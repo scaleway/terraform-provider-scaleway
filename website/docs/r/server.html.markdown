@@ -38,6 +38,10 @@ The following arguments are supported:
 * `enable_ipv6` - (Optional) enable ipv6
 * `dynamic_ip_required` - (Optional) make server publicly available
 * `security_group` - (Optional) assign security group to server
+* `volume` - (Optional) attach additional volumes to your instance (see below)
+* `public_ipv6` - (Read Only) if `enable_ipv6` is set this contains the ipv6 address of your instance
+* `state` - (Optional) allows you to define the desired state of your server. Valid values include (`stopped`, `running`)
+* `state_detail` - (Read Only) contains details from the scaleway API the state of your instance
 
 Field `name`, `type`, `tags`, `dynamic_ip_required`, `security_group` are editable.
 

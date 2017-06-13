@@ -34,6 +34,7 @@ resource "scaleway_security_group_rule" "smtp_drop_1" {
 
 The following arguments are supported:
 
+* `security_group` - (Required) the security group which should be associated with this rule
 * `action` - (Required) action of rule (`accept`, `drop`)
 * `direction` - (Required) direction of rule (`inbound`, `outbound`)
 * `ip_range` - (Required) ip_range of rule
