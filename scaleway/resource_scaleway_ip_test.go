@@ -2,11 +2,42 @@ package scaleway
 
 import (
 	"fmt"
+	"log"
 	"testing"
 
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/terraform"
 )
+
+func init() {
+	resource.AddTestSweepers("scaleway_ip", &resource.Sweeper{
+		Name: "scaleway_ip",
+		F:    testSweepIP,
+	})
+}
+
+func testSweepIP(region string) error {
+	client, err := sharedClientForRegion(region)
+	if err != nil {
+		return fmt.Errorf("error getting client: %s", err)
+	}
+
+	scaleway := client.(*Client).scaleway
+	log.Printf("[DEBUG] Destroying the ips in (%s)", region)
+
+	ips, err := scaleway.GetIPS()
+	if err != nil {
+		return fmt.Errorf("Error describing IPs in Sweeper: %s", err)
+	}
+
+	for _, ip := range ips.IPS {
+		if err := scaleway.DeleteIP(ip.ID); err != nil {
+			return fmt.Errorf("Error deleting ip in Sweeper: %s", err)
+		}
+	}
+
+	return nil
+}
 
 func TestAccScalewayIP_Count(t *testing.T) {
 	resource.Test(t, resource.TestCase{
