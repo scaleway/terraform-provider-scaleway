@@ -19,13 +19,13 @@ func sharedClientForRegion(region string) (interface{}, error) {
 		return nil, fmt.Errorf("empty SCALEWAY_ORGANIZATION")
 	}
 
-	if os.Getenv("SCALEWAY_ACCESS_KEY") == "" {
-		return nil, fmt.Errorf("empty SCALEWAY_ACCESS_KEY")
+	if os.Getenv("SCALEWAY_TOKEN") == "" {
+		return nil, fmt.Errorf("empty SCALEWAY_TOKEN")
 	}
 
 	conf := &Config{
 		Organization: os.Getenv("SCALEWAY_ORGANIZATION"),
-		APIKey:       os.Getenv("SCALEWAY_ACCESS_KEY"),
+		APIKey:       os.Getenv("SCALEWAY_TOKEN"),
 		Region:       region,
 	}
 
