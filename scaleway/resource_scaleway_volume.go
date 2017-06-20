@@ -22,22 +22,26 @@ func resourceScalewayVolume() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"name": {
-				Type:     schema.TypeString,
-				Required: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: "the name of the volume",
 			},
 			"size_in_gb": {
 				Type:         schema.TypeInt,
 				Required:     true,
 				ValidateFunc: validateVolumeSize,
+				Description:  "the size of the volume in GB",
 			},
 			"type": {
 				Type:         schema.TypeString,
 				Required:     true,
 				ValidateFunc: validateVolumeType,
+				Description:  "the type of backing storage",
 			},
 			"server": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "the server the volume is attached to",
 			},
 		},
 	}

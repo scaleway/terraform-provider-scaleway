@@ -16,8 +16,9 @@ func resourceScalewaySecurityGroupRule() *schema.Resource {
 		Delete: resourceScalewaySecurityGroupRuleDelete,
 		Schema: map[string]*schema.Schema{
 			"security_group": {
-				Type:     schema.TypeString,
-				Required: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: "The security group this rule is attached to",
 			},
 			"action": {
 				Type:     schema.TypeString,
@@ -29,6 +30,7 @@ func resourceScalewaySecurityGroupRule() *schema.Resource {
 					}
 					return
 				},
+				Description: "The action to take when the security group rule is triggered (accept or drop)",
 			},
 			"direction": {
 				Type:     schema.TypeString,
@@ -40,10 +42,12 @@ func resourceScalewaySecurityGroupRule() *schema.Resource {
 					}
 					return
 				},
+				Description: "The direction the traffic is affected (inbound or outbound)",
 			},
 			"ip_range": {
-				Type:     schema.TypeString,
-				Required: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: "The ip range affected by the security group rule",
 			},
 			"protocol": {
 				Type:     schema.TypeString,
@@ -55,10 +59,12 @@ func resourceScalewaySecurityGroupRule() *schema.Resource {
 					}
 					return
 				},
+				Description: "The protocol of the security group rule (ICMP, TCP or UDP)",
 			},
 			"port": {
-				Type:     schema.TypeInt,
-				Optional: true,
+				Type:        schema.TypeInt,
+				Optional:    true,
+				Description: "The port affected by the security group rule",
 			},
 		},
 	}
