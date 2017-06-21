@@ -7,7 +7,7 @@ import (
 
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
-	"github.com/scaleway/scaleway-cli/pkg/api"
+	"github.com/nicolai86/scaleway-cli/pkg/api"
 )
 
 func resourceScalewayVolumeAttachment() *schema.Resource {

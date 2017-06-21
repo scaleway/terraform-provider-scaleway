@@ -6,7 +6,7 @@ import (
 
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/terraform"
-	"github.com/scaleway/scaleway-cli/pkg/api"
+	"github.com/nicolai86/scaleway-cli/pkg/api"
 )
 
 func TestAccScalewaySecurityGroupRule_Basic(t *testing.T) {

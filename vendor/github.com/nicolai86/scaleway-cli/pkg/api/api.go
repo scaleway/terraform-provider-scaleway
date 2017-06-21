@@ -52,6 +52,12 @@ func init() {
 	if url := os.Getenv("SCW_MARKETPLACE_API"); url != "" {
 		MarketplaceAPI = url
 	}
+	if url := os.Getenv("SCW_COMPUTE_PAR1_API"); url != "" {
+		ComputeAPIPar1 = url
+	}
+	if url := os.Getenv("SCW_COMPUTE_AMS1_API"); url != "" {
+		ComputeAPIAms1 = url
+	}
 }
 
 const (
@@ -708,6 +714,26 @@ type ScalewayConnect struct {
 	Expires     bool   `json:"expires"`
 }
 
+// ScalewayConnectInterface is the interface implemented by ScalewayConnect,
+// ScalewayConnectByOTP and ScalewayConnectByBackupCode
+type ScalewayConnectInterface interface {
+	GetPassword() string
+}
+
+func (s *ScalewayConnect) GetPassword() string {
+	return s.Password
+}
+
+type ScalewayConnectByOTP struct {
+	ScalewayConnect
+	TwoFAToken string `json:"2FA_token"`
+}
+
+type ScalewayConnectByBackupCode struct {
+	ScalewayConnect
+	TwoFABackupCode string `json:"2FA_backup_code"`
+}
+
 // ScalewayOrganizationDefinition represents a Scaleway Organization
 type ScalewayOrganizationDefinition struct {
 	ID    string                   `json:"id"`
@@ -1188,6 +1214,9 @@ func (s ScalewaySortServers) Less(i, j int) bool {
 
 // GetServer gets a server from the ScalewayAPI
 func (s *ScalewayAPI) GetServer(serverID string) (*ScalewayServer, error) {
+	if serverID == "" {
+		return nil, fmt.Errorf("cannot get server without serverID")
+	}
 	resp, err := s.GetResponsePaginate(s.computeAPI, "servers/"+serverID, url.Values{})
 	if err != nil {
 		return nil, err

@@ -5,7 +5,7 @@ import (
 	"log"
 
 	"github.com/hashicorp/terraform/helper/schema"
-	"github.com/scaleway/scaleway-cli/pkg/api"
+	"github.com/nicolai86/scaleway-cli/pkg/api"
 )
 
 func resourceScalewayServer() *schema.Resource {
