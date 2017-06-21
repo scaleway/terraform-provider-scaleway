@@ -94,7 +94,10 @@ func waitForServerState(scaleway *api.ScalewayAPI, serverID, targetState string)
 				}
 			}
 
-			return 42, s.State, err
+			if s != nil {
+				return 42, s.State, err
+			}
+			return 42, "error", err
 		},
 		Timeout:    60 * time.Minute,
 		MinTimeout: 5 * time.Second,
