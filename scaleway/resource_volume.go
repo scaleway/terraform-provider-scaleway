@@ -5,7 +5,7 @@ import (
 	"log"
 
 	"github.com/hashicorp/terraform/helper/schema"
-	"github.com/nicolai86/scaleway-cli/pkg/api"
+	"github.com/nicolai86/scaleway-sdk/api"
 )
 
 const gb uint64 = 1000 * 1000 * 1000

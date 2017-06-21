@@ -7,7 +7,7 @@ import (
 
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
-	"github.com/nicolai86/scaleway-cli/pkg/api"
+	"github.com/nicolai86/scaleway-sdk/api"
 )
 
 func resourceScalewayVolumeAttachment() *schema.Resource {
@@ -36,7 +36,6 @@ var errVolumeAlreadyAttached = fmt.Errorf("Scaleway volume already attached")
 
 func resourceScalewayVolumeAttachmentCreate(d *schema.ResourceData, m interface{}) error {
 	scaleway := m.(*Client).scaleway
-	scaleway.ClearCache()
 
 	vol, err := scaleway.GetVolume(d.Get("volume").(string))
 	if err != nil {
@@ -92,7 +91,6 @@ func resourceScalewayVolumeAttachmentCreate(d *schema.ResourceData, m interface{
 	}
 
 	if err := resource.Retry(5*time.Minute, func() *resource.RetryError {
-		scaleway.ClearCache()
 
 		var req = api.ScalewayServerPatchDefinition{
 			Volumes: &volumes,
@@ -134,7 +132,6 @@ func resourceScalewayVolumeAttachmentCreate(d *schema.ResourceData, m interface{
 
 func resourceScalewayVolumeAttachmentRead(d *schema.ResourceData, m interface{}) error {
 	scaleway := m.(*Client).scaleway
-	scaleway.ClearCache()
 
 	server, err := scaleway.GetServer(d.Get("server").(string))
 	if err != nil {
@@ -174,7 +171,6 @@ func resourceScalewayVolumeAttachmentRead(d *schema.ResourceData, m interface{})
 
 func resourceScalewayVolumeAttachmentDelete(d *schema.ResourceData, m interface{}) error {
 	scaleway := m.(*Client).scaleway
-	scaleway.ClearCache()
 
 	mu.Lock()
 	defer mu.Unlock()
@@ -223,8 +219,6 @@ func resourceScalewayVolumeAttachmentDelete(d *schema.ResourceData, m interface{
 	}
 
 	if err := resource.Retry(5*time.Minute, func() *resource.RetryError {
-		scaleway.ClearCache()
-
 		var req = api.ScalewayServerPatchDefinition{
 			Volumes: &volumes,
 		}

@@ -2,9 +2,10 @@ package scaleway
 
 import (
 	"fmt"
+	"regexp"
 
 	"github.com/hashicorp/terraform/helper/schema"
-	"github.com/nicolai86/scaleway-cli/pkg/api"
+	"github.com/nicolai86/scaleway-sdk/api"
 )
 
 func dataSourceScalewayImage() *schema.Resource {
@@ -59,19 +60,36 @@ func scalewayImageAttributes(d *schema.ResourceData, img *api.ScalewayImage) err
 func dataSourceScalewayImageRead(d *schema.ResourceData, meta interface{}) error {
 	scaleway := meta.(*Client).scaleway
 
-	var needle string
+	var nameMatch func(api.MarketImage) bool
 	if name, ok := d.GetOk("name"); ok {
-		needle = name.(string)
+		nameMatch = func(img api.MarketImage) bool {
+			return img.Name == name.(string)
+		}
 	} else if nameFilter, ok := d.GetOk("name_filter"); ok {
-		needle = nameFilter.(string)
+		exp := regexp.MustCompile(nameFilter.(string))
+		nameMatch = func(img api.MarketImage) bool {
+			return exp.MatchString(img.Name)
+		}
 	}
 
-	images, err := scaleway.ResolveImage(needle)
+	imgs, err := scaleway.GetImages()
 	if err != nil {
 		return err
 	}
-	images = api.FilterImagesByArch(images, d.Get("architecture").(string))
-	images = api.FilterImagesByRegion(images, scaleway.Region)
+	images := []api.MarketLocalImageDefinition{}
+	for _, image := range *imgs {
+		if !nameMatch(image) {
+			continue
+		}
+
+		for _, v := range image.Versions {
+			for _, l := range v.LocalImages {
+				if l.Arch == d.Get("architecture").(string) && l.Zone == scaleway.Region {
+					images = append(images, l)
+				}
+			}
+		}
+	}
 
 	if len(images) > 1 {
 		return fmt.Errorf("The query returned more than one result. Please refine your query.")
@@ -80,7 +98,7 @@ func dataSourceScalewayImageRead(d *schema.ResourceData, meta interface{}) error
 		return fmt.Errorf("The query returned no result. Please refine your query.")
 	}
 
-	img, err := scaleway.GetImage(images[0].Identifier)
+	img, err := scaleway.GetImage(images[0].ID)
 	if err != nil {
 		return err
 	}
