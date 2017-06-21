@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/hashicorp/terraform/helper/resource"
-	"github.com/scaleway/scaleway-cli/pkg/api"
+	"github.com/nicolai86/scaleway-cli/pkg/api"
 )
 
 // Bool returns a pointer to of the bool value passed in.

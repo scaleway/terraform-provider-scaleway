@@ -6,8 +6,8 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/scaleway/scaleway-cli/pkg/api"
-	"github.com/scaleway/scaleway-cli/pkg/scwversion"
+	"github.com/nicolai86/scaleway-cli/pkg/api"
+	"github.com/nicolai86/scaleway-cli/pkg/scwversion"
 )
 
 // Config contains scaleway configuration values
