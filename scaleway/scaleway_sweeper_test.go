@@ -32,7 +32,7 @@ func sharedClientForRegion(region string) (interface{}, error) {
 	// configures a default client for the region, using the above env vars
 	client, err := conf.Client()
 	if err != nil {
-		return nil, fmt.Errorf("error getting Scaleway client")
+		return nil, fmt.Errorf("error getting Scaleway client: %#v", err)
 	}
 
 	return client, nil

@@ -17,14 +17,16 @@ func resourceScalewayVolumeAttachment() *schema.Resource {
 		Delete: resourceScalewayVolumeAttachmentDelete,
 		Schema: map[string]*schema.Schema{
 			"server": {
-				Type:     schema.TypeString,
-				Required: true,
-				ForceNew: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				ForceNew:    true,
+				Description: "the server a volume should be attached to",
 			},
 			"volume": {
-				Type:     schema.TypeString,
-				Required: true,
-				ForceNew: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				ForceNew:    true,
+				Description: "the volume to attach",
 			},
 		},
 	}

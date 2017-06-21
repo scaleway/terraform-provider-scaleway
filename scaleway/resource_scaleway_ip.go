@@ -19,13 +19,15 @@ func resourceScalewayIP() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"server": {
-				Type:     schema.TypeString,
-				Optional: true,
-				Computed: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Computed:    true,
+				Description: "The server associated with the ip",
 			},
 			"ip": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The ipv4 address of the ip",
 			},
 		},
 	}
