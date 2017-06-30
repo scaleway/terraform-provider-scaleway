@@ -35,6 +35,9 @@ func resourceScalewayVolumeAttachment() *schema.Resource {
 var errVolumeAlreadyAttached = fmt.Errorf("Scaleway volume already attached")
 
 func resourceScalewayVolumeAttachmentCreate(d *schema.ResourceData, m interface{}) error {
+	mu.Lock()
+	defer mu.Unlock()
+
 	scaleway := m.(*Client).scaleway
 
 	vol, err := scaleway.GetVolume(d.Get("volume").(string))
@@ -46,10 +49,7 @@ func resourceScalewayVolumeAttachmentCreate(d *schema.ResourceData, m interface{
 		return errVolumeAlreadyAttached
 	}
 
-	// guard against server shutdown/ startup race conditiond
 	serverID := d.Get("server").(string)
-	scalewayMutexKV.Lock(serverID)
-	defer scalewayMutexKV.Unlock(serverID)
 
 	server, err := scaleway.GetServer(serverID)
 	if err != nil {
@@ -90,14 +90,11 @@ func resourceScalewayVolumeAttachmentCreate(d *schema.ResourceData, m interface{
 		volumes[k] = v
 	}
 
-	if err := resource.Retry(5*time.Minute, func() *resource.RetryError {
-
+	if err := resource.Retry(serverWaitTimeout, func() *resource.RetryError {
 		var req = api.ScalewayServerPatchDefinition{
 			Volumes: &volumes,
 		}
-		mu.Lock()
 		err := scaleway.PatchServer(serverID, req)
-		mu.Unlock()
 
 		if err == nil {
 			return nil
@@ -169,18 +166,17 @@ func resourceScalewayVolumeAttachmentRead(d *schema.ResourceData, m interface{})
 	return nil
 }
 
-func resourceScalewayVolumeAttachmentDelete(d *schema.ResourceData, m interface{}) error {
-	scaleway := m.(*Client).scaleway
+const serverWaitTimeout = 5 * time.Minute
 
+func resourceScalewayVolumeAttachmentDelete(d *schema.ResourceData, m interface{}) error {
 	mu.Lock()
 	defer mu.Unlock()
 
+	scaleway := m.(*Client).scaleway
+
 	var startServerAgain = false
 
-	// guard against server shutdown/ startup race conditiond
 	serverID := d.Get("server").(string)
-	scalewayMutexKV.Lock(serverID)
-	defer scalewayMutexKV.Unlock(serverID)
 
 	server, err := scaleway.GetServer(serverID)
 	if err != nil {
@@ -218,13 +214,11 @@ func resourceScalewayVolumeAttachmentDelete(d *schema.ResourceData, m interface{
 		volumes[k] = v
 	}
 
-	if err := resource.Retry(5*time.Minute, func() *resource.RetryError {
+	if err := resource.Retry(serverWaitTimeout, func() *resource.RetryError {
 		var req = api.ScalewayServerPatchDefinition{
 			Volumes: &volumes,
 		}
-		mu.Lock()
 		err := scaleway.PatchServer(serverID, req)
-		mu.Unlock()
 
 		if err == nil {
 			return nil
