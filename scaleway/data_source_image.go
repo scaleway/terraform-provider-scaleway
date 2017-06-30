@@ -66,7 +66,10 @@ func dataSourceScalewayImageRead(d *schema.ResourceData, meta interface{}) error
 			return img.Name == name.(string)
 		}
 	} else if nameFilter, ok := d.GetOk("name_filter"); ok {
-		exp := regexp.MustCompile(nameFilter.(string))
+		exp, err := regexp.Compile(nameFilter.(string))
+		if err != nil {
+			return fmt.Errorf("invalid name_filter regular expression provided: %v", err)
+		}
 		nameMatch = func(img api.MarketImage) bool {
 			return exp.MatchString(img.Name)
 		}
