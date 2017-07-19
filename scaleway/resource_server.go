@@ -120,6 +120,20 @@ func resourceScalewayServer() *schema.Resource {
 	}
 }
 
+func attachIP(scaleway *api.ScalewayAPI, serverID, IPAddress string) error {
+	ips, err := scaleway.GetIPS()
+	if err != nil {
+		return err
+	}
+	for _, ip := range ips.IPS {
+		if ip.Address == IPAddress {
+			log.Printf("[DEBUG] Attaching IP %q to server %q\n", ip.ID, serverID)
+			return scaleway.AttachIP(ip.ID, serverID)
+		}
+	}
+	return fmt.Errorf("Failed to find IP with ip %q to attach", IPAddress)
+}
+
 func resourceScalewayServerCreate(d *schema.ResourceData, m interface{}) error {
 	scaleway := m.(*Client).scaleway
 
@@ -185,18 +199,8 @@ func resourceScalewayServerCreate(d *schema.ResourceData, m interface{}) error {
 		err = waitForServerState(scaleway, id, "running")
 
 		if v, ok := d.GetOk("public_ip"); ok {
-			if ips, err := scaleway.GetIPS(); err != nil {
+			if err := attachIP(scaleway, d.Id(), v.(string)); err != nil {
 				return err
-			} else {
-				for _, ip := range ips.IPS {
-					if ip.Address == v.(string) {
-						log.Printf("[DEBUG] Attaching IP %q to server %q\n", ip.ID, d.Id())
-						if err := scaleway.AttachIP(ip.ID, d.Id()); err != nil {
-							return err
-						}
-						break
-					}
-				}
 			}
 		}
 	}
