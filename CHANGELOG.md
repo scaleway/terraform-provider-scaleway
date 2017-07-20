@@ -1,5 +1,6 @@
 ## 0.1.1 (Unreleased)
 
+* r/server: improve public_ip attachment [GH-14]
 * r/volume_attachment: fix volume_attachment deletion [GH-13]
 
 ## 0.1.0 (June 21, 2017)
