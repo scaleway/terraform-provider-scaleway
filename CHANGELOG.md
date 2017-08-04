@@ -1,3 +1,4 @@
+## 0.1.2 (Unreleased)
 ## 0.1.1 (August 04, 2017)
 
 * r/server: improve public_ip attachment ([#14](https://github.com/terraform-providers/terraform-provider-scaleway/issues/14))
