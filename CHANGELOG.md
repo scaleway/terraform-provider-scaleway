@@ -1,7 +1,7 @@
-## 0.1.1 (Unreleased)
+## 0.1.1 (August 04, 2017)
 
-* r/server: improve public_ip attachment [GH-14]
-* r/volume_attachment: fix volume_attachment deletion [GH-13]
+* r/server: improve public_ip attachment ([#14](https://github.com/terraform-providers/terraform-provider-scaleway/issues/14))
+* r/volume_attachment: fix volume_attachment deletion ([#13](https://github.com/terraform-providers/terraform-provider-scaleway/issues/13))
 
 ## 0.1.0 (June 21, 2017)
 
