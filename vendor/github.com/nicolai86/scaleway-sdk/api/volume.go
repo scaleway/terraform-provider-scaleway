@@ -40,15 +40,8 @@ type ScalewayVolume struct {
 	ExportURI string `json:"export_uri,omitempty"`
 }
 
-// ScalewayOneVolume represents the response of a GET /volumes/UUID API call
-type ScalewayOneVolume struct {
+type volumeResponse struct {
 	Volume ScalewayVolume `json:"volume,omitempty"`
-}
-
-// ScalewayVolumes represents a group of Scaleway volumes
-type ScalewayVolumes struct {
-	// Volumes holds scaleway volumes of the response
-	Volumes []ScalewayVolume `json:"volumes,omitempty"`
 }
 
 // ScalewayVolumeDefinition represents a Scaleway volume definition
@@ -99,7 +92,7 @@ func (s *ScalewayAPI) PostVolume(definition ScalewayVolumeDefinition) (string, e
 	if err != nil {
 		return "", err
 	}
-	var volume ScalewayOneVolume
+	var volume volumeResponse
 
 	if err = json.Unmarshal(body, &volume); err != nil {
 		return "", err
@@ -133,6 +126,10 @@ func (s *ScalewayAPI) DeleteVolume(volumeID string) error {
 	return nil
 }
 
+type volumesResponse struct {
+	Volumes []ScalewayVolume `json:"volumes,omitempty"`
+}
+
 // GetVolumes gets the list of volumes from the ScalewayAPI
 func (s *ScalewayAPI) GetVolumes() (*[]ScalewayVolume, error) {
 	query := url.Values{}
@@ -148,7 +145,7 @@ func (s *ScalewayAPI) GetVolumes() (*[]ScalewayVolume, error) {
 		return nil, err
 	}
 
-	var volumes ScalewayVolumes
+	var volumes volumesResponse
 
 	if err = json.Unmarshal(body, &volumes); err != nil {
 		return nil, err
@@ -168,7 +165,7 @@ func (s *ScalewayAPI) GetVolume(volumeID string) (*ScalewayVolume, error) {
 	if err != nil {
 		return nil, err
 	}
-	var oneVolume ScalewayOneVolume
+	var oneVolume volumeResponse
 
 	if err = json.Unmarshal(body, &oneVolume); err != nil {
 		return nil, err

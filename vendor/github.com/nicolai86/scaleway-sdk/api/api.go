@@ -23,13 +23,17 @@ import (
 	"golang.org/x/sync/errgroup"
 )
 
+// https://cp-par1.scaleway.com/products/servers
+// https://cp-ams1.scaleway.com/products/servers
 // Default values
 var (
-	AccountAPI     = "https://account.scaleway.com/"
-	MetadataAPI    = "http://169.254.42.42/"
-	MarketplaceAPI = "https://api-marketplace.scaleway.com"
-	ComputeAPIPar1 = "https://cp-par1.scaleway.com/"
-	ComputeAPIAms1 = "https://cp-ams1.scaleway.com"
+	AccountAPI          = "https://account.scaleway.com/"
+	MetadataAPI         = "http://169.254.42.42/"
+	MarketplaceAPI      = "https://api-marketplace.scaleway.com"
+	ComputeAPIPar1      = "https://cp-par1.scaleway.com/"
+	ComputeAPIAms1      = "https://cp-ams1.scaleway.com/"
+	AvailabilityAPIPar1 = "https://availability.scaleway.com/"
+	AvailabilityAPIAms1 = "https://availability-ams1.scaleway.com/"
 
 	URLPublicDNS  = ".pub.cloud.scaleway.com"
 	URLPrivateDNS = ".priv.cloud.scaleway.com"
@@ -44,12 +48,6 @@ func init() {
 	}
 	if url := os.Getenv("SCW_MARKETPLACE_API"); url != "" {
 		MarketplaceAPI = url
-	}
-	if url := os.Getenv("SCW_COMPUTE_PAR1_API"); url != "" {
-		ComputeAPIPar1 = url
-	}
-	if url := os.Getenv("SCW_COMPUTE_AMS1_API"); url != "" {
-		ComputeAPIAms1 = url
 	}
 }
 
@@ -75,8 +73,9 @@ type ScalewayAPI struct {
 
 	userAgent string
 
-	client     HTTPClient
-	computeAPI string
+	client          HTTPClient
+	computeAPI      string
+	availabilityAPI string
 
 	Region string
 }
@@ -130,14 +129,19 @@ func New(organization, token, region string, options ...func(*ScalewayAPI)) (*Sc
 	switch region {
 	case "par1", "":
 		s.computeAPI = ComputeAPIPar1
+		s.availabilityAPI = AvailabilityAPIPar1
 	case "ams1":
 		s.computeAPI = ComputeAPIAms1
+		s.availabilityAPI = AvailabilityAPIAms1
 	default:
 		return nil, fmt.Errorf("%s isn't a valid region", region)
 	}
 	s.Region = region
 	if url := os.Getenv("SCW_COMPUTE_API"); url != "" {
 		s.computeAPI = url
+	}
+	if url := os.Getenv("SCW_AVAILABILITY_API"); url != "" {
+		s.availabilityAPI = url
 	}
 	return s, nil
 }
