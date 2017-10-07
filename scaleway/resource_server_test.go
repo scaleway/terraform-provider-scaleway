@@ -112,19 +112,23 @@ func TestAccScalewayServer_Volumes(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"scaleway_server.base", "type", "C1"),
 					resource.TestCheckResourceAttr(
-						"scaleway_server.base", "volume.#", "2"),
+						"scaleway_server.base", "volume.#", "3"),
 					resource.TestCheckResourceAttrSet(
 						"scaleway_server.base", "volume.0.volume_id"),
 					resource.TestCheckResourceAttr(
 						"scaleway_server.base", "volume.0.type", "l_ssd"),
 					resource.TestCheckResourceAttr(
 						"scaleway_server.base", "volume.0.size_in_gb", "20"),
-					resource.TestCheckResourceAttrSet(
-						"scaleway_server.base", "volume.1.volume_id"),
 					resource.TestCheckResourceAttr(
 						"scaleway_server.base", "volume.1.type", "l_ssd"),
 					resource.TestCheckResourceAttr(
-						"scaleway_server.base", "volume.1.size_in_gb", "30"),
+						"scaleway_server.base", "volume.1.size_in_gb", "0"),
+					resource.TestCheckResourceAttrSet(
+						"scaleway_server.base", "volume.2.volume_id"),
+					resource.TestCheckResourceAttr(
+						"scaleway_server.base", "volume.2.type", "l_ssd"),
+					resource.TestCheckResourceAttr(
+						"scaleway_server.base", "volume.2.size_in_gb", "30"),
 				),
 			},
 		},
@@ -338,6 +342,11 @@ resource "scaleway_server" "base" {
 
   volume {
     size_in_gb = 20
+    type = "l_ssd"
+  }
+
+  volume {
+    size_in_gb = 0
     type = "l_ssd"
   }
 

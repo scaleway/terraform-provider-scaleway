@@ -61,9 +61,15 @@ func resourceScalewayServer() *schema.Resource {
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"size_in_gb": {
-							Type:         schema.TypeInt,
-							Required:     true,
-							ValidateFunc: validateVolumeSize,
+							Type:     schema.TypeInt,
+							Required: true,
+							ValidateFunc: func(v interface{}, k string) (ws []string, errors []error) {
+								value := v.(int)
+								if value > 150 {
+									errors = append(errors, fmt.Errorf("%q needs to be less than 150", k))
+								}
+								return
+							},
 						},
 						"type": {
 							Type:         schema.TypeString,
@@ -162,18 +168,21 @@ func resourceScalewayServerCreate(d *schema.ResourceData, m interface{}) error {
 		volumes := vs.([]interface{})
 		for i, v := range volumes {
 			volume := v.(map[string]interface{})
+			sizeInGB := uint64(volume["size_in_gb"].(int))
 
-			volumeID, err := scaleway.PostVolume(api.ScalewayVolumeDefinition{
-				Size: uint64(volume["size_in_gb"].(int)) * gb,
-				Type: volume["type"].(string),
-				Name: fmt.Sprintf("%s-%d", server.Name, volume["size_in_gb"].(int)),
-			})
-			if err != nil {
-				return err
+			if sizeInGB > 0 {
+				volumeID, err := scaleway.PostVolume(api.ScalewayVolumeDefinition{
+					Size: sizeInGB * gb,
+					Type: volume["type"].(string),
+					Name: fmt.Sprintf("%s-%d", server.Name, sizeInGB),
+				})
+				if err != nil {
+					return err
+				}
+				volume["volume_id"] = volumeID
+				server.Volumes[fmt.Sprintf("%d", i+1)] = volumeID
 			}
-			volume["volume_id"] = volumeID
 			volumes[i] = volume
-			server.Volumes[fmt.Sprintf("%d", i+1)] = volumeID
 		}
 		d.Set("volume", volumes)
 	}
