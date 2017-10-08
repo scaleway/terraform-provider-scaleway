@@ -8,6 +8,8 @@ import (
 	"github.com/nicolai86/scaleway-sdk/api"
 )
 
+var commercialServerTypes []string
+
 func resourceScalewayServer() *schema.Resource {
 	return &schema.Resource{
 		Create: resourceScalewayServerCreate,
@@ -31,10 +33,11 @@ func resourceScalewayServer() *schema.Resource {
 				Description: "The base image of the server",
 			},
 			"type": {
-				Type:        schema.TypeString,
-				Required:    true,
-				ForceNew:    true,
-				Description: "The instance type of the server",
+				Type:         schema.TypeString,
+				Required:     true,
+				ForceNew:     true,
+				Description:  "The instance type of the server",
+				ValidateFunc: validateServerType,
 			},
 			"bootscript": {
 				Type:        schema.TypeString,
