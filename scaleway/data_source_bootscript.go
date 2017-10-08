@@ -87,7 +87,7 @@ func dataSourceScalewayBootscriptRead(d *schema.ResourceData, meta interface{}) 
 		return err
 	}
 
-	var isMatch func(api.ScalewayBootscript) bool
+	isMatch := func(s api.ScalewayBootscript) bool { return true }
 
 	architecture := d.Get("architecture")
 	if name, ok := d.GetOk("name"); ok {
