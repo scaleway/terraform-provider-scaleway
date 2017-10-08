@@ -1,6 +1,7 @@
 ## 0.1.2 (Unreleased)
 
 * d/bootscript: fix crash when no filter is specified ([#21](https://github.com/terraform-providers/terraform-provider-scaleway/issues/21))
+* r/server: allow initial volumes without size to improve module support ([#19](https://github.com/terraform-providers/terraform-provider-scaleway/issues/19))
 
 ## 0.1.1 (August 04, 2017)
 
