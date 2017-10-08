@@ -27,10 +27,16 @@ func resourceScalewayVolume() *schema.Resource {
 				Description: "the name of the volume",
 			},
 			"size_in_gb": {
-				Type:         schema.TypeInt,
-				Required:     true,
-				ValidateFunc: validateVolumeSize,
-				Description:  "the size of the volume in GB",
+				Type:     schema.TypeInt,
+				Required: true,
+				ValidateFunc: func(v interface{}, k string) (ws []string, errors []error) {
+					value := v.(int)
+					if value < 1 || value > 150 {
+						errors = append(errors, fmt.Errorf("%q be more than 1 and less than 150", k))
+					}
+					return
+				},
+				Description: "the size of the volume in GB",
 			},
 			"type": {
 				Type:         schema.TypeString,
