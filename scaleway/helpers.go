@@ -2,6 +2,7 @@ package scaleway
 
 import (
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/hashicorp/terraform/helper/resource"
@@ -16,6 +17,24 @@ func Bool(val bool) *bool {
 // String returns a pointer to of the string value passed in.
 func String(val string) *string {
 	return &val
+}
+
+func validateServerType(v interface{}, k string) (ws []string, errors []error) {
+	// only validate if we were able to fetch a list of commercial types
+	if len(commercialServerTypes) == 0 {
+		return
+	}
+
+	isKnown := false
+	requestedType := v.(string)
+	for _, knownType := range commercialServerTypes {
+		isKnown = isKnown || strings.ToUpper(knownType) == strings.ToUpper(requestedType)
+	}
+
+	if !isKnown {
+		errors = append(errors, fmt.Errorf("%q must be one of %q", k, commercialServerTypes))
+	}
+	return
 }
 
 func validateVolumeType(v interface{}, k string) (ws []string, errors []error) {
