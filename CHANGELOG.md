@@ -1,4 +1,7 @@
 ## 1.0.1 (Unreleased)
+
+* r/server: validate types against scaleway offerings ([#17](https://github.com/terraform-providers/terraform-provider-scaleway/issues/17))
+
 ## 1.0.0 (October 25, 2017)
 
 * d/bootscript: fix crash when no filter is specified ([#21](https://github.com/terraform-providers/terraform-provider-scaleway/issues/21))
