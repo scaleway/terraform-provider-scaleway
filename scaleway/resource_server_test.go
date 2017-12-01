@@ -159,6 +159,36 @@ func TestAccScalewayServer_SecurityGroup(t *testing.T) {
 	})
 }
 
+func TestAccScalewayServer_UserData(t *testing.T) {
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckScalewayServerDestroy,
+		Steps: []resource.TestStep{
+			resource.TestStep{
+				Config: testAccCheckScalewayServerConfig_UserData,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayServerExists("scaleway_server.base"),
+					testAccCheckScalewayServerUserData("scaleway_server.base", map[string]string{
+						"key1": "val1",
+						"key2": "val2",
+					}),
+				),
+			},
+			resource.TestStep{
+				Config: testAccCheckScalewayServerConfig_UserData_Update,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayServerExists("scaleway_server.base"),
+					testAccCheckScalewayServerUserData("scaleway_server.base", map[string]string{
+						"key2": "val2",
+						"key3": "val3",
+					}),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckScalewayServerDestroy(s *terraform.State) error {
 	client := testAccProvider.Meta().(*Client).scaleway
 
@@ -267,6 +297,38 @@ func testAccCheckScalewayServerSecurityGroup(n, securityGroupName string) resour
 
 		if server.SecurityGroup.Name != securityGroupName {
 			return fmt.Errorf("Server has wrong security_group")
+		}
+
+		return nil
+	}
+}
+
+func testAccCheckScalewayServerUserData(n string, ud map[string]string) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		rs, ok := s.RootModule().Resources[n]
+		if !ok {
+			return fmt.Errorf("Unknown resource: %s", n)
+		}
+
+		client := testAccProvider.Meta().(*Client).scaleway
+		aud, err := readUserDatas(client, rs.Primary.ID)
+		if err != nil {
+			return err
+		}
+
+		if len(ud) != len(aud) {
+			return fmt.Errorf("Server has wrong number of user datas")
+		}
+
+		for k, v := range ud {
+			ov, ok := aud[k]
+			if !ok {
+				return fmt.Errorf("Missing user data key: %s", k)
+			}
+
+			if v != ov {
+				return fmt.Errorf("Wrong value for user data key %s: %s", k, ov)
+			}
 		}
 
 		return nil
@@ -394,4 +456,30 @@ resource "scaleway_server" "base" {
   type = "C1"
   tags = [ "terraform-test" ]
   security_group = "${scaleway_security_group.red.id}"
+}`, armImageIdentifier)
+
+var testAccCheckScalewayServerConfig_UserData = fmt.Sprintf(`
+resource "scaleway_server" "base" {
+  name = "test"
+  # ubuntu 14.04
+  image = "%s"
+  type = "C1"
+  tags = [ "terraform-test" ]
+	user_data {
+		key1 = "val1"
+		key2 = "val2"
+	}
+}`, armImageIdentifier)
+
+var testAccCheckScalewayServerConfig_UserData_Update = fmt.Sprintf(`
+resource "scaleway_server" "base" {
+  name = "test"
+  # ubuntu 14.04
+  image = "%s"
+  type = "C1"
+  tags = [ "terraform-test" ]
+	user_data {
+		key2 = "val2"
+		key3 = "val3"
+	}
 }`, armImageIdentifier)
