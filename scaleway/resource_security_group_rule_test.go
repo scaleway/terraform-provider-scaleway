@@ -39,6 +39,26 @@ func TestAccScalewaySecurityGroupRule_Basic(t *testing.T) {
 	})
 }
 
+func TestAccScalewaySecurityGroupRule_Count(t *testing.T) {
+	var group api.ScalewaySecurityGroups
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckScalewaySecurityGroupRuleDestroy,
+		Steps: []resource.TestStep{
+			resource.TestStep{
+				Config: testAccCheckScalewaySecurityGroupRuleVariablesConfig,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewaySecurityGroupsExists("scaleway_security_group.base", &group),
+					testAccCheckScalewaySecurityGroupRuleExists("scaleway_security_group_rule.rule.0", &group),
+					testAccCheckScalewaySecurityGroupRuleExists("scaleway_security_group_rule.rule.1", &group),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckScalewaySecurityGroupsExists(n string, group *api.ScalewaySecurityGroups) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
@@ -179,3 +199,26 @@ resource "scaleway_security_group_rule" "https" {
   port = 443
 }
 `
+
+var testAccCheckScalewaySecurityGroupRuleVariablesConfig = `
+variable "trusted_ips" {
+    type        = "list"
+    default = ["1.1.1.1", "2.2.2.2/31"]
+}
+
+resource "scaleway_security_group" "base" {
+    name        = "sg"
+    description = "sg rules"
+}
+
+resource "scaleway_security_group_rule" "rule" {
+    count = "${length(var.trusted_ips)}"
+
+    security_group = "${scaleway_security_group.base.id}"
+
+    action    = "accept"
+    direction = "inbound"
+    ip_range  = "${element(var.trusted_ips, count.index)}"
+    protocol  = "TCP"
+    port      = "22"
+}`

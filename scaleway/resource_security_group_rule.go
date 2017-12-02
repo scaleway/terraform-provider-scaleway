@@ -76,7 +76,7 @@ func resourceScalewaySecurityGroupRuleCreate(d *schema.ResourceData, m interface
 	mu.Lock()
 	defer mu.Unlock()
 
-	req := api.ScalewayNewSecurityGroupRule{
+	req := api.NewSecurityGroupRule{
 		Action:       d.Get("action").(string),
 		Direction:    d.Get("direction").(string),
 		IPRange:      d.Get("ip_range").(string),
@@ -84,7 +84,7 @@ func resourceScalewaySecurityGroupRuleCreate(d *schema.ResourceData, m interface
 		DestPortFrom: d.Get("port").(int),
 	}
 
-	err := scaleway.PostSecurityGroupRule(d.Get("security_group").(string), req)
+	rule, err := scaleway.PostSecurityGroupRule(d.Get("security_group").(string), req)
 	if err != nil {
 		if serr, ok := err.(api.ScalewayAPIError); ok {
 			log.Printf("[DEBUG] Error creating Security Group Rule: %q\n", serr.APIMessage)
@@ -93,25 +93,7 @@ func resourceScalewaySecurityGroupRuleCreate(d *schema.ResourceData, m interface
 		return err
 	}
 
-	resp, err := scaleway.GetSecurityGroupRules(d.Get("security_group").(string))
-	if err != nil {
-		return err
-	}
-
-	matches := func(rule api.ScalewaySecurityGroupRule) bool {
-		return rule.Action == req.Action &&
-			rule.Direction == req.Direction &&
-			rule.IPRange == req.IPRange &&
-			rule.Protocol == req.Protocol &&
-			rule.DestPortFrom == req.DestPortFrom
-	}
-
-	for _, rule := range resp.Rules {
-		if matches(rule) {
-			d.SetId(rule.ID)
-			break
-		}
-	}
+	d.SetId(rule.ID)
 
 	if d.Id() == "" {
 		return fmt.Errorf("Failed to find created security group rule")
@@ -152,7 +134,7 @@ func resourceScalewaySecurityGroupRuleUpdate(d *schema.ResourceData, m interface
 	mu.Lock()
 	defer mu.Unlock()
 
-	var req = api.ScalewayNewSecurityGroupRule{
+	var req = api.NewSecurityGroupRule{
 		Action:       d.Get("action").(string),
 		Direction:    d.Get("direction").(string),
 		IPRange:      d.Get("ip_range").(string),
