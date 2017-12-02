@@ -1,6 +1,7 @@
 ## 1.0.1 (Unreleased)
 
 * r/server: validate types against scaleway offerings ([#17](https://github.com/terraform-providers/terraform-provider-scaleway/issues/17))
+* r/security_group_rule: fix error when using count ([#25](https://github.com/terraform-providers/terraform-provider-scaleway/issues/25))
 
 ## 1.0.0 (October 25, 2017)
 
