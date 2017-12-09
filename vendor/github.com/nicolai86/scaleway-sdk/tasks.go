@@ -6,8 +6,8 @@ import (
 	"net/url"
 )
 
-// ScalewayTask represents a Scaleway Task
-type ScalewayTask struct {
+// Task represents a  Task
+type Task struct {
 	// Identifier is a unique identifier for the task
 	Identifier string `json:"id,omitempty"`
 
@@ -26,19 +26,19 @@ type ScalewayTask struct {
 	Progress int `json:"progress,omitempty"`
 }
 
-// ScalewayOneTask represents the response of a GET /tasks/UUID API call
-type ScalewayOneTask struct {
-	Task ScalewayTask `json:"task,omitempty"`
+// OneTask represents the response of a GET /tasks/UUID API call
+type OneTask struct {
+	Task Task `json:"task,omitempty"`
 }
 
-// ScalewayTasks represents a group of Scaleway tasks
-type ScalewayTasks struct {
-	// Tasks holds scaleway tasks of the response
-	Tasks []ScalewayTask `json:"tasks,omitempty"`
+// Tasks represents a group of  tasks
+type Tasks struct {
+	// Tasks holds  tasks of the response
+	Tasks []Task `json:"tasks,omitempty"`
 }
 
-// GetTasks get the list of tasks from the ScalewayAPI
-func (s *ScalewayAPI) GetTasks() (*[]ScalewayTask, error) {
+// GetTasks get the list of tasks from the API
+func (s *API) GetTasks() (*[]Task, error) {
 	query := url.Values{}
 	resp, err := s.GetResponsePaginate(s.computeAPI, "tasks", query)
 	if err != nil {
@@ -50,7 +50,7 @@ func (s *ScalewayAPI) GetTasks() (*[]ScalewayTask, error) {
 	if err != nil {
 		return nil, err
 	}
-	var tasks ScalewayTasks
+	var tasks Tasks
 
 	if err = json.Unmarshal(body, &tasks); err != nil {
 		return nil, err

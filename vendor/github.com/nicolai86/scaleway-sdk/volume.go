@@ -7,8 +7,8 @@ import (
 	"net/url"
 )
 
-// ScalewayVolume represents a Scaleway Volume
-type ScalewayVolume struct {
+// Volume represents a  Volume
+type Volume struct {
 	// Identifier is a unique identifier for the volume
 	Identifier string `json:"id,omitempty"`
 
@@ -33,7 +33,7 @@ type ScalewayVolume struct {
 		Name       string `json:"name,omitempty"`
 	} `json:"server,omitempty"`
 
-	// VolumeType is a Scaleway identifier for the kind of volume (default: l_ssd)
+	// VolumeType is a  identifier for the kind of volume (default: l_ssd)
 	VolumeType string `json:"volume_type,omitempty"`
 
 	// ExportURI represents the url used by initrd/scripts to attach the volume
@@ -41,11 +41,11 @@ type ScalewayVolume struct {
 }
 
 type volumeResponse struct {
-	Volume ScalewayVolume `json:"volume,omitempty"`
+	Volume Volume `json:"volume,omitempty"`
 }
 
-// ScalewayVolumeDefinition represents a Scaleway volume definition
-type ScalewayVolumeDefinition struct {
+// VolumeDefinition represents a  volume definition
+type VolumeDefinition struct {
 	// Name is the user-defined name of the volume
 	Name string `json:"name"`
 
@@ -59,8 +59,8 @@ type ScalewayVolumeDefinition struct {
 	Organization string `json:"organization"`
 }
 
-// ScalewayVolumePutDefinition represents a Scaleway volume with nullable fields (for PUT)
-type ScalewayVolumePutDefinition struct {
+// VolumePutDefinition represents a  volume with nullable fields (for PUT)
+type VolumePutDefinition struct {
 	Identifier       *string `json:"id,omitempty"`
 	Size             *uint64 `json:"size,omitempty"`
 	CreationDate     *string `json:"creation_date,omitempty"`
@@ -76,7 +76,7 @@ type ScalewayVolumePutDefinition struct {
 }
 
 // PostVolume creates a new volume
-func (s *ScalewayAPI) PostVolume(definition ScalewayVolumeDefinition) (string, error) {
+func (s *API) PostVolume(definition VolumeDefinition) (string, error) {
 	definition.Organization = s.Organization
 	if definition.Type == "" {
 		definition.Type = "l_ssd"
@@ -101,7 +101,7 @@ func (s *ScalewayAPI) PostVolume(definition ScalewayVolumeDefinition) (string, e
 }
 
 // PutVolume updates a volume
-func (s *ScalewayAPI) PutVolume(volumeID string, definition ScalewayVolumePutDefinition) error {
+func (s *API) PutVolume(volumeID string, definition VolumePutDefinition) error {
 	resp, err := s.PutResponse(s.computeAPI, fmt.Sprintf("volumes/%s", volumeID), definition)
 	if err != nil {
 		return err
@@ -113,7 +113,7 @@ func (s *ScalewayAPI) PutVolume(volumeID string, definition ScalewayVolumePutDef
 }
 
 // DeleteVolume deletes a volume
-func (s *ScalewayAPI) DeleteVolume(volumeID string) error {
+func (s *API) DeleteVolume(volumeID string) error {
 	resp, err := s.DeleteResponse(s.computeAPI, fmt.Sprintf("volumes/%s", volumeID))
 	if err != nil {
 		return err
@@ -127,11 +127,11 @@ func (s *ScalewayAPI) DeleteVolume(volumeID string) error {
 }
 
 type volumesResponse struct {
-	Volumes []ScalewayVolume `json:"volumes,omitempty"`
+	Volumes []Volume `json:"volumes,omitempty"`
 }
 
-// GetVolumes gets the list of volumes from the ScalewayAPI
-func (s *ScalewayAPI) GetVolumes() (*[]ScalewayVolume, error) {
+// GetVolumes gets the list of volumes from the API
+func (s *API) GetVolumes() (*[]Volume, error) {
 	query := url.Values{}
 
 	resp, err := s.GetResponsePaginate(s.computeAPI, "volumes", query)
@@ -153,8 +153,8 @@ func (s *ScalewayAPI) GetVolumes() (*[]ScalewayVolume, error) {
 	return &volumes.Volumes, nil
 }
 
-// GetVolume gets a volume from the ScalewayAPI
-func (s *ScalewayAPI) GetVolume(volumeID string) (*ScalewayVolume, error) {
+// GetVolume gets a volume from the API
+func (s *API) GetVolume(volumeID string) (*Volume, error) {
 	resp, err := s.GetResponsePaginate(s.computeAPI, "volumes/"+volumeID, url.Values{})
 	if err != nil {
 		return nil, err

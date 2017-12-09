@@ -5,7 +5,7 @@ import (
 	"regexp"
 
 	"github.com/hashicorp/terraform/helper/schema"
-	"github.com/nicolai86/scaleway-sdk/api"
+	api "github.com/nicolai86/scaleway-sdk"
 )
 
 func dataSourceScalewayBootscript() *schema.Resource {
@@ -66,7 +66,7 @@ func dataSourceScalewayBootscript() *schema.Resource {
 	}
 }
 
-func bootscriptDescriptionAttributes(d *schema.ResourceData, script api.ScalewayBootscript) error {
+func bootscriptDescriptionAttributes(d *schema.ResourceData, script api.Bootscript) error {
 	d.Set("architecture", script.Arch)
 	d.Set("organization", script.Organization)
 	d.Set("public", script.Public)
@@ -87,11 +87,11 @@ func dataSourceScalewayBootscriptRead(d *schema.ResourceData, meta interface{}) 
 		return err
 	}
 
-	isMatch := func(s api.ScalewayBootscript) bool { return true }
+	isMatch := func(s api.Bootscript) bool { return true }
 
 	architecture := d.Get("architecture")
 	if name, ok := d.GetOk("name"); ok {
-		isMatch = func(s api.ScalewayBootscript) bool {
+		isMatch = func(s api.Bootscript) bool {
 			architectureMatch := true
 			if architecture != "" {
 				architectureMatch = architecture == s.Arch
@@ -104,7 +104,7 @@ func dataSourceScalewayBootscriptRead(d *schema.ResourceData, meta interface{}) 
 			return err
 		}
 
-		isMatch = func(s api.ScalewayBootscript) bool {
+		isMatch = func(s api.Bootscript) bool {
 			nameMatch := exp.MatchString(s.Title)
 			architectureMatch := true
 			if architecture != "" {
@@ -114,8 +114,8 @@ func dataSourceScalewayBootscriptRead(d *schema.ResourceData, meta interface{}) 
 		}
 	}
 
-	var matches []api.ScalewayBootscript
-	for _, script := range *scripts {
+	var matches []api.Bootscript
+	for _, script := range scripts {
 		if isMatch(script) {
 			matches = append(matches, script)
 		}

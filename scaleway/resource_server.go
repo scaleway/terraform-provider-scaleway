@@ -5,7 +5,7 @@ import (
 	"log"
 
 	"github.com/hashicorp/terraform/helper/schema"
-	"github.com/nicolai86/scaleway-sdk/api"
+	api "github.com/nicolai86/scaleway-sdk"
 )
 
 var commercialServerTypes []string
@@ -129,7 +129,7 @@ func resourceScalewayServer() *schema.Resource {
 	}
 }
 
-func attachIP(scaleway *api.ScalewayAPI, serverID, IPAddress string) error {
+func attachIP(scaleway *api.API, serverID, IPAddress string) error {
 	ips, err := scaleway.GetIPS()
 	if err != nil {
 		return err
@@ -150,7 +150,7 @@ func resourceScalewayServerCreate(d *schema.ResourceData, m interface{}) error {
 	defer mu.Unlock()
 
 	image := d.Get("image").(string)
-	var server = api.ScalewayServerDefinition{
+	var server = api.ServerDefinition{
 		Name:          d.Get("name").(string),
 		Image:         String(image),
 		Organization:  scaleway.Organization,
@@ -174,7 +174,7 @@ func resourceScalewayServerCreate(d *schema.ResourceData, m interface{}) error {
 			sizeInGB := uint64(volume["size_in_gb"].(int))
 
 			if sizeInGB > 0 {
-				volumeID, err := scaleway.PostVolume(api.ScalewayVolumeDefinition{
+				volumeID, err := scaleway.PostVolume(api.VolumeDefinition{
 					Size: sizeInGB * gb,
 					Type: volume["type"].(string),
 					Name: fmt.Sprintf("%s-%d", server.Name, sizeInGB),
@@ -229,7 +229,7 @@ func resourceScalewayServerRead(d *schema.ResourceData, m interface{}) error {
 	server, err := scaleway.GetServer(d.Id())
 
 	if err != nil {
-		if serr, ok := err.(api.ScalewayAPIError); ok {
+		if serr, ok := err.(api.APIError); ok {
 			log.Printf("[DEBUG] Error reading server: %q\n", serr.APIMessage)
 
 			if serr.StatusCode == 404 {
@@ -270,7 +270,7 @@ func resourceScalewayServerUpdate(d *schema.ResourceData, m interface{}) error {
 	mu.Lock()
 	defer mu.Unlock()
 
-	var req api.ScalewayServerPatchDefinition
+	var req api.ServerPatchDefinition
 	if d.HasChange("name") {
 		name := d.Get("name").(string)
 		req.Name = &name
@@ -295,7 +295,7 @@ func resourceScalewayServerUpdate(d *schema.ResourceData, m interface{}) error {
 	}
 
 	if d.HasChange("security_group") {
-		req.SecurityGroup = &api.ScalewaySecurityGroup{
+		req.SecurityGroup = &api.SecurityGroup{
 			Identifier: d.Get("security_group").(string),
 		}
 	}

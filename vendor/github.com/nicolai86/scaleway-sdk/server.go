@@ -10,8 +10,8 @@ import (
 	"golang.org/x/sync/errgroup"
 )
 
-// ScalewayServer represents a Scaleway server
-type ScalewayServer struct {
+// Server represents a  server
+type Server struct {
 	// Arch is the architecture target of the server
 	Arch string `json:"arch,omitempty"`
 
@@ -28,13 +28,13 @@ type ScalewayServer struct {
 	ModificationDate string `json:"modification_date,omitempty"`
 
 	// Image is the image used by the server
-	Image ScalewayImage `json:"image,omitempty"`
+	Image Image `json:"image,omitempty"`
 
 	// DynamicIPRequired is a flag that defines a server with a dynamic ip address attached
 	DynamicIPRequired *bool `json:"dynamic_ip_required,omitempty"`
 
 	// PublicIP is the public IP address bound to the server
-	PublicAddress ScalewayIPAddress `json:"public_ip,omitempty"`
+	PublicAddress IPAddress `json:"public_ip,omitempty"`
 
 	// State is the current status of the server
 	State string `json:"state,omitempty"`
@@ -46,7 +46,7 @@ type ScalewayServer struct {
 	PrivateIP string `json:"private_ip,omitempty"`
 
 	// Bootscript is the unique identifier of the selected bootscript
-	Bootscript *ScalewayBootscript `json:"bootscript,omitempty"`
+	Bootscript *Bootscript `json:"bootscript,omitempty"`
 
 	// Hostname represents the ServerName in a format compatible with unix's hostname
 	Hostname string `json:"hostname,omitempty"`
@@ -55,10 +55,10 @@ type ScalewayServer struct {
 	Tags []string `json:"tags,omitempty"`
 
 	// Volumes are the attached volumes
-	Volumes map[string]ScalewayVolume `json:"volumes,omitempty"`
+	Volumes map[string]Volume `json:"volumes,omitempty"`
 
 	// SecurityGroup is the selected security group object
-	SecurityGroup ScalewaySecurityGroup `json:"security_group,omitempty"`
+	SecurityGroup SecurityGroup `json:"security_group,omitempty"`
 
 	// Organization is the owner of the server
 	Organization string `json:"organization,omitempty"`
@@ -77,7 +77,7 @@ type ScalewayServer struct {
 		ZoneID     string `json:"zone_id,omitempty"`
 	} `json:"location,omitempty"`
 
-	IPV6 *ScalewayIPV6Definition `json:"ipv6,omitempty"`
+	IPV6 *IPV6 `json:"ipv6,omitempty"`
 
 	EnableIPV6 bool `json:"enable_ipv6,omitempty"`
 
@@ -86,30 +86,30 @@ type ScalewayServer struct {
 	DNSPrivate string `json:"dns_private,omitempty"`
 }
 
-// ScalewayServerPatchDefinition represents a Scaleway server with nullable fields (for PATCH)
-type ScalewayServerPatchDefinition struct {
-	Arch              *string                    `json:"arch,omitempty"`
-	Name              *string                    `json:"name,omitempty"`
-	CreationDate      *string                    `json:"creation_date,omitempty"`
-	ModificationDate  *string                    `json:"modification_date,omitempty"`
-	Image             *ScalewayImage             `json:"image,omitempty"`
-	DynamicIPRequired *bool                      `json:"dynamic_ip_required,omitempty"`
-	PublicAddress     *ScalewayIPAddress         `json:"public_ip,omitempty"`
-	State             *string                    `json:"state,omitempty"`
-	StateDetail       *string                    `json:"state_detail,omitempty"`
-	PrivateIP         *string                    `json:"private_ip,omitempty"`
-	Bootscript        *string                    `json:"bootscript,omitempty"`
-	Hostname          *string                    `json:"hostname,omitempty"`
-	Volumes           *map[string]ScalewayVolume `json:"volumes,omitempty"`
-	SecurityGroup     *ScalewaySecurityGroup     `json:"security_group,omitempty"`
-	Organization      *string                    `json:"organization,omitempty"`
-	Tags              *[]string                  `json:"tags,omitempty"`
-	IPV6              *ScalewayIPV6Definition    `json:"ipv6,omitempty"`
-	EnableIPV6        *bool                      `json:"enable_ipv6,omitempty"`
+// ServerPatchDefinition represents a  server with nullable fields (for PATCH)
+type ServerPatchDefinition struct {
+	Arch              *string            `json:"arch,omitempty"`
+	Name              *string            `json:"name,omitempty"`
+	CreationDate      *string            `json:"creation_date,omitempty"`
+	ModificationDate  *string            `json:"modification_date,omitempty"`
+	Image             *Image             `json:"image,omitempty"`
+	DynamicIPRequired *bool              `json:"dynamic_ip_required,omitempty"`
+	PublicAddress     *IPAddress         `json:"public_ip,omitempty"`
+	State             *string            `json:"state,omitempty"`
+	StateDetail       *string            `json:"state_detail,omitempty"`
+	PrivateIP         *string            `json:"private_ip,omitempty"`
+	Bootscript        *string            `json:"bootscript,omitempty"`
+	Hostname          *string            `json:"hostname,omitempty"`
+	Volumes           *map[string]Volume `json:"volumes,omitempty"`
+	SecurityGroup     *SecurityGroup     `json:"security_group,omitempty"`
+	Organization      *string            `json:"organization,omitempty"`
+	Tags              *[]string          `json:"tags,omitempty"`
+	IPV6              *IPV6              `json:"ipv6,omitempty"`
+	EnableIPV6        *bool              `json:"enable_ipv6,omitempty"`
 }
 
-// ScalewayServerDefinition represents a Scaleway server with image definition
-type ScalewayServerDefinition struct {
+// ServerDefinition represents a  server with image definition
+type ServerDefinition struct {
 	// Name is the user-defined name of the server
 	Name string `json:"name"`
 
@@ -141,25 +141,25 @@ type ScalewayServerDefinition struct {
 	SecurityGroup string `json:"security_group,omitempty"`
 }
 
-// ScalewayServers represents a group of Scaleway servers
-type ScalewayServers struct {
-	// Servers holds scaleway servers of the response
-	Servers []ScalewayServer `json:"servers,omitempty"`
+// Servers represents a group of  servers
+type Servers struct {
+	// Servers holds  servers of the response
+	Servers []Server `json:"servers,omitempty"`
 }
 
-// ScalewayServerAction represents an action to perform on a Scaleway server
-type ScalewayServerAction struct {
+// ServerAction represents an action to perform on a  server
+type ServerAction struct {
 	// Action is the name of the action to trigger
 	Action string `json:"action,omitempty"`
 }
 
-// ScalewayOneServer represents the response of a GET /servers/UUID API call
-type ScalewayOneServer struct {
-	Server ScalewayServer `json:"server,omitempty"`
+// OneServer represents the response of a GET /servers/UUID API call
+type OneServer struct {
+	Server Server `json:"server,omitempty"`
 }
 
 // PatchServer updates a server
-func (s *ScalewayAPI) PatchServer(serverID string, definition ScalewayServerPatchDefinition) error {
+func (s *API) PatchServer(serverID string, definition ServerPatchDefinition) error {
 	resp, err := s.PatchResponse(s.computeAPI, fmt.Sprintf("servers/%s", serverID), definition)
 	if err != nil {
 		return err
@@ -172,8 +172,8 @@ func (s *ScalewayAPI) PatchServer(serverID string, definition ScalewayServerPatc
 	return nil
 }
 
-// GetServers gets the list of servers from the ScalewayAPI
-func (s *ScalewayAPI) GetServers(all bool, limit int) (*[]ScalewayServer, error) {
+// GetServers gets the list of servers from the API
+func (s *API) GetServers(all bool, limit int) (*[]Server, error) {
 	query := url.Values{}
 	if !all {
 		query.Set("state", "running")
@@ -192,7 +192,7 @@ func (s *ScalewayAPI) GetServers(all bool, limit int) (*[]ScalewayServer, error)
 		}
 	)
 
-	serverChan := make(chan ScalewayServers, 2)
+	serverChan := make(chan Servers, 2)
 	for _, api := range apis {
 		g.Go(s.fetchServers(api, query, serverChan))
 	}
@@ -201,7 +201,7 @@ func (s *ScalewayAPI) GetServers(all bool, limit int) (*[]ScalewayServer, error)
 		return nil, err
 	}
 	close(serverChan)
-	var servers ScalewayServers
+	var servers Servers
 
 	for server := range serverChan {
 		servers.Servers = append(servers.Servers, server.Servers...)
@@ -214,25 +214,25 @@ func (s *ScalewayAPI) GetServers(all bool, limit int) (*[]ScalewayServer, error)
 	return &servers.Servers, nil
 }
 
-// ScalewaySortServers represents a wrapper to sort by CreationDate the servers
-type ScalewaySortServers []ScalewayServer
+// SortServers represents a wrapper to sort by CreationDate the servers
+type SortServers []Server
 
-func (s ScalewaySortServers) Len() int {
+func (s SortServers) Len() int {
 	return len(s)
 }
 
-func (s ScalewaySortServers) Swap(i, j int) {
+func (s SortServers) Swap(i, j int) {
 	s[i], s[j] = s[j], s[i]
 }
 
-func (s ScalewaySortServers) Less(i, j int) bool {
+func (s SortServers) Less(i, j int) bool {
 	date1, _ := time.Parse("2006-01-02T15:04:05.000000+00:00", s[i].CreationDate)
 	date2, _ := time.Parse("2006-01-02T15:04:05.000000+00:00", s[j].CreationDate)
 	return date2.Before(date1)
 }
 
-// GetServer gets a server from the ScalewayAPI
-func (s *ScalewayAPI) GetServer(serverID string) (*ScalewayServer, error) {
+// GetServer gets a server from the API
+func (s *API) GetServer(serverID string) (*Server, error) {
 	if serverID == "" {
 		return nil, fmt.Errorf("cannot get server without serverID")
 	}
@@ -247,7 +247,7 @@ func (s *ScalewayAPI) GetServer(serverID string) (*ScalewayServer, error) {
 		return nil, err
 	}
 
-	var oneServer ScalewayOneServer
+	var oneServer OneServer
 
 	if err = json.Unmarshal(body, &oneServer); err != nil {
 		return nil, err
@@ -259,8 +259,8 @@ func (s *ScalewayAPI) GetServer(serverID string) (*ScalewayServer, error) {
 }
 
 // PostServerAction posts an action on a server
-func (s *ScalewayAPI) PostServerAction(serverID, action string) error {
-	data := ScalewayServerAction{
+func (s *API) PostServerAction(serverID, action string) error {
+	data := ServerAction{
 		Action: action,
 	}
 	resp, err := s.PostResponse(s.computeAPI, fmt.Sprintf("servers/%s/action", serverID), data)
@@ -273,7 +273,7 @@ func (s *ScalewayAPI) PostServerAction(serverID, action string) error {
 	return err
 }
 
-func (s *ScalewayAPI) fetchServers(api string, query url.Values, out chan<- ScalewayServers) func() error {
+func (s *API) fetchServers(api string, query url.Values, out chan<- Servers) func() error {
 	return func() error {
 		resp, err := s.GetResponsePaginate(api, "servers", query)
 		if err != nil {
@@ -285,7 +285,7 @@ func (s *ScalewayAPI) fetchServers(api string, query url.Values, out chan<- Scal
 		if err != nil {
 			return err
 		}
-		var servers ScalewayServers
+		var servers Servers
 
 		if err = json.Unmarshal(body, &servers); err != nil {
 			return err
@@ -296,7 +296,7 @@ func (s *ScalewayAPI) fetchServers(api string, query url.Values, out chan<- Scal
 }
 
 // DeleteServer deletes a server
-func (s *ScalewayAPI) DeleteServer(serverID string) error {
+func (s *API) DeleteServer(serverID string) error {
 	resp, err := s.DeleteResponse(s.computeAPI, fmt.Sprintf("servers/%s", serverID))
 	if err != nil {
 		return err
@@ -310,7 +310,7 @@ func (s *ScalewayAPI) DeleteServer(serverID string) error {
 }
 
 // PostServer creates a new server
-func (s *ScalewayAPI) PostServer(definition ScalewayServerDefinition) (string, error) {
+func (s *API) PostServer(definition ServerDefinition) (string, error) {
 	definition.Organization = s.Organization
 
 	resp, err := s.PostResponse(s.computeAPI, "servers", definition)
@@ -323,7 +323,7 @@ func (s *ScalewayAPI) PostServer(definition ScalewayServerDefinition) (string, e
 	if err != nil {
 		return "", err
 	}
-	var server ScalewayOneServer
+	var server OneServer
 
 	if err = json.Unmarshal(body, &server); err != nil {
 		return "", err

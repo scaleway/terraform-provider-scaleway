@@ -5,7 +5,7 @@ import (
 	"regexp"
 
 	"github.com/hashicorp/terraform/helper/schema"
-	"github.com/nicolai86/scaleway-sdk/api"
+	api "github.com/nicolai86/scaleway-sdk"
 )
 
 func dataSourceScalewayImage() *schema.Resource {
@@ -52,7 +52,7 @@ func dataSourceScalewayImage() *schema.Resource {
 	}
 }
 
-func scalewayImageAttributes(d *schema.ResourceData, img *api.ScalewayImage) error {
+func scalewayImageAttributes(d *schema.ResourceData, img *api.Image) error {
 	d.Set("architecture", img.Arch)
 	d.Set("organization", img.Organization)
 	d.Set("public", img.Public)

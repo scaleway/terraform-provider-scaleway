@@ -5,7 +5,7 @@ import (
 	"log"
 
 	"github.com/hashicorp/terraform/helper/schema"
-	"github.com/nicolai86/scaleway-sdk/api"
+	api "github.com/nicolai86/scaleway-sdk"
 )
 
 func resourceScalewaySecurityGroupRule() *schema.Resource {
@@ -86,7 +86,7 @@ func resourceScalewaySecurityGroupRuleCreate(d *schema.ResourceData, m interface
 
 	rule, err := scaleway.PostSecurityGroupRule(d.Get("security_group").(string), req)
 	if err != nil {
-		if serr, ok := err.(api.ScalewayAPIError); ok {
+		if serr, ok := err.(api.APIError); ok {
 			log.Printf("[DEBUG] Error creating Security Group Rule: %q\n", serr.APIMessage)
 		}
 
@@ -107,7 +107,7 @@ func resourceScalewaySecurityGroupRuleRead(d *schema.ResourceData, m interface{}
 	rule, err := scaleway.GetASecurityGroupRule(d.Get("security_group").(string), d.Id())
 
 	if err != nil {
-		if serr, ok := err.(api.ScalewayAPIError); ok {
+		if serr, ok := err.(api.APIError); ok {
 			log.Printf("[DEBUG] error reading Security Group Rule: %q\n", serr.APIMessage)
 
 			if serr.StatusCode == 404 {
@@ -159,7 +159,7 @@ func resourceScalewaySecurityGroupRuleDelete(d *schema.ResourceData, m interface
 
 	err := scaleway.DeleteSecurityGroupRule(d.Get("security_group").(string), d.Id())
 	if err != nil {
-		if serr, ok := err.(api.ScalewayAPIError); ok {
+		if serr, ok := err.(api.APIError); ok {
 			log.Printf("[DEBUG] error reading Security Group Rule: %q\n", serr.APIMessage)
 
 			if serr.StatusCode == 404 {

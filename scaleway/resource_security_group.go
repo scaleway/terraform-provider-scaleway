@@ -5,7 +5,7 @@ import (
 	"log"
 
 	"github.com/hashicorp/terraform/helper/schema"
-	"github.com/nicolai86/scaleway-sdk/api"
+	api "github.com/nicolai86/scaleway-sdk"
 )
 
 func resourceScalewaySecurityGroup() *schema.Resource {
@@ -39,7 +39,7 @@ func resourceScalewaySecurityGroupCreate(d *schema.ResourceData, m interface{}) 
 	mu.Lock()
 	defer mu.Unlock()
 
-	req := api.ScalewayNewSecurityGroup{
+	req := api.NewSecurityGroup{
 		Name:         d.Get("name").(string),
 		Description:  d.Get("description").(string),
 		Organization: scaleway.Organization,
@@ -47,7 +47,7 @@ func resourceScalewaySecurityGroupCreate(d *schema.ResourceData, m interface{}) 
 
 	err := scaleway.PostSecurityGroup(req)
 	if err != nil {
-		if serr, ok := err.(api.ScalewayAPIError); ok {
+		if serr, ok := err.(api.APIError); ok {
 			log.Printf("[DEBUG] Error creating security group: %q\n", serr.APIMessage)
 		}
 
@@ -78,7 +78,7 @@ func resourceScalewaySecurityGroupRead(d *schema.ResourceData, m interface{}) er
 	resp, err := scaleway.GetASecurityGroup(d.Id())
 
 	if err != nil {
-		if serr, ok := err.(api.ScalewayAPIError); ok {
+		if serr, ok := err.(api.APIError); ok {
 			log.Printf("[DEBUG] Error reading security group: %q\n", serr.APIMessage)
 
 			if serr.StatusCode == 404 {
@@ -102,7 +102,7 @@ func resourceScalewaySecurityGroupUpdate(d *schema.ResourceData, m interface{}) 
 	mu.Lock()
 	defer mu.Unlock()
 
-	var req = api.ScalewayUpdateSecurityGroup{
+	var req = api.UpdateSecurityGroup{
 		Organization: scaleway.Organization,
 		Name:         d.Get("name").(string),
 		Description:  d.Get("description").(string),
@@ -125,7 +125,7 @@ func resourceScalewaySecurityGroupDelete(d *schema.ResourceData, m interface{}) 
 
 	err := scaleway.DeleteSecurityGroup(d.Id())
 	if err != nil {
-		if serr, ok := err.(api.ScalewayAPIError); ok {
+		if serr, ok := err.(api.APIError); ok {
 			log.Printf("[DEBUG] error reading Security Group Rule: %q\n", serr.APIMessage)
 
 			if serr.StatusCode == 404 {
