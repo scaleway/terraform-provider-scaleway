@@ -84,12 +84,18 @@ func resourceScalewaySecurityGroupRuleCreate(d *schema.ResourceData, m interface
 		DestPortFrom: d.Get("port").(int),
 	}
 
-	rule, err := scaleway.PostSecurityGroupRule(d.Get("security_group").(string), req)
-	if err != nil {
+	var (
+		rule *api.SecurityGroupRule
+		err  error
+	)
+	if err = retry(func() error {
+		rule, err = scaleway.PostSecurityGroupRule(d.Get("security_group").(string), req)
 		if serr, ok := err.(api.APIError); ok {
 			log.Printf("[DEBUG] Error creating Security Group Rule: %q\n", serr.APIMessage)
 		}
 
+		return err
+	}); err != nil {
 		return err
 	}
 
@@ -104,9 +110,14 @@ func resourceScalewaySecurityGroupRuleCreate(d *schema.ResourceData, m interface
 
 func resourceScalewaySecurityGroupRuleRead(d *schema.ResourceData, m interface{}) error {
 	scaleway := m.(*Client).scaleway
-	rule, err := scaleway.GetASecurityGroupRule(d.Get("security_group").(string), d.Id())
-
-	if err != nil {
+	var (
+		rule *api.GetSecurityGroupRule
+		err  error
+	)
+	if err = retry(func() error {
+		rule, err = scaleway.GetASecurityGroupRule(d.Get("security_group").(string), d.Id())
+		return err
+	}); err != nil {
 		if serr, ok := err.(api.APIError); ok {
 			log.Printf("[DEBUG] error reading Security Group Rule: %q\n", serr.APIMessage)
 
@@ -142,7 +153,9 @@ func resourceScalewaySecurityGroupRuleUpdate(d *schema.ResourceData, m interface
 		DestPortFrom: d.Get("port").(int),
 	}
 
-	if err := scaleway.PutSecurityGroupRule(req, d.Get("security_group").(string), d.Id()); err != nil {
+	if err := retry(func() error {
+		return scaleway.PutSecurityGroupRule(req, d.Get("security_group").(string), d.Id())
+	}); err != nil {
 		log.Printf("[DEBUG] error updating Security Group Rule: %q", err)
 
 		return err
@@ -157,8 +170,9 @@ func resourceScalewaySecurityGroupRuleDelete(d *schema.ResourceData, m interface
 	mu.Lock()
 	defer mu.Unlock()
 
-	err := scaleway.DeleteSecurityGroupRule(d.Get("security_group").(string), d.Id())
-	if err != nil {
+	if err := retry(func() error {
+		return scaleway.DeleteSecurityGroupRule(d.Get("security_group").(string), d.Id())
+	}); err != nil {
 		if serr, ok := err.(api.APIError); ok {
 			log.Printf("[DEBUG] error reading Security Group Rule: %q\n", serr.APIMessage)
 

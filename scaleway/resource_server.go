@@ -174,12 +174,18 @@ func resourceScalewayServerCreate(d *schema.ResourceData, m interface{}) error {
 			sizeInGB := uint64(volume["size_in_gb"].(int))
 
 			if sizeInGB > 0 {
-				volumeID, err := scaleway.PostVolume(api.VolumeDefinition{
-					Size: sizeInGB * gb,
-					Type: volume["type"].(string),
-					Name: fmt.Sprintf("%s-%d", server.Name, sizeInGB),
-				})
-				if err != nil {
+				var (
+					volumeID string
+					err      error
+				)
+				if err = retry(func() error {
+					volumeID, err = scaleway.PostVolume(api.VolumeDefinition{
+						Size: sizeInGB * gb,
+						Type: volume["type"].(string),
+						Name: fmt.Sprintf("%s-%d", server.Name, sizeInGB),
+					})
+					return err
+				}); err != nil {
 					return err
 				}
 				volume["volume_id"] = volumeID
@@ -196,15 +202,22 @@ func resourceScalewayServerCreate(d *schema.ResourceData, m interface{}) error {
 		}
 	}
 
-	id, err := scaleway.PostServer(server)
-	if err != nil {
+	var (
+		id  string
+		err error
+	)
+	if err := retry(func() error {
+		id, err = scaleway.PostServer(server)
+		return err
+	}); err != nil {
 		return err
 	}
 
 	d.SetId(id)
 	if d.Get("state").(string) != "stopped" {
-		err = scaleway.PostServerAction(id, "poweron")
-		if err != nil {
+		if err := retry(func() error {
+			return scaleway.PostServerAction(id, "poweron")
+		}); err != nil {
 			return err
 		}
 
@@ -226,9 +239,14 @@ func resourceScalewayServerCreate(d *schema.ResourceData, m interface{}) error {
 
 func resourceScalewayServerRead(d *schema.ResourceData, m interface{}) error {
 	scaleway := m.(*Client).scaleway
-	server, err := scaleway.GetServer(d.Id())
-
-	if err != nil {
+	var (
+		server *api.Server
+		err    error
+	)
+	if err := retry(func() error {
+		server, err = scaleway.GetServer(d.Id())
+		return err
+	}); err != nil {
 		if serr, ok := err.(api.APIError); ok {
 			log.Printf("[DEBUG] Error reading server: %q\n", serr.APIMessage)
 
@@ -300,20 +318,30 @@ func resourceScalewayServerUpdate(d *schema.ResourceData, m interface{}) error {
 		}
 	}
 
-	if err := scaleway.PatchServer(d.Id(), req); err != nil {
+	if err := retry(func() error {
+		return scaleway.PatchServer(d.Id(), req)
+	}); err != nil {
 		return fmt.Errorf("Failed patching scaleway server: %q", err)
 	}
 
 	if d.HasChange("public_ip") {
-		ips, err := scaleway.GetIPS()
-		if err != nil {
+		var (
+			ips *api.GetIPS
+			err error
+		)
+		if err := retry(func() error {
+			ips, err = scaleway.GetIPS()
+			return err
+		}); err != nil {
 			return err
 		}
 		if v, ok := d.GetOk("public_ip"); ok {
 			for _, ip := range ips.IPS {
 				if ip.Address == v.(string) {
 					log.Printf("[DEBUG] Attaching IP %q to server %q\n", ip.ID, d.Id())
-					if err := scaleway.AttachIP(ip.ID, d.Id()); err != nil {
+					if err := retry(func() error {
+						return scaleway.AttachIP(ip.ID, d.Id())
+					}); err != nil {
 						return err
 					}
 					break
@@ -323,7 +351,9 @@ func resourceScalewayServerUpdate(d *schema.ResourceData, m interface{}) error {
 			for _, ip := range ips.IPS {
 				if ip.Server != nil && ip.Server.Identifier == d.Id() {
 					log.Printf("[DEBUG] Detaching IP %q to server %q\n", ip.ID, d.Id())
-					if err := scaleway.DetachIP(ip.ID); err != nil {
+					if err := retry(func() error {
+						return scaleway.DetachIP(ip.ID)
+					}); err != nil {
 						return err
 					}
 					break
@@ -341,8 +371,14 @@ func resourceScalewayServerDelete(d *schema.ResourceData, m interface{}) error {
 	mu.Lock()
 	defer mu.Unlock()
 
-	s, err := scaleway.GetServer(d.Id())
-	if err != nil {
+	var (
+		s   *api.Server
+		err error
+	)
+	if err := retry(func() error {
+		s, err = scaleway.GetServer(d.Id())
+		return err
+	}); err != nil {
 		return err
 	}
 

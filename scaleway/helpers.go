@@ -47,9 +47,9 @@ func validateVolumeType(v interface{}, k string) (ws []string, errors []error) {
 
 // deleteRunningServer terminates the server and waits until it is removed.
 func deleteRunningServer(scaleway *api.API, server *api.Server) error {
-	err := scaleway.PostServerAction(server.Identifier, "terminate")
-
-	if err != nil {
+	if err := retry(func() error {
+		return scaleway.PostServerAction(server.Identifier, "terminate")
+	}); err != nil {
 		if serr, ok := err.(api.APIError); ok {
 			if serr.StatusCode == 404 {
 				return nil
@@ -65,12 +65,16 @@ func deleteRunningServer(scaleway *api.API, server *api.Server) error {
 // deleteStoppedServer needs to cleanup attached root volumes. this is not done
 // automatically by Scaleway
 func deleteStoppedServer(scaleway *api.API, server *api.Server) error {
-	if err := scaleway.DeleteServer(server.Identifier); err != nil {
+	if err := retry(func() error {
+		return scaleway.DeleteServer(server.Identifier)
+	}); err != nil {
 		return err
 	}
 
 	if rootVolume, ok := server.Volumes["0"]; ok {
-		if err := scaleway.DeleteVolume(rootVolume.Identifier); err != nil {
+		if err := retry(func() error {
+			return scaleway.DeleteVolume(rootVolume.Identifier)
+		}); err != nil {
 			return err
 		}
 	}
@@ -93,9 +97,14 @@ func waitForServerState(scaleway *api.API, serverID, targetState string) error {
 		Pending: pending,
 		Target:  []string{targetState},
 		Refresh: func() (interface{}, string, error) {
-			s, err := scaleway.GetServer(serverID)
-
-			if err == nil {
+			var (
+				s   *api.Server
+				err error
+			)
+			if err := retry(func() error {
+				s, err = scaleway.GetServer(serverID)
+				return err
+			}); err == nil {
 				return 42, s.State, nil
 			}
 
@@ -116,4 +125,28 @@ func waitForServerState(scaleway *api.API, serverID, targetState string) error {
 	}
 	_, err := stateConf.WaitForState()
 	return err
+}
+
+func retry(f func() error) error {
+	return retryWithCodes([]int{429}, f)
+}
+
+func retryWithCodes(retryCodes []int,
+	f func() error) error {
+	return resource.Retry(serverWaitTimeout, func() *resource.RetryError {
+		err := f()
+		if err == nil {
+			return nil
+		}
+
+		if err, ok := err.(api.APIError); ok {
+			for _, rc := range retryCodes {
+				if err.StatusCode == rc {
+					return resource.RetryableError(err)
+				}
+			}
+		}
+
+		return resource.NonRetryableError(err)
+	})
 }

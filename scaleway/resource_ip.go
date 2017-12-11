@@ -36,8 +36,15 @@ func resourceScalewayIP() *schema.Resource {
 func resourceScalewayIPCreate(d *schema.ResourceData, m interface{}) error {
 	scaleway := m.(*Client).scaleway
 
+	var (
+		resp *api.GetIP
+		err  error
+	)
 	mu.Lock()
-	resp, err := scaleway.NewIP()
+	err = retry(func() error {
+		resp, err = scaleway.NewIP()
+		return err
+	})
 	mu.Unlock()
 	if err != nil {
 		return err
@@ -51,8 +58,14 @@ func resourceScalewayIPRead(d *schema.ResourceData, m interface{}) error {
 	scaleway := m.(*Client).scaleway
 	log.Printf("[DEBUG] Reading IP\n")
 
-	resp, err := scaleway.GetIP(d.Id())
-	if err != nil {
+	var (
+		resp *api.GetIP
+		err  error
+	)
+	if err = retry(func() error {
+		resp, err = scaleway.GetIP(d.Id())
+		return err
+	}); err != nil {
 		log.Printf("[DEBUG] Error reading ip: %q\n", err)
 		if serr, ok := err.(api.APIError); ok {
 			if serr.StatusCode == 404 {

@@ -45,8 +45,9 @@ func resourceScalewaySecurityGroupCreate(d *schema.ResourceData, m interface{}) 
 		Organization: scaleway.Organization,
 	}
 
-	err := scaleway.PostSecurityGroup(req)
-	if err != nil {
+	if err := retry(func() error {
+		return scaleway.PostSecurityGroup(req)
+	}); err != nil {
 		if serr, ok := err.(api.APIError); ok {
 			log.Printf("[DEBUG] Error creating security group: %q\n", serr.APIMessage)
 		}
@@ -54,8 +55,14 @@ func resourceScalewaySecurityGroupCreate(d *schema.ResourceData, m interface{}) 
 		return err
 	}
 
-	resp, err := scaleway.GetSecurityGroups()
-	if err != nil {
+	var (
+		resp *api.GetSecurityGroups
+		err  error
+	)
+	if err = retry(func() error {
+		resp, err = scaleway.GetSecurityGroups()
+		return err
+	}); err != nil {
 		return err
 	}
 
@@ -75,9 +82,14 @@ func resourceScalewaySecurityGroupCreate(d *schema.ResourceData, m interface{}) 
 
 func resourceScalewaySecurityGroupRead(d *schema.ResourceData, m interface{}) error {
 	scaleway := m.(*Client).scaleway
-	resp, err := scaleway.GetASecurityGroup(d.Id())
-
-	if err != nil {
+	var (
+		resp *api.GetSecurityGroup
+		err  error
+	)
+	if err = retry(func() error {
+		resp, err = scaleway.GetASecurityGroup(d.Id())
+		return err
+	}); err != nil {
 		if serr, ok := err.(api.APIError); ok {
 			log.Printf("[DEBUG] Error reading security group: %q\n", serr.APIMessage)
 
@@ -108,7 +120,9 @@ func resourceScalewaySecurityGroupUpdate(d *schema.ResourceData, m interface{}) 
 		Description:  d.Get("description").(string),
 	}
 
-	if err := scaleway.PutSecurityGroup(req, d.Id()); err != nil {
+	if err := retry(func() error {
+		return scaleway.PutSecurityGroup(req, d.Id())
+	}); err != nil {
 		log.Printf("[DEBUG] Error reading security group: %q\n", err)
 
 		return err
@@ -123,8 +137,9 @@ func resourceScalewaySecurityGroupDelete(d *schema.ResourceData, m interface{}) 
 	mu.Lock()
 	defer mu.Unlock()
 
-	err := scaleway.DeleteSecurityGroup(d.Id())
-	if err != nil {
+	if err := retry(func() error {
+		return scaleway.DeleteSecurityGroup(d.Id())
+	}); err != nil {
 		if serr, ok := err.(api.APIError); ok {
 			log.Printf("[DEBUG] error reading Security Group Rule: %q\n", serr.APIMessage)
 
