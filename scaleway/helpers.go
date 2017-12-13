@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/hashicorp/terraform/helper/resource"
-	"github.com/nicolai86/scaleway-sdk/api"
+	api "github.com/nicolai86/scaleway-sdk"
 )
 
 // Bool returns a pointer to of the bool value passed in.
@@ -46,11 +46,11 @@ func validateVolumeType(v interface{}, k string) (ws []string, errors []error) {
 }
 
 // deleteRunningServer terminates the server and waits until it is removed.
-func deleteRunningServer(scaleway *api.ScalewayAPI, server *api.ScalewayServer) error {
+func deleteRunningServer(scaleway *api.API, server *api.Server) error {
 	err := scaleway.PostServerAction(server.Identifier, "terminate")
 
 	if err != nil {
-		if serr, ok := err.(api.ScalewayAPIError); ok {
+		if serr, ok := err.(api.APIError); ok {
 			if serr.StatusCode == 404 {
 				return nil
 			}
@@ -64,7 +64,7 @@ func deleteRunningServer(scaleway *api.ScalewayAPI, server *api.ScalewayServer) 
 
 // deleteStoppedServer needs to cleanup attached root volumes. this is not done
 // automatically by Scaleway
-func deleteStoppedServer(scaleway *api.ScalewayAPI, server *api.ScalewayServer) error {
+func deleteStoppedServer(scaleway *api.API, server *api.Server) error {
 	if err := scaleway.DeleteServer(server.Identifier); err != nil {
 		return err
 	}
@@ -82,7 +82,7 @@ func deleteStoppedServer(scaleway *api.ScalewayAPI, server *api.ScalewayServer) 
 
 var allStates = []string{"starting", "running", "stopping", "stopped"}
 
-func waitForServerState(scaleway *api.ScalewayAPI, serverID, targetState string) error {
+func waitForServerState(scaleway *api.API, serverID, targetState string) error {
 	pending := []string{}
 	for _, state := range allStates {
 		if state != targetState {
@@ -99,7 +99,7 @@ func waitForServerState(scaleway *api.ScalewayAPI, serverID, targetState string)
 				return 42, s.State, nil
 			}
 
-			if serr, ok := err.(api.ScalewayAPIError); ok {
+			if serr, ok := err.(api.APIError); ok {
 				if serr.StatusCode == 404 {
 					return 42, "stopped", nil
 				}

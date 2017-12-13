@@ -7,7 +7,7 @@ import (
 
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
-	"github.com/nicolai86/scaleway-sdk/api"
+	api "github.com/nicolai86/scaleway-sdk"
 )
 
 func resourceScalewayVolumeAttachment() *schema.Resource {
@@ -70,7 +70,7 @@ func resourceScalewayVolumeAttachmentCreate(d *schema.ResourceData, m interface{
 		return err
 	}
 
-	volumes := make(map[string]api.ScalewayVolume)
+	volumes := make(map[string]api.Volume)
 	for i, volume := range server.Volumes {
 		volumes[i] = volume
 	}
@@ -91,7 +91,7 @@ func resourceScalewayVolumeAttachmentCreate(d *schema.ResourceData, m interface{
 	}
 
 	if err := resource.Retry(serverWaitTimeout, func() *resource.RetryError {
-		var req = api.ScalewayServerPatchDefinition{
+		var req = api.ServerPatchDefinition{
 			Volumes: &volumes,
 		}
 		err := scaleway.PatchServer(serverID, req)
@@ -100,7 +100,7 @@ func resourceScalewayVolumeAttachmentCreate(d *schema.ResourceData, m interface{
 			return nil
 		}
 
-		if serr, ok := err.(api.ScalewayAPIError); ok {
+		if serr, ok := err.(api.APIError); ok {
 			log.Printf("[DEBUG] Error patching server: %q\n", serr.APIMessage)
 
 			if serr.StatusCode == 400 {
@@ -132,7 +132,7 @@ func resourceScalewayVolumeAttachmentRead(d *schema.ResourceData, m interface{})
 
 	server, err := scaleway.GetServer(d.Get("server").(string))
 	if err != nil {
-		if serr, ok := err.(api.ScalewayAPIError); ok {
+		if serr, ok := err.(api.APIError); ok {
 			log.Printf("[DEBUG] Error reading server: %q\n", serr.APIMessage)
 
 			if serr.StatusCode == 404 {
@@ -144,7 +144,7 @@ func resourceScalewayVolumeAttachmentRead(d *schema.ResourceData, m interface{})
 	}
 
 	if _, err := scaleway.GetVolume(d.Get("volume").(string)); err != nil {
-		if serr, ok := err.(api.ScalewayAPIError); ok {
+		if serr, ok := err.(api.APIError); ok {
 			log.Printf("[DEBUG] Error reading volume: %q\n", serr.APIMessage)
 
 			if serr.StatusCode == 404 {
@@ -194,7 +194,7 @@ func resourceScalewayVolumeAttachmentDelete(d *schema.ResourceData, m interface{
 		return err
 	}
 
-	volumes := make(map[string]api.ScalewayVolume)
+	volumes := make(map[string]api.Volume)
 	for _, volume := range server.Volumes {
 		if volume.Identifier != d.Get("volume").(string) {
 			volumes[fmt.Sprintf("%d", len(volumes))] = volume
@@ -215,7 +215,7 @@ func resourceScalewayVolumeAttachmentDelete(d *schema.ResourceData, m interface{
 	}
 
 	if err := resource.Retry(serverWaitTimeout, func() *resource.RetryError {
-		var req = api.ScalewayServerPatchDefinition{
+		var req = api.ServerPatchDefinition{
 			Volumes: &volumes,
 		}
 		err := scaleway.PatchServer(serverID, req)
@@ -224,7 +224,7 @@ func resourceScalewayVolumeAttachmentDelete(d *schema.ResourceData, m interface{
 			return nil
 		}
 
-		if serr, ok := err.(api.ScalewayAPIError); ok {
+		if serr, ok := err.(api.APIError); ok {
 			log.Printf("[DEBUG] Error patching server: %q\n", serr.APIMessage)
 
 			if serr.StatusCode == 400 {

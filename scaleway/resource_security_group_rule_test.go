@@ -6,11 +6,11 @@ import (
 
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/terraform"
-	"github.com/nicolai86/scaleway-sdk/api"
+	api "github.com/nicolai86/scaleway-sdk"
 )
 
 func TestAccScalewaySecurityGroupRule_Basic(t *testing.T) {
-	var group api.ScalewaySecurityGroups
+	var group api.SecurityGroups
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -40,7 +40,7 @@ func TestAccScalewaySecurityGroupRule_Basic(t *testing.T) {
 }
 
 func TestAccScalewaySecurityGroupRule_Count(t *testing.T) {
-	var group api.ScalewaySecurityGroups
+	var group api.SecurityGroups
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -59,7 +59,7 @@ func TestAccScalewaySecurityGroupRule_Count(t *testing.T) {
 	})
 }
 
-func testAccCheckScalewaySecurityGroupsExists(n string, group *api.ScalewaySecurityGroups) resource.TestCheckFunc {
+func testAccCheckScalewaySecurityGroupsExists(n string, group *api.SecurityGroups) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
@@ -113,7 +113,7 @@ func testAccCheckScalewaySecurityGroupRuleDestroy(s *terraform.State) error {
 	return nil
 }
 
-func testAccCheckScalewaySecurityGroupRuleAttributes(n string, group *api.ScalewaySecurityGroups) resource.TestCheckFunc {
+func testAccCheckScalewaySecurityGroupRuleAttributes(n string, group *api.SecurityGroups) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
@@ -146,7 +146,7 @@ func testAccCheckScalewaySecurityGroupRuleAttributes(n string, group *api.Scalew
 	}
 }
 
-func testAccCheckScalewaySecurityGroupRuleExists(n string, group *api.ScalewaySecurityGroups) resource.TestCheckFunc {
+func testAccCheckScalewaySecurityGroupRuleExists(n string, group *api.SecurityGroups) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 

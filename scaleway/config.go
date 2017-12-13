@@ -3,7 +3,7 @@ package scaleway
 import (
 	"sort"
 
-	"github.com/nicolai86/scaleway-sdk/api"
+	sdk "github.com/nicolai86/scaleway-sdk"
 )
 
 // Config contains scaleway configuration values
@@ -15,12 +15,12 @@ type Config struct {
 
 // Client contains scaleway api clients
 type Client struct {
-	scaleway *api.ScalewayAPI
+	scaleway *sdk.API
 }
 
 // Client configures and returns a fully initialized Scaleway client
 func (c *Config) Client() (*Client, error) {
-	api, err := api.New(
+	api, err := sdk.New(
 		c.Organization,
 		c.APIKey,
 		c.Region,

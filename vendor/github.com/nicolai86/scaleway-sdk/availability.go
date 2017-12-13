@@ -19,7 +19,7 @@ func (a ServerAvailabilities) CommercialTypes() []string {
 	return types
 }
 
-func (s *ScalewayAPI) GetServerAvailabilities() (ServerAvailabilities, error) {
+func (s *API) GetServerAvailabilities() (ServerAvailabilities, error) {
 	resp, err := s.response("GET", fmt.Sprintf("%s/availability.json", s.availabilityAPI), nil)
 	if err != nil {
 		return nil, err

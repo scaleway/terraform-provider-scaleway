@@ -20,17 +20,17 @@ type SecurityGroupRule struct {
 	ID           string `json:"id"`
 }
 
-// GetSecurityGroupRules represents the response of a GET /security_group/{groupID}/rules
+// GetSecurityGroupRules represents the response of a GET /_group/{groupID}/rules
 type GetSecurityGroupRules struct {
 	Rules []SecurityGroupRule `json:"rules"`
 }
 
-// GetSecurityGroupRule represents the response of a GET /security_group/{groupID}/rules/{ruleID}
+// GetSecurityGroupRule represents the response of a GET /_group/{groupID}/rules/{ruleID}
 type GetSecurityGroupRule struct {
 	Rules SecurityGroupRule `json:"rule"`
 }
 
-// NewSecurityGroupRule definition POST/PUT request /security_group/{groupID}
+// NewSecurityGroupRule definition POST/PUT request /_group/{groupID}
 type NewSecurityGroupRule struct {
 	Action       string `json:"action"`
 	Direction    string `json:"direction"`
@@ -39,8 +39,8 @@ type NewSecurityGroupRule struct {
 	DestPortFrom int    `json:"dest_port_from,omitempty"`
 }
 
-// GetSecurityGroupRules returns a SecurityGroupRules
-func (s *ScalewayAPI) GetSecurityGroupRules(groupID string) (*GetSecurityGroupRules, error) {
+// GetSecurityGroupRules returns a GroupRules
+func (s *API) GetSecurityGroupRules(groupID string) (*GetSecurityGroupRules, error) {
 	resp, err := s.GetResponsePaginate(s.computeAPI, fmt.Sprintf("security_groups/%s/rules", groupID), url.Values{})
 	if err != nil {
 		return nil, err
@@ -51,16 +51,16 @@ func (s *ScalewayAPI) GetSecurityGroupRules(groupID string) (*GetSecurityGroupRu
 	if err != nil {
 		return nil, err
 	}
-	var securityGroupRules GetSecurityGroupRules
+	var GroupRules GetSecurityGroupRules
 
-	if err = json.Unmarshal(body, &securityGroupRules); err != nil {
+	if err = json.Unmarshal(body, &GroupRules); err != nil {
 		return nil, err
 	}
-	return &securityGroupRules, nil
+	return &GroupRules, nil
 }
 
-// GetASecurityGroupRule returns a SecurityGroupRule
-func (s *ScalewayAPI) GetASecurityGroupRule(groupID string, rulesID string) (*GetSecurityGroupRule, error) {
+// GetAGroupRule returns a SecurityGroupRule
+func (s *API) GetASecurityGroupRule(groupID string, rulesID string) (*GetSecurityGroupRule, error) {
 	resp, err := s.GetResponsePaginate(s.computeAPI, fmt.Sprintf("security_groups/%s/rules/%s", groupID, rulesID), url.Values{})
 	if err != nil {
 		return nil, err
@@ -71,21 +71,21 @@ func (s *ScalewayAPI) GetASecurityGroupRule(groupID string, rulesID string) (*Ge
 	if err != nil {
 		return nil, err
 	}
-	var securityGroupRules GetSecurityGroupRule
+	var GroupRules GetSecurityGroupRule
 
-	if err = json.Unmarshal(body, &securityGroupRules); err != nil {
+	if err = json.Unmarshal(body, &GroupRules); err != nil {
 		return nil, err
 	}
-	return &securityGroupRules, nil
+	return &GroupRules, nil
 }
 
-type postSecurityGroupRuleResponse struct {
+type postGroupRuleResponse struct {
 	SecurityGroupRule SecurityGroupRule `json:"rule"`
 }
 
-// PostSecurityGroupRule posts a rule on a server
-func (s *ScalewayAPI) PostSecurityGroupRule(SecurityGroupID string, rules NewSecurityGroupRule) (*SecurityGroupRule, error) {
-	resp, err := s.PostResponse(s.computeAPI, fmt.Sprintf("security_groups/%s/rules", SecurityGroupID), rules)
+// PostGroupRule posts a rule on a server
+func (s *API) PostSecurityGroupRule(GroupID string, rules NewSecurityGroupRule) (*SecurityGroupRule, error) {
+	resp, err := s.PostResponse(s.computeAPI, fmt.Sprintf("security_groups/%s/rules", GroupID), rules)
 	if err != nil {
 		return nil, err
 	}
@@ -95,14 +95,14 @@ func (s *ScalewayAPI) PostSecurityGroupRule(SecurityGroupID string, rules NewSec
 	if err != nil {
 		return nil, err
 	}
-	var res postSecurityGroupRuleResponse
+	var res postGroupRuleResponse
 	err = json.Unmarshal(data, &res)
 	return &res.SecurityGroupRule, err
 }
 
-// PutSecurityGroupRule updates a SecurityGroupRule
-func (s *ScalewayAPI) PutSecurityGroupRule(rules NewSecurityGroupRule, securityGroupID, RuleID string) error {
-	resp, err := s.PutResponse(s.computeAPI, fmt.Sprintf("security_groups/%s/rules/%s", securityGroupID, RuleID), rules)
+// PutGroupRule updates a SecurityGroupRule
+func (s *API) PutSecurityGroupRule(rules NewSecurityGroupRule, GroupID, RuleID string) error {
+	resp, err := s.PutResponse(s.computeAPI, fmt.Sprintf("security_groups/%s/rules/%s", GroupID, RuleID), rules)
 	if err != nil {
 		return err
 	}
@@ -112,9 +112,9 @@ func (s *ScalewayAPI) PutSecurityGroupRule(rules NewSecurityGroupRule, securityG
 	return err
 }
 
-// DeleteSecurityGroupRule deletes a SecurityGroupRule
-func (s *ScalewayAPI) DeleteSecurityGroupRule(SecurityGroupID, RuleID string) error {
-	resp, err := s.DeleteResponse(s.computeAPI, fmt.Sprintf("security_groups/%s/rules/%s", SecurityGroupID, RuleID))
+// DeleteGroupRule deletes a SecurityGroupRule
+func (s *API) DeleteSecurityGroupRule(GroupID, RuleID string) error {
+	resp, err := s.DeleteResponse(s.computeAPI, fmt.Sprintf("security_groups/%s/rules/%s", GroupID, RuleID))
 	if err != nil {
 		return err
 	}

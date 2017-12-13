@@ -7,15 +7,15 @@ import (
 	"net/url"
 )
 
-// ScalewaySnapshotDefinition represents a Scaleway snapshot definition
-type ScalewaySnapshotDefinition struct {
+// SnapshotDefinition represents a  snapshot definition
+type SnapshotDefinition struct {
 	VolumeIDentifier string `json:"volume_id"`
 	Name             string `json:"name,omitempty"`
 	Organization     string `json:"organization"`
 }
 
-// ScalewaySnapshot represents a Scaleway Snapshot
-type ScalewaySnapshot struct {
+// Snapshot represents a  Snapshot
+type Snapshot struct {
 	// Identifier is a unique identifier for the snapshot
 	Identifier string `json:"id,omitempty"`
 
@@ -41,23 +41,23 @@ type ScalewaySnapshot struct {
 	VolumeType string `json:"volume_type"`
 
 	// BaseVolume is the volume from which the snapshot inherits
-	BaseVolume ScalewayVolume `json:"base_volume,omitempty"`
+	BaseVolume Volume `json:"base_volume,omitempty"`
 }
 
-// ScalewayOneSnapshot represents the response of a GET /snapshots/UUID API call
-type ScalewayOneSnapshot struct {
-	Snapshot ScalewaySnapshot `json:"snapshot,omitempty"`
+// OneSnapshot represents the response of a GET /snapshots/UUID API call
+type OneSnapshot struct {
+	Snapshot Snapshot `json:"snapshot,omitempty"`
 }
 
-// ScalewaySnapshots represents a group of Scaleway snapshots
-type ScalewaySnapshots struct {
-	// Snapshots holds scaleway snapshots of the response
-	Snapshots []ScalewaySnapshot `json:"snapshots,omitempty"`
+// Snapshots represents a group of  snapshots
+type Snapshots struct {
+	// Snapshots holds  snapshots of the response
+	Snapshots []Snapshot `json:"snapshots,omitempty"`
 }
 
 // PostSnapshot creates a new snapshot
-func (s *ScalewayAPI) PostSnapshot(volumeID string, name string) (string, error) {
-	definition := ScalewaySnapshotDefinition{
+func (s *API) PostSnapshot(volumeID string, name string) (string, error) {
+	definition := SnapshotDefinition{
 		VolumeIDentifier: volumeID,
 		Name:             name,
 		Organization:     s.Organization,
@@ -72,7 +72,7 @@ func (s *ScalewayAPI) PostSnapshot(volumeID string, name string) (string, error)
 	if err != nil {
 		return "", err
 	}
-	var snapshot ScalewayOneSnapshot
+	var snapshot OneSnapshot
 
 	if err = json.Unmarshal(body, &snapshot); err != nil {
 		return "", err
@@ -81,7 +81,7 @@ func (s *ScalewayAPI) PostSnapshot(volumeID string, name string) (string, error)
 }
 
 // DeleteSnapshot deletes a snapshot
-func (s *ScalewayAPI) DeleteSnapshot(snapshotID string) error {
+func (s *API) DeleteSnapshot(snapshotID string) error {
 	resp, err := s.DeleteResponse(s.computeAPI, fmt.Sprintf("snapshots/%s", snapshotID))
 	if err != nil {
 		return err
@@ -94,8 +94,8 @@ func (s *ScalewayAPI) DeleteSnapshot(snapshotID string) error {
 	return nil
 }
 
-// GetSnapshots gets the list of snapshots from the ScalewayAPI
-func (s *ScalewayAPI) GetSnapshots() (*[]ScalewaySnapshot, error) {
+// GetSnapshots gets the list of snapshots from the API
+func (s *API) GetSnapshots() (*[]Snapshot, error) {
 	query := url.Values{}
 
 	resp, err := s.GetResponsePaginate(s.computeAPI, "snapshots", query)
@@ -108,7 +108,7 @@ func (s *ScalewayAPI) GetSnapshots() (*[]ScalewaySnapshot, error) {
 	if err != nil {
 		return nil, err
 	}
-	var snapshots ScalewaySnapshots
+	var snapshots Snapshots
 
 	if err = json.Unmarshal(body, &snapshots); err != nil {
 		return nil, err
@@ -116,8 +116,8 @@ func (s *ScalewayAPI) GetSnapshots() (*[]ScalewaySnapshot, error) {
 	return &snapshots.Snapshots, nil
 }
 
-// GetSnapshot gets a snapshot from the ScalewayAPI
-func (s *ScalewayAPI) GetSnapshot(snapshotID string) (*ScalewaySnapshot, error) {
+// GetSnapshot gets a snapshot from the API
+func (s *API) GetSnapshot(snapshotID string) (*Snapshot, error) {
 	resp, err := s.GetResponsePaginate(s.computeAPI, "snapshots/"+snapshotID, url.Values{})
 	if err != nil {
 		return nil, err
@@ -128,7 +128,7 @@ func (s *ScalewayAPI) GetSnapshot(snapshotID string) (*ScalewaySnapshot, error) 
 	if err != nil {
 		return nil, err
 	}
-	var oneSnapshot ScalewayOneSnapshot
+	var oneSnapshot OneSnapshot
 
 	if err = json.Unmarshal(body, &oneSnapshot); err != nil {
 		return nil, err

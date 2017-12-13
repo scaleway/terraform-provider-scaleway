@@ -5,7 +5,7 @@ import (
 	"log"
 
 	"github.com/hashicorp/terraform/helper/schema"
-	"github.com/nicolai86/scaleway-sdk/api"
+	api "github.com/nicolai86/scaleway-sdk"
 )
 
 const gb uint64 = 1000 * 1000 * 1000
@@ -60,7 +60,7 @@ func resourceScalewayVolumeCreate(d *schema.ResourceData, m interface{}) error {
 	defer mu.Unlock()
 
 	size := uint64(d.Get("size_in_gb").(int)) * gb
-	req := api.ScalewayVolumeDefinition{
+	req := api.VolumeDefinition{
 		Name:         d.Get("name").(string),
 		Size:         size,
 		Type:         d.Get("type").(string),
@@ -78,7 +78,7 @@ func resourceScalewayVolumeRead(d *schema.ResourceData, m interface{}) error {
 	scaleway := m.(*Client).scaleway
 	volume, err := scaleway.GetVolume(d.Id())
 	if err != nil {
-		if serr, ok := err.(api.ScalewayAPIError); ok {
+		if serr, ok := err.(api.APIError); ok {
 			log.Printf("[DEBUG] Error reading volume: %q\n", serr.APIMessage)
 
 			if serr.StatusCode == 404 {
@@ -105,7 +105,7 @@ func resourceScalewayVolumeUpdate(d *schema.ResourceData, m interface{}) error {
 	mu.Lock()
 	defer mu.Unlock()
 
-	var req api.ScalewayVolumePutDefinition
+	var req api.VolumePutDefinition
 	if d.HasChange("name") {
 		req.Name = String(d.Get("name").(string))
 	}
@@ -127,7 +127,7 @@ func resourceScalewayVolumeDelete(d *schema.ResourceData, m interface{}) error {
 
 	err := scaleway.DeleteVolume(d.Id())
 	if err != nil {
-		if serr, ok := err.(api.ScalewayAPIError); ok {
+		if serr, ok := err.(api.APIError); ok {
 			if serr.StatusCode == 404 {
 				d.SetId("")
 				return nil
