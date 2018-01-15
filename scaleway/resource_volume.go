@@ -66,8 +66,14 @@ func resourceScalewayVolumeCreate(d *schema.ResourceData, m interface{}) error {
 		Type:         d.Get("type").(string),
 		Organization: scaleway.Organization,
 	}
-	volumeID, err := scaleway.PostVolume(req)
-	if err != nil {
+	var (
+		volumeID string
+		err      error
+	)
+	if err := retry(func() error {
+		volumeID, err = scaleway.PostVolume(req)
+		return err
+	}); err != nil {
 		return fmt.Errorf("Error Creating volume: %q", err)
 	}
 	d.SetId(volumeID)
@@ -76,8 +82,14 @@ func resourceScalewayVolumeCreate(d *schema.ResourceData, m interface{}) error {
 
 func resourceScalewayVolumeRead(d *schema.ResourceData, m interface{}) error {
 	scaleway := m.(*Client).scaleway
-	volume, err := scaleway.GetVolume(d.Id())
-	if err != nil {
+	var (
+		volume *api.Volume
+		err    error
+	)
+	if err := retry(func() error {
+		volume, err = scaleway.GetVolume(d.Id())
+		return err
+	}); err != nil {
 		if serr, ok := err.(api.APIError); ok {
 			log.Printf("[DEBUG] Error reading volume: %q\n", serr.APIMessage)
 
@@ -115,7 +127,9 @@ func resourceScalewayVolumeUpdate(d *schema.ResourceData, m interface{}) error {
 		req.Size = &size
 	}
 
-	scaleway.PutVolume(d.Id(), req)
+	retry(func() error {
+		return scaleway.PutVolume(d.Id(), req)
+	})
 	return resourceScalewayVolumeRead(d, m)
 }
 
@@ -125,8 +139,9 @@ func resourceScalewayVolumeDelete(d *schema.ResourceData, m interface{}) error {
 	mu.Lock()
 	defer mu.Unlock()
 
-	err := scaleway.DeleteVolume(d.Id())
-	if err != nil {
+	if err := retry(func() error {
+		return scaleway.DeleteVolume(d.Id())
+	}); err != nil {
 		if serr, ok := err.(api.APIError); ok {
 			if serr.StatusCode == 404 {
 				d.SetId("")

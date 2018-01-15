@@ -81,10 +81,17 @@ func dataSourceScalewayImageRead(d *schema.ResourceData, meta interface{}) error
 		}
 	}
 
-	imgs, err := scaleway.GetImages()
-	if err != nil {
+	var (
+		imgs *[]api.MarketImage
+		err  error
+	)
+	if err := retry(func() error {
+		imgs, err = scaleway.GetImages()
+		return err
+	}); err != nil {
 		return err
 	}
+
 	images := []api.MarketLocalImageDefinition{}
 	for _, image := range *imgs {
 		if !nameMatch(image) {
@@ -107,8 +114,11 @@ func dataSourceScalewayImageRead(d *schema.ResourceData, meta interface{}) error
 		return fmt.Errorf("The query returned no result. Please refine your query.")
 	}
 
-	img, err := scaleway.GetImage(images[0].ID)
-	if err != nil {
+	var img *api.Image
+	if err := retry(func() error {
+		img, err = scaleway.GetImage(images[0].ID)
+		return err
+	}); err != nil {
 		return err
 	}
 

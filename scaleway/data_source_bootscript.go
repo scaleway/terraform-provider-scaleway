@@ -81,9 +81,15 @@ func bootscriptDescriptionAttributes(d *schema.ResourceData, script api.Bootscri
 
 func dataSourceScalewayBootscriptRead(d *schema.ResourceData, meta interface{}) error {
 	scaleway := meta.(*Client).scaleway
+	var (
+		scripts []api.Bootscript
+		err     error
+	)
 
-	scripts, err := scaleway.GetBootscripts()
-	if err != nil {
+	if err := retry(func() error {
+		scripts, err = scaleway.GetBootscripts()
+		return err
+	}); err != nil {
 		return err
 	}
 

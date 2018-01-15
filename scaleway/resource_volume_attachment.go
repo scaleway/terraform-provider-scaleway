@@ -5,7 +5,6 @@ import (
 	"log"
 	"time"
 
-	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
 	api "github.com/nicolai86/scaleway-sdk"
 )
@@ -40,8 +39,14 @@ func resourceScalewayVolumeAttachmentCreate(d *schema.ResourceData, m interface{
 
 	scaleway := m.(*Client).scaleway
 
-	vol, err := scaleway.GetVolume(d.Get("volume").(string))
-	if err != nil {
+	var (
+		vol *api.Volume
+		err error
+	)
+	if err = retry(func() error {
+		vol, err = scaleway.GetVolume(d.Get("volume").(string))
+		return err
+	}); err != nil {
 		return err
 	}
 	if vol.Server != nil {
@@ -51,8 +56,11 @@ func resourceScalewayVolumeAttachmentCreate(d *schema.ResourceData, m interface{
 
 	serverID := d.Get("server").(string)
 
-	server, err := scaleway.GetServer(serverID)
-	if err != nil {
+	var server *api.Server
+	if err = retry(func() error {
+		server, err = scaleway.GetServer(serverID)
+		return err
+	}); err != nil {
 		fmt.Printf("Failed getting server: %q", err)
 		return err
 	}
@@ -62,7 +70,9 @@ func resourceScalewayVolumeAttachmentCreate(d *schema.ResourceData, m interface{
 	if server.State != "stopped" {
 		startServerAgain = true
 
-		if err := scaleway.PostServerAction(server.Identifier, "poweroff"); err != nil {
+		if err = retry(func() error {
+			return scaleway.PostServerAction(server.Identifier, "poweroff")
+		}); err != nil {
 			return err
 		}
 	}
@@ -90,31 +100,19 @@ func resourceScalewayVolumeAttachmentCreate(d *schema.ResourceData, m interface{
 		volumes[k] = v
 	}
 
-	if err := resource.Retry(serverWaitTimeout, func() *resource.RetryError {
+	if err := retryWithCodes([]int{429, 400}, func() error {
 		var req = api.ServerPatchDefinition{
 			Volumes: &volumes,
 		}
-		err := scaleway.PatchServer(serverID, req)
-
-		if err == nil {
-			return nil
-		}
-
-		if serr, ok := err.(api.APIError); ok {
-			log.Printf("[DEBUG] Error patching server: %q\n", serr.APIMessage)
-
-			if serr.StatusCode == 400 {
-				return resource.RetryableError(fmt.Errorf("Waiting for server update to succeed: %q", serr.APIMessage))
-			}
-		}
-
-		return resource.NonRetryableError(err)
+		return scaleway.PatchServer(serverID, req)
 	}); err != nil {
 		return err
 	}
 
 	if startServerAgain {
-		if err := scaleway.PostServerAction(serverID, "poweron"); err != nil {
+		if err := retry(func() error {
+			return scaleway.PostServerAction(serverID, "poweron")
+		}); err != nil {
 			return err
 		}
 		if err := waitForServerState(scaleway, serverID, "running"); err != nil {
@@ -130,8 +128,14 @@ func resourceScalewayVolumeAttachmentCreate(d *schema.ResourceData, m interface{
 func resourceScalewayVolumeAttachmentRead(d *schema.ResourceData, m interface{}) error {
 	scaleway := m.(*Client).scaleway
 
-	server, err := scaleway.GetServer(d.Get("server").(string))
-	if err != nil {
+	var (
+		server *api.Server
+		err    error
+	)
+	if err = retry(func() error {
+		server, err = scaleway.GetServer(d.Get("server").(string))
+		return err
+	}); err != nil {
 		if serr, ok := err.(api.APIError); ok {
 			log.Printf("[DEBUG] Error reading server: %q\n", serr.APIMessage)
 
@@ -143,7 +147,10 @@ func resourceScalewayVolumeAttachmentRead(d *schema.ResourceData, m interface{})
 		return err
 	}
 
-	if _, err := scaleway.GetVolume(d.Get("volume").(string)); err != nil {
+	if err := retry(func() error {
+		_, err := scaleway.GetVolume(d.Get("volume").(string))
+		return err
+	}); err != nil {
 		if serr, ok := err.(api.APIError); ok {
 			log.Printf("[DEBUG] Error reading volume: %q\n", serr.APIMessage)
 
@@ -178,15 +185,23 @@ func resourceScalewayVolumeAttachmentDelete(d *schema.ResourceData, m interface{
 
 	serverID := d.Get("server").(string)
 
-	server, err := scaleway.GetServer(serverID)
-	if err != nil {
+	var (
+		server *api.Server
+		err    error
+	)
+	if err := retry(func() error {
+		server, err = scaleway.GetServer(serverID)
+		return err
+	}); err != nil {
 		return err
 	}
 
 	// volumes can only be modified when the server is powered off
 	if server.State != "stopped" {
 		startServerAgain = true
-		if err := scaleway.PostServerAction(server.Identifier, "poweroff"); err != nil {
+		if err := retry(func() error {
+			return scaleway.PostServerAction(server.Identifier, "poweroff")
+		}); err != nil {
 			return err
 		}
 	}
@@ -214,31 +229,19 @@ func resourceScalewayVolumeAttachmentDelete(d *schema.ResourceData, m interface{
 		volumes[k] = v
 	}
 
-	if err := resource.Retry(serverWaitTimeout, func() *resource.RetryError {
+	if err := retryWithCodes([]int{429, 400}, func() error {
 		var req = api.ServerPatchDefinition{
 			Volumes: &volumes,
 		}
-		err := scaleway.PatchServer(serverID, req)
-
-		if err == nil {
-			return nil
-		}
-
-		if serr, ok := err.(api.APIError); ok {
-			log.Printf("[DEBUG] Error patching server: %q\n", serr.APIMessage)
-
-			if serr.StatusCode == 400 {
-				return resource.RetryableError(fmt.Errorf("Waiting for server update to succeed: %q", serr.APIMessage))
-			}
-		}
-
-		return resource.NonRetryableError(err)
+		return scaleway.PatchServer(serverID, req)
 	}); err != nil {
 		return err
 	}
 
 	if startServerAgain {
-		if err := scaleway.PostServerAction(serverID, "poweron"); err != nil {
+		if err := retry(func() error {
+			return scaleway.PostServerAction(serverID, "poweron")
+		}); err != nil {
 			return err
 		}
 		if err := waitForServerState(scaleway, serverID, "running"); err != nil {
