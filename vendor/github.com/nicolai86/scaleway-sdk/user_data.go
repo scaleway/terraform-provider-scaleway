@@ -104,7 +104,7 @@ func (s *API) PatchUserdata(serverID, key string, value []byte, metadata bool) e
 	req.Header.Set("Content-Type", "text/plain")
 	req.Header.Set("User-Agent", s.userAgent)
 
-	resp, err := s.client.Do(req)
+	resp, err := s.Client.Do(req)
 	if err != nil {
 		return err
 	}
