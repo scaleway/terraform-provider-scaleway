@@ -62,18 +62,12 @@ type HTTPClient interface {
 
 // API is the interface used to communicate with the  API
 type API struct {
-	// Organization is the identifier of the  organization
-	Organization string
+	Organization string     // Organization is the identifier of the  organization
+	Token        string     // Token is the authentication token for the  organization
+	Client       HTTPClient // Client is used for all HTTP interactions
 
-	// Token is the authentication token for the  organization
-	Token string
-
-	// Password is the authentication password
-	password string
-
-	userAgent string
-
-	client          HTTPClient
+	password        string // Password is the authentication password
+	userAgent       string
 	computeAPI      string
 	availabilityAPI string
 
@@ -117,9 +111,9 @@ func New(organization, token, region string, options ...func(*API)) (*API, error
 		// exposed
 		Organization: organization,
 		Token:        token,
+		Client:       &http.Client{},
 
 		// internal
-		client:    &http.Client{},
 		password:  "",
 		userAgent: "-sdk",
 	}
@@ -159,7 +153,7 @@ func (s *API) response(method, uri string, content io.Reader) (resp *http.Respon
 	req.Header.Set("X-Auth-Token", s.Token)
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("User-Agent", s.userAgent)
-	resp, err = s.client.Do(req)
+	resp, err = s.Client.Do(req)
 	return
 }
 
