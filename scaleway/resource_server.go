@@ -125,6 +125,12 @@ func resourceScalewayServer() *schema.Resource {
 				Computed:    true,
 				Description: "scaleway description of the server state",
 			},
+			"user_data": {
+				Type:        schema.TypeMap,
+				Optional:    true,
+				Elem:        schema.TypeString,
+				Description: "user data key-value pairs associated to this server",
+			},
 		},
 	}
 }
@@ -202,6 +208,15 @@ func resourceScalewayServerCreate(d *schema.ResourceData, m interface{}) error {
 	}
 
 	d.SetId(id)
+	if ud, ok := d.GetOk("user_data"); ok {
+		for k, v := range ud.(map[string]interface{}) {
+			sv := []byte(v.(string))
+			if err := scaleway.PatchUserdata(id, k, sv, false); err != nil {
+				return err
+			}
+		}
+	}
+
 	if d.Get("state").(string) != "stopped" {
 		err = scaleway.PostServerAction(id, "poweron")
 		if err != nil {
@@ -260,6 +275,15 @@ func resourceScalewayServerRead(d *schema.ResourceData, m interface{}) error {
 		"type": "ssh",
 		"host": server.PublicAddress.IP,
 	})
+
+	ud, err := readUserDatas(scaleway, d.Id())
+	if err != nil {
+		return err
+	}
+
+	if len(ud) > 0 {
+		d.Set("user_data", ud)
+	}
 
 	return nil
 }
@@ -332,6 +356,37 @@ func resourceScalewayServerUpdate(d *schema.ResourceData, m interface{}) error {
 		}
 	}
 
+	if d.HasChange("user_data") {
+		am, err := readUserDatas(scaleway, d.Id())
+		if err != nil {
+			return err
+		}
+
+		m := make(map[string]interface{})
+		if om, ok := d.GetOk("user_data"); ok {
+			m = om.(map[string]interface{})
+		}
+
+		for ak := range am {
+			_, ok := m[ak]
+			if !ok {
+				if err := scaleway.DeleteUserdata(d.Id(), ak, false); err != nil {
+					return err
+				}
+			}
+		}
+
+		for k, v := range m {
+			av := am[k]
+			if av != v {
+				bv := []byte(v.(string))
+				if err := scaleway.PatchUserdata(d.Id(), k, bv, false); err != nil {
+					return err
+				}
+			}
+		}
+	}
+
 	return resourceScalewayServerRead(d, m)
 }
 
@@ -357,4 +412,25 @@ func resourceScalewayServerDelete(d *schema.ResourceData, m interface{}) error {
 	}
 
 	return err
+}
+
+func readUserDatas(scaleway *api.ScalewayAPI, id string) (
+	map[string]interface{}, error) {
+
+	uds, err := scaleway.GetUserdatas(id, false)
+	if err != nil {
+		return nil, err
+	}
+
+	m := make(map[string]interface{}, len(uds.UserData))
+	for _, k := range uds.UserData {
+		ud, err := scaleway.GetUserdata(id, k, false)
+		if err != nil {
+			return m, err
+		}
+
+		m[k] = ud.String()
+	}
+
+	return m, nil
 }

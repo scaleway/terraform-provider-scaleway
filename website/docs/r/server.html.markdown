@@ -23,6 +23,10 @@ resource "scaleway_server" "test" {
     size_in_gb = 20
     type       = "l_ssd"
   }
+
+  user_data {
+    my_value = "my_value"
+  }
 }
 ```
 
@@ -42,8 +46,9 @@ The following arguments are supported:
 * `public_ipv6` - (Read Only) if `enable_ipv6` is set this contains the ipv6 address of your instance
 * `state` - (Optional) allows you to define the desired state of your server. Valid values include (`stopped`, `running`)
 * `state_detail` - (Read Only) contains details from the scaleway API the state of your instance
+* `user_data` - (Optional) contains a map with key-value pairs to add to user data associated to this server
 
-Field `name`, `type`, `tags`, `dynamic_ip_required`, `security_group` are editable.
+Field `name`, `type`, `tags`, `dynamic_ip_required`, `security_group`, `user_data` are editable.
 
 ## Volume
 
