@@ -66,7 +66,8 @@ func resourceScalewayVolumeAttachmentCreate(d *schema.ResourceData, m interface{
 			return err
 		}
 	}
-	if err := waitForServerState(scaleway, server.Identifier, "stopped"); err != nil {
+
+	if err := waitForServerShutdown(scaleway, server.Identifier); err != nil {
 		return err
 	}
 
@@ -117,7 +118,7 @@ func resourceScalewayVolumeAttachmentCreate(d *schema.ResourceData, m interface{
 		if err := scaleway.PostServerAction(serverID, "poweron"); err != nil {
 			return err
 		}
-		if err := waitForServerState(scaleway, serverID, "running"); err != nil {
+		if err := waitForServerStartup(scaleway, serverID); err != nil {
 			return err
 		}
 	}
@@ -190,7 +191,7 @@ func resourceScalewayVolumeAttachmentDelete(d *schema.ResourceData, m interface{
 			return err
 		}
 	}
-	if err := waitForServerState(scaleway, server.Identifier, "stopped"); err != nil {
+	if err := waitForServerShutdown(scaleway, server.Identifier); err != nil {
 		return err
 	}
 
@@ -241,7 +242,7 @@ func resourceScalewayVolumeAttachmentDelete(d *schema.ResourceData, m interface{
 		if err := scaleway.PostServerAction(serverID, "poweron"); err != nil {
 			return err
 		}
-		if err := waitForServerState(scaleway, serverID, "running"); err != nil {
+		if err := waitForServerStartup(scaleway, serverID); err != nil {
 			return err
 		}
 	}

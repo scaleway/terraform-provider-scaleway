@@ -208,7 +208,7 @@ func resourceScalewayServerCreate(d *schema.ResourceData, m interface{}) error {
 			return err
 		}
 
-		err = waitForServerState(scaleway, id, "running")
+		err = waitForServerStartup(scaleway, id)
 
 		if v, ok := d.GetOk("public_ip"); ok {
 			if err := attachIP(scaleway, d.Id(), v.(string)); err != nil {
