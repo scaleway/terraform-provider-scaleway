@@ -59,7 +59,7 @@ func deleteRunningServer(scaleway *api.API, server *api.Server) error {
 		return err
 	}
 
-	return waitForServerState(scaleway, server.Identifier, "stopped")
+	return waitForServerShutdown(scaleway, server.Identifier)
 }
 
 // deleteStoppedServer needs to cleanup attached root volumes. this is not done
@@ -82,15 +82,17 @@ func deleteStoppedServer(scaleway *api.API, server *api.Server) error {
 
 var allStates = []string{"starting", "running", "stopping", "stopped"}
 
-func waitForServerState(scaleway *api.API, serverID, targetState string) error {
-	pending := []string{}
-	for _, state := range allStates {
-		if state != targetState {
-			pending = append(pending, state)
-		}
-	}
+func waitForServerStartup(scaleway *api.API, serverID string) error {
+	return waitForServerState(scaleway, serverID, "running", []string{"running", "starting"})
+}
+
+func waitForServerShutdown(scaleway *api.API, serverID string) error {
+	return waitForServerState(scaleway, serverID, "stopped", []string{"stopped", "stopping"})
+}
+
+func waitForServerState(scaleway *api.API, serverID, targetState string, pendingStates []string) error {
 	stateConf := &resource.StateChangeConf{
-		Pending: pending,
+		Pending: pendingStates,
 		Target:  []string{targetState},
 		Refresh: func() (interface{}, string, error) {
 			s, err := scaleway.GetServer(serverID)
@@ -111,8 +113,8 @@ func waitForServerState(scaleway *api.API, serverID, targetState string) error {
 			return 42, "error", err
 		},
 		Timeout:    60 * time.Minute,
-		MinTimeout: 5 * time.Second,
-		Delay:      5 * time.Second,
+		MinTimeout: 10 * time.Second,
+		Delay:      15 * time.Second,
 	}
 	_, err := stateConf.WaitForState()
 	return err
