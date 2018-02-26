@@ -40,6 +40,7 @@ The following arguments are supported:
 * `ip_range` - (Required) ip_range of rule
 * `protocol` - (Required) protocol of rule (`ICMP`, `TCP`, `UDP`)
 * `port` - (Optional) port of the rule
+* `position` - (Optional) position of the rule within the security group
 
 Fields `action`, `direction`, `ip_range`, `protocol`, `port` are editable.
 
@@ -48,3 +49,4 @@ Fields `action`, `direction`, `ip_range`, `protocol`, `port` are editable.
 The following attributes are exported:
 
 * `id` - id of the new resource
+* `position` - position of the resource within the security group

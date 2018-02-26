@@ -61,6 +61,11 @@ func resourceScalewaySecurityGroupRule() *schema.Resource {
 				},
 				Description: "The protocol of the security group rule (ICMP, TCP or UDP)",
 			},
+			"position": {
+				Type:        schema.TypeInt,
+				Optional:    true,
+				Description: "The position with the security group, useful for ordering",
+			},
 			"port": {
 				Type:        schema.TypeInt,
 				Optional:    true,
@@ -94,9 +99,20 @@ func resourceScalewaySecurityGroupRuleCreate(d *schema.ResourceData, m interface
 	}
 
 	d.SetId(rule.ID)
-
 	if d.Id() == "" {
 		return fmt.Errorf("Failed to find created security group rule")
+	}
+
+	err = scaleway.PutSecurityGroupRule(api.UpdateSecurityGroupRule{
+		Position:     d.Get("position").(int),
+		Action:       d.Get("action").(string),
+		Direction:    d.Get("direction").(string),
+		IPRange:      d.Get("ip_range").(string),
+		Protocol:     d.Get("protocol").(string),
+		DestPortFrom: d.Get("port").(int),
+	}, d.Get("security_group").(string), rule.ID)
+	if err != nil {
+		return err
 	}
 
 	return resourceScalewaySecurityGroupRuleRead(d, m)
@@ -124,6 +140,7 @@ func resourceScalewaySecurityGroupRuleRead(d *schema.ResourceData, m interface{}
 	d.Set("ip_range", rule.Rules.IPRange)
 	d.Set("protocol", rule.Rules.Protocol)
 	d.Set("port", rule.Rules.DestPortFrom)
+	d.Set("position", rule.Rules.Position)
 
 	return nil
 }
@@ -134,12 +151,13 @@ func resourceScalewaySecurityGroupRuleUpdate(d *schema.ResourceData, m interface
 	mu.Lock()
 	defer mu.Unlock()
 
-	var req = api.NewSecurityGroupRule{
+	var req = api.UpdateSecurityGroupRule{
 		Action:       d.Get("action").(string),
 		Direction:    d.Get("direction").(string),
 		IPRange:      d.Get("ip_range").(string),
 		Protocol:     d.Get("protocol").(string),
 		DestPortFrom: d.Get("port").(int),
+		Position:     d.Get("position").(int),
 	}
 
 	if err := scaleway.PutSecurityGroupRule(req, d.Get("security_group").(string), d.Id()); err != nil {
