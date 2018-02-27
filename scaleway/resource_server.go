@@ -248,7 +248,7 @@ func resourceScalewayServerRead(d *schema.ResourceData, m interface{}) error {
 	d.Set("private_ip", server.PrivateIP)
 	d.Set("public_ip", server.PublicAddress.IP)
 
-	if server.EnableIPV6 {
+	if server.EnableIPV6 && server.IPV6 != nil {
 		d.Set("public_ipv6", server.IPV6.Address)
 	}
 
