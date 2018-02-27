@@ -1,4 +1,7 @@
 ## 1.0.2 (Unreleased)
+
+* r/security_group: add `enable_default_security` attribute to manage Scaleway default security group rules ([#43](https://github.com/terraform-providers/terraform-provider-scaleway/pull/43))
+
 ## 1.0.1 (January 15, 2018)
 
 * r/server: validate types against scaleway offerings ([#17](https://github.com/terraform-providers/terraform-provider-scaleway/issues/17))
