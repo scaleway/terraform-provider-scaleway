@@ -39,6 +39,16 @@ type NewSecurityGroupRule struct {
 	DestPortFrom int    `json:"dest_port_from,omitempty"`
 }
 
+// UpdateSecurityGroupRule definition POST/PUT request /_group/{groupID}
+type UpdateSecurityGroupRule struct {
+	Action       string `json:"action"`
+	Direction    string `json:"direction"`
+	IPRange      string `json:"ip_range"`
+	Protocol     string `json:"protocol"`
+	Position     int    `json:"position"`
+	DestPortFrom int    `json:"dest_port_from,omitempty"`
+}
+
 // GetSecurityGroupRules returns a GroupRules
 func (s *API) GetSecurityGroupRules(groupID string) (*GetSecurityGroupRules, error) {
 	resp, err := s.GetResponsePaginate(s.computeAPI, fmt.Sprintf("security_groups/%s/rules", groupID), url.Values{})
@@ -101,7 +111,7 @@ func (s *API) PostSecurityGroupRule(GroupID string, rules NewSecurityGroupRule) 
 }
 
 // PutGroupRule updates a SecurityGroupRule
-func (s *API) PutSecurityGroupRule(rules NewSecurityGroupRule, GroupID, RuleID string) error {
+func (s *API) PutSecurityGroupRule(rules UpdateSecurityGroupRule, GroupID, RuleID string) error {
 	resp, err := s.PutResponse(s.computeAPI, fmt.Sprintf("security_groups/%s/rules/%s", GroupID, RuleID), rules)
 	if err != nil {
 		return err

@@ -15,8 +15,9 @@ For additional details please refer to [API documentation](https://developer.sca
 
 ```hcl
 resource "scaleway_security_group" "test" {
-  name        = "test"
-  description = "test"
+  name                    = "test"
+  description             = "test"
+  enable_default_security = true
 }
 ```
 
@@ -26,6 +27,7 @@ The following arguments are supported:
 
 * `name` - (Required) name of security group
 * `description` - (Required) description of security group
+* `enable_default_security` - (Optional) default: true. Add default security group rules
 
 Field `name`, `description` are editable.
 
