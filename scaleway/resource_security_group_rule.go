@@ -134,7 +134,7 @@ func resourceScalewaySecurityGroupRuleUpdate(d *schema.ResourceData, m interface
 	mu.Lock()
 	defer mu.Unlock()
 
-	var req = api.NewSecurityGroupRule{
+	var req = api.UpdateSecurityGroupRule{
 		Action:       d.Get("action").(string),
 		Direction:    d.Get("direction").(string),
 		IPRange:      d.Get("ip_range").(string),

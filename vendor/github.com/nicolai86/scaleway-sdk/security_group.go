@@ -39,9 +39,10 @@ type SecurityGroup struct {
 
 // NewSecurityGroup definition POST request /security_groups
 type NewSecurityGroup struct {
-	Organization string `json:"organization"`
-	Name         string `json:"name"`
-	Description  string `json:"description"`
+	Organization          string `json:"organization"`
+	Name                  string `json:"name"`
+	Description           string `json:"description"`
+	EnableDefaultSecurity bool   `json:"enable_default_security"`
 }
 
 // UpdateSecurityGroup definition PUT request /security_groups

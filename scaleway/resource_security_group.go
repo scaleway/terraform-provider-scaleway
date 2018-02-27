@@ -29,6 +29,13 @@ func resourceScalewaySecurityGroup() *schema.Resource {
 				Required:    true,
 				Description: "The description of the security group",
 			},
+			"enable_default_security": {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Default:     true,
+				ForceNew:    true,
+				Description: "Add default security group rules",
+			},
 		},
 	}
 }
@@ -40,9 +47,10 @@ func resourceScalewaySecurityGroupCreate(d *schema.ResourceData, m interface{}) 
 	defer mu.Unlock()
 
 	req := api.NewSecurityGroup{
-		Name:         d.Get("name").(string),
-		Description:  d.Get("description").(string),
-		Organization: scaleway.Organization,
+		Name:                  d.Get("name").(string),
+		Description:           d.Get("description").(string),
+		Organization:          scaleway.Organization,
+		EnableDefaultSecurity: d.Get("enable_default_security").(bool),
 	}
 
 	err := scaleway.PostSecurityGroup(req)
@@ -92,6 +100,7 @@ func resourceScalewaySecurityGroupRead(d *schema.ResourceData, m interface{}) er
 
 	d.Set("name", resp.SecurityGroups.Name)
 	d.Set("description", resp.SecurityGroups.Description)
+	d.Set("enable_default_security", resp.SecurityGroups.EnableDefaultSecurity)
 
 	return nil
 }
