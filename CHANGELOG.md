@@ -1,5 +1,6 @@
 ## 1.0.2 (Unreleased)
 
+* r/server: fix crash with stopped server and ipv6 enabled. ([#44](https://github.com/terraform-providers/terraform-provider-scaleway/pull/44))
 * r/security_group: add `enable_default_security` attribute to manage Scaleway default security group rules ([#43](https://github.com/terraform-providers/terraform-provider-scaleway/pull/43))
 
 ## 1.0.1 (January 15, 2018)
