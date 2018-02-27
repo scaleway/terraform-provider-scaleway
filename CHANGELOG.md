@@ -1,12 +1,12 @@
-## 1.1.0 (Unreleased)
+## 1.1.0 (February 27, 2018)
 
 BUG FIXES:
 
-* resource/scaleway_server: Fix crash with stopped server and ipv6 enabled [GH-44]
+* resource/scaleway_server: Fix crash with stopped server and ipv6 enabled ([#44](https://github.com/terraform-providers/terraform-provider-scaleway/issues/44))
 
 IMPROVEMENTS:
 
-* resource/scaleway_security_group: Add `enable_default_security` attribute to manage Scaleway default security group rules [GH-43]
+* resource/scaleway_security_group: Add `enable_default_security` attribute to manage Scaleway default security group rules ([#43](https://github.com/terraform-providers/terraform-provider-scaleway/issues/43))
 
 ## 1.0.1 (January 15, 2018)
 
