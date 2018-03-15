@@ -69,12 +69,22 @@ func TestAccScalewayIP_Basic(t *testing.T) {
 				),
 			},
 			resource.TestStep{
+				Config: testAccCheckScalewayIPConfig_Reverse,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayIPExists("scaleway_ip.base"),
+					resource.TestCheckResourceAttr(
+						"scaleway_ip.base", "reverse", "www.google.de"),
+				),
+			},
+			resource.TestStep{
 				Config: testAccCheckScalewayIPAttachConfig,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayIPExists("scaleway_ip.base"),
 					testAccCheckScalewayIPAttachment("scaleway_ip.base", func(serverID string) bool {
 						return serverID != ""
 					}, "attachment failed"),
+					resource.TestCheckResourceAttr(
+						"scaleway_ip.base", "reverse", ""),
 				),
 			},
 			resource.TestStep{
@@ -172,9 +182,14 @@ func testAccCheckScalewayIPAttachment(n string, check func(string) bool, msg str
 	}
 }
 
-var testAccCheckScalewayIPConfig = `
+var testAccCheckScalewayIPConfig_Reverse = `
 resource "scaleway_ip" "base" {
+  reverse = "www.google.de"
 }
+`
+
+var testAccCheckScalewayIPConfig = `
+resource "scaleway_ip" "base" {}
 `
 
 var testAccCheckScalewayIPConfig_Count = `
