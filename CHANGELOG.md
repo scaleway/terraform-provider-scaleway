@@ -2,6 +2,7 @@
 
 IMPROVEMENTS:
 
+* resource/scaleway_ip: Add support for setting reverse DNS field ([#48](https://github.com/terraform-providers/terraform-provider-scaleway/pull/48))
 * resource/scaleway_ssh_key: Add new resource to manage ssh keys ([#47](https://github.com/terraform-providers/terraform-provider-scaleway/pull/47))
 
 ## 1.1.0 (February 27, 2018)
