@@ -1,4 +1,9 @@
 ## 1.1.1 (Unreleased)
+
+IMPROVEMENTS:
+
+* resource/scaleway_ssh_key: Add new resource to manage ssh keys ([#47](https://github.com/terraform-providers/terraform-provider-scaleway/pull/47))
+
 ## 1.1.0 (February 27, 2018)
 
 BUG FIXES:
