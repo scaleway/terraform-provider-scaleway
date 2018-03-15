@@ -29,6 +29,11 @@ func resourceScalewayIP() *schema.Resource {
 				Computed:    true,
 				Description: "The ipv4 address of the ip",
 			},
+			"reverse": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The ipv4 reverse dns",
+			},
 		},
 	}
 }
@@ -67,6 +72,9 @@ func resourceScalewayIPRead(d *schema.ResourceData, m interface{}) error {
 	if resp.IP.Server != nil {
 		d.Set("server", resp.IP.Server.Identifier)
 	}
+	if resp.IP.Reverse != nil {
+		d.Set("reverse", *resp.IP.Reverse)
+	}
 	return nil
 }
 
@@ -75,6 +83,22 @@ func resourceScalewayIPUpdate(d *schema.ResourceData, m interface{}) error {
 
 	mu.Lock()
 	defer mu.Unlock()
+
+	if d.HasChange("reverse") {
+		log.Printf("[DEBUG] Updating IP %q reverse to %q\n", d.Id(), d.Get("reverse").(string))
+		ip, err := scaleway.UpdateIP(api.UpdateIPRequest{
+			ID:      d.Id(),
+			Reverse: d.Get("reverse").(string),
+		})
+		if err != nil {
+			return err
+		}
+		if ip.IP.Reverse != nil {
+			d.Set("reverse", *ip.IP.Reverse)
+		} else {
+			d.Set("reverse", "")
+		}
+	}
 
 	if d.HasChange("server") {
 		if d.Get("server").(string) != "" {

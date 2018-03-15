@@ -22,15 +22,16 @@ resource "scaleway_ip" "test_ip" {}
 The following arguments are supported:
 
 * `server` - (Optional) ID of server to associate IP with
-
-Field `server` is editable.
+* `reverse` - (Optional) Reverse DNS of the IP
 
 ## Attributes Reference
 
 The following attributes are exported:
 
-* `id` - id of the new resource
+* `id` - ID of the new resource
 * `ip` - IP of the new resource
+* `server` - ID of the associated server resource
+* `reverse` - reverse DNS setting of the IP resource
 
 ## Import
 

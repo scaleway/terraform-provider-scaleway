@@ -68,6 +68,46 @@ func (s *API) GetIP(ipID string) (*GetIP, error) {
 	return &ip, nil
 }
 
+type UpdateIPRequest struct {
+	ID      string
+	Reverse string
+}
+
+func (s *API) UpdateIP(req UpdateIPRequest) (*GetIP, error) {
+	var update struct {
+		Address      string  `json:"address"`
+		ID           string  `json:"id"`
+		Reverse      *string `json:"reverse"`
+		Organization string  `json:"organization"`
+		Server       *string `json:"server"`
+	}
+
+	ip, err := s.GetIP(req.ID)
+	if err != nil {
+		return nil, err
+	}
+	update.Address = ip.IP.Address
+	update.ID = ip.IP.ID
+	update.Organization = ip.IP.Organization
+	update.Server = nil
+	if ip.IP.Server != nil {
+		update.Server = &ip.IP.Server.Identifier
+	}
+	update.Reverse = nil
+	if req.Reverse != "" {
+		update.Reverse = &req.Reverse
+	}
+	resp, err := s.PutResponse(s.computeAPI, fmt.Sprintf("ips/%s", req.ID), update)
+	if err != nil {
+		return nil, err
+	}
+	body, err := s.handleHTTPError([]int{http.StatusOK}, resp)
+	if err = json.Unmarshal(body, &ip); err != nil {
+		return nil, err
+	}
+	return ip, nil
+}
+
 // GetIPS returns a GetIPS
 func (s *API) GetIPS() (*GetIPS, error) {
 	resp, err := s.GetResponsePaginate(s.computeAPI, "ips", url.Values{})
