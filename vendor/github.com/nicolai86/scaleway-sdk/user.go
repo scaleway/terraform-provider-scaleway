@@ -62,18 +62,24 @@ type UserPatchSSHKeyDefinition struct {
 }
 
 // PatchUserSSHKey updates a user
-func (s *API) PatchUserSSHKey(UserID string, definition UserPatchSSHKeyDefinition) error {
+func (s *API) PatchUserSSHKey(UserID string, definition UserPatchSSHKeyDefinition) (*UserDefinition, error) {
 	resp, err := s.PatchResponse(AccountAPI, fmt.Sprintf("users/%s", UserID), definition)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	defer resp.Body.Close()
 
-	if _, err := s.handleHTTPError([]int{http.StatusOK}, resp); err != nil {
-		return err
+	body, err := s.handleHTTPError([]int{http.StatusOK}, resp)
+	if err != nil {
+		return nil, err
 	}
-	return nil
+	var user UsersDefinition
+
+	if err = json.Unmarshal(body, &user); err != nil {
+		return nil, err
+	}
+	return &user.User, nil
 }
 
 // GetUserID returns the userID
