@@ -1,4 +1,9 @@
 ## 1.2.1 (Unreleased)
+
+BUG FIXES:
+
+* provider: fix crash when working over slow and unreliable network connection ([#49](https://github.com/terraform-providers/terraform-provider-scaleway/pull/49))
+
 ## 1.2.0 (March 15, 2018)
 
 IMPROVEMENTS:
