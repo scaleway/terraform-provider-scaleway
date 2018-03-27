@@ -15,7 +15,7 @@ Use the navigation to the left to read about the available resources.
 ## Example Usage
 
 Here is an example that will setup the following:
-+ An ARM Server.
++ A Server.
 + An IP Address.
 + A security group.
 
