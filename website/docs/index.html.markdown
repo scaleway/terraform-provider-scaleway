@@ -40,7 +40,7 @@ resource "scaleway_server" "test" {
 
 resource "scaleway_volume" "test" {
   name       = "test"
-  size_in_gb = 20
+  size_in_gb = 50
   type       = "l_ssd"
 }
 
