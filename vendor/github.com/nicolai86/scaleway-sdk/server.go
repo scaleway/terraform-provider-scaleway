@@ -178,6 +178,7 @@ func (s *API) GetServers(all bool, limit int) (*[]Server, error) {
 	if !all {
 		query.Set("state", "running")
 	}
+	// TODO per_page=20&page=2&state=running
 	if limit > 0 {
 		// FIXME: wait for the API to be ready
 		// query.Set("per_page", strconv.Itoa(limit))
@@ -259,18 +260,26 @@ func (s *API) GetServer(serverID string) (*Server, error) {
 }
 
 // PostServerAction posts an action on a server
-func (s *API) PostServerAction(serverID, action string) error {
+func (s *API) PostServerAction(serverID, action string) (*Task, error) {
 	data := ServerAction{
 		Action: action,
 	}
 	resp, err := s.PostResponse(s.computeAPI, fmt.Sprintf("servers/%s/action", serverID), data)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	defer resp.Body.Close()
 
-	_, err = s.handleHTTPError([]int{http.StatusAccepted}, resp)
-	return err
+	body, err := s.handleHTTPError([]int{http.StatusAccepted}, resp)
+	if err != nil {
+		return nil, err
+	}
+
+	var t oneTask
+	if err = json.Unmarshal(body, &t); err != nil {
+		return nil, err
+	}
+	return &t.Task, err
 }
 
 func (s *API) fetchServers(api string, query url.Values, out chan<- Servers) func() error {

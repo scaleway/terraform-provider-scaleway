@@ -174,7 +174,7 @@ func resourceScalewayServerCreate(d *schema.ResourceData, m interface{}) error {
 			sizeInGB := uint64(volume["size_in_gb"].(int))
 
 			if sizeInGB > 0 {
-				volumeID, err := scaleway.PostVolume(api.VolumeDefinition{
+				v, err := scaleway.PostVolume(api.VolumeDefinition{
 					Size: sizeInGB * gb,
 					Type: volume["type"].(string),
 					Name: fmt.Sprintf("%s-%d", server.Name, sizeInGB),
@@ -182,8 +182,8 @@ func resourceScalewayServerCreate(d *schema.ResourceData, m interface{}) error {
 				if err != nil {
 					return err
 				}
-				volume["volume_id"] = volumeID
-				server.Volumes[fmt.Sprintf("%d", i+1)] = volumeID
+				volume["volume_id"] = v.Identifier
+				server.Volumes[fmt.Sprintf("%d", i+1)] = v.Identifier
 			}
 			volumes[i] = volume
 		}
@@ -203,7 +203,7 @@ func resourceScalewayServerCreate(d *schema.ResourceData, m interface{}) error {
 
 	d.SetId(id)
 	if d.Get("state").(string) != "stopped" {
-		err = scaleway.PostServerAction(id, "poweron")
+		_, err = scaleway.PostServerAction(id, "poweron")
 		if err != nil {
 			return err
 		}

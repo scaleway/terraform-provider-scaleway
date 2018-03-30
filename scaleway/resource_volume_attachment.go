@@ -62,7 +62,7 @@ func resourceScalewayVolumeAttachmentCreate(d *schema.ResourceData, m interface{
 	if server.State != "stopped" {
 		startServerAgain = true
 
-		if err := scaleway.PostServerAction(server.Identifier, "poweroff"); err != nil {
+		if _, err := scaleway.PostServerAction(server.Identifier, "poweroff"); err != nil {
 			return err
 		}
 	}
@@ -115,7 +115,7 @@ func resourceScalewayVolumeAttachmentCreate(d *schema.ResourceData, m interface{
 	}
 
 	if startServerAgain {
-		if err := scaleway.PostServerAction(serverID, "poweron"); err != nil {
+		if _, err := scaleway.PostServerAction(serverID, "poweron"); err != nil {
 			return err
 		}
 		if err := waitForServerStartup(scaleway, serverID); err != nil {
@@ -187,7 +187,7 @@ func resourceScalewayVolumeAttachmentDelete(d *schema.ResourceData, m interface{
 	// volumes can only be modified when the server is powered off
 	if server.State != "stopped" {
 		startServerAgain = true
-		if err := scaleway.PostServerAction(server.Identifier, "poweroff"); err != nil {
+		if _, err := scaleway.PostServerAction(server.Identifier, "poweroff"); err != nil {
 			return err
 		}
 	}
@@ -239,7 +239,7 @@ func resourceScalewayVolumeAttachmentDelete(d *schema.ResourceData, m interface{
 	}
 
 	if startServerAgain {
-		if err := scaleway.PostServerAction(serverID, "poweron"); err != nil {
+		if _, err := scaleway.PostServerAction(serverID, "poweron"); err != nil {
 			return err
 		}
 		if err := waitForServerStartup(scaleway, serverID); err != nil {
