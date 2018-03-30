@@ -47,7 +47,7 @@ func validateVolumeType(v interface{}, k string) (ws []string, errors []error) {
 
 // deleteRunningServer terminates the server and waits until it is removed.
 func deleteRunningServer(scaleway *api.API, server *api.Server) error {
-	err := scaleway.PostServerAction(server.Identifier, "terminate")
+	_, err := scaleway.PostServerAction(server.Identifier, "terminate")
 
 	if err != nil {
 		if serr, ok := err.(api.APIError); ok {

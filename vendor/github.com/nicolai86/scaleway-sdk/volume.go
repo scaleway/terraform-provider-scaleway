@@ -76,7 +76,7 @@ type VolumePutDefinition struct {
 }
 
 // PostVolume creates a new volume
-func (s *API) PostVolume(definition VolumeDefinition) (string, error) {
+func (s *API) PostVolume(definition VolumeDefinition) (*Volume, error) {
 	definition.Organization = s.Organization
 	if definition.Type == "" {
 		definition.Type = "l_ssd"
@@ -84,32 +84,40 @@ func (s *API) PostVolume(definition VolumeDefinition) (string, error) {
 
 	resp, err := s.PostResponse(s.computeAPI, "volumes", definition)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 	defer resp.Body.Close()
 
 	body, err := s.handleHTTPError([]int{http.StatusCreated}, resp)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 	var volume volumeResponse
 
 	if err = json.Unmarshal(body, &volume); err != nil {
-		return "", err
+		return nil, err
 	}
-	return volume.Volume.Identifier, nil
+	return &volume.Volume, nil
 }
 
 // PutVolume updates a volume
-func (s *API) PutVolume(volumeID string, definition VolumePutDefinition) error {
+func (s *API) PutVolume(volumeID string, definition VolumePutDefinition) (*Volume, error) {
 	resp, err := s.PutResponse(s.computeAPI, fmt.Sprintf("volumes/%s", volumeID), definition)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	defer resp.Body.Close()
 
-	_, err = s.handleHTTPError([]int{http.StatusOK}, resp)
-	return err
+	body, err := s.handleHTTPError([]int{http.StatusOK}, resp)
+	if err != nil {
+		return nil, err
+	}
+	var volume volumeResponse
+
+	if err = json.Unmarshal(body, &volume); err != nil {
+		return nil, err
+	}
+	return &volume.Volume, nil
 }
 
 // DeleteVolume deletes a volume
@@ -165,11 +173,11 @@ func (s *API) GetVolume(volumeID string) (*Volume, error) {
 	if err != nil {
 		return nil, err
 	}
-	var oneVolume volumeResponse
+	var volume volumeResponse
 
-	if err = json.Unmarshal(body, &oneVolume); err != nil {
+	if err = json.Unmarshal(body, &volume); err != nil {
 		return nil, err
 	}
 	// FIXME region, arch, owner, title
-	return &oneVolume.Volume, nil
+	return &volume.Volume, nil
 }
