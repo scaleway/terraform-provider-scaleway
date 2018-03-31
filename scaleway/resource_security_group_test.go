@@ -30,7 +30,7 @@ func testSweepSecurityGroup(region string) error {
 		return fmt.Errorf("Error describing security groups in Sweeper: %s", err)
 	}
 
-	for _, sg := range sgs.SecurityGroups {
+	for _, sg := range sgs {
 		if sg.OrganizationDefault {
 			continue
 		}
@@ -70,7 +70,7 @@ func testAccCheckScalewaySecurityGroupDestroy(s *terraform.State) error {
 			continue
 		}
 
-		_, err := client.GetASecurityGroup(rs.Primary.ID)
+		_, err := client.GetSecurityGroup(rs.Primary.ID)
 
 		if err == nil {
 			return fmt.Errorf("Security Group still exists")
@@ -88,15 +88,15 @@ func testAccCheckScalewaySecurityGroupAttributes(n string) resource.TestCheckFun
 		}
 
 		client := testAccProvider.Meta().(*Client).scaleway
-		group, err := client.GetASecurityGroup(rs.Primary.ID)
+		group, err := client.GetSecurityGroup(rs.Primary.ID)
 		if err != nil {
 			return err
 		}
 
-		if group.SecurityGroups.Name != "public" {
+		if group.Name != "public" {
 			return fmt.Errorf("Security Group has wrong name")
 		}
-		if group.SecurityGroups.Description != "public gateway" {
+		if group.Description != "public gateway" {
 			return fmt.Errorf("Security Group has wrong description")
 		}
 
@@ -117,13 +117,13 @@ func testAccCheckScalewaySecurityGroupExists(n string) resource.TestCheckFunc {
 		}
 
 		client := testAccProvider.Meta().(*Client).scaleway
-		group, err := client.GetASecurityGroup(rs.Primary.ID)
+		group, err := client.GetSecurityGroup(rs.Primary.ID)
 
 		if err != nil {
 			return err
 		}
 
-		if group.SecurityGroups.ID != rs.Primary.ID {
+		if group.ID != rs.Primary.ID {
 			return fmt.Errorf("Record not found")
 		}
 

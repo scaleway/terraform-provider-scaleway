@@ -13,13 +13,13 @@ type Permissions map[string]PermCategory
 // PermCategory represents Permissions's fields
 type PermCategory map[string][]string
 
-// PermissionDefinition represents the permissions
-type PermissionDefinition struct {
+// permissions represents the permissions
+type permissionsResponse struct {
 	Permissions Permissions `json:"permissions"`
 }
 
 // GetPermissions returns the permissions
-func (s *API) GetPermissions() (*PermissionDefinition, error) {
+func (s *API) GetPermissions() (Permissions, error) {
 	resp, err := s.GetResponsePaginate(AccountAPI, fmt.Sprintf("tokens/%s/permissions", s.Token), url.Values{})
 	if err != nil {
 		return nil, err
@@ -30,10 +30,10 @@ func (s *API) GetPermissions() (*PermissionDefinition, error) {
 	if err != nil {
 		return nil, err
 	}
-	var permissions PermissionDefinition
+	var permissions permissionsResponse
 
 	if err = json.Unmarshal(body, &permissions); err != nil {
 		return nil, err
 	}
-	return &permissions, nil
+	return permissions.Permissions, nil
 }

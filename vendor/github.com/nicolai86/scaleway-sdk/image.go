@@ -130,8 +130,8 @@ type MarketImage struct {
 	MarketVersions
 }
 
-// PostImage creates a new image
-func (s *API) PostImage(volumeID string, name string, bootscript string, arch string) (string, error) {
+// CreateImage creates a new image
+func (s *API) CreateImage(volumeID string, name string, bootscript string, arch string) (*Image, error) {
 	definition := ImageDefinition{
 		SnapshotIDentifier: volumeID,
 		Name:               name,
@@ -144,20 +144,20 @@ func (s *API) PostImage(volumeID string, name string, bootscript string, arch st
 
 	resp, err := s.PostResponse(s.computeAPI, "images", definition)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 	defer resp.Body.Close()
 
 	body, err := s.handleHTTPError([]int{http.StatusCreated}, resp)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 	var image OneImage
 
 	if err = json.Unmarshal(body, &image); err != nil {
-		return "", err
+		return nil, err
 	}
-	return image.Image.Identifier, nil
+	return &image.Image, nil
 }
 
 // GetImages gets the list of images from the API
@@ -369,8 +369,8 @@ func (s *API) GetMarketPlaceLocalImages(uuidImage, uuidVersion, uuidLocalImage s
 	return &ret, nil
 }
 
-// PostMarketPlaceImage adds new image
-func (s *API) PostMarketPlaceImage(images MarketImage) error {
+// CreateMarketPlaceImage adds new image
+func (s *API) CreateMarketPlaceImage(images MarketImage) error {
 	resp, err := s.PostResponse(MarketplaceAPI, "images/", images)
 	if err != nil {
 		return err
@@ -380,8 +380,8 @@ func (s *API) PostMarketPlaceImage(images MarketImage) error {
 	return err
 }
 
-// PostMarketPlaceImageVersion adds new image version
-func (s *API) PostMarketPlaceImageVersion(uuidImage string, version MarketVersion) error {
+// CreateMarketPlaceImageVersion adds new image version
+func (s *API) CreateMarketPlaceImageVersion(uuidImage string, version MarketVersion) error {
 	resp, err := s.PostResponse(MarketplaceAPI, fmt.Sprintf("images/%v/versions", uuidImage), version)
 	if err != nil {
 		return err
@@ -391,8 +391,8 @@ func (s *API) PostMarketPlaceImageVersion(uuidImage string, version MarketVersio
 	return err
 }
 
-// PostMarketPlaceLocalImage adds new local image
-func (s *API) PostMarketPlaceLocalImage(uuidImage, uuidVersion, uuidLocalImage string, local MarketLocalImage) error {
+// CreateMarketPlaceLocalImage adds new local image
+func (s *API) CreateMarketPlaceLocalImage(uuidImage, uuidVersion, uuidLocalImage string, local MarketLocalImage) error {
 	resp, err := s.PostResponse(MarketplaceAPI, fmt.Sprintf("images/%v/versions/%s/local_images/%v", uuidImage, uuidVersion, uuidLocalImage), local)
 	if err != nil {
 		return err
@@ -402,8 +402,8 @@ func (s *API) PostMarketPlaceLocalImage(uuidImage, uuidVersion, uuidLocalImage s
 	return err
 }
 
-// PutMarketPlaceImage updates image
-func (s *API) PutMarketPlaceImage(uudiImage string, images MarketImage) error {
+// UpdateMarketPlaceImage updates image
+func (s *API) UpdateMarketPlaceImage(uudiImage string, images MarketImage) error {
 	resp, err := s.PutResponse(MarketplaceAPI, fmt.Sprintf("images/%v", uudiImage), images)
 	if err != nil {
 		return err
@@ -413,8 +413,8 @@ func (s *API) PutMarketPlaceImage(uudiImage string, images MarketImage) error {
 	return err
 }
 
-// PutMarketPlaceImageVersion updates image version
-func (s *API) PutMarketPlaceImageVersion(uuidImage, uuidVersion string, version MarketVersion) error {
+// UpdateMarketPlaceImageVersion updates image version
+func (s *API) UpdateMarketPlaceImageVersion(uuidImage, uuidVersion string, version MarketVersion) error {
 	resp, err := s.PutResponse(MarketplaceAPI, fmt.Sprintf("images/%v/versions/%v", uuidImage, uuidVersion), version)
 	if err != nil {
 		return err
@@ -424,8 +424,8 @@ func (s *API) PutMarketPlaceImageVersion(uuidImage, uuidVersion string, version 
 	return err
 }
 
-// PutMarketPlaceLocalImage updates local image
-func (s *API) PutMarketPlaceLocalImage(uuidImage, uuidVersion, uuidLocalImage string, local MarketLocalImage) error {
+// UpdateMarketPlaceLocalImage updates local image
+func (s *API) UpdateMarketPlaceLocalImage(uuidImage, uuidVersion, uuidLocalImage string, local MarketLocalImage) error {
 	resp, err := s.PostResponse(MarketplaceAPI, fmt.Sprintf("images/%v/versions/%s/local_images/%v", uuidImage, uuidVersion, uuidLocalImage), local)
 	if err != nil {
 		return err

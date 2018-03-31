@@ -7,14 +7,14 @@ import (
 	"net/url"
 )
 
-// IPV6 represents a  ipv6
+// IPV6 represents a ipv6
 type IPV6 struct {
 	Netmask string `json:"netmask"`
 	Gateway string `json:"gateway"`
 	Address string `json:"address"`
 }
 
-// IPV4 represents the IP's fields
+// IPV4 represents the IPs fields
 type IPV4 struct {
 	Organization string  `json:"organization"`
 	Reverse      *string `json:"reverse"`
@@ -49,7 +49,7 @@ type GetIP struct {
 }
 
 // GetIP returns a GetIP
-func (s *API) GetIP(ipID string) (*GetIP, error) {
+func (s *API) GetIP(ipID string) (*IPV4, error) {
 	resp, err := s.GetResponsePaginate(s.computeAPI, fmt.Sprintf("ips/%s", ipID), url.Values{})
 	if err != nil {
 		return nil, err
@@ -65,7 +65,7 @@ func (s *API) GetIP(ipID string) (*GetIP, error) {
 	if err = json.Unmarshal(body, &ip); err != nil {
 		return nil, err
 	}
-	return &ip, nil
+	return &ip.IP, nil
 }
 
 type UpdateIPRequest struct {
@@ -73,7 +73,7 @@ type UpdateIPRequest struct {
 	Reverse string
 }
 
-func (s *API) UpdateIP(req UpdateIPRequest) (*GetIP, error) {
+func (s *API) UpdateIP(req UpdateIPRequest) (*IPV4, error) {
 	var update struct {
 		Address      string  `json:"address"`
 		ID           string  `json:"id"`
@@ -86,12 +86,12 @@ func (s *API) UpdateIP(req UpdateIPRequest) (*GetIP, error) {
 	if err != nil {
 		return nil, err
 	}
-	update.Address = ip.IP.Address
-	update.ID = ip.IP.ID
-	update.Organization = ip.IP.Organization
+	update.Address = ip.Address
+	update.ID = ip.ID
+	update.Organization = ip.Organization
 	update.Server = nil
-	if ip.IP.Server != nil {
-		update.Server = &ip.IP.Server.Identifier
+	if ip.Server != nil {
+		update.Server = &ip.Server.Identifier
 	}
 	update.Reverse = nil
 	if req.Reverse != "" {
@@ -101,15 +101,18 @@ func (s *API) UpdateIP(req UpdateIPRequest) (*GetIP, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	body, err := s.handleHTTPError([]int{http.StatusOK}, resp)
-	if err = json.Unmarshal(body, &ip); err != nil {
+	var data GetIP
+
+	if err = json.Unmarshal(body, &data); err != nil {
 		return nil, err
 	}
-	return ip, nil
+	return &data.IP, nil
 }
 
 // GetIPS returns a GetIPS
-func (s *API) GetIPS() (*GetIPS, error) {
+func (s *API) GetIPS() ([]IPV4, error) {
 	resp, err := s.GetResponsePaginate(s.computeAPI, "ips", url.Values{})
 	if err != nil {
 		return nil, err
@@ -125,11 +128,11 @@ func (s *API) GetIPS() (*GetIPS, error) {
 	if err = json.Unmarshal(body, &ips); err != nil {
 		return nil, err
 	}
-	return &ips, nil
+	return ips.IPS, nil
 }
 
-// NewIP returns a new IP
-func (s *API) NewIP() (*GetIP, error) {
+// CreateIP returns a new IP
+func (s *API) CreateIP() (*IPV4, error) {
 	var orga struct {
 		Organization string `json:"organization"`
 	}
@@ -149,7 +152,7 @@ func (s *API) NewIP() (*GetIP, error) {
 	if err = json.Unmarshal(body, &ip); err != nil {
 		return nil, err
 	}
-	return &ip, nil
+	return &ip.IP, nil
 }
 
 // AttachIP attachs an IP to a server
@@ -166,9 +169,9 @@ func (s *API) AttachIP(ipID, serverID string) error {
 	if err != nil {
 		return err
 	}
-	update.Address = ip.IP.Address
-	update.ID = ip.IP.ID
-	update.Organization = ip.IP.Organization
+	update.Address = ip.Address
+	update.ID = ip.ID
+	update.Organization = ip.Organization
 	update.Server = serverID
 	resp, err := s.PutResponse(s.computeAPI, fmt.Sprintf("ips/%s", ipID), update)
 	if err != nil {
@@ -184,8 +187,8 @@ func (s *API) DetachIP(ipID string) error {
 	if err != nil {
 		return err
 	}
-	ip.IP.Server = nil
-	resp, err := s.PutResponse(s.computeAPI, fmt.Sprintf("ips/%s", ipID), ip.IP)
+	ip.Server = nil
+	resp, err := s.PutResponse(s.computeAPI, fmt.Sprintf("ips/%s", ipID), ip)
 	if err != nil {
 		return err
 	}

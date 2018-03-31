@@ -75,8 +75,8 @@ type VolumePutDefinition struct {
 	ExportURI  *string `json:"export_uri,omitempty"`
 }
 
-// PostVolume creates a new volume
-func (s *API) PostVolume(definition VolumeDefinition) (*Volume, error) {
+// CreateVolume creates a new volume
+func (s *API) CreateVolume(definition VolumeDefinition) (*Volume, error) {
 	definition.Organization = s.Organization
 	if definition.Type == "" {
 		definition.Type = "l_ssd"
@@ -100,8 +100,8 @@ func (s *API) PostVolume(definition VolumeDefinition) (*Volume, error) {
 	return &volume.Volume, nil
 }
 
-// PutVolume updates a volume
-func (s *API) PutVolume(volumeID string, definition VolumePutDefinition) (*Volume, error) {
+// UpdateVolume updates a volume
+func (s *API) UpdateVolume(volumeID string, definition VolumePutDefinition) (*Volume, error) {
 	resp, err := s.PutResponse(s.computeAPI, fmt.Sprintf("volumes/%s", volumeID), definition)
 	if err != nil {
 		return nil, err

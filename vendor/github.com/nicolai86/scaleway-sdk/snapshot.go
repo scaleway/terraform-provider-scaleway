@@ -44,8 +44,8 @@ type Snapshot struct {
 	BaseVolume Volume `json:"base_volume,omitempty"`
 }
 
-// OneSnapshot represents the response of a GET /snapshots/UUID API call
-type OneSnapshot struct {
+// oneSnapshot represents the response of a GET /snapshots/UUID API call
+type oneSnapshot struct {
 	Snapshot Snapshot `json:"snapshot,omitempty"`
 }
 
@@ -55,8 +55,8 @@ type Snapshots struct {
 	Snapshots []Snapshot `json:"snapshots,omitempty"`
 }
 
-// PostSnapshot creates a new snapshot
-func (s *API) PostSnapshot(volumeID string, name string) (string, error) {
+// CreateSnapshot creates a new snapshot
+func (s *API) CreateSnapshot(volumeID string, name string) (*Snapshot, error) {
 	definition := SnapshotDefinition{
 		VolumeIDentifier: volumeID,
 		Name:             name,
@@ -64,20 +64,20 @@ func (s *API) PostSnapshot(volumeID string, name string) (string, error) {
 	}
 	resp, err := s.PostResponse(s.computeAPI, "snapshots", definition)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 	defer resp.Body.Close()
 
 	body, err := s.handleHTTPError([]int{http.StatusCreated}, resp)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
-	var snapshot OneSnapshot
+	var snapshot oneSnapshot
 
 	if err = json.Unmarshal(body, &snapshot); err != nil {
-		return "", err
+		return nil, err
 	}
-	return snapshot.Snapshot.Identifier, nil
+	return &snapshot.Snapshot, nil
 }
 
 // DeleteSnapshot deletes a snapshot
@@ -95,7 +95,7 @@ func (s *API) DeleteSnapshot(snapshotID string) error {
 }
 
 // GetSnapshots gets the list of snapshots from the API
-func (s *API) GetSnapshots() (*[]Snapshot, error) {
+func (s *API) GetSnapshots() ([]Snapshot, error) {
 	query := url.Values{}
 
 	resp, err := s.GetResponsePaginate(s.computeAPI, "snapshots", query)
@@ -113,7 +113,7 @@ func (s *API) GetSnapshots() (*[]Snapshot, error) {
 	if err = json.Unmarshal(body, &snapshots); err != nil {
 		return nil, err
 	}
-	return &snapshots.Snapshots, nil
+	return snapshots.Snapshots, nil
 }
 
 // GetSnapshot gets a snapshot from the API
@@ -128,7 +128,7 @@ func (s *API) GetSnapshot(snapshotID string) (*Snapshot, error) {
 	if err != nil {
 		return nil, err
 	}
-	var oneSnapshot OneSnapshot
+	var oneSnapshot oneSnapshot
 
 	if err = json.Unmarshal(body, &oneSnapshot); err != nil {
 		return nil, err

@@ -6,20 +6,20 @@ import (
 	"net/url"
 )
 
-// OrganizationDefinition represents a  Organization
-type OrganizationDefinition struct {
-	ID    string           `json:"id"`
-	Name  string           `json:"name"`
-	Users []UserDefinition `json:"users"`
+// Organization represents a  Organization
+type Organization struct {
+	ID    string `json:"id"`
+	Name  string `json:"name"`
+	Users []User `json:"users"`
 }
 
-// OrganizationsDefinition represents a  Organizations
-type OrganizationsDefinition struct {
-	Organizations []OrganizationDefinition `json:"organizations"`
+// organizationsDefinition represents a  Organizations
+type organizationsDefinition struct {
+	Organizations []Organization `json:"organizations"`
 }
 
 // GetOrganization returns Organization
-func (s *API) GetOrganization() (*OrganizationsDefinition, error) {
+func (s *API) GetOrganization() ([]Organization, error) {
 	resp, err := s.GetResponsePaginate(AccountAPI, "organizations", url.Values{})
 	if err != nil {
 		return nil, err
@@ -30,10 +30,10 @@ func (s *API) GetOrganization() (*OrganizationsDefinition, error) {
 	if err != nil {
 		return nil, err
 	}
-	var data OrganizationsDefinition
+	var data organizationsDefinition
 
 	if err = json.Unmarshal(body, &data); err != nil {
 		return nil, err
 	}
-	return &data, nil
+	return data.Organizations, nil
 }

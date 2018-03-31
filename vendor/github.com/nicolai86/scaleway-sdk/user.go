@@ -9,12 +9,12 @@ import (
 
 // TokenDefinition represents a  Token
 type TokenDefinition struct {
-	UserID             string         `json:"user_id"`
-	Description        string         `json:"description,omitempty"`
-	Roles              RoleDefinition `json:"roles"`
-	Expires            string         `json:"expires"`
-	InheritsUsersPerms bool           `json:"inherits_user_perms"`
-	ID                 string         `json:"id"`
+	UserID             string `json:"user_id"`
+	Description        string `json:"description,omitempty"`
+	Roles              Role   `json:"roles"`
+	Expires            string `json:"expires"`
+	InheritsUsersPerms bool   `json:"inherits_user_perms"`
+	ID                 string `json:"id"`
 }
 
 // TokensDefinition represents a  Tokens
@@ -27,22 +27,22 @@ type GetTokens struct {
 	Tokens []TokenDefinition `json:"tokens"`
 }
 
-// RoleDefinition represents a  Token UserId Role
-type RoleDefinition struct {
-	Organization OrganizationDefinition `json:"organization,omitempty"`
-	Role         string                 `json:"role,omitempty"`
+// Role represents a  Token UserId Role
+type Role struct {
+	Organization Organization `json:"organization,omitempty"`
+	Role         string       `json:"role,omitempty"`
 }
 
-// UserDefinition represents a  User
-type UserDefinition struct {
-	Email         string                   `json:"email"`
-	Firstname     string                   `json:"firstname"`
-	Fullname      string                   `json:"fullname"`
-	ID            string                   `json:"id"`
-	Lastname      string                   `json:"lastname"`
-	Organizations []OrganizationDefinition `json:"organizations"`
-	Roles         []RoleDefinition         `json:"roles"`
-	SSHPublicKeys []KeyDefinition          `json:"ssh_public_keys"`
+// User represents a  User
+type User struct {
+	Email         string          `json:"email"`
+	Firstname     string          `json:"firstname"`
+	Fullname      string          `json:"fullname"`
+	ID            string          `json:"id"`
+	Lastname      string          `json:"lastname"`
+	Organizations []Organization  `json:"organizations"`
+	Roles         []Role          `json:"roles"`
+	SSHPublicKeys []KeyDefinition `json:"ssh_public_keys"`
 }
 
 // KeyDefinition represents a key
@@ -53,7 +53,7 @@ type KeyDefinition struct {
 
 // UsersDefinition represents the response of a GET /user
 type UsersDefinition struct {
-	User UserDefinition `json:"user"`
+	User User `json:"user"`
 }
 
 // UserPatchSSHKeyDefinition represents a User Patch
@@ -62,7 +62,7 @@ type UserPatchSSHKeyDefinition struct {
 }
 
 // PatchUserSSHKey updates a user
-func (s *API) PatchUserSSHKey(UserID string, definition UserPatchSSHKeyDefinition) (*UserDefinition, error) {
+func (s *API) PatchUserSSHKey(UserID string, definition UserPatchSSHKeyDefinition) (*User, error) {
 	resp, err := s.PatchResponse(AccountAPI, fmt.Sprintf("users/%s", UserID), definition)
 	if err != nil {
 		return nil, err
@@ -103,7 +103,7 @@ func (s *API) GetUserID() (string, error) {
 }
 
 // GetUser returns the user
-func (s *API) GetUser() (*UserDefinition, error) {
+func (s *API) GetUser() (*User, error) {
 	userID, err := s.GetUserID()
 	if err != nil {
 		return nil, err

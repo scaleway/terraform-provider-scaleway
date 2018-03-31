@@ -1,7 +1,7 @@
 package scaleway
 
 import (
-	"fmt"
+	"errors"
 	"log"
 
 	"github.com/hashicorp/terraform/helper/schema"
@@ -53,7 +53,7 @@ func resourceScalewaySecurityGroupCreate(d *schema.ResourceData, m interface{}) 
 		EnableDefaultSecurity: d.Get("enable_default_security").(bool),
 	}
 
-	err := scaleway.PostSecurityGroup(req)
+	group, err := scaleway.CreateSecurityGroup(req)
 	if err != nil {
 		if serr, ok := err.(api.APIError); ok {
 			log.Printf("[DEBUG] Error creating security group: %q\n", serr.APIMessage)
@@ -62,20 +62,10 @@ func resourceScalewaySecurityGroupCreate(d *schema.ResourceData, m interface{}) 
 		return err
 	}
 
-	resp, err := scaleway.GetSecurityGroups()
-	if err != nil {
-		return err
-	}
-
-	for _, group := range resp.SecurityGroups {
-		if group.Name == req.Name {
-			d.SetId(group.ID)
-			break
-		}
-	}
+	d.SetId(group.ID)
 
 	if d.Id() == "" {
-		return fmt.Errorf("Failed to find created security group.")
+		return errors.New("failed to find created security group")
 	}
 
 	return resourceScalewaySecurityGroupRead(d, m)
@@ -83,7 +73,7 @@ func resourceScalewaySecurityGroupCreate(d *schema.ResourceData, m interface{}) 
 
 func resourceScalewaySecurityGroupRead(d *schema.ResourceData, m interface{}) error {
 	scaleway := m.(*Client).scaleway
-	resp, err := scaleway.GetASecurityGroup(d.Id())
+	group, err := scaleway.GetSecurityGroup(d.Id())
 
 	if err != nil {
 		if serr, ok := err.(api.APIError); ok {
@@ -98,9 +88,9 @@ func resourceScalewaySecurityGroupRead(d *schema.ResourceData, m interface{}) er
 		return err
 	}
 
-	d.Set("name", resp.SecurityGroups.Name)
-	d.Set("description", resp.SecurityGroups.Description)
-	d.Set("enable_default_security", resp.SecurityGroups.EnableDefaultSecurity)
+	d.Set("name", group.Name)
+	d.Set("description", group.Description)
+	d.Set("enable_default_security", group.EnableDefaultSecurity)
 
 	return nil
 }
@@ -117,7 +107,7 @@ func resourceScalewaySecurityGroupUpdate(d *schema.ResourceData, m interface{}) 
 		Description:  d.Get("description").(string),
 	}
 
-	if err := scaleway.PutSecurityGroup(req, d.Id()); err != nil {
+	if _, err := scaleway.UpdateSecurityGroup(req, d.Id()); err != nil {
 		log.Printf("[DEBUG] Error reading security group: %q\n", err)
 
 		return err

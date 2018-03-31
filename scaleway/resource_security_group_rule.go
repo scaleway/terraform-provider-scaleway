@@ -84,7 +84,7 @@ func resourceScalewaySecurityGroupRuleCreate(d *schema.ResourceData, m interface
 		DestPortFrom: d.Get("port").(int),
 	}
 
-	rule, err := scaleway.PostSecurityGroupRule(d.Get("security_group").(string), req)
+	rule, err := scaleway.CreateSecurityGroupRule(d.Get("security_group").(string), req)
 	if err != nil {
 		if serr, ok := err.(api.APIError); ok {
 			log.Printf("[DEBUG] Error creating Security Group Rule: %q\n", serr.APIMessage)
@@ -104,7 +104,7 @@ func resourceScalewaySecurityGroupRuleCreate(d *schema.ResourceData, m interface
 
 func resourceScalewaySecurityGroupRuleRead(d *schema.ResourceData, m interface{}) error {
 	scaleway := m.(*Client).scaleway
-	rule, err := scaleway.GetASecurityGroupRule(d.Get("security_group").(string), d.Id())
+	rule, err := scaleway.GetSecurityGroupRule(d.Get("security_group").(string), d.Id())
 
 	if err != nil {
 		if serr, ok := err.(api.APIError); ok {
@@ -119,11 +119,11 @@ func resourceScalewaySecurityGroupRuleRead(d *schema.ResourceData, m interface{}
 		return err
 	}
 
-	d.Set("action", rule.Rules.Action)
-	d.Set("direction", rule.Rules.Direction)
-	d.Set("ip_range", rule.Rules.IPRange)
-	d.Set("protocol", rule.Rules.Protocol)
-	d.Set("port", rule.Rules.DestPortFrom)
+	d.Set("action", rule.Action)
+	d.Set("direction", rule.Direction)
+	d.Set("ip_range", rule.IPRange)
+	d.Set("protocol", rule.Protocol)
+	d.Set("port", rule.DestPortFrom)
 
 	return nil
 }
@@ -142,7 +142,7 @@ func resourceScalewaySecurityGroupRuleUpdate(d *schema.ResourceData, m interface
 		DestPortFrom: d.Get("port").(int),
 	}
 
-	if err := scaleway.PutSecurityGroupRule(req, d.Get("security_group").(string), d.Id()); err != nil {
+	if _, err := scaleway.UpdateSecurityGroupRule(req, d.Get("security_group").(string), d.Id()); err != nil {
 		log.Printf("[DEBUG] error updating Security Group Rule: %q", err)
 
 		return err

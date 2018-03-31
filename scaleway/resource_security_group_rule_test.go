@@ -10,7 +10,7 @@ import (
 )
 
 func TestAccScalewaySecurityGroupRule_Basic(t *testing.T) {
-	var group api.SecurityGroups
+	var group api.SecurityGroup
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -40,7 +40,7 @@ func TestAccScalewaySecurityGroupRule_Basic(t *testing.T) {
 }
 
 func TestAccScalewaySecurityGroupRule_Count(t *testing.T) {
-	var group api.SecurityGroups
+	var group api.SecurityGroup
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -59,7 +59,7 @@ func TestAccScalewaySecurityGroupRule_Count(t *testing.T) {
 	})
 }
 
-func testAccCheckScalewaySecurityGroupsExists(n string, group *api.SecurityGroups) resource.TestCheckFunc {
+func testAccCheckScalewaySecurityGroupsExists(n string, group *api.SecurityGroup) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
@@ -71,14 +71,14 @@ func testAccCheckScalewaySecurityGroupsExists(n string, group *api.SecurityGroup
 		}
 
 		conn := testAccProvider.Meta().(*Client).scaleway
-		resp, err := conn.GetASecurityGroup(rs.Primary.ID)
+		resp, err := conn.GetSecurityGroup(rs.Primary.ID)
 
 		if err != nil {
 			return err
 		}
 
-		if resp.SecurityGroups.ID == rs.Primary.ID {
-			*group = resp.SecurityGroups
+		if resp.ID == rs.Primary.ID {
+			*group = *resp
 			return nil
 		}
 
@@ -100,8 +100,8 @@ func testAccCheckScalewaySecurityGroupRuleDestroy(s *terraform.State) error {
 		}
 
 		all_err := true
-		for _, group := range groups.SecurityGroups {
-			_, err := client.GetASecurityGroupRule(group.ID, rs.Primary.ID)
+		for _, group := range groups {
+			_, err := client.GetSecurityGroupRule(group.ID, rs.Primary.ID)
 			all_err = all_err && err != nil
 		}
 
@@ -113,7 +113,7 @@ func testAccCheckScalewaySecurityGroupRuleDestroy(s *terraform.State) error {
 	return nil
 }
 
-func testAccCheckScalewaySecurityGroupRuleAttributes(n string, group *api.SecurityGroups) resource.TestCheckFunc {
+func testAccCheckScalewaySecurityGroupRuleAttributes(n string, group *api.SecurityGroup) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
@@ -121,24 +121,24 @@ func testAccCheckScalewaySecurityGroupRuleAttributes(n string, group *api.Securi
 		}
 
 		client := testAccProvider.Meta().(*Client).scaleway
-		rule, err := client.GetASecurityGroupRule(group.ID, rs.Primary.ID)
+		rule, err := client.GetSecurityGroupRule(group.ID, rs.Primary.ID)
 		if err != nil {
 			return err
 		}
 
-		if rule.Rules.Action != "accept" {
+		if rule.Action != "accept" {
 			return fmt.Errorf("Wrong rule action")
 		}
-		if rule.Rules.Direction != "inbound" {
+		if rule.Direction != "inbound" {
 			return fmt.Errorf("wrong rule direction")
 		}
-		if rule.Rules.IPRange != "0.0.0.0/0" {
+		if rule.IPRange != "0.0.0.0/0" {
 			return fmt.Errorf("wrong rule IP Range")
 		}
-		if rule.Rules.Protocol != "TCP" {
+		if rule.Protocol != "TCP" {
 			return fmt.Errorf("wrong rule protocol")
 		}
-		if rule.Rules.DestPortFrom != 80 {
+		if rule.DestPortFrom != 80 {
 			return fmt.Errorf("Wrong port")
 		}
 
@@ -146,7 +146,7 @@ func testAccCheckScalewaySecurityGroupRuleAttributes(n string, group *api.Securi
 	}
 }
 
-func testAccCheckScalewaySecurityGroupRuleExists(n string, group *api.SecurityGroups) resource.TestCheckFunc {
+func testAccCheckScalewaySecurityGroupRuleExists(n string, group *api.SecurityGroup) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 
@@ -159,13 +159,13 @@ func testAccCheckScalewaySecurityGroupRuleExists(n string, group *api.SecurityGr
 		}
 
 		client := testAccProvider.Meta().(*Client).scaleway
-		rule, err := client.GetASecurityGroupRule(group.ID, rs.Primary.ID)
+		rule, err := client.GetSecurityGroupRule(group.ID, rs.Primary.ID)
 
 		if err != nil {
 			return err
 		}
 
-		if rule.Rules.ID != rs.Primary.ID {
+		if rule.ID != rs.Primary.ID {
 			return fmt.Errorf("Record not found")
 		}
 

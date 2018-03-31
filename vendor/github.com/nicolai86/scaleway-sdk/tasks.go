@@ -39,7 +39,7 @@ type Tasks struct {
 }
 
 // GetTasks get the list of tasks from the API
-func (s *API) GetTasks() (*[]Task, error) {
+func (s *API) GetTasks() ([]Task, error) {
 	query := url.Values{}
 	// TODO per_page=20&page=2
 	resp, err := s.GetResponsePaginate(s.computeAPI, "tasks", query)
@@ -57,7 +57,7 @@ func (s *API) GetTasks() (*[]Task, error) {
 	if err = json.Unmarshal(body, &tasks); err != nil {
 		return nil, err
 	}
-	return &tasks.Tasks, nil
+	return tasks.Tasks, nil
 }
 
 // GetTask fetches a specific task

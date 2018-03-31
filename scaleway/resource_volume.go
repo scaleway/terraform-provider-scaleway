@@ -66,7 +66,7 @@ func resourceScalewayVolumeCreate(d *schema.ResourceData, m interface{}) error {
 		Type:         d.Get("type").(string),
 		Organization: scaleway.Organization,
 	}
-	v, err := scaleway.PostVolume(req)
+	v, err := scaleway.CreateVolume(req)
 	if err != nil {
 		return fmt.Errorf("Error Creating volume: %q", err)
 	}
@@ -115,7 +115,7 @@ func resourceScalewayVolumeUpdate(d *schema.ResourceData, m interface{}) error {
 		req.Size = &size
 	}
 
-	scaleway.PutVolume(d.Id(), req)
+	scaleway.UpdateVolume(d.Id(), req)
 	return resourceScalewayVolumeRead(d, m)
 }
 
