@@ -1,5 +1,10 @@
 ## 1.2.1 (Unreleased)
 
+IMPROVEMENTS:
+
+* provider: update documentation ([#51](https://github.com/terraform-providers/terraform-provider-scaleway/pull/51),[#52](https://github.com/terraform-providers/terraform-provider-scaleway/pull/52))
+* provider: update scaleway sdk ([#53](https://github.com/terraform-providers/terraform-provider-scaleway/pull/53), [#54](https://github.com/terraform-providers/terraform-provider-scaleway/pull/54), [#55](https://github.com/terraform-providers/terraform-provider-scaleway/pull/55))
+
 BUG FIXES:
 
 * provider: fix crash when working over slow and unreliable network connection ([#49](https://github.com/terraform-providers/terraform-provider-scaleway/pull/49))
