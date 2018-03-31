@@ -30,7 +30,7 @@ func testSweepIP(region string) error {
 		return fmt.Errorf("Error describing IPs in Sweeper: %s", err)
 	}
 
-	for _, ip := range ips.IPS {
+	for _, ip := range ips {
 		if err := scaleway.DeleteIP(ip.ID); err != nil {
 			return fmt.Errorf("Error deleting ip in Sweeper: %s", err)
 		}
@@ -143,7 +143,7 @@ func testAccCheckScalewayIPExists(n string) resource.TestCheckFunc {
 			return err
 		}
 
-		if ip.IP.ID != rs.Primary.ID {
+		if ip.ID != rs.Primary.ID {
 			return fmt.Errorf("Record not found")
 		}
 
@@ -171,8 +171,8 @@ func testAccCheckScalewayIPAttachment(n string, check func(string) bool, msg str
 		}
 
 		var serverID = ""
-		if ip.IP.Server != nil {
-			serverID = ip.IP.Server.Identifier
+		if ip.Server != nil {
+			serverID = ip.Server.Identifier
 		}
 		if !check(serverID) {
 			return fmt.Errorf("IP check failed: %q", msg)

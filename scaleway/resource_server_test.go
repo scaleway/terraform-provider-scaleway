@@ -30,7 +30,7 @@ func testSweepServer(region string) error {
 		return fmt.Errorf("Error describing servers in Sweeper: %s", err)
 	}
 
-	for _, server := range *servers {
+	for _, server := range servers {
 		var err error
 		if server.State == "stopped" {
 			err = deleteStoppedServer(scaleway, &server)
@@ -179,7 +179,7 @@ func testAccCheckScalewayServerDestroy(s *terraform.State) error {
 
 func testAccCheckScalewayServerIPAttachmentAttributes(ipName, serverName string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-		ip, ok := s.RootModule().Resources[ipName]
+		rs, ok := s.RootModule().Resources[ipName]
 		if !ok {
 			return fmt.Errorf("Unknown scaleway_ip resource: %s", ipName)
 		}
@@ -191,12 +191,12 @@ func testAccCheckScalewayServerIPAttachmentAttributes(ipName, serverName string)
 
 		client := testAccProvider.Meta().(*Client).scaleway
 
-		res, err := client.GetIP(ip.Primary.ID)
+		ip, err := client.GetIP(rs.Primary.ID)
 		if err != nil {
 			return err
 		}
-		if res.IP.Server == nil || res.IP.Server.Identifier != server.Primary.ID {
-			return fmt.Errorf("IP %q is not attached to server %q", ip.Primary.ID, server.Primary.ID)
+		if ip.Server == nil || ip.Server.Identifier != server.Primary.ID {
+			return fmt.Errorf("IP %q is not attached to server %q", rs.Primary.ID, server.Primary.ID)
 		}
 
 		return nil

@@ -134,7 +134,7 @@ func attachIP(scaleway *api.API, serverID, IPAddress string) error {
 	if err != nil {
 		return err
 	}
-	for _, ip := range ips.IPS {
+	for _, ip := range ips {
 		if ip.Address == IPAddress {
 			log.Printf("[DEBUG] Attaching IP %q to server %q\n", ip.ID, serverID)
 			return scaleway.AttachIP(ip.ID, serverID)
@@ -150,7 +150,7 @@ func resourceScalewayServerCreate(d *schema.ResourceData, m interface{}) error {
 	defer mu.Unlock()
 
 	image := d.Get("image").(string)
-	var server = api.ServerDefinition{
+	var req = api.ServerDefinition{
 		Name:          d.Get("name").(string),
 		Image:         String(image),
 		Organization:  scaleway.Organization,
@@ -158,15 +158,15 @@ func resourceScalewayServerCreate(d *schema.ResourceData, m interface{}) error {
 		SecurityGroup: d.Get("security_group").(string),
 	}
 
-	server.DynamicIPRequired = Bool(d.Get("dynamic_ip_required").(bool))
-	server.CommercialType = d.Get("type").(string)
+	req.DynamicIPRequired = Bool(d.Get("dynamic_ip_required").(bool))
+	req.CommercialType = d.Get("type").(string)
 
 	if bootscript, ok := d.GetOk("bootscript"); ok {
-		server.Bootscript = String(bootscript.(string))
+		req.Bootscript = String(bootscript.(string))
 	}
 
 	if vs, ok := d.GetOk("volume"); ok {
-		server.Volumes = make(map[string]string)
+		req.Volumes = make(map[string]string)
 
 		volumes := vs.([]interface{})
 		for i, v := range volumes {
@@ -174,16 +174,16 @@ func resourceScalewayServerCreate(d *schema.ResourceData, m interface{}) error {
 			sizeInGB := uint64(volume["size_in_gb"].(int))
 
 			if sizeInGB > 0 {
-				v, err := scaleway.PostVolume(api.VolumeDefinition{
+				v, err := scaleway.CreateVolume(api.VolumeDefinition{
 					Size: sizeInGB * gb,
 					Type: volume["type"].(string),
-					Name: fmt.Sprintf("%s-%d", server.Name, sizeInGB),
+					Name: fmt.Sprintf("%s-%d", req.Name, sizeInGB),
 				})
 				if err != nil {
 					return err
 				}
 				volume["volume_id"] = v.Identifier
-				server.Volumes[fmt.Sprintf("%d", i+1)] = v.Identifier
+				req.Volumes[fmt.Sprintf("%d", i+1)] = v.Identifier
 			}
 			volumes[i] = volume
 		}
@@ -192,23 +192,23 @@ func resourceScalewayServerCreate(d *schema.ResourceData, m interface{}) error {
 
 	if raw, ok := d.GetOk("tags"); ok {
 		for _, tag := range raw.([]interface{}) {
-			server.Tags = append(server.Tags, tag.(string))
+			req.Tags = append(req.Tags, tag.(string))
 		}
 	}
 
-	id, err := scaleway.PostServer(server)
+	server, err := scaleway.CreateServer(req)
 	if err != nil {
 		return err
 	}
 
-	d.SetId(id)
+	d.SetId(server.Identifier)
 	if d.Get("state").(string) != "stopped" {
-		_, err = scaleway.PostServerAction(id, "poweron")
+		_, err = scaleway.PostServerAction(server.Identifier, "poweron")
 		if err != nil {
 			return err
 		}
 
-		err = waitForServerStartup(scaleway, id)
+		err = waitForServerStartup(scaleway, server.Identifier)
 
 		if v, ok := d.GetOk("public_ip"); ok {
 			if err := attachIP(scaleway, d.Id(), v.(string)); err != nil {
@@ -295,7 +295,7 @@ func resourceScalewayServerUpdate(d *schema.ResourceData, m interface{}) error {
 	}
 
 	if d.HasChange("security_group") {
-		req.SecurityGroup = &api.SecurityGroup{
+		req.SecurityGroup = &api.SecurityGroupRef{
 			Identifier: d.Get("security_group").(string),
 		}
 	}
@@ -310,7 +310,7 @@ func resourceScalewayServerUpdate(d *schema.ResourceData, m interface{}) error {
 			return err
 		}
 		if v, ok := d.GetOk("public_ip"); ok {
-			for _, ip := range ips.IPS {
+			for _, ip := range ips {
 				if ip.Address == v.(string) {
 					log.Printf("[DEBUG] Attaching IP %q to server %q\n", ip.ID, d.Id())
 					if err := scaleway.AttachIP(ip.ID, d.Id()); err != nil {
@@ -320,7 +320,7 @@ func resourceScalewayServerUpdate(d *schema.ResourceData, m interface{}) error {
 				}
 			}
 		} else {
-			for _, ip := range ips.IPS {
+			for _, ip := range ips {
 				if ip.Server != nil && ip.Server.Identifier == d.Id() {
 					log.Printf("[DEBUG] Detaching IP %q to server %q\n", ip.ID, d.Id())
 					if err := scaleway.DetachIP(ip.ID); err != nil {

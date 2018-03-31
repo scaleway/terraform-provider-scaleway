@@ -20,13 +20,13 @@ type SecurityGroupRule struct {
 	ID           string `json:"id"`
 }
 
-// GetSecurityGroupRules represents the response of a GET /_group/{groupID}/rules
-type GetSecurityGroupRules struct {
+// getSecurityGroupRules represents the response of a GET /_group/{groupID}/rules
+type getSecurityGroupRules struct {
 	Rules []SecurityGroupRule `json:"rules"`
 }
 
-// GetSecurityGroupRule represents the response of a GET /_group/{groupID}/rules/{ruleID}
-type GetSecurityGroupRule struct {
+// getSecurityGroupRule represents the response of a GET /_group/{groupID}/rules/{ruleID}
+type getSecurityGroupRule struct {
 	Rules SecurityGroupRule `json:"rule"`
 }
 
@@ -50,7 +50,7 @@ type UpdateSecurityGroupRule struct {
 }
 
 // GetSecurityGroupRules returns a GroupRules
-func (s *API) GetSecurityGroupRules(groupID string) (*GetSecurityGroupRules, error) {
+func (s *API) GetSecurityGroupRules(groupID string) ([]SecurityGroupRule, error) {
 	resp, err := s.GetResponsePaginate(s.computeAPI, fmt.Sprintf("security_groups/%s/rules", groupID), url.Values{})
 	if err != nil {
 		return nil, err
@@ -61,16 +61,16 @@ func (s *API) GetSecurityGroupRules(groupID string) (*GetSecurityGroupRules, err
 	if err != nil {
 		return nil, err
 	}
-	var GroupRules GetSecurityGroupRules
+	var data getSecurityGroupRules
 
-	if err = json.Unmarshal(body, &GroupRules); err != nil {
+	if err = json.Unmarshal(body, &data); err != nil {
 		return nil, err
 	}
-	return &GroupRules, nil
+	return data.Rules, nil
 }
 
-// GetAGroupRule returns a SecurityGroupRule
-func (s *API) GetASecurityGroupRule(groupID string, rulesID string) (*GetSecurityGroupRule, error) {
+// GetASecurityGroupRule returns a SecurityGroupRule
+func (s *API) GetSecurityGroupRule(groupID string, rulesID string) (*SecurityGroupRule, error) {
 	resp, err := s.GetResponsePaginate(s.computeAPI, fmt.Sprintf("security_groups/%s/rules/%s", groupID, rulesID), url.Values{})
 	if err != nil {
 		return nil, err
@@ -81,20 +81,20 @@ func (s *API) GetASecurityGroupRule(groupID string, rulesID string) (*GetSecurit
 	if err != nil {
 		return nil, err
 	}
-	var GroupRules GetSecurityGroupRule
+	var data getSecurityGroupRule
 
-	if err = json.Unmarshal(body, &GroupRules); err != nil {
+	if err = json.Unmarshal(body, &data); err != nil {
 		return nil, err
 	}
-	return &GroupRules, nil
+	return &data.Rules, nil
 }
 
 type postGroupRuleResponse struct {
 	SecurityGroupRule SecurityGroupRule `json:"rule"`
 }
 
-// PostGroupRule posts a rule on a server
-func (s *API) PostSecurityGroupRule(GroupID string, rules NewSecurityGroupRule) (*SecurityGroupRule, error) {
+// CreateSecurityGroupRule posts a rule on a server
+func (s *API) CreateSecurityGroupRule(GroupID string, rules NewSecurityGroupRule) (*SecurityGroupRule, error) {
 	resp, err := s.PostResponse(s.computeAPI, fmt.Sprintf("security_groups/%s/rules", GroupID), rules)
 	if err != nil {
 		return nil, err
@@ -110,19 +110,24 @@ func (s *API) PostSecurityGroupRule(GroupID string, rules NewSecurityGroupRule) 
 	return &res.SecurityGroupRule, err
 }
 
-// PutGroupRule updates a SecurityGroupRule
-func (s *API) PutSecurityGroupRule(rules UpdateSecurityGroupRule, GroupID, RuleID string) error {
+// UpdateSecurityGroupRule updates a SecurityGroupRule
+func (s *API) UpdateSecurityGroupRule(rules UpdateSecurityGroupRule, GroupID, RuleID string) (*SecurityGroupRule, error) {
 	resp, err := s.PutResponse(s.computeAPI, fmt.Sprintf("security_groups/%s/rules/%s", GroupID, RuleID), rules)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	defer resp.Body.Close()
 
-	_, err = s.handleHTTPError([]int{http.StatusOK}, resp)
-	return err
+	body, err := s.handleHTTPError([]int{http.StatusOK}, resp)
+	if err != nil {
+		return nil, err
+	}
+	var res postGroupRuleResponse
+	err = json.Unmarshal(body, &res)
+	return &res.SecurityGroupRule, err
 }
 
-// DeleteGroupRule deletes a SecurityGroupRule
+// DeleteSecurityGroupRule deletes a SecurityGroupRule
 func (s *API) DeleteSecurityGroupRule(GroupID, RuleID string) error {
 	resp, err := s.DeleteResponse(s.computeAPI, fmt.Sprintf("security_groups/%s/rules/%s", GroupID, RuleID))
 	if err != nil {

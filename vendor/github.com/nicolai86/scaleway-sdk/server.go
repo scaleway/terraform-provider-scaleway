@@ -58,7 +58,7 @@ type Server struct {
 	Volumes map[string]Volume `json:"volumes,omitempty"`
 
 	// SecurityGroup is the selected security group object
-	SecurityGroup SecurityGroup `json:"security_group,omitempty"`
+	SecurityGroup SecurityGroupRef `json:"security_group,omitempty"`
 
 	// Organization is the owner of the server
 	Organization string `json:"organization,omitempty"`
@@ -101,7 +101,7 @@ type ServerPatchDefinition struct {
 	Bootscript        *string            `json:"bootscript,omitempty"`
 	Hostname          *string            `json:"hostname,omitempty"`
 	Volumes           *map[string]Volume `json:"volumes,omitempty"`
-	SecurityGroup     *SecurityGroup     `json:"security_group,omitempty"`
+	SecurityGroup     *SecurityGroupRef  `json:"security_group,omitempty"`
 	Organization      *string            `json:"organization,omitempty"`
 	Tags              *[]string          `json:"tags,omitempty"`
 	IPV6              *IPV6              `json:"ipv6,omitempty"`
@@ -173,7 +173,7 @@ func (s *API) PatchServer(serverID string, definition ServerPatchDefinition) err
 }
 
 // GetServers gets the list of servers from the API
-func (s *API) GetServers(all bool, limit int) (*[]Server, error) {
+func (s *API) GetServers(all bool, limit int) ([]Server, error) {
 	query := url.Values{}
 	if !all {
 		query.Set("state", "running")
@@ -212,7 +212,7 @@ func (s *API) GetServers(all bool, limit int) (*[]Server, error) {
 		servers.Servers[i].DNSPublic = server.Identifier + URLPublicDNS
 		servers.Servers[i].DNSPrivate = server.Identifier + URLPrivateDNS
 	}
-	return &servers.Servers, nil
+	return servers.Servers, nil
 }
 
 // SortServers represents a wrapper to sort by CreationDate the servers
@@ -318,24 +318,24 @@ func (s *API) DeleteServer(serverID string) error {
 	return nil
 }
 
-// PostServer creates a new server
-func (s *API) PostServer(definition ServerDefinition) (string, error) {
+// CreateServer creates a new server
+func (s *API) CreateServer(definition ServerDefinition) (*Server, error) {
 	definition.Organization = s.Organization
 
 	resp, err := s.PostResponse(s.computeAPI, "servers", definition)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 	defer resp.Body.Close()
 
 	body, err := s.handleHTTPError([]int{http.StatusCreated}, resp)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
-	var server OneServer
+	var data OneServer
 
-	if err = json.Unmarshal(body, &server); err != nil {
-		return "", err
+	if err = json.Unmarshal(body, &data); err != nil {
+		return nil, err
 	}
-	return server.Server.Identifier, nil
+	return &data.Server, nil
 }

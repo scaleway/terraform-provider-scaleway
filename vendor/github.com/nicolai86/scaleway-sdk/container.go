@@ -14,25 +14,23 @@ type ContainerData struct {
 	Size         string `json:"size"`
 }
 
-// GetContainerDatas represents a list of  containers data (S3)
-type GetContainerDatas struct {
-	Container []ContainerData `json:"container"`
+type getContainerDatas struct {
+	Container []*ContainerData `json:"container"`
 }
 
 // Container represents a  container (S3)
 type Container struct {
-	OrganizationDefinition `json:"organization"`
-	Name                   string `json:"name"`
-	Size                   string `json:"size"`
+	Organization `json:"organization"`
+	Name         string `json:"name"`
+	Size         string `json:"size"`
 }
 
-// GetContainers represents a list of  containers (S3)
-type GetContainers struct {
-	Containers []Container `json:"containers"`
+type getContainers struct {
+	Containers []*Container `json:"containers"`
 }
 
 // GetContainers returns a GetContainers
-func (s *API) GetContainers() (*GetContainers, error) {
+func (s *API) GetContainers() ([]*Container, error) {
 	resp, err := s.GetResponsePaginate(s.computeAPI, "containers", url.Values{})
 	if err != nil {
 		return nil, err
@@ -43,16 +41,16 @@ func (s *API) GetContainers() (*GetContainers, error) {
 	if err != nil {
 		return nil, err
 	}
-	var containers GetContainers
+	var containers getContainers
 
 	if err = json.Unmarshal(body, &containers); err != nil {
 		return nil, err
 	}
-	return &containers, nil
+	return containers.Containers, nil
 }
 
 // GetContainerDatas returns a GetContainerDatas
-func (s *API) GetContainerDatas(container string) (*GetContainerDatas, error) {
+func (s *API) GetContainerDatas(container string) ([]*ContainerData, error) {
 	resp, err := s.GetResponsePaginate(s.computeAPI, fmt.Sprintf("containers/%s", container), url.Values{})
 	if err != nil {
 		return nil, err
@@ -63,10 +61,10 @@ func (s *API) GetContainerDatas(container string) (*GetContainerDatas, error) {
 	if err != nil {
 		return nil, err
 	}
-	var datas GetContainerDatas
+	var datas getContainerDatas
 
 	if err = json.Unmarshal(body, &datas); err != nil {
 		return nil, err
 	}
-	return &datas, nil
+	return datas.Container, nil
 }
