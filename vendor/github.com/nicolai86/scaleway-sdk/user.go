@@ -7,32 +7,6 @@ import (
 	"net/url"
 )
 
-// TokenDefinition represents a  Token
-type TokenDefinition struct {
-	UserID             string `json:"user_id"`
-	Description        string `json:"description,omitempty"`
-	Roles              Role   `json:"roles"`
-	Expires            string `json:"expires"`
-	InheritsUsersPerms bool   `json:"inherits_user_perms"`
-	ID                 string `json:"id"`
-}
-
-// TokensDefinition represents a  Tokens
-type TokensDefinition struct {
-	Token TokenDefinition `json:"token"`
-}
-
-// GetTokens represents a list of  Tokens
-type GetTokens struct {
-	Tokens []TokenDefinition `json:"tokens"`
-}
-
-// Role represents a  Token UserId Role
-type Role struct {
-	Organization Organization `json:"organization,omitempty"`
-	Role         string       `json:"role,omitempty"`
-}
-
 // User represents a  User
 type User struct {
 	Email         string          `json:"email"`
@@ -94,7 +68,7 @@ func (s *API) GetUserID() (string, error) {
 	if err != nil {
 		return "", err
 	}
-	var token TokensDefinition
+	var token getTokenResponse
 
 	if err = json.Unmarshal(body, &token); err != nil {
 		return "", err
