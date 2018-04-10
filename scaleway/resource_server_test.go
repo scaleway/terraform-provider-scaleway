@@ -3,6 +3,7 @@ package scaleway
 import (
 	"fmt"
 	"log"
+	"strings"
 	"testing"
 
 	"github.com/hashicorp/terraform/helper/resource"
@@ -159,6 +160,47 @@ func TestAccScalewayServer_SecurityGroup(t *testing.T) {
 	})
 }
 
+func TestAccScalewayServer_UserData(t *testing.T) {
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckScalewayServerDestroy,
+		Steps: []resource.TestStep{
+			resource.TestStep{
+				Config: testAccCheckScalewayServerConfig_UserDatas,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayServerExists("scaleway_server.base"),
+					resource.TestCheckResourceAttr("scaleway_server.base", "user_data.#", "2"),
+					resource.TestCheckResourceAttr("scaleway_server.base", "user_data.527074092.key", "app"),
+					resource.TestCheckResourceAttr("scaleway_server.base", "user_data.527074092.value", "lb"),
+					resource.TestCheckResourceAttr("scaleway_server.base", "user_data.2562481374.key", "roles"),
+					resource.TestCheckResourceAttr("scaleway_server.base", "user_data.2562481374.value", "ingress,egress"),
+				),
+			},
+			resource.TestStep{
+				Config: testAccCheckScalewayServerConfig_UserData,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayServerExists("scaleway_server.base"),
+					resource.TestCheckResourceAttr("scaleway_server.base", "user_data.#", "1"),
+					resource.TestCheckResourceAttr("scaleway_server.base", "user_data.2562481374.key", "roles"),
+					resource.TestCheckResourceAttr("scaleway_server.base", "user_data.2562481374.value", "ingress,egress"),
+				),
+			},
+			resource.TestStep{
+				Config: strings.Replace(testAccCheckScalewayServerConfig_UserDatas, "ingress,egress", "ingress", -1),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayServerExists("scaleway_server.base"),
+					resource.TestCheckResourceAttr("scaleway_server.base", "user_data.#", "2"),
+					resource.TestCheckResourceAttr("scaleway_server.base", "user_data.527074092.key", "app"),
+					resource.TestCheckResourceAttr("scaleway_server.base", "user_data.527074092.value", "lb"),
+					resource.TestCheckResourceAttr("scaleway_server.base", "user_data.2562481374.key", "roles"),
+					resource.TestCheckResourceAttr("scaleway_server.base", "user_data.2562481374.value", "ingress"),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckScalewayServerDestroy(s *terraform.State) error {
 	client := testAccProvider.Meta().(*Client).scaleway
 
@@ -309,6 +351,40 @@ resource "scaleway_server" "base" {
   image = "%s"
   type = "C1"
   tags = [ "terraform-test" ]
+}`, armImageIdentifier)
+
+var testAccCheckScalewayServerConfig_UserData = fmt.Sprintf(`
+resource "scaleway_server" "base" {
+  name = "test"
+  # ubuntu 14.04
+  image = "%s"
+  type = "C1"
+  tags = [ "terraform-test" ]
+  state = "stopped"
+
+  user_data {
+    key = "roles"
+    value = "ingress,egress"
+  }
+}`, armImageIdentifier)
+
+var testAccCheckScalewayServerConfig_UserDatas = fmt.Sprintf(`
+resource "scaleway_server" "base" {
+  name = "test"
+  # ubuntu 14.04
+  image = "%s"
+  type = "C1"
+  tags = [ "terraform-test" ]
+  state = "stopped"
+
+  user_data {
+    key = "roles"
+    value = "ingress,egress"
+  }
+  user_data {
+    key = "app"
+    value = "lb"
+  }
 }`, armImageIdentifier)
 
 var testAccCheckScalewayServerConfig_IPAttachment = fmt.Sprintf(`
