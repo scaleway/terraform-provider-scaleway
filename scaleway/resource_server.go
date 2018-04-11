@@ -2,7 +2,6 @@ package scaleway
 
 import (
 	"fmt"
-	"hash/fnv"
 	"log"
 
 	"github.com/hashicorp/terraform/helper/schema"
@@ -59,29 +58,6 @@ func resourceScalewayServer() *schema.Resource {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Description: "The security group the server is attached to",
-			},
-			"user_data": {
-				Type:     schema.TypeSet,
-				Optional: true,
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"key": {
-							Type:     schema.TypeString,
-							Required: true,
-						},
-						"value": {
-							Type:     schema.TypeString,
-							Required: true,
-						},
-					},
-				},
-				Set: func(val interface{}) int {
-					h := fnv.New32a()
-					userData := val.(map[string]interface{})
-					h.Write([]byte(userData["key"].(string)))
-					return int(h.Sum32())
-				},
-				Description: "User Data attached to the server on creation",
 			},
 			"volume": {
 				Type:     schema.TypeList,
@@ -227,17 +203,6 @@ func resourceScalewayServerCreate(d *schema.ResourceData, m interface{}) error {
 		return err
 	}
 
-	if val, ok := d.GetOk("user_data"); ok {
-		s := val.(*schema.Set)
-		for _, v := range s.List() {
-			data := v.(map[string]interface{})
-			err := scaleway.PatchUserdata(server.Identifier, data["key"].(string), []byte(data["value"].(string)), false)
-			if err != nil {
-				return err
-			}
-		}
-	}
-
 	d.SetId(server.Identifier)
 	if d.Get("state").(string) != "stopped" {
 		task, err := scaleway.PostServerAction(server.Identifier, "poweron")
@@ -293,26 +258,6 @@ func resourceScalewayServerRead(d *schema.ResourceData, m interface{}) error {
 	d.Set("state_detail", server.StateDetail)
 	d.Set("tags", server.Tags)
 
-	userDatas := []map[string]interface{}{}
-	keys, err := scaleway.GetUserdatas(d.Id(), false)
-	if err != nil {
-		return err
-	}
-	for _, key := range keys.UserData {
-		if key == sshHostFingerprints {
-			continue
-		}
-		data, err := scaleway.GetUserdata(d.Id(), key, false)
-		if err != nil {
-			return err
-		}
-		userDatas = append(userDatas, map[string]interface{}{
-			"key":   key,
-			"value": data.String(),
-		})
-	}
-	d.Set("user_data", userDatas)
-
 	d.SetConnInfo(map[string]string{
 		"type": "ssh",
 		"host": server.PublicAddress.IP,
@@ -359,40 +304,6 @@ func resourceScalewayServerUpdate(d *schema.ResourceData, m interface{}) error {
 
 	if err := scaleway.PatchServer(d.Id(), req); err != nil {
 		return fmt.Errorf("Failed patching scaleway server: %q", err)
-	}
-
-	if d.HasChange("user_data") {
-		remote, err := scaleway.GetUserdatas(d.Id(), false)
-		if err != nil {
-			return err
-		}
-
-		toDelete := []string{}
-		local := d.Get("user_data").(*schema.Set)
-		for _, key := range remote.UserData {
-			exists := false
-			for _, v := range local.List() {
-				exists = exists || v.(map[string]interface{})["key"] == key
-			}
-			if !exists {
-				toDelete = append(toDelete, key)
-			}
-		}
-		for _, key := range toDelete {
-			if err := scaleway.DeleteUserdata(d.Id(), key, false); err != nil {
-				return err
-			}
-		}
-
-		for _, v := range local.List() {
-			if err := scaleway.PatchUserdata(
-				d.Id(),
-				v.(map[string]interface{})["key"].(string),
-				[]byte(v.(map[string]interface{})["value"].(string)),
-				false); err != nil {
-				return err
-			}
-		}
 	}
 
 	if d.HasChange("public_ip") {
