@@ -1,11 +1,14 @@
 ## 1.3.0 (Unreleased)
 
+FEATURES:
+
+* **New Resource:** `scaleway_token` ([#56](https://github.com/terraform-providers/terraform-provider-scaleway/pull/56))
+* **New Resource:** `scaleway_user_data` ([#57](https://github.com/terraform-providers/terraform-provider-scaleway/pull/57))
+
 IMPROVEMENTS:
 
-* provider: add new scaleway_user_data resource ([#57](https://github.com/terraform-providers/terraform-provider-scaleway/pull/57))
 * provider: update documentation ([#51](https://github.com/terraform-providers/terraform-provider-scaleway/pull/51),[#52](https://github.com/terraform-providers/terraform-provider-scaleway/pull/52))
 * provider: update scaleway sdk ([#53](https://github.com/terraform-providers/terraform-provider-scaleway/pull/53), [#54](https://github.com/terraform-providers/terraform-provider-scaleway/pull/54), [#55](https://github.com/terraform-providers/terraform-provider-scaleway/pull/55))
-* provider: add new scaleway_token resource ([#56](https://github.com/terraform-providers/terraform-provider-scaleway/pull/56))
 
 BUG FIXES:
 
