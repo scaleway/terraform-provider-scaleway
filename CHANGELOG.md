@@ -1,4 +1,9 @@
 ## 1.4.0 (Unreleased)
+
+IMPROVEMENTS:
+
+* resource/scaleway_server: Update public_ip documentation ([#58](https://github.com/terraform-providers/terraform-provider-scaleway/pull/58))
+
 ## 1.3.0 (April 11, 2018)
 
 FEATURES:
