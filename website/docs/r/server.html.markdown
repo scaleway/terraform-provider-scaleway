@@ -37,6 +37,7 @@ The following arguments are supported:
 * `tags` - (Optional) list of tags for server
 * `enable_ipv6` - (Optional) enable ipv6
 * `dynamic_ip_required` - (Optional) make server publicly available
+* `public_ip` - (Optional) set a public ip previously created (a real ip is expected here, not its resource id)
 * `security_group` - (Optional) assign security group to server
 * `volume` - (Optional) attach additional volumes to your instance (see below)
 * `public_ipv6` - (Read Only) if `enable_ipv6` is set this contains the ipv6 address of your instance
