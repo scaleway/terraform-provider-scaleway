@@ -5,6 +5,7 @@ import (
 	"log"
 
 	"github.com/hashicorp/terraform/helper/schema"
+	"github.com/hashicorp/terraform/helper/validation"
 	api "github.com/nicolai86/scaleway-sdk"
 )
 
@@ -40,6 +41,17 @@ func resourceScalewayServer() *schema.Resource {
 				ForceNew:     true,
 				Description:  "The instance type of the server",
 				ValidateFunc: validateServerType,
+			},
+			"boot_type": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Computed:    true,
+				ForceNew:    true,
+				Description: "The boot_type of the server",
+				ValidateFunc: validation.StringInSlice([]string{
+					"bootscript",
+					"local",
+				}, false),
 			},
 			"bootscript": {
 				Type:        schema.TypeString,
@@ -159,6 +171,10 @@ func resourceScalewayServerCreate(d *schema.ResourceData, m interface{}) error {
 		EnableIPV6:    d.Get("enable_ipv6").(bool),
 		SecurityGroup: d.Get("security_group").(string),
 	}
+	bootType, ok := d.GetOk("boot_type")
+	if ok {
+		req.BootType = bootType.(string)
+	}
 
 	req.DynamicIPRequired = Bool(d.Get("dynamic_ip_required").(bool))
 	req.CommercialType = d.Get("type").(string)
@@ -249,6 +265,7 @@ func resourceScalewayServerRead(d *schema.ResourceData, m interface{}) error {
 	d.Set("enable_ipv6", server.EnableIPV6)
 	d.Set("private_ip", server.PrivateIP)
 	d.Set("public_ip", server.PublicAddress.IP)
+	d.Set("boot_type", server.BootType)
 
 	if server.EnableIPV6 && server.IPV6 != nil {
 		d.Set("public_ipv6", server.IPV6.Address)
