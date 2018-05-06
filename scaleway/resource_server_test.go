@@ -63,6 +63,8 @@ func TestAccScalewayServer_Basic(t *testing.T) {
 						"scaleway_server.base", "name", "test"),
 					resource.TestCheckResourceAttr(
 						"scaleway_server.base", "tags.0", "terraform-test"),
+					resource.TestCheckResourceAttr(
+						"scaleway_server.base", "boot_type", "bootscript"),
 				),
 			},
 			resource.TestStep{
@@ -75,6 +77,23 @@ func TestAccScalewayServer_Basic(t *testing.T) {
 				Config: testAccCheckScalewayServerConfig_IPDetachment,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayServerIPDetachmentAttributes("scaleway_server.base"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccScalewayServer_BootType(t *testing.T) {
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckScalewayServerDestroy,
+		Steps: []resource.TestStep{
+			resource.TestStep{
+				Config: testAccCheckScalewayServerConfig_LocalBoot,
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(
+						"scaleway_server.base", "boot_type", "local"),
 				),
 			},
 		},
@@ -301,6 +320,7 @@ func testAccCheckScalewayServerExists(n string) resource.TestCheckFunc {
 }
 
 var armImageIdentifier = "5faef9cd-ea9b-4a63-9171-9e26bec03dbc"
+var x86_64ImageIdentifier = "e20532c4-1fa0-4c97-992f-436b8d372c07"
 
 var testAccCheckScalewayServerConfig = fmt.Sprintf(`
 resource "scaleway_server" "base" {
@@ -310,6 +330,16 @@ resource "scaleway_server" "base" {
   type = "C1"
   tags = [ "terraform-test" ]
 }`, armImageIdentifier)
+
+var testAccCheckScalewayServerConfig_LocalBoot = fmt.Sprintf(`
+resource "scaleway_server" "base" {
+  name = "test"
+  # ubuntu 14.04
+  image = "%s"
+  type = "VC1S"
+  tags = [ "terraform-test" ]
+  boot_type = "local"
+}`, x86_64ImageIdentifier)
 
 var testAccCheckScalewayServerConfig_IPAttachment = fmt.Sprintf(`
 resource "scaleway_ip" "base" {}

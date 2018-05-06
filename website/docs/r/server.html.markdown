@@ -34,6 +34,7 @@ The following arguments are supported:
 * `image` - (Required) base image of server
 * `type` - (Required) type of server
 * `bootscript` - (Optional) server bootscript
+* `boot_type` - (Optional) the boot mechanism for this server. Possible values include `local` and `bootscript`
 * `tags` - (Optional) list of tags for server
 * `enable_ipv6` - (Optional) enable ipv6
 * `dynamic_ip_required` - (Optional) make server publicly available

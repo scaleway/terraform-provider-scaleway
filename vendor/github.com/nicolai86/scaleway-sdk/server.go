@@ -48,6 +48,9 @@ type Server struct {
 	// Bootscript is the unique identifier of the selected bootscript
 	Bootscript *Bootscript `json:"bootscript,omitempty"`
 
+	// BootType defines the type of boot. Can be local or bootscript
+	BootType string `json:"boot_type,omitempty"`
+
 	// Hostname represents the ServerName in a format compatible with unix's hostname
 	Hostname string `json:"hostname,omitempty"`
 
@@ -133,6 +136,9 @@ type ServerDefinition struct {
 
 	// CommercialType is the commercial type of the server (i.e: C1, C2[SML], VC1S)
 	CommercialType string `json:"commercial_type"`
+
+	// BootType defines the type of boot. Can be local or bootscript
+	BootType string `json:"boot_type,omitempty"`
 
 	PublicIP string `json:"public_ip,omitempty"`
 
