@@ -3,6 +3,7 @@
 IMPROVEMENTS:
 
 * resource/scaleway_server: Update public_ip documentation ([#58](https://github.com/terraform-providers/terraform-provider-scaleway/pull/58))
+* resource/scaleway_server: Add boot_type ([#59](https://github.com/terraform-providers/terraform-provider-scaleway/pull/59))
 
 ## 1.3.0 (April 11, 2018)
 
