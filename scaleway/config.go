@@ -84,6 +84,9 @@ func (c *Config) Client() (*Client, error) {
 			commercialServerTypes = availability.CommercialTypes()
 			sort.StringSlice(commercialServerTypes).Sort()
 		}
+		if os.Getenv("DISABLE_SCALEWAY_SERVER_TYPE_VALIDATION") != "" {
+			commercialServerTypes = commercialServerTypes[:0]
+		}
 	}
 	return &Client{api}, nil
 }
