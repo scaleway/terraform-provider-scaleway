@@ -1,4 +1,9 @@
-## 1.5.0 (Unreleased)
+## 1.4.1 (Unreleased)
+
+BUG FIXES:
+
+* resource/scaleway_server: fix server type validation ([#59](https://github.com/terraform-providers/terraform-provider-scaleway/pull/59))
+
 ## 1.4.0 (May 07, 2018)
 
 IMPROVEMENTS:
