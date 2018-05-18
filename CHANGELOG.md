@@ -2,7 +2,7 @@
 
 BUG FIXES:
 
-* resource/scaleway_server: fix server type validation ([#59](https://github.com/terraform-providers/terraform-provider-scaleway/pull/59))
+* resource/scaleway_server: fix server type validation ([#63](https://github.com/terraform-providers/terraform-provider-scaleway/pull/63))
 
 ## 1.4.0 (May 07, 2018)
 
