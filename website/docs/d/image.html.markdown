@@ -43,7 +43,7 @@ are exported:
 
 * `organization` - uuid of the organization owning this Image
 
-* `public` - is this a public bootscript
+* `public` - is this a public image
 
 * `creation_date` - date when image was created
 
