@@ -1,4 +1,9 @@
 ## 1.4.2 (Unreleased)
+
+IMPROVEMENTS:
+
+* provider: update documentation ([#68](https://github.com/terraform-providers/terraform-provider-scaleway/pull/68))
+
 ## 1.4.1 (May 18, 2018)
 
 BUG FIXES:
