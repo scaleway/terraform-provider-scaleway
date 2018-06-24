@@ -179,6 +179,20 @@ func resourceScalewayServerCreate(d *schema.ResourceData, m interface{}) error {
 	req.DynamicIPRequired = Bool(d.Get("dynamic_ip_required").(bool))
 	req.CommercialType = d.Get("type").(string)
 
+	availabilities, err := scaleway.GetServerAvailabilities()
+	if err != nil {
+		log.Printf("[DEBUG] Unable to fetch server availability; won't validate availability: %q\n", err.Error())
+	} else {
+		typeAvailability, ok := availabilities[req.CommercialType]
+		if !ok {
+			// this will most likely happen for new instance types
+			log.Printf("[DEBUG] no server availability for type %q. Ignoring\n", req.CommercialType)
+		}
+		if typeAvailability.Availability == api.InstanceTypeShortage {
+			return fmt.Errorf("InstanceType %s is currently out of stock", req.CommercialType)
+		}
+	}
+
 	if bootscript, ok := d.GetOk("bootscript"); ok {
 		req.Bootscript = String(bootscript.(string))
 	}
