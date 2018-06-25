@@ -2,7 +2,7 @@
 
 IMPROVEMENTS:
 
-* provider: update documentation ([#68](https://github.com/terraform-providers/terraform-provider-scaleway/pull/68))
+* provider: update documentation ([#68](https://github.com/terraform-providers/terraform-provider-scaleway/pull/68), [#70](https://github.com/terraform-providers/terraform-provider-scaleway/pull/70))
 
 ## 1.4.1 (May 18, 2018)
 
