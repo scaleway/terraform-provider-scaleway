@@ -23,8 +23,8 @@ import (
 	"golang.org/x/sync/errgroup"
 )
 
-// https://cp-par1..com/products/servers
-// https://cp-ams1..com/products/servers
+// https://cp-par1.scaleway.com/products/servers
+// https://cp-ams1.scaleway.com/products/servers
 // Default values
 var (
 	AccountAPI     = "https://account.scaleway.com/"
@@ -112,7 +112,7 @@ func New(organization, token, region string, options ...func(*API)) (*API, error
 
 		// internal
 		password:  "",
-		userAgent: "-sdk",
+		userAgent: "scaleway-sdk",
 	}
 	for _, option := range options {
 		option(s)

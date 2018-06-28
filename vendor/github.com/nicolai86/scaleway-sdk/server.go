@@ -6,8 +6,6 @@ import (
 	"net/http"
 	"net/url"
 	"time"
-
-	"golang.org/x/sync/errgroup"
 )
 
 // Server represents a  server
@@ -191,27 +189,9 @@ func (s *API) GetServers(all bool, limit int) ([]Server, error) {
 		panic("Not implemented yet")
 	}
 
-	var (
-		g    errgroup.Group
-		apis = []string{
-			ComputeAPIPar1,
-			ComputeAPIAms1,
-		}
-	)
-
-	serverChan := make(chan Servers, 2)
-	for _, api := range apis {
-		g.Go(s.fetchServers(api, query, serverChan))
-	}
-
-	if err := g.Wait(); err != nil {
+	servers, err := s.fetchServers(query)
+	if err != nil {
 		return nil, err
-	}
-	close(serverChan)
-	var servers Servers
-
-	for server := range serverChan {
-		servers.Servers = append(servers.Servers, server.Servers...)
 	}
 
 	for i, server := range servers.Servers {
@@ -288,26 +268,23 @@ func (s *API) PostServerAction(serverID, action string) (*Task, error) {
 	return &t.Task, err
 }
 
-func (s *API) fetchServers(api string, query url.Values, out chan<- Servers) func() error {
-	return func() error {
-		resp, err := s.GetResponsePaginate(api, "servers", query)
-		if err != nil {
-			return err
-		}
-		defer resp.Body.Close()
-
-		body, err := s.handleHTTPError([]int{http.StatusOK}, resp)
-		if err != nil {
-			return err
-		}
-		var servers Servers
-
-		if err = json.Unmarshal(body, &servers); err != nil {
-			return err
-		}
-		out <- servers
-		return nil
+func (s *API) fetchServers(query url.Values) (*Servers, error) {
+	resp, err := s.GetResponsePaginate(s.computeAPI, "servers", query)
+	if err != nil {
+		return nil, err
 	}
+	defer resp.Body.Close()
+
+	body, err := s.handleHTTPError([]int{http.StatusOK}, resp)
+	if err != nil {
+		return nil, err
+	}
+	var servers Servers
+
+	if err = json.Unmarshal(body, &servers); err != nil {
+		return nil, err
+	}
+	return &servers, nil
 }
 
 // DeleteServer deletes a server
