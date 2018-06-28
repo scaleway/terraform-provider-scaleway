@@ -6,7 +6,19 @@ import (
 	"io/ioutil"
 )
 
-type ServerAvailabilities map[string]interface{}
+type InstanceTypeAvailability string
+
+var (
+	InstanceTypeAvailable InstanceTypeAvailability = "available"
+	InstanceTypeScarce    InstanceTypeAvailability = "scarce"
+	InstanceTypeShortage  InstanceTypeAvailability = "shortage"
+)
+
+type ServerAvailability struct {
+	Availability InstanceTypeAvailability `json:"availability"`
+}
+
+type ServerAvailabilities map[string]ServerAvailability
 
 func (a ServerAvailabilities) CommercialTypes() []string {
 	types := []string{}
