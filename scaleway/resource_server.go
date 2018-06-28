@@ -160,9 +160,6 @@ func attachIP(scaleway *api.API, serverID, IPAddress string) error {
 func resourceScalewayServerCreate(d *schema.ResourceData, m interface{}) error {
 	scaleway := m.(*Client).scaleway
 
-	mu.Lock()
-	defer mu.Unlock()
-
 	image := d.Get("image").(string)
 	var req = api.ServerDefinition{
 		Name:          d.Get("name").(string),
@@ -228,14 +225,18 @@ func resourceScalewayServerCreate(d *schema.ResourceData, m interface{}) error {
 		}
 	}
 
+	mu.Lock()
 	server, err := scaleway.CreateServer(req)
+	mu.Unlock()
 	if err != nil {
 		return err
 	}
 
 	d.SetId(server.Identifier)
 	if d.Get("state").(string) != "stopped" {
+		mu.Lock()
 		task, err := scaleway.PostServerAction(server.Identifier, "poweron")
+		mu.Unlock()
 		if err != nil {
 			return err
 		}
@@ -300,9 +301,6 @@ func resourceScalewayServerRead(d *schema.ResourceData, m interface{}) error {
 func resourceScalewayServerUpdate(d *schema.ResourceData, m interface{}) error {
 	scaleway := m.(*Client).scaleway
 
-	mu.Lock()
-	defer mu.Unlock()
-
 	var req api.ServerPatchDefinition
 	if d.HasChange("name") {
 		name := d.Get("name").(string)
@@ -333,7 +331,11 @@ func resourceScalewayServerUpdate(d *schema.ResourceData, m interface{}) error {
 		}
 	}
 
-	if err := scaleway.PatchServer(d.Id(), req); err != nil {
+	mu.Lock()
+	err := scaleway.PatchServer(d.Id(), req)
+	mu.Unlock()
+
+	if err != nil {
 		return fmt.Errorf("Failed patching scaleway server: %q", err)
 	}
 
