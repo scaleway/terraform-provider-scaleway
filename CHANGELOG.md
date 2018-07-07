@@ -1,8 +1,12 @@
-## 1.6.0 (Unreleased)
+## 1.5.1 (Unreleased)
 
 IMPROVEMENTS:
 
 * provider: update documentation ([#75](https://github.com/terraform-providers/terraform-provider-scaleway/pull/75))
+
+BUG FIXES:
+
+* resource/scaleway_server & resource/scaleway_volume_attachment: race condition between startup & shutdown of servers ([#74](https://github.com/terraform-providers/terraform-provider-scaleway/pull/74))
 
 ## 1.5.0 (June 29, 2018)
 
