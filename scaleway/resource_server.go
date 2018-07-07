@@ -203,11 +203,13 @@ func resourceScalewayServerCreate(d *schema.ResourceData, m interface{}) error {
 			sizeInGB := uint64(volume["size_in_gb"].(int))
 
 			if sizeInGB > 0 {
+				mu.Lock()
 				v, err := scaleway.CreateVolume(api.VolumeDefinition{
 					Size: sizeInGB * gb,
 					Type: volume["type"].(string),
 					Name: fmt.Sprintf("%s-%d", req.Name, sizeInGB),
 				})
+				mu.Unlock()
 				if err != nil {
 					return err
 				}
@@ -259,7 +261,9 @@ func resourceScalewayServerCreate(d *schema.ResourceData, m interface{}) error {
 
 func resourceScalewayServerRead(d *schema.ResourceData, m interface{}) error {
 	scaleway := m.(*Client).scaleway
+	mu.Lock()
 	server, err := scaleway.GetServer(d.Id())
+	mu.Unlock()
 
 	if err != nil {
 		if serr, ok := err.(api.APIError); ok {
@@ -374,9 +378,9 @@ func resourceScalewayServerDelete(d *schema.ResourceData, m interface{}) error {
 	scaleway := m.(*Client).scaleway
 
 	mu.Lock()
-	defer mu.Unlock()
-
 	s, err := scaleway.GetServer(d.Id())
+	mu.Unlock()
+
 	if err != nil {
 		return err
 	}

@@ -47,7 +47,9 @@ func validateVolumeType(v interface{}, k string) (ws []string, errors []error) {
 
 // deleteRunningServer terminates the server and waits until it is removed.
 func deleteRunningServer(scaleway *api.API, server *api.Server) error {
+	mu.Lock()
 	task, err := scaleway.PostServerAction(server.Identifier, "terminate")
+	mu.Unlock()
 
 	if err != nil {
 		if serr, ok := err.(api.APIError); ok {
@@ -65,6 +67,8 @@ func deleteRunningServer(scaleway *api.API, server *api.Server) error {
 // deleteStoppedServer needs to cleanup attached root volumes. this is not done
 // automatically by Scaleway
 func deleteStoppedServer(scaleway *api.API, server *api.Server) error {
+	mu.Lock()
+	defer mu.Unlock()
 	if err := scaleway.DeleteServer(server.Identifier); err != nil {
 		return err
 	}
@@ -82,6 +86,9 @@ func waitForTaskCompletion(scaleway *api.API, taskID string) error {
 		Pending: []string{"pending", "started"},
 		Target:  []string{"success"},
 		Refresh: func() (interface{}, string, error) {
+			mu.Lock()
+			defer mu.Unlock()
+
 			task, err := scaleway.GetTask(taskID)
 			if err != nil {
 				return 42, "error", err
