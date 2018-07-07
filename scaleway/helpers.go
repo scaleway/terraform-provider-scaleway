@@ -3,6 +3,7 @@ package scaleway
 import (
 	"fmt"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/hashicorp/terraform/helper/resource"
@@ -45,8 +46,53 @@ func validateVolumeType(v interface{}, k string) (ws []string, errors []error) {
 	return
 }
 
+var waitForServer = map[string]*sync.WaitGroup{}
+
+func getWaitForServerLock(serverID string) *sync.WaitGroup {
+	mu.Lock()
+	defer mu.Unlock()
+	wg, ok := waitForServer[serverID]
+	if !ok {
+		wg = &sync.WaitGroup{}
+		waitForServer[serverID] = wg
+	}
+	return wg
+}
+
+func startServer(scaleway *api.API, server *api.Server) error {
+	wg := getWaitForServerLock(server.Identifier)
+	wg.Wait()
+
+	mu.Lock()
+	task, err := scaleway.PostServerAction(server.Identifier, "poweron")
+	mu.Unlock()
+
+	if err != nil {
+		return err
+	}
+
+	return waitForTaskCompletion(scaleway, task.Identifier, server.Identifier)
+}
+
+func stopServer(scaleway *api.API, server *api.Server) error {
+	wg := getWaitForServerLock(server.Identifier)
+	wg.Wait()
+
+	mu.Lock()
+	task, err := scaleway.PostServerAction(server.Identifier, "poweroff")
+	mu.Unlock()
+
+	if err != nil {
+		return err
+	}
+	return waitForTaskCompletion(scaleway, task.Identifier, server.Identifier)
+}
+
 // deleteRunningServer terminates the server and waits until it is removed.
 func deleteRunningServer(scaleway *api.API, server *api.Server) error {
+	wg := getWaitForServerLock(server.Identifier)
+	wg.Wait()
+
 	mu.Lock()
 	task, err := scaleway.PostServerAction(server.Identifier, "terminate")
 	mu.Unlock()
@@ -61,7 +107,7 @@ func deleteRunningServer(scaleway *api.API, server *api.Server) error {
 		return err
 	}
 
-	return waitForTaskCompletion(scaleway, task.Identifier)
+	return waitForTaskCompletion(scaleway, task.Identifier, server.Identifier)
 }
 
 // deleteStoppedServer needs to cleanup attached root volumes. this is not done
@@ -81,7 +127,20 @@ func deleteStoppedServer(scaleway *api.API, server *api.Server) error {
 	return nil
 }
 
-func waitForTaskCompletion(scaleway *api.API, taskID string) error {
+func waitForTaskCompletion(scaleway *api.API, taskID, serverID string) error {
+	wg := getWaitForServerLock(serverID)
+	wg.Wait()
+
+	mu.Lock()
+	wg.Add(1)
+	mu.Unlock()
+
+	defer func() {
+		mu.Lock()
+		wg.Done()
+		mu.Unlock()
+	}()
+
 	stateConf := &resource.StateChangeConf{
 		Pending: []string{"pending", "started"},
 		Target:  []string{"success"},
@@ -99,12 +158,17 @@ func waitForTaskCompletion(scaleway *api.API, taskID string) error {
 		MinTimeout: 10 * time.Second,
 		Delay:      15 * time.Second,
 	}
+
 	_, err := stateConf.WaitForState()
+
 	return err
 }
 
 func withStoppedServer(scaleway *api.API, serverID string, run func(*api.Server) error) error {
+	mu.Lock()
 	server, err := scaleway.GetServer(serverID)
+	mu.Unlock()
+
 	if err != nil {
 		return err
 	}
@@ -114,11 +178,8 @@ func withStoppedServer(scaleway *api.API, serverID string, run func(*api.Server)
 	if server.State != "stopped" {
 		startServerAgain = true
 
-		task, err := scaleway.PostServerAction(server.Identifier, "poweroff")
+		err := stopServer(scaleway, server)
 		if err != nil {
-			return err
-		}
-		if err := waitForTaskCompletion(scaleway, task.Identifier); err != nil {
 			return err
 		}
 	}
@@ -128,11 +189,8 @@ func withStoppedServer(scaleway *api.API, serverID string, run func(*api.Server)
 	}
 
 	if startServerAgain {
-		task, err := scaleway.PostServerAction(serverID, "poweron")
+		err := startServer(scaleway, server)
 		if err != nil {
-			return err
-		}
-		if err := waitForTaskCompletion(scaleway, task.Identifier); err != nil {
 			return err
 		}
 	}

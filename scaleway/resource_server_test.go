@@ -315,6 +315,10 @@ func testAccCheckScalewayServerExists(n string) resource.TestCheckFunc {
 			return fmt.Errorf("Record not found")
 		}
 
+		if server.State != "running" {
+			return fmt.Errorf("expected server to be running, but was %q", server.State)
+		}
+
 		return nil
 	}
 }

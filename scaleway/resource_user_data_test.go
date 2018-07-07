@@ -17,6 +17,7 @@ func TestAccScalewayUserData_Basic(t *testing.T) {
 			resource.TestStep{
 				Config: testAccCheckScalewayUserDataConfig,
 				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayServerExists("scaleway_server.base"),
 					testAccCheckScalewayUserDataExists("scaleway_user_data.base"),
 					resource.TestCheckResourceAttr("scaleway_user_data.base", "value", "supersecret"),
 					resource.TestCheckResourceAttr("scaleway_user_data.base", "key", "gcp_username"),
@@ -69,7 +70,6 @@ resource "scaleway_server" "base" {
   # ubuntu 14.04
   image = "%s"
   type = "C1"
-  state = "stopped"
 }
 
 resource "scaleway_user_data" "base" {

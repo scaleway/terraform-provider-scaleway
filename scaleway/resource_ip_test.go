@@ -79,6 +79,7 @@ func TestAccScalewayIP_Basic(t *testing.T) {
 			resource.TestStep{
 				Config: testAccCheckScalewayIPAttachConfig,
 				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayServerExists("scaleway_server.base"),
 					testAccCheckScalewayIPExists("scaleway_ip.base"),
 					testAccCheckScalewayIPAttachment("scaleway_ip.base", func(serverID string) bool {
 						return serverID != ""
@@ -204,7 +205,6 @@ resource "scaleway_server" "base" {
   # ubuntu 14.04
   image = "%s"
   type = "C1"
-  state = "stopped"
 }
 
 resource "scaleway_ip" "base" {
