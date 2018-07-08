@@ -1,4 +1,9 @@
 ## 1.6.0 (Unreleased)
+
+IMPROVEMENTS:
+
+* provider: update documentation ([#75](https://github.com/terraform-providers/terraform-provider-scaleway/pull/75))
+
 ## 1.5.0 (June 29, 2018)
 
 IMPROVEMENTS:
