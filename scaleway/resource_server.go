@@ -203,11 +203,13 @@ func resourceScalewayServerCreate(d *schema.ResourceData, m interface{}) error {
 			sizeInGB := uint64(volume["size_in_gb"].(int))
 
 			if sizeInGB > 0 {
+				mu.Lock()
 				v, err := scaleway.CreateVolume(api.VolumeDefinition{
 					Size: sizeInGB * gb,
 					Type: volume["type"].(string),
 					Name: fmt.Sprintf("%s-%d", req.Name, sizeInGB),
 				})
+				mu.Unlock()
 				if err != nil {
 					return err
 				}
@@ -234,14 +236,10 @@ func resourceScalewayServerCreate(d *schema.ResourceData, m interface{}) error {
 
 	d.SetId(server.Identifier)
 	if d.Get("state").(string) != "stopped" {
-		mu.Lock()
-		task, err := scaleway.PostServerAction(server.Identifier, "poweron")
-		mu.Unlock()
+		err := startServer(scaleway, server)
 		if err != nil {
 			return err
 		}
-
-		err = waitForTaskCompletion(scaleway, task.Identifier)
 
 		if v, ok := d.GetOk("public_ip"); ok {
 			if err := attachIP(scaleway, d.Id(), v.(string)); err != nil {
@@ -259,8 +257,8 @@ func resourceScalewayServerCreate(d *schema.ResourceData, m interface{}) error {
 
 func resourceScalewayServerRead(d *schema.ResourceData, m interface{}) error {
 	scaleway := m.(*Client).scaleway
-	server, err := scaleway.GetServer(d.Id())
 
+	server, err := scaleway.GetServer(d.Id())
 	if err != nil {
 		if serr, ok := err.(api.APIError); ok {
 			log.Printf("[DEBUG] Error reading server: %q\n", serr.APIMessage)
@@ -373,9 +371,6 @@ func resourceScalewayServerUpdate(d *schema.ResourceData, m interface{}) error {
 func resourceScalewayServerDelete(d *schema.ResourceData, m interface{}) error {
 	scaleway := m.(*Client).scaleway
 
-	mu.Lock()
-	defer mu.Unlock()
-
 	s, err := scaleway.GetServer(d.Id())
 	if err != nil {
 		return err
@@ -386,7 +381,6 @@ func resourceScalewayServerDelete(d *schema.ResourceData, m interface{}) error {
 	}
 
 	err = deleteRunningServer(scaleway, s)
-
 	if err == nil {
 		d.SetId("")
 	}

@@ -35,12 +35,12 @@ func resourceScalewayVolumeAttachment() *schema.Resource {
 var errVolumeAlreadyAttached = fmt.Errorf("Scaleway volume already attached")
 
 func resourceScalewayVolumeAttachmentCreate(d *schema.ResourceData, m interface{}) error {
-	mu.Lock()
-	defer mu.Unlock()
-
 	scaleway := m.(*Client).scaleway
 
+	mu.Lock()
 	vol, err := scaleway.GetVolume(d.Get("volume").(string))
+	mu.Unlock()
+
 	if err != nil {
 		return err
 	}
@@ -74,7 +74,9 @@ func resourceScalewayVolumeAttachmentCreate(d *schema.ResourceData, m interface{
 			var req = api.ServerPatchDefinition{
 				Volumes: &volumes,
 			}
+			mu.Lock()
 			err := scaleway.PatchServer(server.Identifier, req)
+			mu.Unlock()
 
 			if err == nil {
 				return nil
@@ -141,9 +143,6 @@ func resourceScalewayVolumeAttachmentRead(d *schema.ResourceData, m interface{})
 const serverWaitTimeout = 5 * time.Minute
 
 func resourceScalewayVolumeAttachmentDelete(d *schema.ResourceData, m interface{}) error {
-	mu.Lock()
-	defer mu.Unlock()
-
 	scaleway := m.(*Client).scaleway
 
 	if err := withStoppedServer(scaleway, d.Get("server").(string), func(server *api.Server) error {
@@ -171,7 +170,9 @@ func resourceScalewayVolumeAttachmentDelete(d *schema.ResourceData, m interface{
 			var req = api.ServerPatchDefinition{
 				Volumes: &volumes,
 			}
+			mu.Lock()
 			err := scaleway.PatchServer(server.Identifier, req)
+			mu.Unlock()
 
 			if err == nil {
 				return nil
