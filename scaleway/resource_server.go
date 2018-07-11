@@ -257,10 +257,8 @@ func resourceScalewayServerCreate(d *schema.ResourceData, m interface{}) error {
 
 func resourceScalewayServerRead(d *schema.ResourceData, m interface{}) error {
 	scaleway := m.(*Client).scaleway
-	mu.Lock()
-	server, err := scaleway.GetServer(d.Id())
-	mu.Unlock()
 
+	server, err := scaleway.GetServer(d.Id())
 	if err != nil {
 		if serr, ok := err.(api.APIError); ok {
 			log.Printf("[DEBUG] Error reading server: %q\n", serr.APIMessage)
@@ -373,10 +371,7 @@ func resourceScalewayServerUpdate(d *schema.ResourceData, m interface{}) error {
 func resourceScalewayServerDelete(d *schema.ResourceData, m interface{}) error {
 	scaleway := m.(*Client).scaleway
 
-	mu.Lock()
 	s, err := scaleway.GetServer(d.Id())
-	mu.Unlock()
-
 	if err != nil {
 		return err
 	}
