@@ -6,7 +6,7 @@ description: |-
   Manages Scaleway IPs.
 ---
 
-# scaleway\_ip
+# scaleway_ip
 
 Provides IPs for servers. This allows IPs to be created, updated and deleted.
 For additional details please refer to [API documentation](https://developer.scaleway.com/#ips).

@@ -6,7 +6,7 @@ description: |-
   Manages Scaleway Volumes.
 ---
 
-# scaleway\_volume
+# scaleway_volume
 
 Provides volumes. This allows volumes to be created, updated and deleted.
 For additional details please refer to [API documentation](https://developer.scaleway.com/#volumes).

@@ -6,7 +6,7 @@ description: |-
   Manages Scaleway Tokens.
 ---
 
-# scaleway\_token
+# scaleway_token
 
 Provides Tokens for scaleway API access. For additional details please refer to [API documentation](https://developer.scaleway.com/#tokens-tokens-post).
 

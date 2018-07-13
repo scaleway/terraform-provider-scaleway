@@ -6,7 +6,7 @@ description: |-
   Manages Scaleway servers.
 ---
 
-# scaleway\_server
+# scaleway_server
 
 Provides servers. This allows servers to be created, updated and deleted.
 For additional details please refer to [API documentation](https://developer.scaleway.com/#servers).
@@ -52,16 +52,16 @@ Field `name`, `type`, `tags`, `dynamic_ip_required`, `security_group` are editab
 You can attach additional volumes to your instance, which will share the lifetime
 of your `scaleway_server` resource.
 
-**Warning:** Using the `volume` attribute does not modify the System Volume provided default with every `scaleway_server` instance.
-Instead it adds additional volumes to the server instance.
+~> **Warning:** Using the `volume` attribute does not modify the System Volume provided default with every `scaleway_server` instance. Instead it adds additional volumes to the server instance.
 
-**Warning:** Some instance types require an additional volume to work. This includes for example *START-1M* and *VC1M*.
-If you run into this issue add an additional volume of the specified size.
+~> **Warning:** Some instance types require an additional volume to work. This includes for example *START-1M* and *VC1M*. If you run into this issue add an additional volume of the specified size.
 
 The `volume` mapping supports the following:
 
 * `type` - (Required) The type of volume. Can be `"l_ssd"`
 * `size_in_gb` - (Required) The size of the volume in gigabytes.
+
+
 ## Attributes Reference
 
 The following attributes are exported:

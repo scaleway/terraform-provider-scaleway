@@ -6,7 +6,7 @@ description: |-
   Manages Scaleway user SSH keys.
 ---
 
-# scaleway\_ssh\_key
+# scaleway_ssh_key
 
 Manages user SSH Keys to access servers provisioned on scaleway.
 For additional details please refer to [API documentation](https://developer.scaleway.com/#users-user-get).
