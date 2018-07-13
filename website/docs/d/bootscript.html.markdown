@@ -6,7 +6,7 @@ description: |-
   Get information on a Scaleway bootscript.
 ---
 
-# scaleway\_bootscript
+# scaleway_bootscript
 
 Use this data source to get the ID of a registered Bootscript for use with the
 `scaleway_server` resource.
@@ -46,4 +46,3 @@ are exported:
 * `initrd` - URL to initial ramdisk content
 
 * `kernel` - URL to used kernel
-
