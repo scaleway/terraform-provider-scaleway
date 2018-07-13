@@ -35,13 +35,14 @@ The following arguments are supported:
 * `name` - (Required) name of volume
 * `size_in_gb` - (Required) size of the volume in GB
 * `type` - (Required) type of volume
-* `server` - (Read Only) the `scaleway_server` instance which has this volume mounted right now
 
 ## Attributes Reference
 
 The following attributes are exported:
 
 * `id` - id of the new resource
+
+* `server` - (Read Only) the `scaleway_server` instance which has this volume mounted right now
 
 ## Import
 
