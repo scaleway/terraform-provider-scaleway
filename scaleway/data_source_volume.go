@@ -11,9 +11,6 @@ import (
 func dataSourceScalewayVolume() *schema.Resource {
 	return &schema.Resource{
 		Read: dataSourceScalewayVolumeRead,
-		Importer: &schema.ResourceImporter{
-			State: schema.ImportStatePassthrough,
-		},
 
 		Schema: map[string]*schema.Schema{
 			"name": {
