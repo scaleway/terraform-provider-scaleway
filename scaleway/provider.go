@@ -56,9 +56,10 @@ func Provider() terraform.ResourceProvider {
 		},
 
 		DataSourcesMap: map[string]*schema.Resource{
-			"scaleway_bootscript": dataSourceScalewayBootscript(),
-			"scaleway_image":      dataSourceScalewayImage(),
-			"scaleway_volume":     dataSourceScalewayVolume(),
+			"scaleway_bootscript":     dataSourceScalewayBootscript(),
+			"scaleway_image":          dataSourceScalewayImage(),
+			"scaleway_security_group": dataSourceScalewaySecurityGroup(),
+			"scaleway_volume":         dataSourceScalewayVolume(),
 		},
 
 		ConfigureFunc: providerConfigure,
