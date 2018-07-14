@@ -1,7 +1,7 @@
 ---
 layout: "scaleway"
 page_title: "Scaleway: volume"
-sidebar_current: "docs-scaleway-resource-volume"
+sidebar_current: "docs-scaleway-resource-volume-x"
 description: |-
   Manages Scaleway Volumes.
 ---

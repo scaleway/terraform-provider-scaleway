@@ -1,7 +1,7 @@
 ---
 layout: "scaleway"
 page_title: "Scaleway: volume attachment"
-sidebar_current: "docs-scaleway-resource-volume attachment"
+sidebar_current: "docs-scaleway-resource-volume-attachment"
 description: |-
   Manages Scaleway Volume attachments for servers.
 ---
