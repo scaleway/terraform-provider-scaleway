@@ -20,7 +20,7 @@ data "scaleway_security_group" "test" {
 
 ## Argument Reference
 
-* `name` - (Optional) Exact name of desired Security Group
+* `name` - (Required) Exact name of desired Security Group
 
 ## Attributes Reference
 
