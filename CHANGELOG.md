@@ -2,6 +2,7 @@
 
 FEATURES:
 
+* **New Data Source:** `scaleway_security_group` [GH-78]
 * **New Data Source:** `scaleway_volume` [GH-77]
 
 ## 1.5.1 (July 11, 2018)
