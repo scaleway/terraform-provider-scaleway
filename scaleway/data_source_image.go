@@ -2,7 +2,10 @@ package scaleway
 
 import (
 	"fmt"
+	"log"
 	"regexp"
+	"sort"
+	"time"
 
 	"github.com/hashicorp/terraform/helper/schema"
 	api "github.com/nicolai86/scaleway-sdk"
@@ -31,6 +34,13 @@ func dataSourceScalewayImage() *schema.Resource {
 				Required:    true,
 				ForceNew:    true,
 				Description: "architecture of the desired image",
+			},
+			"most_recent": {
+				Type:        schema.TypeBool,
+				Required:    false,
+				Default:     false,
+				Optional:    true,
+				Description: "select most recent image if multiple match",
 			},
 			// Computed values.
 			"organization": {
@@ -63,6 +73,11 @@ func scalewayImageAttributes(d *schema.ResourceData, img *api.Image) error {
 	return nil
 }
 
+type localImage struct {
+	api.MarketLocalImageDefinition
+	ModificationDate *time.Time
+}
+
 func dataSourceScalewayImageRead(d *schema.ResourceData, meta interface{}) error {
 	scaleway := meta.(*Client).scaleway
 
@@ -85,7 +100,7 @@ func dataSourceScalewayImageRead(d *schema.ResourceData, meta interface{}) error
 	if err != nil {
 		return err
 	}
-	images := []api.MarketLocalImageDefinition{}
+	images := []localImage{}
 	for _, image := range *imgs {
 		if !nameMatch(image) {
 			continue
@@ -94,13 +109,26 @@ func dataSourceScalewayImageRead(d *schema.ResourceData, meta interface{}) error
 		for _, v := range image.Versions {
 			for _, l := range v.LocalImages {
 				if l.Arch == d.Get("architecture").(string) && l.Zone == scaleway.Region {
-					images = append(images, l)
+					t, err := time.Parse(time.RFC3339, v.ModificationDate)
+					if err != nil {
+						log.Printf("[WARNING] could not parse modification date: %v", err.Error())
+					}
+					images = append(images, localImage{
+						MarketLocalImageDefinition: l,
+						ModificationDate:           &t,
+					})
 				}
 			}
 		}
 	}
 
-	if len(images) > 1 {
+	mostRecent := d.Get("most_recent").(bool)
+	sort.Slice(images, func(i, j int) bool {
+		return images[i].ModificationDate.Before(*images[j].ModificationDate)
+	})
+	log.Printf("[DEBUG] got %d images: %#v\n", len(images), images)
+
+	if len(images) > 1 && !mostRecent {
 		return fmt.Errorf("The query returned more than one result. Please refine your query.")
 	}
 	if len(images) == 0 {
