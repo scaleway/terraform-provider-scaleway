@@ -24,10 +24,11 @@ func dataSourceScalewayImage() *schema.Resource {
 				Description: "exact name of the desired image",
 			},
 			"name_filter": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				ForceNew:    true,
-				Description: "partial name of the desired image to filter with",
+				Type:          schema.TypeString,
+				Optional:      true,
+				ForceNew:      true,
+				Description:   "partial name of the desired image to filter with",
+				ConflictsWith: []string{"most_recent"},
 			},
 			"architecture": {
 				Type:        schema.TypeString,
@@ -36,11 +37,12 @@ func dataSourceScalewayImage() *schema.Resource {
 				Description: "architecture of the desired image",
 			},
 			"most_recent": {
-				Type:        schema.TypeBool,
-				Required:    false,
-				Default:     false,
-				Optional:    true,
-				Description: "select most recent image if multiple match",
+				Type:          schema.TypeBool,
+				Required:      false,
+				Default:       false,
+				Optional:      true,
+				Description:   "select most recent image if multiple match",
+				ConflictsWith: []string{"name_filter"},
 			},
 			// Computed values.
 			"organization": {
