@@ -46,6 +46,57 @@ func validateVolumeType(v interface{}, k string) (ws []string, errors []error) {
 	return
 }
 
+var allStates = []string{"starting", "running", "stopping", "stopped"}
+
+func waitForServerShutdown(scaleway *api.API, serverID string) error {
+	return waitForServerState(scaleway, serverID, "stopped", []string{"stopped", "stopping"})
+}
+
+func waitForServerStartup(scaleway *api.API, serverID string) error {
+	return waitForServerState(scaleway, serverID, "running", []string{"running", "starting"})
+}
+
+func waitForServerState(scaleway *api.API, serverID, targetState string, pendingStates []string) error {
+	wg := getWaitForServerLock(serverID)
+	wg.Wait()
+
+	mu.Lock()
+	wg.Add(1)
+	mu.Unlock()
+
+	defer func() {
+		mu.Lock()
+		wg.Done()
+		mu.Unlock()
+	}()
+
+	stateConf := &resource.StateChangeConf{
+		Pending: pendingStates,
+		Target:  []string{targetState},
+		Refresh: func() (interface{}, string, error) {
+			s, err := scaleway.GetServer(serverID)
+			if err == nil {
+				return 42, s.State, nil
+			}
+			if serr, ok := err.(api.APIError); ok {
+				if serr.StatusCode == 404 {
+					return 42, "stopped", nil
+				}
+			}
+			if s != nil {
+				return 42, s.State, err
+			}
+			return 42, "error", err
+		},
+		Timeout:    60 * time.Minute,
+		MinTimeout: 10 * time.Second,
+		Delay:      15 * time.Second,
+	}
+	_, err := stateConf.WaitForState()
+
+	return err
+}
+
 var waitForServer = map[string]*sync.WaitGroup{}
 
 func getWaitForServerLock(serverID string) *sync.WaitGroup {
@@ -93,9 +144,7 @@ func deleteRunningServer(scaleway *api.API, server *api.Server) error {
 	wg := getWaitForServerLock(server.Identifier)
 	wg.Wait()
 
-	mu.Lock()
-	task, err := scaleway.PostServerAction(server.Identifier, "terminate")
-	mu.Unlock()
+	_, err := scaleway.PostServerAction(server.Identifier, "terminate")
 
 	if err != nil {
 		if serr, ok := err.(api.APIError); ok {
@@ -107,7 +156,7 @@ func deleteRunningServer(scaleway *api.API, server *api.Server) error {
 		return err
 	}
 
-	return waitForTaskCompletion(scaleway, task.Identifier, server.Identifier)
+	return waitForServerShutdown(scaleway, server.Identifier)
 }
 
 // deleteStoppedServer needs to cleanup attached root volumes. this is not done
@@ -165,9 +214,10 @@ func waitForTaskCompletion(scaleway *api.API, taskID, serverID string) error {
 }
 
 func withStoppedServer(scaleway *api.API, serverID string, run func(*api.Server) error) error {
-	mu.Lock()
+	wg := getWaitForServerLock(serverID)
+	wg.Wait()
+
 	server, err := scaleway.GetServer(serverID)
-	mu.Unlock()
 
 	if err != nil {
 		return err
