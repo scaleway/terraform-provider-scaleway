@@ -40,8 +40,6 @@ func getSSHKeyFingerprint(key []byte) (string, error) {
 func resourceScalewaySSHKeyCreate(d *schema.ResourceData, m interface{}) error {
 	scaleway := m.(*Client).scaleway
 
-	mu.Lock()
-	defer mu.Unlock()
 	fingerprint, err := getSSHKeyFingerprint([]byte(d.Get("key").(string)))
 	if err != nil {
 		return err
@@ -106,9 +104,6 @@ func resourceScalewaySSHKeyRead(d *schema.ResourceData, m interface{}) error {
 
 func resourceScalewaySSHKeyDelete(d *schema.ResourceData, m interface{}) error {
 	scaleway := m.(*Client).scaleway
-
-	mu.Lock()
-	defer mu.Unlock()
 
 	user, err := scaleway.GetUser()
 	if err != nil {

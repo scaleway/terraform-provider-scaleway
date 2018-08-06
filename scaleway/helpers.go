@@ -114,29 +114,25 @@ func startServer(scaleway *api.API, server *api.Server) error {
 	wg := getWaitForServerLock(server.Identifier)
 	wg.Wait()
 
-	mu.Lock()
-	task, err := scaleway.PostServerAction(server.Identifier, "poweron")
-	mu.Unlock()
+	_, err := scaleway.PostServerAction(server.Identifier, "poweron")
 
 	if err != nil {
 		return err
 	}
 
-	return waitForTaskCompletion(scaleway, task.Identifier, server.Identifier)
+	return waitForServerStartup(scaleway, server.Identifier)
 }
 
 func stopServer(scaleway *api.API, server *api.Server) error {
 	wg := getWaitForServerLock(server.Identifier)
 	wg.Wait()
 
-	mu.Lock()
-	task, err := scaleway.PostServerAction(server.Identifier, "poweroff")
-	mu.Unlock()
+	_, err := scaleway.PostServerAction(server.Identifier, "poweroff")
 
 	if err != nil {
 		return err
 	}
-	return waitForTaskCompletion(scaleway, task.Identifier, server.Identifier)
+	return waitForServerShutdown(scaleway, server.Identifier)
 }
 
 // deleteRunningServer terminates the server and waits until it is removed.
@@ -176,43 +172,6 @@ func deleteStoppedServer(scaleway *api.API, server *api.Server) error {
 	return nil
 }
 
-func waitForTaskCompletion(scaleway *api.API, taskID, serverID string) error {
-	wg := getWaitForServerLock(serverID)
-	wg.Wait()
-
-	mu.Lock()
-	wg.Add(1)
-	mu.Unlock()
-
-	defer func() {
-		mu.Lock()
-		wg.Done()
-		mu.Unlock()
-	}()
-
-	stateConf := &resource.StateChangeConf{
-		Pending: []string{"pending", "started"},
-		Target:  []string{"success"},
-		Refresh: func() (interface{}, string, error) {
-			mu.Lock()
-			defer mu.Unlock()
-
-			task, err := scaleway.GetTask(taskID)
-			if err != nil {
-				return 42, "error", err
-			}
-			return 42, task.Status, nil
-		},
-		Timeout:    60 * time.Minute,
-		MinTimeout: 10 * time.Second,
-		Delay:      15 * time.Second,
-	}
-
-	_, err := stateConf.WaitForState()
-
-	return err
-}
-
 func withStoppedServer(scaleway *api.API, serverID string, run func(*api.Server) error) error {
 	wg := getWaitForServerLock(serverID)
 	wg.Wait()
@@ -224,7 +183,6 @@ func withStoppedServer(scaleway *api.API, serverID string, run func(*api.Server)
 	}
 
 	var startServerAgain = false
-
 	if server.State != "stopped" {
 		startServerAgain = true
 

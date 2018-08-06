@@ -56,7 +56,6 @@ func resourceScalewayToken() *schema.Resource {
 func resourceScalewayTokenCreate(d *schema.ResourceData, m interface{}) error {
 	scaleway := m.(*Client).scaleway
 
-	mu.Lock()
 	email := ""
 	if mail, ok := d.GetOk("email"); ok {
 		email = mail.(string)
@@ -73,7 +72,6 @@ func resourceScalewayTokenCreate(d *schema.ResourceData, m interface{}) error {
 		Password: d.Get("password").(string),
 		Expires:  d.Get("expires").(bool),
 	})
-	mu.Unlock()
 	if err != nil {
 		return err
 	}
@@ -113,9 +111,6 @@ func resourceScalewayTokenRead(d *schema.ResourceData, m interface{}) error {
 func resourceScalewayTokenUpdate(d *schema.ResourceData, m interface{}) error {
 	scaleway := m.(*Client).scaleway
 
-	mu.Lock()
-	defer mu.Unlock()
-
 	if d.HasChange("description") || d.HasChange("expires") {
 		_, err := scaleway.UpdateToken(&api.UpdateTokenRequest{
 			ID:          d.Id(),
@@ -132,9 +127,6 @@ func resourceScalewayTokenUpdate(d *schema.ResourceData, m interface{}) error {
 
 func resourceScalewayTokenDelete(d *schema.ResourceData, m interface{}) error {
 	scaleway := m.(*Client).scaleway
-
-	mu.Lock()
-	defer mu.Unlock()
 
 	err := scaleway.DeleteToken(d.Id())
 	if err != nil {

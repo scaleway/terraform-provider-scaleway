@@ -43,7 +43,6 @@ func resourceScalewayUserData() *schema.Resource {
 func resourceScalewayUserDataCreate(d *schema.ResourceData, m interface{}) error {
 	scaleway := m.(*Client).scaleway
 
-	mu.Lock()
 	if err := scaleway.PatchUserdata(
 		d.Get("server").(string),
 		d.Get("key").(string),
@@ -51,7 +50,6 @@ func resourceScalewayUserDataCreate(d *schema.ResourceData, m interface{}) error
 		false); err != nil {
 		return err
 	}
-	mu.Unlock()
 
 	d.SetId(fmt.Sprintf("userdata-%s-%s", d.Get("server").(string), d.Get("key").(string)))
 	return resourceScalewayUserDataRead(d, m)
@@ -89,7 +87,6 @@ func resourceScalewayUserDataRead(d *schema.ResourceData, m interface{}) error {
 func resourceScalewayUserDataUpdate(d *schema.ResourceData, m interface{}) error {
 	scaleway := m.(*Client).scaleway
 
-	mu.Lock()
 	if err := scaleway.PatchUserdata(
 		d.Get("server").(string),
 		d.Get("key").(string),
@@ -97,16 +94,12 @@ func resourceScalewayUserDataUpdate(d *schema.ResourceData, m interface{}) error
 		false); err != nil {
 		return err
 	}
-	mu.Unlock()
 
 	return resourceScalewayUserDataRead(d, m)
 }
 
 func resourceScalewayUserDataDelete(d *schema.ResourceData, m interface{}) error {
 	scaleway := m.(*Client).scaleway
-
-	mu.Lock()
-	defer mu.Unlock()
 
 	err := scaleway.DeleteUserdata(
 		d.Get("server").(string),

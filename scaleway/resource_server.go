@@ -203,13 +203,11 @@ func resourceScalewayServerCreate(d *schema.ResourceData, m interface{}) error {
 			sizeInGB := uint64(volume["size_in_gb"].(int))
 
 			if sizeInGB > 0 {
-				mu.Lock()
 				v, err := scaleway.CreateVolume(api.VolumeDefinition{
 					Size: sizeInGB * gb,
 					Type: volume["type"].(string),
 					Name: fmt.Sprintf("%s-%d", req.Name, sizeInGB),
 				})
-				mu.Unlock()
 				if err != nil {
 					return err
 				}
@@ -227,9 +225,7 @@ func resourceScalewayServerCreate(d *schema.ResourceData, m interface{}) error {
 		}
 	}
 
-	mu.Lock()
 	server, err := scaleway.CreateServer(req)
-	mu.Unlock()
 	if err != nil {
 		return err
 	}
@@ -329,9 +325,7 @@ func resourceScalewayServerUpdate(d *schema.ResourceData, m interface{}) error {
 		}
 	}
 
-	mu.Lock()
 	err := scaleway.PatchServer(d.Id(), req)
-	mu.Unlock()
 
 	if err != nil {
 		return fmt.Errorf("Failed patching scaleway server: %q", err)
