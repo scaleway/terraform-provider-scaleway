@@ -38,8 +38,6 @@ func dataSourceScalewayImage() *schema.Resource {
 			},
 			"most_recent": {
 				Type:          schema.TypeBool,
-				Required:      false,
-				Default:       false,
 				Optional:      true,
 				Description:   "select most recent image if multiple match",
 				ConflictsWith: []string{"name_filter"},
