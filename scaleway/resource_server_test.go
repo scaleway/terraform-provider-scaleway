@@ -344,7 +344,7 @@ resource "scaleway_server" "base" {
 
   image = "${data.scaleway_image.ubuntu.id}"
   type = "C1"
-  tags = [ "terraform-test" ]
+  tags = [ "terraform-test", "xenial" ]
 }`
 
 var testAccCheckScalewayServerConfig = fmt.Sprintf(`
@@ -362,7 +362,7 @@ resource "scaleway_server" "base" {
   # ubuntu 14.04
   image = "%s"
   type = "VC1S"
-  tags = [ "terraform-test" ]
+  tags = [ "terraform-test", "local_boot" ]
   boot_type = "local"
 }`, x86_64ImageIdentifier)
 
@@ -374,7 +374,7 @@ resource "scaleway_server" "base" {
   # ubuntu 14.04
   image = "%s"
   type = "C1"
-  tags = [ "terraform-test" ]
+  tags = [ "terraform-test", "scaleway_ip" ]
   public_ip = "${scaleway_ip.base.ip}"
 }`, armImageIdentifier)
 
@@ -393,7 +393,7 @@ resource "scaleway_server" "base" {
   # ubuntu 14.04
   image = "%s"
   type = "C1"
-  tags = [ "terraform-test" ]
+  tags = [ "terraform-test", "inline-images" ]
 
   volume {
     size_in_gb = 20
@@ -427,7 +427,7 @@ resource "scaleway_server" "base" {
   # ubuntu 14.04
   image = "%s"
   type = "C1"
-  tags = [ "terraform-test" ]
+  tags = [ "terraform-test", "security_groups.blue" ]
   security_group = "${scaleway_security_group.blue.id}"
 }`, armImageIdentifier)
 
@@ -447,6 +447,6 @@ resource "scaleway_server" "base" {
   # ubuntu 14.04
   image = "%s"
   type = "C1"
-  tags = [ "terraform-test" ]
+  tags = [ "terraform-test", "security_groups.red" ]
   security_group = "${scaleway_security_group.red.id}"
 }`, armImageIdentifier)
