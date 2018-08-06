@@ -10,6 +10,10 @@ import (
 // Token represents a  Token
 type Token struct {
 	UserID             string `json:"user_id"`
+	AccessKey          string `json:"access_key"`
+	SecretKey          string `json:"secret_key"`
+	Category           string `json:"category"`
+	CreationIP         string `json:"creation_ip"`
 	Description        string `json:"description,omitempty"`
 	Roles              Role   `json:"roles"`
 	Expires            string `json:"expires"`
@@ -99,6 +103,7 @@ func (s *API) UpdateToken(req *UpdateTokenRequest) (*Token, error) {
 	if err = json.Unmarshal(body, &data); err != nil {
 		return nil, err
 	}
+	data.Token.ID = req.ID
 	return &data.Token, nil
 }
 
@@ -119,6 +124,7 @@ func (s *API) GetToken(id string) (*Token, error) {
 	if err = json.Unmarshal(body, &data); err != nil {
 		return nil, err
 	}
+	data.Token.ID = id
 	return &data.Token, nil
 }
 
