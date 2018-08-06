@@ -36,6 +36,7 @@ func resourceScalewayToken() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The secret_key.",
+				Sensitive:   true,
 			},
 			"creation_ip": {
 				Type:        schema.TypeString,
