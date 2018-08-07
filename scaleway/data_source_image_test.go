@@ -27,6 +27,25 @@ func TestAccScalewayDataSourceImage_Basic(t *testing.T) {
 	})
 }
 
+func TestAccScalewayDataSourceImage_MostRecent(t *testing.T) {
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { testAccPreCheck(t) },
+		Providers: testAccProviders,
+		Steps: []resource.TestStep{
+			resource.TestStep{
+				Config: testAccCheckScalewayImageConfig_mostRecent,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckImageID("data.scaleway_image.ubuntu"),
+					resource.TestCheckResourceAttr("data.scaleway_image.ubuntu", "architecture", "arm"),
+					resource.TestCheckResourceAttr("data.scaleway_image.ubuntu", "public", "true"),
+					resource.TestCheckResourceAttrSet("data.scaleway_image.ubuntu", "organization"),
+					resource.TestCheckResourceAttrSet("data.scaleway_image.ubuntu", "creation_date"),
+				),
+			},
+		},
+	})
+}
+
 func TestAccScalewayDataSourceImage_Filtered(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
@@ -73,6 +92,14 @@ const testAccCheckScalewayImageConfig = `
 data "scaleway_image" "ubuntu" {
   name = "Ubuntu Precise"
   architecture = "arm"
+}
+`
+
+const testAccCheckScalewayImageConfig_mostRecent = `
+data "scaleway_image" "ubuntu" {
+  name = "Ubuntu Xenial"
+  architecture = "arm"
+  most_recent = true
 }
 `
 

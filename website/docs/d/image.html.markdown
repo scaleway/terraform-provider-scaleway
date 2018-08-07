@@ -34,6 +34,8 @@ resource "scaleway_server" "base" {
 
 * `name` - (Optional) Exact name of desired Image
 
+* `most_recent` - (Optional) Return most recent image if multiple exist. Can not be used together with name_filter.
+
 ## Attributes Reference
 
 `id` is set to the ID of the found Image. In addition, the following attributes
