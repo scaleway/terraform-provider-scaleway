@@ -27,6 +27,22 @@ func resourceScalewayToken() *schema.Resource {
 				Computed:    true,
 				Description: "The userid of the associated user.",
 			},
+			"access_key": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The access_key.",
+			},
+			"secret_key": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The secret_key.",
+				Sensitive:   true,
+			},
+			"creation_ip": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The ip used to create the key.",
+			},
 			"description": {
 				Type:        schema.TypeString,
 				Optional:    true,
@@ -99,6 +115,9 @@ func resourceScalewayTokenRead(d *schema.ResourceData, m interface{}) error {
 	d.Set("expiration_date", token.Expires)
 	d.Set("expires", token.Expires != "")
 	d.Set("user_id", token.UserID)
+	d.Set("creation_ip", token.CreationIP)
+	d.Set("access_key", token.AccessKey)
+	d.Set("secret_key", token.SecretKey)
 	user, err := scaleway.GetUser()
 	if err != nil {
 		return err

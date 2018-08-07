@@ -53,6 +53,9 @@ func TestAccScalewayToken_Basic(t *testing.T) {
 						"scaleway_token.base", "description", "just a test"),
 					resource.TestCheckResourceAttr(
 						"scaleway_token.base", "expires", "false"),
+					resource.TestCheckResourceAttrSet("scaleway_token.base", "access_key"),
+					resource.TestCheckResourceAttrSet("scaleway_token.base", "secret_key"),
+					resource.TestCheckResourceAttrSet("scaleway_token.base", "creation_ip"),
 				),
 			},
 			resource.TestStep{
@@ -129,7 +132,7 @@ func testAccCheckScalewayTokenExists(n string) resource.TestCheckFunc {
 		}
 
 		if token.ID != rs.Primary.ID {
-			return fmt.Errorf("Record not found")
+			return fmt.Errorf("Expected %q, got %q", rs.Primary.ID, token.ID)
 		}
 
 		return nil
