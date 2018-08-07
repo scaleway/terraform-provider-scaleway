@@ -4,6 +4,11 @@ FEATURES:
 
 * **New Data Source:** `scaleway_security_group` [GH-78]
 * **New Data Source:** `scaleway_volume` [GH-77]
+* resource/scaleway_image: support filtering by most recently created image ([#82](https://github.com/terraform-providers/terraform-provider-scaleway/pull/82))
+
+BUG FIXES:
+
+* resource/scaleway_token: fix compatability to changes in Scaleway API ([#86](https://github.com/terraform-providers/terraform-provider-scaleway/pull/86))
 
 ## 1.5.1 (July 11, 2018)
 
