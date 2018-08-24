@@ -9,6 +9,7 @@ FEATURES:
 BUG FIXES:
 
 * resource/scaleway_token: fix compatability to changes in Scaleway API ([#86](https://github.com/terraform-providers/terraform-provider-scaleway/pull/86))
+* resource/server: fix issue identifying restarts properly ([#87](https://github.com/terraform-providers/terraform-provider-scaleway/pull/87))
 
 ## 1.5.1 (July 11, 2018)
 
