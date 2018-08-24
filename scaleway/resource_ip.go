@@ -41,9 +41,7 @@ func resourceScalewayIP() *schema.Resource {
 func resourceScalewayIPCreate(d *schema.ResourceData, m interface{}) error {
 	scaleway := m.(*Client).scaleway
 
-	mu.Lock()
 	ip, err := scaleway.CreateIP()
-	mu.Unlock()
 	if err != nil {
 		return err
 	}
@@ -81,9 +79,6 @@ func resourceScalewayIPRead(d *schema.ResourceData, m interface{}) error {
 func resourceScalewayIPUpdate(d *schema.ResourceData, m interface{}) error {
 	scaleway := m.(*Client).scaleway
 
-	mu.Lock()
-	defer mu.Unlock()
-
 	if d.HasChange("reverse") {
 		log.Printf("[DEBUG] Updating IP %q reverse to %q\n", d.Id(), d.Get("reverse").(string))
 		ip, err := scaleway.UpdateIP(api.UpdateIPRequest{
@@ -117,9 +112,6 @@ func resourceScalewayIPUpdate(d *schema.ResourceData, m interface{}) error {
 
 func resourceScalewayIPDelete(d *schema.ResourceData, m interface{}) error {
 	scaleway := m.(*Client).scaleway
-
-	mu.Lock()
-	defer mu.Unlock()
 
 	err := scaleway.DeleteIP(d.Id())
 	if err != nil {

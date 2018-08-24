@@ -70,6 +70,8 @@ resource "scaleway_server" "base" {
   # ubuntu 14.04
   image = "%s"
   type = "C1"
+
+  tags = [ "terraform-test", "user-data" ]
 }
 
 resource "scaleway_user_data" "base" {

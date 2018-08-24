@@ -77,6 +77,8 @@ resource "scaleway_server" "base" {
   # ubuntu 14.04
   image = "%s"
   type = "C1"
+
+  tags = [ "terraform-test", "external-volume-attachment" ]
 }
 
 resource "scaleway_volume" "test" {

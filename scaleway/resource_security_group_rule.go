@@ -73,9 +73,6 @@ func resourceScalewaySecurityGroupRule() *schema.Resource {
 func resourceScalewaySecurityGroupRuleCreate(d *schema.ResourceData, m interface{}) error {
 	scaleway := m.(*Client).scaleway
 
-	mu.Lock()
-	defer mu.Unlock()
-
 	req := api.NewSecurityGroupRule{
 		Action:       d.Get("action").(string),
 		Direction:    d.Get("direction").(string),
@@ -131,9 +128,6 @@ func resourceScalewaySecurityGroupRuleRead(d *schema.ResourceData, m interface{}
 func resourceScalewaySecurityGroupRuleUpdate(d *schema.ResourceData, m interface{}) error {
 	scaleway := m.(*Client).scaleway
 
-	mu.Lock()
-	defer mu.Unlock()
-
 	var req = api.UpdateSecurityGroupRule{
 		Action:       d.Get("action").(string),
 		Direction:    d.Get("direction").(string),
@@ -153,9 +147,6 @@ func resourceScalewaySecurityGroupRuleUpdate(d *schema.ResourceData, m interface
 
 func resourceScalewaySecurityGroupRuleDelete(d *schema.ResourceData, m interface{}) error {
 	scaleway := m.(*Client).scaleway
-
-	mu.Lock()
-	defer mu.Unlock()
 
 	err := scaleway.DeleteSecurityGroupRule(d.Get("security_group").(string), d.Id())
 	if err != nil {
