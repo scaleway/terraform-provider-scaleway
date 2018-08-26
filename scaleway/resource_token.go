@@ -93,6 +93,9 @@ func resourceScalewayTokenCreate(d *schema.ResourceData, m interface{}) error {
 	}
 
 	d.SetId(token.ID)
+	// the secret_key is not present in read operations
+	d.Set("secret_key", token.SecretKey)
+
 	return resourceScalewayTokenUpdate(d, m)
 }
 
@@ -115,7 +118,10 @@ func resourceScalewayTokenRead(d *schema.ResourceData, m interface{}) error {
 	d.Set("user_id", token.UserID)
 	d.Set("creation_ip", token.CreationIP)
 	d.Set("access_key", token.AccessKey)
-	d.Set("secret_key", token.SecretKey)
+	// this is compatibilty to old tokens: the secret key is the id
+	if d.Get("secret_key") == "" {
+		d.Set("secret_key", token.ID)
+	}
 	user, err := scaleway.GetUser()
 	if err != nil {
 		return err
