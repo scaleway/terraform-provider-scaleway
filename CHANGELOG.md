@@ -1,9 +1,9 @@
-## 1.6.0 (Unreleased)
+## 1.6.0 (August 28, 2018)
 
 FEATURES:
 
-* **New Data Source:** `scaleway_security_group` [GH-78]
-* **New Data Source:** `scaleway_volume` [GH-77]
+* **New Data Source:** `scaleway_security_group` ([#78](https://github.com/terraform-providers/terraform-provider-scaleway/issues/78))
+* **New Data Source:** `scaleway_volume` ([#77](https://github.com/terraform-providers/terraform-provider-scaleway/issues/77))
 * resource/scaleway_image: support filtering by most recently created image ([#82](https://github.com/terraform-providers/terraform-provider-scaleway/pull/82))
 
 BUG FIXES:
