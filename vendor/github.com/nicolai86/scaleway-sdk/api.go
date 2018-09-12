@@ -14,11 +14,13 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"mime/multipart"
 	"net/http"
 	"net/url"
 	"os"
 	"strconv"
 	"strings"
+	"time"
 
 	"golang.org/x/sync/errgroup"
 )
@@ -27,11 +29,12 @@ import (
 // https://cp-ams1.scaleway.com/products/servers
 // Default values
 var (
-	AccountAPI     = "https://account.scaleway.com/"
-	MetadataAPI    = "http://169.254.42.42/"
-	MarketplaceAPI = "https://api-marketplace.scaleway.com"
-	ComputeAPIPar1 = "https://cp-par1.scaleway.com/"
-	ComputeAPIAms1 = "https://cp-ams1.scaleway.com/"
+	AccountAPI           = "https://account.scaleway.com/"
+	MetadataAPI          = "http://169.254.42.42/"
+	MarketplaceAPI       = "https://api-marketplace.scaleway.com"
+	ComputeAPIPar1       = "https://cp-par1.scaleway.com/"
+	ComputeAPIAms1       = "https://cp-ams1.scaleway.com/"
+	ObjectStorageAPIAms1 = "https://sis-ams1.scaleway.com"
 
 	URLPublicDNS  = ".pub.cloud.scaleway.com"
 	URLPrivateDNS = ".priv.cloud.scaleway.com"
@@ -64,11 +67,15 @@ type API struct {
 	Token        string     // Token is the authentication token for the  organization
 	Client       HTTPClient // Client is used for all HTTP interactions
 
-	password   string // Password is the authentication password
-	userAgent  string
-	computeAPI string
+	password       string // Password is the authentication password
+	userAgent      string
+	computeAPI     string
+	objectstoreAPI string
 
 	Region string
+
+	// Channel to throttle requests to the API
+	throttle <-chan time.Time
 }
 
 // APIError represents a  API Error
@@ -113,6 +120,7 @@ func New(organization, token, region string, options ...func(*API)) (*API, error
 		// internal
 		password:  "",
 		userAgent: "scaleway-sdk",
+		throttle:  time.Tick(time.Minute / 50),
 	}
 	for _, option := range options {
 		option(s)
@@ -120,14 +128,19 @@ func New(organization, token, region string, options ...func(*API)) (*API, error
 	switch region {
 	case "par1", "":
 		s.computeAPI = ComputeAPIPar1
+		s.objectstoreAPI = ""
 	case "ams1":
 		s.computeAPI = ComputeAPIAms1
+		s.objectstoreAPI = ObjectStorageAPIAms1
 	default:
 		return nil, fmt.Errorf("%s isn't a valid region", region)
 	}
 	s.Region = region
 	if url := os.Getenv("SCW_COMPUTE_API"); url != "" {
 		s.computeAPI = url
+	}
+	if url := os.Getenv("SCW_OBJECTSTORE_API"); url != "" {
+		s.objectstoreAPI = url
 	}
 	return s, nil
 }
@@ -145,6 +158,7 @@ func (s *API) response(method, uri string, content io.Reader) (resp *http.Respon
 	req.Header.Set("X-Auth-Token", s.Token)
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("User-Agent", s.userAgent)
+	<-s.throttle
 	resp, err = s.Client.Do(req)
 	return
 }
@@ -235,6 +249,37 @@ func (s *API) GetResponsePaginate(apiURL, resource string, values url.Values) (*
 		resp, err = s.response("GET", fmt.Sprintf("%s/%s?%s", strings.TrimRight(apiURL, "/"), resource, values.Encode()), nil)
 	}
 	return resp, err
+}
+
+func (s *API) Upload(apiURL, resource, name string, data io.Reader) (resp *http.Response, err error) {
+	body := &bytes.Buffer{}
+	writer := multipart.NewWriter(body)
+	part, err := writer.CreateFormFile("file", name)
+	if err != nil {
+		return nil, err
+	}
+	_, err = io.Copy(part, data)
+
+	params := map[string]string{}
+	for key, val := range params {
+		_ = writer.WriteField(key, val)
+	}
+	err = writer.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	uri := fmt.Sprintf("%s/%s", strings.TrimRight(apiURL, "/"), resource)
+	req, err := http.NewRequest("POST", uri, body)
+	if err != nil {
+		err = fmt.Errorf("response %s %s", "POST", uri)
+		return
+	}
+	req.Header.Set("Content-Type", writer.FormDataContentType())
+	req.Header.Set("X-Auth-Token", s.Token)
+	req.Header.Set("User-Agent", s.userAgent)
+	resp, err = s.Client.Do(req)
+	return
 }
 
 // PostResponse returns an http.Response object for the updated resource
