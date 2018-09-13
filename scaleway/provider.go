@@ -44,6 +44,7 @@ func Provider() terraform.ResourceProvider {
 		},
 
 		ResourcesMap: map[string]*schema.Resource{
+			"scaleway_bucket":              resourceScalewayBucket(),
 			"scaleway_user_data":           resourceScalewayUserData(),
 			"scaleway_server":              resourceScalewayServer(),
 			"scaleway_token":               resourceScalewayToken(),
