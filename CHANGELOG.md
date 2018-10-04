@@ -1,4 +1,9 @@
-## 1.6.1 (Unreleased)
+## 1.7.0 (Unreleased)
+
+FEATURES:
+
+* **New Resource:** `scaleway_bucket` ([#94](https://github.com/terraform-providers/terraform-provider-scaleway/issues/94))
+
 ## 1.6.0 (August 28, 2018)
 
 FEATURES:
