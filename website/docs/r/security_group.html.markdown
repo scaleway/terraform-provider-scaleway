@@ -18,6 +18,9 @@ resource "scaleway_security_group" "test" {
   name                    = "test"
   description             = "test"
   enable_default_security = true
+  stateful                = true
+  inbound_default_policy  = "accept"
+  outbound_default_policy = "drop"
 }
 ```
 
@@ -28,6 +31,9 @@ The following arguments are supported:
 * `name` - (Required) name of security group
 * `description` - (Required) description of security group
 * `enable_default_security` - (Optional) default: true. Add default security group rules
+* `stateful` - (Optional) default: false. Mark the security group as stateful. Note that stateful security groups can not be associated with bare metal servers
+* `inbound_default_policy` - (Optional) default policy for inbound traffic. Can be one of accept or drop
+* `outbound_default_policy` - (Optional) default policy for outbound traffic. Can be one of accept or drop
 
 Field `name`, `description` are editable.
 
