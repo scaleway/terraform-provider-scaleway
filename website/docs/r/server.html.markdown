@@ -43,6 +43,7 @@ The following arguments are supported:
 * `volume` - (Optional) attach additional volumes to your instance (see below)
 * `public_ipv6` - (Read Only) if `enable_ipv6` is set this contains the ipv6 address of your instance
 * `state` - (Optional) allows you to define the desired state of your server. Valid values include (`stopped`, `running`)
+* `cloudinit` - (Optional) allows you to define cloudinit script for this server
 * `state_detail` - (Read Only) contains details from the scaleway API the state of your instance
 
 Field `name`, `type`, `tags`, `dynamic_ip_required`, `security_group` are editable.
