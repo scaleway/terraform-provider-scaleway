@@ -50,6 +50,7 @@ func Provider() terraform.ResourceProvider {
 			"scaleway_token":               resourceScalewayToken(),
 			"scaleway_ssh_key":             resourceScalewaySSHKey(),
 			"scaleway_ip":                  resourceScalewayIP(),
+			"scaleway_ip_reverse_dns":      resourceScalewayIPReverseDNS(),
 			"scaleway_security_group":      resourceScalewaySecurityGroup(),
 			"scaleway_security_group_rule": resourceScalewaySecurityGroupRule(),
 			"scaleway_volume":              resourceScalewayVolume(),
