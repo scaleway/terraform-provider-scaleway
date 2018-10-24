@@ -22,7 +22,7 @@ resource "scaleway_ip" "test_ip" {}
 The following arguments are supported:
 
 * `server` - (Optional) ID of server to associate IP with
-* `reverse` - (Optional) Reverse DNS of the IP
+* `reverse` - (Deprecated) Please us the scaleway_ip_reverse_dns resource instead.
 
 ## Attributes Reference
 
