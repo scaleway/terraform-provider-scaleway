@@ -1,4 +1,10 @@
-## 1.8.0 (Unreleased)
+## 1.7.1 (Unreleased)
+
+FEATURES:
+
+* resource/scaleway_server: support cloudinit ([#97](https://github.com/terraform-providers/terraform-provider-scaleway/pull/97))
+* resource/scaleway_security_group: support stateful security groups as well as default inbound and outbount policies ([#97](https://github.com/terraform-providers/terraform-provider-scaleway/pull/97))
+
 ## 1.7.0 (October 05, 2018)
 
 FEATURES:
