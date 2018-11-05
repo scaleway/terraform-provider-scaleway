@@ -123,6 +123,12 @@ func resourceScalewayServer() *schema.Resource {
 				Computed:    true,
 				Description: "the public IPv4 address of the server",
 			},
+			"cloudinit": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Computed:    true,
+				Description: "the cloudinit script associated with this server",
+			},
 			"public_ipv6": {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -230,6 +236,12 @@ func resourceScalewayServerCreate(d *schema.ResourceData, m interface{}) error {
 		return err
 	}
 
+	if v, ok := d.GetOk("cloudinit"); ok {
+		if err := scaleway.PatchUserdata(server.Identifier, "cloud-init", []byte(v.(string)), false); err != nil {
+			return err
+		}
+	}
+
 	d.SetId(server.Identifier)
 	if d.Get("state").(string) != "stopped" {
 		err := startServer(scaleway, server)
@@ -266,6 +278,13 @@ func resourceScalewayServerRead(d *schema.ResourceData, m interface{}) error {
 		}
 
 		return err
+	}
+
+	cloudinit, err := scaleway.GetUserdata(server.Identifier, "cloud-init", false)
+	if err == nil {
+		d.Set("cloudinit", cloudinit.String())
+	} else {
+		fmt.Printf("[DEBUG] unable to retrieve cloudinit configuration for server %q\n", d.Get("server"))
 	}
 
 	d.Set("name", server.Name)
@@ -308,6 +327,12 @@ func resourceScalewayServerUpdate(d *schema.ResourceData, m interface{}) error {
 				tags = append(tags, tag.(string))
 			}
 			req.Tags = &tags
+		}
+	}
+
+	if d.HasChange("cloudinit") {
+		if err := scaleway.PatchUserdata(d.Id(), "cloud-init", []byte(d.Get("cloudinit").(string)), false); err != nil {
+			fmt.Printf("[DEBUG] unable to update cloud-init for server %q\n", d.Id())
 		}
 	}
 

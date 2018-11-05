@@ -62,6 +62,34 @@ func TestAccScalewaySecurityGroup_Basic(t *testing.T) {
 	})
 }
 
+func TestAccScalewaySecurityGroup_Stateful(t *testing.T) {
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckScalewaySecurityGroupDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckScalewaySecurityGroupConfig_Stateful,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewaySecurityGroupExists("scaleway_security_group.base"),
+					resource.TestCheckResourceAttr("scaleway_security_group.base", "inbound_default_policy", "accept"),
+					resource.TestCheckResourceAttr("scaleway_security_group.base", "outbound_default_policy", "drop"),
+					resource.TestCheckResourceAttr("scaleway_security_group.base", "stateful", "true"),
+				),
+			},
+			{
+				Config: testAccCheckScalewaySecurityGroupConfig,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewaySecurityGroupExists("scaleway_security_group.base"),
+					resource.TestCheckResourceAttr("scaleway_security_group.base", "inbound_default_policy", "accept"),
+					resource.TestCheckResourceAttr("scaleway_security_group.base", "outbound_default_policy", "drop"),
+					resource.TestCheckResourceAttr("scaleway_security_group.base", "stateful", "false"),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckScalewaySecurityGroupDestroy(s *terraform.State) error {
 	client := testAccProvider.Meta().(*Client).scaleway
 
@@ -135,5 +163,15 @@ var testAccCheckScalewaySecurityGroupConfig = `
 resource "scaleway_security_group" "base" {
   name = "public"
   description = "public gateway"
+}
+`
+
+var testAccCheckScalewaySecurityGroupConfig_Stateful = `
+resource "scaleway_security_group" "base" {
+  name = "public"
+  description = "public gateway"
+  stateful = true 
+  inbound_default_policy = "accept"
+  outbound_default_policy = "drop"
 }
 `

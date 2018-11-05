@@ -65,6 +65,8 @@ func TestAccScalewayServer_Basic(t *testing.T) {
 						"scaleway_server.base", "tags.0", "terraform-test"),
 					resource.TestCheckResourceAttr(
 						"scaleway_server.base", "boot_type", "bootscript"),
+					resource.TestCheckResourceAttr(
+						"scaleway_server.base", "cloudinit", "#cloud-config\napt_update: true\napt_upgrade: true\n"),
 				),
 			},
 			resource.TestStep{
@@ -354,6 +356,11 @@ resource "scaleway_server" "base" {
   image = "%s"
   type = "C1"
   tags = [ "terraform-test" ]
+  cloudinit = <<EOF
+#cloud-config
+apt_update: true
+apt_upgrade: true
+EOF
 }`, armImageIdentifier)
 
 var testAccCheckScalewayServerConfig_LocalBoot = fmt.Sprintf(`
