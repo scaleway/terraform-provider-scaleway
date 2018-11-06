@@ -32,6 +32,8 @@ func resourceScalewayIP() *schema.Resource {
 			"reverse": {
 				Type:        schema.TypeString,
 				Optional:    true,
+				Computed:    true,
+				Deprecated:  "use scaleway_ip_reverse_dns resource instead",
 				Description: "The ipv4 reverse dns",
 			},
 		},
@@ -52,11 +54,9 @@ func resourceScalewayIPCreate(d *schema.ResourceData, m interface{}) error {
 
 func resourceScalewayIPRead(d *schema.ResourceData, m interface{}) error {
 	scaleway := m.(*Client).scaleway
-	log.Printf("[DEBUG] Reading IP\n")
 
 	ip, err := scaleway.GetIP(d.Id())
 	if err != nil {
-		log.Printf("[DEBUG] Error reading ip: %q\n", err)
 		if serr, ok := err.(api.APIError); ok {
 			if serr.StatusCode == 404 {
 				d.SetId("")
@@ -72,6 +72,8 @@ func resourceScalewayIPRead(d *schema.ResourceData, m interface{}) error {
 	}
 	if ip.Reverse != nil {
 		d.Set("reverse", *ip.Reverse)
+	} else {
+		d.Set("reverse", "")
 	}
 	return nil
 }
@@ -81,17 +83,12 @@ func resourceScalewayIPUpdate(d *schema.ResourceData, m interface{}) error {
 
 	if d.HasChange("reverse") {
 		log.Printf("[DEBUG] Updating IP %q reverse to %q\n", d.Id(), d.Get("reverse").(string))
-		ip, err := scaleway.UpdateIP(api.UpdateIPRequest{
+		_, err := scaleway.UpdateIP(api.UpdateIPRequest{
 			ID:      d.Id(),
 			Reverse: d.Get("reverse").(string),
 		})
 		if err != nil {
 			return err
-		}
-		if ip.Reverse != nil {
-			d.Set("reverse", *ip.Reverse)
-		} else {
-			d.Set("reverse", "")
 		}
 	}
 
