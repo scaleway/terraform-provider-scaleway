@@ -1,7 +1,8 @@
-## 1.7.1 (Unreleased)
+## 1.8.0 (Unreleased)
 
 FEATURES:
 
+* **New Resource:**: `scaleway_ip_reverse_dns` ([#96](https://github.com/terraform-providers/terraform-provider-scaleway/pull/96))
 * resource/scaleway_server: support cloudinit ([#97](https://github.com/terraform-providers/terraform-provider-scaleway/pull/97))
 * resource/scaleway_security_group: support stateful security groups as well as default inbound and outbount policies ([#97](https://github.com/terraform-providers/terraform-provider-scaleway/pull/97))
 
