@@ -64,12 +64,18 @@ func testAccCheckScalewayUserDataDestroy(s *terraform.State) error {
 	return nil
 }
 
-var testAccCheckScalewayUserDataConfig = fmt.Sprintf(`
+var testAccCheckScalewayUserDataConfig = `
+data "scaleway_image" "ubuntu" {
+  architecture = "arm64"
+  name         = "Ubuntu Xenial"
+  most_recent  = true
+}
+
 resource "scaleway_server" "base" {
   name = "test"
-  # ubuntu 14.04
-  image = "%s"
-  type = "C1"
+
+  image = "${data.scaleway_image.ubuntu.id}"
+  type = "ARM64-2GB"
 
   tags = [ "terraform-test", "user-data" ]
 }
@@ -79,4 +85,4 @@ resource "scaleway_user_data" "base" {
 	key = "gcp_username"
 	value = "supersecret"
 }
-`, armImageIdentifier)
+`

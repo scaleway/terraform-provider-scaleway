@@ -199,15 +199,21 @@ resource "scaleway_ip" "base" {
 }
 `
 
-var testAccCheckScalewayIPAttachConfig = fmt.Sprintf(`
+var testAccCheckScalewayIPAttachConfig = `
+data "scaleway_image" "ubuntu" {
+  architecture = "arm64"
+  name         = "Ubuntu Xenial"
+  most_recent  = true
+}
+
 resource "scaleway_server" "base" {
   name = "test"
-  # ubuntu 14.04
-  image = "%s"
-  type = "C1"
+
+  image = "${data.scaleway_image.ubuntu.id}"
+  type = "ARM64-2GB"
 }
 
 resource "scaleway_ip" "base" {
   server = "${scaleway_server.base.id}"
 }
-`, armImageIdentifier)
+`

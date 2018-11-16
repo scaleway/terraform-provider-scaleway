@@ -81,9 +81,9 @@ func TestAccScalewaySecurityGroup_Stateful(t *testing.T) {
 				Config: testAccCheckScalewaySecurityGroupConfig,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewaySecurityGroupExists("scaleway_security_group.base"),
-					resource.TestCheckResourceAttr("scaleway_security_group.base", "inbound_default_policy", "accept"),
-					resource.TestCheckResourceAttr("scaleway_security_group.base", "outbound_default_policy", "drop"),
 					resource.TestCheckResourceAttr("scaleway_security_group.base", "stateful", "false"),
+					resource.TestCheckResourceAttr("scaleway_security_group.base", "inbound_default_policy", "accept"),
+					resource.TestCheckResourceAttr("scaleway_security_group.base", "outbound_default_policy", "accept"),
 				),
 			},
 		},
@@ -170,7 +170,7 @@ var testAccCheckScalewaySecurityGroupConfig_Stateful = `
 resource "scaleway_security_group" "base" {
   name = "public"
   description = "public gateway"
-  stateful = true 
+  stateful = true
   inbound_default_policy = "accept"
   outbound_default_policy = "drop"
 }

@@ -49,6 +49,6 @@ func testAccCheckBootscriptID(n string) resource.TestCheckFunc {
 const testAccCheckScalewayBootscriptFilterConfig = `
 data "scaleway_bootscript" "debug" {
   architecture = "arm"
-  name_filter = "Rescue"
+  name_filter = "rescue"
 }
 `

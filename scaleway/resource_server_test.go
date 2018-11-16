@@ -56,9 +56,8 @@ func TestAccScalewayServer_Basic(t *testing.T) {
 				Config: testAccCheckScalewayServerConfig,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayServerExists("scaleway_server.base"),
-					testAccCheckScalewayServerAttributes("scaleway_server.base"),
 					resource.TestCheckResourceAttr(
-						"scaleway_server.base", "type", "C1"),
+						"scaleway_server.base", "type", "ARM64-2GB"),
 					resource.TestCheckResourceAttr(
 						"scaleway_server.base", "name", "test"),
 					resource.TestCheckResourceAttr(
@@ -136,9 +135,8 @@ func TestAccScalewayServer_Volumes(t *testing.T) {
 				Config: testAccCheckScalewayServerVolumeConfig,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayServerExists("scaleway_server.base"),
-					testAccCheckScalewayServerAttributes("scaleway_server.base"),
 					resource.TestCheckResourceAttr(
-						"scaleway_server.base", "type", "C1"),
+						"scaleway_server.base", "type", "C2S"),
 					resource.TestCheckResourceAttr(
 						"scaleway_server.base", "volume.#", "3"),
 					resource.TestCheckResourceAttrSet(
@@ -251,34 +249,6 @@ func testAccCheckScalewayServerIPDetachmentAttributes(n string) resource.TestChe
 	}
 }
 
-func testAccCheckScalewayServerAttributes(n string) resource.TestCheckFunc {
-	return func(s *terraform.State) error {
-		rs, ok := s.RootModule().Resources[n]
-		if !ok {
-			return fmt.Errorf("Unknown resource: %s", n)
-		}
-
-		client := testAccProvider.Meta().(*Client).scaleway
-		server, err := client.GetServer(rs.Primary.ID)
-
-		if err != nil {
-			return err
-		}
-
-		if server.Name != "test" {
-			return fmt.Errorf("Server has wrong name")
-		}
-		if server.Image.Identifier != armImageIdentifier {
-			return fmt.Errorf("Wrong server image")
-		}
-		if server.CommercialType != "C1" {
-			return fmt.Errorf("Wrong server type")
-		}
-
-		return nil
-	}
-}
-
 func testAccCheckScalewayServerSecurityGroup(n, securityGroupName string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
@@ -332,12 +302,9 @@ func testAccCheckScalewayServerExists(n string) resource.TestCheckFunc {
 	}
 }
 
-var armImageIdentifier = "5faef9cd-ea9b-4a63-9171-9e26bec03dbc"
-var x86_64ImageIdentifier = "e20532c4-1fa0-4c97-992f-436b8d372c07"
-
 var testAccCheckScalewayServerConfig_dataSource = `
 data "scaleway_image" "ubuntu" {
-  architecture = "arm"
+  architecture = "arm64"
   name         = "Ubuntu Xenial"
 }
 
@@ -345,61 +312,87 @@ resource "scaleway_server" "base" {
   name = "test"
 
   image = "${data.scaleway_image.ubuntu.id}"
-  type = "C1"
+  type = "ARM64-2GB"
   tags = [ "terraform-test", "xenial" ]
 }`
 
-var testAccCheckScalewayServerConfig = fmt.Sprintf(`
+var testAccCheckScalewayServerConfig = `
+data "scaleway_image" "ubuntu" {
+  architecture = "arm64"
+  name         = "Ubuntu Xenial"
+  most_recent  = true
+}
+
 resource "scaleway_server" "base" {
   name = "test"
-  # ubuntu 14.04
-  image = "%s"
-  type = "C1"
+  image = "${data.scaleway_image.ubuntu.id}"
+  type = "ARM64-2GB"
   tags = [ "terraform-test" ]
   cloudinit = <<EOF
 #cloud-config
 apt_update: true
 apt_upgrade: true
 EOF
-}`, armImageIdentifier)
+}`
 
-var testAccCheckScalewayServerConfig_LocalBoot = fmt.Sprintf(`
+var testAccCheckScalewayServerConfig_LocalBoot = `
+data "scaleway_image" "ubuntu" {
+  architecture = "x86_64"
+  name         = "Ubuntu Xenial"
+  most_recent  = true
+}
+
 resource "scaleway_server" "base" {
   name = "test"
-  # ubuntu 14.04
-  image = "%s"
-  type = "VC1S"
+  image = "${data.scaleway_image.ubuntu.id}"
+  type = "START1-S"
   tags = [ "terraform-test", "local_boot" ]
   boot_type = "local"
-}`, x86_64ImageIdentifier)
+}`
 
-var testAccCheckScalewayServerConfig_IPAttachment = fmt.Sprintf(`
+var testAccCheckScalewayServerConfig_IPAttachment = `
+data "scaleway_image" "ubuntu" {
+  architecture = "arm64"
+  name         = "Ubuntu Xenial"
+  most_recent  = true
+}
+
 resource "scaleway_ip" "base" {}
 
 resource "scaleway_server" "base" {
   name = "test"
-  # ubuntu 14.04
-  image = "%s"
-  type = "C1"
+  image = "${data.scaleway_image.ubuntu.id}"
+  type = "ARM64-2GB"
   tags = [ "terraform-test", "scaleway_ip" ]
   public_ip = "${scaleway_ip.base.ip}"
-}`, armImageIdentifier)
+}`
 
-var testAccCheckScalewayServerConfig_IPDetachment = fmt.Sprintf(`
+var testAccCheckScalewayServerConfig_IPDetachment = `
+data "scaleway_image" "ubuntu" {
+  architecture = "arm64"
+  most_recent  = true
+  name         = "Ubuntu Xenial"
+}
+
 resource "scaleway_server" "base" {
   name = "test"
-  # ubuntu 14.04
-  image = "%s"
-  type = "C1"
+  image = "${data.scaleway_image.ubuntu.id}"
+  type = "ARM64-2GB"
   tags = [ "terraform-test" ]
-}`, armImageIdentifier)
+}
+`
 
-var testAccCheckScalewayServerVolumeConfig = fmt.Sprintf(`
+var testAccCheckScalewayServerVolumeConfig = `
+data "scaleway_image" "ubuntu" {
+  architecture = "x86_64"
+  name         = "Ubuntu Xenial"
+  most_recent  = true
+}
+
 resource "scaleway_server" "base" {
   name = "test"
-  # ubuntu 14.04
-  image = "%s"
-  type = "C1"
+  image = "${data.scaleway_image.ubuntu.id}"
+  type = "C2S"
   tags = [ "terraform-test", "inline-images" ]
 
   volume {
@@ -416,9 +409,14 @@ resource "scaleway_server" "base" {
     size_in_gb = 30
     type = "l_ssd"
   }
-}`, armImageIdentifier)
+}`
 
-var testAccCheckScalewayServerConfig_SecurityGroup = fmt.Sprintf(`
+var testAccCheckScalewayServerConfig_SecurityGroup = `
+data "scaleway_image" "ubuntu" {
+  architecture = "arm64"
+  name         = "Ubuntu Xenial"
+}
+
 resource "scaleway_security_group" "blue" {
   name = "blue"
   description = "blue"
@@ -431,14 +429,19 @@ resource "scaleway_security_group" "red" {
 
 resource "scaleway_server" "base" {
   name = "test"
-  # ubuntu 14.04
-  image = "%s"
-  type = "C1"
+  image = "${data.scaleway_image.ubuntu.id}"
+  type = "ARM64-2GB"
   tags = [ "terraform-test", "security_groups.blue" ]
   security_group = "${scaleway_security_group.blue.id}"
-}`, armImageIdentifier)
+}`
 
-var testAccCheckScalewayServerConfig_SecurityGroup_Update = fmt.Sprintf(`
+var testAccCheckScalewayServerConfig_SecurityGroup_Update = `
+data "scaleway_image" "ubuntu" {
+  architecture = "arm64"
+  name         = "Ubuntu Xenial"
+  most_recent  = true
+}
+
 resource "scaleway_security_group" "blue" {
   name = "blue"
   description = "blue"
@@ -451,9 +454,8 @@ resource "scaleway_security_group" "red" {
 
 resource "scaleway_server" "base" {
   name = "test"
-  # ubuntu 14.04
-  image = "%s"
-  type = "C1"
+  image = "${data.scaleway_image.ubuntu.id}"
+  type = "ARM64-2GB"
   tags = [ "terraform-test", "security_groups.red" ]
   security_group = "${scaleway_security_group.red.id}"
-}`, armImageIdentifier)
+}`
