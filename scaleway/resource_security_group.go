@@ -9,7 +9,7 @@ import (
 	api "github.com/nicolai86/scaleway-sdk"
 )
 
-var supportedDefaultTrafficPolicies = []string{"accept", "drop"}
+var supportedDefaultTrafficPolicies = []string{"accept", "drop", ""}
 
 func resourceScalewaySecurityGroup() *schema.Resource {
 	return &schema.Resource{
@@ -40,14 +40,14 @@ func resourceScalewaySecurityGroup() *schema.Resource {
 			"inbound_default_policy": {
 				Type:         schema.TypeString,
 				Optional:     true,
-				Computed:     true,
+				Default:      "accept",
 				Description:  "Default inbound traffic policy for this security group",
 				ValidateFunc: validation.StringInSlice(supportedDefaultTrafficPolicies, true),
 			},
 			"outbound_default_policy": {
 				Type:         schema.TypeString,
 				Optional:     true,
-				Computed:     true,
+				Default:      "accept",
 				Description:  "Default outbound traffic policy for this security group",
 				ValidateFunc: validation.StringInSlice(supportedDefaultTrafficPolicies, true),
 			},

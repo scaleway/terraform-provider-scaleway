@@ -71,12 +71,16 @@ func testAccCheckScalewayVolumeAttachmentExists(n string) resource.TestCheckFunc
 	}
 }
 
-var testAccCheckScalewayVolumeAttachmentConfig = fmt.Sprintf(`
+var testAccCheckScalewayVolumeAttachmentConfig = `
+data "scaleway_image" "ubuntu" {
+  name         = "Ubuntu Xenial"
+  architecture = "x86_64"
+}
+
 resource "scaleway_server" "base" {
   name = "test"
-  # ubuntu 14.04
-  image = "%s"
-  type = "C1"
+  image = "${data.scaleway_image.ubuntu.id}"
+  type = "C2S"
 
   tags = [ "terraform-test", "external-volume-attachment" ]
 }
@@ -90,4 +94,4 @@ resource "scaleway_volume" "test" {
 resource "scaleway_volume_attachment" "test" {
   server = "${scaleway_server.base.id}"
   volume = "${scaleway_volume.test.id}"
-}`, armImageIdentifier)
+}`
