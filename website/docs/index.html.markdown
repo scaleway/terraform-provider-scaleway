@@ -115,3 +115,26 @@ The minimal size of increment is 50GB and you can add at most 15 different volum
 Additional volumes cannot be added to virtual cloud servers.
 
 Check out the list of different instances on the [pricing page](https://www.scaleway.com/pricing).
+
+## Scaleway S3-compatible
+
+[Scaleway object storage](https://www.scaleway.com/object-storage/) can be used to store your Terraform state.
+Configure your backend as:
+
+```
+terraform {
+  backend "s3" {
+    bucket      = "terraform_state"
+    key         = "my_state.tfstate"
+    region      = "nl-ams"
+    endpoint    = "https://s3.nl-ams.scw.cloud"
+    access_key  = "SCWXYZ"
+    secret_key  = "xxxxxxxxxxxxxxxxxxx"
+    skip_credentials_validation = true
+    skip_region_validation = true
+  }
+}
+```
+
+Beware as no locking mechanism are yet supported.
+Using scaleway object storage as terraform backend is not suitable if you work in a team with à risk of simultaneously access to the same plan.
