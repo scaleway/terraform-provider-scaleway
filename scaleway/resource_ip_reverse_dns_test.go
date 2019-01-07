@@ -12,7 +12,7 @@ func TestAccScalewayIPReverseDNS_Basic(t *testing.T) {
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckScalewayIPDestroy,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccCheckScalewayIPReverseDNSConfig,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayIPExists("scaleway_ip.base"),
@@ -20,7 +20,7 @@ func TestAccScalewayIPReverseDNS_Basic(t *testing.T) {
 						"scaleway_ip_reverse_dns.google", "reverse", "www.google.com"),
 				),
 			},
-			resource.TestStep{
+			{
 				Config: testAccCheckScalewayIPReverseDNSConfig,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayIPExists("scaleway_ip.base"),

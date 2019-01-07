@@ -14,7 +14,7 @@ func TestAccScalewayUserData_Basic(t *testing.T) {
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckScalewayUserDataDestroy,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccCheckScalewayUserDataConfig,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayServerExists("scaleway_server.base"),

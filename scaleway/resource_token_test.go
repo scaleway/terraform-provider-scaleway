@@ -45,7 +45,7 @@ func TestAccScalewayToken_Basic(t *testing.T) {
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckScalewayTokenDestroy,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccCheckScalewayTokenConfig,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayTokenExists("scaleway_token.base"),
@@ -58,7 +58,7 @@ func TestAccScalewayToken_Basic(t *testing.T) {
 					resource.TestCheckResourceAttrSet("scaleway_token.base", "creation_ip"),
 				),
 			},
-			resource.TestStep{
+			{
 				Config: testAccCheckScalewayTokenConfig_Update,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayTokenExists("scaleway_token.base"),
@@ -79,7 +79,7 @@ func TestAccScalewayToken_Expiry(t *testing.T) {
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckScalewayTokenDestroy,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccCheckScalewayTokenConfig_Update,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayTokenExists("scaleway_token.base"),

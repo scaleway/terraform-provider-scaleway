@@ -13,7 +13,7 @@ func TestAccScalewayDataSourceImage_Basic(t *testing.T) {
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccCheckScalewayImageConfig,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckImageID("data.scaleway_image.ubuntu"),
@@ -32,7 +32,7 @@ func TestAccScalewayDataSourceImage_MostRecent(t *testing.T) {
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccCheckScalewayImageConfig_mostRecent,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckImageID("data.scaleway_image.ubuntu"),
@@ -51,7 +51,7 @@ func TestAccScalewayDataSourceImage_Filtered(t *testing.T) {
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccCheckScalewayImageFilterConfig,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckImageID("data.scaleway_image.ubuntu"),

@@ -52,7 +52,7 @@ func TestAccScalewayServer_Basic(t *testing.T) {
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckScalewayServerDestroy,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccCheckScalewayServerConfig,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayServerExists("scaleway_server.base"),
@@ -68,19 +68,19 @@ func TestAccScalewayServer_Basic(t *testing.T) {
 						"scaleway_server.base", "cloudinit", "#cloud-config\napt_update: true\napt_upgrade: true\n"),
 				),
 			},
-			resource.TestStep{
+			{
 				Config: testAccCheckScalewayServerConfig_IPAttachment,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayServerIPAttachmentAttributes("scaleway_ip.base", "scaleway_server.base"),
 				),
 			},
-			resource.TestStep{
+			{
 				Config: testAccCheckScalewayServerConfig_IPDetachment,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayServerIPDetachmentAttributes("scaleway_server.base"),
 				),
 			},
-			resource.TestStep{
+			{
 				Config: testAccCheckScalewayServerConfig_dataSource,
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
@@ -97,7 +97,7 @@ func TestAccScalewayServer_BootType(t *testing.T) {
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckScalewayServerDestroy,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccCheckScalewayServerConfig_LocalBoot,
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
@@ -114,7 +114,7 @@ func TestAccScalewayServer_ExistingIP(t *testing.T) {
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckScalewayServerDestroy,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccCheckScalewayServerConfig_IPAttachment,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayServerExists("scaleway_server.base"),
@@ -131,7 +131,7 @@ func TestAccScalewayServer_Volumes(t *testing.T) {
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckScalewayServerDestroy,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccCheckScalewayServerVolumeConfig,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayServerExists("scaleway_server.base"),
@@ -167,14 +167,14 @@ func TestAccScalewayServer_SecurityGroup(t *testing.T) {
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckScalewayServerDestroy,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccCheckScalewayServerConfig_SecurityGroup,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayServerExists("scaleway_server.base"),
 					testAccCheckScalewayServerSecurityGroup("scaleway_server.base", "blue"),
 				),
 			},
-			resource.TestStep{
+			{
 				Config: testAccCheckScalewayServerConfig_SecurityGroup_Update,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayServerExists("scaleway_server.base"),
