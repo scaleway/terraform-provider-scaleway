@@ -13,14 +13,14 @@ var mu = sync.Mutex{}
 func Provider() terraform.ResourceProvider {
 	return &schema.Provider{
 		Schema: map[string]*schema.Schema{
-			"access_key": &schema.Schema{
+			"access_key": {
 				Type:        schema.TypeString,
 				Optional:    true,
 				DefaultFunc: schema.EnvDefaultFunc("SCALEWAY_ACCESS_KEY", nil),
 				Deprecated:  "Use `token` instead.",
 				Description: "The API key for Scaleway API operations.",
 			},
-			"token": &schema.Schema{
+			"token": {
 				Type:     schema.TypeString,
 				Required: true,
 				DefaultFunc: schema.MultiEnvDefaultFunc([]string{
@@ -29,13 +29,13 @@ func Provider() terraform.ResourceProvider {
 				}, nil),
 				Description: "The API key for Scaleway API operations.",
 			},
-			"organization": &schema.Schema{
+			"organization": {
 				Type:        schema.TypeString,
 				Required:    true,
 				DefaultFunc: schema.EnvDefaultFunc("SCALEWAY_ORGANIZATION", nil),
 				Description: "The Organization ID (a.k.a. 'access key') for Scaleway API operations.",
 			},
-			"region": &schema.Schema{
+			"region": {
 				Type:        schema.TypeString,
 				Optional:    true,
 				DefaultFunc: schema.EnvDefaultFunc("SCALEWAY_REGION", "par1"),

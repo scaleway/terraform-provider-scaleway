@@ -27,14 +27,14 @@ func TestAccScalewaySSHKey_Basic(t *testing.T) {
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckScalewaySSHKeyDestroy,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccCheckScalewaySSHKeyConfig,
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
 						"scaleway_ssh_key.test", "id", "d1:4c:45:59:a8:ee:e6:41:10:fb:3c:3e:54:98:5b:6f"),
 				),
 			},
-			resource.TestStep{
+			{
 				Config: testAccCheckScalewaySSHKeysConfig,
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
@@ -43,7 +43,7 @@ func TestAccScalewaySSHKey_Basic(t *testing.T) {
 						"scaleway_ssh_key.test2", "id", "71:a9:e9:ec:5a:43:bc:49:0c:59:1d:74:0d:bb:a4:24"),
 				),
 			},
-			resource.TestStep{
+			{
 				Config: testAccCheckScalewaySSHKeyConfig,
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(

@@ -45,7 +45,7 @@ func TestAccScalewayIP_Count(t *testing.T) {
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckScalewayIPDestroy,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccCheckScalewayIPConfig_Count,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayIPExists("scaleway_ip.base.0"),
@@ -62,13 +62,13 @@ func TestAccScalewayIP_Basic(t *testing.T) {
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckScalewayIPDestroy,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccCheckScalewayIPConfig,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayIPExists("scaleway_ip.base"),
 				),
 			},
-			resource.TestStep{
+			{
 				Config: testAccCheckScalewayIPConfig_Reverse,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayIPExists("scaleway_ip.base"),
@@ -76,7 +76,7 @@ func TestAccScalewayIP_Basic(t *testing.T) {
 						"scaleway_ip.base", "reverse", "www.google.de"),
 				),
 			},
-			resource.TestStep{
+			{
 				Config: testAccCheckScalewayIPAttachConfig,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayServerExists("scaleway_server.base"),
@@ -88,7 +88,7 @@ func TestAccScalewayIP_Basic(t *testing.T) {
 						"scaleway_ip.base", "reverse", ""),
 				),
 			},
-			resource.TestStep{
+			{
 				Config: testAccCheckScalewayIPConfig,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayIPExists("scaleway_ip.base"),
