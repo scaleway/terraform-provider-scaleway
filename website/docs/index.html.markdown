@@ -15,11 +15,11 @@ Use the navigation to the left to read about the available resources.
 ## Example Usage
 
 Here is an example that will setup the following:
-+ A Server.
-+ An IP Address.
-+ A security group.
+* A Server.
+* An IP Address.
+* A security group.
 
-(create this as sl.tf and run terraform commands from this directory):
+(create this as `sl.tf` and run terraform commands from this directory):
 
 ```hcl
 provider "scaleway" {
@@ -109,7 +109,7 @@ provider "scaleway" {
 
 ## Volume usage
 
-You can add volumes to baremetal instances.
+You can add volumes to bare metal instances.
 The minimal size of increment is 50GB and you can add at most 15 different volumes on an instance.
 
 Additional volumes cannot be added to virtual cloud servers.
