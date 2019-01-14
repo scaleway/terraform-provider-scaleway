@@ -15,9 +15,9 @@ Use the navigation to the left to read about the available resources.
 ## Example Usage
 
 Here is an example that will setup the following:
-+ A Server.
-+ An IP Address.
-+ A security group.
+* A Server.
+* An IP Address.
+* A security group.
 
 (create this as sl.tf and run terraform commands from this directory):
 
