@@ -67,7 +67,7 @@ func resourceScalewaySSHKeyCreate(d *schema.ResourceData, m interface{}) error {
 
 	user, err = scaleway.PatchUserSSHKey(user.ID, api.UserPatchSSHKeyDefinition{
 		SSHPublicKeys: append(keys, api.KeyDefinition{
-			Key: d.Get("key").(string),
+			Key: strings.TrimSpace(d.Get("key").(string)),
 		}),
 	})
 
