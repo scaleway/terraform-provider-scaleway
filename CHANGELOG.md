@@ -1,4 +1,10 @@
-## 1.9.0 (Unreleased)
+## 1.8.1 (Unreleased)
+
+BUG FIXES:
+
+* resource/scaleway_ssh_key: trim leading and trailing spaces on SSH keys ([#110](https://github.com/terraform-providers/terraform-provider-scaleway/pull/110))
+
+
 ## 1.8.0 (November 27, 2018)
 
 FEATURES:
