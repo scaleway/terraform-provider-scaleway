@@ -6,6 +6,7 @@ import (
 
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/hashicorp/terraform/terraform"
+	homedir "github.com/mitchellh/go-homedir"
 )
 
 var testAccProviders map[string]terraform.ResourceProvider
@@ -30,6 +31,16 @@ func TestProvider_impl(t *testing.T) {
 
 func testAccPreCheck(t *testing.T) {
 	if v := os.Getenv("SCALEWAY_ORGANIZATION"); v == "" {
+		if path, err := homedir.Expand("~/.scwrc"); err == nil {
+			scwAPIKey, scwOrganization, err := readScalewayConfig(path)
+			if err != nil {
+				t.Fatalf("failed falling back to %s: %v", path, err)
+			}
+			if scwAPIKey == "" && scwOrganization == "" {
+				t.Fatal("SCALEWAY_TOKEN must be set for acceptance tests")
+			}
+			return
+		}
 		t.Fatal("SCALEWAY_ORGANIZATION must be set for acceptance tests")
 	}
 	tokenFromAccessKey := os.Getenv("SCALEWAY_ACCESS_KEY")
