@@ -2,6 +2,7 @@ package scaleway
 
 import (
 	"bytes"
+	"context"
 	"io"
 	"io/ioutil"
 	"log"
@@ -62,14 +63,14 @@ func (c *Config) Client() (*Client, error) {
 			cl.RetryWaitMax = 2 * time.Minute
 			cl.Logger = log.New(os.Stderr, "", 0)
 			cl.RetryWaitMin = time.Minute
-			cl.CheckRetry = func(resp *http.Response, err error) (bool, error) {
+			cl.CheckRetry = func(_ context.Context, resp *http.Response, err error) (bool, error) {
 				if resp == nil {
 					return true, err
 				}
 				if resp.StatusCode == http.StatusTooManyRequests {
 					return true, err
 				}
-				return retryablehttp.DefaultRetryPolicy(resp, err)
+				return retryablehttp.DefaultRetryPolicy(context.TODO(), resp, err)
 			}
 			c.Client = &client{cl}
 		},
