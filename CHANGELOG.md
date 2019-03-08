@@ -1,5 +1,9 @@
 ## 1.8.1 (Unreleased)
 
+FEATURES:
+
+* provider/scaleway: the provider now tries to parse the Scaleway CLI configuration if no environment variables are set ([#111](https://github.com/terraform-providers/terraform-provider-scaleway/pull/111))
+
 BUG FIXES:
 
 * resource/scaleway_ssh_key: trim leading and trailing spaces on SSH keys ([#110](https://github.com/terraform-providers/terraform-provider-scaleway/pull/110))
