@@ -31,7 +31,7 @@ func Provider() terraform.ResourceProvider {
 				DefaultFunc: schema.SchemaDefaultFunc(func() (interface{}, error) {
 					for _, k := range []string{"SCALEWAY_TOKEN", "SCALEWAY_ACCESS_KEY"} {
 						if os.Getenv(k) != "" {
-							return k, nil
+							return os.Getenv(k), nil
 						}
 					}
 					if path, err := homedir.Expand("~/.scwrc"); err == nil {
