@@ -1,4 +1,9 @@
-## 1.10.0 (Unreleased)
+## 1.9.1 (Unreleased)
+
+BUG FIXES:
+
+* provider/scaleway: load correct value from ENV ([#113](https://github.com/terraform-providers/terraform-provider-scaleway/pull/113))
+
 ## 1.9.0 (March 15, 2019)
 
 FEATURES:
