@@ -12,6 +12,7 @@ import (
 	"time"
 
 	retryablehttp "github.com/hashicorp/go-retryablehttp"
+	"github.com/hashicorp/terraform/helper/logging"
 	sdk "github.com/nicolai86/scaleway-sdk"
 )
 
@@ -53,27 +54,32 @@ func (c *client) Do(r *http.Request) (*http.Response, error) {
 
 // Client configures and returns a fully initialized Scaleway client
 func (c *Config) Client() (*Client, error) {
+	options := func(sdkApi *sdk.API) {
+		cl := retryablehttp.NewClient()
+
+		cl.HTTPClient.Transport = logging.NewTransport("Scaleway", cl.HTTPClient.Transport)
+		cl.RetryMax = 3
+		cl.RetryWaitMax = 2 * time.Minute
+		cl.Logger = log.New(os.Stderr, "", 0)
+		cl.RetryWaitMin = time.Minute
+		cl.CheckRetry = func(_ context.Context, resp *http.Response, err error) (bool, error) {
+			if resp == nil {
+				return true, err
+			}
+			if resp.StatusCode == http.StatusTooManyRequests {
+				return true, err
+			}
+			return retryablehttp.DefaultRetryPolicy(context.TODO(), resp, err)
+		}
+
+		sdkApi.Client = &client{cl}
+	}
+
 	api, err := sdk.New(
 		c.Organization,
 		c.APIKey,
 		c.Region,
-		func(c *sdk.API) {
-			cl := retryablehttp.NewClient()
-			cl.RetryMax = 3
-			cl.RetryWaitMax = 2 * time.Minute
-			cl.Logger = log.New(os.Stderr, "", 0)
-			cl.RetryWaitMin = time.Minute
-			cl.CheckRetry = func(_ context.Context, resp *http.Response, err error) (bool, error) {
-				if resp == nil {
-					return true, err
-				}
-				if resp.StatusCode == http.StatusTooManyRequests {
-					return true, err
-				}
-				return retryablehttp.DefaultRetryPolicy(context.TODO(), resp, err)
-			}
-			c.Client = &client{cl}
-		},
+		options,
 	)
 	if err != nil {
 		return nil, err
