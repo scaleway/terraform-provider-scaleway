@@ -22,6 +22,9 @@ func TestAccScalewayServer_importBasic(t *testing.T) {
 				ResourceName:      resourceName,
 				ImportState:       true,
 				ImportStateVerify: true,
+				ImportStateVerifyIgnore: []string{
+					"state_detail",
+				},
 			},
 		},
 	})
