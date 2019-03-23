@@ -1,4 +1,10 @@
 ## 1.9.2 (Unreleased)
+
+BUG FIXES:
+
+* provider/scaleway: load correct credentials from ENV ([#115](https://github.com/terraform-providers/terraform-provider-scaleway/pull/115))
+
+
 ## 1.9.1 (March 15, 2019)
 
 BUG FIXES:
