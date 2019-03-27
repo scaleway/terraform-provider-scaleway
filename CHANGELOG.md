@@ -2,6 +2,7 @@
 
 BUG FIXES:
 
+* datasource/image: sort results descending ([#117](https://github.com/terraform-providers/terraform-provider-scaleway/issues/117))
 * provider/scaleway: load correct credentials from ENV ([#114](https://github.com/terraform-providers/terraform-provider-scaleway/pull/114))
 
 
