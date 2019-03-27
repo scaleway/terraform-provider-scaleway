@@ -90,14 +90,14 @@ func testAccCheckImageID(n string) resource.TestCheckFunc {
 
 const testAccCheckScalewayImageConfig = `
 data "scaleway_image" "ubuntu" {
-  name = "Ubuntu Precise"
+  name = "Ubuntu Bionic"
   architecture = "arm"
 }
 `
 
 const testAccCheckScalewayImageConfig_mostRecent = `
 data "scaleway_image" "ubuntu" {
-  name = "Ubuntu Xenial"
+  name = "Ubuntu Bionic"
   architecture = "arm"
   most_recent = true
 }
