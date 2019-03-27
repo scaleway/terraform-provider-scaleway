@@ -124,7 +124,7 @@ func dataSourceScalewayImageRead(d *schema.ResourceData, meta interface{}) error
 
 	mostRecent := d.Get("most_recent").(bool)
 	sort.Slice(images, func(i, j int) bool {
-		return images[i].ModificationDate.Before(*images[j].ModificationDate)
+		return images[i].ModificationDate.After(*images[j].ModificationDate)
 	})
 	log.Printf("[DEBUG] got %d images: %#v\n", len(images), images)
 
