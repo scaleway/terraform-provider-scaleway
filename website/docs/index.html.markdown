@@ -132,6 +132,10 @@ If it fails to detect credentials inline, or in the environment, Terraform will 
 You can optionally specify a different location with `SCW_CONFIG_PATH` environment variable.
 You can find more information about this configuration [in the documentation](https://github.com/scaleway/scaleway-sdk-go/blob/master/scw/README.md#scaleway-config).
 
+The previous version of the config was located in `~/.scwrc`. It was produced by
+[scw](https://github.com/scaleway/scaleway-cli) tool. The format was JSON string
+`{"organization":"","token":"","version":"v1.19"}` where `version` was the version of `scw`.
+
 ## Arguments Reference
 
 In addition to [generic provider arguments](https://www.terraform.io/docs/configuration/providers.html) (e.g. `alias` and `version`), the following arguments are supported in the Scaleway provider block:
