@@ -79,7 +79,7 @@ type localImage struct {
 }
 
 func dataSourceScalewayImageRead(d *schema.ResourceData, meta interface{}) error {
-	scaleway := meta.(*Client).scaleway
+	scaleway := meta.(*Meta).deprecatedClient
 
 	var nameMatch func(api.MarketImage) bool
 	if name, ok := d.GetOk("name"); ok {

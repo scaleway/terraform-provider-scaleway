@@ -70,7 +70,7 @@ func resourceScalewayToken() *schema.Resource {
 }
 
 func resourceScalewayTokenCreate(d *schema.ResourceData, m interface{}) error {
-	scaleway := m.(*Client).scaleway
+	scaleway := m.(*Meta).deprecatedClient
 
 	email := ""
 	if mail, ok := d.GetOk("email"); ok {
@@ -100,7 +100,7 @@ func resourceScalewayTokenCreate(d *schema.ResourceData, m interface{}) error {
 }
 
 func resourceScalewayTokenRead(d *schema.ResourceData, m interface{}) error {
-	scaleway := m.(*Client).scaleway
+	scaleway := m.(*Meta).deprecatedClient
 
 	token, err := scaleway.GetToken(d.Id())
 	if err != nil {
@@ -134,7 +134,7 @@ func resourceScalewayTokenRead(d *schema.ResourceData, m interface{}) error {
 }
 
 func resourceScalewayTokenUpdate(d *schema.ResourceData, m interface{}) error {
-	scaleway := m.(*Client).scaleway
+	scaleway := m.(*Meta).deprecatedClient
 
 	if d.HasChange("description") || d.HasChange("expires") {
 		_, err := scaleway.UpdateToken(&api.UpdateTokenRequest{
@@ -151,7 +151,7 @@ func resourceScalewayTokenUpdate(d *schema.ResourceData, m interface{}) error {
 }
 
 func resourceScalewayTokenDelete(d *schema.ResourceData, m interface{}) error {
-	scaleway := m.(*Client).scaleway
+	scaleway := m.(*Meta).deprecatedClient
 
 	err := scaleway.DeleteToken(d.Id())
 	if err != nil {

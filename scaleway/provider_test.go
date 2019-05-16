@@ -32,7 +32,7 @@ func TestProvider_impl(t *testing.T) {
 func testAccPreCheck(t *testing.T) {
 	if v := os.Getenv("SCALEWAY_ORGANIZATION"); v == "" {
 		if path, err := homedir.Expand("~/.scwrc"); err == nil {
-			scwAPIKey, scwOrganization, err := readScalewayConfig(path)
+			scwAPIKey, scwOrganization, err := readDeprecatedScalewayConfig(path)
 			if err != nil {
 				t.Fatalf("failed falling back to %s: %v", path, err)
 			}

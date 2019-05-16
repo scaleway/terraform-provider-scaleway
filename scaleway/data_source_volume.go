@@ -5,7 +5,7 @@ import (
 	"log"
 
 	"github.com/hashicorp/terraform/helper/schema"
-	"github.com/nicolai86/scaleway-sdk"
+	api "github.com/nicolai86/scaleway-sdk"
 )
 
 func dataSourceScalewayVolume() *schema.Resource {
@@ -37,7 +37,7 @@ func dataSourceScalewayVolume() *schema.Resource {
 }
 
 func dataSourceScalewayVolumeRead(d *schema.ResourceData, m interface{}) error {
-	client := m.(*Client).scaleway
+	client := m.(*Meta).deprecatedClient
 
 	name := d.Get("name").(string)
 

@@ -3,6 +3,8 @@ package scaleway
 import (
 	"bytes"
 	"context"
+	"encoding/json"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"log"
@@ -23,16 +25,43 @@ type Config struct {
 	Region       string
 }
 
-// Client contains scaleway api clients
-type Client struct {
-	scaleway *sdk.API
+// Meta contains the SDK client and a deprecated version of the SDK temporary.
+//
+// This meta value returned by this function is passed into all resources.
+type Meta struct {
+	deprecatedClient *sdk.API
 }
 
-// client is a bridge between sdk.HTTPClient interface and retryablehttp.Client
+// Meta creates a meta instance from a client configuration.
+func (c *Config) Meta() (*Meta, error) {
+	meta := &Meta{}
+
+	deprecatedClient, err := c.GetDeprecatedClient()
+	if err != nil {
+		return nil, fmt.Errorf("error: cannot create deprecated client: %s", err)
+	}
+	meta.deprecatedClient = deprecatedClient
+
+	// fetch known scaleway server types to support validation in r/server
+	if len(commercialServerTypes) == 0 {
+		if availability, err := deprecatedClient.GetServerAvailabilities(); err == nil {
+			commercialServerTypes = availability.CommercialTypes()
+			sort.StringSlice(commercialServerTypes).Sort()
+		}
+		if os.Getenv("DISABLE_SCALEWAY_SERVER_TYPE_VALIDATION") != "" {
+			commercialServerTypes = commercialServerTypes[:0]
+		}
+	}
+
+	return meta, nil
+}
+
+// client is a bridge between scw.httpClient interface and retryablehttp.Client
 type client struct {
 	*retryablehttp.Client
 }
 
+// Do wraps calling an HTTP method with retries.
 func (c *client) Do(r *http.Request) (*http.Response, error) {
 	var body io.ReadSeeker
 	if r.Body != nil {
@@ -52,8 +81,8 @@ func (c *client) Do(r *http.Request) (*http.Response, error) {
 	return c.Client.Do(req)
 }
 
-// Client configures and returns a fully initialized Scaleway client
-func (c *Config) Client() (*Client, error) {
+// GetDeprecatedClient create a new deprecated client from a configuration.
+func (c *Config) GetDeprecatedClient() (*sdk.API, error) {
 	options := func(sdkApi *sdk.API) {
 		cl := retryablehttp.NewClient()
 
@@ -75,25 +104,32 @@ func (c *Config) Client() (*Client, error) {
 		sdkApi.Client = &client{cl}
 	}
 
-	api, err := sdk.New(
+	return sdk.New(
 		c.Organization,
 		c.APIKey,
 		c.Region,
 		options,
 	)
-	if err != nil {
-		return nil, err
-	}
+}
 
-	// fetch known scaleway server types to support validation in r/server
-	if len(commercialServerTypes) == 0 {
-		if availability, err := api.GetServerAvailabilities(); err == nil {
-			commercialServerTypes = availability.CommercialTypes()
-			sort.StringSlice(commercialServerTypes).Sort()
-		}
-		if os.Getenv("DISABLE_SCALEWAY_SERVER_TYPE_VALIDATION") != "" {
-			commercialServerTypes = commercialServerTypes[:0]
-		}
+// deprecatedScalewayConfig is the structure of the deprecated Scaleway config file.
+type deprecatedScalewayConfig struct {
+	Organization string `json:"organization"`
+	Token        string `json:"token"`
+	Version      string `json:"version"`
+}
+
+// readDeprecatedScalewayConfig parse the deprecated Scaleway config file.
+func readDeprecatedScalewayConfig(path string) (string, string, error) {
+	f, err := os.Open(path)
+	if err != nil {
+		return "", "", err
 	}
-	return &Client{api}, nil
+	defer f.Close()
+
+	var data deprecatedScalewayConfig
+	if err := json.NewDecoder(f).Decode(&data); err != nil {
+		return "", "", err
+	}
+	return data.Token, data.Organization, nil
 }

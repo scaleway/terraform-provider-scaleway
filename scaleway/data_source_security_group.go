@@ -5,7 +5,7 @@ import (
 	"log"
 
 	"github.com/hashicorp/terraform/helper/schema"
-	"github.com/nicolai86/scaleway-sdk"
+	api "github.com/nicolai86/scaleway-sdk"
 )
 
 func dataSourceScalewaySecurityGroup() *schema.Resource {
@@ -30,7 +30,7 @@ func dataSourceScalewaySecurityGroup() *schema.Resource {
 	}
 }
 func dataSourceScalewaySecurityGroupRead(d *schema.ResourceData, m interface{}) error {
-	client := m.(*Client).scaleway
+	client := m.(*Meta).deprecatedClient
 
 	groups, err := client.GetSecurityGroups()
 	if err != nil {
