@@ -7,6 +7,10 @@ Terraform Provider
 
 <img src="https://cdn.rawgit.com/hashicorp/terraform-website/master/content/source/assets/images/logo-hashicorp.svg" width="600px">
 
+### Version 2 In Progress
+
+We are actively working on the version 2. You can follow the progess [here](https://github.com/terraform-providers/terraform-provider-scaleway/issues/125).
+
 Requirements
 ------------
 
