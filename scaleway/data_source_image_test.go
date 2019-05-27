@@ -55,7 +55,7 @@ func TestAccScalewayDataSourceImage_Filtered(t *testing.T) {
 				Config: testAccCheckScalewayImageFilterConfig,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckImageID("data.scaleway_image.ubuntu"),
-					resource.TestCheckResourceAttr("data.scaleway_image.ubuntu", "name", "Ubuntu Precise (12.04)"),
+					resource.TestCheckResourceAttr("data.scaleway_image.ubuntu", "name", "Ubuntu Bionic Beaver"),
 					resource.TestCheckResourceAttr("data.scaleway_image.ubuntu", "architecture", "arm"),
 					resource.TestCheckResourceAttr("data.scaleway_image.ubuntu", "public", "true"),
 					resource.TestCheckResourceAttrSet("data.scaleway_image.ubuntu", "organization"),
@@ -105,7 +105,7 @@ data "scaleway_image" "ubuntu" {
 
 const testAccCheckScalewayImageFilterConfig = `
 data "scaleway_image" "ubuntu" {
-  name_filter = "Precise"
+  name_filter = "Bionic"
   architecture = "arm"
 }
 `
