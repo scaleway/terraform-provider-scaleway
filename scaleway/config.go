@@ -25,10 +25,11 @@ type Config struct {
 	Region       string
 }
 
-// Meta contains the SDK client and a deprecated version of the SDK temporary.
+// Meta contains SDK clients used by resources.
 //
-// This meta value returned by this function is passed into all resources.
+// This meta value is passed into all resources.
 type Meta struct {
+	// The deprecated Scaleway SDK (will be removed in `v2.0.0`).
 	deprecatedClient *sdk.API
 }
 
