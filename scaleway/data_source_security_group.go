@@ -5,7 +5,7 @@ import (
 	"log"
 
 	"github.com/hashicorp/terraform/helper/schema"
-	api "github.com/nicolai86/scaleway-sdk"
+	"github.com/nicolai86/scaleway-sdk"
 )
 
 func dataSourceScalewaySecurityGroup() *schema.Resource {
