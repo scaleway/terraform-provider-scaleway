@@ -37,7 +37,6 @@ func testAccCheckBootscriptID(n string) resource.TestCheckFunc {
 		}
 
 		scaleway := testAccProvider.Meta().(*Meta).deprecatedClient
-
 		_, err := scaleway.GetBootscript(rs.Primary.ID)
 		if err != nil {
 			return err
