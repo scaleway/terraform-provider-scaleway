@@ -29,7 +29,7 @@ type Config struct {
 //
 // This meta value is passed into all resources.
 type Meta struct {
-	// The deprecated Scaleway SDK (will be removed in `v2.0.0`).
+	// Deprecated: The deprecated Scaleway SDK (will be removed in `v2.0.0`).
 	deprecatedClient *sdk.API
 }
 
