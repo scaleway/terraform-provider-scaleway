@@ -14,6 +14,9 @@ import (
 type logger struct {
 }
 
+// l is the global logger singleton
+var l = logger{}
+
 // Debugf logs to the DEBUG log. Arguments are handled in the manner of fmt.Printf.
 func (l logger) Debugf(format string, args ...interface{}) {
 	log.Printf("[DEBUG] "+format, args...)

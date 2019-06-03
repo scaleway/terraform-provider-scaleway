@@ -23,11 +23,10 @@ import (
 
 // Config is a configuration for a client.
 type Config struct {
-	AccessKey        string
-	SecretKey        string
-	DefaultProjectID string
-	DefaultRegion    utils.Region
-	DefaultZone      utils.Zone
+	Organization string
+	APIKey       string
+	Region       utils.Region
+	Zone         utils.Zone
 }
 
 // Meta contains SDK clients used by resources.
@@ -83,20 +82,20 @@ func (c *Config) GetScwClient() (*scw.Client, error) {
 	}
 
 	// The access key is not used for API authentications.
-	if c.SecretKey != "" {
-		options = append(options, scw.WithAuth(c.AccessKey, c.SecretKey))
+	if c.APIKey != "" {
+		options = append(options, scw.WithAuth("", c.APIKey))
 	}
 
-	if c.DefaultProjectID != "" {
-		options = append(options, scw.WithDefaultOrganizationID(c.DefaultProjectID))
+	if c.Organization != "" {
+		options = append(options, scw.WithDefaultOrganizationID(c.Organization))
 	}
 
-	if c.DefaultRegion != "" {
-		options = append(options, scw.WithDefaultRegion(c.DefaultRegion))
+	if c.Region != "" {
+		options = append(options, scw.WithDefaultRegion(c.Region))
 	}
 
-	if c.DefaultZone != "" {
-		options = append(options, scw.WithDefaultZone(c.DefaultZone))
+	if c.Zone != "" {
+		options = append(options, scw.WithDefaultZone(c.Zone))
 	}
 
 	client, err := scw.NewClient(options...)
@@ -162,16 +161,16 @@ func (c *Config) GetDeprecatedClient() (*sdk.API, error) {
 
 	// TODO: Replace by a parsing with error handling.
 	region := ""
-	if c.DefaultRegion == utils.RegionFrPar || c.DefaultZone == utils.ZoneFrPar1 {
+	if c.Region == utils.RegionFrPar || c.Zone == utils.ZoneFrPar1 {
 		region = "par1"
 	}
-	if c.DefaultRegion == utils.RegionNlAms || c.DefaultZone == utils.ZoneNlAms1 {
+	if c.Region == utils.RegionNlAms || c.Zone == utils.ZoneNlAms1 {
 		region = "ams1"
 	}
 
 	return sdk.New(
-		c.DefaultProjectID,
-		c.SecretKey,
+		c.Organization,
+		c.APIKey,
 		region,
 		options,
 	)

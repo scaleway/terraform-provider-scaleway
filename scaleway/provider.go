@@ -1,6 +1,7 @@
 package scaleway
 
 import (
+	"fmt"
 	"log"
 	"os"
 	"sync"
@@ -24,7 +25,8 @@ func Provider() terraform.ResourceProvider {
 	// Init the Scaleway config.
 	scwConfig, err := scwconfig.Load()
 	if err != nil {
-		log.Fatalf("error: cannot load configuration: %s", err)
+		l.Errorf("cannot load configuration: %s", err)
+		return nil
 	}
 
 	return &schema.Provider{
@@ -177,25 +179,39 @@ func Provider() terraform.ResourceProvider {
 
 // providerConfigure creates the Meta object containing the SDK client.
 func providerConfigure(d *schema.ResourceData) (interface{}, error) {
-	config := &Config{
-		AccessKey:        d.Get("access_key").(string),
-		SecretKey:        d.Get("secret_key").(string),
-		DefaultProjectID: d.Get("organization_id").(string),
-		DefaultRegion:    utils.Region(d.Get("region").(string)),
-		DefaultZone:      utils.Zone(d.Get("zone").(string)),
+	apiKey := ""
+	if v, ok := d.Get("secret_key").(string); ok {
+		apiKey = v
+	} else if v, ok := d.Get("token").(string); ok {
+		apiKey = v
+	} else {
+		if v, ok := d.Get("access_key").(string); ok {
+			log.Println("[WARN] you seem to use the access_key instead of secret_key in the provider. This bogus behavior is deprecated, please use the `secret_key` field instead.")
+			apiKey = v
+		}
 	}
 
-	// Handle deprecated values.
-	// Deprecation messages will be handled by terraform.
-	if config.SecretKey == "" {
-		config.SecretKey = d.Get("token").(string)
+	organization := d.Get("organization_id").(string)
+	if organization == "" {
+		organization = d.Get("organization").(string)
 	}
-	if config.DefaultProjectID == "" {
-		config.DefaultProjectID = d.Get("organization").(string)
+
+	if apiKey == "" {
+		if path, err := homedir.Expand("~/.scwrc"); err == nil {
+			scwAPIKey, scwOrganization, err := readDeprecatedScalewayConfig(path)
+			if err != nil {
+				return nil, fmt.Errorf("Error loading credentials from SCW: %s", err)
+			}
+			apiKey = scwAPIKey
+			organization = scwOrganization
+		}
 	}
-	if config.SecretKey == "" && config.AccessKey != "" {
-		log.Println("[WARN] you seem to use the access_key instead of secret_key in the provider. This bogus behavior is deprecated, please use the `secret_key` field instead.")
-		config.SecretKey = config.AccessKey
+
+	config := Config{
+		Organization: organization,
+		APIKey:       apiKey,
+		Region:       utils.Region(d.Get("region").(string)),
+		Zone:         utils.Zone(d.Get("zone").(string)),
 	}
 
 	return config.Meta()
