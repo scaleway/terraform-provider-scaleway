@@ -5,14 +5,12 @@ import (
 	"os"
 	"sync"
 
-	"github.com/scaleway/scaleway-sdk-go/logger"
-	"github.com/scaleway/scaleway-sdk-go/scwconfig"
-
-	"github.com/scaleway/scaleway-sdk-go/utils"
-
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/hashicorp/terraform/terraform"
 	"github.com/mitchellh/go-homedir"
+	scwLogger "github.com/scaleway/scaleway-sdk-go/logger"
+	"github.com/scaleway/scaleway-sdk-go/scwconfig"
+	"github.com/scaleway/scaleway-sdk-go/utils"
 )
 
 var mu = sync.Mutex{}
@@ -21,7 +19,7 @@ var mu = sync.Mutex{}
 func Provider() terraform.ResourceProvider {
 
 	// Init the SDK logger.
-	logger.SetLogger(sdkLogger{})
+	scwLogger.SetLogger(logger{})
 
 	// Init the Scaleway config.
 	scwConfig, err := scwconfig.Load()
