@@ -71,7 +71,7 @@ func (c *Config) Meta() (*Meta, error) {
 	return meta, nil
 }
 
-var userAgent = fmt.Sprintf("terraform-provider/%s;terraform/%s", version, terraform.VersionString())
+var userAgent = fmt.Sprintf("terraform-provider/%s terraform/%s", version, terraform.VersionString())
 
 // GetScwClient returns a new scw.Client from a configuration.
 func (c *Config) GetScwClient() (*scw.Client, error) {
@@ -111,10 +111,7 @@ func createRetryableHTTPClient() *client {
 	c.Logger = log.New(os.Stderr, "", 0)
 	c.RetryWaitMin = time.Minute
 	c.CheckRetry = func(_ context.Context, resp *http.Response, err error) (bool, error) {
-		if resp == nil {
-			return true, err
-		}
-		if resp.StatusCode == http.StatusTooManyRequests {
+		if resp == nil || resp.StatusCode == http.StatusTooManyRequests {
 			return true, err
 		}
 		return retryablehttp.DefaultRetryPolicy(context.TODO(), resp, err)
