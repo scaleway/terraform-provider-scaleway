@@ -1,12 +1,12 @@
-## 1.10.0 (Unreleased)
+## 1.10.0 (June 03, 2019)
 
 FEATURES
 
-* provider/scaleway: update terraform SDK to 0.12.0 [GH-127]
+* provider/scaleway: update terraform SDK to 0.12.0 ([#127](https://github.com/terraform-providers/terraform-provider-scaleway/issues/127))
 
 BUG FIXES:
 
-* provider/scaleway: build command in the README [GH-134]
+* provider/scaleway: build command in the README ([#134](https://github.com/terraform-providers/terraform-provider-scaleway/issues/134))
 
 
 ## 1.9.2 (March 27, 2019)
