@@ -19,7 +19,7 @@ var mu = sync.Mutex{}
 func Provider() terraform.ResourceProvider {
 
 	// Init the SDK logger.
-	scwLogger.SetLogger(logger{})
+	scwLogger.SetLogger(l)
 
 	return &schema.Provider{
 		Schema: map[string]*schema.Schema{

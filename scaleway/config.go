@@ -95,7 +95,7 @@ func (c *Config) GetScwClient() (*scw.Client, error) {
 
 	client, err := scw.NewClient(options...)
 	if err != nil {
-		return nil, fmt.Errorf("error: cannot create SDK client: %s", err)
+		return nil, fmt.Errorf("cannot create SDK client: %s", err)
 	}
 
 	return client, err
