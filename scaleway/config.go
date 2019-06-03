@@ -26,7 +26,6 @@ type Config struct {
 	Organization string
 	APIKey       string
 	Region       utils.Region
-	Zone         utils.Zone
 }
 
 // Meta contains SDK clients used by resources.
@@ -94,10 +93,6 @@ func (c *Config) GetScwClient() (*scw.Client, error) {
 		options = append(options, scw.WithDefaultRegion(c.Region))
 	}
 
-	if c.Zone != "" {
-		options = append(options, scw.WithDefaultZone(c.Zone))
-	}
-
 	client, err := scw.NewClient(options...)
 	if err != nil {
 		return nil, fmt.Errorf("error: cannot create SDK client: %s", err)
@@ -161,10 +156,10 @@ func (c *Config) GetDeprecatedClient() (*sdk.API, error) {
 
 	// TODO: Replace by a parsing with error handling.
 	region := ""
-	if c.Region == utils.RegionFrPar || c.Zone == utils.ZoneFrPar1 {
+	if c.Region == utils.RegionFrPar {
 		region = "par1"
 	}
-	if c.Region == utils.RegionNlAms || c.Zone == utils.ZoneNlAms1 {
+	if c.Region == utils.RegionNlAms {
 		region = "ams1"
 	}
 
