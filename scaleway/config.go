@@ -99,36 +99,12 @@ func (c *Config) GetScwClient() (*scw.Client, error) {
 		options = append(options, scw.WithDefaultZone(c.DefaultZone))
 	}
 
-	// TODO: Use retryablehttp client here
 	client, err := scw.NewClient(options...)
 	if err != nil {
 		return nil, fmt.Errorf("error: cannot create SDK client: %s", err)
 	}
 
 	return client, err
-}
-
-// GetDeprecatedClient create a new deprecated client from a configuration.
-func (c *Config) GetDeprecatedClient() (*sdk.API, error) {
-	options := func(sdkApi *sdk.API) {
-		sdkApi.Client = createRetryableHTTPClient()
-	}
-
-	// TODO: Replace by a parsing with error handling.
-	region := ""
-	if c.DefaultRegion == utils.RegionFrPar || c.DefaultZone == utils.ZoneFrPar1 {
-		region = "par1"
-	}
-	if c.DefaultRegion == utils.RegionNlAms || c.DefaultZone == utils.ZoneNlAms1 {
-		region = "ams1"
-	}
-
-	return sdk.New(
-		c.DefaultProjectID,
-		c.SecretKey,
-		region,
-		options,
-	)
 }
 
 // createRetryableHTTPClient create a retryablehttp.Client.
@@ -176,6 +152,29 @@ func (c *client) Do(r *http.Request) (*http.Response, error) {
 		return nil, err
 	}
 	return c.Client.Do(req)
+}
+
+// GetDeprecatedClient create a new deprecated client from a configuration.
+func (c *Config) GetDeprecatedClient() (*sdk.API, error) {
+	options := func(sdkApi *sdk.API) {
+		sdkApi.Client = createRetryableHTTPClient()
+	}
+
+	// TODO: Replace by a parsing with error handling.
+	region := ""
+	if c.DefaultRegion == utils.RegionFrPar || c.DefaultZone == utils.ZoneFrPar1 {
+		region = "par1"
+	}
+	if c.DefaultRegion == utils.RegionNlAms || c.DefaultZone == utils.ZoneNlAms1 {
+		region = "ams1"
+	}
+
+	return sdk.New(
+		c.DefaultProjectID,
+		c.SecretKey,
+		region,
+		options,
+	)
 }
 
 // deprecatedScalewayConfig is the structure of the deprecated Scaleway config file.
