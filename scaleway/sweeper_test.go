@@ -31,9 +31,9 @@ func sharedDeprecatedClientForRegion(r string) (*api.API, error) {
 	}
 
 	conf := &Config{
-		Organization: os.Getenv("SCALEWAY_ORGANIZATION"),
-		APIKey:       os.Getenv("SCALEWAY_TOKEN"),
-		Region:       region,
+		DefaultProjectID: os.Getenv("SCALEWAY_ORGANIZATION"),
+		SecretKey:        os.Getenv("SCALEWAY_TOKEN"),
+		DefaultRegion:    region,
 	}
 
 	// configures a default client for the region, using the above env vars
