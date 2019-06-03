@@ -1,4 +1,19 @@
 ## 1.10.0 (Unreleased)
+
+FEATURES
+
+* provider/scaleway: update terraform SDK to 0.12.0 [GH-127]
+
+IMPROVEMENTS
+
+* provider/scaleway: add .vscode to .gitignore [GH-128]
+
+BUG FIXES:
+
+* provider/scaleway: build command in the README [GH-134]
+* datasource/image: TestAccScalewayDataSourceImage_Filtered [GH-129]
+
+
 ## 1.9.2 (March 27, 2019)
 
 BUG FIXES:
