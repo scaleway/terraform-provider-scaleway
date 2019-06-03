@@ -86,7 +86,7 @@ func (c *Config) GetScwClient() (*scw.Client, error) {
 	}
 
 	if c.Organization != "" {
-		options = append(options, scw.WithDefaultOrganizationID(c.Organization))
+		options = append(options, scw.WithDefaultProjectID(c.Organization))
 	}
 
 	if c.Region != "" {
