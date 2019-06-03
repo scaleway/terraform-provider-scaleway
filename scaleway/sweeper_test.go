@@ -2,38 +2,65 @@ package scaleway
 
 import (
 	"fmt"
-	"os"
 	"testing"
 
 	"github.com/hashicorp/terraform/helper/resource"
-	"github.com/nicolai86/scaleway-sdk"
+	api "github.com/nicolai86/scaleway-sdk"
+	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/scaleway-sdk-go/utils"
 )
 
 func TestMain(m *testing.M) {
 	resource.TestMain(m)
 }
 
-// sharedClientForRegion returns a common scaleway client needed for the sweeper
+// sharedDeprecatedClientForRegion returns a scaleway deprecated client needed for the sweeper
 // functions for a given region {par1,ams1}
 func sharedDeprecatedClientForRegion(region string) (*api.API, error) {
-	if os.Getenv("SCALEWAY_ORGANIZATION") == "" {
-		return nil, fmt.Errorf("empty SCALEWAY_ORGANIZATION")
+	organizationId, exists := scwConfig.GetDefaultOrganizationID()
+	if !exists {
+		return nil, fmt.Errorf("a default organization ID must be set for sweeper tests")
 	}
 
-	if os.Getenv("SCALEWAY_TOKEN") == "" {
-		return nil, fmt.Errorf("empty SCALEWAY_TOKEN")
+	accessKey, exists := scwConfig.GetAccessKey()
+	if !exists {
+		return nil, fmt.Errorf("an access key must be set for sweeper tests")
 	}
 
-	conf := &Config{
-		Organization: os.Getenv("SCALEWAY_ORGANIZATION"),
-		APIKey:       os.Getenv("SCALEWAY_TOKEN"),
-		Region:       region,
+	config := &Config{
+		AccessKey:             accessKey,
+		DefaultOrganizationID: organizationId,
+		DefaultRegion:         utils.Region(region),
 	}
 
 	// configures a default client for the region, using the above env vars
-	client, err := conf.GetDeprecatedClient()
+	client, err := config.GetDeprecatedClient()
 	if err != nil {
-		return nil, fmt.Errorf("error getting Scaleway client: %#v", err)
+		return nil, fmt.Errorf("error getting Scaleway deprecated client for sweeper tests: %#v", err)
+	}
+
+	return client, nil
+}
+
+// sharedClientForRegion returns a scaleway client needed for the sweeper
+// functions for a given region {par1,ams1}
+func sharedClientForRegion(region string) (*scw.Client, error) {
+	_, exists := scwConfig.GetDefaultOrganizationID()
+	if !exists {
+		return nil, fmt.Errorf("a default organization ID must be set for sweeper tests")
+	}
+
+	_, exists = scwConfig.GetAccessKey()
+	if !exists {
+		return nil, fmt.Errorf("an access key must be set for sweeper tests")
+	}
+
+	config := &Config{}
+
+	// configures a default client for the region, using the above env vars
+	client, err := config.GetScwClient()
+	if err != nil {
+		return nil, fmt.Errorf("error getting Scaleway client for sweeper tests: %#v", err)
 	}
 
 	return client, nil
