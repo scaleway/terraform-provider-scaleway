@@ -3,15 +3,10 @@ package scaleway
 import (
 	"fmt"
 	"log"
-	"os"
-	"sort"
-
-	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
-	"github.com/scaleway/scaleway-sdk-go/scw"
 
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/hashicorp/terraform/helper/validation"
-	api "github.com/nicolai86/scaleway-sdk"
+	"github.com/nicolai86/scaleway-sdk"
 )
 
 var commercialServerTypes []string
@@ -410,27 +405,4 @@ func resourceScalewayServerDelete(d *schema.ResourceData, m interface{}) error {
 	}
 
 	return err
-}
-
-// fetchServerAvailabilities fetch known scaleway server types to support validation in r/server
-func fetchServerAvailabilities(client *scw.Client) error {
-	// TODO: add documentation for DISABLE_SCALEWAY_SERVER_TYPE_VALIDATION
-	disableTypeValidation := os.Getenv("DISABLE_SCALEWAY_SERVER_TYPE_VALIDATION") != ""
-	if disableTypeValidation || len(commercialServerTypes) > 0 {
-		return nil
-	}
-
-	instanceAPI := instance.NewAPI(client)
-	res, err := instanceAPI.GetServerTypesAvailability(&instance.GetServerTypesAvailabilityRequest{})
-	if err != nil {
-		return fmt.Errorf("error: cannot fetch server availabilities: %s", err)
-	}
-
-	commercialServerTypes = make([]string, 0, len(res.Servers))
-	for k := range res.Servers {
-		commercialServerTypes = append(commercialServerTypes, k)
-	}
-	sort.StringSlice(commercialServerTypes).Sort()
-
-	return nil
 }

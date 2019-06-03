@@ -10,42 +10,24 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"sort"
 	"time"
 
-	"github.com/hashicorp/terraform/terraform"
-
-	"github.com/scaleway/scaleway-sdk-go/scw"
-
-	retryablehttp "github.com/hashicorp/go-retryablehttp"
+	"github.com/hashicorp/go-retryablehttp"
 	"github.com/hashicorp/terraform/helper/logging"
-	deprecatedSdk "github.com/nicolai86/scaleway-sdk"
-	"github.com/scaleway/scaleway-sdk-go/logger"
-	"github.com/scaleway/scaleway-sdk-go/scwconfig"
+	"github.com/hashicorp/terraform/terraform"
+	sdk "github.com/nicolai86/scaleway-sdk"
+	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/scaleway-sdk-go/utils"
 )
 
-// scwConfig contains the Scaleway configuration.
-var scwConfig scwconfig.Config
-
-func init() {
-	// Init the Scaleway config.
-	config, err := scwconfig.Load()
-	if err != nil {
-		log.Fatalf("error: cannot load configuration: %s", err)
-	}
-	scwConfig = config
-
-	// Init the SDK logger.
-	logger.SetLogger(sdkLogger{})
-}
-
 // Config is a configuration for a client.
 type Config struct {
-	AccessKey             string
-	SecretKey             string
-	DefaultOrganizationID string
-	DefaultRegion         utils.Region
-	DefaultZone           utils.Zone
+	AccessKey        string
+	SecretKey        string
+	DefaultProjectID string
+	DefaultRegion    utils.Region
+	DefaultZone      utils.Zone
 }
 
 // Meta contains SDK clients used by resources.
@@ -56,7 +38,7 @@ type Meta struct {
 	scwClient *scw.Client
 
 	// Deprecated: The deprecated Scaleway SDK (will be removed in `v2.0.0`).
-	deprecatedClient *deprecatedSdk.API
+	deprecatedClient *sdk.API
 }
 
 // Meta creates a meta instance from a client configuration.
@@ -77,10 +59,15 @@ func (c *Config) Meta() (*Meta, error) {
 	}
 	meta.deprecatedClient = deprecatedClient
 
-	// Fetch known scaleway server types to support validation in r/server
-	err = fetchServerAvailabilities(client)
-	if err != nil {
-		log.Printf("error: cannot fetch server availabilities: %s", err)
+	// fetch known scaleway server types to support validation in r/server
+	if len(commercialServerTypes) == 0 {
+		if availability, err := deprecatedClient.GetServerAvailabilities(); err == nil {
+			commercialServerTypes = availability.CommercialTypes()
+			sort.StringSlice(commercialServerTypes).Sort()
+		}
+		if os.Getenv("DISABLE_SCALEWAY_SERVER_TYPE_VALIDATION") != "" {
+			commercialServerTypes = commercialServerTypes[:0]
+		}
 	}
 
 	return meta, nil
@@ -100,8 +87,8 @@ func (c *Config) GetScwClient() (*scw.Client, error) {
 		options = append(options, scw.WithAuth(c.AccessKey, c.SecretKey))
 	}
 
-	if c.DefaultOrganizationID != "" {
-		options = append(options, scw.WithDefaultOrganizationID(c.DefaultOrganizationID))
+	if c.DefaultProjectID != "" {
+		options = append(options, scw.WithDefaultOrganizationID(c.DefaultProjectID))
 	}
 
 	if c.DefaultRegion != "" {
@@ -122,8 +109,8 @@ func (c *Config) GetScwClient() (*scw.Client, error) {
 }
 
 // GetDeprecatedClient create a new deprecated client from a configuration.
-func (c *Config) GetDeprecatedClient() (*deprecatedSdk.API, error) {
-	options := func(sdkApi *deprecatedSdk.API) {
+func (c *Config) GetDeprecatedClient() (*sdk.API, error) {
+	options := func(sdkApi *sdk.API) {
 		sdkApi.Client = createRetryableHTTPClient()
 	}
 
@@ -136,8 +123,8 @@ func (c *Config) GetDeprecatedClient() (*deprecatedSdk.API, error) {
 		region = "ams1"
 	}
 
-	return deprecatedSdk.New(
-		c.DefaultOrganizationID,
+	return sdk.New(
+		c.DefaultProjectID,
 		c.SecretKey,
 		region,
 		options,

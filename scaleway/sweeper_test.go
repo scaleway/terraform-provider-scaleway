@@ -28,9 +28,9 @@ func sharedDeprecatedClientForRegion(region string) (*api.API, error) {
 	}
 
 	config := &Config{
-		AccessKey:             accessKey,
-		DefaultOrganizationID: organizationId,
-		DefaultRegion:         utils.Region(region),
+		AccessKey:        accessKey,
+		DefaultProjectID: organizationId,
+		DefaultRegion:    utils.Region(region),
 	}
 
 	// configures a default client for the region, using the above env vars
@@ -42,9 +42,9 @@ func sharedDeprecatedClientForRegion(region string) (*api.API, error) {
 	return client, nil
 }
 
-// sharedClientForRegion returns a scaleway client needed for the sweeper
+// sharedScwClientForRegion returns a scaleway client needed for the sweeper
 // functions for a given region {par1,ams1}
-func sharedClientForRegion(region string) (*scw.Client, error) {
+func sharedScwClientForRegion(region string) (*scw.Client, error) {
 	_, exists := scwConfig.GetDefaultOrganizationID()
 	if !exists {
 		return nil, fmt.Errorf("a default organization ID must be set for sweeper tests")

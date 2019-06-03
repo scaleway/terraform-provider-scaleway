@@ -5,6 +5,9 @@ import (
 	"os"
 	"sync"
 
+	"github.com/scaleway/scaleway-sdk-go/logger"
+	"github.com/scaleway/scaleway-sdk-go/scwconfig"
+
 	"github.com/scaleway/scaleway-sdk-go/utils"
 
 	"github.com/hashicorp/terraform/helper/schema"
@@ -16,6 +19,16 @@ var mu = sync.Mutex{}
 
 // Provider returns a terraform.ResourceProvider.
 func Provider() terraform.ResourceProvider {
+
+	// Init the SDK logger.
+	logger.SetLogger(sdkLogger{})
+
+	// Init the Scaleway config.
+	scwConfig, err := scwconfig.Load()
+	if err != nil {
+		log.Fatalf("error: cannot load configuration: %s", err)
+	}
+
 	return &schema.Provider{
 		Schema: map[string]*schema.Schema{
 			"access_key": {
@@ -46,7 +59,7 @@ func Provider() terraform.ResourceProvider {
 					return nil, nil
 				}),
 			},
-			"organization_id": {
+			"project_id": {
 				Type:        schema.TypeString,
 				Optional:    true, // To allow user to use deprecated `organization`.
 				Description: "The Scaleway organization ID.",
@@ -167,11 +180,11 @@ func Provider() terraform.ResourceProvider {
 // providerConfigure creates the Meta object containing the SDK client.
 func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 	config := &Config{
-		AccessKey:             d.Get("access_key").(string),
-		SecretKey:             d.Get("secret_key").(string),
-		DefaultOrganizationID: d.Get("organization_id").(string),
-		DefaultRegion:         utils.Region(d.Get("region").(string)),
-		DefaultZone:           utils.Zone(d.Get("zone").(string)),
+		AccessKey:        d.Get("access_key").(string),
+		SecretKey:        d.Get("secret_key").(string),
+		DefaultProjectID: d.Get("organization_id").(string),
+		DefaultRegion:    utils.Region(d.Get("region").(string)),
+		DefaultZone:      utils.Zone(d.Get("zone").(string)),
 	}
 
 	// Handle deprecated values.
@@ -179,8 +192,8 @@ func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 	if config.SecretKey == "" {
 		config.SecretKey = d.Get("token").(string)
 	}
-	if config.DefaultOrganizationID == "" {
-		config.DefaultOrganizationID = d.Get("organization").(string)
+	if config.DefaultProjectID == "" {
+		config.DefaultProjectID = d.Get("organization").(string)
 	}
 	if config.SecretKey == "" && config.AccessKey != "" {
 		log.Println("[WARN] you seem to use the access_key instead of secret_key in the provider. This bogus behavior is deprecated, please use the `secret_key` field instead.")
