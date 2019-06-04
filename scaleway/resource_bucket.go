@@ -10,9 +10,10 @@ import (
 
 func resourceScalewayBucket() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceScalewayBucketCreate,
-		Read:   resourceScalewayBucketRead,
-		Delete: resourceScalewayBucketDelete,
+		DeprecationMessage: "resource_bucket is depracted. Use 'storage_object_bucket'.",
+		Create:             resourceScalewayBucketCreate,
+		Read:               resourceScalewayBucketRead,
+		Delete:             resourceScalewayBucketDelete,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},
