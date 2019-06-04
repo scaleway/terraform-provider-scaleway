@@ -8,13 +8,19 @@ import (
 
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/hashicorp/terraform/terraform"
-	homedir "github.com/mitchellh/go-homedir"
+	"github.com/mitchellh/go-homedir"
+	scwLogger "github.com/scaleway/scaleway-sdk-go/logger"
+	"github.com/scaleway/scaleway-sdk-go/utils"
 )
 
 var mu = sync.Mutex{}
 
 // Provider returns a terraform.ResourceProvider.
 func Provider() terraform.ResourceProvider {
+
+	// Init the SDK logger.
+	scwLogger.SetLogger(l)
+
 	return &schema.Provider{
 		Schema: map[string]*schema.Schema{
 			"access_key": {
@@ -124,7 +130,7 @@ func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 	config := Config{
 		Organization: organization,
 		APIKey:       apiKey,
-		Region:       d.Get("region").(string),
+		Region:       utils.Region(d.Get("region").(string)),
 	}
 
 	return config.Meta()
