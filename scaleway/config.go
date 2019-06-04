@@ -32,10 +32,10 @@ type Config struct {
 //
 // This meta value is passed into all resources.
 type Meta struct {
-	// The Scaleway SDK client.
+	// scwClient is the Scaleway SDK client.
 	scwClient *scw.Client
 
-	// Deprecated: The deprecated Scaleway SDK (will be removed in `v2.0.0`).
+	// Deprecated: deprecatedClient is the deprecated Scaleway SDK (will be removed in `v2.0.0`).
 	deprecatedClient *sdk.API
 }
 
@@ -76,7 +76,7 @@ var userAgent = fmt.Sprintf("terraform-provider/%s terraform/%s", version, terra
 // GetScwClient returns a new scw.Client from a configuration.
 func (c *Config) GetScwClient() (*scw.Client, error) {
 	options := []scw.ClientOption{
-		scw.WithHTTPClient(createRetryableHTTPClient()),
+		scw.WithHTTPClient(createsRetryableHTTPClient()),
 		scw.WithUserAgent(userAgent),
 	}
 
@@ -101,8 +101,8 @@ func (c *Config) GetScwClient() (*scw.Client, error) {
 	return client, err
 }
 
-// createRetryableHTTPClient create a retryablehttp.Client.
-func createRetryableHTTPClient() *client {
+// createsRetryableHTTPClient create a retryablehttp.Client.
+func createsRetryableHTTPClient() *client {
 	c := retryablehttp.NewClient()
 
 	c.HTTPClient.Transport = logging.NewTransport("Scaleway", c.HTTPClient.Transport)
@@ -148,7 +148,7 @@ func (c *client) Do(r *http.Request) (*http.Response, error) {
 // GetDeprecatedClient create a new deprecated client from a configuration.
 func (c *Config) GetDeprecatedClient() (*sdk.API, error) {
 	options := func(sdkApi *sdk.API) {
-		sdkApi.Client = createRetryableHTTPClient()
+		sdkApi.Client = createsRetryableHTTPClient()
 	}
 
 	// TODO: Replace by a parsing with error handling.
