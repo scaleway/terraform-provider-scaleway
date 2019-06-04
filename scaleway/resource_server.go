@@ -164,7 +164,7 @@ func attachIP(scaleway *api.API, serverID, IPAddress string) error {
 }
 
 func resourceScalewayServerCreate(d *schema.ResourceData, m interface{}) error {
-	scaleway := m.(*Client).scaleway
+	scaleway := m.(*Meta).deprecatedClient
 
 	image := d.Get("image").(string)
 	var req = api.ServerDefinition{
@@ -264,7 +264,7 @@ func resourceScalewayServerCreate(d *schema.ResourceData, m interface{}) error {
 }
 
 func resourceScalewayServerRead(d *schema.ResourceData, m interface{}) error {
-	scaleway := m.(*Client).scaleway
+	scaleway := m.(*Meta).deprecatedClient
 
 	server, err := scaleway.GetServer(d.Id())
 	if err != nil {
@@ -312,7 +312,7 @@ func resourceScalewayServerRead(d *schema.ResourceData, m interface{}) error {
 }
 
 func resourceScalewayServerUpdate(d *schema.ResourceData, m interface{}) error {
-	scaleway := m.(*Client).scaleway
+	scaleway := m.(*Meta).deprecatedClient
 
 	var req api.ServerPatchDefinition
 	if d.HasChange("name") {
@@ -388,7 +388,7 @@ func resourceScalewayServerUpdate(d *schema.ResourceData, m interface{}) error {
 }
 
 func resourceScalewayServerDelete(d *schema.ResourceData, m interface{}) error {
-	scaleway := m.(*Client).scaleway
+	scaleway := m.(*Meta).deprecatedClient
 
 	s, err := scaleway.GetServer(d.Id())
 	if err != nil {

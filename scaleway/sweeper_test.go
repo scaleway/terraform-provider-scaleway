@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/hashicorp/terraform/helper/resource"
+	"github.com/nicolai86/scaleway-sdk"
 )
 
 func TestMain(m *testing.M) {
@@ -14,7 +15,7 @@ func TestMain(m *testing.M) {
 
 // sharedClientForRegion returns a common scaleway client needed for the sweeper
 // functions for a given region {par1,ams1}
-func sharedClientForRegion(region string) (interface{}, error) {
+func sharedDeprecatedClientForRegion(region string) (*api.API, error) {
 	if os.Getenv("SCALEWAY_ORGANIZATION") == "" {
 		return nil, fmt.Errorf("empty SCALEWAY_ORGANIZATION")
 	}
@@ -30,7 +31,7 @@ func sharedClientForRegion(region string) (interface{}, error) {
 	}
 
 	// configures a default client for the region, using the above env vars
-	client, err := conf.Client()
+	client, err := conf.GetDeprecatedClient()
 	if err != nil {
 		return nil, fmt.Errorf("error getting Scaleway client: %#v", err)
 	}

@@ -17,12 +17,11 @@ func init() {
 }
 
 func testSweepIP(region string) error {
-	client, err := sharedClientForRegion(region)
+	scaleway, err := sharedDeprecatedClientForRegion(region)
 	if err != nil {
 		return fmt.Errorf("error getting client: %s", err)
 	}
 
-	scaleway := client.(*Client).scaleway
 	log.Printf("[DEBUG] Destroying the ips in (%s)", region)
 
 	ips, err := scaleway.GetIPS()
@@ -102,7 +101,7 @@ func TestAccScalewayIP_Basic(t *testing.T) {
 }
 
 func testAccCheckScalewayIPDestroy(s *terraform.State) error {
-	client := testAccProvider.Meta().(*Client).scaleway
+	client := testAccProvider.Meta().(*Meta).deprecatedClient
 
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "scaleway" {
@@ -137,7 +136,7 @@ func testAccCheckScalewayIPExists(n string) resource.TestCheckFunc {
 			return fmt.Errorf("No IP ID is set")
 		}
 
-		client := testAccProvider.Meta().(*Client).scaleway
+		client := testAccProvider.Meta().(*Meta).deprecatedClient
 		ip, err := client.GetIP(rs.Primary.ID)
 
 		if err != nil {
@@ -164,7 +163,7 @@ func testAccCheckScalewayIPAttachment(n string, check func(string) bool, msg str
 			return fmt.Errorf("No IP ID is set")
 		}
 
-		client := testAccProvider.Meta().(*Client).scaleway
+		client := testAccProvider.Meta().(*Meta).deprecatedClient
 		ip, err := client.GetIP(rs.Primary.ID)
 
 		if err != nil {

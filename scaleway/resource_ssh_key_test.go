@@ -55,7 +55,7 @@ func TestAccScalewaySSHKey_Basic(t *testing.T) {
 }
 
 func testAccCheckScalewaySSHKeyDestroy(s *terraform.State) error {
-	client := testAccProvider.Meta().(*Client).scaleway
+	client := testAccProvider.Meta().(*Meta).deprecatedClient
 
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "scaleway" {

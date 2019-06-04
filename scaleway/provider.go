@@ -1,7 +1,6 @@
 package scaleway
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
 	"os"
@@ -35,7 +34,7 @@ func Provider() terraform.ResourceProvider {
 						}
 					}
 					if path, err := homedir.Expand("~/.scwrc"); err == nil {
-						scwAPIKey, _, err := readScalewayConfig(path)
+						scwAPIKey, _, err := readDeprecatedScalewayConfig(path)
 						if err != nil {
 							return nil, err
 						}
@@ -55,7 +54,7 @@ func Provider() terraform.ResourceProvider {
 						}
 					}
 					if path, err := homedir.Expand("~/.scwrc"); err == nil {
-						_, scwOrganization, err := readScalewayConfig(path)
+						_, scwOrganization, err := readDeprecatedScalewayConfig(path)
 						if err != nil {
 							return nil, err
 						}
@@ -98,26 +97,7 @@ func Provider() terraform.ResourceProvider {
 	}
 }
 
-type scalewayConfig struct {
-	Organization string `json:"organization"`
-	Token        string `json:"token"`
-	Version      string `json:"version"`
-}
-
-func readScalewayConfig(path string) (string, string, error) {
-	f, err := os.Open(path)
-	if err != nil {
-		return "", "", err
-	}
-	defer f.Close()
-
-	var data scalewayConfig
-	if err := json.NewDecoder(f).Decode(&data); err != nil {
-		return "", "", err
-	}
-	return data.Token, data.Organization, nil
-}
-
+// providerConfigure creates the Meta object containing the SDK client.
 func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 	apiKey := ""
 	if v, ok := d.Get("token").(string); ok {
@@ -132,7 +112,7 @@ func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 
 	if apiKey == "" {
 		if path, err := homedir.Expand("~/.scwrc"); err == nil {
-			scwAPIKey, scwOrganization, err := readScalewayConfig(path)
+			scwAPIKey, scwOrganization, err := readDeprecatedScalewayConfig(path)
 			if err != nil {
 				return nil, fmt.Errorf("Error loading credentials from SCW: %s", err)
 			}
@@ -147,5 +127,5 @@ func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 		Region:       d.Get("region").(string),
 	}
 
-	return config.Client()
+	return config.Meta()
 }
