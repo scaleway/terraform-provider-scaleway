@@ -68,7 +68,7 @@ func Provider() terraform.ResourceProvider {
 					}
 					return nil, errors.New("No token found")
 				}),
-				Description: "The DefaultProjectID ID (a.k.a. 'access key') for Scaleway API operations.",
+				Description: "The DefaultProjectID ID for Scaleway API operations.",
 			},
 			"region": {
 				Type:        schema.TypeString,
