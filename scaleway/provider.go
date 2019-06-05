@@ -127,10 +127,12 @@ func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 		}
 	}
 
+	rawRegion := d.Get("region").(string)
 	config := Config{
 		Organization: organization,
 		APIKey:       apiKey,
-		Region:       utils.Region(d.Get("region").(string)),
+		Region:       utils.ParseRegion(rawRegion),
+		Zone:         utils.ParseZone(rawRegion),
 	}
 
 	return config.Meta()
