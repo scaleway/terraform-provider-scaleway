@@ -11,8 +11,8 @@ import (
 	api "github.com/nicolai86/scaleway-sdk"
 )
 
-// UserAgent used for SDK requests.
-var UserAgent = fmt.Sprintf("terraform-provider/%s terraform/%s", version, terraform.VersionString())
+// userAgent used for SDK requests.
+var userAgent = fmt.Sprintf("terraform-provider/%s terraform/%s", version, terraform.VersionString())
 
 // Bool returns a pointer to of the bool value passed in.
 func Bool(val bool) *bool {

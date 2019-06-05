@@ -4,7 +4,6 @@ import (
 	"log"
 
 	"github.com/hashicorp/terraform/helper/logging"
-
 	sdkLogger "github.com/scaleway/scaleway-sdk-go/logger"
 )
 
