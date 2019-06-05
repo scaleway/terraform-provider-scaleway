@@ -153,7 +153,6 @@ func (c *Config) GetDeprecatedClient() (*sdk.API, error) {
 		sdkApi.Client = createsRetryableHTTPClient()
 	}
 
-	// TODO: Replace by a parsing with error handling.
 	region := string(c.Region)
 	if c.Region == utils.RegionFrPar {
 		region = "par1"
