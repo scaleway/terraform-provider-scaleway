@@ -15,7 +15,6 @@ import (
 
 	"github.com/hashicorp/go-retryablehttp"
 	"github.com/hashicorp/terraform/helper/logging"
-	"github.com/hashicorp/terraform/terraform"
 	sdk "github.com/nicolai86/scaleway-sdk"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/scaleway-sdk-go/utils"
@@ -72,13 +71,11 @@ func (c *Config) Meta() (*Meta, error) {
 	return meta, nil
 }
 
-var userAgent = fmt.Sprintf("terraform-provider/%s terraform/%s", version, terraform.VersionString())
-
 // GetScwClient returns a new scw.Client from a configuration.
 func (c *Config) GetScwClient() (*scw.Client, error) {
 	options := []scw.ClientOption{
 		scw.WithHTTPClient(createsRetryableHTTPClient()),
-		scw.WithUserAgent(userAgent),
+		scw.WithUserAgent(UserAgent),
 	}
 
 	// The access key is not used for API authentications.
