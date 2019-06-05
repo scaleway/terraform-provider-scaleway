@@ -154,11 +154,11 @@ func (c *Config) GetDeprecatedClient() (*sdk.API, error) {
 	}
 
 	// TODO: Replace by a parsing with error handling.
-	region := ""
-	if c.Region == utils.RegionFrPar || c.Zone == utils.ZoneFrPar1 {
+	region := string(c.Region)
+	if c.Region == utils.RegionFrPar {
 		region = "par1"
 	}
-	if c.Region == utils.RegionNlAms || c.Zone == utils.ZoneNlAms1 {
+	if c.Region == utils.RegionNlAms {
 		region = "ams1"
 	}
 
