@@ -68,7 +68,7 @@ func Provider() terraform.ResourceProvider {
 					}
 					return nil, errors.New("No token found")
 				}),
-				Description: "The Organization ID (a.k.a. 'access key') for Scaleway API operations.",
+				Description: "The DefaultProjectID ID for Scaleway API operations.",
 			},
 			"region": {
 				Type:        schema.TypeString,
@@ -139,10 +139,10 @@ func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 	}
 
 	config := Config{
-		Organization: organization,
-		APIKey:       apiKey,
-		Region:       region,
-		Zone:         zone,
+		DefaultProjectID: organization,
+		SecretKey:        apiKey,
+		DefaultRegion:    region,
+		DefaultZone:      zone,
 	}
 
 	return config.Meta()

@@ -22,10 +22,11 @@ import (
 
 // Config is a configuration for a client.
 type Config struct {
-	Organization string
-	APIKey       string
-	Region       utils.Region
-	Zone         utils.Zone
+	AccessKey        string
+	SecretKey        string
+	DefaultProjectID string
+	DefaultRegion    utils.Region
+	DefaultZone      utils.Zone
 }
 
 // Meta contains SDK clients used by resources.
@@ -79,20 +80,20 @@ func (c *Config) GetScwClient() (*scw.Client, error) {
 	}
 
 	// The access key is not used for API authentications.
-	if c.APIKey != "" {
-		options = append(options, scw.WithAuth("", c.APIKey))
+	if c.SecretKey != "" {
+		options = append(options, scw.WithAuth("", c.SecretKey))
 	}
 
-	if c.Organization != "" {
-		options = append(options, scw.WithDefaultProjectID(c.Organization))
+	if c.DefaultProjectID != "" {
+		options = append(options, scw.WithDefaultProjectID(c.DefaultProjectID))
 	}
 
-	if c.Region != "" {
-		options = append(options, scw.WithDefaultRegion(c.Region))
+	if c.DefaultRegion != "" {
+		options = append(options, scw.WithDefaultRegion(c.DefaultRegion))
 	}
 
-	if c.Zone != "" {
-		options = append(options, scw.WithDefaultZone(c.Zone))
+	if c.DefaultZone != "" {
+		options = append(options, scw.WithDefaultZone(c.DefaultZone))
 	}
 
 	client, err := scw.NewClient(options...)
@@ -153,17 +154,17 @@ func (c *Config) GetDeprecatedClient() (*sdk.API, error) {
 		sdkApi.Client = createsRetryableHTTPClient()
 	}
 
-	region := string(c.Region)
-	if c.Region == utils.RegionFrPar {
+	region := string(c.DefaultRegion)
+	if c.DefaultRegion == utils.RegionFrPar {
 		region = "par1"
 	}
-	if c.Region == utils.RegionNlAms {
+	if c.DefaultRegion == utils.RegionNlAms {
 		region = "ams1"
 	}
 
 	return sdk.New(
-		c.Organization,
-		c.APIKey,
+		c.DefaultProjectID,
+		c.SecretKey,
 		region,
 		options,
 	)
