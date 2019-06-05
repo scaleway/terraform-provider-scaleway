@@ -104,7 +104,7 @@ func (c *Config) GetScwClient() (*scw.Client, error) {
 	return client, err
 }
 
-// createRetryableHTTPClient create a retryablehttp.Client.
+// createsRetryableHTTPClient create a retryablehttp.Client.
 func createsRetryableHTTPClient() *client {
 	c := retryablehttp.NewClient()
 
