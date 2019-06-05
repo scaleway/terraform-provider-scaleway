@@ -75,7 +75,7 @@ func (c *Config) Meta() (*Meta, error) {
 func (c *Config) GetScwClient() (*scw.Client, error) {
 	options := []scw.ClientOption{
 		scw.WithHTTPClient(createsRetryableHTTPClient()),
-		scw.WithUserAgent(UserAgent),
+		scw.WithUserAgent(userAgent),
 	}
 
 	// The access key is not used for API authentications.
