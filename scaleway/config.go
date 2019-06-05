@@ -75,13 +75,13 @@ func (c *Config) Meta() (*Meta, error) {
 // GetScwClient returns a new scw.Client from a configuration.
 func (c *Config) GetScwClient() (*scw.Client, error) {
 	options := []scw.ClientOption{
-		scw.WithHTTPClient(createsRetryableHTTPClient()),
+		scw.WithHTTPClient(createRetryableHTTPClient()),
 		scw.WithUserAgent(userAgent),
 	}
 
 	// The access key is not used for API authentications.
 	if c.SecretKey != "" {
-		options = append(options, scw.WithAuth("", c.SecretKey))
+		options = append(options, scw.WithAuth(c.AccessKey, c.SecretKey))
 	}
 
 	if c.DefaultProjectID != "" {
@@ -104,8 +104,8 @@ func (c *Config) GetScwClient() (*scw.Client, error) {
 	return client, err
 }
 
-// createsRetryableHTTPClient create a retryablehttp.Client.
-func createsRetryableHTTPClient() *client {
+// createRetryableHTTPClient create a retryablehttp.Client.
+func createRetryableHTTPClient() *client {
 	c := retryablehttp.NewClient()
 
 	c.HTTPClient.Transport = logging.NewTransport("Scaleway", c.HTTPClient.Transport)
@@ -151,7 +151,7 @@ func (c *client) Do(r *http.Request) (*http.Response, error) {
 // GetDeprecatedClient create a new deprecated client from a configuration.
 func (c *Config) GetDeprecatedClient() (*sdk.API, error) {
 	options := func(sdkApi *sdk.API) {
-		sdkApi.Client = createsRetryableHTTPClient()
+		sdkApi.Client = createRetryableHTTPClient()
 	}
 
 	region := string(c.DefaultRegion)
