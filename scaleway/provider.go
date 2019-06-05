@@ -206,12 +206,14 @@ func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 		}
 	}
 
-	region, err := utils.ParseRegion(d.Get("region").(string))
+	rawRegion := d.Get("region").(string)
+	region, err := utils.ParseRegion(rawRegion)
 	if err != nil {
 		return nil, err
 	}
 
-	zone, err := utils.ParseZone(d.Get("zone").(string))
+	rawZone := d.Get("zone").(string)
+	zone, err := utils.ParseZone(rawZone)
 	if err != nil {
 		return nil, err
 	}
