@@ -13,23 +13,29 @@ import (
 	"sort"
 	"time"
 
-	retryablehttp "github.com/hashicorp/go-retryablehttp"
+	"github.com/hashicorp/go-retryablehttp"
 	"github.com/hashicorp/terraform/helper/logging"
 	sdk "github.com/nicolai86/scaleway-sdk"
+	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/scaleway-sdk-go/utils"
 )
 
-// Config contains scaleway configuration values
+// Config is a configuration for a client.
 type Config struct {
 	Organization string
 	APIKey       string
-	Region       string
+	Region       utils.Region
+	Zone         utils.Zone
 }
 
 // Meta contains SDK clients used by resources.
 //
 // This meta value is passed into all resources.
 type Meta struct {
-	// Deprecated: The deprecated Scaleway SDK (will be removed in `v2.0.0`).
+	// scwClient is the Scaleway SDK client.
+	scwClient *scw.Client
+
+	// Deprecated: deprecatedClient is the deprecated Scaleway SDK (will be removed in `v2.0.0`).
 	deprecatedClient *sdk.API
 }
 
@@ -37,6 +43,14 @@ type Meta struct {
 func (c *Config) Meta() (*Meta, error) {
 	meta := &Meta{}
 
+	// Scaleway Client
+	client, err := c.GetScwClient()
+	if err != nil {
+		return nil, err
+	}
+	meta.scwClient = client
+
+	// Deprecated Scaleway Client
 	deprecatedClient, err := c.GetDeprecatedClient()
 	if err != nil {
 		return nil, fmt.Errorf("error: cannot create deprecated client: %s", err)
@@ -55,6 +69,57 @@ func (c *Config) Meta() (*Meta, error) {
 	}
 
 	return meta, nil
+}
+
+// GetScwClient returns a new scw.Client from a configuration.
+func (c *Config) GetScwClient() (*scw.Client, error) {
+	options := []scw.ClientOption{
+		scw.WithHTTPClient(createsRetryableHTTPClient()),
+		scw.WithUserAgent(userAgent),
+	}
+
+	// The access key is not used for API authentications.
+	if c.APIKey != "" {
+		options = append(options, scw.WithAuth("", c.APIKey))
+	}
+
+	if c.Organization != "" {
+		options = append(options, scw.WithDefaultProjectID(c.Organization))
+	}
+
+	if c.Region != "" {
+		options = append(options, scw.WithDefaultRegion(c.Region))
+	}
+
+	if c.Zone != "" {
+		options = append(options, scw.WithDefaultZone(c.Zone))
+	}
+
+	client, err := scw.NewClient(options...)
+	if err != nil {
+		return nil, fmt.Errorf("cannot create SDK client: %s", err)
+	}
+
+	return client, err
+}
+
+// createsRetryableHTTPClient create a retryablehttp.Client.
+func createsRetryableHTTPClient() *client {
+	c := retryablehttp.NewClient()
+
+	c.HTTPClient.Transport = logging.NewTransport("Scaleway", c.HTTPClient.Transport)
+	c.RetryMax = 3
+	c.RetryWaitMax = 2 * time.Minute
+	c.Logger = log.New(os.Stderr, "", 0)
+	c.RetryWaitMin = time.Minute
+	c.CheckRetry = func(_ context.Context, resp *http.Response, err error) (bool, error) {
+		if resp == nil || resp.StatusCode == http.StatusTooManyRequests {
+			return true, err
+		}
+		return retryablehttp.DefaultRetryPolicy(context.TODO(), resp, err)
+	}
+
+	return &client{c}
 }
 
 // client is a bridge between scw.httpClient interface and retryablehttp.Client
@@ -85,30 +150,21 @@ func (c *client) Do(r *http.Request) (*http.Response, error) {
 // GetDeprecatedClient create a new deprecated client from a configuration.
 func (c *Config) GetDeprecatedClient() (*sdk.API, error) {
 	options := func(sdkApi *sdk.API) {
-		cl := retryablehttp.NewClient()
+		sdkApi.Client = createsRetryableHTTPClient()
+	}
 
-		cl.HTTPClient.Transport = logging.NewTransport("Scaleway", cl.HTTPClient.Transport)
-		cl.RetryMax = 3
-		cl.RetryWaitMax = 2 * time.Minute
-		cl.Logger = log.New(os.Stderr, "", 0)
-		cl.RetryWaitMin = time.Minute
-		cl.CheckRetry = func(_ context.Context, resp *http.Response, err error) (bool, error) {
-			if resp == nil {
-				return true, err
-			}
-			if resp.StatusCode == http.StatusTooManyRequests {
-				return true, err
-			}
-			return retryablehttp.DefaultRetryPolicy(context.TODO(), resp, err)
-		}
-
-		sdkApi.Client = &client{cl}
+	region := string(c.Region)
+	if c.Region == utils.RegionFrPar {
+		region = "par1"
+	}
+	if c.Region == utils.RegionNlAms {
+		region = "ams1"
 	}
 
 	return sdk.New(
 		c.Organization,
 		c.APIKey,
-		c.Region,
+		region,
 		options,
 	)
 }
