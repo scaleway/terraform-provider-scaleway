@@ -1,7 +1,6 @@
 package scaleway
 
 import (
-	"errors"
 	"fmt"
 	"os"
 	"sync"
@@ -10,6 +9,7 @@ import (
 	"github.com/hashicorp/terraform/terraform"
 	"github.com/mitchellh/go-homedir"
 	scwLogger "github.com/scaleway/scaleway-sdk-go/logger"
+	"github.com/scaleway/scaleway-sdk-go/scwconfig"
 	"github.com/scaleway/scaleway-sdk-go/utils"
 )
 
@@ -21,60 +21,133 @@ func Provider() terraform.ResourceProvider {
 	// Init the SDK logger.
 	scwLogger.SetLogger(l)
 
+	// Init the Scaleway config.
+	scwConfig, err := scwconfig.Load()
+	if err != nil {
+		l.Errorf("cannot load configuration: %s", err)
+		return nil
+	}
+
 	return &schema.Provider{
 		Schema: map[string]*schema.Schema{
 			"access_key": {
 				Type:        schema.TypeString,
 				Optional:    true,
-				DefaultFunc: schema.EnvDefaultFunc("SCALEWAY_ACCESS_KEY", nil),
-				Deprecated:  "Use `token` instead.",
-				Description: "The API key for Scaleway API operations.",
-			},
-			"token": {
-				Type:     schema.TypeString,
-				Required: true,
+				Description: "The Scaleway access key.",
 				DefaultFunc: schema.SchemaDefaultFunc(func() (interface{}, error) {
+					// Keep the deprecated behavior
+					if accessKey := os.Getenv("SCALEWAY_ACCESS_KEY"); accessKey != "" {
+						l.Warningf("SCALEWAY_ACCESS_KEY is deprecated, please use SCW_ACCESS_KEY instead")
+						return accessKey, nil
+					}
+					if accessKey, exist := scwConfig.GetAccessKey(); exist {
+						return accessKey, nil
+					}
+					return nil, nil
+				}),
+			},
+			"secret_key": {
+				Type:        schema.TypeString,
+				Optional:    true, // To allow user to use deprecated `token`.
+				Description: "The Scaleway secret Key.",
+				DefaultFunc: schema.SchemaDefaultFunc(func() (interface{}, error) {
+					// No error is returned here to allow user to use deprecated `token`.
+					if secretKey, exist := scwConfig.GetSecretKey(); exist {
+						return secretKey, nil
+					}
+					return nil, nil
+				}),
+			},
+			"project_id": {
+				Type:        schema.TypeString,
+				Optional:    true, // To allow user to use deprecated `organization`.
+				Description: "The Scaleway organization ID.",
+				DefaultFunc: schema.SchemaDefaultFunc(func() (interface{}, error) {
+					if organizationID, exist := scwConfig.GetDefaultProjectID(); exist {
+						return organizationID, nil
+					}
+					// No error is returned here to allow user to use deprecated `organization`.
+					return nil, nil
+				}),
+			},
+			"region": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The Scaleway default region to use for your resources.",
+				DefaultFunc: schema.SchemaDefaultFunc(func() (interface{}, error) {
+					// Keep the deprecated behavior
+					// Note: The deprecated region format conversion is handled in `config.GetDeprecatedClient`.
+					if region := os.Getenv("SCALEWAY_REGION"); region != "" {
+						l.Warningf("SCALEWAY_REGION is deprecated, please use SCW_DEFAULT_REGION instead")
+						return region, nil
+					}
+					if defaultRegion, exist := scwConfig.GetDefaultRegion(); exist {
+						return string(defaultRegion), nil
+					}
+					return string(utils.RegionFrPar), nil
+				}),
+			},
+			"zone": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The Scaleway default zone to use for your resources.",
+				DefaultFunc: schema.SchemaDefaultFunc(func() (interface{}, error) {
+					if defaultZone, exist := scwConfig.GetDefaultZone(); exist {
+						return string(defaultZone), nil
+					}
+					return nil, nil
+				}),
+			},
+
+			// Deprecated values
+			"token": {
+				Type:       schema.TypeString,
+				Optional:   true, // To allow user to use `secret_key`.
+				Deprecated: "Use `secret_key` instead.",
+				DefaultFunc: schema.SchemaDefaultFunc(func() (interface{}, error) {
+					// Keep the deprecated behavior
 					for _, k := range []string{"SCALEWAY_TOKEN", "SCALEWAY_ACCESS_KEY"} {
 						if os.Getenv(k) != "" {
+							l.Warningf("%s is deprecated, please use SCW_SECRET_KEY instead", k)
 							return os.Getenv(k), nil
 						}
 					}
 					if path, err := homedir.Expand("~/.scwrc"); err == nil {
 						scwAPIKey, _, err := readDeprecatedScalewayConfig(path)
 						if err != nil {
-							return nil, err
+							// No error is returned here to allow user to use `secret_key`.
+							l.Errorf("cannot parse deprecated config file: %s", err)
+							return nil, nil
 						}
+						// Depreciation log is already handled by scwconfig.
 						return scwAPIKey, nil
 					}
-					return nil, errors.New("No token found")
+					// No error is returned here to allow user to use `secret_key`.
+					return nil, nil
 				}),
-				Description: "The API key for Scaleway API operations.",
 			},
 			"organization": {
-				Type:     schema.TypeString,
-				Required: true,
+				Type:       schema.TypeString,
+				Optional:   true, // To allow user to use `organization_id`.
+				Deprecated: "Use `organization_id` instead.",
 				DefaultFunc: schema.SchemaDefaultFunc(func() (interface{}, error) {
-					for _, k := range []string{"SCALEWAY_ORGANIZATION"} {
-						if os.Getenv(k) != "" {
-							return os.Getenv(k), nil
-						}
+					// Keep the deprecated behavior
+					if organization := os.Getenv("SCALEWAY_ORGANIZATION"); organization != "" {
+						l.Warningf("SCALEWAY_ORGANIZATION is deprecated, please use SCW_DEFAULT_ORGANIZATION_ID instead")
+						return organization, nil
 					}
 					if path, err := homedir.Expand("~/.scwrc"); err == nil {
 						_, scwOrganization, err := readDeprecatedScalewayConfig(path)
 						if err != nil {
-							return nil, err
+							// No error is returned here to allow user to use `organization_id`.
+							l.Errorf("cannot parse deprecated config file: %s", err)
+							return nil, nil
 						}
 						return scwOrganization, nil
 					}
-					return nil, errors.New("No token found")
+					// No error is returned here to allow user to use `organization_id`.
+					return nil, nil
 				}),
-				Description: "The DefaultProjectID ID for Scaleway API operations.",
-			},
-			"region": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				DefaultFunc: schema.EnvDefaultFunc("SCALEWAY_REGION", "par1"),
-				Description: "The Scaleway API region to use.",
 			},
 		},
 
@@ -106,15 +179,21 @@ func Provider() terraform.ResourceProvider {
 // providerConfigure creates the Meta object containing the SDK client.
 func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 	apiKey := ""
-	if v, ok := d.Get("token").(string); ok {
+	if v, ok := d.Get("secret_key").(string); ok {
+		apiKey = v
+	} else if v, ok := d.Get("token").(string); ok {
 		apiKey = v
 	} else {
 		if v, ok := d.Get("access_key").(string); ok {
+			l.Warningf("you seem to use the access_key instead of secret_key in the provider. This bogus behavior is deprecated, please use the `secret_key` field instead.")
 			apiKey = v
 		}
 	}
 
-	organization := d.Get("organization").(string)
+	organization := d.Get("organization_id").(string)
+	if organization == "" {
+		organization = d.Get("organization").(string)
+	}
 
 	if apiKey == "" {
 		if path, err := homedir.Expand("~/.scwrc"); err == nil {
@@ -128,19 +207,21 @@ func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 	}
 
 	rawRegion := d.Get("region").(string)
-
 	region, err := utils.ParseRegion(rawRegion)
 	if err != nil {
 		return nil, err
 	}
-	zone, err := utils.ParseZone(rawRegion)
+
+	rawZone := d.Get("zone").(string)
+	zone, err := utils.ParseZone(rawZone)
 	if err != nil {
 		return nil, err
 	}
 
 	config := Config{
-		DefaultProjectID: organization,
+		AccessKey:        d.Get("access_key").(string),
 		SecretKey:        apiKey,
+		DefaultProjectID: organization,
 		DefaultRegion:    region,
 		DefaultZone:      zone,
 	}
