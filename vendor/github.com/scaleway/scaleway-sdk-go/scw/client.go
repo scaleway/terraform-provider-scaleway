@@ -33,7 +33,7 @@ type Client struct {
 func defaultOptions() []ClientOption {
 	return []ClientOption{
 		WithAPIURL("https://api.scaleway.com"),
-		WithUserAgent(userAgent),
+		withDefaultUserAgent(userAgent),
 	}
 }
 
