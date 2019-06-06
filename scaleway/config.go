@@ -13,9 +13,12 @@ import (
 	"sort"
 	"time"
 
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/credentials"
+	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/aws/aws-sdk-go/service/s3"
 	retryablehttp "github.com/hashicorp/go-retryablehttp"
 	"github.com/hashicorp/terraform/helper/logging"
-	"github.com/minio/minio-go/v6"
 	sdk "github.com/nicolai86/scaleway-sdk"
 )
 
@@ -31,7 +34,7 @@ type Config struct {
 // This meta value is passed into all resources.
 type Meta struct {
 	// s3Client is the S3 client
-	s3Client *minio.Client
+	s3Client *s3.S3
 
 	// Deprecated: The deprecated Scaleway SDK (will be removed in `v2.0.0`).
 	deprecatedClient *sdk.API
@@ -130,7 +133,7 @@ func (c *Config) GetDeprecatedClient() (*sdk.API, error) {
 var s3AccessKey string
 
 // GetS3Client creates a new s3 client from the configuration.
-func (c *Config) GetS3Client() (*minio.Client, error) {
+func (c *Config) GetS3Client() (*s3.S3, error) {
 
 	if s3AccessKey == "" {
 		scwClient, err := c.GetDeprecatedClient()
@@ -144,10 +147,16 @@ func (c *Config) GetS3Client() (*minio.Client, error) {
 		}
 	}
 
-	s3client, err := minio.NewWithRegion(c.getS3Endpoint(), s3AccessKey, c.APIKey, true, c.getS3Region())
+	config := &aws.Config{}
+	config.WithRegion(c.getS3Region())
+	config.WithCredentials(credentials.NewStaticCredentials(s3AccessKey, c.APIKey, ""))
+	config.WithEndpoint(c.getS3Endpoint())
+
+	s, err := session.NewSession(config)
 	if err != nil {
 		return nil, err
 	}
+	s3client := s3.New(s)
 
 	return s3client, nil
 }
@@ -167,7 +176,7 @@ func (c *Config) getS3Region() string {
 
 // getS3Endpoint returns the correct S3 endpoint for object storage based on the current region
 func (c *Config) getS3Endpoint() string {
-	return "s3." + c.getS3Region() + ".scw.cloud"
+	return "https://s3." + c.getS3Region() + ".scw.cloud"
 
 }
 

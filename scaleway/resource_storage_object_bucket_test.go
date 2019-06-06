@@ -7,6 +7,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/aws/aws-sdk-go/aws/awserr"
+	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/terraform"
 )
@@ -19,25 +21,29 @@ func init() {
 }
 
 func testSweepStorageObjectBucket(region string) error {
-	s3Client, err := sharedS3ClientForRegion(region)
+	s3client, err := sharedS3ClientForRegion(region)
 	if err != nil {
 		return fmt.Errorf("error getting client: %s", err)
 	}
 
-	log.Printf("[DEBUG] Destroying the buckets in (%s)", region)
-
-	buckets, err := s3Client.ListBuckets()
+	listBucketResponse, err := s3client.ListBuckets(&s3.ListBucketsInput{})
 	if err != nil {
-		return fmt.Errorf("Error listing buckets in Sweeper: %s", err)
+		return fmt.Errorf("couldn't list buckets: %s", err)
 	}
-	for _, bucket := range buckets {
-		if strings.HasPrefix(bucket.Name, "terraform-test") {
-			err := s3Client.RemoveBucket(bucket.Name)
+
+	for _, bucket := range listBucketResponse.Buckets {
+		log.Println(*bucket.Name)
+		if strings.HasPrefix(*bucket.Name, "terraform-test") {
+			_, err := s3client.DeleteBucket(&s3.DeleteBucketInput{
+				Bucket: bucket.Name,
+			})
 			if err != nil {
 				return fmt.Errorf("Error deleting bucket in Sweeper: %s", err)
 			}
 		}
+
 	}
+
 	return nil
 
 }
@@ -66,13 +72,20 @@ func testAccCheckScalewayStorageObjectBucketDestroy(s *terraform.State) error {
 			continue
 		}
 
-		bucketExists, err := s3Client.BucketExists(rs.Primary.ID)
+		bucketName := rs.Primary.ID
+
+		_, err := s3Client.ListObjects(&s3.ListObjectsInput{
+			Bucket: &bucketName,
+		})
 		if err != nil {
-			return err
+			if serr, ok := err.(awserr.Error); ok && serr.Code() == s3.ErrCodeNoSuchBucket {
+				// bucket doesn't exist
+				continue
+			}
+			return fmt.Errorf("couldn't get bucket to verify if it stil exists: %s", err)
 		}
-		if bucketExists {
-			return fmt.Errorf("Bucket still exists")
-		}
+
+		return fmt.Errorf("bucket should be deleted")
 	}
 
 	return nil

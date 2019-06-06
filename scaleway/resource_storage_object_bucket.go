@@ -1,8 +1,12 @@
 package scaleway
 
 import (
+	"fmt"
 	"log"
 
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/awserr"
+	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/hashicorp/terraform/helper/schema"
 )
 
@@ -23,41 +27,50 @@ func resourceScalewayStorageObjectBucket() *schema.Resource {
 				ForceNew:    true,
 				Description: "The name of the bucket",
 			},
-			"policy": {
+			"acl": {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Default:     "private",
-				Description: "Policy of the bucket: either 'public' or 'private'. Private by default.",
+				Description: "ACL of the bucket: either 'public-read' or 'private'. Private by default.",
 			},
 		},
 	}
 }
 
 func resourceScalewayStorageObjectBucketCreate(d *schema.ResourceData, m interface{}) error {
-	name := d.Get("name").(string)
+	bucketName := d.Get("name").(string)
+	acl := d.Get("acl").(string)
+
 	s3Client := m.(*Meta).s3Client
 
-	err := s3Client.MakeBucket(name, "")
+	_, err := s3Client.CreateBucket(&s3.CreateBucketInput{
+		Bucket: aws.String(bucketName),
+		ACL:    aws.String(acl),
+	})
 	if err != nil {
 		return err
 	}
 
-	d.SetId(name)
-	return nil
+	d.SetId(bucketName)
+
+	return resourceScalewayStorageObjectBucketRead(d, m)
 }
 
 func resourceScalewayStorageObjectBucketRead(d *schema.ResourceData, m interface{}) error {
 	bucketName := d.Get("name").(string)
+
 	s3Client := m.(*Meta).s3Client
 
-	exists, err := s3Client.BucketExists(bucketName)
+	_, err := s3Client.ListObjects(&s3.ListObjectsInput{
+		Bucket: aws.String(bucketName),
+	})
 	if err != nil {
-		return err
-	}
-	if !exists {
-		log.Printf("[DEBUG] Bucket %q was not found - removing from state!", d.Get("name").(string))
-		d.SetId("")
-		return nil
+		if serr, ok := err.(awserr.Error); ok && serr.Code() == s3.ErrCodeNoSuchBucket {
+			log.Printf("[ERROR] Bucket %q was not found - removing from state!", d.Get("name").(string))
+			d.SetId("")
+			return nil
+		}
+		return fmt.Errorf("couldn't read bucket: %s", err)
 	}
 
 	return nil
@@ -65,26 +78,31 @@ func resourceScalewayStorageObjectBucketRead(d *schema.ResourceData, m interface
 
 func resourceScalewayStorageObjectBucketUpdate(d *schema.ResourceData, m interface{}) error {
 
-	if d.HasChange("policy") {
+	if d.HasChange("acl") {
 		bucketName := d.Get("name").(string)
-		policy := d.Get("policy").(string)
+		acl := d.Get("acl").(string)
 		s3Client := m.(*Meta).s3Client
 
-		//policy := `{"Version": "2012-10-17","Statement": [{"Action": ["s3:GetObject"],"Effect": "Allow","Principal": {"AWS": ["*"]},"Resource": ["arn:aws:s3:::my-bucketname/*"],"Sid": ""}]}`
-
-		err := s3Client.SetBucketPolicy(bucketName, policy)
+		_, err := s3Client.PutBucketAcl(&s3.PutBucketAclInput{
+			Bucket: aws.String(bucketName),
+			ACL:    aws.String(acl),
+		})
 		if err != nil {
-			return err
+			log.Printf("[ERROR] Couldn't update bucket ACL: %s", err)
+			return fmt.Errorf("couldn't update bucket ACL: %s", err)
 		}
 	}
 
 	return resourceScalewayStorageObjectBucketRead(d, m)
-
 }
 
 func resourceScalewayStorageObjectBucketDelete(d *schema.ResourceData, m interface{}) error {
 	bucketName := d.Get("name").(string)
+
 	s3Client := m.(*Meta).s3Client
 
-	return s3Client.RemoveBucket(bucketName)
+	_, err := s3Client.DeleteBucket(&s3.DeleteBucketInput{
+		Bucket: aws.String(bucketName),
+	})
+	return err
 }

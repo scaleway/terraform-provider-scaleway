@@ -5,8 +5,8 @@ import (
 	"os"
 	"testing"
 
+	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/hashicorp/terraform/helper/resource"
-	"github.com/minio/minio-go/v6"
 	api "github.com/nicolai86/scaleway-sdk"
 )
 
@@ -41,7 +41,7 @@ func sharedDeprecatedClientForRegion(region string) (*api.API, error) {
 }
 
 // sharedS3ClientForRegion returns a common S3 client needed for the sweeper
-func sharedS3ClientForRegion(region string) (*minio.Client, error) {
+func sharedS3ClientForRegion(region string) (*s3.S3, error) {
 
 	if os.Getenv("SCALEWAY_ORGANIZATION") == "" {
 		return nil, fmt.Errorf("empty SCALEWAY_ORGANIZATION")
