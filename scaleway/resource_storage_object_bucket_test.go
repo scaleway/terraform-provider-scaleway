@@ -19,33 +19,26 @@ func init() {
 	})
 }
 
-func testSweepStorageObjectBucket(region string) error {
-	s3client, err := sharedS3ClientForRegion(region)
-	if err != nil {
-		return fmt.Errorf("error getting client: %s", err)
-	}
+// Test data
+var (
+	testBucketName       = fmt.Sprintf("terraform-test-%d", time.Now().Unix())
+	testBucketACL        = "private"
+	testBucketUpdatedACL = "public-read"
+)
 
-	listBucketResponse, err := s3client.ListBuckets(&s3.ListBucketsInput{})
-	if err != nil {
-		return fmt.Errorf("couldn't list buckets: %s", err)
-	}
-
-	for _, bucket := range listBucketResponse.Buckets {
-		l.Debugf("Deleting %q bucket", *bucket.Name)
-		if strings.HasPrefix(*bucket.Name, "terraform-test") {
-			_, err := s3client.DeleteBucket(&s3.DeleteBucketInput{
-				Bucket: bucket.Name,
-			})
-			if err != nil {
-				return fmt.Errorf("Error deleting bucket in Sweeper: %s", err)
-			}
-		}
-
-	}
-
-	return nil
-
+// Test configs
+var testAccCheckScalewayStorageObjectBucket = fmt.Sprintf(`
+resource "scaleway_storage_object_bucket" "base" {
+  name = "%s"
 }
+`, testBucketName)
+
+var testAccCheckScalewayStorageObjectBucketUpdate = fmt.Sprintf(`
+resource "scaleway_storage_object_bucket" "base" {
+  name = "%s"
+  acl = "%s"
+}
+`, testBucketName, testBucketUpdatedACL)
 
 func TestAccScalewayStorageObjectBucket(t *testing.T) {
 	resource.Test(t, resource.TestCase{
@@ -57,6 +50,14 @@ func TestAccScalewayStorageObjectBucket(t *testing.T) {
 				Config: testAccCheckScalewayStorageObjectBucket,
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("scaleway_storage_object_bucket.base", "name", testBucketName),
+					resource.TestCheckResourceAttr("scaleway_storage_object_bucket.base", "acl", testBucketACL),
+				),
+			},
+			{
+				Config: testAccCheckScalewayStorageObjectBucketUpdate,
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("scaleway_storage_object_bucket.base", "name", testBucketName),
+					resource.TestCheckResourceAttr("scaleway_storage_object_bucket.base", "acl", testBucketUpdatedACL),
 				),
 			},
 		},
@@ -90,10 +91,30 @@ func testAccCheckScalewayStorageObjectBucketDestroy(s *terraform.State) error {
 	return nil
 }
 
-var testBucketName = fmt.Sprintf("terraform-test-%d", time.Now().Unix())
+func testSweepStorageObjectBucket(region string) error {
+	s3client, err := sharedS3ClientForRegion(region)
+	if err != nil {
+		return fmt.Errorf("error getting client: %s", err)
+	}
 
-var testAccCheckScalewayStorageObjectBucket = fmt.Sprintf(`
-resource "scaleway_storage_object_bucket" "base" {
-  name = "%s"
+	listBucketResponse, err := s3client.ListBuckets(&s3.ListBucketsInput{})
+	if err != nil {
+		return fmt.Errorf("couldn't list buckets: %s", err)
+	}
+
+	for _, bucket := range listBucketResponse.Buckets {
+		l.Debugf("Deleting %q bucket", *bucket.Name)
+		if strings.HasPrefix(*bucket.Name, "terraform-test") {
+			_, err := s3client.DeleteBucket(&s3.DeleteBucketInput{
+				Bucket: bucket.Name,
+			})
+			if err != nil {
+				return fmt.Errorf("Error deleting bucket in Sweeper: %s", err)
+			}
+		}
+
+	}
+
+	return nil
+
 }
-`, testBucketName)
