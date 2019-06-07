@@ -7,6 +7,8 @@ import (
 
 func resourceScalewayToken() *schema.Resource {
 	return &schema.Resource{
+		DeprecationMessage: "This resource is deprecated and will be removed in the next major version",
+
 		Create: resourceScalewayTokenCreate,
 		Read:   resourceScalewayTokenRead,
 		Update: resourceScalewayTokenUpdate,

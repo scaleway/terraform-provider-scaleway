@@ -8,6 +8,8 @@ description: |-
 
 # scaleway_token
 
+**DEPRECATED**: This resource is deprecated and will be removed in `v2.0+`.
+
 Provides Tokens for scaleway API access. For additional details please refer to [API documentation](https://developer.scaleway.com/#tokens-tokens-post).
 
 ## Example Usage
