@@ -8,6 +8,9 @@ description: |-
 
 # scaleway_bucket
 
+**DEPRECATED**: This resource is deprecated and will be removed in `v2.0+`.
+Please use `scaleway_storage_object_bucket` instead.
+
 Creates Scaleway object storage buckets.
 
 ## Example Usage
