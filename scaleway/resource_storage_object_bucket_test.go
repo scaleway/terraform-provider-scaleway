@@ -2,7 +2,6 @@ package scaleway
 
 import (
 	"fmt"
-	"log"
 	"strings"
 	"testing"
 	"time"
@@ -32,7 +31,7 @@ func testSweepStorageObjectBucket(region string) error {
 	}
 
 	for _, bucket := range listBucketResponse.Buckets {
-		log.Println(*bucket.Name)
+		l.Debugf("Deleting %q bucket", *bucket.Name)
 		if strings.HasPrefix(*bucket.Name, "terraform-test") {
 			_, err := s3client.DeleteBucket(&s3.DeleteBucketInput{
 				Bucket: bucket.Name,

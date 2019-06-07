@@ -2,7 +2,6 @@ package scaleway
 
 import (
 	"fmt"
-	"log"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
@@ -31,7 +30,7 @@ func resourceScalewayStorageObjectBucket() *schema.Resource {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Default:     "private",
-				Description: "ACL of the bucket: either 'public-read' or 'private'. Private by default.",
+				Description: "ACL of the bucket: either 'public-read' or 'private'.",
 			},
 		},
 	}
@@ -66,7 +65,7 @@ func resourceScalewayStorageObjectBucketRead(d *schema.ResourceData, m interface
 	})
 	if err != nil {
 		if serr, ok := err.(awserr.Error); ok && serr.Code() == s3.ErrCodeNoSuchBucket {
-			log.Printf("[ERROR] Bucket %q was not found - removing from state!", d.Get("name").(string))
+			l.Errorf("Bucket %q was not found - removing from state!", d.Get("name"))
 			d.SetId("")
 			return nil
 		}
@@ -88,7 +87,7 @@ func resourceScalewayStorageObjectBucketUpdate(d *schema.ResourceData, m interfa
 			ACL:    aws.String(acl),
 		})
 		if err != nil {
-			log.Printf("[ERROR] Couldn't update bucket ACL: %s", err)
+			l.Errorf("Couldn't update bucket ACL: %s", err)
 			return fmt.Errorf("couldn't update bucket ACL: %s", err)
 		}
 	}

@@ -61,13 +61,13 @@ func (c *Config) Meta() (*Meta, error) {
 	// Deprecated Scaleway Client
 	deprecatedClient, err := c.GetDeprecatedClient()
 	if err != nil {
-		return nil, fmt.Errorf("error: cannot create deprecated client: %s", err)
+		return nil, fmt.Errorf("cannot create deprecated client: %s", err)
 	}
 	meta.deprecatedClient = deprecatedClient
 
 	s3Client, err := c.GetS3Client()
 	if err != nil {
-		return nil, fmt.Errorf("error: cannot create S3 client: %s", err)
+		return nil, fmt.Errorf("cannot create S3 client: %s", err)
 	}
 	meta.s3Client = s3Client
 
@@ -207,7 +207,7 @@ func (c *Config) GetS3Client() (*s3.S3, error) {
 	}
 
 	config := &aws.Config{}
-	config.WithRegion(c.getS3Region())
+	config.WithRegion(string(c.DefaultRegion))
 	config.WithCredentials(credentials.NewStaticCredentials(s3AccessKey, c.SecretKey, ""))
 	config.WithEndpoint(c.getS3Endpoint())
 
@@ -220,14 +220,9 @@ func (c *Config) GetS3Client() (*s3.S3, error) {
 	return s3client, nil
 }
 
-// getS3Region returns the correct S3 region for object storage based on the current region
-func (c *Config) getS3Region() string {
-	return string(c.DefaultRegion)
-}
-
 // getS3Endpoint returns the correct S3 endpoint for object storage based on the current region
 func (c *Config) getS3Endpoint() string {
-	return "https://s3." + c.getS3Region() + ".scw.cloud"
+	return "https://s3." + string(c.DefaultRegion) + ".scw.cloud"
 
 }
 
@@ -266,26 +261,24 @@ func (c *Config) getAccessKeyFromSecretKey(scwClient *sdk.API) (string, error) {
 	url := "https://account.scaleway.com/tokens/" + c.SecretKey
 	req, err := http.NewRequest(http.MethodGet, url, nil)
 	if err != nil {
-		panic(err)
+		return "", err
 	}
 
 	res, err := scwClient.Client.Do(req)
 	if err != nil {
-		panic(err)
+		return "", err
 	}
 
 	body, err := ioutil.ReadAll(res.Body)
 	defer res.Body.Close()
 	if err != nil {
-		panic(err)
+		return "", err
 	}
-
-	fmt.Println(string(body))
 
 	content := &resBody{}
 	err = json.Unmarshal(body, content)
 	if err != nil {
-		panic(err)
+		return "", err
 	}
 
 	return content.Token.AccessKey, nil
