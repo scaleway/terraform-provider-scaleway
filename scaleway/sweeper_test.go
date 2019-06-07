@@ -5,6 +5,7 @@ import (
 	"os"
 	"testing"
 
+	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/hashicorp/terraform/helper/resource"
 	api "github.com/nicolai86/scaleway-sdk"
 	"github.com/scaleway/scaleway-sdk-go/scw"
@@ -79,4 +80,31 @@ func buildTestConfigForTests(region string) (*Config, error) {
 		SecretKey:        secretKey,
 		DefaultRegion:    parsedRegion,
 	}, nil
+}
+
+// sharedS3ClientForRegion returns a common S3 client needed for the sweeper
+func sharedS3ClientForRegion(region string) (*s3.S3, error) {
+
+	if os.Getenv("SCALEWAY_ORGANIZATION") == "" {
+		return nil, fmt.Errorf("empty SCALEWAY_ORGANIZATION")
+	}
+
+	if os.Getenv("SCALEWAY_TOKEN") == "" {
+		return nil, fmt.Errorf("empty SCALEWAY_TOKEN")
+	}
+
+	conf := &Config{
+		DefaultProjectID: os.Getenv("SCALEWAY_ORGANIZATION"),
+		SecretKey:        os.Getenv("SCALEWAY_TOKEN"),
+		DefaultRegion:    utils.Region(region),
+	}
+
+	// configures a default client for the region, using the above env vars
+	client, err := conf.GetS3Client()
+	if err != nil {
+		return nil, fmt.Errorf("error getting S3 client: %#v", err)
+	}
+
+	return client, nil
+
 }
