@@ -192,7 +192,7 @@ func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 
 	projectID := d.Get("project_id").(string)
 	if projectID == "" {
-		projectID = d.Get("projectID").(string)
+		projectID = d.Get("organization").(string)
 	}
 
 	if apiKey == "" {
