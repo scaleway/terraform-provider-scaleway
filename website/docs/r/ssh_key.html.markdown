@@ -8,6 +8,8 @@ description: |-
 
 # scaleway_ssh_key
 
+**DEPRECATED**: This resource is deprecated and will be removed in `v2.0+`.
+
 Manages user SSH Keys to access servers provisioned on scaleway.
 For additional details please refer to [API documentation](https://developer.scaleway.com/#users-user-get).
 
