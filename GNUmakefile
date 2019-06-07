@@ -54,7 +54,7 @@ endif
 
 website-test:
 ifeq (,$(wildcard $(GOPATH)/src/$(WEBSITE_REPO)))
-	echo "$(WEBSITE_REPO) not found in your GOPATH (necessary for layouts and assets), get-ting..."
+	echo "$(WEBSITE_REPO) not found in your GOPATH (necessary for layouts and assets), getting..."
 	git clone https://$(WEBSITE_REPO) $(GOPATH)/src/$(WEBSITE_REPO)
 	cd $(GOPATH)/src/$(WEBSITE_REPO) && git submodule init ext/providers/$(PKG_NAME) && git submodule update
 endif
