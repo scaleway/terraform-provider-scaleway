@@ -11,6 +11,8 @@ import (
 
 func resourceScalewaySSHKey() *schema.Resource {
 	return &schema.Resource{
+		DeprecationMessage: "This resource is deprecated and will be removed in the next major version",
+
 		Create: resourceScalewaySSHKeyCreate,
 		Read:   resourceScalewaySSHKeyRead,
 		Delete: resourceScalewaySSHKeyDelete,
