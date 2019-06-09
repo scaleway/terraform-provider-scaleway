@@ -9,6 +9,10 @@ default: build
 build: fmtcheck
 	go install
 
+sweep:
+	@echo "WARNING: This will destroy infrastructure. Use only in development accounts."
+	go test $(TEST) -v -sweep=$(SWEEP) $(SWEEPARGS)
+
 test: fmtcheck
 	go test -i $(TEST) || exit 1
 	echo $(TEST) | \
