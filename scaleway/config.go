@@ -33,6 +33,9 @@ type Config struct {
 //
 // This meta value is passed into all resources.
 type Meta struct {
+	// Config is the Config object that is used to generate the Meta.
+	Config *Config
+
 	// scwClient is the Scaleway SDK client.
 	scwClient *scw.Client
 
@@ -42,7 +45,7 @@ type Meta struct {
 
 // Meta creates a meta instance from a client configuration.
 func (c *Config) Meta() (*Meta, error) {
-	meta := &Meta{}
+	meta := &Meta{Config: c}
 
 	// Scaleway Client
 	client, err := c.GetScwClient()
