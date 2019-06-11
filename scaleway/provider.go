@@ -55,6 +55,25 @@ func Provider() terraform.ResourceProvider {
 					if secretKey, exist := scwConfig.GetSecretKey(); exist {
 						return secretKey, nil
 					}
+
+					// Keep the deprecated behavior from 'token'.
+					for _, k := range []string{"SCALEWAY_TOKEN", "SCALEWAY_ACCESS_KEY"} {
+						if os.Getenv(k) != "" {
+							l.Warningf("%s is deprecated, please use SCW_SECRET_KEY instead", k)
+							return os.Getenv(k), nil
+						}
+					}
+					if path, err := homedir.Expand("~/.scwrc"); err == nil {
+						scwAPIKey, _, err := readDeprecatedScalewayConfig(path)
+						if err != nil {
+							// No error is returned here to allow user to use `secret_key`.
+							l.Errorf("cannot parse deprecated config file: %s", err)
+							return nil, nil
+						}
+						// Depreciation log is already handled by scwconfig.
+						return scwAPIKey, nil
+					}
+					// No error is returned here to allow user to use `secret_key`.
 					return nil, nil
 				}),
 			},
@@ -104,27 +123,6 @@ func Provider() terraform.ResourceProvider {
 				Type:       schema.TypeString,
 				Optional:   true, // To allow user to use `secret_key`.
 				Deprecated: "Use `secret_key` instead.",
-				DefaultFunc: schema.SchemaDefaultFunc(func() (interface{}, error) {
-					// Keep the deprecated behavior
-					for _, k := range []string{"SCALEWAY_TOKEN", "SCALEWAY_ACCESS_KEY"} {
-						if os.Getenv(k) != "" {
-							l.Warningf("%s is deprecated, please use SCW_SECRET_KEY instead", k)
-							return os.Getenv(k), nil
-						}
-					}
-					if path, err := homedir.Expand("~/.scwrc"); err == nil {
-						scwAPIKey, _, err := readDeprecatedScalewayConfig(path)
-						if err != nil {
-							// No error is returned here to allow user to use `secret_key`.
-							l.Errorf("cannot parse deprecated config file: %s", err)
-							return nil, nil
-						}
-						// Depreciation log is already handled by scwconfig.
-						return scwAPIKey, nil
-					}
-					// No error is returned here to allow user to use `secret_key`.
-					return nil, nil
-				}),
 			},
 			"organization": {
 				Type:       schema.TypeString,
