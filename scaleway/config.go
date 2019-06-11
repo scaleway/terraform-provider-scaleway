@@ -75,7 +75,7 @@ func (c *Config) Meta() (*Meta, error) {
 // GetScwClient returns a new scw.Client from a configuration.
 func (c *Config) GetScwClient() (*scw.Client, error) {
 	options := []scw.ClientOption{
-		scw.WithHTTPClient(createsRetryableHTTPClient()),
+		scw.WithHTTPClient(createRetryableHTTPClient(false)),
 		scw.WithUserAgent(userAgent),
 	}
 
@@ -104,11 +104,13 @@ func (c *Config) GetScwClient() (*scw.Client, error) {
 	return client, err
 }
 
-// createsRetryableHTTPClient create a retryablehttp.Client.
-func createsRetryableHTTPClient() *client {
+// createRetryableHTTPClient create a retryablehttp.Client.
+func createRetryableHTTPClient(shouldLog bool) *client {
 	c := retryablehttp.NewClient()
 
-	c.HTTPClient.Transport = logging.NewTransport("Scaleway", c.HTTPClient.Transport)
+	if shouldLog {
+		c.HTTPClient.Transport = logging.NewTransport("Scaleway", c.HTTPClient.Transport)
+	}
 	c.RetryMax = 3
 	c.RetryWaitMax = 2 * time.Minute
 	c.Logger = log.New(os.Stderr, "", 0)
@@ -151,7 +153,7 @@ func (c *client) Do(r *http.Request) (*http.Response, error) {
 // GetDeprecatedClient create a new deprecated client from a configuration.
 func (c *Config) GetDeprecatedClient() (*sdk.API, error) {
 	options := func(sdkApi *sdk.API) {
-		sdkApi.Client = createsRetryableHTTPClient()
+		sdkApi.Client = createRetryableHTTPClient(true)
 	}
 
 	region := string(c.DefaultRegion)
