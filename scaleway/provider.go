@@ -66,7 +66,22 @@ func Provider() terraform.ResourceProvider {
 					if projectID, exist := scwConfig.GetDefaultProjectID(); exist {
 						return projectID, nil
 					}
-					// No error is returned here to allow user to use deprecated `organization`.
+
+					// Keep the deprecated behavior of 'organization'.
+					if organization := os.Getenv("SCALEWAY_ORGANIZATION"); organization != "" {
+						l.Warningf("SCALEWAY_ORGANIZATION is deprecated, please use SCW_DEFAULT_PROJECT_ID instead")
+						return organization, nil
+					}
+					if path, err := homedir.Expand("~/.scwrc"); err == nil {
+						_, scwOrganization, err := readDeprecatedScalewayConfig(path)
+						if err != nil {
+							// No error is returned here to allow user to use `project_id`.
+							l.Errorf("cannot parse deprecated config file: %s", err)
+							return nil, nil
+						}
+						return scwOrganization, nil
+					}
+					// No error is returned here to allow user to use `project_id`.
 					return nil, nil
 				}),
 			},
@@ -130,24 +145,6 @@ func Provider() terraform.ResourceProvider {
 				Type:       schema.TypeString,
 				Optional:   true, // To allow user to use `project_id`.
 				Deprecated: "Use `project_id` instead.",
-				DefaultFunc: schema.SchemaDefaultFunc(func() (interface{}, error) {
-					// Keep the deprecated behavior
-					if organization := os.Getenv("SCALEWAY_ORGANIZATION"); organization != "" {
-						l.Warningf("SCALEWAY_ORGANIZATION is deprecated, please use SCW_DEFAULT_PROJECT_ID instead")
-						return organization, nil
-					}
-					if path, err := homedir.Expand("~/.scwrc"); err == nil {
-						_, scwOrganization, err := readDeprecatedScalewayConfig(path)
-						if err != nil {
-							// No error is returned here to allow user to use `project_id`.
-							l.Errorf("cannot parse deprecated config file: %s", err)
-							return nil, nil
-						}
-						return scwOrganization, nil
-					}
-					// No error is returned here to allow user to use `project_id`.
-					return nil, nil
-				}),
 			},
 		},
 
