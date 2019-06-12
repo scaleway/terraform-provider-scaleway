@@ -85,7 +85,7 @@ func resourceScalewayComputeInstanceIPRead(d *schema.ResourceData, m interface{}
 	})
 
 	if err != nil {
-		// We check for 403 because instance API returns 403 for deleted IP
+		// We check for 403 because instance API returns 403 for a deleted IP
 		if is404Error(err) || is403Error(err) {
 			d.SetId("")
 			return nil
