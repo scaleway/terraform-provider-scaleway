@@ -17,6 +17,14 @@ func init() {
 	testAccProviders = map[string]terraform.ResourceProvider{
 		"scaleway": testAccProvider,
 	}
+
+	old := testAccProvider.ConfigureFunc
+	testAccProvider.ConfigureFunc = func(data *schema.ResourceData) (i interface{}, e error) {
+		data.Set("region", "fr-par")
+		data.Set("zone", "fr-par-1")
+		return old(data)
+	}
+
 }
 
 func TestProvider(t *testing.T) {
