@@ -255,8 +255,8 @@ func newRegionalId(region utils.Region, id string) string {
 	return fmt.Sprintf("%s/%s", region, id)
 }
 
-// TerraformResourceData is an interface for *schema.ResourceData. (used for mock)
-type TerraformResourceData interface {
+// terraformResourceData is an interface for *schema.ResourceData. (used for mock)
+type terraformResourceData interface {
 	HasChange(string) bool
 	GetOkExists(string) (interface{}, bool)
 	GetOk(string) (interface{}, bool)
@@ -269,7 +269,7 @@ type TerraformResourceData interface {
 // getZone will try to guess the zone from the following:
 //  - zone field of the resource data
 //  - default zone from config
-func getZone(d TerraformResourceData, meta *Meta) (utils.Zone, error) {
+func getZone(d terraformResourceData, meta *Meta) (utils.Zone, error) {
 
 	rawZone, exist := d.GetOkExists("zone")
 	if exist {
