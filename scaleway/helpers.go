@@ -2,13 +2,17 @@ package scaleway
 
 import (
 	"fmt"
+	"net/http"
 	"strings"
 	"sync"
 	"time"
 
 	"github.com/hashicorp/terraform/helper/resource"
+	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/hashicorp/terraform/terraform"
 	api "github.com/nicolai86/scaleway-sdk"
+	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/scaleway-sdk-go/utils"
 )
 
 // userAgent used for SDK requests.
@@ -207,4 +211,130 @@ func withStoppedServer(scaleway *api.API, serverID string, run func(*api.Server)
 		}
 	}
 	return nil
+}
+
+// parseLocalizedID parses a localizedID and extracts the resource locality and id.
+func parseLocalizedID(localizedID string) (locality string, ID string, err error) {
+	tab := strings.SplitN(localizedID, "/", 2)
+	if len(tab) != 2 {
+		return "", "", fmt.Errorf("cant parse localized id: %s", localizedID)
+	}
+	return tab[0], tab[1], nil
+}
+
+// parseZonedID parses a zonedID and extracts the resource zone and id.
+func parseZonedID(zonedID string) (zone utils.Zone, id string, err error) {
+
+	locality, id, err := parseLocalizedID(zonedID)
+	if err != nil {
+		return
+	}
+
+	zone, err = utils.ParseZone(locality)
+	return
+}
+
+// parseRegionalID parses a regionalID and extracts the resource region and id.
+func parseRegionalID(regionalID string) (region utils.Region, id string, err error) {
+	locality, id, err := parseLocalizedID(regionalID)
+	if err != nil {
+		return
+	}
+
+	region, err = utils.ParseRegion(locality)
+	return
+}
+
+// newZonedId constructs a unique identifier based on resource zone and id
+func newZonedId(zone utils.Zone, id string) string {
+	return fmt.Sprintf("%s/%s", zone, id)
+}
+
+// newRegionalId constructs a unique identifier based on resource region and id
+func newRegionalId(region utils.Region, id string) string {
+	return fmt.Sprintf("%s/%s", region, id)
+}
+
+// terraformResourceData is an interface for *schema.ResourceData. (used for mock)
+type terraformResourceData interface {
+	HasChange(string) bool
+	GetOkExists(string) (interface{}, bool)
+	GetOk(string) (interface{}, bool)
+	Get(string) interface{}
+	Set(string, interface{}) error
+	SetId(string)
+	Id() string
+}
+
+// getZone will try to guess the zone from the following:
+//  - zone field of the resource data
+//  - default zone from config
+func getZone(d terraformResourceData, meta *Meta) (utils.Zone, error) {
+
+	rawZone, exist := d.GetOkExists("zone")
+	if exist {
+		return utils.ParseZone(rawZone.(string))
+	}
+
+	zone, exist := meta.scwClient.GetDefaultZone()
+	if exist {
+		return zone, nil
+	}
+
+	return utils.Zone(""), fmt.Errorf("could not detect region")
+}
+
+// isHTTPCodeError returns true if err is an http error with code statusCode
+func isHTTPCodeError(err error, statusCode int) bool {
+	if err == nil {
+		return false
+	}
+
+	if resErr, isResError := err.(*scw.ResponseError); isResError && resErr.StatusCode == statusCode {
+		return true
+	}
+	return false
+}
+
+// is404Error returns true if err is an HTTP 404 error
+func is404Error(err error) bool {
+	return isHTTPCodeError(err, http.StatusNotFound)
+}
+
+// is403Error returns true if err is an HTTP 403 error
+func is403Error(err error) bool {
+	return isHTTPCodeError(err, http.StatusForbidden)
+}
+
+// projectIDSchema returns a standard schema for a project_id
+func projectIDSchema() *schema.Schema {
+	return &schema.Schema{
+		Type:        schema.TypeString,
+		Description: "The project_id you want to attach the resource to",
+		Optional:    true,
+		ForceNew:    true,
+		Computed:    true,
+	}
+}
+
+// zoneSchema returns a standard schema for a zone
+func zoneSchema() *schema.Schema {
+	return &schema.Schema{
+		Type:        schema.TypeString,
+		Description: "The zone you want to attach the resource to",
+		Optional:    true,
+		ForceNew:    true,
+		Computed:    true,
+	}
+}
+
+// regionSchema returns a standard schema for a zone
+func regionSchema() *schema.Schema {
+	return &schema.Schema{
+		Type:        schema.TypeString,
+		Description: "The region you want to attach the resource to",
+		Optional:    true,
+		ForceNew:    true,
+		Computed:    true,
+	}
 }
