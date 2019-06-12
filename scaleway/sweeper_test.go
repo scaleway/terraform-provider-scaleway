@@ -6,7 +6,7 @@ import (
 	"testing"
 
 	"github.com/hashicorp/terraform/helper/resource"
-	api "github.com/nicolai86/scaleway-sdk"
+	"github.com/nicolai86/scaleway-sdk"
 	"github.com/scaleway/scaleway-sdk-go/utils"
 	_ "github.com/stretchr/testify/require"
 )
