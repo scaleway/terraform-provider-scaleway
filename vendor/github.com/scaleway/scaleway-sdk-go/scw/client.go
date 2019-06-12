@@ -209,7 +209,7 @@ func (c *Client) do(req *ScalewayRequest, res interface{}) (sdkErr SdkError) {
 	}
 
 	sdkErr = hasResponseError(httpResponse)
-	if err != nil {
+	if sdkErr != nil {
 		return sdkErr
 	}
 

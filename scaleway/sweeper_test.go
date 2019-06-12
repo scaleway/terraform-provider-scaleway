@@ -6,8 +6,9 @@ import (
 	"testing"
 
 	"github.com/hashicorp/terraform/helper/resource"
-	"github.com/nicolai86/scaleway-sdk"
+	api "github.com/nicolai86/scaleway-sdk"
 	"github.com/scaleway/scaleway-sdk-go/utils"
+	_ "github.com/stretchr/testify/require"
 )
 
 func TestMain(m *testing.M) {
