@@ -10,7 +10,6 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"sort"
 	"time"
 
 	"github.com/hashicorp/go-retryablehttp"
@@ -35,37 +34,6 @@ type Meta struct {
 
 	// Deprecated: deprecatedClient is the deprecated Scaleway SDK (will be removed in `v2.0.0`).
 	deprecatedClient *sdk.API
-}
-
-// Meta creates a meta instance from a client configuration.
-func (m *Meta) bootstrap() error {
-
-	// Scaleway Client
-	client, err := newScwClient(m)
-	if err != nil {
-		return err
-	}
-	m.scwClient = client
-
-	// Deprecated Scaleway Client
-	deprecatedClient, err := newDeprecatedClient(m)
-	if err != nil {
-		return fmt.Errorf("error: cannot create deprecated client: %s", err)
-	}
-	m.deprecatedClient = deprecatedClient
-
-	// fetch known scaleway server types to support validation in r/server
-	if len(commercialServerTypes) == 0 {
-		if availability, err := deprecatedClient.GetServerAvailabilities(); err == nil {
-			commercialServerTypes = availability.CommercialTypes()
-			sort.StringSlice(commercialServerTypes).Sort()
-		}
-		if os.Getenv("DISABLE_SCALEWAY_SERVER_TYPE_VALIDATION") != "" {
-			commercialServerTypes = commercialServerTypes[:0]
-		}
-	}
-
-	return nil
 }
 
 // newScwClient returns a new scw.Client from a configuration.
