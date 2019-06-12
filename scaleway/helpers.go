@@ -213,8 +213,8 @@ func withStoppedServer(scaleway *api.API, serverID string, run func(*api.Server)
 	return nil
 }
 
-// ParseLocalizedID parses a localizedID and extracts the resource locality and id.
-func ParseLocalizedID(localizedID string) (locality string, ID string, err error) {
+// parseLocalizedID parses a localizedID and extracts the resource locality and id.
+func parseLocalizedID(localizedID string) (locality string, ID string, err error) {
 	tab := strings.SplitN(localizedID, "/", 2)
 	if len(tab) != 2 {
 		return "", "", fmt.Errorf("cant parse localized id: %s", localizedID)
@@ -222,10 +222,10 @@ func ParseLocalizedID(localizedID string) (locality string, ID string, err error
 	return tab[0], tab[1], nil
 }
 
-// ParseZonedID parses a zonedID and extracts the resource zone and id.
-func ParseZonedID(zonedID string) (zone utils.Zone, id string, err error) {
+// parseZonedID parses a zonedID and extracts the resource zone and id.
+func parseZonedID(zonedID string) (zone utils.Zone, id string, err error) {
 
-	locality, id, err := ParseLocalizedID(zonedID)
+	locality, id, err := parseLocalizedID(zonedID)
 	if err != nil {
 		return
 	}
@@ -234,9 +234,9 @@ func ParseZonedID(zonedID string) (zone utils.Zone, id string, err error) {
 	return
 }
 
-// ParseRegionalID parses a regionalID and extracts the resource region and id.
-func ParseRegionalID(regionalID string) (region utils.Region, id string, err error) {
-	locality, id, err := ParseLocalizedID(regionalID)
+// parseRegionalID parses a regionalID and extracts the resource region and id.
+func parseRegionalID(regionalID string) (region utils.Region, id string, err error) {
+	locality, id, err := parseLocalizedID(regionalID)
 	if err != nil {
 		return
 	}
@@ -245,13 +245,13 @@ func ParseRegionalID(regionalID string) (region utils.Region, id string, err err
 	return
 }
 
-// NewZonedId constructs a unique identifier based on resource zone and id
-func NewZonedId(zone utils.Zone, id string) string {
+// newZonedId constructs a unique identifier based on resource zone and id
+func newZonedId(zone utils.Zone, id string) string {
 	return fmt.Sprintf("%s/%s", zone, id)
 }
 
-// NewRegionalId constructs a unique identifier based on resource region and id
-func NewRegionalId(region utils.Region, id string) string {
+// newRegionalId constructs a unique identifier based on resource region and id
+func newRegionalId(region utils.Region, id string) string {
 	return fmt.Sprintf("%s/%s", region, id)
 }
 
@@ -266,10 +266,10 @@ type TerraformResourceData interface {
 	Id() string
 }
 
-// GetZone will try to guess the zone from the following:
+// getZone will try to guess the zone from the following:
 //  - zone field of the resource data
 //  - default zone from config
-func GetZone(d TerraformResourceData, meta *Meta) (utils.Zone, error) {
+func getZone(d TerraformResourceData, meta *Meta) (utils.Zone, error) {
 
 	rawZone, exist := d.GetOkExists("zone")
 	if exist {
@@ -284,8 +284,8 @@ func GetZone(d TerraformResourceData, meta *Meta) (utils.Zone, error) {
 	return utils.Zone(""), fmt.Errorf("could not detect region")
 }
 
-// IsHTTPCodeError returns true if err is an http error with code statusCode
-func IsHTTPCodeError(err error, statusCode int) bool {
+// isHTTPCodeError returns true if err is an http error with code statusCode
+func isHTTPCodeError(err error, statusCode int) bool {
 	if err == nil {
 		return false
 	}
@@ -296,18 +296,18 @@ func IsHTTPCodeError(err error, statusCode int) bool {
 	return false
 }
 
-// Is404Error returns true is err is an HTTP 404 error
-func Is404Error(err error) bool {
-	return IsHTTPCodeError(err, http.StatusNotFound)
+// is404Error returns true if err is an HTTP 404 error
+func is404Error(err error) bool {
+	return isHTTPCodeError(err, http.StatusNotFound)
 }
 
-// Is403Error returns true is err is an HTTP 403 error
-func Is403Error(err error) bool {
-	return IsHTTPCodeError(err, http.StatusForbidden)
+// is403Error returns true if err is an HTTP 403 error
+func is403Error(err error) bool {
+	return isHTTPCodeError(err, http.StatusForbidden)
 }
 
-// ProjectIDSchema returns a standard schema for a project_id
-func ProjectIDSchema() *schema.Schema {
+// projectIDSchema returns a standard schema for a project_id
+func projectIDSchema() *schema.Schema {
 	return &schema.Schema{
 		Type:        schema.TypeString,
 		Description: "The project_id you want to attach the resource to",
@@ -317,8 +317,8 @@ func ProjectIDSchema() *schema.Schema {
 	}
 }
 
-// ZoneSchema returns a standard schema for a zone
-func ZoneSchema() *schema.Schema {
+// zoneSchema returns a standard schema for a zone
+func zoneSchema() *schema.Schema {
 	return &schema.Schema{
 		Type:        schema.TypeString,
 		Description: "The zone you want to attach the resource to",
@@ -328,8 +328,8 @@ func ZoneSchema() *schema.Schema {
 	}
 }
 
-// RegionSchema returns a standard schema for a zone
-func RegionSchema() *schema.Schema {
+// regionSchema returns a standard schema for a zone
+func regionSchema() *schema.Schema {
 	return &schema.Schema{
 		Type:        schema.TypeString,
 		Description: "The region you want to attach the resource to",

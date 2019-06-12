@@ -52,7 +52,7 @@ func TestParseLocalizedID(t *testing.T) {
 
 	for _, testCase := range testCases {
 		t.Run(testCase.name, func(t *testing.T) {
-			locality, id, err := ParseLocalizedID(testCase.localityId)
+			locality, id, err := parseLocalizedID(testCase.localityId)
 			if testCase.err != "" {
 				require.EqualError(t, err, testCase.err)
 			} else {
@@ -106,7 +106,7 @@ func TestParseZonedID(t *testing.T) {
 
 	for _, testCase := range testCases {
 		t.Run(testCase.name, func(t *testing.T) {
-			zone, id, err := ParseZonedID(testCase.localityId)
+			zone, id, err := parseZonedID(testCase.localityId)
 			if testCase.err != "" {
 				require.EqualError(t, err, testCase.err)
 			} else {
@@ -154,7 +154,7 @@ func TestParseRegionID(t *testing.T) {
 
 	for _, testCase := range testCases {
 		t.Run(testCase.name, func(t *testing.T) {
-			region, id, err := ParseRegionalID(testCase.localityId)
+			region, id, err := parseRegionalID(testCase.localityId)
 			if testCase.err != "" {
 				require.EqualError(t, err, testCase.err)
 			} else {
@@ -168,28 +168,28 @@ func TestParseRegionID(t *testing.T) {
 }
 
 func TestNewZonedId(t *testing.T) {
-	assert.Equal(t, "fr-par-1/my-id", NewZonedId(utils.ZoneFrPar1, "my-id"))
+	assert.Equal(t, "fr-par-1/my-id", newZonedId(utils.ZoneFrPar1, "my-id"))
 }
 
 func TestNewRegionalId(t *testing.T) {
-	assert.Equal(t, "fr-par/my-id", NewRegionalId(utils.RegionFrPar, "my-id"))
+	assert.Equal(t, "fr-par/my-id", newRegionalId(utils.RegionFrPar, "my-id"))
 }
 
 func TestIsHTTPCodeError(t *testing.T) {
-	assert.True(t, IsHTTPCodeError(&scw.ResponseError{StatusCode: http.StatusBadRequest}, http.StatusBadRequest))
-	assert.False(t, IsHTTPCodeError(nil, http.StatusBadRequest))
-	assert.False(t, IsHTTPCodeError(&scw.ResponseError{StatusCode: http.StatusBadRequest}, http.StatusNotFound))
-	assert.False(t, IsHTTPCodeError(fmt.Errorf("not an http error"), http.StatusNotFound))
+	assert.True(t, isHTTPCodeError(&scw.ResponseError{StatusCode: http.StatusBadRequest}, http.StatusBadRequest))
+	assert.False(t, isHTTPCodeError(nil, http.StatusBadRequest))
+	assert.False(t, isHTTPCodeError(&scw.ResponseError{StatusCode: http.StatusBadRequest}, http.StatusNotFound))
+	assert.False(t, isHTTPCodeError(fmt.Errorf("not an http error"), http.StatusNotFound))
 }
 
 func TestIs404Error(t *testing.T) {
-	assert.True(t, Is404Error(&scw.ResponseError{StatusCode: http.StatusNotFound}))
-	assert.False(t, Is404Error(nil))
-	assert.False(t, Is404Error(&scw.ResponseError{StatusCode: http.StatusBadRequest}))
+	assert.True(t, is404Error(&scw.ResponseError{StatusCode: http.StatusNotFound}))
+	assert.False(t, is404Error(nil))
+	assert.False(t, is404Error(&scw.ResponseError{StatusCode: http.StatusBadRequest}))
 }
 
 func TestIs403Error(t *testing.T) {
-	assert.True(t, Is403Error(&scw.ResponseError{StatusCode: http.StatusForbidden}))
-	assert.False(t, Is403Error(nil))
-	assert.False(t, Is403Error(&scw.ResponseError{StatusCode: http.StatusBadRequest}))
+	assert.True(t, is403Error(&scw.ResponseError{StatusCode: http.StatusForbidden}))
+	assert.False(t, is403Error(nil))
+	assert.False(t, is403Error(&scw.ResponseError{StatusCode: http.StatusBadRequest}))
 }
