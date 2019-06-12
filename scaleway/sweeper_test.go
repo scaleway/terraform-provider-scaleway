@@ -44,10 +44,11 @@ func sharedDeprecatedClientForRegion(region string) (*api.API, error) {
 		DefaultRegion:    parsedRegion,
 	}
 
-	err = meta.bootstrap()
+	// configures a default client for the region, using the above env vars		err = meta.bootstrap()
+	client, err := newDeprecatedClient(meta)
 	if err != nil {
 		return nil, fmt.Errorf("error getting Scaleway client: %#v", err)
 	}
 
-	return meta.deprecatedClient, nil
+	return client, nil
 }
