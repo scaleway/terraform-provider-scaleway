@@ -68,7 +68,7 @@ func newScwClient(m *Meta) (*scw.Client, error) {
 	return client, err
 }
 
-// createRetryableHTTPClient create a retryablehttp.Client.
+// createRetryableHTTPClient creates a retryablehttp.Client.
 func createRetryableHTTPClient(shouldLog bool) *client {
 	c := retryablehttp.NewClient()
 
@@ -114,7 +114,7 @@ func (c *client) Do(r *http.Request) (*http.Response, error) {
 	return c.Client.Do(req)
 }
 
-// newDeprecatedClient create a new deprecated client from a configuration.
+// newDeprecatedClient creates a new deprecated client from a configuration.
 func newDeprecatedClient(m *Meta) (*sdk.API, error) {
 	options := func(sdkApi *sdk.API) {
 		sdkApi.Client = createRetryableHTTPClient(true)
@@ -143,7 +143,7 @@ type deprecatedScalewayConfig struct {
 	Version      string `json:"version"`
 }
 
-// readDeprecatedScalewayConfig parse the deprecated Scaleway config file.
+// readDeprecatedScalewayConfig parses the deprecated Scaleway config file.
 func readDeprecatedScalewayConfig(path string) (string, string, error) {
 	f, err := os.Open(path)
 	if err != nil {
