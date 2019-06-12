@@ -6,7 +6,7 @@ import (
 	"testing"
 
 	"github.com/hashicorp/terraform/helper/resource"
-	"github.com/nicolai86/scaleway-sdk"
+	api "github.com/nicolai86/scaleway-sdk"
 	"github.com/scaleway/scaleway-sdk-go/utils"
 )
 
@@ -38,17 +38,16 @@ func sharedDeprecatedClientForRegion(region string) (*api.API, error) {
 		return nil, err
 	}
 
-	conf := &Config{
+	meta := &Meta{
 		DefaultProjectID: projectId,
 		SecretKey:        secretKey,
 		DefaultRegion:    parsedRegion,
 	}
 
-	// configures a default client for the region, using the above env vars
-	client, err := conf.GetDeprecatedClient()
+	err = meta.bootstrap()
 	if err != nil {
 		return nil, fmt.Errorf("error getting Scaleway client: %#v", err)
 	}
 
-	return client, nil
+	return meta.deprecatedClient, nil
 }

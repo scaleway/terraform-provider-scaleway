@@ -213,7 +213,7 @@ func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 		return nil, err
 	}
 
-	config := Config{
+	meta := &Meta{
 		AccessKey:        d.Get("access_key").(string),
 		SecretKey:        apiKey,
 		DefaultProjectID: projectID,
@@ -221,5 +221,10 @@ func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 		DefaultZone:      zone,
 	}
 
-	return config.Meta()
+	err = meta.bootstrap()
+	if err != nil {
+		return nil, err
+	}
+
+	return meta, nil
 }
