@@ -266,6 +266,9 @@ type terraformResourceData interface {
 	Id() string
 }
 
+// ErrZoneNotFound is returned when no zone can be detected
+var ErrZoneNotFound = fmt.Errorf("could not detect zone")
+
 // getZone will try to guess the zone from the following:
 //  - zone field of the resource data
 //  - default zone from config
@@ -281,8 +284,11 @@ func getZone(d terraformResourceData, meta *Meta) (utils.Zone, error) {
 		return zone, nil
 	}
 
-	return utils.Zone(""), fmt.Errorf("could not detect zone")
+	return utils.Zone(""), ErrZoneNotFound
 }
+
+// ErrRegionNotFound is returned when no region can be detected
+var ErrRegionNotFound = fmt.Errorf("could not detect region")
 
 // getRegion will try to guess the region from the following:
 //  - region field of the resource data
@@ -299,7 +305,7 @@ func getRegion(d terraformResourceData, meta *Meta) (utils.Region, error) {
 		return region, nil
 	}
 
-	return utils.Region(""), fmt.Errorf("could not detect region")
+	return utils.Region(""), ErrRegionNotFound
 }
 
 // isHTTPCodeError returns true if err is an http error with code statusCode
