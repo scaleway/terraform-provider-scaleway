@@ -117,7 +117,7 @@ func resourceScalewayComputeInstanceIPUpdate(d *schema.ResourceData, m interface
 	}
 
 	if d.HasChange("reverse") {
-		l.Debugf("updating IP %q reverse to %s\n", d.Id(), d.Get("reverse"))
+		l.Debugf("updating IP %q reverse to %q\n", d.Id(), d.Get("reverse"))
 
 		reverse := d.Get("reverse").(string)
 		_, err = instanceApi.UpdateIP(&instance.UpdateIPRequest{
