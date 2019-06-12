@@ -19,12 +19,12 @@ func resourceScalewayComputeInstanceIP() *schema.Resource {
 			"address": {
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "The ipv4 address",
+				Description: "The ip address",
 			},
 			"reverse": {
 				Type:        schema.TypeString,
 				Optional:    true,
-				Description: "The ipv4 reverse dns",
+				Description: "The reverse dns for this IP",
 			},
 			"server_id": {
 				Type:        schema.TypeString,
