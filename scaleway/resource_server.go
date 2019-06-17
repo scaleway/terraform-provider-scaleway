@@ -15,6 +15,9 @@ var sshHostFingerprints = "ssh-host-fingerprints"
 
 func resourceScalewayServer() *schema.Resource {
 	return &schema.Resource{
+		DeprecationMessage: `This resource is deprecated and will be removed in the next major version.
+ Please use scaleway_compute_instance_server instead.`,
+
 		Create: resourceScalewayServerCreate,
 		Read:   resourceScalewayServerRead,
 		Update: resourceScalewayServerUpdate,
