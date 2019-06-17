@@ -36,15 +36,14 @@ func resourceScalewayComputeInstanceServer() *schema.Resource {
 				Optional:    true,
 				Description: "The tags associated with the server",
 			},
-			"security_group": {
+			"security_group_id": {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Description: "The security group the server is attached to", // TODO: add this field in CreateServerRequest (proto)
 			},
-			"volume": {
+			"volumes": {
 				Type:     schema.TypeList,
 				Required: true,
-				ForceNew: true,
 				Elem: &schema.Schema{
 					Type: schema.TypeString,
 				},
@@ -68,15 +67,8 @@ func resourceScalewayComputeInstanceServer() *schema.Resource {
 			},
 			"public_ip": {
 				Type:        schema.TypeString,
-				Optional:    true,
 				Computed:    true,
 				Description: "the public IPv4 address of the server",
-			},
-			"cloudinit": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Computed:    true,
-				Description: "the cloudinit script associated with this server",
 			},
 			"state": {
 				Type:        schema.TypeString,
@@ -90,7 +82,7 @@ func resourceScalewayComputeInstanceServer() *schema.Resource {
 					Type: schema.TypeString,
 				},
 				Optional:    true,
-				Description: "The user data associated with the server",
+				Description: "The user data associated with the server", // TODO: document reserved keys (`cloud-init`)
 			},
 		},
 	}
