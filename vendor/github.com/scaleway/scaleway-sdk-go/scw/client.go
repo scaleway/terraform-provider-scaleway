@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"net/http/httputil"
 	"strconv"
+	"sync/atomic"
 	"time"
 
 	"github.com/scaleway/scaleway-sdk-go/internal/auth"
@@ -143,8 +144,15 @@ func (c *Client) Do(req *ScalewayRequest, res interface{}, opts ...RequestOption
 	return c.do(req, res)
 }
 
+// requestNumber auto increments on each do().
+// This allows easy distinguishing of concurrently performed requests in log.
+var requestNumber uint32
+
 // do performs a single HTTP request based on the ScalewayRequest object.
 func (c *Client) do(req *ScalewayRequest, res interface{}) (sdkErr SdkError) {
+
+	currentRequestNumber := atomic.AddUint32(&requestNumber, 1)
+
 	if req == nil {
 		return errors.New("request must be non-nil")
 	}
@@ -180,7 +188,12 @@ func (c *Client) do(req *ScalewayRequest, res interface{}) (sdkErr SdkError) {
 		if err != nil {
 			logger.Warningf("cannot dump outgoing request: %s", err)
 		} else {
-			logger.Debugf("dumping http request:\n" + string(dump))
+			var logString string
+			logString += "\n--------------- Scaleway SDK REQUEST %d : ---------------\n"
+			logString += "%s\n"
+			logString += "---------------------------------------------------------"
+
+			logger.Debugf(logString, currentRequestNumber, dump)
 		}
 
 		// Restore original headers before sending the request
@@ -204,7 +217,12 @@ func (c *Client) do(req *ScalewayRequest, res interface{}) (sdkErr SdkError) {
 		if err != nil {
 			logger.Warningf("cannot dump ingoing response: %s", err)
 		} else {
-			logger.Debugf("dumping http response:\n" + string(dump))
+			var logString string
+			logString += "\n--------------- Scaleway SDK RESPONSE %d : ---------------\n"
+			logString += "%s\n"
+			logString += "----------------------------------------------------------"
+
+			logger.Debugf(logString, currentRequestNumber, dump)
 		}
 	}
 
