@@ -1088,6 +1088,8 @@ type CreateServerRequest struct {
 	Organization string `json:"organization,omitempty"`
 	// Tags define the server tags
 	Tags []string `json:"tags,omitempty"`
+	// SecurityGroup define the security group id
+	SecurityGroup string `json:"security_group,omitempty"`
 }
 
 // CreateServer create server
@@ -1774,6 +1776,8 @@ type CreateImageRequest struct {
 	Zone utils.Zone `json:"-"`
 
 	Name string `json:"name,omitempty"`
+
+	RootVolume string `json:"root_volume,omitempty"`
 	// Arch
 	//
 	// Default value: x86_64
