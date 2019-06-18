@@ -24,7 +24,7 @@ func resourceScalewayComputeInstanceServer() *schema.Resource {
 			"name": {
 				Type:        schema.TypeString,
 				Optional:    true,
-				DefaultFunc: validationRandomName("srv"),
+				DefaultFunc: defaultFuncRandomName("srv"),
 				Description: "The name of the server",
 			},
 			"image": {
@@ -160,7 +160,6 @@ func resourceScalewayComputeInstanceServerCreate(d *schema.ResourceData, m inter
 
 	// todo: add userdata
 
-	// doActionAndWait
 	action := instance.ServerActionPoweron
 	switch d.Get("state").(string) {
 	case "stopped":

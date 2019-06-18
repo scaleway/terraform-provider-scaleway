@@ -340,7 +340,7 @@ func regionSchema() *schema.Schema {
 	}
 }
 
-func validationRandomName(prefixes ...string) func() (interface{}, error) {
+func defaultFuncRandomName(prefixes ...string) func() (interface{}, error) {
 	return func() (interface{}, error) {
 		return namesgenerator.GetRandomName(prefixes...), nil
 	}
