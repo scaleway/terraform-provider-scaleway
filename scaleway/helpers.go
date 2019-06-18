@@ -11,6 +11,7 @@ import (
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/hashicorp/terraform/terraform"
 	api "github.com/nicolai86/scaleway-sdk"
+	"github.com/scaleway/scaleway-sdk-go/namegenerator"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/scaleway-sdk-go/utils"
 )
@@ -337,4 +338,11 @@ func regionSchema() *schema.Schema {
 		ForceNew:    true,
 		Computed:    true,
 	}
+}
+
+func defaultFuncRandomName(prefixes ...string) func() (interface{}, error) {
+	return func() (interface{}, error) {
+		return namesgenerator.GetRandomName(prefixes...), nil
+	}
+
 }
