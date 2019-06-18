@@ -19,114 +19,119 @@ func resourceScalewayComputeInstanceVolume() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"name": {
-				Type:        schema.TypeString,
-				Required:    true,
+				Type:     schema.TypeString,
+				Optional: true,
+				DefaultFunc: func() (interface{}, error) {
+					// TODO generate
+					return "foo", nil
+				},
 				Description: "the name of the volume",
 			},
-			"size_in_gb": {
-				Type:     schema.TypeInt,
-				Required: true,
-				ValidateFunc: func(v interface{}, k string) (ws []string, errors []error) {
-					value := v.(int)
-					if value < 1 || value > 150 {
-						errors = append(errors, fmt.Errorf("%q be more than 1 and less than 150", k))
-					}
-					return
-				},
-				Description: "the size of the volume in GB",
+			"size": {
+				Type:        schema.TypeInt,
+				Optional:    true,
+				ForceNew:    true,
+				Description: "the size of the volume in bytes", // TODO: human readable
 			},
-			"type": {
-				Type:         schema.TypeString,
-				Required:     true,
-				ValidateFunc: validateVolumeType,
-				Description:  "the type of backing storage",
-			},
-			"server": {
+			// TODO handle snapshot, base_volume
+			"server_id": {
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "the server the volume is attached to",
+				Description: "the server associated with this volume",
 			},
+			"project_id": projectIDSchema(),
+			"zone":       zoneSchema(),
 		},
 	}
 }
 
 func resourceScalewayComputeInstanceVolumeCreate(d *schema.ResourceData, m interface{}) error {
 
-	scwClient := m.(*Meta).scwClient
-	instanceAPI := instance.NewAPI(scwClient)
+	meta := m.(*Meta)
+	instanceAPI := instance.NewAPI(meta.scwClient)
 
-	// TODO add zone to resource config?
-
-	/*
-		defaultZone, ok := scwClient.GetDefaultZone()
-		if !ok {
-			return fmt.Errorf("couldn't create volume: default zone not set")
-		}
-	*/
+	zone, err := getZone(d, meta)
+	if err != nil {
+		return err
+	}
 
 	var (
-		//zone       = defaultZone
 		volumeName = d.Get("name").(string)
-		volumeSize = uint64(d.Get("size_in_gb").(int)) * gbToBytesFactor
-		volumeType = d.Get("type").(string)
-		//volumeServer = d.Get("server").(string)
+		volumeSize = uint64(d.Get("size").(int))
+		projectID  = d.Get("project_id").(string)
 	)
 
-	createVolumeResponse, err := instanceAPI.CreateVolume(&instance.CreateVolumeRequest{
-		//Zone:       zone,
-		Name:       volumeName,
-		Size:       &volumeSize,
-		VolumeType: instance.VolumeType(volumeType),
+	res, err := instanceAPI.CreateVolume(&instance.CreateVolumeRequest{
+		Zone:         zone,
+		Name:         volumeName,
+		Size:         &volumeSize,
+		VolumeType:   instance.VolumeTypeLSsd,
+		Organization: projectID,
 	})
 	if err != nil {
 		return fmt.Errorf("couldn't create volume: %s", err)
 	}
 
-	// attach to server
-
-	d.SetId(createVolumeResponse.Volume.ID)
+	d.SetId(newZonedId(zone, res.Volume.ID))
 
 	return resourceScalewayComputeInstanceVolumeRead(d, m)
 }
 
 func resourceScalewayComputeInstanceVolumeRead(d *schema.ResourceData, m interface{}) error {
 
-	scwClient := m.(*Meta).scwClient
-	instanceAPI := instance.NewAPI(scwClient)
+	meta := m.(*Meta)
+	instanceAPI := instance.NewAPI(meta.scwClient)
 
-	getVolumeResponse, err := instanceAPI.GetVolume(&instance.GetVolumeRequest{
-		VolumeID: d.Id(),
+	zone, id, err := parseZonedID(d.Id())
+	if err != nil {
+		return err
+	}
+
+	res, err := instanceAPI.GetVolume(&instance.GetVolumeRequest{
+		VolumeID: id,
+		Zone:     zone,
 	})
 	if err != nil {
-		return fmt.Errorf("couldn't read volume: %s", err)
-	}
-	if getVolumeResponse.Volume == nil {
-		return fmt.Errorf("couldn't read volume: received empty Volume in response")
+		if is404Error(err) {
+			d.SetId("")
+			return nil
+		}
+		return fmt.Errorf("couldn't read volume: %v", err)
 	}
 
-	d.Set("name", getVolumeResponse.Volume.Name)
-	d.Set("size_in_gb", getVolumeResponse.Volume.Size/gbToBytesFactor)
-	d.Set("type", getVolumeResponse.Volume.VolumeType)
-	d.Set("server", getVolumeResponse.Volume.Server)
+	d.Set("name", res.Volume.Name)
+	d.Set("size", res.Volume.Size)
+	d.Set("project_id", res.Volume.Organization)
+	d.Set("zone", string(zone))
+
+	if res.Volume.Server != nil {
+		d.Set("server_id", res.Volume.Server.ID)
+	} else {
+		d.Set("server_id", nil)
+	}
 
 	return nil
 }
 
 func resourceScalewayComputeInstanceVolumeUpdate(d *schema.ResourceData, m interface{}) error {
 
-	if d.HasChange("name") || d.HasChange("size_in_gb") {
+	meta := m.(*Meta)
+	instanceAPI := instance.NewAPI(meta.scwClient)
 
-		scwClient := m.(*Meta).scwClient
-		instanceAPI := instance.NewAPI(scwClient)
+	zone, id, err := parseZonedID(d.Id())
+	if err != nil {
+		return err
+	}
 
-		getVolumeResponse, err := instanceAPI.GetVolume(&instance.GetVolumeRequest{
-			VolumeID: d.Id(),
+	if d.HasChange("name") {
+
+		newName := d.Get("name").(string)
+
+		_, err = instanceAPI.UpdateVolume(&instance.UpdateVolumeRequest{
+			VolumeID: id,
+			Zone:     zone,
+			Name:     &newName,
 		})
-		if err != nil {
-			return fmt.Errorf("couldn't update volume: %s", err)
-		}
-
-		_, err = instanceAPI.SetVolume(&instance.SetVolumeRequest{})
 		if err != nil {
 			return fmt.Errorf("couldn't update volume: %s", err)
 		}
@@ -138,18 +143,22 @@ func resourceScalewayComputeInstanceVolumeUpdate(d *schema.ResourceData, m inter
 
 func resourceScalewayComputeInstanceVolumeDelete(d *schema.ResourceData, m interface{}) error {
 
-	scwClient := m.(*Meta).scwClient
-	instanceAPI := instance.NewAPI(scwClient)
+	meta := m.(*Meta)
+	instanceAPI := instance.NewAPI(meta.scwClient)
 
-	err := instanceAPI.DeleteVolume(&instance.DeleteVolumeRequest{
-		VolumeID: d.Id(),
+	zone, id, err := parseZonedID(d.Id())
+	if err != nil {
+		return err
+	}
+
+	err = instanceAPI.DeleteVolume(&instance.DeleteVolumeRequest{
+		VolumeID: id,
+		Zone:     zone,
 	})
 
-	if err != nil {
-		return fmt.Errorf("couldn't delete volume: %s", err)
+	if err != nil && !is404Error(err) {
+		return fmt.Errorf("couldn't delete volume: %v", err)
 	}
 
 	return nil
 }
-
-const gbToBytesFactor uint64 = 1000000000

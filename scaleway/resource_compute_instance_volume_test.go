@@ -7,7 +7,22 @@ import (
 
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/terraform"
+	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
 )
+
+var testAccCheckScalewayComputeInstanceVolumeConfig = []string{
+	`
+		resource "scaleway_compute_instance_volume" "test" {
+			size = 2000000000
+		}
+	`,
+	`
+		resource "scaleway_compute_instance_volume" "test" {
+			name = "terraform-test"
+			size = 2000000000
+		}
+	`,
+}
 
 func init() {
 	resource.AddTestSweepers("scaleway_compute_instance_volume", &resource.Sweeper{
@@ -48,38 +63,82 @@ func TestAccScalewayComputeInstanceVolume_Basic(t *testing.T) {
 		CheckDestroy: testAccCheckScalewayVolumeDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckScalewayComputeInstanceVolumeConfig,
-				Check:  resource.ComposeTestCheckFunc(
-				//testAccCheckScalewayComputeInstanceVolumeExists("scaleway_volume.test"),
-				//testAccCheckScalewayComputeInstanceVolumeAttributes("scaleway_volume.test"),
+				Config: testAccCheckScalewayComputeInstanceVolumeConfig[0],
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayComputeInstanceVolumeExists("scaleway_compute_instance_volume.test"),
+					resource.TestCheckResourceAttr("scaleway_compute_instance_volume.test", "name", "foo"),
+					resource.TestCheckResourceAttr("scaleway_compute_instance_volume.test", "size", "2000000000"),
+				),
+			},
+			{
+				Config: testAccCheckScalewayComputeInstanceVolumeConfig[1],
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayComputeInstanceVolumeExists("scaleway_compute_instance_volume.test"),
+					resource.TestCheckResourceAttr("scaleway_compute_instance_volume.test", "name", "terraform-test"),
+					resource.TestCheckResourceAttr("scaleway_compute_instance_volume.test", "size", "2000000000"),
 				),
 			},
 		},
 	})
 }
 
+func testAccCheckScalewayComputeInstanceVolumeExists(resourceName string) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		rs, ok := s.RootModule().Resources[resourceName]
+
+		if !ok {
+			return fmt.Errorf("not found: %s", resourceName)
+		}
+
+		zone, id, err := parseZonedID(rs.Primary.ID)
+		if err != nil {
+			return err
+		}
+
+		meta := testAccProvider.Meta().(*Meta)
+		instanceAPI := instance.NewAPI(meta.scwClient)
+		_, err = instanceAPI.GetVolume(&instance.GetVolumeRequest{
+			VolumeID: id,
+			Zone:     zone,
+		})
+
+		if err != nil {
+			return err
+		}
+
+		return nil
+	}
+}
+
 func testAccCheckScalewayComputeInstanceVolumeDestroy(s *terraform.State) error {
-	client := testAccProvider.Meta().(*Meta).deprecatedClient
+	meta := testAccProvider.Meta().(*Meta)
+	instanceAPI := instance.NewAPI(meta.scwClient)
 
 	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "scaleway" {
+		if rs.Type != "scaleway_compute_instance_volume" {
 			continue
 		}
 
-		_, err := client.GetVolume(rs.Primary.ID)
+		zone, id, err := parseZonedID(rs.Primary.ID)
+		if err != nil {
+			return err
+		}
 
+		_, err = instanceAPI.GetVolume(&instance.GetVolumeRequest{
+			Zone:     zone,
+			VolumeID: id,
+		})
+
+		// If no error resource still exist
 		if err == nil {
-			return fmt.Errorf("Volume still exists")
+			return fmt.Errorf("volume (%s) still exists", rs.Primary.ID)
+		}
+
+		// Unexpected api error we return it
+		if !is404Error(err) {
+			return err
 		}
 	}
 
 	return nil
 }
-
-var testAccCheckScalewayComputeInstanceVolumeConfig = `
-resource "scaleway_compute_instance_volume" "test" {
-  name = "terraform-test"
-  size_in_gb = 2
-  type = "l_ssd"
-}
-`
