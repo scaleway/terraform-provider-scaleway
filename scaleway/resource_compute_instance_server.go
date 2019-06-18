@@ -89,7 +89,7 @@ func resourceScalewayComputeInstanceServer() *schema.Resource {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Default:     "started",
-				Description: "the server action (poweron, poweroff)",
+				Description: "the state the server should be (started,stopped,standby)",
 				ValidateFunc: validation.StringInSlice([]string{
 					"started",
 					"stopped",
@@ -167,6 +167,7 @@ func resourceScalewayComputeInstanceServerCreate(d *schema.ResourceData, m inter
 		action = instance.ServerActionStopInPlace
 	}
 
+	// room for improvement: start the action in Create / Update, wait for the state in Read
 	err = instanceApi.ServerActionAndWait(&instance.ServerActionAndWaitRequest{
 		Zone:     zone,
 		ServerID: res.Server.ID,
@@ -177,5 +178,50 @@ func resourceScalewayComputeInstanceServerCreate(d *schema.ResourceData, m inter
 		return err
 	}
 
-	return nil // todo: read
+	return resourceScalewayComputeInstanceServerRead(d, m)
+}
+
+func resourceScalewayComputeInstanceServerRead(d *schema.ResourceData, m interface{}) error {
+	meta := m.(*Meta)
+	instanceApi := instance.NewAPI(meta.scwClient)
+
+	zone, err := getZone(d, meta)
+	if err != nil {
+		return err
+	}
+
+	response, err := instanceApi.GetServer(&instance.GetServerRequest{
+		Zone:     zone,
+		ServerID: d.Id(),
+	})
+	if err != nil {
+		if is404Error(err) {
+			d.SetId("")
+			return nil
+		}
+		return err
+	}
+
+	d.Set("name", response.Server.Name)
+	d.Set("image", response.Server.Image.ID)
+	d.Set("type", response.Server.CommercialType)
+	d.Set("tags", response.Server.Tags)
+	d.Set("security_group_id", response.Server.SecurityGroup.ID)
+
+	d.Set("enable_ipv6", response.Server.EnableIPv6)
+	d.Set("private_ip", *response.Server.PrivateIP)
+	d.Set("public_ip", response.Server.PublicIP.Address.String())
+
+	if response.Server.EnableIPv6 && response.Server.IPv6 != nil {
+		d.Set("public_ipv6", response.Server.IPv6.Address.String())
+	}
+
+	// todo: user data
+
+	d.SetConnInfo(map[string]string{
+		"type": "ssh",
+		"host": response.Server.PublicIP.Address.String(),
+	})
+
+	return nil
 }
