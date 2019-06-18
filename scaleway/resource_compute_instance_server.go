@@ -22,12 +22,18 @@ func resourceScalewayComputeInstanceServer() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"name": {
-				Type:     schema.TypeString,
-				Optional: true,
-				//DefaultFunc: // TODO: generate default name
+				Type:        schema.TypeString,
+				Optional:    true,
+				DefaultFunc: validationRandomName("srv"),
 				Description: "The name of the server",
 			},
-			"commercial_type": {
+			"image": {
+				Type:        schema.TypeString,
+				Required:    true,
+				ForceNew:    true,
+				Description: "The base image of the server",
+			},
+			"type": {
 				Type:        schema.TypeString,
 				Required:    true,
 				ForceNew:    true,
@@ -46,14 +52,24 @@ func resourceScalewayComputeInstanceServer() *schema.Resource {
 				Optional:    true,
 				Description: "The security group the server is attached to", // TODO: add this field in CreateServerRequest (proto)
 			},
-			"volumes": {
-				Type:     schema.TypeList,
-				Required: true,
-				Elem: &schema.Schema{
-					Type: schema.TypeString,
-				},
-				Description: "Volume IDs attached to the server on creation",
-			},
+			//"root_volume": {
+			//	Type:     schema.TypeMap,
+			//	Optional: true,
+			//	ForceNew: true,
+			//	Elem: &schema.Resource{
+			//		Schema: map[string]*schema.Schema{
+			//			"size": {
+			//				Type:     schema.TypeString,
+			//				Optional: true,
+			//			},
+			//			"id": {
+			//				Type:     schema.TypeString,
+			//				Computed: true,
+			//			},
+			//		},
+			//	},
+			//	Description: "Root volume attached to the server on creation",
+			//},
 			"enable_ipv6": {
 				Type:        schema.TypeBool,
 				Optional:    true,
@@ -70,18 +86,15 @@ func resourceScalewayComputeInstanceServer() *schema.Resource {
 				Computed:    true,
 				Description: "the public IPv4 address of the server",
 			},
-			"action": {
+			"state": {
 				Type:        schema.TypeString,
 				Optional:    true,
-				Default:     instance.ServerActionPoweron,
+				Default:     "started",
 				Description: "the server action (poweron, poweroff)",
 				ValidateFunc: validation.StringInSlice([]string{
-					string(instance.ServerActionPoweron),
-					string(instance.ServerActionStopInPlace),
-					string(instance.ServerActionPoweroff),
-					string(instance.ServerActionTerminate),
-					string(instance.ServerActionBackup), // allowed but not recommended
-					string(instance.ServerActionReboot), // allowed but not recommended
+					"started",
+					"stopped",
+					"standby",
 				}, false),
 			},
 			"user_data": {
@@ -147,18 +160,20 @@ func resourceScalewayComputeInstanceServerCreate(d *schema.ResourceData, m inter
 
 	// todo: add userdata
 
-	_, err = instanceApi.ServerAction(&instance.ServerActionRequest{
-		Zone:     zone,
-		ServerID: res.Server.ID,
-	})
-	if err != nil {
-		return err
+	// doActionAndWait
+	action := instance.ServerActionPoweron
+	switch d.Get("state").(string) {
+	case "stopped":
+		action = instance.ServerActionPoweroff
+	case "standby":
+		action = instance.ServerActionStopInPlace
 	}
 
-	_, err = instanceApi.WaitForServer(&instance.WaitForServerRequest{
+	err = instanceApi.ServerActionAndWait(&instance.ServerActionAndWaitRequest{
 		Zone:     zone,
 		ServerID: res.Server.ID,
-		Timeout:  time.Minute * 2,
+		Action:   action,
+		Timeout:  time.Minute * 10,
 	})
 	if err != nil {
 		return err
