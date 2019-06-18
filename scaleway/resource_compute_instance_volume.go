@@ -3,6 +3,7 @@ package scaleway
 import (
 	"fmt"
 
+	"github.com/dustin/go-humanize"
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
 )
@@ -28,10 +29,33 @@ func resourceScalewayComputeInstanceVolume() *schema.Resource {
 				Description: "the name of the volume",
 			},
 			"size": {
-				Type:        schema.TypeInt,
+				Type:        schema.TypeString,
 				Optional:    true,
 				ForceNew:    true,
-				Description: "the size of the volume in bytes", // TODO: human readable
+				Description: "the size of the volume in humab readable format (e.g. 20GB)", // TODO: human readable
+				ValidateFunc: func(val interface{}, key string) (warns []string, errs []error) {
+					_, err := humanize.ParseBytes(val.(string))
+					if err != nil {
+						errs = append(errs, fmt.Errorf("couldn't parse volume size: %s", err))
+					}
+					return
+				},
+				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
+					if old == new {
+						return true
+					}
+
+					oldInBytes, err := humanize.ParseBytes(old)
+					if err != nil {
+						return false
+					}
+					newInBytes, err := humanize.ParseBytes(new)
+					if err != nil {
+						return false
+					}
+
+					return newInBytes == oldInBytes
+				},
 			},
 			// TODO handle snapshot, base_volume
 			"server_id": {
@@ -57,14 +81,19 @@ func resourceScalewayComputeInstanceVolumeCreate(d *schema.ResourceData, m inter
 
 	var (
 		volumeName = d.Get("name").(string)
-		volumeSize = uint64(d.Get("size").(int))
+		volumeSize = d.Get("size").(string)
 		projectID  = d.Get("project_id").(string)
 	)
+
+	volumeSizeInBytes, err := humanize.ParseBytes(volumeSize)
+	if err != nil {
+		return fmt.Errorf("couldn't parse volume size: %s", err)
+	}
 
 	res, err := instanceAPI.CreateVolume(&instance.CreateVolumeRequest{
 		Zone:         zone,
 		Name:         volumeName,
-		Size:         &volumeSize,
+		Size:         &volumeSizeInBytes,
 		VolumeType:   instance.VolumeTypeLSsd,
 		Organization: projectID,
 	})
