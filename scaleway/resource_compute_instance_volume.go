@@ -6,6 +6,7 @@ import (
 	"github.com/dustin/go-humanize"
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
+	namesgenerator "github.com/scaleway/scaleway-sdk-go/namegenerator"
 )
 
 func resourceScalewayComputeInstanceVolume() *schema.Resource {
@@ -20,13 +21,16 @@ func resourceScalewayComputeInstanceVolume() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"name": {
-				Type:     schema.TypeString,
-				Optional: true,
-				DefaultFunc: func() (interface{}, error) {
-					// TODO generate
-					return "foo", nil
-				},
+				Type:        schema.TypeString,
+				Optional:    true,
+				Computed:    true,
 				Description: "the name of the volume",
+				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
+					if new == "" {
+						return true
+					}
+					return old == new
+				},
 			},
 			"size": {
 				Type:        schema.TypeString,
@@ -85,9 +89,15 @@ func resourceScalewayComputeInstanceVolumeCreate(d *schema.ResourceData, m inter
 		projectID  = d.Get("project_id").(string)
 	)
 
+	// Convert human readable volume size to int in bytes
 	volumeSizeInBytes, err := humanize.ParseBytes(volumeSize)
 	if err != nil {
 		return fmt.Errorf("couldn't parse volume size: %s", err)
+	}
+
+	// Generate name if not set
+	if volumeName == "" {
+		volumeName = namesgenerator.GetRandomName()
 	}
 
 	res, err := instanceAPI.CreateVolume(&instance.CreateVolumeRequest{
