@@ -6,6 +6,7 @@ import (
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/hashicorp/terraform/helper/validation"
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
+	"github.com/scaleway/scaleway-sdk-go/utils"
 )
 
 func resourceScalewayComputeInstanceServer() *schema.Resource {
@@ -22,7 +23,7 @@ func resourceScalewayComputeInstanceServer() *schema.Resource {
 			"name": {
 				Type:        schema.TypeString,
 				Optional:    true,
-				DefaultFunc: defaultFuncRandomName("srv"),
+				Computed:    true,
 				Description: "The name of the server",
 			},
 			"image": {
@@ -49,6 +50,7 @@ func resourceScalewayComputeInstanceServer() *schema.Resource {
 			"security_group_id": {
 				Type:        schema.TypeString,
 				Optional:    true,
+				Computed:    true,
 				Description: "The security group the server is attached to", // TODO: add this field in CreateServerRequest (proto)
 			},
 			//"root_volume": {
@@ -116,9 +118,13 @@ func resourceScalewayComputeInstanceServerCreate(d *schema.ResourceData, m inter
 		return err
 	}
 
+	name, ok := d.GetOk("name")
+	if !ok {
+		name = getRandomName("srv")
+	}
 	req := &instance.CreateServerRequest{
 		Zone:           zone,
-		Name:           d.Get("name").(string),
+		Name:           name.(string),
 		Organization:   d.Get("project_id").(string),
 		Image:          d.Get("image").(string),
 		CommercialType: d.Get("type").(string),
@@ -164,7 +170,7 @@ func resourceScalewayComputeInstanceServerCreate(d *schema.ResourceData, m inter
 }
 
 func resourceScalewayComputeInstanceServerRead(d *schema.ResourceData, m interface{}) error {
-	instanceApi, zone, ID, err := getInstanceAPIWithZoneAndID(d, m)
+	instanceApi, zone, ID, err := getInstanceAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return err
 	}
@@ -206,7 +212,7 @@ func resourceScalewayComputeInstanceServerRead(d *schema.ResourceData, m interfa
 }
 
 func resourceScalewayComputeInstanceServerUpdate(d *schema.ResourceData, m interface{}) error {
-	instanceApi, zone, ID, err := getInstanceAPIWithZoneAndID(d, m)
+	instanceApi, zone, ID, err := getInstanceAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return err
 	}
@@ -217,26 +223,22 @@ func resourceScalewayComputeInstanceServerUpdate(d *schema.ResourceData, m inter
 	}
 
 	if d.HasChange("name") {
-		name := d.Get("name").(string)
-		updateRequest.Name = &name
+		updateRequest.Name = utils.String(d.Get("name").(string))
 	}
 
 	if d.HasChange("tags") {
-		tags := d.Get("tags").([]string)
-		updateRequest.Tags = &tags
+		updateRequest.Tags = utils.Strings(d.Get("tags").([]string))
 	}
 
 	if d.HasChange("security_group_id") {
-		securityGroupID := d.Get("security_group_id").(string)
 		updateRequest.SecurityGroup = &instance.SecurityGroupSummary{
-			ID:   securityGroupID,
+			ID:   d.Get("security_group_id").(string),
 			Name: getRandomName("sg"),
 		}
 	}
 
 	if d.HasChange("enable_ipv6") {
-		enableIPV6 := d.Get("enable_ipv6").(bool)
-		updateRequest.EnableIPv6 = &enableIPV6
+		updateRequest.EnableIPv6 = utils.Bool(d.Get("enable_ipv6").(bool))
 	}
 
 	_, err = instanceApi.UpdateServer(updateRequest)
@@ -261,7 +263,7 @@ func resourceScalewayComputeInstanceServerUpdate(d *schema.ResourceData, m inter
 }
 
 func resourceScalewayComputeInstanceServerDelete(d *schema.ResourceData, m interface{}) error {
-	instanceApi, zone, ID, err := getInstanceAPIWithZoneAndID(d, m)
+	instanceApi, zone, ID, err := getInstanceAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return err
 	}

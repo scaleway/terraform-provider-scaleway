@@ -16,10 +16,10 @@ func getInstanceAPIWithZone(d *schema.ResourceData, m interface{}) (*instance.AP
 }
 
 // getInstanceAPIWithZoneAndID returns an instance API with zone and ID extracted from the state
-func getInstanceAPIWithZoneAndID(d *schema.ResourceData, m interface{}) (*instance.API, utils.Zone, string, error) {
+func getInstanceAPIWithZoneAndID(m interface{}, id string) (*instance.API, utils.Zone, string, error) {
 	meta := m.(*Meta)
 	instanceApi := instance.NewAPI(meta.scwClient)
 
-	zone, ID, err := parseZonedID(d.Id())
+	zone, ID, err := parseZonedID(id)
 	return instanceApi, zone, ID, err
 }
