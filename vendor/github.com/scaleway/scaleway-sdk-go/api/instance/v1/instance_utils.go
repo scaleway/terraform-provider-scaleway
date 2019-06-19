@@ -3,6 +3,7 @@ package instance
 import (
 	"fmt"
 
+	"github.com/scaleway/scaleway-sdk-go/internal/errors"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/scaleway-sdk-go/utils"
 )
@@ -252,4 +253,26 @@ func (r *ListSnapshotsResponse) UnsafeSetTotalCount(totalCount int) {
 // Internal usage only
 func (r *ListVolumesResponse) UnsafeSetTotalCount(totalCount int) {
 	r.TotalCount = uint32(totalCount)
+}
+
+func (r *ListServersTypesResponse) UnsafeGetTotalCount() int {
+	return int(r.TotalCount)
+}
+
+func (r *ListServersTypesResponse) UnsafeAppend(res interface{}) (int, scw.SdkError) {
+	results, ok := res.(*ListServersTypesResponse)
+	if !ok {
+		return 0, errors.New("%T type cannot be appended to type %T", res, r)
+	}
+
+	if r.Servers == nil {
+		r.Servers = make(map[string]*ServerType, len(results.Servers))
+	}
+
+	for name, serverType := range results.Servers {
+		r.Servers[name] = serverType
+	}
+
+	r.TotalCount += uint32(len(results.Servers))
+	return len(results.Servers), nil
 }
