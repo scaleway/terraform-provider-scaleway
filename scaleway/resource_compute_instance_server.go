@@ -29,7 +29,7 @@ func resourceScalewayComputeInstanceServer() *schema.Resource {
 				Type:        schema.TypeString,
 				Required:    true,
 				ForceNew:    true,
-				Description: "The base image of the server",
+				Description: "The base image of the server", // TODO: add in doc example with UUID or distrib name
 			},
 			"type": {
 				Type:        schema.TypeString,
@@ -88,7 +88,7 @@ func resourceScalewayComputeInstanceServer() *schema.Resource {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Default:     "started",
-				Description: "the state the server should be (started,stopped,standby)",
+				Description: "the state of the server should be (started, stopped, standby)",
 				ValidateFunc: validation.StringInSlice([]string{
 					"started",
 					"stopped",
