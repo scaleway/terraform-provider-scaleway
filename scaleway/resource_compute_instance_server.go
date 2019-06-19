@@ -17,7 +17,7 @@ func resourceScalewayComputeInstanceServer() *schema.Resource {
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},
-
+		SchemaVersion: 0,
 		Schema: map[string]*schema.Schema{
 			"name": {
 				Type:        schema.TypeString,
@@ -121,7 +121,7 @@ func resourceScalewayComputeInstanceServerCreate(d *schema.ResourceData, m inter
 		Name:           d.Get("name").(string),
 		Organization:   d.Get("project_id").(string),
 		Image:          d.Get("image").(string),
-		CommercialType: d.Get("commercial_type").(string),
+		CommercialType: d.Get("type").(string),
 		EnableIPv6:     d.Get("enable_ipv6").(bool),
 		SecurityGroup:  d.Get("security_group_id").(string),
 	}
