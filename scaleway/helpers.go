@@ -14,6 +14,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/namegenerator"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/scaleway-sdk-go/utils"
+	"golang.org/x/xerrors"
 )
 
 // userAgent used for SDK requests.
@@ -291,7 +292,8 @@ func isHTTPCodeError(err error, statusCode int) bool {
 		return false
 	}
 
-	if resErr, isResError := err.(*scw.ResponseError); isResError && resErr.StatusCode == statusCode {
+	responseError := &scw.ResponseError{}
+	if xerrors.As(err, &responseError) && responseError.StatusCode == statusCode {
 		return true
 	}
 	return false

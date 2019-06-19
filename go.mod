@@ -8,4 +8,5 @@ require (
 	github.com/scaleway/scaleway-sdk-go v0.0.0-20190618171924-fafa213ccbcb
 	github.com/stretchr/testify v1.3.0
 	golang.org/x/crypto v0.0.0-20190426145343-a29dc8fdc734
+	golang.org/x/xerrors v0.0.0-20190513163551-3ee3066db522
 )
