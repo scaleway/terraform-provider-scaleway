@@ -348,6 +348,7 @@ func getRandomName(prefix string) string {
 	return namegenerator.GetRandomName("tf", prefix)
 }
 
+// defaultFuncRandomName returns a default random name
 func defaultFuncRandomName(prefix string) func() (interface{}, error) {
 	return func() (interface{}, error) {
 		return getRandomName(prefix), nil
