@@ -26,10 +26,11 @@ func resourceScalewayComputeInstanceServer() *schema.Resource {
 				Description: "The name of the server",
 			},
 			"image": {
-				Type:        schema.TypeString,
-				Required:    true,
-				ForceNew:    true,
-				Description: "The base image of the server", // TODO: add in doc example with UUID or distrib name
+				Type:         schema.TypeString,
+				Required:     true,
+				ForceNew:     true,
+				Description:  "The base image of the server", // TODO: add in doc example with UUID or distrib name
+				ValidateFunc: validationUUID(),
 			},
 			"type": {
 				Type:        schema.TypeString,
@@ -117,18 +118,13 @@ func resourceScalewayComputeInstanceServerCreate(d *schema.ResourceData, m inter
 
 	req := &instance.CreateServerRequest{
 		Zone:           zone,
+		Name:           d.Get("name").(string),
 		Organization:   d.Get("project_id").(string),
 		Image:          d.Get("image").(string),
 		CommercialType: d.Get("commercial_type").(string),
 		EnableIPv6:     d.Get("enable_ipv6").(bool),
 		SecurityGroup:  d.Get("security_group_id").(string),
 	}
-
-	name, ok := d.GetOk("name")
-	if !ok {
-		name = namesgenerator.GetRandomName()
-	}
-	req.Name = name.(string)
 
 	if raw, ok := d.GetOk("tags"); ok {
 		for _, tag := range raw.([]interface{}) {
@@ -153,19 +149,11 @@ func resourceScalewayComputeInstanceServerCreate(d *schema.ResourceData, m inter
 
 	// todo: add userdata
 
-	action := instance.ServerActionPoweron
-	switch d.Get("state").(string) {
-	case "stopped":
-		action = instance.ServerActionPoweroff
-	case "standby":
-		action = instance.ServerActionStopInPlace
-	}
-
 	// room for improvement: start the action in Create / Update, wait for the state in Read
 	err = instanceApi.ServerActionAndWait(&instance.ServerActionAndWaitRequest{
 		Zone:     zone,
 		ServerID: res.Server.ID,
-		Action:   action,
+		Action:   stateToAction(d.Get("state").(string)),
 		Timeout:  time.Minute * 10,
 	})
 	if err != nil {
@@ -241,8 +229,8 @@ func resourceScalewayComputeInstanceServerUpdate(d *schema.ResourceData, m inter
 	if d.HasChange("security_group_id") {
 		securityGroupID := d.Get("security_group_id").(string)
 		updateRequest.SecurityGroup = &instance.SecurityGroupSummary{
-			ID: securityGroupID,
-			//Name: // todo: generate name
+			ID:   securityGroupID,
+			Name: getRandomName("sg"),
 		}
 	}
 
@@ -257,19 +245,11 @@ func resourceScalewayComputeInstanceServerUpdate(d *schema.ResourceData, m inter
 	}
 
 	if d.HasChange("state") {
-		action := instance.ServerActionPoweron
-		switch d.Get("state").(string) {
-		case "stopped":
-			action = instance.ServerActionPoweroff
-		case "standby":
-			action = instance.ServerActionStopInPlace
-		}
-
 		// room for improvement: start the action in Create / Update, wait for the state in Read
 		err = instanceApi.ServerActionAndWait(&instance.ServerActionAndWaitRequest{
 			Zone:     zone,
 			ServerID: ID,
-			Action:   action,
+			Action:   stateToAction(d.Get("state").(string)),
 			Timeout:  time.Minute * 10,
 		})
 		if err != nil {
@@ -286,15 +266,30 @@ func resourceScalewayComputeInstanceServerDelete(d *schema.ResourceData, m inter
 		return err
 	}
 
-	// TODO: switch with `WipeOutServer`
-	err = instanceApi.DeleteServer(&instance.DeleteServerRequest{
-		ServerID: ID,
+	err = instanceApi.ServerActionAndWait(&instance.ServerActionAndWaitRequest{
 		Zone:     zone,
+		ServerID: ID,
+		Action:   instance.ServerActionTerminate,
+		Timeout:  time.Minute * 10,
 	})
 
 	if err != nil && !is404Error(err) {
 		return err
 	}
 
+	// TODO: if root volume remove_on_terminate
+
 	return nil
+}
+
+func stateToAction(state string) instance.ServerAction {
+	action := instance.ServerActionPoweron
+	switch state {
+	case "stopped":
+		action = instance.ServerActionPoweroff
+	case "standby":
+		action = instance.ServerActionStopInPlace
+	}
+
+	return action
 }
