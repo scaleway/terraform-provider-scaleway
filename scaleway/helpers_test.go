@@ -3,6 +3,7 @@ package scaleway
 import (
 	"fmt"
 	"net/http"
+	"strings"
 	"testing"
 
 	"github.com/scaleway/scaleway-sdk-go/scw"
@@ -192,4 +193,9 @@ func TestIs403Error(t *testing.T) {
 	assert.True(t, is403Error(&scw.ResponseError{StatusCode: http.StatusForbidden}))
 	assert.False(t, is403Error(nil))
 	assert.False(t, is403Error(&scw.ResponseError{StatusCode: http.StatusBadRequest}))
+}
+
+func TestGetRandomName(t *testing.T) {
+	name := getRandomName("test")
+	assert.True(t, strings.HasPrefix(name, "tf-test-"))
 }

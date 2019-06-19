@@ -11,6 +11,7 @@ import (
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/hashicorp/terraform/terraform"
 	api "github.com/nicolai86/scaleway-sdk"
+	"github.com/scaleway/scaleway-sdk-go/namegenerator"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/scaleway-sdk-go/utils"
 )
@@ -337,4 +338,9 @@ func regionSchema() *schema.Schema {
 		ForceNew:    true,
 		Computed:    true,
 	}
+}
+
+// getRandomName returns a random name prefixed for terraform.
+func getRandomName(prefix string) string {
+	return namegenerator.GetRandomName("tf", prefix)
 }
