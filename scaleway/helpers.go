@@ -11,7 +11,6 @@ import (
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/hashicorp/terraform/terraform"
 	api "github.com/nicolai86/scaleway-sdk"
-	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
 	"github.com/scaleway/scaleway-sdk-go/namegenerator"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/scaleway-sdk-go/utils"
@@ -285,24 +284,6 @@ func getZone(d terraformResourceData, meta *Meta) (utils.Zone, error) {
 	}
 
 	return utils.Zone(""), fmt.Errorf("could not detect region")
-}
-
-// extractInstanceAPICreateHelper returns a new instance API and the zone for a Create request
-func extractInstanceAPICreateHelper(d *schema.ResourceData, m interface{}) (*instance.API, utils.Zone, error) {
-	meta := m.(*Meta)
-	instanceApi := instance.NewAPI(meta.scwClient)
-
-	zone, err := getZone(d, meta)
-	return instanceApi, zone, err
-}
-
-// extractInstanceAPI returns an instance API with zone and ID extracted from the state
-func extractInstanceAPI(d *schema.ResourceData, m interface{}) (*instance.API, utils.Zone, string, error) {
-	meta := m.(*Meta)
-	instanceApi := instance.NewAPI(meta.scwClient)
-
-	zone, ID, err := parseZonedID(d.Id())
-	return instanceApi, zone, ID, err
 }
 
 // isHTTPCodeError returns true if err is an http error with code statusCode

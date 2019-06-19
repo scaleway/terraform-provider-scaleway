@@ -110,7 +110,7 @@ func resourceScalewayComputeInstanceServer() *schema.Resource {
 }
 
 func resourceScalewayComputeInstanceServerCreate(d *schema.ResourceData, m interface{}) error {
-	instanceApi, zone, err := extractInstanceAPICreateHelper(d, m)
+	instanceApi, zone, err := getInstanceAPIWithZone(d, m)
 	if err != nil {
 		return err
 	}
@@ -176,7 +176,7 @@ func resourceScalewayComputeInstanceServerCreate(d *schema.ResourceData, m inter
 }
 
 func resourceScalewayComputeInstanceServerRead(d *schema.ResourceData, m interface{}) error {
-	instanceApi, zone, ID, err := extractInstanceAPI(d, m)
+	instanceApi, zone, ID, err := getInstanceAPIWithZoneAndID(d, m)
 	if err != nil {
 		return err
 	}
@@ -218,7 +218,7 @@ func resourceScalewayComputeInstanceServerRead(d *schema.ResourceData, m interfa
 }
 
 func resourceScalewayComputeInstanceServerUpdate(d *schema.ResourceData, m interface{}) error {
-	instanceApi, zone, ID, err := extractInstanceAPI(d, m)
+	instanceApi, zone, ID, err := getInstanceAPIWithZoneAndID(d, m)
 	if err != nil {
 		return err
 	}
@@ -281,7 +281,7 @@ func resourceScalewayComputeInstanceServerUpdate(d *schema.ResourceData, m inter
 }
 
 func resourceScalewayComputeInstanceServerDelete(d *schema.ResourceData, m interface{}) error {
-	instanceApi, zone, ID, err := extractInstanceAPI(d, m)
+	instanceApi, zone, ID, err := getInstanceAPIWithZoneAndID(d, m)
 	if err != nil {
 		return err
 	}
