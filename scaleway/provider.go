@@ -76,6 +76,7 @@ func Provider() terraform.ResourceProvider {
 					// No error is returned here to allow user to use `secret_key`.
 					return nil, nil
 				}),
+				ValidateFunc: validationUUID(),
 			},
 			"project_id": {
 				Type:        schema.TypeString,
@@ -103,6 +104,7 @@ func Provider() terraform.ResourceProvider {
 					// No error is returned here to allow user to use `project_id`.
 					return nil, nil
 				}),
+				ValidateFunc: validationUUID(),
 			},
 			"region": {
 				Type:        schema.TypeString,
@@ -120,6 +122,7 @@ func Provider() terraform.ResourceProvider {
 					}
 					return string(utils.RegionFrPar), nil
 				}),
+				ValidateFunc: validationRegion(),
 			},
 			"zone": {
 				Type:        schema.TypeString,
@@ -131,6 +134,7 @@ func Provider() terraform.ResourceProvider {
 					}
 					return nil, nil
 				}),
+				ValidateFunc: validationZone(),
 			},
 
 			// Deprecated values

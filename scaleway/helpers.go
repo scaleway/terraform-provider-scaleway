@@ -310,37 +310,47 @@ func is403Error(err error) bool {
 // projectIDSchema returns a standard schema for a project_id
 func projectIDSchema() *schema.Schema {
 	return &schema.Schema{
-		Type:        schema.TypeString,
-		Description: "The project_id you want to attach the resource to",
-		Optional:    true,
-		ForceNew:    true,
-		Computed:    true,
+		Type:         schema.TypeString,
+		Description:  "The project_id you want to attach the resource to",
+		Optional:     true,
+		ForceNew:     true,
+		Computed:     true,
+		ValidateFunc: validationUUID(),
 	}
 }
 
 // zoneSchema returns a standard schema for a zone
 func zoneSchema() *schema.Schema {
 	return &schema.Schema{
-		Type:        schema.TypeString,
-		Description: "The zone you want to attach the resource to",
-		Optional:    true,
-		ForceNew:    true,
-		Computed:    true,
+		Type:         schema.TypeString,
+		Description:  "The zone you want to attach the resource to",
+		Optional:     true,
+		ForceNew:     true,
+		Computed:     true,
+		ValidateFunc: validationZone(),
 	}
 }
 
 // regionSchema returns a standard schema for a zone
 func regionSchema() *schema.Schema {
 	return &schema.Schema{
-		Type:        schema.TypeString,
-		Description: "The region you want to attach the resource to",
-		Optional:    true,
-		ForceNew:    true,
-		Computed:    true,
+		Type:         schema.TypeString,
+		Description:  "The region you want to attach the resource to",
+		Optional:     true,
+		ForceNew:     true,
+		Computed:     true,
+		ValidateFunc: validationRegion(),
 	}
 }
 
 // getRandomName returns a random name prefixed for terraform.
 func getRandomName(prefix string) string {
 	return namegenerator.GetRandomName("tf", prefix)
+}
+
+// defaultFuncRandomName returns a default random name
+func defaultFuncRandomName(prefix string) func() (interface{}, error) {
+	return func() (interface{}, error) {
+		return getRandomName(prefix), nil
+	}
 }
