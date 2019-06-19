@@ -1,7 +1,6 @@
 package scaleway
 
 import (
-	"strconv"
 	"time"
 
 	"github.com/hashicorp/terraform/helper/schema"
@@ -111,10 +110,7 @@ func resourceScalewayComputeInstanceServer() *schema.Resource {
 }
 
 func resourceScalewayComputeInstanceServerCreate(d *schema.ResourceData, m interface{}) error {
-	meta := m.(*Meta)
-	instanceApi := instance.NewAPI(meta.scwClient)
-
-	zone, err := getZone(d, meta)
+	instanceApi, zone, err := extractInstanceAPICreateHelper(d, m)
 	if err != nil {
 		return err
 	}
@@ -122,6 +118,7 @@ func resourceScalewayComputeInstanceServerCreate(d *schema.ResourceData, m inter
 	req := &instance.CreateServerRequest{
 		Zone:           zone,
 		Organization:   d.Get("project_id").(string),
+		Image:          d.Get("image").(string),
 		CommercialType: d.Get("commercial_type").(string),
 		EnableIPv6:     d.Get("enable_ipv6").(bool),
 		SecurityGroup:  d.Get("security_group_id").(string),
@@ -139,23 +136,20 @@ func resourceScalewayComputeInstanceServerCreate(d *schema.ResourceData, m inter
 		}
 	}
 
-	if vs, ok := d.GetOk("volumes"); ok {
-		req.Volumes = make(map[string]*instance.VolumeTemplate)
-
-		for i, v := range vs.([]interface{}) {
-			req.Volumes[strconv.Itoa(i)] = &instance.VolumeTemplate{
-				ID:   v.(string),
-				Name: namesgenerator.GetRandomName(),
-			}
-		}
-	}
+	//if vs, ok := d.GetOk("root_volume"); ok {
+	//	req.Volumes = make(map[string]*instance.VolumeTemplate)
+	//	req.Volumes["0"] = &instance.VolumeTemplate{
+	//		ID:   v.(string),
+	//		Name: namesgenerator.GetRandomName(),
+	//	}
+	//}
 
 	res, err := instanceApi.CreateServer(req)
 	if err != nil {
 		return err
 	}
 
-	d.SetId(res.Server.ID)
+	d.SetId(newZonedId(zone, res.Server.ID))
 
 	// todo: add userdata
 
@@ -182,17 +176,14 @@ func resourceScalewayComputeInstanceServerCreate(d *schema.ResourceData, m inter
 }
 
 func resourceScalewayComputeInstanceServerRead(d *schema.ResourceData, m interface{}) error {
-	meta := m.(*Meta)
-	instanceApi := instance.NewAPI(meta.scwClient)
-
-	zone, err := getZone(d, meta)
+	instanceApi, zone, ID, err := extractInstanceAPI(d, m)
 	if err != nil {
 		return err
 	}
 
 	response, err := instanceApi.GetServer(&instance.GetServerRequest{
 		Zone:     zone,
-		ServerID: d.Id(),
+		ServerID: ID,
 	})
 	if err != nil {
 		if is404Error(err) {
@@ -222,6 +213,88 @@ func resourceScalewayComputeInstanceServerRead(d *schema.ResourceData, m interfa
 		"type": "ssh",
 		"host": response.Server.PublicIP.Address.String(),
 	})
+
+	return nil
+}
+
+func resourceScalewayComputeInstanceServerUpdate(d *schema.ResourceData, m interface{}) error {
+	instanceApi, zone, ID, err := extractInstanceAPI(d, m)
+	if err != nil {
+		return err
+	}
+
+	updateRequest := &instance.UpdateServerRequest{
+		Zone:     zone,
+		ServerID: ID,
+	}
+
+	if d.HasChange("name") {
+		name := d.Get("name").(string)
+		updateRequest.Name = &name
+	}
+
+	if d.HasChange("tags") {
+		tags := d.Get("tags").([]string)
+		updateRequest.Tags = &tags
+	}
+
+	if d.HasChange("security_group_id") {
+		securityGroupID := d.Get("security_group_id").(string)
+		updateRequest.SecurityGroup = &instance.SecurityGroupSummary{
+			ID: securityGroupID,
+			//Name: // todo: generate name
+		}
+	}
+
+	if d.HasChange("enable_ipv6") {
+		enableIPV6 := d.Get("enable_ipv6").(bool)
+		updateRequest.EnableIPv6 = &enableIPV6
+	}
+
+	_, err = instanceApi.UpdateServer(updateRequest)
+	if err != nil {
+		return err
+	}
+
+	if d.HasChange("state") {
+		action := instance.ServerActionPoweron
+		switch d.Get("state").(string) {
+		case "stopped":
+			action = instance.ServerActionPoweroff
+		case "standby":
+			action = instance.ServerActionStopInPlace
+		}
+
+		// room for improvement: start the action in Create / Update, wait for the state in Read
+		err = instanceApi.ServerActionAndWait(&instance.ServerActionAndWaitRequest{
+			Zone:     zone,
+			ServerID: ID,
+			Action:   action,
+			Timeout:  time.Minute * 10,
+		})
+		if err != nil {
+			return err
+		}
+	}
+
+	return resourceScalewayComputeInstanceServerRead(d, m)
+}
+
+func resourceScalewayComputeInstanceServerDelete(d *schema.ResourceData, m interface{}) error {
+	instanceApi, zone, ID, err := extractInstanceAPI(d, m)
+	if err != nil {
+		return err
+	}
+
+	// TODO: switch with `WipeOutServer`
+	err = instanceApi.DeleteServer(&instance.DeleteServerRequest{
+		ServerID: ID,
+		Zone:     zone,
+	})
+
+	if err != nil && !is404Error(err) {
+		return err
+	}
 
 	return nil
 }
