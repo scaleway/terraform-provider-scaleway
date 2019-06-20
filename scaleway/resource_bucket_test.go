@@ -39,6 +39,7 @@ func testSweepBucket(region string) error {
 }
 
 func TestAccScalewayBucket(t *testing.T) {
+	t.SkipNow()
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
