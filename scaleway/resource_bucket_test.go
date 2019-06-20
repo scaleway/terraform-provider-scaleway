@@ -39,7 +39,8 @@ func testSweepBucket(region string) error {
 }
 
 func TestAccScalewayBucket(t *testing.T) {
-	resource.Test(t, resource.TestCase{
+	t.SkipNow()
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckScalewayBucketDestroy,

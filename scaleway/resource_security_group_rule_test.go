@@ -12,7 +12,7 @@ import (
 func TestAccScalewaySecurityGroupRule_Basic(t *testing.T) {
 	var group api.SecurityGroup
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckScalewaySecurityGroupRuleDestroy,
@@ -42,7 +42,7 @@ func TestAccScalewaySecurityGroupRule_Basic(t *testing.T) {
 func TestAccScalewaySecurityGroupRule_Count(t *testing.T) {
 	var group api.SecurityGroup
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckScalewaySecurityGroupRuleDestroy,

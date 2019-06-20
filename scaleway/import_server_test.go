@@ -9,7 +9,7 @@ import (
 func TestAccScalewayServer_importBasic(t *testing.T) {
 	resourceName := "scaleway_server.base"
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckScalewayServerDestroy,

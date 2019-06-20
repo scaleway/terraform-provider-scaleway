@@ -46,7 +46,7 @@ func testSweepServer(region string) error {
 }
 
 func TestAccScalewayServer_Basic(t *testing.T) {
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckScalewayServerDestroy,
@@ -91,7 +91,7 @@ func TestAccScalewayServer_Basic(t *testing.T) {
 }
 
 func TestAccScalewayServer_BootType(t *testing.T) {
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckScalewayServerDestroy,
@@ -108,7 +108,7 @@ func TestAccScalewayServer_BootType(t *testing.T) {
 }
 
 func TestAccScalewayServer_ExistingIP(t *testing.T) {
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckScalewayServerDestroy,
@@ -125,7 +125,7 @@ func TestAccScalewayServer_ExistingIP(t *testing.T) {
 }
 
 func TestAccScalewayServer_Volumes(t *testing.T) {
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckScalewayServerDestroy,
@@ -161,7 +161,7 @@ func TestAccScalewayServer_Volumes(t *testing.T) {
 }
 
 func TestAccScalewayServer_SecurityGroup(t *testing.T) {
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckScalewayServerDestroy,

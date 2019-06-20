@@ -43,7 +43,7 @@ func testSweepSecurityGroup(region string) error {
 }
 
 func TestAccScalewaySecurityGroup_Basic(t *testing.T) {
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckScalewaySecurityGroupDestroy,
@@ -62,7 +62,7 @@ func TestAccScalewaySecurityGroup_Basic(t *testing.T) {
 }
 
 func TestAccScalewaySecurityGroup_Stateful(t *testing.T) {
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckScalewaySecurityGroupDestroy,

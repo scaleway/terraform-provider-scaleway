@@ -39,7 +39,7 @@ func testSweepToken(region string) error {
 }
 
 func TestAccScalewayToken_Basic(t *testing.T) {
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckScalewayTokenDestroy,
@@ -73,7 +73,7 @@ func TestAccScalewayToken_Basic(t *testing.T) {
 }
 
 func TestAccScalewayToken_Expiry(t *testing.T) {
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckScalewayTokenDestroy,

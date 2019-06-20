@@ -9,7 +9,7 @@ import (
 func TestAccScalewayIP_importBasic(t *testing.T) {
 	resourceName := "scaleway_ip.base"
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckScalewayIPDestroy,
