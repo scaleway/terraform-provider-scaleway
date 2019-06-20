@@ -7,6 +7,8 @@ import (
 )
 
 func TestAccScalewayServer_importBasic(t *testing.T) {
+	t.Parallel()
+
 	resourceName := "scaleway_server.base"
 
 	resource.Test(t, resource.TestCase{

@@ -46,6 +46,8 @@ func testSweepServer(region string) error {
 }
 
 func TestAccScalewayServer_Basic(t *testing.T) {
+	t.Parallel()
+
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
@@ -91,6 +93,8 @@ func TestAccScalewayServer_Basic(t *testing.T) {
 }
 
 func TestAccScalewayServer_BootType(t *testing.T) {
+	t.Parallel()
+
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
@@ -108,6 +112,8 @@ func TestAccScalewayServer_BootType(t *testing.T) {
 }
 
 func TestAccScalewayServer_ExistingIP(t *testing.T) {
+	t.Parallel()
+
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
@@ -125,6 +131,8 @@ func TestAccScalewayServer_ExistingIP(t *testing.T) {
 }
 
 func TestAccScalewayServer_Volumes(t *testing.T) {
+	t.Parallel()
+
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
@@ -161,6 +169,8 @@ func TestAccScalewayServer_Volumes(t *testing.T) {
 }
 
 func TestAccScalewayServer_SecurityGroup(t *testing.T) {
+	t.Parallel()
+
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,

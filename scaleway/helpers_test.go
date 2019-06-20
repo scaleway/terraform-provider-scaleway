@@ -88,12 +88,6 @@ func TestParseZonedID(t *testing.T) {
 			zone:       utils.ZoneFrPar1,
 		},
 		{
-			name:       "id with a region",
-			localityId: "fr-par/my-id",
-			id:         "my-id",
-			zone:       utils.Zone("fr-par"),
-		},
-		{
 			name:       "empty",
 			localityId: "",
 			err:        "cant parse localized id: ",

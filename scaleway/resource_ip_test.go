@@ -39,6 +39,8 @@ func testSweepIP(region string) error {
 }
 
 func TestAccScalewayIP_Count(t *testing.T) {
+	t.Parallel()
+
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
@@ -56,6 +58,8 @@ func TestAccScalewayIP_Count(t *testing.T) {
 }
 
 func TestAccScalewayIP_Basic(t *testing.T) {
+	t.Parallel()
+
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,

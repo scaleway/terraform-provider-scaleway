@@ -7,6 +7,8 @@ import (
 )
 
 func TestAccScalewayUserData_importBasic(t *testing.T) {
+	t.Parallel()
+
 	resourceName := "scaleway_user_data.base"
 
 	resource.Test(t, resource.TestCase{

@@ -9,35 +9,8 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
 )
 
-// Check that reverse is handled at creation and update time
-var testAccScalewayComputeInstanceIPConfig = []string{
-	`
-		resource "scaleway_compute_instance_ip" "base" {}
-		resource "scaleway_compute_instance_ip" "scaleway" {
-			reverse = "www.scaleway.com"
-		}
-	`,
-	`
-		resource "scaleway_compute_instance_ip" "base" {
-			reverse = "www.scaleway.com"	
-		}
-		resource "scaleway_compute_instance_ip" "scaleway" {}
-	`,
-}
-
-// Check that we can change the zone of an ip (delete + create)
-var testAccScalewayComputeInstanceIPZoneConfig = []string{
-	`
-		resource "scaleway_compute_instance_ip" "base" {}
-	`,
-	`
-		resource "scaleway_compute_instance_ip" "base" {
-			zone = "nl-ams-1"	
-		}
-	`,
-}
-
 func TestAccScalewayComputeInstanceIP(t *testing.T) {
+	t.Parallel()
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -67,6 +40,7 @@ func TestAccScalewayComputeInstanceIP(t *testing.T) {
 }
 
 func TestAccScalewayComputeInstanceIP_Zone(t *testing.T) {
+	t.Parallel()
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -151,4 +125,32 @@ func testAccCheckScalewayComputeInstanceIPDestroy(s *terraform.State) error {
 	}
 
 	return nil
+}
+
+// Check that reverse is handled at creation and update time
+var testAccScalewayComputeInstanceIPConfig = []string{
+	`
+		resource "scaleway_compute_instance_ip" "base" {}
+		resource "scaleway_compute_instance_ip" "scaleway" {
+			reverse = "www.scaleway.com"
+		}
+	`,
+	`
+		resource "scaleway_compute_instance_ip" "base" {
+			reverse = "www.scaleway.com"	
+		}
+		resource "scaleway_compute_instance_ip" "scaleway" {}
+	`,
+}
+
+// Check that we can change the zone of an ip (delete + create)
+var testAccScalewayComputeInstanceIPZoneConfig = []string{
+	`
+		resource "scaleway_compute_instance_ip" "base" {}
+	`,
+	`
+		resource "scaleway_compute_instance_ip" "base" {
+			zone = "nl-ams-1"	
+		}
+	`,
 }
