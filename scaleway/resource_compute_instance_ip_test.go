@@ -94,18 +94,15 @@ func TestAccScalewayComputeInstanceIP_Zone(t *testing.T) {
 func testAccCheckScalewayComputeInstanceIPExists(n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
-
 		if !ok {
-			return fmt.Errorf("not found: %s", n)
+			return fmt.Errorf("resource not found: %s", n)
 		}
 
-		zone, ID, err := parseZonedID(rs.Primary.ID)
+		instanceApi, zone, ID, err := getInstanceAPIWithZoneAndID(testAccProvider.Meta(), rs.Primary.ID)
 		if err != nil {
 			return err
 		}
 
-		meta := testAccProvider.Meta().(*Meta)
-		instanceApi := instance.NewAPI(meta.scwClient)
 		_, err = instanceApi.GetIP(&instance.GetIPRequest{
 			IPID: ID,
 			Zone: zone,
@@ -120,15 +117,12 @@ func testAccCheckScalewayComputeInstanceIPExists(n string) resource.TestCheckFun
 }
 
 func testAccCheckScalewayComputeInstanceIPDestroy(s *terraform.State) error {
-	meta := testAccProvider.Meta().(*Meta)
-	instanceApi := instance.NewAPI(meta.scwClient)
-
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "scaleway_compute_instance_ip" {
 			continue
 		}
 
-		zone, ID, err := parseZonedID(rs.Primary.ID)
+		instanceApi, zone, ID, err := getInstanceAPIWithZoneAndID(testAccProvider.Meta(), rs.Primary.ID)
 		if err != nil {
 			return err
 		}

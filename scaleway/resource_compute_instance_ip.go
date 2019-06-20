@@ -38,10 +38,7 @@ func resourceScalewayComputeInstanceIP() *schema.Resource {
 }
 
 func resourceScalewayComputeInstanceIPCreate(d *schema.ResourceData, m interface{}) error {
-	meta := m.(*Meta)
-	instanceApi := instance.NewAPI(meta.scwClient)
-
-	zone, err := getZone(d, meta)
+	instanceApi, zone, err := getInstanceAPIWithZone(d, m)
 	if err != nil {
 		return err
 	}
@@ -71,10 +68,7 @@ func resourceScalewayComputeInstanceIPCreate(d *schema.ResourceData, m interface
 }
 
 func resourceScalewayComputeInstanceIPRead(d *schema.ResourceData, m interface{}) error {
-	meta := m.(*Meta)
-	instanceApi := instance.NewAPI(meta.scwClient)
-
-	zone, ID, err := parseZonedID(d.Id())
+	instanceApi, zone, ID, err := getInstanceAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return err
 	}
@@ -108,10 +102,7 @@ func resourceScalewayComputeInstanceIPRead(d *schema.ResourceData, m interface{}
 }
 
 func resourceScalewayComputeInstanceIPUpdate(d *schema.ResourceData, m interface{}) error {
-	meta := m.(*Meta)
-	instanceApi := instance.NewAPI(meta.scwClient)
-
-	zone, ID, err := parseZonedID(d.Id())
+	instanceApi, zone, ID, err := getInstanceAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return err
 	}
@@ -134,10 +125,7 @@ func resourceScalewayComputeInstanceIPUpdate(d *schema.ResourceData, m interface
 }
 
 func resourceScalewayComputeInstanceIPDelete(d *schema.ResourceData, m interface{}) error {
-	meta := m.(*Meta)
-	instanceApi := instance.NewAPI(meta.scwClient)
-
-	zone, ID, err := parseZonedID(d.Id())
+	instanceApi, zone, ID, err := getInstanceAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return err
 	}
