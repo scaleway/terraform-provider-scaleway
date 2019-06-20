@@ -117,9 +117,9 @@ func testAccCheckScalewayComputeInstanceServerDestroy(s *terraform.State) error 
 func testAccCheckScalewayComputeInstanceServerConfigMinimal1() string {
 	return `
 resource "scaleway_compute_instance_server" "webserver" {
-image = "f974feac-abae-4365-b988-8ec7d1cec10d"
-type  = "DEV1-S"
-tags = [ "terraform-test", "scaleway_compute_instance_server", "minimal1" ]
+  image = "f974feac-abae-4365-b988-8ec7d1cec10d"
+  type  = "DEV1-S"
+  tags = [ "terraform-test", "scaleway_compute_instance_server", "minimal1" ]
 }`
 }
 

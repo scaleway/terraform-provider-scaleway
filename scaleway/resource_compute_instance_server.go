@@ -192,16 +192,21 @@ func resourceScalewayComputeInstanceServerRead(d *schema.ResourceData, m interfa
 	d.Set("type", response.Server.CommercialType)
 	d.Set("tags", response.Server.Tags)
 	d.Set("security_group_id", response.Server.SecurityGroup.ID)
-
 	d.Set("enable_ipv6", response.Server.EnableIPv6)
-	d.Set("private_ip", *response.Server.PrivateIP)
-	d.Set("public_ip", response.Server.PublicIP.Address.String())
+
+	if response.Server.PrivateIP != nil {
+		d.Set("private_ip", *response.Server.PrivateIP)
+	}
+
+	if response.Server.PublicIP != nil {
+		d.Set("public_ip", response.Server.PublicIP.Address.String())
+	}
 
 	if response.Server.EnableIPv6 && response.Server.IPv6 != nil {
 		d.Set("public_ipv6", response.Server.IPv6.Address.String())
 	}
 
-	// todo: user data
+	// todo: set user data
 
 	d.SetConnInfo(map[string]string{
 		"type": "ssh",
