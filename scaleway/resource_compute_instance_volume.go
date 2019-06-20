@@ -104,7 +104,7 @@ func resourceScalewayComputeInstanceVolumeCreate(d *schema.ResourceData, m inter
 		Zone:         zone,
 		Name:         volumeName,
 		Size:         &volumeSizeInBytes,
-		VolumeType:   instance.VolumeTypeLSsd,
+		VolumeType:   instance.VolumeTypeLSSD,
 		Organization: projectID,
 	})
 	if err != nil {
