@@ -9,10 +9,8 @@ import (
 )
 
 func TestAccScalewayDataSourceVolume_Basic(t *testing.T) {
-	t.Parallel()
-
 	dataSourceName := "data.scaleway_volume.test"
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{

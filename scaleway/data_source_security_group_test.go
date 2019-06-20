@@ -9,12 +9,10 @@ import (
 )
 
 func TestAccScalewaySecurityGroupDataSource_Basic(t *testing.T) {
-	t.Parallel()
-
 	dataSourceName := "data.scaleway_security_group.test"
 	ri := acctest.RandInt()
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckScalewaySecurityGroupDestroy,

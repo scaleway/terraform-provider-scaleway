@@ -9,9 +9,7 @@ import (
 )
 
 func TestAccScalewayDataSourceImage_Basic(t *testing.T) {
-	t.Parallel()
-
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
@@ -30,9 +28,7 @@ func TestAccScalewayDataSourceImage_Basic(t *testing.T) {
 }
 
 func TestAccScalewayDataSourceImage_MostRecent(t *testing.T) {
-	t.Parallel()
-
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
@@ -51,9 +47,7 @@ func TestAccScalewayDataSourceImage_MostRecent(t *testing.T) {
 }
 
 func TestAccScalewayDataSourceImage_Filtered(t *testing.T) {
-	t.Parallel()
-
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{

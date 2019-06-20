@@ -10,9 +10,7 @@ import (
 )
 
 func TestAccScalewayComputeInstanceIP(t *testing.T) {
-	t.Parallel()
-
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckScalewayComputeInstanceIPDestroy,
@@ -40,9 +38,7 @@ func TestAccScalewayComputeInstanceIP(t *testing.T) {
 }
 
 func TestAccScalewayComputeInstanceIP_Zone(t *testing.T) {
-	t.Parallel()
-
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckScalewayComputeInstanceIPDestroy,

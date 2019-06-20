@@ -7,11 +7,9 @@ import (
 )
 
 func TestAccScalewaySecurityGroup_importBasic(t *testing.T) {
-	t.Parallel()
-
 	resourceName := "scaleway_security_group.base"
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckScalewaySecurityGroupDestroy,
