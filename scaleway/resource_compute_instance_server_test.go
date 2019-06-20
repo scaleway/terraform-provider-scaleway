@@ -10,22 +10,6 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
 )
 
-// Check that type force recreate the server
-var testAccScalewayComputeInstanceServerConfig = []string{
-	`
-		resource "scaleway_compute_instance_server" "webserver" {
-  			image = "f974feac-abae-4365-b988-8ec7d1cec10d"
-  			type  = "DEV1-M"
-		}
-	`,
-	`
-		resource "scaleway_compute_instance_server" "webserver" {
-  			image = "f974feac-abae-4365-b988-8ec7d1cec10d"
-  			type  = "DEV1-S"
-		}
-	`,
-}
-
 func TestAccScalewayComputeInstanceServer(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
@@ -102,6 +86,22 @@ func testAccCheckScalewayComputeInstanceServerDestroy(s *terraform.State) error 
 	}
 
 	return nil
+}
+
+// Check that type force recreate the server
+var testAccScalewayComputeInstanceServerConfig = []string{
+	`
+		resource "scaleway_compute_instance_server" "webserver" {
+  			image = "f974feac-abae-4365-b988-8ec7d1cec10d"
+  			type  = "DEV1-M"
+		}
+	`,
+	`
+		resource "scaleway_compute_instance_server" "webserver" {
+  			image = "f974feac-abae-4365-b988-8ec7d1cec10d"
+  			type  = "DEV1-S"
+		}
+	`,
 }
 
 func Test_stateToAction(t *testing.T) {
