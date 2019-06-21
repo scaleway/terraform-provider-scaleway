@@ -1,6 +1,7 @@
 package scaleway
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/hashicorp/terraform/helper/schema"
@@ -30,7 +31,7 @@ func resourceScalewayComputeInstanceServer() *schema.Resource {
 				Type:         schema.TypeString,
 				Required:     true,
 				ForceNew:     true,
-				Description:  "The base image of the server", // TODO: add in doc example with UUID or distrib name
+				Description:  "The base image of the server", // TODO: add in doc example with UUID
 				ValidateFunc: validationUUID(),
 			},
 			"type": {
@@ -51,26 +52,36 @@ func resourceScalewayComputeInstanceServer() *schema.Resource {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Computed:    true,
-				Description: "The security group the server is attached to", // TODO: add this field in CreateServerRequest (proto)
+				Description: "The security group the server is attached to",
 			},
-			//"root_volume": {
-			//	Type:     schema.TypeMap,
-			//	Optional: true,
-			//	ForceNew: true,
-			//	Elem: &schema.Resource{
-			//		Schema: map[string]*schema.Schema{
-			//			"size": {
-			//				Type:     schema.TypeString,
-			//				Optional: true,
-			//			},
-			//			"id": {
-			//				Type:     schema.TypeString,
-			//				Computed: true,
-			//			},
-			//		},
-			//	},
-			//	Description: "Root volume attached to the server on creation",
-			//},
+			"root_volume": {
+				Type:     schema.TypeList,
+				MaxItems: 1,
+				Optional: true,
+				Computed: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"size_in_gb": {
+							Type:     schema.TypeInt,
+							Optional: true,
+							Computed: true,
+							ForceNew: true, // TODO: don't force new but stop server and create new volume instead
+						},
+						"delete_on_termination": {
+							Type:     schema.TypeBool,
+							Optional: true,
+							Default:  true,
+						},
+						"volume_id": {
+							Type:         schema.TypeString,
+							Optional:     true,
+							Computed:     true,
+							ValidateFunc: validationUUID(),
+						},
+					},
+				},
+				Description: "Root volume attached to the server on creation",
+			},
 			"enable_ipv6": {
 				Type:        schema.TypeBool,
 				Optional:    true,
@@ -91,7 +102,7 @@ func resourceScalewayComputeInstanceServer() *schema.Resource {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Default:     "started",
-				Description: "the state of the server should be (started, stopped, standby)",
+				Description: "the state of the server should be: started, stopped, standby",
 				ValidateFunc: validation.StringInSlice([]string{
 					"started",
 					"stopped",
@@ -104,13 +115,15 @@ func resourceScalewayComputeInstanceServer() *schema.Resource {
 					Type: schema.TypeString,
 				},
 				Optional:    true,
-				Description: "The user data associated with the server", // TODO: document reserved keys (`cloud-init`)
+				Description: "the user data associated with the server", // TODO: document reserved keys (`cloud-init`)
 			},
 			"zone":       zoneSchema(),
 			"project_id": projectIDSchema(),
 		},
 	}
 }
+
+const giga = 1000000000
 
 func resourceScalewayComputeInstanceServerCreate(d *schema.ResourceData, m interface{}) error {
 	instanceApi, zone, err := getInstanceAPIWithZone(d, m)
@@ -138,13 +151,12 @@ func resourceScalewayComputeInstanceServerCreate(d *schema.ResourceData, m inter
 		}
 	}
 
-	//if vs, ok := d.GetOk("root_volume"); ok {
-	//	req.Volumes = make(map[string]*instance.VolumeTemplate)
-	//	req.Volumes["0"] = &instance.VolumeTemplate{
-	//		ID:   v.(string),
-	//		Name: namesgenerator.GetRandomName(),
-	//	}
-	//}
+	if size, ok := d.GetOk("root_volume.0.size_in_gb"); ok {
+		req.Volumes = make(map[string]*instance.VolumeTemplate)
+		req.Volumes["0"] = &instance.VolumeTemplate{
+			Size: uint64(size.(int)) * giga,
+		}
+	}
 
 	res, err := instanceApi.CreateServer(req)
 	if err != nil {
@@ -155,15 +167,16 @@ func resourceScalewayComputeInstanceServerCreate(d *schema.ResourceData, m inter
 
 	// todo: add userdata
 
-	// room for improvement: start the action in Create / Update, wait for the state in Read
-	err = instanceApi.ServerActionAndWait(&instance.ServerActionAndWaitRequest{
-		Zone:     zone,
-		ServerID: res.Server.ID,
-		Action:   stateToAction(d.Get("state").(string)),
-		Timeout:  time.Minute * 10,
-	})
-	if err != nil {
-		return err
+	for _, action := range stateToAction("stopped", d.Get("state").(string)) {
+		err = instanceApi.ServerActionAndWait(&instance.ServerActionAndWaitRequest{
+			Zone:     zone,
+			ServerID: res.Server.ID,
+			Action:   action,
+			Timeout:  time.Minute * 10,
+		})
+		if err != nil && !is404Error(err) {
+			return err
+		}
 	}
 
 	return resourceScalewayComputeInstanceServerRead(d, m)
@@ -186,6 +199,18 @@ func resourceScalewayComputeInstanceServerRead(d *schema.ResourceData, m interfa
 		}
 		return err
 	}
+	switch response.Server.State {
+	case instance.ServerStateStopped:
+		d.Set("state", "stopped")
+	case instance.ServerStateStoppedInPlace:
+		d.Set("state", "standby")
+	case instance.ServerStateRunning:
+		d.Set("state", "started")
+	case instance.ServerStateLocked:
+		return fmt.Errorf("server is locked, please contact Scaleway support: https://console.scaleway.com/support/tickets")
+	default:
+		return fmt.Errorf("server is in an invalid state, someone else might be executing action at the same time")
+	}
 
 	d.Set("name", response.Server.Name)
 	d.Set("image", response.Server.Image.ID)
@@ -200,18 +225,24 @@ func resourceScalewayComputeInstanceServerRead(d *schema.ResourceData, m interfa
 
 	if response.Server.PublicIP != nil {
 		d.Set("public_ip", response.Server.PublicIP.Address.String())
+		d.SetConnInfo(map[string]string{
+			"type": "ssh",
+			"host": response.Server.PublicIP.Address.String(),
+		})
 	}
 
 	if response.Server.EnableIPv6 && response.Server.IPv6 != nil {
 		d.Set("public_ipv6", response.Server.IPv6.Address.String())
 	}
 
-	// todo: set user data
+	if vs, ok := response.Server.Volumes["0"]; ok {
+		rootVolume := flattenRootVolume(d.Get("root_volume"))
+		rootVolume[0]["volume_id"] = vs.ID
+		rootVolume[0]["size_in_gb"] = int(vs.Size / giga)
+		d.Set("root_volume", rootVolume)
+	}
 
-	d.SetConnInfo(map[string]string{
-		"type": "ssh",
-		"host": response.Server.PublicIP.Address.String(),
-	})
+	// todo: set user data
 
 	return nil
 }
@@ -238,7 +269,7 @@ func resourceScalewayComputeInstanceServerUpdate(d *schema.ResourceData, m inter
 	if d.HasChange("security_group_id") {
 		updateRequest.SecurityGroup = &instance.SecurityGroupSummary{
 			ID:   d.Get("security_group_id").(string),
-			Name: getRandomName("sg"),
+			Name: getRandomName("sg"), // this value will be ignored by the API
 		}
 	}
 
@@ -252,15 +283,17 @@ func resourceScalewayComputeInstanceServerUpdate(d *schema.ResourceData, m inter
 	}
 
 	if d.HasChange("state") {
-		// room for improvement: start the action in Create / Update, wait for the state in Read
-		err = instanceApi.ServerActionAndWait(&instance.ServerActionAndWaitRequest{
-			Zone:     zone,
-			ServerID: ID,
-			Action:   stateToAction(d.Get("state").(string)),
-			Timeout:  time.Minute * 10,
-		})
-		if err != nil {
-			return err
+		previousState, nextState := d.GetChange("state")
+		for _, action := range stateToAction(previousState.(string), nextState.(string)) {
+			err = instanceApi.ServerActionAndWait(&instance.ServerActionAndWaitRequest{
+				Zone:     zone,
+				ServerID: ID,
+				Action:   action,
+				Timeout:  time.Minute * 10,
+			})
+			if err != nil && !is404Error(err) {
+				return err
+			}
 		}
 	}
 
@@ -273,30 +306,55 @@ func resourceScalewayComputeInstanceServerDelete(d *schema.ResourceData, m inter
 		return err
 	}
 
-	err = instanceApi.ServerActionAndWait(&instance.ServerActionAndWaitRequest{
+	if d.Get("state").(string) != "stopped" {
+		err = instanceApi.ServerActionAndWait(&instance.ServerActionAndWaitRequest{
+			Zone:     zone,
+			ServerID: ID,
+			Action:   instance.ServerActionPoweroff,
+			Timeout:  time.Minute * 10,
+		})
+		if is404Error(err) {
+			return nil
+		}
+		if err != nil {
+			return err
+		}
+	}
+
+	err = instanceApi.DeleteServer(&instance.DeleteServerRequest{
 		Zone:     zone,
 		ServerID: ID,
-		Action:   instance.ServerActionTerminate,
-		Timeout:  time.Minute * 10,
 	})
 
 	if err != nil && !is404Error(err) {
 		return err
 	}
 
-	// TODO: if root volume remove_on_terminate
+	if d.Get("root_volume.0.delete_on_termination").(bool) {
+		err = instanceApi.DeleteVolume(&instance.DeleteVolumeRequest{
+			Zone:     zone,
+			VolumeID: d.Get("root_volume.0.volume_id").(string),
+		})
+		if err != nil && !is404Error(err) {
+			return err
+		}
+	}
 
 	return nil
 }
 
-func stateToAction(state string) instance.ServerAction {
-	action := instance.ServerActionPoweron
-	switch state {
-	case "stopped":
-		action = instance.ServerActionPoweroff
-	case "standby":
-		action = instance.ServerActionStopInPlace
+func stateToAction(previousState, nextState string) []instance.ServerAction {
+	transitionMap := map[[2]string][]instance.ServerAction{
+		{"stopped", "stopped"}: {},
+		{"stopped", "started"}: {instance.ServerActionPoweron},
+		{"stopped", "standby"}: {instance.ServerActionPoweron, instance.ServerActionStopInPlace},
+		{"started", "stopped"}: {instance.ServerActionPoweroff},
+		{"started", "started"}: {},
+		{"started", "standby"}: {instance.ServerActionStopInPlace},
+		{"standby", "stopped"}: {instance.ServerActionPoweroff},
+		{"standby", "started"}: {instance.ServerActionPoweron},
+		{"standby", "standby"}: {},
 	}
 
-	return action
+	return transitionMap[[2]string{previousState, nextState}]
 }

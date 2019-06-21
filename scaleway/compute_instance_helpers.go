@@ -23,3 +23,18 @@ func getInstanceAPIWithZoneAndID(m interface{}, id string) (*instance.API, utils
 	zone, ID, err := parseZonedID(id)
 	return instanceApi, zone, ID, err
 }
+
+func flattenRootVolume(v interface{}) []map[string]interface{} {
+	flattenVolume := []map[string]interface{}{{}}
+
+	vs, ok := v.([]map[string]interface{})
+	if ok {
+		flattenVolume = vs
+	}
+
+	if _, exist := flattenVolume[0]["delete_on_termination"]; !exist {
+		flattenVolume[0]["delete_on_termination"] = true // default value does not work on list
+	}
+
+	return flattenVolume
+}
