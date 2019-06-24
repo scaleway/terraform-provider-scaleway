@@ -10,6 +10,9 @@ import (
 
 func resourceScalewayVolume() *schema.Resource {
 	return &schema.Resource{
+		DeprecationMessage: `This resource is deprecated and will be removed in the next major version.
+ Please use scaleway_compute_instance_volume instead.`,
+
 		Create: resourceScalewayVolumeCreate,
 		Read:   resourceScalewayVolumeRead,
 		Update: resourceScalewayVolumeUpdate,

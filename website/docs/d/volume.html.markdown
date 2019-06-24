@@ -8,6 +8,9 @@ description: |-
 
 # scaleway_volume
 
+**DEPRECATED**: This resource is deprecated and will be removed in `v2.0+`.
+Please use `scaleway_compute_instance_volume` instead.
+
 Gets information about a Volume.
 
 ## Example Usage
