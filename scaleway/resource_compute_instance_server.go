@@ -238,7 +238,7 @@ func resourceScalewayComputeInstanceServerRead(d *schema.ResourceData, m interfa
 	}
 
 	if vs, ok := response.Server.Volumes["0"]; ok {
-		rootVolume := flattenRootVolume(d.Get("root_volume"))
+		rootVolume := expandRootVolume(d.Get("root_volume"))
 		rootVolume[0]["volume_id"] = vs.ID
 		rootVolume[0]["size_in_gb"] = int(vs.Size / giga)
 		d.Set("root_volume", rootVolume)

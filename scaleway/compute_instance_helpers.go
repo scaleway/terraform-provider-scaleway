@@ -34,7 +34,8 @@ func getInstanceAPIWithZoneAndID(m interface{}, id string) (*instance.API, utils
 	return instanceApi, zone, ID, err
 }
 
-func flattenRootVolume(v interface{}) []map[string]interface{} {
+// expandRootVolume expands the current root volume or returns the default root volume
+func expandRootVolume(v interface{}) []map[string]interface{} {
 	flattenVolume := []map[string]interface{}{{}}
 
 	vs, ok := v.([]map[string]interface{})
