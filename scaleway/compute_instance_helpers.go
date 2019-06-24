@@ -3,6 +3,7 @@ package scaleway
 import (
 	"time"
 
+	"github.com/hashicorp/terraform/helper/hashcode"
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
 	"github.com/scaleway/scaleway-sdk-go/utils"
@@ -13,7 +14,7 @@ const (
 	ServerStateStarted = "started"
 	ServerStateStandby = "standby"
 
-	ServerWaitForTimeout = time.Minute * 10
+	ServerWaitForTimeout = 10 * time.Minute
 )
 
 // getInstanceAPIWithZone returns a new instance API and the zone for a Create request
@@ -48,4 +49,9 @@ func expandRootVolume(v interface{}) map[string]interface{} {
 	}
 
 	return flattenVolume
+}
+
+func schemaSetUserData(v interface{}) int {
+	userData := v.(map[string]interface{})
+	return hashcode.String(userData["key"].(string) + userData["value"].(string))
 }

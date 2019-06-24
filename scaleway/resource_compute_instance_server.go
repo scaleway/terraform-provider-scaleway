@@ -1,7 +1,9 @@
 package scaleway
 
 import (
+	"bytes"
 	"fmt"
+	"io/ioutil"
 	"time"
 
 	"github.com/hashicorp/terraform/helper/schema"
@@ -55,10 +57,11 @@ func resourceScalewayComputeInstanceServer() *schema.Resource {
 				Description: "The security group the server is attached to",
 			},
 			"root_volume": {
-				Type:     schema.TypeList,
-				MaxItems: 1,
-				Optional: true,
-				Computed: true,
+				Type:        schema.TypeList,
+				MaxItems:    1,
+				Optional:    true,
+				Computed:    true,
+				Description: "Root volume attached to the server on creation",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"size_in_gb": {
@@ -80,7 +83,6 @@ func resourceScalewayComputeInstanceServer() *schema.Resource {
 						},
 					},
 				},
-				Description: "Root volume attached to the server on creation",
 			},
 			"enable_ipv6": {
 				Type:        schema.TypeBool,
@@ -109,28 +111,34 @@ func resourceScalewayComputeInstanceServer() *schema.Resource {
 					ServerStateStandby,
 				}, false),
 			},
-			"cloudinit": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Computed:    true,
-				Description: "the cloudinit script associated with this server",
+			"cloud_init": {
+				Type:         schema.TypeString,
+				Optional:     true,
+				Computed:     true,
+				Description:  "the cloud init script associated with this server",
+				ValidateFunc: validation.StringLenBetween(0, 127998),
 			},
 			"user_data": {
-				Type: schema.TypeSet,
+				Type:        schema.TypeSet,
+				Optional:    true,
+				Computed:    true,
+				MaxItems:    98,
+				Description: "the user data associated with the server", // TODO: document reserved keys (`cloud-init`)
+				Set:         schemaSetUserData,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"key": {
-							Type:     schema.TypeString,
-							Required: true,
+							Type:         schema.TypeString,
+							Required:     true,
+							ValidateFunc: validationStringNotInSlice([]string{"cloud-init"}, true),
 						},
 						"value": {
-							Type:     schema.TypeString,
-							Required: true,
+							Type:         schema.TypeString,
+							Required:     true,
+							ValidateFunc: validation.StringLenBetween(0, 127998),
 						},
 					},
 				},
-				Optional:    true,
-				Description: "the user data associated with the server", // TODO: document reserved keys (`cloud-init`)
 			},
 			"zone":       zoneSchema(),
 			"project_id": projectIDSchema(),
@@ -144,6 +152,9 @@ func resourceScalewayComputeInstanceServerCreate(d *schema.ResourceData, m inter
 		return err
 	}
 
+	////
+	// Create the server
+	////
 	name, ok := d.GetOk("name")
 	if !ok {
 		name = getRandomName("srv")
@@ -178,8 +189,44 @@ func resourceScalewayComputeInstanceServerCreate(d *schema.ResourceData, m inter
 
 	d.SetId(newZonedId(zone, res.Server.ID))
 
-	// todo: add userdata
+	////
+	// Set user data
+	////
+	var userDataRequests []*instance.SetServerUserDataRequest
 
+	// cloud init script is set in user data
+	if cloudInit, ok := d.GetOk("cloud_init"); ok {
+		userDataRequests = append(userDataRequests, &instance.SetServerUserDataRequest{
+			Zone:     zone,
+			ServerID: res.Server.ID,
+			Key:      "cloud-init",
+			Content:  bytes.NewBufferString(cloudInit.(string)),
+		})
+	}
+
+	if allUserData, ok := d.GetOk("user_data"); ok {
+		userDataSet := allUserData.(*schema.Set)
+		for _, rawUserData := range userDataSet.List() {
+			userData := rawUserData.(map[string]interface{})
+			userDataRequests = append(userDataRequests, &instance.SetServerUserDataRequest{
+				Zone:     zone,
+				ServerID: res.Server.ID,
+				Key:      userData["key"].(string),
+				Content:  bytes.NewBufferString(userData["value"].(string)),
+			})
+		}
+	}
+
+	for _, userDataRequest := range userDataRequests {
+		err := instanceApi.SetServerUserData(userDataRequest)
+		if err != nil {
+			return err
+		}
+	}
+
+	////
+	// Execute server action to reach the expected state
+	////
 	for _, action := range stateToAction(ServerStateStopped, d.Get("state").(string)) {
 		err = instanceApi.ServerActionAndWait(&instance.ServerActionAndWaitRequest{
 			Zone:     zone,
@@ -187,7 +234,7 @@ func resourceScalewayComputeInstanceServerCreate(d *schema.ResourceData, m inter
 			Action:   action,
 			Timeout:  time.Minute * 10,
 		})
-		if err != nil && !is404Error(err) {
+		if err != nil {
 			return err
 		}
 	}
@@ -203,6 +250,9 @@ func resourceScalewayComputeInstanceServerRead(d *schema.ResourceData, m interfa
 
 	d.Set("zone", string(zone))
 
+	////
+	// Read Server
+	////
 	response, err := instanceApi.GetServer(&instance.GetServerRequest{
 		Zone:     zone,
 		ServerID: ID,
@@ -257,7 +307,30 @@ func resourceScalewayComputeInstanceServerRead(d *schema.ResourceData, m interfa
 		d.Set("root_volume", []map[string]interface{}{rootVolume})
 	}
 
-	// todo: set user data
+	////
+	// Read server user data
+	////
+	allUserData, err := instanceApi.GetAllServerUserData(&instance.GetAllServerUserDataRequest{
+		Zone:     zone,
+		ServerID: ID,
+	})
+
+	userDataList := []interface{}{}
+	for key, value := range allUserData.UserData {
+		userData, err := ioutil.ReadAll(value)
+		if err != nil {
+			return err
+		}
+		if key != "cloud-init" {
+			userDataList = append(userDataList, map[string]interface{}{
+				"key":   key,
+				"value": string(userData),
+			})
+		} else {
+			d.Set("cloud_init", string(userData))
+		}
+	}
+	d.Set("user_data", schema.NewSet(schemaSetUserData, userDataList))
 
 	return nil
 }
