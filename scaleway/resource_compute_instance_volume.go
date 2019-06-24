@@ -117,7 +117,6 @@ func resourceScalewayComputeInstanceVolumeUpdate(d *schema.ResourceData, m inter
 	}
 
 	if d.HasChange("name") {
-
 		newName := d.Get("name").(string)
 
 		_, err = instanceAPI.UpdateVolume(&instance.UpdateVolumeRequest{
@@ -128,7 +127,6 @@ func resourceScalewayComputeInstanceVolumeUpdate(d *schema.ResourceData, m inter
 		if err != nil {
 			return fmt.Errorf("couldn't update volume: %s", err)
 		}
-
 	}
 
 	return resourceScalewayComputeInstanceVolumeRead(d, m)
