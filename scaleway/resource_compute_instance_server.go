@@ -109,10 +109,25 @@ func resourceScalewayComputeInstanceServer() *schema.Resource {
 					ServerStateStandby,
 				}, false),
 			},
+			"cloudinit": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Computed:    true,
+				Description: "the cloudinit script associated with this server",
+			},
 			"user_data": {
-				Type: schema.TypeMap,
-				Elem: &schema.Schema{
-					Type: schema.TypeString,
+				Type: schema.TypeSet,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"key": {
+							Type:     schema.TypeString,
+							Required: true,
+						},
+						"value": {
+							Type:     schema.TypeString,
+							Required: true,
+						},
+					},
 				},
 				Optional:    true,
 				Description: "the user data associated with the server", // TODO: document reserved keys (`cloud-init`)
@@ -122,8 +137,6 @@ func resourceScalewayComputeInstanceServer() *schema.Resource {
 		},
 	}
 }
-
-const giga = 1000000000
 
 func resourceScalewayComputeInstanceServerCreate(d *schema.ResourceData, m interface{}) error {
 	instanceApi, zone, err := getInstanceAPIWithZone(d, m)
@@ -154,7 +167,7 @@ func resourceScalewayComputeInstanceServerCreate(d *schema.ResourceData, m inter
 	if size, ok := d.GetOk("root_volume.0.size_in_gb"); ok {
 		req.Volumes = make(map[string]*instance.VolumeTemplate)
 		req.Volumes["0"] = &instance.VolumeTemplate{
-			Size: uint64(size.(int)) * giga,
+			Size: uint64(size.(int)) * gb,
 		}
 	}
 
@@ -240,7 +253,7 @@ func resourceScalewayComputeInstanceServerRead(d *schema.ResourceData, m interfa
 	if vs, ok := response.Server.Volumes["0"]; ok {
 		rootVolume := expandRootVolume(d.Get("root_volume"))
 		rootVolume["volume_id"] = vs.ID
-		rootVolume["size_in_gb"] = int(vs.Size / giga)
+		rootVolume["size_in_gb"] = int(vs.Size / gb)
 		d.Set("root_volume", []map[string]interface{}{rootVolume})
 	}
 
