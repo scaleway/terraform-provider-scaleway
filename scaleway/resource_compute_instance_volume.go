@@ -5,7 +5,6 @@ import (
 
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
-	namesgenerator "github.com/scaleway/scaleway-sdk-go/namegenerator"
 )
 
 func resourceScalewayComputeInstanceVolume() *schema.Resource {
@@ -45,7 +44,6 @@ func resourceScalewayComputeInstanceVolume() *schema.Resource {
 }
 
 func resourceScalewayComputeInstanceVolumeCreate(d *schema.ResourceData, m interface{}) error {
-
 	instanceAPI, zone, err := getInstanceAPIWithZone(d, m)
 	if err != nil {
 		return err
@@ -62,7 +60,7 @@ func resourceScalewayComputeInstanceVolumeCreate(d *schema.ResourceData, m inter
 
 	// Generate name if not set
 	if volumeName == "" {
-		volumeName = namesgenerator.GetRandomName()
+		volumeName = getRandomName("vol")
 	}
 
 	res, err := instanceAPI.CreateVolume(&instance.CreateVolumeRequest{
@@ -82,7 +80,6 @@ func resourceScalewayComputeInstanceVolumeCreate(d *schema.ResourceData, m inter
 }
 
 func resourceScalewayComputeInstanceVolumeRead(d *schema.ResourceData, m interface{}) error {
-
 	instanceAPI, zone, id, err := getInstanceAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return err
@@ -115,7 +112,6 @@ func resourceScalewayComputeInstanceVolumeRead(d *schema.ResourceData, m interfa
 }
 
 func resourceScalewayComputeInstanceVolumeUpdate(d *schema.ResourceData, m interface{}) error {
-
 	instanceAPI, zone, id, err := getInstanceAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return err
@@ -140,7 +136,6 @@ func resourceScalewayComputeInstanceVolumeUpdate(d *schema.ResourceData, m inter
 }
 
 func resourceScalewayComputeInstanceVolumeDelete(d *schema.ResourceData, m interface{}) error {
-
 	instanceAPI, zone, id, err := getInstanceAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return err

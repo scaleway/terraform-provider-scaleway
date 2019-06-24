@@ -8,8 +8,6 @@ import (
 	api "github.com/nicolai86/scaleway-sdk"
 )
 
-const gb uint64 = 1000 * 1000 * 1000
-
 func resourceScalewayVolume() *schema.Resource {
 	return &schema.Resource{
 		Create: resourceScalewayVolumeCreate,

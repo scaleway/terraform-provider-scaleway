@@ -357,3 +357,5 @@ func diffSuppressFuncForRandomName(k, old, new string, d *schema.ResourceData) b
 	}
 	return old == new
 }
+
+const gb uint64 = 1000 * 1000 * 1000
