@@ -35,16 +35,16 @@ func getInstanceAPIWithZoneAndID(m interface{}, id string) (*instance.API, utils
 }
 
 // expandRootVolume expands the current root volume or returns the default root volume
-func expandRootVolume(v interface{}) []map[string]interface{} {
-	flattenVolume := []map[string]interface{}{{}}
+func expandRootVolume(v interface{}) map[string]interface{} {
+	flattenVolume := map[string]interface{}{}
 
 	vs, ok := v.([]map[string]interface{})
-	if ok {
-		flattenVolume = vs
+	if ok && len(vs) > 0 {
+		flattenVolume = vs[0]
 	}
 
-	if _, exist := flattenVolume[0]["delete_on_termination"]; !exist {
-		flattenVolume[0]["delete_on_termination"] = true // default value does not work on list
+	if _, exist := flattenVolume["delete_on_termination"]; !exist {
+		flattenVolume["delete_on_termination"] = true // default value does not work on list
 	}
 
 	return flattenVolume
