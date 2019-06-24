@@ -24,7 +24,7 @@ func resourceScalewayComputeInstanceVolume() *schema.Resource {
 				Optional:         true,
 				Computed:         true,
 				Description:      "the name of the volume",
-				DiffSuppressFunc: DiffSuppressFuncForRandomName,
+				DiffSuppressFunc: diffSuppressFuncForRandomName,
 			},
 			"size_in_gb": {
 				Type:        schema.TypeInt,
