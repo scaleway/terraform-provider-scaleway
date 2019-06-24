@@ -12,13 +12,13 @@ import (
 var testAccCheckScalewayComputeInstanceVolumeConfig = []string{
 	`
 		resource "scaleway_compute_instance_volume" "test" {
-			size = "20GB"
+			size_in_gb = 20
 		}
 	`,
 	`
 		resource "scaleway_compute_instance_volume" "test" {
 			name = "terraform-test"
-			size = "20000000000"
+			size_in_gb = 20
 		}
 	`,
 }
@@ -26,12 +26,12 @@ var testAccCheckScalewayComputeInstanceVolumeConfig = []string{
 var testAccCheckScalewayComputeInstanceVolumeConfigWithRandomName = []string{
 	`
 		resource "scaleway_compute_instance_volume" "test" {
-			size = "20GB"
+			size_in_gb = 20
 		}
 	`,
 	`
 		resource "scaleway_compute_instance_volume" "test" {
-			size = "20000000000"
+			size_in_gb = 20
 		}
 	`,
 }
@@ -80,7 +80,7 @@ func TestAccScalewayComputeInstanceVolume_Basic(t *testing.T) {
 				Config: testAccCheckScalewayComputeInstanceVolumeConfig[0],
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayComputeInstanceVolumeExists("scaleway_compute_instance_volume.test"),
-					resource.TestCheckResourceAttr("scaleway_compute_instance_volume.test", "size", "20GB"),
+					resource.TestCheckResourceAttr("scaleway_compute_instance_volume.test", "size_in_gb", "20"),
 				),
 			},
 			{
@@ -88,7 +88,7 @@ func TestAccScalewayComputeInstanceVolume_Basic(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayComputeInstanceVolumeExists("scaleway_compute_instance_volume.test"),
 					resource.TestCheckResourceAttr("scaleway_compute_instance_volume.test", "name", "terraform-test"),
-					resource.TestCheckResourceAttr("scaleway_compute_instance_volume.test", "size", "20GB"),
+					resource.TestCheckResourceAttr("scaleway_compute_instance_volume.test", "size_in_gb", "20"),
 				),
 			},
 		},

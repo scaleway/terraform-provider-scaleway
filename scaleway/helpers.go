@@ -349,3 +349,11 @@ func regionSchema() *schema.Schema {
 func getRandomName(prefix string) string {
 	return namegenerator.GetRandomName("tf", prefix)
 }
+
+// DiffSuppressFuncForRandomName is a generic DiffSuppressFunc to avoid changing randomly generated names.
+func DiffSuppressFuncForRandomName(k, old, new string, d *schema.ResourceData) bool {
+	if new == "" {
+		return true
+	}
+	return old == new
+}

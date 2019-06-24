@@ -3,7 +3,6 @@ package scaleway
 import (
 	"fmt"
 
-	"github.com/dustin/go-humanize"
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
 	namesgenerator "github.com/scaleway/scaleway-sdk-go/namegenerator"
@@ -21,45 +20,17 @@ func resourceScalewayComputeInstanceVolume() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"name": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Computed:    true,
-				Description: "the name of the volume",
-				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
-					if new == "" {
-						return true
-					}
-					return old == new
-				},
+				Type:             schema.TypeString,
+				Optional:         true,
+				Computed:         true,
+				Description:      "the name of the volume",
+				DiffSuppressFunc: DiffSuppressFuncForRandomName,
 			},
-			"size": {
-				Type:        schema.TypeString,
+			"size_in_gb": {
+				Type:        schema.TypeInt,
 				Optional:    true,
 				ForceNew:    true,
-				Description: "the size of the volume in humab readable format (e.g. 20GB)", // TODO: human readable
-				ValidateFunc: func(val interface{}, key string) (warns []string, errs []error) {
-					_, err := humanize.ParseBytes(val.(string))
-					if err != nil {
-						errs = append(errs, fmt.Errorf("couldn't parse volume size: %s", err))
-					}
-					return
-				},
-				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
-					if old == new {
-						return true
-					}
-
-					oldInBytes, err := humanize.ParseBytes(old)
-					if err != nil {
-						return false
-					}
-					newInBytes, err := humanize.ParseBytes(new)
-					if err != nil {
-						return false
-					}
-
-					return newInBytes == oldInBytes
-				},
+				Description: "the size of the volume in gigabye.",
 			},
 			// TODO handle snapshot, base_volume
 			"server_id": {
@@ -75,25 +46,19 @@ func resourceScalewayComputeInstanceVolume() *schema.Resource {
 
 func resourceScalewayComputeInstanceVolumeCreate(d *schema.ResourceData, m interface{}) error {
 
-	meta := m.(*Meta)
-	instanceAPI := instance.NewAPI(meta.scwClient)
-
-	zone, err := getZone(d, meta)
+	instanceAPI, zone, err := getInstanceAPIWithZone(d, m)
 	if err != nil {
 		return err
 	}
 
 	var (
 		volumeName = d.Get("name").(string)
-		volumeSize = d.Get("size").(string)
+		volumeSize = uint64(d.Get("size_in_gb").(int))
 		projectID  = d.Get("project_id").(string)
 	)
 
 	// Convert human readable volume size to int in bytes
-	volumeSizeInBytes, err := humanize.ParseBytes(volumeSize)
-	if err != nil {
-		return fmt.Errorf("couldn't parse volume size: %s", err)
-	}
+	volumeSizeInBytes := volumeSize * gb
 
 	// Generate name if not set
 	if volumeName == "" {
@@ -118,10 +83,7 @@ func resourceScalewayComputeInstanceVolumeCreate(d *schema.ResourceData, m inter
 
 func resourceScalewayComputeInstanceVolumeRead(d *schema.ResourceData, m interface{}) error {
 
-	meta := m.(*Meta)
-	instanceAPI := instance.NewAPI(meta.scwClient)
-
-	zone, id, err := parseZonedID(d.Id())
+	instanceAPI, zone, id, err := getInstanceAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return err
 	}
@@ -139,7 +101,7 @@ func resourceScalewayComputeInstanceVolumeRead(d *schema.ResourceData, m interfa
 	}
 
 	d.Set("name", res.Volume.Name)
-	d.Set("size", res.Volume.Size)
+	d.Set("size_in_gb", uint64(res.Volume.Size/gb))
 	d.Set("project_id", res.Volume.Organization)
 	d.Set("zone", string(zone))
 
@@ -154,10 +116,7 @@ func resourceScalewayComputeInstanceVolumeRead(d *schema.ResourceData, m interfa
 
 func resourceScalewayComputeInstanceVolumeUpdate(d *schema.ResourceData, m interface{}) error {
 
-	meta := m.(*Meta)
-	instanceAPI := instance.NewAPI(meta.scwClient)
-
-	zone, id, err := parseZonedID(d.Id())
+	instanceAPI, zone, id, err := getInstanceAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return err
 	}
@@ -182,10 +141,7 @@ func resourceScalewayComputeInstanceVolumeUpdate(d *schema.ResourceData, m inter
 
 func resourceScalewayComputeInstanceVolumeDelete(d *schema.ResourceData, m interface{}) error {
 
-	meta := m.(*Meta)
-	instanceAPI := instance.NewAPI(meta.scwClient)
-
-	zone, id, err := parseZonedID(d.Id())
+	instanceAPI, zone, id, err := getInstanceAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return err
 	}
