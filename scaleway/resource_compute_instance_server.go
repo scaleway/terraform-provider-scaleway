@@ -27,7 +27,7 @@ func resourceScalewayComputeInstanceServer() *schema.Resource {
 				Computed:    true,
 				Description: "The name of the server",
 			},
-			"image": {
+			"image_id": {
 				Type:         schema.TypeString,
 				Required:     true,
 				ForceNew:     true,
@@ -101,12 +101,12 @@ func resourceScalewayComputeInstanceServer() *schema.Resource {
 			"state": {
 				Type:        schema.TypeString,
 				Optional:    true,
-				Default:     "started",
+				Default:     ServerStateStarted,
 				Description: "the state of the server should be: started, stopped, standby",
 				ValidateFunc: validation.StringInSlice([]string{
-					"started",
-					"stopped",
-					"standby",
+					ServerStateStarted,
+					ServerStateStopped,
+					ServerStateStandby,
 				}, false),
 			},
 			"user_data": {
@@ -139,7 +139,7 @@ func resourceScalewayComputeInstanceServerCreate(d *schema.ResourceData, m inter
 		Zone:           zone,
 		Name:           name.(string),
 		Organization:   d.Get("project_id").(string),
-		Image:          d.Get("image").(string),
+		Image:          d.Get("image_id").(string),
 		CommercialType: d.Get("type").(string),
 		EnableIPv6:     d.Get("enable_ipv6").(bool),
 		SecurityGroup:  d.Get("security_group_id").(string),
@@ -167,7 +167,7 @@ func resourceScalewayComputeInstanceServerCreate(d *schema.ResourceData, m inter
 
 	// todo: add userdata
 
-	for _, action := range stateToAction("stopped", d.Get("state").(string)) {
+	for _, action := range stateToAction(ServerStateStopped, d.Get("state").(string)) {
 		err = instanceApi.ServerActionAndWait(&instance.ServerActionAndWaitRequest{
 			Zone:     zone,
 			ServerID: res.Server.ID,
@@ -188,6 +188,8 @@ func resourceScalewayComputeInstanceServerRead(d *schema.ResourceData, m interfa
 		return err
 	}
 
+	d.Set("zone", string(zone))
+
 	response, err := instanceApi.GetServer(&instance.GetServerRequest{
 		Zone:     zone,
 		ServerID: ID,
@@ -201,11 +203,11 @@ func resourceScalewayComputeInstanceServerRead(d *schema.ResourceData, m interfa
 	}
 	switch response.Server.State {
 	case instance.ServerStateStopped:
-		d.Set("state", "stopped")
+		d.Set("state", ServerStateStopped)
 	case instance.ServerStateStoppedInPlace:
-		d.Set("state", "standby")
+		d.Set("state", ServerStateStandby)
 	case instance.ServerStateRunning:
-		d.Set("state", "started")
+		d.Set("state", ServerStateStarted)
 	case instance.ServerStateLocked:
 		return fmt.Errorf("server is locked, please contact Scaleway support: https://console.scaleway.com/support/tickets")
 	default:
@@ -213,7 +215,7 @@ func resourceScalewayComputeInstanceServerRead(d *schema.ResourceData, m interfa
 	}
 
 	d.Set("name", response.Server.Name)
-	d.Set("image", response.Server.Image.ID)
+	d.Set("image_id", response.Server.Image.ID)
 	d.Set("type", response.Server.CommercialType)
 	d.Set("tags", response.Server.Tags)
 	d.Set("security_group_id", response.Server.SecurityGroup.ID)
@@ -289,7 +291,7 @@ func resourceScalewayComputeInstanceServerUpdate(d *schema.ResourceData, m inter
 				Zone:     zone,
 				ServerID: ID,
 				Action:   action,
-				Timeout:  time.Minute * 10,
+				Timeout:  ServerWaitForTimeout,
 			})
 			if err != nil && !is404Error(err) {
 				return err
@@ -306,12 +308,12 @@ func resourceScalewayComputeInstanceServerDelete(d *schema.ResourceData, m inter
 		return err
 	}
 
-	if d.Get("state").(string) != "stopped" {
+	if d.Get("state").(string) != ServerStateStopped {
 		err = instanceApi.ServerActionAndWait(&instance.ServerActionAndWaitRequest{
 			Zone:     zone,
 			ServerID: ID,
 			Action:   instance.ServerActionPoweroff,
-			Timeout:  time.Minute * 10,
+			Timeout:  ServerWaitForTimeout,
 		})
 		if is404Error(err) {
 			return nil
@@ -345,15 +347,15 @@ func resourceScalewayComputeInstanceServerDelete(d *schema.ResourceData, m inter
 
 func stateToAction(previousState, nextState string) []instance.ServerAction {
 	transitionMap := map[[2]string][]instance.ServerAction{
-		{"stopped", "stopped"}: {},
-		{"stopped", "started"}: {instance.ServerActionPoweron},
-		{"stopped", "standby"}: {instance.ServerActionPoweron, instance.ServerActionStopInPlace},
-		{"started", "stopped"}: {instance.ServerActionPoweroff},
-		{"started", "started"}: {},
-		{"started", "standby"}: {instance.ServerActionStopInPlace},
-		{"standby", "stopped"}: {instance.ServerActionPoweroff},
-		{"standby", "started"}: {instance.ServerActionPoweron},
-		{"standby", "standby"}: {},
+		{ServerStateStopped, ServerStateStopped}: {},
+		{ServerStateStopped, ServerStateStarted}: {instance.ServerActionPoweron},
+		{ServerStateStopped, ServerStateStandby}: {instance.ServerActionPoweron, instance.ServerActionStopInPlace},
+		{ServerStateStarted, ServerStateStopped}: {instance.ServerActionPoweroff},
+		{ServerStateStarted, ServerStateStarted}: {},
+		{ServerStateStarted, ServerStateStandby}: {instance.ServerActionStopInPlace},
+		{ServerStateStandby, ServerStateStopped}: {instance.ServerActionPoweroff},
+		{ServerStateStandby, ServerStateStarted}: {instance.ServerActionPoweron},
+		{ServerStateStandby, ServerStateStandby}: {},
 	}
 
 	return transitionMap[[2]string{previousState, nextState}]

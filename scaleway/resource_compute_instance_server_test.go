@@ -19,7 +19,7 @@ func TestAccScalewayComputeInstanceServerMinimal1(t *testing.T) {
 				Config: testAccCheckScalewayComputeInstanceServerConfigMinimal(),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayComputeInstanceServerExists("scaleway_compute_instance_server.base"),
-					resource.TestCheckResourceAttr("scaleway_compute_instance_server.base", "image", "f974feac-abae-4365-b988-8ec7d1cec10d"),
+					resource.TestCheckResourceAttr("scaleway_compute_instance_server.base", "image_id", "f974feac-abae-4365-b988-8ec7d1cec10d"),
 					resource.TestCheckResourceAttr("scaleway_compute_instance_server.base", "type", "DEV1-S"),
 					resource.TestCheckResourceAttr("scaleway_compute_instance_server.base", "root_volume.0.delete_on_termination", "true"),
 					resource.TestCheckResourceAttr("scaleway_compute_instance_server.base", "root_volume.0.size_in_gb", "20"),
@@ -204,7 +204,7 @@ func testAccCheckScalewayComputeInstanceServerDestroy(s *terraform.State) error 
 func testAccCheckScalewayComputeInstanceServerConfigMinimal() string {
 	return `
 resource "scaleway_compute_instance_server" "base" {
-  image = "f974feac-abae-4365-b988-8ec7d1cec10d"
+  image_id = "f974feac-abae-4365-b988-8ec7d1cec10d"
   type  = "DEV1-S"
   tags = [ "terraform-test", "scaleway_compute_instance_server", "minimal" ]
 }`
@@ -220,7 +220,7 @@ data "scaleway_image" "ubuntu" {
 
 resource "scaleway_compute_instance_server" "base" {
   name = "test"
-  image = "${data.scaleway_image.ubuntu.id}"
+  image_id = "${data.scaleway_image.ubuntu.id}"
   type = "%s"
   tags = [ "terraform-test", "scaleway_compute_instance_server", "basic" ]
 }`, architecture, serverType)
@@ -229,7 +229,7 @@ resource "scaleway_compute_instance_server" "base" {
 func testAccCheckScalewayComputeInstanceServerConfigRootVolume(size, deleteOnTermination string) string {
 	return fmt.Sprintf(`
 resource "scaleway_compute_instance_server" "base" {
-  image = "f974feac-abae-4365-b988-8ec7d1cec10d"
+  image_id = "f974feac-abae-4365-b988-8ec7d1cec10d"
   type  = "C2S"
   tags = [ "terraform-test", "scaleway_compute_instance_server", "root_volume" ]
   root_volume {
@@ -248,7 +248,7 @@ data "scaleway_image" "ubuntu" {
 }
 
 resource "scaleway_compute_instance_server" "base" {
-  image = "${data.scaleway_image.ubuntu.id}"
+  image_id = "${data.scaleway_image.ubuntu.id}"
   type  = "DEV1-S"
   state = "%s"
   tags  = [ "terraform-test", "scaleway_compute_instance_server", "state" ]

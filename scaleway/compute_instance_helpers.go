@@ -1,9 +1,19 @@
 package scaleway
 
 import (
+	"time"
+
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
 	"github.com/scaleway/scaleway-sdk-go/utils"
+)
+
+const (
+	ServerStateStopped = "stopped"
+	ServerStateStarted = "started"
+	ServerStateStandby = "standby"
+
+	ServerWaitForTimeout = time.Minute * 10
 )
 
 // getInstanceAPIWithZone returns a new instance API and the zone for a Create request
