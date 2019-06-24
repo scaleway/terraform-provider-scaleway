@@ -350,12 +350,4 @@ func getRandomName(prefix string) string {
 	return namegenerator.GetRandomName("tf", prefix)
 }
 
-// diffSuppressFuncForRandomName is a generic DiffSuppressFunc to avoid changing randomly generated names.
-func diffSuppressFuncForRandomName(k, old, new string, d *schema.ResourceData) bool {
-	if new == "" {
-		return true
-	}
-	return old == new
-}
-
 const gb uint64 = 1000 * 1000 * 1000

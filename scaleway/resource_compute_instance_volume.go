@@ -19,11 +19,10 @@ func resourceScalewayComputeInstanceVolume() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"name": {
-				Type:             schema.TypeString,
-				Optional:         true,
-				Computed:         true,
-				Description:      "the name of the volume",
-				DiffSuppressFunc: diffSuppressFuncForRandomName,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Computed:    true,
+				Description: "the name of the volume",
 			},
 			"size_in_gb": {
 				Type:        schema.TypeInt,
