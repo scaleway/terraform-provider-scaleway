@@ -198,7 +198,7 @@ func TestAccScalewayComputeInstanceServerUserData2(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayComputeInstanceServerExists("scaleway_compute_instance_server.base"),
 					resource.TestCheckNoResourceAttr("scaleway_compute_instance_server.base", "user_data"),
-					resource.TestCheckResourceAttr("scaleway_compute_instance_server.base", "cloud_init", ""),
+					resource.TestCheckNoResourceAttr("scaleway_compute_instance_server.base", "cloud_init"),
 				),
 			},
 			{
