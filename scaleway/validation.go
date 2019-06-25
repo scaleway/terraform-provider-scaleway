@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/utils"
 )
 
@@ -65,6 +66,27 @@ func validationRegion() func(interface{}, string) ([]string, []error) {
 			warnings = append(warnings, fmt.Sprintf("%s is a deprecated name for region, use %v instead", rawRegion, region))
 		} else if !region.Exists() {
 			warnings = append(warnings, "%s region is not recognized", rawRegion)
+		}
+
+		return
+	}
+}
+
+// validationStringNotInSlice returns a SchemaValidateFunc which tests if the provided value
+// is of type string and does not match the value of an element in the invalid slice
+// will test with in lower case if ignoreCase is true
+func validationStringNotInSlice(invalid []string, ignoreCase bool) schema.SchemaValidateFunc {
+	return func(i interface{}, k string) (s []string, es []error) {
+		v, ok := i.(string)
+		if !ok {
+			es = append(es, fmt.Errorf("expected type of %s to be string", k))
+			return
+		}
+
+		for _, str := range invalid {
+			if v == str || (ignoreCase && strings.ToLower(v) == strings.ToLower(str)) {
+				es = append(es, fmt.Errorf("expected %s not to be one of %v, got %s", k, invalid, v))
+			}
 		}
 
 		return

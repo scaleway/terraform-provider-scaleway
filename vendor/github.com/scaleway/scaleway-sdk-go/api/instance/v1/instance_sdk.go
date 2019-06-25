@@ -119,16 +119,16 @@ func (enum SecurityGroupPolicy) String() string {
 	return string(enum)
 }
 
-type SecurityRuleAction string
+type SecurityGroupRuleAction string
 
 const (
-	// SecurityRuleActionAccept is [insert doc].
-	SecurityRuleActionAccept = SecurityRuleAction("accept")
-	// SecurityRuleActionDrop is [insert doc].
-	SecurityRuleActionDrop = SecurityRuleAction("drop")
+	// SecurityGroupRuleActionAccept is [insert doc].
+	SecurityGroupRuleActionAccept = SecurityGroupRuleAction("accept")
+	// SecurityGroupRuleActionDrop is [insert doc].
+	SecurityGroupRuleActionDrop = SecurityGroupRuleAction("drop")
 )
 
-func (enum SecurityRuleAction) String() string {
+func (enum SecurityGroupRuleAction) String() string {
 	if enum == "" {
 		// return default value if empty
 		return "accept"
@@ -136,16 +136,16 @@ func (enum SecurityRuleAction) String() string {
 	return string(enum)
 }
 
-type SecurityRuleDirection string
+type SecurityGroupRuleDirection string
 
 const (
-	// SecurityRuleDirectionInbound is [insert doc].
-	SecurityRuleDirectionInbound = SecurityRuleDirection("inbound")
-	// SecurityRuleDirectionOutbound is [insert doc].
-	SecurityRuleDirectionOutbound = SecurityRuleDirection("outbound")
+	// SecurityGroupRuleDirectionInbound is [insert doc].
+	SecurityGroupRuleDirectionInbound = SecurityGroupRuleDirection("inbound")
+	// SecurityGroupRuleDirectionOutbound is [insert doc].
+	SecurityGroupRuleDirectionOutbound = SecurityGroupRuleDirection("outbound")
 )
 
-func (enum SecurityRuleDirection) String() string {
+func (enum SecurityGroupRuleDirection) String() string {
 	if enum == "" {
 		// return default value if empty
 		return "inbound"
@@ -153,21 +153,21 @@ func (enum SecurityRuleDirection) String() string {
 	return string(enum)
 }
 
-type SecurityRuleProtocol string
+type SecurityGroupRuleProtocol string
 
 const (
-	// SecurityRuleProtocolTCP is [insert doc].
-	SecurityRuleProtocolTCP = SecurityRuleProtocol("tcp")
-	// SecurityRuleProtocolUDP is [insert doc].
-	SecurityRuleProtocolUDP = SecurityRuleProtocol("udp")
-	// SecurityRuleProtocolIcmp is [insert doc].
-	SecurityRuleProtocolIcmp = SecurityRuleProtocol("icmp")
+	// SecurityGroupRuleProtocolTCP is [insert doc].
+	SecurityGroupRuleProtocolTCP = SecurityGroupRuleProtocol("TCP")
+	// SecurityGroupRuleProtocolUDP is [insert doc].
+	SecurityGroupRuleProtocolUDP = SecurityGroupRuleProtocol("UDP")
+	// SecurityGroupRuleProtocolICMP is [insert doc].
+	SecurityGroupRuleProtocolICMP = SecurityGroupRuleProtocol("ICMP")
 )
 
-func (enum SecurityRuleProtocol) String() string {
+func (enum SecurityGroupRuleProtocol) String() string {
 	if enum == "" {
 		// return default value if empty
-		return "tcp"
+		return "TCP"
 	}
 	return string(enum)
 }
@@ -359,7 +359,7 @@ type CreateSecurityGroupResponse struct {
 }
 
 type CreateSecurityGroupRuleResponse struct {
-	SecurityRule *SecurityRule `json:"security_rule,omitempty"`
+	SecurityRule *SecurityGroupRule `json:"security_rule,omitempty"`
 }
 
 type CreateServerResponse struct {
@@ -417,7 +417,7 @@ type GetSecurityGroupResponse struct {
 }
 
 type GetSecurityGroupRuleResponse struct {
-	SecurityRule *SecurityRule `json:"security_rule,omitempty"`
+	SecurityRule *SecurityGroupRule `json:"security_rule,omitempty"`
 }
 
 type GetServerResponse struct {
@@ -497,7 +497,7 @@ type ListIpsResponse struct {
 }
 
 type ListSecurityGroupRulesResponse struct {
-	SecurityRules []*SecurityRule `json:"security_rules,omitempty"`
+	Rules []*SecurityGroupRule `json:"rules,omitempty"`
 
 	TotalCount uint32 `json:"total_count,omitempty"`
 }
@@ -571,26 +571,20 @@ type SecurityGroup struct {
 	Stateful bool `json:"stateful,omitempty"`
 }
 
-type SecurityGroupSummary struct {
-	ID string `json:"id,omitempty"`
-
-	Name string `json:"name,omitempty"`
-}
-
-type SecurityRule struct {
+type SecurityGroupRule struct {
 	ID string `json:"id,omitempty"`
 	// Protocol
 	//
-	// Default value: tcp
-	Protocol SecurityRuleProtocol `json:"protocol,omitempty"`
+	// Default value: TCP
+	Protocol SecurityGroupRuleProtocol `json:"protocol,omitempty"`
 	// Direction
 	//
 	// Default value: inbound
-	Direction SecurityRuleDirection `json:"direction,omitempty"`
+	Direction SecurityGroupRuleDirection `json:"direction,omitempty"`
 	// Action
 	//
 	// Default value: accept
-	Action SecurityRuleAction `json:"action,omitempty"`
+	Action SecurityGroupRuleAction `json:"action,omitempty"`
 
 	IPRange string `json:"ip_range,omitempty"`
 
@@ -601,6 +595,12 @@ type SecurityRule struct {
 	Position uint32 `json:"position,omitempty"`
 
 	Editable bool `json:"editable,omitempty"`
+}
+
+type SecurityGroupSummary struct {
+	ID string `json:"id,omitempty"`
+
+	Name string `json:"name,omitempty"`
 }
 
 type Server struct {
@@ -1541,103 +1541,6 @@ func (s *API) DeleteServerUserData(req *DeleteServerUserDataRequest, opts ...scw
 		return err
 	}
 	return nil
-}
-
-type SetServerUserDataRequest struct {
-	Zone utils.Zone `json:"-"`
-
-	ServerID string `json:"-"`
-
-	Key string `json:"-"`
-
-	Content *utils.File
-}
-
-// SetServerUserData add/Set user data
-//
-// Add or update a user data with the given key on a server
-func (s *API) SetServerUserData(req *SetServerUserDataRequest, opts ...scw.RequestOption) error {
-	var err error
-
-	if req.Zone == "" {
-		defaultZone, _ := s.client.GetDefaultZone()
-		req.Zone = defaultZone
-	}
-
-	if fmt.Sprint(req.Zone) == "" {
-		return errors.New("field Zone cannot be empty in request")
-	}
-
-	if fmt.Sprint(req.ServerID) == "" {
-		return errors.New("field ServerID cannot be empty in request")
-	}
-
-	if fmt.Sprint(req.Key) == "" {
-		return errors.New("field Key cannot be empty in request")
-	}
-
-	scwReq := &scw.ScalewayRequest{
-		Method:  "PATCH",
-		Path:    "/instance/v1/zones/" + fmt.Sprint(req.Zone) + "/servers/" + fmt.Sprint(req.ServerID) + "/user_data/" + fmt.Sprint(req.Key) + "",
-		Headers: http.Header{},
-	}
-
-	err = scwReq.SetBody(req.Content)
-	if err != nil {
-		return err
-	}
-
-	err = s.client.Do(scwReq, nil, opts...)
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-type GetServerUserDataRequest struct {
-	Zone utils.Zone `json:"-"`
-
-	ServerID string `json:"-"`
-
-	Key string `json:"-"`
-}
-
-// GetServerUserData get user data
-//
-// Get the content of a user data with the given key on a server
-func (s *API) GetServerUserData(req *GetServerUserDataRequest, opts ...scw.RequestOption) (*utils.File, error) {
-	var err error
-
-	if req.Zone == "" {
-		defaultZone, _ := s.client.GetDefaultZone()
-		req.Zone = defaultZone
-	}
-
-	if fmt.Sprint(req.Zone) == "" {
-		return nil, errors.New("field Zone cannot be empty in request")
-	}
-
-	if fmt.Sprint(req.ServerID) == "" {
-		return nil, errors.New("field ServerID cannot be empty in request")
-	}
-
-	if fmt.Sprint(req.Key) == "" {
-		return nil, errors.New("field Key cannot be empty in request")
-	}
-
-	scwReq := &scw.ScalewayRequest{
-		Method:  "GET",
-		Path:    "/instance/v1/zones/" + fmt.Sprint(req.Zone) + "/servers/" + fmt.Sprint(req.ServerID) + "/user_data/" + fmt.Sprint(req.Key) + "",
-		Headers: http.Header{},
-	}
-
-	var resp utils.File
-
-	err = s.client.Do(scwReq, &resp, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return &resp, nil
 }
 
 type ListImagesRequest struct {
@@ -2789,9 +2692,9 @@ func (r *ListSecurityGroupRulesResponse) UnsafeAppend(res interface{}) (int, scw
 		return 0, errors.New("%T type cannot be appended to type %T", res, r)
 	}
 
-	r.SecurityRules = append(r.SecurityRules, results.SecurityRules...)
-	r.TotalCount += uint32(len(results.SecurityRules))
-	return len(results.SecurityRules), nil
+	r.Rules = append(r.Rules, results.Rules...)
+	r.TotalCount += uint32(len(results.Rules))
+	return len(results.Rules), nil
 }
 
 type CreateSecurityGroupRuleRequest struct {
@@ -2800,16 +2703,16 @@ type CreateSecurityGroupRuleRequest struct {
 	SecurityGroupID string `json:"-"`
 	// Protocol
 	//
-	// Default value: tcp
-	Protocol SecurityRuleProtocol `json:"protocol,omitempty"`
+	// Default value: TCP
+	Protocol SecurityGroupRuleProtocol `json:"protocol,omitempty"`
 	// Direction
 	//
 	// Default value: inbound
-	Direction SecurityRuleDirection `json:"direction,omitempty"`
+	Direction SecurityGroupRuleDirection `json:"direction,omitempty"`
 	// Action
 	//
 	// Default value: accept
-	Action SecurityRuleAction `json:"action,omitempty"`
+	Action SecurityGroupRuleAction `json:"action,omitempty"`
 
 	IPRange string `json:"ip_range,omitempty"`
 

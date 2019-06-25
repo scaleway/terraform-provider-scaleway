@@ -3,6 +3,7 @@ package scw
 import (
 	"crypto/tls"
 	"encoding/json"
+	"io"
 	"net"
 	"net/http"
 	"net/http/httputil"
@@ -232,9 +233,24 @@ func (c *Client) do(req *ScalewayRequest, res interface{}) (sdkErr SdkError) {
 	}
 
 	if res != nil {
-		err = json.NewDecoder(httpResponse.Body).Decode(&res)
-		if err != nil {
-			return errors.Wrap(err, "could not parse response body")
+		contentType := httpResponse.Header.Get("Content-Type")
+
+		switch contentType {
+		case "application/json":
+			err = json.NewDecoder(httpResponse.Body).Decode(&res)
+			if err != nil {
+				return errors.Wrap(err, "could not parse %s response body", contentType)
+			}
+		default:
+			buffer, isBuffer := res.(io.Writer)
+			if !isBuffer {
+				return errors.Wrap(err, "could not handle %s response body with %T result type", contentType, buffer)
+			}
+
+			_, err := io.Copy(buffer, httpResponse.Body)
+			if err != nil {
+				return errors.Wrap(err, "could not copy %s response body", contentType)
+			}
 		}
 
 		// Handle instance API X-Total-Count header
