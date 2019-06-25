@@ -349,3 +349,5 @@ func regionSchema() *schema.Schema {
 func getRandomName(prefix string) string {
 	return namegenerator.GetRandomName("tf", prefix)
 }
+
+const gb uint64 = 1000 * 1000 * 1000

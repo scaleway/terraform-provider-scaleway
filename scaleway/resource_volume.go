@@ -8,10 +8,11 @@ import (
 	api "github.com/nicolai86/scaleway-sdk"
 )
 
-const gb uint64 = 1000 * 1000 * 1000
-
 func resourceScalewayVolume() *schema.Resource {
 	return &schema.Resource{
+		DeprecationMessage: `This resource is deprecated and will be removed in the next major version.
+ Please use scaleway_compute_instance_volume instead.`,
+
 		Create: resourceScalewayVolumeCreate,
 		Read:   resourceScalewayVolumeRead,
 		Update: resourceScalewayVolumeUpdate,
