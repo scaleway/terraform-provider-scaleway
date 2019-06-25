@@ -220,7 +220,7 @@ func resourceScalewayComputeInstanceServerCreate(d *schema.ResourceData, m inter
 	////
 	// Execute server action to reach the expected state
 	////
-	for _, action := range stateToAction(ServerStateStopped, d.Get("state").(string), false) {
+	for _, action := range computeServerStateToAction(ServerStateStopped, d.Get("state").(string), false) {
 		err = instanceApi.ServerActionAndWait(&instance.ServerActionAndWaitRequest{
 			Zone:     zone,
 			ServerID: res.Server.ID,
@@ -406,7 +406,7 @@ func resourceScalewayComputeInstanceServerUpdate(d *schema.ResourceData, m inter
 	////
 	if d.HasChange("state") {
 		previousState, nextState := d.GetChange("state")
-		for _, action := range stateToAction(previousState.(string), nextState.(string), forceReboot) {
+		for _, action := range computeServerStateToAction(previousState.(string), nextState.(string), forceReboot) {
 			err = instanceApi.ServerActionAndWait(&instance.ServerActionAndWaitRequest{
 				Zone:     zone,
 				ServerID: ID,
@@ -465,7 +465,7 @@ func resourceScalewayComputeInstanceServerDelete(d *schema.ResourceData, m inter
 	return nil
 }
 
-func stateToAction(previousState, nextState string, forceReboot bool) []instance.ServerAction {
+func computeServerStateToAction(previousState, nextState string, forceReboot bool) []instance.ServerAction {
 	if previousState == ServerStateStarted && nextState == ServerStateStarted && forceReboot {
 		return []instance.ServerAction{instance.ServerActionReboot}
 	}
