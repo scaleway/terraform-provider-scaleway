@@ -150,6 +150,69 @@ func TestAccScalewayComputeInstanceServerState2(t *testing.T) {
 	})
 }
 
+func TestAccScalewayComputeInstanceServerUserData1(t *testing.T) {
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckScalewayComputeInstanceServerDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckScalewayComputeInstanceServerConfigUserData(true, true),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayComputeInstanceServerExists("scaleway_compute_instance_server.base"),
+					resource.TestCheckResourceAttr("scaleway_compute_instance_server.base", "user_data.459781404.key", "plop"),
+					resource.TestCheckResourceAttr("scaleway_compute_instance_server.base", "user_data.459781404.value", "world"),
+					resource.TestCheckResourceAttr("scaleway_compute_instance_server.base", "user_data.599848950.key", "blanquette"),
+					resource.TestCheckResourceAttr("scaleway_compute_instance_server.base", "user_data.599848950.value", "hareng pomme à l'huile"),
+					resource.TestCheckResourceAttr("scaleway_compute_instance_server.base", "cloud_init", "#cloud-config\napt_update: true\napt_upgrade: true\n"),
+				),
+			},
+			{
+				Config: testAccCheckScalewayComputeInstanceServerConfigUserData(false, true),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayComputeInstanceServerExists("scaleway_compute_instance_server.base"),
+					resource.TestCheckNoResourceAttr("scaleway_compute_instance_server.base", "user_data"),
+					resource.TestCheckResourceAttr("scaleway_compute_instance_server.base", "cloud_init", "#cloud-config\napt_update: true\napt_upgrade: true\n"),
+				),
+			},
+			{
+				Config: testAccCheckScalewayComputeInstanceServerConfigUserData(false, false),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayComputeInstanceServerExists("scaleway_compute_instance_server.base"),
+					resource.TestCheckNoResourceAttr("scaleway_compute_instance_server.base", "user_data"),
+					resource.TestCheckResourceAttr("scaleway_compute_instance_server.base", "cloud_init", ""),
+				),
+			},
+		},
+	})
+}
+
+func TestAccScalewayComputeInstanceServerUserData2(t *testing.T) {
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckScalewayComputeInstanceServerDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckScalewayComputeInstanceServerConfigUserData(false, false),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayComputeInstanceServerExists("scaleway_compute_instance_server.base"),
+					resource.TestCheckNoResourceAttr("scaleway_compute_instance_server.base", "user_data"),
+					resource.TestCheckResourceAttr("scaleway_compute_instance_server.base", "cloud_init", ""),
+				),
+			},
+			{
+				Config: testAccCheckScalewayComputeInstanceServerConfigUserData(false, true),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayComputeInstanceServerExists("scaleway_compute_instance_server.base"),
+					resource.TestCheckNoResourceAttr("scaleway_compute_instance_server.base", "user_data"),
+					resource.TestCheckResourceAttr("scaleway_compute_instance_server.base", "cloud_init", "#cloud-config\napt_update: true\napt_upgrade: true\n"),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckScalewayComputeInstanceServerExists(n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
@@ -255,12 +318,47 @@ resource "scaleway_compute_instance_server" "base" {
 }`, state)
 }
 
+func testAccCheckScalewayComputeInstanceServerConfigUserData(withRandomUserData, withCloudInit bool) string {
+	additionalUserData := ""
+	if withRandomUserData {
+		additionalUserData += `
+  user_data {
+    key = "plop"
+    value = "world"
+  }
+
+  user_data {
+    key = "blanquette"
+    value = "hareng pomme à l'huile"
+  }`
+	}
+
+	if withCloudInit {
+		additionalUserData += `
+  cloud_init = <<EOF
+#cloud-config
+apt_update: true
+apt_upgrade: true
+EOF`
+	}
+
+	return fmt.Sprintf(`
+data "scaleway_image" "ubuntu" {
+  architecture = "x86_64"
+  name         = "Ubuntu Bionic"
+  most_recent  = true
+}
+
+resource "scaleway_compute_instance_server" "base" {
+  image_id = "${data.scaleway_image.ubuntu.id}"
+  type  = "DEV1-S"
+  tags  = [ "terraform-test", "scaleway_compute_instance_server", "user_data" ]
+%s
+}`, additionalUserData)
+}
+
 // todo: add tests with IP attachment
 
 // todo: add tests with additional volume attachement
 
 // todo: add a test with security groups
-
-// todo: add a test with user data
-
-// todo: add a test with cloud init (in user data)

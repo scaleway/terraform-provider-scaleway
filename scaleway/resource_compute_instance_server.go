@@ -3,6 +3,7 @@ package scaleway
 import (
 	"bytes"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"time"
 
@@ -114,14 +115,12 @@ func resourceScalewayComputeInstanceServer() *schema.Resource {
 			"cloud_init": {
 				Type:         schema.TypeString,
 				Optional:     true,
-				Computed:     true,
 				Description:  "the cloud init script associated with this server",
 				ValidateFunc: validation.StringLenBetween(0, 127998),
 			},
 			"user_data": {
 				Type:        schema.TypeSet,
 				Optional:    true,
-				Computed:    true,
 				MaxItems:    98,
 				Description: "the user data associated with the server", // TODO: document reserved keys (`cloud-init`)
 				Set:         schemaSetUserData,
@@ -192,33 +191,27 @@ func resourceScalewayComputeInstanceServerCreate(d *schema.ResourceData, m inter
 	////
 	// Set user data
 	////
-	var userDataRequests []*instance.SetServerUserDataRequest
-
-	// cloud init script is set in user data
-	if cloudInit, ok := d.GetOk("cloud_init"); ok {
-		userDataRequests = append(userDataRequests, &instance.SetServerUserDataRequest{
-			Zone:     zone,
-			ServerID: res.Server.ID,
-			Key:      "cloud-init",
-			Content:  bytes.NewBufferString(cloudInit.(string)),
-		})
+	userDataRequests := &instance.SetAllServerUserDataRequest{
+		Zone:     zone,
+		ServerID: res.Server.ID,
+		UserData: make(map[string]io.Reader),
 	}
 
 	if allUserData, ok := d.GetOk("user_data"); ok {
 		userDataSet := allUserData.(*schema.Set)
 		for _, rawUserData := range userDataSet.List() {
 			userData := rawUserData.(map[string]interface{})
-			userDataRequests = append(userDataRequests, &instance.SetServerUserDataRequest{
-				Zone:     zone,
-				ServerID: res.Server.ID,
-				Key:      userData["key"].(string),
-				Content:  bytes.NewBufferString(userData["value"].(string)),
-			})
+			userDataRequests.UserData[userData["key"].(string)] = bytes.NewBufferString(userData["value"].(string))
 		}
 	}
 
-	for _, userDataRequest := range userDataRequests {
-		err := instanceApi.SetServerUserData(userDataRequest)
+	// cloud init script is set in user data
+	if cloudInit, ok := d.GetOk("cloud_init"); ok {
+		userDataRequests.UserData["cloud-init"] = bytes.NewBufferString(cloudInit.(string))
+	}
+
+	if len(userDataRequests.UserData) > 0 {
+		err := instanceApi.SetAllServerUserData(userDataRequests)
 		if err != nil {
 			return err
 		}
@@ -227,7 +220,7 @@ func resourceScalewayComputeInstanceServerCreate(d *schema.ResourceData, m inter
 	////
 	// Execute server action to reach the expected state
 	////
-	for _, action := range stateToAction(ServerStateStopped, d.Get("state").(string)) {
+	for _, action := range stateToAction(ServerStateStopped, d.Get("state").(string), false) {
 		err = instanceApi.ServerActionAndWait(&instance.ServerActionAndWaitRequest{
 			Zone:     zone,
 			ServerID: res.Server.ID,
@@ -330,7 +323,9 @@ func resourceScalewayComputeInstanceServerRead(d *schema.ResourceData, m interfa
 			d.Set("cloud_init", string(userData))
 		}
 	}
-	d.Set("user_data", schema.NewSet(schemaSetUserData, userDataList))
+	if len(userDataList) > 0 {
+		d.Set("user_data", schema.NewSet(schemaSetUserData, userDataList))
+	}
 
 	return nil
 }
@@ -341,6 +336,9 @@ func resourceScalewayComputeInstanceServerUpdate(d *schema.ResourceData, m inter
 		return err
 	}
 
+	////
+	// Update the server
+	////
 	updateRequest := &instance.UpdateServerRequest{
 		Zone:     zone,
 		ServerID: ID,
@@ -370,9 +368,45 @@ func resourceScalewayComputeInstanceServerUpdate(d *schema.ResourceData, m inter
 		return err
 	}
 
+	////
+	// Update server user data
+	////
+	var forceReboot bool
+	if d.HasChange("cloud_init") || d.HasChange("user_data") {
+
+		userDataRequests := &instance.SetAllServerUserDataRequest{
+			Zone:     zone,
+			ServerID: ID,
+			UserData: make(map[string]io.Reader),
+		}
+
+		if allUserData, ok := d.GetOk("user_data"); ok {
+			userDataSet := allUserData.(*schema.Set)
+			for _, rawUserData := range userDataSet.List() {
+				userData := rawUserData.(map[string]interface{})
+				userDataRequests.UserData[userData["key"].(string)] = bytes.NewBufferString(userData["value"].(string))
+			}
+		}
+
+		// cloud init script is set in user data
+		if cloudInit, ok := d.GetOk("cloud_init"); ok {
+			userDataRequests.UserData["cloud-init"] = bytes.NewBufferString(cloudInit.(string))
+			forceReboot = true // instance must reboot when cloud init script change
+		}
+
+		err := instanceApi.SetAllServerUserData(userDataRequests)
+		if err != nil {
+			return err
+		}
+
+	}
+
+	////
+	// Execute server action to reach the expected state
+	////
 	if d.HasChange("state") {
 		previousState, nextState := d.GetChange("state")
-		for _, action := range stateToAction(previousState.(string), nextState.(string)) {
+		for _, action := range stateToAction(previousState.(string), nextState.(string), forceReboot) {
 			err = instanceApi.ServerActionAndWait(&instance.ServerActionAndWaitRequest{
 				Zone:     zone,
 				ServerID: ID,
@@ -431,7 +465,10 @@ func resourceScalewayComputeInstanceServerDelete(d *schema.ResourceData, m inter
 	return nil
 }
 
-func stateToAction(previousState, nextState string) []instance.ServerAction {
+func stateToAction(previousState, nextState string, forceReboot bool) []instance.ServerAction {
+	if previousState == ServerStateStarted && nextState == ServerStateStarted && forceReboot {
+		return []instance.ServerAction{instance.ServerActionReboot}
+	}
 	transitionMap := map[[2]string][]instance.ServerAction{
 		{ServerStateStopped, ServerStateStopped}: {},
 		{ServerStateStopped, ServerStateStarted}: {instance.ServerActionPoweron},
