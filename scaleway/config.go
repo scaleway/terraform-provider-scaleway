@@ -10,7 +10,6 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"sort"
 	"time"
 
 	"github.com/hashicorp/go-retryablehttp"
@@ -20,19 +19,16 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/utils"
 )
 
-// Config is a configuration for a client.
-type Config struct {
+// Meta contains config and SDK clients used by resources.
+//
+// This meta value is passed into all resources.
+type Meta struct {
 	AccessKey        string
 	SecretKey        string
 	DefaultProjectID string
 	DefaultRegion    utils.Region
 	DefaultZone      utils.Zone
-}
 
-// Meta contains SDK clients used by resources.
-//
-// This meta value is passed into all resources.
-type Meta struct {
 	// scwClient is the Scaleway SDK client.
 	scwClient *scw.Client
 
@@ -40,60 +36,28 @@ type Meta struct {
 	deprecatedClient *sdk.API
 }
 
-// Meta creates a meta instance from a client configuration.
-func (c *Config) Meta() (*Meta, error) {
-	meta := &Meta{}
-
-	// Scaleway Client
-	client, err := c.GetScwClient()
-	if err != nil {
-		return nil, err
-	}
-	meta.scwClient = client
-
-	// Deprecated Scaleway Client
-	deprecatedClient, err := c.GetDeprecatedClient()
-	if err != nil {
-		return nil, fmt.Errorf("error: cannot create deprecated client: %s", err)
-	}
-	meta.deprecatedClient = deprecatedClient
-
-	// fetch known scaleway server types to support validation in r/server
-	if len(commercialServerTypes) == 0 {
-		if availability, err := deprecatedClient.GetServerAvailabilities(); err == nil {
-			commercialServerTypes = availability.CommercialTypes()
-			sort.StringSlice(commercialServerTypes).Sort()
-		}
-		if os.Getenv("DISABLE_SCALEWAY_SERVER_TYPE_VALIDATION") != "" {
-			commercialServerTypes = commercialServerTypes[:0]
-		}
-	}
-
-	return meta, nil
-}
-
-// GetScwClient returns a new scw.Client from a configuration.
-func (c *Config) GetScwClient() (*scw.Client, error) {
+// newScwClient returns a new scw.Client from a configuration.
+func newScwClient(m *Meta) (*scw.Client, error) {
 	options := []scw.ClientOption{
 		scw.WithHTTPClient(createRetryableHTTPClient(false)),
 		scw.WithUserAgent(userAgent),
 	}
 
 	// The access key is not used for API authentications.
-	if c.SecretKey != "" {
-		options = append(options, scw.WithAuth(c.AccessKey, c.SecretKey))
+	if m.SecretKey != "" {
+		options = append(options, scw.WithAuth(m.AccessKey, m.SecretKey))
 	}
 
-	if c.DefaultProjectID != "" {
-		options = append(options, scw.WithDefaultProjectID(c.DefaultProjectID))
+	if m.DefaultProjectID != "" {
+		options = append(options, scw.WithDefaultProjectID(m.DefaultProjectID))
 	}
 
-	if c.DefaultRegion != "" {
-		options = append(options, scw.WithDefaultRegion(c.DefaultRegion))
+	if m.DefaultRegion != "" {
+		options = append(options, scw.WithDefaultRegion(m.DefaultRegion))
 	}
 
-	if c.DefaultZone != "" {
-		options = append(options, scw.WithDefaultZone(c.DefaultZone))
+	if m.DefaultZone != "" {
+		options = append(options, scw.WithDefaultZone(m.DefaultZone))
 	}
 
 	client, err := scw.NewClient(options...)
@@ -104,7 +68,7 @@ func (c *Config) GetScwClient() (*scw.Client, error) {
 	return client, err
 }
 
-// createRetryableHTTPClient create a retryablehttp.Client.
+// createRetryableHTTPClient creates a retryablehttp.Client.
 func createRetryableHTTPClient(shouldLog bool) *client {
 	c := retryablehttp.NewClient()
 
@@ -150,23 +114,23 @@ func (c *client) Do(r *http.Request) (*http.Response, error) {
 	return c.Client.Do(req)
 }
 
-// GetDeprecatedClient create a new deprecated client from a configuration.
-func (c *Config) GetDeprecatedClient() (*sdk.API, error) {
+// newDeprecatedClient creates a new deprecated client from a configuration.
+func newDeprecatedClient(m *Meta) (*sdk.API, error) {
 	options := func(sdkApi *sdk.API) {
 		sdkApi.Client = createRetryableHTTPClient(true)
 	}
 
-	region := string(c.DefaultRegion)
-	if c.DefaultRegion == utils.RegionFrPar {
+	region := string(m.DefaultRegion)
+	if m.DefaultRegion == utils.RegionFrPar {
 		region = "par1"
 	}
-	if c.DefaultRegion == utils.RegionNlAms {
+	if m.DefaultRegion == utils.RegionNlAms {
 		region = "ams1"
 	}
 
 	return sdk.New(
-		c.DefaultProjectID,
-		c.SecretKey,
+		m.DefaultProjectID,
+		m.SecretKey,
 		region,
 		options,
 	)
@@ -179,7 +143,7 @@ type deprecatedScalewayConfig struct {
 	Version      string `json:"version"`
 }
 
-// readDeprecatedScalewayConfig parse the deprecated Scaleway config file.
+// readDeprecatedScalewayConfig parses the deprecated Scaleway config file.
 func readDeprecatedScalewayConfig(path string) (string, string, error) {
 	f, err := os.Open(path)
 	if err != nil {
