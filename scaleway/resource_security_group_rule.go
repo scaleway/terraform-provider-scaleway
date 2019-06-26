@@ -10,6 +10,9 @@ import (
 
 func resourceScalewaySecurityGroupRule() *schema.Resource {
 	return &schema.Resource{
+		DeprecationMessage: `This resource is deprecated and will be removed in the next major version.
+ Please use scaleway_compute_instance_security_group_rule instead.`,
+
 		Create: resourceScalewaySecurityGroupRuleCreate,
 		Read:   resourceScalewaySecurityGroupRuleRead,
 		Update: resourceScalewaySecurityGroupRuleUpdate,
