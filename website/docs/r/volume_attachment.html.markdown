@@ -9,7 +9,7 @@ description: |-
 # scaleway_volume_attachment
 
 **DEPRECATED**: This resource is deprecated and will be removed in `v2.0+`.
-Please use `scaleway_compute_instance_server` instead.
+Please use `scaleway_compute_instance_server.additional_volumes` instead.
 
 This allows volumes to be attached to servers.
 
