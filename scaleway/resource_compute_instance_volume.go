@@ -5,6 +5,7 @@ import (
 
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
+	"github.com/scaleway/scaleway-sdk-go/utils"
 )
 
 func resourceScalewayComputeInstanceVolume() *schema.Resource {
@@ -24,13 +25,36 @@ func resourceScalewayComputeInstanceVolume() *schema.Resource {
 				Computed:    true,
 				Description: "the name of the volume",
 			},
-			"size_in_gb": {
-				Type:        schema.TypeInt,
+			"type": {
+				Type:        schema.TypeString,
 				Optional:    true,
 				ForceNew:    true,
-				Description: "the size of the volume in gigabye.",
+				Default:     instance.VolumeTypeLSSD.String(),
+				Description: "the volume type.",
 			},
-			// TODO handle snapshot, base_volume
+			"size_in_gb": {
+				Type:          schema.TypeInt,
+				Optional:      true,
+				ForceNew:      true,
+				Description:   "the size of the volume in gigabyte.",
+				ConflictsWith: []string{"from_image_id", "from_volume_id"},
+			},
+			"from_volume_id": {
+				Type:          schema.TypeString,
+				Optional:      true,
+				ForceNew:      true,
+				Description:   "create a copy of an existing volume.",
+				ValidateFunc:  validationUUID(),
+				ConflictsWith: []string{"from_image_id", "size_in_gb"},
+			},
+			"from_image_id": {
+				Type:          schema.TypeString,
+				Optional:      true,
+				ForceNew:      true,
+				Description:   "create a volume based on a image.",
+				ValidateFunc:  validationUUID(),
+				ConflictsWith: []string{"from_volume_id", "size_in_gb"},
+			},
 			"server_id": {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -48,27 +72,32 @@ func resourceScalewayComputeInstanceVolumeCreate(d *schema.ResourceData, m inter
 		return err
 	}
 
-	var (
-		volumeName = d.Get("name").(string)
-		volumeSize = uint64(d.Get("size_in_gb").(int))
-		projectID  = d.Get("project_id").(string)
-	)
-
-	// Convert human readable volume size to int in bytes
-	volumeSizeInBytes := volumeSize * gb
-
-	// Generate name if not set
-	if volumeName == "" {
-		volumeName = getRandomName("vol")
+	createVolumeRequest := &instance.CreateVolumeRequest{
+		Zone:         zone,
+		Name:         d.Get("name").(string),
+		VolumeType:   instance.VolumeType(d.Get("type").(string)),
+		Organization: d.Get("project_id").(string),
 	}
 
-	res, err := instanceAPI.CreateVolume(&instance.CreateVolumeRequest{
-		Zone:         zone,
-		Name:         volumeName,
-		Size:         &volumeSizeInBytes,
-		VolumeType:   instance.VolumeTypeLSSD,
-		Organization: projectID,
-	})
+	// Generate name if not set
+	if createVolumeRequest.Name == "" {
+		createVolumeRequest.Name = getRandomName("vol")
+	}
+
+	if size, ok := d.GetOk("size_in_gb"); ok {
+		volumeSizeInBytes := uint64(size.(int)) * gb
+		createVolumeRequest.Size = &volumeSizeInBytes
+	}
+
+	if volumeID, ok := d.GetOk("from_volume_id"); ok {
+		createVolumeRequest.BaseVolume = utils.String(expandID(volumeID))
+	}
+
+	if imageID, ok := d.GetOk("from_image_id"); ok {
+		createVolumeRequest.BaseSnapshot = utils.String(expandID(imageID))
+	}
+
+	res, err := instanceAPI.CreateVolume(createVolumeRequest)
 	if err != nil {
 		return fmt.Errorf("couldn't create volume: %s", err)
 	}
@@ -97,7 +126,6 @@ func resourceScalewayComputeInstanceVolumeRead(d *schema.ResourceData, m interfa
 	}
 
 	d.Set("name", res.Volume.Name)
-	d.Set("size_in_gb", uint64(res.Volume.Size/gb))
 	d.Set("project_id", res.Volume.Organization)
 	d.Set("zone", string(zone))
 

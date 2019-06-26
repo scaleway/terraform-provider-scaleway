@@ -384,3 +384,7 @@ func getRandomName(prefix string) string {
 }
 
 const gb uint64 = 1000 * 1000 * 1000
+
+func suppressLocality(k, old, new string, d *schema.ResourceData) bool {
+	return expandID(old) == expandID(new)
+}

@@ -68,11 +68,28 @@ func TestAccScalewayComputeInstanceVolume_Basic(t *testing.T) {
 	})
 }
 
+func TestAccScalewayComputeInstanceVolume_FromVolume(t *testing.T) {
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckScalewayComputeInstanceVolumeDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckScalewayComputeInstanceVolumeConfigFromVolume,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayComputeInstanceVolumeExists("scaleway_compute_instance_volume.test1"),
+					testAccCheckScalewayComputeInstanceVolumeExists("scaleway_compute_instance_volume.test2"),
+				),
+			},
+		},
+	})
+}
+
 func TestAccScalewayComputeInstanceVolume_RandomName(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckScalewayVolumeDestroy,
+		CheckDestroy: testAccCheckScalewayComputeInstanceVolumeDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccCheckScalewayComputeInstanceVolumeConfigWithRandomName[0],
@@ -171,3 +188,13 @@ var testAccCheckScalewayComputeInstanceVolumeConfigWithRandomName = []string{
 		}
 	`,
 }
+
+var testAccCheckScalewayComputeInstanceVolumeConfigFromVolume = `
+		resource "scaleway_compute_instance_volume" "test1" {
+			size_in_gb = 20
+		}
+
+		resource "scaleway_compute_instance_volume" "test2" {
+			from_volume_id = "${scaleway_compute_instance_volume.test1.id}"
+		}
+	`

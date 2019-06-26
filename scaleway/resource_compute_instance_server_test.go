@@ -64,6 +64,28 @@ func TestAccScalewayComputeInstanceServerRootVolume1(t *testing.T) {
 	})
 }
 
+func TestAccScalewayComputeInstanceServerRootVolume2(t *testing.T) {
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckScalewayComputeInstanceServerDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckScalewayComputeInstanceServerConfigRootVolumeID(10),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayComputeInstanceServerExists("scaleway_compute_instance_server.base"),
+					testAccCheckScalewayComputeInstanceVolumeExists("scaleway_compute_instance_volume.root_volume"),
+					testAccCheckScalewayComputeInstanceVolumeExists("scaleway_compute_instance_volume.additional_volume"),
+					resource.TestCheckResourceAttr("scaleway_compute_instance_volume.root_volume", "size_in_gb", "10"),
+					resource.TestCheckResourceAttr("scaleway_compute_instance_volume.additional_volume", "size_in_gb", "10"),
+					resource.TestCheckNoResourceAttr("scaleway_compute_instance_server.base", "root_volume"),
+					resource.TestCheckResourceAttr("scaleway_compute_instance_server.base", "tags.2", "root_volume_id"),
+				),
+			},
+		},
+	})
+}
+
 func TestAccScalewayComputeInstanceServerBasic1(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -344,6 +366,25 @@ resource "scaleway_compute_instance_server" "base" {
     delete_on_termination = %s
   }
 }`, size, deleteOnTermination)
+}
+
+func testAccCheckScalewayComputeInstanceServerConfigRootVolumeID(rootSize int) string {
+	additionalSize := 20 - rootSize
+	return fmt.Sprintf(`
+resource "scaleway_compute_instance_volume" "root_volume" {
+  size_in_gb = %d
+}
+
+resource "scaleway_compute_instance_volume" "additional_volume" {
+  size_in_gb = %d
+}
+
+resource "scaleway_compute_instance_server" "base" {
+  type  = "DEV1-S"
+  root_volume_id = "${scaleway_compute_instance_volume.root_volume.id}"
+  additional_volumes  = [ "${scaleway_compute_instance_volume.additional_volume.id}" ]
+  tags  = [ "terraform-test", "scaleway_compute_instance_server", "root_volume_id" ]
+}`, rootSize, additionalSize)
 }
 
 func testAccCheckScalewayComputeInstanceServerConfigState(state string) string {

@@ -32,11 +32,12 @@ func resourceScalewayComputeInstanceServer() *schema.Resource {
 				Description: "The name of the server",
 			},
 			"image_id": {
-				Type:         schema.TypeString,
-				Required:     true,
-				ForceNew:     true,
-				Description:  "The base image of the server", // TODO: add in doc example with UUID
-				ValidateFunc: validationUUID(),
+				Type:          schema.TypeString,
+				Optional:      true,
+				ForceNew:      true,
+				Description:   "The base image of the server", // TODO: add in doc example with UUID
+				ValidateFunc:  validationUUID(),
+				ConflictsWith: []string{"root_volume_id"},
 			},
 			"type": {
 				Type:        schema.TypeString,
@@ -58,12 +59,21 @@ func resourceScalewayComputeInstanceServer() *schema.Resource {
 				Computed:    true,
 				Description: "The security group the server is attached to",
 			},
+
+			"root_volume_id": {
+				Type:             schema.TypeString,
+				Optional:         true,
+				ValidateFunc:     validationUUID(),
+				Description:      "ID of the root volume attached to the server on creation",
+				ConflictsWith:    []string{"root_volume", "image_id"},
+				DiffSuppressFunc: suppressLocality,
+			},
 			"root_volume": {
-				Type:        schema.TypeList,
-				MaxItems:    1,
-				Optional:    true,
-				Computed:    true,
-				Description: "Root volume attached to the server on creation",
+				Type:          schema.TypeList,
+				MaxItems:      1,
+				Optional:      true,
+				Description:   "Root volume attached to the server on creation",
+				ConflictsWith: []string{"root_volume_id"},
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"size_in_gb": {
@@ -78,10 +88,8 @@ func resourceScalewayComputeInstanceServer() *schema.Resource {
 							Default:  true,
 						},
 						"volume_id": {
-							Type:         schema.TypeString,
-							Optional:     true,
-							Computed:     true,
-							ValidateFunc: validationUUID(),
+							Type:     schema.TypeString,
+							Computed: true,
 						},
 					},
 				},
@@ -172,10 +180,10 @@ func resourceScalewayComputeInstanceServerCreate(d *schema.ResourceData, m inter
 		Zone:           zone,
 		Name:           name.(string),
 		Organization:   d.Get("project_id").(string),
-		Image:          d.Get("image_id").(string),
+		Image:          expandID(d.Get("image_id")),
 		CommercialType: d.Get("type").(string),
 		EnableIPv6:     d.Get("enable_ipv6").(bool),
-		SecurityGroup:  d.Get("security_group_id").(string),
+		SecurityGroup:  expandID(d.Get("security_group_id")),
 	}
 
 	if raw, ok := d.GetOk("tags"); ok {
@@ -188,6 +196,14 @@ func resourceScalewayComputeInstanceServerCreate(d *schema.ResourceData, m inter
 		req.Volumes = make(map[string]*instance.VolumeTemplate)
 		req.Volumes["0"] = &instance.VolumeTemplate{
 			Size: uint64(size.(int)) * gb,
+		}
+	}
+
+	if rootVolumeID, ok := d.GetOk("root_volume_id"); ok {
+		req.Volumes = make(map[string]*instance.VolumeTemplate)
+		req.Volumes["0"] = &instance.VolumeTemplate{
+			ID:   expandID(rootVolumeID),
+			Name: getRandomName("vol"),
 		}
 	}
 
@@ -290,11 +306,14 @@ func resourceScalewayComputeInstanceServerRead(d *schema.ResourceData, m interfa
 	}
 
 	d.Set("name", response.Server.Name)
-	d.Set("image_id", response.Server.Image.ID)
 	d.Set("type", response.Server.CommercialType)
 	d.Set("tags", response.Server.Tags)
 	d.Set("security_group_id", response.Server.SecurityGroup.ID)
 	d.Set("enable_ipv6", response.Server.EnableIPv6)
+
+	if response.Server.Image != nil {
+		d.Set("image_id", response.Server.Image.ID)
+	}
 
 	if response.Server.PrivateIP != nil {
 		d.Set("private_ip", *response.Server.PrivateIP)
@@ -315,10 +334,14 @@ func resourceScalewayComputeInstanceServerRead(d *schema.ResourceData, m interfa
 	var additionalVolumes []string
 	for i, volume := range orderVolumes(response.Server.Volumes) {
 		if i == 0 {
-			rootVolume := expandRootVolume(d.Get("root_volume"))
-			rootVolume["volume_id"] = volume.ID
-			rootVolume["size_in_gb"] = int(volume.Size / gb)
-			d.Set("root_volume", []map[string]interface{}{rootVolume})
+			if _, ok := d.GetOk("root_volume_id"); ok {
+				d.Set("root_volume_id", volume.ID)
+			} else {
+				rootVolume := expandRootVolume(d.Get("root_volume"))
+				rootVolume["volume_id"] = volume.ID
+				rootVolume["size_in_gb"] = int(volume.Size / gb)
+				d.Set("root_volume", []map[string]interface{}{rootVolume})
+			}
 		} else {
 			additionalVolumes = append(additionalVolumes, volume.ID)
 		}
@@ -388,8 +411,11 @@ func resourceScalewayComputeInstanceServerUpdate(d *schema.ResourceData, m inter
 		updateRequest.EnableIPv6 = utils.Bool(d.Get("enable_ipv6").(bool))
 	}
 
-	volumes := map[string]*instance.VolumeTemplate{
-		"0": {ID: d.Get("root_volume.0.volume_id").(string), Name: "unused"},
+	volumes := map[string]*instance.VolumeTemplate{}
+	if rootVolumeID, ok := d.GetOk("root_volume_id"); ok {
+		volumes["0"] = &instance.VolumeTemplate{ID: rootVolumeID.(string), Name: getRandomName("vol")}
+	} else {
+		volumes["0"] = &instance.VolumeTemplate{ID: d.Get("root_volume.0.volume_id").(string), Name: getRandomName("vol")}
 	}
 
 	if raw, ok := d.GetOk("additional_volumes"); d.HasChange("additional_volumes") && ok {
@@ -512,7 +538,8 @@ func resourceScalewayComputeInstanceServerDelete(d *schema.ResourceData, m inter
 		return err
 	}
 
-	if d.Get("root_volume.0.delete_on_termination").(bool) {
+	_, customRootVolumeExists := d.GetOk("root_volume_id")
+	if !customRootVolumeExists && d.Get("root_volume.0.delete_on_termination").(bool) {
 		err = instanceApi.DeleteVolume(&instance.DeleteVolumeRequest{
 			Zone:     zone,
 			VolumeID: d.Get("root_volume.0.volume_id").(string),
