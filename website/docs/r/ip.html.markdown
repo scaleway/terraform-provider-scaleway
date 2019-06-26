@@ -8,6 +8,9 @@ description: |-
 
 # scaleway_ip
 
+**DEPRECATED**: This resource is deprecated and will be removed in `v2.0+`.
+Please use `scaleway_compute_instance_ip` instead.
+
 Provides IPs for servers. This allows IPs to be created, updated and deleted.
 For additional details please refer to [API documentation](https://developer.scaleway.com/#ips).
 
