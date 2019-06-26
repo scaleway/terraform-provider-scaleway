@@ -10,7 +10,7 @@ import (
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/hashicorp/terraform/terraform"
-	"github.com/nicolai86/scaleway-sdk"
+	api "github.com/nicolai86/scaleway-sdk"
 	"github.com/scaleway/scaleway-sdk-go/namegenerator"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/scaleway-sdk-go/utils"
@@ -284,6 +284,24 @@ func getZone(d terraformResourceData, meta *Meta) (utils.Zone, error) {
 	}
 
 	return utils.Zone(""), fmt.Errorf("could not detect region")
+}
+
+// getRegion will try to guess the zone from the following:
+//  - zone field of the resource data
+//  - default zone from config
+func getRegion(d terraformResourceData, meta *Meta) (utils.Region, error) {
+
+	rawRegion, exist := d.GetOkExists("region")
+	if exist {
+		return utils.ParseRegion(rawRegion.(string))
+	}
+
+	region, exist := meta.scwClient.GetDefaultRegion()
+	if exist {
+		return region, nil
+	}
+
+	return utils.Region(""), fmt.Errorf("could not detect region")
 }
 
 // isHTTPCodeError returns true if err is an http error with code statusCode

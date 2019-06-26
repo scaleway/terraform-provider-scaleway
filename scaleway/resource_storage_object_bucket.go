@@ -7,6 +7,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/hashicorp/terraform/helper/schema"
+	"github.com/scaleway/scaleway-sdk-go/utils"
 )
 
 func resourceScalewayStorageObjectBucket() *schema.Resource {
@@ -32,6 +33,7 @@ func resourceScalewayStorageObjectBucket() *schema.Resource {
 				Default:     "private",
 				Description: "ACL of the bucket: either 'public-read' or 'private'.",
 			},
+			"region": regionSchema(),
 		},
 	}
 }
@@ -39,6 +41,7 @@ func resourceScalewayStorageObjectBucket() *schema.Resource {
 func resourceScalewayStorageObjectBucketCreate(d *schema.ResourceData, m interface{}) error {
 	bucketName := d.Get("name").(string)
 	acl := d.Get("acl").(string)
+	region := d.Get("region").(string)
 
 	s3Client := m.(*Meta).s3Client
 
@@ -50,7 +53,7 @@ func resourceScalewayStorageObjectBucketCreate(d *schema.ResourceData, m interfa
 		return err
 	}
 
-	d.SetId(bucketName)
+	d.SetId(newRegionalId(utils.Region(region), bucketName))
 
 	return resourceScalewayStorageObjectBucketRead(d, m)
 }
