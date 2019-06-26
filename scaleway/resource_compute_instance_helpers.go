@@ -1,6 +1,7 @@
 package scaleway
 
 import (
+	"sort"
 	"time"
 
 	"github.com/hashicorp/terraform/helper/hashcode"
@@ -54,4 +55,17 @@ func expandRootVolume(v interface{}) map[string]interface{} {
 func schemaSetUserData(v interface{}) int {
 	userData := v.(map[string]interface{})
 	return hashcode.String(userData["key"].(string) + userData["value"].(string))
+}
+
+func orderVolumes(v map[string]*instance.Volume) []*instance.Volume {
+	indexes := []string{}
+	for index := range v {
+		indexes = append(indexes, index)
+	}
+	sort.Strings(indexes)
+	var orderedVolumes []*instance.Volume
+	for _, index := range indexes {
+		orderedVolumes = append(orderedVolumes, v[index])
+	}
+	return orderedVolumes
 }

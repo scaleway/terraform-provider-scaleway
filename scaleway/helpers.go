@@ -236,6 +236,15 @@ func parseZonedID(zonedID string) (zone utils.Zone, id string, err error) {
 	return
 }
 
+// expandID returns the id whether it is a localizedID or a raw ID.
+func expandID(id interface{}) string {
+	_, ID, err := parseLocalizedID(id.(string))
+	if err != nil {
+		return id.(string)
+	}
+	return ID
+}
+
 // parseRegionalID parses a regionalID and extracts the resource region and id.
 func parseRegionalID(regionalID string) (region utils.Region, id string, err error) {
 	locality, id, err := parseLocalizedID(regionalID)

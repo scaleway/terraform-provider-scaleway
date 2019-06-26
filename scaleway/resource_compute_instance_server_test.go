@@ -2,6 +2,7 @@ package scaleway
 
 import (
 	"fmt"
+	"strings"
 	"testing"
 
 	"github.com/hashicorp/terraform/helper/resource"
@@ -213,6 +214,49 @@ func TestAccScalewayComputeInstanceServerUserData2(t *testing.T) {
 	})
 }
 
+func TestAccScalewayComputeInstanceServerAdditionalVolumes(t *testing.T) {
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckScalewayComputeInstanceServerDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckScalewayComputeInstanceServerConfigVolumes(6),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayComputeInstanceVolumeExists("scaleway_compute_instance_volume.base_volume0"),
+					testAccCheckScalewayComputeInstanceServerExists("scaleway_compute_instance_server.base"),
+					resource.TestCheckResourceAttr("scaleway_compute_instance_volume.base_volume0", "size_in_gb", "6"),
+					resource.TestCheckResourceAttr("scaleway_compute_instance_server.base", "root_volume.0.size_in_gb", "14"),
+				),
+			},
+			{
+				Config: testAccCheckScalewayComputeInstanceServerConfigVolumes(3, 3),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayComputeInstanceVolumeExists("scaleway_compute_instance_volume.base_volume0"),
+					testAccCheckScalewayComputeInstanceVolumeExists("scaleway_compute_instance_volume.base_volume1"),
+					testAccCheckScalewayComputeInstanceServerExists("scaleway_compute_instance_server.base"),
+					resource.TestCheckResourceAttr("scaleway_compute_instance_volume.base_volume0", "size_in_gb", "3"),
+					resource.TestCheckResourceAttr("scaleway_compute_instance_volume.base_volume1", "size_in_gb", "3"),
+					resource.TestCheckResourceAttr("scaleway_compute_instance_server.base", "root_volume.0.size_in_gb", "14"),
+				),
+			},
+			{
+				Config: testAccCheckScalewayComputeInstanceServerConfigVolumes(3, 3, 2),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayComputeInstanceVolumeExists("scaleway_compute_instance_volume.base_volume0"),
+					testAccCheckScalewayComputeInstanceVolumeExists("scaleway_compute_instance_volume.base_volume1"),
+					testAccCheckScalewayComputeInstanceVolumeExists("scaleway_compute_instance_volume.base_volume2"),
+					testAccCheckScalewayComputeInstanceServerExists("scaleway_compute_instance_server.base"),
+					resource.TestCheckResourceAttr("scaleway_compute_instance_volume.base_volume0", "size_in_gb", "3"),
+					resource.TestCheckResourceAttr("scaleway_compute_instance_volume.base_volume1", "size_in_gb", "3"),
+					resource.TestCheckResourceAttr("scaleway_compute_instance_volume.base_volume2", "size_in_gb", "2"),
+					resource.TestCheckResourceAttr("scaleway_compute_instance_server.base", "root_volume.0.size_in_gb", "12"),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckScalewayComputeInstanceServerExists(n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
@@ -357,8 +401,32 @@ resource "scaleway_compute_instance_server" "base" {
 }`, additionalUserData)
 }
 
-// todo: add tests with IP attachment
+func testAccCheckScalewayComputeInstanceServerConfigVolumes(sizesInGB ...int) string {
+	additionalVolumeResources := ""
+	baseVolume := 20
+	var additionalVolumeIDs []string
+	for i, size := range sizesInGB {
+		additionalVolumeResources += fmt.Sprintf(`
+resource "scaleway_compute_instance_volume" "base_volume%d" {
+  size_in_gb = %d
+}`, i, size)
+		additionalVolumeIDs = append(additionalVolumeIDs, fmt.Sprintf(`"${scaleway_compute_instance_volume.base_volume%d.id}"`, i))
+		baseVolume -= size
+	}
+	return fmt.Sprintf(`
+%s
 
-// todo: add tests with additional volume attachement
+resource "scaleway_compute_instance_server" "base" {
+  image_id = "f974feac-abae-4365-b988-8ec7d1cec10d"
+  type  = "DEV1-S"
+  root_volume {
+    size_in_gb = %d
+  }
+  tags  = [ "terraform-test", "scaleway_compute_instance_server", "additional_volumes" ]
+  additional_volumes  = [ %s ]
+}`, additionalVolumeResources, baseVolume, strings.Join(additionalVolumeIDs, ","))
+}
+
+// todo: add tests with IP attachment
 
 // todo: add a test with security groups

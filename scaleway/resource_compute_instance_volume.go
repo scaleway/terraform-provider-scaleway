@@ -103,8 +103,6 @@ func resourceScalewayComputeInstanceVolumeRead(d *schema.ResourceData, m interfa
 
 	if res.Volume.Server != nil {
 		d.Set("server_id", res.Volume.Server.ID)
-	} else {
-		d.Set("server_id", nil)
 	}
 
 	return nil
@@ -136,6 +134,31 @@ func resourceScalewayComputeInstanceVolumeDelete(d *schema.ResourceData, m inter
 	instanceAPI, zone, id, err := getInstanceAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return err
+	}
+
+	getVolumeResponse, err := instanceAPI.GetVolume(&instance.GetVolumeRequest{
+		Zone:     zone,
+		VolumeID: id,
+	})
+	if err != nil {
+		return err
+	}
+
+	if getVolumeResponse.Volume.Server != nil {
+		instanceAPI.ServerActionAndWait(&instance.ServerActionAndWaitRequest{
+			Zone:     zone,
+			ServerID: getVolumeResponse.Volume.Server.ID,
+			Action:   instance.ServerActionPoweroff,
+			Timeout:  ServerWaitForTimeout,
+		})
+		// ignore errors
+		_, err := instanceAPI.DetachVolume(&instance.DetachVolumeRequest{
+			Zone:     zone,
+			VolumeID: id,
+		})
+		if err != nil && !is404Error(err) {
+			return err
+		}
 	}
 
 	err = instanceAPI.DeleteVolume(&instance.DeleteVolumeRequest{
