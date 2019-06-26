@@ -8,12 +8,12 @@ description: |-
 
 # scaleway_compute_instance_ip
 
-Creates and manages Scaleway Compute Instance IPs.
+Creates and manages Scaleway Compute Instance IPs. For more information, see [the documentation](https://developers.scaleway.com/en/products/instance/api/#ips-268151).
 
 ## Example Usage
 
 ```hcl
-resource "scaleway_compute_instance_ip" "ip" {}
+resource "scaleway_compute_instance_ip" "server_ip" {}
 ```
 
 ## Argument Reference
@@ -23,7 +23,7 @@ The following arguments are supported:
 - `address` - (Computed) The IP address.
 - `reverse` - (Optional) The reverse DNS for this IP.
 - `project_id` - (Optional) The ID of the project you want to attach this resource to. If it is not provided, the provider `project_id` is used.
-- `zone` - (Optional) The zone you want to attach this resource to. If it is not provided, the provider `zone` is used.
+- `zone` - (Optional) The [zone](https://developers.scaleway.com/en/quickstart/#zone-definition) you want to attach this resource to. If it is not provided, the provider `zone` is used.
 
 ## Attributes Reference
 
@@ -34,7 +34,7 @@ The following attributes are exported:
 - `reverse` - The reverse DNS for this IP.
 - `server_id` - The ID of the server this resource is attached to.
 - `project_id` - The ID of the project you want to attach this resource to.
-- `zone` - The zone your resource is attached to.
+- `zone` - The [zone](https://developers.scaleway.com/en/quickstart/#zone-definition) your resource is attached to.
 
 
 ## Import
@@ -42,5 +42,5 @@ The following attributes are exported:
 Instances can be imported using the `{zone}/{id}`, e.g.
 
 ```bash
-$ terraform import scaleway_compute_instance_ip.ip fr-par-1/11111111-1111-1111-1111-111111111111
+$ terraform import scaleway_compute_instance_ip.server_ip fr-par-1/11111111-1111-1111-1111-111111111111
 ```
