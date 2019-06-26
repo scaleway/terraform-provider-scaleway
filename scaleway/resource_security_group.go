@@ -13,6 +13,9 @@ var supportedDefaultTrafficPolicies = []string{"accept", "drop", ""}
 
 func resourceScalewaySecurityGroup() *schema.Resource {
 	return &schema.Resource{
+		DeprecationMessage: `This resource is deprecated and will be removed in the next major version.
+ Please use scaleway_compute_security_group instead.`,
+
 		Create: resourceScalewaySecurityGroupCreate,
 		Read:   resourceScalewaySecurityGroupRead,
 		Update: resourceScalewaySecurityGroupUpdate,
