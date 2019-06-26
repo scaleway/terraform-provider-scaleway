@@ -3,41 +3,44 @@ layout: "scaleway"
 page_title: "Scaleway: scaleway_compute_instance_ip"
 sidebar_current: "docs-scaleway-resource-compute-instance-ip"
 description: |-
-  Manages Scaleway compute instance ip.
+  Manages Scaleway Compute Instance IPs.
 ---
 
 # scaleway_compute_instance_ip
 
-Creates and manages Scaleway compute instance IPs.
+Creates and manages Scaleway Compute Instance IPs.
 
 ## Example Usage
 
 ```hcl
-resource "scaleway_compute_instance_ip" "test" {}
+resource "scaleway_compute_instance_ip" "ip" {}
 ```
 
 ## Argument Reference
 
 The following arguments are supported:
 
-* `project_id` - (Optional) The id of the project you want to attach this resource to.
-* `reverse` - (Optional) The reverse dns for this IP.
-* `zone` - (Optional) The zone you want to attach this resource to.
+- `address` - (Computed) The IP address.
+- `reverse` - (Optional) The reverse DNS for this IP.
+- `project_id` - (Optional) The ID of the project you want to attach this resource to. If it is not provided, the provider `project_id` is used.
+- `zone` - (Optional) The zone you want to attach this resource to. If it is not provided, the provider `zone` is used.
 
 ## Attributes Reference
 
 The following attributes are exported:
 
-* `project_id` - The id of the project your resource is attached to.
-* `reverse` - The reverse dns for this IP.
-* `server_id` - The id of the server this resource is attached to.
-* `zone` - The zone your resource is attached to.
+- `id` - The ID of the IP.
+- `address` - The IP address.
+- `reverse` - The reverse DNS for this IP.
+- `server_id` - The ID of the server this resource is attached to.
+- `project_id` - The ID of the project you want to attach this resource to.
+- `zone` - The zone your resource is attached to.
 
 
 ## Import
 
-Instances can be imported using the `zone/id`, e.g.
+Instances can be imported using the `{zone}/{id}`, e.g.
 
-```
-$ terraform import scaleway_compute_instance_ip.test fr-par-1/11111111-1111-1111-1111-111111111111
+```bash
+$ terraform import scaleway_compute_instance_ip.ip fr-par-1/11111111-1111-1111-1111-111111111111
 ```
