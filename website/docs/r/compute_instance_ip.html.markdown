@@ -16,7 +16,7 @@ Creates and manages Scaleway Compute Instance IPs. For more information, see [th
 resource "scaleway_compute_instance_ip" "server_ip" {}
 ```
 
-## Argument Reference
+## Arguments Reference
 
 The following arguments are supported:
 
