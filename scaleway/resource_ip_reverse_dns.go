@@ -9,6 +9,9 @@ import (
 
 func resourceScalewayIPReverseDNS() *schema.Resource {
 	return &schema.Resource{
+		DeprecationMessage: `This resource is deprecated and will be removed in the next major version.
+ Please use scaleway_compute_instance_ip instead.`,
+
 		Create: resourceScalewayIPReverseDNSCreate,
 		Read:   resourceScalewayIPReverseDNSRead,
 		Update: resourceScalewayIPReverseDNSUpdate,
