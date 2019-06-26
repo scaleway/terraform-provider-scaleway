@@ -10,6 +10,9 @@ import (
 
 func resourceScalewayUserData() *schema.Resource {
 	return &schema.Resource{
+		DeprecationMessage: `This resource is deprecated and will be removed in the next major version.
+ Please use scaleway_compute_instance_server instead.`,
+
 		Create: resourceScalewayUserDataCreate,
 		Read:   resourceScalewayUserDataRead,
 		Update: resourceScalewayUserDataUpdate,
