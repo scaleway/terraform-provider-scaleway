@@ -8,6 +8,9 @@ description: |-
 
 # scaleway_user_data
 
+**DEPRECATED**: This resource is deprecated and will be removed in `v2.0+`.
+Please use `scaleway_compute_instance_server` instead.
+
 Provides user data for servers.
 For additional details please refer to [API documentation](https://developer.scaleway.com/#user-data).
 
