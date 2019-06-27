@@ -36,8 +36,8 @@ type Meta struct {
 	deprecatedClient *sdk.API
 }
 
-// newScwClient returns a new scw.Client from a configuration.
-func newScwClient(m *Meta) (*scw.Client, error) {
+// bootstrapScwClient returns a new scw.Client from the configuration.
+func (m *Meta) bootstrapScwClient() error {
 	options := []scw.ClientOption{
 		scw.WithHTTPClient(createRetryableHTTPClient(false)),
 		scw.WithUserAgent(userAgent),
@@ -62,10 +62,11 @@ func newScwClient(m *Meta) (*scw.Client, error) {
 
 	client, err := scw.NewClient(options...)
 	if err != nil {
-		return nil, fmt.Errorf("cannot create SDK client: %s", err)
+		return fmt.Errorf("cannot create SDK client: %s", err)
 	}
 
-	return client, err
+	m.scwClient = client
+	return nil
 }
 
 // createRetryableHTTPClient creates a retryablehttp.Client.
@@ -114,8 +115,8 @@ func (c *client) Do(r *http.Request) (*http.Response, error) {
 	return c.Client.Do(req)
 }
 
-// newDeprecatedClient creates a new deprecated client from a configuration.
-func newDeprecatedClient(m *Meta) (*sdk.API, error) {
+// bootstrapDeprecatedClient creates a new deprecated client from the configuration.
+func (m *Meta) bootstrapDeprecatedClient() error {
 	options := func(sdkApi *sdk.API) {
 		sdkApi.Client = createRetryableHTTPClient(true)
 	}
@@ -128,12 +129,18 @@ func newDeprecatedClient(m *Meta) (*sdk.API, error) {
 		region = "ams1"
 	}
 
-	return sdk.New(
+	sdk, err := sdk.New(
 		m.DefaultProjectID,
 		m.SecretKey,
 		region,
 		options,
 	)
+	if err != nil {
+		return fmt.Errorf("cannot create deprecated SDK client: %s", err)
+	}
+
+	m.deprecatedClient = sdk
+	return nil
 }
 
 // deprecatedScalewayConfig is the structure of the deprecated Scaleway config file.

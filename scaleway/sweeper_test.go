@@ -24,12 +24,12 @@ func sharedDeprecatedClientForRegion(region string) (*api.API, error) {
 	}
 
 	// configures a default client for the region, using the above env vars
-	client, err := newDeprecatedClient(meta)
+	err = meta.bootstrapDeprecatedClient()
 	if err != nil {
 		return nil, fmt.Errorf("error getting Scaleway client: %#v", err)
 	}
 
-	return client, nil
+	return meta.deprecatedClient, nil
 }
 
 // sharedClientForRegion returns a Scaleway client needed for the sweeper
@@ -42,12 +42,12 @@ func sharedClientForRegion(region string) (*scw.Client, error) {
 	}
 
 	// configures a default client for the region, using the above env vars
-	client, err := newScwClient(meta)
+	err = meta.bootstrapScwClient()
 	if err != nil {
 		return nil, fmt.Errorf("error getting Scaleway client: %s", err)
 	}
 
-	return client, nil
+	return meta.scwClient, nil
 }
 
 // buildTestConfigForTests creates a Config objects based on the region
