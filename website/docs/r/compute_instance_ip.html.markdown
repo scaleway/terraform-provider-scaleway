@@ -20,8 +20,8 @@ resource "scaleway_compute_instance_ip" "server_ip" {}
 
 The following arguments are supported:
 
-- `address` - (Computed) The IP address.
 - `reverse` - (Optional) The reverse DNS for this IP.
+- `server_id` - (Optional) The ID of the server you want to attach this resource to.
 - `project_id` - (Optional) The ID of the project you want to attach this resource to. If it is not provided, the provider `project_id` is used.
 - `zone` - (Optional) The [zone](https://developers.scaleway.com/en/quickstart/#zone-definition) you want to attach this resource to. If it is not provided, the provider `zone` is used.
 
