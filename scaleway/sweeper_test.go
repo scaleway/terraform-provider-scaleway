@@ -19,41 +19,40 @@ func TestMain(m *testing.M) {
 // sharedDeprecatedClientForRegion returns a scaleway deprecated client needed for the sweeper
 // functions for a given region {par1,ams1}
 func sharedDeprecatedClientForRegion(region string) (*api.API, error) {
-	config, err := buildTestConfigForTests(region)
+	meta, err := buildTestConfigForTests(region)
 	if err != nil {
 		return nil, err
 	}
 
 	// configures a default client for the region, using the above env vars
-	client, err := config.GetDeprecatedClient()
+	err = meta.bootstrapDeprecatedClient()
 	if err != nil {
 		return nil, fmt.Errorf("error getting Scaleway client: %#v", err)
 	}
 
-	return client, nil
+	return meta.deprecatedClient, nil
 }
 
 // sharedClientForRegion returns a Scaleway client needed for the sweeper
 // functions for a given region {fr-par,nl-ams}
 func sharedClientForRegion(region string) (*scw.Client, error) {
-
-	config, err := buildTestConfigForTests(region)
+	meta, err := buildTestConfigForTests(region)
 	if err != nil {
 		return nil, err
 	}
 
 	// configures a default client for the region, using the above env vars
-	client, err := config.GetScwClient()
+	err = meta.bootstrapScwClient()
 	if err != nil {
 		return nil, fmt.Errorf("error getting Scaleway client: %s", err)
 	}
 
-	return client, nil
+	return meta.scwClient, nil
 }
 
 // buildTestConfigForTests creates a Config objects based on the region
 // and the config variables needed for testing.
-func buildTestConfigForTests(region string) (*Config, error) {
+func buildTestConfigForTests(region string) (*Meta, error) {
 	projectID := os.Getenv("SCW_DEFAULT_PROJECT_ID")
 	if projectID == "" {
 		projectID = os.Getenv("SCALEWAY_ORGANIZATION")
@@ -75,7 +74,7 @@ func buildTestConfigForTests(region string) (*Config, error) {
 		return nil, err
 	}
 
-	return &Config{
+	return &Meta{
 		DefaultProjectID: projectID,
 		SecretKey:        secretKey,
 		DefaultRegion:    parsedRegion,
@@ -85,17 +84,17 @@ func buildTestConfigForTests(region string) (*Config, error) {
 // sharedS3ClientForRegion returns a common S3 client needed for the sweeper
 func sharedS3ClientForRegion(region string) (*s3.S3, error) {
 
-	config, err := buildTestConfigForTests(region)
+	meta, err := buildTestConfigForTests(region)
 	if err != nil {
 		return nil, err
 	}
 
 	// configures a default client for the region, using the above env vars
-	client, err := config.GetS3Client()
+	err = meta.bootstrapS3Client()
 	if err != nil {
 		return nil, fmt.Errorf("error getting S3 client: %#v", err)
 	}
 
-	return client, nil
+	return meta.s3Client, nil
 
 }

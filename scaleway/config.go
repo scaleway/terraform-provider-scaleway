@@ -10,7 +10,6 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"sort"
 	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -24,19 +23,16 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/utils"
 )
 
-// Config is a configuration for a client.
-type Config struct {
+// Meta contains config and SDK clients used by resources.
+//
+// This meta value is passed into all resources.
+type Meta struct {
 	AccessKey        string
 	SecretKey        string
 	DefaultProjectID string
 	DefaultRegion    utils.Region
 	DefaultZone      utils.Zone
-}
 
-// Meta contains SDK clients used by resources.
-//
-// This meta value is passed into all resources.
-type Meta struct {
 	// scwClient is the Scaleway SDK client.
 	scwClient *scw.Client
 
@@ -47,77 +43,40 @@ type Meta struct {
 	deprecatedClient *sdk.API
 }
 
-// Meta creates a meta instance from a client configuration.
-func (c *Config) Meta() (*Meta, error) {
-	meta := &Meta{}
-
-	// Scaleway Client
-	client, err := c.GetScwClient()
-	if err != nil {
-		return nil, err
-	}
-	meta.scwClient = client
-
-	// Deprecated Scaleway Client
-	deprecatedClient, err := c.GetDeprecatedClient()
-	if err != nil {
-		return nil, fmt.Errorf("cannot create deprecated client: %s", err)
-	}
-	meta.deprecatedClient = deprecatedClient
-
-	s3Client, err := c.GetS3Client()
-	if err != nil {
-		return nil, fmt.Errorf("cannot create S3 client: %s", err)
-	}
-	meta.s3Client = s3Client
-
-	// fetch known scaleway server types to support validation in r/server
-	if len(commercialServerTypes) == 0 {
-		if availability, err := deprecatedClient.GetServerAvailabilities(); err == nil {
-			commercialServerTypes = availability.CommercialTypes()
-			sort.StringSlice(commercialServerTypes).Sort()
-		}
-		if os.Getenv("DISABLE_SCALEWAY_SERVER_TYPE_VALIDATION") != "" {
-			commercialServerTypes = commercialServerTypes[:0]
-		}
-	}
-
-	return meta, nil
-}
-
-// GetScwClient returns a new scw.Client from a configuration.
-func (c *Config) GetScwClient() (*scw.Client, error) {
+// bootstrapScwClient returns a new scw.Client from the configuration.
+func (m *Meta) bootstrapScwClient() error {
 	options := []scw.ClientOption{
 		scw.WithHTTPClient(createRetryableHTTPClient(false)),
 		scw.WithUserAgent(userAgent),
 	}
 
 	// The access key is not used for API authentications.
-	if c.SecretKey != "" {
-		options = append(options, scw.WithAuth(c.AccessKey, c.SecretKey))
+	if m.SecretKey != "" {
+		options = append(options, scw.WithAuth(m.AccessKey, m.SecretKey))
 	}
 
-	if c.DefaultProjectID != "" {
-		options = append(options, scw.WithDefaultProjectID(c.DefaultProjectID))
+	if m.DefaultProjectID != "" {
+		options = append(options, scw.WithDefaultProjectID(m.DefaultProjectID))
 	}
 
-	if c.DefaultRegion != "" {
-		options = append(options, scw.WithDefaultRegion(c.DefaultRegion))
+	if m.DefaultRegion != "" {
+		options = append(options, scw.WithDefaultRegion(m.DefaultRegion))
 	}
 
-	if c.DefaultZone != "" {
-		options = append(options, scw.WithDefaultZone(c.DefaultZone))
+	if m.DefaultZone != "" {
+		options = append(options, scw.WithDefaultZone(m.DefaultZone))
 	}
 
 	client, err := scw.NewClient(options...)
 	if err != nil {
-		return nil, fmt.Errorf("cannot create SDK client: %s", err)
+		return fmt.Errorf("cannot create SDK client: %s", err)
 	}
 
-	return client, err
+	m.scwClient = client
+	return nil
 }
 
-// createRetryableHTTPClient create a retryablehttp.Client.
+// createRetryableHTTPClient creates a retryablehttp.Client.
 func createRetryableHTTPClient(shouldLog bool) *client {
 	c := retryablehttp.NewClient()
 
@@ -163,26 +122,32 @@ func (c *client) Do(r *http.Request) (*http.Response, error) {
 	return c.Client.Do(req)
 }
 
-// GetDeprecatedClient create a new deprecated client from a configuration.
-func (c *Config) GetDeprecatedClient() (*sdk.API, error) {
+// bootstrapDeprecatedClient creates a new deprecated client from the configuration.
+func (m *Meta) bootstrapDeprecatedClient() error {
 	options := func(sdkApi *sdk.API) {
 		sdkApi.Client = createRetryableHTTPClient(true)
 	}
 
-	region := string(c.DefaultRegion)
-	if c.DefaultRegion == utils.RegionFrPar {
+	region := string(m.DefaultRegion)
+	if m.DefaultRegion == utils.RegionFrPar {
 		region = "par1"
 	}
-	if c.DefaultRegion == utils.RegionNlAms {
+	if m.DefaultRegion == utils.RegionNlAms {
 		region = "ams1"
 	}
 
-	return sdk.New(
-		c.DefaultProjectID,
-		c.SecretKey,
+	sdk, err := sdk.New(
+		m.DefaultProjectID,
+		m.SecretKey,
 		region,
 		options,
 	)
+	if err != nil {
+		return fmt.Errorf("cannot create deprecated SDK client: %s", err)
+	}
+
+	m.deprecatedClient = sdk
+	return nil
 }
 
 // s3AccessKey contains the access key that is needed for S3.
@@ -191,38 +156,42 @@ func (c *Config) GetDeprecatedClient() (*sdk.API, error) {
 // This will be removed in v2.
 var s3AccessKey string
 
-// GetS3Client creates a new s3 client from the configuration.
-func (c *Config) GetS3Client() (*s3.S3, error) {
+// bootstrapS3Client creates a new s3 client from the configuration.
+func (m *Meta) bootstrapS3Client() error {
+	var err error
 
 	if s3AccessKey == "" {
-		scwClient, err := c.GetDeprecatedClient()
-		if err != nil {
-			return nil, err
+
+		if m.deprecatedClient == nil {
+			err = m.bootstrapDeprecatedClient()
+			if err != nil {
+				return err
+			}
 		}
 
-		s3AccessKey, err = c.getAccessKeyFromSecretKey(scwClient)
+		s3AccessKey, err = m.getAccessKeyFromSecretKey(m.deprecatedClient)
 		if err != nil {
-			return nil, err
+			return err
 		}
 	}
 
 	config := &aws.Config{}
-	config.WithRegion(string(c.DefaultRegion))
-	config.WithCredentials(credentials.NewStaticCredentials(s3AccessKey, c.SecretKey, ""))
-	config.WithEndpoint(c.getS3Endpoint())
+	config.WithRegion(string(m.DefaultRegion))
+	config.WithCredentials(credentials.NewStaticCredentials(s3AccessKey, m.SecretKey, ""))
+	config.WithEndpoint(m.getS3Endpoint())
 
 	s, err := session.NewSession(config)
 	if err != nil {
-		return nil, err
+		return err
 	}
-	s3client := s3.New(s)
 
-	return s3client, nil
+	m.s3Client = s3.New(s)
+	return nil
 }
 
 // getS3Endpoint returns the correct S3 endpoint for object storage based on the current region
-func (c *Config) getS3Endpoint() string {
-	return "https://s3." + string(c.DefaultRegion) + ".scw.cloud"
+func (m *Meta) getS3Endpoint() string {
+	return "https://s3." + string(m.DefaultRegion) + ".scw.cloud"
 
 }
 
@@ -233,7 +202,7 @@ type deprecatedScalewayConfig struct {
 	Version      string `json:"version"`
 }
 
-// readDeprecatedScalewayConfig parse the deprecated Scaleway config file.
+// readDeprecatedScalewayConfig parses the deprecated Scaleway config file.
 func readDeprecatedScalewayConfig(path string) (string, string, error) {
 	f, err := os.Open(path)
 	if err != nil {
@@ -249,7 +218,7 @@ func readDeprecatedScalewayConfig(path string) (string, string, error) {
 }
 
 // getAccessKeyFromSecretKey returns the access key that is coupled to the current token/secret key in the client.
-func (c *Config) getAccessKeyFromSecretKey(scwClient *sdk.API) (string, error) {
+func (m *Meta) getAccessKeyFromSecretKey(scwClient *sdk.API) (string, error) {
 	type token struct {
 		AccessKey string `json:"access_key"`
 	}
@@ -258,7 +227,7 @@ func (c *Config) getAccessKeyFromSecretKey(scwClient *sdk.API) (string, error) {
 		Token token `json:"token"`
 	}
 
-	url := "https://account.scaleway.com/tokens/" + c.SecretKey
+	url := "https://account.scaleway.com/tokens/" + m.SecretKey
 	req, err := http.NewRequest(http.MethodGet, url, nil)
 	if err != nil {
 		return "", err
