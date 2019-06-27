@@ -150,42 +150,15 @@ func (m *Meta) bootstrapDeprecatedClient() error {
 	return nil
 }
 
-// s3AccessKey contains the access key that is needed for S3.
-// This is a global variable so we only have to do one request to fetch the token.
-//
-// This will be removed in v2.
-var s3AccessKey string
-
 // bootstrapS3Client creates a new s3 client from the configuration.
 func (m *Meta) bootstrapS3Client() error {
-	var err error
 
-	if s3AccessKey == "" {
-
-		if m.deprecatedClient == nil {
-			err = m.bootstrapDeprecatedClient()
-			if err != nil {
-				return err
-			}
-		}
-
-		s3AccessKey, err = m.getAccessKeyFromSecretKey(m.deprecatedClient)
-		if err != nil {
-			return err
-		}
-	}
-
-	config := &aws.Config{}
-	config.WithRegion(string(m.DefaultRegion))
-	config.WithCredentials(credentials.NewStaticCredentials(s3AccessKey, m.SecretKey, ""))
-	config.WithEndpoint(m.getS3Endpoint())
-
-	s, err := session.NewSession(config)
+	client, err := m.createS3ClientForRegion(m.DefaultRegion)
 	if err != nil {
 		return err
 	}
 
-	m.s3Client = s3.New(s)
+	m.s3Client = client
 	return nil
 }
 
@@ -251,4 +224,42 @@ func (m *Meta) getAccessKeyFromSecretKey(scwClient *sdk.API) (string, error) {
 	}
 
 	return content.Token.AccessKey, nil
+}
+
+// s3AccessKey contains the access key that is needed for S3.
+// This is a global variable so we only have to do one request to fetch the token.
+//
+// This will be removed in v2.
+var s3AccessKey string
+
+// createS3ClientForRegion creates a new s3 client from the configuration.
+func (m *Meta) createS3ClientForRegion(region utils.Region) (*s3.S3, error) {
+	var err error
+
+	if s3AccessKey == "" {
+
+		if m.deprecatedClient == nil {
+			err = m.bootstrapDeprecatedClient()
+			if err != nil {
+				return nil, err
+			}
+		}
+
+		s3AccessKey, err = m.getAccessKeyFromSecretKey(m.deprecatedClient)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	config := &aws.Config{}
+	config.WithRegion(string(region))
+	config.WithCredentials(credentials.NewStaticCredentials(s3AccessKey, m.SecretKey, ""))
+	config.WithEndpoint(m.getS3Endpoint())
+
+	s, err := session.NewSession(config)
+	if err != nil {
+		return nil, err
+	}
+
+	return s3.New(s), nil
 }

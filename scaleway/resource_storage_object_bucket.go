@@ -41,11 +41,10 @@ func resourceScalewayStorageObjectBucket() *schema.Resource {
 func resourceScalewayStorageObjectBucketCreate(d *schema.ResourceData, m interface{}) error {
 	bucketName := d.Get("name").(string)
 	acl := d.Get("acl").(string)
-	region := d.Get("region").(string)
 
-	s3Client := m.(*Meta).s3Client
+	s3Client, region, err := getS3ClientWithRegion(d, m)
 
-	_, err := s3Client.CreateBucket(&s3.CreateBucketInput{
+	_, err = s3Client.CreateBucket(&s3.CreateBucketInput{
 		Bucket: aws.String(bucketName),
 		ACL:    aws.String(acl),
 	})
@@ -59,16 +58,17 @@ func resourceScalewayStorageObjectBucketCreate(d *schema.ResourceData, m interfa
 }
 
 func resourceScalewayStorageObjectBucketRead(d *schema.ResourceData, m interface{}) error {
-	bucketName := d.Get("name").(string)
+	s3Client, _, bucketName, err := getS3ClientWithRegionAndID(d, m)
+	if err != nil {
+		return err
+	}
 
-	s3Client := m.(*Meta).s3Client
-
-	_, err := s3Client.ListObjects(&s3.ListObjectsInput{
+	_, err = s3Client.ListObjects(&s3.ListObjectsInput{
 		Bucket: aws.String(bucketName),
 	})
 	if err != nil {
 		if serr, ok := err.(awserr.Error); ok && serr.Code() == s3.ErrCodeNoSuchBucket {
-			l.Errorf("Bucket %q was not found - removing from state!", d.Get("name"))
+			l.Errorf("Bucket %q was not found - removing from state!", bucketName)
 			d.SetId("")
 			return nil
 		}
@@ -79,11 +79,13 @@ func resourceScalewayStorageObjectBucketRead(d *schema.ResourceData, m interface
 }
 
 func resourceScalewayStorageObjectBucketUpdate(d *schema.ResourceData, m interface{}) error {
+	s3Client, _, bucketName, err := getS3ClientWithRegionAndID(d, m)
+	if err != nil {
+		return err
+	}
 
 	if d.HasChange("acl") {
-		bucketName := d.Get("name").(string)
 		acl := d.Get("acl").(string)
-		s3Client := m.(*Meta).s3Client
 
 		_, err := s3Client.PutBucketAcl(&s3.PutBucketAclInput{
 			Bucket: aws.String(bucketName),
@@ -99,11 +101,12 @@ func resourceScalewayStorageObjectBucketUpdate(d *schema.ResourceData, m interfa
 }
 
 func resourceScalewayStorageObjectBucketDelete(d *schema.ResourceData, m interface{}) error {
-	bucketName := d.Get("name").(string)
+	s3Client, _, bucketName, err := getS3ClientWithRegionAndID(d, m)
+	if err != nil {
+		return err
+	}
 
-	s3Client := m.(*Meta).s3Client
-
-	_, err := s3Client.DeleteBucket(&s3.DeleteBucketInput{
+	_, err = s3Client.DeleteBucket(&s3.DeleteBucketInput{
 		Bucket: aws.String(bucketName),
 	})
 	return err
