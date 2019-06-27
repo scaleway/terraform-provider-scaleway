@@ -3,6 +3,7 @@ package scaleway
 import (
 	"fmt"
 	"os"
+	"sort"
 	"sync"
 
 	"github.com/hashicorp/terraform/helper/schema"
@@ -201,7 +202,7 @@ func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 		if path, err := homedir.Expand("~/.scwrc"); err == nil {
 			scwAPIKey, scwOrganization, err := readDeprecatedScalewayConfig(path)
 			if err != nil {
-				return nil, fmt.Errorf("Error loading credentials from SCW: %s", err)
+				return nil, fmt.Errorf("error loading credentials from SCW: %s", err)
 			}
 			apiKey = scwAPIKey
 			projectID = scwOrganization
@@ -220,7 +221,7 @@ func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 		return nil, err
 	}
 
-	config := Config{
+	meta := &Meta{
 		AccessKey:        d.Get("access_key").(string),
 		SecretKey:        apiKey,
 		DefaultProjectID: projectID,
@@ -228,5 +229,26 @@ func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 		DefaultZone:      zone,
 	}
 
-	return config.Meta()
+	err = meta.bootstrapScwClient()
+	if err != nil {
+		return nil, err
+	}
+
+	err = meta.bootstrapDeprecatedClient()
+	if err != nil {
+		return nil, err
+	}
+
+	// fetch known scaleway server types to support validation in r/server
+	if len(commercialServerTypes) == 0 {
+		if availability, err := meta.deprecatedClient.GetServerAvailabilities(); err == nil {
+			commercialServerTypes = availability.CommercialTypes()
+			sort.StringSlice(commercialServerTypes).Sort()
+		}
+		if os.Getenv("DISABLE_SCALEWAY_SERVER_TYPE_VALIDATION") != "" {
+			commercialServerTypes = commercialServerTypes[:0]
+		}
+	}
+
+	return meta, nil
 }
