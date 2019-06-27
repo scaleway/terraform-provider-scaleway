@@ -35,7 +35,6 @@ func sharedDeprecatedClientForRegion(region string) (*api.API, error) {
 // sharedClientForRegion returns a Scaleway client needed for the sweeper
 // functions for a given region {fr-par,nl-ams}
 func sharedClientForRegion(region string) (*scw.Client, error) {
-
 	meta, err := buildTestConfigForTests(region)
 	if err != nil {
 		return nil, err
