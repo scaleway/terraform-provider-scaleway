@@ -4,8 +4,6 @@ import (
 	"fmt"
 	"testing"
 
-	"gitlab.infra.online.net/front/protobuf/scaleway-sdk-go/api/instance/v1"
-
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/terraform"
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
