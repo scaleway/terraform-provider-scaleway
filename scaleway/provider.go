@@ -230,17 +230,7 @@ func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 		DefaultZone:      zone,
 	}
 
-	err = meta.bootstrapScwClient()
-	if err != nil {
-		return nil, err
-	}
-
-	err = meta.bootstrapDeprecatedClient()
-	if err != nil {
-		return nil, err
-	}
-
-	err = meta.bootstrapS3Client()
+	meta.bootstrap()
 	if err != nil {
 		return nil, err
 	}

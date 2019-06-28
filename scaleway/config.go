@@ -43,7 +43,27 @@ type Meta struct {
 	deprecatedClient *sdk.API
 }
 
-// bootstrapScwClient returns a new scw.Client from the configuration.
+// bootstrap initializes all the clients for this meta config object.
+func (m *Meta) bootstrap() error {
+	err := m.bootstrapScwClient()
+	if err != nil {
+		return err
+	}
+
+	err = m.bootstrapDeprecatedClient()
+	if err != nil {
+		return err
+	}
+
+	err = m.bootstrapS3Client()
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// bootstrapScwClient initializes a new scw.Client from the configuration.
 func (m *Meta) bootstrapScwClient() error {
 	options := []scw.ClientOption{
 		scw.WithHTTPClient(createRetryableHTTPClient(false)),
@@ -122,7 +142,7 @@ func (c *client) Do(r *http.Request) (*http.Response, error) {
 	return c.Client.Do(req)
 }
 
-// bootstrapDeprecatedClient creates a new deprecated client from the configuration.
+// bootstrapDeprecatedClient initializes a new deprecated client from the configuration.
 func (m *Meta) bootstrapDeprecatedClient() error {
 	options := func(sdkApi *sdk.API) {
 		sdkApi.Client = createRetryableHTTPClient(true)
@@ -150,7 +170,7 @@ func (m *Meta) bootstrapDeprecatedClient() error {
 	return nil
 }
 
-// bootstrapS3Client creates a new s3 client from the configuration.
+// bootstrapS3Client initializes a new s3 client from the configuration.
 func (m *Meta) bootstrapS3Client() error {
 
 	client, err := m.createS3ClientForRegion(m.DefaultRegion)
