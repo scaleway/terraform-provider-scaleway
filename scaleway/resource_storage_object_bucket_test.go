@@ -22,6 +22,8 @@ func init() {
 // Test data
 var (
 	testBucketName       = fmt.Sprintf("terraform-test-%d", time.Now().Unix())
+	testBucketNameAms    = testBucketName + "ams"
+	testBucketNamePar    = testBucketName + "par"
 	testBucketACL        = "private"
 	testBucketUpdatedACL = "public-read"
 )
@@ -30,13 +32,25 @@ var (
 var testAccCheckScalewayStorageObjectBucket = fmt.Sprintf(`
 resource "scaleway_storage_object_bucket" "base" {
   name = "%s"
+  region = "nl-ams"
 }
-`, testBucketName)
+
+resource "scaleway_storage_object_bucket" "use-region-ams" {
+  name = "%s"
+  region = "nl-ams"
+}
+
+resource "scaleway_storage_object_bucket" "use-region-par" {
+  name = "%s"
+  region = "nl-ams"
+}
+`, testBucketName, testBucketNameAms, testBucketNamePar)
 
 var testAccCheckScalewayStorageObjectBucketUpdate = fmt.Sprintf(`
 resource "scaleway_storage_object_bucket" "base" {
   name = "%s"
   acl = "%s"
+  region = "nl-ams"
 }
 `, testBucketName, testBucketUpdatedACL)
 
@@ -51,6 +65,8 @@ func TestAccScalewayStorageObjectBucket(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("scaleway_storage_object_bucket.base", "name", testBucketName),
 					resource.TestCheckResourceAttr("scaleway_storage_object_bucket.base", "acl", testBucketACL),
+					resource.TestCheckResourceAttr("scaleway_storage_object_bucket.use-region-ams", "name", testBucketNameAms),
+					resource.TestCheckResourceAttr("scaleway_storage_object_bucket.use-region-par", "name", testBucketNamePar),
 				),
 			},
 			{
