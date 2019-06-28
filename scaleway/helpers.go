@@ -385,6 +385,31 @@ func getRandomName(prefix string) string {
 
 const gb uint64 = 1000 * 1000 * 1000
 
+// suppressLocality is a SuppressDiffFunc to remove the locality from an ID when checking diff.
+// e.g. 2c1a1716-5570-4668-a50a-860c90beabf6 == fr-par/2c1a1716-5570-4668-a50a-860c90beabf6
 func suppressLocality(k, old, new string, d *schema.ResourceData) bool {
 	return expandID(old) == expandID(new)
+}
+
+func isResourceTimeoutError(err error) bool {
+	timeoutErr, ok := err.(*resource.TimeoutError)
+	return ok && timeoutErr.LastError == nil
+}
+
+func isSDKResponseError(err error, status int, message string) bool {
+	responseError, ok := err.(*scw.ResponseError)
+	if !ok {
+		return false
+	}
+
+	return responseError.StatusCode == status && responseError.Message == message
+}
+
+func isSDKError(err error, message string) bool {
+	responseError, ok := err.(scw.SdkError)
+	if !ok {
+		return false
+	}
+
+	return responseError.Error() == "scaleway-sdk-go: "+message
 }

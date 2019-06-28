@@ -2,7 +2,10 @@ package scaleway
 
 import (
 	"fmt"
+	"net/http"
+	"time"
 
+	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
 	"github.com/scaleway/scaleway-sdk-go/utils"
@@ -29,7 +32,7 @@ func resourceScalewayComputeInstanceVolume() *schema.Resource {
 				Type:        schema.TypeString,
 				Optional:    true,
 				ForceNew:    true,
-				Default:     instance.VolumeTypeLSSD.String(),
+				Default:     instance.VolumeTypeBSSD.String(),
 				Description: "the volume type.",
 			},
 			"size_in_gb": {
@@ -37,7 +40,7 @@ func resourceScalewayComputeInstanceVolume() *schema.Resource {
 				Optional:      true,
 				ForceNew:      true,
 				Description:   "the size of the volume in gigabyte.",
-				ConflictsWith: []string{"from_image_id", "from_volume_id"},
+				ConflictsWith: []string{"from_snapshot_id", "from_volume_id"},
 			},
 			"from_volume_id": {
 				Type:          schema.TypeString,
@@ -45,9 +48,9 @@ func resourceScalewayComputeInstanceVolume() *schema.Resource {
 				ForceNew:      true,
 				Description:   "create a copy of an existing volume.",
 				ValidateFunc:  validationUUID(),
-				ConflictsWith: []string{"from_image_id", "size_in_gb"},
+				ConflictsWith: []string{"from_snapshot_id", "size_in_gb"},
 			},
-			"from_image_id": {
+			"from_snapshot_id": {
 				Type:          schema.TypeString,
 				Optional:      true,
 				ForceNew:      true,
@@ -93,8 +96,8 @@ func resourceScalewayComputeInstanceVolumeCreate(d *schema.ResourceData, m inter
 		createVolumeRequest.BaseVolume = utils.String(expandID(volumeID))
 	}
 
-	if imageID, ok := d.GetOk("from_image_id"); ok {
-		createVolumeRequest.BaseSnapshot = utils.String(expandID(imageID))
+	if snapshotID, ok := d.GetOk("from_snapshot_id"); ok {
+		createVolumeRequest.BaseSnapshot = utils.String(expandID(snapshotID))
 	}
 
 	res, err := instanceAPI.CreateVolume(createVolumeRequest)
@@ -131,6 +134,8 @@ func resourceScalewayComputeInstanceVolumeRead(d *schema.ResourceData, m interfa
 
 	if res.Volume.Server != nil {
 		d.Set("server_id", res.Volume.Server.ID)
+	} else {
+		d.Set("server_id", nil)
 	}
 
 	return nil
@@ -164,39 +169,43 @@ func resourceScalewayComputeInstanceVolumeDelete(d *schema.ResourceData, m inter
 		return err
 	}
 
-	getVolumeResponse, err := instanceAPI.GetVolume(&instance.GetVolumeRequest{
+	deleteRequest := &instance.DeleteVolumeRequest{
 		Zone:     zone,
 		VolumeID: id,
-	})
-	if err != nil {
-		return err
 	}
 
-	if getVolumeResponse.Volume.Server != nil {
-		instanceAPI.ServerActionAndWait(&instance.ServerActionAndWaitRequest{
-			Zone:     zone,
-			ServerID: getVolumeResponse.Volume.Server.ID,
-			Action:   instance.ServerActionPoweroff,
-			Timeout:  ServerWaitForTimeout,
-		})
-		// ignore errors
-		_, err := instanceAPI.DetachVolume(&instance.DetachVolumeRequest{
-			Zone:     zone,
-			VolumeID: id,
-		})
-		if err != nil && !is404Error(err) {
-			return err
+	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
+		err := instanceAPI.DeleteVolume(deleteRequest)
+		if isSDKResponseError(err, http.StatusBadRequest, "a server is attached to this volume") {
+			if d.Get("type").(string) != instance.VolumeTypeBSSD.String() {
+				err = instanceAPI.ServerActionAndWait(&instance.ServerActionAndWaitRequest{
+					Zone:     zone,
+					ServerID: d.Get("server_id").(string),
+					Action:   instance.ServerActionPoweroff,
+					Timeout:  4 * time.Minute,
+				})
+				if err != nil && !isSDKResponseError(err, http.StatusBadRequest, "server should be running") {
+					return resource.NonRetryableError(err)
+				}
+			}
+			_, err = instanceAPI.DetachVolume(&instance.DetachVolumeRequest{
+				Zone:     zone,
+				VolumeID: id,
+			})
+			if isSDKResponseError(err, http.StatusBadRequest, "Instance must be powered off to change local volumes") {
+				return resource.RetryableError(err)
+			}
 		}
-	}
-
-	err = instanceAPI.DeleteVolume(&instance.DeleteVolumeRequest{
-		VolumeID: id,
-		Zone:     zone,
+		if isSDKResponseError(err, http.StatusBadRequest, "Instance must be powered off, in standby or running to change block-storage volumes") {
+			return resource.RetryableError(err)
+		}
+		if err != nil && !is404Error(err) {
+			return resource.NonRetryableError(fmt.Errorf("couldn't delete volume: %v", err))
+		}
+		return nil
 	})
-
-	if err != nil && !is404Error(err) {
-		return fmt.Errorf("couldn't delete volume: %v", err)
+	if isResourceTimeoutError(err) {
+		err = instanceAPI.DeleteVolume(deleteRequest)
 	}
-
-	return nil
+	return err
 }

@@ -1,6 +1,7 @@
 package scaleway
 
 import (
+	"fmt"
 	"sort"
 	"time"
 
@@ -68,4 +69,53 @@ func orderVolumes(v map[string]*instance.Volume) []*instance.Volume {
 		orderedVolumes = append(orderedVolumes, v[index])
 	}
 	return orderedVolumes
+}
+
+func expandServerState(fromState instance.ServerState) (string, error) {
+	switch fromState {
+	case instance.ServerStateStopped:
+		return ServerStateStopped, nil
+	case instance.ServerStateStoppedInPlace:
+		return ServerStateStandby, nil
+	case instance.ServerStateRunning:
+		return ServerStateStarted, nil
+	case instance.ServerStateLocked:
+		return "", fmt.Errorf("server is locked, please contact Scaleway support: https://console.scaleway.com/support/tickets")
+	}
+	return "", fmt.Errorf("server is in an invalid state, someone else might be executing action at the same time")
+}
+
+func computeServerStateToAction(previousState, nextState string, forceReboot bool) []instance.ServerAction {
+	if previousState == ServerStateStarted && nextState == ServerStateStarted && forceReboot {
+		return []instance.ServerAction{instance.ServerActionReboot}
+	}
+	transitionMap := map[[2]string][]instance.ServerAction{
+		{ServerStateStopped, ServerStateStopped}: {},
+		{ServerStateStopped, ServerStateStarted}: {instance.ServerActionPoweron},
+		{ServerStateStopped, ServerStateStandby}: {instance.ServerActionPoweron, instance.ServerActionStopInPlace},
+		{ServerStateStarted, ServerStateStopped}: {instance.ServerActionPoweroff},
+		{ServerStateStarted, ServerStateStarted}: {},
+		{ServerStateStarted, ServerStateStandby}: {instance.ServerActionStopInPlace},
+		{ServerStateStandby, ServerStateStopped}: {instance.ServerActionPoweroff},
+		{ServerStateStandby, ServerStateStarted}: {instance.ServerActionPoweron},
+		{ServerStateStandby, ServerStateStandby}: {},
+	}
+
+	return transitionMap[[2]string{previousState, nextState}]
+}
+
+// reachState executes server action(s) to reach the expected state
+func reachState(instanceApi *instance.API, zone utils.Zone, serverID, fromState, toState string, forceReboot bool) error {
+	for _, action := range computeServerStateToAction(fromState, toState, forceReboot) {
+		err := instanceApi.ServerActionAndWait(&instance.ServerActionAndWaitRequest{
+			Zone:     zone,
+			ServerID: serverID,
+			Action:   action,
+			Timeout:  ServerWaitForTimeout,
+		})
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }

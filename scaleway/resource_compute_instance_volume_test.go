@@ -165,11 +165,13 @@ func testAccCheckScalewayComputeInstanceVolumeDestroy(s *terraform.State) error 
 var testAccCheckScalewayComputeInstanceVolumeConfig = []string{
 	`
 		resource "scaleway_compute_instance_volume" "test" {
+			type       = "l_ssd"
 			size_in_gb = 20
 		}
 	`,
 	`
 		resource "scaleway_compute_instance_volume" "test" {
+			type       = "l_ssd"
 			name = "terraform-test"
 			size_in_gb = 20
 		}
@@ -179,11 +181,13 @@ var testAccCheckScalewayComputeInstanceVolumeConfig = []string{
 var testAccCheckScalewayComputeInstanceVolumeConfigWithRandomName = []string{
 	`
 		resource "scaleway_compute_instance_volume" "test" {
+			type       = "l_ssd"
 			size_in_gb = 20
 		}
 	`,
 	`
 		resource "scaleway_compute_instance_volume" "test" {
+			type       = "l_ssd"
 			size_in_gb = 20
 		}
 	`,
@@ -191,6 +195,7 @@ var testAccCheckScalewayComputeInstanceVolumeConfigWithRandomName = []string{
 
 var testAccCheckScalewayComputeInstanceVolumeConfigFromVolume = `
 		resource "scaleway_compute_instance_volume" "test1" {
+			type       = "l_ssd"
 			size_in_gb = 20
 		}
 

@@ -27,9 +27,10 @@ func resourceScalewayComputeInstanceIP() *schema.Resource {
 				Description: "The reverse dns for this IP",
 			},
 			"server_id": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The server associated with this ip",
+				Type:             schema.TypeString,
+				Optional:         true,
+				Description:      "The server associated with this ip",
+				DiffSuppressFunc: suppressLocality,
 			},
 			"zone":       zoneSchema(),
 			"project_id": projectIDSchema(),
@@ -87,7 +88,7 @@ func resourceScalewayComputeInstanceIPRead(d *schema.ResourceData, m interface{}
 		return err
 	}
 
-	d.Set("address", res.IP.Address)
+	d.Set("address", res.IP.Address.String())
 	d.Set("zone", string(zone))
 	d.Set("project_id", res.IP.Organization)
 	d.Set("reverse", res.IP.Reverse)
@@ -119,6 +120,19 @@ func resourceScalewayComputeInstanceIPUpdate(d *schema.ResourceData, m interface
 		if err != nil {
 			return err
 		}
+	}
+
+	if d.HasChange("server_id") {
+		serverID := expandID(d.Get("server_id"))
+		_, err = instanceApi.AttachIP(&instance.AttachIPRequest{
+			Zone:     zone,
+			IPID:     ID,
+			ServerID: serverID,
+		})
+		if err != nil {
+			return err
+		}
+
 	}
 
 	return resourceScalewayComputeInstanceIPRead(d, m)

@@ -2,11 +2,10 @@ package scaleway
 
 import (
 	"bytes"
-	"fmt"
 	"io"
 	"io/ioutil"
+	"net/http"
 	"strconv"
-	"time"
 
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/hashicorp/terraform/helper/validation"
@@ -32,12 +31,11 @@ func resourceScalewayComputeInstanceServer() *schema.Resource {
 				Description: "The name of the server",
 			},
 			"image_id": {
-				Type:          schema.TypeString,
-				Optional:      true,
-				ForceNew:      true,
-				Description:   "The base image of the server", // TODO: add in doc example with UUID
-				ValidateFunc:  validationUUID(),
-				ConflictsWith: []string{"root_volume_id"},
+				Type:         schema.TypeString,
+				Required:     true,
+				ForceNew:     true,
+				Description:  "The base image of the server", // TODO: add in doc example with UUID
+				ValidateFunc: validationUUID(),
 			},
 			"type": {
 				Type:        schema.TypeString,
@@ -59,21 +57,12 @@ func resourceScalewayComputeInstanceServer() *schema.Resource {
 				Computed:    true,
 				Description: "The security group the server is attached to",
 			},
-
-			"root_volume_id": {
-				Type:             schema.TypeString,
-				Optional:         true,
-				ValidateFunc:     validationUUID(),
-				Description:      "ID of the root volume attached to the server on creation",
-				ConflictsWith:    []string{"root_volume", "image_id"},
-				DiffSuppressFunc: suppressLocality,
-			},
 			"root_volume": {
-				Type:          schema.TypeList,
-				MaxItems:      1,
-				Optional:      true,
-				Description:   "Root volume attached to the server on creation",
-				ConflictsWith: []string{"root_volume_id"},
+				Type:        schema.TypeList,
+				MaxItems:    1,
+				Optional:    true,
+				Computed:    true,
+				Description: "Root volume attached to the server on creation",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"size_in_gb": {
@@ -94,11 +83,12 @@ func resourceScalewayComputeInstanceServer() *schema.Resource {
 					},
 				},
 			},
-			"additional_volumes": {
+			"additional_volume_ids": {
 				Type: schema.TypeList,
 				Elem: &schema.Schema{
-					Type:         schema.TypeString,
-					ValidateFunc: validationUUID(),
+					Type:             schema.TypeString,
+					ValidateFunc:     validationUUID(),
+					DiffSuppressFunc: suppressLocality,
 				},
 				Optional:    true,
 				Description: "The additional volumes attached to the server",
@@ -199,15 +189,7 @@ func resourceScalewayComputeInstanceServerCreate(d *schema.ResourceData, m inter
 		}
 	}
 
-	if rootVolumeID, ok := d.GetOk("root_volume_id"); ok {
-		req.Volumes = make(map[string]*instance.VolumeTemplate)
-		req.Volumes["0"] = &instance.VolumeTemplate{
-			ID:   expandID(rootVolumeID),
-			Name: getRandomName("vol"),
-		}
-	}
-
-	if raw, ok := d.GetOk("additional_volumes"); ok {
+	if raw, ok := d.GetOk("additional_volume_ids"); ok {
 		for i, volumeID := range raw.([]interface{}) {
 			req.Volumes[strconv.Itoa(i+1)] = &instance.VolumeTemplate{
 				ID:   expandID(volumeID),
@@ -252,19 +234,9 @@ func resourceScalewayComputeInstanceServerCreate(d *schema.ResourceData, m inter
 		}
 	}
 
-	////
-	// Execute server action to reach the expected state
-	////
-	for _, action := range computeServerStateToAction(ServerStateStopped, d.Get("state").(string), false) {
-		err = instanceApi.ServerActionAndWait(&instance.ServerActionAndWaitRequest{
-			Zone:     zone,
-			ServerID: res.Server.ID,
-			Action:   action,
-			Timeout:  time.Minute * 10,
-		})
-		if err != nil {
-			return err
-		}
+	err = reachState(instanceApi, zone, res.Server.ID, ServerStateStopped, d.Get("state").(string), false)
+	if err != nil {
+		return err
 	}
 
 	return resourceScalewayComputeInstanceServerRead(d, m)
@@ -275,8 +247,6 @@ func resourceScalewayComputeInstanceServerRead(d *schema.ResourceData, m interfa
 	if err != nil {
 		return err
 	}
-
-	d.Set("zone", string(zone))
 
 	////
 	// Read Server
@@ -292,19 +262,14 @@ func resourceScalewayComputeInstanceServerRead(d *schema.ResourceData, m interfa
 		}
 		return err
 	}
-	switch response.Server.State {
-	case instance.ServerStateStopped:
-		d.Set("state", ServerStateStopped)
-	case instance.ServerStateStoppedInPlace:
-		d.Set("state", ServerStateStandby)
-	case instance.ServerStateRunning:
-		d.Set("state", ServerStateStarted)
-	case instance.ServerStateLocked:
-		return fmt.Errorf("server is locked, please contact Scaleway support: https://console.scaleway.com/support/tickets")
-	default:
-		return fmt.Errorf("server is in an invalid state, someone else might be executing action at the same time")
+	state, err := expandServerState(response.Server.State)
+	if err != nil {
+		return err
+	} else {
+		d.Set("state", state)
 	}
 
+	d.Set("zone", string(zone))
 	d.Set("name", response.Server.Name)
 	d.Set("type", response.Server.CommercialType)
 	d.Set("tags", response.Server.Tags)
@@ -331,21 +296,18 @@ func resourceScalewayComputeInstanceServerRead(d *schema.ResourceData, m interfa
 		d.Set("public_ipv6", response.Server.IPv6.Address.String())
 	}
 
-	var additionalVolumes []string
+	var additionalVolumesIDs []string
 	for i, volume := range orderVolumes(response.Server.Volumes) {
 		if i == 0 {
-			if _, ok := d.GetOk("root_volume_id"); ok {
-				d.Set("root_volume_id", volume.ID)
-			} else {
-				rootVolume := expandRootVolume(d.Get("root_volume"))
-				rootVolume["volume_id"] = volume.ID
-				rootVolume["size_in_gb"] = int(volume.Size / gb)
-				d.Set("root_volume", []map[string]interface{}{rootVolume})
-			}
+			rootVolume := expandRootVolume(d.Get("root_volume"))
+			rootVolume["volume_id"] = volume.ID
+			rootVolume["size_in_gb"] = int(volume.Size / gb)
+			d.Set("root_volume", []map[string]interface{}{rootVolume})
 		} else {
-			additionalVolumes = append(additionalVolumes, volume.ID)
+			additionalVolumesIDs = append(additionalVolumesIDs, volume.ID)
 		}
 	}
+	d.Set("additional_volume_ids", additionalVolumesIDs)
 
 	////
 	// Read server user data
@@ -412,13 +374,9 @@ func resourceScalewayComputeInstanceServerUpdate(d *schema.ResourceData, m inter
 	}
 
 	volumes := map[string]*instance.VolumeTemplate{}
-	if rootVolumeID, ok := d.GetOk("root_volume_id"); ok {
-		volumes["0"] = &instance.VolumeTemplate{ID: rootVolumeID.(string), Name: getRandomName("vol")}
-	} else {
-		volumes["0"] = &instance.VolumeTemplate{ID: d.Get("root_volume.0.volume_id").(string), Name: getRandomName("vol")}
-	}
+	volumes["0"] = &instance.VolumeTemplate{ID: d.Get("root_volume.0.volume_id").(string), Name: getRandomName("vol")}
 
-	if raw, ok := d.GetOk("additional_volumes"); d.HasChange("additional_volumes") && ok {
+	if raw, ok := d.GetOk("additional_volume_ids"); d.HasChange("additional_volume_ids") && ok {
 		for i, volumeID := range raw.([]interface{}) {
 			volumes[strconv.Itoa(i+1)] = &instance.VolumeTemplate{
 				ID:   expandID(volumeID),
@@ -426,16 +384,9 @@ func resourceScalewayComputeInstanceServerUpdate(d *schema.ResourceData, m inter
 			}
 		}
 		// server must be stopped before updating volumes
-		for _, action := range computeServerStateToAction(previousState.(string), ServerStateStopped, false) {
-			err = instanceApi.ServerActionAndWait(&instance.ServerActionAndWaitRequest{
-				Zone:     zone,
-				ServerID: ID,
-				Action:   action,
-				Timeout:  ServerWaitForTimeout,
-			})
-			if err != nil {
-				return err
-			}
+		err = reachState(instanceApi, zone, ID, previousState.(string), ServerStateStopped, false)
+		if err != nil && !isSDKResponseError(err, http.StatusBadRequest, "server should be running") {
+			return err
 		}
 	}
 
@@ -445,13 +396,10 @@ func resourceScalewayComputeInstanceServerUpdate(d *schema.ResourceData, m inter
 	if err != nil {
 		return err
 	}
-	switch updateResponse.Server.State {
-	case instance.ServerStateStopped:
-		previousState = ServerStateStopped
-	case instance.ServerStateStoppedInPlace:
-		previousState = ServerStateStandby
-	case instance.ServerStateRunning:
-		previousState = ServerStateStarted
+
+	previousState, err = expandServerState(updateResponse.Server.State)
+	if err != nil {
+		return err
 	}
 
 	////
@@ -487,19 +435,10 @@ func resourceScalewayComputeInstanceServerUpdate(d *schema.ResourceData, m inter
 
 	}
 
-	////
-	// Execute server action to reach the expected state
-	////
-	for _, action := range computeServerStateToAction(previousState.(string), nextState.(string), forceReboot) {
-		err = instanceApi.ServerActionAndWait(&instance.ServerActionAndWaitRequest{
-			Zone:     zone,
-			ServerID: ID,
-			Action:   action,
-			Timeout:  ServerWaitForTimeout,
-		})
-		if err != nil {
-			return err
-		}
+	// reach expected state
+	err = reachState(instanceApi, zone, ID, previousState.(string), nextState.(string), forceReboot)
+	if err != nil {
+		return err
 	}
 
 	return resourceScalewayComputeInstanceServerRead(d, m)
@@ -511,22 +450,13 @@ func resourceScalewayComputeInstanceServerDelete(d *schema.ResourceData, m inter
 		return err
 	}
 
-	////
-	// Execute server action to reach the expected state
-	////
-	for _, action := range computeServerStateToAction(d.Get("state").(string), ServerStateStopped, false) {
-		err = instanceApi.ServerActionAndWait(&instance.ServerActionAndWaitRequest{
-			Zone:     zone,
-			ServerID: ID,
-			Action:   action,
-			Timeout:  ServerWaitForTimeout,
-		})
-		if is404Error(err) {
-			return nil
-		}
-		if err != nil {
-			return err
-		}
+	// reach stopped state
+	err = reachState(instanceApi, zone, ID, d.Get("state").(string), ServerStateStopped, false)
+	if is404Error(err) {
+		return nil
+	}
+	if err != nil {
+		return err
 	}
 
 	err = instanceApi.DeleteServer(&instance.DeleteServerRequest{
@@ -538,8 +468,7 @@ func resourceScalewayComputeInstanceServerDelete(d *schema.ResourceData, m inter
 		return err
 	}
 
-	_, customRootVolumeExists := d.GetOk("root_volume_id")
-	if !customRootVolumeExists && d.Get("root_volume.0.delete_on_termination").(bool) {
+	if d.Get("root_volume.0.delete_on_termination").(bool) {
 		err = instanceApi.DeleteVolume(&instance.DeleteVolumeRequest{
 			Zone:     zone,
 			VolumeID: d.Get("root_volume.0.volume_id").(string),
@@ -550,23 +479,4 @@ func resourceScalewayComputeInstanceServerDelete(d *schema.ResourceData, m inter
 	}
 
 	return nil
-}
-
-func computeServerStateToAction(previousState, nextState string, forceReboot bool) []instance.ServerAction {
-	if previousState == ServerStateStarted && nextState == ServerStateStarted && forceReboot {
-		return []instance.ServerAction{instance.ServerActionReboot}
-	}
-	transitionMap := map[[2]string][]instance.ServerAction{
-		{ServerStateStopped, ServerStateStopped}: {},
-		{ServerStateStopped, ServerStateStarted}: {instance.ServerActionPoweron},
-		{ServerStateStopped, ServerStateStandby}: {instance.ServerActionPoweron, instance.ServerActionStopInPlace},
-		{ServerStateStarted, ServerStateStopped}: {instance.ServerActionPoweroff},
-		{ServerStateStarted, ServerStateStarted}: {},
-		{ServerStateStarted, ServerStateStandby}: {instance.ServerActionStopInPlace},
-		{ServerStateStandby, ServerStateStopped}: {instance.ServerActionPoweroff},
-		{ServerStateStandby, ServerStateStarted}: {instance.ServerActionPoweron},
-		{ServerStateStandby, ServerStateStandby}: {},
-	}
-
-	return transitionMap[[2]string{previousState, nextState}]
 }
