@@ -319,6 +319,24 @@ func getRegion(d terraformResourceData, meta *Meta) (scw.Region, error) {
 	return scw.Region(""), ErrRegionNotFound
 }
 
+// getProjectId will try to guess the project_id from the following:
+//  - project_id field of the resource data
+//  - default project_id from config
+func getProjectId(d terraformResourceData, meta *Meta) (string, error) {
+
+	projectID, exist := d.GetOkExists("project_id")
+	if exist {
+		return projectID.(string), nil
+	}
+
+	projectID, exist = meta.scwClient.GetDefaultProjectID()
+	if exist {
+		return projectID.(string), nil
+	}
+
+	return "", fmt.Errorf("could not detect project_id")
+}
+
 // isHTTPCodeError returns true if err is an http error with code statusCode
 func isHTTPCodeError(err error, statusCode int) bool {
 	if err == nil {
