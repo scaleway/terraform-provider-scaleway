@@ -200,6 +200,7 @@ var testAccCheckScalewayComputeInstanceVolumeConfigFromVolume = `
 		}
 
 		resource "scaleway_compute_instance_volume" "test2" {
+			type       = "l_ssd"
 			from_volume_id = "${scaleway_compute_instance_volume.test1.id}"
 		}
 	`
