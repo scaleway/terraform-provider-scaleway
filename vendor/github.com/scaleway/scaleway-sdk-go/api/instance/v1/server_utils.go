@@ -13,6 +13,14 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/utils"
 )
 
+type UpdateServerRequest updateServerRequest
+
+// updateServer update server
+func (s *API) UpdateServer(req *UpdateServerRequest, opts ...scw.RequestOption) (*UpdateServerResponse, error) {
+	defer lockServer(req.Zone, req.ServerID).Unlock()
+	return s.updateServer((*updateServerRequest)(req), opts...)
+}
+
 // waitForServerRequest is used by waitForServer method
 type waitForServerRequest struct {
 	ServerID string
