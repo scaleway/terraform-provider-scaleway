@@ -65,6 +65,19 @@ func resourceScalewayComputeInstanceIPCreate(d *schema.ResourceData, m interface
 	}
 
 	d.SetId(newZonedId(zone, res.IP.ID))
+
+	serverID := expandID(d.Get("server_id"))
+	if serverID != "" {
+		_, err = instanceApi.AttachIP(&instance.AttachIPRequest{
+			Zone:     zone,
+			IPID:     res.IP.ID,
+			ServerID: serverID,
+		})
+		if err != nil {
+			return err
+		}
+
+	}
 	return resourceScalewayComputeInstanceIPRead(d, m)
 }
 
@@ -93,12 +106,6 @@ func resourceScalewayComputeInstanceIPRead(d *schema.ResourceData, m interface{}
 	d.Set("project_id", res.IP.Organization)
 	d.Set("reverse", res.IP.Reverse)
 
-	if res.IP.Server != nil {
-		d.Set("server_id", res.IP.Server.ID)
-	} else {
-		d.Set("server_id", nil)
-	}
-
 	return nil
 }
 
@@ -124,15 +131,21 @@ func resourceScalewayComputeInstanceIPUpdate(d *schema.ResourceData, m interface
 
 	if d.HasChange("server_id") {
 		serverID := expandID(d.Get("server_id"))
-		_, err = instanceApi.AttachIP(&instance.AttachIPRequest{
-			Zone:     zone,
-			IPID:     ID,
-			ServerID: serverID,
-		})
+		if serverID != "" {
+			_, err = instanceApi.AttachIP(&instance.AttachIPRequest{
+				Zone:     zone,
+				IPID:     ID,
+				ServerID: serverID,
+			})
+		} else {
+			_, err = instanceApi.DetachIP(&instance.DetachIPRequest{
+				Zone: zone,
+				IPID: ID,
+			})
+		}
 		if err != nil {
 			return err
 		}
-
 	}
 
 	return resourceScalewayComputeInstanceIPRead(d, m)

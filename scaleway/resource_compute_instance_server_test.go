@@ -214,24 +214,6 @@ func TestAccScalewayComputeInstanceServerUserData2(t *testing.T) {
 	})
 }
 
-func TestAccScalewayComputeInstanceServerIP(t *testing.T) {
-	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckScalewayComputeInstanceServerDestroy,
-		Steps: []resource.TestStep{
-			{
-				Config: testAccCheckScalewayComputeInstanceServerConfigIP(),
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayComputeInstanceServerExists("scaleway_compute_instance_server.base"),
-					testAccCheckScalewayComputeInstanceIPExists("scaleway_compute_instance_ip.base_ip"),
-					resource.TestCheckResourceAttrPair("scaleway_compute_instance_ip.base_ip", "address", "scaleway_compute_instance_server.base", "public_ip"),
-				),
-			},
-		},
-	})
-}
-
 func TestAccScalewayComputeInstanceServerAdditionalVolumes(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -465,21 +447,5 @@ resource "scaleway_compute_instance_server" "base" {
   additional_volume_ids  = [ %s ]
 }`, additionalVolumeResources, baseVolume, strings.Join(additionalVolumeIDs, ","))
 }
-
-func testAccCheckScalewayComputeInstanceServerConfigIP() string {
-	return `
-resource "scaleway_compute_instance_ip" "base_ip" {
-  server_id = "${scaleway_compute_instance_server.base.id}"
-}
-
-resource "scaleway_compute_instance_server" "base" {
-  image_id = "f974feac-abae-4365-b988-8ec7d1cec10d"
-  type  = "DEV1-S"
-  
-  tags  = [ "terraform-test", "scaleway_compute_instance_server", "attach_ip" ]
-}`
-}
-
-// todo: add tests with IP attachment
 
 // todo: add a test with security groups
