@@ -15,11 +15,11 @@ var testAccScalewayComputeInstanceSecurityGroupConfig = []string{
 		resource "scaleway_compute_instance_security_group" "base" {
 			name = "sg-name"
 
-			inbound_rule {
+			rule {
 				port_range = "22"
 				ip_range = "0.0.0.0"
             }
-			inbound_rule {
+			rule {
 				port_range = "0-1024"
 				ip_range = "8.8.8.8"
             }
@@ -51,13 +51,13 @@ func TestAccScalewayComputeInstanceSecurityGroup(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_compute_instance_security_group.base", "name", "sg-name"),
 					resource.TestCheckResourceAttr("scaleway_compute_instance_security_group.base", "inbound_default_policy", "drop"),
 					resource.TestCheckResourceAttr("scaleway_compute_instance_security_group.base", "outbound_default_policy", "accept"),
-					resource.TestCheckResourceAttr("scaleway_compute_instance_security_group.base", "inbound_rule.#", "1"),
-					resource.TestCheckResourceAttr("scaleway_compute_instance_security_group.base", "inbound_rule.0.protocol", "TCP"),
-					resource.TestCheckResourceAttr("scaleway_compute_instance_security_group.base", "inbound_rule.0.port_range", "22-22"),
-					resource.TestCheckResourceAttr("scaleway_compute_instance_security_group.base", "inbound_rule.0.ip_range", "0.0.0.0/32"),
-					resource.TestCheckResourceAttr("scaleway_compute_instance_security_group.base", "inbound_rule.1.protocol", "TCP"),
-					resource.TestCheckResourceAttr("scaleway_compute_instance_security_group.base", "inbound_rule.1.port_range", "0-1024"),
-					resource.TestCheckResourceAttr("scaleway_compute_instance_security_group.base", "inbound_rule.1.ip_range", "8.8.8.8/32"),
+					resource.TestCheckResourceAttr("scaleway_compute_instance_security_group.base", "rule.#", "2"),
+					resource.TestCheckResourceAttr("scaleway_compute_instance_security_group.base", "rule.1.protocol", "TCP"),
+					resource.TestCheckResourceAttr("scaleway_compute_instance_security_group.base", "rule.1.port_range", "22-22"),
+					resource.TestCheckResourceAttr("scaleway_compute_instance_security_group.base", "rule.1.ip_range", "0.0.0.0/32"),
+					resource.TestCheckResourceAttr("scaleway_compute_instance_security_group.base", "rule.0.protocol", "TCP"),
+					resource.TestCheckResourceAttr("scaleway_compute_instance_security_group.base", "rule.0.port_range", "0-1024"),
+					resource.TestCheckResourceAttr("scaleway_compute_instance_security_group.base", "rule.0.ip_range", "8.8.8.8/32"),
 				),
 			},
 			{
