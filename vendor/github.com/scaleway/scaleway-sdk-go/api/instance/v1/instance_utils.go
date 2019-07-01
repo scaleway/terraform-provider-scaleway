@@ -2,11 +2,27 @@ package instance
 
 import (
 	"fmt"
+	"sync"
 
 	"github.com/scaleway/scaleway-sdk-go/internal/errors"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/scaleway-sdk-go/utils"
 )
+
+var (
+	resourceLock sync.Map
+)
+
+func lockResource(resourceID string) *sync.Mutex {
+	v, _ := resourceLock.LoadOrStore(resourceID, &sync.Mutex{})
+	mutex := v.(*sync.Mutex)
+	mutex.Lock()
+	return mutex
+}
+
+func lockServer(zone utils.Zone, serverID string) *sync.Mutex {
+	return lockResource(fmt.Sprint("server", zone, serverID))
+}
 
 // AttachIPRequest contains the parameters to attach an IP to a server
 type AttachIPRequest struct {
@@ -114,6 +130,7 @@ func volumesToVolumeTemplates(volumes map[string]*Volume) map[string]*VolumeTemp
 
 // AttachVolume attaches a volume to a server
 func (s *API) AttachVolume(req *AttachVolumeRequest, opts ...scw.RequestOption) (*AttachVolumeResponse, error) {
+	defer lockServer(req.Zone, req.ServerID).Unlock()
 	// get server with volumes
 	getServerResponse, err := s.GetServer(&GetServerRequest{
 		Zone:     req.Zone,
@@ -135,7 +152,7 @@ func (s *API) AttachVolume(req *AttachVolumeRequest, opts ...scw.RequestOption) 
 	}
 
 	// update server
-	updateServerResponse, err := s.UpdateServer(&UpdateServerRequest{
+	updateServerResponse, err := s.updateServer(&updateServerRequest{
 		Zone:     req.Zone,
 		ServerID: req.ServerID,
 		Volumes:  &newVolumes,
@@ -160,6 +177,7 @@ type DetachVolumeResponse struct {
 
 // DetachVolume detaches a volume from a server
 func (s *API) DetachVolume(req *DetachVolumeRequest, opts ...scw.RequestOption) (*DetachVolumeResponse, error) {
+
 	// get volume
 	getVolumeResponse, err := s.GetVolume(&GetVolumeRequest{
 		Zone:     req.Zone,
@@ -169,13 +187,14 @@ func (s *API) DetachVolume(req *DetachVolumeRequest, opts ...scw.RequestOption) 
 		return nil, err
 	}
 	if getVolumeResponse.Volume == nil {
-		return nil, fmt.Errorf("expected volume to have value in response")
+		return nil, errors.New("expected volume to have value in response")
 	}
 	if getVolumeResponse.Volume.Server == nil {
-		return nil, fmt.Errorf("server should be attached to a server")
+		return nil, errors.New("volume should be attached to a server")
 	}
 	serverID := getVolumeResponse.Volume.Server.ID
 
+	defer lockServer(req.Zone, serverID).Unlock()
 	// get server with volumes
 	getServerResponse, err := s.GetServer(&GetServerRequest{
 		Zone:     req.Zone,
@@ -195,7 +214,7 @@ func (s *API) DetachVolume(req *DetachVolumeRequest, opts ...scw.RequestOption) 
 	newVolumes := volumesToVolumeTemplates(volumes)
 
 	// update server
-	updateServerResponse, err := s.UpdateServer(&UpdateServerRequest{
+	updateServerResponse, err := s.updateServer(&updateServerRequest{
 		Zone:     req.Zone,
 		ServerID: serverID,
 		Volumes:  &newVolumes,

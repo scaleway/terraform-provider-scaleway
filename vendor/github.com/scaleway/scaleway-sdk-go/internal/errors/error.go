@@ -15,7 +15,7 @@ func (e *Error) Unwrap() error {
 
 // Error implement standard error interface
 func (e *Error) Error() string {
-	str := "[scaleway-sdk-go] " + e.str
+	str := "scaleway-sdk-go: " + e.str
 	if e.err != nil {
 		str += ": " + e.err.Error()
 	}
