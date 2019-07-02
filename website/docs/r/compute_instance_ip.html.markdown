@@ -22,8 +22,8 @@ The following arguments are supported:
 
 - `reverse` - (Optional) The reverse DNS for this IP.
 - `server_id` - (Optional) The ID of the server you want to attach this resource to.
-- `project_id` - (Optional) The ID of the project you want to attach this resource to. If it is not provided, the provider `project_id` is used.
-- `zone` - (Optional) The [zone](https://developers.scaleway.com/en/quickstart/#zone-definition) you want to attach this resource to. If it is not provided, the provider `zone` is used.
+- `zone` - (Optional) The [zone](https://developers.scaleway.com/en/quickstart/#zone-definition) in which the IP should be reserved. If it is not provided, the provider `zone` is used.
+- `project_id` - (Optional) The ID of the project the IP is associated with. If it is not provided, the provider `project_id` is used.
 
 ## Attributes Reference
 
@@ -32,9 +32,9 @@ The following attributes are exported:
 - `id` - The ID of the IP.
 - `address` - The IP address.
 - `reverse` - The reverse DNS for this IP.
-- `server_id` - The ID of the server this resource is attached to.
-- `project_id` - The ID of the project you want to attach this resource to.
-- `zone` - The [zone](https://developers.scaleway.com/en/quickstart/#zone-definition) your resource is attached to.
+- `server_id` - The ID of the server you want to attach this IP to.
+- `zone` - The [zone](https://developers.scaleway.com/en/quickstart/#zone-definition) in which the IP is reserved.
+- `project_id` - The ID of the project the IP is associated with.
 
 
 ## Import
