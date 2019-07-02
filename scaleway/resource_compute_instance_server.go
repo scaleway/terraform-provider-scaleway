@@ -90,7 +90,7 @@ func resourceScalewayComputeInstanceServer() *schema.Resource {
 				Type: schema.TypeList,
 				Elem: &schema.Schema{
 					Type:             schema.TypeString,
-					ValidateFunc:     validationUUID(),
+					ValidateFunc:     validationUUIDorUUIDWithLocality(),
 					DiffSuppressFunc: suppressLocality,
 				},
 				Optional:    true,
@@ -187,8 +187,8 @@ func resourceScalewayComputeInstanceServerCreate(d *schema.ResourceData, m inter
 		}
 	}
 
+	req.Volumes = make(map[string]*instance.VolumeTemplate)
 	if size, ok := d.GetOk("root_volume.0.size_in_gb"); ok {
-		req.Volumes = make(map[string]*instance.VolumeTemplate)
 		req.Volumes["0"] = &instance.VolumeTemplate{
 			Size: uint64(size.(int)) * gb,
 		}

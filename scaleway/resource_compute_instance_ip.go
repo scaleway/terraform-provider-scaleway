@@ -30,6 +30,7 @@ func resourceScalewayComputeInstanceIP() *schema.Resource {
 				Type:             schema.TypeString,
 				Optional:         true,
 				Description:      "The server associated with this ip",
+				ValidateFunc:     validationUUIDorUUIDWithLocality(),
 				DiffSuppressFunc: suppressLocality,
 			},
 			"zone":       zoneSchema(),

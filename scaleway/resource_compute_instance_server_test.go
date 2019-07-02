@@ -95,6 +95,23 @@ func TestAccScalewayComputeInstanceServerBasic1(t *testing.T) {
 		},
 	})
 }
+func TestAccScalewayComputeInstanceServerRemoteExec(t *testing.T) {
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckScalewayComputeInstanceServerDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckScalewayComputeInstanceServerConfigWithIPAndVolume,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayComputeInstanceServerExists("scaleway_compute_instance_server.webserver"),
+					testAccCheckScalewayComputeInstanceVolumeExists("scaleway_compute_instance_volume.data"),
+					testAccCheckScalewayComputeInstanceIPExists("scaleway_compute_instance_ip.myip"),
+				),
+			},
+		},
+	})
+}
 
 func TestAccScalewayComputeInstanceServerState1(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
@@ -447,5 +464,21 @@ resource "scaleway_compute_instance_server" "base" {
   additional_volume_ids  = [ %s ]
 }`, additionalVolumeResources, baseVolume, strings.Join(additionalVolumeIDs, ","))
 }
+
+var testAccCheckScalewayComputeInstanceServerConfigWithIPAndVolume = `
+resource "scaleway_compute_instance_ip" "myip" {
+  server_id = "${scaleway_compute_instance_server.webserver.id}"
+}
+
+resource "scaleway_compute_instance_volume" "data" {
+  size_in_gb = 100
+}
+
+resource "scaleway_compute_instance_server" "webserver" {
+  image_id = "f974feac-abae-4365-b988-8ec7d1cec10d"
+  type  = "DEV1-S"
+  additional_volume_ids = [ "${scaleway_compute_instance_volume.data.id}" ]
+}
+`
 
 // todo: add a test with security groups
