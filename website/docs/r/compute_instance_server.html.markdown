@@ -45,9 +45,9 @@ The following arguments are supported:
 
 In addition to all arguments above, the following attributes are exported:
 
-- `id` - The ID of the IP.
+- `id` - The ID of the server.
 - `root_volume`
-  - `volume_id` - The volume ID of the root volume.
+  - `volume_id` - The volume ID of the root volume or the server.
 - `private_ip` - The Scaleway internal IP address of the server.
 - `public_ip` - The public IPv4 address of the server.
 
