@@ -87,9 +87,17 @@ func resourceScalewayComputeInstanceSecurityGroup() *schema.Resource {
 							Default:      instance.SecurityGroupRuleProtocolTCP.String(),
 							ValidateFunc: validation.StringInSlice(resourceScalewayComputeInstanceSecurityGroupProtocols, false),
 						},
+						"port": {
+							Type:     schema.TypeString,
+							Optional: true,
+						},
 						"port_range": {
 							Type:     schema.TypeString,
-							Required: true,
+							Optional: true,
+						},
+						"ip": {
+							Type:     schema.TypeString,
+							Optional: true,
 						},
 						"ip_range": {
 							Type:     schema.TypeString,
@@ -315,10 +323,6 @@ func portRangeFlatten(from, to uint32) string {
 	return fmt.Sprintf("%d-%d", from, to)
 }
 
-func portRangeFormat(i interface{}) string {
-	return portRangeFlatten(portRangeExpand(i))
-}
-
 func ipv4RangeFormat(i interface{}) string {
 	ipRange := i.(string)
 	if !strings.Contains(ipRange, "/") {
@@ -354,17 +358,30 @@ func portRangeExpand(i interface{}) (uint32, uint32) {
 
 func securityGroupRuleExpand(i interface{}) *instance.SecurityGroupRule {
 	rawRule := i.(map[string]interface{})
-	from, to := portRangeExpand(rawRule["port_range"])
+
+	portRange := rawRule["port_range"].(string)
+	if portRange == "" {
+		portRange = rawRule["port"].(string)
+	}
+	from, to := portRangeExpand(portRange)
 
 	id, _ := rawRule["id"].(string)
 	action, _ := rawRule["action"].(string)
+
+	ipRange := rawRule["ip_range"].(string)
+	if ipRange == "" {
+		ipRange = rawRule["ip"].(string) + "/32"
+	}
+	if ipRange == "/32" {
+		ipRange = "0.0.0.0/0"
+	}
 
 	return &instance.SecurityGroupRule{
 		ID:           id,
 		DestPortTo:   to,
 		DestPortFrom: from,
 		Protocol:     instance.SecurityGroupRuleProtocol(rawRule["protocol"].(string)),
-		IPRange:      ipv4RangeFormat(rawRule["ip_range"].(string)),
+		IPRange:      ipRange,
 		Direction:    instance.SecurityGroupRuleDirection(rawRule["type"].(string)),
 		Action:       instance.SecurityGroupRuleAction(action),
 	}
@@ -382,17 +399,15 @@ func securityGroupRuleFlatten(rule *instance.SecurityGroupRule) map[string]inter
 	return res
 }
 
-func securityGroupRuleHash(rule interface{}) int {
-	r := rule.(map[string]interface{})
-	s := fmt.Sprintf("%s/%s/%s/%s", r["protocol"], ipv4RangeFormat(r["ip_range"]), portRangeFormat(r["port_range"]), r["type"])
-	fmt.Println(s, "=>", schema.HashString(s))
+func securityGroupRuleHash(i interface{}) int {
+	rule := securityGroupRuleExpand(i)
+	s := fmt.Sprintf("%s/%s/%d-%d/%s", rule.Protocol.String(), rule.IPRange, rule.DestPortFrom, rule.DestPortFrom, rule.Direction)
 	return schema.HashString(s)
 }
 
-func securityGroupRuleWithActionHash(rule interface{}) int {
-	r := rule.(map[string]interface{})
-	s := fmt.Sprintf("%s/%s/%s/%s/%s", r["protocol"], ipv4RangeFormat(r["ip_range"]), portRangeFormat(r["port_range"]), r["type"], r["action"])
-	fmt.Println(s, "=>", schema.HashString(s))
+func securityGroupRuleWithActionHash(i interface{}) int {
+	rule := securityGroupRuleExpand(i)
+	s := fmt.Sprintf("%d/%s", securityGroupRuleHash(i), rule.Action)
 	return schema.HashString(s)
 }
 

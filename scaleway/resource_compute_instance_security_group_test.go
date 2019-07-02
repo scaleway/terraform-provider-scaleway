@@ -18,8 +18,8 @@ var testAccScalewayComputeInstanceSecurityGroupConfig = []string{
 			name = "sg-name"
 
 			rule {
-				port_range = "22"
-				ip_range = "0.0.0.0"
+				port = "22"
+				ip = "10.10.10.10"
             }
 
 			rule {
@@ -30,7 +30,6 @@ var testAccScalewayComputeInstanceSecurityGroupConfig = []string{
 			rule {
 				type = "outbound"
 				port_range = "3000"
-				ip_range = "0.0.0.0"
 			}
 		}
 	`,
@@ -40,8 +39,8 @@ var testAccScalewayComputeInstanceSecurityGroupConfig = []string{
 			outbound_default_policy = "drop"
 
 			rule {
-				port_range = "22"
-				ip_range = "0.0.0.0"
+				port = "22"
+				ip = "10.10.10.10"
 			}
 
 			rule {
@@ -52,7 +51,6 @@ var testAccScalewayComputeInstanceSecurityGroupConfig = []string{
 			rule {
 				type = "outbound"
 				port_range = "3000"
-				ip_range = "0.0.0.0"
 			}
 			
 		}
@@ -78,21 +76,12 @@ func TestAccScalewayComputeInstanceSecurityGroup(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_compute_instance_security_group.base", "inbound_default_policy", "drop"),
 					resource.TestCheckResourceAttr("scaleway_compute_instance_security_group.base", "outbound_default_policy", "accept"),
 					resource.TestCheckResourceAttr("scaleway_compute_instance_security_group.base", "rule.#", "3"),
-					resource.TestCheckResourceAttr("scaleway_compute_instance_security_group.base", "rule.4082861517.type", "inbound"),
-					resource.TestCheckResourceAttr("scaleway_compute_instance_security_group.base", "rule.4082861517.protocol", "TCP"),
-					resource.TestCheckResourceAttr("scaleway_compute_instance_security_group.base", "rule.4082861517.port_range", "22"),
-					resource.TestCheckResourceAttr("scaleway_compute_instance_security_group.base", "rule.4082861517.ip_range", "0.0.0.0"),
-					testAccCheckScalewayComputeInstanceSecurityGroupRuleIs("scaleway_compute_instance_security_group.base", 4082861517, "accept"),
-					resource.TestCheckResourceAttr("scaleway_compute_instance_security_group.base", "rule.1078896110.type", "inbound"),
-					resource.TestCheckResourceAttr("scaleway_compute_instance_security_group.base", "rule.1078896110.protocol", "TCP"),
-					resource.TestCheckResourceAttr("scaleway_compute_instance_security_group.base", "rule.1078896110.port_range", "1-1024"),
-					resource.TestCheckResourceAttr("scaleway_compute_instance_security_group.base", "rule.1078896110.ip_range", "8.8.8.0/24"),
-					testAccCheckScalewayComputeInstanceSecurityGroupRuleIs("scaleway_compute_instance_security_group.base", 1078896110, "accept"),
-					resource.TestCheckResourceAttr("scaleway_compute_instance_security_group.base", "rule.813120688.type", "outbound"),
-					resource.TestCheckResourceAttr("scaleway_compute_instance_security_group.base", "rule.813120688.protocol", "TCP"),
-					resource.TestCheckResourceAttr("scaleway_compute_instance_security_group.base", "rule.813120688.port_range", "3000"),
-					resource.TestCheckResourceAttr("scaleway_compute_instance_security_group.base", "rule.813120688.ip_range", "0.0.0.0"),
-					testAccCheckScalewayComputeInstanceSecurityGroupRuleIs("scaleway_compute_instance_security_group.base", 813120688, "drop"),
+					testAccCheckScalewayComputeInstanceSecurityGroupRuleMatch("scaleway_compute_instance_security_group.base", 2421519970,
+						instance.SecurityGroupRuleDirectionInbound, instance.SecurityGroupRuleActionAccept, instance.SecurityGroupRuleProtocolTCP, "10.10.10.10", 22, 0),
+					testAccCheckScalewayComputeInstanceSecurityGroupRuleMatch("scaleway_compute_instance_security_group.base", 2236276624,
+						instance.SecurityGroupRuleDirectionInbound, instance.SecurityGroupRuleActionAccept, instance.SecurityGroupRuleProtocolTCP, "8.8.8.0/24", 1, 1024),
+					testAccCheckScalewayComputeInstanceSecurityGroupRuleMatch("scaleway_compute_instance_security_group.base", 3624953052,
+						instance.SecurityGroupRuleDirectionOutbound, instance.SecurityGroupRuleActionDrop, instance.SecurityGroupRuleProtocolTCP, "0.0.0.0/0", 3000, 0),
 				),
 			},
 			{
@@ -107,27 +96,43 @@ func TestAccScalewayComputeInstanceSecurityGroup(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_compute_instance_security_group.base", "inbound_default_policy", "accept"),
 					resource.TestCheckResourceAttr("scaleway_compute_instance_security_group.base", "outbound_default_policy", "drop"),
 					resource.TestCheckResourceAttr("scaleway_compute_instance_security_group.base", "rule.#", "3"),
-					resource.TestCheckResourceAttr("scaleway_compute_instance_security_group.base", "rule.4082861517.protocol", "TCP"),
-					resource.TestCheckResourceAttr("scaleway_compute_instance_security_group.base", "rule.4082861517.port_range", "22"),
-					resource.TestCheckResourceAttr("scaleway_compute_instance_security_group.base", "rule.4082861517.ip_range", "0.0.0.0"),
-					testAccCheckScalewayComputeInstanceSecurityGroupRuleIs("scaleway_compute_instance_security_group.base", 4082861517, "drop"),
-					resource.TestCheckResourceAttr("scaleway_compute_instance_security_group.base", "rule.1078896110.type", "inbound"),
-					resource.TestCheckResourceAttr("scaleway_compute_instance_security_group.base", "rule.1078896110.protocol", "TCP"),
-					resource.TestCheckResourceAttr("scaleway_compute_instance_security_group.base", "rule.1078896110.port_range", "1-1024"),
-					resource.TestCheckResourceAttr("scaleway_compute_instance_security_group.base", "rule.1078896110.ip_range", "8.8.8.0/24"),
-					testAccCheckScalewayComputeInstanceSecurityGroupRuleIs("scaleway_compute_instance_security_group.base", 1078896110, "drop"),
-					resource.TestCheckResourceAttr("scaleway_compute_instance_security_group.base", "rule.813120688.type", "outbound"),
-					resource.TestCheckResourceAttr("scaleway_compute_instance_security_group.base", "rule.813120688.protocol", "TCP"),
-					resource.TestCheckResourceAttr("scaleway_compute_instance_security_group.base", "rule.813120688.port_range", "3000"),
-					resource.TestCheckResourceAttr("scaleway_compute_instance_security_group.base", "rule.813120688.ip_range", "0.0.0.0"),
-					testAccCheckScalewayComputeInstanceSecurityGroupRuleIs("scaleway_compute_instance_security_group.base", 813120688, "accept"),
+					testAccCheckScalewayComputeInstanceSecurityGroupRuleMatch("scaleway_compute_instance_security_group.base", 2421519970,
+						instance.SecurityGroupRuleDirectionInbound, instance.SecurityGroupRuleActionDrop, instance.SecurityGroupRuleProtocolTCP, "10.10.10.10", 22, 0),
+					testAccCheckScalewayComputeInstanceSecurityGroupRuleMatch("scaleway_compute_instance_security_group.base", 2236276624,
+						instance.SecurityGroupRuleDirectionInbound, instance.SecurityGroupRuleActionDrop, instance.SecurityGroupRuleProtocolTCP, "8.8.8.0/24", 1, 1024),
+					testAccCheckScalewayComputeInstanceSecurityGroupRuleMatch("scaleway_compute_instance_security_group.base", 3624953052,
+						instance.SecurityGroupRuleDirectionOutbound, instance.SecurityGroupRuleActionAccept, instance.SecurityGroupRuleProtocolTCP, "0.0.0.0/0", 3000, 0),
 				),
 			},
 		},
 	})
 }
 
-func testAccCheckScalewayComputeInstanceSecurityGroupRuleIs(name string, key int, action instance.SecurityGroupRuleAction) resource.TestCheckFunc {
+func testAccCheckScalewayComputeInstanceSecurityGroupRuleMatch(name string, key int, direction instance.SecurityGroupRuleDirection, action instance.SecurityGroupRuleAction, protocol instance.SecurityGroupRuleProtocol, ipRange string, portFrom uint32, portTo uint32) resource.TestCheckFunc {
+	return testAccCheckScalewayComputeInstanceSecurityGroupRuleIs(name, key, func(rule *instance.SecurityGroupRule) error {
+		if rule.Direction != direction {
+			return fmt.Errorf("direction with hash %d shoud be %s got %s", key, direction, rule.Direction)
+		}
+		if rule.Action != action {
+			return fmt.Errorf("rule with hash %d shoud be %s got %s", key, action, rule.Action)
+		}
+		if rule.Protocol != protocol {
+			return fmt.Errorf("protocol with hash %d shoud be %s got %s", key, protocol, rule.Protocol)
+		}
+		if rule.IPRange != ipRange {
+			return fmt.Errorf("ip_range with hash %d shoud be %s got %s", key, ipRange, rule.IPRange)
+		}
+		if rule.DestPortFrom != portFrom {
+			return fmt.Errorf("dest_port_from with hash %d shoud be %d got %d", key, portFrom, rule.DestPortFrom)
+		}
+		if rule.DestPortTo != portTo {
+			return fmt.Errorf("dest_port_to with hash %d shoud be %d got %d", key, portTo, rule.DestPortTo)
+		}
+		return nil
+	})
+}
+
+func testAccCheckScalewayComputeInstanceSecurityGroupRuleIs(name string, key int, test func(rule *instance.SecurityGroupRule) error) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[name]
 		if !ok {
@@ -150,10 +155,7 @@ func testAccCheckScalewayComputeInstanceSecurityGroupRuleIs(name string, key int
 		for _, rule := range res.Rules {
 			flat := securityGroupRuleFlatten(rule)
 			if securityGroupRuleHash(flat) == key {
-				if rule.Action != action {
-					return fmt.Errorf("rule with hash %d shoud have action %s got %s", key, action, rule.Action)
-				}
-				return nil
+				return test(rule)
 			}
 		}
 
