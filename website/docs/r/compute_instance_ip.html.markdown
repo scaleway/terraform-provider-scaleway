@@ -27,19 +27,14 @@ The following arguments are supported:
 
 ## Attributes Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 - `id` - The ID of the IP.
 - `address` - The IP address.
-- `reverse` - The reverse DNS for this IP.
-- `server_id` - The ID of the server you want to attach this IP to.
-- `zone` - The [zone](https://developers.scaleway.com/en/quickstart/#zone-definition) in which the IP is reserved.
-- `project_id` - The ID of the project the IP is associated with.
-
 
 ## Import
 
-Instances can be imported using the `{zone}/{id}`, e.g.
+IPs can be imported using the `{zone}/{id}`, e.g.
 
 ```bash
 $ terraform import scaleway_compute_instance_ip.server_ip fr-par-1/11111111-1111-1111-1111-111111111111
