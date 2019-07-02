@@ -391,11 +391,15 @@ func suppressLocality(k, old, new string, d *schema.ResourceData) bool {
 	return expandID(old) == expandID(new)
 }
 
+// isResourceTimeoutError returns true when the given error is a timeout error returned by
+// terraform's Retry helper.
 func isResourceTimeoutError(err error) bool {
 	timeoutErr, ok := err.(*resource.TimeoutError)
 	return ok && timeoutErr.LastError == nil
 }
 
+// isSDKResponseError returns true when the given http status and the message match
+// with the scw.ResponseError status and message.
 func isSDKResponseError(err error, status int, message string) bool {
 	responseError, ok := err.(*scw.ResponseError)
 	if !ok {
@@ -405,6 +409,7 @@ func isSDKResponseError(err error, status int, message string) bool {
 	return responseError.StatusCode == status && responseError.Message == message
 }
 
+// isSDKError returns true when the SdkError error message matches with the given message.
 func isSDKError(err error, message string) bool {
 	responseError, ok := err.(scw.SdkError)
 	if !ok {

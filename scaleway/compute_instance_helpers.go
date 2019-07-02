@@ -58,6 +58,7 @@ func schemaSetUserData(v interface{}) int {
 	return hashcode.String(userData["key"].(string) + userData["value"].(string))
 }
 
+// orderVolumes return an ordered slice based on the volume map key "0", "1", "2",...
 func orderVolumes(v map[string]*instance.Volume) []*instance.Volume {
 	indexes := []string{}
 	for index := range v {
@@ -71,6 +72,7 @@ func orderVolumes(v map[string]*instance.Volume) []*instance.Volume {
 	return orderedVolumes
 }
 
+// expandServerState converts the API state to terraform state or return an error.
 func expandServerState(fromState instance.ServerState) (string, error) {
 	switch fromState {
 	case instance.ServerStateStopped:
@@ -85,6 +87,7 @@ func expandServerState(fromState instance.ServerState) (string, error) {
 	return "", fmt.Errorf("server is in an invalid state, someone else might be executing action at the same time")
 }
 
+// computeServerStateToAction returns the action required to transit from a state to another.
 func computeServerStateToAction(previousState, nextState string, forceReboot bool) []instance.ServerAction {
 	if previousState == ServerStateStarted && nextState == ServerStateStarted && forceReboot {
 		return []instance.ServerAction{instance.ServerActionReboot}

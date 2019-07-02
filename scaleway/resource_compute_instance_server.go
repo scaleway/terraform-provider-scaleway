@@ -66,19 +66,22 @@ func resourceScalewayComputeInstanceServer() *schema.Resource {
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"size_in_gb": {
-							Type:     schema.TypeInt,
-							Optional: true,
-							Computed: true,
-							ForceNew: true, // TODO: don't force new but stop server and create new volume instead
+							Type:        schema.TypeInt,
+							Optional:    true,
+							Computed:    true,
+							ForceNew:    true, // todo: don't force new but stop server and create new volume instead
+							Description: "Size of the root volume in gigabytes",
 						},
 						"delete_on_termination": {
-							Type:     schema.TypeBool,
-							Optional: true,
-							Default:  true,
+							Type:        schema.TypeBool,
+							Optional:    true,
+							Default:     true,
+							Description: "Force deletion of the root volume on instance termination",
 						},
 						"volume_id": {
-							Type:     schema.TypeString,
-							Computed: true,
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Volume ID of the root volume",
 						},
 					},
 				},
@@ -97,23 +100,23 @@ func resourceScalewayComputeInstanceServer() *schema.Resource {
 				Type:        schema.TypeBool,
 				Optional:    true,
 				Default:     false,
-				Description: "determines if IPv6 is enabled for the server",
+				Description: "Determines if IPv6 is enabled for the server",
 			},
 			"private_ip": {
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "the Scaleway internal IP address of the server", // TODO: add this field in CreateServerRequest (proto)
+				Description: "The Scaleway internal IP address of the server",
 			},
 			"public_ip": {
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "the public IPv4 address of the server",
+				Description: "The public IPv4 address of the server",
 			},
 			"state": {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Default:     ServerStateStarted,
-				Description: "the state of the server should be: started, stopped, standby",
+				Description: "The state of the server should be: started, stopped, standby",
 				ValidateFunc: validation.StringInSlice([]string{
 					ServerStateStarted,
 					ServerStateStopped,
@@ -123,14 +126,14 @@ func resourceScalewayComputeInstanceServer() *schema.Resource {
 			"cloud_init": {
 				Type:         schema.TypeString,
 				Optional:     true,
-				Description:  "the cloud init script associated with this server",
+				Description:  "The cloud init script associated with this server",
 				ValidateFunc: validation.StringLenBetween(0, 127998),
 			},
 			"user_data": {
 				Type:        schema.TypeSet,
 				Optional:    true,
 				MaxItems:    98,
-				Description: "the user data associated with the server", // TODO: document reserved keys (`cloud-init`)
+				Description: "The user data associated with the server", // TODO: document reserved keys (`cloud-init`)
 				Set:         schemaSetUserData,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -138,11 +141,13 @@ func resourceScalewayComputeInstanceServer() *schema.Resource {
 							Type:         schema.TypeString,
 							Required:     true,
 							ValidateFunc: validationStringNotInSlice([]string{"cloud-init"}, true),
+							Description:  "A user data key, the value \"cloud-init\" is not allowed",
 						},
 						"value": {
 							Type:         schema.TypeString,
 							Required:     true,
 							ValidateFunc: validation.StringLenBetween(0, 127998),
+							Description:  "A user value",
 						},
 					},
 				},
@@ -374,13 +379,13 @@ func resourceScalewayComputeInstanceServerUpdate(d *schema.ResourceData, m inter
 	}
 
 	volumes := map[string]*instance.VolumeTemplate{}
-	volumes["0"] = &instance.VolumeTemplate{ID: d.Get("root_volume.0.volume_id").(string), Name: getRandomName("vol")}
+	volumes["0"] = &instance.VolumeTemplate{ID: d.Get("root_volume.0.volume_id").(string), Name: getRandomName("vol")} // name is ignored by the API, any name will work here
 
 	if raw, ok := d.GetOk("additional_volume_ids"); d.HasChange("additional_volume_ids") && ok {
 		for i, volumeID := range raw.([]interface{}) {
 			volumes[strconv.Itoa(i+1)] = &instance.VolumeTemplate{
 				ID:   expandID(volumeID),
-				Name: getRandomName("vol"),
+				Name: getRandomName("vol"), // name is ignored by the API, any name will work here
 			}
 		}
 		// server must be stopped before updating volumes
