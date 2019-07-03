@@ -23,18 +23,18 @@ resource "scaleway_compute_instance_server" "web" {
 
 The following arguments are supported:
 
-- `type` - The server commercial type. You can use [this endpoint](https://api.scaleway.com/instance/v1/zones/fr-par-1/products/servers) to find all the available commercial types. <!-- TODO: Add a link to an adapted tool -->
-- `image_id` - The base image of the server. You can use [this endpoint](https://api-marketplace.scaleway.com/images?page=1&per_page=100) to find the right local image `ID` for a given image `name` and a given `commercial_type`. <!-- TODO: Add a link to an adapted tool -->
+- `type` - The server commercial type. You can use [this endpoint](https://api.scaleway.com/instance/v1/zones/fr-par-1/products/servers) to find all the available commercial types.
+- `image_id` - The base image of the server. You can use [this endpoint](https://api-marketplace.scaleway.com/images?page=1&per_page=100) to find the right local image `ID` for a given image `name` and a given `commercial_type`.
 - `name` - (Optional) The name of the server.
 - `tags` - (Optional) The tags associated with the server.
-- `security_group_id` - The security group the server is attached to. <!-- TODO: Add a link to instance_compute_security_group -->
-- `root_volume` - (Optional) Root volume attached to the server on creation.
+- `security_group_id` - The [security group](https://developers.scaleway.com/en/products/instance/api/#security-groups-8d7f89) the server is attached to.
+- `root_volume` - (Optional) Root [volume](https://developers.scaleway.com/en/products/instance/api/#volumes-7e8a39) attached to the server on creation. Updates to this field will trigger a stop/start of the server.
   - `size_in_gb` - (Optional) Size of the root volume in gigabytes.
   - `delete_on_termination` - (Defaults to `false`) Force deletion of the root volume on instance termination.
-- `additional_volume_ids` - (Optional) The additional volumes attached to the server.
+- `additional_volume_ids` - (Optional) The [additional volumes](https://developers.scaleway.com/en/products/instance/api/#volumes-7e8a39) attached to the server. Updates to this field will trigger a stop/start of the server.
 - `enable_ipv6` - (Default to `false`) Determines if IPv6 is enabled for the server.
 - `state` - (Default to `started`) The state of the server. Possible values are: `started`, `stopped` or `standby`.
-- `cloud_init` - (Optional) The cloud init script associated with this server.
+- `cloud_init` - (Optional) The cloud init script associated with this server. Updates to this field will trigger a stop/start of the server.
 - `user_data` - (Optional) The user data associated with the server.
   - `key` - The user data key. The `cloud-init` key is reserved, please use `cloud_init` attribute instead.
   - `value` - The user data content. It could be a string or a file content using [file](https://www.terraform.io/docs/configuration/functions/file.html) or [filebase64](https://www.terraform.io/docs/configuration/functions/filebase64.html) for example.
