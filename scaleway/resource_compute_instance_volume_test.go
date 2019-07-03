@@ -9,33 +9,6 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
 )
 
-var testAccCheckScalewayComputeInstanceVolumeConfig = []string{
-	`
-		resource "scaleway_compute_instance_volume" "test" {
-			size_in_gb = 20
-		}
-	`,
-	`
-		resource "scaleway_compute_instance_volume" "test" {
-			name = "terraform-test"
-			size_in_gb = 20
-		}
-	`,
-}
-
-var testAccCheckScalewayComputeInstanceVolumeConfigWithRandomName = []string{
-	`
-		resource "scaleway_compute_instance_volume" "test" {
-			size_in_gb = 20
-		}
-	`,
-	`
-		resource "scaleway_compute_instance_volume" "test" {
-			size_in_gb = 20
-		}
-	`,
-}
-
 func init() {
 	resource.AddTestSweepers("scaleway_compute_instance_volume", &resource.Sweeper{
 		Name: "scaleway_compute_instance_volume",
@@ -74,7 +47,7 @@ func TestAccScalewayComputeInstanceVolume_Basic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckScalewayVolumeDestroy,
+		CheckDestroy: testAccCheckScalewayComputeInstanceVolumeDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccCheckScalewayComputeInstanceVolumeConfig[0],
@@ -95,11 +68,28 @@ func TestAccScalewayComputeInstanceVolume_Basic(t *testing.T) {
 	})
 }
 
+func TestAccScalewayComputeInstanceVolume_FromVolume(t *testing.T) {
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckScalewayComputeInstanceVolumeDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckScalewayComputeInstanceVolumeConfigFromVolume,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayComputeInstanceVolumeExists("scaleway_compute_instance_volume.test1"),
+					testAccCheckScalewayComputeInstanceVolumeExists("scaleway_compute_instance_volume.test2"),
+				),
+			},
+		},
+	})
+}
+
 func TestAccScalewayComputeInstanceVolume_RandomName(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckScalewayVolumeDestroy,
+		CheckDestroy: testAccCheckScalewayComputeInstanceVolumeDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccCheckScalewayComputeInstanceVolumeConfigWithRandomName[0],
@@ -111,12 +101,12 @@ func TestAccScalewayComputeInstanceVolume_RandomName(t *testing.T) {
 	})
 }
 
-func testAccCheckScalewayComputeInstanceVolumeExists(resourceName string) resource.TestCheckFunc {
+func testAccCheckScalewayComputeInstanceVolumeExists(n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-		rs, ok := s.RootModule().Resources[resourceName]
+		rs, ok := s.RootModule().Resources[n]
 
 		if !ok {
-			return fmt.Errorf("not found: %s", resourceName)
+			return fmt.Errorf("not found: %s", n)
 		}
 
 		zone, id, err := parseZonedID(rs.Primary.ID)
@@ -171,3 +161,46 @@ func testAccCheckScalewayComputeInstanceVolumeDestroy(s *terraform.State) error 
 
 	return nil
 }
+
+var testAccCheckScalewayComputeInstanceVolumeConfig = []string{
+	`
+		resource "scaleway_compute_instance_volume" "test" {
+			type       = "l_ssd"
+			size_in_gb = 20
+		}
+	`,
+	`
+		resource "scaleway_compute_instance_volume" "test" {
+			type       = "l_ssd"
+			name       = "terraform-test"
+			size_in_gb = 20
+		}
+	`,
+}
+
+var testAccCheckScalewayComputeInstanceVolumeConfigWithRandomName = []string{
+	`
+		resource "scaleway_compute_instance_volume" "test" {
+			type       = "l_ssd"
+			size_in_gb = 20
+		}
+	`,
+	`
+		resource "scaleway_compute_instance_volume" "test" {
+			type       = "l_ssd"
+			size_in_gb = 20
+		}
+	`,
+}
+
+var testAccCheckScalewayComputeInstanceVolumeConfigFromVolume = `
+		resource "scaleway_compute_instance_volume" "test1" {
+			type       = "l_ssd"
+			size_in_gb = 20
+		}
+
+		resource "scaleway_compute_instance_volume" "test2" {
+			type           = "l_ssd"
+			from_volume_id = "${scaleway_compute_instance_volume.test1.id}"
+		}
+	`

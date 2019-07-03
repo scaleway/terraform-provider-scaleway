@@ -3,6 +3,7 @@ package scaleway
 import (
 	"fmt"
 	"net/http"
+	"regexp"
 	"strings"
 	"sync"
 	"time"
@@ -236,6 +237,15 @@ func parseZonedID(zonedID string) (zone utils.Zone, id string, err error) {
 	return
 }
 
+// expandID returns the id whether it is a localizedID or a raw ID.
+func expandID(id interface{}) string {
+	_, ID, err := parseLocalizedID(id.(string))
+	if err != nil {
+		return id.(string)
+	}
+	return ID
+}
+
 // parseRegionalID parses a regionalID and extracts the resource region and id.
 func parseRegionalID(regionalID string) (region utils.Region, id string, err error) {
 	locality, id, err := parseLocalizedID(regionalID)
@@ -375,3 +385,47 @@ func getRandomName(prefix string) string {
 }
 
 const gb uint64 = 1000 * 1000 * 1000
+
+// suppressLocality is a SuppressDiffFunc to remove the locality from an ID when checking diff.
+// e.g. 2c1a1716-5570-4668-a50a-860c90beabf6 == fr-par/2c1a1716-5570-4668-a50a-860c90beabf6
+func suppressLocality(k, old, new string, d *schema.ResourceData) bool {
+	return expandID(old) == expandID(new)
+}
+
+// isResourceTimeoutError returns true when the given error is a timeout error returned by
+// terraform's Retry helper.
+func isResourceTimeoutError(err error) bool {
+	timeoutErr, ok := err.(*resource.TimeoutError)
+	return ok && timeoutErr.LastError == nil
+}
+
+// isSDKResponseError returns true when the given http status and the message match
+// with the scw.ResponseError status and message.
+func isSDKResponseError(err error, status int, message string) bool {
+	responseError, ok := err.(*scw.ResponseError)
+	if !ok {
+		return false
+	}
+
+	return responseError.StatusCode == status && responseError.Message == message
+}
+
+// isSDKError returns true when the SdkError error message matches with the given message.
+func isSDKError(err error, expectedMessage string) bool {
+
+	responseError, ok := err.(scw.SdkError)
+	if !ok {
+		return false
+	}
+	actualMessage := responseError.Error()[17:] // remove "scaleway-sdk-go: "
+	if actualMessage == expectedMessage {
+		return true
+	}
+
+	regexp, err := regexp.Compile(expectedMessage)
+	if err != nil {
+		return false
+	}
+
+	return regexp.MatchString(actualMessage)
+}

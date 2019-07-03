@@ -27,9 +27,11 @@ func resourceScalewayComputeInstanceIP() *schema.Resource {
 				Description: "The reverse dns for this IP",
 			},
 			"server_id": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The server associated with this ip",
+				Type:             schema.TypeString,
+				Optional:         true,
+				Description:      "The server associated with this ip",
+				ValidateFunc:     validationUUIDorUUIDWithLocality(),
+				DiffSuppressFunc: suppressLocality,
 			},
 			"zone":       zoneSchema(),
 			"project_id": projectIDSchema(),
@@ -64,6 +66,19 @@ func resourceScalewayComputeInstanceIPCreate(d *schema.ResourceData, m interface
 	}
 
 	d.SetId(newZonedId(zone, res.IP.ID))
+
+	serverID := expandID(d.Get("server_id"))
+	if serverID != "" {
+		_, err = instanceApi.AttachIP(&instance.AttachIPRequest{
+			Zone:     zone,
+			IPID:     res.IP.ID,
+			ServerID: serverID,
+		})
+		if err != nil {
+			return err
+		}
+
+	}
 	return resourceScalewayComputeInstanceIPRead(d, m)
 }
 
@@ -87,16 +102,10 @@ func resourceScalewayComputeInstanceIPRead(d *schema.ResourceData, m interface{}
 		return err
 	}
 
-	d.Set("address", res.IP.Address)
+	d.Set("address", res.IP.Address.String())
 	d.Set("zone", string(zone))
 	d.Set("project_id", res.IP.Organization)
 	d.Set("reverse", res.IP.Reverse)
-
-	if res.IP.Server != nil {
-		d.Set("server_id", res.IP.Server.ID)
-	} else {
-		d.Set("server_id", nil)
-	}
 
 	return nil
 }
@@ -116,6 +125,25 @@ func resourceScalewayComputeInstanceIPUpdate(d *schema.ResourceData, m interface
 			IPID:    ID,
 			Reverse: &reverse,
 		})
+		if err != nil {
+			return err
+		}
+	}
+
+	if d.HasChange("server_id") {
+		serverID := expandID(d.Get("server_id"))
+		if serverID != "" {
+			_, err = instanceApi.AttachIP(&instance.AttachIPRequest{
+				Zone:     zone,
+				IPID:     ID,
+				ServerID: serverID,
+			})
+		} else {
+			_, err = instanceApi.DetachIP(&instance.DetachIPRequest{
+				Zone: zone,
+				IPID: ID,
+			})
+		}
 		if err != nil {
 			return err
 		}

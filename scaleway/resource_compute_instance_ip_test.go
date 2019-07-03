@@ -61,6 +61,39 @@ func TestAccScalewayComputeInstanceIP_Zone(t *testing.T) {
 	})
 }
 
+func TestAccScalewayComputeInstanceServerIP(t *testing.T) {
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckScalewayComputeInstanceServerDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckScalewayComputeInstanceServerConfigIP("base1"),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayComputeInstanceServerExists("scaleway_compute_instance_server.base1"),
+					testAccCheckScalewayComputeInstanceServerExists("scaleway_compute_instance_server.base2"),
+					testAccCheckScalewayComputeInstanceIPExists("scaleway_compute_instance_ip.base_ip"),
+					testAccCheckScalewayComputeInstanceIPPairWithServer("scaleway_compute_instance_ip.base_ip", "scaleway_compute_instance_server.base1"),
+				),
+			},
+			{
+				Config: testAccCheckScalewayComputeInstanceServerConfigIP("base2"),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayComputeInstanceIPPairWithServer("scaleway_compute_instance_ip.base_ip", "scaleway_compute_instance_server.base2"),
+				),
+			},
+			{
+				Config: testAccCheckScalewayComputeInstanceServerConfigIP(""),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayComputeInstanceServerNoIPAssigned("scaleway_compute_instance_server.base1"),
+					testAccCheckScalewayComputeInstanceServerNoIPAssigned("scaleway_compute_instance_server.base2"),
+					resource.TestCheckResourceAttr("scaleway_compute_instance_ip.base_ip", "server_id", ""),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckScalewayComputeInstanceIPExists(n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
@@ -80,6 +113,74 @@ func testAccCheckScalewayComputeInstanceIPExists(n string) resource.TestCheckFun
 
 		if err != nil {
 			return err
+		}
+
+		return nil
+	}
+}
+
+func testAccCheckScalewayComputeInstanceIPPairWithServer(ipResource, serverResource string) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		ipState, ok := s.RootModule().Resources[ipResource]
+		if !ok {
+			return fmt.Errorf("resource not found: %s", ipResource)
+		}
+		serverState, ok := s.RootModule().Resources[serverResource]
+		if !ok {
+			return fmt.Errorf("resource not found: %s", serverResource)
+		}
+
+		instanceApi, zone, ID, err := getInstanceAPIWithZoneAndID(testAccProvider.Meta(), ipState.Primary.ID)
+		if err != nil {
+			return err
+		}
+
+		server, err := instanceApi.GetServer(&instance.GetServerRequest{
+			Zone:     zone,
+			ServerID: expandID(serverState.Primary.ID),
+		})
+		if err != nil {
+			return err
+		}
+
+		ip, err := instanceApi.GetIP(&instance.GetIPRequest{
+			IPID: ID,
+			Zone: zone,
+		})
+		if err != nil {
+			return err
+		}
+
+		if server.Server.PublicIP.Address.String() != ip.IP.Address.String() {
+			return fmt.Errorf("IPs should be the same in %s and %s: %v is different than %v", ipResource, serverResource, server.Server.PublicIP.Address, ip.IP.Address)
+		}
+
+		return nil
+	}
+}
+
+func testAccCheckScalewayComputeInstanceServerNoIPAssigned(serverResource string) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		serverState, ok := s.RootModule().Resources[serverResource]
+		if !ok {
+			return fmt.Errorf("resource not found: %s", serverResource)
+		}
+
+		instanceApi, zone, ID, err := getInstanceAPIWithZoneAndID(testAccProvider.Meta(), serverState.Primary.ID)
+		if err != nil {
+			return err
+		}
+
+		server, err := instanceApi.GetServer(&instance.GetServerRequest{
+			Zone:     zone,
+			ServerID: ID,
+		})
+		if err != nil {
+			return err
+		}
+
+		if server.Server.PublicIP != nil && !server.Server.PublicIP.Dynamic {
+			return fmt.Errorf("No flexible IP should be assigned to %s", serverResource)
 		}
 
 		return nil
@@ -143,4 +244,29 @@ var testAccScalewayComputeInstanceIPZoneConfig = []string{
 			zone = "nl-ams-1"	
 		}
 	`,
+}
+
+func testAccCheckScalewayComputeInstanceServerConfigIP(attachedBase string) string {
+	attachedServer := ""
+	if attachedBase != "" {
+		attachedServer = `server_id = "${scaleway_compute_instance_server.` + attachedBase + `.id}"`
+	}
+	return fmt.Sprintf(`
+resource "scaleway_compute_instance_ip" "base_ip" {
+  %s
+}
+
+resource "scaleway_compute_instance_server" "base1" {
+  image_id = "f974feac-abae-4365-b988-8ec7d1cec10d"
+  type  = "DEV1-S"
+  
+  tags  = [ "terraform-test", "scaleway_compute_instance_server", "attach_ip" ]
+}
+
+resource "scaleway_compute_instance_server" "base2" {
+  image_id = "f974feac-abae-4365-b988-8ec7d1cec10d"
+  type  = "DEV1-S"
+  
+  tags  = [ "terraform-test", "scaleway_compute_instance_server", "attach_ip" ]
+}`, attachedServer)
 }

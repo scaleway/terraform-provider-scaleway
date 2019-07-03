@@ -9,6 +9,14 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/utils"
 )
 
+// validationUUID validates the schema is a UUID or the combination of a locality and a UUID
+// e.g. "6ba7b810-9dad-11d1-80b4-00c04fd430c8" or "fr-par/6ba7b810-9dad-11d1-80b4-00c04fd430c8".
+func validationUUIDorUUIDWithLocality() func(interface{}, string) ([]string, []error) {
+	return func(v interface{}, key string) ([]string, []error) {
+		return validationUUID()(expandID(v), key)
+	}
+}
+
 // validationUUID validates the schema following the canonical UUID format
 // "6ba7b810-9dad-11d1-80b4-00c04fd430c8".
 func validationUUID() func(interface{}, string) ([]string, []error) {
