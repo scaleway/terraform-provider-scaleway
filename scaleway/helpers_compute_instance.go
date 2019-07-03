@@ -39,23 +39,7 @@ func getInstanceAPIWithZoneAndID(m interface{}, id string) (*instance.API, utils
 	return instanceApi, zone, ID, err
 }
 
-// rootVolumeExpand expands the current root volume or returns the default root volume
-func rootVolumeExpand(v interface{}) map[string]interface{} {
-	flattenVolume := map[string]interface{}{}
-
-	vs, ok := v.([]map[string]interface{})
-	if ok && len(vs) > 0 {
-		flattenVolume = vs[0]
-	}
-
-	if _, exist := flattenVolume["delete_on_termination"]; !exist {
-		flattenVolume["delete_on_termination"] = true // default value does not work on list
-	}
-
-	return flattenVolume
-}
-
-func schemaSetUserDataHash(v interface{}) int {
+func userDataHash(v interface{}) int {
 	userData := v.(map[string]interface{})
 	return hashcode.String(userData["key"].(string) + userData["value"].(string))
 }

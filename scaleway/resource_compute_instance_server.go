@@ -136,7 +136,7 @@ func resourceScalewayComputeInstanceServer() *schema.Resource {
 				Optional:    true,
 				MaxItems:    98,
 				Description: "The user data associated with the server", // TODO: document reserved keys (`cloud-init`)
-				Set:         schemaSetUserDataHash,
+				Set:         userDataHash,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"key": {
@@ -306,9 +306,20 @@ func resourceScalewayComputeInstanceServerRead(d *schema.ResourceData, m interfa
 	var additionalVolumesIDs []string
 	for i, volume := range orderVolumes(response.Server.Volumes) {
 		if i == 0 {
-			rootVolume := rootVolumeExpand(d.Get("root_volume"))
+			rootVolume := map[string]interface{}{}
+
+			vs, ok := d.Get("root_volume").([]map[string]interface{})
+			if ok && len(vs) > 0 {
+				rootVolume = vs[0]
+			}
+
 			rootVolume["volume_id"] = volume.ID
 			rootVolume["size_in_gb"] = int(volume.Size / gb)
+
+			if _, exist := rootVolume["delete_on_termination"]; !exist {
+				rootVolume["delete_on_termination"] = true // default value does not work on list
+			}
+
 			d.Set("root_volume", []map[string]interface{}{rootVolume})
 		} else {
 			additionalVolumesIDs = append(additionalVolumesIDs, volume.ID)
@@ -340,7 +351,7 @@ func resourceScalewayComputeInstanceServerRead(d *schema.ResourceData, m interfa
 		}
 	}
 	if len(userDataList) > 0 {
-		d.Set("user_data", schema.NewSet(schemaSetUserDataHash, userDataList))
+		d.Set("user_data", schema.NewSet(userDataHash, userDataList))
 	}
 
 	return nil
