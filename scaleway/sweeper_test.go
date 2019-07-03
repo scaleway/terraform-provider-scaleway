@@ -5,6 +5,7 @@ import (
 	"os"
 	"testing"
 
+	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/hashicorp/terraform/helper/resource"
 	api "github.com/nicolai86/scaleway-sdk"
 	"github.com/scaleway/scaleway-sdk-go/scw"
@@ -78,4 +79,22 @@ func buildTestConfigForTests(region string) (*Meta, error) {
 		SecretKey:        secretKey,
 		DefaultRegion:    parsedRegion,
 	}, nil
+}
+
+// sharedS3ClientForRegion returns a common S3 client needed for the sweeper
+func sharedS3ClientForRegion(region string) (*s3.S3, error) {
+
+	meta, err := buildTestConfigForTests(region)
+	if err != nil {
+		return nil, err
+	}
+
+	// configures a default client for the region, using the above env vars
+	err = meta.bootstrapS3Client()
+	if err != nil {
+		return nil, fmt.Errorf("error getting S3 client: %#v", err)
+	}
+
+	return meta.s3Client, nil
+
 }

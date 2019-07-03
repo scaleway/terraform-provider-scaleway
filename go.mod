@@ -1,9 +1,10 @@
 module github.com/terraform-providers/terraform-provider-scaleway
 
 require (
+	github.com/aws/aws-sdk-go v1.19.18
 	github.com/hashicorp/go-retryablehttp v0.5.2
 	github.com/hashicorp/terraform v0.12.1
-	github.com/mitchellh/go-homedir v1.0.0
+	github.com/mitchellh/go-homedir v1.1.0
 	github.com/nicolai86/scaleway-sdk v0.0.0-20181024210327-b20018e944c4
 	github.com/scaleway/scaleway-sdk-go v0.0.0-20190628150506-6175a43111c8
 	github.com/stretchr/testify v1.3.0

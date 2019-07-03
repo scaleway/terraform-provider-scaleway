@@ -156,6 +156,7 @@ func Provider() terraform.ResourceProvider {
 			"scaleway_compute_instance_ip":     resourceScalewayComputeInstanceIP(),
 			"scaleway_compute_instance_volume": resourceScalewayComputeInstanceVolume(),
 			"scaleway_compute_instance_server": resourceScalewayComputeInstanceServer(),
+			"scaleway_storage_object_bucket":   resourceScalewayStorageObjectBucket(),
 			"scaleway_user_data":               resourceScalewayUserData(),
 			"scaleway_server":                  resourceScalewayServer(),
 			"scaleway_token":                   resourceScalewayToken(),
@@ -229,12 +230,7 @@ func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 		DefaultZone:      zone,
 	}
 
-	err = meta.bootstrapScwClient()
-	if err != nil {
-		return nil, err
-	}
-
-	err = meta.bootstrapDeprecatedClient()
+	meta.bootstrap()
 	if err != nil {
 		return nil, err
 	}
