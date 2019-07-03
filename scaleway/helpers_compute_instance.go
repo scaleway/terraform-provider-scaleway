@@ -39,8 +39,8 @@ func getInstanceAPIWithZoneAndID(m interface{}, id string) (*instance.API, utils
 	return instanceApi, zone, ID, err
 }
 
-// expandRootVolume expands the current root volume or returns the default root volume
-func expandRootVolume(v interface{}) map[string]interface{} {
+// rootVolumeExpand expands the current root volume or returns the default root volume
+func rootVolumeExpand(v interface{}) map[string]interface{} {
 	flattenVolume := map[string]interface{}{}
 
 	vs, ok := v.([]map[string]interface{})
@@ -55,7 +55,7 @@ func expandRootVolume(v interface{}) map[string]interface{} {
 	return flattenVolume
 }
 
-func schemaSetUserData(v interface{}) int {
+func schemaSetUserDataHash(v interface{}) int {
 	userData := v.(map[string]interface{})
 	return hashcode.String(userData["key"].(string) + userData["value"].(string))
 }
@@ -74,8 +74,8 @@ func orderVolumes(v map[string]*instance.Volume) []*instance.Volume {
 	return orderedVolumes
 }
 
-// expandServerState converts the API state to terraform state or return an error.
-func expandServerState(fromState instance.ServerState) (string, error) {
+// serverStateFlatten converts the API state to terraform state or return an error.
+func serverStateFlatten(fromState instance.ServerState) (string, error) {
 	switch fromState {
 	case instance.ServerStateStopped:
 		return ServerStateStopped, nil

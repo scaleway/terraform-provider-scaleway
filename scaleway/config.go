@@ -106,11 +106,11 @@ func (c *client) Do(r *http.Request) (*http.Response, error) {
 		body = bytes.NewReader(bs)
 	}
 	req, err := retryablehttp.NewRequest(r.Method, r.URL.String(), body)
-	for key, val := range r.Header {
-		req.Header.Set(key, val[0])
-	}
 	if err != nil {
 		return nil, err
+	}
+	for key, val := range r.Header {
+		req.Header.Set(key, val[0])
 	}
 	return c.Client.Do(req)
 }

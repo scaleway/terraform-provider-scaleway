@@ -6,6 +6,7 @@ import (
 
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
+	"github.com/hashicorp/terraform/helper/validation"
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
 	"github.com/scaleway/scaleway-sdk-go/utils"
 )
@@ -33,6 +34,11 @@ func resourceScalewayComputeInstanceVolume() *schema.Resource {
 				ForceNew:    true,
 				Default:     instance.VolumeTypeBSSD.String(),
 				Description: "The volume type",
+				ValidateFunc: validation.StringInSlice([]string{
+					instance.VolumeTypeBSSD.String(),
+					instance.VolumeTypeLSSD.String(),
+					instance.VolumeTypeLHdd.String(),
+				}, false),
 			},
 			"size_in_gb": {
 				Type:          schema.TypeInt,

@@ -136,7 +136,7 @@ func resourceScalewayComputeInstanceServer() *schema.Resource {
 				Optional:    true,
 				MaxItems:    98,
 				Description: "The user data associated with the server", // TODO: document reserved keys (`cloud-init`)
-				Set:         schemaSetUserData,
+				Set:         schemaSetUserDataHash,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"key": {
@@ -269,7 +269,7 @@ func resourceScalewayComputeInstanceServerRead(d *schema.ResourceData, m interfa
 		}
 		return err
 	}
-	state, err := expandServerState(response.Server.State)
+	state, err := serverStateFlatten(response.Server.State)
 	if err != nil {
 		return err
 	} else {
@@ -306,7 +306,7 @@ func resourceScalewayComputeInstanceServerRead(d *schema.ResourceData, m interfa
 	var additionalVolumesIDs []string
 	for i, volume := range orderVolumes(response.Server.Volumes) {
 		if i == 0 {
-			rootVolume := expandRootVolume(d.Get("root_volume"))
+			rootVolume := rootVolumeExpand(d.Get("root_volume"))
 			rootVolume["volume_id"] = volume.ID
 			rootVolume["size_in_gb"] = int(volume.Size / gb)
 			d.Set("root_volume", []map[string]interface{}{rootVolume})
@@ -340,7 +340,7 @@ func resourceScalewayComputeInstanceServerRead(d *schema.ResourceData, m interfa
 		}
 	}
 	if len(userDataList) > 0 {
-		d.Set("user_data", schema.NewSet(schemaSetUserData, userDataList))
+		d.Set("user_data", schema.NewSet(schemaSetUserDataHash, userDataList))
 	}
 
 	return nil
@@ -381,9 +381,9 @@ func resourceScalewayComputeInstanceServerUpdate(d *schema.ResourceData, m inter
 	}
 
 	volumes := map[string]*instance.VolumeTemplate{}
-	volumes["0"] = &instance.VolumeTemplate{ID: d.Get("root_volume.0.volume_id").(string), Name: getRandomName("vol")} // name is ignored by the API, any name will work here
 
 	if raw, ok := d.GetOk("additional_volume_ids"); d.HasChange("additional_volume_ids") && ok {
+		volumes["0"] = &instance.VolumeTemplate{ID: d.Get("root_volume.0.volume_id").(string), Name: getRandomName("vol")} // name is ignored by the API, any name will work here
 		for i, volumeID := range raw.([]interface{}) {
 			volumes[strconv.Itoa(i+1)] = &instance.VolumeTemplate{
 				ID:   expandID(volumeID),
@@ -417,7 +417,7 @@ func resourceScalewayComputeInstanceServerUpdate(d *schema.ResourceData, m inter
 		return err
 	}
 
-	previousState, err = expandServerState(updateResponse.Server.State)
+	previousState, err = serverStateFlatten(updateResponse.Server.State)
 	if err != nil {
 		return err
 	}
