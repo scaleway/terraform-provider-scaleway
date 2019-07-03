@@ -310,24 +310,6 @@ func getRegion(d terraformResourceData, meta *Meta) (utils.Region, error) {
 	return utils.Region(""), ErrRegionNotFound
 }
 
-// getRegion will try to guess the zone from the following:
-//  - zone field of the resource data
-//  - default zone from config
-func getRegion(d terraformResourceData, meta *Meta) (utils.Region, error) {
-
-	rawRegion, exist := d.GetOkExists("region")
-	if exist {
-		return utils.ParseRegion(rawRegion.(string))
-	}
-
-	region, exist := meta.scwClient.GetDefaultRegion()
-	if exist {
-		return region, nil
-	}
-
-	return utils.Region(""), fmt.Errorf("could not detect region")
-}
-
 // isHTTPCodeError returns true if err is an http error with code statusCode
 func isHTTPCodeError(err error, statusCode int) bool {
 	if err == nil {

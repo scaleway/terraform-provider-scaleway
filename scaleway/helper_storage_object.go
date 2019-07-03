@@ -16,31 +16,41 @@ func getS3ClientWithRegion(d *schema.ResourceData, m interface{}) (*s3.S3, utils
 	}
 
 	if region != meta.DefaultRegion {
-		newS3Client, err := meta.createS3ClientForRegion(region)
+		// if the region is not the same as the default region:
+		// we have to clone the meta object with the new region and create a new S3 client.
+		newMeta := *meta
+		newMeta.DefaultRegion = region
+
+		err := newMeta.bootstrapS3Client()
 		if err != nil {
 			return nil, "", err
 		}
-		return newS3Client, region, nil
+		return newMeta.s3Client, region, nil
 	}
 
 	return meta.s3Client, region, err
 }
 
 // getS3ClientWithRegion returns a new S3 client with the correct region and id  extracted from the resource data.
-func getS3ClientWithRegionAndID(d *schema.ResourceData, m interface{}) (*s3.S3, utils.Region, string, error) {
+func getS3ClientWithRegionAndID(m interface{}, id string) (*s3.S3, utils.Region, string, error) {
 	meta := m.(*Meta)
 
-	region, id, err := parseRegionalID(d.Id())
+	region, id, err := parseRegionalID(id)
 	if err != nil {
 		return nil, "", id, err
 	}
 
 	if region != meta.DefaultRegion {
-		newS3Client, err := meta.createS3ClientForRegion(region)
+		// if the region is not the same as the default region:
+		// we have to clone the meta object with the new region and create a new S3 client.
+		newMeta := *meta
+		newMeta.DefaultRegion = region
+
+		err := newMeta.bootstrapS3Client()
 		if err != nil {
 			return nil, "", id, err
 		}
-		return newS3Client, region, id, nil
+		return newMeta.s3Client, region, id, nil
 	}
 
 	return meta.s3Client, region, id, err

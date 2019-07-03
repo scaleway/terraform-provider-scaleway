@@ -30,28 +30,26 @@ var (
 
 // Test configs
 var testAccCheckScalewayStorageObjectBucket = fmt.Sprintf(`
-resource "scaleway_storage_object_bucket" "base" {
-  name = "%s"
-  region = "nl-ams"
-}
+	resource "scaleway_storage_object_bucket" "base" {
+		name = "%s"
+	}
 
-resource "scaleway_storage_object_bucket" "use-region-ams" {
-  name = "%s"
-  region = "nl-ams"
-}
+	resource "scaleway_storage_object_bucket" "ams-bucket" {
+		name = "%s"
+		region = "nl-ams"
+	}
 
-resource "scaleway_storage_object_bucket" "use-region-par" {
-  name = "%s"
-  region = "nl-ams"
-}
+	resource "scaleway_storage_object_bucket" "par-bucket" {
+		name = "%s"
+		region = "fr-par"
+	}
 `, testBucketName, testBucketNameAms, testBucketNamePar)
 
 var testAccCheckScalewayStorageObjectBucketUpdate = fmt.Sprintf(`
-resource "scaleway_storage_object_bucket" "base" {
-  name = "%s"
-  acl = "%s"
-  region = "nl-ams"
-}
+	resource "scaleway_storage_object_bucket" "base" {
+		name = "%s"
+		acl = "%s"
+	}
 `, testBucketName, testBucketUpdatedACL)
 
 func TestAccScalewayStorageObjectBucket(t *testing.T) {
@@ -65,8 +63,8 @@ func TestAccScalewayStorageObjectBucket(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("scaleway_storage_object_bucket.base", "name", testBucketName),
 					resource.TestCheckResourceAttr("scaleway_storage_object_bucket.base", "acl", testBucketACL),
-					resource.TestCheckResourceAttr("scaleway_storage_object_bucket.use-region-ams", "name", testBucketNameAms),
-					resource.TestCheckResourceAttr("scaleway_storage_object_bucket.use-region-par", "name", testBucketNamePar),
+					resource.TestCheckResourceAttr("scaleway_storage_object_bucket.ams-bucket", "name", testBucketNameAms),
+					resource.TestCheckResourceAttr("scaleway_storage_object_bucket.par-bucket", "name", testBucketNamePar),
 				),
 			},
 			{

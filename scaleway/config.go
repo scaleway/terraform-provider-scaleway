@@ -172,13 +172,19 @@ func (m *Meta) bootstrapDeprecatedClient() error {
 
 // bootstrapS3Client initializes a new s3 client from the configuration.
 func (m *Meta) bootstrapS3Client() error {
+	var err error
 
-	client, err := m.createS3ClientForRegion(m.DefaultRegion)
+	config := &aws.Config{}
+	config.WithRegion(string(m.DefaultRegion))
+	config.WithCredentials(credentials.NewStaticCredentials(m.AccessKey, m.SecretKey, ""))
+	config.WithEndpoint(m.getS3Endpoint(m.DefaultRegion))
+
+	s, err := session.NewSession(config)
 	if err != nil {
 		return err
 	}
 
-	m.s3Client = client
+	m.s3Client = s3.New(s)
 	return nil
 }
 
@@ -208,78 +214,4 @@ func readDeprecatedScalewayConfig(path string) (string, string, error) {
 		return "", "", err
 	}
 	return data.Token, data.Organization, nil
-}
-
-// getAccessKeyFromSecretKey returns the access key that is coupled to the current token/secret key in the client.
-func (m *Meta) getAccessKeyFromSecretKey(scwClient *sdk.API) (string, error) {
-	type token struct {
-		AccessKey string `json:"access_key"`
-	}
-
-	type resBody struct {
-		Token token `json:"token"`
-	}
-
-	url := "https://account.scaleway.com/tokens/" + m.SecretKey
-	req, err := http.NewRequest(http.MethodGet, url, nil)
-	if err != nil {
-		return "", err
-	}
-
-	res, err := scwClient.Client.Do(req)
-	if err != nil {
-		return "", err
-	}
-
-	body, err := ioutil.ReadAll(res.Body)
-	defer res.Body.Close()
-	if err != nil {
-		return "", err
-	}
-
-	content := &resBody{}
-	err = json.Unmarshal(body, content)
-	if err != nil {
-		return "", err
-	}
-
-	return content.Token.AccessKey, nil
-}
-
-// s3AccessKey contains the access key that is needed for S3.
-// This is a global variable so we only have to do one request to fetch the token.
-//
-// This will be removed in v2.
-var s3AccessKey string
-
-// createS3ClientForRegion creates a new s3 client from the configuration.
-func (m *Meta) createS3ClientForRegion(region utils.Region) (*s3.S3, error) {
-	var err error
-
-	if s3AccessKey == "" {
-
-		if m.deprecatedClient == nil {
-			err = m.bootstrapDeprecatedClient()
-			if err != nil {
-				return nil, err
-			}
-		}
-
-		s3AccessKey, err = m.getAccessKeyFromSecretKey(m.deprecatedClient)
-		if err != nil {
-			return nil, err
-		}
-	}
-
-	config := &aws.Config{}
-	config.WithRegion(string(region))
-	config.WithCredentials(credentials.NewStaticCredentials(s3AccessKey, m.SecretKey, ""))
-	config.WithEndpoint(m.getS3Endpoint(region))
-
-	s, err := session.NewSession(config)
-	if err != nil {
-		return nil, err
-	}
-
-	return s3.New(s), nil
 }

@@ -7,7 +7,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/hashicorp/terraform/helper/schema"
-	"github.com/scaleway/scaleway-sdk-go/utils"
+	"github.com/hashicorp/terraform/helper/validation"
 )
 
 func resourceScalewayStorageObjectBucket() *schema.Resource {
@@ -32,6 +32,16 @@ func resourceScalewayStorageObjectBucket() *schema.Resource {
 				Optional:    true,
 				Default:     "private",
 				Description: "ACL of the bucket: either 'public-read' or 'private'.",
+				ValidateFunc: validation.StringInSlice([]string{
+					"private",
+					"public-read",
+					"public-read-write",
+					"aws-exec-read",
+					"authenticated-read",
+					"bucket-owner-read",
+					"bucket-owner-full-control",
+					"log-delivery-write",
+				}, false),
 			},
 			"region": regionSchema(),
 		},
@@ -52,13 +62,13 @@ func resourceScalewayStorageObjectBucketCreate(d *schema.ResourceData, m interfa
 		return err
 	}
 
-	d.SetId(newRegionalId(utils.Region(region), bucketName))
+	d.SetId(newRegionalId(region, bucketName))
 
 	return resourceScalewayStorageObjectBucketRead(d, m)
 }
 
 func resourceScalewayStorageObjectBucketRead(d *schema.ResourceData, m interface{}) error {
-	s3Client, _, bucketName, err := getS3ClientWithRegionAndID(d, m)
+	s3Client, _, bucketName, err := getS3ClientWithRegionAndID(m, d.Id())
 	if err != nil {
 		return err
 	}
@@ -79,7 +89,7 @@ func resourceScalewayStorageObjectBucketRead(d *schema.ResourceData, m interface
 }
 
 func resourceScalewayStorageObjectBucketUpdate(d *schema.ResourceData, m interface{}) error {
-	s3Client, _, bucketName, err := getS3ClientWithRegionAndID(d, m)
+	s3Client, _, bucketName, err := getS3ClientWithRegionAndID(m, d.Id())
 	if err != nil {
 		return err
 	}
@@ -101,7 +111,7 @@ func resourceScalewayStorageObjectBucketUpdate(d *schema.ResourceData, m interfa
 }
 
 func resourceScalewayStorageObjectBucketDelete(d *schema.ResourceData, m interface{}) error {
-	s3Client, _, bucketName, err := getS3ClientWithRegionAndID(d, m)
+	s3Client, _, bucketName, err := getS3ClientWithRegionAndID(m, d.Id())
 	if err != nil {
 		return err
 	}
