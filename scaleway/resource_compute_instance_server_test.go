@@ -366,7 +366,8 @@ func testAccCheckScalewayComputeInstanceServerConfigMinimal() string {
 	return `
 resource "scaleway_compute_instance_server" "base" {
   image_id = "f974feac-abae-4365-b988-8ec7d1cec10d"
-  type  = "DEV1-S"
+  type     = "DEV1-S"
+
   tags = [ "terraform-test", "scaleway_compute_instance_server", "minimal" ]
 }`
 }
@@ -380,9 +381,10 @@ data "scaleway_image" "ubuntu" {
 }
 
 resource "scaleway_compute_instance_server" "base" {
-  name = "test"
+  name     = "test"
   image_id = "${data.scaleway_image.ubuntu.id}"
-  type = "%s"
+  type     = "%s"
+
   tags = [ "terraform-test", "scaleway_compute_instance_server", "basic" ]
 }`, architecture, serverType)
 }
@@ -391,12 +393,12 @@ func testAccCheckScalewayComputeInstanceServerConfigRootVolume(size, deleteOnTer
 	return fmt.Sprintf(`
 resource "scaleway_compute_instance_server" "base" {
   image_id = "f974feac-abae-4365-b988-8ec7d1cec10d"
-  type = "C2S"
-  tags = [ "terraform-test", "scaleway_compute_instance_server", "root_volume" ]
+  type     = "C2S"
   root_volume {
     size_in_gb = %s
     delete_on_termination = %s
   }
+  tags = [ "terraform-test", "scaleway_compute_instance_server", "root_volume" ]
 }`, size, deleteOnTermination)
 }
 
@@ -410,9 +412,9 @@ data "scaleway_image" "ubuntu" {
 
 resource "scaleway_compute_instance_server" "base" {
   image_id = "${data.scaleway_image.ubuntu.id}"
-  type  = "DEV1-S"
-  state = "%s"
-  tags  = [ "terraform-test", "scaleway_compute_instance_server", "state" ]
+  type     = "DEV1-S"
+  state    = "%s"
+  tags     = [ "terraform-test", "scaleway_compute_instance_server", "state" ]
 }`, state)
 }
 
@@ -421,12 +423,12 @@ func testAccCheckScalewayComputeInstanceServerConfigUserData(withRandomUserData,
 	if withRandomUserData {
 		additionalUserData += `
   user_data {
-    key = "plop"
+    key   = "plop"
     value = "world"
   }
 
   user_data {
-    key = "blanquette"
+    key   = "blanquette"
     value = "hareng pomme à l'huile"
   }`
 	}
@@ -449,8 +451,8 @@ data "scaleway_image" "ubuntu" {
 
 resource "scaleway_compute_instance_server" "base" {
   image_id = "${data.scaleway_image.ubuntu.id}"
-  type  = "DEV1-S"
-  tags  = [ "terraform-test", "scaleway_compute_instance_server", "user_data" ]
+  type     = "DEV1-S"
+  tags     = [ "terraform-test", "scaleway_compute_instance_server", "user_data" ]
 %s
 }`, additionalUserData)
 }
@@ -482,11 +484,12 @@ resource "scaleway_compute_instance_volume" "base_block" {
 
 resource "scaleway_compute_instance_server" "base" {
   image_id = "f974feac-abae-4365-b988-8ec7d1cec10d"
-  type  = "DEV1-S"
+  type     = "DEV1-S"
   root_volume {
     size_in_gb = %d
   }
-  tags  = [ "terraform-test", "scaleway_compute_instance_server", "additional_volume_ids" ]
+  tags = [ "terraform-test", "scaleway_compute_instance_server", "additional_volume_ids" ]
+
   additional_volume_ids  = [ %s ]
 }`, additionalVolumeResources, baseVolume, strings.Join(additionalVolumeIDs, ","))
 }
@@ -502,7 +505,8 @@ resource "scaleway_compute_instance_volume" "data" {
 
 resource "scaleway_compute_instance_server" "webserver" {
   image_id = "f974feac-abae-4365-b988-8ec7d1cec10d"
-  type  = "DEV1-S"
+  type     = "DEV1-S"
+
   additional_volume_ids = [ "${scaleway_compute_instance_volume.data.id}" ]
 }
 `

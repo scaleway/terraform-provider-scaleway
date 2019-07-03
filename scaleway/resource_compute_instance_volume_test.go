@@ -172,7 +172,7 @@ var testAccCheckScalewayComputeInstanceVolumeConfig = []string{
 	`
 		resource "scaleway_compute_instance_volume" "test" {
 			type       = "l_ssd"
-			name = "terraform-test"
+			name       = "terraform-test"
 			size_in_gb = 20
 		}
 	`,
@@ -200,7 +200,7 @@ var testAccCheckScalewayComputeInstanceVolumeConfigFromVolume = `
 		}
 
 		resource "scaleway_compute_instance_volume" "test2" {
-			type       = "l_ssd"
+			type           = "l_ssd"
 			from_volume_id = "${scaleway_compute_instance_volume.test1.id}"
 		}
 	`
