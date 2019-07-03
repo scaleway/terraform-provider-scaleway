@@ -7,6 +7,7 @@ import (
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/hashicorp/terraform/terraform"
 	homedir "github.com/mitchellh/go-homedir"
+	"github.com/scaleway/scaleway-sdk-go/scwconfig"
 )
 
 var testAccProviders map[string]terraform.ResourceProvider
@@ -38,6 +39,17 @@ func TestProvider_impl(t *testing.T) {
 }
 
 func testAccPreCheck(t *testing.T) {
+
+	// Handle new config system first
+	config, err := scwconfig.Load()
+	if err == nil {
+		_, hasAccessKey := config.GetAccessKey()
+		_, hasSecretKey := config.GetSecretKey()
+		if hasAccessKey && hasSecretKey {
+			return
+		}
+	}
+
 	if v := os.Getenv("SCALEWAY_ORGANIZATION"); v == "" {
 		if path, err := homedir.Expand("~/.scwrc"); err == nil {
 			scwAPIKey, scwOrganization, err := readDeprecatedScalewayConfig(path)
