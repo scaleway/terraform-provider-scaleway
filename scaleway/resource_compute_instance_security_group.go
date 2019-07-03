@@ -88,12 +88,14 @@ func resourceScalewayComputeInstanceSecurityGroup() *schema.Resource {
 							ValidateFunc: validation.StringInSlice(resourceScalewayComputeInstanceSecurityGroupProtocols, false),
 						},
 						"port": {
-							Type:     schema.TypeString,
-							Optional: true,
+							Type:          schema.TypeString,
+							Optional:      true,
+							ConflictsWith: []string{"rule.port"},
 						},
 						"port_range": {
-							Type:     schema.TypeString,
-							Optional: true,
+							Type:          schema.TypeString,
+							Optional:      true,
+							ConflictsWith: []string{"rule.port"},
 						},
 						"ip": {
 							Type:     schema.TypeString,
