@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/hashicorp/terraform/helper/hashcode"
+	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
 	"github.com/scaleway/scaleway-sdk-go/utils"
@@ -16,7 +17,8 @@ const (
 	ServerStateStarted = "started"
 	ServerStateStandby = "standby"
 
-	ServerWaitForTimeout = 10 * time.Minute
+	ServerWaitForTimeout   = 10 * time.Minute
+	ServerRetryFuncTimeout = ServerWaitForTimeout + time.Minute // some RetryFunc are calling a WaitFor
 )
 
 // getInstanceAPIWithZone returns a new instance API and the zone for a Create request
@@ -110,15 +112,25 @@ func computeServerStateToAction(previousState, nextState string, forceReboot boo
 // reachState executes server action(s) to reach the expected state
 func reachState(instanceApi *instance.API, zone utils.Zone, serverID, fromState, toState string, forceReboot bool) error {
 	for _, action := range computeServerStateToAction(fromState, toState, forceReboot) {
-		err := instanceApi.ServerActionAndWait(&instance.ServerActionAndWaitRequest{
-			Zone:     zone,
-			ServerID: serverID,
-			Action:   action,
-			Timeout:  ServerWaitForTimeout,
+		err := resource.Retry(ServerRetryFuncTimeout, func() *resource.RetryError {
+			err := instanceApi.ServerActionAndWait(&instance.ServerActionAndWaitRequest{
+				Zone:     zone,
+				ServerID: serverID,
+				Action:   action,
+				Timeout:  ServerWaitForTimeout,
+			})
+			if isSDKError(err, "expected state [\\w]+ but found [\\w]+") {
+				return resource.RetryableError(err)
+			}
+			if err != nil {
+				return resource.NonRetryableError(err)
+			}
+			return nil
 		})
 		if err != nil {
 			return err
 		}
+
 	}
 	return nil
 }

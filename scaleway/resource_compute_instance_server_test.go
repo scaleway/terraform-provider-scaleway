@@ -231,7 +231,33 @@ func TestAccScalewayComputeInstanceServerUserData2(t *testing.T) {
 	})
 }
 
-func TestAccScalewayComputeInstanceServerAdditionalVolumes(t *testing.T) {
+func TestAccScalewayComputeInstanceServerAdditionalVolumes1(t *testing.T) {
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckScalewayComputeInstanceServerDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckScalewayComputeInstanceServerConfigVolumes(false),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayComputeInstanceServerExists("scaleway_compute_instance_server.base"),
+					resource.TestCheckResourceAttr("scaleway_compute_instance_server.base", "root_volume.0.size_in_gb", "20"),
+				),
+			},
+			{
+				Config: testAccCheckScalewayComputeInstanceServerConfigVolumes(true),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayComputeInstanceVolumeExists("scaleway_compute_instance_volume.base_block"),
+					testAccCheckScalewayComputeInstanceServerExists("scaleway_compute_instance_server.base"),
+					resource.TestCheckResourceAttr("scaleway_compute_instance_volume.base_block", "size_in_gb", "100"),
+					resource.TestCheckResourceAttr("scaleway_compute_instance_server.base", "root_volume.0.size_in_gb", "20"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccScalewayComputeInstanceServerAdditionalVolumes2(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
@@ -365,7 +391,7 @@ func testAccCheckScalewayComputeInstanceServerConfigRootVolume(size, deleteOnTer
 	return fmt.Sprintf(`
 resource "scaleway_compute_instance_server" "base" {
   image_id = "f974feac-abae-4365-b988-8ec7d1cec10d"
-  type  = "C2S"
+  type = "C2S"
   tags = [ "terraform-test", "scaleway_compute_instance_server", "root_volume" ]
   root_volume {
     size_in_gb = %s

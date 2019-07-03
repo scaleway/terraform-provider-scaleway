@@ -3,7 +3,6 @@ package scaleway
 import (
 	"fmt"
 	"net/http"
-	"time"
 
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
@@ -174,7 +173,7 @@ func resourceScalewayComputeInstanceVolumeDelete(d *schema.ResourceData, m inter
 		VolumeID: id,
 	}
 
-	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
+	err = resource.Retry(ServerRetryFuncTimeout, func() *resource.RetryError {
 		err := instanceAPI.DeleteVolume(deleteRequest)
 		if isSDKResponseError(err, http.StatusBadRequest, "a server is attached to this volume") {
 			if d.Get("type").(string) != instance.VolumeTypeBSSD.String() {
@@ -182,7 +181,7 @@ func resourceScalewayComputeInstanceVolumeDelete(d *schema.ResourceData, m inter
 					Zone:     zone,
 					ServerID: d.Get("server_id").(string),
 					Action:   instance.ServerActionPoweroff,
-					Timeout:  4 * time.Minute,
+					Timeout:  ServerWaitForTimeout,
 				})
 				if err != nil && !isSDKResponseError(err, http.StatusBadRequest, "server should be running") {
 					return resource.NonRetryableError(err)

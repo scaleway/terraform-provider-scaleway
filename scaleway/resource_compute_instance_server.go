@@ -2,11 +2,13 @@ package scaleway
 
 import (
 	"bytes"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"net/http"
 	"strconv"
 
+	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/hashicorp/terraform/helper/validation"
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
@@ -388,16 +390,29 @@ func resourceScalewayComputeInstanceServerUpdate(d *schema.ResourceData, m inter
 				Name: getRandomName("vol"), // name is ignored by the API, any name will work here
 			}
 		}
-		// server must be stopped before updating volumes
-		err = reachState(instanceApi, zone, ID, previousState.(string), ServerStateStopped, false)
-		if err != nil && !isSDKResponseError(err, http.StatusBadRequest, "server should be running") {
-			return err
-		}
+
 	}
 
 	updateRequest.Volumes = &volumes
 
-	updateResponse, err := instanceApi.UpdateServer(updateRequest)
+	var updateResponse *instance.UpdateServerResponse
+
+	err = resource.Retry(ServerRetryFuncTimeout, func() *resource.RetryError {
+		updateResponse, err = instanceApi.UpdateServer(updateRequest)
+		if isSDKResponseError(err, http.StatusBadRequest, "Instance must be powered off to change local volumes") {
+			err = reachState(instanceApi, zone, ID, previousState.(string), ServerStateStopped, false)
+			if err != nil && !isSDKResponseError(err, http.StatusBadRequest, "server should be running") {
+				return resource.NonRetryableError(err)
+			}
+			return resource.RetryableError(fmt.Errorf("server is being powered off"))
+		}
+
+		if err != nil {
+			return resource.NonRetryableError(err)
+		}
+
+		return nil
+	})
 	if err != nil {
 		return err
 	}

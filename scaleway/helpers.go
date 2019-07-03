@@ -3,6 +3,7 @@ package scaleway
 import (
 	"fmt"
 	"net/http"
+	"regexp"
 	"strings"
 	"sync"
 	"time"
@@ -410,11 +411,21 @@ func isSDKResponseError(err error, status int, message string) bool {
 }
 
 // isSDKError returns true when the SdkError error message matches with the given message.
-func isSDKError(err error, message string) bool {
+func isSDKError(err error, expectedMessage string) bool {
+
 	responseError, ok := err.(scw.SdkError)
 	if !ok {
 		return false
 	}
+	actualMessage := responseError.Error()[17:] // remove "scaleway-sdk-go: "
+	if actualMessage == expectedMessage {
+		return true
+	}
 
-	return responseError.Error() == "scaleway-sdk-go: "+message
+	regexp, err := regexp.Compile(expectedMessage)
+	if err != nil {
+		return false
+	}
+
+	return regexp.MatchString(actualMessage)
 }
