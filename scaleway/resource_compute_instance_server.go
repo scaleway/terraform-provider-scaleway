@@ -59,6 +59,11 @@ func resourceScalewayComputeInstanceServer() *schema.Resource {
 				Computed:    true,
 				Description: "The security group the server is attached to",
 			},
+			"placement_group_id": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The placement group the server is attached to",
+			},
 			"root_volume": {
 				Type:        schema.TypeList,
 				MaxItems:    1,
@@ -182,6 +187,10 @@ func resourceScalewayComputeInstanceServerCreate(d *schema.ResourceData, m inter
 		EnableIPv6:     d.Get("enable_ipv6").(bool),
 		SecurityGroup:  expandID(d.Get("security_group_id")),
 	}
+
+	//if placementGroup, ok := d.GetOk("placement_group_id"); ok {
+	//	req.ComputeCluster = placementGroup
+	//}
 
 	if raw, ok := d.GetOk("tags"); ok {
 		for _, tag := range raw.([]interface{}) {
