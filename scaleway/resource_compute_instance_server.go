@@ -161,7 +161,7 @@ func resourceScalewayComputeInstanceServer() *schema.Resource {
 }
 
 func resourceScalewayComputeInstanceServerCreate(d *schema.ResourceData, m interface{}) error {
-	instanceApi, zone, err := getInstanceAPIWithZone(d, m)
+	instanceAPI, zone, err := getInstanceAPIWithZone(d, m)
 	if err != nil {
 		return err
 	}
@@ -205,7 +205,7 @@ func resourceScalewayComputeInstanceServerCreate(d *schema.ResourceData, m inter
 		}
 	}
 
-	res, err := instanceApi.CreateServer(req)
+	res, err := instanceAPI.CreateServer(req)
 	if err != nil {
 		return err
 	}
@@ -235,13 +235,13 @@ func resourceScalewayComputeInstanceServerCreate(d *schema.ResourceData, m inter
 	}
 
 	if len(userDataRequests.UserData) > 0 {
-		err := instanceApi.SetAllServerUserData(userDataRequests)
+		err := instanceAPI.SetAllServerUserData(userDataRequests)
 		if err != nil {
 			return err
 		}
 	}
 
-	err = reachState(instanceApi, zone, res.Server.ID, ServerStateStopped, d.Get("state").(string), false)
+	err = reachState(instanceAPI, zone, res.Server.ID, ServerStateStopped, d.Get("state").(string), false)
 	if err != nil {
 		return err
 	}
@@ -250,7 +250,7 @@ func resourceScalewayComputeInstanceServerCreate(d *schema.ResourceData, m inter
 }
 
 func resourceScalewayComputeInstanceServerRead(d *schema.ResourceData, m interface{}) error {
-	instanceApi, zone, ID, err := getInstanceAPIWithZoneAndID(m, d.Id())
+	instanceAPI, zone, ID, err := getInstanceAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return err
 	}
@@ -258,7 +258,7 @@ func resourceScalewayComputeInstanceServerRead(d *schema.ResourceData, m interfa
 	////
 	// Read Server
 	////
-	response, err := instanceApi.GetServer(&instance.GetServerRequest{
+	response, err := instanceAPI.GetServer(&instance.GetServerRequest{
 		Zone:     zone,
 		ServerID: ID,
 	})
@@ -330,7 +330,7 @@ func resourceScalewayComputeInstanceServerRead(d *schema.ResourceData, m interfa
 	////
 	// Read server user data
 	////
-	allUserData, err := instanceApi.GetAllServerUserData(&instance.GetAllServerUserDataRequest{
+	allUserData, err := instanceAPI.GetAllServerUserData(&instance.GetAllServerUserDataRequest{
 		Zone:     zone,
 		ServerID: ID,
 	})
@@ -358,7 +358,7 @@ func resourceScalewayComputeInstanceServerRead(d *schema.ResourceData, m interfa
 }
 
 func resourceScalewayComputeInstanceServerUpdate(d *schema.ResourceData, m interface{}) error {
-	instanceApi, zone, ID, err := getInstanceAPIWithZoneAndID(m, d.Id())
+	instanceAPI, zone, ID, err := getInstanceAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return err
 	}
@@ -409,9 +409,9 @@ func resourceScalewayComputeInstanceServerUpdate(d *schema.ResourceData, m inter
 	var updateResponse *instance.UpdateServerResponse
 
 	err = resource.Retry(ServerRetryFuncTimeout, func() *resource.RetryError {
-		updateResponse, err = instanceApi.UpdateServer(updateRequest)
+		updateResponse, err = instanceAPI.UpdateServer(updateRequest)
 		if isSDKResponseError(err, http.StatusBadRequest, "Instance must be powered off to change local volumes") {
-			err = reachState(instanceApi, zone, ID, previousState.(string), ServerStateStopped, false)
+			err = reachState(instanceAPI, zone, ID, previousState.(string), ServerStateStopped, false)
 			if err != nil && !isSDKResponseError(err, http.StatusBadRequest, "server should be running") {
 				return resource.NonRetryableError(err)
 			}
@@ -459,7 +459,7 @@ func resourceScalewayComputeInstanceServerUpdate(d *schema.ResourceData, m inter
 			forceReboot = true // instance must reboot when cloud init script change
 		}
 
-		err := instanceApi.SetAllServerUserData(userDataRequests)
+		err := instanceAPI.SetAllServerUserData(userDataRequests)
 		if err != nil {
 			return err
 		}
@@ -467,7 +467,7 @@ func resourceScalewayComputeInstanceServerUpdate(d *schema.ResourceData, m inter
 	}
 
 	// reach expected state
-	err = reachState(instanceApi, zone, ID, previousState.(string), nextState.(string), forceReboot)
+	err = reachState(instanceAPI, zone, ID, previousState.(string), nextState.(string), forceReboot)
 	if err != nil {
 		return err
 	}
@@ -476,13 +476,13 @@ func resourceScalewayComputeInstanceServerUpdate(d *schema.ResourceData, m inter
 }
 
 func resourceScalewayComputeInstanceServerDelete(d *schema.ResourceData, m interface{}) error {
-	instanceApi, zone, ID, err := getInstanceAPIWithZoneAndID(m, d.Id())
+	instanceAPI, zone, ID, err := getInstanceAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return err
 	}
 
 	// reach stopped state
-	err = reachState(instanceApi, zone, ID, d.Get("state").(string), ServerStateStopped, false)
+	err = reachState(instanceAPI, zone, ID, d.Get("state").(string), ServerStateStopped, false)
 	if is404Error(err) {
 		return nil
 	}
@@ -490,7 +490,7 @@ func resourceScalewayComputeInstanceServerDelete(d *schema.ResourceData, m inter
 		return err
 	}
 
-	err = instanceApi.DeleteServer(&instance.DeleteServerRequest{
+	err = instanceAPI.DeleteServer(&instance.DeleteServerRequest{
 		Zone:     zone,
 		ServerID: ID,
 	})
@@ -500,7 +500,7 @@ func resourceScalewayComputeInstanceServerDelete(d *schema.ResourceData, m inter
 	}
 
 	if d.Get("root_volume.0.delete_on_termination").(bool) {
-		err = instanceApi.DeleteVolume(&instance.DeleteVolumeRequest{
+		err = instanceAPI.DeleteVolume(&instance.DeleteVolumeRequest{
 			Zone:     zone,
 			VolumeID: d.Get("root_volume.0.volume_id").(string),
 		})

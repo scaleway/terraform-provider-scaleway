@@ -318,12 +318,12 @@ func testAccCheckScalewayComputeInstanceServerExists(n string) resource.TestChec
 			return fmt.Errorf("resource not found: %s", n)
 		}
 
-		instanceApi, zone, ID, err := getInstanceAPIWithZoneAndID(testAccProvider.Meta(), rs.Primary.ID)
+		instanceAPI, zone, ID, err := getInstanceAPIWithZoneAndID(testAccProvider.Meta(), rs.Primary.ID)
 		if err != nil {
 			return err
 		}
 
-		_, err = instanceApi.GetServer(&instance.GetServerRequest{ServerID: ID, Zone: zone})
+		_, err = instanceAPI.GetServer(&instance.GetServerRequest{ServerID: ID, Zone: zone})
 		if err != nil {
 			return err
 		}
@@ -338,12 +338,12 @@ func testAccCheckScalewayComputeInstanceServerDestroy(s *terraform.State) error 
 			continue
 		}
 
-		instanceApi, zone, ID, err := getInstanceAPIWithZoneAndID(testAccProvider.Meta(), rs.Primary.ID)
+		instanceAPI, zone, ID, err := getInstanceAPIWithZoneAndID(testAccProvider.Meta(), rs.Primary.ID)
 		if err != nil {
 			return err
 		}
 
-		_, err = instanceApi.GetServer(&instance.GetServerRequest{
+		_, err = instanceAPI.GetServer(&instance.GetServerRequest{
 			ServerID: ID,
 			Zone:     zone,
 		})
