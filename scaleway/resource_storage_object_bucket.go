@@ -36,7 +36,6 @@ func resourceScalewayStorageObjectBucket() *schema.Resource {
 					"private",
 					"public-read",
 					"public-read-write",
-					"aws-exec-read",
 					"authenticated-read",
 					"bucket-owner-read",
 					"bucket-owner-full-control",
