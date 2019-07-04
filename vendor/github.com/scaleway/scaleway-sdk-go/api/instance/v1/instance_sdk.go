@@ -16,7 +16,6 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/internal/marshaler"
 	"github.com/scaleway/scaleway-sdk-go/internal/parameter"
 	"github.com/scaleway/scaleway-sdk-go/scw"
-	"github.com/scaleway/scaleway-sdk-go/utils"
 )
 
 // always import dependencies
@@ -31,7 +30,7 @@ var (
 
 	_ scw.ScalewayRequest
 	_ marshaler.Duration
-	_ utils.File
+	_ scw.File
 	_ = parameter.AddToQuery
 )
 
@@ -60,6 +59,40 @@ func (enum Arch) String() string {
 	if enum == "" {
 		// return default value if empty
 		return "x86_64"
+	}
+	return string(enum)
+}
+
+type ComputeClusterPolicyMode string
+
+const (
+	// ComputeClusterPolicyModeOptional is [insert doc].
+	ComputeClusterPolicyModeOptional = ComputeClusterPolicyMode("optional")
+	// ComputeClusterPolicyModeEnforced is [insert doc].
+	ComputeClusterPolicyModeEnforced = ComputeClusterPolicyMode("enforced")
+)
+
+func (enum ComputeClusterPolicyMode) String() string {
+	if enum == "" {
+		// return default value if empty
+		return "optional"
+	}
+	return string(enum)
+}
+
+type ComputeClusterPolicyType string
+
+const (
+	// ComputeClusterPolicyTypeLowLatency is [insert doc].
+	ComputeClusterPolicyTypeLowLatency = ComputeClusterPolicyType("low_latency")
+	// ComputeClusterPolicyTypeMaxAvailability is [insert doc].
+	ComputeClusterPolicyTypeMaxAvailability = ComputeClusterPolicyType("max_availability")
+)
+
+func (enum ComputeClusterPolicyType) String() string {
+	if enum == "" {
+		// return default value if empty
+		return "low_latency"
 	}
 	return string(enum)
 }
@@ -342,6 +375,37 @@ type Bootscript struct {
 	Title string `json:"title,omitempty"`
 }
 
+type ComputeCluster struct {
+	// ID display compute-cluster unique ID
+	ID string `json:"id,omitempty"`
+	// Name display compute-cluster name
+	Name string `json:"name,omitempty"`
+	// Organization display compute-cluster organization
+	Organization string `json:"organization,omitempty"`
+	// PolicyMode select the failling mode when the placement cannot be  respected, either optional or enforced
+	//
+	// Default value: optional
+	PolicyMode ComputeClusterPolicyMode `json:"policy_mode,omitempty"`
+	// PolicyType select the behavior of the compute-cluster, either low_latency (group) or max_availability (spread)
+	//
+	// Default value: low_latency
+	PolicyType ComputeClusterPolicyType `json:"policy_type,omitempty"`
+	// PolicyRespected indicate if the selected policy is respected. Returns true if the policy is respected, false otherwise
+	PolicyRespected bool `json:"policy_respected,omitempty"`
+}
+
+type ComputeClusterServer struct {
+	ID string `json:"id,omitempty"`
+
+	Name string `json:"name,omitempty"`
+
+	PolicyRespected bool `json:"policy_respected,omitempty"`
+}
+
+type CreateComputeClusterResponse struct {
+	ComputeCluster *ComputeCluster `json:"compute_cluster,omitempty"`
+}
+
 type CreateIPResponse struct {
 	IP *IP `json:"ip,omitempty"`
 
@@ -398,6 +462,14 @@ type Dashboard struct {
 
 type GetBootscriptResponse struct {
 	Bootscript *Bootscript `json:"bootscript,omitempty"`
+}
+
+type GetComputeClusterResponse struct {
+	ComputeCluster *ComputeCluster `json:"compute_cluster,omitempty"`
+}
+
+type GetComputeClusterServersResponse struct {
+	Servers []*ComputeClusterServer `json:"servers,omitempty"`
 }
 
 type GetDashboardResponse struct {
@@ -482,6 +554,10 @@ type ListBootscriptsResponse struct {
 	Bootscripts []*Bootscript `json:"bootscripts,omitempty"`
 
 	TotalCount uint32 `json:"total_count,omitempty"`
+}
+
+type ListComputeClustersResponse struct {
+	ComputeClusters []*ComputeCluster `json:"compute_clusters,omitempty"`
 }
 
 type ListImagesResponse struct {
@@ -630,8 +706,6 @@ type Server struct {
 	Volumes map[string]*Volume `json:"volumes,omitempty"`
 	// Bootscript display the server bootscript
 	Bootscript *Bootscript `json:"bootscript,omitempty"`
-	// DynamicPublicIP display the server dynamic public IP
-	DynamicPublicIP bool `json:"dynamic_public_ip,omitempty"`
 	// CommercialType display the server commercial type (e.g. GP1-M)
 	CommercialType string `json:"commercial_type,omitempty"`
 	// CreationDate display the server creation date
@@ -664,6 +738,8 @@ type Server struct {
 	SecurityGroup *SecurityGroupSummary `json:"security_group,omitempty"`
 	// StateDetail display the server state_detail
 	StateDetail string `json:"state_detail,omitempty"`
+	// ComputeCluster display the server ComputeCluster
+	ComputeCluster *ComputeCluster `json:"compute_cluster,omitempty"`
 }
 
 type ServerActionResponse struct {
@@ -761,6 +837,14 @@ type ServerTypeVolumeConstraintsByType struct {
 	LSSD *ServerTypeVolumeConstraintSizes `json:"l_ssd,omitempty"`
 }
 
+type SetComputeClusterResponse struct {
+	ComputeClusterID string `json:"compute_cluster_id,omitempty"`
+}
+
+type SetComputeClusterServersResponse struct {
+	Servers []*ComputeClusterServer `json:"servers,omitempty"`
+}
+
 type Snapshot struct {
 	ID string `json:"id,omitempty"`
 
@@ -810,6 +894,14 @@ type Task struct {
 	Status TaskStatus `json:"status,omitempty"`
 	// TerminatedAt display the task end date
 	TerminatedAt time.Time `json:"terminated_at,omitempty"`
+}
+
+type UpdateComputeClusterResponse struct {
+	ComputeClusterID string `json:"compute_cluster_id,omitempty"`
+}
+
+type UpdateComputeClusterServersResponse struct {
+	Servers []*ComputeClusterServer `json:"servers,omitempty"`
 }
 
 type UpdateIPResponse struct {
@@ -885,7 +977,7 @@ type setSnapshotResponse struct {
 // Service API
 
 type GetServerTypesAvailabilityRequest struct {
-	Zone utils.Zone `json:"-"`
+	Zone scw.Zone `json:"-"`
 
 	PerPage *int32 `json:"-"`
 
@@ -933,7 +1025,7 @@ func (s *API) GetServerTypesAvailability(req *GetServerTypesAvailabilityRequest,
 }
 
 type ListServersTypesRequest struct {
-	Zone utils.Zone `json:"-"`
+	Zone scw.Zone `json:"-"`
 
 	PerPage *int32 `json:"-"`
 
@@ -981,7 +1073,7 @@ func (s *API) ListServersTypes(req *ListServersTypesRequest, opts ...scw.Request
 }
 
 type ListServersRequest struct {
-	Zone utils.Zone `json:"-"`
+	Zone scw.Zone `json:"-"`
 
 	Organization *string `json:"-"`
 
@@ -1057,11 +1149,11 @@ func (r *ListServersResponse) UnsafeAppend(res interface{}) (int, scw.SdkError) 
 }
 
 type CreateServerRequest struct {
-	Zone utils.Zone `json:"-"`
+	Zone scw.Zone `json:"-"`
 	// Name display the server name
 	Name string `json:"name,omitempty"`
 	// DynamicIPRequired define if a dynamic IP is required for the instance
-	DynamicIPRequired bool `json:"dynamic_ip_required,omitempty"`
+	DynamicIPRequired *bool `json:"dynamic_ip_required,omitempty"`
 	// CommercialType define the server commercial type (i.e. GP1-S)
 	CommercialType string `json:"commercial_type,omitempty"`
 	// Image define the server image id
@@ -1082,6 +1174,8 @@ type CreateServerRequest struct {
 	Tags []string `json:"tags,omitempty"`
 	// SecurityGroup define the security group id
 	SecurityGroup string `json:"security_group,omitempty"`
+	// ComputeClusterID computeCluster key if server must be part of a ComputeCluster
+	ComputeClusterID string `json:"compute_cluster_id,omitempty"`
 }
 
 // CreateServer create server
@@ -1123,7 +1217,7 @@ func (s *API) CreateServer(req *CreateServerRequest, opts ...scw.RequestOption) 
 }
 
 type DeleteServerRequest struct {
-	Zone utils.Zone `json:"-"`
+	Zone scw.Zone `json:"-"`
 
 	ServerID string `json:"-"`
 }
@@ -1161,7 +1255,7 @@ func (s *API) DeleteServer(req *DeleteServerRequest, opts ...scw.RequestOption) 
 }
 
 type GetServerRequest struct {
-	Zone utils.Zone `json:"-"`
+	Zone scw.Zone `json:"-"`
 
 	ServerID string `json:"-"`
 }
@@ -1201,7 +1295,7 @@ func (s *API) GetServer(req *GetServerRequest, opts ...scw.RequestOption) (*GetS
 }
 
 type setServerRequest struct {
-	Zone utils.Zone `json:"-"`
+	Zone scw.Zone `json:"-"`
 	// ID display the server unique ID
 	ID string `json:"-"`
 	// Name display the server name
@@ -1218,8 +1312,6 @@ type setServerRequest struct {
 	CreationDate time.Time `json:"creation_date"`
 	// DynamicIPRequired display if a dynamic IP is required
 	DynamicIPRequired bool `json:"dynamic_ip_required"`
-	// DynamicPublicIP display the server dynamic public IP
-	DynamicPublicIP bool `json:"dynamic_public_ip"`
 	// EnableIPv6 display if IPv6 is enabled
 	EnableIPv6 bool `json:"enable_ipv6"`
 	// ExtraNetworks display information about additional network interfaces
@@ -1262,6 +1354,8 @@ type setServerRequest struct {
 	//
 	// Default value: x86_64
 	Arch Arch `json:"arch"`
+	// ComputeCluster display the server ComputeCluster
+	ComputeCluster *ComputeCluster `json:"compute_cluster"`
 }
 
 func (s *API) setServer(req *setServerRequest, opts ...scw.RequestOption) (*setServerResponse, error) {
@@ -1306,7 +1400,7 @@ func (s *API) setServer(req *setServerRequest, opts ...scw.RequestOption) (*setS
 }
 
 type updateServerRequest struct {
-	Zone utils.Zone `json:"-"`
+	Zone scw.Zone `json:"-"`
 
 	ServerID string `json:"-"`
 
@@ -1371,7 +1465,7 @@ func (s *API) updateServer(req *updateServerRequest, opts ...scw.RequestOption) 
 }
 
 type ListServerActionsRequest struct {
-	Zone utils.Zone `json:"-"`
+	Zone scw.Zone `json:"-"`
 
 	ServerID string `json:"-"`
 }
@@ -1411,7 +1505,7 @@ func (s *API) ListServerActions(req *ListServerActionsRequest, opts ...scw.Reque
 }
 
 type ServerActionRequest struct {
-	Zone utils.Zone `json:"-"`
+	Zone scw.Zone `json:"-"`
 
 	ServerID string `json:"-"`
 	// Action
@@ -1460,7 +1554,7 @@ func (s *API) ServerAction(req *ServerActionRequest, opts ...scw.RequestOption) 
 }
 
 type ListServerUserDataRequest struct {
-	Zone utils.Zone `json:"-"`
+	Zone scw.Zone `json:"-"`
 
 	ServerID string `json:"-"`
 }
@@ -1500,7 +1594,7 @@ func (s *API) ListServerUserData(req *ListServerUserDataRequest, opts ...scw.Req
 }
 
 type DeleteServerUserDataRequest struct {
-	Zone utils.Zone `json:"-"`
+	Zone scw.Zone `json:"-"`
 
 	ServerID string `json:"-"`
 
@@ -1544,7 +1638,7 @@ func (s *API) DeleteServerUserData(req *DeleteServerUserDataRequest, opts ...scw
 }
 
 type ListImagesRequest struct {
-	Zone utils.Zone `json:"-"`
+	Zone scw.Zone `json:"-"`
 
 	Organization *string `json:"-"`
 
@@ -1628,7 +1722,7 @@ func (r *ListImagesResponse) UnsafeAppend(res interface{}) (int, scw.SdkError) {
 }
 
 type GetImageRequest struct {
-	Zone utils.Zone `json:"-"`
+	Zone scw.Zone `json:"-"`
 
 	ImageID string `json:"-"`
 }
@@ -1668,7 +1762,7 @@ func (s *API) GetImage(req *GetImageRequest, opts ...scw.RequestOption) (*GetIma
 }
 
 type CreateImageRequest struct {
-	Zone utils.Zone `json:"-"`
+	Zone scw.Zone `json:"-"`
 
 	Name string `json:"name,omitempty"`
 
@@ -1726,7 +1820,7 @@ func (s *API) CreateImage(req *CreateImageRequest, opts ...scw.RequestOption) (*
 }
 
 type setImageRequest struct {
-	Zone utils.Zone `json:"-"`
+	Zone scw.Zone `json:"-"`
 
 	ID string `json:"-"`
 
@@ -1802,7 +1896,7 @@ func (s *API) setImage(req *setImageRequest, opts ...scw.RequestOption) (*setIma
 }
 
 type DeleteImageRequest struct {
-	Zone utils.Zone `json:"-"`
+	Zone scw.Zone `json:"-"`
 
 	ImageID string `json:"-"`
 }
@@ -1840,7 +1934,7 @@ func (s *API) DeleteImage(req *DeleteImageRequest, opts ...scw.RequestOption) er
 }
 
 type ListSnapshotsRequest struct {
-	Zone utils.Zone `json:"-"`
+	Zone scw.Zone `json:"-"`
 
 	Organization *string `json:"-"`
 
@@ -1916,7 +2010,7 @@ func (r *ListSnapshotsResponse) UnsafeAppend(res interface{}) (int, scw.SdkError
 }
 
 type CreateSnapshotRequest struct {
-	Zone utils.Zone `json:"-"`
+	Zone scw.Zone `json:"-"`
 
 	VolumeID string `json:"volume_id,omitempty"`
 
@@ -1964,7 +2058,7 @@ func (s *API) CreateSnapshot(req *CreateSnapshotRequest, opts ...scw.RequestOpti
 }
 
 type GetSnapshotRequest struct {
-	Zone utils.Zone `json:"-"`
+	Zone scw.Zone `json:"-"`
 
 	SnapshotID string `json:"-"`
 }
@@ -2004,7 +2098,7 @@ func (s *API) GetSnapshot(req *GetSnapshotRequest, opts ...scw.RequestOption) (*
 }
 
 type setSnapshotRequest struct {
-	Zone utils.Zone `json:"-"`
+	Zone scw.Zone `json:"-"`
 
 	ID string `json:"-"`
 
@@ -2074,7 +2168,7 @@ func (s *API) setSnapshot(req *setSnapshotRequest, opts ...scw.RequestOption) (*
 }
 
 type DeleteSnapshotRequest struct {
-	Zone utils.Zone `json:"-"`
+	Zone scw.Zone `json:"-"`
 
 	SnapshotID string `json:"-"`
 }
@@ -2112,7 +2206,7 @@ func (s *API) DeleteSnapshot(req *DeleteSnapshotRequest, opts ...scw.RequestOpti
 }
 
 type ListVolumesRequest struct {
-	Zone utils.Zone `json:"-"`
+	Zone scw.Zone `json:"-"`
 
 	Organization *string `json:"-"`
 
@@ -2188,7 +2282,7 @@ func (r *ListVolumesResponse) UnsafeAppend(res interface{}) (int, scw.SdkError) 
 }
 
 type CreateVolumeRequest struct {
-	Zone utils.Zone `json:"-"`
+	Zone scw.Zone `json:"-"`
 
 	Name string `json:"name,omitempty"`
 
@@ -2259,7 +2353,7 @@ func (s *API) CreateVolume(req *CreateVolumeRequest, opts ...scw.RequestOption) 
 }
 
 type GetVolumeRequest struct {
-	Zone utils.Zone `json:"-"`
+	Zone scw.Zone `json:"-"`
 
 	VolumeID string `json:"-"`
 }
@@ -2299,7 +2393,7 @@ func (s *API) GetVolume(req *GetVolumeRequest, opts ...scw.RequestOption) (*GetV
 }
 
 type DeleteVolumeRequest struct {
-	Zone utils.Zone `json:"-"`
+	Zone scw.Zone `json:"-"`
 
 	VolumeID string `json:"-"`
 }
@@ -2337,7 +2431,7 @@ func (s *API) DeleteVolume(req *DeleteVolumeRequest, opts ...scw.RequestOption) 
 }
 
 type ListSecurityGroupsRequest struct {
-	Zone utils.Zone `json:"-"`
+	Zone scw.Zone `json:"-"`
 
 	Organization *string `json:"-"`
 
@@ -2415,7 +2509,7 @@ func (r *ListSecurityGroupsResponse) UnsafeAppend(res interface{}) (int, scw.Sdk
 }
 
 type CreateSecurityGroupRequest struct {
-	Zone utils.Zone `json:"-"`
+	Zone scw.Zone `json:"-"`
 
 	Name string `json:"name,omitempty"`
 
@@ -2475,7 +2569,7 @@ func (s *API) CreateSecurityGroup(req *CreateSecurityGroupRequest, opts ...scw.R
 }
 
 type GetSecurityGroupRequest struct {
-	Zone utils.Zone `json:"-"`
+	Zone scw.Zone `json:"-"`
 
 	SecurityGroupID string `json:"-"`
 }
@@ -2515,7 +2609,7 @@ func (s *API) GetSecurityGroup(req *GetSecurityGroupRequest, opts ...scw.Request
 }
 
 type DeleteSecurityGroupRequest struct {
-	Zone utils.Zone `json:"-"`
+	Zone scw.Zone `json:"-"`
 
 	SecurityGroupID string `json:"-"`
 }
@@ -2551,7 +2645,7 @@ func (s *API) DeleteSecurityGroup(req *DeleteSecurityGroupRequest, opts ...scw.R
 }
 
 type setSecurityGroupRequest struct {
-	Zone utils.Zone `json:"-"`
+	Zone scw.Zone `json:"-"`
 	// ID display the security groups' unique ID
 	ID string `json:"-"`
 	// Name display the security groups name
@@ -2627,7 +2721,7 @@ func (s *API) setSecurityGroup(req *setSecurityGroupRequest, opts ...scw.Request
 }
 
 type ListSecurityGroupRulesRequest struct {
-	Zone utils.Zone `json:"-"`
+	Zone scw.Zone `json:"-"`
 
 	SecurityGroupID string `json:"-"`
 
@@ -2698,7 +2792,7 @@ func (r *ListSecurityGroupRulesResponse) UnsafeAppend(res interface{}) (int, scw
 }
 
 type CreateSecurityGroupRuleRequest struct {
-	Zone utils.Zone `json:"-"`
+	Zone scw.Zone `json:"-"`
 
 	SecurityGroupID string `json:"-"`
 	// Protocol
@@ -2763,7 +2857,7 @@ func (s *API) CreateSecurityGroupRule(req *CreateSecurityGroupRuleRequest, opts 
 }
 
 type DeleteSecurityGroupRuleRequest struct {
-	Zone utils.Zone `json:"-"`
+	Zone scw.Zone `json:"-"`
 
 	SecurityGroupID string `json:"-"`
 
@@ -2807,7 +2901,7 @@ func (s *API) DeleteSecurityGroupRule(req *DeleteSecurityGroupRuleRequest, opts 
 }
 
 type GetSecurityGroupRuleRequest struct {
-	Zone utils.Zone `json:"-"`
+	Zone scw.Zone `json:"-"`
 
 	SecurityGroupID string `json:"-"`
 
@@ -2852,8 +2946,460 @@ func (s *API) GetSecurityGroupRule(req *GetSecurityGroupRuleRequest, opts ...scw
 	return &resp, nil
 }
 
+type ListComputeClustersRequest struct {
+	Zone scw.Zone `json:"-"`
+
+	Organization *string `json:"-"`
+
+	PerPage *int32 `json:"-"`
+
+	Page *int32 `json:"-"`
+}
+
+// ListComputeClusters list all compute-clusters
+func (s *API) ListComputeClusters(req *ListComputeClustersRequest, opts ...scw.RequestOption) (*ListComputeClustersResponse, error) {
+	var err error
+
+	defaultOrganization, exist := s.client.GetDefaultProjectID()
+	if (req.Organization == nil || *req.Organization == "") && exist {
+		req.Organization = &defaultOrganization
+	}
+
+	if req.Zone == "" {
+		defaultZone, _ := s.client.GetDefaultZone()
+		req.Zone = defaultZone
+	}
+
+	defaultPerPage, exist := s.client.GetDefaultPageSize()
+	if (req.PerPage == nil || *req.PerPage == 0) && exist {
+		req.PerPage = &defaultPerPage
+	}
+
+	query := url.Values{}
+	parameter.AddToQuery(query, "organization", req.Organization)
+	parameter.AddToQuery(query, "per_page", req.PerPage)
+	parameter.AddToQuery(query, "page", req.Page)
+
+	if fmt.Sprint(req.Zone) == "" {
+		return nil, errors.New("field Zone cannot be empty in request")
+	}
+
+	scwReq := &scw.ScalewayRequest{
+		Method:  "GET",
+		Path:    "/instance/v1/zones/" + fmt.Sprint(req.Zone) + "/compute_clusters",
+		Query:   query,
+		Headers: http.Header{},
+	}
+
+	var resp ListComputeClustersResponse
+
+	err = s.client.Do(scwReq, &resp, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &resp, nil
+}
+
+type CreateComputeClusterRequest struct {
+	Zone scw.Zone `json:"-"`
+
+	Name string `json:"name,omitempty"`
+
+	Organization string `json:"organization,omitempty"`
+	// PolicyMode
+	//
+	// Default value: optional
+	PolicyMode ComputeClusterPolicyMode `json:"policy_mode,omitempty"`
+	// PolicyType
+	//
+	// Default value: low_latency
+	PolicyType ComputeClusterPolicyType `json:"policy_type,omitempty"`
+}
+
+// CreateComputeCluster create a new compute-cluster
+func (s *API) CreateComputeCluster(req *CreateComputeClusterRequest, opts ...scw.RequestOption) (*CreateComputeClusterResponse, error) {
+	var err error
+
+	if req.Organization == "" {
+		defaultOrganization, _ := s.client.GetDefaultProjectID()
+		req.Organization = defaultOrganization
+	}
+
+	if req.Zone == "" {
+		defaultZone, _ := s.client.GetDefaultZone()
+		req.Zone = defaultZone
+	}
+
+	if fmt.Sprint(req.Zone) == "" {
+		return nil, errors.New("field Zone cannot be empty in request")
+	}
+
+	scwReq := &scw.ScalewayRequest{
+		Method:  "POST",
+		Path:    "/instance/v1/zones/" + fmt.Sprint(req.Zone) + "/compute_clusters",
+		Headers: http.Header{},
+	}
+
+	err = scwReq.SetBody(req)
+	if err != nil {
+		return nil, err
+	}
+
+	var resp CreateComputeClusterResponse
+
+	err = s.client.Do(scwReq, &resp, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &resp, nil
+}
+
+type GetComputeClusterRequest struct {
+	Zone scw.Zone `json:"-"`
+
+	ComputeClusterID string `json:"-"`
+}
+
+// GetComputeCluster get the given compute-cluster
+func (s *API) GetComputeCluster(req *GetComputeClusterRequest, opts ...scw.RequestOption) (*GetComputeClusterResponse, error) {
+	var err error
+
+	if req.Zone == "" {
+		defaultZone, _ := s.client.GetDefaultZone()
+		req.Zone = defaultZone
+	}
+
+	if fmt.Sprint(req.Zone) == "" {
+		return nil, errors.New("field Zone cannot be empty in request")
+	}
+
+	if fmt.Sprint(req.ComputeClusterID) == "" {
+		return nil, errors.New("field ComputeClusterID cannot be empty in request")
+	}
+
+	scwReq := &scw.ScalewayRequest{
+		Method:  "GET",
+		Path:    "/instance/v1/zones/" + fmt.Sprint(req.Zone) + "/compute_clusters/" + fmt.Sprint(req.ComputeClusterID) + "",
+		Headers: http.Header{},
+	}
+
+	var resp GetComputeClusterResponse
+
+	err = s.client.Do(scwReq, &resp, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &resp, nil
+}
+
+type SetComputeClusterRequest struct {
+	Zone scw.Zone `json:"-"`
+
+	ComputeClusterID string `json:"-"`
+
+	Name string `json:"name"`
+
+	Organization string `json:"organization"`
+	// PolicyMode
+	//
+	// Default value: optional
+	PolicyMode ComputeClusterPolicyMode `json:"policy_mode"`
+	// PolicyType
+	//
+	// Default value: low_latency
+	PolicyType ComputeClusterPolicyType `json:"policy_type"`
+}
+
+// SetComputeCluster set all parameters of the given compute-cluster
+func (s *API) SetComputeCluster(req *SetComputeClusterRequest, opts ...scw.RequestOption) (*SetComputeClusterResponse, error) {
+	var err error
+
+	if req.Organization == "" {
+		defaultOrganization, _ := s.client.GetDefaultProjectID()
+		req.Organization = defaultOrganization
+	}
+
+	if req.Zone == "" {
+		defaultZone, _ := s.client.GetDefaultZone()
+		req.Zone = defaultZone
+	}
+
+	if fmt.Sprint(req.Zone) == "" {
+		return nil, errors.New("field Zone cannot be empty in request")
+	}
+
+	if fmt.Sprint(req.ComputeClusterID) == "" {
+		return nil, errors.New("field ComputeClusterID cannot be empty in request")
+	}
+
+	scwReq := &scw.ScalewayRequest{
+		Method:  "PUT",
+		Path:    "/instance/v1/zones/" + fmt.Sprint(req.Zone) + "/compute_clusters/" + fmt.Sprint(req.ComputeClusterID) + "",
+		Headers: http.Header{},
+	}
+
+	err = scwReq.SetBody(req)
+	if err != nil {
+		return nil, err
+	}
+
+	var resp SetComputeClusterResponse
+
+	err = s.client.Do(scwReq, &resp, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &resp, nil
+}
+
+type UpdateComputeClusterRequest struct {
+	Zone scw.Zone `json:"-"`
+
+	ComputeClusterID string `json:"-"`
+
+	Name *string `json:"name,omitempty"`
+
+	Organization *string `json:"organization,omitempty"`
+	// PolicyMode
+	//
+	// Default value: optional
+	PolicyMode ComputeClusterPolicyMode `json:"policy_mode,omitempty"`
+	// PolicyType
+	//
+	// Default value: low_latency
+	PolicyType ComputeClusterPolicyType `json:"policy_type,omitempty"`
+}
+
+// UpdateComputeCluster update one or more parameter of the given compute-cluster
+func (s *API) UpdateComputeCluster(req *UpdateComputeClusterRequest, opts ...scw.RequestOption) (*UpdateComputeClusterResponse, error) {
+	var err error
+
+	defaultOrganization, exist := s.client.GetDefaultProjectID()
+	if (req.Organization == nil || *req.Organization == "") && exist {
+		req.Organization = &defaultOrganization
+	}
+
+	if req.Zone == "" {
+		defaultZone, _ := s.client.GetDefaultZone()
+		req.Zone = defaultZone
+	}
+
+	if fmt.Sprint(req.Zone) == "" {
+		return nil, errors.New("field Zone cannot be empty in request")
+	}
+
+	if fmt.Sprint(req.ComputeClusterID) == "" {
+		return nil, errors.New("field ComputeClusterID cannot be empty in request")
+	}
+
+	scwReq := &scw.ScalewayRequest{
+		Method:  "PATCH",
+		Path:    "/instance/v1/zones/" + fmt.Sprint(req.Zone) + "/compute_clusters/" + fmt.Sprint(req.ComputeClusterID) + "",
+		Headers: http.Header{},
+	}
+
+	err = scwReq.SetBody(req)
+	if err != nil {
+		return nil, err
+	}
+
+	var resp UpdateComputeClusterResponse
+
+	err = s.client.Do(scwReq, &resp, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &resp, nil
+}
+
+type DeleteComputeClusterRequest struct {
+	Zone scw.Zone `json:"-"`
+
+	ComputeClusterID string `json:"-"`
+}
+
+// DeleteComputeCluster delete the given compute-cluster
+func (s *API) DeleteComputeCluster(req *DeleteComputeClusterRequest, opts ...scw.RequestOption) error {
+	var err error
+
+	if req.Zone == "" {
+		defaultZone, _ := s.client.GetDefaultZone()
+		req.Zone = defaultZone
+	}
+
+	if fmt.Sprint(req.Zone) == "" {
+		return errors.New("field Zone cannot be empty in request")
+	}
+
+	if fmt.Sprint(req.ComputeClusterID) == "" {
+		return errors.New("field ComputeClusterID cannot be empty in request")
+	}
+
+	scwReq := &scw.ScalewayRequest{
+		Method:  "DELETE",
+		Path:    "/instance/v1/zones/" + fmt.Sprint(req.Zone) + "/compute_clusters/" + fmt.Sprint(req.ComputeClusterID) + "",
+		Headers: http.Header{},
+	}
+
+	err = s.client.Do(scwReq, nil, opts...)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+type GetComputeClusterServersRequest struct {
+	Zone scw.Zone `json:"-"`
+
+	ComputeClusterID string `json:"-"`
+}
+
+// GetComputeClusterServers get all servers belonging to the given compute-cluster
+func (s *API) GetComputeClusterServers(req *GetComputeClusterServersRequest, opts ...scw.RequestOption) (*GetComputeClusterServersResponse, error) {
+	var err error
+
+	if req.Zone == "" {
+		defaultZone, _ := s.client.GetDefaultZone()
+		req.Zone = defaultZone
+	}
+
+	if fmt.Sprint(req.Zone) == "" {
+		return nil, errors.New("field Zone cannot be empty in request")
+	}
+
+	if fmt.Sprint(req.ComputeClusterID) == "" {
+		return nil, errors.New("field ComputeClusterID cannot be empty in request")
+	}
+
+	scwReq := &scw.ScalewayRequest{
+		Method:  "GET",
+		Path:    "/instance/v1/zones/" + fmt.Sprint(req.Zone) + "/compute_clusters/" + fmt.Sprint(req.ComputeClusterID) + "/servers",
+		Headers: http.Header{},
+	}
+
+	var resp GetComputeClusterServersResponse
+
+	err = s.client.Do(scwReq, &resp, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &resp, nil
+}
+
+type SetComputeClusterServersRequest struct {
+	Zone scw.Zone `json:"-"`
+
+	ComputeClusterID string `json:"-"`
+}
+
+// SetComputeClusterServers set all servers belonging to the given compute-cluster
+func (s *API) SetComputeClusterServers(req *SetComputeClusterServersRequest, opts ...scw.RequestOption) (*SetComputeClusterServersResponse, error) {
+	var err error
+
+	if req.Zone == "" {
+		defaultZone, _ := s.client.GetDefaultZone()
+		req.Zone = defaultZone
+	}
+
+	if fmt.Sprint(req.Zone) == "" {
+		return nil, errors.New("field Zone cannot be empty in request")
+	}
+
+	if fmt.Sprint(req.ComputeClusterID) == "" {
+		return nil, errors.New("field ComputeClusterID cannot be empty in request")
+	}
+
+	scwReq := &scw.ScalewayRequest{
+		Method:  "PUT",
+		Path:    "/instance/v1/zones/" + fmt.Sprint(req.Zone) + "/compute_clusters/" + fmt.Sprint(req.ComputeClusterID) + "/servers",
+		Headers: http.Header{},
+	}
+
+	var resp SetComputeClusterServersResponse
+
+	err = s.client.Do(scwReq, &resp, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &resp, nil
+}
+
+type UpdateComputeClusterServersRequest struct {
+	Zone scw.Zone `json:"-"`
+
+	ComputeClusterID string `json:"-"`
+}
+
+// UpdateComputeClusterServers update all servers belonging to the given compute-cluster
+func (s *API) UpdateComputeClusterServers(req *UpdateComputeClusterServersRequest, opts ...scw.RequestOption) (*UpdateComputeClusterServersResponse, error) {
+	var err error
+
+	if req.Zone == "" {
+		defaultZone, _ := s.client.GetDefaultZone()
+		req.Zone = defaultZone
+	}
+
+	if fmt.Sprint(req.Zone) == "" {
+		return nil, errors.New("field Zone cannot be empty in request")
+	}
+
+	if fmt.Sprint(req.ComputeClusterID) == "" {
+		return nil, errors.New("field ComputeClusterID cannot be empty in request")
+	}
+
+	scwReq := &scw.ScalewayRequest{
+		Method:  "PATCH",
+		Path:    "/instance/v1/zones/" + fmt.Sprint(req.Zone) + "/compute_clusters/" + fmt.Sprint(req.ComputeClusterID) + "/servers",
+		Headers: http.Header{},
+	}
+
+	var resp UpdateComputeClusterServersResponse
+
+	err = s.client.Do(scwReq, &resp, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &resp, nil
+}
+
+type DeleteComputeClusterServersRequest struct {
+	Zone scw.Zone `json:"-"`
+
+	ComputeClusterID string `json:"-"`
+}
+
+// DeleteComputeClusterServers delete all servers from the given compute-cluster
+func (s *API) DeleteComputeClusterServers(req *DeleteComputeClusterServersRequest, opts ...scw.RequestOption) error {
+	var err error
+
+	if req.Zone == "" {
+		defaultZone, _ := s.client.GetDefaultZone()
+		req.Zone = defaultZone
+	}
+
+	if fmt.Sprint(req.Zone) == "" {
+		return errors.New("field Zone cannot be empty in request")
+	}
+
+	if fmt.Sprint(req.ComputeClusterID) == "" {
+		return errors.New("field ComputeClusterID cannot be empty in request")
+	}
+
+	scwReq := &scw.ScalewayRequest{
+		Method:  "DELETE",
+		Path:    "/instance/v1/zones/" + fmt.Sprint(req.Zone) + "/compute_clusters/" + fmt.Sprint(req.ComputeClusterID) + "/servers",
+		Headers: http.Header{},
+	}
+
+	err = s.client.Do(scwReq, nil, opts...)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 type ListIpsRequest struct {
-	Zone utils.Zone `json:"-"`
+	Zone scw.Zone `json:"-"`
 
 	Organization string `json:"-"`
 
@@ -2929,7 +3475,7 @@ func (r *ListIpsResponse) UnsafeAppend(res interface{}) (int, scw.SdkError) {
 }
 
 type CreateIPRequest struct {
-	Zone utils.Zone `json:"-"`
+	Zone scw.Zone `json:"-"`
 
 	Organization string `json:"organization,omitempty"`
 
@@ -2975,7 +3521,7 @@ func (s *API) CreateIP(req *CreateIPRequest, opts ...scw.RequestOption) (*Create
 }
 
 type GetIPRequest struct {
-	Zone utils.Zone `json:"-"`
+	Zone scw.Zone `json:"-"`
 
 	IPID string `json:"-"`
 }
@@ -3015,7 +3561,7 @@ func (s *API) GetIP(req *GetIPRequest, opts ...scw.RequestOption) (*GetIPRespons
 }
 
 type setIPRequest struct {
-	Zone utils.Zone `json:"-"`
+	Zone scw.Zone `json:"-"`
 
 	ID string `json:"-"`
 
@@ -3070,7 +3616,7 @@ func (s *API) setIP(req *setIPRequest, opts ...scw.RequestOption) (*setIPRespons
 }
 
 type updateIPRequest struct {
-	Zone utils.Zone `json:"-"`
+	Zone scw.Zone `json:"-"`
 
 	IPID string `json:"-"`
 
@@ -3117,7 +3663,7 @@ func (s *API) updateIP(req *updateIPRequest, opts ...scw.RequestOption) (*Update
 }
 
 type DeleteIPRequest struct {
-	Zone utils.Zone `json:"-"`
+	Zone scw.Zone `json:"-"`
 
 	IPID string `json:"-"`
 }
@@ -3155,7 +3701,7 @@ func (s *API) DeleteIP(req *DeleteIPRequest, opts ...scw.RequestOption) error {
 }
 
 type ListBootscriptsRequest struct {
-	Zone utils.Zone `json:"-"`
+	Zone scw.Zone `json:"-"`
 
 	Arch *string `json:"-"`
 
@@ -3232,7 +3778,7 @@ func (r *ListBootscriptsResponse) UnsafeAppend(res interface{}) (int, scw.SdkErr
 }
 
 type GetBootscriptRequest struct {
-	Zone utils.Zone `json:"-"`
+	Zone scw.Zone `json:"-"`
 
 	BootscriptID string `json:"-"`
 }
@@ -3272,7 +3818,7 @@ func (s *API) GetBootscript(req *GetBootscriptRequest, opts ...scw.RequestOption
 }
 
 type GetDashboardRequest struct {
-	Zone utils.Zone `json:"-"`
+	Zone scw.Zone `json:"-"`
 
 	Organization *string `json:"-"`
 }

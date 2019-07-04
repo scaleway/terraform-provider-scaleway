@@ -4,9 +4,11 @@ import (
 	"crypto/tls"
 	"encoding/json"
 	"io"
+	"math"
 	"net"
 	"net/http"
 	"net/http/httputil"
+	"reflect"
 	"strconv"
 	"sync/atomic"
 	"time"
@@ -14,7 +16,6 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/internal/auth"
 	"github.com/scaleway/scaleway-sdk-go/internal/errors"
 	"github.com/scaleway/scaleway-sdk-go/logger"
-	"github.com/scaleway/scaleway-sdk-go/utils"
 )
 
 // Client is the Scaleway client which performs API requests.
@@ -27,8 +28,8 @@ type Client struct {
 	apiURL           string
 	userAgent        string
 	defaultProjectID *string
-	defaultRegion    *utils.Region
-	defaultZone      *utils.Zone
+	defaultRegion    *Region
+	defaultZone      *Zone
 	defaultPageSize  *int32
 }
 
@@ -93,21 +94,21 @@ func (c *Client) GetDefaultProjectID() (string, bool) {
 // GetDefaultRegion return the default region of the client.
 // This value can be set in the client option
 // WithDefaultRegion(). Be aware this value can be empty.
-func (c *Client) GetDefaultRegion() (utils.Region, bool) {
+func (c *Client) GetDefaultRegion() (Region, bool) {
 	if c.defaultRegion != nil {
 		return *c.defaultRegion, true
 	}
-	return utils.Region(""), false
+	return Region(""), false
 }
 
 // GetDefaultZone return the default zone of the client.
 // This value can be set in the client option
 // WithDefaultZone(). Be aware this value can be empty.
-func (c *Client) GetDefaultZone() (utils.Zone, bool) {
+func (c *Client) GetDefaultZone() (Zone, bool) {
 	if c.defaultZone != nil {
 		return *c.defaultZone, true
 	}
-	return utils.Zone(""), false
+	return Zone(""), false
 }
 
 // GetDefaultPageSize return the default page size of the client.
@@ -266,6 +267,61 @@ func (c *Client) do(req *ScalewayRequest, res interface{}) (sdkErr SdkError) {
 	}
 
 	return nil
+}
+
+type lister interface {
+	UnsafeGetTotalCount() int
+	UnsafeAppend(interface{}) (int, SdkError)
+}
+
+type legacyLister interface {
+	UnsafeSetTotalCount(totalCount int)
+}
+
+// doListAll collects all pages of a List request and aggregate all results on a single response.
+func (c *Client) doListAll(req *ScalewayRequest, res interface{}) (err SdkError) {
+
+	// check for lister interface
+	if response, isLister := res.(lister); isLister {
+
+		pageCount := math.MaxUint32
+		for page := 1; page <= pageCount; page++ {
+			// set current page
+			req.Query.Set("page", strconv.Itoa(page))
+
+			// request the next page
+			nextPage := newPage(response)
+			err := c.do(req, nextPage)
+			if err != nil {
+				return err
+			}
+
+			// append results
+			pageSize, err := response.UnsafeAppend(nextPage)
+			if err != nil {
+				return err
+			}
+
+			if pageSize == 0 {
+				return nil
+			}
+
+			// set total count on first request
+			if pageCount == math.MaxUint32 {
+				totalCount := nextPage.(lister).UnsafeGetTotalCount()
+				pageCount = (totalCount + pageSize - 1) / pageSize
+			}
+		}
+		return nil
+	}
+
+	return errors.New("%T does not support pagination", res)
+}
+
+// newPage returns a variable set to the zero value of the given type
+func newPage(v interface{}) interface{} {
+	// reflect.New always create a pointer, that's why we use reflect.Indirect before
+	return reflect.New(reflect.Indirect(reflect.ValueOf(v)).Type()).Interface()
 }
 
 func newHTTPClient() *http.Client {

@@ -10,7 +10,6 @@ import (
 
 	"github.com/scaleway/scaleway-sdk-go/internal/auth"
 	"github.com/scaleway/scaleway-sdk-go/internal/errors"
-	"github.com/scaleway/scaleway-sdk-go/utils"
 )
 
 // ScalewayRequest contains all the contents related to performing a request on the Scaleway API.
@@ -64,7 +63,7 @@ func (req *ScalewayRequest) SetBody(body interface{}) error {
 	var content io.Reader
 
 	switch b := body.(type) {
-	case *utils.File:
+	case *File:
 		contentType = b.ContentType
 		content = b.Content
 	case io.Reader:
