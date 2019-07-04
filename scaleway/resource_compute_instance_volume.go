@@ -8,7 +8,7 @@ import (
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/hashicorp/terraform/helper/validation"
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
-	"github.com/scaleway/scaleway-sdk-go/utils"
+	"github.com/scaleway/scaleway-sdk-go/scw"
 )
 
 func resourceScalewayComputeInstanceVolume() *schema.Resource {
@@ -98,11 +98,11 @@ func resourceScalewayComputeInstanceVolumeCreate(d *schema.ResourceData, m inter
 	}
 
 	if volumeID, ok := d.GetOk("from_volume_id"); ok {
-		createVolumeRequest.BaseVolume = utils.String(expandID(volumeID))
+		createVolumeRequest.BaseVolume = scw.String(expandID(volumeID))
 	}
 
 	if snapshotID, ok := d.GetOk("from_snapshot_id"); ok {
-		createVolumeRequest.BaseSnapshot = utils.String(expandID(snapshotID))
+		createVolumeRequest.BaseSnapshot = scw.String(expandID(snapshotID))
 	}
 
 	res, err := instanceAPI.CreateVolume(createVolumeRequest)

@@ -9,7 +9,7 @@ import (
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
-	"github.com/scaleway/scaleway-sdk-go/utils"
+	"github.com/scaleway/scaleway-sdk-go/scw"
 )
 
 const (
@@ -22,7 +22,7 @@ const (
 )
 
 // getInstanceAPIWithZone returns a new instance API and the zone for a Create request
-func getInstanceAPIWithZone(d *schema.ResourceData, m interface{}) (*instance.API, utils.Zone, error) {
+func getInstanceAPIWithZone(d *schema.ResourceData, m interface{}) (*instance.API, scw.Zone, error) {
 	meta := m.(*Meta)
 	instanceAPI := instance.NewAPI(meta.scwClient)
 
@@ -31,7 +31,7 @@ func getInstanceAPIWithZone(d *schema.ResourceData, m interface{}) (*instance.AP
 }
 
 // getInstanceAPIWithZoneAndID returns an instance API with zone and ID extracted from the state
-func getInstanceAPIWithZoneAndID(m interface{}, id string) (*instance.API, utils.Zone, string, error) {
+func getInstanceAPIWithZoneAndID(m interface{}, id string) (*instance.API, scw.Zone, string, error) {
 	meta := m.(*Meta)
 	instanceAPI := instance.NewAPI(meta.scwClient)
 
@@ -94,7 +94,7 @@ func computeServerStateToAction(previousState, nextState string, forceReboot boo
 }
 
 // reachState executes server action(s) to reach the expected state
-func reachState(instanceAPI *instance.API, zone utils.Zone, serverID, fromState, toState string, forceReboot bool) error {
+func reachState(instanceAPI *instance.API, zone scw.Zone, serverID, fromState, toState string, forceReboot bool) error {
 	for _, action := range computeServerStateToAction(fromState, toState, forceReboot) {
 		err := resource.Retry(ServerRetryFuncTimeout, func() *resource.RetryError {
 			err := instanceAPI.ServerActionAndWait(&instance.ServerActionAndWaitRequest{

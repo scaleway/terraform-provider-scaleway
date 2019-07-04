@@ -10,8 +10,7 @@ import (
 	"github.com/hashicorp/terraform/terraform"
 	"github.com/mitchellh/go-homedir"
 	scwLogger "github.com/scaleway/scaleway-sdk-go/logger"
-	"github.com/scaleway/scaleway-sdk-go/scwconfig"
-	"github.com/scaleway/scaleway-sdk-go/utils"
+	"github.com/scaleway/scaleway-sdk-go/scw"
 )
 
 var mu = sync.Mutex{}
@@ -23,7 +22,7 @@ func Provider() terraform.ResourceProvider {
 	scwLogger.SetLogger(l)
 
 	// Init the Scaleway config.
-	scwConfig, err := scwconfig.Load()
+	scwConfig, err := scw.LoadConfig()
 	if err != nil {
 		l.Errorf("cannot load configuration: %s", err)
 		return nil
@@ -71,7 +70,7 @@ func Provider() terraform.ResourceProvider {
 							l.Errorf("cannot parse deprecated config file: %s", err)
 							return nil, nil
 						}
-						// Depreciation log is already handled by scwconfig.
+						// Depreciation log is already handled by scw config.
 						return scwAPIKey, nil
 					}
 					// No error is returned here to allow user to use `secret_key`.
@@ -121,7 +120,7 @@ func Provider() terraform.ResourceProvider {
 					if defaultRegion, exist := scwConfig.GetDefaultRegion(); exist {
 						return string(defaultRegion), nil
 					}
-					return string(utils.RegionFrPar), nil
+					return string(scw.RegionFrPar), nil
 				}),
 				ValidateFunc: validationRegion(),
 			},
@@ -211,13 +210,13 @@ func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 	}
 
 	rawRegion := d.Get("region").(string)
-	region, err := utils.ParseRegion(rawRegion)
+	region, err := scw.ParseRegion(rawRegion)
 	if err != nil {
 		return nil, err
 	}
 
 	rawZone := d.Get("zone").(string)
-	zone, err := utils.ParseZone(rawZone)
+	zone, err := scw.ParseZone(rawZone)
 	if err != nil {
 		return nil, err
 	}

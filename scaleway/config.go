@@ -20,7 +20,6 @@ import (
 	"github.com/hashicorp/terraform/helper/logging"
 	sdk "github.com/nicolai86/scaleway-sdk"
 	"github.com/scaleway/scaleway-sdk-go/scw"
-	"github.com/scaleway/scaleway-sdk-go/utils"
 )
 
 // Meta contains config and SDK clients used by resources.
@@ -30,8 +29,8 @@ type Meta struct {
 	AccessKey        string
 	SecretKey        string
 	DefaultProjectID string
-	DefaultRegion    utils.Region
-	DefaultZone      utils.Zone
+	DefaultRegion    scw.Region
+	DefaultZone      scw.Zone
 
 	// scwClient is the Scaleway SDK client.
 	scwClient *scw.Client
@@ -149,10 +148,10 @@ func (m *Meta) bootstrapDeprecatedClient() error {
 	}
 
 	region := string(m.DefaultRegion)
-	if m.DefaultRegion == utils.RegionFrPar {
+	if m.DefaultRegion == scw.RegionFrPar {
 		region = "par1"
 	}
-	if m.DefaultRegion == utils.RegionNlAms {
+	if m.DefaultRegion == scw.RegionNlAms {
 		region = "ams1"
 	}
 
@@ -189,7 +188,7 @@ func (m *Meta) bootstrapS3Client() error {
 }
 
 // getS3Endpoint returns the correct S3 endpoint for object storage based on the current region
-func (m *Meta) getS3Endpoint(region utils.Region) string {
+func (m *Meta) getS3Endpoint(region scw.Region) string {
 	return "https://s3." + string(region) + ".scw.cloud"
 
 }

@@ -9,7 +9,6 @@ import (
 	"github.com/hashicorp/terraform/helper/resource"
 	api "github.com/nicolai86/scaleway-sdk"
 	"github.com/scaleway/scaleway-sdk-go/scw"
-	"github.com/scaleway/scaleway-sdk-go/utils"
 )
 
 func TestMain(m *testing.M) {
@@ -69,7 +68,7 @@ func buildTestConfigForTests(region string) (*Meta, error) {
 		return nil, fmt.Errorf("empty SCW_SECRET_KEY")
 	}
 
-	parsedRegion, err := utils.ParseRegion(region)
+	parsedRegion, err := scw.ParseRegion(region)
 	if err != nil {
 		return nil, err
 	}

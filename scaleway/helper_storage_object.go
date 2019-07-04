@@ -3,11 +3,11 @@ package scaleway
 import (
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/hashicorp/terraform/helper/schema"
-	"github.com/scaleway/scaleway-sdk-go/utils"
+	"github.com/scaleway/scaleway-sdk-go/scw"
 )
 
 // getS3ClientWithRegion returns a new S3 client with the correct region extracted from the resource data.
-func getS3ClientWithRegion(d *schema.ResourceData, m interface{}) (*s3.S3, utils.Region, error) {
+func getS3ClientWithRegion(d *schema.ResourceData, m interface{}) (*s3.S3, scw.Region, error) {
 	meta := m.(*Meta)
 
 	region, err := getRegion(d, meta)
@@ -32,7 +32,7 @@ func getS3ClientWithRegion(d *schema.ResourceData, m interface{}) (*s3.S3, utils
 }
 
 // getS3ClientWithRegion returns a new S3 client with the correct region and id  extracted from the resource data.
-func getS3ClientWithRegionAndID(m interface{}, id string) (*s3.S3, utils.Region, string, error) {
+func getS3ClientWithRegionAndID(m interface{}, id string) (*s3.S3, scw.Region, string, error) {
 	meta := m.(*Meta)
 
 	region, id, err := parseRegionalID(id)
