@@ -24,19 +24,19 @@ const (
 // getInstanceAPIWithZone returns a new instance API and the zone for a Create request
 func getInstanceAPIWithZone(d *schema.ResourceData, m interface{}) (*instance.API, utils.Zone, error) {
 	meta := m.(*Meta)
-	instanceApi := instance.NewAPI(meta.scwClient)
+	instanceAPI := instance.NewAPI(meta.scwClient)
 
 	zone, err := getZone(d, meta)
-	return instanceApi, zone, err
+	return instanceAPI, zone, err
 }
 
 // getInstanceAPIWithZoneAndID returns an instance API with zone and ID extracted from the state
 func getInstanceAPIWithZoneAndID(m interface{}, id string) (*instance.API, utils.Zone, string, error) {
 	meta := m.(*Meta)
-	instanceApi := instance.NewAPI(meta.scwClient)
+	instanceAPI := instance.NewAPI(meta.scwClient)
 
 	zone, ID, err := parseZonedID(id)
-	return instanceApi, zone, ID, err
+	return instanceAPI, zone, ID, err
 }
 
 func userDataHash(v interface{}) int {
@@ -94,10 +94,10 @@ func computeServerStateToAction(previousState, nextState string, forceReboot boo
 }
 
 // reachState executes server action(s) to reach the expected state
-func reachState(instanceApi *instance.API, zone utils.Zone, serverID, fromState, toState string, forceReboot bool) error {
+func reachState(instanceAPI *instance.API, zone utils.Zone, serverID, fromState, toState string, forceReboot bool) error {
 	for _, action := range computeServerStateToAction(fromState, toState, forceReboot) {
 		err := resource.Retry(ServerRetryFuncTimeout, func() *resource.RetryError {
-			err := instanceApi.ServerActionAndWait(&instance.ServerActionAndWaitRequest{
+			err := instanceAPI.ServerActionAndWait(&instance.ServerActionAndWaitRequest{
 				Zone:     zone,
 				ServerID: serverID,
 				Action:   action,
