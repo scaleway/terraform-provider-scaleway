@@ -14,7 +14,6 @@ import (
 	api "github.com/nicolai86/scaleway-sdk"
 	"github.com/scaleway/scaleway-sdk-go/namegenerator"
 	"github.com/scaleway/scaleway-sdk-go/scw"
-	"github.com/scaleway/scaleway-sdk-go/utils"
 	"golang.org/x/xerrors"
 )
 
@@ -226,14 +225,14 @@ func parseLocalizedID(localizedID string) (locality string, ID string, err error
 }
 
 // parseZonedID parses a zonedID and extracts the resource zone and id.
-func parseZonedID(zonedID string) (zone utils.Zone, id string, err error) {
+func parseZonedID(zonedID string) (zone scw.Zone, id string, err error) {
 
 	locality, id, err := parseLocalizedID(zonedID)
 	if err != nil {
 		return
 	}
 
-	zone, err = utils.ParseZone(locality)
+	zone, err = scw.ParseZone(locality)
 	return
 }
 
@@ -247,23 +246,23 @@ func expandID(id interface{}) string {
 }
 
 // parseRegionalID parses a regionalID and extracts the resource region and id.
-func parseRegionalID(regionalID string) (region utils.Region, id string, err error) {
+func parseRegionalID(regionalID string) (region scw.Region, id string, err error) {
 	locality, id, err := parseLocalizedID(regionalID)
 	if err != nil {
 		return
 	}
 
-	region, err = utils.ParseRegion(locality)
+	region, err = scw.ParseRegion(locality)
 	return
 }
 
 // newZonedId constructs a unique identifier based on resource zone and id
-func newZonedId(zone utils.Zone, id string) string {
+func newZonedId(zone scw.Zone, id string) string {
 	return fmt.Sprintf("%s/%s", zone, id)
 }
 
 // newRegionalId constructs a unique identifier based on resource region and id
-func newRegionalId(region utils.Region, id string) string {
+func newRegionalId(region scw.Region, id string) string {
 	return fmt.Sprintf("%s/%s", region, id)
 }
 
@@ -284,11 +283,11 @@ var ErrZoneNotFound = fmt.Errorf("could not detect zone")
 // getZone will try to guess the zone from the following:
 //  - zone field of the resource data
 //  - default zone from config
-func getZone(d terraformResourceData, meta *Meta) (utils.Zone, error) {
+func getZone(d terraformResourceData, meta *Meta) (scw.Zone, error) {
 
 	rawZone, exist := d.GetOkExists("zone")
 	if exist {
-		return utils.ParseZone(rawZone.(string))
+		return scw.ParseZone(rawZone.(string))
 	}
 
 	zone, exist := meta.scwClient.GetDefaultZone()
@@ -296,7 +295,7 @@ func getZone(d terraformResourceData, meta *Meta) (utils.Zone, error) {
 		return zone, nil
 	}
 
-	return utils.Zone(""), ErrZoneNotFound
+	return scw.Zone(""), ErrZoneNotFound
 }
 
 // ErrRegionNotFound is returned when no region can be detected
@@ -305,11 +304,11 @@ var ErrRegionNotFound = fmt.Errorf("could not detect region")
 // getRegion will try to guess the region from the following:
 //  - region field of the resource data
 //  - default region from config
-func getRegion(d terraformResourceData, meta *Meta) (utils.Region, error) {
+func getRegion(d terraformResourceData, meta *Meta) (scw.Region, error) {
 
 	rawRegion, exist := d.GetOkExists("region")
 	if exist {
-		return utils.ParseRegion(rawRegion.(string))
+		return scw.ParseRegion(rawRegion.(string))
 	}
 
 	region, exist := meta.scwClient.GetDefaultRegion()
@@ -317,7 +316,7 @@ func getRegion(d terraformResourceData, meta *Meta) (utils.Region, error) {
 		return region, nil
 	}
 
-	return utils.Region(""), ErrRegionNotFound
+	return scw.Region(""), ErrRegionNotFound
 }
 
 // isHTTPCodeError returns true if err is an http error with code statusCode

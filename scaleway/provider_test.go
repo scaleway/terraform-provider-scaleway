@@ -7,7 +7,7 @@ import (
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/hashicorp/terraform/terraform"
 	homedir "github.com/mitchellh/go-homedir"
-	"github.com/scaleway/scaleway-sdk-go/scwconfig"
+	"github.com/scaleway/scaleway-sdk-go/scw"
 )
 
 var testAccProviders map[string]terraform.ResourceProvider
@@ -41,7 +41,7 @@ func TestProvider_impl(t *testing.T) {
 func testAccPreCheck(t *testing.T) {
 
 	// Handle new config system first
-	config, err := scwconfig.Load()
+	config, err := scw.LoadConfig()
 	if err == nil {
 		_, hasAccessKey := config.GetAccessKey()
 		_, hasSecretKey := config.GetSecretKey()

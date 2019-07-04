@@ -1,4 +1,34 @@
-package utils
+package scw
+
+import "io"
+
+// ServiceInfo contains API metadata
+// These metadata are only here for debugging. Do not rely on these values
+type ServiceInfo struct {
+	// Name is the name of the API
+	Name string `json:"name"`
+
+	// Description is a human readable description for the API
+	Description string `json:"description"`
+
+	// Version is the version of the API
+	Version string `json:"version"`
+
+	// DocumentationUrl is the a web url where the documentation of the API can be found
+	DocumentationUrl *string `json:"documentation_url"`
+}
+
+// File is the structure used to receive / send a file from / to the API
+type File struct {
+	// Name of the file
+	Name string `json:"name"`
+
+	// ContentType used in the HTTP header `Content-Type`
+	ContentType string `json:"content_type"`
+
+	// Content of the file
+	Content io.Reader `json:"content"`
+}
 
 // Money represents an amount of money with its currency type.
 type Money struct {

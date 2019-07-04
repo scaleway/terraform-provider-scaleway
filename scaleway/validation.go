@@ -6,7 +6,7 @@ import (
 	"strings"
 
 	"github.com/hashicorp/terraform/helper/schema"
-	"github.com/scaleway/scaleway-sdk-go/utils"
+	"github.com/scaleway/scaleway-sdk-go/scw"
 )
 
 // validationUUID validates the schema is a UUID or the combination of a locality and a UUID
@@ -48,8 +48,8 @@ func validationZone() func(interface{}, string) ([]string, []error) {
 			return nil, []error{fmt.Errorf("invalid zone: not a string")}
 		}
 
-		// TODO: Use utils.ParseZone when the format validation will be implemented.
-		zone, _ := utils.ParseZone(rawZone)
+		// TODO: Use scw.ParseZone when the format validation will be implemented.
+		zone, _ := scw.ParseZone(rawZone)
 		if rawZone == "par1" || rawZone == "ams1" {
 			warnings = append(warnings, fmt.Sprintf("%s is a deprecated name for zone, use %v instead", rawZone, zone))
 		} else if !zone.Exists() {
@@ -68,8 +68,8 @@ func validationRegion() func(interface{}, string) ([]string, []error) {
 			return nil, []error{fmt.Errorf("invalid region: not a string")}
 		}
 
-		// TODO: Use utils.ParseRegion when the format validation will be implemented.
-		region, _ := utils.ParseRegion(rawRegion)
+		// TODO: Use scw.ParseRegion when the format validation will be implemented.
+		region, _ := scw.ParseRegion(rawRegion)
 		if rawRegion == "par1" || rawRegion == "ams1" {
 			warnings = append(warnings, fmt.Sprintf("%s is a deprecated name for region, use %v instead", rawRegion, region))
 		} else if !region.Exists() {

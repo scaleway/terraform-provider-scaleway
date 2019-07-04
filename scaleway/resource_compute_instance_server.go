@@ -12,7 +12,7 @@ import (
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/hashicorp/terraform/helper/validation"
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
-	"github.com/scaleway/scaleway-sdk-go/utils"
+	"github.com/scaleway/scaleway-sdk-go/scw"
 )
 
 func resourceScalewayComputeInstanceServer() *schema.Resource {
@@ -373,11 +373,11 @@ func resourceScalewayComputeInstanceServerUpdate(d *schema.ResourceData, m inter
 	}
 
 	if d.HasChange("name") {
-		updateRequest.Name = utils.String(d.Get("name").(string))
+		updateRequest.Name = scw.String(d.Get("name").(string))
 	}
 
 	if d.HasChange("tags") {
-		updateRequest.Tags = utils.Strings(d.Get("tags").([]string))
+		updateRequest.Tags = scw.Strings(d.Get("tags").([]string))
 	}
 
 	if d.HasChange("security_group_id") {
@@ -388,7 +388,7 @@ func resourceScalewayComputeInstanceServerUpdate(d *schema.ResourceData, m inter
 	}
 
 	if d.HasChange("enable_ipv6") {
-		updateRequest.EnableIPv6 = utils.Bool(d.Get("enable_ipv6").(bool))
+		updateRequest.EnableIPv6 = scw.Bool(d.Get("enable_ipv6").(bool))
 	}
 
 	volumes := map[string]*instance.VolumeTemplate{}

@@ -7,7 +7,6 @@ import (
 	"testing"
 
 	"github.com/scaleway/scaleway-sdk-go/scw"
-	"github.com/scaleway/scaleway-sdk-go/utils"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -72,20 +71,20 @@ func TestParseZonedID(t *testing.T) {
 		name       string
 		localityId string
 		id         string
-		zone       utils.Zone
+		zone       scw.Zone
 		err        string
 	}{
 		{
 			name:       "simple",
 			localityId: "fr-par-1/my-id",
 			id:         "my-id",
-			zone:       utils.ZoneFrPar1,
+			zone:       scw.ZoneFrPar1,
 		},
 		{
 			name:       "id with slashed",
 			localityId: "fr-par-1/my/id",
 			id:         "my/id",
-			zone:       utils.ZoneFrPar1,
+			zone:       scw.ZoneFrPar1,
 		},
 		{
 			name:       "empty",
@@ -120,20 +119,20 @@ func TestParseRegionID(t *testing.T) {
 		name       string
 		localityId string
 		id         string
-		region     utils.Region
+		region     scw.Region
 		err        string
 	}{
 		{
 			name:       "simple",
 			localityId: "fr-par/my-id",
 			id:         "my-id",
-			region:     utils.RegionFrPar,
+			region:     scw.RegionFrPar,
 		},
 		{
 			name:       "id with slashed",
 			localityId: "fr-par/my/id",
 			id:         "my/id",
-			region:     utils.RegionFrPar,
+			region:     scw.RegionFrPar,
 		},
 		{
 			name:       "empty",
@@ -163,11 +162,11 @@ func TestParseRegionID(t *testing.T) {
 }
 
 func TestNewZonedId(t *testing.T) {
-	assert.Equal(t, "fr-par-1/my-id", newZonedId(utils.ZoneFrPar1, "my-id"))
+	assert.Equal(t, "fr-par-1/my-id", newZonedId(scw.ZoneFrPar1, "my-id"))
 }
 
 func TestNewRegionalId(t *testing.T) {
-	assert.Equal(t, "fr-par/my-id", newRegionalId(utils.RegionFrPar, "my-id"))
+	assert.Equal(t, "fr-par/my-id", newRegionalId(scw.RegionFrPar, "my-id"))
 }
 
 func TestIsHTTPCodeError(t *testing.T) {
