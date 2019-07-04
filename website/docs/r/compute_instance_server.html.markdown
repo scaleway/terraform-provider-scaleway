@@ -46,6 +46,40 @@ resource "scaleway_compute_instance_server" "web" {
 }
 ```
 
+### With security group
+
+```hcl
+resource "scaleway_compute_instance_security_group" "www" {
+  inbound_default_policy = "drop"
+  outbound_default_policy = "accept"
+
+  inbound {
+    action = accept
+    port = "22"
+  }
+
+  inbound {
+    action = accept
+    port = "443"
+    ip = "8.8.8.8"
+  }
+
+  outbound {
+    action = drop
+    ip_range = "10.20.0.0/24"
+  }
+
+  resource "scaleway_compute_instance_server" "web" {
+    type = "DEV1-S"
+    image_id = "f974feac-abae-4365-b988-8ec7d1cec10d"
+    
+    security_group_id= "${scaleway_compute_instance_security_group.www.id}"
+  }
+}
+
+
+```
+
 ### With user data and could-init
 
 ```hcl
