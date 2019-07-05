@@ -311,6 +311,28 @@ func TestAccScalewayComputeInstanceServerAdditionalVolumes2(t *testing.T) {
 	})
 }
 
+func TestAccScalewayComputeInstanceServerWithPlacementGroup(t *testing.T) {
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckScalewayComputeInstanceServerDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckScalewayComputeInstanceServerConfigWithPlacementGroup,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayComputeInstanceServerExists("scaleway_compute_instance_server.base.0"),
+					testAccCheckScalewayComputeInstanceServerExists("scaleway_compute_instance_server.base.1"),
+					testAccCheckScalewayComputeInstanceServerExists("scaleway_compute_instance_server.base.2"),
+					testAccCheckScalewayComputeInstancePlacementGroupExists("scaleway_compute_instance_placement_group.ha"),
+					resource.TestCheckResourceAttr("scaleway_compute_instance_server.base.0", "placement_group_policy_respected", "true"),
+					resource.TestCheckResourceAttr("scaleway_compute_instance_server.base.1", "placement_group_policy_respected", "true"),
+					resource.TestCheckResourceAttr("scaleway_compute_instance_server.base.2", "placement_group_policy_respected", "true"),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckScalewayComputeInstanceServerExists(n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
@@ -508,6 +530,20 @@ resource "scaleway_compute_instance_server" "webserver" {
   type     = "DEV1-S"
 
   additional_volume_ids = [ "${scaleway_compute_instance_volume.data.id}" ]
+}
+`
+
+var testAccCheckScalewayComputeInstanceServerConfigWithPlacementGroup = `
+resource "scaleway_compute_instance_placement_group" "ha" {
+	policy_mode = "enforced"
+	policy_type = "max_availability"
+}
+
+resource "scaleway_compute_instance_server" "base" {
+	count = 3
+	image_id = "f974feac-abae-4365-b988-8ec7d1cec10d"
+	type     = "DEV1-S"
+	placement_group_id = "${scaleway_compute_instance_placement_group.ha.id}"
 }
 `
 
