@@ -1,7 +1,6 @@
 ---
 layout: "scaleway"
 page_title: "Scaleway: bucket"
-sidebar_current: "docs-scaleway-resource-bucket"
 description: |-
   Manages Scaleway buckets.
 ---

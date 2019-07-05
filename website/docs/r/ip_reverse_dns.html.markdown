@@ -1,7 +1,6 @@
 ---
 layout: "scaleway"
 page_title: "Scaleway: ip_reverse_dns"
-sidebar_current: "docs-scaleway-resource-ip-reverse-dns"
 description: |-
   Manages Scaleway IPs.
 ---

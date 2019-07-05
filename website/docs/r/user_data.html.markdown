@@ -1,7 +1,6 @@
 ---
 layout: "scaleway"
 page_title: "Scaleway: user_data"
-sidebar_current: "docs-scaleway-resource-user-data"
 description: |-
   Manages Scaleway Server UserData.
 ---

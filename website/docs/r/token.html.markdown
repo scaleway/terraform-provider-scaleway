@@ -1,7 +1,6 @@
 ---
 layout: "scaleway"
 page_title: "Scaleway: token"
-sidebar_current: "docs-scaleway-resource-token"
 description: |-
   Manages Scaleway Tokens.
 ---
