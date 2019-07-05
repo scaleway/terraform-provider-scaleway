@@ -56,12 +56,17 @@ resource "scaleway_compute_instance_security_group" "www" {
   inbound {
     action = "accept"
     port = "22"
+    ip = "212.47.225.64"
+  }
+
+  inbound {
+    action = "accept"
+    port = "80"
   }
 
   inbound {
     action = "accept"
     port = "443"
-    ip = "8.8.8.8"
   }
 
   outbound {
