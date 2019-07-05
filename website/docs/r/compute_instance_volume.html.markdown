@@ -1,7 +1,6 @@
 ---
 layout: "scaleway"
 page_title: "Scaleway: scaleway_compute_instance_volume"
-sidebar_current: "docs-scaleway-resource-compute-instance-volume"
 description: |-
   Manages Scaleway Compute Instance Volumes.
 ---
