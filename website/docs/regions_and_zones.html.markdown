@@ -24,7 +24,7 @@ In order to deploy highly available application, a region can be splitted in man
 ## Resource IDs
 
 To save this notion of regions and zones in the state, all the Terraform IDs of Scaleway contain the region or zone.
-This is saved in the following format: `{zone|region}/{scaleway_id}`. Where `zone` or `region` is the place where the resource is created and where `scaleway_id` is the ID that is used on Scaleway's console/API.
+This is saved in the following format: `{zone|region}/{resource_id}`. Where `zone` or `region` is the place where the resource is created and where `resource_id` is the ID that is used on Scaleway's console/API.
 
 
 ---
