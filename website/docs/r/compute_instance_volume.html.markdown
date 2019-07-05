@@ -24,7 +24,7 @@ resource "scaleway_compute_instance_volume" "server_volume" {
 
 The following arguments are supported:
 
-- `type` - (Defaults to `b_ssd`) The type of the volume: `b_ssd` (Block SSD), `l_ssd` (Local SSD). Defaults to `b_ssd`.
+- `type` - (Defaults to `b_ssd`) The type of the volume. the possible values are: `b_ssd` (Block SSD), `l_ssd` (Local SSD).
 - `size_in_gb` - (Optional) The size of the volume (leave this empty when using `from_volume_id` or `from_snapshot_id`).
 - `from_volume_id` - (Optional) If set, the new volume will be copied from this volume. (leave this empty when using `size_in_gb` or `from_snapshot_id`).
 - `from_snapshot_id` - (Optional) If set, the new volume will be created from this snapshot. (leave this empty when using `size_in_gb` or `from_volume_id`).
