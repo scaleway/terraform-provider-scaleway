@@ -1,7 +1,6 @@
 ---
 layout: "scaleway"
 page_title: "Scaleway: ip"
-sidebar_current: "docs-scaleway-resource-ip"
 description: |-
   Manages Scaleway IPs.
 ---

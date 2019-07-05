@@ -1,7 +1,6 @@
 ---
 layout: "scaleway"
 page_title: "Scaleway: scaleway_image"
-sidebar_current: "docs-scaleway-datasource-image"
 description: |-
   Get information on a Scaleway image.
 ---

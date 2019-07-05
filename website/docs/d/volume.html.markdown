@@ -1,7 +1,6 @@
 ---
 layout: "scaleway"
 page_title: "Scaleway: scaleway_volume"
-sidebar_current: "docs-scaleway-datasource-volume"
 description: |-
   Gets information about a Volume.
 ---

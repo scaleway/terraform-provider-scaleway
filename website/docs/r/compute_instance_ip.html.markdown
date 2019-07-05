@@ -1,7 +1,6 @@
 ---
 layout: "scaleway"
 page_title: "Scaleway: scaleway_compute_instance_ip"
-sidebar_current: "docs-scaleway-resource-compute-instance-ip"
 description: |-
   Manages Scaleway Compute Instance IPs.
 ---
