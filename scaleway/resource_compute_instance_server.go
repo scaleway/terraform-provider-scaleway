@@ -188,9 +188,9 @@ func resourceScalewayComputeInstanceServerCreate(d *schema.ResourceData, m inter
 		SecurityGroup:  expandID(d.Get("security_group_id")),
 	}
 
-	//if placementGroup, ok := d.GetOk("placement_group_id"); ok {
-	//	req.ComputeCluster = placementGroup
-	//}
+	if placementGroupID, ok := d.GetOk("placement_group_id"); ok {
+		req.ComputeClusterID = placementGroupID.(string)
+	}
 
 	if raw, ok := d.GetOk("tags"); ok {
 		for _, tag := range raw.([]interface{}) {
@@ -294,6 +294,9 @@ func resourceScalewayComputeInstanceServerRead(d *schema.ResourceData, m interfa
 
 	if response.Server.Image != nil {
 		d.Set("image_id", response.Server.Image.ID)
+	}
+	if response.Server.ComputeCluster != nil {
+		d.Set("compute_cluster_id", response.Server.ComputeCluster.ID)
 	}
 
 	if response.Server.PrivateIP != nil {
@@ -411,6 +414,15 @@ func resourceScalewayComputeInstanceServerUpdate(d *schema.ResourceData, m inter
 			}
 		}
 
+	}
+
+	if d.HasChange("placement_group_id") {
+		placementGroupID, ok := d.GetOk("placement_group_id")
+		if !ok {
+			updateRequest.ComputeCluster = &[]*string{nil}[0]
+		} else {
+			updateRequest.ComputeCluster = &[]*string{scw.String(placementGroupID.(string))}[0]
+		}
 	}
 
 	updateRequest.Volumes = &volumes
