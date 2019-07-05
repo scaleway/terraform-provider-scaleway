@@ -23,18 +23,16 @@ resource "scaleway_storage_object_bucket" "some_bucket" {
 
 The following arguments are supported:
 
-* `name` - The name of the bucket.
+* `name` - (Required) The name of the bucket.
 * `acl` - (Optional) The canned ACL you want to apply to the bucket.
-* `region` - (Optional) The [region](https://developers.scaleway.com/en/quickstart/#region-definition) you want to attach this resource to.
+[//]: # (TODO: Add a link to doc when it will exist.)
+* `region` - (Optional) The [region](https://developers.scaleway.com/en/quickstart/#region-definition) in which the bucket should be created.
 
 ## Attributes Reference
 
-The following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 * `id` - The ID of the bucket.
-* `name` - The name of the bucket.
-* `acl` - The canned ACL of the bucket.
-* `region` - The [region](https://developers.scaleway.com/en/quickstart/#region-definition) this resource is attached to.
 
 
 
