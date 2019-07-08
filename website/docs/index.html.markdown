@@ -128,7 +128,35 @@ Its default location is `$HOME/.config/scw/config.yaml` (`%USERPROFILE%/.config/
 If it fail to detect credentials inline, or in the environment, Terraform will check this file.
 
 You can optionally specify a different location with `SCW_CONFIG_PATH` environment variable.
-You an find more information about this configuration [in the documentation](https://github.com/scaleway/scaleway-sdk-go/blob/master/scw/README.md).
+You an find more information about this configuration [in the documentation](https://github.com/scaleway/scaleway-sdk-go/blob/master/scw/README.md#scaleway-config).
+
+## Arguments Reference
+
+In addition to [generic provider arguments](https://www.terraform.io/docs/configuration/providers.html) (e.g. `alias` and `version`), the following arguments are supported in the Scaleway provider block:
+
+- `access_key` - (Optional) The Scaleway access key. It must be provided, but it can also be sourced from
+the `SCW_ACCESS_KEY` [environment variable](#environment-variables), or via a [shared configuration file](#shared-configuration-file),
+in this priotity order.
+
+- `secret_key` - (Optional) The Scaleway secert key. It must be provided, but it can also be sourced from
+the `SCW_SECRET_KEY` [environment variable](#environment-variables), or via a [shared configuration file](#shared-configuration-file),
+in this priotity order.
+
+- `project_id` - (Optional) The project ID that will be used as default value for all resources. It can also be sourced from
+the `SCW_DEFAULT_PROJECT_ID` [environment variable](https://github.com/scaleway/scaleway-sdk-go/blob/master/scw/README.md#environment-variables), or via a [shared configuration file](https://github.com/scaleway/scaleway-sdk-go/blob/master/scw/README.md#scaleway-config),
+in this priotity order.
+
+- `region` - (Optional) The region that will be used as default value for all resources. It can also be sourced from
+the `SCW_DEFAULT_REGION` [environment variable](https://github.com/scaleway/scaleway-sdk-go/blob/master/scw/README.md#environment-variables), or via a [shared configuration file](https://github.com/scaleway/scaleway-sdk-go/blob/master/scw/README.md#scaleway-config),
+in this priotity order.
+
+[//]: # (TODO: Add region link to TF doc)
+
+- `zone` - (Optional) The zone that will be used as default value for all resources. It can also be sourced from
+the `SCW_DEFAULT_ZONE` [environment variable](https://github.com/scaleway/scaleway-sdk-go/blob/master/scw/README.md#environment-variables), or via a [shared configuration file](https://github.com/scaleway/scaleway-sdk-go/blob/master/scw/README.md#scaleway-config),
+in this priotity order.
+
+[//]: # (TODO: Add zone link to TF doc)
 
 ## Scaleway S3-compatible
 
