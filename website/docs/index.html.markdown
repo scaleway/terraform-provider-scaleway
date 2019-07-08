@@ -10,6 +10,10 @@ description: |-
 The Scaleway provider is used to manage Scaleway resources.
 The provider needs to be configured with the proper credentials before it can be used.
 
+This is the documentation for the version `>= 1.11.0` of the provider. If you comes from `< v1.11.0`, checkout to migration guide.
+
+[//]: # (TODO: Add migration guide link)
+
 Use the navigation to the left to read about the available resources.
 
 ## Example
