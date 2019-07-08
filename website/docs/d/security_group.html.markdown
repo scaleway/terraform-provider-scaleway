@@ -1,7 +1,6 @@
 ---
 layout: "scaleway"
 page_title: "Scaleway: scaleway_security_group"
-sidebar_current: "docs-scaleway-datasource-security-group"
 description: |-
   Gets information about a Security Group.
 ---

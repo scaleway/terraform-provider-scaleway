@@ -1,6 +1,7 @@
 package instance
 
 import (
+	"encoding/json"
 	"fmt"
 	"sync"
 
@@ -39,11 +40,10 @@ type AttachIPResponse struct {
 
 // AttachIP attaches an IP to a server.
 func (s *API) AttachIP(req *AttachIPRequest, opts ...scw.RequestOption) (*AttachIPResponse, error) {
-	var ptrServerID = &req.ServerID
 	ipResponse, err := s.updateIP(&updateIPRequest{
 		Zone:   req.Zone,
 		IPID:   req.IPID,
-		Server: &ptrServerID,
+		Server: &NullableStringValue{Value: req.ServerID},
 	})
 	if err != nil {
 		return nil, err
@@ -65,11 +65,10 @@ type DetachIPResponse struct {
 
 // DetachIP detaches an IP from a server.
 func (s *API) DetachIP(req *DetachIPRequest, opts ...scw.RequestOption) (*DetachIPResponse, error) {
-	var ptrServerID *string
 	ipResponse, err := s.updateIP(&updateIPRequest{
 		Zone:   req.Zone,
 		IPID:   req.IPID,
-		Server: &ptrServerID,
+		Server: &NullableStringValue{Null: true},
 	})
 	if err != nil {
 		return nil, err
@@ -81,24 +80,17 @@ func (s *API) DetachIP(req *DetachIPRequest, opts ...scw.RequestOption) (*Detach
 // UpdateIPRequest contains the parameters to update an IP
 // if Reverse is an empty string, the reverse will be removed
 type UpdateIPRequest struct {
-	Zone    scw.Zone `json:"-"`
-	IPID    string   `json:"-"`
-	Reverse *string  `json:"reverse"`
+	Zone    scw.Zone             `json:"-"`
+	IPID    string               `json:"-"`
+	Reverse *NullableStringValue `json:"reverse"`
 }
 
 // UpdateIP updates an IP
 func (s *API) UpdateIP(req *UpdateIPRequest, opts ...scw.RequestOption) (*UpdateIPResponse, error) {
-	var reverse **string
-	if req.Reverse != nil {
-		if *req.Reverse == "" {
-			req.Reverse = nil
-		}
-		reverse = &req.Reverse
-	}
 	ipResponse, err := s.updateIP(&updateIPRequest{
 		Zone:    req.Zone,
 		IPID:    req.IPID,
-		Reverse: reverse,
+		Reverse: req.Reverse,
 	})
 	if err != nil {
 		return nil, err
@@ -302,4 +294,26 @@ func (r *ListServersTypesResponse) UnsafeAppend(res interface{}) (int, scw.SdkEr
 
 	r.TotalCount += uint32(len(results.Servers))
 	return len(results.Servers), nil
+}
+
+func (v *NullableStringValue) UnmarshalJSON(b []byte) error {
+	if string(b) == "null" {
+		v.Null = true
+		return nil
+	}
+
+	var tmp string
+	if err := json.Unmarshal(b, &tmp); err != nil {
+		return err
+	}
+	v.Null = false
+	v.Value = tmp
+	return nil
+}
+
+func (v *NullableStringValue) MarshalJSON() ([]byte, error) {
+	if v.Null {
+		return []byte("null"), nil
+	}
+	return json.Marshal(v.Value)
 }

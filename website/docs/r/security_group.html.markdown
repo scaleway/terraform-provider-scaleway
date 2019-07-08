@@ -1,7 +1,6 @@
 ---
 layout: "scaleway"
 page_title: "Scaleway: security_group"
-sidebar_current: "docs-scaleway-resource-security-group-x"
 description: |-
   Manages Scaleway security groups.
 ---

@@ -1,7 +1,6 @@
 ---
 layout: "scaleway"
 page_title: "Scaleway: server"
-sidebar_current: "docs-scaleway-resource-server"
 description: |-
   Manages Scaleway servers.
 ---
