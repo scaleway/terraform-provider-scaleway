@@ -79,7 +79,7 @@ resource "scaleway_compute_instance_server" "web" {
 
 ## Authentication
 
-The Scaleway authentication is based on an **access key** and and **secret key**.
+The Scaleway authentication is based on an **access key** and a **secret key**.
 Since secret keys are only revealed one time (when it is first created) you might
 need to create a new one in the section "API Tokens" of the
 [Scaleway console](https://console.scaleway.com/account/credentials).
