@@ -10,7 +10,7 @@ description: |-
 The Scaleway provider is used to manage Scaleway resources.
 The provider needs to be configured with the proper credentials before it can be used.
 
-This is the documentation for the version `>= 1.11.0` of the provider. If you comes from `< v1.11.0`, checkout to migration guide.
+This is the documentation for the version `>= 1.11.0` of the provider. If you come from `< v1.11.0`, checkout to migration guide.
 
 [//]: # (TODO: Add migration guide link)
 
@@ -25,7 +25,7 @@ You can test this config by creating a `test.tf` and run terraform commands from
 - Get your [Scaleway credentials](https://console.scaleway.com/account/credentials) 
 - Initialize a Terraform working directory: `terraform init`
 - Generate and show the execution plan: `terraform plan`
-- Builds the infrastructure: `terraform apply`
+- Build the infrastructure: `terraform apply`
 
 ```hcl
 provider "scaleway" {
@@ -128,11 +128,11 @@ $ terraform plan
 
 It is a YAML configuration file shared between the majority of the
 [Scaleway developer tools](https://developers.scaleway.com/en/community-tools/#official-repos).
-Its default location is `$HOME/.config/scw/config.yaml` (`%USERPROFILE%/.config/scw/config.yaml` on windows).
-If it fail to detect credentials inline, or in the environment, Terraform will check this file.
+Its default location is `$HOME/.config/scw/config.yaml` (`%USERPROFILE%/.config/scw/config.yaml` on Windows).
+If it fails to detect credentials inline, or in the environment, Terraform will check this file.
 
 You can optionally specify a different location with `SCW_CONFIG_PATH` environment variable.
-You an find more information about this configuration [in the documentation](https://github.com/scaleway/scaleway-sdk-go/blob/master/scw/README.md#scaleway-config).
+You can find more information about this configuration [in the documentation](https://github.com/scaleway/scaleway-sdk-go/blob/master/scw/README.md#scaleway-config).
 
 ## Arguments Reference
 
@@ -140,25 +140,25 @@ In addition to [generic provider arguments](https://www.terraform.io/docs/config
 
 - `access_key` - (Optional) The Scaleway access key. It must be provided, but it can also be sourced from
 the `SCW_ACCESS_KEY` [environment variable](#environment-variables), or via a [shared configuration file](#shared-configuration-file),
-in this priotity order.
+in this priority order.
 
 - `secret_key` - (Optional) The Scaleway secert key. It must be provided, but it can also be sourced from
 the `SCW_SECRET_KEY` [environment variable](#environment-variables), or via a [shared configuration file](#shared-configuration-file),
-in this priotity order.
+in this priority order.
 
 - `project_id` - (Optional) The project ID that will be used as default value for all resources. It can also be sourced from
 the `SCW_DEFAULT_PROJECT_ID` [environment variable](https://github.com/scaleway/scaleway-sdk-go/blob/master/scw/README.md#environment-variables), or via a [shared configuration file](https://github.com/scaleway/scaleway-sdk-go/blob/master/scw/README.md#scaleway-config),
-in this priotity order.
+in this priority order.
 
 - `region` - (Optional) The region that will be used as default value for all resources. It can also be sourced from
 the `SCW_DEFAULT_REGION` [environment variable](https://github.com/scaleway/scaleway-sdk-go/blob/master/scw/README.md#environment-variables), or via a [shared configuration file](https://github.com/scaleway/scaleway-sdk-go/blob/master/scw/README.md#scaleway-config),
-in this priotity order.
+in this priority order.
 
 [//]: # (TODO: Add region link to TF doc)
 
 - `zone` - (Optional) The zone that will be used as default value for all resources. It can also be sourced from
 the `SCW_DEFAULT_ZONE` [environment variable](https://github.com/scaleway/scaleway-sdk-go/blob/master/scw/README.md#environment-variables), or via a [shared configuration file](https://github.com/scaleway/scaleway-sdk-go/blob/master/scw/README.md#scaleway-config),
-in this priotity order.
+in this priority order.
 
 [//]: # (TODO: Add zone link to TF doc)
 
