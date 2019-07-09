@@ -41,20 +41,20 @@ Below you find an overview of the changes in environment variables:
 
 ## Resources
 
-All resources are from now on prefixed by `scaleway`, their branch and their product name (`scaleway_{branch-name}_{product-name}_{resource-name}`). For instances an S3 bucket belongs to the `Storage` branch and is a resource of the `Object` product. Hence it is named: `scaleway_storage_object_bucket`.
+All resources are from now on prefixed by `scaleway`, their product category and their product name (`scaleway_{product category-name}_{product-name}_{resource-name}`). For instances an S3 bucket belongs to the `Storage` product category and is a resource of the `Object` product. Hence it is named: `scaleway_storage_object_bucket`.
 
 ### Compute
 
-All the old compute resources have been regrouped under a new name: `Instance`. `Compute` is now the general branch name of all server related resources. In the future, baremetal and kapsule will become available in this branch.\
+All the old compute resources have been regrouped under a new name: `Instance`. `Compute` is now the general product category name of all server related resources.\
 This means that all old resources are now prefixed with `scaleway_compute_instance_`.
 
 #### Renamed: `scaleway_server` -> `scaleway_compute_instance_server`
 
 `scaleway_server` was renamed to `scaleway_compute_instance_server`.
 
-In version 1, attachments of volumes where done on the volume resource. But from now on, this is done on the `scaleway_compute_instance_server` resources.
+In version 1, attachments of volumes where done on the volume resource. But from now on, this is done on the `scaleway_compute_instance_server` resource.
 
-So to create a server with a volume attached:
+Thus, to create a server with a volume attached:
 
 ```hcl
 resource "scaleway_compute_instance_volume" "data" {
@@ -81,7 +81,7 @@ resource "scaleway_compute_instance_server" "web" {
 
 ```hcl
 resource "scaleway_compute_instance_ip" "test_ip" {
-  server_id = "xxxx-xxxx-xxxx"
+  server_id = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
 }
 ```
 
@@ -130,6 +130,6 @@ Volumes can in version 2 only be attached on the server resource. The [above exa
 
 #### Renamed: `scaleway_bucket` -> `scaleway_storage_object_bucket`
 
-The `scaleway_bucket` was moved to the `object` product in the `storage` branch.
+The `scaleway_bucket` was moved to the `object` product in the `storage` product category.
 
 It's behaviour remained the same, but we also added an [`acl` argument](./r/storage_object_bucket.html#acl). This argument takes canned ACLs.
