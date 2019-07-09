@@ -9,7 +9,7 @@ description: |-
 
 Scaleway's products are deployed across multiple datacenter in the world.
 
-For performance and legal reasons, some products are splitted by Region or by Availability Zones. When using such product, you can choose the location that better fits your need (country, latency, ...).
+For technical and legal reasons, some products are splitted by Region or by Availability Zones. When using such product, you can choose the location that better fits your need (country, latency, ...).
 
 ## Regions
 
