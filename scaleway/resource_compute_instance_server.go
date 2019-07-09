@@ -59,6 +59,16 @@ func resourceScalewayComputeInstanceServer() *schema.Resource {
 				Computed:    true,
 				Description: "The security group the server is attached to",
 			},
+			"placement_group_id": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The placement group the server is attached to",
+			},
+			"placement_group_policy_respected": {
+				Type:        schema.TypeBool,
+				Computed:    true,
+				Description: "True when the placement group policy is respected",
+			},
 			"root_volume": {
 				Type:        schema.TypeList,
 				MaxItems:    1,
@@ -183,6 +193,10 @@ func resourceScalewayComputeInstanceServerCreate(d *schema.ResourceData, m inter
 		SecurityGroup:  expandID(d.Get("security_group_id")),
 	}
 
+	if placementGroupID, ok := d.GetOk("placement_group_id"); ok {
+		req.ComputeCluster = expandID(placementGroupID)
+	}
+
 	if raw, ok := d.GetOk("tags"); ok {
 		for _, tag := range raw.([]interface{}) {
 			req.Tags = append(req.Tags, tag.(string))
@@ -285,6 +299,9 @@ func resourceScalewayComputeInstanceServerRead(d *schema.ResourceData, m interfa
 
 	if response.Server.Image != nil {
 		d.Set("image_id", response.Server.Image.ID)
+	}
+	if response.Server.ComputeCluster != nil {
+		d.Set("placement_group_policy_respected", response.Server.ComputeCluster.PolicyRespected)
 	}
 
 	if response.Server.PrivateIP != nil {
@@ -402,6 +419,15 @@ func resourceScalewayComputeInstanceServerUpdate(d *schema.ResourceData, m inter
 			}
 		}
 
+	}
+
+	if d.HasChange("placement_group_id") {
+		placementGroupID := expandID(d.Get("placement_group_id"))
+		if placementGroupID == "" {
+			updateRequest.ComputeCluster = &instance.NullableStringValue{Null: true}
+		} else {
+			updateRequest.ComputeCluster = &instance.NullableStringValue{Value: placementGroupID}
+		}
 	}
 
 	updateRequest.Volumes = &volumes
