@@ -30,7 +30,10 @@ The following arguments are supported:
 
 ## Attributes Reference
 
-There are no additional attributes in addition to all arguments above.
+In addition to all arguments above, the following attribute is exported:
+	
+	* `id` - The ID of the bucket.
+	
 
 
 ## Import
