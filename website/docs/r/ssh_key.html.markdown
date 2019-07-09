@@ -1,7 +1,6 @@
 ---
 layout: "scaleway"
 page_title: "Scaleway: ssh_key"
-sidebar_current: "docs-scaleway-resource-ssh_key"
 description: |-
   Manages Scaleway user SSH keys.
 ---

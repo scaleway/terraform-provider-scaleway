@@ -58,7 +58,7 @@ func resourceScalewayComputeInstanceIPCreate(d *schema.ResourceData, m interface
 		_, err = instanceAPI.UpdateIP(&instance.UpdateIPRequest{
 			Zone:    zone,
 			IPID:    res.IP.ID,
-			Reverse: &reverse,
+			Reverse: &instance.NullableStringValue{Value: reverse},
 		})
 		if err != nil {
 			return err
@@ -119,12 +119,18 @@ func resourceScalewayComputeInstanceIPUpdate(d *schema.ResourceData, m interface
 	if d.HasChange("reverse") {
 		l.Debugf("updating IP %q reverse to %q\n", d.Id(), d.Get("reverse"))
 
+		updateReverseReq := &instance.UpdateIPRequest{
+			Zone: zone,
+			IPID: ID,
+		}
+
 		reverse := d.Get("reverse").(string)
-		_, err = instanceAPI.UpdateIP(&instance.UpdateIPRequest{
-			Zone:    zone,
-			IPID:    ID,
-			Reverse: &reverse,
-		})
+		if reverse == "" {
+			updateReverseReq.Reverse = &instance.NullableStringValue{Null: true}
+		} else {
+			updateReverseReq.Reverse = &instance.NullableStringValue{Value: reverse}
+		}
+		_, err = instanceAPI.UpdateIP(updateReverseReq)
 		if err != nil {
 			return err
 		}

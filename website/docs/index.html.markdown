@@ -1,7 +1,6 @@
 ---
 layout: "scaleway"
 page_title: "Provider: Scaleway"
-sidebar_current: "docs-scaleway-index"
 description: |-
   The Scaleway provider is used to interact with Scaleway bare metal & VPS provider.
 ---

@@ -423,7 +423,7 @@ type CreateSecurityGroupResponse struct {
 }
 
 type CreateSecurityGroupRuleResponse struct {
-	SecurityRule *SecurityGroupRule `json:"security_rule,omitempty"`
+	Rule *SecurityGroupRule `json:"rule,omitempty"`
 }
 
 type CreateServerResponse struct {
@@ -489,7 +489,7 @@ type GetSecurityGroupResponse struct {
 }
 
 type GetSecurityGroupRuleResponse struct {
-	SecurityRule *SecurityGroupRule `json:"security_rule,omitempty"`
+	Rule *SecurityGroupRule `json:"rule,omitempty"`
 }
 
 type GetServerResponse struct {
@@ -616,6 +616,12 @@ type ListVolumesResponse struct {
 	TotalCount uint32 `json:"total_count,omitempty"`
 }
 
+type NullableStringValue struct {
+	Null bool `json:"null,omitempty"`
+
+	Value string `json:"value,omitempty"`
+}
+
 type SecurityGroup struct {
 	// ID display the security groups' unique ID
 	ID string `json:"id,omitempty"`
@@ -664,9 +670,9 @@ type SecurityGroupRule struct {
 
 	IPRange string `json:"ip_range,omitempty"`
 
-	DestPortFrom uint32 `json:"dest_port_from,omitempty"`
+	DestPortFrom *uint32 `json:"dest_port_from,omitempty"`
 
-	DestPortTo uint32 `json:"dest_port_to,omitempty"`
+	DestPortTo *uint32 `json:"dest_port_to,omitempty"`
 
 	Position uint32 `json:"position,omitempty"`
 
@@ -966,6 +972,10 @@ type setSecurityGroupResponse struct {
 	SecurityGroup *SecurityGroup `json:"security_group,omitempty"`
 }
 
+type setSecurityGroupRuleResponse struct {
+	Rule *SecurityGroupRule `json:"rule,omitempty"`
+}
+
 type setServerResponse struct {
 	Server *Server `json:"server,omitempty"`
 }
@@ -1174,8 +1184,8 @@ type CreateServerRequest struct {
 	Tags []string `json:"tags,omitempty"`
 	// SecurityGroup define the security group id
 	SecurityGroup string `json:"security_group,omitempty"`
-	// ComputeClusterID computeCluster key if server must be part of a ComputeCluster
-	ComputeClusterID string `json:"compute_cluster_id,omitempty"`
+	// ComputeCluster computeCluster key if server must be part of a ComputeCluster
+	ComputeCluster string `json:"compute_cluster,omitempty"`
 }
 
 // CreateServer create server
@@ -1425,6 +1435,8 @@ type updateServerRequest struct {
 	Protected *bool `json:"protected,omitempty"`
 
 	SecurityGroup *SecurityGroupSummary `json:"security_group,omitempty"`
+
+	ComputeCluster *NullableStringValue `json:"compute_cluster,omitempty"`
 }
 
 // updateServer update server
@@ -2861,7 +2873,7 @@ type DeleteSecurityGroupRuleRequest struct {
 
 	SecurityGroupID string `json:"-"`
 
-	SecurityRuleID string `json:"-"`
+	SecurityGroupRuleID string `json:"-"`
 }
 
 // DeleteSecurityGroupRule delete rule
@@ -2883,13 +2895,13 @@ func (s *API) DeleteSecurityGroupRule(req *DeleteSecurityGroupRuleRequest, opts 
 		return errors.New("field SecurityGroupID cannot be empty in request")
 	}
 
-	if fmt.Sprint(req.SecurityRuleID) == "" {
-		return errors.New("field SecurityRuleID cannot be empty in request")
+	if fmt.Sprint(req.SecurityGroupRuleID) == "" {
+		return errors.New("field SecurityGroupRuleID cannot be empty in request")
 	}
 
 	scwReq := &scw.ScalewayRequest{
 		Method:  "DELETE",
-		Path:    "/instance/v1/zones/" + fmt.Sprint(req.Zone) + "/security_groups/" + fmt.Sprint(req.SecurityGroupID) + "/rules/" + fmt.Sprint(req.SecurityRuleID) + "",
+		Path:    "/instance/v1/zones/" + fmt.Sprint(req.Zone) + "/security_groups/" + fmt.Sprint(req.SecurityGroupID) + "/rules/" + fmt.Sprint(req.SecurityGroupRuleID) + "",
 		Headers: http.Header{},
 	}
 
@@ -2905,7 +2917,7 @@ type GetSecurityGroupRuleRequest struct {
 
 	SecurityGroupID string `json:"-"`
 
-	SecurityRuleID string `json:"-"`
+	SecurityGroupRuleID string `json:"-"`
 }
 
 // GetSecurityGroupRule get rule
@@ -2927,17 +2939,90 @@ func (s *API) GetSecurityGroupRule(req *GetSecurityGroupRuleRequest, opts ...scw
 		return nil, errors.New("field SecurityGroupID cannot be empty in request")
 	}
 
-	if fmt.Sprint(req.SecurityRuleID) == "" {
-		return nil, errors.New("field SecurityRuleID cannot be empty in request")
+	if fmt.Sprint(req.SecurityGroupRuleID) == "" {
+		return nil, errors.New("field SecurityGroupRuleID cannot be empty in request")
 	}
 
 	scwReq := &scw.ScalewayRequest{
 		Method:  "GET",
-		Path:    "/instance/v1/zones/" + fmt.Sprint(req.Zone) + "/security_groups/" + fmt.Sprint(req.SecurityGroupID) + "/rules/" + fmt.Sprint(req.SecurityRuleID) + "",
+		Path:    "/instance/v1/zones/" + fmt.Sprint(req.Zone) + "/security_groups/" + fmt.Sprint(req.SecurityGroupID) + "/rules/" + fmt.Sprint(req.SecurityGroupRuleID) + "",
 		Headers: http.Header{},
 	}
 
 	var resp GetSecurityGroupRuleResponse
+
+	err = s.client.Do(scwReq, &resp, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &resp, nil
+}
+
+type setSecurityGroupRuleRequest struct {
+	Zone scw.Zone `json:"-"`
+
+	SecurityGroupID string `json:"-"`
+
+	SecurityGroupRuleID string `json:"-"`
+
+	ID string `json:"id"`
+	// Protocol
+	//
+	// Default value: TCP
+	Protocol SecurityGroupRuleProtocol `json:"protocol"`
+	// Direction
+	//
+	// Default value: inbound
+	Direction SecurityGroupRuleDirection `json:"direction"`
+	// Action
+	//
+	// Default value: accept
+	Action SecurityGroupRuleAction `json:"action"`
+
+	IPRange string `json:"ip_range"`
+
+	DestPortFrom *uint32 `json:"dest_port_from"`
+
+	DestPortTo *uint32 `json:"dest_port_to"`
+
+	Position uint32 `json:"position"`
+
+	Editable bool `json:"editable"`
+}
+
+// setSecurityGroupRule update security group rule
+func (s *API) setSecurityGroupRule(req *setSecurityGroupRuleRequest, opts ...scw.RequestOption) (*setSecurityGroupRuleResponse, error) {
+	var err error
+
+	if req.Zone == "" {
+		defaultZone, _ := s.client.GetDefaultZone()
+		req.Zone = defaultZone
+	}
+
+	if fmt.Sprint(req.Zone) == "" {
+		return nil, errors.New("field Zone cannot be empty in request")
+	}
+
+	if fmt.Sprint(req.SecurityGroupID) == "" {
+		return nil, errors.New("field SecurityGroupID cannot be empty in request")
+	}
+
+	if fmt.Sprint(req.SecurityGroupRuleID) == "" {
+		return nil, errors.New("field SecurityGroupRuleID cannot be empty in request")
+	}
+
+	scwReq := &scw.ScalewayRequest{
+		Method:  "PUT",
+		Path:    "/instance/v1/zones/" + fmt.Sprint(req.Zone) + "/security_groups/" + fmt.Sprint(req.SecurityGroupID) + "/rules/" + fmt.Sprint(req.SecurityGroupRuleID) + "",
+		Headers: http.Header{},
+	}
+
+	err = scwReq.SetBody(req)
+	if err != nil {
+		return nil, err
+	}
+
+	var resp setSecurityGroupRuleResponse
 
 	err = s.client.Do(scwReq, &resp, opts...)
 	if err != nil {
@@ -2956,7 +3041,9 @@ type ListComputeClustersRequest struct {
 	Page *int32 `json:"-"`
 }
 
-// ListComputeClusters list all compute-clusters
+// ListComputeClusters list compute-clusters
+//
+// List all compute-clusters
 func (s *API) ListComputeClusters(req *ListComputeClustersRequest, opts ...scw.RequestOption) (*ListComputeClustersResponse, error) {
 	var err error
 
@@ -3016,7 +3103,9 @@ type CreateComputeClusterRequest struct {
 	PolicyType ComputeClusterPolicyType `json:"policy_type,omitempty"`
 }
 
-// CreateComputeCluster create a new compute-cluster
+// CreateComputeCluster create compute-cluster
+//
+// Create a new compute-cluster
 func (s *API) CreateComputeCluster(req *CreateComputeClusterRequest, opts ...scw.RequestOption) (*CreateComputeClusterResponse, error) {
 	var err error
 
@@ -3060,7 +3149,9 @@ type GetComputeClusterRequest struct {
 	ComputeClusterID string `json:"-"`
 }
 
-// GetComputeCluster get the given compute-cluster
+// GetComputeCluster get compute-cluster
+//
+// Get the given compute-cluster
 func (s *API) GetComputeCluster(req *GetComputeClusterRequest, opts ...scw.RequestOption) (*GetComputeClusterResponse, error) {
 	var err error
 
@@ -3110,7 +3201,9 @@ type SetComputeClusterRequest struct {
 	PolicyType ComputeClusterPolicyType `json:"policy_type"`
 }
 
-// SetComputeCluster set all parameters of the given compute-cluster
+// SetComputeCluster set compute-cluster
+//
+// Set all parameters of the given compute-cluster
 func (s *API) SetComputeCluster(req *SetComputeClusterRequest, opts ...scw.RequestOption) (*SetComputeClusterResponse, error) {
 	var err error
 
@@ -3170,7 +3263,9 @@ type UpdateComputeClusterRequest struct {
 	PolicyType ComputeClusterPolicyType `json:"policy_type,omitempty"`
 }
 
-// UpdateComputeCluster update one or more parameter of the given compute-cluster
+// UpdateComputeCluster update compute-cluster
+//
+// Update one or more parameter of the given compute-cluster
 func (s *API) UpdateComputeCluster(req *UpdateComputeClusterRequest, opts ...scw.RequestOption) (*UpdateComputeClusterResponse, error) {
 	var err error
 
@@ -3219,6 +3314,8 @@ type DeleteComputeClusterRequest struct {
 }
 
 // DeleteComputeCluster delete the given compute-cluster
+//
+// Delete the given compute-cluster
 func (s *API) DeleteComputeCluster(req *DeleteComputeClusterRequest, opts ...scw.RequestOption) error {
 	var err error
 
@@ -3254,7 +3351,9 @@ type GetComputeClusterServersRequest struct {
 	ComputeClusterID string `json:"-"`
 }
 
-// GetComputeClusterServers get all servers belonging to the given compute-cluster
+// GetComputeClusterServers get compute-cluster servers
+//
+// Get all servers belonging to the given compute-cluster
 func (s *API) GetComputeClusterServers(req *GetComputeClusterServersRequest, opts ...scw.RequestOption) (*GetComputeClusterServersResponse, error) {
 	var err error
 
@@ -3292,7 +3391,9 @@ type SetComputeClusterServersRequest struct {
 	ComputeClusterID string `json:"-"`
 }
 
-// SetComputeClusterServers set all servers belonging to the given compute-cluster
+// SetComputeClusterServers set compute-cluster servers
+//
+// Set all servers belonging to the given compute-cluster
 func (s *API) SetComputeClusterServers(req *SetComputeClusterServersRequest, opts ...scw.RequestOption) (*SetComputeClusterServersResponse, error) {
 	var err error
 
@@ -3330,7 +3431,9 @@ type UpdateComputeClusterServersRequest struct {
 	ComputeClusterID string `json:"-"`
 }
 
-// UpdateComputeClusterServers update all servers belonging to the given compute-cluster
+// UpdateComputeClusterServers update compute-cluster servers
+//
+// Update all servers belonging to the given compute-cluster
 func (s *API) UpdateComputeClusterServers(req *UpdateComputeClusterServersRequest, opts ...scw.RequestOption) (*UpdateComputeClusterServersResponse, error) {
 	var err error
 
@@ -3368,7 +3471,9 @@ type DeleteComputeClusterServersRequest struct {
 	ComputeClusterID string `json:"-"`
 }
 
-// DeleteComputeClusterServers delete all servers from the given compute-cluster
+// DeleteComputeClusterServers delete compute-cluster servers
+//
+// Delete all servers from the given compute-cluster
 func (s *API) DeleteComputeClusterServers(req *DeleteComputeClusterServersRequest, opts ...scw.RequestOption) error {
 	var err error
 
@@ -3620,9 +3725,9 @@ type updateIPRequest struct {
 
 	IPID string `json:"-"`
 
-	Reverse **string `json:"reverse,omitempty"`
+	Reverse *NullableStringValue `json:"reverse,omitempty"`
 
-	Server **string `json:"server,omitempty"`
+	Server *NullableStringValue `json:"server,omitempty"`
 }
 
 // updateIP update IP

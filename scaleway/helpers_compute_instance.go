@@ -104,6 +104,7 @@ func reachState(instanceAPI *instance.API, zone scw.Zone, serverID, fromState, t
 				Timeout:  ServerWaitForTimeout,
 			})
 			if isSDKError(err, "expected state [\\w]+ but found [\\w]+") {
+				l.Errorf("Retrying action %s because of error '%v'", action, err)
 				return resource.RetryableError(err)
 			}
 			if err != nil {

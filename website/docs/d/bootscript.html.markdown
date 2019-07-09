@@ -1,7 +1,6 @@
 ---
 layout: "scaleway"
 page_title: "Scaleway: scaleway_bootscript"
-sidebar_current: "docs-scaleway-datasource-bootscript"
 description: |-
   Get information on a Scaleway bootscript.
 ---
