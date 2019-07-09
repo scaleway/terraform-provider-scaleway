@@ -12,11 +12,14 @@ import (
 	"os"
 	"time"
 
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/credentials"
+	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/hashicorp/go-retryablehttp"
 	"github.com/hashicorp/terraform/helper/logging"
 	sdk "github.com/nicolai86/scaleway-sdk"
 	"github.com/scaleway/scaleway-sdk-go/scw"
-	"github.com/scaleway/scaleway-sdk-go/utils"
 )
 
 // Meta contains config and SDK clients used by resources.
@@ -26,17 +29,40 @@ type Meta struct {
 	AccessKey        string
 	SecretKey        string
 	DefaultProjectID string
-	DefaultRegion    utils.Region
-	DefaultZone      utils.Zone
+	DefaultRegion    scw.Region
+	DefaultZone      scw.Zone
 
 	// scwClient is the Scaleway SDK client.
 	scwClient *scw.Client
+
+	// s3Client is the S3 client
+	s3Client *s3.S3
 
 	// Deprecated: deprecatedClient is the deprecated Scaleway SDK (will be removed in `v2.0.0`).
 	deprecatedClient *sdk.API
 }
 
-// bootstrapScwClient returns a new scw.Client from the configuration.
+// bootstrap initializes all the clients for this meta config object.
+func (m *Meta) bootstrap() error {
+	err := m.bootstrapScwClient()
+	if err != nil {
+		return err
+	}
+
+	err = m.bootstrapDeprecatedClient()
+	if err != nil {
+		return err
+	}
+
+	err = m.bootstrapS3Client()
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// bootstrapScwClient initializes a new scw.Client from the configuration.
 func (m *Meta) bootstrapScwClient() error {
 	options := []scw.ClientOption{
 		scw.WithHTTPClient(createRetryableHTTPClient(false)),
@@ -106,26 +132,26 @@ func (c *client) Do(r *http.Request) (*http.Response, error) {
 		body = bytes.NewReader(bs)
 	}
 	req, err := retryablehttp.NewRequest(r.Method, r.URL.String(), body)
-	for key, val := range r.Header {
-		req.Header.Set(key, val[0])
-	}
 	if err != nil {
 		return nil, err
+	}
+	for key, val := range r.Header {
+		req.Header.Set(key, val[0])
 	}
 	return c.Client.Do(req)
 }
 
-// bootstrapDeprecatedClient creates a new deprecated client from the configuration.
+// bootstrapDeprecatedClient initializes a new deprecated client from the configuration.
 func (m *Meta) bootstrapDeprecatedClient() error {
 	options := func(sdkApi *sdk.API) {
 		sdkApi.Client = createRetryableHTTPClient(true)
 	}
 
 	region := string(m.DefaultRegion)
-	if m.DefaultRegion == utils.RegionFrPar {
+	if m.DefaultRegion == scw.RegionFrPar {
 		region = "par1"
 	}
-	if m.DefaultRegion == utils.RegionNlAms {
+	if m.DefaultRegion == scw.RegionNlAms {
 		region = "ams1"
 	}
 
@@ -141,6 +167,30 @@ func (m *Meta) bootstrapDeprecatedClient() error {
 
 	m.deprecatedClient = sdk
 	return nil
+}
+
+// bootstrapS3Client initializes a new s3 client from the configuration.
+func (m *Meta) bootstrapS3Client() error {
+	var err error
+
+	config := &aws.Config{}
+	config.WithRegion(string(m.DefaultRegion))
+	config.WithCredentials(credentials.NewStaticCredentials(m.AccessKey, m.SecretKey, ""))
+	config.WithEndpoint(m.getS3Endpoint(m.DefaultRegion))
+
+	s, err := session.NewSession(config)
+	if err != nil {
+		return err
+	}
+
+	m.s3Client = s3.New(s)
+	return nil
+}
+
+// getS3Endpoint returns the correct S3 endpoint for object storage based on the current region
+func (m *Meta) getS3Endpoint(region scw.Region) string {
+	return "https://s3." + string(region) + ".scw.cloud"
+
 }
 
 // deprecatedScalewayConfig is the structure of the deprecated Scaleway config file.

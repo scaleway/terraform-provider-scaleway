@@ -5,13 +5,12 @@ import (
 
 	"github.com/scaleway/scaleway-sdk-go/internal/errors"
 	"github.com/scaleway/scaleway-sdk-go/scw"
-	"github.com/scaleway/scaleway-sdk-go/utils"
 )
 
 // UpdateSecurityGroupRequest contains the parameters to update a security group
 type UpdateSecurityGroupRequest struct {
-	Zone            utils.Zone `json:"-"`
-	SecurityGroupID string     `json:"-"`
+	Zone            scw.Zone `json:"-"`
+	SecurityGroupID string   `json:"-"`
 
 	Name                  *string              `json:"name,omitempty"`
 	Description           *string              `json:"description,omitempty"`

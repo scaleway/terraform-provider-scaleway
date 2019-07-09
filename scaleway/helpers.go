@@ -3,6 +3,7 @@ package scaleway
 import (
 	"fmt"
 	"net/http"
+	"regexp"
 	"strings"
 	"sync"
 	"time"
@@ -10,10 +11,9 @@ import (
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/hashicorp/terraform/terraform"
-	"github.com/nicolai86/scaleway-sdk"
+	api "github.com/nicolai86/scaleway-sdk"
 	"github.com/scaleway/scaleway-sdk-go/namegenerator"
 	"github.com/scaleway/scaleway-sdk-go/scw"
-	"github.com/scaleway/scaleway-sdk-go/utils"
 	"golang.org/x/xerrors"
 )
 
@@ -225,35 +225,44 @@ func parseLocalizedID(localizedID string) (locality string, ID string, err error
 }
 
 // parseZonedID parses a zonedID and extracts the resource zone and id.
-func parseZonedID(zonedID string) (zone utils.Zone, id string, err error) {
+func parseZonedID(zonedID string) (zone scw.Zone, id string, err error) {
 
 	locality, id, err := parseLocalizedID(zonedID)
 	if err != nil {
 		return
 	}
 
-	zone, err = utils.ParseZone(locality)
+	zone, err = scw.ParseZone(locality)
 	return
 }
 
+// expandID returns the id whether it is a localizedID or a raw ID.
+func expandID(id interface{}) string {
+	_, ID, err := parseLocalizedID(id.(string))
+	if err != nil {
+		return id.(string)
+	}
+	return ID
+}
+
 // parseRegionalID parses a regionalID and extracts the resource region and id.
-func parseRegionalID(regionalID string) (region utils.Region, id string, err error) {
+func parseRegionalID(regionalID string) (region scw.Region, id string, err error) {
 	locality, id, err := parseLocalizedID(regionalID)
 	if err != nil {
 		return
 	}
 
-	region, err = utils.ParseRegion(locality)
+	region, err = scw.ParseRegion(locality)
 	return
 }
 
 // newZonedId constructs a unique identifier based on resource zone and id
-func newZonedId(zone utils.Zone, id string) string {
+func newZonedId(zone scw.Zone, id string) string {
 	return fmt.Sprintf("%s/%s", zone, id)
 }
 
 // newRegionalId constructs a unique identifier based on resource region and id
-func newRegionalId(region utils.Region, id string) string {
+func newRegionalId(region scw.Region, id string) string {
 	return fmt.Sprintf("%s/%s", region, id)
 }
 
@@ -274,11 +283,11 @@ var ErrZoneNotFound = fmt.Errorf("could not detect zone")
 // getZone will try to guess the zone from the following:
 //  - zone field of the resource data
 //  - default zone from config
-func getZone(d terraformResourceData, meta *Meta) (utils.Zone, error) {
+func getZone(d terraformResourceData, meta *Meta) (scw.Zone, error) {
 
 	rawZone, exist := d.GetOkExists("zone")
 	if exist {
-		return utils.ParseZone(rawZone.(string))
+		return scw.ParseZone(rawZone.(string))
 	}
 
 	zone, exist := meta.scwClient.GetDefaultZone()
@@ -286,7 +295,7 @@ func getZone(d terraformResourceData, meta *Meta) (utils.Zone, error) {
 		return zone, nil
 	}
 
-	return utils.Zone(""), ErrZoneNotFound
+	return scw.Zone(""), ErrZoneNotFound
 }
 
 // ErrRegionNotFound is returned when no region can be detected
@@ -295,11 +304,11 @@ var ErrRegionNotFound = fmt.Errorf("could not detect region")
 // getRegion will try to guess the region from the following:
 //  - region field of the resource data
 //  - default region from config
-func getRegion(d terraformResourceData, meta *Meta) (utils.Region, error) {
+func getRegion(d terraformResourceData, meta *Meta) (scw.Region, error) {
 
 	rawRegion, exist := d.GetOkExists("region")
 	if exist {
-		return utils.ParseRegion(rawRegion.(string))
+		return scw.ParseRegion(rawRegion.(string))
 	}
 
 	region, exist := meta.scwClient.GetDefaultRegion()
@@ -307,7 +316,7 @@ func getRegion(d terraformResourceData, meta *Meta) (utils.Region, error) {
 		return region, nil
 	}
 
-	return utils.Region(""), ErrRegionNotFound
+	return scw.Region(""), ErrRegionNotFound
 }
 
 // isHTTPCodeError returns true if err is an http error with code statusCode
@@ -375,3 +384,47 @@ func getRandomName(prefix string) string {
 }
 
 const gb uint64 = 1000 * 1000 * 1000
+
+// suppressLocality is a SuppressDiffFunc to remove the locality from an ID when checking diff.
+// e.g. 2c1a1716-5570-4668-a50a-860c90beabf6 == fr-par/2c1a1716-5570-4668-a50a-860c90beabf6
+func suppressLocality(k, old, new string, d *schema.ResourceData) bool {
+	return expandID(old) == expandID(new)
+}
+
+// isResourceTimeoutError returns true when the given error is a timeout error returned by
+// terraform's Retry helper.
+func isResourceTimeoutError(err error) bool {
+	timeoutErr, ok := err.(*resource.TimeoutError)
+	return ok && timeoutErr.LastError == nil
+}
+
+// isSDKResponseError returns true when the given http status and the message match
+// with the scw.ResponseError status and message.
+func isSDKResponseError(err error, status int, message string) bool {
+	responseError, ok := err.(*scw.ResponseError)
+	if !ok {
+		return false
+	}
+
+	return responseError.StatusCode == status && responseError.Message == message
+}
+
+// isSDKError returns true when the SdkError error message matches with the given message.
+func isSDKError(err error, expectedMessage string) bool {
+
+	responseError, ok := err.(scw.SdkError)
+	if !ok {
+		return false
+	}
+	actualMessage := responseError.Error()[17:] // remove "scaleway-sdk-go: "
+	if actualMessage == expectedMessage {
+		return true
+	}
+
+	regexp, err := regexp.Compile(expectedMessage)
+	if err != nil {
+		return false
+	}
+
+	return regexp.MatchString(actualMessage)
+}

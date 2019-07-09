@@ -1,4 +1,4 @@
-package scwconfig
+package scw
 
 import (
 	"fmt"
@@ -9,12 +9,12 @@ import (
 )
 
 const (
-	documentationLink = "https://github.com/scaleway/scaleway-sdk-go/blob/master/scwconfig/README.md"
+	documentationLink = "https://github.com/scaleway/scaleway-sdk-go/blob/master/scw/README.md"
 )
 
-// LoadWithProfile call Load() and set withProfile with the profile name.
-func LoadWithProfile(profileName string) (Config, error) {
-	config, err := Load()
+// LoadConfigWithProfile call LoadConfig() and set withProfile with the profile name.
+func LoadConfigWithProfile(profileName string) (Config, error) {
+	config, err := LoadConfig()
 	if err != nil {
 		return nil, err
 	}
@@ -24,13 +24,13 @@ func LoadWithProfile(profileName string) (Config, error) {
 	return v2Loaded.catchInvalidProfile()
 }
 
-// Load config in the following order:
+// LoadConfig config in the following order:
 // - config file from SCW_CONFIG_PATH (V2 or V1)
 // - config file V2
 // - config file V1
 // When the latest is found it migrates the V1 config
 // to a V2 config following the V2 config path.
-func Load() (Config, error) {
+func LoadConfig() (Config, error) {
 	// STEP 1: try to load config file from SCW_CONFIG_PATH
 	configPath := os.Getenv(scwConfigPathEnv)
 	if configPath != "" {

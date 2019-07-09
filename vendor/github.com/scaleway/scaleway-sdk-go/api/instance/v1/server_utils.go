@@ -10,12 +10,13 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/internal/async"
 	"github.com/scaleway/scaleway-sdk-go/internal/errors"
 	"github.com/scaleway/scaleway-sdk-go/scw"
-	"github.com/scaleway/scaleway-sdk-go/utils"
 )
 
 type UpdateServerRequest updateServerRequest
 
-// updateServer update server
+// UpdateServer updates a server
+//
+// Note: Implementation is thread-safe.
 func (s *API) UpdateServer(req *UpdateServerRequest, opts ...scw.RequestOption) (*UpdateServerResponse, error) {
 	defer lockServer(req.Zone, req.ServerID).Unlock()
 	return s.updateServer((*updateServerRequest)(req), opts...)
@@ -24,7 +25,7 @@ func (s *API) UpdateServer(req *UpdateServerRequest, opts ...scw.RequestOption) 
 // waitForServerRequest is used by waitForServer method
 type waitForServerRequest struct {
 	ServerID string
-	Zone     utils.Zone
+	Zone     scw.Zone
 	Timeout  time.Duration
 }
 
@@ -65,7 +66,7 @@ func (s *API) waitForServer(req *waitForServerRequest) (*Server, scw.SdkError) {
 // ServerActionAndWaitRequest is used by ServerActionAndWait method
 type ServerActionAndWaitRequest struct {
 	ServerID string
-	Zone     utils.Zone
+	Zone     scw.Zone
 	Action   ServerAction
 
 	// Timeout: maximum time to wait before (default: 5 minutes)
@@ -118,7 +119,7 @@ func (s *API) ServerActionAndWait(req *ServerActionAndWaitRequest) error {
 
 // GetServerTypeRequest is used by GetServerType.
 type GetServerTypeRequest struct {
-	Zone utils.Zone
+	Zone scw.Zone
 	Name string
 }
 
@@ -142,8 +143,8 @@ func (s *API) GetServerType(req *GetServerTypeRequest) (*ServerType, error) {
 
 // GetServerUserDataRequest is used by GetServerUserData method.
 type GetServerUserDataRequest struct {
-	Zone     utils.Zone `json:"-"`
-	ServerID string     `json:"-"`
+	Zone     scw.Zone `json:"-"`
+	ServerID string   `json:"-"`
 
 	// Key defines the user data key to get.
 	Key string `json:"-"`
@@ -188,8 +189,8 @@ func (s *API) GetServerUserData(req *GetServerUserDataRequest, opts ...scw.Reque
 
 // SetServerUserDataRequest is used by SetServerUserData method.
 type SetServerUserDataRequest struct {
-	Zone     utils.Zone `json:"-"`
-	ServerID string     `json:"-"`
+	Zone     scw.Zone `json:"-"`
+	ServerID string   `json:"-"`
 
 	// Key defines the user data key to set.
 	Key string `json:"-"`
@@ -244,8 +245,8 @@ func (s *API) SetServerUserData(req *SetServerUserDataRequest, opts ...scw.Reque
 
 // GetAllServerUserDataRequest is used by GetAllServerUserData method.
 type GetAllServerUserDataRequest struct {
-	Zone     utils.Zone `json:"-"`
-	ServerID string     `json:"-"`
+	Zone     scw.Zone `json:"-"`
+	ServerID string   `json:"-"`
 }
 
 // GetAllServerUserDataResponse is used by GetAllServerUserData method.
@@ -301,8 +302,8 @@ func (s *API) GetAllServerUserData(req *GetAllServerUserDataRequest, opts ...scw
 
 // SetAllServerUserDataRequest is used by SetAllServerUserData method.
 type SetAllServerUserDataRequest struct {
-	Zone     utils.Zone `json:"-"`
-	ServerID string     `json:"-"`
+	Zone     scw.Zone `json:"-"`
+	ServerID string   `json:"-"`
 
 	// UserData defines all user data that will be set to the server.
 	// This map is idempotent, it means that all the current data will be overwritten and

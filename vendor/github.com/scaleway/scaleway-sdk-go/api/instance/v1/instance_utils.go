@@ -1,18 +1,19 @@
 package instance
 
 import (
+	"encoding/json"
 	"fmt"
 	"sync"
 
 	"github.com/scaleway/scaleway-sdk-go/internal/errors"
 	"github.com/scaleway/scaleway-sdk-go/scw"
-	"github.com/scaleway/scaleway-sdk-go/utils"
 )
 
 var (
 	resourceLock sync.Map
 )
 
+// lockResource locks a resource from a specific resourceID
 func lockResource(resourceID string) *sync.Mutex {
 	v, _ := resourceLock.LoadOrStore(resourceID, &sync.Mutex{})
 	mutex := v.(*sync.Mutex)
@@ -20,15 +21,16 @@ func lockResource(resourceID string) *sync.Mutex {
 	return mutex
 }
 
-func lockServer(zone utils.Zone, serverID string) *sync.Mutex {
+// lockServer locks a server from its zone and its ID
+func lockServer(zone scw.Zone, serverID string) *sync.Mutex {
 	return lockResource(fmt.Sprint("server", zone, serverID))
 }
 
 // AttachIPRequest contains the parameters to attach an IP to a server
 type AttachIPRequest struct {
-	Zone     utils.Zone `json:"-"`
-	IPID     string     `json:"-"`
-	ServerID string     `json:"server_id"`
+	Zone     scw.Zone `json:"-"`
+	IPID     string   `json:"-"`
+	ServerID string   `json:"server_id"`
 }
 
 // AttachIPResponse contains the updated IP after attaching
@@ -38,11 +40,10 @@ type AttachIPResponse struct {
 
 // AttachIP attaches an IP to a server.
 func (s *API) AttachIP(req *AttachIPRequest, opts ...scw.RequestOption) (*AttachIPResponse, error) {
-	var ptrServerID = &req.ServerID
 	ipResponse, err := s.updateIP(&updateIPRequest{
 		Zone:   req.Zone,
 		IPID:   req.IPID,
-		Server: &ptrServerID,
+		Server: &NullableStringValue{Value: req.ServerID},
 	})
 	if err != nil {
 		return nil, err
@@ -53,8 +54,8 @@ func (s *API) AttachIP(req *AttachIPRequest, opts ...scw.RequestOption) (*Attach
 
 // DetachIPRequest contains the parameters to detach an IP from a server
 type DetachIPRequest struct {
-	Zone utils.Zone `json:"-"`
-	IPID string     `json:"-"`
+	Zone scw.Zone `json:"-"`
+	IPID string   `json:"-"`
 }
 
 // DetachIPResponse contains the updated IP after detaching
@@ -64,11 +65,10 @@ type DetachIPResponse struct {
 
 // DetachIP detaches an IP from a server.
 func (s *API) DetachIP(req *DetachIPRequest, opts ...scw.RequestOption) (*DetachIPResponse, error) {
-	var ptrServerID *string
 	ipResponse, err := s.updateIP(&updateIPRequest{
 		Zone:   req.Zone,
 		IPID:   req.IPID,
-		Server: &ptrServerID,
+		Server: &NullableStringValue{Null: true},
 	})
 	if err != nil {
 		return nil, err
@@ -80,24 +80,17 @@ func (s *API) DetachIP(req *DetachIPRequest, opts ...scw.RequestOption) (*Detach
 // UpdateIPRequest contains the parameters to update an IP
 // if Reverse is an empty string, the reverse will be removed
 type UpdateIPRequest struct {
-	Zone    utils.Zone `json:"-"`
-	IPID    string     `json:"-"`
-	Reverse *string    `json:"reverse"`
+	Zone    scw.Zone             `json:"-"`
+	IPID    string               `json:"-"`
+	Reverse *NullableStringValue `json:"reverse"`
 }
 
 // UpdateIP updates an IP
 func (s *API) UpdateIP(req *UpdateIPRequest, opts ...scw.RequestOption) (*UpdateIPResponse, error) {
-	var reverse **string
-	if req.Reverse != nil {
-		if *req.Reverse == "" {
-			req.Reverse = nil
-		}
-		reverse = &req.Reverse
-	}
 	ipResponse, err := s.updateIP(&updateIPRequest{
 		Zone:    req.Zone,
 		IPID:    req.IPID,
-		Reverse: reverse,
+		Reverse: req.Reverse,
 	})
 	if err != nil {
 		return nil, err
@@ -108,9 +101,9 @@ func (s *API) UpdateIP(req *UpdateIPRequest, opts ...scw.RequestOption) (*Update
 
 // AttachVolumeRequest contains the parameters to attach a volume to a server
 type AttachVolumeRequest struct {
-	Zone     utils.Zone `json:"-"`
-	ServerID string     `json:"-"`
-	VolumeID string     `json:"-"`
+	Zone     scw.Zone `json:"-"`
+	ServerID string   `json:"-"`
+	VolumeID string   `json:"-"`
 }
 
 // AttachVolumeResponse contains the updated server after attaching a volume
@@ -129,6 +122,8 @@ func volumesToVolumeTemplates(volumes map[string]*Volume) map[string]*VolumeTemp
 }
 
 // AttachVolume attaches a volume to a server
+//
+// Note: Implementation is thread-safe.
 func (s *API) AttachVolume(req *AttachVolumeRequest, opts ...scw.RequestOption) (*AttachVolumeResponse, error) {
 	defer lockServer(req.Zone, req.ServerID).Unlock()
 	// get server with volumes
@@ -166,8 +161,8 @@ func (s *API) AttachVolume(req *AttachVolumeRequest, opts ...scw.RequestOption) 
 
 // DetachVolumeRequest contains the parameters to detach a volume from a server
 type DetachVolumeRequest struct {
-	Zone     utils.Zone `json:"-"`
-	VolumeID string     `json:"-"`
+	Zone     scw.Zone `json:"-"`
+	VolumeID string   `json:"-"`
 }
 
 // DetachVolumeResponse contains the updated server after detaching a volume
@@ -176,8 +171,9 @@ type DetachVolumeResponse struct {
 }
 
 // DetachVolume detaches a volume from a server
+//
+// Note: Implementation is thread-safe.
 func (s *API) DetachVolume(req *DetachVolumeRequest, opts ...scw.RequestOption) (*DetachVolumeResponse, error) {
-
 	// get volume
 	getVolumeResponse, err := s.GetVolume(&GetVolumeRequest{
 		Zone:     req.Zone,
@@ -274,10 +270,14 @@ func (r *ListVolumesResponse) UnsafeSetTotalCount(totalCount int) {
 	r.TotalCount = uint32(totalCount)
 }
 
+// UnsafeGetTotalCount should not be used
+// Internal usage only
 func (r *ListServersTypesResponse) UnsafeGetTotalCount() int {
 	return int(r.TotalCount)
 }
 
+// UnsafeAppend should not be used
+// Internal usage only
 func (r *ListServersTypesResponse) UnsafeAppend(res interface{}) (int, scw.SdkError) {
 	results, ok := res.(*ListServersTypesResponse)
 	if !ok {
@@ -294,4 +294,26 @@ func (r *ListServersTypesResponse) UnsafeAppend(res interface{}) (int, scw.SdkEr
 
 	r.TotalCount += uint32(len(results.Servers))
 	return len(results.Servers), nil
+}
+
+func (v *NullableStringValue) UnmarshalJSON(b []byte) error {
+	if string(b) == "null" {
+		v.Null = true
+		return nil
+	}
+
+	var tmp string
+	if err := json.Unmarshal(b, &tmp); err != nil {
+		return err
+	}
+	v.Null = false
+	v.Value = tmp
+	return nil
+}
+
+func (v *NullableStringValue) MarshalJSON() ([]byte, error) {
+	if v.Null {
+		return []byte("null"), nil
+	}
+	return json.Marshal(v.Value)
 }

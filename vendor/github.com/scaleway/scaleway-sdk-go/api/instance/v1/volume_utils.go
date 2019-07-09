@@ -7,12 +7,11 @@ import (
 
 	"github.com/scaleway/scaleway-sdk-go/internal/errors"
 	"github.com/scaleway/scaleway-sdk-go/scw"
-	"github.com/scaleway/scaleway-sdk-go/utils"
 )
 
 // UpdateVolumeRequest contains the parameters to update on a volume
 type UpdateVolumeRequest struct {
-	Zone utils.Zone `json:"-"`
+	Zone scw.Zone `json:"-"`
 	// VolumeID is the volumes unique ID
 	VolumeID string `json:"-"`
 	// Name display the volumes names
@@ -26,7 +25,7 @@ type UpdateVolumeResponse struct {
 
 // setVolumeRequest contains all the params to PUT volumes
 type setVolumeRequest struct {
-	Zone utils.Zone `json:"-"`
+	Zone scw.Zone `json:"-"`
 	// ID display the volumes unique ID
 	ID string `json:"id"`
 	// Name display the volumes names

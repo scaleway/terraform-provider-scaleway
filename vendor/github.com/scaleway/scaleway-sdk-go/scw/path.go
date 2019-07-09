@@ -1,4 +1,4 @@
-package scwconfig
+package scw
 
 import (
 	"errors"

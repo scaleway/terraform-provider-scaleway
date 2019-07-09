@@ -1,13 +1,14 @@
-package scwconfig
+package scw
 
 import (
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"os"
+	"path/filepath"
 	"strconv"
 
 	"github.com/scaleway/scaleway-sdk-go/logger"
-	"github.com/scaleway/scaleway-sdk-go/utils"
 	"gopkg.in/yaml.v2"
 )
 
@@ -59,8 +60,8 @@ type Config interface {
 	GetAPIURL() (apiURL string, exist bool)
 	GetInsecure() (insecure bool, exist bool)
 	GetDefaultProjectID() (defaultProjectID string, exist bool)
-	GetDefaultRegion() (defaultRegion utils.Region, exist bool)
-	GetDefaultZone() (defaultZone utils.Zone, exist bool)
+	GetDefaultRegion() (defaultRegion Region, exist bool)
+	GetDefaultZone() (defaultZone Zone, exist bool)
 }
 
 type configV2 struct {
@@ -68,7 +69,7 @@ type configV2 struct {
 	ActiveProfile *string             `yaml:"active_profile,omitempty"`
 	Profiles      map[string]*profile `yaml:"profiles,omitempty"`
 
-	// withProfile is used by LoadWithProfile to handle the following priority order:
+	// withProfile is used by LoadConfigWithProfile to handle the following priority order:
 	// c.withProfile > os.Getenv("SCW_PROFILE") > c.ActiveProfile
 	withProfile string
 }
@@ -298,7 +299,7 @@ func (c *configV2) GetDefaultProjectID() (string, bool) {
 // value (which may be empty) is returned and the boolean is true.
 // Otherwise the returned value will be empty and the boolean will
 // be false.
-func (c *configV2) GetDefaultRegion() (utils.Region, bool) {
+func (c *configV2) GetDefaultRegion() (Region, bool) {
 	envValue, _, envExist := getenv(scwDefaultRegionEnv, cliRegionEnv, terraformRegionEnv)
 	activeProfile, _ := c.getActiveProfile()
 
@@ -319,7 +320,7 @@ func (c *configV2) GetDefaultRegion() (utils.Region, bool) {
 		logger.Warningf("default region is empty")
 	}
 
-	return utils.Region(defaultRegion), true
+	return Region(defaultRegion), true
 }
 
 // GetDefaultZone retrieve the default zone
@@ -330,7 +331,7 @@ func (c *configV2) GetDefaultRegion() (utils.Region, bool) {
 // value (which may be empty) is returned and the boolean is true.
 // Otherwise the returned value will be empty and the boolean will
 // be false.
-func (c *configV2) GetDefaultZone() (utils.Zone, bool) {
+func (c *configV2) GetDefaultZone() (Zone, bool) {
 	envValue, _, envExist := getenv(scwDefaultZoneEnv)
 	activeProfile, _ := c.getActiveProfile()
 
@@ -351,7 +352,7 @@ func (c *configV2) GetDefaultZone() (utils.Zone, bool) {
 		logger.Warningf("default zone is empty")
 	}
 
-	return utils.Zone(defaultZone), true
+	return Zone(defaultZone), true
 }
 
 func getenv(upToDateKey string, deprecatedKeys ...string) (string, string, bool) {
@@ -420,4 +421,41 @@ func v1RegionToV2(region string) string {
 	default:
 		return region
 	}
+}
+
+const (
+	defaultConfigPermission = 0600
+)
+
+// migrateV1toV2 converts the V1 config to V2 config and save it in the target path
+// use config.Save() when the method is public
+func migrateV1toV2(configV1 *configV1, targetPath string) error {
+	// STEP 0: get absolute target path
+
+	targetPath = filepath.Clean(targetPath)
+
+	// STEP 1: create dir
+	err := os.MkdirAll(filepath.Dir(targetPath), 0700)
+	if err != nil {
+		logger.Debugf("mkdir did not work on %s: %s", filepath.Dir(targetPath), err)
+		return nil
+	}
+
+	// STEP 2: marshal yaml config
+	newConfig := configV1.toV2()
+	file, err := yaml.Marshal(newConfig)
+	if err != nil {
+		return err
+	}
+
+	// STEP 3: save config
+	err = ioutil.WriteFile(targetPath, file, defaultConfigPermission)
+	if err != nil {
+		logger.Debugf("cannot write file %s: %s", targetPath, err)
+		return nil
+	}
+
+	// STEP 4: log success
+	logger.Infof("config successfully migrated to %s", targetPath)
+	return nil
 }
