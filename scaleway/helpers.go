@@ -320,7 +320,7 @@ func getRegion(d terraformResourceData, meta *Meta) (scw.Region, error) {
 }
 
 // ErrProjectIdNotFound is returned when no project_id can be detected
-var ErrProjectIdNotFound = fmt.Errorf("could not detect region")
+var ErrProjectIdNotFound = fmt.Errorf("could not detect project_id")
 
 // getProjectId will try to guess the project_id from the following:
 //  - project_id field of the resource data
