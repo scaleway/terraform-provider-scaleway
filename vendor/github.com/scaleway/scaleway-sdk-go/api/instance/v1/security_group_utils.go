@@ -90,3 +90,101 @@ func (s *API) UpdateSecurityGroup(req *UpdateSecurityGroupRequest, opts ...scw.R
 		SecurityGroup: setRes.SecurityGroup,
 	}, nil
 }
+
+// UpdateSecurityGroupRuleRequest contains the parameters to update a security group rule
+type UpdateSecurityGroupRuleRequest struct {
+	Zone                scw.Zone `json:"-"`
+	SecurityGroupID     string   `json:"-"`
+	SecurityGroupRuleID string   `json:"-"`
+
+	Protocol     *SecurityGroupRuleProtocol  `json:"protocol,omitempty"`
+	Direction    *SecurityGroupRuleDirection `json:"direction,omitempty"`
+	Action       *SecurityGroupRuleAction    `json:"action,omitempty"`
+	IPRange      *string                     `json:"ip_range,omitempty"`
+	DestPortFrom *uint32                     `json:"dest_port_from,omitempty"`
+	DestPortTo   *uint32                     `json:"dest_port_to,omitempty"`
+	Position     *uint32                     `json:"position,omitempty"`
+}
+
+type UpdateSecurityGroupRuleResponse struct {
+	Rule *SecurityGroupRule `json:"security_rule"`
+}
+
+// UpdateSecurityGroupRule updates a security group.
+func (s *API) UpdateSecurityGroupRule(req *UpdateSecurityGroupRuleRequest, opts ...scw.RequestOption) (*UpdateSecurityGroupRuleResponse, error) {
+	var err error
+
+	if fmt.Sprint(req.Zone) == "" {
+		defaultZone, _ := s.client.GetDefaultZone()
+		req.Zone = defaultZone
+	}
+
+	if fmt.Sprint(req.Zone) == "" {
+		return nil, errors.New("field Zone cannot be empty in request")
+	}
+
+	res, err := s.GetSecurityGroupRule(&GetSecurityGroupRuleRequest{
+		SecurityGroupRuleID: req.SecurityGroupRuleID,
+		SecurityGroupID:     req.SecurityGroupID,
+		Zone:                req.Zone,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	setRequest := &setSecurityGroupRuleRequest{
+		Zone:                req.Zone,
+		SecurityGroupID:     req.SecurityGroupID,
+		SecurityGroupRuleID: req.SecurityGroupRuleID,
+		ID:                  req.SecurityGroupRuleID,
+		Direction:           res.Rule.Direction,
+		Protocol:            res.Rule.Protocol,
+		DestPortFrom:        res.Rule.DestPortFrom,
+		DestPortTo:          res.Rule.DestPortTo,
+		IPRange:             res.Rule.IPRange,
+		Action:              res.Rule.Action,
+		Position:            res.Rule.Position,
+		Editable:            res.Rule.Editable,
+	}
+
+	// Override the values that need to be updated
+	if req.Action != nil {
+		setRequest.Action = *req.Action
+	}
+	if req.IPRange != nil {
+		setRequest.IPRange = *req.IPRange
+	}
+	if req.DestPortTo != nil {
+		setRequest.DestPortTo = req.DestPortTo
+	}
+	if req.DestPortFrom != nil {
+		setRequest.DestPortFrom = req.DestPortFrom
+	}
+	if req.DestPortFrom != nil && req.DestPortTo != nil && *req.DestPortFrom == *req.DestPortTo {
+		setRequest.DestPortTo = nil
+	}
+	if req.Protocol != nil {
+		setRequest.Protocol = *req.Protocol
+	}
+	if req.Direction != nil {
+		setRequest.Direction = *req.Direction
+	}
+	if req.Position != nil {
+		setRequest.Position = *req.Position
+	}
+
+	// When we use ICMP protocol portFrom and portTo should be set to nil
+	if req.Protocol != nil && *req.Protocol == SecurityGroupRuleProtocolICMP {
+		setRequest.DestPortFrom = nil
+		setRequest.DestPortTo = nil
+	}
+
+	resp, err := s.setSecurityGroupRule(setRequest)
+	if err != nil {
+		return nil, err
+	}
+
+	return &UpdateSecurityGroupRuleResponse{
+		Rule: resp.Rule,
+	}, nil
+}
