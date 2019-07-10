@@ -8,11 +8,11 @@ description: |-
 # Migrating from v1 to v2
 
 This page guides you through the process of migrating your version 1 resources to their version 2 equivalent.
-In version 2 we completely changed the naming of all resources, as well as their attributes.
+To prepare the launch of all new Scaleway products, we completely changed the naming of all resources (as well as their attributes) in version 2 of the Terraform provider.
 
 ## Configuration
 
-To accomodate to the changes in the API and to be future proof, we decided to change the configuration management in version 2.
+In order to unify configuration management across all scaleway developer tools, we decided to change the configuration management in version 2.
 
 Below you find an overview of changes in the provider config:
 
