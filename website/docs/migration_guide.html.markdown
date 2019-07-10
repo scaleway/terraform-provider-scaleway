@@ -12,7 +12,7 @@ To prepare the launch of all new Scaleway products, we completely changed the na
 
 ## Configuration
 
-In order to unify configuration management across all scaleway developer tools, we decided to change the configuration management in version 2.
+In order to unify configuration management across all scaleway developer tools, we changed the configuration management in version 2.
 
 Below you find an overview of changes in the provider config:
 
