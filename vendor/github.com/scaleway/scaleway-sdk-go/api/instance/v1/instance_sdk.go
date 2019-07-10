@@ -2822,9 +2822,9 @@ type CreateSecurityGroupRuleRequest struct {
 
 	IPRange string `json:"ip_range,omitempty"`
 
-	DestPortFrom uint32 `json:"dest_port_from,omitempty"`
+	DestPortFrom *uint32 `json:"dest_port_from,omitempty"`
 
-	DestPortTo uint32 `json:"dest_port_to,omitempty"`
+	DestPortTo *uint32 `json:"dest_port_to,omitempty"`
 
 	Position uint32 `json:"position,omitempty"`
 
