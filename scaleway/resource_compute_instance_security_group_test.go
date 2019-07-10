@@ -2,6 +2,7 @@ package scaleway
 
 import (
 	"fmt"
+	"sort"
 	"testing"
 
 	"github.com/scaleway/scaleway-sdk-go/scw"
@@ -11,48 +12,77 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
 )
 
-// Check that reverse is handled at creation and update time
+// Test that we can add / update / delete rules
 var testAccScalewayComputeInstanceSecurityGroupConfig = []string{
 	`
 		resource "scaleway_compute_instance_security_group" "base" {
 			name = "sg-name"
-
-			rule {
-				port = "22"
-				ip = "10.10.10.10"
+			inbound_default_policy = "drop"
+			
+			inbound_rule {
+			   	action = "accept"
+			   	port = 80
+				ip_range = "0.0.0.0/0"
             }
 
-			rule {
-				port_range = "1-1024"
-				ip_range = "8.8.8.0/24"
-			}
-			
-			rule {
-				type = "outbound"
-				port_range = "3000"
+			inbound_rule {
+		   		action = "accept"
+		   		port = 22
+				ip = "1.1.1.1"
 			}
 		}
 	`,
 	`
 		resource "scaleway_compute_instance_security_group" "base" {
+			name = "sg-name"
 			inbound_default_policy = "accept"
-			outbound_default_policy = "drop"
 
-			rule {
-				port = "22"
-				ip = "10.10.10.10"
-			}
+			inbound_rule {
+			   	action = "drop"
+			   	port = 80
+				ip = "8.8.8.8"
+            }
 
-			rule {
-				port_range = "1-1024"
-				ip_range = "8.8.8.0/24"
+			inbound_rule {
+			   	action = "accept"
+			   	port = 80
+				ip_range = "0.0.0.0/0"
+            }
+
+			inbound_rule {
+		   		action = "accept"
+		   		port = 22
+				ip = "1.1.1.1"
 			}
 			
-			rule {
-				type = "outbound"
-				port_range = "3000"
-			}
-			
+		}
+	`,
+	`
+		resource "scaleway_compute_instance_security_group" "base" {
+			name = "sg-name"
+			inbound_default_policy = "accept"
+		}
+	`,
+}
+
+// Test that we can use ICMP protocol
+var testAccScalewayComputeInstanceSecurityGroupConfigICMP = []string{
+	`
+		resource "scaleway_compute_instance_security_group" "base" {
+			inbound_rule {
+			   	action = "accept"
+			   	port = 80
+				ip_range = "0.0.0.0/0"
+            }
+		}
+	`,
+	`
+		resource "scaleway_compute_instance_security_group" "base" {
+			inbound_rule {
+			   	action = "drop"
+			   	protocol = "ICMP"
+				ip = "8.8.8.8"
+            }
 		}
 	`,
 }
@@ -67,72 +97,148 @@ func TestAccScalewayComputeInstanceSecurityGroup(t *testing.T) {
 			{
 				Config: testAccScalewayComputeInstanceSecurityGroupConfig[0],
 				Check: resource.ComposeTestCheckFunc(
-					func(s *terraform.State) error {
-						fmt.Println(s)
-						return nil
-					},
 					testAccCheckScalewayComputeInstanceSecurityGroupExists("scaleway_compute_instance_security_group.base"),
 					resource.TestCheckResourceAttr("scaleway_compute_instance_security_group.base", "name", "sg-name"),
 					resource.TestCheckResourceAttr("scaleway_compute_instance_security_group.base", "inbound_default_policy", "drop"),
 					resource.TestCheckResourceAttr("scaleway_compute_instance_security_group.base", "outbound_default_policy", "accept"),
-					resource.TestCheckResourceAttr("scaleway_compute_instance_security_group.base", "rule.#", "3"),
-					testAccCheckScalewayComputeInstanceSecurityGroupRuleMatch("scaleway_compute_instance_security_group.base", 2421519970,
-						instance.SecurityGroupRuleDirectionInbound, instance.SecurityGroupRuleActionAccept, instance.SecurityGroupRuleProtocolTCP, "10.10.10.10", 22, 0),
-					testAccCheckScalewayComputeInstanceSecurityGroupRuleMatch("scaleway_compute_instance_security_group.base", 2236276624,
-						instance.SecurityGroupRuleDirectionInbound, instance.SecurityGroupRuleActionAccept, instance.SecurityGroupRuleProtocolTCP, "8.8.8.0/24", 1, 1024),
-					testAccCheckScalewayComputeInstanceSecurityGroupRuleMatch("scaleway_compute_instance_security_group.base", 3624953052,
-						instance.SecurityGroupRuleDirectionOutbound, instance.SecurityGroupRuleActionDrop, instance.SecurityGroupRuleProtocolTCP, "0.0.0.0/0", 3000, 0),
+					resource.TestCheckResourceAttr("scaleway_compute_instance_security_group.base", "inbound_rule.#", "2"),
+					resource.TestCheckResourceAttr("scaleway_compute_instance_security_group.base", "inbound_rule.0.action", "accept"),
+					resource.TestCheckResourceAttr("scaleway_compute_instance_security_group.base", "inbound_rule.0.protocol", "TCP"),
+					resource.TestCheckResourceAttr("scaleway_compute_instance_security_group.base", "inbound_rule.0.port", "80"),
+					resource.TestCheckResourceAttr("scaleway_compute_instance_security_group.base", "inbound_rule.0.ip_range", "0.0.0.0/0"),
+					testAccCheckScalewayComputeInstanceSecurityGroupRuleMatch("scaleway_compute_instance_security_group.base", 0, &instance.SecurityGroupRule{
+						Direction:    instance.SecurityGroupRuleDirectionInbound,
+						IPRange:      "0.0.0.0/0",
+						DestPortFrom: scw.Uint32(80),
+						DestPortTo:   nil,
+						Protocol:     instance.SecurityGroupRuleProtocolTCP,
+						Action:       instance.SecurityGroupRuleActionAccept,
+					}),
+					resource.TestCheckResourceAttr("scaleway_compute_instance_security_group.base", "inbound_rule.1.action", "accept"),
+					resource.TestCheckResourceAttr("scaleway_compute_instance_security_group.base", "inbound_rule.1.protocol", "TCP"),
+					resource.TestCheckResourceAttr("scaleway_compute_instance_security_group.base", "inbound_rule.1.port", "22"),
+					resource.TestCheckResourceAttr("scaleway_compute_instance_security_group.base", "inbound_rule.1.ip", "1.1.1.1"),
+					testAccCheckScalewayComputeInstanceSecurityGroupRuleMatch("scaleway_compute_instance_security_group.base", 1, &instance.SecurityGroupRule{
+						Direction:    instance.SecurityGroupRuleDirectionInbound,
+						IPRange:      "1.1.1.1",
+						DestPortFrom: scw.Uint32(22),
+						DestPortTo:   nil,
+						Protocol:     instance.SecurityGroupRuleProtocolTCP,
+						Action:       instance.SecurityGroupRuleActionAccept,
+					}),
 				),
 			},
 			{
 				Config: testAccScalewayComputeInstanceSecurityGroupConfig[1],
 				Check: resource.ComposeTestCheckFunc(
-					func(s *terraform.State) error {
-						fmt.Println(s)
-						return nil
-					},
 					testAccCheckScalewayComputeInstanceSecurityGroupExists("scaleway_compute_instance_security_group.base"),
 					resource.TestCheckResourceAttr("scaleway_compute_instance_security_group.base", "name", "sg-name"),
 					resource.TestCheckResourceAttr("scaleway_compute_instance_security_group.base", "inbound_default_policy", "accept"),
-					resource.TestCheckResourceAttr("scaleway_compute_instance_security_group.base", "outbound_default_policy", "drop"),
-					resource.TestCheckResourceAttr("scaleway_compute_instance_security_group.base", "rule.#", "3"),
-					testAccCheckScalewayComputeInstanceSecurityGroupRuleMatch("scaleway_compute_instance_security_group.base", 2421519970,
-						instance.SecurityGroupRuleDirectionInbound, instance.SecurityGroupRuleActionDrop, instance.SecurityGroupRuleProtocolTCP, "10.10.10.10", 22, 0),
-					testAccCheckScalewayComputeInstanceSecurityGroupRuleMatch("scaleway_compute_instance_security_group.base", 2236276624,
-						instance.SecurityGroupRuleDirectionInbound, instance.SecurityGroupRuleActionDrop, instance.SecurityGroupRuleProtocolTCP, "8.8.8.0/24", 1, 1024),
-					testAccCheckScalewayComputeInstanceSecurityGroupRuleMatch("scaleway_compute_instance_security_group.base", 3624953052,
-						instance.SecurityGroupRuleDirectionOutbound, instance.SecurityGroupRuleActionAccept, instance.SecurityGroupRuleProtocolTCP, "0.0.0.0/0", 3000, 0),
+					resource.TestCheckResourceAttr("scaleway_compute_instance_security_group.base", "outbound_default_policy", "accept"),
+					resource.TestCheckResourceAttr("scaleway_compute_instance_security_group.base", "inbound_rule.#", "3"),
+					resource.TestCheckResourceAttr("scaleway_compute_instance_security_group.base", "inbound_rule.0.action", "drop"),
+					resource.TestCheckResourceAttr("scaleway_compute_instance_security_group.base", "inbound_rule.0.protocol", "TCP"),
+					resource.TestCheckResourceAttr("scaleway_compute_instance_security_group.base", "inbound_rule.0.port", "80"),
+					resource.TestCheckResourceAttr("scaleway_compute_instance_security_group.base", "inbound_rule.0.ip", "8.8.8.8"),
+					testAccCheckScalewayComputeInstanceSecurityGroupRuleMatch("scaleway_compute_instance_security_group.base", 0, &instance.SecurityGroupRule{
+						Direction:    instance.SecurityGroupRuleDirectionInbound,
+						IPRange:      "8.8.8.8",
+						DestPortFrom: scw.Uint32(80),
+						DestPortTo:   nil,
+						Protocol:     instance.SecurityGroupRuleProtocolTCP,
+						Action:       instance.SecurityGroupRuleActionDrop,
+					}),
+					resource.TestCheckResourceAttr("scaleway_compute_instance_security_group.base", "inbound_rule.1.action", "accept"),
+					resource.TestCheckResourceAttr("scaleway_compute_instance_security_group.base", "inbound_rule.1.protocol", "TCP"),
+					resource.TestCheckResourceAttr("scaleway_compute_instance_security_group.base", "inbound_rule.1.port", "80"),
+					resource.TestCheckResourceAttr("scaleway_compute_instance_security_group.base", "inbound_rule.1.ip_range", "0.0.0.0/0"),
+					testAccCheckScalewayComputeInstanceSecurityGroupRuleMatch("scaleway_compute_instance_security_group.base", 1, &instance.SecurityGroupRule{
+						Direction:    instance.SecurityGroupRuleDirectionInbound,
+						IPRange:      "0.0.0.0/0",
+						DestPortFrom: scw.Uint32(80),
+						DestPortTo:   nil,
+						Protocol:     instance.SecurityGroupRuleProtocolTCP,
+						Action:       instance.SecurityGroupRuleActionAccept,
+					}),
+					resource.TestCheckResourceAttr("scaleway_compute_instance_security_group.base", "inbound_rule.2.action", "accept"),
+					resource.TestCheckResourceAttr("scaleway_compute_instance_security_group.base", "inbound_rule.2.protocol", "TCP"),
+					resource.TestCheckResourceAttr("scaleway_compute_instance_security_group.base", "inbound_rule.2.port", "22"),
+					resource.TestCheckResourceAttr("scaleway_compute_instance_security_group.base", "inbound_rule.2.ip", "1.1.1.1"),
+					testAccCheckScalewayComputeInstanceSecurityGroupRuleMatch("scaleway_compute_instance_security_group.base", 2, &instance.SecurityGroupRule{
+						Direction:    instance.SecurityGroupRuleDirectionInbound,
+						IPRange:      "1.1.1.1",
+						DestPortFrom: scw.Uint32(22),
+						DestPortTo:   nil,
+						Protocol:     instance.SecurityGroupRuleProtocolTCP,
+						Action:       instance.SecurityGroupRuleActionAccept,
+					}),
+				),
+			},
+			{
+				Config: testAccScalewayComputeInstanceSecurityGroupConfig[2],
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("scaleway_compute_instance_security_group.base", "inbound_rule.#", "0"),
 				),
 			},
 		},
 	})
 }
 
-func testAccCheckScalewayComputeInstanceSecurityGroupRuleMatch(name string, key int, direction instance.SecurityGroupRuleDirection, action instance.SecurityGroupRuleAction, protocol instance.SecurityGroupRuleProtocol, ipRange string, portFrom uint32, portTo uint32) resource.TestCheckFunc {
-	return testAccCheckScalewayComputeInstanceSecurityGroupRuleIs(name, key, func(rule *instance.SecurityGroupRule) error {
-		if rule.Direction != direction {
-			return fmt.Errorf("direction with hash %d shoud be %s got %s", key, direction, rule.Direction)
-		}
-		if rule.Action != action {
-			return fmt.Errorf("rule with hash %d shoud be %s got %s", key, action, rule.Action)
-		}
-		if rule.Protocol != protocol {
-			return fmt.Errorf("protocol with hash %d shoud be %s got %s", key, protocol, rule.Protocol)
-		}
-		if rule.IPRange != ipRange {
-			return fmt.Errorf("ip_range with hash %d shoud be %s got %s", key, ipRange, rule.IPRange)
-		}
-		if rule.DestPortFrom != portFrom {
-			return fmt.Errorf("dest_port_from with hash %d shoud be %d got %d", key, portFrom, rule.DestPortFrom)
-		}
-		if rule.DestPortTo != portTo {
-			return fmt.Errorf("dest_port_to with hash %d shoud be %d got %d", key, portTo, rule.DestPortTo)
+func TestAccScalewayComputeInstanceSecurityGroupICMP(t *testing.T) {
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckScalewayComputeInstanceSecurityGroupDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccScalewayComputeInstanceSecurityGroupConfigICMP[0],
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("scaleway_compute_instance_security_group.base", "inbound_rule.0.action", "accept"),
+					resource.TestCheckResourceAttr("scaleway_compute_instance_security_group.base", "inbound_rule.0.protocol", "TCP"),
+					resource.TestCheckResourceAttr("scaleway_compute_instance_security_group.base", "inbound_rule.0.port", "80"),
+					resource.TestCheckResourceAttr("scaleway_compute_instance_security_group.base", "inbound_rule.0.ip_range", "0.0.0.0/0"),
+					testAccCheckScalewayComputeInstanceSecurityGroupRuleMatch("scaleway_compute_instance_security_group.base", 0, &instance.SecurityGroupRule{
+						Direction:    instance.SecurityGroupRuleDirectionInbound,
+						IPRange:      "0.0.0.0/0",
+						DestPortFrom: scw.Uint32(80),
+						DestPortTo:   nil,
+						Protocol:     instance.SecurityGroupRuleProtocolTCP,
+						Action:       instance.SecurityGroupRuleActionAccept,
+					}),
+				),
+			},
+			{
+				Config: testAccScalewayComputeInstanceSecurityGroupConfigICMP[1],
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("scaleway_compute_instance_security_group.base", "inbound_rule.0.action", "drop"),
+					resource.TestCheckResourceAttr("scaleway_compute_instance_security_group.base", "inbound_rule.0.protocol", "ICMP"),
+					resource.TestCheckResourceAttr("scaleway_compute_instance_security_group.base", "inbound_rule.0.port", "0"),
+					resource.TestCheckResourceAttr("scaleway_compute_instance_security_group.base", "inbound_rule.0.ip", "8.8.8.8"),
+					testAccCheckScalewayComputeInstanceSecurityGroupRuleMatch("scaleway_compute_instance_security_group.base", 0, &instance.SecurityGroupRule{
+						Direction:    instance.SecurityGroupRuleDirectionInbound,
+						IPRange:      "8.8.8.8",
+						DestPortFrom: nil,
+						DestPortTo:   nil,
+						Protocol:     instance.SecurityGroupRuleProtocolICMP,
+						Action:       instance.SecurityGroupRuleActionDrop,
+					}),
+				),
+			},
+		},
+	})
+}
+
+func testAccCheckScalewayComputeInstanceSecurityGroupRuleMatch(name string, index int, expected *instance.SecurityGroupRule) resource.TestCheckFunc {
+	return testAccCheckScalewayComputeInstanceSecurityGroupRuleIs(name, expected.Direction, index, func(actual *instance.SecurityGroupRule) error {
+		if !securityGroupRuleEquals(expected, actual) {
+			return fmt.Errorf("security group does not match %v, %v", actual, expected)
 		}
 		return nil
 	})
 }
 
-func testAccCheckScalewayComputeInstanceSecurityGroupRuleIs(name string, key int, test func(rule *instance.SecurityGroupRule) error) resource.TestCheckFunc {
+func testAccCheckScalewayComputeInstanceSecurityGroupRuleIs(name string, direction instance.SecurityGroupRuleDirection, index int, test func(rule *instance.SecurityGroupRule) error) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[name]
 		if !ok {
@@ -144,22 +250,29 @@ func testAccCheckScalewayComputeInstanceSecurityGroupRuleIs(name string, key int
 			return err
 		}
 
-		res, err := instanceApi.ListSecurityGroupRules(&instance.ListSecurityGroupRulesRequest{
+		resRules, err := instanceApi.ListSecurityGroupRules(&instance.ListSecurityGroupRulesRequest{
 			SecurityGroupID: ID,
 			Zone:            zone,
 		}, scw.WithAllPages())
 		if err != nil {
 			return err
 		}
-
-		for _, rule := range res.Rules {
-			flat := securityGroupRuleFlatten(rule)
-			if securityGroupRuleHash(flat) == key {
-				return test(rule)
-			}
+		sort.Slice(resRules.Rules, func(i, j int) bool {
+			return resRules.Rules[i].Position < resRules.Rules[j].Position
+		})
+		apiRules := map[instance.SecurityGroupRuleDirection][]*instance.SecurityGroupRule{
+			instance.SecurityGroupRuleDirectionInbound:  {},
+			instance.SecurityGroupRuleDirectionOutbound: {},
 		}
 
-		return fmt.Errorf("could not find a rule with hash %d", key)
+		for _, apiRule := range resRules.Rules {
+			if apiRule.Editable == false {
+				continue
+			}
+			apiRules[apiRule.Direction] = append(apiRules[apiRule.Direction], apiRule)
+		}
+
+		return test(apiRules[direction][index])
 	}
 }
 
