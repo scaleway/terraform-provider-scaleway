@@ -28,8 +28,8 @@ The following arguments are supported:
 - `from_volume_id` - (Optional) If set, the new volume will be copied from this volume. (leave this empty when using `size_in_gb` or `from_snapshot_id`).
 - `from_snapshot_id` - (Optional) If set, the new volume will be created from this snapshot. (leave this empty when using `size_in_gb` or `from_volume_id`).
 - `name` - (Optional) The name of the volume. If not provided it will be randomly generated.
-- `zone` - (Defaults to the default `zone`) The [zone](https://developers.scaleway.com/en/quickstart/#zone-definition) in which the volume should be created. If it is not provided, the `zone` of the provider is used.
-- `project_id` - (Defaults to the default `project_id`) The ID of the project the volume is associated with. If it is not provided, the provider `project_id` is used.
+- `zone` - (Defaults to [provider](../index.html#zone) `zone`) The [zone](../guides/regions_and_zones.html#zones) in which the volume should be created.
+- `project_id` - (Defaults to [provider](../index.html#project_id) `project_id`) The ID of the project the volume is associated with.
 
 ## Attributes Reference
 

@@ -21,8 +21,8 @@ The following arguments are supported:
 
 - `reverse` - (Optional) The reverse DNS for this IP.
 - `server_id` - (Optional) The ID of the server you want to attach this resource to.
-- `zone` - (Optional) The [zone](https://developers.scaleway.com/en/quickstart/#zone-definition) in which the IP should be reserved. If it is not provided, the provider `zone` is used.
-- `project_id` - (Optional) The ID of the project the IP is associated with. If it is not provided, the provider `project_id` is used.
+- `zone` - (Defaults to [provider](../index.html#zone) `zone`) The [zone](../guides/regions_and_zones.html#zones) in which the IP should be reserved.
+- `project_id` - (Defaults to [provider](../index.html#project_id) `project_id`) The ID of the project the IP is associated with.
 
 ## Attributes Reference
 
