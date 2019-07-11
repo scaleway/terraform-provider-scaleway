@@ -56,13 +56,13 @@ func resourceScalewayComputeInstanceSecurityGroup() *schema.Resource {
 			"inbound_rule": {
 				Type:        schema.TypeList,
 				Optional:    true,
-				Description: "inbound rules for this security group",
+				Description: "Inbound rules for this security group",
 				Elem:        securityGroupRuleSchema(),
 			},
 			"outbound_rule": {
 				Type:        schema.TypeList,
 				Optional:    true,
-				Description: "outbound rules for this security group",
+				Description: "Outbound rules for this security group",
 				Elem:        securityGroupRuleSchema(),
 			},
 			"zone":       zoneSchema(),
@@ -215,9 +215,9 @@ func resourceScalewayComputeInstanceSecurityGroupUpdate(d *schema.ResourceData, 
 	// Handle SecurityGroupRules
 	//
 	// It works as followed:
-	//   1) create 2 map[direction][]rule: one for rules in state and one for rules in API
+	//   1) Creates 2 map[direction][]rule: one for rules in state and one for rules in API
 	//   2) For each direction we:
-	//     A) Loop for each rule in state for a this direction
+	//     A) Loop for each rule in state for this direction
 	//       a) Compare with api rule in this direction at the same index
 	//          if different update / if equals do nothing / if no more api rules to compare create new api rule
 	//     B) If there is more rule in the API we remove them
@@ -253,7 +253,7 @@ func resourceScalewayComputeInstanceSecurityGroupUpdate(d *schema.ResourceData, 
 	// Loop through all directions
 	for direction := range stateRules {
 
-		// Loop for all states rule in this direction
+		// Loop for all state rules in this direction
 		for index, rawStateRule := range stateRules[direction] {
 			apiRule := (*instance.SecurityGroupRule)(nil)
 			stateRule := securityGroupRuleExpand(rawStateRule)
@@ -276,7 +276,7 @@ func resourceScalewayComputeInstanceSecurityGroupUpdate(d *schema.ResourceData, 
 				continue
 			}
 
-			// We compare rule stateRule[index] and apiRule[index].If they are different we update api rule to match state.
+			// We compare rule stateRule[index] and apiRule[index]. If they are different we update api rule to match state.
 			apiRule = apiRules[direction][index]
 			if !securityGroupRuleEquals(stateRule, apiRule) {
 				_, err = instanceApi.UpdateSecurityGroupRule(&instance.UpdateSecurityGroupRuleRequest{
@@ -296,7 +296,7 @@ func resourceScalewayComputeInstanceSecurityGroupUpdate(d *schema.ResourceData, 
 			}
 		}
 
-		// We loop through remaining apirule and delete them as they are no longer in the state.
+		// We loop through remaining API rules and delete them as they are no longer in the state.
 		for index := len(stateRules[direction]); index < len(apiRules[direction]); index++ {
 			err = instanceApi.DeleteSecurityGroupRule(&instance.DeleteSecurityGroupRuleRequest{
 				Zone:                zone,
@@ -344,6 +344,7 @@ func securityGroupRuleSchema() *schema.Resource {
 					instance.SecurityGroupRuleActionAccept.String(),
 					instance.SecurityGroupRuleActionDrop.String(),
 				}, false),
+				Description: "Action when rule match request (drop or accept)",
 			},
 			"protocol": {
 				Type:     schema.TypeString,
@@ -354,24 +355,29 @@ func securityGroupRuleSchema() *schema.Resource {
 					instance.SecurityGroupRuleProtocolTCP.String(),
 					instance.SecurityGroupRuleProtocolUDP.String(),
 				}, false),
+				Description: "Protocol for this rule (TCP, UDP, ICMP)",
 			},
 			"port": {
-				Type:     schema.TypeInt,
-				Optional: true,
+				Type:        schema.TypeInt,
+				Optional:    true,
+				Description: "Network port for this rule",
 			},
 			"port_range": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Computed port range for this rule (e.g: 1-1024, 22-22)",
 			},
 			"ip": {
 				Type:         schema.TypeString,
 				Optional:     true,
 				ValidateFunc: validation.SingleIP(),
+				Description:  "Ip address for this rule (e.g: 1.1.1.1). Only one of ip or ip_range should be provided",
 			},
 			"ip_range": {
 				Type:         schema.TypeString,
 				Optional:     true,
 				ValidateFunc: validation.CIDRNetwork(0, 32),
+				Description:  "Ip range for this rule (e.g: 192.168.1.0/24). Only one of ip or ip_range should be provided",
 			},
 		},
 	}
@@ -424,7 +430,7 @@ func securityGroupRuleExpand(i interface{}) *instance.SecurityGroupRule {
 	return rule
 }
 
-// securityGroupRuleExpand transform a api rule to an state one.
+// securityGroupRuleFlatten transform a api rule to an state one.
 func securityGroupRuleFlatten(rule *instance.SecurityGroupRule) map[string]interface{} {
 	portFrom, portTo := uint32(0), uint32(0)
 

@@ -70,8 +70,8 @@ var testAccScalewayComputeInstanceSecurityGroupConfigICMP = []string{
 	`
 		resource "scaleway_compute_instance_security_group" "base" {
 			inbound_rule {
-			   	action = "accept"
-			   	port = 80
+				action = "accept"
+				port = 80
 				ip_range = "0.0.0.0/0"
             }
 		}
@@ -79,8 +79,8 @@ var testAccScalewayComputeInstanceSecurityGroupConfigICMP = []string{
 	`
 		resource "scaleway_compute_instance_security_group" "base" {
 			inbound_rule {
-			   	action = "drop"
-			   	protocol = "ICMP"
+				action = "drop"
+				protocol = "ICMP"
 				ip = "8.8.8.8"
             }
 		}
