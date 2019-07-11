@@ -46,18 +46,18 @@ resource "scaleway_compute_instance_security_group" "www" {
   inbound_default_policy = "drop"
   outbound_default_policy = "accept"
 
-  inbound {
+  inbound_rule {
     action = "accept"
     port = "22"
     ip = "212.47.225.64"
   }
 
-  inbound {
+  inbound_rule {
     action = "accept"
     port = "80"
   }
 
-  inbound {
+  inbound_rule {
     action = "accept"
     port = "443"
   }
