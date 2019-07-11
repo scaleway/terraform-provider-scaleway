@@ -12,6 +12,13 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
 )
 
+func init() {
+	resource.AddTestSweepers("scaleway_compute_instance_security_group", &resource.Sweeper{
+		Name: "scaleway_compute_instance_security_group",
+		F:    testSweepComputeInstanceSecurityGroup,
+	})
+}
+
 // Test that we can add / update / delete rules
 var testAccScalewayComputeInstanceSecurityGroupConfig = []string{
 	`
@@ -331,6 +338,36 @@ func testAccCheckScalewayComputeInstanceSecurityGroupDestroy(s *terraform.State)
 		// Unexpected api error we return it
 		if !is404Error(err) {
 			return err
+		}
+	}
+
+	return nil
+}
+
+func testSweepComputeInstanceSecurityGroup(region string) error {
+	scwClient, err := sharedClientForRegion(region)
+	if err != nil {
+		return fmt.Errorf("error getting client in sweeper: %s", err)
+	}
+	instanceAPI := instance.NewAPI(scwClient)
+
+	l.Debugf("sweeper: destroying the security groups in (%s)", region)
+
+	listResp, err := instanceAPI.ListSecurityGroups(&instance.ListSecurityGroupsRequest{})
+	if err != nil {
+		return fmt.Errorf("error listing security groups in sweeper: %s", err)
+	}
+
+	for _, securityGroup := range listResp.SecurityGroups {
+		// Can't delete default security group.
+		if securityGroup.OrganizationDefault {
+			continue
+		}
+		err = instanceAPI.DeleteSecurityGroup(&instance.DeleteSecurityGroupRequest{
+			SecurityGroupID: securityGroup.ID,
+		})
+		if err != nil {
+			return fmt.Errorf("error deleting security groups in sweeper: %s", err)
 		}
 	}
 
