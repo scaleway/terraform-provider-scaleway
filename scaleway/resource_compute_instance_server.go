@@ -184,13 +184,14 @@ func resourceScalewayComputeInstanceServerCreate(d *schema.ResourceData, m inter
 		name = getRandomName("srv")
 	}
 	req := &instance.CreateServerRequest{
-		Zone:           zone,
-		Name:           name.(string),
-		Organization:   d.Get("project_id").(string),
-		Image:          expandID(d.Get("image_id")),
-		CommercialType: d.Get("type").(string),
-		EnableIPv6:     d.Get("enable_ipv6").(bool),
-		SecurityGroup:  expandID(d.Get("security_group_id")),
+		Zone:              zone,
+		Name:              name.(string),
+		Organization:      d.Get("project_id").(string),
+		Image:             expandID(d.Get("image_id")),
+		CommercialType:    d.Get("type").(string),
+		EnableIPv6:        d.Get("enable_ipv6").(bool),
+		SecurityGroup:     expandID(d.Get("security_group_id")),
+		DynamicIPRequired: Bool(false),
 	}
 
 	if placementGroupID, ok := d.GetOk("placement_group_id"); ok {
