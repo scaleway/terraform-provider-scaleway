@@ -90,7 +90,7 @@ The `inbound_rule` and `outbound_rule` block supports:
 
 - `action` - (Required) The action to take when rule match. Possible values are: `accept` or `drop`.
 
-- `protocol`- (Optional) The protocol this rule apply to. Possible values are: `TCP` or `UDP`, `ICMP`.
+- `protocol`- (Defaults to `TCP`) The protocol this rule apply to. Possible values are: `TCP` or `UDP`, `ICMP`.
 
 - `port`- (Optional) The port this rule apply to. If no port is specified, rule will apply to all port.
 
