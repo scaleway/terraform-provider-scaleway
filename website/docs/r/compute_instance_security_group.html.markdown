@@ -19,7 +19,7 @@ resource "scaleway_compute_instance_security_group" "allow_all" {
 }
 
 resource "scaleway_compute_instance_security_group" "web" {
-  inbound_default_policy = "drop" // By default we drop incomming trafic that do not match any inbound_rule
+  inbound_default_policy = "drop" # By default we drop incomming trafic that do not match any inbound_rule
   
   
   inbound_rule {
@@ -35,16 +35,16 @@ resource "scaleway_compute_instance_security_group" "web" {
 }
 ```
 
-### Web server with banned IP and restricted net-access
+### Web server with banned IP and restricted internet access
 
 ```hcl
 resource "scaleway_compute_instance_security_group" "web" {
-  inbound_default_policy = "drop" // By default we drop incomming trafic that do not match any inbound_rule.
-  inbound_default_policy = "drop" // By default we drop outgoing trafic that do not match any outbound_rule.
+  inbound_default_policy = "drop" # By default we drop incomming trafic that do not match any inbound_rule.
+  inbound_default_policy = "drop" # By default we drop outgoing trafic that do not match any outbound_rule.
   
   inbound_rule {
     action = "drop"
-    ip = "1.1.1.1" // Banned IP
+    ip = "1.1.1.1" # Banned IP
   }
   
   inbound_rule {
@@ -60,7 +60,7 @@ resource "scaleway_compute_instance_security_group" "web" {
   
   outbound_rule {
     action = "accept"
-    ip = "8.8.8.8" // Only allow outgoing conection to this IP.
+    ip = "8.8.8.8" # Only allow outgoing conection to this IP.
   }
 }
 ```
