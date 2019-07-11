@@ -153,13 +153,10 @@ attached to the server. Updates to this field will trigger a stop/start of the s
 
   - `value` - (Required) The user data content. It could be a string or a file content using [file](https://www.terraform.io/docs/configuration/functions/file.html) or [filebase64](https://www.terraform.io/docs/configuration/functions/filebase64.html) for example.
 
-- `zone` - (Default: provider `default_zone`) The [zone](https://developers.scaleway.com/en/quickstart/#zone-definition) in which the server should be created.
+- `zone` - (Defaults to [provider](../index.html#zone) `zone`) The [zone](../guides/regions_and_zones.html#zones) in which the server should be created.
 
-[//]: # (TODO: Add a provider `default_zone` link)
+- `project_id` - (Defaults to [provider](../index.html#project_id) `project_id`) The ID of the project the server is associated with.
 
-- `project_id` - (Default: provider `project_id`) The ID of the project the server is associated with.
-
-[//]: # (TODO: Add a provider `default_zone` link)
 
 ## Attributes Reference
 
