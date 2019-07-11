@@ -427,7 +427,7 @@ func securityGroupRuleExpand(i interface{}) *instance.SecurityGroupRule {
 		rule.DestPortTo = nil
 	}
 
-	// Handle when no port was specified.
+	// Handle when no port is specified.
 	if portFrom == 0 && portTo == 0 {
 		rule.DestPortFrom = nil
 		rule.DestPortTo = nil
