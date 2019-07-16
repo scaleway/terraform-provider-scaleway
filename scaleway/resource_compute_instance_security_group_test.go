@@ -94,6 +94,18 @@ var testAccScalewayComputeInstanceSecurityGroupConfigICMP = []string{
 	`,
 }
 
+// Test that we can omit port on a rule
+var testAccScalewayComputeInstanceSecurityGroupConfigNoPort = []string{
+	`
+		resource "scaleway_compute_instance_security_group" "base" {
+			inbound_rule {
+				action = "accept"
+				ip_range = "0.0.0.0/0"
+            }
+		}
+	`,
+}
+
 func TestAccScalewayComputeInstanceSecurityGroup(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
@@ -229,6 +241,30 @@ func TestAccScalewayComputeInstanceSecurityGroupICMP(t *testing.T) {
 						DestPortTo:   nil,
 						Protocol:     instance.SecurityGroupRuleProtocolICMP,
 						Action:       instance.SecurityGroupRuleActionDrop,
+					}),
+				),
+			},
+		},
+	})
+}
+
+func TestAccScalewayComputeInstanceSecurityGroupNoPort(t *testing.T) {
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckScalewayComputeInstanceSecurityGroupDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccScalewayComputeInstanceSecurityGroupConfigNoPort[0],
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayComputeInstanceSecurityGroupRuleMatch("scaleway_compute_instance_security_group.base", 0, &instance.SecurityGroupRule{
+						Direction:    instance.SecurityGroupRuleDirectionInbound,
+						IPRange:      "0.0.0.0/0",
+						DestPortFrom: nil,
+						DestPortTo:   nil,
+						Protocol:     instance.SecurityGroupRuleProtocolTCP,
+						Action:       instance.SecurityGroupRuleActionAccept,
 					}),
 				),
 			},
