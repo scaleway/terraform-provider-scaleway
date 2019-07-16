@@ -3,7 +3,7 @@ layout: "scaleway"
 page_title: "Scaleway: scaleway_compute_instance_server"
 sidebar_current: "docs-scaleway-resource-compute-instance-server"
 description: |-
-  Manages Scaleway Compute Instance servers.
+  Manages Scaleway Compute Instance security groups.
 ---
 
 # scaleway_compute_instance_server
@@ -20,7 +20,6 @@ resource "scaleway_compute_instance_security_group" "allow_all" {
 
 resource "scaleway_compute_instance_security_group" "web" {
   inbound_default_policy = "drop" # By default we drop incomming trafic that do not match any inbound_rule
-  
   
   inbound_rule {
     action = "accept"
