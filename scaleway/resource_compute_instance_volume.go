@@ -30,12 +30,11 @@ func resourceScalewayComputeInstanceVolume() *schema.Resource {
 			},
 			"type": {
 				Type:        schema.TypeString,
-				Optional:    true,
+				Required:    true,
 				ForceNew:    true,
-				Default:     instance.VolumeTypeBSSD.String(),
 				Description: "The volume type",
 				ValidateFunc: validation.StringInSlice([]string{
-					instance.VolumeTypeBSSD.String(),
+					// instance.VolumeTypeBSSD.String(), Comming Soon
 					instance.VolumeTypeLSSD.String(),
 					instance.VolumeTypeLHdd.String(),
 				}, false),
