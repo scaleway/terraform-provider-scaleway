@@ -381,6 +381,8 @@ func resourceScalewayComputeInstanceServerUpdate(d *schema.ResourceData, m inter
 		return err
 	}
 
+	var forceReboot bool
+
 	////
 	// Update the server
 	////
@@ -427,6 +429,7 @@ func resourceScalewayComputeInstanceServerUpdate(d *schema.ResourceData, m inter
 		if placementGroupID == "" {
 			updateRequest.ComputeCluster = &instance.NullableStringValue{Null: true}
 		} else {
+			forceReboot = true
 			updateRequest.ComputeCluster = &instance.NullableStringValue{Value: placementGroupID}
 		}
 	}
@@ -463,7 +466,6 @@ func resourceScalewayComputeInstanceServerUpdate(d *schema.ResourceData, m inter
 	////
 	// Update server user data
 	////
-	var forceReboot bool
 	if d.HasChange("cloud_init") || d.HasChange("user_data") {
 
 		userDataRequests := &instance.SetAllServerUserDataRequest{
