@@ -413,13 +413,13 @@ func resourceScalewayComputeInstanceServerUpdate(d *schema.ResourceData, m inter
 
 	if raw, ok := d.GetOk("additional_volume_ids"); d.HasChange("additional_volume_ids") && ok {
 		volumes["0"] = &instance.VolumeTemplate{ID: d.Get("root_volume.0.volume_id").(string), Name: getRandomName("vol")} // name is ignored by the API, any name will work here
+
 		for i, volumeID := range raw.([]interface{}) {
 			volumes[strconv.Itoa(i+1)] = &instance.VolumeTemplate{
 				ID:   expandID(volumeID),
 				Name: getRandomName("vol"), // name is ignored by the API, any name will work here
 			}
 		}
-
 	}
 
 	if d.HasChange("placement_group_id") {
@@ -431,7 +431,9 @@ func resourceScalewayComputeInstanceServerUpdate(d *schema.ResourceData, m inter
 		}
 	}
 
-	updateRequest.Volumes = &volumes
+	if len(volumes) > 0 {
+		updateRequest.Volumes = &volumes
+	}
 
 	var updateResponse *instance.UpdateServerResponse
 
