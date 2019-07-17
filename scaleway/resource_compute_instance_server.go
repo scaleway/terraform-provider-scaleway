@@ -184,11 +184,6 @@ func resourceScalewayComputeInstanceServerCreate(d *schema.ResourceData, m inter
 		name = getRandomName("srv")
 	}
 
-	_, secGroupID, err := parseZonedID(d.Get("security_group_id").(string))
-	if err != nil {
-		secGroupID = expandID(d.Get("security_group_id"))
-	}
-
 	req := &instance.CreateServerRequest{
 		Zone:              zone,
 		Name:              name.(string),
@@ -196,7 +191,7 @@ func resourceScalewayComputeInstanceServerCreate(d *schema.ResourceData, m inter
 		Image:             expandID(d.Get("image_id")),
 		CommercialType:    d.Get("type").(string),
 		EnableIPv6:        d.Get("enable_ipv6").(bool),
-		SecurityGroup:     secGroupID,
+		SecurityGroup:     expandID(d.Get("security_group_id")),
 		DynamicIPRequired: Bool(false),
 	}
 
@@ -405,12 +400,8 @@ func resourceScalewayComputeInstanceServerUpdate(d *schema.ResourceData, m inter
 	}
 
 	if d.HasChange("security_group_id") {
-		_, secGroupID, err := parseZonedID(d.Get("security_group_id").(string))
-		if err != nil {
-			secGroupID = expandID(d.Get("security_group_id"))
-		}
 		updateRequest.SecurityGroup = &instance.SecurityGroupSummary{
-			ID:   secGroupID,
+			ID:   expandID(d.Get("security_group_id")),
 			Name: getRandomName("sg"), // this value will be ignored by the API
 		}
 	}
