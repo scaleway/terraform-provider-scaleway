@@ -45,7 +45,7 @@ func TestAccScalewayComputeInstanceServerRootVolume1(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayComputeInstanceServerExists("scaleway_compute_instance_server.base"),
 					resource.TestCheckResourceAttr("scaleway_compute_instance_server.base", "root_volume.0.delete_on_termination", "true"),
-					resource.TestCheckResourceAttr("scaleway_compute_instance_server.base", "root_volume.0.size_in_gb", "50"),
+					resource.TestCheckResourceAttr("scaleway_compute_instance_server.base", "root_volume.0.size_in_gb", "60"),
 					resource.TestCheckResourceAttrSet("scaleway_compute_instance_server.base", "root_volume.0.volume_id"),
 					resource.TestCheckResourceAttr("scaleway_compute_instance_server.base", "tags.2", "root_volume"),
 				),
