@@ -53,7 +53,7 @@ func validationZone() func(interface{}, string) ([]string, []error) {
 		if rawZone == "par1" || rawZone == "ams1" {
 			warnings = append(warnings, fmt.Sprintf("%s is a deprecated name for zone, use %v instead", rawZone, zone))
 		} else if !zone.Exists() {
-			warnings = append(warnings, "%s zone is not recognized", rawZone)
+			warnings = append(warnings, fmt.Sprintf("%s zone is not recognized", rawZone))
 		}
 
 		return
@@ -73,7 +73,7 @@ func validationRegion() func(interface{}, string) ([]string, []error) {
 		if rawRegion == "par1" || rawRegion == "ams1" {
 			warnings = append(warnings, fmt.Sprintf("%s is a deprecated name for region, use %v instead", rawRegion, region))
 		} else if !region.Exists() {
-			warnings = append(warnings, "%s region is not recognized", rawRegion)
+			warnings = append(warnings, fmt.Sprintf("%s region is not recognized", rawRegion))
 		}
 
 		return
