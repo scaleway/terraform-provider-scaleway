@@ -107,8 +107,8 @@ func resourceScalewayComputeInstanceIPRead(d *schema.ResourceData, m interface{}
 	d.Set("project_id", res.IP.Organization)
 	d.Set("reverse", res.IP.Reverse)
 	
-	if res.Server != nil {
-		d.Set("server_id", res.Server.ID)	
+	if res.IP.Server != nil {
+		d.Set("server_id", res.IP.Server.ID)
 	}
 
 	return nil
