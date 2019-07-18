@@ -127,6 +127,8 @@ to find the right local image `ID` for a given image `name` and a given `commerc
 
 - `security_group_id` - (Optional) The [security group](https://developers.scaleway.com/en/products/instance/api/#security-groups-8d7f89) the server is attached to.
 
+- `placement_group_id` - (Optional) The [placement group](https://developers.scaleway.com/en/products/instance/api/#compute-clusters-7fd7e0) the server is attached to.
+
 - `root_volume` - (Optional) Root [volume](https://developers.scaleway.com/en/products/instance/api/#volumes-7e8a39) attached to the server on creation.
    - `size_in_gb` - (Required) Size of the root volume in gigabytes.
    To find the right size use [this endpoint](https://api.scaleway.com/instance/v1/zones/fr-par-1/products/servers) and
@@ -163,6 +165,7 @@ attached to the server. Updates to this field will trigger a stop/start of the s
 In addition to all arguments above, the following attributes are exported:
 
 - `id` - The ID of the server.
+- `placement_group_policy_respected` - True when the placement group policy is respected.
 - `root_volume`
   - `volume_id` - The volume ID of the root volume of the server.
 - `private_ip` - The Scaleway internal IP address of the server.
