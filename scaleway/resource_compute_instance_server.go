@@ -183,6 +183,7 @@ func resourceScalewayComputeInstanceServerCreate(d *schema.ResourceData, m inter
 	if !ok {
 		name = getRandomName("srv")
 	}
+
 	req := &instance.CreateServerRequest{
 		Zone:              zone,
 		Name:              name.(string),
@@ -402,7 +403,7 @@ func resourceScalewayComputeInstanceServerUpdate(d *schema.ResourceData, m inter
 
 	if d.HasChange("security_group_id") {
 		updateRequest.SecurityGroup = &instance.SecurityGroupSummary{
-			ID:   d.Get("security_group_id").(string),
+			ID:   expandID(d.Get("security_group_id")),
 			Name: getRandomName("sg"), // this value will be ignored by the API
 		}
 	}
