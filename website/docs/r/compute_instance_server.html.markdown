@@ -129,6 +129,8 @@ to find the right local image `ID` for a given image `name` and a given `commerc
 
 - `placement_group_id` - (Optional) The [placement group](https://developers.scaleway.com/en/products/instance/api/#compute-clusters-7fd7e0) the server is attached to.
 
+~> **Important:** Updates to `placement_group_id` may trigger a stop/start of the server.
+
 - `root_volume` - (Optional) Root [volume](https://developers.scaleway.com/en/products/instance/api/#volumes-7e8a39) attached to the server on creation.
    - `size_in_gb` - (Required) Size of the root volume in gigabytes.
    To find the right size use [this endpoint](https://api.scaleway.com/instance/v1/zones/fr-par-1/products/servers) and
