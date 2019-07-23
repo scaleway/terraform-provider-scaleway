@@ -420,6 +420,8 @@ func resourceScalewayComputeInstanceServerUpdate(d *schema.ResourceData, m inter
 				Name: getRandomName("vol"), // name is ignored by the API, any name will work here
 			}
 		}
+
+		updateRequest.Volumes = &volumes
 	}
 
 	if d.HasChange("placement_group_id") {
@@ -429,10 +431,6 @@ func resourceScalewayComputeInstanceServerUpdate(d *schema.ResourceData, m inter
 		} else {
 			updateRequest.ComputeCluster = &instance.NullableStringValue{Value: placementGroupID}
 		}
-	}
-
-	if len(volumes) > 0 {
-		updateRequest.Volumes = &volumes
 	}
 
 	var updateResponse *instance.UpdateServerResponse
