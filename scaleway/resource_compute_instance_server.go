@@ -402,7 +402,7 @@ func resourceScalewayComputeInstanceServerUpdate(d *schema.ResourceData, m inter
 	}
 
 	if d.HasChange("security_group_id") {
-		updateRequest.SecurityGroup = &instance.SecurityGroupSummary{
+		updateRequest.SecurityGroup = &instance.SecurityGroupTemplate{
 			ID:   expandID(d.Get("security_group_id")),
 			Name: getRandomName("sg"), // this value will be ignored by the API
 		}

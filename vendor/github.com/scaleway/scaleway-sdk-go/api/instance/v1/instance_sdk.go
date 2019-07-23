@@ -63,6 +63,21 @@ func (enum Arch) String() string {
 	return string(enum)
 }
 
+func (enum Arch) MarshalJSON() ([]byte, error) {
+	return []byte(fmt.Sprintf(`"%s"`, enum)), nil
+}
+
+func (enum *Arch) UnmarshalJSON(data []byte) error {
+	tmp := ""
+
+	if err := json.Unmarshal(data, &tmp); err != nil {
+		return err
+	}
+
+	*enum = Arch(Arch(tmp).String())
+	return nil
+}
+
 type ComputeClusterPolicyMode string
 
 const (
@@ -80,21 +95,51 @@ func (enum ComputeClusterPolicyMode) String() string {
 	return string(enum)
 }
 
+func (enum ComputeClusterPolicyMode) MarshalJSON() ([]byte, error) {
+	return []byte(fmt.Sprintf(`"%s"`, enum)), nil
+}
+
+func (enum *ComputeClusterPolicyMode) UnmarshalJSON(data []byte) error {
+	tmp := ""
+
+	if err := json.Unmarshal(data, &tmp); err != nil {
+		return err
+	}
+
+	*enum = ComputeClusterPolicyMode(ComputeClusterPolicyMode(tmp).String())
+	return nil
+}
+
 type ComputeClusterPolicyType string
 
 const (
-	// ComputeClusterPolicyTypeLowLatency is [insert doc].
-	ComputeClusterPolicyTypeLowLatency = ComputeClusterPolicyType("low_latency")
 	// ComputeClusterPolicyTypeMaxAvailability is [insert doc].
 	ComputeClusterPolicyTypeMaxAvailability = ComputeClusterPolicyType("max_availability")
+	// ComputeClusterPolicyTypeLowLatency is [insert doc].
+	ComputeClusterPolicyTypeLowLatency = ComputeClusterPolicyType("low_latency")
 )
 
 func (enum ComputeClusterPolicyType) String() string {
 	if enum == "" {
 		// return default value if empty
-		return "low_latency"
+		return "max_availability"
 	}
 	return string(enum)
+}
+
+func (enum ComputeClusterPolicyType) MarshalJSON() ([]byte, error) {
+	return []byte(fmt.Sprintf(`"%s"`, enum)), nil
+}
+
+func (enum *ComputeClusterPolicyType) UnmarshalJSON(data []byte) error {
+	tmp := ""
+
+	if err := json.Unmarshal(data, &tmp); err != nil {
+		return err
+	}
+
+	*enum = ComputeClusterPolicyType(ComputeClusterPolicyType(tmp).String())
+	return nil
 }
 
 type GetServerTypesAvailabilityResponseAvailability string
@@ -116,6 +161,21 @@ func (enum GetServerTypesAvailabilityResponseAvailability) String() string {
 	return string(enum)
 }
 
+func (enum GetServerTypesAvailabilityResponseAvailability) MarshalJSON() ([]byte, error) {
+	return []byte(fmt.Sprintf(`"%s"`, enum)), nil
+}
+
+func (enum *GetServerTypesAvailabilityResponseAvailability) UnmarshalJSON(data []byte) error {
+	tmp := ""
+
+	if err := json.Unmarshal(data, &tmp); err != nil {
+		return err
+	}
+
+	*enum = GetServerTypesAvailabilityResponseAvailability(GetServerTypesAvailabilityResponseAvailability(tmp).String())
+	return nil
+}
+
 type ImageState string
 
 const (
@@ -135,6 +195,21 @@ func (enum ImageState) String() string {
 	return string(enum)
 }
 
+func (enum ImageState) MarshalJSON() ([]byte, error) {
+	return []byte(fmt.Sprintf(`"%s"`, enum)), nil
+}
+
+func (enum *ImageState) UnmarshalJSON(data []byte) error {
+	tmp := ""
+
+	if err := json.Unmarshal(data, &tmp); err != nil {
+		return err
+	}
+
+	*enum = ImageState(ImageState(tmp).String())
+	return nil
+}
+
 type SecurityGroupPolicy string
 
 const (
@@ -150,6 +225,21 @@ func (enum SecurityGroupPolicy) String() string {
 		return "accept"
 	}
 	return string(enum)
+}
+
+func (enum SecurityGroupPolicy) MarshalJSON() ([]byte, error) {
+	return []byte(fmt.Sprintf(`"%s"`, enum)), nil
+}
+
+func (enum *SecurityGroupPolicy) UnmarshalJSON(data []byte) error {
+	tmp := ""
+
+	if err := json.Unmarshal(data, &tmp); err != nil {
+		return err
+	}
+
+	*enum = SecurityGroupPolicy(SecurityGroupPolicy(tmp).String())
+	return nil
 }
 
 type SecurityGroupRuleAction string
@@ -169,6 +259,21 @@ func (enum SecurityGroupRuleAction) String() string {
 	return string(enum)
 }
 
+func (enum SecurityGroupRuleAction) MarshalJSON() ([]byte, error) {
+	return []byte(fmt.Sprintf(`"%s"`, enum)), nil
+}
+
+func (enum *SecurityGroupRuleAction) UnmarshalJSON(data []byte) error {
+	tmp := ""
+
+	if err := json.Unmarshal(data, &tmp); err != nil {
+		return err
+	}
+
+	*enum = SecurityGroupRuleAction(SecurityGroupRuleAction(tmp).String())
+	return nil
+}
+
 type SecurityGroupRuleDirection string
 
 const (
@@ -184,6 +289,21 @@ func (enum SecurityGroupRuleDirection) String() string {
 		return "inbound"
 	}
 	return string(enum)
+}
+
+func (enum SecurityGroupRuleDirection) MarshalJSON() ([]byte, error) {
+	return []byte(fmt.Sprintf(`"%s"`, enum)), nil
+}
+
+func (enum *SecurityGroupRuleDirection) UnmarshalJSON(data []byte) error {
+	tmp := ""
+
+	if err := json.Unmarshal(data, &tmp); err != nil {
+		return err
+	}
+
+	*enum = SecurityGroupRuleDirection(SecurityGroupRuleDirection(tmp).String())
+	return nil
 }
 
 type SecurityGroupRuleProtocol string
@@ -203,6 +323,21 @@ func (enum SecurityGroupRuleProtocol) String() string {
 		return "TCP"
 	}
 	return string(enum)
+}
+
+func (enum SecurityGroupRuleProtocol) MarshalJSON() ([]byte, error) {
+	return []byte(fmt.Sprintf(`"%s"`, enum)), nil
+}
+
+func (enum *SecurityGroupRuleProtocol) UnmarshalJSON(data []byte) error {
+	tmp := ""
+
+	if err := json.Unmarshal(data, &tmp); err != nil {
+		return err
+	}
+
+	*enum = SecurityGroupRuleProtocol(SecurityGroupRuleProtocol(tmp).String())
+	return nil
 }
 
 type ServerAction string
@@ -230,6 +365,21 @@ func (enum ServerAction) String() string {
 	return string(enum)
 }
 
+func (enum ServerAction) MarshalJSON() ([]byte, error) {
+	return []byte(fmt.Sprintf(`"%s"`, enum)), nil
+}
+
+func (enum *ServerAction) UnmarshalJSON(data []byte) error {
+	tmp := ""
+
+	if err := json.Unmarshal(data, &tmp); err != nil {
+		return err
+	}
+
+	*enum = ServerAction(ServerAction(tmp).String())
+	return nil
+}
+
 type ServerBootType string
 
 const (
@@ -243,6 +393,21 @@ func (enum ServerBootType) String() string {
 		return "local"
 	}
 	return string(enum)
+}
+
+func (enum ServerBootType) MarshalJSON() ([]byte, error) {
+	return []byte(fmt.Sprintf(`"%s"`, enum)), nil
+}
+
+func (enum *ServerBootType) UnmarshalJSON(data []byte) error {
+	tmp := ""
+
+	if err := json.Unmarshal(data, &tmp); err != nil {
+		return err
+	}
+
+	*enum = ServerBootType(ServerBootType(tmp).String())
+	return nil
 }
 
 type ServerState string
@@ -270,6 +435,21 @@ func (enum ServerState) String() string {
 	return string(enum)
 }
 
+func (enum ServerState) MarshalJSON() ([]byte, error) {
+	return []byte(fmt.Sprintf(`"%s"`, enum)), nil
+}
+
+func (enum *ServerState) UnmarshalJSON(data []byte) error {
+	tmp := ""
+
+	if err := json.Unmarshal(data, &tmp); err != nil {
+		return err
+	}
+
+	*enum = ServerState(ServerState(tmp).String())
+	return nil
+}
+
 type SnapshotState string
 
 const (
@@ -287,6 +467,21 @@ func (enum SnapshotState) String() string {
 		return "available"
 	}
 	return string(enum)
+}
+
+func (enum SnapshotState) MarshalJSON() ([]byte, error) {
+	return []byte(fmt.Sprintf(`"%s"`, enum)), nil
+}
+
+func (enum *SnapshotState) UnmarshalJSON(data []byte) error {
+	tmp := ""
+
+	if err := json.Unmarshal(data, &tmp); err != nil {
+		return err
+	}
+
+	*enum = SnapshotState(SnapshotState(tmp).String())
+	return nil
 }
 
 type TaskStatus string
@@ -312,6 +507,21 @@ func (enum TaskStatus) String() string {
 	return string(enum)
 }
 
+func (enum TaskStatus) MarshalJSON() ([]byte, error) {
+	return []byte(fmt.Sprintf(`"%s"`, enum)), nil
+}
+
+func (enum *TaskStatus) UnmarshalJSON(data []byte) error {
+	tmp := ""
+
+	if err := json.Unmarshal(data, &tmp); err != nil {
+		return err
+	}
+
+	*enum = TaskStatus(TaskStatus(tmp).String())
+	return nil
+}
+
 type VolumeState string
 
 const (
@@ -329,6 +539,21 @@ func (enum VolumeState) String() string {
 		return "available"
 	}
 	return string(enum)
+}
+
+func (enum VolumeState) MarshalJSON() ([]byte, error) {
+	return []byte(fmt.Sprintf(`"%s"`, enum)), nil
+}
+
+func (enum *VolumeState) UnmarshalJSON(data []byte) error {
+	tmp := ""
+
+	if err := json.Unmarshal(data, &tmp); err != nil {
+		return err
+	}
+
+	*enum = VolumeState(VolumeState(tmp).String())
+	return nil
 }
 
 type VolumeType string
@@ -350,270 +575,285 @@ func (enum VolumeType) String() string {
 	return string(enum)
 }
 
+func (enum VolumeType) MarshalJSON() ([]byte, error) {
+	return []byte(fmt.Sprintf(`"%s"`, enum)), nil
+}
+
+func (enum *VolumeType) UnmarshalJSON(data []byte) error {
+	tmp := ""
+
+	if err := json.Unmarshal(data, &tmp); err != nil {
+		return err
+	}
+
+	*enum = VolumeType(VolumeType(tmp).String())
+	return nil
+}
+
 type Bootscript struct {
 	// Arch display the bootscripts arch
 	//
 	// Default value: x86_64
-	Arch Arch `json:"arch,omitempty"`
+	Arch Arch `json:"arch"`
 	// Bootcmdargs display the bootscript parameters
-	Bootcmdargs string `json:"bootcmdargs,omitempty"`
+	Bootcmdargs string `json:"bootcmdargs"`
 	// Default dispmay if the bootscript is the default bootscript if no other boot option is configured
-	Default bool `json:"default,omitempty"`
+	Default bool `json:"default"`
 	// Dtb provide information regarding a Device Tree Binary (dtb) for use with C1 servers
-	Dtb string `json:"dtb,omitempty"`
+	Dtb string `json:"dtb"`
 	// ID display the bootscripts ID
-	ID string `json:"id,omitempty"`
+	ID string `json:"id"`
 	// Initrd display the initrd (initial ramdisk) configuration
-	Initrd string `json:"initrd,omitempty"`
+	Initrd string `json:"initrd"`
 	// Kernel display the server kernel version
-	Kernel string `json:"kernel,omitempty"`
+	Kernel string `json:"kernel"`
 	// Organization display the bootscripts organization
-	Organization string `json:"organization,omitempty"`
+	Organization string `json:"organization"`
 	// Public provide information if the bootscript is public
-	Public bool `json:"public,omitempty"`
+	Public bool `json:"public"`
 	// Title display the bootscripts title
-	Title string `json:"title,omitempty"`
+	Title string `json:"title"`
 }
 
 type ComputeCluster struct {
 	// ID display compute-cluster unique ID
-	ID string `json:"id,omitempty"`
+	ID string `json:"id"`
 	// Name display compute-cluster name
-	Name string `json:"name,omitempty"`
+	Name string `json:"name"`
 	// Organization display compute-cluster organization
-	Organization string `json:"organization,omitempty"`
+	Organization string `json:"organization"`
 	// PolicyMode select the failling mode when the placement cannot be  respected, either optional or enforced
 	//
 	// Default value: optional
-	PolicyMode ComputeClusterPolicyMode `json:"policy_mode,omitempty"`
+	PolicyMode ComputeClusterPolicyMode `json:"policy_mode"`
 	// PolicyType select the behavior of the compute-cluster, either low_latency (group) or max_availability (spread)
 	//
-	// Default value: low_latency
-	PolicyType ComputeClusterPolicyType `json:"policy_type,omitempty"`
+	// Default value: max_availability
+	PolicyType ComputeClusterPolicyType `json:"policy_type"`
 	// PolicyRespected indicate if the selected policy is respected. Returns true if the policy is respected, false otherwise
-	PolicyRespected bool `json:"policy_respected,omitempty"`
+	PolicyRespected bool `json:"policy_respected"`
 }
 
 type ComputeClusterServer struct {
-	ID string `json:"id,omitempty"`
+	ID string `json:"id"`
 
-	Name string `json:"name,omitempty"`
+	Name string `json:"name"`
 
-	PolicyRespected bool `json:"policy_respected,omitempty"`
+	PolicyRespected bool `json:"policy_respected"`
 }
 
 type CreateComputeClusterResponse struct {
-	ComputeCluster *ComputeCluster `json:"compute_cluster,omitempty"`
+	ComputeCluster *ComputeCluster `json:"compute_cluster"`
 }
 
 type CreateIPResponse struct {
-	IP *IP `json:"ip,omitempty"`
+	IP *IP `json:"ip"`
 
-	Location string `json:"Location,omitempty"`
+	Location string `json:"Location"`
 }
 
 type CreateImageResponse struct {
-	Image *Image `json:"image,omitempty"`
+	Image *Image `json:"image"`
 
-	Location string `json:"Location,omitempty"`
+	Location string `json:"Location"`
 }
 
 type CreateSecurityGroupResponse struct {
-	SecurityGroup *SecurityGroup `json:"security_group,omitempty"`
+	SecurityGroup *SecurityGroup `json:"security_group"`
 }
 
 type CreateSecurityGroupRuleResponse struct {
-	Rule *SecurityGroupRule `json:"rule,omitempty"`
+	Rule *SecurityGroupRule `json:"rule"`
 }
 
 type CreateServerResponse struct {
-	Server *Server `json:"server,omitempty"`
+	Server *Server `json:"server"`
 }
 
 type CreateSnapshotResponse struct {
-	Snapshot *Snapshot `json:"snapshot,omitempty"`
+	Snapshot *Snapshot `json:"snapshot"`
 }
 
 type CreateVolumeResponse struct {
-	Volume *Volume `json:"volume,omitempty"`
+	Volume *Volume `json:"volume"`
 
-	Location string `json:"Location,omitempty"`
+	Location string `json:"Location"`
 }
 
 type Dashboard struct {
-	VolumesCount uint32 `json:"volumes_count,omitempty"`
+	VolumesCount uint32 `json:"volumes_count"`
 
-	RunningServersCount uint32 `json:"running_servers_count,omitempty"`
+	RunningServersCount uint32 `json:"running_servers_count"`
 
-	ServersByTypes map[string]uint32 `json:"servers_by_types,omitempty"`
+	ServersByTypes map[string]uint32 `json:"servers_by_types"`
 
-	ImagesCount uint32 `json:"images_count,omitempty"`
+	ImagesCount uint32 `json:"images_count"`
 
-	SnapshotsCount uint32 `json:"snapshots_count,omitempty"`
+	SnapshotsCount uint32 `json:"snapshots_count"`
 
-	ServersCount uint32 `json:"servers_count,omitempty"`
+	ServersCount uint32 `json:"servers_count"`
 
-	IpsCount uint32 `json:"ips_count,omitempty"`
+	IpsCount uint32 `json:"ips_count"`
 
-	SecurityGroupsCount uint32 `json:"security_groups_count,omitempty"`
+	SecurityGroupsCount uint32 `json:"security_groups_count"`
 
-	IpsUnused uint32 `json:"ips_unused,omitempty"`
+	IpsUnused uint32 `json:"ips_unused"`
 }
 
 type GetBootscriptResponse struct {
-	Bootscript *Bootscript `json:"bootscript,omitempty"`
+	Bootscript *Bootscript `json:"bootscript"`
 }
 
 type GetComputeClusterResponse struct {
-	ComputeCluster *ComputeCluster `json:"compute_cluster,omitempty"`
+	ComputeCluster *ComputeCluster `json:"compute_cluster"`
 }
 
 type GetComputeClusterServersResponse struct {
-	Servers []*ComputeClusterServer `json:"servers,omitempty"`
+	Servers []*ComputeClusterServer `json:"servers"`
 }
 
 type GetDashboardResponse struct {
-	Dashboard *Dashboard `json:"dashboard,omitempty"`
+	Dashboard *Dashboard `json:"dashboard"`
 }
 
 type GetIPResponse struct {
-	IP *IP `json:"ip,omitempty"`
+	IP *IP `json:"ip"`
 }
 
 type GetImageResponse struct {
-	Image *Image `json:"image,omitempty"`
+	Image *Image `json:"image"`
 }
 
 type GetSecurityGroupResponse struct {
-	SecurityGroup *SecurityGroup `json:"security_group,omitempty"`
+	SecurityGroup *SecurityGroup `json:"security_group"`
 }
 
 type GetSecurityGroupRuleResponse struct {
-	Rule *SecurityGroupRule `json:"rule,omitempty"`
+	Rule *SecurityGroupRule `json:"rule"`
 }
 
 type GetServerResponse struct {
-	Server *Server `json:"server,omitempty"`
+	Server *Server `json:"server"`
 }
 
 type GetServerTypesAvailabilityResponse struct {
-	Servers map[string]GetServerTypesAvailabilityResponseAvailability `json:"servers,omitempty"`
+	Servers map[string]GetServerTypesAvailabilityResponseAvailability `json:"servers"`
 }
 
 type GetSnapshotResponse struct {
-	Snapshot *Snapshot `json:"snapshot,omitempty"`
+	Snapshot *Snapshot `json:"snapshot"`
 }
 
 type GetVolumeResponse struct {
-	Volume *Volume `json:"volume,omitempty"`
+	Volume *Volume `json:"volume"`
 }
 
 type IP struct {
-	ID string `json:"id,omitempty"`
+	ID string `json:"id"`
 
-	Address net.IP `json:"address,omitempty"`
+	Address net.IP `json:"address"`
 
-	Reverse *string `json:"reverse,omitempty"`
+	Reverse *string `json:"reverse"`
 
-	Server *ServerSummary `json:"server,omitempty"`
+	Server *ServerSummary `json:"server"`
 
-	Organization string `json:"organization,omitempty"`
+	Organization string `json:"organization"`
 }
 
 type Image struct {
-	ID string `json:"id,omitempty"`
+	ID string `json:"id"`
 
-	Name string `json:"name,omitempty"`
+	Name string `json:"name"`
 	// Arch
 	//
 	// Default value: x86_64
-	Arch Arch `json:"arch,omitempty"`
+	Arch Arch `json:"arch"`
 
-	CreationDate time.Time `json:"creation_date,omitempty"`
+	CreationDate time.Time `json:"creation_date"`
 
-	ModificationDate time.Time `json:"modification_date,omitempty"`
+	ModificationDate time.Time `json:"modification_date"`
 
-	DefaultBootscript *Bootscript `json:"default_bootscript,omitempty"`
+	DefaultBootscript *Bootscript `json:"default_bootscript"`
 
-	ExtraVolumes map[string]*Volume `json:"extra_volumes,omitempty"`
+	ExtraVolumes map[string]*Volume `json:"extra_volumes"`
 
-	FromServer *ServerSummary `json:"from_server,omitempty"`
+	FromServer *ServerSummary `json:"from_server"`
 
-	Organization string `json:"organization,omitempty"`
+	Organization string `json:"organization"`
 
-	Public bool `json:"public,omitempty"`
+	Public bool `json:"public"`
 
-	RootVolume *VolumeTemplate `json:"root_volume,omitempty"`
+	RootVolume *VolumeSummary `json:"root_volume"`
 	// State
 	//
 	// Default value: available
-	State ImageState `json:"state,omitempty"`
+	State ImageState `json:"state"`
 }
 
 type ListBootscriptsResponse struct {
-	Bootscripts []*Bootscript `json:"bootscripts,omitempty"`
+	Bootscripts []*Bootscript `json:"bootscripts"`
 
-	TotalCount uint32 `json:"total_count,omitempty"`
+	TotalCount uint32 `json:"total_count"`
 }
 
 type ListComputeClustersResponse struct {
-	ComputeClusters []*ComputeCluster `json:"compute_clusters,omitempty"`
+	ComputeClusters []*ComputeCluster `json:"compute_clusters"`
 }
 
 type ListImagesResponse struct {
-	Images []*Image `json:"images,omitempty"`
+	Images []*Image `json:"images"`
 
-	TotalCount uint32 `json:"total_count,omitempty"`
+	TotalCount uint32 `json:"total_count"`
 }
 
 type ListIpsResponse struct {
-	Ips []*IP `json:"ips,omitempty"`
+	Ips []*IP `json:"ips"`
 
-	TotalCount uint32 `json:"total_count,omitempty"`
+	TotalCount uint32 `json:"total_count"`
 }
 
 type ListSecurityGroupRulesResponse struct {
-	Rules []*SecurityGroupRule `json:"rules,omitempty"`
+	Rules []*SecurityGroupRule `json:"rules"`
 
-	TotalCount uint32 `json:"total_count,omitempty"`
+	TotalCount uint32 `json:"total_count"`
 }
 
 type ListSecurityGroupsResponse struct {
-	SecurityGroups []*SecurityGroup `json:"security_groups,omitempty"`
+	SecurityGroups []*SecurityGroup `json:"security_groups"`
 
-	TotalCount uint32 `json:"total_count,omitempty"`
+	TotalCount uint32 `json:"total_count"`
 }
 
 type ListServerActionsResponse struct {
-	Actions []ServerAction `json:"actions,omitempty"`
+	Actions []ServerAction `json:"actions"`
 }
 
 type ListServerUserDataResponse struct {
-	UserData []string `json:"user_data,omitempty"`
+	UserData []string `json:"user_data"`
 }
 
 type ListServersResponse struct {
-	Servers []*Server `json:"servers,omitempty"`
+	Servers []*Server `json:"servers"`
 
-	TotalCount uint32 `json:"total_count,omitempty"`
+	TotalCount uint32 `json:"total_count"`
 }
 
 type ListServersTypesResponse struct {
-	Servers map[string]*ServerType `json:"servers,omitempty"`
+	Servers map[string]*ServerType `json:"servers"`
 
-	TotalCount uint32 `json:"total_count,omitempty"`
+	TotalCount uint32 `json:"total_count"`
 }
 
 type ListSnapshotsResponse struct {
-	Snapshots []*Snapshot `json:"snapshots,omitempty"`
+	Snapshots []*Snapshot `json:"snapshots"`
 
-	TotalCount uint32 `json:"total_count,omitempty"`
+	TotalCount uint32 `json:"total_count"`
 }
 
 type ListVolumesResponse struct {
-	Volumes []*Volume `json:"volumes,omitempty"`
+	Volumes []*Volume `json:"volumes"`
 
-	TotalCount uint32 `json:"total_count,omitempty"`
+	TotalCount uint32 `json:"total_count"`
 }
 
 type NullableStringValue struct {
@@ -624,62 +864,68 @@ type NullableStringValue struct {
 
 type SecurityGroup struct {
 	// ID display the security groups' unique ID
-	ID string `json:"id,omitempty"`
+	ID string `json:"id"`
 	// Name display the security groups name
-	Name string `json:"name,omitempty"`
+	Name string `json:"name"`
 	// CreationDate display the security group creation date
-	CreationDate time.Time `json:"creation_date,omitempty"`
+	CreationDate time.Time `json:"creation_date"`
 	// ModificationDate display the security group modification date
-	ModificationDate time.Time `json:"modification_date,omitempty"`
+	ModificationDate time.Time `json:"modification_date"`
 	// Description display the security groups description
-	Description string `json:"description,omitempty"`
+	Description string `json:"description"`
 	// EnableDefaultSecurity display if the security group is set as default
-	EnableDefaultSecurity bool `json:"enable_default_security,omitempty"`
+	EnableDefaultSecurity bool `json:"enable_default_security"`
 	// InboundDefaultPolicy display the default inbound policy
 	//
 	// Default value: accept
-	InboundDefaultPolicy SecurityGroupPolicy `json:"inbound_default_policy,omitempty"`
+	InboundDefaultPolicy SecurityGroupPolicy `json:"inbound_default_policy"`
 	// Organization display the security groups organization ID
-	Organization string `json:"organization,omitempty"`
+	Organization string `json:"organization"`
 	// OrganizationDefault display if the security group is set as organization default
-	OrganizationDefault bool `json:"organization_default,omitempty"`
+	OrganizationDefault bool `json:"organization_default"`
 	// OutboundDefaultPolicy display the default outbound policy
 	//
 	// Default value: accept
-	OutboundDefaultPolicy SecurityGroupPolicy `json:"outbound_default_policy,omitempty"`
+	OutboundDefaultPolicy SecurityGroupPolicy `json:"outbound_default_policy"`
 	// Servers list of servers attached to this security group
-	Servers []*ServerSummary `json:"servers,omitempty"`
+	Servers []*ServerSummary `json:"servers"`
 	// Stateful true if the security group is stateful
-	Stateful bool `json:"stateful,omitempty"`
+	Stateful bool `json:"stateful"`
 }
 
 type SecurityGroupRule struct {
-	ID string `json:"id,omitempty"`
+	ID string `json:"id"`
 	// Protocol
 	//
 	// Default value: TCP
-	Protocol SecurityGroupRuleProtocol `json:"protocol,omitempty"`
+	Protocol SecurityGroupRuleProtocol `json:"protocol"`
 	// Direction
 	//
 	// Default value: inbound
-	Direction SecurityGroupRuleDirection `json:"direction,omitempty"`
+	Direction SecurityGroupRuleDirection `json:"direction"`
 	// Action
 	//
 	// Default value: accept
-	Action SecurityGroupRuleAction `json:"action,omitempty"`
+	Action SecurityGroupRuleAction `json:"action"`
 
-	IPRange string `json:"ip_range,omitempty"`
+	IPRange string `json:"ip_range"`
 
-	DestPortFrom *uint32 `json:"dest_port_from,omitempty"`
+	DestPortFrom *uint32 `json:"dest_port_from"`
 
-	DestPortTo *uint32 `json:"dest_port_to,omitempty"`
+	DestPortTo *uint32 `json:"dest_port_to"`
 
-	Position uint32 `json:"position,omitempty"`
+	Position uint32 `json:"position"`
 
-	Editable bool `json:"editable,omitempty"`
+	Editable bool `json:"editable"`
 }
 
 type SecurityGroupSummary struct {
+	ID string `json:"id"`
+
+	Name string `json:"name"`
+}
+
+type SecurityGroupTemplate struct {
 	ID string `json:"id,omitempty"`
 
 	Name string `json:"name,omitempty"`
@@ -687,262 +933,274 @@ type SecurityGroupSummary struct {
 
 type Server struct {
 	// ID display the server unique ID
-	ID string `json:"id,omitempty"`
+	ID string `json:"id"`
 	// Image provide information on the server image
-	Image *Image `json:"image,omitempty"`
+	Image *Image `json:"image"`
 	// Name display the server name
-	Name string `json:"name,omitempty"`
+	Name string `json:"name"`
 	// Organization display the server organization
-	Organization string `json:"organization,omitempty"`
+	Organization string `json:"organization"`
 	// PrivateIP display the server private IP address
-	PrivateIP *string `json:"private_ip,omitempty"`
+	PrivateIP *string `json:"private_ip"`
 	// PublicIP display the server public IP address
-	PublicIP *ServerIP `json:"public_ip,omitempty"`
+	PublicIP *ServerIP `json:"public_ip"`
 	// State display the server state
 	//
 	// Default value: running
-	State ServerState `json:"state,omitempty"`
+	State ServerState `json:"state"`
 	// BootType display the server boot type
 	//
 	// Default value: local
-	BootType ServerBootType `json:"boot_type,omitempty"`
+	BootType ServerBootType `json:"boot_type"`
 	// Tags display the server associated tags
-	Tags []string `json:"tags,omitempty"`
+	Tags []string `json:"tags"`
 	// Volumes display the server volumes
-	Volumes map[string]*Volume `json:"volumes,omitempty"`
+	Volumes map[string]*Volume `json:"volumes"`
 	// Bootscript display the server bootscript
-	Bootscript *Bootscript `json:"bootscript,omitempty"`
+	Bootscript *Bootscript `json:"bootscript"`
 	// CommercialType display the server commercial type (e.g. GP1-M)
-	CommercialType string `json:"commercial_type,omitempty"`
+	CommercialType string `json:"commercial_type"`
 	// CreationDate display the server creation date
-	CreationDate time.Time `json:"creation_date,omitempty"`
+	CreationDate time.Time `json:"creation_date"`
 	// DynamicIPRequired display if a dynamic IP is required
-	DynamicIPRequired bool `json:"dynamic_ip_required,omitempty"`
+	DynamicIPRequired bool `json:"dynamic_ip_required"`
 	// EnableIPv6 display if IPv6 is enabled
-	EnableIPv6 bool `json:"enable_ipv6,omitempty"`
+	EnableIPv6 bool `json:"enable_ipv6"`
 	// ExtraNetworks display information about additional network interfaces
-	ExtraNetworks []string `json:"extra_networks,omitempty"`
+	ExtraNetworks []string `json:"extra_networks"`
 	// Hostname display the server host name
-	Hostname string `json:"hostname,omitempty"`
+	Hostname string `json:"hostname"`
 	// AllowedActions provide as list of allowed actions on the server
-	AllowedActions []ServerAction `json:"allowed_actions,omitempty"`
+	AllowedActions []ServerAction `json:"allowed_actions"`
 	// Arch display the server arch
 	//
 	// Default value: x86_64
-	Arch Arch `json:"arch,omitempty"`
+	Arch Arch `json:"arch"`
 	// IPv6 display the server IPv6 address
-	IPv6 *ServerIPv6 `json:"ipv6,omitempty"`
+	IPv6 *ServerIPv6 `json:"ipv6"`
 	// Location display the server location
-	Location *ServerLocation `json:"location,omitempty"`
+	Location *ServerLocation `json:"location"`
 	// Maintenances display the server planned maintenances
-	Maintenances []*ServerMaintenance `json:"maintenances,omitempty"`
+	Maintenances []*ServerMaintenance `json:"maintenances"`
 	// ModificationDate display the server modification date
-	ModificationDate time.Time `json:"modification_date,omitempty"`
+	ModificationDate time.Time `json:"modification_date"`
 	// Protected display the server protection option is activated
-	Protected bool `json:"protected,omitempty"`
+	Protected bool `json:"protected"`
 	// SecurityGroup display the server security group
-	SecurityGroup *SecurityGroupSummary `json:"security_group,omitempty"`
+	SecurityGroup *SecurityGroupSummary `json:"security_group"`
 	// StateDetail display the server state_detail
-	StateDetail string `json:"state_detail,omitempty"`
+	StateDetail string `json:"state_detail"`
 	// ComputeCluster display the server ComputeCluster
-	ComputeCluster *ComputeCluster `json:"compute_cluster,omitempty"`
+	ComputeCluster *ComputeCluster `json:"compute_cluster"`
 }
 
 type ServerActionResponse struct {
-	Task *Task `json:"task,omitempty"`
+	Task *Task `json:"task"`
 }
 
 type ServerIP struct {
 	// ID display the unique ID of the IP address
-	ID string `json:"id,omitempty"`
+	ID string `json:"id"`
 	// Address display the server public IPv4 IP-Address
-	Address net.IP `json:"address,omitempty"`
+	Address net.IP `json:"address"`
 	// Dynamic display information if the IP address will be considered as dynamic
-	Dynamic bool `json:"dynamic,omitempty"`
+	Dynamic bool `json:"dynamic"`
 }
 
 type ServerIPv6 struct {
 	// Address display the server IPv6 IP-Address
-	Address net.IP `json:"address,omitempty"`
+	Address net.IP `json:"address"`
 	// Gateway display the IPv6 IP-addresses gateway
-	Gateway string `json:"gateway,omitempty"`
+	Gateway string `json:"gateway"`
 	// Netmask display the IPv6 IP-addresses CIDR netmask
-	Netmask string `json:"netmask,omitempty"`
+	Netmask string `json:"netmask"`
 }
 
 type ServerLocation struct {
-	ClusterID string `json:"cluster_id,omitempty"`
+	ClusterID string `json:"cluster_id"`
 
-	HypervisorID string `json:"hypervisor_id,omitempty"`
+	HypervisorID string `json:"hypervisor_id"`
 
-	NodeID string `json:"node_id,omitempty"`
+	NodeID string `json:"node_id"`
 
-	PlatformID string `json:"platform_id,omitempty"`
+	PlatformID string `json:"platform_id"`
 
-	ZoneID string `json:"zone_id,omitempty"`
+	ZoneID string `json:"zone_id"`
 }
 
 type ServerMaintenance struct {
 }
 
 type ServerSummary struct {
-	ID string `json:"id,omitempty"`
+	ID string `json:"id"`
 
-	Name string `json:"name,omitempty"`
+	Name string `json:"name"`
 }
 
 type ServerType struct {
-	MonthlyPrice float32 `json:"monthly_price,omitempty"`
+	MonthlyPrice float32 `json:"monthly_price"`
 
-	HourlyPrice float32 `json:"hourly_price,omitempty"`
+	HourlyPrice float32 `json:"hourly_price"`
 
-	AltNames []string `json:"alt_names,omitempty"`
+	AltNames []string `json:"alt_names"`
 
-	PerVolumeConstraint *ServerTypeVolumeConstraintsByType `json:"per_volume_constraint,omitempty"`
+	PerVolumeConstraint *ServerTypeVolumeConstraintsByType `json:"per_volume_constraint"`
 
-	VolumesConstraint *ServerTypeVolumeConstraintSizes `json:"volumes_constraint,omitempty"`
+	VolumesConstraint *ServerTypeVolumeConstraintSizes `json:"volumes_constraint"`
 
-	Ncpus uint32 `json:"ncpus,omitempty"`
+	Ncpus uint32 `json:"ncpus"`
 
-	Gpu *uint64 `json:"gpu,omitempty"`
+	Gpu *uint64 `json:"gpu"`
 
-	RAM uint64 `json:"ram,omitempty"`
+	RAM uint64 `json:"ram"`
 	// Arch
 	//
 	// Default value: x86_64
-	Arch Arch `json:"arch,omitempty"`
+	Arch Arch `json:"arch"`
 
-	Baremetal bool `json:"baremetal,omitempty"`
+	Baremetal bool `json:"baremetal"`
 
-	Network *ServerTypeNetwork `json:"network,omitempty"`
+	Network *ServerTypeNetwork `json:"network"`
 }
 
 type ServerTypeNetwork struct {
-	Interfaces []*ServerTypeNetworkInterface `json:"interfaces,omitempty"`
+	Interfaces []*ServerTypeNetworkInterface `json:"interfaces"`
 
-	SumInternalBandwidth *uint64 `json:"sum_internal_bandwidth,omitempty"`
+	SumInternalBandwidth *uint64 `json:"sum_internal_bandwidth"`
 
-	SumInternetBandwidth *uint64 `json:"sum_internet_bandwidth,omitempty"`
+	SumInternetBandwidth *uint64 `json:"sum_internet_bandwidth"`
 
-	IPv6Support bool `json:"ipv6_support,omitempty"`
+	IPv6Support bool `json:"ipv6_support"`
 }
 
 type ServerTypeNetworkInterface struct {
-	InternalBandwidth *uint64 `json:"internal_bandwidth,omitempty"`
+	InternalBandwidth *uint64 `json:"internal_bandwidth"`
 
-	InternetBandwidth *uint64 `json:"internet_bandwidth,omitempty"`
+	InternetBandwidth *uint64 `json:"internet_bandwidth"`
 }
 
 type ServerTypeVolumeConstraintSizes struct {
-	MinSize uint64 `json:"min_size,omitempty"`
+	MinSize uint64 `json:"min_size"`
 
-	MaxSize uint64 `json:"max_size,omitempty"`
+	MaxSize uint64 `json:"max_size"`
 }
 
 type ServerTypeVolumeConstraintsByType struct {
-	LSSD *ServerTypeVolumeConstraintSizes `json:"l_ssd,omitempty"`
+	LSSD *ServerTypeVolumeConstraintSizes `json:"l_ssd"`
 }
 
 type SetComputeClusterResponse struct {
-	ComputeClusterID string `json:"compute_cluster_id,omitempty"`
+	ComputeClusterID string `json:"compute_cluster_id"`
 }
 
 type SetComputeClusterServersResponse struct {
-	Servers []*ComputeClusterServer `json:"servers,omitempty"`
+	Servers []*ComputeClusterServer `json:"servers"`
 }
 
 type Snapshot struct {
-	ID string `json:"id,omitempty"`
+	ID string `json:"id"`
 
-	Name string `json:"name,omitempty"`
+	Name string `json:"name"`
 
-	Organization string `json:"organization,omitempty"`
+	Organization string `json:"organization"`
 	// VolumeType
 	//
 	// Default value: l_ssd
-	VolumeType VolumeType `json:"volume_type,omitempty"`
+	VolumeType VolumeType `json:"volume_type"`
 
-	Size uint64 `json:"size,omitempty"`
+	Size uint64 `json:"size"`
 	// State
 	//
 	// Default value: available
-	State SnapshotState `json:"state,omitempty"`
+	State SnapshotState `json:"state"`
 
-	BaseVolume *SnapshotBaseVolume `json:"base_volume,omitempty"`
+	BaseVolume *SnapshotBaseVolume `json:"base_volume"`
 
-	CreationDate time.Time `json:"creation_date,omitempty"`
+	CreationDate time.Time `json:"creation_date"`
 
-	ModificationDate time.Time `json:"modification_date,omitempty"`
+	ModificationDate time.Time `json:"modification_date"`
 }
 
 type SnapshotBaseVolume struct {
-	ID string `json:"id,omitempty"`
+	ID string `json:"id"`
 
-	Name string `json:"name,omitempty"`
+	Name string `json:"name"`
 }
 
 type Task struct {
 	// ID the unique ID of the task
-	ID string `json:"id,omitempty"`
+	ID string `json:"id"`
 	// Description the description of the task
-	Description string `json:"description,omitempty"`
+	Description string `json:"description"`
 
-	HrefFrom string `json:"href_from,omitempty"`
+	HrefFrom string `json:"href_from"`
 
-	HrefResult string `json:"href_result,omitempty"`
+	HrefResult string `json:"href_result"`
 	// Progress show the progress of the task in percent
-	Progress int32 `json:"progress,omitempty"`
+	Progress int32 `json:"progress"`
 	// StartedAt display the task start date
-	StartedAt time.Time `json:"started_at,omitempty"`
+	StartedAt time.Time `json:"started_at"`
 	// Status display the task status
 	//
 	// Default value: pending
-	Status TaskStatus `json:"status,omitempty"`
+	Status TaskStatus `json:"status"`
 	// TerminatedAt display the task end date
-	TerminatedAt time.Time `json:"terminated_at,omitempty"`
+	TerminatedAt time.Time `json:"terminated_at"`
 }
 
 type UpdateComputeClusterResponse struct {
-	ComputeClusterID string `json:"compute_cluster_id,omitempty"`
+	ComputeClusterID string `json:"compute_cluster_id"`
 }
 
 type UpdateComputeClusterServersResponse struct {
-	Servers []*ComputeClusterServer `json:"servers,omitempty"`
+	Servers []*ComputeClusterServer `json:"servers"`
 }
 
 type UpdateIPResponse struct {
-	IP *IP `json:"ip,omitempty"`
+	IP *IP `json:"ip"`
 }
 
 type UpdateServerResponse struct {
-	Server *Server `json:"server,omitempty"`
+	Server *Server `json:"server"`
 }
 
 type Volume struct {
 	// ID display the volumes unique ID
-	ID string `json:"id,omitempty"`
+	ID string `json:"id"`
 	// Name display the volumes names
-	Name string `json:"name,omitempty"`
+	Name string `json:"name"`
 	// ExportURI show the volumes NBD export URI
-	ExportURI string `json:"export_uri,omitempty"`
+	ExportURI string `json:"export_uri"`
 	// Organization display the volumes organization
-	Organization string `json:"organization,omitempty"`
+	Organization string `json:"organization"`
 	// Server display information about the server attached to the volume
-	Server *ServerSummary `json:"server,omitempty"`
+	Server *ServerSummary `json:"server"`
 	// Size display the volumes disk size
-	Size uint64 `json:"size,omitempty"`
+	Size uint64 `json:"size"`
 	// VolumeType display the volumes type
 	//
 	// Default value: l_ssd
-	VolumeType VolumeType `json:"volume_type,omitempty"`
+	VolumeType VolumeType `json:"volume_type"`
 	// CreationDate display the volumes creation date
-	CreationDate time.Time `json:"creation_date,omitempty"`
+	CreationDate time.Time `json:"creation_date"`
 	// ModificationDate display the volumes modification date
-	ModificationDate time.Time `json:"modification_date,omitempty"`
+	ModificationDate time.Time `json:"modification_date"`
 	// State display the volumes state
 	//
 	// Default value: available
-	State VolumeState `json:"state,omitempty"`
+	State VolumeState `json:"state"`
+}
+
+type VolumeSummary struct {
+	ID string `json:"id"`
+
+	Name string `json:"name"`
+
+	Size uint64 `json:"size"`
+	// VolumeType
+	//
+	// Default value: l_ssd
+	VolumeType VolumeType `json:"volume_type"`
 }
 
 type VolumeTemplate struct {
@@ -961,27 +1219,27 @@ type VolumeTemplate struct {
 }
 
 type setIPResponse struct {
-	IP *IP `json:"ip,omitempty"`
+	IP *IP `json:"ip"`
 }
 
 type setImageResponse struct {
-	Image *Image `json:"image,omitempty"`
+	Image *Image `json:"image"`
 }
 
 type setSecurityGroupResponse struct {
-	SecurityGroup *SecurityGroup `json:"security_group,omitempty"`
+	SecurityGroup *SecurityGroup `json:"security_group"`
 }
 
 type setSecurityGroupRuleResponse struct {
-	Rule *SecurityGroupRule `json:"rule,omitempty"`
+	Rule *SecurityGroupRule `json:"rule"`
 }
 
 type setServerResponse struct {
-	Server *Server `json:"server,omitempty"`
+	Server *Server `json:"server"`
 }
 
 type setSnapshotResponse struct {
-	Snapshot *Snapshot `json:"snapshot,omitempty"`
+	Snapshot *Snapshot `json:"snapshot"`
 }
 
 // Service API
@@ -1424,7 +1682,7 @@ type updateServerRequest struct {
 
 	Volumes *map[string]*VolumeTemplate `json:"volumes,omitempty"`
 
-	Bootscript *Bootscript `json:"bootscript,omitempty"`
+	Bootscript string `json:"bootscript,omitempty"`
 
 	DynamicIPRequired *bool `json:"dynamic_ip_required,omitempty"`
 
@@ -1434,7 +1692,7 @@ type updateServerRequest struct {
 
 	Protected *bool `json:"protected,omitempty"`
 
-	SecurityGroup *SecurityGroupSummary `json:"security_group,omitempty"`
+	SecurityGroup *SecurityGroupTemplate `json:"security_group,omitempty"`
 
 	ComputeCluster *NullableStringValue `json:"compute_cluster,omitempty"`
 }
@@ -1784,9 +2042,9 @@ type CreateImageRequest struct {
 	// Default value: x86_64
 	Arch Arch `json:"arch,omitempty"`
 
-	DefaultBootscript *Bootscript `json:"default_bootscript,omitempty"`
+	DefaultBootscript string `json:"default_bootscript,omitempty"`
 
-	ExtraVolumes map[string]*Volume `json:"extra_volumes,omitempty"`
+	ExtraVolumes map[string]*VolumeTemplate `json:"extra_volumes,omitempty"`
 
 	Organization string `json:"organization,omitempty"`
 
@@ -1856,7 +2114,7 @@ type setImageRequest struct {
 
 	Public bool `json:"public"`
 
-	RootVolume *VolumeTemplate `json:"root_volume"`
+	RootVolume *VolumeSummary `json:"root_volume"`
 	// State
 	//
 	// Default value: available
@@ -2219,13 +2477,17 @@ func (s *API) DeleteSnapshot(req *DeleteSnapshotRequest, opts ...scw.RequestOpti
 
 type ListVolumesRequest struct {
 	Zone scw.Zone `json:"-"`
-
-	Organization *string `json:"-"`
-
+	// VolumeType filter by volume type ("l_ssd", "b_ssd")
+	//
+	// Default value: l_ssd
+	VolumeType VolumeType `json:"-"`
+	// PerPage a positive integer lower or equal to 100 to select the number of items to display
 	PerPage *int32 `json:"-"`
-
+	// Page a positive integer to choose the page to display
 	Page *int32 `json:"-"`
-
+	// Organization display volumes of this organization
+	Organization *string `json:"-"`
+	// Name filter volume by name (for eg "vol" will return "myvolume" but not "data")
 	Name *string `json:"-"`
 }
 
@@ -2249,9 +2511,10 @@ func (s *API) ListVolumes(req *ListVolumesRequest, opts ...scw.RequestOption) (*
 	}
 
 	query := url.Values{}
-	parameter.AddToQuery(query, "organization", req.Organization)
+	parameter.AddToQuery(query, "volume_type", req.VolumeType)
 	parameter.AddToQuery(query, "per_page", req.PerPage)
 	parameter.AddToQuery(query, "page", req.Page)
+	parameter.AddToQuery(query, "organization", req.Organization)
 	parameter.AddToQuery(query, "name", req.Name)
 
 	if fmt.Sprint(req.Zone) == "" {
@@ -3099,7 +3362,7 @@ type CreateComputeClusterRequest struct {
 	PolicyMode ComputeClusterPolicyMode `json:"policy_mode,omitempty"`
 	// PolicyType
 	//
-	// Default value: low_latency
+	// Default value: max_availability
 	PolicyType ComputeClusterPolicyType `json:"policy_type,omitempty"`
 }
 
@@ -3197,7 +3460,7 @@ type SetComputeClusterRequest struct {
 	PolicyMode ComputeClusterPolicyMode `json:"policy_mode"`
 	// PolicyType
 	//
-	// Default value: low_latency
+	// Default value: max_availability
 	PolicyType ComputeClusterPolicyType `json:"policy_type"`
 }
 
@@ -3259,7 +3522,7 @@ type UpdateComputeClusterRequest struct {
 	PolicyMode ComputeClusterPolicyMode `json:"policy_mode,omitempty"`
 	// PolicyType
 	//
-	// Default value: low_latency
+	// Default value: max_availability
 	PolicyType ComputeClusterPolicyType `json:"policy_type,omitempty"`
 }
 
