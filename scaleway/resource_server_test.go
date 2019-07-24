@@ -344,7 +344,7 @@ data "scaleway_image" "ubuntu" {
 resource "scaleway_server" "base" {
   name = "test"
   image = "${data.scaleway_image.ubuntu.id}"
-  type = "DEV1-S"
+  type = "START1-S" # This type is deprecated but as this resource will be removed in next major release we kept it.
   tags = [ "terraform-test", "local_boot" ]
   boot_type = "local"
 }`
