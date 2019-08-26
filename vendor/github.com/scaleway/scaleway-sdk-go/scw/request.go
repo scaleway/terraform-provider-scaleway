@@ -19,7 +19,11 @@ type ScalewayRequest struct {
 	Headers http.Header
 	Query   url.Values
 	Body    io.Reader
-	Ctx     context.Context
+
+	// request options
+	ctx      context.Context
+	auth     auth.Auth
+	allPages bool
 }
 
 // getAllHeaders constructs a http.Header object and aggregates all headers into the object.
@@ -76,6 +80,10 @@ func (req *ScalewayRequest) SetBody(body interface{}) error {
 		}
 		contentType = "application/json"
 		content = bytes.NewReader(buf)
+	}
+
+	if req.Headers == nil {
+		req.Headers = http.Header{}
 	}
 
 	req.Headers.Set("Content-Type", contentType)

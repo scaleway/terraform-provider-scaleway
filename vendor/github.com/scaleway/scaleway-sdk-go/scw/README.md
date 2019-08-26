@@ -15,25 +15,31 @@ default_zone: fr-par-1
 
 ## Config file path
 
-This package will try to locate the config file in the following ways:
+The function [`GetConfigPath`](https://godoc.org/github.com/scaleway/scaleway-sdk-go/scw#GetConfigPath) will try to locate the config file in the following ways:
 
 1. Custom directory: `$SCW_CONFIG_PATH`
 2. [XDG base directory](https://specifications.freedesktop.org/basedir-spec/basedir-spec-latest.html): `$XDG_CONFIG_HOME/scw/config.yaml`
-3. Home directory: `$HOME/.config/scw/config.yaml` (`%USERPROFILE%/.config/scw/config.yaml` on windows)
+3. Unix home directory: `$HOME/.config/scw/config.yaml`
+3. Windows home directory: `%USERPROFILE%/.config/scw/config.yaml`
 
 ## V1 config (DEPRECATED)
 
-The V1 config `.scwrc` is supported but deprecated.
-When found in the home directory, the V1 config is automatically migrated to a V2 config file in `$HOME/.config/scw/config.yaml`.
+The V1 config (AKA legacy config) `.scwrc` is deprecated.
+To migrate the V1 config to the new format use the function [`MigrateLegacyConfig`](https://godoc.org/github.com/scaleway/scaleway-sdk-go/scw#MigrateLegacyConfig), this will create a [proper config file](#tl-dr) the new [config file path](#config-file-path).
 
 ## Reading config order
 
-When getting the value of a config field, the following priority order will be respected:
+[ClientOption](https://godoc.org/github.com/scaleway/scaleway-sdk-go/scw#ClientOption) ordering will decide the order in which the config should apply:
 
-1. Environment variable
-2. Legacy environment variable
-3. Config file V2
-4. Config file V1
+```go
+p, _ := scw.MustLoadConfig().GetActiveProfile()
+
+scw.NewClient(
+    scw.WithProfile(p),                     // active profile applies first
+    scw.WithEnv(),                          // existing env variables may overwrite active profile
+    scw.WithDefaultRegion(scw.RegionFrPar)  // any prior region set will be discarded to usr the new one
+)
+```
 
 ## Environment variables
 

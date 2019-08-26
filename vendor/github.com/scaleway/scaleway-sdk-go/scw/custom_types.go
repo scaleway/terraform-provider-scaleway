@@ -1,6 +1,13 @@
 package scw
 
-import "io"
+import (
+	"encoding/json"
+	"fmt"
+	"io"
+	"time"
+
+	"github.com/scaleway/scaleway-sdk-go/internal/errors"
+)
 
 // ServiceInfo contains API metadata
 // These metadata are only here for debugging. Do not rely on these values
@@ -60,4 +67,81 @@ func NewMoneyFromFloat(value float64, currency string) *Money {
 // ToFloat converts a Money object to a float.
 func (m *Money) ToFloat() float64 {
 	return float64(m.Units) + float64(m.Nanos)/1000000000
+}
+
+// Money represents a size in bytes.
+type Size uint64
+
+const (
+	B  Size = 1
+	KB      = 1000 * B
+	MB      = 1000 * KB
+	GB      = 1000 * MB
+	TB      = 1000 * GB
+	PB      = 1000 * TB
+)
+
+// String returns the string representation of a Size.
+func (s Size) String() string {
+	return fmt.Sprintf("%d", s)
+}
+
+// TimeSeries represents a time series that could be used for graph purposes.
+type TimeSeries struct {
+	// Name of the metric.
+	Name string `json:"name"`
+
+	// Points contains all the points that composed the series.
+	Points []*TimeSeriesPoint `json:"points"`
+
+	// Metadata contains some string metadata related to a metric.
+	Metadata map[string]string `json:"metadata"`
+}
+
+// TimeSeriesPoint represents a point of a time series.
+type TimeSeriesPoint struct {
+	Timestamp time.Time
+	Value     float32
+}
+
+func (tsp *TimeSeriesPoint) MarshalJSON() ([]byte, error) {
+	timestamp := tsp.Timestamp.Format(time.RFC3339)
+	value, err := json.Marshal(tsp.Value)
+	if err != nil {
+		return nil, err
+	}
+
+	return []byte(`["` + timestamp + `",` + string(value) + "]"), nil
+}
+
+func (tsp *TimeSeriesPoint) UnmarshalJSON(b []byte) error {
+	point := [2]interface{}{}
+
+	err := json.Unmarshal(b, &point)
+	if err != nil {
+		return err
+	}
+
+	if len(point) != 2 {
+		return errors.New("invalid point array")
+	}
+
+	strTimestamp, isStrTimestamp := point[0].(string)
+	if !isStrTimestamp {
+		return errors.New("%s timestamp is not a string in RFC 3339 format", point[0])
+	}
+	timestamp, err := time.Parse(time.RFC3339, strTimestamp)
+	if err != nil {
+		return errors.New("%s timestamp is not in RFC 3339 format", point[0])
+	}
+	tsp.Timestamp = timestamp
+
+	// By default, JSON unmarshal a float in float64 but the TimeSeriesPoint is a float32 value.
+	value, isValue := point[1].(float64)
+	if !isValue {
+		return errors.New("%s is not a valid float32 value", point[1])
+	}
+	tsp.Value = float32(value)
+
+	return nil
 }

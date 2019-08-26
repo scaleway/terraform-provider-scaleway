@@ -2,14 +2,14 @@ package scw
 
 import "time"
 
-// String returns a pointer to the string value passed in.
-func String(v string) *string {
+// StringPtr returns a pointer to the string value passed in.
+func StringPtr(v string) *string {
 	return &v
 }
 
-// StringSlice converts a slice of string values into a slice of
+// StringSlicePtr converts a slice of string values into a slice of
 // string pointers
-func StringSlice(src []string) []*string {
+func StringSlicePtr(src []string) []*string {
 	dst := make([]*string, len(src))
 	for i := 0; i < len(src); i++ {
 		dst[i] = &(src[i])
@@ -17,14 +17,14 @@ func StringSlice(src []string) []*string {
 	return dst
 }
 
-// Strings returns a pointer to the []string value passed in.
-func Strings(v []string) *[]string {
+// StringsPtr returns a pointer to the []string value passed in.
+func StringsPtr(v []string) *[]string {
 	return &v
 }
 
-// StringsSlice converts a slice of []string values into a slice of
+// StringsSlicePtr converts a slice of []string values into a slice of
 // []string pointers
-func StringsSlice(src [][]string) []*[]string {
+func StringsSlicePtr(src [][]string) []*[]string {
 	dst := make([]*[]string, len(src))
 	for i := 0; i < len(src); i++ {
 		dst[i] = &(src[i])
@@ -32,14 +32,14 @@ func StringsSlice(src [][]string) []*[]string {
 	return dst
 }
 
-// Bytes returns a pointer to the []byte value passed in.
-func Bytes(v []byte) *[]byte {
+// BytesPtr returns a pointer to the []byte value passed in.
+func BytesPtr(v []byte) *[]byte {
 	return &v
 }
 
-// BytesSlice converts a slice of []byte values into a slice of
+// BytesSlicePtr converts a slice of []byte values into a slice of
 // []byte pointers
-func BytesSlice(src [][]byte) []*[]byte {
+func BytesSlicePtr(src [][]byte) []*[]byte {
 	dst := make([]*[]byte, len(src))
 	for i := 0; i < len(src); i++ {
 		dst[i] = &(src[i])
@@ -47,14 +47,14 @@ func BytesSlice(src [][]byte) []*[]byte {
 	return dst
 }
 
-// Bool returns a pointer to the bool value passed in.
-func Bool(v bool) *bool {
+// BoolPtr returns a pointer to the bool value passed in.
+func BoolPtr(v bool) *bool {
 	return &v
 }
 
-// BoolSlice converts a slice of bool values into a slice of
+// BoolSlicePtr converts a slice of bool values into a slice of
 // bool pointers
-func BoolSlice(src []bool) []*bool {
+func BoolSlicePtr(src []bool) []*bool {
 	dst := make([]*bool, len(src))
 	for i := 0; i < len(src); i++ {
 		dst[i] = &(src[i])
@@ -62,14 +62,14 @@ func BoolSlice(src []bool) []*bool {
 	return dst
 }
 
-// Int32 returns a pointer to the int32 value passed in.
-func Int32(v int32) *int32 {
+// Int32Ptr returns a pointer to the int32 value passed in.
+func Int32Ptr(v int32) *int32 {
 	return &v
 }
 
-// Int32Slice converts a slice of int32 values into a slice of
+// Int32SlicePtr converts a slice of int32 values into a slice of
 // int32 pointers
-func Int32Slice(src []int32) []*int32 {
+func Int32SlicePtr(src []int32) []*int32 {
 	dst := make([]*int32, len(src))
 	for i := 0; i < len(src); i++ {
 		dst[i] = &(src[i])
@@ -77,14 +77,14 @@ func Int32Slice(src []int32) []*int32 {
 	return dst
 }
 
-// Int64 returns a pointer to the int64 value passed in.
-func Int64(v int64) *int64 {
+// Int64Ptr returns a pointer to the int64 value passed in.
+func Int64Ptr(v int64) *int64 {
 	return &v
 }
 
-// Int64Slice converts a slice of int64 values into a slice of
+// Int64SlicePtr converts a slice of int64 values into a slice of
 // int64 pointers
-func Int64Slice(src []int64) []*int64 {
+func Int64SlicePtr(src []int64) []*int64 {
 	dst := make([]*int64, len(src))
 	for i := 0; i < len(src); i++ {
 		dst[i] = &(src[i])
@@ -92,14 +92,14 @@ func Int64Slice(src []int64) []*int64 {
 	return dst
 }
 
-// Uint32 returns a pointer to the uint32 value passed in.
-func Uint32(v uint32) *uint32 {
+// Uint32Ptr returns a pointer to the uint32 value passed in.
+func Uint32Ptr(v uint32) *uint32 {
 	return &v
 }
 
-// Uint32Slice converts a slice of uint32 values into a slice of
+// Uint32SlicePtr converts a slice of uint32 values into a slice of
 // uint32 pointers
-func Uint32Slice(src []uint32) []*uint32 {
+func Uint32SlicePtr(src []uint32) []*uint32 {
 	dst := make([]*uint32, len(src))
 	for i := 0; i < len(src); i++ {
 		dst[i] = &(src[i])
@@ -107,14 +107,14 @@ func Uint32Slice(src []uint32) []*uint32 {
 	return dst
 }
 
-// Uint64 returns a pointer to the uint64 value passed in.
-func Uint64(v uint64) *uint64 {
+// Uint64Ptr returns a pointer to the uint64 value passed in.
+func Uint64Ptr(v uint64) *uint64 {
 	return &v
 }
 
-// Uint64Slice converts a slice of uint64 values into a slice of
+// Uint64SlicePtr converts a slice of uint64 values into a slice of
 // uint64 pointers
-func Uint64Slice(src []uint64) []*uint64 {
+func Uint64SlicePtr(src []uint64) []*uint64 {
 	dst := make([]*uint64, len(src))
 	for i := 0; i < len(src); i++ {
 		dst[i] = &(src[i])
@@ -122,14 +122,14 @@ func Uint64Slice(src []uint64) []*uint64 {
 	return dst
 }
 
-// Float32 returns a pointer to the float32 value passed in.
-func Float32(v float32) *float32 {
+// Float32Ptr returns a pointer to the float32 value passed in.
+func Float32Ptr(v float32) *float32 {
 	return &v
 }
 
-// Float32Slice converts a slice of float32 values into a slice of
+// Float32SlicePtr converts a slice of float32 values into a slice of
 // float32 pointers
-func Float32Slice(src []float32) []*float32 {
+func Float32SlicePtr(src []float32) []*float32 {
 	dst := make([]*float32, len(src))
 	for i := 0; i < len(src); i++ {
 		dst[i] = &(src[i])
@@ -137,14 +137,14 @@ func Float32Slice(src []float32) []*float32 {
 	return dst
 }
 
-// Float64 returns a pointer to the float64 value passed in.
-func Float64(v float64) *float64 {
+// Float64Ptr returns a pointer to the float64 value passed in.
+func Float64Ptr(v float64) *float64 {
 	return &v
 }
 
-// Float64Slice converts a slice of float64 values into a slice of
+// Float64SlicePtr converts a slice of float64 values into a slice of
 // float64 pointers
-func Float64Slice(src []float64) []*float64 {
+func Float64SlicePtr(src []float64) []*float64 {
 	dst := make([]*float64, len(src))
 	for i := 0; i < len(src); i++ {
 		dst[i] = &(src[i])
@@ -152,7 +152,12 @@ func Float64Slice(src []float64) []*float64 {
 	return dst
 }
 
-// Duration returns a pointer to the Duration value passed in.
-func Duration(v time.Duration) *time.Duration {
+// DurationPtr returns a pointer to the Duration value passed in.
+func DurationPtr(v time.Duration) *time.Duration {
+	return &v
+}
+
+// SizePtr returns a pointer to the Size value passed in.
+func SizePtr(v Size) *Size {
 	return &v
 }

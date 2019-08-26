@@ -1,11 +1,11 @@
 package scw
 
 import (
-	"fmt"
 	"net/http"
 	"net/url"
 
 	"github.com/scaleway/scaleway-sdk-go/internal/auth"
+	"github.com/scaleway/scaleway-sdk-go/internal/errors"
 )
 
 // ClientOption is a function which applies options to a settings object.
@@ -68,41 +68,46 @@ func withDefaultUserAgent(ua string) ClientOption {
 	}
 }
 
-// WithConfig client option configure a client with Scaleway configuration.
-func WithConfig(config Config) ClientOption {
+// WithProfile client option configures a client from the given profile.
+func WithProfile(p *Profile) ClientOption {
 	return func(s *settings) {
-		// The access key is not used for API authentications.
-		accessKey, _ := config.GetAccessKey()
-		secretKey, secretKeyExist := config.GetSecretKey()
-		if secretKeyExist {
-			s.token = auth.NewToken(accessKey, secretKey)
+		accessKey := ""
+		if p.AccessKey != nil {
+			accessKey = *p.AccessKey
 		}
 
-		apiURL, exist := config.GetAPIURL()
-		if exist {
-			s.apiURL = apiURL
+		if p.SecretKey != nil {
+			s.token = auth.NewToken(accessKey, *p.SecretKey)
 		}
 
-		insecure, exist := config.GetInsecure()
-		if exist {
-			s.insecure = insecure
+		if p.APIURL != nil {
+			s.apiURL = *p.APIURL
 		}
 
-		defaultProjectID, exist := config.GetDefaultProjectID()
-		if exist {
-			s.defaultProjectID = &defaultProjectID
+		if p.Insecure != nil {
+			s.insecure = *p.Insecure
 		}
 
-		defaultRegion, exist := config.GetDefaultRegion()
-		if exist {
+		if p.DefaultProjectID != nil {
+			projectID := *p.DefaultProjectID
+			s.defaultProjectID = &projectID
+		}
+
+		if p.DefaultRegion != nil {
+			defaultRegion := Region(*p.DefaultRegion)
 			s.defaultRegion = &defaultRegion
 		}
 
-		defaultZone, exist := config.GetDefaultZone()
-		if exist {
+		if p.DefaultZone != nil {
+			defaultZone := Zone(*p.DefaultZone)
 			s.defaultZone = &defaultZone
 		}
 	}
+}
+
+// WithProfile client option configures a client from the environment variables.
+func WithEnv() ClientOption {
+	return WithProfile(LoadEnvProfile())
 }
 
 // WithDefaultProjectID client option sets the client default project ID.
@@ -167,31 +172,31 @@ func (s *settings) apply(opts []ClientOption) {
 func (s *settings) validate() error {
 	var err error
 	if s.token == nil {
-		return fmt.Errorf("no credential option provided")
+		return errors.New("no credential option provided")
 	}
 
 	_, err = url.Parse(s.apiURL)
 	if err != nil {
-		return fmt.Errorf("invalid url %s: %s", s.apiURL, err)
+		return errors.Wrap(err, "invalid url %s", s.apiURL)
 	}
 
 	// TODO: Check ProjectID format
 	if s.defaultProjectID != nil && *s.defaultProjectID == "" {
-		return fmt.Errorf("default project id cannot be empty")
+		return errors.New("default project id cannot be empty")
 	}
 
 	// TODO: Check Region format
 	if s.defaultRegion != nil && *s.defaultRegion == "" {
-		return fmt.Errorf("default region cannot be empty")
+		return errors.New("default region cannot be empty")
 	}
 
 	// TODO: Check Zone format
 	if s.defaultZone != nil && *s.defaultZone == "" {
-		return fmt.Errorf("default zone cannot be empty")
+		return errors.New("default zone cannot be empty")
 	}
 
 	if s.defaultPageSize != nil && *s.defaultPageSize <= 0 {
-		return fmt.Errorf("default page size cannot be <= 0")
+		return errors.New("default page size cannot be <= 0")
 	}
 
 	return nil

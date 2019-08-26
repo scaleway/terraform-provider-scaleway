@@ -33,7 +33,7 @@ type setVolumeRequest struct {
 	// ExportURI show the volumes NBD export URI
 	ExportURI string `json:"export_uri"`
 	// Size display the volumes disk size
-	Size uint64 `json:"size"`
+	Size scw.Size `json:"size"`
 	// VolumeType display the volumes type
 	//
 	// Default value: l_ssd
