@@ -196,14 +196,14 @@ func resourceScalewayComputeInstanceSecurityGroupUpdate(d *schema.ResourceData, 
 	updateReq := &instance.UpdateSecurityGroupRequest{
 		Zone:                  zone,
 		SecurityGroupID:       ID,
-		Description:           scw.String(d.Get("description").(string)),
+		Description:           scw.StringPtr(d.Get("description").(string)),
 		InboundDefaultPolicy:  &inboundDefaultPolicy,
 		OutboundDefaultPolicy: &outboundDefaultPolicy,
 	}
 
 	// Only update name if on is provided in the state
 	if d.Get("name").(string) != "" {
-		updateReq.Name = scw.String(d.Get("name").(string))
+		updateReq.Name = scw.StringPtr(d.Get("name").(string))
 	}
 
 	_, err = instanceApi.UpdateSecurityGroup(updateReq)

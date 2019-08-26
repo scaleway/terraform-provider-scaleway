@@ -5,11 +5,10 @@ import (
 	"sort"
 	"testing"
 
-	"github.com/scaleway/scaleway-sdk-go/scw"
-
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/terraform"
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
+	"github.com/scaleway/scaleway-sdk-go/scw"
 )
 
 func init() {
@@ -128,7 +127,7 @@ func TestAccScalewayComputeInstanceSecurityGroup(t *testing.T) {
 					testAccCheckScalewayComputeInstanceSecurityGroupRuleMatch("scaleway_compute_instance_security_group.base", 0, &instance.SecurityGroupRule{
 						Direction:    instance.SecurityGroupRuleDirectionInbound,
 						IPRange:      "0.0.0.0/0",
-						DestPortFrom: scw.Uint32(80),
+						DestPortFrom: scw.Uint32Ptr(80),
 						DestPortTo:   nil,
 						Protocol:     instance.SecurityGroupRuleProtocolTCP,
 						Action:       instance.SecurityGroupRuleActionAccept,
@@ -140,7 +139,7 @@ func TestAccScalewayComputeInstanceSecurityGroup(t *testing.T) {
 					testAccCheckScalewayComputeInstanceSecurityGroupRuleMatch("scaleway_compute_instance_security_group.base", 1, &instance.SecurityGroupRule{
 						Direction:    instance.SecurityGroupRuleDirectionInbound,
 						IPRange:      "1.1.1.1",
-						DestPortFrom: scw.Uint32(22),
+						DestPortFrom: scw.Uint32Ptr(22),
 						DestPortTo:   nil,
 						Protocol:     instance.SecurityGroupRuleProtocolTCP,
 						Action:       instance.SecurityGroupRuleActionAccept,
@@ -162,7 +161,7 @@ func TestAccScalewayComputeInstanceSecurityGroup(t *testing.T) {
 					testAccCheckScalewayComputeInstanceSecurityGroupRuleMatch("scaleway_compute_instance_security_group.base", 0, &instance.SecurityGroupRule{
 						Direction:    instance.SecurityGroupRuleDirectionInbound,
 						IPRange:      "8.8.8.8",
-						DestPortFrom: scw.Uint32(80),
+						DestPortFrom: scw.Uint32Ptr(80),
 						DestPortTo:   nil,
 						Protocol:     instance.SecurityGroupRuleProtocolTCP,
 						Action:       instance.SecurityGroupRuleActionDrop,
@@ -174,7 +173,7 @@ func TestAccScalewayComputeInstanceSecurityGroup(t *testing.T) {
 					testAccCheckScalewayComputeInstanceSecurityGroupRuleMatch("scaleway_compute_instance_security_group.base", 1, &instance.SecurityGroupRule{
 						Direction:    instance.SecurityGroupRuleDirectionInbound,
 						IPRange:      "0.0.0.0/0",
-						DestPortFrom: scw.Uint32(80),
+						DestPortFrom: scw.Uint32Ptr(80),
 						DestPortTo:   nil,
 						Protocol:     instance.SecurityGroupRuleProtocolTCP,
 						Action:       instance.SecurityGroupRuleActionAccept,
@@ -186,7 +185,7 @@ func TestAccScalewayComputeInstanceSecurityGroup(t *testing.T) {
 					testAccCheckScalewayComputeInstanceSecurityGroupRuleMatch("scaleway_compute_instance_security_group.base", 2, &instance.SecurityGroupRule{
 						Direction:    instance.SecurityGroupRuleDirectionInbound,
 						IPRange:      "1.1.1.1",
-						DestPortFrom: scw.Uint32(22),
+						DestPortFrom: scw.Uint32Ptr(22),
 						DestPortTo:   nil,
 						Protocol:     instance.SecurityGroupRuleProtocolTCP,
 						Action:       instance.SecurityGroupRuleActionAccept,
@@ -220,7 +219,7 @@ func TestAccScalewayComputeInstanceSecurityGroupICMP(t *testing.T) {
 					testAccCheckScalewayComputeInstanceSecurityGroupRuleMatch("scaleway_compute_instance_security_group.base", 0, &instance.SecurityGroupRule{
 						Direction:    instance.SecurityGroupRuleDirectionInbound,
 						IPRange:      "0.0.0.0/0",
-						DestPortFrom: scw.Uint32(80),
+						DestPortFrom: scw.Uint32Ptr(80),
 						DestPortTo:   nil,
 						Protocol:     instance.SecurityGroupRuleProtocolTCP,
 						Action:       instance.SecurityGroupRuleActionAccept,

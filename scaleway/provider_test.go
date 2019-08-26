@@ -43,10 +43,11 @@ func testAccPreCheck(t *testing.T) {
 	// Handle new config system first
 	config, err := scw.LoadConfig()
 	if err == nil {
-		_, hasAccessKey := config.GetAccessKey()
-		_, hasSecretKey := config.GetSecretKey()
-		if hasAccessKey && hasSecretKey {
-			return
+		p, err := config.GetActiveProfile()
+		if err == nil {
+			if p.AccessKey != nil && p.SecretKey != nil {
+				return
+			}
 		}
 	}
 
