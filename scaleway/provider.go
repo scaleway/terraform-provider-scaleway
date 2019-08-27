@@ -21,7 +21,14 @@ func Provider() terraform.ResourceProvider {
 	// Init the SDK logger.
 	scwLogger.SetLogger(l)
 
-	// Init the Scaleway config.
+	// Try to migrate config
+	_, err := scw.MigrateLegacyConfig()
+	if err != nil {
+		l.Errorf("cannot migrate configuration: %s", err)
+		return nil
+	}
+
+	// Load config
 	scwConfig, err := scw.LoadConfig()
 	if err != nil {
 		l.Errorf("cannot load configuration: %s", err)
@@ -32,6 +39,9 @@ func Provider() terraform.ResourceProvider {
 		l.Errorf("cannot load configuration: %s", err)
 		return nil
 	}
+
+	// load env
+	e := scw.LoadEnvProfile()
 
 	return &schema.Provider{
 		Schema: map[string]*schema.Schema{
@@ -45,6 +55,9 @@ func Provider() terraform.ResourceProvider {
 						l.Warningf("SCALEWAY_ACCESS_KEY is deprecated, please use SCW_ACCESS_KEY instead")
 						return accessKey, nil
 					}
+					if e.AccessKey != nil {
+						return *e.AccessKey, nil
+					}
 					if p.AccessKey != nil {
 						return *p.AccessKey, nil
 					}
@@ -57,6 +70,9 @@ func Provider() terraform.ResourceProvider {
 				Description: "The Scaleway secret Key.",
 				DefaultFunc: func() (interface{}, error) {
 					// No error is returned here to allow user to use deprecated `token`.
+					if e.SecretKey != nil {
+						return *e.SecretKey, nil
+					}
 					if p.SecretKey != nil {
 						return *p.SecretKey, nil
 					}
@@ -88,6 +104,9 @@ func Provider() terraform.ResourceProvider {
 				Optional:    true, // To allow user to use deprecated `organization`.
 				Description: "The Scaleway project ID.",
 				DefaultFunc: schema.SchemaDefaultFunc(func() (interface{}, error) {
+					if e.DefaultProjectID != nil {
+						return *e.DefaultProjectID, nil
+					}
 					if p.DefaultProjectID != nil {
 						return *p.DefaultProjectID, nil
 					}
@@ -122,6 +141,9 @@ func Provider() terraform.ResourceProvider {
 						l.Warningf("SCALEWAY_REGION is deprecated, please use SCW_DEFAULT_REGION instead")
 						return region, nil
 					}
+					if e.DefaultRegion != nil {
+						return *e.DefaultRegion, nil
+					}
 					if p.DefaultRegion != nil {
 						return *p.DefaultRegion, nil
 					}
@@ -134,6 +156,9 @@ func Provider() terraform.ResourceProvider {
 				Optional:    true,
 				Description: "The Scaleway default zone to use for your resources.",
 				DefaultFunc: func() (interface{}, error) {
+					if e.DefaultZone != nil {
+						return *e.DefaultZone, nil
+					}
 					if p.DefaultZone != nil {
 						return *p.DefaultZone, nil
 					}

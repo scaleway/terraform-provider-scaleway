@@ -41,6 +41,7 @@ func TestProvider_impl(t *testing.T) {
 func testAccPreCheck(t *testing.T) {
 
 	// Handle new config system first
+	scw.MigrateLegacyConfig()
 	config, err := scw.LoadConfig()
 	if err == nil {
 		p, err := config.GetActiveProfile()
