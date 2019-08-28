@@ -11,12 +11,12 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 )
 
-func resourceScalewayComputeInstanceSecurityGroup() *schema.Resource {
+func resourceScalewayInstanceSecurityGroup() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceScalewayComputeInstanceSecurityGroupCreate,
-		Read:   resourceScalewayComputeInstanceSecurityGroupRead,
-		Update: resourceScalewayComputeInstanceSecurityGroupUpdate,
-		Delete: resourceScalewayComputeInstanceSecurityGroupDelete,
+		Create: resourceScalewayInstanceSecurityGroupCreate,
+		Read:   resourceScalewayInstanceSecurityGroupRead,
+		Update: resourceScalewayInstanceSecurityGroupUpdate,
+		Delete: resourceScalewayInstanceSecurityGroupDelete,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},
@@ -71,7 +71,7 @@ func resourceScalewayComputeInstanceSecurityGroup() *schema.Resource {
 	}
 }
 
-func resourceScalewayComputeInstanceSecurityGroupCreate(d *schema.ResourceData, m interface{}) error {
+func resourceScalewayInstanceSecurityGroupCreate(d *schema.ResourceData, m interface{}) error {
 	meta := m.(*Meta)
 	instanceApi, zone, err := getInstanceAPIWithZone(d, meta)
 	if err != nil {
@@ -104,10 +104,10 @@ func resourceScalewayComputeInstanceSecurityGroupCreate(d *schema.ResourceData, 
 	d.SetId(newZonedId(zone, res.SecurityGroup.ID))
 
 	// We call update instead of read as it will take care of creating rules.
-	return resourceScalewayComputeInstanceSecurityGroupUpdate(d, m)
+	return resourceScalewayInstanceSecurityGroupUpdate(d, m)
 }
 
-func resourceScalewayComputeInstanceSecurityGroupRead(d *schema.ResourceData, m interface{}) error {
+func resourceScalewayInstanceSecurityGroupRead(d *schema.ResourceData, m interface{}) error {
 	instanceApi, zone, ID, err := getInstanceAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return err
@@ -181,7 +181,7 @@ func resourceScalewayComputeInstanceSecurityGroupRead(d *schema.ResourceData, m 
 	return nil
 }
 
-func resourceScalewayComputeInstanceSecurityGroupUpdate(d *schema.ResourceData, m interface{}) error {
+func resourceScalewayInstanceSecurityGroupUpdate(d *schema.ResourceData, m interface{}) error {
 	meta := m.(*Meta)
 	instanceApi := instance.NewAPI(meta.scwClient)
 
@@ -309,10 +309,10 @@ func resourceScalewayComputeInstanceSecurityGroupUpdate(d *schema.ResourceData, 
 		}
 	}
 
-	return resourceScalewayComputeInstanceSecurityGroupRead(d, m)
+	return resourceScalewayInstanceSecurityGroupRead(d, m)
 }
 
-func resourceScalewayComputeInstanceSecurityGroupDelete(d *schema.ResourceData, m interface{}) error {
+func resourceScalewayInstanceSecurityGroupDelete(d *schema.ResourceData, m interface{}) error {
 	meta := m.(*Meta)
 	instanceApi := instance.NewAPI(meta.scwClient)
 

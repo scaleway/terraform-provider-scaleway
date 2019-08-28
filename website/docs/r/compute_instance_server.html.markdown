@@ -49,7 +49,7 @@ resource "scaleway_compute_instance_server" "web" {
 ### With security group
 
 ```hcl
-resource "scaleway_compute_instance_security_group" "www" {
+resource "scaleway_instance_security_group" "www" {
   inbound_default_policy = "drop"
   outbound_default_policy = "accept"
 
@@ -79,7 +79,7 @@ resource "scaleway_compute_instance_server" "web" {
   type = "DEV1-S"
   image_id = "f974feac-abae-4365-b988-8ec7d1cec10d"
 
-  security_group_id= "${scaleway_compute_instance_security_group.www.id}"
+  security_group_id= "${scaleway_instance_security_group.www.id}"
 }
 ```
 

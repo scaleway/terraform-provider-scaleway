@@ -8,7 +8,7 @@ description: |-
 # scaleway_security_group_rule
 
 **DEPRECATED**: This resource is deprecated and will be removed in `v2.0+`.
-Please use `scaleway_compute_instance_security_group_rule` instead.
+Please use `scaleway_instance_security_group_rule` instead.
 
 Provides security group rules. This allows security group rules to be created, updated and deleted.
 For additional details please refer to [API documentation](https://developer.scaleway.com/#security-groups-manage-rules).
