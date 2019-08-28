@@ -21,12 +21,27 @@ func Provider() terraform.ResourceProvider {
 	// Init the SDK logger.
 	scwLogger.SetLogger(l)
 
-	// Init the Scaleway config.
-	scwConfig, err := scw.LoadConfig()
+	// Try to migrate config
+	_, err := scw.MigrateLegacyConfig()
 	if err != nil {
-		l.Errorf("cannot load configuration: %s", err)
+		l.Errorf("cannot migrate configuration: %s", err)
 		return nil
 	}
+
+	// Load active profile
+	var activeProfile *scw.Profile
+	scwConfig, err := scw.LoadConfig()
+	if err != nil {
+		l.Warningf("cannot load configuration: %s", err)
+	} else {
+		activeProfile, err = scwConfig.GetActiveProfile()
+		if err != nil {
+			l.Errorf("cannot load configuration: %s", err)
+		}
+	}
+
+	// load env
+	envProfile := scw.LoadEnvProfile()
 
 	return &schema.Provider{
 		Schema: map[string]*schema.Schema{
@@ -34,26 +49,32 @@ func Provider() terraform.ResourceProvider {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Description: "The Scaleway access key.",
-				DefaultFunc: schema.SchemaDefaultFunc(func() (interface{}, error) {
+				DefaultFunc: func() (interface{}, error) {
 					// Keep the deprecated behavior
 					if accessKey := os.Getenv("SCALEWAY_ACCESS_KEY"); accessKey != "" {
 						l.Warningf("SCALEWAY_ACCESS_KEY is deprecated, please use SCW_ACCESS_KEY instead")
 						return accessKey, nil
 					}
-					if accessKey, exist := scwConfig.GetAccessKey(); exist {
-						return accessKey, nil
+					if envProfile.AccessKey != nil {
+						return *envProfile.AccessKey, nil
+					}
+					if activeProfile.AccessKey != nil {
+						return *activeProfile.AccessKey, nil
 					}
 					return nil, nil
-				}),
+				},
 			},
 			"secret_key": {
 				Type:        schema.TypeString,
 				Optional:    true, // To allow user to use deprecated `token`.
 				Description: "The Scaleway secret Key.",
-				DefaultFunc: schema.SchemaDefaultFunc(func() (interface{}, error) {
+				DefaultFunc: func() (interface{}, error) {
 					// No error is returned here to allow user to use deprecated `token`.
-					if secretKey, exist := scwConfig.GetSecretKey(); exist {
-						return secretKey, nil
+					if envProfile.SecretKey != nil {
+						return *envProfile.SecretKey, nil
+					}
+					if activeProfile.SecretKey != nil {
+						return *activeProfile.SecretKey, nil
 					}
 
 					// Keep the deprecated behavior from 'token'.
@@ -75,7 +96,7 @@ func Provider() terraform.ResourceProvider {
 					}
 					// No error is returned here to allow user to use `secret_key`.
 					return nil, nil
-				}),
+				},
 				ValidateFunc: validationUUID(),
 			},
 			"project_id": {
@@ -83,8 +104,11 @@ func Provider() terraform.ResourceProvider {
 				Optional:    true, // To allow user to use deprecated `organization`.
 				Description: "The Scaleway project ID.",
 				DefaultFunc: schema.SchemaDefaultFunc(func() (interface{}, error) {
-					if projectID, exist := scwConfig.GetDefaultProjectID(); exist {
-						return projectID, nil
+					if envProfile.DefaultProjectID != nil {
+						return *envProfile.DefaultProjectID, nil
+					}
+					if activeProfile.DefaultProjectID != nil {
+						return *activeProfile.DefaultProjectID, nil
 					}
 
 					// Keep the deprecated behavior of 'organization'.
@@ -110,30 +134,36 @@ func Provider() terraform.ResourceProvider {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Description: "The Scaleway default region to use for your resources.",
-				DefaultFunc: schema.SchemaDefaultFunc(func() (interface{}, error) {
+				DefaultFunc: func() (interface{}, error) {
 					// Keep the deprecated behavior
 					// Note: The deprecated region format conversion is handled in `config.GetDeprecatedClient`.
 					if region := os.Getenv("SCALEWAY_REGION"); region != "" {
 						l.Warningf("SCALEWAY_REGION is deprecated, please use SCW_DEFAULT_REGION instead")
 						return region, nil
 					}
-					if defaultRegion, exist := scwConfig.GetDefaultRegion(); exist {
-						return string(defaultRegion), nil
+					if envProfile.DefaultRegion != nil {
+						return *envProfile.DefaultRegion, nil
+					}
+					if activeProfile.DefaultRegion != nil {
+						return *activeProfile.DefaultRegion, nil
 					}
 					return string(scw.RegionFrPar), nil
-				}),
+				},
 				ValidateFunc: validationRegion(),
 			},
 			"zone": {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Description: "The Scaleway default zone to use for your resources.",
-				DefaultFunc: schema.SchemaDefaultFunc(func() (interface{}, error) {
-					if defaultZone, exist := scwConfig.GetDefaultZone(); exist {
-						return string(defaultZone), nil
+				DefaultFunc: func() (interface{}, error) {
+					if envProfile.DefaultZone != nil {
+						return *envProfile.DefaultZone, nil
+					}
+					if activeProfile.DefaultZone != nil {
+						return *activeProfile.DefaultZone, nil
 					}
 					return nil, nil
-				}),
+				},
 				ValidateFunc: validationZone(),
 			},
 

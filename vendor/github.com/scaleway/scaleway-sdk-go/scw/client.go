@@ -124,22 +124,20 @@ func (c *Client) GetDefaultPageSize() (int32, bool) {
 // Do performs HTTP request(s) based on the ScalewayRequest object.
 // RequestOptions are applied prior to doing the request.
 func (c *Client) Do(req *ScalewayRequest, res interface{}, opts ...RequestOption) (err error) {
-	requestSettings := newRequestSettings()
-
 	// apply request options
-	requestSettings.apply(opts)
+	req.apply(opts)
 
 	// validate request options
-	err = requestSettings.validate()
+	err = req.validate()
 	if err != nil {
 		return err
 	}
 
-	if requestSettings.ctx != nil {
-		req.Ctx = requestSettings.ctx
+	if req.auth == nil {
+		req.auth = c.auth
 	}
 
-	if requestSettings.allPages {
+	if req.allPages {
 		return c.doListAll(req, res)
 	}
 
@@ -172,10 +170,10 @@ func (c *Client) do(req *ScalewayRequest, res interface{}) (sdkErr SdkError) {
 		return errors.Wrap(err, "could not create request")
 	}
 
-	httpRequest.Header = req.getAllHeaders(c.auth, c.userAgent, false)
+	httpRequest.Header = req.getAllHeaders(req.auth, c.userAgent, false)
 
-	if req.Ctx != nil {
-		httpRequest = httpRequest.WithContext(req.Ctx)
+	if req.ctx != nil {
+		httpRequest = httpRequest.WithContext(req.ctx)
 	}
 
 	if logger.ShouldLog(logger.LogLevelDebug) {
@@ -184,7 +182,7 @@ func (c *Client) do(req *ScalewayRequest, res interface{}) (sdkErr SdkError) {
 		originalHeaders := httpRequest.Header
 
 		// Get anonymized headers
-		httpRequest.Header = req.getAllHeaders(c.auth, c.userAgent, true)
+		httpRequest.Header = req.getAllHeaders(req.auth, c.userAgent, true)
 
 		dump, err := httputil.DumpRequestOut(httpRequest, true)
 		if err != nil {
@@ -290,7 +288,7 @@ func (c *Client) doListAll(req *ScalewayRequest, res interface{}) (err SdkError)
 			req.Query.Set("page", strconv.Itoa(page))
 
 			// request the next page
-			nextPage := newPage(response)
+			nextPage := newVariableFromType(response)
 			err := c.do(req, nextPage)
 			if err != nil {
 				return err
@@ -318,10 +316,10 @@ func (c *Client) doListAll(req *ScalewayRequest, res interface{}) (err SdkError)
 	return errors.New("%T does not support pagination", res)
 }
 
-// newPage returns a variable set to the zero value of the given type
-func newPage(v interface{}) interface{} {
+// newVariableFromType returns a variable set to the zero value of the given type
+func newVariableFromType(t interface{}) interface{} {
 	// reflect.New always create a pointer, that's why we use reflect.Indirect before
-	return reflect.New(reflect.Indirect(reflect.ValueOf(v)).Type()).Interface()
+	return reflect.New(reflect.Indirect(reflect.ValueOf(t)).Type()).Interface()
 }
 
 func newHTTPClient() *http.Client {

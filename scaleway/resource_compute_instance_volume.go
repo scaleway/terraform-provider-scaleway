@@ -92,16 +92,16 @@ func resourceScalewayComputeInstanceVolumeCreate(d *schema.ResourceData, m inter
 	}
 
 	if size, ok := d.GetOk("size_in_gb"); ok {
-		volumeSizeInBytes := uint64(size.(int)) * gb
+		volumeSizeInBytes := scw.Size(uint64(size.(int)) * gb)
 		createVolumeRequest.Size = &volumeSizeInBytes
 	}
 
 	if volumeID, ok := d.GetOk("from_volume_id"); ok {
-		createVolumeRequest.BaseVolume = scw.String(expandID(volumeID))
+		createVolumeRequest.BaseVolume = scw.StringPtr(expandID(volumeID))
 	}
 
 	if snapshotID, ok := d.GetOk("from_snapshot_id"); ok {
-		createVolumeRequest.BaseSnapshot = scw.String(expandID(snapshotID))
+		createVolumeRequest.BaseSnapshot = scw.StringPtr(expandID(snapshotID))
 	}
 
 	res, err := instanceAPI.CreateVolume(createVolumeRequest)

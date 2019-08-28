@@ -208,7 +208,7 @@ func resourceScalewayComputeInstanceServerCreate(d *schema.ResourceData, m inter
 	req.Volumes = make(map[string]*instance.VolumeTemplate)
 	if size, ok := d.GetOk("root_volume.0.size_in_gb"); ok {
 		req.Volumes["0"] = &instance.VolumeTemplate{
-			Size: uint64(size.(int)) * gb,
+			Size: scw.Size(uint64(size.(int)) * gb),
 		}
 	}
 
@@ -333,7 +333,7 @@ func resourceScalewayComputeInstanceServerRead(d *schema.ResourceData, m interfa
 			}
 
 			rootVolume["volume_id"] = volume.ID
-			rootVolume["size_in_gb"] = int(volume.Size / gb)
+			rootVolume["size_in_gb"] = int(uint64(volume.Size) / gb)
 
 			if _, exist := rootVolume["delete_on_termination"]; !exist {
 				rootVolume["delete_on_termination"] = true // default value does not work on list
@@ -394,11 +394,11 @@ func resourceScalewayComputeInstanceServerUpdate(d *schema.ResourceData, m inter
 	}
 
 	if d.HasChange("name") {
-		updateRequest.Name = scw.String(d.Get("name").(string))
+		updateRequest.Name = scw.StringPtr(d.Get("name").(string))
 	}
 
 	if d.HasChange("tags") {
-		updateRequest.Tags = scw.Strings(d.Get("tags").([]string))
+		updateRequest.Tags = scw.StringsPtr(d.Get("tags").([]string))
 	}
 
 	if d.HasChange("security_group_id") {
@@ -409,7 +409,7 @@ func resourceScalewayComputeInstanceServerUpdate(d *schema.ResourceData, m inter
 	}
 
 	if d.HasChange("enable_ipv6") {
-		updateRequest.EnableIPv6 = scw.Bool(d.Get("enable_ipv6").(bool))
+		updateRequest.EnableIPv6 = scw.BoolPtr(d.Get("enable_ipv6").(bool))
 	}
 
 	volumes := map[string]*instance.VolumeTemplate{}

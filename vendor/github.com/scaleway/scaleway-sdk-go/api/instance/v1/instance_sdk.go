@@ -15,6 +15,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/internal/errors"
 	"github.com/scaleway/scaleway-sdk-go/internal/marshaler"
 	"github.com/scaleway/scaleway-sdk-go/internal/parameter"
+	"github.com/scaleway/scaleway-sdk-go/namegenerator"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 )
 
@@ -32,6 +33,7 @@ var (
 	_ marshaler.Duration
 	_ scw.File
 	_ = parameter.AddToQuery
+	_ = namegenerator.GetRandomName
 )
 
 // API instance API
@@ -591,10 +593,6 @@ func (enum *VolumeType) UnmarshalJSON(data []byte) error {
 }
 
 type Bootscript struct {
-	// Arch display the bootscripts arch
-	//
-	// Default value: x86_64
-	Arch Arch `json:"arch"`
 	// Bootcmdargs display the bootscript parameters
 	Bootcmdargs string `json:"bootcmdargs"`
 	// Default dispmay if the bootscript is the default bootscript if no other boot option is configured
@@ -613,6 +611,10 @@ type Bootscript struct {
 	Public bool `json:"public"`
 	// Title display the bootscripts title
 	Title string `json:"title"`
+	// Arch display the bootscripts arch
+	//
+	// Default value: x86_64
+	Arch Arch `json:"arch"`
 }
 
 type ComputeCluster struct {
@@ -630,7 +632,7 @@ type ComputeCluster struct {
 	//
 	// Default value: max_availability
 	PolicyType ComputeClusterPolicyType `json:"policy_type"`
-	// PolicyRespected indicate if the selected policy is respected. Returns true if the policy is respected, false otherwise
+	// PolicyRespected returns true if the policy is respected, false otherwise
 	PolicyRespected bool `json:"policy_respected"`
 }
 
@@ -798,6 +800,8 @@ type ListBootscriptsResponse struct {
 
 type ListComputeClustersResponse struct {
 	ComputeClusters []*ComputeCluster `json:"compute_clusters"`
+
+	TotalCount uint32 `json:"total_count"`
 }
 
 type ListImagesResponse struct {
@@ -867,10 +871,6 @@ type SecurityGroup struct {
 	ID string `json:"id"`
 	// Name display the security groups name
 	Name string `json:"name"`
-	// CreationDate display the security group creation date
-	CreationDate time.Time `json:"creation_date"`
-	// ModificationDate display the security group modification date
-	ModificationDate time.Time `json:"modification_date"`
 	// Description display the security groups description
 	Description string `json:"description"`
 	// EnableDefaultSecurity display if the security group is set as default
@@ -879,14 +879,18 @@ type SecurityGroup struct {
 	//
 	// Default value: accept
 	InboundDefaultPolicy SecurityGroupPolicy `json:"inbound_default_policy"`
-	// Organization display the security groups organization ID
-	Organization string `json:"organization"`
-	// OrganizationDefault display if the security group is set as organization default
-	OrganizationDefault bool `json:"organization_default"`
 	// OutboundDefaultPolicy display the default outbound policy
 	//
 	// Default value: accept
 	OutboundDefaultPolicy SecurityGroupPolicy `json:"outbound_default_policy"`
+	// Organization display the security groups organization ID
+	Organization string `json:"organization"`
+	// OrganizationDefault display if the security group is set as organization default
+	OrganizationDefault bool `json:"organization_default"`
+	// CreationDate display the security group creation date
+	CreationDate time.Time `json:"creation_date"`
+	// ModificationDate display the security group modification date
+	ModificationDate time.Time `json:"modification_date"`
 	// Servers list of servers attached to this security group
 	Servers []*ServerSummary `json:"servers"`
 	// Stateful true if the security group is stateful
@@ -934,31 +938,15 @@ type SecurityGroupTemplate struct {
 type Server struct {
 	// ID display the server unique ID
 	ID string `json:"id"`
-	// Image provide information on the server image
-	Image *Image `json:"image"`
 	// Name display the server name
 	Name string `json:"name"`
 	// Organization display the server organization
 	Organization string `json:"organization"`
-	// PrivateIP display the server private IP address
-	PrivateIP *string `json:"private_ip"`
-	// PublicIP display the server public IP address
-	PublicIP *ServerIP `json:"public_ip"`
-	// State display the server state
-	//
-	// Default value: running
-	State ServerState `json:"state"`
-	// BootType display the server boot type
-	//
-	// Default value: local
-	BootType ServerBootType `json:"boot_type"`
+	// AllowedActions provide as list of allowed actions on the server
+	AllowedActions []ServerAction `json:"allowed_actions"`
 	// Tags display the server associated tags
 	Tags []string `json:"tags"`
-	// Volumes display the server volumes
-	Volumes map[string]*Volume `json:"volumes"`
-	// Bootscript display the server bootscript
-	Bootscript *Bootscript `json:"bootscript"`
-	// CommercialType display the server commercial type (e.g. GP1-M)
+	// CommercialType display the server commercial type (eg. GP1-M)
 	CommercialType string `json:"commercial_type"`
 	// CreationDate display the server creation date
 	CreationDate time.Time `json:"creation_date"`
@@ -970,26 +958,42 @@ type Server struct {
 	ExtraNetworks []string `json:"extra_networks"`
 	// Hostname display the server host name
 	Hostname string `json:"hostname"`
-	// AllowedActions provide as list of allowed actions on the server
-	AllowedActions []ServerAction `json:"allowed_actions"`
+	// Image provide information on the server image
+	Image *Image `json:"image"`
+	// Protected display the server protection option is activated
+	Protected bool `json:"protected"`
+	// PrivateIP display the server private IP address
+	PrivateIP *string `json:"private_ip"`
+	// PublicIP display the server public IP address
+	PublicIP *ServerIP `json:"public_ip"`
+	// ModificationDate display the server modification date
+	ModificationDate time.Time `json:"modification_date"`
+	// State display the server state
+	//
+	// Default value: running
+	State ServerState `json:"state"`
+	// Location display the server location
+	Location *ServerLocation `json:"location"`
+	// IPv6 display the server IPv6 address
+	IPv6 *ServerIPv6 `json:"ipv6"`
+	// Bootscript display the server bootscript
+	Bootscript *Bootscript `json:"bootscript"`
+	// BootType display the server boot type
+	//
+	// Default value: local
+	BootType ServerBootType `json:"boot_type"`
+	// Volumes display the server volumes
+	Volumes map[string]*Volume `json:"volumes"`
+	// SecurityGroup display the server security group
+	SecurityGroup *SecurityGroupSummary `json:"security_group"`
+	// Maintenances display the server planned maintenances
+	Maintenances []*ServerMaintenance `json:"maintenances"`
+	// StateDetail display the server state_detail
+	StateDetail string `json:"state_detail"`
 	// Arch display the server arch
 	//
 	// Default value: x86_64
 	Arch Arch `json:"arch"`
-	// IPv6 display the server IPv6 address
-	IPv6 *ServerIPv6 `json:"ipv6"`
-	// Location display the server location
-	Location *ServerLocation `json:"location"`
-	// Maintenances display the server planned maintenances
-	Maintenances []*ServerMaintenance `json:"maintenances"`
-	// ModificationDate display the server modification date
-	ModificationDate time.Time `json:"modification_date"`
-	// Protected display the server protection option is activated
-	Protected bool `json:"protected"`
-	// SecurityGroup display the server security group
-	SecurityGroup *SecurityGroupSummary `json:"security_group"`
-	// StateDetail display the server state_detail
-	StateDetail string `json:"state_detail"`
 	// ComputeCluster display the server ComputeCluster
 	ComputeCluster *ComputeCluster `json:"compute_cluster"`
 }
@@ -1080,9 +1084,9 @@ type ServerTypeNetworkInterface struct {
 }
 
 type ServerTypeVolumeConstraintSizes struct {
-	MinSize uint64 `json:"min_size"`
+	MinSize scw.Size `json:"min_size"`
 
-	MaxSize uint64 `json:"max_size"`
+	MaxSize scw.Size `json:"max_size"`
 }
 
 type ServerTypeVolumeConstraintsByType struct {
@@ -1108,7 +1112,7 @@ type Snapshot struct {
 	// Default value: l_ssd
 	VolumeType VolumeType `json:"volume_type"`
 
-	Size uint64 `json:"size"`
+	Size scw.Size `json:"size"`
 	// State
 	//
 	// Default value: available
@@ -1132,20 +1136,20 @@ type Task struct {
 	ID string `json:"id"`
 	// Description the description of the task
 	Description string `json:"description"`
-
-	HrefFrom string `json:"href_from"`
-
-	HrefResult string `json:"href_result"`
 	// Progress show the progress of the task in percent
 	Progress int32 `json:"progress"`
 	// StartedAt display the task start date
 	StartedAt time.Time `json:"started_at"`
+	// TerminatedAt display the task end date
+	TerminatedAt time.Time `json:"terminated_at"`
 	// Status display the task status
 	//
 	// Default value: pending
 	Status TaskStatus `json:"status"`
-	// TerminatedAt display the task end date
-	TerminatedAt time.Time `json:"terminated_at"`
+
+	HrefFrom string `json:"href_from"`
+
+	HrefResult string `json:"href_result"`
 }
 
 type UpdateComputeClusterResponse struct {
@@ -1171,12 +1175,8 @@ type Volume struct {
 	Name string `json:"name"`
 	// ExportURI show the volumes NBD export URI
 	ExportURI string `json:"export_uri"`
-	// Organization display the volumes organization
-	Organization string `json:"organization"`
-	// Server display information about the server attached to the volume
-	Server *ServerSummary `json:"server"`
 	// Size display the volumes disk size
-	Size uint64 `json:"size"`
+	Size scw.Size `json:"size"`
 	// VolumeType display the volumes type
 	//
 	// Default value: l_ssd
@@ -1185,6 +1185,10 @@ type Volume struct {
 	CreationDate time.Time `json:"creation_date"`
 	// ModificationDate display the volumes modification date
 	ModificationDate time.Time `json:"modification_date"`
+	// Organization display the volumes organization
+	Organization string `json:"organization"`
+	// Server display information about the server attached to the volume
+	Server *ServerSummary `json:"server"`
 	// State display the volumes state
 	//
 	// Default value: available
@@ -1196,7 +1200,7 @@ type VolumeSummary struct {
 
 	Name string `json:"name"`
 
-	Size uint64 `json:"size"`
+	Size scw.Size `json:"size"`
 	// VolumeType
 	//
 	// Default value: l_ssd
@@ -1209,7 +1213,7 @@ type VolumeTemplate struct {
 	// Name display the volumes name
 	Name string `json:"name,omitempty"`
 	// Size display the volumes disk size
-	Size uint64 `json:"size,omitempty"`
+	Size scw.Size `json:"size,omitempty"`
 	// VolumeType display the volumes type
 	//
 	// Default value: l_ssd
@@ -1342,14 +1346,22 @@ func (s *API) ListServersTypes(req *ListServersTypesRequest, opts ...scw.Request
 
 type ListServersRequest struct {
 	Zone scw.Zone `json:"-"`
-
-	Organization *string `json:"-"`
-
+	// PerPage a positive integer lower or equal to 100 to select the number of items to display
+	//
+	// Default value: 20
 	PerPage *int32 `json:"-"`
-
+	// Page a positive integer to choose the page to display
 	Page *int32 `json:"-"`
-
+	// Organization list only servers of this organization
+	Organization *string `json:"-"`
+	// Name filter servers by name (for eg. "server1" will return "server100" and "server1" but not "foo")
 	Name *string `json:"-"`
+	// PrivateIP list servers by private_ip
+	PrivateIP *string `json:"-"`
+	// WithoutIP list servers that are not attached to a public IP
+	WithoutIP *string `json:"-"`
+	// CommercialType list servers of this commercial type
+	CommercialType *string `json:"-"`
 }
 
 // ListServers list servers
@@ -1372,10 +1384,13 @@ func (s *API) ListServers(req *ListServersRequest, opts ...scw.RequestOption) (*
 	}
 
 	query := url.Values{}
-	parameter.AddToQuery(query, "organization", req.Organization)
 	parameter.AddToQuery(query, "per_page", req.PerPage)
 	parameter.AddToQuery(query, "page", req.Page)
+	parameter.AddToQuery(query, "organization", req.Organization)
 	parameter.AddToQuery(query, "name", req.Name)
+	parameter.AddToQuery(query, "private_ip", req.PrivateIP)
+	parameter.AddToQuery(query, "without_ip", req.WithoutIP)
+	parameter.AddToQuery(query, "commercial_type", req.CommercialType)
 
 	if fmt.Sprint(req.Zone) == "" {
 		return nil, errors.New("field Zone cannot be empty in request")
@@ -1435,7 +1450,7 @@ type CreateServerRequest struct {
 	// BootType define the boot type you want to use
 	//
 	// Default value: local
-	BootType ServerBootType `json:"boot_type,omitempty"`
+	BootType ServerBootType `json:"boot_type"`
 	// Organization define the server organization
 	Organization string `json:"organization,omitempty"`
 	// Tags define the server tags
@@ -1458,6 +1473,10 @@ func (s *API) CreateServer(req *CreateServerRequest, opts ...scw.RequestOption) 
 	if req.Zone == "" {
 		defaultZone, _ := s.client.GetDefaultZone()
 		req.Zone = defaultZone
+	}
+
+	if req.Name == "" {
+		req.Name = namegenerator.GetRandomName("srv")
 	}
 
 	if fmt.Sprint(req.Zone) == "" {
@@ -1574,7 +1593,7 @@ type setServerRequest struct {
 	AllowedActions []ServerAction `json:"allowed_actions"`
 	// Tags display the server associated tags
 	Tags []string `json:"tags"`
-	// CommercialType display the server commercial type (e.g. GP1-M)
+	// CommercialType display the server commercial type (eg. GP1-M)
 	CommercialType string `json:"commercial_type"`
 	// CreationDate display the server creation date
 	CreationDate time.Time `json:"creation_date"`
@@ -1676,7 +1695,7 @@ type updateServerRequest struct {
 	// BootType
 	//
 	// Default value: local
-	BootType ServerBootType `json:"boot_type,omitempty"`
+	BootType ServerBootType `json:"boot_type"`
 
 	Tags *[]string `json:"tags,omitempty"`
 
@@ -1781,7 +1800,7 @@ type ServerActionRequest struct {
 	// Action
 	//
 	// Default value: poweron
-	Action ServerAction `json:"action,omitempty"`
+	Action ServerAction `json:"action"`
 }
 
 // ServerAction perform action
@@ -2040,7 +2059,7 @@ type CreateImageRequest struct {
 	// Arch
 	//
 	// Default value: x86_64
-	Arch Arch `json:"arch,omitempty"`
+	Arch Arch `json:"arch"`
 
 	DefaultBootscript string `json:"default_bootscript,omitempty"`
 
@@ -2380,7 +2399,7 @@ type setSnapshotRequest struct {
 	// Default value: l_ssd
 	VolumeType VolumeType `json:"volume_type"`
 
-	Size uint64 `json:"size"`
+	Size scw.Size `json:"size"`
 	// State
 	//
 	// Default value: available
@@ -2477,17 +2496,19 @@ func (s *API) DeleteSnapshot(req *DeleteSnapshotRequest, opts ...scw.RequestOpti
 
 type ListVolumesRequest struct {
 	Zone scw.Zone `json:"-"`
-	// VolumeType filter by volume type ("l_ssd", "b_ssd")
+	// VolumeType filter by volume type
 	//
 	// Default value: l_ssd
 	VolumeType VolumeType `json:"-"`
 	// PerPage a positive integer lower or equal to 100 to select the number of items to display
+	//
+	// Default value: 20
 	PerPage *int32 `json:"-"`
 	// Page a positive integer to choose the page to display
 	Page *int32 `json:"-"`
 	// Organization display volumes of this organization
 	Organization *string `json:"-"`
-	// Name filter volume by name (for eg "vol" will return "myvolume" but not "data")
+	// Name filter volume by name (for eg. "vol" will return "myvolume" but not "data")
 	Name *string `json:"-"`
 }
 
@@ -2565,10 +2586,10 @@ type CreateVolumeRequest struct {
 	// VolumeType
 	//
 	// Default value: l_ssd
-	VolumeType VolumeType `json:"volume_type,omitempty"`
+	VolumeType VolumeType `json:"volume_type"`
 
 	// Precisely one of BaseSnapshot, BaseVolume, Size must be set.
-	Size *uint64 `json:"size,omitempty"`
+	Size *scw.Size `json:"size,omitempty"`
 
 	// Precisely one of BaseSnapshot, BaseVolume, Size must be set.
 	BaseVolume *string `json:"base_volume,omitempty"`
@@ -2798,11 +2819,11 @@ type CreateSecurityGroupRequest struct {
 	// InboundDefaultPolicy
 	//
 	// Default value: accept
-	InboundDefaultPolicy SecurityGroupPolicy `json:"inbound_default_policy,omitempty"`
+	InboundDefaultPolicy SecurityGroupPolicy `json:"inbound_default_policy"`
 	// OutboundDefaultPolicy
 	//
 	// Default value: accept
-	OutboundDefaultPolicy SecurityGroupPolicy `json:"outbound_default_policy,omitempty"`
+	OutboundDefaultPolicy SecurityGroupPolicy `json:"outbound_default_policy"`
 }
 
 // CreateSecurityGroup create security group
@@ -3073,15 +3094,15 @@ type CreateSecurityGroupRuleRequest struct {
 	// Protocol
 	//
 	// Default value: TCP
-	Protocol SecurityGroupRuleProtocol `json:"protocol,omitempty"`
+	Protocol SecurityGroupRuleProtocol `json:"protocol"`
 	// Direction
 	//
 	// Default value: inbound
-	Direction SecurityGroupRuleDirection `json:"direction,omitempty"`
+	Direction SecurityGroupRuleDirection `json:"direction"`
 	// Action
 	//
 	// Default value: accept
-	Action SecurityGroupRuleAction `json:"action,omitempty"`
+	Action SecurityGroupRuleAction `json:"action"`
 
 	IPRange string `json:"ip_range,omitempty"`
 
@@ -3296,12 +3317,16 @@ func (s *API) setSecurityGroupRule(req *setSecurityGroupRuleRequest, opts ...scw
 
 type ListComputeClustersRequest struct {
 	Zone scw.Zone `json:"-"`
-
-	Organization *string `json:"-"`
-
+	// PerPage a positive integer lower or equal to 100 to select the number of items to display
+	//
+	// Default value: 20
 	PerPage *int32 `json:"-"`
-
+	// Page a positive integer to choose the page to display
 	Page *int32 `json:"-"`
+	// Organization list only compute-clusters of this organization
+	Organization *string `json:"-"`
+	// Name filter compute-clusters by name (for eg. "cluster1" will return "cluster100" and "cluster1" but not "foo")
+	Name *string `json:"-"`
 }
 
 // ListComputeClusters list compute-clusters
@@ -3326,9 +3351,10 @@ func (s *API) ListComputeClusters(req *ListComputeClustersRequest, opts ...scw.R
 	}
 
 	query := url.Values{}
-	parameter.AddToQuery(query, "organization", req.Organization)
 	parameter.AddToQuery(query, "per_page", req.PerPage)
 	parameter.AddToQuery(query, "page", req.Page)
+	parameter.AddToQuery(query, "organization", req.Organization)
+	parameter.AddToQuery(query, "name", req.Name)
 
 	if fmt.Sprint(req.Zone) == "" {
 		return nil, errors.New("field Zone cannot be empty in request")
@@ -3350,6 +3376,25 @@ func (s *API) ListComputeClusters(req *ListComputeClustersRequest, opts ...scw.R
 	return &resp, nil
 }
 
+// UnsafeGetTotalCount should not be used
+// Internal usage only
+func (r *ListComputeClustersResponse) UnsafeGetTotalCount() int {
+	return int(r.TotalCount)
+}
+
+// UnsafeAppend should not be used
+// Internal usage only
+func (r *ListComputeClustersResponse) UnsafeAppend(res interface{}) (int, scw.SdkError) {
+	results, ok := res.(*ListComputeClustersResponse)
+	if !ok {
+		return 0, errors.New("%T type cannot be appended to type %T", res, r)
+	}
+
+	r.ComputeClusters = append(r.ComputeClusters, results.ComputeClusters...)
+	r.TotalCount += uint32(len(results.ComputeClusters))
+	return len(results.ComputeClusters), nil
+}
+
 type CreateComputeClusterRequest struct {
 	Zone scw.Zone `json:"-"`
 
@@ -3359,11 +3404,11 @@ type CreateComputeClusterRequest struct {
 	// PolicyMode
 	//
 	// Default value: optional
-	PolicyMode ComputeClusterPolicyMode `json:"policy_mode,omitempty"`
+	PolicyMode ComputeClusterPolicyMode `json:"policy_mode"`
 	// PolicyType
 	//
 	// Default value: max_availability
-	PolicyType ComputeClusterPolicyType `json:"policy_type,omitempty"`
+	PolicyType ComputeClusterPolicyType `json:"policy_type"`
 }
 
 // CreateComputeCluster create compute-cluster
@@ -3519,11 +3564,11 @@ type UpdateComputeClusterRequest struct {
 	// PolicyMode
 	//
 	// Default value: optional
-	PolicyMode ComputeClusterPolicyMode `json:"policy_mode,omitempty"`
+	PolicyMode ComputeClusterPolicyMode `json:"policy_mode"`
 	// PolicyType
 	//
 	// Default value: max_availability
-	PolicyType ComputeClusterPolicyType `json:"policy_type,omitempty"`
+	PolicyType ComputeClusterPolicyType `json:"policy_type"`
 }
 
 // UpdateComputeCluster update compute-cluster
@@ -3769,7 +3814,7 @@ func (s *API) DeleteComputeClusterServers(req *DeleteComputeClusterServersReques
 type ListIpsRequest struct {
 	Zone scw.Zone `json:"-"`
 
-	Organization string `json:"-"`
+	Organization *string `json:"-"`
 
 	Name *string `json:"-"`
 
@@ -3782,9 +3827,9 @@ type ListIpsRequest struct {
 func (s *API) ListIps(req *ListIpsRequest, opts ...scw.RequestOption) (*ListIpsResponse, error) {
 	var err error
 
-	if req.Organization == "" {
-		defaultOrganization, _ := s.client.GetDefaultProjectID()
-		req.Organization = defaultOrganization
+	defaultOrganization, exist := s.client.GetDefaultProjectID()
+	if (req.Organization == nil || *req.Organization == "") && exist {
+		req.Organization = &defaultOrganization
 	}
 
 	if req.Zone == "" {
@@ -4232,7 +4277,7 @@ type From interface {
 }
 
 type FromSize struct {
-	Value uint64
+	Value scw.Size
 }
 
 func (FromSize) isFrom() {

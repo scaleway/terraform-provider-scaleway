@@ -41,13 +41,19 @@ func TestProvider_impl(t *testing.T) {
 func testAccPreCheck(t *testing.T) {
 
 	// Handle new config system first
+	scw.MigrateLegacyConfig()
 	config, err := scw.LoadConfig()
 	if err == nil {
-		_, hasAccessKey := config.GetAccessKey()
-		_, hasSecretKey := config.GetSecretKey()
-		if hasAccessKey && hasSecretKey {
-			return
+		activeProfile, err := config.GetActiveProfile()
+		if err == nil {
+			if activeProfile.AccessKey != nil && activeProfile.SecretKey != nil {
+				return
+			}
 		}
+	}
+	envProfile := scw.LoadEnvProfile()
+	if envProfile.AccessKey != nil && envProfile.SecretKey != nil {
+		return
 	}
 
 	if v := os.Getenv("SCALEWAY_ORGANIZATION"); v == "" {
