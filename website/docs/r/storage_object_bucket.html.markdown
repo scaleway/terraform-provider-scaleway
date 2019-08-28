@@ -24,8 +24,7 @@ resource "scaleway_storage_object_bucket" "some_bucket" {
 The following arguments are supported:
 
 * `name` - (Required) The name of the bucket.
-* `acl` - (Optional) The canned ACL you want to apply to the bucket.
-[//]: # (TODO: Add a link to doc when it will exist.)
+* `acl` - (Optional) The [canned ACL](https://docs.aws.amazon.com/AmazonS3/latest/dev/acl-overview.html#canned-acl) you want to apply to the bucket.
 * `region` - (Optional) The [region](https://developers.scaleway.com/en/quickstart/#region-definition) in which the bucket should be created.
 
 ## Attributes Reference
@@ -33,8 +32,6 @@ The following arguments are supported:
 In addition to all arguments above, the following attribute is exported:
 	
 * `id` - The ID of the bucket.
-	
-
 
 ## Import
 
