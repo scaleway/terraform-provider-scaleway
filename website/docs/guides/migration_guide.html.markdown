@@ -45,7 +45,7 @@ All resources are from now on prefixed by `scaleway`, their product category and
 
 ### Compute
 
-All the old compute resources have been regrouped under a new name: `Instance`. `Compute` is now the general product category name of all server related resources.\
+All the old compute resources have been regrouped under a new name: `Instance`. `Compute` is now the general product category name of all server related resources. 
 This means that all old resources are now prefixed with `scaleway_compute_instance_`.
 
 #### Renamed: `scaleway_server` -> `scaleway_compute_instance_server`
