@@ -183,7 +183,7 @@ func Provider() terraform.ResourceProvider {
 		ResourcesMap: map[string]*schema.Resource{
 			"scaleway_bucket":                   resourceScalewayBucket(),
 			"scaleway_instance_ip":              resourceScalewayInstanceIP(),
-			"scaleway_compute_instance_volume":  resourceScalewayComputeInstanceVolume(),
+			"scaleway_instance_volume":          resourceScalewayInstanceVolume(),
 			"scaleway_instance_security_group":  resourceScalewayInstanceSecurityGroup(),
 			"scaleway_instance_server":          resourceScalewayInstanceServer(),
 			"scaleway_instance_placement_group": resourceScalewayInstancePlacementGroup(),

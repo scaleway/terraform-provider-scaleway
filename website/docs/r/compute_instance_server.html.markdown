@@ -28,7 +28,7 @@ resource "scaleway_instance_server" "web" {
 ### With additional volumes, public IP and tags
 
 ```hcl
-resource "scaleway_compute_instance_volume" "data" {
+resource "scaleway_instance_volume" "data" {
   size_in_gb = 100
 }
 
@@ -42,7 +42,7 @@ resource "scaleway_instance_server" "web" {
     delete_on_termination = false
   }
 
-  additional_volume_ids = [ "${scaleway_compute_instance_volume.data.id}" ]
+  additional_volume_ids = [ "${scaleway_instance_volume.data.id}" ]
 }
 ```
 

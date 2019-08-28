@@ -45,8 +45,8 @@ All resources are from now on prefixed by `scaleway`, their product category and
 
 ### Compute
 
-All the old compute resources have been regrouped under a new name: `Instance`. `Compute` is now the general product category name of all server related resources. 
-This means that all old resources are now prefixed with `scaleway_compute_instance_`.
+All the old compute resources have been regrouped under a new name: `Instance`. 
+This means that all old instance resources are now prefixed with `scaleway_instance_`.
 
 #### Renamed: `scaleway_server` -> `scaleway_instance_server`
 
@@ -57,7 +57,7 @@ In version 1, attachments of volumes where done on the volume resource. But from
 Thus, to create a server with a volume attached:
 
 ```hcl
-resource "scaleway_compute_instance_volume" "data" {
+resource "scaleway_instance_volume" "data" {
   size_in_gb = 100
 }
 
@@ -71,7 +71,7 @@ resource "scaleway_instance_server" "web" {
     delete_on_termination = false
   }
 
-  additional_volume_ids = [ "${scaleway_compute_instance_volume.data.id}" ]
+  additional_volume_ids = [ "${scaleway_instance_volume.data.id}" ]
 }
 ```
 
@@ -85,12 +85,12 @@ resource "scaleway_instance_ip" "test_ip" {
 }
 ```
 
-#### Renamed: `scaleway_volume` -> `scaleway_compute_instance_volume`
+#### Renamed: `scaleway_volume` -> `scaleway_instance_volume`
 
-`scaleway_volume` was renamed to `scaleway_compute_instance_volume`.
+`scaleway_volume` was renamed to `scaleway_instance_volume`.
 The former arguments can still be used on the new volume resource.
 
-Additionally, from now on, you can also create new volumes based on other volumes or snapshots. For more information check the [new volume `scaleway_compute_instance_volume` resource](../r/compute_instance_volume.html).
+Additionally, from now on, you can also create new volumes based on other volumes or snapshots. For more information check the [new volume `scaleway_instance_volume` resource](../r/compute_instance_volume.html).
 
 #### Removed: `scaleway_user_data`
 

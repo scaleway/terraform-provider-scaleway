@@ -1,18 +1,18 @@
 ---
 layout: "scaleway"
-page_title: "Scaleway: scaleway_compute_instance_volume"
+page_title: "Scaleway: scaleway_instance_volume"
 description: |-
   Manages Scaleway Compute Instance Volumes.
 ---
 
-# scaleway_compute_instance_volume
+# scaleway_instance_volume
 
 Creates and manages Scaleway Compute Instance Volumes. For more information, see [the documentation](https://developers.scaleway.com/en/products/instance/api/#volumes-7e8a39).
 
 ## Example
 
 ```hcl
-resource "scaleway_compute_instance_volume" "server_volume" {
+resource "scaleway_instance_volume" "server_volume" {
     type       = "l_ssd"
     name       = "some-volume-name"
     size_in_gb = 20
@@ -43,5 +43,5 @@ In addition to all arguments above, the following attributes are exported:
 volumes can be imported using the `{zone}/{id}`, e.g.
 
 ```bash
-$ terraform import scaleway_compute_instance_volume.server_volume fr-par-1/11111111-1111-1111-1111-111111111111
+$ terraform import scaleway_instance_volume.server_volume fr-par-1/11111111-1111-1111-1111-111111111111
 ```

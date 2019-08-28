@@ -105,7 +105,7 @@ func TestAccScalewayInstanceServerRemoteExec(t *testing.T) {
 				Config: testAccCheckScalewayInstanceServerConfigWithIPAndVolume,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayInstanceServerExists("scaleway_instance_server.webserver"),
-					testAccCheckScalewayComputeInstanceVolumeExists("scaleway_compute_instance_volume.data"),
+					testAccCheckSalewayInstanceVolumeExists("scaleway_instance_volume.data"),
 					testAccCheckScalewayInstanceIPExists("scaleway_instance_ip.myip"),
 				),
 			},
@@ -248,9 +248,9 @@ func TestAccScalewayInstanceServerAdditionalVolumes1(t *testing.T) {
 			// {
 			// 	Config: testAccCheckScalewayInstanceServerConfigVolumes(true),
 			// 	Check: resource.ComposeTestCheckFunc(
-			// 		testAccCheckScalewayComputeInstanceVolumeExists("scaleway_compute_instance_volume.base_block"),
+			// 		testAccCheckSalewayInstanceVolumeExists("scaleway_instance_volume.base_block"),
 			// 		testAccCheckScalewayInstanceServerExists("scaleway_instance_server.base"),
-			// 		resource.TestCheckResourceAttr("scaleway_compute_instance_volume.base_block", "size_in_gb", "100"),
+			// 		resource.TestCheckResourceAttr("scaleway_instance_volume.base_block", "size_in_gb", "100"),
 			// 		resource.TestCheckResourceAttr("scaleway_instance_server.base", "root_volume.0.size_in_gb", "20"),
 			// 	),
 			// },
@@ -267,44 +267,44 @@ func TestAccScalewayInstanceServerAdditionalVolumes2(t *testing.T) {
 			{
 				Config: testAccCheckScalewayInstanceServerConfigVolumes(false, 5, 5),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayComputeInstanceVolumeExists("scaleway_compute_instance_volume.base_volume0"),
-					testAccCheckScalewayComputeInstanceVolumeExists("scaleway_compute_instance_volume.base_volume1"),
-					// testAccCheckScalewayComputeInstanceVolumeExists("scaleway_compute_instance_volume.base_block"),
+					testAccCheckSalewayInstanceVolumeExists("scaleway_instance_volume.base_volume0"),
+					testAccCheckSalewayInstanceVolumeExists("scaleway_instance_volume.base_volume1"),
+					// testAccCheckSalewayInstanceVolumeExists("scaleway_instance_volume.base_block"),
 					testAccCheckScalewayInstanceServerExists("scaleway_instance_server.base"),
-					resource.TestCheckResourceAttr("scaleway_compute_instance_volume.base_volume0", "size_in_gb", "5"),
-					resource.TestCheckResourceAttr("scaleway_compute_instance_volume.base_volume1", "size_in_gb", "5"),
-					// resource.TestCheckResourceAttr("scaleway_compute_instance_volume.base_block", "size_in_gb", "100"),
+					resource.TestCheckResourceAttr("scaleway_instance_volume.base_volume0", "size_in_gb", "5"),
+					resource.TestCheckResourceAttr("scaleway_instance_volume.base_volume1", "size_in_gb", "5"),
+					// resource.TestCheckResourceAttr("scaleway_instance_volume.base_block", "size_in_gb", "100"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "root_volume.0.size_in_gb", "10"),
 				),
 			},
 			{
 				Config: testAccCheckScalewayInstanceServerConfigVolumes(false, 4, 3, 2, 1),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayComputeInstanceVolumeExists("scaleway_compute_instance_volume.base_volume0"),
-					testAccCheckScalewayComputeInstanceVolumeExists("scaleway_compute_instance_volume.base_volume1"),
-					testAccCheckScalewayComputeInstanceVolumeExists("scaleway_compute_instance_volume.base_volume2"),
-					testAccCheckScalewayComputeInstanceVolumeExists("scaleway_compute_instance_volume.base_volume3"),
-					// testAccCheckScalewayComputeInstanceVolumeExists("scaleway_compute_instance_volume.base_block"),
+					testAccCheckSalewayInstanceVolumeExists("scaleway_instance_volume.base_volume0"),
+					testAccCheckSalewayInstanceVolumeExists("scaleway_instance_volume.base_volume1"),
+					testAccCheckSalewayInstanceVolumeExists("scaleway_instance_volume.base_volume2"),
+					testAccCheckSalewayInstanceVolumeExists("scaleway_instance_volume.base_volume3"),
+					// testAccCheckSalewayInstanceVolumeExists("scaleway_instance_volume.base_block"),
 					testAccCheckScalewayInstanceServerExists("scaleway_instance_server.base"),
-					resource.TestCheckResourceAttr("scaleway_compute_instance_volume.base_volume0", "size_in_gb", "4"),
-					resource.TestCheckResourceAttr("scaleway_compute_instance_volume.base_volume1", "size_in_gb", "3"),
-					resource.TestCheckResourceAttr("scaleway_compute_instance_volume.base_volume2", "size_in_gb", "2"),
-					resource.TestCheckResourceAttr("scaleway_compute_instance_volume.base_volume3", "size_in_gb", "1"),
-					// resource.TestCheckResourceAttr("scaleway_compute_instance_volume.base_block", "size_in_gb", "100"),
-					// resource.TestCheckResourceAttr("scaleway_compute_instance_volume.base_block", "type", "l_ssd"),
+					resource.TestCheckResourceAttr("scaleway_instance_volume.base_volume0", "size_in_gb", "4"),
+					resource.TestCheckResourceAttr("scaleway_instance_volume.base_volume1", "size_in_gb", "3"),
+					resource.TestCheckResourceAttr("scaleway_instance_volume.base_volume2", "size_in_gb", "2"),
+					resource.TestCheckResourceAttr("scaleway_instance_volume.base_volume3", "size_in_gb", "1"),
+					// resource.TestCheckResourceAttr("scaleway_instance_volume.base_block", "size_in_gb", "100"),
+					// resource.TestCheckResourceAttr("scaleway_instance_volume.base_block", "type", "l_ssd"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "root_volume.0.size_in_gb", "10"),
 				),
 			},
 			{
 				Config: testAccCheckScalewayInstanceServerConfigVolumes(false, 4, 3, 2),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayComputeInstanceVolumeExists("scaleway_compute_instance_volume.base_volume0"),
-					testAccCheckScalewayComputeInstanceVolumeExists("scaleway_compute_instance_volume.base_volume1"),
-					testAccCheckScalewayComputeInstanceVolumeExists("scaleway_compute_instance_volume.base_volume2"),
+					testAccCheckSalewayInstanceVolumeExists("scaleway_instance_volume.base_volume0"),
+					testAccCheckSalewayInstanceVolumeExists("scaleway_instance_volume.base_volume1"),
+					testAccCheckSalewayInstanceVolumeExists("scaleway_instance_volume.base_volume2"),
 					testAccCheckScalewayInstanceServerExists("scaleway_instance_server.base"),
-					resource.TestCheckResourceAttr("scaleway_compute_instance_volume.base_volume0", "size_in_gb", "4"),
-					resource.TestCheckResourceAttr("scaleway_compute_instance_volume.base_volume1", "size_in_gb", "3"),
-					resource.TestCheckResourceAttr("scaleway_compute_instance_volume.base_volume2", "size_in_gb", "2"),
+					resource.TestCheckResourceAttr("scaleway_instance_volume.base_volume0", "size_in_gb", "4"),
+					resource.TestCheckResourceAttr("scaleway_instance_volume.base_volume1", "size_in_gb", "3"),
+					resource.TestCheckResourceAttr("scaleway_instance_volume.base_volume2", "size_in_gb", "2"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "root_volume.0.size_in_gb", "11"),
 				),
 			},
@@ -486,20 +486,20 @@ func testAccCheckScalewayInstanceServerConfigVolumes(withBlock bool, localVolume
 	var additionalVolumeIDs []string
 	for i, size := range localVolumesInGB {
 		additionalVolumeResources += fmt.Sprintf(`
-resource "scaleway_compute_instance_volume" "base_volume%d" {
+resource "scaleway_instance_volume" "base_volume%d" {
   size_in_gb = %d
   type       = "l_ssd"
 }`, i, size)
-		additionalVolumeIDs = append(additionalVolumeIDs, fmt.Sprintf(`"${scaleway_compute_instance_volume.base_volume%d.id}"`, i))
+		additionalVolumeIDs = append(additionalVolumeIDs, fmt.Sprintf(`"${scaleway_instance_volume.base_volume%d.id}"`, i))
 		baseVolume -= size
 	}
 
 	if withBlock {
 		additionalVolumeResources += fmt.Sprintf(`
-resource "scaleway_compute_instance_volume" "base_block" {
+resource "scaleway_instance_volume" "base_block" {
   size_in_gb = 100
 }`)
-		additionalVolumeIDs = append(additionalVolumeIDs, `"${scaleway_compute_instance_volume.base_block.id}"`)
+		additionalVolumeIDs = append(additionalVolumeIDs, `"${scaleway_instance_volume.base_block.id}"`)
 
 	}
 	return fmt.Sprintf(`
@@ -522,7 +522,7 @@ resource "scaleway_instance_ip" "myip" {
   server_id = "${scaleway_instance_server.webserver.id}"
 }
 
-resource "scaleway_compute_instance_volume" "data" {
+resource "scaleway_instance_volume" "data" {
   size_in_gb = 100
   type       = "l_ssd"
 }
@@ -531,7 +531,7 @@ resource "scaleway_instance_server" "webserver" {
   image_id = "f974feac-abae-4365-b988-8ec7d1cec10d"
   type     = "DEV1-S"
 
-  additional_volume_ids = [ "${scaleway_compute_instance_volume.data.id}" ]
+  additional_volume_ids = [ "${scaleway_instance_volume.data.id}" ]
 }
 `
 

@@ -38,7 +38,7 @@ resource "scaleway_instance_ip" "public_ip" {
   server_id = "${scaleway_instance_server.web.id}"
 }
 
-resource "scaleway_compute_instance_volume" "data" {
+resource "scaleway_instance_volume" "data" {
   size_in_gb = 100
 }
 
@@ -69,7 +69,7 @@ resource "scaleway_instance_server" "web" {
 
   tags = [ "front", "web" ]
 
-  additional_volume_ids = [ "${scaleway_compute_instance_volume.data.id}" ]
+  additional_volume_ids = [ "${scaleway_instance_volume.data.id}" ]
 
   security_group_id= "${scaleway_instance_security_group.www.id}"
 }
