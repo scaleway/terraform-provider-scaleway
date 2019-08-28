@@ -18,25 +18,25 @@ func TestAccScalewayComputeInstancePlacementGroup(t *testing.T) {
 			{
 				Config: testAccScalewayComputeInstancePlacementGroupConfig[0],
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayComputeInstancePlacementGroupExists("scaleway_compute_instance_placement_group.base"),
-					testAccCheckScalewayComputeInstancePlacementGroupExists("scaleway_compute_instance_placement_group.scaleway"),
-					resource.TestCheckResourceAttr("scaleway_compute_instance_placement_group.base", "policy_mode", "optional"),
-					resource.TestCheckResourceAttr("scaleway_compute_instance_placement_group.base", "policy_type", "low_latency"),
-					resource.TestCheckResourceAttr("scaleway_compute_instance_placement_group.scaleway", "policy_mode", "enforced"),
-					resource.TestCheckResourceAttr("scaleway_compute_instance_placement_group.scaleway", "policy_type", "max_availability"),
-					resource.TestCheckResourceAttr("scaleway_compute_instance_placement_group.scaleway", "policy_respected", "true"),
+					testAccCheckScalewayComputeInstancePlacementGroupExists("scaleway_instance_placement_group.base"),
+					testAccCheckScalewayComputeInstancePlacementGroupExists("scaleway_instance_placement_group.scaleway"),
+					resource.TestCheckResourceAttr("scaleway_instance_placement_group.base", "policy_mode", "optional"),
+					resource.TestCheckResourceAttr("scaleway_instance_placement_group.base", "policy_type", "low_latency"),
+					resource.TestCheckResourceAttr("scaleway_instance_placement_group.scaleway", "policy_mode", "enforced"),
+					resource.TestCheckResourceAttr("scaleway_instance_placement_group.scaleway", "policy_type", "max_availability"),
+					resource.TestCheckResourceAttr("scaleway_instance_placement_group.scaleway", "policy_respected", "true"),
 				),
 			},
 			{
 				Config: testAccScalewayComputeInstancePlacementGroupConfig[1],
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayComputeInstancePlacementGroupExists("scaleway_compute_instance_placement_group.base"),
-					testAccCheckScalewayComputeInstancePlacementGroupExists("scaleway_compute_instance_placement_group.scaleway"),
-					resource.TestCheckResourceAttr("scaleway_compute_instance_placement_group.base", "policy_mode", "enforced"),
-					resource.TestCheckResourceAttr("scaleway_compute_instance_placement_group.base", "policy_type", "max_availability"),
-					resource.TestCheckResourceAttr("scaleway_compute_instance_placement_group.base", "policy_respected", "true"),
-					resource.TestCheckResourceAttr("scaleway_compute_instance_placement_group.scaleway", "policy_mode", "optional"),
-					resource.TestCheckResourceAttr("scaleway_compute_instance_placement_group.scaleway", "policy_type", "low_latency"),
+					testAccCheckScalewayComputeInstancePlacementGroupExists("scaleway_instance_placement_group.base"),
+					testAccCheckScalewayComputeInstancePlacementGroupExists("scaleway_instance_placement_group.scaleway"),
+					resource.TestCheckResourceAttr("scaleway_instance_placement_group.base", "policy_mode", "enforced"),
+					resource.TestCheckResourceAttr("scaleway_instance_placement_group.base", "policy_type", "max_availability"),
+					resource.TestCheckResourceAttr("scaleway_instance_placement_group.base", "policy_respected", "true"),
+					resource.TestCheckResourceAttr("scaleway_instance_placement_group.scaleway", "policy_mode", "optional"),
+					resource.TestCheckResourceAttr("scaleway_instance_placement_group.scaleway", "policy_type", "low_latency"),
 				),
 			},
 		},
@@ -70,7 +70,7 @@ func testAccCheckScalewayComputeInstancePlacementGroupExists(n string) resource.
 
 func testAccCheckScalewayComputeInstancePlacementGroupDestroy(s *terraform.State) error {
 	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "scaleway_compute_instance_placement_group" {
+		if rs.Type != "scaleway_instance_placement_group" {
 			continue
 		}
 
@@ -101,17 +101,17 @@ func testAccCheckScalewayComputeInstancePlacementGroupDestroy(s *terraform.State
 // Check that reverse is handled at creation and update time
 var testAccScalewayComputeInstancePlacementGroupConfig = []string{
 	`
-		resource "scaleway_compute_instance_placement_group" "base" {}
-		resource "scaleway_compute_instance_placement_group" "scaleway" {
+		resource "scaleway_instance_placement_group" "base" {}
+		resource "scaleway_instance_placement_group" "scaleway" {
 			policy_mode = "enforced"
 			policy_type = "max_availability"
 		}
 	`,
 	`
-		resource "scaleway_compute_instance_placement_group" "base" {
+		resource "scaleway_instance_placement_group" "base" {
 			policy_mode = "enforced"
 			policy_type = "max_availability"
 		}
-		resource "scaleway_compute_instance_placement_group" "scaleway" {}
+		resource "scaleway_instance_placement_group" "scaleway" {}
 	`,
 }

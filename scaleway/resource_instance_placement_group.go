@@ -5,12 +5,12 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
 )
 
-func resourceScalewayComputeInstancePlacementGroup() *schema.Resource {
+func resourceScalewayInstancePlacementGroup() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceScalewayComputeInstancePlacementGroupCreate,
-		Read:   resourceScalewayComputeInstancePlacementGroupRead,
-		Update: resourceScalewayComputeInstancePlacementGroupUpdate,
-		Delete: resourceScalewayComputeInstancePlacementGroupDelete,
+		Create: resourceScalewayInstancePlacementGroupCreate,
+		Read:   resourceScalewayInstancePlacementGroupRead,
+		Update: resourceScalewayInstancePlacementGroupUpdate,
+		Delete: resourceScalewayInstancePlacementGroupDelete,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},
@@ -45,7 +45,7 @@ func resourceScalewayComputeInstancePlacementGroup() *schema.Resource {
 	}
 }
 
-func resourceScalewayComputeInstancePlacementGroupCreate(d *schema.ResourceData, m interface{}) error {
+func resourceScalewayInstancePlacementGroupCreate(d *schema.ResourceData, m interface{}) error {
 	instanceApi, zone, err := getInstanceAPIWithZone(d, m)
 	if err != nil {
 		return err
@@ -67,10 +67,10 @@ func resourceScalewayComputeInstancePlacementGroupCreate(d *schema.ResourceData,
 	}
 
 	d.SetId(newZonedId(zone, res.ComputeCluster.ID))
-	return resourceScalewayComputeInstancePlacementGroupRead(d, m)
+	return resourceScalewayInstancePlacementGroupRead(d, m)
 }
 
-func resourceScalewayComputeInstancePlacementGroupRead(d *schema.ResourceData, m interface{}) error {
+func resourceScalewayInstancePlacementGroupRead(d *schema.ResourceData, m interface{}) error {
 	instanceApi, zone, ID, err := getInstanceAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return err
@@ -99,7 +99,7 @@ func resourceScalewayComputeInstancePlacementGroupRead(d *schema.ResourceData, m
 	return nil
 }
 
-func resourceScalewayComputeInstancePlacementGroupUpdate(d *schema.ResourceData, m interface{}) error {
+func resourceScalewayInstancePlacementGroupUpdate(d *schema.ResourceData, m interface{}) error {
 	instanceApi, zone, ID, err := getInstanceAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return err
@@ -124,10 +124,10 @@ func resourceScalewayComputeInstancePlacementGroupUpdate(d *schema.ResourceData,
 		}
 	}
 
-	return resourceScalewayComputeInstancePlacementGroupRead(d, m)
+	return resourceScalewayInstancePlacementGroupRead(d, m)
 }
 
-func resourceScalewayComputeInstancePlacementGroupDelete(d *schema.ResourceData, m interface{}) error {
+func resourceScalewayInstancePlacementGroupDelete(d *schema.ResourceData, m interface{}) error {
 	instanceApi, zone, ID, err := getInstanceAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return err

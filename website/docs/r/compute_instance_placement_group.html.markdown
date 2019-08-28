@@ -1,18 +1,18 @@
 ---
 layout: "scaleway"
-page_title: "Scaleway: scaleway_compute_instance_placement_group"
+page_title: "Scaleway: scaleway_instance_placement_group"
 description: |-
   Manages Scaleway Compute Instance Placement Groups (aka. Compute Clusters).
 ---
 
-# scaleway_compute_instance_placement_group
+# scaleway_instance_placement_group
 
 Creates and manages Compute Instance Placement Groups (aka. Compute Clusters). For more information, see [the documentation](https://developers.scaleway.com/en/products/instance/api/#compute-clusters-7fd7e0).
 
 ## Example Usage
 
 ```hcl
-resource "scaleway_compute_instance_placement_group" "availability_group" {}
+resource "scaleway_instance_placement_group" "availability_group" {}
 ```
 
 ## Arguments Reference
@@ -37,5 +37,5 @@ In addition to all arguments above, the following attributes are exported:
 Placement groups can be imported using the `{zone}/{id}`, e.g.
 
 ```bash
-$ terraform import scaleway_compute_instance_placement_group.availability_group fr-par-1/11111111-1111-1111-1111-111111111111
+$ terraform import scaleway_instance_placement_group.availability_group fr-par-1/11111111-1111-1111-1111-111111111111
 ```
