@@ -58,7 +58,7 @@ func Provider() terraform.ResourceProvider {
 					if envProfile.AccessKey != nil {
 						return *envProfile.AccessKey, nil
 					}
-					if activeProfile.AccessKey != nil {
+					if activeProfile != nil && activeProfile.AccessKey != nil {
 						return *activeProfile.AccessKey, nil
 					}
 					return nil, nil
@@ -73,7 +73,7 @@ func Provider() terraform.ResourceProvider {
 					if envProfile.SecretKey != nil {
 						return *envProfile.SecretKey, nil
 					}
-					if activeProfile.SecretKey != nil {
+					if activeProfile != nil && activeProfile.SecretKey != nil {
 						return *activeProfile.SecretKey, nil
 					}
 
@@ -107,7 +107,7 @@ func Provider() terraform.ResourceProvider {
 					if envProfile.DefaultProjectID != nil {
 						return *envProfile.DefaultProjectID, nil
 					}
-					if activeProfile.DefaultProjectID != nil {
+					if activeProfile != nil && activeProfile.DefaultProjectID != nil {
 						return *activeProfile.DefaultProjectID, nil
 					}
 
@@ -144,7 +144,7 @@ func Provider() terraform.ResourceProvider {
 					if envProfile.DefaultRegion != nil {
 						return *envProfile.DefaultRegion, nil
 					}
-					if activeProfile.DefaultRegion != nil {
+					if activeProfile != nil && activeProfile.DefaultRegion != nil {
 						return *activeProfile.DefaultRegion, nil
 					}
 					return string(scw.RegionFrPar), nil
@@ -159,7 +159,7 @@ func Provider() terraform.ResourceProvider {
 					if envProfile.DefaultZone != nil {
 						return *envProfile.DefaultZone, nil
 					}
-					if activeProfile.DefaultZone != nil {
+					if activeProfile != nil && activeProfile.DefaultZone != nil {
 						return *activeProfile.DefaultZone, nil
 					}
 					return nil, nil
