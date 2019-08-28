@@ -9,17 +9,17 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
 )
 
-func TestAccScalewayComputeInstancePlacementGroup(t *testing.T) {
+func TestAccScalewayInstancePlacementGroup(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckScalewayComputeInstancePlacementGroupDestroy,
+		CheckDestroy: testAccCheckScalewayInstancePlacementGroupDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccScalewayComputeInstancePlacementGroupConfig[0],
+				Config: testAccScalewayInstancePlacementGroupConfig[0],
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayComputeInstancePlacementGroupExists("scaleway_instance_placement_group.base"),
-					testAccCheckScalewayComputeInstancePlacementGroupExists("scaleway_instance_placement_group.scaleway"),
+					testAccCheckScalewayInstancePlacementGroupExists("scaleway_instance_placement_group.base"),
+					testAccCheckScalewayInstancePlacementGroupExists("scaleway_instance_placement_group.scaleway"),
 					resource.TestCheckResourceAttr("scaleway_instance_placement_group.base", "policy_mode", "optional"),
 					resource.TestCheckResourceAttr("scaleway_instance_placement_group.base", "policy_type", "low_latency"),
 					resource.TestCheckResourceAttr("scaleway_instance_placement_group.scaleway", "policy_mode", "enforced"),
@@ -28,10 +28,10 @@ func TestAccScalewayComputeInstancePlacementGroup(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccScalewayComputeInstancePlacementGroupConfig[1],
+				Config: testAccScalewayInstancePlacementGroupConfig[1],
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayComputeInstancePlacementGroupExists("scaleway_instance_placement_group.base"),
-					testAccCheckScalewayComputeInstancePlacementGroupExists("scaleway_instance_placement_group.scaleway"),
+					testAccCheckScalewayInstancePlacementGroupExists("scaleway_instance_placement_group.base"),
+					testAccCheckScalewayInstancePlacementGroupExists("scaleway_instance_placement_group.scaleway"),
 					resource.TestCheckResourceAttr("scaleway_instance_placement_group.base", "policy_mode", "enforced"),
 					resource.TestCheckResourceAttr("scaleway_instance_placement_group.base", "policy_type", "max_availability"),
 					resource.TestCheckResourceAttr("scaleway_instance_placement_group.base", "policy_respected", "true"),
@@ -43,7 +43,7 @@ func TestAccScalewayComputeInstancePlacementGroup(t *testing.T) {
 	})
 }
 
-func testAccCheckScalewayComputeInstancePlacementGroupExists(n string) resource.TestCheckFunc {
+func testAccCheckScalewayInstancePlacementGroupExists(n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
@@ -68,7 +68,7 @@ func testAccCheckScalewayComputeInstancePlacementGroupExists(n string) resource.
 	}
 }
 
-func testAccCheckScalewayComputeInstancePlacementGroupDestroy(s *terraform.State) error {
+func testAccCheckScalewayInstancePlacementGroupDestroy(s *terraform.State) error {
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "scaleway_instance_placement_group" {
 			continue
@@ -99,7 +99,7 @@ func testAccCheckScalewayComputeInstancePlacementGroupDestroy(s *terraform.State
 }
 
 // Check that reverse is handled at creation and update time
-var testAccScalewayComputeInstancePlacementGroupConfig = []string{
+var testAccScalewayInstancePlacementGroupConfig = []string{
 	`
 		resource "scaleway_instance_placement_group" "base" {}
 		resource "scaleway_instance_placement_group" "scaleway" {

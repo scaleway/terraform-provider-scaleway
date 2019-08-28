@@ -324,7 +324,7 @@ func TestAccScalewayInstanceServerWithPlacementGroup(t *testing.T) {
 					testAccCheckScalewayInstanceServerExists("scaleway_instance_server.base.0"),
 					testAccCheckScalewayInstanceServerExists("scaleway_instance_server.base.1"),
 					testAccCheckScalewayInstanceServerExists("scaleway_instance_server.base.2"),
-					testAccCheckScalewayComputeInstancePlacementGroupExists("scaleway_instance_placement_group.ha"),
+					testAccCheckScalewayInstancePlacementGroupExists("scaleway_instance_placement_group.ha"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base.0", "placement_group_policy_respected", "true"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base.1", "placement_group_policy_respected", "true"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base.2", "placement_group_policy_respected", "true"),
