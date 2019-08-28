@@ -28,16 +28,16 @@ func Provider() terraform.ResourceProvider {
 		return nil
 	}
 
-	// Load config
+	// Load active profile
+	var p *scw.Profile
 	scwConfig, err := scw.LoadConfig()
 	if err != nil {
-		l.Errorf("cannot load configuration: %s", err)
-		return nil
-	}
-	p, err := scwConfig.GetActiveProfile()
-	if err != nil {
-		l.Errorf("cannot load configuration: %s", err)
-		return nil
+		l.Warningf("cannot load configuration: %s", err)
+	} else {
+		p, err = scwConfig.GetActiveProfile()
+		if err != nil {
+			l.Errorf("cannot load configuration: %s", err)
+		}
 	}
 
 	// load env
