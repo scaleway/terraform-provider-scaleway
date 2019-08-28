@@ -90,7 +90,7 @@ resource "scaleway_instance_ip" "test_ip" {
 `scaleway_volume` was renamed to `scaleway_instance_volume`.
 The former arguments can still be used on the new volume resource.
 
-Additionally, from now on, you can also create new volumes based on other volumes or snapshots. For more information check the [new volume `scaleway_instance_volume` resource](../r/compute_instance_volume.html).
+Additionally, from now on, you can also create new volumes based on other volumes or snapshots. For more information check the [new volume `scaleway_instance_volume` resource](../r/instance_volume.html).
 
 #### Removed: `scaleway_user_data`
 
@@ -132,4 +132,4 @@ Volumes can in version 2 only be attached on the server resource. The [above exa
 
 The `scaleway_bucket` was moved to the `object` product in the `storage` product category.
 
-It's behaviour remained the same, but we also added an [`acl` argument](../r/storage_object_bucket.html#acl). This argument takes canned ACLs.
+It's behaviour remained the same, but we also added an [`acl` argument](../r/object_bucket.html#acl). This argument takes canned ACLs.
