@@ -106,7 +106,7 @@ func TestAccScalewayComputeInstanceServerRemoteExec(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayComputeInstanceServerExists("scaleway_compute_instance_server.webserver"),
 					testAccCheckScalewayComputeInstanceVolumeExists("scaleway_compute_instance_volume.data"),
-					testAccCheckScalewayComputeInstanceIPExists("scaleway_compute_instance_ip.myip"),
+					testAccCheckScalewayInstanceIPExists("scaleway_instance_ip.myip"),
 				),
 			},
 		},
@@ -357,7 +357,7 @@ func testAccCheckScalewayComputeInstanceServerExists(n string) resource.TestChec
 
 func testAccCheckScalewayComputeInstanceServerDestroy(s *terraform.State) error {
 	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "scaleway_compute_instance_ip" {
+		if rs.Type != "scaleway_instance_ip" {
 			continue
 		}
 
@@ -518,7 +518,7 @@ resource "scaleway_compute_instance_server" "base" {
 }
 
 var testAccCheckScalewayComputeInstanceServerConfigWithIPAndVolume = `
-resource "scaleway_compute_instance_ip" "myip" {
+resource "scaleway_instance_ip" "myip" {
   server_id = "${scaleway_compute_instance_server.webserver.id}"
 }
 

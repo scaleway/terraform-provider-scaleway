@@ -5,12 +5,12 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
 )
 
-func resourceScalewayComputeInstanceIP() *schema.Resource {
+func resourceScalewayInstanceIP() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceScalewayComputeInstanceIPCreate,
-		Read:   resourceScalewayComputeInstanceIPRead,
-		Update: resourceScalewayComputeInstanceIPUpdate,
-		Delete: resourceScalewayComputeInstanceIPDelete,
+		Create: resourceScalewayInstanceIPCreate,
+		Read:   resourceScalewayInstanceIPRead,
+		Update: resourceScalewayInstanceIPUpdate,
+		Delete: resourceScalewayInstanceIPDelete,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},
@@ -39,7 +39,7 @@ func resourceScalewayComputeInstanceIP() *schema.Resource {
 	}
 }
 
-func resourceScalewayComputeInstanceIPCreate(d *schema.ResourceData, m interface{}) error {
+func resourceScalewayInstanceIPCreate(d *schema.ResourceData, m interface{}) error {
 	instanceAPI, zone, err := getInstanceAPIWithZone(d, m)
 	if err != nil {
 		return err
@@ -79,10 +79,10 @@ func resourceScalewayComputeInstanceIPCreate(d *schema.ResourceData, m interface
 		}
 
 	}
-	return resourceScalewayComputeInstanceIPRead(d, m)
+	return resourceScalewayInstanceIPRead(d, m)
 }
 
-func resourceScalewayComputeInstanceIPRead(d *schema.ResourceData, m interface{}) error {
+func resourceScalewayInstanceIPRead(d *schema.ResourceData, m interface{}) error {
 	instanceAPI, zone, ID, err := getInstanceAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return err
@@ -116,7 +116,7 @@ func resourceScalewayComputeInstanceIPRead(d *schema.ResourceData, m interface{}
 	return nil
 }
 
-func resourceScalewayComputeInstanceIPUpdate(d *schema.ResourceData, m interface{}) error {
+func resourceScalewayInstanceIPUpdate(d *schema.ResourceData, m interface{}) error {
 	instanceAPI, zone, ID, err := getInstanceAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return err
@@ -161,10 +161,10 @@ func resourceScalewayComputeInstanceIPUpdate(d *schema.ResourceData, m interface
 		}
 	}
 
-	return resourceScalewayComputeInstanceIPRead(d, m)
+	return resourceScalewayInstanceIPRead(d, m)
 }
 
-func resourceScalewayComputeInstanceIPDelete(d *schema.ResourceData, m interface{}) error {
+func resourceScalewayInstanceIPDelete(d *schema.ResourceData, m interface{}) error {
 	instanceAPI, zone, ID, err := getInstanceAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return err

@@ -15,7 +15,7 @@ Creates and manages Scaleway Compute Instance servers. For more information, see
 ### Basic
 
 ```hcl
-resource "scaleway_compute_instance_ip" "public_ip" {
+resource "scaleway_instance_ip" "public_ip" {
   server_id = "${scaleway_compute_instance_server.web.id}"
 }
 

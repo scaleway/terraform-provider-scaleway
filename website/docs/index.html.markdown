@@ -34,7 +34,7 @@ provider "scaleway" {
   region     = "fr-par"
 }
 
-resource "scaleway_compute_instance_ip" "public_ip" {
+resource "scaleway_instance_ip" "public_ip" {
   server_id = "${scaleway_compute_instance_server.web.id}"
 }
 

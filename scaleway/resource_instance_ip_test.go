@@ -9,92 +9,92 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
 )
 
-func TestAccScalewayComputeInstanceIP(t *testing.T) {
+func TestAccScalewayInstanceIP(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckScalewayComputeInstanceIPDestroy,
+		CheckDestroy: testAccCheckScalewayInstanceIPDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccScalewayComputeInstanceIPConfig[0],
+				Config: testAccScalewayInstanceIPConfig[0],
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayComputeInstanceIPExists("scaleway_compute_instance_ip.base"),
-					testAccCheckScalewayComputeInstanceIPExists("scaleway_compute_instance_ip.scaleway"),
-					resource.TestCheckResourceAttr("scaleway_compute_instance_ip.base", "reverse", ""),
-					resource.TestCheckResourceAttr("scaleway_compute_instance_ip.scaleway", "reverse", "www.scaleway.com"),
+					testAccCheckScalewayInstanceIPExists("scaleway_instance_ip.base"),
+					testAccCheckScalewayInstanceIPExists("scaleway_instance_ip.scaleway"),
+					resource.TestCheckResourceAttr("scaleway_instance_ip.base", "reverse", ""),
+					resource.TestCheckResourceAttr("scaleway_instance_ip.scaleway", "reverse", "www.scaleway.com"),
 				),
 			},
 			{
-				Config: testAccScalewayComputeInstanceIPConfig[1],
+				Config: testAccScalewayInstanceIPConfig[1],
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayComputeInstanceIPExists("scaleway_compute_instance_ip.base"),
-					testAccCheckScalewayComputeInstanceIPExists("scaleway_compute_instance_ip.scaleway"),
-					resource.TestCheckResourceAttr("scaleway_compute_instance_ip.base", "reverse", "www.scaleway.com"),
-					resource.TestCheckResourceAttr("scaleway_compute_instance_ip.scaleway", "reverse", ""),
+					testAccCheckScalewayInstanceIPExists("scaleway_instance_ip.base"),
+					testAccCheckScalewayInstanceIPExists("scaleway_instance_ip.scaleway"),
+					resource.TestCheckResourceAttr("scaleway_instance_ip.base", "reverse", "www.scaleway.com"),
+					resource.TestCheckResourceAttr("scaleway_instance_ip.scaleway", "reverse", ""),
 				),
 			},
 		},
 	})
 }
 
-func TestAccScalewayComputeInstanceIP_Zone(t *testing.T) {
+func TestAccScalewayInstanceIP_Zone(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckScalewayComputeInstanceIPDestroy,
+		CheckDestroy: testAccCheckScalewayInstanceIPDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccScalewayComputeInstanceIPZoneConfig[0],
+				Config: testAccScalewayInstanceIPZoneConfig[0],
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayComputeInstanceIPExists("scaleway_compute_instance_ip.base"),
-					resource.TestCheckResourceAttr("scaleway_compute_instance_ip.base", "zone", "fr-par-1"),
+					testAccCheckScalewayInstanceIPExists("scaleway_instance_ip.base"),
+					resource.TestCheckResourceAttr("scaleway_instance_ip.base", "zone", "fr-par-1"),
 				),
 			},
 			{
-				Config: testAccScalewayComputeInstanceIPZoneConfig[1],
+				Config: testAccScalewayInstanceIPZoneConfig[1],
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayComputeInstanceIPExists("scaleway_compute_instance_ip.base"),
-					resource.TestCheckResourceAttr("scaleway_compute_instance_ip.base", "zone", "nl-ams-1"),
+					testAccCheckScalewayInstanceIPExists("scaleway_instance_ip.base"),
+					resource.TestCheckResourceAttr("scaleway_instance_ip.base", "zone", "nl-ams-1"),
 				),
 			},
 		},
 	})
 }
 
-func TestAccScalewayComputeInstanceServerIP(t *testing.T) {
+func TestAccScalewayInstanceServerIP(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckScalewayComputeInstanceServerDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckScalewayComputeInstanceServerConfigIP("base1"),
+				Config: testAccCheckScalewayInstanceServerConfigIP("base1"),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayComputeInstanceServerExists("scaleway_compute_instance_server.base1"),
 					testAccCheckScalewayComputeInstanceServerExists("scaleway_compute_instance_server.base2"),
-					testAccCheckScalewayComputeInstanceIPExists("scaleway_compute_instance_ip.base_ip"),
-					testAccCheckScalewayComputeInstanceIPPairWithServer("scaleway_compute_instance_ip.base_ip", "scaleway_compute_instance_server.base1"),
+					testAccCheckScalewayInstanceIPExists("scaleway_instance_ip.base_ip"),
+					testAccCheckScalewayInstanceIPPairWithServer("scaleway_instance_ip.base_ip", "scaleway_compute_instance_server.base1"),
 				),
 			},
 			{
-				Config: testAccCheckScalewayComputeInstanceServerConfigIP("base2"),
+				Config: testAccCheckScalewayInstanceServerConfigIP("base2"),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayComputeInstanceIPPairWithServer("scaleway_compute_instance_ip.base_ip", "scaleway_compute_instance_server.base2"),
+					testAccCheckScalewayInstanceIPPairWithServer("scaleway_instance_ip.base_ip", "scaleway_compute_instance_server.base2"),
 				),
 			},
 			{
-				Config: testAccCheckScalewayComputeInstanceServerConfigIP(""),
+				Config: testAccCheckScalewayInstanceServerConfigIP(""),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayComputeInstanceServerNoIPAssigned("scaleway_compute_instance_server.base1"),
-					testAccCheckScalewayComputeInstanceServerNoIPAssigned("scaleway_compute_instance_server.base2"),
-					resource.TestCheckResourceAttr("scaleway_compute_instance_ip.base_ip", "server_id", ""),
+					testAccCheckScalewayInstanceServerNoIPAssigned("scaleway_compute_instance_server.base1"),
+					testAccCheckScalewayInstanceServerNoIPAssigned("scaleway_compute_instance_server.base2"),
+					resource.TestCheckResourceAttr("scaleway_instance_ip.base_ip", "server_id", ""),
 				),
 			},
 		},
 	})
 }
 
-func testAccCheckScalewayComputeInstanceIPExists(n string) resource.TestCheckFunc {
+func testAccCheckScalewayInstanceIPExists(n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
@@ -119,7 +119,7 @@ func testAccCheckScalewayComputeInstanceIPExists(n string) resource.TestCheckFun
 	}
 }
 
-func testAccCheckScalewayComputeInstanceIPPairWithServer(ipResource, serverResource string) resource.TestCheckFunc {
+func testAccCheckScalewayInstanceIPPairWithServer(ipResource, serverResource string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		ipState, ok := s.RootModule().Resources[ipResource]
 		if !ok {
@@ -159,7 +159,7 @@ func testAccCheckScalewayComputeInstanceIPPairWithServer(ipResource, serverResou
 	}
 }
 
-func testAccCheckScalewayComputeInstanceServerNoIPAssigned(serverResource string) resource.TestCheckFunc {
+func testAccCheckScalewayInstanceServerNoIPAssigned(serverResource string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		serverState, ok := s.RootModule().Resources[serverResource]
 		if !ok {
@@ -187,9 +187,9 @@ func testAccCheckScalewayComputeInstanceServerNoIPAssigned(serverResource string
 	}
 }
 
-func testAccCheckScalewayComputeInstanceIPDestroy(s *terraform.State) error {
+func testAccCheckScalewayInstanceIPDestroy(s *terraform.State) error {
 	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "scaleway_compute_instance_ip" {
+		if rs.Type != "scaleway_instance_ip" {
 			continue
 		}
 
@@ -219,40 +219,40 @@ func testAccCheckScalewayComputeInstanceIPDestroy(s *terraform.State) error {
 }
 
 // Check that reverse is handled at creation and update time
-var testAccScalewayComputeInstanceIPConfig = []string{
+var testAccScalewayInstanceIPConfig = []string{
 	`
-		resource "scaleway_compute_instance_ip" "base" {}
-		resource "scaleway_compute_instance_ip" "scaleway" {
+		resource "scaleway_instance_ip" "base" {}
+		resource "scaleway_instance_ip" "scaleway" {
 			reverse = "www.scaleway.com"
 		}
 	`,
 	`
-		resource "scaleway_compute_instance_ip" "base" {
+		resource "scaleway_instance_ip" "base" {
 			reverse = "www.scaleway.com"	
 		}
-		resource "scaleway_compute_instance_ip" "scaleway" {}
+		resource "scaleway_instance_ip" "scaleway" {}
 	`,
 }
 
 // Check that we can change the zone of an ip (delete + create)
-var testAccScalewayComputeInstanceIPZoneConfig = []string{
+var testAccScalewayInstanceIPZoneConfig = []string{
 	`
-		resource "scaleway_compute_instance_ip" "base" {}
+		resource "scaleway_instance_ip" "base" {}
 	`,
 	`
-		resource "scaleway_compute_instance_ip" "base" {
+		resource "scaleway_instance_ip" "base" {
 			zone = "nl-ams-1"	
 		}
 	`,
 }
 
-func testAccCheckScalewayComputeInstanceServerConfigIP(attachedBase string) string {
+func testAccCheckScalewayInstanceServerConfigIP(attachedBase string) string {
 	attachedServer := ""
 	if attachedBase != "" {
 		attachedServer = `server_id = "${scaleway_compute_instance_server.` + attachedBase + `.id}"`
 	}
 	return fmt.Sprintf(`
-resource "scaleway_compute_instance_ip" "base_ip" {
+resource "scaleway_instance_ip" "base_ip" {
   %s
 }
 

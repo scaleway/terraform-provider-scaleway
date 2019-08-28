@@ -10,7 +10,7 @@ import (
 func resourceScalewayIP() *schema.Resource {
 	return &schema.Resource{
 		DeprecationMessage: `This resource is deprecated and will be removed in the next major version.
- Please use scaleway_compute_instance_ip instead.`,
+ Please use scaleway_instance_ip instead.`,
 
 		Create: resourceScalewayIPCreate,
 		Read:   resourceScalewayIPRead,

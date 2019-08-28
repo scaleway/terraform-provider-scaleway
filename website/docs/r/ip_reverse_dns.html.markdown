@@ -8,7 +8,7 @@ description: |-
 # scaleway_ip_reverse_dns
 
 **DEPRECATED**: This resource is deprecated and will be removed in `v2.0+`.
-Please use `scaleway_compute_instance_ip` instead.
+Please use `scaleway_instance_ip` instead.
 
 Provides reverse DNS settings for IPs.
 For additional details please refer to [API documentation](https://developer.scaleway.com/#ips).

@@ -75,12 +75,12 @@ resource "scaleway_compute_instance_server" "web" {
 }
 ```
 
-#### Renamed: `scaleway_ip` -> `scaleway_compute_instance_ip`
+#### Renamed: `scaleway_ip` -> `scaleway_instance_ip`
 
-`scaleway_ip` was renamed to `scaleway_compute_instance_ip` and the argument `server` was renamed to `server_id`.
+`scaleway_ip` was renamed to `scaleway_instance_ip` and the argument `server` was renamed to `server_id`.
 
 ```hcl
-resource "scaleway_compute_instance_ip" "test_ip" {
+resource "scaleway_instance_ip" "test_ip" {
   server_id = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
 }
 ```
@@ -115,7 +115,7 @@ The `scaleway_ip_reverse_dns` was removed in version 2.
 Reverse DNS must be set on the IP resource itself:
 
 ```hcl
-resource "scaleway_compute_instance_ip" "test_ip" {
+resource "scaleway_instance_ip" "test_ip" {
   reverse = "scaleway.com"
 }
 ```
