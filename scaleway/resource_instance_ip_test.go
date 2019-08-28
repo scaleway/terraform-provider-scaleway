@@ -65,28 +65,28 @@ func TestAccScalewayInstanceServerIP(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckScalewayComputeInstanceServerDestroy,
+		CheckDestroy: testAccCheckScalewayInstanceServerDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccCheckScalewayInstanceServerConfigIP("base1"),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayComputeInstanceServerExists("scaleway_compute_instance_server.base1"),
-					testAccCheckScalewayComputeInstanceServerExists("scaleway_compute_instance_server.base2"),
+					testAccCheckScalewayInstanceServerExists("scaleway_instance_server.base1"),
+					testAccCheckScalewayInstanceServerExists("scaleway_instance_server.base2"),
 					testAccCheckScalewayInstanceIPExists("scaleway_instance_ip.base_ip"),
-					testAccCheckScalewayInstanceIPPairWithServer("scaleway_instance_ip.base_ip", "scaleway_compute_instance_server.base1"),
+					testAccCheckScalewayInstanceIPPairWithServer("scaleway_instance_ip.base_ip", "scaleway_instance_server.base1"),
 				),
 			},
 			{
 				Config: testAccCheckScalewayInstanceServerConfigIP("base2"),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayInstanceIPPairWithServer("scaleway_instance_ip.base_ip", "scaleway_compute_instance_server.base2"),
+					testAccCheckScalewayInstanceIPPairWithServer("scaleway_instance_ip.base_ip", "scaleway_instance_server.base2"),
 				),
 			},
 			{
 				Config: testAccCheckScalewayInstanceServerConfigIP(""),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayInstanceServerNoIPAssigned("scaleway_compute_instance_server.base1"),
-					testAccCheckScalewayInstanceServerNoIPAssigned("scaleway_compute_instance_server.base2"),
+					testAccCheckScalewayInstanceServerNoIPAssigned("scaleway_instance_server.base1"),
+					testAccCheckScalewayInstanceServerNoIPAssigned("scaleway_instance_server.base2"),
 					resource.TestCheckResourceAttr("scaleway_instance_ip.base_ip", "server_id", ""),
 				),
 			},
@@ -249,24 +249,24 @@ var testAccScalewayInstanceIPZoneConfig = []string{
 func testAccCheckScalewayInstanceServerConfigIP(attachedBase string) string {
 	attachedServer := ""
 	if attachedBase != "" {
-		attachedServer = `server_id = "${scaleway_compute_instance_server.` + attachedBase + `.id}"`
+		attachedServer = `server_id = "${scaleway_instance_server.` + attachedBase + `.id}"`
 	}
 	return fmt.Sprintf(`
 resource "scaleway_instance_ip" "base_ip" {
   %s
 }
 
-resource "scaleway_compute_instance_server" "base1" {
+resource "scaleway_instance_server" "base1" {
   image_id = "f974feac-abae-4365-b988-8ec7d1cec10d"
   type  = "DEV1-S"
   
-  tags  = [ "terraform-test", "scaleway_compute_instance_server", "attach_ip" ]
+  tags  = [ "terraform-test", "scaleway_instance_server", "attach_ip" ]
 }
 
-resource "scaleway_compute_instance_server" "base2" {
+resource "scaleway_instance_server" "base2" {
   image_id = "f974feac-abae-4365-b988-8ec7d1cec10d"
   type  = "DEV1-S"
   
-  tags  = [ "terraform-test", "scaleway_compute_instance_server", "attach_ip" ]
+  tags  = [ "terraform-test", "scaleway_instance_server", "attach_ip" ]
 }`, attachedServer)
 }

@@ -1,12 +1,12 @@
 ---
 layout: "scaleway"
-page_title: "Scaleway: scaleway_compute_instance_server"
+page_title: "Scaleway: scaleway_instance_server"
 sidebar_current: "docs-scaleway-resource-compute-instance-server"
 description: |-
   Manages Scaleway Compute Instance security groups.
 ---
 
-# scaleway_compute_instance_server
+# scaleway_instance_server
 
 Creates and manages Scaleway Compute Instance security groups. For more information, see [the documentation](https://developers.scaleway.com/en/products/instance/api/#security-groups-8d7f89).
 

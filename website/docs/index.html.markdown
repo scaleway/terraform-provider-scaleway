@@ -35,7 +35,7 @@ provider "scaleway" {
 }
 
 resource "scaleway_instance_ip" "public_ip" {
-  server_id = "${scaleway_compute_instance_server.web.id}"
+  server_id = "${scaleway_instance_server.web.id}"
 }
 
 resource "scaleway_compute_instance_volume" "data" {
@@ -63,7 +63,7 @@ resource "scaleway_instance_security_group" "www" {
   }
 }
 
-resource "scaleway_compute_instance_server" "web" {
+resource "scaleway_instance_server" "web" {
   type = "DEV1-L"
   image_id = "f974feac-abae-4365-b988-8ec7d1cec10d"
 

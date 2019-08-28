@@ -13,7 +13,7 @@ import (
 func resourceScalewayVolumeAttachment() *schema.Resource {
 	return &schema.Resource{
 		DeprecationMessage: `This resource is deprecated and will be removed in the next major version.
- Please use scaleway_compute_instance_server.additional_volumes instead.`,
+ Please use scaleway_instance_server.additional_volumes instead.`,
 
 		Create: resourceScalewayVolumeAttachmentCreate,
 		Read:   resourceScalewayVolumeAttachmentRead,

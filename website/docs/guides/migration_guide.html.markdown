@@ -48,11 +48,11 @@ All resources are from now on prefixed by `scaleway`, their product category and
 All the old compute resources have been regrouped under a new name: `Instance`. `Compute` is now the general product category name of all server related resources. 
 This means that all old resources are now prefixed with `scaleway_compute_instance_`.
 
-#### Renamed: `scaleway_server` -> `scaleway_compute_instance_server`
+#### Renamed: `scaleway_server` -> `scaleway_instance_server`
 
-`scaleway_server` was renamed to `scaleway_compute_instance_server`.
+`scaleway_server` was renamed to `scaleway_instance_server`.
 
-In version 1, attachments of volumes where done on the volume resource. But from now on, this is done on the `scaleway_compute_instance_server` resource.
+In version 1, attachments of volumes where done on the volume resource. But from now on, this is done on the `scaleway_instance_server` resource.
 
 Thus, to create a server with a volume attached:
 
@@ -61,7 +61,7 @@ resource "scaleway_compute_instance_volume" "data" {
   size_in_gb = 100
 }
 
-resource "scaleway_compute_instance_server" "web" {
+resource "scaleway_instance_server" "web" {
   type = "DEV1-L"
   image_id = "f974feac-abae-4365-b988-8ec7d1cec10d"
 
@@ -94,7 +94,7 @@ Additionally, from now on, you can also create new volumes based on other volume
 
 #### Removed: `scaleway_user_data`
 
-`scaleway_user_data` is now part of the `scaleway_compute_instance_server` resource.
+`scaleway_user_data` is now part of the `scaleway_instance_server` resource.
 
 #### Removed: `scaleway_token`
 
@@ -124,7 +124,7 @@ resource "scaleway_instance_ip" "test_ip" {
 
 The `scaleway_volume_attachment` was removed in version 2.
 
-Volumes can in version 2 only be attached on the server resource. The [above example](#scaleway_server-gt-scaleway_compute_instance_server) shows how this works.
+Volumes can in version 2 only be attached on the server resource. The [above example](#scaleway_server-gt-scaleway_instance_server) shows how this works.
 
 ### Storage
 

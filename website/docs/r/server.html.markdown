@@ -8,7 +8,7 @@ description: |-
 # scaleway_server
 
 **DEPRECATED**: This resource is deprecated and will be removed in `v2.0+`.
-Please use `scaleway_compute_instance_server` instead.
+Please use `scaleway_instance_server` instead.
 
 Provides servers. This allows servers to be created, updated and deleted.
 For additional details please refer to [API documentation](https://developer.scaleway.com/#servers).
