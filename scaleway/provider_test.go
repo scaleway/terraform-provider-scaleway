@@ -44,12 +44,16 @@ func testAccPreCheck(t *testing.T) {
 	scw.MigrateLegacyConfig()
 	config, err := scw.LoadConfig()
 	if err == nil {
-		p, err := config.GetActiveProfile()
+		activeProfile, err := config.GetActiveProfile()
 		if err == nil {
-			if p.AccessKey != nil && p.SecretKey != nil {
+			if activeProfile.AccessKey != nil && activeProfile.SecretKey != nil {
 				return
 			}
 		}
+	}
+	envProfile := scw.LoadEnvProfile()
+	if envProfile.AccessKey != nil && envProfile.SecretKey != nil {
+		return
 	}
 
 	if v := os.Getenv("SCALEWAY_ORGANIZATION"); v == "" {

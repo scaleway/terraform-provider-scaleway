@@ -29,19 +29,19 @@ func Provider() terraform.ResourceProvider {
 	}
 
 	// Load active profile
-	var p *scw.Profile
+	var activeProfile *scw.Profile
 	scwConfig, err := scw.LoadConfig()
 	if err != nil {
 		l.Warningf("cannot load configuration: %s", err)
 	} else {
-		p, err = scwConfig.GetActiveProfile()
+		activeProfile, err = scwConfig.GetActiveProfile()
 		if err != nil {
 			l.Errorf("cannot load configuration: %s", err)
 		}
 	}
 
 	// load env
-	e := scw.LoadEnvProfile()
+	envProfile := scw.LoadEnvProfile()
 
 	return &schema.Provider{
 		Schema: map[string]*schema.Schema{
@@ -55,11 +55,11 @@ func Provider() terraform.ResourceProvider {
 						l.Warningf("SCALEWAY_ACCESS_KEY is deprecated, please use SCW_ACCESS_KEY instead")
 						return accessKey, nil
 					}
-					if e.AccessKey != nil {
-						return *e.AccessKey, nil
+					if envProfile.AccessKey != nil {
+						return *envProfile.AccessKey, nil
 					}
-					if p.AccessKey != nil {
-						return *p.AccessKey, nil
+					if activeProfile.AccessKey != nil {
+						return *activeProfile.AccessKey, nil
 					}
 					return nil, nil
 				},
@@ -70,11 +70,11 @@ func Provider() terraform.ResourceProvider {
 				Description: "The Scaleway secret Key.",
 				DefaultFunc: func() (interface{}, error) {
 					// No error is returned here to allow user to use deprecated `token`.
-					if e.SecretKey != nil {
-						return *e.SecretKey, nil
+					if envProfile.SecretKey != nil {
+						return *envProfile.SecretKey, nil
 					}
-					if p.SecretKey != nil {
-						return *p.SecretKey, nil
+					if activeProfile.SecretKey != nil {
+						return *activeProfile.SecretKey, nil
 					}
 
 					// Keep the deprecated behavior from 'token'.
@@ -104,11 +104,11 @@ func Provider() terraform.ResourceProvider {
 				Optional:    true, // To allow user to use deprecated `organization`.
 				Description: "The Scaleway project ID.",
 				DefaultFunc: schema.SchemaDefaultFunc(func() (interface{}, error) {
-					if e.DefaultProjectID != nil {
-						return *e.DefaultProjectID, nil
+					if envProfile.DefaultProjectID != nil {
+						return *envProfile.DefaultProjectID, nil
 					}
-					if p.DefaultProjectID != nil {
-						return *p.DefaultProjectID, nil
+					if activeProfile.DefaultProjectID != nil {
+						return *activeProfile.DefaultProjectID, nil
 					}
 
 					// Keep the deprecated behavior of 'organization'.
@@ -141,11 +141,11 @@ func Provider() terraform.ResourceProvider {
 						l.Warningf("SCALEWAY_REGION is deprecated, please use SCW_DEFAULT_REGION instead")
 						return region, nil
 					}
-					if e.DefaultRegion != nil {
-						return *e.DefaultRegion, nil
+					if envProfile.DefaultRegion != nil {
+						return *envProfile.DefaultRegion, nil
 					}
-					if p.DefaultRegion != nil {
-						return *p.DefaultRegion, nil
+					if activeProfile.DefaultRegion != nil {
+						return *activeProfile.DefaultRegion, nil
 					}
 					return string(scw.RegionFrPar), nil
 				},
@@ -156,11 +156,11 @@ func Provider() terraform.ResourceProvider {
 				Optional:    true,
 				Description: "The Scaleway default zone to use for your resources.",
 				DefaultFunc: func() (interface{}, error) {
-					if e.DefaultZone != nil {
-						return *e.DefaultZone, nil
+					if envProfile.DefaultZone != nil {
+						return *envProfile.DefaultZone, nil
 					}
-					if p.DefaultZone != nil {
-						return *p.DefaultZone, nil
+					if activeProfile.DefaultZone != nil {
+						return *activeProfile.DefaultZone, nil
 					}
 					return nil, nil
 				},
