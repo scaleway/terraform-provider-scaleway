@@ -1,19 +1,19 @@
 ---
 layout: "scaleway"
-page_title: "Scaleway: scaleway_storage_object_bucket"
+page_title: "Scaleway: scaleway_object_bucket"
 sidebar_current: "docs-scaleway-resource-storage-object-bucket"
 description: |-
   Manages Scaleway object storage buckets.
 ---
 
-# scaleway_storage_object_bucket
+# scaleway_object_bucket
 
 Creates and manages Scaleway object storage buckets. For more information, see [the documentation](https://www.scaleway.com/en/docs/object-storage-feature/).
 
 ## Example Usage
 
 ```hcl
-resource "scaleway_storage_object_bucket" "some_bucket" {
+resource "scaleway_object_bucket" "some_bucket" {
     name = "some-unique-name"
     acl = "private"
 }
@@ -38,5 +38,5 @@ In addition to all arguments above, the following attribute is exported:
 Buckets can be imported using the `{region}/{id}` identifier, e.g.
 
 ```
-$ terraform import scaleway_storage_object_bucket.some_bucket fr-par/11111111-1111-1111-1111-111111111111
+$ terraform import scaleway_object_bucket.some_bucket fr-par/11111111-1111-1111-1111-111111111111
 ```

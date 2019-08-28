@@ -13,8 +13,8 @@ import (
 )
 
 func init() {
-	resource.AddTestSweepers("scaleway_storage_object_bucket", &resource.Sweeper{
-		Name: "scaleway_storage_object_bucket",
+	resource.AddTestSweepers("scaleway_object_bucket", &resource.Sweeper{
+		Name: "scaleway_object_bucket",
 		F:    testSweepStorageObjectBucket,
 	})
 }
@@ -29,56 +29,56 @@ var (
 )
 
 // Test configs
-var testAccCheckScalewayStorageObjectBucket = fmt.Sprintf(`
-	resource "scaleway_storage_object_bucket" "base" {
+var testAccCheckScalewayObjectBucket = fmt.Sprintf(`
+	resource "scaleway_object_bucket" "base" {
 		name = "%s"
 	}
 
-	resource "scaleway_storage_object_bucket" "ams-bucket" {
+	resource "scaleway_object_bucket" "ams-bucket" {
 		name = "%s"
 		region = "nl-ams"
 	}
 
-	resource "scaleway_storage_object_bucket" "par-bucket" {
+	resource "scaleway_object_bucket" "par-bucket" {
 		name = "%s"
 		region = "fr-par"
 	}
 `, testBucketName, testBucketNameAms, testBucketNamePar)
 
-var testAccCheckScalewayStorageObjectBucketUpdate = fmt.Sprintf(`
-	resource "scaleway_storage_object_bucket" "base" {
+var testAccCheckScalewayObjectBucketUpdate = fmt.Sprintf(`
+	resource "scaleway_object_bucket" "base" {
 		name = "%s"
 		acl = "%s"
 	}
 `, testBucketName, testBucketUpdatedACL)
 
-func TestAccScalewayStorageObjectBucket(t *testing.T) {
+func TestAccScalewayObjectBucket(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckScalewayStorageObjectBucketDestroy,
+		CheckDestroy: testAccCheckScalewayObjectBucketDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckScalewayStorageObjectBucket,
+				Config: testAccCheckScalewayObjectBucket,
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("scaleway_storage_object_bucket.base", "name", testBucketName),
-					resource.TestCheckResourceAttr("scaleway_storage_object_bucket.base", "acl", testBucketACL),
-					resource.TestCheckResourceAttr("scaleway_storage_object_bucket.ams-bucket", "name", testBucketNameAms),
-					resource.TestCheckResourceAttr("scaleway_storage_object_bucket.par-bucket", "name", testBucketNamePar),
+					resource.TestCheckResourceAttr("scaleway_object_bucket.base", "name", testBucketName),
+					resource.TestCheckResourceAttr("scaleway_object_bucket.base", "acl", testBucketACL),
+					resource.TestCheckResourceAttr("scaleway_object_bucket.ams-bucket", "name", testBucketNameAms),
+					resource.TestCheckResourceAttr("scaleway_object_bucket.par-bucket", "name", testBucketNamePar),
 				),
 			},
 			{
-				Config: testAccCheckScalewayStorageObjectBucketUpdate,
+				Config: testAccCheckScalewayObjectBucketUpdate,
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("scaleway_storage_object_bucket.base", "name", testBucketName),
-					resource.TestCheckResourceAttr("scaleway_storage_object_bucket.base", "acl", testBucketUpdatedACL),
+					resource.TestCheckResourceAttr("scaleway_object_bucket.base", "name", testBucketName),
+					resource.TestCheckResourceAttr("scaleway_object_bucket.base", "acl", testBucketUpdatedACL),
 				),
 			},
 		},
 	})
 }
 
-func testAccCheckScalewayStorageObjectBucketDestroy(s *terraform.State) error {
+func testAccCheckScalewayObjectBucketDestroy(s *terraform.State) error {
 	s3Client := testAccProvider.Meta().(*Meta).s3Client
 
 	for _, rs := range s.RootModule().Resources {

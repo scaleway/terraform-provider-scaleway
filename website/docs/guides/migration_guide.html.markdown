@@ -41,7 +41,7 @@ Below you find an overview of the changes in environment variables:
 
 ## Resources
 
-All resources are from now on prefixed by `scaleway`, their product category and their product name (`scaleway_{product-category-name}_{product-name}_{resource-name}`). For instances an S3 bucket belongs to the `Storage` product category and is a resource of the `Object` product. Hence it is named: `scaleway_storage_object_bucket`.
+All resources are from now on prefixed by `scaleway`, their product category and their product name (`scaleway_{product-category-name}_{product-name}_{resource-name}`). For instances an S3 bucket belongs to the `Storage` product category and is a resource of the `Object` product. Hence it is named: `scaleway_object_bucket`.
 
 ### Compute
 
@@ -128,7 +128,7 @@ Volumes can in version 2 only be attached on the server resource. The [above exa
 
 ### Storage
 
-#### Renamed: `scaleway_bucket` -> `scaleway_storage_object_bucket`
+#### Renamed: `scaleway_bucket` -> `scaleway_object_bucket`
 
 The `scaleway_bucket` was moved to the `object` product in the `storage` product category.
 
