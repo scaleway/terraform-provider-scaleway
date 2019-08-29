@@ -34,15 +34,15 @@ provider "scaleway" {
   region     = "fr-par"
 }
 
-resource "scaleway_compute_instance_ip" "public_ip" {
-  server_id = "${scaleway_compute_instance_server.web.id}"
+resource "scaleway_instance_ip" "public_ip" {
+  server_id = "${scaleway_instance_server.web.id}"
 }
 
-resource "scaleway_compute_instance_volume" "data" {
+resource "scaleway_instance_volume" "data" {
   size_in_gb = 100
 }
 
-resource "scaleway_compute_instance_security_group" "www" {
+resource "scaleway_instance_security_group" "www" {
   inbound_default_policy = "drop"
   outbound_default_policy = "accept"
 
@@ -63,15 +63,15 @@ resource "scaleway_compute_instance_security_group" "www" {
   }
 }
 
-resource "scaleway_compute_instance_server" "web" {
+resource "scaleway_instance_server" "web" {
   type = "DEV1-L"
   image_id = "f974feac-abae-4365-b988-8ec7d1cec10d"
 
   tags = [ "front", "web" ]
 
-  additional_volume_ids = [ "${scaleway_compute_instance_volume.data.id}" ]
+  additional_volume_ids = [ "${scaleway_instance_volume.data.id}" ]
 
-  security_group_id= "${scaleway_compute_instance_security_group.www.id}"
+  security_group_id= "${scaleway_instance_security_group.www.id}"
 }
 ```
 

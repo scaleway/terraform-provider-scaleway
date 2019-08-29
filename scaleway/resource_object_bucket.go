@@ -10,12 +10,12 @@ import (
 	"github.com/hashicorp/terraform/helper/validation"
 )
 
-func resourceScalewayStorageObjectBucket() *schema.Resource {
+func resourceScalewayObjectBucket() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceScalewayStorageObjectBucketCreate,
-		Read:   resourceScalewayStorageObjectBucketRead,
-		Update: resourceScalewayStorageObjectBucketUpdate,
-		Delete: resourceScalewayStorageObjectBucketDelete,
+		Create: resourceScalewayObjectBucketCreate,
+		Read:   resourceScalewayObjectBucketRead,
+		Update: resourceScalewayObjectBucketUpdate,
+		Delete: resourceScalewayObjectBucketDelete,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},
@@ -47,7 +47,7 @@ func resourceScalewayStorageObjectBucket() *schema.Resource {
 	}
 }
 
-func resourceScalewayStorageObjectBucketCreate(d *schema.ResourceData, m interface{}) error {
+func resourceScalewayObjectBucketCreate(d *schema.ResourceData, m interface{}) error {
 	bucketName := d.Get("name").(string)
 	acl := d.Get("acl").(string)
 
@@ -63,10 +63,10 @@ func resourceScalewayStorageObjectBucketCreate(d *schema.ResourceData, m interfa
 
 	d.SetId(newRegionalId(region, bucketName))
 
-	return resourceScalewayStorageObjectBucketRead(d, m)
+	return resourceScalewayObjectBucketRead(d, m)
 }
 
-func resourceScalewayStorageObjectBucketRead(d *schema.ResourceData, m interface{}) error {
+func resourceScalewayObjectBucketRead(d *schema.ResourceData, m interface{}) error {
 	s3Client, _, bucketName, err := getS3ClientWithRegionAndID(m, d.Id())
 	if err != nil {
 		return err
@@ -87,7 +87,7 @@ func resourceScalewayStorageObjectBucketRead(d *schema.ResourceData, m interface
 	return nil
 }
 
-func resourceScalewayStorageObjectBucketUpdate(d *schema.ResourceData, m interface{}) error {
+func resourceScalewayObjectBucketUpdate(d *schema.ResourceData, m interface{}) error {
 	s3Client, _, bucketName, err := getS3ClientWithRegionAndID(m, d.Id())
 	if err != nil {
 		return err
@@ -106,10 +106,10 @@ func resourceScalewayStorageObjectBucketUpdate(d *schema.ResourceData, m interfa
 		}
 	}
 
-	return resourceScalewayStorageObjectBucketRead(d, m)
+	return resourceScalewayObjectBucketRead(d, m)
 }
 
-func resourceScalewayStorageObjectBucketDelete(d *schema.ResourceData, m interface{}) error {
+func resourceScalewayObjectBucketDelete(d *schema.ResourceData, m interface{}) error {
 	s3Client, _, bucketName, err := getS3ClientWithRegionAndID(m, d.Id())
 	if err != nil {
 		return err

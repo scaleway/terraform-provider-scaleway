@@ -15,12 +15,12 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 )
 
-func resourceScalewayComputeInstanceServer() *schema.Resource {
+func resourceScalewayInstanceServer() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceScalewayComputeInstanceServerCreate,
-		Read:   resourceScalewayComputeInstanceServerRead,
-		Update: resourceScalewayComputeInstanceServerUpdate,
-		Delete: resourceScalewayComputeInstanceServerDelete,
+		Create: resourceScalewayInstanceServerCreate,
+		Read:   resourceScalewayInstanceServerRead,
+		Update: resourceScalewayInstanceServerUpdate,
+		Delete: resourceScalewayInstanceServerDelete,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},
@@ -170,7 +170,7 @@ func resourceScalewayComputeInstanceServer() *schema.Resource {
 	}
 }
 
-func resourceScalewayComputeInstanceServerCreate(d *schema.ResourceData, m interface{}) error {
+func resourceScalewayInstanceServerCreate(d *schema.ResourceData, m interface{}) error {
 	instanceAPI, zone, err := getInstanceAPIWithZone(d, m)
 	if err != nil {
 		return err
@@ -262,10 +262,10 @@ func resourceScalewayComputeInstanceServerCreate(d *schema.ResourceData, m inter
 		return err
 	}
 
-	return resourceScalewayComputeInstanceServerRead(d, m)
+	return resourceScalewayInstanceServerRead(d, m)
 }
 
-func resourceScalewayComputeInstanceServerRead(d *schema.ResourceData, m interface{}) error {
+func resourceScalewayInstanceServerRead(d *schema.ResourceData, m interface{}) error {
 	instanceAPI, zone, ID, err := getInstanceAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return err
@@ -376,7 +376,7 @@ func resourceScalewayComputeInstanceServerRead(d *schema.ResourceData, m interfa
 	return nil
 }
 
-func resourceScalewayComputeInstanceServerUpdate(d *schema.ResourceData, m interface{}) error {
+func resourceScalewayInstanceServerUpdate(d *schema.ResourceData, m interface{}) error {
 	instanceAPI, zone, ID, err := getInstanceAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return err
@@ -502,10 +502,10 @@ func resourceScalewayComputeInstanceServerUpdate(d *schema.ResourceData, m inter
 		return err
 	}
 
-	return resourceScalewayComputeInstanceServerRead(d, m)
+	return resourceScalewayInstanceServerRead(d, m)
 }
 
-func resourceScalewayComputeInstanceServerDelete(d *schema.ResourceData, m interface{}) error {
+func resourceScalewayInstanceServerDelete(d *schema.ResourceData, m interface{}) error {
 	instanceAPI, zone, ID, err := getInstanceAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return err

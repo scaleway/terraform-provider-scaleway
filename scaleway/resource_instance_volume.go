@@ -11,12 +11,12 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 )
 
-func resourceScalewayComputeInstanceVolume() *schema.Resource {
+func resourceScalewayInstanceVolume() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceScalewayComputeInstanceVolumeCreate,
-		Read:   resourceScalewayComputeInstanceVolumeRead,
-		Update: resourceScalewayComputeInstanceVolumeUpdate,
-		Delete: resourceScalewayComputeInstanceVolumeDelete,
+		Create: resourceSalewayInstanceVolumeCreate,
+		Read:   resourceSalewayInstanceVolumeRead,
+		Update: resourceSalewayInstanceVolumeUpdate,
+		Delete: resourceSalewayInstanceVolumeDelete,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},
@@ -73,7 +73,7 @@ func resourceScalewayComputeInstanceVolume() *schema.Resource {
 	}
 }
 
-func resourceScalewayComputeInstanceVolumeCreate(d *schema.ResourceData, m interface{}) error {
+func resourceSalewayInstanceVolumeCreate(d *schema.ResourceData, m interface{}) error {
 	instanceAPI, zone, err := getInstanceAPIWithZone(d, m)
 	if err != nil {
 		return err
@@ -111,10 +111,10 @@ func resourceScalewayComputeInstanceVolumeCreate(d *schema.ResourceData, m inter
 
 	d.SetId(newZonedId(zone, res.Volume.ID))
 
-	return resourceScalewayComputeInstanceVolumeRead(d, m)
+	return resourceSalewayInstanceVolumeRead(d, m)
 }
 
-func resourceScalewayComputeInstanceVolumeRead(d *schema.ResourceData, m interface{}) error {
+func resourceSalewayInstanceVolumeRead(d *schema.ResourceData, m interface{}) error {
 	instanceAPI, zone, id, err := getInstanceAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return err
@@ -145,7 +145,7 @@ func resourceScalewayComputeInstanceVolumeRead(d *schema.ResourceData, m interfa
 	return nil
 }
 
-func resourceScalewayComputeInstanceVolumeUpdate(d *schema.ResourceData, m interface{}) error {
+func resourceSalewayInstanceVolumeUpdate(d *schema.ResourceData, m interface{}) error {
 	instanceAPI, zone, id, err := getInstanceAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return err
@@ -164,10 +164,10 @@ func resourceScalewayComputeInstanceVolumeUpdate(d *schema.ResourceData, m inter
 		}
 	}
 
-	return resourceScalewayComputeInstanceVolumeRead(d, m)
+	return resourceSalewayInstanceVolumeRead(d, m)
 }
 
-func resourceScalewayComputeInstanceVolumeDelete(d *schema.ResourceData, m interface{}) error {
+func resourceSalewayInstanceVolumeDelete(d *schema.ResourceData, m interface{}) error {
 	instanceAPI, zone, id, err := getInstanceAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return err

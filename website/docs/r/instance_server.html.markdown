@@ -1,12 +1,12 @@
 ---
 layout: "scaleway"
-page_title: "Scaleway: scaleway_compute_instance_server"
+page_title: "Scaleway: scaleway_instance_server"
 sidebar_current: "docs-scaleway-resource-compute-instance-server"
 description: |-
   Manages Scaleway Compute Instance servers.
 ---
 
-# scaleway_compute_instance_server
+# scaleway_instance_server
 
 Creates and manages Scaleway Compute Instance servers. For more information, see [the documentation](https://developers.scaleway.com/en/products/instance/api/#servers-8bf7d7).
 
@@ -15,11 +15,11 @@ Creates and manages Scaleway Compute Instance servers. For more information, see
 ### Basic
 
 ```hcl
-resource "scaleway_compute_instance_ip" "public_ip" {
-  server_id = "${scaleway_compute_instance_server.web.id}"
+resource "scaleway_instance_ip" "public_ip" {
+  server_id = "${scaleway_instance_server.web.id}"
 }
 
-resource "scaleway_compute_instance_server" "web" {
+resource "scaleway_instance_server" "web" {
   type = "DEV1-S"
   image_id = "f974feac-abae-4365-b988-8ec7d1cec10d"
 }
@@ -28,11 +28,11 @@ resource "scaleway_compute_instance_server" "web" {
 ### With additional volumes, public IP and tags
 
 ```hcl
-resource "scaleway_compute_instance_volume" "data" {
+resource "scaleway_instance_volume" "data" {
   size_in_gb = 100
 }
 
-resource "scaleway_compute_instance_server" "web" {
+resource "scaleway_instance_server" "web" {
   type = "DEV1-L"
   image_id = "f974feac-abae-4365-b988-8ec7d1cec10d"
 
@@ -42,14 +42,14 @@ resource "scaleway_compute_instance_server" "web" {
     delete_on_termination = false
   }
 
-  additional_volume_ids = [ "${scaleway_compute_instance_volume.data.id}" ]
+  additional_volume_ids = [ "${scaleway_instance_volume.data.id}" ]
 }
 ```
 
 ### With security group
 
 ```hcl
-resource "scaleway_compute_instance_security_group" "www" {
+resource "scaleway_instance_security_group" "www" {
   inbound_default_policy = "drop"
   outbound_default_policy = "accept"
 
@@ -75,18 +75,18 @@ resource "scaleway_compute_instance_security_group" "www" {
   }
 }
 
-resource "scaleway_compute_instance_server" "web" {
+resource "scaleway_instance_server" "web" {
   type = "DEV1-S"
   image_id = "f974feac-abae-4365-b988-8ec7d1cec10d"
 
-  security_group_id= "${scaleway_compute_instance_security_group.www.id}"
+  security_group_id= "${scaleway_instance_security_group.www.id}"
 }
 ```
 
 ### With user data and could-init
 
 ```hcl
-resource "scaleway_compute_instance_server" "web" {
+resource "scaleway_instance_server" "web" {
   type = "DEV1-L"
   image_id = "f974feac-abae-4365-b988-8ec7d1cec10d"
 
@@ -178,5 +178,5 @@ In addition to all arguments above, the following attributes are exported:
 Instance servers can be imported using the `{zone}/{id}`, e.g.
 
 ```bash
-$ terraform import scaleway_compute_instance_server.web fr-par-1/11111111-1111-1111-1111-111111111111
+$ terraform import scaleway_instance_server.web fr-par-1/11111111-1111-1111-1111-111111111111
 ```

@@ -1,12 +1,12 @@
 ---
 layout: "scaleway"
-page_title: "Scaleway: scaleway_compute_instance_server"
+page_title: "Scaleway: scaleway_instance_server"
 sidebar_current: "docs-scaleway-resource-compute-instance-server"
 description: |-
   Manages Scaleway Compute Instance security groups.
 ---
 
-# scaleway_compute_instance_server
+# scaleway_instance_server
 
 Creates and manages Scaleway Compute Instance security groups. For more information, see [the documentation](https://developers.scaleway.com/en/products/instance/api/#security-groups-8d7f89).
 
@@ -15,10 +15,10 @@ Creates and manages Scaleway Compute Instance security groups. For more informat
 ### Basic
 
 ```hcl
-resource "scaleway_compute_instance_security_group" "allow_all" {
+resource "scaleway_instance_security_group" "allow_all" {
 }
 
-resource "scaleway_compute_instance_security_group" "web" {
+resource "scaleway_instance_security_group" "web" {
   inbound_default_policy = "drop" # By default we drop incomming trafic that do not match any inbound_rule
   
   inbound_rule {
@@ -37,7 +37,7 @@ resource "scaleway_compute_instance_security_group" "web" {
 ### Web server with banned IP and restricted internet access
 
 ```hcl
-resource "scaleway_compute_instance_security_group" "web" {
+resource "scaleway_instance_security_group" "web" {
   inbound_default_policy = "drop" # By default we drop incomming trafic that do not match any inbound_rule.
   inbound_default_policy = "drop" # By default we drop outgoing trafic that do not match any outbound_rule.
   
@@ -108,5 +108,5 @@ In addition to all arguments above, the following attributes are exported:
 Instance security group can be imported using the `{zone}/{id}`, e.g.
 
 ```bash
-$ terraform import scaleway_compute_instance_security_group.web fr-par-1/11111111-1111-1111-1111-111111111111
+$ terraform import scaleway_instance_security_group.web fr-par-1/11111111-1111-1111-1111-111111111111
 ```

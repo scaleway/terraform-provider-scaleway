@@ -12,7 +12,7 @@ func resourceScalewayBucket() *schema.Resource {
 	return &schema.Resource{
 		DeprecationMessage: `This resource is deprecated and will be removed in the next major version.
 
-Please use scaleway_storage_object_bucket instead.`,
+Please use scaleway_object_bucket instead.`,
 
 		Create: resourceScalewayBucketCreate,
 		Read:   resourceScalewayBucketRead,

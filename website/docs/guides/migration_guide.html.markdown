@@ -41,27 +41,27 @@ Below you find an overview of the changes in environment variables:
 
 ## Resources
 
-All resources are from now on prefixed by `scaleway`, their product category and their product name (`scaleway_{product-category-name}_{product-name}_{resource-name}`). For instances an S3 bucket belongs to the `Storage` product category and is a resource of the `Object` product. Hence it is named: `scaleway_storage_object_bucket`.
+All resources are from now on prefixed by `scaleway`, their product category and their product name (`scaleway_{product-category-name}_{product-name}_{resource-name}`). For instances an S3 bucket belongs to the `Storage` product category and is a resource of the `Object` product. Hence it is named: `scaleway_object_bucket`.
 
 ### Compute
 
-All the old compute resources have been regrouped under a new name: `Instance`. `Compute` is now the general product category name of all server related resources. 
-This means that all old resources are now prefixed with `scaleway_compute_instance_`.
+All the old compute resources have been regrouped under a new name: `Instance`. 
+This means that all old instance resources are now prefixed with `scaleway_instance_`.
 
-#### Renamed: `scaleway_server` -> `scaleway_compute_instance_server`
+#### Renamed: `scaleway_server` -> `scaleway_instance_server`
 
-`scaleway_server` was renamed to `scaleway_compute_instance_server`.
+`scaleway_server` was renamed to `scaleway_instance_server`.
 
-In version 1, attachments of volumes where done on the volume resource. But from now on, this is done on the `scaleway_compute_instance_server` resource.
+In version 1, attachments of volumes where done on the volume resource. But from now on, this is done on the `scaleway_instance_server` resource.
 
 Thus, to create a server with a volume attached:
 
 ```hcl
-resource "scaleway_compute_instance_volume" "data" {
+resource "scaleway_instance_volume" "data" {
   size_in_gb = 100
 }
 
-resource "scaleway_compute_instance_server" "web" {
+resource "scaleway_instance_server" "web" {
   type = "DEV1-L"
   image_id = "f974feac-abae-4365-b988-8ec7d1cec10d"
 
@@ -71,30 +71,30 @@ resource "scaleway_compute_instance_server" "web" {
     delete_on_termination = false
   }
 
-  additional_volume_ids = [ "${scaleway_compute_instance_volume.data.id}" ]
+  additional_volume_ids = [ "${scaleway_instance_volume.data.id}" ]
 }
 ```
 
-#### Renamed: `scaleway_ip` -> `scaleway_compute_instance_ip`
+#### Renamed: `scaleway_ip` -> `scaleway_instance_ip`
 
-`scaleway_ip` was renamed to `scaleway_compute_instance_ip` and the argument `server` was renamed to `server_id`.
+`scaleway_ip` was renamed to `scaleway_instance_ip` and the argument `server` was renamed to `server_id`.
 
 ```hcl
-resource "scaleway_compute_instance_ip" "test_ip" {
+resource "scaleway_instance_ip" "test_ip" {
   server_id = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
 }
 ```
 
-#### Renamed: `scaleway_volume` -> `scaleway_compute_instance_volume`
+#### Renamed: `scaleway_volume` -> `scaleway_instance_volume`
 
-`scaleway_volume` was renamed to `scaleway_compute_instance_volume`.
+`scaleway_volume` was renamed to `scaleway_instance_volume`.
 The former arguments can still be used on the new volume resource.
 
-Additionally, from now on, you can also create new volumes based on other volumes or snapshots. For more information check the [new volume `scaleway_compute_instance_volume` resource](../r/compute_instance_volume.html).
+Additionally, from now on, you can also create new volumes based on other volumes or snapshots. For more information check the [new volume `scaleway_instance_volume` resource](../r/instance_volume.html).
 
 #### Removed: `scaleway_user_data`
 
-`scaleway_user_data` is now part of the `scaleway_compute_instance_server` resource.
+`scaleway_user_data` is now part of the `scaleway_instance_server` resource.
 
 #### Removed: `scaleway_token`
 
@@ -115,7 +115,7 @@ The `scaleway_ip_reverse_dns` was removed in version 2.
 Reverse DNS must be set on the IP resource itself:
 
 ```hcl
-resource "scaleway_compute_instance_ip" "test_ip" {
+resource "scaleway_instance_ip" "test_ip" {
   reverse = "scaleway.com"
 }
 ```
@@ -124,12 +124,12 @@ resource "scaleway_compute_instance_ip" "test_ip" {
 
 The `scaleway_volume_attachment` was removed in version 2.
 
-Volumes can in version 2 only be attached on the server resource. The [above example](#scaleway_server-gt-scaleway_compute_instance_server) shows how this works.
+Volumes can in version 2 only be attached on the server resource. The [above example](#scaleway_server-gt-scaleway_instance_server) shows how this works.
 
 ### Storage
 
-#### Renamed: `scaleway_bucket` -> `scaleway_storage_object_bucket`
+#### Renamed: `scaleway_bucket` -> `scaleway_object_bucket`
 
 The `scaleway_bucket` was moved to the `object` product in the `storage` product category.
 
-It's behaviour remained the same, but we also added an [`acl` argument](../r/storage_object_bucket.html#acl). This argument takes canned ACLs.
+It's behaviour remained the same, but we also added an [`acl` argument](../r/object_bucket.html#acl). This argument takes canned ACLs.
