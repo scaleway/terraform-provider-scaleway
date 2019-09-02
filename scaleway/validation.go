@@ -1,7 +1,6 @@
 package scaleway
 
 import (
-	"encoding/hex"
 	"fmt"
 	"strings"
 
@@ -26,14 +25,8 @@ func validationUUID() func(interface{}, string) ([]string, []error) {
 			return nil, []error{fmt.Errorf("invalid UUID: not a string")}
 		}
 
-		t := []byte(uuid)
-		if len(t) != 36 || t[8] != '-' || t[13] != '-' || t[18] != '-' || t[23] != '-' {
-			return nil, []error{fmt.Errorf("invalid UUID '%s' (%d): format should be 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx' (36)", uuid, len(uuid))}
-		}
-
-		_, err := hex.DecodeString(strings.Replace(uuid, "-", "", -1))
-		if err != nil {
-			return nil, []error{fmt.Errorf("invalid UUID '%s': characters should be valid hexadecimal", uuid)}
+		if !isUUID(uuid) {
+			return nil, []error{fmt.Errorf("invalid UUID '%s' (%d): format should be 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx' (36) and contains valid hexadecimal characters", uuid, len(uuid))}
 		}
 
 		return

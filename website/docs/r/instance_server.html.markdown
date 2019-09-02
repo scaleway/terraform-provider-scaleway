@@ -116,8 +116,8 @@ Updates to this field will recreate a new resource.
 
 [//]: # (TODO: Improve me)
 
-- `image_id` - (Required) The base image of the server. You can use [this endpoint](https://api-marketplace.scaleway.com/images?page=1&per_page=100)
-to find the right local image `ID` for a given image `name` and a given `commercial_type`.
+- `image` - (Required) The UUID or the label of the base image used by the server. You can use [this endpoint](https://api-marketplace.scaleway.com/images?page=1&per_page=100)
+to find either the right `label` or the right local image `ID` for a given `commercial_type`.
 
 [//]: # (TODO: Improve me)
 

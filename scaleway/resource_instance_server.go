@@ -12,6 +12,7 @@ import (
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/hashicorp/terraform/helper/validation"
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
+	"github.com/scaleway/scaleway-sdk-go/api/marketplace/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 )
 
@@ -32,12 +33,11 @@ func resourceScalewayInstanceServer() *schema.Resource {
 				Computed:    true,
 				Description: "The name of the server",
 			},
-			"image_id": {
-				Type:         schema.TypeString,
-				Required:     true,
-				ForceNew:     true,
-				Description:  "The base image of the server", // TODO: add in doc example with UUID
-				ValidateFunc: validationUUID(),
+			"image": {
+				Type:        schema.TypeString,
+				Required:    true,
+				ForceNew:    true,
+				Description: "The UUID or the label of the base image used by the server",
 			},
 			"type": {
 				Type:        schema.TypeString,
@@ -184,12 +184,28 @@ func resourceScalewayInstanceServerCreate(d *schema.ResourceData, m interface{})
 		name = getRandomName("srv")
 	}
 
+	commercialType := d.Get("type").(string)
+
+	image := expandID(d.Get("image"))
+	if !isUUID(image) {
+		instanceAPI := marketplace.NewAPI(m.(*Meta).scwClient)
+		imageUUID, err := instanceAPI.GetLocalImageIDByLabel(&marketplace.GetLocalImageIDByLabelRequest{
+			CommercialType: commercialType,
+			Zone:           zone,
+			ImageLabel:     image,
+		})
+		if is403Error(err) {
+			return fmt.Errorf("invalid image '%s': it must be an UUID or a valid image label", image)
+		}
+		image = imageUUID
+	}
+
 	req := &instance.CreateServerRequest{
 		Zone:              zone,
 		Name:              name.(string),
 		Organization:      d.Get("project_id").(string),
-		Image:             expandID(d.Get("image_id")),
-		CommercialType:    d.Get("type").(string),
+		Image:             image,
+		CommercialType:    commercialType,
 		EnableIPv6:        d.Get("enable_ipv6").(bool),
 		SecurityGroup:     expandID(d.Get("security_group_id")),
 		DynamicIPRequired: Bool(false),
@@ -299,9 +315,12 @@ func resourceScalewayInstanceServerRead(d *schema.ResourceData, m interface{}) e
 	d.Set("security_group_id", response.Server.SecurityGroup.ID)
 	d.Set("enable_ipv6", response.Server.EnableIPv6)
 
-	if response.Server.Image != nil {
-		d.Set("image_id", response.Server.Image.ID)
+	// TODO: If image is a label, check that response.Server.Image.ID match the label.
+	// It could be useful if the user edit the image with another tool.
+	if response.Server.Image != nil && isUUID(d.Get("image").(string)) {
+		d.Set("image", response.Server.Image.ID)
 	}
+
 	if response.Server.ComputeCluster != nil {
 		d.Set("placement_group_policy_respected", response.Server.ComputeCluster.PolicyRespected)
 	}
