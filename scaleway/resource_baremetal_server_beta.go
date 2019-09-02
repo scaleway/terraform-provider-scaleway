@@ -62,8 +62,8 @@ func resourceScalewayBaremetalServer() *schema.Resource {
 				Optional:    true,
 				Description: "Array of tags to associate with the server.",
 			},
-			"zone":       zoneSchema(),
-			"project_id": projectIDSchema(),
+			"zone":            zoneSchema(),
+			"organization_id": organizationIDSchema(),
 		},
 	}
 }
