@@ -26,11 +26,11 @@ import (
 //
 // This meta value is passed into all resources.
 type Meta struct {
-	AccessKey        string
-	SecretKey        string
-	DefaultProjectID string
-	DefaultRegion    scw.Region
-	DefaultZone      scw.Zone
+	AccessKey             string
+	SecretKey             string
+	DefaultOrganizationID string
+	DefaultRegion         scw.Region
+	DefaultZone           scw.Zone
 
 	// scwClient is the Scaleway SDK client.
 	scwClient *scw.Client
@@ -74,8 +74,8 @@ func (m *Meta) bootstrapScwClient() error {
 		options = append(options, scw.WithAuth(m.AccessKey, m.SecretKey))
 	}
 
-	if m.DefaultProjectID != "" {
-		options = append(options, scw.WithDefaultProjectID(m.DefaultProjectID))
+	if m.DefaultOrganizationID != "" {
+		options = append(options, scw.WithDefaultOrganizationID(m.DefaultOrganizationID))
 	}
 
 	if m.DefaultRegion != "" {
@@ -156,7 +156,7 @@ func (m *Meta) bootstrapDeprecatedClient() error {
 	}
 
 	sdk, err := sdk.New(
-		m.DefaultProjectID,
+		m.DefaultOrganizationID,
 		m.SecretKey,
 		region,
 		options,

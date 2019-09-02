@@ -88,9 +88,9 @@ func WithProfile(p *Profile) ClientOption {
 			s.insecure = *p.Insecure
 		}
 
-		if p.DefaultProjectID != nil {
-			projectID := *p.DefaultProjectID
-			s.defaultProjectID = &projectID
+		if p.DefaultOrganizationID != nil {
+			organizationID := *p.DefaultOrganizationID
+			s.defaultOrganizationID = &organizationID
 		}
 
 		if p.DefaultRegion != nil {
@@ -110,12 +110,12 @@ func WithEnv() ClientOption {
 	return WithProfile(LoadEnvProfile())
 }
 
-// WithDefaultProjectID client option sets the client default project ID.
+// WithDefaultOrganizationID client option sets the client default organization ID.
 //
-// It will be used as the default value of the project_id field in all requests made with this client.
-func WithDefaultProjectID(projectID string) ClientOption {
+// It will be used as the default value of the organization_id field in all requests made with this client.
+func WithDefaultOrganizationID(organizationID string) ClientOption {
 	return func(s *settings) {
-		s.defaultProjectID = &projectID
+		s.defaultOrganizationID = &organizationID
 	}
 }
 
@@ -153,7 +153,7 @@ type settings struct {
 	userAgent        string
 	httpClient       httpClient
 	insecure         bool
-	defaultProjectID *string
+	defaultOrganizationID *string
 	defaultRegion    *Region
 	defaultZone      *Zone
 	defaultPageSize  *int32
@@ -180,9 +180,9 @@ func (s *settings) validate() error {
 		return errors.Wrap(err, "invalid url %s", s.apiURL)
 	}
 
-	// TODO: Check ProjectID format
-	if s.defaultProjectID != nil && *s.defaultProjectID == "" {
-		return errors.New("default project id cannot be empty")
+	// TODO: Check OrganizationID format
+	if s.defaultOrganizationID != nil && *s.defaultOrganizationID == "" {
+		return errors.New("default organization id cannot be empty")
 	}
 
 	// TODO: Check Region format

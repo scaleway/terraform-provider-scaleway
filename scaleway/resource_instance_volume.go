@@ -36,7 +36,6 @@ func resourceScalewayInstanceVolume() *schema.Resource {
 				ValidateFunc: validation.StringInSlice([]string{
 					// instance.VolumeTypeBSSD.String(), Comming Soon
 					instance.VolumeTypeLSSD.String(),
-					instance.VolumeTypeLHdd.String(),
 				}, false),
 			},
 			"size_in_gb": {
@@ -67,8 +66,8 @@ func resourceScalewayInstanceVolume() *schema.Resource {
 				Computed:    true,
 				Description: "The server associated with this volume",
 			},
-			"project_id": projectIDSchema(),
-			"zone":       zoneSchema(),
+			"organization_id": organizationIDSchema(),
+			"zone":            zoneSchema(),
 		},
 	}
 }
@@ -83,7 +82,7 @@ func resourceSalewayInstanceVolumeCreate(d *schema.ResourceData, m interface{}) 
 		Zone:         zone,
 		Name:         d.Get("name").(string),
 		VolumeType:   instance.VolumeType(d.Get("type").(string)),
-		Organization: d.Get("project_id").(string),
+		Organization: d.Get("organization_id").(string),
 	}
 
 	// Generate name if not set
@@ -133,7 +132,7 @@ func resourceSalewayInstanceVolumeRead(d *schema.ResourceData, m interface{}) er
 	}
 
 	d.Set("name", res.Volume.Name)
-	d.Set("project_id", res.Volume.Organization)
+	d.Set("organization_id", res.Volume.Organization)
 	d.Set("zone", string(zone))
 
 	if res.Volume.Server != nil {

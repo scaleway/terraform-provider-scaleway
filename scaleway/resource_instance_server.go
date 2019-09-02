@@ -164,8 +164,8 @@ func resourceScalewayInstanceServer() *schema.Resource {
 					},
 				},
 			},
-			"zone":       zoneSchema(),
-			"project_id": projectIDSchema(),
+			"zone":            zoneSchema(),
+			"organization_id": organizationIDSchema(),
 		},
 	}
 }
@@ -203,7 +203,7 @@ func resourceScalewayInstanceServerCreate(d *schema.ResourceData, m interface{})
 	req := &instance.CreateServerRequest{
 		Zone:              zone,
 		Name:              name.(string),
-		Organization:      d.Get("project_id").(string),
+		Organization:      d.Get("organization_id").(string),
 		Image:             image,
 		CommercialType:    commercialType,
 		EnableIPv6:        d.Get("enable_ipv6").(bool),

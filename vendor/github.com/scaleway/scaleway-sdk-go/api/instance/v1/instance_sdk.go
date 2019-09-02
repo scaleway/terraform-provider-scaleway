@@ -563,8 +563,6 @@ type VolumeType string
 const (
 	// VolumeTypeLSSD is [insert doc].
 	VolumeTypeLSSD = VolumeType("l_ssd")
-	// VolumeTypeLHdd is [insert doc].
-	VolumeTypeLHdd = VolumeType("l_hdd")
 	// VolumeTypeBSSD is [insert doc].
 	VolumeTypeBSSD = VolumeType("b_ssd")
 )
@@ -1368,7 +1366,7 @@ type ListServersRequest struct {
 func (s *API) ListServers(req *ListServersRequest, opts ...scw.RequestOption) (*ListServersResponse, error) {
 	var err error
 
-	defaultOrganization, exist := s.client.GetDefaultProjectID()
+	defaultOrganization, exist := s.client.GetDefaultOrganizationID()
 	if (req.Organization == nil || *req.Organization == "") && exist {
 		req.Organization = &defaultOrganization
 	}
@@ -1466,7 +1464,7 @@ func (s *API) CreateServer(req *CreateServerRequest, opts ...scw.RequestOption) 
 	var err error
 
 	if req.Organization == "" {
-		defaultOrganization, _ := s.client.GetDefaultProjectID()
+		defaultOrganization, _ := s.client.GetDefaultOrganizationID()
 		req.Organization = defaultOrganization
 	}
 
@@ -1649,7 +1647,7 @@ func (s *API) setServer(req *setServerRequest, opts ...scw.RequestOption) (*setS
 	var err error
 
 	if req.Organization == "" {
-		defaultOrganization, _ := s.client.GetDefaultProjectID()
+		defaultOrganization, _ := s.client.GetDefaultOrganizationID()
 		req.Organization = defaultOrganization
 	}
 
@@ -1948,7 +1946,7 @@ type ListImagesRequest struct {
 func (s *API) ListImages(req *ListImagesRequest, opts ...scw.RequestOption) (*ListImagesResponse, error) {
 	var err error
 
-	defaultOrganization, exist := s.client.GetDefaultProjectID()
+	defaultOrganization, exist := s.client.GetDefaultOrganizationID()
 	if (req.Organization == nil || *req.Organization == "") && exist {
 		req.Organization = &defaultOrganization
 	}
@@ -2075,7 +2073,7 @@ func (s *API) CreateImage(req *CreateImageRequest, opts ...scw.RequestOption) (*
 	var err error
 
 	if req.Organization == "" {
-		defaultOrganization, _ := s.client.GetDefaultProjectID()
+		defaultOrganization, _ := s.client.GetDefaultOrganizationID()
 		req.Organization = defaultOrganization
 	}
 
@@ -2147,7 +2145,7 @@ func (s *API) setImage(req *setImageRequest, opts ...scw.RequestOption) (*setIma
 	var err error
 
 	if req.Organization == "" {
-		defaultOrganization, _ := s.client.GetDefaultProjectID()
+		defaultOrganization, _ := s.client.GetDefaultOrganizationID()
 		req.Organization = defaultOrganization
 	}
 
@@ -2238,7 +2236,7 @@ type ListSnapshotsRequest struct {
 func (s *API) ListSnapshots(req *ListSnapshotsRequest, opts ...scw.RequestOption) (*ListSnapshotsResponse, error) {
 	var err error
 
-	defaultOrganization, exist := s.client.GetDefaultProjectID()
+	defaultOrganization, exist := s.client.GetDefaultOrganizationID()
 	if (req.Organization == nil || *req.Organization == "") && exist {
 		req.Organization = &defaultOrganization
 	}
@@ -2313,7 +2311,7 @@ func (s *API) CreateSnapshot(req *CreateSnapshotRequest, opts ...scw.RequestOpti
 	var err error
 
 	if req.Organization == "" {
-		defaultOrganization, _ := s.client.GetDefaultProjectID()
+		defaultOrganization, _ := s.client.GetDefaultOrganizationID()
 		req.Organization = defaultOrganization
 	}
 
@@ -2419,7 +2417,7 @@ func (s *API) setSnapshot(req *setSnapshotRequest, opts ...scw.RequestOption) (*
 	var err error
 
 	if req.Organization == "" {
-		defaultOrganization, _ := s.client.GetDefaultProjectID()
+		defaultOrganization, _ := s.client.GetDefaultOrganizationID()
 		req.Organization = defaultOrganization
 	}
 
@@ -2516,7 +2514,7 @@ type ListVolumesRequest struct {
 func (s *API) ListVolumes(req *ListVolumesRequest, opts ...scw.RequestOption) (*ListVolumesResponse, error) {
 	var err error
 
-	defaultOrganization, exist := s.client.GetDefaultProjectID()
+	defaultOrganization, exist := s.client.GetDefaultOrganizationID()
 	if (req.Organization == nil || *req.Organization == "") && exist {
 		req.Organization = &defaultOrganization
 	}
@@ -2615,7 +2613,7 @@ func (s *API) CreateVolume(req *CreateVolumeRequest, opts ...scw.RequestOption) 
 	var err error
 
 	if req.Organization == "" {
-		defaultOrganization, _ := s.client.GetDefaultProjectID()
+		defaultOrganization, _ := s.client.GetDefaultOrganizationID()
 		req.Organization = defaultOrganization
 	}
 
@@ -2744,7 +2742,7 @@ type ListSecurityGroupsRequest struct {
 func (s *API) ListSecurityGroups(req *ListSecurityGroupsRequest, opts ...scw.RequestOption) (*ListSecurityGroupsResponse, error) {
 	var err error
 
-	defaultOrganization, exist := s.client.GetDefaultProjectID()
+	defaultOrganization, exist := s.client.GetDefaultOrganizationID()
 	if (req.Organization == nil || *req.Organization == "") && exist {
 		req.Organization = &defaultOrganization
 	}
@@ -2831,7 +2829,7 @@ func (s *API) CreateSecurityGroup(req *CreateSecurityGroupRequest, opts ...scw.R
 	var err error
 
 	if req.Organization == "" {
-		defaultOrganization, _ := s.client.GetDefaultProjectID()
+		defaultOrganization, _ := s.client.GetDefaultOrganizationID()
 		req.Organization = defaultOrganization
 	}
 
@@ -2979,7 +2977,7 @@ func (s *API) setSecurityGroup(req *setSecurityGroupRequest, opts ...scw.Request
 	var err error
 
 	if req.Organization == "" {
-		defaultOrganization, _ := s.client.GetDefaultProjectID()
+		defaultOrganization, _ := s.client.GetDefaultOrganizationID()
 		req.Organization = defaultOrganization
 	}
 
@@ -3335,7 +3333,7 @@ type ListComputeClustersRequest struct {
 func (s *API) ListComputeClusters(req *ListComputeClustersRequest, opts ...scw.RequestOption) (*ListComputeClustersResponse, error) {
 	var err error
 
-	defaultOrganization, exist := s.client.GetDefaultProjectID()
+	defaultOrganization, exist := s.client.GetDefaultOrganizationID()
 	if (req.Organization == nil || *req.Organization == "") && exist {
 		req.Organization = &defaultOrganization
 	}
@@ -3418,7 +3416,7 @@ func (s *API) CreateComputeCluster(req *CreateComputeClusterRequest, opts ...scw
 	var err error
 
 	if req.Organization == "" {
-		defaultOrganization, _ := s.client.GetDefaultProjectID()
+		defaultOrganization, _ := s.client.GetDefaultOrganizationID()
 		req.Organization = defaultOrganization
 	}
 
@@ -3516,7 +3514,7 @@ func (s *API) SetComputeCluster(req *SetComputeClusterRequest, opts ...scw.Reque
 	var err error
 
 	if req.Organization == "" {
-		defaultOrganization, _ := s.client.GetDefaultProjectID()
+		defaultOrganization, _ := s.client.GetDefaultOrganizationID()
 		req.Organization = defaultOrganization
 	}
 
@@ -3577,7 +3575,7 @@ type UpdateComputeClusterRequest struct {
 func (s *API) UpdateComputeCluster(req *UpdateComputeClusterRequest, opts ...scw.RequestOption) (*UpdateComputeClusterResponse, error) {
 	var err error
 
-	defaultOrganization, exist := s.client.GetDefaultProjectID()
+	defaultOrganization, exist := s.client.GetDefaultOrganizationID()
 	if (req.Organization == nil || *req.Organization == "") && exist {
 		req.Organization = &defaultOrganization
 	}
@@ -3827,7 +3825,7 @@ type ListIpsRequest struct {
 func (s *API) ListIps(req *ListIpsRequest, opts ...scw.RequestOption) (*ListIpsResponse, error) {
 	var err error
 
-	defaultOrganization, exist := s.client.GetDefaultProjectID()
+	defaultOrganization, exist := s.client.GetDefaultOrganizationID()
 	if (req.Organization == nil || *req.Organization == "") && exist {
 		req.Organization = &defaultOrganization
 	}
@@ -3900,7 +3898,7 @@ func (s *API) CreateIP(req *CreateIPRequest, opts ...scw.RequestOption) (*Create
 	var err error
 
 	if req.Organization == "" {
-		defaultOrganization, _ := s.client.GetDefaultProjectID()
+		defaultOrganization, _ := s.client.GetDefaultOrganizationID()
 		req.Organization = defaultOrganization
 	}
 
@@ -3991,7 +3989,7 @@ func (s *API) setIP(req *setIPRequest, opts ...scw.RequestOption) (*setIPRespons
 	var err error
 
 	if req.Organization == "" {
-		defaultOrganization, _ := s.client.GetDefaultProjectID()
+		defaultOrganization, _ := s.client.GetDefaultOrganizationID()
 		req.Organization = defaultOrganization
 	}
 
@@ -4239,7 +4237,7 @@ type GetDashboardRequest struct {
 func (s *API) GetDashboard(req *GetDashboardRequest, opts ...scw.RequestOption) (*GetDashboardResponse, error) {
 	var err error
 
-	defaultOrganization, exist := s.client.GetDefaultProjectID()
+	defaultOrganization, exist := s.client.GetDefaultOrganizationID()
 	if (req.Organization == nil || *req.Organization == "") && exist {
 		req.Organization = &defaultOrganization
 	}

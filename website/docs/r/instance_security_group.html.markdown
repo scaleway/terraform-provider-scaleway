@@ -82,7 +82,7 @@ The following arguments are supported:
 
 - `zone` - (Defaults to [provider](../index.html#zone) `zone`) The [zone](../guides/regions_and_zones.html#zones) in which the server should be created.
 
-- `project_id` - (Defaults to [provider](../index.html#project_id) `project_id`) The ID of the project the server is associated with.
+- `organization_id` - (Defaults to [provider](../index.html#organization_id) `organization_id`) The ID of the project the server is associated with.
 
 
 The `inbound_rule` and `outbound_rule` block supports:

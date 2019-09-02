@@ -16,7 +16,7 @@ const (
 	scwActiveProfileEnv    = "SCW_PROFILE"
 	scwAPIURLEnv           = "SCW_API_URL"
 	scwInsecureEnv         = "SCW_INSECURE"
-	scwDefaultProjectIDEnv = "SCW_DEFAULT_PROJECT_ID"
+	scwDefaultOrganizationIDEnv = "SCW_DEFAULT_ORGANIZATION_ID"
 	scwDefaultRegionEnv    = "SCW_DEFAULT_REGION"
 	scwDefaultZoneEnv      = "SCW_DEFAULT_ZONE"
 
@@ -84,9 +84,9 @@ func LoadEnvProfile() *Profile {
 		p.Insecure = &insecure
 	}
 
-	projectID, _, envExist := getEnv(scwDefaultProjectIDEnv, cliOrganizationEnv, terraformOrganizationEnv)
+	organizationID, _, envExist := getEnv(scwDefaultOrganizationIDEnv, cliOrganizationEnv, terraformOrganizationEnv)
 	if envExist {
-		p.DefaultProjectID = &projectID
+		p.DefaultOrganizationID = &organizationID
 	}
 
 	region, _, envExist := getEnv(scwDefaultRegionEnv, cliRegionEnv, terraformRegionEnv)

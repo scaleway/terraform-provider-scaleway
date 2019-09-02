@@ -319,25 +319,25 @@ func getRegion(d terraformResourceData, meta *Meta) (scw.Region, error) {
 	return scw.Region(""), ErrRegionNotFound
 }
 
-// ErrProjectIdNotFound is returned when no project_id can be detected
-var ErrProjectIdNotFound = fmt.Errorf("could not detect project_id")
+// ErrOrganizationIDNotFound is returned when no organization_id can be detected
+var ErrOrganizationIDNotFound = fmt.Errorf("could not detect organization_id")
 
-// getProjectId will try to guess the project_id from the following:
-//  - project_id field of the resource data
-//  - default project_id from config
-func getProjectId(d terraformResourceData, meta *Meta) (string, error) {
+// getOrganizationID will try to guess the organization_id from the following:
+//  - organization_id field of the resource data
+//  - default organization_id from config
+func getOrganizationID(d terraformResourceData, meta *Meta) (string, error) {
 
-	projectID, exist := d.GetOkExists("project_id")
+	organizationID, exist := d.GetOkExists("organization_id")
 	if exist {
-		return projectID.(string), nil
+		return organizationID.(string), nil
 	}
 
-	projectID, exist = meta.scwClient.GetDefaultProjectID()
+	organizationID, exist = meta.scwClient.GetDefaultOrganizationID()
 	if exist {
-		return projectID.(string), nil
+		return organizationID.(string), nil
 	}
 
-	return "", ErrProjectIdNotFound
+	return "", ErrOrganizationIDNotFound
 }
 
 // isHTTPCodeError returns true if err is an http error with code statusCode
@@ -363,11 +363,11 @@ func is403Error(err error) bool {
 	return isHTTPCodeError(err, http.StatusForbidden)
 }
 
-// projectIDSchema returns a standard schema for a project_id
-func projectIDSchema() *schema.Schema {
+// organizationIDSchema returns a standard schema for a organization_id
+func organizationIDSchema() *schema.Schema {
 	return &schema.Schema{
 		Type:         schema.TypeString,
-		Description:  "The project_id you want to attach the resource to",
+		Description:  "The organization_id you want to attach the resource to",
 		Optional:     true,
 		ForceNew:     true,
 		Computed:     true,

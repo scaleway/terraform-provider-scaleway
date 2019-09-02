@@ -39,8 +39,8 @@ func resourceScalewayInstancePlacementGroup() *schema.Resource {
 				Computed:    true,
 				Description: "Is true when the policy is respected.",
 			},
-			"zone":       zoneSchema(),
-			"project_id": projectIDSchema(),
+			"zone":            zoneSchema(),
+			"organization_id": organizationIDSchema(),
 		},
 	}
 }
@@ -58,7 +58,7 @@ func resourceScalewayInstancePlacementGroupCreate(d *schema.ResourceData, m inte
 	res, err := instanceApi.CreateComputeCluster(&instance.CreateComputeClusterRequest{
 		Zone:         zone,
 		Name:         name.(string),
-		Organization: d.Get("project_id").(string),
+		Organization: d.Get("organization_id").(string),
 		PolicyMode:   instance.ComputeClusterPolicyMode(d.Get("policy_mode").(string)),
 		PolicyType:   instance.ComputeClusterPolicyType(d.Get("policy_type").(string)),
 	})
@@ -91,7 +91,7 @@ func resourceScalewayInstancePlacementGroupRead(d *schema.ResourceData, m interf
 
 	d.Set("name", res.ComputeCluster.Name)
 	d.Set("zone", string(zone))
-	d.Set("project_id", res.ComputeCluster.Organization)
+	d.Set("organization_id", res.ComputeCluster.Organization)
 	d.Set("policy_mode", res.ComputeCluster.PolicyMode.String())
 	d.Set("policy_type", res.ComputeCluster.PolicyType.String())
 	d.Set("policy_respected", res.ComputeCluster.PolicyRespected)

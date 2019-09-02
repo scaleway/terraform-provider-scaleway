@@ -20,9 +20,9 @@ Below you find an overview of changes in the provider config:
 | --------------------- | --------------------- |
 | `access_key`          | `access_key`          |
 | `token`               | `secret_key`          |
-| `organization`        | `project_id`          |
+| `organization`        | `organization_id`     |
 
-~> **Important:** `access_key` should now only be used for your access key (e.g. `SCWZFD9BPQ4TZ14SM1YS`). Your secret key (previously known as *token*) must be set in `secret_key` (`xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx`).
+~> **Important:** `access_key` should now only be used for your access key (e.g. `SCWZFD9BPQ4TZ14SM1YS`). Your secret key (previously known as _token_) must be set in `secret_key` (`xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx`).
 
 Below you find an overview of the changes in environment variables:
 
@@ -30,14 +30,14 @@ Below you find an overview of the changes in environment variables:
 | ----------------------- | ------------------------------------------- |
 | `SCALEWAY_ACCESS_KEY`   | `SCW_ACCESS_KEY`                            |
 | `SCALEWAY_TOKEN`        | `SCW_SECRET_KEY`                            |
-| `SCALEWAY_ORGANIZATION` | `SCW_DEFAULT_PROJECT_ID`                    |
+| `SCALEWAY_ORGANIZATION` | `SCW_DEFAULT_ORGANIZATION_ID`               |
 | `SCALEWAY_REGION`       | `SCW_DEFAULT_REGION` and `SCW_DEFAULT_ZONE` |
 | `SCW_TLSVERIFY`         | `SCW_INSECURE`                              |
-| `SCW_ORGANIZATION`      | `SCW_DEFAULT_PROJECT_ID`                    |
+| `SCW_ORGANIZATION`      | `SCW_DEFAULT_ORGANIZATION_ID`               |
 | `SCW_REGION`            | `SCW_DEFAULT_REGION`                        |
 | `SCW_TOKEN`             | `SCW_SECRET_KEY`                            |
 
-~> **Important:** `SCALEWAY_ACCESS_KEY` was changed to `SCW_ACCESS_KEY`. This should be your access key (e.g. `SCWZFD9BPQ4TZ14SM1YS`). Your secret key (previously known as *token*) must be set in `SCW_SECRET_KEY` (`xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx`).
+~> **Important:** `SCALEWAY_ACCESS_KEY` was changed to `SCW_ACCESS_KEY`. This should be your access key (e.g. `SCWZFD9BPQ4TZ14SM1YS`). Your secret key (previously known as _token_) must be set in `SCW_SECRET_KEY` (`xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx`).
 
 ## Resources
 
@@ -45,7 +45,7 @@ All resources are from now on prefixed by `scaleway`, their product category and
 
 ### Compute
 
-All the old compute resources have been regrouped under a new name: `Instance`. 
+All the old compute resources have been regrouped under a new name: `Instance`.
 This means that all old instance resources are now prefixed with `scaleway_instance_`.
 
 #### Renamed: `scaleway_server` -> `scaleway_instance_server`

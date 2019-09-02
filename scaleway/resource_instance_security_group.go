@@ -65,8 +65,8 @@ func resourceScalewayInstanceSecurityGroup() *schema.Resource {
 				Description: "Outbound rules for this security group",
 				Elem:        securityGroupRuleSchema(),
 			},
-			"zone":       zoneSchema(),
-			"project_id": projectIDSchema(),
+			"zone":            zoneSchema(),
+			"organization_id": organizationIDSchema(),
 		},
 	}
 }
@@ -78,7 +78,7 @@ func resourceScalewayInstanceSecurityGroupCreate(d *schema.ResourceData, m inter
 		return err
 	}
 
-	projectID, err := getProjectId(d, meta)
+	organizationID, err := getOrganizationID(d, meta)
 	if err != nil {
 		return err
 	}
@@ -91,7 +91,7 @@ func resourceScalewayInstanceSecurityGroupCreate(d *schema.ResourceData, m inter
 	res, err := instanceApi.CreateSecurityGroup(&instance.CreateSecurityGroupRequest{
 		Name:                  name,
 		Zone:                  zone,
-		Organization:          projectID,
+		Organization:          organizationID,
 		Description:           d.Get("description").(string),
 		Stateful:              true,
 		InboundDefaultPolicy:  instance.SecurityGroupPolicy(d.Get("inbound_default_policy").(string)),
@@ -126,7 +126,7 @@ func resourceScalewayInstanceSecurityGroupRead(d *schema.ResourceData, m interfa
 	}
 
 	d.Set("zone", zone)
-	d.Set("project_id", res.SecurityGroup.Organization)
+	d.Set("organization_id", res.SecurityGroup.Organization)
 	d.Set("name", res.SecurityGroup.Name)
 	d.Set("description", res.SecurityGroup.Description)
 	d.Set("inbound_default_policy", res.SecurityGroup.InboundDefaultPolicy.String())
