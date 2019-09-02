@@ -451,7 +451,7 @@ func isSDKError(err error, expectedMessage string) bool {
 	return regexp.MatchString(actualMessage)
 }
 
-// isUUID returns true is the given string have an UUID format.
+// isUUID returns true if the given string have an UUID format.
 func isUUID(s string) bool {
 	t := []byte(s)
 	if len(t) != 36 || t[8] != '-' || t[13] != '-' || t[18] != '-' || t[23] != '-' {
