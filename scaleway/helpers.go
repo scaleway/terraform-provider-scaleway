@@ -1,7 +1,6 @@
 package scaleway
 
 import (
-	"encoding/hex"
 	"fmt"
 	"net/http"
 	"regexp"
@@ -453,11 +452,6 @@ func isSDKError(err error, expectedMessage string) bool {
 
 // isUUID returns true if the given string have an UUID format.
 func isUUID(s string) bool {
-	t := []byte(s)
-	if len(t) != 36 || t[8] != '-' || t[13] != '-' || t[18] != '-' || t[23] != '-' {
-		return false
-	}
-
-	_, err := hex.DecodeString(strings.Replace(s, "-", "", -1))
-	return err == nil
+	matched, _ := regexp.MatchString(`[0-9a-fA-F]{8}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{12}`, s)
+	return matched
 }

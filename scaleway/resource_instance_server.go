@@ -194,7 +194,7 @@ func resourceScalewayInstanceServerCreate(d *schema.ResourceData, m interface{})
 			Zone:           zone,
 			ImageLabel:     image,
 		})
-		if is403Error(err) {
+		if err != nil {
 			return fmt.Errorf("invalid image '%s': it must be an UUID or a valid image label", image)
 		}
 		image = imageUUID
