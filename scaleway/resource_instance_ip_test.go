@@ -257,14 +257,14 @@ resource "scaleway_instance_ip" "base_ip" {
 }
 
 resource "scaleway_instance_server" "base1" {
-  image_id = "f974feac-abae-4365-b988-8ec7d1cec10d"
+  image = "ubuntu-bionic"
   type  = "DEV1-S"
   
   tags  = [ "terraform-test", "scaleway_instance_server", "attach_ip" ]
 }
 
 resource "scaleway_instance_server" "base2" {
-  image_id = "f974feac-abae-4365-b988-8ec7d1cec10d"
+  image = "ubuntu-bionic"
   type  = "DEV1-S"
   
   tags  = [ "terraform-test", "scaleway_instance_server", "attach_ip" ]

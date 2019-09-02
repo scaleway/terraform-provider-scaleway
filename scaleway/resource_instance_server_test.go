@@ -17,10 +17,24 @@ func TestAccScalewayInstanceServerMinimal1(t *testing.T) {
 		CheckDestroy: testAccCheckScalewayInstanceServerDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckScalewayInstanceServerConfigMinimal(),
+				Config: testAccCheckScalewayInstanceServerConfigMinimal("f974feac-abae-4365-b988-8ec7d1cec10d"),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayInstanceServerExists("scaleway_instance_server.base"),
-					resource.TestCheckResourceAttr("scaleway_instance_server.base", "image_id", "f974feac-abae-4365-b988-8ec7d1cec10d"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.base", "image", "f974feac-abae-4365-b988-8ec7d1cec10d"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.base", "type", "DEV1-S"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.base", "root_volume.0.delete_on_termination", "true"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.base", "root_volume.0.size_in_gb", "20"),
+					resource.TestCheckResourceAttrSet("scaleway_instance_server.base", "root_volume.0.volume_id"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.base", "tags.0", "terraform-test"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.base", "tags.1", "scaleway_instance_server"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.base", "tags.2", "minimal"),
+				),
+			},
+			{
+				Config: testAccCheckScalewayInstanceServerConfigMinimal("ubuntu-bionic"),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayInstanceServerExists("scaleway_instance_server.base"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.base", "image", "ubuntu-bionic"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "type", "DEV1-S"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "root_volume.0.delete_on_termination", "true"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "root_volume.0.size_in_gb", "20"),
@@ -385,14 +399,14 @@ func testAccCheckScalewayInstanceServerDestroy(s *terraform.State) error {
 	return nil
 }
 
-func testAccCheckScalewayInstanceServerConfigMinimal() string {
-	return `
+func testAccCheckScalewayInstanceServerConfigMinimal(imageValue string) string {
+	return fmt.Sprintf(`
 resource "scaleway_instance_server" "base" {
-  image_id = "f974feac-abae-4365-b988-8ec7d1cec10d"
-  type     = "DEV1-S"
+  image = "%s"
+  type  = "DEV1-S"
 
   tags = [ "terraform-test", "scaleway_instance_server", "minimal" ]
-}`
+}`, imageValue)
 }
 
 func testAccCheckScalewayInstanceServerConfigServerType(architecture, serverType string) string {
@@ -404,9 +418,9 @@ data "scaleway_image" "ubuntu" {
 }
 
 resource "scaleway_instance_server" "base" {
-  name     = "test"
-  image_id = "${data.scaleway_image.ubuntu.id}"
-  type     = "%s"
+  name  = "test"
+  image = "${data.scaleway_image.ubuntu.id}"
+  type  = "%s"
 
   tags = [ "terraform-test", "scaleway_instance_server", "basic" ]
 }`, architecture, serverType)
@@ -415,8 +429,8 @@ resource "scaleway_instance_server" "base" {
 func testAccCheckScalewayInstanceServerConfigRootVolume(size, deleteOnTermination string) string {
 	return fmt.Sprintf(`
 resource "scaleway_instance_server" "base" {
-  image_id = "f974feac-abae-4365-b988-8ec7d1cec10d"
-  type     = "C2S"
+  image = "f974feac-abae-4365-b988-8ec7d1cec10d"
+  type  = "C2S"
   root_volume {
     size_in_gb = %s
     delete_on_termination = %s
@@ -434,10 +448,10 @@ data "scaleway_image" "ubuntu" {
 }
 
 resource "scaleway_instance_server" "base" {
-  image_id = "${data.scaleway_image.ubuntu.id}"
-  type     = "DEV1-S"
-  state    = "%s"
-  tags     = [ "terraform-test", "scaleway_instance_server", "state" ]
+  image = "${data.scaleway_image.ubuntu.id}"
+  type  = "DEV1-S"
+  state = "%s"
+  tags  = [ "terraform-test", "scaleway_instance_server", "state" ]
 }`, state)
 }
 
@@ -473,9 +487,9 @@ data "scaleway_image" "ubuntu" {
 }
 
 resource "scaleway_instance_server" "base" {
-  image_id = "${data.scaleway_image.ubuntu.id}"
-  type     = "DEV1-S"
-  tags     = [ "terraform-test", "scaleway_instance_server", "user_data" ]
+  image = "${data.scaleway_image.ubuntu.id}"
+  type  = "DEV1-S"
+  tags  = [ "terraform-test", "scaleway_instance_server", "user_data" ]
 %s
 }`, additionalUserData)
 }
@@ -506,8 +520,8 @@ resource "scaleway_instance_volume" "base_block" {
 %s
 
 resource "scaleway_instance_server" "base" {
-  image_id = "f974feac-abae-4365-b988-8ec7d1cec10d"
-  type     = "DEV1-S"
+  image = "f974feac-abae-4365-b988-8ec7d1cec10d"
+  type  = "DEV1-S"
   root_volume {
     size_in_gb = %d
   }
@@ -528,7 +542,7 @@ resource "scaleway_instance_volume" "data" {
 }
 
 resource "scaleway_instance_server" "webserver" {
-  image_id = "f974feac-abae-4365-b988-8ec7d1cec10d"
+  image = "f974feac-abae-4365-b988-8ec7d1cec10d"
   type     = "DEV1-S"
 
   additional_volume_ids = [ "${scaleway_instance_volume.data.id}" ]
@@ -543,8 +557,8 @@ resource "scaleway_instance_placement_group" "ha" {
 
 resource "scaleway_instance_server" "base" {
 	count = 3
-	image_id = "f974feac-abae-4365-b988-8ec7d1cec10d"
-	type     = "DEV1-S"
+	image = "f974feac-abae-4365-b988-8ec7d1cec10d"
+	type  = "DEV1-S"
 	placement_group_id = "${scaleway_instance_placement_group.ha.id}"
 }
 `
