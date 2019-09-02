@@ -33,8 +33,8 @@ func resourceScalewayInstanceIP() *schema.Resource {
 				ValidateFunc:     validationUUIDorUUIDWithLocality(),
 				DiffSuppressFunc: suppressLocality,
 			},
-			"zone":       zoneSchema(),
-			"project_id": projectIDSchema(),
+			"zone":            zoneSchema(),
+			"organization_id": organizationIDSchema(),
 		},
 	}
 }
@@ -47,7 +47,7 @@ func resourceScalewayInstanceIPCreate(d *schema.ResourceData, m interface{}) err
 
 	res, err := instanceAPI.CreateIP(&instance.CreateIPRequest{
 		Zone:         zone,
-		Organization: d.Get("project_id").(string),
+		Organization: d.Get("organization_id").(string),
 	})
 	if err != nil {
 		return err
@@ -104,7 +104,7 @@ func resourceScalewayInstanceIPRead(d *schema.ResourceData, m interface{}) error
 
 	d.Set("address", res.IP.Address.String())
 	d.Set("zone", string(zone))
-	d.Set("project_id", res.IP.Organization)
+	d.Set("organization_id", res.IP.Organization)
 	d.Set("reverse", res.IP.Reverse)
 
 	if res.IP.Server != nil {

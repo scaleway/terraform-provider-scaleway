@@ -55,6 +55,11 @@ type GetLocalImageIDByLabelRequest struct {
 // it returns the latest version of this specific image.
 func (s *API) GetLocalImageIDByLabel(req *GetLocalImageIDByLabelRequest) (string, error) {
 
+	if req.Zone == "" {
+		defaultZone, _ := s.client.GetDefaultZone()
+		req.Zone = defaultZone
+	}
+
 	listImageRequest := &ListImagesRequest{}
 	listImageResponse, err := s.ListImages(listImageRequest, scw.WithAllPages())
 	if err != nil {

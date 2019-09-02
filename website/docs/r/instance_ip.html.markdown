@@ -22,7 +22,7 @@ The following arguments are supported:
 - `reverse` - (Optional) The reverse DNS for this IP.
 - `server_id` - (Optional) The ID of the server you want to attach this resource to.
 - `zone` - (Defaults to [provider](../index.html#zone) `zone`) The [zone](../guides/regions_and_zones.html#zones) in which the IP should be reserved.
-- `project_id` - (Defaults to [provider](../index.html#project_id) `project_id`) The ID of the project the IP is associated with.
+- `organization_id` - (Defaults to [provider](../index.html#organization_id) `organization_id`) The ID of the organization the IP is associated with.
 
 ## Attributes Reference
 

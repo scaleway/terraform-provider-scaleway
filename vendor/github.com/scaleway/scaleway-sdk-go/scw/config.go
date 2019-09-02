@@ -27,7 +27,7 @@ type Profile struct {
 	SecretKey        *string `yaml:"secret_key,omitempty"`
 	APIURL           *string `yaml:"api_url,omitempty"`
 	Insecure         *bool   `yaml:"insecure,omitempty"`
-	DefaultProjectID *string `yaml:"default_project_id,omitempty"`
+	DefaultOrganizationID *string `yaml:"default_organization_id,omitempty"`
 	DefaultRegion    *string `yaml:"default_region,omitempty"`
 	DefaultZone      *string `yaml:"default_zone,omitempty"`
 }

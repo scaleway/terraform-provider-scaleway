@@ -99,33 +99,33 @@ func Provider() terraform.ResourceProvider {
 				},
 				ValidateFunc: validationUUID(),
 			},
-			"project_id": {
+			"organization_id": {
 				Type:        schema.TypeString,
 				Optional:    true, // To allow user to use deprecated `organization`.
-				Description: "The Scaleway project ID.",
+				Description: "The Scaleway organization ID.",
 				DefaultFunc: schema.SchemaDefaultFunc(func() (interface{}, error) {
-					if envProfile.DefaultProjectID != nil {
-						return *envProfile.DefaultProjectID, nil
+					if envProfile.DefaultOrganizationID != nil {
+						return *envProfile.DefaultOrganizationID, nil
 					}
-					if activeProfile != nil && activeProfile.DefaultProjectID != nil {
-						return *activeProfile.DefaultProjectID, nil
+					if activeProfile != nil && activeProfile.DefaultOrganizationID != nil {
+						return *activeProfile.DefaultOrganizationID, nil
 					}
 
 					// Keep the deprecated behavior of 'organization'.
 					if organization := os.Getenv("SCALEWAY_ORGANIZATION"); organization != "" {
-						l.Warningf("SCALEWAY_ORGANIZATION is deprecated, please use SCW_DEFAULT_PROJECT_ID instead")
+						l.Warningf("SCALEWAY_ORGANIZATION is deprecated, please use SCW_DEFAULT_ORGANIZATION_ID instead")
 						return organization, nil
 					}
 					if path, err := homedir.Expand("~/.scwrc"); err == nil {
 						_, scwOrganization, err := readDeprecatedScalewayConfig(path)
 						if err != nil {
-							// No error is returned here to allow user to use `project_id`.
+							// No error is returned here to allow user to use `organization_id`.
 							l.Errorf("cannot parse deprecated config file: %s", err)
 							return nil, nil
 						}
 						return scwOrganization, nil
 					}
-					// No error is returned here to allow user to use `project_id`.
+					// No error is returned here to allow user to use `organization_id`.
 					return nil, nil
 				}),
 				ValidateFunc: validationUUID(),
@@ -175,8 +175,8 @@ func Provider() terraform.ResourceProvider {
 			},
 			"organization": {
 				Type:       schema.TypeString,
-				Optional:   true, // To allow user to use `project_id`.
-				Deprecated: "Use `project_id` instead.",
+				Optional:   true, // To allow user to use `organization_id`.
+				Deprecated: "Use `organization_id` instead.",
 			},
 		},
 
@@ -225,9 +225,9 @@ func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 		}
 	}
 
-	projectID := d.Get("project_id").(string)
-	if projectID == "" {
-		projectID = d.Get("organization").(string)
+	organizationID := d.Get("organization_id").(string)
+	if organizationID == "" {
+		organizationID = d.Get("organization").(string)
 	}
 
 	if apiKey == "" {
@@ -237,7 +237,7 @@ func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 				return nil, fmt.Errorf("error loading credentials from SCW: %s", err)
 			}
 			apiKey = scwAPIKey
-			projectID = scwOrganization
+			organizationID = scwOrganization
 		}
 	}
 
@@ -254,11 +254,11 @@ func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 	}
 
 	meta := &Meta{
-		AccessKey:        d.Get("access_key").(string),
-		SecretKey:        apiKey,
-		DefaultProjectID: projectID,
-		DefaultRegion:    region,
-		DefaultZone:      zone,
+		AccessKey:             d.Get("access_key").(string),
+		SecretKey:             apiKey,
+		DefaultOrganizationID: organizationID,
+		DefaultRegion:         region,
+		DefaultZone:           zone,
 	}
 
 	meta.bootstrap()

@@ -27,7 +27,7 @@ type Client struct {
 	auth             auth.Auth
 	apiURL           string
 	userAgent        string
-	defaultProjectID *string
+	defaultOrganizationID *string
 	defaultRegion    *Region
 	defaultZone      *Zone
 	defaultPageSize  *int32
@@ -74,19 +74,19 @@ func NewClient(opts ...ClientOption) (*Client, error) {
 		httpClient:       s.httpClient,
 		apiURL:           s.apiURL,
 		userAgent:        s.userAgent,
-		defaultProjectID: s.defaultProjectID,
+		defaultOrganizationID: s.defaultOrganizationID,
 		defaultRegion:    s.defaultRegion,
 		defaultZone:      s.defaultZone,
 		defaultPageSize:  s.defaultPageSize,
 	}, nil
 }
 
-// GetDefaultProjectID return the default project ID
+// GetDefaultOrganizationID return the default organization ID
 // of the client. This value can be set in the client option
-// WithDefaultProjectID(). Be aware this value can be empty.
-func (c *Client) GetDefaultProjectID() (string, bool) {
-	if c.defaultProjectID != nil {
-		return *c.defaultProjectID, true
+// WithDefaultOrganizationID(). Be aware this value can be empty.
+func (c *Client) GetDefaultOrganizationID() (string, bool) {
+	if c.defaultOrganizationID != nil {
+		return *c.defaultOrganizationID, true
 	}
 	return "", false
 }

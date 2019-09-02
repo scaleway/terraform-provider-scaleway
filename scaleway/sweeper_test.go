@@ -52,12 +52,12 @@ func sharedClientForRegion(region string) (*scw.Client, error) {
 // buildTestConfigForTests creates a Config objects based on the region
 // and the config variables needed for testing.
 func buildTestConfigForTests(region string) (*Meta, error) {
-	projectID := os.Getenv("SCW_DEFAULT_PROJECT_ID")
-	if projectID == "" {
-		projectID = os.Getenv("SCALEWAY_ORGANIZATION")
+	organizationID := os.Getenv("SCW_DEFAULT_ORGANIZATION_ID")
+	if organizationID == "" {
+		organizationID = os.Getenv("SCALEWAY_ORGANIZATION")
 	}
-	if projectID == "" {
-		return nil, fmt.Errorf("empty SCW_DEFAULT_PROJECT_ID")
+	if organizationID == "" {
+		return nil, fmt.Errorf("empty SCW_DEFAULT_ORGANIZATION_ID")
 	}
 
 	secretKey := os.Getenv("SCW_SECRET_KEY")
@@ -74,9 +74,9 @@ func buildTestConfigForTests(region string) (*Meta, error) {
 	}
 
 	return &Meta{
-		DefaultProjectID: projectID,
-		SecretKey:        secretKey,
-		DefaultRegion:    parsedRegion,
+		DefaultOrganizationID: organizationID,
+		SecretKey:             secretKey,
+		DefaultRegion:         parsedRegion,
 	}, nil
 }
 

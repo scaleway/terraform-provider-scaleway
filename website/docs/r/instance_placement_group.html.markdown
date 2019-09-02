@@ -23,7 +23,7 @@ The following arguments are supported:
 - `policy_type` - (Defaults to `low_latency`) The [policy type](https://developers.scaleway.com/en/products/instance/api/#compute-clusters-7fd7e0) of the placement group. Possible values are: `low_latency` or `max_availability`.
 - `policy_mode` - (Defaults to `optional`) The [policy mode](https://developers.scaleway.com/en/products/instance/api/#compute-clusters-7fd7e0) of the placement group. Possible values are: `optional` or `enforced`.
 - `zone` - (Defaults to [provider](../index.html#zone) `zone`) The [zone](../guides/regions_and_zones.html#zones) in which the placement group should be created.
-- `project_id` - (Defaults to [provider](../index.html#project_id) `project_id`) The ID of the project the placement group is associated with.
+- `organization_id` - (Defaults to [provider](../index.html#organization_id) `organization_id`) The ID of the project the placement group is associated with.
 
 ## Attributes Reference
 

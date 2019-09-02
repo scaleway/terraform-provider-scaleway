@@ -29,7 +29,7 @@ You can test this config by creating a `test.tf` and run terraform commands from
 provider "scaleway" {
   access_key = "<SCALEWAY-ACCESS-KEY>"
   secret_key = "<SCALEWAY-SECRET-KEY>"
-  project_id = "<SCALEWAY-PROJECT-ID>" # aka. Organization ID
+  organization_id = "<SCALEWAY-ORGANIZATION-ID>"
   zone       = "fr-par-1"
   region     = "fr-par"
 }
@@ -144,8 +144,8 @@ in this priority order.
 the `SCW_SECRET_KEY` [environment variable](#environment-variables), or via a [shared configuration file](#shared-configuration-file),
 in this priority order.
 
-- `project_id` - (Optional) The project ID that will be used as default value for all resources. It can also be sourced from
-the `SCW_DEFAULT_PROJECT_ID` [environment variable](https://github.com/scaleway/scaleway-sdk-go/blob/master/scw/README.md#environment-variables), or via a [shared configuration file](https://github.com/scaleway/scaleway-sdk-go/blob/master/scw/README.md#scaleway-config),
+- `organization_id` - (Optional) The organization ID that will be used as default value for all resources. It can also be sourced from
+the `SCW_DEFAULT_ORGANIZATION_ID` [environment variable](https://github.com/scaleway/scaleway-sdk-go/blob/master/scw/README.md#environment-variables), or via a [shared configuration file](https://github.com/scaleway/scaleway-sdk-go/blob/master/scw/README.md#scaleway-config),
 in this priority order.
 
 - `region` - (Optional) The [region](./guides/regions_and_zones.html#regions)  that will be used as default value for all resources. It can also be sourced from

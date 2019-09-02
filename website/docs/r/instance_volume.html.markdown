@@ -29,7 +29,7 @@ The following arguments are supported:
 - `from_snapshot_id` - (Optional) If set, the new volume will be created from this snapshot. (leave this empty when using `size_in_gb` or `from_volume_id`).
 - `name` - (Optional) The name of the volume. If not provided it will be randomly generated.
 - `zone` - (Defaults to [provider](../index.html#zone) `zone`) The [zone](../guides/regions_and_zones.html#zones) in which the volume should be created.
-- `project_id` - (Defaults to [provider](../index.html#project_id) `project_id`) The ID of the project the volume is associated with.
+- `organization_id` - (Defaults to [provider](../index.html#organization_id) `organization_id`) The ID of the organization the volume is associated with.
 
 ## Attributes Reference
 
