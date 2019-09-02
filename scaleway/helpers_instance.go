@@ -13,12 +13,12 @@ import (
 )
 
 const (
-	ServerStateStopped = "stopped"
-	ServerStateStarted = "started"
-	ServerStateStandby = "standby"
+	InstanceServerStateStopped = "stopped"
+	InstanceServerStateStarted = "started"
+	InstanceServerStateStandby = "standby"
 
-	ServerWaitForTimeout   = 10 * time.Minute
-	ServerRetryFuncTimeout = ServerWaitForTimeout + time.Minute // some RetryFunc are calling a WaitFor
+	InstanceServerWaitForTimeout   = 10 * time.Minute
+	InstanceServerRetryFuncTimeout = InstanceServerWaitForTimeout + time.Minute // some RetryFunc are calling a WaitFor
 )
 
 // getInstanceAPIWithZone returns a new instance API and the zone for a Create request
@@ -62,32 +62,32 @@ func orderVolumes(v map[string]*instance.Volume) []*instance.Volume {
 func serverStateFlatten(fromState instance.ServerState) (string, error) {
 	switch fromState {
 	case instance.ServerStateStopped:
-		return ServerStateStopped, nil
+		return InstanceServerStateStopped, nil
 	case instance.ServerStateStoppedInPlace:
-		return ServerStateStandby, nil
+		return InstanceServerStateStandby, nil
 	case instance.ServerStateRunning:
-		return ServerStateStarted, nil
+		return InstanceServerStateStarted, nil
 	case instance.ServerStateLocked:
 		return "", fmt.Errorf("server is locked, please contact Scaleway support: https://console.scaleway.com/support/tickets")
 	}
 	return "", fmt.Errorf("server is in an invalid state, someone else might be executing action at the same time")
 }
 
-// computeServerStateToAction returns the action required to transit from a state to another.
-func computeServerStateToAction(previousState, nextState string, forceReboot bool) []instance.ServerAction {
-	if previousState == ServerStateStarted && nextState == ServerStateStarted && forceReboot {
+// instanceServerStateToAction returns the action required to transit from a state to another.
+func instanceServerStateToAction(previousState, nextState string, forceReboot bool) []instance.ServerAction {
+	if previousState == InstanceServerStateStarted && nextState == InstanceServerStateStarted && forceReboot {
 		return []instance.ServerAction{instance.ServerActionReboot}
 	}
 	transitionMap := map[[2]string][]instance.ServerAction{
-		{ServerStateStopped, ServerStateStopped}: {},
-		{ServerStateStopped, ServerStateStarted}: {instance.ServerActionPoweron},
-		{ServerStateStopped, ServerStateStandby}: {instance.ServerActionPoweron, instance.ServerActionStopInPlace},
-		{ServerStateStarted, ServerStateStopped}: {instance.ServerActionPoweroff},
-		{ServerStateStarted, ServerStateStarted}: {},
-		{ServerStateStarted, ServerStateStandby}: {instance.ServerActionStopInPlace},
-		{ServerStateStandby, ServerStateStopped}: {instance.ServerActionPoweroff},
-		{ServerStateStandby, ServerStateStarted}: {instance.ServerActionPoweron},
-		{ServerStateStandby, ServerStateStandby}: {},
+		{InstanceServerStateStopped, InstanceServerStateStopped}: {},
+		{InstanceServerStateStopped, InstanceServerStateStarted}: {instance.ServerActionPoweron},
+		{InstanceServerStateStopped, InstanceServerStateStandby}: {instance.ServerActionPoweron, instance.ServerActionStopInPlace},
+		{InstanceServerStateStarted, InstanceServerStateStopped}: {instance.ServerActionPoweroff},
+		{InstanceServerStateStarted, InstanceServerStateStarted}: {},
+		{InstanceServerStateStarted, InstanceServerStateStandby}: {instance.ServerActionStopInPlace},
+		{InstanceServerStateStandby, InstanceServerStateStopped}: {instance.ServerActionPoweroff},
+		{InstanceServerStateStandby, InstanceServerStateStarted}: {instance.ServerActionPoweron},
+		{InstanceServerStateStandby, InstanceServerStateStandby}: {},
 	}
 
 	return transitionMap[[2]string{previousState, nextState}]
@@ -95,13 +95,13 @@ func computeServerStateToAction(previousState, nextState string, forceReboot boo
 
 // reachState executes server action(s) to reach the expected state
 func reachState(instanceAPI *instance.API, zone scw.Zone, serverID, fromState, toState string, forceReboot bool) error {
-	for _, action := range computeServerStateToAction(fromState, toState, forceReboot) {
-		err := resource.Retry(ServerRetryFuncTimeout, func() *resource.RetryError {
+	for _, action := range instanceServerStateToAction(fromState, toState, forceReboot) {
+		err := resource.Retry(InstanceServerRetryFuncTimeout, func() *resource.RetryError {
 			err := instanceAPI.ServerActionAndWait(&instance.ServerActionAndWaitRequest{
 				Zone:     zone,
 				ServerID: serverID,
 				Action:   action,
-				Timeout:  ServerWaitForTimeout,
+				Timeout:  InstanceServerWaitForTimeout,
 			})
 			if isSDKError(err, "expected state [\\w]+ but found [\\w]+") {
 				l.Errorf("Retrying action %s because of error '%v'", action, err)

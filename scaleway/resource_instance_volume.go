@@ -177,7 +177,7 @@ func resourceSalewayInstanceVolumeDelete(d *schema.ResourceData, m interface{}) 
 		VolumeID: id,
 	}
 
-	err = resource.Retry(ServerRetryFuncTimeout, func() *resource.RetryError {
+	err = resource.Retry(InstanceServerRetryFuncTimeout, func() *resource.RetryError {
 		err := instanceAPI.DeleteVolume(deleteRequest)
 		if isSDKResponseError(err, http.StatusBadRequest, "a server is attached to this volume") {
 			if d.Get("type").(string) != instance.VolumeTypeBSSD.String() {
@@ -185,7 +185,7 @@ func resourceSalewayInstanceVolumeDelete(d *schema.ResourceData, m interface{}) 
 					Zone:     zone,
 					ServerID: d.Get("server_id").(string),
 					Action:   instance.ServerActionPoweroff,
-					Timeout:  ServerWaitForTimeout,
+					Timeout:  InstanceServerWaitForTimeout,
 				})
 				if err != nil && !isSDKResponseError(err, http.StatusBadRequest, "server should be running") {
 					return resource.NonRetryableError(err)
