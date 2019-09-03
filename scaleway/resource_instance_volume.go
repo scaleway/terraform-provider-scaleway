@@ -34,7 +34,7 @@ func resourceScalewayInstanceVolume() *schema.Resource {
 				ForceNew:    true,
 				Description: "The volume type",
 				ValidateFunc: validation.StringInSlice([]string{
-					// instance.VolumeTypeBSSD.String(), Comming Soon
+					instance.VolumeTypeBSSD.String(),
 					instance.VolumeTypeLSSD.String(),
 				}, false),
 			},
