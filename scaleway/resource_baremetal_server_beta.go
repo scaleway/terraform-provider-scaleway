@@ -17,6 +17,10 @@ func resourceScalewayBaremetalServerBeta() *schema.Resource {
 			State: schema.ImportStatePassthrough,
 		},
 		SchemaVersion: 0,
+		Timeouts: &schema.ResourceTimeout{
+			Create: &BaremetalServerResourceTimeout,
+			Delete: &BaremetalServerResourceTimeout,
+		},
 		Schema: map[string]*schema.Schema{
 			"name": {
 				Type:        schema.TypeString,
