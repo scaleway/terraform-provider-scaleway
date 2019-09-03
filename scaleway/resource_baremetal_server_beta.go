@@ -24,14 +24,14 @@ func resourceScalewayBaremetalServerBeta() *schema.Resource {
 				Computed:    true,
 				Description: "Name of the server.",
 			},
-			"type": {
+			"offer_id": {
 				Type:         schema.TypeString,
 				Required:     true,
 				ForceNew:     true,
 				Description:  "ID of the server type.",
 				ValidateFunc: validationUUID(),
 			},
-			"image_id": {
+			"os_id": {
 				Type:         schema.TypeString,
 				Required:     true,
 				ForceNew:     true,
@@ -80,9 +80,9 @@ func resourceScalewayBaremetalServerBetaCreate(d *schema.ResourceData, m interfa
 	createReq := &baremetal.CreateServerRequest{
 		Zone:           zone,
 		Name:           name.(string),
-		OrganizationID: d.Get("project_id").(string),
+		OrganizationID: d.Get("organization_id").(string),
 		Description:    d.Get("description").(string),
-		OfferID:        d.Get("type").(string),
+		OfferID:        d.Get("offer_id").(string),
 	}
 	if raw, ok := d.GetOk("tags"); ok {
 		for _, tag := range raw.([]interface{}) {
@@ -108,7 +108,7 @@ func resourceScalewayBaremetalServerBetaCreate(d *schema.ResourceData, m interfa
 	installReq := &baremetal.InstallServerRequest{
 		Zone:     zone,
 		ServerID: res.ID,
-		OsID:     d.Get("image_id").(string),
+		OsID:     d.Get("os_id").(string),
 		Hostname: res.Name,
 	}
 
@@ -225,6 +225,10 @@ func resourceScalewayBaremetalServerBetaDelete(d *schema.ResourceData, m interfa
 		ServerID: ID,
 		Timeout:  BaremetalServerWaitForTimeout,
 	})
+
+	if is404Error(err) {
+		return nil
+	}
 
 	return err
 }
