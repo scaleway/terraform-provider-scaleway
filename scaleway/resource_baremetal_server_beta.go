@@ -7,12 +7,12 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 )
 
-func resourceScalewayBaremetalServer() *schema.Resource {
+func resourceScalewayBaremetalServerBeta() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceScalewayBaremetalServerCreate,
-		Read:   resourceScalewayBaremetalServerRead,
-		Update: resourceScalewayBaremetalServerUpdate,
-		Delete: resourceScalewayBaremetalServerDelete,
+		Create: resourceScalewayBaremetalServerBetaCreate,
+		Read:   resourceScalewayBaremetalServerBetaRead,
+		Update: resourceScalewayBaremetalServerBetaUpdate,
+		Delete: resourceScalewayBaremetalServerBetaDelete,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},
@@ -44,8 +44,7 @@ func resourceScalewayBaremetalServer() *schema.Resource {
 					Type:         schema.TypeString,
 					ValidateFunc: validationUUID(),
 				},
-				Required:    true,
-				ForceNew:    true,
+				Optional:    true,
 				Description: "Array of SSH key IDs allowed to SSH to the server.",
 			},
 			"description": {
@@ -68,7 +67,7 @@ func resourceScalewayBaremetalServer() *schema.Resource {
 	}
 }
 
-func resourceScalewayBaremetalServerCreate(d *schema.ResourceData, m interface{}) error {
+func resourceScalewayBaremetalServerBetaCreate(d *schema.ResourceData, m interface{}) error {
 	baremetalApi, zone, err := getBaremetalAPIWithZone(d, m)
 	if err != nil {
 		return err
@@ -117,6 +116,8 @@ func resourceScalewayBaremetalServerCreate(d *schema.ResourceData, m interface{}
 		for _, sshKeyID := range raw.([]interface{}) {
 			installReq.SSHKeyIds = append(installReq.SSHKeyIds, sshKeyID.(string))
 		}
+	} else {
+		// TODO: pull all user ssh keys
 	}
 
 	_, err = baremetalApi.InstallServer(installReq)
@@ -124,19 +125,27 @@ func resourceScalewayBaremetalServerCreate(d *schema.ResourceData, m interface{}
 		return err
 	}
 
-	return resourceScalewayBaremetalServerRead(d, m)
+	_, err = baremetalApi.WaitForServer(&baremetal.WaitForServerRequest{
+		Zone:     zone,
+		ServerID: res.ID,
+		Timeout:  BaremetalServerWaitForTimeout,
+	})
+	if err != nil {
+		return err
+	}
+
+	return resourceScalewayBaremetalServerBetaRead(d, m)
 }
 
-func resourceScalewayBaremetalServerRead(d *schema.ResourceData, m interface{}) error {
+func resourceScalewayBaremetalServerBetaRead(d *schema.ResourceData, m interface{}) error {
 	baremetalApi, zone, ID, err := getBaremetalAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return err
 	}
 
-	res, err := baremetalApi.WaitForServer(&baremetal.WaitForServerRequest{
+	res, err := baremetalApi.GetServer(&baremetal.GetServerRequest{
 		Zone:     zone,
 		ServerID: ID,
-		Timeout:  BaremetalServerWaitForTimeout,
 	})
 
 	if err != nil {
@@ -159,7 +168,7 @@ func resourceScalewayBaremetalServerRead(d *schema.ResourceData, m interface{}) 
 	return nil
 }
 
-func resourceScalewayBaremetalServerUpdate(d *schema.ResourceData, m interface{}) error {
+func resourceScalewayBaremetalServerBetaUpdate(d *schema.ResourceData, m interface{}) error {
 	baremetalApi, zone, ID, err := getBaremetalAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return err
@@ -193,10 +202,10 @@ func resourceScalewayBaremetalServerUpdate(d *schema.ResourceData, m interface{}
 		}
 	}
 
-	return resourceScalewayBaremetalServerRead(d, m)
+	return resourceScalewayBaremetalServerBetaRead(d, m)
 }
 
-func resourceScalewayBaremetalServerDelete(d *schema.ResourceData, m interface{}) error {
+func resourceScalewayBaremetalServerBetaDelete(d *schema.ResourceData, m interface{}) error {
 	baremetalApi, zone, ID, err := getBaremetalAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return err
@@ -211,10 +220,11 @@ func resourceScalewayBaremetalServerDelete(d *schema.ResourceData, m interface{}
 		return err
 	}
 
-	err = resourceScalewayBaremetalServerRead(d, m)
-	if err != nil && !is404Error(err) {
-		return err
-	}
+	_, err = baremetalApi.WaitForServer(&baremetal.WaitForServerRequest{
+		Zone:     zone,
+		ServerID: ID,
+		Timeout:  BaremetalServerWaitForTimeout,
+	})
 
-	return nil
+	return err
 }

@@ -9,16 +9,16 @@ import (
 	baremetal "github.com/scaleway/scaleway-sdk-go/api/baremetal/v1alpha1"
 )
 
-func TestAccScalewayBaremetalServerMinimal1(t *testing.T) {
+func TestAccScalewayBaremetalServerBetaMinimal1(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckScalewayBaremetalServerDestroy,
+		CheckDestroy: testAccCheckScalewayBaremetalServerBetaDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckScalewayBaremetalServerConfigMinimal(),
+				Config: testAccCheckScalewayBaremetalServerBetaConfigMinimal(),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayBaremetalServerExists("scaleway_baremetal_server_beta.base"),
+					testAccCheckScalewayBaremetalServerBetaExists("scaleway_baremetal_server_beta.base"),
 					resource.TestCheckResourceAttr("scaleway_baremetal_server_beta.base", "name", "namo"),
 					resource.TestCheckResourceAttr("scaleway_baremetal_server_beta.base", "type", "9eebce52-f7d5-484f-9437-b234164c4c4b"),
 					resource.TestCheckResourceAttr("scaleway_baremetal_server_beta.base", "image_id", "d17d6872-0412-45d9-a198-af82c34d3c5c"),
@@ -32,7 +32,7 @@ func TestAccScalewayBaremetalServerMinimal1(t *testing.T) {
 	})
 }
 
-func testAccCheckScalewayBaremetalServerExists(n string) resource.TestCheckFunc {
+func testAccCheckScalewayBaremetalServerBetaExists(n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
@@ -53,7 +53,7 @@ func testAccCheckScalewayBaremetalServerExists(n string) resource.TestCheckFunc 
 	}
 }
 
-func testAccCheckScalewayBaremetalServerDestroy(s *terraform.State) error {
+func testAccCheckScalewayBaremetalServerBetaDestroy(s *terraform.State) error {
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "scaleway_baremetal_server_beta" {
 			continue
@@ -83,7 +83,7 @@ func testAccCheckScalewayBaremetalServerDestroy(s *terraform.State) error {
 	return nil
 }
 
-func testAccCheckScalewayBaremetalServerConfigMinimal() string {
+func testAccCheckScalewayBaremetalServerBetaConfigMinimal() string {
 	return `
 resource "scaleway_baremetal_server_beta" "base" {
   name        = "namo"
