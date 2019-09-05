@@ -25,6 +25,7 @@ func TestAccScalewayInstanceServerMinimal1(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "root_volume.0.delete_on_termination", "true"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "root_volume.0.size_in_gb", "20"),
 					resource.TestCheckResourceAttrSet("scaleway_instance_server.base", "root_volume.0.volume_id"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.base", "disable_public_ip", "false"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "tags.0", "terraform-test"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "tags.1", "scaleway_instance_server"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "tags.2", "minimal"),
@@ -104,23 +105,6 @@ func TestAccScalewayInstanceServerBasic1(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "tags.0", "terraform-test"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "tags.1", "scaleway_instance_server"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "tags.2", "basic"),
-				),
-			},
-		},
-	})
-}
-func TestAccScalewayInstanceServerRemoteExec(t *testing.T) {
-	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckScalewayInstanceServerDestroy,
-		Steps: []resource.TestStep{
-			{
-				Config: testAccCheckScalewayInstanceServerConfigWithIPAndVolume,
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayInstanceServerExists("scaleway_instance_server.webserver"),
-					testAccCheckSalewayInstanceVolumeExists("scaleway_instance_volume.data"),
-					testAccCheckScalewayInstanceIPExists("scaleway_instance_ip.myip"),
 				),
 			},
 		},
@@ -530,24 +514,6 @@ resource "scaleway_instance_server" "base" {
   additional_volume_ids  = [ %s ]
 }`, additionalVolumeResources, baseVolume, strings.Join(additionalVolumeIDs, ","))
 }
-
-var testAccCheckScalewayInstanceServerConfigWithIPAndVolume = `
-resource "scaleway_instance_ip" "myip" {
-  server_id = "${scaleway_instance_server.webserver.id}"
-}
-
-resource "scaleway_instance_volume" "data" {
-  size_in_gb = 100
-  type       = "b_ssd"
-}
-
-resource "scaleway_instance_server" "webserver" {
-  image = "f974feac-abae-4365-b988-8ec7d1cec10d"
-  type     = "DEV1-S"
-
-  additional_volume_ids = [ "${scaleway_instance_volume.data.id}" ]
-}
-`
 
 var testAccCheckScalewayInstanceServerConfigWithPlacementGroup = `
 resource "scaleway_instance_placement_group" "ha" {

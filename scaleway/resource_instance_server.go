@@ -124,6 +124,12 @@ func resourceScalewayInstanceServer() *schema.Resource {
 				Computed:    true,
 				Description: "The public IPv4 address of the server",
 			},
+			"disable_public_ip": {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Default:     false,
+				Description: "Disable dynamic ip on the server",
+			},
 			"state": {
 				Type:        schema.TypeString,
 				Optional:    true,
@@ -208,7 +214,7 @@ func resourceScalewayInstanceServerCreate(d *schema.ResourceData, m interface{})
 		CommercialType:    commercialType,
 		EnableIPv6:        d.Get("enable_ipv6").(bool),
 		SecurityGroup:     expandID(d.Get("security_group_id")),
-		DynamicIPRequired: Bool(false),
+		DynamicIPRequired: Bool(!d.Get("disable_public_ip").(bool)),
 	}
 
 	if placementGroupID, ok := d.GetOk("placement_group_id"); ok {
@@ -314,6 +320,7 @@ func resourceScalewayInstanceServerRead(d *schema.ResourceData, m interface{}) e
 	d.Set("tags", response.Server.Tags)
 	d.Set("security_group_id", response.Server.SecurityGroup.ID)
 	d.Set("enable_ipv6", response.Server.EnableIPv6)
+	d.Set("disable_public_ip", !response.Server.DynamicIPRequired)
 
 	// TODO: If image is a label, check that response.Server.Image.ID match the label.
 	// It could be useful if the user edit the image with another tool.
@@ -429,6 +436,10 @@ func resourceScalewayInstanceServerUpdate(d *schema.ResourceData, m interface{})
 
 	if d.HasChange("enable_ipv6") {
 		updateRequest.EnableIPv6 = scw.BoolPtr(d.Get("enable_ipv6").(bool))
+	}
+
+	if d.HasChange("disable_public_ip") {
+		updateRequest.DynamicIPRequired = scw.BoolPtr(!d.Get("disable_public_ip").(bool))
 	}
 
 	volumes := map[string]*instance.VolumeTemplate{}
