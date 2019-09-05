@@ -1445,10 +1445,6 @@ type CreateServerRequest struct {
 	EnableIPv6 bool `json:"enable_ipv6,omitempty"`
 	// PublicIP define the public IPv4 attached to the server
 	PublicIP string `json:"public_ip,omitempty"`
-	// BootType define the boot type you want to use
-	//
-	// Default value: local
-	BootType ServerBootType `json:"boot_type"`
 	// Organization define the server organization
 	Organization string `json:"organization,omitempty"`
 	// Tags define the server tags
@@ -1690,10 +1686,6 @@ type updateServerRequest struct {
 	ServerID string `json:"-"`
 
 	Name *string `json:"name,omitempty"`
-	// BootType
-	//
-	// Default value: local
-	BootType ServerBootType `json:"boot_type"`
 
 	Tags *[]string `json:"tags,omitempty"`
 
