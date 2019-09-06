@@ -3,6 +3,7 @@ package scaleway
 import (
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/hashicorp/terraform/helper/validation"
+	account "github.com/scaleway/scaleway-sdk-go/api/account/v2alpha1"
 	baremetal "github.com/scaleway/scaleway-sdk-go/api/baremetal/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 )
@@ -49,6 +50,7 @@ func resourceScalewayBaremetalServerBeta() *schema.Resource {
 					ValidateFunc: validationUUID(),
 				},
 				Optional:    true,
+				Computed:    true,
 				Description: "Array of SSH key IDs allowed to SSH to the server.",
 			},
 			"description": {
@@ -121,7 +123,15 @@ func resourceScalewayBaremetalServerBetaCreate(d *schema.ResourceData, m interfa
 			installReq.SSHKeyIds = append(installReq.SSHKeyIds, sshKeyID.(string))
 		}
 	} else {
-		// TODO: pull all user ssh keys
+		// pull all ssh keys
+		sshKeysResponse, err := account.NewAPI(m.(*Meta).scwClient).ListSSHKeys(&account.ListSSHKeysRequest{})
+		if err != nil {
+			return err
+		}
+
+		for _, sshKey := range sshKeysResponse.SSHKeys {
+			installReq.SSHKeyIds = append(installReq.SSHKeyIds, sshKey.ID)
+		}
 	}
 
 	_, err = baremetalApi.InstallServer(installReq)
