@@ -91,7 +91,6 @@ resource "scaleway_baremetal_server_beta" "base" {
   description = "test a description"
   offer_id    = "9eebce52-f7d5-484f-9437-b234164c4c4b"
   os_id       = "d17d6872-0412-45d9-a198-af82c34d3c5c"
-  ssh_key_ids = ["2a9845b2-d722-4fc1-a77d-fe763728cc37"]
 
   tags = [ "terraform-test", "scaleway_baremetal_server_beta", "minimal" ]
 }`
