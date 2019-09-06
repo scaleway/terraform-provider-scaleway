@@ -301,6 +301,8 @@ const (
 	ServerStatusError = ServerStatus("error")
 	// ServerStatusDeleting is [insert doc].
 	ServerStatusDeleting = ServerStatus("deleting")
+	// ServerStatusLocked is [insert doc].
+	ServerStatusLocked = ServerStatus("locked")
 )
 
 func (enum ServerStatus) String() string {
