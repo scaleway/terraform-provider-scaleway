@@ -8,6 +8,7 @@ description: |-
 # scaleway_ssh_key
 
 **DEPRECATED**: This resource is deprecated and will be removed in `v2.0+`.
+Please use `account_ssh_key` instead.
 
 Manages user SSH Keys to access servers provisioned on scaleway.
 For additional details please refer to [API documentation](https://developer.scaleway.com/#users-user-get).
@@ -24,13 +25,13 @@ resource "scaleway_ssh_key" "test" {
 
 The following arguments are supported:
 
-* `key` - (Required) public key of the SSH key to be added
+- `key` - (Required) public key of the SSH key to be added
 
 ## Attributes Reference
 
 The following attributes are exported:
 
-* `id` - fingerprint of the SSH key
+- `id` - fingerprint of the SSH key
 
 ## Import
 
