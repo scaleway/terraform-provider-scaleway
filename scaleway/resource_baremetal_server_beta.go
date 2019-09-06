@@ -124,7 +124,7 @@ func resourceScalewayBaremetalServerBetaCreate(d *schema.ResourceData, m interfa
 		}
 	} else {
 		// pull all ssh keys
-		sshKeysResponse, err := account.NewAPI(m.(*Meta).scwClient).ListSSHKeys(&account.ListSSHKeysRequest{})
+		sshKeysResponse, err := getAccountAPI(m).ListSSHKeys(&account.ListSSHKeysRequest{})
 		if err != nil {
 			return err
 		}
