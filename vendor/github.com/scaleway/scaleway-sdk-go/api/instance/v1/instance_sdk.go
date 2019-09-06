@@ -1429,7 +1429,7 @@ func (r *ListServersResponse) UnsafeAppend(res interface{}) (int, scw.SdkError) 
 	return len(results.Servers), nil
 }
 
-type CreateServerRequest struct {
+type createServerRequest struct {
 	Zone scw.Zone `json:"-"`
 	// Name display the server name
 	Name string `json:"name,omitempty"`
@@ -1455,8 +1455,8 @@ type CreateServerRequest struct {
 	ComputeCluster string `json:"compute_cluster,omitempty"`
 }
 
-// CreateServer create server
-func (s *API) CreateServer(req *CreateServerRequest, opts ...scw.RequestOption) (*CreateServerResponse, error) {
+// createServer create server
+func (s *API) createServer(req *createServerRequest, opts ...scw.RequestOption) (*CreateServerResponse, error) {
 	var err error
 
 	if req.Organization == "" {
