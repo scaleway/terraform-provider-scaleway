@@ -65,9 +65,7 @@ func resourceScalewayAccountSSHKeyRead(d *schema.ResourceData, m interface{}) er
 
 	d.Set("name", res.Name)
 	d.Set("public_key", res.PublicKey)
-
-	// TODO: Uncomment me when it will be implemented in the API.
-	// d.Set("organization_id", res.OrganizationID)
+	d.Set("organization_id", res.OrganizationID)
 
 	return nil
 }
