@@ -11,14 +11,14 @@ description: |-
 Creates and manages Scaleway Compute Baremetal servers. For more information, see [the documentation](https://developers.scaleway.com/en/products/baremetal/api).
 
 ## Examples
-
+    
 ### Basic
 
 ```hcl
 resource "scaleway_baremetal_server_beta" "base" {
   zone		  = "fr-par-2"
-  type        = "9eebce52-f7d5-484f-9437-b234164c4c4b"
-  image_id    = "d17d6872-0412-45d9-a198-af82c34d3c5c"
+  offer_id    = "9eebce52-f7d5-484f-9437-b234164c4c4b"
+  os_id       = "d17d6872-0412-45d9-a198-af82c34d3c5c"
   ssh_key_ids = ["f974feac-abae-4365-b988-8ec7d1cec10d"] // get ssh key ids from the console
 }
 ```
@@ -27,11 +27,11 @@ resource "scaleway_baremetal_server_beta" "base" {
 
 The following arguments are supported:
 
-- `type` - (Required) The type of the baremetal server.
+- `offer_id` - (Required) The type of the baremetal server.
 Updates to this field will recreate the resource.
 
 
-- `image_id` - (Required) The UUID of the base image used by the server.
+- `os_id` - (Required) The UUID of the base image used by the server.
 Updates to this field will recreate the resource.
 
 - `name` - (Optional) The name of the server.
