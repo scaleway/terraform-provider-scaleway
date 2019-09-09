@@ -7,7 +7,7 @@ description: |-
 
 # Migrating from v1 to v2
 
--> **Note:** The version 2 is not released yet but versions `v1.11+` allows you to do a smooth migration to the `v2`. In other words, there will be no breaking changes between `v1.11+` and `v2`. The `v2` roadmap is avaiable here
+-> **Note:** The version 2 is not released yet but versions `v1.11+` allow you to do a smooth migration to the `v2`. In other words, there will be no breaking change between `v1.11+` and `v2`. The `v2` roadmap is available [here](https://github.com/terraform-providers/terraform-provider-scaleway/issues/125).
 
 This page guides you through the process of migrating your version 1 resources to their version 2 equivalent.
 To prepare the launch of all new Scaleway products, we completely changed the naming of all resources (as well as their attributes) in version 2 of the Terraform provider.
@@ -16,9 +16,9 @@ To prepare the launch of all new Scaleway products, we completely changed the na
 
 ### Version configuration
 
--> **Note:** Before upgrading to `v2+`, it is recommended to upgrade to the most recent `1.X` version of the provider (`v1.11.0`) and ensure that your environment successfully runs [`terraform plan`](https://www.terraform.io/docs/commands/plan.html) without unexpected changes or deprecation notices.
+-> **Note:** Before upgrading to `v2+`, it is recommended to upgrade to the most recent `1.X` version of the provider (`v1.11.0`) and ensure that your environment successfully runs [`terraform plan`](https://www.terraform.io/docs/commands/plan.html) without unexpected change or deprecation notice.
 
-It is recommended to use [version constraints when configuring Terraform providers](https://www.terraform.io/docs/configuration/providers.html#version-provider-versions). If you are following that recommendation, update the version constraints in your Terraform configuration and run [`terraform init`](https://www.terraform.io/docs/commands/init.html) to download the new version.
+It is recommended to use [version constraints when configuring Terraform providers](https://www.terraform.io/docs/configuration/providers.html#version-provider-versions). If you are following these recommendation, update the version constraints in your Terraform configuration and run [`terraform init`](https://www.terraform.io/docs/commands/init.html) to download the new version.
 
 Update to latest `1.X` version:
 
