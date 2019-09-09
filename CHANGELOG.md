@@ -2,7 +2,7 @@
 
 NOTES:
 
-* Full documentation about this update, including Terraform provider version pinning and configuration examples, can be found in the [migrating guide](https://www.terraform.io/docs/providers/scaleway/guides/migration_guide_v2.html).
+* Full documentation about this update, including Terraform provider version pinning and configuration examples, can be found in the [migration guide](https://www.terraform.io/docs/providers/scaleway/guides/migration_guide_v2.html).
 
 FEATURES:
 
