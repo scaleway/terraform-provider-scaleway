@@ -135,12 +135,12 @@ func resourceScalewayInstanceServer() *schema.Resource {
 			"state": {
 				Type:        schema.TypeString,
 				Optional:    true,
-				Default:     ServerStateStarted,
+				Default:     InstanceServerStateStarted,
 				Description: "The state of the server should be: started, stopped, standby",
 				ValidateFunc: validation.StringInSlice([]string{
-					ServerStateStarted,
-					ServerStateStopped,
-					ServerStateStandby,
+					InstanceServerStateStarted,
+					InstanceServerStateStopped,
+					InstanceServerStateStandby,
 				}, false),
 			},
 			"cloud_init": {
@@ -281,7 +281,7 @@ func resourceScalewayInstanceServerCreate(d *schema.ResourceData, m interface{})
 		}
 	}
 
-	err = reachState(instanceAPI, zone, res.Server.ID, ServerStateStopped, d.Get("state").(string), false)
+	err = reachState(instanceAPI, zone, res.Server.ID, InstanceServerStateStopped, d.Get("state").(string), false)
 	if err != nil {
 		return err
 	}
@@ -472,10 +472,10 @@ func resourceScalewayInstanceServerUpdate(d *schema.ResourceData, m interface{})
 
 	var updateResponse *instance.UpdateServerResponse
 
-	err = resource.Retry(ServerRetryFuncTimeout, func() *resource.RetryError {
+	err = resource.Retry(InstanceServerRetryFuncTimeout, func() *resource.RetryError {
 		updateResponse, err = instanceAPI.UpdateServer(updateRequest)
 		if isSDKResponseError(err, http.StatusBadRequest, "Instance must be powered off to change local volumes") {
-			err = reachState(instanceAPI, zone, ID, previousState.(string), ServerStateStopped, false)
+			err = reachState(instanceAPI, zone, ID, previousState.(string), InstanceServerStateStopped, false)
 			if err != nil && !isSDKResponseError(err, http.StatusBadRequest, "server should be running") {
 				return resource.NonRetryableError(err)
 			}
@@ -545,7 +545,7 @@ func resourceScalewayInstanceServerDelete(d *schema.ResourceData, m interface{})
 	}
 
 	// reach stopped state
-	err = reachState(instanceAPI, zone, ID, d.Get("state").(string), ServerStateStopped, false)
+	err = reachState(instanceAPI, zone, ID, d.Get("state").(string), InstanceServerStateStopped, false)
 	if is404Error(err) {
 		return nil
 	}

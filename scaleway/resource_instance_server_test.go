@@ -354,7 +354,7 @@ func testAccCheckScalewayInstanceServerExists(n string) resource.TestCheckFunc {
 
 func testAccCheckScalewayInstanceServerDestroy(s *terraform.State) error {
 	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "scaleway_instance_ip" {
+		if rs.Type != "scaleway_instance_server" {
 			continue
 		}
 
