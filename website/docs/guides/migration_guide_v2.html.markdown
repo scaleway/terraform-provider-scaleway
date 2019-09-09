@@ -7,10 +7,40 @@ description: |-
 
 # Migrating from v1 to v2
 
+-> **Note:** The version 2 is not released yet but versions `v1.11+` allow you to do a smooth migration to the `v2`. In other words, there will be no breaking change between `v1.11+` and `v2`. The `v2` roadmap is available [here](https://github.com/terraform-providers/terraform-provider-scaleway/issues/125).
+
 This page guides you through the process of migrating your version 1 resources to their version 2 equivalent.
 To prepare the launch of all new Scaleway products, we completely changed the naming of all resources (as well as their attributes) in version 2 of the Terraform provider.
 
-## Configuration
+## Provider
+
+### Version configuration
+
+-> **Note:** Before upgrading to `v2+`, it is recommended to upgrade to the most recent `1.X` version of the provider (`v1.11.0`) and ensure that your environment successfully runs [`terraform plan`](https://www.terraform.io/docs/commands/plan.html) without unexpected change or deprecation notice.
+
+It is recommended to use [version constraints when configuring Terraform providers](https://www.terraform.io/docs/configuration/providers.html#version-provider-versions). If you are following these recommendation, update the version constraints in your Terraform configuration and run [`terraform init`](https://www.terraform.io/docs/commands/init.html) to download the new version.
+
+Update to latest `1.X` version:
+
+```hcl
+provider "scaleway" {
+  # ... other configuration ...
+
+  version = "~> 1.11"
+}
+```
+
+Update to latest 2.X version:
+
+```hcl
+provider "scaleway" {
+  # ... other configuration ...
+
+  version = "~> 2.0"
+}
+```
+
+### Provider configuration
 
 In order to unify configuration management across all scaleway developer tools, we changed the configuration management in version 2.
 
@@ -43,9 +73,9 @@ Below you find an overview of the changes in environment variables:
 
 All resources are from now on prefixed by `scaleway`, their product category and their product name (`scaleway_{product-category-name}_{product-name}_{resource-name}`). For instances an S3 bucket belongs to the `Storage` product category and is a resource of the `Object` product. Hence it is named: `scaleway_object_bucket`.
 
-### Compute
+### Instance
 
-All the old compute resources have been regrouped under a new name: `Instance`.
+All the old instance resources have been regrouped under a new name: `Instance`.
 This means that all old instance resources are now prefixed with `scaleway_instance_`.
 
 #### Renamed: `scaleway_server` -> `scaleway_instance_server`
