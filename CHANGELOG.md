@@ -1,4 +1,37 @@
 ## 1.11.0 (Unreleased)
+
+NOTES:
+
+* Full documentation about this update, including Terraform provider version pinning and configuration examples, can be found in the [migrating guide](https://www.terraform.io/docs/providers/scaleway/guides/migration_guide_v2.html).
+
+FEATURES:
+
+* provider/scaleway: new provider configuration [GH-140]
+* **New Resource:**: `scaleway_instance_server` [GH-143]
+* **New Resource:**: `scaleway_instance_ip` [GH-143]
+* **New Resource:**: `scaleway_instance_security_group` [GH-143]
+* **New Resource:**: `scaleway_instance_volume` [GH-143]
+* **New Resource:**: `scaleway_object_bucket` [GH-143]
+* **New Resource:**: `scaleway_account_ssh_key` [GH-143]
+* **New Resource:**: `scaleway_baremetal_server_beta` (in beta version) [GH-143]
+
+* **Deprecated Resource:**: `scaleway_server` (replaced by `scaleway_instance_server`) [GH-143]
+* **Deprecated Resource:**: `scaleway_ip` (replaced by `scaleway_instance_ip`) [GH-143]
+* **Deprecated Resource:**: `scaleway_ip_reverse_dns` (included into `scaleway_instance_ip`) [GH-143]
+* **Deprecated Resource:**: `scaleway_security_group` (replaced by `scaleway_instance_security_group`) [GH-143]
+* **Deprecated Resource:**: `scaleway_security_group_rule` (included into `scaleway_instance_security_group`) [GH-143]
+* **Deprecated Resource:**: `scaleway_volume` (replaced by `scaleway_instance_volume`) [GH-143]
+* **Deprecated Resource:**: `scaleway_volume_attachment` (included into `scaleway_instance_volume`) [GH-143]
+* **Deprecated Resource:**: `scaleway_user_data` (included into `scaleway_instance_server`) [GH-143]
+* **Deprecated Resource:**: `scaleway_bucket` (replaced by `scaleway_object_bucket`) [GH-143]
+* **Deprecated Resource:**: `scaleway_token` [GH-143]
+* **Deprecated Resource:**: `scaleway_ssh_key` (replaced by `scaleway_account_ssh_key`) [GH-143]
+
+BUG FIXES:
+
+* provider/scaleway: update terraform SDK to 0.12.8 [GH-242]
+
+
 ## 1.10.0 (June 03, 2019)
 
 FEATURES
