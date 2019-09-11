@@ -279,6 +279,15 @@ func resourceScalewayInstanceSecurityGroupUpdate(d *schema.ResourceData, m inter
 			// We compare rule stateRule[index] and apiRule[index]. If they are different we update api rule to match state.
 			apiRule = apiRules[direction][index]
 			if !securityGroupRuleEquals(stateRule, apiRule) {
+				destPortFrom := stateRule.DestPortFrom
+				destPortTo := stateRule.DestPortTo
+				if destPortFrom == nil {
+					destPortFrom = scw.Uint32Ptr(0)
+				}
+				if destPortTo == nil {
+					destPortTo = scw.Uint32Ptr(0)
+				}
+
 				_, err = instanceApi.UpdateSecurityGroupRule(&instance.UpdateSecurityGroupRuleRequest{
 					Zone:                zone,
 					SecurityGroupID:     ID,
@@ -286,8 +295,8 @@ func resourceScalewayInstanceSecurityGroupUpdate(d *schema.ResourceData, m inter
 					Protocol:            &stateRule.Protocol,
 					IPRange:             &stateRule.IPRange,
 					Action:              &stateRule.Action,
-					DestPortTo:          stateRule.DestPortTo,
-					DestPortFrom:        stateRule.DestPortFrom,
+					DestPortTo:          destPortTo,
+					DestPortFrom:        destPortFrom,
 					Direction:           &direction,
 				})
 				if err != nil {

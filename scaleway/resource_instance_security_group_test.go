@@ -105,6 +105,27 @@ var testAccScalewayInstanceSecurityGroupConfigNoPort = []string{
 	`,
 }
 
+// Test that we remove a port from a rule
+var testAccScalewayInstanceSecurityGroupConfigRemovePort = []string{
+	`
+		resource "scaleway_instance_security_group" "base" {
+			inbound_rule {
+				action = "accept"
+				ip_range = "0.0.0.0/0"
+				port = 22
+            }
+		}
+	`,
+	`
+		resource "scaleway_instance_security_group" "base" {
+			inbound_rule {
+				action = "accept"
+				ip_range = "0.0.0.0/0"
+            }
+		}
+	`,
+}
+
 func TestAccScalewayInstanceSecurityGroup(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
@@ -256,6 +277,43 @@ func TestAccScalewayInstanceSecurityGroupNoPort(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: testAccScalewayInstanceSecurityGroupConfigNoPort[0],
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayInstanceSecurityGroupRuleMatch("scaleway_instance_security_group.base", 0, &instance.SecurityGroupRule{
+						Direction:    instance.SecurityGroupRuleDirectionInbound,
+						IPRange:      "0.0.0.0/0",
+						DestPortFrom: nil,
+						DestPortTo:   nil,
+						Protocol:     instance.SecurityGroupRuleProtocolTCP,
+						Action:       instance.SecurityGroupRuleActionAccept,
+					}),
+				),
+			},
+		},
+	})
+}
+
+func TestAccScalewayInstanceSecurityGroupRemovePort(t *testing.T) {
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckScalewayInstanceSecurityGroupDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccScalewayInstanceSecurityGroupConfigRemovePort[0],
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayInstanceSecurityGroupRuleMatch("scaleway_instance_security_group.base", 0, &instance.SecurityGroupRule{
+						Direction:    instance.SecurityGroupRuleDirectionInbound,
+						IPRange:      "0.0.0.0/0",
+						DestPortFrom: scw.Uint32Ptr(22),
+						DestPortTo:   nil,
+						Protocol:     instance.SecurityGroupRuleProtocolTCP,
+						Action:       instance.SecurityGroupRuleActionAccept,
+					}),
+				),
+			},
+			{
+				Config: testAccScalewayInstanceSecurityGroupConfigRemovePort[1],
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayInstanceSecurityGroupRuleMatch("scaleway_instance_security_group.base", 0, &instance.SecurityGroupRule{
 						Direction:    instance.SecurityGroupRuleDirectionInbound,

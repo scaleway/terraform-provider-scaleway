@@ -693,11 +693,11 @@ type Dashboard struct {
 
 	ServersCount uint32 `json:"servers_count"`
 
-	IpsCount uint32 `json:"ips_count"`
+	IPsCount uint32 `json:"ips_count"`
 
 	SecurityGroupsCount uint32 `json:"security_groups_count"`
 
-	IpsUnused uint32 `json:"ips_unused"`
+	IPsUnused uint32 `json:"ips_unused"`
 }
 
 type GetBootscriptResponse struct {
@@ -802,14 +802,14 @@ type ListComputeClustersResponse struct {
 	TotalCount uint32 `json:"total_count"`
 }
 
-type ListImagesResponse struct {
-	Images []*Image `json:"images"`
+type ListIPsResponse struct {
+	IPs []*IP `json:"ips"`
 
 	TotalCount uint32 `json:"total_count"`
 }
 
-type ListIpsResponse struct {
-	Ips []*IP `json:"ips"`
+type ListImagesResponse struct {
+	Images []*Image `json:"images"`
 
 	TotalCount uint32 `json:"total_count"`
 }
@@ -3801,7 +3801,7 @@ func (s *API) DeleteComputeClusterServers(req *DeleteComputeClusterServersReques
 	return nil
 }
 
-type ListIpsRequest struct {
+type ListIPsRequest struct {
 	Zone scw.Zone `json:"-"`
 
 	Organization *string `json:"-"`
@@ -3813,8 +3813,8 @@ type ListIpsRequest struct {
 	Page *int32 `json:"-"`
 }
 
-// ListIps list IPs
-func (s *API) ListIps(req *ListIpsRequest, opts ...scw.RequestOption) (*ListIpsResponse, error) {
+// ListIPs list IPs
+func (s *API) ListIPs(req *ListIPsRequest, opts ...scw.RequestOption) (*ListIPsResponse, error) {
 	var err error
 
 	defaultOrganization, exist := s.client.GetDefaultOrganizationID()
@@ -3849,7 +3849,7 @@ func (s *API) ListIps(req *ListIpsRequest, opts ...scw.RequestOption) (*ListIpsR
 		Headers: http.Header{},
 	}
 
-	var resp ListIpsResponse
+	var resp ListIPsResponse
 
 	err = s.client.Do(scwReq, &resp, opts...)
 	if err != nil {
@@ -3860,21 +3860,21 @@ func (s *API) ListIps(req *ListIpsRequest, opts ...scw.RequestOption) (*ListIpsR
 
 // UnsafeGetTotalCount should not be used
 // Internal usage only
-func (r *ListIpsResponse) UnsafeGetTotalCount() int {
+func (r *ListIPsResponse) UnsafeGetTotalCount() int {
 	return int(r.TotalCount)
 }
 
 // UnsafeAppend should not be used
 // Internal usage only
-func (r *ListIpsResponse) UnsafeAppend(res interface{}) (int, scw.SdkError) {
-	results, ok := res.(*ListIpsResponse)
+func (r *ListIPsResponse) UnsafeAppend(res interface{}) (int, scw.SdkError) {
+	results, ok := res.(*ListIPsResponse)
 	if !ok {
 		return 0, errors.New("%T type cannot be appended to type %T", res, r)
 	}
 
-	r.Ips = append(r.Ips, results.Ips...)
-	r.TotalCount += uint32(len(results.Ips))
-	return len(results.Ips), nil
+	r.IPs = append(r.IPs, results.IPs...)
+	r.TotalCount += uint32(len(results.IPs))
+	return len(results.IPs), nil
 }
 
 type CreateIPRequest struct {

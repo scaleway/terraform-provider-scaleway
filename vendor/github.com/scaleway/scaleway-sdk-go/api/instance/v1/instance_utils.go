@@ -236,7 +236,7 @@ func (r *ListBootscriptsResponse) UnsafeSetTotalCount(totalCount int) {
 
 // UnsafeSetTotalCount should not be used
 // Internal usage only
-func (r *ListIpsResponse) UnsafeSetTotalCount(totalCount int) {
+func (r *ListIPsResponse) UnsafeSetTotalCount(totalCount int) {
 	r.TotalCount = uint32(totalCount)
 }
 

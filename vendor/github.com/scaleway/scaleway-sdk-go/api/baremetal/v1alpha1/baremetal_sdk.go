@@ -395,8 +395,8 @@ type Server struct {
 	Install *ServerInstall `json:"install"`
 	// Tags array of customs tags
 	Tags []string `json:"tags"`
-	// Ips array of IPs
-	Ips []*IP `json:"ips"`
+	// IPs array of IPs
+	IPs []*IP `json:"ips"`
 	// Domain the server domain
 	Domain string `json:"domain"`
 	// BootType boot type
@@ -420,7 +420,7 @@ type ServerInstall struct {
 
 	Hostname string `json:"hostname"`
 
-	SSHKeyIds []string `json:"ssh_key_ids"`
+	SSHKeyIDs []string `json:"ssh_key_ids"`
 	// Status
 	//
 	// Default value: unknown
@@ -661,8 +661,8 @@ type InstallServerRequest struct {
 	OsID string `json:"os_id"`
 	// Hostname hostname of the server
 	Hostname string `json:"hostname"`
-	// SSHKeyIds array of ssh key IDs authorized
-	SSHKeyIds []string `json:"ssh_key_ids"`
+	// SSHKeyIDs array of ssh key IDs authorized
+	SSHKeyIDs []string `json:"ssh_key_ids"`
 }
 
 // InstallServer install your server.
