@@ -120,7 +120,7 @@ func resourceScalewayBaremetalServerBetaCreate(d *schema.ResourceData, m interfa
 
 	if raw, ok := d.GetOk("ssh_key_ids"); ok {
 		for _, sshKeyID := range raw.([]interface{}) {
-			installReq.SSHKeyIds = append(installReq.SSHKeyIds, sshKeyID.(string))
+			installReq.SSHKeyIDs = append(installReq.SSHKeyIDs, sshKeyID.(string))
 		}
 	} else {
 		// pull all ssh keys
@@ -130,7 +130,7 @@ func resourceScalewayBaremetalServerBetaCreate(d *schema.ResourceData, m interfa
 		}
 
 		for _, sshKey := range sshKeysResponse.SSHKeys {
-			installReq.SSHKeyIds = append(installReq.SSHKeyIds, sshKey.ID)
+			installReq.SSHKeyIDs = append(installReq.SSHKeyIDs, sshKey.ID)
 		}
 	}
 
@@ -177,7 +177,7 @@ func resourceScalewayBaremetalServerBetaRead(d *schema.ResourceData, m interface
 	d.Set("type", res.OfferID)
 	if res.Install != nil {
 		d.Set("image_id", res.Install.OsID)
-		d.Set("ssh_key_ids", res.Install.SSHKeyIds)
+		d.Set("ssh_key_ids", res.Install.SSHKeyIDs)
 	}
 	d.Set("description", res.Description)
 
