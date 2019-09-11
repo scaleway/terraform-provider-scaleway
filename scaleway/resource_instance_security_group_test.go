@@ -26,14 +26,14 @@ var testAccScalewayInstanceSecurityGroupConfig = []string{
 			inbound_default_policy = "drop"
 			
 			inbound_rule {
-			   	action = "accept"
-			   	port = 80
+				action = "accept"
+				port = 80
 				ip_range = "0.0.0.0/0"
-            }
+			}
 
 			inbound_rule {
-		   		action = "accept"
-		   		port = 22
+				action = "accept"
+				port = 22
 				ip = "1.1.1.1"
 			}
 		}
@@ -44,20 +44,20 @@ var testAccScalewayInstanceSecurityGroupConfig = []string{
 			inbound_default_policy = "accept"
 
 			inbound_rule {
-			   	action = "drop"
-			   	port = 80
+				action = "drop"
+				port = 80
 				ip = "8.8.8.8"
-            }
+			}
 
 			inbound_rule {
-			   	action = "accept"
-			   	port = 80
+				action = "accept"
+				port = 80
 				ip_range = "0.0.0.0/0"
-            }
+			}
 
 			inbound_rule {
-		   		action = "accept"
-		   		port = 22
+				action = "accept"
+				port = 22
 				ip = "1.1.1.1"
 			}
 			
@@ -79,7 +79,7 @@ var testAccScalewayInstanceSecurityGroupConfigICMP = []string{
 				action = "accept"
 				port = 80
 				ip_range = "0.0.0.0/0"
-            }
+			}
 		}
 	`,
 	`
@@ -88,7 +88,7 @@ var testAccScalewayInstanceSecurityGroupConfigICMP = []string{
 				action = "drop"
 				protocol = "ICMP"
 				ip = "8.8.8.8"
-            }
+			}
 		}
 	`,
 }
@@ -100,7 +100,7 @@ var testAccScalewayInstanceSecurityGroupConfigNoPort = []string{
 			inbound_rule {
 				action = "accept"
 				ip_range = "0.0.0.0/0"
-            }
+			}
 		}
 	`,
 }
@@ -113,7 +113,7 @@ var testAccScalewayInstanceSecurityGroupConfigRemovePort = []string{
 				action = "accept"
 				ip_range = "0.0.0.0/0"
 				port = 22
-            }
+			}
 		}
 	`,
 	`
@@ -121,7 +121,7 @@ var testAccScalewayInstanceSecurityGroupConfigRemovePort = []string{
 			inbound_rule {
 				action = "accept"
 				ip_range = "0.0.0.0/0"
-            }
+			}
 		}
 	`,
 }
