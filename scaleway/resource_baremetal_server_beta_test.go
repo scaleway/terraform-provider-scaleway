@@ -16,16 +16,30 @@ func TestAccScalewayBaremetalServerBetaMinimal1(t *testing.T) {
 		CheckDestroy: testAccCheckScalewayBaremetalServerBetaDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckScalewayBaremetalServerBetaConfigMinimal(),
+				Config: testAccCheckScalewayBaremetalServerBetaConfigMinimal1[0],
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayBaremetalServerBetaExists("scaleway_baremetal_server_beta.base"),
 					resource.TestCheckResourceAttr("scaleway_baremetal_server_beta.base", "name", "namo"),
-					resource.TestCheckResourceAttr("scaleway_baremetal_server_beta.base", "offer_id", "9eebce52-f7d5-484f-9437-b234164c4c4b"),
+					resource.TestCheckResourceAttr("scaleway_baremetal_server_beta.base", "offer_id", "cc372979-cda3-4335-a6d2-748b639805ea"),
 					resource.TestCheckResourceAttr("scaleway_baremetal_server_beta.base", "os_id", "d17d6872-0412-45d9-a198-af82c34d3c5c"),
 					resource.TestCheckResourceAttr("scaleway_baremetal_server_beta.base", "description", "test a description"),
 					resource.TestCheckResourceAttr("scaleway_baremetal_server_beta.base", "tags.0", "terraform-test"),
 					resource.TestCheckResourceAttr("scaleway_baremetal_server_beta.base", "tags.1", "scaleway_baremetal_server_beta"),
 					resource.TestCheckResourceAttr("scaleway_baremetal_server_beta.base", "tags.2", "minimal"),
+				),
+			},
+			{
+				Config: testAccCheckScalewayBaremetalServerBetaConfigMinimal1[1],
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayBaremetalServerBetaExists("scaleway_baremetal_server_beta.base"),
+					resource.TestCheckResourceAttr("scaleway_baremetal_server_beta.base", "name", "namo"),
+					resource.TestCheckResourceAttr("scaleway_baremetal_server_beta.base", "offer_id", "cc372979-cda3-4335-a6d2-748b639805ea"),
+					resource.TestCheckResourceAttr("scaleway_baremetal_server_beta.base", "os_id", "d17d6872-0412-45d9-a198-af82c34d3c5c"),
+					resource.TestCheckResourceAttr("scaleway_baremetal_server_beta.base", "description", "test a description"),
+					resource.TestCheckResourceAttr("scaleway_baremetal_server_beta.base", "tags.0", "terraform-test"),
+					resource.TestCheckResourceAttr("scaleway_baremetal_server_beta.base", "tags.1", "scaleway_baremetal_server_beta"),
+					resource.TestCheckResourceAttr("scaleway_baremetal_server_beta.base", "tags.2", "minimal"),
+					resource.TestCheckResourceAttr("scaleway_baremetal_server_beta.base", "tags.3", "edited"),
 				),
 			},
 		},
@@ -71,7 +85,7 @@ func testAccCheckScalewayBaremetalServerBetaDestroy(s *terraform.State) error {
 
 		// If no error resource still exist
 		if err == nil {
-			return fmt.Errorf("Server (%s) still exists", rs.Primary.ID)
+			return fmt.Errorf("server (%s) still exists", rs.Primary.ID)
 		}
 
 		// Unexpected api error we return it
@@ -83,15 +97,26 @@ func testAccCheckScalewayBaremetalServerBetaDestroy(s *terraform.State) error {
 	return nil
 }
 
-func testAccCheckScalewayBaremetalServerBetaConfigMinimal() string {
-	return `
+var testAccCheckScalewayBaremetalServerBetaConfigMinimal1 = []string{`
 resource "scaleway_baremetal_server_beta" "base" {
-  name        = "namo"
-  zone		  = "fr-par-2"
-  description = "test a description"
-  offer_id    = "9eebce52-f7d5-484f-9437-b234164c4c4b"
-  os_id       = "d17d6872-0412-45d9-a198-af82c34d3c5c"
+	name        = "namo"
+	zone        = "fr-par-2"
+	description = "test a description"
+	offer_id    = "cc372979-cda3-4335-a6d2-748b639805ea"
+	os_id       = "d17d6872-0412-45d9-a198-af82c34d3c5c"
 
-  tags = [ "terraform-test", "scaleway_baremetal_server_beta", "minimal" ]
-}`
+	tags = [ "terraform-test", "scaleway_baremetal_server_beta", "minimal" ]
+}
+`,
+	`
+resource "scaleway_baremetal_server_beta" "base" {
+	name        = "namo"
+	zone        = "fr-par-2"
+	description = "test a description"
+	offer_id    = "cc372979-cda3-4335-a6d2-748b639805ea"
+	os_id       = "d17d6872-0412-45d9-a198-af82c34d3c5c"
+
+	tags = [ "terraform-test", "scaleway_baremetal_server_beta", "minimal", "edited" ]
+}
+`,
 }

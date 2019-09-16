@@ -207,7 +207,11 @@ func resourceScalewayBaremetalServerBetaUpdate(d *schema.ResourceData, m interfa
 	}
 
 	if d.HasChange("tags") {
-		req.Tags = scw.StringsPtr(d.Get("tags").([]string))
+		var tags []string
+		for _, tag := range d.Get("tags").([]interface{}) {
+			tags = append(tags, tag.(string))
+		}
+		req.Tags = &tags
 		hasChanged = true
 	}
 
