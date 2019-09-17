@@ -28,17 +28,21 @@ resource "scaleway_baremetal_server_beta" "base" {
 The following arguments are supported:
 
 - `offer_id` - (Required) The type of the baremetal server.
-Updates to this field will recreate the resource.
+Use [this endpoint](https://developers.scaleway.com/en/products/baremetal/api/#get-334154) to find the right offer ID.
 
+~> **Important:** Updates to `offer_id` will recreate the server.
 
 - `os_id` - (Required) The UUID of the base image used by the server.
-Updates to this field will recreate the resource.
+Use [this endpoint](https://developers.scaleway.com/en/products/baremetal/api/#get-87598a) to find the right OS ID.
+
+~> **Important:** Updates to `os_id` will reinstall the server.
 
 - `name` - (Optional) The name of the server.
 
 - `description` - (Optional) A description for the server.
 
-- `ssh_key_ids` - (Optional) List of SSH keys allowed to connect to the server. By default all user SSH keys will be allowed.
+- `ssh_key_ids` - (Defaults to all user SSH keys) List of SSH keys allowed to connect to the server.
+Updates to this field will reinstall the server.
 
 - `tags` - (Optional) The tags associated with the server.
 
