@@ -39,7 +39,6 @@ func resourceScalewayBaremetalServerBeta() *schema.Resource {
 			"os_id": {
 				Type:         schema.TypeString,
 				Required:     true,
-				ForceNew:     true,
 				Description:  "The base image of the server", // TODO: add in doc example with UUID
 				ValidateFunc: validationUUID(),
 			},
@@ -74,7 +73,7 @@ func resourceScalewayBaremetalServerBeta() *schema.Resource {
 }
 
 func resourceScalewayBaremetalServerBetaCreate(d *schema.ResourceData, m interface{}) error {
-	baremetalApi, zone, err := getBaremetalAPIWithZone(d, m)
+	baremetalAPI, zone, err := getBaremetalAPIWithZone(d, m)
 	if err != nil {
 		return err
 	}
@@ -95,14 +94,14 @@ func resourceScalewayBaremetalServerBetaCreate(d *schema.ResourceData, m interfa
 			createReq.Tags = append(createReq.Tags, tag.(string))
 		}
 	}
-	res, err := baremetalApi.CreateServer(createReq)
+	res, err := baremetalAPI.CreateServer(createReq)
 	if err != nil {
 		return err
 	}
 
 	d.SetId(newZonedId(zone, res.ID))
 
-	_, err = baremetalApi.WaitForServer(&baremetal.WaitForServerRequest{
+	_, err = baremetalAPI.WaitForServer(&baremetal.WaitForServerRequest{
 		Zone:     zone,
 		ServerID: res.ID,
 		Timeout:  BaremetalServerWaitForTimeout,
@@ -134,12 +133,12 @@ func resourceScalewayBaremetalServerBetaCreate(d *schema.ResourceData, m interfa
 		}
 	}
 
-	_, err = baremetalApi.InstallServer(installReq)
+	_, err = baremetalAPI.InstallServer(installReq)
 	if err != nil {
 		return err
 	}
 
-	_, err = baremetalApi.WaitForServer(&baremetal.WaitForServerRequest{
+	_, err = baremetalAPI.WaitForServer(&baremetal.WaitForServerRequest{
 		Zone:     zone,
 		ServerID: res.ID,
 		Timeout:  BaremetalServerWaitForTimeout,
@@ -152,12 +151,12 @@ func resourceScalewayBaremetalServerBetaCreate(d *schema.ResourceData, m interfa
 }
 
 func resourceScalewayBaremetalServerBetaRead(d *schema.ResourceData, m interface{}) error {
-	baremetalApi, zone, ID, err := getBaremetalAPIWithZoneAndID(m, d.Id())
+	baremetalAPI, zone, ID, err := getBaremetalAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return err
 	}
 
-	res, err := baremetalApi.GetServer(&baremetal.GetServerRequest{
+	res, err := baremetalAPI.GetServer(&baremetal.GetServerRequest{
 		Zone:     zone,
 		ServerID: ID,
 	})
@@ -185,7 +184,7 @@ func resourceScalewayBaremetalServerBetaRead(d *schema.ResourceData, m interface
 }
 
 func resourceScalewayBaremetalServerBetaUpdate(d *schema.ResourceData, m interface{}) error {
-	baremetalApi, zone, ID, err := getBaremetalAPIWithZoneAndID(m, d.Id())
+	baremetalAPI, zone, ID, err := getBaremetalAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return err
 	}
@@ -216,7 +215,27 @@ func resourceScalewayBaremetalServerBetaUpdate(d *schema.ResourceData, m interfa
 	}
 
 	if hasChanged {
-		_, err = baremetalApi.UpdateServer(req)
+		_, err = baremetalAPI.UpdateServer(req)
+		if err != nil {
+			return err
+		}
+	}
+
+	// FIXME: Implement ssh_key_ids changes
+
+	if d.HasChange("os_id") {
+		installReq := &baremetal.InstallServerRequest{
+			Zone:     zone,
+			ServerID: ID,
+			OsID:     d.Get("os_id").(string),
+			Hostname: d.Get("name").(string),
+		}
+
+		for _, sshKeyID := range d.Get("ssh_key_ids").([]interface{}) {
+			installReq.SSHKeyIDs = append(installReq.SSHKeyIDs, sshKeyID.(string))
+		}
+
+		_, err := baremetalAPI.InstallServer(installReq)
 		if err != nil {
 			return err
 		}
@@ -226,12 +245,12 @@ func resourceScalewayBaremetalServerBetaUpdate(d *schema.ResourceData, m interfa
 }
 
 func resourceScalewayBaremetalServerBetaDelete(d *schema.ResourceData, m interface{}) error {
-	baremetalApi, zone, ID, err := getBaremetalAPIWithZoneAndID(m, d.Id())
+	baremetalAPI, zone, ID, err := getBaremetalAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return err
 	}
 
-	_, err = baremetalApi.DeleteServer(&baremetal.DeleteServerRequest{
+	_, err = baremetalAPI.DeleteServer(&baremetal.DeleteServerRequest{
 		Zone:     zone,
 		ServerID: ID,
 	})
@@ -240,7 +259,7 @@ func resourceScalewayBaremetalServerBetaDelete(d *schema.ResourceData, m interfa
 		return err
 	}
 
-	_, err = baremetalApi.WaitForServer(&baremetal.WaitForServerRequest{
+	_, err = baremetalAPI.WaitForServer(&baremetal.WaitForServerRequest{
 		Zone:     zone,
 		ServerID: ID,
 		Timeout:  BaremetalServerWaitForTimeout,
