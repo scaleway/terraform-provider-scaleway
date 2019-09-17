@@ -193,16 +193,16 @@ func resourceScalewayBaremetalServerBetaUpdate(d *schema.ResourceData, m interfa
 		ServerID: ID,
 	}
 
-	hasChanged := false
+	needUpdate := false
 
 	if d.HasChange("name") {
 		req.Name = scw.StringPtr(d.Get("name").(string))
-		hasChanged = true
+		needUpdate = true
 	}
 
 	if d.HasChange("description") {
 		req.Description = scw.StringPtr(d.Get("description").(string))
-		hasChanged = true
+		needUpdate = true
 	}
 
 	if d.HasChange("tags") {
@@ -211,10 +211,10 @@ func resourceScalewayBaremetalServerBetaUpdate(d *schema.ResourceData, m interfa
 			tags = append(tags, tag.(string))
 		}
 		req.Tags = &tags
-		hasChanged = true
+		needUpdate = true
 	}
 
-	if hasChanged {
+	if needUpdate {
 		_, err = baremetalAPI.UpdateServer(req)
 		if err != nil {
 			return err
@@ -223,7 +223,7 @@ func resourceScalewayBaremetalServerBetaUpdate(d *schema.ResourceData, m interfa
 
 	// FIXME: Implement ssh_key_ids changes
 
-	if d.HasChange("os_id") {
+	if d.HasChange("os_id") || d.HasChange("ssh_key_ids") {
 		installReq := &baremetal.InstallServerRequest{
 			Zone:     zone,
 			ServerID: ID,

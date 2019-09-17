@@ -42,7 +42,8 @@ Use [this endpoint](https://developers.scaleway.com/en/products/baremetal/api/#g
 - `description` - (Optional) A description for the server.
 
 - `ssh_key_ids` - (Defaults to all user SSH keys) List of SSH keys allowed to connect to the server.
-Updates to this field will reinstall the server.
+
+~> **Important:** Updates to `ssh_key_ids` will reinstall the server.
 
 - `tags` - (Optional) The tags associated with the server.
 
