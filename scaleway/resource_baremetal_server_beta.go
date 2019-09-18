@@ -3,7 +3,6 @@ package scaleway
 import (
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/hashicorp/terraform/helper/validation"
-	account "github.com/scaleway/scaleway-sdk-go/api/account/v2alpha1"
 	baremetal "github.com/scaleway/scaleway-sdk-go/api/baremetal/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 )
@@ -122,14 +121,10 @@ func resourceScalewayBaremetalServerBetaCreate(d *schema.ResourceData, m interfa
 			installReq.SSHKeyIDs = append(installReq.SSHKeyIDs, sshKeyID.(string))
 		}
 	} else {
-		// pull all ssh keys
-		sshKeysResponse, err := getAccountAPI(m).ListSSHKeys(&account.ListSSHKeysRequest{})
+		// add all user SSH keys
+		installReq.SSHKeyIDs, err = getAllUserSSHKeyIDs(m)
 		if err != nil {
-			return err
-		}
-
-		for _, sshKey := range sshKeysResponse.SSHKeys {
-			installReq.SSHKeyIDs = append(installReq.SSHKeyIDs, sshKey.ID)
+			return nil
 		}
 	}
 
@@ -221,8 +216,6 @@ func resourceScalewayBaremetalServerBetaUpdate(d *schema.ResourceData, m interfa
 		}
 	}
 
-	// FIXME: Implement ssh_key_ids changes
-
 	if d.HasChange("os_id") || d.HasChange("ssh_key_ids") {
 		installReq := &baremetal.InstallServerRequest{
 			Zone:     zone,
@@ -231,8 +224,16 @@ func resourceScalewayBaremetalServerBetaUpdate(d *schema.ResourceData, m interfa
 			Hostname: d.Get("name").(string),
 		}
 
-		for _, sshKeyID := range d.Get("ssh_key_ids").([]interface{}) {
-			installReq.SSHKeyIDs = append(installReq.SSHKeyIDs, sshKeyID.(string))
+		if raw, ok := d.GetOk("ssh_key_ids"); ok {
+			for _, sshKeyID := range raw.([]interface{}) {
+				installReq.SSHKeyIDs = append(installReq.SSHKeyIDs, sshKeyID.(string))
+			}
+		} else {
+			// add all user SSH keys
+			installReq.SSHKeyIDs, err = getAllUserSSHKeyIDs(m)
+			if err != nil {
+				return nil
+			}
 		}
 
 		_, err := baremetalAPI.InstallServer(installReq)
