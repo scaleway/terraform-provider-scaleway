@@ -56,6 +56,21 @@ func TestAccScalewayBaremetalServerBetaMinimal1(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_baremetal_server_beta.base", "tags.3", "edited"),
 				),
 			},
+			{
+				Config: testAccCheckScalewayBaremetalServerBetaConfigMinimal1[3],
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayBaremetalServerBetaExists("scaleway_baremetal_server_beta.base"),
+					resource.TestCheckResourceAttr("scaleway_baremetal_server_beta.base", "name", "namo-ubuntu"),
+					resource.TestCheckResourceAttr("scaleway_baremetal_server_beta.base", "offer_id", "cc372979-cda3-4335-a6d2-748b639805ea"),
+					resource.TestCheckResourceAttr("scaleway_baremetal_server_beta.base", "os_id", "d859aa89-8b4a-4551-af42-ff7c0c27260a"),
+					resource.TestCheckResourceAttr("scaleway_baremetal_server_beta.base", "description", "test a description"),
+					resource.TestCheckResourceAttr("scaleway_baremetal_server_beta.base", "tags.0", "terraform-test"),
+					resource.TestCheckResourceAttr("scaleway_baremetal_server_beta.base", "tags.1", "scaleway_baremetal_server_beta"),
+					resource.TestCheckResourceAttr("scaleway_baremetal_server_beta.base", "tags.2", "minimal"),
+					resource.TestCheckResourceAttr("scaleway_baremetal_server_beta.base", "tags.3", "edited"),
+					resource.TestMatchResourceAttr("scaleway_baremetal_server_beta.base", "ssh_key_ids.0", UUIDRegex),
+				),
+			},
 		},
 	})
 }
@@ -121,8 +136,7 @@ resource "scaleway_baremetal_server_beta" "base" {
 
 	tags = [ "terraform-test", "scaleway_baremetal_server_beta", "minimal" ]
 }
-`,
-	`
+`, `
 resource "scaleway_baremetal_server_beta" "base" {
 	name        = "namo-centos"
 	zone        = "fr-par-2"
@@ -132,8 +146,7 @@ resource "scaleway_baremetal_server_beta" "base" {
 
 	tags = [ "terraform-test", "scaleway_baremetal_server_beta", "minimal", "edited" ]
 }
-`,
-	`
+`, `
 resource "scaleway_baremetal_server_beta" "base" {
 	name        = "namo-ubuntu"
 	zone        = "fr-par-2"
@@ -143,5 +156,22 @@ resource "scaleway_baremetal_server_beta" "base" {
 
 	tags = [ "terraform-test", "scaleway_baremetal_server_beta", "minimal", "edited" ]
 }
-`,
+`, fmt.Sprintf(`
+resource "scaleway_account_ssh_key" "main" {
+	name 	   = "main"
+	public_key = "%s"
+}
+
+resource "scaleway_baremetal_server_beta" "base" {
+	name        = "namo-ubuntu"
+	zone        = "fr-par-2"
+	description = "test a description"
+	offer_id    = "cc372979-cda3-4335-a6d2-748b639805ea"
+	os_id       = "d859aa89-8b4a-4551-af42-ff7c0c27260a"
+
+	tags = [ "terraform-test", "scaleway_baremetal_server_beta", "minimal", "edited" ]
+
+	ssh_key_ids = [ "${scaleway_account_ssh_key.main.id}" ]
+}
+`, accountSSHKey),
 }

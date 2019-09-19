@@ -3,7 +3,6 @@ package scaleway
 import (
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/hashicorp/terraform/helper/validation"
-	account "github.com/scaleway/scaleway-sdk-go/api/account/v2alpha1"
 	baremetal "github.com/scaleway/scaleway-sdk-go/api/baremetal/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 )
@@ -122,14 +121,10 @@ func resourceScalewayBaremetalServerBetaCreate(d *schema.ResourceData, m interfa
 			installReq.SSHKeyIDs = append(installReq.SSHKeyIDs, sshKeyID.(string))
 		}
 	} else {
-		// pull all ssh keys
-		sshKeysResponse, err := getAccountAPI(m).ListSSHKeys(&account.ListSSHKeysRequest{})
+		// add all user SSH keys
+		installReq.SSHKeyIDs, err = getAllUserSSHKeyIDs(m)
 		if err != nil {
-			return err
-		}
-
-		for _, sshKey := range sshKeysResponse.SSHKeys {
-			installReq.SSHKeyIDs = append(installReq.SSHKeyIDs, sshKey.ID)
+			return nil
 		}
 	}
 
@@ -193,16 +188,16 @@ func resourceScalewayBaremetalServerBetaUpdate(d *schema.ResourceData, m interfa
 		ServerID: ID,
 	}
 
-	hasChanged := false
+	needUpdate := false
 
 	if d.HasChange("name") {
 		req.Name = scw.StringPtr(d.Get("name").(string))
-		hasChanged = true
+		needUpdate = true
 	}
 
 	if d.HasChange("description") {
 		req.Description = scw.StringPtr(d.Get("description").(string))
-		hasChanged = true
+		needUpdate = true
 	}
 
 	if d.HasChange("tags") {
@@ -211,19 +206,17 @@ func resourceScalewayBaremetalServerBetaUpdate(d *schema.ResourceData, m interfa
 			tags = append(tags, tag.(string))
 		}
 		req.Tags = &tags
-		hasChanged = true
+		needUpdate = true
 	}
 
-	if hasChanged {
+	if needUpdate {
 		_, err = baremetalAPI.UpdateServer(req)
 		if err != nil {
 			return err
 		}
 	}
 
-	// FIXME: Implement ssh_key_ids changes
-
-	if d.HasChange("os_id") {
+	if d.HasChange("os_id") || d.HasChange("ssh_key_ids") {
 		installReq := &baremetal.InstallServerRequest{
 			Zone:     zone,
 			ServerID: ID,
@@ -231,8 +224,16 @@ func resourceScalewayBaremetalServerBetaUpdate(d *schema.ResourceData, m interfa
 			Hostname: d.Get("name").(string),
 		}
 
-		for _, sshKeyID := range d.Get("ssh_key_ids").([]interface{}) {
-			installReq.SSHKeyIDs = append(installReq.SSHKeyIDs, sshKeyID.(string))
+		if raw, ok := d.GetOk("ssh_key_ids"); ok {
+			for _, sshKeyID := range raw.([]interface{}) {
+				installReq.SSHKeyIDs = append(installReq.SSHKeyIDs, sshKeyID.(string))
+			}
+		} else {
+			// add all user SSH keys
+			installReq.SSHKeyIDs, err = getAllUserSSHKeyIDs(m)
+			if err != nil {
+				return nil
+			}
 		}
 
 		_, err := baremetalAPI.InstallServer(installReq)

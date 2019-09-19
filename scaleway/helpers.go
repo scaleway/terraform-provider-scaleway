@@ -458,8 +458,9 @@ func isSDKError(err error, expectedMessage string) bool {
 	return regexp.MatchString(actualMessage)
 }
 
+var UUIDRegex = regexp.MustCompile(`[0-9a-fA-F]{8}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{12}`)
+
 // isUUID returns true if the given string have an UUID format.
 func isUUID(s string) bool {
-	matched, _ := regexp.MatchString(`[0-9a-fA-F]{8}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{12}`, s)
-	return matched
+	return UUIDRegex.MatchString(s)
 }
