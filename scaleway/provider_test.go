@@ -8,7 +8,7 @@ import (
 
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/hashicorp/terraform/terraform"
-	homedir "github.com/mitchellh/go-homedir"
+	"github.com/mitchellh/go-homedir"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 )
 
@@ -27,7 +27,7 @@ func init() {
 		data.Set("zone", "fr-par-1")
 		return old(data)
 	}
-
+	fmt.Println("SCALEWAY TOKEN IS", strings.Replace(os.Getenv("SCALEWAY_TOKEN"), "-", " ", -1))
 }
 
 func TestProvider(t *testing.T) {
@@ -55,7 +55,6 @@ func testAccPreCheck(t *testing.T) {
 	}
 	envProfile := scw.LoadEnvProfile()
 	if envProfile.AccessKey != nil && envProfile.SecretKey != nil {
-		fmt.Println("SCALEWAY TOKEN IS", strings.Replace(*envProfile.SecretKey, "-", " ", -1))
 		return
 	}
 
