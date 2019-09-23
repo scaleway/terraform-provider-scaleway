@@ -247,7 +247,7 @@ func TestAccScalewayInstanceServerAdditionalVolumes1(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckSalewayInstanceVolumeExists("scaleway_instance_volume.base_block"),
 					testAccCheckScalewayInstanceServerExists("scaleway_instance_server.base"),
-					resource.TestCheckResourceAttr("scaleway_instance_volume.base_block", "size_in_gb", "100"),
+					resource.TestCheckResourceAttr("scaleway_instance_volume.base_block", "size_in_gb", "10"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "root_volume.0.size_in_gb", "20"),
 				),
 			},
@@ -270,7 +270,7 @@ func TestAccScalewayInstanceServerAdditionalVolumes2(t *testing.T) {
 					testAccCheckScalewayInstanceServerExists("scaleway_instance_server.base"),
 					resource.TestCheckResourceAttr("scaleway_instance_volume.base_volume0", "size_in_gb", "5"),
 					resource.TestCheckResourceAttr("scaleway_instance_volume.base_volume1", "size_in_gb", "5"),
-					resource.TestCheckResourceAttr("scaleway_instance_volume.base_block", "size_in_gb", "100"),
+					resource.TestCheckResourceAttr("scaleway_instance_volume.base_block", "size_in_gb", "10"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "root_volume.0.size_in_gb", "10"),
 				),
 			},
@@ -287,7 +287,7 @@ func TestAccScalewayInstanceServerAdditionalVolumes2(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_instance_volume.base_volume1", "size_in_gb", "3"),
 					resource.TestCheckResourceAttr("scaleway_instance_volume.base_volume2", "size_in_gb", "2"),
 					resource.TestCheckResourceAttr("scaleway_instance_volume.base_volume3", "size_in_gb", "1"),
-					resource.TestCheckResourceAttr("scaleway_instance_volume.base_block", "size_in_gb", "100"),
+					resource.TestCheckResourceAttr("scaleway_instance_volume.base_block", "size_in_gb", "10"),
 					resource.TestCheckResourceAttr("scaleway_instance_volume.base_block", "type", "b_ssd"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "root_volume.0.size_in_gb", "10"),
 				),
@@ -494,7 +494,7 @@ resource "scaleway_instance_volume" "base_volume%d" {
 	if withBlock {
 		additionalVolumeResources += fmt.Sprintf(`
 resource "scaleway_instance_volume" "base_block" {
-  size_in_gb = 100
+  size_in_gb = 10
   type       = "b_ssd"
 }`)
 		additionalVolumeIDs = append(additionalVolumeIDs, `"${scaleway_instance_volume.base_block.id}"`)
