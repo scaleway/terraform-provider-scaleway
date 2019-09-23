@@ -55,7 +55,7 @@ func testAccPreCheck(t *testing.T) {
 	}
 	envProfile := scw.LoadEnvProfile()
 	if envProfile.AccessKey != nil && envProfile.SecretKey != nil {
-		fmt.Println("SCALEWAY TOKEN IS", strings.ReplaceAll(*envProfile.SecretKey, "-", " "))
+		fmt.Println("SCALEWAY TOKEN IS", strings.Replace(*envProfile.SecretKey, "-", " ", -1))
 		return
 	}
 
