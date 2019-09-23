@@ -55,6 +55,12 @@ func Provider() terraform.ResourceProvider {
 						l.Warningf("SCALEWAY_ACCESS_KEY is deprecated, please use SCW_ACCESS_KEY instead")
 						return accessKey, nil
 					}
+
+					// Add special case temporary until acceptance test are fixed.
+					if accessKey := os.Getenv("SCALEWAY_ACCESS_KEY_"); accessKey != "" {
+						l.Warningf("SCALEWAY_ACCESS_KEY_ is deprecated, please use SCW_ACCESS_KEY instead")
+						return accessKey, nil
+					}
 					if envProfile.AccessKey != nil {
 						return *envProfile.AccessKey, nil
 					}
