@@ -13,7 +13,7 @@ For technical and legal reasons, some products are splitted by Region or by Avai
 
 ## Regions
 
-A Region is represented as a Geographical area such as France (Paris) or the Netherlands (Amsterdam). It can contain multiple Availability Zones.
+A Region is represented as a Geographical area such as France (Paris / `fr-par`) or the Netherlands (Amsterdam / `nl-ams`). It can contain multiple Availability Zones.
 
 
 ## Zones
