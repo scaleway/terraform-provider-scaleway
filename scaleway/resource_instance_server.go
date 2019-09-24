@@ -5,10 +5,8 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
-	"net/http"
 	"strconv"
 
-	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/hashicorp/terraform/helper/validation"
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
@@ -281,7 +279,11 @@ func resourceScalewayInstanceServerCreate(d *schema.ResourceData, m interface{})
 		}
 	}
 
-	err = reachState(instanceAPI, zone, res.Server.ID, InstanceServerStateStopped, d.Get("state").(string), false)
+	targetState, err := serverStateExpand(d.Get("state").(string))
+	if err != nil {
+		return err
+	}
+	err = reachState(instanceAPI, zone, res.Server.ID, targetState)
 	if err != nil {
 		return err
 	}
@@ -409,13 +411,45 @@ func resourceScalewayInstanceServerUpdate(d *schema.ResourceData, m interface{})
 	if err != nil {
 		return err
 	}
+	defer lockLocalizedId(d.Id())()
 
 	var forceReboot bool
 
 	////
+	// Update server user data first as this may trigger a reboot
+	////
+	if d.HasChange("cloud_init") || d.HasChange("user_data") {
+
+		userDataRequests := &instance.SetAllServerUserDataRequest{
+			Zone:     zone,
+			ServerID: ID,
+			UserData: make(map[string]io.Reader),
+		}
+
+		if allUserData, ok := d.GetOk("user_data"); ok {
+			userDataSet := allUserData.(*schema.Set)
+			for _, rawUserData := range userDataSet.List() {
+				userData := rawUserData.(map[string]interface{})
+				userDataRequests.UserData[userData["key"].(string)] = bytes.NewBufferString(userData["value"].(string))
+			}
+		}
+
+		// cloud init script is set in user data
+		if cloudInit, ok := d.GetOk("cloud_init"); ok {
+			userDataRequests.UserData["cloud-init"] = bytes.NewBufferString(cloudInit.(string))
+			forceReboot = true // instance must reboot when cloud init script change
+		}
+
+		err := instanceAPI.SetAllServerUserData(userDataRequests)
+		if err != nil {
+			return err
+		}
+
+	}
+
+	////
 	// Update the server
 	////
-	previousState, nextState := d.GetChange("state") // the previous state of the server might change when updating volumes
 	updateRequest := &instance.UpdateServerRequest{
 		Zone:     zone,
 		ServerID: ID,
@@ -458,6 +492,7 @@ func resourceScalewayInstanceServerUpdate(d *schema.ResourceData, m interface{})
 		}
 
 		updateRequest.Volumes = &volumes
+		forceReboot = true
 	}
 
 	if d.HasChange("placement_group_id") {
@@ -470,67 +505,24 @@ func resourceScalewayInstanceServerUpdate(d *schema.ResourceData, m interface{})
 		}
 	}
 
-	var updateResponse *instance.UpdateServerResponse
-
-	err = resource.Retry(InstanceServerRetryFuncTimeout, func() *resource.RetryError {
-		updateResponse, err = instanceAPI.UpdateServer(updateRequest)
-		if isSDKResponseError(err, http.StatusBadRequest, "Instance must be powered off to change local volumes") {
-			err = reachState(instanceAPI, zone, ID, previousState.(string), InstanceServerStateStopped, false)
-			if err != nil && !isSDKResponseError(err, http.StatusBadRequest, "server should be running") {
-				return resource.NonRetryableError(err)
-			}
-			return resource.RetryableError(fmt.Errorf("server is being powered off"))
-		}
-
-		if err != nil {
-			return resource.NonRetryableError(err)
-		}
-
-		return nil
-	})
-	if err != nil {
-		return err
-	}
-
-	previousState, err = serverStateFlatten(updateResponse.Server.State)
-	if err != nil {
-		return err
-	}
-
-	////
-	// Update server user data
-	////
-	if d.HasChange("cloud_init") || d.HasChange("user_data") {
-
-		userDataRequests := &instance.SetAllServerUserDataRequest{
-			Zone:     zone,
-			ServerID: ID,
-			UserData: make(map[string]io.Reader),
-		}
-
-		if allUserData, ok := d.GetOk("user_data"); ok {
-			userDataSet := allUserData.(*schema.Set)
-			for _, rawUserData := range userDataSet.List() {
-				userData := rawUserData.(map[string]interface{})
-				userDataRequests.UserData[userData["key"].(string)] = bytes.NewBufferString(userData["value"].(string))
-			}
-		}
-
-		// cloud init script is set in user data
-		if cloudInit, ok := d.GetOk("cloud_init"); ok {
-			userDataRequests.UserData["cloud-init"] = bytes.NewBufferString(cloudInit.(string))
-			forceReboot = true // instance must reboot when cloud init script change
-		}
-
-		err := instanceAPI.SetAllServerUserData(userDataRequests)
+	if forceReboot {
+		err = reachState(instanceAPI, zone, ID, InstanceServerStateStopped)
 		if err != nil {
 			return err
 		}
+	}
+	_, err = instanceAPI.UpdateServer(updateRequest)
+	if err != nil {
+		return err
+	}
 
+	targetState, err := serverStateExpand(d.Get("state").(string))
+	if err != nil {
+		return err
 	}
 
 	// reach expected state
-	err = reachState(instanceAPI, zone, ID, previousState.(string), nextState.(string), forceReboot)
+	err = reachState(instanceAPI, zone, ID, targetState)
 	if err != nil {
 		return err
 	}
@@ -543,9 +535,10 @@ func resourceScalewayInstanceServerDelete(d *schema.ResourceData, m interface{})
 	if err != nil {
 		return err
 	}
+	defer lockLocalizedId(d.Id())()
 
 	// reach stopped state
-	err = reachState(instanceAPI, zone, ID, d.Get("state").(string), InstanceServerStateStopped, false)
+	err = reachState(instanceAPI, zone, ID, instance.ServerStateStopped)
 	if is404Error(err) {
 		return nil
 	}

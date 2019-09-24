@@ -2,9 +2,6 @@ package scaleway
 
 import (
 	"fmt"
-	"net/http"
-
-	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/hashicorp/terraform/helper/validation"
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
@@ -172,43 +169,42 @@ func resourceSalewayInstanceVolumeDelete(d *schema.ResourceData, m interface{}) 
 		return err
 	}
 
+	// Make sure volume is update
+	err = resourceSalewayInstanceVolumeRead(d, m)
+	if err != nil {
+		return err
+	}
+
+	serverId := d.Get("server_id").(string)
+
+	// If volume is attached to a server we must make sure it's stopped
+	if serverId != "" {
+		defer lockLocalizedId(newZonedId(zone, serverId))()
+		// When trying to delete multiple volume at the same time we may enter a race condition
+		err = reachState(instanceAPI, zone, serverId, instance.ServerStateStopped)
+
+		// We ignore 404 as a server may already be deleted. In this case no need to detach volume.
+		if err != nil && !is404Error(err) {
+			return err
+		}
+
+		// If we got no error we detach volume
+		if err == nil {
+			_, err = instanceAPI.DetachVolume(&instance.DetachVolumeRequest{
+				Zone:     zone,
+				VolumeID: id,
+			})
+			if err != nil {
+				return err
+			}
+		}
+	}
+
 	deleteRequest := &instance.DeleteVolumeRequest{
 		Zone:     zone,
 		VolumeID: id,
 	}
 
-	err = resource.Retry(InstanceServerRetryFuncTimeout, func() *resource.RetryError {
-		err := instanceAPI.DeleteVolume(deleteRequest)
-		if isSDKResponseError(err, http.StatusBadRequest, "a server is attached to this volume") {
-			if d.Get("type").(string) != instance.VolumeTypeBSSD.String() {
-				err = instanceAPI.ServerActionAndWait(&instance.ServerActionAndWaitRequest{
-					Zone:     zone,
-					ServerID: d.Get("server_id").(string),
-					Action:   instance.ServerActionPoweroff,
-					Timeout:  InstanceServerWaitForTimeout,
-				})
-				if err != nil && !isSDKResponseError(err, http.StatusBadRequest, "server should be running") {
-					return resource.NonRetryableError(err)
-				}
-			}
-			_, err = instanceAPI.DetachVolume(&instance.DetachVolumeRequest{
-				Zone:     zone,
-				VolumeID: id,
-			})
-			if isSDKResponseError(err, http.StatusBadRequest, "Instance must be powered off to change local volumes") {
-				return resource.RetryableError(err)
-			}
-		}
-		if isSDKResponseError(err, http.StatusBadRequest, "Instance must be powered off, in standby or running to change block-storage volumes") {
-			return resource.RetryableError(err)
-		}
-		if err != nil && !is404Error(err) {
-			return resource.NonRetryableError(fmt.Errorf("couldn't delete volume: %v", err))
-		}
-		return nil
-	})
-	if isResourceTimeoutError(err) {
-		err = instanceAPI.DeleteVolume(deleteRequest)
-	}
+	err = instanceAPI.DeleteVolume(deleteRequest)
 	return err
 }

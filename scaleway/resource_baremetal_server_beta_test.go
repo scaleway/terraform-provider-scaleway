@@ -10,6 +10,7 @@ import (
 )
 
 func TestAccScalewayBaremetalServerBetaMinimal1(t *testing.T) {
+	t.SkipNow()
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
