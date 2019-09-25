@@ -1,11 +1,13 @@
 package scaleway
 
 import (
+	"bytes"
 	"fmt"
 	"net/http"
 	"regexp"
 	"strings"
 	"sync"
+	"text/template"
 	"time"
 
 	"github.com/hashicorp/terraform/helper/resource"
@@ -463,4 +465,17 @@ var UUIDRegex = regexp.MustCompile(`[0-9a-fA-F]{8}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{
 // isUUID returns true if the given string have an UUID format.
 func isUUID(s string) bool {
 	return UUIDRegex.MatchString(s)
+}
+
+// newTemplateFunc take a go template string a return a function that can be called to execute template.
+func newTemplateFunc(tplStr string) func(data interface{}) string {
+	t := template.Must(template.New("tpl").Parse(tplStr))
+	return func(tplParams interface{}) string {
+		buffer := bytes.Buffer{}
+		err := t.Execute(&buffer, tplParams)
+		if err != nil {
+			panic(err)
+		}
+		return buffer.String()
+	}
 }

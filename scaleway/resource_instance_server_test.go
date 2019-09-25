@@ -331,6 +331,57 @@ func TestAccScalewayInstanceServerWithPlacementGroup(t *testing.T) {
 	})
 }
 
+func TestAccScalewayInstanceServerSwapVolume(t *testing.T) {
+	tplFunc := newTemplateFunc(`
+		resource "scaleway_instance_volume" "volume1" {
+		  size_in_gb = 10
+		  type       = "l_ssd"
+		}
+		resource "scaleway_instance_volume" "volume2" {
+		  size_in_gb = 10
+		  type       = "l_ssd"
+		}
+		resource "scaleway_instance_server" "server1" {
+		  image = "ubuntu-bionic"
+		  type  = "DEV1-S"
+		  root_volume {
+			size_in_gb = 10
+		  }
+		  additional_volume_ids = [ scaleway_instance_volume.volume{{index . 0}}.id ]
+		}
+		resource "scaleway_instance_server" "server2" {
+		  image = "ubuntu-bionic"
+		  type  = "DEV1-S"
+		  root_volume {
+			size_in_gb = 10
+		  }
+		  additional_volume_ids = [ scaleway_instance_volume.volume{{index . 1}}.id ]
+		}
+	`)
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckScalewayInstanceServerDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: tplFunc([]int{1, 2}),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayInstanceServerExists("scaleway_instance_server.server1"),
+					testAccCheckScalewayInstanceServerExists("scaleway_instance_server.server2"),
+				),
+			},
+			{
+				Config: tplFunc([]int{2, 1}),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayInstanceServerExists("scaleway_instance_server.server1"),
+					testAccCheckScalewayInstanceServerExists("scaleway_instance_server.server2"),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckScalewayInstanceServerExists(n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]

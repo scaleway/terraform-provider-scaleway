@@ -411,44 +411,12 @@ func resourceScalewayInstanceServerUpdate(d *schema.ResourceData, m interface{})
 	if err != nil {
 		return err
 	}
-	defer lockLocalizedId(d.Id())()
 
+	// This variable will be set to true if any state change requires a server reboot.
 	var forceReboot bool
 
 	////
-	// Update server user data first as this may trigger a reboot
-	////
-	if d.HasChange("cloud_init") || d.HasChange("user_data") {
-
-		userDataRequests := &instance.SetAllServerUserDataRequest{
-			Zone:     zone,
-			ServerID: ID,
-			UserData: make(map[string]io.Reader),
-		}
-
-		if allUserData, ok := d.GetOk("user_data"); ok {
-			userDataSet := allUserData.(*schema.Set)
-			for _, rawUserData := range userDataSet.List() {
-				userData := rawUserData.(map[string]interface{})
-				userDataRequests.UserData[userData["key"].(string)] = bytes.NewBufferString(userData["value"].(string))
-			}
-		}
-
-		// cloud init script is set in user data
-		if cloudInit, ok := d.GetOk("cloud_init"); ok {
-			userDataRequests.UserData["cloud-init"] = bytes.NewBufferString(cloudInit.(string))
-			forceReboot = true // instance must reboot when cloud init script change
-		}
-
-		err := instanceAPI.SetAllServerUserData(userDataRequests)
-		if err != nil {
-			return err
-		}
-
-	}
-
-	////
-	// Update the server
+	// Construct UpdateServerRequest
 	////
 	updateRequest := &instance.UpdateServerRequest{
 		Zone:     zone,
@@ -485,6 +453,12 @@ func resourceScalewayInstanceServerUpdate(d *schema.ResourceData, m interface{})
 		volumes["0"] = &instance.VolumeTemplate{ID: d.Get("root_volume.0.volume_id").(string), Name: getRandomName("vol")} // name is ignored by the API, any name will work here
 
 		for i, volumeID := range raw.([]interface{}) {
+
+			// We make sure volume is detach so we can attach it to the server.
+			err = detachVolume(instanceAPI, zone, expandID(volumeID))
+			if err != nil {
+				return err
+			}
 			volumes[strconv.Itoa(i+1)] = &instance.VolumeTemplate{
 				ID:   expandID(volumeID),
 				Name: getRandomName("vol"), // name is ignored by the API, any name will work here
@@ -504,6 +478,44 @@ func resourceScalewayInstanceServerUpdate(d *schema.ResourceData, m interface{})
 			updateRequest.ComputeCluster = &instance.NullableStringValue{Value: placementGroupID}
 		}
 	}
+
+	////
+	// Update server user data
+	////
+	if d.HasChange("cloud_init") || d.HasChange("user_data") {
+
+		userDataRequests := &instance.SetAllServerUserDataRequest{
+			Zone:     zone,
+			ServerID: ID,
+			UserData: make(map[string]io.Reader),
+		}
+
+		if allUserData, ok := d.GetOk("user_data"); ok {
+			userDataSet := allUserData.(*schema.Set)
+			for _, rawUserData := range userDataSet.List() {
+				userData := rawUserData.(map[string]interface{})
+				userDataRequests.UserData[userData["key"].(string)] = bytes.NewBufferString(userData["value"].(string))
+			}
+		}
+
+		// cloud init script is set in user data
+		if cloudInit, ok := d.GetOk("cloud_init"); ok {
+			userDataRequests.UserData["cloud-init"] = bytes.NewBufferString(cloudInit.(string))
+			forceReboot = true // instance must reboot when cloud init script change
+		}
+
+		err := instanceAPI.SetAllServerUserData(userDataRequests)
+		if err != nil {
+			return err
+		}
+
+	}
+
+	////
+	// Apply changes
+	////
+
+	defer lockLocalizedId(d.Id())()
 
 	if forceReboot {
 		err = reachState(instanceAPI, zone, ID, InstanceServerStateStopped)

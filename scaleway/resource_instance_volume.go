@@ -169,35 +169,9 @@ func resourceSalewayInstanceVolumeDelete(d *schema.ResourceData, m interface{}) 
 		return err
 	}
 
-	// Make sure volume is update
-	err = resourceSalewayInstanceVolumeRead(d, m)
+	err = detachVolume(instanceAPI, zone, id)
 	if err != nil {
 		return err
-	}
-
-	serverId := d.Get("server_id").(string)
-
-	// If volume is attached to a server we must make sure it's stopped
-	if serverId != "" {
-		defer lockLocalizedId(newZonedId(zone, serverId))()
-		// When trying to delete multiple volume at the same time we may enter a race condition
-		err = reachState(instanceAPI, zone, serverId, instance.ServerStateStopped)
-
-		// We ignore 404 as a server may already be deleted. In this case no need to detach volume.
-		if err != nil && !is404Error(err) {
-			return err
-		}
-
-		// If we got no error we detach volume
-		if err == nil {
-			_, err = instanceAPI.DetachVolume(&instance.DetachVolumeRequest{
-				Zone:     zone,
-				VolumeID: id,
-			})
-			if err != nil {
-				return err
-			}
-		}
 	}
 
 	deleteRequest := &instance.DeleteVolumeRequest{

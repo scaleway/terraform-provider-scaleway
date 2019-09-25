@@ -128,3 +128,45 @@ func reachState(instanceAPI *instance.API, zone scw.Zone, serverID string, toSta
 	}
 	return nil
 }
+
+// detachVolume will make sure a volume is not attached to any server. If volume is attached to a server, it will be stopped
+// to allow volume detachment.
+func detachVolume(instanceAPI *instance.API, zone scw.Zone, volumeId string) error {
+
+	res, err := instanceAPI.GetVolume(&instance.GetVolumeRequest{
+		Zone:     zone,
+		VolumeID: volumeId,
+	})
+	if err != nil {
+		return err
+	}
+
+	if res.Volume.Server == nil {
+		return nil
+	}
+
+	// We need to stop server only for VolumeTypeLSSD volume type
+	if res.Volume.VolumeType == instance.VolumeTypeLSSD {
+		defer lockLocalizedId(newZonedId(zone, res.Volume.Server.ID))()
+		err = reachState(instanceAPI, zone, res.Volume.Server.ID, instance.ServerStateStopped)
+
+		// If 404 this mean server is deleted and volume is already detached
+		if is404Error(err) {
+			return nil
+		}
+		if err != nil {
+			return err
+		}
+	}
+	_, err = instanceAPI.DetachVolume(&instance.DetachVolumeRequest{
+		Zone:     zone,
+		VolumeID: res.Volume.ID,
+	})
+
+	// TODO find a better way to test this error
+	if err != nil && err.Error() != "scaleway-sdk-go: volume should be attached to a server" {
+		return err
+	}
+
+	return nil
+}
