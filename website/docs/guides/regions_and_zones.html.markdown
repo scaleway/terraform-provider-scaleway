@@ -13,13 +13,20 @@ For technical and legal reasons, some products are splitted by Region or by Avai
 
 ## Regions
 
-A Region is represented as a Geographical area such as France (Paris) or the Netherlands (Amsterdam). It can contain multiple Availability Zones.
+A Region is represented as a Geographical area such as France (Paris: `fr-par`) or the Netherlands (Amsterdam: `nl-ams`). It can contain multiple Availability Zones.
 
 
 ## Zones
 
 In order to deploy highly available application, a region can be splitted in many Availability Zones (AZ). Latency between multiple AZ of the same region are low as they have a common network layer.
-
+List of availability zones by regions:
+- France
+  - Paris
+    - `fr-par-1`
+    - `fr-par-2`
+- Netherlands
+  - Amsterdam
+    - `nl-ams-1`
 
 ## Resource IDs
 
