@@ -479,3 +479,29 @@ func newTemplateFunc(tplStr string) func(data interface{}) string {
 		return buffer.String()
 	}
 }
+
+// testAccGetResourceAttr can be used in accptence tests to extract value from state and store it in dest
+func testAccGetResourceAttr(resourceName string, attrName string, dest *string) resource.TestCheckFunc {
+	return func(state *terraform.State) error {
+		r, exist := state.RootModule().Resources[resourceName]
+		if !exist {
+			return fmt.Errorf("unknown ressource %s", resourceName)
+		}
+
+		a, exist := r.Primary.Attributes[attrName]
+		if !exist {
+			return fmt.Errorf("unknown ressource %s", resourceName)
+		}
+
+		*dest = a
+		return nil
+	}
+}
+
+// testCheckResourceAttr is similar so standard resource.testCheckResourceAttr except value is a pointer and value can change
+// Can be useful when combined with testAccGetResourceAttr
+func testCheckResourceAttr(resourceName string, attrName string, value *string) resource.TestCheckFunc {
+	return func(state *terraform.State) error {
+		return resource.TestCheckResourceAttr(resourceName, attrName, *value)(state)
+	}
+}

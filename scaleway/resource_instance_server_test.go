@@ -56,21 +56,21 @@ func TestAccScalewayInstanceServerRootVolume1(t *testing.T) {
 		CheckDestroy: testAccCheckScalewayInstanceServerDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckScalewayInstanceServerConfigRootVolume("50", "true"),
+				Config: testAccCheckScalewayInstanceServerConfigRootVolume("51", "true"),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayInstanceServerExists("scaleway_instance_server.base"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "root_volume.0.delete_on_termination", "true"),
-					resource.TestCheckResourceAttr("scaleway_instance_server.base", "root_volume.0.size_in_gb", "50"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.base", "root_volume.0.size_in_gb", "51"),
 					resource.TestCheckResourceAttrSet("scaleway_instance_server.base", "root_volume.0.volume_id"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "tags.2", "root_volume"),
 				),
 			},
 			{
-				Config: testAccCheckScalewayInstanceServerConfigRootVolume("60", "true"),
+				Config: testAccCheckScalewayInstanceServerConfigRootVolume("52", "true"),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayInstanceServerExists("scaleway_instance_server.base"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "root_volume.0.delete_on_termination", "true"),
-					resource.TestCheckResourceAttr("scaleway_instance_server.base", "root_volume.0.size_in_gb", "60"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.base", "root_volume.0.size_in_gb", "52"),
 					resource.TestCheckResourceAttrSet("scaleway_instance_server.base", "root_volume.0.volume_id"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "tags.2", "root_volume"),
 				),
@@ -359,6 +359,7 @@ func TestAccScalewayInstanceServerSwapVolume(t *testing.T) {
 		}
 	`)
 
+	var volume1Id, volume2Id string
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
@@ -369,6 +370,8 @@ func TestAccScalewayInstanceServerSwapVolume(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayInstanceServerExists("scaleway_instance_server.server1"),
 					testAccCheckScalewayInstanceServerExists("scaleway_instance_server.server2"),
+					testAccGetResourceAttr("scaleway_instance_server.server1", "additional_volume_ids.0", &volume1Id),
+					testAccGetResourceAttr("scaleway_instance_server.server2", "additional_volume_ids.0", &volume2Id),
 				),
 			},
 			{
@@ -376,6 +379,8 @@ func TestAccScalewayInstanceServerSwapVolume(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayInstanceServerExists("scaleway_instance_server.server1"),
 					testAccCheckScalewayInstanceServerExists("scaleway_instance_server.server2"),
+					testCheckResourceAttr("scaleway_instance_server.server1", "additional_volume_ids.0", &volume2Id),
+					testCheckResourceAttr("scaleway_instance_server.server2", "additional_volume_ids.0", &volume1Id),
 				),
 			},
 		},

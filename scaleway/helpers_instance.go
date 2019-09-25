@@ -81,7 +81,7 @@ func serverStateExpand(rawState string) (instance.ServerState, error) {
 	}[rawState]
 
 	if !exist {
-		return "", fmt.Errorf("server is in an invalid state, someone else might be executing action at the same time")
+		return "", fmt.Errorf("server is in an invalid state, someone else might be executing another action at the same time")
 	}
 
 	return apiState, nil
@@ -112,7 +112,7 @@ func reachState(instanceAPI *instance.API, zone scw.Zone, serverID string, toSta
 
 	actions, exist := transitionMap[[2]instance.ServerState{fromState, toState}]
 	if !exist {
-		return fmt.Errorf("dont't kwon how to reach state %s from state %s for server %s", toState, fromState, serverID)
+		return fmt.Errorf("don't know how to reach state %s from state %s for server %s", toState, fromState, serverID)
 	}
 
 	for _, a := range actions {
@@ -145,9 +145,10 @@ func detachVolume(instanceAPI *instance.API, zone scw.Zone, volumeId string) err
 		return nil
 	}
 
+	defer lockLocalizedId(newZonedId(zone, res.Volume.Server.ID))()
+
 	// We need to stop server only for VolumeTypeLSSD volume type
 	if res.Volume.VolumeType == instance.VolumeTypeLSSD {
-		defer lockLocalizedId(newZonedId(zone, res.Volume.Server.ID))()
 		err = reachState(instanceAPI, zone, res.Volume.Server.ID, instance.ServerStateStopped)
 
 		// If 404 this mean server is deleted and volume is already detached

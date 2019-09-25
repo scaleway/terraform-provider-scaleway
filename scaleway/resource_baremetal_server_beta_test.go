@@ -10,7 +10,7 @@ import (
 )
 
 func TestAccScalewayBaremetalServerBetaMinimal1(t *testing.T) {
-	t.SkipNow()
+	t.Skip("due to low stock on this resource type, test is flaky")
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
