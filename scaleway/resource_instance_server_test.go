@@ -56,21 +56,21 @@ func TestAccScalewayInstanceServerRootVolume1(t *testing.T) {
 		CheckDestroy: testAccCheckScalewayInstanceServerDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckScalewayInstanceServerConfigRootVolume("60", "true"),
+				Config: testAccCheckScalewayInstanceServerConfigRootVolume("50", "true"),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayInstanceServerExists("scaleway_instance_server.base"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "root_volume.0.delete_on_termination", "true"),
-					resource.TestCheckResourceAttr("scaleway_instance_server.base", "root_volume.0.size_in_gb", "60"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.base", "root_volume.0.size_in_gb", "50"),
 					resource.TestCheckResourceAttrSet("scaleway_instance_server.base", "root_volume.0.volume_id"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "tags.2", "root_volume"),
 				),
 			},
 			{
-				Config: testAccCheckScalewayInstanceServerConfigRootVolume("200", "true"),
+				Config: testAccCheckScalewayInstanceServerConfigRootVolume("60", "true"),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayInstanceServerExists("scaleway_instance_server.base"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "root_volume.0.delete_on_termination", "true"),
-					resource.TestCheckResourceAttr("scaleway_instance_server.base", "root_volume.0.size_in_gb", "200"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.base", "root_volume.0.size_in_gb", "60"),
 					resource.TestCheckResourceAttrSet("scaleway_instance_server.base", "root_volume.0.volume_id"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "tags.2", "root_volume"),
 				),
