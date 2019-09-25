@@ -5,10 +5,8 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
-	"net/http"
 	"strconv"
 
-	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/hashicorp/terraform/helper/validation"
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
@@ -281,7 +279,11 @@ func resourceScalewayInstanceServerCreate(d *schema.ResourceData, m interface{})
 		}
 	}
 
-	err = reachState(instanceAPI, zone, res.Server.ID, InstanceServerStateStopped, d.Get("state").(string), false)
+	targetState, err := serverStateExpand(d.Get("state").(string))
+	if err != nil {
+		return err
+	}
+	err = reachState(instanceAPI, zone, res.Server.ID, targetState)
 	if err != nil {
 		return err
 	}
@@ -410,12 +412,12 @@ func resourceScalewayInstanceServerUpdate(d *schema.ResourceData, m interface{})
 		return err
 	}
 
+	// This variable will be set to true if any state change requires a server reboot.
 	var forceReboot bool
 
 	////
-	// Update the server
+	// Construct UpdateServerRequest
 	////
-	previousState, nextState := d.GetChange("state") // the previous state of the server might change when updating volumes
 	updateRequest := &instance.UpdateServerRequest{
 		Zone:     zone,
 		ServerID: ID,
@@ -451,6 +453,12 @@ func resourceScalewayInstanceServerUpdate(d *schema.ResourceData, m interface{})
 		volumes["0"] = &instance.VolumeTemplate{ID: d.Get("root_volume.0.volume_id").(string), Name: getRandomName("vol")} // name is ignored by the API, any name will work here
 
 		for i, volumeID := range raw.([]interface{}) {
+
+			// We make sure volume is detached so we can attach it to the server.
+			err = detachVolume(instanceAPI, zone, expandID(volumeID))
+			if err != nil {
+				return err
+			}
 			volumes[strconv.Itoa(i+1)] = &instance.VolumeTemplate{
 				ID:   expandID(volumeID),
 				Name: getRandomName("vol"), // name is ignored by the API, any name will work here
@@ -458,6 +466,7 @@ func resourceScalewayInstanceServerUpdate(d *schema.ResourceData, m interface{})
 		}
 
 		updateRequest.Volumes = &volumes
+		forceReboot = true
 	}
 
 	if d.HasChange("placement_group_id") {
@@ -468,33 +477,6 @@ func resourceScalewayInstanceServerUpdate(d *schema.ResourceData, m interface{})
 			forceReboot = true
 			updateRequest.ComputeCluster = &instance.NullableStringValue{Value: placementGroupID}
 		}
-	}
-
-	var updateResponse *instance.UpdateServerResponse
-
-	err = resource.Retry(InstanceServerRetryFuncTimeout, func() *resource.RetryError {
-		updateResponse, err = instanceAPI.UpdateServer(updateRequest)
-		if isSDKResponseError(err, http.StatusBadRequest, "Instance must be powered off to change local volumes") {
-			err = reachState(instanceAPI, zone, ID, previousState.(string), InstanceServerStateStopped, false)
-			if err != nil && !isSDKResponseError(err, http.StatusBadRequest, "server should be running") {
-				return resource.NonRetryableError(err)
-			}
-			return resource.RetryableError(fmt.Errorf("server is being powered off"))
-		}
-
-		if err != nil {
-			return resource.NonRetryableError(err)
-		}
-
-		return nil
-	})
-	if err != nil {
-		return err
-	}
-
-	previousState, err = serverStateFlatten(updateResponse.Server.State)
-	if err != nil {
-		return err
 	}
 
 	////
@@ -529,8 +511,30 @@ func resourceScalewayInstanceServerUpdate(d *schema.ResourceData, m interface{})
 
 	}
 
+	////
+	// Apply changes
+	////
+
+	defer lockLocalizedId(d.Id())()
+
+	if forceReboot {
+		err = reachState(instanceAPI, zone, ID, InstanceServerStateStopped)
+		if err != nil {
+			return err
+		}
+	}
+	_, err = instanceAPI.UpdateServer(updateRequest)
+	if err != nil {
+		return err
+	}
+
+	targetState, err := serverStateExpand(d.Get("state").(string))
+	if err != nil {
+		return err
+	}
+
 	// reach expected state
-	err = reachState(instanceAPI, zone, ID, previousState.(string), nextState.(string), forceReboot)
+	err = reachState(instanceAPI, zone, ID, targetState)
 	if err != nil {
 		return err
 	}
@@ -543,9 +547,10 @@ func resourceScalewayInstanceServerDelete(d *schema.ResourceData, m interface{})
 	if err != nil {
 		return err
 	}
+	defer lockLocalizedId(d.Id())()
 
 	// reach stopped state
-	err = reachState(instanceAPI, zone, ID, d.Get("state").(string), InstanceServerStateStopped, false)
+	err = reachState(instanceAPI, zone, ID, instance.ServerStateStopped)
 	if is404Error(err) {
 		return nil
 	}

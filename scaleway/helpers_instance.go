@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"github.com/hashicorp/terraform/helper/hashcode"
-	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
@@ -17,8 +16,7 @@ const (
 	InstanceServerStateStarted = "started"
 	InstanceServerStateStandby = "standby"
 
-	InstanceServerWaitForTimeout   = 10 * time.Minute
-	InstanceServerRetryFuncTimeout = InstanceServerWaitForTimeout + time.Minute // some RetryFunc are calling a WaitFor
+	InstanceServerWaitForTimeout = 10 * time.Minute
 )
 
 // getInstanceAPIWithZone returns a new instance API and the zone for a Create request
@@ -73,49 +71,103 @@ func serverStateFlatten(fromState instance.ServerState) (string, error) {
 	return "", fmt.Errorf("server is in an invalid state, someone else might be executing action at the same time")
 }
 
-// instanceServerStateToAction returns the action required to transit from a state to another.
-func instanceServerStateToAction(previousState, nextState string, forceReboot bool) []instance.ServerAction {
-	if previousState == InstanceServerStateStarted && nextState == InstanceServerStateStarted && forceReboot {
-		return []instance.ServerAction{instance.ServerActionReboot}
-	}
-	transitionMap := map[[2]string][]instance.ServerAction{
-		{InstanceServerStateStopped, InstanceServerStateStopped}: {},
-		{InstanceServerStateStopped, InstanceServerStateStarted}: {instance.ServerActionPoweron},
-		{InstanceServerStateStopped, InstanceServerStateStandby}: {instance.ServerActionPoweron, instance.ServerActionStopInPlace},
-		{InstanceServerStateStarted, InstanceServerStateStopped}: {instance.ServerActionPoweroff},
-		{InstanceServerStateStarted, InstanceServerStateStarted}: {},
-		{InstanceServerStateStarted, InstanceServerStateStandby}: {instance.ServerActionStopInPlace},
-		{InstanceServerStateStandby, InstanceServerStateStopped}: {instance.ServerActionPoweroff},
-		{InstanceServerStateStandby, InstanceServerStateStarted}: {instance.ServerActionPoweron},
-		{InstanceServerStateStandby, InstanceServerStateStandby}: {},
+// serverStateExpand converts a terraform state  to an API state or return an error.
+func serverStateExpand(rawState string) (instance.ServerState, error) {
+
+	apiState, exist := map[string]instance.ServerState{
+		InstanceServerStateStopped: instance.ServerStateStopped,
+		InstanceServerStateStandby: instance.ServerStateStoppedInPlace,
+		InstanceServerStateStarted: instance.ServerStateRunning,
+	}[rawState]
+
+	if !exist {
+		return "", fmt.Errorf("server is in a transient state, someone else might be executing another action at the same time")
 	}
 
-	return transitionMap[[2]string{previousState, nextState}]
+	return apiState, nil
 }
 
-// reachState executes server action(s) to reach the expected state
-func reachState(instanceAPI *instance.API, zone scw.Zone, serverID, fromState, toState string, forceReboot bool) error {
-	for _, action := range instanceServerStateToAction(fromState, toState, forceReboot) {
-		err := resource.Retry(InstanceServerRetryFuncTimeout, func() *resource.RetryError {
-			err := instanceAPI.ServerActionAndWait(&instance.ServerActionAndWaitRequest{
-				Zone:     zone,
-				ServerID: serverID,
-				Action:   action,
-				Timeout:  InstanceServerWaitForTimeout,
-			})
-			if isSDKError(err, "expected state [\\w]+ but found [\\w]+") {
-				l.Errorf("Retrying action %s because of error '%v'", action, err)
-				return resource.RetryableError(err)
-			}
-			if err != nil {
-				return resource.NonRetryableError(err)
-			}
-			return nil
+func reachState(instanceAPI *instance.API, zone scw.Zone, serverID string, toState instance.ServerState) error {
+	response, err := instanceAPI.GetServer(&instance.GetServerRequest{
+		Zone:     zone,
+		ServerID: serverID,
+	})
+	if err != nil {
+		return err
+	}
+	fromState := response.Server.State
+
+	if response.Server.State == toState {
+		return nil
+	}
+
+	transitionMap := map[[2]instance.ServerState][]instance.ServerAction{
+		{instance.ServerStateStopped, instance.ServerStateRunning}:        {instance.ServerActionPoweron},
+		{instance.ServerStateStopped, instance.ServerStateStoppedInPlace}: {instance.ServerActionPoweron, instance.ServerActionStopInPlace},
+		{instance.ServerStateRunning, instance.ServerStateStopped}:        {instance.ServerActionPoweroff},
+		{instance.ServerStateRunning, instance.ServerStateStoppedInPlace}: {instance.ServerActionStopInPlace},
+		{instance.ServerStateStoppedInPlace, instance.ServerStateRunning}: {instance.ServerActionPoweron},
+		{instance.ServerStateStoppedInPlace, instance.ServerStateStopped}: {instance.ServerActionPoweron, instance.ServerActionPoweroff},
+	}
+
+	actions, exist := transitionMap[[2]instance.ServerState{fromState, toState}]
+	if !exist {
+		return fmt.Errorf("don't know how to reach state %s from state %s for server %s", toState, fromState, serverID)
+	}
+
+	for _, a := range actions {
+		err = instanceAPI.ServerActionAndWait(&instance.ServerActionAndWaitRequest{
+			ServerID: serverID,
+			Action:   a,
+			Zone:     zone,
+			Timeout:  InstanceServerWaitForTimeout,
 		})
 		if err != nil {
 			return err
 		}
-
 	}
+	return nil
+}
+
+// detachVolume will make sure a volume is not attached to any server. If volume is attached to a server, it will be stopped
+// to allow volume detachment.
+func detachVolume(instanceAPI *instance.API, zone scw.Zone, volumeId string) error {
+
+	res, err := instanceAPI.GetVolume(&instance.GetVolumeRequest{
+		Zone:     zone,
+		VolumeID: volumeId,
+	})
+	if err != nil {
+		return err
+	}
+
+	if res.Volume.Server == nil {
+		return nil
+	}
+
+	defer lockLocalizedId(newZonedId(zone, res.Volume.Server.ID))()
+
+	// We need to stop server only for VolumeTypeLSSD volume type
+	if res.Volume.VolumeType == instance.VolumeTypeLSSD {
+		err = reachState(instanceAPI, zone, res.Volume.Server.ID, instance.ServerStateStopped)
+
+		// If 404 this mean server is deleted and volume is already detached
+		if is404Error(err) {
+			return nil
+		}
+		if err != nil {
+			return err
+		}
+	}
+	_, err = instanceAPI.DetachVolume(&instance.DetachVolumeRequest{
+		Zone:     zone,
+		VolumeID: res.Volume.ID,
+	})
+
+	// TODO find a better way to test this error
+	if err != nil && err.Error() != "scaleway-sdk-go: volume should be attached to a server" {
+		return err
+	}
+
 	return nil
 }

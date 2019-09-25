@@ -50,27 +50,28 @@ func TestAccScalewayInstanceServerMinimal1(t *testing.T) {
 }
 
 func TestAccScalewayInstanceServerRootVolume1(t *testing.T) {
+	t.Skip("C2S often don't start. This is an issue on API. This server type is deprecated anyway")
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckScalewayInstanceServerDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckScalewayInstanceServerConfigRootVolume("60", "true"),
+				Config: testAccCheckScalewayInstanceServerConfigRootVolume("51", "true"),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayInstanceServerExists("scaleway_instance_server.base"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "root_volume.0.delete_on_termination", "true"),
-					resource.TestCheckResourceAttr("scaleway_instance_server.base", "root_volume.0.size_in_gb", "60"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.base", "root_volume.0.size_in_gb", "51"),
 					resource.TestCheckResourceAttrSet("scaleway_instance_server.base", "root_volume.0.volume_id"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "tags.2", "root_volume"),
 				),
 			},
 			{
-				Config: testAccCheckScalewayInstanceServerConfigRootVolume("200", "true"),
+				Config: testAccCheckScalewayInstanceServerConfigRootVolume("52", "true"),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayInstanceServerExists("scaleway_instance_server.base"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "root_volume.0.delete_on_termination", "true"),
-					resource.TestCheckResourceAttr("scaleway_instance_server.base", "root_volume.0.size_in_gb", "200"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.base", "root_volume.0.size_in_gb", "52"),
 					resource.TestCheckResourceAttrSet("scaleway_instance_server.base", "root_volume.0.volume_id"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "tags.2", "root_volume"),
 				),
@@ -325,6 +326,62 @@ func TestAccScalewayInstanceServerWithPlacementGroup(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_instance_server.base.0", "placement_group_policy_respected", "true"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base.1", "placement_group_policy_respected", "true"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base.2", "placement_group_policy_respected", "true"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccScalewayInstanceServerSwapVolume(t *testing.T) {
+	tplFunc := newTemplateFunc(`
+		resource "scaleway_instance_volume" "volume1" {
+		  size_in_gb = 10
+		  type       = "l_ssd"
+		}
+		resource "scaleway_instance_volume" "volume2" {
+		  size_in_gb = 10
+		  type       = "l_ssd"
+		}
+		resource "scaleway_instance_server" "server1" {
+		  image = "ubuntu-bionic"
+		  type  = "DEV1-S"
+		  root_volume {
+			size_in_gb = 10
+		  }
+		  additional_volume_ids = [ scaleway_instance_volume.volume{{index . 0}}.id ]
+		}
+		resource "scaleway_instance_server" "server2" {
+		  image = "ubuntu-bionic"
+		  type  = "DEV1-S"
+		  root_volume {
+			size_in_gb = 10
+		  }
+		  additional_volume_ids = [ scaleway_instance_volume.volume{{index . 1}}.id ]
+		}
+	`)
+
+	var volume1Id, volume2Id string
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckScalewayInstanceServerDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: tplFunc([]int{1, 2}),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayInstanceServerExists("scaleway_instance_server.server1"),
+					testAccCheckScalewayInstanceServerExists("scaleway_instance_server.server2"),
+					testAccGetResourceAttr("scaleway_instance_server.server1", "additional_volume_ids.0", &volume1Id),
+					testAccGetResourceAttr("scaleway_instance_server.server2", "additional_volume_ids.0", &volume2Id),
+				),
+			},
+			{
+				Config: tplFunc([]int{2, 1}),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayInstanceServerExists("scaleway_instance_server.server1"),
+					testAccCheckScalewayInstanceServerExists("scaleway_instance_server.server2"),
+					resource.TestCheckResourceAttrPtr("scaleway_instance_server.server1", "additional_volume_ids.0", &volume2Id),
+					resource.TestCheckResourceAttrPtr("scaleway_instance_server.server2", "additional_volume_ids.0", &volume1Id),
 				),
 			},
 		},
