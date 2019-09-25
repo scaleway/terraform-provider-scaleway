@@ -454,7 +454,7 @@ func resourceScalewayInstanceServerUpdate(d *schema.ResourceData, m interface{})
 
 		for i, volumeID := range raw.([]interface{}) {
 
-			// We make sure volume is detach so we can attach it to the server.
+			// We make sure volume is detached so we can attach it to the server.
 			err = detachVolume(instanceAPI, zone, expandID(volumeID))
 			if err != nil {
 				return err

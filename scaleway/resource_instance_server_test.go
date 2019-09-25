@@ -380,8 +380,8 @@ func TestAccScalewayInstanceServerSwapVolume(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayInstanceServerExists("scaleway_instance_server.server1"),
 					testAccCheckScalewayInstanceServerExists("scaleway_instance_server.server2"),
-					testCheckResourceAttr("scaleway_instance_server.server1", "additional_volume_ids.0", &volume2Id),
-					testCheckResourceAttr("scaleway_instance_server.server2", "additional_volume_ids.0", &volume1Id),
+					resource.TestCheckResourceAttrPtr("scaleway_instance_server.server1", "additional_volume_ids.0", &volume2Id),
+					resource.TestCheckResourceAttrPtr("scaleway_instance_server.server2", "additional_volume_ids.0", &volume1Id),
 				),
 			},
 		},

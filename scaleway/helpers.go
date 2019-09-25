@@ -467,7 +467,7 @@ func isUUID(s string) bool {
 	return UUIDRegex.MatchString(s)
 }
 
-// newTemplateFunc take a go template string a return a function that can be called to execute template.
+// newTemplateFunc takes a go template string and returns a function that can be called to execute template.
 func newTemplateFunc(tplStr string) func(data interface{}) string {
 	t := template.Must(template.New("tpl").Parse(tplStr))
 	return func(tplParams interface{}) string {
@@ -480,7 +480,7 @@ func newTemplateFunc(tplStr string) func(data interface{}) string {
 	}
 }
 
-// testAccGetResourceAttr can be used in accptence tests to extract value from state and store it in dest
+// testAccGetResourceAttr can be used in acceptance tests to extract value from state and store it in dest
 func testAccGetResourceAttr(resourceName string, attrName string, dest *string) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		r, exist := state.RootModule().Resources[resourceName]
@@ -495,13 +495,5 @@ func testAccGetResourceAttr(resourceName string, attrName string, dest *string) 
 
 		*dest = a
 		return nil
-	}
-}
-
-// testCheckResourceAttr is similar so standard resource.testCheckResourceAttr except value is a pointer and value can change
-// Can be useful when combined with testAccGetResourceAttr
-func testCheckResourceAttr(resourceName string, attrName string, value *string) resource.TestCheckFunc {
-	return func(state *terraform.State) error {
-		return resource.TestCheckResourceAttr(resourceName, attrName, *value)(state)
 	}
 }

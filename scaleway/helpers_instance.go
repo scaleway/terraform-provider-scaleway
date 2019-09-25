@@ -81,7 +81,7 @@ func serverStateExpand(rawState string) (instance.ServerState, error) {
 	}[rawState]
 
 	if !exist {
-		return "", fmt.Errorf("server is in an invalid state, someone else might be executing another action at the same time")
+		return "", fmt.Errorf("server is in a transient state, someone else might be executing another action at the same time")
 	}
 
 	return apiState, nil
