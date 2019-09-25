@@ -50,6 +50,7 @@ func TestAccScalewayInstanceServerMinimal1(t *testing.T) {
 }
 
 func TestAccScalewayInstanceServerRootVolume1(t *testing.T) {
+	t.Skip("C2S often don't start. This is an issue on API. This server type is deprecated anyway")
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
