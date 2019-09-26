@@ -176,13 +176,13 @@ func (s *API) ListSSHKeys(req *ListSSHKeysRequest, opts ...scw.RequestOption) (*
 
 // UnsafeGetTotalCount should not be used
 // Internal usage only
-func (r *ListSSHKeysResponse) UnsafeGetTotalCount() int {
-	return int(r.TotalCount)
+func (r *ListSSHKeysResponse) UnsafeGetTotalCount() uint32 {
+	return r.TotalCount
 }
 
 // UnsafeAppend should not be used
 // Internal usage only
-func (r *ListSSHKeysResponse) UnsafeAppend(res interface{}) (int, scw.SdkError) {
+func (r *ListSSHKeysResponse) UnsafeAppend(res interface{}) (uint32, scw.SdkError) {
 	results, ok := res.(*ListSSHKeysResponse)
 	if !ok {
 		return 0, errors.New("%T type cannot be appended to type %T", res, r)
@@ -190,7 +190,7 @@ func (r *ListSSHKeysResponse) UnsafeAppend(res interface{}) (int, scw.SdkError) 
 
 	r.SSHKeys = append(r.SSHKeys, results.SSHKeys...)
 	r.TotalCount += uint32(len(results.SSHKeys))
-	return len(results.SSHKeys), nil
+	return uint32(len(results.SSHKeys)), nil
 }
 
 type CreateSSHKeyRequest struct {

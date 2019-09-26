@@ -22,7 +22,7 @@ type CreateServerRequest createServerRequest
 func (s *API) CreateServer(req *CreateServerRequest, opts ...scw.RequestOption) (*CreateServerResponse, error) {
 
 	// If image is not a UUID we try to fetch it from marketplace.
-	if !uuid.IsUUID(req.Image) {
+	if req.Image != "" && !uuid.IsUUID(req.Image) {
 		apiMarketplace := marketplace.NewAPI(s.client)
 		imageId, err := apiMarketplace.GetLocalImageIDByLabel(&marketplace.GetLocalImageIDByLabelRequest{
 			ImageLabel:     req.Image,

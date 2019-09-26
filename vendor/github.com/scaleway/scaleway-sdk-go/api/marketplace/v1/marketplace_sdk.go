@@ -189,13 +189,13 @@ func (s *API) ListImages(req *ListImagesRequest, opts ...scw.RequestOption) (*Li
 
 // UnsafeGetTotalCount should not be used
 // Internal usage only
-func (r *ListImagesResponse) UnsafeGetTotalCount() int {
-	return int(r.TotalCount)
+func (r *ListImagesResponse) UnsafeGetTotalCount() uint32 {
+	return r.TotalCount
 }
 
 // UnsafeAppend should not be used
 // Internal usage only
-func (r *ListImagesResponse) UnsafeAppend(res interface{}) (int, scw.SdkError) {
+func (r *ListImagesResponse) UnsafeAppend(res interface{}) (uint32, scw.SdkError) {
 	results, ok := res.(*ListImagesResponse)
 	if !ok {
 		return 0, errors.New("%T type cannot be appended to type %T", res, r)
@@ -203,7 +203,7 @@ func (r *ListImagesResponse) UnsafeAppend(res interface{}) (int, scw.SdkError) {
 
 	r.Images = append(r.Images, results.Images...)
 	r.TotalCount += uint32(len(results.Images))
-	return len(results.Images), nil
+	return uint32(len(results.Images)), nil
 }
 
 type GetImageRequest struct {
