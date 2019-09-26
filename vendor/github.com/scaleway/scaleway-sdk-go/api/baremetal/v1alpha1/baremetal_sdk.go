@@ -491,13 +491,13 @@ func (s *API) ListServers(req *ListServersRequest, opts ...scw.RequestOption) (*
 
 // UnsafeGetTotalCount should not be used
 // Internal usage only
-func (r *ListServersResponse) UnsafeGetTotalCount() int {
-	return int(r.TotalCount)
+func (r *ListServersResponse) UnsafeGetTotalCount() uint32 {
+	return r.TotalCount
 }
 
 // UnsafeAppend should not be used
 // Internal usage only
-func (r *ListServersResponse) UnsafeAppend(res interface{}) (int, scw.SdkError) {
+func (r *ListServersResponse) UnsafeAppend(res interface{}) (uint32, scw.SdkError) {
 	results, ok := res.(*ListServersResponse)
 	if !ok {
 		return 0, errors.New("%T type cannot be appended to type %T", res, r)
@@ -505,7 +505,7 @@ func (r *ListServersResponse) UnsafeAppend(res interface{}) (int, scw.SdkError) 
 
 	r.Servers = append(r.Servers, results.Servers...)
 	r.TotalCount += uint32(len(results.Servers))
-	return len(results.Servers), nil
+	return uint32(len(results.Servers)), nil
 }
 
 type GetServerRequest struct {
@@ -934,13 +934,13 @@ func (s *API) ListServerEvents(req *ListServerEventsRequest, opts ...scw.Request
 
 // UnsafeGetTotalCount should not be used
 // Internal usage only
-func (r *ListServerEventsResponse) UnsafeGetTotalCount() int {
-	return int(r.TotalCount)
+func (r *ListServerEventsResponse) UnsafeGetTotalCount() uint32 {
+	return r.TotalCount
 }
 
 // UnsafeAppend should not be used
 // Internal usage only
-func (r *ListServerEventsResponse) UnsafeAppend(res interface{}) (int, scw.SdkError) {
+func (r *ListServerEventsResponse) UnsafeAppend(res interface{}) (uint32, scw.SdkError) {
 	results, ok := res.(*ListServerEventsResponse)
 	if !ok {
 		return 0, errors.New("%T type cannot be appended to type %T", res, r)
@@ -948,7 +948,7 @@ func (r *ListServerEventsResponse) UnsafeAppend(res interface{}) (int, scw.SdkEr
 
 	r.Event = append(r.Event, results.Event...)
 	r.TotalCount += uint32(len(results.Event))
-	return len(results.Event), nil
+	return uint32(len(results.Event)), nil
 }
 
 type CreateRemoteServerAccessRequest struct {

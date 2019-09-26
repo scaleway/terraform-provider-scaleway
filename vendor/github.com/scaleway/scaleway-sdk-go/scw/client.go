@@ -23,14 +23,14 @@ import (
 // This client should be passed in the `NewApi` functions whenever an API instance is created.
 // Creating a Client is done with the `NewClient` function.
 type Client struct {
-	httpClient       httpClient
-	auth             auth.Auth
-	apiURL           string
-	userAgent        string
+	httpClient            httpClient
+	auth                  auth.Auth
+	apiURL                string
+	userAgent             string
 	defaultOrganizationID *string
-	defaultRegion    *Region
-	defaultZone      *Zone
-	defaultPageSize  *int32
+	defaultRegion         *Region
+	defaultZone           *Zone
+	defaultPageSize       *int32
 }
 
 func defaultOptions() []ClientOption {
@@ -70,14 +70,14 @@ func NewClient(opts ...ClientOption) (*Client, error) {
 	logger.Debugf("client: using sdk version " + version)
 
 	return &Client{
-		auth:             s.token,
-		httpClient:       s.httpClient,
-		apiURL:           s.apiURL,
-		userAgent:        s.userAgent,
+		auth:                  s.token,
+		httpClient:            s.httpClient,
+		apiURL:                s.apiURL,
+		userAgent:             s.userAgent,
 		defaultOrganizationID: s.defaultOrganizationID,
-		defaultRegion:    s.defaultRegion,
-		defaultZone:      s.defaultZone,
-		defaultPageSize:  s.defaultPageSize,
+		defaultRegion:         s.defaultRegion,
+		defaultZone:           s.defaultZone,
+		defaultPageSize:       s.defaultPageSize,
 	}, nil
 }
 
@@ -268,13 +268,15 @@ func (c *Client) do(req *ScalewayRequest, res interface{}) (sdkErr SdkError) {
 }
 
 type lister interface {
-	UnsafeGetTotalCount() int
-	UnsafeAppend(interface{}) (int, SdkError)
+	UnsafeGetTotalCount() uint32
+	UnsafeAppend(interface{}) (uint32, SdkError)
 }
 
 type legacyLister interface {
 	UnsafeSetTotalCount(totalCount int)
 }
+
+const maxPageCount uint32 = math.MaxUint32
 
 // doListAll collects all pages of a List request and aggregate all results on a single response.
 func (c *Client) doListAll(req *ScalewayRequest, res interface{}) (err SdkError) {
@@ -282,10 +284,10 @@ func (c *Client) doListAll(req *ScalewayRequest, res interface{}) (err SdkError)
 	// check for lister interface
 	if response, isLister := res.(lister); isLister {
 
-		pageCount := math.MaxUint32
-		for page := 1; page <= pageCount; page++ {
+		pageCount := maxPageCount
+		for page := uint32(1); page <= pageCount; page++ {
 			// set current page
-			req.Query.Set("page", strconv.Itoa(page))
+			req.Query.Set("page", strconv.FormatUint(uint64(page), 10))
 
 			// request the next page
 			nextPage := newVariableFromType(response)
@@ -305,7 +307,7 @@ func (c *Client) doListAll(req *ScalewayRequest, res interface{}) (err SdkError)
 			}
 
 			// set total count on first request
-			if pageCount == math.MaxUint32 {
+			if pageCount == maxPageCount {
 				totalCount := nextPage.(lister).UnsafeGetTotalCount()
 				pageCount = (totalCount + pageSize - 1) / pageSize
 			}
