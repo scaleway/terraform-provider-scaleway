@@ -1,4 +1,4 @@
-## 1.11.0 (Unreleased)
+## 1.11.0 (October 01, 2019)
 
 NOTES:
 
@@ -6,30 +6,30 @@ NOTES:
 
 FEATURES:
 
-* provider/scaleway: new provider configuration [GH-140]
-* **New Resource:**: `scaleway_instance_server` [GH-143]
-* **New Resource:**: `scaleway_instance_ip` [GH-143]
-* **New Resource:**: `scaleway_instance_security_group` [GH-143]
-* **New Resource:**: `scaleway_instance_volume` [GH-143]
-* **New Resource:**: `scaleway_object_bucket` [GH-143]
-* **New Resource:**: `scaleway_account_ssh_key` [GH-143]
-* **New Resource:**: `scaleway_baremetal_server_beta` (in beta version) [GH-143]
+* provider/scaleway: new provider configuration ([#140](https://github.com/terraform-providers/terraform-provider-scaleway/issues/140))
+* **New Resource:**: `scaleway_instance_server` ([#143](https://github.com/terraform-providers/terraform-provider-scaleway/issues/143))
+* **New Resource:**: `scaleway_instance_ip` ([#143](https://github.com/terraform-providers/terraform-provider-scaleway/issues/143))
+* **New Resource:**: `scaleway_instance_security_group` ([#143](https://github.com/terraform-providers/terraform-provider-scaleway/issues/143))
+* **New Resource:**: `scaleway_instance_volume` ([#143](https://github.com/terraform-providers/terraform-provider-scaleway/issues/143))
+* **New Resource:**: `scaleway_object_bucket` ([#143](https://github.com/terraform-providers/terraform-provider-scaleway/issues/143))
+* **New Resource:**: `scaleway_account_ssh_key` ([#143](https://github.com/terraform-providers/terraform-provider-scaleway/issues/143))
+* **New Resource:**: `scaleway_baremetal_server_beta` (in beta version) ([#143](https://github.com/terraform-providers/terraform-provider-scaleway/issues/143))
 
-* **Deprecated Resource:**: `scaleway_server` (replaced by `scaleway_instance_server`) [GH-143]
-* **Deprecated Resource:**: `scaleway_ip` (replaced by `scaleway_instance_ip`) [GH-143]
-* **Deprecated Resource:**: `scaleway_ip_reverse_dns` (included into `scaleway_instance_ip`) [GH-143]
-* **Deprecated Resource:**: `scaleway_security_group` (replaced by `scaleway_instance_security_group`) [GH-143]
-* **Deprecated Resource:**: `scaleway_security_group_rule` (included into `scaleway_instance_security_group`) [GH-143]
-* **Deprecated Resource:**: `scaleway_volume` (replaced by `scaleway_instance_volume`) [GH-143]
-* **Deprecated Resource:**: `scaleway_volume_attachment` (included into `scaleway_instance_volume`) [GH-143]
-* **Deprecated Resource:**: `scaleway_user_data` (included into `scaleway_instance_server`) [GH-143]
-* **Deprecated Resource:**: `scaleway_bucket` (replaced by `scaleway_object_bucket`) [GH-143]
-* **Deprecated Resource:**: `scaleway_token` [GH-143]
-* **Deprecated Resource:**: `scaleway_ssh_key` (replaced by `scaleway_account_ssh_key`) [GH-143]
+* **Deprecated Resource:**: `scaleway_server` (replaced by `scaleway_instance_server`) ([#143](https://github.com/terraform-providers/terraform-provider-scaleway/issues/143))
+* **Deprecated Resource:**: `scaleway_ip` (replaced by `scaleway_instance_ip`) ([#143](https://github.com/terraform-providers/terraform-provider-scaleway/issues/143))
+* **Deprecated Resource:**: `scaleway_ip_reverse_dns` (included into `scaleway_instance_ip`) ([#143](https://github.com/terraform-providers/terraform-provider-scaleway/issues/143))
+* **Deprecated Resource:**: `scaleway_security_group` (replaced by `scaleway_instance_security_group`) ([#143](https://github.com/terraform-providers/terraform-provider-scaleway/issues/143))
+* **Deprecated Resource:**: `scaleway_security_group_rule` (included into `scaleway_instance_security_group`) ([#143](https://github.com/terraform-providers/terraform-provider-scaleway/issues/143))
+* **Deprecated Resource:**: `scaleway_volume` (replaced by `scaleway_instance_volume`) ([#143](https://github.com/terraform-providers/terraform-provider-scaleway/issues/143))
+* **Deprecated Resource:**: `scaleway_volume_attachment` (included into `scaleway_instance_volume`) ([#143](https://github.com/terraform-providers/terraform-provider-scaleway/issues/143))
+* **Deprecated Resource:**: `scaleway_user_data` (included into `scaleway_instance_server`) ([#143](https://github.com/terraform-providers/terraform-provider-scaleway/issues/143))
+* **Deprecated Resource:**: `scaleway_bucket` (replaced by `scaleway_object_bucket`) ([#143](https://github.com/terraform-providers/terraform-provider-scaleway/issues/143))
+* **Deprecated Resource:**: `scaleway_token` ([#143](https://github.com/terraform-providers/terraform-provider-scaleway/issues/143))
+* **Deprecated Resource:**: `scaleway_ssh_key` (replaced by `scaleway_account_ssh_key`) ([#143](https://github.com/terraform-providers/terraform-provider-scaleway/issues/143))
 
 BUG FIXES:
 
-* provider/scaleway: update terraform SDK to 0.12.8 [GH-242]
+* provider/scaleway: update terraform SDK to 0.12.8 ([#242](https://github.com/terraform-providers/terraform-provider-scaleway/issues/242))
 
 
 ## 1.10.0 (June 03, 2019)
