@@ -365,12 +365,14 @@ func isHTTPCodeError(err error, statusCode int) bool {
 
 // is404Error returns true if err is an HTTP 404 error
 func is404Error(err error) bool {
-	return isHTTPCodeError(err, http.StatusNotFound)
+	notFoundError := &scw.ResourceNotFoundError{}
+	return isHTTPCodeError(err, http.StatusNotFound) || xerrors.As(err, &notFoundError)
 }
 
 // is403Error returns true if err is an HTTP 403 error
 func is403Error(err error) bool {
-	return isHTTPCodeError(err, http.StatusForbidden)
+	permissionsDeniedError := &scw.PermissionsDeniedError{}
+	return isHTTPCodeError(err, http.StatusForbidden) || xerrors.As(err, &permissionsDeniedError)
 }
 
 // organizationIDSchema returns a standard schema for a organization_id
