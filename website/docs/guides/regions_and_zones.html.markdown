@@ -19,14 +19,14 @@ A Region is represented as a Geographical area such as France (Paris: `fr-par`) 
 ## Zones
 
 In order to deploy highly available application, a region can be splitted in many Availability Zones (AZ). Latency between multiple AZ of the same region are low as they have a common network layer.
+
 List of availability zones by regions:
-- France
-  - Paris
-    - `fr-par-1`
-    - `fr-par-2`
-- Netherlands
-  - Amsterdam
-    - `nl-ams-1`
+
+- France - Paris (`fr-par`)
+  - `fr-par-1`
+  - `fr-par-2`
+- The Netherlands - Amsterdam (`nl-ams`)
+  - `nl-ams-1`
 
 ## Resource IDs
 
