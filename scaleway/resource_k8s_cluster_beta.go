@@ -7,7 +7,6 @@ import (
 	"github.com/hashicorp/terraform/helper/schema"
 	k8s "github.com/scaleway/scaleway-sdk-go/api/k8s/v1beta3"
 	"github.com/scaleway/scaleway-sdk-go/scw"
-
 	"gopkg.in/yaml.v2"
 )
 
@@ -81,14 +80,14 @@ func resourceScalewayK8SClusterBeta() *schema.Resource {
 				Type:        schema.TypeList,
 				MaxItems:    1,
 				Required:    true,
-				Description: "Default pool created on the cluster on creation",
+				Description: "Default pool created for the cluster on creation",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"node_type": {
 							Type:        schema.TypeString,
 							Required:    true,
 							ForceNew:    true,
-							Description: "Server Type of the default pool servers",
+							Description: "Server type of the default pool servers",
 						},
 						"autoscaling": {
 							Type:        schema.TypeBool,
@@ -455,11 +454,11 @@ func resourceScalewayK8SClusterBetaRead(d *schema.ResourceData, m interface{}) e
 	}
 
 	if len(kubeconfig.Clusters) != 1 {
-		return fmt.Errorf("The kubeconfig contains %d clusters instead of 1", len(kubeconfig.Clusters))
+		return fmt.Errorf("the kubeconfig contains %d clusters instead of 1", len(kubeconfig.Clusters))
 	}
 
 	if len(kubeconfig.Users) != 1 {
-		return fmt.Errorf("The kubeconfig contains %d users instead of 1", len(kubeconfig.Users))
+		return fmt.Errorf("the kubeconfig contains %d users instead of 1", len(kubeconfig.Users))
 	}
 
 	kubeconf := map[string]interface{}{}
@@ -484,7 +483,6 @@ func resourceScalewayK8SClusterBetaDefaultPoolUpdate(d *schema.ResourceData, m i
 	////
 	// Update default Pool
 	////
-
 	if d.HasChange("default_pool") {
 		defaultPoolID := d.Get("default_pool.0.id").(string)
 
@@ -599,7 +597,7 @@ func resourceScalewayK8SClusterBetaUpdate(d *schema.ResourceData, m interface{})
 			}
 		}
 		if !canUpgrade {
-			return fmt.Errorf("Cluster %s can not be upgraded to version %s", clusterID, d.Get("version").(string))
+			return fmt.Errorf("cluster %s can not be upgraded to version %s", clusterID, d.Get("version").(string))
 		}
 	}
 

@@ -38,6 +38,29 @@ func TestAccScalewayK8SClusterBetaMinimal(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_k8s_cluster_beta.minimal", "tags.2", "minimal"),
 				),
 			},
+			{
+				Config: testAccCheckScalewayK8SClusterBetaConfigMinimal("1.16.1"),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayK8SClusterBetaExists("scaleway_k8s_cluster_beta.minimal"),
+					resource.TestCheckResourceAttr("scaleway_k8s_cluster_beta.minimal", "version", "1.16.1"),
+					resource.TestCheckResourceAttr("scaleway_k8s_cluster_beta.minimal", "cni", "calico"),
+					resource.TestCheckResourceAttr("scaleway_k8s_cluster_beta.minimal", "status", k8s.ClusterStatusReady.String()),
+					resource.TestCheckResourceAttrSet("scaleway_k8s_cluster_beta.minimal", "default_pool.0.pool_id"),
+					resource.TestCheckResourceAttr("scaleway_k8s_cluster_beta.minimal", "default_pool.0.size", "1"),
+					resource.TestCheckResourceAttr("scaleway_k8s_cluster_beta.minimal", "default_pool.0.node_type", "gp1_xs"),
+					resource.TestCheckResourceAttr("scaleway_k8s_cluster_beta.minimal", "default_pool.0.min_size", "1"),
+					resource.TestCheckResourceAttr("scaleway_k8s_cluster_beta.minimal", "default_pool.0.max_size", "1"),
+					resource.TestCheckResourceAttrSet("scaleway_k8s_cluster_beta.minimal", "kubeconfig.0.config_file"),
+					resource.TestCheckResourceAttrSet("scaleway_k8s_cluster_beta.minimal", "kubeconfig.0.host"),
+					resource.TestCheckResourceAttrSet("scaleway_k8s_cluster_beta.minimal", "kubeconfig.0.cluster_ca_certificate"),
+					resource.TestCheckResourceAttrSet("scaleway_k8s_cluster_beta.minimal", "kubeconfig.0.token"),
+					resource.TestCheckResourceAttrSet("scaleway_k8s_cluster_beta.minimal", "apiserver_url"),
+					resource.TestCheckResourceAttrSet("scaleway_k8s_cluster_beta.minimal", "wildcard_dns"),
+					resource.TestCheckResourceAttr("scaleway_k8s_cluster_beta.minimal", "tags.0", "terraform-test"),
+					resource.TestCheckResourceAttr("scaleway_k8s_cluster_beta.minimal", "tags.1", "scaleway_k8s_cluster_beta"),
+					resource.TestCheckResourceAttr("scaleway_k8s_cluster_beta.minimal", "tags.2", "minimal"),
+				),
+			},
 		},
 	})
 }
@@ -135,7 +158,7 @@ func testAccCheckScalewayK8SClusterBetaDestroy(s *terraform.State) error {
 
 		// If no error resource still exist
 		if err == nil {
-			return fmt.Errorf("Cluster (%s) still exists", rs.Primary.ID)
+			return fmt.Errorf("cluster (%s) still exists", rs.Primary.ID)
 		}
 
 		// Unexpected api error we return it

@@ -32,7 +32,7 @@ func resourceScalewayK8SPoolBeta() *schema.Resource {
 				Type:        schema.TypeString,
 				Required:    true,
 				ForceNew:    true,
-				Description: "Server Type of the pool servers",
+				Description: "Server type of the pool servers",
 			},
 			"autoscaling": {
 				Type:        schema.TypeBool,
@@ -152,7 +152,6 @@ func resourceScalewayK8SPoolBetaRead(d *schema.ResourceData, m interface{}) erro
 	////
 	// Read Pool
 	////
-
 	pool, err := k8sAPI.GetPool(&k8s.GetPoolRequest{
 		Region: region,
 		PoolID: poolID,
@@ -189,7 +188,6 @@ func resourceScalewayK8SPoolBetaUpdate(d *schema.ResourceData, m interface{}) er
 	////
 	// Update Pool
 	////
-
 	updateRequest := &k8s.UpdatePoolRequest{
 		Region: region,
 		PoolID: poolID,
