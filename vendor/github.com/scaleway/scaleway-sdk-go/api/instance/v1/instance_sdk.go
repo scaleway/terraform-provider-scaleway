@@ -1353,9 +1353,9 @@ type ListServersRequest struct {
 	// Name filter servers by name (for eg. "server1" will return "server100" and "server1" but not "foo")
 	Name *string `json:"-"`
 	// PrivateIP list servers by private_ip
-	PrivateIP *string `json:"-"`
+	PrivateIP *net.IP `json:"-"`
 	// WithoutIP list servers that are not attached to a public IP
-	WithoutIP *string `json:"-"`
+	WithoutIP *bool `json:"-"`
 	// CommercialType list servers of this commercial type
 	CommercialType *string `json:"-"`
 }
@@ -3708,6 +3708,11 @@ func (s *API) SetComputeClusterServers(req *SetComputeClusterServersRequest, opt
 		Headers: http.Header{},
 	}
 
+	err = scwReq.SetBody(req)
+	if err != nil {
+		return nil, err
+	}
+
 	var resp SetComputeClusterServersResponse
 
 	err = s.client.Do(scwReq, &resp, opts...)
@@ -3746,6 +3751,11 @@ func (s *API) UpdateComputeClusterServers(req *UpdateComputeClusterServersReques
 		Method:  "PATCH",
 		Path:    "/instance/v1/zones/" + fmt.Sprint(req.Zone) + "/compute_clusters/" + fmt.Sprint(req.ComputeClusterID) + "/servers",
 		Headers: http.Header{},
+	}
+
+	err = scwReq.SetBody(req)
+	if err != nil {
+		return nil, err
 	}
 
 	var resp UpdateComputeClusterServersResponse

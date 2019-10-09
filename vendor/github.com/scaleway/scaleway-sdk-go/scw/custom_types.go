@@ -1,6 +1,7 @@
 package scw
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -35,6 +36,24 @@ type File struct {
 
 	// Content of the file
 	Content io.Reader `json:"content"`
+}
+
+func (f *File) UnmarshalJSON(b []byte) error {
+	type file File
+	var tmpFile struct {
+		file
+		Content []byte `json:"content"`
+	}
+
+	err := json.Unmarshal(b, &tmpFile)
+	if err != nil {
+		return err
+	}
+
+	tmpFile.file.Content = bytes.NewReader(tmpFile.Content)
+
+	*f = File(tmpFile.file)
+	return nil
 }
 
 // Money represents an amount of money with its currency type.

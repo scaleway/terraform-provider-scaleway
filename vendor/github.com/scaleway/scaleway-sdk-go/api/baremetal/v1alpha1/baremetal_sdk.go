@@ -828,6 +828,11 @@ func (s *API) StartServer(req *StartServerRequest, opts ...scw.RequestOption) (*
 		Headers: http.Header{},
 	}
 
+	err = scwReq.SetBody(req)
+	if err != nil {
+		return nil, err
+	}
+
 	var resp Server
 
 	err = s.client.Do(scwReq, &resp, opts...)
@@ -866,6 +871,11 @@ func (s *API) StopServer(req *StopServerRequest, opts ...scw.RequestOption) (*Se
 		Method:  "POST",
 		Path:    "/baremetal/v1alpha1/zones/" + fmt.Sprint(req.Zone) + "/servers/" + fmt.Sprint(req.ServerID) + "/stop",
 		Headers: http.Header{},
+	}
+
+	err = scwReq.SetBody(req)
+	if err != nil {
+		return nil, err
 	}
 
 	var resp Server
