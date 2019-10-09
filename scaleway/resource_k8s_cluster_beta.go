@@ -412,16 +412,7 @@ func resourceScalewayK8SClusterBetaRead(d *schema.ResourceData, m interface{}) e
 	d.Set("status", response.Status.String())
 
 	// autoscaler_config
-	autoscalerConfig := map[string]interface{}{}
-	autoscalerConfig["disable_scale_down"] = response.AutoscalerConfig.ScaleDownDisabled
-	autoscalerConfig["scale_down_delay_after_add"] = response.AutoscalerConfig.ScaleDownDelayAfterAdd
-	autoscalerConfig["estimator"] = response.AutoscalerConfig.Estimator
-	autoscalerConfig["expander"] = response.AutoscalerConfig.Expander
-	autoscalerConfig["ignore_daemonsets_utilization"] = response.AutoscalerConfig.IgnoreDaemonsetsUtilization
-	autoscalerConfig["balance_similar_node_groups"] = response.AutoscalerConfig.BalanceSimilarNodeGroups
-	autoscalerConfig["expendable_pods_priority_cutoff"] = response.AutoscalerConfig.ExpendablePodsPriorityCutoff
-
-	d.Set("autoscaler_config", []map[string]interface{}{autoscalerConfig})
+	d.Set("autoscaler_config", []map[string]interface{}{clusterAutoscalerConfigFlatten(response)})
 
 	// default_pool_config
 	err = resourceScalewayK8SClusterBetaDefaultPoolRead(d, m)

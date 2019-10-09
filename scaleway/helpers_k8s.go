@@ -87,3 +87,16 @@ func waitK8SClusterDeleted(k8sAPI *k8s.API, region scw.Region, clusterID string)
 
 	return fmt.Errorf("Cluster %s has state %s, wants %s", clusterID, cluster.Status.String(), k8s.ClusterStatusDeleted.String())
 }
+
+func clusterAutoscalerConfigFlatten(cluster *k8s.Cluster) map[string]interface{} {
+	autoscalerConfig := map[string]interface{}{}
+	autoscalerConfig["disable_scale_down"] = cluster.AutoscalerConfig.ScaleDownDisabled
+	autoscalerConfig["scale_down_delay_after_add"] = cluster.AutoscalerConfig.ScaleDownDelayAfterAdd
+	autoscalerConfig["estimator"] = cluster.AutoscalerConfig.Estimator
+	autoscalerConfig["expander"] = cluster.AutoscalerConfig.Expander
+	autoscalerConfig["ignore_daemonsets_utilization"] = cluster.AutoscalerConfig.IgnoreDaemonsetsUtilization
+	autoscalerConfig["balance_similar_node_groups"] = cluster.AutoscalerConfig.BalanceSimilarNodeGroups
+	autoscalerConfig["expendable_pods_priority_cutoff"] = cluster.AutoscalerConfig.ExpendablePodsPriorityCutoff
+
+	return autoscalerConfig
+}
