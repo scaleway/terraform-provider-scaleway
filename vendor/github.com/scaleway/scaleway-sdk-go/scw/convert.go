@@ -1,6 +1,9 @@
 package scw
 
-import "time"
+import (
+	"net"
+	"time"
+)
 
 // StringPtr returns a pointer to the string value passed in.
 func StringPtr(v string) *string {
@@ -159,5 +162,10 @@ func DurationPtr(v time.Duration) *time.Duration {
 
 // SizePtr returns a pointer to the Size value passed in.
 func SizePtr(v Size) *Size {
+	return &v
+}
+
+// IPPtr returns a pointer to the net.IP value passed in.
+func IPPtr(v net.IP) *net.IP {
 	return &v
 }
