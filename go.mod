@@ -6,8 +6,10 @@ require (
 	github.com/hashicorp/terraform v0.12.8
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/nicolai86/scaleway-sdk v0.0.0-20181024210327-b20018e944c4
-	github.com/scaleway/scaleway-sdk-go v1.0.0-beta.3
+	github.com/scaleway/scaleway-sdk-go v1.0.0-beta.3.0.20191009143120-ded55705fc60
 	github.com/stretchr/testify v1.3.0
 	golang.org/x/crypto v0.0.0-20190701094942-4def268fd1a4
 	golang.org/x/xerrors v0.0.0-20190513163551-3ee3066db522
 )
+
+go 1.13
