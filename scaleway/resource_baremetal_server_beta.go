@@ -47,8 +47,7 @@ func resourceScalewayBaremetalServerBeta() *schema.Resource {
 					Type:         schema.TypeString,
 					ValidateFunc: validationUUID(),
 				},
-				Optional:    true,
-				Computed:    true,
+				Required:    true,
 				Description: "Array of SSH key IDs allowed to SSH to the server",
 			},
 			"description": {
@@ -116,16 +115,8 @@ func resourceScalewayBaremetalServerBetaCreate(d *schema.ResourceData, m interfa
 		Hostname: res.Name,
 	}
 
-	if raw, ok := d.GetOk("ssh_key_ids"); ok {
-		for _, sshKeyID := range raw.([]interface{}) {
-			installReq.SSHKeyIDs = append(installReq.SSHKeyIDs, sshKeyID.(string))
-		}
-	} else {
-		// add all user SSH keys
-		installReq.SSHKeyIDs, err = getAllUserSSHKeyIDs(m)
-		if err != nil {
-			return nil
-		}
+	for _, sshKeyID := range d.Get("ssh_key_ids").([]interface{}) {
+		installReq.SSHKeyIDs = append(installReq.SSHKeyIDs, sshKeyID.(string))
 	}
 
 	_, err = baremetalAPI.InstallServer(installReq)
@@ -224,16 +215,8 @@ func resourceScalewayBaremetalServerBetaUpdate(d *schema.ResourceData, m interfa
 			Hostname: d.Get("name").(string),
 		}
 
-		if raw, ok := d.GetOk("ssh_key_ids"); ok {
-			for _, sshKeyID := range raw.([]interface{}) {
-				installReq.SSHKeyIDs = append(installReq.SSHKeyIDs, sshKeyID.(string))
-			}
-		} else {
-			// add all user SSH keys
-			installReq.SSHKeyIDs, err = getAllUserSSHKeyIDs(m)
-			if err != nil {
-				return nil
-			}
+		for _, sshKeyID := range d.Get("ssh_key_ids").([]interface{}) {
+			installReq.SSHKeyIDs = append(installReq.SSHKeyIDs, sshKeyID.(string))
 		}
 
 		_, err := baremetalAPI.InstallServer(installReq)
