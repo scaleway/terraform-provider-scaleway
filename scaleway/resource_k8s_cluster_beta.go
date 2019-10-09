@@ -2,12 +2,10 @@ package scaleway
 
 import (
 	"fmt"
-	"io/ioutil"
 
 	"github.com/hashicorp/terraform/helper/schema"
 	k8s "github.com/scaleway/scaleway-sdk-go/api/k8s/v1beta3"
 	"github.com/scaleway/scaleway-sdk-go/scw"
-	"gopkg.in/yaml.v2"
 )
 
 func resourceScalewayK8SClusterBeta() *schema.Resource {
@@ -434,7 +432,7 @@ func resourceScalewayK8SClusterBetaRead(d *schema.ResourceData, m interface{}) e
 	////
 	// Read kubeconfig
 	////
-	kubeconfigResp, err := k8sAPI.GetClusterKubeConfig(&k8s.GetClusterKubeConfigRequest{
+	kubeconfig, err := k8sAPI.GetClusterKubeConfig(&k8s.GetClusterKubeConfigRequest{
 		Region:    region,
 		ClusterID: clusterID,
 	})
@@ -442,30 +440,26 @@ func resourceScalewayK8SClusterBetaRead(d *schema.ResourceData, m interface{}) e
 		return err
 	}
 
-	kubeconfigContent, err := ioutil.ReadAll(kubeconfigResp.Content)
+	kubeconfigServer, err := kubeconfig.GetServer()
 	if err != nil {
 		return err
 	}
 
-	var kubeconfig KubeconfigStruct
-	err = yaml.Unmarshal(kubeconfigContent, &kubeconfig)
+	kubeconfigCa, err := kubeconfig.GetCertificateAuthorityData()
 	if err != nil {
 		return err
 	}
 
-	if len(kubeconfig.Clusters) != 1 {
-		return fmt.Errorf("the kubeconfig contains %d clusters instead of 1", len(kubeconfig.Clusters))
-	}
-
-	if len(kubeconfig.Users) != 1 {
-		return fmt.Errorf("the kubeconfig contains %d users instead of 1", len(kubeconfig.Users))
+	kubeconfigToken, err := kubeconfig.GetToken()
+	if err != nil {
+		return err
 	}
 
 	kubeconf := map[string]interface{}{}
-	kubeconf["config_file"] = string(kubeconfigContent)
-	kubeconf["host"] = kubeconfig.Clusters[0].Cluster.Server
-	kubeconf["cluster_ca_certificate"] = kubeconfig.Clusters[0].Cluster.CertificateAuthorityData
-	kubeconf["token"] = kubeconfig.Users[0].User.Token
+	kubeconf["config_file"] = string(kubeconfig.GetRaw())
+	kubeconf["host"] = kubeconfigServer
+	kubeconf["cluster_ca_certificate"] = kubeconfigCa
+	kubeconf["token"] = kubeconfigToken
 
 	d.Set("kubeconfig", []map[string]interface{}{kubeconf})
 
@@ -679,37 +673,37 @@ func autoscalerConfigSchema() *schema.Resource {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Default:     "10m",
-				Description: "",
+				Description: "How long after scale up that scale down evaluation resumes",
 			},
 			"estimator": {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Default:     "binpacking",
-				Description: "",
+				Description: "Type of resource estimator to be used in scale up",
 			},
 			"expander": {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Default:     "random",
-				Description: "",
+				Description: "Type of node group expander to be used in scale up",
 			},
 			"ignore_daemonsets_utilization": {
 				Type:        schema.TypeBool,
 				Optional:    true,
 				Default:     false,
-				Description: "",
+				Description: "Ignore DaemonSet pods when calculating resource utilization for scaling down",
 			},
 			"balance_similar_node_groups": {
 				Type:        schema.TypeBool,
 				Optional:    true,
 				Default:     false,
-				Description: "",
+				Description: "Detect similar node groups and balance the number of nodes between them",
 			},
 			"expendable_pods_priority_cutoff": {
 				Type:        schema.TypeInt,
 				Optional:    true,
 				Default:     -10,
-				Description: "",
+				Description: "Pods with priority below cutoff will be expendable. They can be killed without any consideration during scale down and they don't cause scale up. Pods with null priority (PodPriority disabled) are non expendable",
 			},
 		},
 	}
