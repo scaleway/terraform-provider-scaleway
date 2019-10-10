@@ -483,11 +483,11 @@ func resourceScalewayK8SClusterBetaDefaultPoolUpdate(d *schema.ResourceData, m i
 			Region: region,
 			PoolID: defaultPoolID,
 		}
-		
+
 		if autohealing, ok := d.GetOk("default_pool.0.autohealing"); ok {
 			updateRequest.Autohealing = scw.BoolPtr(autohealing.(bool))
 		}
-    
+
 		if minSize, ok := d.GetOk("default_pool.0.min_size"); ok {
 			updateRequest.MinSize = scw.Uint32Ptr(uint32(minSize.(int)))
 		}
