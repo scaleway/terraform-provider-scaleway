@@ -288,7 +288,7 @@ type terraformResourceData interface {
 }
 
 // ErrZoneNotFound is returned when no zone can be detected
-var ErrZoneNotFound = fmt.Errorf("could not detect zone")
+var ErrZoneNotFound = fmt.Errorf("could not detect zone. Scaleway uses regions and zones. For more information, refer to https://www.terraform.io/docs/providers/scaleway/guides/regions_and_zones.html")
 
 // getZone will try to guess the zone from the following:
 //  - zone field of the resource data
