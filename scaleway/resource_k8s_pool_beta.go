@@ -217,7 +217,7 @@ func resourceScalewayK8SPoolBetaUpdate(d *schema.ResourceData, m interface{}) er
 		updateRequest.MaxSize = scw.Uint32Ptr(uint32(d.Get("max_size").(int)))
 	}
 
-	if d.HasChange("size") {
+	if d.Get("autoscaling").(bool) == false && d.HasChange("size") {
 		updateRequest.Size = scw.Uint32Ptr(uint32(d.Get("size").(int)))
 	}
 
