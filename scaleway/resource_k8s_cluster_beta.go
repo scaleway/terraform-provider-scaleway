@@ -93,6 +93,12 @@ func resourceScalewayK8SClusterBeta() *schema.Resource {
 							Default:     false,
 							Description: "Enable the autoscaling on the default pool",
 						},
+						"autohealing": {
+							Type:        schema.TypeBool,
+							Optional:    true,
+							Default:     false,
+							Description: "Enable the autohealing on the default pool",
+						},
 						"size": {
 							Type:        schema.TypeInt,
 							Required:    true,
@@ -284,6 +290,7 @@ func resourceScalewayK8SClusterBetaCreate(d *schema.ResourceData, m interface{})
 	defaultPoolReq := &k8s.CreateClusterRequestDefaultPoolConfig{
 		NodeType:    d.Get("default_pool.0.node_type").(string),
 		Autoscaling: d.Get("default_pool.0.autoscaling").(bool),
+		Autohealing: d.Get("default_pool.0.autohealing").(bool),
 		Size:        uint32(d.Get("default_pool.0.size").(int)),
 	}
 
@@ -363,6 +370,7 @@ func resourceScalewayK8SClusterBetaDefaultPoolRead(d *schema.ResourceData, m int
 	defaultPool["pool_id"] = pool.ID
 	defaultPool["node_type"] = pool.NodeType
 	defaultPool["autoscaling"] = pool.Autoscaling
+	defaultPool["autohealing"] = pool.Autohealing
 	defaultPool["size"] = pool.Size
 	defaultPool["min_size"] = pool.MinSize
 	defaultPool["max_size"] = pool.MaxSize
@@ -475,7 +483,11 @@ func resourceScalewayK8SClusterBetaDefaultPoolUpdate(d *schema.ResourceData, m i
 			Region: region,
 			PoolID: defaultPoolID,
 		}
-
+		
+		if autohealing, ok := d.GetOk("default_pool.0.autohealing"); ok {
+			updateRequest.Autohealing = scw.BoolPtr(autohealing.(bool))
+		}
+    
 		if minSize, ok := d.GetOk("default_pool.0.min_size"); ok {
 			updateRequest.MinSize = scw.Uint32Ptr(uint32(minSize.(int)))
 		}
@@ -505,6 +517,7 @@ func resourceScalewayK8SClusterBetaDefaultPoolUpdate(d *schema.ResourceData, m i
 				Name:        "default",
 				NodeType:    d.Get("default_pool.0.node_type").(string),
 				Autoscaling: d.Get("default_pool.0.autoscaling").(bool),
+				Autohealing: d.Get("default_pool.0.autohealing").(bool),
 				Size:        uint32(d.Get("default_pool.0.size").(int)),
 			}
 			if placementGroupID, ok := d.GetOk("default_pool.0.placement_group_id"); ok {

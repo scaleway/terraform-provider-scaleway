@@ -28,6 +28,8 @@ func TestAccScalewayK8SClusterPoolMinimal(t *testing.T) {
 					testAccCheckScalewayK8SPoolBetaExists("scaleway_k8s_pool_beta.minimal"),
 					resource.TestCheckResourceAttr("scaleway_k8s_pool_beta.minimal", "node_type", "gp1_xs"),
 					resource.TestCheckResourceAttr("scaleway_k8s_pool_beta.minimal", "size", "1"),
+					resource.TestCheckResourceAttr("scaleway_k8s_pool_beta.minimal", "autohealing", "true"),
+					resource.TestCheckResourceAttr("scaleway_k8s_pool_beta.minimal", "autoscaling", "true"),
 					resource.TestCheckResourceAttr("scaleway_k8s_pool_beta.minimal", "version", "1.16.0"),
 					resource.TestCheckResourceAttrSet("scaleway_k8s_pool_beta.minimal", "id"),
 				),
@@ -104,6 +106,8 @@ resource "scaleway_k8s_pool_beta" "minimal" {
     name = "minimal"
 	cluster_id = "${scaleway_k8s_cluster_beta.minimal.id}"
 	node_type = "gp1_xs"
+	autohealing = true
+	autoscaling = true
 	size = 1
 }`)
 	}
