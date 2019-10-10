@@ -476,10 +476,6 @@ func resourceScalewayK8SClusterBetaDefaultPoolUpdate(d *schema.ResourceData, m i
 			PoolID: defaultPoolID,
 		}
 
-		if autoscaling, ok := d.GetOk("default_pool.0.autoscaling"); ok {
-			updateRequest.Autoscaling = scw.BoolPtr(autoscaling.(bool))
-		}
-
 		if minSize, ok := d.GetOk("default_pool.0.min_size"); ok {
 			updateRequest.MinSize = scw.Uint32Ptr(uint32(minSize.(int)))
 		}
@@ -488,8 +484,14 @@ func resourceScalewayK8SClusterBetaDefaultPoolUpdate(d *schema.ResourceData, m i
 			updateRequest.MaxSize = scw.Uint32Ptr(uint32(maxSize.(int)))
 		}
 
-		if size, ok := d.GetOk("default_pool.0.size"); ok {
-			updateRequest.Size = scw.Uint32Ptr(uint32(size.(int)))
+		if autoscaling, ok := d.GetOk("default_pool.0.autoscaling"); ok {
+			updateRequest.Autoscaling = scw.BoolPtr(autoscaling.(bool))
+		}
+
+		if d.Get("default_pool.0.autoscaling").(bool) == false {
+			if size, ok := d.GetOk("default_pool.0.size"); ok {
+				updateRequest.Size = scw.Uint32Ptr(uint32(size.(int)))
+			}
 		}
 
 		_, err := k8sAPI.UpdatePool(updateRequest)
