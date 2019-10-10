@@ -124,6 +124,7 @@ func TestAccScalewayK8SClusterBetaDefaultPool(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_k8s_cluster_beta.pool", "default_pool.0.min_size", "1"),
 					resource.TestCheckResourceAttr("scaleway_k8s_cluster_beta.pool", "default_pool.0.max_size", "2"),
 					resource.TestCheckResourceAttr("scaleway_k8s_cluster_beta.pool", "default_pool.0.autoscaling", "true"),
+					resource.TestCheckResourceAttr("scaleway_k8s_cluster_beta.pool", "default_pool.0.autohealing", "true"),
 					resource.TestCheckResourceAttr("scaleway_k8s_cluster_beta.pool", "default_pool.0.container_runtime", "docker"),
 					resource.TestCheckResourceAttrSet("scaleway_k8s_cluster_beta.pool", "kubeconfig.0.config_file"),
 					resource.TestCheckResourceAttrSet("scaleway_k8s_cluster_beta.pool", "kubeconfig.0.host"),
@@ -242,6 +243,7 @@ resource "scaleway_k8s_cluster_beta" "pool" {
 		min_size = 1
 		max_size = 2
 		autoscaling = true
+		autohealing = true
 		container_runtime = "docker"
 	}
 	tags = [ "terraform-test", "scaleway_k8s_cluster_beta", "default-pool" ]

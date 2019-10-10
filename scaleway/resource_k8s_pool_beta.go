@@ -40,6 +40,12 @@ func resourceScalewayK8SPoolBeta() *schema.Resource {
 				Default:     false,
 				Description: "Enable the autoscaling on the pool",
 			},
+			"autohealing": {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Default:     false,
+				Description: "Enable the autohealing on the pool",
+			},
 			"size": {
 				Type:        schema.TypeInt,
 				Required:    true,
@@ -112,6 +118,7 @@ func resourceScalewayK8SPoolBetaCreate(d *schema.ResourceData, m interface{}) er
 		Name:        name.(string),
 		NodeType:    d.Get("node_type").(string),
 		Autoscaling: d.Get("autoscaling").(bool),
+		Autohealing: d.Get("autohealing").(bool),
 		Size:        uint32(d.Get("size").(int)),
 	}
 
@@ -168,6 +175,7 @@ func resourceScalewayK8SPoolBetaRead(d *schema.ResourceData, m interface{}) erro
 	d.Set("name", pool.Name)
 	d.Set("node_type", pool.NodeType)
 	d.Set("autoscaling", pool.Autoscaling)
+	d.Set("autohealing", pool.Autohealing)
 	d.Set("size", pool.Size)
 	d.Set("version", pool.Version)
 	d.Set("min_size", pool.MinSize)
@@ -195,6 +203,10 @@ func resourceScalewayK8SPoolBetaUpdate(d *schema.ResourceData, m interface{}) er
 
 	if d.HasChange("autoscaling") {
 		updateRequest.Autoscaling = scw.BoolPtr(d.Get("autoscaling").(bool))
+	}
+
+	if d.HasChange("autohealing") {
+		updateRequest.Autohealing = scw.BoolPtr(d.Get("autohealing").(bool))
 	}
 
 	if d.HasChange("min_size") {
