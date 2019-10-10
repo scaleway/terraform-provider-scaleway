@@ -22,11 +22,11 @@ func validationUUID() func(interface{}, string) ([]string, []error) {
 	return func(v interface{}, key string) (warnings []string, errors []error) {
 		uuid, isString := v.(string)
 		if !isString {
-			return nil, []error{fmt.Errorf("invalid UUID: not a string")}
+			return nil, []error{fmt.Errorf("invalid UUID for key '%s': not a string", key)}
 		}
 
 		if !isUUID(uuid) {
-			return nil, []error{fmt.Errorf("invalid UUID '%s' (%d): format should be 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx' (36) and contains valid hexadecimal characters", uuid, len(uuid))}
+			return nil, []error{fmt.Errorf("invalid UUID for key '%s': '%s' (%d): format should be 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx' (36) and contains valid hexadecimal characters", key, uuid, len(uuid))}
 		}
 
 		return
