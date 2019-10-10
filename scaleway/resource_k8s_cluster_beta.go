@@ -111,6 +111,13 @@ func resourceScalewayK8SClusterBeta() *schema.Resource {
 							Default:     nil,
 							Description: "Maximum size of the default pool",
 						},
+						"placement_group_id": {
+							Type:        schema.TypeString,
+							Optional:    true,
+							ForceNew:    true,
+							Default:     nil,
+							Description: "ID of the placement group for the default pool",
+						},
 						"container_runtime": {
 							Type:        schema.TypeString,
 							Optional:    true,
