@@ -19,7 +19,7 @@ resource "scaleway_k8s_cluster_beta" "jack" {
   version = "1.16.1"
   cni = "calico"
   default_pool {
-    node_type = "gp1_xs"
+    node_type = "GP1-XS"
     size = 3
   }
 }
@@ -27,7 +27,7 @@ resource "scaleway_k8s_cluster_beta" "jack" {
 resource "scaleway_k8s_pool_beta" "bill" {
   cluster_id = "${scaleway_k8s_cluster_beta.jack.id}"
   name = "bill"
-  node_type = "gp1_s"
+  node_type = "GP1-S"
   size = 3
   min_size = 0
   max_size = 10

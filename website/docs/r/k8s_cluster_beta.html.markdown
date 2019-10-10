@@ -19,7 +19,7 @@ resource "scaleway_k8s_cluster_beta" "jack" {
   version = "1.16.1"
   cni = "calico"
   default_pool {
-    node_type = "gp1_xs"
+    node_type = "GP1-XS"
     size = 3
   }
 }
@@ -38,7 +38,7 @@ resource "scaleway_k8s_cluster_beta" "john" {
   tags = ["i'm an awsome tag", "yay"]
 
   default_pool {
-    node_type = "gp1_xs"
+    node_type = "GP1-XS"
     size = 3
     autoscaling = true
     autohealing = true
@@ -66,7 +66,7 @@ resource "scaleway_k8s_cluster_beta" "joy" {
   version = "1.16.1"
   cni = "flannel"
   default_pool {
-    node_type = "gp1_xs"
+    node_type = "GP1-XS"
     size = 3
   }
 }
