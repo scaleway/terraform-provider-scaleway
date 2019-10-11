@@ -64,6 +64,31 @@ resource "scaleway_instance_security_group" "web" {
 }
 ```
 
+### Trusted IP for SSH access (using for_each)
+
+If you use terraform >= 0.12.6, you can leverage the [`for_each`](https://www.terraform.io/docs/configuration/resources.html#for_each-multiple-resource-instances-defined-by-a-map-or-set-of-strings) feature with this resource.
+
+```hcl
+locals {
+  trusted = ["192.168.0.1", "192.168.0.2", "192.168.0.3"]
+}
+
+resource "scaleway_instance_security_group" "dummy" {
+  inbound_default_policy  = "drop"
+  outbound_default_policy = "accept"
+
+  dynamic "inbound_rule" {
+    for_each = local.trusted
+
+    content {
+      action = "accept"
+      port   = 22
+      ip     = inbound_rule.value
+    }
+  }
+}
+```
+
 ## Arguments Reference
 
 The following arguments are supported:
