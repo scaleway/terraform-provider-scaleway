@@ -177,4 +177,4 @@ terraform {
 ```
 
 Beware as no locking mechanism are yet supported.
-Using scaleway object storage as terraform backend is not suitable if you work in a team with a risk of simultaneously access to the same plan.
+Using scaleway object storage as terraform backend is not suitable if you work in a team with a risk of simultaneous access to the same plan.
