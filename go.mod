@@ -13,3 +13,5 @@ require (
 )
 
 go 1.13
+
+replace github.com/scaleway/scaleway-sdk-go => /Volumes/work/scaleway/front/scaleway-sdk-go

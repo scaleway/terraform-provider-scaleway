@@ -1,0 +1,58 @@
+---
+layout: "scaleway"
+page_title: "Scaleway: scaleway_lb_lb_beta"
+sidebar_current: "docs-scaleway-resource-network-lb-lb-beta"
+description: |-
+  Manages Scaleway Load-Balancers.
+---
+
+# scaleway_lb_lb_beta
+
+Creates and manages Scaleway Load-Balancers. For more information, see [the documentation](https://developers.scaleway.com/en/products/lb/api).
+
+## Examples
+    
+### Basic
+
+```hcl
+resource "scaleway_lb_lb_beta" "base" {
+  region      = "fr-par"
+  type        = "LB-S"
+}
+```
+
+## Arguments Reference
+
+The following arguments are supported:
+
+- `type` - (Required) The type of the load-balancer.  For now only `LB-S` is available
+
+~> **Important:** Updates to `type` will recreate the load-balancer.
+
+- `name` - (Optional) The name of the load-balancer.
+
+- `tags` - (Optional) The tags associated with the load-balancers.
+
+- `region` - (Defaults to [provider](../index.html#region) `region`) The [region](../guides/regions_and_zones.html#regions) in which the load-balacer should be created.
+
+- `organization_id` - (Defaults to [provider](../index.html#organization_id) `organization_id`) The ID of the organization the server is associated with.
+
+
+## Attributes Reference
+
+In addition to all arguments above, the following attributes are exported:
+
+- `id` - The ID of the server.
+
+- `ips` - IPs attached to the load-balancers
+   - `ip_id` - The IP ID.
+   - `address` - The IP address.
+
+
+## Import
+
+Load-Balancer can be imported using the `{region}/{id}`, e.g.
+
+```bash
+$ terraform import scaleway_lb_lb_beta.lb01 fr-par/11111111-1111-1111-1111-111111111111
+```
