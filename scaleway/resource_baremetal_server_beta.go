@@ -157,7 +157,7 @@ func resourceScalewayBaremetalServerBetaRead(d *schema.ResourceData, m interface
 
 	d.Set("name", res.Name)
 	d.Set("zone", string(zone))
-	d.Set("project_id", res.OrganizationID)
+	d.Set("organization_id", res.OrganizationID)
 	d.Set("tags", res.Tags)
 	d.Set("type", res.OfferID)
 	if res.Install != nil {
