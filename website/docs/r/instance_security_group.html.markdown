@@ -39,7 +39,7 @@ resource "scaleway_instance_security_group" "web" {
 ```hcl
 resource "scaleway_instance_security_group" "web" {
   inbound_default_policy = "drop" # By default we drop incomming trafic that do not match any inbound_rule.
-  inbound_default_policy = "drop" # By default we drop outgoing trafic that do not match any outbound_rule.
+  outbound_default_policy = "drop" # By default we drop outgoing trafic that do not match any outbound_rule.
   
   inbound_rule {
     action = "drop"
