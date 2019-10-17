@@ -44,10 +44,8 @@ The following arguments are supported:
 In addition to all arguments above, the following attributes are exported:
 
 - `id` - The ID of the server.
-
-- `ips` - IPs attached to the load-balancers
-   - `ip_id` - The IP ID.
-   - `address` - The IP address.
+- `ip_id` - The load-balance public IP ID
+- `ip_address` -  The load-balance public IP Address
 
 
 ## Import

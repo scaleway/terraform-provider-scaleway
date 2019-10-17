@@ -37,12 +37,14 @@ func resourceScalewayLbBeta() *schema.Resource {
 				Description: "Array of tags to associate with the load-balancer",
 			},
 			"ip_id": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The load-balance public IP ID",
 			},
 			"ip_address": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The load-balance public IP address",
 			},
 			"region":          regionSchema(),
 			"organization_id": organizationIDSchema(),
