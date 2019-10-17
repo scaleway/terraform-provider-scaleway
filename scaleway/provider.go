@@ -198,6 +198,7 @@ func Provider() terraform.ResourceProvider {
 			"scaleway_k8s_cluster_beta":         resourceScalewayK8SClusterBeta(),
 			"scaleway_k8s_pool_beta":            resourceScalewayK8SPoolBeta(),
 			"scaleway_lb_beta":                  resourceScalewayLbBeta(),
+			"scaleway_lb_backend_beta":          resourceScalewayLbBackendBeta(),
 			"scaleway_object_bucket":            resourceScalewayObjectBucket(),
 			"scaleway_user_data":                resourceScalewayUserData(),
 			"scaleway_server":                   resourceScalewayServer(),

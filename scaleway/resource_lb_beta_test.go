@@ -76,7 +76,7 @@ func testAccCheckScalewayLbBetaExists(n string) resource.TestCheckFunc {
 
 func testAccCheckScalewayLbBetaDestroy(s *terraform.State) error {
 	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "scaleway_instance_ip" {
+		if rs.Type != "scaleway_lb_beta" {
 			continue
 		}
 
