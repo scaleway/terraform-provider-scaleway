@@ -2,7 +2,7 @@ package scaleway
 
 import (
 	"github.com/hashicorp/terraform/helper/schema"
-	"github.com/scaleway/scaleway-sdk-go/api/lb/v1"
+	lb "github.com/scaleway/scaleway-sdk-go/api/lb/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 )
 
