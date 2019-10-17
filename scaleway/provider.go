@@ -215,7 +215,7 @@ func Provider() terraform.ResourceProvider {
 			"scaleway_image":           dataSourceScalewayImage(),
 			"scaleway_security_group":  dataSourceScalewaySecurityGroup(),
 			"scaleway_volume":          dataSourceScalewayVolume(),
-			"scaleway_account_ssh_key": dataSourceScalewayAccountSSH(),
+			"scaleway_account_ssh_key": dataSourceScalewayAccountSSHKey(),
 		},
 
 		ConfigureFunc: providerConfigure,
