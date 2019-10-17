@@ -30,7 +30,7 @@ type Client struct {
 	defaultOrganizationID *string
 	defaultRegion         *Region
 	defaultZone           *Zone
-	defaultPageSize       *int32
+	defaultPageSize       *uint32
 }
 
 func defaultOptions() []ClientOption {
@@ -114,7 +114,7 @@ func (c *Client) GetDefaultZone() (Zone, bool) {
 // GetDefaultPageSize return the default page size of the client.
 // This value can be set in the client option
 // WithDefaultPageSize(). Be aware this value can be empty.
-func (c *Client) GetDefaultPageSize() (int32, bool) {
+func (c *Client) GetDefaultPageSize() (uint32, bool) {
 	if c.defaultPageSize != nil {
 		return *c.defaultPageSize, true
 	}

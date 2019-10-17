@@ -130,7 +130,7 @@ type ListSSHKeysRequest struct {
 
 	Page *int32 `json:"-"`
 
-	PageSize *int32 `json:"-"`
+	PageSize *uint32 `json:"-"`
 
 	Name *string `json:"-"`
 
@@ -140,11 +140,6 @@ type ListSSHKeysRequest struct {
 // ListSSHKeys list all SSH keys
 func (s *API) ListSSHKeys(req *ListSSHKeysRequest, opts ...scw.RequestOption) (*ListSSHKeysResponse, error) {
 	var err error
-
-	defaultOrganizationID, exist := s.client.GetDefaultOrganizationID()
-	if (req.OrganizationID == nil || *req.OrganizationID == "") && exist {
-		req.OrganizationID = &defaultOrganizationID
-	}
 
 	defaultPageSize, exist := s.client.GetDefaultPageSize()
 	if (req.PageSize == nil || *req.PageSize == 0) && exist {

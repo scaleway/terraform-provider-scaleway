@@ -140,7 +140,7 @@ func WithDefaultZone(zone Zone) ClientOption {
 // WithDefaultPageSize client option overrides the default page size of the SDK.
 //
 // It will be used as the default value of the page_size field in all requests made with this client.
-func WithDefaultPageSize(pageSize int32) ClientOption {
+func WithDefaultPageSize(pageSize uint32) ClientOption {
 	return func(s *settings) {
 		s.defaultPageSize = &pageSize
 	}
@@ -148,15 +148,15 @@ func WithDefaultPageSize(pageSize int32) ClientOption {
 
 // settings hold the values of all client options
 type settings struct {
-	apiURL           string
-	token            auth.Auth
-	userAgent        string
-	httpClient       httpClient
-	insecure         bool
+	apiURL                string
+	token                 auth.Auth
+	userAgent             string
+	httpClient            httpClient
+	insecure              bool
 	defaultOrganizationID *string
-	defaultRegion    *Region
-	defaultZone      *Zone
-	defaultPageSize  *int32
+	defaultRegion         *Region
+	defaultZone           *Zone
+	defaultPageSize       *uint32
 }
 
 func newSettings() *settings {

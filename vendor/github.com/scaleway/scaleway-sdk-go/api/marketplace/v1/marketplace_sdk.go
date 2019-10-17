@@ -154,7 +154,7 @@ func (s *API) GetServiceInfo(req *GetServiceInfoRequest, opts ...scw.RequestOpti
 }
 
 type ListImagesRequest struct {
-	PerPage *int32 `json:"-"`
+	PerPage *uint32 `json:"-"`
 
 	Page *int32 `json:"-"`
 }

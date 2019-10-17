@@ -161,7 +161,7 @@ func (s *API) AttachVolume(req *AttachVolumeRequest, opts ...scw.RequestOption) 
 	}
 
 	// update server
-	updateServerResponse, err := s.updateServer(&updateServerRequest{
+	updateServerResponse, err := s.updateServer(&UpdateServerRequest{
 		Zone:     req.Zone,
 		ServerID: req.ServerID,
 		Volumes:  &newVolumes,
@@ -224,7 +224,7 @@ func (s *API) DetachVolume(req *DetachVolumeRequest, opts ...scw.RequestOption) 
 	newVolumes := volumesToVolumeTemplates(volumes)
 
 	// update server
-	updateServerResponse, err := s.updateServer(&updateServerRequest{
+	updateServerResponse, err := s.updateServer(&UpdateServerRequest{
 		Zone:     req.Zone,
 		ServerID: serverID,
 		Volumes:  &newVolumes,
@@ -281,6 +281,12 @@ func (r *ListSnapshotsResponse) UnsafeSetTotalCount(totalCount int) {
 // UnsafeSetTotalCount should not be used
 // Internal usage only
 func (r *ListVolumesResponse) UnsafeSetTotalCount(totalCount int) {
+	r.TotalCount = uint32(totalCount)
+}
+
+// UnsafeSetTotalCount should not be used
+// Internal usage only
+func (r *ListImagesResponse) UnsafeSetTotalCount(totalCount int) {
 	r.TotalCount = uint32(totalCount)
 }
 

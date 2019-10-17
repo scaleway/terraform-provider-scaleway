@@ -68,6 +68,7 @@ func (s *API) GetLocalImageIDByLabel(req *GetLocalImageIDByLabelRequest) (string
 
 	images := listImageResponse.Images
 	label := strings.Replace(req.ImageLabel, "-", "_", -1)
+	commercialType := strings.ToUpper(req.CommercialType)
 
 	for _, image := range images {
 
@@ -79,7 +80,7 @@ func (s *API) GetLocalImageIDByLabel(req *GetLocalImageIDByLabelRequest) (string
 				return "", errors.Wrap(err, "couldn't find a matching image for the given label (%s), zone (%s) and commercial type (%s)", req.ImageLabel, req.Zone, req.CommercialType)
 			}
 
-			localImage, err := latestVersion.getLocalImage(req.Zone, req.CommercialType)
+			localImage, err := latestVersion.getLocalImage(req.Zone, commercialType)
 			if err != nil {
 				return "", errors.Wrap(err, "couldn't find a matching image for the given label (%s), zone (%s) and commercial type (%s)", req.ImageLabel, req.Zone, req.CommercialType)
 			}

@@ -91,16 +91,9 @@ func (k *Kubeconfig) GetToken() (string, error) {
 	return k.Users[0].User.Token, nil
 }
 
-// GetClusterKubeConfigRequest is the requst for GetClusterKubeConfig
-type GetClusterKubeConfigRequest struct {
-	Region scw.Region `json:"-"`
-
-	ClusterID string `json:"-"`
-}
-
 // GetClusterKubeConfig downloads the kubeconfig for the given cluster
 func (s *API) GetClusterKubeConfig(req *GetClusterKubeConfigRequest, opts ...scw.RequestOption) (*Kubeconfig, error) {
-	kubeconfigFile, err := s.getClusterKubeConfig(&getClusterKubeConfigRequest{
+	kubeconfigFile, err := s.getClusterKubeConfig(&GetClusterKubeConfigRequest{
 		Region:    req.Region,
 		ClusterID: req.ClusterID,
 	})

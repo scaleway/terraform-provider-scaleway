@@ -343,7 +343,7 @@ type IP struct {
 	//
 	// Default value: unknown
 	ReverseStatus IPReverseStatus `json:"reverse_status"`
-	// ReverseStatusMessage message is an error occured with reverse
+	// ReverseStatusMessage a message related to the reverse status, in case of an error for example
 	ReverseStatusMessage *string `json:"reverse_status_message"`
 }
 
@@ -436,7 +436,7 @@ type ListServersRequest struct {
 	// Page page number
 	Page *int32 `json:"-"`
 	// PageSize number of server per page
-	PageSize *int32 `json:"-"`
+	PageSize *uint32 `json:"-"`
 	// OrderBy order of the servers
 	//
 	// Default value: created_at_asc
@@ -894,7 +894,7 @@ type ListServerEventsRequest struct {
 	// Page page number
 	Page *int32 `json:"-"`
 	// PageSize number of server events per page
-	PageSize *int32 `json:"-"`
+	PageSize *uint32 `json:"-"`
 	// OrderBy order of the server events
 	//
 	// Default value: created_at_asc
