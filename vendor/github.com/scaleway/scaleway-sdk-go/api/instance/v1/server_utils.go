@@ -14,10 +14,6 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 )
 
-type UpdateServerRequest updateServerRequest
-
-type CreateServerRequest createServerRequest
-
 // CreateServer creates a server.
 func (s *API) CreateServer(req *CreateServerRequest, opts ...scw.RequestOption) (*CreateServerResponse, error) {
 
@@ -35,7 +31,7 @@ func (s *API) CreateServer(req *CreateServerRequest, opts ...scw.RequestOption) 
 		req.Image = imageId
 	}
 
-	return s.createServer((*createServerRequest)(req), opts...)
+	return s.createServer((*CreateServerRequest)(req), opts...)
 }
 
 // UpdateServer updates a server.
@@ -43,7 +39,7 @@ func (s *API) CreateServer(req *CreateServerRequest, opts ...scw.RequestOption) 
 // Note: Implementation is thread-safe.
 func (s *API) UpdateServer(req *UpdateServerRequest, opts ...scw.RequestOption) (*UpdateServerResponse, error) {
 	defer lockServer(req.Zone, req.ServerID).Unlock()
-	return s.updateServer((*updateServerRequest)(req), opts...)
+	return s.updateServer((*UpdateServerRequest)(req), opts...)
 }
 
 // waitForServerRequest is used by waitForServer method.
