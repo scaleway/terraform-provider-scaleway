@@ -1,11 +1,11 @@
 ---
 layout: "scaleway"
-page_title: "Scaleway: scaleway_account_ssk_key"
+page_title: "Scaleway: scaleway_account_ssh_key"
 description: |-
   Manages Scaleway user SSH keys.
 ---
 
-# scaleway_account_ssk_key
+# scaleway_account_ssh_key
 
 Manages user SSH keys to access servers provisioned on Scaleway.
 
