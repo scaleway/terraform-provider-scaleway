@@ -7,7 +7,7 @@ description: |-
 
 # scaleway_account_ssh_key
 
-Use this data source to get SSH key information based on it's ID or name.
+Use this data source to get SSH key information based on its ID or name.
 
 ## Example Usage
 
@@ -32,7 +32,7 @@ data "scaleway_account_ssh_key" "my_key" {
 
 ## Attributes Reference
 
-In addition to all arguments above, the following attributes are exported:
+In addition to all above arguments, the following attributes are exported:
 
 - `id` - The ID of the server.
 - `public_key` - The ssh public key string

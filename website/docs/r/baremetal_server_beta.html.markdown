@@ -54,7 +54,7 @@ Use [this endpoint](https://developers.scaleway.com/en/products/baremetal/api/#g
 
 ## Attributes Reference
 
-In addition to all arguments above, the following attributes are exported:
+In addition to all above arguments, the following attributes are exported:
 
 - `id` - The ID of the server.
 
