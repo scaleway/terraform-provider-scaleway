@@ -2,6 +2,9 @@ package scaleway
 
 import (
 	"fmt"
+	"github.com/hashicorp/terraform/helper/resource"
+	"github.com/hashicorp/terraform/terraform"
+	"net"
 	"net/http"
 	"strings"
 	"testing"
@@ -191,4 +194,36 @@ func TestIs403Error(t *testing.T) {
 func TestGetRandomName(t *testing.T) {
 	name := getRandomName("test")
 	assert.True(t, strings.HasPrefix(name, "tf-test-"))
+}
+
+func testCheckResourceAttrFunc(name string, key string, test func(string) error) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		rs, ok := s.RootModule().Resources[name]
+		if !ok {
+			return fmt.Errorf("resource not found: %s", name)
+		}
+		value, ok := rs.Primary.Attributes[key]
+		if !ok {
+			return fmt.Errorf("key not found: %s", key)
+		}
+		err := test(value)
+		if err != nil {
+			return fmt.Errorf("test for %s %s did not pass test: %s", name, key, err)
+		}
+		return nil
+	}
+}
+
+func testCheckResourceAttrUUID(name string, key string) resource.TestCheckFunc {
+	return resource.TestMatchResourceAttr(name, key, UUIDRegex)
+}
+
+func testCheckResourceAttrIPv4(name string, key string) resource.TestCheckFunc {
+	return testCheckResourceAttrFunc(name, key, func(value string) error {
+		ip := net.ParseIP(value)
+		if ip.To4() == nil {
+			return fmt.Errorf("%s is not a valid IPv4", value)
+		}
+		return nil
+	})
 }
