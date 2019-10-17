@@ -1,12 +1,13 @@
 ---
 layout: "scaleway"
-page_title: "Scaleway: scaleway_lb_lb_beta"
-sidebar_current: "docs-scaleway-resource-network-lb-lb-beta"
+page_title: "Scaleway: scaleway_lb_beta"
 description: |-
   Manages Scaleway Load-Balancers.
 ---
 
-# scaleway_lb_lb_beta
+# scaleway_lb_beta
+
+-> **Note:** This terraform resource is flagged beta and might include breaking change in future releases.
 
 Creates and manages Scaleway Load-Balancers. For more information, see [the documentation](https://developers.scaleway.com/en/products/lb/api).
 
@@ -15,7 +16,7 @@ Creates and manages Scaleway Load-Balancers. For more information, see [the docu
 ### Basic
 
 ```hcl
-resource "scaleway_lb_lb_beta" "base" {
+resource "scaleway_lb_beta" "base" {
   region      = "fr-par"
   type        = "LB-S"
 }
@@ -54,5 +55,5 @@ In addition to all arguments above, the following attributes are exported:
 Load-Balancer can be imported using the `{region}/{id}`, e.g.
 
 ```bash
-$ terraform import scaleway_lb_lb_beta.lb01 fr-par/11111111-1111-1111-1111-111111111111
+$ terraform import scaleway_lb_beta.lb01 fr-par/11111111-1111-1111-1111-111111111111
 ```

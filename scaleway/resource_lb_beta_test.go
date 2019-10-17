@@ -8,48 +8,48 @@ import (
 	"testing"
 )
 
-func TestAccScalewayLbLbBeta(t *testing.T) {
+func TestAccScalewayLbBeta(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckScalewayLbLbBetaDestroy,
+		CheckDestroy: testAccCheckScalewayLbBetaDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: `
-					resource scaleway_lb_lb_beta lb01 {
+					resource scaleway_lb_beta lb01 {
 						name = "test-lb"
 						type = "LB-S"
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayLbLbBetaExists("scaleway_lb_lb_beta.lb01"),
-					resource.TestCheckResourceAttr("scaleway_lb_lb_beta.lb01", "name", "test-lb"),
-					testCheckResourceAttrUUID("scaleway_lb_lb_beta.lb01", "ips.0.ip_id"),
-					testCheckResourceAttrIPv4("scaleway_lb_lb_beta.lb01", "ips.0.address"),
+					testAccCheckScalewayLbBetaExists("scaleway_lb_beta.lb01"),
+					resource.TestCheckResourceAttr("scaleway_lb_beta.lb01", "name", "test-lb"),
+					testCheckResourceAttrUUID("scaleway_lb_beta.lb01", "ip_id"),
+					testCheckResourceAttrIPv4("scaleway_lb_beta.lb01", "ip_address"),
 				),
 			},
 			{
 				Config: `
-					resource scaleway_lb_lb_beta lb01 {
+					resource scaleway_lb_beta lb01 {
 						name = "test-lb"
 						type = "LB-S"
 						tags = ["tag1", "tag2"]
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayLbLbBetaExists("scaleway_lb_lb_beta.lb01"),
-					resource.TestCheckResourceAttr("scaleway_lb_lb_beta.lb01", "name", "test-lb"),
-					resource.TestCheckResourceAttr("scaleway_lb_lb_beta.lb01", "tags.0", "tag1"),
-					resource.TestCheckResourceAttr("scaleway_lb_lb_beta.lb01", "tags.1", "tag2"),
-					testCheckResourceAttrUUID("scaleway_lb_lb_beta.lb01", "ips.0.ip_id"),
-					testCheckResourceAttrIPv4("scaleway_lb_lb_beta.lb01", "ips.0.address"),
+					testAccCheckScalewayLbBetaExists("scaleway_lb_beta.lb01"),
+					resource.TestCheckResourceAttr("scaleway_lb_beta.lb01", "name", "test-lb"),
+					resource.TestCheckResourceAttr("scaleway_lb_beta.lb01", "tags.0", "tag1"),
+					resource.TestCheckResourceAttr("scaleway_lb_beta.lb01", "tags.1", "tag2"),
+					testCheckResourceAttrUUID("scaleway_lb_beta.lb01", "ip_id"),
+					testCheckResourceAttrIPv4("scaleway_lb_beta.lb01", "ip_address"),
 				),
 			},
 		},
 	})
 }
 
-func testAccCheckScalewayLbLbBetaExists(n string) resource.TestCheckFunc {
+func testAccCheckScalewayLbBetaExists(n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
@@ -74,7 +74,7 @@ func testAccCheckScalewayLbLbBetaExists(n string) resource.TestCheckFunc {
 	}
 }
 
-func testAccCheckScalewayLbLbBetaDestroy(s *terraform.State) error {
+func testAccCheckScalewayLbBetaDestroy(s *terraform.State) error {
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "scaleway_instance_ip" {
 			continue

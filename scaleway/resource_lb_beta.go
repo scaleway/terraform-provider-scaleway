@@ -5,20 +5,16 @@ import (
 	lb "github.com/scaleway/scaleway-sdk-go/api/lb/v1"
 )
 
-func resourceScalewayLbLbBeta() *schema.Resource {
+func resourceScalewayLbBeta() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceScalewayLbLbBetaCreate,
-		Read:   resourceScalewayLbLbBetaRead,
-		Update: resourceScalewayLbLbBetaUpdate,
-		Delete: resourceScalewayLbLbBetaDelete,
+		Create: resourceScalewayLbBetaCreate,
+		Read:   resourceScalewayLbBetaRead,
+		Update: resourceScalewayLbBetaUpdate,
+		Delete: resourceScalewayLbBetaDelete,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},
 		SchemaVersion: 0,
-		Timeouts: &schema.ResourceTimeout{
-			Create: &BaremetalServerResourceTimeout,
-			Delete: &BaremetalServerResourceTimeout,
-		},
 		Schema: map[string]*schema.Schema{
 			"name": {
 				Type:        schema.TypeString,
@@ -40,22 +36,13 @@ func resourceScalewayLbLbBeta() *schema.Resource {
 				Optional:    true,
 				Description: "Array of tags to associate with the load-balancer",
 			},
-			"ips": {
-				Type: schema.TypeList,
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"ip_id": {
-							Type:     schema.TypeString,
-							Computed: true,
-						},
-						"address": {
-							Type:     schema.TypeString,
-							Computed: true,
-						},
-					},
-				},
-				Computed:    true,
-				Description: "Array of ip ids attached to the load-balancer",
+			"ip_id": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"ip_address": {
+				Type:     schema.TypeString,
+				Computed: true,
 			},
 			"region":          regionSchema(),
 			"organization_id": organizationIDSchema(),
@@ -63,7 +50,7 @@ func resourceScalewayLbLbBeta() *schema.Resource {
 	}
 }
 
-func resourceScalewayLbLbBetaCreate(d *schema.ResourceData, m interface{}) error {
+func resourceScalewayLbBetaCreate(d *schema.ResourceData, m interface{}) error {
 	lbAPI, region, err := getLbAPIWithRegion(d, m)
 	if err != nil {
 		return err
@@ -100,10 +87,10 @@ func resourceScalewayLbLbBetaCreate(d *schema.ResourceData, m interface{}) error
 		return err
 	}
 
-	return resourceScalewayLbLbBetaRead(d, m)
+	return resourceScalewayLbBetaRead(d, m)
 }
 
-func resourceScalewayLbLbBetaRead(d *schema.ResourceData, m interface{}) error {
+func resourceScalewayLbBetaRead(d *schema.ResourceData, m interface{}) error {
 	lbAPI, region, ID, err := getLbAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return err
@@ -122,25 +109,18 @@ func resourceScalewayLbLbBetaRead(d *schema.ResourceData, m interface{}) error {
 		return err
 	}
 
-	ips := []map[string]interface{}(nil)
-	for _, ip := range res.IP {
-		ips = append(ips, map[string]interface{}{
-			"ip_id":   ip.ID,
-			"address": ip.IPAddress,
-		})
-	}
-
 	d.Set("name", res.Name)
 	d.Set("region", string(region))
 	d.Set("organization_id", res.OrganizationID)
 	d.Set("tags", res.Tags)
 	d.Set("type", res.Type)
-	d.Set("ips", ips)
+	d.Set("ip_id", res.IP[0].ID)
+	d.Set("ip_address", res.IP[0].IPAddress)
 
 	return nil
 }
 
-func resourceScalewayLbLbBetaUpdate(d *schema.ResourceData, m interface{}) error {
+func resourceScalewayLbBetaUpdate(d *schema.ResourceData, m interface{}) error {
 	lbAPI, region, ID, err := getLbAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return err
@@ -161,10 +141,10 @@ func resourceScalewayLbLbBetaUpdate(d *schema.ResourceData, m interface{}) error
 		}
 	}
 
-	return resourceScalewayLbLbBetaRead(d, m)
+	return resourceScalewayLbBetaRead(d, m)
 }
 
-func resourceScalewayLbLbBetaDelete(d *schema.ResourceData, m interface{}) error {
+func resourceScalewayLbBetaDelete(d *schema.ResourceData, m interface{}) error {
 	lbAPI, region, ID, err := getLbAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return err

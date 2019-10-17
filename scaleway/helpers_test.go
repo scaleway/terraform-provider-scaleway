@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/terraform"
+	"net"
 	"net/http"
-	"regexp"
 	"strings"
 	"testing"
 
@@ -196,8 +196,6 @@ func TestGetRandomName(t *testing.T) {
 	assert.True(t, strings.HasPrefix(name, "tf-test-"))
 }
 
-var IPv4Regexp = regexp.MustCompile("([0-9]{1,3}.){3}[0-9]{1,3}")
-
 func testCheckResourceAttrFunc(name string, key string, test func(string) error) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[name]
@@ -216,19 +214,16 @@ func testCheckResourceAttrFunc(name string, key string, test func(string) error)
 	}
 }
 
-func testCheckResourceAttrRegex(name string, key string, regexp *regexp.Regexp) resource.TestCheckFunc {
-	return testCheckResourceAttrFunc(name, key, func(value string) error {
-		if IPv4Regexp.MatchString(value) {
-			return nil
-		}
-		return fmt.Errorf("%s do not match %s", value, regexp.String())
-	})
-}
-
 func testCheckResourceAttrUUID(name string, key string) resource.TestCheckFunc {
-	return testCheckResourceAttrRegex(name, key, UUIDRegex)
+	return resource.TestMatchResourceAttr(name, key, UUIDRegex)
 }
 
 func testCheckResourceAttrIPv4(name string, key string) resource.TestCheckFunc {
-	return testCheckResourceAttrRegex(name, key, IPv4Regexp)
+	return testCheckResourceAttrFunc(name, key, func(value string) error {
+		ip := net.ParseIP(value)
+		if ip.To4() == nil {
+			return fmt.Errorf("%s is not a valid IPv4", value)
+		}
+		return nil
+	})
 }
