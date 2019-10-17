@@ -164,7 +164,7 @@ attached to the server. Updates to this field will trigger a stop/start of the s
 
 ## Attributes Reference
 
-In addition to all arguments above, the following attributes are exported:
+In addition to all above arguments, the following attributes are exported:
 
 - `id` - The ID of the server.
 - `placement_group_policy_respected` - True when the placement group policy is respected.

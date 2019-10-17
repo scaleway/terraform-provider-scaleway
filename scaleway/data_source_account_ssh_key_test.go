@@ -7,7 +7,7 @@ import (
 	"github.com/hashicorp/terraform/helper/resource"
 )
 
-func TestAccScalewayDataSourceAccountSSH_Basic(t *testing.T) {
+func TestAccScalewayDataSourceAccountSSHKey_Basic(t *testing.T) {
 	sshKeyName := acctest.RandString(10)
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },

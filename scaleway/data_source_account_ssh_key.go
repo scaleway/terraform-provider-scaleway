@@ -7,9 +7,9 @@ import (
 	account "github.com/scaleway/scaleway-sdk-go/api/account/v2alpha1"
 )
 
-func dataSourceScalewayAccountSSH() *schema.Resource {
+func dataSourceScalewayAccountSSHKey() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceScalewayAccountSSHRead,
+		Read: dataSourceScalewayAccountSSHKeyRead,
 
 		Schema: map[string]*schema.Schema{
 			"name": {
@@ -35,7 +35,7 @@ func dataSourceScalewayAccountSSH() *schema.Resource {
 	}
 }
 
-func dataSourceScalewayAccountSSHRead(d *schema.ResourceData, m interface{}) error {
+func dataSourceScalewayAccountSSHKeyRead(d *schema.ResourceData, m interface{}) error {
 	accountAPI := getAccountAPI(m)
 
 	var sshKey *account.SSHKey
