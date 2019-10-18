@@ -124,11 +124,11 @@ func resourceScalewayInstanceServer() *schema.Resource {
 				Computed:    true,
 				Description: "The public IPv4 address of the server",
 			},
-			"disable_public_ip": {
+			"disable_dynamic_ip": {
 				Type:        schema.TypeBool,
 				Optional:    true,
 				Default:     false,
-				Description: "Disable dynamic ip on the server",
+				Description: "Disable dynamic IP on the server",
 			},
 			"state": {
 				Type:        schema.TypeString,
@@ -172,6 +172,14 @@ func resourceScalewayInstanceServer() *schema.Resource {
 			},
 			"zone":            zoneSchema(),
 			"organization_id": organizationIDSchema(),
+
+			// Deprecated and removed.
+			"disable_public_ip": {
+				Type:     schema.TypeBool,
+				Optional: true,
+				Default:  false,
+				Removed:  "Please use disable_dynamic_ip instead",
+			},
 		},
 	}
 }
@@ -214,7 +222,7 @@ func resourceScalewayInstanceServerCreate(d *schema.ResourceData, m interface{})
 		CommercialType:    commercialType,
 		EnableIPv6:        d.Get("enable_ipv6").(bool),
 		SecurityGroup:     expandID(d.Get("security_group_id")),
-		DynamicIPRequired: Bool(!d.Get("disable_public_ip").(bool)),
+		DynamicIPRequired: Bool(!d.Get("disable_dynamic_ip").(bool)),
 	}
 
 	if placementGroupID, ok := d.GetOk("placement_group_id"); ok {
@@ -324,7 +332,7 @@ func resourceScalewayInstanceServerRead(d *schema.ResourceData, m interface{}) e
 	d.Set("tags", response.Server.Tags)
 	d.Set("security_group_id", response.Server.SecurityGroup.ID)
 	d.Set("enable_ipv6", response.Server.EnableIPv6)
-	d.Set("disable_public_ip", !response.Server.DynamicIPRequired)
+	d.Set("disable_dynamic_ip", !response.Server.DynamicIPRequired)
 
 	// TODO: If image is a label, check that response.Server.Image.ID match the label.
 	// It could be useful if the user edit the image with another tool.
@@ -443,8 +451,8 @@ func resourceScalewayInstanceServerUpdate(d *schema.ResourceData, m interface{})
 		updateRequest.EnableIPv6 = scw.BoolPtr(d.Get("enable_ipv6").(bool))
 	}
 
-	if d.HasChange("disable_public_ip") {
-		updateRequest.DynamicIPRequired = scw.BoolPtr(!d.Get("disable_public_ip").(bool))
+	if d.HasChange("disable_dynamic_ip") {
+		updateRequest.DynamicIPRequired = scw.BoolPtr(!d.Get("disable_dynamic_ip").(bool))
 	}
 
 	volumes := map[string]*instance.VolumeTemplate{}
