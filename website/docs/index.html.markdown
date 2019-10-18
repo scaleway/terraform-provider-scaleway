@@ -65,7 +65,7 @@ resource "scaleway_instance_security_group" "www" {
 
 resource "scaleway_instance_server" "web" {
   type = "DEV1-L"
-  image_id = "f974feac-abae-4365-b988-8ec7d1cec10d"
+  image = "f974feac-abae-4365-b988-8ec7d1cec10d"
 
   tags = [ "front", "web" ]
 
