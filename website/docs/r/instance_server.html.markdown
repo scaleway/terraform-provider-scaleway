@@ -146,6 +146,8 @@ attached to the server. Updates to this field will trigger a stop/start of the s
 
 - `enable_ipv6` - (Defaults to `false`) Determines if IPv6 is enabled for the server.
 
+- `disable_dynamic_ip` - (Defaults to `false`) Disable dynamic ip on the server.
+
 - `state` - (Defaults to `started`) The state of the server. Possible values are: `started`, `stopped` or `standby`.
 
 - `cloud_init` - (Optional) The cloud init script associated with this server. Updates to this field will trigger a stop/start of the server.

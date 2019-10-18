@@ -25,7 +25,7 @@ func TestAccScalewayInstanceServerMinimal1(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "root_volume.0.delete_on_termination", "true"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "root_volume.0.size_in_gb", "20"),
 					resource.TestCheckResourceAttrSet("scaleway_instance_server.base", "root_volume.0.volume_id"),
-					resource.TestCheckResourceAttr("scaleway_instance_server.base", "disable_public_ip", "false"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.base", "disable_dynamic_ip", "false"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "tags.0", "terraform-test"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "tags.1", "scaleway_instance_server"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "tags.2", "minimal"),
