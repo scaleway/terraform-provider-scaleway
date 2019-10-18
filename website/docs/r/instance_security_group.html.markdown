@@ -1,7 +1,6 @@
 ---
 layout: "scaleway"
 page_title: "Scaleway: scaleway_instance_server"
-sidebar_current: "docs-scaleway-resource-compute-instance-server"
 description: |-
   Manages Scaleway Compute Instance security groups.
 ---
