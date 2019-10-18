@@ -46,7 +46,7 @@ In order to unify configuration management across all scaleway developer tools, 
 
 Below you find an overview of changes in the provider config:
 
-| Old provider argument | New provider argument |
+| Old provider attribute | New provider attribute |
 | --------------------- | --------------------- |
 | `access_key`          | `access_key`          |
 | `token`               | `secret_key`          |
@@ -107,7 +107,7 @@ resource "scaleway_instance_server" "web" {
 
 #### Renamed: `scaleway_ip` -> `scaleway_instance_ip`
 
-`scaleway_ip` was renamed to `scaleway_instance_ip` and the argument `server` was renamed to `server_id`.
+`scaleway_ip` was renamed to `scaleway_instance_ip` and the attribute `server` was renamed to `server_id`.
 
 ```hcl
 resource "scaleway_instance_ip" "test_ip" {
@@ -118,9 +118,14 @@ resource "scaleway_instance_ip" "test_ip" {
 #### Renamed: `scaleway_volume` -> `scaleway_instance_volume`
 
 `scaleway_volume` was renamed to `scaleway_instance_volume`.
-The former arguments can still be used on the new volume resource.
+The former attributes can still be used on the new volume resource.
 
 Additionally, from now on, you can also create new volumes based on other volumes or snapshots. For more information check the [new volume `scaleway_instance_volume` resource](../r/instance_volume.html).
+
+#### Renamed: `scaleway_ssh_key` -> `scaleway_account_ssk_key`
+
+`scaleway_ssh_key` was renamed to `scaleway_account_ssk_key`
+The `key` attribute has been renamed to `public_key`. A `name` required attribute and an `organization_id` optional attribute have been added.
 
 #### Removed: `scaleway_user_data`
 
@@ -131,12 +136,6 @@ Additionally, from now on, you can also create new volumes based on other volume
 The `scaleway_token` was removed in version 2.
 
 Tokens should be created in the console.
-
-#### Removed: `scaleway_ssh_key`
-
-The `scaleway_ssh_key` was removed in version 2.
-
-SSH keys should be uploaded in the console.
 
 #### Removed: `scaleway_ip_reverse_dns`
 
@@ -162,4 +161,4 @@ Volumes can in version 2 only be attached on the server resource. The [above exa
 
 The `scaleway_bucket` was moved to the `object` product in the `storage` product category.
 
-It's behaviour remained the same, but we also added an [`acl` argument](../r/object_bucket.html#acl). This argument takes canned ACLs.
+It's behaviour remained the same, but we also added an [`acl` attribute](../r/object_bucket.html#acl). This attribute takes canned ACLs.
