@@ -128,7 +128,7 @@ func resourceScalewayInstanceServer() *schema.Resource {
 				Type:        schema.TypeBool,
 				Optional:    true,
 				Default:     false,
-				Description: "Disable dynamic ip on the server",
+				Description: "Disable dynamic IP on the server",
 			},
 			"state": {
 				Type:        schema.TypeString,
@@ -172,6 +172,14 @@ func resourceScalewayInstanceServer() *schema.Resource {
 			},
 			"zone":            zoneSchema(),
 			"organization_id": organizationIDSchema(),
+
+			// Deprecated and removed.
+			"disable_public_ip": {
+				Type:     schema.TypeBool,
+				Optional: true,
+				Default:  false,
+				Removed:  "Please use disable_dynamic_ip instead",
+			},
 		},
 	}
 }
