@@ -21,7 +21,7 @@ resource "scaleway_instance_ip" "public_ip" {
 
 resource "scaleway_instance_server" "web" {
   type = "DEV1-S"
-  image_id = "f974feac-abae-4365-b988-8ec7d1cec10d"
+  image = "f974feac-abae-4365-b988-8ec7d1cec10d"
 }
 ```
 
@@ -34,7 +34,7 @@ resource "scaleway_instance_volume" "data" {
 
 resource "scaleway_instance_server" "web" {
   type = "DEV1-L"
-  image_id = "f974feac-abae-4365-b988-8ec7d1cec10d"
+  image = "f974feac-abae-4365-b988-8ec7d1cec10d"
 
   tags = [ "hello", "public" ]
 
@@ -77,7 +77,7 @@ resource "scaleway_instance_security_group" "www" {
 
 resource "scaleway_instance_server" "web" {
   type = "DEV1-S"
-  image_id = "f974feac-abae-4365-b988-8ec7d1cec10d"
+  image = "f974feac-abae-4365-b988-8ec7d1cec10d"
 
   security_group_id= "${scaleway_instance_security_group.www.id}"
 }
@@ -88,7 +88,7 @@ resource "scaleway_instance_server" "web" {
 ```hcl
 resource "scaleway_instance_server" "web" {
   type = "DEV1-L"
-  image_id = "f974feac-abae-4365-b988-8ec7d1cec10d"
+  image = "f974feac-abae-4365-b988-8ec7d1cec10d"
 
   tags = [ "web", "public" ]
 
