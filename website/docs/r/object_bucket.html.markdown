@@ -1,7 +1,6 @@
 ---
 layout: "scaleway"
 page_title: "Scaleway: scaleway_object_bucket"
-sidebar_current: "docs-scaleway-resource-storage-object-bucket"
 description: |-
   Manages Scaleway object storage buckets.
 ---

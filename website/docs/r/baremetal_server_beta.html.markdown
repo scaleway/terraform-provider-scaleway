@@ -1,7 +1,6 @@
 ---
 layout: "scaleway"
 page_title: "Scaleway: scaleway_baremetal_server_beta"
-sidebar_current: "docs-scaleway-resource-compute-baremetal-server-beta"
 description: |-
   Manages Scaleway Compute Baremetal servers.
 ---
