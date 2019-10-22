@@ -358,13 +358,14 @@ func securityGroupRuleSchema() *schema.Resource {
 			"protocol": {
 				Type:     schema.TypeString,
 				Optional: true,
-				Default:  instance.SecurityGroupRuleProtocolTCP.String(),
+				Default:  instance.SecurityGroupRuleProtocolANY.String(),
 				ValidateFunc: validation.StringInSlice([]string{
 					instance.SecurityGroupRuleProtocolICMP.String(),
 					instance.SecurityGroupRuleProtocolTCP.String(),
 					instance.SecurityGroupRuleProtocolUDP.String(),
+					instance.SecurityGroupRuleProtocolANY.String(),
 				}, false),
-				Description: "Protocol for this rule (TCP, UDP, ICMP)",
+				Description: "Protocol for this rule (TCP, UDP, ICMP or ANY)",
 			},
 			"port": {
 				Type:        schema.TypeInt,
