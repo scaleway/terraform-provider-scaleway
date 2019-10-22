@@ -129,7 +129,7 @@ The following arguments are supported:
 
   - `max_size` - (Defaults to `size`) The maximum size of the default pool, used by the autoscaling feature.
 
-  - `placement_group_id` - (Optional) The [placement group](https://developers.scaleway.com/en/products/instance/api/#compute-clusters-7fd7e0) the nodes of the pool will be attached to.
+  - `placement_group_id` - (Optional) The [placement group](https://developers.scaleway.com/en/products/instance/api/#placement-groups-d8f653) the nodes of the pool will be attached to.
 
   - `autoscaling` - (Defaults to `false`) Enables the autoscaling feature for the default pool.
 ~> **Important:** When enabled, an update of the `size` will not be taken into account.
