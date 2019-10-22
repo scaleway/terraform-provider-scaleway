@@ -88,12 +88,14 @@ func (enum *ListSSHKeysRequestOrderBy) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
+// ListSSHKeysResponse list ssh keys response
 type ListSSHKeysResponse struct {
 	SSHKeys []*SSHKey `json:"ssh_keys"`
 
 	TotalCount uint32 `json:"total_count"`
 }
 
+// SSHKey ssh key
 type SSHKey struct {
 	ID string `json:"id"`
 
