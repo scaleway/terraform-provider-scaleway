@@ -358,7 +358,7 @@ func securityGroupRuleSchema() *schema.Resource {
 			"protocol": {
 				Type:     schema.TypeString,
 				Optional: true,
-				Default:  instance.SecurityGroupRuleProtocolANY.String(),
+				Default:  instance.SecurityGroupRuleProtocolTCP.String(),
 				ValidateFunc: validation.StringInSlice([]string{
 					instance.SecurityGroupRuleProtocolICMP.String(),
 					instance.SecurityGroupRuleProtocolTCP.String(),

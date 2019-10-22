@@ -17,115 +17,6 @@ func init() {
 		F:    testSweepComputeInstanceSecurityGroup,
 	})
 }
-
-// Test that we can add / update / delete rules
-var testAccScalewayInstanceSecurityGroupConfig = []string{
-	`
-		resource "scaleway_instance_security_group" "base" {
-			name = "sg-name"
-			inbound_default_policy = "drop"
-			
-			inbound_rule {
-				action = "accept"
-				port = 80
-				ip_range = "0.0.0.0/0"
-			}
-
-			inbound_rule {
-				action = "accept"
-				port = 22
-				ip = "1.1.1.1"
-			}
-		}
-	`,
-	`
-		resource "scaleway_instance_security_group" "base" {
-			name = "sg-name"
-			inbound_default_policy = "accept"
-
-			inbound_rule {
-				action = "drop"
-				port = 80
-				ip = "8.8.8.8"
-			}
-
-			inbound_rule {
-				action = "accept"
-				port = 80
-				ip_range = "0.0.0.0/0"
-			}
-
-			inbound_rule {
-				action = "accept"
-				port = 22
-				ip = "1.1.1.1"
-			}
-			
-		}
-	`,
-	`
-		resource "scaleway_instance_security_group" "base" {
-			name = "sg-name"
-			inbound_default_policy = "accept"
-		}
-	`,
-}
-
-// Test that we can use ICMP protocol
-var testAccScalewayInstanceSecurityGroupConfigICMP = []string{
-	`
-		resource "scaleway_instance_security_group" "base" {
-			inbound_rule {
-				action = "accept"
-				port = 80
-				ip_range = "0.0.0.0/0"
-			}
-		}
-	`,
-	`
-		resource "scaleway_instance_security_group" "base" {
-			inbound_rule {
-				action = "drop"
-				protocol = "ICMP"
-				ip = "8.8.8.8"
-			}
-		}
-	`,
-}
-
-// Test that we can omit port on a rule
-var testAccScalewayInstanceSecurityGroupConfigNoPort = []string{
-	`
-		resource "scaleway_instance_security_group" "base" {
-			inbound_rule {
-				action = "accept"
-				ip_range = "0.0.0.0/0"
-			}
-		}
-	`,
-}
-
-// Test that we remove a port from a rule
-var testAccScalewayInstanceSecurityGroupConfigRemovePort = []string{
-	`
-		resource "scaleway_instance_security_group" "base" {
-			inbound_rule {
-				action = "accept"
-				ip_range = "0.0.0.0/0"
-				port = 22
-			}
-		}
-	`,
-	`
-		resource "scaleway_instance_security_group" "base" {
-			inbound_rule {
-				action = "accept"
-				ip_range = "0.0.0.0/0"
-			}
-		}
-	`,
-}
-
 func TestAccScalewayInstanceSecurityGroup(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
@@ -262,6 +153,31 @@ func TestAccScalewayInstanceSecurityGroupICMP(t *testing.T) {
 						Protocol:     instance.SecurityGroupRuleProtocolICMP,
 						Action:       instance.SecurityGroupRuleActionDrop,
 					}),
+				),
+			},
+		},
+	})
+}
+
+func TestAccScalewayInstanceSecurityGroupANY(t *testing.T) {
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckScalewayInstanceSecurityGroupDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccScalewayInstanceSecurityGroupConfigIPBan[0],
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("scaleway_instance_security_group.ban_ips", "inbound_rule.0.action", "drop"),
+					resource.TestCheckResourceAttr("scaleway_instance_security_group.ban_ips", "inbound_rule.0.protocol", "ANY"),
+					resource.TestCheckResourceAttr("scaleway_instance_security_group.ban_ips", "inbound_rule.0.ip", "1.1.1.1"),
+					resource.TestCheckResourceAttr("scaleway_instance_security_group.ban_ips", "inbound_rule.1.action", "drop"),
+					resource.TestCheckResourceAttr("scaleway_instance_security_group.ban_ips", "inbound_rule.1.protocol", "ANY"),
+					resource.TestCheckResourceAttr("scaleway_instance_security_group.ban_ips", "inbound_rule.1.ip", "2.2.2.2"),
+					resource.TestCheckResourceAttr("scaleway_instance_security_group.ban_ips", "inbound_rule.2.action", "drop"),
+					resource.TestCheckResourceAttr("scaleway_instance_security_group.ban_ips", "inbound_rule.2.protocol", "ANY"),
+					resource.TestCheckResourceAttr("scaleway_instance_security_group.ban_ips", "inbound_rule.2.ip", "3.3.3.3"),
 				),
 			},
 		},
@@ -465,4 +381,135 @@ func testSweepComputeInstanceSecurityGroup(region string) error {
 	}
 
 	return nil
+}
+
+// Test that we can add / update / delete rules
+var testAccScalewayInstanceSecurityGroupConfig = []string{
+	`
+		resource "scaleway_instance_security_group" "base" {
+			name = "sg-name"
+			inbound_default_policy = "drop"
+			
+			inbound_rule {
+				action = "accept"
+				port = 80
+				ip_range = "0.0.0.0/0"
+			}
+
+			inbound_rule {
+				action = "accept"
+				port = 22
+				ip = "1.1.1.1"
+			}
+		}
+	`,
+	`
+		resource "scaleway_instance_security_group" "base" {
+			name = "sg-name"
+			inbound_default_policy = "accept"
+
+			inbound_rule {
+				action = "drop"
+				port = 80
+				ip = "8.8.8.8"
+			}
+
+			inbound_rule {
+				action = "accept"
+				port = 80
+				ip_range = "0.0.0.0/0"
+			}
+
+			inbound_rule {
+				action = "accept"
+				port = 22
+				ip = "1.1.1.1"
+			}
+			
+		}
+	`,
+	`
+		resource "scaleway_instance_security_group" "base" {
+			name = "sg-name"
+			inbound_default_policy = "accept"
+		}
+	`,
+}
+
+// Test that we can use ICMP protocol
+var testAccScalewayInstanceSecurityGroupConfigICMP = []string{
+	`
+		resource "scaleway_instance_security_group" "base" {
+			inbound_rule {
+				action = "accept"
+				port = 80
+				ip_range = "0.0.0.0/0"
+			}
+		}
+	`,
+	`
+		resource "scaleway_instance_security_group" "base" {
+			inbound_rule {
+				action = "drop"
+				protocol = "ICMP"
+				ip = "8.8.8.8"
+			}
+		}
+	`,
+}
+
+// Test that we can omit port on a rule
+var testAccScalewayInstanceSecurityGroupConfigNoPort = []string{
+	`
+		resource "scaleway_instance_security_group" "base" {
+			inbound_rule {
+				action = "accept"
+				ip_range = "0.0.0.0/0"
+			}
+		}
+	`,
+}
+
+// Test that we remove a port from a rule
+var testAccScalewayInstanceSecurityGroupConfigRemovePort = []string{
+	`
+		resource "scaleway_instance_security_group" "base" {
+			inbound_rule {
+				action = "accept"
+				ip_range = "0.0.0.0/0"
+				port = 22
+			}
+		}
+	`,
+	`
+		resource "scaleway_instance_security_group" "base" {
+			inbound_rule {
+				action = "accept"
+				ip_range = "0.0.0.0/0"
+			}
+		}
+	`,
+}
+
+// Test that we remove a port from a rule
+var testAccScalewayInstanceSecurityGroupConfigIPBan = []string{
+	`
+		locals {
+		  ips_to_ban = ["1.1.1.1", "2.2.2.2", "3.3.3.3"]
+		}
+		
+		resource "scaleway_instance_security_group" "ban_ips" {
+		  inbound_default_policy = "accept"
+		
+			dynamic "inbound_rule" {
+			for_each = local.ips_to_ban
+		
+			content {
+			  action = "drop"
+			  protocol  = "ANY"
+			  ip = inbound_rule.value
+			}
+		  }
+		}
+	`,
 }
