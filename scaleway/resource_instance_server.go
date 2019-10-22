@@ -226,7 +226,7 @@ func resourceScalewayInstanceServerCreate(d *schema.ResourceData, m interface{})
 	}
 
 	if placementGroupID, ok := d.GetOk("placement_group_id"); ok {
-		req.ComputeCluster = expandID(placementGroupID)
+		req.PlacementGroup = expandID(placementGroupID)
 	}
 
 	if raw, ok := d.GetOk("tags"); ok {
@@ -340,8 +340,8 @@ func resourceScalewayInstanceServerRead(d *schema.ResourceData, m interface{}) e
 		d.Set("image", response.Server.Image.ID)
 	}
 
-	if response.Server.ComputeCluster != nil {
-		d.Set("placement_group_policy_respected", response.Server.ComputeCluster.PolicyRespected)
+	if response.Server.PlacementGroup != nil {
+		d.Set("placement_group_policy_respected", response.Server.PlacementGroup.PolicyRespected)
 	}
 
 	if response.Server.PrivateIP != nil {
@@ -480,10 +480,10 @@ func resourceScalewayInstanceServerUpdate(d *schema.ResourceData, m interface{})
 	if d.HasChange("placement_group_id") {
 		placementGroupID := expandID(d.Get("placement_group_id"))
 		if placementGroupID == "" {
-			updateRequest.ComputeCluster = &instance.NullableStringValue{Null: true}
+			updateRequest.PlacementGroup = &instance.NullableStringValue{Null: true}
 		} else {
 			forceReboot = true
-			updateRequest.ComputeCluster = &instance.NullableStringValue{Value: placementGroupID}
+			updateRequest.PlacementGroup = &instance.NullableStringValue{Value: placementGroupID}
 		}
 	}
 

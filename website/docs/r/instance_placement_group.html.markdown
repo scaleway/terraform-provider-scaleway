@@ -2,12 +2,12 @@
 layout: "scaleway"
 page_title: "Scaleway: scaleway_instance_placement_group"
 description: |-
-  Manages Scaleway Compute Instance Placement Groups (aka. Compute Clusters).
+  Manages Scaleway Compute Instance Placement Groups.
 ---
 
 # scaleway_instance_placement_group
 
-Creates and manages Compute Instance Placement Groups (aka. Compute Clusters). For more information, see [the documentation](https://developers.scaleway.com/en/products/instance/api/#compute-clusters-7fd7e0).
+Creates and manages Compute Instance Placement Groups. For more information, see [the documentation](https://developers.scaleway.com/en/products/instance/api/#compute-clusters-7fd7e0).
 
 ## Example Usage
 

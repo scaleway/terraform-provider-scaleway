@@ -55,9 +55,9 @@ func testAccCheckScalewayInstancePlacementGroupExists(n string) resource.TestChe
 			return err
 		}
 
-		_, err = instanceApi.GetComputeCluster(&instance.GetComputeClusterRequest{
+		_, err = instanceApi.GetPlacementGroup(&instance.GetPlacementGroupRequest{
 			Zone:             zone,
-			ComputeClusterID: ID,
+			PlacementGroupID: ID,
 		})
 
 		if err != nil {
@@ -79,9 +79,9 @@ func testAccCheckScalewayInstancePlacementGroupDestroy(s *terraform.State) error
 			return err
 		}
 
-		_, err = instanceApi.GetComputeCluster(&instance.GetComputeClusterRequest{
+		_, err = instanceApi.GetPlacementGroup(&instance.GetPlacementGroupRequest{
 			Zone:             zone,
-			ComputeClusterID: ID,
+			PlacementGroupID: ID,
 		})
 
 		// If no error resource still exist
