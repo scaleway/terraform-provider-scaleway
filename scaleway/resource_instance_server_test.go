@@ -583,6 +583,7 @@ resource "scaleway_instance_server" "base" {
 	image = "f974feac-abae-4365-b988-8ec7d1cec10d"
 	type  = "DEV1-S"
 	placement_group_id = "${scaleway_instance_placement_group.ha.id}"
+    tags  = [ "terraform-test", "scaleway_instance_server", "placement_group" ]
 }
 `
 
