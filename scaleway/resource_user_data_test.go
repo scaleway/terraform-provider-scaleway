@@ -66,8 +66,8 @@ func testAccCheckScalewayUserDataDestroy(s *terraform.State) error {
 
 var testAccCheckScalewayUserDataConfig = `
 data "scaleway_image" "ubuntu" {
-  architecture = "arm64"
-  name         = "Ubuntu Xenial"
+  architecture = "x86_64"
+  name         = "Ubuntu Bionic"
   most_recent  = true
 }
 
@@ -75,7 +75,7 @@ resource "scaleway_server" "base" {
   name = "test"
 
   image = "${data.scaleway_image.ubuntu.id}"
-  type = "ARM64-2GB"
+  type = "DEV1-S"
 
   tags = [ "terraform-test", "user-data" ]
 }
