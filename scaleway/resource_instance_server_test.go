@@ -421,7 +421,7 @@ func TestAccScalewayInstanceServerIpv6(t *testing.T) {
 					testAccCheckScalewayInstanceServerExists("scaleway_instance_server.server01"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.server01", "ipv6_address", ""),
 					resource.TestCheckResourceAttr("scaleway_instance_server.server01", "ipv6_gateway", ""),
-					resource.TestCheckResourceAttr("scaleway_instance_server.server01", "ipv6_prefix_length", ""),
+					resource.TestCheckResourceAttr("scaleway_instance_server.server01", "ipv6_prefix_length", "0"),
 				),
 			},
 		},
