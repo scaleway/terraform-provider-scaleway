@@ -135,7 +135,7 @@ func TestAccScalewayServer_Volumes(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayServerExists("scaleway_server.base"),
 					resource.TestCheckResourceAttr(
-						"scaleway_server.base", "type", "DEV1-S"),
+						"scaleway_server.base", "type", "C2S"),
 					resource.TestCheckResourceAttr(
 						"scaleway_server.base", "volume.#", "3"),
 					resource.TestCheckResourceAttrSet(
@@ -143,17 +143,17 @@ func TestAccScalewayServer_Volumes(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"scaleway_server.base", "volume.0.type", "l_ssd"),
 					resource.TestCheckResourceAttr(
-						"scaleway_server.base", "volume.0.size_in_gb", "20"),
+						"scaleway_server.base", "volume.0.size_in_gb", "10"),
 					resource.TestCheckResourceAttr(
 						"scaleway_server.base", "volume.1.type", "l_ssd"),
 					resource.TestCheckResourceAttr(
-						"scaleway_server.base", "volume.1.size_in_gb", "0"),
+						"scaleway_server.base", "volume.1.size_in_gb", "5"),
 					resource.TestCheckResourceAttrSet(
 						"scaleway_server.base", "volume.2.volume_id"),
 					resource.TestCheckResourceAttr(
 						"scaleway_server.base", "volume.2.type", "l_ssd"),
 					resource.TestCheckResourceAttr(
-						"scaleway_server.base", "volume.2.size_in_gb", "30"),
+						"scaleway_server.base", "volume.2.size_in_gb", "5"),
 				),
 			},
 		},
@@ -391,21 +391,21 @@ data "scaleway_image" "ubuntu" {
 resource "scaleway_server" "base" {
   name = "test"
   image = "${data.scaleway_image.ubuntu.id}"
-  type = "DEV1-S"
+  type = "C2S"
   tags = [ "terraform-test", "inline-images" ]
 
   volume {
-    size_in_gb = 20
+    size_in_gb = 10
     type = "l_ssd"
   }
 
   volume {
-    size_in_gb = 0
+    size_in_gb = 5
     type = "l_ssd"
   }
 
   volume {
-    size_in_gb = 30
+    size_in_gb = 5
     type = "l_ssd"
   }
 }`
