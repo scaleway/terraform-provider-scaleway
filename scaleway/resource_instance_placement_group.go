@@ -2,6 +2,7 @@ package scaleway
 
 import (
 	"github.com/hashicorp/terraform/helper/schema"
+	"github.com/hashicorp/terraform/helper/validation"
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
 )
 
@@ -25,14 +26,22 @@ func resourceScalewayInstancePlacementGroup() *schema.Resource {
 			"policy_type": {
 				Type:        schema.TypeString,
 				Optional:    true,
-				Default:     instance.ComputeClusterPolicyTypeLowLatency.String(),
+				Default:     instance.PlacementGroupPolicyTypeLowLatency.String(),
 				Description: "The operating mode is selected by a policy_type",
+				ValidateFunc: validation.StringInSlice([]string{
+					instance.PlacementGroupPolicyTypeLowLatency.String(),
+					instance.PlacementGroupPolicyTypeMaxAvailability.String(),
+				}, false),
 			},
 			"policy_mode": {
 				Type:        schema.TypeString,
 				Optional:    true,
-				Default:     instance.ComputeClusterPolicyModeOptional,
+				Default:     instance.PlacementGroupPolicyModeOptional,
 				Description: "One of the two policy_mode may be selected: enforced or optional.",
+				ValidateFunc: validation.StringInSlice([]string{
+					instance.PlacementGroupPolicyModeOptional.String(),
+					instance.PlacementGroupPolicyModeEnforced.String(),
+				}, false),
 			},
 			"policy_respected": {
 				Type:        schema.TypeBool,
@@ -55,18 +64,18 @@ func resourceScalewayInstancePlacementGroupCreate(d *schema.ResourceData, m inte
 	if !ok {
 		name = getRandomName("pg")
 	}
-	res, err := instanceApi.CreateComputeCluster(&instance.CreateComputeClusterRequest{
+	res, err := instanceApi.CreatePlacementGroup(&instance.CreatePlacementGroupRequest{
 		Zone:         zone,
 		Name:         name.(string),
 		Organization: d.Get("organization_id").(string),
-		PolicyMode:   instance.ComputeClusterPolicyMode(d.Get("policy_mode").(string)),
-		PolicyType:   instance.ComputeClusterPolicyType(d.Get("policy_type").(string)),
+		PolicyMode:   instance.PlacementGroupPolicyMode(d.Get("policy_mode").(string)),
+		PolicyType:   instance.PlacementGroupPolicyType(d.Get("policy_type").(string)),
 	})
 	if err != nil {
 		return err
 	}
 
-	d.SetId(newZonedId(zone, res.ComputeCluster.ID))
+	d.SetId(newZonedId(zone, res.PlacementGroup.ID))
 	return resourceScalewayInstancePlacementGroupRead(d, m)
 }
 
@@ -76,9 +85,9 @@ func resourceScalewayInstancePlacementGroupRead(d *schema.ResourceData, m interf
 		return err
 	}
 
-	res, err := instanceApi.GetComputeCluster(&instance.GetComputeClusterRequest{
+	res, err := instanceApi.GetPlacementGroup(&instance.GetPlacementGroupRequest{
 		Zone:             zone,
-		ComputeClusterID: ID,
+		PlacementGroupID: ID,
 	})
 
 	if err != nil {
@@ -89,12 +98,12 @@ func resourceScalewayInstancePlacementGroupRead(d *schema.ResourceData, m interf
 		return err
 	}
 
-	d.Set("name", res.ComputeCluster.Name)
+	d.Set("name", res.PlacementGroup.Name)
 	d.Set("zone", string(zone))
-	d.Set("organization_id", res.ComputeCluster.Organization)
-	d.Set("policy_mode", res.ComputeCluster.PolicyMode.String())
-	d.Set("policy_type", res.ComputeCluster.PolicyType.String())
-	d.Set("policy_respected", res.ComputeCluster.PolicyRespected)
+	d.Set("organization_id", res.PlacementGroup.Organization)
+	d.Set("policy_mode", res.PlacementGroup.PolicyMode.String())
+	d.Set("policy_type", res.PlacementGroup.PolicyType.String())
+	d.Set("policy_respected", res.PlacementGroup.PolicyRespected)
 
 	return nil
 }
@@ -104,11 +113,11 @@ func resourceScalewayInstancePlacementGroupUpdate(d *schema.ResourceData, m inte
 	if err != nil {
 		return err
 	}
-	req := &instance.UpdateComputeClusterRequest{
+	req := &instance.UpdatePlacementGroupRequest{
 		Zone:             zone,
-		ComputeClusterID: ID,
-		PolicyMode:       instance.ComputeClusterPolicyMode(d.Get("policy_mode").(string)),
-		PolicyType:       instance.ComputeClusterPolicyType(d.Get("policy_type").(string)),
+		PlacementGroupID: ID,
+		PolicyMode:       instance.PlacementGroupPolicyMode(d.Get("policy_mode").(string)),
+		PolicyType:       instance.PlacementGroupPolicyType(d.Get("policy_type").(string)),
 	}
 
 	hasChanged := d.HasChange("policy_mode") || d.HasChange("policy_type")
@@ -118,7 +127,7 @@ func resourceScalewayInstancePlacementGroupUpdate(d *schema.ResourceData, m inte
 		hasChanged = true
 	}
 	if hasChanged {
-		_, err = instanceApi.UpdateComputeCluster(req)
+		_, err = instanceApi.UpdatePlacementGroup(req)
 		if err != nil {
 			return err
 		}
@@ -133,9 +142,9 @@ func resourceScalewayInstancePlacementGroupDelete(d *schema.ResourceData, m inte
 		return err
 	}
 
-	err = instanceApi.DeleteComputeCluster(&instance.DeleteComputeClusterRequest{
+	err = instanceApi.DeletePlacementGroup(&instance.DeletePlacementGroupRequest{
 		Zone:             zone,
-		ComputeClusterID: ID,
+		PlacementGroupID: ID,
 	})
 
 	if err != nil && !is404Error(err) {

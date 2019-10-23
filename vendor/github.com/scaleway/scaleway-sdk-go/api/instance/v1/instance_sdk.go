@@ -80,104 +80,6 @@ func (enum *Arch) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
-type ComputeClusterPolicyMode string
-
-const (
-	// ComputeClusterPolicyModeOptional is [insert doc].
-	ComputeClusterPolicyModeOptional = ComputeClusterPolicyMode("optional")
-	// ComputeClusterPolicyModeEnforced is [insert doc].
-	ComputeClusterPolicyModeEnforced = ComputeClusterPolicyMode("enforced")
-)
-
-func (enum ComputeClusterPolicyMode) String() string {
-	if enum == "" {
-		// return default value if empty
-		return "optional"
-	}
-	return string(enum)
-}
-
-func (enum ComputeClusterPolicyMode) MarshalJSON() ([]byte, error) {
-	return []byte(fmt.Sprintf(`"%s"`, enum)), nil
-}
-
-func (enum *ComputeClusterPolicyMode) UnmarshalJSON(data []byte) error {
-	tmp := ""
-
-	if err := json.Unmarshal(data, &tmp); err != nil {
-		return err
-	}
-
-	*enum = ComputeClusterPolicyMode(ComputeClusterPolicyMode(tmp).String())
-	return nil
-}
-
-type ComputeClusterPolicyType string
-
-const (
-	// ComputeClusterPolicyTypeMaxAvailability is [insert doc].
-	ComputeClusterPolicyTypeMaxAvailability = ComputeClusterPolicyType("max_availability")
-	// ComputeClusterPolicyTypeLowLatency is [insert doc].
-	ComputeClusterPolicyTypeLowLatency = ComputeClusterPolicyType("low_latency")
-)
-
-func (enum ComputeClusterPolicyType) String() string {
-	if enum == "" {
-		// return default value if empty
-		return "max_availability"
-	}
-	return string(enum)
-}
-
-func (enum ComputeClusterPolicyType) MarshalJSON() ([]byte, error) {
-	return []byte(fmt.Sprintf(`"%s"`, enum)), nil
-}
-
-func (enum *ComputeClusterPolicyType) UnmarshalJSON(data []byte) error {
-	tmp := ""
-
-	if err := json.Unmarshal(data, &tmp); err != nil {
-		return err
-	}
-
-	*enum = ComputeClusterPolicyType(ComputeClusterPolicyType(tmp).String())
-	return nil
-}
-
-type GetServerTypesAvailabilityResponseAvailability string
-
-const (
-	// GetServerTypesAvailabilityResponseAvailabilityAvailable is [insert doc].
-	GetServerTypesAvailabilityResponseAvailabilityAvailable = GetServerTypesAvailabilityResponseAvailability("available")
-	// GetServerTypesAvailabilityResponseAvailabilityScarce is [insert doc].
-	GetServerTypesAvailabilityResponseAvailabilityScarce = GetServerTypesAvailabilityResponseAvailability("scarce")
-	// GetServerTypesAvailabilityResponseAvailabilityShortage is [insert doc].
-	GetServerTypesAvailabilityResponseAvailabilityShortage = GetServerTypesAvailabilityResponseAvailability("shortage")
-)
-
-func (enum GetServerTypesAvailabilityResponseAvailability) String() string {
-	if enum == "" {
-		// return default value if empty
-		return "available"
-	}
-	return string(enum)
-}
-
-func (enum GetServerTypesAvailabilityResponseAvailability) MarshalJSON() ([]byte, error) {
-	return []byte(fmt.Sprintf(`"%s"`, enum)), nil
-}
-
-func (enum *GetServerTypesAvailabilityResponseAvailability) UnmarshalJSON(data []byte) error {
-	tmp := ""
-
-	if err := json.Unmarshal(data, &tmp); err != nil {
-		return err
-	}
-
-	*enum = GetServerTypesAvailabilityResponseAvailability(GetServerTypesAvailabilityResponseAvailability(tmp).String())
-	return nil
-}
-
 type ImageState string
 
 const (
@@ -209,6 +111,70 @@ func (enum *ImageState) UnmarshalJSON(data []byte) error {
 	}
 
 	*enum = ImageState(ImageState(tmp).String())
+	return nil
+}
+
+type PlacementGroupPolicyMode string
+
+const (
+	// PlacementGroupPolicyModeOptional is [insert doc].
+	PlacementGroupPolicyModeOptional = PlacementGroupPolicyMode("optional")
+	// PlacementGroupPolicyModeEnforced is [insert doc].
+	PlacementGroupPolicyModeEnforced = PlacementGroupPolicyMode("enforced")
+)
+
+func (enum PlacementGroupPolicyMode) String() string {
+	if enum == "" {
+		// return default value if empty
+		return "optional"
+	}
+	return string(enum)
+}
+
+func (enum PlacementGroupPolicyMode) MarshalJSON() ([]byte, error) {
+	return []byte(fmt.Sprintf(`"%s"`, enum)), nil
+}
+
+func (enum *PlacementGroupPolicyMode) UnmarshalJSON(data []byte) error {
+	tmp := ""
+
+	if err := json.Unmarshal(data, &tmp); err != nil {
+		return err
+	}
+
+	*enum = PlacementGroupPolicyMode(PlacementGroupPolicyMode(tmp).String())
+	return nil
+}
+
+type PlacementGroupPolicyType string
+
+const (
+	// PlacementGroupPolicyTypeMaxAvailability is [insert doc].
+	PlacementGroupPolicyTypeMaxAvailability = PlacementGroupPolicyType("max_availability")
+	// PlacementGroupPolicyTypeLowLatency is [insert doc].
+	PlacementGroupPolicyTypeLowLatency = PlacementGroupPolicyType("low_latency")
+)
+
+func (enum PlacementGroupPolicyType) String() string {
+	if enum == "" {
+		// return default value if empty
+		return "max_availability"
+	}
+	return string(enum)
+}
+
+func (enum PlacementGroupPolicyType) MarshalJSON() ([]byte, error) {
+	return []byte(fmt.Sprintf(`"%s"`, enum)), nil
+}
+
+func (enum *PlacementGroupPolicyType) UnmarshalJSON(data []byte) error {
+	tmp := ""
+
+	if err := json.Unmarshal(data, &tmp); err != nil {
+		return err
+	}
+
+	*enum = PlacementGroupPolicyType(PlacementGroupPolicyType(tmp).String())
 	return nil
 }
 
@@ -317,6 +283,8 @@ const (
 	SecurityGroupRuleProtocolUDP = SecurityGroupRuleProtocol("UDP")
 	// SecurityGroupRuleProtocolICMP is [insert doc].
 	SecurityGroupRuleProtocolICMP = SecurityGroupRuleProtocol("ICMP")
+	// SecurityGroupRuleProtocolANY is [insert doc].
+	SecurityGroupRuleProtocolANY = SecurityGroupRuleProtocol("ANY")
 )
 
 func (enum SecurityGroupRuleProtocol) String() string {
@@ -449,6 +417,40 @@ func (enum *ServerState) UnmarshalJSON(data []byte) error {
 	}
 
 	*enum = ServerState(ServerState(tmp).String())
+	return nil
+}
+
+type ServerTypesAvailability string
+
+const (
+	// ServerTypesAvailabilityAvailable is [insert doc].
+	ServerTypesAvailabilityAvailable = ServerTypesAvailability("available")
+	// ServerTypesAvailabilityScarce is [insert doc].
+	ServerTypesAvailabilityScarce = ServerTypesAvailability("scarce")
+	// ServerTypesAvailabilityShortage is [insert doc].
+	ServerTypesAvailabilityShortage = ServerTypesAvailability("shortage")
+)
+
+func (enum ServerTypesAvailability) String() string {
+	if enum == "" {
+		// return default value if empty
+		return "available"
+	}
+	return string(enum)
+}
+
+func (enum ServerTypesAvailability) MarshalJSON() ([]byte, error) {
+	return []byte(fmt.Sprintf(`"%s"`, enum)), nil
+}
+
+func (enum *ServerTypesAvailability) UnmarshalJSON(data []byte) error {
+	tmp := ""
+
+	if err := json.Unmarshal(data, &tmp); err != nil {
+		return err
+	}
+
+	*enum = ServerTypesAvailability(ServerTypesAvailability(tmp).String())
 	return nil
 }
 
@@ -590,6 +592,7 @@ func (enum *VolumeType) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
+// Bootscript bootscript
 type Bootscript struct {
 	// Bootcmdargs display the bootscript parameters
 	Bootcmdargs string `json:"bootcmdargs"`
@@ -615,37 +618,6 @@ type Bootscript struct {
 	Arch Arch `json:"arch"`
 }
 
-type ComputeCluster struct {
-	// ID display compute-cluster unique ID
-	ID string `json:"id"`
-	// Name display compute-cluster name
-	Name string `json:"name"`
-	// Organization display compute-cluster organization
-	Organization string `json:"organization"`
-	// PolicyMode select the failling mode when the placement cannot be  respected, either optional or enforced
-	//
-	// Default value: optional
-	PolicyMode ComputeClusterPolicyMode `json:"policy_mode"`
-	// PolicyType select the behavior of the compute-cluster, either low_latency (group) or max_availability (spread)
-	//
-	// Default value: max_availability
-	PolicyType ComputeClusterPolicyType `json:"policy_type"`
-	// PolicyRespected returns true if the policy is respected, false otherwise
-	PolicyRespected bool `json:"policy_respected"`
-}
-
-type ComputeClusterServer struct {
-	ID string `json:"id"`
-
-	Name string `json:"name"`
-
-	PolicyRespected bool `json:"policy_respected"`
-}
-
-type CreateComputeClusterResponse struct {
-	ComputeCluster *ComputeCluster `json:"compute_cluster"`
-}
-
 type CreateIPResponse struct {
 	IP *IP `json:"ip"`
 
@@ -656,6 +628,10 @@ type CreateImageResponse struct {
 	Image *Image `json:"image"`
 
 	Location string `json:"Location"`
+}
+
+type CreatePlacementGroupResponse struct {
+	PlacementGroup *PlacementGroup `json:"placement_group"`
 }
 
 type CreateSecurityGroupResponse struct {
@@ -704,14 +680,6 @@ type GetBootscriptResponse struct {
 	Bootscript *Bootscript `json:"bootscript"`
 }
 
-type GetComputeClusterResponse struct {
-	ComputeCluster *ComputeCluster `json:"compute_cluster"`
-}
-
-type GetComputeClusterServersResponse struct {
-	Servers []*ComputeClusterServer `json:"servers"`
-}
-
 type GetDashboardResponse struct {
 	Dashboard *Dashboard `json:"dashboard"`
 }
@@ -722,6 +690,14 @@ type GetIPResponse struct {
 
 type GetImageResponse struct {
 	Image *Image `json:"image"`
+}
+
+type GetPlacementGroupResponse struct {
+	PlacementGroup *PlacementGroup `json:"placement_group"`
+}
+
+type GetPlacementGroupServersResponse struct {
+	Servers []*PlacementGroupServer `json:"servers"`
 }
 
 type GetSecurityGroupResponse struct {
@@ -737,7 +713,7 @@ type GetServerResponse struct {
 }
 
 type GetServerTypesAvailabilityResponse struct {
-	Servers map[string]GetServerTypesAvailabilityResponseAvailability `json:"servers"`
+	Servers map[string]ServerTypesAvailability `json:"servers"`
 }
 
 type GetSnapshotResponse struct {
@@ -796,12 +772,6 @@ type ListBootscriptsResponse struct {
 	TotalCount uint32 `json:"total_count"`
 }
 
-type ListComputeClustersResponse struct {
-	ComputeClusters []*ComputeCluster `json:"compute_clusters"`
-
-	TotalCount uint32 `json:"total_count"`
-}
-
 type ListIPsResponse struct {
 	IPs []*IP `json:"ips"`
 
@@ -810,6 +780,12 @@ type ListIPsResponse struct {
 
 type ListImagesResponse struct {
 	Images []*Image `json:"images"`
+
+	TotalCount uint32 `json:"total_count"`
+}
+
+type ListPlacementGroupsResponse struct {
+	PlacementGroups []*PlacementGroup `json:"placement_groups"`
 
 	TotalCount uint32 `json:"total_count"`
 }
@@ -864,6 +840,35 @@ type NullableStringValue struct {
 	Value string `json:"value,omitempty"`
 }
 
+// PlacementGroup placement group
+type PlacementGroup struct {
+	// ID display placement group unique ID
+	ID string `json:"id"`
+	// Name display placement group name
+	Name string `json:"name"`
+	// Organization display placement group organization
+	Organization string `json:"organization"`
+	// PolicyMode select the failling mode when the placement cannot be  respected, either optional or enforced
+	//
+	// Default value: optional
+	PolicyMode PlacementGroupPolicyMode `json:"policy_mode"`
+	// PolicyType select the behavior of the placement group, either low_latency (group) or max_availability (spread)
+	//
+	// Default value: max_availability
+	PolicyType PlacementGroupPolicyType `json:"policy_type"`
+	// PolicyRespected returns true if the policy is respected, false otherwise
+	PolicyRespected bool `json:"policy_respected"`
+}
+
+type PlacementGroupServer struct {
+	ID string `json:"id"`
+
+	Name string `json:"name"`
+
+	PolicyRespected bool `json:"policy_respected"`
+}
+
+// SecurityGroup security group
 type SecurityGroup struct {
 	// ID display the security groups' unique ID
 	ID string `json:"id"`
@@ -933,6 +938,7 @@ type SecurityGroupTemplate struct {
 	Name string `json:"name,omitempty"`
 }
 
+// Server server
 type Server struct {
 	// ID display the server unique ID
 	ID string `json:"id"`
@@ -990,14 +996,15 @@ type Server struct {
 	//
 	// Default value: x86_64
 	Arch Arch `json:"arch"`
-	// ComputeCluster display the server ComputeCluster
-	ComputeCluster *ComputeCluster `json:"compute_cluster"`
+	// PlacementGroup display the server placement group
+	PlacementGroup *PlacementGroup `json:"placement_group"`
 }
 
 type ServerActionResponse struct {
 	Task *Task `json:"task"`
 }
 
+// ServerIP server. ip
 type ServerIP struct {
 	// ID display the unique ID of the IP address
 	ID string `json:"id"`
@@ -1007,6 +1014,7 @@ type ServerIP struct {
 	Dynamic bool `json:"dynamic"`
 }
 
+// ServerIPv6 server. ipv6
 type ServerIPv6 struct {
 	// Address display the server IPv6 IP-Address
 	Address net.IP `json:"address"`
@@ -1089,12 +1097,12 @@ type ServerTypeVolumeConstraintsByType struct {
 	LSSD *ServerTypeVolumeConstraintSizes `json:"l_ssd"`
 }
 
-type SetComputeClusterResponse struct {
-	ComputeClusterID string `json:"compute_cluster_id"`
+type SetPlacementGroupResponse struct {
+	PlacementGroupID string `json:"placement_group_id"`
 }
 
-type SetComputeClusterServersResponse struct {
-	Servers []*ComputeClusterServer `json:"servers"`
+type SetPlacementGroupServersResponse struct {
+	Servers []*PlacementGroupServer `json:"servers"`
 }
 
 type Snapshot struct {
@@ -1127,6 +1135,7 @@ type SnapshotBaseVolume struct {
 	Name string `json:"name"`
 }
 
+// Task task
 type Task struct {
 	// ID the unique ID of the task
 	ID string `json:"id"`
@@ -1148,22 +1157,23 @@ type Task struct {
 	HrefResult string `json:"href_result"`
 }
 
-type UpdateComputeClusterResponse struct {
-	ComputeClusterID string `json:"compute_cluster_id"`
-}
-
-type UpdateComputeClusterServersResponse struct {
-	Servers []*ComputeClusterServer `json:"servers"`
-}
-
 type UpdateIPResponse struct {
 	IP *IP `json:"ip"`
+}
+
+type UpdatePlacementGroupResponse struct {
+	PlacementGroupID string `json:"placement_group_id"`
+}
+
+type UpdatePlacementGroupServersResponse struct {
+	Servers []*PlacementGroupServer `json:"servers"`
 }
 
 type UpdateServerResponse struct {
 	Server *Server `json:"server"`
 }
 
+// Volume volume
 type Volume struct {
 	// ID display the volumes unique ID
 	ID string `json:"id"`
@@ -1203,6 +1213,7 @@ type VolumeSummary struct {
 	VolumeType VolumeType `json:"volume_type"`
 }
 
+// VolumeTemplate volume template
 type VolumeTemplate struct {
 	// ID display the volumes unique ID
 	ID string `json:"id,omitempty"`
@@ -1218,26 +1229,32 @@ type VolumeTemplate struct {
 	Organization string `json:"organization,omitempty"`
 }
 
+// setIPResponse set ip response
 type setIPResponse struct {
 	IP *IP `json:"ip"`
 }
 
+// setImageResponse set image response
 type setImageResponse struct {
 	Image *Image `json:"image"`
 }
 
+// setSecurityGroupResponse set security group response
 type setSecurityGroupResponse struct {
 	SecurityGroup *SecurityGroup `json:"security_group"`
 }
 
+// setSecurityGroupRuleResponse set security group rule response
 type setSecurityGroupRuleResponse struct {
 	Rule *SecurityGroupRule `json:"rule"`
 }
 
+// setServerResponse set server response
 type setServerResponse struct {
 	Server *Server `json:"server"`
 }
 
+// setSnapshotResponse set snapshot response
 type setSnapshotResponse struct {
 	Snapshot *Snapshot `json:"snapshot"`
 }
@@ -1430,22 +1447,22 @@ type CreateServerRequest struct {
 	DynamicIPRequired *bool `json:"dynamic_ip_required,omitempty"`
 	// CommercialType define the server commercial type (i.e. GP1-S)
 	CommercialType string `json:"commercial_type,omitempty"`
-	// Image define the server image id
+	// Image the server image ID or label
 	Image string `json:"image,omitempty"`
-	// Volumes define the volumes attached to the server
+	// Volumes the volumes attached to the server
 	Volumes map[string]*VolumeTemplate `json:"volumes,omitempty"`
-	// EnableIPv6 define if IPv6 is enabled on the server
+	// EnableIPv6 true if IPv6 is enabled on the server
 	EnableIPv6 bool `json:"enable_ipv6,omitempty"`
-	// PublicIP define the public IPv4 attached to the server
+	// PublicIP the public IPv4 attached to the server
 	PublicIP string `json:"public_ip,omitempty"`
-	// Organization define the server organization
+	// Organization the server organization ID
 	Organization string `json:"organization,omitempty"`
-	// Tags define the server tags
+	// Tags the server tags
 	Tags []string `json:"tags,omitempty"`
-	// SecurityGroup define the security group id
+	// SecurityGroup the security group ID
 	SecurityGroup string `json:"security_group,omitempty"`
-	// ComputeCluster computeCluster key if server must be part of a ComputeCluster
-	ComputeCluster string `json:"compute_cluster,omitempty"`
+	// PlacementGroup placement group ID if server must be part of a placement group
+	PlacementGroup string `json:"placement_group,omitempty"`
 }
 
 // createServer create server
@@ -1626,8 +1643,8 @@ type setServerRequest struct {
 	//
 	// Default value: x86_64
 	Arch Arch `json:"arch"`
-	// ComputeCluster display the server ComputeCluster
-	ComputeCluster *ComputeCluster `json:"compute_cluster"`
+	// PlacementGroup display the server placement group
+	PlacementGroup *PlacementGroup `json:"placement_group"`
 }
 
 func (s *API) setServer(req *setServerRequest, opts ...scw.RequestOption) (*setServerResponse, error) {
@@ -1691,8 +1708,8 @@ type UpdateServerRequest struct {
 	Protected *bool `json:"protected,omitempty"`
 
 	SecurityGroup *SecurityGroupTemplate `json:"security_group,omitempty"`
-
-	ComputeCluster *NullableStringValue `json:"compute_cluster,omitempty"`
+	// PlacementGroup placement group ID if server must be part of a placement group
+	PlacementGroup *NullableStringValue `json:"placement_group,omitempty"`
 }
 
 // updateServer update server
@@ -3282,7 +3299,7 @@ func (s *API) setSecurityGroupRule(req *setSecurityGroupRuleRequest, opts ...scw
 	return &resp, nil
 }
 
-type ListComputeClustersRequest struct {
+type ListPlacementGroupsRequest struct {
 	Zone scw.Zone `json:"-"`
 	// PerPage a positive integer lower or equal to 100 to select the number of items to display
 	//
@@ -3290,16 +3307,16 @@ type ListComputeClustersRequest struct {
 	PerPage *uint32 `json:"-"`
 	// Page a positive integer to choose the page to display
 	Page *int32 `json:"-"`
-	// Organization list only compute-clusters of this organization
+	// Organization list only placement groups of this organization
 	Organization *string `json:"-"`
-	// Name filter compute-clusters by name (for eg. "cluster1" will return "cluster100" and "cluster1" but not "foo")
+	// Name filter placement groups by name (for eg. "cluster1" will return "cluster100" and "cluster1" but not "foo")
 	Name *string `json:"-"`
 }
 
-// ListComputeClusters list compute-clusters
+// ListPlacementGroups list placement groups
 //
-// List all compute-clusters
-func (s *API) ListComputeClusters(req *ListComputeClustersRequest, opts ...scw.RequestOption) (*ListComputeClustersResponse, error) {
+// List all placement groups
+func (s *API) ListPlacementGroups(req *ListPlacementGroupsRequest, opts ...scw.RequestOption) (*ListPlacementGroupsResponse, error) {
 	var err error
 
 	if req.Zone == "" {
@@ -3324,12 +3341,12 @@ func (s *API) ListComputeClusters(req *ListComputeClustersRequest, opts ...scw.R
 
 	scwReq := &scw.ScalewayRequest{
 		Method:  "GET",
-		Path:    "/instance/v1/zones/" + fmt.Sprint(req.Zone) + "/compute_clusters",
+		Path:    "/instance/v1/zones/" + fmt.Sprint(req.Zone) + "/placement_groups",
 		Query:   query,
 		Headers: http.Header{},
 	}
 
-	var resp ListComputeClustersResponse
+	var resp ListPlacementGroupsResponse
 
 	err = s.client.Do(scwReq, &resp, opts...)
 	if err != nil {
@@ -3340,24 +3357,24 @@ func (s *API) ListComputeClusters(req *ListComputeClustersRequest, opts ...scw.R
 
 // UnsafeGetTotalCount should not be used
 // Internal usage only
-func (r *ListComputeClustersResponse) UnsafeGetTotalCount() uint32 {
+func (r *ListPlacementGroupsResponse) UnsafeGetTotalCount() uint32 {
 	return r.TotalCount
 }
 
 // UnsafeAppend should not be used
 // Internal usage only
-func (r *ListComputeClustersResponse) UnsafeAppend(res interface{}) (uint32, scw.SdkError) {
-	results, ok := res.(*ListComputeClustersResponse)
+func (r *ListPlacementGroupsResponse) UnsafeAppend(res interface{}) (uint32, scw.SdkError) {
+	results, ok := res.(*ListPlacementGroupsResponse)
 	if !ok {
 		return 0, errors.New("%T type cannot be appended to type %T", res, r)
 	}
 
-	r.ComputeClusters = append(r.ComputeClusters, results.ComputeClusters...)
-	r.TotalCount += uint32(len(results.ComputeClusters))
-	return uint32(len(results.ComputeClusters)), nil
+	r.PlacementGroups = append(r.PlacementGroups, results.PlacementGroups...)
+	r.TotalCount += uint32(len(results.PlacementGroups))
+	return uint32(len(results.PlacementGroups)), nil
 }
 
-type CreateComputeClusterRequest struct {
+type CreatePlacementGroupRequest struct {
 	Zone scw.Zone `json:"-"`
 
 	Name string `json:"name,omitempty"`
@@ -3366,17 +3383,17 @@ type CreateComputeClusterRequest struct {
 	// PolicyMode
 	//
 	// Default value: optional
-	PolicyMode ComputeClusterPolicyMode `json:"policy_mode"`
+	PolicyMode PlacementGroupPolicyMode `json:"policy_mode"`
 	// PolicyType
 	//
 	// Default value: max_availability
-	PolicyType ComputeClusterPolicyType `json:"policy_type"`
+	PolicyType PlacementGroupPolicyType `json:"policy_type"`
 }
 
-// CreateComputeCluster create compute-cluster
+// CreatePlacementGroup create placement group
 //
-// Create a new compute-cluster
-func (s *API) CreateComputeCluster(req *CreateComputeClusterRequest, opts ...scw.RequestOption) (*CreateComputeClusterResponse, error) {
+// Create a new placement group
+func (s *API) CreatePlacementGroup(req *CreatePlacementGroupRequest, opts ...scw.RequestOption) (*CreatePlacementGroupResponse, error) {
 	var err error
 
 	if req.Organization == "" {
@@ -3395,7 +3412,7 @@ func (s *API) CreateComputeCluster(req *CreateComputeClusterRequest, opts ...scw
 
 	scwReq := &scw.ScalewayRequest{
 		Method:  "POST",
-		Path:    "/instance/v1/zones/" + fmt.Sprint(req.Zone) + "/compute_clusters",
+		Path:    "/instance/v1/zones/" + fmt.Sprint(req.Zone) + "/placement_groups",
 		Headers: http.Header{},
 	}
 
@@ -3404,7 +3421,7 @@ func (s *API) CreateComputeCluster(req *CreateComputeClusterRequest, opts ...scw
 		return nil, err
 	}
 
-	var resp CreateComputeClusterResponse
+	var resp CreatePlacementGroupResponse
 
 	err = s.client.Do(scwReq, &resp, opts...)
 	if err != nil {
@@ -3413,16 +3430,16 @@ func (s *API) CreateComputeCluster(req *CreateComputeClusterRequest, opts ...scw
 	return &resp, nil
 }
 
-type GetComputeClusterRequest struct {
+type GetPlacementGroupRequest struct {
 	Zone scw.Zone `json:"-"`
 
-	ComputeClusterID string `json:"-"`
+	PlacementGroupID string `json:"-"`
 }
 
-// GetComputeCluster get compute-cluster
+// GetPlacementGroup get placement group
 //
-// Get the given compute-cluster
-func (s *API) GetComputeCluster(req *GetComputeClusterRequest, opts ...scw.RequestOption) (*GetComputeClusterResponse, error) {
+// Get the given placement group
+func (s *API) GetPlacementGroup(req *GetPlacementGroupRequest, opts ...scw.RequestOption) (*GetPlacementGroupResponse, error) {
 	var err error
 
 	if req.Zone == "" {
@@ -3434,17 +3451,17 @@ func (s *API) GetComputeCluster(req *GetComputeClusterRequest, opts ...scw.Reque
 		return nil, errors.New("field Zone cannot be empty in request")
 	}
 
-	if fmt.Sprint(req.ComputeClusterID) == "" {
-		return nil, errors.New("field ComputeClusterID cannot be empty in request")
+	if fmt.Sprint(req.PlacementGroupID) == "" {
+		return nil, errors.New("field PlacementGroupID cannot be empty in request")
 	}
 
 	scwReq := &scw.ScalewayRequest{
 		Method:  "GET",
-		Path:    "/instance/v1/zones/" + fmt.Sprint(req.Zone) + "/compute_clusters/" + fmt.Sprint(req.ComputeClusterID) + "",
+		Path:    "/instance/v1/zones/" + fmt.Sprint(req.Zone) + "/placement_groups/" + fmt.Sprint(req.PlacementGroupID) + "",
 		Headers: http.Header{},
 	}
 
-	var resp GetComputeClusterResponse
+	var resp GetPlacementGroupResponse
 
 	err = s.client.Do(scwReq, &resp, opts...)
 	if err != nil {
@@ -3453,10 +3470,10 @@ func (s *API) GetComputeCluster(req *GetComputeClusterRequest, opts ...scw.Reque
 	return &resp, nil
 }
 
-type SetComputeClusterRequest struct {
+type SetPlacementGroupRequest struct {
 	Zone scw.Zone `json:"-"`
 
-	ComputeClusterID string `json:"-"`
+	PlacementGroupID string `json:"-"`
 
 	Name string `json:"name"`
 
@@ -3464,17 +3481,17 @@ type SetComputeClusterRequest struct {
 	// PolicyMode
 	//
 	// Default value: optional
-	PolicyMode ComputeClusterPolicyMode `json:"policy_mode"`
+	PolicyMode PlacementGroupPolicyMode `json:"policy_mode"`
 	// PolicyType
 	//
 	// Default value: max_availability
-	PolicyType ComputeClusterPolicyType `json:"policy_type"`
+	PolicyType PlacementGroupPolicyType `json:"policy_type"`
 }
 
-// SetComputeCluster set compute-cluster
+// SetPlacementGroup set placement group
 //
-// Set all parameters of the given compute-cluster
-func (s *API) SetComputeCluster(req *SetComputeClusterRequest, opts ...scw.RequestOption) (*SetComputeClusterResponse, error) {
+// Set all parameters of the given placement group
+func (s *API) SetPlacementGroup(req *SetPlacementGroupRequest, opts ...scw.RequestOption) (*SetPlacementGroupResponse, error) {
 	var err error
 
 	if req.Organization == "" {
@@ -3491,13 +3508,13 @@ func (s *API) SetComputeCluster(req *SetComputeClusterRequest, opts ...scw.Reque
 		return nil, errors.New("field Zone cannot be empty in request")
 	}
 
-	if fmt.Sprint(req.ComputeClusterID) == "" {
-		return nil, errors.New("field ComputeClusterID cannot be empty in request")
+	if fmt.Sprint(req.PlacementGroupID) == "" {
+		return nil, errors.New("field PlacementGroupID cannot be empty in request")
 	}
 
 	scwReq := &scw.ScalewayRequest{
 		Method:  "PUT",
-		Path:    "/instance/v1/zones/" + fmt.Sprint(req.Zone) + "/compute_clusters/" + fmt.Sprint(req.ComputeClusterID) + "",
+		Path:    "/instance/v1/zones/" + fmt.Sprint(req.Zone) + "/placement_groups/" + fmt.Sprint(req.PlacementGroupID) + "",
 		Headers: http.Header{},
 	}
 
@@ -3506,7 +3523,7 @@ func (s *API) SetComputeCluster(req *SetComputeClusterRequest, opts ...scw.Reque
 		return nil, err
 	}
 
-	var resp SetComputeClusterResponse
+	var resp SetPlacementGroupResponse
 
 	err = s.client.Do(scwReq, &resp, opts...)
 	if err != nil {
@@ -3515,10 +3532,10 @@ func (s *API) SetComputeCluster(req *SetComputeClusterRequest, opts ...scw.Reque
 	return &resp, nil
 }
 
-type UpdateComputeClusterRequest struct {
+type UpdatePlacementGroupRequest struct {
 	Zone scw.Zone `json:"-"`
 
-	ComputeClusterID string `json:"-"`
+	PlacementGroupID string `json:"-"`
 
 	Name *string `json:"name,omitempty"`
 
@@ -3526,17 +3543,17 @@ type UpdateComputeClusterRequest struct {
 	// PolicyMode
 	//
 	// Default value: optional
-	PolicyMode ComputeClusterPolicyMode `json:"policy_mode"`
+	PolicyMode PlacementGroupPolicyMode `json:"policy_mode"`
 	// PolicyType
 	//
 	// Default value: max_availability
-	PolicyType ComputeClusterPolicyType `json:"policy_type"`
+	PolicyType PlacementGroupPolicyType `json:"policy_type"`
 }
 
-// UpdateComputeCluster update compute-cluster
+// UpdatePlacementGroup update placement group
 //
-// Update one or more parameter of the given compute-cluster
-func (s *API) UpdateComputeCluster(req *UpdateComputeClusterRequest, opts ...scw.RequestOption) (*UpdateComputeClusterResponse, error) {
+// Update one or more parameter of the given placement group
+func (s *API) UpdatePlacementGroup(req *UpdatePlacementGroupRequest, opts ...scw.RequestOption) (*UpdatePlacementGroupResponse, error) {
 	var err error
 
 	if req.Zone == "" {
@@ -3548,13 +3565,13 @@ func (s *API) UpdateComputeCluster(req *UpdateComputeClusterRequest, opts ...scw
 		return nil, errors.New("field Zone cannot be empty in request")
 	}
 
-	if fmt.Sprint(req.ComputeClusterID) == "" {
-		return nil, errors.New("field ComputeClusterID cannot be empty in request")
+	if fmt.Sprint(req.PlacementGroupID) == "" {
+		return nil, errors.New("field PlacementGroupID cannot be empty in request")
 	}
 
 	scwReq := &scw.ScalewayRequest{
 		Method:  "PATCH",
-		Path:    "/instance/v1/zones/" + fmt.Sprint(req.Zone) + "/compute_clusters/" + fmt.Sprint(req.ComputeClusterID) + "",
+		Path:    "/instance/v1/zones/" + fmt.Sprint(req.Zone) + "/placement_groups/" + fmt.Sprint(req.PlacementGroupID) + "",
 		Headers: http.Header{},
 	}
 
@@ -3563,7 +3580,7 @@ func (s *API) UpdateComputeCluster(req *UpdateComputeClusterRequest, opts ...scw
 		return nil, err
 	}
 
-	var resp UpdateComputeClusterResponse
+	var resp UpdatePlacementGroupResponse
 
 	err = s.client.Do(scwReq, &resp, opts...)
 	if err != nil {
@@ -3572,16 +3589,16 @@ func (s *API) UpdateComputeCluster(req *UpdateComputeClusterRequest, opts ...scw
 	return &resp, nil
 }
 
-type DeleteComputeClusterRequest struct {
+type DeletePlacementGroupRequest struct {
 	Zone scw.Zone `json:"-"`
 
-	ComputeClusterID string `json:"-"`
+	PlacementGroupID string `json:"-"`
 }
 
-// DeleteComputeCluster delete the given compute-cluster
+// DeletePlacementGroup delete the given placement group
 //
-// Delete the given compute-cluster
-func (s *API) DeleteComputeCluster(req *DeleteComputeClusterRequest, opts ...scw.RequestOption) error {
+// Delete the given placement group
+func (s *API) DeletePlacementGroup(req *DeletePlacementGroupRequest, opts ...scw.RequestOption) error {
 	var err error
 
 	if req.Zone == "" {
@@ -3593,13 +3610,13 @@ func (s *API) DeleteComputeCluster(req *DeleteComputeClusterRequest, opts ...scw
 		return errors.New("field Zone cannot be empty in request")
 	}
 
-	if fmt.Sprint(req.ComputeClusterID) == "" {
-		return errors.New("field ComputeClusterID cannot be empty in request")
+	if fmt.Sprint(req.PlacementGroupID) == "" {
+		return errors.New("field PlacementGroupID cannot be empty in request")
 	}
 
 	scwReq := &scw.ScalewayRequest{
 		Method:  "DELETE",
-		Path:    "/instance/v1/zones/" + fmt.Sprint(req.Zone) + "/compute_clusters/" + fmt.Sprint(req.ComputeClusterID) + "",
+		Path:    "/instance/v1/zones/" + fmt.Sprint(req.Zone) + "/placement_groups/" + fmt.Sprint(req.PlacementGroupID) + "",
 		Headers: http.Header{},
 	}
 
@@ -3610,16 +3627,16 @@ func (s *API) DeleteComputeCluster(req *DeleteComputeClusterRequest, opts ...scw
 	return nil
 }
 
-type GetComputeClusterServersRequest struct {
+type GetPlacementGroupServersRequest struct {
 	Zone scw.Zone `json:"-"`
 
-	ComputeClusterID string `json:"-"`
+	PlacementGroupID string `json:"-"`
 }
 
-// GetComputeClusterServers get compute-cluster servers
+// GetPlacementGroupServers get placement group servers
 //
-// Get all servers belonging to the given compute-cluster
-func (s *API) GetComputeClusterServers(req *GetComputeClusterServersRequest, opts ...scw.RequestOption) (*GetComputeClusterServersResponse, error) {
+// Get all servers belonging to the given placement group
+func (s *API) GetPlacementGroupServers(req *GetPlacementGroupServersRequest, opts ...scw.RequestOption) (*GetPlacementGroupServersResponse, error) {
 	var err error
 
 	if req.Zone == "" {
@@ -3631,17 +3648,17 @@ func (s *API) GetComputeClusterServers(req *GetComputeClusterServersRequest, opt
 		return nil, errors.New("field Zone cannot be empty in request")
 	}
 
-	if fmt.Sprint(req.ComputeClusterID) == "" {
-		return nil, errors.New("field ComputeClusterID cannot be empty in request")
+	if fmt.Sprint(req.PlacementGroupID) == "" {
+		return nil, errors.New("field PlacementGroupID cannot be empty in request")
 	}
 
 	scwReq := &scw.ScalewayRequest{
 		Method:  "GET",
-		Path:    "/instance/v1/zones/" + fmt.Sprint(req.Zone) + "/compute_clusters/" + fmt.Sprint(req.ComputeClusterID) + "/servers",
+		Path:    "/instance/v1/zones/" + fmt.Sprint(req.Zone) + "/placement_groups/" + fmt.Sprint(req.PlacementGroupID) + "/servers",
 		Headers: http.Header{},
 	}
 
-	var resp GetComputeClusterServersResponse
+	var resp GetPlacementGroupServersResponse
 
 	err = s.client.Do(scwReq, &resp, opts...)
 	if err != nil {
@@ -3650,16 +3667,16 @@ func (s *API) GetComputeClusterServers(req *GetComputeClusterServersRequest, opt
 	return &resp, nil
 }
 
-type SetComputeClusterServersRequest struct {
+type SetPlacementGroupServersRequest struct {
 	Zone scw.Zone `json:"-"`
 
-	ComputeClusterID string `json:"-"`
+	PlacementGroupID string `json:"-"`
 }
 
-// SetComputeClusterServers set compute-cluster servers
+// SetPlacementGroupServers set placement group servers
 //
-// Set all servers belonging to the given compute-cluster
-func (s *API) SetComputeClusterServers(req *SetComputeClusterServersRequest, opts ...scw.RequestOption) (*SetComputeClusterServersResponse, error) {
+// Set all servers belonging to the given placement group
+func (s *API) SetPlacementGroupServers(req *SetPlacementGroupServersRequest, opts ...scw.RequestOption) (*SetPlacementGroupServersResponse, error) {
 	var err error
 
 	if req.Zone == "" {
@@ -3671,13 +3688,13 @@ func (s *API) SetComputeClusterServers(req *SetComputeClusterServersRequest, opt
 		return nil, errors.New("field Zone cannot be empty in request")
 	}
 
-	if fmt.Sprint(req.ComputeClusterID) == "" {
-		return nil, errors.New("field ComputeClusterID cannot be empty in request")
+	if fmt.Sprint(req.PlacementGroupID) == "" {
+		return nil, errors.New("field PlacementGroupID cannot be empty in request")
 	}
 
 	scwReq := &scw.ScalewayRequest{
 		Method:  "PUT",
-		Path:    "/instance/v1/zones/" + fmt.Sprint(req.Zone) + "/compute_clusters/" + fmt.Sprint(req.ComputeClusterID) + "/servers",
+		Path:    "/instance/v1/zones/" + fmt.Sprint(req.Zone) + "/placement_groups/" + fmt.Sprint(req.PlacementGroupID) + "/servers",
 		Headers: http.Header{},
 	}
 
@@ -3686,7 +3703,7 @@ func (s *API) SetComputeClusterServers(req *SetComputeClusterServersRequest, opt
 		return nil, err
 	}
 
-	var resp SetComputeClusterServersResponse
+	var resp SetPlacementGroupServersResponse
 
 	err = s.client.Do(scwReq, &resp, opts...)
 	if err != nil {
@@ -3695,16 +3712,16 @@ func (s *API) SetComputeClusterServers(req *SetComputeClusterServersRequest, opt
 	return &resp, nil
 }
 
-type UpdateComputeClusterServersRequest struct {
+type UpdatePlacementGroupServersRequest struct {
 	Zone scw.Zone `json:"-"`
 
-	ComputeClusterID string `json:"-"`
+	PlacementGroupID string `json:"-"`
 }
 
-// UpdateComputeClusterServers update compute-cluster servers
+// UpdatePlacementGroupServers update placement group servers
 //
-// Update all servers belonging to the given compute-cluster
-func (s *API) UpdateComputeClusterServers(req *UpdateComputeClusterServersRequest, opts ...scw.RequestOption) (*UpdateComputeClusterServersResponse, error) {
+// Update all servers belonging to the given placement group
+func (s *API) UpdatePlacementGroupServers(req *UpdatePlacementGroupServersRequest, opts ...scw.RequestOption) (*UpdatePlacementGroupServersResponse, error) {
 	var err error
 
 	if req.Zone == "" {
@@ -3716,13 +3733,13 @@ func (s *API) UpdateComputeClusterServers(req *UpdateComputeClusterServersReques
 		return nil, errors.New("field Zone cannot be empty in request")
 	}
 
-	if fmt.Sprint(req.ComputeClusterID) == "" {
-		return nil, errors.New("field ComputeClusterID cannot be empty in request")
+	if fmt.Sprint(req.PlacementGroupID) == "" {
+		return nil, errors.New("field PlacementGroupID cannot be empty in request")
 	}
 
 	scwReq := &scw.ScalewayRequest{
 		Method:  "PATCH",
-		Path:    "/instance/v1/zones/" + fmt.Sprint(req.Zone) + "/compute_clusters/" + fmt.Sprint(req.ComputeClusterID) + "/servers",
+		Path:    "/instance/v1/zones/" + fmt.Sprint(req.Zone) + "/placement_groups/" + fmt.Sprint(req.PlacementGroupID) + "/servers",
 		Headers: http.Header{},
 	}
 
@@ -3731,7 +3748,7 @@ func (s *API) UpdateComputeClusterServers(req *UpdateComputeClusterServersReques
 		return nil, err
 	}
 
-	var resp UpdateComputeClusterServersResponse
+	var resp UpdatePlacementGroupServersResponse
 
 	err = s.client.Do(scwReq, &resp, opts...)
 	if err != nil {
@@ -3740,16 +3757,16 @@ func (s *API) UpdateComputeClusterServers(req *UpdateComputeClusterServersReques
 	return &resp, nil
 }
 
-type DeleteComputeClusterServersRequest struct {
+type DeletePlacementGroupServersRequest struct {
 	Zone scw.Zone `json:"-"`
 
-	ComputeClusterID string `json:"-"`
+	PlacementGroupID string `json:"-"`
 }
 
-// DeleteComputeClusterServers delete compute-cluster servers
+// DeletePlacementGroupServers delete placement group servers
 //
-// Delete all servers from the given compute-cluster
-func (s *API) DeleteComputeClusterServers(req *DeleteComputeClusterServersRequest, opts ...scw.RequestOption) error {
+// Delete all servers from the given placement group
+func (s *API) DeletePlacementGroupServers(req *DeletePlacementGroupServersRequest, opts ...scw.RequestOption) error {
 	var err error
 
 	if req.Zone == "" {
@@ -3761,13 +3778,13 @@ func (s *API) DeleteComputeClusterServers(req *DeleteComputeClusterServersReques
 		return errors.New("field Zone cannot be empty in request")
 	}
 
-	if fmt.Sprint(req.ComputeClusterID) == "" {
-		return errors.New("field ComputeClusterID cannot be empty in request")
+	if fmt.Sprint(req.PlacementGroupID) == "" {
+		return errors.New("field PlacementGroupID cannot be empty in request")
 	}
 
 	scwReq := &scw.ScalewayRequest{
 		Method:  "DELETE",
-		Path:    "/instance/v1/zones/" + fmt.Sprint(req.Zone) + "/compute_clusters/" + fmt.Sprint(req.ComputeClusterID) + "/servers",
+		Path:    "/instance/v1/zones/" + fmt.Sprint(req.Zone) + "/placement_groups/" + fmt.Sprint(req.PlacementGroupID) + "/servers",
 		Headers: http.Header{},
 	}
 

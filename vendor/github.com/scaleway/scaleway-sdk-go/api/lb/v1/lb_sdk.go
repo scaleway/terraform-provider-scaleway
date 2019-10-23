@@ -718,6 +718,7 @@ type ACLMatch struct {
 	Invert bool `json:"invert"`
 }
 
+// Backend backend
 type Backend struct {
 	ID string `json:"id"`
 
@@ -854,6 +855,7 @@ type CreateCertificateRequestLetsencryptConfig struct {
 	SubjectAlternativeName []string `json:"subject_alternative_name"`
 }
 
+// Frontend frontend
 type Frontend struct {
 	ID string `json:"id"`
 
@@ -902,6 +904,7 @@ func (m Frontend) MarshalJSON() ([]byte, error) {
 	return json.Marshal(tmp)
 }
 
+// HealthCheck health check
 type HealthCheck struct {
 	// MysqlConfig the check requires MySQL >=3.22, for older versions, use TCP check
 	// Precisely one of HTTPConfig, HTTPSConfig, LdapConfig, MysqlConfig, PgsqlConfig, RedisConfig, TCPConfig must be set.
@@ -1023,6 +1026,7 @@ type HealthCheckRedisConfig struct {
 type HealthCheckTCPConfig struct {
 }
 
+// IP ip
 type IP struct {
 	ID string `json:"id"`
 
@@ -1049,6 +1053,7 @@ type Instance struct {
 	Region scw.Region `json:"region"`
 }
 
+// Lb lb
 type Lb struct {
 	ID string `json:"id"`
 
@@ -1077,6 +1082,7 @@ type Lb struct {
 	Region scw.Region `json:"region"`
 }
 
+// LbStats lb stats
 type LbStats struct {
 	// BackendServersStats list stats object of your loadbalancer (See the BackendServerStats object description)
 	BackendServersStats []*BackendServerStats `json:"backend_servers_stats"`
@@ -1094,6 +1100,7 @@ type LbType struct {
 	Region scw.Region `json:"region"`
 }
 
+// ListACLResponse list acl response
 type ListACLResponse struct {
 	// ACLs list of Acl object (see Acl object description)
 	ACLs []*ACL `json:"acls"`
@@ -1101,6 +1108,7 @@ type ListACLResponse struct {
 	TotalCount uint32 `json:"total_count"`
 }
 
+// ListBackendsResponse list backends response
 type ListBackendsResponse struct {
 	// Backends list Backend objects of a Load Balancer
 	Backends []*Backend `json:"backends"`
@@ -1114,6 +1122,7 @@ type ListCertificatesResponse struct {
 	TotalCount uint32 `json:"total_count"`
 }
 
+// ListFrontendsResponse list frontends response
 type ListFrontendsResponse struct {
 	// Frontends list frontends object of your loadbalancer
 	Frontends []*Frontend `json:"frontends"`
@@ -1121,6 +1130,7 @@ type ListFrontendsResponse struct {
 	TotalCount uint32 `json:"total_count"`
 }
 
+// ListIPsResponse list ips response
 type ListIPsResponse struct {
 	// IPs list IP address object
 	IPs []*IP `json:"ips"`
@@ -1134,6 +1144,7 @@ type ListLbTypesResponse struct {
 	TotalCount uint32 `json:"total_count"`
 }
 
+// ListLbsResponse list lbs response
 type ListLbsResponse struct {
 	Lbs []*Lb `json:"lbs"`
 
@@ -1572,49 +1583,6 @@ func (s *API) ReleaseIP(req *ReleaseIPRequest, opts ...scw.RequestOption) error 
 		return err
 	}
 	return nil
-}
-
-type UpdateIPRequest struct {
-	Region scw.Region `json:"-"`
-	// IPID iP address ID
-	IPID string `json:"-"`
-	// Reverse reverse DNS
-	Reverse *string `json:"-"`
-}
-
-func (s *API) UpdateIP(req *UpdateIPRequest, opts ...scw.RequestOption) (*IP, error) {
-	var err error
-
-	if req.Region == "" {
-		defaultRegion, _ := s.client.GetDefaultRegion()
-		req.Region = defaultRegion
-	}
-
-	query := url.Values{}
-	parameter.AddToQuery(query, "reverse", req.Reverse)
-
-	if fmt.Sprint(req.Region) == "" {
-		return nil, errors.New("field Region cannot be empty in request")
-	}
-
-	if fmt.Sprint(req.IPID) == "" {
-		return nil, errors.New("field IPID cannot be empty in request")
-	}
-
-	scwReq := &scw.ScalewayRequest{
-		Method:  "PATCH",
-		Path:    "/lb/v1/regions/" + fmt.Sprint(req.Region) + "/ips/" + fmt.Sprint(req.IPID) + "",
-		Query:   query,
-		Headers: http.Header{},
-	}
-
-	var resp IP
-
-	err = s.client.Do(scwReq, &resp, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return &resp, nil
 }
 
 type ListBackendsRequest struct {

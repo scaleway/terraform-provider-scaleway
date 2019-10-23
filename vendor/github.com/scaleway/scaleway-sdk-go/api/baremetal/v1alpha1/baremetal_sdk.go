@@ -328,6 +328,7 @@ func (enum *ServerStatus) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
+// IP ip
 type IP struct {
 	// ID iD of the IP
 	ID string `json:"id"`
@@ -347,6 +348,7 @@ type IP struct {
 	ReverseStatusMessage *string `json:"reverse_status_message"`
 }
 
+// ListServerEventsResponse list server events response
 type ListServerEventsResponse struct {
 	// TotalCount total count of matching events
 	TotalCount uint32 `json:"total_count"`
@@ -354,6 +356,7 @@ type ListServerEventsResponse struct {
 	Event []*ServerEvent `json:"event"`
 }
 
+// ListServersResponse list servers response
 type ListServersResponse struct {
 	// TotalCount total count of matching servers
 	TotalCount uint32 `json:"total_count"`
@@ -361,6 +364,7 @@ type ListServersResponse struct {
 	Servers []*Server `json:"servers"`
 }
 
+// RemoteServerAccess remote server access
 type RemoteServerAccess struct {
 	// URL uRL to access to the server console
 	URL string `json:"url"`
@@ -372,6 +376,7 @@ type RemoteServerAccess struct {
 	ExpiresAt time.Time `json:"expires_at"`
 }
 
+// Server server
 type Server struct {
 	// ID iD of the server
 	ID string `json:"id"`
@@ -405,6 +410,7 @@ type Server struct {
 	BootType ServerBootType `json:"boot_type"`
 }
 
+// ServerEvent server event
 type ServerEvent struct {
 	// ID iD of the server for whom the action will be applied
 	ID string `json:"id"`
@@ -416,6 +422,7 @@ type ServerEvent struct {
 	CreatedAt time.Time `json:"created_at"`
 }
 
+// ServerInstall server install
 type ServerInstall struct {
 	// OsID iD of the OS
 	OsID string `json:"os_id"`

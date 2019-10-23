@@ -19,14 +19,6 @@ var (
 	ErrNoHomeDir = errors.New("user home directory not found")
 )
 
-func inConfigFile() string {
-	v2path, exist := getConfigV2FilePath()
-	if exist {
-		return "in config file " + v2path
-	}
-	return ""
-}
-
 // GetConfigPath returns the default path.
 // Default path is base on the following priority order:
 // - $SCW_CONFIG_PATH

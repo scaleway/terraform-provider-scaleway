@@ -94,48 +94,6 @@ func (enum *ClusterStatus) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
-type ClusterSubStatus string
-
-const (
-	// ClusterSubStatusNoDetails is [insert doc].
-	ClusterSubStatusNoDetails = ClusterSubStatus("no_details")
-	// ClusterSubStatusDeployLoadbalancer is [insert doc].
-	ClusterSubStatusDeployLoadbalancer = ClusterSubStatus("deploy_loadbalancer")
-	// ClusterSubStatusDeployEtcd is [insert doc].
-	ClusterSubStatusDeployEtcd = ClusterSubStatus("deploy_etcd")
-	// ClusterSubStatusDeployControlplane is [insert doc].
-	ClusterSubStatusDeployControlplane = ClusterSubStatus("deploy_controlplane")
-	// ClusterSubStatusDeployNodes is [insert doc].
-	ClusterSubStatusDeployNodes = ClusterSubStatus("deploy_nodes")
-	// ClusterSubStatusUpdatingEtcd is [insert doc].
-	ClusterSubStatusUpdatingEtcd = ClusterSubStatus("updating_etcd")
-	// ClusterSubStatusUpdatingControlplane is [insert doc].
-	ClusterSubStatusUpdatingControlplane = ClusterSubStatus("updating_controlplane")
-)
-
-func (enum ClusterSubStatus) String() string {
-	if enum == "" {
-		// return default value if empty
-		return "no_details"
-	}
-	return string(enum)
-}
-
-func (enum ClusterSubStatus) MarshalJSON() ([]byte, error) {
-	return []byte(fmt.Sprintf(`"%s"`, enum)), nil
-}
-
-func (enum *ClusterSubStatus) UnmarshalJSON(data []byte) error {
-	tmp := ""
-
-	if err := json.Unmarshal(data, &tmp); err != nil {
-		return err
-	}
-
-	*enum = ClusterSubStatus(ClusterSubStatus(tmp).String())
-	return nil
-}
-
 type ListClustersRequestOrderBy string
 
 const (
@@ -362,6 +320,7 @@ func (enum *PoolStatus) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
+// Cluster cluster
 type Cluster struct {
 	// ID display the cluster unique ID
 	ID string `json:"id"`
@@ -379,10 +338,6 @@ type Cluster struct {
 	//
 	// Default value: unknown
 	Status ClusterStatus `json:"status"`
-	// SubStatus
-	//
-	// Default value: no_details
-	SubStatus ClusterSubStatus `json:"sub_status"`
 	// Version display the cluster version
 	Version string `json:"version"`
 	// Cni display the cni model
@@ -455,32 +410,38 @@ type CreateClusterRequestDefaultPoolConfig struct {
 	Autohealing bool `json:"autohealing"`
 }
 
+// ListClusterAvailableVersionsResponse list cluster available versions response
 type ListClusterAvailableVersionsResponse struct {
 	Versions []*Version `json:"versions"`
 }
 
+// ListClustersResponse list clusters response
 type ListClustersResponse struct {
 	TotalCount uint32 `json:"total_count"`
 
 	Clusters []*Cluster `json:"clusters"`
 }
 
+// ListNodesResponse list nodes response
 type ListNodesResponse struct {
 	TotalCount uint32 `json:"total_count"`
 
 	Nodes []*Node `json:"nodes"`
 }
 
+// ListPoolsResponse list pools response
 type ListPoolsResponse struct {
 	TotalCount uint32 `json:"total_count"`
 
 	Pools []*Pool `json:"pools"`
 }
 
+// ListVersionsResponse list versions response
 type ListVersionsResponse struct {
 	Versions []*Version `json:"versions"`
 }
 
+// Node node
 type Node struct {
 	// ID display node unique ID
 	ID string `json:"id"`
@@ -508,6 +469,7 @@ type Node struct {
 	UpdatedAt time.Time `json:"updated_at"`
 }
 
+// Pool pool
 type Pool struct {
 	// ID display pool unique ID
 	ID string `json:"id"`
@@ -549,6 +511,7 @@ type Pool struct {
 	ContainerRuntime string `json:"container_runtime"`
 }
 
+// ResetClusterAdminTokenResponse reset cluster admin token response
 type ResetClusterAdminTokenResponse struct {
 }
 
@@ -568,6 +531,7 @@ type UpdateClusterRequestAutoscalerConfig struct {
 	ExpendablePodsPriorityCutoff *int32 `json:"expendable_pods_priority_cutoff"`
 }
 
+// Version version
 type Version struct {
 	Name string `json:"name"`
 

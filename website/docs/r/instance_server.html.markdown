@@ -126,7 +126,7 @@ to find either the right `label` or the right local image `ID` for a given `comm
 
 - `security_group_id` - (Optional) The [security group](https://developers.scaleway.com/en/products/instance/api/#security-groups-8d7f89) the server is attached to.
 
-- `placement_group_id` - (Optional) The [placement group](https://developers.scaleway.com/en/products/instance/api/#compute-clusters-7fd7e0) the server is attached to.
+- `placement_group_id` - (Optional) The [placement group](https://developers.scaleway.com/en/products/instance/api/#placement-groups-d8f653) the server is attached to.
 
 ~> **Important:** Updates to `placement_group_id` may trigger a stop/start of the server.
 
