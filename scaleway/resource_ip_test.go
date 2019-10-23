@@ -200,8 +200,8 @@ resource "scaleway_ip" "base" {
 
 var testAccCheckScalewayIPAttachConfig = `
 data "scaleway_image" "ubuntu" {
-  architecture = "arm64"
-  name         = "Ubuntu Xenial"
+  architecture = "x86_64"
+  name         = "Ubuntu Bionic"
   most_recent  = true
 }
 
@@ -209,7 +209,7 @@ resource "scaleway_server" "base" {
   name = "test"
 
   image = "${data.scaleway_image.ubuntu.id}"
-  type = "ARM64-2GB"
+  type = "DEV1-S"
 }
 
 resource "scaleway_ip" "base" {

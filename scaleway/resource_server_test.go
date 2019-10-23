@@ -56,13 +56,13 @@ func TestAccScalewayServer_Basic(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayServerExists("scaleway_server.base"),
 					resource.TestCheckResourceAttr(
-						"scaleway_server.base", "type", "ARM64-2GB"),
+						"scaleway_server.base", "type", "DEV1-S"),
 					resource.TestCheckResourceAttr(
 						"scaleway_server.base", "name", "test"),
 					resource.TestCheckResourceAttr(
 						"scaleway_server.base", "tags.0", "terraform-test"),
 					resource.TestCheckResourceAttr(
-						"scaleway_server.base", "boot_type", "bootscript"),
+						"scaleway_server.base", "boot_type", "local"),
 					resource.TestCheckResourceAttr(
 						"scaleway_server.base", "cloudinit", "#cloud-config\napt_update: true\napt_upgrade: true\n"),
 				),
@@ -135,7 +135,7 @@ func TestAccScalewayServer_Volumes(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayServerExists("scaleway_server.base"),
 					resource.TestCheckResourceAttr(
-						"scaleway_server.base", "type", "C2S"),
+						"scaleway_server.base", "type", "DEV1-S"),
 					resource.TestCheckResourceAttr(
 						"scaleway_server.base", "volume.#", "3"),
 					resource.TestCheckResourceAttrSet(
@@ -303,29 +303,29 @@ func testAccCheckScalewayServerExists(n string) resource.TestCheckFunc {
 
 var testAccCheckScalewayServerConfig_dataSource = `
 data "scaleway_image" "ubuntu" {
-  architecture = "arm64"
-  name         = "Ubuntu Xenial"
+  architecture = "x86_64"
+  name         = "Ubuntu Bionic"
 }
 
 resource "scaleway_server" "base" {
   name = "test"
 
   image = "${data.scaleway_image.ubuntu.id}"
-  type = "ARM64-2GB"
+  type = "DEV1-S"
   tags = [ "terraform-test", "xenial" ]
 }`
 
 var testAccCheckScalewayServerConfig = `
 data "scaleway_image" "ubuntu" {
-  architecture = "arm64"
-  name         = "Ubuntu Xenial"
+  architecture = "x86_64"
+  name         = "Ubuntu Bionic"
   most_recent  = true
 }
 
 resource "scaleway_server" "base" {
   name = "test"
   image = "${data.scaleway_image.ubuntu.id}"
-  type = "ARM64-2GB"
+  type = "DEV1-S"
   tags = [ "terraform-test" ]
   cloudinit = <<EOF
 #cloud-config
@@ -351,8 +351,8 @@ resource "scaleway_server" "base" {
 
 var testAccCheckScalewayServerConfig_IPAttachment = `
 data "scaleway_image" "ubuntu" {
-  architecture = "arm64"
-  name         = "Ubuntu Xenial"
+  architecture = "x86_64"
+  name         = "Ubuntu Bionic"
   most_recent  = true
 }
 
@@ -361,22 +361,22 @@ resource "scaleway_ip" "base" {}
 resource "scaleway_server" "base" {
   name = "test"
   image = "${data.scaleway_image.ubuntu.id}"
-  type = "ARM64-2GB"
+  type = "DEV1-S"
   tags = [ "terraform-test", "scaleway_ip" ]
   public_ip = "${scaleway_ip.base.ip}"
 }`
 
 var testAccCheckScalewayServerConfig_IPDetachment = `
 data "scaleway_image" "ubuntu" {
-  architecture = "arm64"
+  architecture = "x86_64"
   most_recent  = true
-  name         = "Ubuntu Xenial"
+  name         = "Ubuntu Bionic"
 }
 
 resource "scaleway_server" "base" {
   name = "test"
   image = "${data.scaleway_image.ubuntu.id}"
-  type = "ARM64-2GB"
+  type = "DEV1-S"
   tags = [ "terraform-test" ]
 }
 `
@@ -384,14 +384,14 @@ resource "scaleway_server" "base" {
 var testAccCheckScalewayServerVolumeConfig = `
 data "scaleway_image" "ubuntu" {
   architecture = "x86_64"
-  name         = "Ubuntu Xenial"
+  name         = "Ubuntu Bionic"
   most_recent  = true
 }
 
 resource "scaleway_server" "base" {
   name = "test"
   image = "${data.scaleway_image.ubuntu.id}"
-  type = "C2S"
+  type = "DEV1-S"
   tags = [ "terraform-test", "inline-images" ]
 
   volume {
@@ -412,8 +412,8 @@ resource "scaleway_server" "base" {
 
 var testAccCheckScalewayServerConfig_SecurityGroup = `
 data "scaleway_image" "ubuntu" {
-  architecture = "arm64"
-  name         = "Ubuntu Xenial"
+  architecture = "x86_64"
+  name         = "Ubuntu Bionic"
 }
 
 resource "scaleway_security_group" "blue" {
@@ -429,15 +429,15 @@ resource "scaleway_security_group" "red" {
 resource "scaleway_server" "base" {
   name = "test"
   image = "${data.scaleway_image.ubuntu.id}"
-  type = "ARM64-2GB"
+  type = "DEV1-S"
   tags = [ "terraform-test", "security_groups.blue" ]
   security_group = "${scaleway_security_group.blue.id}"
 }`
 
 var testAccCheckScalewayServerConfig_SecurityGroup_Update = `
 data "scaleway_image" "ubuntu" {
-  architecture = "arm64"
-  name         = "Ubuntu Xenial"
+  architecture = "x86_64"
+  name         = "Ubuntu Bionic"
   most_recent  = true
 }
 
@@ -454,7 +454,7 @@ resource "scaleway_security_group" "red" {
 resource "scaleway_server" "base" {
   name = "test"
   image = "${data.scaleway_image.ubuntu.id}"
-  type = "ARM64-2GB"
+  type = "DEV1-S"
   tags = [ "terraform-test", "security_groups.red" ]
   security_group = "${scaleway_security_group.red.id}"
 }`
