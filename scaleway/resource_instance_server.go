@@ -124,6 +124,21 @@ func resourceScalewayInstanceServer() *schema.Resource {
 				Computed:    true,
 				Description: "The public IPv4 address of the server",
 			},
+			"ipv6_address": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The default public IPv6 address routed to the server.",
+			},
+			"ipv6_gateway": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The IPv6 gateway address",
+			},
+			"ipv6_prefix_length": {
+				Type:        schema.TypeInt,
+				Computed:    true,
+				Description: "The IPv6 prefix length routed to the server.",
+			},
 			"disable_dynamic_ip": {
 				Type:        schema.TypeBool,
 				Optional:    true,
@@ -356,8 +371,18 @@ func resourceScalewayInstanceServerRead(d *schema.ResourceData, m interface{}) e
 		})
 	}
 
-	if response.Server.EnableIPv6 && response.Server.IPv6 != nil {
-		d.Set("public_ipv6", response.Server.IPv6.Address.String())
+	if response.Server.IPv6 != nil {
+		d.Set("ipv6_address", response.Server.IPv6.Address.String())
+		d.Set("ipv6_gateway", response.Server.IPv6.Gateway.String())
+		prefixLength, err := strconv.Atoi(response.Server.IPv6.Netmask)
+		if err != nil {
+			return err
+		}
+		d.Set("ipv6_prefix_length", prefixLength)
+	} else {
+		d.Set("ipv6_address", nil)
+		d.Set("ipv6_gateway", nil)
+		d.Set("ipv6_prefix_length", nil)
 	}
 
 	var additionalVolumesIDs []string

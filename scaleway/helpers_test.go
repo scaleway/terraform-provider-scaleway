@@ -2,12 +2,13 @@ package scaleway
 
 import (
 	"fmt"
-	"github.com/hashicorp/terraform/helper/resource"
-	"github.com/hashicorp/terraform/terraform"
 	"net"
 	"net/http"
 	"strings"
 	"testing"
+
+	"github.com/hashicorp/terraform/helper/resource"
+	"github.com/hashicorp/terraform/terraform"
 
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/stretchr/testify/assert"
@@ -223,6 +224,16 @@ func testCheckResourceAttrIPv4(name string, key string) resource.TestCheckFunc {
 		ip := net.ParseIP(value)
 		if ip.To4() == nil {
 			return fmt.Errorf("%s is not a valid IPv4", value)
+		}
+		return nil
+	})
+}
+
+func testCheckResourceAttrIPv6(name string, key string) resource.TestCheckFunc {
+	return testCheckResourceAttrFunc(name, key, func(value string) error {
+		ip := net.ParseIP(value)
+		if ip.To16() == nil {
+			return fmt.Errorf("%s is not a valid IPv6", value)
 		}
 		return nil
 	})

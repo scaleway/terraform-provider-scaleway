@@ -388,6 +388,46 @@ func TestAccScalewayInstanceServerSwapVolume(t *testing.T) {
 	})
 }
 
+func TestAccScalewayInstanceServerIpv6(t *testing.T) {
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckScalewayInstanceServerDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource "scaleway_instance_server" "server01" {
+						image = "ubuntu-bionic"
+		  				type  = "DEV1-S"
+		  				enable_ipv6 = true
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayInstanceServerExists("scaleway_instance_server.server01"),
+					testCheckResourceAttrIPv6("scaleway_instance_server.server01", "ipv6_address"),
+					testCheckResourceAttrIPv6("scaleway_instance_server.server01", "ipv6_gateway"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.server01", "ipv6_prefix_length", "64"),
+				),
+			},
+			{
+				Config: `
+					resource "scaleway_instance_server" "server01" {
+						image = "ubuntu-bionic"
+		  				type  = "DEV1-S"
+		  				enable_ipv6 = false
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayInstanceServerExists("scaleway_instance_server.server01"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.server01", "ipv6_address", ""),
+					resource.TestCheckResourceAttr("scaleway_instance_server.server01", "ipv6_gateway", ""),
+					resource.TestCheckResourceAttr("scaleway_instance_server.server01", "ipv6_prefix_length", ""),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckScalewayInstanceServerExists(n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
