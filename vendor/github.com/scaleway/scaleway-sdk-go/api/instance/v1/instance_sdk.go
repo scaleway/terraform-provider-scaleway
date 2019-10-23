@@ -1019,7 +1019,7 @@ type ServerIPv6 struct {
 	// Address display the server IPv6 IP-Address
 	Address net.IP `json:"address"`
 	// Gateway display the IPv6 IP-addresses gateway
-	Gateway string `json:"gateway"`
+	Gateway net.IP `json:"gateway"`
 	// Netmask display the IPv6 IP-addresses CIDR netmask
 	Netmask string `json:"netmask"`
 }
