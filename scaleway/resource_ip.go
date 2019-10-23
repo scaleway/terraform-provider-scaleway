@@ -62,7 +62,7 @@ func resourceScalewayIPRead(d *schema.ResourceData, m interface{}) error {
 	ip, err := scaleway.GetIP(d.Id())
 	if err != nil {
 		if serr, ok := err.(api.APIError); ok {
-			if serr.StatusCode == 404 {
+			if serr.StatusCode == 404 || serr.StatusCode == 403 {
 				d.SetId("")
 				return nil
 			}
