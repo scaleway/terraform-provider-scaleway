@@ -502,14 +502,45 @@ func testAccGetResourceAttr(resourceName string, attrName string, dest *string) 
 
 func flattenDuration(duration *time.Duration) interface{} {
 	if duration != nil {
-		return int64(*duration) / int64(time.Millisecond)
+		return duration.String()
 	}
-	return nil
+	return ""
 }
 
 func expandDuration(data interface{}) *time.Duration {
-	if data == nil {
+	if data == nil || data == "" {
 		return nil
 	}
-	return scw.DurationPtr(time.Duration(int64(data.(int)) * int64(time.Millisecond)))
+	d, err := time.ParseDuration(data.(string))
+	if err != nil {
+		// We panic as this should never happend. Data from state should be validate using a validate func
+		panic(err)
+	}
+	return &d
+}
+
+func difSuppressFuncDuration(k, old, new string, d *schema.ResourceData) bool {
+	if old == new {
+		return true
+	}
+	d1, err1 := time.ParseDuration(old)
+	d2, err2 := time.ParseDuration(new)
+	if err1 != nil || err2 != nil {
+		return false
+	}
+	return d1 == d2
+}
+
+func validateDuration() schema.SchemaValidateFunc {
+	return func(i interface{}, s string) (strings []string, errors []error) {
+		str, isStr := i.(string)
+		if !isStr {
+			return nil, []error{fmt.Errorf("%v is not a string", i)}
+		}
+		_, err := time.ParseDuration(str)
+		if err != nil {
+			return nil, []error{fmt.Errorf("cannot parse duration for value %s", str)}
+		}
+		return nil, nil
+	}
 }
