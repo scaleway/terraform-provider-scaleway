@@ -16,7 +16,12 @@ func TestAccScalewayAccountSSHKey(t *testing.T) {
 		CheckDestroy: testAccCheckScalewayAccountSSHKeyDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccScalewayAccountSSHKeyConfig[0],
+				Config: fmt.Sprintf(`
+					resource "scaleway_account_ssh_key" "main" {
+						name 	   = "main"
+						public_key = "%s"
+					}
+				`, accountSSHKey),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayAccountSSHKeyExists("scaleway_account_ssh_key.main"),
 					resource.TestCheckResourceAttr("scaleway_account_ssh_key.main", "name", "main"),
@@ -24,10 +29,38 @@ func TestAccScalewayAccountSSHKey(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccScalewayAccountSSHKeyConfig[1],
+				Config: fmt.Sprintf(`
+					resource "scaleway_account_ssh_key" "main" {
+						name 	   = "main-updated"
+						public_key = "%s"
+					}
+				`, accountSSHKey),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayAccountSSHKeyExists("scaleway_account_ssh_key.main"),
 					resource.TestCheckResourceAttr("scaleway_account_ssh_key.main", "name", "main-updated"),
+					resource.TestCheckResourceAttr("scaleway_account_ssh_key.main", "public_key", accountSSHKey),
+				),
+			},
+		},
+	})
+}
+
+func TestAccScalewayAccountSSHKey_WithNewLine(t *testing.T) {
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckScalewayAccountSSHKeyDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`
+					resource "scaleway_account_ssh_key" "main" {
+						name 	   = "main"
+						public_key = "\n\n%s\n\n"
+					}
+				`, accountSSHKey),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayAccountSSHKeyExists("scaleway_account_ssh_key.main"),
+					resource.TestCheckResourceAttr("scaleway_account_ssh_key.main", "name", "main"),
 					resource.TestCheckResourceAttr("scaleway_account_ssh_key.main", "public_key", accountSSHKey),
 				),
 			},
@@ -82,18 +115,3 @@ func testAccCheckScalewayAccountSSHKeyExists(n string) resource.TestCheckFunc {
 }
 
 const accountSSHKey = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAAAgQC7P977mH29VxAEHy+rzuZjYzcMKdx2fYlQvg+9EXnhzadFY2tqimOy0GBMMN263KwATHcJ7tqnKS8ahg3mdWJjKZyBFIeWozCggxJGNbWDjpw5qiSvnPQjfeqRYZedS5vi/rAPZpGZVyXGeLUd01QEKhnMGUdBiLtaAg1UgBeDYQ== opensource@scaleway.com"
-
-var testAccScalewayAccountSSHKeyConfig = []string{
-	fmt.Sprintf(`
-		resource "scaleway_account_ssh_key" "main" {
-			name 	   = "main"
-			public_key = "%s"
-		}
-	`, accountSSHKey),
-	fmt.Sprintf(`
-		resource "scaleway_account_ssh_key" "main" {
-			name 	   = "main-updated"
-			public_key = "%s"
-		}
-	`, accountSSHKey),
-}

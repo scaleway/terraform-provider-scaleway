@@ -1,6 +1,8 @@
 package scaleway
 
 import (
+	"strings"
+
 	"github.com/hashicorp/terraform/helper/schema"
 	account "github.com/scaleway/scaleway-sdk-go/api/account/v2alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
@@ -26,6 +28,10 @@ func resourceScalewayAccountSSKKey() *schema.Resource {
 				Required:    true,
 				ForceNew:    true,
 				Description: "The public SSH key",
+				// We dont consider trailing \n as diff
+				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
+					return strings.Trim(old, "\n") == strings.Trim(new, "\n")
+				},
 			},
 			"organization_id": organizationIDSchema(),
 		},
@@ -37,7 +43,7 @@ func resourceScalewayAccountSSHKeyCreate(d *schema.ResourceData, m interface{}) 
 
 	res, err := accountAPI.CreateSSHKey(&account.CreateSSHKeyRequest{
 		Name:           d.Get("name").(string),
-		PublicKey:      d.Get("public_key").(string),
+		PublicKey:      strings.Trim(d.Get("public_key").(string), "\n"),
 		OrganizationID: d.Get("organization_id").(string),
 	})
 	if err != nil {
