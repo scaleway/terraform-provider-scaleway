@@ -56,11 +56,10 @@ func resourceScalewayLbBackendBeta() *schema.Resource {
 			"sticky_sessions": {
 				Type: schema.TypeString,
 				ValidateFunc: validation.StringInSlice([]string{
-					lb.StickySessionsTypeNone.String(),
+					"none",
 					lb.StickySessionsTypeCookie.String(),
 					lb.StickySessionsTypeTable.String(),
 				}, false),
-				Default:     lb.StickySessionsTypeNone.String(),
 				Optional:    true,
 				Description: "Load balancing algorithm",
 			},
@@ -93,7 +92,7 @@ func resourceScalewayLbBackendBeta() *schema.Resource {
 				Type:        schema.TypeInt,
 				Optional:    true,
 				Computed:    true,
-				Description: "Maximum initical server connection establishment time (in milliseconds).",
+				Description: "Maximum initial server connection establishment time (in milliseconds).",
 			},
 			"timeout_tunnel": {
 				Type:        schema.TypeInt,
@@ -104,11 +103,11 @@ func resourceScalewayLbBackendBeta() *schema.Resource {
 			"on_marked_down_action": {
 				Type: schema.TypeString,
 				ValidateFunc: validation.StringInSlice([]string{
-					lb.OnMarkedDownActionOnMarkedDownActionNone.String(),
+					"none",
 					lb.OnMarkedDownActionShutdownSessions.String(),
 				}, false),
-				Default:  lb.OnMarkedDownActionOnMarkedDownActionNone.String(),
-				Optional: true,
+				Optional:    true,
+				Description: "Modify what occurs when a backend server is marked down.",
 			},
 		},
 	}
@@ -130,22 +129,22 @@ func resourceScalewayLbBackendBetaCreate(d *schema.ResourceData, m interface{}) 
 		Region:                   region,
 		LbID:                     LbID,
 		Name:                     name.(string),
-		ForwardProtocol:          lb.Protocol(d.Get("forward_protocol").(string)),
+		ForwardProtocol:          expandLbProtocol(d.Get("forward_protocol")),
 		ForwardPort:              int32(d.Get("forward_port").(int)),
-		ForwardPortAlgorithm:     lb.ForwardPortAlgorithm(d.Get("forward_port_algorithm").(string)),
-		StickySessions:           lb.StickySessionsType(d.Get("sticky_sessions").(string)),
+		ForwardPortAlgorithm:     expandLbForwardPortAlgorithm(d.Get("forward_port_algorithm")),
+		StickySessions:           expandLbStickySessionsType(d.Get("sticky_sessions")),
 		StickySessionsCookieName: d.Get("sticky_sessions_cookie_name").(string),
 		HealthCheck: &lb.HealthCheck{
 			Port:            80,
 			CheckMaxRetries: 1,
 		},
 
-		ServerIP:    StringSliceFromState(d.Get("server_ips").([]interface{})),
-		SendProxyV2: d.Get("send_proxy_v2").(bool),
-		//TimeoutServer:            d.Get("timeout_server").()
-		//TimeoutConnect:           nil,
-		//TimeoutTunnel:            nil,
-		OnMarkedDownAction: lb.OnMarkedDownAction(d.Get("on_marked_down_action").(string)),
+		ServerIP:           StringSliceFromState(d.Get("server_ips").([]interface{})),
+		SendProxyV2:        d.Get("send_proxy_v2").(bool),
+		TimeoutServer:      expandDuration(d.Get("timeout_server")),
+		TimeoutConnect:     expandDuration(d.Get("timeout_connect")),
+		TimeoutTunnel:      expandDuration(d.Get("timeout_tunnel")),
+		OnMarkedDownAction: expandLbBackendMarkdownAction(d.Get("on_marked_down_action")),
 	}
 
 	res, err := lbAPI.CreateBackend(createReq)
@@ -179,19 +178,18 @@ func resourceScalewayLbBackendBetaRead(d *schema.ResourceData, m interface{}) er
 
 	d.Set("lb_id", newRegionalId(region, res.Lb.ID))
 	d.Set("name", res.Name)
-	d.Set("forward_protocol", res.ForwardProtocol.String())
+	d.Set("forward_protocol", flattenLbProtocol(res.ForwardProtocol))
 	d.Set("forward_port", res.ForwardPort)
-	d.Set("forward_port_algorithm", res.ForwardPortAlgorithm)
-	d.Set("sticky_sessions", res.StickySessions)
+	d.Set("forward_port_algorithm", flattenLbForwardPortAlgorithm(res.ForwardPortAlgorithm))
+	d.Set("sticky_sessions", flattenLbStickySessionsType(res.StickySessions))
 	d.Set("sticky_sessions_cookie_name", res.StickySessionsCookieName)
 	d.Set("server_ips", res.Pool)
 	d.Set("send_proxy_v2", res.SendProxyV2)
-	//d.Set("timeout_server", res.TimeoutServer)
-	//d.Set("timeout_connect", res.TimeoutServer)
-	//d.Set("timeout_tunnel", res.TimeoutServer)
-	d.Set("on_marked_down_action", res.OnMarkedDownAction.String())
-	//d.Set("timeout_server", res.TimeoutServer)
-	d.Set("region", string(region))
+
+	d.Set("timeout_server", flattenDuration(res.TimeoutServer))
+	d.Set("timeout_connect", flattenDuration(res.TimeoutConnect))
+	d.Set("timeout_tunnel", flattenDuration(res.TimeoutTunnel))
+	d.Set("on_marked_down_action", flattenLbBackendMarkdownAction(res.OnMarkedDownAction))
 
 	return nil
 }
@@ -206,17 +204,16 @@ func resourceScalewayLbBackendBetaUpdate(d *schema.ResourceData, m interface{}) 
 		Region:                   region,
 		BackendID:                ID,
 		Name:                     d.Get("name").(string),
-		ForwardProtocol:          lb.Protocol(d.Get("forward_protocol").(string)),
+		ForwardProtocol:          expandLbProtocol(d.Get("forward_protocol")),
 		ForwardPort:              int32(d.Get("forward_port").(int)),
-		ForwardPortAlgorithm:     lb.ForwardPortAlgorithm(d.Get("forward_port_algorithm").(string)),
-		StickySessions:           lb.StickySessionsType(d.Get("sticky_sessions").(string)),
+		ForwardPortAlgorithm:     expandLbForwardPortAlgorithm(d.Get("forward_port_algorithm")),
+		StickySessions:           expandLbStickySessionsType(d.Get("sticky_sessions")),
 		StickySessionsCookieName: d.Get("sticky_sessions_cookie_name").(string),
 		SendProxyV2:              d.Get("send_proxy_v2").(bool),
-
-		//TimeoutServer:            d.Get("timeout_server").()
-		//TimeoutConnect:           nil,
-		//TimeoutTunnel:            nil,
-		OnMarkedDownAction: lb.OnMarkedDownAction(d.Get("on_marked_down_action").(string)),
+		TimeoutServer:            expandDuration(d.Get("timeout_server")),
+		TimeoutConnect:           expandDuration(d.Get("timeout_connect")),
+		TimeoutTunnel:            expandDuration(d.Get("timeout_tunnel")),
+		OnMarkedDownAction:       expandLbBackendMarkdownAction(d.Get("on_marked_down_action")),
 	}
 
 	_, err = lbAPI.UpdateBackend(req)
@@ -257,4 +254,48 @@ func resourceScalewayLbBackendBetaDelete(d *schema.ResourceData, m interface{}) 
 	}
 
 	return err
+}
+
+func flattenLbBackendMarkdownAction(action lb.OnMarkedDownAction) interface{} {
+	if action == lb.OnMarkedDownActionOnMarkedDownActionNone {
+		return "none"
+	}
+	return action.String()
+}
+
+func expandLbBackendMarkdownAction(raw interface{}) lb.OnMarkedDownAction {
+	if raw == "none" {
+		return lb.OnMarkedDownActionOnMarkedDownActionNone
+	}
+	return lb.OnMarkedDownAction(raw.(string))
+}
+
+func flattenLbProtocol(protocol lb.Protocol) interface{} {
+	return protocol.String()
+}
+
+func expandLbProtocol(raw interface{}) lb.Protocol {
+	return lb.Protocol(raw.(string))
+}
+
+func flattenLbForwardPortAlgorithm(algo lb.ForwardPortAlgorithm) interface{} {
+	return algo.String()
+}
+
+func expandLbForwardPortAlgorithm(raw interface{}) lb.ForwardPortAlgorithm {
+	return lb.ForwardPortAlgorithm(raw.(string))
+}
+
+func flattenLbStickySessionsType(t lb.StickySessionsType) interface{} {
+	if t == lb.StickySessionsTypeNone {
+		return "none"
+	}
+	return t.String()
+}
+
+func expandLbStickySessionsType(raw interface{}) lb.StickySessionsType {
+	if raw == "none" {
+		return lb.StickySessionsTypeNone
+	}
+	return lb.StickySessionsType(raw.(string))
 }
