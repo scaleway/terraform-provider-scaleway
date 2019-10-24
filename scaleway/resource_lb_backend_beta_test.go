@@ -39,8 +39,9 @@ func TestAccScalewayLbBackendBeta(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_lb_backend_beta.bkd01", "forward_port_algorithm", "roundrobin"),
 					resource.TestCheckResourceAttr("scaleway_lb_backend_beta.bkd01", "sticky_sessions", "none"),
 					resource.TestCheckResourceAttr("scaleway_lb_backend_beta.bkd01", "send_proxy_v2", "false"),
-					resource.TestCheckResourceAttr("scaleway_lb_backend_beta.bkd01", "timeout_server", "0"),
+					resource.TestCheckResourceAttr("scaleway_lb_backend_beta.bkd01", "timeout_server_ms", "0"),
 					resource.TestCheckResourceAttr("scaleway_lb_backend_beta.bkd01", "on_marked_down_action", "none"),
+					resource.TestCheckResourceAttrPair("scaleway_lb_backend_beta.bkd01", "server_ips.0", "scaleway_instance_ip.ip01", "address"),
 				),
 			},
 			{
@@ -63,16 +64,16 @@ func TestAccScalewayLbBackendBeta(t *testing.T) {
 						sticky_sessions_cookie_name = "session-id"
 						server_ips = [ scaleway_instance_ip.ip02.address ]
 						send_proxy_v2 = true
-						timeout_server = 1000
-						timeout_connect = 2000
-						timeout_tunnel = 3000
+						timeout_server_ms = 1000
+						timeout_connect_ms = 2000
+						timeout_tunnel_ms = 3000
 						on_marked_down_action = "shutdown_sessions"
 					}
 
 				`,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayLbBackendBetaExists("scaleway_lb_backend_beta.bkd01"),
-					testCheckResourceAttrEqualResourceAttr("scaleway_lb_backend_beta.bkd01", "server_ips.0", "scaleway_instance_ip.ip02", "address"),
+					resource.TestCheckResourceAttrPair("scaleway_lb_backend_beta.bkd01", "server_ips.0", "scaleway_instance_ip.ip02", "address"),
 					resource.TestCheckResourceAttr("scaleway_lb_backend_beta.bkd01", "on_marked_down_action", "shutdown_sessions"),
 				),
 			},

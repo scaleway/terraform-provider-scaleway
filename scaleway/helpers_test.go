@@ -2,13 +2,13 @@ package scaleway
 
 import (
 	"fmt"
-	"github.com/hashicorp/terraform/helper/resource"
-	"github.com/hashicorp/terraform/terraform"
 	"net"
 	"net/http"
 	"strings"
 	"testing"
 
+	"github.com/hashicorp/terraform/helper/resource"
+	"github.com/hashicorp/terraform/terraform"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -209,32 +209,6 @@ func testCheckResourceAttrFunc(name string, key string, test func(string) error)
 		err := test(value)
 		if err != nil {
 			return fmt.Errorf("test for %s %s did not pass test: %s", name, key, err)
-		}
-		return nil
-	}
-}
-
-func testCheckResourceAttrEqualResourceAttr(name string, key string, name2 string, key2 string) resource.TestCheckFunc {
-	return func(s *terraform.State) error {
-		rs, ok := s.RootModule().Resources[name]
-		if !ok {
-			return fmt.Errorf("resource not found: %s", name)
-		}
-		value, ok := rs.Primary.Attributes[key]
-		if !ok {
-			return fmt.Errorf("key not found: %s", key)
-		}
-
-		rs2, ok := s.RootModule().Resources[name2]
-		if !ok {
-			return fmt.Errorf("resource not found: %s", name)
-		}
-		value2, ok := rs2.Primary.Attributes[key2]
-		if !ok {
-			return fmt.Errorf("key not found: %s", key)
-		}
-		if value != value2 {
-			return fmt.Errorf("test for %s %s is not equal to %s %s (%s != %s)", name, key, name2, key2, value, value2)
 		}
 		return nil
 	}

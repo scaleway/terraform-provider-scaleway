@@ -60,6 +60,7 @@ func resourceScalewayLbBackendBeta() *schema.Resource {
 					lb.StickySessionsTypeCookie.String(),
 					lb.StickySessionsTypeTable.String(),
 				}, false),
+				Default:     "none",
 				Optional:    true,
 				Description: "Load balancing algorithm",
 			},
@@ -71,7 +72,8 @@ func resourceScalewayLbBackendBeta() *schema.Resource {
 			"server_ips": {
 				Type: schema.TypeList,
 				Elem: &schema.Schema{
-					Type: schema.TypeString,
+					Type:         schema.TypeString,
+					ValidateFunc: validation.SingleIP(),
 				},
 				Optional:    true,
 				Description: "Backend server IP addresses list (IPv4 or IPv6)",
@@ -82,19 +84,19 @@ func resourceScalewayLbBackendBeta() *schema.Resource {
 				Optional:    true,
 				Default:     false,
 			},
-			"timeout_server": {
+			"timeout_server_ms": {
 				Type:        schema.TypeInt,
 				Optional:    true,
 				Computed:    true,
 				Description: "Maximum server connection inactivity time (in milliseconds).",
 			},
-			"timeout_connect": {
+			"timeout_connect_ms": {
 				Type:        schema.TypeInt,
 				Optional:    true,
 				Computed:    true,
 				Description: "Maximum initial server connection establishment time (in milliseconds).",
 			},
-			"timeout_tunnel": {
+			"timeout_tunnel_ms": {
 				Type:        schema.TypeInt,
 				Optional:    true,
 				Computed:    true,
@@ -106,6 +108,7 @@ func resourceScalewayLbBackendBeta() *schema.Resource {
 					"none",
 					lb.OnMarkedDownActionShutdownSessions.String(),
 				}, false),
+				Default: "none",
 				Optional:    true,
 				Description: "Modify what occurs when a backend server is marked down.",
 			},
@@ -141,9 +144,9 @@ func resourceScalewayLbBackendBetaCreate(d *schema.ResourceData, m interface{}) 
 
 		ServerIP:           StringSliceFromState(d.Get("server_ips").([]interface{})),
 		SendProxyV2:        d.Get("send_proxy_v2").(bool),
-		TimeoutServer:      expandDuration(d.Get("timeout_server")),
-		TimeoutConnect:     expandDuration(d.Get("timeout_connect")),
-		TimeoutTunnel:      expandDuration(d.Get("timeout_tunnel")),
+		TimeoutServer:      expandDuration(d.Get("timeout_server_ms")),
+		TimeoutConnect:     expandDuration(d.Get("timeout_connect_ms")),
+		TimeoutTunnel:      expandDuration(d.Get("timeout_tunnel_ms")),
 		OnMarkedDownAction: expandLbBackendMarkdownAction(d.Get("on_marked_down_action")),
 	}
 
@@ -185,10 +188,9 @@ func resourceScalewayLbBackendBetaRead(d *schema.ResourceData, m interface{}) er
 	d.Set("sticky_sessions_cookie_name", res.StickySessionsCookieName)
 	d.Set("server_ips", res.Pool)
 	d.Set("send_proxy_v2", res.SendProxyV2)
-
-	d.Set("timeout_server", flattenDuration(res.TimeoutServer))
-	d.Set("timeout_connect", flattenDuration(res.TimeoutConnect))
-	d.Set("timeout_tunnel", flattenDuration(res.TimeoutTunnel))
+	d.Set("timeout_server_ms", flattenDuration(res.TimeoutServer))
+	d.Set("timeout_connect_ms", flattenDuration(res.TimeoutConnect))
+	d.Set("timeout_tunnel_ms", flattenDuration(res.TimeoutTunnel))
 	d.Set("on_marked_down_action", flattenLbBackendMarkdownAction(res.OnMarkedDownAction))
 
 	return nil
@@ -210,9 +212,9 @@ func resourceScalewayLbBackendBetaUpdate(d *schema.ResourceData, m interface{}) 
 		StickySessions:           expandLbStickySessionsType(d.Get("sticky_sessions")),
 		StickySessionsCookieName: d.Get("sticky_sessions_cookie_name").(string),
 		SendProxyV2:              d.Get("send_proxy_v2").(bool),
-		TimeoutServer:            expandDuration(d.Get("timeout_server")),
-		TimeoutConnect:           expandDuration(d.Get("timeout_connect")),
-		TimeoutTunnel:            expandDuration(d.Get("timeout_tunnel")),
+		TimeoutServer:            expandDuration(d.Get("timeout_server_ms")),
+		TimeoutConnect:           expandDuration(d.Get("timeout_connect_ms")),
+		TimeoutTunnel:            expandDuration(d.Get("timeout_tunnel_ms")),
 		OnMarkedDownAction:       expandLbBackendMarkdownAction(d.Get("on_marked_down_action")),
 	}
 

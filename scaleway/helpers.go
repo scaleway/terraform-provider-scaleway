@@ -502,16 +502,14 @@ func testAccGetResourceAttr(resourceName string, attrName string, dest *string) 
 
 func flattenDuration(duration *time.Duration) interface{} {
 	if duration != nil {
-		return duration.Milliseconds()
-	} else {
-		return nil
+		return int64(*duration) / int64(time.Millisecond)
 	}
+	return nil
 }
 
 func expandDuration(data interface{}) *time.Duration {
 	if data == nil {
 		return nil
 	}
-	ms := time.Duration(data.(int))
-	return scw.DurationPtr(ms * time.Millisecond)
+	return scw.DurationPtr(time.Duration(int64(data.(int)) * int64(time.Millisecond)))
 }
