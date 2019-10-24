@@ -29,3 +29,47 @@ func getLbAPIWithRegionAndID(m interface{}, id string) (*lb.API, scw.Region, str
 	region, ID, err := parseRegionalID(id)
 	return lbApi, region, ID, err
 }
+
+func flattenLbBackendMarkdownAction(action lb.OnMarkedDownAction) interface{} {
+	if action == lb.OnMarkedDownActionOnMarkedDownActionNone {
+		return "none"
+	}
+	return action.String()
+}
+
+func expandLbBackendMarkdownAction(raw interface{}) lb.OnMarkedDownAction {
+	if raw == "none" {
+		return lb.OnMarkedDownActionOnMarkedDownActionNone
+	}
+	return lb.OnMarkedDownAction(raw.(string))
+}
+
+func flattenLbProtocol(protocol lb.Protocol) interface{} {
+	return protocol.String()
+}
+
+func expandLbProtocol(raw interface{}) lb.Protocol {
+	return lb.Protocol(raw.(string))
+}
+
+func flattenLbForwardPortAlgorithm(algo lb.ForwardPortAlgorithm) interface{} {
+	return algo.String()
+}
+
+func expandLbForwardPortAlgorithm(raw interface{}) lb.ForwardPortAlgorithm {
+	return lb.ForwardPortAlgorithm(raw.(string))
+}
+
+func flattenLbStickySessionsType(t lb.StickySessionsType) interface{} {
+	if t == lb.StickySessionsTypeNone {
+		return "none"
+	}
+	return t.String()
+}
+
+func expandLbStickySessionsType(raw interface{}) lb.StickySessionsType {
+	if raw == "none" {
+		return lb.StickySessionsTypeNone
+	}
+	return lb.StickySessionsType(raw.(string))
+}

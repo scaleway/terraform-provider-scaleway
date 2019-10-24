@@ -36,7 +36,7 @@ The following arguments are supported:
 - `forward_port_algorithm`      - (Default: `roundrobin`) Load balancing algorithm. Possible values are: `roundrobin` and `leastconn`.
 - `sticky_sessions`             - (Default: `none`)  Load balancing algorithm. Possible values are: `none`, `cookie` and `table`.
 - `sticky_sessions_cookie_name` - (Optional) Cookie name for for sticky sessions. Only applicable when sticky_sessions is set to `cookie`.
-- `server_ips`                  - (Optional) List of backend server IP addresses. Address can be IPv4 or IPv6.  
+- `server_ips`                  - (Optional) List of backend server IP addresses. Addresses can be either IPv4 or IPv6.
 - `send_proxy_v2`               - (Default: false) Enables PROXY protocol version 2.
 - `timeout_server_ms`           - (Optional) Maximum server connection inactivity time (in milliseconds).
 - `timeout_connect_ms`          - (Optional) Maximum initial server connection establishment time (in milliseconds).
