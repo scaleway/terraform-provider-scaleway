@@ -28,7 +28,7 @@ func resourceScalewayAccountSSKKey() *schema.Resource {
 				Required:    true,
 				ForceNew:    true,
 				Description: "The public SSH key",
-				// We dont consider trailing \n as diff
+				// We don't consider trailing \n as diff
 				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
 					return strings.Trim(old, "\n") == strings.Trim(new, "\n")
 				},
