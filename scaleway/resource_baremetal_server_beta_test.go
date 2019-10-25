@@ -126,10 +126,12 @@ func testAccCheckScalewayBaremetalServerBetaDestroy(s *terraform.State) error {
 	return nil
 }
 
+const accountSSHKeyBm = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCve+G4fdcWk3YjfvAXDp9LWSLLbb+lm7XpMAbXW8D5f9l4RxQkekISLox7XeRN/az0q+6ob90xrWaX4L1oRxgZubARYh3XANXj8e9QxMTU9L0723Q2iWJ7Y0F3XBgTaDXDhdnIGZVpLuB98pKeZSOl8V3lhS2jSEFX+VV2DfkWfsV1u20A9PWpXGjwWtKm0uBwSbmitII8Zi5TXUrHyR1xLuuUWxql5yhzJjPAME5zf+TxVD12oBRsieKENFzgXmGHuS/JrMPmSQZSp1vOWN7/DSB5baWfXIZh0vEaEt5A+6MyVtuIiyZalgua201VIY263BmRXNBuOWMC4PkAuRQr opensource@scaleway.com"
+
 var testAccCheckScalewayBaremetalServerBetaConfigMinimal1 = []string{`
 resource "scaleway_account_ssh_key" "main" {
 	name 	   = "main"
-	public_key = "` + accountSSHKey + `"
+	public_key = "` + accountSSHKeyBm + `"
 }
 
 resource "scaleway_baremetal_server_beta" "base" {
@@ -145,7 +147,7 @@ resource "scaleway_baremetal_server_beta" "base" {
 `, `
 resource "scaleway_account_ssh_key" "main" {
 	name 	   = "main"
-	public_key = "` + accountSSHKey + `"
+	public_key = "` + accountSSHKeyBm + `"
 }
 
 resource "scaleway_baremetal_server_beta" "base" {
@@ -161,7 +163,7 @@ resource "scaleway_baremetal_server_beta" "base" {
 `, `
 resource "scaleway_account_ssh_key" "main" {
 	name 	   = "main"
-	public_key = "` + accountSSHKey + `"
+	public_key = "` + accountSSHKeyBm + `"
 }
 
 resource "scaleway_baremetal_server_beta" "base" {
@@ -177,7 +179,7 @@ resource "scaleway_baremetal_server_beta" "base" {
 `, `
 resource "scaleway_account_ssh_key" "main" {
 	name 	   = "main"
-	public_key = "` + accountSSHKey + `"
+	public_key = "` + accountSSHKeyBm + `"
 }
 
 resource "scaleway_baremetal_server_beta" "base" {
