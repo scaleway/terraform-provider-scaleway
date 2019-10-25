@@ -519,6 +519,20 @@ func expandDuration(data interface{}) *time.Duration {
 	return &d
 }
 
+func flattenStringPtr(s *string) interface{} {
+	if s != nil {
+		return *s
+	}
+	return ""
+}
+
+func expandStringPtr(data interface{}) *string {
+	if data == nil || data == "" {
+		return nil
+	}
+	return scw.StringPtr(data.(string))
+}
+
 func diffSuppressFuncDuration(k, old, new string, d *schema.ResourceData) bool {
 	if old == new {
 		return true

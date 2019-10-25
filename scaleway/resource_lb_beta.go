@@ -163,9 +163,5 @@ func resourceScalewayLbBetaDelete(d *schema.ResourceData, m interface{}) error {
 		return err
 	}
 
-	if is404Error(err) {
-		return nil
-	}
-
-	return err
+	return nil
 }
