@@ -6,7 +6,6 @@ import (
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/hashicorp/terraform/helper/validation"
 	"github.com/scaleway/scaleway-sdk-go/api/lb/v1"
-	"github.com/scaleway/scaleway-sdk-go/scw"
 )
 
 func resourceScalewayLbFrontendBeta() *schema.Resource {
@@ -25,20 +24,20 @@ func resourceScalewayLbFrontendBeta() *schema.Resource {
 				Required:     true,
 				ForceNew:     true,
 				ValidateFunc: validationUUIDorUUIDWithLocality(),
-				Description:  "The load-balancer id",
+				Description:  "The load-balancer ID",
 			},
 			"backend_id": {
 				Type:         schema.TypeString,
 				Required:     true,
 				ForceNew:     true,
 				ValidateFunc: validationUUIDorUUIDWithLocality(),
-				Description:  "The load-balancer backend id",
+				Description:  "The load-balancer backend ID",
 			},
 			"name": {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Computed:    true,
-				Description: "The name of the backend",
+				Description: "The name of the frontend",
 			},
 			"inbound_port": {
 				Type:         schema.TypeInt,
@@ -51,7 +50,7 @@ func resourceScalewayLbFrontendBeta() *schema.Resource {
 				Optional:         true,
 				DiffSuppressFunc: diffSuppressFuncDuration,
 				ValidateFunc:     validateDuration(),
-				Description:      "Set the ",
+				Description:      "Set the maximum inactivity time on the client side",
 			},
 			"certificate_id": {
 				Type:         schema.TypeString,
@@ -76,20 +75,14 @@ func resourceScalewayLbFrontendBetaCreate(d *schema.ResourceData, m interface{})
 		name = getRandomName("lb-frt")
 	}
 
-	backendID := expandID(d.Get("backend_id"))
-	certificateID := scw.StringPtr(expandID(d.Get("certificate_id")))
-	if *certificateID == "" {
-		certificateID = nil
-	}
-
 	var createReq = &lb.CreateFrontendRequest{
 		Region:        region,
 		LbID:          LbID,
 		Name:          name.(string),
 		InboundPort:   int32(d.Get("inbound_port").(int)),
-		BackendID:     backendID,
+		BackendID:     expandID(d.Get("backend_id")),
 		TimeoutClient: expandDuration(d.Get("timeout_client")),
-		CertificateID: certificateID,
+		CertificateID: expandStringPtr(expandID(d.Get("certificate_id"))),
 	}
 	res, err := lbAPI.CreateFrontend(createReq)
 	if err != nil {
@@ -141,20 +134,14 @@ func resourceScalewayLbFrontendBetaUpdate(d *schema.ResourceData, m interface{})
 		return err
 	}
 
-	backendID := expandID(d.Get("backend_id"))
-	certificateID := scw.StringPtr(expandID(d.Get("certificate_id")))
-	if *certificateID == "" {
-		certificateID = nil
-	}
-
 	req := &lb.UpdateFrontendRequest{
 		Region:        region,
 		FrontendID:    ID,
 		Name:          d.Get("name").(string),
 		InboundPort:   int32(d.Get("inbound_port").(int)),
-		BackendID:     backendID,
+		BackendID:     expandID(d.Get("backend_id")),
 		TimeoutClient: expandDuration(d.Get("timeout_client")),
-		CertificateID: certificateID,
+		CertificateID: expandStringPtr(expandID(d.Get("certificate_id"))),
 	}
 
 	_, err = lbAPI.UpdateFrontend(req)
@@ -180,9 +167,5 @@ func resourceScalewayLbFrontendBetaDelete(d *schema.ResourceData, m interface{})
 		return err
 	}
 
-	if is404Error(err) {
-		return nil
-	}
-
-	return err
+	return nil
 }
