@@ -58,7 +58,6 @@ func TestAccScalewayLbFrontendBeta(t *testing.T) {
 						inbound_port = 443
 						timeout_client = "30s"
 					}
-
 				`,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayLbFrontendBetaExists("scaleway_lb_frontend_beta.frt01"),
