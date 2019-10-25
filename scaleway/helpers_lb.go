@@ -61,15 +61,9 @@ func expandLbForwardPortAlgorithm(raw interface{}) lb.ForwardPortAlgorithm {
 }
 
 func flattenLbStickySessionsType(t lb.StickySessionsType) interface{} {
-	if t == lb.StickySessionsTypeNone {
-		return "none"
-	}
 	return t.String()
 }
 
 func expandLbStickySessionsType(raw interface{}) lb.StickySessionsType {
-	if raw == "none" {
-		return lb.StickySessionsTypeNone
-	}
 	return lb.StickySessionsType(raw.(string))
 }

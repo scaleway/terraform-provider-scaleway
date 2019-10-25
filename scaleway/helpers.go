@@ -519,7 +519,7 @@ func expandDuration(data interface{}) *time.Duration {
 	return &d
 }
 
-func difSuppressFuncDuration(k, old, new string, d *schema.ResourceData) bool {
+func diffSuppressFuncDuration(k, old, new string, d *schema.ResourceData) bool {
 	if old == new {
 		return true
 	}

@@ -21,7 +21,7 @@ func resourceScalewayLbBackendBeta() *schema.Resource {
 				Type:        schema.TypeString,
 				Required:    true,
 				ForceNew:    true,
-				Description: "The load-balancer id",
+				Description: "The load-balancer ID",
 			},
 			"name": {
 				Type:        schema.TypeString,
@@ -56,11 +56,11 @@ func resourceScalewayLbBackendBeta() *schema.Resource {
 			"sticky_sessions": {
 				Type: schema.TypeString,
 				ValidateFunc: validation.StringInSlice([]string{
-					"none",
+					lb.StickySessionsTypeNone.String(),
 					lb.StickySessionsTypeCookie.String(),
 					lb.StickySessionsTypeTable.String(),
 				}, false),
-				Default:     "none",
+				Default:     lb.StickySessionsTypeNone.String(),
 				Optional:    true,
 				Description: "Load balancing algorithm",
 			},
@@ -87,21 +87,21 @@ func resourceScalewayLbBackendBeta() *schema.Resource {
 			"timeout_server": {
 				Type:             schema.TypeString,
 				Optional:         true,
-				DiffSuppressFunc: difSuppressFuncDuration,
+				DiffSuppressFunc: diffSuppressFuncDuration,
 				ValidateFunc:     validateDuration(),
 				Description:      "Maximum server connection inactivity time (in milliseconds).",
 			},
 			"timeout_connect": {
 				Type:             schema.TypeString,
 				Optional:         true,
-				DiffSuppressFunc: difSuppressFuncDuration,
+				DiffSuppressFunc: diffSuppressFuncDuration,
 				ValidateFunc:     validateDuration(),
 				Description:      "Maximum initial server connection establishment time (in milliseconds).",
 			},
 			"timeout_tunnel": {
 				Type:             schema.TypeString,
 				Optional:         true,
-				DiffSuppressFunc: difSuppressFuncDuration,
+				DiffSuppressFunc: diffSuppressFuncDuration,
 				ValidateFunc:     validateDuration(),
 				Description:      "Maximum tunnel inactivity time (in milliseconds).",
 			},
