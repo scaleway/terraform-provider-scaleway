@@ -65,7 +65,7 @@ func TestAccScalewayLbBackendBeta(t *testing.T) {
 						server_ips = [ scaleway_instance_ip.ip02.address ]
 						send_proxy_v2 = true
 						timeout_server = "1s"
-						timeout_connect = "2s"
+						timeout_connect = "2.5s"
 						timeout_tunnel = "3s"
 						on_marked_down_action = "shutdown_sessions"
 					}

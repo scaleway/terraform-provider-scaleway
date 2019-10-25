@@ -38,9 +38,9 @@ The following arguments are supported:
 - `sticky_sessions_cookie_name` - (Optional) Cookie name for for sticky sessions. Only applicable when sticky_sessions is set to `cookie`.
 - `server_ips`                  - (Optional) List of backend server IP addresses. Addresses can be either IPv4 or IPv6.
 - `send_proxy_v2`               - (Default: false) Enables PROXY protocol version 2.
-- `timeout_server_ms`           - (Optional) Maximum server connection inactivity time (in milliseconds).
-- `timeout_connect_ms`          - (Optional) Maximum initial server connection establishment time (in milliseconds).
-- `timeout_tunnel_ms`           - (Optional) Maximum tunnel inactivity time (in milliseconds).
+- `timeout_server`              - (Optional) Maximum server connection inactivity time. (e.g.: `1s`)
+- `timeout_connect`             - (Optional) Maximum initial server connection establishment time. (e.g.: `1s`)
+- `timeout_tunnel`              - (Optional) Maximum tunnel inactivity time. (e.g.: `1s`)
 - `on_marked_down_action`       - (Default: `none`) Modify what occurs when a backend server is marked down. Possible values are: `none` and `shutdown_sessions`.
 
 
