@@ -1,4 +1,4 @@
-## 1.12.0 (Unreleased)
+## 1.12.0 (October 25, 2019)
 
 FEATURES:
 
