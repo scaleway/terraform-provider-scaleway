@@ -113,7 +113,7 @@ func resourceScalewayLbBackendBeta() *schema.Resource {
 				}, false),
 				Default:     "none",
 				Optional:    true,
-				Description: "Modify what occurs when a backend server is marked down.",
+				Description: "Modify what occurs when a backend server is marked down",
 			},
 		},
 	}
@@ -144,7 +144,6 @@ func resourceScalewayLbBackendBetaCreate(d *schema.ResourceData, m interface{}) 
 			Port:            80,
 			CheckMaxRetries: 1,
 		},
-
 		ServerIP:           StringSliceFromState(d.Get("server_ips").([]interface{})),
 		SendProxyV2:        d.Get("send_proxy_v2").(bool),
 		TimeoutServer:      expandDuration(d.Get("timeout_server")),
