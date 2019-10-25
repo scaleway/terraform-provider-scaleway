@@ -1,4 +1,28 @@
-## 1.11.1 (Unreleased)
+## 1.12.0 (October 25, 2019)
+
+FEATURES:
+
+* **New Resource:** `scaleway_lb_frontend_beta` ([#305](https://github.com/terraform-providers/terraform-provider-scaleway/pull/305))
+* **New Resource:** `scaleway_lb_backend_beta` ([#303](https://github.com/terraform-providers/terraform-provider-scaleway/pull/303))
+* **New Resource:** `scaleway_lb_beta` ([#278](https://github.com/terraform-providers/terraform-provider-scaleway/pull/278))
+* **New Resource:** `scaleway_k8s_cluster` ([#258](https://github.com/terraform-providers/terraform-provider-scaleway/pull/258))
+* **New Resource:** `scaleway_k8s_pool` ([#258](https://github.com/terraform-providers/terraform-provider-scaleway/pull/258))
+* **New Resource:** `scaleway_account_ssh_key` ([#262](https://github.com/terraform-providers/terraform-provider-scaleway/pull/262))
+* `scaleway_instance_server`: add ipv6 info on server resource ([#301](https://github.com/terraform-providers/terraform-provider-scaleway/pull/301))
+* `scaleway_instance_security_group`: add ANY protocol ([#297](https://github.com/terraform-providers/terraform-provider-scaleway/pull/297))
+* `scaleway_instance_server`: add disable_dynamic_ip ([#293](https://github.com/terraform-providers/terraform-provider-scaleway/pull/293))
+* `scaleway_k8s_cluster`: add missing placement group ID ([#268](https://github.com/terraform-providers/terraform-provider-scaleway/pull/268))
+* `scaleway_k8s_cluster`: add autohealing to pools ([#266](https://github.com/terraform-providers/terraform-provider-scaleway/pull/266))
+
+BUG FIXES:
+
+* `scaleway_account_ssh_key`: trim ssh key before sending it to the API (#304) ([#242](https://github.com/terraform-providers/terraform-provider-scaleway/issues/304))
+* `scaleway_ip`: handle 403 error as a 404 in read function ([#300](https://github.com/terraform-providers/terraform-provider-scaleway/pull/300))
+* `scaleway_baremetal_server_beta`: read OS.ID in os_id attribute ([#288](https://github.com/terraform-providers/terraform-provider-scaleway/pull/288))
+* `scaleway_baremetal_server_beta`: remplace project_id by organization_id in read ([#277](https://github.com/terraform-providers/terraform-provider-scaleway/pull/277))
+* `scaleway_k8s_cluster_beta`: do not update autoscaled pool size ([#265](https://github.com/terraform-providers/terraform-provider-scaleway/pull/265))
+
+
 ## 1.11.0 (October 01, 2019)
 
 NOTES:
