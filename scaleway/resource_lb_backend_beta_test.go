@@ -32,7 +32,6 @@ func TestAccScalewayLbBackendBeta(t *testing.T) {
 						forward_port = 80
 						server_ips = [ scaleway_instance_ip.ip01.address ]
 					}
-
 				`,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayLbBackendBetaExists("scaleway_lb_backend_beta.bkd01"),
@@ -69,7 +68,6 @@ func TestAccScalewayLbBackendBeta(t *testing.T) {
 						timeout_tunnel = "3s"
 						on_marked_down_action = "shutdown_sessions"
 					}
-
 				`,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayLbBackendBetaExists("scaleway_lb_backend_beta.bkd01"),
@@ -97,7 +95,6 @@ func testAccCheckScalewayLbBackendBetaExists(n string) resource.TestCheckFunc {
 			BackendID: ID,
 			Region:    region,
 		})
-
 		if err != nil {
 			return err
 		}
