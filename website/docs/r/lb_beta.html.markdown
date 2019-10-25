@@ -43,7 +43,7 @@ The following arguments are supported:
 
 In addition to all arguments above, the following attributes are exported:
 
-- `id` - The ID of the server.
+- `id` - The ID of the load-balancer.
 - `ip_id` - The load-balance public IP ID
 - `ip_address` -  The load-balance public IP Address
 
