@@ -38,10 +38,11 @@ func resourceScalewayInstanceServer() *schema.Resource {
 				Description: "The UUID or the label of the base image used by the server",
 			},
 			"type": {
-				Type:        schema.TypeString,
-				Required:    true,
-				ForceNew:    true,
-				Description: "The instance type of the server", // TODO: link to scaleway pricing in the doc
+				Type:             schema.TypeString,
+				Required:         true,
+				ForceNew:         true,
+				Description:      "The instance type of the server", // TODO: link to scaleway pricing in the doc
+				DiffSuppressFunc: diffSuppressFuncIgnoreCase,
 			},
 			"tags": {
 				Type: schema.TypeList,

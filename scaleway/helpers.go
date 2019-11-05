@@ -558,3 +558,10 @@ func validateDuration() schema.SchemaValidateFunc {
 		return nil, nil
 	}
 }
+
+func diffSuppressFuncIgnoreCase(k, old, new string, d *schema.ResourceData) bool {
+	if strings.ToLower(old) == strings.ToLower(new) {
+		return true
+	}
+	return false
+}

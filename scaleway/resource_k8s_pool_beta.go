@@ -29,10 +29,11 @@ func resourceScalewayK8SPoolBeta() *schema.Resource {
 				Description: "The name of the cluster",
 			},
 			"node_type": {
-				Type:        schema.TypeString,
-				Required:    true,
-				ForceNew:    true,
-				Description: "Server type of the pool servers",
+				Type:             schema.TypeString,
+				Required:         true,
+				ForceNew:         true,
+				Description:      "Server type of the pool servers",
+				DiffSuppressFunc: diffSuppressFuncIgnoreCase,
 			},
 			"autoscaling": {
 				Type:        schema.TypeBool,
