@@ -565,3 +565,10 @@ func diffSuppressFuncIgnoreCase(k, old, new string, d *schema.ResourceData) bool
 	}
 	return false
 }
+
+func diffSuppressFuncIgnoreCaseAndHyphen(k, old, new string, d *schema.ResourceData) bool {
+	if strings.ReplaceAll(strings.ToLower(old), "-", "_") == strings.ReplaceAll(strings.ToLower(new), "-", "_") {
+		return true
+	}
+	return false
+}

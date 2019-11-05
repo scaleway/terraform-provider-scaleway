@@ -86,7 +86,7 @@ func resourceScalewayK8SClusterBeta() *schema.Resource {
 							Required:         true,
 							ForceNew:         true,
 							Description:      "Server type of the default pool servers",
-							DiffSuppressFunc: diffSuppressFuncIgnoreCase,
+							DiffSuppressFunc: diffSuppressFuncIgnoreCaseAndHyphen,
 						},
 						"autoscaling": {
 							Type:        schema.TypeBool,

@@ -33,7 +33,7 @@ func resourceScalewayK8SPoolBeta() *schema.Resource {
 				Required:         true,
 				ForceNew:         true,
 				Description:      "Server type of the pool servers",
-				DiffSuppressFunc: diffSuppressFuncIgnoreCase,
+				DiffSuppressFunc: diffSuppressFuncIgnoreCaseAndHyphen,
 			},
 			"autoscaling": {
 				Type:        schema.TypeBool,
