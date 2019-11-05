@@ -558,3 +558,17 @@ func validateDuration() schema.SchemaValidateFunc {
 		return nil, nil
 	}
 }
+
+func diffSuppressFuncIgnoreCase(k, old, new string, d *schema.ResourceData) bool {
+	if strings.ToLower(old) == strings.ToLower(new) {
+		return true
+	}
+	return false
+}
+
+func diffSuppressFuncIgnoreCaseAndHyphen(k, old, new string, d *schema.ResourceData) bool {
+	if strings.Replace(strings.ToLower(old), "-", "_", -1) == strings.Replace(strings.ToLower(new), "-", "_", -1) {
+		return true
+	}
+	return false
+}
