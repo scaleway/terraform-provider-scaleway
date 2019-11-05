@@ -485,7 +485,7 @@ func resourceScalewayK8SClusterBetaDefaultPoolUpdate(d *schema.ResourceData, m i
 	// Update default Pool
 	////
 	if d.HasChange("default_pool") {
-		defaultPoolID := d.Get("default_pool.0.id").(string)
+		defaultPoolID := d.Get("default_pool.0.pool_id").(string)
 
 		updateRequest := &k8s.UpdatePoolRequest{
 			Region: region,
@@ -554,11 +554,6 @@ func resourceScalewayK8SClusterBetaDefaultPoolUpdate(d *schema.ResourceData, m i
 			d.Set("default_pool", []map[string]interface{}{defaultPool})
 
 		}
-	}
-
-	err = resourceScalewayK8SClusterBetaDefaultPoolRead(d, m)
-	if err != nil {
-		return err
 	}
 
 	return resourceScalewayK8SClusterBetaDefaultPoolRead(d, m)
@@ -641,6 +636,11 @@ func resourceScalewayK8SClusterBetaUpdate(d *schema.ResourceData, m interface{})
 		if err != nil {
 			return err
 		}
+	}
+
+	err = resourceScalewayK8SClusterBetaDefaultPoolUpdate(d, m)
+	if err != nil {
+		return err
 	}
 
 	return resourceScalewayK8SClusterBetaRead(d, m)
