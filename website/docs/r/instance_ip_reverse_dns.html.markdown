@@ -38,5 +38,5 @@ In addition to all above arguments, the following attributes are exported:
 IPs reverse DNS can be imported using the `{zone}/{id}`, e.g.
 
 ```bash
-$ terraform import scaleway_instance_ip_reverse_dns.revers fr-par-1/11111111-1111-1111-1111-111111111111
+$ terraform import scaleway_instance_ip_reverse_dns.reverse fr-par-1/11111111-1111-1111-1111-111111111111
 ```
