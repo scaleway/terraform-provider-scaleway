@@ -191,6 +191,7 @@ func Provider() terraform.ResourceProvider {
 			"scaleway_baremetal_server_beta":    resourceScalewayBaremetalServerBeta(),
 			"scaleway_bucket":                   resourceScalewayBucket(),
 			"scaleway_instance_ip":              resourceScalewayInstanceIP(),
+			"scaleway_instance_ip_reverse_dns":  resourceScalewayInstanceIPReverseDns(),
 			"scaleway_instance_volume":          resourceScalewayInstanceVolume(),
 			"scaleway_instance_security_group":  resourceScalewayInstanceSecurityGroup(),
 			"scaleway_instance_server":          resourceScalewayInstanceServer(),

@@ -24,6 +24,8 @@ func resourceScalewayInstanceIP() *schema.Resource {
 			"reverse": {
 				Type:        schema.TypeString,
 				Optional:    true,
+				Computed:    true,
+				Deprecated:  "Deprecated in favor of scaleway_instance_ip_reverse_dns resource",
 				Description: "The reverse DNS for this IP",
 			},
 			"server_id": {
