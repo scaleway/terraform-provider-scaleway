@@ -89,7 +89,7 @@ func resourceScalewayInstanceIPRead(d *schema.ResourceData, m interface{}) error
 	}
 
 	res, err := instanceAPI.GetIP(&instance.GetIPRequest{
-		IPID: ID,
+		IP:   ID,
 		Zone: zone,
 	})
 

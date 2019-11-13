@@ -107,7 +107,7 @@ func testAccCheckScalewayInstanceIPExists(n string) resource.TestCheckFunc {
 		}
 
 		_, err = instanceAPI.GetIP(&instance.GetIPRequest{
-			IPID: ID,
+			IP:   ID,
 			Zone: zone,
 		})
 
@@ -144,7 +144,7 @@ func testAccCheckScalewayInstanceIPPairWithServer(ipResource, serverResource str
 		}
 
 		ip, err := instanceAPI.GetIP(&instance.GetIPRequest{
-			IPID: ID,
+			IP:   ID,
 			Zone: zone,
 		})
 		if err != nil {
@@ -200,7 +200,7 @@ func testAccCheckScalewayInstanceIPDestroy(s *terraform.State) error {
 
 		_, err = instanceAPI.GetIP(&instance.GetIPRequest{
 			Zone: zone,
-			IPID: ID,
+			IP:   ID,
 		})
 
 		// If no error resource still exist

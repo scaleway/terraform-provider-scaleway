@@ -1,6 +1,7 @@
 // This file was automatically generated. DO NOT EDIT.
 // If you have any remark or suggestion do not hesitate to open an issue.
 
+// Package instance provides methods and message types of the instance v1 API.
 package instance
 
 import (
@@ -77,6 +78,40 @@ func (enum *Arch) UnmarshalJSON(data []byte) error {
 	}
 
 	*enum = Arch(Arch(tmp).String())
+	return nil
+}
+
+type BootType string
+
+const (
+	// BootTypeLocal is [insert doc].
+	BootTypeLocal = BootType("local")
+	// BootTypeBootscript is [insert doc].
+	BootTypeBootscript = BootType("bootscript")
+	// BootTypeRescue is [insert doc].
+	BootTypeRescue = BootType("rescue")
+)
+
+func (enum BootType) String() string {
+	if enum == "" {
+		// return default value if empty
+		return "local"
+	}
+	return string(enum)
+}
+
+func (enum BootType) MarshalJSON() ([]byte, error) {
+	return []byte(fmt.Sprintf(`"%s"`, enum)), nil
+}
+
+func (enum *BootType) UnmarshalJSON(data []byte) error {
+	tmp := ""
+
+	if err := json.Unmarshal(data, &tmp); err != nil {
+		return err
+	}
+
+	*enum = BootType(BootType(tmp).String())
 	return nil
 }
 
@@ -347,36 +382,6 @@ func (enum *ServerAction) UnmarshalJSON(data []byte) error {
 	}
 
 	*enum = ServerAction(ServerAction(tmp).String())
-	return nil
-}
-
-type ServerBootType string
-
-const (
-	// ServerBootTypeLocal is [insert doc].
-	ServerBootTypeLocal = ServerBootType("local")
-)
-
-func (enum ServerBootType) String() string {
-	if enum == "" {
-		// return default value if empty
-		return "local"
-	}
-	return string(enum)
-}
-
-func (enum ServerBootType) MarshalJSON() ([]byte, error) {
-	return []byte(fmt.Sprintf(`"%s"`, enum)), nil
-}
-
-func (enum *ServerBootType) UnmarshalJSON(data []byte) error {
-	tmp := ""
-
-	if err := json.Unmarshal(data, &tmp); err != nil {
-		return err
-	}
-
-	*enum = ServerBootType(ServerBootType(tmp).String())
 	return nil
 }
 
@@ -983,7 +988,7 @@ type Server struct {
 	// BootType display the server boot type
 	//
 	// Default value: local
-	BootType ServerBootType `json:"boot_type"`
+	BootType BootType `json:"boot_type"`
 	// Volumes display the server volumes
 	Volumes map[string]*Volume `json:"volumes"`
 	// SecurityGroup display the server security group
@@ -1098,7 +1103,7 @@ type ServerTypeVolumeConstraintsByType struct {
 }
 
 type SetPlacementGroupResponse struct {
-	PlacementGroupID string `json:"placement_group_id"`
+	PlacementGroup *PlacementGroup `json:"placement_group"`
 }
 
 type SetPlacementGroupServersResponse struct {
@@ -1162,7 +1167,7 @@ type UpdateIPResponse struct {
 }
 
 type UpdatePlacementGroupResponse struct {
-	PlacementGroupID string `json:"placement_group_id"`
+	PlacementGroup *PlacementGroup `json:"placement_group"`
 }
 
 type UpdatePlacementGroupServersResponse struct {
@@ -1454,15 +1459,21 @@ type CreateServerRequest struct {
 	// EnableIPv6 true if IPv6 is enabled on the server
 	EnableIPv6 bool `json:"enable_ipv6,omitempty"`
 	// PublicIP the public IPv4 attached to the server
-	PublicIP string `json:"public_ip,omitempty"`
+	PublicIP *string `json:"public_ip,omitempty"`
+	// BootType the boot type to use
+	//
+	// Default value: local
+	BootType BootType `json:"boot_type"`
+	// Bootscript the bootscript ID to use when `boot_type` is set to `bootscript`.
+	Bootscript *string `json:"bootscript,omitempty"`
 	// Organization the server organization ID
 	Organization string `json:"organization,omitempty"`
 	// Tags the server tags
 	Tags []string `json:"tags,omitempty"`
 	// SecurityGroup the security group ID
-	SecurityGroup string `json:"security_group,omitempty"`
+	SecurityGroup *string `json:"security_group,omitempty"`
 	// PlacementGroup placement group ID if server must be part of a placement group
-	PlacementGroup string `json:"placement_group,omitempty"`
+	PlacementGroup *string `json:"placement_group,omitempty"`
 }
 
 // createServer create server
@@ -1515,7 +1526,7 @@ type DeleteServerRequest struct {
 
 // DeleteServer delete server
 //
-// Delete a server with the given id
+// Delete a server with the given ID.
 func (s *API) DeleteServer(req *DeleteServerRequest, opts ...scw.RequestOption) error {
 	var err error
 
@@ -1630,7 +1641,7 @@ type setServerRequest struct {
 	// BootType display the server boot type
 	//
 	// Default value: local
-	BootType ServerBootType `json:"boot_type"`
+	BootType BootType `json:"boot_type"`
 	// Volumes display the server volumes
 	Volumes map[string]*Volume `json:"volumes"`
 	// SecurityGroup display the server security group
@@ -1694,12 +1705,16 @@ type UpdateServerRequest struct {
 	ServerID string `json:"-"`
 
 	Name *string `json:"name,omitempty"`
+	// BootType
+	//
+	// Default value: local
+	BootType *BootType `json:"boot_type,omitempty"`
 
 	Tags *[]string `json:"tags,omitempty"`
 
 	Volumes *map[string]*VolumeTemplate `json:"volumes,omitempty"`
 
-	Bootscript string `json:"bootscript,omitempty"`
+	Bootscript *string `json:"bootscript,omitempty"`
 
 	DynamicIPRequired *bool `json:"dynamic_ip_required,omitempty"`
 
@@ -2009,7 +2024,7 @@ type GetImageRequest struct {
 
 // GetImage get image
 //
-// Get details of an image with the given id
+// Get details of an image with the given ID.
 func (s *API) GetImage(req *GetImageRequest, opts ...scw.RequestOption) (*GetImageResponse, error) {
 	var err error
 
@@ -2073,6 +2088,10 @@ func (s *API) CreateImage(req *CreateImageRequest, opts ...scw.RequestOption) (*
 	if req.Zone == "" {
 		defaultZone, _ := s.client.GetDefaultZone()
 		req.Zone = defaultZone
+	}
+
+	if req.Name == "" {
+		req.Name = namegenerator.GetRandomName("img")
 	}
 
 	if fmt.Sprint(req.Zone) == "" {
@@ -2183,7 +2202,7 @@ type DeleteImageRequest struct {
 
 // DeleteImage delete image
 //
-// Delete the image with the given id
+// Delete the image with the given ID.
 func (s *API) DeleteImage(req *DeleteImageRequest, opts ...scw.RequestOption) error {
 	var err error
 
@@ -2287,11 +2306,11 @@ func (r *ListSnapshotsResponse) UnsafeAppend(res interface{}) (uint32, scw.SdkEr
 type CreateSnapshotRequest struct {
 	Zone scw.Zone `json:"-"`
 
+	Name string `json:"name,omitempty"`
+
 	VolumeID string `json:"volume_id,omitempty"`
 
 	Organization string `json:"organization,omitempty"`
-
-	Name string `json:"name,omitempty"`
 }
 
 // CreateSnapshot create snapshot
@@ -2306,6 +2325,10 @@ func (s *API) CreateSnapshot(req *CreateSnapshotRequest, opts ...scw.RequestOpti
 	if req.Zone == "" {
 		defaultZone, _ := s.client.GetDefaultZone()
 		req.Zone = defaultZone
+	}
+
+	if req.Name == "" {
+		req.Name = namegenerator.GetRandomName("snp")
 	}
 
 	if fmt.Sprint(req.Zone) == "" {
@@ -2340,7 +2363,7 @@ type GetSnapshotRequest struct {
 
 // GetSnapshot get snapshot
 //
-// Get details of a snapshot with the given id
+// Get details of a snapshot with the given ID.
 func (s *API) GetSnapshot(req *GetSnapshotRequest, opts ...scw.RequestOption) (*GetSnapshotResponse, error) {
 	var err error
 
@@ -2450,7 +2473,7 @@ type DeleteSnapshotRequest struct {
 
 // DeleteSnapshot delete snapshot
 //
-// Delete the snapshot with the given id
+// Delete the snapshot with the given ID.
 func (s *API) DeleteSnapshot(req *DeleteSnapshotRequest, opts ...scw.RequestOption) error {
 	var err error
 
@@ -2637,7 +2660,7 @@ type GetVolumeRequest struct {
 
 // GetVolume get volume
 //
-// Get details of a volume with the given id
+// Get details of a volume with the given ID.
 func (s *API) GetVolume(req *GetVolumeRequest, opts ...scw.RequestOption) (*GetVolumeResponse, error) {
 	var err error
 
@@ -2677,7 +2700,7 @@ type DeleteVolumeRequest struct {
 
 // DeleteVolume delete volume
 //
-// Delete the volume with the given id
+// Delete the volume with the given ID.
 func (s *API) DeleteVolume(req *DeleteVolumeRequest, opts ...scw.RequestOption) error {
 	var err error
 
@@ -2856,7 +2879,7 @@ type GetSecurityGroupRequest struct {
 
 // GetSecurityGroup get security group
 //
-// Get the details of a Security Group with the given id
+// Get the details of a Security Group with the given ID.
 func (s *API) GetSecurityGroup(req *GetSecurityGroupRequest, opts ...scw.RequestOption) (*GetSecurityGroupResponse, error) {
 	var err error
 
@@ -3146,7 +3169,7 @@ type DeleteSecurityGroupRuleRequest struct {
 
 // DeleteSecurityGroupRule delete rule
 //
-// Delete a security group rule with the given id
+// Delete a security group rule with the given ID.
 func (s *API) DeleteSecurityGroupRule(req *DeleteSecurityGroupRuleRequest, opts ...scw.RequestOption) error {
 	var err error
 
@@ -3190,7 +3213,7 @@ type GetSecurityGroupRuleRequest struct {
 
 // GetSecurityGroupRule get rule
 //
-// Get details of a security group rule with the given id
+// Get details of a security group rule with the given ID.
 func (s *API) GetSecurityGroupRule(req *GetSecurityGroupRuleRequest, opts ...scw.RequestOption) (*GetSecurityGroupRuleResponse, error) {
 	var err error
 
@@ -3404,6 +3427,10 @@ func (s *API) CreatePlacementGroup(req *CreatePlacementGroupRequest, opts ...scw
 	if req.Zone == "" {
 		defaultZone, _ := s.client.GetDefaultZone()
 		req.Zone = defaultZone
+	}
+
+	if req.Name == "" {
+		req.Name = namegenerator.GetRandomName("pg")
 	}
 
 	if fmt.Sprint(req.Zone) == "" {
@@ -3671,6 +3698,8 @@ type SetPlacementGroupServersRequest struct {
 	Zone scw.Zone `json:"-"`
 
 	PlacementGroupID string `json:"-"`
+
+	Servers []string `json:"servers"`
 }
 
 // SetPlacementGroupServers set placement group servers
@@ -3716,6 +3745,8 @@ type UpdatePlacementGroupServersRequest struct {
 	Zone scw.Zone `json:"-"`
 
 	PlacementGroupID string `json:"-"`
+
+	Servers []string `json:"servers,omitempty"`
 }
 
 // UpdatePlacementGroupServers update placement group servers
@@ -3755,44 +3786,6 @@ func (s *API) UpdatePlacementGroupServers(req *UpdatePlacementGroupServersReques
 		return nil, err
 	}
 	return &resp, nil
-}
-
-type DeletePlacementGroupServersRequest struct {
-	Zone scw.Zone `json:"-"`
-
-	PlacementGroupID string `json:"-"`
-}
-
-// DeletePlacementGroupServers delete placement group servers
-//
-// Delete all servers from the given placement group
-func (s *API) DeletePlacementGroupServers(req *DeletePlacementGroupServersRequest, opts ...scw.RequestOption) error {
-	var err error
-
-	if req.Zone == "" {
-		defaultZone, _ := s.client.GetDefaultZone()
-		req.Zone = defaultZone
-	}
-
-	if fmt.Sprint(req.Zone) == "" {
-		return errors.New("field Zone cannot be empty in request")
-	}
-
-	if fmt.Sprint(req.PlacementGroupID) == "" {
-		return errors.New("field PlacementGroupID cannot be empty in request")
-	}
-
-	scwReq := &scw.ScalewayRequest{
-		Method:  "DELETE",
-		Path:    "/instance/v1/zones/" + fmt.Sprint(req.Zone) + "/placement_groups/" + fmt.Sprint(req.PlacementGroupID) + "/servers",
-		Headers: http.Header{},
-	}
-
-	err = s.client.Do(scwReq, nil, opts...)
-	if err != nil {
-		return err
-	}
-	return nil
 }
 
 type ListIPsRequest struct {
@@ -3914,13 +3907,13 @@ func (s *API) CreateIP(req *CreateIPRequest, opts ...scw.RequestOption) (*Create
 
 type GetIPRequest struct {
 	Zone scw.Zone `json:"-"`
-
-	IPID string `json:"-"`
+	// IP the IP ID or address to get
+	IP string `json:"-"`
 }
 
 // GetIP get IP
 //
-// Get details of an IP with the given id
+// Get details of an IP with the given ID or address
 func (s *API) GetIP(req *GetIPRequest, opts ...scw.RequestOption) (*GetIPResponse, error) {
 	var err error
 
@@ -3933,13 +3926,13 @@ func (s *API) GetIP(req *GetIPRequest, opts ...scw.RequestOption) (*GetIPRespons
 		return nil, errors.New("field Zone cannot be empty in request")
 	}
 
-	if fmt.Sprint(req.IPID) == "" {
-		return nil, errors.New("field IPID cannot be empty in request")
+	if fmt.Sprint(req.IP) == "" {
+		return nil, errors.New("field IP cannot be empty in request")
 	}
 
 	scwReq := &scw.ScalewayRequest{
 		Method:  "GET",
-		Path:    "/instance/v1/zones/" + fmt.Sprint(req.Zone) + "/ips/" + fmt.Sprint(req.IPID) + "",
+		Path:    "/instance/v1/zones/" + fmt.Sprint(req.Zone) + "/ips/" + fmt.Sprint(req.IP) + "",
 		Headers: http.Header{},
 	}
 
@@ -4062,7 +4055,7 @@ type DeleteIPRequest struct {
 
 // DeleteIP delete IP
 //
-// Delete the IP with the given id
+// Delete the IP with the given ID.
 func (s *API) DeleteIP(req *DeleteIPRequest, opts ...scw.RequestOption) error {
 	var err error
 
@@ -4177,7 +4170,7 @@ type GetBootscriptRequest struct {
 
 // GetBootscript get bootscripts
 //
-// Get details of a bootscript with the given id
+// Get details of a bootscript with the given ID.
 func (s *API) GetBootscript(req *GetBootscriptRequest, opts ...scw.RequestOption) (*GetBootscriptResponse, error) {
 	var err error
 
