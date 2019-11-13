@@ -20,13 +20,18 @@ func TestAccScalewayInstanceReverseDnsIP(t *testing.T) {
 						reverse = "www.google.fr"
 					}
 				`,
-				Check: resource.ComposeTestCheckFunc(),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("scaleway_instance_ip_reverse_dns.base", "reverse", "www.google.fr"),
+				),
 			},
 			{
 				Config: `
 					resource "scaleway_instance_ip" "ip" {}
 				`,
-				Check: resource.ComposeTestCheckFunc(),
+				Taint: []string{"scaleway_instance_ip.ip"},
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("scaleway_instance_ip.ip", "reverse", ""),
+				),
 			},
 		},
 	})
