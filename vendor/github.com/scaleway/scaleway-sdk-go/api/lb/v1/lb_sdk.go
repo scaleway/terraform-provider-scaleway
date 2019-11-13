@@ -1,6 +1,7 @@
 // This file was automatically generated. DO NOT EDIT.
 // If you have any remark or suggestion do not hesitate to open an issue.
 
+// Package lb provides methods and message types of the lb v1 API.
 package lb
 
 import (

@@ -35,6 +35,7 @@ type Client struct {
 
 func defaultOptions() []ClientOption {
 	return []ClientOption{
+		WithoutAuth(),
 		WithAPIURL("https://api.scaleway.com"),
 		withDefaultUserAgent(userAgent),
 	}
@@ -81,40 +82,40 @@ func NewClient(opts ...ClientOption) (*Client, error) {
 	}, nil
 }
 
-// GetDefaultOrganizationID return the default organization ID
+// GetDefaultOrganizationID returns the default organization ID
 // of the client. This value can be set in the client option
 // WithDefaultOrganizationID(). Be aware this value can be empty.
-func (c *Client) GetDefaultOrganizationID() (string, bool) {
+func (c *Client) GetDefaultOrganizationID() (organizationID string, exists bool) {
 	if c.defaultOrganizationID != nil {
 		return *c.defaultOrganizationID, true
 	}
 	return "", false
 }
 
-// GetDefaultRegion return the default region of the client.
+// GetDefaultRegion returns the default region of the client.
 // This value can be set in the client option
 // WithDefaultRegion(). Be aware this value can be empty.
-func (c *Client) GetDefaultRegion() (Region, bool) {
+func (c *Client) GetDefaultRegion() (region Region, exists bool) {
 	if c.defaultRegion != nil {
 		return *c.defaultRegion, true
 	}
 	return Region(""), false
 }
 
-// GetDefaultZone return the default zone of the client.
+// GetDefaultZone returns the default zone of the client.
 // This value can be set in the client option
 // WithDefaultZone(). Be aware this value can be empty.
-func (c *Client) GetDefaultZone() (Zone, bool) {
+func (c *Client) GetDefaultZone() (zone Zone, exists bool) {
 	if c.defaultZone != nil {
 		return *c.defaultZone, true
 	}
 	return Zone(""), false
 }
 
-// GetDefaultPageSize return the default page size of the client.
+// GetDefaultPageSize returns the default page size of the client.
 // This value can be set in the client option
 // WithDefaultPageSize(). Be aware this value can be empty.
-func (c *Client) GetDefaultPageSize() (uint32, bool) {
+func (c *Client) GetDefaultPageSize() (pageSize uint32, exists bool) {
 	if c.defaultPageSize != nil {
 		return *c.defaultPageSize, true
 	}

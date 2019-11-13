@@ -1,6 +1,7 @@
 // This file was automatically generated. DO NOT EDIT.
 // If you have any remark or suggestion do not hesitate to open an issue.
 
+// Package marketplace provides methods and message types of the marketplace v1 API.
 package marketplace
 
 import (
@@ -159,6 +160,7 @@ type ListImagesRequest struct {
 	Page *int32 `json:"-"`
 }
 
+// ListImages list marketplace images
 func (s *API) ListImages(req *ListImagesRequest, opts ...scw.RequestOption) (*ListImagesResponse, error) {
 	var err error
 
@@ -210,6 +212,7 @@ type GetImageRequest struct {
 	ImageID string `json:"-"`
 }
 
+// GetImage get a specific marketplace image
 func (s *API) GetImage(req *GetImageRequest, opts ...scw.RequestOption) (*GetImageResponse, error) {
 	var err error
 

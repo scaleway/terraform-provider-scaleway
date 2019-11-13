@@ -1,6 +1,7 @@
 // This file was automatically generated. DO NOT EDIT.
 // If you have any remark or suggestion do not hesitate to open an issue.
 
+// Package account provides methods and message types of the account v2alpha1 API.
 package account
 
 import (
