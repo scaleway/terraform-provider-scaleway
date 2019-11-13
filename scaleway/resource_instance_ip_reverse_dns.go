@@ -38,7 +38,7 @@ func resourceScalewayInstanceIPReverseDnsCreate(d *schema.ResourceData, m interf
 	}
 
 	res, err := instanceAPI.GetIP(&instance.GetIPRequest{
-		IPID: expandID(d.Get("ip_id")),
+		IP:   expandID(d.Get("ip_id")),
 		Zone: zone,
 	})
 	if err != nil {
@@ -57,7 +57,7 @@ func resourceScalewayInstanceIPReverseDnsRead(d *schema.ResourceData, m interfac
 	}
 
 	res, err := instanceAPI.GetIP(&instance.GetIPRequest{
-		IPID: ID,
+		IP:   ID,
 		Zone: zone,
 	})
 
