@@ -46,7 +46,6 @@ func resourceScalewayK8SClusterBeta() *schema.Resource {
 			},
 			"enable_dashboard": {
 				Type:        schema.TypeBool,
-				ForceNew:    true,
 				Optional:    true,
 				Default:     false,
 				Description: "Enable the dashboard on the cluster",
@@ -54,7 +53,6 @@ func resourceScalewayK8SClusterBeta() *schema.Resource {
 			"ingress": {
 				Type:        schema.TypeString,
 				Optional:    true,
-				ForceNew:    true,
 				Default:     "no_ingress",
 				Description: "The ingress to be deployed on the cluster",
 			},
@@ -602,6 +600,14 @@ func resourceScalewayK8SClusterBetaUpdate(d *schema.ResourceData, m interface{})
 		if !canUpgrade {
 			return fmt.Errorf("cluster %s can not be upgraded to version %s", clusterID, d.Get("version").(string))
 		}
+	}
+
+	if d.HasChange("ingress") {
+		updateRequest.Ingress = scw.StringPtr(d.Get("ingress").(string))
+	}
+
+	if d.HasChange("enable_dashboard") {
+		updateRequest.EnableDashboard = scw.BoolPtr(d.Get("enable_dashboard").(bool))
 	}
 
 	////

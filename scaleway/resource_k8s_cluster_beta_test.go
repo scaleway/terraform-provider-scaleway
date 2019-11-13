@@ -65,6 +65,66 @@ func TestAccScalewayK8SClusterBetaMinimal(t *testing.T) {
 	})
 }
 
+func TestAccScalewayK8SClusterBetaIngressDasboard(t *testing.T) {
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckScalewayK8SClusterBetaDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckScalewayK8SClusterBetaConfigIngressDashboard("1.16.0", "nginx", false),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayK8SClusterBetaExists("scaleway_k8s_cluster_beta.ingressdashboard"),
+					resource.TestCheckResourceAttr("scaleway_k8s_cluster_beta.ingressdashboard", "version", "1.16.0"),
+					resource.TestCheckResourceAttr("scaleway_k8s_cluster_beta.ingressdashboard", "cni", "calico"),
+					resource.TestCheckResourceAttr("scaleway_k8s_cluster_beta.ingressdashboard", "ingress", "nginx"),
+					resource.TestCheckResourceAttr("scaleway_k8s_cluster_beta.ingressdashboard", "enable_dashboard", "false"),
+					resource.TestCheckResourceAttr("scaleway_k8s_cluster_beta.ingressdashboard", "status", k8s.ClusterStatusReady.String()),
+					resource.TestCheckResourceAttrSet("scaleway_k8s_cluster_beta.ingressdashboard", "default_pool.0.pool_id"),
+					resource.TestCheckResourceAttr("scaleway_k8s_cluster_beta.ingressdashboard", "default_pool.0.size", "1"),
+					resource.TestCheckResourceAttr("scaleway_k8s_cluster_beta.ingressdashboard", "default_pool.0.node_type", "gp1_xs"),
+					resource.TestCheckResourceAttr("scaleway_k8s_cluster_beta.ingressdashboard", "default_pool.0.min_size", "1"),
+					resource.TestCheckResourceAttr("scaleway_k8s_cluster_beta.ingressdashboard", "default_pool.0.max_size", "1"),
+					resource.TestCheckResourceAttrSet("scaleway_k8s_cluster_beta.ingressdashboard", "kubeconfig.0.config_file"),
+					resource.TestCheckResourceAttrSet("scaleway_k8s_cluster_beta.ingressdashboard", "kubeconfig.0.host"),
+					resource.TestCheckResourceAttrSet("scaleway_k8s_cluster_beta.ingressdashboard", "kubeconfig.0.cluster_ca_certificate"),
+					resource.TestCheckResourceAttrSet("scaleway_k8s_cluster_beta.ingressdashboard", "kubeconfig.0.token"),
+					resource.TestCheckResourceAttrSet("scaleway_k8s_cluster_beta.ingressdashboard", "apiserver_url"),
+					resource.TestCheckResourceAttrSet("scaleway_k8s_cluster_beta.ingressdashboard", "wildcard_dns"),
+					resource.TestCheckResourceAttr("scaleway_k8s_cluster_beta.ingressdashboard", "tags.0", "terraform-test"),
+					resource.TestCheckResourceAttr("scaleway_k8s_cluster_beta.ingressdashboard", "tags.1", "scaleway_k8s_cluster_beta"),
+					resource.TestCheckResourceAttr("scaleway_k8s_cluster_beta.ingressdashboard", "tags.2", "ingressdashboard"),
+				),
+			},
+			{
+				Config: testAccCheckScalewayK8SClusterBetaConfigIngressDashboard("1.16.0", "traefik", true),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayK8SClusterBetaExists("scaleway_k8s_cluster_beta.ingressdashboard"),
+					resource.TestCheckResourceAttr("scaleway_k8s_cluster_beta.ingressdashboard", "version", "1.16.0"),
+					resource.TestCheckResourceAttr("scaleway_k8s_cluster_beta.ingressdashboard", "cni", "calico"),
+					resource.TestCheckResourceAttr("scaleway_k8s_cluster_beta.ingressdashboard", "ingress", "traefik"),
+					resource.TestCheckResourceAttr("scaleway_k8s_cluster_beta.ingressdashboard", "enable_dashboard", "true"),
+					resource.TestCheckResourceAttr("scaleway_k8s_cluster_beta.ingressdashboard", "status", k8s.ClusterStatusReady.String()),
+					resource.TestCheckResourceAttrSet("scaleway_k8s_cluster_beta.ingressdashboard", "default_pool.0.pool_id"),
+					resource.TestCheckResourceAttr("scaleway_k8s_cluster_beta.ingressdashboard", "default_pool.0.size", "1"),
+					resource.TestCheckResourceAttr("scaleway_k8s_cluster_beta.ingressdashboard", "default_pool.0.node_type", "gp1_xs"),
+					resource.TestCheckResourceAttr("scaleway_k8s_cluster_beta.ingressdashboard", "default_pool.0.min_size", "1"),
+					resource.TestCheckResourceAttr("scaleway_k8s_cluster_beta.ingressdashboard", "default_pool.0.max_size", "1"),
+					resource.TestCheckResourceAttrSet("scaleway_k8s_cluster_beta.ingressdashboard", "kubeconfig.0.config_file"),
+					resource.TestCheckResourceAttrSet("scaleway_k8s_cluster_beta.ingressdashboard", "kubeconfig.0.host"),
+					resource.TestCheckResourceAttrSet("scaleway_k8s_cluster_beta.ingressdashboard", "kubeconfig.0.cluster_ca_certificate"),
+					resource.TestCheckResourceAttrSet("scaleway_k8s_cluster_beta.ingressdashboard", "kubeconfig.0.token"),
+					resource.TestCheckResourceAttrSet("scaleway_k8s_cluster_beta.ingressdashboard", "apiserver_url"),
+					resource.TestCheckResourceAttrSet("scaleway_k8s_cluster_beta.ingressdashboard", "wildcard_dns"),
+					resource.TestCheckResourceAttr("scaleway_k8s_cluster_beta.ingressdashboard", "tags.0", "terraform-test"),
+					resource.TestCheckResourceAttr("scaleway_k8s_cluster_beta.ingressdashboard", "tags.1", "scaleway_k8s_cluster_beta"),
+					resource.TestCheckResourceAttr("scaleway_k8s_cluster_beta.ingressdashboard", "tags.2", "ingressdashboard"),
+				),
+			},
+		},
+	})
+}
+
 func TestAccScalewayK8SClusterBetaAutoscaling(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -206,6 +266,22 @@ resource "scaleway_k8s_cluster_beta" "minimal" {
 	}
 	tags = [ "terraform-test", "scaleway_k8s_cluster_beta", "minimal" ]
 }`, version)
+}
+
+func testAccCheckScalewayK8SClusterBetaConfigIngressDashboard(version string, ingress string, dashboard bool) string {
+	return fmt.Sprintf(`
+resource "scaleway_k8s_cluster_beta" "ingressdashboard" {
+	cni = "calico"
+	version = "%s"
+	name = "ingress-dashboard"
+	ingress = "%s"
+	enable_dashboard = %t
+	default_pool {
+		node_type = "gp1_xs"
+		size = 1
+	}
+	tags = [ "terraform-test", "scaleway_k8s_cluster_beta", "ingressdashboard" ]
+}`, version, ingress, dashboard)
 }
 
 func testAccCheckScalewayK8SClusterBetaConfigAutoscaler(version string) string {
