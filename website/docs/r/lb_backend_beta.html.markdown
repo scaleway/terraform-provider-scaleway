@@ -24,9 +24,26 @@ resource "scaleway_lb_backend_beta" "backend01" {
 }
 ```
 
+### With HTTP Health Check
+
+```hcl
+resource "scaleway_lb_backend_beta" "backend01" {
+    lb_id = scaleway_lb_beta.lb01.id
+    name = "backend01"
+    forward_protocol = "http"
+    forward_port = "80"
+ 
+    health_check_http {
+      uri: "www.test.com/health"
+    }
+}
+```
+
 ## Arguments Reference
 
 The following arguments are supported:
+
+### Basic arguments
 
 - `lb_id`                       - (Required) The load-balancer ID this backend is attached to.
 ~> **Important:** Updates to `lb_id` will recreate the backend.
@@ -41,6 +58,25 @@ The following arguments are supported:
 - `timeout_server`              - (Optional) Maximum server connection inactivity time. (e.g.: `1s`)
 - `timeout_connect`             - (Optional) Maximum initial server connection establishment time. (e.g.: `1s`)
 - `timeout_tunnel`              - (Optional) Maximum tunnel inactivity time. (e.g.: `1s`)
+
+### Health Check arguments
+
+Backends use Health Check to test if a backend server is ready to receive requests.
+You may use one of the following health check types: `TCP`, `HTTP` or `HTTPS`. (Default: `TCP`)
+
+- `health_check_timeout`        - (Default: `30s`) Timeout before we consider a HC request failed.
+- `health_check_delay`          - (Default: `60s`) Interval between two HC requests.
+- `health_check_port`           - (Default: `forward_port`) Port the HC requests will be send to.
+- `health_check_max_retries`    - (Default: `2`) Number of allowed failed HC requests before the backend server is marked down.
+- `health_check_tcp`            - (Optional) This block enable TCP health check.
+- `health_check_http`           - (Optional) This block enable HTTP health check.
+  - `uri`                       - (Required) The HTTP endpoint URL to call for HC requests.
+  - `method`                    - (Default: `GET`) The HTTP method to use for HC requests.
+  - `code`                      - (Default: `200`) The expected HTTP status code.
+- `health_check_https`          - (Optional) This block enable HTTPS health check.
+  - `uri`                       - (Required) The HTTP endpoint URL to call for HC requests.
+  - `method`                    - (Default: `GET`) The HTTP method to use for HC requests.
+  - `code`                      - (Default: `200`) The expected HTTP status code.
 - `on_marked_down_action`       - (Default: `none`) Modify what occurs when a backend server is marked down. Possible values are: `none` and `shutdown_sessions`.
 
 

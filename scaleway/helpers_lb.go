@@ -67,3 +67,69 @@ func flattenLbStickySessionsType(t lb.StickySessionsType) interface{} {
 func expandLbStickySessionsType(raw interface{}) lb.StickySessionsType {
 	return lb.StickySessionsType(raw.(string))
 }
+
+func flattenLbHCTCP(config *lb.HealthCheckTCPConfig) interface{} {
+	if config == nil {
+		return nil
+	}
+	return []map[string]interface{}{
+		{},
+	}
+}
+
+func expandLbHCTCP(raw interface{}) *lb.HealthCheckTCPConfig {
+	if raw == nil || len(raw.([]interface{})) != 1 {
+		return nil
+	}
+	return &lb.HealthCheckTCPConfig{}
+}
+
+func flattenLbHCHTTP(config *lb.HealthCheckHTTPConfig) interface{} {
+	if config == nil {
+		return nil
+	}
+	return []map[string]interface{}{
+		{
+			"uri":    config.URI,
+			"method": config.Method,
+			"code":   flattenInt32Ptr(config.Code),
+		},
+	}
+}
+
+func expandLbHCHTTP(raw interface{}) *lb.HealthCheckHTTPConfig {
+	if raw == nil || len(raw.([]interface{})) != 1 {
+		return nil
+	}
+	rawMap := raw.([]interface{})[0].(map[string]interface{})
+	return &lb.HealthCheckHTTPConfig{
+		URI:    rawMap["uri"].(string),
+		Method: rawMap["method"].(string),
+		Code:   expandInt32Ptr(rawMap["code"]),
+	}
+}
+
+func flattenLbHCHTTPS(config *lb.HealthCheckHTTPSConfig) interface{} {
+	if config == nil {
+		return nil
+	}
+	return []map[string]interface{}{
+		{
+			"uri":    config.URI,
+			"method": config.Method,
+			"code":   flattenInt32Ptr(config.Code),
+		},
+	}
+}
+
+func expandLbHCHTTPS(raw interface{}) *lb.HealthCheckHTTPSConfig {
+	if raw == nil || len(raw.([]interface{})) != 1 {
+		return nil
+	}
+	rawMap := raw.([]interface{})[0].(map[string]interface{})
+	return &lb.HealthCheckHTTPSConfig{
+		URI:    rawMap["uri"].(string),
+		Method: rawMap["method"].(string),
+		Code:   expandInt32Ptr(rawMap["code"]),
+	}
+}
