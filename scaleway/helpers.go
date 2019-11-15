@@ -520,10 +520,10 @@ func expandDuration(data interface{}) *time.Duration {
 }
 
 func flattenStringPtr(s *string) interface{} {
-	if s != nil {
-		return *s
+	if s == nil {
+		return ""
 	}
-	return ""
+	return *s
 }
 
 func expandStringPtr(data interface{}) *string {
@@ -534,10 +534,10 @@ func expandStringPtr(data interface{}) *string {
 }
 
 func flattenInt32Ptr(i *int32) interface{} {
-	if i != nil {
-		return *i
+	if i == nil {
+		return 0
 	}
-	return ""
+	return *i
 }
 
 func expandInt32Ptr(data interface{}) *int32 {
