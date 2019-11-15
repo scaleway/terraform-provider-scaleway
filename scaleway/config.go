@@ -31,6 +31,7 @@ type Meta struct {
 	DefaultOrganizationID string
 	DefaultRegion         scw.Region
 	DefaultZone           scw.Zone
+	TerraformVersion      string
 
 	// scwClient is the Scaleway SDK client.
 	scwClient *scw.Client
@@ -66,7 +67,7 @@ func (m *Meta) bootstrap() error {
 func (m *Meta) bootstrapScwClient() error {
 	options := []scw.ClientOption{
 		scw.WithHTTPClient(createRetryableHTTPClient(false)),
-		scw.WithUserAgent(userAgent),
+		scw.WithUserAgent(fmt.Sprintf("terraform-provider/%s terraform/%s", version, m.TerraformVersion)),
 	}
 
 	// The access key is not used for API authentications.
