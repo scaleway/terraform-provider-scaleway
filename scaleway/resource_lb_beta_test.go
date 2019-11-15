@@ -2,10 +2,11 @@ package scaleway
 
 import (
 	"fmt"
+	"testing"
+
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/terraform"
 	"github.com/scaleway/scaleway-sdk-go/api/lb/v1"
-	"testing"
 )
 
 func TestAccScalewayLbBeta(t *testing.T) {
@@ -18,7 +19,7 @@ func TestAccScalewayLbBeta(t *testing.T) {
 				Config: `
 					resource scaleway_lb_beta lb01 {
 						name = "test-lb"
-						type = "LB-S"
+						type = "lb-s"
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
@@ -32,7 +33,7 @@ func TestAccScalewayLbBeta(t *testing.T) {
 				Config: `
 					resource scaleway_lb_beta lb01 {
 						name = "test-lb"
-						type = "LB-S"
+						type = "lb-s"
 						tags = ["tag1", "tag2"]
 					}
 				`,
