@@ -182,7 +182,7 @@ func resourceScalewayLbBackendBeta() *schema.Resource {
 						"uri": {
 							Type:        schema.TypeString,
 							Required:    true,
-							Description: "The HTTP endpoint URL to call for HC requests",
+							Description: "The HTTPS endpoint URL to call for HC requests",
 						},
 						"method": {
 							Type:        schema.TypeString,
@@ -346,7 +346,7 @@ func resourceScalewayLbBackendBetaUpdate(d *schema.ResourceData, m interface{}) 
 		HTTPSConfig:     expandLbHCHTTPS(d.Get("health_check_https")),
 	}
 
-	// As this is the default behaviour If no other HC type are present we enable TCP
+	// As this is the default behaviour if no other HC type are present we enable TCP
 	if updateHCRequest.HTTPConfig == nil && updateHCRequest.HTTPSConfig == nil {
 		updateHCRequest.TCPConfig = expandLbHCTCP(d.Get("health_check_tcp"))
 	}

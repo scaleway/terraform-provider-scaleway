@@ -106,10 +106,6 @@ func TestAccScalewayLbBackendBeta_HealthCheck(t *testing.T) {
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
-					func(state *terraform.State) error {
-						fmt.Println("TOTOT")
-						return nil
-					},
 					resource.TestCheckResourceAttr("scaleway_lb_backend_beta.bkd01", "health_check_tcp.#", "1"),
 					resource.TestCheckResourceAttr("scaleway_lb_backend_beta.bkd01", "health_check_http.#", "0"),
 					resource.TestCheckResourceAttr("scaleway_lb_backend_beta.bkd01", "health_check_https.#", "0"),

@@ -74,7 +74,7 @@ You may use one of the following health check types: `TCP`, `HTTP` or `HTTPS`. (
   - `method`                    - (Default: `GET`) The HTTP method to use for HC requests.
   - `code`                      - (Default: `200`) The expected HTTP status code.
 - `health_check_https`          - (Optional) This block enable HTTPS health check.
-  - `uri`                       - (Required) The HTTP endpoint URL to call for HC requests.
+  - `uri`                       - (Required) The HTTPS endpoint URL to call for HC requests.
   - `method`                    - (Default: `GET`) The HTTP method to use for HC requests.
   - `code`                      - (Default: `200`) The expected HTTP status code.
 - `on_marked_down_action`       - (Default: `none`) Modify what occurs when a backend server is marked down. Possible values are: `none` and `shutdown_sessions`.
