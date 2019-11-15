@@ -43,7 +43,7 @@ func Provider() terraform.ResourceProvider {
 	// load env
 	envProfile := scw.LoadEnvProfile()
 
-	return &schema.Provider{
+	p := &schema.Provider{
 		Schema: map[string]*schema.Schema{
 			"access_key": {
 				Type:        schema.TypeString,
@@ -221,13 +221,23 @@ func Provider() terraform.ResourceProvider {
 			"scaleway_volume":          dataSourceScalewayVolume(),
 			"scaleway_account_ssh_key": dataSourceScalewayAccountSSHKey(),
 		},
-
-		ConfigureFunc: providerConfigure,
 	}
+
+	p.ConfigureFunc = func(data *schema.ResourceData) (i interface{}, e error) {
+		terraformVersion := p.TerraformVersion
+		if terraformVersion == "" {
+			// Terraform 0.12 introduced this field to the protocol
+			// We can therefore assume that if it's missing it's 0.10 or 0.11
+			terraformVersion = "0.11+compatible"
+		}
+		return providerConfigure(data, terraformVersion)
+	}
+
+	return p
 }
 
 // providerConfigure creates the Meta object containing the SDK client.
-func providerConfigure(d *schema.ResourceData) (interface{}, error) {
+func providerConfigure(d *schema.ResourceData, terraformVersion string) (interface{}, error) {
 	apiKey := ""
 	if v, ok := d.Get("secret_key").(string); ok {
 		apiKey = v
@@ -274,6 +284,7 @@ func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 		DefaultOrganizationID: organizationID,
 		DefaultRegion:         region,
 		DefaultZone:           zone,
+		TerraformVersion:      terraformVersion,
 	}
 
 	meta.bootstrap()
