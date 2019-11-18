@@ -3,7 +3,6 @@ package scaleway
 import (
 	"fmt"
 	"sort"
-	"strings"
 
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/hashicorp/terraform/helper/validation"
@@ -393,15 +392,6 @@ func securityGroupRuleSchema() *schema.Resource {
 	}
 }
 
-// ipv4RangeFormat format a ip_range making sure the range suffix is always present
-func ipv4RangeFormat(i interface{}) string {
-	ipRange := i.(string)
-	if !strings.Contains(ipRange, "/") {
-		ipRange = ipRange + "/32"
-	}
-	return ipRange
-}
-
 // securityGroupRuleExpand transform a state rule to an api one.
 func securityGroupRuleExpand(i interface{}) *instance.SecurityGroupRule {
 	rawRule := i.(map[string]interface{})
@@ -429,7 +419,7 @@ func securityGroupRuleExpand(i interface{}) *instance.SecurityGroupRule {
 		DestPortFrom: &portFrom,
 		DestPortTo:   &portTo,
 		Protocol:     instance.SecurityGroupRuleProtocol(rawRule["protocol"].(string)),
-		IPRange:      ipRange,
+		IPRange:      expandIPNet(ipRange),
 		Action:       instance.SecurityGroupRuleAction(action),
 	}
 
@@ -460,7 +450,7 @@ func securityGroupRuleFlatten(rule *instance.SecurityGroupRule) map[string]inter
 
 	res := map[string]interface{}{
 		"protocol":   rule.Protocol.String(),
-		"ip_range":   ipv4RangeFormat(rule.IPRange),
+		"ip_range":   flattenIpNet(rule.IPRange),
 		"port_range": fmt.Sprintf("%d-%d", portFrom, portTo),
 		"action":     rule.Action.String(),
 	}
@@ -477,7 +467,7 @@ func securityGroupRuleEquals(ruleA, ruleB *instance.SecurityGroupRule) bool {
 	}
 	portFromEqual := zeroIfNil(ruleA.DestPortFrom) == zeroIfNil(ruleB.DestPortFrom)
 	portToEqual := zeroIfNil(ruleA.DestPortTo) == zeroIfNil(ruleB.DestPortTo)
-	ipEqual := ipv4RangeFormat(ruleA.IPRange) == ipv4RangeFormat(ruleB.IPRange)
+	ipEqual := flattenIpNet(ruleA.IPRange) == flattenIpNet(ruleB.IPRange)
 
 	return ruleA.Action == ruleB.Action &&
 		portFromEqual &&

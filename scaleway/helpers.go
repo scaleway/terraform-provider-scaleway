@@ -2,6 +2,7 @@ package scaleway
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"regexp"
@@ -542,6 +543,30 @@ func expandInt32Ptr(data interface{}) *int32 {
 		return nil
 	}
 	return scw.Int32Ptr(int32(data.(int)))
+}
+
+func expandIPNet(raw string) scw.IPNet {
+	if raw == "" {
+		return scw.IPNet{}
+	}
+	var ipNet scw.IPNet
+	raw = `"` + raw + `"`
+	err := json.Unmarshal([]byte(raw), &ipNet)
+	if err != nil {
+		// We panic as this should never happen. Data from state should be validate using a validate func
+		panic(err)
+	}
+
+	return ipNet
+}
+
+func flattenIpNet(ipNet scw.IPNet) string {
+	raw, err := json.Marshal(ipNet)
+	if err != nil {
+		// We panic as this should never happen.
+		panic(err)
+	}
+	return string(raw)
 }
 
 func diffSuppressFuncDuration(k, old, new string, d *schema.ResourceData) bool {

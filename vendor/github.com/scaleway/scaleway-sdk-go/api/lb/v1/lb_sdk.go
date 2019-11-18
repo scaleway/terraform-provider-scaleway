@@ -1514,7 +1514,7 @@ type GetIPRequest struct {
 	Region scw.Region `json:"-"`
 	// IPID
 	//
-	// IP address ID
+	// IP address ID.
 	IPID string `json:"-"`
 }
 
@@ -2849,7 +2849,7 @@ func (m *CreateCertificateRequest) GetType() Type {
 
 // CreateCertificate create Certificate
 //
-// Generate a new SSL certificate using Let's Encrypt (Custom certificates can be imported soon)
+// Generate a new SSL certificate using Let's Encrypt (Custom certificates can be imported soon).
 func (s *API) CreateCertificate(req *CreateCertificateRequest, opts ...scw.RequestOption) (*Certificate, error) {
 	var err error
 

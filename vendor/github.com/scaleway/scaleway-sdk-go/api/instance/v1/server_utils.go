@@ -10,15 +10,15 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/api/marketplace/v1"
 	"github.com/scaleway/scaleway-sdk-go/internal/async"
 	"github.com/scaleway/scaleway-sdk-go/internal/errors"
-	"github.com/scaleway/scaleway-sdk-go/internal/uuid"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/scaleway-sdk-go/validation"
 )
 
 // CreateServer creates a server.
 func (s *API) CreateServer(req *CreateServerRequest, opts ...scw.RequestOption) (*CreateServerResponse, error) {
 
 	// If image is not a UUID we try to fetch it from marketplace.
-	if req.Image != "" && !uuid.IsUUID(req.Image) {
+	if req.Image != "" && !validation.IsUUID(req.Image) {
 		apiMarketplace := marketplace.NewAPI(s.client)
 		imageId, err := apiMarketplace.GetLocalImageIDByLabel(&marketplace.GetLocalImageIDByLabelRequest{
 			ImageLabel:     req.Image,
@@ -42,16 +42,16 @@ func (s *API) UpdateServer(req *UpdateServerRequest, opts ...scw.RequestOption) 
 	return s.updateServer((*UpdateServerRequest)(req), opts...)
 }
 
-// waitForServerRequest is used by waitForServer method.
-type waitForServerRequest struct {
+// WaitForServerRequest is used by WaitForServer method.
+type WaitForServerRequest struct {
 	ServerID string
 	Zone     scw.Zone
 	Timeout  time.Duration
 }
 
-// waitForServer wait for the server to be in a "terminal state" before returning.
+// WaitForServer wait for the server to be in a "terminal state" before returning.
 // This function can be used to wait for a server to be started for example.
-func (s *API) waitForServer(req *waitForServerRequest) (*Server, scw.SdkError) {
+func (s *API) WaitForServer(req *WaitForServerRequest) (*Server, error) {
 
 	terminalStatus := map[ServerState]struct{}{
 		ServerStateStopped:        {},
@@ -109,7 +109,7 @@ func (s *API) ServerActionAndWait(req *ServerActionAndWaitRequest) error {
 		return err
 	}
 
-	finalServer, err := s.waitForServer(&waitForServerRequest{
+	finalServer, err := s.WaitForServer(&WaitForServerRequest{
 		Zone:     req.Zone,
 		ServerID: req.ServerID,
 		Timeout:  req.Timeout,
