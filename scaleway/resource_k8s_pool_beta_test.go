@@ -45,6 +45,27 @@ func TestAccScalewayK8SClusterPoolMinimal(t *testing.T) {
 	})
 }
 
+func TestAccScalewayK8SClusterPoolPlacementGroup(t *testing.T) {
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckScalewayK8SClusterBetaDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckScalewayK8SPoolBetaConfigPlacementGroup("1.16.0"),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayK8SClusterBetaExists("scaleway_k8s_cluster_beta.placement_group"),
+					testAccCheckScalewayK8SPoolBetaExists("scaleway_k8s_pool_beta.placement_group"),
+					resource.TestCheckResourceAttr("scaleway_k8s_pool_beta.placement_group", "node_type", "gp1_xs"),
+					resource.TestCheckResourceAttr("scaleway_k8s_pool_beta.placement_group", "size", "1"),
+					resource.TestCheckResourceAttrSet("scaleway_k8s_pool_beta.placement_group", "id"),
+					resource.TestCheckResourceAttrSet("scaleway_k8s_pool_beta.placement_group", "placement_group_id"),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckScalewayK8SPoolBetaDestroy(s *terraform.State) error {
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "scaleway_k8s_pool_beta" {
@@ -124,4 +145,32 @@ resource "scaleway_k8s_cluster_beta" "minimal" {
 	tags = [ "terraform-test", "scaleway_k8s_cluster_beta", "minimal" ]
 }
 %s`, version, pool)
+}
+
+func testAccCheckScalewayK8SPoolBetaConfigPlacementGroup(version string) string {
+	return fmt.Sprintf(`
+resource "scaleway_instance_placement_group" "placement_group" {
+  name        = "pool-placement-group"
+  policy_type = "max_availability"
+  policy_mode = "optional"
+}
+
+resource "scaleway_k8s_pool_beta" "placement_group" {
+    name = "placement_group"
+	cluster_id = scaleway_k8s_cluster_beta.placement_group.id
+	node_type = "gp1_xs"
+	placement_group_id = scaleway_instance_placement_group.placement_group.id
+	size = 1
+}
+
+resource "scaleway_k8s_cluster_beta" "placement_group" {
+    name = "placement_group"
+	cni = "calico"
+	version = "%s"
+	default_pool {
+		node_type = "gp1_xs"
+		size = 1
+	}
+	tags = [ "terraform-test", "scaleway_k8s_cluster_beta", "placement_group" ]
+}`, version)
 }
