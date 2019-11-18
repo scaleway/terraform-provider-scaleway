@@ -23,13 +23,13 @@ type Config struct {
 }
 
 type Profile struct {
-	AccessKey        *string `yaml:"access_key,omitempty"`
-	SecretKey        *string `yaml:"secret_key,omitempty"`
-	APIURL           *string `yaml:"api_url,omitempty"`
-	Insecure         *bool   `yaml:"insecure,omitempty"`
+	AccessKey             *string `yaml:"access_key,omitempty"`
+	SecretKey             *string `yaml:"secret_key,omitempty"`
+	APIURL                *string `yaml:"api_url,omitempty"`
+	Insecure              *bool   `yaml:"insecure,omitempty"`
 	DefaultOrganizationID *string `yaml:"default_organization_id,omitempty"`
-	DefaultRegion    *string `yaml:"default_region,omitempty"`
-	DefaultZone      *string `yaml:"default_zone,omitempty"`
+	DefaultRegion         *string `yaml:"default_region,omitempty"`
+	DefaultZone           *string `yaml:"default_zone,omitempty"`
 }
 
 func (p *Profile) String() string {
@@ -124,7 +124,8 @@ func (c *Config) GetProfile(profileName string) (*Profile, error) {
 		return nil, errors.New("given profile %s does not exist", profileName)
 	}
 
-	return p, nil
+	// Merge selected profile on top of default profile
+	return MergeProfiles(&c.Profile, p), nil
 }
 
 // GetActiveProfile returns the active profile of the config based on the following order:
@@ -174,4 +175,43 @@ func (c *Config) SaveTo(path string) error {
 
 	return nil
 
+}
+
+// MergeProfiles merges profiles in a new one. The last profile has priority.
+func MergeProfiles(original *Profile, others ...*Profile) *Profile {
+	np := &Profile{
+		AccessKey:             original.AccessKey,
+		SecretKey:             original.SecretKey,
+		APIURL:                original.APIURL,
+		Insecure:              original.Insecure,
+		DefaultOrganizationID: original.DefaultOrganizationID,
+		DefaultRegion:         original.DefaultRegion,
+		DefaultZone:           original.DefaultZone,
+	}
+
+	for _, other := range others {
+		if other.AccessKey != nil {
+			np.AccessKey = other.AccessKey
+		}
+		if other.SecretKey != nil {
+			np.SecretKey = other.SecretKey
+		}
+		if other.APIURL != nil {
+			np.APIURL = other.APIURL
+		}
+		if other.Insecure != nil {
+			np.Insecure = other.Insecure
+		}
+		if other.DefaultOrganizationID != nil {
+			np.DefaultOrganizationID = other.DefaultOrganizationID
+		}
+		if other.DefaultRegion != nil {
+			np.DefaultRegion = other.DefaultRegion
+		}
+		if other.DefaultZone != nil {
+			np.DefaultZone = other.DefaultZone
+		}
+	}
+
+	return np
 }

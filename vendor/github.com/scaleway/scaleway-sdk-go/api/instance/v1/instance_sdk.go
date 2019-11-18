@@ -920,7 +920,7 @@ type SecurityGroupRule struct {
 	// Default value: accept
 	Action SecurityGroupRuleAction `json:"action"`
 
-	IPRange string `json:"ip_range"`
+	IPRange scw.IPNet `json:"ip_range"`
 
 	DestPortFrom *uint32 `json:"dest_port_from"`
 
@@ -1276,7 +1276,7 @@ type GetServerTypesAvailabilityRequest struct {
 
 // GetServerTypesAvailability get availability
 //
-// Get availibility for all server types
+// Get availibility for all server types.
 func (s *API) GetServerTypesAvailability(req *GetServerTypesAvailabilityRequest, opts ...scw.RequestOption) (*GetServerTypesAvailabilityResponse, error) {
 	var err error
 
@@ -1324,7 +1324,7 @@ type ListServersTypesRequest struct {
 
 // ListServersTypes list server types
 //
-// Get server types technical details
+// Get server types technical details.
 func (s *API) ListServersTypes(req *ListServersTypesRequest, opts ...scw.RequestOption) (*ListServersTypesResponse, error) {
 	var err error
 
@@ -1564,7 +1564,7 @@ type GetServerRequest struct {
 
 // GetServer get server
 //
-// Get the details of a specified Server
+// Get the details of a specified Server.
 func (s *API) GetServer(req *GetServerRequest, opts ...scw.RequestOption) (*GetServerResponse, error) {
 	var err error
 
@@ -1772,7 +1772,7 @@ type ListServerActionsRequest struct {
 
 // ListServerActions list server actions
 //
-// Liste all actions that can currently be performed on a server
+// Liste all actions that can currently be performed on a server.
 func (s *API) ListServerActions(req *ListServerActionsRequest, opts ...scw.RequestOption) (*ListServerActionsResponse, error) {
 	var err error
 
@@ -1816,7 +1816,7 @@ type ServerActionRequest struct {
 
 // ServerAction perform action
 //
-// Perform power related actions on a server
+// Perform power related actions on a server.
 func (s *API) ServerAction(req *ServerActionRequest, opts ...scw.RequestOption) (*ServerActionResponse, error) {
 	var err error
 
@@ -1861,7 +1861,7 @@ type ListServerUserDataRequest struct {
 
 // ListServerUserData list user data
 //
-// List all user data keys register on a given server
+// List all user data keys register on a given server.
 func (s *API) ListServerUserData(req *ListServerUserDataRequest, opts ...scw.RequestOption) (*ListServerUserDataResponse, error) {
 	var err error
 
@@ -1903,7 +1903,7 @@ type DeleteServerUserDataRequest struct {
 
 // DeleteServerUserData delete user data
 //
-// Delete the given key from a server user data
+// Delete the given key from a server user data.
 func (s *API) DeleteServerUserData(req *DeleteServerUserDataRequest, opts ...scw.RequestOption) error {
 	var err error
 
@@ -1955,7 +1955,7 @@ type ListImagesRequest struct {
 
 // ListImages list images
 //
-// List all images available in an account
+// List all images available in an account.
 func (s *API) ListImages(req *ListImagesRequest, opts ...scw.RequestOption) (*ListImagesResponse, error) {
 	var err error
 
@@ -2152,7 +2152,7 @@ type SetImageRequest struct {
 
 // setImage update image
 //
-// Replace all image properties with an image message
+// Replace all image properties with an image message.
 func (s *API) setImage(req *SetImageRequest, opts ...scw.RequestOption) (*setImageResponse, error) {
 	var err error
 
@@ -2423,7 +2423,7 @@ type SetSnapshotRequest struct {
 
 // setSnapshot update snapshot
 //
-// Replace all snapshot properties with a snapshot message
+// Replace all snapshot properties with a snapshot message.
 func (s *API) setSnapshot(req *SetSnapshotRequest, opts ...scw.RequestOption) (*setSnapshotResponse, error) {
 	var err error
 
@@ -2744,7 +2744,7 @@ type ListSecurityGroupsRequest struct {
 
 // ListSecurityGroups list security groups
 //
-// List all security groups available in an account
+// List all security groups available in an account.
 func (s *API) ListSecurityGroups(req *ListSecurityGroupsRequest, opts ...scw.RequestOption) (*ListSecurityGroupsResponse, error) {
 	var err error
 
@@ -2981,7 +2981,7 @@ type setSecurityGroupRequest struct {
 
 // setSecurityGroup update security group
 //
-// Replace all security group properties with a security group message
+// Replace all security group properties with a security group message.
 func (s *API) setSecurityGroup(req *setSecurityGroupRequest, opts ...scw.RequestOption) (*setSecurityGroupResponse, error) {
 	var err error
 
@@ -3111,7 +3111,7 @@ type CreateSecurityGroupRuleRequest struct {
 	// Default value: accept
 	Action SecurityGroupRuleAction `json:"action"`
 
-	IPRange string `json:"ip_range,omitempty"`
+	IPRange scw.IPNet `json:"ip_range,omitempty"`
 
 	DestPortFrom *uint32 `json:"dest_port_from,omitempty"`
 
@@ -3270,7 +3270,7 @@ type setSecurityGroupRuleRequest struct {
 	// Default value: accept
 	Action SecurityGroupRuleAction `json:"action"`
 
-	IPRange string `json:"ip_range"`
+	IPRange scw.IPNet `json:"ip_range"`
 
 	DestPortFrom *uint32 `json:"dest_port_from"`
 
@@ -3338,7 +3338,7 @@ type ListPlacementGroupsRequest struct {
 
 // ListPlacementGroups list placement groups
 //
-// List all placement groups
+// List all placement groups.
 func (s *API) ListPlacementGroups(req *ListPlacementGroupsRequest, opts ...scw.RequestOption) (*ListPlacementGroupsResponse, error) {
 	var err error
 
@@ -3415,7 +3415,7 @@ type CreatePlacementGroupRequest struct {
 
 // CreatePlacementGroup create placement group
 //
-// Create a new placement group
+// Create a new placement group.
 func (s *API) CreatePlacementGroup(req *CreatePlacementGroupRequest, opts ...scw.RequestOption) (*CreatePlacementGroupResponse, error) {
 	var err error
 
@@ -3465,7 +3465,7 @@ type GetPlacementGroupRequest struct {
 
 // GetPlacementGroup get placement group
 //
-// Get the given placement group
+// Get the given placement group.
 func (s *API) GetPlacementGroup(req *GetPlacementGroupRequest, opts ...scw.RequestOption) (*GetPlacementGroupResponse, error) {
 	var err error
 
@@ -3517,7 +3517,7 @@ type SetPlacementGroupRequest struct {
 
 // SetPlacementGroup set placement group
 //
-// Set all parameters of the given placement group
+// Set all parameters of the given placement group.
 func (s *API) SetPlacementGroup(req *SetPlacementGroupRequest, opts ...scw.RequestOption) (*SetPlacementGroupResponse, error) {
 	var err error
 
@@ -3579,7 +3579,7 @@ type UpdatePlacementGroupRequest struct {
 
 // UpdatePlacementGroup update placement group
 //
-// Update one or more parameter of the given placement group
+// Update one or more parameter of the given placement group.
 func (s *API) UpdatePlacementGroup(req *UpdatePlacementGroupRequest, opts ...scw.RequestOption) (*UpdatePlacementGroupResponse, error) {
 	var err error
 
@@ -3624,7 +3624,7 @@ type DeletePlacementGroupRequest struct {
 
 // DeletePlacementGroup delete the given placement group
 //
-// Delete the given placement group
+// Delete the given placement group.
 func (s *API) DeletePlacementGroup(req *DeletePlacementGroupRequest, opts ...scw.RequestOption) error {
 	var err error
 
@@ -3662,7 +3662,7 @@ type GetPlacementGroupServersRequest struct {
 
 // GetPlacementGroupServers get placement group servers
 //
-// Get all servers belonging to the given placement group
+// Get all servers belonging to the given placement group.
 func (s *API) GetPlacementGroupServers(req *GetPlacementGroupServersRequest, opts ...scw.RequestOption) (*GetPlacementGroupServersResponse, error) {
 	var err error
 
@@ -3704,7 +3704,7 @@ type SetPlacementGroupServersRequest struct {
 
 // SetPlacementGroupServers set placement group servers
 //
-// Set all servers belonging to the given placement group
+// Set all servers belonging to the given placement group.
 func (s *API) SetPlacementGroupServers(req *SetPlacementGroupServersRequest, opts ...scw.RequestOption) (*SetPlacementGroupServersResponse, error) {
 	var err error
 
@@ -3751,7 +3751,7 @@ type UpdatePlacementGroupServersRequest struct {
 
 // UpdatePlacementGroupServers update placement group servers
 //
-// Update all servers belonging to the given placement group
+// Update all servers belonging to the given placement group.
 func (s *API) UpdatePlacementGroupServers(req *UpdatePlacementGroupServersRequest, opts ...scw.RequestOption) (*UpdatePlacementGroupServersResponse, error) {
 	var err error
 
@@ -3913,7 +3913,7 @@ type GetIPRequest struct {
 
 // GetIP get IP
 //
-// Get details of an IP with the given ID or address
+// Get details of an IP with the given ID or address.
 func (s *API) GetIP(req *GetIPRequest, opts ...scw.RequestOption) (*GetIPResponse, error) {
 	var err error
 

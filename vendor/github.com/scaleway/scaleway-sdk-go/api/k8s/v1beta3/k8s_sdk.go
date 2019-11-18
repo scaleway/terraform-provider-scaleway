@@ -506,6 +506,8 @@ type Pool struct {
 	MinSize uint32 `json:"min_size"`
 	// MaxSize display upper limit for this pool
 	MaxSize uint32 `json:"max_size"`
+	// PlacementGroupID iD of the placement group if any
+	PlacementGroupID *string `json:"placement_group_id"`
 
 	CreatedAt time.Time `json:"created_at"`
 

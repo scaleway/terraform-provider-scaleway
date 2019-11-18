@@ -100,7 +100,7 @@ type UpdateSecurityGroupRuleRequest struct {
 	Protocol  *SecurityGroupRuleProtocol  `json:"protocol"`
 	Direction *SecurityGroupRuleDirection `json:"direction"`
 	Action    *SecurityGroupRuleAction    `json:"action"`
-	IPRange   *string                     `json:"ip_range"`
+	IPRange   *scw.IPNet                  `json:"ip_range"`
 	Position  *uint32                     `json:"position"`
 
 	// If set to 0, DestPortFrom will be removed.
