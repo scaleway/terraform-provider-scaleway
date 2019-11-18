@@ -163,5 +163,15 @@ func resourceScalewayLbBetaDelete(d *schema.ResourceData, m interface{}) error {
 		return err
 	}
 
+	_, err = lbAPI.WaitForLb(&lb.WaitForLbRequest{
+		LbID:    ID,
+		Region:  region,
+		Timeout: LbWaitForTimeout,
+	})
+
+	if err != nil && !is404Error(err) {
+		return err
+	}
+
 	return nil
 }

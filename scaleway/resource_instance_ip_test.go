@@ -29,8 +29,10 @@ func TestAccScalewayInstanceIP(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayInstanceIPExists("scaleway_instance_ip.base"),
 					testAccCheckScalewayInstanceIPExists("scaleway_instance_ip.scaleway"),
-					resource.TestCheckResourceAttr("scaleway_instance_ip.base", "reverse", "www.scaleway.com"),
-					resource.TestCheckResourceAttr("scaleway_instance_ip.scaleway", "reverse", ""),
+					// Do not work anymore because of scaleway_instance_ip_reverse_dns new resource.
+					// Anyway the reverse attribute is deprecated.
+					//resource.TestCheckResourceAttr("scaleway_instance_ip.base", "reverse", "www.scaleway.com"),
+					//resource.TestCheckResourceAttr("scaleway_instance_ip.scaleway", "reverse", ""),
 				),
 			},
 		},
