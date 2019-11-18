@@ -157,7 +157,7 @@ resource "scaleway_instance_placement_group" "placement_group" {
 
 resource "scaleway_k8s_pool_beta" "placement_group" {
     name = "placement_group"
-	cluster_id = "${scaleway_k8s_cluster_beta.placement_group.id}"
+	cluster_id = scaleway_k8s_cluster_beta.placement_group.id
 	node_type = "gp1_xs"
 	placement_group_id = scaleway_instance_placement_group.placement_group.id
 	size = 1
