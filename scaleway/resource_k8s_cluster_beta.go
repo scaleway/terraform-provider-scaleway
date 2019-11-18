@@ -301,7 +301,7 @@ func resourceScalewayK8SClusterBetaCreate(d *schema.ResourceData, m interface{})
 	}
 
 	if placementGroupID, ok := d.GetOk("default_pool.0.placement_group_id"); ok {
-		defaultPoolReq.PlacementGroupID = scw.StringPtr(placementGroupID.(string))
+		defaultPoolReq.PlacementGroupID = scw.StringPtr(expandID(placementGroupID.(string)))
 	}
 
 	defaultPoolReq.MinSize = scw.Uint32Ptr(uint32(d.Get("default_pool.0.min_size").(int)))
@@ -350,7 +350,7 @@ func resourceScalewayK8SClusterBetaDefaultPoolRead(d *schema.ResourceData, m int
 	if defaultPoolID, ok := d.GetOk("default_pool.0.pool_id"); ok {
 		poolResp, err := k8sAPI.GetPool(&k8s.GetPoolRequest{
 			Region: region,
-			PoolID: defaultPoolID.(string),
+			PoolID: expandID(defaultPoolID.(string)),
 		})
 		if err != nil {
 			return err
@@ -373,7 +373,7 @@ func resourceScalewayK8SClusterBetaDefaultPoolRead(d *schema.ResourceData, m int
 	}
 
 	defaultPool := map[string]interface{}{}
-	defaultPool["pool_id"] = pool.ID
+	defaultPool["pool_id"] = newRegionalId(region, pool.ID)
 	defaultPool["node_type"] = pool.NodeType
 	defaultPool["autoscaling"] = pool.Autoscaling
 	defaultPool["autohealing"] = pool.Autohealing
@@ -487,7 +487,7 @@ func resourceScalewayK8SClusterBetaDefaultPoolUpdate(d *schema.ResourceData, m i
 
 		updateRequest := &k8s.UpdatePoolRequest{
 			Region: region,
-			PoolID: defaultPoolID,
+			PoolID: expandID(defaultPoolID),
 		}
 
 		if autohealing, ok := d.GetOk("default_pool.0.autohealing"); ok {
@@ -527,7 +527,7 @@ func resourceScalewayK8SClusterBetaDefaultPoolUpdate(d *schema.ResourceData, m i
 				Size:        uint32(d.Get("default_pool.0.size").(int)),
 			}
 			if placementGroupID, ok := d.GetOk("default_pool.0.placement_group_id"); ok {
-				defaultPoolRequest.PlacementGroupID = scw.StringPtr(placementGroupID.(string))
+				defaultPoolRequest.PlacementGroupID = scw.StringPtr(expandID(placementGroupID.(string)))
 			}
 
 			if minSize, ok := d.GetOk("default_pool.0.min_size"); ok {
@@ -547,7 +547,7 @@ func resourceScalewayK8SClusterBetaDefaultPoolUpdate(d *schema.ResourceData, m i
 				return err
 			}
 			defaultPool := map[string]interface{}{}
-			defaultPool["pool_id"] = defaultPoolRes.ID
+			defaultPool["pool_id"] = newRegionalId(region, defaultPoolRes.ID)
 
 			d.Set("default_pool", []map[string]interface{}{defaultPool})
 
