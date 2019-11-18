@@ -201,6 +201,30 @@ func TestAccScalewayK8SClusterBetaDefaultPool(t *testing.T) {
 	})
 }
 
+func TestAccScalewayK8SClusterBetaDefaultPoolWithPlacementGroup(t *testing.T) {
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckScalewayK8SClusterBetaDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckScalewayK8SClusterBetaConfigPoolWithPlacementGroup("1.16.0"),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayK8SClusterBetaExists("scaleway_k8s_cluster_beta.pool_placement_group"),
+					resource.TestCheckResourceAttr("scaleway_k8s_cluster_beta.pool_placement_group", "status", k8s.ClusterStatusReady.String()),
+					resource.TestCheckResourceAttrSet("scaleway_k8s_cluster_beta.pool_placement_group", "default_pool.0.pool_id"),
+					resource.TestCheckResourceAttrSet("scaleway_k8s_cluster_beta.pool_placement_group", "default_pool.0.placement_group_id"),
+					resource.TestCheckResourceAttr("scaleway_k8s_cluster_beta.pool_placement_group", "default_pool.0.size", "1"),
+					resource.TestCheckResourceAttr("scaleway_k8s_cluster_beta.pool_placement_group", "default_pool.0.node_type", "gp1_xs"),
+					resource.TestCheckResourceAttr("scaleway_k8s_cluster_beta.pool_placement_group", "tags.0", "terraform-test"),
+					resource.TestCheckResourceAttr("scaleway_k8s_cluster_beta.pool_placement_group", "tags.1", "scaleway_k8s_cluster_beta"),
+					resource.TestCheckResourceAttr("scaleway_k8s_cluster_beta.pool_placement_group", "tags.2", "default-pool-placement-group"),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckScalewayK8SClusterBetaDestroy(s *terraform.State) error {
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "scaleway_k8s_cluster_beta" {
@@ -323,5 +347,26 @@ resource "scaleway_k8s_cluster_beta" "pool" {
 		container_runtime = "docker"
 	}
 	tags = [ "terraform-test", "scaleway_k8s_cluster_beta", "default-pool" ]
+}`, version)
+}
+
+func testAccCheckScalewayK8SClusterBetaConfigPoolWithPlacementGroup(version string) string {
+	return fmt.Sprintf(`
+resource "scaleway_instance_placement_group" "pool_placement_group" {
+  name        = "pool-placement-group"
+  policy_type = "max_availability"
+  policy_mode = "optional"
+}
+
+resource "scaleway_k8s_cluster_beta" "pool_placement_group" {
+	cni = "calico"
+	version = "%s"
+	name = "default-pool-placement-group"
+	default_pool {
+		node_type = "gp1_xs"
+		size = 1
+		placement_group_id = scaleway_instance_placement_group.pool_placement_group.id
+	}
+	tags = [ "terraform-test", "scaleway_k8s_cluster_beta", "default-pool-placement-group" ]
 }`, version)
 }
