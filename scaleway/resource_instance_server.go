@@ -237,7 +237,7 @@ func resourceScalewayInstanceServerCreate(d *schema.ResourceData, m interface{})
 		Image:             image,
 		CommercialType:    commercialType,
 		EnableIPv6:        d.Get("enable_ipv6").(bool),
-		SecurityGroup:     scw.StringPtr(expandID(d.Get("security_group_id"))),
+		SecurityGroup:     expandStringPtr(expandID(d.Get("security_group_id"))),
 		DynamicIPRequired: Bool(!d.Get("disable_dynamic_ip").(bool)),
 	}
 

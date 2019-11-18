@@ -10,7 +10,6 @@ import (
 )
 
 func TestAccScalewayLbFrontendBeta(t *testing.T) {
-	t.Skip("API throw 500 error when GET a deleted backend. Skip for now.")
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
@@ -20,7 +19,7 @@ func TestAccScalewayLbFrontendBeta(t *testing.T) {
 				Config: `
 					resource scaleway_lb_beta lb01 {
 						name = "test-lb"
-						type = "LB-S"
+						type = "lb-s"
 					}
 					resource scaleway_lb_backend_beta bkd01 {
 						lb_id = scaleway_lb_beta.lb01.id
@@ -44,7 +43,7 @@ func TestAccScalewayLbFrontendBeta(t *testing.T) {
 				Config: `
 					resource scaleway_lb_beta lb01 {
 						name = "test-lb"
-						type = "LB-S"
+						type = "lb-s"
 					}
 					resource scaleway_lb_backend_beta bkd01 {
 						lb_id = scaleway_lb_beta.lb01.id

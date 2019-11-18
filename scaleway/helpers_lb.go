@@ -1,9 +1,15 @@
 package scaleway
 
 import (
+	"time"
+
 	"github.com/hashicorp/terraform/helper/schema"
 	lb "github.com/scaleway/scaleway-sdk-go/api/lb/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+)
+
+const (
+	LbWaitForTimeout = 10 * time.Minute
 )
 
 // getLbAPI returns a new lb API
