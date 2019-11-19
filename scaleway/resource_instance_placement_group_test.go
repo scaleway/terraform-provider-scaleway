@@ -21,9 +21,9 @@ func TestAccScalewayInstancePlacementGroup(t *testing.T) {
 					testAccCheckScalewayInstancePlacementGroupExists("scaleway_instance_placement_group.base"),
 					testAccCheckScalewayInstancePlacementGroupExists("scaleway_instance_placement_group.scaleway"),
 					resource.TestCheckResourceAttr("scaleway_instance_placement_group.base", "policy_mode", "optional"),
-					resource.TestCheckResourceAttr("scaleway_instance_placement_group.base", "policy_type", "low_latency"),
+					resource.TestCheckResourceAttr("scaleway_instance_placement_group.base", "policy_type", "max_availability"),
 					resource.TestCheckResourceAttr("scaleway_instance_placement_group.scaleway", "policy_mode", "enforced"),
-					resource.TestCheckResourceAttr("scaleway_instance_placement_group.scaleway", "policy_type", "max_availability"),
+					resource.TestCheckResourceAttr("scaleway_instance_placement_group.scaleway", "policy_type", "low_latency"),
 					resource.TestCheckResourceAttr("scaleway_instance_placement_group.scaleway", "policy_respected", "true"),
 				),
 			},
@@ -33,10 +33,10 @@ func TestAccScalewayInstancePlacementGroup(t *testing.T) {
 					testAccCheckScalewayInstancePlacementGroupExists("scaleway_instance_placement_group.base"),
 					testAccCheckScalewayInstancePlacementGroupExists("scaleway_instance_placement_group.scaleway"),
 					resource.TestCheckResourceAttr("scaleway_instance_placement_group.base", "policy_mode", "enforced"),
-					resource.TestCheckResourceAttr("scaleway_instance_placement_group.base", "policy_type", "max_availability"),
+					resource.TestCheckResourceAttr("scaleway_instance_placement_group.base", "policy_type", "low_latency"),
 					resource.TestCheckResourceAttr("scaleway_instance_placement_group.base", "policy_respected", "true"),
 					resource.TestCheckResourceAttr("scaleway_instance_placement_group.scaleway", "policy_mode", "optional"),
-					resource.TestCheckResourceAttr("scaleway_instance_placement_group.scaleway", "policy_type", "low_latency"),
+					resource.TestCheckResourceAttr("scaleway_instance_placement_group.scaleway", "policy_type", "max_availability"),
 				),
 			},
 		},
@@ -104,13 +104,13 @@ var testAccScalewayInstancePlacementGroupConfig = []string{
 		resource "scaleway_instance_placement_group" "base" {}
 		resource "scaleway_instance_placement_group" "scaleway" {
 			policy_mode = "enforced"
-			policy_type = "max_availability"
+			policy_type = "low_latency"
 		}
 	`,
 	`
 		resource "scaleway_instance_placement_group" "base" {
 			policy_mode = "enforced"
-			policy_type = "max_availability"
+			policy_type = "low_latency"
 		}
 		resource "scaleway_instance_placement_group" "scaleway" {}
 	`,
