@@ -274,6 +274,13 @@ func newRegionalId(region scw.Region, id string) string {
 	return fmt.Sprintf("%s/%s", region, id)
 }
 
+// newZonedIdFromRegion constructs a unique identifier based on resource region and id
+// but returns a zoned ID with the first zone in the region, i.e. adding `-1` to the region
+// TODO this function is a quick fix
+func newZonedIdFromRegion(region scw.Region, id string) string {
+	return fmt.Sprintf("%s-1/%s", region, id)
+}
+
 // terraformResourceData is an interface for *schema.ResourceData. (used for mock)
 type terraformResourceData interface {
 	HasChange(string) bool
