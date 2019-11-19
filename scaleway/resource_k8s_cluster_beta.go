@@ -385,6 +385,10 @@ func resourceScalewayK8SClusterBetaDefaultPoolRead(d *schema.ResourceData, m int
 	defaultPool["updated_at"] = pool.UpdatedAt.String()
 	defaultPool["status"] = pool.Status.String()
 
+	if pool.PlacementGroupID != nil {
+		defaultPool["placement_group_id"] = newRegionalId(region, *pool.PlacementGroupID)
+	}
+
 	err = d.Set("default_pool", []map[string]interface{}{defaultPool})
 	if err != nil {
 		return err

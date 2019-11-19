@@ -185,6 +185,10 @@ func resourceScalewayK8SPoolBetaRead(d *schema.ResourceData, m interface{}) erro
 	d.Set("created_at", pool.CreatedAt)
 	d.Set("updated_at", pool.UpdatedAt)
 
+	if pool.PlacementGroupID != nil {
+		d.Set("placement_group_id", newRegionalId(region, *pool.PlacementGroupID))
+	}
+
 	return nil
 }
 
