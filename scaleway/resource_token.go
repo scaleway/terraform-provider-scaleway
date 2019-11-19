@@ -1,7 +1,7 @@
 package scaleway
 
 import (
-	"github.com/hashicorp/terraform/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	api "github.com/nicolai86/scaleway-sdk"
 )
 
