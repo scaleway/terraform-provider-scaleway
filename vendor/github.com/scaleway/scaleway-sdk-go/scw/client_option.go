@@ -2,10 +2,11 @@ package scw
 
 import (
 	"net/http"
-	"net/url"
+	"strings"
 
 	"github.com/scaleway/scaleway-sdk-go/internal/auth"
 	"github.com/scaleway/scaleway-sdk-go/internal/errors"
+	"github.com/scaleway/scaleway-sdk-go/validation"
 )
 
 // ClientOption is a function which applies options to a settings object.
@@ -170,30 +171,70 @@ func (s *settings) apply(opts []ClientOption) {
 }
 
 func (s *settings) validate() error {
-	var err error
+	// Auth.
 	if s.token == nil {
-		return errors.New("no credential option provided")
+		// It should not happen, WithoutAuth option is used by default.
+		panic(errors.New("no credential option provided"))
+	}
+	if token, isToken := s.token.(*auth.Token); isToken {
+		if token.AccessKey == "" {
+			return NewInvalidClientOptionError("access key cannot be empty")
+		}
+		if !validation.IsAccessKey(token.AccessKey) {
+			return NewInvalidClientOptionError("invalid access key format '%s', expected SCWXXXXXXXXXXXXXXXXX format", token.AccessKey)
+		}
+		if token.SecretKey == "" {
+			return NewInvalidClientOptionError("secret key cannot be empty")
+		}
+		if !validation.IsSecretKey(token.SecretKey) {
+			return NewInvalidClientOptionError("invalid secret key format '%s', expected a UUID: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx", token.SecretKey)
+		}
 	}
 
-	_, err = url.Parse(s.apiURL)
-	if err != nil {
-		return errors.Wrap(err, "invalid url %s", s.apiURL)
+	// Default Organization ID.
+	if s.defaultOrganizationID != nil {
+		if *s.defaultOrganizationID == "" {
+			return NewInvalidClientOptionError("default organization ID cannot be empty")
+		}
+		if !validation.IsOrganizationID(*s.defaultOrganizationID) {
+			return NewInvalidClientOptionError("invalid organization ID format '%s', expected a UUID: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx", *s.defaultOrganizationID)
+		}
 	}
 
-	// TODO: Check OrganizationID format
-	if s.defaultOrganizationID != nil && *s.defaultOrganizationID == "" {
-		return errors.New("default organization id cannot be empty")
+	// Default Region.
+	if s.defaultRegion != nil {
+		if *s.defaultRegion == "" {
+			return NewInvalidClientOptionError("default region cannot be empty")
+		}
+		if !validation.IsRegion(string(*s.defaultRegion)) {
+			regions := []string(nil)
+			for _, r := range AllRegions {
+				regions = append(regions, string(r))
+			}
+			return NewInvalidClientOptionError("invalid default region format '%s', available regions are: %s", *s.defaultRegion, strings.Join(regions, ", "))
+		}
 	}
 
-	// TODO: Check Region format
-	if s.defaultRegion != nil && *s.defaultRegion == "" {
-		return errors.New("default region cannot be empty")
+	// Default Zone.
+	if s.defaultZone != nil {
+		if *s.defaultZone == "" {
+			return NewInvalidClientOptionError("default zone cannot be empty")
+		}
+		if !validation.IsZone(string(*s.defaultZone)) {
+			zones := []string(nil)
+			for _, z := range AllZones {
+				zones = append(zones, string(z))
+			}
+			return NewInvalidClientOptionError("invalid default zone format '%s', available zones are: %s", *s.defaultZone, strings.Join(zones, ", "))
+		}
 	}
 
-	// TODO: Check Zone format
-	if s.defaultZone != nil && *s.defaultZone == "" {
-		return errors.New("default zone cannot be empty")
+	// API URL.
+	if !validation.IsURL(s.apiURL) {
+		return NewInvalidClientOptionError("invalid url %s", s.apiURL)
 	}
+
+	// TODO: check for max s.defaultPageSize
 
 	return nil
 }
