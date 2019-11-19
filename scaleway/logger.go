@@ -3,7 +3,7 @@ package scaleway
 import (
 	"log"
 
-	"github.com/hashicorp/terraform/helper/logging"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/logging"
 	sdkLogger "github.com/scaleway/scaleway-sdk-go/logger"
 )
 

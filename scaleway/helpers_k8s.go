@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/hashicorp/terraform/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	k8s "github.com/scaleway/scaleway-sdk-go/api/k8s/v1beta3"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 )

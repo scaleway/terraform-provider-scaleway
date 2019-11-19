@@ -3,8 +3,8 @@ package scaleway
 import (
 	"math"
 
-	"github.com/hashicorp/terraform/helper/schema"
-	"github.com/hashicorp/terraform/helper/validation"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
 	"github.com/scaleway/scaleway-sdk-go/api/lb/v1"
 )
 
