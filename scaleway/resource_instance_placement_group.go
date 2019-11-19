@@ -26,7 +26,7 @@ func resourceScalewayInstancePlacementGroup() *schema.Resource {
 			"policy_type": {
 				Type:        schema.TypeString,
 				Optional:    true,
-				Default:     instance.PlacementGroupPolicyTypeLowLatency.String(),
+				Default:     instance.PlacementGroupPolicyTypeMaxAvailability.String(),
 				Description: "The operating mode is selected by a policy_type",
 				ValidateFunc: validation.StringInSlice([]string{
 					instance.PlacementGroupPolicyTypeLowLatency.String(),
