@@ -274,6 +274,7 @@ func newRegionalId(region scw.Region, id string) string {
 	return fmt.Sprintf("%s/%s", region, id)
 }
 
+// deprecated and should not be used
 // newZonedIdFromRegion constructs a unique identifier based on resource region and id
 // but returns a zoned ID with the first zone in the region, i.e. adding `-1` to the region
 // TODO this function is a quick fix
