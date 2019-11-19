@@ -5,7 +5,7 @@ import (
 	"log"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"github.com/nicolai86/scaleway-sdk"
+	api "github.com/nicolai86/scaleway-sdk"
 )
 
 func dataSourceScalewayVolume() *schema.Resource {
