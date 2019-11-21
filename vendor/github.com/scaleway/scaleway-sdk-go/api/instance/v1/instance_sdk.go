@@ -1380,6 +1380,10 @@ type ListServersRequest struct {
 	WithoutIP *bool `json:"-"`
 	// CommercialType list servers of this commercial type
 	CommercialType *string `json:"-"`
+	// State list servers in this state
+	//
+	// Default value: running
+	State *ServerState `json:"-"`
 }
 
 // ListServers list servers
@@ -1404,6 +1408,7 @@ func (s *API) ListServers(req *ListServersRequest, opts ...scw.RequestOption) (*
 	parameter.AddToQuery(query, "private_ip", req.PrivateIP)
 	parameter.AddToQuery(query, "without_ip", req.WithoutIP)
 	parameter.AddToQuery(query, "commercial_type", req.CommercialType)
+	parameter.AddToQuery(query, "state", req.State)
 
 	if fmt.Sprint(req.Zone) == "" {
 		return nil, errors.New("field Zone cannot be empty in request")
