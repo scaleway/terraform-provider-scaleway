@@ -63,14 +63,9 @@ resource "scaleway_instance_security_group" "www" {
   }
 }
 
-data "scaleway_image" "ubuntu" {
-    architecture = "x86_64"
-    name = "Ubuntu Bionic"
-}
-
 resource "scaleway_instance_server" "web" {
   type = "DEV1-L"
-  image = "${data.scaleway_image.ubuntu.id}"
+  image = "ubuntu-bionic"
 
   tags = [ "front", "web" ]
 
