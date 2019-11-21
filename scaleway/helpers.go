@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"net"
 	"net/http"
 	"regexp"
 	"strings"
@@ -541,6 +542,13 @@ func expandStrings(data interface{}) []string {
 		stringSlice = append(stringSlice, s.(string))
 	}
 	return stringSlice
+}
+
+func flattenIPPtr(ip *net.IP) interface{} {
+	if ip == nil {
+		return ""
+	}
+	return ip.String()
 }
 
 func flattenStringPtr(s *string) interface{} {

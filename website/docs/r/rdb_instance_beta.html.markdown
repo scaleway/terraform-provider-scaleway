@@ -33,7 +33,7 @@ The following arguments are supported:
 
 - `node_type` - (Required) The type of database instance you want to create (e.g. `db-dev-s`).
 
-~> **Important:** Updates to `node_type` will recreate the Database Instance.
+~> **Important:** Updates to `node_type` will upgrade the Database Instance to the desired `node_type` without any interruption.
 
 - `engine` - (Required) Database Instance's engine version (e.g. `PostgreSQL-11`).
 
@@ -67,6 +67,14 @@ The following arguments are supported:
 In addition to all arguments above, the following attributes are exported:
 
 - `id` - The ID of the Database Instance.
+- `endpoint_ip` - The IP of the Database Instance.
+- `endpoint_port` - The IP of the Database Instance.
+- `read_replicas` - List of read replicas of the database instance. 
+  - `ip` - IP of the replica.
+  - `port` - Port of the replica.
+  - `name` - Name of the replica.
+- `certificate` - Certificate of the database instance.
+- `backup_schedule_frequency` - Backup schedule frequency in hour.
 
 
 ## Import

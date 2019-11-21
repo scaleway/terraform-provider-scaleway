@@ -40,6 +40,10 @@ func TestAccScalewayRdbInstanceBeta(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_rdb_instance_beta.main", "tags.0", "terraform-test"),
 					resource.TestCheckResourceAttr("scaleway_rdb_instance_beta.main", "tags.1", "scaleway_rdb_instance_beta"),
 					resource.TestCheckResourceAttr("scaleway_rdb_instance_beta.main", "tags.2", "minimal"),
+					resource.TestCheckResourceAttrSet("scaleway_rdb_instance_beta.main", "endpoint_ip"),
+					resource.TestCheckResourceAttrSet("scaleway_rdb_instance_beta.main", "endpoint_port"),
+					resource.TestCheckResourceAttrSet("scaleway_rdb_instance_beta.main", "backup_schedule_frequency"),
+					resource.TestCheckResourceAttrSet("scaleway_rdb_instance_beta.main", "certificate"),
 				),
 			},
 			{

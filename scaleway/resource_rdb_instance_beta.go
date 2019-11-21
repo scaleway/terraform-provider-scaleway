@@ -1,6 +1,8 @@
 package scaleway
 
 import (
+	"io/ioutil"
+
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/api/rdb/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
@@ -26,7 +28,6 @@ func resourceScalewayRdbInstanceBeta() *schema.Resource {
 			"node_type": {
 				Type:        schema.TypeString,
 				Required:    true,
-				ForceNew:    true,
 				Description: "The type of database instance you want to create",
 			},
 			"engine": {
@@ -67,8 +68,53 @@ func resourceScalewayRdbInstanceBeta() *schema.Resource {
 				Description: "List of tags [\"tag1\", \"tag2\", ...] attached to a database instance",
 			},
 
-			// TODO: computed (endpoint_ip,endpoint_port,read_replicas,certificate,backup_schedule)
+			// Computed
+			"endpoint_ip": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Endpoint IP of the database instance",
+			},
+			"endpoint_port": {
+				Type:        schema.TypeInt,
+				Computed:    true,
+				Description: "Endpoint port of the database instance",
+			},
+			"read_replicas": {
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "Read replicas of the database instance",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"ip": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "IP of the replica",
+						},
+						"port": {
+							Type:        schema.TypeInt,
+							Computed:    true,
+							Description: "Port of the replica",
+						},
+						"name": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Name of the replica",
+						},
+					},
+				},
+			},
+			"certificate": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Certificate of the database instance",
+			},
+			"backup_schedule_frequency": {
+				Type:        schema.TypeInt,
+				Computed:    true,
+				Description: "Backup schedule frequency in hour",
+			},
 
+			// Common
 			"region":          regionSchema(),
 			"organization_id": organizationIDSchema(),
 		},
@@ -123,7 +169,6 @@ func resourceScalewayRdbInstanceBetaRead(d *schema.ResourceData, m interface{}) 
 		Region:     region,
 		InstanceID: ID,
 	})
-
 	if err != nil {
 		if is404Error(err) {
 			d.SetId("")
@@ -140,8 +185,28 @@ func resourceScalewayRdbInstanceBetaRead(d *schema.ResourceData, m interface{}) 
 	d.Set("user_name", d.Get("user_name").(string)) // user name and
 	d.Set("password", d.Get("password").(string))   // password are immutable
 	d.Set("tags", res.Tags)
+	if res.Endpoint != nil {
+		d.Set("endpoint_ip", flattenIPPtr(res.Endpoint.IP))
+		d.Set("endpoint_port", int(res.Endpoint.Port))
+	}
+	d.Set("backup_schedule_frequency", int(res.BackupSchedule.Frequency))
+	d.Set("read_replicas", flattenRdbInstanceReadReplicas(res.ReadReplicas))
 	d.Set("region", string(region))
 	d.Set("organization_id", res.OrganizationID)
+
+	// set certificate
+	cert, err := rdbAPI.GetInstanceCertificate(&rdb.GetInstanceCertificateRequest{
+		Region:     region,
+		InstanceID: ID,
+	})
+	if err != nil {
+		return err
+	}
+	certContent, err := ioutil.ReadAll(cert.Content)
+	if err != nil {
+		return err
+	}
+	d.Set("certificate", string(certContent))
 
 	return nil
 }
@@ -168,12 +233,30 @@ func resourceScalewayRdbInstanceBetaUpdate(d *schema.ResourceData, m interface{}
 	req.Tags = scw.StringsPtr(StringSliceFromState(d.Get("tags").([]interface{}))) // due to a bug in the API Tags must always be sent for now
 	//}
 
-	// TODO: handle engine upgrade
 	_, err = rdbAPI.UpdateInstance(req)
 	if err != nil {
 		return err
 	}
 
+	if d.HasChange("node_type") {
+		_, err = rdbAPI.UpgradeInstance(&rdb.UpgradeInstanceRequest{
+			Region:     region,
+			InstanceID: ID,
+			NodeType:   d.Get("node_type").(string),
+		})
+		if err != nil {
+			return err
+		}
+
+		_, err = rdbAPI.WaitForInstance(&rdb.WaitForInstanceRequest{
+			Region:     region,
+			InstanceID: ID,
+			Timeout:    InstanceServerWaitForTimeout,
+		})
+		if err != nil {
+			return err
+		}
+	}
 	return resourceScalewayRdbInstanceBetaRead(d, m)
 }
 
