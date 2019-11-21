@@ -70,15 +70,10 @@ func resourceScalewayLbFrontendBetaCreate(d *schema.ResourceData, m interface{})
 		return err
 	}
 
-	name, ok := d.GetOk("name")
-	if !ok {
-		name = getRandomName("lb-frt")
-	}
-
 	var createReq = &lb.CreateFrontendRequest{
 		Region:        region,
 		LbID:          LbID,
-		Name:          name.(string),
+		Name:          expandOrGenerateString(d.Get("name"), "lb-frt"),
 		InboundPort:   int32(d.Get("inbound_port").(int)),
 		BackendID:     expandID(d.Get("backend_id")),
 		TimeoutClient: expandDuration(d.Get("timeout_client")),

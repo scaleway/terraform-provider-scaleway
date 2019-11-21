@@ -221,11 +221,6 @@ func resourceScalewayLbBackendBetaCreate(d *schema.ResourceData, m interface{}) 
 		return err
 	}
 
-	name, ok := d.GetOk("name")
-	if !ok {
-		name = getRandomName("lb-bkd")
-	}
-
 	healthCheckPort := d.Get("health_check_port").(int)
 	if healthCheckPort == 0 {
 		healthCheckPort = d.Get("forward_port").(int)
@@ -234,7 +229,7 @@ func resourceScalewayLbBackendBetaCreate(d *schema.ResourceData, m interface{}) 
 	createReq := &lb.CreateBackendRequest{
 		Region:                   region,
 		LbID:                     LbID,
-		Name:                     name.(string),
+		Name:                     expandOrGenerateString(d.Get("name"), "lb-bkd"),
 		ForwardProtocol:          expandLbProtocol(d.Get("forward_protocol")),
 		ForwardPort:              int32(d.Get("forward_port").(int)),
 		ForwardPortAlgorithm:     expandLbForwardPortAlgorithm(d.Get("forward_port_algorithm")),

@@ -108,15 +108,11 @@ func resourceScalewayK8SPoolBetaCreate(d *schema.ResourceData, m interface{}) er
 	////
 	// Create pool
 	////
-	name, ok := d.GetOk("name")
-	if !ok {
-		name = getRandomName("pool")
-	}
 
 	req := &k8s.CreatePoolRequest{
 		Region:      region,
 		ClusterID:   expandID(d.Get("cluster_id")),
-		Name:        name.(string),
+		Name:        expandOrGenerateString(d.Get("name"), "pool"),
 		NodeType:    d.Get("node_type").(string),
 		Autoscaling: d.Get("autoscaling").(bool),
 		Autohealing: d.Get("autohealing").(bool),

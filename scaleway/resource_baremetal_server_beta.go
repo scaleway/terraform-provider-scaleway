@@ -76,13 +76,9 @@ func resourceScalewayBaremetalServerBetaCreate(d *schema.ResourceData, m interfa
 		return err
 	}
 
-	name, ok := d.GetOk("name")
-	if !ok {
-		name = getRandomName("bm")
-	}
 	createReq := &baremetal.CreateServerRequest{
 		Zone:           zone,
-		Name:           name.(string),
+		Name:           expandOrGenerateString(d.Get("name"), "bm"),
 		OrganizationID: d.Get("organization_id").(string),
 		Description:    d.Get("description").(string),
 		OfferID:        d.Get("offer_id").(string),
