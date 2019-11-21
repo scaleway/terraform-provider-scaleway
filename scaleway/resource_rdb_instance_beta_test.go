@@ -10,6 +10,7 @@ import (
 )
 
 func TestAccScalewayRdbInstanceBeta(t *testing.T) {
+	t.Skip("Database Instance currently have a concurrent access issue so we skip this test for now.")
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
