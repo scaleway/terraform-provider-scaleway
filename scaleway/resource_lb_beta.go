@@ -79,7 +79,7 @@ func resourceScalewayLbBetaCreate(d *schema.ResourceData, m interface{}) error {
 	_, err = lbAPI.WaitForLb(&lb.WaitForLbRequest{
 		Region:  region,
 		LbID:    res.ID,
-		Timeout: BaremetalServerWaitForTimeout,
+		Timeout: InstanceServerWaitForTimeout,
 	})
 	if err != nil {
 		return err

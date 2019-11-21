@@ -21,13 +21,13 @@ func resourceScalewayRdbInstanceBeta() *schema.Resource {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Computed:    true,
-				Description: "Instance database's name",
+				Description: "Name of the database instance",
 			},
-			"type": {
+			"node_type": {
 				Type:        schema.TypeString,
 				Required:    true,
 				ForceNew:    true,
-				Description: "The type of instance node you want to create",
+				Description: "The type of database instance you want to create",
 			},
 			"engine": {
 				Type:        schema.TypeString,
@@ -40,23 +40,23 @@ func resourceScalewayRdbInstanceBeta() *schema.Resource {
 				Optional:    true,
 				ForceNew:    true,
 				Default:     false,
-				Description: "Enable or disable high availability for database instance",
+				Description: "Enable or disable high availability for the database instance",
 			},
 			"disable_backup": {
 				Type:        schema.TypeBool,
 				Optional:    true,
 				Default:     false,
-				Description: "Disable automated backup on your database instance",
+				Description: "Disable automated backup for the database instance",
 			},
 			"user_name": {
 				Type:        schema.TypeString,
 				Required:    true,
-				Description: "Identifier of the first user of your database",
+				Description: "Identifier for the first user of the database instance",
 			},
 			"password": {
 				Type:        schema.TypeString,
 				Required:    true,
-				Description: "Password for the first user",
+				Description: "Password for the first user of the database instance",
 			},
 			"tags": {
 				Type: schema.TypeList,
@@ -64,7 +64,7 @@ func resourceScalewayRdbInstanceBeta() *schema.Resource {
 					Type: schema.TypeString,
 				},
 				Optional:    true,
-				Description: "list of tags [\"tag1\", \"tag2\", ...] attached to a database instance",
+				Description: "List of tags [\"tag1\", \"tag2\", ...] attached to a database instance",
 			},
 
 			// TODO: computed (endpoint_ip,endpoint_port,read_replicas,certificate,backup_schedule)
@@ -84,8 +84,8 @@ func resourceScalewayRdbInstanceBetaCreate(d *schema.ResourceData, m interface{}
 	createReq := &rdb.CreateInstanceRequest{
 		Region:         region,
 		OrganizationID: d.Get("organization_id").(string),
-		Name:           expandOrGenerateString(d.Get("name"), "instance"),
-		NodeType:       d.Get("type").(string),
+		Name:           expandOrGenerateString(d.Get("name"), "rdb"),
+		NodeType:       d.Get("node_type").(string),
 		Engine:         d.Get("engine").(string),
 		IsHaCluster:    d.Get("is_ha_cluster").(bool),
 		DisableBackup:  d.Get("disable_backup").(bool),
@@ -104,7 +104,7 @@ func resourceScalewayRdbInstanceBetaCreate(d *schema.ResourceData, m interface{}
 	_, err = rdbAPI.WaitForInstance(&rdb.WaitForInstanceRequest{
 		Region:     region,
 		InstanceID: res.ID,
-		Timeout:    BaremetalServerWaitForTimeout,
+		Timeout:    InstanceServerWaitForTimeout,
 	})
 	if err != nil {
 		return err
@@ -133,7 +133,7 @@ func resourceScalewayRdbInstanceBetaRead(d *schema.ResourceData, m interface{}) 
 	}
 
 	d.Set("name", res.Name)
-	d.Set("type", res.NodeType)
+	d.Set("node_type", res.NodeType)
 	d.Set("engine", res.Engine)
 	d.Set("is_ha_cluster", res.IsHaCluster)
 	d.Set("disable_backup", res.BackupSchedule.Disabled)

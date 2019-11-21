@@ -19,7 +19,7 @@ func TestAccScalewayRdbInstanceBeta(t *testing.T) {
 				Config: `
 					resource scaleway_rdb_instance_beta main {
 						name = "test-rdb"
-						type = "db-dev-s"
+						node_type = "db-dev-s"
 						engine = "PostgreSQL-11"
 						is_ha_cluster = true
 						disable_backup = true
@@ -31,7 +31,7 @@ func TestAccScalewayRdbInstanceBeta(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayRdbBetaExists("scaleway_rdb_instance_beta.main"),
 					resource.TestCheckResourceAttr("scaleway_rdb_instance_beta.main", "name", "test-rdb"),
-					resource.TestCheckResourceAttr("scaleway_rdb_instance_beta.main", "type", "db-dev-s"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance_beta.main", "node_type", "db-dev-s"),
 					resource.TestCheckResourceAttr("scaleway_rdb_instance_beta.main", "engine", "PostgreSQL-11"),
 					resource.TestCheckResourceAttr("scaleway_rdb_instance_beta.main", "is_ha_cluster", "true"),
 					resource.TestCheckResourceAttr("scaleway_rdb_instance_beta.main", "disable_backup", "true"),
@@ -46,7 +46,7 @@ func TestAccScalewayRdbInstanceBeta(t *testing.T) {
 				Config: `
 					resource scaleway_rdb_instance_beta main {
 						name = "test-rdb"
-						type = "db-dev-s"
+						node_type = "db-dev-s"
 						engine = "PostgreSQL-11"
 						is_ha_cluster = true
 						disable_backup = false
@@ -58,7 +58,7 @@ func TestAccScalewayRdbInstanceBeta(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayRdbBetaExists("scaleway_rdb_instance_beta.main"),
 					resource.TestCheckResourceAttr("scaleway_rdb_instance_beta.main", "name", "test-rdb"),
-					resource.TestCheckResourceAttr("scaleway_rdb_instance_beta.main", "type", "db-dev-s"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance_beta.main", "node_type", "db-dev-s"),
 					resource.TestCheckResourceAttr("scaleway_rdb_instance_beta.main", "engine", "PostgreSQL-11"),
 					resource.TestCheckResourceAttr("scaleway_rdb_instance_beta.main", "is_ha_cluster", "true"),
 					resource.TestCheckResourceAttr("scaleway_rdb_instance_beta.main", "disable_backup", "false"),
