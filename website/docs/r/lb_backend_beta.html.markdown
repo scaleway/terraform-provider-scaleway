@@ -47,7 +47,7 @@ The following arguments are supported:
 
 - `lb_id`                       - (Required) The load-balancer ID this backend is attached to.
 ~> **Important:** Updates to `lb_id` will recreate the backend.
-- `forward_protocol`            - (Required) Backend protocol. Possible values are: `TCP` or `HTTP`.
+- `forward_protocol`            - (Required) Backend protocol. Possible values are: `tcp` or `http`.
 - `name`                        - (Optional) The name of the load-balancer backend.
 - `forward_port`                - (Required) User sessions will be forwarded to this port of backend servers.
 - `forward_port_algorithm`      - (Default: `roundrobin`) Load balancing algorithm. Possible values are: `roundrobin` and `leastconn`.
