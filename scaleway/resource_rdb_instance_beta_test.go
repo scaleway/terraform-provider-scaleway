@@ -50,7 +50,7 @@ func TestAccScalewayRdbInstanceBeta(t *testing.T) {
 				Config: `
 					resource scaleway_rdb_instance_beta main {
 						name = "test-rdb"
-						node_type = "db-dev-s"
+						node_type = "db-dev-m"
 						engine = "PostgreSQL-11"
 						is_ha_cluster = true
 						disable_backup = false

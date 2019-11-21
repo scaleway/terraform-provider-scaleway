@@ -33,7 +33,7 @@ The following arguments are supported:
 
 - `node_type` - (Required) The type of database instance you want to create (e.g. `db-dev-s`).
 
-~> **Important:** Updates to `node_type` will upgrade the Database Instance to the desired `node_type` without any interruption.
+~> **Important:** Updates to `node_type` will upgrade the Database Instance to the desired `node_type` without any interruption. Keep in mind that you cannot downgrade a Database Instance.
 
 - `engine` - (Required) Database Instance's engine version (e.g. `PostgreSQL-11`).
 

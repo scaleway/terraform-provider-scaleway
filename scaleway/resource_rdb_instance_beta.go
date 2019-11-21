@@ -108,11 +108,6 @@ func resourceScalewayRdbInstanceBeta() *schema.Resource {
 				Computed:    true,
 				Description: "Certificate of the database instance",
 			},
-			"backup_schedule_frequency": {
-				Type:        schema.TypeInt,
-				Computed:    true,
-				Description: "Backup schedule frequency in hour",
-			},
 
 			// Common
 			"region":          regionSchema(),
@@ -188,8 +183,10 @@ func resourceScalewayRdbInstanceBetaRead(d *schema.ResourceData, m interface{}) 
 	if res.Endpoint != nil {
 		d.Set("endpoint_ip", flattenIPPtr(res.Endpoint.IP))
 		d.Set("endpoint_port", int(res.Endpoint.Port))
+	} else {
+		d.Set("endpoint_ip", "")
+		d.Set("endpoint_port", 0)
 	}
-	d.Set("backup_schedule_frequency", int(res.BackupSchedule.Frequency))
 	d.Set("read_replicas", flattenRdbInstanceReadReplicas(res.ReadReplicas))
 	d.Set("region", string(region))
 	d.Set("organization_id", res.OrganizationID)
@@ -251,7 +248,7 @@ func resourceScalewayRdbInstanceBetaUpdate(d *schema.ResourceData, m interface{}
 		_, err = rdbAPI.WaitForInstance(&rdb.WaitForInstanceRequest{
 			Region:     region,
 			InstanceID: ID,
-			Timeout:    InstanceServerWaitForTimeout,
+			Timeout:    InstanceServerWaitForTimeout * 3, // upgrade takes some time
 		})
 		if err != nil {
 			return err
