@@ -180,7 +180,7 @@ func testAccCheckScalewayLbBackendBetaExists(n string) resource.TestCheckFunc {
 			return fmt.Errorf("resource not found: %s", n)
 		}
 
-		lbAPI, region, ID, err := getLbAPIWithRegionAndID(testAccProvider.Meta(), rs.Primary.ID)
+		lbAPI, region, ID, err := lbAPIWithRegionAndID(testAccProvider.Meta(), rs.Primary.ID)
 		if err != nil {
 			return err
 		}
@@ -203,7 +203,7 @@ func testAccCheckScalewayLbBackendBetaDestroy(s *terraform.State) error {
 			continue
 		}
 
-		lbAPI, region, ID, err := getLbAPIWithRegionAndID(testAccProvider.Meta(), rs.Primary.ID)
+		lbAPI, region, ID, err := lbAPIWithRegionAndID(testAccProvider.Meta(), rs.Primary.ID)
 		if err != nil {
 			return err
 		}

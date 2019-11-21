@@ -68,7 +68,7 @@ func waitForServerStartup(scaleway *api.API, serverID string) error {
 }
 
 func waitForServerState(scaleway *api.API, serverID, targetState string, pendingStates []string) error {
-	wg := getWaitForServerLock(serverID)
+	wg := waitForServerLock(serverID)
 	wg.Wait()
 
 	mu.Lock()
@@ -110,7 +110,7 @@ func waitForServerState(scaleway *api.API, serverID, targetState string, pending
 
 var waitForServer = map[string]*sync.WaitGroup{}
 
-func getWaitForServerLock(serverID string) *sync.WaitGroup {
+func waitForServerLock(serverID string) *sync.WaitGroup {
 	mu.Lock()
 	defer mu.Unlock()
 	wg, ok := waitForServer[serverID]
@@ -122,7 +122,7 @@ func getWaitForServerLock(serverID string) *sync.WaitGroup {
 }
 
 func startServer(scaleway *api.API, server *api.Server) error {
-	wg := getWaitForServerLock(server.Identifier)
+	wg := waitForServerLock(server.Identifier)
 	wg.Wait()
 
 	_, err := scaleway.PostServerAction(server.Identifier, "poweron")
@@ -135,7 +135,7 @@ func startServer(scaleway *api.API, server *api.Server) error {
 }
 
 func stopServer(scaleway *api.API, server *api.Server) error {
-	wg := getWaitForServerLock(server.Identifier)
+	wg := waitForServerLock(server.Identifier)
 	wg.Wait()
 
 	_, err := scaleway.PostServerAction(server.Identifier, "poweroff")
@@ -148,7 +148,7 @@ func stopServer(scaleway *api.API, server *api.Server) error {
 
 // deleteRunningServer terminates the server and waits until it is removed.
 func deleteRunningServer(scaleway *api.API, server *api.Server) error {
-	wg := getWaitForServerLock(server.Identifier)
+	wg := waitForServerLock(server.Identifier)
 	wg.Wait()
 
 	_, err := scaleway.PostServerAction(server.Identifier, "terminate")
@@ -184,7 +184,7 @@ func deleteStoppedServer(scaleway *api.API, server *api.Server) error {
 }
 
 func withStoppedServer(scaleway *api.API, serverID string, run func(*api.Server) error) error {
-	wg := getWaitForServerLock(serverID)
+	wg := waitForServerLock(serverID)
 	wg.Wait()
 
 	server, err := scaleway.GetServer(serverID)
@@ -289,10 +289,10 @@ type terraformResourceData interface {
 // ErrZoneNotFound is returned when no zone can be detected
 var ErrZoneNotFound = fmt.Errorf("could not detect zone. Scaleway uses regions and zones. For more information, refer to https://www.terraform.io/docs/providers/scaleway/guides/regions_and_zones.html")
 
-// getZone will try to guess the zone from the following:
+// extractZone will try to guess the zone from the following:
 //  - zone field of the resource data
 //  - default zone from config
-func getZone(d terraformResourceData, meta *Meta) (scw.Zone, error) {
+func extractZone(d terraformResourceData, meta *Meta) (scw.Zone, error) {
 
 	rawZone, exist := d.GetOkExists("zone")
 	if exist {
@@ -310,10 +310,10 @@ func getZone(d terraformResourceData, meta *Meta) (scw.Zone, error) {
 // ErrRegionNotFound is returned when no region can be detected
 var ErrRegionNotFound = fmt.Errorf("could not detect region")
 
-// getRegion will try to guess the region from the following:
+// extractRegion will try to guess the region from the following:
 //  - region field of the resource data
 //  - default region from config
-func getRegion(d terraformResourceData, meta *Meta) (scw.Region, error) {
+func extractRegion(d terraformResourceData, meta *Meta) (scw.Region, error) {
 
 	rawRegion, exist := d.GetOkExists("region")
 	if exist {
@@ -331,10 +331,10 @@ func getRegion(d terraformResourceData, meta *Meta) (scw.Region, error) {
 // ErrOrganizationIDNotFound is returned when no organization_id can be detected
 var ErrOrganizationIDNotFound = fmt.Errorf("could not detect organization_id")
 
-// getOrganizationID will try to guess the organization_id from the following:
+// organizationID will try to guess the organization_id from the following:
 //  - organization_id field of the resource data
 //  - default organization_id from config
-func getOrganizationID(d terraformResourceData, meta *Meta) (string, error) {
+func organizationID(d terraformResourceData, meta *Meta) (string, error) {
 
 	organizationID, exist := d.GetOkExists("organization_id")
 	if exist {
@@ -410,8 +410,8 @@ func regionSchema() *schema.Schema {
 	}
 }
 
-// getRandomName returns a random name prefixed for terraform.
-func getRandomName(prefix string) string {
+// newRandomName returns a random name prefixed for terraform.
+func newRandomName(prefix string) string {
 	return namegenerator.GetRandomName("tf", prefix)
 }
 
@@ -527,7 +527,7 @@ func expandDuration(data interface{}) *time.Duration {
 
 func expandOrGenerateString(data interface{}, prefix string) string {
 	if data == nil || data == "" {
-		return getRandomName(prefix)
+		return newRandomName(prefix)
 	}
 	return data.(string)
 }

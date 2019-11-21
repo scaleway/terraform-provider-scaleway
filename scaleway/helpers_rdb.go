@@ -12,23 +12,23 @@ const (
 	RdbWaitForTimeout = 10 * time.Minute
 )
 
-// getRdbAPI returns a new RDB API
-func getRdbAPI(m interface{}) *rdb.API {
+// rdbAPI returns a new RDB API
+func rdbAPI(m interface{}) *rdb.API {
 	meta := m.(*Meta)
 	return rdb.NewAPI(meta.scwClient)
 }
 
-// getRdbAPIWithRegion returns a new lb API and the region for a Create request
-func getRdbAPIWithRegion(d *schema.ResourceData, m interface{}) (*rdb.API, scw.Region, error) {
+// rdbAPIWithRegion returns a new lb API and the region for a Create request
+func rdbAPIWithRegion(d *schema.ResourceData, m interface{}) (*rdb.API, scw.Region, error) {
 	meta := m.(*Meta)
 	rdbApi := rdb.NewAPI(meta.scwClient)
 
-	region, err := getRegion(d, meta)
+	region, err := extractRegion(d, meta)
 	return rdbApi, region, err
 }
 
-// getRdbAPIWithRegionAndID returns an lb API with region and ID extracted from the state
-func getRdbAPIWithRegionAndID(m interface{}, id string) (*rdb.API, scw.Region, string, error) {
+// rdbAPIWithRegionAndID returns an lb API with region and ID extracted from the state
+func rdbAPIWithRegionAndID(m interface{}, id string) (*rdb.API, scw.Region, string, error) {
 	meta := m.(*Meta)
 	rdbApi := rdb.NewAPI(meta.scwClient)
 

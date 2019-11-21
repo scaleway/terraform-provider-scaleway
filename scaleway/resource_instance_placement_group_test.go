@@ -50,7 +50,7 @@ func testAccCheckScalewayInstancePlacementGroupExists(n string) resource.TestChe
 			return fmt.Errorf("resource not found: %s", n)
 		}
 
-		instanceApi, zone, ID, err := getInstanceAPIWithZoneAndID(testAccProvider.Meta(), rs.Primary.ID)
+		instanceApi, zone, ID, err := instanceAPIWithZoneAndID(testAccProvider.Meta(), rs.Primary.ID)
 		if err != nil {
 			return err
 		}
@@ -74,7 +74,7 @@ func testAccCheckScalewayInstancePlacementGroupDestroy(s *terraform.State) error
 			continue
 		}
 
-		instanceApi, zone, ID, err := getInstanceAPIWithZoneAndID(testAccProvider.Meta(), rs.Primary.ID)
+		instanceApi, zone, ID, err := instanceAPIWithZoneAndID(testAccProvider.Meta(), rs.Primary.ID)
 		if err != nil {
 			return err
 		}

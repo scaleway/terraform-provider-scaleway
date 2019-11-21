@@ -106,7 +106,7 @@ func resourceScalewayK8SPoolBeta() *schema.Resource {
 }
 
 func resourceScalewayK8SPoolBetaCreate(d *schema.ResourceData, m interface{}) error {
-	k8sAPI, region, err := getK8SAPIWithRegion(d, m)
+	k8sAPI, region, err := k8sAPIWithRegion(d, m)
 	if err != nil {
 		return err
 	}
@@ -154,7 +154,7 @@ func resourceScalewayK8SPoolBetaCreate(d *schema.ResourceData, m interface{}) er
 }
 
 func resourceScalewayK8SPoolBetaRead(d *schema.ResourceData, m interface{}) error {
-	k8sAPI, region, poolID, err := getK8SAPIWithRegionAndID(m, d.Id())
+	k8sAPI, region, poolID, err := k8sAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return err
 	}
@@ -195,7 +195,7 @@ func resourceScalewayK8SPoolBetaRead(d *schema.ResourceData, m interface{}) erro
 }
 
 func resourceScalewayK8SPoolBetaUpdate(d *schema.ResourceData, m interface{}) error {
-	k8sAPI, region, poolID, err := getK8SAPIWithRegionAndID(m, d.Id())
+	k8sAPI, region, poolID, err := k8sAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return err
 	}
@@ -237,7 +237,7 @@ func resourceScalewayK8SPoolBetaUpdate(d *schema.ResourceData, m interface{}) er
 }
 
 func resourceScalewayK8SPoolBetaDelete(d *schema.ResourceData, m interface{}) error {
-	k8sAPI, region, poolID, err := getK8SAPIWithRegionAndID(m, d.Id())
+	k8sAPI, region, poolID, err := k8sAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return err
 	}

@@ -6,11 +6,11 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 )
 
-// getS3ClientWithRegion returns a new S3 client with the correct region extracted from the resource data.
-func getS3ClientWithRegion(d *schema.ResourceData, m interface{}) (*s3.S3, scw.Region, error) {
+// s3ClientWithRegion returns a new S3 client with the correct region extracted from the resource data.
+func s3ClientWithRegion(d *schema.ResourceData, m interface{}) (*s3.S3, scw.Region, error) {
 	meta := m.(*Meta)
 
-	region, err := getRegion(d, meta)
+	region, err := extractRegion(d, meta)
 	if err != nil {
 		return nil, "", err
 	}
@@ -31,8 +31,8 @@ func getS3ClientWithRegion(d *schema.ResourceData, m interface{}) (*s3.S3, scw.R
 	return meta.s3Client, region, err
 }
 
-// getS3ClientWithRegion returns a new S3 client with the correct region and name extracted from the resource data.
-func getS3ClientWithRegionAndName(m interface{}, name string) (*s3.S3, scw.Region, string, error) {
+// s3ClientWithRegion returns a new S3 client with the correct region and name extracted from the resource data.
+func s3ClientWithRegionAndName(m interface{}, name string) (*s3.S3, scw.Region, string, error) {
 	meta := m.(*Meta)
 
 	region, name, err := parseRegionalID(name)

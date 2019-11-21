@@ -72,7 +72,7 @@ func resourceScalewayInstanceVolume() *schema.Resource {
 }
 
 func resourceScalewayInstanceVolumeCreate(d *schema.ResourceData, m interface{}) error {
-	instanceAPI, zone, err := getInstanceAPIWithZone(d, m)
+	instanceAPI, zone, err := instanceAPIWithZone(d, m)
 	if err != nil {
 		return err
 	}
@@ -108,7 +108,7 @@ func resourceScalewayInstanceVolumeCreate(d *schema.ResourceData, m interface{})
 }
 
 func resourceScalewayInstanceVolumeRead(d *schema.ResourceData, m interface{}) error {
-	instanceAPI, zone, id, err := getInstanceAPIWithZoneAndID(m, d.Id())
+	instanceAPI, zone, id, err := instanceAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return err
 	}
@@ -141,7 +141,7 @@ func resourceScalewayInstanceVolumeRead(d *schema.ResourceData, m interface{}) e
 }
 
 func resourceScalewayInstanceVolumeUpdate(d *schema.ResourceData, m interface{}) error {
-	instanceAPI, zone, id, err := getInstanceAPIWithZoneAndID(m, d.Id())
+	instanceAPI, zone, id, err := instanceAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return err
 	}
@@ -163,7 +163,7 @@ func resourceScalewayInstanceVolumeUpdate(d *schema.ResourceData, m interface{})
 }
 
 func resourceScalewayInstanceVolumeDelete(d *schema.ResourceData, m interface{}) error {
-	instanceAPI, zone, id, err := getInstanceAPIWithZoneAndID(m, d.Id())
+	instanceAPI, zone, id, err := instanceAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return err
 	}

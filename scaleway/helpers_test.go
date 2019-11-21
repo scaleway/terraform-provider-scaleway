@@ -193,7 +193,7 @@ func TestIs403Error(t *testing.T) {
 }
 
 func TestGetRandomName(t *testing.T) {
-	name := getRandomName("test")
+	name := newRandomName("test")
 	assert.True(t, strings.HasPrefix(name, "tf-test-"))
 }
 

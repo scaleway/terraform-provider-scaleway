@@ -214,7 +214,7 @@ func resourceScalewayInstanceServer() *schema.Resource {
 }
 
 func resourceScalewayInstanceServerCreate(d *schema.ResourceData, m interface{}) error {
-	instanceAPI, zone, err := getInstanceAPIWithZone(d, m)
+	instanceAPI, zone, err := instanceAPIWithZone(d, m)
 	if err != nil {
 		return err
 	}
@@ -270,7 +270,7 @@ func resourceScalewayInstanceServerCreate(d *schema.ResourceData, m interface{})
 		for i, volumeID := range raw.([]interface{}) {
 			req.Volumes[strconv.Itoa(i+1)] = &instance.VolumeTemplate{
 				ID:   expandID(volumeID),
-				Name: getRandomName("vol"),
+				Name: newRandomName("vol"),
 			}
 		}
 	}
@@ -324,7 +324,7 @@ func resourceScalewayInstanceServerCreate(d *schema.ResourceData, m interface{})
 }
 
 func resourceScalewayInstanceServerRead(d *schema.ResourceData, m interface{}) error {
-	instanceAPI, zone, ID, err := getInstanceAPIWithZoneAndID(m, d.Id())
+	instanceAPI, zone, ID, err := instanceAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return err
 	}
@@ -459,7 +459,7 @@ func resourceScalewayInstanceServerRead(d *schema.ResourceData, m interface{}) e
 }
 
 func resourceScalewayInstanceServerUpdate(d *schema.ResourceData, m interface{}) error {
-	instanceAPI, zone, ID, err := getInstanceAPIWithZoneAndID(m, d.Id())
+	instanceAPI, zone, ID, err := instanceAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return err
 	}
@@ -487,7 +487,7 @@ func resourceScalewayInstanceServerUpdate(d *schema.ResourceData, m interface{})
 	if d.HasChange("security_group_id") {
 		updateRequest.SecurityGroup = &instance.SecurityGroupTemplate{
 			ID:   expandID(d.Get("security_group_id")),
-			Name: getRandomName("sg"), // this value will be ignored by the API
+			Name: newRandomName("sg"), // this value will be ignored by the API
 		}
 	}
 
@@ -502,7 +502,7 @@ func resourceScalewayInstanceServerUpdate(d *schema.ResourceData, m interface{})
 	volumes := map[string]*instance.VolumeTemplate{}
 
 	if raw, ok := d.GetOk("additional_volume_ids"); d.HasChange("additional_volume_ids") && ok {
-		volumes["0"] = &instance.VolumeTemplate{ID: d.Get("root_volume.0.volume_id").(string), Name: getRandomName("vol")} // name is ignored by the API, any name will work here
+		volumes["0"] = &instance.VolumeTemplate{ID: d.Get("root_volume.0.volume_id").(string), Name: newRandomName("vol")} // name is ignored by the API, any name will work here
 
 		for i, volumeID := range raw.([]interface{}) {
 
@@ -513,7 +513,7 @@ func resourceScalewayInstanceServerUpdate(d *schema.ResourceData, m interface{})
 			}
 			volumes[strconv.Itoa(i+1)] = &instance.VolumeTemplate{
 				ID:   expandID(volumeID),
-				Name: getRandomName("vol"), // name is ignored by the API, any name will work here
+				Name: newRandomName("vol"), // name is ignored by the API, any name will work here
 			}
 		}
 
@@ -633,7 +633,7 @@ func resourceScalewayInstanceServerUpdate(d *schema.ResourceData, m interface{})
 }
 
 func resourceScalewayInstanceServerDelete(d *schema.ResourceData, m interface{}) error {
-	instanceAPI, zone, ID, err := getInstanceAPIWithZoneAndID(m, d.Id())
+	instanceAPI, zone, ID, err := instanceAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return err
 	}

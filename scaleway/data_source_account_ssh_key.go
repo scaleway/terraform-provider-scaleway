@@ -36,7 +36,7 @@ func dataSourceScalewayAccountSSHKey() *schema.Resource {
 }
 
 func dataSourceScalewayAccountSSHKeyRead(d *schema.ResourceData, m interface{}) error {
-	accountAPI := getAccountAPI(m)
+	accountAPI := accountAPI(m)
 
 	var sshKey *account.SSHKey
 	sshKeyID, ok := d.GetOk("ssh_key_id")

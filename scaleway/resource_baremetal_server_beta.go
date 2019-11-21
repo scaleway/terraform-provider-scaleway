@@ -79,14 +79,14 @@ func resourceScalewayBaremetalServerBeta() *schema.Resource {
 }
 
 func resourceScalewayBaremetalServerBetaCreate(d *schema.ResourceData, m interface{}) error {
-	baremetalAPI, zone, err := getBaremetalAPIWithZone(d, m)
+	baremetalAPI, zone, err := baremetalAPIWithZone(d, m)
 	if err != nil {
 		return err
 	}
 
 	offer := d.Get("offer").(string)
 	if !sdkValidation.IsUUID(offer) {
-		o, err := getBaremetalOfferByName(baremetalAPI, zone, offer)
+		o, err := baremetalOfferByName(baremetalAPI, zone, offer)
 		if err != nil {
 			return err
 		}
@@ -150,7 +150,7 @@ func resourceScalewayBaremetalServerBetaCreate(d *schema.ResourceData, m interfa
 }
 
 func resourceScalewayBaremetalServerBetaRead(d *schema.ResourceData, m interface{}) error {
-	baremetalAPI, zone, ID, err := getBaremetalAPIWithZoneAndID(m, d.Id())
+	baremetalAPI, zone, ID, err := baremetalAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return err
 	}
@@ -168,7 +168,7 @@ func resourceScalewayBaremetalServerBetaRead(d *schema.ResourceData, m interface
 		return err
 	}
 
-	offer, err := getBaremetalOfferByID(baremetalAPI, zone, res.OfferID)
+	offer, err := baremetalOfferByID(baremetalAPI, zone, res.OfferID)
 	if err != nil {
 		return err
 	}
@@ -188,7 +188,7 @@ func resourceScalewayBaremetalServerBetaRead(d *schema.ResourceData, m interface
 }
 
 func resourceScalewayBaremetalServerBetaUpdate(d *schema.ResourceData, m interface{}) error {
-	baremetalAPI, zone, ID, err := getBaremetalAPIWithZoneAndID(m, d.Id())
+	baremetalAPI, zone, ID, err := baremetalAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return err
 	}
@@ -247,7 +247,7 @@ func resourceScalewayBaremetalServerBetaUpdate(d *schema.ResourceData, m interfa
 }
 
 func resourceScalewayBaremetalServerBetaDelete(d *schema.ResourceData, m interface{}) error {
-	baremetalAPI, zone, ID, err := getBaremetalAPIWithZoneAndID(m, d.Id())
+	baremetalAPI, zone, ID, err := baremetalAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return err
 	}

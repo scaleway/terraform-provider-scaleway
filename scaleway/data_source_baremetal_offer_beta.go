@@ -131,7 +131,7 @@ func dataSourceScalewayBaremetalOfferBeta() *schema.Resource {
 
 func dataSourceScalewayBaremetalOfferBetaRead(d *schema.ResourceData, m interface{}) error {
 	meta := m.(*Meta)
-	baremetalApi, fallBackZone, err := getBaremetalAPIWithZone(d, meta)
+	baremetalApi, fallBackZone, err := baremetalAPIWithZone(d, meta)
 	if err != nil {
 		return err
 	}

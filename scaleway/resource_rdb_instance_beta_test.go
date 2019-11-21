@@ -83,7 +83,7 @@ func testAccCheckScalewayRdbBetaExists(n string) resource.TestCheckFunc {
 			return fmt.Errorf("resource not found: %s", n)
 		}
 
-		rdbAPI, region, ID, err := getRdbAPIWithRegionAndID(testAccProvider.Meta(), rs.Primary.ID)
+		rdbAPI, region, ID, err := rdbAPIWithRegionAndID(testAccProvider.Meta(), rs.Primary.ID)
 		if err != nil {
 			return err
 		}
@@ -107,7 +107,7 @@ func testAccCheckScalewayRdbInstanceBetaDestroy(s *terraform.State) error {
 			continue
 		}
 
-		rdbAPI, region, ID, err := getRdbAPIWithRegionAndID(testAccProvider.Meta(), rs.Primary.ID)
+		rdbAPI, region, ID, err := rdbAPIWithRegionAndID(testAccProvider.Meta(), rs.Primary.ID)
 		if err != nil {
 			return err
 		}

@@ -10,7 +10,7 @@ import (
 )
 
 func TestAccScalewayAccountSSHKey(t *testing.T) {
-	name := getRandomName("ssh-key")
+	name := newRandomName("ssh-key")
 	SSHKey := "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIEEYrzDOZmhItdKaDAEqJQ4ORS2GyBMtBozYsK5kiXXX opensource@scaleway.com"
 
 	resource.ParallelTest(t, resource.TestCase{
@@ -49,7 +49,7 @@ func TestAccScalewayAccountSSHKey(t *testing.T) {
 }
 
 func TestAccScalewayAccountSSHKey_WithNewLine(t *testing.T) {
-	name := getRandomName("ssh-key")
+	name := newRandomName("ssh-key")
 	SSHKey := "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIDjfkdWCwkYlVQMDUfiZlVrmjaGOfBYnmkucssae8Iup opensource@scaleway.com"
 
 	resource.ParallelTest(t, resource.TestCase{
@@ -80,7 +80,7 @@ func testAccCheckScalewayAccountSSHKeyDestroy(s *terraform.State) error {
 			continue
 		}
 
-		accountAPI := getAccountAPI(testAccProvider.Meta())
+		accountAPI := accountAPI(testAccProvider.Meta())
 
 		_, err := accountAPI.GetSSHKey(&account.GetSSHKeyRequest{
 			SSHKeyID: rs.Primary.ID,
@@ -107,7 +107,7 @@ func testAccCheckScalewayAccountSSHKeyExists(n string) resource.TestCheckFunc {
 			return fmt.Errorf("resource not found: %s", n)
 		}
 
-		accountAPI := getAccountAPI(testAccProvider.Meta())
+		accountAPI := accountAPI(testAccProvider.Meta())
 
 		_, err := accountAPI.GetSSHKey(&account.GetSSHKeyRequest{
 			SSHKeyID: rs.Primary.ID,

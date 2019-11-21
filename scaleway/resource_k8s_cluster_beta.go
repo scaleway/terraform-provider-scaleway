@@ -288,7 +288,7 @@ func resourceScalewayK8SClusterBeta() *schema.Resource {
 }
 
 func resourceScalewayK8SClusterBetaCreate(d *schema.ResourceData, m interface{}) error {
-	k8sAPI, region, err := getK8SAPIWithRegion(d, m)
+	k8sAPI, region, err := k8sAPIWithRegion(d, m)
 	if err != nil {
 		return err
 	}
@@ -421,7 +421,7 @@ func resourceScalewayK8SClusterBetaCreate(d *schema.ResourceData, m interface{})
 // resourceScalewayK8SClusterBetaDefaultPoolRead is only called after a resourceScalewayK8SClusterBetaCreate
 // thus ensuring the uniqueness of the only pool listed
 func resourceScalewayK8SClusterBetaDefaultPoolRead(d *schema.ResourceData, m interface{}) error {
-	k8sAPI, region, clusterID, err := getK8SAPIWithRegionAndID(m, d.Id())
+	k8sAPI, region, clusterID, err := k8sAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return err
 	}
@@ -482,7 +482,7 @@ func resourceScalewayK8SClusterBetaDefaultPoolRead(d *schema.ResourceData, m int
 }
 
 func resourceScalewayK8SClusterBetaRead(d *schema.ResourceData, m interface{}) error {
-	k8sAPI, region, clusterID, err := getK8SAPIWithRegionAndID(m, d.Id())
+	k8sAPI, region, clusterID, err := k8sAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return err
 	}
@@ -565,7 +565,7 @@ func resourceScalewayK8SClusterBetaRead(d *schema.ResourceData, m interface{}) e
 // resourceScalewayK8SClusterBetaDefaultPoolUpdate is only called after a resourceScalewayK8SClusterBetaUpdate
 // thus guarating that "default_pool.id" is set
 func resourceScalewayK8SClusterBetaDefaultPoolUpdate(d *schema.ResourceData, m interface{}) error {
-	k8sAPI, region, clusterID, err := getK8SAPIWithRegionAndID(m, d.Id())
+	k8sAPI, region, clusterID, err := k8sAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return err
 	}
@@ -670,7 +670,7 @@ func resourceScalewayK8SClusterBetaDefaultPoolUpdate(d *schema.ResourceData, m i
 }
 
 func resourceScalewayK8SClusterBetaUpdate(d *schema.ResourceData, m interface{}) error {
-	k8sAPI, region, clusterID, err := getK8SAPIWithRegionAndID(m, d.Id())
+	k8sAPI, region, clusterID, err := k8sAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return err
 	}
@@ -790,7 +790,7 @@ func resourceScalewayK8SClusterBetaUpdate(d *schema.ResourceData, m interface{})
 }
 
 func resourceScalewayK8SClusterBetaDelete(d *schema.ResourceData, m interface{}) error {
-	k8sAPI, region, clusterID, err := getK8SAPIWithRegionAndID(m, d.Id())
+	k8sAPI, region, clusterID, err := k8sAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return err
 	}

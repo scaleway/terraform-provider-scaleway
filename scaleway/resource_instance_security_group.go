@@ -72,12 +72,12 @@ func resourceScalewayInstanceSecurityGroup() *schema.Resource {
 
 func resourceScalewayInstanceSecurityGroupCreate(d *schema.ResourceData, m interface{}) error {
 	meta := m.(*Meta)
-	instanceApi, zone, err := getInstanceAPIWithZone(d, meta)
+	instanceApi, zone, err := instanceAPIWithZone(d, meta)
 	if err != nil {
 		return err
 	}
 
-	organizationID, err := getOrganizationID(d, meta)
+	organizationID, err := organizationID(d, meta)
 	if err != nil {
 		return err
 	}
@@ -102,7 +102,7 @@ func resourceScalewayInstanceSecurityGroupCreate(d *schema.ResourceData, m inter
 }
 
 func resourceScalewayInstanceSecurityGroupRead(d *schema.ResourceData, m interface{}) error {
-	instanceApi, zone, ID, err := getInstanceAPIWithZoneAndID(m, d.Id())
+	instanceApi, zone, ID, err := instanceAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return err
 	}

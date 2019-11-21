@@ -31,7 +31,7 @@ func dataSourceScalewayInstanceVolume() *schema.Resource {
 
 func dataSourceScalewayInstanceVolumeRead(d *schema.ResourceData, m interface{}) error {
 	meta := m.(*Meta)
-	instanceApi, zone, err := getInstanceAPIWithZone(d, meta)
+	instanceApi, zone, err := instanceAPIWithZone(d, meta)
 	if err != nil {
 		return err
 	}

@@ -117,7 +117,7 @@ func resourceScalewayRdbInstanceBeta() *schema.Resource {
 }
 
 func resourceScalewayRdbInstanceBetaCreate(d *schema.ResourceData, m interface{}) error {
-	rdbAPI, region, err := getRdbAPIWithRegion(d, m)
+	rdbAPI, region, err := rdbAPIWithRegion(d, m)
 	if err != nil {
 		return err
 	}
@@ -155,7 +155,7 @@ func resourceScalewayRdbInstanceBetaCreate(d *schema.ResourceData, m interface{}
 }
 
 func resourceScalewayRdbInstanceBetaRead(d *schema.ResourceData, m interface{}) error {
-	rdbAPI, region, ID, err := getRdbAPIWithRegionAndID(m, d.Id())
+	rdbAPI, region, ID, err := rdbAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return err
 	}
@@ -209,7 +209,7 @@ func resourceScalewayRdbInstanceBetaRead(d *schema.ResourceData, m interface{}) 
 }
 
 func resourceScalewayRdbInstanceBetaUpdate(d *schema.ResourceData, m interface{}) error {
-	rdbAPI, region, ID, err := getRdbAPIWithRegionAndID(m, d.Id())
+	rdbAPI, region, ID, err := rdbAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return err
 	}
@@ -258,7 +258,7 @@ func resourceScalewayRdbInstanceBetaUpdate(d *schema.ResourceData, m interface{}
 }
 
 func resourceScalewayRdbInstanceBetaDelete(d *schema.ResourceData, m interface{}) error {
-	rdbAPI, region, ID, err := getRdbAPIWithRegionAndID(m, d.Id())
+	rdbAPI, region, ID, err := rdbAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return err
 	}

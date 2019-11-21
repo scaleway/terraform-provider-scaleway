@@ -19,17 +19,17 @@ const (
 	InstanceServerWaitForTimeout = 10 * time.Minute
 )
 
-// getInstanceAPIWithZone returns a new instance API and the zone for a Create request
-func getInstanceAPIWithZone(d *schema.ResourceData, m interface{}) (*instance.API, scw.Zone, error) {
+// instanceAPIWithZone returns a new instance API and the zone for a Create request
+func instanceAPIWithZone(d *schema.ResourceData, m interface{}) (*instance.API, scw.Zone, error) {
 	meta := m.(*Meta)
 	instanceAPI := instance.NewAPI(meta.scwClient)
 
-	zone, err := getZone(d, meta)
+	zone, err := extractZone(d, meta)
 	return instanceAPI, zone, err
 }
 
-// getInstanceAPIWithZoneAndID returns an instance API with zone and ID extracted from the state
-func getInstanceAPIWithZoneAndID(m interface{}, id string) (*instance.API, scw.Zone, string, error) {
+// instanceAPIWithZoneAndID returns an instance API with zone and ID extracted from the state
+func instanceAPIWithZoneAndID(m interface{}, id string) (*instance.API, scw.Zone, string, error) {
 	meta := m.(*Meta)
 	instanceAPI := instance.NewAPI(meta.scwClient)
 
