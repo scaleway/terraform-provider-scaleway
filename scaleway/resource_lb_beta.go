@@ -58,14 +58,10 @@ func resourceScalewayLbBetaCreate(d *schema.ResourceData, m interface{}) error {
 		return err
 	}
 
-	name, ok := d.GetOk("name")
-	if !ok {
-		name = getRandomName("lb")
-	}
 	createReq := &lb.CreateLbRequest{
 		Region:         region,
 		OrganizationID: d.Get("organization_id").(string),
-		Name:           name.(string),
+		Name:           expandOrGenerateString(d.Get("name"), "lb"),
 		Type:           d.Get("type").(string),
 	}
 	if raw, ok := d.GetOk("tags"); ok {

@@ -525,6 +525,24 @@ func expandDuration(data interface{}) *time.Duration {
 	return &d
 }
 
+func expandOrGenerateString(data interface{}, prefix string) string {
+	if data == nil || data == "" {
+		return getRandomName(prefix)
+	}
+	return data.(string)
+}
+
+func expandStrings(data interface{}) []string {
+	if data == nil {
+		return nil
+	}
+	stringSlice := []string(nil)
+	for _, s := range data.([]interface{}) {
+		stringSlice = append(stringSlice, s.(string))
+	}
+	return stringSlice
+}
+
 func flattenStringPtr(s *string) interface{} {
 	if s == nil {
 		return ""

@@ -209,10 +209,6 @@ func resourceScalewayInstanceServerCreate(d *schema.ResourceData, m interface{})
 	////
 	// Create the server
 	////
-	name, ok := d.GetOk("name")
-	if !ok {
-		name = getRandomName("srv")
-	}
 
 	commercialType := d.Get("type").(string)
 
@@ -232,23 +228,18 @@ func resourceScalewayInstanceServerCreate(d *schema.ResourceData, m interface{})
 
 	req := &instance.CreateServerRequest{
 		Zone:              zone,
-		Name:              name.(string),
+		Name:              expandOrGenerateString(d.Get("name"), "srv"),
 		Organization:      d.Get("organization_id").(string),
 		Image:             image,
 		CommercialType:    commercialType,
 		EnableIPv6:        d.Get("enable_ipv6").(bool),
 		SecurityGroup:     expandStringPtr(expandID(d.Get("security_group_id"))),
 		DynamicIPRequired: Bool(!d.Get("disable_dynamic_ip").(bool)),
+		Tags:              expandStrings(d.Get("tags")),
 	}
 
 	if placementGroupID, ok := d.GetOk("placement_group_id"); ok {
 		req.PlacementGroup = scw.StringPtr(expandID(placementGroupID))
-	}
-
-	if raw, ok := d.GetOk("tags"); ok {
-		for _, tag := range raw.([]interface{}) {
-			req.Tags = append(req.Tags, tag.(string))
-		}
 	}
 
 	req.Volumes = make(map[string]*instance.VolumeTemplate)

@@ -60,13 +60,9 @@ func resourceScalewayInstancePlacementGroupCreate(d *schema.ResourceData, m inte
 		return err
 	}
 
-	name, ok := d.GetOk("name")
-	if !ok {
-		name = getRandomName("pg")
-	}
 	res, err := instanceApi.CreatePlacementGroup(&instance.CreatePlacementGroupRequest{
 		Zone:         zone,
-		Name:         name.(string),
+		Name:         expandOrGenerateString(d.Get("name"), "pg"),
 		Organization: d.Get("organization_id").(string),
 		PolicyMode:   instance.PlacementGroupPolicyMode(d.Get("policy_mode").(string)),
 		PolicyType:   instance.PlacementGroupPolicyType(d.Get("policy_type").(string)),

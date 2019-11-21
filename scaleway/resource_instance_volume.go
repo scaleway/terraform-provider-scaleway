@@ -11,10 +11,10 @@ import (
 
 func resourceScalewayInstanceVolume() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceSalewayInstanceVolumeCreate,
-		Read:   resourceSalewayInstanceVolumeRead,
-		Update: resourceSalewayInstanceVolumeUpdate,
-		Delete: resourceSalewayInstanceVolumeDelete,
+		Create: resourceScalewayInstanceVolumeCreate,
+		Read:   resourceScalewayInstanceVolumeRead,
+		Update: resourceScalewayInstanceVolumeUpdate,
+		Delete: resourceScalewayInstanceVolumeDelete,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},
@@ -70,7 +70,7 @@ func resourceScalewayInstanceVolume() *schema.Resource {
 	}
 }
 
-func resourceSalewayInstanceVolumeCreate(d *schema.ResourceData, m interface{}) error {
+func resourceScalewayInstanceVolumeCreate(d *schema.ResourceData, m interface{}) error {
 	instanceAPI, zone, err := getInstanceAPIWithZone(d, m)
 	if err != nil {
 		return err
@@ -78,14 +78,9 @@ func resourceSalewayInstanceVolumeCreate(d *schema.ResourceData, m interface{}) 
 
 	createVolumeRequest := &instance.CreateVolumeRequest{
 		Zone:         zone,
-		Name:         d.Get("name").(string),
+		Name:         expandOrGenerateString(d.Get("name"), "vol"),
 		VolumeType:   instance.VolumeType(d.Get("type").(string)),
 		Organization: d.Get("organization_id").(string),
-	}
-
-	// Generate name if not set
-	if createVolumeRequest.Name == "" {
-		createVolumeRequest.Name = getRandomName("vol")
 	}
 
 	if size, ok := d.GetOk("size_in_gb"); ok {
@@ -108,10 +103,10 @@ func resourceSalewayInstanceVolumeCreate(d *schema.ResourceData, m interface{}) 
 
 	d.SetId(newZonedId(zone, res.Volume.ID))
 
-	return resourceSalewayInstanceVolumeRead(d, m)
+	return resourceScalewayInstanceVolumeRead(d, m)
 }
 
-func resourceSalewayInstanceVolumeRead(d *schema.ResourceData, m interface{}) error {
+func resourceScalewayInstanceVolumeRead(d *schema.ResourceData, m interface{}) error {
 	instanceAPI, zone, id, err := getInstanceAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return err
@@ -142,7 +137,7 @@ func resourceSalewayInstanceVolumeRead(d *schema.ResourceData, m interface{}) er
 	return nil
 }
 
-func resourceSalewayInstanceVolumeUpdate(d *schema.ResourceData, m interface{}) error {
+func resourceScalewayInstanceVolumeUpdate(d *schema.ResourceData, m interface{}) error {
 	instanceAPI, zone, id, err := getInstanceAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return err
@@ -161,10 +156,10 @@ func resourceSalewayInstanceVolumeUpdate(d *schema.ResourceData, m interface{}) 
 		}
 	}
 
-	return resourceSalewayInstanceVolumeRead(d, m)
+	return resourceScalewayInstanceVolumeRead(d, m)
 }
 
-func resourceSalewayInstanceVolumeDelete(d *schema.ResourceData, m interface{}) error {
+func resourceScalewayInstanceVolumeDelete(d *schema.ResourceData, m interface{}) error {
 	instanceAPI, zone, id, err := getInstanceAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return err

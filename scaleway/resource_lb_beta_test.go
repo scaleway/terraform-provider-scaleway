@@ -93,11 +93,10 @@ func testAccCheckScalewayLbBetaDestroy(s *terraform.State) error {
 
 		// If no error resource still exist
 		if err == nil {
-			return fmt.Errorf("IP (%s) still exists", rs.Primary.ID)
+			return fmt.Errorf("Load Balancer (%s) still exists", rs.Primary.ID)
 		}
 
 		// Unexpected api error we return it
-		// We check for 403 because instance API return 403 for deleted IP
 		if !is404Error(err) {
 			return err
 		}

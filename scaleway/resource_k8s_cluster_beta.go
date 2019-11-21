@@ -225,10 +225,6 @@ func resourceScalewayK8SClusterBetaCreate(d *schema.ResourceData, m interface{})
 	////
 	// Create cluster
 	////
-	name, ok := d.GetOk("name")
-	if !ok {
-		name = getRandomName("cluster")
-	}
 
 	description, ok := d.GetOk("description")
 	if !ok {
@@ -243,10 +239,11 @@ func resourceScalewayK8SClusterBetaCreate(d *schema.ResourceData, m interface{})
 	req := &k8s.CreateClusterRequest{
 		Region:         region,
 		OrganizationID: d.Get("organization_id").(string),
-		Name:           name.(string),
+		Name:           expandOrGenerateString(d.Get("name"), "cluster"),
 		Description:    description.(string),
 		Version:        version.(string),
 		Cni:            d.Get("cni").(string),
+		Tags:           expandStrings(d.Get("tags")),
 	}
 
 	if dashboard, ok := d.GetOk("enable_dashboard"); ok {
@@ -255,12 +252,6 @@ func resourceScalewayK8SClusterBetaCreate(d *schema.ResourceData, m interface{})
 
 	if ingress, ok := d.GetOk("ingress"); ok {
 		req.Ingress = ingress.(string)
-	}
-
-	if raw, ok := d.GetOk("tags"); ok {
-		for _, tag := range raw.([]interface{}) {
-			req.Tags = append(req.Tags, tag.(string))
-		}
 	}
 
 	autoscalerReq := &k8s.CreateClusterRequestAutoscalerConfig{}

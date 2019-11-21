@@ -82,13 +82,8 @@ func resourceScalewayInstanceSecurityGroupCreate(d *schema.ResourceData, m inter
 		return err
 	}
 
-	name := d.Get("name").(string)
-	if name == "" {
-		name = getRandomName("sg")
-	}
-
 	res, err := instanceApi.CreateSecurityGroup(&instance.CreateSecurityGroupRequest{
-		Name:                  name,
+		Name:                  expandOrGenerateString(d.Get("name"), "sg"),
 		Zone:                  zone,
 		Organization:          organizationID,
 		Description:           d.Get("description").(string),
