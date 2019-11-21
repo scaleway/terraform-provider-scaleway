@@ -34,7 +34,7 @@ The following arguments are supported:
 - `inbound_port`                - (Required) TCP port to listen on the front side.
 - `name`                        - (Optional) The name of the load-balancer frontend.
 - `timeout_client`              - (Optional) Maximum inactivity time on the client side. (e.g.: `1s`)
-- `certificate_id`              - (Required) Certificate ID that should be used by the frontend.
+- `certificate_id`              - (Optional) Certificate ID that should be used by the frontend.
 
 ## Attributes Reference
 
