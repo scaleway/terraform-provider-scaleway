@@ -226,9 +226,9 @@ func resourceScalewayRdbInstanceBetaUpdate(d *schema.ResourceData, m interface{}
 		req.IsBackupScheduleDisabled = scw.BoolPtr(d.Get("disable_backup").(bool))
 	}
 
-	//if d.HasChange("tags") {
-	req.Tags = scw.StringsPtr(StringSliceFromState(d.Get("tags").([]interface{}))) // due to a bug in the API Tags must always be sent for now
-	//}
+	if d.HasChange("tags") {
+		req.Tags = scw.StringsPtr(StringSliceFromState(d.Get("tags").([]interface{})))
+	}
 
 	_, err = rdbAPI.UpdateInstance(req)
 	if err != nil {

@@ -42,7 +42,6 @@ func TestAccScalewayRdbInstanceBeta(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_rdb_instance_beta.main", "tags.2", "minimal"),
 					resource.TestCheckResourceAttrSet("scaleway_rdb_instance_beta.main", "endpoint_ip"),
 					resource.TestCheckResourceAttrSet("scaleway_rdb_instance_beta.main", "endpoint_port"),
-					resource.TestCheckResourceAttrSet("scaleway_rdb_instance_beta.main", "backup_schedule_frequency"),
 					resource.TestCheckResourceAttrSet("scaleway_rdb_instance_beta.main", "certificate"),
 				),
 			},
@@ -62,7 +61,7 @@ func TestAccScalewayRdbInstanceBeta(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayRdbBetaExists("scaleway_rdb_instance_beta.main"),
 					resource.TestCheckResourceAttr("scaleway_rdb_instance_beta.main", "name", "test-rdb"),
-					resource.TestCheckResourceAttr("scaleway_rdb_instance_beta.main", "node_type", "db-dev-s"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance_beta.main", "node_type", "db-dev-m"),
 					resource.TestCheckResourceAttr("scaleway_rdb_instance_beta.main", "engine", "PostgreSQL-11"),
 					resource.TestCheckResourceAttr("scaleway_rdb_instance_beta.main", "is_ha_cluster", "true"),
 					resource.TestCheckResourceAttr("scaleway_rdb_instance_beta.main", "disable_backup", "false"),
