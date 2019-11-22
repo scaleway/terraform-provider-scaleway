@@ -237,15 +237,3 @@ func testCheckResourceAttrIPv6(name string, key string) resource.TestCheckFunc {
 		return nil
 	})
 }
-
-func testGetScwClient() *scw.Client {
-	client, err := scw.NewClient(
-		scw.WithEnv(),
-		scw.WithDefaultZone(scw.ZoneFrPar1),
-		scw.WithDefaultRegion(scw.RegionFrPar),
-	)
-	if err != nil {
-		panic(err)
-	}
-	return client
-}
