@@ -8,7 +8,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
-	"github.com/scaleway/scaleway-sdk-go/scw"
 )
 
 func TestAccScalewayInstanceServerMinimal1(t *testing.T) {
@@ -439,34 +438,15 @@ func TestAccScalewayInstanceServerImport(t *testing.T) {
 				Config: `
 					resource "scaleway_instance_server" "server01" {
 						type  = "DEV1-S"
-						image = "ubuntu-bionic"
+						image = "f974feac-abae-4365-b988-8ec7d1cec10d"
+						state = "stopped"
 					}
 				`,
-				ResourceName: "scaleway_instance_server.server01",
-				ImportState:  true,
-				ImportStateIdFunc: func(state *terraform.State) (string, error) {
-					instanceApi := instance.NewAPI(testGetScwClient())
-					s, err := instanceApi.CreateServer(&instance.CreateServerRequest{
-						CommercialType: "DEV1-S",
-						Image:          "ubuntu-bionic",
-					})
-					if err != nil {
-						return "", err
-					}
-					return newZonedId(scw.ZoneFrPar1, s.Server.ID), nil
-				},
 			},
 			{
-				Config: `
-					resource "scaleway_instance_server" "server01" {
-						type  = "DEV1-S"
-						image = "ubuntu-bionic"
-					}
-				`,
-				Check: resource.ComposeTestCheckFunc(
-					testCheckResourceAttrUUID("scaleway_instance_server.server01", "id"),
-					resource.TestCheckResourceAttr("scaleway_instance_server.server01", "image", "ubuntu-bionic"),
-				),
+				ResourceName:      "scaleway_instance_server.server01",
+				ImportState:       true,
+				ImportStateVerify: true,
 			},
 		},
 	})
