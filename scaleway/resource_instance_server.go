@@ -338,10 +338,9 @@ func resourceScalewayInstanceServerRead(d *schema.ResourceData, m interface{}) e
 	state, err := serverStateFlatten(response.Server.State)
 	if err != nil {
 		return err
-	} else {
-		d.Set("state", state)
 	}
 
+	d.Set("state", state)
 	d.Set("zone", string(zone))
 	d.Set("name", response.Server.Name)
 	d.Set("type", response.Server.CommercialType)
@@ -350,9 +349,11 @@ func resourceScalewayInstanceServerRead(d *schema.ResourceData, m interface{}) e
 	d.Set("enable_ipv6", response.Server.EnableIPv6)
 	d.Set("disable_dynamic_ip", !response.Server.DynamicIPRequired)
 
-	// TODO: If image is a label, check that response.Server.Image.ID match the label.
-	// It could be useful if the user edit the image with another tool.
-	if response.Server.Image != nil && isUUID(d.Get("image").(string)) {
+	// Image could be empty in an import context.
+	image := d.Get("image").(string)
+	if response.Server.Image != nil && (image == "" || isUUID(image)) {
+		// TODO: If image is a label, check that response.Server.Image.ID match the label.
+		// It could be useful if the user edit the image with another tool.
 		d.Set("image", response.Server.Image.ID)
 	}
 
