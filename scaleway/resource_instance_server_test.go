@@ -8,6 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
+	"github.com/scaleway/scaleway-sdk-go/scw"
 )
 
 func TestAccScalewayInstanceServerMinimal1(t *testing.T) {
@@ -422,6 +423,49 @@ func TestAccScalewayInstanceServerIpv6(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_instance_server.server01", "ipv6_address", ""),
 					resource.TestCheckResourceAttr("scaleway_instance_server.server01", "ipv6_gateway", ""),
 					resource.TestCheckResourceAttr("scaleway_instance_server.server01", "ipv6_prefix_length", "0"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccScalewayInstanceServerImport(t *testing.T) {
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckScalewayInstanceServerDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource "scaleway_instance_server" "server01" {
+						type  = "DEV1-S"
+						image = "ubuntu-bionic"
+					}
+				`,
+				ResourceName: "scaleway_instance_server.server01",
+				ImportState:  true,
+				ImportStateIdFunc: func(state *terraform.State) (string, error) {
+					instanceApi := instance.NewAPI(testGetScwClient())
+					s, err := instanceApi.CreateServer(&instance.CreateServerRequest{
+						CommercialType: "DEV1-S",
+						Image:          "ubuntu-bionic",
+					})
+					if err != nil {
+						return "", err
+					}
+					return newZonedId(scw.ZoneFrPar1, s.Server.ID), nil
+				},
+			},
+			{
+				Config: `
+					resource "scaleway_instance_server" "server01" {
+						type  = "DEV1-S"
+						image = "ubuntu-bionic"
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					testCheckResourceAttrUUID("scaleway_instance_server.server01", "id"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.server01", "image", "ubuntu-bionic"),
 				),
 			},
 		},
