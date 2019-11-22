@@ -35,3 +35,15 @@ func getRdbAPIWithRegionAndID(m interface{}, id string) (*rdb.API, scw.Region, s
 	region, ID, err := parseRegionalID(id)
 	return rdbApi, region, ID, err
 }
+
+func flattenRdbInstanceReadReplicas(readReplicas []*rdb.Endpoint) interface{} {
+	replicasI := []map[string]interface{}(nil)
+	for _, readReplica := range readReplicas {
+		replicasI = append(replicasI, map[string]interface{}{
+			"ip":   flattenIPPtr(readReplica.IP),
+			"port": int(readReplica.Port),
+			"name": flattenStringPtr(readReplica.Name),
+		})
+	}
+	return replicasI
+}
