@@ -573,7 +573,7 @@ func resourceScalewayK8SClusterBetaUpdate(d *schema.ResourceData, m interface{})
 	}
 
 	if d.HasChange("tags") {
-		tags := StringSliceFromState(d.Get("tags").([]interface{}))
+		tags := expandStrings(d.Get("tags").([]interface{}))
 		updateRequest.Tags = scw.StringsPtr(tags)
 	}
 

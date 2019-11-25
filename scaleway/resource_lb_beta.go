@@ -130,7 +130,7 @@ func resourceScalewayLbBetaUpdate(d *schema.ResourceData, m interface{}) error {
 			Region: region,
 			LbID:   ID,
 			Name:   d.Get("name").(string),
-			Tags:   StringSliceFromState(d.Get("tags").([]interface{})),
+			Tags:   expandStrings(d.Get("tags").([]interface{})),
 		}
 
 		_, err = lbAPI.UpdateLb(req)

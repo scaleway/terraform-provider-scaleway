@@ -243,7 +243,7 @@ func resourceScalewayLbBackendBetaCreate(d *schema.ResourceData, m interface{}) 
 			HTTPConfig:      expandLbHCHTTP(d.Get("health_check_http")),
 			HTTPSConfig:     expandLbHCHTTPS(d.Get("health_check_https")),
 		},
-		ServerIP:           StringSliceFromState(d.Get("server_ips").([]interface{})),
+		ServerIP:           expandStrings(d.Get("server_ips").([]interface{})),
 		SendProxyV2:        d.Get("send_proxy_v2").(bool),
 		TimeoutServer:      expandDuration(d.Get("timeout_server")),
 		TimeoutConnect:     expandDuration(d.Get("timeout_connect")),
@@ -355,7 +355,7 @@ func resourceScalewayLbBackendBetaUpdate(d *schema.ResourceData, m interface{}) 
 	_, err = lbAPI.SetBackendServers(&lb.SetBackendServersRequest{
 		Region:    region,
 		BackendID: ID,
-		ServerIP:  StringSliceFromState(d.Get("server_ips").([]interface{})),
+		ServerIP:  expandStrings(d.Get("server_ips").([]interface{})),
 	})
 	if err != nil {
 		return err
