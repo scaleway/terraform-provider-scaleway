@@ -74,7 +74,6 @@ In addition to all arguments above, the following attributes are exported:
   - `port` - Port of the replica.
   - `name` - Name of the replica.
 - `certificate` - Certificate of the database instance.
-- `backup_schedule_frequency` - Backup schedule frequency in hour.
 
 
 ## Import
