@@ -227,7 +227,7 @@ func resourceScalewayRdbInstanceBetaUpdate(d *schema.ResourceData, m interface{}
 	}
 
 	if d.HasChange("tags") {
-		req.Tags = scw.StringsPtr(expandStrings(d.Get("tags").([]interface{})))
+		req.Tags = scw.StringsPtr(expandStrings(d.Get("tags")))
 	}
 
 	_, err = rdbAPI.UpdateInstance(req)

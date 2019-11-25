@@ -31,14 +31,6 @@ func String(val string) *string {
 	return &val
 }
 
-func StringSliceFromState(slice []interface{}) []string {
-	strs := []string(nil)
-	for _, i := range slice {
-		strs = append(strs, i.(string))
-	}
-	return strs
-}
-
 func validateServerType(v interface{}, k string) (ws []string, errors []error) {
 	// only validate if we were able to fetch a list of commercial types
 	if len(commercialServerTypes) == 0 {
