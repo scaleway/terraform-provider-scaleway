@@ -288,7 +288,7 @@ func providerConfigure(d *schema.ResourceData, terraformVersion string) (interfa
 		TerraformVersion:      terraformVersion,
 	}
 
-	meta.bootstrap()
+	err = meta.bootstrap()
 	if err != nil {
 		return nil, err
 	}
