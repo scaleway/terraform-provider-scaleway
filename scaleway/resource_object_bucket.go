@@ -19,7 +19,6 @@ func resourceScalewayObjectBucket() *schema.Resource {
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},
-
 		Schema: map[string]*schema.Schema{
 			"name": {
 				Type:        schema.TypeString,
@@ -33,13 +32,10 @@ func resourceScalewayObjectBucket() *schema.Resource {
 				Default:     "private",
 				Description: "ACL of the bucket: either 'public-read' or 'private'.",
 				ValidateFunc: validation.StringInSlice([]string{
-					"private",
-					"public-read",
-					"public-read-write",
-					"authenticated-read",
-					"bucket-owner-read",
-					"bucket-owner-full-control",
-					"log-delivery-write",
+					s3.ObjectCannedACLPrivate,
+					s3.ObjectCannedACLPublicRead,
+					s3.ObjectCannedACLPublicReadWrite,
+					s3.ObjectCannedACLAuthenticatedRead,
 				}, false),
 			},
 			"region": regionSchema(),
@@ -67,10 +63,21 @@ func resourceScalewayObjectBucketCreate(d *schema.ResourceData, m interface{}) e
 }
 
 func resourceScalewayObjectBucketRead(d *schema.ResourceData, m interface{}) error {
-	s3Client, _, bucketName, err := getS3ClientWithRegionAndID(m, d.Id())
+	s3Client, _, bucketName, err := getS3ClientWithRegionAndName(m, d.Id())
 	if err != nil {
 		return err
 	}
+
+	d.Set("name", bucketName)
+
+	// We do not read `acl` attribute because it could be impossible to find
+	// the right canned ACL from a complex ACL object.
+	//
+	// Known issue:
+	// Import a bucket (eg. terraform import scaleway_object_bucket.x fr-par/x)
+	// will always trigger a diff (eg. terraform plan) on acl attribute because
+	// we do not read it and it has a "private" default value.
+	// AWS has the same issue: https://github.com/terraform-providers/terraform-provider-aws/issues/6193
 
 	_, err = s3Client.ListObjects(&s3.ListObjectsInput{
 		Bucket: aws.String(bucketName),
@@ -88,7 +95,7 @@ func resourceScalewayObjectBucketRead(d *schema.ResourceData, m interface{}) err
 }
 
 func resourceScalewayObjectBucketUpdate(d *schema.ResourceData, m interface{}) error {
-	s3Client, _, bucketName, err := getS3ClientWithRegionAndID(m, d.Id())
+	s3Client, _, bucketName, err := getS3ClientWithRegionAndName(m, d.Id())
 	if err != nil {
 		return err
 	}
@@ -110,7 +117,7 @@ func resourceScalewayObjectBucketUpdate(d *schema.ResourceData, m interface{}) e
 }
 
 func resourceScalewayObjectBucketDelete(d *schema.ResourceData, m interface{}) error {
-	s3Client, _, bucketName, err := getS3ClientWithRegionAndID(m, d.Id())
+	s3Client, _, bucketName, err := getS3ClientWithRegionAndName(m, d.Id())
 	if err != nil {
 		return err
 	}

@@ -30,12 +30,12 @@ The following arguments are supported:
 
 In addition to all above arguments, the following attribute is exported:
 	
-* `id` - The ID of the bucket.
+* `id` - The unique name of the bucket.
 
 ## Import
 
-Buckets can be imported using the `{region}/{id}` identifier, e.g.
+Buckets can be imported using the `{region}/{bucketName}` identifier, e.g.
 
-```
-$ terraform import scaleway_object_bucket.some_bucket fr-par/11111111-1111-1111-1111-111111111111
+```bash
+$ terraform import scaleway_object_bucket.some_bucket fr-par/some-bucket
 ```

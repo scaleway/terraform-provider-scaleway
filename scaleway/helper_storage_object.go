@@ -31,13 +31,13 @@ func getS3ClientWithRegion(d *schema.ResourceData, m interface{}) (*s3.S3, scw.R
 	return meta.s3Client, region, err
 }
 
-// getS3ClientWithRegion returns a new S3 client with the correct region and id  extracted from the resource data.
-func getS3ClientWithRegionAndID(m interface{}, id string) (*s3.S3, scw.Region, string, error) {
+// getS3ClientWithRegion returns a new S3 client with the correct region and name extracted from the resource data.
+func getS3ClientWithRegionAndName(m interface{}, name string) (*s3.S3, scw.Region, string, error) {
 	meta := m.(*Meta)
 
-	region, id, err := parseRegionalID(id)
+	region, name, err := parseRegionalID(name)
 	if err != nil {
-		return nil, "", id, err
+		return nil, "", name, err
 	}
 
 	if region != meta.DefaultRegion {
@@ -48,11 +48,11 @@ func getS3ClientWithRegionAndID(m interface{}, id string) (*s3.S3, scw.Region, s
 
 		err := newMeta.bootstrapS3Client()
 		if err != nil {
-			return nil, "", id, err
+			return nil, "", name, err
 		}
-		return newMeta.s3Client, region, id, nil
+		return newMeta.s3Client, region, name, nil
 	}
 
-	return meta.s3Client, region, id, err
+	return meta.s3Client, region, name, err
 
 }
