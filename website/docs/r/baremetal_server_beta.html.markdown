@@ -14,11 +14,15 @@ Creates and manages Scaleway Compute Baremetal servers. For more information, se
 ### Basic
 
 ```hcl
+data "scaleway_account_ssh_key" "main" {
+  name = "main"
+}
+
 resource "scaleway_baremetal_server_beta" "base" {
   zone		  = "fr-par-2"
   offer_id    = "9eebce52-f7d5-484f-9437-b234164c4c4b"
   os_id       = "d17d6872-0412-45d9-a198-af82c34d3c5c"
-  ssh_key_ids = ["f974feac-abae-4365-b988-8ec7d1cec10d"] // get ssh key ids from the console
+  ssh_key_ids = [data.scaleway_account_ssh_key.main]
 }
 ```
 
@@ -36,11 +40,11 @@ Use [this endpoint](https://developers.scaleway.com/en/products/baremetal/api/#g
 
 ~> **Important:** Updates to `os_id` will reinstall the server.
 
+- `ssh_key_ids` - (Required) List of SSH keys allowed to connect to the server.
+
 - `name` - (Optional) The name of the server.
 
 - `description` - (Optional) A description for the server.
-
-- `ssh_key_ids` - (Defaults to all user SSH keys) List of SSH keys allowed to connect to the server.
 
 ~> **Important:** Updates to `ssh_key_ids` will reinstall the server.
 
