@@ -5,6 +5,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
 	baremetal "github.com/scaleway/scaleway-sdk-go/api/baremetal/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	sdkValidation "github.com/scaleway/scaleway-sdk-go/validation"
 )
 
 func resourceScalewayBaremetalServerBeta() *schema.Resource {
@@ -18,8 +19,8 @@ func resourceScalewayBaremetalServerBeta() *schema.Resource {
 		},
 		SchemaVersion: 0,
 		Timeouts: &schema.ResourceTimeout{
-			Create: &BaremetalServerResourceTimeout,
-			Delete: &BaremetalServerResourceTimeout,
+			Create: &baremetalServerResourceTimeout,
+			Delete: &baremetalServerResourceTimeout,
 		},
 		Schema: map[string]*schema.Schema{
 			"name": {
@@ -28,17 +29,17 @@ func resourceScalewayBaremetalServerBeta() *schema.Resource {
 				Computed:    true,
 				Description: "Name of the server",
 			},
-			"offer_id": {
-				Type:         schema.TypeString,
-				Required:     true,
-				ForceNew:     true,
-				Description:  "ID of the server type",
-				ValidateFunc: validationUUID(),
+			"offer": {
+				Type:             schema.TypeString,
+				Required:         true,
+				ForceNew:         true,
+				Description:      "ID of the server type",
+				DiffSuppressFunc: diffSuppressFuncLabelUUID,
 			},
 			"os_id": {
 				Type:         schema.TypeString,
 				Required:     true,
-				Description:  "The base image of the server", // TODO: add in doc example with UUID
+				Description:  "The base image of the server",
 				ValidateFunc: validationUUID(),
 			},
 			"ssh_key_ids": {
@@ -66,6 +67,13 @@ func resourceScalewayBaremetalServerBeta() *schema.Resource {
 			},
 			"zone":            zoneSchema(),
 			"organization_id": organizationIDSchema(),
+
+			// TODO: Remove deleted attributes at the end of the beta.
+			"offer_id": {
+				Type:     schema.TypeString,
+				Optional: true,
+				Removed:  "Please use offer instead",
+			},
 		},
 	}
 }
@@ -76,12 +84,21 @@ func resourceScalewayBaremetalServerBetaCreate(d *schema.ResourceData, m interfa
 		return err
 	}
 
+	offer := d.Get("offer").(string)
+	if !sdkValidation.IsUUID(offer) {
+		o, err := getBaremetalOfferByName(baremetalAPI, zone, offer)
+		if err != nil {
+			return err
+		}
+		offer = o.ID
+	}
+
 	createReq := &baremetal.CreateServerRequest{
 		Zone:           zone,
 		Name:           expandOrGenerateString(d.Get("name"), "bm"),
 		OrganizationID: d.Get("organization_id").(string),
 		Description:    d.Get("description").(string),
-		OfferID:        d.Get("offer_id").(string),
+		OfferID:        offer,
 	}
 	if raw, ok := d.GetOk("tags"); ok {
 		for _, tag := range raw.([]interface{}) {
@@ -98,7 +115,7 @@ func resourceScalewayBaremetalServerBetaCreate(d *schema.ResourceData, m interfa
 	_, err = baremetalAPI.WaitForServer(&baremetal.WaitForServerRequest{
 		Zone:     zone,
 		ServerID: res.ID,
-		Timeout:  BaremetalServerWaitForTimeout,
+		Timeout:  baremetalServerWaitForTimeout,
 	})
 	if err != nil {
 		return err
@@ -120,10 +137,10 @@ func resourceScalewayBaremetalServerBetaCreate(d *schema.ResourceData, m interfa
 		return err
 	}
 
-	_, err = baremetalAPI.WaitForServer(&baremetal.WaitForServerRequest{
+	_, err = baremetalAPI.WaitForServerInstall(&baremetal.WaitForServerInstallRequest{
 		Zone:     zone,
 		ServerID: res.ID,
-		Timeout:  BaremetalServerWaitForTimeout,
+		Timeout:  baremetalServerWaitForTimeout,
 	})
 	if err != nil {
 		return err
@@ -151,11 +168,16 @@ func resourceScalewayBaremetalServerBetaRead(d *schema.ResourceData, m interface
 		return err
 	}
 
+	offer, err := getBaremetalOfferByID(baremetalAPI, zone, res.OfferID)
+	if err != nil {
+		return err
+	}
+
 	d.Set("name", res.Name)
 	d.Set("zone", string(zone))
 	d.Set("organization_id", res.OrganizationID)
+	d.Set("offer", flattenLabelUUID(offer.Name, offer.ID))
 	d.Set("tags", res.Tags)
-	d.Set("type", res.OfferID)
 	if res.Install != nil {
 		d.Set("os_id", res.Install.OsID)
 		d.Set("ssh_key_ids", res.Install.SSHKeyIDs)
@@ -242,7 +264,7 @@ func resourceScalewayBaremetalServerBetaDelete(d *schema.ResourceData, m interfa
 	_, err = baremetalAPI.WaitForServer(&baremetal.WaitForServerRequest{
 		Zone:     zone,
 		ServerID: ID,
-		Timeout:  BaremetalServerWaitForTimeout,
+		Timeout:  baremetalServerWaitForTimeout,
 	})
 
 	if is404Error(err) {

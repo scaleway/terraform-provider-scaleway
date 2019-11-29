@@ -86,7 +86,7 @@ func resourceScalewayInstanceIPReverseDnsUpdate(d *schema.ResourceData, m interf
 
 		updateReverseReq := &instance.UpdateIPRequest{
 			Zone: zone,
-			IPID: ID,
+			IP:   ID,
 		}
 
 		reverse := d.Get("reverse").(string)
@@ -113,7 +113,7 @@ func resourceScalewayInstanceIPReverseDnsDelete(d *schema.ResourceData, m interf
 	// Unset the reverse dns on the IP
 	updateReverseReq := &instance.UpdateIPRequest{
 		Zone:    zone,
-		IPID:    ID,
+		IP:      ID,
 		Reverse: &instance.NullableStringValue{Null: true},
 	}
 	_, err = instanceAPI.UpdateIP(updateReverseReq)

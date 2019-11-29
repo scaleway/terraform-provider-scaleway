@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/stretchr/testify/assert"
@@ -194,6 +195,66 @@ func TestIs403Error(t *testing.T) {
 func TestGetRandomName(t *testing.T) {
 	name := getRandomName("test")
 	assert.True(t, strings.HasPrefix(name, "tf-test-"))
+}
+
+func TestDiffSuppressFuncLabelUUID(t *testing.T) {
+	testCases := []struct {
+		name     string
+		old      string
+		new      string
+		expected bool
+	}{
+		{
+			name:     "no label changes",
+			old:      "foo/11111111-1111-1111-1111-111111111111",
+			new:      "foo",
+			expected: true,
+		},
+		{
+			name:     "no UUID changes",
+			old:      "foo/11111111-1111-1111-1111-111111111111",
+			new:      "11111111-1111-1111-1111-111111111111",
+			expected: true,
+		},
+		{
+			name:     "UUID changes",
+			old:      "foo/11111111-1111-1111-1111-111111111111",
+			new:      "22222222-2222-2222-2222-222222222222",
+			expected: false,
+		},
+		{
+			name:     "From equal UUID to label",
+			old:      "foo/11111111-1111-1111-1111-111111111111",
+			new:      "foo",
+			expected: true,
+		},
+		{
+			name:     "From diff UUID to label",
+			old:      "foo/11111111-1111-1111-1111-111111111111",
+			new:      "bar",
+			expected: false,
+		},
+		{
+			name:     "From equal label to UUID",
+			old:      "foo/11111111-1111-1111-1111-111111111111",
+			new:      "11111111-1111-1111-1111-111111111111",
+			expected: true,
+		},
+		{
+			name:     "From diff label to UUID",
+			old:      "foo/11111111-1111-1111-1111-111111111111",
+			new:      "22222222-2222-2222-2222-222222222222",
+			expected: false,
+		},
+	}
+
+	fakeResourceData := &schema.ResourceData{}
+
+	for _, c := range testCases {
+		t.Run(c.name, func(t *testing.T) {
+			assert.Equal(t, c.expected, diffSuppressFuncLabelUUID("", c.old, c.new, fakeResourceData))
+		})
+	}
 }
 
 func testCheckResourceAttrFunc(name string, key string, test func(string) error) resource.TestCheckFunc {

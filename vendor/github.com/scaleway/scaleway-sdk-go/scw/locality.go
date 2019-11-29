@@ -40,6 +40,11 @@ func (zone *Zone) Exists() bool {
 	return false
 }
 
+// String returns a Zone as a string
+func (zone *Zone) String() string {
+	return string(*zone)
+}
+
 // Region is a geographical location
 type Region string
 
@@ -171,4 +176,9 @@ func (region *Region) UnmarshalJSON(input []byte) error {
 		return err
 	}
 	return nil
+}
+
+// String returns a Region as a string
+func (region *Region) String() string {
+	return string(*region)
 }

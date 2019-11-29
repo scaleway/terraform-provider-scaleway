@@ -1085,7 +1085,7 @@ type Lb struct {
 
 // LbStats lb stats
 type LbStats struct {
-	// BackendServersStats list stats object of your loadbalancer (See the BackendServerStats object description)
+	// BackendServersStats list stats object of your loadbalancer
 	BackendServersStats []*BackendServerStats `json:"backend_servers_stats"`
 }
 
@@ -1105,7 +1105,15 @@ type LbType struct {
 type ListACLResponse struct {
 	// ACLs list of Acl object (see Acl object description)
 	ACLs []*ACL `json:"acls"`
-	// TotalCount result count
+	// TotalCount the total number of items
+	TotalCount uint32 `json:"total_count"`
+}
+
+// ListBackendStatsResponse list backend stats response
+type ListBackendStatsResponse struct {
+	// BackendServersStats list backend stats object of your loadbalancer
+	BackendServersStats []*BackendServerStats `json:"backend_servers_stats"`
+	// TotalCount the total number of items
 	TotalCount uint32 `json:"total_count"`
 }
 
@@ -1268,7 +1276,7 @@ type CreateLbRequest struct {
 	Name string `json:"name"`
 	// Description resource description
 	Description string `json:"description"`
-	// IPID just like for compute instances, when you destroy a Load Balancer, you can keep its highly available IP address and reuse it for another Load Balancer later.
+	// IPID just like for compute instances, when you destroy a Load Balancer, you can keep its highly available IP address and reuse it for another Load Balancer later
 	IPID *string `json:"ip_id"`
 	// Tags list of keyword
 	Tags []string `json:"tags"`
@@ -1443,7 +1451,7 @@ type ListIPsRequest struct {
 	Region scw.Region `json:"-"`
 	// Page page number
 	Page *int32 `json:"-"`
-	// PageSize set the maximum list size
+	// PageSize the number of items to return
 	PageSize *uint32 `json:"-"`
 	// IPAddress use this to search by IP address
 	IPAddress *string `json:"-"`
@@ -1598,7 +1606,7 @@ type ListBackendsRequest struct {
 	OrderBy ListBackendsRequestOrderBy `json:"-"`
 	// Page page number
 	Page *int32 `json:"-"`
-	// PageSize set the maximum list sizes
+	// PageSize the number of items to returns
 	PageSize *uint32 `json:"-"`
 }
 
@@ -2235,7 +2243,7 @@ type ListFrontendsRequest struct {
 	OrderBy ListFrontendsRequestOrderBy `json:"-"`
 	// Page page number
 	Page *int32 `json:"-"`
-	// PageSize set the maximum list sizes
+	// PageSize the number of items to returns
 	PageSize *uint32 `json:"-"`
 }
 
@@ -2578,6 +2586,76 @@ func (s *API) GetLbStats(req *GetLbStatsRequest, opts ...scw.RequestOption) (*Lb
 	return &resp, nil
 }
 
+type ListBackendStatsRequest struct {
+	Region scw.Region `json:"-"`
+	// LbID load Balancer ID
+	LbID string `json:"-"`
+	// Page page number
+	Page *int32 `json:"-"`
+	// PageSize the number of items to return
+	PageSize *uint32 `json:"-"`
+}
+
+func (s *API) ListBackendStats(req *ListBackendStatsRequest, opts ...scw.RequestOption) (*ListBackendStatsResponse, error) {
+	var err error
+
+	if req.Region == "" {
+		defaultRegion, _ := s.client.GetDefaultRegion()
+		req.Region = defaultRegion
+	}
+
+	defaultPageSize, exist := s.client.GetDefaultPageSize()
+	if (req.PageSize == nil || *req.PageSize == 0) && exist {
+		req.PageSize = &defaultPageSize
+	}
+
+	query := url.Values{}
+	parameter.AddToQuery(query, "page", req.Page)
+	parameter.AddToQuery(query, "page_size", req.PageSize)
+
+	if fmt.Sprint(req.Region) == "" {
+		return nil, errors.New("field Region cannot be empty in request")
+	}
+
+	if fmt.Sprint(req.LbID) == "" {
+		return nil, errors.New("field LbID cannot be empty in request")
+	}
+
+	scwReq := &scw.ScalewayRequest{
+		Method:  "GET",
+		Path:    "/lb/v1/regions/" + fmt.Sprint(req.Region) + "/lbs/" + fmt.Sprint(req.LbID) + "/backend-stats",
+		Query:   query,
+		Headers: http.Header{},
+	}
+
+	var resp ListBackendStatsResponse
+
+	err = s.client.Do(scwReq, &resp, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &resp, nil
+}
+
+// UnsafeGetTotalCount should not be used
+// Internal usage only
+func (r *ListBackendStatsResponse) UnsafeGetTotalCount() uint32 {
+	return r.TotalCount
+}
+
+// UnsafeAppend should not be used
+// Internal usage only
+func (r *ListBackendStatsResponse) UnsafeAppend(res interface{}) (uint32, scw.SdkError) {
+	results, ok := res.(*ListBackendStatsResponse)
+	if !ok {
+		return 0, errors.New("%T type cannot be appended to type %T", res, r)
+	}
+
+	r.BackendServersStats = append(r.BackendServersStats, results.BackendServersStats...)
+	r.TotalCount += uint32(len(results.BackendServersStats))
+	return uint32(len(results.BackendServersStats)), nil
+}
+
 type ListACLsRequest struct {
 	Region scw.Region `json:"-"`
 	// FrontendID iD of your frontend
@@ -2588,7 +2666,7 @@ type ListACLsRequest struct {
 	OrderBy ListACLRequestOrderBy `json:"-"`
 	// Page page number
 	Page *int32 `json:"-"`
-	// PageSize set the maximum list size
+	// PageSize the number of items to return
 	PageSize *uint32 `json:"-"`
 	// Name filter acl per name
 	Name *string `json:"-"`
@@ -2896,7 +2974,7 @@ type ListCertificatesRequest struct {
 	OrderBy ListCertificatesRequestOrderBy `json:"-"`
 	// Page page number
 	Page *int32 `json:"-"`
-	// PageSize set the maximum list size
+	// PageSize the number of items to return
 	PageSize *uint32 `json:"-"`
 	// Name use this to search by name
 	Name *string `json:"-"`
@@ -3088,7 +3166,7 @@ type ListLbTypesRequest struct {
 	Region scw.Region `json:"-"`
 	// Page page number
 	Page *int32 `json:"-"`
-	// PageSize set the maximum list size
+	// PageSize the number of items to return
 	PageSize *uint32 `json:"-"`
 }
 

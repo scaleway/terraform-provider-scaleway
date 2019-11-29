@@ -20,7 +20,7 @@ func TestAccScalewayBaremetalServerBetaMinimal1(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayBaremetalServerBetaExists("scaleway_baremetal_server_beta.base"),
 					resource.TestCheckResourceAttr("scaleway_baremetal_server_beta.base", "name", "namo-centos"),
-					resource.TestCheckResourceAttr("scaleway_baremetal_server_beta.base", "offer_id", "964f9b38-577e-470f-a220-7d762f9e8672"),
+					resource.TestCheckResourceAttr("scaleway_baremetal_server_beta.base", "offer", "GP-BM1-M/964f9b38-577e-470f-a220-7d762f9e8672"),
 					resource.TestCheckResourceAttr("scaleway_baremetal_server_beta.base", "os_id", "d17d6872-0412-45d9-a198-af82c34d3c5c"),
 					resource.TestCheckResourceAttr("scaleway_baremetal_server_beta.base", "description", "test a description"),
 					resource.TestCheckResourceAttr("scaleway_baremetal_server_beta.base", "tags.0", "terraform-test"),
@@ -33,7 +33,7 @@ func TestAccScalewayBaremetalServerBetaMinimal1(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayBaremetalServerBetaExists("scaleway_baremetal_server_beta.base"),
 					resource.TestCheckResourceAttr("scaleway_baremetal_server_beta.base", "name", "namo-centos"),
-					resource.TestCheckResourceAttr("scaleway_baremetal_server_beta.base", "offer_id", "964f9b38-577e-470f-a220-7d762f9e8672"),
+					resource.TestCheckResourceAttr("scaleway_baremetal_server_beta.base", "offer", "GP-BM1-M/964f9b38-577e-470f-a220-7d762f9e8672"),
 					resource.TestCheckResourceAttr("scaleway_baremetal_server_beta.base", "os_id", "d17d6872-0412-45d9-a198-af82c34d3c5c"),
 					resource.TestCheckResourceAttr("scaleway_baremetal_server_beta.base", "description", "test a description"),
 					resource.TestCheckResourceAttr("scaleway_baremetal_server_beta.base", "tags.0", "terraform-test"),
@@ -47,7 +47,7 @@ func TestAccScalewayBaremetalServerBetaMinimal1(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayBaremetalServerBetaExists("scaleway_baremetal_server_beta.base"),
 					resource.TestCheckResourceAttr("scaleway_baremetal_server_beta.base", "name", "namo-ubuntu"),
-					resource.TestCheckResourceAttr("scaleway_baremetal_server_beta.base", "offer_id", "964f9b38-577e-470f-a220-7d762f9e8672"),
+					resource.TestCheckResourceAttr("scaleway_baremetal_server_beta.base", "offer", "GP-BM1-M/964f9b38-577e-470f-a220-7d762f9e8672"),
 					resource.TestCheckResourceAttr("scaleway_baremetal_server_beta.base", "os_id", "d859aa89-8b4a-4551-af42-ff7c0c27260a"),
 					resource.TestCheckResourceAttr("scaleway_baremetal_server_beta.base", "description", "test a description"),
 					resource.TestCheckResourceAttr("scaleway_baremetal_server_beta.base", "tags.0", "terraform-test"),
@@ -61,7 +61,7 @@ func TestAccScalewayBaremetalServerBetaMinimal1(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayBaremetalServerBetaExists("scaleway_baremetal_server_beta.base"),
 					resource.TestCheckResourceAttr("scaleway_baremetal_server_beta.base", "name", "namo-ubuntu"),
-					resource.TestCheckResourceAttr("scaleway_baremetal_server_beta.base", "offer_id", "964f9b38-577e-470f-a220-7d762f9e8672"),
+					resource.TestCheckResourceAttr("scaleway_baremetal_server_beta.base", "offer", "GP-BM1-M/964f9b38-577e-470f-a220-7d762f9e8672"),
 					resource.TestCheckResourceAttr("scaleway_baremetal_server_beta.base", "os_id", "d859aa89-8b4a-4551-af42-ff7c0c27260a"),
 					resource.TestCheckResourceAttr("scaleway_baremetal_server_beta.base", "description", "test a description"),
 					resource.TestCheckResourceAttr("scaleway_baremetal_server_beta.base", "tags.0", "terraform-test"),
@@ -138,7 +138,7 @@ resource "scaleway_baremetal_server_beta" "base" {
 	name        = "namo-centos"
 	zone        = "fr-par-2"
 	description = "test a description"
-	offer_id    = "964f9b38-577e-470f-a220-7d762f9e8672"
+	offer       = "GP-BM1-M"
 	os_id       = "d17d6872-0412-45d9-a198-af82c34d3c5c"
 
 	tags = [ "terraform-test", "scaleway_baremetal_server_beta", "minimal" ]
@@ -154,7 +154,7 @@ resource "scaleway_baremetal_server_beta" "base" {
 	name        = "namo-centos"
 	zone        = "fr-par-2"
 	description = "test a description"
-	offer_id    = "964f9b38-577e-470f-a220-7d762f9e8672"
+	offer       = "GP-BM1-M"
 	os_id       = "d17d6872-0412-45d9-a198-af82c34d3c5c"
 
 	tags = [ "terraform-test", "scaleway_baremetal_server_beta", "minimal", "edited" ]
@@ -170,7 +170,7 @@ resource "scaleway_baremetal_server_beta" "base" {
 	name        = "namo-ubuntu"
 	zone        = "fr-par-2"
 	description = "test a description"
-	offer_id    = "964f9b38-577e-470f-a220-7d762f9e8672"
+	offer       = "GP-BM1-M"
 	os_id       = "d859aa89-8b4a-4551-af42-ff7c0c27260a"
 
 	tags = [ "terraform-test", "scaleway_baremetal_server_beta", "minimal", "edited" ]
@@ -186,7 +186,7 @@ resource "scaleway_baremetal_server_beta" "base" {
 	name        = "namo-ubuntu"
 	zone        = "fr-par-2"
 	description = "test a description"
-	offer_id    = "964f9b38-577e-470f-a220-7d762f9e8672"
+	offer       = "964f9b38-577e-470f-a220-7d762f9e8672"
 	os_id       = "d859aa89-8b4a-4551-af42-ff7c0c27260a"
 
 	tags = [ "terraform-test", "scaleway_baremetal_server_beta", "minimal", "edited" ]

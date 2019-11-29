@@ -1,6 +1,8 @@
 package scaleway
 
 import (
+	"fmt"
+	"strings"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
@@ -9,11 +11,11 @@ import (
 )
 
 const (
-	BaremetalServerWaitForTimeout   = 60 * time.Minute
-	BaremetalServerRetryFuncTimeout = BaremetalServerWaitForTimeout + time.Minute // some RetryFunc are calling a WaitFor
+	baremetalServerWaitForTimeout   = 60 * time.Minute
+	baremetalServerRetryFuncTimeout = baremetalServerWaitForTimeout + time.Minute // some RetryFunc are calling a WaitFor
 )
 
-var BaremetalServerResourceTimeout = BaremetalServerRetryFuncTimeout + time.Minute
+var baremetalServerResourceTimeout = baremetalServerRetryFuncTimeout + time.Minute
 
 // getInstanceAPIWithZone returns a new baremetal API and the zone for a Create request
 func getBaremetalAPIWithZone(d *schema.ResourceData, m interface{}) (*baremetal.API, scw.Zone, error) {
@@ -31,4 +33,39 @@ func getBaremetalAPIWithZoneAndID(m interface{}, id string) (*baremetal.API, scw
 
 	zone, ID, err := parseZonedID(id)
 	return baremetalAPI, zone, ID, err
+}
+
+// getBaremetalOfferByName call baremetal API to get an offer by its exact name.
+func getBaremetalOfferByName(baremetalAPI *baremetal.API, zone scw.Zone, offerName string) (*baremetal.Offer, error) {
+	offerRes, err := baremetalAPI.ListOffers(&baremetal.ListOffersRequest{
+		Zone: zone,
+	}, scw.WithAllPages())
+	if err != nil {
+		return nil, err
+	}
+
+	offerName = strings.ToUpper(offerName)
+	for _, offer := range offerRes.Offers {
+		if offer.Name == offerName {
+			return offer, nil
+		}
+	}
+	return nil, fmt.Errorf("cannot find the offer %s", offerName)
+}
+
+// getBaremetalOfferByID call baremetal API to get an offer by its exact name.
+func getBaremetalOfferByID(baremetalAPI *baremetal.API, zone scw.Zone, offerID string) (*baremetal.Offer, error) {
+	offerRes, err := baremetalAPI.ListOffers(&baremetal.ListOffersRequest{
+		Zone: zone,
+	}, scw.WithAllPages())
+	if err != nil {
+		return nil, err
+	}
+
+	for _, offer := range offerRes.Offers {
+		if offer.ID == offerID {
+			return offer, nil
+		}
+	}
+	return nil, fmt.Errorf("cannot find the offer %s", offerID)
 }
