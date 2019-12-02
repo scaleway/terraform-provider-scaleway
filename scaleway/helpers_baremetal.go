@@ -35,6 +35,7 @@ func getBaremetalAPIWithZoneAndID(m interface{}, id string) (*baremetal.API, scw
 	return baremetalAPI, zone, ID, err
 }
 
+// TODO: Remove it when SDK will handle it.
 // getBaremetalOfferByName call baremetal API to get an offer by its exact name.
 func getBaremetalOfferByName(baremetalAPI *baremetal.API, zone scw.Zone, offerName string) (*baremetal.Offer, error) {
 	offerRes, err := baremetalAPI.ListOffers(&baremetal.ListOffersRequest{
@@ -53,6 +54,7 @@ func getBaremetalOfferByName(baremetalAPI *baremetal.API, zone scw.Zone, offerNa
 	return nil, fmt.Errorf("cannot find the offer %s", offerName)
 }
 
+// TODO: Remove it when SDK will handle it.
 // getBaremetalOfferByID call baremetal API to get an offer by its exact name.
 func getBaremetalOfferByID(baremetalAPI *baremetal.API, zone scw.Zone, offerID string) (*baremetal.Offer, error) {
 	offerRes, err := baremetalAPI.ListOffers(&baremetal.ListOffersRequest{
