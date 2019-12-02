@@ -199,52 +199,40 @@ func TestGetRandomName(t *testing.T) {
 
 func TestDiffSuppressFuncLabelUUID(t *testing.T) {
 	testCases := []struct {
-		name     string
-		old      string
-		new      string
-		expected bool
+		name    string
+		old     string
+		new     string
+		isEqual bool
 	}{
 		{
-			name:     "no label changes",
-			old:      "foo/11111111-1111-1111-1111-111111111111",
-			new:      "foo",
-			expected: true,
+			name:    "no label changes",
+			old:     "foo/11111111-1111-1111-1111-111111111111",
+			new:     "foo",
+			isEqual: true,
 		},
 		{
-			name:     "no UUID changes",
-			old:      "foo/11111111-1111-1111-1111-111111111111",
-			new:      "11111111-1111-1111-1111-111111111111",
-			expected: true,
+			name:    "no UUID changes",
+			old:     "foo/11111111-1111-1111-1111-111111111111",
+			new:     "11111111-1111-1111-1111-111111111111",
+			isEqual: true,
 		},
 		{
-			name:     "UUID changes",
-			old:      "foo/11111111-1111-1111-1111-111111111111",
-			new:      "22222222-2222-2222-2222-222222222222",
-			expected: false,
+			name:    "UUID changes",
+			old:     "foo/11111111-1111-1111-1111-111111111111",
+			new:     "22222222-2222-2222-2222-222222222222",
+			isEqual: false,
 		},
 		{
-			name:     "From equal UUID to label",
-			old:      "foo/11111111-1111-1111-1111-111111111111",
-			new:      "foo",
-			expected: true,
+			name:    "To label",
+			old:     "foo/11111111-1111-1111-1111-111111111111",
+			new:     "foo",
+			isEqual: true,
 		},
 		{
-			name:     "From diff UUID to label",
-			old:      "foo/11111111-1111-1111-1111-111111111111",
-			new:      "bar",
-			expected: false,
-		},
-		{
-			name:     "From equal label to UUID",
-			old:      "foo/11111111-1111-1111-1111-111111111111",
-			new:      "11111111-1111-1111-1111-111111111111",
-			expected: true,
-		},
-		{
-			name:     "From diff label to UUID",
-			old:      "foo/11111111-1111-1111-1111-111111111111",
-			new:      "22222222-2222-2222-2222-222222222222",
-			expected: false,
+			name:    "To label change",
+			old:     "foo/11111111-1111-1111-1111-111111111111",
+			new:     "bar",
+			isEqual: false,
 		},
 	}
 
@@ -252,7 +240,7 @@ func TestDiffSuppressFuncLabelUUID(t *testing.T) {
 
 	for _, c := range testCases {
 		t.Run(c.name, func(t *testing.T) {
-			assert.Equal(t, c.expected, diffSuppressFuncLabelUUID("", c.old, c.new, fakeResourceData))
+			assert.Equal(t, c.isEqual, diffSuppressFuncLabelUUID("", c.old, c.new, fakeResourceData))
 		})
 	}
 }
