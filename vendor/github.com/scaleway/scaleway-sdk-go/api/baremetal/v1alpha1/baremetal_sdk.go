@@ -37,7 +37,7 @@ var (
 	_ = namegenerator.GetRandomName
 )
 
-// API this API allows to manage your Bare metal server.
+// API this API allows to manage your Bare metal server
 type API struct {
 	client *scw.Client
 }
@@ -178,6 +178,40 @@ func (enum *ListServersRequestOrderBy) UnmarshalJSON(data []byte) error {
 	}
 
 	*enum = ListServersRequestOrderBy(ListServersRequestOrderBy(tmp).String())
+	return nil
+}
+
+type OfferStock string
+
+const (
+	// OfferStockEmpty is [insert doc].
+	OfferStockEmpty = OfferStock("empty")
+	// OfferStockLow is [insert doc].
+	OfferStockLow = OfferStock("low")
+	// OfferStockAvailable is [insert doc].
+	OfferStockAvailable = OfferStock("available")
+)
+
+func (enum OfferStock) String() string {
+	if enum == "" {
+		// return default value if empty
+		return "empty"
+	}
+	return string(enum)
+}
+
+func (enum OfferStock) MarshalJSON() ([]byte, error) {
+	return []byte(fmt.Sprintf(`"%s"`, enum)), nil
+}
+
+func (enum *OfferStock) UnmarshalJSON(data []byte) error {
+	tmp := ""
+
+	if err := json.Unmarshal(data, &tmp); err != nil {
+		return err
+	}
+
+	*enum = OfferStock(OfferStock(tmp).String())
 	return nil
 }
 
@@ -329,6 +363,26 @@ func (enum *ServerStatus) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
+// CPU cpu
+type CPU struct {
+	// Name name of the CPU
+	Name string `json:"name"`
+	// Cores number of cores of the CPU
+	Cores uint32 `json:"cores"`
+	// Threads number of threads of the CPU
+	Threads uint32 `json:"threads"`
+
+	Frequency uint32 `json:"frequency"`
+}
+
+// Disk disk
+type Disk struct {
+	// Capacity capacity of the disk in GB
+	Capacity uint64 `json:"capacity"`
+	// Type type of the disk
+	Type string `json:"type"`
+}
+
 // IP ip
 type IP struct {
 	// ID iD of the IP
@@ -349,6 +403,22 @@ type IP struct {
 	ReverseStatusMessage *string `json:"reverse_status_message"`
 }
 
+// ListOffersResponse list offers response
+type ListOffersResponse struct {
+	// TotalCount total count of matching offers
+	TotalCount uint32 `json:"total_count"`
+	// Offers offers that match filters
+	Offers []*Offer `json:"offers"`
+}
+
+// ListOsResponse list os response
+type ListOsResponse struct {
+	// TotalCount total count of matching OS
+	TotalCount uint32 `json:"total_count"`
+	// Os oS that match filters
+	Os []*Os `json:"os"`
+}
+
 // ListServerEventsResponse list server events response
 type ListServerEventsResponse struct {
 	// TotalCount total count of matching events
@@ -363,6 +433,61 @@ type ListServersResponse struct {
 	TotalCount uint32 `json:"total_count"`
 	// Servers servers that match filters
 	Servers []*Server `json:"servers"`
+}
+
+// Memory memory
+type Memory struct {
+	Capacity uint64 `json:"capacity"`
+
+	Type string `json:"type"`
+
+	Frequency uint32 `json:"frequency"`
+
+	Ecc bool `json:"ecc"`
+}
+
+// Offer offer
+type Offer struct {
+	// ID iD of the offer
+	ID string `json:"id"`
+	// Name name of the offer
+	Name string `json:"name"`
+	// Stock stock level
+	//
+	// Default value: empty
+	Stock OfferStock `json:"stock"`
+	// Bandwidth bandwidth available with the offer
+	Bandwidth uint32 `json:"bandwidth"`
+	// CommercialRange commercial range of the offer
+	CommercialRange string `json:"commercial_range"`
+	// PriceByMinute price of the offer by minutes, this field is deprecated, please use `price_per_sixty_minutes` instead
+	PriceByMinute *scw.Money `json:"price_by_minute"`
+	// PriceByMonth price of the offer by months, this field is deprecated, please use `price_per_month` instead
+	PriceByMonth *scw.Money `json:"price_by_month"`
+	// PricePerSixtyMinutes price of the offer for the next 60 minutes (a server order at 11h32 will be payed until 12h32)
+	PricePerSixtyMinutes *scw.Money `json:"price_per_sixty_minutes"`
+	// PricePerMonth price of the offer per months
+	PricePerMonth *scw.Money `json:"price_per_month"`
+	// Disk disks specifications of the offer
+	Disk []*Disk `json:"disk"`
+	// Enable true if the offer is currently available
+	Enable bool `json:"enable"`
+	// CPU cPU specifications of the offer
+	CPU []*CPU `json:"cpu"`
+	// Memory memory specifications of the offer
+	Memory []*Memory `json:"memory"`
+	// QuotaName name of the quota associated to the offer
+	QuotaName string `json:"quota_name"`
+}
+
+// Os os
+type Os struct {
+	// ID iD of the OS
+	ID string `json:"id"`
+	// Name name of the OS
+	Name string `json:"name"`
+	// Version version of the OS
+	Version string `json:"version"`
 }
 
 // RemoteServerAccess remote server access
@@ -1151,4 +1276,138 @@ func (s *API) UpdateIP(req *UpdateIPRequest, opts ...scw.RequestOption) (*IP, er
 		return nil, err
 	}
 	return &resp, nil
+}
+
+type ListOffersRequest struct {
+	Zone scw.Zone `json:"-"`
+	// Page page number
+	Page *int32 `json:"-"`
+	// PageSize number of offers per page
+	PageSize *uint32 `json:"-"`
+}
+
+// ListOffers list offers
+//
+// List all available server offers.
+func (s *API) ListOffers(req *ListOffersRequest, opts ...scw.RequestOption) (*ListOffersResponse, error) {
+	var err error
+
+	if req.Zone == "" {
+		defaultZone, _ := s.client.GetDefaultZone()
+		req.Zone = defaultZone
+	}
+
+	defaultPageSize, exist := s.client.GetDefaultPageSize()
+	if (req.PageSize == nil || *req.PageSize == 0) && exist {
+		req.PageSize = &defaultPageSize
+	}
+
+	query := url.Values{}
+	parameter.AddToQuery(query, "page", req.Page)
+	parameter.AddToQuery(query, "page_size", req.PageSize)
+
+	if fmt.Sprint(req.Zone) == "" {
+		return nil, errors.New("field Zone cannot be empty in request")
+	}
+
+	scwReq := &scw.ScalewayRequest{
+		Method:  "GET",
+		Path:    "/baremetal/v1alpha1/zones/" + fmt.Sprint(req.Zone) + "/offers",
+		Query:   query,
+		Headers: http.Header{},
+	}
+
+	var resp ListOffersResponse
+
+	err = s.client.Do(scwReq, &resp, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &resp, nil
+}
+
+// UnsafeGetTotalCount should not be used
+// Internal usage only
+func (r *ListOffersResponse) UnsafeGetTotalCount() uint32 {
+	return r.TotalCount
+}
+
+// UnsafeAppend should not be used
+// Internal usage only
+func (r *ListOffersResponse) UnsafeAppend(res interface{}) (uint32, scw.SdkError) {
+	results, ok := res.(*ListOffersResponse)
+	if !ok {
+		return 0, errors.New("%T type cannot be appended to type %T", res, r)
+	}
+
+	r.Offers = append(r.Offers, results.Offers...)
+	r.TotalCount += uint32(len(results.Offers))
+	return uint32(len(results.Offers)), nil
+}
+
+type ListOsRequest struct {
+	Zone scw.Zone `json:"-"`
+	// Page page number
+	Page *int32 `json:"-"`
+	// PageSize number of OS per page
+	PageSize *uint32 `json:"-"`
+}
+
+// ListOs list OS
+//
+// List all available OS that can be install on a baremetal server.
+func (s *API) ListOs(req *ListOsRequest, opts ...scw.RequestOption) (*ListOsResponse, error) {
+	var err error
+
+	if req.Zone == "" {
+		defaultZone, _ := s.client.GetDefaultZone()
+		req.Zone = defaultZone
+	}
+
+	defaultPageSize, exist := s.client.GetDefaultPageSize()
+	if (req.PageSize == nil || *req.PageSize == 0) && exist {
+		req.PageSize = &defaultPageSize
+	}
+
+	query := url.Values{}
+	parameter.AddToQuery(query, "page", req.Page)
+	parameter.AddToQuery(query, "page_size", req.PageSize)
+
+	if fmt.Sprint(req.Zone) == "" {
+		return nil, errors.New("field Zone cannot be empty in request")
+	}
+
+	scwReq := &scw.ScalewayRequest{
+		Method:  "GET",
+		Path:    "/baremetal/v1alpha1/zones/" + fmt.Sprint(req.Zone) + "/os",
+		Query:   query,
+		Headers: http.Header{},
+	}
+
+	var resp ListOsResponse
+
+	err = s.client.Do(scwReq, &resp, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &resp, nil
+}
+
+// UnsafeGetTotalCount should not be used
+// Internal usage only
+func (r *ListOsResponse) UnsafeGetTotalCount() uint32 {
+	return r.TotalCount
+}
+
+// UnsafeAppend should not be used
+// Internal usage only
+func (r *ListOsResponse) UnsafeAppend(res interface{}) (uint32, scw.SdkError) {
+	results, ok := res.(*ListOsResponse)
+	if !ok {
+		return 0, errors.New("%T type cannot be appended to type %T", res, r)
+	}
+
+	r.Os = append(r.Os, results.Os...)
+	r.TotalCount += uint32(len(results.Os))
+	return uint32(len(results.Os)), nil
 }

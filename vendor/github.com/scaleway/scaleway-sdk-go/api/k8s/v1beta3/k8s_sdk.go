@@ -37,7 +37,7 @@ var (
 	_ = namegenerator.GetRandomName
 )
 
-// API this API allows you to manage your kapsule clusters.
+// API this API allows you to manage your kapsule clusters
 type API struct {
 	client *scw.Client
 }
@@ -223,6 +223,50 @@ func (enum *ListPoolsRequestOrderBy) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
+type MaintenanceWindowDayOfTheWeek string
+
+const (
+	// MaintenanceWindowDayOfTheWeekAny is [insert doc].
+	MaintenanceWindowDayOfTheWeekAny = MaintenanceWindowDayOfTheWeek("any")
+	// MaintenanceWindowDayOfTheWeekMonday is [insert doc].
+	MaintenanceWindowDayOfTheWeekMonday = MaintenanceWindowDayOfTheWeek("monday")
+	// MaintenanceWindowDayOfTheWeekTuesday is [insert doc].
+	MaintenanceWindowDayOfTheWeekTuesday = MaintenanceWindowDayOfTheWeek("tuesday")
+	// MaintenanceWindowDayOfTheWeekWednesday is [insert doc].
+	MaintenanceWindowDayOfTheWeekWednesday = MaintenanceWindowDayOfTheWeek("wednesday")
+	// MaintenanceWindowDayOfTheWeekThursday is [insert doc].
+	MaintenanceWindowDayOfTheWeekThursday = MaintenanceWindowDayOfTheWeek("thursday")
+	// MaintenanceWindowDayOfTheWeekFriday is [insert doc].
+	MaintenanceWindowDayOfTheWeekFriday = MaintenanceWindowDayOfTheWeek("friday")
+	// MaintenanceWindowDayOfTheWeekSaturday is [insert doc].
+	MaintenanceWindowDayOfTheWeekSaturday = MaintenanceWindowDayOfTheWeek("saturday")
+	// MaintenanceWindowDayOfTheWeekSunday is [insert doc].
+	MaintenanceWindowDayOfTheWeekSunday = MaintenanceWindowDayOfTheWeek("sunday")
+)
+
+func (enum MaintenanceWindowDayOfTheWeek) String() string {
+	if enum == "" {
+		// return default value if empty
+		return "any"
+	}
+	return string(enum)
+}
+
+func (enum MaintenanceWindowDayOfTheWeek) MarshalJSON() ([]byte, error) {
+	return []byte(fmt.Sprintf(`"%s"`, enum)), nil
+}
+
+func (enum *MaintenanceWindowDayOfTheWeek) UnmarshalJSON(data []byte) error {
+	tmp := ""
+
+	if err := json.Unmarshal(data, &tmp); err != nil {
+		return err
+	}
+
+	*enum = MaintenanceWindowDayOfTheWeek(MaintenanceWindowDayOfTheWeek(tmp).String())
+	return nil
+}
+
 type NodeStatus string
 
 const (
@@ -363,6 +407,14 @@ type Cluster struct {
 	DashboardEnabled bool `json:"dashboard_enabled"`
 	// Ingress display which ingress is deployed
 	Ingress string `json:"ingress"`
+
+	AutoUpgrade *ClusterAutoUpgrade `json:"auto_upgrade"`
+}
+
+type ClusterAutoUpgrade struct {
+	Enabled bool `json:"enabled"`
+
+	MaintenanceWindow *MaintenanceWindow `json:"maintenance_window"`
 }
 
 type ClusterAutoscalerConfig struct {
@@ -379,6 +431,12 @@ type ClusterAutoscalerConfig struct {
 	BalanceSimilarNodeGroups bool `json:"balance_similar_node_groups"`
 
 	ExpendablePodsPriorityCutoff int32 `json:"expendable_pods_priority_cutoff"`
+}
+
+type CreateClusterRequestAutoUpgrade struct {
+	Enable bool `json:"enable"`
+
+	MaintenanceWindow *MaintenanceWindow `json:"maintenance_window"`
 }
 
 type CreateClusterRequestAutoscalerConfig struct {
@@ -448,6 +506,14 @@ type ListVersionsResponse struct {
 	Versions []*Version `json:"versions"`
 }
 
+type MaintenanceWindow struct {
+	StartHour uint32 `json:"start_hour"`
+	// Day
+	//
+	// Default value: any
+	Day MaintenanceWindowDayOfTheWeek `json:"day"`
+}
+
 // Node node
 type Node struct {
 	// ID display node unique ID
@@ -506,7 +572,7 @@ type Pool struct {
 	MinSize uint32 `json:"min_size"`
 	// MaxSize display upper limit for this pool
 	MaxSize uint32 `json:"max_size"`
-	// PlacementGroupID iD of the placement group if any
+	// PlacementGroupID display ID of the placement group if any
 	PlacementGroupID *string `json:"placement_group_id"`
 
 	CreatedAt time.Time `json:"created_at"`
@@ -524,6 +590,12 @@ type Pool struct {
 
 // ResetClusterAdminTokenResponse reset cluster admin token response
 type ResetClusterAdminTokenResponse struct {
+}
+
+type UpdateClusterRequestAutoUpgrade struct {
+	Enable *bool `json:"enable"`
+
+	MaintenanceWindow *MaintenanceWindow `json:"maintenance_window"`
 }
 
 type UpdateClusterRequestAutoscalerConfig struct {
@@ -664,6 +736,8 @@ type CreateClusterRequest struct {
 	DefaultPoolConfig *CreateClusterRequestDefaultPoolConfig `json:"default_pool_config"`
 
 	AutoscalerConfig *CreateClusterRequestAutoscalerConfig `json:"autoscaler_config"`
+
+	AutoUpgrade *CreateClusterRequestAutoUpgrade `json:"auto_upgrade"`
 }
 
 // CreateCluster create a new cluster
@@ -760,6 +834,8 @@ type UpdateClusterRequest struct {
 	EnableDashboard *bool `json:"enable_dashboard"`
 	// Ingress select a Kubernetes Ingress Controller
 	Ingress *string `json:"ingress"`
+
+	AutoUpgrade *UpdateClusterRequestAutoUpgrade `json:"auto_upgrade"`
 }
 
 // UpdateCluster update an existing cluster

@@ -1,9 +1,11 @@
 package scw
 
 import (
+	"bytes"
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"text/template"
 
 	"github.com/scaleway/scaleway-sdk-go/internal/auth"
 	"github.com/scaleway/scaleway-sdk-go/internal/errors"
@@ -15,6 +17,78 @@ const (
 	documentationLink       = "https://github.com/scaleway/scaleway-sdk-go/blob/master/scw/README.md"
 	defaultConfigPermission = 0600
 )
+
+const configFileTemplate = `# Scaleway configuration file
+# https://github.com/scaleway/scaleway-sdk-go/tree/master/scw#scaleway-config
+
+# You need an access key and a secret key to connect to Scaleway API.
+# Generate your token at the following address: https://console.scaleway.com/account/credentials
+
+# An access key is a secret key identifier.
+{{ if .AccessKey }}access_key: {{.AccessKey}}{{ else }}# access_key: SCW11111111111111111{{ end }}
+
+# The secret key is the value that can be used to authenticate against the API (the value used in X-Auth-Token HTTP-header).
+# The secret key MUST remain secret and not given to anyone or published online.
+{{ if .SecretKey }}secret_key: {{ .SecretKey }}{{ else }}# secret_key: 11111111-1111-1111-1111-111111111111{{ end }}
+
+# Your organization ID is the identifier of your account inside Scaleway infrastructure.
+{{ if .DefaultOrganizationID }}default_organization_id: {{ .DefaultOrganizationID }}{{ else }}# default_organization_id: 11111111-1111-1111-1111-111111111111{{ end }}
+
+# A region is represented as a geographical area such as France (Paris) or the Netherlands (Amsterdam).
+# It can contain multiple availability zones.
+# Example of region: fr-par, nl-ams
+{{ if .DefaultRegion }}default_region: {{ .DefaultRegion }}{{ else }}# default_region: fr-par{{ end }}
+
+# A region can be split into many availability zones (AZ).
+# Latency between multiple AZ of the same region are low as they have a common network layer.
+# Example of zones: fr-par-1, nl-ams-1
+{{ if .DefaultZone }}default_zone: {{.DefaultZone}}{{ else }}# default_zone: fr-par-1{{ end }}
+
+# APIURL overrides the API URL of the Scaleway API to the given URL.
+# Change that if you want to direct requests to a different endpoint.
+{{ if .APIURL }}apiurl: {{ .APIURL }}{{ else }}# api_url: https://api.scaleway.com{{ end }}
+
+# Insecure enables insecure transport on the client.
+# Default to false
+{{ if .Insecure }}insecure: {{ .Insecure }}{{ else }}# insecure: false{{ end }}
+
+# A configuration is a named set of Scaleway properties.
+# Starting off with a Scaleway SDK or Scaleway CLI, you’ll work with a single configuration named default.
+# You can set properties of the default profile by running either scw init or scw config set. 
+# This single default configuration is suitable for most use cases.
+{{ if .ActiveProfile }}active_profile: {{ .ActiveProfile }}{{ else }}# active_profile: myProfile{{ end }}
+
+# To work with multiple projects or authorization accounts, you can set up multiple configurations with scw config configurations create and switch among them accordingly.
+# You can use a profile by either:
+# - Define the profile you want to use as the SCW_PROFILE environment variable
+# - Use the GetActiveProfile() function in the SDK
+# - Use the --profile flag with the CLI
+
+# You can define a profile using the following syntax:
+{{ if gt (len .Profiles) 0 }}
+profiles:
+{{- range $k,$v := .Profiles }}
+  {{ $k }}:
+    {{ if $v.AccessKey }}access_key: {{ $v.AccessKey }}{{ else }}# access_key: SCW11111111111111111{{ end }}
+    {{ if $v.SecretKey }}secret_key: {{ $v.SecretKey }}{{ else }}# secret_key: 11111111-1111-1111-1111-111111111111{{ end }}
+    {{ if $v.DefaultOrganizationID }}default_organization_id: {{ $v.DefaultOrganizationID }}{{ else }}# default_organization_id: 11111111-1111-1111-1111-111111111111{{ end }}
+    {{ if $v.DefaultZone }}default_zone: {{ $v.DefaultZone }}{{ else }}# default_zone: fr-par-1{{ end }}
+    {{ if $v.DefaultRegion }}default_region: {{ $v.DefaultRegion }}{{ else }}# default_region: fr-par{{ end }}
+    {{ if $v.APIURL }}api_url: {{ $v.APIURL }}{{ else }}# api_url: https://api.scaleway.com{{ end }}
+    {{ if $v.Insecure }}insecure: {{ $v.Insecure }}{{ else }}# insecure: false{{ end }}
+{{ end }}
+{{- else }}
+# profiles:
+#   myProfile:
+#     access_key: 11111111-1111-1111-1111-111111111111
+#     secret_key: 11111111-1111-1111-1111-111111111111
+#     organization_id: 11111111-1111-1111-1111-111111111111
+#     default_zone: fr-par-1
+#     default_region: fr-par
+#     api_url: https://api.scaleway.com
+#     insecure: false
+{{ end -}}
+`
 
 type Config struct {
 	Profile       `yaml:",inline"`
@@ -150,13 +224,29 @@ func (c *Config) Save() error {
 	return c.SaveTo(GetConfigPath())
 }
 
+// HumanConfig will generate a config file with documented arguments.
+func (c *Config) HumanConfig() (string, error) {
+	tmpl, err := template.New("configuration").Parse(configFileTemplate)
+	if err != nil {
+		return "", err
+	}
+
+	var buf bytes.Buffer
+	err = tmpl.Execute(&buf, c)
+	if err != nil {
+		return "", err
+	}
+
+	return buf.String(), nil
+}
+
 // SaveTo will save the config to the given path. This action will
 // overwrite the previous file when it exists.
 func (c *Config) SaveTo(path string) error {
 	path = filepath.Clean(path)
 
-	// STEP 1: marshal config
-	file, err := yaml.Marshal(c)
+	// STEP 1: Render the configuration file as a file
+	file, err := c.HumanConfig()
 	if err != nil {
 		return err
 	}
@@ -168,7 +258,7 @@ func (c *Config) SaveTo(path string) error {
 	}
 
 	// STEP 3: write new config file
-	err = ioutil.WriteFile(path, file, defaultConfigPermission)
+	err = ioutil.WriteFile(path, []byte(file), defaultConfigPermission)
 	if err != nil {
 		return err
 	}

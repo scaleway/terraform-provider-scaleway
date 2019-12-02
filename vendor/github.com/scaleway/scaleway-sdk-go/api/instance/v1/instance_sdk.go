@@ -1469,7 +1469,7 @@ type CreateServerRequest struct {
 	//
 	// Default value: local
 	BootType BootType `json:"boot_type"`
-	// Bootscript the bootscript ID to use when `boot_type` is set to `bootscript`.
+	// Bootscript the bootscript ID to use when `boot_type` is set to `bootscript`
 	Bootscript *string `json:"bootscript,omitempty"`
 	// Organization the server organization ID
 	Organization string `json:"organization,omitempty"`
@@ -3872,7 +3872,7 @@ type CreateIPRequest struct {
 	Server *string `json:"server,omitempty"`
 }
 
-// CreateIP reseve an IP
+// CreateIP reserve an IP
 func (s *API) CreateIP(req *CreateIPRequest, opts ...scw.RequestOption) (*CreateIPResponse, error) {
 	var err error
 
@@ -4007,8 +4007,8 @@ func (s *API) setIP(req *SetIPRequest, opts ...scw.RequestOption) (*setIPRespons
 
 type updateIPRequest struct {
 	Zone scw.Zone `json:"-"`
-
-	IPID string `json:"-"`
+	// IP iP ID or IP address
+	IP string `json:"-"`
 
 	Reverse *NullableStringValue `json:"reverse,omitempty"`
 
@@ -4028,13 +4028,13 @@ func (s *API) updateIP(req *updateIPRequest, opts ...scw.RequestOption) (*Update
 		return nil, errors.New("field Zone cannot be empty in request")
 	}
 
-	if fmt.Sprint(req.IPID) == "" {
-		return nil, errors.New("field IPID cannot be empty in request")
+	if fmt.Sprint(req.IP) == "" {
+		return nil, errors.New("field IP cannot be empty in request")
 	}
 
 	scwReq := &scw.ScalewayRequest{
 		Method:  "PATCH",
-		Path:    "/instance/v1/zones/" + fmt.Sprint(req.Zone) + "/ips/" + fmt.Sprint(req.IPID) + "",
+		Path:    "/instance/v1/zones/" + fmt.Sprint(req.Zone) + "/ips/" + fmt.Sprint(req.IP) + "",
 		Headers: http.Header{},
 	}
 

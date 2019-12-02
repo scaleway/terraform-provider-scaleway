@@ -1253,7 +1253,7 @@ type RestoreDatabaseBackupRequest struct {
 	Region scw.Region `json:"-"`
 	// DatabaseBackupID backup of a logical database
 	DatabaseBackupID string `json:"-"`
-	// DatabaseName defines the destination database in order to restore into a specified database, the default destination is set to the origin database of the backup.
+	// DatabaseName defines the destination database in order to restore into a specified database, the default destination is set to the origin database of the backup
 	DatabaseName *string `json:"database_name"`
 	// InstanceID defines the rdb instance where the backup has to be restored
 	InstanceID string `json:"instance_id"`

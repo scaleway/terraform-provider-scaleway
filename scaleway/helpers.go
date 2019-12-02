@@ -525,6 +525,18 @@ func expandOrGenerateString(data interface{}, prefix string) string {
 	return data.(string)
 }
 
+func expandLabelUUID(data interface{}) (label, uuid string) {
+	parts := strings.Split(data.(string), "/")
+	if len(parts) != 2 {
+		panic(fmt.Errorf("'%s' is not a valid label/uuid format", data.(string)))
+	}
+	return parts[0], parts[1]
+}
+
+func flattenLabelUUID(label, uuid string) string {
+	return label + "/" + uuid
+}
+
 func expandStrings(data interface{}) []string {
 	if data == nil {
 		return nil
@@ -633,4 +645,15 @@ func diffSuppressFuncIgnoreCaseAndHyphen(k, old, new string, d *schema.ResourceD
 		return true
 	}
 	return false
+}
+
+func diffSuppressFuncLabelUUID(k, old, new string, d *schema.ResourceData) bool {
+	if old == "" {
+		return false
+	}
+
+	// Get label and UUID.
+	label, uuid := expandLabelUUID(old)
+
+	return new == label || new == uuid
 }

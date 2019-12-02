@@ -59,7 +59,7 @@ func resourceScalewayInstanceIPCreate(d *schema.ResourceData, m interface{}) err
 	if reverse != "" {
 		_, err = instanceAPI.UpdateIP(&instance.UpdateIPRequest{
 			Zone:    zone,
-			IPID:    res.IP.ID,
+			IP:      res.IP.ID,
 			Reverse: &instance.NullableStringValue{Value: reverse},
 		})
 		if err != nil {
@@ -73,7 +73,7 @@ func resourceScalewayInstanceIPCreate(d *schema.ResourceData, m interface{}) err
 	if serverID != "" {
 		_, err = instanceAPI.AttachIP(&instance.AttachIPRequest{
 			Zone:     zone,
-			IPID:     res.IP.ID,
+			IP:       res.IP.ID,
 			ServerID: serverID,
 		})
 		if err != nil {
@@ -129,7 +129,7 @@ func resourceScalewayInstanceIPUpdate(d *schema.ResourceData, m interface{}) err
 
 		updateReverseReq := &instance.UpdateIPRequest{
 			Zone: zone,
-			IPID: ID,
+			IP:   ID,
 		}
 
 		reverse := d.Get("reverse").(string)
@@ -149,13 +149,13 @@ func resourceScalewayInstanceIPUpdate(d *schema.ResourceData, m interface{}) err
 		if serverID != "" {
 			_, err = instanceAPI.AttachIP(&instance.AttachIPRequest{
 				Zone:     zone,
-				IPID:     ID,
+				IP:       ID,
 				ServerID: serverID,
 			})
 		} else {
 			_, err = instanceAPI.DetachIP(&instance.DetachIPRequest{
 				Zone: zone,
-				IPID: ID,
+				IP:   ID,
 			})
 		}
 		if err != nil {
