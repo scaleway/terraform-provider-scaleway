@@ -18,6 +18,7 @@ func TestAccScalewayDataSourceInstanceSecurityGroup_Basic(t *testing.T) {
 				Config: `
 resource "scaleway_instance_security_group" "main" {
 	name 	   = "` + securityGroupName + `"
+
 }
 
 data "scaleway_instance_security_group" "prod" {

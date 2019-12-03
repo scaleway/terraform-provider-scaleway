@@ -1,8 +1,21 @@
 package scaleway
 
-// source: https://github.com/terraform-providers/terraform-provider-google/blob/master/google/datasource_helpers.go
-
 import "github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+
+func datasourceSetAliasAndID(d *schema.ResourceData, alias string, idI interface{}) error {
+	zone, id, err := parseZonedID(idI.(string))
+	if err != nil {
+		return err
+	}
+
+	d.SetId(newZonedId(zone, id))
+	return d.Set(alias, d.Id())
+}
+
+////
+// The below methods are imported from Google's terraform provider.
+// source: https://github.com/terraform-providers/terraform-provider-google/blob/master/google/datasource_helpers.go
+////
 
 // datasourceSchemaFromResourceSchema is a recursive func that
 // converts an existing Resource schema to a Datasource schema.
