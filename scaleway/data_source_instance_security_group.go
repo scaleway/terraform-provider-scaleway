@@ -8,26 +8,25 @@ import (
 )
 
 func dataSourceScalewayInstanceSecurityGroup() *schema.Resource {
+	// Generate datasource schema from resource
+	dsSchema := datasourceSchemaFromResourceSchema(resourceScalewayInstanceSecurityGroup().Schema)
+
+	// Set 'Optional' schema elements
+	addOptionalFieldsToSchema(dsSchema, "name", "organization_id", "zone")
+
+	dsSchema["name"].ConflictsWith = []string{"security_group_id"}
+	dsSchema["security_group_id"] = &schema.Schema{
+		Type:          schema.TypeString,
+		Optional:      true,
+		Description:   "The ID of the security group",
+		ValidateFunc:  validationUUIDorUUIDWithLocality(),
+		ConflictsWith: []string{"name"},
+	}
+
 	return &schema.Resource{
 		Read: dataSourceScalewayInstanceSecurityGroupRead,
 
-		Schema: map[string]*schema.Schema{
-			"name": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Computed:    true,
-				Description: "The name of the security group",
-			},
-			"security_group_id": {
-				Type:         schema.TypeString,
-				Optional:     true,
-				Computed:     true,
-				Description:  "The ID of the security group",
-				ValidateFunc: validationUUIDorUUIDWithLocality(),
-			},
-			"zone":            zoneSchema(),
-			"organization_id": organizationIDSchema(),
-		},
+		Schema: dsSchema,
 	}
 }
 
@@ -67,10 +66,6 @@ func dataSourceScalewayInstanceSecurityGroupRead(d *schema.ResourceData, m inter
 	}
 
 	d.SetId(newZonedId(zone, securityGroup.ID))
-	d.Set("name", securityGroup.Name)
-	d.Set("security_group_id", securityGroup.ID)
-	d.Set("zone", zone)
-	d.Set("organization_id", securityGroup.Organization)
-
-	return nil
+	d.Set("security_group_id", newZonedId(zone, securityGroup.ID))
+	return resourceScalewayInstanceSecurityGroupRead(d, m)
 }

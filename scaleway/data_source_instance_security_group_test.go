@@ -34,6 +34,26 @@ data "scaleway_instance_security_group" "stg" {
 					resource.TestCheckResourceAttr("data.scaleway_instance_security_group.stg", "name", securityGroupName),
 				),
 			},
+			{
+				Config: `
+resource "scaleway_instance_security_group" "main" {
+	name 	   = "` + securityGroupName + `"
+}
+
+data "scaleway_instance_security_group" "prod" {
+	security_group_id = "${scaleway_instance_security_group.main.id}"
+}
+
+data "scaleway_instance_security_group" "stg" {
+	name = "${scaleway_instance_security_group.main.name}"
+}`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayInstanceSecurityGroupExists("data.scaleway_instance_security_group.prod"),
+					resource.TestCheckResourceAttr("data.scaleway_instance_security_group.prod", "name", securityGroupName),
+					testAccCheckScalewayInstanceSecurityGroupExists("data.scaleway_instance_security_group.stg"),
+					resource.TestCheckResourceAttr("data.scaleway_instance_security_group.stg", "name", securityGroupName),
+				),
+			},
 		},
 	})
 }
