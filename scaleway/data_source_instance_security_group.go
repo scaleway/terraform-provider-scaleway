@@ -37,18 +37,8 @@ func dataSourceScalewayInstanceSecurityGroupRead(d *schema.ResourceData, m inter
 		return err
 	}
 
-	var securityGroup *instance.SecurityGroup
 	securityGroupID, ok := d.GetOk("security_group_id")
-	if ok {
-		res, err := instanceApi.GetSecurityGroup(&instance.GetSecurityGroupRequest{
-			Zone:            zone,
-			SecurityGroupID: expandID(securityGroupID),
-		})
-		if err != nil {
-			return err
-		}
-		securityGroup = res.SecurityGroup
-	} else {
+	if !ok {
 		res, err := instanceApi.ListSecurityGroups(&instance.ListSecurityGroupsRequest{
 			Zone: zone,
 			Name: String(d.Get("name").(string)),
@@ -62,10 +52,10 @@ func dataSourceScalewayInstanceSecurityGroupRead(d *schema.ResourceData, m inter
 		if len(res.SecurityGroups) > 1 {
 			return fmt.Errorf("%d security groups found with the same name %s", len(res.SecurityGroups), d.Get("name"))
 		}
-		securityGroup = res.SecurityGroups[0]
+		securityGroupID = res.SecurityGroups[0].ID
 	}
 
-	d.SetId(newZonedId(zone, securityGroup.ID))
-	d.Set("security_group_id", newZonedId(zone, securityGroup.ID))
+	d.SetId(newZonedId(zone, expandID(securityGroupID)))
+	d.Set("security_group_id", d.Id())
 	return resourceScalewayInstanceSecurityGroupRead(d, m)
 }
