@@ -452,6 +452,25 @@ func TestAccScalewayInstanceServerImport(t *testing.T) {
 	})
 }
 
+func TestAccScalewayInstanceServerWithReservedIP(t *testing.T) {
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckScalewayInstanceServerDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckScalewayInstanceServerConfigWithReservedIP,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayInstanceServerExists("scaleway_instance_server.base"),
+					testAccCheckScalewayInstanceIPExists("scaleway_instance_ip.ip"),
+					resource.TestCheckResourceAttrPair("scaleway_instance_ip.ip", "address", "scaleway_instance_server.base", "public_ip"),
+					resource.TestCheckResourceAttrPair("scaleway_instance_ip.ip", "id", "scaleway_instance_server.base", "ip_id"),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckScalewayInstanceServerExists(n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
@@ -648,6 +667,19 @@ resource "scaleway_instance_server" "base" {
 	type  = "DEV1-S"
 	placement_group_id = "${scaleway_instance_placement_group.ha.id}"
     tags  = [ "terraform-test", "scaleway_instance_server", "placement_group" ]
+}
+`
+
+var testAccCheckScalewayInstanceServerConfigWithReservedIP = `
+resource "scaleway_instance_ip" "ip" {
+}
+
+resource "scaleway_instance_server" "base" {
+	image = "f974feac-abae-4365-b988-8ec7d1cec10d"
+	type  = "DEV1-S"
+	ip_id = scaleway_instance_ip.ip.id
+	disable_dynamic_ip = true
+    tags  = [ "terraform-test", "scaleway_instance_server", "reserved_ip" ]
 }
 `
 

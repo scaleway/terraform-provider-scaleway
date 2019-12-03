@@ -31,9 +31,11 @@ func resourceScalewayInstanceIP() *schema.Resource {
 			"server_id": {
 				Type:             schema.TypeString,
 				Optional:         true,
+				Computed:         true,
 				Description:      "The server associated with this IP",
 				ValidateFunc:     validationUUIDorUUIDWithLocality(),
 				DiffSuppressFunc: suppressLocality,
+				Deprecated:       "Use the ip_id in scaleway_instance_server",
 			},
 			"zone":            zoneSchema(),
 			"organization_id": organizationIDSchema(),

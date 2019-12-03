@@ -24,7 +24,7 @@ resource "scaleway_instance_server" "web" {
 }
 ```
 
-### With additional volumes, public IP and tags
+### With additional volumes and tags
 
 ```hcl
 resource "scaleway_instance_volume" "data" {
@@ -42,6 +42,23 @@ resource "scaleway_instance_server" "web" {
   }
 
   additional_volume_ids = [ scaleway_instance_volume.data.id ]
+}
+```
+
+### With a reserved IP
+
+```hcl
+resource "scaleway_instance_ip" "ip" {
+}
+
+resource "scaleway_instance_server" "web" {
+  type = "DEV1-L"
+  image = "f974feac-abae-4365-b988-8ec7d1cec10d"
+
+  tags = [ "hello", "public" ]
+
+  ip_id = scaleway_instance_ip.ip.id
+  disable_dynamic_ip = true # required for now when using `ip_id`
 }
 ```
 
@@ -145,6 +162,10 @@ attached to the server. Updates to this field will trigger a stop/start of the s
 ~> **Important:** If this field contains local volumes, updates will trigger a stop/start of the server.
 
 - `enable_ipv6` - (Defaults to `false`) Determines if IPv6 is enabled for the server.
+
+- `ip_id` = (Optional) The ID of the reserved IP that is attached to the server. 
+
+~> **Important:** When using `ip_id`, `disable_dynamic_ip` must also be set to true, otherwise leading to incorrect Terraform state.
 
 - `disable_dynamic_ip` - (Defaults to `false`) Disable dynamic IP on the server.
 
