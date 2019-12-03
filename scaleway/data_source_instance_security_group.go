@@ -32,7 +32,6 @@ func dataSourceScalewayInstanceSecurityGroup() *schema.Resource {
 
 func dataSourceScalewayInstanceSecurityGroupRead(d *schema.ResourceData, m interface{}) error {
 	meta := m.(*Meta)
-	getInstanceAPIWithZoneAndID()
 	instanceApi, zone, err := getInstanceAPIWithZone(d, meta)
 	if err != nil {
 		return err
@@ -56,7 +55,7 @@ func dataSourceScalewayInstanceSecurityGroupRead(d *schema.ResourceData, m inter
 		securityGroupID = res.SecurityGroups[0].ID
 	}
 
-	err = datasourceSetAliasAndID(d, "security_group_id", securityGroupID)
+	err = datasourceSetAliasAndID(d, "security_group_id", securityGroupID, zone)
 	if err != nil {
 		return err
 	}

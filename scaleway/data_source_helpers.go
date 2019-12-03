@@ -1,11 +1,15 @@
 package scaleway
 
-import "github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+import (
+	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/scaleway/scaleway-sdk-go/scw"
+)
 
-func datasourceSetAliasAndID(d *schema.ResourceData, alias string, idI interface{}) error {
+func datasourceSetAliasAndID(d *schema.ResourceData, alias string, idI interface{}, fallBackZone scw.Zone) error {
 	zone, id, err := parseZonedID(idI.(string))
 	if err != nil {
-		return err
+		id = idI.(string)
+		zone = fallBackZone
 	}
 
 	d.SetId(newZonedId(zone, id))
