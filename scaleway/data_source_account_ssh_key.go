@@ -22,7 +22,7 @@ func dataSourceScalewayAccountSSHKey() *schema.Resource {
 				Type:         schema.TypeString,
 				Optional:     true,
 				Computed:     true,
-				Description:  "The name of the SSH key",
+				Description:  "The ID of the SSH key",
 				ValidateFunc: validationUUIDorUUIDWithLocality(),
 			},
 			"public_key": {

@@ -34,5 +34,5 @@ data "scaleway_account_ssh_key" "my_key" {
 
 In addition to all above arguments, the following attributes are exported:
 
-- `id` - The ID of the server.
+- `id` - The ID of the SSH public key.
 - `public_key` - The SSH public key string
