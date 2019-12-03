@@ -1,6 +1,6 @@
 ---
 layout: "scaleway"
-page_title: "Scaleway: scaleway_security_group"
+page_title: "Scaleway: scaleway_instance_security_group"
 description: |-
   Gets information about a Security Group.
 ---
