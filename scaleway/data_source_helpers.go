@@ -1,5 +1,7 @@
 package scaleway
 
+// source: https://github.com/terraform-providers/terraform-provider-google/blob/master/google/datasource_helpers.go
+
 import "github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 
 // datasourceSchemaFromResourceSchema is a recursive func that
