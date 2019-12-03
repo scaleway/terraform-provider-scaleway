@@ -15,6 +15,7 @@ var testAccProvider *schema.Provider
 
 func init() {
 	testAccProvider = Provider().(*schema.Provider)
+	version += "-tftest"
 	testAccProviders = map[string]terraform.ResourceProvider{
 		"scaleway": testAccProvider,
 	}
