@@ -39,6 +39,7 @@ resource "scaleway_instance_ip" "public_ip" {
 }
 
 resource "scaleway_instance_volume" "data" {
+  type = "l_ssd"
   size_in_gb = 100
 }
 

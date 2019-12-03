@@ -14,6 +14,7 @@ Gets information about a Volume.
 ```hcl
 data "scaleway_volume" "data" {
   name = "data"
+  type = "l_ssd"
 }
 
 resource "scaleway_server" "test" {
@@ -29,6 +30,7 @@ resource "scaleway_volume_attachment" "data" {
 ## Argument Reference
 
 * `name` - (Required) Exact name of the Volume.
+* `type` - (Required) Type for the Volume l_ssd or r_ssd.
 
 ## Attributes Reference
 
