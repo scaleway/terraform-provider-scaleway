@@ -55,9 +55,8 @@ func dataSourceScalewayInstanceSecurityGroupRead(d *schema.ResourceData, m inter
 		securityGroupID = res.SecurityGroups[0].ID
 	}
 
-	err = datasourceSetAliasAndID(d, "security_group_id", securityGroupID, zone)
-	if err != nil {
-		return err
-	}
+	zonedID := datasourceNewZonedID(securityGroupID, zone)
+	d.SetId(zonedID)
+	d.Set("security_group_id", zonedID)
 	return resourceScalewayInstanceSecurityGroupRead(d, m)
 }

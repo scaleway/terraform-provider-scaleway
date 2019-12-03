@@ -5,15 +5,14 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 )
 
-func datasourceSetAliasAndID(d *schema.ResourceData, alias string, idI interface{}, fallBackZone scw.Zone) error {
+func datasourceNewZonedID(idI interface{}, fallBackZone scw.Zone) string {
 	zone, id, err := parseZonedID(idI.(string))
 	if err != nil {
 		id = idI.(string)
 		zone = fallBackZone
 	}
 
-	d.SetId(newZonedId(zone, id))
-	return d.Set(alias, d.Id())
+	return newZonedId(zone, id)
 }
 
 ////
