@@ -2,9 +2,11 @@ package scaleway
 
 import (
 	"fmt"
+	"sort"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
+	"github.com/scaleway/scaleway-sdk-go/scw"
 )
 
 func dataSourceScalewayInstanceImage() *schema.Resource {
@@ -21,7 +23,7 @@ func dataSourceScalewayInstanceImage() *schema.Resource {
 			"image_id": {
 				Type:          schema.TypeString,
 				Optional:      true,
-				Description:   "exact name of the desired image",
+				Description:   "ID of the desired image",
 				ConflictsWith: []string{"name", "architecture"},
 			},
 			"architecture": {
@@ -29,6 +31,13 @@ func dataSourceScalewayInstanceImage() *schema.Resource {
 				Optional:      true,
 				Default:       instance.ArchX86_64.String(),
 				Description:   "architecture of the desired image",
+				ConflictsWith: []string{"image_id"},
+			},
+			"latest": {
+				Type:          schema.TypeBool,
+				Optional:      true,
+				Default:       true,
+				Description:   "select most recent image if multiple match",
 				ConflictsWith: []string{"image_id"},
 			},
 			"zone":            zoneSchema(),
@@ -39,7 +48,7 @@ func dataSourceScalewayInstanceImage() *schema.Resource {
 				Computed:    true,
 				Description: "indication if the image is public",
 			},
-			"bootscript_id": {
+			"default_bootscript_id": {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "ID of the bootscript associated with this image",
@@ -94,16 +103,19 @@ func dataSourceScalewayInstanceImageRead(d *schema.ResourceData, m interface{}) 
 			Zone: zone,
 			Name: expandStringPtr(d.Get("name")),
 			Arch: expandStringPtr(d.Get("architecture")),
-		})
+		}, scw.WithAllPages())
 		if err != nil {
 			return err
 		}
 		if len(res.Images) == 0 {
 			return fmt.Errorf("no image found with the name %s and architecture %s", d.Get("name"), d.Get("architecture"))
 		}
-		if len(res.Images) > 1 {
+		if len(res.Images) > 1 && !d.Get("latest").(bool) {
 			return fmt.Errorf("%d images found with the same name %s and architecture %s", len(res.Images), d.Get("name"), d.Get("architecture"))
 		}
+		sort.Slice(res.Images, func(i, j int) bool {
+			return res.Images[i].ModificationDate.After(res.Images[j].ModificationDate)
+		})
 		imageID = res.Images[0].ID
 	}
 
@@ -129,9 +141,9 @@ func dataSourceScalewayInstanceImageRead(d *schema.ResourceData, m interface{}) 
 	d.Set("state", resp.Image.State.String())
 
 	if resp.Image.DefaultBootscript != nil {
-		d.Set("bootscript_id", resp.Image.DefaultBootscript.ID)
+		d.Set("default_bootscript_id", resp.Image.DefaultBootscript.ID)
 	} else {
-		d.Set("bootscript_id", "")
+		d.Set("default_bootscript_id", "")
 	}
 
 	if resp.Image.RootVolume != nil {
