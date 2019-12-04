@@ -223,6 +223,7 @@ func Provider() terraform.ResourceProvider {
 			"scaleway_account_ssh_key":         dataSourceScalewayAccountSSHKey(),
 			"scaleway_instance_security_group": dataSourceScalewayInstanceSecurityGroup(),
 			"scaleway_instance_server":         dataSourceScalewayInstanceServer(),
+			"scaleway_instance_image":          dataSourceScalewayInstanceImage(),
 		},
 	}
 
