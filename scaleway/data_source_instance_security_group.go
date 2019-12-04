@@ -12,7 +12,7 @@ func dataSourceScalewayInstanceSecurityGroup() *schema.Resource {
 	dsSchema := datasourceSchemaFromResourceSchema(resourceScalewayInstanceSecurityGroup().Schema)
 
 	// Set 'Optional' schema elements
-	addOptionalFieldsToSchema(dsSchema, "name", "organization_id", "zone")
+	addOptionalFieldsToSchema(dsSchema, "name", "zone")
 
 	dsSchema["name"].ConflictsWith = []string{"security_group_id"}
 	dsSchema["security_group_id"] = &schema.Schema{
