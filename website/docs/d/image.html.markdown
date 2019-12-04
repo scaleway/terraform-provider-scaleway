@@ -20,7 +20,7 @@ data "scaleway_image" "ubuntu" {
 
 resource "scaleway_server" "base" {
   name  = "test"
-  image = "${data.scaleway_image.ubuntu.id}"
+  image = data.scaleway_image.ubuntu.id
   type  = "C1"
 }
 ```

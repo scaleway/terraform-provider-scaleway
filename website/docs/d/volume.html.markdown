@@ -21,8 +21,8 @@ resource "scaleway_server" "test" {
 }
 
 resource "scaleway_volume_attachment" "data" {
-  server = "${scaleway_server.test.id}"
-  volume = "${scaleway_volume.data.id}"
+  server = scaleway_server.test.id
+  volume = scaleway_volume.data.id
 }
 ```
 

@@ -15,12 +15,12 @@ Creates and manages Scaleway Compute Instance servers. For more information, see
 
 ```hcl
 resource "scaleway_instance_ip" "public_ip" {
-  server_id = "${scaleway_instance_server.web.id}"
+  server_id = scaleway_instance_server.web.id
 }
 
 resource "scaleway_instance_server" "web" {
   type = "DEV1-S"
-  image = "f974feac-abae-4365-b988-8ec7d1cec10d"
+  image = "ubuntu-bionic"
 }
 ```
 
@@ -33,7 +33,7 @@ resource "scaleway_instance_volume" "data" {
 
 resource "scaleway_instance_server" "web" {
   type = "DEV1-L"
-  image = "f974feac-abae-4365-b988-8ec7d1cec10d"
+  image = "ubuntu-bionic"
 
   tags = [ "hello", "public" ]
 
@@ -41,7 +41,7 @@ resource "scaleway_instance_server" "web" {
     delete_on_termination = false
   }
 
-  additional_volume_ids = [ "${scaleway_instance_volume.data.id}" ]
+  additional_volume_ids = [ scaleway_instance_volume.data.id ]
 }
 ```
 
@@ -76,9 +76,9 @@ resource "scaleway_instance_security_group" "www" {
 
 resource "scaleway_instance_server" "web" {
   type = "DEV1-S"
-  image = "f974feac-abae-4365-b988-8ec7d1cec10d"
+  image = "ubuntu-bionic"
 
-  security_group_id= "${scaleway_instance_security_group.www.id}"
+  security_group_id= scaleway_instance_security_group.www.id
 }
 ```
 
@@ -87,7 +87,7 @@ resource "scaleway_instance_server" "web" {
 ```hcl
 resource "scaleway_instance_server" "web" {
   type = "DEV1-L"
-  image = "f974feac-abae-4365-b988-8ec7d1cec10d"
+  image = "ubuntu-bionic"
 
   tags = [ "web", "public" ]
 

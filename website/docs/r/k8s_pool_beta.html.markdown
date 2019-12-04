@@ -25,7 +25,7 @@ resource "scaleway_k8s_cluster_beta" "jack" {
 }
 
 resource "scaleway_k8s_pool_beta" "bill" {
-  cluster_id = "${scaleway_k8s_cluster_beta.jack.id}"
+  cluster_id = scaleway_k8s_cluster_beta.jack.id
   name = "bill"
   node_type = "GP1-S"
   size = 3

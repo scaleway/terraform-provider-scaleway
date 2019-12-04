@@ -22,7 +22,7 @@ resource "scaleway_security_group" "test" {
 }
 
 resource "scaleway_security_group_rule" "smtp_drop_1" {
-  security_group = "${scaleway_security_group.test.id}"
+  security_group = scaleway_security_group.test.id
 
   action    = "accept"
   direction = "inbound"

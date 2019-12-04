@@ -25,7 +25,7 @@ resource "scaleway_server" "base" {
 }
 
 resource "scaleway_user_data" "gcp" {
-	server = "${scaleway_server.base.id}"
+	server = scaleway_server.base.id
 	key = "gcp_username"
 	value = "supersecret"
 }
