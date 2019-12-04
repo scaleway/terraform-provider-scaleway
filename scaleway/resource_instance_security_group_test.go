@@ -245,6 +245,59 @@ func TestAccScalewayInstanceSecurityGroupRemovePort(t *testing.T) {
 	})
 }
 
+func TestAccScalewayInstanceSecurityGroupPortRange(t *testing.T) {
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckScalewayInstanceSecurityGroupDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource "scaleway_instance_security_group" "base" {
+						inbound_rule {
+							action = "accept"
+							port_range = "1-1024"
+							ip = "8.8.8.8"
+						}
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("scaleway_instance_security_group.base", "inbound_rule.0.port_range", "1-1024"),
+				),
+			},
+			{
+				Config: `
+					resource "scaleway_instance_security_group" "base" {
+						inbound_rule {
+							action = "accept"
+							port = "22"
+							ip = "8.8.8.8"
+						}
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("scaleway_instance_security_group.base", "inbound_rule.0.port", "22"),
+				),
+			},
+			{
+				Config: `
+					resource "scaleway_instance_security_group" "base" {
+						inbound_rule {
+							action = "accept"
+							port_range = "1-1024"
+							ip = "8.8.8.8"
+						}
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("scaleway_instance_security_group.base", "inbound_rule.0.port_range", "1-1024"),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckScalewayInstanceSecurityGroupRuleMatch(name string, index int, expected *instance.SecurityGroupRule) resource.TestCheckFunc {
 	return testAccCheckScalewayInstanceSecurityGroupRuleIs(name, expected.Direction, index, func(actual *instance.SecurityGroupRule) error {
 		if !securityGroupRuleEquals(expected, actual) {
