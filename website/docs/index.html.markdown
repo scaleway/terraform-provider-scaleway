@@ -27,15 +27,15 @@ You can test this config by creating a `test.tf` and run terraform commands from
 
 ```hcl
 provider "scaleway" {
-  access_key = "<SCALEWAY-ACCESS-KEY>"
-  secret_key = "<SCALEWAY-SECRET-KEY>"
+  access_key      = "<SCALEWAY-ACCESS-KEY>"
+  secret_key      = "<SCALEWAY-SECRET-KEY>"
   organization_id = "<SCALEWAY-ORGANIZATION-ID>"
-  zone       = "fr-par-1"
-  region     = "fr-par"
+  zone            = "fr-par-1"
+  region          = "fr-par"
 }
 
 resource "scaleway_instance_ip" "public_ip" {
-  server_id = "${scaleway_instance_server.web.id}"
+  server_id = scaleway_instance_server.web.id
 }
 
 resource "scaleway_instance_volume" "data" {
@@ -43,35 +43,35 @@ resource "scaleway_instance_volume" "data" {
 }
 
 resource "scaleway_instance_security_group" "www" {
-  inbound_default_policy = "drop"
+  inbound_default_policy  = "drop"
   outbound_default_policy = "accept"
 
   inbound_rule {
     action = "accept"
-    port = "22"
-    ip = "212.47.225.64"
+    port   = "22"
+    ip     = "212.47.225.64"
   }
 
   inbound_rule {
     action = "accept"
-    port = "80"
+    port   = "80"
   }
 
   inbound_rule {
     action = "accept"
-    port = "443"
+    port   = "443"
   }
 }
 
 resource "scaleway_instance_server" "web" {
-  type = "DEV1-L"
+  type  = "DEV1-L"
   image = "ubuntu-bionic"
 
   tags = [ "front", "web" ]
 
-  additional_volume_ids = [ "${scaleway_instance_volume.data.id}" ]
+  additional_volume_ids = [ scaleway_instance_volume.data.id ]
 
-  security_group_id= "${scaleway_instance_security_group.www.id}"
+  security_group_id = scaleway_instance_security_group.www.id
 }
 ```
 
@@ -164,14 +164,14 @@ Configure your backend as:
 ```
 terraform {
   backend "s3" {
-    bucket      = "terraform_state"
-    key         = "my_state.tfstate"
-    region      = "fr-par"
-    endpoint    = "https://s3.fr-par.scw.cloud"
-    access_key = "my-access-key"
-    secret_key = "my-secret-key"
+    bucket                      = "terraform_state"
+    key                         = "my_state.tfstate"
+    region                      = "fr-par"
+    endpoint                    = "https://s3.fr-par.scw.cloud"
+    access_key                  = "my-access-key"
+    secret_key                  = "my-secret-key"
     skip_credentials_validation = true
-    skip_region_validation = true
+    skip_region_validation      = true
   }
 }
 ```
