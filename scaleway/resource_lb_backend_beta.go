@@ -239,6 +239,7 @@ func resourceScalewayLbBackendBetaCreate(d *schema.ResourceData, m interface{}) 
 			Port:            int32(healthCheckPort),
 			CheckMaxRetries: int32(d.Get("health_check_max_retries").(int)),
 			CheckTimeout:    expandDuration(d.Get("health_check_timeout")),
+			CheckDelay:      expandDuration(d.Get("health_check_delay")),
 			TCPConfig:       expandLbHCTCP(d.Get("health_check_tcp")),
 			HTTPConfig:      expandLbHCHTTP(d.Get("health_check_http")),
 			HTTPSConfig:     expandLbHCHTTPS(d.Get("health_check_https")),
@@ -295,6 +296,7 @@ func resourceScalewayLbBackendBetaRead(d *schema.ResourceData, m interface{}) er
 	d.Set("health_check_port", res.HealthCheck.Port)
 	d.Set("health_check_max_retries", res.HealthCheck.CheckMaxRetries)
 	d.Set("health_check_timeout", flattenDuration(res.HealthCheck.CheckTimeout))
+	d.Set("health_check_delay", flattenDuration(res.HealthCheck.CheckDelay))
 	d.Set("on_marked_down_action", flattenLbBackendMarkdownAction(res.OnMarkedDownAction))
 	d.Set("health_check_tcp", flattenLbHCTCP(res.HealthCheck.TCPConfig))
 	d.Set("health_check_http", flattenLbHCHTTP(res.HealthCheck.HTTPConfig))
@@ -337,6 +339,7 @@ func resourceScalewayLbBackendBetaUpdate(d *schema.ResourceData, m interface{}) 
 		Port:            int32(d.Get("health_check_port").(int)),
 		CheckMaxRetries: int32(d.Get("health_check_max_retries").(int)),
 		CheckTimeout:    expandDuration(d.Get("health_check_timeout")),
+		CheckDelay:      expandDuration(d.Get("health_check_delay")),
 		HTTPConfig:      expandLbHCHTTP(d.Get("health_check_http")),
 		HTTPSConfig:     expandLbHCHTTPS(d.Get("health_check_https")),
 	}

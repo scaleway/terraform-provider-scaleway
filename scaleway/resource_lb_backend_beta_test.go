@@ -42,6 +42,7 @@ func TestAccScalewayLbBackendBeta(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_lb_backend_beta.bkd01", "on_marked_down_action", "none"),
 					resource.TestCheckResourceAttr("scaleway_lb_backend_beta.bkd01", "health_check_timeout", "30s"),
 					resource.TestCheckResourceAttr("scaleway_lb_backend_beta.bkd01", "health_check_port", "80"),
+					resource.TestCheckResourceAttr("scaleway_lb_backend_beta.bkd01", "health_check_delay", "60s"),
 					resource.TestCheckResourceAttr("scaleway_lb_backend_beta.bkd01", "health_check_max_retries", "2"),
 					resource.TestCheckResourceAttrPair("scaleway_lb_backend_beta.bkd01", "server_ips.0", "scaleway_instance_ip.ip01", "address"),
 				),
@@ -70,6 +71,7 @@ func TestAccScalewayLbBackendBeta(t *testing.T) {
 						timeout_connect = "2.5s"
 						timeout_tunnel = "3s"
 						health_check_timeout = "15s"
+						health_check_delay = "10s"
 						health_check_port = 81
 						health_check_max_retries = 3
 						on_marked_down_action = "shutdown_sessions"
@@ -78,6 +80,10 @@ func TestAccScalewayLbBackendBeta(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayLbBackendBetaExists("scaleway_lb_backend_beta.bkd01"),
 					resource.TestCheckResourceAttrPair("scaleway_lb_backend_beta.bkd01", "server_ips.0", "scaleway_instance_ip.ip02", "address"),
+					resource.TestCheckResourceAttr("scaleway_lb_backend_beta.bkd01", "health_check_delay", "10s"),
+					resource.TestCheckResourceAttr("scaleway_lb_backend_beta.bkd01", "health_check_timeout", "15s"),
+					resource.TestCheckResourceAttr("scaleway_lb_backend_beta.bkd01", "health_check_port", "81"),
+					resource.TestCheckResourceAttr("scaleway_lb_backend_beta.bkd01", "health_check_max_retries", "3"),
 					resource.TestCheckResourceAttr("scaleway_lb_backend_beta.bkd01", "on_marked_down_action", "shutdown_sessions"),
 				),
 			},
