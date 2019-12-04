@@ -12,7 +12,7 @@ func dataSourceScalewayInstanceSecurityGroup() *schema.Resource {
 	dsSchema := datasourceSchemaFromResourceSchema(resourceScalewayInstanceSecurityGroup().Schema)
 
 	// Set 'Optional' schema elements
-	addOptionalFieldsToSchema(dsSchema, "name", "organization_id", "zone")
+	addOptionalFieldsToSchema(dsSchema, "name", "zone")
 
 	dsSchema["name"].ConflictsWith = []string{"security_group_id"}
 	dsSchema["security_group_id"] = &schema.Schema{
@@ -55,7 +55,8 @@ func dataSourceScalewayInstanceSecurityGroupRead(d *schema.ResourceData, m inter
 		securityGroupID = res.SecurityGroups[0].ID
 	}
 
-	d.SetId(newZonedId(zone, expandID(securityGroupID)))
-	d.Set("security_group_id", d.Id())
+	zonedID := datasourceNewZonedID(securityGroupID, zone)
+	d.SetId(zonedID)
+	d.Set("security_group_id", zonedID)
 	return resourceScalewayInstanceSecurityGroupRead(d, m)
 }

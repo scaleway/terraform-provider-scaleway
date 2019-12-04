@@ -1,6 +1,6 @@
 ---
 layout: "scaleway"
-page_title: "Scaleway: scaleway_security_group"
+page_title: "Scaleway: scaleway_instance_security_group"
 description: |-
   Gets information about a Security Group.
 ---
@@ -31,13 +31,13 @@ data "scaleway_instance_security_group" "my_key" {
 
 - `zone` - (Defaults to [provider](../index.html#zone) `zone`) The [zone](../guides/regions_and_zones.html#zones) in which the security group should be created.
 
-- `organization_id` - (Defaults to [provider](../index.html#organization_id) `organization_id`) The ID of the organization the security group is associated with.
-
 ## Attributes Reference
 
 In addition to all above arguments, the following attributes are exported:
 
 - `id` - The ID of the security group.
+
+- `organization_id` - The ID of the organization the security group is associated with.
 
 - `inbound_default_policy` - The default policy on incoming traffic. Possible values are: `accept` or `drop`.
 
