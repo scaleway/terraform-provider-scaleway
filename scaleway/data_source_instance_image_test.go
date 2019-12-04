@@ -27,6 +27,7 @@ data "scaleway_instance_image" "stg" {
 					testAccCheckScalewayInstanceImageExists("data.scaleway_instance_image.prod"),
 					resource.TestCheckResourceAttr("data.scaleway_instance_image.prod", "name", "Golang 1.10"),
 					testAccCheckScalewayInstanceImageExists("data.scaleway_instance_image.stg"),
+					resource.TestCheckResourceAttr("data.scaleway_instance_image.stg", "image_id", "fr-par-1/43213956-c7a3-44b8-9d96-d51fa7457969"),
 					resource.TestCheckResourceAttr("data.scaleway_instance_image.stg", "name", "Golang 1.10"),
 					resource.TestCheckResourceAttr("data.scaleway_instance_image.stg", "architecture", "x86_64"),
 					resource.TestCheckResourceAttr("data.scaleway_instance_image.stg", "creation_date", "2018-04-12T10:22:46Z"),
