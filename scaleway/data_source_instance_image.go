@@ -126,9 +126,9 @@ func dataSourceScalewayInstanceImageRead(d *schema.ResourceData, m interface{}) 
 	if err != nil {
 		return err
 	}
-
-	d.SetId(newZonedId(zone, expandID(imageID)))
-	d.Set("security_group_id", d.Id())
+	zonedID := datasourceNewZonedID(imageID, zone)
+	d.SetId(zonedID)
+	d.Set("security_group_id", zonedID)
 	d.Set("zone", zone)
 	d.Set("organization_id", resp.Image.Organization)
 	d.Set("architecture", resp.Image.Arch)
