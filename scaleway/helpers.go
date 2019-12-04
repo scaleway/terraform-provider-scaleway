@@ -592,7 +592,7 @@ func expandIPNet(raw string) scw.IPNet {
 	err := json.Unmarshal([]byte(raw), &ipNet)
 	if err != nil {
 		// We panic as this should never happen. Data from state should be validate using a validate func
-		panic(err)
+		panic(fmt.Errorf("%s could not be marshaled: %v", raw, err))
 	}
 
 	return ipNet
@@ -604,7 +604,7 @@ func flattenIpNet(ipNet scw.IPNet) string {
 		// We panic as this should never happen.
 		panic(err)
 	}
-	return string(raw)
+	return string(raw[1 : len(raw)-1])
 }
 
 func diffSuppressFuncDuration(k, old, new string, d *schema.ResourceData) bool {
