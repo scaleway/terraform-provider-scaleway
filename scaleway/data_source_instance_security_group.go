@@ -5,6 +5,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
+	"github.com/scaleway/scaleway-sdk-go/scw"
 )
 
 func dataSourceScalewayInstanceSecurityGroup() *schema.Resource {
@@ -42,7 +43,7 @@ func dataSourceScalewayInstanceSecurityGroupRead(d *schema.ResourceData, m inter
 		res, err := instanceApi.ListSecurityGroups(&instance.ListSecurityGroupsRequest{
 			Zone: zone,
 			Name: String(d.Get("name").(string)),
-		})
+		}, scw.WithAllPages())
 		if err != nil {
 			return err
 		}

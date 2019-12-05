@@ -499,6 +499,13 @@ func testAccGetResourceAttr(resourceName string, attrName string, dest *string) 
 	}
 }
 
+func flattenTime(date *time.Time) interface{} {
+	if date != nil {
+		return date.Format(time.RFC3339)
+	}
+	return ""
+}
+
 func flattenDuration(duration *time.Duration) interface{} {
 	if duration != nil {
 		return duration.String()

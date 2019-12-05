@@ -7,6 +7,9 @@ description: |-
 
 # scaleway_security_group
 
+**DEPRECATED**: This resource is deprecated and will be removed in `v2.0+`.
+Please use `scaleway_instance_security_group` instead.
+
 Gets information about a Security Group.
 
 ## Example Usage
