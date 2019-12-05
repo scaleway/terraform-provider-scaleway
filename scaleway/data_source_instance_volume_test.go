@@ -10,7 +10,6 @@ import (
 )
 
 func TestAccScalewayDataSourceInstanceVolume_Basic(t *testing.T) {
-	dataSourceName := "data.scaleway_instance_volume.test"
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
@@ -18,9 +17,9 @@ func TestAccScalewayDataSourceInstanceVolume_Basic(t *testing.T) {
 			{
 				Config: testAccCheckScalewayDataSourceVolumeConfig(acctest.RandInt()),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayInstanceVolumeExists(dataSourceName),
-					resource.TestCheckResourceAttr(dataSourceName, "size_in_gb", "2"),
-					resource.TestCheckResourceAttr(dataSourceName, "type", "l_ssd"),
+					testAccCheckScalewayInstanceVolumeExists("data.scaleway_instance_volume.test"),
+					resource.TestCheckResourceAttr("data.scaleway_instance_volume.test", "size_in_gb", "2"),
+					resource.TestCheckResourceAttr("data.scaleway_instance_volume.test", "type", "l_ssd"),
 				),
 			},
 		},
