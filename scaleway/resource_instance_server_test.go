@@ -428,6 +428,30 @@ func TestAccScalewayInstanceServerIpv6(t *testing.T) {
 	})
 }
 
+func TestAccScalewayInstanceServerImport(t *testing.T) {
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckScalewayInstanceServerDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource "scaleway_instance_server" "server01" {
+						type  = "DEV1-S"
+						image = "f974feac-abae-4365-b988-8ec7d1cec10d"
+						state = "stopped"
+					}
+				`,
+			},
+			{
+				ResourceName:      "scaleway_instance_server.server01",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
 func testAccCheckScalewayInstanceServerExists(n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
