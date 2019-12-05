@@ -158,19 +158,18 @@ func dataSourceScalewayBaremetalOfferBetaRead(d *schema.ResourceData, m interfac
 	if err != nil {
 		return err
 	}
-	excludedOffers := []int(nil)
-	for i, offer := range res.Offers {
+
+	for i := 0; i < len(res.Offers); i++ {
+		offer := res.Offers[i]
 		switch {
 		case offer.Name == d.Get("name"), offer.ID == offerID:
 			if !offer.Enable && !d.Get("allow_disabled").(bool) {
 				return fmt.Errorf("offer %s (%s) found in zone %s but is disabled. Add allow_disabled=true in your terraform config to use it.", offer.Name, offer.Name, zone)
 			}
 		default:
-			excludedOffers = append(excludedOffers, i)
+			res.Offers = append(res.Offers[:i], res.Offers[i+1:]...)
+			i--
 		}
-	}
-	for _, excludedOffer := range excludedOffers {
-		res.Offers = append(res.Offers[:excludedOffer], res.Offers[:excludedOffer+1]...)
 	}
 
 	if len(res.Offers) == 0 {
@@ -190,6 +189,7 @@ func dataSourceScalewayBaremetalOfferBetaRead(d *schema.ResourceData, m interfac
 		return err
 	}
 
+	d.Set("name", offer.Name)
 	d.Set("allow_disabled", !offer.Enable)
 	d.Set("bandwidth", offer.Bandwidth)
 	d.Set("commercial_range", offer.CommercialRange)
