@@ -17,7 +17,7 @@ func dataSourceScalewayInstanceImage() *schema.Resource {
 			"name": {
 				Type:          schema.TypeString,
 				Optional:      true,
-				Description:   "exact name of the desired image",
+				Description:   "Exact name of the desired image",
 				ConflictsWith: []string{"image_id"},
 			},
 			"image_id": {
@@ -30,14 +30,14 @@ func dataSourceScalewayInstanceImage() *schema.Resource {
 				Type:          schema.TypeString,
 				Optional:      true,
 				Default:       instance.ArchX86_64.String(),
-				Description:   "architecture of the desired image",
+				Description:   "Architecture of the desired image",
 				ConflictsWith: []string{"image_id"},
 			},
 			"latest": {
 				Type:          schema.TypeBool,
 				Optional:      true,
 				Default:       true,
-				Description:   "select most recent image if multiple match",
+				Description:   "Select most recent image if multiple match",
 				ConflictsWith: []string{"image_id"},
 			},
 			"zone":            zoneSchema(),
@@ -46,7 +46,7 @@ func dataSourceScalewayInstanceImage() *schema.Resource {
 			"public": {
 				Type:        schema.TypeBool,
 				Computed:    true,
-				Description: "indication if the image is public",
+				Description: "Indication if the image is public",
 			},
 			"default_bootscript_id": {
 				Type:        schema.TypeString,
@@ -74,17 +74,17 @@ func dataSourceScalewayInstanceImage() *schema.Resource {
 			"creation_date": {
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "date when the image was created",
+				Description: "Date when the image was created",
 			},
 			"modification_date": {
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "date when the image was updated",
+				Description: "Date when the image was updated",
 			},
 			"state": {
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "state of the image",
+				Description: "State of the image",
 			},
 		},
 	}
@@ -98,7 +98,7 @@ func dataSourceScalewayInstanceImageRead(d *schema.ResourceData, m interface{}) 
 	}
 
 	imageID, ok := d.GetOk("image_id")
-	if !ok {
+	if !ok { // Get instance by name, zone, and arch.
 		res, err := instanceApi.ListImages(&instance.ListImagesRequest{
 			Zone: zone,
 			Name: expandStringPtr(d.Get("name")),
@@ -108,10 +108,10 @@ func dataSourceScalewayInstanceImageRead(d *schema.ResourceData, m interface{}) 
 			return err
 		}
 		if len(res.Images) == 0 {
-			return fmt.Errorf("no image found with the name %s and architecture %s", d.Get("name"), d.Get("architecture"))
+			return fmt.Errorf("no image found with the name %s and architecture %s in zone %s", d.Get("name"), d.Get("architecture"), zone)
 		}
 		if len(res.Images) > 1 && !d.Get("latest").(bool) {
-			return fmt.Errorf("%d images found with the same name %s and architecture %s", len(res.Images), d.Get("name"), d.Get("architecture"))
+			return fmt.Errorf("%d images found with the same name %s and architecture %s in zone %s", len(res.Images), d.Get("name"), d.Get("architecture"), zone)
 		}
 		sort.Slice(res.Images, func(i, j int) bool {
 			return res.Images[i].ModificationDate.After(res.Images[j].ModificationDate)

@@ -29,7 +29,7 @@ data "scaleway_instance_image" "my_key" {
 
 - `image_id` - (Optional) The image id. Only one of `name` and `image_id` should be specified.
 
-- `architecture` - (Optional, default `x86_64`) The architecture the image is compatible with.Possible values are: `x86_64` or `arm`.
+- `architecture` - (Optional, default `x86_64`) The architecture the image is compatible with. Possible values are: `x86_64` or `arm`.
 
 - `latest` - (Optional, default `true`) Use the latest image ID.
 
