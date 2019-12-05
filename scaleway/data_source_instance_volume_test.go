@@ -11,8 +11,9 @@ import (
 
 func TestAccScalewayDataSourceInstanceVolume_Basic(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
-		Providers: testAccProviders,
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckSalewayInstanceVolumeDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccCheckScalewayDataSourceVolumeConfig(acctest.RandInt()),
