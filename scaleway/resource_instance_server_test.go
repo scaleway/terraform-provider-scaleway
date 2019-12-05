@@ -459,12 +459,23 @@ func TestAccScalewayInstanceServerWithReservedIP(t *testing.T) {
 		CheckDestroy: testAccCheckScalewayInstanceServerDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckScalewayInstanceServerConfigWithReservedIP,
+				Config: testAccCheckScalewayInstanceServerConfigWithReservedIP(false),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayInstanceServerExists("scaleway_instance_server.base"),
-					testAccCheckScalewayInstanceIPExists("scaleway_instance_ip.ip"),
-					resource.TestCheckResourceAttrPair("scaleway_instance_ip.ip", "address", "scaleway_instance_server.base", "public_ip"),
-					resource.TestCheckResourceAttrPair("scaleway_instance_ip.ip", "id", "scaleway_instance_server.base", "ip_id"),
+					testAccCheckScalewayInstanceIPExists("scaleway_instance_ip.first"),
+					testAccCheckScalewayInstanceIPExists("scaleway_instance_ip.second"),
+					resource.TestCheckResourceAttrPair("scaleway_instance_ip.first", "address", "scaleway_instance_server.base", "public_ip"),
+					resource.TestCheckResourceAttrPair("scaleway_instance_ip.first", "id", "scaleway_instance_server.base", "ip_id"),
+				),
+			},
+			{
+				Config: testAccCheckScalewayInstanceServerConfigWithReservedIP(true),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayInstanceServerExists("scaleway_instance_server.base"),
+					testAccCheckScalewayInstanceIPExists("scaleway_instance_ip.first"),
+					testAccCheckScalewayInstanceIPExists("scaleway_instance_ip.second"),
+					resource.TestCheckResourceAttrPair("scaleway_instance_ip.second", "address", "scaleway_instance_server.base", "public_ip"),
+					resource.TestCheckResourceAttrPair("scaleway_instance_ip.second", "id", "scaleway_instance_server.base", "ip_id"),
 				),
 			},
 		},
@@ -670,17 +681,26 @@ resource "scaleway_instance_server" "base" {
 }
 `
 
-var testAccCheckScalewayInstanceServerConfigWithReservedIP = `
-resource "scaleway_instance_ip" "ip" {
+func testAccCheckScalewayInstanceServerConfigWithReservedIP(secondIP bool) string {
+	ip := "first"
+	if secondIP {
+		ip = "second"
+	}
+	return fmt.Sprintf(`
+resource "scaleway_instance_ip" "first" {
+}
+
+resource "scaleway_instance_ip" "second" {
 }
 
 resource "scaleway_instance_server" "base" {
 	image = "f974feac-abae-4365-b988-8ec7d1cec10d"
 	type  = "DEV1-S"
-	ip_id = scaleway_instance_ip.ip.id
+	ip_id = scaleway_instance_ip.%s.id
 	disable_dynamic_ip = true
     tags  = [ "terraform-test", "scaleway_instance_server", "reserved_ip" ]
 }
-`
+`, ip)
+}
 
 // todo: add a test with security groups
