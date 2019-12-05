@@ -10,6 +10,8 @@ import (
 
 func dataSourceScalewayVolume() *schema.Resource {
 	return &schema.Resource{
+		DeprecationMessage: `This data source is deprecated and will be removed in the next major version.
+		Please use scaleway_instance_volume instead.`,
 		Read: dataSourceScalewayVolumeRead,
 
 		Schema: map[string]*schema.Schema{
