@@ -225,7 +225,7 @@ func Provider() terraform.ResourceProvider {
 			"scaleway_instance_server":         dataSourceScalewayInstanceServer(),
 			"scaleway_instance_image":          dataSourceScalewayInstanceImage(),
 			"scaleway_instance_volume":         dataSourceScalewayInstanceVolume(),
-			"scaleway_baremetal_offer":         dataSourceScalewayBaremetalOfferBeta(),
+			"scaleway_baremetal_offer_beta":    dataSourceScalewayBaremetalOfferBeta(),
 		},
 	}
 
