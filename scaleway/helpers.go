@@ -18,6 +18,7 @@ import (
 	api "github.com/nicolai86/scaleway-sdk"
 	"github.com/scaleway/scaleway-sdk-go/namegenerator"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"golang.org/x/text/currency"
 	"golang.org/x/xerrors"
 )
 
@@ -497,6 +498,13 @@ func testAccGetResourceAttr(resourceName string, attrName string, dest *string) 
 		*dest = a
 		return nil
 	}
+}
+
+func flattenMoney(value *scw.Money) interface{} {
+	if value != nil {
+		return fmt.Sprint(currency.MustParseISO(value.CurrencyCode).Amount(value.ToFloat()))
+	}
+	return ""
 }
 
 func flattenTime(date *time.Time) interface{} {
