@@ -2,7 +2,7 @@
 layout: "scaleway"
 page_title: "Scaleway: scaleway_instance_volume"
 description: |-
-  Gets information about an Instance Volume.
+  Gets information about an instance volume.
 ---
 
 # scaleway_instance_volume
@@ -13,12 +13,12 @@ Gets information about an instance volume.
 
 ```hcl
 // Get info by volume name
-data "scaleway_instance_volume" "my_key" {
+data "scaleway_instance_volume" "my_volume" {
   name = "my-volume-name"
 }
 
-// Get info by volume id
-data "scaleway_instance_volume" "my_key" {
+// Get info by volume ID
+data "scaleway_instance_volume" "my_volume" {
   volume_id = "11111111-1111-1111-1111-111111111111"
 }
 ```

@@ -14,7 +14,6 @@ func dataSourceScalewayInstanceVolume() *schema.Resource {
 	// Set 'Optional' schema elements
 	addOptionalFieldsToSchema(dsSchema, "name", "organization_id", "zone")
 
-	dsSchema["name"].ConflictsWith = []string{"volume_id"}
 	dsSchema["volume_id"] = &schema.Schema{
 		Type:          schema.TypeString,
 		Optional:      true,
@@ -22,6 +21,7 @@ func dataSourceScalewayInstanceVolume() *schema.Resource {
 		ConflictsWith: []string{"name"},
 		ValidateFunc:  validationUUIDorUUIDWithLocality(),
 	}
+	dsSchema["name"].ConflictsWith = []string{"volume_id"}
 
 	return &schema.Resource{
 		Read:   dataSourceScalewayInstanceVolumeRead,
@@ -37,7 +37,7 @@ func dataSourceScalewayInstanceVolumeRead(d *schema.ResourceData, m interface{})
 	}
 
 	volumeID, ok := d.GetOk("volume_id")
-	if !ok {
+	if !ok { // Get volumes by zone and name.
 		res, err := instanceApi.ListVolumes(&instance.ListVolumesRequest{
 			Zone:       zone,
 			VolumeType: "",
@@ -53,7 +53,6 @@ func dataSourceScalewayInstanceVolumeRead(d *schema.ResourceData, m interface{})
 			return fmt.Errorf("%d volumes found with the same name %s", len(res.Volumes), d.Get("name"))
 		}
 		volumeID = res.Volumes[0].ID
-
 	}
 
 	zonedID := datasourceNewZonedID(volumeID, zone)
