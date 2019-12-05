@@ -8,7 +8,7 @@ description: |-
 # scaleway_image
 
 **DEPRECATED**: This resource is deprecated and will be removed in `v2.0+`.
-Please use `scaleway_instance_image` instead.
+Please use `scaleway_instance_image` instead or `scaleway_marketplace_image_beta` depending on your usage.
 
 Use this data source to get the ID of a registered Image for use with the
 `scaleway_server` resource.

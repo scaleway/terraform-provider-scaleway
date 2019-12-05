@@ -14,7 +14,7 @@ Gets information about an instance image.
 ```hcl
 // Get info by image name
 data "scaleway_instance_image" "my_image" {
-  name  = "ubuntu bionic"
+  name  = "my-image-name"
 }
 
 // Get info by image id
