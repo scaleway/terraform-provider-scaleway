@@ -13,12 +13,12 @@ Gets information about an instance image.
 
 ```hcl
 // Get info by image name
-data "scaleway_instance_image" "my_key" {
+data "scaleway_instance_image" "my_image" {
   name  = "ubuntu bionic"
 }
 
 // Get info by image id
-data "scaleway_instance_image" "my_key" {
+data "scaleway_instance_image" "my_image" {
   image_id = "11111111-1111-1111-1111-111111111111"
 }
 ```
