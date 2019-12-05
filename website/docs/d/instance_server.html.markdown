@@ -37,6 +37,11 @@ In addition to all above arguments, the following attributes are exported:
 
 - `id` - The ID of the server.
 
+- `type` - The commercial type of the server.
+You find all the available types on the [pricing page](https://www.scaleway.com/en/pricing/).
+
+- `image` - The UUID and the label of the base image used by the server.
+
 - `organization_id` - The ID of the organization the server is associated with.
 
 - `tags` - The tags associated with the server.
