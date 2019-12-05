@@ -16,7 +16,7 @@ func TestAccScalewayDataSourceInstanceVolume_Basic(t *testing.T) {
 		CheckDestroy: testAccCheckSalewayInstanceVolumeDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckScalewayDataSourceVolumeConfig(acctest.RandInt()),
+				Config: testAccCheckScalewayDataSourceInstanceVolumeConfig(acctest.RandInt()),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayInstanceVolumeExists("data.scaleway_instance_volume.test"),
 					resource.TestCheckResourceAttr("data.scaleway_instance_volume.test", "size_in_gb", "2"),
