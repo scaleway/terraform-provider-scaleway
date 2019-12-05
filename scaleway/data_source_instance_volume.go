@@ -12,7 +12,7 @@ func dataSourceScalewayInstanceVolume() *schema.Resource {
 	dsSchema := datasourceSchemaFromResourceSchema(resourceScalewayInstanceVolume().Schema)
 
 	// Set 'Optional' schema elements
-	addOptionalFieldsToSchema(dsSchema, "name", "organization_id", "zone")
+	addOptionalFieldsToSchema(dsSchema, "name", "zone")
 
 	dsSchema["volume_id"] = &schema.Schema{
 		Type:          schema.TypeString,
