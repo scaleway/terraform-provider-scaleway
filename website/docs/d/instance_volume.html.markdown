@@ -31,7 +31,7 @@ data "scaleway_instance_volume" "my_volume" {
 - `volume_id` - (Optional) The volume id.
   Only one of `name` and `volume_id` should be specified.
 
-- `zone` - (Defaults to [provider](../index.html#zone) `zone`) The [zone](../guides/regions_and_zones.html#zones) in which the server should be created.
+- `zone` - (Defaults to [provider](../index.html#zone) `zone`) The [zone](../guides/regions_and_zones.html#zones) in which the volume exists.
 
 - `organization_id` - (Defaults to [provider](../index.html#organization_id) `organization_id`) The ID of the organization the server is associated with.
 
