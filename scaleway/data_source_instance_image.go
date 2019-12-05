@@ -119,6 +119,13 @@ func dataSourceScalewayInstanceImageRead(d *schema.ResourceData, m interface{}) 
 		imageID = res.Images[0].ID
 	}
 
+	zonedID := datasourceNewZonedID(imageID, zone)
+	zone, imageID, _ = parseZonedID(zonedID)
+
+	d.SetId(zonedID)
+	d.Set("image_id", zonedID)
+	d.Set("zone", zone)
+
 	resp, err := instanceApi.GetImage(&instance.GetImageRequest{
 		Zone:    zone,
 		ImageID: imageID.(string),
@@ -126,10 +133,7 @@ func dataSourceScalewayInstanceImageRead(d *schema.ResourceData, m interface{}) 
 	if err != nil {
 		return err
 	}
-	zonedID := datasourceNewZonedID(imageID, zone)
-	d.SetId(zonedID)
-	d.Set("image_id", zonedID)
-	d.Set("zone", zone)
+
 	d.Set("organization_id", resp.Image.Organization)
 	d.Set("architecture", resp.Image.Arch)
 	d.Set("name", resp.Image.Name)
