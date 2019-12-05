@@ -18,7 +18,7 @@ func TestAccScalewayDataSourceInstanceVolume_Basic(t *testing.T) {
 			{
 				Config: testAccCheckScalewayDataSourceVolumeConfig(acctest.RandInt()),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayVolumeExists(dataSourceName),
+					testAccCheckScalewayInstanceVolumeExists(dataSourceName),
 					resource.TestCheckResourceAttr(dataSourceName, "size_in_gb", "2"),
 					resource.TestCheckResourceAttr(dataSourceName, "type", "l_ssd"),
 				),
@@ -37,6 +37,10 @@ resource "scaleway_instance_volume" "test" {
 
 data "scaleway_instance_volume" "test" {
   name = "${scaleway_instance_volume.test.name}"
+}
+
+data "scaleway_instance_volume" "test2" {
+  volume_id = "${scaleway_instance_volume.test.id}"
 }
 `, rInt)
 }
