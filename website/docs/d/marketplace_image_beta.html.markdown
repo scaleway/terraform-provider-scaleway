@@ -2,12 +2,12 @@
 layout: "scaleway"
 page_title: "Scaleway: scaleway_marketplace_image_beta"
 description: |-
-  Gets image ID of an image from its label name.
+  Gets local image ID of an image from its label name.
 ---
 
 # scaleway_marketplace_image_beta
 
-Gets information about an instance image.
+Gets local image ID of an image from its label name.
 
 ## Example Usage
 
