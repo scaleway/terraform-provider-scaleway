@@ -368,7 +368,7 @@ func securityGroupRuleSchema() *schema.Resource {
 			},
 			"port_range": {
 				Type:        schema.TypeString,
-				Computed:    true,
+				Optional:    true,
 				Description: "Computed port range for this rule (e.g: 1-1024, 22-22)",
 			},
 			"ip": {
