@@ -532,17 +532,8 @@ func resourceScalewayInstanceServerUpdate(d *schema.ResourceData, m interface{})
 		if err != nil {
 			return err
 		}
-		newIPID := d.Get("ip_id")
-		if server.Server.PublicIP == nil && expandID(newIPID) != "" {
-			_, err = instanceAPI.AttachIP(&instance.AttachIPRequest{
-				Zone:     zone,
-				IP:       expandID(newIPID.(string)),
-				ServerID: ID,
-			})
-			if err != nil {
-				return err
-			}
-		} else if server.Server.PublicIP != nil && server.Server.PublicIP.ID != expandID(newIPID) {
+		newIPID := expandID(d.Get("ip_id"))
+		if server.Server.PublicIP != nil {
 			_, err = instanceAPI.DetachIP(&instance.DetachIPRequest{
 				Zone: zone,
 				IP:   server.Server.PublicIP.ID,
@@ -550,15 +541,15 @@ func resourceScalewayInstanceServerUpdate(d *schema.ResourceData, m interface{})
 			if err != nil {
 				return err
 			}
-			if expandID(newIPID) != "" {
-				_, err = instanceAPI.AttachIP(&instance.AttachIPRequest{
-					Zone:     zone,
-					IP:       expandID(newIPID.(string)),
-					ServerID: ID,
-				})
-				if err != nil {
-					return err
-				}
+		}
+		if newIPID != "" {
+			_, err = instanceAPI.AttachIP(&instance.AttachIPRequest{
+				Zone:     zone,
+				IP:       newIPID,
+				ServerID: ID,
+			})
+			if err != nil {
+				return err
 			}
 		}
 	}
