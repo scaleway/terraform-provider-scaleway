@@ -64,6 +64,7 @@ func TestAccScalewayInstanceIP_Zone(t *testing.T) {
 }
 
 func TestAccScalewayInstanceServerIP(t *testing.T) {
+	t.Skip("Attaching an IP to a server via an IP block is deprecated")
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
