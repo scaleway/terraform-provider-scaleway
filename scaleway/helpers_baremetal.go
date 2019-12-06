@@ -72,7 +72,7 @@ func getBaremetalOfferByID(baremetalAPI *baremetal.API, zone scw.Zone, offerID s
 	return nil, fmt.Errorf("cannot find the offer %s", offerID)
 }
 
-func flattenCPUs(cpus []*baremetal.CPU) interface{} {
+func flattenBaremetalCPUs(cpus []*baremetal.CPU) interface{} {
 	if cpus == nil {
 		return nil
 	}
@@ -88,7 +88,7 @@ func flattenCPUs(cpus []*baremetal.CPU) interface{} {
 	return flattenedCPUs
 }
 
-func flattenDisks(disks []*baremetal.Disk) interface{} {
+func flattenBaremetalDisks(disks []*baremetal.Disk) interface{} {
 	if disks == nil {
 		return nil
 	}
@@ -102,7 +102,7 @@ func flattenDisks(disks []*baremetal.Disk) interface{} {
 	return flattenedCPUs
 }
 
-func flattenMemory(memories []*baremetal.Memory) interface{} {
+func flattenBaremetalMemory(memories []*baremetal.Memory) interface{} {
 	if memories == nil {
 		return nil
 	}

@@ -45,10 +45,36 @@ In addition to all above arguments, the following attributes are exported:
 
 - `commercial_range` - Commercial range of the offer.
 
-- `price_per_sixty_minutes` - Price of the offer for the next 60 minutes (a server order at 11h32 will be payed until 12h32).
+- `cpu` - A list of cpu specifications. (Structure is documented below.)
 
-- `price_per_month` - Price of the offer per months.
+- `disk` - A list of disk specifications. (Structure is documented below.)
 
-- `quota_name` - Quota name of this offer.
+- `memory` - A list of memory specifications. (Structure is documented below.)
 
 - `stock` - Stock status for this offer. Possible values are: `empty`, `low` or `available`.
+
+The `cpu` block supports:
+
+- `name` - Name of the CPU.
+
+- `core_count`- Number of core on this CPU.
+
+- `frequency`- Frequency of the CPU in MHz.
+
+- `thread_count`- Number of thread on this CPU.
+
+The `disk` block supports:
+
+- `type` - Type of disk.
+
+- `capacity`- Capacity of the disk in GB.
+
+The `memory` block supports:
+
+- `type` - Type of memory.
+
+- `capacity`- Capacity of the memory in GB.
+
+- `frequency` - Frequency of the memory in MHz.
+
+- `ecc`- True if error-correcting code is available on this memory.

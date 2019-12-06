@@ -25,7 +25,7 @@ func dataSourceScalewayBaremetalOfferBeta() *schema.Resource {
 				Description:   "ID of the desired offer",
 				ConflictsWith: []string{"name"},
 			},
-			"allow_disabled": {
+			"include_disabled": {
 				Type:        schema.TypeBool,
 				Optional:    true,
 				Default:     false,
@@ -120,21 +120,6 @@ func dataSourceScalewayBaremetalOfferBeta() *schema.Resource {
 					},
 				},
 			},
-			"price_per_sixty_minutes": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "Price of the offer for the next 60 minutes (a server order at 11h32 will be payed until 12h32)",
-			},
-			"price_per_month": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "Price of the offer per months",
-			},
-			"quota_name": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "Quota name of this offer",
-			},
 			"stock": {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -159,27 +144,23 @@ func dataSourceScalewayBaremetalOfferBetaRead(d *schema.ResourceData, m interfac
 		return err
 	}
 
-	for i := 0; i < len(res.Offers); i++ {
-		offer := res.Offers[i]
-		switch {
-		case offer.Name == d.Get("name"), offer.ID == offerID:
-			if !offer.Enable && !d.Get("allow_disabled").(bool) {
+	matches := []*baremetal.Offer(nil)
+	for _, offer := range res.Offers {
+		if offer.Name == d.Get("name") || offer.ID == offerID {
+			if !offer.Enable && !d.Get("include_disabled").(bool) {
 				return fmt.Errorf("offer %s (%s) found in zone %s but is disabled. Add allow_disabled=true in your terraform config to use it.", offer.Name, offer.Name, zone)
 			}
-		default:
-			res.Offers = append(res.Offers[:i], res.Offers[i+1:]...)
-			i--
+			matches = append(matches, offer)
 		}
 	}
-
-	if len(res.Offers) == 0 {
+	if len(matches) == 0 {
 		return fmt.Errorf("no offer found with the name %s in zone %s", d.Get("name"), zone)
 	}
-	if len(res.Offers) > 1 {
-		return fmt.Errorf("%d offers found with the same name %s in zone %s", len(res.Offers), d.Get("name"), zone)
+	if len(matches) > 1 {
+		return fmt.Errorf("%d offers found with the same name %s in zone %s", len(matches), d.Get("name"), zone)
 	}
 
-	offer := res.Offers[0]
+	offer := matches[0]
 	zonedID := datasourceNewZonedID(offer.ID, zone)
 	d.SetId(zonedID)
 	d.Set("offer_id", zonedID)
@@ -190,15 +171,12 @@ func dataSourceScalewayBaremetalOfferBetaRead(d *schema.ResourceData, m interfac
 	}
 
 	d.Set("name", offer.Name)
-	d.Set("allow_disabled", !offer.Enable)
+	d.Set("include_disabled", !offer.Enable)
 	d.Set("bandwidth", offer.Bandwidth)
 	d.Set("commercial_range", offer.CommercialRange)
-	d.Set("cpu", flattenCPUs(offer.CPU))
-	d.Set("disk", flattenDisks(offer.Disk))
-	d.Set("memory", flattenMemory(offer.Memory))
-	d.Set("price_per_sixty_minutes", flattenMoney(offer.PricePerSixtyMinutes))
-	d.Set("price_per_month", flattenMoney(offer.PricePerMonth))
-	d.Set("quota_name", offer.QuotaName)
+	d.Set("cpu", flattenBaremetalCPUs(offer.CPU))
+	d.Set("disk", flattenBaremetalDisks(offer.Disk))
+	d.Set("memory", flattenBaremetalMemory(offer.Memory))
 	d.Set("stock", offer.Stock.String())
 
 	return nil
