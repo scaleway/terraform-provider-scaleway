@@ -29,13 +29,18 @@ data "scaleway_instance_server" "my_key" {
 
 - `server_id` - (Optional) The server id. Only one of `name` and `server_id` should be specified.
 
-- `zone` - (Defaults to [provider](../index.html#zone) `zone`) The [zone](../guides/regions_and_zones.html#zones) in which the server should be created.
+- `zone` - (Defaults to [provider](../index.html#zone) `zone`) The [zone](../guides/regions_and_zones.html#zones) in which the server exists.
 
 ## Attributes Reference
 
 In addition to all above arguments, the following attributes are exported:
 
 - `id` - The ID of the server.
+
+- `type` - The commercial type of the server.
+You find all the available types on the [pricing page](https://www.scaleway.com/en/pricing/).
+
+- `image` - The UUID and the label of the base image used by the server.
 
 - `organization_id` - The ID of the organization the server is associated with.
 
@@ -58,7 +63,7 @@ attached to the server.
 
 - `state` - The state of the server. Possible values are: `started`, `stopped` or `standby`.
 
-- `cloud_init` - The cloud init script associated with this server. Updates to this field will trigger a stop/start of the server.
+- `cloud_init` - The cloud init script associated with this server.
 
 - `user_data` - The user data associated with the server.
 

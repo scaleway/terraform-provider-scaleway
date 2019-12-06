@@ -14,7 +14,7 @@ Gets information about an instance image.
 ```hcl
 // Get info by image name
 data "scaleway_instance_image" "my_image" {
-  name  = "ubuntu bionic"
+  name  = "my-image-name"
 }
 
 // Get info by image id
@@ -33,7 +33,7 @@ data "scaleway_instance_image" "my_image" {
 
 - `latest` - (Optional, default `true`) Use the latest image ID.
 
-- `zone` - (Defaults to [provider](../index.html#zone) `zone`) The [zone](../guides/regions_and_zones.html#zones) in which the image should be created.
+- `zone` - (Defaults to [provider](../index.html#zone) `zone`) The [zone](../guides/regions_and_zones.html#zones) in which the image exists.
 
 ## Attributes Reference
 
