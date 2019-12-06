@@ -71,3 +71,49 @@ func getBaremetalOfferByID(baremetalAPI *baremetal.API, zone scw.Zone, offerID s
 	}
 	return nil, fmt.Errorf("cannot find the offer %s", offerID)
 }
+
+func flattenBaremetalCPUs(cpus []*baremetal.CPU) interface{} {
+	if cpus == nil {
+		return nil
+	}
+	flattenedCPUs := []map[string]interface{}(nil)
+	for _, cpu := range cpus {
+		flattenedCPUs = append(flattenedCPUs, map[string]interface{}{
+			"name":         cpu.Name,
+			"core_count":   cpu.Cores,
+			"frequency":    cpu.Frequency,
+			"thread_count": cpu.Threads,
+		})
+	}
+	return flattenedCPUs
+}
+
+func flattenBaremetalDisks(disks []*baremetal.Disk) interface{} {
+	if disks == nil {
+		return nil
+	}
+	flattenedDisks := []map[string]interface{}(nil)
+	for _, disk := range disks {
+		flattenedDisks = append(flattenedDisks, map[string]interface{}{
+			"type":     disk.Type,
+			"capacity": disk.Capacity,
+		})
+	}
+	return flattenedDisks
+}
+
+func flattenBaremetalMemory(memories []*baremetal.Memory) interface{} {
+	if memories == nil {
+		return nil
+	}
+	flattenedMemories := []map[string]interface{}(nil)
+	for _, memory := range memories {
+		flattenedMemories = append(flattenedMemories, map[string]interface{}{
+			"type":      memory.Type,
+			"capacity":  memory.Capacity,
+			"frequency": memory.Frequency,
+			"ecc":       memory.Ecc,
+		})
+	}
+	return flattenedMemories
+}
