@@ -2,7 +2,7 @@
 layout: "scaleway"
 page_title: "Scaleway: scaleway_baremetal_offer_beta"
 description: |-
-  Gets information about an Baremetal offer.
+  Gets information about an baremetal offer.
 ---
 
 # scaleway_baremetal_offer_beta

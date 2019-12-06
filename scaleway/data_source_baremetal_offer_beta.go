@@ -148,7 +148,7 @@ func dataSourceScalewayBaremetalOfferBetaRead(d *schema.ResourceData, m interfac
 	for _, offer := range res.Offers {
 		if offer.Name == d.Get("name") || offer.ID == offerID {
 			if !offer.Enable && !d.Get("include_disabled").(bool) {
-				return fmt.Errorf("offer %s (%s) found in zone %s but is disabled. Add allow_disabled=true in your terraform config to use it.", offer.Name, offer.Name, zone)
+				return fmt.Errorf("offer %s (%s) found in zone %s but is disabled. Add allow_disabled=true in your terraform config to use it.", offer.Name, offer.ID, zone)
 			}
 			matches = append(matches, offer)
 		}
@@ -165,11 +165,6 @@ func dataSourceScalewayBaremetalOfferBetaRead(d *schema.ResourceData, m interfac
 	d.SetId(zonedID)
 	d.Set("offer_id", zonedID)
 	d.Set("zone", zone)
-
-	if err != nil {
-		return err
-	}
-
 	d.Set("name", offer.Name)
 	d.Set("include_disabled", !offer.Enable)
 	d.Set("bandwidth", offer.Bandwidth)

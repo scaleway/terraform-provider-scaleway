@@ -92,28 +92,28 @@ func flattenBaremetalDisks(disks []*baremetal.Disk) interface{} {
 	if disks == nil {
 		return nil
 	}
-	flattenedCPUs := []map[string]interface{}(nil)
+	flattenedDisks := []map[string]interface{}(nil)
 	for _, disk := range disks {
-		flattenedCPUs = append(flattenedCPUs, map[string]interface{}{
+		flattenedDisks = append(flattenedDisks, map[string]interface{}{
 			"type":     disk.Type,
 			"capacity": disk.Capacity,
 		})
 	}
-	return flattenedCPUs
+	return flattenedDisks
 }
 
 func flattenBaremetalMemory(memories []*baremetal.Memory) interface{} {
 	if memories == nil {
 		return nil
 	}
-	flattenedCPUs := []map[string]interface{}(nil)
+	flattenedMemories := []map[string]interface{}(nil)
 	for _, memory := range memories {
-		flattenedCPUs = append(flattenedCPUs, map[string]interface{}{
+		flattenedMemories = append(flattenedMemories, map[string]interface{}{
 			"type":      memory.Type,
 			"capacity":  memory.Capacity,
 			"frequency": memory.Frequency,
 			"ecc":       memory.Ecc,
 		})
 	}
-	return flattenedCPUs
+	return flattenedMemories
 }
