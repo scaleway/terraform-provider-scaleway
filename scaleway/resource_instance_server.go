@@ -373,11 +373,11 @@ func resourceScalewayInstanceServerRead(d *schema.ResourceData, m interface{}) e
 			"host": response.Server.PublicIP.Address.String(),
 		})
 		// Waiting for new breaking change version
-		// if response.Server.PublicIP.Dynamic == false {
-		// 	d.Set("ip_id", newZonedId(zone, response.Server.PublicIP.ID))
-		// } else {
-		// 	d.Set("ip_id", "")
-		// }
+		if response.Server.PublicIP.Dynamic == false {
+			d.Set("ip_id", newZonedId(zone, response.Server.PublicIP.ID))
+		} else {
+			d.Set("ip_id", "")
+		}
 	}
 
 	if response.Server.IPv6 != nil {
