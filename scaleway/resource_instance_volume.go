@@ -127,6 +127,8 @@ func resourceScalewayInstanceVolumeRead(d *schema.ResourceData, m interface{}) e
 	d.Set("name", res.Volume.Name)
 	d.Set("organization_id", res.Volume.Organization)
 	d.Set("zone", string(zone))
+	d.Set("type", res.Volume.VolumeType.String())
+	d.Set("size_in_gb", uint64(res.Volume.Size/scw.GB))
 
 	if res.Volume.Server != nil {
 		d.Set("server_id", res.Volume.Server.ID)

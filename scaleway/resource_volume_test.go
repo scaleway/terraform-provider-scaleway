@@ -47,7 +47,7 @@ func TestAccScalewayVolume_Basic(t *testing.T) {
 			{
 				Config: testAccCheckScalewayVolumeConfig,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayInstanceVolumeExists("scaleway_volume.test"),
+					testAccCheckScalewayVolumeExists("scaleway_volume.test"),
 					testAccCheckScalewayVolumeAttributes("scaleway_volume.test"),
 				),
 			},
@@ -101,7 +101,7 @@ func testAccCheckScalewayVolumeAttributes(n string) resource.TestCheckFunc {
 	}
 }
 
-func testAccCheckScalewayInstanceVolumeExists(n string) resource.TestCheckFunc {
+func testAccCheckScalewayVolumeExists(n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 

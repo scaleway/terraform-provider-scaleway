@@ -52,14 +52,14 @@ func TestAccSalewayInstanceVolume_Basic(t *testing.T) {
 			{
 				Config: testAccCheckSalewayInstanceVolumeConfig[0],
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckSalewayInstanceVolumeExists("scaleway_instance_volume.test"),
+					testAccCheckScalewayInstanceVolumeExists("scaleway_instance_volume.test"),
 					resource.TestCheckResourceAttr("scaleway_instance_volume.test", "size_in_gb", "20"),
 				),
 			},
 			{
 				Config: testAccCheckSalewayInstanceVolumeConfig[1],
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckSalewayInstanceVolumeExists("scaleway_instance_volume.test"),
+					testAccCheckScalewayInstanceVolumeExists("scaleway_instance_volume.test"),
 					resource.TestCheckResourceAttr("scaleway_instance_volume.test", "name", "terraform-test"),
 					resource.TestCheckResourceAttr("scaleway_instance_volume.test", "size_in_gb", "20"),
 				),
@@ -77,8 +77,8 @@ func TestAccSalewayInstanceVolume_FromVolume(t *testing.T) {
 			{
 				Config: testAccCheckSalewayInstanceVolumeConfigFromVolume,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckSalewayInstanceVolumeExists("scaleway_instance_volume.test1"),
-					testAccCheckSalewayInstanceVolumeExists("scaleway_instance_volume.test2"),
+					testAccCheckScalewayInstanceVolumeExists("scaleway_instance_volume.test1"),
+					testAccCheckScalewayInstanceVolumeExists("scaleway_instance_volume.test2"),
 				),
 			},
 		},
@@ -101,7 +101,7 @@ func TestAccSalewayInstanceVolume_RandomName(t *testing.T) {
 	})
 }
 
-func testAccCheckSalewayInstanceVolumeExists(n string) resource.TestCheckFunc {
+func testAccCheckScalewayInstanceVolumeExists(n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 

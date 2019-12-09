@@ -246,7 +246,7 @@ func TestAccScalewayInstanceServerAdditionalVolumes1(t *testing.T) {
 			{
 				Config: testAccCheckScalewayInstanceServerConfigVolumes(true),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckSalewayInstanceVolumeExists("scaleway_instance_volume.base_block"),
+					testAccCheckScalewayInstanceVolumeExists("scaleway_instance_volume.base_block"),
 					testAccCheckScalewayInstanceServerExists("scaleway_instance_server.base"),
 					resource.TestCheckResourceAttr("scaleway_instance_volume.base_block", "size_in_gb", "10"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "root_volume.0.size_in_gb", "20"),
@@ -265,9 +265,9 @@ func TestAccScalewayInstanceServerAdditionalVolumes2(t *testing.T) {
 			{
 				Config: testAccCheckScalewayInstanceServerConfigVolumes(true, 5, 5),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckSalewayInstanceVolumeExists("scaleway_instance_volume.base_volume0"),
-					testAccCheckSalewayInstanceVolumeExists("scaleway_instance_volume.base_volume1"),
-					testAccCheckSalewayInstanceVolumeExists("scaleway_instance_volume.base_block"),
+					testAccCheckScalewayInstanceVolumeExists("scaleway_instance_volume.base_volume0"),
+					testAccCheckScalewayInstanceVolumeExists("scaleway_instance_volume.base_volume1"),
+					testAccCheckScalewayInstanceVolumeExists("scaleway_instance_volume.base_block"),
 					testAccCheckScalewayInstanceServerExists("scaleway_instance_server.base"),
 					resource.TestCheckResourceAttr("scaleway_instance_volume.base_volume0", "size_in_gb", "5"),
 					resource.TestCheckResourceAttr("scaleway_instance_volume.base_volume1", "size_in_gb", "5"),
@@ -278,11 +278,11 @@ func TestAccScalewayInstanceServerAdditionalVolumes2(t *testing.T) {
 			{
 				Config: testAccCheckScalewayInstanceServerConfigVolumes(true, 4, 3, 2, 1),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckSalewayInstanceVolumeExists("scaleway_instance_volume.base_volume0"),
-					testAccCheckSalewayInstanceVolumeExists("scaleway_instance_volume.base_volume1"),
-					testAccCheckSalewayInstanceVolumeExists("scaleway_instance_volume.base_volume2"),
-					testAccCheckSalewayInstanceVolumeExists("scaleway_instance_volume.base_volume3"),
-					testAccCheckSalewayInstanceVolumeExists("scaleway_instance_volume.base_block"),
+					testAccCheckScalewayInstanceVolumeExists("scaleway_instance_volume.base_volume0"),
+					testAccCheckScalewayInstanceVolumeExists("scaleway_instance_volume.base_volume1"),
+					testAccCheckScalewayInstanceVolumeExists("scaleway_instance_volume.base_volume2"),
+					testAccCheckScalewayInstanceVolumeExists("scaleway_instance_volume.base_volume3"),
+					testAccCheckScalewayInstanceVolumeExists("scaleway_instance_volume.base_block"),
 					testAccCheckScalewayInstanceServerExists("scaleway_instance_server.base"),
 					resource.TestCheckResourceAttr("scaleway_instance_volume.base_volume0", "size_in_gb", "4"),
 					resource.TestCheckResourceAttr("scaleway_instance_volume.base_volume1", "size_in_gb", "3"),
@@ -296,9 +296,9 @@ func TestAccScalewayInstanceServerAdditionalVolumes2(t *testing.T) {
 			{
 				Config: testAccCheckScalewayInstanceServerConfigVolumes(false, 4, 3, 2),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckSalewayInstanceVolumeExists("scaleway_instance_volume.base_volume0"),
-					testAccCheckSalewayInstanceVolumeExists("scaleway_instance_volume.base_volume1"),
-					testAccCheckSalewayInstanceVolumeExists("scaleway_instance_volume.base_volume2"),
+					testAccCheckScalewayInstanceVolumeExists("scaleway_instance_volume.base_volume0"),
+					testAccCheckScalewayInstanceVolumeExists("scaleway_instance_volume.base_volume1"),
+					testAccCheckScalewayInstanceVolumeExists("scaleway_instance_volume.base_volume2"),
 					testAccCheckScalewayInstanceServerExists("scaleway_instance_server.base"),
 					resource.TestCheckResourceAttr("scaleway_instance_volume.base_volume0", "size_in_gb", "4"),
 					resource.TestCheckResourceAttr("scaleway_instance_volume.base_volume1", "size_in_gb", "3"),
