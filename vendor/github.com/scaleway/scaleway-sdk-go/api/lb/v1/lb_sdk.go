@@ -230,6 +230,8 @@ type CertificateType string
 const (
 	// CertificateTypeLetsencryt is [insert doc].
 	CertificateTypeLetsencryt = CertificateType("letsencryt")
+	// CertificateTypeCustom is [insert doc].
+	CertificateTypeCustom = CertificateType("custom")
 )
 
 func (enum CertificateType) String() string {
@@ -822,7 +824,7 @@ type BackendServerStats struct {
 
 // Certificate sSL certificate
 type Certificate struct {
-	// Type type of certificate (custom coming soon)
+	// Type type of certificate (Let's encrypt or custom)
 	//
 	// Default value: letsencryt
 	Type CertificateType `json:"type"`
@@ -846,6 +848,12 @@ type Certificate struct {
 	Lb *Lb `json:"lb"`
 	// Name certificate name
 	Name string `json:"name"`
+}
+
+// CreateCertificateRequestCustomCertificate import a custom SSL certificate
+type CreateCertificateRequestCustomCertificate struct {
+	// CertificateChain the full PEM-formatted include an entire certificate chain including public key, private key, and optionally certificate authorities.
+	CertificateChain string `json:"certificate_chain"`
 }
 
 // CreateCertificateRequestLetsencryptConfig generate a new SSL certificate using Let's Encrypt.
@@ -2913,21 +2921,26 @@ type CreateCertificateRequest struct {
 	// Name certificate name
 	Name string `json:"name"`
 	// Letsencrypt let's Encrypt type
-	// Precisely one of Letsencrypt must be set.
+	// Precisely one of CustomCertificate, Letsencrypt must be set.
 	Letsencrypt *CreateCertificateRequestLetsencryptConfig `json:"letsencrypt,omitempty"`
+	// CustomCertificate custom import certificate
+	// Precisely one of CustomCertificate, Letsencrypt must be set.
+	CustomCertificate *CreateCertificateRequestCustomCertificate `json:"custom_certificate,omitempty"`
 }
 
 func (m *CreateCertificateRequest) GetType() Type {
 	switch {
 	case m.Letsencrypt != nil:
 		return TypeLetsencrypt{*m.Letsencrypt}
+	case m.CustomCertificate != nil:
+		return TypeCustomCertificate{*m.CustomCertificate}
 	}
 	return nil
 }
 
 // CreateCertificate create Certificate
 //
-// Generate a new SSL certificate using Let's Encrypt (Custom certificates can be imported soon).
+// Generate a new SSL certificate using Let's Encrypt or import your certificate.
 func (s *API) CreateCertificate(req *CreateCertificateRequest, opts ...scw.RequestOption) (*Certificate, error) {
 	var err error
 
@@ -3289,4 +3302,11 @@ type TypeLetsencrypt struct {
 }
 
 func (TypeLetsencrypt) isType() {
+}
+
+type TypeCustomCertificate struct {
+	Value CreateCertificateRequestCustomCertificate
+}
+
+func (TypeCustomCertificate) isType() {
 }

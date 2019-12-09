@@ -971,7 +971,7 @@ type Server struct {
 	Protected bool `json:"protected"`
 	// PrivateIP display the server private IP address
 	PrivateIP *string `json:"private_ip"`
-	// PublicIP display the server public IP address
+	// PublicIP display information about the public IP
 	PublicIP *ServerIP `json:"public_ip"`
 	// ModificationDate display the server modification date
 	ModificationDate time.Time `json:"modification_date"`
@@ -1463,7 +1463,7 @@ type CreateServerRequest struct {
 	Volumes map[string]*VolumeTemplate `json:"volumes,omitempty"`
 	// EnableIPv6 true if IPv6 is enabled on the server
 	EnableIPv6 bool `json:"enable_ipv6,omitempty"`
-	// PublicIP the public IPv4 attached to the server
+	// PublicIP the ID of the reserved IP to attach to the server
 	PublicIP *string `json:"public_ip,omitempty"`
 	// BootType the boot type to use
 	//
@@ -1629,7 +1629,7 @@ type setServerRequest struct {
 	Protected bool `json:"protected"`
 	// PrivateIP display the server private IP address
 	PrivateIP *string `json:"private_ip"`
-	// PublicIP display the server public IP address
+	// PublicIP display information about the public IP
 	PublicIP *ServerIP `json:"public_ip"`
 	// ModificationDate display the server modification date
 	ModificationDate time.Time `json:"modification_date"`
@@ -1821,7 +1821,7 @@ type ServerActionRequest struct {
 
 // ServerAction perform action
 //
-// Perform power related actions on a server.
+// Perform power related actions on a server. Be wary that when terminating a server, all the attached volumes (local *and* block storage) are deleted. So, if you want to keep your local volumes, you must use the `archive` action instead of `terminate`. And if you want to keep block-storage volumes, **you must** detach it beforehand you issue the `terminate` call.  For more information, read the [Volumes](#volumes-7e8a39) documentation.
 func (s *API) ServerAction(req *ServerActionRequest, opts ...scw.RequestOption) (*ServerActionResponse, error) {
 	var err error
 
