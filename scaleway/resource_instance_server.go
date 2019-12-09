@@ -149,7 +149,7 @@ func resourceScalewayInstanceServer() *schema.Resource {
 			"disable_dynamic_ip": {
 				Type:        schema.TypeBool,
 				Optional:    true,
-				Default:     false,
+				Default:     true,
 				Description: "Disable dynamic IP on the server",
 			},
 			"state": {
