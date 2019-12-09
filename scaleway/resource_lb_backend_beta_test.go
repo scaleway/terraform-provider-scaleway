@@ -42,7 +42,7 @@ func TestAccScalewayLbBackendBeta(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_lb_backend_beta.bkd01", "on_marked_down_action", "none"),
 					resource.TestCheckResourceAttr("scaleway_lb_backend_beta.bkd01", "health_check_timeout", "30s"),
 					resource.TestCheckResourceAttr("scaleway_lb_backend_beta.bkd01", "health_check_port", "80"),
-					resource.TestCheckResourceAttr("scaleway_lb_backend_beta.bkd01", "health_check_delay", "60s"),
+					resource.TestCheckResourceAttr("scaleway_lb_backend_beta.bkd01", "health_check_delay", "1m0s"),
 					resource.TestCheckResourceAttr("scaleway_lb_backend_beta.bkd01", "health_check_max_retries", "2"),
 					resource.TestCheckResourceAttrPair("scaleway_lb_backend_beta.bkd01", "server_ips.0", "scaleway_instance_ip.ip01", "address"),
 				),

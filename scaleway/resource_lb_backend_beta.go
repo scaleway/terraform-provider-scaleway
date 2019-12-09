@@ -110,18 +110,20 @@ func resourceScalewayLbBackendBeta() *schema.Resource {
 
 			// Health Check
 			"health_check_timeout": {
-				Type:         schema.TypeString,
-				Optional:     true,
-				ValidateFunc: validateDuration(),
-				Default:      "30s",
-				Description:  "Timeout before we consider a HC request failed",
+				Type:             schema.TypeString,
+				Optional:         true,
+				DiffSuppressFunc: diffSuppressFuncDuration,
+				ValidateFunc:     validateDuration(),
+				Default:          "30s",
+				Description:      "Timeout before we consider a HC request failed",
 			},
 			"health_check_delay": {
-				Type:         schema.TypeString,
-				Optional:     true,
-				ValidateFunc: validateDuration(),
-				Default:      "60s",
-				Description:  "Interval between two HC requests",
+				Type:             schema.TypeString,
+				Optional:         true,
+				DiffSuppressFunc: diffSuppressFuncDuration,
+				ValidateFunc:     validateDuration(),
+				Default:          "60s",
+				Description:      "Interval between two HC requests",
 			},
 			"health_check_port": {
 				Type:        schema.TypeInt,
