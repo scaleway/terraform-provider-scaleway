@@ -65,30 +65,32 @@ type GetVersionResponse struct {
 	Version *Version `json:"version"`
 }
 
+// Image image
 type Image struct {
+	// ID uUID of this image
 	ID string `json:"id"`
-
+	// Name name of the image
 	Name string `json:"name"`
-
+	// Description text description of this image
 	Description string `json:"description"`
-
+	// Logo uRL of this image's logo
 	Logo string `json:"logo"`
-
+	// Categories list of categories this image belongs to
 	Categories []string `json:"categories"`
-
+	// CreationDate creation date of this image
+	CreationDate time.Time `json:"creation_date"`
+	// ModificationDate date of the last modification of this image
+	ModificationDate time.Time `json:"modification_date"`
+	// ValidUntil expiration date of this image
+	ValidUntil time.Time `json:"valid_until"`
+	// Label label of this image
+	Label string `json:"label"`
+	// Versions list of versions of this image
+	Versions []*Version `json:"versions"`
+	// Organization organization this image belongs to
 	Organization *Organization `json:"organization"`
 
-	ValidUntil time.Time `json:"valid_until"`
-
-	CreationDate time.Time `json:"creation_date"`
-
-	ModificationDate time.Time `json:"modification_date"`
-
-	Versions []*Version `json:"versions"`
-
 	CurrentPublicVersion string `json:"current_public_version"`
-
-	Label string `json:"label"`
 }
 
 type ListImagesResponse struct {
@@ -103,14 +105,16 @@ type ListVersionsResponse struct {
 	TotalCount uint32 `json:"total_count"`
 }
 
+// LocalImage local image
 type LocalImage struct {
+	// ID uUID of this local image
 	ID string `json:"id"`
-
-	Arch string `json:"arch"`
-
-	Zone scw.Zone `json:"zone"`
-
+	// CompatibleCommercialTypes list of all commercial types that are compatible with this local image
 	CompatibleCommercialTypes []string `json:"compatible_commercial_types"`
+	// Arch supported architecture for this local image
+	Arch string `json:"arch"`
+	// Zone availability Zone where this local image is available
+	Zone scw.Zone `json:"zone"`
 }
 
 type Organization struct {
@@ -119,15 +123,17 @@ type Organization struct {
 	Name string `json:"name"`
 }
 
+// Version version
 type Version struct {
+	// ID uUID of this version
 	ID string `json:"id"`
-
+	// Name name of this version
 	Name string `json:"name"`
-
+	// CreationDate creation date of this image version
 	CreationDate time.Time `json:"creation_date"`
-
+	// ModificationDate date of the last modification of this version
 	ModificationDate time.Time `json:"modification_date"`
-
+	// LocalImages list of local images available in this version
 	LocalImages []*LocalImage `json:"local_images"`
 }
 
@@ -155,8 +161,9 @@ func (s *API) GetServiceInfo(req *GetServiceInfoRequest, opts ...scw.RequestOpti
 }
 
 type ListImagesRequest struct {
+	// PerPage a positive integer lower or equal to 100 to select the number of items to display
 	PerPage *uint32 `json:"-"`
-
+	// Page a positive integer to choose the page to display
 	Page *int32 `json:"-"`
 }
 
@@ -209,6 +216,7 @@ func (r *ListImagesResponse) UnsafeAppend(res interface{}) (uint32, scw.SdkError
 }
 
 type GetImageRequest struct {
+	// ImageID display the image name
 	ImageID string `json:"-"`
 }
 
