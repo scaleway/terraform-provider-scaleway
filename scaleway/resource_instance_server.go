@@ -125,6 +125,12 @@ func resourceScalewayInstanceServer() *schema.Resource {
 				Computed:    true,
 				Description: "The public IPv4 address of the server",
 			},
+			"ip_id": {
+				Type:             schema.TypeString,
+				Optional:         true,
+				Description:      "The ID of the reserved IP for the server",
+				DiffSuppressFunc: suppressLocality,
+			},
 			"ipv6_address": {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -236,6 +242,10 @@ func resourceScalewayInstanceServerCreate(d *schema.ResourceData, m interface{})
 		SecurityGroup:     expandStringPtr(expandID(d.Get("security_group_id"))),
 		DynamicIPRequired: Bool(!d.Get("disable_dynamic_ip").(bool)),
 		Tags:              expandStrings(d.Get("tags")),
+	}
+
+	if ipID, ok := d.GetOk("ip_id"); ok {
+		req.PublicIP = scw.StringPtr(expandID(ipID))
 	}
 
 	if placementGroupID, ok := d.GetOk("placement_group_id"); ok {
@@ -362,6 +372,12 @@ func resourceScalewayInstanceServerRead(d *schema.ResourceData, m interface{}) e
 			"type": "ssh",
 			"host": response.Server.PublicIP.Address.String(),
 		})
+		// Waiting for new breaking change version
+		// if response.Server.PublicIP.Dynamic == false {
+		// 	d.Set("ip_id", newZonedId(zone, response.Server.PublicIP.ID))
+		// } else {
+		// 	d.Set("ip_id", "")
+		// }
 	}
 
 	if response.Server.IPv6 != nil {
@@ -502,6 +518,39 @@ func resourceScalewayInstanceServerUpdate(d *schema.ResourceData, m interface{})
 		} else {
 			forceReboot = true
 			updateRequest.PlacementGroup = &instance.NullableStringValue{Value: placementGroupID}
+		}
+	}
+
+	////
+	// Update reserved IP
+	////
+	if d.HasChange("ip_id") {
+		server, err := instanceAPI.GetServer(&instance.GetServerRequest{
+			Zone:     zone,
+			ServerID: ID,
+		})
+		if err != nil {
+			return err
+		}
+		newIPID := expandID(d.Get("ip_id"))
+		if server.Server.PublicIP != nil {
+			_, err = instanceAPI.DetachIP(&instance.DetachIPRequest{
+				Zone: zone,
+				IP:   server.Server.PublicIP.ID,
+			})
+			if err != nil {
+				return err
+			}
+		}
+		if newIPID != "" {
+			_, err = instanceAPI.AttachIP(&instance.AttachIPRequest{
+				Zone:     zone,
+				IP:       newIPID,
+				ServerID: ID,
+			})
+			if err != nil {
+				return err
+			}
 		}
 	}
 
