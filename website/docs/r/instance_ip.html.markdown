@@ -19,7 +19,6 @@ resource "scaleway_instance_ip" "server_ip" {}
 
 The following arguments are supported:
 
-- `reverse` - (Deprecated) Please use the `scaleway_instance_ip_reverse_dns` resource instead.
 - `zone` - (Defaults to [provider](../index.html#zone) `zone`) The [zone](../guides/regions_and_zones.html#zones) in which the IP should be reserved.
 - `organization_id` - (Defaults to [provider](../index.html#organization_id) `organization_id`) The ID of the organization the IP is associated with.
 
@@ -30,6 +29,12 @@ In addition to all above arguments, the following attributes are exported:
 - `id` - The ID of the IP.
 - `address` - The IP address.
 - `server_id` - The ID of the server this IP is attached to.
+
+~> **Warning:** Since v1.13 to attach an IP to a server you must use `ip_id` field on `scaleway_instance_server`.
+
+- `reverse` - The reverse dns attached to this IP
+
+~> **Warning:** Since v1.13 to update reverse dns of an IP you mist use `scaleway_instance_ip_reverse_dns`.
 
 ## Import
 
