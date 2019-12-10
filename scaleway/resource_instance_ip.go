@@ -56,18 +56,6 @@ func resourceScalewayInstanceIPCreate(d *schema.ResourceData, m interface{}) err
 		return err
 	}
 
-	reverse := d.Get("reverse").(string)
-	if reverse != "" {
-		_, err = instanceAPI.UpdateIP(&instance.UpdateIPRequest{
-			Zone:    zone,
-			IP:      res.IP.ID,
-			Reverse: &instance.NullableStringValue{Value: reverse},
-		})
-		if err != nil {
-			return err
-		}
-	}
-
 	d.SetId(newZonedId(zone, res.IP.ID))
 	return resourceScalewayInstanceIPRead(d, m)
 }
