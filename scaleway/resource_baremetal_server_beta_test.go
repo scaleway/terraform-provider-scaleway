@@ -46,7 +46,7 @@ func TestAccScalewayBaremetalServerBetaMinimal1(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_baremetal_server_beta.base", "tags.0", "terraform-test"),
 					resource.TestCheckResourceAttr("scaleway_baremetal_server_beta.base", "tags.1", "scaleway_baremetal_server_beta"),
 					resource.TestCheckResourceAttr("scaleway_baremetal_server_beta.base", "tags.2", "minimal"),
-					testCheckResourceAttrUUID("scaleway_baremetal_server_beta.base", "ssh_key_ids.0"),x
+					testCheckResourceAttrUUID("scaleway_baremetal_server_beta.base", "ssh_key_ids.0"),
 				),
 			},
 			{
