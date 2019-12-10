@@ -379,12 +379,15 @@ func resourceScalewayInstanceServerRead(d *schema.ResourceData, m interface{}) e
 			"type": "ssh",
 			"host": response.Server.PublicIP.Address.String(),
 		})
-		// Waiting for new breaking change version
 		if response.Server.PublicIP.Dynamic == false {
 			d.Set("ip_id", newZonedId(zone, response.Server.PublicIP.ID))
 		} else {
 			d.Set("ip_id", "")
 		}
+	} else {
+		d.Set("public_ip", "")
+		d.Set("ip_id", "")
+		d.SetConnInfo(nil)
 	}
 
 	if response.Server.IPv6 != nil {
