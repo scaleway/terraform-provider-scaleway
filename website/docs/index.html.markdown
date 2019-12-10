@@ -34,9 +34,7 @@ provider "scaleway" {
   region          = "fr-par"
 }
 
-resource "scaleway_instance_ip" "public_ip" {
-  server_id = scaleway_instance_server.web.id
-}
+resource "scaleway_instance_ip" "public_ip" {}
 
 resource "scaleway_instance_volume" "data" {
   size_in_gb = 30
@@ -69,6 +67,8 @@ resource "scaleway_instance_server" "web" {
   image = "ubuntu-bionic"
 
   tags = [ "front", "web" ]
+
+  ip_id = scaleway_instance_ip.public_ip.id
 
   additional_volume_ids = [ scaleway_instance_volume.data.id ]
 

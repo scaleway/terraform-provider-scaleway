@@ -107,11 +107,10 @@ resource "scaleway_instance_server" "web" {
 
 #### Renamed: `scaleway_ip` -> `scaleway_instance_ip`
 
-`scaleway_ip` was renamed to `scaleway_instance_ip` and the attribute `server` was renamed to `server_id`.
+`scaleway_ip` was renamed to `scaleway_instance_ip` and the `server` attribute, used to attach an IP has been moved to `scaleway_instance_server.id_id`
 
 ```hcl
 resource "scaleway_instance_ip" "test_ip" {
-  server_id = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
 }
 ```
 

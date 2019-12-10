@@ -16,23 +16,13 @@ func TestAccScalewayInstanceIP(t *testing.T) {
 		CheckDestroy: testAccCheckScalewayInstanceIPDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccScalewayInstanceIPConfig[0],
+				Config: `
+					resource "scaleway_instance_ip" "base" {}
+					resource "scaleway_instance_ip" "scaleway" {}
+				`,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayInstanceIPExists("scaleway_instance_ip.base"),
 					testAccCheckScalewayInstanceIPExists("scaleway_instance_ip.scaleway"),
-					resource.TestCheckResourceAttr("scaleway_instance_ip.base", "reverse", ""),
-					resource.TestCheckResourceAttr("scaleway_instance_ip.scaleway", "reverse", "www.scaleway.com"),
-				),
-			},
-			{
-				Config: testAccScalewayInstanceIPConfig[1],
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayInstanceIPExists("scaleway_instance_ip.base"),
-					testAccCheckScalewayInstanceIPExists("scaleway_instance_ip.scaleway"),
-					// Do not work anymore because of scaleway_instance_ip_reverse_dns new resource.
-					// Anyway the reverse attribute is deprecated.
-					//resource.TestCheckResourceAttr("scaleway_instance_ip.base", "reverse", "www.scaleway.com"),
-					//resource.TestCheckResourceAttr("scaleway_instance_ip.scaleway", "reverse", ""),
 				),
 			},
 		},
@@ -46,51 +36,23 @@ func TestAccScalewayInstanceIP_Zone(t *testing.T) {
 		CheckDestroy: testAccCheckScalewayInstanceIPDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccScalewayInstanceIPZoneConfig[0],
+				Config: `
+					resource "scaleway_instance_ip" "base" {}
+				`,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayInstanceIPExists("scaleway_instance_ip.base"),
 					resource.TestCheckResourceAttr("scaleway_instance_ip.base", "zone", "fr-par-1"),
 				),
 			},
 			{
-				Config: testAccScalewayInstanceIPZoneConfig[1],
+				Config: `
+					resource "scaleway_instance_ip" "base" {
+						zone = "nl-ams-1"	
+					}
+				`,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayInstanceIPExists("scaleway_instance_ip.base"),
 					resource.TestCheckResourceAttr("scaleway_instance_ip.base", "zone", "nl-ams-1"),
-				),
-			},
-		},
-	})
-}
-
-func TestAccScalewayInstanceServerIP(t *testing.T) {
-	t.Skip("Attaching an IP to a server via an IP block is deprecated")
-	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckScalewayInstanceServerDestroy,
-		Steps: []resource.TestStep{
-			{
-				Config: testAccCheckScalewayInstanceServerConfigIP("base1"),
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayInstanceServerExists("scaleway_instance_server.base1"),
-					testAccCheckScalewayInstanceServerExists("scaleway_instance_server.base2"),
-					testAccCheckScalewayInstanceIPExists("scaleway_instance_ip.base_ip"),
-					testAccCheckScalewayInstanceIPPairWithServer("scaleway_instance_ip.base_ip", "scaleway_instance_server.base1"),
-				),
-			},
-			{
-				Config: testAccCheckScalewayInstanceServerConfigIP("base2"),
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayInstanceIPPairWithServer("scaleway_instance_ip.base_ip", "scaleway_instance_server.base2"),
-				),
-			},
-			{
-				Config: testAccCheckScalewayInstanceServerConfigIP(""),
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayInstanceServerNoIPAssigned("scaleway_instance_server.base1"),
-					testAccCheckScalewayInstanceServerNoIPAssigned("scaleway_instance_server.base2"),
-					resource.TestCheckResourceAttr("scaleway_instance_ip.base_ip", "server_id", ""),
 				),
 			},
 		},
@@ -219,57 +181,4 @@ func testAccCheckScalewayInstanceIPDestroy(s *terraform.State) error {
 	}
 
 	return nil
-}
-
-// Check that reverse is handled at creation and update time
-var testAccScalewayInstanceIPConfig = []string{
-	`
-		resource "scaleway_instance_ip" "base" {}
-		resource "scaleway_instance_ip" "scaleway" {
-			reverse = "www.scaleway.com"
-		}
-	`,
-	`
-		resource "scaleway_instance_ip" "base" {
-			reverse = "www.scaleway.com"	
-		}
-		resource "scaleway_instance_ip" "scaleway" {}
-	`,
-}
-
-// Check that we can change the zone of an ip (delete + create)
-var testAccScalewayInstanceIPZoneConfig = []string{
-	`
-		resource "scaleway_instance_ip" "base" {}
-	`,
-	`
-		resource "scaleway_instance_ip" "base" {
-			zone = "nl-ams-1"	
-		}
-	`,
-}
-
-func testAccCheckScalewayInstanceServerConfigIP(attachedBase string) string {
-	attachedServer := ""
-	if attachedBase != "" {
-		attachedServer = `server_id = "${scaleway_instance_server.` + attachedBase + `.id}"`
-	}
-	return fmt.Sprintf(`
-resource "scaleway_instance_ip" "base_ip" {
-  %s
-}
-
-resource "scaleway_instance_server" "base1" {
-  image = "ubuntu-bionic"
-  type  = "DEV1-S"
-  
-  tags  = [ "terraform-test", "scaleway_instance_server", "attach_ip" ]
-}
-
-resource "scaleway_instance_server" "base2" {
-  image = "ubuntu-bionic"
-  type  = "DEV1-S"
-  
-  tags  = [ "terraform-test", "scaleway_instance_server", "attach_ip" ]
-}`, attachedServer)
 }

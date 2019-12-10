@@ -25,7 +25,7 @@ func TestAccScalewayInstanceServerMinimal1(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "root_volume.0.delete_on_termination", "true"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "root_volume.0.size_in_gb", "20"),
 					resource.TestCheckResourceAttrSet("scaleway_instance_server.base", "root_volume.0.volume_id"),
-					resource.TestCheckResourceAttr("scaleway_instance_server.base", "disable_dynamic_ip", "false"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.base", "enable_dynamic_ip", "false"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "tags.0", "terraform-test"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "tags.1", "scaleway_instance_server"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "tags.2", "minimal"),
@@ -459,23 +459,73 @@ func TestAccScalewayInstanceServerWithReservedIP(t *testing.T) {
 		CheckDestroy: testAccCheckScalewayInstanceServerDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckScalewayInstanceServerConfigWithReservedIP(false),
+				Config: `
+					resource "scaleway_instance_ip" "first" {}
+					resource "scaleway_instance_ip" "second" {}
+					resource "scaleway_instance_server" "base" {
+						image = "f974feac-abae-4365-b988-8ec7d1cec10d"
+						type  = "DEV1-S"
+						ip_id = scaleway_instance_ip.first.id
+						tags  = [ "terraform-test", "scaleway_instance_server", "reserved_ip" ]
+					}
+				`,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayInstanceServerExists("scaleway_instance_server.base"),
-					testAccCheckScalewayInstanceIPExists("scaleway_instance_ip.first"),
-					testAccCheckScalewayInstanceIPExists("scaleway_instance_ip.second"),
 					resource.TestCheckResourceAttrPair("scaleway_instance_ip.first", "address", "scaleway_instance_server.base", "public_ip"),
 					resource.TestCheckResourceAttrPair("scaleway_instance_ip.first", "id", "scaleway_instance_server.base", "ip_id"),
 				),
 			},
 			{
-				Config: testAccCheckScalewayInstanceServerConfigWithReservedIP(true),
+				Config: `
+					resource "scaleway_instance_ip" "first" {}
+					resource "scaleway_instance_ip" "second" {}
+					resource "scaleway_instance_server" "base" {
+						image = "f974feac-abae-4365-b988-8ec7d1cec10d"
+						type  = "DEV1-S"
+						ip_id = scaleway_instance_ip.second.id
+						tags  = [ "terraform-test", "scaleway_instance_server", "reserved_ip" ]
+					}
+				`,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayInstanceServerExists("scaleway_instance_server.base"),
-					testAccCheckScalewayInstanceIPExists("scaleway_instance_ip.first"),
-					testAccCheckScalewayInstanceIPExists("scaleway_instance_ip.second"),
+					testAccCheckScalewayInstanceIPPairWithServer("scaleway_instance_ip.second", "scaleway_instance_server.base"),
 					resource.TestCheckResourceAttrPair("scaleway_instance_ip.second", "address", "scaleway_instance_server.base", "public_ip"),
 					resource.TestCheckResourceAttrPair("scaleway_instance_ip.second", "id", "scaleway_instance_server.base", "ip_id"),
+				),
+			},
+			{
+				Config: `
+					resource "scaleway_instance_ip" "first" {}
+					resource "scaleway_instance_ip" "second" {}
+					resource "scaleway_instance_server" "base" {
+						image = "f974feac-abae-4365-b988-8ec7d1cec10d"
+						type  = "DEV1-S"
+						tags  = [ "terraform-test", "scaleway_instance_server", "reserved_ip" ]
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayInstanceServerExists("scaleway_instance_server.base"),
+					testAccCheckScalewayInstanceServerNoIPAssigned("scaleway_instance_server.base"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.base", "public_ip", ""),
+					resource.TestCheckResourceAttr("scaleway_instance_server.base", "ip_id", ""),
+				),
+			},
+			{
+				Config: `
+					resource "scaleway_instance_ip" "first" {}
+					resource "scaleway_instance_ip" "second" {}
+					resource "scaleway_instance_server" "base" {
+						image = "f974feac-abae-4365-b988-8ec7d1cec10d"
+						type  = "DEV1-S"
+						enable_dynamic_ip = true
+						tags  = [ "terraform-test", "scaleway_instance_server", "reserved_ip" ]
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayInstanceServerExists("scaleway_instance_server.base"),
+					testAccCheckScalewayInstanceServerNoIPAssigned("scaleway_instance_server.base"),
+					testCheckResourceAttrIPv4("scaleway_instance_server.base", "public_ip"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.base", "ip_id", ""),
 				),
 			},
 		},
@@ -680,27 +730,5 @@ resource "scaleway_instance_server" "base" {
     tags  = [ "terraform-test", "scaleway_instance_server", "placement_group" ]
 }
 `
-
-func testAccCheckScalewayInstanceServerConfigWithReservedIP(secondIP bool) string {
-	ip := "first"
-	if secondIP {
-		ip = "second"
-	}
-	return fmt.Sprintf(`
-resource "scaleway_instance_ip" "first" {
-}
-
-resource "scaleway_instance_ip" "second" {
-}
-
-resource "scaleway_instance_server" "base" {
-	image = "f974feac-abae-4365-b988-8ec7d1cec10d"
-	type  = "DEV1-S"
-	ip_id = scaleway_instance_ip.%s.id
-	disable_dynamic_ip = true
-    tags  = [ "terraform-test", "scaleway_instance_server", "reserved_ip" ]
-}
-`, ip)
-}
 
 // todo: add a test with security groups

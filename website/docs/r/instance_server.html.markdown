@@ -14,13 +14,12 @@ Creates and manages Scaleway Compute Instance servers. For more information, see
 ### Basic
 
 ```hcl
-resource "scaleway_instance_ip" "public_ip" {
-  server_id = scaleway_instance_server.web.id
-}
+resource "scaleway_instance_ip" "public_ip" {}
 
 resource "scaleway_instance_server" "web" {
   type = "DEV1-S"
   image = "ubuntu-bionic"
+  ip_id = scaleway_instance_ip.public_ip.id
 }
 ```
 
@@ -48,8 +47,7 @@ resource "scaleway_instance_server" "web" {
 ### With a reserved IP
 
 ```hcl
-resource "scaleway_instance_ip" "ip" {
-}
+resource "scaleway_instance_ip" "ip" {}
 
 resource "scaleway_instance_server" "web" {
   type = "DEV1-L"
@@ -165,9 +163,7 @@ attached to the server. Updates to this field will trigger a stop/start of the s
 
 - `ip_id` = (Optional) The ID of the reserved IP that is attached to the server. 
 
-~> **Important:** When using `ip_id`, `disable_dynamic_ip` must also be set to true, otherwise leading to incorrect Terraform state.
-
-- `disable_dynamic_ip` - (Defaults to `false`) Disable dynamic IP on the server.
+- `enable_dynamic_ip` - (Defaults to `false`) If true a dynamic IP will be attached to the server.
 
 - `state` - (Defaults to `started`) The state of the server. Possible values are: `started`, `stopped` or `standby`.
 

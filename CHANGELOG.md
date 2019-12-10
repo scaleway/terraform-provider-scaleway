@@ -3,7 +3,11 @@
 BREAKING CHANGES:
 
 * `scaleway_instance_placement_group`: change default policy from `low_latency` to `max_availability` ([#329](https://github.com/terraform-providers/terraform-provider-scaleway/pull/329)).
-This change was made to keep coherence with default API behaviour.
+This change was made to keep coherence with default API behavior.
+* `scaleway_instance_server`: The attribute `disable_dynamic_ip` has been removed in favor of `enable_dynamic_ip` ([#365](https://github.com/terraform-providers/terraform-provider-scaleway/pull/365)).
+* `scaleway_instance_ip`: In order to resolve circular dependencies that can happen in some use case we changed
+the way an IP is attached to a server. The attribute `scaleway_instance_ip.server_id` has been removed in
+favor of `scaleway_instance_server.ip_id` ([#365](https://github.com/terraform-providers/terraform-provider-scaleway/pull/365)).
 
 FEATURE:
 

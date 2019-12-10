@@ -59,7 +59,7 @@ attached to the server.
 
 - `enable_ipv6` - Determines if IPv6 is enabled for the server.
 
-- `disable_dynamic_ip` - Disable dynamic IP on the server.
+- `enable_dynamic_ip` - True is dynamic IP in enable on the server.
 
 - `state` - The state of the server. Possible values are: `started`, `stopped` or `standby`.
 

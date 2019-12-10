@@ -151,6 +151,13 @@ func resourceScalewayInstanceServer() *schema.Resource {
 				Optional:    true,
 				Default:     false,
 				Description: "Disable dynamic IP on the server",
+				Removed:     "Removed in favor of enable_dynamic_ip",
+			},
+			"enable_dynamic_ip": {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Default:     false,
+				Description: "Enable dynamic IP on the server",
 			},
 			"state": {
 				Type:        schema.TypeString,
@@ -200,7 +207,7 @@ func resourceScalewayInstanceServer() *schema.Resource {
 				Type:     schema.TypeBool,
 				Optional: true,
 				Default:  false,
-				Removed:  "Please use disable_dynamic_ip instead",
+				Removed:  "Please use enable_dynamic_ip instead",
 			},
 		},
 	}
@@ -240,7 +247,7 @@ func resourceScalewayInstanceServerCreate(d *schema.ResourceData, m interface{})
 		CommercialType:    commercialType,
 		EnableIPv6:        d.Get("enable_ipv6").(bool),
 		SecurityGroup:     expandStringPtr(expandID(d.Get("security_group_id"))),
-		DynamicIPRequired: Bool(!d.Get("disable_dynamic_ip").(bool)),
+		DynamicIPRequired: scw.BoolPtr(d.Get("enable_dynamic_ip").(bool)),
 		Tags:              expandStrings(d.Get("tags")),
 	}
 
@@ -348,7 +355,7 @@ func resourceScalewayInstanceServerRead(d *schema.ResourceData, m interface{}) e
 	d.Set("tags", response.Server.Tags)
 	d.Set("security_group_id", response.Server.SecurityGroup.ID)
 	d.Set("enable_ipv6", response.Server.EnableIPv6)
-	d.Set("disable_dynamic_ip", !response.Server.DynamicIPRequired)
+	d.Set("enable_dynamic_ip", response.Server.DynamicIPRequired)
 
 	// Image could be empty in an import context.
 	image := d.Get("image").(string)
@@ -372,12 +379,15 @@ func resourceScalewayInstanceServerRead(d *schema.ResourceData, m interface{}) e
 			"type": "ssh",
 			"host": response.Server.PublicIP.Address.String(),
 		})
-		// Waiting for new breaking change version
-		// if response.Server.PublicIP.Dynamic == false {
-		// 	d.Set("ip_id", newZonedId(zone, response.Server.PublicIP.ID))
-		// } else {
-		// 	d.Set("ip_id", "")
-		// }
+		if response.Server.PublicIP.Dynamic == false {
+			d.Set("ip_id", newZonedId(zone, response.Server.PublicIP.ID))
+		} else {
+			d.Set("ip_id", "")
+		}
+	} else {
+		d.Set("public_ip", "")
+		d.Set("ip_id", "")
+		d.SetConnInfo(nil)
 	}
 
 	if response.Server.IPv6 != nil {
@@ -485,8 +495,8 @@ func resourceScalewayInstanceServerUpdate(d *schema.ResourceData, m interface{})
 		updateRequest.EnableIPv6 = scw.BoolPtr(d.Get("enable_ipv6").(bool))
 	}
 
-	if d.HasChange("disable_dynamic_ip") {
-		updateRequest.DynamicIPRequired = scw.BoolPtr(!d.Get("disable_dynamic_ip").(bool))
+	if d.HasChange("enable_dynamic_ip") {
+		updateRequest.DynamicIPRequired = scw.BoolPtr(d.Get("enable_dynamic_ip").(bool))
 	}
 
 	volumes := map[string]*instance.VolumeTemplate{}
@@ -533,7 +543,9 @@ func resourceScalewayInstanceServerUpdate(d *schema.ResourceData, m interface{})
 			return err
 		}
 		newIPID := expandID(d.Get("ip_id"))
-		if server.Server.PublicIP != nil {
+
+		// If an IP is already attached and it's not a dynamic IP we detach it.
+		if server.Server.PublicIP != nil && server.Server.PublicIP.Dynamic == false {
 			_, err = instanceAPI.DetachIP(&instance.DetachIPRequest{
 				Zone: zone,
 				IP:   server.Server.PublicIP.ID,
