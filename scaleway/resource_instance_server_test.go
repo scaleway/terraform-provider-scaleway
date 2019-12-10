@@ -25,7 +25,7 @@ func TestAccScalewayInstanceServerMinimal1(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "root_volume.0.delete_on_termination", "true"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "root_volume.0.size_in_gb", "20"),
 					resource.TestCheckResourceAttrSet("scaleway_instance_server.base", "root_volume.0.volume_id"),
-					resource.TestCheckResourceAttr("scaleway_instance_server.base", "disable_dynamic_ip", "false"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.base", "enable_dynamic_ip", "false"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "tags.0", "terraform-test"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "tags.1", "scaleway_instance_server"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "tags.2", "minimal"),
@@ -466,7 +466,6 @@ func TestAccScalewayInstanceServerWithReservedIP(t *testing.T) {
 						image = "f974feac-abae-4365-b988-8ec7d1cec10d"
 						type  = "DEV1-S"
 						ip_id = scaleway_instance_ip.first.id
-						disable_dynamic_ip = true
 						tags  = [ "terraform-test", "scaleway_instance_server", "reserved_ip" ]
 					}
 				`,
@@ -484,7 +483,6 @@ func TestAccScalewayInstanceServerWithReservedIP(t *testing.T) {
 						image = "f974feac-abae-4365-b988-8ec7d1cec10d"
 						type  = "DEV1-S"
 						ip_id = scaleway_instance_ip.second.id
-						disable_dynamic_ip = true
 						tags  = [ "terraform-test", "scaleway_instance_server", "reserved_ip" ]
 					}
 				`,
@@ -502,7 +500,6 @@ func TestAccScalewayInstanceServerWithReservedIP(t *testing.T) {
 					resource "scaleway_instance_server" "base" {
 						image = "f974feac-abae-4365-b988-8ec7d1cec10d"
 						type  = "DEV1-S"
-						disable_dynamic_ip = true
 						tags  = [ "terraform-test", "scaleway_instance_server", "reserved_ip" ]
 					}
 				`,
