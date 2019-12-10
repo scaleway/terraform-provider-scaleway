@@ -7,12 +7,12 @@ This change was made to keep coherence with default API behaviour.
 
 FEATURE:
 
-* **New Data source**: `scaleway_marketplace_image` ([#362](https://github.com/terraform-providers/terraform-provider-scaleway/pull/362))
 * **New Data source**: `scaleway_baremetal_offer_beta` ([#361](https://github.com/terraform-providers/terraform-provider-scaleway/pull/361))
-* **New Data source**: `scaleway_instance_volume` ([#356](https://github.com/terraform-providers/terraform-provider-scaleway/pull/356))
 * **New Data source**: `scaleway_instance_image` ([#359](https://github.com/terraform-providers/terraform-provider-scaleway/pull/359))
-* **New Data source**: `scaleway_instance_server` ([#350](https://github.com/terraform-providers/terraform-provider-scaleway/pull/350))
 * **New Data source**: `scaleway_instance_security_group` ([#346](https://github.com/terraform-providers/terraform-provider-scaleway/pull/346))
+* **New Data source**: `scaleway_instance_server` ([#350](https://github.com/terraform-providers/terraform-provider-scaleway/pull/350))
+* **New Data source**: `scaleway_instance_volume` ([#356](https://github.com/terraform-providers/terraform-provider-scaleway/pull/356))
+* **New Data source**: `scaleway_marketplace_image` ([#362](https://github.com/terraform-providers/terraform-provider-scaleway/pull/362))
 * **New Resource**: `scaleway_rdb_instance_beta` ([#331](https://github.com/terraform-providers/terraform-provider-scaleway/pull/331))
 * **New Resource**: `scaleway_instance_ip_reverse_dns` ([#315](https://github.com/terraform-providers/terraform-provider-scaleway/pull/315))
 `scaleway_baremetal_server_beta`: add support for offer name ([#345](https://github.com/terraform-providers/terraform-provider-scaleway/pull/345))
@@ -21,13 +21,13 @@ FEATURE:
 
 BUG FIXES:
 
-* `scaleway_instance_security_group`: make port-range editable ([#358](https://github.com/terraform-providers/terraform-provider-scaleway/pull/358))
+* `scaleway_k8s_cluster_beta`: handle regional IDs properly ([#320](https://github.com/terraform-providers/terraform-provider-scaleway/pull/320))
 * `scaleway_lb_backend_beta`: health_check_delay is now properly used ([#357](https://github.com/terraform-providers/terraform-provider-scaleway/pull/357))
+* `scaleway_instance_security_group`: make port-range editable ([#358](https://github.com/terraform-providers/terraform-provider-scaleway/pull/358))
+* `scaleway_instance_server`: read server image during import ([#337](https://github.com/terraform-providers/terraform-provider-scaleway/pull/337))
+* `scaleway_instance_server`: ignore case on instance types ([#312](https://github.com/terraform-providers/terraform-provider-scaleway/pull/312))
 * `scaleway_object_bucket`: fix bucket import ([#343](https://github.com/terraform-providers/terraform-provider-scaleway/pull/343))
 * `scaleway_provider`: better bootstrap error handling ([#342](https://github.com/terraform-providers/terraform-provider-scaleway/pull/342))
-* `scaleway_instance_server`: read server image during import ([#337](https://github.com/terraform-providers/terraform-provider-scaleway/pull/337))
-* `scaleway_k8s_cluster_beta`: handle regional IDs properly ([#320](https://github.com/terraform-providers/terraform-provider-scaleway/pull/320))
-* `scaleway_instance_server`: ignore case on instance types ([#312](https://github.com/terraform-providers/terraform-provider-scaleway/pull/312))
 
 
 ## 1.12.0 (October 25, 2019)
