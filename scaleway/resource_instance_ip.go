@@ -10,6 +10,11 @@ func resourceScalewayInstanceIP() *schema.Resource {
 		Create: resourceScalewayInstanceIPCreate,
 		Read:   resourceScalewayInstanceIPRead,
 		Delete: resourceScalewayInstanceIPDelete,
+
+		// Because of removed attribute server_id we must add an Update func that do nothing. This could be remove on
+		// next major release.
+		Update: resourceScalewayInstanceIPRead,
+
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},
@@ -27,7 +32,8 @@ func resourceScalewayInstanceIP() *schema.Resource {
 			},
 			"server_id": {
 				Type:        schema.TypeString,
-				Computed:    true,
+				Optional:    true,
+				Removed:     "server_id has been removed in favor of scaleway_instance_server.ip_id",
 				Description: "The server associated with this IP",
 			},
 			"zone":            zoneSchema(),
@@ -90,12 +96,6 @@ func resourceScalewayInstanceIPRead(d *schema.ResourceData, m interface{}) error
 	d.Set("zone", string(zone))
 	d.Set("organization_id", res.IP.Organization)
 	d.Set("reverse", res.IP.Reverse)
-
-	if res.IP.Server != nil {
-		d.Set("server_id", newZonedId(zone, res.IP.Server.ID))
-	} else {
-		d.Set("server_id", "")
-	}
 
 	return nil
 }

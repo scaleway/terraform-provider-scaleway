@@ -28,13 +28,7 @@ In addition to all above arguments, the following attributes are exported:
 
 - `id` - The ID of the IP.
 - `address` - The IP address.
-- `server_id` - The ID of the server this IP is attached to.
-
-~> **Warning:** Since v1.13 to attach an IP to a server you must use `ip_id` field on `scaleway_instance_server`.
-
 - `reverse` - The reverse dns attached to this IP
-
-~> **Warning:** Since v1.13 to update reverse dns of an IP you mist use `scaleway_instance_ip_reverse_dns`.
 
 ## Import
 

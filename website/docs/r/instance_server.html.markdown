@@ -165,7 +165,7 @@ attached to the server. Updates to this field will trigger a stop/start of the s
 
 ~> **Important:** When using `ip_id`, `disable_dynamic_ip` must also be set to true, otherwise leading to incorrect Terraform state.
 
-- `disable_dynamic_ip` - (Defaults to `true`) Disable dynamic IP on the server.
+- `enable_dynamic_ip` - (Defaults to `false`) If true a dynamic IP will be attached to the server.
 
 - `state` - (Defaults to `started`) The state of the server. Possible values are: `started`, `stopped` or `standby`.
 
