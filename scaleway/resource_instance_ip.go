@@ -11,7 +11,7 @@ func resourceScalewayInstanceIP() *schema.Resource {
 		Read:   resourceScalewayInstanceIPRead,
 		Delete: resourceScalewayInstanceIPDelete,
 
-		// Because of removed attribute server_id we must add an Update func that do nothing. This could be remove on
+		// Because of removed attribute server_id we must add an update func that does nothing. This could be removed on
 		// next major release.
 		Update: resourceScalewayInstanceIPRead,
 
