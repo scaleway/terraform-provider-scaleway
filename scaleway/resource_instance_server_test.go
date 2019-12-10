@@ -510,6 +510,24 @@ func TestAccScalewayInstanceServerWithReservedIP(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "ip_id", ""),
 				),
 			},
+			{
+				Config: `
+					resource "scaleway_instance_ip" "first" {}
+					resource "scaleway_instance_ip" "second" {}
+					resource "scaleway_instance_server" "base" {
+						image = "f974feac-abae-4365-b988-8ec7d1cec10d"
+						type  = "DEV1-S"
+						enable_dynamic_ip = true
+						tags  = [ "terraform-test", "scaleway_instance_server", "reserved_ip" ]
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayInstanceServerExists("scaleway_instance_server.base"),
+					testAccCheckScalewayInstanceServerNoIPAssigned("scaleway_instance_server.base"),
+					testCheckResourceAttrIPv4("scaleway_instance_server.base", "public_ip"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.base", "ip_id", ""),
+				),
+			},
 		},
 	})
 }
