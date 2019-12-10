@@ -506,8 +506,8 @@ func TestAccScalewayInstanceServerWithReservedIP(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayInstanceServerExists("scaleway_instance_server.base"),
 					testAccCheckScalewayInstanceServerNoIPAssigned("scaleway_instance_server.base"),
-					resource.TestCheckResourceAttrPair("scaleway_instance_ip.second", "address", "scaleway_instance_server.base", "public_ip"),
-					resource.TestCheckResourceAttrPair("scaleway_instance_ip.second", "id", "scaleway_instance_server.base", "ip_id"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.base", "public_ip", ""),
+					resource.TestCheckResourceAttr("scaleway_instance_server.base", "ip_id", ""),
 				),
 			},
 		},
