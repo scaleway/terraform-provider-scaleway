@@ -39,7 +39,6 @@ func resourceScalewayInstanceVolume() *schema.Resource {
 			"size_in_gb": {
 				Type:          schema.TypeInt,
 				Optional:      true,
-				Computed:      true,
 				ForceNew:      true,
 				Description:   "The size of the volume in gigabyte",
 				ConflictsWith: []string{"from_snapshot_id", "from_volume_id"},
