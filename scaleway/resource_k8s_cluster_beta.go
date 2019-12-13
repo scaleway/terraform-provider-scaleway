@@ -53,7 +53,7 @@ func resourceScalewayK8SClusterBeta() *schema.Resource {
 			"ingress": {
 				Type:        schema.TypeString,
 				Optional:    true,
-				Default:     "no_ingress",
+				Default:     "none",
 				Description: "The ingress to be deployed on the cluster",
 			},
 			"tags": {
