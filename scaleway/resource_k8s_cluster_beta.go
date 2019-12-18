@@ -82,7 +82,6 @@ func resourceScalewayK8SClusterBeta() *schema.Resource {
 						"node_type": {
 							Type:             schema.TypeString,
 							Required:         true,
-							ForceNew:         true,
 							Description:      "Server type of the default pool servers",
 							DiffSuppressFunc: diffSuppressFuncIgnoreCaseAndHyphen,
 						},
@@ -119,14 +118,12 @@ func resourceScalewayK8SClusterBeta() *schema.Resource {
 						"placement_group_id": {
 							Type:        schema.TypeString,
 							Optional:    true,
-							ForceNew:    true,
 							Default:     nil,
 							Description: "ID of the placement group for the default pool",
 						},
 						"container_runtime": {
 							Type:        schema.TypeString,
 							Optional:    true,
-							ForceNew:    true,
 							Default:     "docker",
 							Description: "Container runtime for the default pool",
 						},
@@ -480,38 +477,49 @@ func resourceScalewayK8SClusterBetaDefaultPoolUpdate(d *schema.ResourceData, m i
 	if d.HasChange("default_pool") {
 		defaultPoolID := d.Get("default_pool.0.pool_id").(string)
 
-		updateRequest := &k8s.UpdatePoolRequest{
-			Region: region,
-			PoolID: expandID(defaultPoolID),
-		}
+		forceNew := false
+		oldPoolID := ""
+		if d.HasChange("default_pool.0.container_runtime") || d.HasChange("default_pool.0.node_type") || d.HasChange("default_pool.0.placement_group_id") {
+			forceNew = true
+			oldPoolID = defaultPoolID
+		} else {
+			updateRequest := &k8s.UpdatePoolRequest{
+				Region: region,
+				PoolID: expandID(defaultPoolID),
+			}
 
-		if autohealing, ok := d.GetOk("default_pool.0.autohealing"); ok {
-			updateRequest.Autohealing = scw.BoolPtr(autohealing.(bool))
-		}
+			if autohealing, ok := d.GetOk("default_pool.0.autohealing"); ok {
+				updateRequest.Autohealing = scw.BoolPtr(autohealing.(bool))
+			}
 
-		if minSize, ok := d.GetOk("default_pool.0.min_size"); ok {
-			updateRequest.MinSize = scw.Uint32Ptr(uint32(minSize.(int)))
-		}
+			if minSize, ok := d.GetOk("default_pool.0.min_size"); ok {
+				updateRequest.MinSize = scw.Uint32Ptr(uint32(minSize.(int)))
+			}
 
-		if maxSize, ok := d.GetOk("default_pool.0.max_size"); ok {
-			updateRequest.MaxSize = scw.Uint32Ptr(uint32(maxSize.(int)))
-		}
+			if maxSize, ok := d.GetOk("default_pool.0.max_size"); ok {
+				updateRequest.MaxSize = scw.Uint32Ptr(uint32(maxSize.(int)))
+			}
 
-		if autoscaling, ok := d.GetOk("default_pool.0.autoscaling"); ok {
-			updateRequest.Autoscaling = scw.BoolPtr(autoscaling.(bool))
-		}
+			if autoscaling, ok := d.GetOk("default_pool.0.autoscaling"); ok {
+				updateRequest.Autoscaling = scw.BoolPtr(autoscaling.(bool))
+			}
 
-		if d.Get("default_pool.0.autoscaling").(bool) == false {
-			if size, ok := d.GetOk("default_pool.0.size"); ok {
-				updateRequest.Size = scw.Uint32Ptr(uint32(size.(int)))
+			if d.Get("default_pool.0.autoscaling").(bool) == false {
+				if size, ok := d.GetOk("default_pool.0.size"); ok {
+					updateRequest.Size = scw.Uint32Ptr(uint32(size.(int)))
+				}
+			}
+
+			_, err := k8sAPI.UpdatePool(updateRequest)
+			if err != nil {
+				if !is404Error(err) {
+					return err
+				}
+				forceNew = true
 			}
 		}
 
-		_, err := k8sAPI.UpdatePool(updateRequest)
-		if err != nil {
-			if !is404Error(err) {
-				return err
-			}
+		if forceNew {
 			defaultPoolRequest := &k8s.CreatePoolRequest{
 				Region:      region,
 				ClusterID:   clusterID,
@@ -546,6 +554,15 @@ func resourceScalewayK8SClusterBetaDefaultPoolUpdate(d *schema.ResourceData, m i
 
 			d.Set("default_pool", []map[string]interface{}{defaultPool})
 
+			if oldPoolID != "" {
+				_, err = k8sAPI.DeletePool(&k8s.DeletePoolRequest{
+					Region: region,
+					PoolID: expandID(oldPoolID),
+				})
+				if err != nil {
+					return err
+				}
+			}
 		}
 	}
 

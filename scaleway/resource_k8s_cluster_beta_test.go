@@ -225,6 +225,30 @@ func TestAccScalewayK8SClusterBetaDefaultPoolWithPlacementGroup(t *testing.T) {
 	})
 }
 
+func TestAccScalewayK8SClusterBetaDefaultPoolRecreate(t *testing.T) {
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckScalewayK8SClusterBetaDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckScalewayK8SClusterBetaDefaultPoolRecreate("gp1_xs"),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayK8SClusterBetaExists("scaleway_k8s_cluster_beta.recreate_pool"),
+					resource.TestCheckResourceAttr("scaleway_k8s_cluster_beta.recreate_pool", "status", k8s.ClusterStatusReady.String()),
+					resource.TestCheckResourceAttr("scaleway_k8s_cluster_beta.recreate_pool", "default_pool.0.node_type", "gp1_xs"),
+				),
+			},
+			{
+				Config: testAccCheckScalewayK8SClusterBetaDefaultPoolRecreate("gp1_s"),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("scaleway_k8s_cluster_beta.recreate_pool", "default_pool.0.node_type", "gp1_s"),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckScalewayK8SClusterBetaDestroy(s *terraform.State) error {
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "scaleway_k8s_cluster_beta" {
@@ -369,4 +393,18 @@ resource "scaleway_k8s_cluster_beta" "pool_placement_group" {
 	}
 	tags = [ "terraform-test", "scaleway_k8s_cluster_beta", "default-pool-placement-group" ]
 }`, version)
+}
+
+func testAccCheckScalewayK8SClusterBetaDefaultPoolRecreate(nodeType string) string {
+	return fmt.Sprintf(`
+resource "scaleway_k8s_cluster_beta" "recreate_pool" {
+	cni = "calico"
+	version = "1.17.0"
+	name = "default-pool"
+	default_pool {
+		node_type = "%s"
+		size = 1
+	}
+	tags = [ "terraform-test", "scaleway_k8s_cluster_beta", "recreate-pool" ]
+}`, nodeType)
 }
