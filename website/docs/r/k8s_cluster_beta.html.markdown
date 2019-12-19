@@ -121,7 +121,7 @@ The following arguments are supported:
 - `default_pool` - (Required) The cluster's default pool configuration.
   
   - `node_type` - (Required)  The commercial type of the default pool instances.
-~> **Important:** Updates to this field will recreate a new resource.
+~> **Important:** Updates to this field will recreate a new default pool.
 
   - `size` - (Required) The size of the default pool.
 
@@ -130,6 +130,7 @@ The following arguments are supported:
   - `max_size` - (Defaults to `size`) The maximum size of the default pool, used by the autoscaling feature.
 
   - `placement_group_id` - (Optional) The [placement group](https://developers.scaleway.com/en/products/instance/api/#placement-groups-d8f653) the nodes of the pool will be attached to.
+~> **Important:** Updates to this field will recreate a new default pool.
 
   - `autoscaling` - (Defaults to `false`) Enables the autoscaling feature for the default pool.
 ~> **Important:** When enabled, an update of the `size` will not be taken into account.
@@ -137,6 +138,7 @@ The following arguments are supported:
   - `autohealing` - (Defaults to `false`) Enables the autohealing feature for the default pool.
 
   - `container_runtime` - (Defaults to `docker`) The container runtime of the default pool.
+~> **Important:** Updates to this field will recreate a new default pool.
 
 - `region` - (Defaults to [provider](../index.html#region) `region`) The [region](../guides/regions_and_zones.html#regions) in which the cluster should be created.
 
