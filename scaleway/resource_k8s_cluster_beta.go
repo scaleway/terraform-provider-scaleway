@@ -5,6 +5,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	k8s "github.com/scaleway/scaleway-sdk-go/api/k8s/v1beta3"
+	"github.com/scaleway/scaleway-sdk-go/logger"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 )
 
@@ -515,6 +516,7 @@ func resourceScalewayK8SClusterBetaDefaultPoolUpdate(d *schema.ResourceData, m i
 				if !is404Error(err) {
 					return err
 				}
+				logger.Warningf("default node pool %s is not found, recreating a new one", defaultPoolID)
 				forceNew = true
 			}
 		}
