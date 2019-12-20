@@ -256,12 +256,30 @@ func TestAccScalewayK8SClusterBetaAutoUpgrade(t *testing.T) {
 		CheckDestroy: testAccCheckScalewayK8SClusterBetaDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckScalewayK8SClusterBetaAutoUpgrade(),
+				Config: testAccCheckScalewayK8SClusterBetaAutoUpgrade(true, "tuesday", 3),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayK8SClusterBetaExists("scaleway_k8s_cluster_beta.auto_upgrade"),
 					resource.TestCheckResourceAttr("scaleway_k8s_cluster_beta.auto_upgrade", "auto_upgrade.0.enable", "true"),
 					resource.TestCheckResourceAttr("scaleway_k8s_cluster_beta.auto_upgrade", "auto_upgrade.0.maintenance_window_day", "tuesday"),
 					resource.TestCheckResourceAttr("scaleway_k8s_cluster_beta.auto_upgrade", "auto_upgrade.0.maintenance_window_start_hour", "3"),
+				),
+			},
+			{
+				Config: testAccCheckScalewayK8SClusterBetaAutoUpgrade(true, "any", 0),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayK8SClusterBetaExists("scaleway_k8s_cluster_beta.auto_upgrade"),
+					resource.TestCheckResourceAttr("scaleway_k8s_cluster_beta.auto_upgrade", "auto_upgrade.0.enable", "true"),
+					resource.TestCheckResourceAttr("scaleway_k8s_cluster_beta.auto_upgrade", "auto_upgrade.0.maintenance_window_day", "any"),
+					resource.TestCheckResourceAttr("scaleway_k8s_cluster_beta.auto_upgrade", "auto_upgrade.0.maintenance_window_start_hour", "0"),
+				),
+			},
+			{
+				Config: testAccCheckScalewayK8SClusterBetaAutoUpgrade(false, "any", 0),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayK8SClusterBetaExists("scaleway_k8s_cluster_beta.auto_upgrade"),
+					resource.TestCheckResourceAttr("scaleway_k8s_cluster_beta.auto_upgrade", "auto_upgrade.0.enable", "false"),
+					resource.TestCheckResourceAttr("scaleway_k8s_cluster_beta.auto_upgrade", "auto_upgrade.0.maintenance_window_day", "any"),
+					resource.TestCheckResourceAttr("scaleway_k8s_cluster_beta.auto_upgrade", "auto_upgrade.0.maintenance_window_start_hour", "0"),
 				),
 			},
 		},
@@ -428,8 +446,8 @@ resource "scaleway_k8s_cluster_beta" "recreate_pool" {
 }`, nodeType)
 }
 
-func testAccCheckScalewayK8SClusterBetaAutoUpgrade() string {
-	return `
+func testAccCheckScalewayK8SClusterBetaAutoUpgrade(enable bool, day string, hour uint64) string {
+	return fmt.Sprintf(`
 resource "scaleway_k8s_cluster_beta" "auto_upgrade" {
 	cni = "calico"
 	version = "1.17.0"
@@ -439,10 +457,10 @@ resource "scaleway_k8s_cluster_beta" "auto_upgrade" {
 		size = 1
 	}
 	auto_upgrade {
-	    enable = true
-		maintenance_window_start_hour = 3
-		maintenance_window_day = "tuesday"
+	    enable = %t
+		maintenance_window_start_hour = %d
+		maintenance_window_day = "%s"
 	}
 	tags = [ "terraform-test", "scaleway_k8s_cluster_beta", "auto_upgrade" ]
-}`
+}`, enable, hour, day)
 }

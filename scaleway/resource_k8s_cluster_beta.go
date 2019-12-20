@@ -100,7 +100,7 @@ func resourceScalewayK8SClusterBeta() *schema.Resource {
 						"maintenance_window_start_hour": {
 							Type:        schema.TypeInt,
 							Required:    true,
-							Description: "Start hour of the 2 hour maintenance window",
+							Description: "Start hour of the 2-hour maintenance window",
 						},
 						"maintenance_window_day": {
 							Type:        schema.TypeString,
@@ -344,7 +344,7 @@ func resourceScalewayK8SClusterBetaCreate(d *schema.ResourceData, m interface{})
 	autoUpgradeDay, okAutoUpgradeDay := d.GetOk("auto_upgrade.0.maintenance_window_day")
 
 	// check if all or 0 values are set
-	if (okAutoUpgradeDay || okAutoUpgradeEnable || okAutoUpgradeStartHour == true) && (okAutoUpgradeDay && okAutoUpgradeEnable && okAutoUpgradeStartHour == false) {
+	if (okAutoUpgradeDay || okAutoUpgradeEnable || okAutoUpgradeStartHour) && !(okAutoUpgradeDay && okAutoUpgradeEnable && okAutoUpgradeStartHour) {
 		return fmt.Errorf("all field or zero field of auto_upgrade must be set")
 	}
 
