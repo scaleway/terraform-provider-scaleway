@@ -496,8 +496,8 @@ func resourceScalewayK8SClusterBetaRead(d *schema.ResourceData, m interface{}) e
 	d.Set("upgrade_available", response.UpgradeAvailable)
 
 	// autoscaler_config
-	d.Set("autoscaler_config", []map[string]interface{}{clusterAutoscalerConfigFlatten(response)})
-	d.Set("auto_upgrade", []map[string]interface{}{clusterAutoUpgradeFlatten(response)})
+	d.Set("autoscaler_config", clusterAutoscalerConfigFlatten(response))
+	d.Set("auto_upgrade", clusterAutoUpgradeFlatten(response))
 
 	// default_pool_config
 	err = resourceScalewayK8SClusterBetaDefaultPoolRead(d, m)

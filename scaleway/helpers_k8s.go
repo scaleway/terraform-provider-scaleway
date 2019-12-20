@@ -88,7 +88,7 @@ func waitK8SClusterDeleted(k8sAPI *k8s.API, region scw.Region, clusterID string)
 	return fmt.Errorf("Cluster %s has state %s, wants %s", clusterID, cluster.Status.String(), k8s.ClusterStatusDeleted.String())
 }
 
-func clusterAutoscalerConfigFlatten(cluster *k8s.Cluster) map[string]interface{} {
+func clusterAutoscalerConfigFlatten(cluster *k8s.Cluster) []map[string]interface{} {
 	autoscalerConfig := map[string]interface{}{}
 	autoscalerConfig["disable_scale_down"] = cluster.AutoscalerConfig.ScaleDownDisabled
 	autoscalerConfig["scale_down_delay_after_add"] = cluster.AutoscalerConfig.ScaleDownDelayAfterAdd
@@ -98,14 +98,14 @@ func clusterAutoscalerConfigFlatten(cluster *k8s.Cluster) map[string]interface{}
 	autoscalerConfig["balance_similar_node_groups"] = cluster.AutoscalerConfig.BalanceSimilarNodeGroups
 	autoscalerConfig["expendable_pods_priority_cutoff"] = cluster.AutoscalerConfig.ExpendablePodsPriorityCutoff
 
-	return autoscalerConfig
+	return []map[string]interface{}{autoscalerConfig}
 }
 
-func clusterAutoUpgradeFlatten(cluster *k8s.Cluster) map[string]interface{} {
+func clusterAutoUpgradeFlatten(cluster *k8s.Cluster) []map[string]interface{} {
 	autoUpgrade := map[string]interface{}{}
 	autoUpgrade["enable"] = cluster.AutoUpgrade.Enabled
 	autoUpgrade["maintenance_window_start_hour"] = cluster.AutoUpgrade.MaintenanceWindow.StartHour
 	autoUpgrade["maintenance_window_day"] = cluster.AutoUpgrade.MaintenanceWindow.Day
 
-	return autoUpgrade
+	return []map[string]interface{}{autoUpgrade}
 }
