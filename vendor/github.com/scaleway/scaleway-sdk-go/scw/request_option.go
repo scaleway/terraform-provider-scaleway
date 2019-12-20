@@ -37,7 +37,7 @@ func (s *ScalewayRequest) apply(opts []RequestOption) {
 	}
 }
 
-func (s *ScalewayRequest) validate() SdkError {
+func (s *ScalewayRequest) validate() error {
 	// nothing so far
 	return nil
 }

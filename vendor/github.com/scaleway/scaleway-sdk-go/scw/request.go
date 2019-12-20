@@ -50,7 +50,7 @@ func (req *ScalewayRequest) getAllHeaders(token auth.Auth, userAgent string, ano
 }
 
 // getURL constructs a URL based on the base url and the client.
-func (req *ScalewayRequest) getURL(baseURL string) (*url.URL, SdkError) {
+func (req *ScalewayRequest) getURL(baseURL string) (*url.URL, error) {
 	url, err := url.Parse(baseURL + req.Path)
 	if err != nil {
 		return nil, errors.New("invalid url %s: %s", baseURL+req.Path, err)

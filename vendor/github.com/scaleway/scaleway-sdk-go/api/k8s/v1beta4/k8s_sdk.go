@@ -1,7 +1,7 @@
 // This file was automatically generated. DO NOT EDIT.
 // If you have any remark or suggestion do not hesitate to open an issue.
 
-// Package k8s provides methods and message types of the k8s v1beta3 API.
+// Package k8s provides methods and message types of the k8s v1beta4 API.
 package k8s
 
 import (
@@ -49,6 +49,116 @@ func NewAPI(client *scw.Client) *API {
 	}
 }
 
+type AutoscalerEstimator string
+
+const (
+	// AutoscalerEstimatorUnknownEstimator is [insert doc].
+	AutoscalerEstimatorUnknownEstimator = AutoscalerEstimator("unknown_estimator")
+	// AutoscalerEstimatorBinpacking is [insert doc].
+	AutoscalerEstimatorBinpacking = AutoscalerEstimator("binpacking")
+	// AutoscalerEstimatorOldbinpacking is [insert doc].
+	AutoscalerEstimatorOldbinpacking = AutoscalerEstimator("oldbinpacking")
+)
+
+func (enum AutoscalerEstimator) String() string {
+	if enum == "" {
+		// return default value if empty
+		return "unknown_estimator"
+	}
+	return string(enum)
+}
+
+func (enum AutoscalerEstimator) MarshalJSON() ([]byte, error) {
+	return []byte(fmt.Sprintf(`"%s"`, enum)), nil
+}
+
+func (enum *AutoscalerEstimator) UnmarshalJSON(data []byte) error {
+	tmp := ""
+
+	if err := json.Unmarshal(data, &tmp); err != nil {
+		return err
+	}
+
+	*enum = AutoscalerEstimator(AutoscalerEstimator(tmp).String())
+	return nil
+}
+
+type AutoscalerExpander string
+
+const (
+	// AutoscalerExpanderUnknownExpander is [insert doc].
+	AutoscalerExpanderUnknownExpander = AutoscalerExpander("unknown_expander")
+	// AutoscalerExpanderRandom is [insert doc].
+	AutoscalerExpanderRandom = AutoscalerExpander("random")
+	// AutoscalerExpanderMostPods is [insert doc].
+	AutoscalerExpanderMostPods = AutoscalerExpander("most_pods")
+	// AutoscalerExpanderLeastWaste is [insert doc].
+	AutoscalerExpanderLeastWaste = AutoscalerExpander("least_waste")
+	// AutoscalerExpanderPriority is [insert doc].
+	AutoscalerExpanderPriority = AutoscalerExpander("priority")
+)
+
+func (enum AutoscalerExpander) String() string {
+	if enum == "" {
+		// return default value if empty
+		return "unknown_expander"
+	}
+	return string(enum)
+}
+
+func (enum AutoscalerExpander) MarshalJSON() ([]byte, error) {
+	return []byte(fmt.Sprintf(`"%s"`, enum)), nil
+}
+
+func (enum *AutoscalerExpander) UnmarshalJSON(data []byte) error {
+	tmp := ""
+
+	if err := json.Unmarshal(data, &tmp); err != nil {
+		return err
+	}
+
+	*enum = AutoscalerExpander(AutoscalerExpander(tmp).String())
+	return nil
+}
+
+type CNI string
+
+const (
+	// CNIUnknownCni is [insert doc].
+	CNIUnknownCni = CNI("unknown_cni")
+	// CNICilium is [insert doc].
+	CNICilium = CNI("cilium")
+	// CNICalico is [insert doc].
+	CNICalico = CNI("calico")
+	// CNIWeave is [insert doc].
+	CNIWeave = CNI("weave")
+	// CNIFlannel is [insert doc].
+	CNIFlannel = CNI("flannel")
+)
+
+func (enum CNI) String() string {
+	if enum == "" {
+		// return default value if empty
+		return "unknown_cni"
+	}
+	return string(enum)
+}
+
+func (enum CNI) MarshalJSON() ([]byte, error) {
+	return []byte(fmt.Sprintf(`"%s"`, enum)), nil
+}
+
+func (enum *CNI) UnmarshalJSON(data []byte) error {
+	tmp := ""
+
+	if err := json.Unmarshal(data, &tmp); err != nil {
+		return err
+	}
+
+	*enum = CNI(CNI(tmp).String())
+	return nil
+}
+
 type ClusterStatus string
 
 const (
@@ -92,6 +202,42 @@ func (enum *ClusterStatus) UnmarshalJSON(data []byte) error {
 	}
 
 	*enum = ClusterStatus(ClusterStatus(tmp).String())
+	return nil
+}
+
+type Ingress string
+
+const (
+	// IngressUnknownIngress is [insert doc].
+	IngressUnknownIngress = Ingress("unknown_ingress")
+	// IngressNone is [insert doc].
+	IngressNone = Ingress("none")
+	// IngressNginx is [insert doc].
+	IngressNginx = Ingress("nginx")
+	// IngressTraefik is [insert doc].
+	IngressTraefik = Ingress("traefik")
+)
+
+func (enum Ingress) String() string {
+	if enum == "" {
+		// return default value if empty
+		return "unknown_ingress"
+	}
+	return string(enum)
+}
+
+func (enum Ingress) MarshalJSON() ([]byte, error) {
+	return []byte(fmt.Sprintf(`"%s"`, enum)), nil
+}
+
+func (enum *Ingress) UnmarshalJSON(data []byte) error {
+	tmp := ""
+
+	if err := json.Unmarshal(data, &tmp); err != nil {
+		return err
+	}
+
+	*enum = Ingress(Ingress(tmp).String())
 	return nil
 }
 
@@ -365,50 +511,92 @@ func (enum *PoolStatus) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
+type Runtime string
+
+const (
+	// RuntimeUnknownRuntime is [insert doc].
+	RuntimeUnknownRuntime = Runtime("unknown_runtime")
+	// RuntimeDocker is [insert doc].
+	RuntimeDocker = Runtime("docker")
+	// RuntimeContainerd is [insert doc].
+	RuntimeContainerd = Runtime("containerd")
+	// RuntimeCrio is [insert doc].
+	RuntimeCrio = Runtime("crio")
+)
+
+func (enum Runtime) String() string {
+	if enum == "" {
+		// return default value if empty
+		return "unknown_runtime"
+	}
+	return string(enum)
+}
+
+func (enum Runtime) MarshalJSON() ([]byte, error) {
+	return []byte(fmt.Sprintf(`"%s"`, enum)), nil
+}
+
+func (enum *Runtime) UnmarshalJSON(data []byte) error {
+	tmp := ""
+
+	if err := json.Unmarshal(data, &tmp); err != nil {
+		return err
+	}
+
+	*enum = Runtime(Runtime(tmp).String())
+	return nil
+}
+
 // Cluster cluster
 type Cluster struct {
-	// ID display the cluster unique ID
+	// ID the ID of the cluster
 	ID string `json:"id"`
-	// Region display the cluster region
+	// Region the region in which is the cluster
 	Region scw.Region `json:"region"`
-	// Name display the cluster name
+	// Name the name of the cluster
 	Name string `json:"name"`
-	// Description display the cluster description
+	// Description the description of the cluster
 	Description string `json:"description"`
-	// OrganizationID display the cluster organization
+	// OrganizationID the ID of the organization owning the cluster
 	OrganizationID string `json:"organization_id"`
-	// Tags display the cluster associated tags
+	// Tags the tags associated to the cluster
 	Tags []string `json:"tags"`
-	// Status
+	// Status the status of the cluster
 	//
 	// Default value: unknown
 	Status ClusterStatus `json:"status"`
-	// Version display the cluster version
+	// Version the Kubernetes version of the cluster
 	Version string `json:"version"`
-	// Cni display the cni model
-	Cni string `json:"cni"`
-	// ClusterURL display the cluster URL
+	// Cni the Container Network Interface (CNI) plugin running in the cluster
+	//
+	// Default value: unknown_cni
+	Cni CNI `json:"cni"`
+	// ClusterURL the Kubernetes API server URL of the cluster
 	ClusterURL string `json:"cluster_url"`
-	// DNSWildcard display the dns wildcard associated with the cluster
+	// DNSWildcard the DNS wildcard resovling all the ready nodes of the cluster
 	DNSWildcard string `json:"dns_wildcard"`
-
+	// CreatedAt the date at which the cluster was created
 	CreatedAt time.Time `json:"created_at"`
-
+	// UpdatedAt the date at which the cluster was last updated
 	UpdatedAt time.Time `json:"updated_at"`
-
+	// CurrentCoreCount the total number of cores of all the nodes in the cluster
 	CurrentCoreCount uint32 `json:"current_core_count"`
-
+	// CurrentNodeCount the total number of nodes in the cluster
 	CurrentNodeCount uint32 `json:"current_node_count"`
-
+	// CurrentMemCount the total amount of memory of all the nodes in the cluster
 	CurrentMemCount uint64 `json:"current_mem_count"`
-
+	// AutoscalerConfig the autoscaler config for the cluster
 	AutoscalerConfig *ClusterAutoscalerConfig `json:"autoscaler_config"`
-	// DashboardEnabled display if the Kubernetes dashboard is enabled
+	// DashboardEnabled the enablement of the Kubernetes Dashboard in the cluster
 	DashboardEnabled bool `json:"dashboard_enabled"`
-	// Ingress display which ingress is deployed
-	Ingress string `json:"ingress"`
-
+	// Ingress the ingress controller used in the cluster
+	//
+	// Default value: unknown_ingress
+	Ingress Ingress `json:"ingress"`
+	// AutoUpgrade the auo upgrade configuration of the cluster
 	AutoUpgrade *ClusterAutoUpgrade `json:"auto_upgrade"`
+	// UpgradeAvailable true if a new Kubernetes version is available
+	UpgradeAvailable bool `json:"upgrade_available"`
 }
 
 type ClusterAutoUpgrade struct {
@@ -421,10 +609,14 @@ type ClusterAutoscalerConfig struct {
 	ScaleDownDisabled bool `json:"scale_down_disabled"`
 
 	ScaleDownDelayAfterAdd string `json:"scale_down_delay_after_add"`
-
-	Estimator string `json:"estimator"`
-
-	Expander string `json:"expander"`
+	// Estimator
+	//
+	// Default value: unknown_estimator
+	Estimator AutoscalerEstimator `json:"estimator"`
+	// Expander
+	//
+	// Default value: unknown_expander
+	Expander AutoscalerExpander `json:"expander"`
 
 	IgnoreDaemonsetsUtilization bool `json:"ignore_daemonsets_utilization"`
 
@@ -443,10 +635,14 @@ type CreateClusterRequestAutoscalerConfig struct {
 	ScaleDownDisabled *bool `json:"scale_down_disabled"`
 
 	ScaleDownDelayAfterAdd *string `json:"scale_down_delay_after_add"`
-
-	Estimator *string `json:"estimator"`
-
-	Expander *string `json:"expander"`
+	// Estimator
+	//
+	// Default value: unknown_estimator
+	Estimator AutoscalerEstimator `json:"estimator"`
+	// Expander
+	//
+	// Default value: unknown_expander
+	Expander AutoscalerExpander `json:"expander"`
 
 	IgnoreDaemonsetsUtilization *bool `json:"ignore_daemonsets_utilization"`
 
@@ -467,8 +663,10 @@ type CreateClusterRequestDefaultPoolConfig struct {
 	MinSize *uint32 `json:"min_size"`
 
 	MaxSize *uint32 `json:"max_size"`
-
-	ContainerRuntime *string `json:"container_runtime"`
+	// ContainerRuntime
+	//
+	// Default value: unknown_runtime
+	ContainerRuntime Runtime `json:"container_runtime"`
 
 	Autohealing bool `json:"autohealing"`
 
@@ -477,32 +675,37 @@ type CreateClusterRequestDefaultPoolConfig struct {
 
 // ListClusterAvailableVersionsResponse list cluster available versions response
 type ListClusterAvailableVersionsResponse struct {
+	// Versions the available Kubernetes version for the cluster
 	Versions []*Version `json:"versions"`
 }
 
 // ListClustersResponse list clusters response
 type ListClustersResponse struct {
+	// TotalCount the total number of clusters
 	TotalCount uint32 `json:"total_count"`
-
+	// Clusters the paginated returned clusters
 	Clusters []*Cluster `json:"clusters"`
 }
 
 // ListNodesResponse list nodes response
 type ListNodesResponse struct {
+	// TotalCount the total number of nodes
 	TotalCount uint32 `json:"total_count"`
-
+	// Nodes the paginated returned nodes
 	Nodes []*Node `json:"nodes"`
 }
 
 // ListPoolsResponse list pools response
 type ListPoolsResponse struct {
+	// TotalCount the total number of pools that exists for the cluster
 	TotalCount uint32 `json:"total_count"`
-
+	// Pools the paginated returned pools
 	Pools []*Pool `json:"pools"`
 }
 
 // ListVersionsResponse list versions response
 type ListVersionsResponse struct {
+	// Versions the available Kubernetes versions
 	Versions []*Version `json:"versions"`
 }
 
@@ -516,80 +719,86 @@ type MaintenanceWindow struct {
 
 // Node node
 type Node struct {
-	// ID display node unique ID
+	// ID the ID of the node
 	ID string `json:"id"`
-	// PoolID display pool unique ID
+	// PoolID the pool ID of the node
 	PoolID string `json:"pool_id"`
-	// ClusterID display cluster unique ID
+	// ClusterID the cluster ID of the node
 	ClusterID string `json:"cluster_id"`
-
+	// Region the cluster region of the node
 	Region scw.Region `json:"region"`
-	// Name display node name
+	// Name the name of the node
 	Name string `json:"name"`
-	// PublicIPV4 display the servers public IPv4 address
-	PublicIPV4 *string `json:"public_ip_v4"`
-	// PublicIPV6 display the servers public IPv6 address
-	PublicIPV6 *string `json:"public_ip_v6"`
-	// NpdStatus display kubernetes node conditions
-	NpdStatus map[string]string `json:"npd_status"`
-	// Status
+	// PublicIPV4 the public IPv4 address of the node
+	PublicIPV4 *net.IP `json:"public_ip_v4"`
+	// PublicIPV6 the public IPv6 address of the node
+	PublicIPV6 *net.IP `json:"public_ip_v6"`
+	// Conditions the conditions of the node
+	//
+	// These conditions contains the Node Problem Detector conditions, as well as some in house conditions.
+	Conditions map[string]string `json:"conditions"`
+	// Status the status of the node
 	//
 	// Default value: unknown
 	Status NodeStatus `json:"status"`
-
+	// CreatedAt the date at which the node was created
 	CreatedAt time.Time `json:"created_at"`
-
+	// UpdatedAt the date at which the node was last updated
 	UpdatedAt time.Time `json:"updated_at"`
 }
 
 // Pool pool
 type Pool struct {
-	// ID display pool unique ID
+	// ID the ID of the pool
 	ID string `json:"id"`
-	// ClusterID display cluster unique ID
+	// ClusterID the cluster ID of the pool
 	ClusterID string `json:"cluster_id"`
-	// Region display the cluster region
-	Region scw.Region `json:"region"`
-	// Name display pool name
+	// CreatedAt the date at which the pool was created
+	CreatedAt time.Time `json:"created_at"`
+	// UpdatedAt the date at which the pool was last updated
+	UpdatedAt time.Time `json:"updated_at"`
+	// Name the name of the pool
 	Name string `json:"name"`
-	// Tags displat pool tags
-	Tags []string `json:"tags"`
-	// Status
+	// CurrentNodeCount the total number of nodes in the pool
+	CurrentNodeCount uint32 `json:"current_node_count"`
+	// Status the status of the pool
 	//
 	// Default value: unknown
 	Status PoolStatus `json:"status"`
-	// Version display pool version
+	// Version the version of the pool
 	Version string `json:"version"`
-	// NodeType display nodes commercial type (e.g. GP1-M)
+	// NodeType the node type is the type of Scaleway Instance wanted for the pool
 	NodeType string `json:"node_type"`
-	// Autoscaling enable or disable autoscaling
+	// Autoscaling the enablement of the autoscaling feature for the pool
 	Autoscaling bool `json:"autoscaling"`
-	// Autohealing enable or disable autohealing
-	Autohealing bool `json:"autohealing"`
-	// Size target number of nodes
+	// Size the size (number of nodes) of the pool
 	Size uint32 `json:"size"`
-	// MinSize display lower limit for this pool
+	// MinSize the minimun size of the pool
+	//
+	// The minimun size of the pool. Note that this fields will be used only when autoscaling is enabled.
 	MinSize uint32 `json:"min_size"`
-	// MaxSize display upper limit for this pool
+	// MaxSize the maximum size of the pool
+	//
+	// The maximum size of the pool. Note that this fields will be used only when autoscaling is enabled.
 	MaxSize uint32 `json:"max_size"`
-	// PlacementGroupID display ID of the placement group if any
-	PlacementGroupID *string `json:"placement_group_id"`
-
-	CreatedAt time.Time `json:"created_at"`
-
-	UpdatedAt time.Time `json:"updated_at"`
-
+	// CurrentCoreCount the total number of cores of all the nodes in the pool
 	CurrentCoreCount uint32 `json:"current_core_count"`
-
-	CurrentNodeCount uint32 `json:"current_node_count"`
-
+	// CurrentMemCount the total amount of memory of all the nodes in the pool
 	CurrentMemCount uint64 `json:"current_mem_count"`
-
-	ContainerRuntime string `json:"container_runtime"`
-}
-
-// ResetClusterAdminTokenResponse reset cluster admin token response
-type ResetClusterAdminTokenResponse struct {
+	// ContainerRuntime the container runtime for the nodes of the pool
+	//
+	// The customization of the container runtime is available for each pool. Note that `docker` is the only supporter runtime at the moment. Others are to be considered experimental.
+	//
+	// Default value: unknown_runtime
+	ContainerRuntime Runtime `json:"container_runtime"`
+	// Autohealing the enablement of the autohealing feature for the pool
+	Autohealing bool `json:"autohealing"`
+	// Tags the tags associated with the pool
+	Tags []string `json:"tags"`
+	// PlacementGroupID the placement group ID in which all the nodes of the pool will be created
+	PlacementGroupID *string `json:"placement_group_id"`
+	// Region the cluster region of the pool
+	Region scw.Region `json:"region"`
 }
 
 type UpdateClusterRequestAutoUpgrade struct {
@@ -602,10 +811,14 @@ type UpdateClusterRequestAutoscalerConfig struct {
 	ScaleDownDisabled *bool `json:"scale_down_disabled"`
 
 	ScaleDownDelayAfterAdd *string `json:"scale_down_delay_after_add"`
-
-	Estimator *string `json:"estimator"`
-
-	Expander *string `json:"expander"`
+	// Estimator
+	//
+	// Default value: unknown_estimator
+	Estimator AutoscalerEstimator `json:"estimator"`
+	// Expander
+	//
+	// Default value: unknown_expander
+	Expander AutoscalerExpander `json:"expander"`
 
 	IgnoreDaemonsetsUtilization *bool `json:"ignore_daemonsets_utilization"`
 
@@ -616,44 +829,45 @@ type UpdateClusterRequestAutoscalerConfig struct {
 
 // Version version
 type Version struct {
-	Name string `json:"name"`
-
-	Description string `json:"description"`
-
-	Label string `json:"label"`
-
-	Cni []string `json:"cni"`
-
-	Ingress []string `json:"ingress"`
-
-	Monitoring bool `json:"monitoring"`
-
+	// Region the regions in which this version is available
 	Region scw.Region `json:"region"`
+	// Name the name of the Kubernetes version
+	Name string `json:"name"`
+	// Label the label of the Kubernetes version
+	Label string `json:"label"`
+	// AvailableCnis the supported Container Network Interface (CNI) plugins for this version
+	AvailableCnis []CNI `json:"available_cnis"`
+	// AvailableIngresses the supported Ingress Controllers for this version
+	AvailableIngresses []Ingress `json:"available_ingresses"`
+	// AvailableContainerRuntimes the supported container runtimes for this version
+	AvailableContainerRuntimes []Runtime `json:"available_container_runtimes"`
 }
 
 // Service API
 
 type ListClustersRequest struct {
 	Region scw.Region `json:"-"`
-	// OrderBy you can order the response by created_at asc/desc or name asc/desc
+	// OrganizationID the organization ID on which to filter the returned clusters
+	OrganizationID *string `json:"-"`
+	// OrderBy the sort order of the returned clusters
 	//
 	// Default value: created_at_asc
 	OrderBy ListClustersRequestOrderBy `json:"-"`
-	// Page page number
+	// Page the page number for the returned clusters
 	Page *int32 `json:"-"`
-	// PageSize set the maximum list size
+	// PageSize the maximum number of clusters per page
 	PageSize *uint32 `json:"-"`
-	// Name filter clusters per name
+	// Name the name on which to filter the retured clusters
 	Name *string `json:"-"`
-	// OrganizationID filter cluster by organization
-	OrganizationID *string `json:"-"`
-	// Status filter cluster by status
+	// Status the status on which to filter the returned clusters
 	//
 	// Default value: unknown
 	Status ClusterStatus `json:"-"`
 }
 
-// ListClusters list all your clusters
+// ListClusters list all the clusters
+//
+// This method allows to list all the existing Kubernetes clusters in an account.
 func (s *API) ListClusters(req *ListClustersRequest, opts ...scw.RequestOption) (*ListClustersResponse, error) {
 	var err error
 
@@ -668,11 +882,11 @@ func (s *API) ListClusters(req *ListClustersRequest, opts ...scw.RequestOption) 
 	}
 
 	query := url.Values{}
+	parameter.AddToQuery(query, "organization_id", req.OrganizationID)
 	parameter.AddToQuery(query, "order_by", req.OrderBy)
 	parameter.AddToQuery(query, "page", req.Page)
 	parameter.AddToQuery(query, "page_size", req.PageSize)
 	parameter.AddToQuery(query, "name", req.Name)
-	parameter.AddToQuery(query, "organization_id", req.OrganizationID)
 	parameter.AddToQuery(query, "status", req.Status)
 
 	if fmt.Sprint(req.Region) == "" {
@@ -681,7 +895,7 @@ func (s *API) ListClusters(req *ListClustersRequest, opts ...scw.RequestOption) 
 
 	scwReq := &scw.ScalewayRequest{
 		Method:  "GET",
-		Path:    "/k8s/v1beta3/regions/" + fmt.Sprint(req.Region) + "/clusters",
+		Path:    "/k8s/v1beta4/regions/" + fmt.Sprint(req.Region) + "/clusters",
 		Query:   query,
 		Headers: http.Header{},
 	}
@@ -703,7 +917,7 @@ func (r *ListClustersResponse) UnsafeGetTotalCount() uint32 {
 
 // UnsafeAppend should not be used
 // Internal usage only
-func (r *ListClustersResponse) UnsafeAppend(res interface{}) (uint32, scw.SdkError) {
+func (r *ListClustersResponse) UnsafeAppend(res interface{}) (uint32, error) {
 	results, ok := res.(*ListClustersResponse)
 	if !ok {
 		return 0, errors.New("%T type cannot be appended to type %T", res, r)
@@ -716,33 +930,41 @@ func (r *ListClustersResponse) UnsafeAppend(res interface{}) (uint32, scw.SdkErr
 
 type CreateClusterRequest struct {
 	Region scw.Region `json:"-"`
-	// OrganizationID organization owning the resource
+	// OrganizationID the organization ID where the cluster will be created
 	OrganizationID string `json:"organization_id"`
-	// Name cluster name
+	// Name the name of the cluster
 	Name string `json:"name"`
-	// Description description
+	// Description the description of the cluster
 	Description string `json:"description"`
-	// Tags list of keyword
+	// Tags the tags associated with the cluster
 	Tags []string `json:"tags"`
-	// Version set the cluster version (you can get available versions by calling ListVersions)
+	// Version the Kubernetes version of the cluster
 	Version string `json:"version"`
-	// Cni set the Container Network Interface
-	Cni string `json:"cni"`
-	// EnableDashboard enable or disable Kubernetes dashboard preinstallation
+	// Cni the Container Network Interface (CNI) plugin that will run in the cluster
+	//
+	// Default value: unknown_cni
+	Cni CNI `json:"cni"`
+	// EnableDashboard the enablement of the Kubernetes Dashboard in the cluster
 	EnableDashboard bool `json:"enable_dashboard"`
-	// Ingress preinstall an ingress controller into your cluster
-	Ingress string `json:"ingress"`
-
+	// Ingress the Ingress Controller that will run in the cluster
+	//
+	// Default value: unknown_ingress
+	Ingress Ingress `json:"ingress"`
+	// DefaultPoolConfig the config of the defaul pool of the cluster
 	DefaultPoolConfig *CreateClusterRequestDefaultPoolConfig `json:"default_pool_config"`
-
+	// AutoscalerConfig the autoscaler config for the cluster
+	//
+	// This field allows to specify some configuration for the autoscaler, which is an implementation of the [cluster-autoscaler](https://github.com/kubernetes/autoscaler/tree/master/cluster-autoscaler/).
 	AutoscalerConfig *CreateClusterRequestAutoscalerConfig `json:"autoscaler_config"`
-
+	// AutoUpgrade the auo upgrade configuration of the cluster
+	//
+	// This configuratiom enables to set a speicific 2-hour time window in which the cluster can be automatically updated to the latest patch version in the current minor one.
 	AutoUpgrade *CreateClusterRequestAutoUpgrade `json:"auto_upgrade"`
 }
 
 // CreateCluster create a new cluster
 //
-// Create a new kubernetes cluster.
+// This method allows to create a new Kubernetes cluster on an account.
 func (s *API) CreateCluster(req *CreateClusterRequest, opts ...scw.RequestOption) (*Cluster, error) {
 	var err error
 
@@ -762,7 +984,7 @@ func (s *API) CreateCluster(req *CreateClusterRequest, opts ...scw.RequestOption
 
 	scwReq := &scw.ScalewayRequest{
 		Method:  "POST",
-		Path:    "/k8s/v1beta3/regions/" + fmt.Sprint(req.Region) + "/clusters",
+		Path:    "/k8s/v1beta4/regions/" + fmt.Sprint(req.Region) + "/clusters",
 		Headers: http.Header{},
 	}
 
@@ -782,13 +1004,13 @@ func (s *API) CreateCluster(req *CreateClusterRequest, opts ...scw.RequestOption
 
 type GetClusterRequest struct {
 	Region scw.Region `json:"-"`
-
+	// ClusterID the ID of the requested cluster
 	ClusterID string `json:"-"`
 }
 
-// GetCluster get cluster details
+// GetCluster get a cluster
 //
-// Get the cluster details associated with the given id.
+// This method allows to get details about a specific Kubernetes cluster.
 func (s *API) GetCluster(req *GetClusterRequest, opts ...scw.RequestOption) (*Cluster, error) {
 	var err error
 
@@ -807,7 +1029,7 @@ func (s *API) GetCluster(req *GetClusterRequest, opts ...scw.RequestOption) (*Cl
 
 	scwReq := &scw.ScalewayRequest{
 		Method:  "GET",
-		Path:    "/k8s/v1beta3/regions/" + fmt.Sprint(req.Region) + "/clusters/" + fmt.Sprint(req.ClusterID) + "",
+		Path:    "/k8s/v1beta4/regions/" + fmt.Sprint(req.Region) + "/clusters/" + fmt.Sprint(req.ClusterID) + "",
 		Headers: http.Header{},
 	}
 
@@ -822,25 +1044,31 @@ func (s *API) GetCluster(req *GetClusterRequest, opts ...scw.RequestOption) (*Cl
 
 type UpdateClusterRequest struct {
 	Region scw.Region `json:"-"`
-	// ClusterID cluster ID
+	// ClusterID the ID of the cluster to update
 	ClusterID string `json:"-"`
-	// Description description
+	// Description the new description of the cluster
 	Description *string `json:"description"`
-	// Tags list of keyword
+	// Tags the new tags associated with the cluster
 	Tags *[]string `json:"tags"`
-
+	// AutoscalerConfig the new autoscaler config for the cluster
+	//
+	// This field allows to update some configuration for the autoscaler, which is an implementation of the [cluster-autoscaler](https://github.com/kubernetes/autoscaler/tree/master/cluster-autoscaler/).
 	AutoscalerConfig *UpdateClusterRequestAutoscalerConfig `json:"autoscaler_config"`
-	// EnableDashboard enable Kubernetes dashboard
+	// EnableDashboard the new value of the Kubernetes Dashboard enablement
 	EnableDashboard *bool `json:"enable_dashboard"`
-	// Ingress select a Kubernetes Ingress Controller
-	Ingress *string `json:"ingress"`
-
+	// Ingress the new Ingress Controller for the cluster
+	//
+	// Default value: unknown_ingress
+	Ingress Ingress `json:"ingress"`
+	// AutoUpgrade the new auo upgrade configuration of the cluster
+	//
+	// The new auo upgrade configuration of the cluster. Note that all the fields needs to be set.
 	AutoUpgrade *UpdateClusterRequestAutoUpgrade `json:"auto_upgrade"`
 }
 
-// UpdateCluster update an existing cluster
+// UpdateCluster update a cluster
 //
-// Update the cluster associated with the given id.
+// This method allows to update a specific Kubernetes cluster. Note that this method is not made to upgrade a Kubernetes cluster.
 func (s *API) UpdateCluster(req *UpdateClusterRequest, opts ...scw.RequestOption) (*Cluster, error) {
 	var err error
 
@@ -859,7 +1087,7 @@ func (s *API) UpdateCluster(req *UpdateClusterRequest, opts ...scw.RequestOption
 
 	scwReq := &scw.ScalewayRequest{
 		Method:  "PATCH",
-		Path:    "/k8s/v1beta3/regions/" + fmt.Sprint(req.Region) + "/clusters/" + fmt.Sprint(req.ClusterID) + "",
+		Path:    "/k8s/v1beta4/regions/" + fmt.Sprint(req.Region) + "/clusters/" + fmt.Sprint(req.ClusterID) + "",
 		Headers: http.Header{},
 	}
 
@@ -879,13 +1107,13 @@ func (s *API) UpdateCluster(req *UpdateClusterRequest, opts ...scw.RequestOption
 
 type DeleteClusterRequest struct {
 	Region scw.Region `json:"-"`
-
+	// ClusterID the ID of the cluster to delete
 	ClusterID string `json:"-"`
 }
 
-// DeleteCluster delete an existing cluster
+// DeleteCluster delete a cluster
 //
-// Delete the cluster associated with the given id.
+// This method allows to delete a specific cluster and all its associated pools and nodes. Note that this method will not delete any Load Balancers or Block Volumes that are associated with the cluster.
 func (s *API) DeleteCluster(req *DeleteClusterRequest, opts ...scw.RequestOption) (*Cluster, error) {
 	var err error
 
@@ -904,7 +1132,7 @@ func (s *API) DeleteCluster(req *DeleteClusterRequest, opts ...scw.RequestOption
 
 	scwReq := &scw.ScalewayRequest{
 		Method:  "DELETE",
-		Path:    "/k8s/v1beta3/regions/" + fmt.Sprint(req.Region) + "/clusters/" + fmt.Sprint(req.ClusterID) + "",
+		Path:    "/k8s/v1beta4/regions/" + fmt.Sprint(req.Region) + "/clusters/" + fmt.Sprint(req.ClusterID) + "",
 		Headers: http.Header{},
 	}
 
@@ -919,17 +1147,21 @@ func (s *API) DeleteCluster(req *DeleteClusterRequest, opts ...scw.RequestOption
 
 type UpgradeClusterRequest struct {
 	Region scw.Region `json:"-"`
-
+	// ClusterID the ID of the cluster to upgrade
 	ClusterID string `json:"-"`
-
+	// Version the new Kubernetes version of the cluster
+	//
+	// The new Kubernetes version of the cluster. Note that the version shoud either be a higher patch version of the same minor version or the direct minor version after the current one.
 	Version string `json:"version"`
-
+	// UpgradePools the enablement of the pools upgrade
+	//
+	// This field makes the upgrade upgrades the pool once the Kubernetes master in upgrade.
 	UpgradePools bool `json:"upgrade_pools"`
 }
 
-// UpgradeCluster upgrade an existing cluster
+// UpgradeCluster upgrade a cluster
 //
-// Upgrade the cluster associated with the given id.
+// This method allows to upgrade a specific Kubernetes cluster and/or its associated pools to a specific and supported Kubernetes version.
 func (s *API) UpgradeCluster(req *UpgradeClusterRequest, opts ...scw.RequestOption) (*Cluster, error) {
 	var err error
 
@@ -948,7 +1180,7 @@ func (s *API) UpgradeCluster(req *UpgradeClusterRequest, opts ...scw.RequestOpti
 
 	scwReq := &scw.ScalewayRequest{
 		Method:  "POST",
-		Path:    "/k8s/v1beta3/regions/" + fmt.Sprint(req.Region) + "/clusters/" + fmt.Sprint(req.ClusterID) + "/upgrade",
+		Path:    "/k8s/v1beta4/regions/" + fmt.Sprint(req.Region) + "/clusters/" + fmt.Sprint(req.ClusterID) + "/upgrade",
 		Headers: http.Header{},
 	}
 
@@ -968,10 +1200,13 @@ func (s *API) UpgradeCluster(req *UpgradeClusterRequest, opts ...scw.RequestOpti
 
 type ListClusterAvailableVersionsRequest struct {
 	Region scw.Region `json:"-"`
-
+	// ClusterID the ID of the cluster which the available Kuberentes versions will be listed from
 	ClusterID string `json:"-"`
 }
 
+// ListClusterAvailableVersions list available versions for a cluster
+//
+// This method allows to list the versions that a specific Kubernetes cluster is allowed to upgrade to. Note that it will be every patch version greater than the actual one as well a one minor version ahead of the actual one. Upgrades skipping a minor version will not work.
 func (s *API) ListClusterAvailableVersions(req *ListClusterAvailableVersionsRequest, opts ...scw.RequestOption) (*ListClusterAvailableVersionsResponse, error) {
 	var err error
 
@@ -990,7 +1225,7 @@ func (s *API) ListClusterAvailableVersions(req *ListClusterAvailableVersionsRequ
 
 	scwReq := &scw.ScalewayRequest{
 		Method:  "GET",
-		Path:    "/k8s/v1beta3/regions/" + fmt.Sprint(req.Region) + "/clusters/" + fmt.Sprint(req.ClusterID) + "/available-versions",
+		Path:    "/k8s/v1beta4/regions/" + fmt.Sprint(req.Region) + "/clusters/" + fmt.Sprint(req.ClusterID) + "/available-versions",
 		Headers: http.Header{},
 	}
 
@@ -1005,11 +1240,14 @@ func (s *API) ListClusterAvailableVersions(req *ListClusterAvailableVersionsRequ
 
 type GetClusterKubeConfigRequest struct {
 	Region scw.Region `json:"-"`
-
+	// ClusterID the ID of the cluster to download the kubeconfig from
 	ClusterID string `json:"-"`
 }
 
-// getClusterKubeConfig download kubeconfig
+// getClusterKubeConfig download the kubeconfig for a cluster
+//
+// This method allows to download the Kubernetes cluster config file (AKA kubeconfig) for a specific cluster in order to use it with, for instance, `kubectl`. Tips: add `?dl=1` at the end of the URL to directly get the base64 decoded kubeconfig. If not, the kubeconfig will be base64 encoded.
+//
 func (s *API) getClusterKubeConfig(req *GetClusterKubeConfigRequest, opts ...scw.RequestOption) (*scw.File, error) {
 	var err error
 
@@ -1028,7 +1266,7 @@ func (s *API) getClusterKubeConfig(req *GetClusterKubeConfigRequest, opts ...scw
 
 	scwReq := &scw.ScalewayRequest{
 		Method:  "GET",
-		Path:    "/k8s/v1beta3/regions/" + fmt.Sprint(req.Region) + "/clusters/" + fmt.Sprint(req.ClusterID) + "/kubeconfig",
+		Path:    "/k8s/v1beta4/regions/" + fmt.Sprint(req.Region) + "/clusters/" + fmt.Sprint(req.ClusterID) + "/kubeconfig",
 		Headers: http.Header{},
 	}
 
@@ -1043,14 +1281,14 @@ func (s *API) getClusterKubeConfig(req *GetClusterKubeConfigRequest, opts ...scw
 
 type ResetClusterAdminTokenRequest struct {
 	Region scw.Region `json:"-"`
-
+	// ClusterID the ID of the cluster of which the admin token will be renewed
 	ClusterID string `json:"-"`
 }
 
-// ResetClusterAdminToken revoke and renew your admin token
+// ResetClusterAdminToken reset the admin token of a cluster
 //
-// Revoke and renew your cluster admin token, you will have to download kubeconfig again.
-func (s *API) ResetClusterAdminToken(req *ResetClusterAdminTokenRequest, opts ...scw.RequestOption) (*ResetClusterAdminTokenResponse, error) {
+// This method allows to reset the admin token for a specific Kubernetes cluster. This will invalidate the old admin token (which will not be usable after) and create a new one. Note that the redownload of the kubeconfig will be necessary to keep interacting with the cluster (if the old admin token was used).
+func (s *API) ResetClusterAdminToken(req *ResetClusterAdminTokenRequest, opts ...scw.RequestOption) error {
 	var err error
 
 	if req.Region == "" {
@@ -1059,50 +1297,50 @@ func (s *API) ResetClusterAdminToken(req *ResetClusterAdminTokenRequest, opts ..
 	}
 
 	if fmt.Sprint(req.Region) == "" {
-		return nil, errors.New("field Region cannot be empty in request")
+		return errors.New("field Region cannot be empty in request")
 	}
 
 	if fmt.Sprint(req.ClusterID) == "" {
-		return nil, errors.New("field ClusterID cannot be empty in request")
+		return errors.New("field ClusterID cannot be empty in request")
 	}
 
 	scwReq := &scw.ScalewayRequest{
 		Method:  "POST",
-		Path:    "/k8s/v1beta3/regions/" + fmt.Sprint(req.Region) + "/clusters/" + fmt.Sprint(req.ClusterID) + "/reset-admin-token",
+		Path:    "/k8s/v1beta4/regions/" + fmt.Sprint(req.Region) + "/clusters/" + fmt.Sprint(req.ClusterID) + "/reset-admin-token",
 		Headers: http.Header{},
 	}
 
 	err = scwReq.SetBody(req)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	var resp ResetClusterAdminTokenResponse
-
-	err = s.client.Do(scwReq, &resp, opts...)
+	err = s.client.Do(scwReq, nil, opts...)
 	if err != nil {
-		return nil, err
+		return err
 	}
-	return &resp, nil
+	return nil
 }
 
 type ListPoolsRequest struct {
 	Region scw.Region `json:"-"`
-	// ClusterID display the cluster unique ID
+	// ClusterID the ID of the cluster from which the pools will be listed from
 	ClusterID string `json:"-"`
-	// OrderBy you can order the response by created_at asc/desc or name asc/desc
+	// OrderBy the sort order of the returned pools
 	//
 	// Default value: created_at_asc
 	OrderBy ListPoolsRequestOrderBy `json:"-"`
-	// Page page number
+	// Page the page number for the returned pools
 	Page *int32 `json:"-"`
-	// PageSize set the maximum list size
+	// PageSize the maximum number of pools per page
 	PageSize *uint32 `json:"-"`
-	// Name filter pools per name
+	// Name the name on which to filter the retured clusters
 	Name *string `json:"-"`
 }
 
-// ListPools list all your cluster pools
+// ListPools list all the pools in a cluster
+//
+// This method allows to list all the existing pools for a specific Kubernetes cluster.
 func (s *API) ListPools(req *ListPoolsRequest, opts ...scw.RequestOption) (*ListPoolsResponse, error) {
 	var err error
 
@@ -1132,7 +1370,7 @@ func (s *API) ListPools(req *ListPoolsRequest, opts ...scw.RequestOption) (*List
 
 	scwReq := &scw.ScalewayRequest{
 		Method:  "GET",
-		Path:    "/k8s/v1beta3/regions/" + fmt.Sprint(req.Region) + "/clusters/" + fmt.Sprint(req.ClusterID) + "/pools",
+		Path:    "/k8s/v1beta4/regions/" + fmt.Sprint(req.Region) + "/clusters/" + fmt.Sprint(req.ClusterID) + "/pools",
 		Query:   query,
 		Headers: http.Header{},
 	}
@@ -1154,7 +1392,7 @@ func (r *ListPoolsResponse) UnsafeGetTotalCount() uint32 {
 
 // UnsafeAppend should not be used
 // Internal usage only
-func (r *ListPoolsResponse) UnsafeAppend(res interface{}) (uint32, scw.SdkError) {
+func (r *ListPoolsResponse) UnsafeAppend(res interface{}) (uint32, error) {
 	results, ok := res.(*ListPoolsResponse)
 	if !ok {
 		return 0, errors.New("%T type cannot be appended to type %T", res, r)
@@ -1167,33 +1405,41 @@ func (r *ListPoolsResponse) UnsafeAppend(res interface{}) (uint32, scw.SdkError)
 
 type CreatePoolRequest struct {
 	Region scw.Region `json:"-"`
-
+	// ClusterID the ID of the cluster in which the pool will be created
 	ClusterID string `json:"-"`
-
+	// Name the name of the pool
 	Name string `json:"name"`
-
+	// NodeType the node type is the type of Scaleway Instance wanted for the pool
 	NodeType string `json:"node_type"`
-
+	// PlacementGroupID the placement group ID in which all the nodes of the pool will be created
 	PlacementGroupID *string `json:"placement_group_id"`
-
+	// Autoscaling the enablement of the autoscaling feature for the pool
 	Autoscaling bool `json:"autoscaling"`
-
+	// Size the size (number of nodes) of the pool
 	Size uint32 `json:"size"`
-
+	// MinSize the minimun size of the pool
+	//
+	// The minimun size of the pool. Note that this fields will be used only when autoscaling is enabled.
 	MinSize *uint32 `json:"min_size"`
-
+	// MaxSize the maximum size of the pool
+	//
+	// The maximum size of the pool. Note that this fields will be used only when autoscaling is enabled.
 	MaxSize *uint32 `json:"max_size"`
-
-	ContainerRuntime *string `json:"container_runtime"`
-
+	// ContainerRuntime the container runtime for the nodes of the pool
+	//
+	// The customization of the container runtime is available for each pool. Note that `docker` is the only supporter runtime at the moment. Others are to be considered experimental.
+	//
+	// Default value: unknown_runtime
+	ContainerRuntime Runtime `json:"container_runtime"`
+	// Autohealing the enablement of the autohealing feature for the pool
 	Autohealing bool `json:"autohealing"`
-
+	// Tags the tags associated with the pool
 	Tags []string `json:"tags"`
 }
 
-// CreatePool create a new pool
+// CreatePool create a new pool in a cluster
 //
-// Create a new pool in your cluster.
+// This method allows to create a new pool in a specific Kubernetes cluster.
 func (s *API) CreatePool(req *CreatePoolRequest, opts ...scw.RequestOption) (*Pool, error) {
 	var err error
 
@@ -1212,7 +1458,7 @@ func (s *API) CreatePool(req *CreatePoolRequest, opts ...scw.RequestOption) (*Po
 
 	scwReq := &scw.ScalewayRequest{
 		Method:  "POST",
-		Path:    "/k8s/v1beta3/regions/" + fmt.Sprint(req.Region) + "/clusters/" + fmt.Sprint(req.ClusterID) + "/pools",
+		Path:    "/k8s/v1beta4/regions/" + fmt.Sprint(req.Region) + "/clusters/" + fmt.Sprint(req.ClusterID) + "/pools",
 		Headers: http.Header{},
 	}
 
@@ -1232,13 +1478,13 @@ func (s *API) CreatePool(req *CreatePoolRequest, opts ...scw.RequestOption) (*Po
 
 type GetPoolRequest struct {
 	Region scw.Region `json:"-"`
-
+	// PoolID the ID of the requested pool
 	PoolID string `json:"-"`
 }
 
-// GetPool get pool details
+// GetPool get a pool in a cluster
 //
-// Get the pool details associated with the given id.
+// This method allows to get details about a specific pool.
 func (s *API) GetPool(req *GetPoolRequest, opts ...scw.RequestOption) (*Pool, error) {
 	var err error
 
@@ -1257,7 +1503,7 @@ func (s *API) GetPool(req *GetPoolRequest, opts ...scw.RequestOption) (*Pool, er
 
 	scwReq := &scw.ScalewayRequest{
 		Method:  "GET",
-		Path:    "/k8s/v1beta3/regions/" + fmt.Sprint(req.Region) + "/pools/" + fmt.Sprint(req.PoolID) + "",
+		Path:    "/k8s/v1beta4/regions/" + fmt.Sprint(req.Region) + "/pools/" + fmt.Sprint(req.PoolID) + "",
 		Headers: http.Header{},
 	}
 
@@ -1272,15 +1518,15 @@ func (s *API) GetPool(req *GetPoolRequest, opts ...scw.RequestOption) (*Pool, er
 
 type UpgradePoolRequest struct {
 	Region scw.Region `json:"-"`
-
+	// PoolID the ID of the pool to upgrade
 	PoolID string `json:"-"`
-
+	// Version the new Kubernetes version for the pool
 	Version string `json:"version"`
 }
 
-// UpgradePool upgrade an existing cluster pool
+// UpgradePool upgrade a pool in a cluster
 //
-// Upgrade the pool associated with the given id.
+// This method allows to upgrade a specific pool. Note that this will work when the targeted version is the same than the version of the cluster.
 func (s *API) UpgradePool(req *UpgradePoolRequest, opts ...scw.RequestOption) (*Pool, error) {
 	var err error
 
@@ -1299,7 +1545,7 @@ func (s *API) UpgradePool(req *UpgradePoolRequest, opts ...scw.RequestOption) (*
 
 	scwReq := &scw.ScalewayRequest{
 		Method:  "POST",
-		Path:    "/k8s/v1beta3/regions/" + fmt.Sprint(req.Region) + "/pools/" + fmt.Sprint(req.PoolID) + "/upgrade",
+		Path:    "/k8s/v1beta4/regions/" + fmt.Sprint(req.Region) + "/pools/" + fmt.Sprint(req.PoolID) + "/upgrade",
 		Headers: http.Header{},
 	}
 
@@ -1319,25 +1565,25 @@ func (s *API) UpgradePool(req *UpgradePoolRequest, opts ...scw.RequestOption) (*
 
 type UpdatePoolRequest struct {
 	Region scw.Region `json:"-"`
-
+	// PoolID the ID of the pool to update
 	PoolID string `json:"-"`
-
+	// Autoscaling the new value for the enablement of autoscaling for the pool
 	Autoscaling *bool `json:"autoscaling"`
-
+	// Size the new size for the pool
 	Size *uint32 `json:"size"`
-
+	// MinSize the new minimun size for the pool
 	MinSize *uint32 `json:"min_size"`
-
+	// MaxSize the new maximum size for the pool
 	MaxSize *uint32 `json:"max_size"`
-
+	// Autohealing the new value for the enablement of autohealing for the pool
 	Autohealing *bool `json:"autohealing"`
-
+	// Tags the new tags associated with the pool
 	Tags *[]string `json:"tags"`
 }
 
-// UpdatePool update an existing cluster pool
+// UpdatePool update a pool in a cluster
 //
-// Update the pool associated with the given id (nodes will be replaced one by one, quotas must be set to allow user to have -at least- one more node than the size of its current pool).
+// This method allows to update a specific pool.
 func (s *API) UpdatePool(req *UpdatePoolRequest, opts ...scw.RequestOption) (*Pool, error) {
 	var err error
 
@@ -1356,7 +1602,7 @@ func (s *API) UpdatePool(req *UpdatePoolRequest, opts ...scw.RequestOption) (*Po
 
 	scwReq := &scw.ScalewayRequest{
 		Method:  "PATCH",
-		Path:    "/k8s/v1beta3/regions/" + fmt.Sprint(req.Region) + "/pools/" + fmt.Sprint(req.PoolID) + "",
+		Path:    "/k8s/v1beta4/regions/" + fmt.Sprint(req.Region) + "/pools/" + fmt.Sprint(req.PoolID) + "",
 		Headers: http.Header{},
 	}
 
@@ -1376,13 +1622,13 @@ func (s *API) UpdatePool(req *UpdatePoolRequest, opts ...scw.RequestOption) (*Po
 
 type DeletePoolRequest struct {
 	Region scw.Region `json:"-"`
-
+	// PoolID the ID of the pool to delete
 	PoolID string `json:"-"`
 }
 
-// DeletePool delete an existing cluster pool
+// DeletePool delete a pool in a cluster
 //
-// Delete the pool associated with the given id.
+// This method allows to delete a specific pool from a cluster, deleting all the nodes associated with it.
 func (s *API) DeletePool(req *DeletePoolRequest, opts ...scw.RequestOption) (*Pool, error) {
 	var err error
 
@@ -1401,7 +1647,7 @@ func (s *API) DeletePool(req *DeletePoolRequest, opts ...scw.RequestOption) (*Po
 
 	scwReq := &scw.ScalewayRequest{
 		Method:  "DELETE",
-		Path:    "/k8s/v1beta3/regions/" + fmt.Sprint(req.Region) + "/pools/" + fmt.Sprint(req.PoolID) + "",
+		Path:    "/k8s/v1beta4/regions/" + fmt.Sprint(req.Region) + "/pools/" + fmt.Sprint(req.PoolID) + "",
 		Headers: http.Header{},
 	}
 
@@ -1416,27 +1662,29 @@ func (s *API) DeletePool(req *DeletePoolRequest, opts ...scw.RequestOption) (*Po
 
 type ListNodesRequest struct {
 	Region scw.Region `json:"-"`
-	// ClusterID cluster unique ID
+	// ClusterID the cluster ID from which the nodes will be listed from
 	ClusterID string `json:"-"`
-	// PoolID filter nodes by pool id
+	// PoolID the pool ID on which to filter the returned nodes
 	PoolID *string `json:"-"`
-	// OrderBy you can order the response by created_at asc/desc or name asc/desc
+	// OrderBy the sort order of the returned nodes
 	//
 	// Default value: created_at_asc
 	OrderBy ListNodesRequestOrderBy `json:"-"`
-	// Page page number
+	// Page the page number for the returned nodes
 	Page *int32 `json:"-"`
-	// PageSize set the maximum list size
+	// PageSize the maximum number of nodes per page
 	PageSize *uint32 `json:"-"`
-	// Name filter nodes by name
+	// Name the name on which to filter the retured nodes
 	Name *string `json:"-"`
-	// Status filter nodes by status
+	// Status the status on which to filter the returned nodes
 	//
 	// Default value: unknown
 	Status NodeStatus `json:"-"`
 }
 
-// ListNodes list all your cluster nodes
+// ListNodes list all the nodes in a cluster
+//
+// This method allows to list all the existing nodes for a specific Kubernetes cluster.
 func (s *API) ListNodes(req *ListNodesRequest, opts ...scw.RequestOption) (*ListNodesResponse, error) {
 	var err error
 
@@ -1468,7 +1716,7 @@ func (s *API) ListNodes(req *ListNodesRequest, opts ...scw.RequestOption) (*List
 
 	scwReq := &scw.ScalewayRequest{
 		Method:  "GET",
-		Path:    "/k8s/v1beta3/regions/" + fmt.Sprint(req.Region) + "/clusters/" + fmt.Sprint(req.ClusterID) + "/nodes",
+		Path:    "/k8s/v1beta4/regions/" + fmt.Sprint(req.Region) + "/clusters/" + fmt.Sprint(req.ClusterID) + "/nodes",
 		Query:   query,
 		Headers: http.Header{},
 	}
@@ -1490,7 +1738,7 @@ func (r *ListNodesResponse) UnsafeGetTotalCount() uint32 {
 
 // UnsafeAppend should not be used
 // Internal usage only
-func (r *ListNodesResponse) UnsafeAppend(res interface{}) (uint32, scw.SdkError) {
+func (r *ListNodesResponse) UnsafeAppend(res interface{}) (uint32, error) {
 	results, ok := res.(*ListNodesResponse)
 	if !ok {
 		return 0, errors.New("%T type cannot be appended to type %T", res, r)
@@ -1503,13 +1751,13 @@ func (r *ListNodesResponse) UnsafeAppend(res interface{}) (uint32, scw.SdkError)
 
 type GetNodeRequest struct {
 	Region scw.Region `json:"-"`
-
+	// NodeID the ID of the requested node
 	NodeID string `json:"-"`
 }
 
-// GetNode get node details
+// GetNode get a node in a cluster
 //
-// Get the node associated with the given id.
+// This method allows to get details about a specific Kubernetes node.
 func (s *API) GetNode(req *GetNodeRequest, opts ...scw.RequestOption) (*Node, error) {
 	var err error
 
@@ -1528,7 +1776,7 @@ func (s *API) GetNode(req *GetNodeRequest, opts ...scw.RequestOption) (*Node, er
 
 	scwReq := &scw.ScalewayRequest{
 		Method:  "GET",
-		Path:    "/k8s/v1beta3/regions/" + fmt.Sprint(req.Region) + "/nodes/" + fmt.Sprint(req.NodeID) + "",
+		Path:    "/k8s/v1beta4/regions/" + fmt.Sprint(req.Region) + "/nodes/" + fmt.Sprint(req.NodeID) + "",
 		Headers: http.Header{},
 	}
 
@@ -1543,13 +1791,13 @@ func (s *API) GetNode(req *GetNodeRequest, opts ...scw.RequestOption) (*Node, er
 
 type ReplaceNodeRequest struct {
 	Region scw.Region `json:"-"`
-
+	// NodeID the ID of the node to replace
 	NodeID string `json:"-"`
 }
 
-// ReplaceNode replace a node by another
+// ReplaceNode replace a node in a cluster
 //
-// Replace a node by another (first the node is deleted, then a new one is created).
+// This method allows to replace a specific node. The node will be set cordoned, meaning that scheduling will be disabled. Then the existing pods on the node will be drained and reschedule onto another schedulable node. Then the node will be deleted, and a new one will be created after the deletion. Note that when there is not enough space to reschedule all the pods (in a one node cluster for instance), you may experience some disruption of your applications.
 func (s *API) ReplaceNode(req *ReplaceNodeRequest, opts ...scw.RequestOption) (*Node, error) {
 	var err error
 
@@ -1568,7 +1816,7 @@ func (s *API) ReplaceNode(req *ReplaceNodeRequest, opts ...scw.RequestOption) (*
 
 	scwReq := &scw.ScalewayRequest{
 		Method:  "POST",
-		Path:    "/k8s/v1beta3/regions/" + fmt.Sprint(req.Region) + "/nodes/" + fmt.Sprint(req.NodeID) + "/replace",
+		Path:    "/k8s/v1beta4/regions/" + fmt.Sprint(req.Region) + "/nodes/" + fmt.Sprint(req.NodeID) + "/replace",
 		Headers: http.Header{},
 	}
 
@@ -1588,13 +1836,13 @@ func (s *API) ReplaceNode(req *ReplaceNodeRequest, opts ...scw.RequestOption) (*
 
 type RebootNodeRequest struct {
 	Region scw.Region `json:"-"`
-
+	// NodeID the ID of the node to reboot
 	NodeID string `json:"-"`
 }
 
-// RebootNode reboot node
+// RebootNode reboot a node in a cluster
 //
-// Reboot node.
+// This method allows to reboot a specific node. This node will frist be cordoned, meaning that scheduling will be disabled. Then the existing pods on the node will be drained and reschedule onto another schedulable node. Note that when there is not enough space to reschedule all the pods (in a one node cluster for instance), you may experience some disruption of your applications.
 func (s *API) RebootNode(req *RebootNodeRequest, opts ...scw.RequestOption) (*Node, error) {
 	var err error
 
@@ -1613,7 +1861,7 @@ func (s *API) RebootNode(req *RebootNodeRequest, opts ...scw.RequestOption) (*No
 
 	scwReq := &scw.ScalewayRequest{
 		Method:  "POST",
-		Path:    "/k8s/v1beta3/regions/" + fmt.Sprint(req.Region) + "/nodes/" + fmt.Sprint(req.NodeID) + "/reboot",
+		Path:    "/k8s/v1beta4/regions/" + fmt.Sprint(req.Region) + "/nodes/" + fmt.Sprint(req.NodeID) + "/reboot",
 		Headers: http.Header{},
 	}
 
@@ -1635,7 +1883,9 @@ type ListVersionsRequest struct {
 	Region scw.Region `json:"-"`
 }
 
-// ListVersions list available versions
+// ListVersions list all available versions
+//
+// This method allows to list all available versions for the creation of a new Kubernetes cluster.
 func (s *API) ListVersions(req *ListVersionsRequest, opts ...scw.RequestOption) (*ListVersionsResponse, error) {
 	var err error
 
@@ -1650,7 +1900,7 @@ func (s *API) ListVersions(req *ListVersionsRequest, opts ...scw.RequestOption) 
 
 	scwReq := &scw.ScalewayRequest{
 		Method:  "GET",
-		Path:    "/k8s/v1beta3/regions/" + fmt.Sprint(req.Region) + "/versions",
+		Path:    "/k8s/v1beta4/regions/" + fmt.Sprint(req.Region) + "/versions",
 		Headers: http.Header{},
 	}
 
