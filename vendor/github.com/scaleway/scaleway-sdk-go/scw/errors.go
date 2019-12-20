@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"sort"
 	"strings"
 
 	"github.com/scaleway/scaleway-sdk-go/internal/errors"
@@ -63,7 +64,7 @@ func (e *ResponseError) GetRawBody() json.RawMessage {
 }
 
 // hasResponseError throws an error when the HTTP status is not OK
-func hasResponseError(res *http.Response) SdkError {
+func hasResponseError(res *http.Response) error {
 	if res.StatusCode >= 200 && res.StatusCode <= 299 {
 		return nil
 	}
@@ -88,15 +89,20 @@ func hasResponseError(res *http.Response) SdkError {
 		return errors.Wrap(err, "could not parse error response body")
 	}
 
-	stdErr := unmarshalStandardError(newErr.Type, body)
-	if stdErr != nil {
-		return stdErr
+	err = unmarshalStandardError(newErr.Type, body)
+	if err != nil {
+		return err
+	}
+
+	err = unmarshalNonStandardError(newErr.Type, body)
+	if err != nil {
+		return err
 	}
 
 	return newErr
 }
 
-func unmarshalStandardError(errorType string, body []byte) SdkError {
+func unmarshalStandardError(errorType string, body []byte) error {
 	var stdErr SdkError
 
 	switch errorType {
@@ -124,12 +130,30 @@ func unmarshalStandardError(errorType string, body []byte) SdkError {
 	return stdErr
 }
 
+func unmarshalNonStandardError(errorType string, body []byte) error {
+	var stdErr SdkError
+	switch errorType {
+
+	case "invalid_request_error":
+		invalidRequestError := &InvalidRequestError{RawBody: body}
+		err := json.Unmarshal(body, invalidRequestError)
+		if err != nil {
+			return errors.Wrap(err, "could not parse error %s response body", errorType)
+		}
+		stdErr = invalidRequestError.ToInvalidArgumentsError()
+	}
+
+	return stdErr
+}
+
+type InvalidArgumentsErrorDetail struct {
+	ArgumentName string `json:"argument_name"`
+	Reason       string `json:"reason"`
+	HelpMessage  string `json:"help_message"`
+}
+
 type InvalidArgumentsError struct {
-	Details []struct {
-		ArgumentName string `json:"argument_name"`
-		Reason       string `json:"reason"`
-		HelpMessage  string `json:"help_message"`
-	} `json:"details"`
+	Details []InvalidArgumentsErrorDetail `json:"details"`
 
 	RawBody json.RawMessage `json:"-"`
 }
@@ -159,6 +183,36 @@ func (e *InvalidArgumentsError) Error() string {
 }
 func (e *InvalidArgumentsError) GetRawBody() json.RawMessage {
 	return e.RawBody
+}
+
+// InvalidRequestError are only returned by the compute API
+// Warning: this is not a standard error.
+type InvalidRequestError struct {
+	Fields map[string][]string `json:"fields"`
+
+	RawBody json.RawMessage `json:"-"`
+}
+
+// ToInvalidArgumentsError converts it to the standard error InvalidArgumentsError
+func (e *InvalidRequestError) ToInvalidArgumentsError() *InvalidArgumentsError {
+	invalidArguments := &InvalidArgumentsError{
+		RawBody: e.RawBody,
+	}
+	fieldNames := []string(nil)
+	for fieldName := range e.Fields {
+		fieldNames = append(fieldNames, fieldName)
+	}
+	sort.Strings(fieldNames)
+	for _, fieldName := range fieldNames {
+		for _, message := range e.Fields[fieldName] {
+			invalidArguments.Details = append(invalidArguments.Details, InvalidArgumentsErrorDetail{
+				ArgumentName: fieldName,
+				Reason:       "constraint",
+				HelpMessage:  message,
+			})
+		}
+	}
+	return invalidArguments
 }
 
 type QuotasExceededError struct {

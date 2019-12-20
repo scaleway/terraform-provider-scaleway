@@ -585,6 +585,42 @@ func (enum *ListLbsRequestOrderBy) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
+type ListSubscriberRequestOrderBy string
+
+const (
+	// ListSubscriberRequestOrderByCreatedAtAsc is [insert doc].
+	ListSubscriberRequestOrderByCreatedAtAsc = ListSubscriberRequestOrderBy("created_at_asc")
+	// ListSubscriberRequestOrderByCreatedAtDesc is [insert doc].
+	ListSubscriberRequestOrderByCreatedAtDesc = ListSubscriberRequestOrderBy("created_at_desc")
+	// ListSubscriberRequestOrderByNameAsc is [insert doc].
+	ListSubscriberRequestOrderByNameAsc = ListSubscriberRequestOrderBy("name_asc")
+	// ListSubscriberRequestOrderByNameDesc is [insert doc].
+	ListSubscriberRequestOrderByNameDesc = ListSubscriberRequestOrderBy("name_desc")
+)
+
+func (enum ListSubscriberRequestOrderBy) String() string {
+	if enum == "" {
+		// return default value if empty
+		return "created_at_asc"
+	}
+	return string(enum)
+}
+
+func (enum ListSubscriberRequestOrderBy) MarshalJSON() ([]byte, error) {
+	return []byte(fmt.Sprintf(`"%s"`, enum)), nil
+}
+
+func (enum *ListSubscriberRequestOrderBy) UnmarshalJSON(data []byte) error {
+	tmp := ""
+
+	if err := json.Unmarshal(data, &tmp); err != nil {
+		return err
+	}
+
+	*enum = ListSubscriberRequestOrderBy(ListSubscriberRequestOrderBy(tmp).String())
+	return nil
+}
+
 type OnMarkedDownAction string
 
 const (
@@ -946,26 +982,6 @@ type HealthCheck struct {
 	CheckDelay *time.Duration `json:"check_delay"`
 }
 
-func (m *HealthCheck) GetConfig() Config {
-	switch {
-	case m.MysqlConfig != nil:
-		return ConfigMysqlConfig{*m.MysqlConfig}
-	case m.LdapConfig != nil:
-		return ConfigLdapConfig{*m.LdapConfig}
-	case m.RedisConfig != nil:
-		return ConfigRedisConfig{*m.RedisConfig}
-	case m.TCPConfig != nil:
-		return ConfigTCPConfig{*m.TCPConfig}
-	case m.PgsqlConfig != nil:
-		return ConfigPgsqlConfig{*m.PgsqlConfig}
-	case m.HTTPConfig != nil:
-		return ConfigHTTPConfig{*m.HTTPConfig}
-	case m.HTTPSConfig != nil:
-		return ConfigHTTPSConfig{*m.HTTPSConfig}
-	}
-	return nil
-}
-
 func (m *HealthCheck) UnmarshalJSON(b []byte) error {
 	type tmpType HealthCheck
 	tmp := struct {
@@ -1088,6 +1104,8 @@ type Lb struct {
 
 	Type string `json:"type"`
 
+	Subscriber *Subscriber `json:"subscriber"`
+
 	Region scw.Region `json:"region"`
 }
 
@@ -1166,6 +1184,40 @@ type ListLbsResponse struct {
 	Lbs []*Lb `json:"lbs"`
 
 	TotalCount uint32 `json:"total_count"`
+}
+
+// ListSubscriberResponse list subscriber response
+type ListSubscriberResponse struct {
+	// Subscribers list of Subscribers object
+	Subscribers []*Subscriber `json:"subscribers"`
+	// TotalCount the total number of items
+	TotalCount uint32 `json:"total_count"`
+}
+
+// Subscriber subscriber
+type Subscriber struct {
+	// ID subscriber ID
+	ID string `json:"id"`
+	// Name subscriber name
+	Name string `json:"name"`
+	// EmailConfig email address of subscriber
+	// Precisely one of EmailConfig, WebhookConfig must be set.
+	EmailConfig *SubscriberEmailConfig `json:"email_config,omitempty"`
+	// WebhookConfig webHook URI of subscriber
+	// Precisely one of EmailConfig, WebhookConfig must be set.
+	WebhookConfig *SubscriberWebhookConfig `json:"webhook_config,omitempty"`
+}
+
+// SubscriberEmailConfig email alert of subscriber
+type SubscriberEmailConfig struct {
+	// Email email who receive alert
+	Email string `json:"email"`
+}
+
+// SubscriberWebhookConfig webhook alert of subscriber
+type SubscriberWebhookConfig struct {
+	// URI uRI who receive POST request
+	URI string `json:"uri"`
 }
 
 // Service API
@@ -1265,7 +1317,7 @@ func (r *ListLbsResponse) UnsafeGetTotalCount() uint32 {
 
 // UnsafeAppend should not be used
 // Internal usage only
-func (r *ListLbsResponse) UnsafeAppend(res interface{}) (uint32, scw.SdkError) {
+func (r *ListLbsResponse) UnsafeAppend(res interface{}) (uint32, error) {
 	results, ok := res.(*ListLbsResponse)
 	if !ok {
 		return 0, errors.New("%T type cannot be appended to type %T", res, r)
@@ -1515,7 +1567,7 @@ func (r *ListIPsResponse) UnsafeGetTotalCount() uint32 {
 
 // UnsafeAppend should not be used
 // Internal usage only
-func (r *ListIPsResponse) UnsafeAppend(res interface{}) (uint32, scw.SdkError) {
+func (r *ListIPsResponse) UnsafeAppend(res interface{}) (uint32, error) {
 	results, ok := res.(*ListIPsResponse)
 	if !ok {
 		return 0, errors.New("%T type cannot be appended to type %T", res, r)
@@ -1602,6 +1654,49 @@ func (s *API) ReleaseIP(req *ReleaseIPRequest, opts ...scw.RequestOption) error 
 	return nil
 }
 
+type UpdateIPRequest struct {
+	Region scw.Region `json:"-"`
+	// IPID iP address ID
+	IPID string `json:"-"`
+	// Reverse reverse DNS
+	Reverse *string `json:"-"`
+}
+
+func (s *API) UpdateIP(req *UpdateIPRequest, opts ...scw.RequestOption) (*IP, error) {
+	var err error
+
+	if req.Region == "" {
+		defaultRegion, _ := s.client.GetDefaultRegion()
+		req.Region = defaultRegion
+	}
+
+	query := url.Values{}
+	parameter.AddToQuery(query, "reverse", req.Reverse)
+
+	if fmt.Sprint(req.Region) == "" {
+		return nil, errors.New("field Region cannot be empty in request")
+	}
+
+	if fmt.Sprint(req.IPID) == "" {
+		return nil, errors.New("field IPID cannot be empty in request")
+	}
+
+	scwReq := &scw.ScalewayRequest{
+		Method:  "PATCH",
+		Path:    "/lb/v1/regions/" + fmt.Sprint(req.Region) + "/ips/" + fmt.Sprint(req.IPID) + "",
+		Query:   query,
+		Headers: http.Header{},
+	}
+
+	var resp IP
+
+	err = s.client.Do(scwReq, &resp, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &resp, nil
+}
+
 type ListBackendsRequest struct {
 	Region scw.Region `json:"-"`
 	// LbID load Balancer ID
@@ -1669,7 +1764,7 @@ func (r *ListBackendsResponse) UnsafeGetTotalCount() uint32 {
 
 // UnsafeAppend should not be used
 // Internal usage only
-func (r *ListBackendsResponse) UnsafeAppend(res interface{}) (uint32, scw.SdkError) {
+func (r *ListBackendsResponse) UnsafeAppend(res interface{}) (uint32, error) {
 	results, ok := res.(*ListBackendsResponse)
 	if !ok {
 		return 0, errors.New("%T type cannot be appended to type %T", res, r)
@@ -2147,26 +2242,6 @@ type UpdateHealthCheckRequest struct {
 	HTTPSConfig *HealthCheckHTTPSConfig `json:"https_config,omitempty"`
 }
 
-func (m *UpdateHealthCheckRequest) GetConfig() Config {
-	switch {
-	case m.MysqlConfig != nil:
-		return ConfigMysqlConfig{*m.MysqlConfig}
-	case m.LdapConfig != nil:
-		return ConfigLdapConfig{*m.LdapConfig}
-	case m.RedisConfig != nil:
-		return ConfigRedisConfig{*m.RedisConfig}
-	case m.PgsqlConfig != nil:
-		return ConfigPgsqlConfig{*m.PgsqlConfig}
-	case m.TCPConfig != nil:
-		return ConfigTCPConfig{*m.TCPConfig}
-	case m.HTTPConfig != nil:
-		return ConfigHTTPConfig{*m.HTTPConfig}
-	case m.HTTPSConfig != nil:
-		return ConfigHTTPSConfig{*m.HTTPSConfig}
-	}
-	return nil
-}
-
 func (m *UpdateHealthCheckRequest) UnmarshalJSON(b []byte) error {
 	type tmpType UpdateHealthCheckRequest
 	tmp := struct {
@@ -2306,7 +2381,7 @@ func (r *ListFrontendsResponse) UnsafeGetTotalCount() uint32 {
 
 // UnsafeAppend should not be used
 // Internal usage only
-func (r *ListFrontendsResponse) UnsafeAppend(res interface{}) (uint32, scw.SdkError) {
+func (r *ListFrontendsResponse) UnsafeAppend(res interface{}) (uint32, error) {
 	results, ok := res.(*ListFrontendsResponse)
 	if !ok {
 		return 0, errors.New("%T type cannot be appended to type %T", res, r)
@@ -2653,7 +2728,7 @@ func (r *ListBackendStatsResponse) UnsafeGetTotalCount() uint32 {
 
 // UnsafeAppend should not be used
 // Internal usage only
-func (r *ListBackendStatsResponse) UnsafeAppend(res interface{}) (uint32, scw.SdkError) {
+func (r *ListBackendStatsResponse) UnsafeAppend(res interface{}) (uint32, error) {
 	results, ok := res.(*ListBackendStatsResponse)
 	if !ok {
 		return 0, errors.New("%T type cannot be appended to type %T", res, r)
@@ -2731,7 +2806,7 @@ func (r *ListACLResponse) UnsafeGetTotalCount() uint32 {
 
 // UnsafeAppend should not be used
 // Internal usage only
-func (r *ListACLResponse) UnsafeAppend(res interface{}) (uint32, scw.SdkError) {
+func (r *ListACLResponse) UnsafeAppend(res interface{}) (uint32, error) {
 	results, ok := res.(*ListACLResponse)
 	if !ok {
 		return 0, errors.New("%T type cannot be appended to type %T", res, r)
@@ -2928,16 +3003,6 @@ type CreateCertificateRequest struct {
 	CustomCertificate *CreateCertificateRequestCustomCertificate `json:"custom_certificate,omitempty"`
 }
 
-func (m *CreateCertificateRequest) GetType() Type {
-	switch {
-	case m.Letsencrypt != nil:
-		return TypeLetsencrypt{*m.Letsencrypt}
-	case m.CustomCertificate != nil:
-		return TypeCustomCertificate{*m.CustomCertificate}
-	}
-	return nil
-}
-
 // CreateCertificate create Certificate
 //
 // Generate a new SSL certificate using Let's Encrypt or import your certificate.
@@ -3045,7 +3110,7 @@ func (r *ListCertificatesResponse) UnsafeGetTotalCount() uint32 {
 
 // UnsafeAppend should not be used
 // Internal usage only
-func (r *ListCertificatesResponse) UnsafeAppend(res interface{}) (uint32, scw.SdkError) {
+func (r *ListCertificatesResponse) UnsafeAppend(res interface{}) (uint32, error) {
 	results, ok := res.(*ListCertificatesResponse)
 	if !ok {
 		return 0, errors.New("%T type cannot be appended to type %T", res, r)
@@ -3229,7 +3294,7 @@ func (r *ListLbTypesResponse) UnsafeGetTotalCount() uint32 {
 
 // UnsafeAppend should not be used
 // Internal usage only
-func (r *ListLbTypesResponse) UnsafeAppend(res interface{}) (uint32, scw.SdkError) {
+func (r *ListLbTypesResponse) UnsafeAppend(res interface{}) (uint32, error) {
 	results, ok := res.(*ListLbTypesResponse)
 	if !ok {
 		return 0, errors.New("%T type cannot be appended to type %T", res, r)
@@ -3240,73 +3305,338 @@ func (r *ListLbTypesResponse) UnsafeAppend(res interface{}) (uint32, scw.SdkErro
 	return uint32(len(results.LbTypes)), nil
 }
 
-type Config interface {
-	isConfig()
+type CreateSubscriberRequest struct {
+	Region scw.Region `json:"-"`
+	// Name subscriber name
+	Name string `json:"name"`
+	// EmailConfig email address configuration
+	// Precisely one of EmailConfig, WebhookConfig must be set.
+	EmailConfig *SubscriberEmailConfig `json:"email_config,omitempty"`
+	// WebhookConfig webHook URI configuration
+	// Precisely one of EmailConfig, WebhookConfig must be set.
+	WebhookConfig *SubscriberWebhookConfig `json:"webhook_config,omitempty"`
+	// OrganizationID owner of resources
+	OrganizationID string `json:"organization_id"`
 }
 
-type ConfigMysqlConfig struct {
-	Value HealthCheckMysqlConfig
+// CreateSubscriber create a subscriber, webhook or email
+func (s *API) CreateSubscriber(req *CreateSubscriberRequest, opts ...scw.RequestOption) (*Subscriber, error) {
+	var err error
+
+	if req.OrganizationID == "" {
+		defaultOrganizationID, _ := s.client.GetDefaultOrganizationID()
+		req.OrganizationID = defaultOrganizationID
+	}
+
+	if req.Region == "" {
+		defaultRegion, _ := s.client.GetDefaultRegion()
+		req.Region = defaultRegion
+	}
+
+	if fmt.Sprint(req.Region) == "" {
+		return nil, errors.New("field Region cannot be empty in request")
+	}
+
+	scwReq := &scw.ScalewayRequest{
+		Method:  "POST",
+		Path:    "/lb/v1/regions/" + fmt.Sprint(req.Region) + "/subscribers",
+		Headers: http.Header{},
+	}
+
+	err = scwReq.SetBody(req)
+	if err != nil {
+		return nil, err
+	}
+
+	var resp Subscriber
+
+	err = s.client.Do(scwReq, &resp, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &resp, nil
 }
 
-func (ConfigMysqlConfig) isConfig() {
+type GetSubscriberRequest struct {
+	Region scw.Region `json:"-"`
+	// SubscriberID subscriber ID
+	SubscriberID string `json:"-"`
 }
 
-type ConfigLdapConfig struct {
-	Value HealthCheckLdapConfig
+// GetSubscriber get a subscriber
+func (s *API) GetSubscriber(req *GetSubscriberRequest, opts ...scw.RequestOption) (*Subscriber, error) {
+	var err error
+
+	if req.Region == "" {
+		defaultRegion, _ := s.client.GetDefaultRegion()
+		req.Region = defaultRegion
+	}
+
+	if fmt.Sprint(req.Region) == "" {
+		return nil, errors.New("field Region cannot be empty in request")
+	}
+
+	if fmt.Sprint(req.SubscriberID) == "" {
+		return nil, errors.New("field SubscriberID cannot be empty in request")
+	}
+
+	scwReq := &scw.ScalewayRequest{
+		Method:  "GET",
+		Path:    "/lb/v1/regions/" + fmt.Sprint(req.Region) + "/subscribers/" + fmt.Sprint(req.SubscriberID) + "",
+		Headers: http.Header{},
+	}
+
+	var resp Subscriber
+
+	err = s.client.Do(scwReq, &resp, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &resp, nil
 }
 
-func (ConfigLdapConfig) isConfig() {
+type ListSubscriberRequest struct {
+	Region scw.Region `json:"-"`
+	// OrderBy you can order the response by created_at asc/desc or name asc/desc
+	//
+	// Default value: created_at_asc
+	OrderBy ListSubscriberRequestOrderBy `json:"-"`
+	// Page page number
+	Page *int32 `json:"-"`
+	// PageSize the number of items to return
+	PageSize *uint32 `json:"-"`
+	// Name use this to search by name
+	Name *string `json:"-"`
+	// OrganizationID owner of resources
+	OrganizationID *string `json:"-"`
 }
 
-type ConfigRedisConfig struct {
-	Value HealthCheckRedisConfig
+// ListSubscriber list all subscriber
+func (s *API) ListSubscriber(req *ListSubscriberRequest, opts ...scw.RequestOption) (*ListSubscriberResponse, error) {
+	var err error
+
+	if req.Region == "" {
+		defaultRegion, _ := s.client.GetDefaultRegion()
+		req.Region = defaultRegion
+	}
+
+	defaultPageSize, exist := s.client.GetDefaultPageSize()
+	if (req.PageSize == nil || *req.PageSize == 0) && exist {
+		req.PageSize = &defaultPageSize
+	}
+
+	query := url.Values{}
+	parameter.AddToQuery(query, "order_by", req.OrderBy)
+	parameter.AddToQuery(query, "page", req.Page)
+	parameter.AddToQuery(query, "page_size", req.PageSize)
+	parameter.AddToQuery(query, "name", req.Name)
+	parameter.AddToQuery(query, "organization_id", req.OrganizationID)
+
+	if fmt.Sprint(req.Region) == "" {
+		return nil, errors.New("field Region cannot be empty in request")
+	}
+
+	scwReq := &scw.ScalewayRequest{
+		Method:  "GET",
+		Path:    "/lb/v1/regions/" + fmt.Sprint(req.Region) + "/subscribers",
+		Query:   query,
+		Headers: http.Header{},
+	}
+
+	var resp ListSubscriberResponse
+
+	err = s.client.Do(scwReq, &resp, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &resp, nil
 }
 
-func (ConfigRedisConfig) isConfig() {
+// UnsafeGetTotalCount should not be used
+// Internal usage only
+func (r *ListSubscriberResponse) UnsafeGetTotalCount() uint32 {
+	return r.TotalCount
 }
 
-type ConfigPgsqlConfig struct {
-	Value HealthCheckPgsqlConfig
+// UnsafeAppend should not be used
+// Internal usage only
+func (r *ListSubscriberResponse) UnsafeAppend(res interface{}) (uint32, error) {
+	results, ok := res.(*ListSubscriberResponse)
+	if !ok {
+		return 0, errors.New("%T type cannot be appended to type %T", res, r)
+	}
+
+	r.Subscribers = append(r.Subscribers, results.Subscribers...)
+	r.TotalCount += uint32(len(results.Subscribers))
+	return uint32(len(results.Subscribers)), nil
 }
 
-func (ConfigPgsqlConfig) isConfig() {
+type UpdateSubscriberRequest struct {
+	Region scw.Region `json:"-"`
+	// SubscriberID subscriber ID
+	SubscriberID string `json:"-"`
+	// Name subscriber name
+	Name string `json:"name"`
+	// EmailConfig email address configuration
+	// Precisely one of EmailConfig, WebhookConfig must be set.
+	EmailConfig *SubscriberEmailConfig `json:"email_config,omitempty"`
+	// WebhookConfig webHook URI configuration
+	// Precisely one of EmailConfig, WebhookConfig must be set.
+	WebhookConfig *SubscriberWebhookConfig `json:"webhook_config,omitempty"`
 }
 
-type ConfigTCPConfig struct {
-	Value HealthCheckTCPConfig
+// UpdateSubscriber update a subscriber
+func (s *API) UpdateSubscriber(req *UpdateSubscriberRequest, opts ...scw.RequestOption) (*Subscriber, error) {
+	var err error
+
+	if req.Region == "" {
+		defaultRegion, _ := s.client.GetDefaultRegion()
+		req.Region = defaultRegion
+	}
+
+	if fmt.Sprint(req.Region) == "" {
+		return nil, errors.New("field Region cannot be empty in request")
+	}
+
+	if fmt.Sprint(req.SubscriberID) == "" {
+		return nil, errors.New("field SubscriberID cannot be empty in request")
+	}
+
+	scwReq := &scw.ScalewayRequest{
+		Method:  "PUT",
+		Path:    "/lb/v1/regions/" + fmt.Sprint(req.Region) + "/subscribers/" + fmt.Sprint(req.SubscriberID) + "",
+		Headers: http.Header{},
+	}
+
+	err = scwReq.SetBody(req)
+	if err != nil {
+		return nil, err
+	}
+
+	var resp Subscriber
+
+	err = s.client.Do(scwReq, &resp, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &resp, nil
 }
 
-func (ConfigTCPConfig) isConfig() {
+type DeleteSubscriberRequest struct {
+	Region scw.Region `json:"-"`
+	// SubscriberID subscriber ID
+	SubscriberID string `json:"-"`
 }
 
-type ConfigHTTPConfig struct {
-	Value HealthCheckHTTPConfig
+// DeleteSubscriber delete a subscriber
+func (s *API) DeleteSubscriber(req *DeleteSubscriberRequest, opts ...scw.RequestOption) error {
+	var err error
+
+	if req.Region == "" {
+		defaultRegion, _ := s.client.GetDefaultRegion()
+		req.Region = defaultRegion
+	}
+
+	if fmt.Sprint(req.Region) == "" {
+		return errors.New("field Region cannot be empty in request")
+	}
+
+	if fmt.Sprint(req.SubscriberID) == "" {
+		return errors.New("field SubscriberID cannot be empty in request")
+	}
+
+	scwReq := &scw.ScalewayRequest{
+		Method:  "DELETE",
+		Path:    "/lb/v1/regions/" + fmt.Sprint(req.Region) + "/lb/subscription/" + fmt.Sprint(req.SubscriberID) + "",
+		Headers: http.Header{},
+	}
+
+	err = s.client.Do(scwReq, nil, opts...)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
-func (ConfigHTTPConfig) isConfig() {
+type SubscribeToLbRequest struct {
+	Region scw.Region `json:"-"`
+	// LbID load Balancer ID
+	LbID string `json:"-"`
+	// SubscriberID subscriber ID
+	SubscriberID string `json:"subscriber_id"`
 }
 
-type ConfigHTTPSConfig struct {
-	Value HealthCheckHTTPSConfig
+// SubscribeToLb link Load Balancer to a subscriber
+func (s *API) SubscribeToLb(req *SubscribeToLbRequest, opts ...scw.RequestOption) (*Lb, error) {
+	var err error
+
+	if req.Region == "" {
+		defaultRegion, _ := s.client.GetDefaultRegion()
+		req.Region = defaultRegion
+	}
+
+	if fmt.Sprint(req.Region) == "" {
+		return nil, errors.New("field Region cannot be empty in request")
+	}
+
+	if fmt.Sprint(req.LbID) == "" {
+		return nil, errors.New("field LbID cannot be empty in request")
+	}
+
+	scwReq := &scw.ScalewayRequest{
+		Method:  "POST",
+		Path:    "/lb/v1/regions/" + fmt.Sprint(req.Region) + "/lb/" + fmt.Sprint(req.LbID) + "/subscribe",
+		Headers: http.Header{},
+	}
+
+	err = scwReq.SetBody(req)
+	if err != nil {
+		return nil, err
+	}
+
+	var resp Lb
+
+	err = s.client.Do(scwReq, &resp, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &resp, nil
 }
 
-func (ConfigHTTPSConfig) isConfig() {
+type UnsubscribeFromLbRequest struct {
+	Region scw.Region `json:"-"`
+	// LbID load Balancer ID
+	LbID string `json:"-"`
 }
 
-type Type interface {
-	isType()
-}
+// UnsubscribeFromLb remove link between Load Balancer and subscriber
+func (s *API) UnsubscribeFromLb(req *UnsubscribeFromLbRequest, opts ...scw.RequestOption) (*Lb, error) {
+	var err error
 
-type TypeLetsencrypt struct {
-	Value CreateCertificateRequestLetsencryptConfig
-}
+	if req.Region == "" {
+		defaultRegion, _ := s.client.GetDefaultRegion()
+		req.Region = defaultRegion
+	}
 
-func (TypeLetsencrypt) isType() {
-}
+	if fmt.Sprint(req.Region) == "" {
+		return nil, errors.New("field Region cannot be empty in request")
+	}
 
-type TypeCustomCertificate struct {
-	Value CreateCertificateRequestCustomCertificate
-}
+	if fmt.Sprint(req.LbID) == "" {
+		return nil, errors.New("field LbID cannot be empty in request")
+	}
 
-func (TypeCustomCertificate) isType() {
+	scwReq := &scw.ScalewayRequest{
+		Method:  "DELETE",
+		Path:    "/lb/v1/regions/" + fmt.Sprint(req.Region) + "/lb/" + fmt.Sprint(req.LbID) + "/unsubscribe",
+		Headers: http.Header{},
+	}
+
+	var resp Lb
+
+	err = s.client.Do(scwReq, &resp, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &resp, nil
 }

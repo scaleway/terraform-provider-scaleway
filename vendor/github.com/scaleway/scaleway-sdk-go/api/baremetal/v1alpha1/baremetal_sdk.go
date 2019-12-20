@@ -49,6 +49,126 @@ func NewAPI(client *scw.Client) *API {
 	}
 }
 
+type IPFailoverEventAction string
+
+const (
+	// IPFailoverEventActionUnknown is [insert doc].
+	IPFailoverEventActionUnknown = IPFailoverEventAction("unknown")
+	// IPFailoverEventActionBillingStart is [insert doc].
+	IPFailoverEventActionBillingStart = IPFailoverEventAction("billing_start")
+	// IPFailoverEventActionBillingStop is [insert doc].
+	IPFailoverEventActionBillingStop = IPFailoverEventAction("billing_stop")
+	// IPFailoverEventActionOrderFail is [insert doc].
+	IPFailoverEventActionOrderFail = IPFailoverEventAction("order_fail")
+	// IPFailoverEventActionUpdateIP is [insert doc].
+	IPFailoverEventActionUpdateIP = IPFailoverEventAction("update_ip")
+	// IPFailoverEventActionUpdateIPFail is [insert doc].
+	IPFailoverEventActionUpdateIPFail = IPFailoverEventAction("update_ip_fail")
+)
+
+func (enum IPFailoverEventAction) String() string {
+	if enum == "" {
+		// return default value if empty
+		return "unknown"
+	}
+	return string(enum)
+}
+
+func (enum IPFailoverEventAction) MarshalJSON() ([]byte, error) {
+	return []byte(fmt.Sprintf(`"%s"`, enum)), nil
+}
+
+func (enum *IPFailoverEventAction) UnmarshalJSON(data []byte) error {
+	tmp := ""
+
+	if err := json.Unmarshal(data, &tmp); err != nil {
+		return err
+	}
+
+	*enum = IPFailoverEventAction(IPFailoverEventAction(tmp).String())
+	return nil
+}
+
+type IPFailoverMACType string
+
+const (
+	// IPFailoverMACTypeUnknownMacType is [insert doc].
+	IPFailoverMACTypeUnknownMacType = IPFailoverMACType("unknown_mac_type")
+	// IPFailoverMACTypeNone is [insert doc].
+	IPFailoverMACTypeNone = IPFailoverMACType("none")
+	// IPFailoverMACTypeDuplicate is [insert doc].
+	IPFailoverMACTypeDuplicate = IPFailoverMACType("duplicate")
+	// IPFailoverMACTypeVmware is [insert doc].
+	IPFailoverMACTypeVmware = IPFailoverMACType("vmware")
+	// IPFailoverMACTypeXen is [insert doc].
+	IPFailoverMACTypeXen = IPFailoverMACType("xen")
+	// IPFailoverMACTypeKvm is [insert doc].
+	IPFailoverMACTypeKvm = IPFailoverMACType("kvm")
+)
+
+func (enum IPFailoverMACType) String() string {
+	if enum == "" {
+		// return default value if empty
+		return "unknown_mac_type"
+	}
+	return string(enum)
+}
+
+func (enum IPFailoverMACType) MarshalJSON() ([]byte, error) {
+	return []byte(fmt.Sprintf(`"%s"`, enum)), nil
+}
+
+func (enum *IPFailoverMACType) UnmarshalJSON(data []byte) error {
+	tmp := ""
+
+	if err := json.Unmarshal(data, &tmp); err != nil {
+		return err
+	}
+
+	*enum = IPFailoverMACType(IPFailoverMACType(tmp).String())
+	return nil
+}
+
+type IPFailoverStatus string
+
+const (
+	// IPFailoverStatusUnknown is [insert doc].
+	IPFailoverStatusUnknown = IPFailoverStatus("unknown")
+	// IPFailoverStatusDelivering is [insert doc].
+	IPFailoverStatusDelivering = IPFailoverStatus("delivering")
+	// IPFailoverStatusReady is [insert doc].
+	IPFailoverStatusReady = IPFailoverStatus("ready")
+	// IPFailoverStatusUpdating is [insert doc].
+	IPFailoverStatusUpdating = IPFailoverStatus("updating")
+	// IPFailoverStatusError is [insert doc].
+	IPFailoverStatusError = IPFailoverStatus("error")
+	// IPFailoverStatusDeleting is [insert doc].
+	IPFailoverStatusDeleting = IPFailoverStatus("deleting")
+)
+
+func (enum IPFailoverStatus) String() string {
+	if enum == "" {
+		// return default value if empty
+		return "unknown"
+	}
+	return string(enum)
+}
+
+func (enum IPFailoverStatus) MarshalJSON() ([]byte, error) {
+	return []byte(fmt.Sprintf(`"%s"`, enum)), nil
+}
+
+func (enum *IPFailoverStatus) UnmarshalJSON(data []byte) error {
+	tmp := ""
+
+	if err := json.Unmarshal(data, &tmp); err != nil {
+		return err
+	}
+
+	*enum = IPFailoverStatus(IPFailoverStatus(tmp).String())
+	return nil
+}
+
 type IPReverseStatus string
 
 const (
@@ -114,6 +234,70 @@ func (enum *IPVersion) UnmarshalJSON(data []byte) error {
 	}
 
 	*enum = IPVersion(IPVersion(tmp).String())
+	return nil
+}
+
+type ListIPFailoverEventsRequestOrderBy string
+
+const (
+	// ListIPFailoverEventsRequestOrderByCreatedAtAsc is [insert doc].
+	ListIPFailoverEventsRequestOrderByCreatedAtAsc = ListIPFailoverEventsRequestOrderBy("created_at_asc")
+	// ListIPFailoverEventsRequestOrderByCreatedAtDesc is [insert doc].
+	ListIPFailoverEventsRequestOrderByCreatedAtDesc = ListIPFailoverEventsRequestOrderBy("created_at_desc")
+)
+
+func (enum ListIPFailoverEventsRequestOrderBy) String() string {
+	if enum == "" {
+		// return default value if empty
+		return "created_at_asc"
+	}
+	return string(enum)
+}
+
+func (enum ListIPFailoverEventsRequestOrderBy) MarshalJSON() ([]byte, error) {
+	return []byte(fmt.Sprintf(`"%s"`, enum)), nil
+}
+
+func (enum *ListIPFailoverEventsRequestOrderBy) UnmarshalJSON(data []byte) error {
+	tmp := ""
+
+	if err := json.Unmarshal(data, &tmp); err != nil {
+		return err
+	}
+
+	*enum = ListIPFailoverEventsRequestOrderBy(ListIPFailoverEventsRequestOrderBy(tmp).String())
+	return nil
+}
+
+type ListIPFailoversRequestOrderBy string
+
+const (
+	// ListIPFailoversRequestOrderByCreatedAtAsc is [insert doc].
+	ListIPFailoversRequestOrderByCreatedAtAsc = ListIPFailoversRequestOrderBy("created_at_asc")
+	// ListIPFailoversRequestOrderByCreatedAtDesc is [insert doc].
+	ListIPFailoversRequestOrderByCreatedAtDesc = ListIPFailoversRequestOrderBy("created_at_desc")
+)
+
+func (enum ListIPFailoversRequestOrderBy) String() string {
+	if enum == "" {
+		// return default value if empty
+		return "created_at_asc"
+	}
+	return string(enum)
+}
+
+func (enum ListIPFailoversRequestOrderBy) MarshalJSON() ([]byte, error) {
+	return []byte(fmt.Sprintf(`"%s"`, enum)), nil
+}
+
+func (enum *ListIPFailoversRequestOrderBy) UnmarshalJSON(data []byte) error {
+	tmp := ""
+
+	if err := json.Unmarshal(data, &tmp); err != nil {
+		return err
+	}
+
+	*enum = ListIPFailoversRequestOrderBy(ListIPFailoversRequestOrderBy(tmp).String())
 	return nil
 }
 
@@ -363,6 +547,12 @@ func (enum *ServerStatus) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
+// AttachIPFailoversResponse attach ip failovers response
+type AttachIPFailoversResponse struct {
+	// Failovers list of the attached IP failovers
+	Failovers []*IPFailover `json:"failovers"`
+}
+
 // CPU cpu
 type CPU struct {
 	// Name name of the CPU
@@ -373,6 +563,12 @@ type CPU struct {
 	Threads uint32 `json:"threads"`
 
 	Frequency uint32 `json:"frequency"`
+}
+
+// DetachIPFailoversResponse detach ip failovers response
+type DetachIPFailoversResponse struct {
+	// Failovers list of the detached IP failovers
+	Failovers []*IPFailover `json:"failovers"`
 }
 
 // Disk disk
@@ -401,6 +597,74 @@ type IP struct {
 	ReverseStatus IPReverseStatus `json:"reverse_status"`
 	// ReverseStatusMessage a message related to the reverse status, in case of an error for example
 	ReverseStatusMessage *string `json:"reverse_status_message"`
+}
+
+// IPFailover ip failover
+type IPFailover struct {
+	// ID iD of the IP failover
+	ID string `json:"id"`
+	// OrganizationID organization ID the IP failover is attached to
+	OrganizationID string `json:"organization_id"`
+	// Description description of the IP failover
+	Description string `json:"description"`
+	// Tags tags associated to the IP failover
+	Tags []string `json:"tags"`
+	// UpdatedAt date of last update of the IP failover
+	UpdatedAt time.Time `json:"updated_at"`
+	// CreatedAt date of creation of the IP failover
+	CreatedAt time.Time `json:"created_at"`
+	// Status status of the IP failover
+	//
+	// Default value: unknown
+	Status IPFailoverStatus `json:"status"`
+	// IPAddress iP of the IP failover
+	IPAddress net.IP `json:"ip_address"`
+	// MacAddress mac address of the IP failover
+	MacAddress string `json:"mac_address"`
+	// ServerID serverID linked to the IP failover
+	ServerID string `json:"server_id"`
+	// MacType type of the MAC generated of the IP failover
+	//
+	// Default value: unknown_mac_type
+	MacType IPFailoverMACType `json:"mac_type"`
+	// Reverse reverse IP value
+	Reverse string `json:"reverse"`
+	// ReverseStatus status of the reverse
+	//
+	// Default value: unknown
+	ReverseStatus IPReverseStatus `json:"reverse_status"`
+	// ReverseStatusMessage a message related to the reverse status, in case of an error for example
+	ReverseStatusMessage *string `json:"reverse_status_message"`
+}
+
+// IPFailoverEvent ip failover event
+type IPFailoverEvent struct {
+	// ID iD of the IP failover for whom the action will be applied
+	ID string `json:"id"`
+	// Action the action that will be applied to the IP failover
+	//
+	// Default value: unknown
+	Action IPFailoverEventAction `json:"action"`
+	// UpdatedAt date of last modification of the action
+	UpdatedAt time.Time `json:"updated_at"`
+	// CreatedAt date of creation of the action
+	CreatedAt time.Time `json:"created_at"`
+}
+
+// ListIPFailoverEventsResponse list ip failover events response
+type ListIPFailoverEventsResponse struct {
+	// TotalCount total count of matching IP failover events
+	TotalCount uint32 `json:"total_count"`
+	// Event iP failover events that match filters
+	Event []*IPFailoverEvent `json:"event"`
+}
+
+// ListIPFailoversResponse list ip failovers response
+type ListIPFailoversResponse struct {
+	// TotalCount total count of matching IP failovers
+	TotalCount uint32 `json:"total_count"`
+	// Failovers listing of failovers
+	Failovers []*IPFailover `json:"failovers"`
 }
 
 // ListOffersResponse list offers response
@@ -580,6 +844,8 @@ type ListServersRequest struct {
 	Status []string `json:"-"`
 	// Name filter servers by name
 	Name *string `json:"-"`
+	// OrganizationID filter servers by organization ID
+	OrganizationID *string `json:"-"`
 }
 
 // ListServers list servers
@@ -605,6 +871,7 @@ func (s *API) ListServers(req *ListServersRequest, opts ...scw.RequestOption) (*
 	parameter.AddToQuery(query, "tags", req.Tags)
 	parameter.AddToQuery(query, "status", req.Status)
 	parameter.AddToQuery(query, "name", req.Name)
+	parameter.AddToQuery(query, "organization_id", req.OrganizationID)
 
 	if fmt.Sprint(req.Zone) == "" {
 		return nil, errors.New("field Zone cannot be empty in request")
@@ -634,7 +901,7 @@ func (r *ListServersResponse) UnsafeGetTotalCount() uint32 {
 
 // UnsafeAppend should not be used
 // Internal usage only
-func (r *ListServersResponse) UnsafeAppend(res interface{}) (uint32, scw.SdkError) {
+func (r *ListServersResponse) UnsafeAppend(res interface{}) (uint32, error) {
 	results, ok := res.(*ListServersResponse)
 	if !ok {
 		return 0, errors.New("%T type cannot be appended to type %T", res, r)
@@ -1087,7 +1354,7 @@ func (r *ListServerEventsResponse) UnsafeGetTotalCount() uint32 {
 
 // UnsafeAppend should not be used
 // Internal usage only
-func (r *ListServerEventsResponse) UnsafeAppend(res interface{}) (uint32, scw.SdkError) {
+func (r *ListServerEventsResponse) UnsafeAppend(res interface{}) (uint32, error) {
 	results, ok := res.(*ListServerEventsResponse)
 	if !ok {
 		return 0, errors.New("%T type cannot be appended to type %T", res, r)
@@ -1278,6 +1545,445 @@ func (s *API) UpdateIP(req *UpdateIPRequest, opts ...scw.RequestOption) (*IP, er
 	return &resp, nil
 }
 
+type CreateIPFailoverRequest struct {
+	Zone scw.Zone `json:"-"`
+	// OrganizationID iD of the organization to associate to the IP failover
+	OrganizationID string `json:"organization_id"`
+	// Description description to associate to the IP failover, max 255 characters
+	Description string `json:"description"`
+	// Tags tags to associate to the IP failover
+	Tags []string `json:"tags"`
+	// MacType mAC type to use for the IP failover
+	//
+	// Default value: unknown_mac_type
+	MacType IPFailoverMACType `json:"mac_type"`
+	// DuplicateMacFrom iD of the IP failover which must be duplicate
+	DuplicateMacFrom *string `json:"duplicate_mac_from"`
+}
+
+// CreateIPFailover create IP failover
+//
+// Create an IP failover. Once the IP failover is created, you probably want to attach it to a server.
+func (s *API) CreateIPFailover(req *CreateIPFailoverRequest, opts ...scw.RequestOption) (*IPFailover, error) {
+	var err error
+
+	if req.OrganizationID == "" {
+		defaultOrganizationID, _ := s.client.GetDefaultOrganizationID()
+		req.OrganizationID = defaultOrganizationID
+	}
+
+	if req.Zone == "" {
+		defaultZone, _ := s.client.GetDefaultZone()
+		req.Zone = defaultZone
+	}
+
+	if fmt.Sprint(req.Zone) == "" {
+		return nil, errors.New("field Zone cannot be empty in request")
+	}
+
+	scwReq := &scw.ScalewayRequest{
+		Method:  "POST",
+		Path:    "/baremetal/v1alpha1/zones/" + fmt.Sprint(req.Zone) + "/ip-failovers",
+		Headers: http.Header{},
+	}
+
+	err = scwReq.SetBody(req)
+	if err != nil {
+		return nil, err
+	}
+
+	var resp IPFailover
+
+	err = s.client.Do(scwReq, &resp, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &resp, nil
+}
+
+type GetIPFailoverRequest struct {
+	Zone scw.Zone `json:"-"`
+	// IPFailoverID iD of the IP failover
+	IPFailoverID string `json:"-"`
+}
+
+// GetIPFailover get IP failover
+//
+// Get the IP failover associated with the given ID.
+func (s *API) GetIPFailover(req *GetIPFailoverRequest, opts ...scw.RequestOption) (*IPFailover, error) {
+	var err error
+
+	if req.Zone == "" {
+		defaultZone, _ := s.client.GetDefaultZone()
+		req.Zone = defaultZone
+	}
+
+	if fmt.Sprint(req.Zone) == "" {
+		return nil, errors.New("field Zone cannot be empty in request")
+	}
+
+	if fmt.Sprint(req.IPFailoverID) == "" {
+		return nil, errors.New("field IPFailoverID cannot be empty in request")
+	}
+
+	scwReq := &scw.ScalewayRequest{
+		Method:  "GET",
+		Path:    "/baremetal/v1alpha1/zones/" + fmt.Sprint(req.Zone) + "/ip-failovers/" + fmt.Sprint(req.IPFailoverID) + "",
+		Headers: http.Header{},
+	}
+
+	var resp IPFailover
+
+	err = s.client.Do(scwReq, &resp, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &resp, nil
+}
+
+type ListIPFailoversRequest struct {
+	Zone scw.Zone `json:"-"`
+	// Page page number
+	Page *int32 `json:"-"`
+	// PageSize number of IP failover per page
+	PageSize *uint32 `json:"-"`
+	// OrderBy order of the IP failovers
+	//
+	// Default value: created_at_asc
+	OrderBy ListIPFailoversRequestOrderBy `json:"-"`
+	// Tags filter IP failovers by tags
+	Tags []string `json:"-"`
+	// Status filter IP failovers by status
+	Status []string `json:"-"`
+	// ServerIDs filter IP failovers by server IDs
+	ServerIDs []string `json:"-"`
+	// OrganizationID filter servers by organization ID
+	OrganizationID *string `json:"-"`
+}
+
+// ListIPFailovers list IP failovers
+//
+// List all created IP failovers.
+func (s *API) ListIPFailovers(req *ListIPFailoversRequest, opts ...scw.RequestOption) (*ListIPFailoversResponse, error) {
+	var err error
+
+	if req.Zone == "" {
+		defaultZone, _ := s.client.GetDefaultZone()
+		req.Zone = defaultZone
+	}
+
+	defaultPageSize, exist := s.client.GetDefaultPageSize()
+	if (req.PageSize == nil || *req.PageSize == 0) && exist {
+		req.PageSize = &defaultPageSize
+	}
+
+	query := url.Values{}
+	parameter.AddToQuery(query, "page", req.Page)
+	parameter.AddToQuery(query, "page_size", req.PageSize)
+	parameter.AddToQuery(query, "order_by", req.OrderBy)
+	parameter.AddToQuery(query, "tags", req.Tags)
+	parameter.AddToQuery(query, "status", req.Status)
+	parameter.AddToQuery(query, "server_ids", req.ServerIDs)
+	parameter.AddToQuery(query, "organization_id", req.OrganizationID)
+
+	if fmt.Sprint(req.Zone) == "" {
+		return nil, errors.New("field Zone cannot be empty in request")
+	}
+
+	scwReq := &scw.ScalewayRequest{
+		Method:  "GET",
+		Path:    "/baremetal/v1alpha1/zones/" + fmt.Sprint(req.Zone) + "/ip-failovers",
+		Query:   query,
+		Headers: http.Header{},
+	}
+
+	var resp ListIPFailoversResponse
+
+	err = s.client.Do(scwReq, &resp, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &resp, nil
+}
+
+// UnsafeGetTotalCount should not be used
+// Internal usage only
+func (r *ListIPFailoversResponse) UnsafeGetTotalCount() uint32 {
+	return r.TotalCount
+}
+
+// UnsafeAppend should not be used
+// Internal usage only
+func (r *ListIPFailoversResponse) UnsafeAppend(res interface{}) (uint32, error) {
+	results, ok := res.(*ListIPFailoversResponse)
+	if !ok {
+		return 0, errors.New("%T type cannot be appended to type %T", res, r)
+	}
+
+	r.Failovers = append(r.Failovers, results.Failovers...)
+	r.TotalCount += uint32(len(results.Failovers))
+	return uint32(len(results.Failovers)), nil
+}
+
+type DeleteIPFailoverRequest struct {
+	Zone scw.Zone `json:"-"`
+	// IPFailoverID iD of the IP failover to delete
+	IPFailoverID string `json:"-"`
+}
+
+// DeleteIPFailover delete IP failover
+//
+// Delete the IP failover associated with the given IP.
+func (s *API) DeleteIPFailover(req *DeleteIPFailoverRequest, opts ...scw.RequestOption) (*IPFailover, error) {
+	var err error
+
+	if req.Zone == "" {
+		defaultZone, _ := s.client.GetDefaultZone()
+		req.Zone = defaultZone
+	}
+
+	if fmt.Sprint(req.Zone) == "" {
+		return nil, errors.New("field Zone cannot be empty in request")
+	}
+
+	if fmt.Sprint(req.IPFailoverID) == "" {
+		return nil, errors.New("field IPFailoverID cannot be empty in request")
+	}
+
+	scwReq := &scw.ScalewayRequest{
+		Method:  "DELETE",
+		Path:    "/baremetal/v1alpha1/zones/" + fmt.Sprint(req.Zone) + "/ip-failovers/" + fmt.Sprint(req.IPFailoverID) + "",
+		Headers: http.Header{},
+	}
+
+	var resp IPFailover
+
+	err = s.client.Do(scwReq, &resp, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &resp, nil
+}
+
+type UpdateIPFailoverRequest struct {
+	Zone scw.Zone `json:"-"`
+	// IPFailoverID iD of the IP failover to update
+	IPFailoverID string `json:"-"`
+	// Description description to associate to the IP failover, max 255 characters, not updated if null
+	Description *string `json:"description"`
+	// Tags tags to associate to the IP failover, not updated if null
+	Tags *[]string `json:"tags"`
+	// MacType mAC type to use for the IP failover, not updated if null
+	//
+	// Default value: unknown_mac_type
+	MacType IPFailoverMACType `json:"mac_type"`
+	// DuplicateMacFrom iD of the IP failover which must be duplicate, not updated if null
+	DuplicateMacFrom *string `json:"duplicate_mac_from"`
+	// Reverse new reverse IP to update, not updated if null
+	Reverse *string `json:"reverse"`
+}
+
+// UpdateIPFailover update IP failover
+//
+// Update the IP failover associated with the given IP.
+func (s *API) UpdateIPFailover(req *UpdateIPFailoverRequest, opts ...scw.RequestOption) (*IPFailover, error) {
+	var err error
+
+	if req.Zone == "" {
+		defaultZone, _ := s.client.GetDefaultZone()
+		req.Zone = defaultZone
+	}
+
+	if fmt.Sprint(req.Zone) == "" {
+		return nil, errors.New("field Zone cannot be empty in request")
+	}
+
+	if fmt.Sprint(req.IPFailoverID) == "" {
+		return nil, errors.New("field IPFailoverID cannot be empty in request")
+	}
+
+	scwReq := &scw.ScalewayRequest{
+		Method:  "PATCH",
+		Path:    "/baremetal/v1alpha1/zones/" + fmt.Sprint(req.Zone) + "/ip-failovers/" + fmt.Sprint(req.IPFailoverID) + "",
+		Headers: http.Header{},
+	}
+
+	err = scwReq.SetBody(req)
+	if err != nil {
+		return nil, err
+	}
+
+	var resp IPFailover
+
+	err = s.client.Do(scwReq, &resp, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &resp, nil
+}
+
+type AttachIPFailoversRequest struct {
+	Zone scw.Zone `json:"-"`
+	// IPFailoverIDs iP failover IDs to attach to the server
+	IPFailoverIDs []string `json:"ip_failover_ids"`
+	// ServerID iD of the server to attach to the IP failovers
+	ServerID string `json:"server_id"`
+}
+
+// AttachIPFailovers attach IP failovers
+//
+// Attach IP failovers to the given server ID.
+func (s *API) AttachIPFailovers(req *AttachIPFailoversRequest, opts ...scw.RequestOption) (*AttachIPFailoversResponse, error) {
+	var err error
+
+	if req.Zone == "" {
+		defaultZone, _ := s.client.GetDefaultZone()
+		req.Zone = defaultZone
+	}
+
+	if fmt.Sprint(req.Zone) == "" {
+		return nil, errors.New("field Zone cannot be empty in request")
+	}
+
+	scwReq := &scw.ScalewayRequest{
+		Method:  "POST",
+		Path:    "/baremetal/v1alpha1/zones/" + fmt.Sprint(req.Zone) + "/ip-failovers/attach",
+		Headers: http.Header{},
+	}
+
+	err = scwReq.SetBody(req)
+	if err != nil {
+		return nil, err
+	}
+
+	var resp AttachIPFailoversResponse
+
+	err = s.client.Do(scwReq, &resp, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &resp, nil
+}
+
+type DetachIPFailoversRequest struct {
+	Zone scw.Zone `json:"-"`
+	// IPFailoverIDs iP failover IDs to detach to the server
+	IPFailoverIDs []string `json:"ip_failover_ids"`
+}
+
+// DetachIPFailovers detach IP failovers
+//
+// Detach IP failovers to the given server ID.
+func (s *API) DetachIPFailovers(req *DetachIPFailoversRequest, opts ...scw.RequestOption) (*DetachIPFailoversResponse, error) {
+	var err error
+
+	if req.Zone == "" {
+		defaultZone, _ := s.client.GetDefaultZone()
+		req.Zone = defaultZone
+	}
+
+	if fmt.Sprint(req.Zone) == "" {
+		return nil, errors.New("field Zone cannot be empty in request")
+	}
+
+	scwReq := &scw.ScalewayRequest{
+		Method:  "POST",
+		Path:    "/baremetal/v1alpha1/zones/" + fmt.Sprint(req.Zone) + "/ip-failovers/detach",
+		Headers: http.Header{},
+	}
+
+	err = scwReq.SetBody(req)
+	if err != nil {
+		return nil, err
+	}
+
+	var resp DetachIPFailoversResponse
+
+	err = s.client.Do(scwReq, &resp, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &resp, nil
+}
+
+type ListIPFailoverEventsRequest struct {
+	Zone scw.Zone `json:"-"`
+	// IPFailoverID iD of the IP failover events searched
+	IPFailoverID string `json:"-"`
+	// Page page number
+	Page *int32 `json:"-"`
+	// PageSize number of IP failover events per page
+	PageSize *uint32 `json:"-"`
+	// OrderBy order of the IP failover events
+	//
+	// Default value: created_at_asc
+	OrderBy ListIPFailoverEventsRequestOrderBy `json:"-"`
+}
+
+// ListIPFailoverEvents list IP failover events
+//
+// List IP failover events associated with the given ID.
+func (s *API) ListIPFailoverEvents(req *ListIPFailoverEventsRequest, opts ...scw.RequestOption) (*ListIPFailoverEventsResponse, error) {
+	var err error
+
+	if req.Zone == "" {
+		defaultZone, _ := s.client.GetDefaultZone()
+		req.Zone = defaultZone
+	}
+
+	defaultPageSize, exist := s.client.GetDefaultPageSize()
+	if (req.PageSize == nil || *req.PageSize == 0) && exist {
+		req.PageSize = &defaultPageSize
+	}
+
+	query := url.Values{}
+	parameter.AddToQuery(query, "page", req.Page)
+	parameter.AddToQuery(query, "page_size", req.PageSize)
+	parameter.AddToQuery(query, "order_by", req.OrderBy)
+
+	if fmt.Sprint(req.Zone) == "" {
+		return nil, errors.New("field Zone cannot be empty in request")
+	}
+
+	if fmt.Sprint(req.IPFailoverID) == "" {
+		return nil, errors.New("field IPFailoverID cannot be empty in request")
+	}
+
+	scwReq := &scw.ScalewayRequest{
+		Method:  "GET",
+		Path:    "/baremetal/v1alpha1/zones/" + fmt.Sprint(req.Zone) + "/ip-failovers/" + fmt.Sprint(req.IPFailoverID) + "/events",
+		Query:   query,
+		Headers: http.Header{},
+	}
+
+	var resp ListIPFailoverEventsResponse
+
+	err = s.client.Do(scwReq, &resp, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &resp, nil
+}
+
+// UnsafeGetTotalCount should not be used
+// Internal usage only
+func (r *ListIPFailoverEventsResponse) UnsafeGetTotalCount() uint32 {
+	return r.TotalCount
+}
+
+// UnsafeAppend should not be used
+// Internal usage only
+func (r *ListIPFailoverEventsResponse) UnsafeAppend(res interface{}) (uint32, error) {
+	results, ok := res.(*ListIPFailoverEventsResponse)
+	if !ok {
+		return 0, errors.New("%T type cannot be appended to type %T", res, r)
+	}
+
+	r.Event = append(r.Event, results.Event...)
+	r.TotalCount += uint32(len(results.Event))
+	return uint32(len(results.Event)), nil
+}
+
 type ListOffersRequest struct {
 	Zone scw.Zone `json:"-"`
 	// Page page number
@@ -1334,7 +2040,7 @@ func (r *ListOffersResponse) UnsafeGetTotalCount() uint32 {
 
 // UnsafeAppend should not be used
 // Internal usage only
-func (r *ListOffersResponse) UnsafeAppend(res interface{}) (uint32, scw.SdkError) {
+func (r *ListOffersResponse) UnsafeAppend(res interface{}) (uint32, error) {
 	results, ok := res.(*ListOffersResponse)
 	if !ok {
 		return 0, errors.New("%T type cannot be appended to type %T", res, r)
@@ -1343,6 +2049,46 @@ func (r *ListOffersResponse) UnsafeAppend(res interface{}) (uint32, scw.SdkError
 	r.Offers = append(r.Offers, results.Offers...)
 	r.TotalCount += uint32(len(results.Offers))
 	return uint32(len(results.Offers)), nil
+}
+
+type GetOfferRequest struct {
+	Zone scw.Zone `json:"-"`
+	// OfferID iD of the researched Offer
+	OfferID string `json:"-"`
+}
+
+// GetOffer get offer
+//
+// Return specific offer for the given ID.
+func (s *API) GetOffer(req *GetOfferRequest, opts ...scw.RequestOption) (*Offer, error) {
+	var err error
+
+	if req.Zone == "" {
+		defaultZone, _ := s.client.GetDefaultZone()
+		req.Zone = defaultZone
+	}
+
+	if fmt.Sprint(req.Zone) == "" {
+		return nil, errors.New("field Zone cannot be empty in request")
+	}
+
+	if fmt.Sprint(req.OfferID) == "" {
+		return nil, errors.New("field OfferID cannot be empty in request")
+	}
+
+	scwReq := &scw.ScalewayRequest{
+		Method:  "GET",
+		Path:    "/baremetal/v1alpha1/zones/" + fmt.Sprint(req.Zone) + "/offers/" + fmt.Sprint(req.OfferID) + "",
+		Headers: http.Header{},
+	}
+
+	var resp Offer
+
+	err = s.client.Do(scwReq, &resp, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &resp, nil
 }
 
 type ListOsRequest struct {
@@ -1401,7 +2147,7 @@ func (r *ListOsResponse) UnsafeGetTotalCount() uint32 {
 
 // UnsafeAppend should not be used
 // Internal usage only
-func (r *ListOsResponse) UnsafeAppend(res interface{}) (uint32, scw.SdkError) {
+func (r *ListOsResponse) UnsafeAppend(res interface{}) (uint32, error) {
 	results, ok := res.(*ListOsResponse)
 	if !ok {
 		return 0, errors.New("%T type cannot be appended to type %T", res, r)
@@ -1410,4 +2156,44 @@ func (r *ListOsResponse) UnsafeAppend(res interface{}) (uint32, scw.SdkError) {
 	r.Os = append(r.Os, results.Os...)
 	r.TotalCount += uint32(len(results.Os))
 	return uint32(len(results.Os)), nil
+}
+
+type GetOsRequest struct {
+	Zone scw.Zone `json:"-"`
+	// OsID iD of the researched OS
+	OsID string `json:"-"`
+}
+
+// GetOs get OS
+//
+// Return specific OS for the given ID.
+func (s *API) GetOs(req *GetOsRequest, opts ...scw.RequestOption) (*Os, error) {
+	var err error
+
+	if req.Zone == "" {
+		defaultZone, _ := s.client.GetDefaultZone()
+		req.Zone = defaultZone
+	}
+
+	if fmt.Sprint(req.Zone) == "" {
+		return nil, errors.New("field Zone cannot be empty in request")
+	}
+
+	if fmt.Sprint(req.OsID) == "" {
+		return nil, errors.New("field OsID cannot be empty in request")
+	}
+
+	scwReq := &scw.ScalewayRequest{
+		Method:  "GET",
+		Path:    "/baremetal/v1alpha1/zones/" + fmt.Sprint(req.Zone) + "/os/" + fmt.Sprint(req.OsID) + "",
+		Headers: http.Header{},
+	}
+
+	var resp Os
+
+	err = s.client.Do(scwReq, &resp, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &resp, nil
 }

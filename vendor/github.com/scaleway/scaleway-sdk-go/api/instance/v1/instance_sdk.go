@@ -1438,7 +1438,7 @@ func (r *ListServersResponse) UnsafeGetTotalCount() uint32 {
 
 // UnsafeAppend should not be used
 // Internal usage only
-func (r *ListServersResponse) UnsafeAppend(res interface{}) (uint32, scw.SdkError) {
+func (r *ListServersResponse) UnsafeAppend(res interface{}) (uint32, error) {
 	results, ok := res.(*ListServersResponse)
 	if !ok {
 		return 0, errors.New("%T type cannot be appended to type %T", res, r)
@@ -1706,15 +1706,15 @@ func (s *API) setServer(req *setServerRequest, opts ...scw.RequestOption) (*setS
 
 type UpdateServerRequest struct {
 	Zone scw.Zone `json:"-"`
-
+	// ServerID uUID of the server
 	ServerID string `json:"-"`
-
+	// Name name of the server
 	Name *string `json:"name,omitempty"`
 	// BootType
 	//
 	// Default value: local
 	BootType *BootType `json:"boot_type,omitempty"`
-
+	// Tags tags of the server
 	Tags *[]string `json:"tags,omitempty"`
 
 	Volumes *map[string]*VolumeTemplate `json:"volumes,omitempty"`
@@ -2010,7 +2010,7 @@ func (r *ListImagesResponse) UnsafeGetTotalCount() uint32 {
 
 // UnsafeAppend should not be used
 // Internal usage only
-func (r *ListImagesResponse) UnsafeAppend(res interface{}) (uint32, scw.SdkError) {
+func (r *ListImagesResponse) UnsafeAppend(res interface{}) (uint32, error) {
 	results, ok := res.(*ListImagesResponse)
 	if !ok {
 		return 0, errors.New("%T type cannot be appended to type %T", res, r)
@@ -2297,7 +2297,7 @@ func (r *ListSnapshotsResponse) UnsafeGetTotalCount() uint32 {
 
 // UnsafeAppend should not be used
 // Internal usage only
-func (r *ListSnapshotsResponse) UnsafeAppend(res interface{}) (uint32, scw.SdkError) {
+func (r *ListSnapshotsResponse) UnsafeAppend(res interface{}) (uint32, error) {
 	results, ok := res.(*ListSnapshotsResponse)
 	if !ok {
 		return 0, errors.New("%T type cannot be appended to type %T", res, r)
@@ -2310,9 +2310,9 @@ func (r *ListSnapshotsResponse) UnsafeAppend(res interface{}) (uint32, scw.SdkEr
 
 type CreateSnapshotRequest struct {
 	Zone scw.Zone `json:"-"`
-
+	// Name name of the snapshot
 	Name string `json:"name,omitempty"`
-
+	// VolumeID uUID of the volume
 	VolumeID string `json:"volume_id,omitempty"`
 
 	Organization string `json:"organization,omitempty"`
@@ -2575,7 +2575,7 @@ func (r *ListVolumesResponse) UnsafeGetTotalCount() uint32 {
 
 // UnsafeAppend should not be used
 // Internal usage only
-func (r *ListVolumesResponse) UnsafeAppend(res interface{}) (uint32, scw.SdkError) {
+func (r *ListVolumesResponse) UnsafeAppend(res interface{}) (uint32, error) {
 	results, ok := res.(*ListVolumesResponse)
 	if !ok {
 		return 0, errors.New("%T type cannot be appended to type %T", res, r)
@@ -2605,18 +2605,6 @@ type CreateVolumeRequest struct {
 
 	// Precisely one of BaseSnapshot, BaseVolume, Size must be set.
 	BaseSnapshot *string `json:"base_snapshot,omitempty"`
-}
-
-func (m *CreateVolumeRequest) GetFrom() From {
-	switch {
-	case m.Size != nil:
-		return FromSize{*m.Size}
-	case m.BaseVolume != nil:
-		return FromBaseVolume{*m.BaseVolume}
-	case m.BaseSnapshot != nil:
-		return FromBaseSnapshot{*m.BaseSnapshot}
-	}
-	return nil
 }
 
 // CreateVolume create volume
@@ -2737,14 +2725,16 @@ func (s *API) DeleteVolume(req *DeleteVolumeRequest, opts ...scw.RequestOption) 
 
 type ListSecurityGroupsRequest struct {
 	Zone scw.Zone `json:"-"`
-
-	Organization *string `json:"-"`
-
-	PerPage *uint32 `json:"-"`
-
-	Page *int32 `json:"-"`
-
+	// Name name of the security group
 	Name *string `json:"-"`
+	// Organization the security group organization ID
+	Organization *string `json:"-"`
+	// PerPage a positive integer lower or equal to 100 to select the number of items to display
+	//
+	// Default value: 20
+	PerPage *uint32 `json:"-"`
+	// Page a positive integer to choose the page to display
+	Page *int32 `json:"-"`
 }
 
 // ListSecurityGroups list security groups
@@ -2764,10 +2754,10 @@ func (s *API) ListSecurityGroups(req *ListSecurityGroupsRequest, opts ...scw.Req
 	}
 
 	query := url.Values{}
+	parameter.AddToQuery(query, "name", req.Name)
 	parameter.AddToQuery(query, "organization", req.Organization)
 	parameter.AddToQuery(query, "per_page", req.PerPage)
 	parameter.AddToQuery(query, "page", req.Page)
-	parameter.AddToQuery(query, "name", req.Name)
 
 	if fmt.Sprint(req.Zone) == "" {
 		return nil, errors.New("field Zone cannot be empty in request")
@@ -2797,7 +2787,7 @@ func (r *ListSecurityGroupsResponse) UnsafeGetTotalCount() uint32 {
 
 // UnsafeAppend should not be used
 // Internal usage only
-func (r *ListSecurityGroupsResponse) UnsafeAppend(res interface{}) (uint32, scw.SdkError) {
+func (r *ListSecurityGroupsResponse) UnsafeAppend(res interface{}) (uint32, error) {
 	results, ok := res.(*ListSecurityGroupsResponse)
 	if !ok {
 		return 0, errors.New("%T type cannot be appended to type %T", res, r)
@@ -2810,7 +2800,7 @@ func (r *ListSecurityGroupsResponse) UnsafeAppend(res interface{}) (uint32, scw.
 
 type CreateSecurityGroupRequest struct {
 	Zone scw.Zone `json:"-"`
-
+	// Name name of the security group
 	Name string `json:"name,omitempty"`
 
 	Description string `json:"description,omitempty"`
@@ -3030,11 +3020,13 @@ func (s *API) setSecurityGroup(req *setSecurityGroupRequest, opts ...scw.Request
 
 type ListSecurityGroupRulesRequest struct {
 	Zone scw.Zone `json:"-"`
-
+	// SecurityGroupID uUID of the security group
 	SecurityGroupID string `json:"-"`
-
+	// PerPage a positive integer lower or equal to 100 to select the number of items to display
+	//
+	// Default value: 20
 	PerPage *uint32 `json:"-"`
-
+	// Page a positive integer to choose the page to display
 	Page *int32 `json:"-"`
 }
 
@@ -3088,7 +3080,7 @@ func (r *ListSecurityGroupRulesResponse) UnsafeGetTotalCount() uint32 {
 
 // UnsafeAppend should not be used
 // Internal usage only
-func (r *ListSecurityGroupRulesResponse) UnsafeAppend(res interface{}) (uint32, scw.SdkError) {
+func (r *ListSecurityGroupRulesResponse) UnsafeAppend(res interface{}) (uint32, error) {
 	results, ok := res.(*ListSecurityGroupRulesResponse)
 	if !ok {
 		return 0, errors.New("%T type cannot be appended to type %T", res, r)
@@ -3101,7 +3093,7 @@ func (r *ListSecurityGroupRulesResponse) UnsafeAppend(res interface{}) (uint32, 
 
 type CreateSecurityGroupRuleRequest struct {
 	Zone scw.Zone `json:"-"`
-
+	// SecurityGroupID uUID of the security group
 	SecurityGroupID string `json:"-"`
 	// Protocol
 	//
@@ -3391,7 +3383,7 @@ func (r *ListPlacementGroupsResponse) UnsafeGetTotalCount() uint32 {
 
 // UnsafeAppend should not be used
 // Internal usage only
-func (r *ListPlacementGroupsResponse) UnsafeAppend(res interface{}) (uint32, scw.SdkError) {
+func (r *ListPlacementGroupsResponse) UnsafeAppend(res interface{}) (uint32, error) {
 	results, ok := res.(*ListPlacementGroupsResponse)
 	if !ok {
 		return 0, errors.New("%T type cannot be appended to type %T", res, r)
@@ -3404,7 +3396,7 @@ func (r *ListPlacementGroupsResponse) UnsafeAppend(res interface{}) (uint32, scw
 
 type CreatePlacementGroupRequest struct {
 	Zone scw.Zone `json:"-"`
-
+	// Name name of the placement group
 	Name string `json:"name,omitempty"`
 
 	Organization string `json:"organization,omitempty"`
@@ -3566,9 +3558,9 @@ func (s *API) SetPlacementGroup(req *SetPlacementGroupRequest, opts ...scw.Reque
 
 type UpdatePlacementGroupRequest struct {
 	Zone scw.Zone `json:"-"`
-
+	// PlacementGroupID uUID of the placement group
 	PlacementGroupID string `json:"-"`
-
+	// Name name of the placement group
 	Name *string `json:"name,omitempty"`
 
 	Organization *string `json:"organization,omitempty"`
@@ -3748,7 +3740,7 @@ func (s *API) SetPlacementGroupServers(req *SetPlacementGroupServersRequest, opt
 
 type UpdatePlacementGroupServersRequest struct {
 	Zone scw.Zone `json:"-"`
-
+	// PlacementGroupID uUID of the placement group
 	PlacementGroupID string `json:"-"`
 
 	Servers []string `json:"servers,omitempty"`
@@ -3795,13 +3787,15 @@ func (s *API) UpdatePlacementGroupServers(req *UpdatePlacementGroupServersReques
 
 type ListIPsRequest struct {
 	Zone scw.Zone `json:"-"`
-
+	// Organization the organization ID the IPs are reserved in
 	Organization *string `json:"-"`
-
+	// Name filter on the IP address (Works as a LIKE operation on the IP address)
 	Name *string `json:"-"`
-
+	// PerPage a positive integer lower or equal to 100 to select the number of items to display
+	//
+	// Default value: 20
 	PerPage *uint32 `json:"-"`
-
+	// Page a positive integer to choose the page to display
 	Page *int32 `json:"-"`
 }
 
@@ -3853,7 +3847,7 @@ func (r *ListIPsResponse) UnsafeGetTotalCount() uint32 {
 
 // UnsafeAppend should not be used
 // Internal usage only
-func (r *ListIPsResponse) UnsafeAppend(res interface{}) (uint32, scw.SdkError) {
+func (r *ListIPsResponse) UnsafeAppend(res interface{}) (uint32, error) {
 	results, ok := res.(*ListIPsResponse)
 	if !ok {
 		return 0, errors.New("%T type cannot be appended to type %T", res, r)
@@ -3866,9 +3860,9 @@ func (r *ListIPsResponse) UnsafeAppend(res interface{}) (uint32, scw.SdkError) {
 
 type CreateIPRequest struct {
 	Zone scw.Zone `json:"-"`
-
+	// Organization the organization ID the IP is reserved in
 	Organization string `json:"organization,omitempty"`
-
+	// Server uUID of the server you want to attach the IP to
 	Server *string `json:"server,omitempty"`
 }
 
@@ -4009,7 +4003,7 @@ type updateIPRequest struct {
 	Zone scw.Zone `json:"-"`
 	// IP iP ID or IP address
 	IP string `json:"-"`
-
+	// Reverse reverse domain name
 	Reverse *NullableStringValue `json:"reverse,omitempty"`
 
 	Server *NullableStringValue `json:"server,omitempty"`
@@ -4054,8 +4048,8 @@ func (s *API) updateIP(req *updateIPRequest, opts ...scw.RequestOption) (*Update
 
 type DeleteIPRequest struct {
 	Zone scw.Zone `json:"-"`
-
-	IPID string `json:"-"`
+	// IP the ID or the address of the IP to delete
+	IP string `json:"-"`
 }
 
 // DeleteIP delete IP
@@ -4073,13 +4067,13 @@ func (s *API) DeleteIP(req *DeleteIPRequest, opts ...scw.RequestOption) error {
 		return errors.New("field Zone cannot be empty in request")
 	}
 
-	if fmt.Sprint(req.IPID) == "" {
-		return errors.New("field IPID cannot be empty in request")
+	if fmt.Sprint(req.IP) == "" {
+		return errors.New("field IP cannot be empty in request")
 	}
 
 	scwReq := &scw.ScalewayRequest{
 		Method:  "DELETE",
-		Path:    "/instance/v1/zones/" + fmt.Sprint(req.Zone) + "/ips/" + fmt.Sprint(req.IPID) + "",
+		Path:    "/instance/v1/zones/" + fmt.Sprint(req.Zone) + "/ips/" + fmt.Sprint(req.IP) + "",
 		Headers: http.Header{},
 	}
 
@@ -4156,7 +4150,7 @@ func (r *ListBootscriptsResponse) UnsafeGetTotalCount() uint32 {
 
 // UnsafeAppend should not be used
 // Internal usage only
-func (r *ListBootscriptsResponse) UnsafeAppend(res interface{}) (uint32, scw.SdkError) {
+func (r *ListBootscriptsResponse) UnsafeAppend(res interface{}) (uint32, error) {
 	results, ok := res.(*ListBootscriptsResponse)
 	if !ok {
 		return 0, errors.New("%T type cannot be appended to type %T", res, r)
@@ -4242,29 +4236,4 @@ func (s *API) GetDashboard(req *GetDashboardRequest, opts ...scw.RequestOption) 
 		return nil, err
 	}
 	return &resp, nil
-}
-
-type From interface {
-	isFrom()
-}
-
-type FromSize struct {
-	Value scw.Size
-}
-
-func (FromSize) isFrom() {
-}
-
-type FromBaseVolume struct {
-	Value string
-}
-
-func (FromBaseVolume) isFrom() {
-}
-
-type FromBaseSnapshot struct {
-	Value string
-}
-
-func (FromBaseSnapshot) isFrom() {
 }
