@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	k8s "github.com/scaleway/scaleway-sdk-go/api/k8s/v1beta3"
+	k8s "github.com/scaleway/scaleway-sdk-go/api/k8s/v1beta4"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 )
 
@@ -99,4 +99,13 @@ func clusterAutoscalerConfigFlatten(cluster *k8s.Cluster) map[string]interface{}
 	autoscalerConfig["expendable_pods_priority_cutoff"] = cluster.AutoscalerConfig.ExpendablePodsPriorityCutoff
 
 	return autoscalerConfig
+}
+
+func clusterAutoUpgradeFlatten(cluster *k8s.Cluster) map[string]interface{} {
+	autoUpgrade := map[string]interface{}{}
+	autoUpgrade["enable"] = cluster.AutoUpgrade.Enabled
+	autoUpgrade["maintenance_window_start_hour"] = cluster.AutoUpgrade.MaintenanceWindow.StartHour
+	autoUpgrade["maintenance_window_day"] = cluster.AutoUpgrade.MaintenanceWindow.Day
+
+	return autoUpgrade
 }

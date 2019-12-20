@@ -2,7 +2,8 @@ package scaleway
 
 import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	k8s "github.com/scaleway/scaleway-sdk-go/api/k8s/v1beta3"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
+	k8s "github.com/scaleway/scaleway-sdk-go/api/k8s/v1beta4"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 )
 
@@ -67,9 +68,14 @@ func resourceScalewayK8SPoolBeta() *schema.Resource {
 			"container_runtime": {
 				Type:        schema.TypeString,
 				Optional:    true,
-				Default:     "docker",
+				Default:     k8s.RuntimeDocker.String(),
 				ForceNew:    true,
 				Description: "Container runtime for the pool",
+				ValidateFunc: validation.StringInSlice([]string{
+					k8s.RuntimeDocker.String(),
+					k8s.RuntimeContainerd.String(),
+					k8s.RuntimeCrio.String(),
+				}, false),
 			},
 			"placement_group_id": {
 				Type:        schema.TypeString,
@@ -134,7 +140,7 @@ func resourceScalewayK8SPoolBetaCreate(d *schema.ResourceData, m interface{}) er
 	}
 
 	if containerRuntime, ok := d.GetOk("container_runtime"); ok {
-		req.ContainerRuntime = scw.StringPtr(containerRuntime.(string))
+		req.ContainerRuntime = k8s.Runtime(containerRuntime.(string))
 	}
 
 	res, err := k8sAPI.CreatePool(req)

@@ -6,7 +6,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
-	k8s "github.com/scaleway/scaleway-sdk-go/api/k8s/v1beta3"
+	k8s "github.com/scaleway/scaleway-sdk-go/api/k8s/v1beta4"
 )
 
 func TestAccScalewayK8SClusterBetaMinimal(t *testing.T) {
@@ -152,7 +152,7 @@ func TestAccScalewayK8SClusterBetaAutoscaling(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_k8s_cluster_beta.autoscaler", "autoscaler_config.0.disable_scale_down", "true"),
 					resource.TestCheckResourceAttr("scaleway_k8s_cluster_beta.autoscaler", "autoscaler_config.0.scale_down_delay_after_add", "20m"),
 					resource.TestCheckResourceAttr("scaleway_k8s_cluster_beta.autoscaler", "autoscaler_config.0.estimator", "binpacking"),
-					resource.TestCheckResourceAttr("scaleway_k8s_cluster_beta.autoscaler", "autoscaler_config.0.expander", "most-pods"),
+					resource.TestCheckResourceAttr("scaleway_k8s_cluster_beta.autoscaler", "autoscaler_config.0.expander", "most_pods"),
 					resource.TestCheckResourceAttr("scaleway_k8s_cluster_beta.autoscaler", "autoscaler_config.0.ignore_daemonsets_utilization", "true"),
 					resource.TestCheckResourceAttr("scaleway_k8s_cluster_beta.autoscaler", "autoscaler_config.0.balance_similar_node_groups", "true"),
 					resource.TestCheckResourceAttr("scaleway_k8s_cluster_beta.autoscaler", "autoscaler_config.0.expendable_pods_priority_cutoff", "0"),
@@ -243,6 +243,25 @@ func TestAccScalewayK8SClusterBetaDefaultPoolRecreate(t *testing.T) {
 				Config: testAccCheckScalewayK8SClusterBetaDefaultPoolRecreate("gp1_s"),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("scaleway_k8s_cluster_beta.recreate_pool", "default_pool.0.node_type", "gp1_s"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccScalewayK8SClusterBetaAutoUpgrade(t *testing.T) {
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckScalewayK8SClusterBetaDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckScalewayK8SClusterBetaAutoUpgrade(),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayK8SClusterBetaExists("scaleway_k8s_cluster_beta.auto_upgrade"),
+					resource.TestCheckResourceAttr("scaleway_k8s_cluster_beta.auto_upgrade", "auto_upgrade.0.enable", "true"),
+					resource.TestCheckResourceAttr("scaleway_k8s_cluster_beta.auto_upgrade", "auto_upgrade.0.maintenance_window_day", "tuesday"),
+					resource.TestCheckResourceAttr("scaleway_k8s_cluster_beta.auto_upgrade", "auto_upgrade.0.maintenance_window_start_hour", "3"),
 				),
 			},
 		},
@@ -346,7 +365,7 @@ resource "scaleway_k8s_cluster_beta" "autoscaler" {
 		disable_scale_down = true
 		scale_down_delay_after_add = "20m"
 		estimator = "binpacking"
-		expander = "most-pods"
+		expander = "most_pods"
 		ignore_daemonsets_utilization = true
 		balance_similar_node_groups = true
 		expendable_pods_priority_cutoff = 0
@@ -407,4 +426,23 @@ resource "scaleway_k8s_cluster_beta" "recreate_pool" {
 	}
 	tags = [ "terraform-test", "scaleway_k8s_cluster_beta", "recreate-pool" ]
 }`, nodeType)
+}
+
+func testAccCheckScalewayK8SClusterBetaAutoUpgrade() string {
+	return `
+resource "scaleway_k8s_cluster_beta" "auto_upgrade" {
+	cni = "calico"
+	version = "1.17.0"
+	name = "default-pool"
+	default_pool {
+		node_type = "gp1_xs"
+		size = 1
+	}
+	auto_upgrade {
+	    enable = true
+		maintenance_window_start_hour = 3
+		maintenance_window_day = "tuesday"
+	}
+	tags = [ "terraform-test", "scaleway_k8s_cluster_beta", "auto_upgrade" ]
+}`
 }
