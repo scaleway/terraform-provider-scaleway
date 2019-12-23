@@ -28,6 +28,7 @@ resource "scaleway_instance_server" "web" {
 ```hcl
 resource "scaleway_instance_volume" "data" {
   size_in_gb = 100
+  type = "b_ssd"
 }
 
 resource "scaleway_instance_server" "web" {
