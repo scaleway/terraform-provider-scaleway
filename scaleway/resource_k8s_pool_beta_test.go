@@ -6,7 +6,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
-	k8s "github.com/scaleway/scaleway-sdk-go/api/k8s/v1beta3"
+	k8s "github.com/scaleway/scaleway-sdk-go/api/k8s/v1beta4"
 )
 
 func TestAccScalewayK8SClusterPoolMinimal(t *testing.T) {

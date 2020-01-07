@@ -95,7 +95,7 @@ func resourceScalewayInstanceIPDelete(d *schema.ResourceData, m interface{}) err
 	}
 
 	err = instanceAPI.DeleteIP(&instance.DeleteIPRequest{
-		IPID: ID,
+		IP:   ID,
 		Zone: zone,
 	})
 

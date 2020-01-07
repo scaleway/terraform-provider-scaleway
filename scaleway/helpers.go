@@ -640,6 +640,19 @@ func validateDuration() schema.SchemaValidateFunc {
 	}
 }
 
+func validateHour() schema.SchemaValidateFunc {
+	return func(i interface{}, s string) (strings []string, errors []error) {
+		integer, isInteger := i.(int)
+		if !isInteger {
+			return nil, []error{fmt.Errorf("%v is not an int", i)}
+		}
+		if integer < 0 || integer > 23 {
+			return nil, []error{fmt.Errorf("int is outside range 0-23 for value %d", integer)}
+		}
+		return nil, nil
+	}
+}
+
 func diffSuppressFuncIgnoreCase(k, old, new string, d *schema.ResourceData) bool {
 	if strings.ToLower(old) == strings.ToLower(new) {
 		return true

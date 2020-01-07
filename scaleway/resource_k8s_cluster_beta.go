@@ -4,7 +4,8 @@ import (
 	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	k8s "github.com/scaleway/scaleway-sdk-go/api/k8s/v1beta3"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
+	k8s "github.com/scaleway/scaleway-sdk-go/api/k8s/v1beta4"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 )
 
@@ -43,6 +44,12 @@ func resourceScalewayK8SClusterBeta() *schema.Resource {
 				Required:    true,
 				ForceNew:    true,
 				Description: "The CNI plugin of the cluster",
+				ValidateFunc: validation.StringInSlice([]string{
+					k8s.CNICilium.String(),
+					k8s.CNICalico.String(),
+					k8s.CNIFlannel.String(),
+					k8s.CNIWeave.String(),
+				}, false),
 			},
 			"enable_dashboard": {
 				Type:        schema.TypeBool,
@@ -53,8 +60,13 @@ func resourceScalewayK8SClusterBeta() *schema.Resource {
 			"ingress": {
 				Type:        schema.TypeString,
 				Optional:    true,
-				Default:     "none",
+				Default:     k8s.IngressNone.String(),
 				Description: "The ingress to be deployed on the cluster",
+				ValidateFunc: validation.StringInSlice([]string{
+					k8s.IngressNone.String(),
+					k8s.IngressTraefik.String(),
+					k8s.IngressNginx.String(),
+				}, false),
 			},
 			"tags": {
 				Type: schema.TypeList,
@@ -71,6 +83,43 @@ func resourceScalewayK8SClusterBeta() *schema.Resource {
 				Computed:    true,
 				Description: "The autoscaler configuration for the cluster",
 				Elem:        autoscalerConfigSchema(),
+			},
+			"auto_upgrade": {
+				Type:        schema.TypeList,
+				MaxItems:    1,
+				Optional:    true,
+				Computed:    true,
+				Description: "The auto upgrade configuration for the cluster",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"enable": {
+							Type:        schema.TypeBool,
+							Required:    true,
+							Description: "Enables the Kubernetes patch version auto upgrade",
+						},
+						"maintenance_window_start_hour": {
+							Type:         schema.TypeInt,
+							Required:     true,
+							Description:  "Start hour of the 2-hour maintenance window",
+							ValidateFunc: validateHour(),
+						},
+						"maintenance_window_day": {
+							Type:        schema.TypeString,
+							Required:    true,
+							Description: "Day of the maintenance window",
+							ValidateFunc: validation.StringInSlice([]string{
+								k8s.MaintenanceWindowDayOfTheWeekAny.String(),
+								k8s.MaintenanceWindowDayOfTheWeekMonday.String(),
+								k8s.MaintenanceWindowDayOfTheWeekTuesday.String(),
+								k8s.MaintenanceWindowDayOfTheWeekWednesday.String(),
+								k8s.MaintenanceWindowDayOfTheWeekThursday.String(),
+								k8s.MaintenanceWindowDayOfTheWeekFriday.String(),
+								k8s.MaintenanceWindowDayOfTheWeekSaturday.String(),
+								k8s.MaintenanceWindowDayOfTheWeekSunday.String(),
+							}, false),
+						},
+					},
+				},
 			},
 			"default_pool": {
 				Type:        schema.TypeList,
@@ -124,8 +173,13 @@ func resourceScalewayK8SClusterBeta() *schema.Resource {
 						"container_runtime": {
 							Type:        schema.TypeString,
 							Optional:    true,
-							Default:     "docker",
+							Default:     k8s.RuntimeDocker.String(),
 							Description: "Container runtime for the default pool",
+							ValidateFunc: validation.StringInSlice([]string{
+								k8s.RuntimeDocker.String(),
+								k8s.RuntimeContainerd.String(),
+								k8s.RuntimeCrio.String(),
+							}, false),
 						},
 						// Computed elements
 						"pool_id": {
@@ -204,6 +258,11 @@ func resourceScalewayK8SClusterBeta() *schema.Resource {
 					},
 				},
 			},
+			"upgrade_available": {
+				Type:        schema.TypeBool,
+				Computed:    true,
+				Description: "True if an upgrade is available",
+			},
 			"status": {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -239,7 +298,7 @@ func resourceScalewayK8SClusterBetaCreate(d *schema.ResourceData, m interface{})
 		Name:           expandOrGenerateString(d.Get("name"), "cluster"),
 		Description:    description.(string),
 		Version:        version.(string),
-		Cni:            d.Get("cni").(string),
+		Cni:            k8s.CNI(d.Get("cni").(string)),
 		Tags:           expandStrings(d.Get("tags")),
 	}
 
@@ -248,7 +307,7 @@ func resourceScalewayK8SClusterBetaCreate(d *schema.ResourceData, m interface{})
 	}
 
 	if ingress, ok := d.GetOk("ingress"); ok {
-		req.Ingress = ingress.(string)
+		req.Ingress = k8s.Ingress(ingress.(string))
 	}
 
 	autoscalerReq := &k8s.CreateClusterRequestAutoscalerConfig{}
@@ -262,11 +321,11 @@ func resourceScalewayK8SClusterBetaCreate(d *schema.ResourceData, m interface{})
 	}
 
 	if estimator, ok := d.GetOk("autoscaler_config.0.estimator"); ok {
-		autoscalerReq.Estimator = scw.StringPtr(estimator.(string))
+		autoscalerReq.Estimator = k8s.AutoscalerEstimator(estimator.(string))
 	}
 
 	if expander, ok := d.GetOk("autoscaler_config.0.expander"); ok {
-		autoscalerReq.Expander = scw.StringPtr(expander.(string))
+		autoscalerReq.Expander = k8s.AutoscalerExpander(expander.(string))
 	}
 
 	if ignoreDaemonsetsUtilization, ok := d.GetOk("autoscaler_config.0.ignore_daemonsets_utilization"); ok {
@@ -280,6 +339,27 @@ func resourceScalewayK8SClusterBetaCreate(d *schema.ResourceData, m interface{})
 	autoscalerReq.ExpendablePodsPriorityCutoff = scw.Int32Ptr(int32(d.Get("autoscaler_config.0.expendable_pods_priority_cutoff").(int)))
 
 	req.AutoscalerConfig = autoscalerReq
+
+	autoUpgradeEnable, okAutoUpgradeEnable := d.GetOk("auto_upgrade.0.enable")
+	autoUpgradeStartHour, okAutoUpgradeStartHour := d.GetOk("auto_upgrade.0.maintenance_window_start_hour")
+	autoUpgradeDay, okAutoUpgradeDay := d.GetOk("auto_upgrade.0.maintenance_window_day")
+
+	// check if either all or none of the auto upgrade attribute are set.
+	// if one auto upgrade attribute is set, they all must be set.
+	// if none is set, auto upgrade attributes will be computed.
+	if okAutoUpgradeEnable == okAutoUpgradeDay && okAutoUpgradeEnable == okAutoUpgradeStartHour {
+		return fmt.Errorf("all field or zero field of auto_upgrade must be set")
+	}
+
+	if okAutoUpgradeDay && okAutoUpgradeEnable && okAutoUpgradeStartHour {
+		req.AutoUpgrade = &k8s.CreateClusterRequestAutoUpgrade{
+			Enable: autoUpgradeEnable.(bool),
+			MaintenanceWindow: &k8s.MaintenanceWindow{
+				StartHour: uint32(autoUpgradeStartHour.(int)),
+				Day:       k8s.MaintenanceWindowDayOfTheWeek(autoUpgradeDay.(string)),
+			},
+		}
+	}
 
 	defaultPoolReq := &k8s.CreateClusterRequestDefaultPoolConfig{
 		NodeType:    d.Get("default_pool.0.node_type").(string),
@@ -301,7 +381,7 @@ func resourceScalewayK8SClusterBetaCreate(d *schema.ResourceData, m interface{})
 	}
 
 	if containerRuntime, ok := d.GetOk("default_pool.0.container_runtime"); ok {
-		defaultPoolReq.ContainerRuntime = scw.StringPtr(containerRuntime.(string))
+		defaultPoolReq.ContainerRuntime = k8s.Runtime(containerRuntime.(string))
 	}
 
 	req.DefaultPoolConfig = defaultPoolReq
@@ -416,9 +496,11 @@ func resourceScalewayK8SClusterBetaRead(d *schema.ResourceData, m interface{}) e
 	d.Set("apiserver_url", response.ClusterURL)
 	d.Set("wildcard_dns", response.DNSWildcard)
 	d.Set("status", response.Status.String())
+	d.Set("upgrade_available", response.UpgradeAvailable)
 
 	// autoscaler_config
-	d.Set("autoscaler_config", []map[string]interface{}{clusterAutoscalerConfigFlatten(response)})
+	d.Set("autoscaler_config", clusterAutoscalerConfigFlatten(response))
+	d.Set("auto_upgrade", clusterAutoUpgradeFlatten(response))
 
 	// default_pool_config
 	err = resourceScalewayK8SClusterBetaDefaultPoolRead(d, m)
@@ -543,7 +625,7 @@ func resourceScalewayK8SClusterBetaDefaultPoolUpdate(d *schema.ResourceData, m i
 			}
 
 			if containerRuntime, ok := d.GetOk("default_pool.0.container_runtime"); ok {
-				defaultPoolRequest.ContainerRuntime = scw.StringPtr(containerRuntime.(string))
+				defaultPoolRequest.ContainerRuntime = k8s.Runtime(containerRuntime.(string))
 			}
 
 			defaultPoolRes, err := k8sAPI.CreatePool(defaultPoolRequest)
@@ -616,11 +698,24 @@ func resourceScalewayK8SClusterBetaUpdate(d *schema.ResourceData, m interface{})
 	}
 
 	if d.HasChange("ingress") {
-		updateRequest.Ingress = scw.StringPtr(d.Get("ingress").(string))
+		updateRequest.Ingress = k8s.Ingress(d.Get("ingress").(string))
 	}
 
 	if d.HasChange("enable_dashboard") {
 		updateRequest.EnableDashboard = scw.BoolPtr(d.Get("enable_dashboard").(bool))
+	}
+
+	updateRequest.AutoUpgrade = &k8s.UpdateClusterRequestAutoUpgrade{}
+
+	if d.HasChange("auto_upgrade.0.enable") {
+		updateRequest.AutoUpgrade.Enable = scw.BoolPtr(d.Get("auto_upgrade.0.enable").(bool))
+	}
+	updateRequest.AutoUpgrade.MaintenanceWindow = &k8s.MaintenanceWindow{}
+	if d.HasChange("auto_upgrade.0.maintenance_window_start_hour") {
+		updateRequest.AutoUpgrade.MaintenanceWindow.StartHour = uint32(d.Get("auto_upgrade.0.maintenance_window_start_hour").(int))
+	}
+	if d.HasChange("auto_upgrade.0.maintenance_window_day") {
+		updateRequest.AutoUpgrade.MaintenanceWindow.Day = k8s.MaintenanceWindowDayOfTheWeek(d.Get("auto_upgrade.0.maintenance_window_day").(string))
 	}
 
 	////
@@ -711,14 +806,24 @@ func autoscalerConfigSchema() *schema.Resource {
 			"estimator": {
 				Type:        schema.TypeString,
 				Optional:    true,
-				Default:     "binpacking",
+				Default:     k8s.AutoscalerEstimatorBinpacking.String(),
 				Description: "Type of resource estimator to be used in scale up",
+				ValidateFunc: validation.StringInSlice([]string{
+					k8s.AutoscalerEstimatorBinpacking.String(),
+					k8s.AutoscalerEstimatorOldbinpacking.String(),
+				}, false),
 			},
 			"expander": {
 				Type:        schema.TypeString,
 				Optional:    true,
-				Default:     "random",
+				Default:     k8s.AutoscalerExpanderRandom.String(),
 				Description: "Type of node group expander to be used in scale up",
+				ValidateFunc: validation.StringInSlice([]string{
+					k8s.AutoscalerExpanderRandom.String(),
+					k8s.AutoscalerExpanderLeastWaste.String(),
+					k8s.AutoscalerExpanderMostPods.String(),
+					k8s.AutoscalerExpanderPriority.String(),
+				}, false),
 			},
 			"ignore_daemonsets_utilization": {
 				Type:        schema.TypeBool,

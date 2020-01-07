@@ -118,6 +118,14 @@ The following arguments are supported:
 
   - `expendable_pods_priority_cutoff` - (Defaults to `-10`) Pods with priority below cutoff will be expendable. They can be killed without any consideration during scale down and they don't cause scale up. Pods with null priority (PodPriority disabled) are non expendable.
 
+- `auto_upgrade` - (Optional) The auto upgrade configuration.
+
+  - `enable` - (Optional) Set to `true` to enable Kubernetes patch version auto upgrades.
+
+  - `maintenance_window_start_hour` - (Optional) The start hour (UTC) of the 2-hour auto upgrade maintenance window (0 to 23).
+
+  - `maintenance_window_day` - (Optional) The day of the auto upgrade maintenance window (`monday` to `sunday`, or `any`).
+
 - `default_pool` - (Required) The cluster's default pool configuration.
   
   - `node_type` - (Required)  The commercial type of the default pool instances.
@@ -164,6 +172,7 @@ In addition to all above arguments, the following attributes are exported:
   - `pool_id` - The ID of the default pool.
   - `created_at` - The creation date of the default pool.
   - `updated_at` - The last update date of the default pool.
+- `upgrade_available` - Set to `true` if a newer Kubernetes version is available.
 
 ## Import
 
