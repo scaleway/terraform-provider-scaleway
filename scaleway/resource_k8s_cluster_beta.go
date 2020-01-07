@@ -98,9 +98,10 @@ func resourceScalewayK8SClusterBeta() *schema.Resource {
 							Description: "Enables the Kubernetes patch version auto upgrade",
 						},
 						"maintenance_window_start_hour": {
-							Type:        schema.TypeInt,
-							Required:    true,
-							Description: "Start hour of the 2-hour maintenance window",
+							Type:         schema.TypeInt,
+							Required:     true,
+							Description:  "Start hour of the 2-hour maintenance window",
+							ValidateFunc: validateHour(),
 						},
 						"maintenance_window_day": {
 							Type:        schema.TypeString,
@@ -346,12 +347,11 @@ func resourceScalewayK8SClusterBetaCreate(d *schema.ResourceData, m interface{})
 	// check if either all or none of the auto upgrade attribute are set.
 	// if one auto upgrade attribute is set, they all must be set.
 	// if none is set, auto upgrade attributes will be computed.
-	// We either want all true (all set) or all false (none set), so they must be equal
-	if okAutoUpgradeDay == okAutoUpgradeEnable && okAutoUpgradeEnable == okAutoUpgradeStartHour {
+	if okAutoUpgradeEnable == okAutoUpgradeDay && okAutoUpgradeEnable == okAutoUpgradeStartHour {
 		return fmt.Errorf("all field or zero field of auto_upgrade must be set")
 	}
 
-	if okAutoUpgradeDay && okAutoUpgradeEnable && okAutoUpgradeStartHour == true {
+	if okAutoUpgradeDay && okAutoUpgradeEnable && okAutoUpgradeStartHour {
 		req.AutoUpgrade = &k8s.CreateClusterRequestAutoUpgrade{
 			Enable: autoUpgradeEnable.(bool),
 			MaintenanceWindow: &k8s.MaintenanceWindow{
