@@ -43,6 +43,29 @@ func flattenLbBackendMarkdownAction(action lb.OnMarkedDownAction) interface{} {
 	return action.String()
 }
 
+func expandAclAction(raw interface{}) *lb.ACLAction {
+	if raw == nil || len(raw.([]interface{})) != 1 {
+		return nil
+	}
+	rawMap := raw.([]interface{})[0].(map[string]interface{})
+	return &lb.ACLAction{
+		Type: lb.ACLActionType(rawMap["type"].(string)),
+	}
+}
+
+func expandAclMatch(raw interface{}) *lb.ACLMatch {
+	if raw == nil || len(raw.([]interface{})) != 1 {
+		return nil
+	}
+	rawMap := raw.([]interface{})[0].(map[string]interface{})
+	return &lb.ACLMatch{
+		IPSubnet:        expandStringsPtr(rawMap["ip_subnet"].([]interface{})),
+		HTTPFilter:      lb.ACLHTTPFilter(rawMap["http_filter"].(string)),
+		HTTPFilterValue: expandStringsPtr(rawMap["http_filter_value"].([]interface{})),
+		Invert:          rawMap["invert"].(bool),
+	}
+}
+
 func expandLbBackendMarkdownAction(raw interface{}) lb.OnMarkedDownAction {
 	if raw == "none" {
 		return lb.OnMarkedDownActionOnMarkedDownActionNone
