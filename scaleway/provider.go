@@ -198,7 +198,6 @@ func Provider() terraform.ResourceProvider {
 			"scaleway_instance_placement_group": resourceScalewayInstancePlacementGroup(),
 			"scaleway_k8s_cluster_beta":         resourceScalewayK8SClusterBeta(),
 			"scaleway_k8s_pool_beta":            resourceScalewayK8SPoolBeta(),
-			"scaleway_lb_acl_beta":              resourceScalewayLbAclBeta(),
 			"scaleway_lb_beta":                  resourceScalewayLbBeta(),
 			"scaleway_lb_backend_beta":          resourceScalewayLbBackendBeta(),
 			"scaleway_lb_frontend_beta":         resourceScalewayLbFrontendBeta(),

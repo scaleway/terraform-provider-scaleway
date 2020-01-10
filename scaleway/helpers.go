@@ -581,6 +581,14 @@ func flattenStringPtr(s *string) interface{} {
 	return *s
 }
 
+func flattenSliceStringPtr(s []*string) interface{} {
+	res := make([]interface{}, 0, len(s))
+	for _, strPtr := range s {
+		res = append(res, flattenStringPtr(strPtr))
+	}
+	return res
+}
+
 func expandStringPtr(data interface{}) *string {
 	if data == nil || data == "" {
 		return nil

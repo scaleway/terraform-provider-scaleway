@@ -26,7 +26,7 @@ func TestAccScalewayLbFrontendBeta(t *testing.T) {
 						forward_protocol = "tcp"
 						forward_port = 80
 					}
-
+			
 					resource scaleway_lb_frontend_beta frt01 {
 						lb_id = scaleway_lb_beta.lb01.id
 						backend_id = scaleway_lb_backend_beta.bkd01.id
@@ -63,6 +63,80 @@ func TestAccScalewayLbFrontendBeta(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_lb_frontend_beta.frt01", "name", "tf-test"),
 					resource.TestCheckResourceAttr("scaleway_lb_frontend_beta.frt01", "inbound_port", "443"),
 					resource.TestCheckResourceAttr("scaleway_lb_frontend_beta.frt01", "timeout_client", "30s"),
+				),
+			},
+			{
+				Config: `
+					resource scaleway_lb_beta lb01 {
+						name = "test-lb-acl"
+						type = "lb-s"
+					}
+					resource scaleway_lb_backend_beta bkd01 {
+						lb_id = scaleway_lb_beta.lb01.id
+						forward_protocol = "http"
+						forward_port = 80
+					}
+					resource scaleway_lb_frontend_beta frt01 {
+						lb_id = scaleway_lb_beta.lb01.id
+						backend_id = scaleway_lb_backend_beta.bkd01.id
+						name = "tf-test"
+						inbound_port = 80
+						timeout_client = "30s"
+						acl {
+							name = "test-acl"
+							action {
+								type = "allow"
+							}
+							match {
+								ip_subnet = ["192.168.0.1", "192.168.0.2", "192.168.10.0/24"]
+								http_filter = "acl_http_filter_none"
+								http_filter_value = ["criteria1","criteria2"]
+								invert = "true"
+							}
+						}
+						acl {
+							action {
+								type = "allow"
+							}
+							match {
+								http_filter = "path_begin"
+								http_filter_value = ["criteria1","criteria2"]
+								invert = "true"
+							}
+						}
+						acl {
+							action {
+								type = "allow"
+							}
+							match {
+								http_filter_value = ["criteria1","criteria2"]
+							}
+						}
+						acl {
+							action {
+								type = "allow"
+							}
+							match {
+								http_filter = "acl_http_filter_none"
+								http_filter_value = ["criteria1","criteria2"]
+							}
+						}
+						acl {
+							match {
+								ip_subnet = ["192.168.0.1", "192.168.0.2", "192.168.10.0/24"]
+								http_filter = "acl_http_filter_none"
+								http_filter_value = ["criteria1","criteria2"]
+								invert = "true"
+							}
+							action {
+								type = "deny"
+							}
+						}
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("scaleway_lb_frontend_beta.frt01", "acl.0.name", "test-acl"),
+					resource.TestCheckResourceAttr("scaleway_lb_frontend_beta.frt01", "acl.0.action.0.type", "allow"),
 				),
 			},
 		},
