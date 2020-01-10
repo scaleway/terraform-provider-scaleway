@@ -1046,6 +1046,10 @@ type UpdateClusterRequest struct {
 	Region scw.Region `json:"-"`
 	// ClusterID the ID of the cluster to update
 	ClusterID string `json:"-"`
+	// Name the new name of the cluster
+	//
+	// This field allows to update the external name of the cluster. The internal name (used for instance in hostname) won't change.
+	Name *string `json:"name"`
 	// Description the new description of the cluster
 	Description *string `json:"description"`
 	// Tags the new tags associated with the cluster

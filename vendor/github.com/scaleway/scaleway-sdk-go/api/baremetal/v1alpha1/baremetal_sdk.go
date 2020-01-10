@@ -144,6 +144,8 @@ const (
 	IPFailoverStatusError = IPFailoverStatus("error")
 	// IPFailoverStatusDeleting is [insert doc].
 	IPFailoverStatusDeleting = IPFailoverStatus("deleting")
+	// IPFailoverStatusLocked is [insert doc].
+	IPFailoverStatusLocked = IPFailoverStatus("locked")
 )
 
 func (enum IPFailoverStatus) String() string {

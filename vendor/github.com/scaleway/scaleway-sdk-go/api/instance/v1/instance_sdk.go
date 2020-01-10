@@ -599,25 +599,25 @@ func (enum *VolumeType) UnmarshalJSON(data []byte) error {
 
 // Bootscript bootscript
 type Bootscript struct {
-	// Bootcmdargs display the bootscript parameters
+	// Bootcmdargs the bootscript arguments
 	Bootcmdargs string `json:"bootcmdargs"`
 	// Default dispmay if the bootscript is the default bootscript if no other boot option is configured
 	Default bool `json:"default"`
 	// Dtb provide information regarding a Device Tree Binary (dtb) for use with C1 servers
 	Dtb string `json:"dtb"`
-	// ID display the bootscripts ID
+	// ID the bootscript ID
 	ID string `json:"id"`
-	// Initrd display the initrd (initial ramdisk) configuration
+	// Initrd the initrd (initial ramdisk) configuration
 	Initrd string `json:"initrd"`
-	// Kernel display the server kernel version
+	// Kernel the server kernel version
 	Kernel string `json:"kernel"`
-	// Organization display the bootscripts organization
+	// Organization the bootscript organization
 	Organization string `json:"organization"`
 	// Public provide information if the bootscript is public
 	Public bool `json:"public"`
-	// Title display the bootscripts title
+	// Title the bootscript title
 	Title string `json:"title"`
-	// Arch display the bootscripts arch
+	// Arch the bootscript arch
 	//
 	// Default value: x86_64
 	Arch Arch `json:"arch"`
@@ -847,11 +847,11 @@ type NullableStringValue struct {
 
 // PlacementGroup placement group
 type PlacementGroup struct {
-	// ID display placement group unique ID
+	// ID the placement group unique ID
 	ID string `json:"id"`
-	// Name display placement group name
+	// Name the placement group name
 	Name string `json:"name"`
-	// Organization display placement group organization
+	// Organization the placement group organization
 	Organization string `json:"organization"`
 	// PolicyMode select the failling mode when the placement cannot be  respected, either optional or enforced
 	//
@@ -875,29 +875,29 @@ type PlacementGroupServer struct {
 
 // SecurityGroup security group
 type SecurityGroup struct {
-	// ID display the security groups' unique ID
+	// ID the security groups' unique ID
 	ID string `json:"id"`
-	// Name display the security groups name
+	// Name the security groups name
 	Name string `json:"name"`
-	// Description display the security groups description
+	// Description the security groups description
 	Description string `json:"description"`
-	// EnableDefaultSecurity display if the security group is set as default
+	// EnableDefaultSecurity true if SMTP is blocked on IPv4 and IPv6
 	EnableDefaultSecurity bool `json:"enable_default_security"`
-	// InboundDefaultPolicy display the default inbound policy
+	// InboundDefaultPolicy the default inbound policy
 	//
 	// Default value: accept
 	InboundDefaultPolicy SecurityGroupPolicy `json:"inbound_default_policy"`
-	// OutboundDefaultPolicy display the default outbound policy
+	// OutboundDefaultPolicy the default outbound policy
 	//
 	// Default value: accept
 	OutboundDefaultPolicy SecurityGroupPolicy `json:"outbound_default_policy"`
-	// Organization display the security groups organization ID
+	// Organization the security groups organization ID
 	Organization string `json:"organization"`
-	// OrganizationDefault display if the security group is set as organization default
+	// OrganizationDefault true if it is your default security group for this organization
 	OrganizationDefault bool `json:"organization_default"`
-	// CreationDate display the security group creation date
+	// CreationDate the security group creation date
 	CreationDate time.Time `json:"creation_date"`
-	// ModificationDate display the security group modification date
+	// ModificationDate the security group modification date
 	ModificationDate time.Time `json:"modification_date"`
 	// Servers list of servers attached to this security group
 	Servers []*ServerSummary `json:"servers"`
@@ -945,63 +945,63 @@ type SecurityGroupTemplate struct {
 
 // Server server
 type Server struct {
-	// ID display the server unique ID
+	// ID the server unique ID
 	ID string `json:"id"`
-	// Name display the server name
+	// Name the server name
 	Name string `json:"name"`
-	// Organization display the server organization
+	// Organization the server organization
 	Organization string `json:"organization"`
 	// AllowedActions provide as list of allowed actions on the server
 	AllowedActions []ServerAction `json:"allowed_actions"`
-	// Tags display the server associated tags
+	// Tags the server associated tags
 	Tags []string `json:"tags"`
-	// CommercialType display the server commercial type (eg. GP1-M)
+	// CommercialType the server commercial type (eg. GP1-M)
 	CommercialType string `json:"commercial_type"`
-	// CreationDate display the server creation date
+	// CreationDate the server creation date
 	CreationDate time.Time `json:"creation_date"`
-	// DynamicIPRequired display if a dynamic IP is required
+	// DynamicIPRequired true if a dynamic IP is required
 	DynamicIPRequired bool `json:"dynamic_ip_required"`
-	// EnableIPv6 display if IPv6 is enabled
+	// EnableIPv6 true if IPv6 is enabled
 	EnableIPv6 bool `json:"enable_ipv6"`
-	// Hostname display the server host name
+	// Hostname the server host name
 	Hostname string `json:"hostname"`
 	// Image provide information on the server image
 	Image *Image `json:"image"`
-	// Protected display the server protection option is activated
+	// Protected the server protection option is activated
 	Protected bool `json:"protected"`
-	// PrivateIP display the server private IP address
+	// PrivateIP the server private IP address
 	PrivateIP *string `json:"private_ip"`
-	// PublicIP display information about the public IP
+	// PublicIP information about the public IP
 	PublicIP *ServerIP `json:"public_ip"`
-	// ModificationDate display the server modification date
+	// ModificationDate the server modification date
 	ModificationDate time.Time `json:"modification_date"`
-	// State display the server state
+	// State the server state
 	//
 	// Default value: running
 	State ServerState `json:"state"`
-	// Location display the server location
+	// Location the server location
 	Location *ServerLocation `json:"location"`
-	// IPv6 display the server IPv6 address
+	// IPv6 the server IPv6 address
 	IPv6 *ServerIPv6 `json:"ipv6"`
-	// Bootscript display the server bootscript
+	// Bootscript the server bootscript
 	Bootscript *Bootscript `json:"bootscript"`
-	// BootType display the server boot type
+	// BootType the server boot type
 	//
 	// Default value: local
 	BootType BootType `json:"boot_type"`
-	// Volumes display the server volumes
+	// Volumes the server volumes
 	Volumes map[string]*Volume `json:"volumes"`
-	// SecurityGroup display the server security group
+	// SecurityGroup the server security group
 	SecurityGroup *SecurityGroupSummary `json:"security_group"`
-	// Maintenances display the server planned maintenances
+	// Maintenances the server planned maintenances
 	Maintenances []*ServerMaintenance `json:"maintenances"`
-	// StateDetail display the server state_detail
+	// StateDetail the server state_detail
 	StateDetail string `json:"state_detail"`
-	// Arch display the server arch
+	// Arch the server arch
 	//
 	// Default value: x86_64
 	Arch Arch `json:"arch"`
-	// PlacementGroup display the server placement group
+	// PlacementGroup the server placement group
 	PlacementGroup *PlacementGroup `json:"placement_group"`
 }
 
@@ -1011,21 +1011,21 @@ type ServerActionResponse struct {
 
 // ServerIP server. ip
 type ServerIP struct {
-	// ID display the unique ID of the IP address
+	// ID the unique ID of the IP address
 	ID string `json:"id"`
-	// Address display the server public IPv4 IP-Address
+	// Address the server public IPv4 IP-Address
 	Address net.IP `json:"address"`
-	// Dynamic display information if the IP address will be considered as dynamic
+	// Dynamic true if the IP address is dynamic
 	Dynamic bool `json:"dynamic"`
 }
 
 // ServerIPv6 server. ipv6
 type ServerIPv6 struct {
-	// Address display the server IPv6 IP-Address
+	// Address the server IPv6 IP-Address
 	Address net.IP `json:"address"`
-	// Gateway display the IPv6 IP-addresses gateway
+	// Gateway the IPv6 IP-addresses gateway
 	Gateway net.IP `json:"gateway"`
-	// Netmask display the IPv6 IP-addresses CIDR netmask
+	// Netmask the IPv6 IP-addresses CIDR netmask
 	Netmask string `json:"netmask"`
 }
 
@@ -1146,13 +1146,13 @@ type Task struct {
 	ID string `json:"id"`
 	// Description the description of the task
 	Description string `json:"description"`
-	// Progress show the progress of the task in percent
+	// Progress the progress of the task in percent
 	Progress int32 `json:"progress"`
-	// StartedAt display the task start date
+	// StartedAt the task start date
 	StartedAt time.Time `json:"started_at"`
-	// TerminatedAt display the task end date
+	// TerminatedAt the task end date
 	TerminatedAt time.Time `json:"terminated_at"`
-	// Status display the task status
+	// Status the task status
 	//
 	// Default value: pending
 	Status TaskStatus `json:"status"`
@@ -1180,27 +1180,27 @@ type UpdateServerResponse struct {
 
 // Volume volume
 type Volume struct {
-	// ID display the volumes unique ID
+	// ID the volumes unique ID
 	ID string `json:"id"`
-	// Name display the volumes names
+	// Name the volumes names
 	Name string `json:"name"`
 	// ExportURI show the volumes NBD export URI
 	ExportURI string `json:"export_uri"`
-	// Size display the volumes disk size
+	// Size the volumes disk size
 	Size scw.Size `json:"size"`
-	// VolumeType display the volumes type
+	// VolumeType the volumes type
 	//
 	// Default value: l_ssd
 	VolumeType VolumeType `json:"volume_type"`
-	// CreationDate display the volumes creation date
+	// CreationDate the volumes creation date
 	CreationDate time.Time `json:"creation_date"`
-	// ModificationDate display the volumes modification date
+	// ModificationDate the volumes modification date
 	ModificationDate time.Time `json:"modification_date"`
-	// Organization display the volumes organization
+	// Organization the volumes organization
 	Organization string `json:"organization"`
-	// Server display information about the server attached to the volume
+	// Server the server attached to the volume
 	Server *ServerSummary `json:"server"`
-	// State display the volumes state
+	// State the volumes state
 	//
 	// Default value: available
 	State VolumeState `json:"state"`
@@ -1220,13 +1220,13 @@ type VolumeSummary struct {
 
 // VolumeTemplate volume template
 type VolumeTemplate struct {
-	// ID display the volumes unique ID
+	// ID the volumes unique ID
 	ID string `json:"id,omitempty"`
-	// Name display the volumes name
+	// Name the volumes name
 	Name string `json:"name,omitempty"`
-	// Size display the volumes disk size
+	// Size the volumes disk size
 	Size scw.Size `json:"size,omitempty"`
-	// VolumeType display the volumes type
+	// VolumeType the volumes type
 	//
 	// Default value: l_ssd
 	VolumeType VolumeType `json:"volume_type,omitempty"`
@@ -1364,11 +1364,11 @@ func (s *API) ListServersTypes(req *ListServersTypesRequest, opts ...scw.Request
 
 type ListServersRequest struct {
 	Zone scw.Zone `json:"-"`
-	// PerPage a positive integer lower or equal to 100 to select the number of items to display
+	// PerPage a positive integer lower or equal to 100 to select the number of items to return
 	//
-	// Default value: 20
+	// Default value: 50
 	PerPage *uint32 `json:"-"`
-	// Page a positive integer to choose the page to display
+	// Page a positive integer to choose the page to return
 	Page *int32 `json:"-"`
 	// Organization list only servers of this organization
 	Organization *string `json:"-"`
@@ -1451,7 +1451,7 @@ func (r *ListServersResponse) UnsafeAppend(res interface{}) (uint32, error) {
 
 type CreateServerRequest struct {
 	Zone scw.Zone `json:"-"`
-	// Name display the server name
+	// Name the server name
 	Name string `json:"name,omitempty"`
 	// DynamicIPRequired define if a dynamic IP is required for the instance
 	DynamicIPRequired *bool `json:"dynamic_ip_required,omitempty"`
@@ -1603,63 +1603,63 @@ func (s *API) GetServer(req *GetServerRequest, opts ...scw.RequestOption) (*GetS
 
 type setServerRequest struct {
 	Zone scw.Zone `json:"-"`
-	// ID display the server unique ID
+	// ID the server unique ID
 	ID string `json:"-"`
-	// Name display the server name
+	// Name the server name
 	Name string `json:"name"`
-	// Organization display the server organization
+	// Organization the server organization
 	Organization string `json:"organization"`
 	// AllowedActions provide as list of allowed actions on the server
 	AllowedActions []ServerAction `json:"allowed_actions"`
-	// Tags display the server associated tags
+	// Tags the server associated tags
 	Tags []string `json:"tags"`
-	// CommercialType display the server commercial type (eg. GP1-M)
+	// CommercialType the server commercial type (eg. GP1-M)
 	CommercialType string `json:"commercial_type"`
-	// CreationDate display the server creation date
+	// CreationDate the server creation date
 	CreationDate time.Time `json:"creation_date"`
-	// DynamicIPRequired display if a dynamic IP is required
+	// DynamicIPRequired true if a dynamic IP is required
 	DynamicIPRequired bool `json:"dynamic_ip_required"`
-	// EnableIPv6 display if IPv6 is enabled
+	// EnableIPv6 true if IPv6 is enabled
 	EnableIPv6 bool `json:"enable_ipv6"`
-	// Hostname display the server host name
+	// Hostname the server host name
 	Hostname string `json:"hostname"`
 	// Image provide information on the server image
 	Image *Image `json:"image"`
-	// Protected display the server protection option is activated
+	// Protected the server protection option is activated
 	Protected bool `json:"protected"`
-	// PrivateIP display the server private IP address
+	// PrivateIP the server private IP address
 	PrivateIP *string `json:"private_ip"`
-	// PublicIP display information about the public IP
+	// PublicIP information about the public IP
 	PublicIP *ServerIP `json:"public_ip"`
-	// ModificationDate display the server modification date
+	// ModificationDate the server modification date
 	ModificationDate time.Time `json:"modification_date"`
-	// State display the server state
+	// State the server state
 	//
 	// Default value: running
 	State ServerState `json:"state"`
-	// Location display the server location
+	// Location the server location
 	Location *ServerLocation `json:"location"`
-	// IPv6 display the server IPv6 address
+	// IPv6 the server IPv6 address
 	IPv6 *ServerIPv6 `json:"ipv6"`
-	// Bootscript display the server bootscript
+	// Bootscript the server bootscript
 	Bootscript *Bootscript `json:"bootscript"`
-	// BootType display the server boot type
+	// BootType the server boot type
 	//
 	// Default value: local
 	BootType BootType `json:"boot_type"`
-	// Volumes display the server volumes
+	// Volumes the server volumes
 	Volumes map[string]*Volume `json:"volumes"`
-	// SecurityGroup display the server security group
+	// SecurityGroup the server security group
 	SecurityGroup *SecurityGroupSummary `json:"security_group"`
-	// Maintenances display the server planned maintenances
+	// Maintenances the server planned maintenances
 	Maintenances []*ServerMaintenance `json:"maintenances"`
-	// StateDetail display the server state_detail
+	// StateDetail the server state_detail
 	StateDetail string `json:"state_detail"`
-	// Arch display the server arch
+	// Arch the server arch
 	//
 	// Default value: x86_64
 	Arch Arch `json:"arch"`
-	// PlacementGroup display the server placement group
+	// PlacementGroup the server placement group
 	PlacementGroup *PlacementGroup `json:"placement_group"`
 }
 
@@ -2514,13 +2514,13 @@ type ListVolumesRequest struct {
 	//
 	// Default value: l_ssd
 	VolumeType VolumeType `json:"-"`
-	// PerPage a positive integer lower or equal to 100 to select the number of items to display
+	// PerPage a positive integer lower or equal to 100 to select the number of items to return
 	//
-	// Default value: 20
+	// Default value: 50
 	PerPage *uint32 `json:"-"`
-	// Page a positive integer to choose the page to display
+	// Page a positive integer to choose the page to return
 	Page *int32 `json:"-"`
-	// Organization display volumes of this organization
+	// Organization filter volume by organization
 	Organization *string `json:"-"`
 	// Name filter volume by name (for eg. "vol" will return "myvolume" but not "data")
 	Name *string `json:"-"`
@@ -2729,11 +2729,11 @@ type ListSecurityGroupsRequest struct {
 	Name *string `json:"-"`
 	// Organization the security group organization ID
 	Organization *string `json:"-"`
-	// PerPage a positive integer lower or equal to 100 to select the number of items to display
+	// PerPage a positive integer lower or equal to 100 to select the number of items to return
 	//
-	// Default value: 20
+	// Default value: 50
 	PerPage *uint32 `json:"-"`
-	// Page a positive integer to choose the page to display
+	// Page a positive integer to choose the page to return
 	Page *int32 `json:"-"`
 }
 
@@ -2802,23 +2802,23 @@ type CreateSecurityGroupRequest struct {
 	Zone scw.Zone `json:"-"`
 	// Name name of the security group
 	Name string `json:"name,omitempty"`
-
+	// Description description of the security group
 	Description string `json:"description,omitempty"`
-
+	// Organization organization the security group belongs to
 	Organization string `json:"organization,omitempty"`
-	// OrganizationDefault
+	// OrganizationDefault whether this security group becomes the default security group for new instances
 	//
 	// Default value: false
 	OrganizationDefault bool `json:"organization_default,omitempty"`
-	// Stateful
+	// Stateful whether the security group is stateful or not
 	//
 	// Default value: false
 	Stateful bool `json:"stateful,omitempty"`
-	// InboundDefaultPolicy
+	// InboundDefaultPolicy default policy for inbound rules
 	//
 	// Default value: accept
 	InboundDefaultPolicy SecurityGroupPolicy `json:"inbound_default_policy"`
-	// OutboundDefaultPolicy
+	// OutboundDefaultPolicy default policy for outbound rules
 	//
 	// Default value: accept
 	OutboundDefaultPolicy SecurityGroupPolicy `json:"outbound_default_policy"`
@@ -2944,29 +2944,29 @@ func (s *API) DeleteSecurityGroup(req *DeleteSecurityGroupRequest, opts ...scw.R
 
 type setSecurityGroupRequest struct {
 	Zone scw.Zone `json:"-"`
-	// ID display the security groups' unique ID
+	// ID the security groups' unique ID
 	ID string `json:"-"`
-	// Name display the security groups name
+	// Name the security groups name
 	Name string `json:"name"`
-	// Description display the security groups description
+	// Description the security groups description
 	Description string `json:"description"`
-	// EnableDefaultSecurity display if the security group is set as default
+	// EnableDefaultSecurity true if SMTP is blocked on IPv4 and IPv6
 	EnableDefaultSecurity bool `json:"enable_default_security"`
-	// InboundDefaultPolicy display the default inbound policy
+	// InboundDefaultPolicy the default inbound policy
 	//
 	// Default value: accept
 	InboundDefaultPolicy SecurityGroupPolicy `json:"inbound_default_policy"`
-	// OutboundDefaultPolicy display the default outbound policy
+	// OutboundDefaultPolicy the default outbound policy
 	//
 	// Default value: accept
 	OutboundDefaultPolicy SecurityGroupPolicy `json:"outbound_default_policy"`
-	// Organization display the security groups organization ID
+	// Organization the security groups organization ID
 	Organization string `json:"organization"`
-	// OrganizationDefault display if the security group is set as organization default
+	// OrganizationDefault true if it is your default security group for this organization
 	OrganizationDefault bool `json:"organization_default"`
-	// CreationDate display the security group creation date
+	// CreationDate the security group creation date
 	CreationDate time.Time `json:"creation_date"`
-	// ModificationDate display the security group modification date
+	// ModificationDate the security group modification date
 	ModificationDate time.Time `json:"modification_date"`
 	// Servers list of servers attached to this security group
 	Servers []*ServerSummary `json:"servers"`
@@ -3022,11 +3022,11 @@ type ListSecurityGroupRulesRequest struct {
 	Zone scw.Zone `json:"-"`
 	// SecurityGroupID uUID of the security group
 	SecurityGroupID string `json:"-"`
-	// PerPage a positive integer lower or equal to 100 to select the number of items to display
+	// PerPage a positive integer lower or equal to 100 to select the number of items to return
 	//
-	// Default value: 20
+	// Default value: 50
 	PerPage *uint32 `json:"-"`
-	// Page a positive integer to choose the page to display
+	// Page a positive integer to choose the page to return
 	Page *int32 `json:"-"`
 }
 
@@ -3321,11 +3321,11 @@ func (s *API) setSecurityGroupRule(req *setSecurityGroupRuleRequest, opts ...scw
 
 type ListPlacementGroupsRequest struct {
 	Zone scw.Zone `json:"-"`
-	// PerPage a positive integer lower or equal to 100 to select the number of items to display
+	// PerPage a positive integer lower or equal to 100 to select the number of items to return
 	//
-	// Default value: 20
+	// Default value: 50
 	PerPage *uint32 `json:"-"`
-	// Page a positive integer to choose the page to display
+	// Page a positive integer to choose the page to return
 	Page *int32 `json:"-"`
 	// Organization list only placement groups of this organization
 	Organization *string `json:"-"`
@@ -3562,8 +3562,6 @@ type UpdatePlacementGroupRequest struct {
 	PlacementGroupID string `json:"-"`
 	// Name name of the placement group
 	Name *string `json:"name,omitempty"`
-
-	Organization *string `json:"organization,omitempty"`
 	// PolicyMode
 	//
 	// Default value: optional
@@ -3791,11 +3789,11 @@ type ListIPsRequest struct {
 	Organization *string `json:"-"`
 	// Name filter on the IP address (Works as a LIKE operation on the IP address)
 	Name *string `json:"-"`
-	// PerPage a positive integer lower or equal to 100 to select the number of items to display
+	// PerPage a positive integer lower or equal to 100 to select the number of items to return
 	//
-	// Default value: 20
+	// Default value: 50
 	PerPage *uint32 `json:"-"`
-	// Page a positive integer to choose the page to display
+	// Page a positive integer to choose the page to return
 	Page *int32 `json:"-"`
 }
 
