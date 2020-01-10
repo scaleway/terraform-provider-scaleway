@@ -23,7 +23,6 @@ func resourceScalewayK8SClusterBeta() *schema.Resource {
 			"name": {
 				Type:        schema.TypeString,
 				Required:    true,
-				ForceNew:    true,
 				Description: "The name of the cluster",
 			},
 			"description": {
@@ -666,6 +665,10 @@ func resourceScalewayK8SClusterBetaUpdate(d *schema.ResourceData, m interface{})
 	updateRequest := &k8s.UpdateClusterRequest{
 		Region:    region,
 		ClusterID: clusterID,
+	}
+
+	if d.HasChange("name") {
+		updateRequest.Name = scw.StringPtr(d.Get("name").(string))
 	}
 
 	if d.HasChange("description") {

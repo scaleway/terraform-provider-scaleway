@@ -85,7 +85,6 @@ provider "kubernetes" {
 The following arguments are supported:
 
 - `name` - (Required) The name for the Kubernetes cluster.
-~> **Important:** Updates to this field will recreate a new resource.
 
 - `description` - (Optional) A description for the Kubernetes cluster.
 
