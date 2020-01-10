@@ -359,6 +359,10 @@ func (s *API) SetAllServerUserData(req *SetAllServerUserDataRequest, opts ...scw
 
 	// delete all current user data
 	for _, key := range allUserDataRes.UserData {
+		_, exist := req.UserData[key]
+		if exist {
+			continue
+		}
 		err := s.DeleteServerUserData(&DeleteServerUserDataRequest{
 			Zone:     req.Zone,
 			ServerID: req.ServerID,

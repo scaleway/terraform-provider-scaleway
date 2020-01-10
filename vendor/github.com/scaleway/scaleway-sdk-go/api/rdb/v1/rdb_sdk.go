@@ -761,7 +761,7 @@ type EngineSetting struct {
 
 	Unit *string `json:"unit"`
 
-	StringConstraint string `json:"string_constraint"`
+	StringConstraint *string `json:"string_constraint"`
 
 	IntMin *int32 `json:"int_min"`
 
