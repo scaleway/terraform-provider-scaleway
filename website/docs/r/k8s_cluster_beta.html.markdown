@@ -125,6 +125,10 @@ The following arguments are supported:
 
   - `maintenance_window_day` - (Optional) The day of the auto upgrade maintenance window (`monday` to `sunday`, or `any`).
 
+- `feature_gates` - (Optional) The list of [feature gates](https://kubernetes.io/docs/reference/command-line-tools-reference/feature-gates/) to enable on the cluster.
+
+- `admission_controllers` - (Optional) The list of [admission plugins](https://kubernetes.io/docs/reference/access-authn-authz/admission-controllers/) to enable on the cluster.
+
 - `default_pool` - (Required) The cluster's default pool configuration.
   
   - `node_type` - (Required)  The commercial type of the default pool instances.
