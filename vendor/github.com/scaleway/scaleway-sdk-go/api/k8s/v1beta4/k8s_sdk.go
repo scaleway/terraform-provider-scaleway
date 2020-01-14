@@ -597,6 +597,10 @@ type Cluster struct {
 	AutoUpgrade *ClusterAutoUpgrade `json:"auto_upgrade"`
 	// UpgradeAvailable true if a new Kubernetes version is available
 	UpgradeAvailable bool `json:"upgrade_available"`
+	// FeatureGates list of enabled feature gates
+	FeatureGates []string `json:"feature_gates"`
+	// AdmissionPlugins list of enabled admission plugins
+	AdmissionPlugins []string `json:"admission_plugins"`
 }
 
 type ClusterAutoUpgrade struct {
@@ -841,6 +845,10 @@ type Version struct {
 	AvailableIngresses []Ingress `json:"available_ingresses"`
 	// AvailableContainerRuntimes the supported container runtimes for this version
 	AvailableContainerRuntimes []Runtime `json:"available_container_runtimes"`
+	// AvailableFeatureGates the supported feature gates for this version
+	AvailableFeatureGates []string `json:"available_feature_gates"`
+	// AvailableAdmissionPlugins the supported admission plugins for this version
+	AvailableAdmissionPlugins []string `json:"available_admission_plugins"`
 }
 
 // Service API
@@ -960,6 +968,10 @@ type CreateClusterRequest struct {
 	//
 	// This configuratiom enables to set a speicific 2-hour time window in which the cluster can be automatically updated to the latest patch version in the current minor one.
 	AutoUpgrade *CreateClusterRequestAutoUpgrade `json:"auto_upgrade"`
+	// FeatureGates list of feature gates to enable
+	FeatureGates []string `json:"feature_gates"`
+	// AdmissionPlugins list of admission plugins to enable
+	AdmissionPlugins []string `json:"admission_plugins"`
 }
 
 // CreateCluster create a new cluster
@@ -1068,6 +1080,10 @@ type UpdateClusterRequest struct {
 	//
 	// The new auo upgrade configuration of the cluster. Note that all the fields needs to be set.
 	AutoUpgrade *UpdateClusterRequestAutoUpgrade `json:"auto_upgrade"`
+	// FeatureGates list of feature gates to enable
+	FeatureGates *[]string `json:"feature_gates"`
+	// AdmissionPlugins list of admission plugins to enable
+	AdmissionPlugins *[]string `json:"admission_plugins"`
 }
 
 // UpdateCluster update a cluster

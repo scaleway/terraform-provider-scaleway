@@ -151,6 +151,7 @@ func unmarshalStandardError(errorType string, body []byte) error {
 func unmarshalNonStandardError(errorType string, body []byte) error {
 	switch errorType {
 	// Only in instance API.
+
 	case "invalid_request_error":
 		invalidRequestError := &InvalidRequestError{RawBody: body}
 		err := json.Unmarshal(body, invalidRequestError)
@@ -159,8 +160,13 @@ func unmarshalNonStandardError(errorType string, body []byte) error {
 		}
 
 		invalidArgumentsError := invalidRequestError.ToInvalidArgumentsError()
-		if invalidRequestError != nil {
+		if invalidArgumentsError != nil {
 			return invalidArgumentsError
+		}
+
+		quotasExceededError := invalidRequestError.ToQuotasExceededError()
+		if quotasExceededError != nil {
+			return quotasExceededError
 		}
 
 		// At this point, the invalid_request_error is not an InvalidArgumentsError and
@@ -218,13 +224,15 @@ type InvalidRequestError struct {
 
 	Fields map[string][]string `json:"fields"`
 
+	Resource string `json:"resource"`
+
 	RawBody json.RawMessage `json:"-"`
 }
 
 // ToSdkError returns a standard error InvalidArgumentsError or nil Fields is nil.
 func (e *InvalidRequestError) ToInvalidArgumentsError() SdkError {
 	// If error has no fields, it is not an InvalidArgumentsError.
-	if e.Fields == nil {
+	if e.Fields == nil || len(e.Fields) == 0 {
 		return nil
 	}
 
@@ -248,14 +256,32 @@ func (e *InvalidRequestError) ToInvalidArgumentsError() SdkError {
 	return invalidArguments
 }
 
-type QuotasExceededError struct {
-	Details []struct {
-		Resource string `json:"resource"`
-		Quota    uint32 `json:"quota"`
-		Current  uint32 `json:"current"`
-	} `json:"details"`
+func (e *InvalidRequestError) ToQuotasExceededError() SdkError {
+	if !strings.Contains(strings.ToLower(e.Message), "quota exceeded for this resource") {
+		return nil
+	}
 
-	RawBody json.RawMessage `json:"-"`
+	return &QuotasExceededError{
+		Details: []QuotasExceededErrorDetail{
+			{
+				Resource: e.Resource,
+				Quota:    0,
+				Current:  0,
+			},
+		},
+		RawBody: e.RawBody,
+	}
+}
+
+type QuotasExceededErrorDetail struct {
+	Resource string `json:"resource"`
+	Quota    uint32 `json:"quota"`
+	Current  uint32 `json:"current"`
+}
+
+type QuotasExceededError struct {
+	Details []QuotasExceededErrorDetail `json:"details"`
+	RawBody json.RawMessage             `json:"-"`
 }
 
 // IsScwSdkError implements the SdkError interface

@@ -1578,11 +1578,55 @@ func (r *ListIPsResponse) UnsafeAppend(res interface{}) (uint32, error) {
 	return uint32(len(results.IPs)), nil
 }
 
+type CreateIPRequest struct {
+	Region scw.Region `json:"-"`
+	// OrganizationID owner of resources
+	OrganizationID string `json:"organization_id"`
+	// Reverse reverse domain name
+	Reverse *string `json:"reverse"`
+}
+
+// CreateIP create IP
+func (s *API) CreateIP(req *CreateIPRequest, opts ...scw.RequestOption) (*IP, error) {
+	var err error
+
+	if req.OrganizationID == "" {
+		defaultOrganizationID, _ := s.client.GetDefaultOrganizationID()
+		req.OrganizationID = defaultOrganizationID
+	}
+
+	if req.Region == "" {
+		defaultRegion, _ := s.client.GetDefaultRegion()
+		req.Region = defaultRegion
+	}
+
+	if fmt.Sprint(req.Region) == "" {
+		return nil, errors.New("field Region cannot be empty in request")
+	}
+
+	scwReq := &scw.ScalewayRequest{
+		Method:  "POST",
+		Path:    "/lb/v1/regions/" + fmt.Sprint(req.Region) + "/ips",
+		Headers: http.Header{},
+	}
+
+	err = scwReq.SetBody(req)
+	if err != nil {
+		return nil, err
+	}
+
+	var resp IP
+
+	err = s.client.Do(scwReq, &resp, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &resp, nil
+}
+
 type GetIPRequest struct {
 	Region scw.Region `json:"-"`
-	// IPID
-	//
-	// IP address ID.
+	// IPID iP address ID
 	IPID string `json:"-"`
 }
 
@@ -1662,6 +1706,7 @@ type UpdateIPRequest struct {
 	Reverse *string `json:"-"`
 }
 
+// UpdateIP update IP
 func (s *API) UpdateIP(req *UpdateIPRequest, opts ...scw.RequestOption) (*IP, error) {
 	var err error
 
