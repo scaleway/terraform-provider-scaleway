@@ -3997,7 +3997,7 @@ func (s *API) setIP(req *SetIPRequest, opts ...scw.RequestOption) (*setIPRespons
 	return &resp, nil
 }
 
-type updateIPRequest struct {
+type UpdateIPRequest struct {
 	Zone scw.Zone `json:"-"`
 	// IP iP ID or IP address
 	IP string `json:"-"`
@@ -4007,8 +4007,8 @@ type updateIPRequest struct {
 	Server *NullableStringValue `json:"server,omitempty"`
 }
 
-// updateIP update IP
-func (s *API) updateIP(req *updateIPRequest, opts ...scw.RequestOption) (*UpdateIPResponse, error) {
+// UpdateIP update IP
+func (s *API) UpdateIP(req *UpdateIPRequest, opts ...scw.RequestOption) (*UpdateIPResponse, error) {
 	var err error
 
 	if req.Zone == "" {

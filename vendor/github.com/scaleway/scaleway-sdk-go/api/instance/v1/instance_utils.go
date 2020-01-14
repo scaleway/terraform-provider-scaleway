@@ -27,6 +27,8 @@ func lockServer(zone scw.Zone, serverID string) *sync.Mutex {
 }
 
 // AttachIPRequest contains the parameters to attach an IP to a server
+//
+// Deprecated: UpdateIPRequest should be used instead
 type AttachIPRequest struct {
 	Zone     scw.Zone `json:"-"`
 	IP       string   `json:"-"`
@@ -34,13 +36,17 @@ type AttachIPRequest struct {
 }
 
 // AttachIPResponse contains the updated IP after attaching
+//
+// Deprecated: UpdateIPResponse should be used instead
 type AttachIPResponse struct {
 	IP *IP
 }
 
 // AttachIP attaches an IP to a server.
+//
+// Deprecated: UpdateIP() should be used instead
 func (s *API) AttachIP(req *AttachIPRequest, opts ...scw.RequestOption) (*AttachIPResponse, error) {
-	ipResponse, err := s.updateIP(&updateIPRequest{
+	ipResponse, err := s.UpdateIP(&UpdateIPRequest{
 		Zone:   req.Zone,
 		IP:     req.IP,
 		Server: &NullableStringValue{Value: req.ServerID},
@@ -53,19 +59,25 @@ func (s *API) AttachIP(req *AttachIPRequest, opts ...scw.RequestOption) (*Attach
 }
 
 // DetachIPRequest contains the parameters to detach an IP from a server
+//
+// Deprecated: UpdateIPRequest should be used instead
 type DetachIPRequest struct {
 	Zone scw.Zone `json:"-"`
 	IP   string   `json:"-"`
 }
 
 // DetachIPResponse contains the updated IP after detaching
+//
+// Deprecated: UpdateIPResponse should be used instead
 type DetachIPResponse struct {
 	IP *IP
 }
 
 // DetachIP detaches an IP from a server.
+//
+// Deprecated: UpdateIP() should be used instead
 func (s *API) DetachIP(req *DetachIPRequest, opts ...scw.RequestOption) (*DetachIPResponse, error) {
-	ipResponse, err := s.updateIP(&updateIPRequest{
+	ipResponse, err := s.UpdateIP(&UpdateIPRequest{
 		Zone:   req.Zone,
 		IP:     req.IP,
 		Server: &NullableStringValue{Null: true},
@@ -75,28 +87,6 @@ func (s *API) DetachIP(req *DetachIPRequest, opts ...scw.RequestOption) (*Detach
 	}
 
 	return &DetachIPResponse{IP: ipResponse.IP}, nil
-}
-
-// UpdateIPRequest contains the parameters to update an IP
-// if Reverse is an empty string, the reverse will be removed
-type UpdateIPRequest struct {
-	Zone    scw.Zone             `json:"-"`
-	IP      string               `json:"-"`
-	Reverse *NullableStringValue `json:"reverse"`
-}
-
-// UpdateIP updates an IP
-func (s *API) UpdateIP(req *UpdateIPRequest, opts ...scw.RequestOption) (*UpdateIPResponse, error) {
-	ipResponse, err := s.updateIP(&updateIPRequest{
-		Zone:    req.Zone,
-		IP:      req.IP,
-		Reverse: req.Reverse,
-	})
-	if err != nil {
-		return nil, err
-	}
-
-	return &UpdateIPResponse{IP: ipResponse.IP}, nil
 }
 
 // AttachVolumeRequest contains the parameters to attach a volume to a server
