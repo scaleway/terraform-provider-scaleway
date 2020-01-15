@@ -4,6 +4,10 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
+
+	"github.com/scaleway/scaleway-sdk-go/scw"
+
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 	"github.com/scaleway/scaleway-sdk-go/api/lb/v1"
@@ -65,6 +69,16 @@ func TestAccScalewayLbFrontendBeta(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_lb_frontend_beta.frt01", "timeout_client", "30s"),
 				),
 			},
+		},
+	})
+}
+
+func TestAccScalewayLbAclBeta(t *testing.T) {
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckScalewayLbFrontendBetaDestroy,
+		Steps: []resource.TestStep{
 			{
 				Config: `
 					resource scaleway_lb_beta lb01 {
@@ -123,10 +137,7 @@ func TestAccScalewayLbFrontendBeta(t *testing.T) {
 						}
 						acl {
 							match {
-								ip_subnet = ["192.168.0.1", "192.168.0.2", "192.168.10.0/24"]
-								http_filter = "acl_http_filter_none"
-								http_filter_value = ["criteria1","criteria2"]
-								invert = "true"
+								ip_subnet = ["0.0.0.0/0"]	
 							}
 							action {
 								type = "deny"
@@ -135,14 +146,122 @@ func TestAccScalewayLbFrontendBeta(t *testing.T) {
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("scaleway_lb_frontend_beta.frt01", "acl.0.name", "test-acl"),
-					resource.TestCheckResourceAttr("scaleway_lb_frontend_beta.frt01", "acl.0.action.0.type", "allow"),
+					testAccCheckScalewayAclAreCorrect("scaleway_lb_frontend_beta.frt01", []*lb.ACL{
+						{
+							Name: "test-acl",
+							Match: &lb.ACLMatch{
+								IPSubnet:        scw.StringSlicePtr([]string{"192.168.0.1", "192.168.0.2", "192.168.10.0/24"}),
+								HTTPFilter:      lb.ACLHTTPFilterACLHTTPFilterNone,
+								HTTPFilterValue: []*string{},
+								Invert:          true,
+							},
+							Action: &lb.ACLAction{Type: lb.ACLActionTypeAllow},
+						},
+						{
+							Match: &lb.ACLMatch{
+								IPSubnet:        scw.StringSlicePtr([]string{"0.0.0.0/0"}),
+								HTTPFilter:      lb.ACLHTTPFilterPathBegin,
+								HTTPFilterValue: scw.StringSlicePtr([]string{"criteria1", "criteria2"}),
+								Invert:          true,
+							},
+							Action: &lb.ACLAction{Type: lb.ACLActionTypeAllow},
+						},
+						{
+							Match: &lb.ACLMatch{
+								IPSubnet:        scw.StringSlicePtr([]string{"0.0.0.0/0"}),
+								HTTPFilter:      lb.ACLHTTPFilterACLHTTPFilterNone,
+								HTTPFilterValue: []*string{},
+								Invert:          false,
+							},
+							Action: &lb.ACLAction{Type: lb.ACLActionTypeAllow},
+						},
+						{
+							Match: &lb.ACLMatch{
+								IPSubnet:        scw.StringSlicePtr([]string{"0.0.0.0/0"}),
+								HTTPFilter:      lb.ACLHTTPFilterACLHTTPFilterNone,
+								HTTPFilterValue: []*string{},
+								Invert:          false,
+							},
+							Action: &lb.ACLAction{Type: lb.ACLActionTypeAllow},
+						},
+						{
+							Match: &lb.ACLMatch{
+								IPSubnet:        scw.StringSlicePtr([]string{"0.0.0.0/0"}),
+								HTTPFilter:      lb.ACLHTTPFilterACLHTTPFilterNone,
+								HTTPFilterValue: []*string{},
+							},
+							Action: &lb.ACLAction{Type: lb.ACLActionTypeDeny},
+						},
+					}),
 				),
 			},
 		},
 	})
 }
 
+func testAccCheckScalewayAclAreCorrect(frontendName string, expectedAcls []*lb.ACL) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		//define a wrapper for acl comparison
+		testCompareAcls := func(testAcl, apiAcl *lb.ACL, skipNameVerification bool) bool {
+			//drop some values which are not part of the testing acl structure
+			apiAcl.ID = ""
+			apiAcl.Frontend = nil
+			return aclEquals(testAcl, apiAcl, skipNameVerification)
+		}
+
+		rs, ok := s.RootModule().Resources[frontendName]
+		if !ok {
+			return fmt.Errorf("resource not found: %s", frontendName)
+		}
+
+		if rs.Primary.ID == "" {
+			return fmt.Errorf("resource id is not set")
+		}
+
+		lbAPI, region, ID, err := getLbAPIWithRegionAndID(testAccProvider.Meta(), rs.Primary.ID)
+		if err != nil {
+			return err
+		}
+
+		//fetch our acls from the scaleway
+		resAcl, err := lbAPI.ListACLs(&lb.ListACLsRequest{
+			Region:     region,
+			FrontendID: ID,
+		}, scw.WithAllPages())
+		if err != nil {
+			return fmt.Errorf("error on getting acl list [%s]", err)
+		}
+
+		//verify that the count of api acl is the same as we are expecting it to be
+		if len(expectedAcls) != len(resAcl.ACLs) {
+			return fmt.Errorf("acl count is wrong.")
+		}
+		//convert them to map indexed by the acl index
+		aclMap := make(map[int32]*lb.ACL)
+		for _, acl := range resAcl.ACLs {
+			aclMap[acl.Index] = acl
+		}
+
+		//check that every index is set up correctly
+		for i := 1; i <= len(expectedAcls); i++ {
+			if _, found := aclMap[int32(i)]; !found {
+				return fmt.Errorf("cannot find an index set [%d]", i)
+			}
+			ignoreName := false
+			expectedAcl := expectedAcls[i-1]
+			//if we do not pass any name, then drop it from comparison
+			if expectedAcl.Name == "" {
+				ignoreName = true
+			}
+			if !testCompareAcls(expectedAcl, aclMap[int32(i)], ignoreName) {
+				return fmt.Errorf("two acls are not equal on stage %d", i)
+			}
+		}
+		//check the actual data
+
+		return nil
+	}
+}
 func testAccCheckScalewayLbFrontendBetaExists(n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
@@ -196,4 +315,51 @@ func testAccCheckScalewayLbFrontendBetaDestroy(s *terraform.State) error {
 	}
 
 	return nil
+}
+
+func TestAclEqual(t *testing.T) {
+	aclA := &lb.ACL{
+		Name: "test-acl",
+		Match: &lb.ACLMatch{
+			IPSubnet:        scw.StringSlicePtr([]string{"192.168.0.1", "192.168.0.2", "192.168.10.0/24"}),
+			HTTPFilter:      lb.ACLHTTPFilterACLHTTPFilterNone,
+			HTTPFilterValue: nil,
+			Invert:          true,
+		},
+		Action:   &lb.ACLAction{Type: lb.ACLActionTypeAllow},
+		Frontend: nil,
+		Index:    1,
+	}
+	aclB := &lb.ACL{
+		Name: "test-acl",
+		Match: &lb.ACLMatch{
+			IPSubnet:        scw.StringSlicePtr([]string{"192.168.0.1", "192.168.0.2", "192.168.10.0/24"}),
+			HTTPFilter:      lb.ACLHTTPFilterACLHTTPFilterNone,
+			HTTPFilterValue: nil,
+			Invert:          true,
+		},
+		Action:   &lb.ACLAction{Type: lb.ACLActionTypeAllow},
+		Frontend: nil,
+		Index:    1,
+	}
+	assert.True(t, aclEquals(aclA, aclB, false))
+
+	//change name
+	aclA.Name = "nope"
+	assert.False(t, aclEquals(aclA, aclB, false))
+	aclA.Name = aclB.Name
+
+	//check action
+	aclA.Action = nil
+	assert.False(t, aclEquals(aclA, aclB, false))
+	aclA.Action = &lb.ACLAction{Type: lb.ACLActionTypeAllow}
+	assert.True(t, aclEquals(aclA, aclB, false))
+	aclA.Action = &lb.ACLAction{Type: lb.ACLActionTypeDeny}
+	assert.False(t, aclEquals(aclA, aclB, false))
+	aclA.Action = &lb.ACLAction{Type: lb.ACLActionTypeAllow}
+	assert.True(t, aclEquals(aclA, aclB, false))
+
+	//check match
+	aclA.Match.IPSubnet = scw.StringSlicePtr([]string{"192.168.0.1", "192.168.0.2", "192.168.10.0/24", "0.0.0.0"})
+	assert.False(t, aclEquals(aclA, aclB, false))
 }

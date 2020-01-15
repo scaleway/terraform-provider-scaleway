@@ -1,9 +1,10 @@
 package scaleway
 
 import (
-	"encoding/json"
 	"math"
 	"sort"
+
+	"github.com/google/go-cmp/cmp"
 
 	"github.com/scaleway/scaleway-sdk-go/scw"
 
@@ -254,7 +255,7 @@ func resourceLbAclBetaUpdate(d *schema.ResourceData, lbAPI *lb.API, region scw.R
 			delete(existingAcl, index)
 
 			//Verify if their values are the same and ignore if that's the case, update otherwise
-			if aclEquals(acl, oldAcl) {
+			if aclEquals(acl, oldAcl, false) {
 				continue
 			}
 			_, err = lbAPI.UpdateACL(&lb.UpdateACLRequest{
@@ -344,15 +345,15 @@ func resourceScalewayLbFrontendBetaDelete(d *schema.ResourceData, m interface{})
 	return nil
 }
 
-func aclEquals(aclA, aclB *lb.ACL) bool {
-	if aclA.Name != aclB.Name {
+func aclEquals(aclA, aclB *lb.ACL, skipNameVerification bool) bool {
+	if !skipNameVerification && aclA.Name != aclB.Name {
 		return false
 	}
-	if aclA.Action != aclB.Action {
+	if !cmp.Equal(aclA.Match, aclB.Match) {
 		return false
 	}
-	jsonA, _ := json.Marshal(aclA)
-	jsonB, _ := json.Marshal(aclB)
-	//todo: decide if to leave json comparison or to split it in explicit way and compare single elements from it.
-	return string(jsonA) == string(jsonB)
+	if !cmp.Equal(aclA.Action, aclB.Action) {
+		return false
+	}
+	return true
 }
