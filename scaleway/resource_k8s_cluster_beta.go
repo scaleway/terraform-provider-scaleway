@@ -120,6 +120,22 @@ func resourceScalewayK8SClusterBeta() *schema.Resource {
 					},
 				},
 			},
+			"feature_gates": {
+				Type: schema.TypeList,
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
+				Optional:    true,
+				Description: "The list of feature gates to enable on the cluster",
+			},
+			"admission_plugins": {
+				Type: schema.TypeList,
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
+				Optional:    true,
+				Description: "The list of admission plugins to enable on the cluster",
+			},
 			"default_pool": {
 				Type:        schema.TypeList,
 				MaxItems:    1,
@@ -292,13 +308,15 @@ func resourceScalewayK8SClusterBetaCreate(d *schema.ResourceData, m interface{})
 	}
 
 	req := &k8s.CreateClusterRequest{
-		Region:         region,
-		OrganizationID: d.Get("organization_id").(string),
-		Name:           expandOrGenerateString(d.Get("name"), "cluster"),
-		Description:    description.(string),
-		Version:        version.(string),
-		Cni:            k8s.CNI(d.Get("cni").(string)),
-		Tags:           expandStrings(d.Get("tags")),
+		Region:           region,
+		OrganizationID:   d.Get("organization_id").(string),
+		Name:             expandOrGenerateString(d.Get("name"), "cluster"),
+		Description:      description.(string),
+		Version:          version.(string),
+		Cni:              k8s.CNI(d.Get("cni").(string)),
+		Tags:             expandStrings(d.Get("tags")),
+		FeatureGates:     expandStrings(d.Get("feature_gates")),
+		AdmissionPlugins: expandStrings(d.Get("admission_plugins")),
 	}
 
 	if dashboard, ok := d.GetOk("enable_dashboard"); ok {
@@ -678,6 +696,14 @@ func resourceScalewayK8SClusterBetaUpdate(d *schema.ResourceData, m interface{})
 	if d.HasChange("tags") {
 		tags := expandStrings(d.Get("tags"))
 		updateRequest.Tags = scw.StringsPtr(tags)
+	}
+
+	if d.HasChange("feature_gates") {
+		updateRequest.FeatureGates = scw.StringsPtr(expandStrings(d.Get("feature_gates")))
+	}
+
+	if d.HasChange("admission_plugins") {
+		updateRequest.AdmissionPlugins = scw.StringsPtr(expandStrings(d.Get("admission_plugins")))
 	}
 
 	if d.HasChange("version") {
