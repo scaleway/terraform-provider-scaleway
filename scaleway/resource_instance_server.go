@@ -547,9 +547,9 @@ func resourceScalewayInstanceServerUpdate(d *schema.ResourceData, m interface{})
 		// If an IP is already attached and it's not a dynamic IP we detach it.
 		if server.Server.PublicIP != nil && server.Server.PublicIP.Dynamic == false {
 			_, err = instanceAPI.UpdateIP(&instance.UpdateIPRequest{
-				Zone:    zone,
-				IP:      server.Server.PublicIP.ID,
-				Server:  &instance.NullableStringValue{Null:true},
+				Zone:   zone,
+				IP:     server.Server.PublicIP.ID,
+				Server: &instance.NullableStringValue{Null: true},
 			})
 			if err != nil {
 				return err
@@ -559,9 +559,9 @@ func resourceScalewayInstanceServerUpdate(d *schema.ResourceData, m interface{})
 		// If a new IP is provided, we attach it to the server
 		if newIPID != "" {
 			_, err = instanceAPI.UpdateIP(&instance.UpdateIPRequest{
-				Zone:    zone,
-				IP:      newIPID,
-				Server:  &instance.NullableStringValue{Value:ID},
+				Zone:   zone,
+				IP:     newIPID,
+				Server: &instance.NullableStringValue{Value: ID},
 			})
 			if err != nil {
 				return err
