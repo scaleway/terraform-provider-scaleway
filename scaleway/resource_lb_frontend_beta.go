@@ -236,9 +236,9 @@ func resourceLbAclBetaUpdate(d *schema.ResourceData, lbAPI *lb.API, region scw.R
 	if err != nil {
 		return err
 	}
-	existingAcl := make(map[int32]*lb.ACL)
+	apiAcls := make(map[int32]*lb.ACL)
 	for _, acl := range resAcl.ACLs {
-		existingAcl[acl.Index] = acl
+		apiAcls[acl.Index] = acl
 	}
 
 	//convert state acl and sanitize them a bit
@@ -248,22 +248,26 @@ func resourceLbAclBetaUpdate(d *schema.ResourceData, lbAPI *lb.API, region scw.R
 	}
 
 	//loop
-	for index, acl := range newAcl {
+	for index, stateAcl := range newAcl {
 		index := int32(index) + 1
-		if oldAcl, found := existingAcl[index]; found {
+		if apiAcl, found := apiAcls[index]; found {
 			//there is an old acl with the same index. Remove it from array to mark that we've dealt with it
-			delete(existingAcl, index)
+			delete(apiAcls, index)
 
+			//if the state acl doesn't specify a name, set it to the same as the existing rule
+			if stateAcl.Name == "" {
+				stateAcl.Name = apiAcl.Name
+			}
 			//Verify if their values are the same and ignore if that's the case, update otherwise
-			if aclEquals(acl, oldAcl, false) {
+			if aclEquals(stateAcl, apiAcl, false) {
 				continue
 			}
 			_, err = lbAPI.UpdateACL(&lb.UpdateACLRequest{
 				Region: region,
-				ACLID:  oldAcl.ID,
-				Name:   acl.Name,
-				Action: acl.Action,
-				Match:  acl.Match,
+				ACLID:  apiAcl.ID,
+				Name:   stateAcl.Name,
+				Action: stateAcl.Action,
+				Match:  stateAcl.Match,
 				Index:  index,
 			})
 			if err != nil {
@@ -275,9 +279,9 @@ func resourceLbAclBetaUpdate(d *schema.ResourceData, lbAPI *lb.API, region scw.R
 		_, err = lbAPI.CreateACL(&lb.CreateACLRequest{
 			Region:     region,
 			FrontendID: frontendID,
-			Name:       acl.Name,
-			Action:     acl.Action,
-			Match:      acl.Match,
+			Name:       expandOrGenerateString(stateAcl.Name, "lb-acl"),
+			Action:     stateAcl.Action,
+			Match:      stateAcl.Match,
 			Index:      index,
 		})
 		if err != nil {
@@ -285,7 +289,7 @@ func resourceLbAclBetaUpdate(d *schema.ResourceData, lbAPI *lb.API, region scw.R
 		}
 	}
 	//we've finished with all new acl, delete any remaining old one which were not dealt with yet
-	for _, acl := range existingAcl {
+	for _, acl := range apiAcls {
 		err = lbAPI.DeleteACL(&lb.DeleteACLRequest{
 			Region: region,
 			ACLID:  acl.ID,

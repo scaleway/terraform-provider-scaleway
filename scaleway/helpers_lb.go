@@ -56,7 +56,7 @@ func flattenLbAcl(acl *lb.ACL) map[string]interface{} {
 func expandLbAcl(i interface{}) *lb.ACL {
 	rawRule := i.(map[string]interface{})
 	acl := &lb.ACL{
-		Name:   expandOrGenerateString(rawRule["name"], "lb-acl"),
+		Name:   rawRule["name"].(string),
 		Match:  expandLbAclMatch(rawRule["match"]),
 		Action: expandLbAclAction(rawRule["action"]),
 	}
