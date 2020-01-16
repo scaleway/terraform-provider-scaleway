@@ -43,10 +43,10 @@ func flattenLbBackendMarkdownAction(action lb.OnMarkedDownAction) interface{} {
 	return action.String()
 }
 
-func flattenLbAcl(acl *lb.ACL) map[string]interface{} {
+func flattenLbAcl(acl *lb.ACL) interface{} {
 	res := map[string]interface{}{
 		"name":   acl.Name,
-		"match":  acl.Match,
+		"match":  flattenLbAclMatch(acl.Match),
 		"action": flattenLbAclAction(acl.Action),
 	}
 	return res
@@ -69,7 +69,7 @@ func expandLbAcl(i interface{}) *lb.ACL {
 
 	return acl
 }
-func flattenLbAclAction(action *lb.ACLAction) map[string]interface{} {
+func flattenLbAclAction(action *lb.ACLAction) interface{} {
 	res := map[string]interface{}{
 		"type": action.Type,
 	}
@@ -84,7 +84,7 @@ func expandLbAclAction(raw interface{}) *lb.ACLAction {
 		Type: lb.ACLActionType(rawMap["type"].(string)),
 	}
 }
-func flattenLbAclMatch(match *lb.ACLMatch) map[string]interface{} {
+func flattenLbAclMatch(match *lb.ACLMatch) interface{} {
 	res := map[string]interface{}{
 		"ip_subnet":         flattenSliceStringPtr(match.IPSubnet),
 		"http_filter":       match.HTTPFilter.String(),

@@ -66,7 +66,7 @@ func resourceScalewayLbFrontendBeta() *schema.Resource {
 			"acl": {
 				Type:        schema.TypeList,
 				Optional:    true,
-				Description: "Outbound rules for this security group",
+				Description: "ACL rules",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"name": {
@@ -79,6 +79,8 @@ func resourceScalewayLbFrontendBeta() *schema.Resource {
 							Type:        schema.TypeList,
 							Required:    true,
 							Description: "Action to undertake",
+							MaxItems:    1,
+							MinItems:    1,
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"type": {
@@ -96,6 +98,8 @@ func resourceScalewayLbFrontendBeta() *schema.Resource {
 						"match": {
 							Type:        schema.TypeList,
 							Required:    true,
+							MaxItems:    1,
+							MinItems:    1,
 							Description: "AclMatch Rule",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
@@ -111,6 +115,7 @@ func resourceScalewayLbFrontendBeta() *schema.Resource {
 									"http_filter": {
 										Type:     schema.TypeString,
 										Optional: true,
+										Default:  lb.ACLHTTPFilterACLHTTPFilterNone.String(),
 										ValidateFunc: validation.StringInSlice([]string{
 											lb.ACLHTTPFilterACLHTTPFilterNone.String(),
 											lb.ACLHTTPFilterPathBegin.String(),
@@ -152,7 +157,6 @@ func resourceScalewayLbFrontendBetaCreate(d *schema.ResourceData, m interface{})
 		return err
 	}
 
-	//loop through new acl
 	res, err := lbAPI.CreateFrontend(&lb.CreateFrontendRequest{
 		Region:        region,
 		LbID:          LbID,
@@ -168,7 +172,7 @@ func resourceScalewayLbFrontendBetaCreate(d *schema.ResourceData, m interface{})
 
 	d.SetId(newRegionalId(region, res.ID))
 
-	err = resourceLbAclBetaUpdate(d, lbAPI, region, res.ID)
+	err = resourceScalewayLbFrontendBetaUpdateAcl(d, lbAPI, region, res.ID)
 	if err != nil {
 		return err
 	}
@@ -218,7 +222,7 @@ func resourceScalewayLbFrontendBetaRead(d *schema.ResourceData, m interface{}) e
 	sort.Slice(resAcl.ACLs, func(i, j int) bool {
 		return resAcl.ACLs[i].Index < resAcl.ACLs[j].Index
 	})
-	stateAcls := make([]map[string]interface{}, 0, len(resAcl.ACLs))
+	stateAcls := make([]interface{}, 0, len(resAcl.ACLs))
 	for _, apiAcl := range resAcl.ACLs {
 		stateAcls = append(stateAcls, flattenLbAcl(apiAcl))
 	}
@@ -227,7 +231,7 @@ func resourceScalewayLbFrontendBetaRead(d *schema.ResourceData, m interface{}) e
 	return nil
 }
 
-func resourceLbAclBetaUpdate(d *schema.ResourceData, lbAPI *lb.API, region scw.Region, frontendID string) error {
+func resourceScalewayLbFrontendBetaUpdateAcl(d *schema.ResourceData, lbAPI *lb.API, region scw.Region, frontendID string) error {
 	//Fetch existing acl from the api. and convert it to a hashmap with index as key
 	resAcl, err := lbAPI.ListACLs(&lb.ListACLsRequest{
 		Region:     region,
@@ -323,7 +327,7 @@ func resourceScalewayLbFrontendBetaUpdate(d *schema.ResourceData, m interface{})
 	}
 
 	//update acl
-	err = resourceLbAclBetaUpdate(d, lbAPI, region, ID)
+	err = resourceScalewayLbFrontendBetaUpdateAcl(d, lbAPI, region, ID)
 	if err != nil {
 		return err
 	}

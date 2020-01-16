@@ -30,7 +30,6 @@ func TestAccScalewayLbFrontendBeta(t *testing.T) {
 						forward_protocol = "tcp"
 						forward_port = 80
 					}
-			
 					resource scaleway_lb_frontend_beta frt01 {
 						lb_id = scaleway_lb_beta.lb01.id
 						backend_id = scaleway_lb_backend_beta.bkd01.id
@@ -195,49 +194,49 @@ func TestAccScalewayLbAclBeta(t *testing.T) {
 					}),
 				),
 			},
-			{
-				Config: `
-					resource scaleway_lb_beta lb01 {
-						name = "test-lb-acl"
-						type = "lb-s"
-					}
-					resource scaleway_lb_backend_beta bkd01 {
-						lb_id = scaleway_lb_beta.lb01.id
-						forward_protocol = "http"
-						forward_port = 80
-					}
-					resource scaleway_lb_frontend_beta frt01 {
-						lb_id = scaleway_lb_beta.lb01.id
-						backend_id = scaleway_lb_backend_beta.bkd01.id
-						name = "tf-test"
-						inbound_port = 80
-						timeout_client = "30s"
-						acl {
-							action {
-								type = "allow"
-							}
-							match {
-								ip_subnet = ["10.0.0.10"]
-								http_filter = "path_begin"
-								http_filter_value = ["foo","bar"]
-							}
-						}
-					}
-				`,
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayAclAreCorrect("scaleway_lb_frontend_beta.frt01", []*lb.ACL{
-						{
-							Match: &lb.ACLMatch{
-								IPSubnet:        scw.StringSlicePtr([]string{"10.0.0.10"}),
-								HTTPFilter:      lb.ACLHTTPFilterPathBegin,
-								HTTPFilterValue: scw.StringSlicePtr([]string{"foo", "bar"}),
-								Invert:          false,
-							},
-							Action: &lb.ACLAction{Type: lb.ACLActionTypeAllow},
-						},
-					}),
-				),
-			},
+			//{
+			//	Config: `
+			//		resource scaleway_lb_beta lb01 {
+			//			name = "test-lb-acl"
+			//			type = "lb-s"
+			//		}
+			//		resource scaleway_lb_backend_beta bkd01 {
+			//			lb_id = scaleway_lb_beta.lb01.id
+			//			forward_protocol = "http"
+			//			forward_port = 80
+			//		}
+			//		resource scaleway_lb_frontend_beta frt01 {
+			//			lb_id = scaleway_lb_beta.lb01.id
+			//			backend_id = scaleway_lb_backend_beta.bkd01.id
+			//			name = "tf-test"
+			//			inbound_port = 80
+			//			timeout_client = "30s"
+			//			acl {
+			//				action {
+			//					type = "allow"
+			//				}
+			//				match {
+			//					ip_subnet = ["10.0.0.10"]
+			//					http_filter = "path_begin"
+			//					http_filter_value = ["foo","bar"]
+			//				}
+			//			}
+			//		}
+			//	`,
+			//	Check: resource.ComposeTestCheckFunc(
+			//		testAccCheckScalewayAclAreCorrect("scaleway_lb_frontend_beta.frt01", []*lb.ACL{
+			//			{
+			//				Match: &lb.ACLMatch{
+			//					IPSubnet:        scw.StringSlicePtr([]string{"10.0.0.10"}),
+			//					HTTPFilter:      lb.ACLHTTPFilterPathBegin,
+			//					HTTPFilterValue: scw.StringSlicePtr([]string{"foo", "bar"}),
+			//					Invert:          false,
+			//				},
+			//				Action: &lb.ACLAction{Type: lb.ACLActionTypeAllow},
+			//			},
+			//		}),
+			//	),
+			//},
 		},
 	})
 }
