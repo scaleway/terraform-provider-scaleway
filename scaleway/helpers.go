@@ -555,14 +555,13 @@ func expandStrings(data interface{}) []string {
 	return stringSlice
 }
 
-func expandStringsPtr(data interface{}) []*string {
+func expandSliceStringPtr(data interface{}) []*string {
 	if data == nil {
 		return nil
 	}
 	stringSlice := []*string(nil)
 	for _, s := range data.([]interface{}) {
-		str := s.(string)
-		stringSlice = append(stringSlice, &str)
+		stringSlice = append(stringSlice, expandStringPtr(s))
 	}
 	return stringSlice
 }

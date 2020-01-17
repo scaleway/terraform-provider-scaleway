@@ -5,12 +5,10 @@ import (
 	"sort"
 
 	"github.com/google/go-cmp/cmp"
-
-	"github.com/scaleway/scaleway-sdk-go/scw"
-
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
 	"github.com/scaleway/scaleway-sdk-go/api/lb/v1"
+	"github.com/scaleway/scaleway-sdk-go/scw"
 )
 
 func resourceScalewayLbFrontendBeta() *schema.Resource {
@@ -122,7 +120,7 @@ func resourceScalewayLbFrontendBeta() *schema.Resource {
 											lb.ACLHTTPFilterPathEnd.String(),
 											lb.ACLHTTPFilterRegex.String(),
 										}, false),
-										Description: "Http filter (if backend have a http forward protocol)",
+										Description: "Http filter (if backend have a HTTP forward protocol)",
 									},
 									"http_filter_value": {
 										Type:        schema.TypeList,
@@ -253,10 +251,10 @@ func resourceScalewayLbFrontendBetaUpdateAcl(d *schema.ResourceData, lbAPI *lb.A
 
 	//loop
 	for index, stateAcl := range newAcl {
-		index := int32(index) + 1
-		if apiAcl, found := apiAcls[index]; found {
-			//there is an old acl with the same index. Remove it from array to mark that we've dealt with it
-			delete(apiAcls, index)
+		key := int32(index) + 1
+		if apiAcl, found := apiAcls[key]; found {
+			//there is an old acl with the same key. Remove it from array to mark that we've dealt with it
+			delete(apiAcls, key)
 
 			//if the state acl doesn't specify a name, set it to the same as the existing rule
 			if stateAcl.Name == "" {
@@ -272,7 +270,7 @@ func resourceScalewayLbFrontendBetaUpdateAcl(d *schema.ResourceData, lbAPI *lb.A
 				Name:   stateAcl.Name,
 				Action: stateAcl.Action,
 				Match:  stateAcl.Match,
-				Index:  index,
+				Index:  key,
 			})
 			if err != nil {
 				return err
@@ -286,7 +284,7 @@ func resourceScalewayLbFrontendBetaUpdateAcl(d *schema.ResourceData, lbAPI *lb.A
 			Name:       expandOrGenerateString(stateAcl.Name, "lb-acl"),
 			Action:     stateAcl.Action,
 			Match:      stateAcl.Match,
-			Index:      index,
+			Index:      key,
 		})
 		if err != nil {
 			return err

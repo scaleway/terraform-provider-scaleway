@@ -70,10 +70,9 @@ func expandLbAcl(i interface{}) *lb.ACL {
 	return acl
 }
 func flattenLbAclAction(action *lb.ACLAction) interface{} {
-	res := map[string]interface{}{
+	return map[string]interface{}{
 		"type": action.Type,
 	}
-	return res
 }
 func expandLbAclAction(raw interface{}) *lb.ACLAction {
 	if raw == nil || len(raw.([]interface{})) != 1 {
@@ -85,13 +84,12 @@ func expandLbAclAction(raw interface{}) *lb.ACLAction {
 	}
 }
 func flattenLbAclMatch(match *lb.ACLMatch) interface{} {
-	res := map[string]interface{}{
+	return map[string]interface{}{
 		"ip_subnet":         flattenSliceStringPtr(match.IPSubnet),
 		"http_filter":       match.HTTPFilter.String(),
 		"http_filter_value": flattenSliceStringPtr(match.HTTPFilterValue),
 		"invert":            match.Invert,
 	}
-	return res
 }
 func expandLbAclMatch(raw interface{}) *lb.ACLMatch {
 	if raw == nil || len(raw.([]interface{})) != 1 {
@@ -100,7 +98,7 @@ func expandLbAclMatch(raw interface{}) *lb.ACLMatch {
 	rawMap := raw.([]interface{})[0].(map[string]interface{})
 
 	//scaleway api require ip subnet, so if we did not specify one, just put 0.0.0.0/0 instead
-	ipSubnet := expandStringsPtr(rawMap["ip_subnet"].([]interface{}))
+	ipSubnet := expandSliceStringPtr(rawMap["ip_subnet"].([]interface{}))
 	if len(ipSubnet) == 0 {
 		ipSubnet = []*string{scw.StringPtr("0.0.0.0/0")}
 	}
@@ -108,7 +106,7 @@ func expandLbAclMatch(raw interface{}) *lb.ACLMatch {
 	return &lb.ACLMatch{
 		IPSubnet:        ipSubnet,
 		HTTPFilter:      lb.ACLHTTPFilter(rawMap["http_filter"].(string)),
-		HTTPFilterValue: expandStringsPtr(rawMap["http_filter_value"].([]interface{})),
+		HTTPFilterValue: expandSliceStringPtr(rawMap["http_filter_value"].([]interface{})),
 		Invert:          rawMap["invert"].(bool),
 	}
 }
