@@ -33,9 +33,7 @@ func resourceScalewayK8SClusterBeta() *schema.Resource {
 			},
 			"version": {
 				Type:        schema.TypeString,
-				Computed:    true,
-				Optional:    true,
-				Default:     nil,
+				Required:    true,
 				Description: "The version of the cluster",
 			},
 			"cni": {
