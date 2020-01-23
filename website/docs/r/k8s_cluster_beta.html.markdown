@@ -88,7 +88,7 @@ The following arguments are supported:
 
 - `description` - (Optional) A description for the Kubernetes cluster.
 
-- `version` - (Optional) The version of the Kubernetes cluster (will default to the latest).
+- `version` - (Required) The version of the Kubernetes cluster.
 
 - `cni` - (Required) The Container Network Interface (CNI) for the Kubernetes cluster.
 ~> **Important:** Updates to this field will recreate a new resource.
