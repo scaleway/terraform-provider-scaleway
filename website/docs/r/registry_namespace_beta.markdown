@@ -1,11 +1,11 @@
 ---
 layout: "scaleway"
-page_title: "Scaleway: scaleway_container_registry"
+page_title: "Scaleway: scaleway_registry_namespace_beta"
 description: |-
   Manages Scaleway Container Registries.
 ---
 
-# scaleway_container_registry
+# scaleway_registry_namespace_beta
 
 Creates and manages Scaleway Container Registry. For more information see [the documentation](https://developers.scaleway.com/en/products/registry/api/).
 
@@ -14,8 +14,7 @@ Creates and manages Scaleway Container Registry. For more information see [the d
 ### Basic
 
 ```hcl
-resource "scaleway_container_registry" "main" {
-    region = "fr-par"
+resource "scaleway_registry_namespace_beta" "main" {
     name = "main_cr"
     description = "Main container registry"
     is_public = false
@@ -30,13 +29,13 @@ The following arguments are supported:
 
 ~> **Important** Updates to `name` will recreate the namespace.
 
+- `description` (Optional) The description of the container registry namespace.
+
+- `is_public` (Defaults to `false`) Whether or not the Registry Images stored in the namespace should be downloadable publicly (docker pull).
+
 - `region` - (Defaults to [provider](../index.html#region) `region`). The [region](../guides/regions_and_zones.html#regions) in which the container registry namespace should be created.
 
 - `organization_id` - (Defaults to [provider](../index.html#organization_id) `organization_id`) The ID of the organization the registry is associated with.
-
-- `description` (Optional) The description of the container registry namespace.
-
-- `is_public` (Defaults to `false`) Whether or not the registry should be visible to the public.
 
 ## Attibutes Reference
 

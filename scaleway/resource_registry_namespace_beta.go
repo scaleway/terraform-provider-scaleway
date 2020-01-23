@@ -1,15 +1,17 @@
 package scaleway
 
-import "github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+import (
+	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/scaleway/scaleway-sdk-go/api/registry/v1"
+	"github.com/scaleway/scaleway-sdk-go/scw"
+)
 
-import "github.com/scaleway/scaleway-sdk-go/api/registry/v1"
-
-func resourceScalewayContainerRegistry() *schema.Resource {
+func resourceScalewayRegistryNamespaceBeta() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceScalewayContainerRegistryCreate,
-		Read:   resourceScalewayContainerRegistryRead,
-		Update: resourceScalewayContainerRegistryUpdate,
-		Delete: resourceScalewayContainerRegistryDelete,
+		Create: resourceScalewayRegistryNamespaceBetaCreate,
+		Read:   resourceScalewayRegistryNamespaceBetaRead,
+		Update: resourceScalewayRegistryNamespaceBetaUpdate,
+		Delete: resourceScalewayRegistryNamespaceBetaDelete,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},
@@ -19,31 +21,31 @@ func resourceScalewayContainerRegistry() *schema.Resource {
 				Type:        schema.TypeString,
 				Required:    true,
 				ForceNew:    true,
-				Description: "The name of the container registry",
+				Description: "The name of the container registry namespace",
 			},
 			"description": {
 				Type:        schema.TypeString,
 				Optional:    true,
-				ForceNew:    false,
-				Description: "The description of the container registry",
+				Description: "The description of the container registry namespace",
 			},
 			"is_public": {
 				Type:        schema.TypeBool,
 				Optional:    true,
-				ForceNew:    false,
 				Description: "Define the default visibity policy",
 			},
 			"endpoint": {
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "Endpoint reachable by docker",
+				Description: "The endpoint reachable by docker",
 			},
+			"region":          regionSchema(),
+			"organization_id": organizationIDSchema(),
 		},
 	}
 }
 
-func resourceScalewayContainerRegistryCreate(d *schema.ResourceData, m interface{}) error {
-	api, region, err := containerRegistryWithRegion(d, m)
+func resourceScalewayRegistryNamespaceBetaCreate(d *schema.ResourceData, m interface{}) error {
+	api, region, err := registryNamespaceWithRegion(d, m)
 	if err != nil {
 		return err
 	}
@@ -66,11 +68,11 @@ func resourceScalewayContainerRegistryCreate(d *schema.ResourceData, m interface
 
 	d.SetId(newRegionalId(region, ns.ID))
 
-	return resourceScalewayContainerRegistryRead(d, m)
+	return resourceScalewayRegistryNamespaceBetaRead(d, m)
 }
 
-func resourceScalewayContainerRegistryRead(d *schema.ResourceData, m interface{}) error {
-	api, region, id, err := containerRegistryWithRegionAndID(m, d.Id())
+func resourceScalewayRegistryNamespaceBetaRead(d *schema.ResourceData, m interface{}) error {
+	api, region, id, err := registryNamespaceWithRegionAndID(m, d.Id())
 	if err != nil {
 		return err
 	}
@@ -93,35 +95,33 @@ func resourceScalewayContainerRegistryRead(d *schema.ResourceData, m interface{}
 	_ = d.Set("organization_id", ns.OrganizationID)
 	_ = d.Set("is_public", ns.IsPublic)
 	_ = d.Set("endpoint", ns.Endpoint)
+	_ = d.Set("region", ns.Region)
 
 	return nil
 }
 
-func resourceScalewayContainerRegistryUpdate(d *schema.ResourceData, m interface{}) error {
-	api, region, id, err := containerRegistryWithRegionAndID(m, d.Id())
+func resourceScalewayRegistryNamespaceBetaUpdate(d *schema.ResourceData, m interface{}) error {
+	api, region, id, err := registryNamespaceWithRegionAndID(m, d.Id())
 	if err != nil {
 		return err
 	}
-
-	description := d.Get("description").(string)
-	isPublic := d.Get("is_public").(bool)
 
 	if d.HasChange("description") || d.HasChange("is_public") {
 		if _, err := api.UpdateNamespace(&registry.UpdateNamespaceRequest{
 			Region:      region,
 			NamespaceID: id,
-			Description: &description,
-			IsPublic:    &isPublic,
+			Description: scw.StringPtr(d.Get("description").(string)),
+			IsPublic:    scw.BoolPtr(d.Get("is_public").(bool)),
 		}); err != nil {
 			return err
 		}
 	}
 
-	return resourceScalewayContainerRegistryRead(d, m)
+	return resourceScalewayRegistryNamespaceBetaRead(d, m)
 }
 
-func resourceScalewayContainerRegistryDelete(d *schema.ResourceData, m interface{}) error {
-	api, region, id, err := containerRegistryWithRegionAndID(m, d.Id())
+func resourceScalewayRegistryNamespaceBetaDelete(d *schema.ResourceData, m interface{}) error {
+	api, region, id, err := registryNamespaceWithRegionAndID(m, d.Id())
 	if err != nil {
 		return err
 	}
