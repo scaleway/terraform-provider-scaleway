@@ -314,7 +314,7 @@ func testAccCheckScalewayInstanceSecurityGroupRuleIs(name string, direction inst
 			return fmt.Errorf("not found: %s", name)
 		}
 
-		instanceApi, zone, ID, err := getInstanceAPIWithZoneAndID(testAccProvider.Meta(), rs.Primary.ID)
+		instanceApi, zone, ID, err := instanceAPIWithZoneAndID(testAccProvider.Meta(), rs.Primary.ID)
 		if err != nil {
 			return err
 		}

@@ -15,7 +15,7 @@ func TestAccScalewayDataSourceInstanceVolume_Basic(t *testing.T) {
 			{
 				Config: `
 					resource "scaleway_instance_volume" "test" {
-						name = "` + getRandomName("volume") + `"
+						name = "` + newRandomName("volume") + `"
 						size_in_gb = 2
 						type = "l_ssd"
 					}

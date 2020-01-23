@@ -12,23 +12,23 @@ const (
 	LbWaitForTimeout = 10 * time.Minute
 )
 
-// getLbAPI returns a new lb API
-func getLbAPI(m interface{}) *lb.API {
+// lbAPI returns a new lb API
+func lbAPI(m interface{}) *lb.API {
 	meta := m.(*Meta)
 	return lb.NewAPI(meta.scwClient)
 }
 
-// getLbAPIWithRegion returns a new lb API and the region for a Create request
-func getLbAPIWithRegion(d *schema.ResourceData, m interface{}) (*lb.API, scw.Region, error) {
+// lbAPIWithRegion returns a new lb API and the region for a Create request
+func lbAPIWithRegion(d *schema.ResourceData, m interface{}) (*lb.API, scw.Region, error) {
 	meta := m.(*Meta)
 	lbApi := lb.NewAPI(meta.scwClient)
 
-	region, err := getRegion(d, meta)
+	region, err := extractRegion(d, meta)
 	return lbApi, region, err
 }
 
-// getLbAPIWithRegionAndID returns an lb API with region and ID extracted from the state
-func getLbAPIWithRegionAndID(m interface{}, id string) (*lb.API, scw.Region, string, error) {
+// lbAPIWithRegionAndID returns an lb API with region and ID extracted from the state
+func lbAPIWithRegionAndID(m interface{}, id string) (*lb.API, scw.Region, string, error) {
 	meta := m.(*Meta)
 	lbApi := lb.NewAPI(meta.scwClient)
 

@@ -10,9 +10,9 @@ import (
 )
 
 func TestAccScalewayBaremetalServerBetaMinimal1(t *testing.T) {
-	SSHKeyName := getRandomName("ssh-key")
+	SSHKeyName := newRandomName("ssh-key")
 	SSHKey := "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIM7HUxRyQtB2rnlhQUcbDGCZcTJg7OvoznOiyC9W6IxH opensource@scaleway.com"
-	name := getRandomName("bm")
+	name := newRandomName("bm")
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -153,7 +153,7 @@ func testAccCheckScalewayBaremetalServerBetaExists(n string) resource.TestCheckF
 			return fmt.Errorf("resource not found: %s", n)
 		}
 
-		baremetalAPI, zone, ID, err := getBaremetalAPIWithZoneAndID(testAccProvider.Meta(), rs.Primary.ID)
+		baremetalAPI, zone, ID, err := baremetalAPIWithZoneAndID(testAccProvider.Meta(), rs.Primary.ID)
 		if err != nil {
 			return err
 		}
@@ -173,7 +173,7 @@ func testAccCheckScalewayBaremetalServerBetaDestroy(s *terraform.State) error {
 			continue
 		}
 
-		baremetalAPI, zone, ID, err := getBaremetalAPIWithZoneAndID(testAccProvider.Meta(), rs.Primary.ID)
+		baremetalAPI, zone, ID, err := baremetalAPIWithZoneAndID(testAccProvider.Meta(), rs.Primary.ID)
 		if err != nil {
 			return err
 		}

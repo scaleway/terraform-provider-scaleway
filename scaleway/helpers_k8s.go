@@ -39,16 +39,16 @@ const (
 	K8SClusterWaitForDeletedTimeout = 10 * time.Minute
 )
 
-func getK8SAPIWithRegion(d *schema.ResourceData, m interface{}) (*k8s.API, scw.Region, error) {
+func k8sAPIWithRegion(d *schema.ResourceData, m interface{}) (*k8s.API, scw.Region, error) {
 	meta := m.(*Meta)
 	k8sAPI := k8s.NewAPI(meta.scwClient)
 
-	region, err := getRegion(d, meta)
+	region, err := extractRegion(d, meta)
 
 	return k8sAPI, region, err
 }
 
-func getK8SAPIWithRegionAndID(m interface{}, id string) (*k8s.API, scw.Region, string, error) {
+func k8sAPIWithRegionAndID(m interface{}, id string) (*k8s.API, scw.Region, string, error) {
 	meta := m.(*Meta)
 	k8sAPI := k8s.NewAPI(meta.scwClient)
 

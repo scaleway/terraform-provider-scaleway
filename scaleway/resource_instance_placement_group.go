@@ -55,7 +55,7 @@ func resourceScalewayInstancePlacementGroup() *schema.Resource {
 }
 
 func resourceScalewayInstancePlacementGroupCreate(d *schema.ResourceData, m interface{}) error {
-	instanceApi, zone, err := getInstanceAPIWithZone(d, m)
+	instanceApi, zone, err := instanceAPIWithZone(d, m)
 	if err != nil {
 		return err
 	}
@@ -76,7 +76,7 @@ func resourceScalewayInstancePlacementGroupCreate(d *schema.ResourceData, m inte
 }
 
 func resourceScalewayInstancePlacementGroupRead(d *schema.ResourceData, m interface{}) error {
-	instanceApi, zone, ID, err := getInstanceAPIWithZoneAndID(m, d.Id())
+	instanceApi, zone, ID, err := instanceAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return err
 	}
@@ -105,7 +105,7 @@ func resourceScalewayInstancePlacementGroupRead(d *schema.ResourceData, m interf
 }
 
 func resourceScalewayInstancePlacementGroupUpdate(d *schema.ResourceData, m interface{}) error {
-	instanceApi, zone, ID, err := getInstanceAPIWithZoneAndID(m, d.Id())
+	instanceApi, zone, ID, err := instanceAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return err
 	}
@@ -133,7 +133,7 @@ func resourceScalewayInstancePlacementGroupUpdate(d *schema.ResourceData, m inte
 }
 
 func resourceScalewayInstancePlacementGroupDelete(d *schema.ResourceData, m interface{}) error {
-	instanceApi, zone, ID, err := getInstanceAPIWithZoneAndID(m, d.Id())
+	instanceApi, zone, ID, err := instanceAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return err
 	}

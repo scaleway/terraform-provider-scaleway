@@ -11,7 +11,7 @@ import (
 
 func TestGetSSHKeyFingerprint(t *testing.T) {
 	key := []byte("ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDYpDmIzRs5c+xs0jmljMbNYVcgV8fRruMCRDA4HKjGN2lqLTZhngGDXsdt/2kTNQQPAq2sR4N8mfX5wMRT/+jNb+8esPyY5WlElni0zmD7oLoPW4lYRES6f7EeAv6NttLfkDO42r15OtMnglcgWk1u4o3lOXuLbhzJT1qdicpDja22X3uR/xUy1AYhKBOoiSlQbkb7NhL0lA1xQNwerdaJJS8tFB+wViVDyP0f1HaIRxViFlTGuTbTuIJNR/7VJ9VBBuTnYXaRkPxz64sUXrtdVK8U0+4KsisyXwmgQKnvZBDj91wxz12OOzFSQ52iFprIj1JbkzuBmNWXUGKYzXJZ nicolai86@test")
-	fingerprint, err := getSSHKeyFingerprint(key)
+	fingerprint, err := sshKeyFingerprint(key)
 
 	if err != nil {
 		t.Errorf("Expected no error, but got %v", err.Error())

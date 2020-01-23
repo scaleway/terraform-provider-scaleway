@@ -39,7 +39,7 @@ func resourceScalewayAccountSSKKey() *schema.Resource {
 }
 
 func resourceScalewayAccountSSHKeyCreate(d *schema.ResourceData, m interface{}) error {
-	accountAPI := getAccountAPI(m)
+	accountAPI := accountAPI(m)
 
 	res, err := accountAPI.CreateSSHKey(&account.CreateSSHKeyRequest{
 		Name:           d.Get("name").(string),
@@ -56,7 +56,7 @@ func resourceScalewayAccountSSHKeyCreate(d *schema.ResourceData, m interface{}) 
 }
 
 func resourceScalewayAccountSSHKeyRead(d *schema.ResourceData, m interface{}) error {
-	accountAPI := getAccountAPI(m)
+	accountAPI := accountAPI(m)
 
 	res, err := accountAPI.GetSSHKey(&account.GetSSHKeyRequest{
 		SSHKeyID: d.Id(),
@@ -77,7 +77,7 @@ func resourceScalewayAccountSSHKeyRead(d *schema.ResourceData, m interface{}) er
 }
 
 func resourceScalewayAccountSSHKeyUpdate(d *schema.ResourceData, m interface{}) error {
-	accountAPI := getAccountAPI(m)
+	accountAPI := accountAPI(m)
 
 	if d.HasChange("name") {
 		_, err := accountAPI.UpdateSSHKey(&account.UpdateSSHKeyRequest{
@@ -93,7 +93,7 @@ func resourceScalewayAccountSSHKeyUpdate(d *schema.ResourceData, m interface{}) 
 }
 
 func resourceScalewayAccountSSHKeyDelete(d *schema.ResourceData, m interface{}) error {
-	accountAPI := getAccountAPI(m)
+	accountAPI := accountAPI(m)
 
 	err := accountAPI.DeleteSSHKey(&account.DeleteSSHKeyRequest{
 		SSHKeyID: d.Id(),

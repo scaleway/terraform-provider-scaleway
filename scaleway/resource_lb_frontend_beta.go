@@ -63,7 +63,7 @@ func resourceScalewayLbFrontendBeta() *schema.Resource {
 }
 
 func resourceScalewayLbFrontendBetaCreate(d *schema.ResourceData, m interface{}) error {
-	lbAPI := getLbAPI(m)
+	lbAPI := lbAPI(m)
 
 	region, LbID, err := parseRegionalID(d.Get("lb_id").(string))
 	if err != nil {
@@ -90,7 +90,7 @@ func resourceScalewayLbFrontendBetaCreate(d *schema.ResourceData, m interface{})
 }
 
 func resourceScalewayLbFrontendBetaRead(d *schema.ResourceData, m interface{}) error {
-	lbAPI, region, ID, err := getLbAPIWithRegionAndID(m, d.Id())
+	lbAPI, region, ID, err := lbAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return err
 	}
@@ -124,7 +124,7 @@ func resourceScalewayLbFrontendBetaRead(d *schema.ResourceData, m interface{}) e
 }
 
 func resourceScalewayLbFrontendBetaUpdate(d *schema.ResourceData, m interface{}) error {
-	lbAPI, region, ID, err := getLbAPIWithRegionAndID(m, d.Id())
+	lbAPI, region, ID, err := lbAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return err
 	}
@@ -148,7 +148,7 @@ func resourceScalewayLbFrontendBetaUpdate(d *schema.ResourceData, m interface{})
 }
 
 func resourceScalewayLbFrontendBetaDelete(d *schema.ResourceData, m interface{}) error {
-	lbAPI, region, ID, err := getLbAPIWithRegionAndID(m, d.Id())
+	lbAPI, region, ID, err := lbAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return err
 	}

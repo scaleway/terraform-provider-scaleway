@@ -29,7 +29,7 @@ func dataSourceScalewayMarketplaceImageBeta() *schema.Resource {
 func dataSourceScalewayMarketplaceImageReadBeta(d *schema.ResourceData, m interface{}) error {
 	meta := m.(*Meta)
 	marketplaceAPI := marketplace.NewAPI(meta.scwClient)
-	zone, err := getZone(d, meta)
+	zone, err := extractZone(d, meta)
 	if err != nil {
 		return err
 	}

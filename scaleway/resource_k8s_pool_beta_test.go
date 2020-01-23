@@ -72,7 +72,7 @@ func testAccCheckScalewayK8SPoolBetaDestroy(s *terraform.State) error {
 			continue
 		}
 
-		k8sAPI, region, poolID, err := getK8SAPIWithRegionAndID(testAccProvider.Meta(), rs.Primary.ID)
+		k8sAPI, region, poolID, err := k8sAPIWithRegionAndID(testAccProvider.Meta(), rs.Primary.ID)
 		if err != nil {
 			return err
 		}
@@ -102,7 +102,7 @@ func testAccCheckScalewayK8SPoolBetaExists(n string) resource.TestCheckFunc {
 			return fmt.Errorf("resource not found: %s", n)
 		}
 
-		k8sAPI, region, poolID, err := getK8SAPIWithRegionAndID(testAccProvider.Meta(), rs.Primary.ID)
+		k8sAPI, region, poolID, err := k8sAPIWithRegionAndID(testAccProvider.Meta(), rs.Primary.ID)
 		if err != nil {
 			return err
 		}

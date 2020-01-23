@@ -66,7 +66,7 @@ func testAccCheckScalewayInstanceIPExists(n string) resource.TestCheckFunc {
 			return fmt.Errorf("resource not found: %s", n)
 		}
 
-		instanceAPI, zone, ID, err := getInstanceAPIWithZoneAndID(testAccProvider.Meta(), rs.Primary.ID)
+		instanceAPI, zone, ID, err := instanceAPIWithZoneAndID(testAccProvider.Meta(), rs.Primary.ID)
 		if err != nil {
 			return err
 		}
@@ -95,7 +95,7 @@ func testAccCheckScalewayInstanceIPPairWithServer(ipResource, serverResource str
 			return fmt.Errorf("resource not found: %s", serverResource)
 		}
 
-		instanceAPI, zone, ID, err := getInstanceAPIWithZoneAndID(testAccProvider.Meta(), ipState.Primary.ID)
+		instanceAPI, zone, ID, err := instanceAPIWithZoneAndID(testAccProvider.Meta(), ipState.Primary.ID)
 		if err != nil {
 			return err
 		}
@@ -131,7 +131,7 @@ func testAccCheckScalewayInstanceServerNoIPAssigned(serverResource string) resou
 			return fmt.Errorf("resource not found: %s", serverResource)
 		}
 
-		instanceAPI, zone, ID, err := getInstanceAPIWithZoneAndID(testAccProvider.Meta(), serverState.Primary.ID)
+		instanceAPI, zone, ID, err := instanceAPIWithZoneAndID(testAccProvider.Meta(), serverState.Primary.ID)
 		if err != nil {
 			return err
 		}
@@ -158,7 +158,7 @@ func testAccCheckScalewayInstanceIPDestroy(s *terraform.State) error {
 			continue
 		}
 
-		instanceAPI, zone, ID, err := getInstanceAPIWithZoneAndID(testAccProvider.Meta(), rs.Primary.ID)
+		instanceAPI, zone, ID, err := instanceAPIWithZoneAndID(testAccProvider.Meta(), rs.Primary.ID)
 		if err != nil {
 			return err
 		}

@@ -47,7 +47,7 @@ func resourceScalewayObjectBucketCreate(d *schema.ResourceData, m interface{}) e
 	bucketName := d.Get("name").(string)
 	acl := d.Get("acl").(string)
 
-	s3Client, region, err := getS3ClientWithRegion(d, m)
+	s3Client, region, err := s3ClientWithRegion(d, m)
 
 	_, err = s3Client.CreateBucket(&s3.CreateBucketInput{
 		Bucket: aws.String(bucketName),
@@ -63,7 +63,7 @@ func resourceScalewayObjectBucketCreate(d *schema.ResourceData, m interface{}) e
 }
 
 func resourceScalewayObjectBucketRead(d *schema.ResourceData, m interface{}) error {
-	s3Client, _, bucketName, err := getS3ClientWithRegionAndName(m, d.Id())
+	s3Client, _, bucketName, err := s3ClientWithRegionAndName(m, d.Id())
 	if err != nil {
 		return err
 	}
@@ -95,7 +95,7 @@ func resourceScalewayObjectBucketRead(d *schema.ResourceData, m interface{}) err
 }
 
 func resourceScalewayObjectBucketUpdate(d *schema.ResourceData, m interface{}) error {
-	s3Client, _, bucketName, err := getS3ClientWithRegionAndName(m, d.Id())
+	s3Client, _, bucketName, err := s3ClientWithRegionAndName(m, d.Id())
 	if err != nil {
 		return err
 	}
@@ -117,7 +117,7 @@ func resourceScalewayObjectBucketUpdate(d *schema.ResourceData, m interface{}) e
 }
 
 func resourceScalewayObjectBucketDelete(d *schema.ResourceData, m interface{}) error {
-	s3Client, _, bucketName, err := getS3ClientWithRegionAndName(m, d.Id())
+	s3Client, _, bucketName, err := s3ClientWithRegionAndName(m, d.Id())
 	if err != nil {
 		return err
 	}

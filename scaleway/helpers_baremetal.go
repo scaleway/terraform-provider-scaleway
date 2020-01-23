@@ -17,17 +17,17 @@ const (
 
 var baremetalServerResourceTimeout = baremetalServerRetryFuncTimeout + time.Minute
 
-// getInstanceAPIWithZone returns a new baremetal API and the zone for a Create request
-func getBaremetalAPIWithZone(d *schema.ResourceData, m interface{}) (*baremetal.API, scw.Zone, error) {
+// instanceAPIWithZone returns a new baremetal API and the zone for a Create request
+func baremetalAPIWithZone(d *schema.ResourceData, m interface{}) (*baremetal.API, scw.Zone, error) {
 	meta := m.(*Meta)
 	baremetalAPI := baremetal.NewAPI(meta.scwClient)
 
-	zone, err := getZone(d, meta)
+	zone, err := extractZone(d, meta)
 	return baremetalAPI, zone, err
 }
 
-// getInstanceAPIWithZoneAndID returns an baremetal API with zone and ID extracted from the state
-func getBaremetalAPIWithZoneAndID(m interface{}, id string) (*baremetal.API, scw.Zone, string, error) {
+// instanceAPIWithZoneAndID returns an baremetal API with zone and ID extracted from the state
+func baremetalAPIWithZoneAndID(m interface{}, id string) (*baremetal.API, scw.Zone, string, error) {
 	meta := m.(*Meta)
 	baremetalAPI := baremetal.NewAPI(meta.scwClient)
 
@@ -36,8 +36,8 @@ func getBaremetalAPIWithZoneAndID(m interface{}, id string) (*baremetal.API, scw
 }
 
 // TODO: Remove it when SDK will handle it.
-// getBaremetalOfferByName call baremetal API to get an offer by its exact name.
-func getBaremetalOfferByName(baremetalAPI *baremetal.API, zone scw.Zone, offerName string) (*baremetal.Offer, error) {
+// baremetalOfferByName call baremetal API to get an offer by its exact name.
+func baremetalOfferByName(baremetalAPI *baremetal.API, zone scw.Zone, offerName string) (*baremetal.Offer, error) {
 	offerRes, err := baremetalAPI.ListOffers(&baremetal.ListOffersRequest{
 		Zone: zone,
 	}, scw.WithAllPages())
@@ -55,8 +55,8 @@ func getBaremetalOfferByName(baremetalAPI *baremetal.API, zone scw.Zone, offerNa
 }
 
 // TODO: Remove it when SDK will handle it.
-// getBaremetalOfferByID call baremetal API to get an offer by its exact name.
-func getBaremetalOfferByID(baremetalAPI *baremetal.API, zone scw.Zone, offerID string) (*baremetal.Offer, error) {
+// baremetalOfferByID call baremetal API to get an offer by its exact name.
+func baremetalOfferByID(baremetalAPI *baremetal.API, zone scw.Zone, offerID string) (*baremetal.Offer, error) {
 	offerRes, err := baremetalAPI.ListOffers(&baremetal.ListOffersRequest{
 		Zone: zone,
 	}, scw.WithAllPages())

@@ -43,7 +43,7 @@ func resourceScalewayInstanceIP() *schema.Resource {
 }
 
 func resourceScalewayInstanceIPCreate(d *schema.ResourceData, m interface{}) error {
-	instanceAPI, zone, err := getInstanceAPIWithZone(d, m)
+	instanceAPI, zone, err := instanceAPIWithZone(d, m)
 	if err != nil {
 		return err
 	}
@@ -61,7 +61,7 @@ func resourceScalewayInstanceIPCreate(d *schema.ResourceData, m interface{}) err
 }
 
 func resourceScalewayInstanceIPRead(d *schema.ResourceData, m interface{}) error {
-	instanceAPI, zone, ID, err := getInstanceAPIWithZoneAndID(m, d.Id())
+	instanceAPI, zone, ID, err := instanceAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return err
 	}
@@ -89,7 +89,7 @@ func resourceScalewayInstanceIPRead(d *schema.ResourceData, m interface{}) error
 }
 
 func resourceScalewayInstanceIPDelete(d *schema.ResourceData, m interface{}) error {
-	instanceAPI, zone, ID, err := getInstanceAPIWithZoneAndID(m, d.Id())
+	instanceAPI, zone, ID, err := instanceAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return err
 	}

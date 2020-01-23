@@ -32,7 +32,7 @@ func resourceScalewayInstanceIPReverseDns() *schema.Resource {
 }
 
 func resourceScalewayInstanceIPReverseDnsCreate(d *schema.ResourceData, m interface{}) error {
-	instanceAPI, zone, err := getInstanceAPIWithZone(d, m)
+	instanceAPI, zone, err := instanceAPIWithZone(d, m)
 	if err != nil {
 		return err
 	}
@@ -51,7 +51,7 @@ func resourceScalewayInstanceIPReverseDnsCreate(d *schema.ResourceData, m interf
 }
 
 func resourceScalewayInstanceIPReverseDnsRead(d *schema.ResourceData, m interface{}) error {
-	instanceAPI, zone, ID, err := getInstanceAPIWithZoneAndID(m, d.Id())
+	instanceAPI, zone, ID, err := instanceAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return err
 	}
@@ -76,7 +76,7 @@ func resourceScalewayInstanceIPReverseDnsRead(d *schema.ResourceData, m interfac
 }
 
 func resourceScalewayInstanceIPReverseDnsUpdate(d *schema.ResourceData, m interface{}) error {
-	instanceAPI, zone, ID, err := getInstanceAPIWithZoneAndID(m, d.Id())
+	instanceAPI, zone, ID, err := instanceAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return err
 	}
@@ -105,7 +105,7 @@ func resourceScalewayInstanceIPReverseDnsUpdate(d *schema.ResourceData, m interf
 }
 
 func resourceScalewayInstanceIPReverseDnsDelete(d *schema.ResourceData, m interface{}) error {
-	instanceAPI, zone, ID, err := getInstanceAPIWithZoneAndID(m, d.Id())
+	instanceAPI, zone, ID, err := instanceAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return err
 	}

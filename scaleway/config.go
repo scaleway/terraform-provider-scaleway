@@ -177,7 +177,7 @@ func (m *Meta) bootstrapS3Client() error {
 	config := &aws.Config{}
 	config.WithRegion(string(m.DefaultRegion))
 	config.WithCredentials(credentials.NewStaticCredentials(m.AccessKey, m.SecretKey, ""))
-	config.WithEndpoint(m.getS3Endpoint(m.DefaultRegion))
+	config.WithEndpoint(m.s3Endpoint(m.DefaultRegion))
 
 	s, err := session.NewSession(config)
 	if err != nil {
@@ -188,8 +188,8 @@ func (m *Meta) bootstrapS3Client() error {
 	return nil
 }
 
-// getS3Endpoint returns the correct S3 endpoint for object storage based on the current region
-func (m *Meta) getS3Endpoint(region scw.Region) string {
+// s3Endpoint returns the correct S3 endpoint for object storage based on the current region
+func (m *Meta) s3Endpoint(region scw.Region) string {
 	return "https://s3." + string(region) + ".scw.cloud"
 
 }
