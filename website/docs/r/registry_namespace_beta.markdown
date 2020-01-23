@@ -31,7 +31,7 @@ The following arguments are supported:
 
 - `description` (Optional) The description of the container registry namespace.
 
-- `is_public` (Defaults to `false`) Whether or not the Registry Images stored in the namespace should be downloadable publicly (docker pull).
+- `is_public` (Defaults to `false`) Whether or not the registry images stored in the namespace should be downloadable publicly (docker pull).
 
 - `region` - (Defaults to [provider](../index.html#region) `region`). The [region](../guides/regions_and_zones.html#regions) in which the container registry namespace should be created.
 

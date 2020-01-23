@@ -45,20 +45,15 @@ func resourceScalewayRegistryNamespaceBeta() *schema.Resource {
 }
 
 func resourceScalewayRegistryNamespaceBetaCreate(d *schema.ResourceData, m interface{}) error {
-	api, region, err := registryNamespaceWithRegion(d, m)
+	api, region, err := registryNamespaceAPIWithRegion(d, m)
 	if err != nil {
 		return err
-	}
-
-	name, ok := d.GetOk("name")
-	if !ok {
-		name = getRandomName("cr")
 	}
 
 	ns, err := api.CreateNamespace(&registry.CreateNamespaceRequest{
 		Region:         region,
 		OrganizationID: d.Get("organization_id").(string),
-		Name:           name.(string),
+		Name:           d.Get("name").(string),
 		Description:    d.Get("description").(string),
 		IsPublic:       d.Get("is_public").(bool),
 	})
@@ -72,7 +67,7 @@ func resourceScalewayRegistryNamespaceBetaCreate(d *schema.ResourceData, m inter
 }
 
 func resourceScalewayRegistryNamespaceBetaRead(d *schema.ResourceData, m interface{}) error {
-	api, region, id, err := registryNamespaceWithRegionAndID(m, d.Id())
+	api, region, id, err := registryNamespaceAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return err
 	}
@@ -90,18 +85,18 @@ func resourceScalewayRegistryNamespaceBetaRead(d *schema.ResourceData, m interfa
 		return err
 	}
 
-	_ = d.Set("name", ns.Name)
-	_ = d.Set("description", ns.Description)
-	_ = d.Set("organization_id", ns.OrganizationID)
-	_ = d.Set("is_public", ns.IsPublic)
-	_ = d.Set("endpoint", ns.Endpoint)
-	_ = d.Set("region", ns.Region)
+	d.Set("name", ns.Name)
+	d.Set("description", ns.Description)
+	d.Set("organization_id", ns.OrganizationID)
+	d.Set("is_public", ns.IsPublic)
+	d.Set("endpoint", ns.Endpoint)
+	d.Set("region", ns.Region)
 
 	return nil
 }
 
 func resourceScalewayRegistryNamespaceBetaUpdate(d *schema.ResourceData, m interface{}) error {
-	api, region, id, err := registryNamespaceWithRegionAndID(m, d.Id())
+	api, region, id, err := registryNamespaceAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return err
 	}
@@ -121,7 +116,7 @@ func resourceScalewayRegistryNamespaceBetaUpdate(d *schema.ResourceData, m inter
 }
 
 func resourceScalewayRegistryNamespaceBetaDelete(d *schema.ResourceData, m interface{}) error {
-	api, region, id, err := registryNamespaceWithRegionAndID(m, d.Id())
+	api, region, id, err := registryNamespaceAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return err
 	}

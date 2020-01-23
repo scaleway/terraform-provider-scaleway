@@ -31,12 +31,14 @@ func TestRegistryNamespaceBeta(t *testing.T) {
 				Config: `
 					resource scaleway_registry_namespace_beta cr01 {
 						name = "test-cr"
-						description = "test container repository"
+						description = "test registry namespace"
 						is_public = true
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayRegistryNamespaceBetaExists("scaleway_registry_namespace_beta.cr01"),
+					resource.TestCheckResourceAttr("scaleway_registry_namespace_beta.cr01", "description", "test registry namespace"),
+					resource.TestCheckResourceAttr("scaleway_registry_namespace_beta.cr01", "is_public", "true"),
 					testCheckResourceAttrUUID("scaleway_registry_namespace_beta.cr01", "id"),
 				),
 			},
@@ -51,7 +53,7 @@ func testAccCheckScalewayRegistryNamespaceBetaExists(n string) resource.TestChec
 			return fmt.Errorf("resource not found: %s", n)
 		}
 
-		api, region, id, err := registryNamespaceWithRegionAndID(testAccProvider.Meta(), rs.Primary.ID)
+		api, region, id, err := registryNamespaceAPIWithRegionAndID(testAccProvider.Meta(), rs.Primary.ID)
 		if err != nil {
 			return nil
 		}
@@ -75,7 +77,7 @@ func testAccCheckScalewayRegistryNamespaceBetaDestroy(s *terraform.State) error 
 			continue
 		}
 
-		api, region, id, err := registryNamespaceWithRegionAndID(testAccProvider.Meta(), rs.Primary.ID)
+		api, region, id, err := registryNamespaceAPIWithRegionAndID(testAccProvider.Meta(), rs.Primary.ID)
 		if err != nil {
 			return err
 		}
