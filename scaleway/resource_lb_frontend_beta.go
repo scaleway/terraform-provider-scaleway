@@ -261,7 +261,7 @@ func resourceScalewayLbFrontendBetaUpdateAcl(d *schema.ResourceData, lbAPI *lb.A
 				stateAcl.Name = apiAcl.Name
 			}
 			//Verify if their values are the same and ignore if that's the case, update otherwise
-			if aclEquals(stateAcl, apiAcl, false) {
+			if aclEquals(stateAcl, apiAcl) {
 				continue
 			}
 			_, err = lbAPI.UpdateACL(&lb.UpdateACLRequest{
@@ -351,8 +351,8 @@ func resourceScalewayLbFrontendBetaDelete(d *schema.ResourceData, m interface{})
 	return nil
 }
 
-func aclEquals(aclA, aclB *lb.ACL, skipNameVerification bool) bool {
-	if !skipNameVerification && aclA.Name != aclB.Name {
+func aclEquals(aclA, aclB *lb.ACL) bool {
+	if aclA.Name != aclB.Name {
 		return false
 	}
 	if !cmp.Equal(aclA.Match, aclB.Match) {

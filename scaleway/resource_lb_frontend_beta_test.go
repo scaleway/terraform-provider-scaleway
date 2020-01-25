@@ -242,11 +242,15 @@ func TestAccScalewayLbAclBeta(t *testing.T) {
 func testAccCheckScalewayAclAreCorrect(frontendName string, expectedAcls []*lb.ACL) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		//define a wrapper for acl comparison
-		testCompareAcls := func(testAcl, apiAcl *lb.ACL, skipNameVerification bool) bool {
+		testCompareAcls := func(testAcl, apiAcl lb.ACL) bool {
 			//drop some values which are not part of the testing acl structure
 			apiAcl.ID = ""
 			apiAcl.Frontend = nil
-			return aclEquals(testAcl, apiAcl, skipNameVerification)
+			//if we do not pass any name, then drop it from comparison
+			if testAcl.Name == "" {
+				testAcl.Name = apiAcl.Name
+			}
+			return aclEquals(&testAcl, &apiAcl)
 		}
 
 		rs, ok := s.RootModule().Resources[frontendName]
@@ -287,13 +291,7 @@ func testAccCheckScalewayAclAreCorrect(frontendName string, expectedAcls []*lb.A
 			if _, found := aclMap[int32(i)]; !found {
 				return fmt.Errorf("cannot find an index set [%d]", i)
 			}
-			ignoreName := false
-			expectedAcl := expectedAcls[i-1]
-			//if we do not pass any name, then drop it from comparison
-			if expectedAcl.Name == "" {
-				ignoreName = true
-			}
-			if !testCompareAcls(expectedAcl, aclMap[int32(i)], ignoreName) {
+			if !testCompareAcls(*expectedAcls[i-1], *aclMap[int32(i)]) {
 				return fmt.Errorf("two acls are not equal on stage %d", i)
 			}
 		}
@@ -382,24 +380,24 @@ func TestAclEqual(t *testing.T) {
 		Frontend: nil,
 		Index:    1,
 	}
-	assert.True(t, aclEquals(aclA, aclB, false))
+	assert.True(t, aclEquals(aclA, aclB))
 
 	//change name
 	aclA.Name = "nope"
-	assert.False(t, aclEquals(aclA, aclB, false))
+	assert.False(t, aclEquals(aclA, aclB))
 	aclA.Name = aclB.Name
 
 	//check action
 	aclA.Action = nil
-	assert.False(t, aclEquals(aclA, aclB, false))
+	assert.False(t, aclEquals(aclA, aclB))
 	aclA.Action = &lb.ACLAction{Type: lb.ACLActionTypeAllow}
-	assert.True(t, aclEquals(aclA, aclB, false))
+	assert.True(t, aclEquals(aclA, aclB))
 	aclA.Action = &lb.ACLAction{Type: lb.ACLActionTypeDeny}
-	assert.False(t, aclEquals(aclA, aclB, false))
+	assert.False(t, aclEquals(aclA, aclB))
 	aclA.Action = &lb.ACLAction{Type: lb.ACLActionTypeAllow}
-	assert.True(t, aclEquals(aclA, aclB, false))
+	assert.True(t, aclEquals(aclA, aclB))
 
 	//check match
 	aclA.Match.IPSubnet = scw.StringSlicePtr([]string{"192.168.0.1", "192.168.0.2", "192.168.10.0/24", "0.0.0.0"})
-	assert.False(t, aclEquals(aclA, aclB, false))
+	assert.False(t, aclEquals(aclA, aclB))
 }
