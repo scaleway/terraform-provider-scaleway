@@ -258,7 +258,7 @@ func testAccCheckScalewayAclAreCorrect(frontendName string, expectedAcls []*lb.A
 			return fmt.Errorf("resource id is not set")
 		}
 
-		lbAPI, region, ID, err := getLbAPIWithRegionAndID(testAccProvider.Meta(), rs.Primary.ID)
+		lbAPI, region, ID, err := lbAPIWithRegionAndID(testAccProvider.Meta(), rs.Primary.ID)
 		if err != nil {
 			return err
 		}
