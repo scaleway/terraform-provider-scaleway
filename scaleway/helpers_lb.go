@@ -43,6 +43,74 @@ func flattenLbBackendMarkdownAction(action lb.OnMarkedDownAction) interface{} {
 	return action.String()
 }
 
+func flattenLbAcl(acl *lb.ACL) interface{} {
+	res := map[string]interface{}{
+		"name":   acl.Name,
+		"match":  flattenLbAclMatch(acl.Match),
+		"action": flattenLbAclAction(acl.Action),
+	}
+	return res
+}
+
+// expandLbAcl transforms a state acl to an api one.
+func expandLbAcl(i interface{}) *lb.ACL {
+	rawRule := i.(map[string]interface{})
+	acl := &lb.ACL{
+		Name:   rawRule["name"].(string),
+		Match:  expandLbAclMatch(rawRule["match"]),
+		Action: expandLbAclAction(rawRule["action"]),
+	}
+
+	//remove http filter values if we do not pass any http filter
+	if acl.Match.HTTPFilter == "" || acl.Match.HTTPFilter == lb.ACLHTTPFilterACLHTTPFilterNone {
+		acl.Match.HTTPFilter = lb.ACLHTTPFilterACLHTTPFilterNone
+		acl.Match.HTTPFilterValue = []*string{}
+	}
+
+	return acl
+}
+func flattenLbAclAction(action *lb.ACLAction) interface{} {
+	return map[string]interface{}{
+		"type": action.Type,
+	}
+}
+func expandLbAclAction(raw interface{}) *lb.ACLAction {
+	if raw == nil || len(raw.([]interface{})) != 1 {
+		return nil
+	}
+	rawMap := raw.([]interface{})[0].(map[string]interface{})
+	return &lb.ACLAction{
+		Type: lb.ACLActionType(rawMap["type"].(string)),
+	}
+}
+func flattenLbAclMatch(match *lb.ACLMatch) interface{} {
+	return map[string]interface{}{
+		"ip_subnet":         flattenSliceStringPtr(match.IPSubnet),
+		"http_filter":       match.HTTPFilter.String(),
+		"http_filter_value": flattenSliceStringPtr(match.HTTPFilterValue),
+		"invert":            match.Invert,
+	}
+}
+func expandLbAclMatch(raw interface{}) *lb.ACLMatch {
+	if raw == nil || len(raw.([]interface{})) != 1 {
+		return nil
+	}
+	rawMap := raw.([]interface{})[0].(map[string]interface{})
+
+	//scaleway api require ip subnet, so if we did not specify one, just put 0.0.0.0/0 instead
+	ipSubnet := expandSliceStringPtr(rawMap["ip_subnet"].([]interface{}))
+	if len(ipSubnet) == 0 {
+		ipSubnet = []*string{scw.StringPtr("0.0.0.0/0")}
+	}
+
+	return &lb.ACLMatch{
+		IPSubnet:        ipSubnet,
+		HTTPFilter:      lb.ACLHTTPFilter(rawMap["http_filter"].(string)),
+		HTTPFilterValue: expandSliceStringPtr(rawMap["http_filter_value"].([]interface{})),
+		Invert:          rawMap["invert"].(bool),
+	}
+}
+
 func expandLbBackendMarkdownAction(raw interface{}) lb.OnMarkedDownAction {
 	if raw == "none" {
 		return lb.OnMarkedDownActionOnMarkedDownActionNone

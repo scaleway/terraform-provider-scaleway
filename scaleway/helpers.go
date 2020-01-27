@@ -555,6 +555,17 @@ func expandStrings(data interface{}) []string {
 	return stringSlice
 }
 
+func expandSliceStringPtr(data interface{}) []*string {
+	if data == nil {
+		return nil
+	}
+	stringSlice := []*string(nil)
+	for _, s := range data.([]interface{}) {
+		stringSlice = append(stringSlice, expandStringPtr(s))
+	}
+	return stringSlice
+}
+
 func flattenIPPtr(ip *net.IP) interface{} {
 	if ip == nil {
 		return ""
@@ -567,6 +578,14 @@ func flattenStringPtr(s *string) interface{} {
 		return ""
 	}
 	return *s
+}
+
+func flattenSliceStringPtr(s []*string) interface{} {
+	res := make([]interface{}, 0, len(s))
+	for _, strPtr := range s {
+		res = append(res, flattenStringPtr(strPtr))
+	}
+	return res
 }
 
 func expandStringPtr(data interface{}) *string {
