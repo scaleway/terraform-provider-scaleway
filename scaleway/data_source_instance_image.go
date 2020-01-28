@@ -123,8 +123,8 @@ func dataSourceScalewayInstanceImageRead(d *schema.ResourceData, m interface{}) 
 	zone, imageID, _ = parseZonedID(zonedID)
 
 	d.SetId(zonedID)
-	d.Set("image_id", zonedID)
-	d.Set("zone", zone)
+	_ = d.Set("image_id", zonedID)
+	_ = d.Set("zone", zone)
 
 	resp, err := instanceApi.GetImage(&instance.GetImageRequest{
 		Zone:    zone,
@@ -134,33 +134,33 @@ func dataSourceScalewayInstanceImageRead(d *schema.ResourceData, m interface{}) 
 		return err
 	}
 
-	d.Set("organization_id", resp.Image.Organization)
-	d.Set("architecture", resp.Image.Arch)
-	d.Set("name", resp.Image.Name)
+	_ = d.Set("organization_id", resp.Image.Organization)
+	_ = d.Set("architecture", resp.Image.Arch)
+	_ = d.Set("name", resp.Image.Name)
 
-	d.Set("creation_date", flattenTime(&resp.Image.CreationDate))
-	d.Set("modification_date", flattenTime(&resp.Image.ModificationDate))
-	d.Set("public", resp.Image.Public)
-	d.Set("from_server_id", resp.Image.FromServer)
-	d.Set("state", resp.Image.State.String())
+	_ = d.Set("creation_date", flattenTime(&resp.Image.CreationDate))
+	_ = d.Set("modification_date", flattenTime(&resp.Image.ModificationDate))
+	_ = d.Set("public", resp.Image.Public)
+	_ = d.Set("from_server_id", resp.Image.FromServer)
+	_ = d.Set("state", resp.Image.State.String())
 
 	if resp.Image.DefaultBootscript != nil {
-		d.Set("default_bootscript_id", resp.Image.DefaultBootscript.ID)
+		_ = d.Set("default_bootscript_id", resp.Image.DefaultBootscript.ID)
 	} else {
-		d.Set("default_bootscript_id", "")
+		_ = d.Set("default_bootscript_id", "")
 	}
 
 	if resp.Image.RootVolume != nil {
-		d.Set("root_volume_id", resp.Image.RootVolume.ID)
+		_ = d.Set("root_volume_id", resp.Image.RootVolume.ID)
 	} else {
-		d.Set("root_volume_id", "")
+		_ = d.Set("root_volume_id", "")
 	}
 
 	additionalVolumeIDs := []string(nil)
 	for _, volume := range orderVolumes(resp.Image.ExtraVolumes) {
 		additionalVolumeIDs = append(additionalVolumeIDs, volume.ID)
 	}
-	d.Set("additional_volume_ids", additionalVolumeIDs)
+	_ = d.Set("additional_volume_ids", additionalVolumeIDs)
 
 	return nil
 }

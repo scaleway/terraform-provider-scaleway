@@ -113,12 +113,12 @@ func resourceScalewaySecurityGroupRead(d *schema.ResourceData, m interface{}) er
 		return err
 	}
 
-	d.Set("name", group.Name)
-	d.Set("description", group.Description)
-	d.Set("enable_default_security", group.EnableDefaultSecurity)
-	d.Set("stateful", group.Stateful)
-	d.Set("inbound_default_policy", group.InboundDefaultPolicy)
-	d.Set("outbound_default_policy", group.OutboundDefaultPolicy)
+	_ = d.Set("name", group.Name)
+	_ = d.Set("description", group.Description)
+	_ = d.Set("enable_default_security", group.EnableDefaultSecurity)
+	_ = d.Set("stateful", group.Stateful)
+	_ = d.Set("inbound_default_policy", group.InboundDefaultPolicy)
+	_ = d.Set("outbound_default_policy", group.OutboundDefaultPolicy)
 
 	return nil
 }

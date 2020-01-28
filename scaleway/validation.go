@@ -85,7 +85,7 @@ func validationStringNotInSlice(invalid []string, ignoreCase bool) schema.Schema
 		}
 
 		for _, str := range invalid {
-			if v == str || (ignoreCase && strings.ToLower(v) == strings.ToLower(str)) {
+			if v == str || (ignoreCase && strings.EqualFold(v, str)) {
 				es = append(es, fmt.Errorf("expected %s not to be one of %v, got %s", k, invalid, v))
 			}
 		}

@@ -57,9 +57,9 @@ func dataSourceScalewaySecurityGroupRead(d *schema.ResourceData, m interface{}) 
 
 	d.SetId(group.ID)
 
-	d.Set("name", group.Name)
-	d.Set("description", group.Description)
-	d.Set("enable_default_security", group.EnableDefaultSecurity)
+	_ = d.Set("name", group.Name)
+	_ = d.Set("description", group.Description)
+	_ = d.Set("enable_default_security", group.EnableDefaultSecurity)
 
 	return nil
 }

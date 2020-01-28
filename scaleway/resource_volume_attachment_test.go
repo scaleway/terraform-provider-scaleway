@@ -53,7 +53,7 @@ func testAccCheckScalewayVolumeAttachmentExists(n string) resource.TestCheckFunc
 	return func(s *terraform.State) error {
 		client := testAccProvider.Meta().(*Meta).deprecatedClient
 
-		rs, _ := s.RootModule().Resources[n]
+		rs := s.RootModule().Resources[n]
 
 		server, err := client.GetServer(rs.Primary.Attributes["server"])
 		if err != nil {

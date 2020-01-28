@@ -94,12 +94,12 @@ func resourceScalewayInstancePlacementGroupRead(d *schema.ResourceData, m interf
 		return err
 	}
 
-	d.Set("name", res.PlacementGroup.Name)
-	d.Set("zone", string(zone))
-	d.Set("organization_id", res.PlacementGroup.Organization)
-	d.Set("policy_mode", res.PlacementGroup.PolicyMode.String())
-	d.Set("policy_type", res.PlacementGroup.PolicyType.String())
-	d.Set("policy_respected", res.PlacementGroup.PolicyRespected)
+	_ = d.Set("name", res.PlacementGroup.Name)
+	_ = d.Set("zone", string(zone))
+	_ = d.Set("organization_id", res.PlacementGroup.Organization)
+	_ = d.Set("policy_mode", res.PlacementGroup.PolicyMode.String())
+	_ = d.Set("policy_type", res.PlacementGroup.PolicyType.String())
+	_ = d.Set("policy_respected", res.PlacementGroup.PolicyRespected)
 
 	return nil
 }

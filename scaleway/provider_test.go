@@ -22,8 +22,8 @@ func init() {
 
 	old := testAccProvider.ConfigureFunc
 	testAccProvider.ConfigureFunc = func(data *schema.ResourceData) (i interface{}, e error) {
-		data.Set("region", "fr-par")
-		data.Set("zone", "fr-par-1")
+		_ = data.Set("region", "fr-par")
+		_ = data.Set("zone", "fr-par-1")
 		return old(data)
 	}
 
@@ -42,7 +42,7 @@ func TestProvider_impl(t *testing.T) {
 func testAccPreCheck(t *testing.T) {
 
 	// Handle new config system first
-	scw.MigrateLegacyConfig()
+	_, _ = scw.MigrateLegacyConfig()
 	config, err := scw.LoadConfig()
 	if err == nil {
 		activeProfile, err := config.GetActiveProfile()

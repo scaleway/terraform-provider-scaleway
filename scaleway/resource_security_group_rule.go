@@ -119,11 +119,11 @@ func resourceScalewaySecurityGroupRuleRead(d *schema.ResourceData, m interface{}
 		return err
 	}
 
-	d.Set("action", rule.Action)
-	d.Set("direction", rule.Direction)
-	d.Set("ip_range", rule.IPRange)
-	d.Set("protocol", rule.Protocol)
-	d.Set("port", rule.DestPortFrom)
+	_ = d.Set("action", rule.Action)
+	_ = d.Set("direction", rule.Direction)
+	_ = d.Set("ip_range", rule.IPRange)
+	_ = d.Set("protocol", rule.Protocol)
+	_ = d.Set("port", rule.DestPortFrom)
 
 	return nil
 }

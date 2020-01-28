@@ -500,22 +500,22 @@ func resourceScalewayK8SClusterBetaRead(d *schema.ResourceData, m interface{}) e
 		return err
 	}
 
-	d.Set("region", string(region))
-	d.Set("name", response.Name)
-	d.Set("description", response.Description)
-	d.Set("version", response.Version)
-	d.Set("cni", response.Cni)
-	d.Set("tags", response.Tags)
-	d.Set("created_at", response.CreatedAt)
-	d.Set("updated_at", response.UpdatedAt)
-	d.Set("apiserver_url", response.ClusterURL)
-	d.Set("wildcard_dns", response.DNSWildcard)
-	d.Set("status", response.Status.String())
-	d.Set("upgrade_available", response.UpgradeAvailable)
+	_ = d.Set("region", string(region))
+	_ = d.Set("name", response.Name)
+	_ = d.Set("description", response.Description)
+	_ = d.Set("version", response.Version)
+	_ = d.Set("cni", response.Cni)
+	_ = d.Set("tags", response.Tags)
+	_ = d.Set("created_at", response.CreatedAt)
+	_ = d.Set("updated_at", response.UpdatedAt)
+	_ = d.Set("apiserver_url", response.ClusterURL)
+	_ = d.Set("wildcard_dns", response.DNSWildcard)
+	_ = d.Set("status", response.Status.String())
+	_ = d.Set("upgrade_available", response.UpgradeAvailable)
 
 	// autoscaler_config
-	d.Set("autoscaler_config", clusterAutoscalerConfigFlatten(response))
-	d.Set("auto_upgrade", clusterAutoUpgradeFlatten(response))
+	_ = d.Set("autoscaler_config", clusterAutoscalerConfigFlatten(response))
+	_ = d.Set("auto_upgrade", clusterAutoUpgradeFlatten(response))
 
 	// default_pool_config
 	err = resourceScalewayK8SClusterBetaDefaultPoolRead(d, m)
@@ -555,7 +555,7 @@ func resourceScalewayK8SClusterBetaRead(d *schema.ResourceData, m interface{}) e
 	kubeconf["cluster_ca_certificate"] = kubeconfigCa
 	kubeconf["token"] = kubeconfigToken
 
-	d.Set("kubeconfig", []map[string]interface{}{kubeconf})
+	_ = d.Set("kubeconfig", []map[string]interface{}{kubeconf})
 
 	return nil
 }
@@ -601,7 +601,7 @@ func resourceScalewayK8SClusterBetaDefaultPoolUpdate(d *schema.ResourceData, m i
 				updateRequest.Autoscaling = scw.BoolPtr(autoscaling.(bool))
 			}
 
-			if d.Get("default_pool.0.autoscaling").(bool) == false {
+			if !d.Get("default_pool.0.autoscaling").(bool) {
 				if size, ok := d.GetOk("default_pool.0.size"); ok {
 					updateRequest.Size = scw.Uint32Ptr(uint32(size.(int)))
 				}
@@ -650,7 +650,7 @@ func resourceScalewayK8SClusterBetaDefaultPoolUpdate(d *schema.ResourceData, m i
 			defaultPool := map[string]interface{}{}
 			defaultPool["pool_id"] = newRegionalId(region, defaultPoolRes.ID)
 
-			d.Set("default_pool", []map[string]interface{}{defaultPool})
+			_ = d.Set("default_pool", []map[string]interface{}{defaultPool})
 
 			if oldPoolID != "" {
 				_, err = k8sAPI.DeletePool(&k8s.DeletePoolRequest{

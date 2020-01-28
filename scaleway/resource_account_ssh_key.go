@@ -69,9 +69,9 @@ func resourceScalewayAccountSSHKeyRead(d *schema.ResourceData, m interface{}) er
 		return err
 	}
 
-	d.Set("name", res.Name)
-	d.Set("public_key", res.PublicKey)
-	d.Set("organization_id", res.OrganizationID)
+	_ = d.Set("name", res.Name)
+	_ = d.Set("public_key", res.PublicKey)
+	_ = d.Set("organization_id", res.OrganizationID)
 
 	return nil
 }

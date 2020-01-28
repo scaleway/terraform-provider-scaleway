@@ -118,12 +118,6 @@ func testAccCheckScalewayIPDestroy(s *terraform.State) error {
 	return nil
 }
 
-func testAccCheckScalewayIPAttributes() resource.TestCheckFunc {
-	return func(s *terraform.State) error {
-		return nil
-	}
-}
-
 func testAccCheckScalewayIPExists(n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]

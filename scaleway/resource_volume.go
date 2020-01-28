@@ -87,12 +87,12 @@ func resourceScalewayVolumeRead(d *schema.ResourceData, m interface{}) error {
 
 		return err
 	}
-	d.Set("name", volume.Name)
-	d.Set("size_in_gb", uint64(volume.Size)/gb)
-	d.Set("type", volume.VolumeType)
-	d.Set("server", "")
+	_ = d.Set("name", volume.Name)
+	_ = d.Set("size_in_gb", uint64(volume.Size)/gb)
+	_ = d.Set("type", volume.VolumeType)
+	_ = d.Set("server", "")
 	if volume.Server != nil {
-		d.Set("server", volume.Server.Identifier)
+		_ = d.Set("server", volume.Server.Identifier)
 	}
 	return nil
 }
@@ -110,7 +110,7 @@ func resourceScalewayVolumeUpdate(d *schema.ResourceData, m interface{}) error {
 		req.Size = &size
 	}
 
-	scaleway.UpdateVolume(d.Id(), req)
+	_, _ = scaleway.UpdateVolume(d.Id(), req)
 	return resourceScalewayVolumeRead(d, m)
 }
 

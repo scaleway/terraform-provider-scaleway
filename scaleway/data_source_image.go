@@ -63,11 +63,11 @@ func dataSourceScalewayImage() *schema.Resource {
 }
 
 func scalewayImageAttributes(d *schema.ResourceData, img *api.Image) error {
-	d.Set("architecture", img.Arch)
-	d.Set("organization", img.Organization)
-	d.Set("public", img.Public)
-	d.Set("creation_date", img.CreationDate)
-	d.Set("name", img.Name)
+	_ = d.Set("architecture", img.Arch)
+	_ = d.Set("organization", img.Organization)
+	_ = d.Set("public", img.Public)
+	_ = d.Set("creation_date", img.CreationDate)
+	_ = d.Set("name", img.Name)
 	d.SetId(img.Identifier)
 
 	return nil

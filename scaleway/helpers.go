@@ -40,7 +40,7 @@ func validateServerType(v interface{}, k string) (ws []string, errors []error) {
 	isKnown := false
 	requestedType := v.(string)
 	for _, knownType := range commercialServerTypes {
-		isKnown = isKnown || strings.ToUpper(knownType) == strings.ToUpper(requestedType)
+		isKnown = isKnown || strings.EqualFold(knownType, requestedType)
 	}
 
 	if !isKnown {
@@ -56,8 +56,6 @@ func validateVolumeType(v interface{}, k string) (ws []string, errors []error) {
 	}
 	return
 }
-
-var allStates = []string{"starting", "running", "stopping", "stopped"}
 
 func waitForServerShutdown(scaleway *api.API, serverID string) error {
 	return waitForServerState(scaleway, serverID, "stopped", []string{"stopped", "stopping"})
@@ -423,44 +421,6 @@ func suppressLocality(k, old, new string, d *schema.ResourceData) bool {
 	return expandID(old) == expandID(new)
 }
 
-// isResourceTimeoutError returns true when the given error is a timeout error returned by
-// terraform's Retry helper.
-func isResourceTimeoutError(err error) bool {
-	timeoutErr, ok := err.(*resource.TimeoutError)
-	return ok && timeoutErr.LastError == nil
-}
-
-// isSDKResponseError returns true when the given http status and the message match
-// with the scw.ResponseError status and message.
-func isSDKResponseError(err error, status int, message string) bool {
-	responseError, ok := err.(*scw.ResponseError)
-	if !ok {
-		return false
-	}
-
-	return responseError.StatusCode == status && responseError.Message == message
-}
-
-// isSDKError returns true when the SdkError error message matches with the given message.
-func isSDKError(err error, expectedMessage string) bool {
-
-	responseError, ok := err.(scw.SdkError)
-	if !ok {
-		return false
-	}
-	actualMessage := responseError.Error()[17:] // remove "scaleway-sdk-go: "
-	if actualMessage == expectedMessage {
-		return true
-	}
-
-	regexp, err := regexp.Compile(expectedMessage)
-	if err != nil {
-		return false
-	}
-
-	return regexp.MatchString(actualMessage)
-}
-
 var UUIDRegex = regexp.MustCompile(`[0-9a-fA-F]{8}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{12}`)
 
 // isUUID returns true if the given string have an UUID format.
@@ -673,17 +633,11 @@ func validateHour() schema.SchemaValidateFunc {
 }
 
 func diffSuppressFuncIgnoreCase(k, old, new string, d *schema.ResourceData) bool {
-	if strings.ToLower(old) == strings.ToLower(new) {
-		return true
-	}
-	return false
+	return strings.EqualFold(old, new)
 }
 
 func diffSuppressFuncIgnoreCaseAndHyphen(k, old, new string, d *schema.ResourceData) bool {
-	if strings.Replace(strings.ToLower(old), "-", "_", -1) == strings.Replace(strings.ToLower(new), "-", "_", -1) {
-		return true
-	}
-	return false
+	return strings.Replace(strings.ToLower(old), "-", "_", -1) == strings.Replace(strings.ToLower(new), "-", "_", -1)
 }
 
 func diffSuppressFuncLabelUUID(k, old, new string, d *schema.ResourceData) bool {

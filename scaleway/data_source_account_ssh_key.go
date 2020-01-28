@@ -63,10 +63,10 @@ func dataSourceScalewayAccountSSHKeyRead(d *schema.ResourceData, m interface{}) 
 	}
 
 	d.SetId(sshKey.ID)
-	d.Set("name", sshKey.Name)
-	d.Set("ssh_key_id", sshKey.ID)
-	d.Set("public_key", sshKey.PublicKey)
-	d.Set("organization_id", sshKey.OrganizationID)
+	_ = d.Set("name", sshKey.Name)
+	_ = d.Set("ssh_key_id", sshKey.ID)
+	_ = d.Set("public_key", sshKey.PublicKey)
+	_ = d.Set("organization_id", sshKey.OrganizationID)
 
 	return nil
 }

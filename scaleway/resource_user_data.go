@@ -64,8 +64,8 @@ func resourceScalewayUserDataRead(d *schema.ResourceData, m interface{}) error {
 	if d.Get("server").(string) == "" {
 		// import case
 		parts := strings.Split(d.Id(), "-")
-		d.Set("key", parts[len(parts)-1])
-		d.Set("server", strings.Join(parts[1:len(parts)-1], "-"))
+		_ = d.Set("key", parts[len(parts)-1])
+		_ = d.Set("server", strings.Join(parts[1:len(parts)-1], "-"))
 	}
 	userdata, err := scaleway.GetUserdata(
 		d.Get("server").(string),
@@ -83,7 +83,7 @@ func resourceScalewayUserDataRead(d *schema.ResourceData, m interface{}) error {
 		return err
 	}
 
-	d.Set("value", userdata.String())
+	_ = d.Set("value", userdata.String())
 	return nil
 }
 

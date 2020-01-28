@@ -173,16 +173,16 @@ func resourceScalewayBaremetalServerBetaRead(d *schema.ResourceData, m interface
 		return err
 	}
 
-	d.Set("name", res.Name)
-	d.Set("zone", string(zone))
-	d.Set("organization_id", res.OrganizationID)
-	d.Set("offer", flattenLabelUUID(offer.Name, offer.ID))
-	d.Set("tags", res.Tags)
+	_ = d.Set("name", res.Name)
+	_ = d.Set("zone", string(zone))
+	_ = d.Set("organization_id", res.OrganizationID)
+	_ = d.Set("offer", flattenLabelUUID(offer.Name, offer.ID))
+	_ = d.Set("tags", res.Tags)
 	if res.Install != nil {
-		d.Set("os_id", res.Install.OsID)
-		d.Set("ssh_key_ids", res.Install.SSHKeyIDs)
+		_ = d.Set("os_id", res.Install.OsID)
+		_ = d.Set("ssh_key_ids", res.Install.SSHKeyIDs)
 	}
-	d.Set("description", res.Description)
+	_ = d.Set("description", res.Description)
 
 	return nil
 }

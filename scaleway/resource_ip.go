@@ -70,14 +70,14 @@ func resourceScalewayIPRead(d *schema.ResourceData, m interface{}) error {
 		return err
 	}
 
-	d.Set("ip", ip.Address)
+	_ = d.Set("ip", ip.Address)
 	if ip.Server != nil {
-		d.Set("server", ip.Server.Identifier)
+		_ = d.Set("server", ip.Server.Identifier)
 	}
 	if ip.Reverse != nil {
-		d.Set("reverse", *ip.Reverse)
+		_ = d.Set("reverse", *ip.Reverse)
 	} else {
-		d.Set("reverse", "")
+		_ = d.Set("reverse", "")
 	}
 	return nil
 }

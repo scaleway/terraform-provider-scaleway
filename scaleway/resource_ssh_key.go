@@ -67,7 +67,7 @@ func resourceScalewaySSHKeyCreate(d *schema.ResourceData, m interface{}) error {
 		return nil
 	}
 
-	user, err = scaleway.PatchUserSSHKey(user.ID, api.UserPatchSSHKeyDefinition{
+	_, err = scaleway.PatchUserSSHKey(user.ID, api.UserPatchSSHKeyDefinition{
 		SSHPublicKeys: append(keys, api.KeyDefinition{
 			Key: strings.TrimSpace(d.Get("key").(string)),
 		}),
@@ -93,7 +93,7 @@ func resourceScalewaySSHKeyRead(d *schema.ResourceData, m interface{}) error {
 	for _, key := range user.SSHPublicKeys {
 		exists = exists || strings.Contains(key.Fingerprint, d.Id())
 		if exists {
-			d.Set("key", key.Key)
+			_ = d.Set("key", key.Key)
 			break
 		}
 	}
@@ -120,7 +120,7 @@ func resourceScalewaySSHKeyDelete(d *schema.ResourceData, m interface{}) error {
 			})
 		}
 	}
-	user, err = scaleway.PatchUserSSHKey(user.ID, api.UserPatchSSHKeyDefinition{
+	_, err = scaleway.PatchUserSSHKey(user.ID, api.UserPatchSSHKeyDefinition{
 		SSHPublicKeys: keys,
 	})
 
