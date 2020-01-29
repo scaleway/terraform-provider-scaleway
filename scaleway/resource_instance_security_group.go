@@ -57,12 +57,18 @@ func resourceScalewayInstanceSecurityGroup() *schema.Resource {
 				Optional:    true,
 				Description: "Inbound rules for this security group",
 				Elem:        securityGroupRuleSchema(),
+				ConflictsWith: []string{"external_rules"},
 			},
 			"outbound_rule": {
 				Type:        schema.TypeList,
 				Optional:    true,
 				Description: "Outbound rules for this security group",
 				Elem:        securityGroupRuleSchema(),
+				ConflictsWith: []string{"external_rules"},
+			},
+			"external_rules": {
+				Optional:    true,
+				ConflictsWith: []string{"inbound_rule", "outbound_rule"},
 			},
 			"zone":            zoneSchema(),
 			"organization_id": organizationIDSchema(),
@@ -97,8 +103,12 @@ func resourceScalewayInstanceSecurityGroupCreate(d *schema.ResourceData, m inter
 
 	d.SetId(newZonedId(zone, res.SecurityGroup.ID))
 
-	// We call update instead of read as it will take care of creating rules.
-	return resourceScalewayInstanceSecurityGroupUpdate(d, m)
+	if d.Get("external_rules").(bool) {
+		return resourceScalewayInstanceSecurityGroupRead(d, m)
+	} else {
+		// We call update instead of read as it will take care of creating rules.
+		return resourceScalewayInstanceSecurityGroupUpdate(d, m)
+	}
 }
 
 func resourceScalewayInstanceSecurityGroupRead(d *schema.ResourceData, m interface{}) error {
@@ -126,16 +136,25 @@ func resourceScalewayInstanceSecurityGroupRead(d *schema.ResourceData, m interfa
 	_ = d.Set("inbound_default_policy", res.SecurityGroup.InboundDefaultPolicy.String())
 	_ = d.Set("outbound_default_policy", res.SecurityGroup.OutboundDefaultPolicy.String())
 
-	//
-	// Handle SecurityGroupRules
-	//
+	if d.Get("external_rules").(bool) {
+		stateRules, err := getSecurityGroupRules(instanceApi, zone, ID, d)
+		if err != nil {
+			return err
+		}
+		d.Set("inbound_rule", stateRules[instance.SecurityGroupRuleDirectionInbound])
+		d.Set("outbound_rule", stateRules[instance.SecurityGroupRuleDirectionOutbound])
+	}
+	return nil
+}
+
+func getSecurityGroupRules(instanceApi *instance.API, zone scw.Zone, securityGroupID string, d *schema.ResourceData) (map[instance.SecurityGroupRuleDirection][]interface{}, error) {
 
 	resRules, err := instanceApi.ListSecurityGroupRules(&instance.ListSecurityGroupRulesRequest{
 		Zone:            zone,
-		SecurityGroupID: ID,
+		SecurityGroupID: securityGroupID,
 	}, scw.WithAllPages())
 	if err != nil {
-		return err
+		return nil, err
 	}
 	sort.Slice(resRules.Rules, func(i, j int) bool {
 		return resRules.Rules[i].Position < resRules.Rules[j].Position
@@ -144,6 +163,7 @@ func resourceScalewayInstanceSecurityGroupRead(d *schema.ResourceData, m interfa
 		instance.SecurityGroupRuleDirectionInbound:  {},
 		instance.SecurityGroupRuleDirectionOutbound: {},
 	}
+
 	stateRules := map[instance.SecurityGroupRuleDirection][]interface{}{
 		instance.SecurityGroupRuleDirectionInbound:  d.Get("inbound_rule").([]interface{}),
 		instance.SecurityGroupRuleDirectionOutbound: d.Get("outbound_rule").([]interface{}),
@@ -170,16 +190,14 @@ func resourceScalewayInstanceSecurityGroupRead(d *schema.ResourceData, m interfa
 		}
 	}
 
-	_ = d.Set("inbound_rule", stateRules[instance.SecurityGroupRuleDirectionInbound])
-	_ = d.Set("outbound_rule", stateRules[instance.SecurityGroupRuleDirectionOutbound])
-	return nil
+	return stateRules, nil
 }
 
 func resourceScalewayInstanceSecurityGroupUpdate(d *schema.ResourceData, m interface{}) error {
 	meta := m.(*Meta)
 	instanceApi := instance.NewAPI(meta.scwClient)
 
-	zone, ID, err := parseZonedID(d.Id())
+	zone, securityGroupID, err := parseZonedID(d.Id())
 	if err != nil {
 		return err
 	}
@@ -189,7 +207,7 @@ func resourceScalewayInstanceSecurityGroupUpdate(d *schema.ResourceData, m inter
 
 	updateReq := &instance.UpdateSecurityGroupRequest{
 		Zone:                  zone,
-		SecurityGroupID:       ID,
+		SecurityGroupID:       securityGroupID,
 		Description:           scw.StringPtr(d.Get("description").(string)),
 		InboundDefaultPolicy:  &inboundDefaultPolicy,
 		OutboundDefaultPolicy: &outboundDefaultPolicy,
@@ -205,18 +223,28 @@ func resourceScalewayInstanceSecurityGroupUpdate(d *schema.ResourceData, m inter
 		return err
 	}
 
-	// *******
-	// Handle SecurityGroupRules
-	//
-	// It works as followed:
-	//   1) Creates 2 map[direction][]rule: one for rules in state and one for rules in API
-	//   2) For each direction we:
-	//     A) Loop for each rule in state for this direction
-	//       a) Compare with api rule in this direction at the same index
-	//          if different update / if equals do nothing / if no more api rules to compare create new api rule
-	//     B) If there is more rule in the API we remove them
-	// *******
+	if d.Get("external_rules").(bool) {
+		// do nothing
+	} else {
+		err = updateSecurityGroupeRules(d, zone, securityGroupID, instanceApi)
+		if err != nil {
+			return err
+		}
+	}
 
+	return resourceScalewayInstanceSecurityGroupRead(d, m)
+}
+
+// updateSecurityGroupeRules handles updating SecurityGroupRules
+//
+// It works as followed:
+//   1) Creates 2 map[direction][]rule: one for rules in state and one for rules in API
+//   2) For each direction we:
+//     A) Loop for each rule in state for this direction
+//       a) Compare with api rule in this direction at the same index
+//          if different update / if equals do nothing / if no more api rules to compare create new api rule
+//     B) If there is more rule in the API we remove them
+func updateSecurityGroupeRules(d *schema.ResourceData, zone scw.Zone, securityGroupID string, instanceAPI *instance.API) error {
 	apiRules := map[instance.SecurityGroupRuleDirection][]*instance.SecurityGroupRule{
 		instance.SecurityGroupRuleDirectionInbound:  {},
 		instance.SecurityGroupRuleDirectionOutbound: {},
@@ -227,9 +255,9 @@ func resourceScalewayInstanceSecurityGroupUpdate(d *schema.ResourceData, m inter
 	}
 
 	// Fill apiRules with data from API
-	resRules, err := instanceApi.ListSecurityGroupRules(&instance.ListSecurityGroupRulesRequest{
+	resRules, err := instanceAPI.ListSecurityGroupRules(&instance.ListSecurityGroupRulesRequest{
 		Zone:            zone,
-		SecurityGroupID: ID,
+		SecurityGroupID: securityGroupID,
 	}, scw.WithAllPages())
 	if err != nil {
 		return err
@@ -254,9 +282,9 @@ func resourceScalewayInstanceSecurityGroupUpdate(d *schema.ResourceData, m inter
 
 			// This happen when there is more rule in state than in the api. We create more rule in API.
 			if index >= len(apiRules[direction]) {
-				_, err = instanceApi.CreateSecurityGroupRule(&instance.CreateSecurityGroupRuleRequest{
+				_, err = instanceAPI.CreateSecurityGroupRule(&instance.CreateSecurityGroupRuleRequest{
 					Zone:            zone,
-					SecurityGroupID: ID,
+					SecurityGroupID: securityGroupID,
 					Protocol:        stateRule.Protocol,
 					IPRange:         stateRule.IPRange,
 					Action:          stateRule.Action,
@@ -282,9 +310,9 @@ func resourceScalewayInstanceSecurityGroupUpdate(d *schema.ResourceData, m inter
 					destPortTo = scw.Uint32Ptr(0)
 				}
 
-				_, err = instanceApi.UpdateSecurityGroupRule(&instance.UpdateSecurityGroupRuleRequest{
+				_, err = instanceAPI.UpdateSecurityGroupRule(&instance.UpdateSecurityGroupRuleRequest{
 					Zone:                zone,
-					SecurityGroupID:     ID,
+					SecurityGroupID:     securityGroupID,
 					SecurityGroupRuleID: apiRule.ID,
 					Protocol:            &stateRule.Protocol,
 					IPRange:             &stateRule.IPRange,
@@ -301,9 +329,9 @@ func resourceScalewayInstanceSecurityGroupUpdate(d *schema.ResourceData, m inter
 
 		// We loop through remaining API rules and delete them as they are no longer in the state.
 		for index := len(stateRules[direction]); index < len(apiRules[direction]); index++ {
-			err = instanceApi.DeleteSecurityGroupRule(&instance.DeleteSecurityGroupRuleRequest{
+			err = instanceAPI.DeleteSecurityGroupRule(&instance.DeleteSecurityGroupRuleRequest{
 				Zone:                zone,
-				SecurityGroupID:     ID,
+				SecurityGroupID:     securityGroupID,
 				SecurityGroupRuleID: apiRules[direction][index].ID,
 			})
 			if err != nil {
@@ -311,8 +339,7 @@ func resourceScalewayInstanceSecurityGroupUpdate(d *schema.ResourceData, m inter
 			}
 		}
 	}
-
-	return resourceScalewayInstanceSecurityGroupRead(d, m)
+	return nil
 }
 
 func resourceScalewayInstanceSecurityGroupDelete(d *schema.ResourceData, m interface{}) error {

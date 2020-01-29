@@ -194,6 +194,7 @@ func Provider() terraform.ResourceProvider {
 			"scaleway_instance_ip_reverse_dns":  resourceScalewayInstanceIPReverseDns(),
 			"scaleway_instance_volume":          resourceScalewayInstanceVolume(),
 			"scaleway_instance_security_group":  resourceScalewayInstanceSecurityGroup(),
+			"scaleway_instance_security_group_rules": resourceScalewayInstanceSecurityGroupRules(),
 			"scaleway_instance_server":          resourceScalewayInstanceServer(),
 			"scaleway_instance_placement_group": resourceScalewayInstancePlacementGroup(),
 			"scaleway_k8s_cluster_beta":         resourceScalewayK8SClusterBeta(),
