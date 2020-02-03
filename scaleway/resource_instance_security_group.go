@@ -213,7 +213,7 @@ func resourceScalewayInstanceSecurityGroupUpdate(d *schema.ResourceData, m inter
 
 	description := ""
 	if d.Get("description") != nil {
-		description =d.Get("description").(string)
+		description = d.Get("description").(string)
 	}
 	updateReq := &instance.UpdateSecurityGroupRequest{
 		Zone:                  zone,
