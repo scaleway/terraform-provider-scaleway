@@ -216,7 +216,7 @@ func withStoppedServer(scaleway *api.API, serverID string, run func(*api.Server)
 
 // parseLocalizedID parses a localizedID and extracts the resource locality and id.
 func parseLocalizedID(localizedID string) (locality string, ID string, err error) {
-	tab := strings.SplitN(localizedID, "/", 2)
+	tab := strings.SplitN(localizedID, "/", -1)
 	if len(tab) != 2 {
 		return "", "", fmt.Errorf("cant parse localized id: %s", localizedID)
 	}

@@ -2,12 +2,11 @@ package scaleway
 
 import (
 	"fmt"
-	"sort"
-
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"sort"
 )
 
 func resourceScalewayInstanceSecurityGroup() *schema.Resource {
@@ -104,7 +103,7 @@ func resourceScalewayInstanceSecurityGroupCreate(d *schema.ResourceData, m inter
 
 	d.SetId(newZonedId(zone, res.SecurityGroup.ID))
 
-	if d.Get("external_rules").(bool) {
+	if d.Get("external_rules") != nil && d.Get("external_rules").(bool) {
 		return resourceScalewayInstanceSecurityGroupRead(d, m)
 	} else {
 		// We call update instead of read as it will take care of creating rules.
@@ -137,7 +136,7 @@ func resourceScalewayInstanceSecurityGroupRead(d *schema.ResourceData, m interfa
 	_ = d.Set("inbound_default_policy", res.SecurityGroup.InboundDefaultPolicy.String())
 	_ = d.Set("outbound_default_policy", res.SecurityGroup.OutboundDefaultPolicy.String())
 
-	if d.Get("external_rules").(bool) {
+	if d.Get("external_rules") != nil && d.Get("external_rules").(bool) {
 		stateRules, err := getSecurityGroupRules(instanceApi, zone, ID, d)
 		if err != nil {
 			return err
@@ -203,19 +202,29 @@ func resourceScalewayInstanceSecurityGroupUpdate(d *schema.ResourceData, m inter
 		return err
 	}
 
-	inboundDefaultPolicy := instance.SecurityGroupPolicy(d.Get("inbound_default_policy").(string))
-	outboundDefaultPolicy := instance.SecurityGroupPolicy(d.Get("outbound_default_policy").(string))
+	inboundDefaultPolicy := instance.SecurityGroupPolicy("")
+	if d.Get("inbound_default_policy") != nil {
+		inboundDefaultPolicy = instance.SecurityGroupPolicy(d.Get("inbound_default_policy").(string))
+	}
+	outboundDefaultPolicy := instance.SecurityGroupPolicy("")
+	if d.Get("outbound_default_policy") != nil {
+		outboundDefaultPolicy = instance.SecurityGroupPolicy(d.Get("outbound_default_policy").(string))
+	}
 
+	description := ""
+	if d.Get("description") != nil {
+		description =d.Get("description").(string)
+	}
 	updateReq := &instance.UpdateSecurityGroupRequest{
 		Zone:                  zone,
 		SecurityGroupID:       securityGroupID,
-		Description:           scw.StringPtr(d.Get("description").(string)),
+		Description:           scw.StringPtr(description),
 		InboundDefaultPolicy:  &inboundDefaultPolicy,
 		OutboundDefaultPolicy: &outboundDefaultPolicy,
 	}
 
-	// Only update name if on is provided in the state
-	if d.Get("name").(string) != "" {
+	// Only update name if one is provided in the state
+	if d.Get("name") != nil && d.Get("name").(string) != "" {
 		updateReq.Name = scw.StringPtr(d.Get("name").(string))
 	}
 
@@ -224,7 +233,7 @@ func resourceScalewayInstanceSecurityGroupUpdate(d *schema.ResourceData, m inter
 		return err
 	}
 
-	if d.Get("external_rules").(bool) {
+	if d.Get("external_rules") != nil && d.Get("external_rules").(bool) {
 		// do nothing
 	} else {
 		err = updateSecurityGroupeRules(d, zone, securityGroupID, instanceApi)

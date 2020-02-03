@@ -7,13 +7,6 @@ import (
 	"testing"
 )
 
-func init() {
-	resource.AddTestSweepers("scaleway_instance_security_group_rules", &resource.Sweeper{
-		Name: "scaleway_instance_security_group_rules",
-		F:    testSweepComputeInstanceSecurityGroupRules,
-	})
-}
-
 func TestAccScalewayInstanceSecurityGroupRules(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -89,7 +82,3 @@ resource scaleway_instance_security_group_rules sgrs01 {
 	}
 }
 `
-
-func testSweepComputeInstanceSecurityGroupRules(region string) error {
-	return nil
-}

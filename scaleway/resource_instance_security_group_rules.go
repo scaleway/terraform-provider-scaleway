@@ -42,13 +42,14 @@ func resourceScalewayInstanceSecurityGroupRules() *schema.Resource {
 }
 
 func resourceScalewayInstanceSecurityGroupRulesCreate(d *schema.ResourceData, m interface{}) error {
-	meta := m.(*Meta)
+	/*meta := m.(*Meta)
 	_, zone, err := instanceAPIWithZone(d, meta)
 	if err != nil {
 		return err
-	}
+	}*/
 
-	d.SetId(newZonedId(zone, securityGroupRulesIDFromSecurityGroupID(d)))
+	//d.SetId(newZonedId(zone, securityGroupRulesIDFromSecurityGroupID(d)))
+	d.SetId(securityGroupRulesIDFromSecurityGroupID(d))
 
 	// We call update instead of read as it will take care of creating rules.
 	return resourceScalewayInstanceSecurityGroupUpdate(d, m)
@@ -128,11 +129,15 @@ func resourceScalewayInstanceSecurityGroupRulesDelete(d *schema.ResourceData, m 
 // because from the API,
 // the data for a single SGRS is duplicated for all SGs using the same SGRS.
 func securityGroupRulesIDFromSecurityGroupID(d *schema.ResourceData) string {
-	return d.Get("security_group_id").(string) + "sgrs-id"
+	// TODO: have different IDs for SecurityGroup and SecurityGroupRules
+	// Adding the suffix generates an error because the ID is not a valid UUID
+	// Can we disable that check ?
+	// We should not have the same ID for SecurityGroup and SecurityGroupRules.
+	return d.Get("security_group_id").(string) // + "-sgrs-id"
 }
 
 func securityGroupZIDFromsecurityGroupRulesZID(zid string) string {
-	return strings.Replace(zid, "sgrs-id", "", 1)
+	return strings.Replace(zid, "-sgrs-id", "", 1)
 }
 
 func securityGroupZoneIDFromData(d *schema.ResourceData) string {
