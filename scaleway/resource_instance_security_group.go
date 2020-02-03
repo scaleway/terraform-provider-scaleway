@@ -2,11 +2,12 @@ package scaleway
 
 import (
 	"fmt"
+	"sort"
+	
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
-	"sort"
 )
 
 func resourceScalewayInstanceSecurityGroup() *schema.Resource {
