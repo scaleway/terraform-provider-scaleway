@@ -67,7 +67,7 @@ func resourceScalewayInstanceSecurityGroup() *schema.Resource {
 				ConflictsWith: []string{"external_rules"},
 			},
 			"external_rules": {
-				Type: schema.TypeBool,
+				Type:          schema.TypeBool,
 				Optional:      true,
 				ConflictsWith: []string{"inbound_rule", "outbound_rule"},
 			},
