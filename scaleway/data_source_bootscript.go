@@ -67,13 +67,13 @@ func dataSourceScalewayBootscript() *schema.Resource {
 }
 
 func bootscriptDescriptionAttributes(d *schema.ResourceData, script api.Bootscript) error {
-	d.Set("architecture", script.Arch)
-	d.Set("organization", script.Organization)
-	d.Set("public", script.Public)
-	d.Set("boot_cmd_args", script.Bootcmdargs)
-	d.Set("dtb", script.Dtb)
-	d.Set("initrd", script.Initrd)
-	d.Set("kernel", script.Kernel)
+	_ = d.Set("architecture", script.Arch)
+	_ = d.Set("organization", script.Organization)
+	_ = d.Set("public", script.Public)
+	_ = d.Set("boot_cmd_args", script.Bootcmdargs)
+	_ = d.Set("dtb", script.Dtb)
+	_ = d.Set("initrd", script.Initrd)
+	_ = d.Set("kernel", script.Kernel)
 	d.SetId(script.Identifier)
 
 	return nil

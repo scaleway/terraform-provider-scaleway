@@ -57,6 +57,6 @@ func dataSourceScalewayInstanceServerRead(d *schema.ResourceData, m interface{})
 
 	zonedID := datasourceNewZonedID(serverID, zone)
 	d.SetId(zonedID)
-	d.Set("server_id", zonedID)
+	_ = d.Set("server_id", zonedID)
 	return resourceScalewayInstanceServerRead(d, m)
 }

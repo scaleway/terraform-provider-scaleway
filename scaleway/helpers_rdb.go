@@ -12,12 +12,6 @@ const (
 	RdbWaitForTimeout = 10 * time.Minute
 )
 
-// rdbAPI returns a new RDB API
-func rdbAPI(m interface{}) *rdb.API {
-	meta := m.(*Meta)
-	return rdb.NewAPI(meta.scwClient)
-}
-
 // rdbAPIWithRegion returns a new lb API and the region for a Create request
 func rdbAPIWithRegion(d *schema.ResourceData, m interface{}) (*rdb.API, scw.Region, error) {
 	meta := m.(*Meta)

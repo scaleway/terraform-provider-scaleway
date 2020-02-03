@@ -163,16 +163,16 @@ func dataSourceScalewayBaremetalOfferBetaRead(d *schema.ResourceData, m interfac
 	offer := matches[0]
 	zonedID := datasourceNewZonedID(offer.ID, zone)
 	d.SetId(zonedID)
-	d.Set("offer_id", zonedID)
-	d.Set("zone", zone)
-	d.Set("name", offer.Name)
-	d.Set("include_disabled", !offer.Enable)
-	d.Set("bandwidth", offer.Bandwidth)
-	d.Set("commercial_range", offer.CommercialRange)
-	d.Set("cpu", flattenBaremetalCPUs(offer.CPU))
-	d.Set("disk", flattenBaremetalDisks(offer.Disk))
-	d.Set("memory", flattenBaremetalMemory(offer.Memory))
-	d.Set("stock", offer.Stock.String())
+	_ = d.Set("offer_id", zonedID)
+	_ = d.Set("zone", zone)
+	_ = d.Set("name", offer.Name)
+	_ = d.Set("include_disabled", !offer.Enable)
+	_ = d.Set("bandwidth", offer.Bandwidth)
+	_ = d.Set("commercial_range", offer.CommercialRange)
+	_ = d.Set("cpu", flattenBaremetalCPUs(offer.CPU))
+	_ = d.Set("disk", flattenBaremetalDisks(offer.Disk))
+	_ = d.Set("memory", flattenBaremetalMemory(offer.Memory))
+	_ = d.Set("stock", offer.Stock.String())
 
 	return nil
 }

@@ -48,6 +48,9 @@ func resourceScalewayObjectBucketCreate(d *schema.ResourceData, m interface{}) e
 	acl := d.Get("acl").(string)
 
 	s3Client, region, err := s3ClientWithRegion(d, m)
+	if err != nil {
+		return err
+	}
 
 	_, err = s3Client.CreateBucket(&s3.CreateBucketInput{
 		Bucket: aws.String(bucketName),
@@ -68,7 +71,7 @@ func resourceScalewayObjectBucketRead(d *schema.ResourceData, m interface{}) err
 		return err
 	}
 
-	d.Set("name", bucketName)
+	_ = d.Set("name", bucketName)
 
 	// We do not read `acl` attribute because it could be impossible to find
 	// the right canned ACL from a complex ACL object.

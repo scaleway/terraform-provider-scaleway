@@ -45,9 +45,9 @@ func dataSourceScalewayMarketplaceImageReadBeta(d *schema.ResourceData, m interf
 
 	zonedID := datasourceNewZonedID(imageID, zone)
 	d.SetId(zonedID)
-	d.Set("zone", zone)
-	d.Set("label", d.Get("label"))
-	d.Set("instance_type", d.Get("type"))
+	_ = d.Set("zone", zone)
+	_ = d.Set("label", d.Get("label"))
+	_ = d.Set("instance_type", d.Get("type"))
 
 	return nil
 }

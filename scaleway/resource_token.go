@@ -96,7 +96,7 @@ func resourceScalewayTokenCreate(d *schema.ResourceData, m interface{}) error {
 
 	d.SetId(token.ID)
 	// the secret_key is not present in read operations
-	d.Set("secret_key", token.SecretKey)
+	_ = d.Set("secret_key", token.SecretKey)
 
 	return resourceScalewayTokenUpdate(d, m)
 }
@@ -114,22 +114,22 @@ func resourceScalewayTokenRead(d *schema.ResourceData, m interface{}) error {
 		}
 		return err
 	}
-	d.Set("description", token.Description)
-	d.Set("expiration_date", token.Expires)
-	d.Set("expires", token.Expires != "")
-	d.Set("user_id", token.UserID)
-	d.Set("creation_ip", token.CreationIP)
-	d.Set("access_key", token.AccessKey)
+	_ = d.Set("description", token.Description)
+	_ = d.Set("expiration_date", token.Expires)
+	_ = d.Set("expires", token.Expires != "")
+	_ = d.Set("user_id", token.UserID)
+	_ = d.Set("creation_ip", token.CreationIP)
+	_ = d.Set("access_key", token.AccessKey)
 	// this is compatibilty to old tokens: the secret key is the id
 	if d.Get("secret_key") == "" {
-		d.Set("secret_key", token.ID)
+		_ = d.Set("secret_key", token.ID)
 	}
 	user, err := scaleway.GetUser()
 	if err != nil {
 		return err
 	}
 	if user.ID == token.UserID {
-		d.Set("email", user.Email)
+		_ = d.Set("email", user.Email)
 	}
 
 	return nil

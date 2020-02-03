@@ -66,7 +66,7 @@ func resourceScalewayIPReverseDNSRead(d *schema.ResourceData, m interface{}) err
 		return err
 	}
 	if ip.Reverse != nil {
-		d.Set("reverse", *ip.Reverse)
+		_ = d.Set("reverse", *ip.Reverse)
 	}
 	return nil
 }
@@ -82,9 +82,9 @@ func resourceScalewayIPReverseDNSUpdate(d *schema.ResourceData, m interface{}) e
 		return err
 	}
 	if ip.Reverse != nil {
-		d.Set("reverse", *ip.Reverse)
+		_ = d.Set("reverse", *ip.Reverse)
 	} else {
-		d.Set("reverse", "")
+		_ = d.Set("reverse", "")
 	}
 
 	return resourceScalewayIPReverseDNSRead(d, m)

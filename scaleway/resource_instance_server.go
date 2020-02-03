@@ -348,60 +348,60 @@ func resourceScalewayInstanceServerRead(d *schema.ResourceData, m interface{}) e
 		return err
 	}
 
-	d.Set("state", state)
-	d.Set("zone", string(zone))
-	d.Set("name", response.Server.Name)
-	d.Set("type", response.Server.CommercialType)
-	d.Set("tags", response.Server.Tags)
-	d.Set("security_group_id", response.Server.SecurityGroup.ID)
-	d.Set("enable_ipv6", response.Server.EnableIPv6)
-	d.Set("enable_dynamic_ip", response.Server.DynamicIPRequired)
+	_ = d.Set("state", state)
+	_ = d.Set("zone", string(zone))
+	_ = d.Set("name", response.Server.Name)
+	_ = d.Set("type", response.Server.CommercialType)
+	_ = d.Set("tags", response.Server.Tags)
+	_ = d.Set("security_group_id", response.Server.SecurityGroup.ID)
+	_ = d.Set("enable_ipv6", response.Server.EnableIPv6)
+	_ = d.Set("enable_dynamic_ip", response.Server.DynamicIPRequired)
 
 	// Image could be empty in an import context.
 	image := d.Get("image").(string)
 	if response.Server.Image != nil && (image == "" || isUUID(image)) {
 		// TODO: If image is a label, check that response.Server.Image.ID match the label.
 		// It could be useful if the user edit the image with another tool.
-		d.Set("image", response.Server.Image.ID)
+		_ = d.Set("image", response.Server.Image.ID)
 	}
 
 	if response.Server.PlacementGroup != nil {
-		d.Set("placement_group_policy_respected", response.Server.PlacementGroup.PolicyRespected)
+		_ = d.Set("placement_group_policy_respected", response.Server.PlacementGroup.PolicyRespected)
 	}
 
 	if response.Server.PrivateIP != nil {
-		d.Set("private_ip", *response.Server.PrivateIP)
+		_ = d.Set("private_ip", *response.Server.PrivateIP)
 	}
 
 	if response.Server.PublicIP != nil {
-		d.Set("public_ip", response.Server.PublicIP.Address.String())
+		_ = d.Set("public_ip", response.Server.PublicIP.Address.String())
 		d.SetConnInfo(map[string]string{
 			"type": "ssh",
 			"host": response.Server.PublicIP.Address.String(),
 		})
-		if response.Server.PublicIP.Dynamic == false {
-			d.Set("ip_id", newZonedId(zone, response.Server.PublicIP.ID))
+		if !response.Server.PublicIP.Dynamic {
+			_ = d.Set("ip_id", newZonedId(zone, response.Server.PublicIP.ID))
 		} else {
-			d.Set("ip_id", "")
+			_ = d.Set("ip_id", "")
 		}
 	} else {
-		d.Set("public_ip", "")
-		d.Set("ip_id", "")
+		_ = d.Set("public_ip", "")
+		_ = d.Set("ip_id", "")
 		d.SetConnInfo(nil)
 	}
 
 	if response.Server.IPv6 != nil {
-		d.Set("ipv6_address", response.Server.IPv6.Address.String())
-		d.Set("ipv6_gateway", response.Server.IPv6.Gateway.String())
+		_ = d.Set("ipv6_address", response.Server.IPv6.Address.String())
+		_ = d.Set("ipv6_gateway", response.Server.IPv6.Gateway.String())
 		prefixLength, err := strconv.Atoi(response.Server.IPv6.Netmask)
 		if err != nil {
 			return err
 		}
-		d.Set("ipv6_prefix_length", prefixLength)
+		_ = d.Set("ipv6_prefix_length", prefixLength)
 	} else {
-		d.Set("ipv6_address", nil)
-		d.Set("ipv6_gateway", nil)
-		d.Set("ipv6_prefix_length", nil)
+		_ = d.Set("ipv6_address", nil)
+		_ = d.Set("ipv6_gateway", nil)
+		_ = d.Set("ipv6_prefix_length", nil)
 	}
 
 	var additionalVolumesIDs []string
@@ -421,17 +421,17 @@ func resourceScalewayInstanceServerRead(d *schema.ResourceData, m interface{}) e
 				rootVolume["delete_on_termination"] = true // default value does not work on list
 			}
 
-			d.Set("root_volume", []map[string]interface{}{rootVolume})
+			_ = d.Set("root_volume", []map[string]interface{}{rootVolume})
 		} else {
 			additionalVolumesIDs = append(additionalVolumesIDs, volume.ID)
 		}
 	}
-	d.Set("additional_volume_ids", additionalVolumesIDs)
+	_ = d.Set("additional_volume_ids", additionalVolumesIDs)
 
 	////
 	// Read server user data
 	////
-	allUserData, err := instanceAPI.GetAllServerUserData(&instance.GetAllServerUserDataRequest{
+	allUserData, _ := instanceAPI.GetAllServerUserData(&instance.GetAllServerUserDataRequest{
 		Zone:     zone,
 		ServerID: ID,
 	})
@@ -448,11 +448,11 @@ func resourceScalewayInstanceServerRead(d *schema.ResourceData, m interface{}) e
 				"value": string(userData),
 			})
 		} else {
-			d.Set("cloud_init", string(userData))
+			_ = d.Set("cloud_init", string(userData))
 		}
 	}
 	if len(userDataList) > 0 {
-		d.Set("user_data", schema.NewSet(userDataHash, userDataList))
+		_ = d.Set("user_data", schema.NewSet(userDataHash, userDataList))
 	}
 
 	return nil
@@ -545,7 +545,7 @@ func resourceScalewayInstanceServerUpdate(d *schema.ResourceData, m interface{})
 		newIPID := expandID(d.Get("ip_id"))
 
 		// If an IP is already attached and it's not a dynamic IP we detach it.
-		if server.Server.PublicIP != nil && server.Server.PublicIP.Dynamic == false {
+		if server.Server.PublicIP != nil && !server.Server.PublicIP.Dynamic {
 			_, err = instanceAPI.UpdateIP(&instance.UpdateIPRequest{
 				Zone:   zone,
 				IP:     server.Server.PublicIP.ID,

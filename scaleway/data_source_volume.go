@@ -66,14 +66,14 @@ func dataSourceScalewayVolumeRead(d *schema.ResourceData, m interface{}) error {
 
 	d.SetId(volume.Identifier)
 
-	d.Set("name", volume.Name)
-	d.Set("size_in_gb", int(uint64(volume.Size)/gb))
-	d.Set("type", volume.VolumeType)
+	_ = d.Set("name", volume.Name)
+	_ = d.Set("size_in_gb", int(uint64(volume.Size)/gb))
+	_ = d.Set("type", volume.VolumeType)
 
 	if volume.Server != nil {
-		d.Set("server", volume.Server.Identifier)
+		_ = d.Set("server", volume.Server.Identifier)
 	} else {
-		d.Set("server", "")
+		_ = d.Set("server", "")
 	}
 
 	return nil

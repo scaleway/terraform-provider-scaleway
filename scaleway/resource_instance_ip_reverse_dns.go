@@ -70,8 +70,8 @@ func resourceScalewayInstanceIPReverseDnsRead(d *schema.ResourceData, m interfac
 		return err
 	}
 
-	d.Set("zone", string(zone))
-	d.Set("reverse", res.IP.Reverse)
+	_ = d.Set("zone", string(zone))
+	_ = d.Set("reverse", res.IP.Reverse)
 	return nil
 }
 

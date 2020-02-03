@@ -174,21 +174,21 @@ func resourceScalewayK8SPoolBetaRead(d *schema.ResourceData, m interface{}) erro
 		return err
 	}
 
-	d.Set("cluster_id", newRegionalId(region, pool.ClusterID))
-	d.Set("name", pool.Name)
-	d.Set("node_type", pool.NodeType)
-	d.Set("autoscaling", pool.Autoscaling)
-	d.Set("autohealing", pool.Autohealing)
-	d.Set("size", pool.Size)
-	d.Set("version", pool.Version)
-	d.Set("min_size", pool.MinSize)
-	d.Set("max_size", pool.MaxSize)
-	d.Set("container_runtime", pool.ContainerRuntime)
-	d.Set("created_at", pool.CreatedAt)
-	d.Set("updated_at", pool.UpdatedAt)
+	_ = d.Set("cluster_id", newRegionalId(region, pool.ClusterID))
+	_ = d.Set("name", pool.Name)
+	_ = d.Set("node_type", pool.NodeType)
+	_ = d.Set("autoscaling", pool.Autoscaling)
+	_ = d.Set("autohealing", pool.Autohealing)
+	_ = d.Set("size", pool.Size)
+	_ = d.Set("version", pool.Version)
+	_ = d.Set("min_size", pool.MinSize)
+	_ = d.Set("max_size", pool.MaxSize)
+	_ = d.Set("container_runtime", pool.ContainerRuntime)
+	_ = d.Set("created_at", pool.CreatedAt)
+	_ = d.Set("updated_at", pool.UpdatedAt)
 
 	if pool.PlacementGroupID != nil {
-		d.Set("placement_group_id", newZonedIdFromRegion(region, *pool.PlacementGroupID)) // TODO fix this ZonedIdFromRegion
+		_ = d.Set("placement_group_id", newZonedIdFromRegion(region, *pool.PlacementGroupID)) // TODO fix this ZonedIdFromRegion
 	}
 
 	return nil
@@ -224,7 +224,7 @@ func resourceScalewayK8SPoolBetaUpdate(d *schema.ResourceData, m interface{}) er
 		updateRequest.MaxSize = scw.Uint32Ptr(uint32(d.Get("max_size").(int)))
 	}
 
-	if d.Get("autoscaling").(bool) == false && d.HasChange("size") {
+	if !d.Get("autoscaling").(bool) && d.HasChange("size") {
 		updateRequest.Size = scw.Uint32Ptr(uint32(d.Get("size").(int)))
 	}
 

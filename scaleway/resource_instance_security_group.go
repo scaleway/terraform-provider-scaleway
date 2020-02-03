@@ -119,12 +119,12 @@ func resourceScalewayInstanceSecurityGroupRead(d *schema.ResourceData, m interfa
 		return err
 	}
 
-	d.Set("zone", zone)
-	d.Set("organization_id", res.SecurityGroup.Organization)
-	d.Set("name", res.SecurityGroup.Name)
-	d.Set("description", res.SecurityGroup.Description)
-	d.Set("inbound_default_policy", res.SecurityGroup.InboundDefaultPolicy.String())
-	d.Set("outbound_default_policy", res.SecurityGroup.OutboundDefaultPolicy.String())
+	_ = d.Set("zone", zone)
+	_ = d.Set("organization_id", res.SecurityGroup.Organization)
+	_ = d.Set("name", res.SecurityGroup.Name)
+	_ = d.Set("description", res.SecurityGroup.Description)
+	_ = d.Set("inbound_default_policy", res.SecurityGroup.InboundDefaultPolicy.String())
+	_ = d.Set("outbound_default_policy", res.SecurityGroup.OutboundDefaultPolicy.String())
 
 	//
 	// Handle SecurityGroupRules
@@ -150,7 +150,7 @@ func resourceScalewayInstanceSecurityGroupRead(d *schema.ResourceData, m interfa
 	}
 
 	for _, apiRule := range resRules.Rules {
-		if apiRule.Editable == false {
+		if !apiRule.Editable {
 			continue
 		}
 		apiRules[apiRule.Direction] = append(apiRules[apiRule.Direction], apiRule)
@@ -170,8 +170,8 @@ func resourceScalewayInstanceSecurityGroupRead(d *schema.ResourceData, m interfa
 		}
 	}
 
-	d.Set("inbound_rule", stateRules[instance.SecurityGroupRuleDirectionInbound])
-	d.Set("outbound_rule", stateRules[instance.SecurityGroupRuleDirectionOutbound])
+	_ = d.Set("inbound_rule", stateRules[instance.SecurityGroupRuleDirectionInbound])
+	_ = d.Set("outbound_rule", stateRules[instance.SecurityGroupRuleDirectionOutbound])
 	return nil
 }
 
@@ -238,7 +238,7 @@ func resourceScalewayInstanceSecurityGroupUpdate(d *schema.ResourceData, m inter
 		return resRules.Rules[i].Position < resRules.Rules[j].Position
 	})
 	for _, apiRule := range resRules.Rules {
-		if apiRule.Editable == false {
+		if !apiRule.Editable {
 			continue
 		}
 		apiRules[apiRule.Direction] = append(apiRules[apiRule.Direction], apiRule)

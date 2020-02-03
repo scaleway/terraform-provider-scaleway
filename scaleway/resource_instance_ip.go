@@ -80,10 +80,10 @@ func resourceScalewayInstanceIPRead(d *schema.ResourceData, m interface{}) error
 		return err
 	}
 
-	d.Set("address", res.IP.Address.String())
-	d.Set("zone", string(zone))
-	d.Set("organization_id", res.IP.Organization)
-	d.Set("reverse", res.IP.Reverse)
+	_ = d.Set("address", res.IP.Address.String())
+	_ = d.Set("zone", string(zone))
+	_ = d.Set("organization_id", res.IP.Organization)
+	_ = d.Set("reverse", res.IP.Reverse)
 
 	return nil
 }

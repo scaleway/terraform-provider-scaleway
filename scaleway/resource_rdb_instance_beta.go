@@ -172,24 +172,24 @@ func resourceScalewayRdbInstanceBetaRead(d *schema.ResourceData, m interface{}) 
 		return err
 	}
 
-	d.Set("name", res.Name)
-	d.Set("node_type", res.NodeType)
-	d.Set("engine", res.Engine)
-	d.Set("is_ha_cluster", res.IsHaCluster)
-	d.Set("disable_backup", res.BackupSchedule.Disabled)
-	d.Set("user_name", d.Get("user_name").(string)) // user name and
-	d.Set("password", d.Get("password").(string))   // password are immutable
-	d.Set("tags", res.Tags)
+	_ = d.Set("name", res.Name)
+	_ = d.Set("node_type", res.NodeType)
+	_ = d.Set("engine", res.Engine)
+	_ = d.Set("is_ha_cluster", res.IsHaCluster)
+	_ = d.Set("disable_backup", res.BackupSchedule.Disabled)
+	_ = d.Set("user_name", d.Get("user_name").(string)) // user name and
+	_ = d.Set("password", d.Get("password").(string))   // password are immutable
+	_ = d.Set("tags", res.Tags)
 	if res.Endpoint != nil {
-		d.Set("endpoint_ip", flattenIPPtr(res.Endpoint.IP))
-		d.Set("endpoint_port", int(res.Endpoint.Port))
+		_ = d.Set("endpoint_ip", flattenIPPtr(res.Endpoint.IP))
+		_ = d.Set("endpoint_port", int(res.Endpoint.Port))
 	} else {
-		d.Set("endpoint_ip", "")
-		d.Set("endpoint_port", 0)
+		_ = d.Set("endpoint_ip", "")
+		_ = d.Set("endpoint_port", 0)
 	}
-	d.Set("read_replicas", flattenRdbInstanceReadReplicas(res.ReadReplicas))
-	d.Set("region", string(region))
-	d.Set("organization_id", res.OrganizationID)
+	_ = d.Set("read_replicas", flattenRdbInstanceReadReplicas(res.ReadReplicas))
+	_ = d.Set("region", string(region))
+	_ = d.Set("organization_id", res.OrganizationID)
 
 	// set certificate
 	cert, err := rdbAPI.GetInstanceCertificate(&rdb.GetInstanceCertificateRequest{
@@ -203,7 +203,7 @@ func resourceScalewayRdbInstanceBetaRead(d *schema.ResourceData, m interface{}) 
 	if err != nil {
 		return err
 	}
-	d.Set("certificate", string(certContent))
+	_ = d.Set("certificate", string(certContent))
 
 	return nil
 }

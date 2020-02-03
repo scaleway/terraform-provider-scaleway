@@ -107,13 +107,13 @@ func resourceScalewayLbBetaRead(d *schema.ResourceData, m interface{}) error {
 		return err
 	}
 
-	d.Set("name", res.Name)
-	d.Set("region", string(region))
-	d.Set("organization_id", res.OrganizationID)
-	d.Set("tags", res.Tags)
-	d.Set("type", res.Type)
-	d.Set("ip_id", res.IP[0].ID)
-	d.Set("ip_address", res.IP[0].IPAddress)
+	_ = d.Set("name", res.Name)
+	_ = d.Set("region", string(region))
+	_ = d.Set("organization_id", res.OrganizationID)
+	_ = d.Set("tags", res.Tags)
+	_ = d.Set("type", res.Type)
+	_ = d.Set("ip_id", res.IP[0].ID)
+	_ = d.Set("ip_address", res.IP[0].IPAddress)
 
 	return nil
 }

@@ -11,8 +11,6 @@ import (
 
 var commercialServerTypes []string
 
-var sshHostFingerprints = "ssh-host-fingerprints"
-
 func resourceScalewayServer() *schema.Resource {
 	return &schema.Resource{
 		DeprecationMessage: `This resource is deprecated and will be removed in the next major version.
@@ -225,7 +223,7 @@ func resourceScalewayServerCreate(d *schema.ResourceData, m interface{}) error {
 			}
 			volumes[i] = volume
 		}
-		d.Set("volume", volumes)
+		_ = d.Set("volume", volumes)
 	}
 
 	if raw, ok := d.GetOk("tags"); ok {
@@ -285,26 +283,26 @@ func resourceScalewayServerRead(d *schema.ResourceData, m interface{}) error {
 
 	cloudinit, err := scaleway.GetUserdata(server.Identifier, "cloud-init", false)
 	if err == nil {
-		d.Set("cloudinit", cloudinit.String())
+		_ = d.Set("cloudinit", cloudinit.String())
 	} else {
 		fmt.Printf("[DEBUG] unable to retrieve cloudinit configuration for server %q\n", d.Get("server"))
 	}
 
-	d.Set("name", server.Name)
-	d.Set("image", server.Image.Identifier)
-	d.Set("type", server.CommercialType)
-	d.Set("enable_ipv6", server.EnableIPV6)
-	d.Set("private_ip", server.PrivateIP)
-	d.Set("public_ip", server.PublicAddress.IP)
-	d.Set("boot_type", server.BootType)
+	_ = d.Set("name", server.Name)
+	_ = d.Set("image", server.Image.Identifier)
+	_ = d.Set("type", server.CommercialType)
+	_ = d.Set("enable_ipv6", server.EnableIPV6)
+	_ = d.Set("private_ip", server.PrivateIP)
+	_ = d.Set("public_ip", server.PublicAddress.IP)
+	_ = d.Set("boot_type", server.BootType)
 
 	if server.EnableIPV6 && server.IPV6 != nil {
-		d.Set("public_ipv6", server.IPV6.Address)
+		_ = d.Set("public_ipv6", server.IPV6.Address)
 	}
 
-	d.Set("state", server.State)
-	d.Set("state_detail", server.StateDetail)
-	d.Set("tags", server.Tags)
+	_ = d.Set("state", server.State)
+	_ = d.Set("state_detail", server.StateDetail)
+	_ = d.Set("tags", server.Tags)
 
 	d.SetConnInfo(map[string]string{
 		"type": "ssh",
