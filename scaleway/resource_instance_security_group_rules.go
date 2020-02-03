@@ -42,13 +42,6 @@ func resourceScalewayInstanceSecurityGroupRules() *schema.Resource {
 }
 
 func resourceScalewayInstanceSecurityGroupRulesCreate(d *schema.ResourceData, m interface{}) error {
-	/*meta := m.(*Meta)
-	_, zone, err := instanceAPIWithZone(d, meta)
-	if err != nil {
-		return err
-	}*/
-
-	//d.SetId(newZonedId(zone, securityGroupRulesIDFromSecurityGroupID(d)))
 	d.SetId(securityGroupRulesIDFromSecurityGroupID(d))
 
 	// We call update instead of read as it will take care of creating rules.

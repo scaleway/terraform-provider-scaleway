@@ -42,6 +42,12 @@ func TestAccScalewayInstanceSecurityGroupRules(t *testing.T) {
 					resource.TestCheckResourceAttrPair("scaleway_instance_security_group.sg01", "id", "scaleway_instance_security_group_rules.sgrs01", "security_group_id"),
 				),
 			},
+			{
+				Config: conf3,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayInstanceSecurityGroupExists("scaleway_instance_security_group.sg01"),
+				),
+			},
 		},
 	})
 }
@@ -80,5 +86,10 @@ resource scaleway_instance_security_group_rules sgrs01 {
 		port = 80
 		ip_range = "0.0.0.0/0"
 	}
+}
+`
+
+var conf3 = `
+resource scaleway_instance_security_group sg01 {
 }
 `
