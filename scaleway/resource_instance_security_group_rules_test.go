@@ -32,7 +32,6 @@ func TestAccScalewayInstanceSecurityGroupRules(t *testing.T) {
 						Protocol:     instance.SecurityGroupRuleProtocolTCP,
 						Action:       instance.SecurityGroupRuleActionAccept,
 					}),
-
 				),
 			},
 			{
