@@ -132,7 +132,7 @@ func securityGroupRulesIDFromSecurityGroupID(d *schema.ResourceData) string {
 }
 
 func securityGroupZIDFromsecurityGroupRulesZID(zid string) string {
-	return strings.ReplaceAll(zid, "sgrs-id", "")
+	return strings.Replace(zid, "sgrs-id", "", 1)
 }
 
 func securityGroupZoneIDFromData(d *schema.ResourceData) string {
