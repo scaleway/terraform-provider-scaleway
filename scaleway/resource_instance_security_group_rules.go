@@ -20,7 +20,7 @@ func resourceScalewayInstanceSecurityGroupRules() *schema.Resource {
 			"security_group_id": {
 				Type:        schema.TypeString,
 				Required:    true,
-				ForceNew: true,
+				ForceNew:    true,
 				Description: "The security group associated with this volume",
 			},
 			"inbound_rule": {
