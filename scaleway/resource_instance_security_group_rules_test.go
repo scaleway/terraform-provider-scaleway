@@ -90,8 +90,8 @@ func TestAccScalewayInstanceSecurityGroupRules(t *testing.T) {
 						}
 					}
 				`,
-				ResourceName:      "scaleway_instance_security_group_rules.sgrs01",
-				ImportState:       true,
+				ResourceName: "scaleway_instance_security_group_rules.sgrs01",
+				ImportState:  true,
 				// Necessary because of security_group_id.ForceNew == true.
 				ImportStateVerify: false,
 				// Necessary because of security_group_id.ForceNew == true.
