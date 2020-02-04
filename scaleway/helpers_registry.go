@@ -11,7 +11,7 @@ func registryNamespaceAPIWithRegion(d *schema.ResourceData, m interface{}) (*reg
 	meta := m.(*Meta)
 	api := registry.NewAPI(meta.scwClient)
 
-	region, err := getRegion(d, meta)
+	region, err := extractRegion(d, meta)
 	return api, region, err
 }
 
