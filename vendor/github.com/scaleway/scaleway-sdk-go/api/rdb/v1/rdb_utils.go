@@ -18,7 +18,6 @@ type WaitForInstanceRequest struct {
 // WaitForInstance waits for the instance to be in a "terminal state" before returning.
 // This function can be used to wait for an instance to be ready for example.
 func (s *API) WaitForInstance(req *WaitForInstanceRequest) (*Instance, error) {
-
 	terminalStatus := map[InstanceStatus]struct{}{
 		InstanceStatusReady:    {},
 		InstanceStatusDiskFull: {},
@@ -26,18 +25,18 @@ func (s *API) WaitForInstance(req *WaitForInstanceRequest) (*Instance, error) {
 	}
 
 	instance, err := async.WaitSync(&async.WaitSyncConfig{
-		Get: func() (interface{}, error, bool) {
+		Get: func() (interface{}, bool, error) {
 			res, err := s.GetInstance(&GetInstanceRequest{
 				InstanceID: req.InstanceID,
 				Region:     req.Region,
 			})
 
 			if err != nil {
-				return nil, err, false
+				return nil, false, err
 			}
 			_, isTerminal := terminalStatus[res.Status]
 
-			return res, nil, isTerminal
+			return res, isTerminal, nil
 		},
 		Timeout:          req.Timeout,
 		IntervalStrategy: async.LinearIntervalStrategy(5 * time.Second),

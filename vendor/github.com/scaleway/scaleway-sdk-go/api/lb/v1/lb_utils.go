@@ -18,7 +18,6 @@ type WaitForLbRequest struct {
 // WaitForLb waits for the lb to be in a "terminal state" before returning.
 // This function can be used to wait for a lb to be ready for example.
 func (s *API) WaitForLb(req *WaitForLbRequest) (*Lb, error) {
-
 	terminalStatus := map[LbStatus]struct{}{
 		LbStatusReady:   {},
 		LbStatusStopped: {},
@@ -27,18 +26,18 @@ func (s *API) WaitForLb(req *WaitForLbRequest) (*Lb, error) {
 	}
 
 	lb, err := async.WaitSync(&async.WaitSyncConfig{
-		Get: func() (interface{}, error, bool) {
+		Get: func() (interface{}, bool, error) {
 			res, err := s.GetLb(&GetLbRequest{
 				LbID:   req.LbID,
 				Region: req.Region,
 			})
 
 			if err != nil {
-				return nil, err, false
+				return nil, false, err
 			}
 			_, isTerminal := terminalStatus[res.Status]
 
-			return res, nil, isTerminal
+			return res, isTerminal, nil
 		},
 		Timeout:          req.Timeout,
 		IntervalStrategy: async.LinearIntervalStrategy(5 * time.Second),

@@ -151,7 +151,6 @@ var requestNumber uint32
 
 // do performs a single HTTP request based on the ScalewayRequest object.
 func (c *Client) do(req *ScalewayRequest, res interface{}) (sdkErr error) {
-
 	currentRequestNumber := atomic.AddUint32(&requestNumber, 1)
 
 	if req == nil {
@@ -178,7 +177,6 @@ func (c *Client) do(req *ScalewayRequest, res interface{}) (sdkErr error) {
 	}
 
 	if logger.ShouldLog(logger.LogLevelDebug) {
-
 		// Keep original headers (before anonymization)
 		originalHeaders := httpRequest.Header
 
@@ -262,7 +260,6 @@ func (c *Client) do(req *ScalewayRequest, res interface{}) (sdkErr error) {
 			}
 			legacyLister.UnsafeSetTotalCount(xTotalCount)
 		}
-
 	}
 
 	return nil
@@ -281,10 +278,8 @@ const maxPageCount uint32 = math.MaxUint32
 
 // doListAll collects all pages of a List request and aggregate all results on a single response.
 func (c *Client) doListAll(req *ScalewayRequest, res interface{}) (err error) {
-
 	// check for lister interface
 	if response, isLister := res.(lister); isLister {
-
 		pageCount := maxPageCount
 		for page := uint32(1); page <= pageCount; page++ {
 			// set current page

@@ -10,15 +10,16 @@ import (
 // Environment variables
 const (
 	// Up-to-date
-	scwConfigPathEnv       = "SCW_CONFIG_PATH"
-	scwAccessKeyEnv        = "SCW_ACCESS_KEY"
-	scwSecretKeyEnv        = "SCW_SECRET_KEY"
-	scwActiveProfileEnv    = "SCW_PROFILE"
-	scwAPIURLEnv           = "SCW_API_URL"
-	scwInsecureEnv         = "SCW_INSECURE"
+	scwCacheDirEnv              = "SCW_CACHE_DIR"
+	scwConfigPathEnv            = "SCW_CONFIG_PATH"
+	scwAccessKeyEnv             = "SCW_ACCESS_KEY"
+	scwSecretKeyEnv             = "SCW_SECRET_KEY" // #nosec G101
+	scwActiveProfileEnv         = "SCW_PROFILE"
+	scwAPIURLEnv                = "SCW_API_URL"
+	scwInsecureEnv              = "SCW_INSECURE"
 	scwDefaultOrganizationIDEnv = "SCW_DEFAULT_ORGANIZATION_ID"
-	scwDefaultRegionEnv    = "SCW_DEFAULT_REGION"
-	scwDefaultZoneEnv      = "SCW_DEFAULT_ZONE"
+	scwDefaultRegionEnv         = "SCW_DEFAULT_REGION"
+	scwDefaultZoneEnv           = "SCW_DEFAULT_ZONE"
 
 	// All deprecated (cli&terraform)
 	terraformAccessKeyEnv    = "SCALEWAY_ACCESS_KEY" // used both as access key and secret key

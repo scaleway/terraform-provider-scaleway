@@ -27,17 +27,17 @@ func (s *API) WaitForServer(req *WaitForServerRequest) (*Server, error) {
 	}
 
 	server, err := async.WaitSync(&async.WaitSyncConfig{
-		Get: func() (interface{}, error, bool) {
+		Get: func() (interface{}, bool, error) {
 			res, err := s.GetServer(&GetServerRequest{
 				ServerID: req.ServerID,
 				Zone:     req.Zone,
 			})
 			if err != nil {
-				return nil, err, false
+				return nil, false, err
 			}
 
 			_, isTerminal := terminalStatus[res.Status]
-			return res, err, isTerminal
+			return res, isTerminal, err
 		},
 		Timeout:          req.Timeout,
 		IntervalStrategy: async.LinearIntervalStrategy(5 * time.Second),
@@ -67,21 +67,21 @@ func (s *API) WaitForServerInstall(req *WaitForServerInstallRequest) (*Server, e
 	}
 
 	server, err := async.WaitSync(&async.WaitSyncConfig{
-		Get: func() (interface{}, error, bool) {
+		Get: func() (interface{}, bool, error) {
 			res, err := s.GetServer(&GetServerRequest{
 				ServerID: req.ServerID,
 				Zone:     req.Zone,
 			})
 			if err != nil {
-				return nil, err, false
+				return nil, false, err
 			}
 
 			if res.Install == nil {
-				return nil, errors.New("server creation has not begun for server %s", req.ServerID), false
+				return nil, false, errors.New("server creation has not begun for server %s", req.ServerID)
 			}
 
 			_, isTerminal := installTerminalStatus[res.Install.Status]
-			return res, err, isTerminal
+			return res, isTerminal, err
 		},
 		Timeout:          req.Timeout,
 		IntervalStrategy: async.LinearIntervalStrategy(15 * time.Second),
