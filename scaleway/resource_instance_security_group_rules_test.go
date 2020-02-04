@@ -70,7 +70,7 @@ func TestAccScalewayInstanceSecurityGroupRules(t *testing.T) {
 						}
 					}
 				`,
-				/*Check: resource.ComposeTestCheckFunc(
+				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayInstanceSecurityGroupExists("scaleway_instance_security_group.sg01"),
 					testAccCheckScalewayInstanceSecurityGroupRuleMatch("scaleway_instance_security_group.sg01", 0, &instance.SecurityGroupRule{
 						Direction:    instance.SecurityGroupRuleDirectionInbound,
@@ -81,9 +81,9 @@ func TestAccScalewayInstanceSecurityGroupRules(t *testing.T) {
 						Action:       instance.SecurityGroupRuleActionAccept,
 					}),
 					resource.TestCheckResourceAttrPair("scaleway_instance_security_group.sg01", "id", "scaleway_instance_security_group_rules.sgrs01", "security_group_id"),
-				),*/
+				),
 			},
-			/*{
+			{
 				ResourceName:      "scaleway_instance_security_group.sgrs01",
 				ImportState:       true,
 				ImportStateVerify: true,
@@ -135,7 +135,7 @@ func TestAccScalewayInstanceSecurityGroupRules(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayInstanceSecurityGroupExists("scaleway_instance_security_group.sg01"),
 				),
-			},*/
+			},
 		},
 	})
 }
