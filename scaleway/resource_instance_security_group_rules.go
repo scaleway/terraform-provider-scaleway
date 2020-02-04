@@ -2,7 +2,6 @@ package scaleway
 
 import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
 	"strings"
 )
 
@@ -18,8 +17,10 @@ func resourceScalewayInstanceSecurityGroupRules() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"security_group_id": {
-				Type:        schema.TypeString,
-				Required:    true,
+				Type:     schema.TypeString,
+				Required: true,
+				// Ensure SecurityGroupRules.ID and SecurityGroupRules.security_group_id stay in sync.
+				// If security_group_id is changed, a new SecurityGroupRules is created, with a new ID.
 				ForceNew:    true,
 				Description: "The security group associated with this volume",
 			},
@@ -35,40 +36,27 @@ func resourceScalewayInstanceSecurityGroupRules() *schema.Resource {
 				Description: "Outbound rules for this set of security group rules",
 				Elem:        securityGroupRuleSchema(),
 			},
-			"zone":            zoneSchema(),
-			"organization_id": organizationIDSchema(),
 		},
 	}
 }
 
 func resourceScalewayInstanceSecurityGroupRulesCreate(d *schema.ResourceData, m interface{}) error {
-	d.SetId(securityGroupRulesIDFromSecurityGroupID(d))
+	d.SetId(securityGroupRulesZIDFromSecurityGroupZID(d.Get("security_group_id").(string)))
 
 	// We call update instead of read as it will take care of creating rules.
 	return resourceScalewayInstanceSecurityGroupUpdate(d, m)
 }
 
 func resourceScalewayInstanceSecurityGroupRulesRead(d *schema.ResourceData, m interface{}) error {
+	securityGroupRulesZID := d.Id()
+	securityGroupZID := securityGroupZIDFromSecurityGroupRulesZID(securityGroupRulesZID)
 
-	securityGroupRulesZonedID := d.Id()
-	securityGroupZonedID := securityGroupZIDFromsecurityGroupRulesZID(securityGroupRulesZonedID)
-
-	instanceApi, zone, securityGroupID, err := instanceAPIWithZoneAndID(m, securityGroupZonedID)
+	instanceApi, zone, securityGroupID, err := instanceAPIWithZoneAndID(m, securityGroupZID)
 	if err != nil {
 		return err
 	}
 
-	res, err := instanceApi.GetSecurityGroup(&instance.GetSecurityGroupRequest{
-		SecurityGroupID: securityGroupID,
-		Zone:            zone,
-	})
-	if err != nil {
-		return err
-	}
-
-	d.Set("security_group_id", res.SecurityGroup.ID)
-	d.Set("zone", zone)
-	d.Set("organization_id", res.SecurityGroup.Organization)
+	d.Set("security_group_id", securityGroupZID)
 
 	inboundRules, outboundRules, err := getSecurityGroupRules(instanceApi, zone, securityGroupID, d)
 	if err != nil {
@@ -77,16 +65,16 @@ func resourceScalewayInstanceSecurityGroupRulesRead(d *schema.ResourceData, m in
 
 	d.Set("inbound_rule", inboundRules)
 	d.Set("outbound_rule", outboundRules)
+
 	return nil
 }
 
 func resourceScalewayInstanceSecurityGroupRulesUpdate(d *schema.ResourceData, m interface{}) error {
-
-	instanceApi, zone, securityGroupID, err := instanceAPIWithZoneAndID(m, securityGroupZoneIDFromData(d))
+	securityGroupZID := securityGroupZIDFromSecurityGroupRulesZID(d.Id())
+	instanceApi, zone, securityGroupID, err := instanceAPIWithZoneAndID(m, securityGroupZID)
 	if err != nil {
 		return err
 	}
-	d.SetId(newZonedId(zone, securityGroupRulesIDFromSecurityGroupID(d)))
 
 	err = updateSecurityGroupeRules(d, zone, securityGroupID, instanceApi)
 	if err != nil {
@@ -97,13 +85,14 @@ func resourceScalewayInstanceSecurityGroupRulesUpdate(d *schema.ResourceData, m 
 }
 
 func resourceScalewayInstanceSecurityGroupRulesDelete(d *schema.ResourceData, m interface{}) error {
-	meta := m.(*Meta)
-	instanceApi := instance.NewAPI(meta.scwClient)
-
-	zone, securityGroupID, err := parseZonedID(d.Id())
+	securityGroupZID := securityGroupZIDFromSecurityGroupRulesZID(d.Id())
+	instanceApi, zone, securityGroupID, err := instanceAPIWithZoneAndID(m, securityGroupZID)
 	if err != nil {
 		return err
 	}
+
+	d.Set("inbound_rule", nil)
+	d.Set("outbound_rule", nil)
 
 	err = updateSecurityGroupeRules(d, zone, securityGroupID, instanceApi)
 	if err != nil {
@@ -113,26 +102,18 @@ func resourceScalewayInstanceSecurityGroupRulesDelete(d *schema.ResourceData, m 
 	return nil
 }
 
-// securityGroupRulesIDZFromSecurityGroupIDZ returns the
+// securityGroupRulesZIDFromSecurityGroupZID returns the
 //
 // SecurityGroupRules.ID should be the based on SecurityGroup.ID.
-// This is necessary to support Terraform import feature.
+// This is necessary to support Terraform import feature. -> false -> why is this necessary ?
 // If we want to support multiple SGs(SecurityGroup) for 1 SGRS(SecurityGroupRules),
 // we could always use the first SecurityGroup's ID,
 // because from the API,
 // the data for a single SGRS is duplicated for all SGs using the same SGRS.
-func securityGroupRulesIDFromSecurityGroupID(d *schema.ResourceData) string {
-	// TODO: have different IDs for SecurityGroup and SecurityGroupRules
-	// Adding the suffix generates an error because the ID is not a valid UUID
-	// Can we disable that check ?
-	// We should not have the same ID for SecurityGroup and SecurityGroupRules.
-	return d.Get("security_group_id").(string) // + "-sgrs-id"
+func securityGroupRulesZIDFromSecurityGroupZID(SecurityGroupZID string) string {
+	return securityGroupZIDFromSecurityGroupRulesZID(SecurityGroupZID) + "-sgrs-id"
 }
 
-func securityGroupZIDFromsecurityGroupRulesZID(zid string) string {
+func securityGroupZIDFromSecurityGroupRulesZID(zid string) string {
 	return strings.Replace(zid, "-sgrs-id", "", 1)
-}
-
-func securityGroupZoneIDFromData(d *schema.ResourceData) string {
-	return securityGroupZIDFromsecurityGroupRulesZID(d.Id())
 }

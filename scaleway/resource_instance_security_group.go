@@ -69,6 +69,7 @@ func resourceScalewayInstanceSecurityGroup() *schema.Resource {
 			"external_rules": {
 				Type:          schema.TypeBool,
 				Optional:      true,
+				Default:       false,
 				ConflictsWith: []string{"inbound_rule", "outbound_rule"},
 			},
 			"zone":            zoneSchema(),
@@ -137,7 +138,7 @@ func resourceScalewayInstanceSecurityGroupRead(d *schema.ResourceData, m interfa
 	_ = d.Set("inbound_default_policy", res.SecurityGroup.InboundDefaultPolicy.String())
 	_ = d.Set("outbound_default_policy", res.SecurityGroup.OutboundDefaultPolicy.String())
 
-	if d.Get("external_rules") != nil && d.Get("external_rules").(bool) {
+	if d.Get("external_rules").(bool) {
 		inboundRules, outboundRules, err := getSecurityGroupRules(instanceApi, zone, ID, d)
 		if err != nil {
 			return err
