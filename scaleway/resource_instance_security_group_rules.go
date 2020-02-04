@@ -40,7 +40,7 @@ func resourceScalewayInstanceSecurityGroupRules() *schema.Resource {
 	}
 }
 
-func customImporterState (d *schema.ResourceData, m interface{}) ([]*schema.ResourceData, error) {
+func customImporterState(d *schema.ResourceData, m interface{}) ([]*schema.ResourceData, error) {
 	// importZID is the ID set by the user when using the Terraform's import function.
 	// It should be a SecurityGroupZID.
 	importZID := d.Id()
