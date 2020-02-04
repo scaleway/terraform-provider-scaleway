@@ -16,6 +16,16 @@ func TestAccScalewayInstanceSecurityGroupRules(t *testing.T) {
 			{
 				Config: `
 					resource scaleway_instance_security_group sg01 {
+						external_rules = true
+					}
+					resource scaleway_instance_security_group_rules sgrs01 {
+						security_group_id = scaleway_instance_security_group.sg01.id
+					}
+				`,
+			},
+			{
+				Config: `
+					resource scaleway_instance_security_group sg01 {
 						inbound_rule {
 							action = "accept"
 							port = 80
@@ -40,6 +50,16 @@ func TestAccScalewayInstanceSecurityGroupRules(t *testing.T) {
 					resource scaleway_instance_security_group sg01 {
 						external_rules = true
 					}
+					resource scaleway_instance_security_group_rules sgrs01 {
+						security_group_id = scaleway_instance_security_group.sg01.id
+					}
+				`,
+			},
+			{
+				Config: `
+					resource scaleway_instance_security_group sg01 {
+						external_rules = true
+					}
 					
 					resource scaleway_instance_security_group_rules sgrs01 {
 						security_group_id = scaleway_instance_security_group.sg01.id
@@ -50,7 +70,7 @@ func TestAccScalewayInstanceSecurityGroupRules(t *testing.T) {
 						}
 					}
 				`,
-				Check: resource.ComposeTestCheckFunc(
+				/*Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayInstanceSecurityGroupExists("scaleway_instance_security_group.sg01"),
 					testAccCheckScalewayInstanceSecurityGroupRuleMatch("scaleway_instance_security_group.sg01", 0, &instance.SecurityGroupRule{
 						Direction:    instance.SecurityGroupRuleDirectionInbound,
@@ -61,9 +81,14 @@ func TestAccScalewayInstanceSecurityGroupRules(t *testing.T) {
 						Action:       instance.SecurityGroupRuleActionAccept,
 					}),
 					resource.TestCheckResourceAttrPair("scaleway_instance_security_group.sg01", "id", "scaleway_instance_security_group_rules.sgrs01", "security_group_id"),
-				),
+				),*/
 			},
 			/*{
+				ResourceName:      "scaleway_instance_security_group.sgrs01",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+			{
 				Config: `
 					resource scaleway_instance_security_group sg01 {
 						external_rules = true

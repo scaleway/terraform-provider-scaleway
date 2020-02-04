@@ -12,7 +12,7 @@ func resourceScalewayInstanceSecurityGroupRules() *schema.Resource {
 		Update: resourceScalewayInstanceSecurityGroupRulesUpdate,
 		Delete: resourceScalewayInstanceSecurityGroupRulesDelete,
 		Importer: &schema.ResourceImporter{
-			State: schema.ImportStatePassthrough,
+			State: customImporterState,
 		},
 
 		Schema: map[string]*schema.Schema{
@@ -40,11 +40,22 @@ func resourceScalewayInstanceSecurityGroupRules() *schema.Resource {
 	}
 }
 
+func customImporterState (d *schema.ResourceData, m interface{}) ([]*schema.ResourceData, error) {
+	// importZID is the ID set by the user when using the Terraform's import function.
+	// It should be a SecurityGroupZID.
+	importZID := d.Id()
+
+	d.Set("security_group_id", importZID)
+	d.SetId(securityGroupRulesZIDFromSecurityGroupZID(importZID))
+
+	return []*schema.ResourceData{d}, nil
+}
+
 func resourceScalewayInstanceSecurityGroupRulesCreate(d *schema.ResourceData, m interface{}) error {
 	d.SetId(securityGroupRulesZIDFromSecurityGroupZID(d.Get("security_group_id").(string)))
 
 	// We call update instead of read as it will take care of creating rules.
-	return resourceScalewayInstanceSecurityGroupUpdate(d, m)
+	return resourceScalewayInstanceSecurityGroupRulesUpdate(d, m)
 }
 
 func resourceScalewayInstanceSecurityGroupRulesRead(d *schema.ResourceData, m interface{}) error {
