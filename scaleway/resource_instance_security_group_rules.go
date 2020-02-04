@@ -50,10 +50,10 @@ func resourceScalewayInstanceSecurityGroupRulesCreate(d *schema.ResourceData, m 
 
 func resourceScalewayInstanceSecurityGroupRulesRead(d *schema.ResourceData, m interface{}) error {
 
-	securityGroupRulesZoneID := d.Id()
-	securityGroupZoneID := securityGroupZIDFromsecurityGroupRulesZID(securityGroupRulesZoneID)
+	securityGroupRulesZonedID := d.Id()
+	securityGroupZonedID := securityGroupZIDFromsecurityGroupRulesZID(securityGroupRulesZonedID)
 
-	instanceApi, zone, securityGroupID, err := instanceAPIWithZoneAndID(m, securityGroupZoneID)
+	instanceApi, zone, securityGroupID, err := instanceAPIWithZoneAndID(m, securityGroupZonedID)
 	if err != nil {
 		return err
 	}
@@ -70,13 +70,13 @@ func resourceScalewayInstanceSecurityGroupRulesRead(d *schema.ResourceData, m in
 	d.Set("zone", zone)
 	d.Set("organization_id", res.SecurityGroup.Organization)
 
-	stateRules, err := getSecurityGroupRules(instanceApi, zone, securityGroupID, d)
+	inboundRules, outboundRules, err := getSecurityGroupRules(instanceApi, zone, securityGroupID, d)
 	if err != nil {
 		return err
 	}
 
-	d.Set("inbound_rule", stateRules[instance.SecurityGroupRuleDirectionInbound])
-	d.Set("outbound_rule", stateRules[instance.SecurityGroupRuleDirectionOutbound])
+	d.Set("inbound_rule", inboundRules)
+	d.Set("outbound_rule", outboundRules)
 	return nil
 }
 
