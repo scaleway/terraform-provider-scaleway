@@ -234,7 +234,7 @@ func resourceScalewayInstanceSecurityGroupUpdate(d *schema.ResourceData, m inter
 		return err
 	}
 
-	if d.Get("external_rules") == nil || (d.Get("external_rules") != nil  && !d.Get("external_rules").(bool)) {
+	if d.Get("external_rules") == nil || (d.Get("external_rules") != nil && !d.Get("external_rules").(bool)) {
 		err = updateSecurityGroupeRules(d, zone, ID, instanceApi)
 		if err != nil {
 			return err
