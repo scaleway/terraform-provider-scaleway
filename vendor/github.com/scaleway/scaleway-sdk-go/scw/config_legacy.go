@@ -36,7 +36,7 @@ func (v1 *configV1) toV2() *Config {
 	return &Config{
 		Profile: Profile{
 			DefaultOrganizationID: &v1.Organization,
-			SecretKey:        &v1.Token,
+			SecretKey:             &v1.Token,
 			// ignore v1 version
 		},
 	}

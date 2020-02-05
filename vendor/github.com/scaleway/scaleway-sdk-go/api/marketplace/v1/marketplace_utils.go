@@ -11,9 +11,7 @@ import (
 // getLocalImage returns the correct local version of an image matching
 // the current zone and the compatible commercial type
 func (version *Version) getLocalImage(zone scw.Zone, commercialType string) (*LocalImage, error) {
-
 	for _, localImage := range version.LocalImages {
-
 		// Check if in correct zone
 		if localImage.Zone != zone {
 			continue
@@ -28,13 +26,11 @@ func (version *Version) getLocalImage(zone scw.Zone, commercialType string) (*Lo
 	}
 
 	return nil, fmt.Errorf("couldn't find compatible local image for this image version (%s)", version.ID)
-
 }
 
 // getLatestVersion returns the current/latests version on an image,
 // or an error in case the image doesn't have a public version.
 func (image *Image) getLatestVersion() (*Version, error) {
-
 	for _, version := range image.Versions {
 		if version.ID == image.CurrentPublicVersion {
 			return version, nil
@@ -54,7 +50,6 @@ type GetLocalImageIDByLabelRequest struct {
 // GetLocalImageIDByLabel search for an image with the given label (exact match) in the given region
 // it returns the latest version of this specific image.
 func (s *API) GetLocalImageIDByLabel(req *GetLocalImageIDByLabelRequest) (string, error) {
-
 	if req.Zone == "" {
 		defaultZone, _ := s.client.GetDefaultZone()
 		req.Zone = defaultZone
@@ -71,10 +66,8 @@ func (s *API) GetLocalImageIDByLabel(req *GetLocalImageIDByLabelRequest) (string
 	commercialType := strings.ToUpper(req.CommercialType)
 
 	for _, image := range images {
-
 		// Match label of the image
 		if label == image.Label {
-
 			latestVersion, err := image.getLatestVersion()
 			if err != nil {
 				return "", errors.Wrap(err, "couldn't find a matching image for the given label (%s), zone (%s) and commercial type (%s)", req.ImageLabel, req.Zone, req.CommercialType)
@@ -87,7 +80,6 @@ func (s *API) GetLocalImageIDByLabel(req *GetLocalImageIDByLabelRequest) (string
 
 			return localImage.ID, nil
 		}
-
 	}
 
 	return "", errors.New("couldn't find a matching image for the given label (%s), zone (%s) and commercial type (%s)", req.ImageLabel, req.Zone, req.CommercialType)

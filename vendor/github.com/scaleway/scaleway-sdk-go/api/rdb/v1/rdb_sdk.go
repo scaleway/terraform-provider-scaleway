@@ -162,6 +162,8 @@ const (
 	DatabaseBackupStatusDeleting = DatabaseBackupStatus("deleting")
 	// DatabaseBackupStatusError is [insert doc].
 	DatabaseBackupStatusError = DatabaseBackupStatus("error")
+	// DatabaseBackupStatusExporting is [insert doc].
+	DatabaseBackupStatusExporting = DatabaseBackupStatus("exporting")
 )
 
 func (enum DatabaseBackupStatus) String() string {
@@ -713,6 +715,10 @@ type DatabaseBackup struct {
 	UpdatedAt time.Time `json:"updated_at"`
 
 	InstanceName string `json:"instance_name"`
+
+	DownloadURL *string `json:"download_url"`
+
+	DownloadURLExpiresAt time.Time `json:"download_url_expires_at"`
 
 	Region scw.Region `json:"region"`
 }
@@ -1278,6 +1284,48 @@ func (s *API) RestoreDatabaseBackup(req *RestoreDatabaseBackupRequest, opts ...s
 	scwReq := &scw.ScalewayRequest{
 		Method:  "POST",
 		Path:    "/rdb/v1/regions/" + fmt.Sprint(req.Region) + "/backups/" + fmt.Sprint(req.DatabaseBackupID) + "/restore",
+		Headers: http.Header{},
+	}
+
+	err = scwReq.SetBody(req)
+	if err != nil {
+		return nil, err
+	}
+
+	var resp DatabaseBackup
+
+	err = s.client.Do(scwReq, &resp, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &resp, nil
+}
+
+type ExportDatabaseBackupRequest struct {
+	Region scw.Region `json:"-"`
+
+	DatabaseBackupID string `json:"-"`
+}
+
+func (s *API) ExportDatabaseBackup(req *ExportDatabaseBackupRequest, opts ...scw.RequestOption) (*DatabaseBackup, error) {
+	var err error
+
+	if req.Region == "" {
+		defaultRegion, _ := s.client.GetDefaultRegion()
+		req.Region = defaultRegion
+	}
+
+	if fmt.Sprint(req.Region) == "" {
+		return nil, errors.New("field Region cannot be empty in request")
+	}
+
+	if fmt.Sprint(req.DatabaseBackupID) == "" {
+		return nil, errors.New("field DatabaseBackupID cannot be empty in request")
+	}
+
+	scwReq := &scw.ScalewayRequest{
+		Method:  "POST",
+		Path:    "/rdb/v1/regions/" + fmt.Sprint(req.Region) + "/backups/" + fmt.Sprint(req.DatabaseBackupID) + "/export",
 		Headers: http.Header{},
 	}
 

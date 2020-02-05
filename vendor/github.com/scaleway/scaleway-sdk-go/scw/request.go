@@ -91,3 +91,14 @@ func (req *ScalewayRequest) SetBody(body interface{}) error {
 
 	return nil
 }
+
+func (req *ScalewayRequest) apply(opts []RequestOption) {
+	for _, opt := range opts {
+		opt(req)
+	}
+}
+
+func (req *ScalewayRequest) validate() error {
+	// nothing so far
+	return nil
+}

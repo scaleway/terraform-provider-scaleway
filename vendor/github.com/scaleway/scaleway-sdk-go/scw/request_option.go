@@ -30,14 +30,3 @@ func WithAuthRequest(accessKey, secretKey string) RequestOption {
 		s.auth = auth.NewToken(accessKey, secretKey)
 	}
 }
-
-func (s *ScalewayRequest) apply(opts []RequestOption) {
-	for _, opt := range opts {
-		opt(s)
-	}
-}
-
-func (s *ScalewayRequest) validate() error {
-	// nothing so far
-	return nil
-}

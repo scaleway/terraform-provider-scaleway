@@ -10,7 +10,7 @@ type Token struct {
 }
 
 // XAuthTokenHeader is Scaleway standard auth header
-const XAuthTokenHeader = "X-Auth-Token"
+const XAuthTokenHeader = "X-Auth-Token" // #nosec G101
 
 // NewToken create a token authentication from an
 // access key and a secret key

@@ -685,6 +685,56 @@ func (enum *Protocol) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
+// ProxyProtocol pROXY protocol, forward client's address (must be supported by backend servers software)
+//
+// The PROXY protocol informs the other end about the incoming connection, so that it can know the client's address or the public address it accessed to, whatever the upper layer protocol.
+//
+// * `proxy_protocol_none` Disable proxy protocol.
+// * `proxy_protocol_v1` Version one (text format).
+// * `proxy_protocol_v2` Version two (binary format).
+// * `proxy_protocol_v2_ssl` Version two with SSL connection.
+// * `proxy_protocol_v2_ssl_cn` Version two with SSL connection and common name information.
+//
+type ProxyProtocol string
+
+const (
+	// ProxyProtocolProxyProtocolUnknown is [insert doc].
+	ProxyProtocolProxyProtocolUnknown = ProxyProtocol("proxy_protocol_unknown")
+	// ProxyProtocolProxyProtocolNone is [insert doc].
+	ProxyProtocolProxyProtocolNone = ProxyProtocol("proxy_protocol_none")
+	// ProxyProtocolProxyProtocolV1 is [insert doc].
+	ProxyProtocolProxyProtocolV1 = ProxyProtocol("proxy_protocol_v1")
+	// ProxyProtocolProxyProtocolV2 is [insert doc].
+	ProxyProtocolProxyProtocolV2 = ProxyProtocol("proxy_protocol_v2")
+	// ProxyProtocolProxyProtocolV2Ssl is [insert doc].
+	ProxyProtocolProxyProtocolV2Ssl = ProxyProtocol("proxy_protocol_v2_ssl")
+	// ProxyProtocolProxyProtocolV2SslCn is [insert doc].
+	ProxyProtocolProxyProtocolV2SslCn = ProxyProtocol("proxy_protocol_v2_ssl_cn")
+)
+
+func (enum ProxyProtocol) String() string {
+	if enum == "" {
+		// return default value if empty
+		return "proxy_protocol_unknown"
+	}
+	return string(enum)
+}
+
+func (enum ProxyProtocol) MarshalJSON() ([]byte, error) {
+	return []byte(fmt.Sprintf(`"%s"`, enum)), nil
+}
+
+func (enum *ProxyProtocol) UnmarshalJSON(data []byte) error {
+	tmp := ""
+
+	if err := json.Unmarshal(data, &tmp); err != nil {
+		return err
+	}
+
+	*enum = ProxyProtocol(ProxyProtocol(tmp).String())
+	return nil
+}
+
 type StickySessionsType string
 
 const (
@@ -796,6 +846,10 @@ type Backend struct {
 	//
 	// Default value: on_marked_down_action_none
 	OnMarkedDownAction OnMarkedDownAction `json:"on_marked_down_action"`
+	// ProxyProtocol
+	//
+	// Default value: proxy_protocol_unknown
+	ProxyProtocol ProxyProtocol `json:"proxy_protocol"`
 }
 
 func (m *Backend) UnmarshalJSON(b []byte) error {
@@ -1846,7 +1900,7 @@ type CreateBackendRequest struct {
 	HealthCheck *HealthCheck `json:"health_check"`
 	// ServerIP backend server IP addresses list (IPv4 or IPv6)
 	ServerIP []string `json:"server_ip"`
-	// SendProxyV2 enables PROXY protocol version 2 (must be supported by backend servers)
+	// SendProxyV2 deprecated in favor of proxy_protocol field !
 	SendProxyV2 bool `json:"send_proxy_v2"`
 	// TimeoutServer maximum server connection inactivity time
 	TimeoutServer *time.Duration `json:"timeout_server"`
@@ -1858,6 +1912,18 @@ type CreateBackendRequest struct {
 	//
 	// Default value: on_marked_down_action_none
 	OnMarkedDownAction OnMarkedDownAction `json:"on_marked_down_action"`
+	// ProxyProtocol pROXY protocol, forward client's address (must be supported by backend servers software)
+	//
+	// The PROXY protocol informs the other end about the incoming connection, so that it can know the client's address or the public address it accessed to, whatever the upper layer protocol.
+	//
+	// * `proxy_protocol_none` Disable proxy protocol.
+	// * `proxy_protocol_v1` Version one (text format).
+	// * `proxy_protocol_v2` Version two (binary format).
+	// * `proxy_protocol_v2_ssl` Version two with SSL connection.
+	// * `proxy_protocol_v2_ssl_cn` Version two with SSL connection and common name information.
+	//
+	// Default value: proxy_protocol_unknown
+	ProxyProtocol ProxyProtocol `json:"proxy_protocol"`
 }
 
 func (m *CreateBackendRequest) UnmarshalJSON(b []byte) error {
@@ -1975,38 +2041,42 @@ func (s *API) GetBackend(req *GetBackendRequest, opts ...scw.RequestOption) (*Ba
 
 type UpdateBackendRequest struct {
 	Region scw.Region `json:"-"`
-	// BackendID backend ID to update
+
 	BackendID string `json:"-"`
-	// Name resource name
+
 	Name string `json:"name"`
-	// ForwardProtocol backend protocol. TCP or HTTP
+	// ForwardProtocol
 	//
 	// Default value: tcp
 	ForwardProtocol Protocol `json:"forward_protocol"`
-	// ForwardPort user sessions will be forwarded to this port of backend servers
+
 	ForwardPort int32 `json:"forward_port"`
-	// ForwardPortAlgorithm load balancing algorithm
+	// ForwardPortAlgorithm
 	//
 	// Default value: roundrobin
 	ForwardPortAlgorithm ForwardPortAlgorithm `json:"forward_port_algorithm"`
-	// StickySessions enable cookie-based session persistence
+	// StickySessions
 	//
 	// Default value: none
 	StickySessions StickySessionsType `json:"sticky_sessions"`
-	// StickySessionsCookieName cookie name for for sticky sessions
+
 	StickySessionsCookieName string `json:"sticky_sessions_cookie_name"`
-	// SendProxyV2 enables PROXY protocol version 2 (must be supported by backend servers)
+
 	SendProxyV2 bool `json:"send_proxy_v2"`
-	// TimeoutServer maximum server connection inactivity time
+
 	TimeoutServer *time.Duration `json:"timeout_server"`
-	// TimeoutConnect maximum initial server connection establishment time
+
 	TimeoutConnect *time.Duration `json:"timeout_connect"`
-	// TimeoutTunnel maximum tunnel inactivity time
+
 	TimeoutTunnel *time.Duration `json:"timeout_tunnel"`
-	// OnMarkedDownAction modify what occurs when a backend server is marked down
+	// OnMarkedDownAction
 	//
 	// Default value: on_marked_down_action_none
 	OnMarkedDownAction OnMarkedDownAction `json:"on_marked_down_action"`
+	// ProxyProtocol
+	//
+	// Default value: proxy_protocol_unknown
+	ProxyProtocol ProxyProtocol `json:"proxy_protocol"`
 }
 
 func (m *UpdateBackendRequest) UnmarshalJSON(b []byte) error {

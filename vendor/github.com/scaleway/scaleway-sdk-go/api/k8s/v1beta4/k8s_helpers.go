@@ -27,17 +27,17 @@ func (s *API) WaitForCluster(req *WaitForClusterRequest) (*Cluster, error) {
 	}
 
 	cluster, err := async.WaitSync(&async.WaitSyncConfig{
-		Get: func() (interface{}, error, bool) {
+		Get: func() (interface{}, bool, error) {
 			cluster, err := s.GetCluster(&GetClusterRequest{
 				ClusterID: req.ClusterID,
 				Region:    req.Region,
 			})
 			if err != nil {
-				return nil, err, false
+				return nil, false, err
 			}
 
 			_, isTerminal := terminalStatus[cluster.Status]
-			return cluster, nil, isTerminal
+			return cluster, isTerminal, nil
 		},
 		Timeout:          req.Timeout,
 		IntervalStrategy: async.LinearIntervalStrategy(5 * time.Second),

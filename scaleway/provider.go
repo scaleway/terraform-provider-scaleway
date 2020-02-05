@@ -213,6 +213,7 @@ func Provider() terraform.ResourceProvider {
 			"scaleway_security_group_rule":      resourceScalewaySecurityGroupRule(),
 			"scaleway_volume":                   resourceScalewayVolume(),
 			"scaleway_volume_attachment":        resourceScalewayVolumeAttachment(),
+			"scaleway_registry_namespace_beta":  resourceScalewayRegistryNamespaceBeta(),
 		},
 
 		DataSourcesMap: map[string]*schema.Resource{

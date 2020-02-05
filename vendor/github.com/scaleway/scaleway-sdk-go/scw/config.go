@@ -173,7 +173,6 @@ func LoadConfig() (*Config, error) {
 
 // LoadConfigFromPath read the config from the given path.
 func LoadConfigFromPath(path string) (*Config, error) {
-
 	file, err := ioutil.ReadFile(path)
 	if err != nil {
 		if pathError, isPathError := err.(*os.PathError); isPathError && pathError.Err == syscall.ENOENT {
@@ -224,7 +223,6 @@ func (c *Config) GetActiveProfile() (*Profile, error) {
 	default:
 		return &c.Profile, nil
 	}
-
 }
 
 // SaveTo will save the config to the default config path. This
@@ -273,7 +271,6 @@ func (c *Config) SaveTo(path string) error {
 	}
 
 	return nil
-
 }
 
 // MergeProfiles merges profiles in a new one. The last profile has priority.

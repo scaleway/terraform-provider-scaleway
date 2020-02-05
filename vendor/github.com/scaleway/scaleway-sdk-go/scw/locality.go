@@ -131,7 +131,6 @@ func ParseZone(zone string) (Zone, error) {
 // UnmarshalJSON implements the Unmarshaler interface for a Zone.
 // this to call ParseZone on the string input and return the correct Zone object.
 func (zone *Zone) UnmarshalJSON(input []byte) error {
-
 	// parse input value as string
 	var stringValue string
 	err := json.Unmarshal(input, &stringValue)

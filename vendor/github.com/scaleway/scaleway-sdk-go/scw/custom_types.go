@@ -10,6 +10,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/scaleway/scaleway-sdk-go/internal/errors"
 	"github.com/scaleway/scaleway-sdk-go/logger"
 )
 
@@ -25,8 +26,8 @@ type ServiceInfo struct {
 	// Version is the version of the API
 	Version string `json:"version"`
 
-	// DocumentationUrl is the a web url where the documentation of the API can be found
-	DocumentationUrl *string `json:"documentation_url"`
+	// DocumentationURL is the a web url where the documentation of the API can be found
+	DocumentationURL *string `json:"documentation_url"`
 }
 
 // File is the structure used to receive / send a file from / to the API
@@ -92,32 +93,20 @@ func NewMoneyFromFloat(value float64, currencyCode string, precision int) *Money
 	}
 
 	strValue := strconv.FormatFloat(value, 'f', precision, 64)
-	parts := strings.Split(strValue, ".")
+	units, nanos, err := splitFloatString(strValue)
+	if err != nil {
+		panic(err)
+	}
 
-	money := &Money{
+	return &Money{
 		CurrencyCode: currencyCode,
-		Units:        int64(value),
-		Nanos:        0,
+		Units:        units,
+		Nanos:        nanos,
 	}
-
-	// Handle nanos.
-	if len(parts) == 2 {
-		// Add leading zeros.
-		strNanos := parts[1] + "000000000"[len(parts[1]):]
-
-		n, err := strconv.ParseInt(strNanos, 10, 32)
-		if err != nil {
-			panic(fmt.Errorf("invalid nanos %s", strNanos))
-		}
-
-		money.Nanos = int32(n)
-	}
-
-	return money
 }
 
 // String returns the string representation of Money.
-func (m *Money) String() string {
+func (m Money) String() string {
 	currencySignsByCodes := map[string]string{
 		"EUR": "€",
 		"USD": "$",
@@ -136,11 +125,11 @@ func (m *Money) String() string {
 }
 
 // ToFloat converts a Money object to a float.
-func (m *Money) ToFloat() float64 {
-	return float64(m.Units) + float64(m.Nanos)/1000000000
+func (m Money) ToFloat() float64 {
+	return float64(m.Units) + float64(m.Nanos)/1e9
 }
 
-// Money represents a size in bytes.
+// Size represents a size in bytes.
 type Size uint64
 
 const (
@@ -256,4 +245,95 @@ func (n *IPNet) UnmarshalJSON(b []byte) error {
 	n.IPNet = *value
 
 	return nil
+}
+
+// Duration represents a signed, fixed-length span of time represented as a
+// count of seconds and fractions of seconds at nanosecond resolution. It is
+// independent of any calendar and concepts like "day" or "month". It is related
+// to Timestamp in that the difference between two Timestamp values is a Duration
+// and it can be added or subtracted from a Timestamp.
+// Range is approximately +-10,000 years.
+type Duration struct {
+	Seconds int64
+	Nanos   int32
+}
+
+func (d *Duration) ToTimeDuration() *time.Duration {
+	if d == nil {
+		return nil
+	}
+	timeDuration := time.Duration(d.Nanos) + time.Duration(d.Seconds/1e9)
+	return &timeDuration
+}
+
+func (d Duration) MarshalJSON() ([]byte, error) {
+	nanos := d.Nanos
+	if nanos < 0 {
+		nanos = -nanos
+	}
+
+	return []byte(`"` + fmt.Sprintf("%d.%09d", d.Seconds, nanos) + `s"`), nil
+}
+
+func (d *Duration) UnmarshalJSON(b []byte) error {
+	if string(b) == "null" {
+		return nil
+	}
+	var str string
+
+	err := json.Unmarshal(b, &str)
+	if err != nil {
+		return err
+	}
+	if str == "" {
+		*d = Duration{}
+		return nil
+	}
+
+	seconds, nanos, err := splitFloatString(strings.TrimRight(str, "s"))
+	if err != nil {
+		return err
+	}
+
+	*d = Duration{
+		Seconds: seconds,
+		Nanos:   nanos,
+	}
+
+	return nil
+}
+
+// splitFloatString splits a float represented in a string, and returns its units (left-coma part) and nanos (right-coma part).
+// E.g.:
+// "3"     ==> units = 3  | nanos = 0
+// "3.14"  ==> units = 3  | nanos = 14*1e7
+// "-3.14" ==> units = -3 | nanos = -14*1e7
+func splitFloatString(input string) (units int64, nanos int32, err error) {
+	parts := strings.SplitN(input, ".", 2)
+
+	// parse units as int64
+	units, err = strconv.ParseInt(parts[0], 10, 64)
+	if err != nil {
+		return 0, 0, errors.Wrap(err, "invalid units")
+	}
+
+	// handle nanos
+	if len(parts) == 2 {
+		// add leading zeros
+		strNanos := parts[1] + "000000000"[len(parts[1]):]
+
+		// parse nanos as int32
+		n, err := strconv.ParseUint(strNanos, 10, 32)
+		if err != nil {
+			return 0, 0, errors.Wrap(err, "invalid nanos")
+		}
+
+		nanos = int32(n)
+	}
+
+	if units < 0 {
+		nanos = -nanos
+	}
+
+	return units, nanos, nil
 }
