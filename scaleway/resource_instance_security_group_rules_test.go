@@ -140,13 +140,6 @@ func TestAccScalewayInstanceSecurityGroupRules(t *testing.T) {
 					resource.TestCheckResourceAttrPair("scaleway_instance_security_group.sg01", "id", "scaleway_instance_security_group_rules.sgrs01", "security_group_id"),
 				),
 			},
-			{
-				Config: `resource scaleway_instance_security_group sg01 {
-				}`,
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayInstanceSecurityGroupExists("scaleway_instance_security_group.sg01"),
-				),
-			},
 		},
 	})
 }
