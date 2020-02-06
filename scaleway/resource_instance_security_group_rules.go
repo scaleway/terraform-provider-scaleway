@@ -40,12 +40,12 @@ func resourceScalewayInstanceSecurityGroupRules() *schema.Resource {
 }
 
 func customImporterState(d *schema.ResourceData, m interface{}) ([]*schema.ResourceData, error) {
-	// importZID is the ID set by the user when using the Terraform's import function.
-	// It should be a SecurityGroupZID.
-	importZID := d.Id()
+	// importZonedID is the ID set by the user when using the Terraform's import function.
+	// It should be a SecurityGroupZonedID.
+	importZonedID := d.Id()
 
-	d.Set("security_group_id", importZID)
-	d.SetId(importZID)
+	d.Set("security_group_id", importZonedID)
+	d.SetId(importZonedID)
 
 	return []*schema.ResourceData{d}, nil
 }
@@ -58,14 +58,14 @@ func resourceScalewayInstanceSecurityGroupRulesCreate(d *schema.ResourceData, m 
 }
 
 func resourceScalewayInstanceSecurityGroupRulesRead(d *schema.ResourceData, m interface{}) error {
-	securityGroupZID := d.Id()
+	securityGroupZonedID := d.Id()
 
-	instanceApi, zone, securityGroupID, err := instanceAPIWithZoneAndID(m, securityGroupZID)
+	instanceApi, zone, securityGroupID, err := instanceAPIWithZoneAndID(m, securityGroupZonedID)
 	if err != nil {
 		return err
 	}
 
-	d.Set("security_group_id", securityGroupZID)
+	d.Set("security_group_id", securityGroupZonedID)
 
 	inboundRules, outboundRules, err := getSecurityGroupRules(instanceApi, zone, securityGroupID, d)
 	if err != nil {
@@ -79,8 +79,8 @@ func resourceScalewayInstanceSecurityGroupRulesRead(d *schema.ResourceData, m in
 }
 
 func resourceScalewayInstanceSecurityGroupRulesUpdate(d *schema.ResourceData, m interface{}) error {
-	securityGroupZID := d.Id()
-	instanceApi, zone, securityGroupID, err := instanceAPIWithZoneAndID(m, securityGroupZID)
+	securityGroupZonedID := d.Id()
+	instanceApi, zone, securityGroupID, err := instanceAPIWithZoneAndID(m, securityGroupZonedID)
 	if err != nil {
 		return err
 	}
@@ -94,8 +94,8 @@ func resourceScalewayInstanceSecurityGroupRulesUpdate(d *schema.ResourceData, m 
 }
 
 func resourceScalewayInstanceSecurityGroupRulesDelete(d *schema.ResourceData, m interface{}) error {
-	securityGroupZID := d.Id()
-	instanceApi, zone, securityGroupID, err := instanceAPIWithZoneAndID(m, securityGroupZID)
+	securityGroupZonedID := d.Id()
+	instanceApi, zone, securityGroupID, err := instanceAPIWithZoneAndID(m, securityGroupZonedID)
 	if err != nil {
 		return err
 	}
