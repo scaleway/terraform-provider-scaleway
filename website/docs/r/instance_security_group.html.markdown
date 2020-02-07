@@ -104,7 +104,7 @@ The following arguments are supported:
 
 - `outbound_rule` - (Optional) A list of outbound rule to add to the security group. (Structure is documented below.)
 
-- `external_rules` - (Defaults to `false`) A boolean to specify whether to use [instance_security_group_rules](../instance_security_group_rules.html).
+- `external_rules` - (Defaults to `false`) A boolean to specify whether to use [instance_security_group_rules](../instance_security_group_rules.html). If `external_rules` is set to `true`, `inbound_rule` and `outbound_rule` can not be set directly in the security group.
 
 - `zone` - (Defaults to [provider](../index.html#zone) `zone`) The [zone](../guides/regions_and_zones.html#zones) in which the security group should be created.
 
