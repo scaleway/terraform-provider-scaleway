@@ -98,7 +98,7 @@ resource "scaleway_instance_server" "web" {
 }
 ```
 
-### With user data and could-init
+### With user data and cloud-init
 
 ```hcl
 resource "scaleway_instance_server" "web" {
