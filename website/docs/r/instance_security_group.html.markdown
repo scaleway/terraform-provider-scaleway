@@ -1,11 +1,11 @@
 ---
 layout: "scaleway"
-page_title: "Scaleway: scaleway_instance_server"
+page_title: "Scaleway: scaleway_instance_security_group"
 description: |-
   Manages Scaleway Compute Instance security groups.
 ---
 
-# scaleway_instance_server
+# scaleway_instance_security_group
 
 Creates and manages Scaleway Compute Instance security groups. For more information, see [the documentation](https://developers.scaleway.com/en/products/instance/api/#security-groups-8d7f89).
 
@@ -104,6 +104,8 @@ The following arguments are supported:
 
 - `outbound_rule` - (Optional) A list of outbound rule to add to the security group. (Structure is documented below.)
 
+- `external_rules` - (Defaults to `false`) A boolean to specify whether to use [instance_security_group_rules](../r/instance_security_group_rules.html). If `external_rules` is set to `true`, `inbound_rule` and `outbound_rule` can not be set directly in the security group.
+
 - `zone` - (Defaults to [provider](../index.html#zone) `zone`) The [zone](../guides/regions_and_zones.html#zones) in which the security group should be created.
 
 - `organization_id` - (Defaults to [provider](../index.html#organization_id) `organization_id`) The ID of the project the security group is associated with.
@@ -119,13 +121,13 @@ The `inbound_rule` and `outbound_rule` block supports:
 
 - `ip`- (Optional) The ip this rule apply to. If no `ip` nor `ip_range` are specified, rule will apply to all ip. Only one of `ip` and `ip_range` should be specified.
 
-- `ip_range`- (Optional) The ip range (e.g `192.168.1.0/24`) this rule apply to. If no `ip` nor `ip_range` are specified, rule will apply to all ip. Only one of `ip` and `ip_range` should be specified.
+- `ip_range`- (Optional) The ip range (e.g `192.168.1.0/24`) this rule applies to. If no `ip` nor `ip_range` are specified, rule will apply to all ip. Only one of `ip` and `ip_range` should be specified.
 
 ## Attributes Reference
 
 In addition to all above arguments, the following attributes are exported:
 
-- `id` - The ID of the server.
+- `id` - The ID of the security group.
 
 ## Import
 

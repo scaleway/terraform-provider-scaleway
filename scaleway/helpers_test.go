@@ -31,12 +31,6 @@ func TestParseLocalizedID(t *testing.T) {
 			locality:   "fr-par-1",
 		},
 		{
-			name:       "id with slashed",
-			localityId: "fr-par-1/my/id",
-			id:         "my/id",
-			locality:   "fr-par-1",
-		},
-		{
 			name:       "id with a region",
 			localityId: "fr-par/my-id",
 			id:         "my-id",
@@ -85,12 +79,6 @@ func TestParseZonedID(t *testing.T) {
 			zone:       scw.ZoneFrPar1,
 		},
 		{
-			name:       "id with slashed",
-			localityId: "fr-par-1/my/id",
-			id:         "my/id",
-			zone:       scw.ZoneFrPar1,
-		},
-		{
 			name:       "empty",
 			localityId: "",
 			err:        "cant parse localized id: ",
@@ -130,12 +118,6 @@ func TestParseRegionID(t *testing.T) {
 			name:       "simple",
 			localityId: "fr-par/my-id",
 			id:         "my-id",
-			region:     scw.RegionFrPar,
-		},
-		{
-			name:       "id with slashed",
-			localityId: "fr-par/my/id",
-			id:         "my/id",
 			region:     scw.RegionFrPar,
 		},
 		{
