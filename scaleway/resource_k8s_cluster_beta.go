@@ -362,7 +362,7 @@ func resourceScalewayK8SClusterBetaCreate(d *schema.ResourceData, m interface{})
 	// check if either all or none of the auto upgrade attribute are set.
 	// if one auto upgrade attribute is set, they all must be set.
 	// if none is set, auto upgrade attributes will be computed.
-	if okAutoUpgradeEnable == okAutoUpgradeDay && okAutoUpgradeEnable == okAutoUpgradeStartHour {
+	if okAutoUpgradeEnable != okAutoUpgradeDay || okAutoUpgradeEnable != okAutoUpgradeStartHour {
 		return fmt.Errorf("all field or zero field of auto_upgrade must be set")
 	}
 
