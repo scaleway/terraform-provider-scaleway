@@ -1027,6 +1027,8 @@ type ListDatabaseBackupsRequest struct {
 
 	InstanceID *string `json:"-"`
 
+	OrganizationID *string `json:"-"`
+
 	Page *int32 `json:"-"`
 
 	PageSize *uint32 `json:"-"`
@@ -1049,6 +1051,7 @@ func (s *API) ListDatabaseBackups(req *ListDatabaseBackupsRequest, opts ...scw.R
 	parameter.AddToQuery(query, "name", req.Name)
 	parameter.AddToQuery(query, "order_by", req.OrderBy)
 	parameter.AddToQuery(query, "instance_id", req.InstanceID)
+	parameter.AddToQuery(query, "organization_id", req.OrganizationID)
 	parameter.AddToQuery(query, "page", req.Page)
 	parameter.AddToQuery(query, "page_size", req.PageSize)
 
