@@ -1860,13 +1860,13 @@ func (s *API) ServerAction(req *ServerActionRequest, opts ...scw.RequestOption) 
 
 type ListServerUserDataRequest struct {
 	Zone scw.Zone `json:"-"`
-
+	// ServerID uUID of the server
 	ServerID string `json:"-"`
 }
 
 // ListServerUserData list user data
 //
-// List all user data keys register on a given server.
+// List all user data keys registered on a given server.
 func (s *API) ListServerUserData(req *ListServerUserDataRequest, opts ...scw.RequestOption) (*ListServerUserDataResponse, error) {
 	var err error
 
@@ -1900,9 +1900,9 @@ func (s *API) ListServerUserData(req *ListServerUserDataRequest, opts ...scw.Req
 
 type DeleteServerUserDataRequest struct {
 	Zone scw.Zone `json:"-"`
-
+	// ServerID uUID of the server
 	ServerID string `json:"-"`
-
+	// Key key of the user data to delete
 	Key string `json:"-"`
 }
 

@@ -22,6 +22,11 @@ const (
 const configFileTemplate = `# Scaleway configuration file
 # https://github.com/scaleway/scaleway-sdk-go/tree/master/scw#scaleway-config
 
+# This configuration file can be used with:
+# - Scaleway SDK Go (https://github.com/scaleway/scaleway-sdk-go)
+# - Scaleway CLI (>2.0.0) (https://github.com/scaleway/scaleway-cli)
+# - Scaleway Terraform Provider (https://www.terraform.io/docs/providers/scaleway/index.html)
+
 # You need an access key and a secret key to connect to Scaleway API.
 # Generate your token at the following address: https://console.scaleway.com/account/credentials
 
@@ -59,9 +64,9 @@ const configFileTemplate = `# Scaleway configuration file
 # This single default configuration is suitable for most use cases.
 {{ if .ActiveProfile }}active_profile: {{ .ActiveProfile }}{{ else }}# active_profile: myProfile{{ end }}
 
-# To improve this tools we rely on diagnostic and usage data.
-# Sending such data is optional and can be disable at any time by setting this variable to false.
-{{ if .SendUsage }}send_usage: {{ .SendUsage }}{{ else }}# send_usage: false{{ end }}
+# To improve the Scaleway CLI we rely on diagnostic and usage data.
+# Sending such data is optional and can be disable at any time by setting send_telemetry variable to false.
+{{ if .SendTelemetry }}send_telemetry: {{ .SendTelemetry }}{{ else }}# send_telemetry: false{{ end }}
 
 # To work with multiple projects or authorization accounts, you can set up multiple configurations with scw config configurations create and switch among them accordingly.
 # You can use a profile by either:
@@ -98,7 +103,7 @@ profiles:
 type Config struct {
 	Profile       `yaml:",inline"`
 	ActiveProfile *string             `yaml:"active_profile,omitempty"`
-	SendUsage     bool                `yaml:"send_usage,omitempty"`
+	SendTelemetry bool                `yaml:"send_telemetry,omitempty"`
 	Profiles      map[string]*Profile `yaml:"profiles,omitempty"`
 }
 

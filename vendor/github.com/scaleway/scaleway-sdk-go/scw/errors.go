@@ -100,6 +100,12 @@ func hasResponseError(res *http.Response) error {
 	}
 	newErr.RawBody = body
 
+	// The error content is not encoded in JSON, only returns HTTP data.
+	if res.Header.Get("Content-Type") != "application/json" {
+		newErr.Message = res.Status
+		return newErr
+	}
+
 	err = json.Unmarshal(body, newErr)
 	if err != nil {
 		return errors.Wrap(err, "could not parse error response body")

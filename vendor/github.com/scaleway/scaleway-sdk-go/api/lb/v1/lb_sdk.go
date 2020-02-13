@@ -304,6 +304,8 @@ const (
 	InstanceStatusError = InstanceStatus("error")
 	// InstanceStatusLocked is [insert doc].
 	InstanceStatusLocked = InstanceStatus("locked")
+	// InstanceStatusMigrating is [insert doc].
+	InstanceStatusMigrating = InstanceStatus("migrating")
 )
 
 func (enum InstanceStatus) String() string {
@@ -344,6 +346,8 @@ const (
 	LbStatusError = LbStatus("error")
 	// LbStatusLocked is [insert doc].
 	LbStatusLocked = LbStatus("locked")
+	// LbStatusMigrating is [insert doc].
+	LbStatusMigrating = LbStatus("migrating")
 )
 
 func (enum LbStatus) String() string {
@@ -1757,7 +1761,7 @@ type UpdateIPRequest struct {
 	// IPID iP address ID
 	IPID string `json:"-"`
 	// Reverse reverse DNS
-	Reverse *string `json:"-"`
+	Reverse *string `json:"reverse"`
 }
 
 // UpdateIP update IP
@@ -1768,9 +1772,6 @@ func (s *API) UpdateIP(req *UpdateIPRequest, opts ...scw.RequestOption) (*IP, er
 		defaultRegion, _ := s.client.GetDefaultRegion()
 		req.Region = defaultRegion
 	}
-
-	query := url.Values{}
-	parameter.AddToQuery(query, "reverse", req.Reverse)
 
 	if fmt.Sprint(req.Region) == "" {
 		return nil, errors.New("field Region cannot be empty in request")
@@ -1783,8 +1784,12 @@ func (s *API) UpdateIP(req *UpdateIPRequest, opts ...scw.RequestOption) (*IP, er
 	scwReq := &scw.ScalewayRequest{
 		Method:  "PATCH",
 		Path:    "/lb/v1/regions/" + fmt.Sprint(req.Region) + "/ips/" + fmt.Sprint(req.IPID) + "",
-		Query:   query,
 		Headers: http.Header{},
+	}
+
+	err = scwReq.SetBody(req)
+	if err != nil {
+		return nil, err
 	}
 
 	var resp IP
@@ -2194,7 +2199,7 @@ type AddBackendServersRequest struct {
 	Region scw.Region `json:"-"`
 	// BackendID backend ID
 	BackendID string `json:"-"`
-	// ServerIP set all IPs to remove of your backend
+	// ServerIP set all IPs to add on your backend
 	ServerIP []string `json:"server_ip"`
 }
 
@@ -2282,7 +2287,7 @@ type SetBackendServersRequest struct {
 	Region scw.Region `json:"-"`
 	// BackendID backend ID
 	BackendID string `json:"-"`
-	// ServerIP set all IPs to add of your backend and remove all other
+	// ServerIP set all IPs to add on your backend and remove all other
 	ServerIP []string `json:"server_ip"`
 }
 

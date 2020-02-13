@@ -478,14 +478,16 @@ const (
 	PoolStatusDeleted = PoolStatus("deleted")
 	// PoolStatusUpdating is [insert doc].
 	PoolStatusUpdating = PoolStatus("updating")
-	// PoolStatusScalling is [insert doc].
-	PoolStatusScalling = PoolStatus("scalling")
+	// PoolStatusScaling is [insert doc].
+	PoolStatusScaling = PoolStatus("scaling")
 	// PoolStatusWarning is [insert doc].
 	PoolStatusWarning = PoolStatus("warning")
 	// PoolStatusError is [insert doc].
 	PoolStatusError = PoolStatus("error")
 	// PoolStatusLocked is [insert doc].
 	PoolStatusLocked = PoolStatus("locked")
+	// PoolStatusUpgrading is [insert doc].
+	PoolStatusUpgrading = PoolStatus("upgrading")
 )
 
 func (enum PoolStatus) String() string {
@@ -865,7 +867,7 @@ type ListClustersRequest struct {
 	Page *int32 `json:"-"`
 	// PageSize the maximum number of clusters per page
 	PageSize *uint32 `json:"-"`
-	// Name the name on which to filter the retured clusters
+	// Name the name on which to filter the returned clusters
 	Name *string `json:"-"`
 	// Status the status on which to filter the returned clusters
 	//
@@ -1354,8 +1356,12 @@ type ListPoolsRequest struct {
 	Page *int32 `json:"-"`
 	// PageSize the maximum number of pools per page
 	PageSize *uint32 `json:"-"`
-	// Name the name on which to filter the retured clusters
+	// Name the name on which to filter the returned pools
 	Name *string `json:"-"`
+	// Status the status on which to filter the returned pools
+	//
+	// Default value: unknown
+	Status PoolStatus `json:"-"`
 }
 
 // ListPools list all the pools in a cluster
@@ -1379,6 +1385,7 @@ func (s *API) ListPools(req *ListPoolsRequest, opts ...scw.RequestOption) (*List
 	parameter.AddToQuery(query, "page", req.Page)
 	parameter.AddToQuery(query, "page_size", req.PageSize)
 	parameter.AddToQuery(query, "name", req.Name)
+	parameter.AddToQuery(query, "status", req.Status)
 
 	if fmt.Sprint(req.Region) == "" {
 		return nil, errors.New("field Region cannot be empty in request")
@@ -1694,7 +1701,7 @@ type ListNodesRequest struct {
 	Page *int32 `json:"-"`
 	// PageSize the maximum number of nodes per page
 	PageSize *uint32 `json:"-"`
-	// Name the name on which to filter the retured nodes
+	// Name the name on which to filter the returned nodes
 	Name *string `json:"-"`
 	// Status the status on which to filter the returned nodes
 	//
