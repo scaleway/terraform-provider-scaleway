@@ -1220,17 +1220,17 @@ type VolumeSummary struct {
 
 // VolumeTemplate volume template
 type VolumeTemplate struct {
-	// ID the volumes unique ID
+	// ID uUID of the volume
 	ID string `json:"id,omitempty"`
-	// Name the volumes name
+	// Name name of the volume
 	Name string `json:"name,omitempty"`
-	// Size the volumes disk size
+	// Size disk size of the volume
 	Size scw.Size `json:"size,omitempty"`
-	// VolumeType the volumes type
+	// VolumeType type of the volume
 	//
 	// Default value: l_ssd
 	VolumeType VolumeType `json:"volume_type,omitempty"`
-	// Organization the organization ID
+	// Organization organization ID of the volume
 	Organization string `json:"organization,omitempty"`
 }
 
@@ -1468,7 +1468,7 @@ type CreateServerRequest struct {
 	// BootType the boot type to use
 	//
 	// Default value: local
-	BootType BootType `json:"boot_type"`
+	BootType *BootType `json:"boot_type,omitempty"`
 	// Bootscript the bootscript ID to use when `boot_type` is set to `bootscript`
 	Bootscript *string `json:"bootscript,omitempty"`
 	// Organization the server organization ID
@@ -2063,21 +2063,21 @@ func (s *API) GetImage(req *GetImageRequest, opts ...scw.RequestOption) (*GetIma
 
 type CreateImageRequest struct {
 	Zone scw.Zone `json:"-"`
-
+	// Name name of the image
 	Name string `json:"name,omitempty"`
-
+	// RootVolume uUID of the snapshot
 	RootVolume string `json:"root_volume,omitempty"`
-	// Arch
+	// Arch architecture of the image
 	//
 	// Default value: x86_64
 	Arch Arch `json:"arch"`
-
+	// DefaultBootscript default bootscript of the image
 	DefaultBootscript string `json:"default_bootscript,omitempty"`
-
+	// ExtraVolumes additional volumes of the image
 	ExtraVolumes map[string]*VolumeTemplate `json:"extra_volumes,omitempty"`
-
+	// Organization organization ID of the image
 	Organization string `json:"organization,omitempty"`
-
+	// Public true to create a public image
 	Public bool `json:"public,omitempty"`
 }
 
