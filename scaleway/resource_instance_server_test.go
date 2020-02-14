@@ -49,6 +49,37 @@ func TestAccScalewayInstanceServerMinimal1(t *testing.T) {
 	})
 }
 
+func TestAccScalewayInstanceServerC2S(t *testing.T) {
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckScalewayInstanceServerDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: `
+resource "scaleway_instance_server" "base" {
+  image = "f974feac-abae-4365-b988-8ec7d1cec10d"
+  type  = "C2S"
+
+  tags = [ "terraform-test", "scaleway_instance_server", "C2S" ]
+}`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayInstanceServerExists("scaleway_instance_server.base"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.base", "image", "f974feac-abae-4365-b988-8ec7d1cec10d"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.base", "type", "C2S"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.base", "boot_type", "bootscript"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.base", "root_volume.0.delete_on_termination", "true"),
+					resource.TestCheckResourceAttrSet("scaleway_instance_server.base", "root_volume.0.volume_id"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.base", "enable_dynamic_ip", "false"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.base", "tags.0", "terraform-test"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.base", "tags.1", "scaleway_instance_server"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.base", "tags.2", "C2S"),
+				),
+			},
+		},
+	})
+}
+
 func TestAccScalewayInstanceServerRootVolume1(t *testing.T) {
 	t.Skip("C2S often don't start. This is an issue on API. This server type is deprecated anyway")
 	resource.ParallelTest(t, resource.TestCase{

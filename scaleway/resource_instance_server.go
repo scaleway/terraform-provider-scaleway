@@ -170,6 +170,11 @@ func resourceScalewayInstanceServer() *schema.Resource {
 					InstanceServerStateStandby,
 				}, false),
 			},
+			"boot_type": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The boot type of the server",
+			},
 			"cloud_init": {
 				Type:         schema.TypeString,
 				Optional:     true,
@@ -351,6 +356,7 @@ func resourceScalewayInstanceServerRead(d *schema.ResourceData, m interface{}) e
 	_ = d.Set("state", state)
 	_ = d.Set("zone", string(zone))
 	_ = d.Set("name", response.Server.Name)
+	_ = d.Set("boot_type", response.Server.BootType)
 	_ = d.Set("type", response.Server.CommercialType)
 	_ = d.Set("tags", response.Server.Tags)
 	_ = d.Set("security_group_id", response.Server.SecurityGroup.ID)
