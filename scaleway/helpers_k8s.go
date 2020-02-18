@@ -60,7 +60,7 @@ func waitK8SClusterReady(k8sAPI *k8s.API, region scw.Region, clusterID string) e
 	cluster, err := k8sAPI.WaitForCluster(&k8s.WaitForClusterRequest{
 		ClusterID: clusterID,
 		Region:    region,
-		Timeout:   K8SClusterWaitForReadyTimeout,
+		Timeout:   scw.DurationPtr(K8SClusterWaitForReadyTimeout),
 	})
 	if err != nil {
 		return err
@@ -76,7 +76,7 @@ func waitK8SClusterDeleted(k8sAPI *k8s.API, region scw.Region, clusterID string)
 	cluster, err := k8sAPI.WaitForCluster(&k8s.WaitForClusterRequest{
 		ClusterID: clusterID,
 		Region:    region,
-		Timeout:   K8SClusterWaitForDeletedTimeout,
+		Timeout:   scw.DurationPtr(K8SClusterWaitForDeletedTimeout),
 	})
 	if err != nil {
 		if is404Error(err) {
