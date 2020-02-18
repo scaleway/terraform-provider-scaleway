@@ -438,6 +438,8 @@ const (
 	NodeStatusLocked = NodeStatus("locked")
 	// NodeStatusRebooting is [insert doc].
 	NodeStatusRebooting = NodeStatus("rebooting")
+	// NodeStatusCreationError is [insert doc].
+	NodeStatusCreationError = NodeStatus("creation_error")
 )
 
 func (enum NodeStatus) String() string {
