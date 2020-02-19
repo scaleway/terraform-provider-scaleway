@@ -621,6 +621,8 @@ type Bootscript struct {
 	//
 	// Default value: x86_64
 	Arch Arch `json:"arch"`
+	// Zone the zone in which is the bootscript
+	Zone scw.Zone `json:"zone"`
 }
 
 type CreateIPResponse struct {
@@ -739,6 +741,8 @@ type IP struct {
 	Server *ServerSummary `json:"server"`
 
 	Organization string `json:"organization"`
+
+	Zone scw.Zone `json:"zone"`
 }
 
 type Image struct {
@@ -769,6 +773,8 @@ type Image struct {
 	//
 	// Default value: available
 	State ImageState `json:"state"`
+
+	Zone scw.Zone `json:"zone"`
 }
 
 type ListBootscriptsResponse struct {
@@ -863,6 +869,8 @@ type PlacementGroup struct {
 	PolicyType PlacementGroupPolicyType `json:"policy_type"`
 	// PolicyRespected returns true if the policy is respected, false otherwise
 	PolicyRespected bool `json:"policy_respected"`
+	// Zone the zone in which is the placement group
+	Zone scw.Zone `json:"zone"`
 }
 
 type PlacementGroupServer struct {
@@ -903,6 +911,8 @@ type SecurityGroup struct {
 	Servers []*ServerSummary `json:"servers"`
 	// Stateful true if the security group is stateful
 	Stateful bool `json:"stateful"`
+	// Zone the zone in which is the security group
+	Zone scw.Zone `json:"zone"`
 }
 
 type SecurityGroupRule struct {
@@ -929,6 +939,8 @@ type SecurityGroupRule struct {
 	Position uint32 `json:"position"`
 
 	Editable bool `json:"editable"`
+
+	Zone scw.Zone `json:"zone"`
 }
 
 type SecurityGroupSummary struct {
@@ -1003,6 +1015,8 @@ type Server struct {
 	Arch Arch `json:"arch"`
 	// PlacementGroup the server placement group
 	PlacementGroup *PlacementGroup `json:"placement_group"`
+	// Zone the zone in which is the server
+	Zone scw.Zone `json:"zone"`
 }
 
 type ServerActionResponse struct {
@@ -1132,6 +1146,8 @@ type Snapshot struct {
 	CreationDate time.Time `json:"creation_date"`
 
 	ModificationDate time.Time `json:"modification_date"`
+
+	Zone scw.Zone `json:"zone"`
 }
 
 type SnapshotBaseVolume struct {
@@ -1160,6 +1176,8 @@ type Task struct {
 	HrefFrom string `json:"href_from"`
 
 	HrefResult string `json:"href_result"`
+	// Zone the zone in which is the task
+	Zone scw.Zone `json:"zone"`
 }
 
 type UpdateIPResponse struct {
@@ -1204,6 +1222,8 @@ type Volume struct {
 	//
 	// Default value: available
 	State VolumeState `json:"state"`
+	// Zone the zone in which is the volume
+	Zone scw.Zone `json:"zone"`
 }
 
 type VolumeSummary struct {
@@ -2944,33 +2964,33 @@ func (s *API) DeleteSecurityGroup(req *DeleteSecurityGroupRequest, opts ...scw.R
 
 type setSecurityGroupRequest struct {
 	Zone scw.Zone `json:"-"`
-	// ID the security groups' unique ID
+
 	ID string `json:"-"`
-	// Name the security groups name
+
 	Name string `json:"name"`
-	// Description the security groups description
+
+	CreationDate time.Time `json:"creation_date"`
+
+	ModificationDate time.Time `json:"modification_date"`
+
 	Description string `json:"description"`
-	// EnableDefaultSecurity true if SMTP is blocked on IPv4 and IPv6
+
 	EnableDefaultSecurity bool `json:"enable_default_security"`
-	// InboundDefaultPolicy the default inbound policy
+	// InboundDefaultPolicy
 	//
 	// Default value: accept
 	InboundDefaultPolicy SecurityGroupPolicy `json:"inbound_default_policy"`
-	// OutboundDefaultPolicy the default outbound policy
+
+	Organization string `json:"organization"`
+
+	OrganizationDefault bool `json:"organization_default"`
+	// OutboundDefaultPolicy
 	//
 	// Default value: accept
 	OutboundDefaultPolicy SecurityGroupPolicy `json:"outbound_default_policy"`
-	// Organization the security groups organization ID
-	Organization string `json:"organization"`
-	// OrganizationDefault true if it is your default security group for this organization
-	OrganizationDefault bool `json:"organization_default"`
-	// CreationDate the security group creation date
-	CreationDate time.Time `json:"creation_date"`
-	// ModificationDate the security group modification date
-	ModificationDate time.Time `json:"modification_date"`
-	// Servers list of servers attached to this security group
+
 	Servers []*ServerSummary `json:"servers"`
-	// Stateful true if the security group is stateful
+
 	Stateful bool `json:"stateful"`
 }
 
