@@ -249,6 +249,66 @@ func TestAccScalewayK8SClusterBetaDefaultPoolRecreate(t *testing.T) {
 	})
 }
 
+func TestAccScalewayK8SClusterBetaDefaultPoolWait(t *testing.T) {
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckScalewayK8SClusterBetaDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckScalewayK8SClusterBetaConfigPoolWait("1.17.3", 1),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayK8SClusterBetaExists("scaleway_k8s_cluster_beta.pool"),
+					resource.TestCheckResourceAttr("scaleway_k8s_cluster_beta.pool", "version", "1.17.3"),
+					resource.TestCheckResourceAttr("scaleway_k8s_cluster_beta.pool", "cni", "cilium"),
+					resource.TestCheckResourceAttr("scaleway_k8s_cluster_beta.pool", "status", k8s.ClusterStatusReady.String()),
+					resource.TestCheckResourceAttrSet("scaleway_k8s_cluster_beta.pool", "default_pool.0.pool_id"),
+					resource.TestCheckResourceAttr("scaleway_k8s_cluster_beta.pool", "default_pool.0.size", "1"),
+					resource.TestCheckResourceAttr("scaleway_k8s_cluster_beta.pool", "default_pool.0.node_type", "gp1_xs"),
+					resource.TestCheckResourceAttr("scaleway_k8s_cluster_beta.pool", "default_pool.0.min_size", "1"),
+					resource.TestCheckResourceAttr("scaleway_k8s_cluster_beta.pool", "default_pool.0.max_size", "1"),
+					resource.TestCheckResourceAttr("scaleway_k8s_cluster_beta.pool", "default_pool.0.status", k8s.PoolStatusReady.String()),
+					resource.TestCheckResourceAttr("scaleway_k8s_cluster_beta.pool", "default_pool.0.nodes.0.status", k8s.NodeStatusReady.String()),
+					resource.TestCheckResourceAttr("scaleway_k8s_cluster_beta.pool", "default_pool.0.wait_for_pool_ready", "true"),
+					resource.TestCheckResourceAttr("scaleway_k8s_cluster_beta.pool", "tags.0", "terraform-test"),
+					resource.TestCheckResourceAttr("scaleway_k8s_cluster_beta.pool", "tags.1", "scaleway_k8s_cluster_beta"),
+					resource.TestCheckResourceAttr("scaleway_k8s_cluster_beta.pool", "tags.2", "default-pool"),
+				),
+			},
+			{
+				Config: testAccCheckScalewayK8SClusterBetaConfigPoolWait("1.17.3", 2), // add a node and wait for the pool to be ready
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayK8SClusterBetaExists("scaleway_k8s_cluster_beta.pool"),
+					resource.TestCheckResourceAttr("scaleway_k8s_cluster_beta.pool", "status", k8s.ClusterStatusReady.String()),
+					resource.TestCheckResourceAttrSet("scaleway_k8s_cluster_beta.pool", "default_pool.0.pool_id"),
+					resource.TestCheckResourceAttr("scaleway_k8s_cluster_beta.pool", "default_pool.0.size", "2"),
+					resource.TestCheckResourceAttr("scaleway_k8s_cluster_beta.pool", "default_pool.0.min_size", "1"),
+					resource.TestCheckResourceAttr("scaleway_k8s_cluster_beta.pool", "default_pool.0.max_size", "2"),
+					resource.TestCheckResourceAttr("scaleway_k8s_cluster_beta.pool", "default_pool.0.status", k8s.PoolStatusReady.String()),
+					resource.TestCheckResourceAttr("scaleway_k8s_cluster_beta.pool", "default_pool.0.nodes.0.status", k8s.NodeStatusReady.String()),
+					resource.TestCheckResourceAttr("scaleway_k8s_cluster_beta.pool", "default_pool.0.nodes.1.status", k8s.NodeStatusReady.String()), // check that the new node has the "ready" status
+					resource.TestCheckResourceAttr("scaleway_k8s_cluster_beta.pool", "default_pool.0.wait_for_pool_ready", "true"),
+				),
+			},
+			{
+				Config: testAccCheckScalewayK8SClusterBetaConfigPoolWait("1.17.3", 1), // remove a node and wait for the pool to be ready
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayK8SClusterBetaExists("scaleway_k8s_cluster_beta.pool"),
+					resource.TestCheckResourceAttr("scaleway_k8s_cluster_beta.pool", "status", k8s.ClusterStatusReady.String()),
+					resource.TestCheckResourceAttrSet("scaleway_k8s_cluster_beta.pool", "default_pool.0.pool_id"),
+					resource.TestCheckResourceAttr("scaleway_k8s_cluster_beta.pool", "default_pool.0.size", "1"),
+					resource.TestCheckResourceAttr("scaleway_k8s_cluster_beta.pool", "default_pool.0.min_size", "1"),
+					resource.TestCheckResourceAttr("scaleway_k8s_cluster_beta.pool", "default_pool.0.max_size", "1"),
+					resource.TestCheckResourceAttr("scaleway_k8s_cluster_beta.pool", "default_pool.0.status", k8s.PoolStatusReady.String()),
+					resource.TestCheckResourceAttr("scaleway_k8s_cluster_beta.pool", "default_pool.0.nodes.0.status", k8s.NodeStatusReady.String()),
+					resource.TestCheckNoResourceAttr("scaleway_k8s_cluster_beta.pool", "default_pool.0.nodes.1"), // check that the second node does not exist anymore
+					resource.TestCheckResourceAttr("scaleway_k8s_cluster_beta.pool", "default_pool.0.wait_for_pool_ready", "true"),
+				),
+			},
+		},
+	})
+}
+
 func TestAccScalewayK8SClusterBetaAutoUpgrade(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -409,6 +469,24 @@ resource "scaleway_k8s_cluster_beta" "pool" {
 	}
 	tags = [ "terraform-test", "scaleway_k8s_cluster_beta", "default-pool" ]
 }`, version)
+}
+
+func testAccCheckScalewayK8SClusterBetaConfigPoolWait(version string, size int) string {
+	return fmt.Sprintf(`
+resource "scaleway_k8s_cluster_beta" "pool" {
+	cni = "cilium"
+	version = "%s"
+	name = "default-pool"
+	default_pool {
+		node_type = "gp1_xs"
+		size = %d
+		min_size = 1
+		max_size = %d
+		container_runtime = "docker"
+		wait_for_pool_ready = true
+	}
+	tags = [ "terraform-test", "scaleway_k8s_cluster_beta", "default-pool" ]
+}`, version, size, size)
 }
 
 func testAccCheckScalewayK8SClusterBetaConfigPoolWithPlacementGroup(version string) string {

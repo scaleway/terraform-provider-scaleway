@@ -77,6 +77,12 @@ func resourceScalewayK8SPoolBeta() *schema.Resource {
 					k8s.RuntimeCrio.String(),
 				}, false),
 			},
+			"wait_for_pool_ready": {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Default:     false,
+				Description: "Whether to wait for the pool to be ready",
+			},
 			"placement_group_id": {
 				Type:        schema.TypeString,
 				Optional:    true,
@@ -100,6 +106,39 @@ func resourceScalewayK8SPoolBeta() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The Kubernetes version of the pool",
+			},
+			"nodes": {
+				Type:     schema.TypeList,
+				Computed: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"name": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The name of the node",
+						},
+						"status": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The status of the node",
+						},
+						"public_ip": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The public IPv4 address of the node",
+						},
+						"public_ip_v6": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The public IPv6 address of the node",
+						},
+					},
+				},
+			},
+			"status": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The status of the pool",
 			},
 		},
 	}
@@ -150,6 +189,13 @@ func resourceScalewayK8SPoolBetaCreate(d *schema.ResourceData, m interface{}) er
 
 	d.SetId(newRegionalId(region, res.ID))
 
+	if d.Get("wait_for_pool_ready").(bool) { // wait for the pool to be ready if specified (including all its nodes)
+		err = waitK8SPoolReady(k8sAPI, region, res.ID)
+		if err != nil {
+			return err
+		}
+	}
+
 	return resourceScalewayK8SPoolBetaRead(d, m)
 }
 
@@ -174,6 +220,11 @@ func resourceScalewayK8SPoolBetaRead(d *schema.ResourceData, m interface{}) erro
 		return err
 	}
 
+	nodes, err := getNodes(k8sAPI, pool)
+	if err != nil {
+		return err
+	}
+
 	_ = d.Set("cluster_id", newRegionalId(region, pool.ClusterID))
 	_ = d.Set("name", pool.Name)
 	_ = d.Set("node_type", pool.NodeType)
@@ -186,6 +237,8 @@ func resourceScalewayK8SPoolBetaRead(d *schema.ResourceData, m interface{}) erro
 	_ = d.Set("container_runtime", pool.ContainerRuntime)
 	_ = d.Set("created_at", pool.CreatedAt)
 	_ = d.Set("updated_at", pool.UpdatedAt)
+	_ = d.Set("nodes", nodes)
+	_ = d.Set("status", pool.Status)
 
 	if pool.PlacementGroupID != nil {
 		_ = d.Set("placement_group_id", newZonedIdFromRegion(region, *pool.PlacementGroupID)) // TODO fix this ZonedIdFromRegion
@@ -228,9 +281,16 @@ func resourceScalewayK8SPoolBetaUpdate(d *schema.ResourceData, m interface{}) er
 		updateRequest.Size = scw.Uint32Ptr(uint32(d.Get("size").(int)))
 	}
 
-	_, err = k8sAPI.UpdatePool(updateRequest)
+	res, err := k8sAPI.UpdatePool(updateRequest)
 	if err != nil {
 		return err
+	}
+
+	if d.Get("wait_for_pool_ready").(bool) { // wait for the pool to be ready if specified (including all its nodes)
+		err = waitK8SPoolReady(k8sAPI, region, res.ID)
+		if err != nil {
+			return err
+		}
 	}
 
 	return resourceScalewayK8SPoolBetaRead(d, m)

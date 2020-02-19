@@ -45,6 +45,63 @@ func TestAccScalewayK8SClusterPoolMinimal(t *testing.T) {
 	})
 }
 
+func TestAccScalewayK8SClusterPoolWait(t *testing.T) {
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckScalewayK8SClusterBetaDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckScalewayK8SPoolBetaConfigWait("1.17.3", false, 0),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayK8SClusterBetaExists("scaleway_k8s_cluster_beta.minimal"),
+				),
+			},
+			{
+				Config: testAccCheckScalewayK8SPoolBetaConfigWait("1.17.3", true, 1),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayK8SClusterBetaExists("scaleway_k8s_cluster_beta.minimal"),
+					testAccCheckScalewayK8SPoolBetaExists("scaleway_k8s_pool_beta.minimal"),
+					resource.TestCheckResourceAttr("scaleway_k8s_pool_beta.minimal", "size", "1"),
+					resource.TestCheckResourceAttr("scaleway_k8s_pool_beta.minimal", "status", k8s.PoolStatusReady.String()),
+					resource.TestCheckResourceAttr("scaleway_k8s_pool_beta.minimal", "nodes.0.status", k8s.NodeStatusReady.String()),
+					resource.TestCheckResourceAttr("scaleway_k8s_pool_beta.minimal", "wait_for_pool_ready", "true"),
+				),
+			},
+			{
+				Config: testAccCheckScalewayK8SPoolBetaConfigWait("1.17.3", true, 2),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayK8SClusterBetaExists("scaleway_k8s_cluster_beta.minimal"),
+					testAccCheckScalewayK8SPoolBetaExists("scaleway_k8s_pool_beta.minimal"),
+					resource.TestCheckResourceAttr("scaleway_k8s_pool_beta.minimal", "size", "2"),
+					resource.TestCheckResourceAttr("scaleway_k8s_pool_beta.minimal", "status", k8s.PoolStatusReady.String()),
+					resource.TestCheckResourceAttr("scaleway_k8s_pool_beta.minimal", "nodes.0.status", k8s.NodeStatusReady.String()),
+					resource.TestCheckResourceAttr("scaleway_k8s_pool_beta.minimal", "nodes.1.status", k8s.NodeStatusReady.String()), // check that the new node has the "ready" status
+					resource.TestCheckResourceAttr("scaleway_k8s_pool_beta.minimal", "wait_for_pool_ready", "true"),
+				),
+			},
+			{
+				Config: testAccCheckScalewayK8SPoolBetaConfigWait("1.17.3", true, 1),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayK8SClusterBetaExists("scaleway_k8s_cluster_beta.minimal"),
+					testAccCheckScalewayK8SPoolBetaExists("scaleway_k8s_pool_beta.minimal"),
+					resource.TestCheckResourceAttr("scaleway_k8s_pool_beta.minimal", "size", "1"),
+					resource.TestCheckResourceAttr("scaleway_k8s_pool_beta.minimal", "status", k8s.PoolStatusReady.String()),
+					resource.TestCheckResourceAttr("scaleway_k8s_pool_beta.minimal", "nodes.0.status", k8s.NodeStatusReady.String()),
+					resource.TestCheckNoResourceAttr("scaleway_k8s_pool_beta.minimal", "nodes.1"), // check that the second node does not exist anymore
+					resource.TestCheckResourceAttr("scaleway_k8s_pool_beta.minimal", "wait_for_pool_ready", "true"),
+				),
+			},
+			{
+				Config: testAccCheckScalewayK8SPoolBetaConfigWait("1.17.3", false, 0),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayK8SClusterBetaExists("scaleway_k8s_cluster_beta.minimal"),
+					testAccCheckScalewayK8SPoolBetaDestroy,
+				),
+			},
+		},
+	})
+}
 func TestAccScalewayK8SClusterPoolPlacementGroup(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -131,6 +188,36 @@ resource "scaleway_k8s_pool_beta" "minimal" {
 	autoscaling = true
 	size = 1
 }`)
+	}
+
+	return fmt.Sprintf(`
+resource "scaleway_k8s_cluster_beta" "minimal" {
+    name = "minimal"
+	cni = "calico"
+	version = "%s"
+	default_pool {
+		node_type = "gp1_xs"
+		size = 1
+	}
+	tags = [ "terraform-test", "scaleway_k8s_cluster_beta", "minimal" ]
+}
+%s`, version, pool)
+}
+
+func testAccCheckScalewayK8SPoolBetaConfigWait(version string, otherPool bool, otherPoolSize int) string {
+	pool := ""
+	if otherPool {
+		pool += fmt.Sprintf(`
+resource "scaleway_k8s_pool_beta" "minimal" {
+    name = "minimal"
+	cluster_id = scaleway_k8s_cluster_beta.minimal.id
+	node_type = "gp1_xs"
+	size = %d
+	min_size = 1
+	max_size = %d
+
+	wait_for_pool_ready = true
+}`, otherPoolSize, otherPoolSize)
 	}
 
 	return fmt.Sprintf(`

@@ -194,6 +194,12 @@ func resourceScalewayK8SClusterBeta() *schema.Resource {
 								k8s.RuntimeCrio.String(),
 							}, false),
 						},
+						"wait_for_pool_ready": {
+							Type:        schema.TypeBool,
+							Optional:    true,
+							Default:     false,
+							Description: "Whether to wait for the pool to be ready",
+						},
 						// Computed elements
 						"pool_id": {
 							Type:        schema.TypeString,
@@ -209,6 +215,34 @@ func resourceScalewayK8SClusterBeta() *schema.Resource {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "The date and time of the last update of the default pool",
+						},
+						"nodes": {
+							Type:     schema.TypeList,
+							Computed: true,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"name": {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The name of the node",
+									},
+									"status": {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The status of the node",
+									},
+									"public_ip": {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The public IPv4 address of the node",
+									},
+									"public_ip_v6": {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The public IPv6 address of the node",
+									},
+								},
+							},
 						},
 						"status": {
 							Type:        schema.TypeString,
@@ -408,9 +442,21 @@ func resourceScalewayK8SClusterBetaCreate(d *schema.ResourceData, m interface{})
 
 	d.SetId(newRegionalId(region, res.ID))
 
-	err = waitK8SClusterReady(k8sAPI, region, res.ID)
+	err = waitK8SClusterReady(k8sAPI, region, res.ID) // wait for the cluster status to be ready
 	if err != nil {
 		return err
+	}
+
+	if d.Get("default_pool.0.wait_for_pool_ready").(bool) { // wait for the pool status to be ready (if specified)
+		pool, err := readDefaultPool(d, m) // ensure that 'default_pool.0.pool_id' is set
+		if err != nil {
+			return err
+		}
+
+		err = waitK8SPoolReady(k8sAPI, region, expandID(pool.ID))
+		if err != nil {
+			return err
+		}
 	}
 
 	return resourceScalewayK8SClusterBetaRead(d, m)
@@ -419,40 +465,19 @@ func resourceScalewayK8SClusterBetaCreate(d *schema.ResourceData, m interface{})
 // resourceScalewayK8SClusterBetaDefaultPoolRead is only called after a resourceScalewayK8SClusterBetaCreate
 // thus ensuring the uniqueness of the only pool listed
 func resourceScalewayK8SClusterBetaDefaultPoolRead(d *schema.ResourceData, m interface{}) error {
-	k8sAPI, region, clusterID, err := k8sAPIWithRegionAndID(m, d.Id())
+	k8sAPI, region, _, err := k8sAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return err
 	}
 
-	////
-	// Read default Pool
-	////
+	pool, err := readDefaultPool(d, m)
+	if err != nil {
+		return err
+	}
 
-	var pool *k8s.Pool
-
-	if defaultPoolID, ok := d.GetOk("default_pool.0.pool_id"); ok {
-		poolResp, err := k8sAPI.GetPool(&k8s.GetPoolRequest{
-			Region: region,
-			PoolID: expandID(defaultPoolID.(string)),
-		})
-		if err != nil {
-			return err
-		}
-		pool = poolResp
-	} else {
-		response, err := k8sAPI.ListPools(&k8s.ListPoolsRequest{
-			Region:    region,
-			ClusterID: clusterID,
-		})
-		if err != nil {
-			return err
-		}
-
-		if len(response.Pools) != 1 {
-			return fmt.Errorf("Newly created pool on cluster %s has %d pools instead of 1", clusterID, len(response.Pools))
-		}
-
-		pool = response.Pools[0]
+	nodes, err := getNodes(k8sAPI, pool)
+	if err != nil {
+		return err
 	}
 
 	defaultPool := map[string]interface{}{}
@@ -466,6 +491,8 @@ func resourceScalewayK8SClusterBetaDefaultPoolRead(d *schema.ResourceData, m int
 	defaultPool["container_runtime"] = pool.ContainerRuntime
 	defaultPool["created_at"] = pool.CreatedAt.String()
 	defaultPool["updated_at"] = pool.UpdatedAt.String()
+	defaultPool["nodes"] = nodes
+	defaultPool["wait_for_pool_ready"] = d.Get("default_pool.0.wait_for_pool_ready")
 	defaultPool["status"] = pool.Status.String()
 
 	if pool.PlacementGroupID != nil {
@@ -477,6 +504,41 @@ func resourceScalewayK8SClusterBetaDefaultPoolRead(d *schema.ResourceData, m int
 		return err
 	}
 	return nil
+}
+
+func readDefaultPool(d *schema.ResourceData, m interface{}) (*k8s.Pool, error) {
+	k8sAPI, region, clusterID, err := k8sAPIWithRegionAndID(m, d.Id())
+	if err != nil {
+		return nil, err
+	}
+
+	var pool *k8s.Pool
+
+	if defaultPoolID, ok := d.GetOk("default_pool.0.pool_id"); ok {
+		poolResp, err := k8sAPI.GetPool(&k8s.GetPoolRequest{
+			Region: region,
+			PoolID: expandID(defaultPoolID.(string)),
+		})
+		if err != nil {
+			return nil, err
+		}
+		pool = poolResp
+	} else {
+		response, err := k8sAPI.ListPools(&k8s.ListPoolsRequest{
+			Region:    region,
+			ClusterID: clusterID,
+		})
+		if err != nil {
+			return nil, err
+		}
+
+		if len(response.Pools) != 1 {
+			return nil, fmt.Errorf("Newly created pool on cluster %s has %d pools instead of 1", clusterID, len(response.Pools))
+		}
+
+		pool = response.Pools[0]
+	}
+	return pool, nil
 }
 
 func resourceScalewayK8SClusterBetaRead(d *schema.ResourceData, m interface{}) error {
@@ -660,6 +722,13 @@ func resourceScalewayK8SClusterBetaDefaultPoolUpdate(d *schema.ResourceData, m i
 				if err != nil {
 					return err
 				}
+			}
+		}
+
+		if d.Get("default_pool.0.wait_for_pool_ready").(bool) { // wait for the pool to be ready if specified
+			err = waitK8SPoolReady(k8sAPI, region, expandID(defaultPoolID))
+			if err != nil {
+				return err
 			}
 		}
 	}
