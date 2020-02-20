@@ -151,6 +151,8 @@ The following arguments are supported:
   - `container_runtime` - (Defaults to `docker`) The container runtime of the default pool.
 ~> **Important:** Updates to this field will recreate a new default pool.
 
+  - `wait_for_pool_ready` - (Default to `false`) Whether to wait for the pool to be ready.
+
 - `region` - (Defaults to [provider](../index.html#region) `region`) The [region](../guides/regions_and_zones.html#regions) in which the cluster should be created.
 
 - `organization_id` - (Defaults to [provider](../index.html#organization_id) `organization_id`) The ID of the organization the cluster is associated with.
@@ -173,6 +175,12 @@ In addition to all above arguments, the following attributes are exported:
 - `status` - The status of the Kubernetes cluster.
 - `default_pool`
   - `pool_id` - The ID of the default pool.
+  - `status` - The status of the default pool.
+  - `nodes` - (List of) The nodes in the default pool.
+    - `name` - The name of the node.
+    - `public_ip` - The public IPv4.
+    - `public_ip_v6` - The public IPv6.
+    - `status` - The status of the node.
   - `created_at` - The creation date of the default pool.
   - `updated_at` - The last update date of the default pool.
 - `upgrade_available` - Set to `true` if a newer Kubernetes version is available.
