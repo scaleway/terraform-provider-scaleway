@@ -29,8 +29,10 @@ func TestAccScalewayDataSourceRegistryNamespace_Basic(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayRegistryNamespaceBetaExists("scaleway_registry_namespace_beta.test"),
 					resource.TestCheckResourceAttr("scaleway_registry_namespace_beta.test", "name", "test-cr"),
+					resource.TestCheckResourceAttrSet("data.scaleway_registry_namespace_beta.test", "id"),
 					resource.TestCheckResourceAttr("data.scaleway_registry_namespace_beta.test", "is_public", "false"),
 					resource.TestCheckResourceAttrSet("data.scaleway_registry_namespace_beta.test", "endpoint"),
+					resource.TestCheckResourceAttrSet("data.scaleway_registry_namespace_beta.test", "id"),
 					resource.TestCheckResourceAttr("data.scaleway_registry_namespace_beta.test2", "is_public", "false"),
 					resource.TestCheckResourceAttrSet("data.scaleway_registry_namespace_beta.test2", "endpoint"),
 				),
@@ -53,8 +55,10 @@ func TestAccScalewayDataSourceRegistryNamespace_Basic(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayRegistryNamespaceBetaExists("scaleway_registry_namespace_beta.test"),
 					resource.TestCheckResourceAttr("scaleway_registry_namespace_beta.test", "name", "test-cr"),
+					resource.TestCheckResourceAttrSet("data.scaleway_registry_namespace_beta.test2", "id"),
 					resource.TestCheckResourceAttr("data.scaleway_registry_namespace_beta.test", "is_public", "true"),
 					resource.TestCheckResourceAttrSet("data.scaleway_registry_namespace_beta.test", "endpoint"),
+					resource.TestCheckResourceAttrSet("data.scaleway_registry_namespace_beta.test2", "id"),
 					resource.TestCheckResourceAttr("data.scaleway_registry_namespace_beta.test2", "is_public", "true"),
 					resource.TestCheckResourceAttrSet("data.scaleway_registry_namespace_beta.test2", "endpoint"),
 				),

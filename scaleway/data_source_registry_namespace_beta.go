@@ -27,11 +27,6 @@ func dataSourceScalewayRegistryNamespace() *schema.Resource {
 			},
 			"region":          regionSchema(),
 			"organization_id": organizationIDSchema(),
-			"id": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The ID of the Registry Namespace",
-			},
 			"endpoint": {
 				Type:        schema.TypeString,
 				Computed:    true,
