@@ -76,6 +76,8 @@ func dataSourceScalewayRegistryNamespaceRead(d *schema.ResourceData, m interface
 	}
 
 	d.SetId(datasourceNewRegionalID(namespace.ID, region))
+	_ = d.Set("namespace_id", namespace.ID)
+	_ = d.Set("name", namespace.Name)
 	_ = d.Set("endpoint", namespace.Endpoint)
 	_ = d.Set("is_public", namespace.IsPublic)
 
