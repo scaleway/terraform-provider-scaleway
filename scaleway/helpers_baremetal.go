@@ -117,3 +117,18 @@ func flattenBaremetalMemory(memories []*baremetal.Memory) interface{} {
 	}
 	return flattenedMemories
 }
+
+func flattenBaremetalIPs(ips []*baremetal.IP) interface{} {
+	if ips == nil {
+		return nil
+	}
+	flattendIPs := []map[string]interface{}(nil)
+	for _, ip := range ips {
+		flattendIPs = append(flattendIPs, map[string]interface{}{
+			"id":      ip.ID,
+			"address": ip.Address,
+			"reverse": ip.Reverse,
+		})
+	}
+	return flattendIPs
+}

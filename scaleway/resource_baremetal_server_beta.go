@@ -74,6 +74,33 @@ func resourceScalewayBaremetalServerBeta() *schema.Resource {
 				Optional: true,
 				Removed:  "Please use offer instead",
 			},
+			"ips": {
+				Type:     schema.TypeList,
+				Computed: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"id": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The ID of the IP",
+						},
+						"address": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The IP address of the IP",
+						},
+						"reverse": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The Reverse of the IP",
+						},
+					},
+				},
+			},
+			"domain": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
 		},
 	}
 }
@@ -178,6 +205,8 @@ func resourceScalewayBaremetalServerBetaRead(d *schema.ResourceData, m interface
 	_ = d.Set("organization_id", res.OrganizationID)
 	_ = d.Set("offer", flattenLabelUUID(offer.Name, offer.ID))
 	_ = d.Set("tags", res.Tags)
+	_ = d.Set("domain", res.Domain)
+	_ = d.Set("ips", flattenBaremetalIPs(res.IPs))
 	if res.Install != nil {
 		_ = d.Set("os_id", res.Install.OsID)
 		_ = d.Set("ssh_key_ids", res.Install.SSHKeyIDs)
