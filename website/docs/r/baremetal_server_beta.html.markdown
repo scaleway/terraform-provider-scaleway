@@ -60,6 +60,11 @@ Use [this endpoint](https://developers.scaleway.com/en/products/baremetal/api/#g
 In addition to all above arguments, the following attributes are exported:
 
 - `id` - The ID of the server.
+- `ips` - (List of) The IPs of the server.
+  - `id` - The ID of the IP.
+  - `address` - The address of the IP.
+  - `reverse` - The reverse of the IP.
+- `domain` - The domain of the server.
 
 ## Import
 
