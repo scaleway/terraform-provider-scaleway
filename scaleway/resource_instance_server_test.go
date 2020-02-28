@@ -563,6 +563,46 @@ func TestAccScalewayInstanceServerWithReservedIP(t *testing.T) {
 	})
 }
 
+func TestAccScalewayInstanceServerImageDataSource(t *testing.T) {
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckScalewayInstanceServerDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					data "scaleway_instance_image" "ubuntu_bionic" {
+					  name = "ubuntu_bionic"
+					}
+
+					resource "scaleway_instance_server" "base" {
+					  type  = "DEV1-S"
+					  image = data.scaleway_instance_image.ubuntu_bionic.id
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayInstanceServerExists("scaleway_instance_server.base"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.base", "image", "6651f88f-45af-4b93-95e8-3931b74f6acc"),
+				),
+			},
+			// Ensure that image diffSuppressFunc results in no plan.
+			{
+				Config: `
+					data "scaleway_instance_image" "ubuntu_bionic" {
+					  name = "ubuntu_bionic"
+					}
+
+					resource "scaleway_instance_server" "base" {
+					  type  = "DEV1-S"
+					  image = data.scaleway_instance_image.ubuntu_bionic.id
+					}
+				`,
+				PlanOnly: true,
+			},
+		},
+	})
+}
+
 func testAccCheckScalewayInstanceServerExists(n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]

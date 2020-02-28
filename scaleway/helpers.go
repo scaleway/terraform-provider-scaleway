@@ -415,12 +415,6 @@ func newRandomName(prefix string) string {
 
 const gb uint64 = 1000 * 1000 * 1000
 
-// suppressLocality is a SuppressDiffFunc to remove the locality from an ID when checking diff.
-// e.g. 2c1a1716-5570-4668-a50a-860c90beabf6 == fr-par/2c1a1716-5570-4668-a50a-860c90beabf6
-func suppressLocality(k, old, new string, d *schema.ResourceData) bool {
-	return expandID(old) == expandID(new)
-}
-
 var UUIDRegex = regexp.MustCompile(`[0-9a-fA-F]{8}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{12}`)
 
 // isUUID returns true if the given string have an UUID format.
@@ -593,18 +587,6 @@ func flattenIpNet(ipNet scw.IPNet) string {
 	return string(raw[1 : len(raw)-1])
 }
 
-func diffSuppressFuncDuration(k, old, new string, d *schema.ResourceData) bool {
-	if old == new {
-		return true
-	}
-	d1, err1 := time.ParseDuration(old)
-	d2, err2 := time.ParseDuration(new)
-	if err1 != nil || err2 != nil {
-		return false
-	}
-	return d1 == d2
-}
-
 func validateDuration() schema.SchemaValidateFunc {
 	return func(i interface{}, s string) (strings []string, errors []error) {
 		str, isStr := i.(string)
@@ -632,6 +614,18 @@ func validateHour() schema.SchemaValidateFunc {
 	}
 }
 
+func diffSuppressFuncDuration(k, old, new string, d *schema.ResourceData) bool {
+	if old == new {
+		return true
+	}
+	d1, err1 := time.ParseDuration(old)
+	d2, err2 := time.ParseDuration(new)
+	if err1 != nil || err2 != nil {
+		return false
+	}
+	return d1 == d2
+}
+
 func diffSuppressFuncIgnoreCase(k, old, new string, d *schema.ResourceData) bool {
 	return strings.EqualFold(old, new)
 }
@@ -649,4 +643,10 @@ func diffSuppressFuncLabelUUID(k, old, new string, d *schema.ResourceData) bool 
 	label, uuid := expandLabelUUID(old)
 
 	return new == label || new == uuid
+}
+
+// diffSuppressFuncLocality is a SuppressDiffFunc to remove the locality from an ID when checking diff.
+// e.g. 2c1a1716-5570-4668-a50a-860c90beabf6 == fr-par/2c1a1716-5570-4668-a50a-860c90beabf6
+func diffSuppressFuncLocality(k, old, new string, d *schema.ResourceData) bool {
+	return expandID(old) == expandID(new)
 }
