@@ -57,7 +57,7 @@ resource "scaleway_instance_server" "web" {
   tags = [ "hello", "public" ]
 
   ip_id = scaleway_instance_ip.ip.id
-  disable_dynamic_ip = true # required for now when using `ip_id`
+  enable_dynamic_ip = false # required for now when using `ip_id`
 }
 ```
 
