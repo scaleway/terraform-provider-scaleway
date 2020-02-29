@@ -57,7 +57,6 @@ resource "scaleway_instance_server" "web" {
   tags = [ "hello", "public" ]
 
   ip_id = scaleway_instance_ip.ip.id
-  enable_dynamic_ip = false # required for now when using `ip_id`
 }
 ```
 
@@ -162,7 +161,7 @@ attached to the server. Updates to this field will trigger a stop/start of the s
 
 - `enable_ipv6` - (Defaults to `false`) Determines if IPv6 is enabled for the server.
 
-- `ip_id` = (Optional) The ID of the reserved IP that is attached to the server. 
+- `ip_id` = (Optional) The ID of the reserved IP that is attached to the server.
 
 - `enable_dynamic_ip` - (Defaults to `false`) If true a dynamic IP will be attached to the server.
 
