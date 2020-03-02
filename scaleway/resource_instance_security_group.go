@@ -143,8 +143,8 @@ func resourceScalewayInstanceSecurityGroupRead(d *schema.ResourceData, m interfa
 		if err != nil {
 			return err
 		}
-		d.Set("inbound_rule", inboundRules)
-		d.Set("outbound_rule", outboundRules)
+		_ = d.Set("inbound_rule", inboundRules)
+		_ = d.Set("outbound_rule", outboundRules)
 	}
 	return nil
 }
