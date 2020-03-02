@@ -18,7 +18,7 @@ Creates and manages Scaleway Database Instances. For more information, see [the 
 ```hcl
 resource scaleway_rdb_instance_beta main {
     name = "test-rdb"
-    type = "db-dev-s"
+    node_type = "db-dev-s"
     engine = "PostgreSQL-11"
     is_ha_cluster = true
     disable_backup = true
@@ -68,7 +68,7 @@ In addition to all arguments above, the following attributes are exported:
 
 - `id` - The ID of the Database Instance.
 - `endpoint_ip` - The IP of the Database Instance.
-- `endpoint_port` - The IP of the Database Instance.
+- `endpoint_port` - The port of the Database Instance.
 - `read_replicas` - List of read replicas of the database instance. 
   - `ip` - IP of the replica.
   - `port` - Port of the replica.
