@@ -32,10 +32,11 @@ func resourceScalewayInstanceServer() *schema.Resource {
 				Description: "The name of the server",
 			},
 			"image": {
-				Type:        schema.TypeString,
-				Required:    true,
-				ForceNew:    true,
-				Description: "The UUID or the label of the base image used by the server",
+				Type:             schema.TypeString,
+				Required:         true,
+				ForceNew:         true,
+				Description:      "The UUID or the label of the base image used by the server",
+				DiffSuppressFunc: diffSuppressFuncLocality,
 			},
 			"type": {
 				Type:             schema.TypeString,
@@ -56,13 +57,13 @@ func resourceScalewayInstanceServer() *schema.Resource {
 				Type:             schema.TypeString,
 				Optional:         true,
 				Computed:         true,
-				DiffSuppressFunc: suppressLocality,
+				DiffSuppressFunc: diffSuppressFuncLocality,
 				Description:      "The security group the server is attached to",
 			},
 			"placement_group_id": {
 				Type:             schema.TypeString,
 				Optional:         true,
-				DiffSuppressFunc: suppressLocality,
+				DiffSuppressFunc: diffSuppressFuncLocality,
 				Description:      "The placement group the server is attached to",
 			},
 			"placement_group_policy_respected": {
@@ -104,7 +105,7 @@ func resourceScalewayInstanceServer() *schema.Resource {
 				Elem: &schema.Schema{
 					Type:             schema.TypeString,
 					ValidateFunc:     validationUUIDorUUIDWithLocality(),
-					DiffSuppressFunc: suppressLocality,
+					DiffSuppressFunc: diffSuppressFuncLocality,
 				},
 				Optional:    true,
 				Description: "The additional volumes attached to the server",
@@ -129,7 +130,7 @@ func resourceScalewayInstanceServer() *schema.Resource {
 				Type:             schema.TypeString,
 				Optional:         true,
 				Description:      "The ID of the reserved IP for the server",
-				DiffSuppressFunc: suppressLocality,
+				DiffSuppressFunc: diffSuppressFuncLocality,
 			},
 			"ipv6_address": {
 				Type:        schema.TypeString,

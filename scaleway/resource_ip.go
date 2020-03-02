@@ -26,7 +26,7 @@ func resourceScalewayIP() *schema.Resource {
 				Optional:         true,
 				Computed:         true,
 				Description:      "The server associated with the ip",
-				DiffSuppressFunc: suppressLocality,
+				DiffSuppressFunc: diffSuppressFuncLocality,
 			},
 			"ip": {
 				Type:        schema.TypeString,
