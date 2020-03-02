@@ -44,7 +44,7 @@ func customImporterState(d *schema.ResourceData, m interface{}) ([]*schema.Resou
 	// It should be a SecurityGroupZonedID.
 	importZonedID := d.Id()
 
-	d.Set("security_group_id", importZonedID)
+	_ = d.Set("security_group_id", importZonedID)
 	d.SetId(importZonedID)
 
 	return []*schema.ResourceData{d}, nil
