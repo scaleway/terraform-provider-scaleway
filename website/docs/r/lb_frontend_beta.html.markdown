@@ -28,20 +28,47 @@ resource "scaleway_lb_frontend_beta" "frontend01" {
 
 The following arguments are supported:
 
-- `lb_id`                       - (Required) The load-balancer ID this frontend is attached to.
-- `backend_id`                  - (Required) The load-balancer backend ID this frontend is attached to.
+- `lb_id` - (Required) The load-balancer ID this frontend is attached to.
+
+- `backend_id` - (Required) The load-balancer backend ID this frontend is attached to.
+
 ~> **Important:** Updates to `lb_id` or `backend_id` will recreate the frontend.
-- `inbound_port`                - (Required) TCP port to listen on the front side.
-- `name`                        - (Optional) The name of the load-balancer frontend.
-- `timeout_client`              - (Optional) Maximum inactivity time on the client side. (e.g.: `1s`)
-- `certificate_id`              - (Optional) Certificate ID that should be used by the frontend.
+
+- `inbound_port` - (Required) TCP port to listen on the front side.
+
+- `name` - (Optional) The name of the load-balancer frontend.
+
+- `timeout_client` - (Optional) Maximum inactivity time on the client side. (e.g.: `1s`)
+
+- `certificate_id` - (Optional) Certificate ID that should be used by the frontend.
+
+- `acl` - (Optional) A list of ACL rules to apply to the load-balancer frontend.  Defined below.
+
+## acl
+
+- `name` - (Optional) The ACL name. If not provided it will be randomly generated.
+  
+- `action` - (Required) Action to undertake when an ACL filter matches.
+  
+  - `type` - (Required) The action type. Possible values are: `allow` or `deny`.
+  
+- `match` - (Required) The ACL match rule. At least `ip_subnet` or `http_filter` and `http_filter_value` are required.
+
+  - `ip_subnet` - (Optional) A list of IPs or CIDR v4/v6 addresses of the client of the session to match.
+
+  - `http_filter` - (Optional) The HTTP filter to match. This filter is supported only if your backend protocol has an HTTP forward protocol.
+    It extracts the request's URL path, which starts at the first slash and ends before the question mark (without the host part).
+    Possible values are: `acl_http_filter_none`, `path_begin`, `path_end` or `regex`.
+
+  - `http_filter_value` - (Optional) A list of possible values to match for the given HTTP filter.
+
+  - `invert` - (Optional) If set to `true`, the condition will be of type "unless".
 
 ## Attributes Reference
 
 In addition to all arguments above, the following attributes are exported:
 
-- `id` - The ID of the loadbalancer frontend.
-
+- `id` - The ID of the load-balancer frontend.
 
 ## Import
 
