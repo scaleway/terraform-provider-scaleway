@@ -200,10 +200,39 @@ func expandLbHCHTTPS(raw interface{}) *lb.HealthCheckHTTPSConfig {
 	if raw == nil || len(raw.([]interface{})) != 1 {
 		return nil
 	}
+
 	rawMap := raw.([]interface{})[0].(map[string]interface{})
 	return &lb.HealthCheckHTTPSConfig{
 		URI:    rawMap["uri"].(string),
 		Method: rawMap["method"].(string),
 		Code:   expandInt32Ptr(rawMap["code"]),
 	}
+}
+
+func expandLbLetsEncrypt(raw interface{}) *lb.CreateCertificateRequestLetsencryptConfig {
+	if raw == nil || len(raw.([]interface{})) != 1 {
+		return nil
+	}
+
+	rawMap := raw.([]interface{})[0].(map[string]interface{})
+	alternativeNames := rawMap["subject_alternative_name"].([]interface{})
+	config := &lb.CreateCertificateRequestLetsencryptConfig{
+		CommonName: rawMap["common_name"].(string),
+	}
+	for _, alternativeName := range alternativeNames {
+		config.SubjectAlternativeName = append(config.SubjectAlternativeName, alternativeName.(string))
+	}
+	return config
+}
+
+func expandLbCustomCertificate(raw interface{}) *lb.CreateCertificateRequestCustomCertificate {
+	if raw == nil || len(raw.([]interface{})) != 1 {
+		return nil
+	}
+
+	rawMap := raw.([]interface{})[0].(map[string]interface{})
+	config := &lb.CreateCertificateRequestCustomCertificate{
+		CertificateChain: rawMap["certificate_chain"].(string),
+	}
+	return config
 }
