@@ -132,7 +132,7 @@ The following arguments are supported:
 - `default_pool` - (Required) The cluster's default pool configuration.
   
   - `node_type` - (Required)  The commercial type of the default pool instances.
-~> **Important:** Updates to this field will recreate a new default pool.
+~> **Important:** Updates to this field will recreate a new default pool in a rolling upgrade fashion. It will first create the new pool, wait until all the nodes are ready and then delete the old pool. Errors may occur if you don't have enough quotas.
 
   - `size` - (Required) The size of the default pool.
 

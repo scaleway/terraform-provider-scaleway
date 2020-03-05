@@ -709,12 +709,19 @@ func resourceScalewayK8SClusterBetaDefaultPoolUpdate(d *schema.ResourceData, m i
 			if err != nil {
 				return err
 			}
+			defaultPoolID = newRegionalId(region, defaultPoolRes.ID)
 			defaultPool := map[string]interface{}{}
-			defaultPool["pool_id"] = newRegionalId(region, defaultPoolRes.ID)
+			defaultPool["pool_id"] = defaultPoolID
 
 			_ = d.Set("default_pool", []map[string]interface{}{defaultPool})
 
 			if oldPoolID != "" {
+				// wait for new pool to be ready before deleting old one
+				err = waitK8SPoolReady(k8sAPI, region, expandID(defaultPoolID))
+				if err != nil {
+					return err
+				}
+
 				_, err = k8sAPI.DeletePool(&k8s.DeletePoolRequest{
 					Region: region,
 					PoolID: expandID(oldPoolID),
