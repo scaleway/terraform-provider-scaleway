@@ -176,14 +176,18 @@ In addition to all above arguments, the following attributes are exported:
 - `default_pool`
   - `pool_id` - The ID of the default pool.
   - `status` - The status of the default pool.
-  - `nodes` - (List of) The nodes in the default pool.
-    - `name` - The name of the node.
-    - `public_ip` - The public IPv4.
-    - `public_ip_v6` - The public IPv6.
-    - `status` - The status of the node.
+  - `nodes` - (List of) The nodes in the default pool. Defined below.
   - `created_at` - The creation date of the default pool.
   - `updated_at` - The last update date of the default pool.
 - `upgrade_available` - Set to `true` if a newer Kubernetes version is available.
+
+## nodes
+
+- `name` - The name of the node.
+- `public_ip` - The public IPv4.
+- `public_ip_v6` - The public IPv6.
+- `status` - The status of the node.
+
 
 ## Import
 
