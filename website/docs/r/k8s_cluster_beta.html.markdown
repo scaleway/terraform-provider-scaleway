@@ -188,7 +188,6 @@ In addition to all above arguments, the following attributes are exported:
 - `public_ip_v6` - The public IPv6.
 - `status` - The status of the node.
 
-
 ## Import
 
 Kubernetes clusters can be imported using the `{region}/{id}`, e.g.
