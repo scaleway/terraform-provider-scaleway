@@ -7,47 +7,35 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/api/registry/v1"
 )
 
-func dataSourceScalewayRegistryNamespace() *schema.Resource {
-	return &schema.Resource{
-		Read: dataSourceScalewayRegistryNamespaceRead,
+func dataSourceScalewayRegistryNamespaceBeta() *schema.Resource {
 
-		Schema: map[string]*schema.Schema{
-			"name": {
-				Type:          schema.TypeString,
-				Optional:      true,
-				Description:   "The name of the Registry Namespace",
-				ConflictsWith: []string{"namespace_id"},
-			},
-			"namespace_id": {
-				Type:          schema.TypeString,
-				Optional:      true,
-				Description:   "The ID of the Registry Namespace",
-				ConflictsWith: []string{"name"},
-				ValidateFunc:  validationUUIDorUUIDWithLocality(),
-			},
-			"region":          regionSchema(),
-			"organization_id": organizationIDSchema(),
-			"endpoint": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The endpoint of the Registry Namespace",
-			},
-			"is_public": {
-				Type:        schema.TypeBool,
-				Computed:    true,
-				Description: "The Registry Namespace visibility policy",
-			},
-		},
+	// Generate datasource schema from resource
+	dsSchema := datasourceSchemaFromResourceSchema(resourceScalewayRegistryNamespaceBeta().Schema)
+
+	addOptionalFieldsToSchema(dsSchema, "name", "region")
+
+	dsSchema["name"].ConflictsWith = []string{"namespace_id"}
+	dsSchema["namespace_id"] = &schema.Schema{
+		Type:          schema.TypeString,
+		Optional:      true,
+		Description:   "The ID of the registry namespace",
+		ValidateFunc:  validationUUIDorUUIDWithLocality(),
+		ConflictsWith: []string{"name"},
+	}
+
+	return &schema.Resource{
+		Read: dataSourceScalewayRegistryNamespaceReadBeta,
+
+		Schema: dsSchema,
 	}
 }
 
-func dataSourceScalewayRegistryNamespaceRead(d *schema.ResourceData, m interface{}) error {
+func dataSourceScalewayRegistryNamespaceReadBeta(d *schema.ResourceData, m interface{}) error {
 	api, region, err := registryNamespaceAPIWithRegion(d, m)
 	if err != nil {
 		return err
 	}
 
-	var namespace *registry.Namespace
 	namespaceID, ok := d.GetOk("namespace_id")
 	if !ok {
 		res, err := api.ListNamespaces(&registry.ListNamespacesRequest{
@@ -63,23 +51,12 @@ func dataSourceScalewayRegistryNamespaceRead(d *schema.ResourceData, m interface
 		if len(res.Namespaces) > 1 {
 			return fmt.Errorf("%d namespaces found with the same name %s", len(res.Namespaces), d.Get("name"))
 		}
-		namespace = res.Namespaces[0]
-	} else {
-		res, err := api.GetNamespace(&registry.GetNamespaceRequest{
-			Region:      region,
-			NamespaceID: expandID(namespaceID),
-		})
-		if err != nil {
-			return err
-		}
-		namespace = res
+		namespaceID = res.Namespaces[0].ID
 	}
 
-	d.SetId(datasourceNewRegionalID(namespace.ID, region))
-	_ = d.Set("namespace_id", namespace.ID)
-	_ = d.Set("name", namespace.Name)
-	_ = d.Set("endpoint", namespace.Endpoint)
-	_ = d.Set("is_public", namespace.IsPublic)
+	regionalID := datasourceNewRegionalID(namespaceID, region)
+	d.SetId(regionalID)
+	_ = d.Set("namespace_id", regionalID)
 
-	return nil
+	return resourceScalewayRegistryNamespaceBetaRead(d, m)
 }

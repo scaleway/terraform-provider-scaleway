@@ -65,7 +65,7 @@ func TestAccScalewayK8SClusterBetaMinimal(t *testing.T) {
 	})
 }
 
-func TestAccScalewayK8SClusterBetaIngressDasboard(t *testing.T) {
+func TestAccScalewayK8SClusterBetaIngressDashboard(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
