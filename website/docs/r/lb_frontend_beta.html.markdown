@@ -33,7 +33,7 @@ resource scaleway_lb_frontend_beta frontend01 {
     name = "frontend01"
     inbound_port = "80"
 
-    # Deny downstream requests from: 192.168.0.1, 192.168.0.2 or 192.168.10.0/24
+    # Allow downstream requests from: 192.168.0.1, 192.168.0.2 or 192.168.10.0/24
     acl {
         name = "blacklist wellknwon IPs"
         action {
