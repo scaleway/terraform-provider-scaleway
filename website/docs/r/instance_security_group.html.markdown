@@ -30,6 +30,12 @@ resource "scaleway_instance_security_group" "web" {
     action = "accept"
     port = 80
   }
+  
+  inbound_rule {
+    action = "accept"
+    protocol = "UDP"
+    port_range = "22-23"
+  }
 }
 ```
 
@@ -117,7 +123,9 @@ The `inbound_rule` and `outbound_rule` block supports:
 
 - `protocol`- (Defaults to `TCP`) The protocol this rule apply to. Possible values are: `TCP`, `UDP`, `ICMP` or `ANY`.
 
-- `port`- (Optional) The port this rule apply to. If no port is specified, rule will apply to all port.
+- `port`- (Optional) The port this rule applies to. If no `port` nor `port_range` are specified, the rule will apply to all port. Only one of `port` and `port_range` should be specified.
+
+- `port_range`- Need terraform >= 0.13.0 (Optional) The port range (e.g `22-23`) this rule applies to. Port range MUST comply the Scaleway-notation: interval between ports must be a power of 2 `2^X-1` number (e.g 2^13-1=8191 in port_range = "10000-18191").If no `port` nor `port_range` are specified, rule will apply to all port. Only one of `port` and `port_range` should be specified. 
 
 - `ip`- (Optional) The ip this rule apply to. If no `ip` nor `ip_range` are specified, rule will apply to all ip. Only one of `ip` and `ip_range` should be specified.
 
