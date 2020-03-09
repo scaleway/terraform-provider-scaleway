@@ -71,12 +71,12 @@ func resourceScalewayLbFrontendBeta() *schema.Resource {
 							Type:        schema.TypeString,
 							Optional:    true,
 							Computed:    true,
-							Description: "The name of ACL",
+							Description: "The ACL name",
 						},
 						"action": {
 							Type:        schema.TypeList,
 							Required:    true,
-							Description: "Action to undertake",
+							Description: "Action to undertake when an ACL filter matches",
 							MaxItems:    1,
 							MinItems:    1,
 							Elem: &schema.Resource{
@@ -88,7 +88,7 @@ func resourceScalewayLbFrontendBeta() *schema.Resource {
 											lb.ACLActionTypeAllow.String(),
 											lb.ACLActionTypeDeny.String(),
 										}, false),
-										Description: "<allow> or <deny> request",
+										Description: "The action type",
 									},
 								},
 							},
@@ -98,7 +98,7 @@ func resourceScalewayLbFrontendBeta() *schema.Resource {
 							Required:    true,
 							MaxItems:    1,
 							MinItems:    1,
-							Description: "AclMatch Rule",
+							Description: "The ACL match rule",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"ip_subnet": {
@@ -106,9 +106,8 @@ func resourceScalewayLbFrontendBeta() *schema.Resource {
 										Elem: &schema.Schema{
 											Type: schema.TypeString,
 										},
-										Optional: true,
-										Description: "This is the source IP v4/v6 address of the client of the session to match or not. " +
-											"Addresses values can be specified either as plain addresses or with a netmask appended.",
+										Optional:    true,
+										Description: "A list of IPs or CIDR v4/v6 addresses of the client of the session to match",
 									},
 									"http_filter": {
 										Type:     schema.TypeString,
@@ -120,12 +119,12 @@ func resourceScalewayLbFrontendBeta() *schema.Resource {
 											lb.ACLHTTPFilterPathEnd.String(),
 											lb.ACLHTTPFilterRegex.String(),
 										}, false),
-										Description: "Http filter (if backend have a HTTP forward protocol)",
+										Description: "The HTTP filter to match",
 									},
 									"http_filter_value": {
 										Type:        schema.TypeList,
 										Optional:    true,
-										Description: "Http filter value",
+										Description: "A list of possible values to match for the given HTTP filter",
 										Elem: &schema.Schema{
 											Type: schema.TypeString,
 										},
@@ -133,7 +132,7 @@ func resourceScalewayLbFrontendBeta() *schema.Resource {
 									"invert": {
 										Type:        schema.TypeBool,
 										Optional:    true,
-										Description: "If true, then condition is unless type",
+										Description: `If set to true, the condition will be of type "unless"`,
 									},
 								},
 							},
