@@ -31,7 +31,7 @@ func dataSourceScalewayRegistryNamespaceBeta() *schema.Resource {
 }
 
 func dataSourceScalewayRegistryNamespaceReadBeta(d *schema.ResourceData, m interface{}) error {
-	api, region, err := registryNamespaceAPIWithRegion(d, m)
+	api, region, err := registryAPIWithRegion(d, m)
 	if err != nil {
 		return err
 	}
@@ -54,7 +54,7 @@ func dataSourceScalewayRegistryNamespaceReadBeta(d *schema.ResourceData, m inter
 		namespaceID = res.Namespaces[0].ID
 	}
 
-	regionalID := datasourceNewRegionalID(namespaceID, region)
+	regionalID := datasourceNewRegionalizedID(namespaceID, region)
 	d.SetId(regionalID)
 	_ = d.Set("namespace_id", regionalID)
 

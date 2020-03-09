@@ -6,8 +6,8 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 )
 
-// registryNamespaceAPIWithRegion returns a new container registry API and the region.
-func registryNamespaceAPIWithRegion(d *schema.ResourceData, m interface{}) (*registry.API, scw.Region, error) {
+// registryAPIWithRegion returns a new container registry API and the region.
+func registryAPIWithRegion(d *schema.ResourceData, m interface{}) (*registry.API, scw.Region, error) {
 	meta := m.(*Meta)
 	api := registry.NewAPI(meta.scwClient)
 
@@ -15,8 +15,8 @@ func registryNamespaceAPIWithRegion(d *schema.ResourceData, m interface{}) (*reg
 	return api, region, err
 }
 
-// registryNamespaceAPIWithRegionAndID returns a new container registry API, region and ID.
-func registryNamespaceAPIWithRegionAndID(m interface{}, id string) (*registry.API, scw.Region, string, error) {
+// registryAPIWithRegionAndID returns a new container registry API, region and ID.
+func registryAPIWithRegionAndID(m interface{}, id string) (*registry.API, scw.Region, string, error) {
 	meta := m.(*Meta)
 	api := registry.NewAPI(meta.scwClient)
 

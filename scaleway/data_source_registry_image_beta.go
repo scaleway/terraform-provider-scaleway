@@ -16,13 +16,13 @@ func dataSourceScalewayRegistryImageBeta() *schema.Resource {
 			"name": {
 				Type:          schema.TypeString,
 				Optional:      true,
-				Description:   "The name of the Registry Image",
+				Description:   "The name of the registry image",
 				ConflictsWith: []string{"image_id"},
 			},
 			"image_id": {
 				Type:          schema.TypeString,
 				Optional:      true,
-				Description:   "The ID of the Registry Image",
+				Description:   "The ID of the registry image",
 				ConflictsWith: []string{"name"},
 				ValidateFunc:  validationUUIDorUUIDWithLocality(),
 			},
@@ -30,27 +30,36 @@ func dataSourceScalewayRegistryImageBeta() *schema.Resource {
 				Type:         schema.TypeString,
 				Optional:     true,
 				Computed:     true,
-				Description:  "The namespace ID of the Registry Image",
+				Description:  "The namespace ID of the registry image",
 				ValidateFunc: validationUUIDorUUIDWithLocality(),
 			},
-			"region":          regionSchema(),
-			"organization_id": organizationIDSchema(),
 			"size": {
 				Type:        schema.TypeInt,
 				Computed:    true,
-				Description: "The size of the Registry Image",
+				Description: "The size of the registry image",
 			},
 			"visibility": {
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "The Registry Image visibility policy",
+				Description: "The visibility policy of the registry image",
 			},
+			"tags": {
+				Type:     schema.TypeList,
+				Optional: true,
+				Computed: true,
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
+				Description: "The tags associated with the registry image",
+			},
+			"region":          regionSchema(),
+			"organization_id": organizationIDSchema(),
 		},
 	}
 }
 
 func dataSourceScalewayRegistryImageBetaRead(d *schema.ResourceData, m interface{}) error {
-	api, region, err := registryNamespaceAPIWithRegion(d, m)
+	api, region, err := registryAPIWithRegion(d, m)
 	if err != nil {
 		return err
 	}
@@ -88,12 +97,13 @@ func dataSourceScalewayRegistryImageBetaRead(d *schema.ResourceData, m interface
 		image = res
 	}
 
-	d.SetId(datasourceNewRegionalID(image.ID, region))
+	d.SetId(datasourceNewRegionalizedID(image.ID, region))
 	_ = d.Set("image_id", image.ID)
 	_ = d.Set("name", image.Name)
 	_ = d.Set("namespace_id", image.NamespaceID)
 	_ = d.Set("visibility", image.Visibility.String())
 	_ = d.Set("size", image.Size)
+	_ = d.Set("tags", image.Tags)
 
 	return nil
 }

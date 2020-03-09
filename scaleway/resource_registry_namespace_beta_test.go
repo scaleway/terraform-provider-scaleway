@@ -53,7 +53,7 @@ func testAccCheckScalewayRegistryNamespaceBetaExists(n string) resource.TestChec
 			return fmt.Errorf("resource not found: %s", n)
 		}
 
-		api, region, id, err := registryNamespaceAPIWithRegionAndID(testAccProvider.Meta(), rs.Primary.ID)
+		api, region, id, err := registryAPIWithRegionAndID(testAccProvider.Meta(), rs.Primary.ID)
 		if err != nil {
 			return nil
 		}
@@ -77,7 +77,7 @@ func testAccCheckScalewayRegistryNamespaceBetaDestroy(s *terraform.State) error 
 			continue
 		}
 
-		api, region, id, err := registryNamespaceAPIWithRegionAndID(testAccProvider.Meta(), rs.Primary.ID)
+		api, region, id, err := registryAPIWithRegionAndID(testAccProvider.Meta(), rs.Primary.ID)
 		if err != nil {
 			return err
 		}
