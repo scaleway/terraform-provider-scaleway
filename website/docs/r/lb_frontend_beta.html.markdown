@@ -28,21 +28,21 @@ resource "scaleway_lb_frontend_beta" "frontend01" {
 
 ```hcl
 resource scaleway_lb_frontend_beta frontend01 {
-	lb_id = scaleway_lb_beta.lb01.id
+    lb_id = scaleway_lb_beta.lb01.id
     backend_id = scaleway_lb_backend_beta.backend01.id
     name = "frontend01"
     inbound_port = "80"
 
     # Deny downstream requests from: 192.168.0.1, 192.168.0.2 or 192.168.10.0/24
-	acl {
-		name = "blacklist wellknwon IPs"
-		action {
-			type = "allow"
-		}
-		match {
-			ip_subnet = ["192.168.0.1", "192.168.0.2", "192.168.10.0/24"]
-		}
-	}
+    acl {
+        name = "blacklist wellknwon IPs"
+        action {
+            type = "allow"
+        }
+        match {
+            ip_subnet = ["192.168.0.1", "192.168.0.2", "192.168.10.0/24"]
+        }
+    }
 
     # Deny downstream requests from: 51.51.51.51 that match "^foo*bar$" 
     acl {
@@ -57,27 +57,27 @@ resource scaleway_lb_frontend_beta frontend01 {
     }
 
     # Allow downstream http requests that begins with "/foo" or "/bar" 
-	acl {
-		action {
-			type = "allow"
-		}
-		match {
-			http_filter = "path_begin"
-			http_filter_value = ["foo", "bar"]
-		}
-	}
+    acl {
+        action {
+            type = "allow"
+        }
+        match {
+            http_filter = "path_begin"
+            http_filter_value = ["foo", "bar"]
+        }
+    }
 
     # Allow upstream http requests that DO NOT begins with "/hi"
-	acl {
-		action {
-			type = "allow"
-		}
-		match {
-			http_filter = "path_begin"
+    acl {
+        action {
+            type = "allow"
+        }
+        match {
+            http_filter = "path_begin"
             http_filter_value = ["hi"]
             invert = "true"
-		}
-	}
+        }
+    }
 }
 ```
 
