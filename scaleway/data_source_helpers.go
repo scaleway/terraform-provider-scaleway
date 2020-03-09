@@ -15,6 +15,16 @@ func datasourceNewZonedID(idI interface{}, fallBackZone scw.Zone) string {
 	return newZonedId(zone, id)
 }
 
+func datasourceNewRegionalID(idI interface{}, fallBackRegion scw.Region) string {
+	region, id, err := parseRegionalID(idI.(string))
+	if err != nil {
+		id = idI.(string)
+		region = fallBackRegion
+	}
+
+	return newRegionalId(region, id)
+}
+
 ////
 // The below methods are imported from Google's terraform provider.
 // source: https://github.com/terraform-providers/terraform-provider-google/blob/master/google/datasource_helpers.go
