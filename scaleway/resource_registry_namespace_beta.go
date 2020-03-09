@@ -45,7 +45,7 @@ func resourceScalewayRegistryNamespaceBeta() *schema.Resource {
 }
 
 func resourceScalewayRegistryNamespaceBetaCreate(d *schema.ResourceData, m interface{}) error {
-	api, region, err := registryNamespaceAPIWithRegion(d, m)
+	api, region, err := registryAPIWithRegion(d, m)
 	if err != nil {
 		return err
 	}
@@ -67,7 +67,7 @@ func resourceScalewayRegistryNamespaceBetaCreate(d *schema.ResourceData, m inter
 }
 
 func resourceScalewayRegistryNamespaceBetaRead(d *schema.ResourceData, m interface{}) error {
-	api, region, id, err := registryNamespaceAPIWithRegionAndID(m, d.Id())
+	api, region, id, err := registryAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return err
 	}
@@ -96,7 +96,7 @@ func resourceScalewayRegistryNamespaceBetaRead(d *schema.ResourceData, m interfa
 }
 
 func resourceScalewayRegistryNamespaceBetaUpdate(d *schema.ResourceData, m interface{}) error {
-	api, region, id, err := registryNamespaceAPIWithRegionAndID(m, d.Id())
+	api, region, id, err := registryAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return err
 	}
@@ -116,7 +116,7 @@ func resourceScalewayRegistryNamespaceBetaUpdate(d *schema.ResourceData, m inter
 }
 
 func resourceScalewayRegistryNamespaceBetaDelete(d *schema.ResourceData, m interface{}) error {
-	api, region, id, err := registryNamespaceAPIWithRegionAndID(m, d.Id())
+	api, region, id, err := registryAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return err
 	}

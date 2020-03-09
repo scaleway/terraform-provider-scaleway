@@ -2,12 +2,12 @@
 layout: "scaleway"
 page_title: "Scaleway: scaleway_registry_namespace_beta"
 description: |-
-  Gets information about a Registry Namespace.
+  Gets information about a registry namespace.
 ---
 
 # scaleway_registry_namespace_beta
 
-Gets information about a Registry Namespace.
+Gets information about a registry namespace.
 
 ## Example Usage
 
