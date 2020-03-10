@@ -68,12 +68,12 @@ You may use one of the following health check types: `TCP`, `HTTP` or `HTTPS`. (
 - `health_check_delay`          - (Default: `60s`) Interval between two HC requests.
 - `health_check_port`           - (Default: `forward_port`) Port the HC requests will be send to.
 - `health_check_max_retries`    - (Default: `2`) Number of allowed failed HC requests before the backend server is marked down.
-- `health_check_tcp`            - (Optional) This block enable TCP health check.
-- `health_check_http`           - (Optional) This block enable HTTP health check.
+- `health_check_tcp`            - (Optional) This block enable TCP health check. Only one of `health_check_tcp`, `health_check_http` and `health_check_https` should be specified.
+- `health_check_http`           - (Optional) This block enable HTTP health check. Only one of `health_check_tcp`, `health_check_http` and `health_check_https` should be specified.
   - `uri`                       - (Required) The HTTP endpoint URL to call for HC requests.
   - `method`                    - (Default: `GET`) The HTTP method to use for HC requests.
   - `code`                      - (Default: `200`) The expected HTTP status code.
-- `health_check_https`          - (Optional) This block enable HTTPS health check.
+- `health_check_https`          - (Optional) This block enable HTTPS health check. Only one of `health_check_tcp`, `health_check_http` and `health_check_https` should be specified.
   - `uri`                       - (Required) The HTTPS endpoint URL to call for HC requests.
   - `method`                    - (Default: `GET`) The HTTP method to use for HC requests.
   - `code`                      - (Default: `200`) The expected HTTP status code.

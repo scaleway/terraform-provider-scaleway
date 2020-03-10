@@ -12,12 +12,12 @@ Gets information about an instance image.
 ## Example Usage
 
 ```hcl
-// Get info by image name
+# Get info by image name
 data "scaleway_instance_image" "my_image" {
   name  = "my-image-name"
 }
 
-// Get info by image id
+# Get info by image id
 data "scaleway_instance_image" "my_image" {
   image_id = "11111111-1111-1111-1111-111111111111"
 }
