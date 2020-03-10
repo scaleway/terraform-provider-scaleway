@@ -10,6 +10,8 @@ import (
 
 func dataSourceScalewayBootscript() *schema.Resource {
 	return &schema.Resource{
+		DeprecationMessage: "This resource is deprecated and will be removed in the next major version",
+
 		Read: dataSourceScalewayBootscriptRead,
 
 		Schema: map[string]*schema.Schema{

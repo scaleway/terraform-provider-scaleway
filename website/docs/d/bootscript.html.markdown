@@ -7,6 +7,8 @@ description: |-
 
 # scaleway_bootscript
 
+**DEPRECATED**: This resource is deprecated and will be removed in `v2.0+`.
+
 Use this data source to get the ID of a registered Bootscript for use with the
 `scaleway_server` resource.
 
