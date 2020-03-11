@@ -6,7 +6,7 @@
 * **New Resource** `resource/scaleway_lb_certificate_beta`: [GH-396]
 * **New Resource** `resource/scaleway_registry_namespace_beta`: [GH-330, GH-407]
 * **New Resource** `resource/scaleway_instance_security_group_rules`: [GH-391]
-* `resource/scaleway_baremetal_server_beta`: export ips and domain attributes: [GH-406]
+* `resource/scaleway_baremetal_server_beta`: export `ips` and `domain` attributes: [GH-406]
 * `resource/scaleway_instance_server`: add `boot_type` attribute to support deprecated instance types [GH-401]
 * `resource/scaleway_lb_frontend_beta`: add ACL support [GH-382, GH-420]
 * `resource/scaleway_k8s_cluster_beta`: wait for pool to be ready and add `status` and `nodes` attributes [GH-393]
@@ -14,10 +14,13 @@
 * `resource/scaleway_k8s_cluster_beta`: make version field required [GH-389]
 * `resource/scaleway_k8s_cluster_beta`: add feature gates and admission plugins [GH-386]
 * `resource/scaleway_k8s_cluster_beta`: add cluster renaming [GH-383]
+* `resource/scaleway_k8s_cluster_beta`: add `tags` attribute [GH-431]
+* `resource/scaleway_k8s_pool_beta`: add `tags` attribute [GH-431]
+
 
 IMPROVEMENTS:
 
-* `resource/scaleway_instance_security_group`: add port_range documentation [GH-398]
+* `resource/scaleway_instance_security_group`: add `port_range` documentation [GH-398]
 
 BUG FIXES:
 
