@@ -32,6 +32,9 @@ func TestAccScalewayK8SClusterPoolMinimal(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_k8s_pool_beta.minimal", "autoscaling", "true"),
 					resource.TestCheckResourceAttr("scaleway_k8s_pool_beta.minimal", "version", "1.16.0"),
 					resource.TestCheckResourceAttrSet("scaleway_k8s_pool_beta.minimal", "id"),
+					resource.TestCheckResourceAttr("scaleway_k8s_pool_beta.minimal", "tags.0", "terraform-test"),
+					resource.TestCheckResourceAttr("scaleway_k8s_pool_beta.minimal", "tags.1", "scaleway_k8s_cluster_beta"),
+					resource.TestCheckResourceAttr("scaleway_k8s_pool_beta.minimal", "tags.2", "minimal"),
 				),
 			},
 			{
@@ -187,6 +190,7 @@ resource "scaleway_k8s_pool_beta" "minimal" {
 	autohealing = true
 	autoscaling = true
 	size = 1
+	tags = [ "terraform-test", "scaleway_k8s_cluster_beta", "minimal" ]
 }`)
 	}
 

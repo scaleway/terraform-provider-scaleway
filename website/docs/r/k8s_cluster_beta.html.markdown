@@ -140,6 +140,8 @@ The following arguments are supported:
 
   - `max_size` - (Defaults to `size`) The maximum size of the default pool, used by the autoscaling feature.
 
+  - `tags` - (Optional) The tags associated with the default pool.
+
   - `placement_group_id` - (Optional) The [placement group](https://developers.scaleway.com/en/products/instance/api/#placement-groups-d8f653) the nodes of the pool will be attached to.
 ~> **Important:** Updates to this field will recreate a new default pool.
 

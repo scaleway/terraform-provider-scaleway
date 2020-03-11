@@ -177,6 +177,14 @@ func resourceScalewayK8SClusterBeta() *schema.Resource {
 							Default:     nil,
 							Description: "Maximum size of the default pool",
 						},
+						"tags": {
+							Type: schema.TypeList,
+							Elem: &schema.Schema{
+								Type: schema.TypeString,
+							},
+							Optional:    true,
+							Description: "The tags associated with the default pool",
+						},
 						"placement_group_id": {
 							Type:        schema.TypeString,
 							Optional:    true,
@@ -415,6 +423,7 @@ func resourceScalewayK8SClusterBetaCreate(d *schema.ResourceData, m interface{})
 		Autoscaling: d.Get("default_pool.0.autoscaling").(bool),
 		Autohealing: d.Get("default_pool.0.autohealing").(bool),
 		Size:        uint32(d.Get("default_pool.0.size").(int)),
+		Tags:        expandStrings(d.Get("default_pool.0.tags")),
 	}
 
 	if placementGroupID, ok := d.GetOk("default_pool.0.placement_group_id"); ok {
@@ -488,6 +497,7 @@ func resourceScalewayK8SClusterBetaDefaultPoolRead(d *schema.ResourceData, m int
 	defaultPool["size"] = pool.Size
 	defaultPool["min_size"] = pool.MinSize
 	defaultPool["max_size"] = pool.MaxSize
+	defaultPool["tags"] = pool.Tags
 	defaultPool["container_runtime"] = pool.ContainerRuntime
 	defaultPool["created_at"] = pool.CreatedAt.String()
 	defaultPool["updated_at"] = pool.UpdatedAt.String()
@@ -645,6 +655,7 @@ func resourceScalewayK8SClusterBetaDefaultPoolUpdate(d *schema.ResourceData, m i
 			updateRequest := &k8s.UpdatePoolRequest{
 				Region: region,
 				PoolID: expandID(defaultPoolID),
+				Tags:   scw.StringsPtr(expandStrings(d.Get("default_pool.0.tags"))),
 			}
 
 			if autohealing, ok := d.GetOk("default_pool.0.autohealing"); ok {
