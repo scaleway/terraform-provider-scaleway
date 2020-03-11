@@ -14,9 +14,8 @@
 * `resource/scaleway_k8s_cluster_beta`: make version field required [GH-389]
 * `resource/scaleway_k8s_cluster_beta`: add feature gates and admission plugins [GH-386]
 * `resource/scaleway_k8s_cluster_beta`: add cluster renaming [GH-383]
-* `resource/scaleway_k8s_cluster_beta`: add `tags` attribute [GH-431]
+* `resource/scaleway_k8s_cluster_beta`: add default pools `tags` attribute [GH-431]
 * `resource/scaleway_k8s_pool_beta`: add `tags` attribute [GH-431]
-
 
 IMPROVEMENTS:
 
