@@ -195,6 +195,9 @@ func TestAccScalewayK8SClusterBetaDefaultPool(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_k8s_cluster_beta.pool", "tags.0", "terraform-test"),
 					resource.TestCheckResourceAttr("scaleway_k8s_cluster_beta.pool", "tags.1", "scaleway_k8s_cluster_beta"),
 					resource.TestCheckResourceAttr("scaleway_k8s_cluster_beta.pool", "tags.2", "default-pool"),
+					resource.TestCheckResourceAttr("scaleway_k8s_cluster_beta.pool", "default_pool.0.tags.0", "terraform-test"),
+					resource.TestCheckResourceAttr("scaleway_k8s_cluster_beta.pool", "default_pool.0.tags.1", "scaleway_k8s_cluster_beta"),
+					resource.TestCheckResourceAttr("scaleway_k8s_cluster_beta.pool", "default_pool.0.tags.2", "default-pool"),
 				),
 			},
 		},
@@ -466,6 +469,7 @@ resource "scaleway_k8s_cluster_beta" "pool" {
 		autoscaling = true
 		autohealing = true
 		container_runtime = "docker"
+		tags = [ "terraform-test", "scaleway_k8s_cluster_beta", "default-pool" ]
 	}
 	tags = [ "terraform-test", "scaleway_k8s_cluster_beta", "default-pool" ]
 }`, version)

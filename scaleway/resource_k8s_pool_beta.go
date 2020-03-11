@@ -65,6 +65,14 @@ func resourceScalewayK8SPoolBeta() *schema.Resource {
 				Computed:    true,
 				Description: "Maximum size of the pool",
 			},
+			"tags": {
+				Type: schema.TypeList,
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
+				Optional:    true,
+				Description: "The tags associated with the pool",
+			},
 			"container_runtime": {
 				Type:        schema.TypeString,
 				Optional:    true,
@@ -162,6 +170,7 @@ func resourceScalewayK8SPoolBetaCreate(d *schema.ResourceData, m interface{}) er
 		Autoscaling: d.Get("autoscaling").(bool),
 		Autohealing: d.Get("autohealing").(bool),
 		Size:        uint32(d.Get("size").(int)),
+		Tags:        expandStrings(d.Get("tags")),
 	}
 
 	if placementGroupID, ok := d.GetOk("placement_group_id"); ok {
@@ -234,6 +243,7 @@ func resourceScalewayK8SPoolBetaRead(d *schema.ResourceData, m interface{}) erro
 	_ = d.Set("version", pool.Version)
 	_ = d.Set("min_size", pool.MinSize)
 	_ = d.Set("max_size", pool.MaxSize)
+	_ = d.Set("tags", pool.Tags)
 	_ = d.Set("container_runtime", pool.ContainerRuntime)
 	_ = d.Set("created_at", pool.CreatedAt)
 	_ = d.Set("updated_at", pool.UpdatedAt)
@@ -279,6 +289,10 @@ func resourceScalewayK8SPoolBetaUpdate(d *schema.ResourceData, m interface{}) er
 
 	if !d.Get("autoscaling").(bool) && d.HasChange("size") {
 		updateRequest.Size = scw.Uint32Ptr(uint32(d.Get("size").(int)))
+	}
+
+	if d.HasChange("tags") {
+		updateRequest.Tags = scw.StringsPtr(expandStrings(d.Get("tags")))
 	}
 
 	res, err := k8sAPI.UpdatePool(updateRequest)
