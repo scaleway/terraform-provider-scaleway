@@ -22,7 +22,7 @@ func resourceScalewayLbSubscriberBeta() *schema.Resource {
 			"email_config": {
 				ConflictsWith: []string{"webhook_config"},
 				MaxItems:      1,
-				Description:   "Email address configuration. Only one of email_config and webhook_config may be set",
+				Description:   "Email address configuration.",
 				Type:          schema.TypeList,
 				Optional:      true,
 				Elem: &schema.Resource{
