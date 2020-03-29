@@ -46,7 +46,7 @@ func resourceScalewayLbSubscriberBeta() *schema.Resource {
 						"uri": {
 							Type:        schema.TypeString,
 							Required:    true,
-							Description: "URI who receive POST request.",
+							Description: "URI receiving the POST request.",
 						},
 					},
 				},
