@@ -30,7 +30,7 @@ func resourceScalewayLbSubscriberBeta() *schema.Resource {
 						"email": {
 							Type:        schema.TypeString,
 							Required:    true,
-							Description: "Email who receive alert.",
+							Description: "Email receiving the alert.",
 						},
 					},
 				},
