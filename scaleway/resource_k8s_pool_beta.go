@@ -3,7 +3,7 @@ package scaleway
 import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
-	k8s "github.com/scaleway/scaleway-sdk-go/api/k8s/v1beta4"
+	k8s "github.com/scaleway/scaleway-sdk-go/api/k8s/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 )
 
@@ -191,12 +191,38 @@ func resourceScalewayK8SPoolBetaCreate(d *schema.ResourceData, m interface{}) er
 		req.ContainerRuntime = k8s.Runtime(containerRuntime.(string))
 	}
 
+	// check if the cluster is waiting for a pool
+	cluster, err := k8sAPI.GetCluster(&k8s.GetClusterRequest{
+		ClusterID: expandID(d.Get("cluster_id")),
+	})
+	if err != nil {
+		return err
+	}
+
+	waitForCluster := false
+
+	if cluster.Status == k8s.ClusterStatusPoolRequired {
+		waitForCluster = true
+	} else if cluster.Status == k8s.ClusterStatusCreating {
+		err = waitK8SClusterReady(k8sAPI, region, cluster.ID)
+		if err != nil {
+			return err
+		}
+	}
+
 	res, err := k8sAPI.CreatePool(req)
 	if err != nil {
 		return err
 	}
 
 	d.SetId(newRegionalId(region, res.ID))
+
+	if waitForCluster {
+		err = waitK8SClusterReady(k8sAPI, region, cluster.ID)
+		if err != nil {
+			return err
+		}
+	}
 
 	if d.Get("wait_for_pool_ready").(bool) { // wait for the pool to be ready if specified (including all its nodes)
 		err = waitK8SPoolReady(k8sAPI, region, res.ID)

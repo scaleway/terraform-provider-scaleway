@@ -5,7 +5,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
-	k8s "github.com/scaleway/scaleway-sdk-go/api/k8s/v1beta4"
+	k8s "github.com/scaleway/scaleway-sdk-go/api/k8s/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 )
 
@@ -135,50 +135,58 @@ func resourceScalewayK8SClusterBeta() *schema.Resource {
 				Description: "The list of admission plugins to enable on the cluster",
 			},
 			"default_pool": {
+				Deprecated:  "This fields is deprecated and will be removed in the next major version, please use scaleway_k8s_pool_beta instead.",
 				Type:        schema.TypeList,
 				MaxItems:    1,
-				Required:    true,
+				Optional:    true,
 				Description: "Default pool created for the cluster on creation",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"node_type": {
 							Type:             schema.TypeString,
 							Required:         true,
+							Deprecated:       "This fields is deprecated and will be removed in the next major version, please use scaleway_k8s_pool_beta instead.",
 							Description:      "Server type of the default pool servers",
 							DiffSuppressFunc: diffSuppressFuncIgnoreCaseAndHyphen,
 						},
 						"autoscaling": {
 							Type:        schema.TypeBool,
+							Deprecated:  "This fields is deprecated and will be removed in the next major version, please use scaleway_k8s_pool_beta instead.",
 							Optional:    true,
 							Default:     false,
 							Description: "Enable the autoscaling on the default pool",
 						},
 						"autohealing": {
 							Type:        schema.TypeBool,
+							Deprecated:  "This fields is deprecated and will be removed in the next major version, please use scaleway_k8s_pool_beta instead.",
 							Optional:    true,
 							Default:     false,
 							Description: "Enable the autohealing on the default pool",
 						},
 						"size": {
 							Type:        schema.TypeInt,
+							Deprecated:  "This fields is deprecated and will be removed in the next major version, please use scaleway_k8s_pool_beta instead.",
 							Required:    true,
 							Description: "Size of the default pool",
 						},
 						"min_size": {
 							Type:        schema.TypeInt,
+							Deprecated:  "This fields is deprecated and will be removed in the next major version, please use scaleway_k8s_pool_beta instead.",
 							Optional:    true,
 							Default:     1,
 							Description: "Minimun size of the default pool",
 						},
 						"max_size": {
 							Type:        schema.TypeInt,
+							Deprecated:  "This fields is deprecated and will be removed in the next major version, please use scaleway_k8s_pool_beta instead.",
 							Optional:    true,
 							Computed:    true,
 							Default:     nil,
 							Description: "Maximum size of the default pool",
 						},
 						"tags": {
-							Type: schema.TypeList,
+							Type:       schema.TypeList,
+							Deprecated: "This fields is deprecated and will be removed in the next major version, please use scaleway_k8s_pool_beta instead.",
 							Elem: &schema.Schema{
 								Type: schema.TypeString,
 							},
@@ -187,12 +195,14 @@ func resourceScalewayK8SClusterBeta() *schema.Resource {
 						},
 						"placement_group_id": {
 							Type:        schema.TypeString,
+							Deprecated:  "This fields is deprecated and will be removed in the next major version, please use scaleway_k8s_pool_beta instead.",
 							Optional:    true,
 							Default:     nil,
 							Description: "ID of the placement group for the default pool",
 						},
 						"container_runtime": {
 							Type:        schema.TypeString,
+							Deprecated:  "This fields is deprecated and will be removed in the next major version, please use scaleway_k8s_pool_beta instead.",
 							Optional:    true,
 							Default:     k8s.RuntimeDocker.String(),
 							Description: "Container runtime for the default pool",
@@ -204,6 +214,7 @@ func resourceScalewayK8SClusterBeta() *schema.Resource {
 						},
 						"wait_for_pool_ready": {
 							Type:        schema.TypeBool,
+							Deprecated:  "This fields is deprecated and will be removed in the next major version, please use scaleway_k8s_pool_beta instead.",
 							Optional:    true,
 							Default:     false,
 							Description: "Whether to wait for the pool to be ready",
@@ -260,6 +271,7 @@ func resourceScalewayK8SClusterBeta() *schema.Resource {
 					},
 				},
 			},
+
 			"region":          regionSchema(),
 			"organization_id": organizationIDSchema(),
 			// Computed elements
@@ -418,55 +430,65 @@ func resourceScalewayK8SClusterBetaCreate(d *schema.ResourceData, m interface{})
 		}
 	}
 
-	defaultPoolReq := &k8s.CreateClusterRequestDefaultPoolConfig{
-		NodeType:    d.Get("default_pool.0.node_type").(string),
-		Autoscaling: d.Get("default_pool.0.autoscaling").(bool),
-		Autohealing: d.Get("default_pool.0.autohealing").(bool),
-		Size:        uint32(d.Get("default_pool.0.size").(int)),
-		Tags:        expandStrings(d.Get("default_pool.0.tags")),
+	if _, ok := d.GetOk("default_pool"); ok {
+		defaultPoolReq := &k8s.CreateClusterRequestPoolConfig{
+			Name:        "default",
+			NodeType:    d.Get("default_pool.0.node_type").(string),
+			Autoscaling: d.Get("default_pool.0.autoscaling").(bool),
+			Autohealing: d.Get("default_pool.0.autohealing").(bool),
+			Size:        uint32(d.Get("default_pool.0.size").(int)),
+			Tags:        expandStrings(d.Get("default_pool.0.tags")),
+		}
+
+		if placementGroupID, ok := d.GetOk("default_pool.0.placement_group_id"); ok {
+			defaultPoolReq.PlacementGroupID = scw.StringPtr(expandID(placementGroupID.(string)))
+		}
+
+		defaultPoolReq.MinSize = scw.Uint32Ptr(uint32(d.Get("default_pool.0.min_size").(int)))
+
+		if maxSize, ok := d.GetOk("default_pool.0.max_size"); ok {
+			defaultPoolReq.MaxSize = scw.Uint32Ptr(uint32(maxSize.(int)))
+		} else {
+			defaultPoolReq.MaxSize = scw.Uint32Ptr(defaultPoolReq.Size)
+		}
+
+		if containerRuntime, ok := d.GetOk("default_pool.0.container_runtime"); ok {
+			defaultPoolReq.ContainerRuntime = k8s.Runtime(containerRuntime.(string))
+		}
+
+		req.Pools = []*k8s.CreateClusterRequestPoolConfig{defaultPoolReq}
 	}
-
-	if placementGroupID, ok := d.GetOk("default_pool.0.placement_group_id"); ok {
-		defaultPoolReq.PlacementGroupID = scw.StringPtr(expandID(placementGroupID.(string)))
-	}
-
-	defaultPoolReq.MinSize = scw.Uint32Ptr(uint32(d.Get("default_pool.0.min_size").(int)))
-
-	if maxSize, ok := d.GetOk("default_pool.0.max_size"); ok {
-		defaultPoolReq.MaxSize = scw.Uint32Ptr(uint32(maxSize.(int)))
-	} else {
-		defaultPoolReq.MaxSize = scw.Uint32Ptr(defaultPoolReq.Size)
-	}
-
-	if containerRuntime, ok := d.GetOk("default_pool.0.container_runtime"); ok {
-		defaultPoolReq.ContainerRuntime = k8s.Runtime(containerRuntime.(string))
-	}
-
-	req.DefaultPoolConfig = defaultPoolReq
 
 	res, err := k8sAPI.CreateCluster(req)
 	if err != nil {
 		return err
 	}
 
+	if _, ok := d.GetOk("default_pool"); ok {
+		err = waitK8SClusterReady(k8sAPI, region, res.ID)
+		if err != nil {
+			return err
+		}
+		if d.Get("default_pool.0.wait_for_pool_ready").(bool) { // wait for the pool status to be ready (if specified)
+			pool, err := readDefaultPool(d, m) // ensure that 'default_pool.0.pool_id' is set
+			if err != nil {
+				return err
+			}
+
+			err = waitK8SPoolReady(k8sAPI, region, expandID(pool.ID))
+			if err != nil {
+				return err
+			}
+		}
+
+	} else {
+		err = waitK8SClusterPoolRequired(k8sAPI, region, res.ID)
+		if err != nil {
+			return err
+		}
+	}
+
 	d.SetId(newRegionalId(region, res.ID))
-
-	err = waitK8SClusterReady(k8sAPI, region, res.ID) // wait for the cluster status to be ready
-	if err != nil {
-		return err
-	}
-
-	if d.Get("default_pool.0.wait_for_pool_ready").(bool) { // wait for the pool status to be ready (if specified)
-		pool, err := readDefaultPool(d, m) // ensure that 'default_pool.0.pool_id' is set
-		if err != nil {
-			return err
-		}
-
-		err = waitK8SPoolReady(k8sAPI, region, expandID(pool.ID))
-		if err != nil {
-			return err
-		}
-	}
 
 	return resourceScalewayK8SClusterBetaRead(d, m)
 }
@@ -590,9 +612,11 @@ func resourceScalewayK8SClusterBetaRead(d *schema.ResourceData, m interface{}) e
 	_ = d.Set("auto_upgrade", clusterAutoUpgradeFlatten(response))
 
 	// default_pool_config
-	err = resourceScalewayK8SClusterBetaDefaultPoolRead(d, m)
-	if err != nil {
-		return err
+	if _, ok := d.GetOk("default_pool"); ok {
+		err = resourceScalewayK8SClusterBetaDefaultPoolRead(d, m)
+		if err != nil {
+			return err
+		}
 	}
 
 	////
@@ -840,7 +864,7 @@ func resourceScalewayK8SClusterBetaUpdate(d *schema.ResourceData, m interface{})
 		return err
 	}
 
-	err = waitK8SClusterReady(k8sAPI, region, clusterID)
+	err = waitK8SClusterReadyOrPoolRequired(k8sAPI, region, clusterID)
 	if err != nil {
 		return err
 	}
@@ -860,15 +884,16 @@ func resourceScalewayK8SClusterBetaUpdate(d *schema.ResourceData, m interface{})
 			return err
 		}
 
-		err = waitK8SClusterReady(k8sAPI, region, clusterID)
+		err = waitK8SClusterReadyOrPoolRequired(k8sAPI, region, clusterID)
 		if err != nil {
 			return err
 		}
 	}
-
-	err = resourceScalewayK8SClusterBetaDefaultPoolUpdate(d, m)
-	if err != nil {
-		return err
+	if _, ok := d.GetOk("default_pool"); ok {
+		err = resourceScalewayK8SClusterBetaDefaultPoolUpdate(d, m)
+		if err != nil {
+			return err
+		}
 	}
 
 	return resourceScalewayK8SClusterBetaRead(d, m)
