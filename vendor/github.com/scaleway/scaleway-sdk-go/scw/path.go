@@ -72,7 +72,7 @@ func getConfigV2FilePath() (string, bool) {
 
 // getConfigV1FilePath returns the path to the v1 config file
 func getConfigV1FilePath() (string, bool) {
-	path, err := getHomeDir()
+	path, err := os.UserHomeDir()
 	if err != nil {
 		return "", false
 	}
@@ -85,23 +85,11 @@ func getScwConfigDir() (string, error) {
 		return filepath.Join(xdgPath, "scw"), nil
 	}
 
-	homeDir, err := getHomeDir()
+	homeDir, err := os.UserHomeDir()
 	if err != nil {
 		return "", err
 	}
 	return filepath.Join(homeDir, ".config", "scw"), nil
-}
-
-// getHomeDir returns the path to your home directory
-func getHomeDir() (string, error) {
-	switch {
-	case os.Getenv(unixHomeDirEnv) != "":
-		return os.Getenv(unixHomeDirEnv), nil
-	case os.Getenv(windowsHomeDirEnv) != "":
-		return os.Getenv(windowsHomeDirEnv), nil
-	default:
-		return "", ErrNoHomeDir
-	}
 }
 
 func fileExist(name string) bool {

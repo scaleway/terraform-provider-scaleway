@@ -103,7 +103,7 @@ profiles:
 type Config struct {
 	Profile       `yaml:",inline"`
 	ActiveProfile *string             `yaml:"active_profile,omitempty"`
-	SendTelemetry bool                `yaml:"send_telemetry,omitempty"`
+	SendTelemetry *bool               `yaml:"send_telemetry,omitempty"`
 	Profiles      map[string]*Profile `yaml:"profiles,omitempty"`
 }
 
@@ -141,6 +141,10 @@ func (c *Config) String() string {
 
 	configRaw, _ := yaml.Marshal(c2)
 	return string(configRaw)
+}
+
+func (c *Config) IsEmpty() bool {
+	return c.String() == "{}\n"
 }
 
 func hideSecretKey(key *string) *string {

@@ -8,9 +8,17 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 )
 
+var (
+	// RetryInterval is needed when running recorded tests (e.g. on scaleway-cli)
+	// it allows to execute the WaitFor funcs immediately
+	RetryInterval = defaultRetryInterval
+)
+
 const (
 	waitForClusterDefaultTimeout = time.Minute * 15
 	waitForPoolDefaultTimeout    = time.Minute * 15
+	waitForNodeDefaultTimeout    = time.Minute * 15
+	defaultRetryInterval         = time.Second * 5
 )
 
 // WaitForClusterRequest is used by WaitForCluster method.
@@ -49,7 +57,7 @@ func (s *API) WaitForCluster(req *WaitForClusterRequest) (*Cluster, error) {
 			return cluster, isTerminal, nil
 		},
 		Timeout:          timeout,
-		IntervalStrategy: async.LinearIntervalStrategy(5 * time.Second),
+		IntervalStrategy: async.LinearIntervalStrategy(RetryInterval),
 	})
 	if err != nil {
 		return nil, errors.Wrap(err, "waiting for cluster failed")
@@ -91,8 +99,48 @@ func (s *API) WaitForPool(req *WaitForPoolRequest) (*Pool, error) {
 			return res, isTerminal, nil
 		},
 		Timeout:          timeout,
-		IntervalStrategy: async.LinearIntervalStrategy(5 * time.Second),
+		IntervalStrategy: async.LinearIntervalStrategy(RetryInterval),
 	})
 
 	return pool.(*Pool), err
+}
+
+// WaitForNodeRequest is used by WaitForNode method.
+type WaitForNodeRequest struct {
+	NodeID  string
+	Region  scw.Region
+	Timeout *time.Duration
+}
+
+// WaitForNode waits for a Node to be ready
+func (s *API) WaitForNode(req *WaitForNodeRequest) (*Node, error) {
+	terminalStatus := map[NodeStatus]struct{}{
+		NodeStatusCreationError: {},
+		NodeStatusReady:         {},
+	}
+
+	timeout := waitForNodeDefaultTimeout
+	if req.Timeout != nil {
+		timeout = *req.Timeout
+	}
+
+	node, err := async.WaitSync(&async.WaitSyncConfig{
+		Get: func() (interface{}, bool, error) {
+			res, err := s.GetNode(&GetNodeRequest{
+				NodeID: req.NodeID,
+				Region: req.Region,
+			})
+
+			if err != nil {
+				return nil, false, err
+			}
+			_, isTerminal := terminalStatus[res.Status]
+
+			return res, isTerminal, nil
+		},
+		Timeout:          timeout,
+		IntervalStrategy: async.LinearIntervalStrategy(RetryInterval),
+	})
+
+	return node.(*Node), err
 }
