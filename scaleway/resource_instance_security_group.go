@@ -105,7 +105,7 @@ func resourceScalewayInstanceSecurityGroupCreate(d *schema.ResourceData, m inter
 
 	d.SetId(newZonedId(zone, res.SecurityGroup.ID))
 
-	if d.Get("external_rules") != nil && d.Get("external_rules").(bool) {
+	if d.Get("external_rules").(bool) {
 		return resourceScalewayInstanceSecurityGroupRead(d, m)
 	} else {
 		// We call update instead of read as it will take care of creating rules.
@@ -138,7 +138,7 @@ func resourceScalewayInstanceSecurityGroupRead(d *schema.ResourceData, m interfa
 	_ = d.Set("inbound_default_policy", res.SecurityGroup.InboundDefaultPolicy.String())
 	_ = d.Set("outbound_default_policy", res.SecurityGroup.OutboundDefaultPolicy.String())
 
-	if d.Get("external_rules").(bool) {
+	if !d.Get("external_rules").(bool) {
 		inboundRules, outboundRules, err := getSecurityGroupRules(instanceApi, zone, ID, d)
 		if err != nil {
 			return err
@@ -235,7 +235,7 @@ func resourceScalewayInstanceSecurityGroupUpdate(d *schema.ResourceData, m inter
 		return err
 	}
 
-	if d.Get("external_rules") == nil || (d.Get("external_rules") != nil && !d.Get("external_rules").(bool)) {
+	if !d.Get("external_rules").(bool) {
 		err = updateSecurityGroupeRules(d, zone, ID, instanceApi)
 		if err != nil {
 			return err
