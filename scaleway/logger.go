@@ -36,6 +36,11 @@ func (l logger) Errorf(format string, args ...interface{}) {
 	log.Printf("[ERROR] "+format, args...)
 }
 
+// Printf logs to the DEBUG log. Arguments are handled in the manner of fmt.Printf.
+func (l logger) Printf(format string, args ...interface{}) {
+	l.Debugf(format, args...)
+}
+
 // ShouldLog allow the SDK to log only in DEBUG or TRACE levels.
 func (l logger) ShouldLog(level sdkLogger.LogLevel) bool {
 	return logging.IsDebugOrHigher()

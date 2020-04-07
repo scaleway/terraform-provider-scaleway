@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"os"
 	"time"
@@ -105,7 +104,7 @@ func createRetryableHTTPClient(shouldLog bool) *client {
 	}
 	c.RetryMax = 3
 	c.RetryWaitMax = 2 * time.Minute
-	c.Logger = log.New(os.Stderr, "", 0)
+	c.Logger = l
 	c.RetryWaitMin = time.Second * 2
 	c.CheckRetry = func(_ context.Context, resp *http.Response, err error) (bool, error) {
 		if resp == nil || resp.StatusCode == http.StatusTooManyRequests {
