@@ -173,7 +173,7 @@ func resourceScalewayK8SClusterBeta() *schema.Resource {
 							Type:        schema.TypeInt,
 							Deprecated:  "This fields is deprecated and will be removed in the next major version, please use scaleway_k8s_pool_beta instead.",
 							Optional:    true,
-							Default:     1,
+							Computed:    true,
 							Description: "Minimun size of the default pool",
 						},
 						"max_size": {
@@ -181,7 +181,6 @@ func resourceScalewayK8SClusterBeta() *schema.Resource {
 							Deprecated:  "This fields is deprecated and will be removed in the next major version, please use scaleway_k8s_pool_beta instead.",
 							Optional:    true,
 							Computed:    true,
-							Default:     nil,
 							Description: "Maximum size of the default pool",
 						},
 						"tags": {
@@ -444,12 +443,12 @@ func resourceScalewayK8SClusterBetaCreate(d *schema.ResourceData, m interface{})
 			defaultPoolReq.PlacementGroupID = scw.StringPtr(expandID(placementGroupID.(string)))
 		}
 
-		defaultPoolReq.MinSize = scw.Uint32Ptr(uint32(d.Get("default_pool.0.min_size").(int)))
+		if minSize, ok := d.GetOk("default_pool.0.min_size"); ok {
+			defaultPoolReq.MinSize = scw.Uint32Ptr(uint32(minSize.(int)))
+		}
 
 		if maxSize, ok := d.GetOk("default_pool.0.max_size"); ok {
 			defaultPoolReq.MaxSize = scw.Uint32Ptr(uint32(maxSize.(int)))
-		} else {
-			defaultPoolReq.MaxSize = scw.Uint32Ptr(defaultPoolReq.Size)
 		}
 
 		if containerRuntime, ok := d.GetOk("default_pool.0.container_runtime"); ok {
@@ -465,7 +464,7 @@ func resourceScalewayK8SClusterBetaCreate(d *schema.ResourceData, m interface{})
 	}
 
 	if _, ok := d.GetOk("default_pool"); ok {
-		err = waitK8SClusterReady(k8sAPI, region, res.ID)
+		err = waitK8SCluster(k8sAPI, region, res.ID, k8s.ClusterStatusReady)
 		if err != nil {
 			return err
 		}
@@ -482,7 +481,7 @@ func resourceScalewayK8SClusterBetaCreate(d *schema.ResourceData, m interface{})
 		}
 
 	} else {
-		err = waitK8SClusterPoolRequired(k8sAPI, region, res.ID)
+		err = waitK8SCluster(k8sAPI, region, res.ID, k8s.ClusterStatusPoolRequired)
 		if err != nil {
 			return err
 		}
@@ -686,12 +685,12 @@ func resourceScalewayK8SClusterBetaDefaultPoolUpdate(d *schema.ResourceData, m i
 				updateRequest.Autohealing = scw.BoolPtr(autohealing.(bool))
 			}
 
-			if minSize, ok := d.GetOk("default_pool.0.min_size"); ok {
-				updateRequest.MinSize = scw.Uint32Ptr(uint32(minSize.(int)))
+			if d.HasChange("default_pool.0.min_size") {
+				updateRequest.MinSize = scw.Uint32Ptr(uint32(d.Get("default_pool.0.min_size").(int)))
 			}
 
-			if maxSize, ok := d.GetOk("default_pool.0.max_size"); ok {
-				updateRequest.MaxSize = scw.Uint32Ptr(uint32(maxSize.(int)))
+			if d.HasChange("default_pool.0.max_size") {
+				updateRequest.MaxSize = scw.Uint32Ptr(uint32(d.Get("default_pool.0.max_size").(int)))
 			}
 
 			if autoscaling, ok := d.GetOk("default_pool.0.autoscaling"); ok {
@@ -728,12 +727,12 @@ func resourceScalewayK8SClusterBetaDefaultPoolUpdate(d *schema.ResourceData, m i
 				defaultPoolRequest.PlacementGroupID = scw.StringPtr(expandID(placementGroupID.(string)))
 			}
 
-			if minSize, ok := d.GetOk("default_pool.0.min_size"); ok {
-				defaultPoolRequest.MinSize = scw.Uint32Ptr(uint32(minSize.(int)))
+			if d.HasChange("default_pool.0.min_size") {
+				defaultPoolRequest.MinSize = scw.Uint32Ptr(uint32(d.Get("default_pool.0.min_size").(int)))
 			}
 
-			if maxSize, ok := d.GetOk("default_pool.0.max_size"); ok {
-				defaultPoolRequest.MaxSize = scw.Uint32Ptr(uint32(maxSize.(int)))
+			if d.HasChange("default_pool.0.max_size") {
+				defaultPoolRequest.MaxSize = scw.Uint32Ptr(uint32(d.Get("default_pool.0.max_size").(int)))
 			}
 
 			if containerRuntime, ok := d.GetOk("default_pool.0.container_runtime"); ok {
@@ -864,7 +863,7 @@ func resourceScalewayK8SClusterBetaUpdate(d *schema.ResourceData, m interface{})
 		return err
 	}
 
-	err = waitK8SClusterReadyOrPoolRequired(k8sAPI, region, clusterID)
+	err = waitK8SCluster(k8sAPI, region, clusterID, k8s.ClusterStatusReady, k8s.ClusterStatusPoolRequired)
 	if err != nil {
 		return err
 	}
@@ -884,7 +883,7 @@ func resourceScalewayK8SClusterBetaUpdate(d *schema.ResourceData, m interface{})
 			return err
 		}
 
-		err = waitK8SClusterReadyOrPoolRequired(k8sAPI, region, clusterID)
+		err = waitK8SCluster(k8sAPI, region, clusterID, k8s.ClusterStatusReady, k8s.ClusterStatusPoolRequired)
 		if err != nil {
 			return err
 		}

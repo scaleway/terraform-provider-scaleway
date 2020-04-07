@@ -58,7 +58,7 @@ func k8sAPIWithRegionAndID(m interface{}, id string) (*k8s.API, scw.Region, stri
 	return k8sAPI, region, ID, err
 }
 
-func waitK8SClusterPoolRequired(k8sAPI *k8s.API, region scw.Region, clusterID string) error {
+func waitK8SCluster(k8sAPI *k8s.API, region scw.Region, clusterID string, desiredStates ...k8s.ClusterStatus) error {
 	cluster, err := k8sAPI.WaitForCluster(&k8s.WaitForClusterRequest{
 		ClusterID: clusterID,
 		Region:    region,
@@ -68,42 +68,13 @@ func waitK8SClusterPoolRequired(k8sAPI *k8s.API, region scw.Region, clusterID st
 		return err
 	}
 
-	if cluster.Status == k8s.ClusterStatusPoolRequired {
-		return nil
-	}
-	return fmt.Errorf("cluster %s has state %s, wants %s", clusterID, cluster.Status, k8s.ClusterStatusReady)
-}
-
-func waitK8SClusterReadyOrPoolRequired(k8sAPI *k8s.API, region scw.Region, clusterID string) error {
-	cluster, err := k8sAPI.WaitForCluster(&k8s.WaitForClusterRequest{
-		ClusterID: clusterID,
-		Region:    region,
-		Timeout:   scw.TimeDurationPtr(K8SClusterWaitForReadyTimeout),
-	})
-	if err != nil {
-		return err
+	for _, desiredState := range desiredStates {
+		if cluster.Status == desiredState {
+			return nil
+		}
 	}
 
-	if cluster.Status == k8s.ClusterStatusReady || cluster.Status == k8s.ClusterStatusPoolRequired {
-		return nil
-	}
-	return fmt.Errorf("cluster %s has state %s, wants %s or %s", clusterID, cluster.Status, k8s.ClusterStatusReady, k8s.ClusterStatusPoolRequired)
-}
-
-func waitK8SClusterReady(k8sAPI *k8s.API, region scw.Region, clusterID string) error {
-	cluster, err := k8sAPI.WaitForCluster(&k8s.WaitForClusterRequest{
-		ClusterID: clusterID,
-		Region:    region,
-		Timeout:   scw.TimeDurationPtr(K8SClusterWaitForReadyTimeout),
-	})
-	if err != nil {
-		return err
-	}
-
-	if cluster.Status == k8s.ClusterStatusReady {
-		return nil
-	}
-	return fmt.Errorf("cluster %s has state %s, wants %s", clusterID, cluster.Status, k8s.ClusterStatusReady)
+	return fmt.Errorf("cluster %s has state %s, wants one of %+q", clusterID, cluster.Status, desiredStates)
 }
 
 func waitK8SClusterDeleted(k8sAPI *k8s.API, region scw.Region, clusterID string) error {

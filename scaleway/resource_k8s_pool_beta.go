@@ -204,7 +204,7 @@ func resourceScalewayK8SPoolBetaCreate(d *schema.ResourceData, m interface{}) er
 	if cluster.Status == k8s.ClusterStatusPoolRequired {
 		waitForCluster = true
 	} else if cluster.Status == k8s.ClusterStatusCreating {
-		err = waitK8SClusterReady(k8sAPI, region, cluster.ID)
+		err = waitK8SCluster(k8sAPI, region, cluster.ID, k8s.ClusterStatusReady)
 		if err != nil {
 			return err
 		}
@@ -218,7 +218,7 @@ func resourceScalewayK8SPoolBetaCreate(d *schema.ResourceData, m interface{}) er
 	d.SetId(newRegionalId(region, res.ID))
 
 	if waitForCluster {
-		err = waitK8SClusterReady(k8sAPI, region, cluster.ID)
+		err = waitK8SCluster(k8sAPI, region, cluster.ID, k8s.ClusterStatusReady)
 		if err != nil {
 			return err
 		}
