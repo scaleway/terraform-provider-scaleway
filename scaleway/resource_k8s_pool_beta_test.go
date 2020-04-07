@@ -16,7 +16,7 @@ func TestAccScalewayK8SClusterPoolMinimal(t *testing.T) {
 		CheckDestroy: testAccCheckScalewayK8SClusterBetaDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckScalewayK8SPoolConfigMinimal("1.18.0", false),
+				Config: testAccCheckScalewayK8SPoolBetaConfigMinimal("1.18.0", false),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayK8SClusterBetaExists("scaleway_k8s_cluster_beta.minimal"),
 					testAccCheckScalewayK8SPoolBetaExists("scaleway_k8s_pool_beta.default"),
@@ -32,7 +32,7 @@ func TestAccScalewayK8SClusterPoolMinimal(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccCheckScalewayK8SPoolConfigMinimal("1.18.0", true),
+				Config: testAccCheckScalewayK8SPoolBetaConfigMinimal("1.18.0", true),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayK8SClusterBetaExists("scaleway_k8s_cluster_beta.minimal"),
 					testAccCheckScalewayK8SPoolBetaExists("scaleway_k8s_pool_beta.minimal"),
@@ -48,7 +48,7 @@ func TestAccScalewayK8SClusterPoolMinimal(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccCheckScalewayK8SPoolConfigMinimal("1.18.0", false),
+				Config: testAccCheckScalewayK8SPoolBetaConfigMinimal("1.18.0", false),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayK8SClusterBetaExists("scaleway_k8s_cluster_beta.minimal"),
 					testAccCheckScalewayK8SPoolBetaDestroy("scaleway_k8s_pool_beta.minimal"),
@@ -65,7 +65,7 @@ func TestAccScalewayK8SClusterPoolWait(t *testing.T) {
 		CheckDestroy: testAccCheckScalewayK8SClusterBetaDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckScalewayK8SPoolConfigWait("1.17.3", false, 0),
+				Config: testAccCheckScalewayK8SPoolBetaConfigWait("1.17.3", false, 0),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayK8SClusterBetaExists("scaleway_k8s_cluster_beta.minimal"),
 					testAccCheckScalewayK8SPoolBetaExists("scaleway_k8s_pool_beta.default"),
@@ -78,7 +78,7 @@ func TestAccScalewayK8SClusterPoolWait(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccCheckScalewayK8SPoolConfigWait("1.17.3", true, 1),
+				Config: testAccCheckScalewayK8SPoolBetaConfigWait("1.17.3", true, 1),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayK8SClusterBetaExists("scaleway_k8s_cluster_beta.minimal"),
 					testAccCheckScalewayK8SPoolBetaExists("scaleway_k8s_pool_beta.minimal"),
@@ -91,7 +91,7 @@ func TestAccScalewayK8SClusterPoolWait(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccCheckScalewayK8SPoolConfigWait("1.17.3", true, 2),
+				Config: testAccCheckScalewayK8SPoolBetaConfigWait("1.17.3", true, 2),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayK8SClusterBetaExists("scaleway_k8s_cluster_beta.minimal"),
 					testAccCheckScalewayK8SPoolBetaExists("scaleway_k8s_pool_beta.minimal"),
@@ -105,7 +105,7 @@ func TestAccScalewayK8SClusterPoolWait(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccCheckScalewayK8SPoolConfigWait("1.17.3", true, 1),
+				Config: testAccCheckScalewayK8SPoolBetaConfigWait("1.17.3", true, 1),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayK8SClusterBetaExists("scaleway_k8s_cluster_beta.minimal"),
 					testAccCheckScalewayK8SPoolBetaExists("scaleway_k8s_pool_beta.minimal"),
@@ -119,7 +119,7 @@ func TestAccScalewayK8SClusterPoolWait(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccCheckScalewayK8SPoolConfigWait("1.17.3", false, 0),
+				Config: testAccCheckScalewayK8SPoolBetaConfigWait("1.17.3", false, 0),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayK8SClusterBetaExists("scaleway_k8s_cluster_beta.minimal"),
 					testAccCheckScalewayK8SPoolBetaDestroy("scaleway_k8s_pool_beta.minimal"),
@@ -135,7 +135,7 @@ func TestAccScalewayK8SClusterPoolPlacementGroup(t *testing.T) {
 		CheckDestroy: testAccCheckScalewayK8SClusterBetaDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckScalewayK8SPoolConfigPlacementGroup("1.18.0"),
+				Config: testAccCheckScalewayK8SPoolBetaConfigPlacementGroup("1.18.0"),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayK8SClusterBetaExists("scaleway_k8s_cluster_beta.placement_group"),
 					testAccCheckScalewayK8SPoolBetaExists("scaleway_k8s_pool_beta.placement_group"),
@@ -202,7 +202,7 @@ func testAccCheckScalewayK8SPoolBetaExists(n string) resource.TestCheckFunc {
 	}
 }
 
-func testAccCheckScalewayK8SPoolConfigMinimal(version string, otherPool bool) string {
+func testAccCheckScalewayK8SPoolBetaConfigMinimal(version string, otherPool bool) string {
 	pool := ""
 	if otherPool {
 		pool += fmt.Sprintf(`
@@ -236,7 +236,7 @@ resource "scaleway_k8s_cluster_beta" "minimal" {
 %s`, version, pool)
 }
 
-func testAccCheckScalewayK8SPoolConfigWait(version string, otherPool bool, otherPoolSize int) string {
+func testAccCheckScalewayK8SPoolBetaConfigWait(version string, otherPool bool, otherPoolSize int) string {
 	pool := ""
 	if otherPool {
 		pool += fmt.Sprintf(`
@@ -272,7 +272,7 @@ resource "scaleway_k8s_cluster_beta" "minimal" {
 %s`, version, pool)
 }
 
-func testAccCheckScalewayK8SPoolConfigPlacementGroup(version string) string {
+func testAccCheckScalewayK8SPoolBetaConfigPlacementGroup(version string) string {
 	return fmt.Sprintf(`
 resource "scaleway_instance_placement_group" "placement_group" {
   name        = "pool-placement-group"
