@@ -18,8 +18,8 @@ func TestAccScalewayK8SClusterPoolMinimal(t *testing.T) {
 			{
 				Config: testAccCheckScalewayK8SPoolConfigMinimal("1.18.0", false),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayK8SClusterExists("scaleway_k8s_cluster_beta.minimal"),
-					testAccCheckScalewayK8SPoolExists("scaleway_k8s_pool_beta.default"),
+					testAccCheckScalewayK8SClusterBetaExists("scaleway_k8s_cluster_beta.minimal"),
+					testAccCheckScalewayK8SPoolBetaExists("scaleway_k8s_pool_beta.default"),
 					resource.TestCheckResourceAttr("scaleway_k8s_pool_beta.default", "node_type", "gp1_xs"),
 					resource.TestCheckResourceAttr("scaleway_k8s_pool_beta.default", "size", "1"),
 					resource.TestCheckResourceAttr("scaleway_k8s_pool_beta.default", "autohealing", "true"),
@@ -34,8 +34,8 @@ func TestAccScalewayK8SClusterPoolMinimal(t *testing.T) {
 			{
 				Config: testAccCheckScalewayK8SPoolConfigMinimal("1.18.0", true),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayK8SClusterExists("scaleway_k8s_cluster_beta.minimal"),
-					testAccCheckScalewayK8SPoolExists("scaleway_k8s_pool_beta.minimal"),
+					testAccCheckScalewayK8SClusterBetaExists("scaleway_k8s_cluster_beta.minimal"),
+					testAccCheckScalewayK8SPoolBetaExists("scaleway_k8s_pool_beta.minimal"),
 					resource.TestCheckResourceAttr("scaleway_k8s_pool_beta.minimal", "node_type", "gp1_xs"),
 					resource.TestCheckResourceAttr("scaleway_k8s_pool_beta.minimal", "size", "1"),
 					resource.TestCheckResourceAttr("scaleway_k8s_pool_beta.minimal", "autohealing", "true"),
@@ -50,8 +50,8 @@ func TestAccScalewayK8SClusterPoolMinimal(t *testing.T) {
 			{
 				Config: testAccCheckScalewayK8SPoolConfigMinimal("1.18.0", false),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayK8SClusterExists("scaleway_k8s_cluster_beta.minimal"),
-					testAccCheckScalewayK8SPoolDestroy("scaleway_k8s_pool_beta.minimal"),
+					testAccCheckScalewayK8SClusterBetaExists("scaleway_k8s_cluster_beta.minimal"),
+					testAccCheckScalewayK8SPoolBetaDestroy("scaleway_k8s_pool_beta.minimal"),
 				),
 			},
 		},
@@ -67,8 +67,8 @@ func TestAccScalewayK8SClusterPoolWait(t *testing.T) {
 			{
 				Config: testAccCheckScalewayK8SPoolConfigWait("1.17.3", false, 0),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayK8SClusterExists("scaleway_k8s_cluster_beta.minimal"),
-					testAccCheckScalewayK8SPoolExists("scaleway_k8s_pool_beta.default"),
+					testAccCheckScalewayK8SClusterBetaExists("scaleway_k8s_cluster_beta.minimal"),
+					testAccCheckScalewayK8SPoolBetaExists("scaleway_k8s_pool_beta.default"),
 					resource.TestCheckResourceAttr("scaleway_k8s_pool_beta.default", "size", "1"),
 					resource.TestCheckResourceAttr("scaleway_k8s_pool_beta.default", "min_size", "1"),
 					resource.TestCheckResourceAttr("scaleway_k8s_pool_beta.default", "max_size", "1"),
@@ -80,8 +80,8 @@ func TestAccScalewayK8SClusterPoolWait(t *testing.T) {
 			{
 				Config: testAccCheckScalewayK8SPoolConfigWait("1.17.3", true, 1),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayK8SClusterExists("scaleway_k8s_cluster_beta.minimal"),
-					testAccCheckScalewayK8SPoolExists("scaleway_k8s_pool_beta.minimal"),
+					testAccCheckScalewayK8SClusterBetaExists("scaleway_k8s_cluster_beta.minimal"),
+					testAccCheckScalewayK8SPoolBetaExists("scaleway_k8s_pool_beta.minimal"),
 					resource.TestCheckResourceAttr("scaleway_k8s_pool_beta.minimal", "size", "1"),
 					resource.TestCheckResourceAttr("scaleway_k8s_pool_beta.minimal", "min_size", "1"),
 					resource.TestCheckResourceAttr("scaleway_k8s_pool_beta.minimal", "max_size", "1"),
@@ -93,8 +93,8 @@ func TestAccScalewayK8SClusterPoolWait(t *testing.T) {
 			{
 				Config: testAccCheckScalewayK8SPoolConfigWait("1.17.3", true, 2),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayK8SClusterExists("scaleway_k8s_cluster_beta.minimal"),
-					testAccCheckScalewayK8SPoolExists("scaleway_k8s_pool_beta.minimal"),
+					testAccCheckScalewayK8SClusterBetaExists("scaleway_k8s_cluster_beta.minimal"),
+					testAccCheckScalewayK8SPoolBetaExists("scaleway_k8s_pool_beta.minimal"),
 					resource.TestCheckResourceAttr("scaleway_k8s_pool_beta.minimal", "size", "2"),
 					resource.TestCheckResourceAttr("scaleway_k8s_pool_beta.minimal", "min_size", "1"),
 					resource.TestCheckResourceAttr("scaleway_k8s_pool_beta.minimal", "max_size", "2"),
@@ -107,8 +107,8 @@ func TestAccScalewayK8SClusterPoolWait(t *testing.T) {
 			{
 				Config: testAccCheckScalewayK8SPoolConfigWait("1.17.3", true, 1),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayK8SClusterExists("scaleway_k8s_cluster_beta.minimal"),
-					testAccCheckScalewayK8SPoolExists("scaleway_k8s_pool_beta.minimal"),
+					testAccCheckScalewayK8SClusterBetaExists("scaleway_k8s_cluster_beta.minimal"),
+					testAccCheckScalewayK8SPoolBetaExists("scaleway_k8s_pool_beta.minimal"),
 					resource.TestCheckResourceAttr("scaleway_k8s_pool_beta.minimal", "size", "1"),
 					resource.TestCheckResourceAttr("scaleway_k8s_pool_beta.minimal", "min_size", "1"),
 					resource.TestCheckResourceAttr("scaleway_k8s_pool_beta.minimal", "max_size", "1"),
@@ -121,8 +121,8 @@ func TestAccScalewayK8SClusterPoolWait(t *testing.T) {
 			{
 				Config: testAccCheckScalewayK8SPoolConfigWait("1.17.3", false, 0),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayK8SClusterExists("scaleway_k8s_cluster_beta.minimal"),
-					testAccCheckScalewayK8SPoolDestroy("scaleway_k8s_pool_beta.minimal"),
+					testAccCheckScalewayK8SClusterBetaExists("scaleway_k8s_cluster_beta.minimal"),
+					testAccCheckScalewayK8SPoolBetaDestroy("scaleway_k8s_pool_beta.minimal"),
 				),
 			},
 		},
@@ -137,8 +137,8 @@ func TestAccScalewayK8SClusterPoolPlacementGroup(t *testing.T) {
 			{
 				Config: testAccCheckScalewayK8SPoolConfigPlacementGroup("1.18.0"),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayK8SClusterExists("scaleway_k8s_cluster_beta.placement_group"),
-					testAccCheckScalewayK8SPoolExists("scaleway_k8s_pool_beta.placement_group"),
+					testAccCheckScalewayK8SClusterBetaExists("scaleway_k8s_cluster_beta.placement_group"),
+					testAccCheckScalewayK8SPoolBetaExists("scaleway_k8s_pool_beta.placement_group"),
 					resource.TestCheckResourceAttr("scaleway_k8s_pool_beta.placement_group", "node_type", "gp1_xs"),
 					resource.TestCheckResourceAttr("scaleway_k8s_pool_beta.placement_group", "size", "1"),
 					resource.TestCheckResourceAttrSet("scaleway_k8s_pool_beta.placement_group", "id"),
@@ -149,7 +149,7 @@ func TestAccScalewayK8SClusterPoolPlacementGroup(t *testing.T) {
 	})
 }
 
-func testAccCheckScalewayK8SPoolDestroy(n string) resource.TestCheckFunc {
+func testAccCheckScalewayK8SPoolBetaDestroy(n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
@@ -178,7 +178,7 @@ func testAccCheckScalewayK8SPoolDestroy(n string) resource.TestCheckFunc {
 	}
 }
 
-func testAccCheckScalewayK8SPoolExists(n string) resource.TestCheckFunc {
+func testAccCheckScalewayK8SPoolBetaExists(n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {

@@ -18,7 +18,7 @@ func TestAccScalewayK8SClusterDeprecated(t *testing.T) {
 			{
 				Config: testAccCheckScalewayK8SClusterDeprecated("1.17.4", 1),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayK8SClusterExists("scaleway_k8s_cluster_beta.deprecated"),
+					testAccCheckScalewayK8SClusterBetaExists("scaleway_k8s_cluster_beta.deprecated"),
 					resource.TestCheckResourceAttr("scaleway_k8s_cluster_beta.deprecated", "version", "1.17.4"),
 					resource.TestCheckResourceAttr("scaleway_k8s_cluster_beta.deprecated", "cni", "calico"),
 					resource.TestCheckResourceAttr("scaleway_k8s_cluster_beta.deprecated", "status", k8s.ClusterStatusReady.String()),
@@ -32,7 +32,7 @@ func TestAccScalewayK8SClusterDeprecated(t *testing.T) {
 			{
 				Config: testAccCheckScalewayK8SClusterDeprecated("1.17.4", 2),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayK8SClusterExists("scaleway_k8s_cluster_beta.deprecated"),
+					testAccCheckScalewayK8SClusterBetaExists("scaleway_k8s_cluster_beta.deprecated"),
 					resource.TestCheckResourceAttr("scaleway_k8s_cluster_beta.deprecated", "version", "1.17.4"),
 					resource.TestCheckResourceAttr("scaleway_k8s_cluster_beta.deprecated", "cni", "calico"),
 					resource.TestCheckResourceAttr("scaleway_k8s_cluster_beta.deprecated", "status", k8s.ClusterStatusReady.String()),
@@ -57,7 +57,7 @@ func TestAccScalewayK8SClusterMinimal(t *testing.T) {
 			{
 				Config: testAccCheckScalewayK8SClusterConfigMinimal("1.17.3"),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayK8SClusterExists("scaleway_k8s_cluster_beta.minimal"),
+					testAccCheckScalewayK8SClusterBetaExists("scaleway_k8s_cluster_beta.minimal"),
 					resource.TestCheckResourceAttr("scaleway_k8s_cluster_beta.minimal", "version", "1.17.3"),
 					resource.TestCheckResourceAttr("scaleway_k8s_cluster_beta.minimal", "cni", "calico"),
 					resource.TestCheckResourceAttr("scaleway_k8s_cluster_beta.minimal", "status", k8s.ClusterStatusPoolRequired.String()),
@@ -75,7 +75,7 @@ func TestAccScalewayK8SClusterMinimal(t *testing.T) {
 			{
 				Config: testAccCheckScalewayK8SClusterConfigMinimal("1.17.4"),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayK8SClusterExists("scaleway_k8s_cluster_beta.minimal"),
+					testAccCheckScalewayK8SClusterBetaExists("scaleway_k8s_cluster_beta.minimal"),
 					resource.TestCheckResourceAttr("scaleway_k8s_cluster_beta.minimal", "version", "1.17.4"),
 					resource.TestCheckResourceAttr("scaleway_k8s_cluster_beta.minimal", "cni", "calico"),
 					resource.TestCheckResourceAttr("scaleway_k8s_cluster_beta.minimal", "status", k8s.ClusterStatusPoolRequired.String()),
@@ -103,7 +103,7 @@ func TestAccScalewayK8SClusterIngressDashboard(t *testing.T) {
 			{
 				Config: testAccCheckScalewayK8SClusterConfigIngressDashboard("1.18.0", "nginx", false),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayK8SClusterExists("scaleway_k8s_cluster_beta.ingressdashboard"),
+					testAccCheckScalewayK8SClusterBetaExists("scaleway_k8s_cluster_beta.ingressdashboard"),
 					resource.TestCheckResourceAttr("scaleway_k8s_cluster_beta.ingressdashboard", "version", "1.18.0"),
 					resource.TestCheckResourceAttr("scaleway_k8s_cluster_beta.ingressdashboard", "cni", "calico"),
 					resource.TestCheckResourceAttr("scaleway_k8s_cluster_beta.ingressdashboard", "ingress", "nginx"),
@@ -123,7 +123,7 @@ func TestAccScalewayK8SClusterIngressDashboard(t *testing.T) {
 			{
 				Config: testAccCheckScalewayK8SClusterConfigIngressDashboard("1.18.0", "traefik", true),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayK8SClusterExists("scaleway_k8s_cluster_beta.ingressdashboard"),
+					testAccCheckScalewayK8SClusterBetaExists("scaleway_k8s_cluster_beta.ingressdashboard"),
 					resource.TestCheckResourceAttr("scaleway_k8s_cluster_beta.ingressdashboard", "version", "1.18.0"),
 					resource.TestCheckResourceAttr("scaleway_k8s_cluster_beta.ingressdashboard", "cni", "calico"),
 					resource.TestCheckResourceAttr("scaleway_k8s_cluster_beta.ingressdashboard", "ingress", "traefik"),
@@ -153,7 +153,7 @@ func TestAccScalewayK8SClusterAutoscaling(t *testing.T) {
 			{
 				Config: testAccCheckScalewayK8SClusterConfigAutoscaler("1.18.0"),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayK8SClusterExists("scaleway_k8s_cluster_beta.autoscaler"),
+					testAccCheckScalewayK8SClusterBetaExists("scaleway_k8s_cluster_beta.autoscaler"),
 					resource.TestCheckResourceAttr("scaleway_k8s_cluster_beta.autoscaler", "version", "1.18.0"),
 					resource.TestCheckResourceAttr("scaleway_k8s_cluster_beta.autoscaler", "cni", "calico"),
 					resource.TestCheckResourceAttr("scaleway_k8s_cluster_beta.autoscaler", "status", k8s.ClusterStatusPoolRequired.String()),
@@ -188,7 +188,7 @@ func TestAccScalewayK8SClusterAutoUpgrade(t *testing.T) {
 			{
 				Config: testAccCheckScalewayK8SClusterAutoUpgrade(true, "tuesday", 3),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayK8SClusterExists("scaleway_k8s_cluster_beta.auto_upgrade"),
+					testAccCheckScalewayK8SClusterBetaExists("scaleway_k8s_cluster_beta.auto_upgrade"),
 					resource.TestCheckResourceAttr("scaleway_k8s_cluster_beta.auto_upgrade", "auto_upgrade.0.enable", "true"),
 					resource.TestCheckResourceAttr("scaleway_k8s_cluster_beta.auto_upgrade", "auto_upgrade.0.maintenance_window_day", "tuesday"),
 					resource.TestCheckResourceAttr("scaleway_k8s_cluster_beta.auto_upgrade", "auto_upgrade.0.maintenance_window_start_hour", "3"),
@@ -197,7 +197,7 @@ func TestAccScalewayK8SClusterAutoUpgrade(t *testing.T) {
 			{
 				Config: testAccCheckScalewayK8SClusterAutoUpgrade(true, "any", 0),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayK8SClusterExists("scaleway_k8s_cluster_beta.auto_upgrade"),
+					testAccCheckScalewayK8SClusterBetaExists("scaleway_k8s_cluster_beta.auto_upgrade"),
 					resource.TestCheckResourceAttr("scaleway_k8s_cluster_beta.auto_upgrade", "auto_upgrade.0.enable", "true"),
 					resource.TestCheckResourceAttr("scaleway_k8s_cluster_beta.auto_upgrade", "auto_upgrade.0.maintenance_window_day", "any"),
 					resource.TestCheckResourceAttr("scaleway_k8s_cluster_beta.auto_upgrade", "auto_upgrade.0.maintenance_window_start_hour", "0"),
@@ -206,7 +206,7 @@ func TestAccScalewayK8SClusterAutoUpgrade(t *testing.T) {
 			{
 				Config: testAccCheckScalewayK8SClusterAutoUpgrade(false, "any", 0),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayK8SClusterExists("scaleway_k8s_cluster_beta.auto_upgrade"),
+					testAccCheckScalewayK8SClusterBetaExists("scaleway_k8s_cluster_beta.auto_upgrade"),
 					resource.TestCheckResourceAttr("scaleway_k8s_cluster_beta.auto_upgrade", "auto_upgrade.0.enable", "false"),
 					resource.TestCheckResourceAttr("scaleway_k8s_cluster_beta.auto_upgrade", "auto_upgrade.0.maintenance_window_day", "any"),
 					resource.TestCheckResourceAttr("scaleway_k8s_cluster_beta.auto_upgrade", "auto_upgrade.0.maintenance_window_start_hour", "0"),
@@ -245,7 +245,7 @@ func testAccCheckScalewayK8SClusterBetaDestroy(s *terraform.State) error {
 	return nil
 }
 
-func testAccCheckScalewayK8SClusterExists(n string) resource.TestCheckFunc {
+func testAccCheckScalewayK8SClusterBetaExists(n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
