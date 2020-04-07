@@ -13,7 +13,7 @@ func TestAccScalewayK8SClusterDeprecated(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckScalewayK8SClusterDestroy,
+		CheckDestroy: testAccCheckScalewayK8SClusterBetaDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccCheckScalewayK8SClusterDeprecated("1.17.4", 1),
@@ -52,7 +52,7 @@ func TestAccScalewayK8SClusterMinimal(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckScalewayK8SClusterDestroy,
+		CheckDestroy: testAccCheckScalewayK8SClusterBetaDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccCheckScalewayK8SClusterConfigMinimal("1.17.3"),
@@ -98,7 +98,7 @@ func TestAccScalewayK8SClusterIngressDashboard(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckScalewayK8SClusterDestroy,
+		CheckDestroy: testAccCheckScalewayK8SClusterBetaDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccCheckScalewayK8SClusterConfigIngressDashboard("1.18.0", "nginx", false),
@@ -148,7 +148,7 @@ func TestAccScalewayK8SClusterAutoscaling(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckScalewayK8SClusterDestroy,
+		CheckDestroy: testAccCheckScalewayK8SClusterBetaDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccCheckScalewayK8SClusterConfigAutoscaler("1.18.0"),
@@ -183,7 +183,7 @@ func TestAccScalewayK8SClusterAutoUpgrade(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckScalewayK8SClusterDestroy,
+		CheckDestroy: testAccCheckScalewayK8SClusterBetaDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccCheckScalewayK8SClusterAutoUpgrade(true, "tuesday", 3),
@@ -216,7 +216,7 @@ func TestAccScalewayK8SClusterAutoUpgrade(t *testing.T) {
 	})
 }
 
-func testAccCheckScalewayK8SClusterDestroy(s *terraform.State) error {
+func testAccCheckScalewayK8SClusterBetaDestroy(s *terraform.State) error {
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "scaleway_k8s_cluster_beta" {
 			continue

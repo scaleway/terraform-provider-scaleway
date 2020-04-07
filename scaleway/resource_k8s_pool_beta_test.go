@@ -13,7 +13,7 @@ func TestAccScalewayK8SClusterPoolMinimal(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckScalewayK8SClusterDestroy,
+		CheckDestroy: testAccCheckScalewayK8SClusterBetaDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccCheckScalewayK8SPoolConfigMinimal("1.18.0", false),
@@ -62,7 +62,7 @@ func TestAccScalewayK8SClusterPoolWait(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckScalewayK8SClusterDestroy,
+		CheckDestroy: testAccCheckScalewayK8SClusterBetaDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccCheckScalewayK8SPoolConfigWait("1.17.3", false, 0),
@@ -132,7 +132,7 @@ func TestAccScalewayK8SClusterPoolPlacementGroup(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckScalewayK8SClusterDestroy,
+		CheckDestroy: testAccCheckScalewayK8SClusterBetaDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccCheckScalewayK8SPoolConfigPlacementGroup("1.18.0"),
