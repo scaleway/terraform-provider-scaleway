@@ -37,7 +37,7 @@ var (
 	_ = namegenerator.GetRandomName
 )
 
-// API this API allows to manage your scaleway account
+// API: this API allows to manage your scaleway account
 type API struct {
 	client *scw.Client
 }
@@ -89,14 +89,14 @@ func (enum *ListSSHKeysRequestOrderBy) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
-// ListSSHKeysResponse list ssh keys response
+// ListSSHKeysResponse: list ssh keys response
 type ListSSHKeysResponse struct {
 	SSHKeys []*SSHKey `json:"ssh_keys"`
 
 	TotalCount uint32 `json:"total_count"`
 }
 
-// SSHKey ssh key
+// SSHKey: ssh key
 type SSHKey struct {
 	ID string `json:"id"`
 
@@ -126,7 +126,7 @@ type SSHKeyCreationInfo struct {
 // Service API
 
 type ListSSHKeysRequest struct {
-	// OrderBy
+	// OrderBy:
 	//
 	// Default value: created_at_asc
 	OrderBy ListSSHKeysRequestOrderBy `json:"-"`
@@ -140,7 +140,7 @@ type ListSSHKeysRequest struct {
 	OrganizationID *string `json:"-"`
 }
 
-// ListSSHKeys list all SSH keys
+// ListSSHKeys: list all SSH keys
 func (s *API) ListSSHKeys(req *ListSSHKeysRequest, opts ...scw.RequestOption) (*ListSSHKeysResponse, error) {
 	var err error
 
@@ -199,7 +199,7 @@ type CreateSSHKeyRequest struct {
 	OrganizationID string `json:"organization_id"`
 }
 
-// CreateSSHKey create an SSH key
+// CreateSSHKey: create an SSH key
 func (s *API) CreateSSHKey(req *CreateSSHKeyRequest, opts ...scw.RequestOption) (*SSHKey, error) {
 	var err error
 
@@ -232,7 +232,7 @@ type GetSSHKeyRequest struct {
 	SSHKeyID string `json:"-"`
 }
 
-// GetSSHKey get SSH key details
+// GetSSHKey: get SSH key details
 func (s *API) GetSSHKey(req *GetSSHKeyRequest, opts ...scw.RequestOption) (*SSHKey, error) {
 	var err error
 
@@ -261,7 +261,7 @@ type UpdateSSHKeyRequest struct {
 	Name *string `json:"name"`
 }
 
-// UpdateSSHKey update an SSH key
+// UpdateSSHKey: update an SSH key
 func (s *API) UpdateSSHKey(req *UpdateSSHKeyRequest, opts ...scw.RequestOption) (*SSHKey, error) {
 	var err error
 
@@ -293,7 +293,7 @@ type DeleteSSHKeyRequest struct {
 	SSHKeyID string `json:"-"`
 }
 
-// DeleteSSHKey delete an SSH key
+// DeleteSSHKey: delete an SSH key
 func (s *API) DeleteSSHKey(req *DeleteSSHKeyRequest, opts ...scw.RequestOption) error {
 	var err error
 

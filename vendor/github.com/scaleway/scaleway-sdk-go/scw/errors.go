@@ -136,6 +136,8 @@ func unmarshalStandardError(errorType string, body []byte) error {
 		stdErr = &TransientStateError{RawBody: body}
 	case "not_found":
 		stdErr = &ResourceNotFoundError{RawBody: body}
+	case "locked":
+		stdErr = &ResourceLockedError{RawBody: body}
 	case "permissions_denied":
 		stdErr = &PermissionsDeniedError{RawBody: body}
 	case "out_of_stock":
@@ -357,6 +359,22 @@ func (e *ResourceNotFoundError) Error() string {
 	return fmt.Sprintf("scaleway-sdk-go: resource %s with ID %s is not found", e.Resource, e.ResourceID)
 }
 func (e *ResourceNotFoundError) GetRawBody() json.RawMessage {
+	return e.RawBody
+}
+
+type ResourceLockedError struct {
+	Resource   string `json:"resource"`
+	ResourceID string `json:"resource_id"`
+
+	RawBody json.RawMessage `json:"-"`
+}
+
+// IsScwSdkError implements the SdkError interface
+func (e *ResourceLockedError) IsScwSdkError() {}
+func (e *ResourceLockedError) Error() string {
+	return fmt.Sprintf("scaleway-sdk-go: resource %s with ID %s is locked", e.Resource, e.ResourceID)
+}
+func (e *ResourceLockedError) GetRawBody() json.RawMessage {
 	return e.RawBody
 }
 

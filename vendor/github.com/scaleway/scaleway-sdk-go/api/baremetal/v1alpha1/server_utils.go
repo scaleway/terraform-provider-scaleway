@@ -8,6 +8,16 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 )
 
+var (
+	// RetryInterval is needed when running recorded tests (e.g. on scaleway-cli)
+	// it allows to execute the WaitFor funcs immediately
+	RetryInterval = defaultRetryInterval
+)
+
+const (
+	defaultRetryInterval = 15 * time.Second
+)
+
 // WaitForServerRequest is used by WaitForServer method.
 type WaitForServerRequest struct {
 	ServerID string
@@ -40,7 +50,7 @@ func (s *API) WaitForServer(req *WaitForServerRequest) (*Server, error) {
 			return res, isTerminal, err
 		},
 		Timeout:          req.Timeout,
-		IntervalStrategy: async.LinearIntervalStrategy(5 * time.Second),
+		IntervalStrategy: async.LinearIntervalStrategy(RetryInterval),
 	})
 	if err != nil {
 		return nil, errors.Wrap(err, "waiting for server failed")
@@ -84,11 +94,47 @@ func (s *API) WaitForServerInstall(req *WaitForServerInstallRequest) (*Server, e
 			return res, isTerminal, err
 		},
 		Timeout:          req.Timeout,
-		IntervalStrategy: async.LinearIntervalStrategy(15 * time.Second),
+		IntervalStrategy: async.LinearIntervalStrategy(RetryInterval),
 	})
 	if err != nil {
 		return nil, errors.Wrap(err, "waiting for server installation failed")
 	}
 
 	return server.(*Server), nil
+}
+
+// GetServerOffer returns the offer of a baremetal server
+func (s *API) GetServerOffer(server *Server) (*Offer, error) {
+	offer, err := s.GetOffer(&GetOfferRequest{
+		OfferID: server.OfferID,
+		Zone:    server.Zone,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return offer, nil
+}
+
+type GetOfferFromOfferNameRequest struct {
+	OfferName string
+	Zone      scw.Zone
+}
+
+// GetOfferFromName returns an offer from its commercial name
+func (s *API) GetOfferFromName(req *GetOfferFromOfferNameRequest) (*Offer, error) {
+	res, err := s.ListOffers(&ListOffersRequest{
+		Zone: req.Zone,
+	}, scw.WithAllPages())
+	if err != nil {
+		return nil, err
+	}
+
+	for _, offer := range res.Offers {
+		if req.OfferName == offer.Name {
+			return offer, nil
+		}
+	}
+
+	return nil, errors.New("could not find the offer ID from name %s", req.OfferName)
 }
