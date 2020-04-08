@@ -10,7 +10,7 @@ func TestAccScalewayDataSourceInstanceVolume_Basic(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckSalewayInstanceVolumeDestroy,
+		CheckDestroy: testAccCheckScalewayInstanceVolumeDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: `
