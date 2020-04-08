@@ -52,8 +52,8 @@ type KubeconfigUserWithName struct {
 
 // KubeconfigUser represents a user in the kubeconfig file
 type KubeconfigUser struct {
-	ClientCertificateData []byte `yaml:"client-certificate-data,omitempty"`
-	ClientKeyData         []byte `yaml:"client-key-data,omitempty"`
+	ClientCertificateData string `yaml:"client-certificate-data,omitempty"`
+	ClientKeyData         string `yaml:"client-key-data,omitempty"`
 	Password              string `yaml:"password,omitempty"`
 	Username              string `yaml:"username,omitempty"`
 	Token                 string `yaml:"token,omitempty"`

@@ -16,12 +16,8 @@ Creates and manages Scaleway Kubernetes cluster pools. For more information, see
 ```hcl
 resource "scaleway_k8s_cluster_beta" "jack" {
   name = "jack"
-  version = "1.16.1"
-  cni = "calico"
-  default_pool {
-    node_type = "GP1-XS"
-    size = 3
-  }
+  version = "1.18.0"
+  cni = "cilium"
 }
 
 resource "scaleway_k8s_pool_beta" "bill" {

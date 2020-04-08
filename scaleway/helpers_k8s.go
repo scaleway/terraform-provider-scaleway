@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	k8s "github.com/scaleway/scaleway-sdk-go/api/k8s/v1beta4"
+	k8s "github.com/scaleway/scaleway-sdk-go/api/k8s/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 )
 
@@ -35,9 +35,10 @@ type KubeconfigStruct struct {
 }
 
 const (
-	K8SClusterWaitForReadyTimeout   = 10 * time.Minute
-	K8SClusterWaitForDeletedTimeout = 10 * time.Minute
-	K8SPoolWaitForReadyTimeout      = 10 * time.Minute
+	K8SClusterWaitForReadyTimeout        = 10 * time.Minute
+	K8SClusterWaitForPoolRequiredTimeout = 10 * time.Minute
+	K8SClusterWaitForDeletedTimeout      = 10 * time.Minute
+	K8SPoolWaitForReadyTimeout           = 10 * time.Minute
 )
 
 func k8sAPIWithRegion(d *schema.ResourceData, m interface{}) (*k8s.API, scw.Region, error) {
@@ -57,27 +58,30 @@ func k8sAPIWithRegionAndID(m interface{}, id string) (*k8s.API, scw.Region, stri
 	return k8sAPI, region, ID, err
 }
 
-func waitK8SClusterReady(k8sAPI *k8s.API, region scw.Region, clusterID string) error {
+func waitK8SCluster(k8sAPI *k8s.API, region scw.Region, clusterID string, desiredStates ...k8s.ClusterStatus) error {
 	cluster, err := k8sAPI.WaitForCluster(&k8s.WaitForClusterRequest{
 		ClusterID: clusterID,
 		Region:    region,
-		Timeout:   scw.DurationPtr(K8SClusterWaitForReadyTimeout),
+		Timeout:   scw.TimeDurationPtr(K8SClusterWaitForPoolRequiredTimeout),
 	})
 	if err != nil {
 		return err
 	}
 
-	if cluster.Status == k8s.ClusterStatusReady {
-		return nil
+	for _, desiredState := range desiredStates {
+		if cluster.Status == desiredState {
+			return nil
+		}
 	}
-	return fmt.Errorf("cluster %s has state %s, wants %s", clusterID, cluster.Status, k8s.ClusterStatusReady)
+
+	return fmt.Errorf("cluster %s has state %s, wants one of %+q", clusterID, cluster.Status, desiredStates)
 }
 
 func waitK8SClusterDeleted(k8sAPI *k8s.API, region scw.Region, clusterID string) error {
 	cluster, err := k8sAPI.WaitForCluster(&k8s.WaitForClusterRequest{
 		ClusterID: clusterID,
 		Region:    region,
-		Timeout:   scw.DurationPtr(K8SClusterWaitForDeletedTimeout),
+		Timeout:   scw.TimeDurationPtr(K8SClusterWaitForDeletedTimeout),
 	})
 	if err != nil {
 		if is404Error(err) {
@@ -93,7 +97,7 @@ func waitK8SPoolReady(k8sAPI *k8s.API, region scw.Region, poolID string) error {
 	pool, err := k8sAPI.WaitForPool(&k8s.WaitForPoolRequest{
 		PoolID:  poolID,
 		Region:  region,
-		Timeout: scw.DurationPtr(K8SPoolWaitForReadyTimeout),
+		Timeout: scw.TimeDurationPtr(K8SPoolWaitForReadyTimeout),
 	})
 
 	if err != nil {
