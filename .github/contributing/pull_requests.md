@@ -82,8 +82,8 @@ In addition to the below checklist, please see the [Common Review Items](common_
  - [ ] __Documentation updates__: If your code makes any changes that need to be documented, you should include those doc updates in the same PR.
    This includes things like new resource attributes or changes in default values.
    The [Terraform website][website] source is in this repo and includes instructions for getting a local copy of the site up and running if you'd like to preview your changes.
- - [ ] __Well-formed Code__: Do your best to follow existing conventions you see in the codebase, and ensure your code is formatted with `go fmt`.
-   (The Travis CI build will fail if `go fmt` has not been run on incoming code.)
+ - [ ] __Well-formed Code__: Do your best to follow existing conventions you see in the codebase, and ensure your code is formatted with `goimports`.
+   (The Travis CI build will fail if `goimports` has not been run on incoming code.)
    The PR reviewers can help out on this front, and may provide comments with suggestions on how to improve the code.
  - [ ] __Vendor additions__: Create a separate PR if you are updating the vendor folder.
    This is to avoid conflicts as the vendor versions tend to be fast-moving targets.
@@ -151,8 +151,8 @@ In addition to the below checklist, please see the [Common Review Items](#common
  - [ ] __Documentation__: Each resource gets a page in the Terraform documentation.
    The [Terraform website][website] source is in this repo and includes instructions for getting a local copy of the site up and running if you'd like to preview your changes.
    For a resource, you'll want to add a new file in the appropriate place and add a link to the sidebar for that page.
- - [ ] __Well-formed Code__: Do your best to follow existing conventions you see in the codebase, and ensure your code is formatted with `go fmt`.
-   (The Travis CI build will fail if `go fmt` has not been run on incoming code.)
+ - [ ] __Well-formed Code__: Do your best to follow existing conventions you see in the codebase, and ensure your code is formatted with `goimports`.
+   (The Travis CI build will fail if `goimports` has not been run on incoming code.)
    The PR reviewers can help out on this front, and may provide comments with suggestions on how to improve the code.
  - [ ] __Vendor updates__: Create a separate PR if you are adding to the vendor folder.
    This is to avoid conflicts as the vendor versions tend to be fast-moving targets.
