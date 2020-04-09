@@ -65,8 +65,7 @@ The below are required items that will be noted during submission review and pre
   If necessary, only the provider declarations in `provider_test.go` should be used for multiple account/region or otherwise specialized testing.
 - [ ] __Passes in fr-par-1 Region__: Tests default to running in `fr-par-1` and at a minimum should pass in that region or include necessary `PreCheck` functions to skip the test when ran outside an expected environment.
 - [ ] __Uses resource.ParallelTest__: Tests should utilize [`resource.ParallelTest()`](https://godoc.org/github.com/hashicorp/terraform/helper/resource#ParallelTest) instead of [`resource.Test()`](https://godoc.org/github.com/hashicorp/terraform/helper/resource#Test) except where serialized testing is absolutely required.
-- [ ] __Uses fmt.Sprintf()__: Test configurations preferably should to be separated into their own functions (typically named `testAccScaleway{SERVICE}{RESOURCE}Config{PURPOSE}`) that call [`fmt.Sprintf()`](https://golang.org/pkg/fmt/#Sprintf) for variable injection or a string `const` for completely static configurations.
-  Test configurations should avoid `var` or other variable injection functionality such as [`text/template`](https://golang.org/pkg/text/template/).
+- [ ] __Uses inline test configuration__: Test configurations preferably should be an inline string directly in the test case with no or as few variables as possible.
 - [ ] __Uses Randomized Infrastructure Naming__: Test configurations that utilize resources where a unique name is required should generate a random name.
   Typically this is created via `rName := acctest.RandomWithPrefix("tf-acc-test")` in the acceptance test function before generating the configuration.
 
