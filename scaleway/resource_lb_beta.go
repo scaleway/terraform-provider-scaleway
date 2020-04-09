@@ -37,7 +37,7 @@ func resourceScalewayLbBeta() *schema.Resource {
 				Optional:    true,
 				Description: "Array of tags to associate with the load-balancer",
 			},
-			"keep_ip_on_delete": {
+			"release_ip_on_deletion": {
 				Type:     schema.TypeBool,
 				Computed: true,
 			},
@@ -73,11 +73,11 @@ func resourceScalewayLbBetaCreate(d *schema.ResourceData, m interface{}) error {
 		Type:           d.Get("type").(string),
 	}
 
-	if ipID, ok := d.GetOk("ip_id"); ok {
+	if ipID, ok := d.GetOkExists("ip_id"); ok {
 		createReq.IPID = scw.StringPtr(expandID(ipID.(string)))
-		_ = d.Set("keep_ip_on_delete", true)
+		_ = d.Set("release_ip_on_deletion", false)
 	} else {
-		_ = d.Set("keep_ip_on_delete", false)
+		_ = d.Set("release_ip_on_deletion", true)
 	}
 
 	if raw, ok := d.GetOk("tags"); ok {
@@ -121,6 +121,12 @@ func resourceScalewayLbBetaRead(d *schema.ResourceData, m interface{}) error {
 			return nil
 		}
 		return err
+	}
+
+	if _, ok := d.GetOkExists("ip_id"); ok {
+		_ = d.Set("release_ip_on_deletion", false)
+	} else {
+		_ = d.Set("release_ip_on_deletion", true)
 	}
 
 	_ = d.Set("name", res.Name)
@@ -168,7 +174,7 @@ func resourceScalewayLbBetaDelete(d *schema.ResourceData, m interface{}) error {
 		Region: region,
 		LbID:   ID,
 		// This parameter will probably be breaking change when ip pre reservation will exist.
-		ReleaseIP: !d.Get("keep_ip_on_delete").(bool),
+		ReleaseIP: d.Get("release_ip_on_deletion").(bool),
 	})
 
 	if err != nil && !is404Error(err) {
