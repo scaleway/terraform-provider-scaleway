@@ -15,7 +15,7 @@ This might mean that your PR takes a bit longer to merge, but it most definitely
 
 Acceptance tests can be run using the `testacc` target in the Terraform `Makefile`.
 The individual tests to run can be controlled using a regular expression.
-Prior to running the tests provider configuration details such as access keys must be made available as environment variables.
+Prior to running the tests, provider configuration details such as access keys must be made available as environment variables.
 
 For example, to run an acceptance test against the Scaleway provider, the following environment variables must be set:
 
