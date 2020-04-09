@@ -62,7 +62,6 @@ The exclusion of any applicable check may result in a delayed time to merge.
   ```
 
 - [ ] __Uses resource.NotFoundError__: Custom errors for missing resources should use [`resource.NotFoundError`](https://godoc.org/github.com/hashicorp/terraform/helper/resource#NotFoundError).
-- [ ] __Uses resource.UniqueId()__: API fields for concurrency protection such as `CallerReference` and `IdempotencyToken` should use [`resource.UniqueId()`](https://godoc.org/github.com/hashicorp/terraform/helper/resource#UniqueId). The implementation includes a monotonic counter which is safer for concurrent operations than solutions such as `time.Now()`.
 - [ ] __Skips Exists Function__: Implementing a resource `Exists` function is extraneous as it often duplicates resource `Read` functionality. Ensure `d.SetId("")` is used to appropriately trigger resource recreation in the resource `Read` function.
 - [ ] __Skips id Attribute__: The `id` attribute is implicit for all Terraform resources and does not need to be defined in the schema.
 
@@ -74,11 +73,9 @@ The below are style-based items that _may_ be noted during review and are recomm
   - An example `d.Set()` error: `return fmt.Errorf("error setting {ATTRIBUTE}: %s", err)`
 - [ ] __Implements Warning Logging With Resource State Removal__: If a resource is removed outside of Terraform (e.g. via different tool, API, or web UI), `d.SetId("")` and `return nil` can be used in the resource `Read` function to trigger resource recreation.
   When this occurs, a warning log message should be printed beforehand: `log.Printf("[WARN] {SERVICE} {THING} (%s) not found, removing from state", d.Id())`
-- [ ] __Uses %s fmt Verb with Scaleway Go SDK Objects__: Scaleway SDK Go objects implement `String()` so using the `%v`, `%#v`, or `%+v` fmt verbs with the object are extraneous or provide unhelpful detail.
 - [ ] __Uses Elem with TypeMap__: While provider schema validation does not error when the `Elem` configuration is not present with `Type: schema.TypeMap` attributes, including the explicit `Elem: &schema.Schema{Type: schema.TypeString}` is recommended.
 - [ ] __Uses American English for Attribute Naming__: For any ambiguity with attribute naming, prefer American English over British English. e.g. `color` instead of `colour`.
 - [ ] __Skips Timestamp Attributes__: Generally, creation and modification dates from the API should be omitted from the schema.
-- [ ] __Skips Error() Call with Scaleway Go SDK Error Objects__: Error objects do not need to have `Error()` called.
 
 #### Acceptance Testing Guidelines
 
