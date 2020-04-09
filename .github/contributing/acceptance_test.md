@@ -28,7 +28,7 @@ export SCW_SECRET_KEY=...
 export SCW_DEFAULT_REGION=...
 ```
 
-Please note that the default region for the testing is `fr-par-1` and must be overridden via the `SCW_DEFAULT_REGION` environment variable, if necessary.
+Please note that the default zone for the testing is `fr-par-1` and must be overridden via the `SCW_DEFAULT_ZONE` environment variable, if necessary.
 
 Tests can then be run by specifying the target provider and a regular expression defining the tests to run:
 
