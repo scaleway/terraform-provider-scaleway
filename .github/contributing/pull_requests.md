@@ -2,7 +2,7 @@
 
 ## Pull Request Guidelines
 
-The [maintainers](MAINTAINERS.md) of `scaleway-sdk-go` use a "Let's Get This Merged" (LGTM) message in the pull request to note that the commits are ready to merge.
+The maintainers of `terraform-provider-scaleway` use a "Let's Get This Merged" (LGTM) message in the pull request to note that the commits are ready to merge.
 After one or more maintainer states LGTM, we will merge.
 If you have questions or comments on your code, feel free to correct these in your branch through new commits.
 
