@@ -6,10 +6,10 @@ For additional information about testing Terraform Providers, see the [Extending
 ## Acceptance Tests Often Cost Money to Run 💸
 
 Because acceptance tests create real resources, they often cost money to run.
-Because the resources only exist for a short period of time, the total amount of money required is usually a relatively small.
+Because the resources only exist for a short period of time, the total amount of money required is usually relatively small.
 Nevertheless, we don't want financial limitations to be a barrier to contribution, so if you are unable to pay to run acceptance tests for your contribution, mention this in your pull request.
 We will happily accept "best effort" implementations of acceptance tests and run them for you on our side.
-This might mean that your PR takes a bit longer to merge, but it most definitely is not a blocker for contributions.
+This might mean that your PR will take a bit longer to merge, but it most definitely is not a blocker for contributions.
 
 ## Running an Acceptance Test
 
