@@ -141,7 +141,7 @@ In addition to the below checklist, please see the [Common Review Items](#common
    Resources are namespaced with the service name to allow easier searching of related resources, to align the resource naming with the service for [Customizing Endpoints](https://www.terraform.io/docs/providers/scaleway/guides/custom-service-endpoints.html#available-endpoint-customizations), and to prevent future conflicts with new Scaleway services/resources.
    For reference:
 
-   - `service` is the Scaleway short service name that matches the entry in `endpointServiceNames` (created via the [New Service](#new-service) section)
+   - `service` is the name of the Scaleway short service name that matches the entry in `endpointServiceNames`
    - `name` represents the conceptual infrastructure represented by the create, read, update, and delete methods of the service API.
      It should be a singular noun.
      For example, in an API that has methods such as `CreateThing`, `DeleteThing`, `DescribeThing`, and `ModifyThing` the name of the resource would end in `_thing`.
