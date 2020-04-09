@@ -41,7 +41,7 @@ If you are running into one of these scenarios, we recommend opening an issue in
 <!--- Information about code formatting: https://help.github.com/articles/basic-writing-and-formatting-syntax/#quoting-code --->
 
 ```hcl
-# Copy-paste your Terraform configurations here - for large Terraform configs,
+# Copy-paste the minimal (if possible) terraform configuration to reproduce the bug here - for large Terraform configs,
 # please use a service like Dropbox and share a link to the ZIP file. For
 # security, you can also encrypt the files using our GPG public key: https://keybase.io/hashicorp
 ```
@@ -49,7 +49,8 @@ If you are running into one of these scenarios, we recommend opening an issue in
 ### Debug Output
 
 <!---
-Please provide a link to a GitHub Gist containing the complete debug output. Please do NOT paste the debug output in the issue; just paste a link to the Gist.
+Please provide a link to a GitHub Gist (https://gist.github.com/) containing the complete debug output.
+Please do NOT paste the debug output in the issue; just paste a link to the Gist.
 
 To obtain the debug output, see the [Terraform documentation on debugging](https://www.terraform.io/docs/internals/debugging.html).
 --->
@@ -74,7 +75,7 @@ To obtain the debug output, see the [Terraform documentation on debugging](https
 
 ### Important Factoids
 
-<!--- Are there anything atypical about your accounts that we should know? For example: Running in EC2 Classic? --->
+<!--- Are there anything atypical about your accounts that we should know? --->
 
 ### References
 
