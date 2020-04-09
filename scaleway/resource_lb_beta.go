@@ -3,6 +3,7 @@ package scaleway
 import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	lb "github.com/scaleway/scaleway-sdk-go/api/lb/v1"
+	"github.com/scaleway/scaleway-sdk-go/scw"
 )
 
 func resourceScalewayLbBeta() *schema.Resource {
@@ -36,10 +37,17 @@ func resourceScalewayLbBeta() *schema.Resource {
 				Optional:    true,
 				Description: "Array of tags to associate with the load-balancer",
 			},
+			"keep_ip_on_delete": {
+				Type:     schema.TypeBool,
+				Computed: true,
+			},
 			"ip_id": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The load-balance public IP ID",
+				Type:             schema.TypeString,
+				Optional:         true,
+				Computed:         true,
+				Description:      "The load-balance public IP ID",
+				ForceNew:         true,
+				DiffSuppressFunc: diffSuppressFuncLocality,
 			},
 			"ip_address": {
 				Type:        schema.TypeString,
@@ -64,6 +72,14 @@ func resourceScalewayLbBetaCreate(d *schema.ResourceData, m interface{}) error {
 		Name:           expandOrGenerateString(d.Get("name"), "lb"),
 		Type:           d.Get("type").(string),
 	}
+
+	if ipID, ok := d.GetOk("ip_id"); ok {
+		createReq.IPID = scw.StringPtr(expandID(ipID.(string)))
+		_ = d.Set("keep_ip_on_delete", true)
+	} else {
+		_ = d.Set("keep_ip_on_delete", false)
+	}
+
 	if raw, ok := d.GetOk("tags"); ok {
 		for _, tag := range raw.([]interface{}) {
 			createReq.Tags = append(createReq.Tags, tag.(string))
@@ -112,7 +128,7 @@ func resourceScalewayLbBetaRead(d *schema.ResourceData, m interface{}) error {
 	_ = d.Set("organization_id", res.OrganizationID)
 	_ = d.Set("tags", res.Tags)
 	_ = d.Set("type", res.Type)
-	_ = d.Set("ip_id", res.IP[0].ID)
+	_ = d.Set("ip_id", newRegionalId(region, res.IP[0].ID))
 	_ = d.Set("ip_address", res.IP[0].IPAddress)
 
 	return nil
@@ -152,7 +168,7 @@ func resourceScalewayLbBetaDelete(d *schema.ResourceData, m interface{}) error {
 		Region: region,
 		LbID:   ID,
 		// This parameter will probably be breaking change when ip pre reservation will exist.
-		ReleaseIP: true,
+		ReleaseIP: !d.Get("keep_ip_on_delete").(bool),
 	})
 
 	if err != nil && !is404Error(err) {

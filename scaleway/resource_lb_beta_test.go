@@ -84,6 +84,47 @@ func TestAccScalewayLbBeta(t *testing.T) {
 	})
 }
 
+func TestAccScalewayLbAndIPBeta(t *testing.T) {
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckScalewayLbBetaDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource scaleway_lb_ip_beta ip01 {
+					}
+
+					resource scaleway_lb_beta lb01 {
+					    ip_id = scaleway_lb_ip_beta.ip01.id
+						name = "test-lb"
+						type = "lb-s"
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayLbBetaExists("scaleway_lb_beta.lb01"),
+					testAccCheckScalewayLbIPBetaExists("scaleway_lb_ip_beta.ip01"),
+					resource.TestCheckResourceAttr("scaleway_lb_beta.lb01", "name", "test-lb"),
+					testCheckResourceAttrUUID("scaleway_lb_beta.lb01", "ip_id"),
+					testCheckResourceAttrIPv4("scaleway_lb_beta.lb01", "ip_address"),
+					resource.TestCheckResourceAttrPair("scaleway_lb_beta.lb01", "ip_id", "scaleway_lb_ip_beta.ip01", "id"),
+				),
+			},
+			{
+				Config: `
+					resource scaleway_lb_ip_beta ip01 {
+						reverse = "reverse.com" # force the refresh of the IP
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayLbIPBetaExists("scaleway_lb_ip_beta.ip01"),
+					resource.TestCheckResourceAttr("scaleway_lb_ip_beta.ip01", "lb_id", ""),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckScalewayLbBetaExists(n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]

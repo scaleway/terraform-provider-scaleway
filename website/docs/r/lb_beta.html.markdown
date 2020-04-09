@@ -16,7 +16,11 @@ Creates and manages Scaleway Load-Balancers. For more information, see [the docu
 ### Basic
 
 ```hcl
+resource "scaleway_lb_ip_beta" "ip" {
+}
+
 resource "scaleway_lb_beta" "base" {
+  ip_id = scaleway_lb_ip_beta.ip.id
   region      = "fr-par"
   type        = "LB-S"
 }
@@ -25,6 +29,10 @@ resource "scaleway_lb_beta" "base" {
 ## Arguments Reference
 
 The following arguments are supported:
+
+- `ip_id` - (Required) The ID of the associated IP.
+
+~> **Important:** Updates to `ip_id` will recreate the load-balancer.
 
 - `type` - (Required) The type of the load-balancer.  For now only `LB-S` is available
 
@@ -38,13 +46,11 @@ The following arguments are supported:
 
 - `organization_id` - (Defaults to [provider](../index.html#organization_id) `organization_id`) The ID of the organization the load-balancer is associated with.
 
-
 ## Attributes Reference
 
 In addition to all arguments above, the following attributes are exported:
 
 - `id` - The ID of the load-balancer.
-- `ip_id` - The load-balance public IP ID
 - `ip_address` -  The load-balance public IP Address
 
 
