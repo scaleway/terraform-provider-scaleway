@@ -212,4 +212,4 @@ When executing the test, the following steps are taken for each `TestStep`:
     }
     ```
 
-   These functions usually test only for the resource directly under test.
+   These functions usually test only for the resource used during a specific test.

@@ -1,7 +1,7 @@
 # Common Review Items
 
 The Terraform Scaleway Provider follows common practices to ensure consistent and reliable implementations across all resources.
-While there may be older resource and testing code that predates these guidelines, new submissions are generally expected to adhere to these items to maintain Terraform Provider quality.
+While there may be older resources and testing code that predates these guidelines, new submissions are generally expected to adhere to these items to maintain the quality of the Terraform provider.
 For any guidelines listed, contributors are encouraged to ask any questions and community reviewers are encouraged to provide review suggestions based on these guidelines to speed up the review and merge process.
 
 ## Go Coding Style
@@ -40,7 +40,7 @@ The exclusion of any applicable check may result in a delayed time to merge.
 - [ ] __Skips Exists Function__: Implementing a resource `Exists` function is extraneous as it often duplicates resource `Read` functionality. Ensure `d.SetId("")` is used to appropriately trigger resource recreation in the resource `Read` function.
 - [ ] __Skips id Attribute__: The `id` attribute is implicit for all Terraform resources and does not need to be defined in the schema.
 
-The below are style-based items that _may_ be noted during review and are recommended for simplicity, consistency, and quality assurance:
+Below are style-based items that _may_ be noted during review and are recommended for simplicity, consistency, and quality assurance:
 
 - [ ] __Avoids CustomizeDiff__: Usage of `CustomizeDiff` is generally discouraged.
 - [ ] __Implements Error Message Context__: Returning errors from resource `Create`, `Read`, `Update`, and `Delete` functions should include additional messaging about the location or cause of the error for operators and code maintainers by wrapping with [`fmt.Errorf()`](https://godoc.org/golang.org/x/exp/errors/fmt#Errorf).
@@ -54,7 +54,7 @@ The below are style-based items that _may_ be noted during review and are recomm
 
 #### Acceptance Testing Guidelines
 
-The below are required items that will be noted during submission review and prevent immediate merging:
+Below are required items that will be noted during submission review and prevent immediate merging:
 
 - [ ] __Implements CheckDestroy__: Resource testing should include a `CheckDestroy` function (typically named `testAccCheckScaleway{SERVICE}{RESOURCE}Destroy`) that calls the API to verify that the Terraform resource has been deleted or disassociated as appropriate.
   More information about `CheckDestroy` functions can be found in the [Extending Terraform TestCase documentation](https://www.terraform.io/docs/extend/testing/acceptance-tests/testcase.html#checkdestroy).
@@ -74,7 +74,7 @@ For resources that support import, the additional item below is required that wi
 - [ ] __Implements ImportState Testing__: Tests should include an additional `TestStep` configuration that verifies resource import via `ImportState: true` and `ImportStateVerify: true`.
   This `TestStep` should be added to all possible tests for the resource to ensure that all infrastructure configurations are properly imported into Terraform.
 
-The below are style-based items that _may_ be noted during review and are recommended for simplicity, consistency, and quality assurance:
+Below are style-based items that _may_ be noted during review and are recommended for simplicity, consistency, and quality assurance:
 
 - [ ] __Uses Builtin Check Functions__: Tests should utilize already available check functions, e.g. `resource.TestCheckResourceAttr()`, to verify values in the Terraform state over creating custom `TestCheckFunc`.
   More information about these functions can be found in the [Extending Terraform Builtin Check Functions documentation](https://www.terraform.io/docs/extend/testing/acceptance-tests/teststep.html#builtin-check-functions).
