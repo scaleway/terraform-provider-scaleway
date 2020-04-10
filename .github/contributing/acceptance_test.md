@@ -88,9 +88,9 @@ Each `TestStep` proceeds by applying some Terraform configuration using the prov
 It is common for a single test function to exercise both the creation of and updates to a single resource.
 Most tests follow a similar structure.
 
-1. Pre-flight checks are made to ensure that sufficient provider configuration is available to be able to proceed.
-   For example, in an acceptance test targeting Scaleway, `SCW_ACCESS_KEY_ID` and `SCW_SECRET_ACCESS_KEY` must be set prior to running acceptance tests.
-   This is common to all tests exercising a single provider.
+First, pre-flight checks are made to ensure that sufficient provider configuration is available to be able to proceed.
+For example, in an acceptance test targeting Scaleway, `SCW_ACCESS_KEY_ID` and `SCW_SECRET_ACCESS_KEY` must be set prior to running acceptance tests.
+This is common to all tests exercising a single provider.
 
 Each `TestStep` is defined in the call to `resource.ParallelTest()`.
 Most assertion functions are defined out of band with the tests.
