@@ -37,14 +37,9 @@ func resourceScalewayLbBeta() *schema.Resource {
 				Optional:    true,
 				Description: "Array of tags to associate with the load-balancer",
 			},
-			"release_ip_on_deletion": {
-				Type:     schema.TypeBool,
-				Computed: true,
-			},
 			"ip_id": {
 				Type:             schema.TypeString,
-				Optional:         true,
-				Computed:         true,
+				Required:         true,
 				Description:      "The load-balance public IP ID",
 				ForceNew:         true,
 				DiffSuppressFunc: diffSuppressFuncLocality,
@@ -68,16 +63,10 @@ func resourceScalewayLbBetaCreate(d *schema.ResourceData, m interface{}) error {
 
 	createReq := &lb.CreateLbRequest{
 		Region:         region,
+		IPID:           scw.StringPtr(expandID(d.Get("ip_id").(string))),
 		OrganizationID: d.Get("organization_id").(string),
 		Name:           expandOrGenerateString(d.Get("name"), "lb"),
 		Type:           d.Get("type").(string),
-	}
-
-	if ipID, ok := d.GetOkExists("ip_id"); ok {
-		createReq.IPID = scw.StringPtr(expandID(ipID.(string)))
-		_ = d.Set("release_ip_on_deletion", false)
-	} else {
-		_ = d.Set("release_ip_on_deletion", true)
 	}
 
 	if raw, ok := d.GetOk("tags"); ok {
@@ -123,12 +112,6 @@ func resourceScalewayLbBetaRead(d *schema.ResourceData, m interface{}) error {
 		return err
 	}
 
-	if _, ok := d.GetOkExists("ip_id"); ok {
-		_ = d.Set("release_ip_on_deletion", false)
-	} else {
-		_ = d.Set("release_ip_on_deletion", true)
-	}
-
 	_ = d.Set("name", res.Name)
 	_ = d.Set("region", string(region))
 	_ = d.Set("organization_id", res.OrganizationID)
@@ -171,10 +154,9 @@ func resourceScalewayLbBetaDelete(d *schema.ResourceData, m interface{}) error {
 	}
 
 	err = lbAPI.DeleteLb(&lb.DeleteLbRequest{
-		Region: region,
-		LbID:   ID,
-		// This parameter will probably be breaking change when ip pre reservation will exist.
-		ReleaseIP: d.Get("release_ip_on_deletion").(bool),
+		Region:    region,
+		LbID:      ID,
+		ReleaseIP: false,
 	})
 
 	if err != nil && !is404Error(err) {

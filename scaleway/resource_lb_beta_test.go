@@ -43,47 +43,6 @@ func testSweepLB(region string) error {
 	return nil
 }
 
-func TestAccScalewayLbBeta(t *testing.T) {
-	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckScalewayLbBetaDestroy,
-		Steps: []resource.TestStep{
-			{
-				Config: `
-					resource scaleway_lb_beta lb01 {
-						name = "test-lb"
-						type = "lb-s"
-					}
-				`,
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayLbBetaExists("scaleway_lb_beta.lb01"),
-					resource.TestCheckResourceAttr("scaleway_lb_beta.lb01", "name", "test-lb"),
-					testCheckResourceAttrUUID("scaleway_lb_beta.lb01", "ip_id"),
-					testCheckResourceAttrIPv4("scaleway_lb_beta.lb01", "ip_address"),
-				),
-			},
-			{
-				Config: `
-					resource scaleway_lb_beta lb01 {
-						name = "test-lb"
-						type = "lb-s"
-						tags = ["tag1", "tag2"]
-					}
-				`,
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayLbBetaExists("scaleway_lb_beta.lb01"),
-					resource.TestCheckResourceAttr("scaleway_lb_beta.lb01", "name", "test-lb"),
-					resource.TestCheckResourceAttr("scaleway_lb_beta.lb01", "tags.0", "tag1"),
-					resource.TestCheckResourceAttr("scaleway_lb_beta.lb01", "tags.1", "tag2"),
-					testCheckResourceAttrUUID("scaleway_lb_beta.lb01", "ip_id"),
-					testCheckResourceAttrIPv4("scaleway_lb_beta.lb01", "ip_address"),
-				),
-			},
-		},
-	})
-}
-
 func TestAccScalewayLbAndIPBeta(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -108,62 +67,25 @@ func TestAccScalewayLbAndIPBeta(t *testing.T) {
 					testCheckResourceAttrUUID("scaleway_lb_beta.lb01", "ip_id"),
 					testCheckResourceAttrIPv4("scaleway_lb_beta.lb01", "ip_address"),
 					resource.TestCheckResourceAttrPair("scaleway_lb_beta.lb01", "ip_id", "scaleway_lb_ip_beta.ip01", "id"),
-					resource.TestCheckResourceAttr("scaleway_lb_beta.lb01", "release_ip_on_deletion", "false"),
 				),
 			},
 			{
 				Config: `
 					resource scaleway_lb_ip_beta ip01 {
-						reverse = "reverse.com" # force the refresh of the IP
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayLbIPBetaExists("scaleway_lb_ip_beta.ip01"),
+				),
+			},
+			{
+				Config: `
+					resource scaleway_lb_ip_beta ip01 {
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayLbIPBetaExists("scaleway_lb_ip_beta.ip01"),
 					resource.TestCheckResourceAttr("scaleway_lb_ip_beta.ip01", "lb_id", ""),
-				),
-			},
-		},
-	})
-}
-
-func TestAccScalewayLbThenIPBeta(t *testing.T) {
-	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckScalewayLbBetaDestroy,
-		Steps: []resource.TestStep{
-			{
-				Config: `
-					resource scaleway_lb_beta lb01 {
-						name = "test-lb"
-						type = "lb-s"
-					}
-				`,
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayLbBetaExists("scaleway_lb_beta.lb01"),
-					resource.TestCheckResourceAttr("scaleway_lb_beta.lb01", "name", "test-lb"),
-					testCheckResourceAttrUUID("scaleway_lb_beta.lb01", "ip_id"),
-					testCheckResourceAttrIPv4("scaleway_lb_beta.lb01", "ip_address"),
-					resource.TestCheckResourceAttr("scaleway_lb_beta.lb01", "release_ip_on_deletion", "true"),
-				),
-			},
-			{
-				Config: `
-					resource scaleway_lb_ip_beta ip01 {
-					}
-
-					resource scaleway_lb_beta lb01 {
-					    ip_id = scaleway_lb_ip_beta.ip01.id
-						name = "test-lb"
-						type = "lb-s"
-					}
-				`,
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayLbBetaExists("scaleway_lb_beta.lb01"),
-					testAccCheckScalewayLbIPBetaExists("scaleway_lb_ip_beta.ip01"),
-					resource.TestCheckResourceAttrPair("scaleway_lb_beta.lb01", "ip_id", "scaleway_lb_ip_beta.ip01", "id"),
-					resource.TestCheckResourceAttr("scaleway_lb_beta.lb01", "release_ip_on_deletion", "false"),
-					resource.TestCheckResourceAttrPair("scaleway_lb_beta.lb01", "ip_id", "scaleway_lb_ip_beta.ip01", "id"),
 				),
 			},
 		},

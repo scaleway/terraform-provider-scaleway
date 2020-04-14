@@ -7,7 +7,42 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 	"github.com/scaleway/scaleway-sdk-go/api/lb/v1"
+	"github.com/scaleway/scaleway-sdk-go/scw"
 )
+
+func init() {
+	resource.AddTestSweepers("scaleway_lb_ip_beta", &resource.Sweeper{
+		Name: "scaleway_lb_ip_beta",
+		F:    testSweepLBIP,
+	})
+}
+
+func testSweepLBIP(region string) error {
+	scwClient, err := sharedClientForRegion(region)
+	if err != nil {
+		return fmt.Errorf("error getting client in sweeper: %s", err)
+	}
+	lbAPI := lb.NewAPI(scwClient)
+
+	l.Debugf("sweeper: destroying the lb ips in (%s)", region)
+	listIPs, err := lbAPI.ListIPs(&lb.ListIPsRequest{}, scw.WithAllPages())
+	if err != nil {
+		return fmt.Errorf("error listing lb ips in (%s) in sweeper: %s", region, err)
+	}
+
+	for _, ip := range listIPs.IPs {
+		if ip.LbID == nil {
+			err := lbAPI.ReleaseIP(&lb.ReleaseIPRequest{
+				IPID: ip.ID,
+			})
+			if err != nil {
+				return fmt.Errorf("error deleting lb ip in sweeper: %s", err)
+			}
+		}
+	}
+
+	return nil
+}
 
 func TestAccScalewayLbIPBeta(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
