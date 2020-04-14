@@ -413,23 +413,33 @@ func testSweepComputeInstanceSecurityGroup(region string) error {
 	}
 	instanceAPI := instance.NewAPI(scwClient)
 
-	l.Debugf("sweeper: destroying the security groups in (%s)", region)
-
-	listResp, err := instanceAPI.ListSecurityGroups(&instance.ListSecurityGroupsRequest{})
+	scwRegion, err := scw.ParseRegion(region)
 	if err != nil {
-		return fmt.Errorf("error listing security groups in sweeper: %s", err)
+		return fmt.Errorf("error parsing region: %s", err)
 	}
 
-	for _, securityGroup := range listResp.SecurityGroups {
-		// Can't delete default security group.
-		if securityGroup.OrganizationDefault {
-			continue
-		}
-		err = instanceAPI.DeleteSecurityGroup(&instance.DeleteSecurityGroupRequest{
-			SecurityGroupID: securityGroup.ID,
-		})
+	for _, zone := range scwRegion.GetZones() {
+		l.Debugf("sweeper: destroying the security groups in (%s)", zone)
+
+		listResp, err := instanceAPI.ListSecurityGroups(&instance.ListSecurityGroupsRequest{
+			Zone: zone,
+		}, scw.WithAllPages())
 		if err != nil {
-			return fmt.Errorf("error deleting security groups in sweeper: %s", err)
+			return fmt.Errorf("error listing security groups in sweeper: %s", err)
+		}
+
+		for _, securityGroup := range listResp.SecurityGroups {
+			// Can't delete default security group.
+			if securityGroup.OrganizationDefault {
+				continue
+			}
+			err = instanceAPI.DeleteSecurityGroup(&instance.DeleteSecurityGroupRequest{
+				Zone:            zone,
+				SecurityGroupID: securityGroup.ID,
+			})
+			if err != nil {
+				return fmt.Errorf("error deleting security groups in sweeper: %s", err)
+			}
 		}
 	}
 

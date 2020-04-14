@@ -7,7 +7,51 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
+	"github.com/scaleway/scaleway-sdk-go/scw"
 )
+
+func init() {
+	resource.AddTestSweepers("scaleway_instance_ip", &resource.Sweeper{
+		Name: "scaleway_instance_ip",
+		F:    testSweepInstanceIP,
+	})
+}
+
+func testSweepInstanceIP(region string) error {
+	scwClient, err := sharedClientForRegion(region)
+	if err != nil {
+		return fmt.Errorf("error getting client in sweeper: %s", err)
+	}
+	instanceAPI := instance.NewAPI(scwClient)
+
+	scwRegion, err := scw.ParseRegion(region)
+	if err != nil {
+		return fmt.Errorf("error parsing region: %s", err)
+	}
+
+	for _, zone := range scwRegion.GetZones() {
+		l.Debugf("sweeper: destroying the instance ip in (%s)", zone)
+		listIPs, err := instanceAPI.ListIPs(&instance.ListIPsRequest{
+			Zone: zone,
+		}, scw.WithAllPages())
+		if err != nil {
+			l.Warningf("error listing ips in (%s) in sweeper: %s", zone, err)
+			continue
+		}
+
+		for _, ip := range listIPs.IPs {
+			err := instanceAPI.DeleteIP(&instance.DeleteIPRequest{
+				Zone: zone,
+				IP:   ip.ID,
+			})
+			if err != nil {
+				return fmt.Errorf("error deleting ip in sweeper: %s", err)
+			}
+		}
+	}
+
+	return nil
+}
 
 func TestAccScalewayInstanceIP(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{

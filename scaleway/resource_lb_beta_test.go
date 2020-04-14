@@ -7,7 +7,41 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 	"github.com/scaleway/scaleway-sdk-go/api/lb/v1"
+	"github.com/scaleway/scaleway-sdk-go/scw"
 )
+
+func init() {
+	resource.AddTestSweepers("scaleway_lb_beta", &resource.Sweeper{
+		Name: "scaleway_lb_beta",
+		F:    testSweepLB,
+	})
+}
+
+func testSweepLB(region string) error {
+	scwClient, err := sharedClientForRegion(region)
+	if err != nil {
+		return fmt.Errorf("error getting client in sweeper: %s", err)
+	}
+	lbAPI := lb.NewAPI(scwClient)
+
+	l.Debugf("sweeper: destroying the lbs in (%s)", region)
+	listLBs, err := lbAPI.ListLbs(&lb.ListLbsRequest{}, scw.WithAllPages())
+	if err != nil {
+		return fmt.Errorf("error listing lbs in (%s) in sweeper: %s", region, err)
+	}
+
+	for _, l := range listLBs.Lbs {
+		err := lbAPI.DeleteLb(&lb.DeleteLbRequest{
+			LbID:      l.ID,
+			ReleaseIP: true,
+		})
+		if err != nil {
+			return fmt.Errorf("error deleting lb in sweeper: %s", err)
+		}
+	}
+
+	return nil
+}
 
 func TestAccScalewayLbBeta(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{

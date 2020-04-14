@@ -8,7 +8,51 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
+	"github.com/scaleway/scaleway-sdk-go/scw"
 )
+
+func init() {
+	resource.AddTestSweepers("scaleway_instance_server", &resource.Sweeper{
+		Name: "scaleway_instance_server",
+		F:    testSweepInstanceServer,
+	})
+}
+
+func testSweepInstanceServer(region string) error {
+	scwClient, err := sharedClientForRegion(region)
+	if err != nil {
+		return fmt.Errorf("error getting client in sweeper: %s", err)
+	}
+	instanceAPI := instance.NewAPI(scwClient)
+
+	scwRegion, err := scw.ParseRegion(region)
+	if err != nil {
+		return fmt.Errorf("error parsing region: %s", err)
+	}
+
+	for _, zone := range scwRegion.GetZones() {
+		l.Debugf("sweeper: destroying the instance server in (%s)", zone)
+		listServers, err := instanceAPI.ListServers(&instance.ListServersRequest{
+			Zone: zone,
+		}, scw.WithAllPages())
+		if err != nil {
+			l.Warningf("error listing servers in (%s) in sweeper: %s", zone, err)
+			continue
+		}
+
+		for _, srv := range listServers.Servers {
+			err := instanceAPI.DeleteServer(&instance.DeleteServerRequest{
+				Zone:     zone,
+				ServerID: srv.ID,
+			})
+			if err != nil {
+				return fmt.Errorf("error deleting server in sweeper: %s", err)
+			}
+		}
+	}
+
+	return nil
+}
 
 func TestAccScalewayInstanceServerMinimal1(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{

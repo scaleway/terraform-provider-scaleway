@@ -7,6 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
+	"github.com/scaleway/scaleway-sdk-go/scw"
 )
 
 func init() {
@@ -22,20 +23,29 @@ func testSweepComputeInstanceVolume(region string) error {
 		return fmt.Errorf("error getting client in sweeper: %s", err)
 	}
 	instanceAPI := instance.NewAPI(scwClient)
-
-	l.Debugf("sweeper: destroying the volumes in (%s)", region)
-
-	listVolumesResponse, err := instanceAPI.ListVolumes(&instance.ListVolumesRequest{})
+	scwRegion, err := scw.ParseRegion(region)
 	if err != nil {
-		return fmt.Errorf("error listing volumes in sweeper: %s", err)
+		return fmt.Errorf("error parsing region: %s", err)
 	}
 
-	for _, volume := range listVolumesResponse.Volumes {
-		err := instanceAPI.DeleteVolume(&instance.DeleteVolumeRequest{
-			VolumeID: volume.ID,
-		})
+	for _, zone := range scwRegion.GetZones() {
+		l.Debugf("sweeper: destroying the volumes in (%s)", zone)
+
+		listVolumesResponse, err := instanceAPI.ListVolumes(&instance.ListVolumesRequest{
+			Zone: zone,
+		}, scw.WithAllPages())
 		if err != nil {
-			return fmt.Errorf("error deleting volume in sweeper: %s", err)
+			return fmt.Errorf("error listing volumes in sweeper: %s", err)
+		}
+
+		for _, volume := range listVolumesResponse.Volumes {
+			err := instanceAPI.DeleteVolume(&instance.DeleteVolumeRequest{
+				Zone:     zone,
+				VolumeID: volume.ID,
+			})
+			if err != nil {
+				return fmt.Errorf("error deleting volume in sweeper: %s", err)
+			}
 		}
 	}
 
