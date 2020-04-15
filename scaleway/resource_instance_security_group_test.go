@@ -407,25 +407,15 @@ func testAccCheckScalewayInstanceSecurityGroupDestroy(s *terraform.State) error 
 }
 
 func testSweepComputeInstanceSecurityGroup(region string) error {
-	scwClient, err := sharedClientForRegion(region)
-	if err != nil {
-		return fmt.Errorf("error getting client in sweeper: %s", err)
-	}
-	instanceAPI := instance.NewAPI(scwClient)
-
-	scwRegion, err := scw.ParseRegion(region)
-	if err != nil {
-		return fmt.Errorf("error parsing region: %s", err)
-	}
-
-	for _, zone := range scwRegion.GetZones() {
+	return sweepZones(region, func(scwClient *scw.Client) error {
+		instanceAPI := instance.NewAPI(scwClient)
+		zone, _ := scwClient.GetDefaultZone()
 		l.Debugf("sweeper: destroying the security groups in (%s)", zone)
 
-		listResp, err := instanceAPI.ListSecurityGroups(&instance.ListSecurityGroupsRequest{
-			Zone: zone,
-		}, scw.WithAllPages())
+		listResp, err := instanceAPI.ListSecurityGroups(&instance.ListSecurityGroupsRequest{}, scw.WithAllPages())
 		if err != nil {
-			return fmt.Errorf("error listing security groups in sweeper: %s", err)
+			l.Warningf("error listing security groups in sweeper: %s", err)
+			return nil
 		}
 
 		for _, securityGroup := range listResp.SecurityGroups {
@@ -434,16 +424,15 @@ func testSweepComputeInstanceSecurityGroup(region string) error {
 				continue
 			}
 			err = instanceAPI.DeleteSecurityGroup(&instance.DeleteSecurityGroupRequest{
-				Zone:            zone,
 				SecurityGroupID: securityGroup.ID,
 			})
 			if err != nil {
 				return fmt.Errorf("error deleting security groups in sweeper: %s", err)
 			}
 		}
-	}
 
-	return nil
+		return nil
+	})
 }
 
 // Test that we can add / update / delete rules

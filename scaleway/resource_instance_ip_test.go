@@ -18,39 +18,27 @@ func init() {
 }
 
 func testSweepInstanceIP(region string) error {
-	scwClient, err := sharedClientForRegion(region)
-	if err != nil {
-		return fmt.Errorf("error getting client in sweeper: %s", err)
-	}
-	instanceAPI := instance.NewAPI(scwClient)
-
-	scwRegion, err := scw.ParseRegion(region)
-	if err != nil {
-		return fmt.Errorf("error parsing region: %s", err)
-	}
-
-	for _, zone := range scwRegion.GetZones() {
+	return sweepZones(region, func(scwClient *scw.Client) error {
+		instanceAPI := instance.NewAPI(scwClient)
+		zone, _ := scwClient.GetDefaultZone()
 		l.Debugf("sweeper: destroying the instance ip in (%s)", zone)
-		listIPs, err := instanceAPI.ListIPs(&instance.ListIPsRequest{
-			Zone: zone,
-		}, scw.WithAllPages())
+		listIPs, err := instanceAPI.ListIPs(&instance.ListIPsRequest{}, scw.WithAllPages())
 		if err != nil {
 			l.Warningf("error listing ips in (%s) in sweeper: %s", zone, err)
-			continue
+			return nil
 		}
 
 		for _, ip := range listIPs.IPs {
 			err := instanceAPI.DeleteIP(&instance.DeleteIPRequest{
-				Zone: zone,
-				IP:   ip.ID,
+				IP: ip.ID,
 			})
 			if err != nil {
 				return fmt.Errorf("error deleting ip in sweeper: %s", err)
 			}
 		}
-	}
 
-	return nil
+		return nil
+	})
 }
 
 func TestAccScalewayInstanceIP(t *testing.T) {

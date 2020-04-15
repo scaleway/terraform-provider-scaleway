@@ -18,17 +18,9 @@ func init() {
 }
 
 func testSweepComputeInstanceVolume(region string) error {
-	scwClient, err := sharedClientForRegion(region)
-	if err != nil {
-		return fmt.Errorf("error getting client in sweeper: %s", err)
-	}
-	instanceAPI := instance.NewAPI(scwClient)
-	scwRegion, err := scw.ParseRegion(region)
-	if err != nil {
-		return fmt.Errorf("error parsing region: %s", err)
-	}
-
-	for _, zone := range scwRegion.GetZones() {
+	return sweepZones(region, func(scwClient *scw.Client) error {
+		instanceAPI := instance.NewAPI(scwClient)
+		zone, _ := scwClient.GetDefaultZone()
 		l.Debugf("sweeper: destroying the volumes in (%s)", zone)
 
 		listVolumesResponse, err := instanceAPI.ListVolumes(&instance.ListVolumesRequest{
@@ -39,18 +31,19 @@ func testSweepComputeInstanceVolume(region string) error {
 		}
 
 		for _, volume := range listVolumesResponse.Volumes {
-			err := instanceAPI.DeleteVolume(&instance.DeleteVolumeRequest{
-				Zone:     zone,
-				VolumeID: volume.ID,
-			})
-			if err != nil {
-				return fmt.Errorf("error deleting volume in sweeper: %s", err)
+			if volume.Server == nil {
+				err := instanceAPI.DeleteVolume(&instance.DeleteVolumeRequest{
+					Zone:     zone,
+					VolumeID: volume.ID,
+				})
+				if err != nil {
+					return fmt.Errorf("error deleting volume in sweeper: %s", err)
+				}
 			}
 		}
-	}
 
-	return nil
-
+		return nil
+	})
 }
 
 func TestAccScalewayInstanceVolume_Basic(t *testing.T) {

@@ -19,39 +19,37 @@ func init() {
 }
 
 func testSweepInstanceServer(region string) error {
-	scwClient, err := sharedClientForRegion(region)
-	if err != nil {
-		return fmt.Errorf("error getting client in sweeper: %s", err)
-	}
-	instanceAPI := instance.NewAPI(scwClient)
-
-	scwRegion, err := scw.ParseRegion(region)
-	if err != nil {
-		return fmt.Errorf("error parsing region: %s", err)
-	}
-
-	for _, zone := range scwRegion.GetZones() {
+	return sweepZones(region, func(scwClient *scw.Client) error {
+		instanceAPI := instance.NewAPI(scwClient)
+		zone, _ := scwClient.GetDefaultZone()
 		l.Debugf("sweeper: destroying the instance server in (%s)", zone)
-		listServers, err := instanceAPI.ListServers(&instance.ListServersRequest{
-			Zone: zone,
-		}, scw.WithAllPages())
+		listServers, err := instanceAPI.ListServers(&instance.ListServersRequest{}, scw.WithAllPages())
 		if err != nil {
 			l.Warningf("error listing servers in (%s) in sweeper: %s", zone, err)
-			continue
+			return nil
 		}
 
 		for _, srv := range listServers.Servers {
-			err := instanceAPI.DeleteServer(&instance.DeleteServerRequest{
-				Zone:     zone,
-				ServerID: srv.ID,
-			})
-			if err != nil {
-				return fmt.Errorf("error deleting server in sweeper: %s", err)
+			if srv.State == instance.ServerStateStopped || srv.State == instance.ServerStateStoppedInPlace {
+				err := instanceAPI.DeleteServer(&instance.DeleteServerRequest{
+					ServerID: srv.ID,
+				})
+				if err != nil {
+					return fmt.Errorf("error deleting server in sweeper: %s", err)
+				}
+			} else if srv.State == instance.ServerStateRunning {
+				_, err := instanceAPI.ServerAction(&instance.ServerActionRequest{
+					ServerID: srv.ID,
+					Action:   instance.ServerActionTerminate,
+				})
+				if err != nil {
+					return fmt.Errorf("error terminating server in sweeper: %s", err)
+				}
 			}
 		}
-	}
 
-	return nil
+		return nil
+	})
 }
 
 func TestAccScalewayInstanceServerMinimal1(t *testing.T) {

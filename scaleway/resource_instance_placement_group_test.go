@@ -18,39 +18,27 @@ func init() {
 }
 
 func testSweepInstancePlacementGroup(region string) error {
-	scwClient, err := sharedClientForRegion(region)
-	if err != nil {
-		return fmt.Errorf("error getting client in sweeper: %s", err)
-	}
-	instanceAPI := instance.NewAPI(scwClient)
-
-	scwRegion, err := scw.ParseRegion(region)
-	if err != nil {
-		return fmt.Errorf("error parsing region: %s", err)
-	}
-
-	for _, zone := range scwRegion.GetZones() {
+	return sweepZones(region, func(scwClient *scw.Client) error {
+		instanceAPI := instance.NewAPI(scwClient)
+		zone, _ := scwClient.GetDefaultZone()
 		l.Debugf("sweeper: destroying the instance placement group in (%s)", zone)
-		listPlacementGroups, err := instanceAPI.ListPlacementGroups(&instance.ListPlacementGroupsRequest{
-			Zone: zone,
-		}, scw.WithAllPages())
+		listPlacementGroups, err := instanceAPI.ListPlacementGroups(&instance.ListPlacementGroupsRequest{}, scw.WithAllPages())
 		if err != nil {
 			l.Warningf("error listing placement groups in (%s) in sweeper: %s", zone, err)
-			continue
+			return nil
 		}
 
 		for _, pg := range listPlacementGroups.PlacementGroups {
 			err := instanceAPI.DeletePlacementGroup(&instance.DeletePlacementGroupRequest{
-				Zone:             zone,
 				PlacementGroupID: pg.ID,
 			})
 			if err != nil {
 				return fmt.Errorf("error deleting placement group in sweeper: %s", err)
 			}
 		}
-	}
 
-	return nil
+		return nil
+	})
 }
 
 func TestAccScalewayInstancePlacementGroup(t *testing.T) {

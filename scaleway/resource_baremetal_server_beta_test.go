@@ -18,39 +18,27 @@ func init() {
 }
 
 func testSweepBaremetalServer(region string) error {
-	scwClient, err := sharedClientForRegion(region)
-	if err != nil {
-		return fmt.Errorf("error getting client in sweeper: %s", err)
-	}
-	baremetalAPI := baremetal.NewAPI(scwClient)
-
-	scwRegion, err := scw.ParseRegion(region)
-	if err != nil {
-		return fmt.Errorf("error parsing region: %s", err)
-	}
-
-	for _, zone := range scwRegion.GetZones() {
+	return sweepZones(region, func(scwClient *scw.Client) error {
+		baremetalAPI := baremetal.NewAPI(scwClient)
+		zone, _ := scwClient.GetDefaultZone()
 		l.Debugf("sweeper: destroying the baremetal server in (%s)", zone)
-		listServers, err := baremetalAPI.ListServers(&baremetal.ListServersRequest{
-			Zone: zone,
-		}, scw.WithAllPages())
+		listServers, err := baremetalAPI.ListServers(&baremetal.ListServersRequest{}, scw.WithAllPages())
 		if err != nil {
 			l.Warningf("error listing servers in (%s) in sweeper: %s", zone, err)
-			continue
+			return nil
 		}
 
 		for _, server := range listServers.Servers {
 			_, err := baremetalAPI.DeleteServer(&baremetal.DeleteServerRequest{
-				Zone:     zone,
 				ServerID: server.ID,
 			})
 			if err != nil {
 				return fmt.Errorf("error deleting server in sweeper: %s", err)
 			}
 		}
-	}
 
-	return nil
+		return nil
+	})
 }
 
 func TestAccScalewayBaremetalServerBetaMinimal1(t *testing.T) {
