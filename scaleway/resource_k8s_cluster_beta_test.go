@@ -7,7 +7,40 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 	k8s "github.com/scaleway/scaleway-sdk-go/api/k8s/v1"
+	"github.com/scaleway/scaleway-sdk-go/scw"
 )
+
+func init() {
+	resource.AddTestSweepers("scaleway_k8s_cluster_beta", &resource.Sweeper{
+		Name: "scaleway_k8s_cluster_beta",
+		F:    testSweepK8SCluster,
+	})
+}
+
+func testSweepK8SCluster(region string) error {
+	scwClient, err := sharedClientForRegion(region)
+	if err != nil {
+		return fmt.Errorf("error getting client in sweeper: %s", err)
+	}
+	k8sAPI := k8s.NewAPI(scwClient)
+
+	l.Debugf("sweeper: destroying the k8s cluster in (%s)", region)
+	listClusters, err := k8sAPI.ListClusters(&k8s.ListClustersRequest{}, scw.WithAllPages())
+	if err != nil {
+		return fmt.Errorf("error listing clusters in (%s) in sweeper: %s", region, err)
+	}
+
+	for _, cluster := range listClusters.Clusters {
+		_, err := k8sAPI.DeleteCluster(&k8s.DeleteClusterRequest{
+			ClusterID: cluster.ID,
+		})
+		if err != nil {
+			return fmt.Errorf("error deleting cluster in sweeper: %s", err)
+		}
+	}
+
+	return nil
+}
 
 func TestAccScalewayK8SClusterDeprecated(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{

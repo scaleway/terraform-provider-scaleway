@@ -15,6 +15,24 @@ func TestMain(m *testing.M) {
 	resource.TestMain(m)
 }
 
+func sweepZones(region string, f func(scwClient *scw.Client) error) error {
+	scwRegion, err := scw.ParseRegion(region)
+	if err != nil {
+		return err
+	}
+	for _, zone := range scwRegion.GetZones() {
+		client, err := sharedClientForZone(zone.String())
+		if err != nil {
+			return err
+		}
+		err = f(client)
+		if err != nil {
+			return fmt.Errorf("error running sweepZones, ignoring: %s", err)
+		}
+	}
+	return nil
+}
+
 // sharedDeprecatedClientForRegion returns a scaleway deprecated client needed for the sweeper
 // functions for a given region {par1,ams1}
 func sharedDeprecatedClientForRegion(region string) (*api.API, error) {
@@ -39,6 +57,34 @@ func sharedClientForRegion(region string) (*scw.Client, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	// configures a default client for the region, using the above env vars
+	err = meta.bootstrapScwClient()
+	if err != nil {
+		return nil, fmt.Errorf("error getting Scaleway client: %s", err)
+	}
+
+	return meta.scwClient, nil
+}
+
+// sharedClientForZone returns a Scaleway client needed for the sweeper
+// functions for a given zone {fr-par-1,fr-par-2,nl-ams-1}
+func sharedClientForZone(zone string) (*scw.Client, error) {
+	scwZone, err := scw.ParseZone(zone)
+	if err != nil {
+		return nil, err
+	}
+	scwRegion, err := scwZone.Region()
+	if err != nil {
+		return nil, err
+	}
+
+	meta, err := buildTestConfigForTests(scwRegion.String())
+	if err != nil {
+		return nil, err
+	}
+
+	meta.DefaultZone = scwZone
 
 	// configures a default client for the region, using the above env vars
 	err = meta.bootstrapScwClient()

@@ -7,7 +7,39 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 	baremetal "github.com/scaleway/scaleway-sdk-go/api/baremetal/v1alpha1"
+	"github.com/scaleway/scaleway-sdk-go/scw"
 )
+
+func init() {
+	resource.AddTestSweepers("scaleway_baremetal_server_beta", &resource.Sweeper{
+		Name: "scaleway_baremetal_server_beta",
+		F:    testSweepBaremetalServer,
+	})
+}
+
+func testSweepBaremetalServer(region string) error {
+	return sweepZones(region, func(scwClient *scw.Client) error {
+		baremetalAPI := baremetal.NewAPI(scwClient)
+		zone, _ := scwClient.GetDefaultZone()
+		l.Debugf("sweeper: destroying the baremetal server in (%s)", zone)
+		listServers, err := baremetalAPI.ListServers(&baremetal.ListServersRequest{}, scw.WithAllPages())
+		if err != nil {
+			l.Warningf("error listing servers in (%s) in sweeper: %s", zone, err)
+			return nil
+		}
+
+		for _, server := range listServers.Servers {
+			_, err := baremetalAPI.DeleteServer(&baremetal.DeleteServerRequest{
+				ServerID: server.ID,
+			})
+			if err != nil {
+				return fmt.Errorf("error deleting server in sweeper: %s", err)
+			}
+		}
+
+		return nil
+	})
+}
 
 func TestAccScalewayBaremetalServerBetaMinimal1(t *testing.T) {
 	SSHKeyName := newRandomName("ssh-key")

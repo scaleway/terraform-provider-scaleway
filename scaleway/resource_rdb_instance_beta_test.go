@@ -7,8 +7,40 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 	"github.com/scaleway/scaleway-sdk-go/api/rdb/v1"
+	"github.com/scaleway/scaleway-sdk-go/scw"
 )
 
+func init() {
+	resource.AddTestSweepers("scaleway_rdb_instance_beta", &resource.Sweeper{
+		Name: "scaleway_rdb_instance_beta",
+		F:    testSweepRDBInstance,
+	})
+}
+
+func testSweepRDBInstance(region string) error {
+	scwClient, err := sharedClientForRegion(region)
+	if err != nil {
+		return fmt.Errorf("error getting client in sweeper: %s", err)
+	}
+	rdbAPI := rdb.NewAPI(scwClient)
+
+	l.Debugf("sweeper: destroying the rdb instance in (%s)", region)
+	listInstances, err := rdbAPI.ListInstances(&rdb.ListInstancesRequest{}, scw.WithAllPages())
+	if err != nil {
+		return fmt.Errorf("error listing rdb instances in (%s) in sweeper: %s", region, err)
+	}
+
+	for _, instance := range listInstances.Instances {
+		_, err := rdbAPI.DeleteInstance(&rdb.DeleteInstanceRequest{
+			InstanceID: instance.ID,
+		})
+		if err != nil {
+			return fmt.Errorf("error deleting rdb instance in sweeper: %s", err)
+		}
+	}
+
+	return nil
+}
 func TestAccScalewayRdbInstanceBeta(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
