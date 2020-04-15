@@ -3,7 +3,6 @@ package scaleway
 import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	lb "github.com/scaleway/scaleway-sdk-go/api/lb/v1"
-	"github.com/scaleway/scaleway-sdk-go/scw"
 )
 
 func resourceScalewayLbIPBeta() *schema.Resource {
@@ -49,10 +48,9 @@ func resourceScalewayLbIPBetaCreate(d *schema.ResourceData, m interface{}) error
 	createReq := &lb.CreateIPRequest{
 		Region:         region,
 		OrganizationID: d.Get("organization_id").(string),
+		Reverse:        expandStringPtr(d.Get("reverse")),
 	}
-	if reverse, ok := d.GetOk("reverse"); ok {
-		createReq.Reverse = scw.StringPtr(reverse.(string))
-	}
+
 	res, err := lbAPI.CreateIP(createReq)
 	if err != nil {
 		return err
@@ -87,11 +85,7 @@ func resourceScalewayLbIPBetaRead(d *schema.ResourceData, m interface{}) error {
 	_ = d.Set("ip_id", res.ID)
 	_ = d.Set("ip_address", res.IPAddress)
 	_ = d.Set("reverse", res.Reverse)
-	if res.LbID != nil {
-		_ = d.Set("lb_id", *res.LbID)
-	} else {
-		_ = d.Set("lb_id", "")
-	}
+	_ = d.Set("lb_ip", flattenStringPtr(res.LbID))
 
 	return nil
 }
@@ -106,7 +100,7 @@ func resourceScalewayLbIPBetaUpdate(d *schema.ResourceData, m interface{}) error
 		req := &lb.UpdateIPRequest{
 			Region:  region,
 			IPID:    ID,
-			Reverse: scw.StringPtr(d.Get("reverse").(string)),
+			Reverse: expandStringPtr(d.Get("reverse")),
 		}
 
 		_, err = lbAPI.UpdateIP(req)
