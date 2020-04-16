@@ -27,12 +27,29 @@ type RegionalID struct {
 	Region scw.Region
 }
 
-func expandRegionalID(id interface{}) RegionalID {
-	region, ID, _ := parseRegionalID(id.(string))
+func (z RegionalID) String() string {
+	return fmt.Sprintf("%s/%s", z.Region, z.ID)
+}
+
+func newRegionalID(region scw.Region, id string) RegionalID {
 	return RegionalID{
-		ID:     ID,
+		ID:     id,
 		Region: region,
 	}
+}
+
+func expandRegionalID(id interface{}) RegionalID {
+	regionalID := RegionalID{}
+	tab := strings.SplitN(id.(string), "/", -1)
+	if len(tab) != 2 {
+		regionalID.ID = id.(string)
+	} else {
+		region, _ := scw.ParseRegion(tab[0])
+		regionalID.ID = tab[1]
+		regionalID.Region = region
+	}
+
+	return regionalID
 }
 
 // ZonedID represents an ID that is linked with a zone, eg fr-par-1/11111111-1111-1111-1111-111111111111
@@ -41,12 +58,29 @@ type ZonedID struct {
 	Zone scw.Zone
 }
 
-func expandZonedID(id interface{}) ZonedID {
-	zone, ID, _ := parseZonedID(id.(string))
+func (z ZonedID) String() string {
+	return fmt.Sprintf("%s/%s", z.Zone, z.ID)
+}
+
+func newZonedID(zone scw.Zone, id string) ZonedID {
 	return ZonedID{
-		ID:   ID,
+		ID:   id,
 		Zone: zone,
 	}
+}
+
+func expandZonedID(id interface{}) ZonedID {
+	zonedID := ZonedID{}
+	tab := strings.SplitN(id.(string), "/", -1)
+	if len(tab) != 2 {
+		zonedID.ID = id.(string)
+	} else {
+		zone, _ := scw.ParseZone(tab[0])
+		zonedID.ID = tab[1]
+		zonedID.Zone = zone
+	}
+
+	return zonedID
 }
 
 // Bool returns a pointer to of the bool value passed in.
