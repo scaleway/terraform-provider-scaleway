@@ -21,6 +21,68 @@ import (
 	"golang.org/x/xerrors"
 )
 
+// RegionalID represents an ID that is linked with a region, eg fr-par/11111111-1111-1111-1111-111111111111
+type RegionalID struct {
+	ID     string
+	Region scw.Region
+}
+
+func (z RegionalID) String() string {
+	return fmt.Sprintf("%s/%s", z.Region, z.ID)
+}
+
+func newRegionalID(region scw.Region, id string) RegionalID {
+	return RegionalID{
+		ID:     id,
+		Region: region,
+	}
+}
+
+func expandRegionalID(id interface{}) RegionalID {
+	regionalID := RegionalID{}
+	tab := strings.SplitN(id.(string), "/", -1)
+	if len(tab) != 2 {
+		regionalID.ID = id.(string)
+	} else {
+		region, _ := scw.ParseRegion(tab[0])
+		regionalID.ID = tab[1]
+		regionalID.Region = region
+	}
+
+	return regionalID
+}
+
+// ZonedID represents an ID that is linked with a zone, eg fr-par-1/11111111-1111-1111-1111-111111111111
+type ZonedID struct {
+	ID   string
+	Zone scw.Zone
+}
+
+func (z ZonedID) String() string {
+	return fmt.Sprintf("%s/%s", z.Zone, z.ID)
+}
+
+func newZonedID(zone scw.Zone, id string) ZonedID {
+	return ZonedID{
+		ID:   id,
+		Zone: zone,
+	}
+}
+
+func expandZonedID(id interface{}) ZonedID {
+	zonedID := ZonedID{}
+	tab := strings.SplitN(id.(string), "/", -1)
+	if len(tab) != 2 {
+		zonedID.ID = id.(string)
+	} else {
+		zone, _ := scw.ParseZone(tab[0])
+		zonedID.ID = tab[1]
+		zonedID.Zone = zone
+	}
+
+	return zonedID
+}
+
 // Bool returns a pointer to of the bool value passed in.
 func Bool(val bool) *bool {
 	return &val
@@ -218,7 +280,7 @@ func withStoppedServer(scaleway *api.API, serverID string, run func(*api.Server)
 func parseLocalizedID(localizedID string) (locality string, ID string, err error) {
 	tab := strings.SplitN(localizedID, "/", -1)
 	if len(tab) != 2 {
-		return "", "", fmt.Errorf("cant parse localized id: %s", localizedID)
+		return "", localizedID, fmt.Errorf("cant parse localized id: %s", localizedID)
 	}
 	return tab[0], tab[1], nil
 }

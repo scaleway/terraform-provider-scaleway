@@ -62,7 +62,7 @@ func TestAccScalewayInstanceServerMinimal1(t *testing.T) {
 				Config: testAccCheckScalewayInstanceServerConfigMinimal("f974feac-abae-4365-b988-8ec7d1cec10d"),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayInstanceServerExists("scaleway_instance_server.base"),
-					resource.TestCheckResourceAttr("scaleway_instance_server.base", "image", "f974feac-abae-4365-b988-8ec7d1cec10d"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.base", "image", "fr-par-1/f974feac-abae-4365-b988-8ec7d1cec10d"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "type", "DEV1-S"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "root_volume.0.delete_on_termination", "true"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "root_volume.0.size_in_gb", "20"),
@@ -107,7 +107,7 @@ resource "scaleway_instance_server" "base" {
 }`,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayInstanceServerExists("scaleway_instance_server.base"),
-					resource.TestCheckResourceAttr("scaleway_instance_server.base", "image", "f974feac-abae-4365-b988-8ec7d1cec10d"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.base", "image", "fr-par-1/f974feac-abae-4365-b988-8ec7d1cec10d"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "type", "C2S"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "boot_type", "bootscript"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "root_volume.0.delete_on_termination", "true"),
@@ -624,7 +624,7 @@ func TestAccScalewayInstanceServerImageDataSource(t *testing.T) {
 				`,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayInstanceServerExists("scaleway_instance_server.base"),
-					resource.TestCheckResourceAttr("scaleway_instance_server.base", "image", "6651f88f-45af-4b93-95e8-3931b74f6acc"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.base", "image", "fr-par-1/6651f88f-45af-4b93-95e8-3931b74f6acc"),
 				),
 			},
 			// Ensure that image diffSuppressFunc results in no plan.
