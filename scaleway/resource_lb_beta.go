@@ -3,6 +3,7 @@ package scaleway
 import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	lb "github.com/scaleway/scaleway-sdk-go/api/lb/v1"
+	"github.com/scaleway/scaleway-sdk-go/scw"
 )
 
 func resourceScalewayLbBeta() *schema.Resource {
@@ -37,9 +38,11 @@ func resourceScalewayLbBeta() *schema.Resource {
 				Description: "Array of tags to associate with the load-balancer",
 			},
 			"ip_id": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The load-balance public IP ID",
+				Type:             schema.TypeString,
+				Required:         true,
+				Description:      "The load-balance public IP ID",
+				ForceNew:         true,
+				DiffSuppressFunc: diffSuppressFuncLocality,
 			},
 			"ip_address": {
 				Type:        schema.TypeString,
@@ -60,10 +63,12 @@ func resourceScalewayLbBetaCreate(d *schema.ResourceData, m interface{}) error {
 
 	createReq := &lb.CreateLbRequest{
 		Region:         region,
+		IPID:           scw.StringPtr(expandID(d.Get("ip_id").(string))),
 		OrganizationID: d.Get("organization_id").(string),
 		Name:           expandOrGenerateString(d.Get("name"), "lb"),
 		Type:           d.Get("type").(string),
 	}
+
 	if raw, ok := d.GetOk("tags"); ok {
 		for _, tag := range raw.([]interface{}) {
 			createReq.Tags = append(createReq.Tags, tag.(string))
@@ -112,7 +117,7 @@ func resourceScalewayLbBetaRead(d *schema.ResourceData, m interface{}) error {
 	_ = d.Set("organization_id", res.OrganizationID)
 	_ = d.Set("tags", res.Tags)
 	_ = d.Set("type", res.Type)
-	_ = d.Set("ip_id", res.IP[0].ID)
+	_ = d.Set("ip_id", newRegionalId(region, res.IP[0].ID))
 	_ = d.Set("ip_address", res.IP[0].IPAddress)
 
 	return nil
@@ -149,10 +154,9 @@ func resourceScalewayLbBetaDelete(d *schema.ResourceData, m interface{}) error {
 	}
 
 	err = lbAPI.DeleteLb(&lb.DeleteLbRequest{
-		Region: region,
-		LbID:   ID,
-		// This parameter will probably be breaking change when ip pre reservation will exist.
-		ReleaseIP: true,
+		Region:    region,
+		LbID:      ID,
+		ReleaseIP: false,
 	})
 
 	if err != nil && !is404Error(err) {
