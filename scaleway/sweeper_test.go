@@ -114,6 +114,10 @@ func buildTestConfigForTests(region string) (*Meta, error) {
 		return nil, fmt.Errorf("empty SCW_SECRET_KEY")
 	}
 
+	accessKey := os.Getenv("SCW_ACCESS_KEY")
+	if accessKey == "" {
+		return nil, fmt.Errorf("empty SCW_ACCESS_KEY")
+	}
 	parsedRegion, err := scw.ParseRegion(region)
 	if err != nil {
 		return nil, err
@@ -122,6 +126,7 @@ func buildTestConfigForTests(region string) (*Meta, error) {
 	return &Meta{
 		DefaultOrganizationID: organizationID,
 		SecretKey:             secretKey,
+		AccessKey:             accessKey,
 		DefaultRegion:         parsedRegion,
 	}, nil
 }
