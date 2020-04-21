@@ -128,6 +128,7 @@ func flattenBaremetalIPs(ips []*baremetal.IP) interface{} {
 			"id":      ip.ID,
 			"address": ip.Address.String(),
 			"reverse": ip.Reverse,
+			"version": ip.Version.String(),
 		})
 	}
 	return flattendIPs

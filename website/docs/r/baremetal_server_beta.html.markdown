@@ -64,6 +64,7 @@ In addition to all above arguments, the following attributes are exported:
   - `id` - The ID of the IP.
   - `address` - The address of the IP.
   - `reverse` - The reverse of the IP.
+  - `type` - The type of the IP.
 - `domain` - The domain of the server.
 
 ## Import
