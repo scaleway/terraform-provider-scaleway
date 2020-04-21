@@ -126,7 +126,7 @@ func flattenBaremetalIPs(ips []*baremetal.IP) interface{} {
 	for _, ip := range ips {
 		flattendIPs = append(flattendIPs, map[string]interface{}{
 			"id":      ip.ID,
-			"address": ip.Address,
+			"address": ip.Address.String(),
 			"reverse": ip.Reverse,
 		})
 	}
