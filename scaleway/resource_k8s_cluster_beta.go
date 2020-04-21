@@ -388,6 +388,10 @@ func resourceScalewayK8SClusterBetaCreate(d *schema.ResourceData, m interface{})
 		autoscalerReq.ScaleDownDelayAfterAdd = scw.StringPtr(scaleDownDelayAfterAdd.(string))
 	}
 
+	if scaleDownUneededTime, ok := d.GetOk("autoscaler_config.0.scale_down_unneeded_time"); ok {
+		autoscalerReq.ScaleDownUnneededTime = scw.StringPtr(scaleDownUneededTime.(string))
+	}
+
 	if estimator, ok := d.GetOk("autoscaler_config.0.estimator"); ok {
 		autoscalerReq.Estimator = k8s.AutoscalerEstimator(estimator.(string))
 	}
@@ -855,6 +859,42 @@ func resourceScalewayK8SClusterBetaUpdate(d *schema.ResourceData, m interface{})
 		updateRequest.AutoUpgrade.MaintenanceWindow.Day = k8s.MaintenanceWindowDayOfTheWeek(d.Get("auto_upgrade.0.maintenance_window_day").(string))
 	}
 
+	autoscalerReq := &k8s.UpdateClusterRequestAutoscalerConfig{}
+
+	if d.HasChange("autoscaler_config.0.disable_scale_down") {
+		autoscalerReq.ScaleDownDisabled = scw.BoolPtr((d.Get("autoscaler_config.0.disable_scale_down").(bool)))
+	}
+
+	if d.HasChange("autoscaler_config.0.scale_down_delay_after_add") {
+		autoscalerReq.ScaleDownDelayAfterAdd = scw.StringPtr(d.Get("autoscaler_config.0.scale_down_delay_after_add").(string))
+	}
+
+	if d.HasChange("autoscaler_config.0.scale_down_unneeded_time") {
+		autoscalerReq.ScaleDownUnneededTime = scw.StringPtr(d.Get("autoscaler_config.0.scale_down_unneeded_time").(string))
+	}
+
+	if d.HasChange("autoscaler_config.0.estimator") {
+		autoscalerReq.Estimator = k8s.AutoscalerEstimator(d.Get("autoscaler_config.0.estimator").(string))
+	}
+
+	if d.HasChange("autoscaler_config.0.expander") {
+		autoscalerReq.Expander = k8s.AutoscalerExpander(d.Get("autoscaler_config.0.expander").(string))
+	}
+
+	if d.HasChange("autoscaler_config.0.ignore_daemonsets_utilization") {
+		autoscalerReq.IgnoreDaemonsetsUtilization = scw.BoolPtr(d.Get("autoscaler_config.0.ignore_daemonsets_utilization").(bool))
+	}
+
+	if d.HasChange("autoscaler_config.0.balance_similar_node_groups") {
+		autoscalerReq.BalanceSimilarNodeGroups = scw.BoolPtr(d.Get("autoscaler_config.0.balance_similar_node_groups").(bool))
+	}
+
+	if d.HasChange("autoscaler_config.0.expendable_pods_priority_cutoff") {
+		autoscalerReq.ExpendablePodsPriorityCutoff = scw.Int32Ptr(int32(d.Get("autoscaler_config.0.expendable_pods_priority_cutoff").(int)))
+	}
+
+	updateRequest.AutoscalerConfig = autoscalerReq
+
 	////
 	// Apply Update
 	////
@@ -941,6 +981,12 @@ func autoscalerConfigSchema() *schema.Resource {
 				Default:     "10m",
 				Description: "How long after scale up that scale down evaluation resumes",
 			},
+			"scale_down_unneeded_time": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Default:     "10m",
+				Description: "How long a node should be unneeded before it is eligible for scale down",
+			},
 			"estimator": {
 				Type:        schema.TypeString,
 				Optional:    true,
@@ -948,7 +994,6 @@ func autoscalerConfigSchema() *schema.Resource {
 				Description: "Type of resource estimator to be used in scale up",
 				ValidateFunc: validation.StringInSlice([]string{
 					k8s.AutoscalerEstimatorBinpacking.String(),
-					k8s.AutoscalerEstimatorOldbinpacking.String(),
 				}, false),
 			},
 			"expander": {

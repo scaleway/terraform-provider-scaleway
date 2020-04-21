@@ -148,6 +148,7 @@ func clusterAutoscalerConfigFlatten(cluster *k8s.Cluster) []map[string]interface
 	autoscalerConfig := map[string]interface{}{}
 	autoscalerConfig["disable_scale_down"] = cluster.AutoscalerConfig.ScaleDownDisabled
 	autoscalerConfig["scale_down_delay_after_add"] = cluster.AutoscalerConfig.ScaleDownDelayAfterAdd
+	autoscalerConfig["scale_down_unneeded_time"] = cluster.AutoscalerConfig.ScaleDownUnneededTime
 	autoscalerConfig["estimator"] = cluster.AutoscalerConfig.Estimator
 	autoscalerConfig["expander"] = cluster.AutoscalerConfig.Expander
 	autoscalerConfig["ignore_daemonsets_utilization"] = cluster.AutoscalerConfig.IgnoreDaemonsetsUtilization
