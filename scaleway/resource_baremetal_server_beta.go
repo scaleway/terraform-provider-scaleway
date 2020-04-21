@@ -84,6 +84,11 @@ func resourceScalewayBaremetalServerBeta() *schema.Resource {
 							Computed:    true,
 							Description: "The ID of the IP",
 						},
+						"version": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The version of the IP",
+						},
 						"address": {
 							Type:        schema.TypeString,
 							Computed:    true,
