@@ -11,6 +11,7 @@ import (
 	"net"
 	"net/http"
 	"net/url"
+	"strings"
 	"time"
 
 	"github.com/scaleway/scaleway-sdk-go/internal/errors"
@@ -29,6 +30,7 @@ var (
 	_ http.Header
 	_ bytes.Reader
 	_ time.Time
+	_ = strings.Join
 
 	_ scw.ScalewayRequest
 	_ marshaler.Duration
@@ -617,6 +619,8 @@ type ClusterAutoscalerConfig struct {
 	//
 	// Pods with priority below cutoff will be expendable. They can be killed without any consideration during scale down and they don't cause scale up. Pods with null priority (PodPriority disabled) are non expendable.
 	ExpendablePodsPriorityCutoff int32 `json:"expendable_pods_priority_cutoff"`
+	// ScaleDownUnneededTime: how long a node should be unneeded before it is eligible for scale down
+	ScaleDownUnneededTime string `json:"scale_down_unneeded_time"`
 }
 
 // CreateClusterRequestAutoUpgrade: create cluster request. auto upgrade
@@ -649,6 +653,8 @@ type CreateClusterRequestAutoscalerConfig struct {
 	//
 	// Pods with priority below cutoff will be expendable. They can be killed without any consideration during scale down and they don't cause scale up. Pods with null priority (PodPriority disabled) are non expendable.
 	ExpendablePodsPriorityCutoff *int32 `json:"expendable_pods_priority_cutoff"`
+	// ScaleDownUnneededTime: how long a node should be unneeded before it is eligible for scale down
+	ScaleDownUnneededTime *string `json:"scale_down_unneeded_time"`
 }
 
 // CreateClusterRequestPoolConfig: create cluster request. pool config
@@ -836,6 +842,8 @@ type UpdateClusterRequestAutoscalerConfig struct {
 	//
 	// Pods with priority below cutoff will be expendable. They can be killed without any consideration during scale down and they don't cause scale up. Pods with null priority (PodPriority disabled) are non expendable.
 	ExpendablePodsPriorityCutoff *int32 `json:"expendable_pods_priority_cutoff"`
+	// ScaleDownUnneededTime: how long a node should be unneeded before it is eligible for scale down
+	ScaleDownUnneededTime *string `json:"scale_down_unneeded_time"`
 }
 
 // Version: version

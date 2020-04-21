@@ -112,6 +112,20 @@ func (c *Client) GetDefaultZone() (zone Zone, exists bool) {
 	return Zone(""), false
 }
 
+func (c *Client) GetSecretKey() (secretKey string, exists bool) {
+	if token, isToken := c.auth.(*auth.Token); isToken {
+		return token.SecretKey, isToken
+	}
+	return "", false
+}
+
+func (c *Client) GetAccessKey() (accessKey string, exists bool) {
+	if token, isToken := c.auth.(*auth.Token); isToken {
+		return token.AccessKey, isToken
+	}
+	return "", false
+}
+
 // GetDefaultPageSize returns the default page size of the client.
 // This value can be set in the client option
 // WithDefaultPageSize(). Be aware this value can be empty.
