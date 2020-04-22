@@ -117,6 +117,8 @@ The following arguments are supported:
 
   - `scale_down_delay_after_add` - (Defaults to `10m`) How long after scale up that scale down evaluation resumes.
 
+  - `scale_down_unneeded_time` - (Default to `10m`) How long a node should be unneeded before it is eligible for scale down.
+
   - `estimator` - (Defaults to `binpacking`) Type of resource estimator to be used in scale up.
 
   - `expander` - (Default to `random`) Type of node group expander to be used in scale up.

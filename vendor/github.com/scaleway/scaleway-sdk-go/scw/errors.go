@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/scaleway/scaleway-sdk-go/internal/errors"
+	"github.com/scaleway/scaleway-sdk-go/validation"
 )
 
 // SdkError is a base interface for all Scaleway SDK errors.
@@ -160,6 +161,14 @@ func unmarshalNonStandardError(errorType string, body []byte) error {
 	switch errorType {
 	// Only in instance API.
 
+	case "unknown_resource":
+		unknownResourceError := &UnknownResource{RawBody: body}
+		err := json.Unmarshal(body, unknownResourceError)
+		if err != nil {
+			return errors.Wrap(err, "could not parse error %s response body", errorType)
+		}
+		return unknownResourceError.ToResourceNotFoundError()
+
 	case "invalid_request_error":
 		invalidRequestError := &InvalidRequestError{RawBody: body}
 		err := json.Unmarshal(body, invalidRequestError)
@@ -223,6 +232,27 @@ func (e *InvalidArgumentsError) Error() string {
 }
 func (e *InvalidArgumentsError) GetRawBody() json.RawMessage {
 	return e.RawBody
+}
+
+// UnknownResource is only returned by the instance API.
+// Warning: this is not a standard error.
+type UnknownResource struct {
+	Message string          `json:"message"`
+	RawBody json.RawMessage `json:"-"`
+}
+
+// ToSdkError returns a standard error InvalidArgumentsError or nil Fields is nil.
+func (e *UnknownResource) ToResourceNotFoundError() SdkError {
+	resourceNotFound := &ResourceNotFoundError{
+		RawBody: e.RawBody,
+	}
+
+	resourceNotFound.ResourceID = strings.TrimSuffix(e.Message, `" not found`)
+	resourceNotFound.ResourceID = strings.TrimPrefix(resourceNotFound.ResourceID, `"`)
+	if !validation.IsUUID(resourceNotFound.ResourceID) {
+		return nil
+	}
+	return resourceNotFound
 }
 
 // InvalidRequestError is only returned by the instance API.
