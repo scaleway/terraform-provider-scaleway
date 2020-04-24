@@ -2,6 +2,7 @@ package scaleway
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
@@ -353,17 +354,11 @@ func resourceScalewayK8SClusterBetaCreate(d *schema.ResourceData, m interface{})
 		description = ""
 	}
 
-	version, ok := d.GetOk("version")
-	if !ok {
-		version = ""
-	}
-
 	req := &k8s.CreateClusterRequest{
 		Region:           region,
 		OrganizationID:   d.Get("organization_id").(string),
 		Name:             expandOrGenerateString(d.Get("name"), "cluster"),
 		Description:      description.(string),
-		Version:          version.(string),
 		Cni:              k8s.CNI(d.Get("cni").(string)),
 		Tags:             expandStrings(d.Get("tags")),
 		FeatureGates:     expandStrings(d.Get("feature_gates")),
@@ -412,8 +407,8 @@ func resourceScalewayK8SClusterBetaCreate(d *schema.ResourceData, m interface{})
 
 	req.AutoscalerConfig = autoscalerReq
 
-	autoUpgradeEnable, okAutoUpgradeEnable := d.GetOk("auto_upgrade.0.enable")
-	autoUpgradeStartHour, okAutoUpgradeStartHour := d.GetOk("auto_upgrade.0.maintenance_window_start_hour")
+	autoUpgradeEnable, okAutoUpgradeEnable := d.GetOkExists("auto_upgrade.0.enable")
+	autoUpgradeStartHour, okAutoUpgradeStartHour := d.GetOkExists("auto_upgrade.0.maintenance_window_start_hour")
 	autoUpgradeDay, okAutoUpgradeDay := d.GetOk("auto_upgrade.0.maintenance_window_day")
 
 	// check if either all or none of the auto upgrade attribute are set.
@@ -423,15 +418,34 @@ func resourceScalewayK8SClusterBetaCreate(d *schema.ResourceData, m interface{})
 		return fmt.Errorf("all field or zero field of auto_upgrade must be set")
 	}
 
+	clusterAutoUpgradeEnabled := false
+
 	if okAutoUpgradeDay && okAutoUpgradeEnable && okAutoUpgradeStartHour {
+		clusterAutoUpgradeEnabled = autoUpgradeEnable.(bool)
 		req.AutoUpgrade = &k8s.CreateClusterRequestAutoUpgrade{
-			Enable: autoUpgradeEnable.(bool),
+			Enable: clusterAutoUpgradeEnabled,
 			MaintenanceWindow: &k8s.MaintenanceWindow{
 				StartHour: uint32(autoUpgradeStartHour.(int)),
 				Day:       k8s.MaintenanceWindowDayOfTheWeek(autoUpgradeDay.(string)),
 			},
 		}
 	}
+
+	version := d.Get("version").(string)
+	versionIsOnlyMinor := len(strings.Split(version, ".")) == 2
+
+	if versionIsOnlyMinor != clusterAutoUpgradeEnabled {
+		return fmt.Errorf("minor version x.y must be used with auto upgrade enabled")
+	}
+
+	if versionIsOnlyMinor {
+		version, err = k8sGetLatestVersionFromMinor(k8sAPI, version)
+		if err != nil {
+			return err
+		}
+	}
+
+	req.Version = version
 
 	if _, ok := d.GetOk("default_pool"); ok {
 		defaultPoolReq := &k8s.CreateClusterRequestPoolConfig{
@@ -600,7 +614,6 @@ func resourceScalewayK8SClusterBetaRead(d *schema.ResourceData, m interface{}) e
 	_ = d.Set("region", string(region))
 	_ = d.Set("name", response.Name)
 	_ = d.Set("description", response.Description)
-	_ = d.Set("version", response.Version)
 	_ = d.Set("cni", response.Cni)
 	_ = d.Set("tags", response.Tags)
 	_ = d.Set("created_at", response.CreatedAt)
@@ -609,6 +622,16 @@ func resourceScalewayK8SClusterBetaRead(d *schema.ResourceData, m interface{}) e
 	_ = d.Set("wildcard_dns", response.DNSWildcard)
 	_ = d.Set("status", response.Status.String())
 	_ = d.Set("upgrade_available", response.UpgradeAvailable)
+
+	// if autoupgrade is enabled, we only set the minor k8s version (x.y)
+	version := response.Version
+	if response.AutoUpgrade != nil && response.AutoUpgrade.Enabled {
+		version, err = k8sGetMinorVersionFromFull(version)
+		if err != nil {
+			return err
+		}
+	}
+	_ = d.Set("version", version)
 
 	// autoscaler_config
 	_ = d.Set("autoscaler_config", clusterAutoscalerConfigFlatten(response))
@@ -818,26 +841,6 @@ func resourceScalewayK8SClusterBetaUpdate(d *schema.ResourceData, m interface{})
 		updateRequest.AdmissionPlugins = scw.StringsPtr(expandStrings(d.Get("admission_plugins")))
 	}
 
-	if d.HasChange("version") {
-		versions, err := k8sAPI.ListClusterAvailableVersions(&k8s.ListClusterAvailableVersionsRequest{
-			Region:    region,
-			ClusterID: clusterID,
-		})
-		if err != nil {
-			return err
-		}
-
-		for _, version := range versions.Versions {
-			if version.Name == d.Get("version").(string) {
-				canUpgrade = true
-				break
-			}
-		}
-		if !canUpgrade {
-			return fmt.Errorf("cluster %s can not be upgraded to version %s", clusterID, d.Get("version").(string))
-		}
-	}
-
 	if d.HasChange("ingress") {
 		updateRequest.Ingress = k8s.Ingress(d.Get("ingress").(string))
 	}
@@ -847,6 +850,7 @@ func resourceScalewayK8SClusterBetaUpdate(d *schema.ResourceData, m interface{})
 	}
 
 	updateRequest.AutoUpgrade = &k8s.UpdateClusterRequestAutoUpgrade{}
+	autoupgradeEnabled := d.Get("auto_upgrade.0.enable").(bool)
 
 	if d.HasChange("auto_upgrade.0.enable") {
 		updateRequest.AutoUpgrade.Enable = scw.BoolPtr(d.Get("auto_upgrade.0.enable").(bool))
@@ -857,6 +861,57 @@ func resourceScalewayK8SClusterBetaUpdate(d *schema.ResourceData, m interface{})
 	}
 	if d.HasChange("auto_upgrade.0.maintenance_window_day") {
 		updateRequest.AutoUpgrade.MaintenanceWindow.Day = k8s.MaintenanceWindowDayOfTheWeek(d.Get("auto_upgrade.0.maintenance_window_day").(string))
+	}
+
+	version := d.Get("version").(string)
+	versionIsOnlyMinor := len(strings.Split(version, ".")) == 2
+
+	if versionIsOnlyMinor != autoupgradeEnabled {
+		return fmt.Errorf("minor version x.y must be used with auto upgrades enabled")
+	}
+
+	if versionIsOnlyMinor {
+		version, err = k8sGetLatestVersionFromMinor(k8sAPI, version)
+		if err != nil {
+			return err
+		}
+	}
+
+	if d.HasChange("version") {
+		versions, err := k8sAPI.ListClusterAvailableVersions(&k8s.ListClusterAvailableVersionsRequest{
+			Region:    region,
+			ClusterID: clusterID,
+		})
+		if err != nil {
+			return err
+		}
+
+		for _, v := range versions.Versions {
+			if v.Name == version {
+				canUpgrade = true
+				break
+			}
+		}
+		if !canUpgrade {
+			// maybe it's a change from minor to patch or patch to minor
+			// we need to check the current version
+
+			clusterResp, err := k8sAPI.GetCluster(&k8s.GetClusterRequest{
+				ClusterID: clusterID,
+				Region:    region,
+			})
+			if err != nil {
+				return err
+			}
+
+			if clusterResp.Version == version {
+				// no upgrades if same version
+				canUpgrade = false
+			} else {
+				// we really can't upgrade
+				return fmt.Errorf("cluster %s can not be upgraded to version %s", clusterID, d.Get("version").(string))
+			}
+		}
 	}
 
 	autoscalerReq := &k8s.UpdateClusterRequestAutoscalerConfig{}
@@ -915,7 +970,7 @@ func resourceScalewayK8SClusterBetaUpdate(d *schema.ResourceData, m interface{})
 		upgradeRequest := &k8s.UpgradeClusterRequest{
 			Region:       region,
 			ClusterID:    clusterID,
-			Version:      d.Get("version").(string),
+			Version:      version,
 			UpgradePools: true,
 		}
 		_, err = k8sAPI.UpgradeCluster(upgradeRequest)
