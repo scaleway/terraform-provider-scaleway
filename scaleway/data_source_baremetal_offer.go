@@ -8,9 +8,9 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 )
 
-func dataSourceScalewayBaremetalOfferBeta() *schema.Resource {
+func dataSourceScalewayBaremetalOffer() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceScalewayBaremetalOfferBetaRead,
+		Read: dataSourceScalewayBaremetalOfferRead,
 
 		Schema: map[string]*schema.Schema{
 			"name": {
@@ -129,7 +129,7 @@ func dataSourceScalewayBaremetalOfferBeta() *schema.Resource {
 	}
 }
 
-func dataSourceScalewayBaremetalOfferBetaRead(d *schema.ResourceData, m interface{}) error {
+func dataSourceScalewayBaremetalOfferRead(d *schema.ResourceData, m interface{}) error {
 	meta := m.(*Meta)
 	baremetalApi, fallBackZone, err := baremetalAPIWithZone(d, meta)
 	if err != nil {

@@ -560,6 +560,13 @@ func flattenLabelUUID(label, uuid string) string {
 	return label + "/" + uuid
 }
 
+func expandStringWithDefault(data interface{}, defaultValue string) string {
+	if data == nil || data.(string) == "" {
+		return defaultValue
+	}
+	return data.(string)
+}
+
 func expandStrings(data interface{}) []string {
 	if data == nil {
 		return nil

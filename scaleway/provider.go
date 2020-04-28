@@ -188,7 +188,7 @@ func Provider() terraform.ResourceProvider {
 
 		ResourcesMap: map[string]*schema.Resource{
 			"scaleway_account_ssh_key":               resourceScalewayAccountSSKKey(),
-			"scaleway_baremetal_server_beta":         resourceScalewayBaremetalServerBeta(),
+			"scaleway_baremetal_server":              resourceScalewayBaremetalServer(),
 			"scaleway_bucket":                        resourceScalewayBucket(),
 			"scaleway_instance_ip":                   resourceScalewayInstanceIP(),
 			"scaleway_instance_ip_reverse_dns":       resourceScalewayInstanceIPReverseDns(),
@@ -229,7 +229,7 @@ func Provider() terraform.ResourceProvider {
 			"scaleway_instance_server":         dataSourceScalewayInstanceServer(),
 			"scaleway_instance_image":          dataSourceScalewayInstanceImage(),
 			"scaleway_instance_volume":         dataSourceScalewayInstanceVolume(),
-			"scaleway_baremetal_offer_beta":    dataSourceScalewayBaremetalOfferBeta(),
+			"scaleway_baremetal_offer":         dataSourceScalewayBaremetalOffer(),
 			"scaleway_marketplace_image_beta":  dataSourceScalewayMarketplaceImageBeta(),
 			"scaleway_registry_namespace_beta": dataSourceScalewayRegistryNamespaceBeta(),
 			"scaleway_registry_image_beta":     dataSourceScalewayRegistryImageBeta(),
