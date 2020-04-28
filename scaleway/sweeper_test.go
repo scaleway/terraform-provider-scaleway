@@ -27,7 +27,7 @@ func sweepZones(region string, f func(scwClient *scw.Client) error) error {
 		}
 		err = f(client)
 		if err != nil {
-			return fmt.Errorf("error running sweepZones, ignoring: %s", err)
+			l.Warningf("error running sweepZones, ignoring: %s", err)
 		}
 	}
 	return nil
