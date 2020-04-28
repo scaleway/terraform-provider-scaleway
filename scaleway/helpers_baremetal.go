@@ -27,12 +27,12 @@ func baremetalAPIWithZone(d *schema.ResourceData, m interface{}) (*baremetal.API
 }
 
 // instanceAPIWithZoneAndID returns an baremetal API with zone and ID extracted from the state
-func baremetalAPIWithZoneAndID(m interface{}, id string) (*baremetal.API, scw.Zone, string, error) {
+func baremetalAPIWithZoneAndID(m interface{}, id string) (*baremetal.API, ZonedID, error) {
 	meta := m.(*Meta)
 	baremetalAPI := baremetal.NewAPI(meta.scwClient)
 
 	zone, ID, err := parseZonedID(id)
-	return baremetalAPI, zone, ID, err
+	return baremetalAPI, newZonedID(zone, ID), err
 }
 
 // TODO: Remove it when SDK will handle it.

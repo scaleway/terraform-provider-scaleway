@@ -1,11 +1,11 @@
 ---
 layout: "scaleway"
-page_title: "Scaleway: scaleway_baremetal_server_beta"
+page_title: "Scaleway: scaleway_baremetal_server"
 description: |-
   Manages Scaleway Compute Baremetal servers.
 ---
 
-# scaleway_baremetal_server_beta
+# scaleway_baremetal_server
 
 Creates and manages Scaleway Compute Baremetal servers. For more information, see [the documentation](https://developers.scaleway.com/en/products/baremetal/api).
 
@@ -18,10 +18,10 @@ data "scaleway_account_ssh_key" "main" {
   name = "main"
 }
 
-resource "scaleway_baremetal_server_beta" "base" {
-  zone		    = "fr-par-2"
+resource "scaleway_baremetal_server" "base" {
+  zone		  = "fr-par-2"
   offer       = "GP-BM1-M"
-  os_id       = "d17d6872-0412-45d9-a198-af82c34d3c5c"
+  os          = "d17d6872-0412-45d9-a198-af82c34d3c5c"
   ssh_key_ids = [data.scaleway_account_ssh_key.main]
 }
 ```
@@ -35,18 +35,20 @@ Use [this endpoint](https://developers.scaleway.com/en/products/baremetal/api/#g
 
 ~> **Important:** Updates to `offer_id` will recreate the server.
 
-- `os_id` - (Required) The UUID of the base image used by the server.
+- `os` - (Required) The UUID of the os to install on the server.
 Use [this endpoint](https://developers.scaleway.com/en/products/baremetal/api/#get-87598a) to find the right OS ID.
 
-~> **Important:** Updates to `os_id` will reinstall the server.
+~> **Important:** Updates to `os` will reinstall the server.
 
 - `ssh_key_ids` - (Required) List of SSH keys allowed to connect to the server.
 
+~> **Important:** Updates to `ssh_key_ids` will reinstall the server.
+
 - `name` - (Optional) The name of the server.
 
-- `description` - (Optional) A description for the server.
+- `hostname` - (Optional) The hostname of the server.
 
-~> **Important:** Updates to `ssh_key_ids` will reinstall the server.
+- `description` - (Optional) A description for the server.
 
 - `tags` - (Optional) The tags associated with the server.
 
@@ -60,6 +62,8 @@ Use [this endpoint](https://developers.scaleway.com/en/products/baremetal/api/#g
 In addition to all above arguments, the following attributes are exported:
 
 - `id` - The ID of the server.
+- `offer_id` - The ID of the offer.
+- `os_id` - The ID of the os.
 - `ips` - (List of) The IPs of the server.
   - `id` - The ID of the IP.
   - `address` - The address of the IP.
@@ -72,5 +76,5 @@ In addition to all above arguments, the following attributes are exported:
 Baremetal servers can be imported using the `{zone}/{id}`, e.g.
 
 ```bash
-$ terraform import scaleway_baremetal_server_beta.web fr-par-2/11111111-1111-1111-1111-111111111111
+$ terraform import scaleway_baremetal_server.web fr-par-2/11111111-1111-1111-1111-111111111111
 ```

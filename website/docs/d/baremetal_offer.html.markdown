@@ -1,11 +1,11 @@
 ---
 layout: "scaleway"
-page_title: "Scaleway: scaleway_baremetal_offer_beta"
+page_title: "Scaleway: scaleway_baremetal_offer"
 description: |-
-  Gets information about an baremetal offer.
+  Gets information about a baremetal offer.
 ---
 
-# scaleway_baremetal_offer_beta
+# scaleway_baremetal_offer
 
 Gets information about a baremetal offer. For more information, see [the documentation](https://developers.scaleway.com/en/products/baremetal/api).
 
@@ -13,13 +13,13 @@ Gets information about a baremetal offer. For more information, see [the documen
 
 ```hcl
 # Get info by offer name
-data "scaleway_baremetal_offer_beta" "my_offer" {
+data "scaleway_baremetal_offer" "my_offer" {
   zone = "fr-par-2"
   name = "HC-BM1-L"
 }
 
 # Get info by offer id
-data "scaleway_baremetal_offer_beta" "my_offer" {
+data "scaleway_baremetal_offer" "my_offer" {
   zone     = "fr-par-2"
   offer_id = "3ab0dc29-2fd4-486e-88bf-d08fbf49214b"
 }
