@@ -78,16 +78,6 @@ func TestAccScalewayLbAndIPBeta(t *testing.T) {
 					testAccCheckScalewayLbIPBetaExists("scaleway_lb_ip_beta.ip01"),
 				),
 			},
-			{
-				Config: `
-					resource scaleway_lb_ip_beta ip01 {
-					}
-				`,
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayLbIPBetaExists("scaleway_lb_ip_beta.ip01"),
-					resource.TestCheckResourceAttr("scaleway_lb_ip_beta.ip01", "lb_id", ""),
-				),
-			},
 		},
 	})
 }
