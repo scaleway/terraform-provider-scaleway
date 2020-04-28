@@ -132,6 +132,7 @@ The following arguments are supported:
 - `auto_upgrade` - (Optional) The auto upgrade configuration.
 
   - `enable` - (Optional) Set to `true` to enable Kubernetes patch version auto upgrades.
+~> **Important:** When enabling auto upgrades, the `version` field take a minor version like x.y (ie 1.18).
 
   - `maintenance_window_start_hour` - (Optional) The start hour (UTC) of the 2-hour auto upgrade maintenance window (0 to 23).
 

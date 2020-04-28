@@ -246,28 +246,31 @@ func TestAccScalewayK8SClusterAutoUpgrade(t *testing.T) {
 		CheckDestroy: testAccCheckScalewayK8SClusterBetaDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckScalewayK8SClusterBetaAutoUpgrade(true, "tuesday", 3),
+				Config: testAccCheckScalewayK8SClusterBetaAutoUpgrade(false, "any", 0, "1.18.0"),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayK8SClusterBetaExists("scaleway_k8s_cluster_beta.auto_upgrade"),
+					resource.TestCheckResourceAttr("scaleway_k8s_cluster_beta.auto_upgrade", "version", "1.18.0"),
+					resource.TestCheckResourceAttr("scaleway_k8s_cluster_beta.auto_upgrade", "auto_upgrade.0.enable", "false"),
+					resource.TestCheckResourceAttr("scaleway_k8s_cluster_beta.auto_upgrade", "auto_upgrade.0.maintenance_window_day", "any"),
+					resource.TestCheckResourceAttr("scaleway_k8s_cluster_beta.auto_upgrade", "auto_upgrade.0.maintenance_window_start_hour", "0"),
+				),
+			},
+			{
+				Config: testAccCheckScalewayK8SClusterBetaAutoUpgrade(true, "tuesday", 3, "1.18"),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayK8SClusterBetaExists("scaleway_k8s_cluster_beta.auto_upgrade"),
+					resource.TestCheckResourceAttr("scaleway_k8s_cluster_beta.auto_upgrade", "version", "1.18"),
 					resource.TestCheckResourceAttr("scaleway_k8s_cluster_beta.auto_upgrade", "auto_upgrade.0.enable", "true"),
 					resource.TestCheckResourceAttr("scaleway_k8s_cluster_beta.auto_upgrade", "auto_upgrade.0.maintenance_window_day", "tuesday"),
 					resource.TestCheckResourceAttr("scaleway_k8s_cluster_beta.auto_upgrade", "auto_upgrade.0.maintenance_window_start_hour", "3"),
 				),
 			},
 			{
-				Config: testAccCheckScalewayK8SClusterBetaAutoUpgrade(true, "any", 0),
+				Config: testAccCheckScalewayK8SClusterBetaAutoUpgrade(true, "any", 0, "1.18"),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayK8SClusterBetaExists("scaleway_k8s_cluster_beta.auto_upgrade"),
+					resource.TestCheckResourceAttr("scaleway_k8s_cluster_beta.auto_upgrade", "version", "1.18"),
 					resource.TestCheckResourceAttr("scaleway_k8s_cluster_beta.auto_upgrade", "auto_upgrade.0.enable", "true"),
-					resource.TestCheckResourceAttr("scaleway_k8s_cluster_beta.auto_upgrade", "auto_upgrade.0.maintenance_window_day", "any"),
-					resource.TestCheckResourceAttr("scaleway_k8s_cluster_beta.auto_upgrade", "auto_upgrade.0.maintenance_window_start_hour", "0"),
-				),
-			},
-			{
-				Config: testAccCheckScalewayK8SClusterBetaAutoUpgrade(false, "any", 0),
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayK8SClusterBetaExists("scaleway_k8s_cluster_beta.auto_upgrade"),
-					resource.TestCheckResourceAttr("scaleway_k8s_cluster_beta.auto_upgrade", "auto_upgrade.0.enable", "false"),
 					resource.TestCheckResourceAttr("scaleway_k8s_cluster_beta.auto_upgrade", "auto_upgrade.0.maintenance_window_day", "any"),
 					resource.TestCheckResourceAttr("scaleway_k8s_cluster_beta.auto_upgrade", "auto_upgrade.0.maintenance_window_start_hour", "0"),
 				),
@@ -403,17 +406,26 @@ resource "scaleway_k8s_cluster_beta" "autoscaler" {
 }`, version)
 }
 
-func testAccCheckScalewayK8SClusterBetaAutoUpgrade(enable bool, day string, hour uint64) string {
-	return fmt.Sprintf(`
+func testAccCheckScalewayK8SClusterBetaAutoUpgrade(enable bool, day string, hour uint64, version string) string {
+	if enable {
+		return fmt.Sprintf(`
 resource "scaleway_k8s_cluster_beta" "auto_upgrade" {
 	cni = "calico"
-	version = "1.17.0"
+	version = "%s"
 	name = "default-pool"
 	auto_upgrade {
-	    enable = %t
+	    enable = true
 		maintenance_window_start_hour = %d
 		maintenance_window_day = "%s"
 	}
 	tags = [ "terraform-test", "scaleway_k8s_cluster_beta", "auto_upgrade" ]
-}`, enable, hour, day)
+}`, version, hour, day)
+	}
+	return fmt.Sprintf(`
+resource "scaleway_k8s_cluster_beta" "auto_upgrade" {
+	cni = "calico"
+	version = "%s"
+	name = "default-pool"
+	tags = [ "terraform-test", "scaleway_k8s_cluster_beta", "auto_upgrade" ]
+}`, version)
 }
