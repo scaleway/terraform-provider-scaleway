@@ -70,9 +70,11 @@ func testSweepK8SCluster(region string) error {
 }
 
 func TestAccScalewayK8SClusterDeprecated(t *testing.T) {
-	testAccScalewayK8SClusterGetLatestVersion(t)
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
+		PreCheck: func() {
+			testAccScalewayK8SClusterGetLatestVersion(t)
+			testAccPreCheck(t)
+		},
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckScalewayK8SClusterBetaDestroy,
 		Steps: []resource.TestStep{
@@ -110,9 +112,11 @@ func TestAccScalewayK8SClusterDeprecated(t *testing.T) {
 }
 
 func TestAccScalewayK8SClusterMinimal(t *testing.T) {
-	testAccScalewayK8SClusterGetLatestVersion(t)
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
+		PreCheck: func() {
+			testAccScalewayK8SClusterGetLatestVersion(t)
+			testAccPreCheck(t)
+		},
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckScalewayK8SClusterBetaDestroy,
 		Steps: []resource.TestStep{
@@ -157,9 +161,11 @@ func TestAccScalewayK8SClusterMinimal(t *testing.T) {
 }
 
 func TestAccScalewayK8SClusterIngressDashboard(t *testing.T) {
-	testAccScalewayK8SClusterGetLatestVersion(t)
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
+		PreCheck: func() {
+			testAccScalewayK8SClusterGetLatestVersion(t)
+			testAccPreCheck(t)
+		},
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckScalewayK8SClusterBetaDestroy,
 		Steps: []resource.TestStep{
@@ -208,9 +214,11 @@ func TestAccScalewayK8SClusterIngressDashboard(t *testing.T) {
 }
 
 func TestAccScalewayK8SClusterAutoscaling(t *testing.T) {
-	testAccScalewayK8SClusterGetLatestVersion(t)
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
+		PreCheck: func() {
+			testAccScalewayK8SClusterGetLatestVersion(t)
+			testAccPreCheck(t)
+		},
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckScalewayK8SClusterBetaDestroy,
 		Steps: []resource.TestStep{
@@ -271,9 +279,11 @@ func TestAccScalewayK8SClusterAutoscaling(t *testing.T) {
 }
 
 func TestAccScalewayK8SClusterAutoUpgrade(t *testing.T) {
-	testAccScalewayK8SClusterGetLatestVersion(t)
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
+		PreCheck: func() {
+			testAccPreCheck(t)
+			testAccScalewayK8SClusterGetLatestVersion(t)
+		},
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckScalewayK8SClusterBetaDestroy,
 		Steps: []resource.TestStep{
