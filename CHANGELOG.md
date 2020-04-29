@@ -1,4 +1,30 @@
 ## 1.15.0 (Unreleased)
+
+BREAKING CHANGES:
+
+* `resource/scaleway_baremetal_server_beta` is out of beta and has been renamed to `scaleway_baremetal_server` ([#463](https://github.com/terraform-providers/terraform-provider-scaleway/pull/463)).
+* `data-source/scaleway_baremetal_offer_beta` is out of beta and has been renamed to `scaleway_baremetal_offer` ([#463](https://github.com/terraform-providers/terraform-provider-scaleway/pull/463)).
+* `resource/scaleway_bucket` has been removed as this product is no longer supported ([#471](https://github.com/terraform-providers/terraform-provider-scaleway/pull/471)).
+* `resource/scaleway_lb_beta` ip_id field is now required ([#452](https://github.com/terraform-providers/terraform-provider-scaleway/pull/452)).
+* `resource/scaleway_k8s_cluster_beta` does not accept `default_pool_config` anymore, it should be replaced with a `resource/scaleway_k8s_pool_beta` instead ([#442](https://github.com/terraform-providers/terraform-provider-scaleway/pull/442)).
+
+IMPROVEMENTS:
+
+* **New Resource** `resource/scaleway_lb_ip` ([#452](https://github.com/terraform-providers/terraform-provider-scaleway/pull/452)).
+* `resource/scaleway_k8s_cluster_beta` add unneeded time for auto-scaler ([#461](https://github.com/terraform-providers/terraform-provider-scaleway/pull/461)).
+* `resource/scaleway_k8s_cluster_beta` use minor version on auto-upgrades ([#462](https://github.com/terraform-providers/terraform-provider-scaleway/pull/462)).
+* `resource/scaleway_baremetal_server` add ip version field ([#460](https://github.com/terraform-providers/terraform-provider-scaleway/pull/460)).
+* `resource/scaleway_instance_server` add ip version field ([#460](https://github.com/terraform-providers/terraform-provider-scaleway/pull/460)).
+* `resource/scaleway_k8s_cluster_beta` is now based on `v1` api version ([#442](https://github.com/terraform-providers/terraform-provider-scaleway/pull/442)).
+* `resource/scaleway_k8s_pool_beta` is now based on `v1` api version ([#442](https://github.com/terraform-providers/terraform-provider-scaleway/pull/442)).
+
+BUG FIXES:
+
+* `resource/scaleway_baremetal_server` missing ip in computed fields ([#458](https://github.com/terraform-providers/terraform-provider-scaleway/pull/458)).
+* Dead lock when doing too many retry ([#447](https://github.com/terraform-providers/terraform-provider-scaleway/pull/447)).
+* `resource/scaleway_instance_security_group` fix plan issue when using external rules ([#446](https://github.com/terraform-providers/terraform-provider-scaleway/pull/446)).
+
+
 ## 1.14.0 (March 11, 2020)
 
 * **Deprecated Data Source** `data-source/scaleway_bootscript`: ([#429](https://github.com/terraform-providers/terraform-provider-scaleway/issues/429))
