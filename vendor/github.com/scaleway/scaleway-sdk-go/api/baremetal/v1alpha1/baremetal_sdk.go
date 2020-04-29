@@ -505,6 +505,40 @@ func (enum *ServerInstallStatus) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
+type ServerPingStatus string
+
+const (
+	// ServerPingStatusPingStatusUnknown is [insert doc].
+	ServerPingStatusPingStatusUnknown = ServerPingStatus("ping_status_unknown")
+	// ServerPingStatusPingStatusUp is [insert doc].
+	ServerPingStatusPingStatusUp = ServerPingStatus("ping_status_up")
+	// ServerPingStatusPingStatusDown is [insert doc].
+	ServerPingStatusPingStatusDown = ServerPingStatus("ping_status_down")
+)
+
+func (enum ServerPingStatus) String() string {
+	if enum == "" {
+		// return default value if empty
+		return "ping_status_unknown"
+	}
+	return string(enum)
+}
+
+func (enum ServerPingStatus) MarshalJSON() ([]byte, error) {
+	return []byte(fmt.Sprintf(`"%s"`, enum)), nil
+}
+
+func (enum *ServerPingStatus) UnmarshalJSON(data []byte) error {
+	tmp := ""
+
+	if err := json.Unmarshal(data, &tmp); err != nil {
+		return err
+	}
+
+	*enum = ServerPingStatus(ServerPingStatus(tmp).String())
+	return nil
+}
+
 type ServerStatus string
 
 const (
@@ -812,6 +846,10 @@ type Server struct {
 	BootType ServerBootType `json:"boot_type"`
 	// Zone: the zone in which is the server
 	Zone scw.Zone `json:"zone"`
+	// PingStatus: server status of ping
+	//
+	// Default value: ping_status_unknown
+	PingStatus ServerPingStatus `json:"ping_status"`
 }
 
 // ServerEvent: server event

@@ -58,8 +58,6 @@ const (
 	AutoscalerEstimatorUnknownEstimator = AutoscalerEstimator("unknown_estimator")
 	// AutoscalerEstimatorBinpacking is [insert doc].
 	AutoscalerEstimatorBinpacking = AutoscalerEstimator("binpacking")
-	// AutoscalerEstimatorOldbinpacking is [insert doc].
-	AutoscalerEstimatorOldbinpacking = AutoscalerEstimator("oldbinpacking")
 )
 
 func (enum AutoscalerEstimator) String() string {

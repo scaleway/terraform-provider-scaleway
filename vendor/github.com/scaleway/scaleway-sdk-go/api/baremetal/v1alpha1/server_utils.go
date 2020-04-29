@@ -116,13 +116,13 @@ func (s *API) GetServerOffer(server *Server) (*Offer, error) {
 	return offer, nil
 }
 
-type GetOfferFromOfferNameRequest struct {
+type GetOfferByNameRequest struct {
 	OfferName string
 	Zone      scw.Zone
 }
 
-// GetOfferFromName returns an offer from its commercial name
-func (s *API) GetOfferFromName(req *GetOfferFromOfferNameRequest) (*Offer, error) {
+// GetOfferByName returns an offer from its commercial name
+func (s *API) GetOfferByName(req *GetOfferByNameRequest) (*Offer, error) {
 	res, err := s.ListOffers(&ListOffersRequest{
 		Zone: req.Zone,
 	}, scw.WithAllPages())
