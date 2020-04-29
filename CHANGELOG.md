@@ -13,7 +13,8 @@ IMPROVEMENTS:
 * `resource/scaleway_k8s_cluster_beta` use minor version on auto-upgrades ([#462](https://github.com/terraform-providers/terraform-provider-scaleway/pull/462)).
 * `resource/scaleway_baremetal_server` add ip version field ([#460](https://github.com/terraform-providers/terraform-provider-scaleway/pull/460)).
 * `resource/scaleway_instance_server` add ip version field ([#460](https://github.com/terraform-providers/terraform-provider-scaleway/pull/460)).
-* k8s resources are now based on `v1` api version ([#442](https://github.com/terraform-providers/terraform-provider-scaleway/pull/442)).
+* `resource/scaleway_k8s_cluster_beta` is now based on `v1` api version ([#442](https://github.com/terraform-providers/terraform-provider-scaleway/pull/442)).
+* `resource/scaleway_k8s_pool_beta` is now based on `v1` api version ([#442](https://github.com/terraform-providers/terraform-provider-scaleway/pull/442)).
 
 BUG FIXES:
 
