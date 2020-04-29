@@ -18,6 +18,7 @@ import (
 	"github.com/hashicorp/go-retryablehttp"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/logging"
 	sdk "github.com/nicolai86/scaleway-sdk"
+	scwLogger "github.com/scaleway/scaleway-sdk-go/logger"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 )
 
@@ -64,6 +65,10 @@ func (m *Meta) bootstrap() error {
 
 // bootstrapScwClient initializes a new scw.Client from the configuration.
 func (m *Meta) bootstrapScwClient() error {
+
+	// Init SDK logger
+	scwLogger.SetLogger(l)
+
 	options := []scw.ClientOption{
 		scw.WithHTTPClient(createRetryableHTTPClient(false)),
 		scw.WithUserAgent(fmt.Sprintf("terraform-provider/%s terraform/%s", version, m.TerraformVersion)),
