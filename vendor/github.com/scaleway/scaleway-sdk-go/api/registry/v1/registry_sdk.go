@@ -334,7 +334,7 @@ type Image struct {
 	// Size: image size in bytes, calculated from the size of image layers
 	//
 	// Image size in bytes, calculated from the size of image layers. One layer used in two tags of the same image is counted once but one layer used in two images is counted twice.
-	Size uint64 `json:"size"`
+	Size scw.Size `json:"size"`
 	// CreatedAt: creation date
 	CreatedAt time.Time `json:"created_at"`
 	// UpdatedAt: last modification date, from the user or the service
@@ -388,7 +388,7 @@ type Namespace struct {
 	// IsPublic: namespace visibility policy
 	IsPublic bool `json:"is_public"`
 	// Size: total size of the namespace, calculated as the sum of the size of all images in the namespace
-	Size uint64 `json:"size"`
+	Size scw.Size `json:"size"`
 	// CreatedAt: creation date
 	CreatedAt time.Time `json:"created_at"`
 	// UpdatedAt: last modification date, from the user or the service

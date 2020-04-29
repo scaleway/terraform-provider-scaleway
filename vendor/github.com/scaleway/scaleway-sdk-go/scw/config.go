@@ -5,7 +5,6 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
-	"syscall"
 	"text/template"
 
 	"github.com/scaleway/scaleway-sdk-go/internal/auth"
@@ -182,11 +181,16 @@ func LoadConfig() (*Config, error) {
 
 // LoadConfigFromPath read the config from the given path.
 func LoadConfigFromPath(path string) (*Config, error) {
+	_, err := os.Stat(path)
+	if os.IsNotExist(err) {
+		return nil, configFileNotFound(path)
+	}
+	if err != nil {
+		return nil, err
+	}
+
 	file, err := ioutil.ReadFile(path)
 	if err != nil {
-		if pathError, isPathError := err.(*os.PathError); isPathError && pathError.Err == syscall.ENOENT {
-			return nil, configFileNotFound(pathError.Path)
-		}
 		return nil, errors.Wrap(err, "cannot read config file")
 	}
 
