@@ -23,19 +23,22 @@ func init() {
 		F:    testSweepK8SCluster,
 	})
 
-	// we try to always get the latest versions
-	scwClient, err := scw.NewClient(scw.WithEnv(), scw.WithDefaultRegion(scw.RegionFrPar))
-	if err == nil {
-		api := k8s.NewAPI(scwClient)
-		versions, err := api.ListVersions(&k8s.ListVersionsRequest{})
-		if err == nil {
-			if len(versions.Versions) > 1 {
-				latestK8SVersion = versions.Versions[0].Name
-				latestK8SVersionMinor, _ = k8sGetMinorVersionFromFull(latestK8SVersion)
-				previousK8SVersion = versions.Versions[1].Name
-				previousK8SVersionMinor, _ = k8sGetMinorVersionFromFull(previousK8SVersion)
-			}
-		}
+	scwClient, err := sharedClientForRegion(string(scw.RegionFrPar))
+	if err != nil {
+		l.Warningf("Could not create shared client: %s", err)
+		return
+	}
+	api := k8s.NewAPI(scwClient)
+	versions, err := api.ListVersions(&k8s.ListVersionsRequest{})
+	if err != nil {
+		l.Warningf("Could not get latestK8SVersion: %s", err)
+		return
+	}
+	if len(versions.Versions) > 1 {
+		latestK8SVersion = versions.Versions[0].Name
+		latestK8SVersionMinor, _ = k8sGetMinorVersionFromFull(latestK8SVersion)
+		previousK8SVersion = versions.Versions[1].Name
+		previousK8SVersionMinor, _ = k8sGetMinorVersionFromFull(previousK8SVersion)
 	}
 }
 

@@ -9,7 +9,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 	"github.com/mitchellh/go-homedir"
-	scwLogger "github.com/scaleway/scaleway-sdk-go/logger"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 )
 
@@ -17,9 +16,6 @@ var mu = sync.Mutex{}
 
 // Provider returns a terraform.ResourceProvider.
 func Provider() terraform.ResourceProvider {
-
-	// Init the SDK logger.
-	scwLogger.SetLogger(l)
 
 	// Try to migrate config
 	_, err := scw.MigrateLegacyConfig()

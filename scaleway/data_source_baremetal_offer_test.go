@@ -17,19 +17,20 @@ func TestAccScalewayDataSourceBaremetalOffer_Basic(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: `
-data "scaleway_baremetal_offer" "test1" {
-    zone = "fr-par-2"
-	name = "HC-BM1-L"
-}
-
-data "scaleway_baremetal_offer" "test2" {
-    zone     = "fr-par-2"
-	offer_id = "3ab0dc29-2fd4-486e-88bf-d08fbf49214b"
-}
-
-data "scaleway_baremetal_offer" "test3" {
-	offer_id = "fr-par-2/3ab0dc29-2fd4-486e-88bf-d08fbf49214b"
-}`,
+					data "scaleway_baremetal_offer" "test1" {
+						zone = "fr-par-2"
+						name = "HC-BM1-L"
+					}
+					
+					data "scaleway_baremetal_offer" "test2" {
+						zone     = "fr-par-2"
+						offer_id = "3ab0dc29-2fd4-486e-88bf-d08fbf49214b"
+					}
+					
+					data "scaleway_baremetal_offer" "test3" {
+						offer_id = "fr-par-2/3ab0dc29-2fd4-486e-88bf-d08fbf49214b"
+					}
+				`,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayBaremetalOfferExists("data.scaleway_baremetal_offer.test1"),
 					resource.TestCheckResourceAttr("data.scaleway_baremetal_offer.test1", "name", "HC-BM1-L"),
@@ -73,7 +74,6 @@ func testAccCheckScalewayBaremetalOfferExists(n string) resource.TestCheckFunc {
 		if !ok {
 			return fmt.Errorf("not found: %s", n)
 		}
-		fmt.Println(rs)
 
 		zone, id, err := parseZonedID(rs.Primary.ID)
 		if err != nil {
