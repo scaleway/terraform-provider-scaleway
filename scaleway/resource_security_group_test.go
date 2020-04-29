@@ -2,45 +2,11 @@ package scaleway
 
 import (
 	"fmt"
-	"log"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 )
-
-func init() {
-	resource.AddTestSweepers("scaleway_security_group", &resource.Sweeper{
-		Name: "scaleway_security_group",
-		F:    testSweepSecurityGroup,
-	})
-}
-
-func testSweepSecurityGroup(region string) error {
-	scaleway, err := sharedDeprecatedClientForRegion(region)
-	if err != nil {
-		return fmt.Errorf("error getting client: %s", err)
-	}
-
-	log.Printf("[DEBUG] Destroying the security groups in (%s)", region)
-
-	sgs, err := scaleway.GetSecurityGroups()
-	if err != nil {
-		return fmt.Errorf("Error describing security groups in Sweeper: %s", err)
-	}
-
-	for _, sg := range sgs {
-		if sg.OrganizationDefault {
-			continue
-		}
-
-		if err := scaleway.DeleteSecurityGroup(sg.ID); err != nil {
-			return fmt.Errorf("Error deleting ip in Sweeper: %s", err)
-		}
-	}
-
-	return nil
-}
 
 func TestAccScalewaySecurityGroup_Basic(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{

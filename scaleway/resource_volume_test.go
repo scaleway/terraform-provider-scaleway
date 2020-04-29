@@ -2,41 +2,11 @@ package scaleway
 
 import (
 	"fmt"
-	"log"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 )
-
-func init() {
-	resource.AddTestSweepers("scaleway_volume", &resource.Sweeper{
-		Name: "scaleway_volume",
-		F:    testSweepVolume,
-	})
-}
-
-func testSweepVolume(region string) error {
-	scaleway, err := sharedDeprecatedClientForRegion(region)
-	if err != nil {
-		return fmt.Errorf("error getting client: %s", err)
-	}
-
-	log.Printf("[DEBUG] Destroying the volumes in (%s)", region)
-
-	volumes, err := scaleway.GetVolumes()
-	if err != nil {
-		return fmt.Errorf("Error describing volumes in Sweeper: %s", err)
-	}
-
-	for _, volume := range *volumes {
-		if err := scaleway.DeleteVolume(volume.Identifier); err != nil {
-			return fmt.Errorf("Error deleting volume in Sweeper: %s", err)
-		}
-	}
-
-	return nil
-}
 
 func TestAccScalewayVolume_Basic(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
