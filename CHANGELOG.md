@@ -6,7 +6,7 @@ BREAKING CHANGES:
 * `data-source/scaleway_baremetal_offer_beta` is out of beta and has been renamed to `scaleway_baremetal_offer` ([#463](https://github.com/terraform-providers/terraform-provider-scaleway/pull/463)).
 * `resource/scaleway_bucket` has been removed as this product is no longer supported ([#471](https://github.com/terraform-providers/terraform-provider-scaleway/pull/471)).
 * `resource/scaleway_lb_beta` ip_id field is now required ([#452](https://github.com/terraform-providers/terraform-provider-scaleway/pull/452)).
-* `resource/scaleway_k8s_cluster_beta` does not accepts `default_pool_config` and `resource/scaleway_k8s_pool_beta` should be used instead ([#442](https://github.com/terraform-providers/terraform-provider-scaleway/pull/442)).
+* `resource/scaleway_k8s_cluster_beta` does not accept `default_pool_config` anymore, it should be replaced with a `resource/scaleway_k8s_pool_beta` instead ([#442](https://github.com/terraform-providers/terraform-provider-scaleway/pull/442)).
 
 IMPROVEMENTS:
 
