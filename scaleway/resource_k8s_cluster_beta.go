@@ -878,39 +878,23 @@ func resourceScalewayK8SClusterBetaUpdate(d *schema.ResourceData, m interface{})
 	}
 
 	if d.HasChange("version") {
-		versions, err := k8sAPI.ListClusterAvailableVersions(&k8s.ListClusterAvailableVersionsRequest{
-			Region:    region,
+		// maybe it's a change from minor to patch or patch to minor
+		// we need to check the current version
+
+		clusterResp, err := k8sAPI.GetCluster(&k8s.GetClusterRequest{
 			ClusterID: clusterID,
+			Region:    region,
 		})
 		if err != nil {
 			return err
 		}
 
-		for _, v := range versions.Versions {
-			if v.Name == version {
-				canUpgrade = true
-				break
-			}
-		}
-		if !canUpgrade {
-			// maybe it's a change from minor to patch or patch to minor
-			// we need to check the current version
-
-			clusterResp, err := k8sAPI.GetCluster(&k8s.GetClusterRequest{
-				ClusterID: clusterID,
-				Region:    region,
-			})
-			if err != nil {
-				return err
-			}
-
-			if clusterResp.Version == version {
-				// no upgrades if same version
-				canUpgrade = false
-			} else {
-				// we really can't upgrade
-				return fmt.Errorf("cluster %s can not be upgraded to version %s", clusterID, d.Get("version").(string))
-			}
+		if clusterResp.Version == version {
+			// no upgrades if same version
+			canUpgrade = false
+		} else {
+			// we let the API decide if we can upgrade
+			canUpgrade = true
 		}
 	}
 
