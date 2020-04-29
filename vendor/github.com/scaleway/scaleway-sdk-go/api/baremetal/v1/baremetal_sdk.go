@@ -1,7 +1,7 @@
 // This file was automatically generated. DO NOT EDIT.
 // If you have any remark or suggestion do not hesitate to open an issue.
 
-// Package baremetal provides methods and message types of the baremetal v1alpha1 API.
+// Package baremetal provides methods and message types of the baremetal v1 API.
 package baremetal
 
 import (
@@ -51,128 +51,6 @@ func NewAPI(client *scw.Client) *API {
 	}
 }
 
-type IPFailoverEventAction string
-
-const (
-	// IPFailoverEventActionUnknown is [insert doc].
-	IPFailoverEventActionUnknown = IPFailoverEventAction("unknown")
-	// IPFailoverEventActionBillingStart is [insert doc].
-	IPFailoverEventActionBillingStart = IPFailoverEventAction("billing_start")
-	// IPFailoverEventActionBillingStop is [insert doc].
-	IPFailoverEventActionBillingStop = IPFailoverEventAction("billing_stop")
-	// IPFailoverEventActionOrderFail is [insert doc].
-	IPFailoverEventActionOrderFail = IPFailoverEventAction("order_fail")
-	// IPFailoverEventActionUpdateIP is [insert doc].
-	IPFailoverEventActionUpdateIP = IPFailoverEventAction("update_ip")
-	// IPFailoverEventActionUpdateIPFail is [insert doc].
-	IPFailoverEventActionUpdateIPFail = IPFailoverEventAction("update_ip_fail")
-)
-
-func (enum IPFailoverEventAction) String() string {
-	if enum == "" {
-		// return default value if empty
-		return "unknown"
-	}
-	return string(enum)
-}
-
-func (enum IPFailoverEventAction) MarshalJSON() ([]byte, error) {
-	return []byte(fmt.Sprintf(`"%s"`, enum)), nil
-}
-
-func (enum *IPFailoverEventAction) UnmarshalJSON(data []byte) error {
-	tmp := ""
-
-	if err := json.Unmarshal(data, &tmp); err != nil {
-		return err
-	}
-
-	*enum = IPFailoverEventAction(IPFailoverEventAction(tmp).String())
-	return nil
-}
-
-type IPFailoverMACType string
-
-const (
-	// IPFailoverMACTypeUnknownMacType is [insert doc].
-	IPFailoverMACTypeUnknownMacType = IPFailoverMACType("unknown_mac_type")
-	// IPFailoverMACTypeNone is [insert doc].
-	IPFailoverMACTypeNone = IPFailoverMACType("none")
-	// IPFailoverMACTypeDuplicate is [insert doc].
-	IPFailoverMACTypeDuplicate = IPFailoverMACType("duplicate")
-	// IPFailoverMACTypeVmware is [insert doc].
-	IPFailoverMACTypeVmware = IPFailoverMACType("vmware")
-	// IPFailoverMACTypeXen is [insert doc].
-	IPFailoverMACTypeXen = IPFailoverMACType("xen")
-	// IPFailoverMACTypeKvm is [insert doc].
-	IPFailoverMACTypeKvm = IPFailoverMACType("kvm")
-)
-
-func (enum IPFailoverMACType) String() string {
-	if enum == "" {
-		// return default value if empty
-		return "unknown_mac_type"
-	}
-	return string(enum)
-}
-
-func (enum IPFailoverMACType) MarshalJSON() ([]byte, error) {
-	return []byte(fmt.Sprintf(`"%s"`, enum)), nil
-}
-
-func (enum *IPFailoverMACType) UnmarshalJSON(data []byte) error {
-	tmp := ""
-
-	if err := json.Unmarshal(data, &tmp); err != nil {
-		return err
-	}
-
-	*enum = IPFailoverMACType(IPFailoverMACType(tmp).String())
-	return nil
-}
-
-type IPFailoverStatus string
-
-const (
-	// IPFailoverStatusUnknown is [insert doc].
-	IPFailoverStatusUnknown = IPFailoverStatus("unknown")
-	// IPFailoverStatusDelivering is [insert doc].
-	IPFailoverStatusDelivering = IPFailoverStatus("delivering")
-	// IPFailoverStatusReady is [insert doc].
-	IPFailoverStatusReady = IPFailoverStatus("ready")
-	// IPFailoverStatusUpdating is [insert doc].
-	IPFailoverStatusUpdating = IPFailoverStatus("updating")
-	// IPFailoverStatusError is [insert doc].
-	IPFailoverStatusError = IPFailoverStatus("error")
-	// IPFailoverStatusDeleting is [insert doc].
-	IPFailoverStatusDeleting = IPFailoverStatus("deleting")
-	// IPFailoverStatusLocked is [insert doc].
-	IPFailoverStatusLocked = IPFailoverStatus("locked")
-)
-
-func (enum IPFailoverStatus) String() string {
-	if enum == "" {
-		// return default value if empty
-		return "unknown"
-	}
-	return string(enum)
-}
-
-func (enum IPFailoverStatus) MarshalJSON() ([]byte, error) {
-	return []byte(fmt.Sprintf(`"%s"`, enum)), nil
-}
-
-func (enum *IPFailoverStatus) UnmarshalJSON(data []byte) error {
-	tmp := ""
-
-	if err := json.Unmarshal(data, &tmp); err != nil {
-		return err
-	}
-
-	*enum = IPFailoverStatus(IPFailoverStatus(tmp).String())
-	return nil
-}
-
 type IPReverseStatus string
 
 const (
@@ -213,15 +91,15 @@ type IPVersion string
 
 const (
 	// IPVersionIPv4 is [insert doc].
-	IPVersionIPv4 = IPVersion("Ipv4")
+	IPVersionIPv4 = IPVersion("IPv4")
 	// IPVersionIPv6 is [insert doc].
-	IPVersionIPv6 = IPVersion("Ipv6")
+	IPVersionIPv6 = IPVersion("IPv6")
 )
 
 func (enum IPVersion) String() string {
 	if enum == "" {
 		// return default value if empty
-		return "Ipv4"
+		return "IPv4"
 	}
 	return string(enum)
 }
@@ -238,70 +116,6 @@ func (enum *IPVersion) UnmarshalJSON(data []byte) error {
 	}
 
 	*enum = IPVersion(IPVersion(tmp).String())
-	return nil
-}
-
-type ListIPFailoverEventsRequestOrderBy string
-
-const (
-	// ListIPFailoverEventsRequestOrderByCreatedAtAsc is [insert doc].
-	ListIPFailoverEventsRequestOrderByCreatedAtAsc = ListIPFailoverEventsRequestOrderBy("created_at_asc")
-	// ListIPFailoverEventsRequestOrderByCreatedAtDesc is [insert doc].
-	ListIPFailoverEventsRequestOrderByCreatedAtDesc = ListIPFailoverEventsRequestOrderBy("created_at_desc")
-)
-
-func (enum ListIPFailoverEventsRequestOrderBy) String() string {
-	if enum == "" {
-		// return default value if empty
-		return "created_at_asc"
-	}
-	return string(enum)
-}
-
-func (enum ListIPFailoverEventsRequestOrderBy) MarshalJSON() ([]byte, error) {
-	return []byte(fmt.Sprintf(`"%s"`, enum)), nil
-}
-
-func (enum *ListIPFailoverEventsRequestOrderBy) UnmarshalJSON(data []byte) error {
-	tmp := ""
-
-	if err := json.Unmarshal(data, &tmp); err != nil {
-		return err
-	}
-
-	*enum = ListIPFailoverEventsRequestOrderBy(ListIPFailoverEventsRequestOrderBy(tmp).String())
-	return nil
-}
-
-type ListIPFailoversRequestOrderBy string
-
-const (
-	// ListIPFailoversRequestOrderByCreatedAtAsc is [insert doc].
-	ListIPFailoversRequestOrderByCreatedAtAsc = ListIPFailoversRequestOrderBy("created_at_asc")
-	// ListIPFailoversRequestOrderByCreatedAtDesc is [insert doc].
-	ListIPFailoversRequestOrderByCreatedAtDesc = ListIPFailoversRequestOrderBy("created_at_desc")
-)
-
-func (enum ListIPFailoversRequestOrderBy) String() string {
-	if enum == "" {
-		// return default value if empty
-		return "created_at_asc"
-	}
-	return string(enum)
-}
-
-func (enum ListIPFailoversRequestOrderBy) MarshalJSON() ([]byte, error) {
-	return []byte(fmt.Sprintf(`"%s"`, enum)), nil
-}
-
-func (enum *ListIPFailoversRequestOrderBy) UnmarshalJSON(data []byte) error {
-	tmp := ""
-
-	if err := json.Unmarshal(data, &tmp); err != nil {
-		return err
-	}
-
-	*enum = ListIPFailoversRequestOrderBy(ListIPFailoversRequestOrderBy(tmp).String())
 	return nil
 }
 
@@ -403,41 +217,11 @@ func (enum *OfferStock) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
-type RebootServerRequestBootType string
-
-const (
-	// RebootServerRequestBootTypeNormal is [insert doc].
-	RebootServerRequestBootTypeNormal = RebootServerRequestBootType("normal")
-	// RebootServerRequestBootTypeRescue is [insert doc].
-	RebootServerRequestBootTypeRescue = RebootServerRequestBootType("rescue")
-)
-
-func (enum RebootServerRequestBootType) String() string {
-	if enum == "" {
-		// return default value if empty
-		return "normal"
-	}
-	return string(enum)
-}
-
-func (enum RebootServerRequestBootType) MarshalJSON() ([]byte, error) {
-	return []byte(fmt.Sprintf(`"%s"`, enum)), nil
-}
-
-func (enum *RebootServerRequestBootType) UnmarshalJSON(data []byte) error {
-	tmp := ""
-
-	if err := json.Unmarshal(data, &tmp); err != nil {
-		return err
-	}
-
-	*enum = RebootServerRequestBootType(RebootServerRequestBootType(tmp).String())
-	return nil
-}
-
 type ServerBootType string
 
 const (
+	// ServerBootTypeUnknownBootType is [insert doc].
+	ServerBootTypeUnknownBootType = ServerBootType("unknown_boot_type")
 	// ServerBootTypeNormal is [insert doc].
 	ServerBootTypeNormal = ServerBootType("normal")
 	// ServerBootTypeRescue is [insert doc].
@@ -447,7 +231,7 @@ const (
 func (enum ServerBootType) String() string {
 	if enum == "" {
 		// return default value if empty
-		return "normal"
+		return "unknown_boot_type"
 	}
 	return string(enum)
 }
@@ -472,12 +256,12 @@ type ServerInstallStatus string
 const (
 	// ServerInstallStatusUnknown is [insert doc].
 	ServerInstallStatusUnknown = ServerInstallStatus("unknown")
-	// ServerInstallStatusCompleted is [insert doc].
-	ServerInstallStatusCompleted = ServerInstallStatus("completed")
-	// ServerInstallStatusInstalling is [insert doc].
-	ServerInstallStatusInstalling = ServerInstallStatus("installing")
 	// ServerInstallStatusToInstall is [insert doc].
 	ServerInstallStatusToInstall = ServerInstallStatus("to_install")
+	// ServerInstallStatusInstalling is [insert doc].
+	ServerInstallStatusInstalling = ServerInstallStatus("installing")
+	// ServerInstallStatusCompleted is [insert doc].
+	ServerInstallStatusCompleted = ServerInstallStatus("completed")
 	// ServerInstallStatusError is [insert doc].
 	ServerInstallStatusError = ServerInstallStatus("error")
 )
@@ -544,8 +328,8 @@ type ServerStatus string
 const (
 	// ServerStatusUnknown is [insert doc].
 	ServerStatusUnknown = ServerStatus("unknown")
-	// ServerStatusUndelivered is [insert doc].
-	ServerStatusUndelivered = ServerStatus("undelivered")
+	// ServerStatusDelivering is [insert doc].
+	ServerStatusDelivering = ServerStatus("delivering")
 	// ServerStatusReady is [insert doc].
 	ServerStatusReady = ServerStatus("ready")
 	// ServerStatusStopping is [insert doc].
@@ -585,34 +369,34 @@ func (enum *ServerStatus) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
-// AttachIPFailoversResponse: attach ip failovers response
-type AttachIPFailoversResponse struct {
-	// Failovers: list of the attached IP failovers
-	Failovers []*IPFailover `json:"failovers"`
+// BMCAccess: bmc access
+type BMCAccess struct {
+	// URL: URL to access to the server console
+	URL string `json:"url"`
+	// Login: the login to use for the BMC (Baseboard Management Controller) access authentification
+	Login string `json:"login"`
+	// Password: the password to use for the BMC (Baseboard Management Controller) access authentification
+	Password string `json:"password"`
+	// ExpiresAt: the date after which the BMC (Baseboard Management Controller) access will be closed
+	ExpiresAt time.Time `json:"expires_at"`
 }
 
 // CPU: cpu
 type CPU struct {
 	// Name: name of the CPU
 	Name string `json:"name"`
-	// Cores: number of cores of the CPU
-	Cores uint32 `json:"cores"`
-	// Threads: number of threads of the CPU
-	Threads uint32 `json:"threads"`
+	// CoreCount: number of cores of the CPU
+	CoreCount uint32 `json:"core_count"`
+	// ThreadCount: number of threads of the CPU
+	ThreadCount uint32 `json:"thread_count"`
 
 	Frequency uint32 `json:"frequency"`
 }
 
-// DetachIPFailoversResponse: detach ip failovers response
-type DetachIPFailoversResponse struct {
-	// Failovers: list of the detached IP failovers
-	Failovers []*IPFailover `json:"failovers"`
-}
-
 // Disk: disk
 type Disk struct {
-	// Capacity: capacity of the disk in GB
-	Capacity uint64 `json:"capacity"`
+	// Capacity: capacity of the disk in bytes
+	Capacity scw.Size `json:"capacity"`
 	// Type: type of the disk
 	Type string `json:"type"`
 }
@@ -633,84 +417,22 @@ type IP struct {
 	Reverse string `json:"reverse"`
 	// Version: version of IP (v4 or v6)
 	//
-	// Default value: Ipv4
+	// Default value: IPv4
 	Version IPVersion `json:"version"`
 	// ReverseStatus: status of the reverse
 	//
 	// Default value: unknown
 	ReverseStatus IPReverseStatus `json:"reverse_status"`
 	// ReverseStatusMessage: a message related to the reverse status, in case of an error for example
-	ReverseStatusMessage *string `json:"reverse_status_message"`
+	ReverseStatusMessage string `json:"reverse_status_message"`
 }
 
-// IPFailover: ip failover
-type IPFailover struct {
-	// ID: ID of the IP failover
-	ID string `json:"id"`
-	// OrganizationID: organization ID the IP failover is attached to
-	OrganizationID string `json:"organization_id"`
-	// Description: description of the IP failover
-	Description string `json:"description"`
-	// Tags: tags associated to the IP failover
-	Tags []string `json:"tags"`
-	// UpdatedAt: date of last update of the IP failover
-	UpdatedAt time.Time `json:"updated_at"`
-	// CreatedAt: date of creation of the IP failover
-	CreatedAt time.Time `json:"created_at"`
-	// Status: status of the IP failover
-	//
-	// Default value: unknown
-	Status IPFailoverStatus `json:"status"`
-	// IPAddress: IP of the IP failover
-	IPAddress net.IP `json:"ip_address"`
-	// MacAddress: mac address of the IP failover
-	MacAddress string `json:"mac_address"`
-	// ServerID: serverID linked to the IP failover
-	ServerID string `json:"server_id"`
-	// MacType: type of the MAC generated of the IP failover
-	//
-	// Default value: unknown_mac_type
-	MacType IPFailoverMACType `json:"mac_type"`
-	// Reverse: reverse IP value
-	Reverse string `json:"reverse"`
-	// ReverseStatus: status of the reverse
-	//
-	// Default value: unknown
-	ReverseStatus IPReverseStatus `json:"reverse_status"`
-	// ReverseStatusMessage: a message related to the reverse status, in case of an error for example
-	ReverseStatusMessage *string `json:"reverse_status_message"`
-	// Zone: the zone in which is the ip
-	Zone scw.Zone `json:"zone"`
-}
-
-// IPFailoverEvent: ip failover event
-type IPFailoverEvent struct {
-	// ID: ID of the IP failover for whom the action will be applied
-	ID string `json:"id"`
-	// Action: the action that will be applied to the IP failover
-	//
-	// Default value: unknown
-	Action IPFailoverEventAction `json:"action"`
-	// UpdatedAt: date of last modification of the action
-	UpdatedAt time.Time `json:"updated_at"`
-	// CreatedAt: date of creation of the action
-	CreatedAt time.Time `json:"created_at"`
-}
-
-// ListIPFailoverEventsResponse: list ip failover events response
-type ListIPFailoverEventsResponse struct {
-	// TotalCount: total count of matching IP failover events
+// ListOSResponse: list os response
+type ListOSResponse struct {
+	// TotalCount: total count of matching OS
 	TotalCount uint32 `json:"total_count"`
-	// Event: IP failover events that match filters
-	Event []*IPFailoverEvent `json:"event"`
-}
-
-// ListIPFailoversResponse: list ip failovers response
-type ListIPFailoversResponse struct {
-	// TotalCount: total count of matching IP failovers
-	TotalCount uint32 `json:"total_count"`
-	// Failovers: listing of failovers
-	Failovers []*IPFailover `json:"failovers"`
+	// Os: oS that match filters
+	Os []*OS `json:"os"`
 }
 
 // ListOffersResponse: list offers response
@@ -721,20 +443,12 @@ type ListOffersResponse struct {
 	Offers []*Offer `json:"offers"`
 }
 
-// ListOsResponse: list os response
-type ListOsResponse struct {
-	// TotalCount: total count of matching OS
-	TotalCount uint32 `json:"total_count"`
-	// Os: oS that match filters
-	Os []*Os `json:"os"`
-}
-
 // ListServerEventsResponse: list server events response
 type ListServerEventsResponse struct {
 	// TotalCount: total count of matching events
 	TotalCount uint32 `json:"total_count"`
-	// Event: server events that match filters
-	Event []*ServerEvent `json:"event"`
+	// Events: server events that match filters
+	Events []*ServerEvent `json:"events"`
 }
 
 // ListServersResponse: list servers response
@@ -747,13 +461,23 @@ type ListServersResponse struct {
 
 // Memory: memory
 type Memory struct {
-	Capacity uint64 `json:"capacity"`
+	Capacity scw.Size `json:"capacity"`
 
 	Type string `json:"type"`
 
 	Frequency uint32 `json:"frequency"`
 
-	Ecc bool `json:"ecc"`
+	IsEcc bool `json:"is_ecc"`
+}
+
+// OS: os
+type OS struct {
+	// ID: ID of the OS
+	ID string `json:"id"`
+	// Name: name of the OS
+	Name string `json:"name"`
+	// Version: version of the OS
+	Version string `json:"version"`
 }
 
 // Offer: offer
@@ -766,50 +490,24 @@ type Offer struct {
 	//
 	// Default value: empty
 	Stock OfferStock `json:"stock"`
-	// Bandwidth: bandwidth available with the offer
+	// Bandwidth: bandwidth available in bits/s with the offer
 	Bandwidth uint32 `json:"bandwidth"`
 	// CommercialRange: commercial range of the offer
 	CommercialRange string `json:"commercial_range"`
-	// PriceByMinute: price of the offer by minutes, this field is deprecated, please use `price_per_sixty_minutes` instead
-	PriceByMinute *scw.Money `json:"price_by_minute"`
-	// PriceByMonth: price of the offer by months, this field is deprecated, please use `price_per_month` instead
-	PriceByMonth *scw.Money `json:"price_by_month"`
-	// PricePerSixtyMinutes: price of the offer for the next 60 minutes (a server order at 11h32 will be payed until 12h32)
-	PricePerSixtyMinutes *scw.Money `json:"price_per_sixty_minutes"`
+	// PricePerHour: price of the offer for the next 60 minutes (a server order at 11h32 will be payed until 12h32)
+	PricePerHour *scw.Money `json:"price_per_hour"`
 	// PricePerMonth: price of the offer per months
 	PricePerMonth *scw.Money `json:"price_per_month"`
-	// Disk: disks specifications of the offer
-	Disk []*Disk `json:"disk"`
+	// Disks: disks specifications of the offer
+	Disks []*Disk `json:"disks"`
 	// Enable: true if the offer is currently available
 	Enable bool `json:"enable"`
-	// CPU: CPU specifications of the offer
-	CPU []*CPU `json:"cpu"`
-	// Memory: memory specifications of the offer
-	Memory []*Memory `json:"memory"`
+	// CPUs: CPU specifications of the offer
+	CPUs []*CPU `json:"cpus"`
+	// Memories: memory specifications of the offer
+	Memories []*Memory `json:"memories"`
 	// QuotaName: name of the quota associated to the offer
 	QuotaName string `json:"quota_name"`
-}
-
-// Os: os
-type Os struct {
-	// ID: ID of the OS
-	ID string `json:"id"`
-	// Name: name of the OS
-	Name string `json:"name"`
-	// Version: version of the OS
-	Version string `json:"version"`
-}
-
-// RemoteServerAccess: remote server access
-type RemoteServerAccess struct {
-	// URL: URL to access to the server console
-	URL string `json:"url"`
-	// Login: the login to use for the remote access authentification
-	Login string `json:"login"`
-	// Password: the password to use for the remote access authentification
-	Password string `json:"password"`
-	// ExpiresAt: the date after which the remote access will be closed
-	ExpiresAt time.Time `json:"expires_at"`
 }
 
 // Server: server
@@ -832,8 +530,6 @@ type Server struct {
 	Status ServerStatus `json:"status"`
 	// OfferID: offer ID of the server
 	OfferID string `json:"offer_id"`
-	// Install: information about the last installation of the server
-	Install *ServerInstall `json:"install"`
 	// Tags: array of customs tags attached to the server
 	Tags []string `json:"tags"`
 	// IPs: array of IPs attached to the server
@@ -842,10 +538,12 @@ type Server struct {
 	Domain string `json:"domain"`
 	// BootType: boot type of the server
 	//
-	// Default value: normal
+	// Default value: unknown_boot_type
 	BootType ServerBootType `json:"boot_type"`
 	// Zone: the zone in which is the server
 	Zone scw.Zone `json:"zone"`
+	// Install: configuration of installation
+	Install *ServerInstall `json:"install"`
 	// PingStatus: server status of ping
 	//
 	// Default value: ping_status_unknown
@@ -864,15 +562,13 @@ type ServerEvent struct {
 	CreatedAt time.Time `json:"created_at"`
 }
 
-// ServerInstall: server install
 type ServerInstall struct {
-	// OsID: ID of the OS
 	OsID string `json:"os_id"`
-	// Hostname: host defined in the server install
+
 	Hostname string `json:"hostname"`
-	// SSHKeyIDs: SSH public key IDs defined in the server install
+
 	SSHKeyIDs []string `json:"ssh_key_ids"`
-	// Status: status of the server install
+	// Status:
 	//
 	// Default value: unknown
 	Status ServerInstallStatus `json:"status"`
@@ -931,7 +627,7 @@ func (s *API) ListServers(req *ListServersRequest, opts ...scw.RequestOption) (*
 
 	scwReq := &scw.ScalewayRequest{
 		Method:  "GET",
-		Path:    "/baremetal/v1alpha1/zones/" + fmt.Sprint(req.Zone) + "/servers",
+		Path:    "/baremetal/v1/zones/" + fmt.Sprint(req.Zone) + "/servers",
 		Query:   query,
 		Headers: http.Header{},
 	}
@@ -991,7 +687,7 @@ func (s *API) GetServer(req *GetServerRequest, opts ...scw.RequestOption) (*Serv
 
 	scwReq := &scw.ScalewayRequest{
 		Method:  "GET",
-		Path:    "/baremetal/v1alpha1/zones/" + fmt.Sprint(req.Zone) + "/servers/" + fmt.Sprint(req.ServerID) + "",
+		Path:    "/baremetal/v1/zones/" + fmt.Sprint(req.Zone) + "/servers/" + fmt.Sprint(req.ServerID) + "",
 		Headers: http.Header{},
 	}
 
@@ -1040,7 +736,7 @@ func (s *API) CreateServer(req *CreateServerRequest, opts ...scw.RequestOption) 
 
 	scwReq := &scw.ScalewayRequest{
 		Method:  "POST",
-		Path:    "/baremetal/v1alpha1/zones/" + fmt.Sprint(req.Zone) + "/servers",
+		Path:    "/baremetal/v1/zones/" + fmt.Sprint(req.Zone) + "/servers",
 		Headers: http.Header{},
 	}
 
@@ -1091,7 +787,7 @@ func (s *API) UpdateServer(req *UpdateServerRequest, opts ...scw.RequestOption) 
 
 	scwReq := &scw.ScalewayRequest{
 		Method:  "PATCH",
-		Path:    "/baremetal/v1alpha1/zones/" + fmt.Sprint(req.Zone) + "/servers/" + fmt.Sprint(req.ServerID) + "",
+		Path:    "/baremetal/v1/zones/" + fmt.Sprint(req.Zone) + "/servers/" + fmt.Sprint(req.ServerID) + "",
 		Headers: http.Header{},
 	}
 
@@ -1142,7 +838,7 @@ func (s *API) InstallServer(req *InstallServerRequest, opts ...scw.RequestOption
 
 	scwReq := &scw.ScalewayRequest{
 		Method:  "POST",
-		Path:    "/baremetal/v1alpha1/zones/" + fmt.Sprint(req.Zone) + "/servers/" + fmt.Sprint(req.ServerID) + "/install",
+		Path:    "/baremetal/v1/zones/" + fmt.Sprint(req.Zone) + "/servers/" + fmt.Sprint(req.ServerID) + "/install",
 		Headers: http.Header{},
 	}
 
@@ -1187,7 +883,7 @@ func (s *API) GetServerMetrics(req *GetServerMetricsRequest, opts ...scw.Request
 
 	scwReq := &scw.ScalewayRequest{
 		Method:  "GET",
-		Path:    "/baremetal/v1alpha1/zones/" + fmt.Sprint(req.Zone) + "/servers/" + fmt.Sprint(req.ServerID) + "/metrics",
+		Path:    "/baremetal/v1/zones/" + fmt.Sprint(req.Zone) + "/servers/" + fmt.Sprint(req.ServerID) + "/metrics",
 		Headers: http.Header{},
 	}
 
@@ -1227,7 +923,7 @@ func (s *API) DeleteServer(req *DeleteServerRequest, opts ...scw.RequestOption) 
 
 	scwReq := &scw.ScalewayRequest{
 		Method:  "DELETE",
-		Path:    "/baremetal/v1alpha1/zones/" + fmt.Sprint(req.Zone) + "/servers/" + fmt.Sprint(req.ServerID) + "",
+		Path:    "/baremetal/v1/zones/" + fmt.Sprint(req.Zone) + "/servers/" + fmt.Sprint(req.ServerID) + "",
 		Headers: http.Header{},
 	}
 
@@ -1246,8 +942,8 @@ type RebootServerRequest struct {
 	ServerID string `json:"-"`
 	// BootType: the type of boot
 	//
-	// Default value: normal
-	BootType RebootServerRequestBootType `json:"boot_type"`
+	// Default value: unknown_boot_type
+	BootType ServerBootType `json:"boot_type"`
 }
 
 // RebootServer: reboot server
@@ -1271,7 +967,7 @@ func (s *API) RebootServer(req *RebootServerRequest, opts ...scw.RequestOption) 
 
 	scwReq := &scw.ScalewayRequest{
 		Method:  "POST",
-		Path:    "/baremetal/v1alpha1/zones/" + fmt.Sprint(req.Zone) + "/servers/" + fmt.Sprint(req.ServerID) + "/reboot",
+		Path:    "/baremetal/v1/zones/" + fmt.Sprint(req.Zone) + "/servers/" + fmt.Sprint(req.ServerID) + "/reboot",
 		Headers: http.Header{},
 	}
 
@@ -1316,7 +1012,7 @@ func (s *API) StartServer(req *StartServerRequest, opts ...scw.RequestOption) (*
 
 	scwReq := &scw.ScalewayRequest{
 		Method:  "POST",
-		Path:    "/baremetal/v1alpha1/zones/" + fmt.Sprint(req.Zone) + "/servers/" + fmt.Sprint(req.ServerID) + "/start",
+		Path:    "/baremetal/v1/zones/" + fmt.Sprint(req.Zone) + "/servers/" + fmt.Sprint(req.ServerID) + "/start",
 		Headers: http.Header{},
 	}
 
@@ -1361,7 +1057,7 @@ func (s *API) StopServer(req *StopServerRequest, opts ...scw.RequestOption) (*Se
 
 	scwReq := &scw.ScalewayRequest{
 		Method:  "POST",
-		Path:    "/baremetal/v1alpha1/zones/" + fmt.Sprint(req.Zone) + "/servers/" + fmt.Sprint(req.ServerID) + "/stop",
+		Path:    "/baremetal/v1/zones/" + fmt.Sprint(req.Zone) + "/servers/" + fmt.Sprint(req.ServerID) + "/stop",
 		Headers: http.Header{},
 	}
 
@@ -1424,7 +1120,7 @@ func (s *API) ListServerEvents(req *ListServerEventsRequest, opts ...scw.Request
 
 	scwReq := &scw.ScalewayRequest{
 		Method:  "GET",
-		Path:    "/baremetal/v1alpha1/zones/" + fmt.Sprint(req.Zone) + "/servers/" + fmt.Sprint(req.ServerID) + "/events",
+		Path:    "/baremetal/v1/zones/" + fmt.Sprint(req.Zone) + "/servers/" + fmt.Sprint(req.ServerID) + "/events",
 		Query:   query,
 		Headers: http.Header{},
 	}
@@ -1452,25 +1148,25 @@ func (r *ListServerEventsResponse) UnsafeAppend(res interface{}) (uint32, error)
 		return 0, errors.New("%T type cannot be appended to type %T", res, r)
 	}
 
-	r.Event = append(r.Event, results.Event...)
-	r.TotalCount += uint32(len(results.Event))
-	return uint32(len(results.Event)), nil
+	r.Events = append(r.Events, results.Events...)
+	r.TotalCount += uint32(len(results.Events))
+	return uint32(len(results.Events)), nil
 }
 
-type CreateRemoteServerAccessRequest struct {
+type StartBMCAccessRequest struct {
 	Zone scw.Zone `json:"-"`
 	// ServerID: ID of the server
 	ServerID string `json:"-"`
 	// IP: the IP authorized to connect to the given server
-	IP string `json:"ip"`
+	IP net.IP `json:"ip"`
 }
 
-// CreateRemoteServerAccess: create remote server access
+// StartBMCAccess: start BMC (Baseboard Management Controller) access
 //
-// Create remote server access associated with the given ID.
-// The remote access is available one hour after the installation of the server.
+// Start BMC (Baseboard Management Controller) access associated with the given ID.
+// The BMC (Baseboard Management Controller) access is available one hour after the installation of the server.
 //
-func (s *API) CreateRemoteServerAccess(req *CreateRemoteServerAccessRequest, opts ...scw.RequestOption) (*RemoteServerAccess, error) {
+func (s *API) StartBMCAccess(req *StartBMCAccessRequest, opts ...scw.RequestOption) (*BMCAccess, error) {
 	var err error
 
 	if req.Zone == "" {
@@ -1488,7 +1184,7 @@ func (s *API) CreateRemoteServerAccess(req *CreateRemoteServerAccessRequest, opt
 
 	scwReq := &scw.ScalewayRequest{
 		Method:  "POST",
-		Path:    "/baremetal/v1alpha1/zones/" + fmt.Sprint(req.Zone) + "/servers/" + fmt.Sprint(req.ServerID) + "/remote-access",
+		Path:    "/baremetal/v1/zones/" + fmt.Sprint(req.Zone) + "/servers/" + fmt.Sprint(req.ServerID) + "/bmc-access",
 		Headers: http.Header{},
 	}
 
@@ -1497,7 +1193,7 @@ func (s *API) CreateRemoteServerAccess(req *CreateRemoteServerAccessRequest, opt
 		return nil, err
 	}
 
-	var resp RemoteServerAccess
+	var resp BMCAccess
 
 	err = s.client.Do(scwReq, &resp, opts...)
 	if err != nil {
@@ -1506,16 +1202,16 @@ func (s *API) CreateRemoteServerAccess(req *CreateRemoteServerAccessRequest, opt
 	return &resp, nil
 }
 
-type GetRemoteServerAccessRequest struct {
+type GetBMCAccessRequest struct {
 	Zone scw.Zone `json:"-"`
 	// ServerID: ID of the server
 	ServerID string `json:"-"`
 }
 
-// GetRemoteServerAccess: get remote server access
+// GetBMCAccess: get BMC (Baseboard Management Controller) access
 //
-// Get the remote server access associated with the given ID.
-func (s *API) GetRemoteServerAccess(req *GetRemoteServerAccessRequest, opts ...scw.RequestOption) (*RemoteServerAccess, error) {
+// Get the BMC (Baseboard Management Controller) access associated with the given ID.
+func (s *API) GetBMCAccess(req *GetBMCAccessRequest, opts ...scw.RequestOption) (*BMCAccess, error) {
 	var err error
 
 	if req.Zone == "" {
@@ -1533,11 +1229,11 @@ func (s *API) GetRemoteServerAccess(req *GetRemoteServerAccessRequest, opts ...s
 
 	scwReq := &scw.ScalewayRequest{
 		Method:  "GET",
-		Path:    "/baremetal/v1alpha1/zones/" + fmt.Sprint(req.Zone) + "/servers/" + fmt.Sprint(req.ServerID) + "/remote-access",
+		Path:    "/baremetal/v1/zones/" + fmt.Sprint(req.Zone) + "/servers/" + fmt.Sprint(req.ServerID) + "/bmc-access",
 		Headers: http.Header{},
 	}
 
-	var resp RemoteServerAccess
+	var resp BMCAccess
 
 	err = s.client.Do(scwReq, &resp, opts...)
 	if err != nil {
@@ -1546,16 +1242,16 @@ func (s *API) GetRemoteServerAccess(req *GetRemoteServerAccessRequest, opts ...s
 	return &resp, nil
 }
 
-type DeleteRemoteServerAccessRequest struct {
+type StopBMCAccessRequest struct {
 	Zone scw.Zone `json:"-"`
 	// ServerID: ID of the server
 	ServerID string `json:"-"`
 }
 
-// DeleteRemoteServerAccess: delete remote server access
+// StopBMCAccess: stop BMC (Baseboard Management Controller) access
 //
-// Delete remote server access associated with the given ID.
-func (s *API) DeleteRemoteServerAccess(req *DeleteRemoteServerAccessRequest, opts ...scw.RequestOption) error {
+// Stop BMC (Baseboard Management Controller) access associated with the given ID.
+func (s *API) StopBMCAccess(req *StopBMCAccessRequest, opts ...scw.RequestOption) error {
 	var err error
 
 	if req.Zone == "" {
@@ -1573,7 +1269,7 @@ func (s *API) DeleteRemoteServerAccess(req *DeleteRemoteServerAccessRequest, opt
 
 	scwReq := &scw.ScalewayRequest{
 		Method:  "DELETE",
-		Path:    "/baremetal/v1alpha1/zones/" + fmt.Sprint(req.Zone) + "/servers/" + fmt.Sprint(req.ServerID) + "/remote-access",
+		Path:    "/baremetal/v1/zones/" + fmt.Sprint(req.Zone) + "/servers/" + fmt.Sprint(req.ServerID) + "/bmc-access",
 		Headers: http.Header{},
 	}
 
@@ -1619,7 +1315,7 @@ func (s *API) UpdateIP(req *UpdateIPRequest, opts ...scw.RequestOption) (*IP, er
 
 	scwReq := &scw.ScalewayRequest{
 		Method:  "PATCH",
-		Path:    "/baremetal/v1alpha1/zones/" + fmt.Sprint(req.Zone) + "/servers/" + fmt.Sprint(req.ServerID) + "/ips/" + fmt.Sprint(req.IPID) + "",
+		Path:    "/baremetal/v1/zones/" + fmt.Sprint(req.Zone) + "/servers/" + fmt.Sprint(req.ServerID) + "/ips/" + fmt.Sprint(req.IPID) + "",
 		Headers: http.Header{},
 	}
 
@@ -1635,445 +1331,6 @@ func (s *API) UpdateIP(req *UpdateIPRequest, opts ...scw.RequestOption) (*IP, er
 		return nil, err
 	}
 	return &resp, nil
-}
-
-type CreateIPFailoverRequest struct {
-	Zone scw.Zone `json:"-"`
-	// OrganizationID: ID of the organization to associate to the IP failover
-	OrganizationID string `json:"organization_id"`
-	// Description: description to associate to the IP failover, max 255 characters
-	Description string `json:"description"`
-	// Tags: tags to associate to the IP failover
-	Tags []string `json:"tags"`
-	// MacType: mAC type to use for the IP failover
-	//
-	// Default value: unknown_mac_type
-	MacType IPFailoverMACType `json:"mac_type"`
-	// DuplicateMacFrom: ID of the IP failover which must be duplicate
-	DuplicateMacFrom *string `json:"duplicate_mac_from"`
-}
-
-// CreateIPFailover: create IP failover
-//
-// Create an IP failover. Once the IP failover is created, you probably want to attach it to a server.
-func (s *API) CreateIPFailover(req *CreateIPFailoverRequest, opts ...scw.RequestOption) (*IPFailover, error) {
-	var err error
-
-	if req.OrganizationID == "" {
-		defaultOrganizationID, _ := s.client.GetDefaultOrganizationID()
-		req.OrganizationID = defaultOrganizationID
-	}
-
-	if req.Zone == "" {
-		defaultZone, _ := s.client.GetDefaultZone()
-		req.Zone = defaultZone
-	}
-
-	if fmt.Sprint(req.Zone) == "" {
-		return nil, errors.New("field Zone cannot be empty in request")
-	}
-
-	scwReq := &scw.ScalewayRequest{
-		Method:  "POST",
-		Path:    "/baremetal/v1alpha1/zones/" + fmt.Sprint(req.Zone) + "/ip-failovers",
-		Headers: http.Header{},
-	}
-
-	err = scwReq.SetBody(req)
-	if err != nil {
-		return nil, err
-	}
-
-	var resp IPFailover
-
-	err = s.client.Do(scwReq, &resp, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return &resp, nil
-}
-
-type GetIPFailoverRequest struct {
-	Zone scw.Zone `json:"-"`
-	// IPFailoverID: ID of the IP failover
-	IPFailoverID string `json:"-"`
-}
-
-// GetIPFailover: get IP failover
-//
-// Get the IP failover associated with the given ID.
-func (s *API) GetIPFailover(req *GetIPFailoverRequest, opts ...scw.RequestOption) (*IPFailover, error) {
-	var err error
-
-	if req.Zone == "" {
-		defaultZone, _ := s.client.GetDefaultZone()
-		req.Zone = defaultZone
-	}
-
-	if fmt.Sprint(req.Zone) == "" {
-		return nil, errors.New("field Zone cannot be empty in request")
-	}
-
-	if fmt.Sprint(req.IPFailoverID) == "" {
-		return nil, errors.New("field IPFailoverID cannot be empty in request")
-	}
-
-	scwReq := &scw.ScalewayRequest{
-		Method:  "GET",
-		Path:    "/baremetal/v1alpha1/zones/" + fmt.Sprint(req.Zone) + "/ip-failovers/" + fmt.Sprint(req.IPFailoverID) + "",
-		Headers: http.Header{},
-	}
-
-	var resp IPFailover
-
-	err = s.client.Do(scwReq, &resp, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return &resp, nil
-}
-
-type ListIPFailoversRequest struct {
-	Zone scw.Zone `json:"-"`
-	// Page: page number
-	Page *int32 `json:"-"`
-	// PageSize: number of IP failover per page
-	PageSize *uint32 `json:"-"`
-	// OrderBy: order of the IP failovers
-	//
-	// Default value: created_at_asc
-	OrderBy ListIPFailoversRequestOrderBy `json:"-"`
-	// Tags: filter IP failovers by tags
-	Tags []string `json:"-"`
-	// Status: filter IP failovers by status
-	Status []string `json:"-"`
-	// ServerIDs: filter IP failovers by server IDs
-	ServerIDs []string `json:"-"`
-	// OrganizationID: filter servers by organization ID
-	OrganizationID *string `json:"-"`
-}
-
-// ListIPFailovers: list IP failovers
-//
-// List all created IP failovers.
-func (s *API) ListIPFailovers(req *ListIPFailoversRequest, opts ...scw.RequestOption) (*ListIPFailoversResponse, error) {
-	var err error
-
-	if req.Zone == "" {
-		defaultZone, _ := s.client.GetDefaultZone()
-		req.Zone = defaultZone
-	}
-
-	defaultPageSize, exist := s.client.GetDefaultPageSize()
-	if (req.PageSize == nil || *req.PageSize == 0) && exist {
-		req.PageSize = &defaultPageSize
-	}
-
-	query := url.Values{}
-	parameter.AddToQuery(query, "page", req.Page)
-	parameter.AddToQuery(query, "page_size", req.PageSize)
-	parameter.AddToQuery(query, "order_by", req.OrderBy)
-	parameter.AddToQuery(query, "tags", req.Tags)
-	parameter.AddToQuery(query, "status", req.Status)
-	parameter.AddToQuery(query, "server_ids", req.ServerIDs)
-	parameter.AddToQuery(query, "organization_id", req.OrganizationID)
-
-	if fmt.Sprint(req.Zone) == "" {
-		return nil, errors.New("field Zone cannot be empty in request")
-	}
-
-	scwReq := &scw.ScalewayRequest{
-		Method:  "GET",
-		Path:    "/baremetal/v1alpha1/zones/" + fmt.Sprint(req.Zone) + "/ip-failovers",
-		Query:   query,
-		Headers: http.Header{},
-	}
-
-	var resp ListIPFailoversResponse
-
-	err = s.client.Do(scwReq, &resp, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return &resp, nil
-}
-
-// UnsafeGetTotalCount should not be used
-// Internal usage only
-func (r *ListIPFailoversResponse) UnsafeGetTotalCount() uint32 {
-	return r.TotalCount
-}
-
-// UnsafeAppend should not be used
-// Internal usage only
-func (r *ListIPFailoversResponse) UnsafeAppend(res interface{}) (uint32, error) {
-	results, ok := res.(*ListIPFailoversResponse)
-	if !ok {
-		return 0, errors.New("%T type cannot be appended to type %T", res, r)
-	}
-
-	r.Failovers = append(r.Failovers, results.Failovers...)
-	r.TotalCount += uint32(len(results.Failovers))
-	return uint32(len(results.Failovers)), nil
-}
-
-type DeleteIPFailoverRequest struct {
-	Zone scw.Zone `json:"-"`
-	// IPFailoverID: ID of the IP failover to delete
-	IPFailoverID string `json:"-"`
-}
-
-// DeleteIPFailover: delete IP failover
-//
-// Delete the IP failover associated with the given IP.
-func (s *API) DeleteIPFailover(req *DeleteIPFailoverRequest, opts ...scw.RequestOption) (*IPFailover, error) {
-	var err error
-
-	if req.Zone == "" {
-		defaultZone, _ := s.client.GetDefaultZone()
-		req.Zone = defaultZone
-	}
-
-	if fmt.Sprint(req.Zone) == "" {
-		return nil, errors.New("field Zone cannot be empty in request")
-	}
-
-	if fmt.Sprint(req.IPFailoverID) == "" {
-		return nil, errors.New("field IPFailoverID cannot be empty in request")
-	}
-
-	scwReq := &scw.ScalewayRequest{
-		Method:  "DELETE",
-		Path:    "/baremetal/v1alpha1/zones/" + fmt.Sprint(req.Zone) + "/ip-failovers/" + fmt.Sprint(req.IPFailoverID) + "",
-		Headers: http.Header{},
-	}
-
-	var resp IPFailover
-
-	err = s.client.Do(scwReq, &resp, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return &resp, nil
-}
-
-type UpdateIPFailoverRequest struct {
-	Zone scw.Zone `json:"-"`
-	// IPFailoverID: ID of the IP failover to update
-	IPFailoverID string `json:"-"`
-	// Description: description to associate to the IP failover, max 255 characters, not updated if null
-	Description *string `json:"description"`
-	// Tags: tags to associate to the IP failover, not updated if null
-	Tags *[]string `json:"tags"`
-	// MacType: mAC type to use for the IP failover, not updated if null
-	//
-	// Default value: unknown_mac_type
-	MacType IPFailoverMACType `json:"mac_type"`
-	// DuplicateMacFrom: ID of the IP failover which must be duplicate, not updated if null
-	DuplicateMacFrom *string `json:"duplicate_mac_from"`
-	// Reverse: new reverse IP to update, not updated if null
-	Reverse *string `json:"reverse"`
-}
-
-// UpdateIPFailover: update IP failover
-//
-// Update the IP failover associated with the given IP.
-func (s *API) UpdateIPFailover(req *UpdateIPFailoverRequest, opts ...scw.RequestOption) (*IPFailover, error) {
-	var err error
-
-	if req.Zone == "" {
-		defaultZone, _ := s.client.GetDefaultZone()
-		req.Zone = defaultZone
-	}
-
-	if fmt.Sprint(req.Zone) == "" {
-		return nil, errors.New("field Zone cannot be empty in request")
-	}
-
-	if fmt.Sprint(req.IPFailoverID) == "" {
-		return nil, errors.New("field IPFailoverID cannot be empty in request")
-	}
-
-	scwReq := &scw.ScalewayRequest{
-		Method:  "PATCH",
-		Path:    "/baremetal/v1alpha1/zones/" + fmt.Sprint(req.Zone) + "/ip-failovers/" + fmt.Sprint(req.IPFailoverID) + "",
-		Headers: http.Header{},
-	}
-
-	err = scwReq.SetBody(req)
-	if err != nil {
-		return nil, err
-	}
-
-	var resp IPFailover
-
-	err = s.client.Do(scwReq, &resp, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return &resp, nil
-}
-
-type AttachIPFailoversRequest struct {
-	Zone scw.Zone `json:"-"`
-	// IPFailoverIDs: IP failover IDs to attach to the server
-	IPFailoverIDs []string `json:"ip_failover_ids"`
-	// ServerID: ID of the server to attach to the IP failovers
-	ServerID string `json:"server_id"`
-}
-
-// AttachIPFailovers: attach IP failovers
-//
-// Attach IP failovers to the given server ID.
-func (s *API) AttachIPFailovers(req *AttachIPFailoversRequest, opts ...scw.RequestOption) (*AttachIPFailoversResponse, error) {
-	var err error
-
-	if req.Zone == "" {
-		defaultZone, _ := s.client.GetDefaultZone()
-		req.Zone = defaultZone
-	}
-
-	if fmt.Sprint(req.Zone) == "" {
-		return nil, errors.New("field Zone cannot be empty in request")
-	}
-
-	scwReq := &scw.ScalewayRequest{
-		Method:  "POST",
-		Path:    "/baremetal/v1alpha1/zones/" + fmt.Sprint(req.Zone) + "/ip-failovers/attach",
-		Headers: http.Header{},
-	}
-
-	err = scwReq.SetBody(req)
-	if err != nil {
-		return nil, err
-	}
-
-	var resp AttachIPFailoversResponse
-
-	err = s.client.Do(scwReq, &resp, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return &resp, nil
-}
-
-type DetachIPFailoversRequest struct {
-	Zone scw.Zone `json:"-"`
-	// IPFailoverIDs: IP failover IDs to detach to the server
-	IPFailoverIDs []string `json:"ip_failover_ids"`
-}
-
-// DetachIPFailovers: detach IP failovers
-//
-// Detach IP failovers to the given server ID.
-func (s *API) DetachIPFailovers(req *DetachIPFailoversRequest, opts ...scw.RequestOption) (*DetachIPFailoversResponse, error) {
-	var err error
-
-	if req.Zone == "" {
-		defaultZone, _ := s.client.GetDefaultZone()
-		req.Zone = defaultZone
-	}
-
-	if fmt.Sprint(req.Zone) == "" {
-		return nil, errors.New("field Zone cannot be empty in request")
-	}
-
-	scwReq := &scw.ScalewayRequest{
-		Method:  "POST",
-		Path:    "/baremetal/v1alpha1/zones/" + fmt.Sprint(req.Zone) + "/ip-failovers/detach",
-		Headers: http.Header{},
-	}
-
-	err = scwReq.SetBody(req)
-	if err != nil {
-		return nil, err
-	}
-
-	var resp DetachIPFailoversResponse
-
-	err = s.client.Do(scwReq, &resp, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return &resp, nil
-}
-
-type ListIPFailoverEventsRequest struct {
-	Zone scw.Zone `json:"-"`
-	// IPFailoverID: ID of the IP failover events searched
-	IPFailoverID string `json:"-"`
-	// Page: page number
-	Page *int32 `json:"-"`
-	// PageSize: number of IP failover events per page
-	PageSize *uint32 `json:"-"`
-	// OrderBy: order of the IP failover events
-	//
-	// Default value: created_at_asc
-	OrderBy ListIPFailoverEventsRequestOrderBy `json:"-"`
-}
-
-// ListIPFailoverEvents: list IP failover events
-//
-// List IP failover events associated with the given ID.
-func (s *API) ListIPFailoverEvents(req *ListIPFailoverEventsRequest, opts ...scw.RequestOption) (*ListIPFailoverEventsResponse, error) {
-	var err error
-
-	if req.Zone == "" {
-		defaultZone, _ := s.client.GetDefaultZone()
-		req.Zone = defaultZone
-	}
-
-	defaultPageSize, exist := s.client.GetDefaultPageSize()
-	if (req.PageSize == nil || *req.PageSize == 0) && exist {
-		req.PageSize = &defaultPageSize
-	}
-
-	query := url.Values{}
-	parameter.AddToQuery(query, "page", req.Page)
-	parameter.AddToQuery(query, "page_size", req.PageSize)
-	parameter.AddToQuery(query, "order_by", req.OrderBy)
-
-	if fmt.Sprint(req.Zone) == "" {
-		return nil, errors.New("field Zone cannot be empty in request")
-	}
-
-	if fmt.Sprint(req.IPFailoverID) == "" {
-		return nil, errors.New("field IPFailoverID cannot be empty in request")
-	}
-
-	scwReq := &scw.ScalewayRequest{
-		Method:  "GET",
-		Path:    "/baremetal/v1alpha1/zones/" + fmt.Sprint(req.Zone) + "/ip-failovers/" + fmt.Sprint(req.IPFailoverID) + "/events",
-		Query:   query,
-		Headers: http.Header{},
-	}
-
-	var resp ListIPFailoverEventsResponse
-
-	err = s.client.Do(scwReq, &resp, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return &resp, nil
-}
-
-// UnsafeGetTotalCount should not be used
-// Internal usage only
-func (r *ListIPFailoverEventsResponse) UnsafeGetTotalCount() uint32 {
-	return r.TotalCount
-}
-
-// UnsafeAppend should not be used
-// Internal usage only
-func (r *ListIPFailoverEventsResponse) UnsafeAppend(res interface{}) (uint32, error) {
-	results, ok := res.(*ListIPFailoverEventsResponse)
-	if !ok {
-		return 0, errors.New("%T type cannot be appended to type %T", res, r)
-	}
-
-	r.Event = append(r.Event, results.Event...)
-	r.TotalCount += uint32(len(results.Event))
-	return uint32(len(results.Event)), nil
 }
 
 type ListOffersRequest struct {
@@ -2110,7 +1367,7 @@ func (s *API) ListOffers(req *ListOffersRequest, opts ...scw.RequestOption) (*Li
 
 	scwReq := &scw.ScalewayRequest{
 		Method:  "GET",
-		Path:    "/baremetal/v1alpha1/zones/" + fmt.Sprint(req.Zone) + "/offers",
+		Path:    "/baremetal/v1/zones/" + fmt.Sprint(req.Zone) + "/offers",
 		Query:   query,
 		Headers: http.Header{},
 	}
@@ -2170,7 +1427,7 @@ func (s *API) GetOffer(req *GetOfferRequest, opts ...scw.RequestOption) (*Offer,
 
 	scwReq := &scw.ScalewayRequest{
 		Method:  "GET",
-		Path:    "/baremetal/v1alpha1/zones/" + fmt.Sprint(req.Zone) + "/offers/" + fmt.Sprint(req.OfferID) + "",
+		Path:    "/baremetal/v1/zones/" + fmt.Sprint(req.Zone) + "/offers/" + fmt.Sprint(req.OfferID) + "",
 		Headers: http.Header{},
 	}
 
@@ -2183,7 +1440,7 @@ func (s *API) GetOffer(req *GetOfferRequest, opts ...scw.RequestOption) (*Offer,
 	return &resp, nil
 }
 
-type ListOsRequest struct {
+type ListOSRequest struct {
 	Zone scw.Zone `json:"-"`
 	// Page: page number
 	Page *int32 `json:"-"`
@@ -2193,10 +1450,10 @@ type ListOsRequest struct {
 	OfferID *string `json:"-"`
 }
 
-// ListOs: list OS
+// ListOS: list OS
 //
 // List all available OS that can be install on a baremetal server.
-func (s *API) ListOs(req *ListOsRequest, opts ...scw.RequestOption) (*ListOsResponse, error) {
+func (s *API) ListOS(req *ListOSRequest, opts ...scw.RequestOption) (*ListOSResponse, error) {
 	var err error
 
 	if req.Zone == "" {
@@ -2220,12 +1477,12 @@ func (s *API) ListOs(req *ListOsRequest, opts ...scw.RequestOption) (*ListOsResp
 
 	scwReq := &scw.ScalewayRequest{
 		Method:  "GET",
-		Path:    "/baremetal/v1alpha1/zones/" + fmt.Sprint(req.Zone) + "/os",
+		Path:    "/baremetal/v1/zones/" + fmt.Sprint(req.Zone) + "/os",
 		Query:   query,
 		Headers: http.Header{},
 	}
 
-	var resp ListOsResponse
+	var resp ListOSResponse
 
 	err = s.client.Do(scwReq, &resp, opts...)
 	if err != nil {
@@ -2236,14 +1493,14 @@ func (s *API) ListOs(req *ListOsRequest, opts ...scw.RequestOption) (*ListOsResp
 
 // UnsafeGetTotalCount should not be used
 // Internal usage only
-func (r *ListOsResponse) UnsafeGetTotalCount() uint32 {
+func (r *ListOSResponse) UnsafeGetTotalCount() uint32 {
 	return r.TotalCount
 }
 
 // UnsafeAppend should not be used
 // Internal usage only
-func (r *ListOsResponse) UnsafeAppend(res interface{}) (uint32, error) {
-	results, ok := res.(*ListOsResponse)
+func (r *ListOSResponse) UnsafeAppend(res interface{}) (uint32, error) {
+	results, ok := res.(*ListOSResponse)
 	if !ok {
 		return 0, errors.New("%T type cannot be appended to type %T", res, r)
 	}
@@ -2253,16 +1510,16 @@ func (r *ListOsResponse) UnsafeAppend(res interface{}) (uint32, error) {
 	return uint32(len(results.Os)), nil
 }
 
-type GetOsRequest struct {
+type GetOSRequest struct {
 	Zone scw.Zone `json:"-"`
 	// OsID: ID of the researched OS
 	OsID string `json:"-"`
 }
 
-// GetOs: get OS
+// GetOS: get OS
 //
 // Return specific OS for the given ID.
-func (s *API) GetOs(req *GetOsRequest, opts ...scw.RequestOption) (*Os, error) {
+func (s *API) GetOS(req *GetOSRequest, opts ...scw.RequestOption) (*OS, error) {
 	var err error
 
 	if req.Zone == "" {
@@ -2280,11 +1537,11 @@ func (s *API) GetOs(req *GetOsRequest, opts ...scw.RequestOption) (*Os, error) {
 
 	scwReq := &scw.ScalewayRequest{
 		Method:  "GET",
-		Path:    "/baremetal/v1alpha1/zones/" + fmt.Sprint(req.Zone) + "/os/" + fmt.Sprint(req.OsID) + "",
+		Path:    "/baremetal/v1/zones/" + fmt.Sprint(req.Zone) + "/os/" + fmt.Sprint(req.OsID) + "",
 		Headers: http.Header{},
 	}
 
-	var resp Os
+	var resp OS
 
 	err = s.client.Do(scwReq, &resp, opts...)
 	if err != nil {

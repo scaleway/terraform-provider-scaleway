@@ -6,7 +6,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
-	baremetal "github.com/scaleway/scaleway-sdk-go/api/baremetal/v1alpha1"
+	baremetal "github.com/scaleway/scaleway-sdk-go/api/baremetal/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 )
 
@@ -82,37 +82,7 @@ func TestAccScalewayBaremetalServerMinimal1(t *testing.T) {
 				),
 			},
 			{
-				Config: `
-					resource "scaleway_account_ssh_key" "main" {
-						name 	   = "` + SSHKeyName + `"
-						public_key = "` + SSHKey + `"
-					}
-					
-					resource "scaleway_baremetal_server" "base" {
-						name        = "` + name + `"
-						zone        = "fr-par-2"
-						description = "test a description"
-						offer       = "GP-BM1-M"
-						os          = "d17d6872-0412-45d9-a198-af82c34d3c5c"
-					
-						tags = [ "terraform-test", "scaleway_baremetal_server", "minimal", "edited" ]
-						ssh_key_ids = [ scaleway_account_ssh_key.main.id ]
-					}
-				`,
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayBaremetalServerExists("scaleway_baremetal_server.base"),
-					resource.TestCheckResourceAttr("scaleway_baremetal_server.base", "name", name),
-					resource.TestCheckResourceAttr("scaleway_baremetal_server.base", "offer_id", "fr-par-2/964f9b38-577e-470f-a220-7d762f9e8672"),
-					resource.TestCheckResourceAttr("scaleway_baremetal_server.base", "os_id", "fr-par-2/d17d6872-0412-45d9-a198-af82c34d3c5c"),
-					resource.TestCheckResourceAttr("scaleway_baremetal_server.base", "description", "test a description"),
-					resource.TestCheckResourceAttr("scaleway_baremetal_server.base", "tags.0", "terraform-test"),
-					resource.TestCheckResourceAttr("scaleway_baremetal_server.base", "tags.1", "scaleway_baremetal_server"),
-					resource.TestCheckResourceAttr("scaleway_baremetal_server.base", "tags.2", "minimal"),
-					resource.TestCheckResourceAttr("scaleway_baremetal_server.base", "tags.3", "edited"),
-					testCheckResourceAttrUUID("scaleway_baremetal_server.base", "ssh_key_ids.0"),
-				),
-			},
-			{
+				// Trigger a reinstall and update tags
 				Config: `
 					resource "scaleway_account_ssh_key" "main" {
 						name 	   = "` + SSHKeyName + `"
@@ -136,37 +106,7 @@ func TestAccScalewayBaremetalServerMinimal1(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_baremetal_server.base", "offer_id", "fr-par-2/964f9b38-577e-470f-a220-7d762f9e8672"),
 					resource.TestCheckResourceAttr("scaleway_baremetal_server.base", "os_id", "fr-par-2/d859aa89-8b4a-4551-af42-ff7c0c27260a"),
 					resource.TestCheckResourceAttr("scaleway_baremetal_server.base", "description", "test a description"),
-					resource.TestCheckResourceAttr("scaleway_baremetal_server.base", "tags.0", "terraform-test"),
-					resource.TestCheckResourceAttr("scaleway_baremetal_server.base", "tags.1", "scaleway_baremetal_server"),
-					resource.TestCheckResourceAttr("scaleway_baremetal_server.base", "tags.2", "minimal"),
-					resource.TestCheckResourceAttr("scaleway_baremetal_server.base", "tags.3", "edited"),
-					testCheckResourceAttrUUID("scaleway_baremetal_server.base", "ssh_key_ids.0"),
-				),
-			},
-			{
-				Config: `
-					resource "scaleway_account_ssh_key" "main" {
-						name 	   = "` + SSHKeyName + `"
-						public_key = "` + SSHKey + `"
-					}
-					
-					resource "scaleway_baremetal_server" "base" {
-						name        = "` + name + `"
-						zone        = "fr-par-2"
-						description = "test a description"
-						offer       = "964f9b38-577e-470f-a220-7d762f9e8672"
-						os          = "d859aa89-8b4a-4551-af42-ff7c0c27260a"
-					
-						tags = [ "terraform-test", "scaleway_baremetal_server", "minimal", "edited" ]
-						ssh_key_ids = [ scaleway_account_ssh_key.main.id ]
-					}
-				`,
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayBaremetalServerExists("scaleway_baremetal_server.base"),
-					resource.TestCheckResourceAttr("scaleway_baremetal_server.base", "name", name),
-					resource.TestCheckResourceAttr("scaleway_baremetal_server.base", "offer_id", "fr-par-2/964f9b38-577e-470f-a220-7d762f9e8672"),
-					resource.TestCheckResourceAttr("scaleway_baremetal_server.base", "os_id", "fr-par-2/d859aa89-8b4a-4551-af42-ff7c0c27260a"),
-					resource.TestCheckResourceAttr("scaleway_baremetal_server.base", "description", "test a description"),
+					resource.TestCheckResourceAttr("scaleway_baremetal_server.base", "tags.#", "4"),
 					resource.TestCheckResourceAttr("scaleway_baremetal_server.base", "tags.0", "terraform-test"),
 					resource.TestCheckResourceAttr("scaleway_baremetal_server.base", "tags.1", "scaleway_baremetal_server"),
 					resource.TestCheckResourceAttr("scaleway_baremetal_server.base", "tags.2", "minimal"),

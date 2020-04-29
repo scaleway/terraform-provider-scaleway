@@ -6,7 +6,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
-	baremetal "github.com/scaleway/scaleway-sdk-go/api/baremetal/v1alpha1"
+	baremetal "github.com/scaleway/scaleway-sdk-go/api/baremetal/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 )
 
@@ -37,7 +37,7 @@ data "scaleway_baremetal_offer" "test3" {
 					resource.TestCheckResourceAttr("data.scaleway_baremetal_offer.test2", "offer_id", "fr-par-2/3ab0dc29-2fd4-486e-88bf-d08fbf49214b"),
 					resource.TestCheckResourceAttr("data.scaleway_baremetal_offer.test2", "name", "HC-BM1-L"),
 					resource.TestCheckResourceAttr("data.scaleway_baremetal_offer.test2", "include_disabled", "false"),
-					resource.TestCheckResourceAttr("data.scaleway_baremetal_offer.test2", "bandwidth", "1000"),
+					resource.TestCheckResourceAttr("data.scaleway_baremetal_offer.test2", "bandwidth", "1048576000"),
 					resource.TestCheckResourceAttr("data.scaleway_baremetal_offer.test2", "commercial_range", "high_cpu"),
 					//resource.TestCheckResourceAttr("data.scaleway_baremetal_offer.test2", "stock", "available"), // skipping this as stocks vary too much
 					resource.TestCheckResourceAttr("data.scaleway_baremetal_offer.test2", "cpu.0.name", "Intel Xeon Gold 5120"),
@@ -49,15 +49,15 @@ data "scaleway_baremetal_offer" "test3" {
 					resource.TestCheckResourceAttr("data.scaleway_baremetal_offer.test2", "cpu.1.frequency", "2200"),
 					resource.TestCheckResourceAttr("data.scaleway_baremetal_offer.test2", "cpu.1.thread_count", "28"),
 					resource.TestCheckResourceAttr("data.scaleway_baremetal_offer.test2", "disk.0.type", "NVMe"),
-					resource.TestCheckResourceAttr("data.scaleway_baremetal_offer.test2", "disk.0.capacity", "1024"),
+					resource.TestCheckResourceAttr("data.scaleway_baremetal_offer.test2", "disk.0.capacity", "1099511627776"),
 					resource.TestCheckResourceAttr("data.scaleway_baremetal_offer.test2", "disk.1.type", "NVMe"),
-					resource.TestCheckResourceAttr("data.scaleway_baremetal_offer.test2", "disk.1.capacity", "1024"),
+					resource.TestCheckResourceAttr("data.scaleway_baremetal_offer.test2", "disk.1.capacity", "1099511627776"),
 					resource.TestCheckResourceAttr("data.scaleway_baremetal_offer.test2", "disk.2.type", "NVMe"),
-					resource.TestCheckResourceAttr("data.scaleway_baremetal_offer.test2", "disk.3.capacity", "1024"),
+					resource.TestCheckResourceAttr("data.scaleway_baremetal_offer.test2", "disk.3.capacity", "1099511627776"),
 					resource.TestCheckResourceAttr("data.scaleway_baremetal_offer.test2", "memory.0.type", "DDR4"),
-					resource.TestCheckResourceAttr("data.scaleway_baremetal_offer.test2", "memory.0.capacity", "384"),
+					resource.TestCheckResourceAttr("data.scaleway_baremetal_offer.test2", "memory.0.capacity", "412316860416"),
 					resource.TestCheckResourceAttr("data.scaleway_baremetal_offer.test2", "memory.0.frequency", "2133"),
-					resource.TestCheckResourceAttr("data.scaleway_baremetal_offer.test2", "memory.0.ecc", "true"),
+					resource.TestCheckResourceAttr("data.scaleway_baremetal_offer.test2", "memory.0.is_ecc", "true"),
 					testAccCheckScalewayBaremetalOfferExists("data.scaleway_baremetal_offer.test3"),
 					resource.TestCheckResourceAttr("data.scaleway_baremetal_offer.test3", "name", "HC-BM1-L"),
 				),
