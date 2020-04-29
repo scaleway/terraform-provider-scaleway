@@ -5,6 +5,7 @@ BREAKING CHANGES:
 * `resource/scaleway_baremetal_server_beta` is out of beta and has been renamed to `scaleway_baremetal_server` ([#463](https://github.com/terraform-providers/terraform-provider-scaleway/pull/463)).
 * `data-source/scaleway_baremetal_offer_beta` is out of beta and has been renamed to `scaleway_baremetal_offer` ([#463](https://github.com/terraform-providers/terraform-provider-scaleway/pull/463)).
 * `resource/scaleway_bucket` has been removed as this product is no longer supported ([#471](https://github.com/terraform-providers/terraform-provider-scaleway/pull/471)).
+* `resource/scaleway_lb_beta` ip_id field is now required ([#452](https://github.com/terraform-providers/terraform-provider-scaleway/pull/452)).
 
 IMPROVEMENTS:
 
