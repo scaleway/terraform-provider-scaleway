@@ -2,41 +2,11 @@ package scaleway
 
 import (
 	"fmt"
-	"log"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 )
-
-func init() {
-	resource.AddTestSweepers("scaleway_token", &resource.Sweeper{
-		Name: "scaleway_token",
-		F:    testSweepToken,
-	})
-}
-
-func testSweepToken(region string) error {
-	scaleway, err := sharedDeprecatedClientForRegion(region)
-	if err != nil {
-		return fmt.Errorf("error getting client: %s", err)
-	}
-
-	log.Printf("[DEBUG] Destroying the tokens in (%s)", region)
-
-	tokens, err := scaleway.GetTokens()
-	if err != nil {
-		return fmt.Errorf("Error describing tokens in Sweeper: %s", err)
-	}
-
-	for _, token := range tokens {
-		if err := scaleway.DeleteToken(token.ID); err != nil {
-			return fmt.Errorf("Error deleting token in Sweeper: %s", err)
-		}
-	}
-
-	return nil
-}
 
 func TestAccScalewayToken_Basic(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
