@@ -3,7 +3,7 @@ package scaleway
 import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
-	baremetal "github.com/scaleway/scaleway-sdk-go/api/baremetal/v1alpha1"
+	baremetal "github.com/scaleway/scaleway-sdk-go/api/baremetal/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	sdkValidation "github.com/scaleway/scaleway-sdk-go/validation"
 )
@@ -35,11 +35,10 @@ func resourceScalewayBaremetalServer() *schema.Resource {
 				Description: "Hostname of the server",
 			},
 			"offer": {
-				Type:             schema.TypeString,
-				Required:         true,
-				ForceNew:         true,
-				Description:      "ID of the server offer",
-				DiffSuppressFunc: diffSuppressFuncLabelUUID,
+				Type:        schema.TypeString,
+				Required:    true,
+				ForceNew:    true,
+				Description: "ID of the server offer",
 			},
 			"offer_id": {
 				Type:        schema.TypeString,
@@ -126,7 +125,7 @@ func resourceScalewayBaremetalServerCreate(d *schema.ResourceData, m interface{}
 
 	offerID := expandZonedID(d.Get("offer"))
 	if !sdkValidation.IsUUID(offerID.ID) {
-		o, err := baremetalAPI.GetOfferFromName(&baremetal.GetOfferFromOfferNameRequest{
+		o, err := baremetalAPI.GetOfferByName(&baremetal.GetOfferByNameRequest{
 			OfferName: offerID.ID,
 			Zone:      zone,
 		})

@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	baremetal "github.com/scaleway/scaleway-sdk-go/api/baremetal/v1alpha1"
+	baremetal "github.com/scaleway/scaleway-sdk-go/api/baremetal/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 )
 
@@ -112,7 +112,7 @@ func dataSourceScalewayBaremetalOffer() *schema.Resource {
 							Computed:    true,
 							Description: "Frequency of the memory",
 						},
-						"ecc": {
+						"is_ecc": {
 							Type:        schema.TypeBool,
 							Computed:    true,
 							Description: "True if error-correcting code is available on this memory",
@@ -169,9 +169,9 @@ func dataSourceScalewayBaremetalOfferRead(d *schema.ResourceData, m interface{})
 	_ = d.Set("include_disabled", !offer.Enable)
 	_ = d.Set("bandwidth", offer.Bandwidth)
 	_ = d.Set("commercial_range", offer.CommercialRange)
-	_ = d.Set("cpu", flattenBaremetalCPUs(offer.CPU))
-	_ = d.Set("disk", flattenBaremetalDisks(offer.Disk))
-	_ = d.Set("memory", flattenBaremetalMemory(offer.Memory))
+	_ = d.Set("cpu", flattenBaremetalCPUs(offer.CPUs))
+	_ = d.Set("disk", flattenBaremetalDisks(offer.Disks))
+	_ = d.Set("memory", flattenBaremetalMemory(offer.Memories))
 	_ = d.Set("stock", offer.Stock.String())
 
 	return nil

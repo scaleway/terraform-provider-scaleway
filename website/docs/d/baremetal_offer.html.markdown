@@ -77,4 +77,4 @@ The `memory` block supports:
 
 - `frequency` - Frequency of the memory in MHz.
 
-- `ecc`- True if error-correcting code is available on this memory.
+- `is_ecc`- True if error-correcting code is available on this memory.
