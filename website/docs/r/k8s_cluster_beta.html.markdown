@@ -179,6 +179,7 @@ $ terraform import scaleway_k8s_cluster_beta.mycluster fr-par/11111111-1111-1111
 `default_pool` is deprecated in favour the `scaleway_k8s_pool_beta` resource. Here is a migration example.
 
 Before:
+
 ```hcl
 resource "scaleway_k8s_cluster_beta" "jack" {
   name = "jack"
@@ -209,6 +210,7 @@ resource "scaleway_k8s_pool_beta" "default" {
 ```
 
 Once you have moved all the `default_pool` into their own object, you will need to import them. If your pool had the ID 11111111-1111-1111-1111-111111111111 in the `fr-par` region, you can import it by typing:
+
 ```bash
 $ terraform import scaleway_k8s_pool_beta.default fr-par/11111111-1111-1111-1111-111111111111
 ```
