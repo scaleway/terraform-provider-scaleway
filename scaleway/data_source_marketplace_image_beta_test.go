@@ -14,7 +14,7 @@ func TestAccScalewayDataSourceMarketplaceImageBeta_Basic(t *testing.T) {
 			{
 				Config: `
 data "scaleway_marketplace_image_beta" "test1" {
-	label = "ubuntu-bionic"
+	label = "ubuntu-focal"
 }
 `,
 				Check: resource.ComposeTestCheckFunc(

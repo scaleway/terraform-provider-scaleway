@@ -93,7 +93,7 @@ resource "scaleway_instance_volume" "data" {
 
 resource "scaleway_instance_server" "web" {
   type = "DEV1-L"
-  image = "ubuntu-bionic"
+  image = "ubuntu-focal"
 
   tags = [ "hello", "public" ]
 

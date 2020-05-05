@@ -18,7 +18,7 @@ resource "scaleway_instance_ip" "public_ip" {}
 
 resource "scaleway_instance_server" "web" {
   type = "DEV1-S"
-  image = "ubuntu-bionic"
+  image = "ubuntu-focal"
   ip_id = scaleway_instance_ip.public_ip.id
 }
 ```
@@ -33,7 +33,7 @@ resource "scaleway_instance_volume" "data" {
 
 resource "scaleway_instance_server" "web" {
   type = "DEV1-L"
-  image = "ubuntu-bionic"
+  image = "ubuntu-focal"
 
   tags = [ "hello", "public" ]
 
@@ -91,7 +91,7 @@ resource "scaleway_instance_security_group" "www" {
 
 resource "scaleway_instance_server" "web" {
   type = "DEV1-S"
-  image = "ubuntu-bionic"
+  image = "ubuntu-focal"
 
   security_group_id= scaleway_instance_security_group.www.id
 }
@@ -102,7 +102,7 @@ resource "scaleway_instance_server" "web" {
 ```hcl
 resource "scaleway_instance_server" "web" {
   type = "DEV1-L"
-  image = "ubuntu-bionic"
+  image = "ubuntu-focal"
 
   tags = [ "web", "public" ]
 

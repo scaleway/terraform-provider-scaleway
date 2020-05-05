@@ -74,10 +74,10 @@ func TestAccScalewayInstanceServerMinimal1(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccCheckScalewayInstanceServerConfigMinimal("ubuntu-bionic"),
+				Config: testAccCheckScalewayInstanceServerConfigMinimal("ubuntu-focal"),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayInstanceServerExists("scaleway_instance_server.base"),
-					resource.TestCheckResourceAttr("scaleway_instance_server.base", "image", "ubuntu-bionic"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.base", "image", "ubuntu-focal"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "type", "DEV1-S"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "root_volume.0.delete_on_termination", "true"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "root_volume.0.size_in_gb", "20"),
@@ -417,7 +417,7 @@ func TestAccScalewayInstanceServerSwapVolume(t *testing.T) {
 		  type       = "l_ssd"
 		}
 		resource "scaleway_instance_server" "server1" {
-		  image = "ubuntu-bionic"
+		  image = "ubuntu-focal"
 		  type  = "DEV1-S"
 		  root_volume {
 			size_in_gb = 10
@@ -425,7 +425,7 @@ func TestAccScalewayInstanceServerSwapVolume(t *testing.T) {
 		  additional_volume_ids = [ scaleway_instance_volume.volume{{index . 0}}.id ]
 		}
 		resource "scaleway_instance_server" "server2" {
-		  image = "ubuntu-bionic"
+		  image = "ubuntu-focal"
 		  type  = "DEV1-S"
 		  root_volume {
 			size_in_gb = 10
@@ -471,7 +471,7 @@ func TestAccScalewayInstanceServerIpv6(t *testing.T) {
 			{
 				Config: `
 					resource "scaleway_instance_server" "server01" {
-						image = "ubuntu-bionic"
+						image = "ubuntu-focal"
 		  				type  = "DEV1-S"
 		  				enable_ipv6 = true
 					}
@@ -486,7 +486,7 @@ func TestAccScalewayInstanceServerIpv6(t *testing.T) {
 			{
 				Config: `
 					resource "scaleway_instance_server" "server01" {
-						image = "ubuntu-bionic"
+						image = "ubuntu-focal"
 		  				type  = "DEV1-S"
 		  				enable_ipv6 = false
 					}
@@ -614,13 +614,13 @@ func TestAccScalewayInstanceServerImageDataSource(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: `
-					data "scaleway_instance_image" "ubuntu_bionic" {
-					  name = "ubuntu_bionic"
+					data "scaleway_instance_image" "ubuntu_focal" {
+					  name = "ubuntu_focal"
 					}
 
 					resource "scaleway_instance_server" "base" {
 					  type  = "DEV1-S"
-					  image = data.scaleway_instance_image.ubuntu_bionic.id
+					  image = data.scaleway_instance_image.ubuntu_focal.id
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
@@ -631,13 +631,13 @@ func TestAccScalewayInstanceServerImageDataSource(t *testing.T) {
 			// Ensure that image diffSuppressFunc results in no plan.
 			{
 				Config: `
-					data "scaleway_instance_image" "ubuntu_bionic" {
-					  name = "ubuntu_bionic"
+					data "scaleway_instance_image" "ubuntu_focal" {
+					  name = "ubuntu_focal"
 					}
 
 					resource "scaleway_instance_server" "base" {
 					  type  = "DEV1-S"
-					  image = data.scaleway_instance_image.ubuntu_bionic.id
+					  image = data.scaleway_instance_image.ubuntu_focal.id
 					}
 				`,
 				PlanOnly: true,
@@ -711,7 +711,7 @@ func testAccCheckScalewayInstanceServerConfigServerType(architecture, serverType
 	return fmt.Sprintf(`
 data "scaleway_image" "ubuntu" {
   architecture = "%s"
-  name         = "Ubuntu Bionic"
+  name         = "Ubuntu Focal"
   most_recent  = true
 }
 
@@ -741,7 +741,7 @@ func testAccCheckScalewayInstanceServerConfigState(state string) string {
 	return fmt.Sprintf(`
 data "scaleway_image" "ubuntu" {
   architecture = "x86_64"
-  name         = "Ubuntu Bionic"
+  name         = "Ubuntu Focal"
   most_recent  = true
 }
 
@@ -780,7 +780,7 @@ EOF`
 	return fmt.Sprintf(`
 data "scaleway_image" "ubuntu" {
   architecture = "x86_64"
-  name         = "Ubuntu Bionic"
+  name         = "Ubuntu Focal"
   most_recent  = true
 }
 

@@ -20,7 +20,7 @@ Here is an example that will setup a web server with an additional volume, a pub
 
 You can test this config by creating a `test.tf` and run terraform commands from this directory:
 
-- Get your [Scaleway credentials](https://console.scaleway.com/account/credentials) 
+- Get your [Scaleway credentials](https://console.scaleway.com/account/credentials)
 - Initialize a Terraform working directory: `terraform init`
 - Generate and show the execution plan: `terraform plan`
 - Build the infrastructure: `terraform apply`
@@ -64,7 +64,7 @@ resource "scaleway_instance_security_group" "www" {
 
 resource "scaleway_instance_server" "web" {
   type  = "DEV1-L"
-  image = "ubuntu-bionic"
+  image = "ubuntu-focal"
 
   tags = [ "front", "web" ]
 
