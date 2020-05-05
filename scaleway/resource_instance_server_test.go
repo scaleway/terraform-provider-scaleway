@@ -74,10 +74,10 @@ func TestAccScalewayInstanceServerMinimal1(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccCheckScalewayInstanceServerConfigMinimal("ubuntu-focal"),
+				Config: testAccCheckScalewayInstanceServerConfigMinimal("ubuntu_focal"),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayInstanceServerExists("scaleway_instance_server.base"),
-					resource.TestCheckResourceAttr("scaleway_instance_server.base", "image", "ubuntu-focal"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.base", "image", "ubuntu_focal"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "type", "DEV1-S"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "root_volume.0.delete_on_termination", "true"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "root_volume.0.size_in_gb", "20"),
@@ -417,7 +417,7 @@ func TestAccScalewayInstanceServerSwapVolume(t *testing.T) {
 		  type       = "l_ssd"
 		}
 		resource "scaleway_instance_server" "server1" {
-		  image = "ubuntu-focal"
+		  image = "ubuntu_focal"
 		  type  = "DEV1-S"
 		  root_volume {
 			size_in_gb = 10
@@ -425,7 +425,7 @@ func TestAccScalewayInstanceServerSwapVolume(t *testing.T) {
 		  additional_volume_ids = [ scaleway_instance_volume.volume{{index . 0}}.id ]
 		}
 		resource "scaleway_instance_server" "server2" {
-		  image = "ubuntu-focal"
+		  image = "ubuntu_focal"
 		  type  = "DEV1-S"
 		  root_volume {
 			size_in_gb = 10
@@ -471,7 +471,7 @@ func TestAccScalewayInstanceServerIpv6(t *testing.T) {
 			{
 				Config: `
 					resource "scaleway_instance_server" "server01" {
-						image = "ubuntu-focal"
+						image = "ubuntu_focal"
 		  				type  = "DEV1-S"
 		  				enable_ipv6 = true
 					}
@@ -486,7 +486,7 @@ func TestAccScalewayInstanceServerIpv6(t *testing.T) {
 			{
 				Config: `
 					resource "scaleway_instance_server" "server01" {
-						image = "ubuntu-focal"
+						image = "ubuntu_focal"
 		  				type  = "DEV1-S"
 		  				enable_ipv6 = false
 					}

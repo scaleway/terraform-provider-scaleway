@@ -64,7 +64,7 @@ resource "scaleway_instance_security_group" "www" {
 
 resource "scaleway_instance_server" "web" {
   type  = "DEV1-L"
-  image = "ubuntu-focal"
+  image = "ubuntu_focal"
 
   tags = [ "front", "web" ]
 
