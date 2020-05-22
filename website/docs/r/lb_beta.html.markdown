@@ -60,6 +60,7 @@ When importing, the IP needs to be imported as well as the LB.
 When upgrading to v1.15.0, you will need to create a new `scaleway_lb_ip_beta` resource and import it. 
 
 For instance, if you had the following:
+
 ```hcl
 resource "scaleway_lb_beta" "base" {
   region      = "fr-par"
@@ -68,6 +69,7 @@ resource "scaleway_lb_beta" "base" {
 ```
 
 You will need to update it to:
+
 ```hcl
 resource "scaleway_lb_ip_beta" "ip" {
 }
@@ -80,11 +82,13 @@ resource "scaleway_lb_beta" "base" {
 ```
 
 And before running `terraform apply` you will need to import the IP with: 
+
 ```bash
 $ terraform import scaleway_lb_ip_beta.ip fr-par/11111111-1111-1111-1111-111111111111
 ```
 
 The IP ID can either be found in the console, or you can run:
+
 ```bash
 $ terraform state show scaleway_lb_beta.base
 ```
