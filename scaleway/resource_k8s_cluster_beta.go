@@ -439,7 +439,7 @@ func resourceScalewayK8SClusterBetaCreate(d *schema.ResourceData, m interface{})
 	}
 
 	if versionIsOnlyMinor {
-		version, err = k8sGetLatestVersionFromMinor(k8sAPI, version)
+		version, err = k8sGetLatestVersionFromMinor(k8sAPI, region, version)
 		if err != nil {
 			return err
 		}
@@ -871,7 +871,7 @@ func resourceScalewayK8SClusterBetaUpdate(d *schema.ResourceData, m interface{})
 	}
 
 	if versionIsOnlyMinor {
-		version, err = k8sGetLatestVersionFromMinor(k8sAPI, version)
+		version, err = k8sGetLatestVersionFromMinor(k8sAPI, region, version)
 		if err != nil {
 			return err
 		}

@@ -69,13 +69,15 @@ func k8sGetMinorVersionFromFull(version string) (string, error) {
 }
 
 // k8sGetLatestVersionFromMinor returns the latest full version (x.y.z) for a given minor version (x.y)
-func k8sGetLatestVersionFromMinor(k8sAPI *k8s.API, version string) (string, error) {
+func k8sGetLatestVersionFromMinor(k8sAPI *k8s.API, region scw.Region, version string) (string, error) {
 	versionSplit := strings.Split(version, ".")
 	if len(versionSplit) != 2 {
 		return "", fmt.Errorf("minor version should be like x.y not %s", version)
 	}
 
-	versionsResp, err := k8sAPI.ListVersions(&k8s.ListVersionsRequest{})
+	versionsResp, err := k8sAPI.ListVersions(&k8s.ListVersionsRequest{
+		Region: region,
+	})
 	if err != nil {
 		return "", err
 	}
