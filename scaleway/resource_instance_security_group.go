@@ -417,7 +417,7 @@ func securityGroupRuleSchema() *schema.Resource {
 			"ip_range": {
 				Type:         schema.TypeString,
 				Optional:     true,
-				ValidateFunc: validation.CIDRNetwork(0, 32),
+				ValidateFunc: validation.CIDRNetwork(0, 128),
 				Description:  "Ip range for this rule (e.g: 192.168.1.0/24). Only one of ip or ip_range should be provided",
 			},
 		},
