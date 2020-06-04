@@ -194,6 +194,7 @@ func resourceScalewayK8SPoolBetaCreate(d *schema.ResourceData, m interface{}) er
 	// check if the cluster is waiting for a pool
 	cluster, err := k8sAPI.GetCluster(&k8s.GetClusterRequest{
 		ClusterID: expandID(d.Get("cluster_id")),
+		Region:    region,
 	})
 	if err != nil {
 		return err
