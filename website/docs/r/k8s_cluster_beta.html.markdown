@@ -104,10 +104,8 @@ The following arguments are supported:
 ~> **Important:** Updates to this field will recreate a new resource.
 
 - `enable_dashboard` - (Defaults to `false`) Enables the [Kubernetes dashboard](https://github.com/kubernetes/dashboard) for the Kubernetes cluster.
-~> **Important:** Updates to this field will recreate a new resource.
 
 - `ingress` - (Defaults to `none`) The [ingress controller](https://kubernetes.io/docs/concepts/services-networking/ingress-controllers/) to be deployed on the Kubernetes cluster.
-~> **Important:** Updates to this field will recreate a new resource.
 
 - `tags` - (Optional) The tags associated with the Kubernetes cluster.
 
