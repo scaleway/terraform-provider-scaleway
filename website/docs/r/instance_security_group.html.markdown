@@ -102,6 +102,8 @@ The following arguments are supported:
 
 - `description` - (Optional) The description of the security group.
 
+- `stateful` - (Defaults to `true`) A boolean to specify wether the security group should be stateful or not.
+
 - `inbound_default_policy` - (Defaults to `accept`) The default policy on incoming traffic. Possible values are: `accept` or `drop`.
 
 - `outbound_default_policy` - (Defaults to `accept`) The default policy on outgoing traffic. Possible values are: `accept` or `drop`.
