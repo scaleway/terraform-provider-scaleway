@@ -84,7 +84,7 @@ In addition to all above arguments, the following attributes are exported:
 - `created_at` - The creation date of the pool.
 - `updated_at` - The last update date of the pool.
 - `version` - The version of the pool.
-- `current_size` - The actual size of the pool.
+- `current_size` - The size of the pool at the time the terraform state was updated.
 
 ## Import
 
