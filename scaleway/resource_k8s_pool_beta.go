@@ -115,6 +115,11 @@ func resourceScalewayK8SPoolBeta() *schema.Resource {
 				Computed:    true,
 				Description: "The Kubernetes version of the pool",
 			},
+			"current_size": {
+				Type:        schema.TypeInt,
+				Computed:    true,
+				Description: "The actual size of the pool",
+			},
 			"nodes": {
 				Type:     schema.TypeList,
 				Computed: true,
@@ -266,7 +271,10 @@ func resourceScalewayK8SPoolBetaRead(d *schema.ResourceData, m interface{}) erro
 	_ = d.Set("node_type", pool.NodeType)
 	_ = d.Set("autoscaling", pool.Autoscaling)
 	_ = d.Set("autohealing", pool.Autohealing)
-	_ = d.Set("size", pool.Size)
+	_ = d.Set("current_size", pool.Size)
+	if !pool.Autoscaling {
+		_ = d.Set("size", pool.Size)
+	}
 	_ = d.Set("version", pool.Version)
 	_ = d.Set("min_size", pool.MinSize)
 	_ = d.Set("max_size", pool.MaxSize)
