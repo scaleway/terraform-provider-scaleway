@@ -8,6 +8,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
+	"github.com/scaleway/scaleway-sdk-go/scw"
 )
 
 func resourceScalewayObjectBucket() *schema.Resource {
@@ -38,6 +39,14 @@ func resourceScalewayObjectBucket() *schema.Resource {
 					s3.ObjectCannedACLAuthenticatedRead,
 				}, false),
 			},
+			"tags": {
+				Type: schema.TypeMap,
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
+				Optional:    true,
+				Description: "The tags associated with this bucket",
+			},
 			"region": regionSchema(),
 		},
 	}
@@ -58,6 +67,27 @@ func resourceScalewayObjectBucketCreate(d *schema.ResourceData, m interface{}) e
 	})
 	if err != nil {
 		return err
+	}
+
+	tagsSet := make([]*s3.Tag, 0)
+
+	for key, value := range d.Get("tags").(map[string]interface{}) {
+		tagsSet = append(tagsSet, &s3.Tag{
+			Key:   &key,
+			Value: scw.StringPtr(value.(string)),
+		})
+	}
+
+	if len(tagsSet) > 0 {
+		_, err = s3Client.PutBucketTagging(&s3.PutBucketTaggingInput{
+			Bucket: aws.String(bucketName),
+			Tagging: &s3.Tagging{
+				TagSet: tagsSet,
+			},
+		})
+		if err != nil {
+			return err
+		}
 	}
 
 	d.SetId(newRegionalId(region, bucketName))
@@ -94,6 +124,35 @@ func resourceScalewayObjectBucketRead(d *schema.ResourceData, m interface{}) err
 		return fmt.Errorf("couldn't read bucket: %s", err)
 	}
 
+	var tagsSet []*s3.Tag
+
+	tagsResponse, err := s3Client.GetBucketTagging(&s3.GetBucketTaggingInput{
+		Bucket: aws.String(bucketName),
+	})
+	if err != nil {
+		if serr, ok := err.(awserr.Error); !ok || serr.Code() != "NoSuchTagSet" {
+			return fmt.Errorf("couldn't read tags from bucket: %s", err)
+		}
+	} else {
+		tagsSet = tagsResponse.TagSet
+	}
+
+	tags := map[string]interface{}{}
+
+	for _, tagSet := range tagsSet {
+		var key string
+		var value string
+		if tagSet.Key != nil {
+			key = *tagSet.Key
+		}
+		if tagSet.Value != nil {
+			value = *tagSet.Value
+		}
+		tags[key] = value
+	}
+
+	_ = d.Set("tags", tags)
+
 	return nil
 }
 
@@ -114,6 +173,24 @@ func resourceScalewayObjectBucketUpdate(d *schema.ResourceData, m interface{}) e
 			l.Errorf("Couldn't update bucket ACL: %s", err)
 			return fmt.Errorf("couldn't update bucket ACL: %s", err)
 		}
+	}
+
+	if d.HasChange("tags") {
+		tagsSet := make([]*s3.Tag, 0)
+
+		for key, value := range d.Get("tags").(map[string]interface{}) {
+			tagsSet = append(tagsSet, &s3.Tag{
+				Key:   &key,
+				Value: scw.StringPtr(value.(string)),
+			})
+		}
+
+		_, err = s3Client.PutBucketTagging(&s3.PutBucketTaggingInput{
+			Bucket: aws.String(bucketName),
+			Tagging: &s3.Tagging{
+				TagSet: tagsSet,
+			},
+		})
 	}
 
 	return resourceScalewayObjectBucketRead(d, m)

@@ -32,6 +32,9 @@ var (
 var testAccCheckScalewayObjectBucket = fmt.Sprintf(`
 	resource "scaleway_object_bucket" "base" {
 		name = "%s"
+		tags = {
+			foo = "bar"
+		}
 	}
 
 	resource "scaleway_object_bucket" "ams-bucket" {
@@ -63,6 +66,8 @@ func TestAccScalewayObjectBucket(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("scaleway_object_bucket.base", "name", testBucketName),
 					resource.TestCheckResourceAttr("scaleway_object_bucket.base", "acl", testBucketACL),
+					resource.TestCheckResourceAttr("scaleway_object_bucket.base", "tags.%", "1"),
+					resource.TestCheckResourceAttr("scaleway_object_bucket.base", "tags.foo", "bar"),
 					resource.TestCheckResourceAttr("scaleway_object_bucket.ams-bucket", "name", testBucketNameAms),
 					resource.TestCheckResourceAttr("scaleway_object_bucket.par-bucket", "name", testBucketNamePar),
 				),
@@ -72,6 +77,7 @@ func TestAccScalewayObjectBucket(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("scaleway_object_bucket.base", "name", testBucketName),
 					resource.TestCheckResourceAttr("scaleway_object_bucket.base", "acl", testBucketUpdatedACL),
+					resource.TestCheckResourceAttr("scaleway_object_bucket.base", "tags.%", "0"),
 				),
 			},
 		},
