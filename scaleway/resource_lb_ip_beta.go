@@ -28,7 +28,7 @@ func resourceScalewayLbIPBeta() *schema.Resource {
 			"ip_address": {
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "The load-balance public IP address",
+				Description: "The load-balancer public IP address",
 			},
 			"lb_id": {
 				Type:        schema.TypeString,
