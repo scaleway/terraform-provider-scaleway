@@ -1,4 +1,4 @@
-package instance
+package registry
 
 import (
 	"time"
@@ -8,15 +8,16 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 )
 
-// WaitForImageRequest is used by WaitForImage method.
+// WaitForNamespaceRequest is used by WaitForNamespace method
 type WaitForImageRequest struct {
 	ImageID       string
-	Zone          scw.Zone
+	Region        scw.Region
 	Timeout       *time.Duration
 	RetryInterval *time.Duration
 }
 
 // WaitForImage wait for the image to be in a "terminal state" before returning.
+// This function can be used to wait for an image to be ready for example.
 func (s *API) WaitForImage(req *WaitForImageRequest) (*Image, error) {
 	timeout := defaultTimeout
 	if req.Timeout != nil {
@@ -27,24 +28,26 @@ func (s *API) WaitForImage(req *WaitForImageRequest) (*Image, error) {
 		retryInterval = *req.RetryInterval
 	}
 
-	terminalStatus := map[ImageState]struct{}{
-		ImageStateAvailable: {},
-		ImageStateError:     {},
+	terminalStatus := map[ImageStatus]struct{}{
+		ImageStatusReady:   {},
+		ImageStatusLocked:  {},
+		ImageStatusError:   {},
+		ImageStatusUnknown: {},
 	}
 
 	image, err := async.WaitSync(&async.WaitSyncConfig{
 		Get: func() (interface{}, bool, error) {
-			res, err := s.GetImage(&GetImageRequest{
+			img, err := s.GetImage(&GetImageRequest{
+				Region:  req.Region,
 				ImageID: req.ImageID,
-				Zone:    req.Zone,
 			})
-
 			if err != nil {
 				return nil, false, err
 			}
-			_, isTerminal := terminalStatus[res.Image.State]
 
-			return res.Image, isTerminal, err
+			_, isTerminal := terminalStatus[img.Status]
+
+			return img, isTerminal, err
 		},
 		Timeout:          timeout,
 		IntervalStrategy: async.LinearIntervalStrategy(retryInterval),

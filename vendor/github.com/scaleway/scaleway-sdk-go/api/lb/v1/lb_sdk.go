@@ -591,6 +591,38 @@ func (enum *ListLbsRequestOrderBy) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
+type ListPrivateNetworksRequestOrderBy string
+
+const (
+	// ListPrivateNetworksRequestOrderByCreatedAtAsc is [insert doc].
+	ListPrivateNetworksRequestOrderByCreatedAtAsc = ListPrivateNetworksRequestOrderBy("created_at_asc")
+	// ListPrivateNetworksRequestOrderByCreatedAtDesc is [insert doc].
+	ListPrivateNetworksRequestOrderByCreatedAtDesc = ListPrivateNetworksRequestOrderBy("created_at_desc")
+)
+
+func (enum ListPrivateNetworksRequestOrderBy) String() string {
+	if enum == "" {
+		// return default value if empty
+		return "created_at_asc"
+	}
+	return string(enum)
+}
+
+func (enum ListPrivateNetworksRequestOrderBy) MarshalJSON() ([]byte, error) {
+	return []byte(fmt.Sprintf(`"%s"`, enum)), nil
+}
+
+func (enum *ListPrivateNetworksRequestOrderBy) UnmarshalJSON(data []byte) error {
+	tmp := ""
+
+	if err := json.Unmarshal(data, &tmp); err != nil {
+		return err
+	}
+
+	*enum = ListPrivateNetworksRequestOrderBy(ListPrivateNetworksRequestOrderBy(tmp).String())
+	return nil
+}
+
 type ListSubscriberRequestOrderBy string
 
 const (
@@ -656,6 +688,42 @@ func (enum *OnMarkedDownAction) UnmarshalJSON(data []byte) error {
 	}
 
 	*enum = OnMarkedDownAction(OnMarkedDownAction(tmp).String())
+	return nil
+}
+
+type PrivateNetworkStatus string
+
+const (
+	// PrivateNetworkStatusUnknown is [insert doc].
+	PrivateNetworkStatusUnknown = PrivateNetworkStatus("unknown")
+	// PrivateNetworkStatusReady is [insert doc].
+	PrivateNetworkStatusReady = PrivateNetworkStatus("ready")
+	// PrivateNetworkStatusPending is [insert doc].
+	PrivateNetworkStatusPending = PrivateNetworkStatus("pending")
+	// PrivateNetworkStatusError is [insert doc].
+	PrivateNetworkStatusError = PrivateNetworkStatus("error")
+)
+
+func (enum PrivateNetworkStatus) String() string {
+	if enum == "" {
+		// return default value if empty
+		return "unknown"
+	}
+	return string(enum)
+}
+
+func (enum PrivateNetworkStatus) MarshalJSON() ([]byte, error) {
+	return []byte(fmt.Sprintf(`"%s"`, enum)), nil
+}
+
+func (enum *PrivateNetworkStatus) UnmarshalJSON(data []byte) error {
+	tmp := ""
+
+	if err := json.Unmarshal(data, &tmp); err != nil {
+		return err
+	}
+
+	*enum = PrivateNetworkStatus(PrivateNetworkStatus(tmp).String())
 	return nil
 }
 
@@ -1276,6 +1344,12 @@ type ListIPsResponse struct {
 	TotalCount uint32 `json:"total_count"`
 }
 
+type ListLbPrivateNetworksResponse struct {
+	PrivateNetwork []*PrivateNetwork `json:"private_network"`
+
+	TotalCount uint32 `json:"total_count"`
+}
+
 type ListLbTypesResponse struct {
 	LbTypes []*LbType `json:"lb_types"`
 
@@ -1295,6 +1369,20 @@ type ListSubscriberResponse struct {
 	Subscribers []*Subscriber `json:"subscribers"`
 	// TotalCount: the total number of items
 	TotalCount uint32 `json:"total_count"`
+}
+
+// PrivateNetwork: private network
+type PrivateNetwork struct {
+	// Lb: loadBalancer object
+	Lb *Lb `json:"lb"`
+	// IPAddress: local ip address of Load Balancer instance
+	IPAddress []string `json:"ip_address"`
+	// PrivateNetworkID: instance private network id
+	PrivateNetworkID string `json:"private_network_id"`
+	// Status: status (running, to create...) of private network connection
+	//
+	// Default value: unknown
+	Status PrivateNetworkStatus `json:"status"`
 }
 
 // Subscriber: subscriber
@@ -3874,4 +3962,178 @@ func (s *API) UnsubscribeFromLb(req *UnsubscribeFromLbRequest, opts ...scw.Reque
 		return nil, err
 	}
 	return &resp, nil
+}
+
+type ListLbPrivateNetworksRequest struct {
+	Region scw.Region `json:"-"`
+
+	LbID string `json:"-"`
+	// OrderBy:
+	//
+	// Default value: created_at_asc
+	OrderBy ListPrivateNetworksRequestOrderBy `json:"-"`
+
+	PageSize *uint32 `json:"-"`
+
+	Page *int32 `json:"-"`
+}
+
+// ListLbPrivateNetworks: bETA - List attached private network of Load Balancer
+func (s *API) ListLbPrivateNetworks(req *ListLbPrivateNetworksRequest, opts ...scw.RequestOption) (*ListLbPrivateNetworksResponse, error) {
+	var err error
+
+	if req.Region == "" {
+		defaultRegion, _ := s.client.GetDefaultRegion()
+		req.Region = defaultRegion
+	}
+
+	defaultPageSize, exist := s.client.GetDefaultPageSize()
+	if (req.PageSize == nil || *req.PageSize == 0) && exist {
+		req.PageSize = &defaultPageSize
+	}
+
+	query := url.Values{}
+	parameter.AddToQuery(query, "order_by", req.OrderBy)
+	parameter.AddToQuery(query, "page_size", req.PageSize)
+	parameter.AddToQuery(query, "page", req.Page)
+
+	if fmt.Sprint(req.Region) == "" {
+		return nil, errors.New("field Region cannot be empty in request")
+	}
+
+	if fmt.Sprint(req.LbID) == "" {
+		return nil, errors.New("field LbID cannot be empty in request")
+	}
+
+	scwReq := &scw.ScalewayRequest{
+		Method:  "GET",
+		Path:    "/lb/v1/regions/" + fmt.Sprint(req.Region) + "/lbs/" + fmt.Sprint(req.LbID) + "/private-networks",
+		Query:   query,
+		Headers: http.Header{},
+	}
+
+	var resp ListLbPrivateNetworksResponse
+
+	err = s.client.Do(scwReq, &resp, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &resp, nil
+}
+
+// UnsafeGetTotalCount should not be used
+// Internal usage only
+func (r *ListLbPrivateNetworksResponse) UnsafeGetTotalCount() uint32 {
+	return r.TotalCount
+}
+
+// UnsafeAppend should not be used
+// Internal usage only
+func (r *ListLbPrivateNetworksResponse) UnsafeAppend(res interface{}) (uint32, error) {
+	results, ok := res.(*ListLbPrivateNetworksResponse)
+	if !ok {
+		return 0, errors.New("%T type cannot be appended to type %T", res, r)
+	}
+
+	r.PrivateNetwork = append(r.PrivateNetwork, results.PrivateNetwork...)
+	r.TotalCount += uint32(len(results.PrivateNetwork))
+	return uint32(len(results.PrivateNetwork)), nil
+}
+
+type AttachPrivateNetworkRequest struct {
+	Region scw.Region `json:"-"`
+	// LbID: load Balancer ID
+	LbID string `json:"-"`
+	// PrivateNetworkID: set your instance private network id
+	PrivateNetworkID string `json:"-"`
+	// IPAddress: define two local ip address of your choice for each Load Balancer instance
+	IPAddress []string `json:"ip_address"`
+}
+
+// AttachPrivateNetwork: bETA - Add Load Balancer on instance private network
+func (s *API) AttachPrivateNetwork(req *AttachPrivateNetworkRequest, opts ...scw.RequestOption) (*PrivateNetwork, error) {
+	var err error
+
+	if req.Region == "" {
+		defaultRegion, _ := s.client.GetDefaultRegion()
+		req.Region = defaultRegion
+	}
+
+	if fmt.Sprint(req.Region) == "" {
+		return nil, errors.New("field Region cannot be empty in request")
+	}
+
+	if fmt.Sprint(req.LbID) == "" {
+		return nil, errors.New("field LbID cannot be empty in request")
+	}
+
+	if fmt.Sprint(req.PrivateNetworkID) == "" {
+		return nil, errors.New("field PrivateNetworkID cannot be empty in request")
+	}
+
+	scwReq := &scw.ScalewayRequest{
+		Method:  "POST",
+		Path:    "/lb/v1/regions/" + fmt.Sprint(req.Region) + "/lbs/" + fmt.Sprint(req.LbID) + "/private-networks/" + fmt.Sprint(req.PrivateNetworkID) + "/attach",
+		Headers: http.Header{},
+	}
+
+	err = scwReq.SetBody(req)
+	if err != nil {
+		return nil, err
+	}
+
+	var resp PrivateNetwork
+
+	err = s.client.Do(scwReq, &resp, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &resp, nil
+}
+
+type DetachPrivateNetworkRequest struct {
+	Region scw.Region `json:"-"`
+
+	PrivateNetworkID string `json:"-"`
+
+	LbID string `json:"-"`
+}
+
+// DetachPrivateNetwork: bETA - Remove Load Balancer of private network
+func (s *API) DetachPrivateNetwork(req *DetachPrivateNetworkRequest, opts ...scw.RequestOption) error {
+	var err error
+
+	if req.Region == "" {
+		defaultRegion, _ := s.client.GetDefaultRegion()
+		req.Region = defaultRegion
+	}
+
+	if fmt.Sprint(req.Region) == "" {
+		return errors.New("field Region cannot be empty in request")
+	}
+
+	if fmt.Sprint(req.PrivateNetworkID) == "" {
+		return errors.New("field PrivateNetworkID cannot be empty in request")
+	}
+
+	if fmt.Sprint(req.LbID) == "" {
+		return errors.New("field LbID cannot be empty in request")
+	}
+
+	scwReq := &scw.ScalewayRequest{
+		Method:  "POST",
+		Path:    "/lb/v1/regions/" + fmt.Sprint(req.Region) + "/lbs/" + fmt.Sprint(req.LbID) + "/private-networks/" + fmt.Sprint(req.PrivateNetworkID) + "/detach",
+		Headers: http.Header{},
+	}
+
+	err = scwReq.SetBody(req)
+	if err != nil {
+		return err
+	}
+
+	err = s.client.Do(scwReq, nil, opts...)
+	if err != nil {
+		return err
+	}
+	return nil
 }

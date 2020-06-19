@@ -145,7 +145,7 @@ func resourceScalewayRdbInstanceBetaCreate(d *schema.ResourceData, m interface{}
 	_, err = rdbAPI.WaitForInstance(&rdb.WaitForInstanceRequest{
 		Region:     region,
 		InstanceID: res.ID,
-		Timeout:    InstanceServerWaitForTimeout,
+		Timeout:    scw.TimeDurationPtr(InstanceServerWaitForTimeout),
 	})
 	if err != nil {
 		return err
@@ -239,7 +239,7 @@ func resourceScalewayRdbInstanceBetaUpdate(d *schema.ResourceData, m interface{}
 		_, err = rdbAPI.UpgradeInstance(&rdb.UpgradeInstanceRequest{
 			Region:     region,
 			InstanceID: ID,
-			NodeType:   d.Get("node_type").(string),
+			NodeType:   scw.StringPtr(d.Get("node_type").(string)),
 		})
 		if err != nil {
 			return err
@@ -248,7 +248,7 @@ func resourceScalewayRdbInstanceBetaUpdate(d *schema.ResourceData, m interface{}
 		_, err = rdbAPI.WaitForInstance(&rdb.WaitForInstanceRequest{
 			Region:     region,
 			InstanceID: ID,
-			Timeout:    InstanceServerWaitForTimeout * 3, // upgrade takes some time
+			Timeout:    scw.TimeDurationPtr(InstanceServerWaitForTimeout * 3), // upgrade takes some time
 		})
 		if err != nil {
 			return err
@@ -275,7 +275,7 @@ func resourceScalewayRdbInstanceBetaDelete(d *schema.ResourceData, m interface{}
 	_, err = rdbAPI.WaitForInstance(&rdb.WaitForInstanceRequest{
 		InstanceID: ID,
 		Region:     region,
-		Timeout:    LbWaitForTimeout,
+		Timeout:    scw.TimeDurationPtr(LbWaitForTimeout),
 	})
 
 	if err != nil && !is404Error(err) {

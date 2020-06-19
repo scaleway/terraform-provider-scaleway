@@ -10,16 +10,16 @@ import (
 // Environment variables
 const (
 	// Up-to-date
-	scwCacheDirEnv              = "SCW_CACHE_DIR"
-	scwConfigPathEnv            = "SCW_CONFIG_PATH"
-	scwAccessKeyEnv             = "SCW_ACCESS_KEY"
-	scwSecretKeyEnv             = "SCW_SECRET_KEY" // #nosec G101
-	scwActiveProfileEnv         = "SCW_PROFILE"
-	scwAPIURLEnv                = "SCW_API_URL"
-	scwInsecureEnv              = "SCW_INSECURE"
-	scwDefaultOrganizationIDEnv = "SCW_DEFAULT_ORGANIZATION_ID"
-	scwDefaultRegionEnv         = "SCW_DEFAULT_REGION"
-	scwDefaultZoneEnv           = "SCW_DEFAULT_ZONE"
+	ScwCacheDirEnv              = "SCW_CACHE_DIR"
+	ScwConfigPathEnv            = "SCW_CONFIG_PATH"
+	ScwAccessKeyEnv             = "SCW_ACCESS_KEY"
+	ScwSecretKeyEnv             = "SCW_SECRET_KEY" // #nosec G101
+	ScwActiveProfileEnv         = "SCW_PROFILE"
+	ScwAPIURLEnv                = "SCW_API_URL"
+	ScwInsecureEnv              = "SCW_INSECURE"
+	ScwDefaultOrganizationIDEnv = "SCW_DEFAULT_ORGANIZATION_ID"
+	ScwDefaultRegionEnv         = "SCW_DEFAULT_REGION"
+	ScwDefaultZoneEnv           = "SCW_DEFAULT_ZONE"
 
 	// All deprecated (cli&terraform)
 	terraformAccessKeyEnv    = "SCALEWAY_ACCESS_KEY" // used both as access key and secret key
@@ -56,22 +56,22 @@ const (
 func LoadEnvProfile() *Profile {
 	p := &Profile{}
 
-	accessKey, _, envExist := getEnv(scwAccessKeyEnv, terraformAccessKeyEnv)
+	accessKey, _, envExist := getEnv(ScwAccessKeyEnv, terraformAccessKeyEnv)
 	if envExist {
 		p.AccessKey = &accessKey
 	}
 
-	secretKey, _, envExist := getEnv(scwSecretKeyEnv, cliSecretKeyEnv, terraformSecretKeyEnv, terraformAccessKeyEnv)
+	secretKey, _, envExist := getEnv(ScwSecretKeyEnv, cliSecretKeyEnv, terraformSecretKeyEnv, terraformAccessKeyEnv)
 	if envExist {
 		p.SecretKey = &secretKey
 	}
 
-	apiURL, _, envExist := getEnv(scwAPIURLEnv)
+	apiURL, _, envExist := getEnv(ScwAPIURLEnv)
 	if envExist {
 		p.APIURL = &apiURL
 	}
 
-	insecureValue, envKey, envExist := getEnv(scwInsecureEnv, cliTLSVerifyEnv)
+	insecureValue, envKey, envExist := getEnv(ScwInsecureEnv, cliTLSVerifyEnv)
 	if envExist {
 		insecure, err := strconv.ParseBool(insecureValue)
 		if err != nil {
@@ -85,18 +85,18 @@ func LoadEnvProfile() *Profile {
 		p.Insecure = &insecure
 	}
 
-	organizationID, _, envExist := getEnv(scwDefaultOrganizationIDEnv, cliOrganizationEnv, terraformOrganizationEnv)
+	organizationID, _, envExist := getEnv(ScwDefaultOrganizationIDEnv, cliOrganizationEnv, terraformOrganizationEnv)
 	if envExist {
 		p.DefaultOrganizationID = &organizationID
 	}
 
-	region, _, envExist := getEnv(scwDefaultRegionEnv, cliRegionEnv, terraformRegionEnv)
+	region, _, envExist := getEnv(ScwDefaultRegionEnv, cliRegionEnv, terraformRegionEnv)
 	if envExist {
 		region = v1RegionToV2(region)
 		p.DefaultRegion = &region
 	}
 
-	zone, _, envExist := getEnv(scwDefaultZoneEnv)
+	zone, _, envExist := getEnv(ScwDefaultZoneEnv)
 	if envExist {
 		p.DefaultZone = &zone
 	}

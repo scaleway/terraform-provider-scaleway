@@ -84,7 +84,7 @@ func resourceScalewayLbBetaCreate(d *schema.ResourceData, m interface{}) error {
 	_, err = lbAPI.WaitForLb(&lb.WaitForLbRequest{
 		Region:  region,
 		LbID:    res.ID,
-		Timeout: InstanceServerWaitForTimeout,
+		Timeout: scw.TimeDurationPtr(InstanceServerWaitForTimeout),
 	})
 	if err != nil {
 		return err
@@ -166,7 +166,7 @@ func resourceScalewayLbBetaDelete(d *schema.ResourceData, m interface{}) error {
 	_, err = lbAPI.WaitForLb(&lb.WaitForLbRequest{
 		LbID:    ID,
 		Region:  region,
-		Timeout: LbWaitForTimeout,
+		Timeout: scw.TimeDurationPtr(LbWaitForTimeout),
 	})
 
 	if err != nil && !is404Error(err) {

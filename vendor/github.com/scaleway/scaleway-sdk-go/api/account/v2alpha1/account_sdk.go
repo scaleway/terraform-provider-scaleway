@@ -115,6 +115,8 @@ type SSHKey struct {
 	CreationInfo *SSHKeyCreationInfo `json:"creation_info"`
 
 	OrganizationID string `json:"organization_id"`
+
+	ProjectID string `json:"project_id"`
 }
 
 type SSHKeyCreationInfo struct {
@@ -140,6 +142,8 @@ type ListSSHKeysRequest struct {
 	Name *string `json:"-"`
 
 	OrganizationID *string `json:"-"`
+
+	ProjectID *string `json:"-"`
 }
 
 // ListSSHKeys: list all SSH keys
@@ -157,6 +161,7 @@ func (s *API) ListSSHKeys(req *ListSSHKeysRequest, opts ...scw.RequestOption) (*
 	parameter.AddToQuery(query, "page_size", req.PageSize)
 	parameter.AddToQuery(query, "name", req.Name)
 	parameter.AddToQuery(query, "organization_id", req.OrganizationID)
+	parameter.AddToQuery(query, "project_id", req.ProjectID)
 
 	scwReq := &scw.ScalewayRequest{
 		Method:  "GET",
@@ -199,7 +204,11 @@ type CreateSSHKeyRequest struct {
 	// PublicKey: SSH public key. Currently ssh-rsa, ssh-dss (DSA), ssh-ed25519 and ecdsa keys with NIST curves are supported
 	PublicKey string `json:"public_key"`
 	// OrganizationID: organization owning the resource
-	OrganizationID string `json:"organization_id"`
+	// Precisely one of OrganizationID, ProjectID must be set.
+	OrganizationID *string `json:"organization_id,omitempty"`
+	// ProjectID: project owning the resource
+	// Precisely one of OrganizationID, ProjectID must be set.
+	ProjectID *string `json:"project_id,omitempty"`
 }
 
 // CreateSSHKey: add a SSH key to your Scaleway account
@@ -208,9 +217,9 @@ type CreateSSHKeyRequest struct {
 func (s *API) CreateSSHKey(req *CreateSSHKeyRequest, opts ...scw.RequestOption) (*SSHKey, error) {
 	var err error
 
-	if req.OrganizationID == "" {
-		defaultOrganizationID, _ := s.client.GetDefaultOrganizationID()
-		req.OrganizationID = defaultOrganizationID
+	defaultOrganizationID, exist := s.client.GetDefaultOrganizationID()
+	if exist && req.OrganizationID == nil && req.ProjectID == nil {
+		req.OrganizationID = &defaultOrganizationID
 	}
 
 	scwReq := &scw.ScalewayRequest{

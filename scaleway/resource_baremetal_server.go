@@ -152,7 +152,7 @@ func resourceScalewayBaremetalServerCreate(d *schema.ResourceData, m interface{}
 	_, err = baremetalAPI.WaitForServer(&baremetal.WaitForServerRequest{
 		Zone:     server.Zone,
 		ServerID: server.ID,
-		Timeout:  baremetalServerWaitForTimeout,
+		Timeout:  scw.TimeDurationPtr(baremetalServerWaitForTimeout),
 	})
 	if err != nil {
 		return err
@@ -172,7 +172,7 @@ func resourceScalewayBaremetalServerCreate(d *schema.ResourceData, m interface{}
 	_, err = baremetalAPI.WaitForServerInstall(&baremetal.WaitForServerInstallRequest{
 		Zone:     server.Zone,
 		ServerID: server.ID,
-		Timeout:  baremetalServerWaitForTimeout,
+		Timeout:  scw.TimeDurationPtr(baremetalServerWaitForTimeout),
 	})
 	if err != nil {
 		return err
@@ -257,7 +257,7 @@ func resourceScalewayBaremetalServerUpdate(d *schema.ResourceData, m interface{}
 		_, err = baremetalAPI.WaitForServerInstall(&baremetal.WaitForServerInstallRequest{
 			Zone:     server.Zone,
 			ServerID: server.ID,
-			Timeout:  baremetalServerWaitForTimeout,
+			Timeout:  scw.TimeDurationPtr(baremetalServerWaitForTimeout),
 		})
 		if err != nil {
 			return err
@@ -285,7 +285,7 @@ func resourceScalewayBaremetalServerDelete(d *schema.ResourceData, m interface{}
 	_, err = baremetalAPI.WaitForServer(&baremetal.WaitForServerRequest{
 		Zone:     server.Zone,
 		ServerID: server.ID,
-		Timeout:  baremetalServerWaitForTimeout,
+		Timeout:  scw.TimeDurationPtr(baremetalServerWaitForTimeout),
 	})
 
 	if is404Error(err) {

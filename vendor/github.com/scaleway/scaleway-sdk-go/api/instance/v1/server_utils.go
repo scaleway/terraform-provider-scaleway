@@ -19,10 +19,6 @@ const (
 	defaultRetryInterval = 5 * time.Second
 )
 
-var (
-	RetryInterval = defaultRetryInterval
-)
-
 // CreateServer creates a server.
 func (s *API) CreateServer(req *CreateServerRequest, opts ...scw.RequestOption) (*CreateServerResponse, error) {
 	// If image is not a UUID we try to fetch it from marketplace.
@@ -52,14 +48,24 @@ func (s *API) UpdateServer(req *UpdateServerRequest, opts ...scw.RequestOption) 
 
 // WaitForServerRequest is used by WaitForServer method.
 type WaitForServerRequest struct {
-	ServerID string
-	Zone     scw.Zone
-	Timeout  time.Duration
+	ServerID      string
+	Zone          scw.Zone
+	Timeout       *time.Duration
+	RetryInterval *time.Duration
 }
 
 // WaitForServer wait for the server to be in a "terminal state" before returning.
 // This function can be used to wait for a server to be started for example.
 func (s *API) WaitForServer(req *WaitForServerRequest) (*Server, error) {
+	timeout := defaultTimeout
+	if req.Timeout != nil {
+		timeout = *req.Timeout
+	}
+	retryInterval := defaultRetryInterval
+	if req.RetryInterval != nil {
+		retryInterval = *req.RetryInterval
+	}
+
 	terminalStatus := map[ServerState]struct{}{
 		ServerStateStopped:        {},
 		ServerStateStoppedInPlace: {},
@@ -81,8 +87,8 @@ func (s *API) WaitForServer(req *WaitForServerRequest) (*Server, error) {
 
 			return res.Server, isTerminal, err
 		},
-		Timeout:          req.Timeout,
-		IntervalStrategy: async.LinearIntervalStrategy(RetryInterval),
+		Timeout:          timeout,
+		IntervalStrategy: async.LinearIntervalStrategy(retryInterval),
 	})
 	if err != nil {
 		return nil, errors.Wrap(err, "waiting for server failed")
@@ -97,14 +103,20 @@ type ServerActionAndWaitRequest struct {
 	Action   ServerAction
 
 	// Timeout: maximum time to wait before (default: 5 minutes)
-	Timeout time.Duration
+	Timeout       *time.Duration
+	RetryInterval *time.Duration
 }
 
 // ServerActionAndWait start an action and wait for the server to be in the correct "terminal state"
 // expected by this action.
 func (s *API) ServerActionAndWait(req *ServerActionAndWaitRequest) error {
-	if req.Timeout == 0 {
-		req.Timeout = defaultTimeout
+	timeout := defaultTimeout
+	if req.Timeout != nil {
+		timeout = *req.Timeout
+	}
+	retryInterval := defaultRetryInterval
+	if req.RetryInterval != nil {
+		retryInterval = *req.RetryInterval
 	}
 
 	_, err := s.ServerAction(&ServerActionRequest{
@@ -117,9 +129,10 @@ func (s *API) ServerActionAndWait(req *ServerActionAndWaitRequest) error {
 	}
 
 	finalServer, err := s.WaitForServer(&WaitForServerRequest{
-		Zone:     req.Zone,
-		ServerID: req.ServerID,
-		Timeout:  req.Timeout,
+		Zone:          req.Zone,
+		ServerID:      req.ServerID,
+		Timeout:       &timeout,
+		RetryInterval: &retryInterval,
 	})
 	if err != nil {
 		return err
