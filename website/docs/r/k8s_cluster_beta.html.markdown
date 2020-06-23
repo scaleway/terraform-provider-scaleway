@@ -79,16 +79,25 @@ resource "scaleway_k8s_pool_beta" "john" {
   size = 3
 }
 
+resource "null_resource" "kubeconfig" {
+    depends_on = [scaleway_k8s_pool_beta.john] # at least one pool here
+    triggers = {
+         kubeconfig = scaleway_k8s_cluster_beta.joy.kubeconfig[0]
+    }
+}
+
 provider "kubernetes" {
   load_config_file = "false"
 
-  host  = scaleway_k8s_cluster_beta.joy.kubeconfig[0].host
-  token  = scaleway_k8s_cluster_beta.joy.kubeconfig[0].token
+  host             = null_resource.kubeconfig.triggers.kubeconfig.host
+  token            = null_resource.kubeconfig.triggers.kubeconfig.token
   cluster_ca_certificate = base64decode(
-    scaleway_k8s_cluster_beta.joy.kubeconfig[0].cluster_ca_certificate
+     null_resource.kubeconfig.triggers.kubeconfig.cluster_ca_certificate
   )
 }
 ```
+
+Th `null_resource` is needed because when the cluter is created, it's status is `pool_required`, but the kubeconfig can already be downloaded. It leads the `kubernetes` provider to start creating its objects, but the DNS entry for the Kubernetes master is not yet ready, that's why it's needed to wait for at least a pool.
 
 ## Arguments Reference
 
