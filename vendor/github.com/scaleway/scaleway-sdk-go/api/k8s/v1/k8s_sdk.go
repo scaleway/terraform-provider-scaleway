@@ -214,6 +214,8 @@ const (
 	IngressNginx = Ingress("nginx")
 	// IngressTraefik is [insert doc].
 	IngressTraefik = Ingress("traefik")
+	// IngressTraefik2 is [insert doc].
+	IngressTraefik2 = Ingress("traefik2")
 )
 
 func (enum Ingress) String() string {
@@ -1142,6 +1144,8 @@ type DeleteClusterRequest struct {
 	Region scw.Region `json:"-"`
 	// ClusterID: the ID of the cluster to delete
 	ClusterID string `json:"-"`
+	// WithAdditionalResources: set true if you want to delete all volumes (including retain volume type) and loadbalancers whose name start with cluster ID
+	WithAdditionalResources bool `json:"-"`
 }
 
 // DeleteCluster: delete a cluster
@@ -1155,6 +1159,9 @@ func (s *API) DeleteCluster(req *DeleteClusterRequest, opts ...scw.RequestOption
 		req.Region = defaultRegion
 	}
 
+	query := url.Values{}
+	parameter.AddToQuery(query, "with_additional_resources", req.WithAdditionalResources)
+
 	if fmt.Sprint(req.Region) == "" {
 		return nil, errors.New("field Region cannot be empty in request")
 	}
@@ -1166,6 +1173,7 @@ func (s *API) DeleteCluster(req *DeleteClusterRequest, opts ...scw.RequestOption
 	scwReq := &scw.ScalewayRequest{
 		Method:  "DELETE",
 		Path:    "/k8s/v1/regions/" + fmt.Sprint(req.Region) + "/clusters/" + fmt.Sprint(req.ClusterID) + "",
+		Query:   query,
 		Headers: http.Header{},
 	}
 

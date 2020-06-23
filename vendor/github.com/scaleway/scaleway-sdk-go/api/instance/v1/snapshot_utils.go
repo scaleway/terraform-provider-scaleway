@@ -9,15 +9,15 @@ import (
 )
 
 // WaitForImageRequest is used by WaitForImage method.
-type WaitForVolumeRequest struct {
-	VolumeID      string
+type WaitForSnapshotRequest struct {
+	SnapshotID    string
 	Zone          scw.Zone
 	Timeout       *time.Duration
 	RetryInterval *time.Duration
 }
 
 // WaitForSnapshot wait for the snapshot to be in a "terminal state" before returning.
-func (s *API) WaitForVolume(req *WaitForVolumeRequest) (*Volume, error) {
+func (s *API) WaitForSnapshot(req *WaitForSnapshotRequest) (*Snapshot, error) {
 	timeout := defaultTimeout
 	if req.Timeout != nil {
 		timeout = *req.Timeout
@@ -27,30 +27,30 @@ func (s *API) WaitForVolume(req *WaitForVolumeRequest) (*Volume, error) {
 		retryInterval = *req.RetryInterval
 	}
 
-	terminalStatus := map[VolumeState]struct{}{
-		VolumeStateAvailable: {},
-		VolumeStateError:     {},
+	terminalStatus := map[SnapshotState]struct{}{
+		SnapshotStateAvailable: {},
+		SnapshotStateError:     {},
 	}
 
-	volume, err := async.WaitSync(&async.WaitSyncConfig{
+	snapshot, err := async.WaitSync(&async.WaitSyncConfig{
 		Get: func() (interface{}, bool, error) {
-			res, err := s.GetVolume(&GetVolumeRequest{
-				VolumeID: req.VolumeID,
-				Zone:     req.Zone,
+			res, err := s.GetSnapshot(&GetSnapshotRequest{
+				SnapshotID: req.SnapshotID,
+				Zone:       req.Zone,
 			})
 
 			if err != nil {
 				return nil, false, err
 			}
-			_, isTerminal := terminalStatus[res.Volume.State]
+			_, isTerminal := terminalStatus[res.Snapshot.State]
 
-			return res.Volume, isTerminal, err
+			return res.Snapshot, isTerminal, err
 		},
 		Timeout:          timeout,
 		IntervalStrategy: async.LinearIntervalStrategy(retryInterval),
 	})
 	if err != nil {
-		return nil, errors.Wrap(err, "waiting for volume failed")
+		return nil, errors.Wrap(err, "waiting for snapshot failed")
 	}
-	return volume.(*Volume), nil
+	return snapshot.(*Snapshot), nil
 }

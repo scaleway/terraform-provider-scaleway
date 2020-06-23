@@ -8,26 +8,31 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 )
 
-var (
-	// RetryInterval is needed when running recorded tests (e.g. on scaleway-cli)
-	// it allows to execute the WaitFor funcs immediately
-	RetryInterval = defaultRetryInterval
-)
-
 const (
 	defaultRetryInterval = 15 * time.Second
+	defaultTimeout       = 2 * time.Hour
 )
 
 // WaitForServerRequest is used by WaitForServer method.
 type WaitForServerRequest struct {
-	ServerID string
-	Zone     scw.Zone
-	Timeout  time.Duration
+	ServerID      string
+	Zone          scw.Zone
+	Timeout       *time.Duration
+	RetryInterval *time.Duration
 }
 
 // WaitForServer wait for the server to be in a "terminal state" before returning.
 // This function can be used to wait for a server to be created.
 func (s *API) WaitForServer(req *WaitForServerRequest) (*Server, error) {
+	timeout := defaultTimeout
+	if req.Timeout != nil {
+		timeout = *req.Timeout
+	}
+	retryInterval := defaultRetryInterval
+	if req.RetryInterval != nil {
+		retryInterval = *req.RetryInterval
+	}
+
 	terminalStatus := map[ServerStatus]struct{}{
 		ServerStatusReady:   {},
 		ServerStatusStopped: {},
@@ -49,8 +54,8 @@ func (s *API) WaitForServer(req *WaitForServerRequest) (*Server, error) {
 			_, isTerminal := terminalStatus[res.Status]
 			return res, isTerminal, err
 		},
-		Timeout:          req.Timeout,
-		IntervalStrategy: async.LinearIntervalStrategy(RetryInterval),
+		Timeout:          timeout,
+		IntervalStrategy: async.LinearIntervalStrategy(retryInterval),
 	})
 	if err != nil {
 		return nil, errors.Wrap(err, "waiting for server failed")
@@ -61,15 +66,25 @@ func (s *API) WaitForServer(req *WaitForServerRequest) (*Server, error) {
 
 // WaitForServerInstallRequest is used by WaitForServerInstall method.
 type WaitForServerInstallRequest struct {
-	ServerID string
-	Zone     scw.Zone
-	Timeout  time.Duration
+	ServerID      string
+	Zone          scw.Zone
+	Timeout       *time.Duration
+	RetryInterval *time.Duration
 }
 
 // WaitForServerInstall wait for the server install to be in a
 // "terminal state" before returning.
 // This function can be used to wait for a server to be installed.
 func (s *API) WaitForServerInstall(req *WaitForServerInstallRequest) (*Server, error) {
+	timeout := defaultTimeout
+	if req.Timeout != nil {
+		timeout = *req.Timeout
+	}
+	retryInterval := defaultRetryInterval
+	if req.RetryInterval != nil {
+		retryInterval = *req.RetryInterval
+	}
+
 	installTerminalStatus := map[ServerInstallStatus]struct{}{
 		ServerInstallStatusCompleted: {},
 		ServerInstallStatusError:     {},
@@ -93,8 +108,8 @@ func (s *API) WaitForServerInstall(req *WaitForServerInstallRequest) (*Server, e
 			_, isTerminal := installTerminalStatus[res.Install.Status]
 			return res, isTerminal, err
 		},
-		Timeout:          req.Timeout,
-		IntervalStrategy: async.LinearIntervalStrategy(RetryInterval),
+		Timeout:          timeout,
+		IntervalStrategy: async.LinearIntervalStrategy(retryInterval),
 	})
 	if err != nil {
 		return nil, errors.Wrap(err, "waiting for server installation failed")

@@ -32,8 +32,8 @@ func resourceScalewayInstanceVolume() *schema.Resource {
 				ForceNew:    true,
 				Description: "The volume type",
 				ValidateFunc: validation.StringInSlice([]string{
-					instance.VolumeTypeBSSD.String(),
-					instance.VolumeTypeLSSD.String(),
+					instance.VolumeVolumeTypeBSSD.String(),
+					instance.VolumeVolumeTypeLSSD.String(),
 				}, false),
 			},
 			"size_in_gb": {
@@ -80,7 +80,7 @@ func resourceScalewayInstanceVolumeCreate(d *schema.ResourceData, m interface{})
 	createVolumeRequest := &instance.CreateVolumeRequest{
 		Zone:         zone,
 		Name:         expandOrGenerateString(d.Get("name"), "vol"),
-		VolumeType:   instance.VolumeType(d.Get("type").(string)),
+		VolumeType:   instance.VolumeVolumeType(d.Get("type").(string)),
 		Organization: d.Get("organization_id").(string),
 	}
 

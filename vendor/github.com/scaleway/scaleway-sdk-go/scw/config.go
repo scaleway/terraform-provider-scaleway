@@ -102,7 +102,6 @@ profiles:
 type Config struct {
 	Profile       `yaml:",inline"`
 	ActiveProfile *string             `yaml:"active_profile,omitempty"`
-	SendTelemetry *bool               `yaml:"send_telemetry,omitempty"`
 	Profiles      map[string]*Profile `yaml:"profiles,omitempty"`
 }
 
@@ -114,6 +113,7 @@ type Profile struct {
 	DefaultOrganizationID *string `yaml:"default_organization_id,omitempty"`
 	DefaultRegion         *string `yaml:"default_region,omitempty"`
 	DefaultZone           *string `yaml:"default_zone,omitempty"`
+	SendTelemetry         *bool   `yaml:"send_telemetry,omitempty"`
 }
 
 func (p *Profile) String() string {
@@ -227,11 +227,11 @@ func (c *Config) GetProfile(profileName string) (*Profile, error) {
 // env SCW_PROFILE > config active_profile > config root profile
 func (c *Config) GetActiveProfile() (*Profile, error) {
 	switch {
-	case os.Getenv(scwActiveProfileEnv) != "":
-		logger.Debugf("using active profile from env: %s=%s", scwActiveProfileEnv, os.Getenv(scwActiveProfileEnv))
-		return c.GetProfile(os.Getenv(scwActiveProfileEnv))
+	case os.Getenv(ScwActiveProfileEnv) != "":
+		logger.Debugf("using active profile from env: %s=%s", ScwActiveProfileEnv, os.Getenv(ScwActiveProfileEnv))
+		return c.GetProfile(os.Getenv(ScwActiveProfileEnv))
 	case c.ActiveProfile != nil:
-		logger.Debugf("using active profile from config: active_profile=%s", scwActiveProfileEnv, *c.ActiveProfile)
+		logger.Debugf("using active profile from config: active_profile=%s", ScwActiveProfileEnv, *c.ActiveProfile)
 		return c.GetProfile(*c.ActiveProfile)
 	default:
 		return &c.Profile, nil

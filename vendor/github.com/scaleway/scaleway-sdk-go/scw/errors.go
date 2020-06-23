@@ -247,8 +247,17 @@ func (e *UnknownResource) ToResourceNotFoundError() SdkError {
 		RawBody: e.RawBody,
 	}
 
-	resourceNotFound.ResourceID = strings.TrimSuffix(e.Message, `" not found`)
-	resourceNotFound.ResourceID = strings.TrimPrefix(resourceNotFound.ResourceID, `"`)
+	messageParts := strings.Split(e.Message, `"`)
+	switch len(messageParts) {
+	case 2: // message like: `"111..." not found`
+		resourceNotFound.ResourceID = messageParts[0]
+	case 3: // message like: `Security Group "111..." not found`
+		resourceNotFound.ResourceID = messageParts[1]
+		// transform `Security group ` to `security_group`
+		resourceNotFound.Resource = strings.ReplaceAll(strings.ToLower(strings.TrimSpace(messageParts[0])), " ", "_")
+	default:
+		return nil
+	}
 	if !validation.IsUUID(resourceNotFound.ResourceID) {
 		return nil
 	}

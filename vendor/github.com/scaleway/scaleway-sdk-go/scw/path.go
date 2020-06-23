@@ -31,8 +31,8 @@ var (
 func GetCacheDirectory() string {
 	cacheDir := ""
 	switch {
-	case os.Getenv(scwCacheDirEnv) != "":
-		cacheDir = os.Getenv(scwCacheDirEnv)
+	case os.Getenv(ScwCacheDirEnv) != "":
+		cacheDir = os.Getenv(ScwCacheDirEnv)
 	case os.Getenv(xdgCacheDirEnv) != "":
 		cacheDir = filepath.Join(os.Getenv(xdgCacheDirEnv), "scw")
 	case os.Getenv(unixHomeDirEnv) != "":
@@ -54,7 +54,7 @@ func GetCacheDirectory() string {
 // - $HOME/.config/scw/config.yaml
 // - $USERPROFILE/.config/scw/config.yaml
 func GetConfigPath() string {
-	configPath := os.Getenv(scwConfigPathEnv)
+	configPath := os.Getenv(ScwConfigPathEnv)
 	if configPath == "" {
 		configPath, _ = getConfigV2FilePath()
 	}
