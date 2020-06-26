@@ -42,3 +42,14 @@ func waitIotHub(iotAPI *iot.API, region scw.Region, hubID string, desiredStates 
 
 	return fmt.Errorf("hub %s has state %s, wants one of %+q", hubID, hub.Status, desiredStates)
 }
+
+func extractRestHeaders(d *schema.ResourceData, key string) map[string]string {
+	stringMap := map[string]string{}
+
+	data := d.Get(key).(map[string]interface{})
+
+	for k, v := range data {
+		stringMap[k] = v.(string)
+	}
+	return stringMap
+}
