@@ -24,10 +24,11 @@ func resourceScalewayLbBeta() *schema.Resource {
 				Description: "Name of the lb",
 			},
 			"type": {
-				Type:        schema.TypeString,
-				Required:    true,
-				ForceNew:    true,
-				Description: "The type of load-balancer you want to create",
+				Type:             schema.TypeString,
+				Required:         true,
+				ForceNew:         true,
+				DiffSuppressFunc: diffSuppressFuncIgnoreCase,
+				Description:      "The type of load-balancer you want to create",
 			},
 			"tags": {
 				Type: schema.TypeList,
