@@ -39,6 +39,9 @@ const configFileTemplate = `# Scaleway configuration file
 # Your organization ID is the identifier of your account inside Scaleway infrastructure.
 {{ if .DefaultOrganizationID }}default_organization_id: {{ .DefaultOrganizationID }}{{ else }}# default_organization_id: 11111111-1111-1111-1111-111111111111{{ end }}
 
+# Your project ID is the identifier of the project your resources are attached to (beta).
+{{ if .DefaultProjectID }}default_project_id: {{ .DefaultProjectID }}{{ else }}# default_project_id: 11111111-1111-1111-1111-111111111111{{ end }}
+
 # A region is represented as a geographical area such as France (Paris) or the Netherlands (Amsterdam).
 # It can contain multiple availability zones.
 # Example of region: fr-par, nl-ams
@@ -81,6 +84,7 @@ profiles:
     {{ if $v.AccessKey }}access_key: {{ $v.AccessKey }}{{ else }}# access_key: SCW11111111111111111{{ end }}
     {{ if $v.SecretKey }}secret_key: {{ $v.SecretKey }}{{ else }}# secret_key: 11111111-1111-1111-1111-111111111111{{ end }}
     {{ if $v.DefaultOrganizationID }}default_organization_id: {{ $v.DefaultOrganizationID }}{{ else }}# default_organization_id: 11111111-1111-1111-1111-111111111111{{ end }}
+    {{ if $v.DefaultProjectID }}default_project_id: {{ $v.DefaultProjectID }}{{ else }}# default_project_id: 11111111-1111-1111-1111-111111111111{{ end }}
     {{ if $v.DefaultZone }}default_zone: {{ $v.DefaultZone }}{{ else }}# default_zone: fr-par-1{{ end }}
     {{ if $v.DefaultRegion }}default_region: {{ $v.DefaultRegion }}{{ else }}# default_region: fr-par{{ end }}
     {{ if $v.APIURL }}api_url: {{ $v.APIURL }}{{ else }}# api_url: https://api.scaleway.com{{ end }}
@@ -91,7 +95,8 @@ profiles:
 #   myProfile:
 #     access_key: 11111111-1111-1111-1111-111111111111
 #     secret_key: 11111111-1111-1111-1111-111111111111
-#     organization_id: 11111111-1111-1111-1111-111111111111
+#     default_organization_id: 11111111-1111-1111-1111-111111111111
+#     default_project_id: 11111111-1111-1111-1111-111111111111
 #     default_zone: fr-par-1
 #     default_region: fr-par
 #     api_url: https://api.scaleway.com
@@ -111,6 +116,7 @@ type Profile struct {
 	APIURL                *string `yaml:"api_url,omitempty"`
 	Insecure              *bool   `yaml:"insecure,omitempty"`
 	DefaultOrganizationID *string `yaml:"default_organization_id,omitempty"`
+	DefaultProjectID      *string `yaml:"default_project_id,omitempty"`
 	DefaultRegion         *string `yaml:"default_region,omitempty"`
 	DefaultZone           *string `yaml:"default_zone,omitempty"`
 	SendTelemetry         *bool   `yaml:"send_telemetry,omitempty"`
@@ -294,6 +300,7 @@ func MergeProfiles(original *Profile, others ...*Profile) *Profile {
 		APIURL:                original.APIURL,
 		Insecure:              original.Insecure,
 		DefaultOrganizationID: original.DefaultOrganizationID,
+		DefaultProjectID:      original.DefaultProjectID,
 		DefaultRegion:         original.DefaultRegion,
 		DefaultZone:           original.DefaultZone,
 	}
@@ -313,6 +320,9 @@ func MergeProfiles(original *Profile, others ...*Profile) *Profile {
 		}
 		if other.DefaultOrganizationID != nil {
 			np.DefaultOrganizationID = other.DefaultOrganizationID
+		}
+		if other.DefaultProjectID != nil {
+			np.DefaultProjectID = other.DefaultProjectID
 		}
 		if other.DefaultRegion != nil {
 			np.DefaultRegion = other.DefaultRegion

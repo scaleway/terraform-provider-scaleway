@@ -753,6 +753,8 @@ type IP struct {
 
 	Tags []string `json:"tags"`
 
+	Project string `json:"project"`
+
 	Zone scw.Zone `json:"zone"`
 }
 
@@ -3952,6 +3954,8 @@ func (s *API) UpdatePlacementGroupServers(req *UpdatePlacementGroupServersReques
 
 type ListIPsRequest struct {
 	Zone scw.Zone `json:"-"`
+	// Project: the project ID the IPs are reserved in
+	Project *string `json:"-"`
 	// Organization: the organization ID the IPs are reserved in
 	Organization *string `json:"-"`
 	// Name: filter on the IP address (Works as a LIKE operation on the IP address)
@@ -3979,6 +3983,7 @@ func (s *API) ListIPs(req *ListIPsRequest, opts ...scw.RequestOption) (*ListIPsR
 	}
 
 	query := url.Values{}
+	parameter.AddToQuery(query, "project", req.Project)
 	parameter.AddToQuery(query, "organization", req.Organization)
 	parameter.AddToQuery(query, "name", req.Name)
 	parameter.AddToQuery(query, "per_page", req.PerPage)
@@ -4026,7 +4031,11 @@ func (r *ListIPsResponse) UnsafeAppend(res interface{}) (uint32, error) {
 type CreateIPRequest struct {
 	Zone scw.Zone `json:"-"`
 	// Organization: the organization ID the IP is reserved in
-	Organization string `json:"organization,omitempty"`
+	// Precisely one of Organization, Project must be set.
+	Organization *string `json:"organization,omitempty"`
+	// Project: the project ID the IP is reserved in
+	// Precisely one of Organization, Project must be set.
+	Project *string `json:"project,omitempty"`
 	// Server: UUID of the server you want to attach the IP to
 	Server *string `json:"server,omitempty"`
 	// Tags: an array of keywords you want to tag this IP with
@@ -4037,9 +4046,14 @@ type CreateIPRequest struct {
 func (s *API) CreateIP(req *CreateIPRequest, opts ...scw.RequestOption) (*CreateIPResponse, error) {
 	var err error
 
-	if req.Organization == "" {
-		defaultOrganization, _ := s.client.GetDefaultOrganizationID()
-		req.Organization = defaultOrganization
+	defaultProject, exist := s.client.GetDefaultProjectID()
+	if exist && req.Organization == nil && req.Project == nil {
+		req.Project = &defaultProject
+	}
+
+	defaultOrganization, exist := s.client.GetDefaultOrganizationID()
+	if exist && req.Organization == nil && req.Project == nil {
+		req.Organization = &defaultOrganization
 	}
 
 	if req.Zone == "" {
@@ -4125,10 +4139,17 @@ type SetIPRequest struct {
 	Organization string `json:"organization"`
 
 	Tags []string `json:"tags"`
+
+	Project string `json:"project"`
 }
 
 func (s *API) setIP(req *SetIPRequest, opts ...scw.RequestOption) (*setIPResponse, error) {
 	var err error
+
+	if req.Project == "" {
+		defaultProject, _ := s.client.GetDefaultProjectID()
+		req.Project = defaultProject
+	}
 
 	if req.Organization == "" {
 		defaultOrganization, _ := s.client.GetDefaultOrganizationID()

@@ -34,6 +34,11 @@ func IsOrganizationID(s string) bool {
 	return IsUUID(s)
 }
 
+// IsProjectID returns true if the given string has a valid Scaleway project ID format.
+func IsProjectID(s string) bool {
+	return IsUUID(s)
+}
+
 // IsRegion returns true if the given string has a valid region format.
 func IsRegion(s string) bool {
 	return isRegionRegex.MatchString(s)

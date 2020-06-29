@@ -28,6 +28,7 @@ type Client struct {
 	apiURL                string
 	userAgent             string
 	defaultOrganizationID *string
+	defaultProjectID      *string
 	defaultRegion         *Region
 	defaultZone           *Zone
 	defaultPageSize       *uint32
@@ -76,6 +77,7 @@ func NewClient(opts ...ClientOption) (*Client, error) {
 		apiURL:                s.apiURL,
 		userAgent:             s.userAgent,
 		defaultOrganizationID: s.defaultOrganizationID,
+		defaultProjectID:      s.defaultProjectID,
 		defaultRegion:         s.defaultRegion,
 		defaultZone:           s.defaultZone,
 		defaultPageSize:       s.defaultPageSize,
@@ -88,6 +90,16 @@ func NewClient(opts ...ClientOption) (*Client, error) {
 func (c *Client) GetDefaultOrganizationID() (organizationID string, exists bool) {
 	if c.defaultOrganizationID != nil {
 		return *c.defaultOrganizationID, true
+	}
+	return "", false
+}
+
+// GetDefaultProjectID returns the default project ID
+// of the client. This value can be set in the client option
+// WithDefaultProjectID(). Be aware this value can be empty.
+func (c *Client) GetDefaultProjectID() (projectID string, exists bool) {
+	if c.defaultProjectID != nil {
+		return *c.defaultProjectID, true
 	}
 	return "", false
 }

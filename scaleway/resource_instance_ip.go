@@ -50,7 +50,7 @@ func resourceScalewayInstanceIPCreate(d *schema.ResourceData, m interface{}) err
 
 	res, err := instanceAPI.CreateIP(&instance.CreateIPRequest{
 		Zone:         zone,
-		Organization: d.Get("organization_id").(string),
+		Organization: expandStringPtr(d.Get("organization_id")),
 	})
 	if err != nil {
 		return err
