@@ -94,6 +94,11 @@ func WithProfile(p *Profile) ClientOption {
 			s.defaultOrganizationID = &organizationID
 		}
 
+		if p.DefaultProjectID != nil {
+			projectID := *p.DefaultProjectID
+			s.defaultProjectID = &projectID
+		}
+
 		if p.DefaultRegion != nil {
 			defaultRegion := Region(*p.DefaultRegion)
 			s.defaultRegion = &defaultRegion
@@ -117,6 +122,15 @@ func WithEnv() ClientOption {
 func WithDefaultOrganizationID(organizationID string) ClientOption {
 	return func(s *settings) {
 		s.defaultOrganizationID = &organizationID
+	}
+}
+
+// WithDefaultProjectID client option sets the client default project ID.
+//
+// It will be used as the default value of the projectID field in all requests made with this client.
+func WithDefaultProjectID(projectID string) ClientOption {
+	return func(s *settings) {
+		s.defaultProjectID = &projectID
 	}
 }
 
@@ -155,6 +169,7 @@ type settings struct {
 	httpClient            httpClient
 	insecure              bool
 	defaultOrganizationID *string
+	defaultProjectID      *string
 	defaultRegion         *Region
 	defaultZone           *Zone
 	defaultPageSize       *uint32
@@ -198,6 +213,16 @@ func (s *settings) validate() error {
 		}
 		if !validation.IsOrganizationID(*s.defaultOrganizationID) {
 			return NewInvalidClientOptionError("invalid organization ID format '%s', expected a UUID: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx", *s.defaultOrganizationID)
+		}
+	}
+
+	// Default Project ID.
+	if s.defaultProjectID != nil {
+		if *s.defaultProjectID == "" {
+			return NewInvalidClientOptionError("default project ID cannot be empty")
+		}
+		if !validation.IsProjectID(*s.defaultProjectID) {
+			return NewInvalidClientOptionError("invalid project ID format '%s', expected a UUID: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx", *s.defaultProjectID)
 		}
 	}
 

@@ -36,6 +36,7 @@ func (v1 *configV1) toV2() *Config {
 	return &Config{
 		Profile: Profile{
 			DefaultOrganizationID: &v1.Organization,
+			DefaultProjectID:      &v1.Organization, // v1 config is not aware of project, so default project is set to organization ID
 			SecretKey:             &v1.Token,
 			// ignore v1 version
 		},

@@ -217,6 +217,11 @@ type CreateSSHKeyRequest struct {
 func (s *API) CreateSSHKey(req *CreateSSHKeyRequest, opts ...scw.RequestOption) (*SSHKey, error) {
 	var err error
 
+	defaultProjectID, exist := s.client.GetDefaultProjectID()
+	if exist && req.OrganizationID == nil && req.ProjectID == nil {
+		req.ProjectID = &defaultProjectID
+	}
+
 	defaultOrganizationID, exist := s.client.GetDefaultOrganizationID()
 	if exist && req.OrganizationID == nil && req.ProjectID == nil {
 		req.OrganizationID = &defaultOrganizationID

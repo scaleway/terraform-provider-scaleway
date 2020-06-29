@@ -161,7 +161,7 @@ func TestAccScalewayInstanceServerBasic1(t *testing.T) {
 		CheckDestroy: testAccCheckScalewayInstanceServerDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckScalewayInstanceServerConfigServerType("x86_64", "DEV1-M"),
+				Config: testAccCheckScalewayInstanceServerConfigServerType("DEV1-M"),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayInstanceServerExists("scaleway_instance_server.base"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "type", "DEV1-M"),
@@ -172,7 +172,7 @@ func TestAccScalewayInstanceServerBasic1(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccCheckScalewayInstanceServerConfigServerType("x86_64", "DEV1-S"),
+				Config: testAccCheckScalewayInstanceServerConfigServerType("DEV1-S"),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayInstanceServerExists("scaleway_instance_server.base"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "type", "DEV1-S"),
@@ -707,21 +707,20 @@ resource "scaleway_instance_server" "base" {
 }`, imageValue)
 }
 
-func testAccCheckScalewayInstanceServerConfigServerType(architecture, serverType string) string {
+func testAccCheckScalewayInstanceServerConfigServerType(serverType string) string {
 	return fmt.Sprintf(`
-data "scaleway_image" "ubuntu" {
-  architecture = "%s"
-  name         = "Ubuntu Focal"
-  most_recent  = true
+data "scaleway_marketplace_image_beta" "ubuntu" {
+  instance_type   = "%s"
+  label         = "ubuntu_focal"
 }
 
 resource "scaleway_instance_server" "base" {
   name  = "test"
-  image = "${data.scaleway_image.ubuntu.id}"
+  image = "${data.scaleway_marketplace_image_beta.ubuntu.id}"
   type  = "%s"
 
   tags = [ "terraform-test", "scaleway_instance_server", "basic" ]
-}`, architecture, serverType)
+}`, serverType, serverType)
 }
 
 func testAccCheckScalewayInstanceServerConfigRootVolume(size, deleteOnTermination string) string {
@@ -739,14 +738,13 @@ resource "scaleway_instance_server" "base" {
 
 func testAccCheckScalewayInstanceServerConfigState(state string) string {
 	return fmt.Sprintf(`
-data "scaleway_image" "ubuntu" {
-  architecture = "x86_64"
-  name         = "Ubuntu Focal"
-  most_recent  = true
+data "scaleway_marketplace_image_beta" "ubuntu" {
+  instance_type = "DEV1-S"
+  label         = "ubuntu_focal"
 }
 
 resource "scaleway_instance_server" "base" {
-  image = "${data.scaleway_image.ubuntu.id}"
+  image = "${data.scaleway_marketplace_image_beta.ubuntu.id}"
   type  = "DEV1-S"
   state = "%s"
   tags  = [ "terraform-test", "scaleway_instance_server", "state" ]

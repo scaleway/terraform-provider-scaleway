@@ -108,7 +108,6 @@ func TestAccScalewayK8SClusterDeprecated(t *testing.T) {
 			},
 		},
 	})
-
 }
 
 func TestAccScalewayK8SClusterMinimal(t *testing.T) {
