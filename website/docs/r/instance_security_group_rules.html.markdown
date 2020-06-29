@@ -11,7 +11,7 @@ Creates and manages Scaleway Compute Instance security group rules. For more inf
 
 This resource can be used to externalize rules from a `scaleway_instance_security_group` to solve circular dependency problems. When using this resource do not forget to set `external_rules = true` on the security group.
 
-~> **Warning:** In order to guaranty rules order in a given security group you can only use a single scaleway_instance_security_group_rules per security group.
+~> **Warning:** In order to guaranty rules order in a given security group only one scaleway_instance_security_group_rules is allowed per security group.
 
 ## Examples
 
