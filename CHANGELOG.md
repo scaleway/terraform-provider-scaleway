@@ -1,4 +1,4 @@
-## 1.16.0 (Unreleased)
+## 1.16.0 (June 29, 2020)
 
 IMPROVEMENTS:
 
