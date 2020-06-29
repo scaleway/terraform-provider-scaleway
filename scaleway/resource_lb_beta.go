@@ -1,6 +1,8 @@
 package scaleway
 
 import (
+	"strings"
+
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	lb "github.com/scaleway/scaleway-sdk-go/api/lb/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
@@ -24,10 +26,11 @@ func resourceScalewayLbBeta() *schema.Resource {
 				Description: "Name of the lb",
 			},
 			"type": {
-				Type:        schema.TypeString,
-				Required:    true,
-				ForceNew:    true,
-				Description: "The type of load-balancer you want to create",
+				Type:             schema.TypeString,
+				Required:         true,
+				ForceNew:         true,
+				DiffSuppressFunc: diffSuppressFuncIgnoreCase,
+				Description:      "The type of load-balancer you want to create",
 			},
 			"tags": {
 				Type: schema.TypeList,
@@ -116,7 +119,8 @@ func resourceScalewayLbBetaRead(d *schema.ResourceData, m interface{}) error {
 	_ = d.Set("region", string(region))
 	_ = d.Set("organization_id", res.OrganizationID)
 	_ = d.Set("tags", res.Tags)
-	_ = d.Set("type", res.Type)
+	// For now API return lowercase lb type. This should be fix in a near future on the API side
+	_ = d.Set("type", strings.ToUpper(res.Type))
 	_ = d.Set("ip_id", newRegionalId(region, res.IP[0].ID))
 	_ = d.Set("ip_address", res.IP[0].IPAddress)
 
