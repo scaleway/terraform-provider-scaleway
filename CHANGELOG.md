@@ -1,4 +1,19 @@
 ## 1.16.0 (Unreleased)
+
+IMPROVEMENTS:
+
+* **New Data source** `data-source/scaleway_lb_ip` ([#493](https://github.com/terraform-providers/terraform-provider-scaleway/pull/493)).
+* `resource/scaleway_instance_security_group` add stateful field to security group ([#497](https://github.com/terraform-providers/terraform-provider-scaleway/pull/497)).
+
+BUG FIXES:
+
+* `resource/scaleway_k8s_cluster_beta` use resource region on versions calls ([#492](https://github.com/terraform-providers/terraform-provider-scaleway/pull/492)).
+* `resource/scaleway_k8s_cluster_beta` add missing region argument on pool creation ([#494](https://github.com/terraform-providers/terraform-provider-scaleway/pull/494)).
+* `resource/scaleway_k8s_pool_beta` fix pool size and autoscaling ([#498](https://github.com/terraform-providers/terraform-provider-scaleway/pull/498)).
+* `resource/scaleway_instance_security_group` fix ipv6 security rule validation ([#482](https://github.com/terraform-providers/terraform-provider-scaleway/pull/482)).
+* `resource/scaleway_lb_beta` fix case problem with lb type ([#515](https://github.com/terraform-providers/terraform-provider-scaleway/pull/515)).
+
+
 ## 1.15.0 (April 29, 2020)
 
 BREAKING CHANGES:
