@@ -39,7 +39,6 @@ func resourceScalewayRdbInstanceBeta() *schema.Resource {
 			"is_ha_cluster": {
 				Type:        schema.TypeBool,
 				Optional:    true,
-				ForceNew:    true,
 				Default:     false,
 				Description: "Enable or disable high availability for the database instance",
 			},
@@ -240,6 +239,26 @@ func resourceScalewayRdbInstanceBetaUpdate(d *schema.ResourceData, m interface{}
 			Region:     region,
 			InstanceID: ID,
 			NodeType:   scw.StringPtr(d.Get("node_type").(string)),
+		})
+		if err != nil {
+			return err
+		}
+
+		_, err = rdbAPI.WaitForInstance(&rdb.WaitForInstanceRequest{
+			Region:     region,
+			InstanceID: ID,
+			Timeout:    scw.TimeDurationPtr(InstanceServerWaitForTimeout * 3), // upgrade takes some time
+		})
+		if err != nil {
+			return err
+		}
+	}
+
+	if d.HasChange("is_ha_cluster") {
+		_, err = rdbAPI.UpgradeInstance(&rdb.UpgradeInstanceRequest{
+			Region:     region,
+			InstanceID: ID,
+			EnableHa:   scw.BoolPtr(d.Get("is_ha_cluster").(bool)),
 		})
 		if err != nil {
 			return err
