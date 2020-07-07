@@ -53,7 +53,7 @@ func TestAccScalewayRdbInstanceBeta(t *testing.T) {
 						name = "test-rdb"
 						node_type = "db-dev-s"
 						engine = "PostgreSQL-11"
-						is_ha_cluster = true
+						is_ha_cluster = false
 						disable_backup = true
 						user_name = "my_initial_user"
 						password = "thiZ_is_v&ry_s3cret"
@@ -65,7 +65,7 @@ func TestAccScalewayRdbInstanceBeta(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_rdb_instance_beta.main", "name", "test-rdb"),
 					resource.TestCheckResourceAttr("scaleway_rdb_instance_beta.main", "node_type", "db-dev-s"),
 					resource.TestCheckResourceAttr("scaleway_rdb_instance_beta.main", "engine", "PostgreSQL-11"),
-					resource.TestCheckResourceAttr("scaleway_rdb_instance_beta.main", "is_ha_cluster", "true"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance_beta.main", "is_ha_cluster", "false"),
 					resource.TestCheckResourceAttr("scaleway_rdb_instance_beta.main", "disable_backup", "true"),
 					resource.TestCheckResourceAttr("scaleway_rdb_instance_beta.main", "user_name", "my_initial_user"),
 					resource.TestCheckResourceAttr("scaleway_rdb_instance_beta.main", "password", "thiZ_is_v&ry_s3cret"),
