@@ -51,11 +51,14 @@ func resourceScalewayRdbInstanceBeta() *schema.Resource {
 			"user_name": {
 				Type:        schema.TypeString,
 				Required:    true,
+				ForceNew:    true,
 				Description: "Identifier for the first user of the database instance",
 			},
 			"password": {
 				Type:        schema.TypeString,
 				Required:    true,
+				Sensitive:   true,
+				ForceNew:    true,
 				Description: "Password for the first user of the database instance",
 			},
 			"tags": {
