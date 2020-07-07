@@ -236,33 +236,26 @@ func resourceScalewayRdbInstanceBetaUpdate(d *schema.ResourceData, m interface{}
 	if err != nil {
 		return err
 	}
-
+	var upgradeInstanceRequests []rdb.UpgradeInstanceRequest
 	if d.HasChange("node_type") {
-		_, err = rdbAPI.UpgradeInstance(&rdb.UpgradeInstanceRequest{
-			Region:     region,
-			InstanceID: ID,
-			NodeType:   scw.StringPtr(d.Get("node_type").(string)),
-		})
-		if err != nil {
-			return err
-		}
-
-		_, err = rdbAPI.WaitForInstance(&rdb.WaitForInstanceRequest{
-			Region:     region,
-			InstanceID: ID,
-			Timeout:    scw.TimeDurationPtr(InstanceServerWaitForTimeout * 3), // upgrade takes some time
-		})
-		if err != nil {
-			return err
-		}
+		upgradeInstanceRequests = append(upgradeInstanceRequests,
+			rdb.UpgradeInstanceRequest{
+				Region:     region,
+				InstanceID: ID,
+				NodeType:   scw.StringPtr(d.Get("node_type").(string)),
+			})
 	}
 
 	if d.HasChange("is_ha_cluster") {
-		_, err = rdbAPI.UpgradeInstance(&rdb.UpgradeInstanceRequest{
-			Region:     region,
-			InstanceID: ID,
-			EnableHa:   scw.BoolPtr(d.Get("is_ha_cluster").(bool)),
-		})
+		upgradeInstanceRequests = append(upgradeInstanceRequests,
+			rdb.UpgradeInstanceRequest{
+				Region:     region,
+				InstanceID: ID,
+				EnableHa:   scw.BoolPtr(d.Get("is_ha_cluster").(bool)),
+			})
+	}
+	for _, request := range upgradeInstanceRequests {
+		_, err = rdbAPI.UpgradeInstance(&request)
 		if err != nil {
 			return err
 		}
