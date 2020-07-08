@@ -1,8 +1,6 @@
 package scaleway
 
 import (
-	"io/ioutil"
-
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/api/rdb/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
@@ -20,11 +18,11 @@ func resourceScalewayRdbUserBeta() *schema.Resource {
 		SchemaVersion: 0,
 		Schema: map[string]*schema.Schema{
 			"instance_id": {
-				Type:        schema.TypeString,
-				Required:    true,
-				ForceNew:    true,
-				Description: "Instance on which the user is created",
-				DiffSuppressFunc: diffSuppressFuncLocality,
+				Type:         schema.TypeString,
+				Required:     true,
+				ForceNew:     true,
+				ValidateFunc: validationUUIDorUUIDWithLocality(),
+				Description:  "Instance on which the user is created",
 			},
 			"name": {
 				Type:        schema.TypeString,
@@ -44,7 +42,7 @@ func resourceScalewayRdbUserBeta() *schema.Resource {
 				Description: "Give admin permissions to database user",
 			},
 			// Common
-			"region":          regionSchema(),
+			"region": regionSchema(),
 		},
 	}
 }
@@ -56,17 +54,19 @@ func resourceScalewayRdbUserBetaCreate(d *schema.ResourceData, m interface{}) er
 	}
 
 	createReq := &rdb.CreateUserRequest{
-		Region:         region,
-		InstanceID:     d.Get("instance_id").(string),
-		Name:           d.Get("name").(string),
-		Password:       d.Get("password").(string),
-		IsAdmin:        d.Get("is_admin").(bool),
+		Region:     region,
+		InstanceID: expandID(d.Get("instance_id").(string)),
+		Name:       d.Get("name").(string),
+		Password:   d.Get("password").(string),
+		IsAdmin:    d.Get("is_admin").(bool),
 	}
 
 	res, err := rdbAPI.CreateUser(createReq)
 	if err != nil {
 		return err
 	}
+
+	d.SetId(res.Name)
 
 	return resourceScalewayRdbUserBetaRead(d, m)
 }
@@ -79,18 +79,20 @@ func resourceScalewayRdbUserBetaRead(d *schema.ResourceData, m interface{}) erro
 
 	res, err := rdbAPI.ListUsers(&rdb.ListUsersRequest{
 		Region:     region,
-		InstanceID: d.Get("instance_id").(string),
-		Name:       d.Get("name").(string),
+		InstanceID: expandID(d.Get("instance_id").(string)),
+		Name:       scw.StringPtr(d.Id()),
 	})
 
 	if err != nil {
 		return err
 	}
 
-	user = res[0]
+	var user = res.Users[0]
 	_ = d.Set("name", user.Name)
-	_ = d.Set("password", d.Get("password").(string))   // password are immutable
+	_ = d.Set("password", d.Get("password").(string)) // password are immutable
 	_ = d.Set("is_admin", user.IsAdmin)
+
+	d.SetId(user.Name)
 
 	return nil
 }
@@ -103,7 +105,8 @@ func resourceScalewayRdbUserBetaUpdate(d *schema.ResourceData, m interface{}) er
 
 	req := &rdb.UpdateUserRequest{
 		Region:     region,
-		InstanceID: d.Get("instance_id").(string),
+		InstanceID: expandID(d.Get("instance_id").(string)),
+		Name:       d.Id(),
 	}
 
 	if d.HasChange("password") {
@@ -129,8 +132,8 @@ func resourceScalewayRdbUserBetaDelete(d *schema.ResourceData, m interface{}) er
 
 	err = rdbAPI.DeleteUser(&rdb.DeleteUserRequest{
 		Region:     region,
-		InstanceID: d.Get("instance_id").(string),
-		Name:       d.Get("name").(string),
+		InstanceID: expandID(d.Get("instance_id").(string)),
+		Name:       d.Id(),
 	})
 
 	if err != nil && !is404Error(err) {
