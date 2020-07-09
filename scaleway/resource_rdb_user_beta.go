@@ -88,7 +88,7 @@ func resourceScalewayRdbUserBetaRead(d *schema.ResourceData, m interface{}) erro
 
 	res, err := rdbAPI.ListUsers(&rdb.ListUsersRequest{
 		Region:     region,
-		InstanceID: expandID(instanceId),
+		InstanceID: instanceId,
 		Name:       &userName,
 	})
 
@@ -97,6 +97,7 @@ func resourceScalewayRdbUserBetaRead(d *schema.ResourceData, m interface{}) erro
 	}
 
 	var user = res.Users[0]
+	_ = d.Set("instance_id", fmt.Sprintf("%s/%s", region, instanceId))
 	_ = d.Set("name", user.Name)
 	_ = d.Set("password", d.Get("password").(string)) // password are immutable
 	_ = d.Set("is_admin", user.IsAdmin)
