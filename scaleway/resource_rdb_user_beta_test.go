@@ -21,8 +21,8 @@ func TestAccScalewayRdbUserBeta(t *testing.T) {
 	resourceName := "scaleway_rdb_user_beta.db_user"
 	rName := acctest.RandomWithPrefix("tf-acc-test")
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck: func() { testAccPreCheck(t) },
-		Providers: testAccProviders,
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckScalewayRdbInstanceBetaDestroy,
 		Steps: []resource.TestStep{
 			{
@@ -36,7 +36,7 @@ func TestAccScalewayRdbUserBeta(t *testing.T) {
 			{
 				Config: testAccScalewayRdbUserConfig(rName, "tata", "false"),
 				Check: resource.ComposeTestCheckFunc(
-				testAccCheckRdbUserBetaExists("scaleway_rdb_instance_beta.main", resourceName),
+					testAccCheckRdbUserBetaExists("scaleway_rdb_instance_beta.main", resourceName),
 					resource.TestCheckResourceAttr(resourceName, "name", "tata"),
 					resource.TestCheckResourceAttr(resourceName, "is_admin", "false"),
 				),
@@ -58,15 +58,20 @@ func testAccCheckRdbUserBetaExists(instance string, user string) resource.TestCh
 			return fmt.Errorf("resource not found: %s", user)
 		}
 
-		rdbAPI, region, instanceID, err := rdbAPIWithRegionAndID(testAccProvider.Meta(), instanceResource.Primary.ID)
+		rdbAPI, region, _, err := rdbAPIWithRegionAndID(testAccProvider.Meta(), instanceResource.Primary.ID)
+		if err != nil {
+			return err
+		}
+
+		_, instanceId, userName, err := resourceScalewayRdbUserBetaParseId(userResource.Primary.ID)
 		if err != nil {
 			return err
 		}
 
 		users, err := rdbAPI.ListUsers(&rdb.ListUsersRequest{
-			InstanceID: instanceID,
+			InstanceID: instanceId,
 			Region:     region,
-			Name:       &userResource.Primary.ID,
+			Name:       &userName,
 		})
 
 		if len(users.Users) != 1 {

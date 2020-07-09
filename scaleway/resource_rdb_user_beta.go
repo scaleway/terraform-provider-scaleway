@@ -1,6 +1,9 @@
 package scaleway
 
 import (
+	"fmt"
+	"strings"
+
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/api/rdb/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
@@ -38,8 +41,8 @@ func resourceScalewayRdbUserBeta() *schema.Resource {
 			},
 			"is_admin": {
 				Type:        schema.TypeBool,
-				Required:    true,
-				Description: "Give admin permissions to database user",
+				Optional:    true,
+				Description: "Grant admin permissions to database user",
 			},
 			// Common
 			"region": regionSchema(),
@@ -52,10 +55,10 @@ func resourceScalewayRdbUserBetaCreate(d *schema.ResourceData, m interface{}) er
 	if err != nil {
 		return err
 	}
-
+	instanceId := d.Get("instance_id").(string)
 	createReq := &rdb.CreateUserRequest{
 		Region:     region,
-		InstanceID: expandID(d.Get("instance_id").(string)),
+		InstanceID: expandID(instanceId),
 		Name:       d.Get("name").(string),
 		Password:   d.Get("password").(string),
 		IsAdmin:    d.Get("is_admin").(bool),
@@ -66,7 +69,7 @@ func resourceScalewayRdbUserBetaCreate(d *schema.ResourceData, m interface{}) er
 		return err
 	}
 
-	d.SetId(res.Name)
+	d.SetId(fmt.Sprintf("%s/%s/%s", region, expandID(instanceId), res.Name))
 
 	return resourceScalewayRdbUserBetaRead(d, m)
 }
@@ -77,10 +80,16 @@ func resourceScalewayRdbUserBetaRead(d *schema.ResourceData, m interface{}) erro
 		return err
 	}
 
+	regionName, instanceId, userName, err := resourceScalewayRdbUserBetaParseId(d.Id())
+
+	if err != nil {
+		return err
+	}
+
 	res, err := rdbAPI.ListUsers(&rdb.ListUsersRequest{
 		Region:     region,
-		InstanceID: expandID(d.Get("instance_id").(string)),
-		Name:       scw.StringPtr(d.Id()),
+		InstanceID: expandID(instanceId),
+		Name:       &userName,
 	})
 
 	if err != nil {
@@ -92,7 +101,7 @@ func resourceScalewayRdbUserBetaRead(d *schema.ResourceData, m interface{}) erro
 	_ = d.Set("password", d.Get("password").(string)) // password are immutable
 	_ = d.Set("is_admin", user.IsAdmin)
 
-	d.SetId(user.Name)
+	d.SetId(fmt.Sprintf("%s/%s/%s", regionName, instanceId, user.Name))
 
 	return nil
 }
@@ -103,10 +112,16 @@ func resourceScalewayRdbUserBetaUpdate(d *schema.ResourceData, m interface{}) er
 		return err
 	}
 
+	_, instanceId, userName, err := resourceScalewayRdbUserBetaParseId(d.Id())
+
+	if err != nil {
+		return err
+	}
+
 	req := &rdb.UpdateUserRequest{
 		Region:     region,
-		InstanceID: expandID(d.Get("instance_id").(string)),
-		Name:       d.Id(),
+		InstanceID: instanceId,
+		Name:       userName,
 	}
 
 	if d.HasChange("password") {
@@ -130,10 +145,16 @@ func resourceScalewayRdbUserBetaDelete(d *schema.ResourceData, m interface{}) er
 		return err
 	}
 
+	_, instanceId, userName, err := resourceScalewayRdbUserBetaParseId(d.Id())
+
+	if err != nil {
+		return err
+	}
+
 	err = rdbAPI.DeleteUser(&rdb.DeleteUserRequest{
 		Region:     region,
-		InstanceID: expandID(d.Get("instance_id").(string)),
-		Name:       d.Id(),
+		InstanceID: instanceId,
+		Name:       userName,
 	})
 
 	if err != nil && !is404Error(err) {
@@ -141,4 +162,14 @@ func resourceScalewayRdbUserBetaDelete(d *schema.ResourceData, m interface{}) er
 	}
 
 	return nil
+}
+
+func resourceScalewayRdbUserBetaParseId(resourceId string) (region string, instanceId string, userName string, err error) {
+	idParts := strings.Split(resourceId, "/")
+	if len(idParts) != 3 {
+		return "", "", "", fmt.Errorf("can't parse user resource id: %s", resourceId)
+	}
+	region, instanceId, userName = idParts[0], idParts[1], idParts[2]
+
+	return
 }
