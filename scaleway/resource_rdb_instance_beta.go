@@ -236,7 +236,7 @@ func resourceScalewayRdbInstanceBetaUpdate(d *schema.ResourceData, m interface{}
 	if err != nil {
 		return err
 	}
-	var upgradeInstanceRequests []rdb.UpgradeInstanceRequest
+	upgradeInstanceRequests := []rdb.UpgradeInstanceRequest(nil)
 	if d.HasChange("node_type") {
 		upgradeInstanceRequests = append(upgradeInstanceRequests,
 			rdb.UpgradeInstanceRequest{
