@@ -86,7 +86,7 @@ func TestAccScalewayRdbInstanceBeta(t *testing.T) {
 						is_ha_cluster = true
 						disable_backup = false
 						user_name = "my_initial_user"
-						password = "thiZ_is_v&ry_s3cret"
+						password = "thiZ_is_v&ry_s8cret"
 						tags = [ "terraform-test", "scaleway_rdb_instance_beta", "minimal" ]
 					}
 				`,
@@ -98,7 +98,7 @@ func TestAccScalewayRdbInstanceBeta(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_rdb_instance_beta.main", "is_ha_cluster", "true"),
 					resource.TestCheckResourceAttr("scaleway_rdb_instance_beta.main", "disable_backup", "false"),
 					resource.TestCheckResourceAttr("scaleway_rdb_instance_beta.main", "user_name", "my_initial_user"),
-					resource.TestCheckResourceAttr("scaleway_rdb_instance_beta.main", "password", "thiZ_is_v&ry_s3cret"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance_beta.main", "password", "thiZ_is_v&ry_s8cret"),
 					resource.TestCheckResourceAttr("scaleway_rdb_instance_beta.main", "tags.0", "terraform-test"),
 					resource.TestCheckResourceAttr("scaleway_rdb_instance_beta.main", "tags.1", "scaleway_rdb_instance_beta"),
 					resource.TestCheckResourceAttr("scaleway_rdb_instance_beta.main", "tags.2", "minimal"),

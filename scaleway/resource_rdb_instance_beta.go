@@ -58,7 +58,6 @@ func resourceScalewayRdbInstanceBeta() *schema.Resource {
 				Type:        schema.TypeString,
 				Required:    true,
 				Sensitive:   true,
-				ForceNew:    true,
 				Description: "Password for the first user of the database instance",
 			},
 			"tags": {
@@ -269,6 +268,21 @@ func resourceScalewayRdbInstanceBetaUpdate(d *schema.ResourceData, m interface{}
 			return err
 		}
 	}
+
+	if d.HasChange("password") {
+		req := &rdb.UpdateUserRequest{
+			Region:     region,
+			InstanceID: ID,
+			Name:       d.Get("user_name").(string),
+			Password:   scw.StringPtr(d.Get("password").(string)),
+		}
+
+		_, err = rdbAPI.UpdateUser(req)
+		if err != nil {
+			return err
+		}
+	}
+
 	return resourceScalewayRdbInstanceBetaRead(d, m)
 }
 
