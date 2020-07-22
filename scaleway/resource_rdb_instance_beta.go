@@ -2,6 +2,7 @@ package scaleway
 
 import (
 	"io/ioutil"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/api/rdb/v1"
@@ -267,6 +268,10 @@ func resourceScalewayRdbInstanceBetaUpdate(d *schema.ResourceData, m interface{}
 		if err != nil {
 			return err
 		}
+
+		// Wait for the instance to settle after upgrading
+		time.Sleep(30 * time.Second)
+
 	}
 
 	if d.HasChange("password") {
