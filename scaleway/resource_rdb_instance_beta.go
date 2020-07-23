@@ -2,6 +2,7 @@ package scaleway
 
 import (
 	"io/ioutil"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/api/rdb/v1"
@@ -39,7 +40,6 @@ func resourceScalewayRdbInstanceBeta() *schema.Resource {
 			"is_ha_cluster": {
 				Type:        schema.TypeBool,
 				Optional:    true,
-				ForceNew:    true,
 				Default:     false,
 				Description: "Enable or disable high availability for the database instance",
 			},
@@ -52,11 +52,13 @@ func resourceScalewayRdbInstanceBeta() *schema.Resource {
 			"user_name": {
 				Type:        schema.TypeString,
 				Required:    true,
+				ForceNew:    true,
 				Description: "Identifier for the first user of the database instance",
 			},
 			"password": {
 				Type:        schema.TypeString,
 				Required:    true,
+				Sensitive:   true,
 				Description: "Password for the first user of the database instance",
 			},
 			"tags": {
@@ -234,13 +236,26 @@ func resourceScalewayRdbInstanceBetaUpdate(d *schema.ResourceData, m interface{}
 	if err != nil {
 		return err
 	}
-
+	upgradeInstanceRequests := []rdb.UpgradeInstanceRequest(nil)
 	if d.HasChange("node_type") {
-		_, err = rdbAPI.UpgradeInstance(&rdb.UpgradeInstanceRequest{
-			Region:     region,
-			InstanceID: ID,
-			NodeType:   scw.StringPtr(d.Get("node_type").(string)),
-		})
+		upgradeInstanceRequests = append(upgradeInstanceRequests,
+			rdb.UpgradeInstanceRequest{
+				Region:     region,
+				InstanceID: ID,
+				NodeType:   scw.StringPtr(d.Get("node_type").(string)),
+			})
+	}
+
+	if d.HasChange("is_ha_cluster") {
+		upgradeInstanceRequests = append(upgradeInstanceRequests,
+			rdb.UpgradeInstanceRequest{
+				Region:     region,
+				InstanceID: ID,
+				EnableHa:   scw.BoolPtr(d.Get("is_ha_cluster").(bool)),
+			})
+	}
+	for _, request := range upgradeInstanceRequests {
+		_, err = rdbAPI.UpgradeInstance(&request)
 		if err != nil {
 			return err
 		}
@@ -253,7 +268,26 @@ func resourceScalewayRdbInstanceBetaUpdate(d *schema.ResourceData, m interface{}
 		if err != nil {
 			return err
 		}
+
+		// Wait for the instance to settle after upgrading
+		time.Sleep(30 * time.Second)
+
 	}
+
+	if d.HasChange("password") {
+		req := &rdb.UpdateUserRequest{
+			Region:     region,
+			InstanceID: ID,
+			Name:       d.Get("user_name").(string),
+			Password:   scw.StringPtr(d.Get("password").(string)),
+		}
+
+		_, err = rdbAPI.UpdateUser(req)
+		if err != nil {
+			return err
+		}
+	}
+
 	return resourceScalewayRdbInstanceBetaRead(d, m)
 }
 

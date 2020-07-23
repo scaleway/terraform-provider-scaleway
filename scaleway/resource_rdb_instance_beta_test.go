@@ -53,7 +53,7 @@ func TestAccScalewayRdbInstanceBeta(t *testing.T) {
 						name = "test-rdb"
 						node_type = "db-dev-s"
 						engine = "PostgreSQL-11"
-						is_ha_cluster = true
+						is_ha_cluster = false
 						disable_backup = true
 						user_name = "my_initial_user"
 						password = "thiZ_is_v&ry_s3cret"
@@ -65,7 +65,7 @@ func TestAccScalewayRdbInstanceBeta(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_rdb_instance_beta.main", "name", "test-rdb"),
 					resource.TestCheckResourceAttr("scaleway_rdb_instance_beta.main", "node_type", "db-dev-s"),
 					resource.TestCheckResourceAttr("scaleway_rdb_instance_beta.main", "engine", "PostgreSQL-11"),
-					resource.TestCheckResourceAttr("scaleway_rdb_instance_beta.main", "is_ha_cluster", "true"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance_beta.main", "is_ha_cluster", "false"),
 					resource.TestCheckResourceAttr("scaleway_rdb_instance_beta.main", "disable_backup", "true"),
 					resource.TestCheckResourceAttr("scaleway_rdb_instance_beta.main", "user_name", "my_initial_user"),
 					resource.TestCheckResourceAttr("scaleway_rdb_instance_beta.main", "password", "thiZ_is_v&ry_s3cret"),
@@ -86,7 +86,7 @@ func TestAccScalewayRdbInstanceBeta(t *testing.T) {
 						is_ha_cluster = true
 						disable_backup = false
 						user_name = "my_initial_user"
-						password = "thiZ_is_v&ry_s3cret"
+						password = "thiZ_is_v&ry_s8cret"
 						tags = [ "terraform-test", "scaleway_rdb_instance_beta", "minimal" ]
 					}
 				`,
@@ -98,7 +98,7 @@ func TestAccScalewayRdbInstanceBeta(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_rdb_instance_beta.main", "is_ha_cluster", "true"),
 					resource.TestCheckResourceAttr("scaleway_rdb_instance_beta.main", "disable_backup", "false"),
 					resource.TestCheckResourceAttr("scaleway_rdb_instance_beta.main", "user_name", "my_initial_user"),
-					resource.TestCheckResourceAttr("scaleway_rdb_instance_beta.main", "password", "thiZ_is_v&ry_s3cret"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance_beta.main", "password", "thiZ_is_v&ry_s8cret"),
 					resource.TestCheckResourceAttr("scaleway_rdb_instance_beta.main", "tags.0", "terraform-test"),
 					resource.TestCheckResourceAttr("scaleway_rdb_instance_beta.main", "tags.1", "scaleway_rdb_instance_beta"),
 					resource.TestCheckResourceAttr("scaleway_rdb_instance_beta.main", "tags.2", "minimal"),
