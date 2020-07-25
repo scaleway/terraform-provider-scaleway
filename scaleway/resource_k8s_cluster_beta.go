@@ -63,6 +63,7 @@ func resourceScalewayK8SClusterBeta() *schema.Resource {
 				ValidateFunc: validation.StringInSlice([]string{
 					k8s.IngressNone.String(),
 					k8s.IngressTraefik.String(),
+					k8s.IngressTraefik2.String(),
 					k8s.IngressNginx.String(),
 				}, false),
 			},
