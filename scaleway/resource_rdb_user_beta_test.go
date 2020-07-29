@@ -93,8 +93,6 @@ resource scaleway_rdb_instance_beta main {
     node_type = "db-dev-s"
     engine = "PostgreSQL-12"
     is_ha_cluster = false
-    user_name = "toto"
-    password = "Tata#Titi42"
     tags = [ "terraform-test", "scaleway_rdb_user_beta", "minimal" ]
 }`, rName)
 }
