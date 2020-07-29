@@ -12,7 +12,7 @@ description: |-
 Creates and manages Scaleway Database Instances. For more information, see [the documentation](https://developers.scaleway.com/en/products/rdb/api).
 
 ## Examples
-    
+
 ### Basic
 
 ```hcl
@@ -39,13 +39,11 @@ The following arguments are supported:
 
 ~> **Important:** Updates to `engine` will recreate the Database Instance.
 
-- `user_name` - (Required) Identifier for the first user of the database instance.
+- `user_name` - (Optional) Identifier for the first user of the database instance.
 
 ~> **Important:** Updates to `user_name` will recreate the Database Instance.
 
-- `password` - (Required) Password for the first user of the database instance.
-
-~> **Important:** Updates to `password` will recreate the Database Instance.
+- `password` - (Optional) Password for the first user of the database instance.
 
 - `is_ha_cluster` - (Optional) Enable or disable high availability for the database instance.
 
@@ -69,7 +67,7 @@ In addition to all arguments above, the following attributes are exported:
 - `id` - The ID of the Database Instance.
 - `endpoint_ip` - The IP of the Database Instance.
 - `endpoint_port` - The port of the Database Instance.
-- `read_replicas` - List of read replicas of the database instance. 
+- `read_replicas` - List of read replicas of the database instance.
   - `ip` - IP of the replica.
   - `port` - Port of the replica.
   - `name` - Name of the replica.
