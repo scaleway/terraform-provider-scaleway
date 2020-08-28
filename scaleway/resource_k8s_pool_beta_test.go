@@ -228,7 +228,7 @@ resource "scaleway_k8s_pool_beta" "default" {
 	tags = [ "terraform-test", "scaleway_k8s_cluster_beta", "default" ]
 }
 resource "scaleway_k8s_cluster_beta" "minimal" {
-    name = "minimal"
+    name = "K8SPoolBetaConfigMinimal"
 	cni = "calico"
 	version = "%s"
 	tags = [ "terraform-test", "scaleway_k8s_cluster_beta", "minimal" ]
@@ -264,7 +264,7 @@ resource "scaleway_k8s_pool_beta" "default" {
 }
 
 resource "scaleway_k8s_cluster_beta" "minimal" {
-    name = "minimal"
+    name = "PoolBetaConfigWait"
 	cni = "calico"
 	version = "%s"
 	tags = [ "terraform-test", "scaleway_k8s_cluster_beta", "minimal" ]
