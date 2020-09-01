@@ -9,6 +9,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -31,6 +32,7 @@ type Meta struct {
 	DefaultOrganizationID string
 	DefaultRegion         scw.Region
 	DefaultZone           scw.Zone
+	APIURL                string
 	TerraformVersion      string
 
 	// scwClient is the Scaleway SDK client.
@@ -89,6 +91,10 @@ func (m *Meta) bootstrapScwClient() error {
 
 	if m.DefaultZone != "" {
 		options = append(options, scw.WithDefaultZone(m.DefaultZone))
+	}
+
+	if m.APIURL != "" {
+		options = append(options, scw.WithAPIURL(m.APIURL))
 	}
 
 	client, err := scw.NewClient(options...)
@@ -167,6 +173,10 @@ func (m *Meta) bootstrapDeprecatedClient() error {
 		options,
 	)
 	if err != nil {
+		if strings.HasSuffix(err.Error(), "isn't a valid region") {
+			// will panic if using the deprecated client
+			return nil
+		}
 		return fmt.Errorf("cannot create deprecated SDK client: %s", err)
 	}
 
