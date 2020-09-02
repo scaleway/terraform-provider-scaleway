@@ -38,6 +38,15 @@ func instanceAPIWithZoneAndID(m interface{}, zonedID string) (*instance.API, scw
 	return instanceAPI, zone, ID, err
 }
 
+// instanceAPIWithZoneAndNestedID returns an instance API with zone and inner/outer ID extracted from the state
+func instanceAPIWithZoneAndNestedID(m interface{}, zonedNestedID string) (*instance.API, scw.Zone, string, string, error) {
+	meta := m.(*Meta)
+	instanceAPI := instance.NewAPI(meta.scwClient)
+
+	zone, innerID, outerID, err := parseZonedNestedID(zonedNestedID)
+	return instanceAPI, zone, innerID, outerID, err
+}
+
 // hash hashes a string to a unique hashcode.
 //
 // crc32 returns a uint32, but for our use we need

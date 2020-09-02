@@ -75,6 +75,7 @@ func Provider(config *ProviderConfig) plugin.ProviderFunc {
 				"scaleway_instance_security_group_rules": resourceScalewayInstanceSecurityGroupRules(),
 				"scaleway_instance_server":               resourceScalewayInstanceServer(),
 				"scaleway_instance_placement_group":      resourceScalewayInstancePlacementGroup(),
+				"scaleway_instance_private_nic":          resourceScalewayInstancePrivateNIC(),
 				"scaleway_k8s_cluster":                   resourceScalewayK8SCluster(),
 				"scaleway_k8s_pool":                      resourceScalewayK8SPool(),
 				"scaleway_lb":                            resourceScalewayLb(),
@@ -86,6 +87,7 @@ func Provider(config *ProviderConfig) plugin.ProviderFunc {
 				"scaleway_rdb_instance":                  resourceScalewayRdbInstance(),
 				"scaleway_rdb_user":                      resourceScalewayRdbUser(),
 				"scaleway_object_bucket":                 resourceScalewayObjectBucket(),
+				"scaleway_vpc_private_network":           resourceScalewayVPCPrivateNetwork(),
 			},
 
 			DataSourcesMap: map[string]*schema.Resource{
@@ -100,6 +102,7 @@ func Provider(config *ProviderConfig) plugin.ProviderFunc {
 				"scaleway_marketplace_image":       dataSourceScalewayMarketplaceImage(),
 				"scaleway_registry_namespace":      dataSourceScalewayRegistryNamespace(),
 				"scaleway_registry_image":          dataSourceScalewayRegistryImage(),
+				"scaleway_vpc_private_network":     dataSourceScalewayVPCPrivateNetwork(),
 			},
 		}
 

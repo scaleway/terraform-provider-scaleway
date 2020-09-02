@@ -1,0 +1,140 @@
+package scaleway
+
+import (
+	"fmt"
+	"testing"
+
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/scaleway/scaleway-sdk-go/api/vpc/v1"
+	"github.com/scaleway/scaleway-sdk-go/scw"
+)
+
+func init() {
+	resource.AddTestSweepers("scaleway_vpc", &resource.Sweeper{
+		Name: "scaleway_vpc",
+		F:    testSweepVPCPrivateNetwork,
+	})
+}
+
+func testSweepVPCPrivateNetwork(zone string) error {
+	z, err := scw.ParseZone(zone)
+	if err != nil {
+		return err
+	}
+	scwClient, err := sharedClientForZone(z)
+	if err != nil {
+		return fmt.Errorf("error getting client in sweeper: %s", err)
+	}
+	vpcAPI := vpc.NewAPI(scwClient)
+
+	l.Debugf("sweeper: destroying the VPC private networks in %s", zone)
+	listVPCPrivateNetworks, err := vpcAPI.ListPrivateNetworks(&vpc.ListPrivateNetworksRequest{}, scw.WithAllPages())
+	if err != nil {
+		return fmt.Errorf("error listing private networks in (%s) in sweeper: %s", zone, err)
+	}
+
+	for _, n := range listVPCPrivateNetworks.PrivateNetworks {
+		err := vpcAPI.DeletePrivateNetwork(&vpc.DeletePrivateNetworkRequest{
+			PrivateNetworkID: n.ID,
+			Zone:             z,
+		})
+		if err != nil {
+			return fmt.Errorf("error deleting private network in sweeper: %s", err)
+		}
+	}
+
+	return nil
+}
+
+func TestAccScalewayVPCPrivateNetwork(t *testing.T) {
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckScalewayVPCPrivateNetworkDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource scaleway_vpc_private_network pn01 {
+						name: "private-network-test"
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayVPCPrivateNetworkExists("scaleway_vpc_private_network.pn01"),
+					resource.TestCheckResourceAttr("scaleway_vpc_private_network.pn01", "name", "private-network-test"),
+					testCheckResourceAttrUUID("scaleway_vpc_private_network.pn01", "private_network_id"),
+				),
+			},
+			{
+				Config: `
+					resource scaleway_vpc_private_network pn01 {
+						name: "private-network-test"
+						tags: ["tag0", "tag1"]
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayVPCPrivateNetworkExists("scaleway_vpc_private_network.pn01"),
+					resource.TestCheckResourceAttr("scaleway_vpc_private_network.pn01", "tags.0", "tag0"),
+					resource.TestCheckResourceAttr("scaleway_vpc_private_network.pn01", "tags.1", "tag1"),
+				),
+			},
+		},
+	})
+}
+
+func testAccCheckScalewayVPCPrivateNetworkExists(n string) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		rs, ok := s.RootModule().Resources[n]
+		if !ok {
+			return fmt.Errorf("resource not found: %s", n)
+		}
+
+		vpcAPI, zone, ID, err := vpcAPIWithZoneAndID(testAccProvider.Meta(), rs.Primary.ID)
+		if err != nil {
+			return err
+		}
+
+		_, err = vpcAPI.GetPrivateNetwork(&vpc.GetPrivateNetworkRequest{
+			PrivateNetworkID: ID,
+			Zone:             zone,
+		})
+
+		if err != nil {
+			return err
+		}
+
+		return nil
+	}
+}
+
+func testAccCheckScalewayVPCPrivateNetworkDestroy(s *terraform.State) error {
+	for _, rs := range s.RootModule().Resources {
+		if rs.Type != "scaleway_vpc_private_network" {
+			continue
+		}
+
+		vpcAPI, zone, ID, err := vpcAPIWithZoneAndID(testAccProvider.Meta(), rs.Primary.ID)
+		if err != nil {
+			return err
+		}
+
+		_, err = vpcAPI.GetPrivateNetwork(&vpc.GetPrivateNetworkRequest{
+			PrivateNetworkID: ID,
+			Zone:             zone,
+		})
+
+		if err == nil {
+			return fmt.Errorf(
+				"VPC private network %s still exists",
+				rs.Primary.ID,
+			)
+		}
+
+		// Unexpected api error we return it
+		if !is404Error(err) {
+			return err
+		}
+	}
+
+	return nil
+}
