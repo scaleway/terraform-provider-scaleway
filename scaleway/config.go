@@ -173,6 +173,7 @@ func (m *Meta) bootstrapDeprecatedClient() error {
 		options,
 	)
 	if err != nil {
+		// Ugly fix bug this should be removed when we remove support for older resources.
 		if strings.HasSuffix(err.Error(), "isn't a valid region") {
 			// will panic if using the deprecated client
 			return nil
