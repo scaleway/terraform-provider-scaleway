@@ -69,7 +69,7 @@ func resourceScalewayRdbUserBetaCreate(d *schema.ResourceData, m interface{}) er
 		return err
 	}
 
-	d.SetId(fmt.Sprintf("%s/%s/%s", region, expandID(instanceId), res.Name))
+	d.SetId(resourceScalewayRdbUserBetaID(region, expandID(instanceId), res.Name))
 
 	return resourceScalewayRdbUserBetaRead(d, m)
 }
@@ -80,7 +80,7 @@ func resourceScalewayRdbUserBetaRead(d *schema.ResourceData, m interface{}) erro
 		return err
 	}
 
-	regionName, instanceId, userName, err := resourceScalewayRdbUserBetaParseId(d.Id())
+	_, instanceId, userName, err := resourceScalewayRdbUserBetaParseId(d.Id())
 
 	if err != nil {
 		return err
@@ -101,12 +101,11 @@ func resourceScalewayRdbUserBetaRead(d *schema.ResourceData, m interface{}) erro
 	}
 
 	var user = res.Users[0]
-	_ = d.Set("instance_id", fmt.Sprintf("%s/%s", region, instanceId))
-	_ = d.Set("name", user.Name)
-	_ = d.Set("password", d.Get("password").(string)) // password are immutable
-	_ = d.Set("is_admin", user.IsAdmin)
+	d.Set("instance_id", fmt.Sprintf("%s/%s", region, instanceId))
+	d.Set("name", user.Name)
+	d.Set("is_admin", user.IsAdmin)
 
-	d.SetId(fmt.Sprintf("%s/%s/%s", regionName, instanceId, user.Name))
+	d.SetId(resourceScalewayRdbUserBetaID(region, instanceId, user.Name))
 
 	return nil
 }
@@ -117,7 +116,7 @@ func resourceScalewayRdbUserBetaUpdate(d *schema.ResourceData, m interface{}) er
 		return err
 	}
 
-	_, instanceId, userName, err := resourceScalewayRdbUserBetaParseId(d.Id())
+	_, instanceID, userName, err := resourceScalewayRdbUserBetaParseId(d.Id())
 
 	if err != nil {
 		return err
@@ -125,7 +124,7 @@ func resourceScalewayRdbUserBetaUpdate(d *schema.ResourceData, m interface{}) er
 
 	req := &rdb.UpdateUserRequest{
 		Region:     region,
-		InstanceID: instanceId,
+		InstanceID: instanceID,
 		Name:       userName,
 	}
 
@@ -150,7 +149,7 @@ func resourceScalewayRdbUserBetaDelete(d *schema.ResourceData, m interface{}) er
 		return err
 	}
 
-	_, instanceId, userName, err := resourceScalewayRdbUserBetaParseId(d.Id())
+	_, instanceID, userName, err := resourceScalewayRdbUserBetaParseId(d.Id())
 
 	if err != nil {
 		return err
@@ -158,7 +157,7 @@ func resourceScalewayRdbUserBetaDelete(d *schema.ResourceData, m interface{}) er
 
 	err = rdbAPI.DeleteUser(&rdb.DeleteUserRequest{
 		Region:     region,
-		InstanceID: instanceId,
+		InstanceID: instanceID,
 		Name:       userName,
 	})
 
@@ -169,12 +168,18 @@ func resourceScalewayRdbUserBetaDelete(d *schema.ResourceData, m interface{}) er
 	return nil
 }
 
-func resourceScalewayRdbUserBetaParseId(resourceId string) (region string, instanceId string, userName string, err error) {
+// Build the resource identifier
+// The resource identifier format is "Region/InstanceId/UserName"
+func resourceScalewayRdbUserBetaID(region scw.Region, instanceID string, userName string) (resourceID string) {
+	return fmt.Sprintf("%s/%s/%s", region, instanceID, userName)
+}
+
+// Extract instance ID and username from the resource identifier.
+// The resource identifier format is "Region/InstanceId/UserName"
+func resourceScalewayRdbUserBetaParseId(resourceId string) (region string, instanceID string, userName string, err error) {
 	idParts := strings.Split(resourceId, "/")
 	if len(idParts) != 3 {
 		return "", "", "", fmt.Errorf("can't parse user resource id: %s", resourceId)
 	}
-	region, instanceId, userName = idParts[0], idParts[1], idParts[2]
-
-	return
+	return idParts[0], idParts[1], idParts[2], nil
 }
