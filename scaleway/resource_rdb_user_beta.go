@@ -93,6 +93,10 @@ func resourceScalewayRdbUserBetaRead(d *schema.ResourceData, m interface{}) erro
 	})
 
 	if err != nil {
+		if is404Error(err) {
+			d.SetId("")
+			return nil
+		}
 		return err
 	}
 
