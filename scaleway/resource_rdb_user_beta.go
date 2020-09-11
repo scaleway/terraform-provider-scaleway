@@ -101,7 +101,7 @@ func resourceScalewayRdbUserBetaRead(d *schema.ResourceData, m interface{}) erro
 	}
 
 	var user = res.Users[0]
-	d.Set("instance_id", fmt.Sprintf("%s/%s", region, instanceID))
+	d.Set("instance_id", newRegionalID(region, instanceID))
 	d.Set("name", user.Name)
 	d.Set("is_admin", user.IsAdmin)
 
