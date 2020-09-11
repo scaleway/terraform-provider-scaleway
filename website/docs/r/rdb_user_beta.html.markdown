@@ -43,7 +43,7 @@ The following arguments are supported:
 
 - `password` - (Required) Database User password.
 
-- `is_admin` - (Optional) Grand admin permissions to the Database User.
+- `is_admin` - (Optional) Grant admin permissions to the Database User.
 
 ## Import
 
