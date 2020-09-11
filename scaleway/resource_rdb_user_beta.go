@@ -55,10 +55,10 @@ func resourceScalewayRdbUserBetaCreate(d *schema.ResourceData, m interface{}) er
 	if err != nil {
 		return err
 	}
-	instanceId := d.Get("instance_id").(string)
+	instanceID := d.Get("instance_id").(string)
 	createReq := &rdb.CreateUserRequest{
 		Region:     region,
-		InstanceID: expandID(instanceId),
+		InstanceID: expandID(instanceID),
 		Name:       d.Get("name").(string),
 		Password:   d.Get("password").(string),
 		IsAdmin:    d.Get("is_admin").(bool),
@@ -69,7 +69,7 @@ func resourceScalewayRdbUserBetaCreate(d *schema.ResourceData, m interface{}) er
 		return err
 	}
 
-	d.SetId(resourceScalewayRdbUserBetaID(region, expandID(instanceId), res.Name))
+	d.SetId(resourceScalewayRdbUserBetaID(region, expandID(instanceID), res.Name))
 
 	return resourceScalewayRdbUserBetaRead(d, m)
 }
@@ -80,7 +80,7 @@ func resourceScalewayRdbUserBetaRead(d *schema.ResourceData, m interface{}) erro
 		return err
 	}
 
-	_, instanceId, userName, err := resourceScalewayRdbUserBetaParseId(d.Id())
+	_, instanceID, userName, err := resourceScalewayRdbUserBetaParseId(d.Id())
 
 	if err != nil {
 		return err
@@ -88,7 +88,7 @@ func resourceScalewayRdbUserBetaRead(d *schema.ResourceData, m interface{}) erro
 
 	res, err := rdbAPI.ListUsers(&rdb.ListUsersRequest{
 		Region:     region,
-		InstanceID: instanceId,
+		InstanceID: instanceID,
 		Name:       &userName,
 	})
 
@@ -101,11 +101,11 @@ func resourceScalewayRdbUserBetaRead(d *schema.ResourceData, m interface{}) erro
 	}
 
 	var user = res.Users[0]
-	d.Set("instance_id", fmt.Sprintf("%s/%s", region, instanceId))
+	d.Set("instance_id", fmt.Sprintf("%s/%s", region, instanceID))
 	d.Set("name", user.Name)
 	d.Set("is_admin", user.IsAdmin)
 
-	d.SetId(resourceScalewayRdbUserBetaID(region, instanceId, user.Name))
+	d.SetId(resourceScalewayRdbUserBetaID(region, instanceID, user.Name))
 
 	return nil
 }
