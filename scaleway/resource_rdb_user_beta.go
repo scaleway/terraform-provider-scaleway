@@ -80,7 +80,7 @@ func resourceScalewayRdbUserBetaRead(d *schema.ResourceData, m interface{}) erro
 		return err
 	}
 
-	_, instanceID, userName, err := resourceScalewayRdbUserBetaParseId(d.Id())
+	instanceID, userName, err := resourceScalewayRdbUserBetaParseID(d.Id())
 
 	if err != nil {
 		return err
@@ -116,7 +116,7 @@ func resourceScalewayRdbUserBetaUpdate(d *schema.ResourceData, m interface{}) er
 		return err
 	}
 
-	_, instanceID, userName, err := resourceScalewayRdbUserBetaParseId(d.Id())
+	instanceID, userName, err := resourceScalewayRdbUserBetaParseID(d.Id())
 
 	if err != nil {
 		return err
@@ -149,7 +149,7 @@ func resourceScalewayRdbUserBetaDelete(d *schema.ResourceData, m interface{}) er
 		return err
 	}
 
-	_, instanceID, userName, err := resourceScalewayRdbUserBetaParseId(d.Id())
+	instanceID, userName, err := resourceScalewayRdbUserBetaParseID(d.Id())
 
 	if err != nil {
 		return err
@@ -176,10 +176,10 @@ func resourceScalewayRdbUserBetaID(region scw.Region, instanceID string, userNam
 
 // Extract instance ID and username from the resource identifier.
 // The resource identifier format is "Region/InstanceId/UserName"
-func resourceScalewayRdbUserBetaParseId(resourceId string) (region string, instanceID string, userName string, err error) {
+func resourceScalewayRdbUserBetaParseID(resourceId string) (instanceID string, userName string, err error) {
 	idParts := strings.Split(resourceId, "/")
 	if len(idParts) != 3 {
-		return "", "", "", fmt.Errorf("can't parse user resource id: %s", resourceId)
+		return "", "", fmt.Errorf("can't parse user resource id: %s", resourceId)
 	}
-	return idParts[0], idParts[1], idParts[2], nil
+	return idParts[1], idParts[2], nil
 }
