@@ -63,7 +63,7 @@ func testAccCheckRdbUserBetaExists(instance string, user string) resource.TestCh
 			return err
 		}
 
-		_, instanceId, userName, err := resourceScalewayRdbUserBetaParseId(userResource.Primary.ID)
+		instanceId, userName, err := resourceScalewayRdbUserBetaParseID(userResource.Primary.ID)
 		if err != nil {
 			return err
 		}
