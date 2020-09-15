@@ -1,8 +1,6 @@
 package scaleway
 
 import (
-	"strings"
-
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
 	"github.com/scaleway/scaleway-sdk-go/api/lb/v1"
@@ -93,11 +91,11 @@ func resourceScalewayLbBackendBeta() *schema.Resource {
 				Optional:    true,
 				Default:     lb.ProxyProtocolProxyProtocolNone,
 				ValidateFunc: validation.StringInSlice([]string{
-					strings.TrimPrefix(lb.ProxyProtocolProxyProtocolNone.String(), "proxy_protocol_"),
-					strings.TrimPrefix(lb.ProxyProtocolProxyProtocolV1.String(), "proxy_protocol_"),
-					strings.TrimPrefix(lb.ProxyProtocolProxyProtocolV2.String(), "proxy_protocol_"),
-					strings.TrimPrefix(lb.ProxyProtocolProxyProtocolV2Ssl.String(), "proxy_protocol_"),
-					strings.TrimPrefix(lb.ProxyProtocolProxyProtocolV2SslCn.String(), "proxy_protocol_"),
+					flattenLbProxyProtocol(lb.ProxyProtocolProxyProtocolNone),
+					flattenLbProxyProtocol(lb.ProxyProtocolProxyProtocolV1),
+					flattenLbProxyProtocol(lb.ProxyProtocolProxyProtocolV2),
+					flattenLbProxyProtocol(lb.ProxyProtocolProxyProtocolV2Ssl),
+					flattenLbProxyProtocol(lb.ProxyProtocolProxyProtocolV2SslCn),
 				}, false),
 			},
 			// Timeouts
