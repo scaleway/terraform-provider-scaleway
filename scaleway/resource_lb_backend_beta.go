@@ -263,7 +263,7 @@ func resourceScalewayLbBackendBetaCreate(d *schema.ResourceData, m interface{}) 
 		},
 		ServerIP:           expandStrings(d.Get("server_ips")),
 		SendProxyV2:        d.Get("send_proxy_v2").(bool),
-		ProxyProtocol:      lb.ProxyProtocol("proxy_protocol_" + d.Get("proxy_protocol").(string)),
+		ProxyProtocol:      expandLbProxyProtocol(d.Get("proxy_protocol")),
 		TimeoutServer:      expandDuration(d.Get("timeout_server")),
 		TimeoutConnect:     expandDuration(d.Get("timeout_connect")),
 		TimeoutTunnel:      expandDuration(d.Get("timeout_tunnel")),
@@ -308,7 +308,7 @@ func resourceScalewayLbBackendBetaRead(d *schema.ResourceData, m interface{}) er
 	_ = d.Set("sticky_sessions_cookie_name", res.StickySessionsCookieName)
 	_ = d.Set("server_ips", res.Pool)
 	_ = d.Set("send_proxy_v2", res.SendProxyV2)
-	_ = d.Set("proxy_protocol", strings.TrimPrefix(res.ProxyProtocol.String(), "proxy_protocol_"))
+	_ = d.Set("proxy_protocol", flattenLbProxyProtocol(res.ProxyProtocol))
 	_ = d.Set("timeout_server", flattenDuration(res.TimeoutServer))
 	_ = d.Set("timeout_connect", flattenDuration(res.TimeoutConnect))
 	_ = d.Set("timeout_tunnel", flattenDuration(res.TimeoutTunnel))
@@ -340,7 +340,7 @@ func resourceScalewayLbBackendBetaUpdate(d *schema.ResourceData, m interface{}) 
 		StickySessions:           expandLbStickySessionsType(d.Get("sticky_sessions")),
 		StickySessionsCookieName: d.Get("sticky_sessions_cookie_name").(string),
 		SendProxyV2:              d.Get("send_proxy_v2").(bool),
-		ProxyProtocol:            lb.ProxyProtocol("proxy_protocol_" + d.Get("proxy_protocol").(string)),
+		ProxyProtocol:            expandLbProxyProtocol(d.Get("proxy_protocol")),
 		TimeoutServer:            expandDuration(d.Get("timeout_server")),
 		TimeoutConnect:           expandDuration(d.Get("timeout_connect")),
 		TimeoutTunnel:            expandDuration(d.Get("timeout_tunnel")),
