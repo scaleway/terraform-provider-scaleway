@@ -91,11 +91,11 @@ func resourceScalewayLbBackendBeta() *schema.Resource {
 				Optional:    true,
 				Default:     lb.ProxyProtocolProxyProtocolNone,
 				ValidateFunc: validation.StringInSlice([]string{
-					flattenLbProxyProtocol(lb.ProxyProtocolProxyProtocolNone),
-					flattenLbProxyProtocol(lb.ProxyProtocolProxyProtocolV1),
-					flattenLbProxyProtocol(lb.ProxyProtocolProxyProtocolV2),
-					flattenLbProxyProtocol(lb.ProxyProtocolProxyProtocolV2Ssl),
-					flattenLbProxyProtocol(lb.ProxyProtocolProxyProtocolV2SslCn),
+					flattenLbProxyProtocol(lb.ProxyProtocolProxyProtocolNone).(string),
+					flattenLbProxyProtocol(lb.ProxyProtocolProxyProtocolV1).(string),
+					flattenLbProxyProtocol(lb.ProxyProtocolProxyProtocolV2).(string),
+					flattenLbProxyProtocol(lb.ProxyProtocolProxyProtocolV2Ssl).(string),
+					flattenLbProxyProtocol(lb.ProxyProtocolProxyProtocolV2SslCn).(string),
 				}, false),
 			},
 			// Timeouts
