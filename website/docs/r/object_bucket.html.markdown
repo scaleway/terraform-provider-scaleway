@@ -26,7 +26,7 @@ resource "scaleway_object_bucket" "some_bucket" {
 The following arguments are supported:
 
 * `name` - (Required) The name of the bucket.
-* `tags` - (Optional) The tags of the bucket.
+* `tags` - (Optional) A list of tags (key / value) for the bucket.
 * `acl` - (Optional) The [canned ACL](https://docs.aws.amazon.com/AmazonS3/latest/dev/acl-overview.html#canned-acl) you want to apply to the bucket.
 * `region` - (Optional) The [region](https://developers.scaleway.com/en/quickstart/#region-definition) in which the bucket should be created.
 

@@ -8,7 +8,6 @@ import (
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
-	"github.com/scaleway/scaleway-sdk-go/scw"
 )
 
 func resourceScalewayObjectBucket() *schema.Resource {
@@ -69,14 +68,7 @@ func resourceScalewayObjectBucketCreate(d *schema.ResourceData, m interface{}) e
 		return err
 	}
 
-	tagsSet := make([]*s3.Tag, 0)
-
-	for key, value := range d.Get("tags").(map[string]interface{}) {
-		tagsSet = append(tagsSet, &s3.Tag{
-			Key:   &key,
-			Value: scw.StringPtr(value.(string)),
-		})
-	}
+	tagsSet := expandObjectBucketTags(d.Get("tags"))
 
 	if len(tagsSet) > 0 {
 		_, err = s3Client.PutBucketTagging(&s3.PutBucketTaggingInput{
@@ -137,21 +129,7 @@ func resourceScalewayObjectBucketRead(d *schema.ResourceData, m interface{}) err
 		tagsSet = tagsResponse.TagSet
 	}
 
-	tags := map[string]interface{}{}
-
-	for _, tagSet := range tagsSet {
-		var key string
-		var value string
-		if tagSet.Key != nil {
-			key = *tagSet.Key
-		}
-		if tagSet.Value != nil {
-			value = *tagSet.Value
-		}
-		tags[key] = value
-	}
-
-	_ = d.Set("tags", tags)
+	_ = d.Set("tags", flattenObjectBucketTags(tagsSet))
 
 	return nil
 }
@@ -176,14 +154,7 @@ func resourceScalewayObjectBucketUpdate(d *schema.ResourceData, m interface{}) e
 	}
 
 	if d.HasChange("tags") {
-		tagsSet := make([]*s3.Tag, 0)
-
-		for key, value := range d.Get("tags").(map[string]interface{}) {
-			tagsSet = append(tagsSet, &s3.Tag{
-				Key:   &key,
-				Value: scw.StringPtr(value.(string)),
-			})
-		}
+		tagsSet := expandObjectBucketTags(d.Get("tags"))
 
 		_, err = s3Client.PutBucketTagging(&s3.PutBucketTaggingInput{
 			Bucket: aws.String(bucketName),
