@@ -54,7 +54,8 @@ The following arguments are supported:
 - `sticky_sessions`             - (Default: `none`) Load balancing algorithm. Possible values are: `none`, `cookie` and `table`.
 - `sticky_sessions_cookie_name` - (Optional) Cookie name for for sticky sessions. Only applicable when sticky_sessions is set to `cookie`.
 - `server_ips`                  - (Optional) List of backend server IP addresses. Addresses can be either IPv4 or IPv6.
-- `send_proxy_v2`               - (Default: `false`) Enables PROXY protocol version 2.
+- `send_proxy_v2`               - DEPRECATED please use `proxy_protocol` instead - (Default: `false`) Enables PROXY protocol version 2. 
+- `proxy_protocol`              - (Default: `none`) Choose the type of PROXY protocol to enable (`none`, `v1`, `v2`, `v2_ssl`, `v2_ssl_cn`)
 - `timeout_server`              - (Optional) Maximum server connection inactivity time. (e.g.: `1s`)
 - `timeout_connect`             - (Optional) Maximum initial server connection establishment time. (e.g.: `1s`)
 - `timeout_tunnel`              - (Optional) Maximum tunnel inactivity time. (e.g.: `1s`)

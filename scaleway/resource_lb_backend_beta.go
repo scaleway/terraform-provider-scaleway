@@ -1,6 +1,8 @@
 package scaleway
 
 import (
+	"strings"
+
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
 	"github.com/scaleway/scaleway-sdk-go/api/lb/v1"
@@ -83,8 +85,21 @@ func resourceScalewayLbBackendBeta() *schema.Resource {
 				Description: "Enables PROXY protocol version 2",
 				Optional:    true,
 				Default:     false,
+				Deprecated:  "Please use proxy_protocol instead",
 			},
-
+			"proxy_protocol": {
+				Type:        schema.TypeString,
+				Description: "Type of PROXY protocol to enable",
+				Optional:    true,
+				Default:     lb.ProxyProtocolProxyProtocolNone,
+				ValidateFunc: validation.StringInSlice([]string{
+					strings.TrimPrefix(lb.ProxyProtocolProxyProtocolNone.String(), "proxy_protocol_"),
+					strings.TrimPrefix(lb.ProxyProtocolProxyProtocolV1.String(), "proxy_protocol_"),
+					strings.TrimPrefix(lb.ProxyProtocolProxyProtocolV2.String(), "proxy_protocol_"),
+					strings.TrimPrefix(lb.ProxyProtocolProxyProtocolV2Ssl.String(), "proxy_protocol_"),
+					strings.TrimPrefix(lb.ProxyProtocolProxyProtocolV2SslCn.String(), "proxy_protocol_"),
+				}, false),
+			},
 			// Timeouts
 			"timeout_server": {
 				Type:             schema.TypeString,
@@ -248,6 +263,7 @@ func resourceScalewayLbBackendBetaCreate(d *schema.ResourceData, m interface{}) 
 		},
 		ServerIP:           expandStrings(d.Get("server_ips")),
 		SendProxyV2:        d.Get("send_proxy_v2").(bool),
+		ProxyProtocol:      lb.ProxyProtocol("proxy_protocol_" + d.Get("proxy_protocol").(string)),
 		TimeoutServer:      expandDuration(d.Get("timeout_server")),
 		TimeoutConnect:     expandDuration(d.Get("timeout_connect")),
 		TimeoutTunnel:      expandDuration(d.Get("timeout_tunnel")),
@@ -292,6 +308,7 @@ func resourceScalewayLbBackendBetaRead(d *schema.ResourceData, m interface{}) er
 	_ = d.Set("sticky_sessions_cookie_name", res.StickySessionsCookieName)
 	_ = d.Set("server_ips", res.Pool)
 	_ = d.Set("send_proxy_v2", res.SendProxyV2)
+	_ = d.Set("proxy_protocol", strings.TrimPrefix(res.ProxyProtocol.String(), "proxy_protocol_"))
 	_ = d.Set("timeout_server", flattenDuration(res.TimeoutServer))
 	_ = d.Set("timeout_connect", flattenDuration(res.TimeoutConnect))
 	_ = d.Set("timeout_tunnel", flattenDuration(res.TimeoutTunnel))
@@ -323,6 +340,7 @@ func resourceScalewayLbBackendBetaUpdate(d *schema.ResourceData, m interface{}) 
 		StickySessions:           expandLbStickySessionsType(d.Get("sticky_sessions")),
 		StickySessionsCookieName: d.Get("sticky_sessions_cookie_name").(string),
 		SendProxyV2:              d.Get("send_proxy_v2").(bool),
+		ProxyProtocol:            lb.ProxyProtocol("proxy_protocol_" + d.Get("proxy_protocol").(string)),
 		TimeoutServer:            expandDuration(d.Get("timeout_server")),
 		TimeoutConnect:           expandDuration(d.Get("timeout_connect")),
 		TimeoutTunnel:            expandDuration(d.Get("timeout_tunnel")),
