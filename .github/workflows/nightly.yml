@@ -1,0 +1,24 @@
+name: nightly acceptance tests
+
+on:
+  schedule:
+    # Will run at 00:00 every day
+    - cron: '0 0 * * *'
+
+jobs:
+  nightly:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: 1.15.1
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 2
+      - name: Acceptance Tests
+        run: go test -v ./...
+        env:
+          TF_LOG: DEBUG
+          TF_ACC: 1
