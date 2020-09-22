@@ -10,10 +10,7 @@
 # in `goreleaser` to indicate this is being used in a non-interactive mode.
 #
 name: release
-on:
-  push:
-    tags:
-      - 'v*'
+on: [push]
 jobs:
   goreleaser:
     runs-on: ubuntu-latest
@@ -29,13 +26,17 @@ jobs:
         uses: actions/setup-go@v2
         with:
           go-version: 1.14
-      -
-        name: Import GPG key
+
+      - name: Import GPG key
         id: import_gpg
-        uses: paultyng/ghaction-import-gpg@v2.1.0
-        env:
-          GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
-          PASSPHRASE: ${{ secrets.PASSPHRASE }}
+        run: |
+          gpg-agent --daemon --allow-preset-passphrase
+          gpg --batch --import --yes <(echo "${{ secrets.GPG_PRIVATE_KEY }}")
+          export KEY_FINGERPRINT=$(gpg --list-secret-keys --with-colons | grep sec | cut -d ':' -f 5)
+          export KEY_GRIP=$(gpg-connect-agent 'KEYINFO --list' /bye | grep KEYINFO | cut -d ' ' -f 3)
+          export PASSPHRASE_HEX=$(echo -n "${{ secrets.GPG_PASSPHRASE }}" | xxd -p -u -c 265)
+          gpg-connect-agent "PRESET_PASSPHRASE $KEY_GRIP -1 $PASSPHRASE_HEX" /bye
+          echo "::set-output name=fingerprint::$KEY_FINGERPRINT"
       -
         name: Run GoReleaser
         uses: goreleaser/goreleaser-action@v2
