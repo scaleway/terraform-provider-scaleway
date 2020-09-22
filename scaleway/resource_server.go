@@ -83,8 +83,8 @@ func resourceScalewayServer() *schema.Resource {
 							Required: true,
 							ValidateFunc: func(v interface{}, k string) (ws []string, errors []error) {
 								value := v.(int)
-								if value > 150 {
-									errors = append(errors, fmt.Errorf("%q needs to be less than 150", k))
+								if value > 250 {
+									errors = append(errors, fmt.Errorf("%q needs to be less than 250", k))
 								}
 								return
 							},
