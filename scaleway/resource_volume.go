@@ -32,8 +32,8 @@ func resourceScalewayVolume() *schema.Resource {
 				Required: true,
 				ValidateFunc: func(v interface{}, k string) (ws []string, errors []error) {
 					value := v.(int)
-					if value < 1 || value > 250 {
-						errors = append(errors, fmt.Errorf("%q be more than 1 and less than 250", k))
+					if value < 1 || value > 300 {
+						errors = append(errors, fmt.Errorf("%q be more than 1 and less than 300", k))
 					}
 					return
 				},
