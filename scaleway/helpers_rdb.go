@@ -1,15 +1,9 @@
 package scaleway
 
 import (
-	"time"
-
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/api/rdb/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
-)
-
-const (
-	RdbWaitForTimeout = 10 * time.Minute
 )
 
 // rdbAPIWithRegion returns a new lb API and the region for a Create request

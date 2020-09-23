@@ -1,10 +1,34 @@
 package scaleway
 
 import (
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/credentials"
+	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 )
+
+func newS3Client(region, accessKey, secretKey string) (*s3.S3, error) {
+
+	config := &aws.Config{}
+	config.WithRegion(region)
+	config.WithCredentials(credentials.NewStaticCredentials(accessKey, secretKey, ""))
+	config.WithEndpoint("https://s3." + region + ".scw.cloud")
+
+	s, err := session.NewSession(config)
+	if err != nil {
+		return nil, err
+	}
+	return s3.New(s), nil
+}
+
+func newS3ClientFromMeta(meta *Meta) (*s3.S3, error) {
+	region, _ := meta.scwClient.GetDefaultRegion()
+	accessKey, _ := meta.scwClient.GetAccessKey()
+	secretKey, _ := meta.scwClient.GetSecretKey()
+	return newS3Client(region.String(), accessKey, secretKey)
+}
 
 // s3ClientWithRegion returns a new S3 client with the correct region extracted from the resource data.
 func s3ClientWithRegion(d *schema.ResourceData, m interface{}) (*s3.S3, scw.Region, error) {
@@ -15,20 +39,15 @@ func s3ClientWithRegion(d *schema.ResourceData, m interface{}) (*s3.S3, scw.Regi
 		return nil, "", err
 	}
 
-	if region != meta.DefaultRegion {
-		// if the region is not the same as the default region:
-		// we have to clone the meta object with the new region and create a new S3 client.
-		newMeta := *meta
-		newMeta.DefaultRegion = region
+	accessKey, _ := meta.scwClient.GetAccessKey()
+	secretKey, _ := meta.scwClient.GetSecretKey()
 
-		err := newMeta.bootstrapS3Client()
-		if err != nil {
-			return nil, "", err
-		}
-		return newMeta.s3Client, region, nil
+	s3Client, err := newS3Client(region.String(), accessKey, secretKey)
+	if err != nil {
+		return nil, "", err
 	}
 
-	return meta.s3Client, region, err
+	return s3Client, region, err
 }
 
 // s3ClientWithRegion returns a new S3 client with the correct region and name extracted from the resource data.
@@ -39,20 +58,13 @@ func s3ClientWithRegionAndName(m interface{}, name string) (*s3.S3, scw.Region, 
 	if err != nil {
 		return nil, "", name, err
 	}
+	accessKey, _ := meta.scwClient.GetAccessKey()
+	secretKey, _ := meta.scwClient.GetSecretKey()
 
-	if region != meta.DefaultRegion {
-		// if the region is not the same as the default region:
-		// we have to clone the meta object with the new region and create a new S3 client.
-		newMeta := *meta
-		newMeta.DefaultRegion = region
-
-		err := newMeta.bootstrapS3Client()
-		if err != nil {
-			return nil, "", name, err
-		}
-		return newMeta.s3Client, region, name, nil
+	s3Client, err := newS3Client(region.String(), accessKey, secretKey)
+	if err != nil {
+		return nil, "", "", err
 	}
 
-	return meta.s3Client, region, name, err
-
+	return s3Client, region, name, err
 }

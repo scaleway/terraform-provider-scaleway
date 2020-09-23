@@ -85,7 +85,11 @@ func TestAccScalewayObjectBucket(t *testing.T) {
 }
 
 func testAccCheckScalewayObjectBucketDestroy(s *terraform.State) error {
-	s3Client := testAccProvider.Meta().(*Meta).s3Client
+
+	s3Client, err := newS3ClientFromMeta(testAccProvider.Meta().(*Meta))
+	if err != nil {
+		return err
+	}
 
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "scaleway" {

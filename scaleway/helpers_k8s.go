@@ -36,7 +36,6 @@ type KubeconfigStruct struct {
 }
 
 const (
-	K8SClusterWaitForReadyTimeout        = 10 * time.Minute
 	K8SClusterWaitForPoolRequiredTimeout = 10 * time.Minute
 	K8SClusterWaitForDeletedTimeout      = 10 * time.Minute
 	K8SPoolWaitForReadyTimeout           = 10 * time.Minute

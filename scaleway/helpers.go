@@ -388,27 +388,6 @@ func extractRegion(d terraformResourceData, meta *Meta) (scw.Region, error) {
 	return scw.Region(""), ErrRegionNotFound
 }
 
-// ErrOrganizationIDNotFound is returned when no organization_id can be detected
-var ErrOrganizationIDNotFound = fmt.Errorf("could not detect organization_id")
-
-// organizationID will try to guess the organization_id from the following:
-//  - organization_id field of the resource data
-//  - default organization_id from config
-func organizationID(d terraformResourceData, meta *Meta) (string, error) {
-
-	organizationID, exist := d.GetOkExists("organization_id")
-	if exist {
-		return organizationID.(string), nil
-	}
-
-	organizationID, exist = meta.scwClient.GetDefaultOrganizationID()
-	if exist {
-		return organizationID.(string), nil
-	}
-
-	return "", ErrOrganizationIDNotFound
-}
-
 // isHTTPCodeError returns true if err is an http error with code statusCode
 func isHTTPCodeError(err error, statusCode int) bool {
 	if err == nil {
