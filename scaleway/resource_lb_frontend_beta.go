@@ -156,7 +156,7 @@ func resourceScalewayLbFrontendBetaCreate(d *schema.ResourceData, m interface{})
 
 	res, err := lbAPI.CreateFrontend(&lb.CreateFrontendRequest{
 		Region:        region,
-		LbID:          LbID,
+		LBID:          LbID,
 		Name:          expandOrGenerateString(d.Get("name"), "lb-frt"),
 		InboundPort:   int32(d.Get("inbound_port").(int)),
 		BackendID:     expandID(d.Get("backend_id")),
@@ -196,7 +196,7 @@ func resourceScalewayLbFrontendBetaRead(d *schema.ResourceData, m interface{}) e
 		return err
 	}
 
-	_ = d.Set("lb_id", newRegionalId(region, res.Lb.ID))
+	_ = d.Set("lb_id", newRegionalId(region, res.LB.ID))
 	_ = d.Set("backend_id", newRegionalId(region, res.Backend.ID))
 	_ = d.Set("name", res.Name)
 	_ = d.Set("inbound_port", int(res.InboundPort))
