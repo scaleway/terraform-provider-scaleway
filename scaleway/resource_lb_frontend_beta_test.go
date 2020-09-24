@@ -29,6 +29,7 @@ func TestAccScalewayLbFrontendBeta(t *testing.T) {
 						lb_id = scaleway_lb_beta.lb01.id
 						forward_protocol = "tcp"
 						forward_port = 80
+						proxy_protocol = "none"
 					}
 					resource scaleway_lb_frontend_beta frt01 {
 						lb_id = scaleway_lb_beta.lb01.id
@@ -54,6 +55,7 @@ func TestAccScalewayLbFrontendBeta(t *testing.T) {
 						lb_id = scaleway_lb_beta.lb01.id
 						forward_protocol = "tcp"
 						forward_port = 80
+						proxy_protocol = "none"
 					}
 					resource scaleway_lb_frontend_beta frt01 {
 						lb_id = scaleway_lb_beta.lb01.id
@@ -92,6 +94,7 @@ func TestAccScalewayLbAclBeta(t *testing.T) {
 						lb_id = scaleway_lb_beta.lb01.id
 						forward_protocol = "http"
 						forward_port = 80
+						proxy_protocol = "none"
 					}
 					resource scaleway_lb_frontend_beta frt01 {
 						lb_id = scaleway_lb_beta.lb01.id
@@ -210,6 +213,7 @@ func TestAccScalewayLbAclBeta(t *testing.T) {
 						lb_id = scaleway_lb_beta.lb01.id
 						forward_protocol = "http"
 						forward_port = 80
+						proxy_protocol = "none"
 					}
 					resource scaleway_lb_frontend_beta frt01 {
 						lb_id = scaleway_lb_beta.lb01.id
