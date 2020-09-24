@@ -31,7 +31,7 @@ func testSweepLBIP(region string) error {
 	}
 
 	for _, ip := range listIPs.IPs {
-		if ip.LbID == nil {
+		if ip.LBID == nil {
 			err := lbAPI.ReleaseIP(&lb.ReleaseIPRequest{
 				IPID: ip.ID,
 			})
