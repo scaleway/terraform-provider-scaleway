@@ -625,7 +625,7 @@ func TestAccScalewayInstanceServerImageDataSource(t *testing.T) {
 				`,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayInstanceServerExists("scaleway_instance_server.base"),
-					resource.TestCheckResourceAttr("scaleway_instance_server.base", "image", "fr-par-1/4e84fc90-baef-43c2-ba9c-caa135de7afd"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.base", "image", "fr-par-1/adfa08b0-0924-408a-8cc9-6a569b92f0c6"),
 				),
 			},
 			// Ensure that image diffSuppressFunc results in no plan.
