@@ -115,6 +115,7 @@ func TestAccScalewayLbBackendBeta_HealthCheck(t *testing.T) {
 						name = "bkd01"
 						forward_protocol = "tcp"
 						forward_port = 80
+						proxy_protocol = "none"
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
@@ -137,6 +138,7 @@ func TestAccScalewayLbBackendBeta_HealthCheck(t *testing.T) {
 						name = "bkd01"
 						forward_protocol = "tcp"
 						forward_port = 80
+						proxy_protocol = "none"
 
 						health_check_http {
 							uri = "http://test.com/health"
@@ -165,6 +167,7 @@ func TestAccScalewayLbBackendBeta_HealthCheck(t *testing.T) {
 						name = "bkd01"
 						forward_protocol = "tcp"
 						forward_port = 80
+						proxy_protocol = "none"
 
 						health_check_https {
 							uri = "http://test.com/health"
