@@ -4,7 +4,7 @@ on:
   pull_request:
 
 jobs:
-  os-tests:
+  tests:
     strategy:
       matrix:
         go-version: [1.14.x, 1.15.x]
@@ -15,33 +15,13 @@ jobs:
       uses: actions/setup-go@v1
       with:
         go-version: ${{ matrix.go-version }}
-    - name: Set git to use LF
-      run: |
-        git config --global core.autocrlf false
-        git config --global core.eol lf
     - name: Checkout
       uses: actions/checkout@v2
       with:
         fetch-depth: 1
+    - name: Build binaries
+      run: make build
     - name: Run unit tests
       run: make test
-
-  build-tests:
-    strategy:
-      matrix:
-        go-version: [1.14.x, 1.15.x]
-        platform: [ubuntu-latest]
-    runs-on: ${{ matrix.platform }}
-    steps:
-      - name: Install Go
-        uses: actions/setup-go@v1
-        with:
-          go-version: ${{ matrix.go-version }}
-      - name: Checkout
-        uses: actions/checkout@v2
-        with:
-          fetch-depth: 1
-      - name: Build binaries
-        run: make build
-      - name: Check with go vet
-        run: make vet
+    - name: Check with go vet
+      run: make vet
