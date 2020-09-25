@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"sort"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 )
@@ -412,15 +412,17 @@ func securityGroupRuleSchema() *schema.Resource {
 				Description: "Computed port range for this rule (e.g: 1-1024, 22-22)",
 			},
 			"ip": {
-				Type:         schema.TypeString,
-				Optional:     true,
-				ValidateFunc: validation.SingleIP(),
-				Description:  "Ip address for this rule (e.g: 1.1.1.1). Only one of ip or ip_range should be provided",
+				Type:     schema.TypeString,
+				Optional: true,
+				ValidateFunc: func(i interface{}, s string) ([]string, []error) {
+					return validation.IsIPAddress(i, "server_ips")
+				},
+				Description: "Ip address for this rule (e.g: 1.1.1.1). Only one of ip or ip_range should be provided",
 			},
 			"ip_range": {
 				Type:         schema.TypeString,
 				Optional:     true,
-				ValidateFunc: validation.CIDRNetwork(0, 128),
+				ValidateFunc: validation.IsCIDRNetwork(0, 128),
 				Description:  "Ip range for this rule (e.g: 192.168.1.0/24). Only one of ip or ip_range should be provided",
 			},
 		},
