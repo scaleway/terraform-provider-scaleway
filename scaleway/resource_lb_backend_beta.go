@@ -72,10 +72,8 @@ func resourceScalewayLbBackendBeta() *schema.Resource {
 			"server_ips": {
 				Type: schema.TypeList,
 				Elem: &schema.Schema{
-					Type: schema.TypeString,
-					ValidateFunc: func(i interface{}, s string) ([]string, []error) {
-						return validation.IsIPAddress(i, "server_ips")
-					},
+					Type:         schema.TypeString,
+					ValidateFunc: validation.IsIPAddress,
 				},
 				Optional:    true,
 				Description: "Backend server IP addresses list (IPv4 or IPv6)",

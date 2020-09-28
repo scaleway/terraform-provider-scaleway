@@ -412,12 +412,10 @@ func securityGroupRuleSchema() *schema.Resource {
 				Description: "Computed port range for this rule (e.g: 1-1024, 22-22)",
 			},
 			"ip": {
-				Type:     schema.TypeString,
-				Optional: true,
-				ValidateFunc: func(i interface{}, s string) ([]string, []error) {
-					return validation.IsIPAddress(i, "server_ips")
-				},
-				Description: "Ip address for this rule (e.g: 1.1.1.1). Only one of ip or ip_range should be provided",
+				Type:         schema.TypeString,
+				Optional:     true,
+				ValidateFunc: validation.IsIPAddress,
+				Description:  "Ip address for this rule (e.g: 1.1.1.1). Only one of ip or ip_range should be provided",
 			},
 			"ip_range": {
 				Type:         schema.TypeString,
