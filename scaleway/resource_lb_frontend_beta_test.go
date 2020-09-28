@@ -19,7 +19,9 @@ func TestAccScalewayLbFrontendBeta(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: `
+					resource scaleway_lb_ip_beta ip01 {}
 					resource scaleway_lb_beta lb01 {
+						ip_id = scaleway_lb_ip_beta.ip01.id
 						name = "test-lb"
 						type = "lb-s"
 					}
@@ -42,7 +44,9 @@ func TestAccScalewayLbFrontendBeta(t *testing.T) {
 			},
 			{
 				Config: `
+					resource scaleway_lb_ip_beta ip01 {}
 					resource scaleway_lb_beta lb01 {
+						ip_id = scaleway_lb_ip_beta.ip01.id
 						name = "test-lb"
 						type = "lb-s"
 					}
@@ -78,7 +82,9 @@ func TestAccScalewayLbAclBeta(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: `
+					resource scaleway_lb_ip_beta ip01 {}
 					resource scaleway_lb_beta lb01 {
+						ip_id = scaleway_lb_ip_beta.ip01.id
 						name = "test-lb-acl"
 						type = "lb-s"
 					}
@@ -194,7 +200,9 @@ func TestAccScalewayLbAclBeta(t *testing.T) {
 			},
 			{
 				Config: `
+					resource scaleway_lb_ip_beta ip01 {}
 					resource scaleway_lb_beta lb01 {
+						ip_id = scaleway_lb_ip_beta.ip01.id
 						name = "test-lb-acl"
 						type = "lb-s"
 					}

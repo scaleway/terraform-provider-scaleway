@@ -9,7 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 	"github.com/mitchellh/go-homedir"
-	scwLogger "github.com/scaleway/scaleway-sdk-go/logger"
+	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 )
 
@@ -17,9 +17,6 @@ var mu = sync.Mutex{}
 
 // Provider returns a terraform.ResourceProvider.
 func Provider() terraform.ResourceProvider {
-
-	// Init the SDK logger.
-	scwLogger.SetLogger(l)
 
 	// Try to migrate config
 	_, err := scw.MigrateLegacyConfig()
@@ -172,7 +169,20 @@ func Provider() terraform.ResourceProvider {
 				},
 				ValidateFunc: validationZone(),
 			},
-
+			"api_url": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The Scaleway API URL to use.",
+				DefaultFunc: func() (interface{}, error) {
+					if envProfile.APIURL != nil {
+						return *envProfile.APIURL, nil
+					}
+					if activeProfile != nil && activeProfile.APIURL != nil {
+						return *activeProfile.APIURL, nil
+					}
+					return nil, nil
+				},
+			},
 			// Deprecated values
 			"token": {
 				Type:       schema.TypeString,
@@ -188,8 +198,7 @@ func Provider() terraform.ResourceProvider {
 
 		ResourcesMap: map[string]*schema.Resource{
 			"scaleway_account_ssh_key":               resourceScalewayAccountSSKKey(),
-			"scaleway_baremetal_server_beta":         resourceScalewayBaremetalServerBeta(),
-			"scaleway_bucket":                        resourceScalewayBucket(),
+			"scaleway_baremetal_server":              resourceScalewayBaremetalServer(),
 			"scaleway_instance_ip":                   resourceScalewayInstanceIP(),
 			"scaleway_instance_ip_reverse_dns":       resourceScalewayInstanceIPReverseDns(),
 			"scaleway_instance_volume":               resourceScalewayInstanceVolume(),
@@ -206,6 +215,7 @@ func Provider() terraform.ResourceProvider {
 			"scaleway_lb_frontend_beta":              resourceScalewayLbFrontendBeta(),
 			"scaleway_registry_namespace_beta":       resourceScalewayRegistryNamespaceBeta(),
 			"scaleway_rdb_instance_beta":             resourceScalewayRdbInstanceBeta(),
+			"scaleway_rdb_user_beta":                 resourceScalewayRdbUserBeta(),
 			"scaleway_object_bucket":                 resourceScalewayObjectBucket(),
 			"scaleway_user_data":                     resourceScalewayUserData(),
 			"scaleway_server":                        resourceScalewayServer(),
@@ -230,7 +240,8 @@ func Provider() terraform.ResourceProvider {
 			"scaleway_instance_server":         dataSourceScalewayInstanceServer(),
 			"scaleway_instance_image":          dataSourceScalewayInstanceImage(),
 			"scaleway_instance_volume":         dataSourceScalewayInstanceVolume(),
-			"scaleway_baremetal_offer_beta":    dataSourceScalewayBaremetalOfferBeta(),
+			"scaleway_baremetal_offer":         dataSourceScalewayBaremetalOffer(),
+			"scaleway_lb_ip_beta":              dataSourceScalewayLbIPBeta(),
 			"scaleway_marketplace_image_beta":  dataSourceScalewayMarketplaceImageBeta(),
 			"scaleway_registry_namespace_beta": dataSourceScalewayRegistryNamespaceBeta(),
 			"scaleway_registry_image_beta":     dataSourceScalewayRegistryImageBeta(),
@@ -299,6 +310,7 @@ func providerConfigure(d *schema.ResourceData, terraformVersion string) (interfa
 		DefaultRegion:         region,
 		DefaultZone:           zone,
 		TerraformVersion:      terraformVersion,
+		APIURL:                d.Get("api_url").(string),
 	}
 
 	err = meta.bootstrap()
@@ -308,10 +320,15 @@ func providerConfigure(d *schema.ResourceData, terraformVersion string) (interfa
 
 	// fetch known scaleway server types to support validation in r/server
 	if len(commercialServerTypes) == 0 {
-		if availability, err := meta.deprecatedClient.GetServerAvailabilities(); err == nil {
-			commercialServerTypes = availability.CommercialTypes()
+		instanceAPI := instance.NewAPI(meta.scwClient)
+		availabilityResp, err := instanceAPI.GetServerTypesAvailability(&instance.GetServerTypesAvailabilityRequest{}, scw.WithAllPages())
+		if err == nil {
+			for k := range availabilityResp.Servers {
+				commercialServerTypes = append(commercialServerTypes, k)
+			}
 			sort.StringSlice(commercialServerTypes).Sort()
 		}
+
 		if os.Getenv("DISABLE_SCALEWAY_SERVER_TYPE_VALIDATION") != "" {
 			commercialServerTypes = commercialServerTypes[:0]
 		}

@@ -74,10 +74,10 @@ func TestAccScalewayInstanceServerMinimal1(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccCheckScalewayInstanceServerConfigMinimal("ubuntu-bionic"),
+				Config: testAccCheckScalewayInstanceServerConfigMinimal("ubuntu_focal"),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayInstanceServerExists("scaleway_instance_server.base"),
-					resource.TestCheckResourceAttr("scaleway_instance_server.base", "image", "ubuntu-bionic"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.base", "image", "ubuntu_focal"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "type", "DEV1-S"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "root_volume.0.delete_on_termination", "true"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "root_volume.0.size_in_gb", "20"),
@@ -92,6 +92,7 @@ func TestAccScalewayInstanceServerMinimal1(t *testing.T) {
 }
 
 func TestAccScalewayInstanceServerC2S(t *testing.T) {
+	t.Skip("C2S instance are EOL")
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
@@ -160,7 +161,7 @@ func TestAccScalewayInstanceServerBasic1(t *testing.T) {
 		CheckDestroy: testAccCheckScalewayInstanceServerDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckScalewayInstanceServerConfigServerType("x86_64", "DEV1-M"),
+				Config: testAccCheckScalewayInstanceServerConfigServerType("DEV1-M"),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayInstanceServerExists("scaleway_instance_server.base"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "type", "DEV1-M"),
@@ -171,7 +172,7 @@ func TestAccScalewayInstanceServerBasic1(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccCheckScalewayInstanceServerConfigServerType("x86_64", "DEV1-S"),
+				Config: testAccCheckScalewayInstanceServerConfigServerType("DEV1-S"),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayInstanceServerExists("scaleway_instance_server.base"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "type", "DEV1-S"),
@@ -416,7 +417,7 @@ func TestAccScalewayInstanceServerSwapVolume(t *testing.T) {
 		  type       = "l_ssd"
 		}
 		resource "scaleway_instance_server" "server1" {
-		  image = "ubuntu-bionic"
+		  image = "ubuntu_focal"
 		  type  = "DEV1-S"
 		  root_volume {
 			size_in_gb = 10
@@ -424,7 +425,7 @@ func TestAccScalewayInstanceServerSwapVolume(t *testing.T) {
 		  additional_volume_ids = [ scaleway_instance_volume.volume{{index . 0}}.id ]
 		}
 		resource "scaleway_instance_server" "server2" {
-		  image = "ubuntu-bionic"
+		  image = "ubuntu_focal"
 		  type  = "DEV1-S"
 		  root_volume {
 			size_in_gb = 10
@@ -470,7 +471,7 @@ func TestAccScalewayInstanceServerIpv6(t *testing.T) {
 			{
 				Config: `
 					resource "scaleway_instance_server" "server01" {
-						image = "ubuntu-bionic"
+						image = "ubuntu_focal"
 		  				type  = "DEV1-S"
 		  				enable_ipv6 = true
 					}
@@ -485,7 +486,7 @@ func TestAccScalewayInstanceServerIpv6(t *testing.T) {
 			{
 				Config: `
 					resource "scaleway_instance_server" "server01" {
-						image = "ubuntu-bionic"
+						image = "ubuntu_focal"
 		  				type  = "DEV1-S"
 		  				enable_ipv6 = false
 					}
@@ -613,30 +614,30 @@ func TestAccScalewayInstanceServerImageDataSource(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: `
-					data "scaleway_instance_image" "ubuntu_bionic" {
-					  name = "ubuntu_bionic"
+					data "scaleway_instance_image" "ubuntu_focal" {
+					  name = "Ubuntu 20.04 Focal Fossa"
 					}
 
 					resource "scaleway_instance_server" "base" {
 					  type  = "DEV1-S"
-					  image = data.scaleway_instance_image.ubuntu_bionic.id
+					  image = data.scaleway_instance_image.ubuntu_focal.id
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayInstanceServerExists("scaleway_instance_server.base"),
-					resource.TestCheckResourceAttr("scaleway_instance_server.base", "image", "fr-par-1/6651f88f-45af-4b93-95e8-3931b74f6acc"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.base", "image", "fr-par-1/4e84fc90-baef-43c2-ba9c-caa135de7afd"),
 				),
 			},
 			// Ensure that image diffSuppressFunc results in no plan.
 			{
 				Config: `
-					data "scaleway_instance_image" "ubuntu_bionic" {
-					  name = "ubuntu_bionic"
+					data "scaleway_instance_image" "ubuntu_focal" {
+					  name = "Ubuntu 20.04 Focal Fossa"
 					}
 
 					resource "scaleway_instance_server" "base" {
 					  type  = "DEV1-S"
-					  image = data.scaleway_instance_image.ubuntu_bionic.id
+					  image = data.scaleway_instance_image.ubuntu_focal.id
 					}
 				`,
 				PlanOnly: true,
@@ -706,21 +707,20 @@ resource "scaleway_instance_server" "base" {
 }`, imageValue)
 }
 
-func testAccCheckScalewayInstanceServerConfigServerType(architecture, serverType string) string {
+func testAccCheckScalewayInstanceServerConfigServerType(serverType string) string {
 	return fmt.Sprintf(`
-data "scaleway_image" "ubuntu" {
-  architecture = "%s"
-  name         = "Ubuntu Bionic"
-  most_recent  = true
+data "scaleway_marketplace_image_beta" "ubuntu" {
+  instance_type   = "%s"
+  label         = "ubuntu_focal"
 }
 
 resource "scaleway_instance_server" "base" {
   name  = "test"
-  image = "${data.scaleway_image.ubuntu.id}"
+  image = "${data.scaleway_marketplace_image_beta.ubuntu.id}"
   type  = "%s"
 
   tags = [ "terraform-test", "scaleway_instance_server", "basic" ]
-}`, architecture, serverType)
+}`, serverType, serverType)
 }
 
 func testAccCheckScalewayInstanceServerConfigRootVolume(size, deleteOnTermination string) string {
@@ -738,14 +738,13 @@ resource "scaleway_instance_server" "base" {
 
 func testAccCheckScalewayInstanceServerConfigState(state string) string {
 	return fmt.Sprintf(`
-data "scaleway_image" "ubuntu" {
-  architecture = "x86_64"
-  name         = "Ubuntu Bionic"
-  most_recent  = true
+data "scaleway_marketplace_image_beta" "ubuntu" {
+  instance_type = "DEV1-S"
+  label         = "ubuntu_focal"
 }
 
 resource "scaleway_instance_server" "base" {
-  image = "${data.scaleway_image.ubuntu.id}"
+  image = "${data.scaleway_marketplace_image_beta.ubuntu.id}"
   type  = "DEV1-S"
   state = "%s"
   tags  = [ "terraform-test", "scaleway_instance_server", "state" ]
@@ -779,7 +778,7 @@ EOF`
 	return fmt.Sprintf(`
 data "scaleway_image" "ubuntu" {
   architecture = "x86_64"
-  name         = "Ubuntu Bionic"
+  name         = "Ubuntu 20.04 Focal Fossa"
   most_recent  = true
 }
 

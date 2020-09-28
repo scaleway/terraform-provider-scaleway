@@ -120,7 +120,7 @@ func reachState(instanceAPI *instance.API, zone scw.Zone, serverID string, toSta
 			ServerID: serverID,
 			Action:   a,
 			Zone:     zone,
-			Timeout:  InstanceServerWaitForTimeout,
+			Timeout:  scw.TimeDurationPtr(InstanceServerWaitForTimeout),
 		})
 		if err != nil {
 			return err
@@ -148,7 +148,7 @@ func detachVolume(instanceAPI *instance.API, zone scw.Zone, volumeId string) err
 	defer lockLocalizedId(newZonedId(zone, res.Volume.Server.ID))()
 
 	// We need to stop server only for VolumeTypeLSSD volume type
-	if res.Volume.VolumeType == instance.VolumeTypeLSSD {
+	if res.Volume.VolumeType == instance.VolumeVolumeTypeLSSD {
 		err = reachState(instanceAPI, zone, res.Volume.Server.ID, instance.ServerStateStopped)
 
 		// If 404 this mean server is deleted and volume is already detached

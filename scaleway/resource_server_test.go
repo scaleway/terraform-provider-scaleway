@@ -2,48 +2,11 @@ package scaleway
 
 import (
 	"fmt"
-	"log"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 )
-
-func init() {
-	resource.AddTestSweepers("scaleway_server", &resource.Sweeper{
-		Name: "scaleway_server",
-		F:    testSweepServer,
-	})
-}
-
-func testSweepServer(region string) error {
-	scaleway, err := sharedDeprecatedClientForRegion(region)
-	if err != nil {
-		return fmt.Errorf("error getting client: %s", err)
-	}
-
-	log.Printf("[DEBUG] Destroying the servers in (%s)", region)
-
-	servers, err := scaleway.GetServers(true, 0)
-	if err != nil {
-		return fmt.Errorf("Error describing servers in Sweeper: %s", err)
-	}
-
-	for _, server := range servers {
-		var err error
-		if server.State == "stopped" {
-			err = deleteStoppedServer(scaleway, &server)
-		} else {
-			err = deleteRunningServer(scaleway, &server)
-		}
-
-		if err != nil {
-			return fmt.Errorf("Error deleting server in Sweeper: %s", err)
-		}
-	}
-
-	return nil
-}
 
 func TestAccScalewayServer_Basic(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
@@ -125,6 +88,7 @@ func TestAccScalewayServer_ExistingIP(t *testing.T) {
 }
 
 func TestAccScalewayServer_Volumes(t *testing.T) {
+	t.Skip("C2S instance are EOL")
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,

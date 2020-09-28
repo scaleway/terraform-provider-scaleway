@@ -93,7 +93,7 @@ resource "scaleway_instance_volume" "data" {
 
 resource "scaleway_instance_server" "web" {
   type = "DEV1-L"
-  image = "ubuntu-bionic"
+  image = "ubuntu_focal"
 
   tags = [ "hello", "public" ]
 
@@ -136,17 +136,9 @@ The `scaleway_token` was removed in version 2.
 
 Tokens should be created in the console.
 
-#### Removed: `scaleway_ip_reverse_dns`
+#### Renamed: `scaleway_ip_reverse_dns` -> `scaleway_instance_ip_reverse_dns`
 
-The `scaleway_ip_reverse_dns` was removed in version 2.
-
-Reverse DNS must be set on the IP resource itself:
-
-```hcl
-resource "scaleway_instance_ip" "test_ip" {
-  reverse = "scaleway.com"
-}
-```
+`scaleway_ip_reverse_dns` was renamed to `scaleway_instance_ip_reverse_dns`.
 
 #### Removed: `scaleway_volume_attachment`
 

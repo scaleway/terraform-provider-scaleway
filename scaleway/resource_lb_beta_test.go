@@ -25,14 +25,14 @@ func testSweepLB(region string) error {
 	lbAPI := lb.NewAPI(scwClient)
 
 	l.Debugf("sweeper: destroying the lbs in (%s)", region)
-	listLBs, err := lbAPI.ListLbs(&lb.ListLbsRequest{}, scw.WithAllPages())
+	listLBs, err := lbAPI.ListLBs(&lb.ListLBsRequest{}, scw.WithAllPages())
 	if err != nil {
 		return fmt.Errorf("error listing lbs in (%s) in sweeper: %s", region, err)
 	}
 
-	for _, l := range listLBs.Lbs {
-		err := lbAPI.DeleteLb(&lb.DeleteLbRequest{
-			LbID:      l.ID,
+	for _, l := range listLBs.LBs {
+		err := lbAPI.DeleteLB(&lb.DeleteLBRequest{
+			LBID:      l.ID,
 			ReleaseIP: true,
 		})
 		if err != nil {
@@ -57,7 +57,7 @@ func TestAccScalewayLbAndIPBeta(t *testing.T) {
 					resource scaleway_lb_beta lb01 {
 					    ip_id = scaleway_lb_ip_beta.ip01.id
 						name = "test-lb"
-						type = "lb-s"
+						type = "LB-S"
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
@@ -78,16 +78,6 @@ func TestAccScalewayLbAndIPBeta(t *testing.T) {
 					testAccCheckScalewayLbIPBetaExists("scaleway_lb_ip_beta.ip01"),
 				),
 			},
-			{
-				Config: `
-					resource scaleway_lb_ip_beta ip01 {
-					}
-				`,
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayLbIPBetaExists("scaleway_lb_ip_beta.ip01"),
-					resource.TestCheckResourceAttr("scaleway_lb_ip_beta.ip01", "lb_id", ""),
-				),
-			},
 		},
 	})
 }
@@ -104,8 +94,8 @@ func testAccCheckScalewayLbBetaExists(n string) resource.TestCheckFunc {
 			return err
 		}
 
-		_, err = lbAPI.GetLb(&lb.GetLbRequest{
-			LbID:   ID,
+		_, err = lbAPI.GetLB(&lb.GetLBRequest{
+			LBID:   ID,
 			Region: region,
 		})
 
@@ -128,9 +118,9 @@ func testAccCheckScalewayLbBetaDestroy(s *terraform.State) error {
 			return err
 		}
 
-		_, err = lbAPI.GetLb(&lb.GetLbRequest{
+		_, err = lbAPI.GetLB(&lb.GetLBRequest{
 			Region: region,
-			LbID:   ID,
+			LBID:   ID,
 		})
 
 		// If no error resource still exist

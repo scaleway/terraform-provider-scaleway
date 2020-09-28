@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	baremetal "github.com/scaleway/scaleway-sdk-go/api/baremetal/v1alpha1"
+	baremetal "github.com/scaleway/scaleway-sdk-go/api/baremetal/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 )
 
@@ -27,12 +27,12 @@ func baremetalAPIWithZone(d *schema.ResourceData, m interface{}) (*baremetal.API
 }
 
 // instanceAPIWithZoneAndID returns an baremetal API with zone and ID extracted from the state
-func baremetalAPIWithZoneAndID(m interface{}, id string) (*baremetal.API, scw.Zone, string, error) {
+func baremetalAPIWithZoneAndID(m interface{}, id string) (*baremetal.API, ZonedID, error) {
 	meta := m.(*Meta)
 	baremetalAPI := baremetal.NewAPI(meta.scwClient)
 
 	zone, ID, err := parseZonedID(id)
-	return baremetalAPI, zone, ID, err
+	return baremetalAPI, newZonedID(zone, ID), err
 }
 
 // TODO: Remove it when SDK will handle it.
@@ -80,9 +80,9 @@ func flattenBaremetalCPUs(cpus []*baremetal.CPU) interface{} {
 	for _, cpu := range cpus {
 		flattenedCPUs = append(flattenedCPUs, map[string]interface{}{
 			"name":         cpu.Name,
-			"core_count":   cpu.Cores,
+			"core_count":   cpu.CoreCount,
 			"frequency":    cpu.Frequency,
-			"thread_count": cpu.Threads,
+			"thread_count": cpu.ThreadCount,
 		})
 	}
 	return flattenedCPUs
@@ -112,7 +112,7 @@ func flattenBaremetalMemory(memories []*baremetal.Memory) interface{} {
 			"type":      memory.Type,
 			"capacity":  memory.Capacity,
 			"frequency": memory.Frequency,
-			"ecc":       memory.Ecc,
+			"is_ecc":    memory.IsEcc,
 		})
 	}
 	return flattenedMemories
@@ -128,6 +128,7 @@ func flattenBaremetalIPs(ips []*baremetal.IP) interface{} {
 			"id":      ip.ID,
 			"address": ip.Address.String(),
 			"reverse": ip.Reverse,
+			"version": ip.Version.String(),
 		})
 	}
 	return flattendIPs

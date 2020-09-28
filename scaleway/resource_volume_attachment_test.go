@@ -9,6 +9,7 @@ import (
 )
 
 func TestAccScalewayVolumeAttachment_Basic(t *testing.T) {
+	t.Skip("C2S instance are EOL")
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,

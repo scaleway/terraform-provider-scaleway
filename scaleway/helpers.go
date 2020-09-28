@@ -548,16 +548,11 @@ func expandOrGenerateString(data interface{}, prefix string) string {
 	return data.(string)
 }
 
-func expandLabelUUID(data interface{}) (label, uuid string) {
-	parts := strings.Split(data.(string), "/")
-	if len(parts) != 2 {
-		panic(fmt.Errorf("'%s' is not a valid label/uuid format", data.(string)))
+func expandStringWithDefault(data interface{}, defaultValue string) string {
+	if data == nil || data.(string) == "" {
+		return defaultValue
 	}
-	return parts[0], parts[1]
-}
-
-func flattenLabelUUID(label, uuid string) string {
-	return label + "/" + uuid
+	return data.(string)
 }
 
 func expandStrings(data interface{}) []string {
@@ -694,17 +689,6 @@ func diffSuppressFuncIgnoreCase(k, old, new string, d *schema.ResourceData) bool
 
 func diffSuppressFuncIgnoreCaseAndHyphen(k, old, new string, d *schema.ResourceData) bool {
 	return strings.Replace(strings.ToLower(old), "-", "_", -1) == strings.Replace(strings.ToLower(new), "-", "_", -1)
-}
-
-func diffSuppressFuncLabelUUID(k, old, new string, d *schema.ResourceData) bool {
-	if old == "" {
-		return false
-	}
-
-	// Get label and UUID.
-	label, uuid := expandLabelUUID(old)
-
-	return new == label || new == uuid
 }
 
 // diffSuppressFuncLocality is a SuppressDiffFunc to remove the locality from an ID when checking diff.

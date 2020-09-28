@@ -14,12 +14,12 @@ func TestAccScalewayDataSourceMarketplaceImageBeta_Basic(t *testing.T) {
 			{
 				Config: `
 data "scaleway_marketplace_image_beta" "test1" {
-	label = "ubuntu-bionic"
+	label = "ubuntu_focal"
 }
 `,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayInstanceImageExists("data.scaleway_marketplace_image_beta.test1"),
-					resource.TestCheckResourceAttr("data.scaleway_marketplace_image_beta.test1", "id", "fr-par-1/f974feac-abae-4365-b988-8ec7d1cec10d"),
+					resource.TestCheckResourceAttr("data.scaleway_marketplace_image_beta.test1", "id", "fr-par-1/cf44b8f5-77e2-42ed-8f1e-09ed5bb028fc"),
 				),
 			},
 		},

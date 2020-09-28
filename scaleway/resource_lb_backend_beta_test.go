@@ -17,7 +17,9 @@ func TestAccScalewayLbBackendBeta(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: `
+					resource scaleway_lb_ip_beta ip01 {}
 					resource scaleway_lb_beta lb01 {
+						ip_id = scaleway_lb_ip_beta.ip01.id
 						name = "test-lb"
 						type = "lb-s"
 					}
@@ -37,7 +39,7 @@ func TestAccScalewayLbBackendBeta(t *testing.T) {
 					testAccCheckScalewayLbBackendBetaExists("scaleway_lb_backend_beta.bkd01"),
 					resource.TestCheckResourceAttr("scaleway_lb_backend_beta.bkd01", "forward_port_algorithm", "roundrobin"),
 					resource.TestCheckResourceAttr("scaleway_lb_backend_beta.bkd01", "sticky_sessions", "none"),
-					resource.TestCheckResourceAttr("scaleway_lb_backend_beta.bkd01", "send_proxy_v2", "false"),
+					resource.TestCheckResourceAttr("scaleway_lb_backend_beta.bkd01", "proxy_protocol", "none"),
 					resource.TestCheckResourceAttr("scaleway_lb_backend_beta.bkd01", "timeout_server", ""),
 					resource.TestCheckResourceAttr("scaleway_lb_backend_beta.bkd01", "on_marked_down_action", "none"),
 					resource.TestCheckResourceAttr("scaleway_lb_backend_beta.bkd01", "health_check_timeout", "30s"),
@@ -49,7 +51,9 @@ func TestAccScalewayLbBackendBeta(t *testing.T) {
 			},
 			{
 				Config: `
+					resource scaleway_lb_ip_beta ip01 {}
 					resource scaleway_lb_beta lb01 {
+						ip_id = scaleway_lb_ip_beta.ip01.id
 						name = "test-lb"
 						type = "lb-s"
 					}
@@ -66,7 +70,7 @@ func TestAccScalewayLbBackendBeta(t *testing.T) {
 						sticky_sessions = "cookie"
 						sticky_sessions_cookie_name = "session-id"
 						server_ips = [ scaleway_instance_ip.ip02.address ]
-						send_proxy_v2 = true
+						proxy_protocol = "none"
 						timeout_server = "1s"
 						timeout_connect = "2.5s"
 						timeout_tunnel = "3s"
@@ -99,7 +103,9 @@ func TestAccScalewayLbBackendBeta_HealthCheck(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: `
+					resource scaleway_lb_ip_beta ip01 {}
 					resource scaleway_lb_beta lb01 {
+						ip_id = scaleway_lb_ip_beta.ip01.id
 						name = "test-lb"
 						type = "lb-s"
 					}
@@ -119,7 +125,9 @@ func TestAccScalewayLbBackendBeta_HealthCheck(t *testing.T) {
 			},
 			{
 				Config: `
+					resource scaleway_lb_ip_beta ip01 {}
 					resource scaleway_lb_beta lb01 {
+						ip_id = scaleway_lb_ip_beta.ip01.id
 						name = "test-lb"
 						type = "lb-s"
 					}
@@ -145,7 +153,9 @@ func TestAccScalewayLbBackendBeta_HealthCheck(t *testing.T) {
 			},
 			{
 				Config: `
+					resource scaleway_lb_ip_beta ip01 {}
 					resource scaleway_lb_beta lb01 {
+						ip_id = scaleway_lb_ip_beta.ip01.id
 						name = "test-lb"
 						type = "lb-s"
 					}

@@ -47,6 +47,7 @@ The following arguments are supported:
 ~> **Important:** Updates to this field will recreate a new resource.
 
 - `size` - (Required) The size of the pool.
+~> **Important:** This field will only be used at creation if autoscaling is enabled.
 
 - `min_size` - (Defaults to `1`) The minimum size of the pool, used by the autoscaling feature.
 
@@ -55,6 +56,7 @@ The following arguments are supported:
 - `tags` - (Optional) The tags associated with the pool.
 
 - `placement_group_id` - (Optional) The [placement group](https://developers.scaleway.com/en/products/instance/api/#placement-groups-d8f653) the nodes of the pool will be attached to.
+~> **Important:** Updates to this field will recreate a new resource.
 
 - `autoscaling` - (Defaults to `false`) Enables the autoscaling feature for this pool.
 ~> **Important:** When enabled, an update of the `size` will not be taken into account.
@@ -62,6 +64,7 @@ The following arguments are supported:
 - `autohealing` - (Defaults to `false`) Enables the autohealing feature for this pool.
 
 - `container_runtime` - (Defaults to `docker`) The container runtime of the pool.
+~> **Important:** Updates to this field will recreate a new resource.
 
 - `region` - (Defaults to [provider](../index.html#region) `region`) The [region](../guides/regions_and_zones.html#regions) in which the pool should be created.
 
@@ -81,6 +84,7 @@ In addition to all above arguments, the following attributes are exported:
 - `created_at` - The creation date of the pool.
 - `updated_at` - The last update date of the pool.
 - `version` - The version of the pool.
+- `current_size` - The size of the pool at the time the terraform state was updated.
 
 ## Import
 
