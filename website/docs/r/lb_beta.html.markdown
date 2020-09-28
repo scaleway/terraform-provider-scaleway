@@ -16,7 +16,11 @@ Creates and manages Scaleway Load-Balancers. For more information, see [the docu
 ### Basic
 
 ```hcl
+resource "scaleway_lb_ip_beta" "ip" {
+}
+
 resource "scaleway_lb_beta" "base" {
+  ip_id = scaleway_lb_ip_beta.ip.id
   region      = "fr-par"
   type        = "LB-S"
 }
@@ -25,6 +29,10 @@ resource "scaleway_lb_beta" "base" {
 ## Arguments Reference
 
 The following arguments are supported:
+
+- `ip_id` - (Required) The ID of the associated IP. See below.
+
+~> **Important:** Updates to `ip_id` will recreate the load-balancer.
 
 - `type` - (Required) The type of the load-balancer.  For now only `LB-S` is available
 
@@ -38,15 +46,53 @@ The following arguments are supported:
 
 - `organization_id` - (Defaults to [provider](../index.html#organization_id) `organization_id`) The ID of the organization the load-balancer is associated with.
 
-
 ## Attributes Reference
 
 In addition to all arguments above, the following attributes are exported:
 
 - `id` - The ID of the load-balancer.
-- `ip_id` - The load-balance public IP ID
 - `ip_address` -  The load-balance public IP Address
 
+## IP ID
+
+Since v1.15.0, `ip_id` is a required field. This means that now a separate `scaleway_lb_ip_beta` is required.
+When importing, the IP needs to be imported as well as the LB. 
+When upgrading to v1.15.0, you will need to create a new `scaleway_lb_ip_beta` resource and import it. 
+
+For instance, if you had the following:
+
+```hcl
+resource "scaleway_lb_beta" "base" {
+  region      = "fr-par"
+  type        = "LB-S"
+}
+```
+
+You will need to update it to:
+
+```hcl
+resource "scaleway_lb_ip_beta" "ip" {
+}
+
+resource "scaleway_lb_beta" "base" {
+  ip_id = scaleway_lb_ip_beta.ip.id
+  region      = "fr-par"
+  type        = "LB-S"
+}
+```
+
+And before running `terraform apply` you will need to import the IP with: 
+
+```bash
+$ terraform import scaleway_lb_ip_beta.ip fr-par/11111111-1111-1111-1111-111111111111
+```
+
+The IP ID can either be found in the console, or you can run:
+
+```bash
+$ terraform state show scaleway_lb_beta.base
+```
+and look for `ip_id`.
 
 ## Import
 
@@ -55,3 +101,5 @@ Load-Balancer can be imported using the `{region}/{id}`, e.g.
 ```bash
 $ terraform import scaleway_lb_beta.lb01 fr-par/11111111-1111-1111-1111-111111111111
 ```
+
+Be aware that you will also need to import the `scaleway_lb_ip_beta` resource.

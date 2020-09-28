@@ -7,8 +7,40 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 	"github.com/scaleway/scaleway-sdk-go/api/rdb/v1"
+	"github.com/scaleway/scaleway-sdk-go/scw"
 )
 
+func init() {
+	resource.AddTestSweepers("scaleway_rdb_instance_beta", &resource.Sweeper{
+		Name: "scaleway_rdb_instance_beta",
+		F:    testSweepRDBInstance,
+	})
+}
+
+func testSweepRDBInstance(region string) error {
+	scwClient, err := sharedClientForRegion(region)
+	if err != nil {
+		return fmt.Errorf("error getting client in sweeper: %s", err)
+	}
+	rdbAPI := rdb.NewAPI(scwClient)
+
+	l.Debugf("sweeper: destroying the rdb instance in (%s)", region)
+	listInstances, err := rdbAPI.ListInstances(&rdb.ListInstancesRequest{}, scw.WithAllPages())
+	if err != nil {
+		return fmt.Errorf("error listing rdb instances in (%s) in sweeper: %s", region, err)
+	}
+
+	for _, instance := range listInstances.Instances {
+		_, err := rdbAPI.DeleteInstance(&rdb.DeleteInstanceRequest{
+			InstanceID: instance.ID,
+		})
+		if err != nil {
+			return fmt.Errorf("error deleting rdb instance in sweeper: %s", err)
+		}
+	}
+
+	return nil
+}
 func TestAccScalewayRdbInstanceBeta(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -21,7 +53,7 @@ func TestAccScalewayRdbInstanceBeta(t *testing.T) {
 						name = "test-rdb"
 						node_type = "db-dev-s"
 						engine = "PostgreSQL-11"
-						is_ha_cluster = true
+						is_ha_cluster = false
 						disable_backup = true
 						user_name = "my_initial_user"
 						password = "thiZ_is_v&ry_s3cret"
@@ -33,7 +65,7 @@ func TestAccScalewayRdbInstanceBeta(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_rdb_instance_beta.main", "name", "test-rdb"),
 					resource.TestCheckResourceAttr("scaleway_rdb_instance_beta.main", "node_type", "db-dev-s"),
 					resource.TestCheckResourceAttr("scaleway_rdb_instance_beta.main", "engine", "PostgreSQL-11"),
-					resource.TestCheckResourceAttr("scaleway_rdb_instance_beta.main", "is_ha_cluster", "true"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance_beta.main", "is_ha_cluster", "false"),
 					resource.TestCheckResourceAttr("scaleway_rdb_instance_beta.main", "disable_backup", "true"),
 					resource.TestCheckResourceAttr("scaleway_rdb_instance_beta.main", "user_name", "my_initial_user"),
 					resource.TestCheckResourceAttr("scaleway_rdb_instance_beta.main", "password", "thiZ_is_v&ry_s3cret"),
@@ -54,7 +86,7 @@ func TestAccScalewayRdbInstanceBeta(t *testing.T) {
 						is_ha_cluster = true
 						disable_backup = false
 						user_name = "my_initial_user"
-						password = "thiZ_is_v&ry_s3cret"
+						password = "thiZ_is_v&ry_s8cret"
 						tags = [ "terraform-test", "scaleway_rdb_instance_beta", "minimal" ]
 					}
 				`,
@@ -66,7 +98,7 @@ func TestAccScalewayRdbInstanceBeta(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_rdb_instance_beta.main", "is_ha_cluster", "true"),
 					resource.TestCheckResourceAttr("scaleway_rdb_instance_beta.main", "disable_backup", "false"),
 					resource.TestCheckResourceAttr("scaleway_rdb_instance_beta.main", "user_name", "my_initial_user"),
-					resource.TestCheckResourceAttr("scaleway_rdb_instance_beta.main", "password", "thiZ_is_v&ry_s3cret"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance_beta.main", "password", "thiZ_is_v&ry_s8cret"),
 					resource.TestCheckResourceAttr("scaleway_rdb_instance_beta.main", "tags.0", "terraform-test"),
 					resource.TestCheckResourceAttr("scaleway_rdb_instance_beta.main", "tags.1", "scaleway_rdb_instance_beta"),
 					resource.TestCheckResourceAttr("scaleway_rdb_instance_beta.main", "tags.2", "minimal"),

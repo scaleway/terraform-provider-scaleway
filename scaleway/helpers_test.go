@@ -8,7 +8,6 @@ import (
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/stretchr/testify/assert"
@@ -177,54 +176,6 @@ func TestIs403Error(t *testing.T) {
 func TestGetRandomName(t *testing.T) {
 	name := newRandomName("test")
 	assert.True(t, strings.HasPrefix(name, "tf-test-"))
-}
-
-func TestDiffSuppressFuncLabelUUID(t *testing.T) {
-	testCases := []struct {
-		name    string
-		old     string
-		new     string
-		isEqual bool
-	}{
-		{
-			name:    "no label changes",
-			old:     "foo/11111111-1111-1111-1111-111111111111",
-			new:     "foo",
-			isEqual: true,
-		},
-		{
-			name:    "no UUID changes",
-			old:     "foo/11111111-1111-1111-1111-111111111111",
-			new:     "11111111-1111-1111-1111-111111111111",
-			isEqual: true,
-		},
-		{
-			name:    "UUID changes",
-			old:     "foo/11111111-1111-1111-1111-111111111111",
-			new:     "22222222-2222-2222-2222-222222222222",
-			isEqual: false,
-		},
-		{
-			name:    "To label",
-			old:     "foo/11111111-1111-1111-1111-111111111111",
-			new:     "foo",
-			isEqual: true,
-		},
-		{
-			name:    "To label change",
-			old:     "foo/11111111-1111-1111-1111-111111111111",
-			new:     "bar",
-			isEqual: false,
-		},
-	}
-
-	fakeResourceData := &schema.ResourceData{}
-
-	for _, c := range testCases {
-		t.Run(c.name, func(t *testing.T) {
-			assert.Equal(t, c.isEqual, diffSuppressFuncLabelUUID("", c.old, c.new, fakeResourceData))
-		})
-	}
 }
 
 func testCheckResourceAttrFunc(name string, key string, test func(string) error) resource.TestCheckFunc {

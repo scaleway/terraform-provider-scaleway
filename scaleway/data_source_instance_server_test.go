@@ -18,7 +18,7 @@ func TestAccScalewayDataSourceInstanceServer_Basic(t *testing.T) {
 				Config: `
 resource "scaleway_instance_server" "main" {
   name 	= "` + serverName + `"
-  image = "ubuntu-bionic"
+  image = "ubuntu_focal"
   type  = "DEV1-S"
   tags  = [ "terraform-test", "data_scaleway_instance_server", "basic" ]
 }

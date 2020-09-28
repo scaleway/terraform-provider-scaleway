@@ -7,7 +7,39 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
+	"github.com/scaleway/scaleway-sdk-go/scw"
 )
+
+func init() {
+	resource.AddTestSweepers("scaleway_instance_ip", &resource.Sweeper{
+		Name: "scaleway_instance_ip",
+		F:    testSweepInstanceIP,
+	})
+}
+
+func testSweepInstanceIP(region string) error {
+	return sweepZones(region, func(scwClient *scw.Client) error {
+		instanceAPI := instance.NewAPI(scwClient)
+		zone, _ := scwClient.GetDefaultZone()
+		l.Debugf("sweeper: destroying the instance ip in (%s)", zone)
+		listIPs, err := instanceAPI.ListIPs(&instance.ListIPsRequest{}, scw.WithAllPages())
+		if err != nil {
+			l.Warningf("error listing ips in (%s) in sweeper: %s", zone, err)
+			return nil
+		}
+
+		for _, ip := range listIPs.IPs {
+			err := instanceAPI.DeleteIP(&instance.DeleteIPRequest{
+				IP: ip.ID,
+			})
+			if err != nil {
+				return fmt.Errorf("error deleting ip in sweeper: %s", err)
+			}
+		}
+
+		return nil
+	})
+}
 
 func TestAccScalewayInstanceIP(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{

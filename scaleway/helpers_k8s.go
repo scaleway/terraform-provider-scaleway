@@ -2,6 +2,7 @@ package scaleway
 
 import (
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
@@ -56,6 +57,41 @@ func k8sAPIWithRegionAndID(m interface{}, id string) (*k8s.API, scw.Region, stri
 
 	region, ID, err := parseRegionalID(id)
 	return k8sAPI, region, ID, err
+}
+
+func k8sGetMinorVersionFromFull(version string) (string, error) {
+	versionSplit := strings.Split(version, ".")
+	if len(versionSplit) != 3 {
+		return "", fmt.Errorf("version is not a full x.y.z version") // shoud never happen
+	}
+
+	return versionSplit[0] + "." + versionSplit[1], nil
+}
+
+// k8sGetLatestVersionFromMinor returns the latest full version (x.y.z) for a given minor version (x.y)
+func k8sGetLatestVersionFromMinor(k8sAPI *k8s.API, region scw.Region, version string) (string, error) {
+	versionSplit := strings.Split(version, ".")
+	if len(versionSplit) != 2 {
+		return "", fmt.Errorf("minor version should be like x.y not %s", version)
+	}
+
+	versionsResp, err := k8sAPI.ListVersions(&k8s.ListVersionsRequest{
+		Region: region,
+	})
+	if err != nil {
+		return "", err
+	}
+
+	for _, v := range versionsResp.Versions {
+		vSplit := strings.Split(v.Name, ".")
+		if len(vSplit) != 3 {
+			return "", fmt.Errorf("upstream version %s is not correctly formatted", v.Name) // should never happen
+		}
+		if versionSplit[0] == vSplit[0] && versionSplit[1] == vSplit[1] {
+			return v.Name, nil
+		}
+	}
+	return "", fmt.Errorf("no available upstream version found for %s", version)
 }
 
 func waitK8SCluster(k8sAPI *k8s.API, region scw.Region, clusterID string, desiredStates ...k8s.ClusterStatus) error {
@@ -148,6 +184,7 @@ func clusterAutoscalerConfigFlatten(cluster *k8s.Cluster) []map[string]interface
 	autoscalerConfig := map[string]interface{}{}
 	autoscalerConfig["disable_scale_down"] = cluster.AutoscalerConfig.ScaleDownDisabled
 	autoscalerConfig["scale_down_delay_after_add"] = cluster.AutoscalerConfig.ScaleDownDelayAfterAdd
+	autoscalerConfig["scale_down_unneeded_time"] = cluster.AutoscalerConfig.ScaleDownUnneededTime
 	autoscalerConfig["estimator"] = cluster.AutoscalerConfig.Estimator
 	autoscalerConfig["expander"] = cluster.AutoscalerConfig.Expander
 	autoscalerConfig["ignore_daemonsets_utilization"] = cluster.AutoscalerConfig.IgnoreDaemonsetsUtilization

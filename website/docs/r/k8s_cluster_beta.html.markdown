@@ -79,16 +79,27 @@ resource "scaleway_k8s_pool_beta" "john" {
   size = 3
 }
 
+resource "null_resource" "kubeconfig" {
+    depends_on = [scaleway_k8s_pool_beta.john] # at least one pool here
+    triggers = {
+         host = scaleway_k8s_cluster_beta.joy.kubeconfig[0].host
+         token = scaleway_k8s_cluster_beta.joy.kubeconfig[0].token
+         cluster_ca_certificate = scaleway_k8s_cluster_beta.joy.kubeconfig[0].cluster_ca_certificate
+    }
+}
+
 provider "kubernetes" {
   load_config_file = "false"
 
-  host  = scaleway_k8s_cluster_beta.joy.kubeconfig[0].host
-  token  = scaleway_k8s_cluster_beta.joy.kubeconfig[0].token
+  host             = null_resource.kubeconfig.triggers.host
+  token            = null_resource.kubeconfig.triggers.token
   cluster_ca_certificate = base64decode(
-    scaleway_k8s_cluster_beta.joy.kubeconfig[0].cluster_ca_certificate
+     null_resource.kubeconfig.triggers.cluster_ca_certificate
   )
 }
 ```
+
+Th `null_resource` is needed because when the cluter is created, it's status is `pool_required`, but the kubeconfig can already be downloaded. It leads the `kubernetes` provider to start creating its objects, but the DNS entry for the Kubernetes master is not yet ready, that's why it's needed to wait for at least a pool.
 
 ## Arguments Reference
 
@@ -104,10 +115,8 @@ The following arguments are supported:
 ~> **Important:** Updates to this field will recreate a new resource.
 
 - `enable_dashboard` - (Defaults to `false`) Enables the [Kubernetes dashboard](https://github.com/kubernetes/dashboard) for the Kubernetes cluster.
-~> **Important:** Updates to this field will recreate a new resource.
 
 - `ingress` - (Defaults to `none`) The [ingress controller](https://kubernetes.io/docs/concepts/services-networking/ingress-controllers/) to be deployed on the Kubernetes cluster.
-~> **Important:** Updates to this field will recreate a new resource.
 
 - `tags` - (Optional) The tags associated with the Kubernetes cluster.
 
@@ -116,6 +125,8 @@ The following arguments are supported:
   - `disable_scale_down` - (Defaults to `false`) Disables the scale down feature of the autoscaler.
 
   - `scale_down_delay_after_add` - (Defaults to `10m`) How long after scale up that scale down evaluation resumes.
+
+  - `scale_down_unneeded_time` - (Default to `10m`) How long a node should be unneeded before it is eligible for scale down.
 
   - `estimator` - (Defaults to `binpacking`) Type of resource estimator to be used in scale up.
 
@@ -130,6 +141,7 @@ The following arguments are supported:
 - `auto_upgrade` - (Optional) The auto upgrade configuration.
 
   - `enable` - (Optional) Set to `true` to enable Kubernetes patch version auto upgrades.
+~> **Important:** When enabling auto upgrades, the `version` field take a minor version like x.y (ie 1.18).
 
   - `maintenance_window_start_hour` - (Optional) The start hour (UTC) of the 2-hour auto upgrade maintenance window (0 to 23).
 
@@ -176,6 +188,7 @@ $ terraform import scaleway_k8s_cluster_beta.mycluster fr-par/11111111-1111-1111
 `default_pool` is deprecated in favour the `scaleway_k8s_pool_beta` resource. Here is a migration example.
 
 Before:
+
 ```hcl
 resource "scaleway_k8s_cluster_beta" "jack" {
   name = "jack"
@@ -206,6 +219,7 @@ resource "scaleway_k8s_pool_beta" "default" {
 ```
 
 Once you have moved all the `default_pool` into their own object, you will need to import them. If your pool had the ID 11111111-1111-1111-1111-111111111111 in the `fr-par` region, you can import it by typing:
+
 ```bash
 $ terraform import scaleway_k8s_pool_beta.default fr-par/11111111-1111-1111-1111-111111111111
 ```

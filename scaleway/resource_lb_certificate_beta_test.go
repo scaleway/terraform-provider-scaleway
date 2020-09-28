@@ -21,7 +21,9 @@ func TestAccScalewayLbCertificateBeta(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: `
+					resource scaleway_lb_ip_beta ip01 {}
 					resource scaleway_lb_beta lb01 {
+						ip_id = scaleway_lb_ip_beta.ip01.id
 						name = "test-lb"
 						type = "lb-s"
 					}
@@ -40,7 +42,9 @@ func TestAccScalewayLbCertificateBeta(t *testing.T) {
 			},
 			{
 				Config: `
+					resource scaleway_lb_ip_beta ip01 {}
 					resource scaleway_lb_beta lb01 {
+						ip_id = scaleway_lb_ip_beta.ip01.id
 						name = "test-lb"
 						type = "lb-s"
 					}
@@ -58,7 +62,9 @@ func TestAccScalewayLbCertificateBeta(t *testing.T) {
 			},
 			{
 				Config: `
+					resource scaleway_lb_ip_beta ip01 {}
 					resource scaleway_lb_beta lb01 {
+						ip_id = scaleway_lb_ip_beta.ip01.id
 						name = "test-lb"
 						type = "lb-s"
 					}
@@ -82,7 +88,9 @@ func TestAccScalewayLbCertificateBeta(t *testing.T) {
 			},
 			{
 				Config: `
+					resource scaleway_lb_ip_beta ip01 {}
 					resource scaleway_lb_beta lb01 {
+						ip_id = scaleway_lb_ip_beta.ip01.id
 						name = "test-lb"
 						type = "lb-s"
 					}
@@ -91,42 +99,27 @@ func TestAccScalewayLbCertificateBeta(t *testing.T) {
 						name = "test-custom-cert"
 					  	custom_certificate {
 							certificate_chain = <<EOF
------BEGIN CERTIFICATE REQUEST-----
-MIIBZTCBzwIBADAmMQwwCgYDVQQKDANCYXIxFjAUBgNVBAMMDSouZXhhbXBsZS5j
-b20wgZ8wDQYJKoZIhvcNAQEBBQADgY0AMIGJAoGBAKM8iE+6xpL9ps2x/W/+0wf3
-+5Kgcwl+AoqUTNmAT6eaLfj3PMtdAmN+IcGsYXK2F1FENAdfHd70m4mSBoMJeq+F
-a2ZEYp+RlFQqldTBSUBld48z9DNkbNmb0cMyVmntnKhPZ5wjNjgsYee2Leesm2lx
-Gw2BCpDxGLBmwKFca3bTAgMBAAGgADANBgkqhkiG9w0BAQsFAAOBgQBbelf1jYNX
-Y+AbCpbsySJ32iDtlrZkcIDHMlRIefnoXnO8B1RiEY0SU/n/b2tFCAcvkhq0whKj
-RPOH6lzT0x3lWxI+C6xpVyURlljHPygVRbD3fig1rFnH3sI2IE3fJEbGJdmmHacA
-BRgm3RR+HWWLKB0ygUbOtZk0BLBUqPK+WQ==
------END CERTIFICATE REQUEST-----
------BEGIN RSA PRIVATE KEY-----
-MIICXQIBAAKBgQCjPIhPusaS/abNsf1v/tMH9/uSoHMJfgKKlEzZgE+nmi349zzL
-XQJjfiHBrGFythdRRDQHXx3e9JuJkgaDCXqvhWtmRGKfkZRUKpXUwUlAZXePM/Qz
-ZGzZm9HDMlZp7ZyoT2ecIzY4LGHnti3nrJtpcRsNgQqQ8RiwZsChXGt20wIDAQAB
-AoGBAINGbhU4jvOtW9T2fGvyEgLJkp7zvC/5D9Akvbz5LJYML0aWhmTB0ubyi/E2
-UVQwToZDhFgdTWd9bgxvzB7bo7Z1kiKWTXQSUDTjC3fchE12UU+1/s0LGh9B1cpV
-YqFAu7QNG4maXdZ2h+u+T7dioHslS74PFCBExClkwDiUsdcRAkEAzufrw6zgC0R3
-x6OMaaPsH2oX9KfR0+Kxj2m02TnwyFPSrSlIGfoSVtU5wBkvCwTBx/IPY70vNw3f
-fPacJNldGwJBAMn3/2nqMJUhR3U7bZA3lI+T1z01D7dLbvCafh3oHTYRAbHO2f0z
-k1uhn1+2r9QICwaugZwvx7biCfT3rTqXAKkCQGbINwphWnq+bHI0AJCJ6cZBQd07
-cLS9LE99x2URr1cUrNdwZmzhGTMhgSq4V/I1Tr4wtQxq8oV60saVC0QS5nkCQQDI
-W2NfuNlVN9xhqgC4zspr3KfrqlXa6dQ2j6yJEpjX5+scby3Fh4Kpph4qn1qyJwB5
-MmiVfrjK7lYeVA3fT6lxAkAc1QlmGapJ3w9996v6OZ3UqNBzsHsMmze/zGemdMfc
-VaSSB5OL7dZ8fLoJctv9EwgIBM3LFhSgAm9ASPHHR9fp
------END RSA PRIVATE KEY-----
-----BEGIN TRUSTED CERTIFICATE-----
-MIIBmTCCAQICCQCb2NiBTIlkeTANBgkqhkiG9w0BAQUFADARMQ8wDQYDVQQKDAZG
-b29CYXIwHhcNMjAwMzAzMTYwODQ4WhcNMzAwMzAxMTYwODQ4WjARMQ8wDQYDVQQK
-DAZGb29CYXIwgZ8wDQYJKoZIhvcNAQEBBQADgY0AMIGJAoGBALba1p/3sJ3E2J0J
-Wa6N4Zw9aBAq4OedYszUCYqviG6XiCKZPeI1skfD9bef4pYG67R5OcccCsjwqfT4
-HkwKj/2SG4VsJZpvVr9S1uOeiA70KywB9GvuiLZUflrDEy4IEA0s6UBALRgXllX+
-QbnE8VC9brzgepQwO6tTU1Vjo9s9AgMBAAEwDQYJKoZIhvcNAQEFBQADgYEAelXe
-TxdxZWXZFldVl7LUS39lsc9CRgIcLbmk/s23zs92zyJcYvarulx2ku4Zrp507RzT
-hPrE4kljWeyQnwIXeOSg5UZrsRtRxUTDLBtOrL3PmFZhBaDShSc+1DS4U/kjy/k+
-F+6t5ymALbasChWwC7FFgSsF5PtGP4PxZHFdXiE=
------END TRUSTED CERTIFICATE-----
+-----BEGIN CERTIFICATE-----
+MIIDXzCCAkegAwIBAgIUCQTOZjf11LGYmvGVw7xxWurGFgMwDQYJKoZIhvcNAQEL
+BQAwSDELMAkGA1UEBhMCRlIxDjAMBgNVBAcMBVBhcmlzMREwDwYDVQQKDAhTY2Fs
+ZXdhdTEWMBQGA1UEAwwNKi5leGFtcGxlLmNvbTAeFw0yMDA0MjgxNzQ2MzFaFw0y
+MjA0MjgxNzQ2MzFaMEgxCzAJBgNVBAYTAkZSMQ4wDAYDVQQHDAVQYXJpczERMA8G
+A1UECgwIU2NhbGV3YXUxFjAUBgNVBAMMDSouZXhhbXBsZS5jb20wggEiMA0GCSqG
+SIb3DQEBAQUAA4IBDwAwggEKAoIBAQCws8az+MXTtmNKN66Bl2HmlkAxazMcK9eG
+rmU5jOs3nNZevjn4FhQClVt2mOX7G37b32wpLyt5MUYGg+Ac95fL5zx9nwp57YBx
+NteGYIUpLTD2tb3aKuuIM+eSFkRabOsN1cqwqtMK8pW1YA48olhrunxW82SrMKUw
+cFN508wochbeupkk6nG3K29+1Uhwzr9B93xVQ5FQZKSvj5fuC3OIWJitpVyWlGBx
+pdoTq6T5W3H0odCNoUx8U0nKjOtcPoupe4ZAHL5VEmKi/PaNn4Wpjf0e6KSQv2ld
+WjCyaxSMpVpDSIsGPwy1symPV5Vk586Oexy2A5DIMlLRhGqAR9VbAgMBAAGjQTA/
+MA4GA1UdDwEB/wQEAwIDiDATBgNVHSUEDDAKBggrBgEFBQcDATAYBgNVHREEETAP
+gg0qLmV4YW1wbGUuY29tMA0GCSqGSIb3DQEBCwUAA4IBAQACL1iY9Az8VQM4sOKS
+NYYenvlzGalfQGrNh76DD5edv+0a5YQhWiVXoig0BIwPrsEGR1D4epH4Hrp9Uw56
+5Pln7kpZmcr3rm5WNxYLVBp7uTbAuFAiZZqLKPp7n3eay5AYjGYNa0DEvm0PijF3
+YqpCulrHYNFi0kxwNuoyJ6lORWjbCchxW14zB65hM1nLC4iXUtMF1cin1oOTtRKg
+7o6bLtz7BSdkZE/VSpEg17KO0bR9NWraBby08sf5QcPWrzYYyeoCoR9jC3a2ifUP
+XlnKjeabTGw/NxayLLRJLu5+dJuPodHm/I1Uwl1QWSbh4d1FQBX436mK41zMZhg0
+hUVl
+-----END CERTIFICATE-----
 EOF
 					  	}
 					} 

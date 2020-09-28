@@ -231,38 +231,38 @@ func resourceScalewayInstanceServerCreate(d *schema.ResourceData, m interface{})
 
 	commercialType := d.Get("type").(string)
 
-	image := expandID(d.Get("image"))
-	if !isUUID(image) {
+	image := expandZonedID(d.Get("image"))
+	if !isUUID(image.ID) {
 		instanceAPI := marketplace.NewAPI(m.(*Meta).scwClient)
 		imageUUID, err := instanceAPI.GetLocalImageIDByLabel(&marketplace.GetLocalImageIDByLabelRequest{
 			CommercialType: commercialType,
 			Zone:           zone,
-			ImageLabel:     image,
+			ImageLabel:     image.ID,
 		})
 		if err != nil {
 			return fmt.Errorf("could not get image '%s': %s", image, err)
 		}
-		image = imageUUID
+		image = newZonedID(zone, imageUUID)
 	}
 
 	req := &instance.CreateServerRequest{
 		Zone:              zone,
 		Name:              expandOrGenerateString(d.Get("name"), "srv"),
-		Organization:      d.Get("organization_id").(string),
-		Image:             image,
+		Organization:      expandStringPtr(d.Get("organization_id")),
+		Image:             image.ID,
 		CommercialType:    commercialType,
 		EnableIPv6:        d.Get("enable_ipv6").(bool),
-		SecurityGroup:     expandStringPtr(expandID(d.Get("security_group_id"))),
+		SecurityGroup:     expandStringPtr(expandZonedID(d.Get("security_group_id")).ID),
 		DynamicIPRequired: scw.BoolPtr(d.Get("enable_dynamic_ip").(bool)),
 		Tags:              expandStrings(d.Get("tags")),
 	}
 
 	if ipID, ok := d.GetOk("ip_id"); ok {
-		req.PublicIP = scw.StringPtr(expandID(ipID))
+		req.PublicIP = scw.StringPtr(expandZonedID(ipID).ID)
 	}
 
 	if placementGroupID, ok := d.GetOk("placement_group_id"); ok {
-		req.PlacementGroup = scw.StringPtr(expandID(placementGroupID))
+		req.PlacementGroup = scw.StringPtr(expandZonedID(placementGroupID).ID)
 	}
 
 	req.Volumes = make(map[string]*instance.VolumeTemplate)
@@ -275,7 +275,7 @@ func resourceScalewayInstanceServerCreate(d *schema.ResourceData, m interface{})
 	if raw, ok := d.GetOk("additional_volume_ids"); ok {
 		for i, volumeID := range raw.([]interface{}) {
 			req.Volumes[strconv.Itoa(i+1)] = &instance.VolumeTemplate{
-				ID:   expandID(volumeID),
+				ID:   expandZonedID(volumeID).ID,
 				Name: newRandomName("vol"),
 			}
 		}
@@ -286,7 +286,7 @@ func resourceScalewayInstanceServerCreate(d *schema.ResourceData, m interface{})
 		return err
 	}
 
-	d.SetId(newZonedId(zone, res.Server.ID))
+	d.SetId(newZonedID(zone, res.Server.ID).String())
 
 	////
 	// Set user data
@@ -360,16 +360,16 @@ func resourceScalewayInstanceServerRead(d *schema.ResourceData, m interface{}) e
 	_ = d.Set("boot_type", response.Server.BootType)
 	_ = d.Set("type", response.Server.CommercialType)
 	_ = d.Set("tags", response.Server.Tags)
-	_ = d.Set("security_group_id", response.Server.SecurityGroup.ID)
+	_ = d.Set("security_group_id", newZonedID(zone, response.Server.SecurityGroup.ID).String())
 	_ = d.Set("enable_ipv6", response.Server.EnableIPv6)
 	_ = d.Set("enable_dynamic_ip", response.Server.DynamicIPRequired)
 
 	// Image could be empty in an import context.
-	image := d.Get("image").(string)
-	if response.Server.Image != nil && (image == "" || isUUID(image)) {
+	image := expandRegionalID(d.Get("image").(string))
+	if response.Server.Image != nil && (image.ID == "" || isUUID(image.ID)) {
 		// TODO: If image is a label, check that response.Server.Image.ID match the label.
 		// It could be useful if the user edit the image with another tool.
-		_ = d.Set("image", response.Server.Image.ID)
+		_ = d.Set("image", newZonedID(zone, response.Server.Image.ID).String())
 	}
 
 	if response.Server.PlacementGroup != nil {
@@ -387,7 +387,7 @@ func resourceScalewayInstanceServerRead(d *schema.ResourceData, m interface{}) e
 			"host": response.Server.PublicIP.Address.String(),
 		})
 		if !response.Server.PublicIP.Dynamic {
-			_ = d.Set("ip_id", newZonedId(zone, response.Server.PublicIP.ID))
+			_ = d.Set("ip_id", newZonedID(zone, response.Server.PublicIP.ID).String())
 		} else {
 			_ = d.Set("ip_id", "")
 		}
@@ -421,7 +421,7 @@ func resourceScalewayInstanceServerRead(d *schema.ResourceData, m interface{}) e
 				rootVolume = vs[0]
 			}
 
-			rootVolume["volume_id"] = volume.ID
+			rootVolume["volume_id"] = newZonedID(zone, volume.ID).String()
 			rootVolume["size_in_gb"] = int(uint64(volume.Size) / gb)
 
 			if _, exist := rootVolume["delete_on_termination"]; !exist {
@@ -430,7 +430,7 @@ func resourceScalewayInstanceServerRead(d *schema.ResourceData, m interface{}) e
 
 			_ = d.Set("root_volume", []map[string]interface{}{rootVolume})
 		} else {
-			additionalVolumesIDs = append(additionalVolumesIDs, volume.ID)
+			additionalVolumesIDs = append(additionalVolumesIDs, newZonedID(zone, volume.ID).String())
 		}
 	}
 	_ = d.Set("additional_volume_ids", additionalVolumesIDs)
@@ -493,7 +493,7 @@ func resourceScalewayInstanceServerUpdate(d *schema.ResourceData, m interface{})
 
 	if d.HasChange("security_group_id") {
 		updateRequest.SecurityGroup = &instance.SecurityGroupTemplate{
-			ID:   expandID(d.Get("security_group_id")),
+			ID:   expandZonedID(d.Get("security_group_id")).ID,
 			Name: newRandomName("sg"), // this value will be ignored by the API
 		}
 	}
@@ -509,17 +509,17 @@ func resourceScalewayInstanceServerUpdate(d *schema.ResourceData, m interface{})
 	volumes := map[string]*instance.VolumeTemplate{}
 
 	if raw, ok := d.GetOk("additional_volume_ids"); d.HasChange("additional_volume_ids") && ok {
-		volumes["0"] = &instance.VolumeTemplate{ID: d.Get("root_volume.0.volume_id").(string), Name: newRandomName("vol")} // name is ignored by the API, any name will work here
+		volumes["0"] = &instance.VolumeTemplate{ID: expandZonedID(d.Get("root_volume.0.volume_id")).ID, Name: newRandomName("vol")} // name is ignored by the API, any name will work here
 
 		for i, volumeID := range raw.([]interface{}) {
 
 			// We make sure volume is detached so we can attach it to the server.
-			err = detachVolume(instanceAPI, zone, expandID(volumeID))
+			err = detachVolume(instanceAPI, zone, expandZonedID(volumeID).ID)
 			if err != nil {
 				return err
 			}
 			volumes[strconv.Itoa(i+1)] = &instance.VolumeTemplate{
-				ID:   expandID(volumeID),
+				ID:   expandZonedID(volumeID).ID,
 				Name: newRandomName("vol"), // name is ignored by the API, any name will work here
 			}
 		}
@@ -529,7 +529,7 @@ func resourceScalewayInstanceServerUpdate(d *schema.ResourceData, m interface{})
 	}
 
 	if d.HasChange("placement_group_id") {
-		placementGroupID := expandID(d.Get("placement_group_id"))
+		placementGroupID := expandZonedID(d.Get("placement_group_id")).ID
 		if placementGroupID == "" {
 			updateRequest.PlacementGroup = &instance.NullableStringValue{Null: true}
 		} else {
@@ -549,7 +549,7 @@ func resourceScalewayInstanceServerUpdate(d *schema.ResourceData, m interface{})
 		if err != nil {
 			return err
 		}
-		newIPID := expandID(d.Get("ip_id"))
+		newIPID := expandZonedID(d.Get("ip_id")).ID
 
 		// If an IP is already attached and it's not a dynamic IP we detach it.
 		if server.Server.PublicIP != nil && !server.Server.PublicIP.Dynamic {
@@ -667,7 +667,7 @@ func resourceScalewayInstanceServerDelete(d *schema.ResourceData, m interface{})
 	if d.Get("root_volume.0.delete_on_termination").(bool) {
 		err = instanceAPI.DeleteVolume(&instance.DeleteVolumeRequest{
 			Zone:     zone,
-			VolumeID: d.Get("root_volume.0.volume_id").(string),
+			VolumeID: expandZonedID(d.Get("root_volume.0.volume_id")).ID,
 		})
 		if err != nil && !is404Error(err) {
 			return err

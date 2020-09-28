@@ -11,7 +11,7 @@ func resourceScalewayInstanceSecurityGroupRules() *schema.Resource {
 		Update: resourceScalewayInstanceSecurityGroupRulesUpdate,
 		Delete: resourceScalewayInstanceSecurityGroupRulesDelete,
 		Importer: &schema.ResourceImporter{
-			State: customImporterState,
+			State: schema.ImportStatePassthrough,
 		},
 
 		Schema: map[string]*schema.Schema{
@@ -37,17 +37,6 @@ func resourceScalewayInstanceSecurityGroupRules() *schema.Resource {
 			},
 		},
 	}
-}
-
-func customImporterState(d *schema.ResourceData, m interface{}) ([]*schema.ResourceData, error) {
-	// importZonedID is the ID set by the user when using the Terraform's import function.
-	// It should be a SecurityGroupZonedID.
-	importZonedID := d.Id()
-
-	_ = d.Set("security_group_id", importZonedID)
-	d.SetId(importZonedID)
-
-	return []*schema.ResourceData{d}, nil
 }
 
 func resourceScalewayInstanceSecurityGroupRulesCreate(d *schema.ResourceData, m interface{}) error {

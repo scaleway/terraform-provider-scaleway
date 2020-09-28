@@ -27,6 +27,12 @@ func resourceScalewayInstanceSecurityGroup() *schema.Resource {
 				Computed:    true,
 				Description: "The name of the security group",
 			},
+			"stateful": {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Default:     true,
+				Description: "The stateful value of the security group",
+			},
 			"description": {
 				Type:        schema.TypeString,
 				Optional:    true,
@@ -85,17 +91,12 @@ func resourceScalewayInstanceSecurityGroupCreate(d *schema.ResourceData, m inter
 		return err
 	}
 
-	organizationID, err := organizationID(d, meta)
-	if err != nil {
-		return err
-	}
-
 	res, err := instanceApi.CreateSecurityGroup(&instance.CreateSecurityGroupRequest{
 		Name:                  expandOrGenerateString(d.Get("name"), "sg"),
 		Zone:                  zone,
-		Organization:          organizationID,
+		Organization:          expandStringPtr(d.Get("organization_id")),
 		Description:           d.Get("description").(string),
-		Stateful:              true,
+		Stateful:              d.Get("stateful").(bool),
 		InboundDefaultPolicy:  instance.SecurityGroupPolicy(d.Get("inbound_default_policy").(string)),
 		OutboundDefaultPolicy: instance.SecurityGroupPolicy(d.Get("outbound_default_policy").(string)),
 	})
@@ -134,6 +135,7 @@ func resourceScalewayInstanceSecurityGroupRead(d *schema.ResourceData, m interfa
 	_ = d.Set("zone", zone)
 	_ = d.Set("organization_id", res.SecurityGroup.Organization)
 	_ = d.Set("name", res.SecurityGroup.Name)
+	_ = d.Set("stateful", res.SecurityGroup.Stateful)
 	_ = d.Set("description", res.SecurityGroup.Description)
 	_ = d.Set("inbound_default_policy", res.SecurityGroup.InboundDefaultPolicy.String())
 	_ = d.Set("outbound_default_policy", res.SecurityGroup.OutboundDefaultPolicy.String())
@@ -220,6 +222,7 @@ func resourceScalewayInstanceSecurityGroupUpdate(d *schema.ResourceData, m inter
 	updateReq := &instance.UpdateSecurityGroupRequest{
 		Zone:                  zone,
 		SecurityGroupID:       ID,
+		Stateful:              scw.BoolPtr(d.Get("stateful").(bool)),
 		Description:           scw.StringPtr(description),
 		InboundDefaultPolicy:  &inboundDefaultPolicy,
 		OutboundDefaultPolicy: &outboundDefaultPolicy,
@@ -417,7 +420,7 @@ func securityGroupRuleSchema() *schema.Resource {
 			"ip_range": {
 				Type:         schema.TypeString,
 				Optional:     true,
-				ValidateFunc: validation.CIDRNetwork(0, 32),
+				ValidateFunc: validation.CIDRNetwork(0, 128),
 				Description:  "Ip range for this rule (e.g: 192.168.1.0/24). Only one of ip or ip_range should be provided",
 			},
 		},
