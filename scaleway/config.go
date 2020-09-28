@@ -9,7 +9,6 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
-	"strings"
 	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -18,7 +17,6 @@ import (
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/hashicorp/go-retryablehttp"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/logging"
-	sdk "github.com/nicolai86/scaleway-sdk"
 	scwLogger "github.com/scaleway/scaleway-sdk-go/logger"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 )
@@ -40,19 +38,11 @@ type Meta struct {
 
 	// s3Client is the S3 client
 	s3Client *s3.S3
-
-	// Deprecated: deprecatedClient is the deprecated Scaleway SDK (will be removed in `v2.0.0`).
-	deprecatedClient *sdk.API
 }
 
 // bootstrap initializes all the clients for this meta config object.
 func (m *Meta) bootstrap() error {
 	err := m.bootstrapScwClient()
-	if err != nil {
-		return err
-	}
-
-	err = m.bootstrapDeprecatedClient()
 	if err != nil {
 		return err
 	}
@@ -150,39 +140,6 @@ func (c *client) Do(r *http.Request) (*http.Response, error) {
 		req.Header.Set(key, val[0])
 	}
 	return c.Client.Do(req)
-}
-
-// bootstrapDeprecatedClient initializes a new deprecated client from the configuration.
-func (m *Meta) bootstrapDeprecatedClient() error {
-	options := func(sdkApi *sdk.API) {
-		sdkApi.Client = createRetryableHTTPClient(true)
-	}
-
-	region := string(m.DefaultRegion)
-	if m.DefaultRegion == scw.RegionFrPar {
-		region = "par1"
-	}
-	if m.DefaultRegion == scw.RegionNlAms {
-		region = "ams1"
-	}
-
-	sdk, err := sdk.New(
-		m.DefaultOrganizationID,
-		m.SecretKey,
-		region,
-		options,
-	)
-	if err != nil {
-		// Ugly fix bug this should be removed when we remove support for older resources.
-		if strings.HasSuffix(err.Error(), "isn't a valid region") {
-			// will panic if using the deprecated client
-			return nil
-		}
-		return fmt.Errorf("cannot create deprecated SDK client: %s", err)
-	}
-
-	m.deprecatedClient = sdk
-	return nil
 }
 
 // bootstrapS3Client initializes a new s3 client from the configuration.
