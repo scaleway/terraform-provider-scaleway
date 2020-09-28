@@ -113,7 +113,7 @@ func resourceScalewayLbCertificateBetaCreate(d *schema.ResourceData, m interface
 
 	createReq := &lb.CreateCertificateRequest{
 		Region:            region,
-		LbID:              lbID,
+		LBID:              lbID,
 		Name:              expandOrGenerateString(d.Get("name"), "lb-cert"),
 		Letsencrypt:       expandLbLetsEncrypt(d.Get("letsencrypt")),
 		CustomCertificate: expandLbCustomCertificate(d.Get("custom_certificate")),
@@ -156,8 +156,8 @@ func resourceScalewayLbCertificateBetaRead(d *schema.ResourceData, m interface{}
 	_ = d.Set("common_name", res.CommonName)
 	_ = d.Set("subject_alternative_name", res.SubjectAlternativeName)
 	_ = d.Set("fingerprint", res.Fingerprint)
-	_ = d.Set("not_valid_before", flattenTime(&res.NotValidBefore))
-	_ = d.Set("not_valid_after", flattenTime(&res.NotValidAfter))
+	_ = d.Set("not_valid_before", flattenTime(res.NotValidBefore))
+	_ = d.Set("not_valid_after", flattenTime(res.NotValidAfter))
 	_ = d.Set("status", res.Status)
 	return nil
 }
