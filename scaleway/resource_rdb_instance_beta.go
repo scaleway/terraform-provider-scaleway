@@ -51,14 +51,14 @@ func resourceScalewayRdbInstanceBeta() *schema.Resource {
 			},
 			"user_name": {
 				Type:        schema.TypeString,
-				Required:    true,
 				ForceNew:    true,
+				Optional:    true,
 				Description: "Identifier for the first user of the database instance",
 			},
 			"password": {
 				Type:        schema.TypeString,
-				Required:    true,
 				Sensitive:   true,
+				Optional:    true,
 				Description: "Password for the first user of the database instance",
 			},
 			"tags": {
@@ -126,7 +126,7 @@ func resourceScalewayRdbInstanceBetaCreate(d *schema.ResourceData, m interface{}
 
 	createReq := &rdb.CreateInstanceRequest{
 		Region:         region,
-		OrganizationID: d.Get("organization_id").(string),
+		OrganizationID: expandStringPtr(d.Get("organization_id")),
 		Name:           expandOrGenerateString(d.Get("name"), "rdb"),
 		NodeType:       d.Get("node_type").(string),
 		Engine:         d.Get("engine").(string),

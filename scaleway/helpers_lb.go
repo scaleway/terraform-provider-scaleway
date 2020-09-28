@@ -1,6 +1,7 @@
 package scaleway
 
 import (
+	"strings"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
@@ -235,4 +236,12 @@ func expandLbCustomCertificate(raw interface{}) *lb.CreateCertificateRequestCust
 		CertificateChain: rawMap["certificate_chain"].(string),
 	}
 	return config
+}
+
+func expandLbProxyProtocol(raw interface{}) lb.ProxyProtocol {
+	return lb.ProxyProtocol("proxy_protocol_" + raw.(string))
+}
+
+func flattenLbProxyProtocol(pp lb.ProxyProtocol) interface{} {
+	return strings.TrimPrefix(pp.String(), "proxy_protocol_")
 }

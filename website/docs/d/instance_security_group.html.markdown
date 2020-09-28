@@ -5,7 +5,7 @@ description: |-
   Gets information about a Security Group.
 ---
 
-# scaleway_security_group
+# scaleway_instance_security_group
 
 Gets information about a Security Group.
 

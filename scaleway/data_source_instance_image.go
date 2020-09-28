@@ -114,7 +114,7 @@ func dataSourceScalewayInstanceImageRead(d *schema.ResourceData, m interface{}) 
 			return fmt.Errorf("%d images found with the same name %s and architecture %s in zone %s", len(res.Images), d.Get("name"), d.Get("architecture"), zone)
 		}
 		sort.Slice(res.Images, func(i, j int) bool {
-			return res.Images[i].ModificationDate.After(res.Images[j].ModificationDate)
+			return res.Images[i].ModificationDate.After(*res.Images[j].ModificationDate)
 		})
 		for _, image := range res.Images {
 			if image.Name == d.Get("name").(string) {
@@ -146,8 +146,8 @@ func dataSourceScalewayInstanceImageRead(d *schema.ResourceData, m interface{}) 
 	_ = d.Set("architecture", resp.Image.Arch)
 	_ = d.Set("name", resp.Image.Name)
 
-	_ = d.Set("creation_date", flattenTime(&resp.Image.CreationDate))
-	_ = d.Set("modification_date", flattenTime(&resp.Image.ModificationDate))
+	_ = d.Set("creation_date", flattenTime(resp.Image.CreationDate))
+	_ = d.Set("modification_date", flattenTime(resp.Image.ModificationDate))
 	_ = d.Set("public", resp.Image.Public)
 	_ = d.Set("from_server_id", resp.Image.FromServer)
 	_ = d.Set("state", resp.Image.State.String())
