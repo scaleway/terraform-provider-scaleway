@@ -7,8 +7,8 @@ import (
 	"io/ioutil"
 	"strconv"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
 	"github.com/scaleway/scaleway-sdk-go/api/marketplace/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
@@ -152,7 +152,6 @@ func resourceScalewayInstanceServer() *schema.Resource {
 				Optional:    true,
 				Default:     false,
 				Description: "Disable dynamic IP on the server",
-				Removed:     "Removed in favor of enable_dynamic_ip",
 			},
 			"enable_dynamic_ip": {
 				Type:        schema.TypeBool,
@@ -213,7 +212,6 @@ func resourceScalewayInstanceServer() *schema.Resource {
 				Type:     schema.TypeBool,
 				Optional: true,
 				Default:  false,
-				Removed:  "Please use enable_dynamic_ip instead",
 			},
 		},
 	}

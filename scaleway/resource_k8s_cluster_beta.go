@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	k8s "github.com/scaleway/scaleway-sdk-go/api/k8s/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 )
@@ -298,7 +298,6 @@ func resourceScalewayK8SClusterBeta() *schema.Resource {
 			},
 			"kubeconfig": {
 				Type:        schema.TypeList,
-				MaxItems:    1,
 				Computed:    true,
 				Description: "The kubeconfig configuration file of the Kubernetes cluster",
 				Elem: &schema.Resource{

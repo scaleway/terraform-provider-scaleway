@@ -17,7 +17,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/hashicorp/go-retryablehttp"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/logging"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/logging"
 	sdk "github.com/nicolai86/scaleway-sdk"
 	scwLogger "github.com/scaleway/scaleway-sdk-go/logger"
 	"github.com/scaleway/scaleway-sdk-go/scw"

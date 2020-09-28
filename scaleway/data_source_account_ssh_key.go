@@ -3,7 +3,7 @@ package scaleway
 import (
 	"fmt"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	account "github.com/scaleway/scaleway-sdk-go/api/account/v2alpha1"
 )
 
