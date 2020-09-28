@@ -298,7 +298,6 @@ func resourceScalewayK8SClusterBeta() *schema.Resource {
 			},
 			"kubeconfig": {
 				Type:        schema.TypeList,
-				MaxItems:    1,
 				Computed:    true,
 				Description: "The kubeconfig configuration file of the Kubernetes cluster",
 				Elem: &schema.Resource{
