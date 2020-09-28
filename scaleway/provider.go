@@ -3,12 +3,10 @@ package scaleway
 import (
 	"fmt"
 	"os"
-	"sort"
 	"sync"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/mitchellh/go-homedir"
-	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 )
 
@@ -215,23 +213,9 @@ func Provider() func() *schema.Provider {
 				"scaleway_rdb_instance_beta":             resourceScalewayRdbInstanceBeta(),
 				"scaleway_rdb_user_beta":                 resourceScalewayRdbUserBeta(),
 				"scaleway_object_bucket":                 resourceScalewayObjectBucket(),
-				"scaleway_user_data":                     resourceScalewayUserData(),
-				"scaleway_server":                        resourceScalewayServer(),
-				"scaleway_token":                         resourceScalewayToken(),
-				"scaleway_ssh_key":                       resourceScalewaySSHKey(),
-				"scaleway_ip":                            resourceScalewayIP(),
-				"scaleway_ip_reverse_dns":                resourceScalewayIPReverseDNS(),
-				"scaleway_security_group":                resourceScalewaySecurityGroup(),
-				"scaleway_security_group_rule":           resourceScalewaySecurityGroupRule(),
-				"scaleway_volume":                        resourceScalewayVolume(),
-				"scaleway_volume_attachment":             resourceScalewayVolumeAttachment(),
 			},
 
 			DataSourcesMap: map[string]*schema.Resource{
-				"scaleway_bootscript":              dataSourceScalewayBootscript(),
-				"scaleway_image":                   dataSourceScalewayImage(),
-				"scaleway_security_group":          dataSourceScalewaySecurityGroup(),
-				"scaleway_volume":                  dataSourceScalewayVolume(),
 				"scaleway_account_ssh_key":         dataSourceScalewayAccountSSHKey(),
 				"scaleway_instance_security_group": dataSourceScalewayInstanceSecurityGroup(),
 				"scaleway_instance_server":         dataSourceScalewayInstanceServer(),
@@ -314,22 +298,6 @@ func providerConfigure(d *schema.ResourceData, terraformVersion string) (interfa
 	err = meta.bootstrap()
 	if err != nil {
 		return nil, err
-	}
-
-	// fetch known scaleway server types to support validation in r/server
-	if len(commercialServerTypes) == 0 {
-		instanceAPI := instance.NewAPI(meta.scwClient)
-		availabilityResp, err := instanceAPI.GetServerTypesAvailability(&instance.GetServerTypesAvailabilityRequest{}, scw.WithAllPages())
-		if err == nil {
-			for k := range availabilityResp.Servers {
-				commercialServerTypes = append(commercialServerTypes, k)
-			}
-			sort.StringSlice(commercialServerTypes).Sort()
-		}
-
-		if os.Getenv("DISABLE_SCALEWAY_SERVER_TYPE_VALIDATION") != "" {
-			commercialServerTypes = commercialServerTypes[:0]
-		}
 	}
 
 	return meta, nil
