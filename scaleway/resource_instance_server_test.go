@@ -615,7 +615,7 @@ func TestAccScalewayInstanceServerImageDataSource(t *testing.T) {
 			{
 				Config: `
 					data "scaleway_instance_image" "ubuntu_focal" {
-					  name = "ubuntu_focal"
+					  name = "Ubuntu 20.04 Focal Fossa"
 					}
 
 					resource "scaleway_instance_server" "base" {
@@ -625,14 +625,14 @@ func TestAccScalewayInstanceServerImageDataSource(t *testing.T) {
 				`,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayInstanceServerExists("scaleway_instance_server.base"),
-					resource.TestCheckResourceAttr("scaleway_instance_server.base", "image", "fr-par-1/6651f88f-45af-4b93-95e8-3931b74f6acc"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.base", "image", "fr-par-1/4e84fc90-baef-43c2-ba9c-caa135de7afd"),
 				),
 			},
 			// Ensure that image diffSuppressFunc results in no plan.
 			{
 				Config: `
 					data "scaleway_instance_image" "ubuntu_focal" {
-					  name = "ubuntu_focal"
+					  name = "Ubuntu 20.04 Focal Fossa"
 					}
 
 					resource "scaleway_instance_server" "base" {
@@ -778,7 +778,7 @@ EOF`
 	return fmt.Sprintf(`
 data "scaleway_image" "ubuntu" {
   architecture = "x86_64"
-  name         = "Ubuntu Focal"
+  name         = "Ubuntu 20.04 Focal Fossa"
   most_recent  = true
 }
 

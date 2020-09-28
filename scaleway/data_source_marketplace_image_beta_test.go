@@ -19,7 +19,7 @@ data "scaleway_marketplace_image_beta" "test1" {
 `,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayInstanceImageExists("data.scaleway_marketplace_image_beta.test1"),
-					resource.TestCheckResourceAttr("data.scaleway_marketplace_image_beta.test1", "id", "fr-par-1/365a8b9c-0c6e-4875-a887-dc3213db9e20"),
+					resource.TestCheckResourceAttr("data.scaleway_marketplace_image_beta.test1", "id", "fr-par-1/cf44b8f5-77e2-42ed-8f1e-09ed5bb028fc"),
 				),
 			},
 		},

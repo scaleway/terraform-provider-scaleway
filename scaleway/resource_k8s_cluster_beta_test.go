@@ -428,7 +428,7 @@ func testAccCheckScalewayK8SClusterBetaDeprecated(version string, size int) stri
 resource "scaleway_k8s_cluster_beta" "deprecated" {
 	cni = "calico"
 	version = "%s"
-	name = "deprecated"
+	name = "ClusterBetaDeprecated"
 	tags = [ "terraform-test", "scaleway_k8s_cluster_beta", "deprecated" ]
 	default_pool {
 	  node_type = "DEV1-M"
@@ -442,7 +442,7 @@ func testAccCheckScalewayK8SClusterBetaConfigMinimal(version string) string {
 resource "scaleway_k8s_cluster_beta" "minimal" {
 	cni = "calico"
 	version = "%s"
-	name = "minimal"
+	name = "ClusterBetaConfigMinimal"
 	tags = [ "terraform-test", "scaleway_k8s_cluster_beta", "minimal" ]
 }`, version)
 }
