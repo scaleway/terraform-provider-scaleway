@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"sort"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 )
@@ -116,7 +116,15 @@ func dataSourceScalewayInstanceImageRead(d *schema.ResourceData, m interface{}) 
 		sort.Slice(res.Images, func(i, j int) bool {
 			return res.Images[i].ModificationDate.After(*res.Images[j].ModificationDate)
 		})
-		imageID = res.Images[0].ID
+		for _, image := range res.Images {
+			if image.Name == d.Get("name").(string) {
+				imageID = image.ID
+				break
+			}
+		}
+		if imageID == "" {
+			return fmt.Errorf("no image found with the name %s and architecture %s in zone %s", d.Get("name"), d.Get("architecture"), zone)
+		}
 	}
 
 	zonedID := datasourceNewZonedID(imageID, zone)

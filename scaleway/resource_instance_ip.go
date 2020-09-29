@@ -1,7 +1,7 @@
 package scaleway
 
 import (
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
 )
 
@@ -33,7 +33,6 @@ func resourceScalewayInstanceIP() *schema.Resource {
 			"server_id": {
 				Type:        schema.TypeString,
 				Optional:    true,
-				Removed:     "server_id has been removed in favor of scaleway_instance_server.ip_id",
 				Description: "The server associated with this IP",
 			},
 			"zone":            zoneSchema(),

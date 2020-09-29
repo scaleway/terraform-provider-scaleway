@@ -1,8 +1,8 @@
 package scaleway
 
 import (
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/scaleway/scaleway-sdk-go/api/lb/v1"
 )
 
@@ -73,7 +73,7 @@ func resourceScalewayLbBackendBeta() *schema.Resource {
 				Type: schema.TypeList,
 				Elem: &schema.Schema{
 					Type:         schema.TypeString,
-					ValidateFunc: validation.SingleIP(),
+					ValidateFunc: validation.IsIPAddress,
 				},
 				Optional:    true,
 				Description: "Backend server IP addresses list (IPv4 or IPv6)",

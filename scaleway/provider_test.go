@@ -4,20 +4,20 @@ import (
 	"os"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/terraform"
-	homedir "github.com/mitchellh/go-homedir"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/mitchellh/go-homedir"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 )
 
-var testAccProviders map[string]terraform.ResourceProvider
+var testAccProviders map[string]*schema.Provider
 var testAccProvider *schema.Provider
 
 func init() {
-	testAccProvider = Provider().(*schema.Provider)
+	p := Provider()()
+	testAccProvider = p
 	version += "-tftest"
-	testAccProviders = map[string]terraform.ResourceProvider{
-		"scaleway": testAccProvider,
+	testAccProviders = map[string]*schema.Provider{
+		"scaleway": p,
 	}
 
 	old := testAccProvider.ConfigureFunc
@@ -30,13 +30,10 @@ func init() {
 }
 
 func TestProvider(t *testing.T) {
-	if err := Provider().(*schema.Provider).InternalValidate(); err != nil {
+	p := Provider()()
+	if err := p.InternalValidate(); err != nil {
 		t.Fatalf("err: %s", err)
 	}
-}
-
-func TestProvider_impl(t *testing.T) {
-	var _ terraform.ResourceProvider = Provider()
 }
 
 func testAccPreCheck(t *testing.T) {
