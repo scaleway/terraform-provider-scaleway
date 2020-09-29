@@ -6,8 +6,7 @@ import (
 	"testing"
 
 	"github.com/aws/aws-sdk-go/service/s3"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	api "github.com/nicolai86/scaleway-sdk"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 )
 
@@ -31,23 +30,6 @@ func sweepZones(region string, f func(scwClient *scw.Client) error) error {
 		}
 	}
 	return nil
-}
-
-// sharedDeprecatedClientForRegion returns a scaleway deprecated client needed for the sweeper
-// functions for a given region {par1,ams1}
-func sharedDeprecatedClientForRegion(region string) (*api.API, error) {
-	meta, err := buildTestConfigForTests(region)
-	if err != nil {
-		return nil, err
-	}
-
-	// configures a default client for the region, using the above env vars
-	err = meta.bootstrapDeprecatedClient()
-	if err != nil {
-		return nil, fmt.Errorf("error getting Scaleway client: %#v", err)
-	}
-
-	return meta.deprecatedClient, nil
 }
 
 // sharedClientForRegion returns a Scaleway client needed for the sweeper
