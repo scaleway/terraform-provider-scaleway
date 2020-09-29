@@ -581,7 +581,7 @@ func readDefaultPool(d *schema.ResourceData, m interface{}) (*k8s.Pool, error) {
 		}
 
 		if len(response.Pools) != 1 {
-			return nil, fmt.Errorf("Newly created pool on cluster %s has %d pools instead of 1", clusterID, len(response.Pools))
+			return nil, fmt.Errorf("newly created pool on cluster %s has %d pools instead of 1", clusterID, len(response.Pools))
 		}
 
 		pool = response.Pools[0]
