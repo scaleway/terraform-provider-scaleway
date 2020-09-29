@@ -42,7 +42,7 @@ func testSweepRegistryNamespace(region string) error {
 	return nil
 }
 
-func TestRegistryNamespaceBeta(t *testing.T) {
+func TestAccScalewayRegistryNamespaceBeta(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,

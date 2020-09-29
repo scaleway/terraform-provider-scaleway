@@ -280,8 +280,8 @@ func resourceScalewayK8SPoolBetaRead(d *schema.ResourceData, m interface{}) erro
 	_ = d.Set("max_size", pool.MaxSize)
 	_ = d.Set("tags", pool.Tags)
 	_ = d.Set("container_runtime", pool.ContainerRuntime)
-	_ = d.Set("created_at", pool.CreatedAt)
-	_ = d.Set("updated_at", pool.UpdatedAt)
+	_ = d.Set("created_at", pool.CreatedAt.String())
+	_ = d.Set("updated_at", pool.UpdatedAt.String())
 	_ = d.Set("nodes", nodes)
 	_ = d.Set("status", pool.Status)
 
