@@ -55,7 +55,7 @@ func resourceScalewayInstanceIPCreate(d *schema.ResourceData, m interface{}) err
 		return err
 	}
 
-	d.SetId(newZonedId(zone, res.IP.ID))
+	d.SetId(newZonedIDString(zone, res.IP.ID))
 	return resourceScalewayInstanceIPRead(d, m)
 }
 

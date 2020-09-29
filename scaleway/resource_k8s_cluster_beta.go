@@ -504,7 +504,7 @@ func resourceScalewayK8SClusterBetaCreate(d *schema.ResourceData, m interface{})
 		}
 	}
 
-	d.SetId(newRegionalId(region, res.ID))
+	d.SetId(newRegionalIDString(region, res.ID))
 
 	return resourceScalewayK8SClusterBetaRead(d, m)
 }
@@ -528,7 +528,7 @@ func resourceScalewayK8SClusterBetaDefaultPoolRead(d *schema.ResourceData, m int
 	}
 
 	defaultPool := map[string]interface{}{}
-	defaultPool["pool_id"] = newRegionalId(region, pool.ID)
+	defaultPool["pool_id"] = newRegionalIDString(region, pool.ID)
 	defaultPool["node_type"] = pool.NodeType
 	defaultPool["autoscaling"] = pool.Autoscaling
 	defaultPool["autohealing"] = pool.Autohealing
@@ -544,7 +544,7 @@ func resourceScalewayK8SClusterBetaDefaultPoolRead(d *schema.ResourceData, m int
 	defaultPool["status"] = pool.Status.String()
 
 	if pool.PlacementGroupID != nil {
-		defaultPool["placement_group_id"] = newZonedIdFromRegion(region, *pool.PlacementGroupID) // TODO fix this ZonedIdFromRegion
+		defaultPool["placement_group_id"] = newZonedIDStringFromRegion(region, *pool.PlacementGroupID) // TODO fix this ZonedIdFromRegion
 	}
 
 	err = d.Set("default_pool", []map[string]interface{}{defaultPool})
@@ -769,7 +769,7 @@ func resourceScalewayK8SClusterBetaDefaultPoolUpdate(d *schema.ResourceData, m i
 			if err != nil {
 				return err
 			}
-			defaultPoolID = newRegionalId(region, defaultPoolRes.ID)
+			defaultPoolID = newRegionalIDString(region, defaultPoolRes.ID)
 			defaultPool := map[string]interface{}{}
 			defaultPool["pool_id"] = defaultPoolID
 

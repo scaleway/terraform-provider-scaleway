@@ -125,14 +125,14 @@ func testAccCheckScalewayBaremetalServerExists(n string) resource.TestCheckFunc 
 			return fmt.Errorf("resource not found: %s", n)
 		}
 
-		baremetalAPI, zonedId, err := baremetalAPIWithZoneAndID(testAccProvider.Meta(), rs.Primary.ID)
+		baremetalAPI, zonedID, err := baremetalAPIWithZoneAndID(testAccProvider.Meta(), rs.Primary.ID)
 		if err != nil {
 			return err
 		}
 
 		_, err = baremetalAPI.GetServer(&baremetal.GetServerRequest{
-			ServerID: zonedId.ID,
-			Zone:     zonedId.Zone,
+			ServerID: zonedID.ID,
+			Zone:     zonedID.Zone,
 		})
 		if err != nil {
 			return err
@@ -148,14 +148,14 @@ func testAccCheckScalewayBaremetalServerDestroy(s *terraform.State) error {
 			continue
 		}
 
-		baremetalAPI, zonedId, err := baremetalAPIWithZoneAndID(testAccProvider.Meta(), rs.Primary.ID)
+		baremetalAPI, zonedID, err := baremetalAPIWithZoneAndID(testAccProvider.Meta(), rs.Primary.ID)
 		if err != nil {
 			return err
 		}
 
 		_, err = baremetalAPI.GetServer(&baremetal.GetServerRequest{
-			ServerID: zonedId.ID,
-			Zone:     zonedId.Zone,
+			ServerID: zonedID.ID,
+			Zone:     zonedID.Zone,
 		})
 
 		// If no error resource still exist

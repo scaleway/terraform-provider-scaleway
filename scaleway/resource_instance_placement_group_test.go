@@ -82,12 +82,12 @@ func testAccCheckScalewayInstancePlacementGroupExists(n string) resource.TestChe
 			return fmt.Errorf("resource not found: %s", n)
 		}
 
-		instanceApi, zone, ID, err := instanceAPIWithZoneAndID(testAccProvider.Meta(), rs.Primary.ID)
+		instanceAPI, zone, ID, err := instanceAPIWithZoneAndID(testAccProvider.Meta(), rs.Primary.ID)
 		if err != nil {
 			return err
 		}
 
-		_, err = instanceApi.GetPlacementGroup(&instance.GetPlacementGroupRequest{
+		_, err = instanceAPI.GetPlacementGroup(&instance.GetPlacementGroupRequest{
 			Zone:             zone,
 			PlacementGroupID: ID,
 		})
@@ -106,12 +106,12 @@ func testAccCheckScalewayInstancePlacementGroupDestroy(s *terraform.State) error
 			continue
 		}
 
-		instanceApi, zone, ID, err := instanceAPIWithZoneAndID(testAccProvider.Meta(), rs.Primary.ID)
+		instanceAPI, zone, ID, err := instanceAPIWithZoneAndID(testAccProvider.Meta(), rs.Primary.ID)
 		if err != nil {
 			return err
 		}
 
-		_, err = instanceApi.GetPlacementGroup(&instance.GetPlacementGroupRequest{
+		_, err = instanceAPI.GetPlacementGroup(&instance.GetPlacementGroupRequest{
 			Zone:             zone,
 			PlacementGroupID: ID,
 		})

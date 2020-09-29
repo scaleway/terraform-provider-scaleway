@@ -82,7 +82,7 @@ func resourceScalewayLbBetaCreate(d *schema.ResourceData, m interface{}) error {
 		return err
 	}
 
-	d.SetId(newRegionalId(region, res.ID))
+	d.SetId(newRegionalIDString(region, res.ID))
 
 	_, err = lbAPI.WaitForLb(&lb.WaitForLBRequest{
 		Region:  region,
@@ -121,7 +121,7 @@ func resourceScalewayLbBetaRead(d *schema.ResourceData, m interface{}) error {
 	_ = d.Set("tags", res.Tags)
 	// For now API return lowercase lb type. This should be fix in a near future on the API side
 	_ = d.Set("type", strings.ToUpper(res.Type))
-	_ = d.Set("ip_id", newRegionalId(region, res.IP[0].ID))
+	_ = d.Set("ip_id", newRegionalIDString(region, res.IP[0].ID))
 	_ = d.Set("ip_address", res.IP[0].IPAddress)
 
 	return nil

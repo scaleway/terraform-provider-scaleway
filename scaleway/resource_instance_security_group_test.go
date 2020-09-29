@@ -308,12 +308,12 @@ func testAccCheckScalewayInstanceSecurityGroupRuleIs(name string, direction inst
 			return fmt.Errorf("not found: %s", name)
 		}
 
-		instanceApi, zone, ID, err := instanceAPIWithZoneAndID(testAccProvider.Meta(), rs.Primary.ID)
+		instanceAPI, zone, ID, err := instanceAPIWithZoneAndID(testAccProvider.Meta(), rs.Primary.ID)
 		if err != nil {
 			return err
 		}
 
-		resRules, err := instanceApi.ListSecurityGroupRules(&instance.ListSecurityGroupRulesRequest{
+		resRules, err := instanceAPI.ListSecurityGroupRules(&instance.ListSecurityGroupRulesRequest{
 			SecurityGroupID: ID,
 			Zone:            zone,
 		}, scw.WithAllPages())
@@ -353,8 +353,8 @@ func testAccCheckScalewayInstanceSecurityGroupExists(n string) resource.TestChec
 		}
 
 		meta := testAccProvider.Meta().(*Meta)
-		instanceApi := instance.NewAPI(meta.scwClient)
-		_, err = instanceApi.GetSecurityGroup(&instance.GetSecurityGroupRequest{
+		instanceAPI := instance.NewAPI(meta.scwClient)
+		_, err = instanceAPI.GetSecurityGroup(&instance.GetSecurityGroupRequest{
 			SecurityGroupID: ID,
 			Zone:            zone,
 		})
@@ -369,7 +369,7 @@ func testAccCheckScalewayInstanceSecurityGroupExists(n string) resource.TestChec
 
 func testAccCheckScalewayInstanceSecurityGroupDestroy(s *terraform.State) error {
 	meta := testAccProvider.Meta().(*Meta)
-	instanceApi := instance.NewAPI(meta.scwClient)
+	instanceAPI := instance.NewAPI(meta.scwClient)
 
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "scaleway_instance_security_group" {
@@ -381,7 +381,7 @@ func testAccCheckScalewayInstanceSecurityGroupDestroy(s *terraform.State) error 
 			return err
 		}
 
-		_, err = instanceApi.GetSecurityGroup(&instance.GetSecurityGroupRequest{
+		_, err = instanceAPI.GetSecurityGroup(&instance.GetSecurityGroupRequest{
 			Zone:            zone,
 			SecurityGroupID: ID,
 		})

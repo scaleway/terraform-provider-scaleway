@@ -126,21 +126,21 @@ func parseRegionalID(regionalID string) (region scw.Region, id string, err error
 	return
 }
 
-// newZonedId constructs a unique identifier based on resource zone and id
-func newZonedId(zone scw.Zone, id string) string {
+// newZonedIDString constructs a unique identifier based on resource zone and id
+func newZonedIDString(zone scw.Zone, id string) string {
 	return fmt.Sprintf("%s/%s", zone, id)
 }
 
-// newRegionalId constructs a unique identifier based on resource region and id
-func newRegionalId(region scw.Region, id string) string {
+// newRegionalIDString constructs a unique identifier based on resource region and id
+func newRegionalIDString(region scw.Region, id string) string {
 	return fmt.Sprintf("%s/%s", region, id)
 }
 
 // deprecated and should not be used
-// newZonedIdFromRegion constructs a unique identifier based on resource region and id
+// newZonedIDStringFromRegion constructs a unique identifier based on resource region and id
 // but returns a zoned ID with the first zone in the region, i.e. adding `-1` to the region
 // TODO this function is a quick fix
-func newZonedIdFromRegion(region scw.Region, id string) string {
+func newZonedIDStringFromRegion(region scw.Region, id string) string {
 	return fmt.Sprintf("%s-1/%s", region, id)
 }
 
@@ -193,26 +193,6 @@ func extractRegion(d terraformResourceData, meta *Meta) (scw.Region, error) {
 	}
 
 	return scw.Region(""), ErrRegionNotFound
-}
-
-// ErrOrganizationIDNotFound is returned when no organization_id can be detected
-var ErrOrganizationIDNotFound = fmt.Errorf("could not detect organization_id")
-
-// organizationID will try to guess the organization_id from the following:
-//  - organization_id field of the resource data
-//  - default organization_id from config
-func organizationID(d terraformResourceData, meta *Meta) (string, error) {
-	organizationID, exist := d.GetOkExists("organization_id")
-	if exist {
-		return organizationID.(string), nil
-	}
-
-	organizationID, exist = meta.scwClient.GetDefaultOrganizationID()
-	if exist {
-		return organizationID.(string), nil
-	}
-
-	return "", ErrOrganizationIDNotFound
 }
 
 // isHTTPCodeError returns true if err is an http error with code statusCode
@@ -441,7 +421,7 @@ func expandIPNet(raw string) scw.IPNet {
 	return ipNet
 }
 
-func flattenIpNet(ipNet scw.IPNet) string {
+func flattenIPNet(ipNet scw.IPNet) string {
 	raw, err := json.Marshal(ipNet)
 	if err != nil {
 		// We panic as this should never happen.

@@ -607,7 +607,7 @@ func resourceScalewayInstanceServerUpdate(d *schema.ResourceData, m interface{})
 	// Apply changes
 	////
 
-	defer lockLocalizedId(d.Id())()
+	defer lockLocalizedID(d.Id())()
 
 	if forceReboot {
 		err = reachState(instanceAPI, zone, ID, InstanceServerStateStopped)
@@ -639,7 +639,7 @@ func resourceScalewayInstanceServerDelete(d *schema.ResourceData, m interface{})
 	if err != nil {
 		return err
 	}
-	defer lockLocalizedId(d.Id())()
+	defer lockLocalizedID(d.Id())()
 
 	// reach stopped state
 	err = reachState(instanceAPI, zone, ID, instance.ServerStateStopped)

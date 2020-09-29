@@ -62,13 +62,13 @@ func testAccCheckRdbUserBetaExists(instance string, user string) resource.TestCh
 			return err
 		}
 
-		instanceId, userName, err := resourceScalewayRdbUserBetaParseID(userResource.Primary.ID)
+		instanceID, userName, err := resourceScalewayRdbUserBetaParseID(userResource.Primary.ID)
 		if err != nil {
 			return err
 		}
 
 		users, err := rdbAPI.ListUsers(&rdb.ListUsersRequest{
-			InstanceID: instanceId,
+			InstanceID: instanceID,
 			Region:     region,
 			Name:       &userName,
 		})

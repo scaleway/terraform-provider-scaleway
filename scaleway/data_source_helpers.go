@@ -12,7 +12,7 @@ func datasourceNewZonedID(idI interface{}, fallBackZone scw.Zone) string {
 		zone = fallBackZone
 	}
 
-	return newZonedId(zone, id)
+	return newZonedIDString(zone, id)
 }
 
 func datasourceNewRegionalizedID(idI interface{}, fallBackRegion scw.Region) string {
@@ -22,7 +22,7 @@ func datasourceNewRegionalizedID(idI interface{}, fallBackRegion scw.Region) str
 		region = fallBackRegion
 	}
 
-	return newRegionalId(region, id)
+	return newRegionalIDString(region, id)
 }
 
 ////

@@ -128,7 +128,7 @@ func resourceScalewayLbCertificateBetaCreate(d *schema.ResourceData, m interface
 		return err
 	}
 
-	d.SetId(newRegionalId(region, res.ID))
+	d.SetId(newRegionalIDString(region, res.ID))
 
 	return resourceScalewayLbCertificateBetaRead(d, m)
 }

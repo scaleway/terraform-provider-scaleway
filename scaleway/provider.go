@@ -193,7 +193,7 @@ func Provider() func() *schema.Provider {
 				"scaleway_account_ssh_key":               resourceScalewayAccountSSKKey(),
 				"scaleway_baremetal_server":              resourceScalewayBaremetalServer(),
 				"scaleway_instance_ip":                   resourceScalewayInstanceIP(),
-				"scaleway_instance_ip_reverse_dns":       resourceScalewayInstanceIPReverseDns(),
+				"scaleway_instance_ip_reverse_dns":       resourceScalewayInstanceIPReverseDNS(),
 				"scaleway_instance_volume":               resourceScalewayInstanceVolume(),
 				"scaleway_instance_security_group":       resourceScalewayInstanceSecurityGroup(),
 				"scaleway_instance_security_group_rules": resourceScalewayInstanceSecurityGroupRules(),

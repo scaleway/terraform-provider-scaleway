@@ -33,14 +33,14 @@ func dataSourceScalewayInstanceSecurityGroup() *schema.Resource {
 
 func dataSourceScalewayInstanceSecurityGroupRead(d *schema.ResourceData, m interface{}) error {
 	meta := m.(*Meta)
-	instanceApi, zone, err := instanceAPIWithZone(d, meta)
+	instanceAPI, zone, err := instanceAPIWithZone(d, meta)
 	if err != nil {
 		return err
 	}
 
 	securityGroupID, ok := d.GetOk("security_group_id")
 	if !ok {
-		res, err := instanceApi.ListSecurityGroups(&instance.ListSecurityGroupsRequest{
+		res, err := instanceAPI.ListSecurityGroups(&instance.ListSecurityGroupsRequest{
 			Zone: zone,
 			Name: String(d.Get("name").(string)),
 		}, scw.WithAllPages())

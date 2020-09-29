@@ -22,19 +22,19 @@ func lbAPI(m interface{}) *lb.API {
 // lbAPIWithRegion returns a new lb API and the region for a Create request
 func lbAPIWithRegion(d *schema.ResourceData, m interface{}) (*lb.API, scw.Region, error) {
 	meta := m.(*Meta)
-	lbApi := lb.NewAPI(meta.scwClient)
+	lbAPI := lb.NewAPI(meta.scwClient)
 
 	region, err := extractRegion(d, meta)
-	return lbApi, region, err
+	return lbAPI, region, err
 }
 
 // lbAPIWithRegionAndID returns an lb API with region and ID extracted from the state
 func lbAPIWithRegionAndID(m interface{}, id string) (*lb.API, scw.Region, string, error) {
 	meta := m.(*Meta)
-	lbApi := lb.NewAPI(meta.scwClient)
+	lbAPI := lb.NewAPI(meta.scwClient)
 
 	region, ID, err := parseRegionalID(id)
-	return lbApi, region, ID, err
+	return lbAPI, region, ID, err
 }
 
 func flattenLbBackendMarkdownAction(action lb.OnMarkedDownAction) interface{} {
@@ -44,22 +44,22 @@ func flattenLbBackendMarkdownAction(action lb.OnMarkedDownAction) interface{} {
 	return action.String()
 }
 
-func flattenLbAcl(acl *lb.ACL) interface{} {
+func flattenLbACL(acl *lb.ACL) interface{} {
 	res := map[string]interface{}{
 		"name":   acl.Name,
-		"match":  flattenLbAclMatch(acl.Match),
-		"action": flattenLbAclAction(acl.Action),
+		"match":  flattenLbACLMatch(acl.Match),
+		"action": flattenLbACLAction(acl.Action),
 	}
 	return res
 }
 
-// expandLbAcl transforms a state acl to an api one.
-func expandLbAcl(i interface{}) *lb.ACL {
+// expandLbACL transforms a state acl to an api one.
+func expandLbACL(i interface{}) *lb.ACL {
 	rawRule := i.(map[string]interface{})
 	acl := &lb.ACL{
 		Name:   rawRule["name"].(string),
-		Match:  expandLbAclMatch(rawRule["match"]),
-		Action: expandLbAclAction(rawRule["action"]),
+		Match:  expandLbACLMatch(rawRule["match"]),
+		Action: expandLbACLAction(rawRule["action"]),
 	}
 
 	//remove http filter values if we do not pass any http filter
@@ -70,12 +70,12 @@ func expandLbAcl(i interface{}) *lb.ACL {
 
 	return acl
 }
-func flattenLbAclAction(action *lb.ACLAction) interface{} {
+func flattenLbACLAction(action *lb.ACLAction) interface{} {
 	return map[string]interface{}{
 		"type": action.Type,
 	}
 }
-func expandLbAclAction(raw interface{}) *lb.ACLAction {
+func expandLbACLAction(raw interface{}) *lb.ACLAction {
 	if raw == nil || len(raw.([]interface{})) != 1 {
 		return nil
 	}
@@ -84,7 +84,7 @@ func expandLbAclAction(raw interface{}) *lb.ACLAction {
 		Type: lb.ACLActionType(rawMap["type"].(string)),
 	}
 }
-func flattenLbAclMatch(match *lb.ACLMatch) interface{} {
+func flattenLbACLMatch(match *lb.ACLMatch) interface{} {
 	return map[string]interface{}{
 		"ip_subnet":         flattenSliceStringPtr(match.IPSubnet),
 		"http_filter":       match.HTTPFilter.String(),
@@ -92,7 +92,7 @@ func flattenLbAclMatch(match *lb.ACLMatch) interface{} {
 		"invert":            match.Invert,
 	}
 }
-func expandLbAclMatch(raw interface{}) *lb.ACLMatch {
+func expandLbACLMatch(raw interface{}) *lb.ACLMatch {
 	if raw == nil || len(raw.([]interface{})) != 1 {
 		return nil
 	}

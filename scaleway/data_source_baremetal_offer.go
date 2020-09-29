@@ -131,13 +131,13 @@ func dataSourceScalewayBaremetalOffer() *schema.Resource {
 
 func dataSourceScalewayBaremetalOfferRead(d *schema.ResourceData, m interface{}) error {
 	meta := m.(*Meta)
-	baremetalApi, fallBackZone, err := baremetalAPIWithZone(d, meta)
+	baremetalAPI, fallBackZone, err := baremetalAPIWithZone(d, meta)
 	if err != nil {
 		return err
 	}
 
 	zone, offerID, _ := parseZonedID(datasourceNewZonedID(d.Get("offer_id"), fallBackZone))
-	res, err := baremetalApi.ListOffers(&baremetal.ListOffersRequest{
+	res, err := baremetalAPI.ListOffers(&baremetal.ListOffersRequest{
 		Zone: zone,
 	}, scw.WithAllPages())
 	if err != nil {
@@ -148,7 +148,7 @@ func dataSourceScalewayBaremetalOfferRead(d *schema.ResourceData, m interface{})
 	for _, offer := range res.Offers {
 		if offer.Name == d.Get("name") || offer.ID == offerID {
 			if !offer.Enable && !d.Get("include_disabled").(bool) {
-				return fmt.Errorf("offer %s (%s) found in zone %s but is disabled. Add allow_disabled=true in your terraform config to use it.", offer.Name, offer.ID, zone)
+				return fmt.Errorf("offer %s (%s) found in zone %s but is disabled. Add allow_disabled=true in your terraform config to use it", offer.Name, offer.ID, zone)
 			}
 			matches = append(matches, offer)
 		}

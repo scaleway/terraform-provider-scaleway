@@ -65,8 +65,8 @@ func testAccCheckScalewayInstanceImageExists(n string) resource.TestCheckFunc {
 		}
 
 		meta := testAccProvider.Meta().(*Meta)
-		instanceApi := instance.NewAPI(meta.scwClient)
-		_, err = instanceApi.GetImage(&instance.GetImageRequest{
+		instanceAPI := instance.NewAPI(meta.scwClient)
+		_, err = instanceAPI.GetImage(&instance.GetImageRequest{
 			ImageID: ID,
 			Zone:    zone,
 		})

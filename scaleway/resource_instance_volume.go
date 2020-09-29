@@ -102,7 +102,7 @@ func resourceScalewayInstanceVolumeCreate(d *schema.ResourceData, m interface{})
 		return fmt.Errorf("couldn't create volume: %s", err)
 	}
 
-	d.SetId(newZonedId(zone, res.Volume.ID))
+	d.SetId(newZonedIDString(zone, res.Volume.ID))
 
 	return resourceScalewayInstanceVolumeRead(d, m)
 }

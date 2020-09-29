@@ -17,38 +17,38 @@ import (
 func TestParseLocalizedID(t *testing.T) {
 	testCases := []struct {
 		name       string
-		localityId string
+		localityID string
 		id         string
 		locality   string
 		err        string
 	}{
 		{
 			name:       "simple",
-			localityId: "fr-par-1/my-id",
+			localityID: "fr-par-1/my-id",
 			id:         "my-id",
 			locality:   "fr-par-1",
 		},
 		{
 			name:       "id with a region",
-			localityId: "fr-par/my-id",
+			localityID: "fr-par/my-id",
 			id:         "my-id",
 			locality:   "fr-par",
 		},
 		{
 			name:       "empty",
-			localityId: "",
+			localityID: "",
 			err:        "cant parse localized id: ",
 		},
 		{
 			name:       "without locality",
-			localityId: "my-id",
+			localityID: "my-id",
 			err:        "cant parse localized id: my-id",
 		},
 	}
 
 	for _, testCase := range testCases {
 		t.Run(testCase.name, func(t *testing.T) {
-			locality, id, err := parseLocalizedID(testCase.localityId)
+			locality, id, err := parseLocalizedID(testCase.localityID)
 			if testCase.err != "" {
 				require.EqualError(t, err, testCase.err)
 			} else {
@@ -63,32 +63,32 @@ func TestParseLocalizedID(t *testing.T) {
 func TestParseZonedID(t *testing.T) {
 	testCases := []struct {
 		name       string
-		localityId string
+		localityID string
 		id         string
 		zone       scw.Zone
 		err        string
 	}{
 		{
 			name:       "simple",
-			localityId: "fr-par-1/my-id",
+			localityID: "fr-par-1/my-id",
 			id:         "my-id",
 			zone:       scw.ZoneFrPar1,
 		},
 		{
 			name:       "empty",
-			localityId: "",
+			localityID: "",
 			err:        "cant parse localized id: ",
 		},
 		{
 			name:       "without locality",
-			localityId: "my-id",
+			localityID: "my-id",
 			err:        "cant parse localized id: my-id",
 		},
 	}
 
 	for _, testCase := range testCases {
 		t.Run(testCase.name, func(t *testing.T) {
-			zone, id, err := parseZonedID(testCase.localityId)
+			zone, id, err := parseZonedID(testCase.localityID)
 			if testCase.err != "" {
 				require.EqualError(t, err, testCase.err)
 			} else {
@@ -103,32 +103,32 @@ func TestParseZonedID(t *testing.T) {
 func TestParseRegionID(t *testing.T) {
 	testCases := []struct {
 		name       string
-		localityId string
+		localityID string
 		id         string
 		region     scw.Region
 		err        string
 	}{
 		{
 			name:       "simple",
-			localityId: "fr-par/my-id",
+			localityID: "fr-par/my-id",
 			id:         "my-id",
 			region:     scw.RegionFrPar,
 		},
 		{
 			name:       "empty",
-			localityId: "",
+			localityID: "",
 			err:        "cant parse localized id: ",
 		},
 		{
 			name:       "without locality",
-			localityId: "my-id",
+			localityID: "my-id",
 			err:        "cant parse localized id: my-id",
 		},
 	}
 
 	for _, testCase := range testCases {
 		t.Run(testCase.name, func(t *testing.T) {
-			region, id, err := parseRegionalID(testCase.localityId)
+			region, id, err := parseRegionalID(testCase.localityID)
 			if testCase.err != "" {
 				require.EqualError(t, err, testCase.err)
 			} else {
@@ -141,11 +141,11 @@ func TestParseRegionID(t *testing.T) {
 }
 
 func TestNewZonedId(t *testing.T) {
-	assert.Equal(t, "fr-par-1/my-id", newZonedId(scw.ZoneFrPar1, "my-id"))
+	assert.Equal(t, "fr-par-1/my-id", newZonedIDString(scw.ZoneFrPar1, "my-id"))
 }
 
 func TestNewRegionalId(t *testing.T) {
-	assert.Equal(t, "fr-par/my-id", newRegionalId(scw.RegionFrPar, "my-id"))
+	assert.Equal(t, "fr-par/my-id", newRegionalIDString(scw.RegionFrPar, "my-id"))
 }
 
 func TestIsHTTPCodeError(t *testing.T) {

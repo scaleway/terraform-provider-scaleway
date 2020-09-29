@@ -82,7 +82,7 @@ func resourceScalewayObjectBucketCreate(d *schema.ResourceData, m interface{}) e
 		}
 	}
 
-	d.SetId(newRegionalId(region, bucketName))
+	d.SetId(newRegionalIDString(region, bucketName))
 
 	return resourceScalewayObjectBucketRead(d, m)
 }

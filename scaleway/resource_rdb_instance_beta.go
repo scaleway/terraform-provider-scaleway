@@ -142,7 +142,7 @@ func resourceScalewayRdbInstanceBetaCreate(d *schema.ResourceData, m interface{}
 		return err
 	}
 
-	d.SetId(newRegionalId(region, res.ID))
+	d.SetId(newRegionalIDString(region, res.ID))
 
 	_, err = rdbAPI.WaitForInstance(&rdb.WaitForInstanceRequest{
 		Region:     region,

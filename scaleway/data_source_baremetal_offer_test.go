@@ -81,8 +81,8 @@ func testAccCheckScalewayBaremetalOfferExists(n string) resource.TestCheckFunc {
 		}
 
 		meta := testAccProvider.Meta().(*Meta)
-		baremetalApi := baremetal.NewAPI(meta.scwClient)
-		resp, err := baremetalApi.ListOffers(&baremetal.ListOffersRequest{
+		baremetalAPI := baremetal.NewAPI(meta.scwClient)
+		resp, err := baremetalAPI.ListOffers(&baremetal.ListOffersRequest{
 			Zone: zone,
 		}, scw.WithAllPages())
 

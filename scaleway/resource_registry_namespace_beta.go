@@ -61,7 +61,7 @@ func resourceScalewayRegistryNamespaceBetaCreate(d *schema.ResourceData, m inter
 		return err
 	}
 
-	d.SetId(newRegionalId(region, ns.ID))
+	d.SetId(newRegionalIDString(region, ns.ID))
 
 	return resourceScalewayRegistryNamespaceBetaRead(d, m)
 }

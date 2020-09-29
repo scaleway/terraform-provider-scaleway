@@ -31,14 +31,14 @@ func dataSourceScalewayInstanceVolume() *schema.Resource {
 
 func dataSourceScalewayInstanceVolumeRead(d *schema.ResourceData, m interface{}) error {
 	meta := m.(*Meta)
-	instanceApi, zone, err := instanceAPIWithZone(d, meta)
+	instanceAPI, zone, err := instanceAPIWithZone(d, meta)
 	if err != nil {
 		return err
 	}
 
 	volumeID, ok := d.GetOk("volume_id")
 	if !ok { // Get volumes by zone and name.
-		res, err := instanceApi.ListVolumes(&instance.ListVolumesRequest{
+		res, err := instanceAPI.ListVolumes(&instance.ListVolumesRequest{
 			Zone: zone,
 			Name: String(d.Get("name").(string)),
 		})

@@ -176,10 +176,10 @@ func resourceScalewayRdbUserBetaID(region scw.Region, instanceID string, userNam
 
 // Extract instance ID and username from the resource identifier.
 // The resource identifier format is "Region/InstanceId/UserName"
-func resourceScalewayRdbUserBetaParseID(resourceId string) (instanceID string, userName string, err error) {
-	idParts := strings.Split(resourceId, "/")
+func resourceScalewayRdbUserBetaParseID(resourceID string) (instanceID string, userName string, err error) {
+	idParts := strings.Split(resourceID, "/")
 	if len(idParts) != 3 {
-		return "", "", fmt.Errorf("can't parse user resource id: %s", resourceId)
+		return "", "", fmt.Errorf("can't parse user resource id: %s", resourceID)
 	}
 	return idParts[1], idParts[2], nil
 }
