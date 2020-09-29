@@ -143,6 +143,7 @@ to find either the right `label` or the right local image `ID` for a given `type
 
 - `placement_group_id` - (Optional) The [placement group](https://developers.scaleway.com/en/products/instance/api/#placement-groups-d8f653) the server is attached to.
 
+
 ~> **Important:** Updates to `placement_group_id` may trigger a stop/start of the server.
 
 - `root_volume` - (Optional) Root [volume](https://developers.scaleway.com/en/products/instance/api/#volumes-7e8a39) attached to the server on creation.
@@ -177,7 +178,7 @@ attached to the server. Updates to this field will trigger a stop/start of the s
 
 - `zone` - (Defaults to [provider](../index.html#zone) `zone`) The [zone](../guides/regions_and_zones.html#zones) in which the server should be created.
 
-- `organization_id` - (Defaults to [provider](../index.html#organization_id) `organization_id`) The ID of the organization the server is associated with.
+- `organization_id` - (Defaults to [provider](../index.html#organization_id) `organization_id`) The ID of the organization the server is associated with. If you intend to deploy your instance in another project than the default one use your `project_id` instead of the organization id.
 
 
 ## Attributes Reference
