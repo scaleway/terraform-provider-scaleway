@@ -3,14 +3,11 @@ package scaleway
 import (
 	"fmt"
 	"os"
-	"sync"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/mitchellh/go-homedir"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 )
-
-var mu = sync.Mutex{}
 
 // Provider returns a terraform.ResourceProvider.
 func Provider() func() *schema.Provider {
