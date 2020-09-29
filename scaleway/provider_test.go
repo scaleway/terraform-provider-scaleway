@@ -26,7 +26,6 @@ func init() {
 		_ = data.Set("zone", "fr-par-1")
 		return old(data)
 	}
-
 }
 
 func TestProvider(t *testing.T) {
@@ -37,7 +36,6 @@ func TestProvider(t *testing.T) {
 }
 
 func testAccPreCheck(t *testing.T) {
-
 	// Handle new config system first
 	_, _ = scw.MigrateLegacyConfig()
 	config, err := scw.LoadConfig()

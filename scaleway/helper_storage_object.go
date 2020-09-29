@@ -54,5 +54,4 @@ func s3ClientWithRegionAndName(m interface{}, name string) (*s3.S3, scw.Region, 
 	}
 
 	return meta.s3Client, region, name, err
-
 }

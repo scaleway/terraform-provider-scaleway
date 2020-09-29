@@ -43,7 +43,6 @@ func TestAccScalewayRdbUserBeta(t *testing.T) {
 			},
 		},
 	})
-
 }
 
 func testAccCheckRdbUserBetaExists(instance string, user string) resource.TestCheckFunc {

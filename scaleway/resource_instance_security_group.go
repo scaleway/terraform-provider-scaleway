@@ -152,7 +152,6 @@ func resourceScalewayInstanceSecurityGroupRead(d *schema.ResourceData, m interfa
 }
 
 func getSecurityGroupRules(instanceApi *instance.API, zone scw.Zone, securityGroupID string, d *schema.ResourceData) ([]interface{}, []interface{}, error) {
-
 	resRules, err := instanceApi.ListSecurityGroupRules(&instance.ListSecurityGroupRulesRequest{
 		Zone:            zone,
 		SecurityGroupID: expandID(securityGroupID),
@@ -287,7 +286,6 @@ func updateSecurityGroupeRules(d *schema.ResourceData, zone scw.Zone, securityGr
 
 	// Loop through all directions
 	for direction := range stateRules {
-
 		// Loop for all state rules in this direction
 		for index, rawStateRule := range stateRules[direction] {
 			apiRule := (*instance.SecurityGroupRule)(nil)

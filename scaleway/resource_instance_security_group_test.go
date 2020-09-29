@@ -18,7 +18,6 @@ func init() {
 	})
 }
 func TestAccScalewayInstanceSecurityGroup(t *testing.T) {
-
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
@@ -115,7 +114,6 @@ func TestAccScalewayInstanceSecurityGroup(t *testing.T) {
 }
 
 func TestAccScalewayInstanceSecurityGroupICMP(t *testing.T) {
-
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
@@ -160,7 +158,6 @@ func TestAccScalewayInstanceSecurityGroupICMP(t *testing.T) {
 }
 
 func TestAccScalewayInstanceSecurityGroupANY(t *testing.T) {
-
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
@@ -185,7 +182,6 @@ func TestAccScalewayInstanceSecurityGroupANY(t *testing.T) {
 }
 
 func TestAccScalewayInstanceSecurityGroupNoPort(t *testing.T) {
-
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
@@ -209,7 +205,6 @@ func TestAccScalewayInstanceSecurityGroupNoPort(t *testing.T) {
 }
 
 func TestAccScalewayInstanceSecurityGroupRemovePort(t *testing.T) {
-
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
@@ -246,7 +241,6 @@ func TestAccScalewayInstanceSecurityGroupRemovePort(t *testing.T) {
 }
 
 func TestAccScalewayInstanceSecurityGroupPortRange(t *testing.T) {
-
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,

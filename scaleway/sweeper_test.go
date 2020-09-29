@@ -115,7 +115,6 @@ func buildTestConfigForTests(region string) (*Meta, error) {
 
 // sharedS3ClientForRegion returns a common S3 client needed for the sweeper
 func sharedS3ClientForRegion(region string) (*s3.S3, error) {
-
 	meta, err := buildTestConfigForTests(region)
 	if err != nil {
 		return nil, err
@@ -128,5 +127,4 @@ func sharedS3ClientForRegion(region string) (*s3.S3, error) {
 	}
 
 	return meta.s3Client, nil
-
 }

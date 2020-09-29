@@ -15,7 +15,6 @@ import (
 )
 
 func TestParseLocalizedID(t *testing.T) {
-
 	testCases := []struct {
 		name       string
 		localityId string
@@ -59,11 +58,9 @@ func TestParseLocalizedID(t *testing.T) {
 			}
 		})
 	}
-
 }
 
 func TestParseZonedID(t *testing.T) {
-
 	testCases := []struct {
 		name       string
 		localityId string
@@ -101,11 +98,9 @@ func TestParseZonedID(t *testing.T) {
 			}
 		})
 	}
-
 }
 
 func TestParseRegionID(t *testing.T) {
-
 	testCases := []struct {
 		name       string
 		localityId string
@@ -143,7 +138,6 @@ func TestParseRegionID(t *testing.T) {
 			}
 		})
 	}
-
 }
 
 func TestNewZonedId(t *testing.T) {

@@ -90,7 +90,6 @@ func serverStateFlatten(fromState instance.ServerState) (string, error) {
 
 // serverStateExpand converts a terraform state  to an API state or return an error.
 func serverStateExpand(rawState string) (instance.ServerState, error) {
-
 	apiState, exist := map[string]instance.ServerState{
 		InstanceServerStateStopped: instance.ServerStateStopped,
 		InstanceServerStateStandby: instance.ServerStateStoppedInPlace,
@@ -149,7 +148,6 @@ func reachState(instanceAPI *instance.API, zone scw.Zone, serverID string, toSta
 // detachVolume will make sure a volume is not attached to any server. If volume is attached to a server, it will be stopped
 // to allow volume detachment.
 func detachVolume(instanceAPI *instance.API, zone scw.Zone, volumeId string) error {
-
 	res, err := instanceAPI.GetVolume(&instance.GetVolumeRequest{
 		Zone:     zone,
 		VolumeID: volumeId,

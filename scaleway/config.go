@@ -57,7 +57,6 @@ func (m *Meta) bootstrap() error {
 
 // bootstrapScwClient initializes a new scw.Client from the configuration.
 func (m *Meta) bootstrapScwClient() error {
-
 	// Init SDK logger
 	scwLogger.SetLogger(l)
 
@@ -163,7 +162,6 @@ func (m *Meta) bootstrapS3Client() error {
 // s3Endpoint returns the correct S3 endpoint for object storage based on the current region
 func (m *Meta) s3Endpoint(region scw.Region) string {
 	return "https://s3." + string(region) + ".scw.cloud"
-
 }
 
 // deprecatedScalewayConfig is the structure of the deprecated Scaleway config file.

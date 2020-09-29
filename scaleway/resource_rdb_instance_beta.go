@@ -271,7 +271,6 @@ func resourceScalewayRdbInstanceBetaUpdate(d *schema.ResourceData, m interface{}
 
 		// Wait for the instance to settle after upgrading
 		time.Sleep(30 * time.Second)
-
 	}
 
 	if d.HasChange("password") {

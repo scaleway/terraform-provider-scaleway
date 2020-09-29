@@ -68,10 +68,8 @@ func datasourceSchemaFromResourceSchema(rs map[string]*schema.Schema) map[string
 		default:
 			// Elem of all other types are copied as-is
 			dv.Elem = v.Elem
-
 		}
 		ds[k] = dv
-
 	}
 	return ds
 }

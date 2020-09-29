@@ -97,7 +97,6 @@ func parseLocalizedID(localizedID string) (locality string, ID string, err error
 
 // parseZonedID parses a zonedID and extracts the resource zone and id.
 func parseZonedID(zonedID string) (zone scw.Zone, id string, err error) {
-
 	locality, id, err := parseLocalizedID(zonedID)
 	if err != nil {
 		return
@@ -163,7 +162,6 @@ var ErrZoneNotFound = fmt.Errorf("could not detect zone. Scaleway uses regions a
 //  - zone field of the resource data
 //  - default zone from config
 func extractZone(d terraformResourceData, meta *Meta) (scw.Zone, error) {
-
 	rawZone, exist := d.GetOkExists("zone")
 	if exist {
 		return scw.ParseZone(rawZone.(string))
@@ -184,7 +182,6 @@ var ErrRegionNotFound = fmt.Errorf("could not detect region")
 //  - region field of the resource data
 //  - default region from config
 func extractRegion(d terraformResourceData, meta *Meta) (scw.Region, error) {
-
 	rawRegion, exist := d.GetOkExists("region")
 	if exist {
 		return scw.ParseRegion(rawRegion.(string))
@@ -205,7 +202,6 @@ var ErrOrganizationIDNotFound = fmt.Errorf("could not detect organization_id")
 //  - organization_id field of the resource data
 //  - default organization_id from config
 func organizationID(d terraformResourceData, meta *Meta) (string, error) {
-
 	organizationID, exist := d.GetOkExists("organization_id")
 	if exist {
 		return organizationID.(string), nil

@@ -8,7 +8,6 @@ import (
 )
 
 func dataSourceScalewayRegistryNamespaceBeta() *schema.Resource {
-
 	// Generate datasource schema from resource
 	dsSchema := datasourceSchemaFromResourceSchema(resourceScalewayRegistryNamespaceBeta().Schema)
 

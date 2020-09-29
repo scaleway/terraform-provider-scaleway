@@ -811,7 +811,6 @@ resource "scaleway_instance_volume" "base_block" {
   type       = "b_ssd"
 }`)
 		additionalVolumeIDs = append(additionalVolumeIDs, `"${scaleway_instance_volume.base_block.id}"`)
-
 	}
 	return fmt.Sprintf(`
 %s

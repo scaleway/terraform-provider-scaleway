@@ -497,7 +497,6 @@ func resourceScalewayK8SClusterBetaCreate(d *schema.ResourceData, m interface{})
 				return err
 			}
 		}
-
 	} else {
 		err = waitK8SCluster(k8sAPI, region, res.ID, k8s.ClusterStatusPoolRequired)
 		if err != nil {
