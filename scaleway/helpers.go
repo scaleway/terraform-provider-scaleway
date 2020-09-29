@@ -341,7 +341,7 @@ func expandDuration(data interface{}) *time.Duration {
 	}
 	d, err := time.ParseDuration(data.(string))
 	if err != nil {
-		// We panic as this should never happend. Data from state should be validate using a validate func
+		// We panic as this should never happened. Data from state should be validate using a validate func
 		panic(err)
 	}
 	return &d
