@@ -163,8 +163,7 @@ func resourceScalewayObjectBucketUpdate(d *schema.ResourceData, m interface{}) e
 			},
 		})
 		if err != nil {
-			l.Errorf("Couldn't update bucket tags: %s", err)
-			return fmt.Errorf("couldn't update bucket tags: %s", err)
+			return err
 		}
 	}
 
