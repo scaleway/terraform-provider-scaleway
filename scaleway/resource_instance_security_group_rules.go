@@ -49,32 +49,32 @@ func resourceScalewayInstanceSecurityGroupRulesCreate(d *schema.ResourceData, m 
 func resourceScalewayInstanceSecurityGroupRulesRead(d *schema.ResourceData, m interface{}) error {
 	securityGroupZonedID := d.Id()
 
-	instanceApi, zone, securityGroupID, err := instanceAPIWithZoneAndID(m, securityGroupZonedID)
+	instanceAPI, zone, securityGroupID, err := instanceAPIWithZoneAndID(m, securityGroupZonedID)
 	if err != nil {
 		return err
 	}
 
-	d.Set("security_group_id", securityGroupZonedID)
+	_ = d.Set("security_group_id", securityGroupZonedID)
 
-	inboundRules, outboundRules, err := getSecurityGroupRules(instanceApi, zone, securityGroupID, d)
+	inboundRules, outboundRules, err := getSecurityGroupRules(instanceAPI, zone, securityGroupID, d)
 	if err != nil {
 		return err
 	}
 
-	d.Set("inbound_rule", inboundRules)
-	d.Set("outbound_rule", outboundRules)
+	_ = d.Set("inbound_rule", inboundRules)
+	_ = d.Set("outbound_rule", outboundRules)
 
 	return nil
 }
 
 func resourceScalewayInstanceSecurityGroupRulesUpdate(d *schema.ResourceData, m interface{}) error {
 	securityGroupZonedID := d.Id()
-	instanceApi, zone, securityGroupID, err := instanceAPIWithZoneAndID(m, securityGroupZonedID)
+	instanceAPI, zone, securityGroupID, err := instanceAPIWithZoneAndID(m, securityGroupZonedID)
 	if err != nil {
 		return err
 	}
 
-	err = updateSecurityGroupeRules(d, zone, securityGroupID, instanceApi)
+	err = updateSecurityGroupeRules(d, zone, securityGroupID, instanceAPI)
 	if err != nil {
 		return err
 	}
@@ -84,15 +84,15 @@ func resourceScalewayInstanceSecurityGroupRulesUpdate(d *schema.ResourceData, m 
 
 func resourceScalewayInstanceSecurityGroupRulesDelete(d *schema.ResourceData, m interface{}) error {
 	securityGroupZonedID := d.Id()
-	instanceApi, zone, securityGroupID, err := instanceAPIWithZoneAndID(m, securityGroupZonedID)
+	instanceAPI, zone, securityGroupID, err := instanceAPIWithZoneAndID(m, securityGroupZonedID)
 	if err != nil {
 		return err
 	}
 
-	d.Set("inbound_rule", nil)
-	d.Set("outbound_rule", nil)
+	_ = d.Set("inbound_rule", nil)
+	_ = d.Set("outbound_rule", nil)
 
-	err = updateSecurityGroupeRules(d, zone, securityGroupID, instanceApi)
+	err = updateSecurityGroupeRules(d, zone, securityGroupID, instanceAPI)
 	if err != nil {
 		return err
 	}

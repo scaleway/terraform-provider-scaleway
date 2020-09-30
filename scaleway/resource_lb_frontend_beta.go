@@ -167,9 +167,9 @@ func resourceScalewayLbFrontendBetaCreate(d *schema.ResourceData, m interface{})
 		return err
 	}
 
-	d.SetId(newRegionalId(region, res.ID))
+	d.SetId(newRegionalIDString(region, res.ID))
 
-	err = resourceScalewayLbFrontendBetaUpdateAcl(d, lbAPI, region, res.ID)
+	err = resourceScalewayLbFrontendBetaUpdateACL(d, lbAPI, region, res.ID)
 	if err != nil {
 		return err
 	}
@@ -196,41 +196,41 @@ func resourceScalewayLbFrontendBetaRead(d *schema.ResourceData, m interface{}) e
 		return err
 	}
 
-	_ = d.Set("lb_id", newRegionalId(region, res.LB.ID))
-	_ = d.Set("backend_id", newRegionalId(region, res.Backend.ID))
+	_ = d.Set("lb_id", newRegionalIDString(region, res.LB.ID))
+	_ = d.Set("backend_id", newRegionalIDString(region, res.Backend.ID))
 	_ = d.Set("name", res.Name)
 	_ = d.Set("inbound_port", int(res.InboundPort))
 	_ = d.Set("timeout_client", flattenDuration(res.TimeoutClient))
 
 	if res.Certificate != nil {
-		_ = d.Set("certificate_id", newRegionalId(region, res.Certificate.ID))
+		_ = d.Set("certificate_id", newRegionalIDString(region, res.Certificate.ID))
 	} else {
 		_ = d.Set("certificate_id", "")
 	}
 
 	//read related acls.
-	resAcl, err := lbAPI.ListACLs(&lb.ListACLsRequest{
+	resACL, err := lbAPI.ListACLs(&lb.ListACLsRequest{
 		Region:     region,
 		FrontendID: ID,
 	}, scw.WithAllPages())
 	if err != nil {
 		return err
 	}
-	sort.Slice(resAcl.ACLs, func(i, j int) bool {
-		return resAcl.ACLs[i].Index < resAcl.ACLs[j].Index
+	sort.Slice(resACL.ACLs, func(i, j int) bool {
+		return resACL.ACLs[i].Index < resACL.ACLs[j].Index
 	})
-	stateAcls := make([]interface{}, 0, len(resAcl.ACLs))
-	for _, apiAcl := range resAcl.ACLs {
-		stateAcls = append(stateAcls, flattenLbAcl(apiAcl))
+	stateAcls := make([]interface{}, 0, len(resACL.ACLs))
+	for _, apiACL := range resACL.ACLs {
+		stateAcls = append(stateAcls, flattenLbACL(apiACL))
 	}
 	_ = d.Set("acl", stateAcls)
 
 	return nil
 }
 
-func resourceScalewayLbFrontendBetaUpdateAcl(d *schema.ResourceData, lbAPI *lb.API, region scw.Region, frontendID string) error {
+func resourceScalewayLbFrontendBetaUpdateACL(d *schema.ResourceData, lbAPI *lb.API, region scw.Region, frontendID string) error {
 	//Fetch existing acl from the api. and convert it to a hashmap with index as key
-	resAcl, err := lbAPI.ListACLs(&lb.ListACLsRequest{
+	resACL, err := lbAPI.ListACLs(&lb.ListACLsRequest{
 		Region:     region,
 		FrontendID: frontendID,
 	}, scw.WithAllPages())
@@ -238,37 +238,37 @@ func resourceScalewayLbFrontendBetaUpdateAcl(d *schema.ResourceData, lbAPI *lb.A
 		return err
 	}
 	apiAcls := make(map[int32]*lb.ACL)
-	for _, acl := range resAcl.ACLs {
+	for _, acl := range resACL.ACLs {
 		apiAcls[acl.Index] = acl
 	}
 
 	//convert state acl and sanitize them a bit
-	newAcl := make([]*lb.ACL, 0)
-	for _, rawAcl := range d.Get("acl").([]interface{}) {
-		newAcl = append(newAcl, expandLbAcl(rawAcl))
+	newACL := make([]*lb.ACL, 0)
+	for _, rawACL := range d.Get("acl").([]interface{}) {
+		newACL = append(newACL, expandLbACL(rawACL))
 	}
 
 	//loop
-	for index, stateAcl := range newAcl {
+	for index, stateACL := range newACL {
 		key := int32(index) + 1
-		if apiAcl, found := apiAcls[key]; found {
+		if apiACL, found := apiAcls[key]; found {
 			//there is an old acl with the same key. Remove it from array to mark that we've dealt with it
 			delete(apiAcls, key)
 
 			//if the state acl doesn't specify a name, set it to the same as the existing rule
-			if stateAcl.Name == "" {
-				stateAcl.Name = apiAcl.Name
+			if stateACL.Name == "" {
+				stateACL.Name = apiACL.Name
 			}
 			//Verify if their values are the same and ignore if that's the case, update otherwise
-			if aclEquals(stateAcl, apiAcl) {
+			if aclEquals(stateACL, apiACL) {
 				continue
 			}
 			_, err = lbAPI.UpdateACL(&lb.UpdateACLRequest{
 				Region: region,
-				ACLID:  apiAcl.ID,
-				Name:   stateAcl.Name,
-				Action: stateAcl.Action,
-				Match:  stateAcl.Match,
+				ACLID:  apiACL.ID,
+				Name:   stateACL.Name,
+				Action: stateACL.Action,
+				Match:  stateACL.Match,
 				Index:  key,
 			})
 			if err != nil {
@@ -280,9 +280,9 @@ func resourceScalewayLbFrontendBetaUpdateAcl(d *schema.ResourceData, lbAPI *lb.A
 		_, err = lbAPI.CreateACL(&lb.CreateACLRequest{
 			Region:     region,
 			FrontendID: frontendID,
-			Name:       expandOrGenerateString(stateAcl.Name, "lb-acl"),
-			Action:     stateAcl.Action,
-			Match:      stateAcl.Match,
+			Name:       expandOrGenerateString(stateACL.Name, "lb-acl"),
+			Action:     stateACL.Action,
+			Match:      stateACL.Match,
 			Index:      key,
 		})
 		if err != nil {
@@ -324,7 +324,7 @@ func resourceScalewayLbFrontendBetaUpdate(d *schema.ResourceData, m interface{})
 	}
 
 	//update acl
-	err = resourceScalewayLbFrontendBetaUpdateAcl(d, lbAPI, region, ID)
+	err = resourceScalewayLbFrontendBetaUpdateACL(d, lbAPI, region, ID)
 	if err != nil {
 		return err
 	}

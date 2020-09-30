@@ -3,14 +3,11 @@ package scaleway
 import (
 	"fmt"
 	"os"
-	"sync"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/mitchellh/go-homedir"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 )
-
-var mu = sync.Mutex{}
 
 // Provider returns a terraform.ResourceProvider.
 func Provider() func() *schema.Provider {
@@ -196,7 +193,7 @@ func Provider() func() *schema.Provider {
 				"scaleway_account_ssh_key":               resourceScalewayAccountSSKKey(),
 				"scaleway_baremetal_server":              resourceScalewayBaremetalServer(),
 				"scaleway_instance_ip":                   resourceScalewayInstanceIP(),
-				"scaleway_instance_ip_reverse_dns":       resourceScalewayInstanceIPReverseDns(),
+				"scaleway_instance_ip_reverse_dns":       resourceScalewayInstanceIPReverseDNS(),
 				"scaleway_instance_volume":               resourceScalewayInstanceVolume(),
 				"scaleway_instance_security_group":       resourceScalewayInstanceSecurityGroup(),
 				"scaleway_instance_security_group_rules": resourceScalewayInstanceSecurityGroupRules(),

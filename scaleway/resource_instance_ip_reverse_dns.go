@@ -5,12 +5,12 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
 )
 
-func resourceScalewayInstanceIPReverseDns() *schema.Resource {
+func resourceScalewayInstanceIPReverseDNS() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceScalewayInstanceIPReverseDnsCreate,
-		Read:   resourceScalewayInstanceIPReverseDnsRead,
-		Update: resourceScalewayInstanceIPReverseDnsUpdate,
-		Delete: resourceScalewayInstanceIPReverseDnsDelete,
+		Create: resourceScalewayInstanceIPReverseDNSCreate,
+		Read:   resourceScalewayInstanceIPReverseDNSRead,
+		Update: resourceScalewayInstanceIPReverseDNSUpdate,
+		Delete: resourceScalewayInstanceIPReverseDNSDelete,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},
@@ -31,7 +31,7 @@ func resourceScalewayInstanceIPReverseDns() *schema.Resource {
 	}
 }
 
-func resourceScalewayInstanceIPReverseDnsCreate(d *schema.ResourceData, m interface{}) error {
+func resourceScalewayInstanceIPReverseDNSCreate(d *schema.ResourceData, m interface{}) error {
 	instanceAPI, zone, err := instanceAPIWithZone(d, m)
 	if err != nil {
 		return err
@@ -44,13 +44,13 @@ func resourceScalewayInstanceIPReverseDnsCreate(d *schema.ResourceData, m interf
 	if err != nil {
 		return err
 	}
-	d.SetId(newZonedId(zone, res.IP.ID))
+	d.SetId(newZonedIDString(zone, res.IP.ID))
 
 	// We do not create any resource. We only need to update the IP.
-	return resourceScalewayInstanceIPReverseDnsUpdate(d, m)
+	return resourceScalewayInstanceIPReverseDNSUpdate(d, m)
 }
 
-func resourceScalewayInstanceIPReverseDnsRead(d *schema.ResourceData, m interface{}) error {
+func resourceScalewayInstanceIPReverseDNSRead(d *schema.ResourceData, m interface{}) error {
 	instanceAPI, zone, ID, err := instanceAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return err
@@ -75,7 +75,7 @@ func resourceScalewayInstanceIPReverseDnsRead(d *schema.ResourceData, m interfac
 	return nil
 }
 
-func resourceScalewayInstanceIPReverseDnsUpdate(d *schema.ResourceData, m interface{}) error {
+func resourceScalewayInstanceIPReverseDNSUpdate(d *schema.ResourceData, m interface{}) error {
 	instanceAPI, zone, ID, err := instanceAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return err
@@ -101,10 +101,10 @@ func resourceScalewayInstanceIPReverseDnsUpdate(d *schema.ResourceData, m interf
 		}
 	}
 
-	return resourceScalewayInstanceIPReverseDnsRead(d, m)
+	return resourceScalewayInstanceIPReverseDNSRead(d, m)
 }
 
-func resourceScalewayInstanceIPReverseDnsDelete(d *schema.ResourceData, m interface{}) error {
+func resourceScalewayInstanceIPReverseDNSDelete(d *schema.ResourceData, m interface{}) error {
 	instanceAPI, zone, ID, err := instanceAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return err

@@ -805,13 +805,12 @@ resource "scaleway_instance_volume" "base_volume%d" {
 	}
 
 	if withBlock {
-		additionalVolumeResources += fmt.Sprintf(`
+		additionalVolumeResources += `
 resource "scaleway_instance_volume" "base_block" {
   size_in_gb = 10
   type       = "b_ssd"
-}`)
+}`
 		additionalVolumeIDs = append(additionalVolumeIDs, `"${scaleway_instance_volume.base_block.id}"`)
-
 	}
 	return fmt.Sprintf(`
 %s

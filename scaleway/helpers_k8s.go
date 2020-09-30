@@ -11,7 +11,7 @@ import (
 )
 
 type KubeconfigStruct struct {
-	ApiVersion string `yaml:"apiVersion"`
+	APIVersion string `yaml:"apiVersion"`
 	Clusters   []struct {
 		Name    string `yaml:"name"`
 		Cluster struct {

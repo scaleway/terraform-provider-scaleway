@@ -205,7 +205,7 @@ func testAccCheckScalewayK8SPoolBetaExists(n string) resource.TestCheckFunc {
 func testAccCheckScalewayK8SPoolBetaConfigMinimal(version string, otherPool bool) string {
 	pool := ""
 	if otherPool {
-		pool += fmt.Sprintf(`
+		pool += `
 resource "scaleway_k8s_pool_beta" "minimal" {
     name = "minimal"
 	cluster_id = "${scaleway_k8s_cluster_beta.minimal.id}"
@@ -214,7 +214,7 @@ resource "scaleway_k8s_pool_beta" "minimal" {
 	autoscaling = true
 	size = 1
 	tags = [ "terraform-test", "scaleway_k8s_cluster_beta", "minimal" ]
-}`)
+}`
 	}
 
 	return fmt.Sprintf(`

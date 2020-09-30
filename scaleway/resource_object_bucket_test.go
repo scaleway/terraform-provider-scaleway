@@ -132,9 +132,7 @@ func testSweepStorageObjectBucket(region string) error {
 				return fmt.Errorf("Error deleting bucket in Sweeper: %s", err)
 			}
 		}
-
 	}
 
 	return nil
-
 }

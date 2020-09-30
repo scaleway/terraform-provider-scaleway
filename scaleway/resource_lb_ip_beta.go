@@ -56,7 +56,7 @@ func resourceScalewayLbIPBetaCreate(d *schema.ResourceData, m interface{}) error
 		return err
 	}
 
-	d.SetId(newRegionalId(region, res.ID))
+	d.SetId(newRegionalIDString(region, res.ID))
 
 	return resourceScalewayLbIPBetaRead(d, m)
 }

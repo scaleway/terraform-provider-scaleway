@@ -510,7 +510,6 @@ func resourceScalewayInstanceServerUpdate(d *schema.ResourceData, m interface{})
 		volumes["0"] = &instance.VolumeTemplate{ID: expandZonedID(d.Get("root_volume.0.volume_id")).ID, Name: newRandomName("vol")} // name is ignored by the API, any name will work here
 
 		for i, volumeID := range raw.([]interface{}) {
-
 			// We make sure volume is detached so we can attach it to the server.
 			err = detachVolume(instanceAPI, zone, expandZonedID(volumeID).ID)
 			if err != nil {
@@ -578,7 +577,6 @@ func resourceScalewayInstanceServerUpdate(d *schema.ResourceData, m interface{})
 	// Update server user data
 	////
 	if d.HasChange("cloud_init") || d.HasChange("user_data") {
-
 		userDataRequests := &instance.SetAllServerUserDataRequest{
 			Zone:     zone,
 			ServerID: ID,
@@ -603,14 +601,13 @@ func resourceScalewayInstanceServerUpdate(d *schema.ResourceData, m interface{})
 		if err != nil {
 			return err
 		}
-
 	}
 
 	////
 	// Apply changes
 	////
 
-	defer lockLocalizedId(d.Id())()
+	defer lockLocalizedID(d.Id())()
 
 	if forceReboot {
 		err = reachState(instanceAPI, zone, ID, InstanceServerStateStopped)
@@ -642,7 +639,7 @@ func resourceScalewayInstanceServerDelete(d *schema.ResourceData, m interface{})
 	if err != nil {
 		return err
 	}
-	defer lockLocalizedId(d.Id())()
+	defer lockLocalizedID(d.Id())()
 
 	// reach stopped state
 	err = reachState(instanceAPI, zone, ID, instance.ServerStateStopped)

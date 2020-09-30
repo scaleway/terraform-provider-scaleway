@@ -221,7 +221,7 @@ func resourceScalewayK8SPoolBetaCreate(d *schema.ResourceData, m interface{}) er
 		return err
 	}
 
-	d.SetId(newRegionalId(region, res.ID))
+	d.SetId(newRegionalIDString(region, res.ID))
 
 	if waitForCluster {
 		err = waitK8SCluster(k8sAPI, region, cluster.ID, k8s.ClusterStatusReady)
@@ -266,7 +266,7 @@ func resourceScalewayK8SPoolBetaRead(d *schema.ResourceData, m interface{}) erro
 		return err
 	}
 
-	_ = d.Set("cluster_id", newRegionalId(region, pool.ClusterID))
+	_ = d.Set("cluster_id", newRegionalIDString(region, pool.ClusterID))
 	_ = d.Set("name", pool.Name)
 	_ = d.Set("node_type", pool.NodeType)
 	_ = d.Set("autoscaling", pool.Autoscaling)
@@ -286,7 +286,7 @@ func resourceScalewayK8SPoolBetaRead(d *schema.ResourceData, m interface{}) erro
 	_ = d.Set("status", pool.Status)
 
 	if pool.PlacementGroupID != nil {
-		_ = d.Set("placement_group_id", newZonedIdFromRegion(region, *pool.PlacementGroupID)) // TODO fix this ZonedIdFromRegion
+		_ = d.Set("placement_group_id", newZonedIDStringFromRegion(region, *pool.PlacementGroupID)) // TODO fix this ZonedIdFromRegion
 	}
 
 	return nil

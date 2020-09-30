@@ -61,7 +61,7 @@ func resourceScalewayRegistryNamespaceBetaCreate(d *schema.ResourceData, m inter
 		return err
 	}
 
-	d.SetId(newRegionalId(region, ns.ID))
+	d.SetId(newRegionalIDString(region, ns.ID))
 
 	return resourceScalewayRegistryNamespaceBetaRead(d, m)
 }
@@ -85,12 +85,12 @@ func resourceScalewayRegistryNamespaceBetaRead(d *schema.ResourceData, m interfa
 		return err
 	}
 
-	d.Set("name", ns.Name)
-	d.Set("description", ns.Description)
-	d.Set("organization_id", ns.OrganizationID)
-	d.Set("is_public", ns.IsPublic)
-	d.Set("endpoint", ns.Endpoint)
-	d.Set("region", ns.Region)
+	_ = d.Set("name", ns.Name)
+	_ = d.Set("description", ns.Description)
+	_ = d.Set("organization_id", ns.OrganizationID)
+	_ = d.Set("is_public", ns.IsPublic)
+	_ = d.Set("endpoint", ns.Endpoint)
+	_ = d.Set("region", ns.Region)
 
 	return nil
 }

@@ -7,7 +7,6 @@ import (
 )
 
 func TestAccScalewayInstanceSecurityGroupRules(t *testing.T) {
-
 	t.Run("Basic", func(t *testing.T) {
 		resource.Test(t, resource.TestCase{
 			PreCheck:     func() { testAccPreCheck(t) },
@@ -262,5 +261,4 @@ func TestAccScalewayInstanceSecurityGroupRules(t *testing.T) {
 			},
 		})
 	})
-
 }

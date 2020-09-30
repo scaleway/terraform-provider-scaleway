@@ -149,7 +149,7 @@ func TestAccScalewayLbAclBeta(t *testing.T) {
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayAclAreCorrect("scaleway_lb_frontend_beta.frt01", []*lb.ACL{
+					testAccCheckScalewayACLAreCorrect("scaleway_lb_frontend_beta.frt01", []*lb.ACL{
 						{
 							Name: "test-acl",
 							Match: &lb.ACLMatch{
@@ -230,7 +230,7 @@ func TestAccScalewayLbAclBeta(t *testing.T) {
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayAclAreCorrect("scaleway_lb_frontend_beta.frt01", []*lb.ACL{
+					testAccCheckScalewayACLAreCorrect("scaleway_lb_frontend_beta.frt01", []*lb.ACL{
 						{
 							Match: &lb.ACLMatch{
 								IPSubnet:        scw.StringSlicePtr([]string{"10.0.0.10"}),
@@ -247,7 +247,7 @@ func TestAccScalewayLbAclBeta(t *testing.T) {
 	})
 }
 
-func testAccCheckScalewayAclAreCorrect(frontendName string, expectedAcls []*lb.ACL) resource.TestCheckFunc {
+func testAccCheckScalewayACLAreCorrect(frontendName string, expectedAcls []*lb.ACL) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		//define a wrapper for acl comparison
 		testCompareAcls := func(testAcl, apiAcl lb.ACL) bool {
@@ -276,7 +276,7 @@ func testAccCheckScalewayAclAreCorrect(frontendName string, expectedAcls []*lb.A
 		}
 
 		//fetch our acls from the scaleway
-		resAcl, err := lbAPI.ListACLs(&lb.ListACLsRequest{
+		resACL, err := lbAPI.ListACLs(&lb.ListACLsRequest{
 			Region:     region,
 			FrontendID: ID,
 		}, scw.WithAllPages())
@@ -285,12 +285,12 @@ func testAccCheckScalewayAclAreCorrect(frontendName string, expectedAcls []*lb.A
 		}
 
 		//verify that the count of api acl is the same as we are expecting it to be
-		if len(expectedAcls) != len(resAcl.ACLs) {
-			return fmt.Errorf("acl count is wrong.")
+		if len(expectedAcls) != len(resACL.ACLs) {
+			return fmt.Errorf("acl count is wrong")
 		}
 		//convert them to map indexed by the acl index
 		aclMap := make(map[int32]*lb.ACL)
-		for _, acl := range resAcl.ACLs {
+		for _, acl := range resACL.ACLs {
 			aclMap[acl.Index] = acl
 		}
 

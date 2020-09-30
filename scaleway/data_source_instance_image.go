@@ -92,14 +92,14 @@ func dataSourceScalewayInstanceImage() *schema.Resource {
 
 func dataSourceScalewayInstanceImageRead(d *schema.ResourceData, m interface{}) error {
 	meta := m.(*Meta)
-	instanceApi, zone, err := instanceAPIWithZone(d, meta)
+	instanceAPI, zone, err := instanceAPIWithZone(d, meta)
 	if err != nil {
 		return err
 	}
 
 	imageID, ok := d.GetOk("image_id")
 	if !ok { // Get instance by name, zone, and arch.
-		res, err := instanceApi.ListImages(&instance.ListImagesRequest{
+		res, err := instanceAPI.ListImages(&instance.ListImagesRequest{
 			Zone: zone,
 			Name: expandStringPtr(d.Get("name")),
 			Arch: expandStringPtr(d.Get("architecture")),
@@ -134,7 +134,7 @@ func dataSourceScalewayInstanceImageRead(d *schema.ResourceData, m interface{}) 
 	_ = d.Set("image_id", zonedID)
 	_ = d.Set("zone", zone)
 
-	resp, err := instanceApi.GetImage(&instance.GetImageRequest{
+	resp, err := instanceAPI.GetImage(&instance.GetImageRequest{
 		Zone:    zone,
 		ImageID: imageID.(string),
 	})

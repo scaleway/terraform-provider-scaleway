@@ -32,14 +32,14 @@ func dataSourceScalewayInstanceServer() *schema.Resource {
 
 func dataSourceScalewayInstanceServerRead(d *schema.ResourceData, m interface{}) error {
 	meta := m.(*Meta)
-	instanceApi, zone, err := instanceAPIWithZone(d, meta)
+	instanceAPI, zone, err := instanceAPIWithZone(d, meta)
 	if err != nil {
 		return err
 	}
 
 	serverID, ok := d.GetOk("server_id")
 	if !ok {
-		res, err := instanceApi.ListServers(&instance.ListServersRequest{
+		res, err := instanceAPI.ListServers(&instance.ListServersRequest{
 			Zone: zone,
 			Name: String(d.Get("name").(string)),
 		})

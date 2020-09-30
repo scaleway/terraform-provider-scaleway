@@ -15,7 +15,7 @@ func dataSourceScalewayLbIPBeta() *schema.Resource {
 	dsSchema["ip_address"] = &schema.Schema{
 		Type:          schema.TypeString,
 		Optional:      true,
-		Description:   "The IP adress",
+		Description:   "The IP address",
 		ConflictsWith: []string{"ip_id"},
 	}
 	dsSchema["ip_id"] = &schema.Schema{

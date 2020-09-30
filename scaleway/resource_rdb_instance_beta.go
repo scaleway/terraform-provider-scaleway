@@ -142,7 +142,7 @@ func resourceScalewayRdbInstanceBetaCreate(d *schema.ResourceData, m interface{}
 		return err
 	}
 
-	d.SetId(newRegionalId(region, res.ID))
+	d.SetId(newRegionalIDString(region, res.ID))
 
 	_, err = rdbAPI.WaitForInstance(&rdb.WaitForInstanceRequest{
 		Region:     region,
@@ -271,7 +271,6 @@ func resourceScalewayRdbInstanceBetaUpdate(d *schema.ResourceData, m interface{}
 
 		// Wait for the instance to settle after upgrading
 		time.Sleep(30 * time.Second)
-
 	}
 
 	if d.HasChange("password") {
