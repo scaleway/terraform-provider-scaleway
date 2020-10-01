@@ -47,13 +47,17 @@ func dataSourceScalewayInstanceSecurityGroupRead(d *schema.ResourceData, m inter
 		if err != nil {
 			return err
 		}
-		if len(res.SecurityGroups) == 0 {
+		for _, sg := range res.SecurityGroups {
+			if sg.Name == d.Get("name").(string) {
+				if securityGroupID != "" {
+					return fmt.Errorf("more than 1 security group found with the same name %s", d.Get("name"))
+				}
+				securityGroupID = sg.ID
+			}
+		}
+		if securityGroupID == "" {
 			return fmt.Errorf("no security group found with the name %s", d.Get("name"))
 		}
-		if len(res.SecurityGroups) > 1 {
-			return fmt.Errorf("%d security groups found with the same name %s", len(res.SecurityGroups), d.Get("name"))
-		}
-		securityGroupID = res.SecurityGroups[0].ID
 	}
 
 	zonedID := datasourceNewZonedID(securityGroupID, zone)
