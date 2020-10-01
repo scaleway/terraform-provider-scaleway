@@ -107,24 +107,30 @@ func dataSourceScalewayInstanceImageRead(d *schema.ResourceData, m interface{}) 
 		if err != nil {
 			return err
 		}
-		if len(res.Images) == 0 {
+		var matchingImages []*instance.Image
+		for _, image := range res.Images {
+			if image.Name == d.Get("name").(string) {
+				matchingImages = append(matchingImages, image)
+			}
+		}
+
+		if len(matchingImages) == 0 {
 			return fmt.Errorf("no image found with the name %s and architecture %s in zone %s", d.Get("name"), d.Get("architecture"), zone)
 		}
-		if len(res.Images) > 1 && !d.Get("latest").(bool) {
-			return fmt.Errorf("%d images found with the same name %s and architecture %s in zone %s", len(res.Images), d.Get("name"), d.Get("architecture"), zone)
+		if len(matchingImages) > 1 && !d.Get("latest").(bool) {
+			return fmt.Errorf("%d images found with the same name %s and architecture %s in zone %s", len(matchingImages), d.Get("name"), d.Get("architecture"), zone)
 		}
-		sort.Slice(res.Images, func(i, j int) bool {
-			return res.Images[i].ModificationDate.After(*res.Images[j].ModificationDate)
+
+		sort.Slice(matchingImages, func(i, j int) bool {
+			return matchingImages[i].ModificationDate.After(*matchingImages[j].ModificationDate)
 		})
-		for _, image := range res.Images {
+		for _, image := range matchingImages {
 			if image.Name == d.Get("name").(string) {
 				imageID = image.ID
 				break
 			}
 		}
-		if imageID == "" {
-			return fmt.Errorf("no image found with the name %s and architecture %s in zone %s", d.Get("name"), d.Get("architecture"), zone)
-		}
+		// imageID will always be set here
 	}
 
 	zonedID := datasourceNewZonedID(imageID, zone)

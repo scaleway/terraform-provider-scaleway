@@ -46,13 +46,17 @@ func dataSourceScalewayInstanceServerRead(d *schema.ResourceData, m interface{})
 		if err != nil {
 			return err
 		}
-		if len(res.Servers) == 0 {
+		for _, instance := range res.Servers {
+			if instance.Name == d.Get("name").(string) {
+				if serverID != "" {
+					return fmt.Errorf("more than 1 server found with the same name %s", d.Get("name"))
+				}
+				serverID = instance.ID
+			}
+		}
+		if serverID == "" {
 			return fmt.Errorf("no server found with the name %s", d.Get("name"))
 		}
-		if len(res.Servers) > 1 {
-			return fmt.Errorf("%d servers found with the same name %s", len(res.Servers), d.Get("name"))
-		}
-		serverID = res.Servers[0].ID
 	}
 
 	zonedID := datasourceNewZonedID(serverID, zone)

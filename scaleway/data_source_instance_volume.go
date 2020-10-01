@@ -45,13 +45,17 @@ func dataSourceScalewayInstanceVolumeRead(d *schema.ResourceData, m interface{})
 		if err != nil {
 			return err
 		}
-		if len(res.Volumes) == 0 {
+		for _, volume := range res.Volumes {
+			if volume.Name == d.Get("name").(string) {
+				if volumeID != "" {
+					return fmt.Errorf("more than 1 volume found with the same name %s", d.Get("name"))
+				}
+				volumeID = volume.ID
+			}
+		}
+		if volumeID == "" {
 			return fmt.Errorf("no volume found with the name %s", d.Get("name"))
 		}
-		if len(res.Volumes) > 1 {
-			return fmt.Errorf("%d volumes found with the same name %s", len(res.Volumes), d.Get("name"))
-		}
-		volumeID = res.Volumes[0].ID
 	}
 
 	zonedID := datasourceNewZonedID(volumeID, zone)
