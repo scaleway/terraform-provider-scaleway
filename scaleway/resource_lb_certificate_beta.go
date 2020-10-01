@@ -2,6 +2,7 @@ package scaleway
 
 import (
 	"errors"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/api/lb/v1"
@@ -154,7 +155,7 @@ func resourceScalewayLbCertificateBetaRead(d *schema.ResourceData, m interface{}
 
 	_ = d.Set("name", res.Name)
 	_ = d.Set("common_name", res.CommonName)
-	_ = d.Set("subject_alternative_name", res.SubjectAlternativeName)
+	_ = d.Set("subject_alternative_name", strings.Join(res.SubjectAlternativeName, " "))
 	_ = d.Set("fingerprint", res.Fingerprint)
 	_ = d.Set("not_valid_before", flattenTime(res.NotValidBefore))
 	_ = d.Set("not_valid_after", flattenTime(res.NotValidAfter))

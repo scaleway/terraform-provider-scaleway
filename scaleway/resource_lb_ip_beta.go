@@ -80,12 +80,30 @@ func resourceScalewayLbIPBetaRead(d *schema.ResourceData, m interface{}) error {
 		return err
 	}
 
-	_ = d.Set("region", string(region))
-	_ = d.Set("organization_id", res.OrganizationID)
-	_ = d.Set("ip_id", res.ID)
-	_ = d.Set("ip_address", res.IPAddress)
-	_ = d.Set("reverse", res.Reverse)
-	_ = d.Set("lb_ip", flattenStringPtr(res.LBID))
+	err = d.Set("region", string(region))
+	if err != nil {
+		return err
+	}
+
+	err = d.Set("organization_id", res.OrganizationID)
+	if err != nil {
+		return err
+	}
+
+	err = d.Set("ip_address", res.IPAddress)
+	if err != nil {
+		return err
+	}
+
+	err = d.Set("reverse", res.Reverse)
+	if err != nil {
+		return err
+	}
+
+	err = d.Set("lb_id", flattenStringPtr(res.LBID))
+	if err != nil {
+		return err
+	}
 
 	return nil
 }
