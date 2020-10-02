@@ -28,7 +28,7 @@ jobs:
         uses: actions/checkout@v2
         with:
           fetch-depth: 2
-      - name: Acceptance Tests
+      - name: Run Acceptance Tests
         run: go test -v ./... -timeout=1h -run TestAccScaleway${{ matrix.products }}*
         env:
           TF_LOG: DEBUG
