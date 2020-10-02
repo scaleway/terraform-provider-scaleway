@@ -81,6 +81,8 @@ In addition to all arguments above, the following attributes are exported:
 
 ## Additional notes
 
-* Ensure that all domain names used in configuration are pointing to the load balancer IP. You can achieve this by creating a DNS record through terraform pointing to  `ip_adress` property of `lb_beta` entity
-* In case there are any issues with the certificate, you will receive a `400` error from the `apply` operation. Use `export TF_LOG=DEBUG`  to view exact problem returned by the api.
+* Ensure that all domain names used in configuration are pointing to the load balancer IP.
+  You can achieve this by creating a DNS record through terraform pointing to  `ip_address` property of `lb_beta` entity.
+* In case there are any issues with the certificate, you will receive a `400` error from the `apply` operation.
+  Use `export TF_LOG=DEBUG` to view exact problem returned by the api.
 * Wildcards are not supported with Let's Encrypt yet.
