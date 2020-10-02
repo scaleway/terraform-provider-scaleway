@@ -52,9 +52,9 @@ Use [this endpoint](https://developers.scaleway.com/en/products/baremetal/api/#g
 
 - `tags` - (Optional) The tags associated with the server.
 
-- `zone` - (Defaults to [provider](../index.html#zone) `zone`) The [zone](../guides/regions_and_zones.html#zones) in which the server should be created.
+- `zone` - (Defaults to [provider](../index.md#zone) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which the server should be created.
 
-- `organization_id` - (Defaults to [provider](../index.html#organization_id) `organization_id`) The ID of the organization the server is associated with.
+- `organization_id` - (Defaults to [provider](../index.md#organization_id) `organization_id`) The ID of the organization the server is associated with.
 
 
 ## Attributes Reference

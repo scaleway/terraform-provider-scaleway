@@ -3,5 +3,19 @@
     {
       "pattern": "^https://github.com/[^/]+/[^/]+/(issues|labels|pull)"
     }
+  ],
+  "replacementPatterns": [
+    {
+      "pattern": "^(/docs/(?!providers/scaleway/))",
+      "replacement": "https://terraform.io$1"
+    },
+    {
+      "pattern": "^(?!http(s)?://)(.*)\\.html(#.*)?$",
+      "replacement": "$2.html.markdown$3"
+    },
+    {
+      "pattern": "^file:///github/workspace/website/docs/guides/(.*)\\.markdown(#.*)?$",
+      "replacement": "file:///github/workspace/website/docs/guides/$1.md$2"
+    }
   ]
 }

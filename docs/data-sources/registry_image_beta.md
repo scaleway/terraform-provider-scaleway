@@ -34,9 +34,9 @@ data "scaleway_registry_image_beta" "my_image" {
 
 - `namespace_id` - (Optional) The namespace ID in which the image is.
 
-- `region` - (Defaults to [provider](../index.html#region) `region`) The [region](../guides/regions_and_zones.html#regions) in which the image exists.
+- `region` - (Defaults to [provider](../index.md#region) `region`) The [region](../guides/regions_and_zones.md#regions) in which the image exists.
 
-- `organization_id` - (Defaults to [provider](../index.html#organization_id) `organization_id`) The ID of the organization the image is associated with.
+- `organization_id` - (Defaults to [provider](../index.md#organization_id) `organization_id`) The ID of the organization the image is associated with.
 
 ## Attributes Reference
 

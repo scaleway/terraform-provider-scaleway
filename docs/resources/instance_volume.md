@@ -28,8 +28,8 @@ The following arguments are supported:
 - `from_volume_id` - (Optional) If set, the new volume will be copied from this volume. Only one of `size_in_gb`, `from_volume_id` and `from_volume_id` should be specified.
 - ``from_snapshot_id`` - (Optional) If set, the new volume will be created from this snapshot. Only one of `size_in_gb`, `from_volume_id` and `from_volume_id` should be specified.
 - `name` - (Optional) The name of the volume. If not provided it will be randomly generated.
-- `zone` - (Defaults to [provider](../index.html#zone) `zone`) The [zone](../guides/regions_and_zones.html#zones) in which the volume should be created.
-- `organization_id` - (Defaults to [provider](../index.html#organization_id) `organization_id`) The ID of the organization the volume is associated with.
+- `zone` - (Defaults to [provider](../index.md#zone) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which the volume should be created.
+- `organization_id` - (Defaults to [provider](../index.md#organization_id) `organization_id`) The ID of the organization the volume is associated with.
 
 ## Attributes Reference
 

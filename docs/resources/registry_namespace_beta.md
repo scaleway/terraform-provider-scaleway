@@ -33,9 +33,9 @@ The following arguments are supported:
 
 - `is_public` (Defaults to `false`) Whether or not the registry images stored in the namespace should be downloadable publicly (docker pull).
 
-- `region` - (Defaults to [provider](../index.html#region) `region`). The [region](../guides/regions_and_zones.html#regions) in which the container registry namespace should be created.
+- `region` - (Defaults to [provider](../index.md#region) `region`). The [region](../guides/regions_and_zones.md#regions) in which the container registry namespace should be created.
 
-- `organization_id` - (Defaults to [provider](../index.html#organization_id) `organization_id`) The ID of the organization the registry is associated with.
+- `organization_id` - (Defaults to [provider](../index.md#organization_id) `organization_id`) The ID of the organization the registry is associated with.
 
 ## Attibutes Reference
 

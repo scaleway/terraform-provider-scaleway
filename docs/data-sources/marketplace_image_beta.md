@@ -25,7 +25,7 @@ to find the right `label`.
 - `instance_type` - (Optional, default `DEV1-S`) The instance type the image is compatible with.
 You find all the available types on the [pricing page](https://www.scaleway.com/en/pricing/).
 
-- `zone` - (Defaults to [provider](../index.html#zone) `zone`) The [zone](../guides/regions_and_zones.html#zones) in which the image exists.
+- `zone` - (Defaults to [provider](../index.md#zone) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which the image exists.
 
 ## Attributes Reference
 

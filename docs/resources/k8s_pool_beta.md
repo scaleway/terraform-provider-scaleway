@@ -66,7 +66,7 @@ The following arguments are supported:
 - `container_runtime` - (Defaults to `docker`) The container runtime of the pool.
 ~> **Important:** Updates to this field will recreate a new resource.
 
-- `region` - (Defaults to [provider](../index.html#region) `region`) The [region](../guides/regions_and_zones.html#regions) in which the pool should be created.
+- `region` - (Defaults to [provider](../index.md#region) `region`) The [region](../guides/regions_and_zones.md#regions) in which the pool should be created.
 
 - `wait_for_pool_ready` - (Default to `false`) Whether to wait for the pool to be ready.
 

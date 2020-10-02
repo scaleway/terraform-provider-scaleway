@@ -112,11 +112,12 @@ The following arguments are supported:
 
 - `outbound_rule` - (Optional) A list of outbound rule to add to the security group. (Structure is documented below.)
 
-- `external_rules` - (Defaults to `false`) A boolean to specify whether to use [instance_security_group_rules](../r/instance_security_group_rules.html). If `external_rules` is set to `true`, `inbound_rule` and `outbound_rule` can not be set directly in the security group.
+- `external_rules` - (Defaults to `false`) A boolean to specify whether to use [instance_security_group_rules](../resources/instance_security_group_rules.md).
+  If `external_rules` is set to `true`, `inbound_rule` and `outbound_rule` can not be set directly in the security group.
 
-- `zone` - (Defaults to [provider](../index.html#zone) `zone`) The [zone](../guides/regions_and_zones.html#zones) in which the security group should be created.
+- `zone` - (Defaults to [provider](../index.md#zone) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which the security group should be created.
 
-- `organization_id` - (Defaults to [provider](../index.html#organization_id) `organization_id`) The ID of the project the security group is associated with.
+- `organization_id` - (Defaults to [provider](../index.md#organization_id) `organization_id`) The ID of the project the security group is associated with.
 
 
 The `inbound_rule` and `outbound_rule` block supports:

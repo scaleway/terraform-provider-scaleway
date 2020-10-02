@@ -24,7 +24,7 @@ The following arguments are supported:
 
 - `name` - (Required) The name of the SSH key.
 - `public_key` - (Required) The public SSH key to be added.
-- `organization_id` - (Defaults to [provider](../index.html#organization_id) `organization_id`) The ID of the organization the IP is associated with.
+- `organization_id` - (Defaults to [provider](../index.md#organization_id) `organization_id`) The ID of the organization the IP is associated with.
 
 ## Attributes Reference
 

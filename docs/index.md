@@ -10,7 +10,7 @@ description: |-
 The Scaleway provider is used to manage Scaleway resources.
 The provider needs to be configured with the proper credentials before it can be used.
 
-**This is the documentation for the version `>= 1.11.0` of the provider. If you come from `< v1.11.0`, checkout to [migration guide](./guides/migration_guide_v2.html).**
+**This is the documentation for the version `>= 1.11.0` of the provider. If you come from `< v1.11.0`, checkout to [migration guide](./guides/migration_guide_v2.md).**
 
 Use the navigation to the left to read about the available resources.
 
@@ -149,11 +149,11 @@ in this priority order.
 the `SCW_DEFAULT_ORGANIZATION_ID` [environment variable](https://github.com/scaleway/scaleway-sdk-go/blob/master/scw/README.md#environment-variables), or via a [shared configuration file](https://github.com/scaleway/scaleway-sdk-go/blob/master/scw/README.md#scaleway-config),
 in this priority order.
 
-- `region` - (Optional) The [region](./guides/regions_and_zones.html#regions)  that will be used as default value for all resources. It can also be sourced from
+- `region` - (Optional) The [region](./guides/regions_and_zones.md#regions)  that will be used as default value for all resources. It can also be sourced from
 the `SCW_DEFAULT_REGION` [environment variable](https://github.com/scaleway/scaleway-sdk-go/blob/master/scw/README.md#environment-variables), or via a [shared configuration file](https://github.com/scaleway/scaleway-sdk-go/blob/master/scw/README.md#scaleway-config),
 in this priority order.
 
-- `zone` - (Optional) The [zone](./guides/regions_and_zones.html#zones) that will be used as default value for all resources. It can also be sourced from
+- `zone` - (Optional) The [zone](./guides/regions_and_zones.md#zones) that will be used as default value for all resources. It can also be sourced from
 the `SCW_DEFAULT_ZONE` [environment variable](https://github.com/scaleway/scaleway-sdk-go/blob/master/scw/README.md#environment-variables), or via a [shared configuration file](https://github.com/scaleway/scaleway-sdk-go/blob/master/scw/README.md#scaleway-config),
 in this priority order.
 

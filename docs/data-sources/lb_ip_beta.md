@@ -31,9 +31,9 @@ data "scaleway_lb_ip_beta" "my_ip" {
 - `lb_id` - (Optional) The IP ID.
   Only one of `ip_address` and `ip_id` should be specified.
 
-- `region` - (Defaults to [provider](../index.html#region) `region`) The [region](../guides/regions_and_zones.html#zones) in which the LB IP exists.
+- `region` - (Defaults to [provider](../index.md#region) `region`) The [region](../guides/regions_and_zones.md#zones) in which the LB IP exists.
 
-- `organization_id` - (Defaults to [provider](../index.html#organization_id) `organization_id`) The ID of the organization the LB IP is associated with.
+- `organization_id` - (Defaults to [provider](../index.md#organization_id) `organization_id`) The ID of the organization the LB IP is associated with.
 
 ## Attributes Reference
 

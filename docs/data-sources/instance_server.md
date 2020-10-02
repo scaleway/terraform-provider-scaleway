@@ -29,7 +29,7 @@ data "scaleway_instance_server" "my_key" {
 
 - `server_id` - (Optional) The server id. Only one of `name` and `server_id` should be specified.
 
-- `zone` - (Defaults to [provider](../index.html#zone) `zone`) The [zone](../guides/regions_and_zones.html#zones) in which the server exists.
+- `zone` - (Defaults to [provider](../index.md#zone) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which the server exists.
 
 ## Attributes Reference
 
