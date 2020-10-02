@@ -68,9 +68,9 @@ In addition to all arguments above, the following attributes are exported:
 - `endpoint_ip` - The IP of the Database Instance.
 - `endpoint_port` - The port of the Database Instance.
 - `read_replicas` - List of read replicas of the database instance.
-  - `ip` - IP of the replica.
-  - `port` - Port of the replica.
-  - `name` - Name of the replica.
+    - `ip` - IP of the replica.
+    - `port` - Port of the replica.
+    - `name` - Name of the replica.
 - `certificate` - Certificate of the database instance.
 
 

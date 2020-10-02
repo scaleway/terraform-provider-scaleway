@@ -77,10 +77,10 @@ In addition to all above arguments, the following attributes are exported:
 - `id` - The ID of the pool.
 - `status` - The status of the pool.
 - `nodes` - (List of) The nodes in the default pool.
-  - `name` - The name of the node.
-  - `public_ip` - The public IPv4.
-  - `public_ip_v6` - The public IPv6.
-  - `status` - The status of the node.
+    - `name` - The name of the node.
+    - `public_ip` - The public IPv4.
+    - `public_ip_v6` - The public IPv6.
+    - `status` - The status of the node.
 - `created_at` - The creation date of the pool.
 - `updated_at` - The last update date of the pool.
 - `version` - The version of the pool.

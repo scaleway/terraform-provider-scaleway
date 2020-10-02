@@ -33,7 +33,7 @@ The following arguments are supported:
 ## Attributes Reference
 
 In addition to all above arguments, the following attribute is exported:
-	
+
 * `id` - The unique name of the bucket.
 
 ## Import

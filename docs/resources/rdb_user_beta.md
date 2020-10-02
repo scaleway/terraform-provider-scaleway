@@ -48,6 +48,7 @@ The following arguments are supported:
 ## Import
 
 Database User can be imported using `{region}/{instance_id}/{name}`, e.g.
+
 ```bash
 $ terraform import scaleway_rdb_user_beta.admin fr-par/11111111-1111-1111-1111-111111111111/admin
 ```

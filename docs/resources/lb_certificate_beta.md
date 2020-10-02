@@ -12,8 +12,9 @@ description: |-
 Creates and manages Scaleway Load-Balancer Certificates. For more information, see [the documentation](https://developers.scaleway.com/en/products/lb/api).
 
 ## Examples
-    
-#### Let's Encrypt
+
+### Let's Encrypt
+
 ```hcl
 resource scaleway_lb_certificate_beta cert01 {
     lb_id = scaleway_lb_beta.lb01.id
@@ -28,7 +29,8 @@ resource scaleway_lb_certificate_beta cert01 {
 }
 ```
 
-#### Custom Certificate
+### Custom Certificate
+
 ```hcl
 resource scaleway_lb_certificate_beta cert01 {
     lb_id = scaleway_lb_beta.lb01.id

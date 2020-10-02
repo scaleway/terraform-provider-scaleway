@@ -12,7 +12,7 @@ description: |-
 Creates and manages Scaleway Load-Balancers. For more information, see [the documentation](https://developers.scaleway.com/en/products/lb/api).
 
 ## Examples
-    
+
 ### Basic
 
 ```hcl
@@ -56,8 +56,8 @@ In addition to all arguments above, the following attributes are exported:
 ## IP ID
 
 Since v1.15.0, `ip_id` is a required field. This means that now a separate `scaleway_lb_ip_beta` is required.
-When importing, the IP needs to be imported as well as the LB. 
-When upgrading to v1.15.0, you will need to create a new `scaleway_lb_ip_beta` resource and import it. 
+When importing, the IP needs to be imported as well as the LB.
+When upgrading to v1.15.0, you will need to create a new `scaleway_lb_ip_beta` resource and import it.
 
 For instance, if you had the following:
 
@@ -81,7 +81,7 @@ resource "scaleway_lb_beta" "base" {
 }
 ```
 
-And before running `terraform apply` you will need to import the IP with: 
+And before running `terraform apply` you will need to import the IP with:
 
 ```bash
 $ terraform import scaleway_lb_ip_beta.ip fr-par/11111111-1111-1111-1111-111111111111
@@ -92,6 +92,7 @@ The IP ID can either be found in the console, or you can run:
 ```bash
 $ terraform state show scaleway_lb_beta.base
 ```
+
 and look for `ip_id`.
 
 ## Import

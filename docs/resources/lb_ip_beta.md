@@ -12,7 +12,7 @@ description: |-
 Creates and manages Scaleway Load-Balancers IPs. For more information, see [the documentation](https://developers.scaleway.com/en/products/lb/api).
 
 ## Examples
-    
+
 ### Basic
 
 ```hcl

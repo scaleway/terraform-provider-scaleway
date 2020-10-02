@@ -10,7 +10,7 @@ description: |-
 Creates and manages Scaleway Compute Baremetal servers. For more information, see [the documentation](https://developers.scaleway.com/en/products/baremetal/api).
 
 ## Examples
-    
+
 ### Basic
 
 ```hcl
@@ -65,10 +65,10 @@ In addition to all above arguments, the following attributes are exported:
 - `offer_id` - The ID of the offer.
 - `os_id` - The ID of the os.
 - `ips` - (List of) The IPs of the server.
-  - `id` - The ID of the IP.
-  - `address` - The address of the IP.
-  - `reverse` - The reverse of the IP.
-  - `type` - The type of the IP.
+    - `id` - The ID of the IP.
+    - `address` - The address of the IP.
+    - `reverse` - The reverse of the IP.
+    - `type` - The type of the IP.
 - `domain` - The domain of the server.
 
 ## Import

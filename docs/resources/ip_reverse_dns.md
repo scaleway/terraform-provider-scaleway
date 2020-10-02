@@ -28,7 +28,7 @@ resource "scaleway_ip_reverse_dns" "google" {
 
 The following arguments are supported:
 
-* `ip` - (Required) ID or Address of IP 
+* `ip` - (Required) ID or Address of IP
 * `reverse` - (Required) Reverse DNS of the IP
 
 ## Attributes Reference
