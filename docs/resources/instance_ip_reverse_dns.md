@@ -1,5 +1,4 @@
 ---
-layout: "scaleway"
 page_title: "Scaleway: scaleway_instance_ip_reverse_dns"
 description: |-
   Manages Scaleway Compute Instance IPs' reverse DNS.
@@ -25,7 +24,7 @@ The following arguments are supported:
 
 - `ip_id` - (Required) The IP ID
 - `reverse` - (Required) The reverse DNS for this IP.
-- `zone` - (Defaults to [provider](../index.html#zone) `zone`) The [zone](../guides/regions_and_zones.html#zones) in which the IP should be reserved.
+- `zone` - (Defaults to [provider](../index.md#zone) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which the IP should be reserved.
 
 ## Attributes Reference
 

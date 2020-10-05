@@ -1,5 +1,4 @@
 ---
-layout: "scaleway"
 page_title: "Scaleway Zones and Regions"
 description: |-
   Scaleway resources can be created in availability zones and regions.
@@ -23,10 +22,10 @@ In order to deploy highly available application, a region can be splitted in man
 List of availability zones by regions:
 
 - France - Paris (`fr-par`)
-  - `fr-par-1`
-  - `fr-par-2`
+    - `fr-par-1`
+    - `fr-par-2`
 - The Netherlands - Amsterdam (`nl-ams`)
-  - `nl-ams-1`
+    - `nl-ams-1`
 
 ## Resource IDs
 

@@ -1,5 +1,4 @@
 ---
-layout: "scaleway"
 page_title: "Scaleway: scaleway_lb_frontend_beta"
 description: |-
   Manages Scaleway Load-Balancer Frontends.
@@ -12,7 +11,7 @@ description: |-
 Creates and manages Scaleway Load-Balancer Frontends. For more information, see [the documentation](https://developers.scaleway.com/en/products/lb/api).
 
 ## Examples
-    
+
 ### Basic
 
 ```hcl
@@ -44,7 +43,7 @@ resource scaleway_lb_frontend_beta frontend01 {
         }
     }
 
-    # Deny downstream requests from: 51.51.51.51 that match "^foo*bar$" 
+    # Deny downstream requests from: 51.51.51.51 that match "^foo*bar$"
     acl {
         action {
             type = "deny"
@@ -56,7 +55,7 @@ resource scaleway_lb_frontend_beta frontend01 {
         }
     }
 
-    # Allow downstream http requests that begins with "/foo" or "/bar" 
+    # Allow downstream http requests that begins with "/foo" or "/bar"
     acl {
         action {
             type = "allow"
@@ -107,19 +106,19 @@ The following arguments are supported:
   
 - `action` - (Required) Action to undertake when an ACL filter matches.
   
-  - `type` - (Required) The action type. Possible values are: `allow` or `deny`.
+    - `type` - (Required) The action type. Possible values are: `allow` or `deny`.
   
 - `match` - (Required) The ACL match rule. At least `ip_subnet` or `http_filter` and `http_filter_value` are required.
 
-  - `ip_subnet` - (Optional) A list of IPs or CIDR v4/v6 addresses of the client of the session to match.
+    - `ip_subnet` - (Optional) A list of IPs or CIDR v4/v6 addresses of the client of the session to match.
 
-  - `http_filter` - (Optional) The HTTP filter to match. This filter is supported only if your backend protocol has an HTTP forward protocol.
-    It extracts the request's URL path, which starts at the first slash and ends before the question mark (without the host part).
-    Possible values are: `acl_http_filter_none`, `path_begin`, `path_end` or `regex`.
+    - `http_filter` - (Optional) The HTTP filter to match. This filter is supported only if your backend protocol has an HTTP forward protocol.
+       It extracts the request's URL path, which starts at the first slash and ends before the question mark (without the host part).
+       Possible values are: `acl_http_filter_none`, `path_begin`, `path_end` or `regex`.
 
-  - `http_filter_value` - (Optional) A list of possible values to match for the given HTTP filter.
+    - `http_filter_value` - (Optional) A list of possible values to match for the given HTTP filter.
 
-  - `invert` - (Optional) If set to `true`, the condition will be of type "unless".
+    - `invert` - (Optional) If set to `true`, the condition will be of type "unless".
 
 ## Attributes Reference
 

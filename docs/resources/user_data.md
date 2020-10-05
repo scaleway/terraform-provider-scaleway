@@ -1,5 +1,4 @@
 ---
-layout: "scaleway"
 page_title: "Scaleway: user_data"
 description: |-
   Manages Scaleway Server UserData.

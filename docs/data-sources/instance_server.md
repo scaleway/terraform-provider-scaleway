@@ -1,5 +1,4 @@
 ---
-layout: "scaleway"
 page_title: "Scaleway: scaleway_instance_server"
 description: |-
   Gets information about an Instance Server.
@@ -29,7 +28,7 @@ data "scaleway_instance_server" "my_key" {
 
 - `server_id` - (Optional) The server id. Only one of `name` and `server_id` should be specified.
 
-- `zone` - (Defaults to [provider](../index.html#zone) `zone`) The [zone](../guides/regions_and_zones.html#zones) in which the server exists.
+- `zone` - (Defaults to [provider](../index.md#zone) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which the server exists.
 
 ## Attributes Reference
 
@@ -51,8 +50,8 @@ You find all the available types on the [pricing page](https://www.scaleway.com/
 - `placement_group_id` - The [placement group](https://developers.scaleway.com/en/products/instance/api/#placement-groups-d8f653) the server is attached to.
 
 - `root_volume` - Root [volume](https://developers.scaleway.com/en/products/instance/api/#volumes-7e8a39) attached to the server on creation.
-   - `size_in_gb` - Size of the root volume in gigabytes.
-   - `delete_on_termination` - Forces deletion of the root volume on instance termination.
+    - `size_in_gb` - Size of the root volume in gigabytes.
+    - `delete_on_termination` - Forces deletion of the root volume on instance termination.
 
 - `additional_volume_ids` - The [additional volumes](https://developers.scaleway.com/en/products/instance/api/#volumes-7e8a39)
 attached to the server.
@@ -67,14 +66,14 @@ attached to the server.
 
 - `user_data` - The user data associated with the server.
 
-  - `key` - The user data key. The `cloud-init` key is reserved, please use `cloud_init` attribute instead.
+    - `key` - The user data key. The `cloud-init` key is reserved, please use `cloud_init` attribute instead.
 
-  - `value` - The user data content.
+    - `value` - The user data content.
 
 - `placement_group_policy_respected` - True when the placement group policy is respected.
 
 - `root_volume`
-  - `volume_id` - The volume ID of the root volume of the server.
+    - `volume_id` - The volume ID of the root volume of the server.
 
 - `private_ip` - The Scaleway internal IP address of the server.
 

@@ -1,5 +1,4 @@
 ---
-layout: "scaleway"
 page_title: "Scaleway: scaleway_instance_server"
 description: |-
   Manages Scaleway Compute Instance servers.
@@ -147,11 +146,11 @@ to find either the right `label` or the right local image `ID` for a given `type
 ~> **Important:** Updates to `placement_group_id` may trigger a stop/start of the server.
 
 - `root_volume` - (Optional) Root [volume](https://developers.scaleway.com/en/products/instance/api/#volumes-7e8a39) attached to the server on creation.
-   - `size_in_gb` - (Required) Size of the root volume in gigabytes.
-   To find the right size use [this endpoint](https://api.scaleway.com/instance/v1/zones/fr-par-1/products/servers) and
-   check the `volumes_constraint.{min|max}_size` (in bytes) for your `commercial_type`.
-   Updates to this field will recreate a new resource.
-   - `delete_on_termination` - (Defaults to `true`) Forces deletion of the root volume on instance termination.
+    - `size_in_gb` - (Required) Size of the root volume in gigabytes.
+    To find the right size use [this endpoint](https://api.scaleway.com/instance/v1/zones/fr-par-1/products/servers) and
+    check the `volumes_constraint.{min|max}_size` (in bytes) for your `commercial_type`.
+    Updates to this field will recreate a new resource.
+    - `delete_on_termination` - (Defaults to `true`) Forces deletion of the root volume on instance termination.
 
 ~> **Important:** Updates to `root_volume.size_in_gb` will trigger a stop/start of the server.
 
@@ -172,13 +171,13 @@ attached to the server. Updates to this field will trigger a stop/start of the s
 
 - `user_data` - (Optional) The user data associated with the server.
 
-  - `key` - (Required) The user data key. The `cloud-init` key is reserved, please use `cloud_init` attribute instead.
+    - `key` - (Required) The user data key. The `cloud-init` key is reserved, please use `cloud_init` attribute instead.
 
-  - `value` - (Required) The user data content. It could be a string or a file content using [file](https://www.terraform.io/docs/configuration/functions/file.html) or [filebase64](https://www.terraform.io/docs/configuration/functions/filebase64.html) for example.
+    - `value` - (Required) The user data content. It could be a string or a file content using [file](https://www.terraform.io/docs/configuration/functions/file.html) or [filebase64](https://www.terraform.io/docs/configuration/functions/filebase64.html) for example.
 
-- `zone` - (Defaults to [provider](../index.html#zone) `zone`) The [zone](../guides/regions_and_zones.html#zones) in which the server should be created.
+- `zone` - (Defaults to [provider](../index.md#zone) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which the server should be created.
 
-- `organization_id` - (Defaults to [provider](../index.html#organization_id) `organization_id`) The ID of the organization the server is associated with. If you intend to deploy your instance in another project than the default one use your `project_id` instead of the organization id.
+- `organization_id` - (Defaults to [provider](../index.md#organization_id) `organization_id`) The ID of the organization the server is associated with. If you intend to deploy your instance in another project than the default one use your `project_id` instead of the organization id.
 
 
 ## Attributes Reference
@@ -188,7 +187,7 @@ In addition to all above arguments, the following attributes are exported:
 - `id` - The ID of the server.
 - `placement_group_policy_respected` - True when the placement group policy is respected.
 - `root_volume`
-  - `volume_id` - The volume ID of the root volume of the server.
+    - `volume_id` - The volume ID of the root volume of the server.
 - `private_ip` - The Scaleway internal IP address of the server.
 - `public_ip` - The public IPv4 address of the server.
 - `ipv6_address` - The default ipv6 address routed to the server. ( Only set when enable_ipv6 is set to true )

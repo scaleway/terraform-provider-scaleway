@@ -1,5 +1,4 @@
 ---
-layout: "scaleway"
 page_title: "Scaleway: volume attachment"
 description: |-
   Manages Scaleway Volume attachments for servers.

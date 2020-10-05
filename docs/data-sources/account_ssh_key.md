@@ -1,5 +1,4 @@
 ---
-layout: "scaleway"
 page_title: "Scaleway: scaleway_account_ssh_key"
 description: |-
   Get information on a Scaleway SSH key.
@@ -27,7 +26,7 @@ data "scaleway_account_ssh_key" "my_key" {
 
 - `name` - The SSH key name. Only one of `name` and `ssh_key_id` should be specified.
 - `ssh_key_id` - The SSH key id. Only one of `name` and `ssh_key_id` should be specified.
-- `organization_id` - (Defaults to [provider](../index.html#organization_id) `organization_id`) The ID of the organization the server is associated with.
+- `organization_id` - (Defaults to [provider](../index.md#organization_id) `organization_id`) The ID of the organization the server is associated with.
 
 
 ## Attributes Reference

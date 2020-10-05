@@ -1,5 +1,4 @@
 ---
-layout: "scaleway"
 page_title: "Scaleway: server"
 description: |-
   Manages Scaleway servers.
