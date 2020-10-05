@@ -82,10 +82,8 @@ func resourceScalewayLbIPBetaRead(d *schema.ResourceData, m interface{}) error {
 
 	_ = d.Set("region", string(region))
 	_ = d.Set("organization_id", res.OrganizationID)
-	_ = d.Set("ip_id", res.ID)
 	_ = d.Set("ip_address", res.IPAddress)
 	_ = d.Set("reverse", res.Reverse)
-	_ = d.Set("lb_ip", flattenStringPtr(res.LBID))
 
 	return nil
 }

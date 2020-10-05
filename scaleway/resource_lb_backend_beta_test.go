@@ -32,6 +32,7 @@ func TestAccScalewayLbBackendBeta(t *testing.T) {
 						name = "bkd01"
 						forward_protocol = "tcp"
 						forward_port = 80
+						proxy_protocol = "none"
 						server_ips = [ scaleway_instance_ip.ip01.address ]
 					}
 				`,
