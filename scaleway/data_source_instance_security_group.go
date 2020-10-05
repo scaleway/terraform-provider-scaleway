@@ -42,7 +42,7 @@ func dataSourceScalewayInstanceSecurityGroupRead(d *schema.ResourceData, m inter
 	if !ok {
 		res, err := instanceAPI.ListSecurityGroups(&instance.ListSecurityGroupsRequest{
 			Zone: zone,
-			Name: String(d.Get("name").(string)),
+			Name: scw.StringPtr(d.Get("name").(string)),
 		}, scw.WithAllPages())
 		if err != nil {
 			return err

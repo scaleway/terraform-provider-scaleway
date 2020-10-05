@@ -81,11 +81,6 @@ func expandZonedID(id interface{}) ZonedID {
 	return zonedID
 }
 
-// String returns a pointer to of the string value passed in.
-func String(val string) *string {
-	return &val
-}
-
 // parseLocalizedID parses a localizedID and extracts the resource locality and id.
 func parseLocalizedID(localizedID string) (locality string, ID string, err error) {
 	tab := strings.SplitN(localizedID, "/", -1)
