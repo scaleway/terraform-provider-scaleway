@@ -1,5 +1,4 @@
 ---
-layout: "scaleway"
 page_title: "Scaleway: scaleway_baremetal_offer"
 description: |-
   Gets information about a baremetal offer.
@@ -33,7 +32,7 @@ data "scaleway_baremetal_offer" "my_offer" {
 
 - `allow_disabled` - (Optional, default `false`) Include disabled offers.
 
-- `zone` - (Defaults to [provider](../index.html#zone) `zone`) The [zone](../guides/regions_and_zones.html#zones) in which the offer should be created.
+- `zone` - (Defaults to [provider](../index.md#zone) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which the offer should be created.
 
 ## Attributes Reference
 

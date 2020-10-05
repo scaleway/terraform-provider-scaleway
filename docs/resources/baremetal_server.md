@@ -1,5 +1,4 @@
 ---
-layout: "scaleway"
 page_title: "Scaleway: scaleway_baremetal_server"
 description: |-
   Manages Scaleway Compute Baremetal servers.
@@ -10,7 +9,7 @@ description: |-
 Creates and manages Scaleway Compute Baremetal servers. For more information, see [the documentation](https://developers.scaleway.com/en/products/baremetal/api).
 
 ## Examples
-    
+
 ### Basic
 
 ```hcl
@@ -52,9 +51,9 @@ Use [this endpoint](https://developers.scaleway.com/en/products/baremetal/api/#g
 
 - `tags` - (Optional) The tags associated with the server.
 
-- `zone` - (Defaults to [provider](../index.html#zone) `zone`) The [zone](../guides/regions_and_zones.html#zones) in which the server should be created.
+- `zone` - (Defaults to [provider](../index.md#zone) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which the server should be created.
 
-- `organization_id` - (Defaults to [provider](../index.html#organization_id) `organization_id`) The ID of the organization the server is associated with.
+- `organization_id` - (Defaults to [provider](../index.md#organization_id) `organization_id`) The ID of the organization the server is associated with.
 
 
 ## Attributes Reference
@@ -65,10 +64,10 @@ In addition to all above arguments, the following attributes are exported:
 - `offer_id` - The ID of the offer.
 - `os_id` - The ID of the os.
 - `ips` - (List of) The IPs of the server.
-  - `id` - The ID of the IP.
-  - `address` - The address of the IP.
-  - `reverse` - The reverse of the IP.
-  - `type` - The type of the IP.
+    - `id` - The ID of the IP.
+    - `address` - The address of the IP.
+    - `reverse` - The reverse of the IP.
+    - `type` - The type of the IP.
 - `domain` - The domain of the server.
 
 ## Import

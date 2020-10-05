@@ -1,5 +1,4 @@
 ---
-layout: "scaleway"
 page_title: "Scaleway: scaleway_instance_placement_group"
 description: |-
   Manages Scaleway Compute Instance Placement Groups.
@@ -22,8 +21,8 @@ The following arguments are supported:
 - `name` - (Optional) The name of the placement group.
 - `policy_type` - (Defaults to `max_availability`) The [policy type](https://developers.scaleway.com/en/products/instance/api/#placement-groups-d8f653) of the placement group. Possible values are: `low_latency` or `max_availability`.
 - `policy_mode` - (Defaults to `optional`) The [policy mode](https://developers.scaleway.com/en/products/instance/api/#placement-groups-d8f653) of the placement group. Possible values are: `optional` or `enforced`.
-- `zone` - (Defaults to [provider](../index.html#zone) `zone`) The [zone](../guides/regions_and_zones.html#zones) in which the placement group should be created.
-- `organization_id` - (Defaults to [provider](../index.html#organization_id) `organization_id`) The ID of the project the placement group is associated with.
+- `zone` - (Defaults to [provider](../index.md#zone) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which the placement group should be created.
+- `organization_id` - (Defaults to [provider](../index.md#organization_id) `organization_id`) The ID of the project the placement group is associated with.
 
 ## Attributes Reference
 

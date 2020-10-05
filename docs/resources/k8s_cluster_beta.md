@@ -1,5 +1,4 @@
 ---
-layout: "scaleway"
 page_title: "Scaleway: scaleway_k8s_cluster_beta"
 description: |-
   Manages Scaleway Kubernetes clusters.
@@ -122,30 +121,30 @@ The following arguments are supported:
 
 - `autoscaler_config` - (Optional) The configuration options for the [Kubernetes cluster autoscaler](https://github.com/kubernetes/autoscaler/tree/master/cluster-autoscaler).
 
-  - `disable_scale_down` - (Defaults to `false`) Disables the scale down feature of the autoscaler.
+    - `disable_scale_down` - (Defaults to `false`) Disables the scale down feature of the autoscaler.
 
-  - `scale_down_delay_after_add` - (Defaults to `10m`) How long after scale up that scale down evaluation resumes.
+    - `scale_down_delay_after_add` - (Defaults to `10m`) How long after scale up that scale down evaluation resumes.
 
-  - `scale_down_unneeded_time` - (Default to `10m`) How long a node should be unneeded before it is eligible for scale down.
+    - `scale_down_unneeded_time` - (Default to `10m`) How long a node should be unneeded before it is eligible for scale down.
 
-  - `estimator` - (Defaults to `binpacking`) Type of resource estimator to be used in scale up.
+    - `estimator` - (Defaults to `binpacking`) Type of resource estimator to be used in scale up.
 
-  - `expander` - (Default to `random`) Type of node group expander to be used in scale up.
+    - `expander` - (Default to `random`) Type of node group expander to be used in scale up.
 
-  - `ignore_daemonsets_utilization` - (Defaults to `false`) Ignore DaemonSet pods when calculating resource utilization for scaling down.
+    - `ignore_daemonsets_utilization` - (Defaults to `false`) Ignore DaemonSet pods when calculating resource utilization for scaling down.
 
-  - `balance_similar_node_groups` - (Defaults to `false`) Detect similar node groups and balance the number of nodes between them.
+    - `balance_similar_node_groups` - (Defaults to `false`) Detect similar node groups and balance the number of nodes between them.
 
-  - `expendable_pods_priority_cutoff` - (Defaults to `-10`) Pods with priority below cutoff will be expendable. They can be killed without any consideration during scale down and they don't cause scale up. Pods with null priority (PodPriority disabled) are non expendable.
+    - `expendable_pods_priority_cutoff` - (Defaults to `-10`) Pods with priority below cutoff will be expendable. They can be killed without any consideration during scale down and they don't cause scale up. Pods with null priority (PodPriority disabled) are non expendable.
 
 - `auto_upgrade` - (Optional) The auto upgrade configuration.
 
-  - `enable` - (Optional) Set to `true` to enable Kubernetes patch version auto upgrades.
+    - `enable` - (Optional) Set to `true` to enable Kubernetes patch version auto upgrades.
 ~> **Important:** When enabling auto upgrades, the `version` field take a minor version like x.y (ie 1.18).
 
-  - `maintenance_window_start_hour` - (Optional) The start hour (UTC) of the 2-hour auto upgrade maintenance window (0 to 23).
+    - `maintenance_window_start_hour` - (Optional) The start hour (UTC) of the 2-hour auto upgrade maintenance window (0 to 23).
 
-  - `maintenance_window_day` - (Optional) The day of the auto upgrade maintenance window (`monday` to `sunday`, or `any`).
+    - `maintenance_window_day` - (Optional) The day of the auto upgrade maintenance window (`monday` to `sunday`, or `any`).
 
 - `feature_gates` - (Optional) The list of [feature gates](https://kubernetes.io/docs/reference/command-line-tools-reference/feature-gates/) to enable on the cluster.
 
@@ -153,9 +152,9 @@ The following arguments are supported:
 
 - `default_pool` - (Deprecated) See below.
 
-- `region` - (Defaults to [provider](../index.html#region) `region`) The [region](../guides/regions_and_zones.html#regions) in which the cluster should be created.
+- `region` - (Defaults to [provider](../index.md#region) `region`) The [region](../guides/regions_and_zones.md#regions) in which the cluster should be created.
 
-- `organization_id` - (Defaults to [provider](../index.html#organization_id) `organization_id`) The ID of the organization the cluster is associated with.
+- `organization_id` - (Defaults to [provider](../index.md#organization_id) `organization_id`) The ID of the organization the cluster is associated with.
 
 
 ## Attributes Reference
@@ -168,10 +167,10 @@ In addition to all above arguments, the following attributes are exported:
 - `apiserver_url` - The URL of the Kubernetes API server.
 - `wildcard_dns` - The DNS wildcard that points to all ready nodes.
 - `kubeconfig`
-  - `config_file` - The raw kubeconfig file.
-  - `host` - The URL of the Kubernetes API server.
-  - `cluster_ca_certificate` - The CA certificate of the Kubernetes API server.
-  - `token` - The token to connect to the Kubernetes API server.
+    - `config_file` - The raw kubeconfig file.
+    - `host` - The URL of the Kubernetes API server.
+    - `cluster_ca_certificate` - The CA certificate of the Kubernetes API server.
+    - `token` - The token to connect to the Kubernetes API server.
 - `status` - The status of the Kubernetes cluster.
 - `upgrade_available` - Set to `true` if a newer Kubernetes version is available.
 
