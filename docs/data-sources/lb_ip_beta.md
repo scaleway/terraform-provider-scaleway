@@ -1,5 +1,4 @@
 ---
-layout: "scaleway"
 page_title: "Scaleway: scaleway_lb_ip_beta"
 description: |-
   Gets information about a Load Balancer IP.

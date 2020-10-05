@@ -1,5 +1,4 @@
 ---
-layout: "scaleway"
 page_title: "Scaleway: scaleway_object_bucket"
 description: |-
   Manages Scaleway object storage buckets.

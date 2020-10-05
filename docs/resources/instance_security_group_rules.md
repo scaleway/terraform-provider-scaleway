@@ -1,5 +1,4 @@
 ---
-layout: "scaleway"
 page_title: "Scaleway: scaleway_instance_security_group_rules"
 description: |-
   Manages Scaleway Compute Instance security group rules.

@@ -1,5 +1,4 @@
 ---
-layout: "scaleway"
 page_title: "Scaleway: scaleway_account_ssh_key"
 description: |-
   Manages Scaleway user SSH keys.

@@ -1,5 +1,4 @@
 ---
-layout: "scaleway"
 page_title: "Scaleway: scaleway_instance_image"
 description: |-
   Gets information about an Instance Image.

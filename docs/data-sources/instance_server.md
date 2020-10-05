@@ -1,5 +1,4 @@
 ---
-layout: "scaleway"
 page_title: "Scaleway: scaleway_instance_server"
 description: |-
   Gets information about an Instance Server.

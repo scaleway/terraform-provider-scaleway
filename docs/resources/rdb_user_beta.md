@@ -1,5 +1,4 @@
 ---
-layout: "scaleway"
 page_title: "Scaleway: scaleway_rdb_user_beta"
 description: |-
   Manages Scaleway Database Users.

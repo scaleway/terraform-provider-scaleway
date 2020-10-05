@@ -1,5 +1,4 @@
 ---
-layout: "scaleway"
 page_title: "Scaleway: scaleway_k8s_cluster_beta"
 description: |-
   Manages Scaleway Kubernetes clusters.

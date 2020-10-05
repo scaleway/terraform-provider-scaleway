@@ -1,5 +1,4 @@
 ---
-layout: "scaleway"
 page_title: "Scaleway: scaleway_bootscript"
 description: |-
   Get information on a Scaleway bootscript.

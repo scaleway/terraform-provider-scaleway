@@ -1,5 +1,4 @@
 ---
-layout: "scaleway"
 page_title: "Scaleway: volume"
 description: |-
   Manages Scaleway Volumes.

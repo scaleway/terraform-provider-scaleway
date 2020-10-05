@@ -1,5 +1,4 @@
 ---
-layout: "scaleway"
 page_title: "Scaleway: scaleway_instance_volume"
 description: |-
   Gets information about an instance volume.

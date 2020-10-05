@@ -1,5 +1,4 @@
 ---
-layout: "scaleway"
 page_title: "Scaleway: token"
 description: |-
   Manages Scaleway Tokens.

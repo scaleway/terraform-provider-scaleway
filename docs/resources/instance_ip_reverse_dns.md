@@ -1,5 +1,4 @@
 ---
-layout: "scaleway"
 page_title: "Scaleway: scaleway_instance_ip_reverse_dns"
 description: |-
   Manages Scaleway Compute Instance IPs' reverse DNS.

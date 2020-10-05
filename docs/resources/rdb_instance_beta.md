@@ -1,5 +1,4 @@
 ---
-layout: "scaleway"
 page_title: "Scaleway: scaleway_rdb_instance_beta"
 description: |-
   Manages Scaleway Database Instances.

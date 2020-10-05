@@ -1,5 +1,4 @@
 ---
-layout: "scaleway"
 page_title: "Scaleway: scaleway_marketplace_image_beta"
 description: |-
   Gets local image ID of an image from its label name.

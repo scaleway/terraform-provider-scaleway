@@ -1,5 +1,4 @@
 ---
-layout: "scaleway"
 page_title: "Scaleway: ip_reverse_dns"
 description: |-
   Manages Scaleway IPs.

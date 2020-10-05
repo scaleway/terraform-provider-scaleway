@@ -1,5 +1,4 @@
 ---
-layout: "scaleway"
 page_title: "Scaleway: scaleway_lb_backend_beta"
 description: |-
   Manages Scaleway Load-Balancer Backends.

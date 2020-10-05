@@ -1,5 +1,4 @@
 ---
-layout: "scaleway"
 page_title: "Scaleway: scaleway_registry_namespace_beta"
 description: |-
   Gets information about a registry namespace.

@@ -1,5 +1,4 @@
 ---
-layout: "scaleway"
 page_title: "Scaleway: scaleway_lb_certificate_beta"
 description: |-
   Manages Scaleway Load-Balancer Certificates.
