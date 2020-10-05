@@ -101,18 +101,9 @@ func resourceScalewayRdbUserBetaRead(d *schema.ResourceData, m interface{}) erro
 	}
 
 	var user = res.Users[0]
-	err = d.Set("instance_id", newRegionalID(region, instanceID).String())
-	if err != nil {
-		return err
-	}
-	err = d.Set("name", user.Name)
-	if err != nil {
-		return err
-	}
-	err = d.Set("is_admin", user.IsAdmin)
-	if err != nil {
-		return err
-	}
+	_ = d.Set("instance_id", newRegionalID(region, instanceID).String())
+	_ = d.Set("name", user.Name)
+	_ = d.Set("is_admin", user.IsAdmin)
 
 	d.SetId(resourceScalewayRdbUserBetaID(region, instanceID, user.Name))
 
