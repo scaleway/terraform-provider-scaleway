@@ -5,6 +5,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	instance "github.com/scaleway/scaleway-sdk-go/api/instance/v1"
+	"github.com/scaleway/scaleway-sdk-go/scw"
 )
 
 func dataSourceScalewayInstanceVolume() *schema.Resource {
@@ -40,7 +41,7 @@ func dataSourceScalewayInstanceVolumeRead(d *schema.ResourceData, m interface{})
 	if !ok { // Get volumes by zone and name.
 		res, err := instanceAPI.ListVolumes(&instance.ListVolumesRequest{
 			Zone: zone,
-			Name: String(d.Get("name").(string)),
+			Name: scw.StringPtr(d.Get("name").(string)),
 		})
 		if err != nil {
 			return err
