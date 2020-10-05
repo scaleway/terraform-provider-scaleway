@@ -73,7 +73,7 @@ func dataSourceScalewayRegistryImageBetaRead(d *schema.ResourceData, m interface
 		}
 		res, err := api.ListImages(&registry.ListImagesRequest{
 			Region:      region,
-			Name:        String(d.Get("name").(string)),
+			Name:        scw.StringPtr(d.Get("name").(string)),
 			NamespaceID: namespaceID,
 		})
 		if err != nil {
