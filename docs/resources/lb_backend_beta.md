@@ -1,5 +1,4 @@
 ---
-layout: "scaleway"
 page_title: "Scaleway: scaleway_lb_backend_beta"
 description: |-
   Manages Scaleway Load-Balancer Backends.
@@ -12,7 +11,7 @@ description: |-
 Creates and manages Scaleway Load-Balancer Backends. For more information, see [the documentation](https://developers.scaleway.com/en/products/lb/api).
 
 ## Examples
-    
+
 ### Basic
 
 ```hcl
@@ -32,7 +31,7 @@ resource "scaleway_lb_backend_beta" "backend01" {
     name = "backend01"
     forward_protocol = "http"
     forward_port = "80"
- 
+
     health_check_http {
       uri: "www.test.com/health"
     }
@@ -54,7 +53,7 @@ The following arguments are supported:
 - `sticky_sessions`             - (Default: `none`) Load balancing algorithm. Possible values are: `none`, `cookie` and `table`.
 - `sticky_sessions_cookie_name` - (Optional) Cookie name for for sticky sessions. Only applicable when sticky_sessions is set to `cookie`.
 - `server_ips`                  - (Optional) List of backend server IP addresses. Addresses can be either IPv4 or IPv6.
-- `send_proxy_v2`               - DEPRECATED please use `proxy_protocol` instead - (Default: `false`) Enables PROXY protocol version 2. 
+- `send_proxy_v2`               - DEPRECATED please use `proxy_protocol` instead - (Default: `false`) Enables PROXY protocol version 2.
 - `proxy_protocol`              - (Default: `none`) Choose the type of PROXY protocol to enable (`none`, `v1`, `v2`, `v2_ssl`, `v2_ssl_cn`)
 - `timeout_server`              - (Optional) Maximum server connection inactivity time. (e.g.: `1s`)
 - `timeout_connect`             - (Optional) Maximum initial server connection establishment time. (e.g.: `1s`)
@@ -71,13 +70,13 @@ You may use one of the following health check types: `TCP`, `HTTP` or `HTTPS`. (
 - `health_check_max_retries`    - (Default: `2`) Number of allowed failed HC requests before the backend server is marked down.
 - `health_check_tcp`            - (Optional) This block enable TCP health check. Only one of `health_check_tcp`, `health_check_http` and `health_check_https` should be specified.
 - `health_check_http`           - (Optional) This block enable HTTP health check. Only one of `health_check_tcp`, `health_check_http` and `health_check_https` should be specified.
-  - `uri`                       - (Required) The HTTP endpoint URL to call for HC requests.
-  - `method`                    - (Default: `GET`) The HTTP method to use for HC requests.
-  - `code`                      - (Default: `200`) The expected HTTP status code.
+    - `uri`                       - (Required) The HTTP endpoint URL to call for HC requests.
+    - `method`                    - (Default: `GET`) The HTTP method to use for HC requests.
+    - `code`                      - (Default: `200`) The expected HTTP status code.
 - `health_check_https`          - (Optional) This block enable HTTPS health check. Only one of `health_check_tcp`, `health_check_http` and `health_check_https` should be specified.
-  - `uri`                       - (Required) The HTTPS endpoint URL to call for HC requests.
-  - `method`                    - (Default: `GET`) The HTTP method to use for HC requests.
-  - `code`                      - (Default: `200`) The expected HTTP status code.
+    - `uri`                       - (Required) The HTTPS endpoint URL to call for HC requests.
+    - `method`                    - (Default: `GET`) The HTTP method to use for HC requests.
+    - `code`                      - (Default: `200`) The expected HTTP status code.
 - `on_marked_down_action`       - (Default: `none`) Modify what occurs when a backend server is marked down. Possible values are: `none` and `shutdown_sessions`.
 
 

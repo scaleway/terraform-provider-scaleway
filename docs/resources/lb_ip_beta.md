@@ -1,5 +1,4 @@
 ---
-layout: "scaleway"
 page_title: "Scaleway: scaleway_lb_ip_beta"
 description: |-
   Manages Scaleway Load-Balancers IPs.
@@ -12,7 +11,7 @@ description: |-
 Creates and manages Scaleway Load-Balancers IPs. For more information, see [the documentation](https://developers.scaleway.com/en/products/lb/api).
 
 ## Examples
-    
+
 ### Basic
 
 ```hcl

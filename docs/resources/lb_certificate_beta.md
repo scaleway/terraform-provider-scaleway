@@ -1,5 +1,4 @@
 ---
-layout: "scaleway"
 page_title: "Scaleway: scaleway_lb_certificate_beta"
 description: |-
   Manages Scaleway Load-Balancer Certificates.
@@ -12,8 +11,9 @@ description: |-
 Creates and manages Scaleway Load-Balancer Certificates. For more information, see [the documentation](https://developers.scaleway.com/en/products/lb/api).
 
 ## Examples
-    
-#### Let's Encrypt
+
+### Let's Encrypt
+
 ```hcl
 resource scaleway_lb_certificate_beta cert01 {
     lb_id = scaleway_lb_beta.lb01.id
@@ -28,7 +28,8 @@ resource scaleway_lb_certificate_beta cert01 {
 }
 ```
 
-#### Custom Certificate
+### Custom Certificate
+
 ```hcl
 resource scaleway_lb_certificate_beta cert01 {
     lb_id = scaleway_lb_beta.lb01.id
@@ -81,6 +82,8 @@ In addition to all arguments above, the following attributes are exported:
 
 ## Additional notes
 
-* Ensure that all domain names used in configuration are pointing to the load balancer IP. You can achieve this by creating a DNS record through terraform pointing to  `ip_adress` property of `lb_beta` entity
-* In case there are any issues with the certificate, you will receive a `400` error from the `apply` operation. Use `export TF_LOG=DEBUG`  to view exact problem returned by the api.
+* Ensure that all domain names used in configuration are pointing to the load balancer IP.
+  You can achieve this by creating a DNS record through terraform pointing to  `ip_address` property of `lb_beta` entity.
+* In case there are any issues with the certificate, you will receive a `400` error from the `apply` operation.
+  Use `export TF_LOG=DEBUG` to view exact problem returned by the api.
 * Wildcards are not supported with Let's Encrypt yet.

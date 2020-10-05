@@ -1,5 +1,4 @@
 ---
-layout: "scaleway"
 page_title: "Scaleway: security_group_rule"
 description: |-
   Manages Scaleway security group rules.

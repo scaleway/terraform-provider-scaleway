@@ -1,5 +1,4 @@
 ---
-layout: "scaleway"
 page_title: "Scaleway: scaleway_instance_ip"
 description: |-
   Manages Scaleway Compute Instance IPs.
@@ -19,8 +18,8 @@ resource "scaleway_instance_ip" "server_ip" {}
 
 The following arguments are supported:
 
-- `zone` - (Defaults to [provider](../index.html#zone) `zone`) The [zone](../guides/regions_and_zones.html#zones) in which the IP should be reserved.
-- `organization_id` - (Defaults to [provider](../index.html#organization_id) `organization_id`) The ID of the organization the IP is associated with.
+- `zone` - (Defaults to [provider](../index.md#zone) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which the IP should be reserved.
+- `organization_id` - (Defaults to [provider](../index.md#organization_id) `organization_id`) The ID of the organization the IP is associated with.
 
 ## Attributes Reference
 

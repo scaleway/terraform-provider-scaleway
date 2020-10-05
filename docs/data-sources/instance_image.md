@@ -1,5 +1,4 @@
 ---
-layout: "scaleway"
 page_title: "Scaleway: scaleway_instance_image"
 description: |-
   Gets information about an Instance Image.
@@ -33,7 +32,7 @@ data "scaleway_instance_image" "my_image" {
 
 - `latest` - (Optional, default `true`) Use the latest image ID.
 
-- `zone` - (Defaults to [provider](../index.html#zone) `zone`) The [zone](../guides/regions_and_zones.html#zones) in which the image exists.
+- `zone` - (Defaults to [provider](../index.md#zone) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which the image exists.
 
 ## Attributes Reference
 

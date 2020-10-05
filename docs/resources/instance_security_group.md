@@ -1,5 +1,4 @@
 ---
-layout: "scaleway"
 page_title: "Scaleway: scaleway_instance_security_group"
 description: |-
   Manages Scaleway Compute Instance security groups.
@@ -18,7 +17,7 @@ resource "scaleway_instance_security_group" "allow_all" {
 }
 
 resource "scaleway_instance_security_group" "web" {
-  inbound_default_policy = "drop" # By default we drop incomming trafic that do not match any inbound_rule
+  inbound_default_policy = "drop" # By default we drop incoming traffic that do not match any inbound_rule
   
   inbound_rule {
     action = "accept"
@@ -43,8 +42,8 @@ resource "scaleway_instance_security_group" "web" {
 
 ```hcl
 resource "scaleway_instance_security_group" "web" {
-  inbound_default_policy = "drop" # By default we drop incomming trafic that do not match any inbound_rule.
-  outbound_default_policy = "drop" # By default we drop outgoing trafic that do not match any outbound_rule.
+  inbound_default_policy = "drop" # By default we drop incoming traffic that do not match any inbound_rule.
+  outbound_default_policy = "drop" # By default we drop outgoing traffic that do not match any outbound_rule.
   
   inbound_rule {
     action = "drop"
@@ -64,7 +63,7 @@ resource "scaleway_instance_security_group" "web" {
   
   outbound_rule {
     action = "accept"
-    ip = "8.8.8.8" # Only allow outgoing conection to this IP.
+    ip = "8.8.8.8" # Only allow outgoing connection to this IP.
   }
 }
 ```
@@ -112,11 +111,12 @@ The following arguments are supported:
 
 - `outbound_rule` - (Optional) A list of outbound rule to add to the security group. (Structure is documented below.)
 
-- `external_rules` - (Defaults to `false`) A boolean to specify whether to use [instance_security_group_rules](../r/instance_security_group_rules.html). If `external_rules` is set to `true`, `inbound_rule` and `outbound_rule` can not be set directly in the security group.
+- `external_rules` - (Defaults to `false`) A boolean to specify whether to use [instance_security_group_rules](../resources/instance_security_group_rules.md).
+  If `external_rules` is set to `true`, `inbound_rule` and `outbound_rule` can not be set directly in the security group.
 
-- `zone` - (Defaults to [provider](../index.html#zone) `zone`) The [zone](../guides/regions_and_zones.html#zones) in which the security group should be created.
+- `zone` - (Defaults to [provider](../index.md#zone) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which the security group should be created.
 
-- `organization_id` - (Defaults to [provider](../index.html#organization_id) `organization_id`) The ID of the project the security group is associated with.
+- `organization_id` - (Defaults to [provider](../index.md#organization_id) `organization_id`) The ID of the project the security group is associated with.
 
 
 The `inbound_rule` and `outbound_rule` block supports:
@@ -127,7 +127,10 @@ The `inbound_rule` and `outbound_rule` block supports:
 
 - `port`- (Optional) The port this rule applies to. If no `port` nor `port_range` are specified, the rule will apply to all port. Only one of `port` and `port_range` should be specified.
 
-- `port_range`- Need terraform >= 0.13.0 (Optional) The port range (e.g `22-23`) this rule applies to. Port range MUST comply the Scaleway-notation: interval between ports must be a power of 2 `2^X-1` number (e.g 2^13-1=8191 in port_range = "10000-18191").If no `port` nor `port_range` are specified, rule will apply to all port. Only one of `port` and `port_range` should be specified. 
+- `port_range`- Need terraform >= 0.13.0 (Optional) The port range (e.g `22-23`) this rule applies to.
+  Port range MUST comply the Scaleway-notation: interval between ports must be a power of 2 `2^X-1` number (e.g 2^13-1=8191 in port_range = "10000-18191").
+  If no `port` nor `port_range` are specified, rule will apply to all port.
+  Only one of `port` and `port_range` should be specified.
 
 - `ip`- (Optional) The ip this rule apply to. If no `ip` nor `ip_range` are specified, rule will apply to all ip. Only one of `ip` and `ip_range` should be specified.
 

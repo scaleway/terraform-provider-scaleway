@@ -1,5 +1,4 @@
 ---
-layout: "scaleway"
 page_title: "Scaleway: ip"
 description: |-
   Manages Scaleway IPs.

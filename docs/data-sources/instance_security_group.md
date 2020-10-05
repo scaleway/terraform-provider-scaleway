@@ -1,5 +1,4 @@
 ---
-layout: "scaleway"
 page_title: "Scaleway: scaleway_instance_security_group"
 description: |-
   Gets information about a Security Group.
@@ -29,7 +28,7 @@ data "scaleway_instance_security_group" "my_key" {
 
 - `security_group_id` - (Optional) The security group id. Only one of `name` and `security_group_id` should be specified.
 
-- `zone` - (Defaults to [provider](../index.html#zone) `zone`) The [zone](../guides/regions_and_zones.html#zones) in which the security group exists.
+- `zone` - (Defaults to [provider](../index.md#zone) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which the security group exists.
 
 ## Attributes Reference
 
