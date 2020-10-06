@@ -101,7 +101,7 @@ func expandLbACLMatch(raw interface{}) *lb.ACLMatch {
 	//scaleway api require ip subnet, so if we did not specify one, just put 0.0.0.0/0 instead
 	ipSubnet := expandSliceStringPtr(rawMap["ip_subnet"].([]interface{}))
 	if len(ipSubnet) == 0 {
-		ipSubnet = []*string{scw.StringPtr("0.0.0.0/0")}
+		ipSubnet = []*string{expandStringPtr("0.0.0.0/0")}
 	}
 
 	return &lb.ACLMatch{

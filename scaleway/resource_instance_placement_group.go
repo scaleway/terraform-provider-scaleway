@@ -119,7 +119,7 @@ func resourceScalewayInstancePlacementGroupUpdate(d *schema.ResourceData, m inte
 	hasChanged := d.HasChange("policy_mode") || d.HasChange("policy_type")
 
 	if d.HasChange("name") {
-		req.Name = String(d.Get("name").(string))
+		req.Name = expandStringPtr(d.Get("name").(string))
 		hasChanged = true
 	}
 	if hasChanged {

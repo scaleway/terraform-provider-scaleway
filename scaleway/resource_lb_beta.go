@@ -66,7 +66,7 @@ func resourceScalewayLbBetaCreate(d *schema.ResourceData, m interface{}) error {
 
 	createReq := &lb.CreateLBRequest{
 		Region:         region,
-		IPID:           scw.StringPtr(expandID(d.Get("ip_id").(string))),
+		IPID:           expandStringPtr(expandID(d.Get("ip_id"))),
 		OrganizationID: expandStringPtr(d.Get("organization_id")),
 		Name:           expandOrGenerateString(d.Get("name"), "lb"),
 		Type:           d.Get("type").(string),

@@ -2,7 +2,6 @@ package scaleway
 
 import (
 	"github.com/aws/aws-sdk-go/service/s3"
-	"github.com/scaleway/scaleway-sdk-go/scw"
 )
 
 func flattenObjectBucketTags(tagsSet []*s3.Tag) map[string]interface{} {
@@ -29,7 +28,7 @@ func expandObjectBucketTags(tags interface{}) []*s3.Tag {
 	for key, value := range tags.(map[string]interface{}) {
 		tagsSet = append(tagsSet, &s3.Tag{
 			Key:   &key,
-			Value: scw.StringPtr(value.(string)),
+			Value: expandStringPtr(value),
 		})
 	}
 
