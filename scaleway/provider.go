@@ -128,6 +128,7 @@ func Provider() func() *schema.Provider {
 				},
 				"project_id": {
 					Type:        schema.TypeString,
+					Optional:    true, // To allow user to use organization instead of project
 					Description: "The Scaleway project ID.",
 					DefaultFunc: schema.SchemaDefaultFunc(func() (interface{}, error) {
 						if envProfile.DefaultProjectID != nil {
