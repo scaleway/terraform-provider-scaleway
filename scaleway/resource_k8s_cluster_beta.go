@@ -854,11 +854,10 @@ func resourceScalewayK8SClusterBetaUpdate(d *schema.ResourceData, m interface{})
 	if d.HasChange("auto_upgrade.0.enable") {
 		updateRequest.AutoUpgrade.Enable = scw.BoolPtr(d.Get("auto_upgrade.0.enable").(bool))
 	}
-	updateRequest.AutoUpgrade.MaintenanceWindow = &k8s.MaintenanceWindow{}
-	if d.HasChange("auto_upgrade.0.maintenance_window_start_hour") {
+
+	if d.HasChanges("auto_upgrade.0.maintenance_window_start_hour", "auto_upgrade.0.maintenance_window_day") {
+		updateRequest.AutoUpgrade.MaintenanceWindow = &k8s.MaintenanceWindow{}
 		updateRequest.AutoUpgrade.MaintenanceWindow.StartHour = uint32(d.Get("auto_upgrade.0.maintenance_window_start_hour").(int))
-	}
-	if d.HasChange("auto_upgrade.0.maintenance_window_day") {
 		updateRequest.AutoUpgrade.MaintenanceWindow.Day = k8s.MaintenanceWindowDayOfTheWeek(d.Get("auto_upgrade.0.maintenance_window_day").(string))
 	}
 
