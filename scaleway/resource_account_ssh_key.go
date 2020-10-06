@@ -33,6 +33,7 @@ func resourceScalewayAccountSSKKey() *schema.Resource {
 				},
 			},
 			"organization_id": organizationIDSchema(),
+			"project_id":      projectIDSchema(),
 		},
 	}
 }
@@ -44,6 +45,7 @@ func resourceScalewayAccountSSHKeyCreate(d *schema.ResourceData, m interface{}) 
 		Name:           d.Get("name").(string),
 		PublicKey:      strings.Trim(d.Get("public_key").(string), "\n"),
 		OrganizationID: expandStringPtr(d.Get("organization_id")),
+		ProjectID:      expandStringPtr(d.Get("project_id")),
 	})
 	if err != nil {
 		return err
@@ -71,6 +73,7 @@ func resourceScalewayAccountSSHKeyRead(d *schema.ResourceData, m interface{}) er
 	_ = d.Set("name", res.Name)
 	_ = d.Set("public_key", res.PublicKey)
 	_ = d.Set("organization_id", res.OrganizationID)
+	_ = d.Set("project_id", res.ProjectID)
 
 	return nil
 }
