@@ -272,7 +272,12 @@ func resourceScalewayK8SClusterBeta() *schema.Resource {
 					},
 				},
 			},
-
+			"delete_additional_resources": {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Default:     false,
+				Description: "Delete additional resources like block volumes and loadbalancers on cluster deletion",
+			},
 			"region":          regionSchema(),
 			"organization_id": organizationIDSchema(),
 			// Computed elements
@@ -981,12 +986,15 @@ func resourceScalewayK8SClusterBetaDelete(d *schema.ResourceData, m interface{})
 		return err
 	}
 
+	deleteAdditionalResources := d.Get("delete_additional_resources").(bool)
+
 	////
 	// Delete Cluster
 	////
 	_, err = k8sAPI.DeleteCluster(&k8s.DeleteClusterRequest{
-		Region:    region,
-		ClusterID: clusterID,
+		Region:                  region,
+		ClusterID:               clusterID,
+		WithAdditionalResources: deleteAdditionalResources,
 	})
 	if err != nil {
 		if is404Error(err) {
