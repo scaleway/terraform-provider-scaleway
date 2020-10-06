@@ -126,6 +126,21 @@ func Provider() func() *schema.Provider {
 					}),
 					ValidateFunc: validationUUID(),
 				},
+				"project_id": {
+					Type:        schema.TypeString,
+					Optional:    true, // To allow user to use organization instead of project
+					Description: "The Scaleway project ID.",
+					DefaultFunc: schema.SchemaDefaultFunc(func() (interface{}, error) {
+						if envProfile.DefaultProjectID != nil {
+							return *envProfile.DefaultProjectID, nil
+						}
+						if activeProfile != nil && activeProfile.DefaultProjectID != nil {
+							return *activeProfile.DefaultProjectID, nil
+						}
+						return nil, nil
+					}),
+					ValidateFunc: validationUUID(),
+				},
 				"region": {
 					Type:        schema.TypeString,
 					Optional:    true,
