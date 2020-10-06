@@ -90,11 +90,11 @@ func resourceScalewayInstanceVolumeCreate(d *schema.ResourceData, m interface{})
 	}
 
 	if volumeID, ok := d.GetOk("from_volume_id"); ok {
-		createVolumeRequest.BaseVolume = scw.StringPtr(expandID(volumeID))
+		createVolumeRequest.BaseVolume = expandStringPtr(expandID(volumeID))
 	}
 
 	if snapshotID, ok := d.GetOk("from_snapshot_id"); ok {
-		createVolumeRequest.BaseSnapshot = scw.StringPtr(expandID(snapshotID))
+		createVolumeRequest.BaseSnapshot = expandStringPtr(expandID(snapshotID))
 	}
 
 	res, err := instanceAPI.CreateVolume(createVolumeRequest)

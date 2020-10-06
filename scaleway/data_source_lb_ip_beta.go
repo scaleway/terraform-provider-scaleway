@@ -5,7 +5,6 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/api/lb/v1"
-	"github.com/scaleway/scaleway-sdk-go/scw"
 )
 
 func dataSourceScalewayLbIPBeta() *schema.Resource {
@@ -42,7 +41,7 @@ func dataSourceScalewayLbIPBetaRead(d *schema.ResourceData, m interface{}) error
 	if !ok { // Get IP by region and IP address.
 		res, err := api.ListIPs(&lb.ListIPsRequest{
 			Region:    region,
-			IPAddress: scw.StringPtr(d.Get("ip_address").(string)),
+			IPAddress: expandStringPtr(d.Get("ip_address")),
 		})
 		if err != nil {
 			return err

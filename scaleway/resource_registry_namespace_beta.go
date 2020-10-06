@@ -105,7 +105,7 @@ func resourceScalewayRegistryNamespaceBetaUpdate(d *schema.ResourceData, m inter
 		if _, err := api.UpdateNamespace(&registry.UpdateNamespaceRequest{
 			Region:      region,
 			NamespaceID: id,
-			Description: scw.StringPtr(d.Get("description").(string)),
+			Description: expandStringPtr(d.Get("description")),
 			IsPublic:    scw.BoolPtr(d.Get("is_public").(bool)),
 		}); err != nil {
 			return err

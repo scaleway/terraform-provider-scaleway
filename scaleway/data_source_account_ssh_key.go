@@ -5,7 +5,6 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	account "github.com/scaleway/scaleway-sdk-go/api/account/v2alpha1"
-	"github.com/scaleway/scaleway-sdk-go/scw"
 )
 
 func dataSourceScalewayAccountSSHKey() *schema.Resource {
@@ -49,7 +48,7 @@ func dataSourceScalewayAccountSSHKeyRead(d *schema.ResourceData, m interface{}) 
 		sshKey = res
 	} else {
 		res, err := accountAPI.ListSSHKeys(&account.ListSSHKeysRequest{
-			Name: scw.StringPtr(d.Get("name").(string)),
+			Name: expandStringPtr(d.Get("name")),
 		})
 		if err != nil {
 			return err
