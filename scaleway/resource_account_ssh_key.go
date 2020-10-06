@@ -81,7 +81,7 @@ func resourceScalewayAccountSSHKeyUpdate(d *schema.ResourceData, m interface{}) 
 	if d.HasChange("name") {
 		_, err := accountAPI.UpdateSSHKey(&account.UpdateSSHKeyRequest{
 			SSHKeyID: d.Id(),
-			Name:     expandStringPtr(d.Get("name").(string)),
+			Name:     expandStringPtr(d.Get("name")),
 		})
 		if err != nil {
 			return err

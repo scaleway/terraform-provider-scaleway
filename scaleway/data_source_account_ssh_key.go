@@ -48,7 +48,7 @@ func dataSourceScalewayAccountSSHKeyRead(d *schema.ResourceData, m interface{}) 
 		sshKey = res
 	} else {
 		res, err := accountAPI.ListSSHKeys(&account.ListSSHKeysRequest{
-			Name: expandStringPtr(d.Get("name").(string)),
+			Name: expandStringPtr(d.Get("name")),
 		})
 		if err != nil {
 			return err

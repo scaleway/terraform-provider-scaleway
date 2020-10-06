@@ -222,7 +222,7 @@ func resourceScalewayRdbInstanceBetaUpdate(d *schema.ResourceData, m interface{}
 	}
 
 	if d.HasChange("name") {
-		req.Name = expandStringPtr(d.Get("name").(string))
+		req.Name = expandStringPtr(d.Get("name"))
 	}
 	if d.HasChange("disable_backup") {
 		req.IsBackupScheduleDisabled = scw.BoolPtr(d.Get("disable_backup").(bool))
@@ -242,7 +242,7 @@ func resourceScalewayRdbInstanceBetaUpdate(d *schema.ResourceData, m interface{}
 			rdb.UpgradeInstanceRequest{
 				Region:     region,
 				InstanceID: ID,
-				NodeType:   expandStringPtr(d.Get("node_type").(string)),
+				NodeType:   expandStringPtr(d.Get("node_type")),
 			})
 	}
 
@@ -278,7 +278,7 @@ func resourceScalewayRdbInstanceBetaUpdate(d *schema.ResourceData, m interface{}
 			Region:     region,
 			InstanceID: ID,
 			Name:       d.Get("user_name").(string),
-			Password:   expandStringPtr(d.Get("password").(string)),
+			Password:   expandStringPtr(d.Get("password")),
 		}
 
 		_, err = rdbAPI.UpdateUser(req)

@@ -481,7 +481,7 @@ func resourceScalewayInstanceServerUpdate(d *schema.ResourceData, m interface{})
 	}
 
 	if d.HasChange("name") {
-		updateRequest.Name = expandStringPtr(d.Get("name").(string))
+		updateRequest.Name = expandStringPtr(d.Get("name"))
 	}
 
 	if d.HasChange("tags") {

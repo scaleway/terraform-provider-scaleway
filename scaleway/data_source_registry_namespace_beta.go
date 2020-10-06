@@ -39,7 +39,7 @@ func dataSourceScalewayRegistryNamespaceReadBeta(d *schema.ResourceData, m inter
 	if !ok {
 		res, err := api.ListNamespaces(&registry.ListNamespacesRequest{
 			Region: region,
-			Name:   expandStringPtr(d.Get("name").(string)),
+			Name:   expandStringPtr(d.Get("name")),
 		})
 		if err != nil {
 			return err

@@ -28,7 +28,7 @@ func expandObjectBucketTags(tags interface{}) []*s3.Tag {
 	for key, value := range tags.(map[string]interface{}) {
 		tagsSet = append(tagsSet, &s3.Tag{
 			Key:   &key,
-			Value: expandStringPtr(value.(string)),
+			Value: expandStringPtr(value),
 		})
 	}
 
