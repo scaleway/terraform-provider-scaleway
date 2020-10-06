@@ -380,11 +380,11 @@ func resourceScalewayK8SClusterBetaCreate(d *schema.ResourceData, m interface{})
 	}
 
 	if scaleDownDelayAfterAdd, ok := d.GetOk("autoscaler_config.0.scale_down_delay_after_add"); ok {
-		autoscalerReq.ScaleDownDelayAfterAdd = scw.StringPtr(scaleDownDelayAfterAdd.(string))
+		autoscalerReq.ScaleDownDelayAfterAdd = expandStringPtr(scaleDownDelayAfterAdd.(string))
 	}
 
 	if scaleDownUneededTime, ok := d.GetOk("autoscaler_config.0.scale_down_unneeded_time"); ok {
-		autoscalerReq.ScaleDownUnneededTime = scw.StringPtr(scaleDownUneededTime.(string))
+		autoscalerReq.ScaleDownUnneededTime = expandStringPtr(scaleDownUneededTime.(string))
 	}
 
 	if estimator, ok := d.GetOk("autoscaler_config.0.estimator"); ok {
@@ -458,7 +458,7 @@ func resourceScalewayK8SClusterBetaCreate(d *schema.ResourceData, m interface{})
 		}
 
 		if placementGroupID, ok := d.GetOk("default_pool.0.placement_group_id"); ok {
-			defaultPoolReq.PlacementGroupID = scw.StringPtr(expandID(placementGroupID.(string)))
+			defaultPoolReq.PlacementGroupID = expandStringPtr(expandID(placementGroupID.(string)))
 		}
 
 		if minSize, ok := d.GetOk("default_pool.0.min_size"); ok {
@@ -750,7 +750,7 @@ func resourceScalewayK8SClusterBetaDefaultPoolUpdate(d *schema.ResourceData, m i
 				Size:        uint32(d.Get("default_pool.0.size").(int)),
 			}
 			if placementGroupID, ok := d.GetOk("default_pool.0.placement_group_id"); ok {
-				defaultPoolRequest.PlacementGroupID = scw.StringPtr(expandID(placementGroupID.(string)))
+				defaultPoolRequest.PlacementGroupID = expandStringPtr(expandID(placementGroupID.(string)))
 			}
 
 			if d.HasChange("default_pool.0.min_size") {
@@ -820,11 +820,11 @@ func resourceScalewayK8SClusterBetaUpdate(d *schema.ResourceData, m interface{})
 	}
 
 	if d.HasChange("name") {
-		updateRequest.Name = scw.StringPtr(d.Get("name").(string))
+		updateRequest.Name = expandStringPtr(d.Get("name").(string))
 	}
 
 	if d.HasChange("description") {
-		updateRequest.Description = scw.StringPtr(d.Get("description").(string))
+		updateRequest.Description = expandStringPtr(d.Get("description").(string))
 	}
 
 	if d.HasChange("tags") {
@@ -904,11 +904,11 @@ func resourceScalewayK8SClusterBetaUpdate(d *schema.ResourceData, m interface{})
 	}
 
 	if d.HasChange("autoscaler_config.0.scale_down_delay_after_add") {
-		autoscalerReq.ScaleDownDelayAfterAdd = scw.StringPtr(d.Get("autoscaler_config.0.scale_down_delay_after_add").(string))
+		autoscalerReq.ScaleDownDelayAfterAdd = expandStringPtr(d.Get("autoscaler_config.0.scale_down_delay_after_add").(string))
 	}
 
 	if d.HasChange("autoscaler_config.0.scale_down_unneeded_time") {
-		autoscalerReq.ScaleDownUnneededTime = scw.StringPtr(d.Get("autoscaler_config.0.scale_down_unneeded_time").(string))
+		autoscalerReq.ScaleDownUnneededTime = expandStringPtr(d.Get("autoscaler_config.0.scale_down_unneeded_time").(string))
 	}
 
 	if d.HasChange("autoscaler_config.0.estimator") {

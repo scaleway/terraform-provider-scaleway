@@ -232,8 +232,8 @@ func resourceScalewayBaremetalServerUpdate(d *schema.ResourceData, m interface{}
 	_, err = baremetalAPI.UpdateServer(&baremetal.UpdateServerRequest{
 		Zone:        zonedID.Zone,
 		ServerID:    zonedID.ID,
-		Name:        scw.StringPtr(d.Get("name").(string)),
-		Description: scw.StringPtr(d.Get("description").(string)),
+		Name:        expandStringPtr(d.Get("name").(string)),
+		Description: expandStringPtr(d.Get("description").(string)),
 		Tags:        scw.StringsPtr(expandStrings(d.Get("tags"))),
 	})
 	if err != nil {

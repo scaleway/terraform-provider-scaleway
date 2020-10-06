@@ -256,11 +256,11 @@ func resourceScalewayInstanceServerCreate(d *schema.ResourceData, m interface{})
 	}
 
 	if ipID, ok := d.GetOk("ip_id"); ok {
-		req.PublicIP = scw.StringPtr(expandZonedID(ipID).ID)
+		req.PublicIP = expandStringPtr(expandZonedID(ipID).ID)
 	}
 
 	if placementGroupID, ok := d.GetOk("placement_group_id"); ok {
-		req.PlacementGroup = scw.StringPtr(expandZonedID(placementGroupID).ID)
+		req.PlacementGroup = expandStringPtr(expandZonedID(placementGroupID).ID)
 	}
 
 	req.Volumes = make(map[string]*instance.VolumeTemplate)
@@ -481,7 +481,7 @@ func resourceScalewayInstanceServerUpdate(d *schema.ResourceData, m interface{})
 	}
 
 	if d.HasChange("name") {
-		updateRequest.Name = scw.StringPtr(d.Get("name").(string))
+		updateRequest.Name = expandStringPtr(d.Get("name").(string))
 	}
 
 	if d.HasChange("tags") {

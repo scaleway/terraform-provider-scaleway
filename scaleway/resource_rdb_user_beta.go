@@ -129,7 +129,7 @@ func resourceScalewayRdbUserBetaUpdate(d *schema.ResourceData, m interface{}) er
 	}
 
 	if d.HasChange("password") {
-		req.Password = scw.StringPtr(d.Get("password").(string))
+		req.Password = expandStringPtr(d.Get("password").(string))
 	}
 	if d.HasChange("is_admin") {
 		req.IsAdmin = scw.BoolPtr(d.Get("is_admin").(bool))
