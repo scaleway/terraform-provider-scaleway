@@ -5,7 +5,6 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
-	"github.com/scaleway/scaleway-sdk-go/scw"
 )
 
 func dataSourceScalewayInstanceServer() *schema.Resource {
@@ -42,7 +41,7 @@ func dataSourceScalewayInstanceServerRead(d *schema.ResourceData, m interface{})
 	if !ok {
 		res, err := instanceAPI.ListServers(&instance.ListServersRequest{
 			Zone: zone,
-			Name: scw.StringPtr(d.Get("name").(string)),
+			Name: expandStringPtr(d.Get("name")),
 		})
 		if err != nil {
 			return err

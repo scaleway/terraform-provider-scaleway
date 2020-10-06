@@ -179,7 +179,7 @@ func resourceScalewayK8SPoolBetaCreate(d *schema.ResourceData, m interface{}) er
 	}
 
 	if placementGroupID, ok := d.GetOk("placement_group_id"); ok {
-		req.PlacementGroupID = scw.StringPtr(expandID(placementGroupID.(string)))
+		req.PlacementGroupID = expandStringPtr(expandID(placementGroupID))
 	}
 
 	if minSize, ok := d.GetOk("min_size"); ok {

@@ -4,7 +4,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
-	"github.com/scaleway/scaleway-sdk-go/scw"
 )
 
 func resourceScalewayInstancePlacementGroup() *schema.Resource {
@@ -120,7 +119,7 @@ func resourceScalewayInstancePlacementGroupUpdate(d *schema.ResourceData, m inte
 	hasChanged := d.HasChange("policy_mode") || d.HasChange("policy_type")
 
 	if d.HasChange("name") {
-		req.Name = scw.StringPtr(d.Get("name").(string))
+		req.Name = expandStringPtr(d.Get("name").(string))
 		hasChanged = true
 	}
 	if hasChanged {
