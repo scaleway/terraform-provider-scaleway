@@ -29,6 +29,7 @@ provider "scaleway" {
   access_key      = "<SCALEWAY-ACCESS-KEY>"
   secret_key      = "<SCALEWAY-SECRET-KEY>"
   organization_id = "<SCALEWAY-ORGANIZATION-ID>"
+  project_id      = "<SCALEWAY-PROJECT-ID>"
   zone            = "fr-par-1"
   region          = "fr-par"
 }
@@ -148,6 +149,9 @@ in this priority order.
 the `SCW_DEFAULT_ORGANIZATION_ID` [environment variable](https://github.com/scaleway/scaleway-sdk-go/blob/master/scw/README.md#environment-variables), or via a [shared configuration file](https://github.com/scaleway/scaleway-sdk-go/blob/master/scw/README.md#scaleway-config),
 in this priority order.
 
+- `project_id` - (Optional) The project ID that will be used as default value for all resources.
+  It can also be sourced from the `SCW_DEFAULT_PROJECT_ID` [environment variable](https://github.com/scaleway/scaleway-sdk-go/blob/master/scw/README.md#environment-variables), or via a [shared configuration file](https://github.com/scaleway/scaleway-sdk-go/blob/master/scw/README.md#scaleway-config), in this priority order.
+
 - `region` - (Optional) The [region](./guides/regions_and_zones.md#regions)  that will be used as default value for all resources. It can also be sourced from
 the `SCW_DEFAULT_REGION` [environment variable](https://github.com/scaleway/scaleway-sdk-go/blob/master/scw/README.md#environment-variables), or via a [shared configuration file](https://github.com/scaleway/scaleway-sdk-go/blob/master/scw/README.md#scaleway-config),
 in this priority order.
@@ -178,3 +182,10 @@ terraform {
 
 Beware as no locking mechanism are yet supported.
 Using scaleway object storage as terraform backend is not suitable if you work in a team with a risk of simultaneous access to the same plan.
+
+Note: For security reason it's not recommended to store secrets in terraform files. If you want to configure the backend with environnment var, you need to use `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` [source](https://www.terraform.io/docs/backends/types/s3.html#access_key).
+
+```bash
+export AWS_ACCESS_KEY_ID=$SCW_ACCESS_KEY
+export AWS_SECRET_ACCESS_KEY=$SCW_SECRET_KEY
+```
