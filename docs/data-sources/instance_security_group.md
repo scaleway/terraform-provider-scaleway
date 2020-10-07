@@ -38,6 +38,8 @@ In addition to all above arguments, the following attributes are exported:
 
 - `organization_id` - The ID of the organization the security group is associated with.
 
+- `project_id` - The ID of the project the security group is associated with.
+
 - `inbound_default_policy` - The default policy on incoming traffic. Possible values are: `accept` or `drop`.
 
 - `outbound_default_policy` - The default policy on outgoing traffic. Possible values are: `accept` or `drop`.

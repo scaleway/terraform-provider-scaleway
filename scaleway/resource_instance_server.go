@@ -206,6 +206,7 @@ func resourceScalewayInstanceServer() *schema.Resource {
 			},
 			"zone":            zoneSchema(),
 			"organization_id": organizationIDSchema(),
+			"project_id":      projectIDSchema(),
 
 			// Deprecated and removed.
 			"disable_public_ip": {
@@ -247,6 +248,7 @@ func resourceScalewayInstanceServerCreate(d *schema.ResourceData, m interface{})
 		Zone:              zone,
 		Name:              expandOrGenerateString(d.Get("name"), "srv"),
 		Organization:      expandStringPtr(d.Get("organization_id")),
+		Project:           expandStringPtr(d.Get("project_id")),
 		Image:             image.ID,
 		CommercialType:    commercialType,
 		EnableIPv6:        d.Get("enable_ipv6").(bool),
@@ -361,6 +363,8 @@ func resourceScalewayInstanceServerRead(d *schema.ResourceData, m interface{}) e
 	_ = d.Set("security_group_id", newZonedID(zone, response.Server.SecurityGroup.ID).String())
 	_ = d.Set("enable_ipv6", response.Server.EnableIPv6)
 	_ = d.Set("enable_dynamic_ip", response.Server.DynamicIPRequired)
+	_ = d.Set("organization_id", response.Server.Organization)
+	_ = d.Set("project_id", response.Server.Project)
 
 	// Image could be empty in an import context.
 	image := expandRegionalID(d.Get("image").(string))

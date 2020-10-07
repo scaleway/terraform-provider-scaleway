@@ -41,8 +41,10 @@ func dataSourceScalewayInstanceSecurityGroupRead(d *schema.ResourceData, m inter
 	securityGroupID, ok := d.GetOk("security_group_id")
 	if !ok {
 		res, err := instanceAPI.ListSecurityGroups(&instance.ListSecurityGroupsRequest{
-			Zone: zone,
-			Name: expandStringPtr(d.Get("name")),
+			Zone:         zone,
+			Name:         expandStringPtr(d.Get("name")),
+			Organization: expandStringPtr(d.Get("organization_id")),
+			Project:      expandStringPtr(d.Get("project_id")),
 		}, scw.WithAllPages())
 		if err != nil {
 			return err

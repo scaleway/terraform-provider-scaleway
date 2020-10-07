@@ -40,8 +40,10 @@ func dataSourceScalewayInstanceServerRead(d *schema.ResourceData, m interface{})
 	serverID, ok := d.GetOk("server_id")
 	if !ok {
 		res, err := instanceAPI.ListServers(&instance.ListServersRequest{
-			Zone: zone,
-			Name: expandStringPtr(d.Get("name")),
+			Zone:         zone,
+			Name:         expandStringPtr(d.Get("name")),
+			Organization: expandStringPtr(d.Get("organization_id")),
+			Project:      expandStringPtr(d.Get("project_id")),
 		})
 		if err != nil {
 			return err

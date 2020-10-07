@@ -37,6 +37,7 @@ func resourceScalewayInstanceIP() *schema.Resource {
 			},
 			"zone":            zoneSchema(),
 			"organization_id": organizationIDSchema(),
+			"project_id":      projectIDSchema(),
 		},
 	}
 }
@@ -50,6 +51,7 @@ func resourceScalewayInstanceIPCreate(d *schema.ResourceData, m interface{}) err
 	res, err := instanceAPI.CreateIP(&instance.CreateIPRequest{
 		Zone:         zone,
 		Organization: expandStringPtr(d.Get("organization_id")),
+		Project:      expandStringPtr(d.Get("project_id")),
 	})
 	if err != nil {
 		return err
@@ -82,6 +84,7 @@ func resourceScalewayInstanceIPRead(d *schema.ResourceData, m interface{}) error
 	_ = d.Set("address", res.IP.Address.String())
 	_ = d.Set("zone", string(zone))
 	_ = d.Set("organization_id", res.IP.Organization)
+	_ = d.Set("project_id", res.IP.Project)
 	_ = d.Set("reverse", res.IP.Reverse)
 
 	return nil

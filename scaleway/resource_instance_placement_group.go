@@ -50,6 +50,7 @@ func resourceScalewayInstancePlacementGroup() *schema.Resource {
 			},
 			"zone":            zoneSchema(),
 			"organization_id": organizationIDSchema(),
+			"project_id":      projectIDSchema(),
 		},
 	}
 }
@@ -64,6 +65,7 @@ func resourceScalewayInstancePlacementGroupCreate(d *schema.ResourceData, m inte
 		Zone:         zone,
 		Name:         expandOrGenerateString(d.Get("name"), "pg"),
 		Organization: expandStringPtr(d.Get("organization_id")),
+		Project:      expandStringPtr(d.Get("project_id")),
 		PolicyMode:   instance.PlacementGroupPolicyMode(d.Get("policy_mode").(string)),
 		PolicyType:   instance.PlacementGroupPolicyType(d.Get("policy_type").(string)),
 	})
@@ -97,6 +99,7 @@ func resourceScalewayInstancePlacementGroupRead(d *schema.ResourceData, m interf
 	_ = d.Set("name", res.PlacementGroup.Name)
 	_ = d.Set("zone", string(zone))
 	_ = d.Set("organization_id", res.PlacementGroup.Organization)
+	_ = d.Set("project_id", res.PlacementGroup.Project)
 	_ = d.Set("policy_mode", res.PlacementGroup.PolicyMode.String())
 	_ = d.Set("policy_type", res.PlacementGroup.PolicyType.String())
 	_ = d.Set("policy_respected", res.PlacementGroup.PolicyRespected)

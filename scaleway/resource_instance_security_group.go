@@ -80,6 +80,7 @@ func resourceScalewayInstanceSecurityGroup() *schema.Resource {
 			},
 			"zone":            zoneSchema(),
 			"organization_id": organizationIDSchema(),
+			"project_id":      projectIDSchema(),
 		},
 	}
 }
@@ -95,6 +96,7 @@ func resourceScalewayInstanceSecurityGroupCreate(d *schema.ResourceData, m inter
 		Name:                  expandOrGenerateString(d.Get("name"), "sg"),
 		Zone:                  zone,
 		Organization:          expandStringPtr(d.Get("organization_id")),
+		Project:               expandStringPtr(d.Get("project_id")),
 		Description:           d.Get("description").(string),
 		Stateful:              d.Get("stateful").(bool),
 		InboundDefaultPolicy:  instance.SecurityGroupPolicy(d.Get("inbound_default_policy").(string)),
@@ -133,6 +135,7 @@ func resourceScalewayInstanceSecurityGroupRead(d *schema.ResourceData, m interfa
 
 	_ = d.Set("zone", zone)
 	_ = d.Set("organization_id", res.SecurityGroup.Organization)
+	_ = d.Set("project_id", res.SecurityGroup.Project)
 	_ = d.Set("name", res.SecurityGroup.Name)
 	_ = d.Set("stateful", res.SecurityGroup.Stateful)
 	_ = d.Set("description", res.SecurityGroup.Description)
