@@ -45,6 +45,8 @@ The following arguments are supported:
 
 - `organization_id` - (Defaults to [provider](../index.md#organization_id) `organization_id`) The ID of the organization the load-balancer is associated with.
 
+- `project_id` - (Defaults to [provider](../index.md#project_id) `project_id`) The ID of the project the load-balancer is associated with.
+
 ## Attributes Reference
 
 In addition to all arguments above, the following attributes are exported:
