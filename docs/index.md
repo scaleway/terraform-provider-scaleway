@@ -13,6 +13,21 @@ The provider needs to be configured with the proper credentials before it can be
 
 Use the navigation to the left to read about the available resources.
 
+## Terraform 0.13 and later
+
+For Terraform 0.13 and later, please also include this:
+
+```hcl
+terraform {
+  required_providers {
+    scaleway = {
+      source = "scaleway/scaleway"
+    }
+  }
+  required_version = ">= 0.13"
+}
+```
+
 ## Example
 
 Here is an example that will setup a web server with an additional volume, a public IP and a security group.
