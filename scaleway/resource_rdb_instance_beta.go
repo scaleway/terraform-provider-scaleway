@@ -114,6 +114,7 @@ func resourceScalewayRdbInstanceBeta() *schema.Resource {
 			// Common
 			"region":          regionSchema(),
 			"organization_id": organizationIDSchema(),
+			"project_id":      projectIDSchema(),
 		},
 	}
 }
@@ -127,6 +128,7 @@ func resourceScalewayRdbInstanceBetaCreate(d *schema.ResourceData, m interface{}
 	createReq := &rdb.CreateInstanceRequest{
 		Region:         region,
 		OrganizationID: expandStringPtr(d.Get("organization_id")),
+		ProjectID:      expandStringPtr(d.Get("project_id")),
 		Name:           expandOrGenerateString(d.Get("name"), "rdb"),
 		NodeType:       d.Get("node_type").(string),
 		Engine:         d.Get("engine").(string),
@@ -192,6 +194,7 @@ func resourceScalewayRdbInstanceBetaRead(d *schema.ResourceData, m interface{}) 
 	_ = d.Set("read_replicas", flattenRdbInstanceReadReplicas(res.ReadReplicas))
 	_ = d.Set("region", string(region))
 	_ = d.Set("organization_id", res.OrganizationID)
+	_ = d.Set("project_id", res.ProjectID)
 
 	// set certificate
 	cert, err := rdbAPI.GetInstanceCertificate(&rdb.GetInstanceCertificateRequest{

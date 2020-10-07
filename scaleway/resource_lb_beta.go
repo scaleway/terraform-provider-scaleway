@@ -54,6 +54,7 @@ func resourceScalewayLbBeta() *schema.Resource {
 			},
 			"region":          regionSchema(),
 			"organization_id": organizationIDSchema(),
+			"project_id":      projectIDSchema(),
 		},
 	}
 }
@@ -68,6 +69,7 @@ func resourceScalewayLbBetaCreate(d *schema.ResourceData, m interface{}) error {
 		Region:         region,
 		IPID:           expandStringPtr(expandID(d.Get("ip_id"))),
 		OrganizationID: expandStringPtr(d.Get("organization_id")),
+		ProjectID:      expandStringPtr(d.Get("project_id")),
 		Name:           expandOrGenerateString(d.Get("name"), "lb"),
 		Type:           d.Get("type").(string),
 	}
@@ -118,6 +120,7 @@ func resourceScalewayLbBetaRead(d *schema.ResourceData, m interface{}) error {
 	_ = d.Set("name", res.Name)
 	_ = d.Set("region", string(region))
 	_ = d.Set("organization_id", res.OrganizationID)
+	_ = d.Set("project_id", res.ProjectID)
 	_ = d.Set("tags", res.Tags)
 	// For now API return lowercase lb type. This should be fix in a near future on the API side
 	_ = d.Set("type", strings.ToUpper(res.Type))
