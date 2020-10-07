@@ -40,8 +40,10 @@ func dataSourceScalewayLbIPBetaRead(d *schema.ResourceData, m interface{}) error
 	ipID, ok := d.GetOk("ip_id")
 	if !ok { // Get IP by region and IP address.
 		res, err := api.ListIPs(&lb.ListIPsRequest{
-			Region:    region,
-			IPAddress: expandStringPtr(d.Get("ip_address")),
+			Region:         region,
+			IPAddress:      expandStringPtr(d.Get("ip_address")),
+			OrganizationID: expandStringPtr(d.Get("organization_id")),
+			ProjectID:      expandStringPtr(d.Get("project_id")),
 		})
 		if err != nil {
 			return err

@@ -24,6 +24,7 @@ func resourceScalewayLbIPBeta() *schema.Resource {
 			},
 			"region":          regionSchema(),
 			"organization_id": organizationIDSchema(),
+			"project_id":      projectIDSchema(),
 			// Computed
 			"ip_address": {
 				Type:        schema.TypeString,
@@ -48,6 +49,7 @@ func resourceScalewayLbIPBetaCreate(d *schema.ResourceData, m interface{}) error
 	createReq := &lb.CreateIPRequest{
 		Region:         region,
 		OrganizationID: expandStringPtr(d.Get("organization_id")),
+		ProjectID:      expandStringPtr(d.Get("project_id")),
 		Reverse:        expandStringPtr(d.Get("reverse")),
 	}
 
@@ -82,6 +84,7 @@ func resourceScalewayLbIPBetaRead(d *schema.ResourceData, m interface{}) error {
 
 	_ = d.Set("region", string(region))
 	_ = d.Set("organization_id", res.OrganizationID)
+	_ = d.Set("project_id", res.ProjectID)
 	_ = d.Set("ip_id", res.ID)
 	_ = d.Set("ip_address", res.IPAddress)
 	_ = d.Set("reverse", res.Reverse)
