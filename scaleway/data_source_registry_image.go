@@ -53,6 +53,7 @@ func dataSourceScalewayRegistryImage() *schema.Resource {
 			},
 			"region":          regionSchema(),
 			"organization_id": organizationIDSchema(),
+			"project_id":      projectIDSchema(),
 		},
 	}
 }
