@@ -280,6 +280,7 @@ func resourceScalewayK8SClusterBeta() *schema.Resource {
 			},
 			"region":          regionSchema(),
 			"organization_id": organizationIDSchema(),
+			"project_id":      projectIDSchema(),
 			// Computed elements
 			"created_at": {
 				Type:        schema.TypeString,
@@ -362,6 +363,7 @@ func resourceScalewayK8SClusterBetaCreate(d *schema.ResourceData, m interface{})
 	req := &k8s.CreateClusterRequest{
 		Region:           region,
 		OrganizationID:   expandStringPtr(d.Get("organization_id")),
+		ProjectID:        expandStringPtr(d.Get("project_id")),
 		Name:             expandOrGenerateString(d.Get("name"), "cluster"),
 		Description:      description.(string),
 		Cni:              k8s.CNI(d.Get("cni").(string)),
@@ -617,6 +619,8 @@ func resourceScalewayK8SClusterBetaRead(d *schema.ResourceData, m interface{}) e
 
 	_ = d.Set("region", string(region))
 	_ = d.Set("name", response.Name)
+	_ = d.Set("organization_id", response.OrganizationID)
+	_ = d.Set("project_id", response.ProjectID)
 	_ = d.Set("description", response.Description)
 	_ = d.Set("cni", response.Cni)
 	_ = d.Set("tags", response.Tags)
