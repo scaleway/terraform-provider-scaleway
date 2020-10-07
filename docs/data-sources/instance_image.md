@@ -42,6 +42,8 @@ In addition to all above arguments, the following attributes are exported:
 
 - `organization_id` - The ID of the organization the image is associated with.
 
+- `project_id` - The ID of the project the image is associated with.
+
 - `creation_date` - Date of the image creation.
 
 - `modification_date` - Date of image latest update.

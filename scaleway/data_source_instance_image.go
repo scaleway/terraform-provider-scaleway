@@ -42,6 +42,7 @@ func dataSourceScalewayInstanceImage() *schema.Resource {
 			},
 			"zone":            zoneSchema(),
 			"organization_id": organizationIDSchema(),
+			"project_id":      projectIDSchema(),
 
 			"public": {
 				Type:        schema.TypeBool,
@@ -100,9 +101,11 @@ func dataSourceScalewayInstanceImageRead(d *schema.ResourceData, m interface{}) 
 	imageID, ok := d.GetOk("image_id")
 	if !ok { // Get instance by name, zone, and arch.
 		res, err := instanceAPI.ListImages(&instance.ListImagesRequest{
-			Zone: zone,
-			Name: expandStringPtr(d.Get("name")),
-			Arch: expandStringPtr(d.Get("architecture")),
+			Zone:         zone,
+			Name:         expandStringPtr(d.Get("name")),
+			Arch:         expandStringPtr(d.Get("architecture")),
+			Organization: expandStringPtr(d.Get("organization_id")),
+			Project:      expandStringPtr(d.Get("project_id")),
 		}, scw.WithAllPages())
 		if err != nil {
 			return err
@@ -149,6 +152,7 @@ func dataSourceScalewayInstanceImageRead(d *schema.ResourceData, m interface{}) 
 	}
 
 	_ = d.Set("organization_id", resp.Image.Organization)
+	_ = d.Set("project_id", resp.Image.Project)
 	_ = d.Set("architecture", resp.Image.Arch)
 	_ = d.Set("name", resp.Image.Name)
 

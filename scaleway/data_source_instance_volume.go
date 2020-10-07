@@ -39,8 +39,10 @@ func dataSourceScalewayInstanceVolumeRead(d *schema.ResourceData, m interface{})
 	volumeID, ok := d.GetOk("volume_id")
 	if !ok { // Get volumes by zone and name.
 		res, err := instanceAPI.ListVolumes(&instance.ListVolumesRequest{
-			Zone: zone,
-			Name: expandStringPtr(d.Get("name")),
+			Zone:         zone,
+			Name:         expandStringPtr(d.Get("name")),
+			Organization: expandStringPtr(d.Get("organization_id")),
+			Project:      expandStringPtr(d.Get("project_id")),
 		})
 		if err != nil {
 			return err

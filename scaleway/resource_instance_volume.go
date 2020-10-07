@@ -66,6 +66,7 @@ func resourceScalewayInstanceVolume() *schema.Resource {
 				Description: "The server associated with this volume",
 			},
 			"organization_id": organizationIDSchema(),
+			"project_id":      projectIDSchema(),
 			"zone":            zoneSchema(),
 		},
 	}
@@ -82,6 +83,7 @@ func resourceScalewayInstanceVolumeCreate(d *schema.ResourceData, m interface{})
 		Name:         expandOrGenerateString(d.Get("name"), "vol"),
 		VolumeType:   instance.VolumeVolumeType(d.Get("type").(string)),
 		Organization: expandStringPtr(d.Get("organization_id")),
+		Project:      expandStringPtr(d.Get("project_id")),
 	}
 
 	if size, ok := d.GetOk("size_in_gb"); ok {
@@ -127,6 +129,7 @@ func resourceScalewayInstanceVolumeRead(d *schema.ResourceData, m interface{}) e
 
 	_ = d.Set("name", res.Volume.Name)
 	_ = d.Set("organization_id", res.Volume.Organization)
+	_ = d.Set("project_id", res.Volume.Project)
 	_ = d.Set("zone", string(zone))
 	_ = d.Set("type", res.Volume.VolumeType.String())
 	_ = d.Set("size_in_gb", uint64(res.Volume.Size/scw.GB))
