@@ -619,6 +619,8 @@ func resourceScalewayK8SClusterBetaRead(d *schema.ResourceData, m interface{}) e
 
 	_ = d.Set("region", string(region))
 	_ = d.Set("name", response.Name)
+	_ = d.Set("organization_id", response.OrganizationID)
+	_ = d.Set("project_id", response.ProjectID)
 	_ = d.Set("description", response.Description)
 	_ = d.Set("cni", response.Cni)
 	_ = d.Set("tags", response.Tags)
