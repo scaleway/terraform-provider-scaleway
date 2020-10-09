@@ -97,12 +97,12 @@ func TestAccScalewayInstanceIP(t *testing.T) {
 
 func testAccCheckScalewayInstanceIPExists(tt *TestTools, name string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-		rs, err := testGetResourceStateByName(s, name)
-		if err != nil {
-			return err
+		rs, ok := s.RootModule().Resources[name]
+		if !ok {
+			return fmt.Errorf("resource not found: %s", name)
 		}
 
-		instanceAPI, zone, ID, err := instanceAPIWithZoneAndID(tt.Meta, rs.ID)
+		instanceAPI, zone, ID, err := instanceAPIWithZoneAndID(tt.Meta, rs.Primary.ID)
 		if err != nil {
 			return err
 		}
@@ -190,8 +190,12 @@ func testAccCheckScalewayInstanceServerNoIPAssigned(serverResource string) resou
 
 func testAccCheckScalewayInstanceIPDestroy(tt *TestTools) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-		for _, rs := range testGetResourceStatesByType(s, "scaleway_instance_ip") {
-			instanceAPI, zone, id, err := instanceAPIWithZoneAndID(tt.Meta, rs.ID)
+		for _, rs := range s.RootModule().Resources {
+			if rs.Type != "scaleway_instance_ip" {
+				continue
+			}
+
+			instanceAPI, zone, id, err := instanceAPIWithZoneAndID(tt.Meta, rs.Primary.ID)
 			if err != nil {
 				return err
 			}
@@ -203,10 +207,7 @@ func testAccCheckScalewayInstanceIPDestroy(tt *TestTools) resource.TestCheckFunc
 
 			// If no error resource still exist
 			if err == nil {
-				return &ErrorStillExist{
-					Type: "scaleway_instance_ip",
-					ID:   rs.ID,
-				}
+				return fmt.Errorf("resource %s(%s) still exist", rs.Type, rs.Primary.ID)
 			}
 
 			// Unexpected api error we return it
