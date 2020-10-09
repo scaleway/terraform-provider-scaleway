@@ -18,7 +18,7 @@ func init() {
 }
 
 func testSweepAccountSSHKey(region string) error {
-	scwClient, err := sharedClientForRegion(region)
+	scwClient, err := sharedClientForRegion(scw.Region(region))
 	if err != nil {
 		return fmt.Errorf("error getting client in sweeper: %s", err)
 	}

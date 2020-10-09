@@ -17,8 +17,8 @@ func init() {
 	})
 }
 
-func testSweepInstanceIP(region string) error {
-	return sweepZones(region, func(scwClient *scw.Client) error {
+func testSweepInstanceIP(_ string) error {
+	return sweepZones(scw.AllZones, func(scwClient *scw.Client) error {
 		instanceAPI := instance.NewAPI(scwClient)
 		zone, _ := scwClient.GetDefaultZone()
 		l.Debugf("sweeper: destroying the instance ip in (%s)", zone)
