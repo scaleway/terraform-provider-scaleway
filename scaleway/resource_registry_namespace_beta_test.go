@@ -18,28 +18,27 @@ func init() {
 }
 
 func testSweepRegistryNamespace(region string) error {
-	scwClient, err := sharedClientForRegion(region)
-	if err != nil {
-		return fmt.Errorf("error getting client in sweeper: %s", err)
-	}
-	registryAPI := registry.NewAPI(scwClient)
+	return sweepRegions([]scw.Region{scw.RegionFrPar, scw.RegionNlAms}, func(scwClient *scw.Client) error {
+		registryAPI := registry.NewAPI(scwClient)
+		region, _ := scwClient.GetDefaultRegion()
 
-	l.Debugf("sweeper: destroying the registry namespaces in (%s)", region)
-	listNamespaces, err := registryAPI.ListNamespaces(&registry.ListNamespacesRequest{}, scw.WithAllPages())
-	if err != nil {
-		return fmt.Errorf("error listing namespaces in (%s) in sweeper: %s", region, err)
-	}
-
-	for _, ns := range listNamespaces.Namespaces {
-		_, err := registryAPI.DeleteNamespace(&registry.DeleteNamespaceRequest{
-			NamespaceID: ns.ID,
-		})
+		l.Debugf("sweeper: destroying the registry namespaces in (%s)", region)
+		listNamespaces, err := registryAPI.ListNamespaces(&registry.ListNamespacesRequest{}, scw.WithAllPages())
 		if err != nil {
-			return fmt.Errorf("error deleting namespace in sweeper: %s", err)
+			return fmt.Errorf("error listing namespaces in (%s) in sweeper: %s", region, err)
 		}
-	}
 
-	return nil
+		for _, ns := range listNamespaces.Namespaces {
+			_, err := registryAPI.DeleteNamespace(&registry.DeleteNamespaceRequest{
+				NamespaceID: ns.ID,
+			})
+			if err != nil {
+				return fmt.Errorf("error deleting namespace in sweeper: %s", err)
+			}
+		}
+
+		return nil
+	})
 }
 
 func TestRegistryNamespaceBeta(t *testing.T) {

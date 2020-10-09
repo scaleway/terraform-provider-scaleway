@@ -10,6 +10,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/scaleway/scaleway-sdk-go/scw"
 )
 
 func init() {
@@ -85,7 +86,10 @@ func TestAccScalewayObjectBucket(t *testing.T) {
 }
 
 func testAccCheckScalewayObjectBucketDestroy(s *terraform.State) error {
-	s3Client := testAccProvider.Meta().(*Meta).s3Client
+	s3Client, err := newS3ClientFromMeta(testAccProvider.Meta().(*Meta))
+	if err != nil {
+		return err
+	}
 
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "scaleway" {
@@ -112,7 +116,7 @@ func testAccCheckScalewayObjectBucketDestroy(s *terraform.State) error {
 }
 
 func testSweepStorageObjectBucket(region string) error {
-	s3client, err := sharedS3ClientForRegion(region)
+	s3client, err := sharedS3ClientForRegion(scw.Region(region))
 	if err != nil {
 		return fmt.Errorf("error getting client: %s", err)
 	}
