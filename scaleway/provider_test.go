@@ -9,15 +9,12 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/stretchr/testify/require"
-
-	"github.com/scaleway/scaleway-sdk-go/strcase"
-
 	"github.com/dnaeon/go-vcr/cassette"
 	"github.com/dnaeon/go-vcr/recorder"
-	"github.com/stretchr/testify/assert"
-
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/scaleway/scaleway-sdk-go/strcase"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 var (
@@ -31,12 +28,12 @@ var (
 )
 
 func init() {
-	//p := Provider(DefaultProviderConfig())()
-	//testAccProvider = p
-	//version += "-tftest"
-	//testAccProviders = map[string]*schema.Provider{
-	//	"scaleway": p,
-	//}
+	p := Provider(DefaultProviderConfig())()
+	testAccProvider = p
+	version += "-tftest"
+	testAccProviders = map[string]*schema.Provider{
+		"scaleway": p,
+	}
 }
 
 func testAccPreCheck(_ *testing.T) {}
