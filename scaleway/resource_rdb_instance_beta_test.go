@@ -39,8 +39,8 @@ func testSweepRDBInstance(_ string) error {
 
 		return nil
 	})
-
 }
+
 func TestAccScalewayRdbInstanceBeta(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },

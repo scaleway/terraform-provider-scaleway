@@ -4,13 +4,11 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/scaleway/scaleway-sdk-go/validation"
-
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/plugin"
-
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/plugin"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/scaleway-sdk-go/validation"
 )
 
 // Provider returns a terraform.ResourceProvider.
@@ -174,7 +172,6 @@ func buildMeta(config *MetaConfig) (*Meta, error) {
 }
 
 func loadProfile(d *schema.ResourceData) (*scw.Profile, error) {
-
 	config, err := scw.LoadConfig()
 	// If the config file do not exist, don't return an error as we may find config in ENV or flags.
 	if _, isNotFoundError := err.(*scw.ConfigFileNotFoundError); isNotFoundError {

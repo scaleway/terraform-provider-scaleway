@@ -6,12 +6,11 @@ import (
 	"testing"
 	"time"
 
-	"github.com/scaleway/scaleway-sdk-go/scw"
-
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/scaleway/scaleway-sdk-go/scw"
 )
 
 func init() {
