@@ -81,6 +81,7 @@ func resourceScalewayBaremetalServer() *schema.Resource {
 			},
 			"zone":            zoneSchema(),
 			"organization_id": organizationIDSchema(),
+			"project_id":      projectIDSchema(),
 			"ips": {
 				Type:     schema.TypeList,
 				Computed: true,
@@ -139,6 +140,7 @@ func resourceScalewayBaremetalServerCreate(d *schema.ResourceData, m interface{}
 		Zone:           zone,
 		Name:           expandOrGenerateString(d.Get("name"), "bm"),
 		OrganizationID: expandStringPtr(d.Get("organization_id")),
+		ProjectID:      expandStringPtr(d.Get("project_id")),
 		Description:    d.Get("description").(string),
 		OfferID:        offerID.ID,
 		Tags:           expandStrings(d.Get("tags")),
@@ -210,6 +212,7 @@ func resourceScalewayBaremetalServerRead(d *schema.ResourceData, m interface{}) 
 	_ = d.Set("name", server.Name)
 	_ = d.Set("zone", server.Zone.String())
 	_ = d.Set("organization_id", server.OrganizationID)
+	_ = d.Set("project_id", server.ProjectID)
 	_ = d.Set("offer_id", newZonedID(server.Zone, offer.ID).String())
 	_ = d.Set("tags", server.Tags)
 	_ = d.Set("domain", server.Domain)
