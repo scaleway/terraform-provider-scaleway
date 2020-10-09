@@ -1,9 +1,11 @@
 package scaleway
 
 import (
+	"context"
 	"fmt"
 	"sort"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
@@ -11,7 +13,7 @@ import (
 
 func dataSourceScalewayInstanceImage() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceScalewayInstanceImageRead,
+		ReadContext: dataSourceScalewayInstanceImageRead,
 
 		Schema: map[string]*schema.Schema{
 			"name": {
@@ -91,11 +93,11 @@ func dataSourceScalewayInstanceImage() *schema.Resource {
 	}
 }
 
-func dataSourceScalewayInstanceImageRead(d *schema.ResourceData, m interface{}) error {
+func dataSourceScalewayInstanceImageRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	meta := m.(*Meta)
 	instanceAPI, zone, err := instanceAPIWithZone(d, meta)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	imageID, ok := d.GetOk("image_id")
@@ -106,9 +108,9 @@ func dataSourceScalewayInstanceImageRead(d *schema.ResourceData, m interface{}) 
 			Arch:         expandStringPtr(d.Get("architecture")),
 			Organization: expandStringPtr(d.Get("organization_id")),
 			Project:      expandStringPtr(d.Get("project_id")),
-		}, scw.WithAllPages())
+		}, scw.WithAllPages(), scw.WithContext(ctx))
 		if err != nil {
-			return err
+			return diag.FromErr(err)
 		}
 		var matchingImages []*instance.Image
 		for _, image := range res.Images {
@@ -118,10 +120,10 @@ func dataSourceScalewayInstanceImageRead(d *schema.ResourceData, m interface{}) 
 		}
 
 		if len(matchingImages) == 0 {
-			return fmt.Errorf("no image found with the name %s and architecture %s in zone %s", d.Get("name"), d.Get("architecture"), zone)
+			return diag.FromErr(fmt.Errorf("no image found with the name %s and architecture %s in zone %s", d.Get("name"), d.Get("architecture"), zone))
 		}
 		if len(matchingImages) > 1 && !d.Get("latest").(bool) {
-			return fmt.Errorf("%d images found with the same name %s and architecture %s in zone %s", len(matchingImages), d.Get("name"), d.Get("architecture"), zone)
+			return diag.FromErr(fmt.Errorf("%d images found with the same name %s and architecture %s in zone %s", len(matchingImages), d.Get("name"), d.Get("architecture"), zone))
 		}
 
 		sort.Slice(matchingImages, func(i, j int) bool {
@@ -146,9 +148,9 @@ func dataSourceScalewayInstanceImageRead(d *schema.ResourceData, m interface{}) 
 	resp, err := instanceAPI.GetImage(&instance.GetImageRequest{
 		Zone:    zone,
 		ImageID: imageID.(string),
-	})
+	}, scw.WithContext(ctx))
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	_ = d.Set("organization_id", resp.Image.Organization)
