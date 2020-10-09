@@ -1,16 +1,18 @@
 package scaleway
 
 import (
+	"context"
 	"fmt"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	baremetal "github.com/scaleway/scaleway-sdk-go/api/baremetal/v1"
+	"github.com/scaleway/scaleway-sdk-go/api/baremetal/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 )
 
 func dataSourceScalewayBaremetalOffer() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceScalewayBaremetalOfferRead,
+		ReadContext: dataSourceScalewayBaremetalOfferRead,
 
 		Schema: map[string]*schema.Schema{
 			"name": {
@@ -129,35 +131,35 @@ func dataSourceScalewayBaremetalOffer() *schema.Resource {
 	}
 }
 
-func dataSourceScalewayBaremetalOfferRead(d *schema.ResourceData, m interface{}) error {
+func dataSourceScalewayBaremetalOfferRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	meta := m.(*Meta)
 	baremetalAPI, fallBackZone, err := baremetalAPIWithZone(d, meta)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	zone, offerID, _ := parseZonedID(datasourceNewZonedID(d.Get("offer_id"), fallBackZone))
 	res, err := baremetalAPI.ListOffers(&baremetal.ListOffersRequest{
 		Zone: zone,
-	}, scw.WithAllPages())
+	}, scw.WithAllPages(), scw.WithContext(ctx))
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	matches := []*baremetal.Offer(nil)
 	for _, offer := range res.Offers {
 		if offer.Name == d.Get("name") || offer.ID == offerID {
 			if !offer.Enable && !d.Get("include_disabled").(bool) {
-				return fmt.Errorf("offer %s (%s) found in zone %s but is disabled. Add allow_disabled=true in your terraform config to use it", offer.Name, offer.ID, zone)
+				return diag.FromErr(fmt.Errorf("offer %s (%s) found in zone %s but is disabled. Add allow_disabled=true in your terraform config to use it", offer.Name, offer.ID, zone))
 			}
 			matches = append(matches, offer)
 		}
 	}
 	if len(matches) == 0 {
-		return fmt.Errorf("no offer found with the name %s in zone %s", d.Get("name"), zone)
+		return diag.FromErr(fmt.Errorf("no offer found with the name %s in zone %s", d.Get("name"), zone))
 	}
 	if len(matches) > 1 {
-		return fmt.Errorf("%d offers found with the same name %s in zone %s", len(matches), d.Get("name"), zone)
+		return diag.FromErr(fmt.Errorf("%d offers found with the same name %s in zone %s", len(matches), d.Get("name"), zone))
 	}
 
 	offer := matches[0]

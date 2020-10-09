@@ -1,6 +1,9 @@
 package scaleway
 
 import (
+	"context"
+
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	baremetal "github.com/scaleway/scaleway-sdk-go/api/baremetal/v1"
@@ -10,10 +13,10 @@ import (
 
 func resourceScalewayBaremetalServer() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceScalewayBaremetalServerCreate,
-		Read:   resourceScalewayBaremetalServerRead,
-		Update: resourceScalewayBaremetalServerUpdate,
-		Delete: resourceScalewayBaremetalServerDelete,
+		CreateContext: resourceScalewayBaremetalServerCreate,
+		ReadContext:   resourceScalewayBaremetalServerRead,
+		UpdateContext: resourceScalewayBaremetalServerUpdate,
+		DeleteContext: resourceScalewayBaremetalServerDelete,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},
@@ -118,10 +121,10 @@ func resourceScalewayBaremetalServer() *schema.Resource {
 	}
 }
 
-func resourceScalewayBaremetalServerCreate(d *schema.ResourceData, m interface{}) error {
+func resourceScalewayBaremetalServerCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	baremetalAPI, zone, err := baremetalAPIWithZone(d, m)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	offerID := expandZonedID(d.Get("offer"))
@@ -131,7 +134,7 @@ func resourceScalewayBaremetalServerCreate(d *schema.ResourceData, m interface{}
 			Zone:      zone,
 		})
 		if err != nil {
-			return err
+			return diag.FromErr(err)
 		}
 		offerID = newZonedID(zone, o.ID)
 	}
@@ -144,9 +147,9 @@ func resourceScalewayBaremetalServerCreate(d *schema.ResourceData, m interface{}
 		Description:    d.Get("description").(string),
 		OfferID:        offerID.ID,
 		Tags:           expandStrings(d.Get("tags")),
-	})
+	}, scw.WithContext(ctx))
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	d.SetId(newZonedID(server.Zone, server.ID).String())
@@ -157,7 +160,7 @@ func resourceScalewayBaremetalServerCreate(d *schema.ResourceData, m interface{}
 		Timeout:  scw.TimeDurationPtr(baremetalServerWaitForTimeout),
 	})
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	_, err = baremetalAPI.InstallServer(&baremetal.InstallServerRequest{
@@ -166,9 +169,9 @@ func resourceScalewayBaremetalServerCreate(d *schema.ResourceData, m interface{}
 		OsID:      expandZonedID(d.Get("os")).ID,
 		Hostname:  expandStringWithDefault(d.Get("hostname"), server.Name),
 		SSHKeyIDs: expandStrings(d.Get("ssh_key_ids")),
-	})
+	}, scw.WithContext(ctx))
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	_, err = baremetalAPI.WaitForServerInstall(&baremetal.WaitForServerInstallRequest{
@@ -177,36 +180,36 @@ func resourceScalewayBaremetalServerCreate(d *schema.ResourceData, m interface{}
 		Timeout:  scw.TimeDurationPtr(baremetalServerWaitForTimeout),
 	})
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
-	return resourceScalewayBaremetalServerRead(d, m)
+	return resourceScalewayBaremetalServerRead(ctx, d, m)
 }
 
-func resourceScalewayBaremetalServerRead(d *schema.ResourceData, m interface{}) error {
+func resourceScalewayBaremetalServerRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	baremetalAPI, zonedID, err := baremetalAPIWithZoneAndID(m, d.Id())
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	server, err := baremetalAPI.GetServer(&baremetal.GetServerRequest{
 		Zone:     zonedID.Zone,
 		ServerID: zonedID.ID,
-	})
+	}, scw.WithContext(ctx))
 	if err != nil {
 		if is404Error(err) {
 			d.SetId("")
 			return nil
 		}
-		return err
+		return diag.FromErr(err)
 	}
 
 	offer, err := baremetalAPI.GetOffer(&baremetal.GetOfferRequest{
 		Zone:    server.Zone,
 		OfferID: server.OfferID,
-	})
+	}, scw.WithContext(ctx))
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	_ = d.Set("name", server.Name)
@@ -226,10 +229,10 @@ func resourceScalewayBaremetalServerRead(d *schema.ResourceData, m interface{}) 
 	return nil
 }
 
-func resourceScalewayBaremetalServerUpdate(d *schema.ResourceData, m interface{}) error {
+func resourceScalewayBaremetalServerUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	baremetalAPI, zonedID, err := baremetalAPIWithZoneAndID(m, d.Id())
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	_, err = baremetalAPI.UpdateServer(&baremetal.UpdateServerRequest{
@@ -238,9 +241,9 @@ func resourceScalewayBaremetalServerUpdate(d *schema.ResourceData, m interface{}
 		Name:        expandStringPtr(d.Get("name")),
 		Description: expandStringPtr(d.Get("description")),
 		Tags:        scw.StringsPtr(expandStrings(d.Get("tags"))),
-	})
+	}, scw.WithContext(ctx))
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	if d.HasChange("os") || d.HasChange("ssh_key_ids") {
@@ -252,9 +255,9 @@ func resourceScalewayBaremetalServerUpdate(d *schema.ResourceData, m interface{}
 			SSHKeyIDs: expandStrings(d.Get("ssh_key_ids")),
 		}
 
-		server, err := baremetalAPI.InstallServer(installReq)
+		server, err := baremetalAPI.InstallServer(installReq, scw.WithContext(ctx))
 		if err != nil {
-			return err
+			return diag.FromErr(err)
 		}
 
 		_, err = baremetalAPI.WaitForServerInstall(&baremetal.WaitForServerInstallRequest{
@@ -263,26 +266,26 @@ func resourceScalewayBaremetalServerUpdate(d *schema.ResourceData, m interface{}
 			Timeout:  scw.TimeDurationPtr(baremetalServerWaitForTimeout),
 		})
 		if err != nil {
-			return err
+			return diag.FromErr(err)
 		}
 	}
 
-	return resourceScalewayBaremetalServerRead(d, m)
+	return resourceScalewayBaremetalServerRead(ctx, d, m)
 }
 
-func resourceScalewayBaremetalServerDelete(d *schema.ResourceData, m interface{}) error {
+func resourceScalewayBaremetalServerDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	baremetalAPI, zonedID, err := baremetalAPIWithZoneAndID(m, d.Id())
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	server, err := baremetalAPI.DeleteServer(&baremetal.DeleteServerRequest{
 		Zone:     zonedID.Zone,
 		ServerID: zonedID.ID,
-	})
+	}, scw.WithContext(ctx))
 
 	if err != nil && !is404Error(err) {
-		return err
+		return diag.FromErr(err)
 	}
 
 	_, err = baremetalAPI.WaitForServer(&baremetal.WaitForServerRequest{
@@ -295,5 +298,5 @@ func resourceScalewayBaremetalServerDelete(d *schema.ResourceData, m interface{}
 		return nil
 	}
 
-	return err
+	return diag.FromErr(err)
 }
