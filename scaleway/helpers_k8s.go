@@ -1,6 +1,7 @@
 package scaleway
 
 import (
+	"context"
 	"fmt"
 	"strings"
 	"time"
@@ -163,14 +164,14 @@ func convertNodes(res *k8s.ListNodesResponse) []map[string]interface{} {
 	return result
 }
 
-func getNodes(k8sAPI *k8s.API, pool *k8s.Pool) ([]map[string]interface{}, error) {
+func getNodes(ctx context.Context, k8sAPI *k8s.API, pool *k8s.Pool) ([]map[string]interface{}, error) {
 	req := &k8s.ListNodesRequest{
 		Region:    pool.Region,
 		ClusterID: pool.ClusterID,
 		PoolID:    &pool.ID,
 	}
 
-	nodes, err := k8sAPI.ListNodes(req, scw.WithAllPages())
+	nodes, err := k8sAPI.ListNodes(req, scw.WithAllPages(), scw.WithContext(ctx))
 
 	if err != nil {
 		return nil, err
