@@ -19,6 +19,12 @@ import (
 	"golang.org/x/xerrors"
 )
 
+type ResourceType string
+
+func (r ResourceType) String() string {
+	return string(r)
+}
+
 // RegionalID represents an ID that is linked with a region, eg fr-par/11111111-1111-1111-1111-111111111111
 type RegionalID struct {
 	ID     string

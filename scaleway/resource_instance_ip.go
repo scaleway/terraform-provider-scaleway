@@ -1,22 +1,22 @@
 package scaleway
 
 import (
+	"context"
+
+	"github.com/scaleway/scaleway-sdk-go/scw"
+
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
 )
 
 func resourceScalewayInstanceIP() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceScalewayInstanceIPCreate,
-		Read:   resourceScalewayInstanceIPRead,
-		Delete: resourceScalewayInstanceIPDelete,
-
-		// Because of removed attribute server_id we must add an update func that does nothing. This could be removed on
-		// next major release.
-		Update: resourceScalewayInstanceIPRead,
-
+		CreateContext: resourceScalewayInstanceIPCreate,
+		ReadContext:   resourceScalewayInstanceIPRead,
+		DeleteContext: resourceScalewayInstanceIPDelete,
 		Importer: &schema.ResourceImporter{
-			State: schema.ImportStatePassthrough,
+			StateContext: schema.ImportStatePassthroughContext,
 		},
 		SchemaVersion: 0,
 		Schema: map[string]*schema.Schema{
@@ -32,7 +32,7 @@ func resourceScalewayInstanceIP() *schema.Resource {
 			},
 			"server_id": {
 				Type:        schema.TypeString,
-				Optional:    true,
+				Computed:    true,
 				Description: "The server associated with this IP",
 			},
 			"zone":            zoneSchema(),
@@ -42,35 +42,35 @@ func resourceScalewayInstanceIP() *schema.Resource {
 	}
 }
 
-func resourceScalewayInstanceIPCreate(d *schema.ResourceData, m interface{}) error {
+func resourceScalewayInstanceIPCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	instanceAPI, zone, err := instanceAPIWithZone(d, m)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	res, err := instanceAPI.CreateIP(&instance.CreateIPRequest{
 		Zone:         zone,
 		Organization: expandStringPtr(d.Get("organization_id")),
 		Project:      expandStringPtr(d.Get("project_id")),
-	})
+	}, scw.WithContext(ctx))
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	d.SetId(newZonedIDString(zone, res.IP.ID))
-	return resourceScalewayInstanceIPRead(d, m)
+	return resourceScalewayInstanceIPRead(ctx, d, m)
 }
 
-func resourceScalewayInstanceIPRead(d *schema.ResourceData, m interface{}) error {
+func resourceScalewayInstanceIPRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	instanceAPI, zone, ID, err := instanceAPIWithZoneAndID(m, d.Id())
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	res, err := instanceAPI.GetIP(&instance.GetIPRequest{
 		IP:   ID,
 		Zone: zone,
-	})
+	}, scw.WithContext(ctx))
 
 	if err != nil {
 		// We check for 403 because instance API returns 403 for a deleted IP
@@ -78,11 +78,11 @@ func resourceScalewayInstanceIPRead(d *schema.ResourceData, m interface{}) error
 			d.SetId("")
 			return nil
 		}
-		return err
+		return diag.FromErr(err)
 	}
 
 	_ = d.Set("address", res.IP.Address.String())
-	_ = d.Set("zone", string(zone))
+	_ = d.Set("zone", zone)
 	_ = d.Set("organization_id", res.IP.Organization)
 	_ = d.Set("project_id", res.IP.Project)
 	_ = d.Set("reverse", res.IP.Reverse)
@@ -90,19 +90,19 @@ func resourceScalewayInstanceIPRead(d *schema.ResourceData, m interface{}) error
 	return nil
 }
 
-func resourceScalewayInstanceIPDelete(d *schema.ResourceData, m interface{}) error {
+func resourceScalewayInstanceIPDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	instanceAPI, zone, ID, err := instanceAPIWithZoneAndID(m, d.Id())
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	err = instanceAPI.DeleteIP(&instance.DeleteIPRequest{
 		IP:   ID,
 		Zone: zone,
-	})
+	}, scw.WithContext(ctx))
 
 	if err != nil && !is404Error(err) {
-		return err
+		return diag.FromErr(err)
 	}
 
 	return nil

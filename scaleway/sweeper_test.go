@@ -12,13 +12,13 @@ func TestMain(m *testing.M) {
 	resource.TestMain(m)
 }
 
-func sweepZones(zones []scw.Zone, f func(scwClient *scw.Client) error) error {
+func sweepZones(zones []scw.Zone, f func(scwClient *scw.Client, zone scw.Zone) error) error {
 	for _, zone := range zones {
 		client, err := sharedClientForZone(zone)
 		if err != nil {
 			return err
 		}
-		err = f(client)
+		err = f(client, zone)
 		if err != nil {
 			l.Warningf("error running sweepZones, ignoring: %s", err)
 		}
@@ -26,9 +26,12 @@ func sweepZones(zones []scw.Zone, f func(scwClient *scw.Client) error) error {
 	return nil
 }
 
-func sweepRegions(regions []scw.Region, f func(scwClient *scw.Client) error) error {
+func sweepRegions(regions []scw.Region, f func(scwClient *scw.Client, region scw.Region) error) error {
 	for _, region := range regions {
-		return sweepZones(region.GetZones(), f)
+		return sweepZones(region.GetZones(), func(scwClient *scw.Client, zone scw.Zone) error {
+			r, _ := zone.Region()
+			return f(scwClient, r)
+		})
 	}
 	return nil
 }

@@ -213,3 +213,31 @@ func testCheckResourceAttrIPv6(name string, key string) resource.TestCheckFunc {
 		return nil
 	})
 }
+
+func testGetResourceStateByName(s *terraform.State, name string) (*terraform.InstanceState, error) {
+	rs, ok := s.RootModule().Resources[name]
+	if !ok {
+		return nil, fmt.Errorf("resource not found: %s", name)
+	}
+	return rs.Primary, nil
+}
+
+func testGetResourceStatesByType(s *terraform.State, resourceType ResourceType) []*terraform.InstanceState {
+	var resources []*terraform.InstanceState
+
+	for _, rs := range s.RootModule().Resources {
+		if rs.Type == resourceType.String() {
+			resources = append(resources, rs.Primary)
+		}
+	}
+	return resources
+}
+
+type ErrorStillExist struct {
+	Type ResourceType
+	ID   string
+}
+
+func (e *ErrorStillExist) Error() string {
+	return fmt.Sprintf("resource %s(%s) still exist", e.Type, e.ID)
+}

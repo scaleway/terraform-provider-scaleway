@@ -3,6 +3,7 @@ package scaleway
 import (
 	"context"
 	"fmt"
+	"net/http"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -11,8 +12,16 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/validation"
 )
 
+type ProviderConfig struct {
+	Meta *Meta
+}
+
+func DefaultProviderConfig() *ProviderConfig {
+	return &ProviderConfig{}
+}
+
 // Provider returns a terraform.ResourceProvider.
-func Provider() plugin.ProviderFunc {
+func Provider(config *ProviderConfig) plugin.ProviderFunc {
 	return func() *schema.Provider {
 		p := &schema.Provider{
 			Schema: map[string]*schema.Schema{
@@ -102,9 +111,16 @@ func Provider() plugin.ProviderFunc {
 
 		p.ConfigureContextFunc = func(ctx context.Context, data *schema.ResourceData) (interface{}, diag.Diagnostics) {
 			terraformVersion := p.TerraformVersion
+
+			// If we provide meta in config use it. This is useful for tests
+			if config.Meta != nil {
+				return config.Meta, nil
+			}
+
 			meta, err := buildMeta(&MetaConfig{
 				providerSchema:   data,
 				terraformVersion: terraformVersion,
+				httpClient:       &http.Client{Transport: createRetryableHTTPTransport(http.DefaultTransport)},
 			})
 			if err != nil {
 				return nil, diag.FromErr(err)
@@ -128,12 +144,11 @@ type MetaConfig struct {
 	providerSchema   *schema.ResourceData
 	terraformVersion string
 	forceZone        scw.Zone
+	httpClient       *http.Client
 }
 
 // providerConfigure creates the Meta object containing the SDK client.
 func buildMeta(config *MetaConfig) (*Meta, error) {
-	httpClient := createRetryableHTTPClient(false)
-
 	////
 	// Load Profile
 	////
@@ -158,7 +173,7 @@ func buildMeta(config *MetaConfig) (*Meta, error) {
 	opts := []scw.ClientOption{
 		scw.WithUserAgent(fmt.Sprintf("terraform-provider/%s terraform/%s", version, config.terraformVersion)),
 		scw.WithProfile(profile),
-		scw.WithHTTPClient(httpClient),
+		scw.WithHTTPClient(config.httpClient),
 	}
 
 	scwClient, err := scw.NewClient(opts...)

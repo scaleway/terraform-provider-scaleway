@@ -12,16 +12,16 @@ import (
 
 func init() {
 	resource.AddTestSweepers("scaleway_instance_ip", &resource.Sweeper{
-		Name: "scaleway_instance_ip",
-		F:    testSweepInstanceIP,
+		Name:         "scaleway_instance_ip",
+		F:            testSweepInstanceIP,
+		Dependencies: []string{"scaleway_instance_server"},
 	})
 }
 
 func testSweepInstanceIP(_ string) error {
-	return sweepZones(scw.AllZones, func(scwClient *scw.Client) error {
+	return sweepZones(scw.AllZones, func(scwClient *scw.Client, zone scw.Zone) error {
 		instanceAPI := instance.NewAPI(scwClient)
-		zone, _ := scwClient.GetDefaultZone()
-		l.Debugf("sweeper: destroying the instance ip in (%s)", zone)
+
 		listIPs, err := instanceAPI.ListIPs(&instance.ListIPsRequest{}, scw.WithAllPages())
 		if err != nil {
 			l.Warningf("error listing ips in (%s) in sweeper: %s", zone, err)
@@ -42,63 +42,67 @@ func testSweepInstanceIP(_ string) error {
 }
 
 func TestAccScalewayInstanceIP(t *testing.T) {
-	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckScalewayInstanceIPDestroy,
-		Steps: []resource.TestStep{
-			{
-				Config: `
-					resource "scaleway_instance_ip" "base" {}
-					resource "scaleway_instance_ip" "scaleway" {}
-				`,
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayInstanceIPExists("scaleway_instance_ip.base"),
-					testAccCheckScalewayInstanceIPExists("scaleway_instance_ip.scaleway"),
-				),
+	t.Run("Simple", func(t *testing.T) {
+		tt := NewTestTools(t)
+		defer tt.Cleanup()
+		resource.ParallelTest(t, resource.TestCase{
+			ProviderFactories: tt.ProviderFactories,
+			CheckDestroy:      testAccCheckScalewayInstanceIPDestroy(tt),
+			Steps: []resource.TestStep{
+				{
+					Config: `
+						resource "scaleway_instance_ip" "base" {}
+						resource "scaleway_instance_ip" "scaleway" {}
+					`,
+					Check: resource.ComposeTestCheckFunc(
+						testAccCheckScalewayInstanceIPExists(tt, "scaleway_instance_ip.base"),
+						testAccCheckScalewayInstanceIPExists(tt, "scaleway_instance_ip.scaleway"),
+					),
+				},
 			},
-		},
+		})
+	})
+
+	t.Run("WithZone", func(t *testing.T) {
+		tt := NewTestTools(t)
+		defer tt.Cleanup()
+		resource.ParallelTest(t, resource.TestCase{
+			ProviderFactories: tt.ProviderFactories,
+			CheckDestroy:      testAccCheckScalewayInstanceIPDestroy(tt),
+			Steps: []resource.TestStep{
+				{
+					Config: `
+						resource "scaleway_instance_ip" "base" {}
+					`,
+					Check: resource.ComposeTestCheckFunc(
+						testAccCheckScalewayInstanceIPExists(tt, "scaleway_instance_ip.base"),
+						resource.TestCheckResourceAttr("scaleway_instance_ip.base", "zone", "fr-par-1"),
+					),
+				},
+				{
+					Config: `
+						resource "scaleway_instance_ip" "base" {
+							zone = "nl-ams-1"
+						}
+					`,
+					Check: resource.ComposeTestCheckFunc(
+						testAccCheckScalewayInstanceIPExists(tt, "scaleway_instance_ip.base"),
+						resource.TestCheckResourceAttr("scaleway_instance_ip.base", "zone", "nl-ams-1"),
+					),
+				},
+			},
+		})
 	})
 }
 
-func TestAccScalewayInstanceIP_Zone(t *testing.T) {
-	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckScalewayInstanceIPDestroy,
-		Steps: []resource.TestStep{
-			{
-				Config: `
-					resource "scaleway_instance_ip" "base" {}
-				`,
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayInstanceIPExists("scaleway_instance_ip.base"),
-					resource.TestCheckResourceAttr("scaleway_instance_ip.base", "zone", "fr-par-1"),
-				),
-			},
-			{
-				Config: `
-					resource "scaleway_instance_ip" "base" {
-						zone = "nl-ams-1"	
-					}
-				`,
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayInstanceIPExists("scaleway_instance_ip.base"),
-					resource.TestCheckResourceAttr("scaleway_instance_ip.base", "zone", "nl-ams-1"),
-				),
-			},
-		},
-	})
-}
-
-func testAccCheckScalewayInstanceIPExists(n string) resource.TestCheckFunc {
+func testAccCheckScalewayInstanceIPExists(tt *TestTools, name string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-		rs, ok := s.RootModule().Resources[n]
-		if !ok {
-			return fmt.Errorf("resource not found: %s", n)
+		rs, err := testGetResourceStateByName(s, name)
+		if err != nil {
+			return err
 		}
 
-		instanceAPI, zone, ID, err := instanceAPIWithZoneAndID(testAccProvider.Meta(), rs.Primary.ID)
+		instanceAPI, zone, ID, err := instanceAPIWithZoneAndID(tt.Meta, rs.ID)
 		if err != nil {
 			return err
 		}
@@ -184,33 +188,34 @@ func testAccCheckScalewayInstanceServerNoIPAssigned(serverResource string) resou
 	}
 }
 
-func testAccCheckScalewayInstanceIPDestroy(s *terraform.State) error {
-	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "scaleway_instance_ip" {
-			continue
+func testAccCheckScalewayInstanceIPDestroy(tt *TestTools) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		for _, rs := range testGetResourceStatesByType(s, "scaleway_instance_ip") {
+			instanceAPI, zone, id, err := instanceAPIWithZoneAndID(tt.Meta, rs.ID)
+			if err != nil {
+				return err
+			}
+
+			_, err = instanceAPI.GetIP(&instance.GetIPRequest{
+				Zone: zone,
+				IP:   id,
+			})
+
+			// If no error resource still exist
+			if err == nil {
+				return &ErrorStillExist{
+					Type: "scaleway_instance_ip",
+					ID:   rs.ID,
+				}
+			}
+
+			// Unexpected api error we return it
+			// We check for 403 because instance API return 403 for deleted IP
+			if !is404Error(err) && !is403Error(err) {
+				return err
+			}
 		}
 
-		instanceAPI, zone, ID, err := instanceAPIWithZoneAndID(testAccProvider.Meta(), rs.Primary.ID)
-		if err != nil {
-			return err
-		}
-
-		_, err = instanceAPI.GetIP(&instance.GetIPRequest{
-			Zone: zone,
-			IP:   ID,
-		})
-
-		// If no error resource still exist
-		if err == nil {
-			return fmt.Errorf("IP (%s) still exists", rs.Primary.ID)
-		}
-
-		// Unexpected api error we return it
-		// We check for 403 because instance API return 403 for deleted IP
-		if !is404Error(err) && !is403Error(err) {
-			return err
-		}
+		return nil
 	}
-
-	return nil
 }
