@@ -3,11 +3,10 @@ package scaleway
 import (
 	"context"
 
-	"github.com/scaleway/scaleway-sdk-go/scw"
-
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
+	"github.com/scaleway/scaleway-sdk-go/scw"
 )
 
 func resourceScalewayInstanceIP() *schema.Resource {
