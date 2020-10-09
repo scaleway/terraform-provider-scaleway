@@ -55,6 +55,8 @@ Use [this endpoint](https://developers.scaleway.com/en/products/baremetal/api/#g
 
 - `organization_id` - (Defaults to [provider](../index.md#organization_id) `organization_id`) The ID of the organization the server is associated with.
 
+- `project_id` - (Defaults to [provider](../index.md#project_id) `project_id`) The ID of the project the server is associated with.
+
 
 ## Attributes Reference
 
