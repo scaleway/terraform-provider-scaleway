@@ -124,7 +124,7 @@ func Provider(config *ProviderConfig) plugin.ProviderFunc {
 			meta, err := buildMeta(&MetaConfig{
 				providerSchema:   data,
 				terraformVersion: terraformVersion,
-				httpClient:       &http.Client{Transport: createRetryableHTTPTransport(http.DefaultTransport)},
+				httpClient:       &http.Client{Transport: newRetryableTransport(http.DefaultTransport)},
 			})
 			if err != nil {
 				return nil, diag.FromErr(err)

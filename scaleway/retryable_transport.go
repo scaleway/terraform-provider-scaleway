@@ -12,8 +12,8 @@ import (
 )
 
 // TODO Retry logic should be moved in the SDK
-// createRetryableHTTPTransport creates a http transport with retry capability.
-func createRetryableHTTPTransport(defaultTransport http.RoundTripper) http.RoundTripper {
+// newRetryableTransport creates a http transport with retry capability.
+func newRetryableTransport(defaultTransport http.RoundTripper) http.RoundTripper {
 	c := retryablehttp.NewClient()
 	c.HTTPClient = &http.Client{Transport: defaultTransport}
 
