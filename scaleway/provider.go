@@ -12,10 +12,14 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/validation"
 )
 
+// Provider config can be used to provide additional config when creating provider.
 type ProviderConfig struct {
+	// Meta can be used to override Meta that will be used by the provider.
+	// This is useful for tests.
 	Meta *Meta
 }
 
+// DefaultProviderConfig return default ProviderConfig struct
 func DefaultProviderConfig() *ProviderConfig {
 	return &ProviderConfig{}
 }

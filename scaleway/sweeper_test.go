@@ -46,7 +46,7 @@ func sharedClientForRegion(region scw.Region) (*scw.Client, error) {
 // functions for a given zone
 func sharedClientForZone(zone scw.Zone) (*scw.Client, error) {
 	meta, err := buildMeta(&MetaConfig{
-		terraformVersion: "test",
+		terraformVersion: "terraform-tests",
 		forceZone:        zone,
 	})
 	if err != nil {
@@ -58,7 +58,7 @@ func sharedClientForZone(zone scw.Zone) (*scw.Client, error) {
 // sharedS3ClientForRegion returns a common S3 client needed for the sweeper
 func sharedS3ClientForRegion(region scw.Region) (*s3.S3, error) {
 	meta, err := buildMeta(&MetaConfig{
-		terraformVersion: "test",
+		terraformVersion: "terraform-tests",
 		forceZone:        region.GetZones()[0],
 	})
 	if err != nil {
