@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"net"
 	"net/http"
-	"regexp"
 	"strings"
 	"text/template"
 	"time"
@@ -269,13 +268,6 @@ func newRandomName(prefix string) string {
 }
 
 const gb uint64 = 1000 * 1000 * 1000
-
-var UUIDRegex = regexp.MustCompile(`[0-9a-fA-F]{8}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{12}`)
-
-// isUUID returns true if the given string have an UUID format.
-func isUUID(s string) bool {
-	return UUIDRegex.MatchString(s)
-}
 
 // newTemplateFunc takes a go template string and returns a function that can be called to execute template.
 func newTemplateFunc(tplStr string) func(data interface{}) string {

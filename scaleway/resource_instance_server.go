@@ -12,6 +12,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
 	"github.com/scaleway/scaleway-sdk-go/api/marketplace/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	scwvalidation "github.com/scaleway/scaleway-sdk-go/validation"
 )
 
 func resourceScalewayInstanceServer() *schema.Resource {
@@ -231,7 +232,7 @@ func resourceScalewayInstanceServerCreate(d *schema.ResourceData, m interface{})
 	commercialType := d.Get("type").(string)
 
 	image := expandZonedID(d.Get("image"))
-	if !isUUID(image.ID) {
+	if !scwvalidation.IsUUID(image.ID) {
 		instanceAPI := marketplace.NewAPI(m.(*Meta).scwClient)
 		imageUUID, err := instanceAPI.GetLocalImageIDByLabel(&marketplace.GetLocalImageIDByLabelRequest{
 			CommercialType: commercialType,
@@ -368,7 +369,7 @@ func resourceScalewayInstanceServerRead(d *schema.ResourceData, m interface{}) e
 
 	// Image could be empty in an import context.
 	image := expandRegionalID(d.Get("image").(string))
-	if response.Server.Image != nil && (image.ID == "" || isUUID(image.ID)) {
+	if response.Server.Image != nil && (image.ID == "" || scwvalidation.IsUUID(image.ID)) {
 		// TODO: If image is a label, check that response.Server.Image.ID match the label.
 		// It could be useful if the user edit the image with another tool.
 		_ = d.Set("image", newZonedID(zone, response.Server.Image.ID).String())
