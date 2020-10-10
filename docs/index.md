@@ -203,7 +203,7 @@ terraform {
 Beware as no locking mechanism are yet supported.
 Using scaleway object storage as terraform backend is not suitable if you work in a team with a risk of simultaneous access to the same plan.
 
-Note: For security reason it's not recommended to store secrets in terraform files. If you want to configure the backend with environnment var, you need to use `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` [source](https://www.terraform.io/docs/backends/types/s3.html#access_key).
+Note: For security reason it's not recommended to store secrets in terraform files. If you want to configure the backend with environment var, you need to use `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` [source](https://www.terraform.io/docs/backends/types/s3.html#access_key).
 
 ```bash
 export AWS_ACCESS_KEY_ID=$SCW_ACCESS_KEY
