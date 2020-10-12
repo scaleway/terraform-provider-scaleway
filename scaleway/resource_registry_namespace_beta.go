@@ -1,6 +1,9 @@
 package scaleway
 
 import (
+	"context"
+
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/api/registry/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
@@ -8,12 +11,12 @@ import (
 
 func resourceScalewayRegistryNamespaceBeta() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceScalewayRegistryNamespaceBetaCreate,
-		Read:   resourceScalewayRegistryNamespaceBetaRead,
-		Update: resourceScalewayRegistryNamespaceBetaUpdate,
-		Delete: resourceScalewayRegistryNamespaceBetaDelete,
+		CreateContext: resourceScalewayRegistryNamespaceBetaCreate,
+		ReadContext:   resourceScalewayRegistryNamespaceBetaRead,
+		UpdateContext: resourceScalewayRegistryNamespaceBetaUpdate,
+		DeleteContext: resourceScalewayRegistryNamespaceBetaDelete,
 		Importer: &schema.ResourceImporter{
-			State: schema.ImportStatePassthrough,
+			StateContext: schema.ImportStatePassthroughContext,
 		},
 		SchemaVersion: 0,
 		Schema: map[string]*schema.Schema{
@@ -44,10 +47,10 @@ func resourceScalewayRegistryNamespaceBeta() *schema.Resource {
 	}
 }
 
-func resourceScalewayRegistryNamespaceBetaCreate(d *schema.ResourceData, m interface{}) error {
+func resourceScalewayRegistryNamespaceBetaCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	api, region, err := registryAPIWithRegion(d, m)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	ns, err := api.CreateNamespace(&registry.CreateNamespaceRequest{
@@ -56,33 +59,33 @@ func resourceScalewayRegistryNamespaceBetaCreate(d *schema.ResourceData, m inter
 		Name:           d.Get("name").(string),
 		Description:    d.Get("description").(string),
 		IsPublic:       d.Get("is_public").(bool),
-	})
+	}, scw.WithContext(ctx))
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	d.SetId(newRegionalIDString(region, ns.ID))
 
-	return resourceScalewayRegistryNamespaceBetaRead(d, m)
+	return resourceScalewayRegistryNamespaceBetaRead(ctx, d, m)
 }
 
-func resourceScalewayRegistryNamespaceBetaRead(d *schema.ResourceData, m interface{}) error {
+func resourceScalewayRegistryNamespaceBetaRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	api, region, id, err := registryAPIWithRegionAndID(m, d.Id())
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	ns, err := api.GetNamespace(&registry.GetNamespaceRequest{
 		Region:      region,
 		NamespaceID: id,
-	})
+	}, scw.WithContext(ctx))
 
 	if err != nil {
 		if is404Error(err) {
 			d.SetId("")
 			return nil
 		}
-		return err
+		return diag.FromErr(err)
 	}
 
 	_ = d.Set("name", ns.Name)
@@ -95,10 +98,10 @@ func resourceScalewayRegistryNamespaceBetaRead(d *schema.ResourceData, m interfa
 	return nil
 }
 
-func resourceScalewayRegistryNamespaceBetaUpdate(d *schema.ResourceData, m interface{}) error {
+func resourceScalewayRegistryNamespaceBetaUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	api, region, id, err := registryAPIWithRegionAndID(m, d.Id())
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	if d.HasChange("description") || d.HasChange("is_public") {
@@ -107,27 +110,27 @@ func resourceScalewayRegistryNamespaceBetaUpdate(d *schema.ResourceData, m inter
 			NamespaceID: id,
 			Description: expandStringPtr(d.Get("description")),
 			IsPublic:    scw.BoolPtr(d.Get("is_public").(bool)),
-		}); err != nil {
-			return err
+		}, scw.WithContext(ctx)); err != nil {
+			return diag.FromErr(err)
 		}
 	}
 
-	return resourceScalewayRegistryNamespaceBetaRead(d, m)
+	return resourceScalewayRegistryNamespaceBetaRead(ctx, d, m)
 }
 
-func resourceScalewayRegistryNamespaceBetaDelete(d *schema.ResourceData, m interface{}) error {
+func resourceScalewayRegistryNamespaceBetaDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	api, region, id, err := registryAPIWithRegionAndID(m, d.Id())
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	_, err = api.DeleteNamespace(&registry.DeleteNamespaceRequest{
 		Region:      region,
 		NamespaceID: id,
-	})
+	}, scw.WithContext(ctx))
 
 	if err != nil && !is404Error(err) {
-		return err
+		return diag.FromErr(err)
 	}
 
 	return nil
