@@ -1,16 +1,20 @@
 package scaleway
 
 import (
+	"context"
+
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
+	"github.com/scaleway/scaleway-sdk-go/scw"
 )
 
 func resourceScalewayInstanceIPReverseDNS() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceScalewayInstanceIPReverseDNSCreate,
-		Read:   resourceScalewayInstanceIPReverseDNSRead,
-		Update: resourceScalewayInstanceIPReverseDNSUpdate,
-		Delete: resourceScalewayInstanceIPReverseDNSDelete,
+		CreateContext: resourceScalewayInstanceIPReverseDNSCreate,
+		ReadContext:   resourceScalewayInstanceIPReverseDNSRead,
+		UpdateContext: resourceScalewayInstanceIPReverseDNSUpdate,
+		DeleteContext: resourceScalewayInstanceIPReverseDNSDelete,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},
@@ -31,35 +35,35 @@ func resourceScalewayInstanceIPReverseDNS() *schema.Resource {
 	}
 }
 
-func resourceScalewayInstanceIPReverseDNSCreate(d *schema.ResourceData, m interface{}) error {
+func resourceScalewayInstanceIPReverseDNSCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	instanceAPI, zone, err := instanceAPIWithZone(d, m)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	res, err := instanceAPI.GetIP(&instance.GetIPRequest{
 		IP:   expandID(d.Get("ip_id")),
 		Zone: zone,
-	})
+	}, scw.WithContext(ctx))
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 	d.SetId(newZonedIDString(zone, res.IP.ID))
 
 	// We do not create any resource. We only need to update the IP.
-	return resourceScalewayInstanceIPReverseDNSUpdate(d, m)
+	return resourceScalewayInstanceIPReverseDNSUpdate(ctx, d, m)
 }
 
-func resourceScalewayInstanceIPReverseDNSRead(d *schema.ResourceData, m interface{}) error {
+func resourceScalewayInstanceIPReverseDNSRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	instanceAPI, zone, ID, err := instanceAPIWithZoneAndID(m, d.Id())
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	res, err := instanceAPI.GetIP(&instance.GetIPRequest{
 		IP:   ID,
 		Zone: zone,
-	})
+	}, scw.WithContext(ctx))
 
 	if err != nil {
 		// We check for 403 because instance API returns 403 for a deleted IP
@@ -67,7 +71,7 @@ func resourceScalewayInstanceIPReverseDNSRead(d *schema.ResourceData, m interfac
 			d.SetId("")
 			return nil
 		}
-		return err
+		return diag.FromErr(err)
 	}
 
 	_ = d.Set("zone", string(zone))
@@ -75,10 +79,10 @@ func resourceScalewayInstanceIPReverseDNSRead(d *schema.ResourceData, m interfac
 	return nil
 }
 
-func resourceScalewayInstanceIPReverseDNSUpdate(d *schema.ResourceData, m interface{}) error {
+func resourceScalewayInstanceIPReverseDNSUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	instanceAPI, zone, ID, err := instanceAPIWithZoneAndID(m, d.Id())
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	if d.HasChange("reverse") {
@@ -95,19 +99,19 @@ func resourceScalewayInstanceIPReverseDNSUpdate(d *schema.ResourceData, m interf
 		} else {
 			updateReverseReq.Reverse = &instance.NullableStringValue{Value: reverse}
 		}
-		_, err = instanceAPI.UpdateIP(updateReverseReq)
+		_, err = instanceAPI.UpdateIP(updateReverseReq, scw.WithContext(ctx))
 		if err != nil {
-			return err
+			return diag.FromErr(err)
 		}
 	}
 
-	return resourceScalewayInstanceIPReverseDNSRead(d, m)
+	return resourceScalewayInstanceIPReverseDNSRead(ctx, d, m)
 }
 
-func resourceScalewayInstanceIPReverseDNSDelete(d *schema.ResourceData, m interface{}) error {
+func resourceScalewayInstanceIPReverseDNSDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	instanceAPI, zone, ID, err := instanceAPIWithZoneAndID(m, d.Id())
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	// Unset the reverse dns on the IP
@@ -116,9 +120,9 @@ func resourceScalewayInstanceIPReverseDNSDelete(d *schema.ResourceData, m interf
 		IP:      ID,
 		Reverse: &instance.NullableStringValue{Null: true},
 	}
-	_, err = instanceAPI.UpdateIP(updateReverseReq)
+	_, err = instanceAPI.UpdateIP(updateReverseReq, scw.WithContext(ctx))
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	d.SetId("")

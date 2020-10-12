@@ -1,9 +1,11 @@
 package scaleway
 
 import (
+	"context"
 	"io/ioutil"
 	"time"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/api/rdb/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
@@ -11,12 +13,12 @@ import (
 
 func resourceScalewayRdbInstanceBeta() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceScalewayRdbInstanceBetaCreate,
-		Read:   resourceScalewayRdbInstanceBetaRead,
-		Update: resourceScalewayRdbInstanceBetaUpdate,
-		Delete: resourceScalewayRdbInstanceBetaDelete,
+		CreateContext: resourceScalewayRdbInstanceBetaCreate,
+		ReadContext:   resourceScalewayRdbInstanceBetaRead,
+		UpdateContext: resourceScalewayRdbInstanceBetaUpdate,
+		DeleteContext: resourceScalewayRdbInstanceBetaDelete,
 		Importer: &schema.ResourceImporter{
-			State: schema.ImportStatePassthrough,
+			StateContext: schema.ImportStatePassthroughContext,
 		},
 		SchemaVersion: 0,
 		Schema: map[string]*schema.Schema{
@@ -119,10 +121,10 @@ func resourceScalewayRdbInstanceBeta() *schema.Resource {
 	}
 }
 
-func resourceScalewayRdbInstanceBetaCreate(d *schema.ResourceData, m interface{}) error {
+func resourceScalewayRdbInstanceBetaCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	rdbAPI, region, err := rdbAPIWithRegion(d, m)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	createReq := &rdb.CreateInstanceRequest{
@@ -139,9 +141,9 @@ func resourceScalewayRdbInstanceBetaCreate(d *schema.ResourceData, m interface{}
 		Tags:           expandStrings(d.Get("tags")),
 	}
 
-	res, err := rdbAPI.CreateInstance(createReq)
+	res, err := rdbAPI.CreateInstance(createReq, scw.WithContext(ctx))
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	d.SetId(newRegionalIDString(region, res.ID))
@@ -150,30 +152,30 @@ func resourceScalewayRdbInstanceBetaCreate(d *schema.ResourceData, m interface{}
 		Region:     region,
 		InstanceID: res.ID,
 		Timeout:    scw.TimeDurationPtr(InstanceServerWaitForTimeout),
-	})
+	}, scw.WithContext(ctx))
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
-	return resourceScalewayRdbInstanceBetaRead(d, m)
+	return resourceScalewayRdbInstanceBetaRead(ctx, d, m)
 }
 
-func resourceScalewayRdbInstanceBetaRead(d *schema.ResourceData, m interface{}) error {
+func resourceScalewayRdbInstanceBetaRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	rdbAPI, region, ID, err := rdbAPIWithRegionAndID(m, d.Id())
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	res, err := rdbAPI.GetInstance(&rdb.GetInstanceRequest{
 		Region:     region,
 		InstanceID: ID,
-	})
+	}, scw.WithContext(ctx))
 	if err != nil {
 		if is404Error(err) {
 			d.SetId("")
 			return nil
 		}
-		return err
+		return diag.FromErr(err)
 	}
 
 	_ = d.Set("name", res.Name)
@@ -202,21 +204,21 @@ func resourceScalewayRdbInstanceBetaRead(d *schema.ResourceData, m interface{}) 
 		InstanceID: ID,
 	})
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 	certContent, err := ioutil.ReadAll(cert.Content)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 	_ = d.Set("certificate", string(certContent))
 
 	return nil
 }
 
-func resourceScalewayRdbInstanceBetaUpdate(d *schema.ResourceData, m interface{}) error {
+func resourceScalewayRdbInstanceBetaUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	rdbAPI, region, ID, err := rdbAPIWithRegionAndID(m, d.Id())
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	req := &rdb.UpdateInstanceRequest{
@@ -235,9 +237,9 @@ func resourceScalewayRdbInstanceBetaUpdate(d *schema.ResourceData, m interface{}
 		req.Tags = scw.StringsPtr(expandStrings(d.Get("tags")))
 	}
 
-	_, err = rdbAPI.UpdateInstance(req)
+	_, err = rdbAPI.UpdateInstance(req, scw.WithContext(ctx))
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 	upgradeInstanceRequests := []rdb.UpgradeInstanceRequest(nil)
 	if d.HasChange("node_type") {
@@ -258,18 +260,18 @@ func resourceScalewayRdbInstanceBetaUpdate(d *schema.ResourceData, m interface{}
 			})
 	}
 	for _, request := range upgradeInstanceRequests {
-		_, err = rdbAPI.UpgradeInstance(&request)
+		_, err = rdbAPI.UpgradeInstance(&request, scw.WithContext(ctx))
 		if err != nil {
-			return err
+			return diag.FromErr(err)
 		}
 
 		_, err = rdbAPI.WaitForInstance(&rdb.WaitForInstanceRequest{
 			Region:     region,
 			InstanceID: ID,
 			Timeout:    scw.TimeDurationPtr(InstanceServerWaitForTimeout * 3), // upgrade takes some time
-		})
+		}, scw.WithContext(ctx))
 		if err != nil {
-			return err
+			return diag.FromErr(err)
 		}
 
 		// Wait for the instance to settle after upgrading
@@ -284,38 +286,38 @@ func resourceScalewayRdbInstanceBetaUpdate(d *schema.ResourceData, m interface{}
 			Password:   expandStringPtr(d.Get("password")),
 		}
 
-		_, err = rdbAPI.UpdateUser(req)
+		_, err = rdbAPI.UpdateUser(req, scw.WithContext(ctx))
 		if err != nil {
-			return err
+			return diag.FromErr(err)
 		}
 	}
 
-	return resourceScalewayRdbInstanceBetaRead(d, m)
+	return resourceScalewayRdbInstanceBetaRead(ctx, d, m)
 }
 
-func resourceScalewayRdbInstanceBetaDelete(d *schema.ResourceData, m interface{}) error {
+func resourceScalewayRdbInstanceBetaDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	rdbAPI, region, ID, err := rdbAPIWithRegionAndID(m, d.Id())
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	_, err = rdbAPI.DeleteInstance(&rdb.DeleteInstanceRequest{
 		Region:     region,
 		InstanceID: ID,
-	})
+	}, scw.WithContext(ctx))
 
 	if err != nil && !is404Error(err) {
-		return err
+		return diag.FromErr(err)
 	}
 
 	_, err = rdbAPI.WaitForInstance(&rdb.WaitForInstanceRequest{
 		InstanceID: ID,
 		Region:     region,
 		Timeout:    scw.TimeDurationPtr(LbWaitForTimeout),
-	})
+	}, scw.WithContext(ctx))
 
 	if err != nil && !is404Error(err) {
-		return err
+		return diag.FromErr(err)
 	}
 
 	return nil

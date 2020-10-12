@@ -1,8 +1,10 @@
 package scaleway
 
 import (
+	"context"
 	"fmt"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
@@ -11,10 +13,10 @@ import (
 
 func resourceScalewayInstanceVolume() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceScalewayInstanceVolumeCreate,
-		Read:   resourceScalewayInstanceVolumeRead,
-		Update: resourceScalewayInstanceVolumeUpdate,
-		Delete: resourceScalewayInstanceVolumeDelete,
+		CreateContext: resourceScalewayInstanceVolumeCreate,
+		ReadContext:   resourceScalewayInstanceVolumeRead,
+		UpdateContext: resourceScalewayInstanceVolumeUpdate,
+		DeleteContext: resourceScalewayInstanceVolumeDelete,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},
@@ -72,10 +74,10 @@ func resourceScalewayInstanceVolume() *schema.Resource {
 	}
 }
 
-func resourceScalewayInstanceVolumeCreate(d *schema.ResourceData, m interface{}) error {
+func resourceScalewayInstanceVolumeCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	instanceAPI, zone, err := instanceAPIWithZone(d, m)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	createVolumeRequest := &instance.CreateVolumeRequest{
@@ -99,32 +101,32 @@ func resourceScalewayInstanceVolumeCreate(d *schema.ResourceData, m interface{})
 		createVolumeRequest.BaseSnapshot = expandStringPtr(expandID(snapshotID))
 	}
 
-	res, err := instanceAPI.CreateVolume(createVolumeRequest)
+	res, err := instanceAPI.CreateVolume(createVolumeRequest, scw.WithContext(ctx))
 	if err != nil {
-		return fmt.Errorf("couldn't create volume: %s", err)
+		return diag.FromErr(fmt.Errorf("couldn't create volume: %s", err))
 	}
 
 	d.SetId(newZonedIDString(zone, res.Volume.ID))
 
-	return resourceScalewayInstanceVolumeRead(d, m)
+	return resourceScalewayInstanceVolumeRead(ctx, d, m)
 }
 
-func resourceScalewayInstanceVolumeRead(d *schema.ResourceData, m interface{}) error {
+func resourceScalewayInstanceVolumeRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	instanceAPI, zone, id, err := instanceAPIWithZoneAndID(m, d.Id())
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	res, err := instanceAPI.GetVolume(&instance.GetVolumeRequest{
 		VolumeID: id,
 		Zone:     zone,
-	})
+	}, scw.WithContext(ctx))
 	if err != nil {
 		if is404Error(err) {
 			d.SetId("")
 			return nil
 		}
-		return fmt.Errorf("couldn't read volume: %v", err)
+		return diag.FromErr(fmt.Errorf("couldn't read volume: %v", err))
 	}
 
 	_ = d.Set("name", res.Volume.Name)
@@ -143,10 +145,10 @@ func resourceScalewayInstanceVolumeRead(d *schema.ResourceData, m interface{}) e
 	return nil
 }
 
-func resourceScalewayInstanceVolumeUpdate(d *schema.ResourceData, m interface{}) error {
+func resourceScalewayInstanceVolumeUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	instanceAPI, zone, id, err := instanceAPIWithZoneAndID(m, d.Id())
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	if d.HasChange("name") {
@@ -156,24 +158,24 @@ func resourceScalewayInstanceVolumeUpdate(d *schema.ResourceData, m interface{})
 			VolumeID: id,
 			Zone:     zone,
 			Name:     &newName,
-		})
+		}, scw.WithContext(ctx))
 		if err != nil {
-			return fmt.Errorf("couldn't update volume: %s", err)
+			return diag.FromErr(fmt.Errorf("couldn't update volume: %s", err))
 		}
 	}
 
-	return resourceScalewayInstanceVolumeRead(d, m)
+	return resourceScalewayInstanceVolumeRead(ctx, d, m)
 }
 
-func resourceScalewayInstanceVolumeDelete(d *schema.ResourceData, m interface{}) error {
+func resourceScalewayInstanceVolumeDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	instanceAPI, zone, id, err := instanceAPIWithZoneAndID(m, d.Id())
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
-	err = detachVolume(instanceAPI, zone, id)
+	err = detachVolume(ctx, instanceAPI, zone, id)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	deleteRequest := &instance.DeleteVolumeRequest{
@@ -181,6 +183,6 @@ func resourceScalewayInstanceVolumeDelete(d *schema.ResourceData, m interface{})
 		VolumeID: id,
 	}
 
-	err = instanceAPI.DeleteVolume(deleteRequest)
-	return err
+	err = instanceAPI.DeleteVolume(deleteRequest, scw.WithContext(ctx))
+	return diag.FromErr(err)
 }
