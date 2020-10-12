@@ -6,7 +6,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
-	k8s "github.com/scaleway/scaleway-sdk-go/api/k8s/v1"
+	"github.com/scaleway/scaleway-sdk-go/api/k8s/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 )
 
@@ -17,7 +17,7 @@ func resourceScalewayK8SPoolBeta() *schema.Resource {
 		UpdateContext: resourceScalewayK8SPoolBetaUpdate,
 		DeleteContext: resourceScalewayK8SPoolBetaDelete,
 		Importer: &schema.ResourceImporter{
-			State: schema.ImportStatePassthrough,
+			StateContext: schema.ImportStatePassthroughContext,
 		},
 		SchemaVersion: 0,
 		Schema: map[string]*schema.Schema{
@@ -213,7 +213,7 @@ func resourceScalewayK8SPoolBetaCreate(ctx context.Context, d *schema.ResourceDa
 	if cluster.Status == k8s.ClusterStatusPoolRequired {
 		waitForCluster = true
 	} else if cluster.Status == k8s.ClusterStatusCreating {
-		err = waitK8SCluster(k8sAPI, region, cluster.ID, k8s.ClusterStatusReady)
+		err = waitK8SCluster(ctx, k8sAPI, region, cluster.ID, k8s.ClusterStatusReady)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -227,14 +227,14 @@ func resourceScalewayK8SPoolBetaCreate(ctx context.Context, d *schema.ResourceDa
 	d.SetId(newRegionalIDString(region, res.ID))
 
 	if waitForCluster {
-		err = waitK8SCluster(k8sAPI, region, cluster.ID, k8s.ClusterStatusReady)
+		err = waitK8SCluster(ctx, k8sAPI, region, cluster.ID, k8s.ClusterStatusReady)
 		if err != nil {
 			return diag.FromErr(err)
 		}
 	}
 
 	if d.Get("wait_for_pool_ready").(bool) { // wait for the pool to be ready if specified (including all its nodes)
-		err = waitK8SPoolReady(k8sAPI, region, res.ID)
+		err = waitK8SPoolReady(ctx, k8sAPI, region, res.ID)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -339,7 +339,7 @@ func resourceScalewayK8SPoolBetaUpdate(ctx context.Context, d *schema.ResourceDa
 	}
 
 	if d.Get("wait_for_pool_ready").(bool) { // wait for the pool to be ready if specified (including all its nodes)
-		err = waitK8SPoolReady(k8sAPI, region, res.ID)
+		err = waitK8SPoolReady(ctx, k8sAPI, region, res.ID)
 		if err != nil {
 			return diag.FromErr(err)
 		}

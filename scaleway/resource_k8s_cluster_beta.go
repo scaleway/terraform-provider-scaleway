@@ -19,7 +19,7 @@ func resourceScalewayK8SClusterBeta() *schema.Resource {
 		UpdateContext: resourceScalewayK8SClusterBetaUpdate,
 		DeleteContext: resourceScalewayK8SClusterBetaDelete,
 		Importer: &schema.ResourceImporter{
-			State: schema.ImportStatePassthrough,
+			StateContext: schema.ImportStatePassthroughContext,
 		},
 		SchemaVersion: 0,
 		Schema: map[string]*schema.Schema{
@@ -448,7 +448,7 @@ func resourceScalewayK8SClusterBetaCreate(ctx context.Context, d *schema.Resourc
 	}
 
 	if versionIsOnlyMinor {
-		version, err = k8sGetLatestVersionFromMinor(k8sAPI, region, version)
+		version, err = k8sGetLatestVersionFromMinor(ctx, k8sAPI, region, version)
 		if err != nil {
 			return diag.FromErr(fmt.Errorf("minor version x.y must be used with auto upgrade enabled"))
 		}
@@ -491,7 +491,7 @@ func resourceScalewayK8SClusterBetaCreate(ctx context.Context, d *schema.Resourc
 	}
 
 	if _, ok := d.GetOk("default_pool"); ok {
-		err = waitK8SCluster(k8sAPI, region, res.ID, k8s.ClusterStatusReady)
+		err = waitK8SCluster(ctx, k8sAPI, region, res.ID, k8s.ClusterStatusReady)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -501,13 +501,13 @@ func resourceScalewayK8SClusterBetaCreate(ctx context.Context, d *schema.Resourc
 				return diag.FromErr(err)
 			}
 
-			err = waitK8SPoolReady(k8sAPI, region, expandID(pool.ID))
+			err = waitK8SPoolReady(ctx, k8sAPI, region, expandID(pool.ID))
 			if err != nil {
 				return diag.FromErr(err)
 			}
 		}
 	} else {
-		err = waitK8SCluster(k8sAPI, region, res.ID, k8s.ClusterStatusPoolRequired)
+		err = waitK8SCluster(ctx, k8sAPI, region, res.ID, k8s.ClusterStatusPoolRequired)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -788,7 +788,7 @@ func resourceScalewayK8SClusterBetaDefaultPoolUpdate(ctx context.Context, d *sch
 
 			if oldPoolID != "" {
 				// wait for new pool to be ready before deleting old one
-				err = waitK8SPoolReady(k8sAPI, region, expandID(defaultPoolID))
+				err = waitK8SPoolReady(ctx, k8sAPI, region, expandID(defaultPoolID))
 				if err != nil {
 					return diag.FromErr(err)
 				}
@@ -804,7 +804,7 @@ func resourceScalewayK8SClusterBetaDefaultPoolUpdate(ctx context.Context, d *sch
 		}
 
 		if d.Get("default_pool.0.wait_for_pool_ready").(bool) { // wait for the pool to be ready if specified
-			err = waitK8SPoolReady(k8sAPI, region, expandID(defaultPoolID))
+			err = waitK8SPoolReady(ctx, k8sAPI, region, expandID(defaultPoolID))
 			if err != nil {
 				return diag.FromErr(err)
 			}
@@ -880,7 +880,7 @@ func resourceScalewayK8SClusterBetaUpdate(ctx context.Context, d *schema.Resourc
 	}
 
 	if versionIsOnlyMinor {
-		version, err = k8sGetLatestVersionFromMinor(k8sAPI, region, version)
+		version, err = k8sGetLatestVersionFromMinor(ctx, k8sAPI, region, version)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -951,7 +951,7 @@ func resourceScalewayK8SClusterBetaUpdate(ctx context.Context, d *schema.Resourc
 		return diag.FromErr(err)
 	}
 
-	err = waitK8SCluster(k8sAPI, region, clusterID, k8s.ClusterStatusReady, k8s.ClusterStatusPoolRequired)
+	err = waitK8SCluster(ctx, k8sAPI, region, clusterID, k8s.ClusterStatusReady, k8s.ClusterStatusPoolRequired)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -971,7 +971,7 @@ func resourceScalewayK8SClusterBetaUpdate(ctx context.Context, d *schema.Resourc
 			return diag.FromErr(err)
 		}
 
-		err = waitK8SCluster(k8sAPI, region, clusterID, k8s.ClusterStatusReady, k8s.ClusterStatusPoolRequired)
+		err = waitK8SCluster(ctx, k8sAPI, region, clusterID, k8s.ClusterStatusReady, k8s.ClusterStatusPoolRequired)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -1009,7 +1009,7 @@ func resourceScalewayK8SClusterBetaDelete(ctx context.Context, d *schema.Resourc
 		return diag.FromErr(err)
 	}
 
-	err = waitK8SClusterDeleted(k8sAPI, region, clusterID)
+	err = waitK8SClusterDeleted(ctx, k8sAPI, region, clusterID)
 	if err != nil {
 		return diag.FromErr(err)
 	}
