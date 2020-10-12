@@ -18,7 +18,7 @@ func resourceScalewayBaremetalServer() *schema.Resource {
 		UpdateContext: resourceScalewayBaremetalServerUpdate,
 		DeleteContext: resourceScalewayBaremetalServerDelete,
 		Importer: &schema.ResourceImporter{
-			State: schema.ImportStatePassthrough,
+			StateContext: schema.ImportStatePassthroughContext,
 		},
 		SchemaVersion: 0,
 		Timeouts: &schema.ResourceTimeout{
