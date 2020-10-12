@@ -50,6 +50,9 @@ func getTestFilePath(t *testing.T, suffix string) string {
 	// Replace special characters.
 	fileName = specialChars.ReplaceAllLiteralString(fileName, "") + suffix
 
+	// Remove prefix to simplify
+	fileName = strings.TrimPrefix(fileName, "test-acc-scaleway-")
+
 	return filepath.Join(".", "testdata", fileName)
 }
 
