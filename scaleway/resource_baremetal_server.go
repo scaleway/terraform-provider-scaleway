@@ -246,7 +246,7 @@ func resourceScalewayBaremetalServerUpdate(ctx context.Context, d *schema.Resour
 		return diag.FromErr(err)
 	}
 
-	if d.HasChange("os") || d.HasChange("ssh_key_ids") {
+	if d.HasChanges("os", "ssh_key_ids") {
 		installReq := &baremetal.InstallServerRequest{
 			Zone:      zonedID.Zone,
 			ServerID:  zonedID.ID,

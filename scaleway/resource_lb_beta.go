@@ -138,7 +138,7 @@ func resourceScalewayLbBetaUpdate(ctx context.Context, d *schema.ResourceData, m
 		return diag.FromErr(err)
 	}
 
-	if d.HasChange("name") || d.HasChange("tags") {
+	if d.HasChanges("name", "tags") {
 		req := &lb.UpdateLBRequest{
 			Region: region,
 			LBID:   ID,
