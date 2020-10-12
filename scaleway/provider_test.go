@@ -55,7 +55,7 @@ func getTestFilePath(t *testing.T, suffix string) string {
 
 // getHTTPRecoder creates a new httpClient that records all HTTP requests in a cassette.
 // This cassette is then replayed whenever tests are executed again. This means that once the
-// requests are recorded in the cassette, no more real HTTP request must be made to run the tests.
+// requests are recorded in the cassette, no more real HTTP requests must be made to run the tests.
 //
 // It is important to call add a `defer cleanup()` so the given cassette files are correctly
 // closed and saved after the requests.
