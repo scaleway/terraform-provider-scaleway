@@ -1,10 +1,13 @@
 package scaleway
 
 import (
+	"context"
 	"fmt"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
+	"github.com/scaleway/scaleway-sdk-go/scw"
 )
 
 func dataSourceScalewayInstanceServer() *schema.Resource {
@@ -24,17 +27,17 @@ func dataSourceScalewayInstanceServer() *schema.Resource {
 	}
 
 	return &schema.Resource{
-		Read: dataSourceScalewayInstanceServerRead,
+		ReadContext: dataSourceScalewayInstanceServerRead,
 
 		Schema: dsSchema,
 	}
 }
 
-func dataSourceScalewayInstanceServerRead(d *schema.ResourceData, m interface{}) error {
+func dataSourceScalewayInstanceServerRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	meta := m.(*Meta)
 	instanceAPI, zone, err := instanceAPIWithZone(d, meta)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	serverID, ok := d.GetOk("server_id")
@@ -44,25 +47,25 @@ func dataSourceScalewayInstanceServerRead(d *schema.ResourceData, m interface{})
 			Name:         expandStringPtr(d.Get("name")),
 			Organization: expandStringPtr(d.Get("organization_id")),
 			Project:      expandStringPtr(d.Get("project_id")),
-		})
+		}, scw.WithContext(ctx))
 		if err != nil {
-			return err
+			return diag.FromErr(err)
 		}
 		for _, instance := range res.Servers {
 			if instance.Name == d.Get("name").(string) {
 				if serverID != "" {
-					return fmt.Errorf("more than 1 server found with the same name %s", d.Get("name"))
+					return diag.FromErr(fmt.Errorf("more than 1 server found with the same name %s", d.Get("name")))
 				}
 				serverID = instance.ID
 			}
 		}
 		if serverID == "" {
-			return fmt.Errorf("no server found with the name %s", d.Get("name"))
+			return diag.FromErr(fmt.Errorf("no server found with the name %s", d.Get("name")))
 		}
 	}
 
 	zonedID := datasourceNewZonedID(serverID, zone)
 	d.SetId(zonedID)
 	_ = d.Set("server_id", zonedID)
-	return resourceScalewayInstanceServerRead(d, m)
+	return resourceScalewayInstanceServerRead(ctx, d, m)
 }
