@@ -708,7 +708,7 @@ func resourceScalewayK8SClusterBetaDefaultPoolUpdate(ctx context.Context, d *sch
 
 		forceNew := false
 		oldPoolID := ""
-		if d.HasChanges("default_pool.0.container_runtime", "default_pool.0.node_type","default_pool.0.placement_group_id") {
+		if d.HasChanges("default_pool.0.container_runtime", "default_pool.0.node_type", "default_pool.0.placement_group_id") {
 			forceNew = true
 			oldPoolID = defaultPoolID
 		} else {
