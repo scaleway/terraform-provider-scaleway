@@ -18,9 +18,8 @@ func init() {
 }
 
 func testSweepComputeInstanceVolume(region string) error {
-	return sweepZones(scw.AllZones, func(scwClient *scw.Client) error {
+	return sweepZones(scw.AllZones, func(scwClient *scw.Client, zone scw.Zone) error {
 		instanceAPI := instance.NewAPI(scwClient)
-		zone, _ := scwClient.GetDefaultZone()
 		l.Debugf("sweeper: destroying the volumes in (%s)", zone)
 
 		listVolumesResponse, err := instanceAPI.ListVolumes(&instance.ListVolumesRequest{

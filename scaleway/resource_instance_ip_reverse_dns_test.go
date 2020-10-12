@@ -8,9 +8,10 @@ import (
 
 func TestAccScalewayInstanceReverseDnsIP(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckScalewayInstanceIPDestroy,
+		PreCheck:  func() { testAccPreCheck(t) },
+		Providers: testAccProviders,
+		// TODO enable back when using TestTools
+		//CheckDestroy: testAccCheckScalewayInstanceIPDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: `

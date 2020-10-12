@@ -401,9 +401,8 @@ func testAccCheckScalewayInstanceSecurityGroupDestroy(s *terraform.State) error 
 }
 
 func testSweepComputeInstanceSecurityGroup(region string) error {
-	return sweepZones(scw.AllZones, func(scwClient *scw.Client) error {
+	return sweepZones(scw.AllZones, func(scwClient *scw.Client, zone scw.Zone) error {
 		instanceAPI := instance.NewAPI(scwClient)
-		zone, _ := scwClient.GetDefaultZone()
 		l.Debugf("sweeper: destroying the security groups in (%s)", zone)
 
 		listResp, err := instanceAPI.ListSecurityGroups(&instance.ListSecurityGroupsRequest{}, scw.WithAllPages())

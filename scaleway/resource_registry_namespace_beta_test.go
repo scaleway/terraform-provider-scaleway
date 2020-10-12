@@ -17,11 +17,9 @@ func init() {
 	})
 }
 
-func testSweepRegistryNamespace(region string) error {
-	return sweepRegions([]scw.Region{scw.RegionFrPar, scw.RegionNlAms}, func(scwClient *scw.Client) error {
+func testSweepRegistryNamespace(_ string) error {
+	return sweepRegions([]scw.Region{scw.RegionFrPar, scw.RegionNlAms}, func(scwClient *scw.Client, region scw.Region) error {
 		registryAPI := registry.NewAPI(scwClient)
-		region, _ := scwClient.GetDefaultRegion()
-
 		l.Debugf("sweeper: destroying the registry namespaces in (%s)", region)
 		listNamespaces, err := registryAPI.ListNamespaces(&registry.ListNamespacesRequest{}, scw.WithAllPages())
 		if err != nil {
