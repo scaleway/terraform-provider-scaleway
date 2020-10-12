@@ -57,7 +57,7 @@ func getTestFilePath(t *testing.T, suffix string) string {
 // This cassette is then replayed whenever tests are executed again. This means that once the
 // requests are recorded in the cassette, no more real HTTP requests must be made to run the tests.
 //
-// It is important to call add a `defer cleanup()` so the given cassette files are correctly
+// It is important to add a `defer cleanup()` so the given cassette files are correctly
 // closed and saved after the requests.
 func getHTTPRecoder(t *testing.T, update bool) (client *http.Client, cleanup func(), err error) {
 	recorderMode := recorder.ModeReplaying
