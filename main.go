@@ -18,14 +18,14 @@ func main() {
 	if debugMode {
 		err := plugin.Debug(context.Background(), "registry.terraform.io/namespace/provider",
 			&plugin.ServeOpts{
-				ProviderFunc: scaleway.Provider(),
+				ProviderFunc: scaleway.Provider(scaleway.DefaultProviderConfig()),
 			})
 		if err != nil {
 			log.Println(err.Error())
 		}
 	} else {
 		plugin.Serve(&plugin.ServeOpts{
-			ProviderFunc: scaleway.Provider(),
+			ProviderFunc: scaleway.Provider(scaleway.DefaultProviderConfig()),
 		})
 	}
 }
