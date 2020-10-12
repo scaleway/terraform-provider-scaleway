@@ -18,10 +18,8 @@ func init() {
 }
 
 func testSweepRDBInstance(_ string) error {
-	return sweepRegions(scw.AllRegions, func(scwClient *scw.Client) error {
+	return sweepRegions(scw.AllRegions, func(scwClient *scw.Client, region scw.Region) error {
 		rdbAPI := rdb.NewAPI(scwClient)
-		region, _ := scwClient.GetDefaultRegion()
-
 		l.Debugf("sweeper: destroying the rdb instance in (%s)", region)
 		listInstances, err := rdbAPI.ListInstances(&rdb.ListInstancesRequest{}, scw.WithAllPages())
 		if err != nil {

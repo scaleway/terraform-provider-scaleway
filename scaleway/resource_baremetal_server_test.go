@@ -18,9 +18,8 @@ func init() {
 }
 
 func testSweepBaremetalServer(_ string) error {
-	return sweepZones([]scw.Zone{scw.ZoneFrPar2}, func(scwClient *scw.Client) error {
+	return sweepZones([]scw.Zone{scw.ZoneFrPar2}, func(scwClient *scw.Client, zone scw.Zone) error {
 		baremetalAPI := baremetal.NewAPI(scwClient)
-		zone, _ := scwClient.GetDefaultZone()
 		l.Debugf("sweeper: destroying the baremetal server in (%s)", zone)
 		listServers, err := baremetalAPI.ListServers(&baremetal.ListServersRequest{}, scw.WithAllPages())
 		if err != nil {
