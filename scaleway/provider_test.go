@@ -24,7 +24,7 @@ var (
 	testAccProvider *schema.Provider
 
 	// UpdateCassettes will update all cassettes of a given test
-	UpdateCassettes = flag.Bool("cassettes", os.Getenv("CLI_UPDATE_CASSETTES") == "true", "Record Cassettes")
+	UpdateCassettes = flag.Bool("cassettes", os.Getenv("TF_UPDATE_CASSETTES") == "true", "Record Cassettes")
 )
 
 func init() {
