@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -626,8 +627,8 @@ func resourceScalewayK8SClusterBetaRead(ctx context.Context, d *schema.ResourceD
 	_ = d.Set("description", response.Description)
 	_ = d.Set("cni", response.Cni)
 	_ = d.Set("tags", response.Tags)
-	_ = d.Set("created_at", response.CreatedAt)
-	_ = d.Set("updated_at", response.UpdatedAt)
+	_ = d.Set("created_at", response.CreatedAt.Format(time.RFC3339))
+	_ = d.Set("updated_at", response.UpdatedAt.Format(time.RFC3339))
 	_ = d.Set("apiserver_url", response.ClusterURL)
 	_ = d.Set("wildcard_dns", response.DNSWildcard)
 	_ = d.Set("status", response.Status.String())
