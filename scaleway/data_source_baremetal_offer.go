@@ -169,7 +169,7 @@ func dataSourceScalewayBaremetalOfferRead(ctx context.Context, d *schema.Resourc
 	_ = d.Set("zone", zone)
 	_ = d.Set("name", offer.Name)
 	_ = d.Set("include_disabled", !offer.Enable)
-	_ = d.Set("bandwidth", offer.Bandwidth)
+	_ = d.Set("bandwidth", int(offer.Bandwidth))
 	_ = d.Set("commercial_range", offer.CommercialRange)
 	_ = d.Set("cpu", flattenBaremetalCPUs(offer.CPUs))
 	_ = d.Set("disk", flattenBaremetalDisks(offer.Disks))

@@ -2,6 +2,7 @@ package scaleway
 
 import (
 	"context"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -274,17 +275,17 @@ func resourceScalewayK8SPoolBetaRead(ctx context.Context, d *schema.ResourceData
 	_ = d.Set("node_type", pool.NodeType)
 	_ = d.Set("autoscaling", pool.Autoscaling)
 	_ = d.Set("autohealing", pool.Autohealing)
-	_ = d.Set("current_size", pool.Size)
+	_ = d.Set("current_size", int(pool.Size))
 	if !pool.Autoscaling {
-		_ = d.Set("size", pool.Size)
+		_ = d.Set("size", int(pool.Size))
 	}
 	_ = d.Set("version", pool.Version)
-	_ = d.Set("min_size", pool.MinSize)
-	_ = d.Set("max_size", pool.MaxSize)
+	_ = d.Set("min_size", int(pool.MinSize))
+	_ = d.Set("max_size", int(pool.MaxSize))
 	_ = d.Set("tags", pool.Tags)
 	_ = d.Set("container_runtime", pool.ContainerRuntime)
-	_ = d.Set("created_at", pool.CreatedAt)
-	_ = d.Set("updated_at", pool.UpdatedAt)
+	_ = d.Set("created_at", pool.CreatedAt.Format(time.RFC3339))
+	_ = d.Set("updated_at", pool.UpdatedAt.Format(time.RFC3339))
 	_ = d.Set("nodes", nodes)
 	_ = d.Set("status", pool.Status)
 
