@@ -104,7 +104,7 @@ func resourceScalewayRegistryNamespaceBetaUpdate(ctx context.Context, d *schema.
 		return diag.FromErr(err)
 	}
 
-	if d.HasChange("description") || d.HasChange("is_public") {
+	if d.HasChanges("description", "is_public") {
 		if _, err := api.UpdateNamespace(&registry.UpdateNamespaceRequest{
 			Region:      region,
 			NamespaceID: id,
