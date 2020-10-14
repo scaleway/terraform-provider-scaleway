@@ -43,14 +43,16 @@ func testSweepAccountSSHKey(region string) error {
 	return nil
 }
 
-func TestAccScalewayAccountSSHKey(t *testing.T) {
+func TestAccScalewayAccountSSHKey_basic(t *testing.T) {
 	name := newRandomName("ssh-key")
 	SSHKey := "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIEEYrzDOZmhItdKaDAEqJQ4ORS2GyBMtBozYsK5kiXXX opensource@scaleway.com"
+	tt := NewTestTools(t)
+	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckScalewayAccountSSHKeyDestroy,
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      testAccCheckScalewayAccountSSHKeyDestroy(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -60,7 +62,7 @@ func TestAccScalewayAccountSSHKey(t *testing.T) {
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayAccountSSHKeyExists("scaleway_account_ssh_key.main"),
+					testAccCheckScalewayAccountSSHKeyExists(tt, "scaleway_account_ssh_key.main"),
 					resource.TestCheckResourceAttr("scaleway_account_ssh_key.main", "name", name),
 					resource.TestCheckResourceAttr("scaleway_account_ssh_key.main", "public_key", SSHKey),
 				),
@@ -73,7 +75,7 @@ func TestAccScalewayAccountSSHKey(t *testing.T) {
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayAccountSSHKeyExists("scaleway_account_ssh_key.main"),
+					testAccCheckScalewayAccountSSHKeyExists(tt, "scaleway_account_ssh_key.main"),
 					resource.TestCheckResourceAttr("scaleway_account_ssh_key.main", "name", name+"-updated"),
 					resource.TestCheckResourceAttr("scaleway_account_ssh_key.main", "public_key", SSHKey),
 				),
@@ -85,11 +87,13 @@ func TestAccScalewayAccountSSHKey(t *testing.T) {
 func TestAccScalewayAccountSSHKey_WithNewLine(t *testing.T) {
 	name := newRandomName("ssh-key")
 	SSHKey := "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIDjfkdWCwkYlVQMDUfiZlVrmjaGOfBYnmkucssae8Iup opensource@scaleway.com"
+	tt := NewTestTools(t)
+	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckScalewayAccountSSHKeyDestroy,
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      testAccCheckScalewayAccountSSHKeyDestroy(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -99,7 +103,7 @@ func TestAccScalewayAccountSSHKey_WithNewLine(t *testing.T) {
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayAccountSSHKeyExists("scaleway_account_ssh_key.main"),
+					testAccCheckScalewayAccountSSHKeyExists(tt, "scaleway_account_ssh_key.main"),
 					resource.TestCheckResourceAttr("scaleway_account_ssh_key.main", "name", name),
 					resource.TestCheckResourceAttr("scaleway_account_ssh_key.main", "public_key", SSHKey),
 				),
@@ -108,40 +112,42 @@ func TestAccScalewayAccountSSHKey_WithNewLine(t *testing.T) {
 	})
 }
 
-func testAccCheckScalewayAccountSSHKeyDestroy(s *terraform.State) error {
-	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "scaleway_account_ssh_key" {
-			continue
+func testAccCheckScalewayAccountSSHKeyDestroy(tt *TestTools) resource.TestCheckFunc {
+	return func(state *terraform.State) error {
+		for _, rs := range state.RootModule().Resources {
+			if rs.Type != "scaleway_account_ssh_key" {
+				continue
+			}
+
+			accountAPI := accountAPI(tt.Meta)
+
+			_, err := accountAPI.GetSSHKey(&account.GetSSHKeyRequest{
+				SSHKeyID: rs.Primary.ID,
+			})
+
+			// If no error resource still exist
+			if err == nil {
+				return fmt.Errorf("SSH key (%s) still exists", rs.Primary.ID)
+			}
+
+			// Unexpected api error we return it
+			if !is404Error(err) {
+				return err
+			}
 		}
 
-		accountAPI := accountAPI(testAccProvider.Meta())
-
-		_, err := accountAPI.GetSSHKey(&account.GetSSHKeyRequest{
-			SSHKeyID: rs.Primary.ID,
-		})
-
-		// If no error resource still exist
-		if err == nil {
-			return fmt.Errorf("SSH key (%s) still exists", rs.Primary.ID)
-		}
-
-		// Unexpected api error we return it
-		if !is404Error(err) {
-			return err
-		}
+		return nil
 	}
-
-	return nil
 }
 
-func testAccCheckScalewayAccountSSHKeyExists(n string) resource.TestCheckFunc {
+func testAccCheckScalewayAccountSSHKeyExists(tt *TestTools, n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
 			return fmt.Errorf("resource not found: %s", n)
 		}
 
-		accountAPI := accountAPI(testAccProvider.Meta())
+		accountAPI := accountAPI(tt.Meta)
 
 		_, err := accountAPI.GetSSHKey(&account.GetSSHKeyRequest{
 			SSHKeyID: rs.Primary.ID,
