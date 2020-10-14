@@ -101,7 +101,7 @@ func dataSourceScalewayRegistryImageBetaRead(d *schema.ResourceData, m interface
 	_ = d.Set("name", image.Name)
 	_ = d.Set("namespace_id", image.NamespaceID)
 	_ = d.Set("visibility", image.Visibility.String())
-	_ = d.Set("size", image.Size)
+	_ = d.Set("size", int(image.Size))
 	_ = d.Set("tags", image.Tags)
 
 	return nil

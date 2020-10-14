@@ -33,6 +33,7 @@ func dataSourceScalewayAccountSSHKey() *schema.Resource {
 				Description: "The public SSH key",
 			},
 			"organization_id": organizationIDSchema(),
+			"project_id":      projectIDSchema(),
 		},
 	}
 }
@@ -50,7 +51,9 @@ func dataSourceScalewayAccountSSHKeyRead(ctx context.Context, d *schema.Resource
 		sshKey = res
 	} else {
 		res, err := accountAPI.ListSSHKeys(&account.ListSSHKeysRequest{
-			Name: expandStringPtr(d.Get("name")),
+			Name:           expandStringPtr(d.Get("name")),
+			OrganizationID: expandStringPtr(d.Get("organization_id")),
+			ProjectID:      expandStringPtr(d.Get("project_id")),
 		}, scw.WithContext(ctx))
 		if err != nil {
 			return diag.FromErr(err)
@@ -69,6 +72,7 @@ func dataSourceScalewayAccountSSHKeyRead(ctx context.Context, d *schema.Resource
 	_ = d.Set("ssh_key_id", sshKey.ID)
 	_ = d.Set("public_key", sshKey.PublicKey)
 	_ = d.Set("organization_id", sshKey.OrganizationID)
+	_ = d.Set("project_id", sshKey.ProjectID)
 
 	return nil
 }
