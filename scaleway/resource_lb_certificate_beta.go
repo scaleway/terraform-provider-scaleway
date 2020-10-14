@@ -80,9 +80,18 @@ func resourceScalewayLbCertificateBeta() *schema.Resource {
 				Description: "The main domain name of the certificate",
 			},
 			"subject_alternative_name": {
-				Type:        schema.TypeString,
+				Type:        schema.TypeList,
 				Computed:    true,
 				Description: "The alternative domain names of the certificate",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"name": {
+							Type:        schema.TypeString,
+							Required:    true,
+							Description: "The domain name",
+						},
+					},
+				},
 			},
 			"fingerprint": {
 				Type:        schema.TypeString,

@@ -71,10 +71,13 @@ func expandLbACL(i interface{}) *lb.ACL {
 	return acl
 }
 func flattenLbACLAction(action *lb.ACLAction) interface{} {
-	return map[string]interface{}{
-		"type": action.Type,
+	return []map[string]interface{}{
+		{
+			"type": action.Type,
+		},
 	}
 }
+
 func expandLbACLAction(raw interface{}) *lb.ACLAction {
 	if raw == nil || len(raw.([]interface{})) != 1 {
 		return nil
@@ -85,13 +88,16 @@ func expandLbACLAction(raw interface{}) *lb.ACLAction {
 	}
 }
 func flattenLbACLMatch(match *lb.ACLMatch) interface{} {
-	return map[string]interface{}{
-		"ip_subnet":         flattenSliceStringPtr(match.IPSubnet),
-		"http_filter":       match.HTTPFilter.String(),
-		"http_filter_value": flattenSliceStringPtr(match.HTTPFilterValue),
-		"invert":            match.Invert,
+	return []map[string]interface{}{
+		{
+			"ip_subnet":         flattenSliceStringPtr(match.IPSubnet),
+			"http_filter":       match.HTTPFilter.String(),
+			"http_filter_value": flattenSliceStringPtr(match.HTTPFilterValue),
+			"invert":            match.Invert,
+		},
 	}
 }
+
 func expandLbACLMatch(raw interface{}) *lb.ACLMatch {
 	if raw == nil || len(raw.([]interface{})) != 1 {
 		return nil
