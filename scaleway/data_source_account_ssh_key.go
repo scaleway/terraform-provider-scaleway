@@ -1,16 +1,18 @@
 package scaleway
 
 import (
+	"context"
 	"fmt"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	account "github.com/scaleway/scaleway-sdk-go/api/account/v2alpha1"
+	"github.com/scaleway/scaleway-sdk-go/scw"
 )
 
 func dataSourceScalewayAccountSSHKey() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceScalewayAccountSSHKeyRead,
-
+		ReadContext: dataSourceScalewayAccountSSHKeyRead,
 		Schema: map[string]*schema.Schema{
 			"name": {
 				Type:        schema.TypeString,
@@ -36,15 +38,15 @@ func dataSourceScalewayAccountSSHKey() *schema.Resource {
 	}
 }
 
-func dataSourceScalewayAccountSSHKeyRead(d *schema.ResourceData, m interface{}) error {
+func dataSourceScalewayAccountSSHKeyRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	accountAPI := accountAPI(m)
 
 	var sshKey *account.SSHKey
 	sshKeyID, ok := d.GetOk("ssh_key_id")
 	if ok {
-		res, err := accountAPI.GetSSHKey(&account.GetSSHKeyRequest{SSHKeyID: expandID(sshKeyID)})
+		res, err := accountAPI.GetSSHKey(&account.GetSSHKeyRequest{SSHKeyID: expandID(sshKeyID)}, scw.WithContext(ctx))
 		if err != nil {
-			return err
+			return diag.FromErr(err)
 		}
 		sshKey = res
 	} else {
@@ -52,15 +54,15 @@ func dataSourceScalewayAccountSSHKeyRead(d *schema.ResourceData, m interface{}) 
 			Name:           expandStringPtr(d.Get("name")),
 			OrganizationID: expandStringPtr(d.Get("organization_id")),
 			ProjectID:      expandStringPtr(d.Get("project_id")),
-		})
+		}, scw.WithContext(ctx))
 		if err != nil {
-			return err
+			return diag.FromErr(err)
 		}
 		if len(res.SSHKeys) == 0 {
-			return fmt.Errorf("no SSH Key found with the name %s", d.Get("name"))
+			return diag.FromErr(fmt.Errorf("no SSH Key found with the name %s", d.Get("name")))
 		}
 		if len(res.SSHKeys) > 1 {
-			return fmt.Errorf("%d SSH Keys found with the same name %s", len(res.SSHKeys), d.Get("name"))
+			return diag.FromErr(fmt.Errorf("%d SSH Keys found with the same name %s", len(res.SSHKeys), d.Get("name")))
 		}
 		sshKey = res.SSHKeys[0]
 	}

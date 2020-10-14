@@ -13,6 +13,21 @@ The provider needs to be configured with the proper credentials before it can be
 
 Use the navigation to the left to read about the available resources.
 
+## Terraform 0.13 and later
+
+For Terraform 0.13 and later, please also include this:
+
+```hcl
+terraform {
+  required_providers {
+    scaleway = {
+      source = "scaleway/scaleway"
+    }
+  }
+  required_version = ">= 0.13"
+}
+```
+
 ## Example
 
 Here is an example that will setup a web server with an additional volume, a public IP and a security group.
@@ -71,6 +86,11 @@ resource "scaleway_instance_server" "web" {
   ip_id = scaleway_instance_ip.public_ip.id
 
   additional_volume_ids = [ scaleway_instance_volume.data.id ]
+
+  root_volume {
+    # The local storage of a DEV1-L instance is 80 GB, subtract 30 GB from the additional l_ssd volume, then the root volume needs to be 50 GB.
+    size_in_gb = 50
+  }
 
   security_group_id = scaleway_instance_security_group.www.id
 }
@@ -183,7 +203,7 @@ terraform {
 Beware as no locking mechanism are yet supported.
 Using scaleway object storage as terraform backend is not suitable if you work in a team with a risk of simultaneous access to the same plan.
 
-Note: For security reason it's not recommended to store secrets in terraform files. If you want to configure the backend with environnment var, you need to use `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` [source](https://www.terraform.io/docs/backends/types/s3.html#access_key).
+Note: For security reason it's not recommended to store secrets in terraform files. If you want to configure the backend with environment var, you need to use `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` [source](https://www.terraform.io/docs/backends/types/s3.html#access_key).
 
 ```bash
 export AWS_ACCESS_KEY_ID=$SCW_ACCESS_KEY

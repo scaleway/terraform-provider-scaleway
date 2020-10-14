@@ -17,10 +17,9 @@ func init() {
 	})
 }
 
-func testSweepInstancePlacementGroup(region string) error {
-	return sweepZones(region, func(scwClient *scw.Client) error {
+func testSweepInstancePlacementGroup(_ string) error {
+	return sweepZones(scw.AllZones, func(scwClient *scw.Client, zone scw.Zone) error {
 		instanceAPI := instance.NewAPI(scwClient)
-		zone, _ := scwClient.GetDefaultZone()
 		l.Debugf("sweeper: destroying the instance placement group in (%s)", zone)
 		listPlacementGroups, err := instanceAPI.ListPlacementGroups(&instance.ListPlacementGroupsRequest{}, scw.WithAllPages())
 		if err != nil {

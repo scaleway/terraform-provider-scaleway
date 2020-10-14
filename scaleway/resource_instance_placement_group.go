@@ -1,17 +1,21 @@
 package scaleway
 
 import (
+	"context"
+
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
+	"github.com/scaleway/scaleway-sdk-go/scw"
 )
 
 func resourceScalewayInstancePlacementGroup() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceScalewayInstancePlacementGroupCreate,
-		Read:   resourceScalewayInstancePlacementGroupRead,
-		Update: resourceScalewayInstancePlacementGroupUpdate,
-		Delete: resourceScalewayInstancePlacementGroupDelete,
+		CreateContext: resourceScalewayInstancePlacementGroupCreate,
+		ReadContext:   resourceScalewayInstancePlacementGroupRead,
+		UpdateContext: resourceScalewayInstancePlacementGroupUpdate,
+		DeleteContext: resourceScalewayInstancePlacementGroupDelete,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},
@@ -50,53 +54,56 @@ func resourceScalewayInstancePlacementGroup() *schema.Resource {
 			},
 			"zone":            zoneSchema(),
 			"organization_id": organizationIDSchema(),
+			"project_id":      projectIDSchema(),
 		},
 	}
 }
 
-func resourceScalewayInstancePlacementGroupCreate(d *schema.ResourceData, m interface{}) error {
+func resourceScalewayInstancePlacementGroupCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	instanceAPI, zone, err := instanceAPIWithZone(d, m)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	res, err := instanceAPI.CreatePlacementGroup(&instance.CreatePlacementGroupRequest{
 		Zone:         zone,
 		Name:         expandOrGenerateString(d.Get("name"), "pg"),
 		Organization: expandStringPtr(d.Get("organization_id")),
+		Project:      expandStringPtr(d.Get("project_id")),
 		PolicyMode:   instance.PlacementGroupPolicyMode(d.Get("policy_mode").(string)),
 		PolicyType:   instance.PlacementGroupPolicyType(d.Get("policy_type").(string)),
-	})
+	}, scw.WithContext(ctx))
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	d.SetId(newZonedIDString(zone, res.PlacementGroup.ID))
-	return resourceScalewayInstancePlacementGroupRead(d, m)
+	return resourceScalewayInstancePlacementGroupRead(ctx, d, m)
 }
 
-func resourceScalewayInstancePlacementGroupRead(d *schema.ResourceData, m interface{}) error {
+func resourceScalewayInstancePlacementGroupRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	instanceAPI, zone, ID, err := instanceAPIWithZoneAndID(m, d.Id())
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	res, err := instanceAPI.GetPlacementGroup(&instance.GetPlacementGroupRequest{
 		Zone:             zone,
 		PlacementGroupID: ID,
-	})
+	}, scw.WithContext(ctx))
 
 	if err != nil {
 		if is404Error(err) {
 			d.SetId("")
 			return nil
 		}
-		return err
+		return diag.FromErr(err)
 	}
 
 	_ = d.Set("name", res.PlacementGroup.Name)
 	_ = d.Set("zone", string(zone))
 	_ = d.Set("organization_id", res.PlacementGroup.Organization)
+	_ = d.Set("project_id", res.PlacementGroup.Project)
 	_ = d.Set("policy_mode", res.PlacementGroup.PolicyMode.String())
 	_ = d.Set("policy_type", res.PlacementGroup.PolicyType.String())
 	_ = d.Set("policy_respected", res.PlacementGroup.PolicyRespected)
@@ -104,10 +111,10 @@ func resourceScalewayInstancePlacementGroupRead(d *schema.ResourceData, m interf
 	return nil
 }
 
-func resourceScalewayInstancePlacementGroupUpdate(d *schema.ResourceData, m interface{}) error {
+func resourceScalewayInstancePlacementGroupUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	instanceAPI, zone, ID, err := instanceAPIWithZoneAndID(m, d.Id())
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 	req := &instance.UpdatePlacementGroupRequest{
 		Zone:             zone,
@@ -123,28 +130,28 @@ func resourceScalewayInstancePlacementGroupUpdate(d *schema.ResourceData, m inte
 		hasChanged = true
 	}
 	if hasChanged {
-		_, err = instanceAPI.UpdatePlacementGroup(req)
+		_, err = instanceAPI.UpdatePlacementGroup(req, scw.WithContext(ctx))
 		if err != nil {
-			return err
+			return diag.FromErr(err)
 		}
 	}
 
-	return resourceScalewayInstancePlacementGroupRead(d, m)
+	return resourceScalewayInstancePlacementGroupRead(ctx, d, m)
 }
 
-func resourceScalewayInstancePlacementGroupDelete(d *schema.ResourceData, m interface{}) error {
+func resourceScalewayInstancePlacementGroupDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	instanceAPI, zone, ID, err := instanceAPIWithZoneAndID(m, d.Id())
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	err = instanceAPI.DeletePlacementGroup(&instance.DeletePlacementGroupRequest{
 		Zone:             zone,
 		PlacementGroupID: ID,
-	})
+	}, scw.WithContext(ctx))
 
 	if err != nil && !is404Error(err) {
-		return err
+		return diag.FromErr(err)
 	}
 
 	return nil

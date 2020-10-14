@@ -177,7 +177,10 @@ attached to the server. Updates to this field will trigger a stop/start of the s
 
 - `zone` - (Defaults to [provider](../index.md#zone) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which the server should be created.
 
-- `organization_id` - (Defaults to [provider](../index.md#organization_id) `organization_id`) The ID of the organization the server is associated with. If you intend to deploy your instance in another project than the default one use your `project_id` instead of the organization id.
+- `organization_id` - (Defaults to [provider](../index.md#organization_id) `organization_id`) The ID of the organization the server is associated with.
+  If you intend to deploy your instance in another project than the default one use your `project_id` instead of the organization id.
+
+- `project_id` - (Defaults to [provider](../index.md#project_id) `project_id`) The ID of the project the server is associated with.
 
 
 ## Attributes Reference

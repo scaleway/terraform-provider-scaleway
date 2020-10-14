@@ -1,8 +1,10 @@
 package scaleway
 
 import (
+	"context"
 	"strings"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	lb "github.com/scaleway/scaleway-sdk-go/api/lb/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
@@ -10,12 +12,12 @@ import (
 
 func resourceScalewayLbBeta() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceScalewayLbBetaCreate,
-		Read:   resourceScalewayLbBetaRead,
-		Update: resourceScalewayLbBetaUpdate,
-		Delete: resourceScalewayLbBetaDelete,
+		CreateContext: resourceScalewayLbBetaCreate,
+		ReadContext:   resourceScalewayLbBetaRead,
+		UpdateContext: resourceScalewayLbBetaUpdate,
+		DeleteContext: resourceScalewayLbBetaDelete,
 		Importer: &schema.ResourceImporter{
-			State: schema.ImportStatePassthrough,
+			StateContext: schema.ImportStatePassthroughContext,
 		},
 		SchemaVersion: 0,
 		Schema: map[string]*schema.Schema{
@@ -54,20 +56,22 @@ func resourceScalewayLbBeta() *schema.Resource {
 			},
 			"region":          regionSchema(),
 			"organization_id": organizationIDSchema(),
+			"project_id":      projectIDSchema(),
 		},
 	}
 }
 
-func resourceScalewayLbBetaCreate(d *schema.ResourceData, m interface{}) error {
+func resourceScalewayLbBetaCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	lbAPI, region, err := lbAPIWithRegion(d, m)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	createReq := &lb.CreateLBRequest{
 		Region:         region,
 		IPID:           expandStringPtr(expandID(d.Get("ip_id"))),
 		OrganizationID: expandStringPtr(d.Get("organization_id")),
+		ProjectID:      expandStringPtr(d.Get("project_id")),
 		Name:           expandOrGenerateString(d.Get("name"), "lb"),
 		Type:           d.Get("type").(string),
 	}
@@ -77,9 +81,9 @@ func resourceScalewayLbBetaCreate(d *schema.ResourceData, m interface{}) error {
 			createReq.Tags = append(createReq.Tags, tag.(string))
 		}
 	}
-	res, err := lbAPI.CreateLB(createReq)
+	res, err := lbAPI.CreateLB(createReq, scw.WithContext(ctx))
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	d.SetId(newRegionalIDString(region, res.ID))
@@ -88,36 +92,37 @@ func resourceScalewayLbBetaCreate(d *schema.ResourceData, m interface{}) error {
 		Region:  region,
 		LBID:    res.ID,
 		Timeout: scw.TimeDurationPtr(InstanceServerWaitForTimeout),
-	})
+	}, scw.WithContext(ctx))
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
-	return resourceScalewayLbBetaRead(d, m)
+	return resourceScalewayLbBetaRead(ctx, d, m)
 }
 
-func resourceScalewayLbBetaRead(d *schema.ResourceData, m interface{}) error {
+func resourceScalewayLbBetaRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	lbAPI, region, ID, err := lbAPIWithRegionAndID(m, d.Id())
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	res, err := lbAPI.GetLB(&lb.GetLBRequest{
 		Region: region,
 		LBID:   ID,
-	})
+	}, scw.WithContext(ctx))
 
 	if err != nil {
 		if is404Error(err) {
 			d.SetId("")
 			return nil
 		}
-		return err
+		return diag.FromErr(err)
 	}
 
 	_ = d.Set("name", res.Name)
 	_ = d.Set("region", string(region))
 	_ = d.Set("organization_id", res.OrganizationID)
+	_ = d.Set("project_id", res.ProjectID)
 	_ = d.Set("tags", res.Tags)
 	// For now API return lowercase lb type. This should be fix in a near future on the API side
 	_ = d.Set("type", strings.ToUpper(res.Type))
@@ -127,10 +132,10 @@ func resourceScalewayLbBetaRead(d *schema.ResourceData, m interface{}) error {
 	return nil
 }
 
-func resourceScalewayLbBetaUpdate(d *schema.ResourceData, m interface{}) error {
+func resourceScalewayLbBetaUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	lbAPI, region, ID, err := lbAPIWithRegionAndID(m, d.Id())
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	if d.HasChange("name") || d.HasChange("tags") {
@@ -141,39 +146,39 @@ func resourceScalewayLbBetaUpdate(d *schema.ResourceData, m interface{}) error {
 			Tags:   expandStrings(d.Get("tags")),
 		}
 
-		_, err = lbAPI.UpdateLB(req)
+		_, err = lbAPI.UpdateLB(req, scw.WithContext(ctx))
 		if err != nil {
-			return err
+			return diag.FromErr(err)
 		}
 	}
 
-	return resourceScalewayLbBetaRead(d, m)
+	return resourceScalewayLbBetaRead(ctx, d, m)
 }
 
-func resourceScalewayLbBetaDelete(d *schema.ResourceData, m interface{}) error {
+func resourceScalewayLbBetaDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	lbAPI, region, ID, err := lbAPIWithRegionAndID(m, d.Id())
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	err = lbAPI.DeleteLB(&lb.DeleteLBRequest{
 		Region:    region,
 		LBID:      ID,
 		ReleaseIP: false,
-	})
+	}, scw.WithContext(ctx))
 
 	if err != nil && !is404Error(err) {
-		return err
+		return diag.FromErr(err)
 	}
 
 	_, err = lbAPI.WaitForLb(&lb.WaitForLBRequest{
 		LBID:    ID,
 		Region:  region,
 		Timeout: scw.TimeDurationPtr(LbWaitForTimeout),
-	})
+	}, scw.WithContext(ctx))
 
 	if err != nil && !is404Error(err) {
-		return err
+		return diag.FromErr(err)
 	}
 
 	return nil

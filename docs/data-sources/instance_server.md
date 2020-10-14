@@ -43,6 +43,8 @@ You find all the available types on the [pricing page](https://www.scaleway.com/
 
 - `organization_id` - The ID of the organization the server is associated with.
 
+- `project_id` - The ID of the project the server is associated with.
+
 - `tags` - The tags associated with the server.
 
 - `security_group_id` - The [security group](https://developers.scaleway.com/en/products/instance/api/#security-groups-8d7f89) the server is attached to.
