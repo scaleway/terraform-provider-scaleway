@@ -51,11 +51,11 @@ func resourceScalewayObjectBucket() *schema.Resource {
 	}
 }
 
-func resourceScalewayObjectBucketCreate(d *schema.ResourceData, m interface{}) error {
+func resourceScalewayObjectBucketCreate(d *schema.ResourceData, meta interface{}) error {
 	bucketName := d.Get("name").(string)
 	acl := d.Get("acl").(string)
 
-	s3Client, region, err := s3ClientWithRegion(d, m)
+	s3Client, region, err := s3ClientWithRegion(d, meta)
 	if err != nil {
 		return err
 	}
@@ -84,11 +84,11 @@ func resourceScalewayObjectBucketCreate(d *schema.ResourceData, m interface{}) e
 
 	d.SetId(newRegionalIDString(region, bucketName))
 
-	return resourceScalewayObjectBucketRead(d, m)
+	return resourceScalewayObjectBucketRead(d, meta)
 }
 
-func resourceScalewayObjectBucketRead(d *schema.ResourceData, m interface{}) error {
-	s3Client, _, bucketName, err := s3ClientWithRegionAndName(m, d.Id())
+func resourceScalewayObjectBucketRead(d *schema.ResourceData, meta interface{}) error {
+	s3Client, _, bucketName, err := s3ClientWithRegionAndName(meta, d.Id())
 	if err != nil {
 		return err
 	}
@@ -134,8 +134,8 @@ func resourceScalewayObjectBucketRead(d *schema.ResourceData, m interface{}) err
 	return nil
 }
 
-func resourceScalewayObjectBucketUpdate(d *schema.ResourceData, m interface{}) error {
-	s3Client, _, bucketName, err := s3ClientWithRegionAndName(m, d.Id())
+func resourceScalewayObjectBucketUpdate(d *schema.ResourceData, meta interface{}) error {
+	s3Client, _, bucketName, err := s3ClientWithRegionAndName(meta, d.Id())
 	if err != nil {
 		return err
 	}
@@ -167,11 +167,11 @@ func resourceScalewayObjectBucketUpdate(d *schema.ResourceData, m interface{}) e
 		}
 	}
 
-	return resourceScalewayObjectBucketRead(d, m)
+	return resourceScalewayObjectBucketRead(d, meta)
 }
 
-func resourceScalewayObjectBucketDelete(d *schema.ResourceData, m interface{}) error {
-	s3Client, _, bucketName, err := s3ClientWithRegionAndName(m, d.Id())
+func resourceScalewayObjectBucketDelete(d *schema.ResourceData, meta interface{}) error {
+	s3Client, _, bucketName, err := s3ClientWithRegionAndName(meta, d.Id())
 	if err != nil {
 		return err
 	}

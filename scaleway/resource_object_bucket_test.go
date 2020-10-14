@@ -56,11 +56,13 @@ var testAccCheckScalewayObjectBucketUpdate = fmt.Sprintf(`
 	}
 `, testBucketName, testBucketUpdatedACL)
 
-func TestAccScalewayObjectBucket(t *testing.T) {
-	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckScalewayObjectBucketDestroy,
+func TestAccScalewayObjectBucket_basic(t *testing.T) {
+	tt := NewTestTools(t)
+	defer tt.Cleanup()
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      testAccCheckScalewayObjectBucketDestroy(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: testAccCheckScalewayObjectBucket,
@@ -85,34 +87,36 @@ func TestAccScalewayObjectBucket(t *testing.T) {
 	})
 }
 
-func testAccCheckScalewayObjectBucketDestroy(s *terraform.State) error {
-	s3Client, err := newS3ClientFromMeta(testAccProvider.Meta().(*Meta))
-	if err != nil {
-		return err
-	}
-
-	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "scaleway" {
-			continue
+func testAccCheckScalewayObjectBucketDestroy(tt *TestTools) resource.TestCheckFunc {
+	return func(state *terraform.State) error {
+		s3Client, err := newS3ClientFromMeta(tt.Meta)
+		if err != nil {
+			return err
 		}
 
-		bucketName := rs.Primary.ID
-
-		_, err := s3Client.ListObjects(&s3.ListObjectsInput{
-			Bucket: &bucketName,
-		})
-		if err != nil {
-			if serr, ok := err.(awserr.Error); ok && serr.Code() == s3.ErrCodeNoSuchBucket {
-				// bucket doesn't exist
+		for _, rs := range state.RootModule().Resources {
+			if rs.Type != "scaleway" {
 				continue
 			}
-			return fmt.Errorf("couldn't get bucket to verify if it stil exists: %s", err)
+
+			bucketName := rs.Primary.ID
+
+			_, err := s3Client.ListObjects(&s3.ListObjectsInput{
+				Bucket: &bucketName,
+			})
+			if err != nil {
+				if serr, ok := err.(awserr.Error); ok && serr.Code() == s3.ErrCodeNoSuchBucket {
+					// bucket doesn't exist
+					continue
+				}
+				return fmt.Errorf("couldn't get bucket to verify if it stil exists: %s", err)
+			}
+
+			return fmt.Errorf("bucket should be deleted")
 		}
 
-		return fmt.Errorf("bucket should be deleted")
+		return nil
 	}
-
-	return nil
 }
 
 func testSweepStorageObjectBucket(region string) error {
