@@ -114,7 +114,7 @@ func TestAccScalewayLbAcl_Basic(t *testing.T) {
 							match {
 								ip_subnet = ["192.168.0.1", "192.168.0.2", "192.168.10.0/24"]
 								http_filter = "acl_http_filter_none"
-								http_filter_value = ["criteria1","criteria2"]
+                                http_filter_value = []
 								invert = "true"
 							}
 						}
@@ -123,6 +123,7 @@ func TestAccScalewayLbAcl_Basic(t *testing.T) {
 								type = "allow"
 							}
 							match {
+								ip_subnet = ["0.0.0.0/0"]
 								http_filter = "path_begin"
 								http_filter_value = ["criteria1","criteria2"]
 								invert = "true"
@@ -133,6 +134,8 @@ func TestAccScalewayLbAcl_Basic(t *testing.T) {
 								type = "allow"
 							}
 							match {
+								ip_subnet = ["0.0.0.0/0"]
+								http_filter = "path_begin"
 								http_filter_value = ["criteria1","criteria2"]
 							}
 						}
@@ -141,12 +144,14 @@ func TestAccScalewayLbAcl_Basic(t *testing.T) {
 								type = "allow"
 							}
 							match {
+								ip_subnet = ["0.0.0.0/0"]
 								http_filter = "acl_http_filter_none"
-								http_filter_value = ["criteria1","criteria2"]
+                                http_filter_value = []
 							}
 						}
 						acl {
 							match {
+                                http_filter_value = []
 								ip_subnet = ["0.0.0.0/0"]	
 							}
 							action {
@@ -179,8 +184,8 @@ func TestAccScalewayLbAcl_Basic(t *testing.T) {
 						{
 							Match: &lb.ACLMatch{
 								IPSubnet:        scw.StringSlicePtr([]string{"0.0.0.0/0"}),
-								HTTPFilter:      lb.ACLHTTPFilterACLHTTPFilterNone,
-								HTTPFilterValue: []*string{},
+								HTTPFilter:      lb.ACLHTTPFilterPathBegin,
+								HTTPFilterValue: scw.StringSlicePtr([]string{"criteria1", "criteria2"}),
 								Invert:          false,
 							},
 							Action: &lb.ACLAction{Type: lb.ACLActionTypeAllow},
