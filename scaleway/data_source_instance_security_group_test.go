@@ -8,11 +8,13 @@ import (
 )
 
 func TestAccScalewayDataSourceInstanceSecurityGroup_Basic(t *testing.T) {
+	tt := NewTestTools(t)
+	defer tt.Cleanup()
 	securityGroupName := acctest.RandString(10)
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckScalewayInstanceSecurityGroupDestroy,
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      testAccCheckScalewayInstanceSecurityGroupDestroy(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -29,9 +31,9 @@ data "scaleway_instance_security_group" "stg" {
 	security_group_id = "${scaleway_instance_security_group.main.id}"
 }`,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayInstanceSecurityGroupExists("data.scaleway_instance_security_group.prod"),
+					testAccCheckScalewayInstanceSecurityGroupExists(tt, "data.scaleway_instance_security_group.prod"),
 					resource.TestCheckResourceAttr("data.scaleway_instance_security_group.prod", "name", securityGroupName),
-					testAccCheckScalewayInstanceSecurityGroupExists("data.scaleway_instance_security_group.stg"),
+					testAccCheckScalewayInstanceSecurityGroupExists(tt, "data.scaleway_instance_security_group.stg"),
 					resource.TestCheckResourceAttr("data.scaleway_instance_security_group.stg", "name", securityGroupName),
 				),
 			},
@@ -49,9 +51,9 @@ data "scaleway_instance_security_group" "stg" {
 	name = "${scaleway_instance_security_group.main.name}"
 }`,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayInstanceSecurityGroupExists("data.scaleway_instance_security_group.prod"),
+					testAccCheckScalewayInstanceSecurityGroupExists(tt, "data.scaleway_instance_security_group.prod"),
 					resource.TestCheckResourceAttr("data.scaleway_instance_security_group.prod", "name", securityGroupName),
-					testAccCheckScalewayInstanceSecurityGroupExists("data.scaleway_instance_security_group.stg"),
+					testAccCheckScalewayInstanceSecurityGroupExists(tt, "data.scaleway_instance_security_group.stg"),
 					resource.TestCheckResourceAttr("data.scaleway_instance_security_group.stg", "name", securityGroupName),
 				),
 			},

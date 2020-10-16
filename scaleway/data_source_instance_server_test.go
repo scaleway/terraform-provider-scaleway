@@ -8,11 +8,13 @@ import (
 )
 
 func TestAccScalewayDataSourceInstanceServer_Basic(t *testing.T) {
+	tt := NewTestTools(t)
+	defer tt.Cleanup()
 	serverName := acctest.RandString(10)
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckScalewayInstanceServerDestroy,
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      testAccCheckScalewayInstanceServerDestroy(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -31,9 +33,9 @@ data "scaleway_instance_server" "stg" {
   server_id = "${scaleway_instance_server.main.id}"
 }`,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayInstanceServerExists("data.scaleway_instance_server.prod"),
+					testAccCheckScalewayInstanceServerExists(tt, "data.scaleway_instance_server.prod"),
 					resource.TestCheckResourceAttr("data.scaleway_instance_server.prod", "name", serverName),
-					testAccCheckScalewayInstanceServerExists("data.scaleway_instance_server.stg"),
+					testAccCheckScalewayInstanceServerExists(tt, "data.scaleway_instance_server.stg"),
 					resource.TestCheckResourceAttr("data.scaleway_instance_server.stg", "name", serverName),
 				),
 			},

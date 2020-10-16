@@ -10,9 +10,11 @@ import (
 )
 
 func TestAccScalewayDataSourceInstanceImage_Basic(t *testing.T) {
+	tt := NewTestTools(t)
+	defer tt.Cleanup()
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
-		Providers: testAccProviders,
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -28,9 +30,10 @@ data "scaleway_instance_image" "test3" {
 	image_id = "fr-par-1/43213956-c7a3-44b8-9d96-d51fa7457969"
 }`,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayInstanceImageExists("data.scaleway_instance_image.test1"),
+					testAccCheckScalewayInstanceImageExists(tt, "data.scaleway_instance_image.test1"),
 					resource.TestCheckResourceAttr("data.scaleway_instance_image.test1", "name", "Golang 1.10"),
-					testAccCheckScalewayInstanceImageExists("data.scaleway_instance_image.test2"),
+
+					testAccCheckScalewayInstanceImageExists(tt, "data.scaleway_instance_image.test2"),
 					resource.TestCheckResourceAttr("data.scaleway_instance_image.test2", "image_id", "fr-par-1/43213956-c7a3-44b8-9d96-d51fa7457969"),
 					resource.TestCheckResourceAttr("data.scaleway_instance_image.test2", "name", "Golang 1.10"),
 					resource.TestCheckResourceAttr("data.scaleway_instance_image.test2", "architecture", "x86_64"),
@@ -43,7 +46,8 @@ data "scaleway_instance_image" "test3" {
 					resource.TestCheckResourceAttr("data.scaleway_instance_image.test2", "default_bootscript_id", "b1e68c26-a19c-4eac-9222-498b22bd7ad9"),
 					resource.TestCheckResourceAttr("data.scaleway_instance_image.test2", "root_volume_id", "8fa97c03-ca3b-4267-ba19-2d38190b1c82"),
 					resource.TestCheckNoResourceAttr("data.scaleway_instance_image.test2", "additional_volume_ids"),
-					testAccCheckScalewayInstanceImageExists("data.scaleway_instance_image.test3"),
+
+					testAccCheckScalewayInstanceImageExists(tt, "data.scaleway_instance_image.test3"),
 					resource.TestCheckResourceAttr("data.scaleway_instance_image.test3", "name", "Golang 1.10"),
 				),
 			},
@@ -51,7 +55,7 @@ data "scaleway_instance_image" "test3" {
 	})
 }
 
-func testAccCheckScalewayInstanceImageExists(n string) resource.TestCheckFunc {
+func testAccCheckScalewayInstanceImageExists(tt *TestTools, n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 
@@ -64,8 +68,7 @@ func testAccCheckScalewayInstanceImageExists(n string) resource.TestCheckFunc {
 			return err
 		}
 
-		meta := testAccProvider.Meta().(*Meta)
-		instanceAPI := instance.NewAPI(meta.scwClient)
+		instanceAPI := instance.NewAPI(tt.Meta.scwClient)
 		_, err = instanceAPI.GetImage(&instance.GetImageRequest{
 			ImageID: ID,
 			Zone:    zone,

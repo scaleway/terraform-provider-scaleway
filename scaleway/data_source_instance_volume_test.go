@@ -7,10 +7,12 @@ import (
 )
 
 func TestAccScalewayDataSourceInstanceVolume_Basic(t *testing.T) {
+	tt := NewTestTools(t)
+	defer tt.Cleanup()
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckScalewayInstanceVolumeDestroy,
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      testAccCheckScalewayInstanceVolumeDestroy(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -29,7 +31,7 @@ func TestAccScalewayDataSourceInstanceVolume_Basic(t *testing.T) {
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayInstanceVolumeExists("data.scaleway_instance_volume.test"),
+					testAccCheckScalewayInstanceVolumeExists(tt, "data.scaleway_instance_volume.test"),
 					resource.TestCheckResourceAttr("data.scaleway_instance_volume.test", "size_in_gb", "2"),
 					resource.TestCheckResourceAttr("data.scaleway_instance_volume.test", "type", "l_ssd"),
 				),
