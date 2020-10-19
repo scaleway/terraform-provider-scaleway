@@ -2,6 +2,7 @@ package scaleway
 
 import (
 	"context"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -18,13 +19,11 @@ func resourceScalewayVPCPrivateNetwork() *schema.Resource {
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
-
 		SchemaVersion: 0,
 		Schema: map[string]*schema.Schema{
 			"name": {
 				Type:        schema.TypeString,
 				Optional:    true,
-				Computed:    true,
 				Description: "The name of the private network",
 			},
 			"tags": {
@@ -35,8 +34,20 @@ func resourceScalewayVPCPrivateNetwork() *schema.Resource {
 					Type: schema.TypeString,
 				},
 			},
-			"project_id": projectIDSchema(),
-			"zone":       zoneSchema(),
+			"organization_id": organizationIDSchema(),
+			"project_id":      projectIDSchema(),
+			"zone":            zoneSchema(),
+			// Computed elements
+			"created_at": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The date and time of the creation of the private network",
+			},
+			"updated_at": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The date and time of the last update of the private network",
+			},
 		},
 	}
 }
@@ -53,7 +64,7 @@ func resourceScalewayVPCPrivateNetworkCreate(ctx context.Context, d *schema.Reso
 		Tags:      expandStrings(d.Get("tags")),
 		ProjectID: d.Get("project_id").(string),
 		Zone:      zone,
-	})
+	}, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -72,7 +83,7 @@ func resourceScalewayVPCPrivateNetworkRead(ctx context.Context, d *schema.Resour
 	pn, err := vpcAPI.GetPrivateNetwork(&vpc.GetPrivateNetworkRequest{
 		PrivateNetworkID: ID,
 		Zone:             zone,
-	})
+	}, scw.WithContext(ctx))
 	if err != nil {
 		if is404Error(err) {
 			d.SetId("")
@@ -81,12 +92,11 @@ func resourceScalewayVPCPrivateNetworkRead(ctx context.Context, d *schema.Resour
 		return diag.FromErr(err)
 	}
 
-	_ = d.Set("id", newZonedIDString(zone, pn.ID))
 	_ = d.Set("name", pn.Name)
 	_ = d.Set("organization_id", pn.OrganizationID)
 	_ = d.Set("project_id", pn.ProjectID)
-	_ = d.Set("created_at", pn.CreatedAt.String())
-	_ = d.Set("updated_at", pn.UpdatedAt.String())
+	_ = d.Set("created_at", pn.CreatedAt.Format(time.RFC3339))
+	_ = d.Set("updated_at", pn.UpdatedAt.Format(time.RFC3339))
 	_ = d.Set("zone", zone)
 	_ = d.Set("tags", pn.Tags)
 
@@ -113,7 +123,7 @@ func resourceScalewayVPCPrivateNetworkUpdate(ctx context.Context, d *schema.Reso
 		updateRequest.Tags = scw.StringsPtr(tags)
 	}
 
-	_, err = vpcAPI.UpdatePrivateNetwork(updateRequest)
+	_, err = vpcAPI.UpdatePrivateNetwork(updateRequest, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -130,7 +140,7 @@ func resourceScalewayVPCPrivateNetworkDelete(ctx context.Context, d *schema.Reso
 	err = vpcAPI.DeletePrivateNetwork(&vpc.DeletePrivateNetworkRequest{
 		PrivateNetworkID: ID,
 		Zone:             zone,
-	})
+	}, scw.WithContext(ctx))
 
 	if err != nil && !is404Error(err) {
 		return diag.FromErr(err)
