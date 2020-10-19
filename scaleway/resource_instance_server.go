@@ -381,7 +381,7 @@ func resourceScalewayInstanceServerRead(ctx context.Context, d *schema.ResourceD
 	}
 
 	if response.Server.PrivateIP != nil {
-		_ = d.Set("private_ip", *response.Server.PrivateIP)
+		_ = d.Set("private_ip", flattenStringPtr(response.Server.PrivateIP))
 	}
 
 	if response.Server.PublicIP != nil {

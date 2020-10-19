@@ -41,57 +41,55 @@ func testSweepInstanceIP(_ string) error {
 	})
 }
 
-func TestAccScalewayInstanceIP(t *testing.T) {
-	t.Run("Simple", func(t *testing.T) {
-		tt := NewTestTools(t)
-		defer tt.Cleanup()
-		resource.ParallelTest(t, resource.TestCase{
-			ProviderFactories: tt.ProviderFactories,
-			CheckDestroy:      testAccCheckScalewayInstanceIPDestroy(tt),
-			Steps: []resource.TestStep{
-				{
-					Config: `
+func TestAccScalewayInstanceIP_Basic(t *testing.T) {
+	tt := NewTestTools(t)
+	defer tt.Cleanup()
+	resource.ParallelTest(t, resource.TestCase{
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      testAccCheckScalewayInstanceIPDestroy(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: `
 						resource "scaleway_instance_ip" "base" {}
 						resource "scaleway_instance_ip" "scaleway" {}
 					`,
-					Check: resource.ComposeTestCheckFunc(
-						testAccCheckScalewayInstanceIPExists(tt, "scaleway_instance_ip.base"),
-						testAccCheckScalewayInstanceIPExists(tt, "scaleway_instance_ip.scaleway"),
-					),
-				},
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayInstanceIPExists(tt, "scaleway_instance_ip.base"),
+					testAccCheckScalewayInstanceIPExists(tt, "scaleway_instance_ip.scaleway"),
+				),
 			},
-		})
+		},
 	})
+}
 
-	t.Run("WithZone", func(t *testing.T) {
-		tt := NewTestTools(t)
-		defer tt.Cleanup()
-		resource.ParallelTest(t, resource.TestCase{
-			ProviderFactories: tt.ProviderFactories,
-			CheckDestroy:      testAccCheckScalewayInstanceIPDestroy(tt),
-			Steps: []resource.TestStep{
-				{
-					Config: `
+func TestAccScalewayInstanceIP_WithZone(t *testing.T) {
+	tt := NewTestTools(t)
+	defer tt.Cleanup()
+	resource.ParallelTest(t, resource.TestCase{
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      testAccCheckScalewayInstanceIPDestroy(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: `
 						resource "scaleway_instance_ip" "base" {}
 					`,
-					Check: resource.ComposeTestCheckFunc(
-						testAccCheckScalewayInstanceIPExists(tt, "scaleway_instance_ip.base"),
-						resource.TestCheckResourceAttr("scaleway_instance_ip.base", "zone", "fr-par-1"),
-					),
-				},
-				{
-					Config: `
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayInstanceIPExists(tt, "scaleway_instance_ip.base"),
+					resource.TestCheckResourceAttr("scaleway_instance_ip.base", "zone", "fr-par-1"),
+				),
+			},
+			{
+				Config: `
 						resource "scaleway_instance_ip" "base" {
 							zone = "nl-ams-1"
 						}
 					`,
-					Check: resource.ComposeTestCheckFunc(
-						testAccCheckScalewayInstanceIPExists(tt, "scaleway_instance_ip.base"),
-						resource.TestCheckResourceAttr("scaleway_instance_ip.base", "zone", "nl-ams-1"),
-					),
-				},
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayInstanceIPExists(tt, "scaleway_instance_ip.base"),
+					resource.TestCheckResourceAttr("scaleway_instance_ip.base", "zone", "nl-ams-1"),
+				),
 			},
-		})
+		},
 	})
 }
 
@@ -120,7 +118,7 @@ func testAccCheckScalewayInstanceIPExists(tt *TestTools, name string) resource.T
 	}
 }
 
-func testAccCheckScalewayInstanceIPPairWithServer(ipResource, serverResource string) resource.TestCheckFunc {
+func testAccCheckScalewayInstanceIPPairWithServer(tt *TestTools, ipResource, serverResource string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		ipState, ok := s.RootModule().Resources[ipResource]
 		if !ok {
@@ -131,7 +129,7 @@ func testAccCheckScalewayInstanceIPPairWithServer(ipResource, serverResource str
 			return fmt.Errorf("resource not found: %s", serverResource)
 		}
 
-		instanceAPI, zone, ID, err := instanceAPIWithZoneAndID(testAccProvider.Meta(), ipState.Primary.ID)
+		instanceAPI, zone, ID, err := instanceAPIWithZoneAndID(tt.Meta, ipState.Primary.ID)
 		if err != nil {
 			return err
 		}
@@ -160,14 +158,14 @@ func testAccCheckScalewayInstanceIPPairWithServer(ipResource, serverResource str
 	}
 }
 
-func testAccCheckScalewayInstanceServerNoIPAssigned(serverResource string) resource.TestCheckFunc {
+func testAccCheckScalewayInstanceServerNoIPAssigned(tt *TestTools, serverResource string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		serverState, ok := s.RootModule().Resources[serverResource]
 		if !ok {
 			return fmt.Errorf("resource not found: %s", serverResource)
 		}
 
-		instanceAPI, zone, ID, err := instanceAPIWithZoneAndID(testAccProvider.Meta(), serverState.Primary.ID)
+		instanceAPI, zone, ID, err := instanceAPIWithZoneAndID(tt.Meta, serverState.Primary.ID)
 		if err != nil {
 			return err
 		}
@@ -181,7 +179,7 @@ func testAccCheckScalewayInstanceServerNoIPAssigned(serverResource string) resou
 		}
 
 		if server.Server.PublicIP != nil && !server.Server.PublicIP.Dynamic {
-			return fmt.Errorf("No flexible IP should be assigned to %s", serverResource)
+			return fmt.Errorf("no flexible IP should be assigned to %s", serverResource)
 		}
 
 		return nil
