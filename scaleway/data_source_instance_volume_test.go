@@ -10,7 +10,7 @@ import (
 func TestAccScalewayDataSourceInstanceVolume_Basic(t *testing.T) {
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
-	volumeName := newRandomName("volume")
+	volumeName := "tf-volume"
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
