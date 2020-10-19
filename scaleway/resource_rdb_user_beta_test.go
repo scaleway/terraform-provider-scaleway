@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/scaleway/scaleway-sdk-go/api/rdb/v1"
@@ -17,47 +16,76 @@ func init() {
 	})
 }
 
-func TestAccScalewayRdbUserBeta(t *testing.T) {
-	resourceName := "scaleway_rdb_user_beta.db_user"
-	rName := acctest.RandomWithPrefix("tf-acc-test")
+func TestAccScalewayRdbUser_Basic(t *testing.T) {
+	tt := NewTestTools(t)
+	defer tt.Cleanup()
+	instanceName := "TestAccScalewayRdbUser_Basic"
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckScalewayRdbInstanceBetaDestroy,
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      testAccCheckScalewayRdbInstanceBetaDestroy(tt),
 		Steps: []resource.TestStep{
 			{
-				Config: testAccScalewayRdbUserConfig(rName, "titi", "true"),
+				Config: fmt.Sprintf(`
+					resource scaleway_rdb_instance_beta main {
+						name = "%s"
+						node_type = "db-dev-s"
+						engine = "PostgreSQL-12"
+						is_ha_cluster = false
+						tags = [ "terraform-test", "scaleway_rdb_user_beta", "minimal" ]
+					}
+
+					resource scaleway_rdb_user_beta db_user {
+						instance_id = scaleway_rdb_instance_beta.main.id
+						name = "foo"
+						password = "R34lP4sSw#Rd"
+						is_admin = true
+					}`, instanceName),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckRdbUserBetaExists("scaleway_rdb_instance_beta.main", resourceName),
-					resource.TestCheckResourceAttr(resourceName, "name", "titi"),
-					resource.TestCheckResourceAttr(resourceName, "is_admin", "true"),
+					testAccCheckRdbUserBetaExists(tt, "scaleway_rdb_instance_beta.main", "scaleway_rdb_user_beta.db_user"),
+					resource.TestCheckResourceAttr("scaleway_rdb_user_beta.db_user", "name", "foo"),
+					resource.TestCheckResourceAttr("scaleway_rdb_user_beta.db_user", "is_admin", "true"),
 				),
 			},
 			{
-				Config: testAccScalewayRdbUserConfig(rName, "tata", "false"),
+				Config: fmt.Sprintf(`
+					resource scaleway_rdb_instance_beta main {
+						name = "%s"
+						node_type = "db-dev-s"
+						engine = "PostgreSQL-12"
+						is_ha_cluster = false
+						tags = [ "terraform-test", "scaleway_rdb_user_beta", "minimal" ]
+					}
+
+					resource scaleway_rdb_user_beta db_user {
+						instance_id = scaleway_rdb_instance_beta.main.id
+						name = "bar"
+						password = "R34lP4sSw#Rd"
+						is_admin = false
+					}`, instanceName),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckRdbUserBetaExists("scaleway_rdb_instance_beta.main", resourceName),
-					resource.TestCheckResourceAttr(resourceName, "name", "tata"),
-					resource.TestCheckResourceAttr(resourceName, "is_admin", "false"),
+					testAccCheckRdbUserBetaExists(tt, "scaleway_rdb_instance_beta.main", "scaleway_rdb_user_beta.db_user"),
+					resource.TestCheckResourceAttr("scaleway_rdb_user_beta.db_user", "name", "bar"),
+					resource.TestCheckResourceAttr("scaleway_rdb_user_beta.db_user", "is_admin", "false"),
 				),
 			},
 		},
 	})
 }
 
-func testAccCheckRdbUserBetaExists(instance string, user string) resource.TestCheckFunc {
-	return func(s *terraform.State) error {
-		instanceResource, ok := s.RootModule().Resources[instance]
+func testAccCheckRdbUserBetaExists(tt *TestTools, instance string, user string) resource.TestCheckFunc {
+	return func(state *terraform.State) error {
+		instanceResource, ok := state.RootModule().Resources[instance]
 		if !ok {
 			return fmt.Errorf("resource not found: %s", instance)
 		}
 
-		userResource, ok := s.RootModule().Resources[user]
+		userResource, ok := state.RootModule().Resources[user]
 		if !ok {
 			return fmt.Errorf("resource not found: %s", user)
 		}
 
-		rdbAPI, region, _, err := rdbAPIWithRegionAndID(testAccProvider.Meta(), instanceResource.Primary.ID)
+		rdbAPI, region, _, err := rdbAPIWithRegionAndID(tt.Meta, instanceResource.Primary.ID)
 		if err != nil {
 			return err
 		}
@@ -72,36 +100,14 @@ func testAccCheckRdbUserBetaExists(instance string, user string) resource.TestCh
 			Region:     region,
 			Name:       &userName,
 		})
-
-		if len(users.Users) != 1 {
-			return fmt.Errorf("No user found")
-		}
-
 		if err != nil {
 			return err
 		}
 
+		if len(users.Users) != 1 {
+			return fmt.Errorf("no user found")
+		}
+
 		return nil
 	}
-}
-
-func testAccScalewayRdbUserConfigBase(rName string) string {
-	return fmt.Sprintf(`
-resource scaleway_rdb_instance_beta main {
-    name = %[1]q
-    node_type = "db-dev-s"
-    engine = "PostgreSQL-12"
-    is_ha_cluster = false
-    tags = [ "terraform-test", "scaleway_rdb_user_beta", "minimal" ]
-}`, rName)
-}
-
-func testAccScalewayRdbUserConfig(rName, userName, isAdmin string) string {
-	return testAccScalewayRdbUserConfigBase(rName) + fmt.Sprintf(`
-resource scaleway_rdb_user_beta db_user {
-  instance_id = scaleway_rdb_instance_beta.main.id
-  name = %[1]q
-  password = "R34lP4sSw#Rd"
-  is_admin = %[2]q
-}`, userName, isAdmin)
 }
