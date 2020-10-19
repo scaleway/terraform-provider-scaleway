@@ -582,7 +582,7 @@ func resourceScalewayInstanceServerUpdate(ctx context.Context, d *schema.Resourc
 	////
 	// Update server user data
 	////
-	if d.HasChange("cloud_init") || d.HasChange("user_data") {
+	if d.HasChanges("cloud_init", "user_data") {
 		userDataRequests := &instance.SetAllServerUserDataRequest{
 			Zone:     zone,
 			ServerID: ID,
