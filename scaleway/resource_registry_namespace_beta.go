@@ -34,7 +34,7 @@ func resourceScalewayRegistryNamespaceBeta() *schema.Resource {
 			"is_public": {
 				Type:        schema.TypeBool,
 				Optional:    true,
-				Description: "Define the default visibity policy",
+				Description: "Define the default visibility policy",
 			},
 			"endpoint": {
 				Type:        schema.TypeString,

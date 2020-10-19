@@ -7,11 +7,19 @@ import (
 )
 
 func TestAccScalewayDataSourceRegistryNamespace_Basic(t *testing.T) {
+	tt := NewTestTools(t)
+	defer tt.Cleanup()
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckScalewayRegistryNamespaceBetaDestroy,
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      testAccCheckScalewayRegistryNamespaceBetaDestroy(tt),
 		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource "scaleway_registry_namespace_beta" "test" {
+						name = "test-cr"
+					}`,
+			},
 			{
 				Config: `
 					resource "scaleway_registry_namespace_beta" "test" {

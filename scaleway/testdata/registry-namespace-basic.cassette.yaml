@@ -1,0 +1,38 @@
+---
+version: 1
+interactions:
+- request:
+    body: '{"name":"test-cr","description":"","project_id":"951df375-e094-4d26-97c1-ba548eeb9c42","is_public":false}'
+    form: {}
+    headers:
+      Content-Type:
+      - application/json
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.15.2; darwin; amd64) terraform-provider/develop-tftest
+        terraform/terraform-tests
+    url: https://api.scaleway.com/registry/v1/regions/fr-par/namespaces
+    method: POST
+  response:
+    body: '{"message":"Not authorized"}'
+    headers:
+      Content-Length:
+      - "28"
+      Content-Security-Policy:
+      - default-src 'none'; frame-ancestors 'none'
+      Content-Type:
+      - application/json
+      Date:
+      - Mon, 19 Oct 2020 14:23:14 GMT
+      Server:
+      - Scaleway API-Gateway
+      Strict-Transport-Security:
+      - max-age=63072000
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+      X-Request-Id:
+      - f1a4c951-df71-4199-99ac-71341a3a7f13
+    status: 403 Forbidden
+    code: 403
+    duration: ""

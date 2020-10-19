@@ -10,13 +10,14 @@ import (
 )
 
 func TestAccScalewayDataSourceRegistryImage_Basic(t *testing.T) {
-	ubuntuImageID := "4b5a47c0-6fbf-4388-8783-c07c28d3c2eb"
-
 	t.Skip("It is difficult to test this datasource as we cannot create registry images with Terraform.")
+	tt := NewTestTools(t)
+	defer tt.Cleanup()
+	ubuntuImageID := "4b5a47c0-6fbf-4388-8783-c07c28d3c2eb"
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckScalewayRegistryNamespaceBetaDestroy,
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      testAccCheckScalewayRegistryNamespaceBetaDestroy(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `

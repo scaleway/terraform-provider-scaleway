@@ -39,11 +39,13 @@ func testSweepRegistryNamespace(_ string) error {
 	})
 }
 
-func TestRegistryNamespaceBeta(t *testing.T) {
+func TestAccScalewayRegistryNamespace_Basic(t *testing.T) {
+	tt := NewTestTools(t)
+	defer tt.Cleanup()
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckScalewayRegistryNamespaceBetaDestroy,
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      testAccCheckScalewayRegistryNamespaceBetaDestroy(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -101,30 +103,31 @@ func testAccCheckScalewayRegistryNamespaceBetaExists(n string) resource.TestChec
 	}
 }
 
-func testAccCheckScalewayRegistryNamespaceBetaDestroy(s *terraform.State) error {
-	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "scaleway_registry_namespace_beta" {
-			continue
-		}
+func testAccCheckScalewayRegistryNamespaceBetaDestroy(tt *TestTools) resource.TestCheckFunc {
+	return func(state *terraform.State) error {
+		for _, rs := range state.RootModule().Resources {
+			if rs.Type != "scaleway_registry_namespace_beta" {
+				continue
+			}
 
-		api, region, id, err := registryAPIWithRegionAndID(testAccProvider.Meta(), rs.Primary.ID)
-		if err != nil {
-			return err
-		}
+			api, region, id, err := registryAPIWithRegionAndID(tt.Meta, rs.Primary.ID)
+			if err != nil {
+				return err
+			}
 
-		_, err = api.DeleteNamespace(&registry.DeleteNamespaceRequest{
-			NamespaceID: id,
-			Region:      region,
-		})
+			_, err = api.DeleteNamespace(&registry.DeleteNamespaceRequest{
+				NamespaceID: id,
+				Region:      region,
+			})
 
-		if err == nil {
-			return fmt.Errorf("namespace (%s) still exists", rs.Primary.ID)
-		}
+			if err == nil {
+				return fmt.Errorf("namespace (%s) still exists", rs.Primary.ID)
+			}
 
-		if !is404Error(err) {
-			return err
+			if !is404Error(err) {
+				return err
+			}
 		}
+		return nil
 	}
-
-	return nil
 }
