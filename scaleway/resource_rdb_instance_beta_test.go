@@ -39,11 +39,13 @@ func testSweepRDBInstance(_ string) error {
 	})
 }
 
-func TestAccScalewayRdbInstanceBeta(t *testing.T) {
+func TestAccScalewayRdbInstance_Basic(t *testing.T) {
+	tt := NewTestTools(t)
+	defer tt.Cleanup()
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckScalewayRdbInstanceBetaDestroy,
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      testAccCheckScalewayRdbInstanceBetaDestroy(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -59,7 +61,7 @@ func TestAccScalewayRdbInstanceBeta(t *testing.T) {
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayRdbBetaExists("scaleway_rdb_instance_beta.main"),
+					testAccCheckScalewayRdbBetaExists(tt, "scaleway_rdb_instance_beta.main"),
 					resource.TestCheckResourceAttr("scaleway_rdb_instance_beta.main", "name", "test-rdb"),
 					resource.TestCheckResourceAttr("scaleway_rdb_instance_beta.main", "node_type", "db-dev-s"),
 					resource.TestCheckResourceAttr("scaleway_rdb_instance_beta.main", "engine", "PostgreSQL-11"),
@@ -89,7 +91,7 @@ func TestAccScalewayRdbInstanceBeta(t *testing.T) {
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayRdbBetaExists("scaleway_rdb_instance_beta.main"),
+					testAccCheckScalewayRdbBetaExists(tt, "scaleway_rdb_instance_beta.main"),
 					resource.TestCheckResourceAttr("scaleway_rdb_instance_beta.main", "name", "test-rdb"),
 					resource.TestCheckResourceAttr("scaleway_rdb_instance_beta.main", "node_type", "db-dev-m"),
 					resource.TestCheckResourceAttr("scaleway_rdb_instance_beta.main", "engine", "PostgreSQL-11"),
@@ -106,14 +108,14 @@ func TestAccScalewayRdbInstanceBeta(t *testing.T) {
 	})
 }
 
-func testAccCheckScalewayRdbBetaExists(n string) resource.TestCheckFunc {
+func testAccCheckScalewayRdbBetaExists(tt *TestTools, n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
 			return fmt.Errorf("resource not found: %s", n)
 		}
 
-		rdbAPI, region, ID, err := rdbAPIWithRegionAndID(testAccProvider.Meta(), rs.Primary.ID)
+		rdbAPI, region, ID, err := rdbAPIWithRegionAndID(tt.Meta, rs.Primary.ID)
 		if err != nil {
 			return err
 		}
@@ -131,32 +133,34 @@ func testAccCheckScalewayRdbBetaExists(n string) resource.TestCheckFunc {
 	}
 }
 
-func testAccCheckScalewayRdbInstanceBetaDestroy(s *terraform.State) error {
-	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "scaleway_rdb_instance_beta" {
-			continue
+func testAccCheckScalewayRdbInstanceBetaDestroy(tt *TestTools) resource.TestCheckFunc {
+	return func(state *terraform.State) error {
+		for _, rs := range state.RootModule().Resources {
+			if rs.Type != "scaleway_rdb_instance_beta" {
+				continue
+			}
+
+			rdbAPI, region, ID, err := rdbAPIWithRegionAndID(tt.Meta, rs.Primary.ID)
+			if err != nil {
+				return err
+			}
+
+			_, err = rdbAPI.GetInstance(&rdb.GetInstanceRequest{
+				InstanceID: ID,
+				Region:     region,
+			})
+
+			// If no error resource still exist
+			if err == nil {
+				return fmt.Errorf("Instance (%s) still exists", rs.Primary.ID)
+			}
+
+			// Unexpected api error we return it
+			if !is404Error(err) {
+				return err
+			}
 		}
 
-		rdbAPI, region, ID, err := rdbAPIWithRegionAndID(testAccProvider.Meta(), rs.Primary.ID)
-		if err != nil {
-			return err
-		}
-
-		_, err = rdbAPI.GetInstance(&rdb.GetInstanceRequest{
-			InstanceID: ID,
-			Region:     region,
-		})
-
-		// If no error resource still exist
-		if err == nil {
-			return fmt.Errorf("Instance (%s) still exists", rs.Primary.ID)
-		}
-
-		// Unexpected api error we return it
-		if !is404Error(err) {
-			return err
-		}
+		return nil
 	}
-
-	return nil
 }
