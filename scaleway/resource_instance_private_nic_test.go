@@ -48,10 +48,12 @@ func testSweepInstancePrivateNic(zone string) error {
 }
 
 func TestAccScalewayInstancePrivateNIC(t *testing.T) {
+	tt := NewTestTools(t)
+	defer tt.Cleanup()
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckScalewayInstancePrivateNICDestroy,
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      testAccCheckScalewayInstancePrivateNICDestroy(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -61,7 +63,7 @@ func TestAccScalewayInstancePrivateNIC(t *testing.T) {
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayInstancePrivateNICExists("scaleway_instance_private_nic.nic01"),
+					testAccCheckScalewayInstancePrivateNICExists(tt, "scaleway_instance_private_nic.nic01"),
 					resource.TestCheckResourceAttr("scaleway_vpc_private_network.nic01", "server_id", "fr-par-1/4d67153f-24ee-4cdb-ae79-82986925b247"),
 					resource.TestCheckResourceAttr("scaleway_vpc_private_network.nic01", "private_network_id", "fr-par-1/7bad02dc-edfb-4235-ab37-8f57634dd1d1"),
 				),
@@ -70,14 +72,14 @@ func TestAccScalewayInstancePrivateNIC(t *testing.T) {
 	})
 }
 
-func testAccCheckScalewayInstancePrivateNICExists(n string) resource.TestCheckFunc {
+func testAccCheckScalewayInstancePrivateNICExists(tt *TestTools, n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
 			return fmt.Errorf("resource not found: %s", n)
 		}
 
-		instanceAPI, zone, innerID, outerID, err := instanceAPIWithZoneAndNestedID(testAccProvider.Meta(), rs.Primary.ID)
+		instanceAPI, zone, innerID, outerID, err := instanceAPIWithZoneAndNestedID(tt.Meta, rs.Primary.ID)
 		if err != nil {
 			return err
 		}
@@ -95,35 +97,37 @@ func testAccCheckScalewayInstancePrivateNICExists(n string) resource.TestCheckFu
 	}
 }
 
-func testAccCheckScalewayInstancePrivateNICDestroy(s *terraform.State) error {
-	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "scaleway_instance_private_nic" {
-			continue
+func testAccCheckScalewayInstancePrivateNICDestroy(tt *TestTools) resource.TestCheckFunc {
+	return func(state *terraform.State) error {
+		for _, rs := range state.RootModule().Resources {
+			if rs.Type != "scaleway_instance_private_nic" {
+				continue
+			}
+
+			instanceAPI, zone, innerID, outerID, err := instanceAPIWithZoneAndNestedID(tt.Meta, rs.Primary.ID)
+			if err != nil {
+				return err
+			}
+
+			_, err = instanceAPI.GetPrivateNIC(&instance.GetPrivateNICRequest{
+				ServerID:     outerID,
+				PrivateNicID: innerID,
+				Zone:         zone,
+			})
+
+			if err == nil {
+				return fmt.Errorf(
+					"instance private NIC %s still exists",
+					rs.Primary.ID,
+				)
+			}
+
+			// Unexpected api error we return it
+			if !is404Error(err) {
+				return err
+			}
 		}
 
-		instanceAPI, zone, innerID, outerID, err := instanceAPIWithZoneAndNestedID(testAccProvider.Meta(), rs.Primary.ID)
-		if err != nil {
-			return err
-		}
-
-		_, err = instanceAPI.GetPrivateNIC(&instance.GetPrivateNICRequest{
-			ServerID:     outerID,
-			PrivateNicID: innerID,
-			Zone:         zone,
-		})
-
-		if err == nil {
-			return fmt.Errorf(
-				"Instance private NIC %s still exists",
-				rs.Primary.ID,
-			)
-		}
-
-		// Unexpected api error we return it
-		if !is404Error(err) {
-			return err
-		}
+		return nil
 	}
-
-	return nil
 }
