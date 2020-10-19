@@ -114,7 +114,7 @@ func TestAccScalewayLbAcl_Basic(t *testing.T) {
 							match {
 								ip_subnet = ["192.168.0.1", "192.168.0.2", "192.168.10.0/24"]
 								http_filter = "acl_http_filter_none"
-                                http_filter_value = []
+								http_filter_value = []
 								invert = "true"
 							}
 						}
@@ -146,12 +146,12 @@ func TestAccScalewayLbAcl_Basic(t *testing.T) {
 							match {
 								ip_subnet = ["0.0.0.0/0"]
 								http_filter = "acl_http_filter_none"
-                                http_filter_value = []
+								http_filter_value = []
 							}
 						}
 						acl {
 							match {
-                                http_filter_value = []
+								http_filter_value = []
 								ip_subnet = ["0.0.0.0/0"]	
 							}
 							action {
