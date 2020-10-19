@@ -150,11 +150,15 @@ The following arguments are supported:
 
 - `admission_plugins` - (Optional) The list of [admission plugins](https://kubernetes.io/docs/reference/access-authn-authz/admission-controllers/) to enable on the cluster.
 
+- `delete_additional_resources` - (Defaults to `false`) Delete additional resources like block volumes and loadbalancers that were created in Kubernetes on cluster deletion.
+
 - `default_pool` - (Deprecated) See below.
 
 - `region` - (Defaults to [provider](../index.md#region) `region`) The [region](../guides/regions_and_zones.md#regions) in which the cluster should be created.
 
 - `organization_id` - (Defaults to [provider](../index.md#organization_id) `organization_id`) The ID of the organization the cluster is associated with.
+
+- `project_id` - (Defaults to [provider](../index.md#project_id) `project_id`) The ID of the project the cluster is associated with.
 
 
 ## Attributes Reference

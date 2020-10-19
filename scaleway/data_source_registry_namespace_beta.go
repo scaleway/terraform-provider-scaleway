@@ -1,10 +1,13 @@
 package scaleway
 
 import (
+	"context"
 	"fmt"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/api/registry/v1"
+	"github.com/scaleway/scaleway-sdk-go/scw"
 )
 
 func dataSourceScalewayRegistryNamespaceBeta() *schema.Resource {
@@ -23,16 +26,16 @@ func dataSourceScalewayRegistryNamespaceBeta() *schema.Resource {
 	}
 
 	return &schema.Resource{
-		Read: dataSourceScalewayRegistryNamespaceReadBeta,
+		ReadContext: dataSourceScalewayRegistryNamespaceReadBeta,
 
 		Schema: dsSchema,
 	}
 }
 
-func dataSourceScalewayRegistryNamespaceReadBeta(d *schema.ResourceData, m interface{}) error {
+func dataSourceScalewayRegistryNamespaceReadBeta(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	api, region, err := registryAPIWithRegion(d, m)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	namespaceID, ok := d.GetOk("namespace_id")
@@ -40,15 +43,15 @@ func dataSourceScalewayRegistryNamespaceReadBeta(d *schema.ResourceData, m inter
 		res, err := api.ListNamespaces(&registry.ListNamespacesRequest{
 			Region: region,
 			Name:   expandStringPtr(d.Get("name")),
-		})
+		}, scw.WithContext(ctx))
 		if err != nil {
-			return err
+			return diag.FromErr(err)
 		}
 		if len(res.Namespaces) == 0 {
-			return fmt.Errorf("no namespaces found with the name %s", d.Get("name"))
+			return diag.FromErr(fmt.Errorf("no namespaces found with the name %s", d.Get("name")))
 		}
 		if len(res.Namespaces) > 1 {
-			return fmt.Errorf("%d namespaces found with the same name %s", len(res.Namespaces), d.Get("name"))
+			return diag.FromErr(fmt.Errorf("%d namespaces found with the same name %s", len(res.Namespaces), d.Get("name")))
 		}
 		namespaceID = res.Namespaces[0].ID
 	}
@@ -57,5 +60,5 @@ func dataSourceScalewayRegistryNamespaceReadBeta(d *schema.ResourceData, m inter
 	d.SetId(regionalID)
 	_ = d.Set("namespace_id", regionalID)
 
-	return resourceScalewayRegistryNamespaceBetaRead(d, m)
+	return resourceScalewayRegistryNamespaceBetaRead(ctx, d, m)
 }

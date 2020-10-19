@@ -17,30 +17,28 @@ func init() {
 	})
 }
 
-func testSweepRDBInstance(region string) error {
-	scwClient, err := sharedClientForRegion(region)
-	if err != nil {
-		return fmt.Errorf("error getting client in sweeper: %s", err)
-	}
-	rdbAPI := rdb.NewAPI(scwClient)
-
-	l.Debugf("sweeper: destroying the rdb instance in (%s)", region)
-	listInstances, err := rdbAPI.ListInstances(&rdb.ListInstancesRequest{}, scw.WithAllPages())
-	if err != nil {
-		return fmt.Errorf("error listing rdb instances in (%s) in sweeper: %s", region, err)
-	}
-
-	for _, instance := range listInstances.Instances {
-		_, err := rdbAPI.DeleteInstance(&rdb.DeleteInstanceRequest{
-			InstanceID: instance.ID,
-		})
+func testSweepRDBInstance(_ string) error {
+	return sweepRegions(scw.AllRegions, func(scwClient *scw.Client, region scw.Region) error {
+		rdbAPI := rdb.NewAPI(scwClient)
+		l.Debugf("sweeper: destroying the rdb instance in (%s)", region)
+		listInstances, err := rdbAPI.ListInstances(&rdb.ListInstancesRequest{}, scw.WithAllPages())
 		if err != nil {
-			return fmt.Errorf("error deleting rdb instance in sweeper: %s", err)
+			return fmt.Errorf("error listing rdb instances in (%s) in sweeper: %s", region, err)
 		}
-	}
 
-	return nil
+		for _, instance := range listInstances.Instances {
+			_, err := rdbAPI.DeleteInstance(&rdb.DeleteInstanceRequest{
+				InstanceID: instance.ID,
+			})
+			if err != nil {
+				return fmt.Errorf("error deleting rdb instance in sweeper: %s", err)
+			}
+		}
+
+		return nil
+	})
 }
+
 func TestAccScalewayRdbInstanceBeta(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },

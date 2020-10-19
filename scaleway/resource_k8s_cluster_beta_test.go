@@ -25,7 +25,7 @@ func init() {
 }
 
 func testAccScalewayK8SClusterGetLatestVersion(t *testing.T) {
-	scwClient, err := sharedClientForRegion(string(scw.RegionFrPar))
+	scwClient, err := sharedClientForRegion(scw.RegionFrPar)
 	if err != nil {
 		t.Fatalf("Could not create shared client: %s", err)
 		return
@@ -45,7 +45,7 @@ func testAccScalewayK8SClusterGetLatestVersion(t *testing.T) {
 }
 
 func testSweepK8SCluster(region string) error {
-	scwClient, err := sharedClientForRegion(region)
+	scwClient, err := sharedClientForRegion(scw.Region(region))
 	if err != nil {
 		return fmt.Errorf("error getting client in sweeper: %s", err)
 	}

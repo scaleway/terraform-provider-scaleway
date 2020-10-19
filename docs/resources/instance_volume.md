@@ -29,6 +29,7 @@ The following arguments are supported:
 - `name` - (Optional) The name of the volume. If not provided it will be randomly generated.
 - `zone` - (Defaults to [provider](../index.md#zone) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which the volume should be created.
 - `organization_id` - (Defaults to [provider](../index.md#organization_id) `organization_id`) The ID of the organization the volume is associated with.
+- `project_id` - (Defaults to [provider](../index.md#project_id) `project_id`) The ID of the project the volume is associated with.
 
 ## Attributes Reference
 

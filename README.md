@@ -20,7 +20,7 @@ Requirements
 Building The Provider
 ---------------------
 
-Clone repository to: `$GOPATH/src/github.com/terraform-providers/terraform-provider-scaleway`
+Clone repository to: `$GOPATH/src/github.com/scaleway/terraform-provider-scaleway`
 
 ```sh
 $ mkdir -p $GOPATH/src/github.com/terraform-providers; cd $GOPATH/src/github.com/terraform-providers

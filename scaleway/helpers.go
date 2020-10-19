@@ -227,6 +227,18 @@ func organizationIDSchema() *schema.Schema {
 	}
 }
 
+// projectIDSchema returns a standard schema for a project_id
+func projectIDSchema() *schema.Schema {
+	return &schema.Schema{
+		Type:         schema.TypeString,
+		Description:  "The project_id you want to attach the resource to",
+		Optional:     true,
+		ForceNew:     true,
+		Computed:     true,
+		ValidateFunc: validationUUID(),
+	}
+}
+
 // zoneSchema returns a standard schema for a zone
 func zoneSchema() *schema.Schema {
 	return &schema.Schema{
@@ -384,7 +396,7 @@ func expandStringPtr(data interface{}) *string {
 	if data == nil || data == "" {
 		return nil
 	}
-	return expandStringPtr(data.(string))
+	return scw.StringPtr(data.(string))
 }
 
 func flattenInt32Ptr(i *int32) interface{} {
