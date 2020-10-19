@@ -110,7 +110,7 @@ func TestAccScalewayInstanceVolume_FromVolume(t *testing.T) {
 	})
 }
 
-func TestAccScalewayInstanceVolume_RandomName(t *testing.T) {
+func TestAccScalewayInstanceVolume_DifferentNameGenerated(t *testing.T) {
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
 	resource.Test(t, resource.TestCase{

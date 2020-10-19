@@ -828,9 +828,9 @@ func testAccCheckScalewayInstanceServerDestroy(tt *TestTools) resource.TestCheck
 	}
 }
 
-func testAccCheckScalewayInstanceServerConfigUserData(withRandomUserData, withCloudInit bool) string {
+func testAccCheckScalewayInstanceServerConfigUserData(withUserData, withCloudInit bool) string {
 	additionalUserData := ""
-	if withRandomUserData {
+	if withUserData {
 		additionalUserData += `
   user_data {
     key   = "plop"
