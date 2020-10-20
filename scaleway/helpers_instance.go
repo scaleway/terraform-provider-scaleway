@@ -1,6 +1,7 @@
 package scaleway
 
 import (
+	"context"
 	"fmt"
 	"hash/crc32"
 	"sort"
@@ -103,11 +104,11 @@ func serverStateExpand(rawState string) (instance.ServerState, error) {
 	return apiState, nil
 }
 
-func reachState(instanceAPI *instance.API, zone scw.Zone, serverID string, toState instance.ServerState) error {
+func reachState(ctx context.Context, instanceAPI *instance.API, zone scw.Zone, serverID string, toState instance.ServerState) error {
 	response, err := instanceAPI.GetServer(&instance.GetServerRequest{
 		Zone:     zone,
 		ServerID: serverID,
-	})
+	}, scw.WithContext(ctx))
 	if err != nil {
 		return err
 	}
@@ -147,11 +148,11 @@ func reachState(instanceAPI *instance.API, zone scw.Zone, serverID string, toSta
 
 // detachVolume will make sure a volume is not attached to any server. If volume is attached to a server, it will be stopped
 // to allow volume detachment.
-func detachVolume(instanceAPI *instance.API, zone scw.Zone, volumeID string) error {
+func detachVolume(ctx context.Context, instanceAPI *instance.API, zone scw.Zone, volumeID string) error {
 	res, err := instanceAPI.GetVolume(&instance.GetVolumeRequest{
 		Zone:     zone,
 		VolumeID: volumeID,
-	})
+	}, scw.WithContext(ctx))
 	if err != nil {
 		return err
 	}
@@ -164,7 +165,7 @@ func detachVolume(instanceAPI *instance.API, zone scw.Zone, volumeID string) err
 
 	// We need to stop server only for VolumeTypeLSSD volume type
 	if res.Volume.VolumeType == instance.VolumeVolumeTypeLSSD {
-		err = reachState(instanceAPI, zone, res.Volume.Server.ID, instance.ServerStateStopped)
+		err = reachState(ctx, instanceAPI, zone, res.Volume.Server.ID, instance.ServerStateStopped)
 
 		// If 404 this mean server is deleted and volume is already detached
 		if is404Error(err) {
@@ -177,7 +178,7 @@ func detachVolume(instanceAPI *instance.API, zone scw.Zone, volumeID string) err
 	_, err = instanceAPI.DetachVolume(&instance.DetachVolumeRequest{
 		Zone:     zone,
 		VolumeID: res.Volume.ID,
-	})
+	}, scw.WithContext(ctx))
 
 	// TODO find a better way to test this error
 	if err != nil && err.Error() != "scaleway-sdk-go: volume should be attached to a server" {

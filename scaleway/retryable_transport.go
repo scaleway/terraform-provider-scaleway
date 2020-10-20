@@ -9,17 +9,14 @@ import (
 	"time"
 
 	"github.com/hashicorp/go-retryablehttp"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/logging"
 )
 
 // TODO Retry logic should be moved in the SDK
-// createRetryableHTTPClient creates a retryablehttp.Client.
-func createRetryableHTTPClient(shouldLog bool) *client {
+// newRetryableTransport creates a http transport with retry capability.
+func newRetryableTransport(defaultTransport http.RoundTripper) http.RoundTripper {
 	c := retryablehttp.NewClient()
+	c.HTTPClient = &http.Client{Transport: defaultTransport}
 
-	if shouldLog {
-		c.HTTPClient.Transport = logging.NewTransport("Scaleway", c.HTTPClient.Transport)
-	}
 	c.RetryMax = 3
 	c.RetryWaitMax = 2 * time.Minute
 	c.Logger = l
@@ -31,16 +28,16 @@ func createRetryableHTTPClient(shouldLog bool) *client {
 		return retryablehttp.DefaultRetryPolicy(context.TODO(), resp, err)
 	}
 
-	return &client{c}
+	return &retryableTransport{c}
 }
 
 // client is a bridge between scw.httpClient interface and retryablehttp.Client
-type client struct {
+type retryableTransport struct {
 	*retryablehttp.Client
 }
 
-// Do wraps calling an HTTP method with retries.
-func (c *client) Do(r *http.Request) (*http.Response, error) {
+// RoundTrip wraps calling an HTTP method with retries.
+func (c *retryableTransport) RoundTrip(r *http.Request) (*http.Response, error) {
 	var body io.ReadSeeker
 	if r.Body != nil {
 		bs, err := ioutil.ReadAll(r.Body)
