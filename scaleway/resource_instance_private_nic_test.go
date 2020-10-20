@@ -47,7 +47,7 @@ func testSweepInstancePrivateNic(zone string) error {
 	return nil
 }
 
-func TestAccScalewayInstancePrivateNIC(t *testing.T) {
+func TestAccScalewayInstancePrivateNIC_Basic(t *testing.T) {
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
 	resource.ParallelTest(t, resource.TestCase{
@@ -57,15 +57,22 @@ func TestAccScalewayInstancePrivateNIC(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: `
+					resource scaleway_vpc_private_network pn01 {}
+					resource "scaleway_instance_server" "server01" {
+						image = "f974feac-abae-4365-b988-8ec7d1cec10d"
+						type  = "DEV1-S"
+						tags  = [ "terraform-test", "scaleway_instance_server" ]
+					}
 					resource scaleway_instance_private_nic nic01 {
-						server_id: "4d67153f-24ee-4cdb-ae79-82986925b247"
-						private_network_id: "7bad02dc-edfb-4235-ab37-8f57634dd1d1"
+						server_id          = scaleway_instance_server.server01.id
+						private_network_id = scaleway_vpc_private_network.pn01.id
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayInstancePrivateNICExists(tt, "scaleway_instance_private_nic.nic01"),
-					resource.TestCheckResourceAttr("scaleway_vpc_private_network.nic01", "server_id", "fr-par-1/4d67153f-24ee-4cdb-ae79-82986925b247"),
-					resource.TestCheckResourceAttr("scaleway_vpc_private_network.nic01", "private_network_id", "fr-par-1/7bad02dc-edfb-4235-ab37-8f57634dd1d1"),
+					testAccCheckScalewayInstancePrivateNICExists(
+						tt,
+						"scaleway_instance_private_nic.nic01",
+					),
 				),
 			},
 		},

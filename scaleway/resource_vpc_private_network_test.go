@@ -63,9 +63,15 @@ func TestAccScalewayVPCPrivateNetwork_Basic(t *testing.T) {
 					}
 				`, privateNetworkName),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayVPCPrivateNetworkExists(tt, "scaleway_vpc_private_network.pn01"),
-					resource.TestCheckResourceAttr("scaleway_vpc_private_network.pn01", "name", privateNetworkName),
-					testCheckResourceAttrUUID("scaleway_vpc_private_network.pn01", "private_network_id"),
+					testAccCheckScalewayVPCPrivateNetworkExists(
+						tt,
+						"scaleway_vpc_private_network.pn01",
+					),
+					resource.TestCheckResourceAttr(
+						"scaleway_vpc_private_network.pn01",
+						"name",
+						privateNetworkName,
+					),
 				),
 			},
 			{
@@ -76,9 +82,20 @@ func TestAccScalewayVPCPrivateNetwork_Basic(t *testing.T) {
 					}
 				`, privateNetworkName),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayVPCPrivateNetworkExists(tt, "scaleway_vpc_private_network.pn01"),
-					resource.TestCheckResourceAttr("scaleway_vpc_private_network.pn01", "tags.0", "tag0"),
-					resource.TestCheckResourceAttr("scaleway_vpc_private_network.pn01", "tags.1", "tag1"),
+					testAccCheckScalewayVPCPrivateNetworkExists(
+						tt,
+						"scaleway_vpc_private_network.pn01",
+					),
+					resource.TestCheckResourceAttr(
+						"scaleway_vpc_private_network.pn01",
+						"tags.0",
+						"tag0",
+					),
+					resource.TestCheckResourceAttr(
+						"scaleway_vpc_private_network.pn01",
+						"tags.1",
+						"tag1",
+					),
 				),
 			},
 		},
