@@ -44,9 +44,9 @@ func TestAccScalewayBaremetalServer_Basic(t *testing.T) {
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
 
-	SSHKeyName := newRandomName("ssh-key")
+	SSHKeyName := "TestAccScalewayBaremetalServer_Basic"
 	SSHKey := "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIM7HUxRyQtB2rnlhQUcbDGCZcTJg7OvoznOiyC9W6IxH opensource@scaleway.com"
-	name := newRandomName("bm")
+	name := "TestAccScalewayBaremetalServer_Basic"
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
