@@ -34,6 +34,7 @@ The following arguments are supported:
 In addition to all above arguments, the following attribute is exported:
 
 * `id` - The unique name of the bucket.
+* `endpoint` - The endpoint URL of the bucket
 
 ## Import
 

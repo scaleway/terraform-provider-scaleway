@@ -46,6 +46,11 @@ func resourceScalewayObjectBucket() *schema.Resource {
 				Optional:    true,
 				Description: "The tags associated with this bucket",
 			},
+			"endpoint": {
+				Type:        schema.TypeString,
+				Description: "Endpoint of the bucket",
+				Computed:    true,
+			},
 			"region": regionSchema(),
 		},
 	}
@@ -88,7 +93,7 @@ func resourceScalewayObjectBucketCreate(d *schema.ResourceData, m interface{}) e
 }
 
 func resourceScalewayObjectBucketRead(d *schema.ResourceData, m interface{}) error {
-	s3Client, _, bucketName, err := s3ClientWithRegionAndName(m, d.Id())
+	s3Client, region, bucketName, err := s3ClientWithRegionAndName(m, d.Id())
 	if err != nil {
 		return err
 	}
@@ -130,6 +135,8 @@ func resourceScalewayObjectBucketRead(d *schema.ResourceData, m interface{}) err
 	}
 
 	_ = d.Set("tags", flattenObjectBucketTags(tagsSet))
+
+	_ = d.Set("endpoint", fmt.Sprintf("https://%s.s3.%s.scw.cloud", bucketName, region))
 
 	return nil
 }

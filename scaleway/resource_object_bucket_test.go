@@ -69,8 +69,13 @@ func TestAccScalewayObjectBucket(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_object_bucket.base", "acl", testBucketACL),
 					resource.TestCheckResourceAttr("scaleway_object_bucket.base", "tags.%", "1"),
 					resource.TestCheckResourceAttr("scaleway_object_bucket.base", "tags.foo", "bar"),
+					resource.TestCheckResourceAttr("scaleway_object_bucket.base", "endpoint", fmt.Sprintf("https://%s.s3.%s.scw.cloud", testBucketName, "fr-par")),
+
 					resource.TestCheckResourceAttr("scaleway_object_bucket.ams-bucket", "name", testBucketNameAms),
+					resource.TestCheckResourceAttr("scaleway_object_bucket.ams-bucket", "endpoint", fmt.Sprintf("https://%s.s3.%s.scw.cloud", testBucketNameAms, "nl-ams")),
+
 					resource.TestCheckResourceAttr("scaleway_object_bucket.par-bucket", "name", testBucketNamePar),
+					resource.TestCheckResourceAttr("scaleway_object_bucket.par-bucket", "endpoint", fmt.Sprintf("https://%s.s3.%s.scw.cloud", testBucketNamePar, "fr-par")),
 				),
 			},
 			{
