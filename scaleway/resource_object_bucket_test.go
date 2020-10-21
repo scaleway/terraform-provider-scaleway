@@ -130,3 +130,32 @@ func testSweepStorageObjectBucket(region string) error {
 
 	return nil
 }
+
+func TestAccScalewayObjectBucket_ACL(t *testing.T) {
+	testBucketName := fmt.Sprintf("terraform-test-%d", time.Now().Unix())
+	testBucketACL := "private"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckScalewayObjectBucketDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`
+					resource "scaleway_object_bucket" "base" {
+						name = "%s"
+						acl = "private"
+					}`, testBucketName),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("scaleway_object_bucket.base", "name", testBucketName),
+					resource.TestCheckResourceAttr("scaleway_object_bucket.base", "acl", testBucketACL),
+				),
+			},
+			{
+				ResourceName:      "scaleway_object_bucket.base",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
