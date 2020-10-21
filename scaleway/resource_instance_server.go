@@ -174,8 +174,13 @@ func resourceScalewayInstanceServer() *schema.Resource {
 			},
 			"boot_type": {
 				Type:        schema.TypeString,
-				Computed:    true,
+				Optional:    true,
 				Description: "The boot type of the server",
+			},
+			"bootscript": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "ID of the target bootscript",
 			},
 			"cloud_init": {
 				Type:         schema.TypeString,
@@ -257,6 +262,12 @@ func resourceScalewayInstanceServerCreate(ctx context.Context, d *schema.Resourc
 		SecurityGroup:     expandStringPtr(expandZonedID(d.Get("security_group_id")).ID),
 		DynamicIPRequired: scw.BoolPtr(d.Get("enable_dynamic_ip").(bool)),
 		Tags:              expandStrings(d.Get("tags")),
+	}
+
+	if bootType, ok := d.GetOk("boot_type"); ok && bootType == "bootscript" {
+		b := instance.BootTypeBootscript
+		req.BootType = &b
+		req.Bootscript = expandStringPtr(d.Get("bootscript"))
 	}
 
 	if ipID, ok := d.GetOk("ip_id"); ok {
@@ -360,6 +371,7 @@ func resourceScalewayInstanceServerRead(ctx context.Context, d *schema.ResourceD
 	_ = d.Set("zone", string(zone))
 	_ = d.Set("name", response.Server.Name)
 	_ = d.Set("boot_type", response.Server.BootType)
+	_ = d.Set("bootscript", response.Server.Bootscript.ID)
 	_ = d.Set("type", response.Server.CommercialType)
 	_ = d.Set("tags", response.Server.Tags)
 	_ = d.Set("security_group_id", newZonedID(zone, response.Server.SecurityGroup.ID).String())
