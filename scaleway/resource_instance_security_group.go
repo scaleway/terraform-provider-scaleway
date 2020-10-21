@@ -82,6 +82,12 @@ func resourceScalewayInstanceSecurityGroup() *schema.Resource {
 				Default:       false,
 				ConflictsWith: []string{"inbound_rule", "outbound_rule"},
 			},
+			"enable_default_security": {
+				Type:        schema.TypeBool,
+				Description: "Enable blocking of SMTP on IPv4 and IPv6",
+				Optional:    true,
+				Default:     true,
+			},
 			"zone":            zoneSchema(),
 			"organization_id": organizationIDSchema(),
 			"project_id":      projectIDSchema(),
@@ -104,6 +110,7 @@ func resourceScalewayInstanceSecurityGroupCreate(ctx context.Context, d *schema.
 		Stateful:              d.Get("stateful").(bool),
 		InboundDefaultPolicy:  instance.SecurityGroupPolicy(d.Get("inbound_default_policy").(string)),
 		OutboundDefaultPolicy: instance.SecurityGroupPolicy(d.Get("outbound_default_policy").(string)),
+		EnableDefaultSecurity: expandBoolPtr(d.Get("enable_default_security").(bool)),
 	}, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
@@ -144,6 +151,7 @@ func resourceScalewayInstanceSecurityGroupRead(ctx context.Context, d *schema.Re
 	_ = d.Set("description", res.SecurityGroup.Description)
 	_ = d.Set("inbound_default_policy", res.SecurityGroup.InboundDefaultPolicy.String())
 	_ = d.Set("outbound_default_policy", res.SecurityGroup.OutboundDefaultPolicy.String())
+	_ = d.Set("enable_default_security", res.SecurityGroup.EnableDefaultSecurity)
 
 	if !d.Get("external_rules").(bool) {
 		inboundRules, outboundRules, err := getSecurityGroupRules(instanceAPI, zone, ID, d)
@@ -230,6 +238,10 @@ func resourceScalewayInstanceSecurityGroupUpdate(ctx context.Context, d *schema.
 		Description:           expandStringPtr(description),
 		InboundDefaultPolicy:  &inboundDefaultPolicy,
 		OutboundDefaultPolicy: &outboundDefaultPolicy,
+	}
+
+	if d.HasChange("enable_default_security") {
+		updateReq.EnableDefaultSecurity = expandBoolPtr(d.Get("enable_default_security").(bool))
 	}
 
 	// Only update name if one is provided in the state

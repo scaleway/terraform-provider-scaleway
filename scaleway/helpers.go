@@ -386,6 +386,13 @@ func expandStringPtr(data interface{}) *string {
 	return scw.StringPtr(data.(string))
 }
 
+func expandBoolPtr(data interface{}) *bool {
+	if data == nil || data == "" {
+		return nil
+	}
+	return scw.BoolPtr(data.(bool))
+}
+
 func flattenInt32Ptr(i *int32) interface{} {
 	if i == nil {
 		return 0
