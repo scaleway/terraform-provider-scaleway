@@ -925,12 +925,12 @@ func TestAccScalewayInstanceServer_Bootscript(t *testing.T) {
 						type  = "DEV1-S"
 						image = data.scaleway_instance_image.ubuntu_focal.id
 						boot_type = "bootscript"
-						bootscript = "%s"
+						bootscript_id = "%s"
 					}
 				`, bootscript),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayInstanceServerExists(tt, "scaleway_instance_server.base"),
-					resource.TestCheckResourceAttr("scaleway_instance_server.base", "bootscript", bootscript),
+					resource.TestCheckResourceAttr("scaleway_instance_server.base", "bootscript_id", bootscript),
 				),
 			},
 		},
