@@ -153,3 +153,58 @@ func expandObjectBucketVersioning(v []interface{}) *s3.VersioningConfiguration {
 	}
 	return vc
 }
+
+func flattenBucketCORS(corsResponse interface{}) []map[string]interface{} {
+	corsRules := make([]map[string]interface{}, 0)
+	if cors, ok := corsResponse.(*s3.GetBucketCorsOutput); ok && len(cors.CORSRules) > 0 {
+		corsRules = make([]map[string]interface{}, 0, len(cors.CORSRules))
+		for _, ruleObject := range cors.CORSRules {
+			rule := make(map[string]interface{})
+			rule["allowed_headers"] = flattenSliceStringPtr(ruleObject.AllowedHeaders)
+			rule["allowed_methods"] = flattenSliceStringPtr(ruleObject.AllowedMethods)
+			rule["allowed_origins"] = flattenSliceStringPtr(ruleObject.AllowedOrigins)
+			// Both the "ExposeHeaders" and "MaxAgeSeconds" might not be set.
+			if ruleObject.AllowedOrigins != nil {
+				rule["expose_headers"] = flattenSliceStringPtr(ruleObject.ExposeHeaders)
+			}
+			if ruleObject.MaxAgeSeconds != nil {
+				rule["max_age_seconds"] = int(*ruleObject.MaxAgeSeconds)
+			}
+			corsRules = append(corsRules, rule)
+		}
+	}
+	return corsRules
+}
+
+func expandBucketCORS(rawCors []interface{}, bucket string) []*s3.CORSRule {
+	rules := make([]*s3.CORSRule, 0, len(rawCors))
+	for _, cors := range rawCors {
+		corsMap := cors.(map[string]interface{})
+		r := &s3.CORSRule{}
+		for k, v := range corsMap {
+			l.Printf("[DEBUG] S3 bucket: %s, put CORS: %#v, %#v", bucket, k, v)
+			if k == "max_age_seconds" {
+				r.MaxAgeSeconds = scw.Int64Ptr(int64(v.(int)))
+			} else {
+				vMap := make([]*string, len(v.([]interface{})))
+				for i, vv := range v.([]interface{}) {
+					if str, ok := vv.(string); ok {
+						vMap[i] = scw.StringPtr(str)
+					}
+				}
+				switch k {
+				case "allowed_headers":
+					r.AllowedHeaders = vMap
+				case "allowed_methods":
+					r.AllowedMethods = vMap
+				case "allowed_origins":
+					r.AllowedOrigins = vMap
+				case "expose_headers":
+					r.ExposeHeaders = vMap
+				}
+			}
+		}
+		rules = append(rules, r)
+	}
+	return rules
+}
