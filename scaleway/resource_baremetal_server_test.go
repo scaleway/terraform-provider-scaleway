@@ -6,7 +6,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
-	baremetal "github.com/scaleway/scaleway-sdk-go/api/baremetal/v1"
+	"github.com/scaleway/scaleway-sdk-go/api/baremetal/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 )
 
@@ -40,25 +40,28 @@ func testSweepBaremetalServer(_ string) error {
 	})
 }
 
-func TestAccScalewayBaremetalServerMinimal1(t *testing.T) {
-	SSHKeyName := newRandomName("ssh-key")
+func TestAccScalewayBaremetalServer_Basic(t *testing.T) {
+	tt := NewTestTools(t)
+	defer tt.Cleanup()
+
+	SSHKeyName := "TestAccScalewayBaremetalServer_Basic"
 	SSHKey := "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIM7HUxRyQtB2rnlhQUcbDGCZcTJg7OvoznOiyC9W6IxH opensource@scaleway.com"
-	name := newRandomName("bm")
+	name := "TestAccScalewayBaremetalServer_Basic"
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckScalewayBaremetalServerDestroy,
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      testAccCheckScalewayBaremetalServerDestroy(tt),
 		Steps: []resource.TestStep{
 			{
-				Config: `
+				Config: fmt.Sprintf(`
 					resource "scaleway_account_ssh_key" "main" {
-						name 	   = "` + SSHKeyName + `"
-						public_key = "` + SSHKey + `"
+						name 	   = "%s"
+						public_key = "%s"
 					}
 					
 					resource "scaleway_baremetal_server" "base" {
-						name        = "` + name + `"
+						name        = "%s"
 						zone        = "fr-par-2"
 						description = "test a description"
 						offer       = "GP-BM1-M"
@@ -67,9 +70,9 @@ func TestAccScalewayBaremetalServerMinimal1(t *testing.T) {
 						tags = [ "terraform-test", "scaleway_baremetal_server", "minimal" ]
 						ssh_key_ids = [ scaleway_account_ssh_key.main.id ]
 					}
-				`,
+				`, SSHKeyName, SSHKey, name),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayBaremetalServerExists("scaleway_baremetal_server.base"),
+					testAccCheckScalewayBaremetalServerExists(tt, "scaleway_baremetal_server.base"),
 					resource.TestCheckResourceAttr("scaleway_baremetal_server.base", "name", name),
 					resource.TestCheckResourceAttr("scaleway_baremetal_server.base", "offer_id", "fr-par-2/964f9b38-577e-470f-a220-7d762f9e8672"),
 					resource.TestCheckResourceAttr("scaleway_baremetal_server.base", "os_id", "fr-par-2/d17d6872-0412-45d9-a198-af82c34d3c5c"),
@@ -82,14 +85,14 @@ func TestAccScalewayBaremetalServerMinimal1(t *testing.T) {
 			},
 			{
 				// Trigger a reinstall and update tags
-				Config: `
+				Config: fmt.Sprintf(`
 					resource "scaleway_account_ssh_key" "main" {
-						name 	   = "` + SSHKeyName + `"
-						public_key = "` + SSHKey + `"
+						name 	   = "%s"
+						public_key = "%s"
 					}
 					
 					resource "scaleway_baremetal_server" "base" {
-						name        = "` + name + `"
+						name        = "%s"
 						zone        = "fr-par-2"
 						description = "test a description"
 						offer       = "GP-BM1-M"
@@ -98,9 +101,9 @@ func TestAccScalewayBaremetalServerMinimal1(t *testing.T) {
 						tags = [ "terraform-test", "scaleway_baremetal_server", "minimal", "edited" ]
 						ssh_key_ids = [ scaleway_account_ssh_key.main.id ]
 					}
-				`,
+				`, SSHKeyName, SSHKey, name),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayBaremetalServerExists("scaleway_baremetal_server.base"),
+					testAccCheckScalewayBaremetalServerExists(tt, "scaleway_baremetal_server.base"),
 					resource.TestCheckResourceAttr("scaleway_baremetal_server.base", "name", name),
 					resource.TestCheckResourceAttr("scaleway_baremetal_server.base", "offer_id", "fr-par-2/964f9b38-577e-470f-a220-7d762f9e8672"),
 					resource.TestCheckResourceAttr("scaleway_baremetal_server.base", "os_id", "fr-par-2/d859aa89-8b4a-4551-af42-ff7c0c27260a"),
@@ -117,14 +120,14 @@ func TestAccScalewayBaremetalServerMinimal1(t *testing.T) {
 	})
 }
 
-func testAccCheckScalewayBaremetalServerExists(n string) resource.TestCheckFunc {
+func testAccCheckScalewayBaremetalServerExists(tt *TestTools, n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
 			return fmt.Errorf("resource not found: %s", n)
 		}
 
-		baremetalAPI, zonedID, err := baremetalAPIWithZoneAndID(testAccProvider.Meta(), rs.Primary.ID)
+		baremetalAPI, zonedID, err := baremetalAPIWithZoneAndID(tt.Meta, rs.Primary.ID)
 		if err != nil {
 			return err
 		}
@@ -141,32 +144,33 @@ func testAccCheckScalewayBaremetalServerExists(n string) resource.TestCheckFunc 
 	}
 }
 
-func testAccCheckScalewayBaremetalServerDestroy(s *terraform.State) error {
-	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "scaleway_baremetal_server" {
-			continue
-		}
+func testAccCheckScalewayBaremetalServerDestroy(tt *TestTools) resource.TestCheckFunc {
+	return func(state *terraform.State) error {
+		for _, rs := range state.RootModule().Resources {
+			if rs.Type != "scaleway_baremetal_server" {
+				continue
+			}
 
-		baremetalAPI, zonedID, err := baremetalAPIWithZoneAndID(testAccProvider.Meta(), rs.Primary.ID)
-		if err != nil {
-			return err
-		}
+			baremetalAPI, zonedID, err := baremetalAPIWithZoneAndID(tt.Meta, rs.Primary.ID)
+			if err != nil {
+				return err
+			}
 
-		_, err = baremetalAPI.GetServer(&baremetal.GetServerRequest{
-			ServerID: zonedID.ID,
-			Zone:     zonedID.Zone,
-		})
+			_, err = baremetalAPI.GetServer(&baremetal.GetServerRequest{
+				ServerID: zonedID.ID,
+				Zone:     zonedID.Zone,
+			})
 
-		// If no error resource still exist
-		if err == nil {
-			return fmt.Errorf("server (%s) still exists", rs.Primary.ID)
-		}
+			// If no error resource still exist
+			if err == nil {
+				return fmt.Errorf("server (%s) still exists", rs.Primary.ID)
+			}
 
-		// Unexpected api error we return it
-		if !is404Error(err) {
-			return err
+			// Unexpected api error we return it
+			if !is404Error(err) {
+				return err
+			}
 		}
+		return nil
 	}
-
-	return nil
 }
