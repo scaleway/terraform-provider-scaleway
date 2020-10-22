@@ -3,6 +3,7 @@ package scaleway
 import (
 	"context"
 	"fmt"
+	"log"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
@@ -54,15 +55,35 @@ func resourceScalewayObjectBucket() *schema.Resource {
 				Computed:    true,
 			},
 			"region": regionSchema(),
+			"versioning": {
+				Type:     schema.TypeList,
+				Optional: true,
+				Computed: true,
+				MaxItems: 1,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"enabled": {
+							Type:     schema.TypeBool,
+							Optional: true,
+							Default:  false,
+						},
+						"mfa_delete": {
+							Type:     schema.TypeBool,
+							Optional: true,
+							Default:  false,
+						},
+					},
+				},
+			},
 		},
 	}
 }
 
-func resourceScalewayObjectBucketCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceScalewayObjectBucketCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	bucketName := d.Get("name").(string)
 	acl := d.Get("acl").(string)
 
-	s3Client, region, err := s3ClientWithRegion(d, m)
+	s3Client, region, err := s3ClientWithRegion(d, meta)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -91,11 +112,11 @@ func resourceScalewayObjectBucketCreate(ctx context.Context, d *schema.ResourceD
 
 	d.SetId(newRegionalIDString(region, bucketName))
 
-	return resourceScalewayObjectBucketRead(ctx, d, m)
+	return resourceScalewayObjectBucketRead(ctx, d, meta)
 }
 
-func resourceScalewayObjectBucketRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	s3Client, region, bucketName, err := s3ClientWithRegionAndName(m, d.Id())
+func resourceScalewayObjectBucketRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	s3Client, region, bucketName, err := s3ClientWithRegionAndName(meta, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -140,6 +161,36 @@ func resourceScalewayObjectBucketRead(ctx context.Context, d *schema.ResourceDat
 
 	_ = d.Set("endpoint", objectBucketEndpointURL(bucketName, region))
 
+	// Read the versioning configuration
+	versioningResponse, err := retryOnAwsCode(s3.ErrCodeNoSuchBucket, func() (interface{}, error) {
+		return s3Client.GetBucketVersioning(&s3.GetBucketVersioningInput{
+			Bucket: aws.String(d.Id()),
+		})
+	})
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	vcl := make([]map[string]interface{}, 0, 1)
+	if versioning, ok := versioningResponse.(*s3.GetBucketVersioningOutput); ok {
+		vc := make(map[string]interface{})
+		if versioning.Status != nil && aws.StringValue(versioning.Status) == s3.BucketVersioningStatusEnabled {
+			vc["enabled"] = true
+		} else {
+			vc["enabled"] = false
+		}
+
+		if versioning.MFADelete != nil && aws.StringValue(versioning.MFADelete) == s3.MFADeleteEnabled {
+			vc["mfa_delete"] = true
+		} else {
+			vc["mfa_delete"] = false
+		}
+		vcl = append(vcl, vc)
+	}
+	if err := d.Set("versioning", vcl); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting versioning: %s", err))
+	}
+
 	return nil
 }
 
@@ -159,6 +210,12 @@ func resourceScalewayObjectBucketUpdate(ctx context.Context, d *schema.ResourceD
 		if err != nil {
 			l.Errorf("Couldn't update bucket ACL: %s", err)
 			return diag.FromErr(fmt.Errorf("couldn't update bucket ACL: %s", err))
+		}
+	}
+
+	if d.HasChange("versioning") {
+		if err := resourceScalewayObjectBucketVersioningUpdate(s3Client, d); err != nil {
+			return diag.FromErr(err)
 		}
 	}
 
@@ -190,6 +247,45 @@ func resourceScalewayObjectBucketDelete(ctx context.Context, d *schema.ResourceD
 	})
 	if err != nil {
 		return diag.FromErr(err)
+	}
+
+	return nil
+}
+
+func resourceScalewayObjectBucketVersioningUpdate(s3conn *s3.S3, d *schema.ResourceData) error {
+	v := d.Get("versioning").([]interface{})
+	bucket := d.Get("bucket").(string)
+	vc := &s3.VersioningConfiguration{}
+
+	if len(v) > 0 {
+		c := v[0].(map[string]interface{})
+
+		if c["enabled"].(bool) {
+			vc.Status = aws.String(s3.BucketVersioningStatusEnabled)
+		} else {
+			vc.Status = aws.String(s3.BucketVersioningStatusSuspended)
+		}
+
+		if c["mfa_delete"].(bool) {
+			vc.MFADelete = aws.String(s3.MFADeleteEnabled)
+		} else {
+			vc.MFADelete = aws.String(s3.MFADeleteDisabled)
+		}
+	} else {
+		vc.Status = aws.String(s3.BucketVersioningStatusSuspended)
+	}
+
+	i := &s3.PutBucketVersioningInput{
+		Bucket:                  aws.String(bucket),
+		VersioningConfiguration: vc,
+	}
+	log.Printf("[DEBUG] S3 put bucket versioning: %#v", i)
+
+	_, err := retryOnAwsCode(s3.ErrCodeNoSuchBucket, func() (interface{}, error) {
+		return s3conn.PutBucketVersioning(i)
+	})
+	if err != nil {
+		return fmt.Errorf("error putting S3 versioning: %s", err)
 	}
 
 	return nil

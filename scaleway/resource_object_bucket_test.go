@@ -6,8 +6,10 @@ import (
 	"testing"
 	"time"
 
+	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/service/s3"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/scaleway/scaleway-sdk-go/scw"
@@ -141,4 +143,120 @@ func testSweepStorageObjectBucket(_ string) error {
 
 		return nil
 	})
+}
+
+func TestAccAWSS3Bucket_Versioning(t *testing.T) {
+	tt := NewTestTools(t)
+	defer tt.Cleanup()
+
+	bucketName := acctest.RandomWithPrefix("tf-test-bucket")
+	resourceName := "aws_s3_bucket.bucket"
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      testAccCheckScalewayObjectBucketDestroy(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`
+					resource "scaleway_object_bucket" "bucket" {
+					  bucket = %[1]q
+					}
+					`, bucketName),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayObjectBucketExists(tt, resourceName),
+					testAccCheckScalewayObjectBucketVersioning(tt, resourceName, ""),
+				),
+			},
+			{
+				ResourceName:            resourceName,
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"force_destroy", "acl"},
+			},
+			{
+				Config: fmt.Sprintf(`
+					resource "scaleway_s3_bucket" "bucket" {
+						bucket = %[1]q
+						versioning {
+							enabled = true
+						}
+					}`, bucketName),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayObjectBucketExists(tt, resourceName),
+					testAccCheckScalewayObjectBucketVersioning(tt, resourceName, s3.BucketVersioningStatusEnabled),
+				),
+			},
+			{
+				Config: fmt.Sprintf(`
+					resource "aws_s3_bucket" "bucket" {
+						bucket = %[1]q
+						versioning {
+							enabled = false
+						}
+					}`, bucketName),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayObjectBucketExists(tt, resourceName),
+					testAccCheckScalewayObjectBucketVersioning(tt, resourceName, s3.BucketVersioningStatusSuspended),
+				),
+			},
+		},
+	})
+}
+
+func testAccCheckScalewayObjectBucketExists(tt *TestTools, n string) resource.TestCheckFunc {
+	return testAccCheckAWSS3BucketExistsWithProvider(tt, n)
+}
+
+func testAccCheckAWSS3BucketExistsWithProvider(tt *TestTools, n string) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		rs, ok := s.RootModule().Resources[n]
+		if !ok {
+			return fmt.Errorf("not found: %s", n)
+		}
+
+		if rs.Primary.ID == "" {
+			return fmt.Errorf("no ID is set")
+		}
+
+		conn := tt.Meta.s3Client
+		_, err := conn.HeadBucket(&s3.HeadBucketInput{
+			Bucket: aws.String(rs.Primary.ID),
+		})
+
+		if err != nil {
+			if isAWSErr(err, s3.ErrCodeNoSuchBucket, "") {
+				return fmt.Errorf("s3 bucket not found")
+			}
+			return err
+		}
+		return nil
+	}
+}
+
+func testAccCheckScalewayObjectBucketVersioning(tt *TestTools, n string, versioningStatus string) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		rs := s.RootModule().Resources[n]
+		conn := tt.Meta.s3Client
+
+		out, err := conn.GetBucketVersioning(&s3.GetBucketVersioningInput{
+			Bucket: aws.String(rs.Primary.ID),
+		})
+
+		if err != nil {
+			return fmt.Errorf("GetBucketVersioning error: %v", err)
+		}
+
+		if v := out.Status; v == nil {
+			if versioningStatus != "" {
+				return fmt.Errorf("bad error versioning status, found nil, expected: %s", versioningStatus)
+			}
+		} else {
+			if *v != versioningStatus {
+				return fmt.Errorf("bad error versioning status, expected: %s, got %s", versioningStatus, *v)
+			}
+		}
+
+		return nil
+	}
 }

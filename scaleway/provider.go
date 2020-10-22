@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/plugin"
@@ -131,6 +132,7 @@ func Provider(config *ProviderConfig) plugin.ProviderFunc {
 type Meta struct {
 	// scwClient is the Scaleway SDK client.
 	scwClient *scw.Client
+	s3Client  *s3.S3
 }
 
 type MetaConfig struct {
