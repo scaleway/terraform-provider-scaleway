@@ -150,7 +150,7 @@ func TestAccAWSS3Bucket_Versioning(t *testing.T) {
 	defer tt.Cleanup()
 
 	bucketName := acctest.RandomWithPrefix("tf-test-bucket")
-	resourceName := "aws_s3_bucket.bucket"
+	resourceName := "scaleway_object_bucket.bucket"
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
@@ -160,7 +160,7 @@ func TestAccAWSS3Bucket_Versioning(t *testing.T) {
 			{
 				Config: fmt.Sprintf(`
 					resource "scaleway_object_bucket" "bucket" {
-					  bucket = %[1]q
+					  name = "%s"
 					}
 					`, bucketName),
 				Check: resource.ComposeTestCheckFunc(
@@ -176,8 +176,8 @@ func TestAccAWSS3Bucket_Versioning(t *testing.T) {
 			},
 			{
 				Config: fmt.Sprintf(`
-					resource "scaleway_s3_bucket" "bucket" {
-						bucket = %[1]q
+					resource "scaleway_object_bucket" "bucket" {
+						name = "%s"
 						versioning {
 							enabled = true
 						}
@@ -189,8 +189,8 @@ func TestAccAWSS3Bucket_Versioning(t *testing.T) {
 			},
 			{
 				Config: fmt.Sprintf(`
-					resource "aws_s3_bucket" "bucket" {
-						bucket = %[1]q
+					resource "scaleway_object_bucket" "bucket" {
+						name = "%s"
 						versioning {
 							enabled = false
 						}

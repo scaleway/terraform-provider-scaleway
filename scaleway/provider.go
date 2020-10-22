@@ -182,8 +182,17 @@ func buildMeta(config *MetaConfig) (*Meta, error) {
 		return nil, err
 	}
 
+	region, _ := scwClient.GetDefaultRegion()
+	accessKey, _ := scwClient.GetAccessKey()
+	secretKey, _ := scwClient.GetSecretKey()
+	s3client, err := newS3Client(region.String(), accessKey, secretKey)
+	if err != nil {
+		return nil, err
+	}
+
 	return &Meta{
 		scwClient: scwClient,
+		s3Client:  s3client,
 	}, nil
 }
 
