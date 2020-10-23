@@ -48,5 +48,5 @@ In addition to all arguments above, the following attibutes are exported:
 Container Registry Namespace can be imported using the `{region}/{id}`, eg.
 
 ```bash
-$ terraform import scaleway_container_registy.cr01 fr-par/11111111-1111-1111-1111-111111111111
+$ terraform import scaleway_registry_namespace_beta.main fr-par/11111111-1111-1111-1111-111111111111
 ```
