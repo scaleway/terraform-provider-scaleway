@@ -145,7 +145,7 @@ func testSweepStorageObjectBucket(_ string) error {
 	})
 }
 
-func TestAccAWSS3Bucket_Versioning(t *testing.T) {
+func TestAccScalewayObjectBucket_Versioning(t *testing.T) {
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
 
@@ -205,10 +205,10 @@ func TestAccAWSS3Bucket_Versioning(t *testing.T) {
 }
 
 func testAccCheckScalewayObjectBucketExists(tt *TestTools, n string) resource.TestCheckFunc {
-	return testAccCheckAWSS3BucketExistsWithProvider(tt, n)
+	return testAccCheckScalewayObjectBucketExistsWithProvider(tt, n)
 }
 
-func testAccCheckAWSS3BucketExistsWithProvider(tt *TestTools, n string) resource.TestCheckFunc {
+func testAccCheckScalewayObjectBucketExistsWithProvider(tt *TestTools, n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
@@ -225,7 +225,7 @@ func testAccCheckAWSS3BucketExistsWithProvider(tt *TestTools, n string) resource
 		})
 
 		if err != nil {
-			if isAWSErr(err, s3.ErrCodeNoSuchBucket, "") {
+			if isS3Err(err, s3.ErrCodeNoSuchBucket, "") {
 				return fmt.Errorf("s3 bucket not found")
 			}
 			return err

@@ -4,14 +4,12 @@ import (
 	"errors"
 	"fmt"
 	"strings"
-	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 )
@@ -108,28 +106,10 @@ func objectBucketEndpointURL(bucketName string, region scw.Region) string {
 //  * err is of type awserr.Error
 //  * Error.Code() matches code
 //  * Error.Message() contains message
-func isAWSErr(err error, code string, message string) bool {
+func isS3Err(err error, code string, message string) bool {
 	var awsErr awserr.Error
 	if errors.As(err, &awsErr) {
 		return awsErr.Code() == code && strings.Contains(awsErr.Message(), message)
 	}
 	return false
-}
-
-func retryOnAwsCode(code string, f func() (interface{}, error)) (interface{}, error) {
-	var resp interface{}
-	err := resource.Retry(2*time.Minute, func() *resource.RetryError {
-		var err error
-		resp, err = f()
-		if err != nil {
-			awsErr, ok := err.(awserr.Error)
-			if ok && awsErr.Code() == code {
-				return resource.RetryableError(err)
-			}
-			return resource.NonRetryableError(err)
-		}
-		return nil
-	})
-
-	return resp, err
 }

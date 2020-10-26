@@ -67,11 +67,6 @@ func resourceScalewayObjectBucket() *schema.Resource {
 							Optional: true,
 							Default:  false,
 						},
-						"mfa_delete": {
-							Type:     schema.TypeBool,
-							Optional: true,
-							Default:  false,
-						},
 					},
 				},
 			},
@@ -162,31 +157,20 @@ func resourceScalewayObjectBucketRead(ctx context.Context, d *schema.ResourceDat
 	_ = d.Set("endpoint", objectBucketEndpointURL(bucketName, region))
 
 	// Read the versioning configuration
-	versioningResponse, err := retryOnAwsCode(s3.ErrCodeNoSuchBucket, func() (interface{}, error) {
-		return s3Client.GetBucketVersioning(&s3.GetBucketVersioningInput{
-			Bucket: aws.String(d.Id()),
-		})
+	versioningResponse, err := s3Client.GetBucketVersioning(&s3.GetBucketVersioningInput{
+		Bucket: aws.String(d.Id()),
 	})
 	if err != nil {
 		return diag.FromErr(err)
 	}
-
 	vcl := make([]map[string]interface{}, 0, 1)
-	if versioning, ok := versioningResponse.(*s3.GetBucketVersioningOutput); ok {
-		vc := make(map[string]interface{})
-		if versioning.Status != nil && aws.StringValue(versioning.Status) == s3.BucketVersioningStatusEnabled {
-			vc["enabled"] = true
-		} else {
-			vc["enabled"] = false
-		}
-
-		if versioning.MFADelete != nil && aws.StringValue(versioning.MFADelete) == s3.MFADeleteEnabled {
-			vc["mfa_delete"] = true
-		} else {
-			vc["mfa_delete"] = false
-		}
-		vcl = append(vcl, vc)
+	vc := make(map[string]interface{})
+	if versioningResponse.Status != nil && aws.StringValue(versioningResponse.Status) == s3.BucketVersioningStatusEnabled {
+		vc["enabled"] = true
+	} else {
+		vc["enabled"] = false
 	}
+	vcl = append(vcl, vc)
 	if err := d.Set("versioning", vcl); err != nil {
 		return diag.FromErr(fmt.Errorf("error setting versioning: %s", err))
 	}
@@ -265,12 +249,6 @@ func resourceScalewayObjectBucketVersioningUpdate(s3conn *s3.S3, d *schema.Resou
 		} else {
 			vc.Status = aws.String(s3.BucketVersioningStatusSuspended)
 		}
-
-		if c["mfa_delete"].(bool) {
-			vc.MFADelete = aws.String(s3.MFADeleteEnabled)
-		} else {
-			vc.MFADelete = aws.String(s3.MFADeleteDisabled)
-		}
 	} else {
 		vc.Status = aws.String(s3.BucketVersioningStatusSuspended)
 	}
@@ -281,9 +259,7 @@ func resourceScalewayObjectBucketVersioningUpdate(s3conn *s3.S3, d *schema.Resou
 	}
 	log.Printf("[DEBUG] S3 put bucket versioning: %#v", i)
 
-	_, err := retryOnAwsCode(s3.ErrCodeNoSuchBucket, func() (interface{}, error) {
-		return s3conn.PutBucketVersioning(i)
-	})
+	_, err := s3conn.PutBucketVersioning(i)
 	if err != nil {
 		return fmt.Errorf("error putting S3 versioning: %s", err)
 	}
