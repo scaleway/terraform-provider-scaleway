@@ -601,6 +601,17 @@ func resourceScalewayInstanceServerUpdate(ctx context.Context, d *schema.Resourc
 		}
 	}
 
+	if d.HasChanges("boot_type") {
+		bootType := instance.BootType(d.Get("boot_type").(string))
+		updateRequest.BootType = &bootType
+		forceReboot = true
+	}
+
+	if d.HasChanges("bootscript_id") {
+		updateRequest.Bootscript = expandStringPtr(d.Get("bootscript_id").(string))
+		forceReboot = true
+	}
+
 	////
 	// Update server user data
 	////
