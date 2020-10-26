@@ -272,9 +272,14 @@ func resourceScalewayInstanceServerCreate(ctx context.Context, d *schema.Resourc
 	}
 
 	if bootScriptID, ok := d.GetOk("bootscript_id"); ok {
-		b := instance.BootTypeBootscript
-		req.BootType = &b
 		req.Bootscript = expandStringPtr(bootScriptID)
+	}
+
+	if bootType, ok := d.GetOk("boot_type"); ok {
+		bootType, ok := bootType.(instance.BootType)
+		if ok {
+			req.BootType = &bootType
+		}
 	}
 
 	if ipID, ok := d.GetOk("ip_id"); ok {
