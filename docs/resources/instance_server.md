@@ -177,7 +177,7 @@ attached to the server. Updates to this field will trigger a stop/start of the s
 
 - `boot_type` - The boot Type of the server. Possible values are: `local`, `bootscript` or `rescue`.
 
-- `bootscript` - The ID of the bootscript to use  (set boot_type to `bootscript`).
+- `bootscript_id` - The ID of the bootscript to use  (set boot_type to `bootscript`).
 
 - `zone` - (Defaults to [provider](../index.md#zone) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which the server should be created.
 
