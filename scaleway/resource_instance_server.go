@@ -499,6 +499,7 @@ func resourceScalewayInstanceServerUpdate(ctx context.Context, d *schema.Resourc
 
 	// This variable will be set to true if any state change requires a server reboot.
 	var forceReboot bool
+	var forceStopStart bool
 
 	////
 	// Construct UpdateServerRequest
@@ -538,10 +539,14 @@ func resourceScalewayInstanceServerUpdate(ctx context.Context, d *schema.Resourc
 		volumes["0"] = &instance.VolumeTemplate{ID: expandZonedID(d.Get("root_volume.0.volume_id")).ID, Name: newRandomName("vol")} // name is ignored by the API, any name will work here
 
 		for i, volumeID := range raw.([]interface{}) {
-			// We make sure volume is detached so we can attach it to the server.
-			err = detachVolume(nil, instanceAPI, zone, expandZonedID(volumeID).ID)
+			// We make sure volume is either detached or already attached to the server so we can attach it to the server.
+			volume, err := prepareVolumeForAttach(nil, instanceAPI, zone, expandZonedID(volumeID).ID, ID)
 			if err != nil {
 				return diag.FromErr(err)
+			}
+			if volume.VolumeType == instance.VolumeVolumeTypeLSSD {
+				// we need to stop the server if we attach a local volume
+				forceStopStart = true
 			}
 			volumes[strconv.Itoa(i+1)] = &instance.VolumeTemplate{
 				ID:   expandZonedID(volumeID).ID,
@@ -550,7 +555,6 @@ func resourceScalewayInstanceServerUpdate(ctx context.Context, d *schema.Resourc
 		}
 
 		updateRequest.Volumes = &volumes
-		forceReboot = true
 	}
 
 	if d.HasChange("placement_group_id") {
@@ -558,7 +562,7 @@ func resourceScalewayInstanceServerUpdate(ctx context.Context, d *schema.Resourc
 		if placementGroupID == "" {
 			updateRequest.PlacementGroup = &instance.NullableStringValue{Null: true}
 		} else {
-			forceReboot = true
+			forceStopStart = true
 			updateRequest.PlacementGroup = &instance.NullableStringValue{Value: placementGroupID}
 		}
 	}
@@ -648,15 +652,26 @@ func resourceScalewayInstanceServerUpdate(ctx context.Context, d *schema.Resourc
 
 	defer lockLocalizedID(d.Id())()
 
-	if forceReboot {
+	if forceStopStart {
 		err = reachState(ctx, instanceAPI, zone, ID, InstanceServerStateStopped)
 		if err != nil {
 			return diag.FromErr(err)
 		}
 	}
-	_, err = instanceAPI.UpdateServer(updateRequest)
+	updateServerResp, err := instanceAPI.UpdateServer(updateRequest)
 	if err != nil {
 		return diag.FromErr(err)
+	}
+
+	if forceReboot && updateServerResp.Server.State != instance.ServerStateRunning {
+		_, err = instanceAPI.ServerAction(&instance.ServerActionRequest{
+			Zone:     zone,
+			ServerID: ID,
+			Action:   instance.ServerActionReboot,
+		})
+		if err != nil {
+			return diag.FromErr(err)
+		}
 	}
 
 	targetState, err := serverStateExpand(d.Get("state").(string))

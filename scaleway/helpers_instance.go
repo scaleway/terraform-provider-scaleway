@@ -146,6 +146,55 @@ func reachState(ctx context.Context, instanceAPI *instance.API, zone scw.Zone, s
 	return nil
 }
 
+// prepareVolumeForAttach will make sure a volume is either not attached to a server or already attached to the given server. If volume is attached to another server, it will be stopped
+// to allow volume detachment.
+// Note: the Volume.ServerSummary may not be accurate
+func prepareVolumeForAttach(ctx context.Context, instanceAPI *instance.API, zone scw.Zone, volumeID string, serverID string) (*instance.Volume, error) {
+	res, err := instanceAPI.GetVolume(&instance.GetVolumeRequest{
+		Zone:     zone,
+		VolumeID: volumeID,
+	}, scw.WithContext(ctx))
+	if err != nil {
+		return nil, err
+	}
+
+	if res.Volume.Server == nil || res.Volume.Server.ID == serverID {
+		return res.Volume, nil
+	}
+
+	defer lockLocalizedID(newZonedIDString(zone, res.Volume.Server.ID))()
+
+	if res.Volume.VolumeType == instance.VolumeVolumeTypeLSSD {
+		serverResp, err := instanceAPI.GetServer(&instance.GetServerRequest{
+			ServerID: res.Volume.Server.ID,
+			Zone:     zone,
+		})
+
+		// If 404 this mean server is deleted and volume is already detached
+		if is404Error(err) {
+			return res.Volume, nil
+		}
+		if err != nil {
+			return nil, err
+		}
+		if serverResp.Server.State != instance.ServerStateStopped {
+			// Here we have a local volume on a server that might not be managed by Terraform, better throw an error
+			return nil, fmt.Errorf("volume %s in zone %s is already mounted on the server %s, please stop it", volumeID, zone.String(), res.Volume.Server.ID)
+		}
+	}
+	_, err = instanceAPI.DetachVolume(&instance.DetachVolumeRequest{
+		Zone:     zone,
+		VolumeID: res.Volume.ID,
+	}, scw.WithContext(ctx))
+
+	// TODO find a better way to test this error
+	if err != nil && err.Error() != "scaleway-sdk-go: volume should be attached to a server" {
+		return nil, err
+	}
+
+	return res.Volume, nil
+}
+
 // detachVolume will make sure a volume is not attached to any server. If volume is attached to a server, it will be stopped
 // to allow volume detachment.
 func detachVolume(ctx context.Context, instanceAPI *instance.API, zone scw.Zone, volumeID string) error {
