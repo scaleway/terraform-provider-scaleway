@@ -175,6 +175,10 @@ attached to the server. Updates to this field will trigger a stop/start of the s
 
     - `value` - (Required) The user data content. It could be a string or a file content using [file](https://www.terraform.io/docs/configuration/functions/file.html) or [filebase64](https://www.terraform.io/docs/configuration/functions/filebase64.html) for example.
 
+- `boot_type` - The boot Type of the server. Possible values are: `local`, `bootscript` or `rescue`.
+
+- `bootscript_id` - The ID of the bootscript to use  (set boot_type to `bootscript`).
+
 - `zone` - (Defaults to [provider](../index.md#zone) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which the server should be created.
 
 - `organization_id` - (Defaults to [provider](../index.md#organization_id) `organization_id`) The ID of the organization the server is associated with.

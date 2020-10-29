@@ -174,8 +174,20 @@ func resourceScalewayInstanceServer() *schema.Resource {
 			},
 			"boot_type": {
 				Type:        schema.TypeString,
-				Computed:    true,
+				Optional:    true,
 				Description: "The boot type of the server",
+				Default:     instance.BootTypeLocal,
+				ValidateFunc: validation.StringInSlice([]string{
+					instance.BootTypeLocal.String(),
+					instance.BootTypeRescue.String(),
+					instance.BootTypeBootscript.String(),
+				}, false),
+			},
+			"bootscript_id": {
+				Type:         schema.TypeString,
+				Optional:     true,
+				Description:  "ID of the target bootscript (set boot_type to bootscript)",
+				ValidateFunc: validationUUID(),
 			},
 			"cloud_init": {
 				Type:         schema.TypeString,
@@ -257,6 +269,15 @@ func resourceScalewayInstanceServerCreate(ctx context.Context, d *schema.Resourc
 		SecurityGroup:     expandStringPtr(expandZonedID(d.Get("security_group_id")).ID),
 		DynamicIPRequired: scw.BoolPtr(d.Get("enable_dynamic_ip").(bool)),
 		Tags:              expandStrings(d.Get("tags")),
+	}
+
+	if bootScriptID, ok := d.GetOk("bootscript_id"); ok {
+		req.Bootscript = expandStringPtr(bootScriptID)
+	}
+
+	if bootType, ok := d.GetOk("boot_type"); ok {
+		bootType := instance.BootType(bootType.(string))
+		req.BootType = &bootType
 	}
 
 	if ipID, ok := d.GetOk("ip_id"); ok {
@@ -360,6 +381,7 @@ func resourceScalewayInstanceServerRead(ctx context.Context, d *schema.ResourceD
 	_ = d.Set("zone", string(zone))
 	_ = d.Set("name", response.Server.Name)
 	_ = d.Set("boot_type", response.Server.BootType)
+	_ = d.Set("bootscript_id", response.Server.Bootscript.ID)
 	_ = d.Set("type", response.Server.CommercialType)
 	_ = d.Set("tags", response.Server.Tags)
 	_ = d.Set("security_group_id", newZonedID(zone, response.Server.SecurityGroup.ID).String())
@@ -577,6 +599,17 @@ func resourceScalewayInstanceServerUpdate(ctx context.Context, d *schema.Resourc
 				return diag.FromErr(err)
 			}
 		}
+	}
+
+	if d.HasChanges("boot_type") {
+		bootType := instance.BootType(d.Get("boot_type").(string))
+		updateRequest.BootType = &bootType
+		forceReboot = true
+	}
+
+	if d.HasChanges("bootscript_id") {
+		updateRequest.Bootscript = expandStringPtr(d.Get("bootscript_id").(string))
+		forceReboot = true
 	}
 
 	////
