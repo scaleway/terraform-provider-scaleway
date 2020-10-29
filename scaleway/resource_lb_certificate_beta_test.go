@@ -6,7 +6,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 )
 
-func TestAccScalewayLbCertificateBeta(t *testing.T) {
+func TestAccScalewayLbCertificate_Basic(t *testing.T) {
 	/**
 	* Note regarding the usage of xip.io
 	* See the discussion on https://github.com/terraform-providers/terraform-provider-scaleway/pull/396
@@ -14,10 +14,12 @@ func TestAccScalewayLbCertificateBeta(t *testing.T) {
 	* to the load balancer IP (which is unknown before creating it). In production, this can be overcome by introducing
 	* an additional step which creates a DNS record and depending on it, but for test purposes, xip.io is an ideal solution.
 	 */
+	tt := NewTestTools(t)
+	defer tt.Cleanup()
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckScalewayLbBetaDestroy,
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      testAccCheckScalewayLbBetaDestroy(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `

@@ -89,10 +89,9 @@ func resourceScalewayLbIPBetaRead(ctx context.Context, d *schema.ResourceData, m
 	_ = d.Set("region", string(region))
 	_ = d.Set("organization_id", res.OrganizationID)
 	_ = d.Set("project_id", res.ProjectID)
-	_ = d.Set("ip_id", res.ID)
 	_ = d.Set("ip_address", res.IPAddress)
 	_ = d.Set("reverse", res.Reverse)
-	_ = d.Set("lb_ip", flattenStringPtr(res.LBID))
+	_ = d.Set("lb_id", flattenStringPtr(res.LBID))
 
 	return nil
 }
