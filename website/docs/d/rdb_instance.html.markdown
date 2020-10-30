@@ -5,7 +5,7 @@ description: |-
   Gets information about an RDB instance.
 ---
 
-# scaleway_rdb_instance_beta
+# scaleway_rdb_instance
 
 Gets information about a RDB instance.
 
@@ -13,12 +13,12 @@ Gets information about a RDB instance.
 
 ```hcl
 # Get info by IP address
-data "scaleway_rdb_instance_beta" "my_instance" {
+data "scaleway_rdb_instance" "my_instance" {
   name = "foobar"
 }
 
 # Get info by IP ID
-data "scaleway_rdb_instance_beta" "my_instance" {
+data "scaleway_rdb_instance" "my_instance" {
   instance_id = "11111111-1111-1111-1111-111111111111"
 }
 ```
