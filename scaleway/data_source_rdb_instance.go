@@ -1,9 +1,11 @@
 package scaleway
 
 import (
+	"context"
 	"fmt"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/api/rdb/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 )
@@ -11,7 +13,10 @@ import (
 func dataSourceScalewayRDBInstance() *schema.Resource {
 	// Generate datasource schema from resource
 	dsSchema := datasourceSchemaFromResourceSchema(resourceScalewayRdbInstanceBeta().Schema)
+	// Set 'Optional' schema elements
+	addOptionalFieldsToSchema(dsSchema, "name")
 
+	dsSchema["name"].ConflictsWith = []string{"instance_id"}
 	dsSchema["instance_id"] = &schema.Schema{
 		Type:          schema.TypeString,
 		Optional:      true,
@@ -21,15 +26,15 @@ func dataSourceScalewayRDBInstance() *schema.Resource {
 	}
 
 	return &schema.Resource{
-		Read:   dataSourceScalewayRDBInstanceRead,
-		Schema: dsSchema,
+		ReadContext: dataSourceScalewayRDBInstanceRead,
+		Schema:      dsSchema,
 	}
 }
 
-func dataSourceScalewayRDBInstanceRead(d *schema.ResourceData, m interface{}) error {
+func dataSourceScalewayRDBInstanceRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	api, region, err := rdbAPIWithRegion(d, m)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	instanceID, ok := d.GetOk("instance_id")
@@ -37,15 +42,15 @@ func dataSourceScalewayRDBInstanceRead(d *schema.ResourceData, m interface{}) er
 		res, err := api.ListInstances(&rdb.ListInstancesRequest{
 			Region: region,
 			Name:   scw.StringPtr(d.Get("name").(string)),
-		})
+		}, scw.WithContext(ctx))
 		if err != nil {
-			return err
+			return diag.FromErr(err)
 		}
 		if len(res.Instances) == 0 {
-			return fmt.Errorf("no instances found with the name %s", d.Get("name"))
+			return diag.FromErr(fmt.Errorf("no instances found with the name %s", d.Get("name")))
 		}
 		if len(res.Instances) > 1 {
-			return fmt.Errorf("%d instances found with the same name %s", len(res.Instances), d.Get("name"))
+			return diag.FromErr(fmt.Errorf("%d instances found with the same name %s", len(res.Instances), d.Get("name")))
 		}
 		instanceID = res.Instances[0].ID
 	}
@@ -54,7 +59,7 @@ func dataSourceScalewayRDBInstanceRead(d *schema.ResourceData, m interface{}) er
 	d.SetId(regionalID)
 	err = d.Set("instance_id", regionalID)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
-	return resourceScalewayRdbInstanceBetaRead(d, m)
+	return resourceScalewayRdbInstanceBetaRead(ctx, d, m)
 }

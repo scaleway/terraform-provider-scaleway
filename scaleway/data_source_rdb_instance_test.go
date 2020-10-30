@@ -3,15 +3,25 @@ package scaleway
 import (
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 )
 
 func TestAccScalewayDataSourceRDBInstance_Basic(t *testing.T) {
+	tt := NewTestTools(t)
+	defer tt.Cleanup()
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckScalewayRdbInstanceBetaDestroy,
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      testAccCheckScalewayRdbInstanceBetaDestroy(tt),
 		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource "scaleway_rdb_instance_beta" "test" {
+						name = "test-terraform"
+						engine = "PostgreSQL-11"
+						node_type = "db-dev-s"
+					}`,
+			},
 			{
 				Config: `
 					resource "scaleway_rdb_instance_beta" "test" {
@@ -29,7 +39,7 @@ func TestAccScalewayDataSourceRDBInstance_Basic(t *testing.T) {
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayRdbBetaExists("scaleway_rdb_instance_beta.test"),
+					testAccCheckScalewayRdbBetaExists(tt, "scaleway_rdb_instance_beta.test"),
 
 					resource.TestCheckResourceAttr("scaleway_rdb_instance_beta.test", "name", "test-terraform"),
 					resource.TestCheckResourceAttrSet("data.scaleway_rdb_instance.test", "id"),
