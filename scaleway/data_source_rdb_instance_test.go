@@ -20,11 +20,11 @@ func TestAccScalewayDataSourceRDBInstance_Basic(t *testing.T) {
 						node_type = "db-dev-s"
 					}
 
-					data "scaleway_rdb_instance_beta" "test" {
+					data "scaleway_rdb_instance" "test" {
 						name = scaleway_rdb_instance_beta.test.name
 					}
 
-					data "scaleway_rdb_instance_beta" "test2" {
+					data "scaleway_rdb_instance" "test2" {
 						instance_id = scaleway_rdb_instance_beta.test.id
 					}
 				`,
@@ -32,10 +32,10 @@ func TestAccScalewayDataSourceRDBInstance_Basic(t *testing.T) {
 					testAccCheckScalewayRdbBetaExists("scaleway_rdb_instance_beta.test"),
 
 					resource.TestCheckResourceAttr("scaleway_rdb_instance_beta.test", "name", "test-terraform"),
-					resource.TestCheckResourceAttrSet("data.scaleway_rdb_instance_beta.test", "id"),
+					resource.TestCheckResourceAttrSet("data.scaleway_rdb_instance.test", "id"),
 
-					resource.TestCheckResourceAttr("data.scaleway_rdb_instance_beta.test2", "name", "test-terraform"),
-					resource.TestCheckResourceAttrSet("data.scaleway_rdb_instance_beta.test2", "id"),
+					resource.TestCheckResourceAttr("data.scaleway_rdb_instance.test2", "name", "test-terraform"),
+					resource.TestCheckResourceAttrSet("data.scaleway_rdb_instance.test2", "id"),
 				),
 			},
 		},
