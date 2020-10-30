@@ -1,78 +1,119 @@
 package scaleway
 
 import (
+	"flag"
+	"net/http"
 	"os"
+	"path/filepath"
+	"regexp"
+	"strings"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/terraform"
-	homedir "github.com/mitchellh/go-homedir"
-	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/dnaeon/go-vcr/cassette"
+	"github.com/dnaeon/go-vcr/recorder"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/scaleway/scaleway-sdk-go/strcase"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
-var testAccProviders map[string]terraform.ResourceProvider
-var testAccProvider *schema.Provider
+var (
+	// Deprecated
+	testAccProviders map[string]*schema.Provider
+	// Deprecated
+	testAccProvider *schema.Provider
+
+	// UpdateCassettes will update all cassettes of a given test
+	UpdateCassettes = flag.Bool("cassettes", os.Getenv("TF_UPDATE_CASSETTES") == "true", "Record Cassettes")
+)
 
 func init() {
-	testAccProvider = Provider().(*schema.Provider)
+	p := Provider(DefaultProviderConfig())()
+	testAccProvider = p
 	version += "-tftest"
-	testAccProviders = map[string]terraform.ResourceProvider{
-		"scaleway": testAccProvider,
-	}
-
-	old := testAccProvider.ConfigureFunc
-	testAccProvider.ConfigureFunc = func(data *schema.ResourceData) (i interface{}, e error) {
-		_ = data.Set("region", "fr-par")
-		_ = data.Set("zone", "fr-par-1")
-		return old(data)
-	}
-
-}
-
-func TestProvider(t *testing.T) {
-	if err := Provider().(*schema.Provider).InternalValidate(); err != nil {
-		t.Fatalf("err: %s", err)
+	testAccProviders = map[string]*schema.Provider{
+		"scaleway": p,
 	}
 }
 
-func TestProvider_impl(t *testing.T) {
-	var _ terraform.ResourceProvider = Provider()
+func testAccPreCheck(_ *testing.T) {}
+
+// getTestFilePath returns a valid filename path based on the go test name and suffix. (Take care of non fs friendly char)
+func getTestFilePath(t *testing.T, suffix string) string {
+	specialChars := regexp.MustCompile(`[\\?%*:|"<>. ]`)
+
+	// Replace nested tests separators.
+	fileName := strings.Replace(t.Name(), "/", "-", -1)
+
+	fileName = strcase.ToBashArg(fileName)
+
+	// Replace special characters.
+	fileName = specialChars.ReplaceAllLiteralString(fileName, "") + suffix
+
+	// Remove prefix to simplify
+	fileName = strings.TrimPrefix(fileName, "test-acc-scaleway-")
+
+	return filepath.Join(".", "testdata", fileName)
 }
 
-func testAccPreCheck(t *testing.T) {
-
-	// Handle new config system first
-	_, _ = scw.MigrateLegacyConfig()
-	config, err := scw.LoadConfig()
-	if err == nil {
-		activeProfile, err := config.GetActiveProfile()
-		if err == nil {
-			if activeProfile.AccessKey != nil && activeProfile.SecretKey != nil {
-				return
-			}
-		}
-	}
-	envProfile := scw.LoadEnvProfile()
-	if envProfile.AccessKey != nil && envProfile.SecretKey != nil {
-		return
+// getHTTPRecoder creates a new httpClient that records all HTTP requests in a cassette.
+// This cassette is then replayed whenever tests are executed again. This means that once the
+// requests are recorded in the cassette, no more real HTTP requests must be made to run the tests.
+//
+// It is important to add a `defer cleanup()` so the given cassette files are correctly
+// closed and saved after the requests.
+func getHTTPRecoder(t *testing.T, update bool) (client *http.Client, cleanup func(), err error) {
+	recorderMode := recorder.ModeReplaying
+	if update {
+		recorderMode = recorder.ModeRecording
 	}
 
-	if v := os.Getenv("SCALEWAY_ORGANIZATION"); v == "" {
-		if path, err := homedir.Expand("~/.scwrc"); err == nil {
-			scwAPIKey, scwOrganization, err := readDeprecatedScalewayConfig(path)
-			if err != nil {
-				t.Fatalf("failed falling back to %s: %v", path, err)
-			}
-			if scwAPIKey == "" && scwOrganization == "" {
-				t.Fatal("SCALEWAY_TOKEN must be set for acceptance tests")
-			}
-			return
-		}
-		t.Fatal("SCALEWAY_ORGANIZATION must be set for acceptance tests")
+	// Setup recorder and scw client
+	r, err := recorder.NewAsMode(getTestFilePath(t, ".cassette"), recorderMode, nil)
+	if err != nil {
+		return nil, nil, err
 	}
-	tokenFromAccessKey := os.Getenv("SCALEWAY_ACCESS_KEY")
-	token := os.Getenv("SCALEWAY_TOKEN")
-	if token == "" && tokenFromAccessKey == "" {
-		t.Fatal("SCALEWAY_TOKEN must be set for acceptance tests")
+
+	// Add a filter which removes Authorization headers from all requests:
+	r.AddFilter(func(i *cassette.Interaction) error {
+		delete(i.Request.Headers, "x-auth-token")
+		delete(i.Request.Headers, "X-Auth-Token")
+		return nil
+	})
+
+	return &http.Client{Transport: newRetryableTransport(r)}, func() {
+		assert.NoError(t, r.Stop()) // Make sure recorder is stopped once done with it
+	}, nil
+}
+
+type TestTools struct {
+	T                 *testing.T
+	Meta              *Meta
+	ProviderFactories map[string]func() (*schema.Provider, error)
+	Cleanup           func()
+}
+
+func NewTestTools(t *testing.T) *TestTools {
+	// Create an http client with recording capabilities
+	httpClient, cleanup, err := getHTTPRecoder(t, *UpdateCassettes)
+	require.NoError(t, err)
+
+	// Create meta that will be passed in the provider config
+	meta, err := buildMeta(&MetaConfig{
+		providerSchema:   nil,
+		terraformVersion: "terraform-tests",
+		httpClient:       httpClient,
+	})
+	require.NoError(t, err)
+
+	return &TestTools{
+		T:    t,
+		Meta: meta,
+		ProviderFactories: map[string]func() (*schema.Provider, error){
+			"scaleway": func() (*schema.Provider, error) {
+				return Provider(&ProviderConfig{Meta: meta})(), nil
+			},
+		},
+		Cleanup: cleanup,
 	}
 }

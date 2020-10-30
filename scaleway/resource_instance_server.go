@@ -2,13 +2,15 @@ package scaleway
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"io"
 	"io/ioutil"
 	"strconv"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
 	"github.com/scaleway/scaleway-sdk-go/api/marketplace/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
@@ -16,10 +18,10 @@ import (
 
 func resourceScalewayInstanceServer() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceScalewayInstanceServerCreate,
-		Read:   resourceScalewayInstanceServerRead,
-		Update: resourceScalewayInstanceServerUpdate,
-		Delete: resourceScalewayInstanceServerDelete,
+		CreateContext: resourceScalewayInstanceServerCreate,
+		ReadContext:   resourceScalewayInstanceServerRead,
+		UpdateContext: resourceScalewayInstanceServerUpdate,
+		DeleteContext: resourceScalewayInstanceServerDelete,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},
@@ -152,7 +154,6 @@ func resourceScalewayInstanceServer() *schema.Resource {
 				Optional:    true,
 				Default:     false,
 				Description: "Disable dynamic IP on the server",
-				Removed:     "Removed in favor of enable_dynamic_ip",
 			},
 			"enable_dynamic_ip": {
 				Type:        schema.TypeBool,
@@ -173,8 +174,20 @@ func resourceScalewayInstanceServer() *schema.Resource {
 			},
 			"boot_type": {
 				Type:        schema.TypeString,
-				Computed:    true,
+				Optional:    true,
 				Description: "The boot type of the server",
+				Default:     instance.BootTypeLocal,
+				ValidateFunc: validation.StringInSlice([]string{
+					instance.BootTypeLocal.String(),
+					instance.BootTypeRescue.String(),
+					instance.BootTypeBootscript.String(),
+				}, false),
+			},
+			"bootscript_id": {
+				Type:         schema.TypeString,
+				Optional:     true,
+				Description:  "ID of the target bootscript (set boot_type to bootscript)",
+				ValidateFunc: validationUUID(),
 			},
 			"cloud_init": {
 				Type:         schema.TypeString,
@@ -207,22 +220,15 @@ func resourceScalewayInstanceServer() *schema.Resource {
 			},
 			"zone":            zoneSchema(),
 			"organization_id": organizationIDSchema(),
-
-			// Deprecated and removed.
-			"disable_public_ip": {
-				Type:     schema.TypeBool,
-				Optional: true,
-				Default:  false,
-				Removed:  "Please use enable_dynamic_ip instead",
-			},
+			"project_id":      projectIDSchema(),
 		},
 	}
 }
 
-func resourceScalewayInstanceServerCreate(d *schema.ResourceData, m interface{}) error {
+func resourceScalewayInstanceServerCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	instanceAPI, zone, err := instanceAPIWithZone(d, m)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	////
@@ -240,7 +246,7 @@ func resourceScalewayInstanceServerCreate(d *schema.ResourceData, m interface{})
 			ImageLabel:     image.ID,
 		})
 		if err != nil {
-			return fmt.Errorf("could not get image '%s': %s", image, err)
+			return diag.FromErr(fmt.Errorf("could not get image '%s': %s", image, err))
 		}
 		image = newZonedID(zone, imageUUID)
 	}
@@ -249,6 +255,7 @@ func resourceScalewayInstanceServerCreate(d *schema.ResourceData, m interface{})
 		Zone:              zone,
 		Name:              expandOrGenerateString(d.Get("name"), "srv"),
 		Organization:      expandStringPtr(d.Get("organization_id")),
+		Project:           expandStringPtr(d.Get("project_id")),
 		Image:             image.ID,
 		CommercialType:    commercialType,
 		EnableIPv6:        d.Get("enable_ipv6").(bool),
@@ -257,12 +264,21 @@ func resourceScalewayInstanceServerCreate(d *schema.ResourceData, m interface{})
 		Tags:              expandStrings(d.Get("tags")),
 	}
 
+	if bootScriptID, ok := d.GetOk("bootscript_id"); ok {
+		req.Bootscript = expandStringPtr(bootScriptID)
+	}
+
+	if bootType, ok := d.GetOk("boot_type"); ok {
+		bootType := instance.BootType(bootType.(string))
+		req.BootType = &bootType
+	}
+
 	if ipID, ok := d.GetOk("ip_id"); ok {
-		req.PublicIP = scw.StringPtr(expandZonedID(ipID).ID)
+		req.PublicIP = expandStringPtr(expandZonedID(ipID).ID)
 	}
 
 	if placementGroupID, ok := d.GetOk("placement_group_id"); ok {
-		req.PlacementGroup = scw.StringPtr(expandZonedID(placementGroupID).ID)
+		req.PlacementGroup = expandStringPtr(expandZonedID(placementGroupID).ID)
 	}
 
 	req.Volumes = make(map[string]*instance.VolumeTemplate)
@@ -281,9 +297,9 @@ func resourceScalewayInstanceServerCreate(d *schema.ResourceData, m interface{})
 		}
 	}
 
-	res, err := instanceAPI.CreateServer(req)
+	res, err := instanceAPI.CreateServer(req, scw.WithContext(ctx))
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	d.SetId(newZonedID(zone, res.Server.ID).String())
@@ -313,26 +329,26 @@ func resourceScalewayInstanceServerCreate(d *schema.ResourceData, m interface{})
 	if len(userDataRequests.UserData) > 0 {
 		err := instanceAPI.SetAllServerUserData(userDataRequests)
 		if err != nil {
-			return err
+			return diag.FromErr(err)
 		}
 	}
 
 	targetState, err := serverStateExpand(d.Get("state").(string))
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
-	err = reachState(instanceAPI, zone, res.Server.ID, targetState)
+	err = reachState(ctx, instanceAPI, zone, res.Server.ID, targetState)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
-	return resourceScalewayInstanceServerRead(d, m)
+	return resourceScalewayInstanceServerRead(ctx, d, m)
 }
 
-func resourceScalewayInstanceServerRead(d *schema.ResourceData, m interface{}) error {
+func resourceScalewayInstanceServerRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	instanceAPI, zone, ID, err := instanceAPIWithZoneAndID(m, d.Id())
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	////
@@ -341,28 +357,31 @@ func resourceScalewayInstanceServerRead(d *schema.ResourceData, m interface{}) e
 	response, err := instanceAPI.GetServer(&instance.GetServerRequest{
 		Zone:     zone,
 		ServerID: ID,
-	})
+	}, scw.WithContext(ctx))
 	if err != nil {
 		if is404Error(err) {
 			d.SetId("")
 			return nil
 		}
-		return err
+		return diag.FromErr(err)
 	}
 	state, err := serverStateFlatten(response.Server.State)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	_ = d.Set("state", state)
 	_ = d.Set("zone", string(zone))
 	_ = d.Set("name", response.Server.Name)
 	_ = d.Set("boot_type", response.Server.BootType)
+	_ = d.Set("bootscript_id", response.Server.Bootscript.ID)
 	_ = d.Set("type", response.Server.CommercialType)
 	_ = d.Set("tags", response.Server.Tags)
 	_ = d.Set("security_group_id", newZonedID(zone, response.Server.SecurityGroup.ID).String())
 	_ = d.Set("enable_ipv6", response.Server.EnableIPv6)
 	_ = d.Set("enable_dynamic_ip", response.Server.DynamicIPRequired)
+	_ = d.Set("organization_id", response.Server.Organization)
+	_ = d.Set("project_id", response.Server.Project)
 
 	// Image could be empty in an import context.
 	image := expandRegionalID(d.Get("image").(string))
@@ -377,7 +396,7 @@ func resourceScalewayInstanceServerRead(d *schema.ResourceData, m interface{}) e
 	}
 
 	if response.Server.PrivateIP != nil {
-		_ = d.Set("private_ip", *response.Server.PrivateIP)
+		_ = d.Set("private_ip", flattenStringPtr(response.Server.PrivateIP))
 	}
 
 	if response.Server.PublicIP != nil {
@@ -402,7 +421,7 @@ func resourceScalewayInstanceServerRead(d *schema.ResourceData, m interface{}) e
 		_ = d.Set("ipv6_gateway", response.Server.IPv6.Gateway.String())
 		prefixLength, err := strconv.Atoi(response.Server.IPv6.Netmask)
 		if err != nil {
-			return err
+			return diag.FromErr(err)
 		}
 		_ = d.Set("ipv6_prefix_length", prefixLength)
 	} else {
@@ -441,13 +460,13 @@ func resourceScalewayInstanceServerRead(d *schema.ResourceData, m interface{}) e
 	allUserData, _ := instanceAPI.GetAllServerUserData(&instance.GetAllServerUserDataRequest{
 		Zone:     zone,
 		ServerID: ID,
-	})
+	}, scw.WithContext(ctx))
 
 	var userDataList []interface{}
 	for key, value := range allUserData.UserData {
 		userData, err := ioutil.ReadAll(value)
 		if err != nil {
-			return err
+			return diag.FromErr(err)
 		}
 		if key != "cloud-init" {
 			userDataList = append(userDataList, map[string]interface{}{
@@ -465,10 +484,10 @@ func resourceScalewayInstanceServerRead(d *schema.ResourceData, m interface{}) e
 	return nil
 }
 
-func resourceScalewayInstanceServerUpdate(d *schema.ResourceData, m interface{}) error {
+func resourceScalewayInstanceServerUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	instanceAPI, zone, ID, err := instanceAPIWithZoneAndID(m, d.Id())
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	// This variable will be set to true if any state change requires a server reboot.
@@ -483,7 +502,7 @@ func resourceScalewayInstanceServerUpdate(d *schema.ResourceData, m interface{})
 	}
 
 	if d.HasChange("name") {
-		updateRequest.Name = scw.StringPtr(d.Get("name").(string))
+		updateRequest.Name = expandStringPtr(d.Get("name"))
 	}
 
 	if d.HasChange("tags") {
@@ -512,11 +531,10 @@ func resourceScalewayInstanceServerUpdate(d *schema.ResourceData, m interface{})
 		volumes["0"] = &instance.VolumeTemplate{ID: expandZonedID(d.Get("root_volume.0.volume_id")).ID, Name: newRandomName("vol")} // name is ignored by the API, any name will work here
 
 		for i, volumeID := range raw.([]interface{}) {
-
 			// We make sure volume is detached so we can attach it to the server.
-			err = detachVolume(instanceAPI, zone, expandZonedID(volumeID).ID)
+			err = detachVolume(nil, instanceAPI, zone, expandZonedID(volumeID).ID)
 			if err != nil {
-				return err
+				return diag.FromErr(err)
 			}
 			volumes[strconv.Itoa(i+1)] = &instance.VolumeTemplate{
 				ID:   expandZonedID(volumeID).ID,
@@ -547,7 +565,7 @@ func resourceScalewayInstanceServerUpdate(d *schema.ResourceData, m interface{})
 			ServerID: ID,
 		})
 		if err != nil {
-			return err
+			return diag.FromErr(err)
 		}
 		newIPID := expandZonedID(d.Get("ip_id")).ID
 
@@ -559,7 +577,7 @@ func resourceScalewayInstanceServerUpdate(d *schema.ResourceData, m interface{})
 				Server: &instance.NullableStringValue{Null: true},
 			})
 			if err != nil {
-				return err
+				return diag.FromErr(err)
 			}
 		}
 
@@ -569,18 +587,28 @@ func resourceScalewayInstanceServerUpdate(d *schema.ResourceData, m interface{})
 				Zone:   zone,
 				IP:     newIPID,
 				Server: &instance.NullableStringValue{Value: ID},
-			})
+			}, scw.WithContext(ctx))
 			if err != nil {
-				return err
+				return diag.FromErr(err)
 			}
 		}
+	}
+
+	if d.HasChanges("boot_type") {
+		bootType := instance.BootType(d.Get("boot_type").(string))
+		updateRequest.BootType = &bootType
+		forceReboot = true
+	}
+
+	if d.HasChanges("bootscript_id") {
+		updateRequest.Bootscript = expandStringPtr(d.Get("bootscript_id").(string))
+		forceReboot = true
 	}
 
 	////
 	// Update server user data
 	////
-	if d.HasChange("cloud_init") || d.HasChange("user_data") {
-
+	if d.HasChanges("cloud_init", "user_data") {
 		userDataRequests := &instance.SetAllServerUserDataRequest{
 			Zone:     zone,
 			ServerID: ID,
@@ -603,65 +631,64 @@ func resourceScalewayInstanceServerUpdate(d *schema.ResourceData, m interface{})
 
 		err := instanceAPI.SetAllServerUserData(userDataRequests)
 		if err != nil {
-			return err
+			return diag.FromErr(err)
 		}
-
 	}
 
 	////
 	// Apply changes
 	////
 
-	defer lockLocalizedId(d.Id())()
+	defer lockLocalizedID(d.Id())()
 
 	if forceReboot {
-		err = reachState(instanceAPI, zone, ID, InstanceServerStateStopped)
+		err = reachState(ctx, instanceAPI, zone, ID, InstanceServerStateStopped)
 		if err != nil {
-			return err
+			return diag.FromErr(err)
 		}
 	}
 	_, err = instanceAPI.UpdateServer(updateRequest)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	targetState, err := serverStateExpand(d.Get("state").(string))
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	// reach expected state
-	err = reachState(instanceAPI, zone, ID, targetState)
+	err = reachState(ctx, instanceAPI, zone, ID, targetState)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
-	return resourceScalewayInstanceServerRead(d, m)
+	return resourceScalewayInstanceServerRead(ctx, d, m)
 }
 
-func resourceScalewayInstanceServerDelete(d *schema.ResourceData, m interface{}) error {
+func resourceScalewayInstanceServerDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	instanceAPI, zone, ID, err := instanceAPIWithZoneAndID(m, d.Id())
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
-	defer lockLocalizedId(d.Id())()
+	defer lockLocalizedID(d.Id())()
 
 	// reach stopped state
-	err = reachState(instanceAPI, zone, ID, instance.ServerStateStopped)
+	err = reachState(ctx, instanceAPI, zone, ID, instance.ServerStateStopped)
 	if is404Error(err) {
 		return nil
 	}
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	err = instanceAPI.DeleteServer(&instance.DeleteServerRequest{
 		Zone:     zone,
 		ServerID: ID,
-	})
+	}, scw.WithContext(ctx))
 
 	if err != nil && !is404Error(err) {
-		return err
+		return diag.FromErr(err)
 	}
 
 	if d.Get("root_volume.0.delete_on_termination").(bool) {
@@ -670,7 +697,7 @@ func resourceScalewayInstanceServerDelete(d *schema.ResourceData, m interface{})
 			VolumeID: expandZonedID(d.Get("root_volume.0.volume_id")).ID,
 		})
 		if err != nil && !is404Error(err) {
-			return err
+			return diag.FromErr(err)
 		}
 	}
 

@@ -99,10 +99,12 @@ The definition of a complete test looks like this:
 
 ```go
 func TestAccScalewayInstanceServerImport(t *testing.T) {
+	tt := NewTestTools(t)
+	defer tt.Cleanup()
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckScalewayInstanceServerDestroy,
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy: testAccCheckScalewayInstanceServerDestroy(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -143,14 +145,14 @@ When executing the test, the following steps are taken for each `TestStep`:
    For example, to verify that the `scaleway_instance_server` described above was created successfully, a test function like this is used:
 
     ```go
-    func testAccCheckScalewayInstanceServerExists(n string) resource.TestCheckFunc {
-    	return func(s *terraform.State) error {
-    		rs, ok := s.RootModule().Resources[n]
+    func testAccCheckScalewayInstanceServerExists(tt *TestTools, n string) resource.TestCheckFunc {
+    	return func(state *terraform.State) error {
+    		rs, ok := state.RootModule().Resources[n]
     		if !ok {
     			return fmt.Errorf("resource not found: %s", n)
     		}
     
-    		instanceAPI, zone, ID, err := instanceAPIWithZoneAndID(testAccProvider.Meta(), rs.Primary.ID)
+    		instanceAPI, zone, ID, err := instanceAPIWithZoneAndID(tt.Meta, rs.Primary.ID)
     		if err != nil {
     			return err
     		}
@@ -181,34 +183,35 @@ When executing the test, the following steps are taken for each `TestStep`:
    The code to ensure that the `scaleway_instance_server` shown above has been destroyed looks like this:
 
     ```go
-    func testAccCheckScalewayInstanceServerDestroy(s *terraform.State) error {
-        for _, rs := range s.RootModule().Resources {
-            if rs.Type != "scaleway_instance_server" {
-                continue
-            }
-    
-            instanceAPI, zone, ID, err := instanceAPIWithZoneAndID(testAccProvider.Meta(), rs.Primary.ID)
-            if err != nil {
-                return err
-            }
-    
-            _, err = instanceAPI.GetServer(&instance.GetServerRequest{
-                ServerID: ID,
-                Zone:     zone,
-            })
-    
-            // If no error resource still exist
-            if err == nil {
-                return fmt.Errorf("Server (%s) still exists", rs.Primary.ID)
-            }
-    
-            // Unexpected api error we return it
-            if !is404Error(err) {
-                return err
-            }
-        }
-    
-        return nil
+    func testAccCheckScalewayInstanceServerDestroy(tt *TestTools) resource.TestCheckFunc {
+       return func(state *terraform.State) error {
+            for _, rs := range s.RootModule().Resources {
+                if rs.Type != "scaleway_instance_server" {
+                    continue
+                }
+        
+                instanceAPI, zone, ID, err := instanceAPIWithZoneAndID(tt.Meta, rs.Primary.ID)
+                if err != nil {
+                    return err
+                }
+        
+                _, err = instanceAPI.GetServer(&instance.GetServerRequest{
+                    ServerID: ID,
+                    Zone:     zone,
+                })
+        
+                // If no error resource still exist
+                if err == nil {
+                    return fmt.Errorf("Server (%s) still exists", rs.Primary.ID)
+                }
+        
+                // Unexpected api error we return it
+                if !is404Error(err) {
+                    return err
+                }
+            } 
+            return nil
+           }
     }
     ```
 

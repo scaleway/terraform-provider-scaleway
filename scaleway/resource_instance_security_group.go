@@ -1,21 +1,23 @@
 package scaleway
 
 import (
+	"context"
 	"fmt"
 	"sort"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 )
 
 func resourceScalewayInstanceSecurityGroup() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceScalewayInstanceSecurityGroupCreate,
-		Read:   resourceScalewayInstanceSecurityGroupRead,
-		Update: resourceScalewayInstanceSecurityGroupUpdate,
-		Delete: resourceScalewayInstanceSecurityGroupDelete,
+		CreateContext: resourceScalewayInstanceSecurityGroupCreate,
+		ReadContext:   resourceScalewayInstanceSecurityGroupRead,
+		UpdateContext: resourceScalewayInstanceSecurityGroupUpdate,
+		DeleteContext: resourceScalewayInstanceSecurityGroupDelete,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},
@@ -80,60 +82,62 @@ func resourceScalewayInstanceSecurityGroup() *schema.Resource {
 			},
 			"zone":            zoneSchema(),
 			"organization_id": organizationIDSchema(),
+			"project_id":      projectIDSchema(),
 		},
 	}
 }
 
-func resourceScalewayInstanceSecurityGroupCreate(d *schema.ResourceData, m interface{}) error {
+func resourceScalewayInstanceSecurityGroupCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	meta := m.(*Meta)
-	instanceApi, zone, err := instanceAPIWithZone(d, meta)
+	instanceAPI, zone, err := instanceAPIWithZone(d, meta)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
-	res, err := instanceApi.CreateSecurityGroup(&instance.CreateSecurityGroupRequest{
+	res, err := instanceAPI.CreateSecurityGroup(&instance.CreateSecurityGroupRequest{
 		Name:                  expandOrGenerateString(d.Get("name"), "sg"),
 		Zone:                  zone,
 		Organization:          expandStringPtr(d.Get("organization_id")),
+		Project:               expandStringPtr(d.Get("project_id")),
 		Description:           d.Get("description").(string),
 		Stateful:              d.Get("stateful").(bool),
 		InboundDefaultPolicy:  instance.SecurityGroupPolicy(d.Get("inbound_default_policy").(string)),
 		OutboundDefaultPolicy: instance.SecurityGroupPolicy(d.Get("outbound_default_policy").(string)),
-	})
+	}, scw.WithContext(ctx))
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
-	d.SetId(newZonedId(zone, res.SecurityGroup.ID))
+	d.SetId(newZonedIDString(zone, res.SecurityGroup.ID))
 
 	if d.Get("external_rules").(bool) {
-		return resourceScalewayInstanceSecurityGroupRead(d, m)
-	} else {
-		// We call update instead of read as it will take care of creating rules.
-		return resourceScalewayInstanceSecurityGroupUpdate(d, m)
+		return resourceScalewayInstanceSecurityGroupRead(ctx, d, m)
 	}
+	// We call update instead of read as it will take care of creating rules.
+	return resourceScalewayInstanceSecurityGroupUpdate(ctx, d, m)
 }
 
-func resourceScalewayInstanceSecurityGroupRead(d *schema.ResourceData, m interface{}) error {
-	instanceApi, zone, ID, err := instanceAPIWithZoneAndID(m, d.Id())
+func resourceScalewayInstanceSecurityGroupRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	instanceAPI, zone, ID, err := instanceAPIWithZoneAndID(m, d.Id())
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
-	res, err := instanceApi.GetSecurityGroup(&instance.GetSecurityGroupRequest{
+	res, err := instanceAPI.GetSecurityGroup(&instance.GetSecurityGroupRequest{
 		SecurityGroupID: ID,
 		Zone:            zone,
-	})
+	}, scw.WithContext(ctx))
 	if err != nil {
 		if is404Error(err) {
 			d.SetId("")
 			return nil
 		}
-		return err
+		return diag.FromErr(err)
 	}
 
 	_ = d.Set("zone", zone)
 	_ = d.Set("organization_id", res.SecurityGroup.Organization)
+	_ = d.Set("project_id", res.SecurityGroup.Project)
 	_ = d.Set("name", res.SecurityGroup.Name)
 	_ = d.Set("stateful", res.SecurityGroup.Stateful)
 	_ = d.Set("description", res.SecurityGroup.Description)
@@ -141,9 +145,9 @@ func resourceScalewayInstanceSecurityGroupRead(d *schema.ResourceData, m interfa
 	_ = d.Set("outbound_default_policy", res.SecurityGroup.OutboundDefaultPolicy.String())
 
 	if !d.Get("external_rules").(bool) {
-		inboundRules, outboundRules, err := getSecurityGroupRules(instanceApi, zone, ID, d)
+		inboundRules, outboundRules, err := getSecurityGroupRules(instanceAPI, zone, ID, d)
 		if err != nil {
-			return err
+			return diag.FromErr(err)
 		}
 		_ = d.Set("inbound_rule", inboundRules)
 		_ = d.Set("outbound_rule", outboundRules)
@@ -151,9 +155,8 @@ func resourceScalewayInstanceSecurityGroupRead(d *schema.ResourceData, m interfa
 	return nil
 }
 
-func getSecurityGroupRules(instanceApi *instance.API, zone scw.Zone, securityGroupID string, d *schema.ResourceData) ([]interface{}, []interface{}, error) {
-
-	resRules, err := instanceApi.ListSecurityGroupRules(&instance.ListSecurityGroupRulesRequest{
+func getSecurityGroupRules(instanceAPI *instance.API, zone scw.Zone, securityGroupID string, d *schema.ResourceData) ([]interface{}, []interface{}, error) {
+	resRules, err := instanceAPI.ListSecurityGroupRules(&instance.ListSecurityGroupRulesRequest{
 		Zone:            zone,
 		SecurityGroupID: expandID(securityGroupID),
 	}, scw.WithAllPages())
@@ -197,13 +200,13 @@ func getSecurityGroupRules(instanceApi *instance.API, zone scw.Zone, securityGro
 	return stateRules[instance.SecurityGroupRuleDirectionInbound], stateRules[instance.SecurityGroupRuleDirectionOutbound], nil
 }
 
-func resourceScalewayInstanceSecurityGroupUpdate(d *schema.ResourceData, m interface{}) error {
+func resourceScalewayInstanceSecurityGroupUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	meta := m.(*Meta)
-	instanceApi := instance.NewAPI(meta.scwClient)
+	instanceAPI := instance.NewAPI(meta.scwClient)
 
 	zone, ID, err := parseZonedID(d.Id())
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	inboundDefaultPolicy := instance.SecurityGroupPolicy("")
@@ -223,29 +226,29 @@ func resourceScalewayInstanceSecurityGroupUpdate(d *schema.ResourceData, m inter
 		Zone:                  zone,
 		SecurityGroupID:       ID,
 		Stateful:              scw.BoolPtr(d.Get("stateful").(bool)),
-		Description:           scw.StringPtr(description),
+		Description:           expandStringPtr(description),
 		InboundDefaultPolicy:  &inboundDefaultPolicy,
 		OutboundDefaultPolicy: &outboundDefaultPolicy,
 	}
 
 	// Only update name if one is provided in the state
 	if d.Get("name") != nil && d.Get("name").(string) != "" {
-		updateReq.Name = scw.StringPtr(d.Get("name").(string))
+		updateReq.Name = expandStringPtr(d.Get("name"))
 	}
 
-	_, err = instanceApi.UpdateSecurityGroup(updateReq)
+	_, err = instanceAPI.UpdateSecurityGroup(updateReq, scw.WithContext(ctx))
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	if !d.Get("external_rules").(bool) {
-		err = updateSecurityGroupeRules(d, zone, ID, instanceApi)
+		err = updateSecurityGroupeRules(ctx, d, zone, ID, instanceAPI)
 		if err != nil {
-			return err
+			return diag.FromErr(err)
 		}
 	}
 
-	return resourceScalewayInstanceSecurityGroupRead(d, m)
+	return resourceScalewayInstanceSecurityGroupRead(ctx, d, m)
 }
 
 // updateSecurityGroupeRules handles updating SecurityGroupRules
@@ -257,7 +260,7 @@ func resourceScalewayInstanceSecurityGroupUpdate(d *schema.ResourceData, m inter
 //       a) Compare with api rule in this direction at the same index
 //          if different update / if equals do nothing / if no more api rules to compare create new api rule
 //     B) If there is more rule in the API we remove them
-func updateSecurityGroupeRules(d *schema.ResourceData, zone scw.Zone, securityGroupID string, instanceAPI *instance.API) error {
+func updateSecurityGroupeRules(ctx context.Context, d *schema.ResourceData, zone scw.Zone, securityGroupID string, instanceAPI *instance.API) error {
 	apiRules := map[instance.SecurityGroupRuleDirection][]*instance.SecurityGroupRule{
 		instance.SecurityGroupRuleDirectionInbound:  {},
 		instance.SecurityGroupRuleDirectionOutbound: {},
@@ -271,7 +274,7 @@ func updateSecurityGroupeRules(d *schema.ResourceData, zone scw.Zone, securityGr
 	resRules, err := instanceAPI.ListSecurityGroupRules(&instance.ListSecurityGroupRulesRequest{
 		Zone:            zone,
 		SecurityGroupID: expandID(securityGroupID),
-	}, scw.WithAllPages())
+	}, scw.WithAllPages(), scw.WithContext(ctx))
 	if err != nil {
 		return err
 	}
@@ -287,7 +290,6 @@ func updateSecurityGroupeRules(d *schema.ResourceData, zone scw.Zone, securityGr
 
 	// Loop through all directions
 	for direction := range stateRules {
-
 		// Loop for all state rules in this direction
 		for index, rawStateRule := range stateRules[direction] {
 			apiRule := (*instance.SecurityGroupRule)(nil)
@@ -304,7 +306,7 @@ func updateSecurityGroupeRules(d *schema.ResourceData, zone scw.Zone, securityGr
 					DestPortTo:      stateRule.DestPortTo,
 					DestPortFrom:    stateRule.DestPortFrom,
 					Direction:       direction,
-				})
+				}, scw.WithContext(ctx))
 				if err != nil {
 					return err
 				}
@@ -333,7 +335,7 @@ func updateSecurityGroupeRules(d *schema.ResourceData, zone scw.Zone, securityGr
 					DestPortTo:          destPortTo,
 					DestPortFrom:        destPortFrom,
 					Direction:           &direction,
-				})
+				}, scw.WithContext(ctx))
 				if err != nil {
 					return err
 				}
@@ -346,7 +348,7 @@ func updateSecurityGroupeRules(d *schema.ResourceData, zone scw.Zone, securityGr
 				Zone:                zone,
 				SecurityGroupID:     securityGroupID,
 				SecurityGroupRuleID: apiRules[direction][index].ID,
-			})
+			}, scw.WithContext(ctx))
 			if err != nil {
 				return err
 			}
@@ -355,22 +357,22 @@ func updateSecurityGroupeRules(d *schema.ResourceData, zone scw.Zone, securityGr
 	return nil
 }
 
-func resourceScalewayInstanceSecurityGroupDelete(d *schema.ResourceData, m interface{}) error {
+func resourceScalewayInstanceSecurityGroupDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	meta := m.(*Meta)
-	instanceApi := instance.NewAPI(meta.scwClient)
+	instanceAPI := instance.NewAPI(meta.scwClient)
 
 	zone, ID, err := parseZonedID(d.Id())
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
-	err = instanceApi.DeleteSecurityGroup(&instance.DeleteSecurityGroupRequest{
+	err = instanceAPI.DeleteSecurityGroup(&instance.DeleteSecurityGroupRequest{
 		SecurityGroupID: ID,
 		Zone:            zone,
-	})
+	}, scw.WithContext(ctx))
 
 	if err != nil && !is404Error(err) {
-		return err
+		return diag.FromErr(err)
 	}
 
 	return nil
@@ -414,13 +416,13 @@ func securityGroupRuleSchema() *schema.Resource {
 			"ip": {
 				Type:         schema.TypeString,
 				Optional:     true,
-				ValidateFunc: validation.SingleIP(),
+				ValidateFunc: validation.IsIPAddress,
 				Description:  "Ip address for this rule (e.g: 1.1.1.1). Only one of ip or ip_range should be provided",
 			},
 			"ip_range": {
 				Type:         schema.TypeString,
 				Optional:     true,
-				ValidateFunc: validation.CIDRNetwork(0, 128),
+				ValidateFunc: validation.IsCIDRNetwork(0, 128),
 				Description:  "Ip range for this rule (e.g: 192.168.1.0/24). Only one of ip or ip_range should be provided",
 			},
 		},
@@ -485,7 +487,7 @@ func securityGroupRuleFlatten(rule *instance.SecurityGroupRule) map[string]inter
 
 	res := map[string]interface{}{
 		"protocol":   rule.Protocol.String(),
-		"ip_range":   flattenIpNet(rule.IPRange),
+		"ip_range":   flattenIPNet(rule.IPRange),
 		"port_range": fmt.Sprintf("%d-%d", portFrom, portTo),
 		"action":     rule.Action.String(),
 	}
@@ -502,7 +504,7 @@ func securityGroupRuleEquals(ruleA, ruleB *instance.SecurityGroupRule) bool {
 	}
 	portFromEqual := zeroIfNil(ruleA.DestPortFrom) == zeroIfNil(ruleB.DestPortFrom)
 	portToEqual := zeroIfNil(ruleA.DestPortTo) == zeroIfNil(ruleB.DestPortTo)
-	ipEqual := flattenIpNet(ruleA.IPRange) == flattenIpNet(ruleB.IPRange)
+	ipEqual := flattenIPNet(ruleA.IPRange) == flattenIPNet(ruleB.IPRange)
 
 	return ruleA.Action == ruleB.Action &&
 		portFromEqual &&

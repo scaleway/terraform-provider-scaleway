@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/terraform"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 )
@@ -17,10 +17,9 @@ func init() {
 	})
 }
 
-func testSweepInstancePlacementGroup(region string) error {
-	return sweepZones(region, func(scwClient *scw.Client) error {
+func testSweepInstancePlacementGroup(_ string) error {
+	return sweepZones(scw.AllZones, func(scwClient *scw.Client, zone scw.Zone) error {
 		instanceAPI := instance.NewAPI(scwClient)
-		zone, _ := scwClient.GetDefaultZone()
 		l.Debugf("sweeper: destroying the instance placement group in (%s)", zone)
 		listPlacementGroups, err := instanceAPI.ListPlacementGroups(&instance.ListPlacementGroupsRequest{}, scw.WithAllPages())
 		if err != nil {
@@ -41,17 +40,25 @@ func testSweepInstancePlacementGroup(region string) error {
 	})
 }
 
-func TestAccScalewayInstancePlacementGroup(t *testing.T) {
+func TestAccScalewayInstancePlacementGroup_Basic(t *testing.T) {
+	tt := NewTestTools(t)
+	defer tt.Cleanup()
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckScalewayInstancePlacementGroupDestroy,
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      testAccCheckScalewayInstancePlacementGroupDestroy(tt),
 		Steps: []resource.TestStep{
 			{
-				Config: testAccScalewayInstancePlacementGroupConfig[0],
+				Config: `
+					resource "scaleway_instance_placement_group" "base" {}
+
+					resource "scaleway_instance_placement_group" "scaleway" {
+						policy_mode = "enforced"
+						policy_type = "low_latency"
+					}`,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayInstancePlacementGroupExists("scaleway_instance_placement_group.base"),
-					testAccCheckScalewayInstancePlacementGroupExists("scaleway_instance_placement_group.scaleway"),
+					testAccCheckScalewayInstancePlacementGroupExists(tt, "scaleway_instance_placement_group.base"),
+					testAccCheckScalewayInstancePlacementGroupExists(tt, "scaleway_instance_placement_group.scaleway"),
 					resource.TestCheckResourceAttr("scaleway_instance_placement_group.base", "policy_mode", "optional"),
 					resource.TestCheckResourceAttr("scaleway_instance_placement_group.base", "policy_type", "max_availability"),
 					resource.TestCheckResourceAttr("scaleway_instance_placement_group.scaleway", "policy_mode", "enforced"),
@@ -60,10 +67,16 @@ func TestAccScalewayInstancePlacementGroup(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccScalewayInstancePlacementGroupConfig[1],
+				Config: `
+					resource "scaleway_instance_placement_group" "base" {
+						policy_mode = "enforced"
+						policy_type = "low_latency"
+					}
+			
+					resource "scaleway_instance_placement_group" "scaleway" {}`,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayInstancePlacementGroupExists("scaleway_instance_placement_group.base"),
-					testAccCheckScalewayInstancePlacementGroupExists("scaleway_instance_placement_group.scaleway"),
+					testAccCheckScalewayInstancePlacementGroupExists(tt, "scaleway_instance_placement_group.base"),
+					testAccCheckScalewayInstancePlacementGroupExists(tt, "scaleway_instance_placement_group.scaleway"),
 					resource.TestCheckResourceAttr("scaleway_instance_placement_group.base", "policy_mode", "enforced"),
 					resource.TestCheckResourceAttr("scaleway_instance_placement_group.base", "policy_type", "low_latency"),
 					resource.TestCheckResourceAttr("scaleway_instance_placement_group.base", "policy_respected", "true"),
@@ -75,19 +88,19 @@ func TestAccScalewayInstancePlacementGroup(t *testing.T) {
 	})
 }
 
-func testAccCheckScalewayInstancePlacementGroupExists(n string) resource.TestCheckFunc {
+func testAccCheckScalewayInstancePlacementGroupExists(tt *TestTools, n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
 			return fmt.Errorf("resource not found: %s", n)
 		}
 
-		instanceApi, zone, ID, err := instanceAPIWithZoneAndID(testAccProvider.Meta(), rs.Primary.ID)
+		instanceAPI, zone, ID, err := instanceAPIWithZoneAndID(tt.Meta, rs.Primary.ID)
 		if err != nil {
 			return err
 		}
 
-		_, err = instanceApi.GetPlacementGroup(&instance.GetPlacementGroupRequest{
+		_, err = instanceAPI.GetPlacementGroup(&instance.GetPlacementGroupRequest{
 			Zone:             zone,
 			PlacementGroupID: ID,
 		})
@@ -100,50 +113,33 @@ func testAccCheckScalewayInstancePlacementGroupExists(n string) resource.TestChe
 	}
 }
 
-func testAccCheckScalewayInstancePlacementGroupDestroy(s *terraform.State) error {
-	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "scaleway_instance_placement_group" {
-			continue
-		}
+func testAccCheckScalewayInstancePlacementGroupDestroy(tt *TestTools) resource.TestCheckFunc {
+	return func(state *terraform.State) error {
+		for _, rs := range state.RootModule().Resources {
+			if rs.Type != "scaleway_instance_placement_group" {
+				continue
+			}
 
-		instanceApi, zone, ID, err := instanceAPIWithZoneAndID(testAccProvider.Meta(), rs.Primary.ID)
-		if err != nil {
-			return err
-		}
+			instanceAPI, zone, ID, err := instanceAPIWithZoneAndID(tt.Meta, rs.Primary.ID)
+			if err != nil {
+				return err
+			}
 
-		_, err = instanceApi.GetPlacementGroup(&instance.GetPlacementGroupRequest{
-			Zone:             zone,
-			PlacementGroupID: ID,
-		})
+			_, err = instanceAPI.GetPlacementGroup(&instance.GetPlacementGroupRequest{
+				Zone:             zone,
+				PlacementGroupID: ID,
+			})
 
-		// If no error resource still exist
-		if err == nil {
-			return fmt.Errorf("Placement group (%s) still exists", rs.Primary.ID)
-		}
+			// If no error resource still exist
+			if err == nil {
+				return fmt.Errorf("placement group (%s) still exists", rs.Primary.ID)
+			}
 
-		// Unexpected api error we return it
-		if !is404Error(err) {
-			return err
+			// Unexpected api error we return it
+			if !is404Error(err) {
+				return err
+			}
 		}
+		return nil
 	}
-
-	return nil
-}
-
-// Check that reverse is handled at creation and update time
-var testAccScalewayInstancePlacementGroupConfig = []string{
-	`
-		resource "scaleway_instance_placement_group" "base" {}
-		resource "scaleway_instance_placement_group" "scaleway" {
-			policy_mode = "enforced"
-			policy_type = "low_latency"
-		}
-	`,
-	`
-		resource "scaleway_instance_placement_group" "base" {
-			policy_mode = "enforced"
-			policy_type = "low_latency"
-		}
-		resource "scaleway_instance_placement_group" "scaleway" {}
-	`,
 }

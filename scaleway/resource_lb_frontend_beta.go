@@ -1,24 +1,26 @@
 package scaleway
 
 import (
+	"context"
 	"math"
 	"sort"
 
 	"github.com/google/go-cmp/cmp"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/scaleway/scaleway-sdk-go/api/lb/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 )
 
 func resourceScalewayLbFrontendBeta() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceScalewayLbFrontendBetaCreate,
-		Read:   resourceScalewayLbFrontendBetaRead,
-		Update: resourceScalewayLbFrontendBetaUpdate,
-		Delete: resourceScalewayLbFrontendBetaDelete,
+		CreateContext: resourceScalewayLbFrontendBetaCreate,
+		ReadContext:   resourceScalewayLbFrontendBetaRead,
+		UpdateContext: resourceScalewayLbFrontendBetaUpdate,
+		DeleteContext: resourceScalewayLbFrontendBetaDelete,
 		Importer: &schema.ResourceImporter{
-			State: schema.ImportStatePassthrough,
+			StateContext: schema.ImportStatePassthroughContext,
 		},
 		SchemaVersion: 0,
 		Schema: map[string]*schema.Schema{
@@ -146,12 +148,12 @@ func resourceScalewayLbFrontendBeta() *schema.Resource {
 	}
 }
 
-func resourceScalewayLbFrontendBetaCreate(d *schema.ResourceData, m interface{}) error {
+func resourceScalewayLbFrontendBetaCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	lbAPI := lbAPI(m)
 
 	region, LbID, err := parseRegionalID(d.Get("lb_id").(string))
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	res, err := lbAPI.CreateFrontend(&lb.CreateFrontendRequest{
@@ -162,117 +164,119 @@ func resourceScalewayLbFrontendBetaCreate(d *schema.ResourceData, m interface{})
 		BackendID:     expandID(d.Get("backend_id")),
 		TimeoutClient: expandDuration(d.Get("timeout_client")),
 		CertificateID: expandStringPtr(expandID(d.Get("certificate_id"))),
-	})
+	}, scw.WithContext(ctx))
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
-	d.SetId(newRegionalId(region, res.ID))
+	d.SetId(newRegionalIDString(region, res.ID))
 
-	err = resourceScalewayLbFrontendBetaUpdateAcl(d, lbAPI, region, res.ID)
-	if err != nil {
-		return err
+	diagnostics := resourceScalewayLbFrontendBetaUpdateACL(ctx, d, lbAPI, region, res.ID)
+	if diagnostics != nil {
+		return diagnostics
 	}
 
-	return resourceScalewayLbFrontendBetaRead(d, m)
+	return resourceScalewayLbFrontendBetaRead(ctx, d, m)
 }
 
-func resourceScalewayLbFrontendBetaRead(d *schema.ResourceData, m interface{}) error {
+func resourceScalewayLbFrontendBetaRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	lbAPI, region, ID, err := lbAPIWithRegionAndID(m, d.Id())
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	res, err := lbAPI.GetFrontend(&lb.GetFrontendRequest{
 		Region:     region,
 		FrontendID: ID,
-	})
+	}, scw.WithContext(ctx))
 
 	if err != nil {
 		if is404Error(err) {
 			d.SetId("")
 			return nil
 		}
-		return err
+		return diag.FromErr(err)
 	}
 
-	_ = d.Set("lb_id", newRegionalId(region, res.LB.ID))
-	_ = d.Set("backend_id", newRegionalId(region, res.Backend.ID))
+	_ = d.Set("lb_id", newRegionalIDString(region, res.LB.ID))
+	_ = d.Set("backend_id", newRegionalIDString(region, res.Backend.ID))
 	_ = d.Set("name", res.Name)
 	_ = d.Set("inbound_port", int(res.InboundPort))
 	_ = d.Set("timeout_client", flattenDuration(res.TimeoutClient))
 
 	if res.Certificate != nil {
-		_ = d.Set("certificate_id", newRegionalId(region, res.Certificate.ID))
+		_ = d.Set("certificate_id", newRegionalIDString(region, res.Certificate.ID))
 	} else {
 		_ = d.Set("certificate_id", "")
 	}
 
 	//read related acls.
-	resAcl, err := lbAPI.ListACLs(&lb.ListACLsRequest{
+	resACL, err := lbAPI.ListACLs(&lb.ListACLsRequest{
 		Region:     region,
 		FrontendID: ID,
-	}, scw.WithAllPages())
+	}, scw.WithAllPages(), scw.WithContext(ctx))
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
-	sort.Slice(resAcl.ACLs, func(i, j int) bool {
-		return resAcl.ACLs[i].Index < resAcl.ACLs[j].Index
-	})
-	stateAcls := make([]interface{}, 0, len(resAcl.ACLs))
-	for _, apiAcl := range resAcl.ACLs {
-		stateAcls = append(stateAcls, flattenLbAcl(apiAcl))
-	}
-	_ = d.Set("acl", stateAcls)
+
+	_ = d.Set("acl", flattenLBACLs(resACL.ACLs))
 
 	return nil
 }
 
-func resourceScalewayLbFrontendBetaUpdateAcl(d *schema.ResourceData, lbAPI *lb.API, region scw.Region, frontendID string) error {
+func flattenLBACLs(ACLs []*lb.ACL) interface{} {
+	sort.Slice(ACLs, func(i, j int) bool {
+		return ACLs[i].Index < ACLs[j].Index
+	})
+	rawACLs := make([]interface{}, 0, len(ACLs))
+	for _, apiACL := range ACLs {
+		rawACLs = append(rawACLs, flattenLbACL(apiACL))
+	}
+	return rawACLs
+}
+
+func resourceScalewayLbFrontendBetaUpdateACL(ctx context.Context, d *schema.ResourceData, lbAPI *lb.API, region scw.Region, frontendID string) diag.Diagnostics {
 	//Fetch existing acl from the api. and convert it to a hashmap with index as key
-	resAcl, err := lbAPI.ListACLs(&lb.ListACLsRequest{
+	resACL, err := lbAPI.ListACLs(&lb.ListACLsRequest{
 		Region:     region,
 		FrontendID: frontendID,
-	}, scw.WithAllPages())
+	}, scw.WithAllPages(), scw.WithContext(ctx))
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 	apiAcls := make(map[int32]*lb.ACL)
-	for _, acl := range resAcl.ACLs {
+	for _, acl := range resACL.ACLs {
 		apiAcls[acl.Index] = acl
 	}
 
 	//convert state acl and sanitize them a bit
-	newAcl := make([]*lb.ACL, 0)
-	for _, rawAcl := range d.Get("acl").([]interface{}) {
-		newAcl = append(newAcl, expandLbAcl(rawAcl))
-	}
+	newACL := expandsLBACLs(d.Get("acl"))
 
 	//loop
-	for index, stateAcl := range newAcl {
+	for index, stateACL := range newACL {
 		key := int32(index) + 1
-		if apiAcl, found := apiAcls[key]; found {
+		if apiACL, found := apiAcls[key]; found {
 			//there is an old acl with the same key. Remove it from array to mark that we've dealt with it
 			delete(apiAcls, key)
 
 			//if the state acl doesn't specify a name, set it to the same as the existing rule
-			if stateAcl.Name == "" {
-				stateAcl.Name = apiAcl.Name
+			if stateACL.Name == "" {
+				stateACL.Name = apiACL.Name
 			}
 			//Verify if their values are the same and ignore if that's the case, update otherwise
-			if aclEquals(stateAcl, apiAcl) {
+			if aclEquals(stateACL, apiACL) {
 				continue
 			}
 			_, err = lbAPI.UpdateACL(&lb.UpdateACLRequest{
 				Region: region,
-				ACLID:  apiAcl.ID,
-				Name:   stateAcl.Name,
-				Action: stateAcl.Action,
-				Match:  stateAcl.Match,
+				ACLID:  apiACL.ID,
+				Name:   stateACL.Name,
+				Action: stateACL.Action,
+				Match:  stateACL.Match,
 				Index:  key,
 			})
 			if err != nil {
-				return err
+				return diag.FromErr(err)
 			}
 			continue
 		}
@@ -280,13 +284,13 @@ func resourceScalewayLbFrontendBetaUpdateAcl(d *schema.ResourceData, lbAPI *lb.A
 		_, err = lbAPI.CreateACL(&lb.CreateACLRequest{
 			Region:     region,
 			FrontendID: frontendID,
-			Name:       expandOrGenerateString(stateAcl.Name, "lb-acl"),
-			Action:     stateAcl.Action,
-			Match:      stateAcl.Match,
+			Name:       expandOrGenerateString(stateACL.Name, "lb-acl"),
+			Action:     stateACL.Action,
+			Match:      stateACL.Match,
 			Index:      key,
-		})
+		}, scw.WithContext(ctx))
 		if err != nil {
-			return err
+			return diag.FromErr(err)
 		}
 	}
 	//we've finished with all new acl, delete any remaining old one which were not dealt with yet
@@ -294,18 +298,27 @@ func resourceScalewayLbFrontendBetaUpdateAcl(d *schema.ResourceData, lbAPI *lb.A
 		err = lbAPI.DeleteACL(&lb.DeleteACLRequest{
 			Region: region,
 			ACLID:  acl.ID,
-		})
+		}, scw.WithContext(ctx))
 		if err != nil {
-			return err
+			return diag.FromErr(err)
 		}
 	}
 	return nil
 }
 
-func resourceScalewayLbFrontendBetaUpdate(d *schema.ResourceData, m interface{}) error {
+func expandsLBACLs(raw interface{}) []*lb.ACL {
+	d := raw.([]interface{})
+	newACL := make([]*lb.ACL, 0)
+	for _, rawACL := range d {
+		newACL = append(newACL, expandLbACL(rawACL))
+	}
+	return newACL
+}
+
+func resourceScalewayLbFrontendBetaUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	lbAPI, region, ID, err := lbAPIWithRegionAndID(m, d.Id())
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	req := &lb.UpdateFrontendRequest{
@@ -318,33 +331,33 @@ func resourceScalewayLbFrontendBetaUpdate(d *schema.ResourceData, m interface{})
 		CertificateID: expandStringPtr(expandID(d.Get("certificate_id"))),
 	}
 
-	_, err = lbAPI.UpdateFrontend(req)
+	_, err = lbAPI.UpdateFrontend(req, scw.WithContext(ctx))
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	//update acl
-	err = resourceScalewayLbFrontendBetaUpdateAcl(d, lbAPI, region, ID)
-	if err != nil {
-		return err
+	diagnostics := resourceScalewayLbFrontendBetaUpdateACL(ctx, d, lbAPI, region, ID)
+	if diagnostics != nil {
+		return diagnostics
 	}
 
-	return resourceScalewayLbFrontendBetaRead(d, m)
+	return resourceScalewayLbFrontendBetaRead(ctx, d, m)
 }
 
-func resourceScalewayLbFrontendBetaDelete(d *schema.ResourceData, m interface{}) error {
+func resourceScalewayLbFrontendBetaDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	lbAPI, region, ID, err := lbAPIWithRegionAndID(m, d.Id())
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	err = lbAPI.DeleteFrontend(&lb.DeleteFrontendRequest{
 		Region:     region,
 		FrontendID: ID,
-	})
+	}, scw.WithContext(ctx))
 
 	if err != nil && !is404Error(err) {
-		return err
+		return diag.FromErr(err)
 	}
 
 	return nil

@@ -8,14 +8,12 @@ import (
 	"net/http"
 	"regexp"
 	"strings"
-	"sync"
 	"text/template"
 	"time"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/terraform"
-	api "github.com/nicolai86/scaleway-sdk"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/scaleway/scaleway-sdk-go/namegenerator"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"golang.org/x/xerrors"
@@ -83,199 +81,6 @@ func expandZonedID(id interface{}) ZonedID {
 	return zonedID
 }
 
-// Bool returns a pointer to of the bool value passed in.
-func Bool(val bool) *bool {
-	return &val
-}
-
-// String returns a pointer to of the string value passed in.
-func String(val string) *string {
-	return &val
-}
-
-func validateServerType(v interface{}, k string) (ws []string, errors []error) {
-	// only validate if we were able to fetch a list of commercial types
-	if len(commercialServerTypes) == 0 {
-		return
-	}
-
-	isKnown := false
-	requestedType := v.(string)
-	for _, knownType := range commercialServerTypes {
-		isKnown = isKnown || strings.EqualFold(knownType, requestedType)
-	}
-
-	if !isKnown {
-		errors = append(errors, fmt.Errorf("%q must be one of %q", k, commercialServerTypes))
-	}
-	return
-}
-
-func validateVolumeType(v interface{}, k string) (ws []string, errors []error) {
-	value := v.(string)
-	if value != "l_ssd" {
-		errors = append(errors, fmt.Errorf("%q must be l_ssd", k))
-	}
-	return
-}
-
-func waitForServerShutdown(scaleway *api.API, serverID string) error {
-	return waitForServerState(scaleway, serverID, "stopped", []string{"stopped", "stopping"})
-}
-
-func waitForServerStartup(scaleway *api.API, serverID string) error {
-	return waitForServerState(scaleway, serverID, "running", []string{"running", "starting"})
-}
-
-func waitForServerState(scaleway *api.API, serverID, targetState string, pendingStates []string) error {
-	wg := waitForServerLock(serverID)
-	wg.Wait()
-
-	mu.Lock()
-	wg.Add(1)
-	mu.Unlock()
-
-	defer func() {
-		mu.Lock()
-		wg.Done()
-		mu.Unlock()
-	}()
-
-	stateConf := &resource.StateChangeConf{
-		Pending: pendingStates,
-		Target:  []string{targetState},
-		Refresh: func() (interface{}, string, error) {
-			s, err := scaleway.GetServer(serverID)
-			if err == nil {
-				return 42, s.State, nil
-			}
-			if serr, ok := err.(api.APIError); ok {
-				if serr.StatusCode == 404 {
-					return 42, "stopped", nil
-				}
-			}
-			if s != nil {
-				return 42, s.State, err
-			}
-			return 42, "error", err
-		},
-		Timeout:    60 * time.Minute,
-		MinTimeout: 10 * time.Second,
-		Delay:      15 * time.Second,
-	}
-	_, err := stateConf.WaitForState()
-
-	return err
-}
-
-var waitForServer = map[string]*sync.WaitGroup{}
-
-func waitForServerLock(serverID string) *sync.WaitGroup {
-	mu.Lock()
-	defer mu.Unlock()
-	wg, ok := waitForServer[serverID]
-	if !ok {
-		wg = &sync.WaitGroup{}
-		waitForServer[serverID] = wg
-	}
-	return wg
-}
-
-func startServer(scaleway *api.API, server *api.Server) error {
-	wg := waitForServerLock(server.Identifier)
-	wg.Wait()
-
-	_, err := scaleway.PostServerAction(server.Identifier, "poweron")
-
-	if err != nil {
-		return err
-	}
-
-	return waitForServerStartup(scaleway, server.Identifier)
-}
-
-func stopServer(scaleway *api.API, server *api.Server) error {
-	wg := waitForServerLock(server.Identifier)
-	wg.Wait()
-
-	_, err := scaleway.PostServerAction(server.Identifier, "poweroff")
-
-	if err != nil {
-		return err
-	}
-	return waitForServerShutdown(scaleway, server.Identifier)
-}
-
-// deleteRunningServer terminates the server and waits until it is removed.
-func deleteRunningServer(scaleway *api.API, server *api.Server) error {
-	wg := waitForServerLock(server.Identifier)
-	wg.Wait()
-
-	_, err := scaleway.PostServerAction(server.Identifier, "terminate")
-
-	if err != nil {
-		if serr, ok := err.(api.APIError); ok {
-			if serr.StatusCode == 404 {
-				return nil
-			}
-		}
-
-		return err
-	}
-
-	return waitForServerShutdown(scaleway, server.Identifier)
-}
-
-// deleteStoppedServer needs to cleanup attached root volumes. this is not done
-// automatically by Scaleway
-func deleteStoppedServer(scaleway *api.API, server *api.Server) error {
-	mu.Lock()
-	defer mu.Unlock()
-	if err := scaleway.DeleteServer(server.Identifier); err != nil {
-		return err
-	}
-
-	if rootVolume, ok := server.Volumes["0"]; ok {
-		if err := scaleway.DeleteVolume(rootVolume.Identifier); err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
-func withStoppedServer(scaleway *api.API, serverID string, run func(*api.Server) error) error {
-	wg := waitForServerLock(serverID)
-	wg.Wait()
-
-	server, err := scaleway.GetServer(serverID)
-
-	if err != nil {
-		return err
-	}
-
-	var startServerAgain = false
-	if server.State != "stopped" {
-		startServerAgain = true
-
-		err := stopServer(scaleway, server)
-		if err != nil {
-			return err
-		}
-	}
-
-	if err := run(server); err != nil {
-		return err
-	}
-
-	if startServerAgain {
-		err := startServer(scaleway, server)
-		if err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
 // parseLocalizedID parses a localizedID and extracts the resource locality and id.
 func parseLocalizedID(localizedID string) (locality string, ID string, err error) {
 	tab := strings.SplitN(localizedID, "/", -1)
@@ -287,7 +92,6 @@ func parseLocalizedID(localizedID string) (locality string, ID string, err error
 
 // parseZonedID parses a zonedID and extracts the resource zone and id.
 func parseZonedID(zonedID string) (zone scw.Zone, id string, err error) {
-
 	locality, id, err := parseLocalizedID(zonedID)
 	if err != nil {
 		return
@@ -317,21 +121,21 @@ func parseRegionalID(regionalID string) (region scw.Region, id string, err error
 	return
 }
 
-// newZonedId constructs a unique identifier based on resource zone and id
-func newZonedId(zone scw.Zone, id string) string {
+// newZonedIDString constructs a unique identifier based on resource zone and id
+func newZonedIDString(zone scw.Zone, id string) string {
 	return fmt.Sprintf("%s/%s", zone, id)
 }
 
-// newRegionalId constructs a unique identifier based on resource region and id
-func newRegionalId(region scw.Region, id string) string {
+// newRegionalIDString constructs a unique identifier based on resource region and id
+func newRegionalIDString(region scw.Region, id string) string {
 	return fmt.Sprintf("%s/%s", region, id)
 }
 
 // deprecated and should not be used
-// newZonedIdFromRegion constructs a unique identifier based on resource region and id
+// newZonedIDStringFromRegion constructs a unique identifier based on resource region and id
 // but returns a zoned ID with the first zone in the region, i.e. adding `-1` to the region
 // TODO this function is a quick fix
-func newZonedIdFromRegion(region scw.Region, id string) string {
+func newZonedIDStringFromRegion(region scw.Region, id string) string {
 	return fmt.Sprintf("%s-1/%s", region, id)
 }
 
@@ -353,7 +157,6 @@ var ErrZoneNotFound = fmt.Errorf("could not detect zone. Scaleway uses regions a
 //  - zone field of the resource data
 //  - default zone from config
 func extractZone(d terraformResourceData, meta *Meta) (scw.Zone, error) {
-
 	rawZone, exist := d.GetOkExists("zone")
 	if exist {
 		return scw.ParseZone(rawZone.(string))
@@ -374,7 +177,6 @@ var ErrRegionNotFound = fmt.Errorf("could not detect region")
 //  - region field of the resource data
 //  - default region from config
 func extractRegion(d terraformResourceData, meta *Meta) (scw.Region, error) {
-
 	rawRegion, exist := d.GetOkExists("region")
 	if exist {
 		return scw.ParseRegion(rawRegion.(string))
@@ -386,27 +188,6 @@ func extractRegion(d terraformResourceData, meta *Meta) (scw.Region, error) {
 	}
 
 	return scw.Region(""), ErrRegionNotFound
-}
-
-// ErrOrganizationIDNotFound is returned when no organization_id can be detected
-var ErrOrganizationIDNotFound = fmt.Errorf("could not detect organization_id")
-
-// organizationID will try to guess the organization_id from the following:
-//  - organization_id field of the resource data
-//  - default organization_id from config
-func organizationID(d terraformResourceData, meta *Meta) (string, error) {
-
-	organizationID, exist := d.GetOkExists("organization_id")
-	if exist {
-		return organizationID.(string), nil
-	}
-
-	organizationID, exist = meta.scwClient.GetDefaultOrganizationID()
-	if exist {
-		return organizationID.(string), nil
-	}
-
-	return "", ErrOrganizationIDNotFound
 }
 
 // isHTTPCodeError returns true if err is an http error with code statusCode
@@ -439,6 +220,18 @@ func organizationIDSchema() *schema.Schema {
 	return &schema.Schema{
 		Type:         schema.TypeString,
 		Description:  "The organization_id you want to attach the resource to",
+		Optional:     true,
+		ForceNew:     true,
+		Computed:     true,
+		ValidateFunc: validationUUID(),
+	}
+}
+
+// projectIDSchema returns a standard schema for a project_id
+func projectIDSchema() *schema.Schema {
+	return &schema.Schema{
+		Type:         schema.TypeString,
+		Description:  "The project_id you want to attach the resource to",
 		Optional:     true,
 		ForceNew:     true,
 		Computed:     true,
@@ -535,7 +328,7 @@ func expandDuration(data interface{}) *time.Duration {
 	}
 	d, err := time.ParseDuration(data.(string))
 	if err != nil {
-		// We panic as this should never happend. Data from state should be validate using a validate func
+		// We panic as this should never happened. Data from state should be validate using a validate func
 		panic(err)
 	}
 	return &d
@@ -635,7 +428,7 @@ func expandIPNet(raw string) scw.IPNet {
 	return ipNet
 }
 
-func flattenIpNet(ipNet scw.IPNet) string {
+func flattenIPNet(ipNet scw.IPNet) string {
 	raw, err := json.Marshal(ipNet)
 	if err != nil {
 		// We panic as this should never happen.

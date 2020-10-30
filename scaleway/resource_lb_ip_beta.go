@@ -1,18 +1,22 @@
 package scaleway
 
 import (
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"context"
+
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	lb "github.com/scaleway/scaleway-sdk-go/api/lb/v1"
+	"github.com/scaleway/scaleway-sdk-go/scw"
 )
 
 func resourceScalewayLbIPBeta() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceScalewayLbIPBetaCreate,
-		Read:   resourceScalewayLbIPBetaRead,
-		Update: resourceScalewayLbIPBetaUpdate,
-		Delete: resourceScalewayLbIPBetaDelete,
+		CreateContext: resourceScalewayLbIPBetaCreate,
+		ReadContext:   resourceScalewayLbIPBetaRead,
+		UpdateContext: resourceScalewayLbIPBetaUpdate,
+		DeleteContext: resourceScalewayLbIPBetaDelete,
 		Importer: &schema.ResourceImporter{
-			State: schema.ImportStatePassthrough,
+			StateContext: schema.ImportStatePassthroughContext,
 		},
 		SchemaVersion: 0,
 		Schema: map[string]*schema.Schema{
@@ -24,6 +28,7 @@ func resourceScalewayLbIPBeta() *schema.Resource {
 			},
 			"region":          regionSchema(),
 			"organization_id": organizationIDSchema(),
+			"project_id":      projectIDSchema(),
 			// Computed
 			"ip_address": {
 				Type:        schema.TypeString,
@@ -39,61 +44,62 @@ func resourceScalewayLbIPBeta() *schema.Resource {
 	}
 }
 
-func resourceScalewayLbIPBetaCreate(d *schema.ResourceData, m interface{}) error {
+func resourceScalewayLbIPBetaCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	lbAPI, region, err := lbAPIWithRegion(d, m)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	createReq := &lb.CreateIPRequest{
 		Region:         region,
 		OrganizationID: expandStringPtr(d.Get("organization_id")),
+		ProjectID:      expandStringPtr(d.Get("project_id")),
 		Reverse:        expandStringPtr(d.Get("reverse")),
 	}
 
-	res, err := lbAPI.CreateIP(createReq)
+	res, err := lbAPI.CreateIP(createReq, scw.WithContext(ctx))
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
-	d.SetId(newRegionalId(region, res.ID))
+	d.SetId(newRegionalIDString(region, res.ID))
 
-	return resourceScalewayLbIPBetaRead(d, m)
+	return resourceScalewayLbIPBetaRead(ctx, d, m)
 }
 
-func resourceScalewayLbIPBetaRead(d *schema.ResourceData, m interface{}) error {
+func resourceScalewayLbIPBetaRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	lbAPI, region, ID, err := lbAPIWithRegionAndID(m, d.Id())
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	res, err := lbAPI.GetIP(&lb.GetIPRequest{
 		Region: region,
 		IPID:   ID,
-	})
+	}, scw.WithContext(ctx))
 
 	if err != nil {
 		if is404Error(err) {
 			d.SetId("")
 			return nil
 		}
-		return err
+		return diag.FromErr(err)
 	}
 
 	_ = d.Set("region", string(region))
 	_ = d.Set("organization_id", res.OrganizationID)
-	_ = d.Set("ip_id", res.ID)
+	_ = d.Set("project_id", res.ProjectID)
 	_ = d.Set("ip_address", res.IPAddress)
 	_ = d.Set("reverse", res.Reverse)
-	_ = d.Set("lb_ip", flattenStringPtr(res.LBID))
+	_ = d.Set("lb_id", flattenStringPtr(res.LBID))
 
 	return nil
 }
 
-func resourceScalewayLbIPBetaUpdate(d *schema.ResourceData, m interface{}) error {
+func resourceScalewayLbIPBetaUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	lbAPI, region, ID, err := lbAPIWithRegionAndID(m, d.Id())
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	if d.HasChange("reverse") {
@@ -103,28 +109,28 @@ func resourceScalewayLbIPBetaUpdate(d *schema.ResourceData, m interface{}) error
 			Reverse: expandStringPtr(d.Get("reverse")),
 		}
 
-		_, err = lbAPI.UpdateIP(req)
+		_, err = lbAPI.UpdateIP(req, scw.WithContext(ctx))
 		if err != nil {
-			return err
+			return diag.FromErr(err)
 		}
 	}
 
-	return resourceScalewayLbIPBetaRead(d, m)
+	return resourceScalewayLbIPBetaRead(ctx, d, m)
 }
 
-func resourceScalewayLbIPBetaDelete(d *schema.ResourceData, m interface{}) error {
+func resourceScalewayLbIPBetaDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	lbAPI, region, ID, err := lbAPIWithRegionAndID(m, d.Id())
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	err = lbAPI.ReleaseIP(&lb.ReleaseIPRequest{
 		Region: region,
 		IPID:   ID,
-	})
+	}, scw.WithContext(ctx))
 
 	if err != nil && !is404Error(err) {
-		return err
+		return diag.FromErr(err)
 	}
 
 	return nil

@@ -1,23 +1,26 @@
 package scaleway
 
 import (
+	"context"
 	"fmt"
 	"strings"
+	"time"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	k8s "github.com/scaleway/scaleway-sdk-go/api/k8s/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 )
 
 func resourceScalewayK8SClusterBeta() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceScalewayK8SClusterBetaCreate,
-		Read:   resourceScalewayK8SClusterBetaRead,
-		Update: resourceScalewayK8SClusterBetaUpdate,
-		Delete: resourceScalewayK8SClusterBetaDelete,
+		CreateContext: resourceScalewayK8SClusterBetaCreate,
+		ReadContext:   resourceScalewayK8SClusterBetaRead,
+		UpdateContext: resourceScalewayK8SClusterBetaUpdate,
+		DeleteContext: resourceScalewayK8SClusterBetaDelete,
 		Importer: &schema.ResourceImporter{
-			State: schema.ImportStatePassthrough,
+			StateContext: schema.ImportStatePassthroughContext,
 		},
 		SchemaVersion: 0,
 		Schema: map[string]*schema.Schema{
@@ -136,145 +139,15 @@ func resourceScalewayK8SClusterBeta() *schema.Resource {
 				Optional:    true,
 				Description: "The list of admission plugins to enable on the cluster",
 			},
-			"default_pool": {
-				Deprecated:  "This fields is deprecated and will be removed in the next major version, please use scaleway_k8s_pool_beta instead.",
-				Type:        schema.TypeList,
-				MaxItems:    1,
+			"delete_additional_resources": {
+				Type:        schema.TypeBool,
 				Optional:    true,
-				Description: "Default pool created for the cluster on creation",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"node_type": {
-							Type:             schema.TypeString,
-							Required:         true,
-							Deprecated:       "This fields is deprecated and will be removed in the next major version, please use scaleway_k8s_pool_beta instead.",
-							Description:      "Server type of the default pool servers",
-							DiffSuppressFunc: diffSuppressFuncIgnoreCaseAndHyphen,
-						},
-						"autoscaling": {
-							Type:        schema.TypeBool,
-							Deprecated:  "This fields is deprecated and will be removed in the next major version, please use scaleway_k8s_pool_beta instead.",
-							Optional:    true,
-							Default:     false,
-							Description: "Enable the autoscaling on the default pool",
-						},
-						"autohealing": {
-							Type:        schema.TypeBool,
-							Deprecated:  "This fields is deprecated and will be removed in the next major version, please use scaleway_k8s_pool_beta instead.",
-							Optional:    true,
-							Default:     false,
-							Description: "Enable the autohealing on the default pool",
-						},
-						"size": {
-							Type:        schema.TypeInt,
-							Deprecated:  "This fields is deprecated and will be removed in the next major version, please use scaleway_k8s_pool_beta instead.",
-							Required:    true,
-							Description: "Size of the default pool",
-						},
-						"min_size": {
-							Type:        schema.TypeInt,
-							Deprecated:  "This fields is deprecated and will be removed in the next major version, please use scaleway_k8s_pool_beta instead.",
-							Optional:    true,
-							Computed:    true,
-							Description: "Minimun size of the default pool",
-						},
-						"max_size": {
-							Type:        schema.TypeInt,
-							Deprecated:  "This fields is deprecated and will be removed in the next major version, please use scaleway_k8s_pool_beta instead.",
-							Optional:    true,
-							Computed:    true,
-							Description: "Maximum size of the default pool",
-						},
-						"tags": {
-							Type:       schema.TypeList,
-							Deprecated: "This fields is deprecated and will be removed in the next major version, please use scaleway_k8s_pool_beta instead.",
-							Elem: &schema.Schema{
-								Type: schema.TypeString,
-							},
-							Optional:    true,
-							Description: "The tags associated with the default pool",
-						},
-						"placement_group_id": {
-							Type:        schema.TypeString,
-							Deprecated:  "This fields is deprecated and will be removed in the next major version, please use scaleway_k8s_pool_beta instead.",
-							Optional:    true,
-							Default:     nil,
-							Description: "ID of the placement group for the default pool",
-						},
-						"container_runtime": {
-							Type:        schema.TypeString,
-							Deprecated:  "This fields is deprecated and will be removed in the next major version, please use scaleway_k8s_pool_beta instead.",
-							Optional:    true,
-							Default:     k8s.RuntimeDocker.String(),
-							Description: "Container runtime for the default pool",
-							ValidateFunc: validation.StringInSlice([]string{
-								k8s.RuntimeDocker.String(),
-								k8s.RuntimeContainerd.String(),
-								k8s.RuntimeCrio.String(),
-							}, false),
-						},
-						"wait_for_pool_ready": {
-							Type:        schema.TypeBool,
-							Deprecated:  "This fields is deprecated and will be removed in the next major version, please use scaleway_k8s_pool_beta instead.",
-							Optional:    true,
-							Default:     false,
-							Description: "Whether to wait for the pool to be ready",
-						},
-						// Computed elements
-						"pool_id": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "ID of default pool",
-						},
-						"created_at": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The date and time of the creation of the default pool",
-						},
-						"updated_at": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The date and time of the last update of the default pool",
-						},
-						"nodes": {
-							Type:     schema.TypeList,
-							Computed: true,
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									"name": {
-										Type:        schema.TypeString,
-										Computed:    true,
-										Description: "The name of the node",
-									},
-									"status": {
-										Type:        schema.TypeString,
-										Computed:    true,
-										Description: "The status of the node",
-									},
-									"public_ip": {
-										Type:        schema.TypeString,
-										Computed:    true,
-										Description: "The public IPv4 address of the node",
-									},
-									"public_ip_v6": {
-										Type:        schema.TypeString,
-										Computed:    true,
-										Description: "The public IPv6 address of the node",
-									},
-								},
-							},
-						},
-						"status": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The status of the default pool",
-						},
-					},
-				},
+				Default:     false,
+				Description: "Delete additional resources like block volumes and loadbalancers on cluster deletion",
 			},
-
 			"region":          regionSchema(),
 			"organization_id": organizationIDSchema(),
+			"project_id":      projectIDSchema(),
 			// Computed elements
 			"created_at": {
 				Type:        schema.TypeString,
@@ -298,7 +171,6 @@ func resourceScalewayK8SClusterBeta() *schema.Resource {
 			},
 			"kubeconfig": {
 				Type:        schema.TypeList,
-				MaxItems:    1,
 				Computed:    true,
 				Description: "The kubeconfig configuration file of the Kubernetes cluster",
 				Elem: &schema.Resource{
@@ -340,10 +212,10 @@ func resourceScalewayK8SClusterBeta() *schema.Resource {
 	}
 }
 
-func resourceScalewayK8SClusterBetaCreate(d *schema.ResourceData, m interface{}) error {
+func resourceScalewayK8SClusterBetaCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	k8sAPI, region, err := k8sAPIWithRegion(d, m)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	////
@@ -358,6 +230,7 @@ func resourceScalewayK8SClusterBetaCreate(d *schema.ResourceData, m interface{})
 	req := &k8s.CreateClusterRequest{
 		Region:           region,
 		OrganizationID:   expandStringPtr(d.Get("organization_id")),
+		ProjectID:        expandStringPtr(d.Get("project_id")),
 		Name:             expandOrGenerateString(d.Get("name"), "cluster"),
 		Description:      description.(string),
 		Cni:              k8s.CNI(d.Get("cni").(string)),
@@ -381,11 +254,11 @@ func resourceScalewayK8SClusterBetaCreate(d *schema.ResourceData, m interface{})
 	}
 
 	if scaleDownDelayAfterAdd, ok := d.GetOk("autoscaler_config.0.scale_down_delay_after_add"); ok {
-		autoscalerReq.ScaleDownDelayAfterAdd = scw.StringPtr(scaleDownDelayAfterAdd.(string))
+		autoscalerReq.ScaleDownDelayAfterAdd = expandStringPtr(scaleDownDelayAfterAdd)
 	}
 
 	if scaleDownUneededTime, ok := d.GetOk("autoscaler_config.0.scale_down_unneeded_time"); ok {
-		autoscalerReq.ScaleDownUnneededTime = scw.StringPtr(scaleDownUneededTime.(string))
+		autoscalerReq.ScaleDownUnneededTime = expandStringPtr(scaleDownUneededTime)
 	}
 
 	if estimator, ok := d.GetOk("autoscaler_config.0.estimator"); ok {
@@ -416,7 +289,7 @@ func resourceScalewayK8SClusterBetaCreate(d *schema.ResourceData, m interface{})
 	// if one auto upgrade attribute is set, they all must be set.
 	// if none is set, auto upgrade attributes will be computed.
 	if okAutoUpgradeEnable != okAutoUpgradeDay || okAutoUpgradeEnable != okAutoUpgradeStartHour {
-		return fmt.Errorf("all field or zero field of auto_upgrade must be set")
+		return diag.FromErr(fmt.Errorf("all field or zero field of auto_upgrade must be set"))
 	}
 
 	clusterAutoUpgradeEnabled := false
@@ -436,13 +309,13 @@ func resourceScalewayK8SClusterBetaCreate(d *schema.ResourceData, m interface{})
 	versionIsOnlyMinor := len(strings.Split(version, ".")) == 2
 
 	if versionIsOnlyMinor != clusterAutoUpgradeEnabled {
-		return fmt.Errorf("minor version x.y must be used with auto upgrade enabled")
+		return diag.FromErr(fmt.Errorf("minor version x.y must be used with auto upgrade enabled"))
 	}
 
 	if versionIsOnlyMinor {
-		version, err = k8sGetLatestVersionFromMinor(k8sAPI, region, version)
+		version, err = k8sGetLatestVersionFromMinor(ctx, k8sAPI, region, version)
 		if err != nil {
-			return err
+			return diag.FromErr(fmt.Errorf("minor version x.y must be used with auto upgrade enabled"))
 		}
 	}
 
@@ -459,7 +332,7 @@ func resourceScalewayK8SClusterBetaCreate(d *schema.ResourceData, m interface{})
 		}
 
 		if placementGroupID, ok := d.GetOk("default_pool.0.placement_group_id"); ok {
-			defaultPoolReq.PlacementGroupID = scw.StringPtr(expandID(placementGroupID.(string)))
+			defaultPoolReq.PlacementGroupID = expandStringPtr(expandID(placementGroupID))
 		}
 
 		if minSize, ok := d.GetOk("default_pool.0.min_size"); ok {
@@ -477,60 +350,59 @@ func resourceScalewayK8SClusterBetaCreate(d *schema.ResourceData, m interface{})
 		req.Pools = []*k8s.CreateClusterRequestPoolConfig{defaultPoolReq}
 	}
 
-	res, err := k8sAPI.CreateCluster(req)
+	res, err := k8sAPI.CreateCluster(req, scw.WithContext(ctx))
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	if _, ok := d.GetOk("default_pool"); ok {
-		err = waitK8SCluster(k8sAPI, region, res.ID, k8s.ClusterStatusReady)
+		err = waitK8SCluster(ctx, k8sAPI, region, res.ID, k8s.ClusterStatusReady)
 		if err != nil {
-			return err
+			return diag.FromErr(err)
 		}
 		if d.Get("default_pool.0.wait_for_pool_ready").(bool) { // wait for the pool status to be ready (if specified)
-			pool, err := readDefaultPool(d, m) // ensure that 'default_pool.0.pool_id' is set
+			pool, err := readDefaultPool(ctx, d, m) // ensure that 'default_pool.0.pool_id' is set
 			if err != nil {
-				return err
+				return diag.FromErr(err)
 			}
 
-			err = waitK8SPoolReady(k8sAPI, region, expandID(pool.ID))
+			err = waitK8SPoolReady(ctx, k8sAPI, region, expandID(pool.ID))
 			if err != nil {
-				return err
+				return diag.FromErr(err)
 			}
 		}
-
 	} else {
-		err = waitK8SCluster(k8sAPI, region, res.ID, k8s.ClusterStatusPoolRequired)
+		err = waitK8SCluster(ctx, k8sAPI, region, res.ID, k8s.ClusterStatusPoolRequired)
 		if err != nil {
-			return err
+			return diag.FromErr(err)
 		}
 	}
 
-	d.SetId(newRegionalId(region, res.ID))
+	d.SetId(newRegionalIDString(region, res.ID))
 
-	return resourceScalewayK8SClusterBetaRead(d, m)
+	return resourceScalewayK8SClusterBetaRead(ctx, d, m)
 }
 
 // resourceScalewayK8SClusterBetaDefaultPoolRead is only called after a resourceScalewayK8SClusterBetaCreate
 // thus ensuring the uniqueness of the only pool listed
-func resourceScalewayK8SClusterBetaDefaultPoolRead(d *schema.ResourceData, m interface{}) error {
+func resourceScalewayK8SClusterBetaDefaultPoolRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	k8sAPI, region, _, err := k8sAPIWithRegionAndID(m, d.Id())
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
-	pool, err := readDefaultPool(d, m)
+	pool, err := readDefaultPool(ctx, d, m)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
-	nodes, err := getNodes(k8sAPI, pool)
+	nodes, err := getNodes(ctx, k8sAPI, pool)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	defaultPool := map[string]interface{}{}
-	defaultPool["pool_id"] = newRegionalId(region, pool.ID)
+	defaultPool["pool_id"] = newRegionalIDString(region, pool.ID)
 	defaultPool["node_type"] = pool.NodeType
 	defaultPool["autoscaling"] = pool.Autoscaling
 	defaultPool["autohealing"] = pool.Autohealing
@@ -546,17 +418,17 @@ func resourceScalewayK8SClusterBetaDefaultPoolRead(d *schema.ResourceData, m int
 	defaultPool["status"] = pool.Status.String()
 
 	if pool.PlacementGroupID != nil {
-		defaultPool["placement_group_id"] = newZonedIdFromRegion(region, *pool.PlacementGroupID) // TODO fix this ZonedIdFromRegion
+		defaultPool["placement_group_id"] = newZonedIDStringFromRegion(region, *pool.PlacementGroupID) // TODO fix this ZonedIdFromRegion
 	}
 
 	err = d.Set("default_pool", []map[string]interface{}{defaultPool})
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 	return nil
 }
 
-func readDefaultPool(d *schema.ResourceData, m interface{}) (*k8s.Pool, error) {
+func readDefaultPool(ctx context.Context, d *schema.ResourceData, m interface{}) (*k8s.Pool, error) {
 	k8sAPI, region, clusterID, err := k8sAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return nil, err
@@ -568,7 +440,7 @@ func readDefaultPool(d *schema.ResourceData, m interface{}) (*k8s.Pool, error) {
 		poolResp, err := k8sAPI.GetPool(&k8s.GetPoolRequest{
 			Region: region,
 			PoolID: expandID(defaultPoolID.(string)),
-		})
+		}, scw.WithContext(ctx))
 		if err != nil {
 			return nil, err
 		}
@@ -577,13 +449,13 @@ func readDefaultPool(d *schema.ResourceData, m interface{}) (*k8s.Pool, error) {
 		response, err := k8sAPI.ListPools(&k8s.ListPoolsRequest{
 			Region:    region,
 			ClusterID: clusterID,
-		})
+		}, scw.WithContext(ctx))
 		if err != nil {
 			return nil, err
 		}
 
 		if len(response.Pools) != 1 {
-			return nil, fmt.Errorf("Newly created pool on cluster %s has %d pools instead of 1", clusterID, len(response.Pools))
+			return nil, fmt.Errorf("newly created pool on cluster %s has %d pools instead of 1", clusterID, len(response.Pools))
 		}
 
 		pool = response.Pools[0]
@@ -591,10 +463,10 @@ func readDefaultPool(d *schema.ResourceData, m interface{}) (*k8s.Pool, error) {
 	return pool, nil
 }
 
-func resourceScalewayK8SClusterBetaRead(d *schema.ResourceData, m interface{}) error {
+func resourceScalewayK8SClusterBetaRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	k8sAPI, region, clusterID, err := k8sAPIWithRegionAndID(m, d.Id())
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	////
@@ -603,22 +475,24 @@ func resourceScalewayK8SClusterBetaRead(d *schema.ResourceData, m interface{}) e
 	response, err := k8sAPI.GetCluster(&k8s.GetClusterRequest{
 		Region:    region,
 		ClusterID: clusterID,
-	})
+	}, scw.WithContext(ctx))
 	if err != nil {
 		if is404Error(err) {
 			d.SetId("")
 			return nil
 		}
-		return err
+		return diag.FromErr(err)
 	}
 
 	_ = d.Set("region", string(region))
 	_ = d.Set("name", response.Name)
+	_ = d.Set("organization_id", response.OrganizationID)
+	_ = d.Set("project_id", response.ProjectID)
 	_ = d.Set("description", response.Description)
 	_ = d.Set("cni", response.Cni)
 	_ = d.Set("tags", response.Tags)
-	_ = d.Set("created_at", response.CreatedAt)
-	_ = d.Set("updated_at", response.UpdatedAt)
+	_ = d.Set("created_at", response.CreatedAt.Format(time.RFC3339))
+	_ = d.Set("updated_at", response.UpdatedAt.Format(time.RFC3339))
 	_ = d.Set("apiserver_url", response.ClusterURL)
 	_ = d.Set("wildcard_dns", response.DNSWildcard)
 	_ = d.Set("status", response.Status.String())
@@ -629,7 +503,7 @@ func resourceScalewayK8SClusterBetaRead(d *schema.ResourceData, m interface{}) e
 	if response.AutoUpgrade != nil && response.AutoUpgrade.Enabled {
 		version, err = k8sGetMinorVersionFromFull(version)
 		if err != nil {
-			return err
+			return diag.FromErr(err)
 		}
 	}
 	_ = d.Set("version", version)
@@ -640,9 +514,9 @@ func resourceScalewayK8SClusterBetaRead(d *schema.ResourceData, m interface{}) e
 
 	// default_pool_config
 	if _, ok := d.GetOk("default_pool"); ok {
-		err = resourceScalewayK8SClusterBetaDefaultPoolRead(d, m)
-		if err != nil {
-			return err
+		diagnostics := resourceScalewayK8SClusterBetaDefaultPoolRead(ctx, d, m)
+		if diagnostics != nil {
+			return diagnostics
 		}
 	}
 
@@ -652,24 +526,24 @@ func resourceScalewayK8SClusterBetaRead(d *schema.ResourceData, m interface{}) e
 	kubeconfig, err := k8sAPI.GetClusterKubeConfig(&k8s.GetClusterKubeConfigRequest{
 		Region:    region,
 		ClusterID: clusterID,
-	})
+	}, scw.WithContext(ctx))
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	kubeconfigServer, err := kubeconfig.GetServer()
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	kubeconfigCa, err := kubeconfig.GetCertificateAuthorityData()
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	kubeconfigToken, err := kubeconfig.GetToken()
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	kubeconf := map[string]interface{}{}
@@ -685,10 +559,10 @@ func resourceScalewayK8SClusterBetaRead(d *schema.ResourceData, m interface{}) e
 
 // resourceScalewayK8SClusterBetaDefaultPoolUpdate is only called after a resourceScalewayK8SClusterBetaUpdate
 // thus guarating that "default_pool.id" is set
-func resourceScalewayK8SClusterBetaDefaultPoolUpdate(d *schema.ResourceData, m interface{}) error {
+func resourceScalewayK8SClusterBetaDefaultPoolUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	k8sAPI, region, clusterID, err := k8sAPIWithRegionAndID(m, d.Id())
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	////
@@ -699,7 +573,7 @@ func resourceScalewayK8SClusterBetaDefaultPoolUpdate(d *schema.ResourceData, m i
 
 		forceNew := false
 		oldPoolID := ""
-		if d.HasChange("default_pool.0.container_runtime") || d.HasChange("default_pool.0.node_type") || d.HasChange("default_pool.0.placement_group_id") {
+		if d.HasChanges("default_pool.0.container_runtime", "default_pool.0.node_type", "default_pool.0.placement_group_id") {
 			forceNew = true
 			oldPoolID = defaultPoolID
 		} else {
@@ -731,10 +605,10 @@ func resourceScalewayK8SClusterBetaDefaultPoolUpdate(d *schema.ResourceData, m i
 				}
 			}
 
-			_, err := k8sAPI.UpdatePool(updateRequest)
+			_, err := k8sAPI.UpdatePool(updateRequest, scw.WithContext(ctx))
 			if err != nil {
 				if !is404Error(err) {
-					return err
+					return diag.FromErr(err)
 				}
 				l.Warningf("default node pool %s is not found, recreating a new one", defaultPoolID)
 				forceNew = true
@@ -752,7 +626,7 @@ func resourceScalewayK8SClusterBetaDefaultPoolUpdate(d *schema.ResourceData, m i
 				Size:        uint32(d.Get("default_pool.0.size").(int)),
 			}
 			if placementGroupID, ok := d.GetOk("default_pool.0.placement_group_id"); ok {
-				defaultPoolRequest.PlacementGroupID = scw.StringPtr(expandID(placementGroupID.(string)))
+				defaultPoolRequest.PlacementGroupID = expandStringPtr(expandID(placementGroupID))
 			}
 
 			if d.HasChange("default_pool.0.min_size") {
@@ -767,11 +641,11 @@ func resourceScalewayK8SClusterBetaDefaultPoolUpdate(d *schema.ResourceData, m i
 				defaultPoolRequest.ContainerRuntime = k8s.Runtime(containerRuntime.(string))
 			}
 
-			defaultPoolRes, err := k8sAPI.CreatePool(defaultPoolRequest)
+			defaultPoolRes, err := k8sAPI.CreatePool(defaultPoolRequest, scw.WithContext(ctx))
 			if err != nil {
-				return err
+				return diag.FromErr(err)
 			}
-			defaultPoolID = newRegionalId(region, defaultPoolRes.ID)
+			defaultPoolID = newRegionalIDString(region, defaultPoolRes.ID)
 			defaultPool := map[string]interface{}{}
 			defaultPool["pool_id"] = defaultPoolID
 
@@ -779,36 +653,36 @@ func resourceScalewayK8SClusterBetaDefaultPoolUpdate(d *schema.ResourceData, m i
 
 			if oldPoolID != "" {
 				// wait for new pool to be ready before deleting old one
-				err = waitK8SPoolReady(k8sAPI, region, expandID(defaultPoolID))
+				err = waitK8SPoolReady(ctx, k8sAPI, region, expandID(defaultPoolID))
 				if err != nil {
-					return err
+					return diag.FromErr(err)
 				}
 
 				_, err = k8sAPI.DeletePool(&k8s.DeletePoolRequest{
 					Region: region,
 					PoolID: expandID(oldPoolID),
-				})
+				}, scw.WithContext(ctx))
 				if err != nil {
-					return err
+					return diag.FromErr(err)
 				}
 			}
 		}
 
 		if d.Get("default_pool.0.wait_for_pool_ready").(bool) { // wait for the pool to be ready if specified
-			err = waitK8SPoolReady(k8sAPI, region, expandID(defaultPoolID))
+			err = waitK8SPoolReady(ctx, k8sAPI, region, expandID(defaultPoolID))
 			if err != nil {
-				return err
+				return diag.FromErr(err)
 			}
 		}
 	}
 
-	return resourceScalewayK8SClusterBetaDefaultPoolRead(d, m)
+	return resourceScalewayK8SClusterBetaDefaultPoolRead(ctx, d, m)
 }
 
-func resourceScalewayK8SClusterBetaUpdate(d *schema.ResourceData, m interface{}) error {
+func resourceScalewayK8SClusterBetaUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	k8sAPI, region, clusterID, err := k8sAPIWithRegionAndID(m, d.Id())
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	canUpgrade := false
@@ -822,11 +696,11 @@ func resourceScalewayK8SClusterBetaUpdate(d *schema.ResourceData, m interface{})
 	}
 
 	if d.HasChange("name") {
-		updateRequest.Name = scw.StringPtr(d.Get("name").(string))
+		updateRequest.Name = expandStringPtr(d.Get("name"))
 	}
 
 	if d.HasChange("description") {
-		updateRequest.Description = scw.StringPtr(d.Get("description").(string))
+		updateRequest.Description = expandStringPtr(d.Get("description"))
 	}
 
 	if d.HasChange("tags") {
@@ -856,11 +730,10 @@ func resourceScalewayK8SClusterBetaUpdate(d *schema.ResourceData, m interface{})
 	if d.HasChange("auto_upgrade.0.enable") {
 		updateRequest.AutoUpgrade.Enable = scw.BoolPtr(d.Get("auto_upgrade.0.enable").(bool))
 	}
-	updateRequest.AutoUpgrade.MaintenanceWindow = &k8s.MaintenanceWindow{}
-	if d.HasChange("auto_upgrade.0.maintenance_window_start_hour") {
+
+	if d.HasChanges("auto_upgrade.0.maintenance_window_start_hour", "auto_upgrade.0.maintenance_window_day") {
+		updateRequest.AutoUpgrade.MaintenanceWindow = &k8s.MaintenanceWindow{}
 		updateRequest.AutoUpgrade.MaintenanceWindow.StartHour = uint32(d.Get("auto_upgrade.0.maintenance_window_start_hour").(int))
-	}
-	if d.HasChange("auto_upgrade.0.maintenance_window_day") {
 		updateRequest.AutoUpgrade.MaintenanceWindow.Day = k8s.MaintenanceWindowDayOfTheWeek(d.Get("auto_upgrade.0.maintenance_window_day").(string))
 	}
 
@@ -868,13 +741,13 @@ func resourceScalewayK8SClusterBetaUpdate(d *schema.ResourceData, m interface{})
 	versionIsOnlyMinor := len(strings.Split(version, ".")) == 2
 
 	if versionIsOnlyMinor != autoupgradeEnabled {
-		return fmt.Errorf("minor version x.y must be used with auto upgrades enabled")
+		return diag.FromErr(fmt.Errorf("minor version x.y must be used with auto upgrades enabled"))
 	}
 
 	if versionIsOnlyMinor {
-		version, err = k8sGetLatestVersionFromMinor(k8sAPI, region, version)
+		version, err = k8sGetLatestVersionFromMinor(ctx, k8sAPI, region, version)
 		if err != nil {
-			return err
+			return diag.FromErr(err)
 		}
 	}
 
@@ -885,9 +758,9 @@ func resourceScalewayK8SClusterBetaUpdate(d *schema.ResourceData, m interface{})
 		clusterResp, err := k8sAPI.GetCluster(&k8s.GetClusterRequest{
 			ClusterID: clusterID,
 			Region:    region,
-		})
+		}, scw.WithContext(ctx))
 		if err != nil {
-			return err
+			return diag.FromErr(err)
 		}
 
 		if clusterResp.Version == version {
@@ -906,11 +779,11 @@ func resourceScalewayK8SClusterBetaUpdate(d *schema.ResourceData, m interface{})
 	}
 
 	if d.HasChange("autoscaler_config.0.scale_down_delay_after_add") {
-		autoscalerReq.ScaleDownDelayAfterAdd = scw.StringPtr(d.Get("autoscaler_config.0.scale_down_delay_after_add").(string))
+		autoscalerReq.ScaleDownDelayAfterAdd = expandStringPtr(d.Get("autoscaler_config.0.scale_down_delay_after_add"))
 	}
 
 	if d.HasChange("autoscaler_config.0.scale_down_unneeded_time") {
-		autoscalerReq.ScaleDownUnneededTime = scw.StringPtr(d.Get("autoscaler_config.0.scale_down_unneeded_time").(string))
+		autoscalerReq.ScaleDownUnneededTime = expandStringPtr(d.Get("autoscaler_config.0.scale_down_unneeded_time"))
 	}
 
 	if d.HasChange("autoscaler_config.0.estimator") {
@@ -938,14 +811,14 @@ func resourceScalewayK8SClusterBetaUpdate(d *schema.ResourceData, m interface{})
 	////
 	// Apply Update
 	////
-	_, err = k8sAPI.UpdateCluster(updateRequest)
+	_, err = k8sAPI.UpdateCluster(updateRequest, scw.WithContext(ctx))
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
-	err = waitK8SCluster(k8sAPI, region, clusterID, k8s.ClusterStatusReady, k8s.ClusterStatusPoolRequired)
+	err = waitK8SCluster(ctx, k8sAPI, region, clusterID, k8s.ClusterStatusReady, k8s.ClusterStatusPoolRequired)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	////
@@ -960,47 +833,50 @@ func resourceScalewayK8SClusterBetaUpdate(d *schema.ResourceData, m interface{})
 		}
 		_, err = k8sAPI.UpgradeCluster(upgradeRequest)
 		if err != nil {
-			return err
+			return diag.FromErr(err)
 		}
 
-		err = waitK8SCluster(k8sAPI, region, clusterID, k8s.ClusterStatusReady, k8s.ClusterStatusPoolRequired)
+		err = waitK8SCluster(ctx, k8sAPI, region, clusterID, k8s.ClusterStatusReady, k8s.ClusterStatusPoolRequired)
 		if err != nil {
-			return err
+			return diag.FromErr(err)
 		}
 	}
 	if _, ok := d.GetOk("default_pool"); ok {
-		err = resourceScalewayK8SClusterBetaDefaultPoolUpdate(d, m)
-		if err != nil {
-			return err
+		diagnostics := resourceScalewayK8SClusterBetaDefaultPoolUpdate(ctx, d, m)
+		if diagnostics != nil {
+			return diagnostics
 		}
 	}
 
-	return resourceScalewayK8SClusterBetaRead(d, m)
+	return resourceScalewayK8SClusterBetaRead(ctx, d, m)
 }
 
-func resourceScalewayK8SClusterBetaDelete(d *schema.ResourceData, m interface{}) error {
+func resourceScalewayK8SClusterBetaDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	k8sAPI, region, clusterID, err := k8sAPIWithRegionAndID(m, d.Id())
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
+
+	deleteAdditionalResources := d.Get("delete_additional_resources").(bool)
 
 	////
 	// Delete Cluster
 	////
 	_, err = k8sAPI.DeleteCluster(&k8s.DeleteClusterRequest{
-		Region:    region,
-		ClusterID: clusterID,
-	})
+		Region:                  region,
+		ClusterID:               clusterID,
+		WithAdditionalResources: deleteAdditionalResources,
+	}, scw.WithContext(ctx))
 	if err != nil {
 		if is404Error(err) {
 			return nil
 		}
-		return err
+		return diag.FromErr(err)
 	}
 
-	err = waitK8SClusterDeleted(k8sAPI, region, clusterID)
+	err = waitK8SClusterDeleted(ctx, k8sAPI, region, clusterID)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	return nil

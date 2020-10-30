@@ -1,19 +1,23 @@
 package scaleway
 
 import (
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
+	"context"
+
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/scaleway/scaleway-sdk-go/api/lb/v1"
+	"github.com/scaleway/scaleway-sdk-go/scw"
 )
 
 func resourceScalewayLbBackendBeta() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceScalewayLbBackendBetaCreate,
-		Read:   resourceScalewayLbBackendBetaRead,
-		Update: resourceScalewayLbBackendBetaUpdate,
-		Delete: resourceScalewayLbBackendBetaDelete,
+		CreateContext: resourceScalewayLbBackendBetaCreate,
+		ReadContext:   resourceScalewayLbBackendBetaRead,
+		UpdateContext: resourceScalewayLbBackendBetaUpdate,
+		DeleteContext: resourceScalewayLbBackendBetaDelete,
 		Importer: &schema.ResourceImporter{
-			State: schema.ImportStatePassthrough,
+			StateContext: schema.ImportStatePassthroughContext,
 		},
 		SchemaVersion: 0,
 		Schema: map[string]*schema.Schema{
@@ -73,7 +77,7 @@ func resourceScalewayLbBackendBeta() *schema.Resource {
 				Type: schema.TypeList,
 				Elem: &schema.Schema{
 					Type:         schema.TypeString,
-					ValidateFunc: validation.SingleIP(),
+					ValidateFunc: validation.IsIPAddress,
 				},
 				Optional:    true,
 				Description: "Backend server IP addresses list (IPv4 or IPv6)",
@@ -228,12 +232,12 @@ func resourceScalewayLbBackendBeta() *schema.Resource {
 	}
 }
 
-func resourceScalewayLbBackendBetaCreate(d *schema.ResourceData, m interface{}) error {
+func resourceScalewayLbBackendBetaCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	lbAPI := lbAPI(m)
 
 	region, LbID, err := parseRegionalID(d.Get("lb_id").(string))
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	healthCheckPort := d.Get("health_check_port").(int)
@@ -268,36 +272,36 @@ func resourceScalewayLbBackendBetaCreate(d *schema.ResourceData, m interface{}) 
 		OnMarkedDownAction: expandLbBackendMarkdownAction(d.Get("on_marked_down_action")),
 	}
 
-	res, err := lbAPI.CreateBackend(createReq)
+	res, err := lbAPI.CreateBackend(createReq, scw.WithContext(ctx))
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
-	d.SetId(newRegionalId(region, res.ID))
+	d.SetId(newRegionalIDString(region, res.ID))
 
-	return resourceScalewayLbBackendBetaRead(d, m)
+	return resourceScalewayLbBackendBetaRead(ctx, d, m)
 }
 
-func resourceScalewayLbBackendBetaRead(d *schema.ResourceData, m interface{}) error {
+func resourceScalewayLbBackendBetaRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	lbAPI, region, ID, err := lbAPIWithRegionAndID(m, d.Id())
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	res, err := lbAPI.GetBackend(&lb.GetBackendRequest{
 		Region:    region,
 		BackendID: ID,
-	})
+	}, scw.WithContext(ctx))
 
 	if err != nil {
 		if is404Error(err) {
 			d.SetId("")
 			return nil
 		}
-		return err
+		return diag.FromErr(err)
 	}
 
-	_ = d.Set("lb_id", newRegionalId(region, res.LB.ID))
+	_ = d.Set("lb_id", newRegionalIDString(region, res.LB.ID))
 	_ = d.Set("name", res.Name)
 	_ = d.Set("forward_protocol", flattenLbProtocol(res.ForwardProtocol))
 	_ = d.Set("forward_port", res.ForwardPort)
@@ -322,10 +326,10 @@ func resourceScalewayLbBackendBetaRead(d *schema.ResourceData, m interface{}) er
 	return nil
 }
 
-func resourceScalewayLbBackendBetaUpdate(d *schema.ResourceData, m interface{}) error {
+func resourceScalewayLbBackendBetaUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	lbAPI, region, ID, err := lbAPIWithRegionAndID(m, d.Id())
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	req := &lb.UpdateBackendRequest{
@@ -345,9 +349,9 @@ func resourceScalewayLbBackendBetaUpdate(d *schema.ResourceData, m interface{}) 
 		OnMarkedDownAction:       expandLbBackendMarkdownAction(d.Get("on_marked_down_action")),
 	}
 
-	_, err = lbAPI.UpdateBackend(req)
+	_, err = lbAPI.UpdateBackend(req, scw.WithContext(ctx))
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	// Update Health Check
@@ -367,9 +371,9 @@ func resourceScalewayLbBackendBetaUpdate(d *schema.ResourceData, m interface{}) 
 		updateHCRequest.TCPConfig = expandLbHCTCP(d.Get("health_check_tcp"))
 	}
 
-	_, err = lbAPI.UpdateHealthCheck(updateHCRequest)
+	_, err = lbAPI.UpdateHealthCheck(updateHCRequest, scw.WithContext(ctx))
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	// Update Backend servers
@@ -377,27 +381,27 @@ func resourceScalewayLbBackendBetaUpdate(d *schema.ResourceData, m interface{}) 
 		Region:    region,
 		BackendID: ID,
 		ServerIP:  expandStrings(d.Get("server_ips")),
-	})
+	}, scw.WithContext(ctx))
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
-	return resourceScalewayLbBackendBetaRead(d, m)
+	return resourceScalewayLbBackendBetaRead(ctx, d, m)
 }
 
-func resourceScalewayLbBackendBetaDelete(d *schema.ResourceData, m interface{}) error {
+func resourceScalewayLbBackendBetaDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	lbAPI, region, ID, err := lbAPIWithRegionAndID(m, d.Id())
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	err = lbAPI.DeleteBackend(&lb.DeleteBackendRequest{
 		Region:    region,
 		BackendID: ID,
-	})
+	}, scw.WithContext(ctx))
 
 	if err != nil && !is404Error(err) {
-		return err
+		return diag.FromErr(err)
 	}
 
 	return nil

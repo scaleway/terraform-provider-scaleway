@@ -1,11 +1,9 @@
 package scaleway
 
 import (
-	"fmt"
-	"strings"
 	"time"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	baremetal "github.com/scaleway/scaleway-sdk-go/api/baremetal/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 )
@@ -33,43 +31,6 @@ func baremetalAPIWithZoneAndID(m interface{}, id string) (*baremetal.API, ZonedI
 
 	zone, ID, err := parseZonedID(id)
 	return baremetalAPI, newZonedID(zone, ID), err
-}
-
-// TODO: Remove it when SDK will handle it.
-// baremetalOfferByName call baremetal API to get an offer by its exact name.
-func baremetalOfferByName(baremetalAPI *baremetal.API, zone scw.Zone, offerName string) (*baremetal.Offer, error) {
-	offerRes, err := baremetalAPI.ListOffers(&baremetal.ListOffersRequest{
-		Zone: zone,
-	}, scw.WithAllPages())
-	if err != nil {
-		return nil, err
-	}
-
-	offerName = strings.ToUpper(offerName)
-	for _, offer := range offerRes.Offers {
-		if offer.Name == offerName {
-			return offer, nil
-		}
-	}
-	return nil, fmt.Errorf("cannot find the offer %s", offerName)
-}
-
-// TODO: Remove it when SDK will handle it.
-// baremetalOfferByID call baremetal API to get an offer by its exact name.
-func baremetalOfferByID(baremetalAPI *baremetal.API, zone scw.Zone, offerID string) (*baremetal.Offer, error) {
-	offerRes, err := baremetalAPI.ListOffers(&baremetal.ListOffersRequest{
-		Zone: zone,
-	}, scw.WithAllPages())
-	if err != nil {
-		return nil, err
-	}
-
-	for _, offer := range offerRes.Offers {
-		if offer.ID == offerID {
-			return offer, nil
-		}
-	}
-	return nil, fmt.Errorf("cannot find the offer %s", offerID)
 }
 
 func flattenBaremetalCPUs(cpus []*baremetal.CPU) interface{} {

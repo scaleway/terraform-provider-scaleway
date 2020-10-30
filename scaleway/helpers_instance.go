@@ -1,12 +1,13 @@
 package scaleway
 
 import (
+	"context"
 	"fmt"
+	"hash/crc32"
 	"sort"
 	"time"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/hashcode"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 )
@@ -37,9 +38,26 @@ func instanceAPIWithZoneAndID(m interface{}, zonedID string) (*instance.API, scw
 	return instanceAPI, zone, ID, err
 }
 
+// hash hashes a string to a unique hashcode.
+//
+// crc32 returns a uint32, but for our use we need
+// and non negative integer. Here we cast to an integer
+// and invert it if the result is negative.
+func hash(s string) int {
+	v := int(crc32.ChecksumIEEE([]byte(s)))
+	if v >= 0 {
+		return v
+	}
+	if -v >= 0 {
+		return -v
+	}
+	// v == MinInt
+	return 0
+}
+
 func userDataHash(v interface{}) int {
 	userData := v.(map[string]interface{})
-	return hashcode.String(userData["key"].(string) + userData["value"].(string))
+	return hash(userData["key"].(string) + userData["value"].(string))
 }
 
 // orderVolumes return an ordered slice based on the volume map key "0", "1", "2",...
@@ -73,7 +91,6 @@ func serverStateFlatten(fromState instance.ServerState) (string, error) {
 
 // serverStateExpand converts a terraform state  to an API state or return an error.
 func serverStateExpand(rawState string) (instance.ServerState, error) {
-
 	apiState, exist := map[string]instance.ServerState{
 		InstanceServerStateStopped: instance.ServerStateStopped,
 		InstanceServerStateStandby: instance.ServerStateStoppedInPlace,
@@ -87,11 +104,11 @@ func serverStateExpand(rawState string) (instance.ServerState, error) {
 	return apiState, nil
 }
 
-func reachState(instanceAPI *instance.API, zone scw.Zone, serverID string, toState instance.ServerState) error {
+func reachState(ctx context.Context, instanceAPI *instance.API, zone scw.Zone, serverID string, toState instance.ServerState) error {
 	response, err := instanceAPI.GetServer(&instance.GetServerRequest{
 		Zone:     zone,
 		ServerID: serverID,
-	})
+	}, scw.WithContext(ctx))
 	if err != nil {
 		return err
 	}
@@ -131,12 +148,11 @@ func reachState(instanceAPI *instance.API, zone scw.Zone, serverID string, toSta
 
 // detachVolume will make sure a volume is not attached to any server. If volume is attached to a server, it will be stopped
 // to allow volume detachment.
-func detachVolume(instanceAPI *instance.API, zone scw.Zone, volumeId string) error {
-
+func detachVolume(ctx context.Context, instanceAPI *instance.API, zone scw.Zone, volumeID string) error {
 	res, err := instanceAPI.GetVolume(&instance.GetVolumeRequest{
 		Zone:     zone,
-		VolumeID: volumeId,
-	})
+		VolumeID: volumeID,
+	}, scw.WithContext(ctx))
 	if err != nil {
 		return err
 	}
@@ -145,11 +161,11 @@ func detachVolume(instanceAPI *instance.API, zone scw.Zone, volumeId string) err
 		return nil
 	}
 
-	defer lockLocalizedId(newZonedId(zone, res.Volume.Server.ID))()
+	defer lockLocalizedID(newZonedIDString(zone, res.Volume.Server.ID))()
 
 	// We need to stop server only for VolumeTypeLSSD volume type
 	if res.Volume.VolumeType == instance.VolumeVolumeTypeLSSD {
-		err = reachState(instanceAPI, zone, res.Volume.Server.ID, instance.ServerStateStopped)
+		err = reachState(ctx, instanceAPI, zone, res.Volume.Server.ID, instance.ServerStateStopped)
 
 		// If 404 this mean server is deleted and volume is already detached
 		if is404Error(err) {
@@ -162,7 +178,7 @@ func detachVolume(instanceAPI *instance.API, zone scw.Zone, volumeId string) err
 	_, err = instanceAPI.DetachVolume(&instance.DetachVolumeRequest{
 		Zone:     zone,
 		VolumeID: res.Volume.ID,
-	})
+	}, scw.WithContext(ctx))
 
 	// TODO find a better way to test this error
 	if err != nil && err.Error() != "scaleway-sdk-go: volume should be attached to a server" {

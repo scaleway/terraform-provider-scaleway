@@ -6,7 +6,7 @@ import (
 
 var locks = sync.Map{}
 
-func lockLocalizedId(id string) (unlock func()) {
+func lockLocalizedID(id string) (unlock func()) {
 	lock, _ := locks.LoadOrStore(id, &sync.Mutex{})
 	mutex := lock.(*sync.Mutex)
 	mutex.Lock()

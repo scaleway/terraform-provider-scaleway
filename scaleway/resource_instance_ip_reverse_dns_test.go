@@ -3,14 +3,16 @@ package scaleway
 import (
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 )
 
-func TestAccScalewayInstanceReverseDnsIP(t *testing.T) {
+func TestAccScalewayInstanceIPReverseDns_Basic(t *testing.T) {
+	tt := NewTestTools(t)
+	defer tt.Cleanup()
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckScalewayInstanceIPDestroy,
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      testAccCheckScalewayInstanceIPDestroy(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
