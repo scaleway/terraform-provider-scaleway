@@ -221,13 +221,6 @@ func resourceScalewayInstanceServer() *schema.Resource {
 			"zone":            zoneSchema(),
 			"organization_id": organizationIDSchema(),
 			"project_id":      projectIDSchema(),
-
-			// Deprecated and removed.
-			"disable_public_ip": {
-				Type:     schema.TypeBool,
-				Optional: true,
-				Default:  false,
-			},
 		},
 	}
 }
