@@ -8,7 +8,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 )
 
-func dataSourceScalewayRDBInstanceBeta() *schema.Resource {
+func dataSourceScalewayRDBInstance() *schema.Resource {
 	// Generate datasource schema from resource
 	dsSchema := datasourceSchemaFromResourceSchema(resourceScalewayRdbInstanceBeta().Schema)
 
@@ -21,12 +21,12 @@ func dataSourceScalewayRDBInstanceBeta() *schema.Resource {
 	}
 
 	return &schema.Resource{
-		Read:   dataSourceScalewayRDBInstanceBetaRead,
+		Read:   dataSourceScalewayRDBInstanceRead,
 		Schema: dsSchema,
 	}
 }
 
-func dataSourceScalewayRDBInstanceBetaRead(d *schema.ResourceData, m interface{}) error {
+func dataSourceScalewayRDBInstanceRead(d *schema.ResourceData, m interface{}) error {
 	api, region, err := rdbAPIWithRegion(d, m)
 	if err != nil {
 		return err
