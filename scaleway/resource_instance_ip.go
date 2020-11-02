@@ -48,9 +48,8 @@ func resourceScalewayInstanceIPCreate(ctx context.Context, d *schema.ResourceDat
 	}
 
 	res, err := instanceAPI.CreateIP(&instance.CreateIPRequest{
-		Zone:         zone,
-		Organization: expandStringPtr(d.Get("organization_id")),
-		Project:      expandStringPtr(d.Get("project_id")),
+		Zone:    zone,
+		Project: expandStringPtr(d.Get("project_id")),
 	}, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
