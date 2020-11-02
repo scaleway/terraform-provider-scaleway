@@ -254,7 +254,6 @@ func resourceScalewayInstanceServerCreate(ctx context.Context, d *schema.Resourc
 	req := &instance.CreateServerRequest{
 		Zone:              zone,
 		Name:              expandOrGenerateString(d.Get("name"), "srv"),
-		Organization:      expandStringPtr(d.Get("organization_id")),
 		Project:           expandStringPtr(d.Get("project_id")),
 		Image:             image.ID,
 		CommercialType:    commercialType,

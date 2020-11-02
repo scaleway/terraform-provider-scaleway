@@ -51,10 +51,9 @@ func resourceScalewayLbIPBetaCreate(ctx context.Context, d *schema.ResourceData,
 	}
 
 	createReq := &lb.CreateIPRequest{
-		Region:         region,
-		OrganizationID: expandStringPtr(d.Get("organization_id")),
-		ProjectID:      expandStringPtr(d.Get("project_id")),
-		Reverse:        expandStringPtr(d.Get("reverse")),
+		Region:    region,
+		ProjectID: expandStringPtr(d.Get("project_id")),
+		Reverse:   expandStringPtr(d.Get("reverse")),
 	}
 
 	res, err := lbAPI.CreateIP(createReq, scw.WithContext(ctx))

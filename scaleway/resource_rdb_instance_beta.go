@@ -128,17 +128,16 @@ func resourceScalewayRdbInstanceBetaCreate(ctx context.Context, d *schema.Resour
 	}
 
 	createReq := &rdb.CreateInstanceRequest{
-		Region:         region,
-		OrganizationID: expandStringPtr(d.Get("organization_id")),
-		ProjectID:      expandStringPtr(d.Get("project_id")),
-		Name:           expandOrGenerateString(d.Get("name"), "rdb"),
-		NodeType:       d.Get("node_type").(string),
-		Engine:         d.Get("engine").(string),
-		IsHaCluster:    d.Get("is_ha_cluster").(bool),
-		DisableBackup:  d.Get("disable_backup").(bool),
-		UserName:       d.Get("user_name").(string),
-		Password:       d.Get("password").(string),
-		Tags:           expandStrings(d.Get("tags")),
+		Region:        region,
+		ProjectID:     expandStringPtr(d.Get("project_id")),
+		Name:          expandOrGenerateString(d.Get("name"), "rdb"),
+		NodeType:      d.Get("node_type").(string),
+		Engine:        d.Get("engine").(string),
+		IsHaCluster:   d.Get("is_ha_cluster").(bool),
+		DisableBackup: d.Get("disable_backup").(bool),
+		UserName:      d.Get("user_name").(string),
+		Password:      d.Get("password").(string),
+		Tags:          expandStrings(d.Get("tags")),
 	}
 
 	res, err := rdbAPI.CreateInstance(createReq, scw.WithContext(ctx))

@@ -43,6 +43,7 @@ func resourceScalewayRegistryNamespaceBeta() *schema.Resource {
 			},
 			"region":          regionSchema(),
 			"organization_id": organizationIDSchema(),
+			"project_id":      projectIDSchema(),
 		},
 	}
 }
@@ -54,8 +55,10 @@ func resourceScalewayRegistryNamespaceBetaCreate(ctx context.Context, d *schema.
 	}
 
 	ns, err := api.CreateNamespace(&registry.CreateNamespaceRequest{
-		Region:         region,
-		OrganizationID: expandStringPtr(d.Get("organization_id")),
+		Region: region,
+		// Registry does not support yet project id.
+		// Once it does, use ProjectID instead or OrganizationID
+		OrganizationID: expandStringPtr(d.Get("project_id")),
 		Name:           d.Get("name").(string),
 		Description:    d.Get("description").(string),
 		IsPublic:       d.Get("is_public").(bool),
@@ -90,7 +93,9 @@ func resourceScalewayRegistryNamespaceBetaRead(ctx context.Context, d *schema.Re
 
 	_ = d.Set("name", ns.Name)
 	_ = d.Set("description", ns.Description)
-	_ = d.Set("organization_id", ns.OrganizationID)
+	// Registry does not support yet project id.
+	// Once it does, use ProjectID instead or OrganizationID
+	_ = d.Set("project_id", ns.OrganizationID)
 	_ = d.Set("is_public", ns.IsPublic)
 	_ = d.Set("endpoint", ns.Endpoint)
 	_ = d.Set("region", ns.Region)

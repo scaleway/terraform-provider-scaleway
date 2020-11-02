@@ -43,10 +43,9 @@ func dataSourceScalewayLbIPBetaRead(ctx context.Context, d *schema.ResourceData,
 	ipID, ok := d.GetOk("ip_id")
 	if !ok { // Get IP by region and IP address.
 		res, err := api.ListIPs(&lb.ListIPsRequest{
-			Region:         region,
-			IPAddress:      expandStringPtr(d.Get("ip_address")),
-			OrganizationID: expandStringPtr(d.Get("organization_id")),
-			ProjectID:      expandStringPtr(d.Get("project_id")),
+			Region:    region,
+			IPAddress: expandStringPtr(d.Get("ip_address")),
+			ProjectID: expandStringPtr(d.Get("project_id")),
 		}, scw.WithContext(ctx))
 		if err != nil {
 			return diag.FromErr(err)
