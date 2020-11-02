@@ -43,11 +43,13 @@ func testSweepLB(region string) error {
 	return nil
 }
 
-func TestAccScalewayLbAndIPBeta(t *testing.T) {
+func TestAccScalewayLbLb_WithIP(t *testing.T) {
+	tt := NewTestTools(t)
+	defer tt.Cleanup()
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckScalewayLbBetaDestroy,
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      testAccCheckScalewayLbBetaDestroy(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -61,8 +63,8 @@ func TestAccScalewayLbAndIPBeta(t *testing.T) {
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayLbBetaExists("scaleway_lb_beta.lb01"),
-					testAccCheckScalewayLbIPBetaExists("scaleway_lb_ip_beta.ip01"),
+					testAccCheckScalewayLbBetaExists(tt, "scaleway_lb_beta.lb01"),
+					testAccCheckScalewayLbIPBetaExists(tt, "scaleway_lb_ip_beta.ip01"),
 					resource.TestCheckResourceAttr("scaleway_lb_beta.lb01", "name", "test-lb"),
 					testCheckResourceAttrUUID("scaleway_lb_beta.lb01", "ip_id"),
 					testCheckResourceAttrIPv4("scaleway_lb_beta.lb01", "ip_address"),
@@ -75,21 +77,21 @@ func TestAccScalewayLbAndIPBeta(t *testing.T) {
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayLbIPBetaExists("scaleway_lb_ip_beta.ip01"),
+					testAccCheckScalewayLbIPBetaExists(tt, "scaleway_lb_ip_beta.ip01"),
 				),
 			},
 		},
 	})
 }
 
-func testAccCheckScalewayLbBetaExists(n string) resource.TestCheckFunc {
+func testAccCheckScalewayLbBetaExists(tt *TestTools, n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
 			return fmt.Errorf("resource not found: %s", n)
 		}
 
-		lbAPI, region, ID, err := lbAPIWithRegionAndID(testAccProvider.Meta(), rs.Primary.ID)
+		lbAPI, region, ID, err := lbAPIWithRegionAndID(tt.Meta, rs.Primary.ID)
 		if err != nil {
 			return err
 		}
@@ -107,32 +109,34 @@ func testAccCheckScalewayLbBetaExists(n string) resource.TestCheckFunc {
 	}
 }
 
-func testAccCheckScalewayLbBetaDestroy(s *terraform.State) error {
-	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "scaleway_lb_beta" {
-			continue
+func testAccCheckScalewayLbBetaDestroy(tt *TestTools) resource.TestCheckFunc {
+	return func(state *terraform.State) error {
+		for _, rs := range state.RootModule().Resources {
+			if rs.Type != "scaleway_lb_beta" {
+				continue
+			}
+
+			lbAPI, region, ID, err := lbAPIWithRegionAndID(tt.Meta, rs.Primary.ID)
+			if err != nil {
+				return err
+			}
+
+			_, err = lbAPI.GetLB(&lb.GetLBRequest{
+				Region: region,
+				LBID:   ID,
+			})
+
+			// If no error resource still exist
+			if err == nil {
+				return fmt.Errorf("load Balancer (%s) still exists", rs.Primary.ID)
+			}
+
+			// Unexpected api error we return it
+			if !is404Error(err) {
+				return err
+			}
 		}
 
-		lbAPI, region, ID, err := lbAPIWithRegionAndID(testAccProvider.Meta(), rs.Primary.ID)
-		if err != nil {
-			return err
-		}
-
-		_, err = lbAPI.GetLB(&lb.GetLBRequest{
-			Region: region,
-			LBID:   ID,
-		})
-
-		// If no error resource still exist
-		if err == nil {
-			return fmt.Errorf("Load Balancer (%s) still exists", rs.Primary.ID)
-		}
-
-		// Unexpected api error we return it
-		if !is404Error(err) {
-			return err
-		}
+		return nil
 	}
-
-	return nil
 }

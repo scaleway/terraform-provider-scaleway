@@ -218,16 +218,21 @@ func resourceScalewayLbFrontendBetaRead(ctx context.Context, d *schema.ResourceD
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	sort.Slice(resACL.ACLs, func(i, j int) bool {
-		return resACL.ACLs[i].Index < resACL.ACLs[j].Index
-	})
-	stateAcls := make([]interface{}, 0, len(resACL.ACLs))
-	for _, apiACL := range resACL.ACLs {
-		stateAcls = append(stateAcls, flattenLbACL(apiACL))
-	}
-	_ = d.Set("acl", stateAcls)
+
+	_ = d.Set("acl", flattenLBACLs(resACL.ACLs))
 
 	return nil
+}
+
+func flattenLBACLs(ACLs []*lb.ACL) interface{} {
+	sort.Slice(ACLs, func(i, j int) bool {
+		return ACLs[i].Index < ACLs[j].Index
+	})
+	rawACLs := make([]interface{}, 0, len(ACLs))
+	for _, apiACL := range ACLs {
+		rawACLs = append(rawACLs, flattenLbACL(apiACL))
+	}
+	return rawACLs
 }
 
 func resourceScalewayLbFrontendBetaUpdateACL(ctx context.Context, d *schema.ResourceData, lbAPI *lb.API, region scw.Region, frontendID string) diag.Diagnostics {
@@ -245,10 +250,7 @@ func resourceScalewayLbFrontendBetaUpdateACL(ctx context.Context, d *schema.Reso
 	}
 
 	//convert state acl and sanitize them a bit
-	newACL := make([]*lb.ACL, 0)
-	for _, rawACL := range d.Get("acl").([]interface{}) {
-		newACL = append(newACL, expandLbACL(rawACL))
-	}
+	newACL := expandsLBACLs(d.Get("acl"))
 
 	//loop
 	for index, stateACL := range newACL {
@@ -302,6 +304,15 @@ func resourceScalewayLbFrontendBetaUpdateACL(ctx context.Context, d *schema.Reso
 		}
 	}
 	return nil
+}
+
+func expandsLBACLs(raw interface{}) []*lb.ACL {
+	d := raw.([]interface{})
+	newACL := make([]*lb.ACL, 0)
+	for _, rawACL := range d {
+		newACL = append(newACL, expandLbACL(rawACL))
+	}
+	return newACL
 }
 
 func resourceScalewayLbFrontendBetaUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
