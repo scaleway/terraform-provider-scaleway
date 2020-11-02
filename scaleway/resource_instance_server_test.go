@@ -936,3 +936,41 @@ func TestAccScalewayInstanceServer_Bootscript(t *testing.T) {
 		},
 	})
 }
+
+func TestAccScalewayInstanceServer_AlterTags(t *testing.T) {
+	tt := NewTestTools(t)
+	defer tt.Cleanup()
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      testAccCheckScalewayInstanceServerDestroy(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource "scaleway_instance_server" "web" {
+						type  = "DEV1-L"
+						image = "ubuntu_focal"
+						tags = [ "front", "web" ]
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayInstanceServerExists(tt, "scaleway_instance_server.base"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.web", "tags.0", "front"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.web", "tags.1", "web"),
+				),
+			},
+			{
+				Config: `
+					resource "scaleway_instance_server" "web" {
+						type  = "DEV1-L"
+						image = "ubuntu_focal"
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayInstanceServerExists(tt, "scaleway_instance_server.base"),
+					resource.TestCheckNoResourceAttr("scaleway_instance_server.web", "tags"),
+				),
+			},
+		},
+	})
+}

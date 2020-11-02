@@ -508,6 +508,9 @@ func resourceScalewayInstanceServerUpdate(ctx context.Context, d *schema.Resourc
 
 	if d.HasChange("tags") {
 		tags := expandStrings(d.Get("tags"))
+		if tags == nil {
+			tags = []string{""}
+		}
 		updateRequest.Tags = scw.StringsPtr(tags)
 	}
 
