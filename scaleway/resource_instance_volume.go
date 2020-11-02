@@ -81,11 +81,10 @@ func resourceScalewayInstanceVolumeCreate(ctx context.Context, d *schema.Resourc
 	}
 
 	createVolumeRequest := &instance.CreateVolumeRequest{
-		Zone:         zone,
-		Name:         expandOrGenerateString(d.Get("name"), "vol"),
-		VolumeType:   instance.VolumeVolumeType(d.Get("type").(string)),
-		Organization: expandStringPtr(d.Get("organization_id")),
-		Project:      expandStringPtr(d.Get("project_id")),
+		Zone:       zone,
+		Name:       expandOrGenerateString(d.Get("name"), "vol"),
+		VolumeType: instance.VolumeVolumeType(d.Get("type").(string)),
+		Project:    expandStringPtr(d.Get("project_id")),
 	}
 
 	if size, ok := d.GetOk("size_in_gb"); ok {

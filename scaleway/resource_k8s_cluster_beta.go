@@ -229,7 +229,6 @@ func resourceScalewayK8SClusterBetaCreate(ctx context.Context, d *schema.Resourc
 
 	req := &k8s.CreateClusterRequest{
 		Region:           region,
-		OrganizationID:   expandStringPtr(d.Get("organization_id")),
 		ProjectID:        expandStringPtr(d.Get("project_id")),
 		Name:             expandOrGenerateString(d.Get("name"), "cluster"),
 		Description:      description.(string),
