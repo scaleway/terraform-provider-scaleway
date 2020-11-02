@@ -88,6 +88,42 @@ func TestAccScalewayInstancePlacementGroup_Basic(t *testing.T) {
 	})
 }
 
+func TestAccScalewayInstancePlacementGroup_Rename(t *testing.T) {
+	tt := NewTestTools(t)
+	defer tt.Cleanup()
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      testAccCheckScalewayInstancePlacementGroupDestroy(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource "scaleway_instance_placement_group" "scaleway" {
+						name        = "foo"
+						policy_mode = "enforced"
+						policy_type = "low_latency"
+					}`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayInstancePlacementGroupExists(tt, "scaleway_instance_placement_group.scaleway"),
+					resource.TestCheckResourceAttr("scaleway_instance_placement_group.scaleway", "name", "foo"),
+				),
+			},
+			{
+				Config: `
+					resource "scaleway_instance_placement_group" "scaleway" {
+						name        = "bar"
+						policy_mode = "enforced"
+						policy_type = "low_latency"
+					}`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayInstancePlacementGroupExists(tt, "scaleway_instance_placement_group.scaleway"),
+					resource.TestCheckResourceAttr("scaleway_instance_placement_group.scaleway", "name", "bar"),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckScalewayInstancePlacementGroupExists(tt *TestTools, n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
