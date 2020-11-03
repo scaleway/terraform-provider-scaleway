@@ -17,34 +17,30 @@ func init() {
 	})
 }
 
-func testSweepVPCPrivateNetwork(zone string) error {
-	z, err := scw.ParseZone(zone)
-	if err != nil {
-		return err
-	}
-	scwClient, err := sharedClientForZone(z)
-	if err != nil {
-		return fmt.Errorf("error getting client in sweeper: %s", err)
-	}
-	vpcAPI := vpc.NewAPI(scwClient)
+func testSweepVPCPrivateNetwork(_ string) error {
+	return sweepZones(scw.AllZones, func(scwClient *scw.Client, zone scw.Zone) error {
+		vpcAPI := vpc.NewAPI(scwClient)
+		l.Debugf("sweeper: destroying the private network in (%s)", zone)
 
-	l.Debugf("sweeper: destroying the VPC private networks in %s", zone)
-	listVPCPrivateNetworks, err := vpcAPI.ListPrivateNetworks(&vpc.ListPrivateNetworksRequest{}, scw.WithAllPages())
-	if err != nil {
-		return fmt.Errorf("error listing private networks in (%s) in sweeper: %s", zone, err)
-	}
-
-	for _, n := range listVPCPrivateNetworks.PrivateNetworks {
-		err := vpcAPI.DeletePrivateNetwork(&vpc.DeletePrivateNetworkRequest{
-			PrivateNetworkID: n.ID,
-			Zone:             z,
-		})
+		listPNResponse, err := vpcAPI.ListPrivateNetworks(&vpc.ListPrivateNetworksRequest{
+			Zone: zone,
+		}, scw.WithAllPages())
 		if err != nil {
-			return fmt.Errorf("error deleting private network in sweeper: %s", err)
+			return fmt.Errorf("error listing private network in sweeper: %s", err)
 		}
-	}
 
-	return nil
+		for _, pn := range listPNResponse.PrivateNetworks {
+			err := vpcAPI.DeletePrivateNetwork(&vpc.DeletePrivateNetworkRequest{
+				Zone:             zone,
+				PrivateNetworkID: pn.ID,
+			})
+			if err != nil {
+				return fmt.Errorf("error deleting private network in sweeper: %s", err)
+			}
+
+		}
+		return nil
+	})
 }
 
 func TestAccScalewayVPCPrivateNetwork_Basic(t *testing.T) {
