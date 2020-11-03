@@ -34,10 +34,10 @@ func resourceScalewayVPCPrivateNetwork() *schema.Resource {
 					Type: schema.TypeString,
 				},
 			},
-			"organization_id": organizationIDSchema(),
-			"project_id":      projectIDSchema(),
-			"zone":            zoneSchema(),
+			"project_id": projectIDSchema(),
+			"zone":       zoneSchema(),
 			// Computed elements
+			"organization_id": organizationIDSchema(),
 			"created_at": {
 				Type:        schema.TypeString,
 				Computed:    true,
