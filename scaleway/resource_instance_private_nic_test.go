@@ -53,22 +53,26 @@ func TestAccScalewayInstancePrivateNIC_Basic(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: `
-					resource scaleway_vpc_private_network pn01 {}
-					resource "scaleway_instance_server" "server01" {
-						image = "f974feac-abae-4365-b988-8ec7d1cec10d"
-						type  = "DEV1-S"
-						tags  = [ "terraform-test", "scaleway_instance_server" ]
+					resource scaleway_vpc_private_network pn01 {
+						name = "TestAccScalewayInstancePrivateNIC_Basic"
 					}
+
+					resource "scaleway_instance_server" "server01" {
+						image = "ubuntu_focal"
+						type  = "DEV1-S"
+						bootscript_id = "fdfe150f-a870-4ce4-b432-9f56b5b995c1"
+					}
+
 					resource scaleway_instance_private_nic nic01 {
 						server_id          = scaleway_instance_server.server01.id
 						private_network_id = scaleway_vpc_private_network.pn01.id
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayInstancePrivateNICExists(
-						tt,
-						"scaleway_instance_private_nic.nic01",
-					),
+					testAccCheckScalewayInstancePrivateNICExists(tt, "scaleway_instance_private_nic.nic01"),
+					resource.TestCheckResourceAttrSet("scaleway_instance_private_nic.nic01", "mac_address"),
+					resource.TestCheckResourceAttrSet("scaleway_instance_private_nic.nic01", "private_network_id"),
+					resource.TestCheckResourceAttrSet("scaleway_instance_private_nic.nic01", "server_id"),
 				),
 			},
 		},

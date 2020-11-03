@@ -16,7 +16,7 @@ func resourceScalewayInstancePrivateNIC() *schema.Resource {
 		UpdateContext: resourceScalewayInstancePrivateNICUpdate,
 		DeleteContext: resourceScalewayInstancePrivateNICDelete,
 		Importer: &schema.ResourceImporter{
-			State: schema.ImportStatePassthrough,
+			StateContext: schema.ImportStatePassthroughContext,
 		},
 
 		Schema: map[string]*schema.Schema{
@@ -30,6 +30,12 @@ func resourceScalewayInstancePrivateNIC() *schema.Resource {
 				Description: "The private network ID",
 				Required:    true,
 			},
+			"mac_address": {
+				Type:        schema.TypeString,
+				Description: "MAC address of the NIC",
+				Computed:    true,
+			},
+			"zone": zoneSchema(),
 		},
 	}
 }
@@ -88,11 +94,6 @@ func resourceScalewayInstancePrivateNICRead(ctx context.Context, d *schema.Resou
 		return diag.FromErr(err)
 	}
 
-	_ = d.Set("id", newZonedNestedIDString(
-		zone,
-		res.PrivateNic.ServerID,
-		res.PrivateNic.ID,
-	))
 	_ = d.Set("zone", zone)
 	_ = d.Set("server_id", newZonedID(zone, res.PrivateNic.ServerID).String())
 	_ = d.Set("private_network_id", newZonedID(zone, res.PrivateNic.PrivateNetworkID).String())
@@ -143,10 +144,9 @@ func resourceScalewayInstancePrivateNICUpdate(ctx context.Context, d *schema.Res
 				res.PrivateNic.ID,
 			),
 		)
-		return resourceScalewayInstancePrivateNICRead(ctx, d, m)
 	}
 
-	return nil
+	return resourceScalewayInstancePrivateNICRead(ctx, d, m)
 }
 
 func resourceScalewayInstancePrivateNICDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {

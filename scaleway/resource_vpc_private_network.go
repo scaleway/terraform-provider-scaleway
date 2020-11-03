@@ -109,16 +109,18 @@ func resourceScalewayVPCPrivateNetworkUpdate(ctx context.Context, d *schema.Reso
 		return diag.FromErr(err)
 	}
 
-	updateRequest := &vpc.UpdatePrivateNetworkRequest{
-		PrivateNetworkID: ID,
-		Zone:             zone,
-		Name:             scw.StringPtr(d.Get("name").(string)),
-		Tags:             scw.StringsPtr(expandStrings(d.Get("tags"))),
-	}
+	if d.HasChanges("name", "tags") {
+		updateRequest := &vpc.UpdatePrivateNetworkRequest{
+			PrivateNetworkID: ID,
+			Zone:             zone,
+			Name:             scw.StringPtr(d.Get("name").(string)),
+			Tags:             scw.StringsPtr(expandStrings(d.Get("tags"))),
+		}
 
-	_, err = vpcAPI.UpdatePrivateNetwork(updateRequest, scw.WithContext(ctx))
-	if err != nil {
-		return diag.FromErr(err)
+		_, err = vpcAPI.UpdatePrivateNetwork(updateRequest, scw.WithContext(ctx))
+		if err != nil {
+			return diag.FromErr(err)
+		}
 	}
 
 	return resourceScalewayVPCPrivateNetworkRead(ctx, d, m)
