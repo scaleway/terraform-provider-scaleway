@@ -93,7 +93,7 @@ func resourceScalewayLbBackendBeta() *schema.Resource {
 				Type:        schema.TypeString,
 				Description: "Type of PROXY protocol to enable",
 				Optional:    true,
-				Default:     lb.ProxyProtocolProxyProtocolNone,
+				Default:     flattenLbProxyProtocol(lb.ProxyProtocolProxyProtocolNone).(string),
 				ValidateFunc: validation.StringInSlice([]string{
 					flattenLbProxyProtocol(lb.ProxyProtocolProxyProtocolNone).(string),
 					flattenLbProxyProtocol(lb.ProxyProtocolProxyProtocolV1).(string),
