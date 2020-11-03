@@ -391,6 +391,7 @@ func resourceScalewayInstanceServerRead(ctx context.Context, d *schema.ResourceD
 	}
 
 	if response.Server.PlacementGroup != nil {
+		_ = d.Set("placement_group_id", newZonedID(zone, response.Server.PlacementGroup.ID).String())
 		_ = d.Set("placement_group_policy_respected", response.Server.PlacementGroup.PolicyRespected)
 	}
 
