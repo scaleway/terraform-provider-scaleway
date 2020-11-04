@@ -37,7 +37,6 @@ func testSweepVPCPrivateNetwork(_ string) error {
 			if err != nil {
 				return fmt.Errorf("error deleting private network in sweeper: %s", err)
 			}
-
 		}
 		return nil
 	})

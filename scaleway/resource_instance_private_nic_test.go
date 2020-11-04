@@ -37,7 +37,6 @@ func testSweepInstancePrivateNic(_ string) error {
 			if err != nil {
 				return fmt.Errorf("error deleting private nic in sweeper: %s", err)
 			}
-
 		}
 		return nil
 	})
