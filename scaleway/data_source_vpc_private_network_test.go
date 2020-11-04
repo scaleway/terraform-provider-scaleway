@@ -37,7 +37,7 @@ func TestAccScalewayDataSourceVPCPrivateNetwork_Basic(t *testing.T) {
 					}
 				`, pnName),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayVPCPrivateNetworkExists(tt, "data.scaleway_vpc_private_network.pn_test"),
+					testAccCheckScalewayVPCPrivateNetworkExists(tt, "scaleway_vpc_private_network.pn_test"),
 					resource.TestCheckResourceAttrPair(
 						"data.scaleway_vpc_private_network.pn_test_by_name", "name",
 						"scaleway_vpc_private_network.pn_test", "name"),
