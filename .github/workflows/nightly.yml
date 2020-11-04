@@ -30,7 +30,10 @@ jobs:
         run: go test -v ./... -timeout=1h -run TestAccScaleway${{ matrix.products }}*
         env:
           TF_LOG: DEBUG
+          # https://www.terraform.io/docs/extend/testing/acceptance-tests/index.html#running-acceptance-tests
           TF_ACC: 1
+          # Enable recording with the cassette system. By doing so, we ensure that real HTTPS requests are made.
+          TF_UPDATE_CASSETTES: true
           SCW_DEBUG: 1
           SCW_ACCESS_KEY: ${{ secrets.SCW_ACCESS_KEY }}
           SCW_SECRET_KEY: ${{ secrets.SCW_SECRET_KEY }}
