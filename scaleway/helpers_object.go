@@ -95,6 +95,6 @@ func expandObjectBucketTags(tags interface{}) []*s3.Tag {
 	return tagsSet
 }
 
-func endpointURL(bucketName string, region scw.Region) string {
+func objectBucketEndpointURL(bucketName string, region scw.Region) string {
 	return fmt.Sprintf("https://%s.s3.%s.scw.cloud", bucketName, region)
 }
