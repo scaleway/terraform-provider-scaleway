@@ -43,10 +43,9 @@ func dataSourceScalewayInstanceServerRead(ctx context.Context, d *schema.Resourc
 	serverID, ok := d.GetOk("server_id")
 	if !ok {
 		res, err := instanceAPI.ListServers(&instance.ListServersRequest{
-			Zone:         zone,
-			Name:         expandStringPtr(d.Get("name")),
-			Organization: expandStringPtr(d.Get("organization_id")),
-			Project:      expandStringPtr(d.Get("project_id")),
+			Zone:    zone,
+			Name:    expandStringPtr(d.Get("name")),
+			Project: expandStringPtr(d.Get("project_id")),
 		}, scw.WithContext(ctx))
 		if err != nil {
 			return diag.FromErr(err)

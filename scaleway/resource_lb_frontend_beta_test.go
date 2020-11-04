@@ -11,11 +11,13 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestAccScalewayLbFrontendBeta(t *testing.T) {
+func TestAccScalewayLbFrontend_Basic(t *testing.T) {
+	tt := NewTestTools(t)
+	defer tt.Cleanup()
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckScalewayLbFrontendBetaDestroy,
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      testAccCheckScalewayLbFrontendBetaDestroy(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -29,6 +31,7 @@ func TestAccScalewayLbFrontendBeta(t *testing.T) {
 						lb_id = scaleway_lb_beta.lb01.id
 						forward_protocol = "tcp"
 						forward_port = 80
+						proxy_protocol = "none"
 					}
 					resource scaleway_lb_frontend_beta frt01 {
 						lb_id = scaleway_lb_beta.lb01.id
@@ -37,7 +40,7 @@ func TestAccScalewayLbFrontendBeta(t *testing.T) {
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayLbFrontendBetaExists("scaleway_lb_frontend_beta.frt01"),
+					testAccCheckScalewayLbFrontendBetaExists(tt, "scaleway_lb_frontend_beta.frt01"),
 					resource.TestCheckResourceAttr("scaleway_lb_frontend_beta.frt01", "inbound_port", "80"),
 					resource.TestCheckResourceAttr("scaleway_lb_frontend_beta.frt01", "timeout_client", ""),
 				),
@@ -54,6 +57,7 @@ func TestAccScalewayLbFrontendBeta(t *testing.T) {
 						lb_id = scaleway_lb_beta.lb01.id
 						forward_protocol = "tcp"
 						forward_port = 80
+						proxy_protocol = "none"
 					}
 					resource scaleway_lb_frontend_beta frt01 {
 						lb_id = scaleway_lb_beta.lb01.id
@@ -64,7 +68,7 @@ func TestAccScalewayLbFrontendBeta(t *testing.T) {
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayLbFrontendBetaExists("scaleway_lb_frontend_beta.frt01"),
+					testAccCheckScalewayLbFrontendBetaExists(tt, "scaleway_lb_frontend_beta.frt01"),
 					resource.TestCheckResourceAttr("scaleway_lb_frontend_beta.frt01", "name", "tf-test"),
 					resource.TestCheckResourceAttr("scaleway_lb_frontend_beta.frt01", "inbound_port", "443"),
 					resource.TestCheckResourceAttr("scaleway_lb_frontend_beta.frt01", "timeout_client", "30s"),
@@ -74,11 +78,13 @@ func TestAccScalewayLbFrontendBeta(t *testing.T) {
 	})
 }
 
-func TestAccScalewayLbAclBeta(t *testing.T) {
+func TestAccScalewayLbAcl_Basic(t *testing.T) {
+	tt := NewTestTools(t)
+	defer tt.Cleanup()
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckScalewayLbFrontendBetaDestroy,
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      testAccCheckScalewayLbFrontendBetaDestroy(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -92,6 +98,7 @@ func TestAccScalewayLbAclBeta(t *testing.T) {
 						lb_id = scaleway_lb_beta.lb01.id
 						forward_protocol = "http"
 						forward_port = 80
+						proxy_protocol = "none"
 					}
 					resource scaleway_lb_frontend_beta frt01 {
 						lb_id = scaleway_lb_beta.lb01.id
@@ -107,7 +114,7 @@ func TestAccScalewayLbAclBeta(t *testing.T) {
 							match {
 								ip_subnet = ["192.168.0.1", "192.168.0.2", "192.168.10.0/24"]
 								http_filter = "acl_http_filter_none"
-								http_filter_value = ["criteria1","criteria2"]
+								http_filter_value = []
 								invert = "true"
 							}
 						}
@@ -116,6 +123,7 @@ func TestAccScalewayLbAclBeta(t *testing.T) {
 								type = "allow"
 							}
 							match {
+								ip_subnet = ["0.0.0.0/0"]
 								http_filter = "path_begin"
 								http_filter_value = ["criteria1","criteria2"]
 								invert = "true"
@@ -126,6 +134,8 @@ func TestAccScalewayLbAclBeta(t *testing.T) {
 								type = "allow"
 							}
 							match {
+								ip_subnet = ["0.0.0.0/0"]
+								http_filter = "path_begin"
 								http_filter_value = ["criteria1","criteria2"]
 							}
 						}
@@ -134,12 +144,14 @@ func TestAccScalewayLbAclBeta(t *testing.T) {
 								type = "allow"
 							}
 							match {
+								ip_subnet = ["0.0.0.0/0"]
 								http_filter = "acl_http_filter_none"
-								http_filter_value = ["criteria1","criteria2"]
+								http_filter_value = []
 							}
 						}
 						acl {
 							match {
+								http_filter_value = []
 								ip_subnet = ["0.0.0.0/0"]	
 							}
 							action {
@@ -149,7 +161,7 @@ func TestAccScalewayLbAclBeta(t *testing.T) {
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayACLAreCorrect("scaleway_lb_frontend_beta.frt01", []*lb.ACL{
+					testAccCheckScalewayACLAreCorrect(tt, "scaleway_lb_frontend_beta.frt01", []*lb.ACL{
 						{
 							Name: "test-acl",
 							Match: &lb.ACLMatch{
@@ -172,8 +184,8 @@ func TestAccScalewayLbAclBeta(t *testing.T) {
 						{
 							Match: &lb.ACLMatch{
 								IPSubnet:        scw.StringSlicePtr([]string{"0.0.0.0/0"}),
-								HTTPFilter:      lb.ACLHTTPFilterACLHTTPFilterNone,
-								HTTPFilterValue: []*string{},
+								HTTPFilter:      lb.ACLHTTPFilterPathBegin,
+								HTTPFilterValue: scw.StringSlicePtr([]string{"criteria1", "criteria2"}),
 								Invert:          false,
 							},
 							Action: &lb.ACLAction{Type: lb.ACLActionTypeAllow},
@@ -210,6 +222,7 @@ func TestAccScalewayLbAclBeta(t *testing.T) {
 						lb_id = scaleway_lb_beta.lb01.id
 						forward_protocol = "http"
 						forward_port = 80
+						proxy_protocol = "none"
 					}
 					resource scaleway_lb_frontend_beta frt01 {
 						lb_id = scaleway_lb_beta.lb01.id
@@ -230,7 +243,7 @@ func TestAccScalewayLbAclBeta(t *testing.T) {
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayACLAreCorrect("scaleway_lb_frontend_beta.frt01", []*lb.ACL{
+					testAccCheckScalewayACLAreCorrect(tt, "scaleway_lb_frontend_beta.frt01", []*lb.ACL{
 						{
 							Match: &lb.ACLMatch{
 								IPSubnet:        scw.StringSlicePtr([]string{"10.0.0.10"}),
@@ -247,7 +260,7 @@ func TestAccScalewayLbAclBeta(t *testing.T) {
 	})
 }
 
-func testAccCheckScalewayACLAreCorrect(frontendName string, expectedAcls []*lb.ACL) resource.TestCheckFunc {
+func testAccCheckScalewayACLAreCorrect(tt *TestTools, frontendName string, expectedAcls []*lb.ACL) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		//define a wrapper for acl comparison
 		testCompareAcls := func(testAcl, apiAcl lb.ACL) bool {
@@ -270,7 +283,7 @@ func testAccCheckScalewayACLAreCorrect(frontendName string, expectedAcls []*lb.A
 			return fmt.Errorf("resource id is not set")
 		}
 
-		lbAPI, region, ID, err := lbAPIWithRegionAndID(testAccProvider.Meta(), rs.Primary.ID)
+		lbAPI, region, ID, err := lbAPIWithRegionAndID(tt.Meta, rs.Primary.ID)
 		if err != nil {
 			return err
 		}
@@ -308,14 +321,14 @@ func testAccCheckScalewayACLAreCorrect(frontendName string, expectedAcls []*lb.A
 		return nil
 	}
 }
-func testAccCheckScalewayLbFrontendBetaExists(n string) resource.TestCheckFunc {
+func testAccCheckScalewayLbFrontendBetaExists(tt *TestTools, n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
 			return fmt.Errorf("resource not found: %s", n)
 		}
 
-		lbAPI, region, ID, err := lbAPIWithRegionAndID(testAccProvider.Meta(), rs.Primary.ID)
+		lbAPI, region, ID, err := lbAPIWithRegionAndID(tt.Meta, rs.Primary.ID)
 		if err != nil {
 			return err
 		}
@@ -333,34 +346,36 @@ func testAccCheckScalewayLbFrontendBetaExists(n string) resource.TestCheckFunc {
 	}
 }
 
-func testAccCheckScalewayLbFrontendBetaDestroy(s *terraform.State) error {
-	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "scaleway_lb_frontend_beta" {
-			continue
+func testAccCheckScalewayLbFrontendBetaDestroy(tt *TestTools) resource.TestCheckFunc {
+	return func(state *terraform.State) error {
+		for _, rs := range state.RootModule().Resources {
+			if rs.Type != "scaleway_lb_frontend_beta" {
+				continue
+			}
+
+			lbAPI, region, ID, err := lbAPIWithRegionAndID(tt.Meta, rs.Primary.ID)
+			if err != nil {
+				return err
+			}
+
+			_, err = lbAPI.GetFrontend(&lb.GetFrontendRequest{
+				Region:     region,
+				FrontendID: ID,
+			})
+
+			// If no error resource still exist
+			if err == nil {
+				return fmt.Errorf("LB Frontend (%s) still exists", rs.Primary.ID)
+			}
+
+			// Unexpected api error we return it
+			if !is404Error(err) {
+				return err
+			}
 		}
 
-		lbAPI, region, ID, err := lbAPIWithRegionAndID(testAccProvider.Meta(), rs.Primary.ID)
-		if err != nil {
-			return err
-		}
-
-		_, err = lbAPI.GetFrontend(&lb.GetFrontendRequest{
-			Region:     region,
-			FrontendID: ID,
-		})
-
-		// If no error resource still exist
-		if err == nil {
-			return fmt.Errorf("LB Frontend (%s) still exists", rs.Primary.ID)
-		}
-
-		// Unexpected api error we return it
-		if !is404Error(err) {
-			return err
-		}
+		return nil
 	}
-
-	return nil
 }
 
 func TestAclEqual(t *testing.T) {

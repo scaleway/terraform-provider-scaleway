@@ -39,7 +39,7 @@ func testSweepRegistryNamespace(_ string) error {
 	})
 }
 
-func TestRegistryNamespaceBeta(t *testing.T) {
+func TestAccScalewayRegistryNamespace_Basic(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,

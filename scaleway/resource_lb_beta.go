@@ -68,12 +68,11 @@ func resourceScalewayLbBetaCreate(ctx context.Context, d *schema.ResourceData, m
 	}
 
 	createReq := &lb.CreateLBRequest{
-		Region:         region,
-		IPID:           expandStringPtr(expandID(d.Get("ip_id"))),
-		OrganizationID: expandStringPtr(d.Get("organization_id")),
-		ProjectID:      expandStringPtr(d.Get("project_id")),
-		Name:           expandOrGenerateString(d.Get("name"), "lb"),
-		Type:           d.Get("type").(string),
+		Region:    region,
+		IPID:      expandStringPtr(expandID(d.Get("ip_id"))),
+		ProjectID: expandStringPtr(d.Get("project_id")),
+		Name:      expandOrGenerateString(d.Get("name"), "lb"),
+		Type:      d.Get("type").(string),
 	}
 
 	if raw, ok := d.GetOk("tags"); ok {

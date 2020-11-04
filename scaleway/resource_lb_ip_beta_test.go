@@ -44,11 +44,13 @@ func testSweepLBIP(region string) error {
 	return nil
 }
 
-func TestAccScalewayLbIPBeta(t *testing.T) {
+func TestAccScalewayLbIP_Basic(t *testing.T) {
+	tt := NewTestTools(t)
+	defer tt.Cleanup()
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckScalewayLbIPBetaDestroy,
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      testAccCheckScalewayLbIPBetaDestroy(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -56,7 +58,7 @@ func TestAccScalewayLbIPBeta(t *testing.T) {
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayLbIPBetaExists("scaleway_lb_ip_beta.ip01"),
+					testAccCheckScalewayLbIPBetaExists(tt, "scaleway_lb_ip_beta.ip01"),
 					testCheckResourceAttrIPv4("scaleway_lb_ip_beta.ip01", "ip_address"),
 					resource.TestCheckResourceAttrSet("scaleway_lb_ip_beta.ip01", "reverse"),
 				),
@@ -68,7 +70,7 @@ func TestAccScalewayLbIPBeta(t *testing.T) {
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayLbIPBetaExists("scaleway_lb_ip_beta.ip01"),
+					testAccCheckScalewayLbIPBetaExists(tt, "scaleway_lb_ip_beta.ip01"),
 					testCheckResourceAttrIPv4("scaleway_lb_ip_beta.ip01", "ip_address"),
 					resource.TestCheckResourceAttr("scaleway_lb_ip_beta.ip01", "reverse", "myreverse.com"),
 				),
@@ -77,14 +79,14 @@ func TestAccScalewayLbIPBeta(t *testing.T) {
 	})
 }
 
-func testAccCheckScalewayLbIPBetaExists(n string) resource.TestCheckFunc {
-	return func(s *terraform.State) error {
-		rs, ok := s.RootModule().Resources[n]
+func testAccCheckScalewayLbIPBetaExists(tt *TestTools, n string) resource.TestCheckFunc {
+	return func(state *terraform.State) error {
+		rs, ok := state.RootModule().Resources[n]
 		if !ok {
 			return fmt.Errorf("resource not found: %s", n)
 		}
 
-		lbAPI, region, ID, err := lbAPIWithRegionAndID(testAccProvider.Meta(), rs.Primary.ID)
+		lbAPI, region, ID, err := lbAPIWithRegionAndID(tt.Meta, rs.Primary.ID)
 		if err != nil {
 			return err
 		}
@@ -102,32 +104,34 @@ func testAccCheckScalewayLbIPBetaExists(n string) resource.TestCheckFunc {
 	}
 }
 
-func testAccCheckScalewayLbIPBetaDestroy(s *terraform.State) error {
-	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "scaleway_lb_ip_beta" {
-			continue
+func testAccCheckScalewayLbIPBetaDestroy(tt *TestTools) resource.TestCheckFunc {
+	return func(state *terraform.State) error {
+		for _, rs := range state.RootModule().Resources {
+			if rs.Type != "scaleway_lb_ip_beta" {
+				continue
+			}
+
+			lbAPI, region, ID, err := lbAPIWithRegionAndID(tt.Meta, rs.Primary.ID)
+			if err != nil {
+				return err
+			}
+
+			_, err = lbAPI.GetIP(&lb.GetIPRequest{
+				Region: region,
+				IPID:   ID,
+			})
+
+			// If no error resource still exist
+			if err == nil {
+				return fmt.Errorf("IP (%s) still exists", rs.Primary.ID)
+			}
+
+			// Unexpected api error we return it
+			if !is404Error(err) {
+				return err
+			}
 		}
 
-		lbAPI, region, ID, err := lbAPIWithRegionAndID(testAccProvider.Meta(), rs.Primary.ID)
-		if err != nil {
-			return err
-		}
-
-		_, err = lbAPI.GetIP(&lb.GetIPRequest{
-			Region: region,
-			IPID:   ID,
-		})
-
-		// If no error resource still exist
-		if err == nil {
-			return fmt.Errorf("IP (%s) still exists", rs.Primary.ID)
-		}
-
-		// Unexpected api error we return it
-		if !is404Error(err) {
-			return err
-		}
+		return nil
 	}
-
-	return nil
 }
