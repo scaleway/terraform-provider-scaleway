@@ -17,14 +17,14 @@ func TestAccScalewayInstanceSecurityGroupRules_Basic(t *testing.T) {
 			{
 				// Simple empty configuration
 				Config: `
-						resource scaleway_instance_security_group sg01 {
-							external_rules = true
-						}
+					resource scaleway_instance_security_group sg01 {
+						external_rules = true
+					}
 
-						resource scaleway_instance_security_group_rules sgrs01 {
-							security_group_id = scaleway_instance_security_group.sg01.id
-						}
-					`,
+					resource scaleway_instance_security_group_rules sgrs01 {
+						security_group_id = scaleway_instance_security_group.sg01.id
+					}
+				`,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayInstanceSecurityGroupExists(tt, "scaleway_instance_security_group.sg01"),
 					resource.TestCheckResourceAttr("scaleway_instance_security_group_rules.sgrs01", "inbound_rule.#", "0"),
@@ -34,34 +34,33 @@ func TestAccScalewayInstanceSecurityGroupRules_Basic(t *testing.T) {
 			{
 				// We test that we can add some rules and they stay in correct orders
 				Config: `
-							resource scaleway_instance_security_group sg01 {
-								external_rules = true
-							}
+					resource scaleway_instance_security_group sg01 {
+						external_rules = true
+					}
 
-							resource scaleway_instance_security_group_rules sgrs01 {
-								security_group_id = scaleway_instance_security_group.sg01.id
-								inbound_rule {
-									action = "accept"
-									port = 80
-									ip_range = "0.0.0.0/0"
-								}
-								inbound_rule {
-									action = "drop"
-									port = 443
-									ip_range = "0.0.0.0/0"
-								}
-								outbound_rule {
-									action = "accept"
-									port = 80
-									ip_range = "0.0.0.0/0"
-								}
-								outbound_rule {
-									action = "drop"
-									port = 443
-									ip_range = "0.0.0.0/0"
-								}
-							}
-						`,
+					resource scaleway_instance_security_group_rules sgrs01 {
+						security_group_id = scaleway_instance_security_group.sg01.id
+						inbound_rule {
+							action = "accept"
+							port = 80
+							ip_range = "0.0.0.0/0"
+						}
+						inbound_rule {
+							action = "drop"
+							port = 443
+							ip_range = "0.0.0.0/0"
+						}
+						outbound_rule {
+							action = "accept"
+							port = 80
+							ip_range = "0.0.0.0/0"
+						}
+						outbound_rule {
+							action = "drop"
+							port = 443
+							ip_range = "0.0.0.0/0"
+						}
+					}`,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayInstanceSecurityGroupExists(tt, "scaleway_instance_security_group.sg01"),
 					resource.TestCheckResourceAttr("scaleway_instance_security_group_rules.sgrs01", "inbound_rule.#", "2"),
@@ -81,26 +80,30 @@ func TestAccScalewayInstanceSecurityGroupRules_Basic(t *testing.T) {
 				),
 			},
 			{
+				ResourceName:      "scaleway_instance_security_group_rules.sgrs01",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+			{
 				// We test that we can remove some rules
 				Config: `
-						resource scaleway_instance_security_group sg01 {
-							external_rules = true
+					resource scaleway_instance_security_group sg01 {
+						external_rules = true
+					}
+			
+					resource scaleway_instance_security_group_rules sgrs01 {
+						security_group_id = scaleway_instance_security_group.sg01.id
+						inbound_rule {
+							action = "drop"
+							port = 443
+							ip_range = "0.0.0.0/0"
 						}
-				
-						resource scaleway_instance_security_group_rules sgrs01 {
-							security_group_id = scaleway_instance_security_group.sg01.id
-								inbound_rule {
-									action = "drop"
-									port = 443
-									ip_range = "0.0.0.0/0"
-								}
-								outbound_rule {
-									action = "drop"
-									port = 443
-									ip_range = "0.0.0.0/0"
-								}
+						outbound_rule {
+							action = "drop"
+							port = 443
+							ip_range = "0.0.0.0/0"
 						}
-					`,
+					}`,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayInstanceSecurityGroupExists(tt, "scaleway_instance_security_group.sg01"),
 					resource.TestCheckResourceAttr("scaleway_instance_security_group_rules.sgrs01", "inbound_rule.#", "1"),
@@ -116,19 +119,24 @@ func TestAccScalewayInstanceSecurityGroupRules_Basic(t *testing.T) {
 			{
 				// We test that we can remove all rules
 				Config: `
-						resource scaleway_instance_security_group sg01 {
-							external_rules = true
-						}
-				
-						resource scaleway_instance_security_group_rules sgrs01 {
-							security_group_id = scaleway_instance_security_group.sg01.id
-						}
+					resource scaleway_instance_security_group sg01 {
+						external_rules = true
+					}
+			
+					resource scaleway_instance_security_group sgrs01 {
+						security_group_id = scaleway_instance_security_group.sg01.id
+					}
 					`,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayInstanceSecurityGroupExists(tt, "scaleway_instance_security_group.sg01"),
 					resource.TestCheckResourceAttr("scaleway_instance_security_group_rules.sgrs01", "inbound_rule.#", "0"),
 					resource.TestCheckResourceAttr("scaleway_instance_security_group_rules.sgrs01", "outbound_rule.#", "0"),
 				),
+			},
+			{
+				ResourceName:      "scaleway_instance_security_group_rules.sgrs01",
+				ImportState:       true,
+				ImportStateVerify: true,
 			},
 		},
 	})
@@ -187,9 +195,7 @@ func TestAccScalewayInstanceSecurityGroupRules_IPRanges(t *testing.T) {
 				Config: config,
 			},
 			{
-				ImportState:  true,
-				ResourceName: "scaleway_instance_security_group_rules.sgrs01",
-				Config:       config,
+				Config: config,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayInstanceSecurityGroupExists(tt, "scaleway_instance_security_group.sg01"),
 					resource.TestCheckResourceAttr("scaleway_instance_security_group_rules.sgrs01", "inbound_rule.#", "6"),
@@ -200,6 +206,11 @@ func TestAccScalewayInstanceSecurityGroupRules_IPRanges(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_instance_security_group_rules.sgrs01", "outbound_rule.1.ip_range", "2002:0:0:1234::/64"),
 					resource.TestCheckResourceAttr("scaleway_instance_security_group_rules.sgrs01", "outbound_rule.1.ip_range", "2002::1234:abcd:ffff:c0a8:101/128"),
 				),
+			},
+			{
+				ResourceName:      "scaleway_instance_security_group_rules.sgrs01",
+				ImportState:       true,
+				ImportStateVerify: true,
 			},
 		},
 	})
@@ -246,9 +257,7 @@ func TestAccScalewayInstanceSecurityGroupRules_Basic2(t *testing.T) {
 				Config: config,
 			},
 			{
-				ImportState:  true,
-				ResourceName: "scaleway_instance_security_group_rules.sgrs01",
-				Config:       config,
+				Config: config,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayInstanceSecurityGroupExists(tt, "scaleway_instance_security_group.sg01"),
 					resource.TestCheckResourceAttr("scaleway_instance_security_group_rules.sgrs01", "inbound_rule.#", "2"),
@@ -266,6 +275,11 @@ func TestAccScalewayInstanceSecurityGroupRules_Basic2(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_instance_security_group_rules.sgrs01", "outbound_rule.1.port", "443"),
 					resource.TestCheckResourceAttr("scaleway_instance_security_group_rules.sgrs01", "outbound_rule.1.ip_range", "0.0.0.0/0"),
 				),
+			},
+			{
+				ResourceName:      "scaleway_instance_security_group_rules.sgrs01",
+				ImportState:       true,
+				ImportStateVerify: true,
 			},
 		},
 	})

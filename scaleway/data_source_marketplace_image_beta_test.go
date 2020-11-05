@@ -24,6 +24,11 @@ func TestAccScalewayDataSourceMarketplaceImageBeta_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("data.scaleway_marketplace_image_beta.test1", "id", "fr-par-1/cf44b8f5-77e2-42ed-8f1e-09ed5bb028fc"),
 				),
 			},
+			{
+				ResourceName:      "data.scaleway_marketplace_image_beta.test1",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
 		},
 	})
 }

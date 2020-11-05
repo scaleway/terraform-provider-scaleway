@@ -155,6 +155,11 @@ func TestAccScalewayInstanceSecurityGroup_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_instance_security_group.base", "inbound_rule.#", "0"),
 				),
 			},
+			{
+				ResourceName:      "scaleway_instance_security_group.base",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
 		},
 	})
 }
@@ -217,6 +222,11 @@ func TestAccScalewayInstanceSecurityGroup_ICMP(t *testing.T) {
 					}),
 				),
 			},
+			{
+				ResourceName:      "scaleway_instance_security_group.base",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
 		},
 	})
 }
@@ -261,6 +271,11 @@ func TestAccScalewayInstanceSecurityGroup_ANY(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_instance_security_group.ban_ips", "inbound_rule.2.ip", "3.3.3.3"),
 				),
 			},
+			{
+				ResourceName:      "scaleway_instance_security_group.base",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
 		},
 	})
 }
@@ -292,6 +307,11 @@ func TestAccScalewayInstanceSecurityGroup_WithNoPort(t *testing.T) {
 						Action:       instance.SecurityGroupRuleActionAccept,
 					}),
 				),
+			},
+			{
+				ResourceName:      "scaleway_instance_security_group.base",
+				ImportState:       true,
+				ImportStateVerify: true,
 			},
 		},
 	})
@@ -346,6 +366,11 @@ func TestAccScalewayInstanceSecurityGroup_RemovePort(t *testing.T) {
 					}),
 				),
 			},
+			{
+				ResourceName:      "scaleway_instance_security_group.base",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
 		},
 	})
 }
@@ -399,6 +424,11 @@ func TestAccScalewayInstanceSecurityGroup_WithPortRange(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("scaleway_instance_security_group.base", "inbound_rule.0.port_range", "1-1024"),
 				),
+			},
+			{
+				ResourceName:      "scaleway_instance_security_group.base",
+				ImportState:       true,
+				ImportStateVerify: true,
 			},
 		},
 	})

@@ -74,6 +74,11 @@ func TestAccScalewayLbFrontend_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_lb_frontend_beta.frt01", "timeout_client", "30s"),
 				),
 			},
+			{
+				ResourceName:      "scaleway_lb_frontend_beta.frt01",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
 		},
 	})
 }
@@ -255,6 +260,11 @@ func TestAccScalewayLbAcl_Basic(t *testing.T) {
 						},
 					}),
 				),
+			},
+			{
+				ResourceName:      "scaleway_lb_frontend_beta.frt01",
+				ImportState:       true,
+				ImportStateVerify: true,
 			},
 		},
 	})

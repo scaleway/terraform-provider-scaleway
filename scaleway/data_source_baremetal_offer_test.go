@@ -65,6 +65,21 @@ func TestAccScalewayDataSourceBaremetalOffer_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("data.scaleway_baremetal_offer.test3", "name", "HC-BM1-L"),
 				),
 			},
+			{
+				ResourceName:      "data.scaleway_baremetal_offer.test1",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+			{
+				ResourceName:      "data.scaleway_baremetal_offer.test2",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+			{
+				ResourceName:      "data.scaleway_baremetal_offer.test3",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
 		},
 	})
 }

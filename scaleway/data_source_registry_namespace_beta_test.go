@@ -73,6 +73,16 @@ func TestAccScalewayDataSourceRegistryNamespace_Basic(t *testing.T) {
 					resource.TestCheckResourceAttrSet("data.scaleway_registry_namespace_beta.test2", "namespace_id"),
 				),
 			},
+			{
+				ResourceName:      "data.scaleway_registry_namespace_beta.test",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+			{
+				ResourceName:      "data.scaleway_registry_namespace_beta.test2",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
 		},
 	})
 }

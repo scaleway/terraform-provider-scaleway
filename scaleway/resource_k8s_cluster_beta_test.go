@@ -103,6 +103,11 @@ func TestAccScalewayK8SCluster_Deprecated(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_k8s_cluster_beta.deprecated", "default_pool.0.node_type", "dev1_m"),
 				),
 			},
+			{
+				ResourceName:      "scaleway_k8s_cluster_beta.test",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
 		},
 	})
 }

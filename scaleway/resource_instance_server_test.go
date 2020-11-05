@@ -102,6 +102,11 @@ func TestAccScalewayInstanceServer_Minimal1(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "tags.2", "minimal"),
 				),
 			},
+			{
+				ResourceName:      "scaleway_instance_server.base",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
 		},
 	})
 }
@@ -154,6 +159,11 @@ func TestAccScalewayInstanceServer_RootVolume1(t *testing.T) {
 					resource.TestCheckResourceAttrSet("scaleway_instance_server.base", "root_volume.0.volume_id"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "tags.2", "root_volume"),
 				),
+			},
+			{
+				ResourceName:      "scaleway_instance_server.base",
+				ImportState:       true,
+				ImportStateVerify: true,
 			},
 		},
 	})
@@ -214,6 +224,11 @@ func TestAccScalewayInstanceServer_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "tags.1", "scaleway_instance_server"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "tags.2", "basic"),
 				),
+			},
+			{
+				ResourceName:      "scaleway_instance_server.base",
+				ImportState:       true,
+				ImportStateVerify: true,
 			},
 		},
 	})
@@ -284,6 +299,11 @@ func TestAccScalewayInstanceServer_State1(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "state", "stopped"),
 				),
 			},
+			{
+				ResourceName:      "scaleway_instance_server.base",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
 		},
 	})
 }
@@ -334,6 +354,11 @@ func TestAccScalewayInstanceServer_State2(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "state", "standby"),
 				),
 			},
+			{
+				ResourceName:      "scaleway_instance_server.base",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
 		},
 	})
 }
@@ -372,6 +397,11 @@ func TestAccScalewayInstanceServer_UserData1(t *testing.T) {
 					resource.TestCheckNoResourceAttr("scaleway_instance_server.base", "user_data"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "cloud_init", ""),
 				),
+			},
+			{
+				ResourceName:      "scaleway_instance_server.base",
+				ImportState:       true,
+				ImportStateVerify: true,
 			},
 		},
 	})
@@ -485,6 +515,11 @@ func TestAccScalewayInstanceServer_WithAdditionalVolumes2(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "root_volume.0.size_in_gb", "11"),
 				),
 			},
+			{
+				ResourceName:      "scaleway_instance_server.base",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
 		},
 	})
 }
@@ -520,6 +555,11 @@ func TestAccScalewayInstanceServer_WithPlacementGroup(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_instance_server.base.1", "placement_group_policy_respected", "true"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base.2", "placement_group_policy_respected", "true"),
 				),
+			},
+			{
+				ResourceName:      "scaleway_instance_server.base",
+				ImportState:       true,
+				ImportStateVerify: true,
 			},
 		},
 	})
@@ -579,6 +619,16 @@ func TestAccScalewayInstanceServer_SwapVolume(t *testing.T) {
 					resource.TestCheckResourceAttrPtr("scaleway_instance_server.server2", "additional_volume_ids.0", &volume1Id),
 				),
 			},
+			{
+				ResourceName:      "scaleway_instance_server.server1",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+			{
+				ResourceName:      "scaleway_instance_server.server2",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
 		},
 	})
 }
@@ -620,6 +670,11 @@ func TestAccScalewayInstanceServer_Ipv6(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_instance_server.server01", "ipv6_gateway", ""),
 					resource.TestCheckResourceAttr("scaleway_instance_server.server01", "ipv6_prefix_length", "0"),
 				),
+			},
+			{
+				ResourceName:      "scaleway_instance_server.server01",
+				ImportState:       true,
+				ImportStateVerify: true,
 			},
 		},
 	})
@@ -729,6 +784,11 @@ func TestAccScalewayInstanceServer_WithReservedIP(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "ip_id", ""),
 				),
 			},
+			{
+				ResourceName:      "scaleway_instance_server.base",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
 		},
 	})
 }
@@ -770,6 +830,11 @@ func TestAccScalewayInstanceServer_WithImageDataSource(t *testing.T) {
 					}
 				`,
 				PlanOnly: true,
+			},
+			{
+				ResourceName:      "scaleway_instance_server.base",
+				ImportState:       true,
+				ImportStateVerify: true,
 			},
 		},
 	})
@@ -932,6 +997,11 @@ func TestAccScalewayInstanceServer_Bootscript(t *testing.T) {
 					testAccCheckScalewayInstanceServerExists(tt, "scaleway_instance_server.base"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "bootscript_id", bootscript),
 				),
+			},
+			{
+				ResourceName:      "scaleway_instance_server.base",
+				ImportState:       true,
+				ImportStateVerify: true,
 			},
 		},
 	})

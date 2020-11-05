@@ -94,6 +94,11 @@ func TestAccScalewayLbBackend_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_lb_backend_beta.bkd01", "on_marked_down_action", "shutdown_sessions"),
 				),
 			},
+			{
+				ResourceName:      "scaleway_lb_backend_beta.bkd01",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
 		},
 	})
 }
@@ -183,6 +188,11 @@ func TestAccScalewayLbBackendBeta_HealthCheck(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_lb_backend_beta.bkd01", "health_check_http.#", "0"),
 					resource.TestCheckResourceAttr("scaleway_lb_backend_beta.bkd01", "health_check_https.#", "1"),
 				),
+			},
+			{
+				ResourceName:      "scaleway_lb_backend_beta.bkd01",
+				ImportState:       true,
+				ImportStateVerify: true,
 			},
 		},
 	})

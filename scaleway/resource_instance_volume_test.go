@@ -78,6 +78,11 @@ func TestAccScalewayInstanceVolume_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_instance_volume.test", "size_in_gb", "20"),
 				),
 			},
+			{
+				ResourceName:      "scaleway_instance_volume.test",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
 		},
 	})
 }
@@ -106,6 +111,16 @@ func TestAccScalewayInstanceVolume_FromVolume(t *testing.T) {
 					testAccCheckScalewayInstanceVolumeExists(tt, "scaleway_instance_volume.test2"),
 				),
 			},
+			{
+				ResourceName:      "scaleway_instance_volume.test1",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+			{
+				ResourceName:      "scaleway_instance_volume.test2",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
 		},
 	})
 }
@@ -133,6 +148,11 @@ func TestAccScalewayInstanceVolume_DifferentNameGenerated(t *testing.T) {
 						size_in_gb = 20
 					}
 				`,
+			},
+			{
+				ResourceName:      "scaleway_instance_volume.test",
+				ImportState:       true,
+				ImportStateVerify: true,
 			},
 		},
 	})

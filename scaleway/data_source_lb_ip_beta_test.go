@@ -33,6 +33,16 @@ func TestAccScalewayDataSourceLbIPBeta_Basic(t *testing.T) {
 					resource.TestCheckResourceAttrPair("data.scaleway_lb_ip_beta.test2", "ip_address", "scaleway_lb_ip_beta.test", "ip_address"),
 				),
 			},
+			{
+				ResourceName:      "data.scaleway_lb_ip_beta.test1",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+			{
+				ResourceName:      "data.scaleway_lb_ip_beta.test2",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
 		},
 	})
 }

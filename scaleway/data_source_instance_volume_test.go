@@ -46,6 +46,16 @@ func TestAccScalewayDataSourceInstanceVolume_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("data.scaleway_instance_volume.test", "type", "l_ssd"),
 				),
 			},
+			{
+				ResourceName:      "data.scaleway_instance_volume.test",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+			{
+				ResourceName:      "data.scaleway_instance_volume.test2",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
 		},
 	})
 }

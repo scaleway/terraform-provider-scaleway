@@ -48,6 +48,16 @@ func TestAccScalewayDataSourceRDBInstance_Basic(t *testing.T) {
 					resource.TestCheckResourceAttrSet("data.scaleway_rdb_instance.test2", "id"),
 				),
 			},
+			{
+				ResourceName:      "data.scaleway_rdb_instance.test",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+			{
+				ResourceName:      "data.scaleway_rdb_instance.test2",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
 		},
 	})
 }

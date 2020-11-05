@@ -69,6 +69,11 @@ func TestAccScalewayRdbUser_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_rdb_user_beta.db_user", "is_admin", "false"),
 				),
 			},
+			{
+				ResourceName:      "scaleway_rdb_user_beta.db_user",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
 		},
 	})
 }

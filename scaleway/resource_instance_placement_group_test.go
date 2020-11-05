@@ -84,6 +84,16 @@ func TestAccScalewayInstancePlacementGroup_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_instance_placement_group.scaleway", "policy_type", "max_availability"),
 				),
 			},
+			{
+				ResourceName:      "scaleway_instance_placement_group.base",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+			{
+				ResourceName:      "scaleway_instance_placement_group.scaleway",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
 		},
 	})
 }

@@ -131,6 +131,11 @@ EOF
 					resource.TestCheckResourceAttr("scaleway_lb_certificate_beta.cert01", "custom_certificate.#", "1"),
 				),
 			},
+			{
+				ResourceName:      "scaleway_lb_certificate_beta.cert01",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
 		},
 	})
 }

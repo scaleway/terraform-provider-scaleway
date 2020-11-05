@@ -116,6 +116,11 @@ func TestAccScalewayBaremetalServer_Basic(t *testing.T) {
 					testCheckResourceAttrUUID("scaleway_baremetal_server.base", "ssh_key_ids.0"),
 				),
 			},
+			{
+				ResourceName:      "scaleway_baremetal_server.base",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
 		},
 	})
 }

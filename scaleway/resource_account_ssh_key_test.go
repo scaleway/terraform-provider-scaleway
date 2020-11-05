@@ -80,6 +80,11 @@ func TestAccScalewayAccountSSHKey_basic(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_account_ssh_key.main", "public_key", SSHKey),
 				),
 			},
+			{
+				ResourceName:      "scaleway_account_ssh_key.main",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
 		},
 	})
 }
@@ -107,6 +112,11 @@ func TestAccScalewayAccountSSHKey_WithNewLine(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_account_ssh_key.main", "name", name),
 					resource.TestCheckResourceAttr("scaleway_account_ssh_key.main", "public_key", SSHKey),
 				),
+			},
+			{
+				ResourceName:      "scaleway_account_ssh_key.main",
+				ImportState:       true,
+				ImportStateVerify: true,
 			},
 		},
 	})

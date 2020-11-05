@@ -72,6 +72,11 @@ func TestAccScalewayLbLb_WithIP(t *testing.T) {
 				),
 			},
 			{
+				ResourceName:      "scaleway_lb_beta.lb01",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+			{
 				Config: `
 					resource scaleway_lb_ip_beta ip01 {
 					}

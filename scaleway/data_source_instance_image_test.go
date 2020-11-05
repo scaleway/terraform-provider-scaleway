@@ -43,6 +43,16 @@ func TestAccScalewayDataSourceInstanceImage_Basic(t *testing.T) {
 					resource.TestCheckNoResourceAttr("data.scaleway_instance_image.test2", "additional_volume_ids"),
 				),
 			},
+			{
+				ResourceName:      "data.scaleway_instance_image.test",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+			{
+				ResourceName:      "data.scaleway_instance_image.test2",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
 		},
 	})
 }

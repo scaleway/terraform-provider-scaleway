@@ -89,6 +89,11 @@ func TestAccScalewayInstanceIP_WithZone(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_instance_ip.base", "zone", "nl-ams-1"),
 				),
 			},
+			{
+				ResourceName:      "scaleway_instance_ip.base",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
 		},
 	})
 }

@@ -104,6 +104,11 @@ func TestAccScalewayRdbInstance_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_rdb_instance_beta.main", "tags.2", "minimal"),
 				),
 			},
+			{
+				ResourceName:      "scaleway_rdb_instance_beta.main",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
 		},
 	})
 }

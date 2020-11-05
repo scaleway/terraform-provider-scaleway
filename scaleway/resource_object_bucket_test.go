@@ -80,6 +80,11 @@ func TestAccScalewayObjectBucket_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_object_bucket.base", "tags.%", "0"),
 				),
 			},
+			{
+				ResourceName:      "scaleway_object_bucket.base",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
 		},
 	})
 }

@@ -35,6 +35,11 @@ func TestAccScalewayInstanceIPReverseDns_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_instance_ip.ip", "reverse", ""),
 				),
 			},
+			{
+				ResourceName:      "scaleway_instance_ip_reverse_dns.base",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
 		},
 	})
 }
