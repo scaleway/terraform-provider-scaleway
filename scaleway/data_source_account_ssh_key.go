@@ -18,9 +18,8 @@ func dataSourceScalewayAccountSSHKey() *schema.Resource {
 	dsSchema["ssh_key_id"] = &schema.Schema{
 		Type:         schema.TypeString,
 		Optional:     true,
-		Computed:     true,
 		Description:  "The ID of the SSH key",
-		ValidateFunc: validationUUIDorUUIDWithLocality(),
+		ValidateFunc: validationUUID(),
 	}
 
 	return &schema.Resource{
