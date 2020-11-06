@@ -98,26 +98,32 @@ func TestAccScalewayInstancePlacementGroup_Rename(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: `
-					resource "scaleway_instance_placement_group" "scaleway" {
+					resource "scaleway_instance_placement_group" "base" {
 						name        = "foo"
 						policy_mode = "enforced"
 						policy_type = "low_latency"
+					}
+
+					resource "scaleway_instance_server" "base" {
+						type  = "DEV1-S"
+						image = "ubuntu_focal"
+						placement_group_id = "${scaleway_instance_placement_group.base.id}"
 					}`,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayInstancePlacementGroupExists(tt, "scaleway_instance_placement_group.scaleway"),
-					resource.TestCheckResourceAttr("scaleway_instance_placement_group.scaleway", "name", "foo"),
+					testAccCheckScalewayInstancePlacementGroupExists(tt, "scaleway_instance_placement_group.base"),
+					resource.TestCheckResourceAttr("scaleway_instance_placement_group.base", "name", "foo"),
 				),
 			},
 			{
 				Config: `
-					resource "scaleway_instance_placement_group" "scaleway" {
+					resource "scaleway_instance_placement_group" "base" {
 						name        = "bar"
 						policy_mode = "enforced"
 						policy_type = "low_latency"
 					}`,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayInstancePlacementGroupExists(tt, "scaleway_instance_placement_group.scaleway"),
-					resource.TestCheckResourceAttr("scaleway_instance_placement_group.scaleway", "name", "bar"),
+					testAccCheckScalewayInstancePlacementGroupExists(tt, "scaleway_instance_placement_group.base"),
+					resource.TestCheckResourceAttr("scaleway_instance_placement_group.base", "name", "bar"),
 				),
 			},
 		},
