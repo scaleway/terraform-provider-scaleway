@@ -663,7 +663,7 @@ func resourceScalewayInstanceServerUpdate(ctx context.Context, d *schema.Resourc
 		return diag.FromErr(err)
 	}
 
-	if forceReboot && updateServerResp.Server.State != instance.ServerStateRunning {
+	if forceReboot && updateServerResp.Server.State == instance.ServerStateRunning {
 		_, err = instanceAPI.ServerAction(&instance.ServerActionRequest{
 			Zone:     zone,
 			ServerID: ID,
