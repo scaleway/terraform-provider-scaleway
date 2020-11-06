@@ -947,28 +947,30 @@ func TestAccScalewayInstanceServer_AlterTags(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: `
-					resource "scaleway_instance_server" "web" {
+					resource "scaleway_instance_server" "base" {
 						type  = "DEV1-L"
 						image = "ubuntu_focal"
+						state = "stopped"
 						tags = [ "front", "web" ]
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayInstanceServerExists(tt, "scaleway_instance_server.base"),
-					resource.TestCheckResourceAttr("scaleway_instance_server.web", "tags.0", "front"),
-					resource.TestCheckResourceAttr("scaleway_instance_server.web", "tags.1", "web"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.base", "tags.0", "front"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.base", "tags.1", "web"),
 				),
 			},
 			{
 				Config: `
-					resource "scaleway_instance_server" "web" {
+					resource "scaleway_instance_server" "base" {
 						type  = "DEV1-L"
+						state = "stopped"
 						image = "ubuntu_focal"
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayInstanceServerExists(tt, "scaleway_instance_server.base"),
-					resource.TestCheckNoResourceAttr("scaleway_instance_server.web", "tags"),
+					resource.TestCheckNoResourceAttr("scaleway_instance_server.base", "tags"),
 				),
 			},
 		},
