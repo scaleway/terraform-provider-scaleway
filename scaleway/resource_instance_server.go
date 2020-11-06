@@ -221,13 +221,6 @@ func resourceScalewayInstanceServer() *schema.Resource {
 			"zone":            zoneSchema(),
 			"organization_id": organizationIDSchema(),
 			"project_id":      projectIDSchema(),
-
-			// Deprecated and removed.
-			"disable_public_ip": {
-				Type:     schema.TypeBool,
-				Optional: true,
-				Default:  false,
-			},
 		},
 	}
 }
@@ -261,7 +254,6 @@ func resourceScalewayInstanceServerCreate(ctx context.Context, d *schema.Resourc
 	req := &instance.CreateServerRequest{
 		Zone:              zone,
 		Name:              expandOrGenerateString(d.Get("name"), "srv"),
-		Organization:      expandStringPtr(d.Get("organization_id")),
 		Project:           expandStringPtr(d.Get("project_id")),
 		Image:             image.ID,
 		CommercialType:    commercialType,
@@ -399,6 +391,7 @@ func resourceScalewayInstanceServerRead(ctx context.Context, d *schema.ResourceD
 	}
 
 	if response.Server.PlacementGroup != nil {
+		_ = d.Set("placement_group_id", newZonedID(zone, response.Server.PlacementGroup.ID).String())
 		_ = d.Set("placement_group_policy_respected", response.Server.PlacementGroup.PolicyRespected)
 	}
 

@@ -63,17 +63,6 @@ func Provider(config *ProviderConfig) plugin.ProviderFunc {
 					Optional:    true,
 					Description: "The Scaleway API URL to use.",
 				},
-				// Deprecated values
-				"token": {
-					Type:       schema.TypeString,
-					Optional:   true, // To allow user to use `secret_key`.
-					Deprecated: "Use `secret_key` instead.",
-				},
-				"organization": {
-					Type:       schema.TypeString,
-					Optional:   true, // To allow user to use `organization_id`.
-					Deprecated: "Use `organization_id` instead.",
-				},
 			},
 
 			ResourcesMap: map[string]*schema.Resource{
@@ -107,6 +96,7 @@ func Provider(config *ProviderConfig) plugin.ProviderFunc {
 				"scaleway_instance_volume":         dataSourceScalewayInstanceVolume(),
 				"scaleway_baremetal_offer":         dataSourceScalewayBaremetalOffer(),
 				"scaleway_lb_ip_beta":              dataSourceScalewayLbIPBeta(),
+				"scaleway_rdb_instance":            dataSourceScalewayRDBInstance(),
 				"scaleway_marketplace_image_beta":  dataSourceScalewayMarketplaceImageBeta(),
 				"scaleway_registry_namespace_beta": dataSourceScalewayRegistryNamespaceBeta(),
 				"scaleway_registry_image_beta":     dataSourceScalewayRegistryImageBeta(),

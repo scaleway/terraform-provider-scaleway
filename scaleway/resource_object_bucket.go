@@ -138,7 +138,7 @@ func resourceScalewayObjectBucketRead(ctx context.Context, d *schema.ResourceDat
 
 	_ = d.Set("tags", flattenObjectBucketTags(tagsSet))
 
-	_ = d.Set("endpoint", fmt.Sprintf("https://%s.s3.%s.scw.cloud", bucketName, region))
+	_ = d.Set("endpoint", objectBucketEndpointURL(bucketName, region))
 
 	return nil
 }

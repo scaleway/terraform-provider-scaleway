@@ -45,10 +45,9 @@ func resourceScalewayAccountSSHKeyCreate(ctx context.Context, d *schema.Resource
 	accountAPI := accountAPI(m)
 
 	res, err := accountAPI.CreateSSHKey(&account.CreateSSHKeyRequest{
-		Name:           d.Get("name").(string),
-		PublicKey:      strings.Trim(d.Get("public_key").(string), "\n"),
-		OrganizationID: expandStringPtr(d.Get("organization_id")),
-		ProjectID:      expandStringPtr(d.Get("project_id")),
+		Name:      d.Get("name").(string),
+		PublicKey: strings.Trim(d.Get("public_key").(string), "\n"),
+		ProjectID: expandStringPtr(d.Get("project_id")),
 	}, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)

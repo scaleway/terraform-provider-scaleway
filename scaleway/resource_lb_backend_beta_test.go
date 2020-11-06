@@ -9,11 +9,13 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/api/lb/v1"
 )
 
-func TestAccScalewayLbBackendBeta(t *testing.T) {
+func TestAccScalewayLbBackend_Basic(t *testing.T) {
+	tt := NewTestTools(t)
+	defer tt.Cleanup()
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckScalewayLbBackendBetaDestroy,
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      testAccCheckScalewayLbBackendBetaDestroy(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -32,11 +34,12 @@ func TestAccScalewayLbBackendBeta(t *testing.T) {
 						name = "bkd01"
 						forward_protocol = "tcp"
 						forward_port = 80
+						proxy_protocol = "none"
 						server_ips = [ scaleway_instance_ip.ip01.address ]
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayLbBackendBetaExists("scaleway_lb_backend_beta.bkd01"),
+					testAccCheckScalewayLbBackendBetaExists(tt, "scaleway_lb_backend_beta.bkd01"),
 					resource.TestCheckResourceAttr("scaleway_lb_backend_beta.bkd01", "forward_port_algorithm", "roundrobin"),
 					resource.TestCheckResourceAttr("scaleway_lb_backend_beta.bkd01", "sticky_sessions", "none"),
 					resource.TestCheckResourceAttr("scaleway_lb_backend_beta.bkd01", "proxy_protocol", "none"),
@@ -82,7 +85,7 @@ func TestAccScalewayLbBackendBeta(t *testing.T) {
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayLbBackendBetaExists("scaleway_lb_backend_beta.bkd01"),
+					testAccCheckScalewayLbBackendBetaExists(tt, "scaleway_lb_backend_beta.bkd01"),
 					resource.TestCheckResourceAttrPair("scaleway_lb_backend_beta.bkd01", "server_ips.0", "scaleway_instance_ip.ip02", "address"),
 					resource.TestCheckResourceAttr("scaleway_lb_backend_beta.bkd01", "health_check_delay", "10s"),
 					resource.TestCheckResourceAttr("scaleway_lb_backend_beta.bkd01", "health_check_timeout", "15s"),
@@ -96,10 +99,12 @@ func TestAccScalewayLbBackendBeta(t *testing.T) {
 }
 
 func TestAccScalewayLbBackendBeta_HealthCheck(t *testing.T) {
+	tt := NewTestTools(t)
+	defer tt.Cleanup()
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckScalewayLbBackendBetaDestroy,
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      testAccCheckScalewayLbBackendBetaDestroy(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -183,14 +188,14 @@ func TestAccScalewayLbBackendBeta_HealthCheck(t *testing.T) {
 	})
 }
 
-func testAccCheckScalewayLbBackendBetaExists(n string) resource.TestCheckFunc {
-	return func(s *terraform.State) error {
-		rs, ok := s.RootModule().Resources[n]
+func testAccCheckScalewayLbBackendBetaExists(tt *TestTools, n string) resource.TestCheckFunc {
+	return func(state *terraform.State) error {
+		rs, ok := state.RootModule().Resources[n]
 		if !ok {
 			return fmt.Errorf("resource not found: %s", n)
 		}
 
-		lbAPI, region, ID, err := lbAPIWithRegionAndID(testAccProvider.Meta(), rs.Primary.ID)
+		lbAPI, region, ID, err := lbAPIWithRegionAndID(tt.Meta, rs.Primary.ID)
 		if err != nil {
 			return err
 		}
@@ -207,32 +212,34 @@ func testAccCheckScalewayLbBackendBetaExists(n string) resource.TestCheckFunc {
 	}
 }
 
-func testAccCheckScalewayLbBackendBetaDestroy(s *terraform.State) error {
-	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "scaleway_lb_backend_beta" {
-			continue
+func testAccCheckScalewayLbBackendBetaDestroy(tt *TestTools) resource.TestCheckFunc {
+	return func(state *terraform.State) error {
+		for _, rs := range state.RootModule().Resources {
+			if rs.Type != "scaleway_lb_backend_beta" {
+				continue
+			}
+
+			lbAPI, region, ID, err := lbAPIWithRegionAndID(tt.Meta, rs.Primary.ID)
+			if err != nil {
+				return err
+			}
+
+			_, err = lbAPI.GetBackend(&lb.GetBackendRequest{
+				Region:    region,
+				BackendID: ID,
+			})
+
+			// If no error resource still exist
+			if err == nil {
+				return fmt.Errorf("LB Backend (%s) still exists", rs.Primary.ID)
+			}
+
+			// Unexpected api error we return it
+			if !is404Error(err) {
+				return err
+			}
 		}
 
-		lbAPI, region, ID, err := lbAPIWithRegionAndID(testAccProvider.Meta(), rs.Primary.ID)
-		if err != nil {
-			return err
-		}
-
-		_, err = lbAPI.GetBackend(&lb.GetBackendRequest{
-			Region:    region,
-			BackendID: ID,
-		})
-
-		// If no error resource still exist
-		if err == nil {
-			return fmt.Errorf("LB Backend (%s) still exists", rs.Primary.ID)
-		}
-
-		// Unexpected api error we return it
-		if !is404Error(err) {
-			return err
-		}
+		return nil
 	}
-
-	return nil
 }
