@@ -115,28 +115,30 @@ func testAccCheckScalewayObjectBucketDestroy(tt *TestTools) resource.TestCheckFu
 	}
 }
 
-func testSweepStorageObjectBucket(region string) error {
-	s3client, err := sharedS3ClientForRegion(scw.Region(region))
-	if err != nil {
-		return fmt.Errorf("error getting client: %s", err)
-	}
+func testSweepStorageObjectBucket(_ string) error {
+	return sweepRegions([]scw.Region{scw.RegionFrPar, scw.RegionNlAms, scw.RegionPlWaw}, func(scwClient *scw.Client, region scw.Region) error {
+		s3client, err := sharedS3ClientForRegion(region)
+		if err != nil {
+			return fmt.Errorf("error getting client: %s", err)
+		}
 
-	listBucketResponse, err := s3client.ListBuckets(&s3.ListBucketsInput{})
-	if err != nil {
-		return fmt.Errorf("couldn't list buckets: %s", err)
-	}
+		listBucketResponse, err := s3client.ListBuckets(&s3.ListBucketsInput{})
+		if err != nil {
+			return fmt.Errorf("couldn't list buckets: %s", err)
+		}
 
-	for _, bucket := range listBucketResponse.Buckets {
-		l.Debugf("Deleting %q bucket", *bucket.Name)
-		if strings.HasPrefix(*bucket.Name, "terraform-test") {
-			_, err := s3client.DeleteBucket(&s3.DeleteBucketInput{
-				Bucket: bucket.Name,
-			})
-			if err != nil {
-				return fmt.Errorf("error deleting bucket in Sweeper: %s", err)
+		for _, bucket := range listBucketResponse.Buckets {
+			l.Debugf("Deleting %q bucket", *bucket.Name)
+			if strings.HasPrefix(*bucket.Name, "terraform-test") {
+				_, err := s3client.DeleteBucket(&s3.DeleteBucketInput{
+					Bucket: bucket.Name,
+				})
+				if err != nil {
+					return fmt.Errorf("error deleting bucket in Sweeper: %s", err)
+				}
 			}
 		}
-	}
 
-	return nil
+		return nil
+	})
 }
