@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
@@ -172,19 +173,17 @@ func resourceScalewayInstanceVolumeDelete(ctx context.Context, d *schema.Resourc
 		return diag.FromErr(err)
 	}
 
-	err = detachVolume(ctx, instanceAPI, zone, id)
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
 	deleteRequest := &instance.DeleteVolumeRequest{
 		Zone:     zone,
 		VolumeID: id,
 	}
 
-	err = instanceAPI.DeleteVolume(deleteRequest, scw.WithContext(ctx))
-	if err != nil {
-		return diag.FromErr(err)
-	}
-	return nil
+	return diag.FromErr(resource.RetryContext(ctx, d.Timeout(schema.TimeoutDelete), func() *resource.RetryError {
+		err = instanceAPI.DeleteVolume(deleteRequest, scw.WithContext(ctx))
+		if err != nil {
+			return resource.RetryableError(fmt.Errorf("expected instance to be created but was in state %s", err))
+		}
+
+		return nil
+	}))
 }
