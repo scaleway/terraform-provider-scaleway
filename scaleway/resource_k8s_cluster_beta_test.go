@@ -39,29 +39,30 @@ func testAccScalewayK8SClusterGetLatestVersion(tt *TestTools) {
 	}
 }
 
-func testSweepK8SCluster(region string) error {
-	scwClient, err := sharedClientForRegion(scw.Region(region))
-	if err != nil {
-		return fmt.Errorf("error getting client in sweeper: %s", err)
-	}
-	k8sAPI := k8s.NewAPI(scwClient)
+func testSweepK8SCluster(_ string) error {
+	return sweepRegions([]scw.Region{scw.RegionFrPar, scw.RegionNlAms}, func(scwClient *scw.Client, region scw.Region) error {
+		k8sAPI := k8s.NewAPI(scwClient)
 
-	l.Debugf("sweeper: destroying the k8s cluster in (%s)", region)
-	listClusters, err := k8sAPI.ListClusters(&k8s.ListClustersRequest{}, scw.WithAllPages())
-	if err != nil {
-		return fmt.Errorf("error listing clusters in (%s) in sweeper: %s", region, err)
-	}
-
-	for _, cluster := range listClusters.Clusters {
-		_, err := k8sAPI.DeleteCluster(&k8s.DeleteClusterRequest{
-			ClusterID: cluster.ID,
-		})
+		l.Debugf("sweeper: destroying the k8s cluster in (%s)", region)
+		listClusters, err := k8sAPI.ListClusters(&k8s.ListClustersRequest{
+			Region: region,
+		}, scw.WithAllPages())
 		if err != nil {
-			return fmt.Errorf("error deleting cluster in sweeper: %s", err)
+			return fmt.Errorf("error listing clusters in (%s) in sweeper: %s", region, err)
 		}
-	}
 
-	return nil
+		for _, cluster := range listClusters.Clusters {
+			_, err := k8sAPI.DeleteCluster(&k8s.DeleteClusterRequest{
+				ClusterID: cluster.ID,
+				Region:    region,
+			})
+			if err != nil {
+				return fmt.Errorf("error deleting cluster in sweeper: %s", err)
+			}
+		}
+
+		return nil
+	})
 }
 
 func TestAccScalewayK8SCluster_Deprecated(t *testing.T) {

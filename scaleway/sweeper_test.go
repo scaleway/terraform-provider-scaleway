@@ -36,12 +36,6 @@ func sweepRegions(regions []scw.Region, f func(scwClient *scw.Client, region scw
 	return nil
 }
 
-// sharedClientForRegion returns a Scaleway client needed for the sweeper
-// functions for a given region {fr-par,nl-ams}
-func sharedClientForRegion(region scw.Region) (*scw.Client, error) {
-	return sharedClientForZone(region.GetZones()[0])
-}
-
 // sharedClientForZone returns a Scaleway client needed for the sweeper
 // functions for a given zone
 func sharedClientForZone(zone scw.Zone) (*scw.Client, error) {
