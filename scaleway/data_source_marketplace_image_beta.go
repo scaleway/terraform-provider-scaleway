@@ -1,13 +1,17 @@
 package scaleway
 
 import (
+	"context"
+
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/api/marketplace/v1"
+	"github.com/scaleway/scaleway-sdk-go/scw"
 )
 
 func dataSourceScalewayMarketplaceImageBeta() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceScalewayMarketplaceImageReadBeta,
+		ReadContext: dataSourceScalewayMarketplaceImageReadBeta,
 
 		Schema: map[string]*schema.Schema{
 			"label": {
@@ -26,21 +30,19 @@ func dataSourceScalewayMarketplaceImageBeta() *schema.Resource {
 	}
 }
 
-func dataSourceScalewayMarketplaceImageReadBeta(d *schema.ResourceData, m interface{}) error {
-	meta := m.(*Meta)
-	marketplaceAPI := marketplace.NewAPI(meta.scwClient)
-	zone, err := extractZone(d, meta)
+func dataSourceScalewayMarketplaceImageReadBeta(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	marketplaceAPI, zone, err := marketplaceAPIWithZone(d, m)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	imageID, err := marketplaceAPI.GetLocalImageIDByLabel(&marketplace.GetLocalImageIDByLabelRequest{
 		ImageLabel:     d.Get("label").(string),
 		CommercialType: d.Get("instance_type").(string),
 		Zone:           zone,
-	})
+	}, scw.WithContext(ctx))
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	zonedID := datasourceNewZonedID(imageID, zone)
