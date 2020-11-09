@@ -128,12 +128,14 @@ func resourceScalewayInstancePlacementGroupUpdate(ctx context.Context, d *schema
 	}
 
 	if d.HasChange("policy_mode") {
-		req.PolicyMode = instance.PlacementGroupPolicyMode(expandStringPtr(d.Get("policy_mode").(string)))
+		policyMode := instance.PlacementGroupPolicyMode(d.Get("policy_mode").(string))
+		req.PolicyMode = &policyMode
 		hasChanged = true
 	}
 
 	if d.HasChange("policy_type") {
-		req.PolicyType = instance.PlacementGroupPolicyType(d.Get("policy_type").(string))
+		policyType := instance.PlacementGroupPolicyType(d.Get("policy_type").(string))
+		req.PolicyType = &policyType
 		hasChanged = true
 	}
 
