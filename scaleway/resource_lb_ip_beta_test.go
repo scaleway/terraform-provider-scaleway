@@ -17,31 +17,29 @@ func init() {
 	})
 }
 
-func testSweepLBIP(region string) error {
-	scwClient, err := sharedClientForRegion(scw.Region(region))
-	if err != nil {
-		return fmt.Errorf("error getting client in sweeper: %s", err)
-	}
-	lbAPI := lb.NewAPI(scwClient)
+func testSweepLBIP(_ string) error {
+	return sweepRegions([]scw.Region{scw.RegionFrPar, scw.RegionNlAms, scw.RegionPlWaw}, func(scwClient *scw.Client, region scw.Region) error {
+		lbAPI := lb.NewAPI(scwClient)
 
-	l.Debugf("sweeper: destroying the lb ips in (%s)", region)
-	listIPs, err := lbAPI.ListIPs(&lb.ListIPsRequest{}, scw.WithAllPages())
-	if err != nil {
-		return fmt.Errorf("error listing lb ips in (%s) in sweeper: %s", region, err)
-	}
+		l.Debugf("sweeper: destroying the lb ips in (%s)", region)
+		listIPs, err := lbAPI.ListIPs(&lb.ListIPsRequest{}, scw.WithAllPages())
+		if err != nil {
+			return fmt.Errorf("error listing lb ips in (%s) in sweeper: %s", region, err)
+		}
 
-	for _, ip := range listIPs.IPs {
-		if ip.LBID == nil {
-			err := lbAPI.ReleaseIP(&lb.ReleaseIPRequest{
-				IPID: ip.ID,
-			})
-			if err != nil {
-				return fmt.Errorf("error deleting lb ip in sweeper: %s", err)
+		for _, ip := range listIPs.IPs {
+			if ip.LBID == nil {
+				err := lbAPI.ReleaseIP(&lb.ReleaseIPRequest{
+					IPID: ip.ID,
+				})
+				if err != nil {
+					return fmt.Errorf("error deleting lb ip in sweeper: %s", err)
+				}
 			}
 		}
-	}
 
-	return nil
+		return nil
+	})
 }
 
 func TestAccScalewayLbIP_Basic(t *testing.T) {

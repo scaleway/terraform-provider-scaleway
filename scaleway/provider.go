@@ -114,7 +114,6 @@ func Provider(config *ProviderConfig) plugin.ProviderFunc {
 			meta, err := buildMeta(&MetaConfig{
 				providerSchema:   data,
 				terraformVersion: terraformVersion,
-				httpClient:       &http.Client{Transport: newRetryableTransport(http.DefaultTransport)},
 			})
 			if err != nil {
 				return nil, diag.FromErr(err)
@@ -167,7 +166,13 @@ func buildMeta(config *MetaConfig) (*Meta, error) {
 	opts := []scw.ClientOption{
 		scw.WithUserAgent(fmt.Sprintf("terraform-provider/%s terraform/%s", version, config.terraformVersion)),
 		scw.WithProfile(profile),
-		scw.WithHTTPClient(config.httpClient),
+	}
+
+	defaultHTTPClient := &http.Client{Transport: newRetryableTransport(http.DefaultTransport)}
+	if config.httpClient != nil {
+		opts = append(opts, scw.WithHTTPClient(config.httpClient))
+	} else {
+		opts = append(opts, scw.WithHTTPClient(defaultHTTPClient))
 	}
 
 	scwClient, err := scw.NewClient(opts...)
