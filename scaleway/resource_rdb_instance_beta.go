@@ -274,7 +274,7 @@ func resourceScalewayRdbInstanceBetaUpdate(ctx context.Context, d *schema.Resour
 		}
 
 		// Wait for the instance to settle after upgrading
-		time.Sleep(30 * time.Second)
+		time.Sleep(30 * time.Second) // lintignore:R018
 	}
 
 	if d.HasChange("password") {
