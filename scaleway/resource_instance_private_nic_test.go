@@ -7,38 +7,12 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
-	"github.com/scaleway/scaleway-sdk-go/scw"
 )
 
 func init() {
 	resource.AddTestSweepers("scaleway_instance_private_nic", &resource.Sweeper{
 		Name: "scaleway_instance_private_nic",
-		F:    testSweepInstancePrivateNic,
-	})
-}
-
-func testSweepInstancePrivateNic(_ string) error {
-	return sweepZones(scw.AllZones, func(scwClient *scw.Client, zone scw.Zone) error {
-		instanceAPI := instance.NewAPI(scwClient)
-		l.Debugf("sweeper: destroying the private nic in (%s)", zone)
-
-		listPNResponse, err := instanceAPI.ListPrivateNICs(&instance.ListPrivateNICsRequest{
-			Zone: zone,
-		}, scw.WithAllPages())
-		if err != nil {
-			return fmt.Errorf("error listing private nic in sweeper: %s", err)
-		}
-
-		for _, privateNICs := range listPNResponse.PrivateNics {
-			err := instanceAPI.DeletePrivateNIC(&instance.DeletePrivateNICRequest{
-				Zone:         zone,
-				PrivateNicID: privateNICs.ID,
-			})
-			if err != nil {
-				return fmt.Errorf("error deleting private nic in sweeper: %s", err)
-			}
-		}
-		return nil
+		F:    testSweepInstanceServer,
 	})
 }
 
