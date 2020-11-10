@@ -170,14 +170,14 @@ func TestAccScalewayInstanceServer_Basic(t *testing.T) {
 			{
 				// DEV1-M
 				Config: `
-					data "scaleway_marketplace_image_beta" "ubuntu" {
+					data "scaleway_marketplace_image" "ubuntu" {
 					  instance_type   = "DEV1-M"
 					  label         = "ubuntu_focal"
 					}
 					
 					resource "scaleway_instance_server" "base" {
 					  name  = "test"
-					  image = "${data.scaleway_marketplace_image_beta.ubuntu.id}"
+					  image = "${data.scaleway_marketplace_image.ubuntu.id}"
 					  type  = "DEV1-M"
 					
 					  tags = [ "terraform-test", "scaleway_instance_server", "basic" ]
@@ -194,14 +194,14 @@ func TestAccScalewayInstanceServer_Basic(t *testing.T) {
 			{
 				// DEV1-S
 				Config: `
-					data "scaleway_marketplace_image_beta" "ubuntu" {
+					data "scaleway_marketplace_image" "ubuntu" {
 					  instance_type   = "DEV1-S"
 					  label         = "ubuntu_focal"
 					}
 					
 					resource "scaleway_instance_server" "base" {
 					  name  = "test"
-					  image = "${data.scaleway_marketplace_image_beta.ubuntu.id}"
+					  image = "${data.scaleway_marketplace_image.ubuntu.id}"
 					  type  = "DEV1-S"
 					
 					  tags = [ "terraform-test", "scaleway_instance_server", "basic" ]
@@ -230,13 +230,13 @@ func TestAccScalewayInstanceServer_State1(t *testing.T) {
 			{
 				// started
 				Config: `
-					data "scaleway_marketplace_image_beta" "ubuntu" {
+					data "scaleway_marketplace_image" "ubuntu" {
 					  instance_type = "DEV1-S"
 					  label         = "ubuntu_focal"
 					}
 					
 					resource "scaleway_instance_server" "base" {
-					  image = "${data.scaleway_marketplace_image_beta.ubuntu.id}"
+					  image = "${data.scaleway_marketplace_image.ubuntu.id}"
 					  type  = "DEV1-S"
 					  state = "started"
 					  tags  = [ "terraform-test", "scaleway_instance_server", "state" ]
@@ -249,13 +249,13 @@ func TestAccScalewayInstanceServer_State1(t *testing.T) {
 			{
 				// standby
 				Config: `
-					data "scaleway_marketplace_image_beta" "ubuntu" {
+					data "scaleway_marketplace_image" "ubuntu" {
 					  instance_type = "DEV1-S"
 					  label         = "ubuntu_focal"
 					}
 					
 					resource "scaleway_instance_server" "base" {
-					  image = "${data.scaleway_marketplace_image_beta.ubuntu.id}"
+					  image = "${data.scaleway_marketplace_image.ubuntu.id}"
 					  type  = "DEV1-S"
 					  state = "standby"
 					  tags  = [ "terraform-test", "scaleway_instance_server", "state" ]
@@ -268,13 +268,13 @@ func TestAccScalewayInstanceServer_State1(t *testing.T) {
 			{
 				// stopped
 				Config: `
-					data "scaleway_marketplace_image_beta" "ubuntu" {
+					data "scaleway_marketplace_image" "ubuntu" {
 					  instance_type = "DEV1-S"
 					  label         = "ubuntu_focal"
 					}
 					
 					resource "scaleway_instance_server" "base" {
-					  image = "${data.scaleway_marketplace_image_beta.ubuntu.id}"
+					  image = "${data.scaleway_marketplace_image.ubuntu.id}"
 					  type  = "DEV1-S"
 					  state = "stopped"
 					  tags  = [ "terraform-test", "scaleway_instance_server", "state" ]
@@ -299,13 +299,13 @@ func TestAccScalewayInstanceServer_State2(t *testing.T) {
 			{
 				// stopped
 				Config: `
-					data "scaleway_marketplace_image_beta" "ubuntu" {
+					data "scaleway_marketplace_image" "ubuntu" {
 					  instance_type = "DEV1-S"
 					  label         = "ubuntu_focal"
 					}
 					
 					resource "scaleway_instance_server" "base" {
-					  image = "${data.scaleway_marketplace_image_beta.ubuntu.id}"
+					  image = "${data.scaleway_marketplace_image.ubuntu.id}"
 					  type  = "DEV1-S"
 					  state = "stopped"
 					  tags  = [ "terraform-test", "scaleway_instance_server", "state" ]
@@ -318,13 +318,13 @@ func TestAccScalewayInstanceServer_State2(t *testing.T) {
 			{
 				// standby
 				Config: `
-					data "scaleway_marketplace_image_beta" "ubuntu" {
+					data "scaleway_marketplace_image" "ubuntu" {
 					  instance_type = "DEV1-S"
 					  label         = "ubuntu_focal"
 					}
 					
 					resource "scaleway_instance_server" "base" {
-					  image = "${data.scaleway_marketplace_image_beta.ubuntu.id}"
+					  image = "${data.scaleway_marketplace_image.ubuntu.id}"
 					  type  = "DEV1-S"
 					  state = "standby"
 					  tags  = [ "terraform-test", "scaleway_instance_server", "state" ]
