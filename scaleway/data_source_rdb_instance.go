@@ -12,7 +12,7 @@ import (
 
 func dataSourceScalewayRDBInstance() *schema.Resource {
 	// Generate datasource schema from resource
-	dsSchema := datasourceSchemaFromResourceSchema(resourceScalewayRdbInstanceBeta().Schema)
+	dsSchema := datasourceSchemaFromResourceSchema(resourceScalewayRdbInstance().Schema)
 	// Set 'Optional' schema elements
 	addOptionalFieldsToSchema(dsSchema, "name")
 
@@ -61,5 +61,5 @@ func dataSourceScalewayRDBInstanceRead(ctx context.Context, d *schema.ResourceDa
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	return resourceScalewayRdbInstanceBetaRead(ctx, d, m)
+	return resourceScalewayRdbInstanceRead(ctx, d, m)
 }

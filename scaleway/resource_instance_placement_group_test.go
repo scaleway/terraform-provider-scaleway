@@ -88,6 +88,48 @@ func TestAccScalewayInstancePlacementGroup_Basic(t *testing.T) {
 	})
 }
 
+func TestAccScalewayInstancePlacementGroup_Rename(t *testing.T) {
+	tt := NewTestTools(t)
+	defer tt.Cleanup()
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      testAccCheckScalewayInstancePlacementGroupDestroy(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource "scaleway_instance_placement_group" "base" {
+						name        = "foo"
+						policy_mode = "enforced"
+						policy_type = "low_latency"
+					}
+
+					resource "scaleway_instance_server" "base" {
+						type  = "DEV1-S"
+						image = "ubuntu_focal"
+						placement_group_id = "${scaleway_instance_placement_group.base.id}"
+					}`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayInstancePlacementGroupExists(tt, "scaleway_instance_placement_group.base"),
+					resource.TestCheckResourceAttr("scaleway_instance_placement_group.base", "name", "foo"),
+				),
+			},
+			{
+				Config: `
+					resource "scaleway_instance_placement_group" "base" {
+						name        = "bar"
+						policy_mode = "enforced"
+						policy_type = "low_latency"
+					}`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayInstancePlacementGroupExists(tt, "scaleway_instance_placement_group.base"),
+					resource.TestCheckResourceAttr("scaleway_instance_placement_group.base", "name", "bar"),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckScalewayInstancePlacementGroupExists(tt *TestTools, n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]

@@ -9,7 +9,7 @@ Scaleway Terraform Provider
 
 ### Version 2 In Progress
 
-We are actively working on the version 2. You can follow the progess [here](https://github.com/terraform-providers/terraform-provider-scaleway/issues/125).
+We are actively working on the version 2. You can follow the progess [here](https://github.com/scaleway/terraform-provider-scaleway/issues/125).
 
 Requirements
 ------------

@@ -75,16 +75,16 @@ func Provider(config *ProviderConfig) plugin.ProviderFunc {
 				"scaleway_instance_security_group_rules": resourceScalewayInstanceSecurityGroupRules(),
 				"scaleway_instance_server":               resourceScalewayInstanceServer(),
 				"scaleway_instance_placement_group":      resourceScalewayInstancePlacementGroup(),
-				"scaleway_k8s_cluster_beta":              resourceScalewayK8SClusterBeta(),
-				"scaleway_k8s_pool_beta":                 resourceScalewayK8SPoolBeta(),
-				"scaleway_lb_beta":                       resourceScalewayLbBeta(),
-				"scaleway_lb_ip_beta":                    resourceScalewayLbIPBeta(),
-				"scaleway_lb_backend_beta":               resourceScalewayLbBackendBeta(),
-				"scaleway_lb_certificate_beta":           resourceScalewayLbCertificateBeta(),
-				"scaleway_lb_frontend_beta":              resourceScalewayLbFrontendBeta(),
-				"scaleway_registry_namespace_beta":       resourceScalewayRegistryNamespaceBeta(),
-				"scaleway_rdb_instance_beta":             resourceScalewayRdbInstanceBeta(),
-				"scaleway_rdb_user_beta":                 resourceScalewayRdbUserBeta(),
+				"scaleway_k8s_cluster":                   resourceScalewayK8SCluster(),
+				"scaleway_k8s_pool":                      resourceScalewayK8SPool(),
+				"scaleway_lb":                            resourceScalewayLb(),
+				"scaleway_lb_ip":                         resourceScalewayLbIP(),
+				"scaleway_lb_backend":                    resourceScalewayLbBackend(),
+				"scaleway_lb_certificate":                resourceScalewayLbCertificate(),
+				"scaleway_lb_frontend":                   resourceScalewayLbFrontend(),
+				"scaleway_registry_namespace":            resourceScalewayRegistryNamespace(),
+				"scaleway_rdb_instance":                  resourceScalewayRdbInstance(),
+				"scaleway_rdb_user":                      resourceScalewayRdbUser(),
 				"scaleway_object_bucket":                 resourceScalewayObjectBucket(),
 			},
 
@@ -95,11 +95,11 @@ func Provider(config *ProviderConfig) plugin.ProviderFunc {
 				"scaleway_instance_image":          dataSourceScalewayInstanceImage(),
 				"scaleway_instance_volume":         dataSourceScalewayInstanceVolume(),
 				"scaleway_baremetal_offer":         dataSourceScalewayBaremetalOffer(),
-				"scaleway_lb_ip_beta":              dataSourceScalewayLbIPBeta(),
 				"scaleway_rdb_instance":            dataSourceScalewayRDBInstance(),
-				"scaleway_marketplace_image_beta":  dataSourceScalewayMarketplaceImageBeta(),
-				"scaleway_registry_namespace_beta": dataSourceScalewayRegistryNamespaceBeta(),
-				"scaleway_registry_image_beta":     dataSourceScalewayRegistryImageBeta(),
+				"scaleway_lb_ip":                   dataSourceScalewayLbIP(),
+				"scaleway_marketplace_image":       dataSourceScalewayMarketplaceImage(),
+				"scaleway_registry_namespace":      dataSourceScalewayRegistryNamespace(),
+				"scaleway_registry_image":          dataSourceScalewayRegistryImage(),
 			},
 		}
 
@@ -114,7 +114,6 @@ func Provider(config *ProviderConfig) plugin.ProviderFunc {
 			meta, err := buildMeta(&MetaConfig{
 				providerSchema:   data,
 				terraformVersion: terraformVersion,
-				httpClient:       &http.Client{Transport: newRetryableTransport(http.DefaultTransport)},
 			})
 			if err != nil {
 				return nil, diag.FromErr(err)
@@ -167,7 +166,13 @@ func buildMeta(config *MetaConfig) (*Meta, error) {
 	opts := []scw.ClientOption{
 		scw.WithUserAgent(fmt.Sprintf("terraform-provider/%s terraform/%s", version, config.terraformVersion)),
 		scw.WithProfile(profile),
-		scw.WithHTTPClient(config.httpClient),
+	}
+
+	defaultHTTPClient := &http.Client{Transport: newRetryableTransport(http.DefaultTransport)}
+	if config.httpClient != nil {
+		opts = append(opts, scw.WithHTTPClient(config.httpClient))
+	} else {
+		opts = append(opts, scw.WithHTTPClient(defaultHTTPClient))
 	}
 
 	scwClient, err := scw.NewClient(opts...)

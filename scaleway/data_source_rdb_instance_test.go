@@ -12,7 +12,7 @@ func TestAccScalewayDataSourceRDBInstance_Basic(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      testAccCheckScalewayRdbInstanceBetaDestroy(tt),
+		CheckDestroy:      testAccCheckScalewayRdbInstanceDestroy(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -39,7 +39,7 @@ func TestAccScalewayDataSourceRDBInstance_Basic(t *testing.T) {
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayRdbBetaExists(tt, "scaleway_rdb_instance_beta.test"),
+					testAccCheckScalewayRdbExists(tt, "scaleway_rdb_instance_beta.test"),
 
 					resource.TestCheckResourceAttr("scaleway_rdb_instance_beta.test", "name", "test-terraform"),
 					resource.TestCheckResourceAttrSet("data.scaleway_rdb_instance.test", "id"),
