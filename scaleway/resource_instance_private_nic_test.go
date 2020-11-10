@@ -59,7 +59,6 @@ func TestAccScalewayInstancePrivateNIC_Basic(t *testing.T) {
 					resource "scaleway_instance_server" "server01" {
 						image = "ubuntu_focal"
 						type  = "DEV1-S"
-						bootscript_id = "fdfe150f-a870-4ce4-b432-9f56b5b995c1"
 					}
 
 					resource scaleway_instance_private_nic nic01 {
