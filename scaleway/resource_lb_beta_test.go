@@ -17,30 +17,31 @@ func init() {
 	})
 }
 
-func testSweepLB(region string) error {
-	scwClient, err := sharedClientForRegion(scw.Region(region))
-	if err != nil {
-		return fmt.Errorf("error getting client in sweeper: %s", err)
-	}
-	lbAPI := lb.NewAPI(scwClient)
+func testSweepLB(_ string) error {
+	return sweepRegions([]scw.Region{scw.RegionFrPar, scw.RegionNlAms, scw.RegionPlWaw}, func(scwClient *scw.Client, region scw.Region) error {
+		lbAPI := lb.NewAPI(scwClient)
 
-	l.Debugf("sweeper: destroying the lbs in (%s)", region)
-	listLBs, err := lbAPI.ListLBs(&lb.ListLBsRequest{}, scw.WithAllPages())
-	if err != nil {
-		return fmt.Errorf("error listing lbs in (%s) in sweeper: %s", region, err)
-	}
-
-	for _, l := range listLBs.LBs {
-		err := lbAPI.DeleteLB(&lb.DeleteLBRequest{
-			LBID:      l.ID,
-			ReleaseIP: true,
-		})
+		l.Debugf("sweeper: destroying the lbs in (%s)", region)
+		listLBs, err := lbAPI.ListLBs(&lb.ListLBsRequest{
+			Region: region,
+		}, scw.WithAllPages())
 		if err != nil {
-			return fmt.Errorf("error deleting lb in sweeper: %s", err)
+			return fmt.Errorf("error listing lbs in (%s) in sweeper: %s", region, err)
 		}
-	}
 
-	return nil
+		for _, l := range listLBs.LBs {
+			err := lbAPI.DeleteLB(&lb.DeleteLBRequest{
+				LBID:      l.ID,
+				ReleaseIP: true,
+				Region:    region,
+			})
+			if err != nil {
+				return fmt.Errorf("error deleting lb in sweeper: %s", err)
+			}
+		}
+
+		return nil
+	})
 }
 
 func TestAccScalewayLbLb_WithIP(t *testing.T) {

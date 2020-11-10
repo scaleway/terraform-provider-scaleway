@@ -186,6 +186,7 @@ func resourceScalewayInstanceServer() *schema.Resource {
 			"bootscript_id": {
 				Type:         schema.TypeString,
 				Optional:     true,
+				Computed:     true,
 				Description:  "ID of the target bootscript (set boot_type to bootscript)",
 				ValidateFunc: validationUUID(),
 			},

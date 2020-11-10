@@ -17,30 +17,28 @@ func init() {
 	})
 }
 
-func testSweepAccountSSHKey(region string) error {
-	scwClient, err := sharedClientForRegion(scw.Region(region))
-	if err != nil {
-		return fmt.Errorf("error getting client in sweeper: %s", err)
-	}
-	accountAPI := account.NewAPI(scwClient)
+func testSweepAccountSSHKey(_ string) error {
+	return sweepZones([]scw.Zone{scw.ZoneFrPar1}, func(scwClient *scw.Client, zone scw.Zone) error {
+		accountAPI := account.NewAPI(scwClient)
 
-	l.Debugf("sweeper: destroying the SSH keys")
+		l.Debugf("sweeper: destroying the SSH keys")
 
-	listSSHKeys, err := accountAPI.ListSSHKeys(&account.ListSSHKeysRequest{}, scw.WithAllPages())
-	if err != nil {
-		return fmt.Errorf("error listing SSH keys in sweeper: %s", err)
-	}
-
-	for _, sshKey := range listSSHKeys.SSHKeys {
-		err := accountAPI.DeleteSSHKey(&account.DeleteSSHKeyRequest{
-			SSHKeyID: sshKey.ID,
-		})
+		listSSHKeys, err := accountAPI.ListSSHKeys(&account.ListSSHKeysRequest{}, scw.WithAllPages())
 		if err != nil {
-			return fmt.Errorf("error deleting SSH key in sweeper: %s", err)
+			return fmt.Errorf("error listing SSH keys in sweeper: %s", err)
 		}
-	}
 
-	return nil
+		for _, sshKey := range listSSHKeys.SSHKeys {
+			err := accountAPI.DeleteSSHKey(&account.DeleteSSHKeyRequest{
+				SSHKeyID: sshKey.ID,
+			})
+			if err != nil {
+				return fmt.Errorf("error deleting SSH key in sweeper: %s", err)
+			}
+		}
+
+		return nil
+	})
 }
 
 func TestAccScalewayAccountSSHKey_basic(t *testing.T) {

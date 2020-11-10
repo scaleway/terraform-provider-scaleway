@@ -8,6 +8,7 @@ on:
 jobs:
   nightly:
     strategy:
+      fail-fast: false
       matrix:
         products:
           - Account
@@ -35,6 +36,12 @@ jobs:
           # Enable recording with the cassette system. By doing so, we ensure that real HTTPS requests are made.
           TF_UPDATE_CASSETTES: true
           SCW_DEBUG: 1
+          SCW_ACCESS_KEY: ${{ secrets.SCW_ACCESS_KEY }}
+          SCW_SECRET_KEY: ${{ secrets.SCW_SECRET_KEY }}
+          SCW_DEFAULT_ORGANIZATION_ID: ${{ secrets.SCW_DEFAULT_ORGANIZATION_ID }}
+      - name: Run sweepers
+        run: make sweep
+        env:
           SCW_ACCESS_KEY: ${{ secrets.SCW_ACCESS_KEY }}
           SCW_SECRET_KEY: ${{ secrets.SCW_SECRET_KEY }}
           SCW_DEFAULT_ORGANIZATION_ID: ${{ secrets.SCW_DEFAULT_ORGANIZATION_ID }}
