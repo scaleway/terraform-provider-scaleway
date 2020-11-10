@@ -3,6 +3,7 @@ package scaleway
 import (
 	"errors"
 	"fmt"
+	"os"
 	"strings"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -19,6 +20,9 @@ func newS3Client(region, accessKey, secretKey string) (*s3.S3, error) {
 	config.WithRegion(region)
 	config.WithCredentials(credentials.NewStaticCredentials(accessKey, secretKey, ""))
 	config.WithEndpoint("https://s3." + region + ".scw.cloud")
+	if os.Getenv("S3_DEBUG") != "" {
+		config.WithLogLevel(aws.LogDebugWithHTTPBody)
+	}
 
 	s, err := session.NewSession(config)
 	if err != nil {
@@ -112,4 +116,16 @@ func isS3Err(err error, code string, message string) bool {
 		return awsErr.Code() == code && strings.Contains(awsErr.Message(), message)
 	}
 	return false
+}
+
+func flattenObjectBucketVersioning(versioningResponse *s3.GetBucketVersioningOutput) []map[string]interface{} {
+	vcl := make([]map[string]interface{}, 0, 1)
+	vc := make(map[string]interface{})
+	if versioningResponse.Status != nil && aws.StringValue(versioningResponse.Status) == s3.BucketVersioningStatusEnabled {
+		vc["enabled"] = true
+	} else {
+		vc["enabled"] = false
+	}
+	vcl = append(vcl, vc)
+	return vcl
 }

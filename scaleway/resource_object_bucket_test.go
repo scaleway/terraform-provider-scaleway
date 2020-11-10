@@ -164,8 +164,8 @@ func TestAccScalewayObjectBucket_Versioning(t *testing.T) {
 					}
 					`, bucketName),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayObjectBucketExists(tt, resourceName),
-					testAccCheckScalewayObjectBucketVersioning(tt, resourceName, ""),
+					testAccCheckScalewayObjectBucketExists(tt, resourceName, bucketName),
+					testAccCheckScalewayObjectBucketVersioning(tt, s3.BucketVersioningStatusSuspended, bucketName),
 				),
 			},
 			{
@@ -183,8 +183,8 @@ func TestAccScalewayObjectBucket_Versioning(t *testing.T) {
 						}
 					}`, bucketName),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayObjectBucketExists(tt, resourceName),
-					testAccCheckScalewayObjectBucketVersioning(tt, resourceName, s3.BucketVersioningStatusEnabled),
+					testAccCheckScalewayObjectBucketExists(tt, resourceName, bucketName),
+					testAccCheckScalewayObjectBucketVersioning(tt, s3.BucketVersioningStatusEnabled, bucketName),
 				),
 			},
 			{
@@ -196,19 +196,19 @@ func TestAccScalewayObjectBucket_Versioning(t *testing.T) {
 						}
 					}`, bucketName),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayObjectBucketExists(tt, resourceName),
-					testAccCheckScalewayObjectBucketVersioning(tt, resourceName, s3.BucketVersioningStatusSuspended),
+					testAccCheckScalewayObjectBucketExists(tt, resourceName, bucketName),
+					testAccCheckScalewayObjectBucketVersioning(tt, s3.BucketVersioningStatusSuspended, bucketName),
 				),
 			},
 		},
 	})
 }
 
-func testAccCheckScalewayObjectBucketExists(tt *TestTools, n string) resource.TestCheckFunc {
-	return testAccCheckScalewayObjectBucketExistsWithProvider(tt, n)
+func testAccCheckScalewayObjectBucketExists(tt *TestTools, n string, bucketName string) resource.TestCheckFunc {
+	return testAccCheckScalewayObjectBucketExistsWithProvider(tt, n, bucketName)
 }
 
-func testAccCheckScalewayObjectBucketExistsWithProvider(tt *TestTools, n string) resource.TestCheckFunc {
+func testAccCheckScalewayObjectBucketExistsWithProvider(tt *TestTools, n string, bucketName string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
@@ -220,8 +220,9 @@ func testAccCheckScalewayObjectBucketExistsWithProvider(tt *TestTools, n string)
 		}
 
 		conn := tt.Meta.s3Client
+
 		_, err := conn.HeadBucket(&s3.HeadBucketInput{
-			Bucket: aws.String(rs.Primary.ID),
+			Bucket: aws.String(bucketName),
 		})
 
 		if err != nil {
@@ -234,13 +235,12 @@ func testAccCheckScalewayObjectBucketExistsWithProvider(tt *TestTools, n string)
 	}
 }
 
-func testAccCheckScalewayObjectBucketVersioning(tt *TestTools, n string, versioningStatus string) resource.TestCheckFunc {
+func testAccCheckScalewayObjectBucketVersioning(tt *TestTools, versioningStatus string, bucketName string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-		rs := s.RootModule().Resources[n]
 		conn := tt.Meta.s3Client
 
 		out, err := conn.GetBucketVersioning(&s3.GetBucketVersioningInput{
-			Bucket: aws.String(rs.Primary.ID),
+			Bucket: aws.String(bucketName),
 		})
 
 		if err != nil {

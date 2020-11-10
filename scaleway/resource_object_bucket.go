@@ -158,19 +158,12 @@ func resourceScalewayObjectBucketRead(ctx context.Context, d *schema.ResourceDat
 
 	// Read the versioning configuration
 	versioningResponse, err := s3Client.GetBucketVersioning(&s3.GetBucketVersioningInput{
-		Bucket: aws.String(d.Id()),
+		Bucket: aws.String(bucketName),
 	})
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	vcl := make([]map[string]interface{}, 0, 1)
-	vc := make(map[string]interface{})
-	if versioningResponse.Status != nil && aws.StringValue(versioningResponse.Status) == s3.BucketVersioningStatusEnabled {
-		vc["enabled"] = true
-	} else {
-		vc["enabled"] = false
-	}
-	vcl = append(vcl, vc)
+	vcl := flattenObjectBucketVersioning(versioningResponse)
 	if err := d.Set("versioning", vcl); err != nil {
 		return diag.FromErr(fmt.Errorf("error setting versioning: %s", err))
 	}
@@ -238,7 +231,7 @@ func resourceScalewayObjectBucketDelete(ctx context.Context, d *schema.ResourceD
 
 func resourceScalewayObjectBucketVersioningUpdate(s3conn *s3.S3, d *schema.ResourceData) error {
 	v := d.Get("versioning").([]interface{})
-	bucket := d.Get("bucket").(string)
+	bucketName := d.Get("name").(string)
 	vc := &s3.VersioningConfiguration{}
 
 	if len(v) > 0 {
@@ -254,7 +247,7 @@ func resourceScalewayObjectBucketVersioningUpdate(s3conn *s3.S3, d *schema.Resou
 	}
 
 	i := &s3.PutBucketVersioningInput{
-		Bucket:                  aws.String(bucket),
+		Bucket:                  aws.String(bucketName),
 		VersioningConfiguration: vc,
 	}
 	log.Printf("[DEBUG] S3 put bucket versioning: %#v", i)
