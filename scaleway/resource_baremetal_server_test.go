@@ -59,6 +59,14 @@ func TestAccScalewayBaremetalServer_Basic(t *testing.T) {
 						name 	   = "%s"
 						public_key = "%s"
 					}
+				`, SSHKeyName, SSHKey),
+			},
+			{
+				Config: fmt.Sprintf(`
+					resource "scaleway_account_ssh_key" "main" {
+						name 	   = "%s"
+						public_key = "%s"
+					}
 					
 					resource "scaleway_baremetal_server" "base" {
 						name        = "%s"
