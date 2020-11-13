@@ -283,12 +283,11 @@ func resourceScalewayBaremetalServerDelete(ctx context.Context, d *schema.Resour
 		ServerID: zonedID.ID,
 	}, scw.WithContext(ctx))
 
-	if err != nil && !is404Error(err) {
+	if err != nil {
+		if is404Error(err) {
+			return nil
+		}
 		return diag.FromErr(err)
-	}
-
-	if is404Error(err) {
-		return nil
 	}
 
 	_, err = baremetalAPI.WaitForServer(&baremetal.WaitForServerRequest{
