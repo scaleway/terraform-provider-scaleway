@@ -3,20 +3,13 @@ package scaleway
 import (
 	"context"
 	"fmt"
-	"log"
 	"net/http"
-	"time"
 
-	"github.com/getsentry/sentry-go"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/plugin"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/scaleway-sdk-go/validation"
-)
-
-const (
-	dsn = "https://02b954a634fc439dbb1ac16df9cd3da5@sentry.internal.scaleway.com/223"
 )
 
 // Provider config can be used to provide additional config when creating provider.
@@ -33,18 +26,10 @@ func DefaultProviderConfig() *ProviderConfig {
 
 // Provider returns a terraform.ResourceProvider.
 func Provider(config *ProviderConfig) plugin.ProviderFunc {
-	err := sentry.Init(sentry.ClientOptions{
-		Dsn:     dsn,
-		Release: version,
-	})
-	if err != nil {
-		log.Fatalf("sentry.Init: %s", err)
+	// Catch every panic after this line. This will send an anonymous report on Scaleway's sentry.
+	if version != "develop" {
+		defer RecoverPanicAndSendReport()
 	}
-	// Flush buffered events before the program terminates.
-	// Set the timeout to the maximum duration the program can afford to wait.
-	defer sentry.Flush(2 * time.Second)
-
-	sentry.CaptureMessage("It works!")
 
 	return func() *schema.Provider {
 		p := &schema.Provider{
