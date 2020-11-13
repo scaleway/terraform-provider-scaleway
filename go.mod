@@ -4,6 +4,7 @@ require (
 	github.com/aws/aws-sdk-go v1.34.32
 	github.com/dnaeon/go-vcr v1.0.1
 	github.com/dustin/go-humanize v1.0.0
+	github.com/getsentry/sentry-go v0.8.0
 	github.com/google/go-cmp v0.5.2
 	github.com/hashicorp/go-retryablehttp v0.6.7
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.2.0
