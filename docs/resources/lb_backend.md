@@ -49,7 +49,7 @@ The following arguments are supported:
 - `forward_protocol`            - (Required) Backend protocol. Possible values are: `tcp` or `http`.
 - `name`                        - (Optional) The name of the load-balancer backend.
 - `forward_port`                - (Required) User sessions will be forwarded to this port of backend servers.
-- `forward_port_algorithm`      - (Default: `roundrobin`) Load balancing algorithm. Possible values are: `roundrobin` and `leastconn`.
+- `forward_port_algorithm`      - (Default: `roundrobin`) Load balancing algorithm. Possible values are: `roundrobin`, `leastconn` and `first`.
 - `sticky_sessions`             - (Default: `none`) Load balancing algorithm. Possible values are: `none`, `cookie` and `table`.
 - `sticky_sessions_cookie_name` - (Optional) Cookie name for for sticky sessions. Only applicable when sticky_sessions is set to `cookie`.
 - `server_ips`                  - (Optional) List of backend server IP addresses. Addresses can be either IPv4 or IPv6.
