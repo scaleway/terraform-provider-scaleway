@@ -20,7 +20,7 @@ func newS3Client(region, accessKey, secretKey string) (*s3.S3, error) {
 	config.WithRegion(region)
 	config.WithCredentials(credentials.NewStaticCredentials(accessKey, secretKey, ""))
 	config.WithEndpoint("https://s3." + region + ".scw.cloud")
-	if os.Getenv("S3_DEBUG") != "" {
+	if os.Getenv(scw.DebugEnv) != "" {
 		config.WithLogLevel(aws.LogDebugWithHTTPBody)
 	}
 
