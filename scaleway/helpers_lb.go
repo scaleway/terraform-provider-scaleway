@@ -11,6 +11,7 @@ import (
 
 const (
 	LbWaitForTimeout = 10 * time.Minute
+	defaultLbTimeout = 10 * time.Minute
 )
 
 // lbAPI returns a new lb API

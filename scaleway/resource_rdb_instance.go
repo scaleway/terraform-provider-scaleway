@@ -17,6 +17,9 @@ func resourceScalewayRdbInstance() *schema.Resource {
 		ReadContext:   resourceScalewayRdbInstanceRead,
 		UpdateContext: resourceScalewayRdbInstanceUpdate,
 		DeleteContext: resourceScalewayRdbInstanceDelete,
+		Timeouts: &schema.ResourceTimeout{
+			Default: schema.DefaultTimeout(defaultRdbTimeout),
+		},
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},

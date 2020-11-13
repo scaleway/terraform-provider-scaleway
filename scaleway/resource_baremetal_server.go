@@ -22,8 +22,8 @@ func resourceScalewayBaremetalServer() *schema.Resource {
 		},
 		SchemaVersion: 0,
 		Timeouts: &schema.ResourceTimeout{
-			Create: &baremetalServerResourceTimeout,
-			Delete: &baremetalServerResourceTimeout,
+			Create: schema.DefaultTimeout(baremetalServerResourceTimeout),
+			Delete: schema.DefaultTimeout(baremetalServerResourceTimeout),
 		},
 		Schema: map[string]*schema.Schema{
 			"name": {

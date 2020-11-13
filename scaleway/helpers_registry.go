@@ -1,9 +1,15 @@
 package scaleway
 
 import (
+	"time"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/api/registry/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+)
+
+const (
+	defaultRegistryTimeout = 5 * time.Minute
 )
 
 // registryAPIWithRegion returns a new container registry API and the region.

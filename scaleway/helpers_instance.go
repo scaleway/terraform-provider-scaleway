@@ -17,8 +17,12 @@ const (
 	InstanceServerStateStarted = "started"
 	InstanceServerStateStandby = "standby"
 
-	InstanceServerWaitForTimeout = 10 * time.Minute
-	InstanceVolumeDeleteTimeout  = 10 * time.Minute
+	InstanceServerWaitForTimeout     = 10 * time.Minute
+	InstanceVolumeDeleteTimeout      = 10 * time.Minute
+	instanceSecurityGroupTimeout     = 1 * time.Minute
+	instanceSecurityGroupRuleTimeout = 1 * time.Minute
+	instancePlacementGroupTimeout    = 1 * time.Minute
+	instanceIPTimeout                = 1 * time.Minute
 )
 
 // instanceAPIWithZone returns a new instance API and the zone for a Create request

@@ -21,7 +21,9 @@ func resourceScalewayInstanceSecurityGroup() *schema.Resource {
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
-
+		Timeouts: &schema.ResourceTimeout{
+			Default: schema.DefaultTimeout(instanceSecurityGroupTimeout),
+		},
 		Schema: map[string]*schema.Schema{
 			"name": {
 				Type:        schema.TypeString,
