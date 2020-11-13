@@ -31,7 +31,7 @@ func RecoverPanicAndSendReport() {
 		logAndSentry(sentryClient, fmt.Errorf("unknownw error: %v", e))
 	}
 
-	panic(e)
+	panic(e) // lintignore:R009
 }
 
 func logAndSentry(sentryClient *raven.Client, err error) {
