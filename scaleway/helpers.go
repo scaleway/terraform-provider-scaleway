@@ -276,7 +276,7 @@ func newTemplateFunc(tplStr string) func(data interface{}) string {
 		buffer := bytes.Buffer{}
 		err := t.Execute(&buffer, tplParams)
 		if err != nil {
-			panic(err)
+			panic(err) // lintignore:R009
 		}
 		return buffer.String()
 	}
@@ -321,7 +321,7 @@ func expandDuration(data interface{}) *time.Duration {
 	d, err := time.ParseDuration(data.(string))
 	if err != nil {
 		// We panic as this should never happened. Data from state should be validate using a validate func
-		panic(err)
+		panic(err) // lintignore:R009
 	}
 	return &d
 }
@@ -414,7 +414,7 @@ func expandIPNet(raw string) scw.IPNet {
 	err := json.Unmarshal([]byte(raw), &ipNet)
 	if err != nil {
 		// We panic as this should never happen. Data from state should be validate using a validate func
-		panic(fmt.Errorf("%s could not be marshaled: %v", raw, err))
+		panic(fmt.Errorf("%s could not be marshaled: %v", raw, err)) // lintignore:R009
 	}
 
 	return ipNet
@@ -424,7 +424,7 @@ func flattenIPNet(ipNet scw.IPNet) string {
 	raw, err := json.Marshal(ipNet)
 	if err != nil {
 		// We panic as this should never happen.
-		panic(err)
+		panic(err) // lintignore:R009
 	}
 	return string(raw[1 : len(raw)-1])
 }

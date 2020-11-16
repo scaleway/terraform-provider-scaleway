@@ -24,7 +24,7 @@ func resourceScalewayInstanceServer() *schema.Resource {
 		UpdateContext: resourceScalewayInstanceServerUpdate,
 		DeleteContext: resourceScalewayInstanceServerDelete,
 		Importer: &schema.ResourceImporter{
-			State: schema.ImportStatePassthrough,
+			StateContext: schema.ImportStatePassthroughContext,
 		},
 		SchemaVersion: 0,
 		Schema: map[string]*schema.Schema{
@@ -175,8 +175,21 @@ func resourceScalewayInstanceServer() *schema.Resource {
 			},
 			"boot_type": {
 				Type:        schema.TypeString,
-				Computed:    true,
+				Optional:    true,
 				Description: "The boot type of the server",
+				Default:     instance.BootTypeLocal,
+				ValidateFunc: validation.StringInSlice([]string{
+					instance.BootTypeLocal.String(),
+					instance.BootTypeRescue.String(),
+					instance.BootTypeBootscript.String(),
+				}, false),
+			},
+			"bootscript_id": {
+				Type:         schema.TypeString,
+				Optional:     true,
+				Computed:     true,
+				Description:  "ID of the target bootscript (set boot_type to bootscript)",
+				ValidateFunc: validationUUID(),
 			},
 			"cloud_init": {
 				Type:         schema.TypeString,
@@ -210,13 +223,6 @@ func resourceScalewayInstanceServer() *schema.Resource {
 			"zone":            zoneSchema(),
 			"organization_id": organizationIDSchema(),
 			"project_id":      projectIDSchema(),
-
-			// Deprecated and removed.
-			"disable_public_ip": {
-				Type:     schema.TypeBool,
-				Optional: true,
-				Default:  false,
-			},
 		},
 	}
 }
@@ -250,7 +256,6 @@ func resourceScalewayInstanceServerCreate(ctx context.Context, d *schema.Resourc
 	req := &instance.CreateServerRequest{
 		Zone:              zone,
 		Name:              expandOrGenerateString(d.Get("name"), "srv"),
-		Organization:      expandStringPtr(d.Get("organization_id")),
 		Project:           expandStringPtr(d.Get("project_id")),
 		Image:             image.ID,
 		CommercialType:    commercialType,
@@ -258,6 +263,15 @@ func resourceScalewayInstanceServerCreate(ctx context.Context, d *schema.Resourc
 		SecurityGroup:     expandStringPtr(expandZonedID(d.Get("security_group_id")).ID),
 		DynamicIPRequired: scw.BoolPtr(d.Get("enable_dynamic_ip").(bool)),
 		Tags:              expandStrings(d.Get("tags")),
+	}
+
+	if bootScriptID, ok := d.GetOk("bootscript_id"); ok {
+		req.Bootscript = expandStringPtr(bootScriptID)
+	}
+
+	if bootType, ok := d.GetOk("boot_type"); ok {
+		bootType := instance.BootType(bootType.(string))
+		req.BootType = &bootType
 	}
 
 	if ipID, ok := d.GetOk("ip_id"); ok {
@@ -361,6 +375,7 @@ func resourceScalewayInstanceServerRead(ctx context.Context, d *schema.ResourceD
 	_ = d.Set("zone", string(zone))
 	_ = d.Set("name", response.Server.Name)
 	_ = d.Set("boot_type", response.Server.BootType)
+	_ = d.Set("bootscript_id", response.Server.Bootscript.ID)
 	_ = d.Set("type", response.Server.CommercialType)
 	_ = d.Set("tags", response.Server.Tags)
 	_ = d.Set("security_group_id", newZonedID(zone, response.Server.SecurityGroup.ID).String())
@@ -378,6 +393,7 @@ func resourceScalewayInstanceServerRead(ctx context.Context, d *schema.ResourceD
 	}
 
 	if response.Server.PlacementGroup != nil {
+		_ = d.Set("placement_group_id", newZonedID(zone, response.Server.PlacementGroup.ID).String())
 		_ = d.Set("placement_group_policy_respected", response.Server.PlacementGroup.PolicyRespected)
 	}
 
@@ -517,11 +533,8 @@ func resourceScalewayInstanceServerUpdate(ctx context.Context, d *schema.Resourc
 		volumes["0"] = &instance.VolumeTemplate{ID: expandZonedID(d.Get("root_volume.0.volume_id")).ID, Name: newRandomName("vol")} // name is ignored by the API, any name will work here
 
 		for i, volumeID := range raw.([]interface{}) {
-			// We make sure volume is detached so we can attach it to the server.
-			err = detachVolume(nil, instanceAPI, zone, expandZonedID(volumeID).ID)
-			if err != nil {
-				return diag.FromErr(err)
-			}
+			// TODO: this will be refactored soon, before next release
+			// in the meantime it will throw an error if the volume is already attached somewhere
 			volumes[strconv.Itoa(i+1)] = &instance.VolumeTemplate{
 				ID:   expandZonedID(volumeID).ID,
 				Name: newRandomName("vol"), // name is ignored by the API, any name will work here
@@ -580,6 +593,17 @@ func resourceScalewayInstanceServerUpdate(ctx context.Context, d *schema.Resourc
 		}
 	}
 
+	if d.HasChanges("boot_type") {
+		bootType := instance.BootType(d.Get("boot_type").(string))
+		updateRequest.BootType = &bootType
+		forceReboot = true
+	}
+
+	if d.HasChanges("bootscript_id") {
+		updateRequest.Bootscript = expandStringPtr(d.Get("bootscript_id").(string))
+		forceReboot = true
+	}
+
 	////
 	// Update server user data
 	////
@@ -614,8 +638,6 @@ func resourceScalewayInstanceServerUpdate(ctx context.Context, d *schema.Resourc
 	// Apply changes
 	////
 
-	defer lockLocalizedID(d.Id())()
-
 	if forceReboot {
 		err = reachState(ctx, instanceAPI, zone, ID, InstanceServerStateStopped)
 		if err != nil {
@@ -646,7 +668,6 @@ func resourceScalewayInstanceServerDelete(ctx context.Context, d *schema.Resourc
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	defer lockLocalizedID(d.Id())()
 
 	// reach stopped state
 	err = reachState(ctx, instanceAPI, zone, ID, instance.ServerStateStopped)

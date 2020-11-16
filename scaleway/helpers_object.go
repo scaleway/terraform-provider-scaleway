@@ -1,6 +1,8 @@
 package scaleway
 
 import (
+	"fmt"
+
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
@@ -91,4 +93,8 @@ func expandObjectBucketTags(tags interface{}) []*s3.Tag {
 	}
 
 	return tagsSet
+}
+
+func objectBucketEndpointURL(bucketName string, region scw.Region) string {
+	return fmt.Sprintf("https://%s.s3.%s.scw.cloud", bucketName, region)
 }

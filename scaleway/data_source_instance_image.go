@@ -103,11 +103,10 @@ func dataSourceScalewayInstanceImageRead(ctx context.Context, d *schema.Resource
 	imageID, ok := d.GetOk("image_id")
 	if !ok { // Get instance by name, zone, and arch.
 		res, err := instanceAPI.ListImages(&instance.ListImagesRequest{
-			Zone:         zone,
-			Name:         expandStringPtr(d.Get("name")),
-			Arch:         expandStringPtr(d.Get("architecture")),
-			Organization: expandStringPtr(d.Get("organization_id")),
-			Project:      expandStringPtr(d.Get("project_id")),
+			Zone:    zone,
+			Name:    expandStringPtr(d.Get("name")),
+			Arch:    expandStringPtr(d.Get("architecture")),
+			Project: expandStringPtr(d.Get("project_id")),
 		}, scw.WithAllPages(), scw.WithContext(ctx))
 		if err != nil {
 			return diag.FromErr(err)

@@ -17,7 +17,7 @@ func resourceScalewayInstancePlacementGroup() *schema.Resource {
 		UpdateContext: resourceScalewayInstancePlacementGroupUpdate,
 		DeleteContext: resourceScalewayInstancePlacementGroupDelete,
 		Importer: &schema.ResourceImporter{
-			State: schema.ImportStatePassthrough,
+			StateContext: schema.ImportStatePassthroughContext,
 		},
 		SchemaVersion: 0,
 		Schema: map[string]*schema.Schema{
@@ -66,12 +66,11 @@ func resourceScalewayInstancePlacementGroupCreate(ctx context.Context, d *schema
 	}
 
 	res, err := instanceAPI.CreatePlacementGroup(&instance.CreatePlacementGroupRequest{
-		Zone:         zone,
-		Name:         expandOrGenerateString(d.Get("name"), "pg"),
-		Organization: expandStringPtr(d.Get("organization_id")),
-		Project:      expandStringPtr(d.Get("project_id")),
-		PolicyMode:   instance.PlacementGroupPolicyMode(d.Get("policy_mode").(string)),
-		PolicyType:   instance.PlacementGroupPolicyType(d.Get("policy_type").(string)),
+		Zone:       zone,
+		Name:       expandOrGenerateString(d.Get("name"), "pg"),
+		Project:    expandStringPtr(d.Get("project_id")),
+		PolicyMode: instance.PlacementGroupPolicyMode(d.Get("policy_mode").(string)),
+		PolicyType: instance.PlacementGroupPolicyType(d.Get("policy_type").(string)),
 	}, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
@@ -119,16 +118,27 @@ func resourceScalewayInstancePlacementGroupUpdate(ctx context.Context, d *schema
 	req := &instance.UpdatePlacementGroupRequest{
 		Zone:             zone,
 		PlacementGroupID: ID,
-		PolicyMode:       instance.PlacementGroupPolicyMode(d.Get("policy_mode").(string)),
-		PolicyType:       instance.PlacementGroupPolicyType(d.Get("policy_type").(string)),
 	}
 
-	hasChanged := d.HasChanges("policy_mode", "policy_type")
+	hasChanged := false
 
 	if d.HasChange("name") {
 		req.Name = expandStringPtr(d.Get("name").(string))
 		hasChanged = true
 	}
+
+	if d.HasChange("policy_mode") {
+		policyMode := instance.PlacementGroupPolicyMode(d.Get("policy_mode").(string))
+		req.PolicyMode = &policyMode
+		hasChanged = true
+	}
+
+	if d.HasChange("policy_type") {
+		policyType := instance.PlacementGroupPolicyType(d.Get("policy_type").(string))
+		req.PolicyType = &policyType
+		hasChanged = true
+	}
+
 	if hasChanged {
 		_, err = instanceAPI.UpdatePlacementGroup(req, scw.WithContext(ctx))
 		if err != nil {

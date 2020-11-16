@@ -19,7 +19,7 @@ func resourceScalewayInstanceSecurityGroup() *schema.Resource {
 		UpdateContext: resourceScalewayInstanceSecurityGroupUpdate,
 		DeleteContext: resourceScalewayInstanceSecurityGroupDelete,
 		Importer: &schema.ResourceImporter{
-			State: schema.ImportStatePassthrough,
+			StateContext: schema.ImportStatePassthroughContext,
 		},
 
 		Schema: map[string]*schema.Schema{
@@ -97,7 +97,6 @@ func resourceScalewayInstanceSecurityGroupCreate(ctx context.Context, d *schema.
 	res, err := instanceAPI.CreateSecurityGroup(&instance.CreateSecurityGroupRequest{
 		Name:                  expandOrGenerateString(d.Get("name"), "sg"),
 		Zone:                  zone,
-		Organization:          expandStringPtr(d.Get("organization_id")),
 		Project:               expandStringPtr(d.Get("project_id")),
 		Description:           d.Get("description").(string),
 		Stateful:              d.Get("stateful").(bool),
