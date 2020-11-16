@@ -62,49 +62,6 @@ func testSweepK8SCluster(_ string) error {
 	})
 }
 
-func TestAccScalewayK8SCluster_Deprecated(t *testing.T) {
-	tt := NewTestTools(t)
-	defer tt.Cleanup()
-	resource.ParallelTest(t, resource.TestCase{
-		PreCheck: func() {
-			testAccScalewayK8SClusterGetLatestVersion(tt)
-			testAccPreCheck(t)
-		},
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      testAccCheckScalewayK8SClusterDestroy(tt),
-		Steps: []resource.TestStep{
-			{
-				Config: testAccCheckScalewayK8SClusterDeprecated(latestK8SVersion, 1),
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayK8SClusterExists(tt, "scaleway_k8s_cluster.deprecated"),
-					resource.TestCheckResourceAttr("scaleway_k8s_cluster.deprecated", "version", latestK8SVersion),
-					resource.TestCheckResourceAttr("scaleway_k8s_cluster.deprecated", "cni", "calico"),
-					resource.TestCheckResourceAttr("scaleway_k8s_cluster.deprecated", "status", k8s.ClusterStatusReady.String()),
-					resource.TestCheckResourceAttr("scaleway_k8s_cluster.deprecated", "tags.0", "terraform-test"),
-					resource.TestCheckResourceAttr("scaleway_k8s_cluster.deprecated", "tags.1", "scaleway_k8s_cluster"),
-					resource.TestCheckResourceAttr("scaleway_k8s_cluster.deprecated", "tags.2", "deprecated"),
-					resource.TestCheckResourceAttr("scaleway_k8s_cluster.deprecated", "default_pool.0.size", "1"),
-					resource.TestCheckResourceAttr("scaleway_k8s_cluster.deprecated", "default_pool.0.node_type", "dev1_m"),
-				),
-			},
-			{
-				Config: testAccCheckScalewayK8SClusterDeprecated(latestK8SVersion, 2),
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayK8SClusterExists(tt, "scaleway_k8s_cluster.deprecated"),
-					resource.TestCheckResourceAttr("scaleway_k8s_cluster.deprecated", "version", latestK8SVersion),
-					resource.TestCheckResourceAttr("scaleway_k8s_cluster.deprecated", "cni", "calico"),
-					resource.TestCheckResourceAttr("scaleway_k8s_cluster.deprecated", "status", k8s.ClusterStatusReady.String()),
-					resource.TestCheckResourceAttr("scaleway_k8s_cluster.deprecated", "tags.0", "terraform-test"),
-					resource.TestCheckResourceAttr("scaleway_k8s_cluster.deprecated", "tags.1", "scaleway_k8s_cluster"),
-					resource.TestCheckResourceAttr("scaleway_k8s_cluster.deprecated", "tags.2", "deprecated"),
-					resource.TestCheckResourceAttr("scaleway_k8s_cluster.deprecated", "default_pool.0.size", "2"),
-					resource.TestCheckResourceAttr("scaleway_k8s_cluster.deprecated", "default_pool.0.node_type", "dev1_m"),
-				),
-			},
-		},
-	})
-}
-
 func TestAccScalewayK8SCluster_Basic(t *testing.T) {
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
@@ -426,20 +383,6 @@ func testAccCheckScalewayK8SClusterExists(tt *TestTools, n string) resource.Test
 
 		return nil
 	}
-}
-
-func testAccCheckScalewayK8SClusterDeprecated(version string, size int) string {
-	return fmt.Sprintf(`
-resource "scaleway_k8s_cluster" "deprecated" {
-	cni = "calico"
-	version = "%s"
-	name = "ClusterBetaDeprecated"
-	tags = [ "terraform-test", "scaleway_k8s_cluster", "deprecated" ]
-	default_pool {
-	  node_type = "DEV1-M"
-	  size = %d
-	}
-}`, version, size)
 }
 
 func testAccCheckScalewayK8SClusterConfigMinimal(version string) string {

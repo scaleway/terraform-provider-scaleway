@@ -23,7 +23,7 @@ func resourceScalewayInstanceServer() *schema.Resource {
 		UpdateContext: resourceScalewayInstanceServerUpdate,
 		DeleteContext: resourceScalewayInstanceServerDelete,
 		Importer: &schema.ResourceImporter{
-			State: schema.ImportStatePassthrough,
+			StateContext: schema.ImportStatePassthroughContext,
 		},
 		SchemaVersion: 0,
 		Schema: map[string]*schema.Schema{
@@ -532,11 +532,8 @@ func resourceScalewayInstanceServerUpdate(ctx context.Context, d *schema.Resourc
 		volumes["0"] = &instance.VolumeTemplate{ID: expandZonedID(d.Get("root_volume.0.volume_id")).ID, Name: newRandomName("vol")} // name is ignored by the API, any name will work here
 
 		for i, volumeID := range raw.([]interface{}) {
-			// We make sure volume is detached so we can attach it to the server.
-			err = detachVolume(nil, instanceAPI, zone, expandZonedID(volumeID).ID)
-			if err != nil {
-				return diag.FromErr(err)
-			}
+			// TODO: this will be refactored soon, before next release
+			// in the meantime it will throw an error if the volume is already attached somewhere
 			volumes[strconv.Itoa(i+1)] = &instance.VolumeTemplate{
 				ID:   expandZonedID(volumeID).ID,
 				Name: newRandomName("vol"), // name is ignored by the API, any name will work here
@@ -640,8 +637,6 @@ func resourceScalewayInstanceServerUpdate(ctx context.Context, d *schema.Resourc
 	// Apply changes
 	////
 
-	defer lockLocalizedID(d.Id())()
-
 	if forceReboot {
 		err = reachState(ctx, instanceAPI, zone, ID, InstanceServerStateStopped)
 		if err != nil {
@@ -672,7 +667,6 @@ func resourceScalewayInstanceServerDelete(ctx context.Context, d *schema.Resourc
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	defer lockLocalizedID(d.Id())()
 
 	// reach stopped state
 	err = reachState(ctx, instanceAPI, zone, ID, instance.ServerStateStopped)
