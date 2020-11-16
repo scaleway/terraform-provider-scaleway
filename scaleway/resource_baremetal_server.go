@@ -296,5 +296,9 @@ func resourceScalewayBaremetalServerDelete(ctx context.Context, d *schema.Resour
 		Timeout:  scw.TimeDurationPtr(baremetalServerWaitForTimeout),
 	})
 
-	return diag.FromErr(err)
+	if err != nil && !is404Error(err) {
+		return diag.FromErr(err)
+	}
+
+	return nil
 }
