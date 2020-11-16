@@ -10,13 +10,6 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 )
 
-var (
-	latestK8SVersion        = "1.19.2"
-	latestK8SVersionMinor   = "1.19"
-	previousK8SVersion      = "1.18.9"
-	previousK8SVersionMinor = "1.18"
-)
-
 func init() {
 	resource.AddTestSweepers("scaleway_k8s_cluster", &resource.Sweeper{
 		Name: "scaleway_k8s_cluster",
@@ -24,19 +17,57 @@ func init() {
 	})
 }
 
-func testAccScalewayK8SClusterGetLatestVersion(tt *TestTools) {
+func testAccScalewayK8SClusterGetLatestK8SVersion(tt *TestTools) string {
 	api := k8s.NewAPI(tt.Meta.scwClient)
 	versions, err := api.ListVersions(&k8s.ListVersionsRequest{})
 	if err != nil {
 		tt.T.Fatalf("Could not get latestK8SVersion: %s", err)
-		return
 	}
 	if len(versions.Versions) > 1 {
-		latestK8SVersion = versions.Versions[0].Name
-		latestK8SVersionMinor, _ = k8sGetMinorVersionFromFull(latestK8SVersion)
-		previousK8SVersion = versions.Versions[1].Name
-		previousK8SVersionMinor, _ = k8sGetMinorVersionFromFull(previousK8SVersion)
+		latestK8SVersion := versions.Versions[0].Name
+		return latestK8SVersion
 	}
+	return ""
+}
+func testAccScalewayK8SClusterGetLatestK8SVersionMinor(tt *TestTools) string {
+	api := k8s.NewAPI(tt.Meta.scwClient)
+	versions, err := api.ListVersions(&k8s.ListVersionsRequest{})
+	if err != nil {
+		tt.T.Fatalf("Could not get latestK8SVersion: %s", err)
+	}
+	if len(versions.Versions) > 1 {
+		latestK8SVersion := versions.Versions[0].Name
+		latestK8SVersionMinor, _ := k8sGetMinorVersionFromFull(latestK8SVersion)
+		return latestK8SVersionMinor
+	}
+	return ""
+}
+
+func testAccScalewayK8SClusterGetPreviousK8SVersion(tt *TestTools) string {
+	api := k8s.NewAPI(tt.Meta.scwClient)
+	versions, err := api.ListVersions(&k8s.ListVersionsRequest{})
+	if err != nil {
+		tt.T.Fatalf("Could not get latestK8SVersion: %s", err)
+	}
+	if len(versions.Versions) > 1 {
+		previousK8SVersion := versions.Versions[1].Name
+		return previousK8SVersion
+	}
+	return ""
+}
+
+func testAccScalewayK8SClusterGetPreviousK8SVersionMinor(tt *TestTools) string {
+	api := k8s.NewAPI(tt.Meta.scwClient)
+	versions, err := api.ListVersions(&k8s.ListVersionsRequest{})
+	if err != nil {
+		tt.T.Fatalf("Could not get latestK8SVersion: %s", err)
+	}
+	if len(versions.Versions) > 1 {
+		previousK8SVersion := versions.Versions[1].Name
+		previousK8SVersionMinor, _ := k8sGetMinorVersionFromFull(previousK8SVersion)
+		return previousK8SVersionMinor
+	}
+	return ""
 }
 
 func testSweepK8SCluster(_ string) error {
@@ -65,9 +96,12 @@ func testSweepK8SCluster(_ string) error {
 func TestAccScalewayK8SCluster_Basic(t *testing.T) {
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
+
+	latestK8SVersion := testAccScalewayK8SClusterGetLatestK8SVersion(tt)
+	previousK8SVersion := testAccScalewayK8SClusterGetPreviousK8SVersion(tt)
+
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck: func() {
-			testAccScalewayK8SClusterGetLatestVersion(tt)
 			testAccPreCheck(t)
 		},
 		ProviderFactories: tt.ProviderFactories,
@@ -116,9 +150,11 @@ func TestAccScalewayK8SCluster_Basic(t *testing.T) {
 func TestAccScalewayK8SCluster_IngressDashboard(t *testing.T) {
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
+
+	latestK8SVersion := testAccScalewayK8SClusterGetLatestK8SVersion(tt)
+
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck: func() {
-			testAccScalewayK8SClusterGetLatestVersion(tt)
 			testAccPreCheck(t)
 		},
 		ProviderFactories: tt.ProviderFactories,
@@ -191,9 +227,11 @@ func TestAccScalewayK8SCluster_IngressDashboard(t *testing.T) {
 func TestAccScalewayK8SCluster_Autoscaling(t *testing.T) {
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
+
+	latestK8SVersion := testAccScalewayK8SClusterGetLatestK8SVersion(tt)
+
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck: func() {
-			testAccScalewayK8SClusterGetLatestVersion(tt)
 			testAccPreCheck(t)
 		},
 		ProviderFactories: tt.ProviderFactories,
@@ -258,10 +296,15 @@ func TestAccScalewayK8SCluster_Autoscaling(t *testing.T) {
 func TestAccScalewayK8SCluster_AutoUpgrade(t *testing.T) {
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
+
+	latestK8SVersion := testAccScalewayK8SClusterGetLatestK8SVersion(tt)
+	latestK8SVersionMinor := testAccScalewayK8SClusterGetLatestK8SVersionMinor(tt)
+	previousK8SVersion := testAccScalewayK8SClusterGetPreviousK8SVersion(tt)
+	previousK8SVersionMinor := testAccScalewayK8SClusterGetPreviousK8SVersionMinor(tt)
+
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck: func() {
 			testAccPreCheck(t)
-			testAccScalewayK8SClusterGetLatestVersion(tt)
 		},
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheckScalewayK8SClusterDestroy(tt),
