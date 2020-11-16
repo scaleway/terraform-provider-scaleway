@@ -52,6 +52,7 @@ func resourceScalewayLbBackend() *schema.Resource {
 				ValidateFunc: validation.StringInSlice([]string{
 					lb.ForwardPortAlgorithmRoundrobin.String(),
 					lb.ForwardPortAlgorithmLeastconn.String(),
+					lb.ForwardPortAlgorithmFirst.String(),
 				}, false),
 				Default:     lb.ForwardPortAlgorithmRoundrobin.String(),
 				Optional:    true,
