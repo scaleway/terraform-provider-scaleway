@@ -26,11 +26,6 @@ func DefaultProviderConfig() *ProviderConfig {
 
 // Provider returns a terraform.ResourceProvider.
 func Provider(config *ProviderConfig) plugin.ProviderFunc {
-	// Catch every panic after this line. This will send an anonymous report on Scaleway's sentry.
-	if version != "develop" {
-		defer RecoverPanicAndSendReport()
-	}
-
 	return func() *schema.Provider {
 		p := &schema.Provider{
 			Schema: map[string]*schema.Schema{
@@ -172,7 +167,7 @@ func buildMeta(config *MetaConfig) (*Meta, error) {
 	// Create scaleway SDK client
 	////
 	opts := []scw.ClientOption{
-		scw.WithUserAgent(fmt.Sprintf("terraform-provider/%s terraform/%s", version, config.terraformVersion)),
+		scw.WithUserAgent(fmt.Sprintf("terraform-provider/%s terraform/%s", Version, config.terraformVersion)),
 		scw.WithProfile(profile),
 	}
 

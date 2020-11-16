@@ -49,7 +49,7 @@ func newSentryClient() (*raven.Client, error) {
 	}
 
 	tagsContext := map[string]string{
-		"version": version,
+		"version": Version,
 	}
 
 	client.SetTagsContext(tagsContext)
