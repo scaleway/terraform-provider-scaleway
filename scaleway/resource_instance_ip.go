@@ -108,7 +108,7 @@ func resourceScalewayInstanceIPDelete(ctx context.Context, d *schema.ResourceDat
 		Zone: zone,
 	}, scw.WithContext(ctx))
 
-	if err != nil && !is404Error(err) {
+	if err != nil && !is404Error(err) && !is403Error(err) {
 		return diag.FromErr(err)
 	}
 
