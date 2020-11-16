@@ -41,7 +41,7 @@ func logAndSentry(sentryClient *raven.Client, err error) {
 	}
 }
 
-// newSentryClient create a sentry client with build info tags.
+// newSentryClient creates a sentry client with build info tags.
 func newSentryClient() (*raven.Client, error) {
 	client, err := raven.New(dsn)
 	if err != nil {
