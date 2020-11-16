@@ -19,7 +19,7 @@ func resourceScalewayInstanceSecurityGroup() *schema.Resource {
 		UpdateContext: resourceScalewayInstanceSecurityGroupUpdate,
 		DeleteContext: resourceScalewayInstanceSecurityGroupDelete,
 		Importer: &schema.ResourceImporter{
-			State: schema.ImportStatePassthrough,
+			StateContext: schema.ImportStatePassthroughContext,
 		},
 
 		Schema: map[string]*schema.Schema{
