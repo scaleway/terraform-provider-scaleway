@@ -90,9 +90,29 @@ func parseLocalizedID(localizedID string) (locality string, ID string, err error
 	return tab[0], tab[1], nil
 }
 
+// parseLocalizedNestedID parses a localizedNestedID and extracts the resource locality, the inner and outer id.
+func parseLocalizedNestedID(localizedID string) (locality string, innerID, outerID string, err error) {
+	tab := strings.SplitN(localizedID, "/", -1)
+	if len(tab) != 3 {
+		return "", "", localizedID, fmt.Errorf("cant parse localized id: %s", localizedID)
+	}
+	return tab[0], tab[1], tab[2], nil
+}
+
 // parseZonedID parses a zonedID and extracts the resource zone and id.
 func parseZonedID(zonedID string) (zone scw.Zone, id string, err error) {
 	locality, id, err := parseLocalizedID(zonedID)
+	if err != nil {
+		return
+	}
+
+	zone, err = scw.ParseZone(locality)
+	return
+}
+
+// parseZonedNestedID parses a zonedNestedID and extracts the resource zone ,inner and outer ID.
+func parseZonedNestedID(zonedNestedID string) (zone scw.Zone, outerID, innerID string, err error) {
+	locality, innerID, outerID, err := parseLocalizedNestedID(zonedNestedID)
 	if err != nil {
 		return
 	}
@@ -124,6 +144,11 @@ func parseRegionalID(regionalID string) (region scw.Region, id string, err error
 // newZonedIDString constructs a unique identifier based on resource zone and id
 func newZonedIDString(zone scw.Zone, id string) string {
 	return fmt.Sprintf("%s/%s", zone, id)
+}
+
+// newZonedNestedIDString constructs a unique identifier based on resource zone, inner and outer IDs
+func newZonedNestedIDString(zone scw.Zone, outerID, innerID string) string {
+	return fmt.Sprintf("%s/%s/%s", zone, outerID, innerID)
 }
 
 // newRegionalIDString constructs a unique identifier based on resource region and id
