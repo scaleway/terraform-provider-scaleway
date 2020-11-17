@@ -12,6 +12,9 @@ import (
 func TestAccScalewayK8SCluster_PoolBasic(t *testing.T) {
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
+
+	latestK8SVersion := testAccScalewayK8SClusterGetLatestK8SVersion(tt)
+
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
@@ -63,6 +66,7 @@ func TestAccScalewayK8SCluster_PoolBasic(t *testing.T) {
 func TestAccScalewayK8SCluster_PoolWait(t *testing.T) {
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
+	latestK8SVersion := testAccScalewayK8SClusterGetLatestK8SVersion(tt)
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
@@ -135,6 +139,7 @@ func TestAccScalewayK8SCluster_PoolWait(t *testing.T) {
 func TestAccScalewayK8SCluster_PoolPlacementGroup(t *testing.T) {
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
+	latestK8SVersion := testAccScalewayK8SClusterGetLatestK8SVersion(tt)
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
