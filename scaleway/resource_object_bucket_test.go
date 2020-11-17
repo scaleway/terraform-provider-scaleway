@@ -223,7 +223,7 @@ func testAccCheckScalewayObjectBucketExistsWithProvider(tt *TestTools, n string,
 			return fmt.Errorf("error while creating S3client: %s", err)
 		}
 
-		_, err = conn.HeadBucket(&s3.HeadBucketInput{
+		_, err = conn.HeadBucketWithContext(tt.ctx, &s3.HeadBucketInput{
 			Bucket: aws.String(bucketName),
 		})
 
@@ -244,7 +244,7 @@ func testAccCheckScalewayObjectBucketVersioning(tt *TestTools, versioningStatus 
 			return fmt.Errorf("error while creating S3client: %s", err)
 		}
 
-		out, err := conn.GetBucketVersioning(&s3.GetBucketVersioningInput{
+		out, err := conn.GetBucketVersioningWithContext(tt.ctx, &s3.GetBucketVersioningInput{
 			Bucket: aws.String(bucketName),
 		})
 

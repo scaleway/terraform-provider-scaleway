@@ -156,7 +156,7 @@ func resourceScalewayObjectBucketRead(ctx context.Context, d *schema.ResourceDat
 	_ = d.Set("endpoint", objectBucketEndpointURL(bucketName, region))
 
 	// Read the versioning configuration
-	versioningResponse, err := s3Client.GetBucketVersioning(&s3.GetBucketVersioningInput{
+	versioningResponse, err := s3Client.GetBucketVersioningWithContext(ctx, &s3.GetBucketVersioningInput{
 		Bucket: aws.String(bucketName),
 	})
 	if err != nil {
@@ -187,7 +187,7 @@ func resourceScalewayObjectBucketUpdate(ctx context.Context, d *schema.ResourceD
 	}
 
 	if d.HasChange("versioning") {
-		if err := resourceScalewayObjectBucketVersioningUpdate(s3Client, d); err != nil {
+		if err := resourceScalewayObjectBucketVersioningUpdate(ctx, s3Client, d); err != nil {
 			return diag.FromErr(err)
 		}
 	}
@@ -225,7 +225,7 @@ func resourceScalewayObjectBucketDelete(ctx context.Context, d *schema.ResourceD
 	return nil
 }
 
-func resourceScalewayObjectBucketVersioningUpdate(s3conn *s3.S3, d *schema.ResourceData) error {
+func resourceScalewayObjectBucketVersioningUpdate(ctx context.Context, s3conn *s3.S3, d *schema.ResourceData) error {
 	v := d.Get("versioning").([]interface{})
 	bucketName := d.Get("name").(string)
 	vc := expandObjectBucketVersioning(v)
@@ -236,7 +236,7 @@ func resourceScalewayObjectBucketVersioningUpdate(s3conn *s3.S3, d *schema.Resou
 	}
 	l.Debugf("S3 put bucket versioning: %#v", i)
 
-	_, err := s3conn.PutBucketVersioning(i)
+	_, err := s3conn.PutBucketVersioningWithContext(ctx, i)
 	if err != nil {
 		return fmt.Errorf("error putting S3 versioning: %s", err)
 	}
