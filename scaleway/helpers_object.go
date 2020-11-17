@@ -20,7 +20,7 @@ func newS3Client(region, accessKey, secretKey string) (*s3.S3, error) {
 	config.WithRegion(region)
 	config.WithCredentials(credentials.NewStaticCredentials(accessKey, secretKey, ""))
 	config.WithEndpoint("https://s3." + region + ".scw.cloud")
-	if os.Getenv(scw.DebugEnv) != "" {
+	if strings.ToLower(os.Getenv("TF_LOG")) == "debug" {
 		config.WithLogLevel(aws.LogDebugWithHTTPBody)
 	}
 
@@ -128,4 +128,21 @@ func flattenObjectBucketVersioning(versioningResponse *s3.GetBucketVersioningOut
 	}
 	vcl = append(vcl, vc)
 	return vcl
+}
+
+func expandObjectBucketVersioning(v []interface{}) *s3.VersioningConfiguration {
+	vc := &s3.VersioningConfiguration{}
+
+	if len(v) > 0 {
+		c := v[0].(map[string]interface{})
+
+		if c["enabled"].(bool) {
+			vc.Status = aws.String(s3.BucketVersioningStatusEnabled)
+		} else {
+			vc.Status = aws.String(s3.BucketVersioningStatusSuspended)
+		}
+	} else {
+		vc.Status = aws.String(s3.BucketVersioningStatusSuspended)
+	}
+	return vc
 }

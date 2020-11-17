@@ -9,7 +9,6 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/service/s3"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/scaleway/scaleway-sdk-go/scw"
@@ -149,7 +148,7 @@ func TestAccScalewayObjectBucket_Versioning(t *testing.T) {
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
 
-	bucketName := acctest.RandomWithPrefix("tf-test-bucket")
+	bucketName := "tf-test-bucket-testaccscalewayobjectbucket-versioning"
 	resourceName := "scaleway_object_bucket.bucket"
 
 	resource.ParallelTest(t, resource.TestCase{
@@ -219,9 +218,12 @@ func testAccCheckScalewayObjectBucketExistsWithProvider(tt *TestTools, n string,
 			return fmt.Errorf("no ID is set")
 		}
 
-		conn := tt.Meta.s3Client
+		conn, err := newS3ClientFromMeta(tt.Meta)
+		if err != nil {
+			return fmt.Errorf("error while creating S3client: %s", err)
+		}
 
-		_, err := conn.HeadBucket(&s3.HeadBucketInput{
+		_, err = conn.HeadBucket(&s3.HeadBucketInput{
 			Bucket: aws.String(bucketName),
 		})
 
@@ -237,7 +239,10 @@ func testAccCheckScalewayObjectBucketExistsWithProvider(tt *TestTools, n string,
 
 func testAccCheckScalewayObjectBucketVersioning(tt *TestTools, versioningStatus string, bucketName string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-		conn := tt.Meta.s3Client
+		conn, err := newS3ClientFromMeta(tt.Meta)
+		if err != nil {
+			return fmt.Errorf("error while creating S3client: %s", err)
+		}
 
 		out, err := conn.GetBucketVersioning(&s3.GetBucketVersioningInput{
 			Bucket: aws.String(bucketName),

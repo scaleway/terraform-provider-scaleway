@@ -3,7 +3,6 @@ package scaleway
 import (
 	"context"
 	"fmt"
-	"log"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
@@ -163,10 +162,7 @@ func resourceScalewayObjectBucketRead(ctx context.Context, d *schema.ResourceDat
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	vcl := flattenObjectBucketVersioning(versioningResponse)
-	if err := d.Set("versioning", vcl); err != nil {
-		return diag.FromErr(fmt.Errorf("error setting versioning: %s", err))
-	}
+	_ = d.Set("versioning", flattenObjectBucketVersioning(versioningResponse))
 
 	return nil
 }
@@ -232,25 +228,13 @@ func resourceScalewayObjectBucketDelete(ctx context.Context, d *schema.ResourceD
 func resourceScalewayObjectBucketVersioningUpdate(s3conn *s3.S3, d *schema.ResourceData) error {
 	v := d.Get("versioning").([]interface{})
 	bucketName := d.Get("name").(string)
-	vc := &s3.VersioningConfiguration{}
-
-	if len(v) > 0 {
-		c := v[0].(map[string]interface{})
-
-		if c["enabled"].(bool) {
-			vc.Status = aws.String(s3.BucketVersioningStatusEnabled)
-		} else {
-			vc.Status = aws.String(s3.BucketVersioningStatusSuspended)
-		}
-	} else {
-		vc.Status = aws.String(s3.BucketVersioningStatusSuspended)
-	}
+	vc := expandObjectBucketVersioning(v)
 
 	i := &s3.PutBucketVersioningInput{
 		Bucket:                  aws.String(bucketName),
 		VersioningConfiguration: vc,
 	}
-	log.Printf("[DEBUG] S3 put bucket versioning: %#v", i)
+	l.Debugf("S3 put bucket versioning: %#v", i)
 
 	_, err := s3conn.PutBucketVersioning(i)
 	if err != nil {
