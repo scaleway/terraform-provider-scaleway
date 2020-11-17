@@ -2,7 +2,6 @@ package scaleway
 
 import (
 	"fmt"
-	"log"
 
 	"github.com/getsentry/raven-go"
 )
@@ -21,24 +20,17 @@ func RecoverPanicAndSendReport() {
 
 	sentryClient, err := newSentryClient()
 	if err != nil {
-		log.Printf("cannot create sentry client: %s", err)
+		l.Warningf("cannot create sentry client: %s", err)
 	}
 
 	err, isError := e.(error)
 	if isError {
-		logAndSentry(sentryClient, err)
+		l.Debugf("sending sentry report: %s", sentryClient.CaptureErrorAndWait(err, nil))
 	} else {
-		logAndSentry(sentryClient, fmt.Errorf("unknownw error: %v", e))
+		l.Debugf("sending sentry report: %s", sentryClient.CaptureErrorAndWait(fmt.Errorf("unknownw error: %v", e), nil))
 	}
 
 	panic(e) // lintignore:R009
-}
-
-func logAndSentry(sentryClient *raven.Client, err error) {
-	log.Printf("%s", err)
-	if sentryClient != nil {
-		log.Printf("sending sentry report: %s", sentryClient.CaptureErrorAndWait(err, nil))
-	}
 }
 
 // newSentryClient creates a sentry client with build info tags.
@@ -48,11 +40,9 @@ func newSentryClient() (*raven.Client, error) {
 		return nil, err
 	}
 
-	tagsContext := map[string]string{
+	client.SetTagsContext(map[string]string{
 		"version": Version,
-	}
-
-	client.SetTagsContext(tagsContext)
+	})
 
 	return client, nil
 }
