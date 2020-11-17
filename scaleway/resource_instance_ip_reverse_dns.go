@@ -19,7 +19,7 @@ func resourceScalewayInstanceIPReverseDNS() *schema.Resource {
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 		Timeouts: &schema.ResourceTimeout{
-			Default: schema.DefaultTimeout(instanceIPTimeout),
+			Default: schema.DefaultTimeout(defaultInstanceIPTimeout),
 		},
 		SchemaVersion: 0,
 		Schema: map[string]*schema.Schema{

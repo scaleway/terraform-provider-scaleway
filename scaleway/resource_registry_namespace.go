@@ -19,7 +19,7 @@ func resourceScalewayRegistryNamespace() *schema.Resource {
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 		Timeouts: &schema.ResourceTimeout{
-			Default: schema.DefaultTimeout(defaultRegistryTimeout),
+			Default: schema.DefaultTimeout(defaultRegistryNamespaceTimeout),
 		},
 		SchemaVersion: 0,
 		Schema: map[string]*schema.Schema{

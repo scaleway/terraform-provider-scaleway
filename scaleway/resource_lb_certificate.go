@@ -18,7 +18,7 @@ func resourceScalewayLbCertificate() *schema.Resource {
 		DeleteContext: resourceScalewayLbCertificateDelete,
 		SchemaVersion: 0,
 		Timeouts: &schema.ResourceTimeout{
-			Default: schema.DefaultTimeout(defaultLbTimeout),
+			Default: schema.DefaultTimeout(defaultLbLbTimeout),
 		},
 		Schema: map[string]*schema.Schema{
 			"lb_id": {

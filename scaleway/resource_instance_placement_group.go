@@ -20,7 +20,7 @@ func resourceScalewayInstancePlacementGroup() *schema.Resource {
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 		Timeouts: &schema.ResourceTimeout{
-			Default: schema.DefaultTimeout(instancePlacementGroupTimeout),
+			Default: schema.DefaultTimeout(defaultInstancePlacementGroupTimeout),
 		},
 		SchemaVersion: 0,
 		Schema: map[string]*schema.Schema{

@@ -17,12 +17,12 @@ const (
 	InstanceServerStateStarted = "started"
 	InstanceServerStateStandby = "standby"
 
-	InstanceServerWaitForTimeout     = 10 * time.Minute
-	InstanceVolumeDeleteTimeout      = 10 * time.Minute
-	instanceSecurityGroupTimeout     = 1 * time.Minute
-	instanceSecurityGroupRuleTimeout = 1 * time.Minute
-	instancePlacementGroupTimeout    = 1 * time.Minute
-	instanceIPTimeout                = 1 * time.Minute
+	defaultInstanceServerWaitTimeout        = 10 * time.Minute
+	defaultInstanceVolumeDeleteTimeout      = 10 * time.Minute
+	defaultInstanceSecurityGroupTimeout     = 1 * time.Minute
+	defaultInstanceSecurityGroupRuleTimeout = 1 * time.Minute
+	defaultInstancePlacementGroupTimeout    = 1 * time.Minute
+	defaultInstanceIPTimeout                = 1 * time.Minute
 )
 
 // instanceAPIWithZone returns a new instance API and the zone for a Create request
@@ -151,7 +151,7 @@ func reachState(ctx context.Context, instanceAPI *instance.API, zone scw.Zone, s
 			ServerID: serverID,
 			Action:   a,
 			Zone:     zone,
-			Timeout:  scw.TimeDurationPtr(InstanceServerWaitForTimeout),
+			Timeout:  scw.TimeDurationPtr(defaultInstanceServerWaitTimeout),
 		})
 		if err != nil {
 			return err

@@ -17,7 +17,7 @@ import (
 )
 
 const (
-	defaultObjectTimeout = 10 * time.Minute
+	defaultObjectBucketTimeout = 10 * time.Minute
 )
 
 func newS3Client(region, accessKey, secretKey string) (*s3.S3, error) {

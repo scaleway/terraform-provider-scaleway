@@ -7,7 +7,7 @@ import (
 )
 
 const (
-	accountSSHKeyTimeout = 1 * time.Minute
+	defaultAccountSSHKeyTimeout = 1 * time.Minute
 )
 
 // accountAPI returns a new account API.

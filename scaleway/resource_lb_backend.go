@@ -20,7 +20,7 @@ func resourceScalewayLbBackend() *schema.Resource {
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 		Timeouts: &schema.ResourceTimeout{
-			Default: schema.DefaultTimeout(defaultLbTimeout),
+			Default: schema.DefaultTimeout(defaultLbLbTimeout),
 		},
 		SchemaVersion: 0,
 		Schema: map[string]*schema.Schema{

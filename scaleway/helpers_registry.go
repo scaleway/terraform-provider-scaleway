@@ -9,7 +9,7 @@ import (
 )
 
 const (
-	defaultRegistryTimeout = 5 * time.Minute
+	defaultRegistryNamespaceTimeout = 5 * time.Minute
 )
 
 // registryAPIWithRegion returns a new container registry API and the region.

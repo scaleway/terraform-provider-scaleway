@@ -22,7 +22,7 @@ func resourceScalewayInstanceSecurityGroup() *schema.Resource {
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 		Timeouts: &schema.ResourceTimeout{
-			Default: schema.DefaultTimeout(instanceSecurityGroupTimeout),
+			Default: schema.DefaultTimeout(defaultInstanceSecurityGroupTimeout),
 		},
 		Schema: map[string]*schema.Schema{
 			"name": {

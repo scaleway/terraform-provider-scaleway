@@ -11,7 +11,7 @@ import (
 const (
 	baremetalServerWaitForTimeout   = 60 * time.Minute
 	baremetalServerRetryFuncTimeout = baremetalServerWaitForTimeout + time.Minute // some RetryFunc are calling a WaitFor
-	baremetalServerResourceTimeout  = baremetalServerRetryFuncTimeout + time.Minute
+	defaultBaremetalServerTimeout   = baremetalServerRetryFuncTimeout + time.Minute
 )
 
 // instanceAPIWithZone returns a new baremetal API and the zone for a Create request

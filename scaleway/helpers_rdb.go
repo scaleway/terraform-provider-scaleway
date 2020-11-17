@@ -9,7 +9,7 @@ import (
 )
 
 const (
-	defaultRdbTimeout = 15 * time.Minute
+	defaultRdbInstanceTimeout = 15 * time.Minute
 )
 
 // rdbAPIWithRegion returns a new lb API and the region for a Create request

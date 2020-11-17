@@ -26,7 +26,7 @@ func resourceScalewayInstanceServer() *schema.Resource {
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 		Timeouts: &schema.ResourceTimeout{
-			Default: schema.DefaultTimeout(InstanceServerWaitForTimeout),
+			Default: schema.DefaultTimeout(defaultInstanceServerWaitTimeout),
 		},
 		SchemaVersion: 0,
 		Schema: map[string]*schema.Schema{

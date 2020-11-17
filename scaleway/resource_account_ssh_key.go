@@ -20,7 +20,7 @@ func resourceScalewayAccountSSKKey() *schema.Resource {
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 		Timeouts: &schema.ResourceTimeout{
-			Default: schema.DefaultTimeout(accountSSHKeyTimeout),
+			Default: schema.DefaultTimeout(defaultAccountSSHKeyTimeout),
 		},
 		Schema: map[string]*schema.Schema{
 			"name": {

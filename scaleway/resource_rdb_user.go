@@ -21,7 +21,7 @@ func resourceScalewayRdbUser() *schema.Resource {
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 		Timeouts: &schema.ResourceTimeout{
-			Default: schema.DefaultTimeout(defaultRdbTimeout),
+			Default: schema.DefaultTimeout(defaultRdbInstanceTimeout),
 		},
 		SchemaVersion: 0,
 		Schema: map[string]*schema.Schema{

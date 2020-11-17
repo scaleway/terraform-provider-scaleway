@@ -18,7 +18,7 @@ func resourceScalewayRdbInstance() *schema.Resource {
 		UpdateContext: resourceScalewayRdbInstanceUpdate,
 		DeleteContext: resourceScalewayRdbInstanceDelete,
 		Timeouts: &schema.ResourceTimeout{
-			Default: schema.DefaultTimeout(defaultRdbTimeout),
+			Default: schema.DefaultTimeout(defaultRdbInstanceTimeout),
 		},
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
@@ -153,7 +153,7 @@ func resourceScalewayRdbInstanceCreate(ctx context.Context, d *schema.ResourceDa
 	_, err = rdbAPI.WaitForInstance(&rdb.WaitForInstanceRequest{
 		Region:     region,
 		InstanceID: res.ID,
-		Timeout:    scw.TimeDurationPtr(InstanceServerWaitForTimeout),
+		Timeout:    scw.TimeDurationPtr(defaultInstanceServerWaitTimeout),
 	}, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
@@ -270,7 +270,7 @@ func resourceScalewayRdbInstanceUpdate(ctx context.Context, d *schema.ResourceDa
 		_, err = rdbAPI.WaitForInstance(&rdb.WaitForInstanceRequest{
 			Region:     region,
 			InstanceID: ID,
-			Timeout:    scw.TimeDurationPtr(InstanceServerWaitForTimeout * 3), // upgrade takes some time
+			Timeout:    scw.TimeDurationPtr(defaultInstanceServerWaitTimeout * 3), // upgrade takes some time
 		}, scw.WithContext(ctx))
 		if err != nil {
 			return diag.FromErr(err)

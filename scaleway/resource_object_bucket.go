@@ -19,7 +19,7 @@ func resourceScalewayObjectBucket() *schema.Resource {
 		UpdateContext: resourceScalewayObjectBucketUpdate,
 		DeleteContext: resourceScalewayObjectBucketDelete,
 		Timeouts: &schema.ResourceTimeout{
-			Default: schema.DefaultTimeout(defaultObjectTimeout),
+			Default: schema.DefaultTimeout(defaultObjectBucketTimeout),
 		},
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
