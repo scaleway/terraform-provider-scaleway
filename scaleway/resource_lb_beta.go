@@ -64,10 +64,10 @@ func resourceScalewayLbBetaCreate(d *schema.ResourceData, m interface{}) error {
 		return err
 	}
 
-	createReq := &lb.CreateLbRequest{
+	createReq := &lb.CreateLBRequest{
 		Region:         region,
 		IPID:           scw.StringPtr(expandID(d.Get("ip_id").(string))),
-		OrganizationID: d.Get("organization_id").(string),
+		OrganizationID: scw.StringPtr(d.Get("organization_id").(string)),
 		Name:           expandOrGenerateString(d.Get("name"), "lb"),
 		Type:           d.Get("type").(string),
 	}
@@ -77,16 +77,16 @@ func resourceScalewayLbBetaCreate(d *schema.ResourceData, m interface{}) error {
 			createReq.Tags = append(createReq.Tags, tag.(string))
 		}
 	}
-	res, err := lbAPI.CreateLb(createReq)
+	res, err := lbAPI.CreateLB(createReq)
 	if err != nil {
 		return err
 	}
 
 	d.SetId(newRegionalId(region, res.ID))
 
-	_, err = lbAPI.WaitForLb(&lb.WaitForLbRequest{
+	_, err = lbAPI.WaitForLb(&lb.WaitForLBRequest{
 		Region:  region,
-		LbID:    res.ID,
+		LBID:    res.ID,
 		Timeout: scw.TimeDurationPtr(InstanceServerWaitForTimeout),
 	})
 	if err != nil {
@@ -102,9 +102,9 @@ func resourceScalewayLbBetaRead(d *schema.ResourceData, m interface{}) error {
 		return err
 	}
 
-	res, err := lbAPI.GetLb(&lb.GetLbRequest{
+	res, err := lbAPI.GetLB(&lb.GetLBRequest{
 		Region: region,
-		LbID:   ID,
+		LBID:   ID,
 	})
 
 	if err != nil {
@@ -135,14 +135,14 @@ func resourceScalewayLbBetaUpdate(d *schema.ResourceData, m interface{}) error {
 
 	if d.HasChange("name") || d.HasChange("tags") {
 
-		req := &lb.UpdateLbRequest{
+		req := &lb.UpdateLBRequest{
 			Region: region,
-			LbID:   ID,
+			LBID:   ID,
 			Name:   d.Get("name").(string),
 			Tags:   expandStrings(d.Get("tags")),
 		}
 
-		_, err = lbAPI.UpdateLb(req)
+		_, err = lbAPI.UpdateLB(req)
 		if err != nil {
 			return err
 		}
@@ -157,9 +157,9 @@ func resourceScalewayLbBetaDelete(d *schema.ResourceData, m interface{}) error {
 		return err
 	}
 
-	err = lbAPI.DeleteLb(&lb.DeleteLbRequest{
+	err = lbAPI.DeleteLB(&lb.DeleteLBRequest{
 		Region:    region,
-		LbID:      ID,
+		LBID:      ID,
 		ReleaseIP: false,
 	})
 
@@ -167,8 +167,8 @@ func resourceScalewayLbBetaDelete(d *schema.ResourceData, m interface{}) error {
 		return err
 	}
 
-	_, err = lbAPI.WaitForLb(&lb.WaitForLbRequest{
-		LbID:    ID,
+	_, err = lbAPI.WaitForLb(&lb.WaitForLBRequest{
+		LBID:    ID,
 		Region:  region,
 		Timeout: scw.TimeDurationPtr(LbWaitForTimeout),
 	})

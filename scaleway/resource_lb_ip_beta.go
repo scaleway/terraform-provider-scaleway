@@ -3,6 +3,7 @@ package scaleway
 import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	lb "github.com/scaleway/scaleway-sdk-go/api/lb/v1"
+	"github.com/scaleway/scaleway-sdk-go/scw"
 )
 
 func resourceScalewayLbIPBeta() *schema.Resource {
@@ -47,7 +48,7 @@ func resourceScalewayLbIPBetaCreate(d *schema.ResourceData, m interface{}) error
 
 	createReq := &lb.CreateIPRequest{
 		Region:         region,
-		OrganizationID: d.Get("organization_id").(string),
+		OrganizationID: scw.StringPtr(d.Get("organization_id").(string)),
 		Reverse:        expandStringPtr(d.Get("reverse")),
 	}
 
@@ -85,7 +86,7 @@ func resourceScalewayLbIPBetaRead(d *schema.ResourceData, m interface{}) error {
 	_ = d.Set("ip_id", res.ID)
 	_ = d.Set("ip_address", res.IPAddress)
 	_ = d.Set("reverse", res.Reverse)
-	_ = d.Set("lb_ip", flattenStringPtr(res.LbID))
+	_ = d.Set("lb_ip", flattenStringPtr(res.LBID))
 
 	return nil
 }

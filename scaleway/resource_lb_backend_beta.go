@@ -243,7 +243,7 @@ func resourceScalewayLbBackendBetaCreate(d *schema.ResourceData, m interface{}) 
 
 	createReq := &lb.CreateBackendRequest{
 		Region:                   region,
-		LbID:                     LbID,
+		LBID:                     LbID,
 		Name:                     expandOrGenerateString(d.Get("name"), "lb-bkd"),
 		ForwardProtocol:          expandLbProtocol(d.Get("forward_protocol")),
 		ForwardPort:              int32(d.Get("forward_port").(int)),
@@ -297,7 +297,7 @@ func resourceScalewayLbBackendBetaRead(d *schema.ResourceData, m interface{}) er
 		return err
 	}
 
-	_ = d.Set("lb_id", newRegionalId(region, res.Lb.ID))
+	_ = d.Set("lb_id", newRegionalId(region, res.LB.ID))
 	_ = d.Set("name", res.Name)
 	_ = d.Set("forward_protocol", flattenLbProtocol(res.ForwardProtocol))
 	_ = d.Set("forward_port", res.ForwardPort)
