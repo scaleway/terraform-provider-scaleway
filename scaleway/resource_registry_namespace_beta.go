@@ -52,7 +52,7 @@ func resourceScalewayRegistryNamespaceBetaCreate(d *schema.ResourceData, m inter
 
 	ns, err := api.CreateNamespace(&registry.CreateNamespaceRequest{
 		Region:         region,
-		OrganizationID: scw.StringPtr(d.Get("organization_id").(string)),
+		OrganizationID: expandStringPtr(d.Get("organization_id").(string)),
 		Name:           d.Get("name").(string),
 		Description:    d.Get("description").(string),
 		IsPublic:       d.Get("is_public").(bool),
