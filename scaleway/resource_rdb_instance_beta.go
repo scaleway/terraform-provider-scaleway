@@ -126,7 +126,7 @@ func resourceScalewayRdbInstanceBetaCreate(d *schema.ResourceData, m interface{}
 
 	createReq := &rdb.CreateInstanceRequest{
 		Region:         region,
-		OrganizationID: d.Get("organization_id").(string),
+		OrganizationID: scw.StringPtr(d.Get("organization_id").(string)),
 		Name:           expandOrGenerateString(d.Get("name"), "rdb"),
 		NodeType:       d.Get("node_type").(string),
 		Engine:         d.Get("engine").(string),

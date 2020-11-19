@@ -4,6 +4,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
+	"github.com/scaleway/scaleway-sdk-go/scw"
 )
 
 func resourceScalewayInstancePlacementGroup() *schema.Resource {
@@ -63,7 +64,7 @@ func resourceScalewayInstancePlacementGroupCreate(d *schema.ResourceData, m inte
 	res, err := instanceApi.CreatePlacementGroup(&instance.CreatePlacementGroupRequest{
 		Zone:         zone,
 		Name:         expandOrGenerateString(d.Get("name"), "pg"),
-		Organization: d.Get("organization_id").(string),
+		Organization: scw.StringPtr(d.Get("organization_id").(string)),
 		PolicyMode:   instance.PlacementGroupPolicyMode(d.Get("policy_mode").(string)),
 		PolicyType:   instance.PlacementGroupPolicyType(d.Get("policy_type").(string)),
 	})
@@ -109,11 +110,13 @@ func resourceScalewayInstancePlacementGroupUpdate(d *schema.ResourceData, m inte
 	if err != nil {
 		return err
 	}
+	policyMode := instance.PlacementGroupPolicyMode(d.Get("policy_mode").(string))
+	policyType := instance.PlacementGroupPolicyType(d.Get("policy_type").(string))
 	req := &instance.UpdatePlacementGroupRequest{
 		Zone:             zone,
 		PlacementGroupID: ID,
-		PolicyMode:       instance.PlacementGroupPolicyMode(d.Get("policy_mode").(string)),
-		PolicyType:       instance.PlacementGroupPolicyType(d.Get("policy_type").(string)),
+		PolicyMode:       &policyMode,
+		PolicyType:       &policyType,
 	}
 
 	hasChanged := d.HasChange("policy_mode") || d.HasChange("policy_type")

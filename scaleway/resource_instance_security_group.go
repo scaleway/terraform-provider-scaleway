@@ -99,7 +99,7 @@ func resourceScalewayInstanceSecurityGroupCreate(d *schema.ResourceData, m inter
 	res, err := instanceApi.CreateSecurityGroup(&instance.CreateSecurityGroupRequest{
 		Name:                  expandOrGenerateString(d.Get("name"), "sg"),
 		Zone:                  zone,
-		Organization:          organizationID,
+		Organization:          scw.StringPtr(organizationID),
 		Description:           d.Get("description").(string),
 		Stateful:              d.Get("stateful").(bool),
 		InboundDefaultPolicy:  instance.SecurityGroupPolicy(d.Get("inbound_default_policy").(string)),
