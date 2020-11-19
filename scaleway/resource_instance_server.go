@@ -488,15 +488,9 @@ func resourceScalewayInstanceServerUpdate(ctx context.Context, d *schema.Resourc
 		return diag.FromErr(err)
 	}
 
-	instanceResp, err := instanceAPI.GetServer(&instance.GetServerRequest{
-		Zone:     zone,
-		ServerID: ID,
-	})
-	if err != nil {
-		return diag.FromErr(err)
-	}
+	wantedState := d.Get("state").(string)
+	isStopped := wantedState == InstanceServerStateStopped
 
-	isStopped := instanceResp.Server.State == instance.ServerStateStopped
 	var warnings diag.Diagnostics
 
 	////
@@ -538,7 +532,6 @@ func resourceScalewayInstanceServerUpdate(ctx context.Context, d *schema.Resourc
 
 		for i, volumeID := range raw.([]interface{}) {
 			// local volumes can only be added when the instance is stopped
-			// TODO: handle volumes that will be removed from the instance too
 			if !isStopped {
 				volumeResp, err := instanceAPI.GetVolume(&instance.GetVolumeRequest{
 					Zone:     zone,
@@ -613,18 +606,22 @@ func resourceScalewayInstanceServerUpdate(ctx context.Context, d *schema.Resourc
 	if d.HasChanges("boot_type") {
 		bootType := instance.BootType(d.Get("boot_type").(string))
 		updateRequest.BootType = &bootType
-		warnings = append(warnings, diag.Diagnostic{
-			Severity: diag.Warning,
-			Summary:  "instance may need to be rebooted to use the new boot type",
-		})
+		if !isStopped {
+			warnings = append(warnings, diag.Diagnostic{
+				Severity: diag.Warning,
+				Summary:  "instance may need to be rebooted to use the new boot type",
+			})
+		}
 	}
 
 	if d.HasChanges("bootscript_id") {
 		updateRequest.Bootscript = expandStringPtr(d.Get("bootscript_id").(string))
-		warnings = append(warnings, diag.Diagnostic{
-			Severity: diag.Warning,
-			Summary:  "instance may need to be rebooted to use the new bootscript",
-		})
+		if !isStopped {
+			warnings = append(warnings, diag.Diagnostic{
+				Severity: diag.Warning,
+				Summary:  "instance may need to be rebooted to use the new bootscript",
+			})
+		}
 	}
 
 	////
@@ -648,10 +645,12 @@ func resourceScalewayInstanceServerUpdate(ctx context.Context, d *schema.Resourc
 		// cloud init script is set in user data
 		if cloudInit, ok := d.GetOk("cloud_init"); ok {
 			userDataRequests.UserData["cloud-init"] = bytes.NewBufferString(cloudInit.(string))
-			warnings = append(warnings, diag.Diagnostic{
-				Severity: diag.Warning,
-				Summary:  "instance may need to be rebooted to use the new cloud init config",
-			})
+			if !isStopped {
+				warnings = append(warnings, diag.Diagnostic{
+					Severity: diag.Warning,
+					Summary:  "instance may need to be rebooted to use the new cloud init config",
+				})
+			}
 		}
 
 		err := instanceAPI.SetAllServerUserData(userDataRequests)
