@@ -248,7 +248,7 @@ func resourceScalewayInstanceServerCreate(d *schema.ResourceData, m interface{})
 	req := &instance.CreateServerRequest{
 		Zone:              zone,
 		Name:              expandOrGenerateString(d.Get("name"), "srv"),
-		Organization:      scw.StringPtr(d.Get("organization_id").(string)),
+		Organization:      expandStringPtr(d.Get("organization_id").(string)),
 		Image:             image.ID,
 		CommercialType:    commercialType,
 		EnableIPv6:        d.Get("enable_ipv6").(bool),
