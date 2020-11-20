@@ -95,7 +95,7 @@ func resourceScalewayInstancePlacementGroupRead(ctx context.Context, d *schema.R
 	}, scw.WithContext(ctx))
 
 	if err != nil {
-		if is404Error(err) || is403Error(err) {
+		if is404Error(err) {
 			d.SetId("")
 			return nil
 		}
@@ -163,7 +163,7 @@ func resourceScalewayInstancePlacementGroupDelete(ctx context.Context, d *schema
 		PlacementGroupID: ID,
 	}, scw.WithContext(ctx))
 
-	if err != nil && !is404Error(err) && !is403Error(err) {
+	if err != nil && !is404Error(err) {
 		return diag.FromErr(err)
 	}
 
