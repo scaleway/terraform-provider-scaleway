@@ -20,6 +20,9 @@ func resourceScalewayK8SPool() *schema.Resource {
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
+		Timeouts: &schema.ResourceTimeout{
+			Default: schema.DefaultTimeout(defaultK8SPoolTimeout),
+		},
 		SchemaVersion: 0,
 		Schema: map[string]*schema.Schema{
 			"cluster_id": {
