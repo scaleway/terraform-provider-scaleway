@@ -204,10 +204,6 @@ func TestAccScalewayObjectBucket_Versioning(t *testing.T) {
 }
 
 func testAccCheckScalewayObjectBucketExists(tt *TestTools, n string, bucketName string) resource.TestCheckFunc {
-	return testAccCheckScalewayObjectBucketExistsWithProvider(tt, n, bucketName)
-}
-
-func testAccCheckScalewayObjectBucketExistsWithProvider(tt *TestTools, n string, bucketName string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
