@@ -643,7 +643,7 @@ func resourceScalewayInstanceServerUpdate(ctx context.Context, d *schema.Resourc
 			return diag.FromErr(err)
 		}
 	}
-	_, err = instanceAPI.UpdateServer(updateRequest)
+	_, err = instanceAPI.UpdateServer(updateRequest, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
 	}
