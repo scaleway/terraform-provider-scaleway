@@ -106,6 +106,12 @@ func Provider(config *ProviderConfig) plugin.ProviderFunc {
 			},
 		}
 
+		backup := p.ResourcesMap["scaleway_instance_server"].ReadContext
+		p.ResourcesMap["scaleway_instance_server"].ReadContext = func(ctx context.Context, data *schema.ResourceData, i interface{}) diag.Diagnostics {
+			defer RecoverPanicAndSendReport()
+			return backup(ctx, data, i)
+		}
+
 		p.ConfigureContextFunc = func(ctx context.Context, data *schema.ResourceData) (interface{}, diag.Diagnostics) {
 			terraformVersion := p.TerraformVersion
 

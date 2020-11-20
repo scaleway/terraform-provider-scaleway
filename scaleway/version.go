@@ -1,4 +1,4 @@
 package scaleway
 
 // Version is set by go releaser on release
-var Version = "develop"
+var Version = "v2"
