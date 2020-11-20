@@ -54,15 +54,30 @@ func resourceScalewayObjectBucket() *schema.Resource {
 				Computed:    true,
 			},
 			"region": regionSchema(),
+			"versioning": {
+				Type:     schema.TypeList,
+				Optional: true,
+				Computed: true,
+				MaxItems: 1,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"enabled": {
+							Type:     schema.TypeBool,
+							Optional: true,
+							Default:  false,
+						},
+					},
+				},
+			},
 		},
 	}
 }
 
-func resourceScalewayObjectBucketCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceScalewayObjectBucketCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	bucketName := d.Get("name").(string)
 	acl := d.Get("acl").(string)
 
-	s3Client, region, err := s3ClientWithRegion(d, m)
+	s3Client, region, err := s3ClientWithRegion(d, meta)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -91,11 +106,11 @@ func resourceScalewayObjectBucketCreate(ctx context.Context, d *schema.ResourceD
 
 	d.SetId(newRegionalIDString(region, bucketName))
 
-	return resourceScalewayObjectBucketRead(ctx, d, m)
+	return resourceScalewayObjectBucketRead(ctx, d, meta)
 }
 
-func resourceScalewayObjectBucketRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	s3Client, region, bucketName, err := s3ClientWithRegionAndName(m, d.Id())
+func resourceScalewayObjectBucketRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	s3Client, region, bucketName, err := s3ClientWithRegionAndName(meta, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -140,6 +155,15 @@ func resourceScalewayObjectBucketRead(ctx context.Context, d *schema.ResourceDat
 
 	_ = d.Set("endpoint", objectBucketEndpointURL(bucketName, region))
 
+	// Read the versioning configuration
+	versioningResponse, err := s3Client.GetBucketVersioningWithContext(ctx, &s3.GetBucketVersioningInput{
+		Bucket: aws.String(bucketName),
+	})
+	if err != nil {
+		return diag.FromErr(err)
+	}
+	_ = d.Set("versioning", flattenObjectBucketVersioning(versioningResponse))
+
 	return nil
 }
 
@@ -159,6 +183,12 @@ func resourceScalewayObjectBucketUpdate(ctx context.Context, d *schema.ResourceD
 		if err != nil {
 			l.Errorf("Couldn't update bucket ACL: %s", err)
 			return diag.FromErr(fmt.Errorf("couldn't update bucket ACL: %s", err))
+		}
+	}
+
+	if d.HasChange("versioning") {
+		if err := resourceScalewayObjectBucketVersioningUpdate(ctx, s3Client, d); err != nil {
+			return diag.FromErr(err)
 		}
 	}
 
@@ -190,6 +220,25 @@ func resourceScalewayObjectBucketDelete(ctx context.Context, d *schema.ResourceD
 	})
 	if err != nil {
 		return diag.FromErr(err)
+	}
+
+	return nil
+}
+
+func resourceScalewayObjectBucketVersioningUpdate(ctx context.Context, s3conn *s3.S3, d *schema.ResourceData) error {
+	v := d.Get("versioning").([]interface{})
+	bucketName := d.Get("name").(string)
+	vc := expandObjectBucketVersioning(v)
+
+	i := &s3.PutBucketVersioningInput{
+		Bucket:                  aws.String(bucketName),
+		VersioningConfiguration: vc,
+	}
+	l.Debugf("S3 put bucket versioning: %#v", i)
+
+	_, err := s3conn.PutBucketVersioningWithContext(ctx, i)
+	if err != nil {
+		return fmt.Errorf("error putting S3 versioning: %s", err)
 	}
 
 	return nil

@@ -1,9 +1,13 @@
 package scaleway
 
 import (
+	"errors"
 	"fmt"
+	"os"
+	"strings"
 
 	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
@@ -16,6 +20,9 @@ func newS3Client(region, accessKey, secretKey string) (*s3.S3, error) {
 	config.WithRegion(region)
 	config.WithCredentials(credentials.NewStaticCredentials(accessKey, secretKey, ""))
 	config.WithEndpoint("https://s3." + region + ".scw.cloud")
+	if strings.ToLower(os.Getenv("TF_LOG")) == "debug" {
+		config.WithLogLevel(aws.LogDebugWithHTTPBody)
+	}
 
 	s, err := session.NewSession(config)
 	if err != nil {
@@ -97,4 +104,45 @@ func expandObjectBucketTags(tags interface{}) []*s3.Tag {
 
 func objectBucketEndpointURL(bucketName string, region scw.Region) string {
 	return fmt.Sprintf("https://%s.s3.%s.scw.cloud", bucketName, region)
+}
+
+// Returns true if the error matches all these conditions:
+//  * err is of type awserr.Error
+//  * Error.Code() matches code
+//  * Error.Message() contains message
+func isS3Err(err error, code string, message string) bool {
+	var awsErr awserr.Error
+	if errors.As(err, &awsErr) {
+		return awsErr.Code() == code && strings.Contains(awsErr.Message(), message)
+	}
+	return false
+}
+
+func flattenObjectBucketVersioning(versioningResponse *s3.GetBucketVersioningOutput) []map[string]interface{} {
+	vcl := make([]map[string]interface{}, 0, 1)
+	vc := make(map[string]interface{})
+	if versioningResponse.Status != nil && aws.StringValue(versioningResponse.Status) == s3.BucketVersioningStatusEnabled {
+		vc["enabled"] = true
+	} else {
+		vc["enabled"] = false
+	}
+	vcl = append(vcl, vc)
+	return vcl
+}
+
+func expandObjectBucketVersioning(v []interface{}) *s3.VersioningConfiguration {
+	vc := &s3.VersioningConfiguration{}
+
+	if len(v) > 0 {
+		c := v[0].(map[string]interface{})
+
+		if c["enabled"].(bool) {
+			vc.Status = aws.String(s3.BucketVersioningStatusEnabled)
+		} else {
+			vc.Status = aws.String(s3.BucketVersioningStatusSuspended)
+		}
+	} else {
+		vc.Status = aws.String(s3.BucketVersioningStatusSuspended)
+	}
+	return vc
 }
