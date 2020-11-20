@@ -338,7 +338,7 @@ func TestAccScalewayInstanceServer_State2(t *testing.T) {
 	})
 }
 
-func TestAccScalewayInstanceServer_UserData1(t *testing.T) {
+func TestAccScalewayInstanceServer_UserData_WithCloudInitAtStart(t *testing.T) {
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
 	resource.ParallelTest(t, resource.TestCase{
@@ -347,18 +347,59 @@ func TestAccScalewayInstanceServer_UserData1(t *testing.T) {
 		CheckDestroy:      testAccCheckScalewayInstanceServerDestroy(tt),
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckScalewayInstanceServerConfigUserData(true, true),
+				// With cloud-init and user data
+				Config: `
+				data "scaleway_instance_image" "ubuntu" {
+				 	architecture = "x86_64"
+				 	name         = "Ubuntu 20.04 Focal Fossa"
+				}
+
+				resource "scaleway_instance_server" "base" {
+				 	image = "${data.scaleway_instance_image.ubuntu.id}"
+				 	type  = "DEV1-S"
+
+					user_data {
+				   		key   = "plop"
+				   		value = "world"
+				 	}
+				
+				 	user_data {
+				   		key   = "blanquette"
+				   		value = "hareng pomme à l'huile"
+				 	}
+					
+				 	cloud_init = <<EOF
+#cloud-config
+apt_update: true
+apt_upgrade: true
+EOF
+				}`,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayInstanceServerExists(tt, "scaleway_instance_server.base"),
-					resource.TestCheckResourceAttr("scaleway_instance_server.base", "user_data.459781404.key", "plop"),
-					resource.TestCheckResourceAttr("scaleway_instance_server.base", "user_data.459781404.value", "world"),
-					resource.TestCheckResourceAttr("scaleway_instance_server.base", "user_data.599848950.key", "blanquette"),
-					resource.TestCheckResourceAttr("scaleway_instance_server.base", "user_data.599848950.value", "hareng pomme à l'huile"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.base", "user_data.0.key", "blanquette"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.base", "user_data.0.value", "hareng pomme à l'huile"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.base", "user_data.1.key", "plop"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.base", "user_data.1.value", "world"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "cloud_init", "#cloud-config\napt_update: true\napt_upgrade: true\n"),
 				),
 			},
 			{
-				Config: testAccCheckScalewayInstanceServerConfigUserData(false, true),
+				// With cloud-init and without user data
+				Config: `
+					data "scaleway_instance_image" "ubuntu" {
+						architecture = "x86_64"
+						name         = "Ubuntu 20.04 Focal Fossa"
+					}
+
+					resource "scaleway_instance_server" "base" {
+						image = "${data.scaleway_instance_image.ubuntu.id}"
+						type  = "DEV1-S"
+						cloud_init = <<EOF
+#cloud-config
+apt_update: true
+apt_upgrade: true
+EOF
+					}`,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayInstanceServerExists(tt, "scaleway_instance_server.base"),
 					resource.TestCheckNoResourceAttr("scaleway_instance_server.base", "user_data"),
@@ -366,7 +407,18 @@ func TestAccScalewayInstanceServer_UserData1(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccCheckScalewayInstanceServerConfigUserData(false, false),
+				// No user data nor cloud init
+				Config: `
+					data "scaleway_instance_image" "ubuntu" {
+					  architecture = "x86_64"
+					  name         = "Ubuntu 20.04 Focal Fossa"
+					}
+
+					resource "scaleway_instance_server" "base" {
+					  image = "${data.scaleway_instance_image.ubuntu.id}"
+					  type  = "DEV1-S"
+					  tags  = [ "terraform-test", "scaleway_instance_server", "user_data" ]
+					}`,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayInstanceServerExists(tt, "scaleway_instance_server.base"),
 					resource.TestCheckNoResourceAttr("scaleway_instance_server.base", "user_data"),
@@ -377,7 +429,7 @@ func TestAccScalewayInstanceServer_UserData1(t *testing.T) {
 	})
 }
 
-func TestAccScalewayInstanceServer_UserData2(t *testing.T) {
+func TestAccScalewayInstanceServer_UserData_WithoutCloudInitAtStart(t *testing.T) {
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
 	resource.ParallelTest(t, resource.TestCase{
@@ -386,7 +438,18 @@ func TestAccScalewayInstanceServer_UserData2(t *testing.T) {
 		CheckDestroy:      testAccCheckScalewayInstanceServerDestroy(tt),
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckScalewayInstanceServerConfigUserData(false, false),
+				// Without cloud-init
+				Config: `
+					data "scaleway_instance_image" "ubuntu" {
+						architecture = "x86_64"
+						name         = "Ubuntu 20.04 Focal Fossa"
+					}
+
+					resource "scaleway_instance_server" "base" {
+						image = "${data.scaleway_instance_image.ubuntu.id}"
+						type  = "DEV1-S"
+						tags  = [ "terraform-test", "scaleway_instance_server", "user_data" ]
+					}`,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayInstanceServerExists(tt, "scaleway_instance_server.base"),
 					resource.TestCheckNoResourceAttr("scaleway_instance_server.base", "user_data"),
@@ -394,7 +457,24 @@ func TestAccScalewayInstanceServer_UserData2(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccCheckScalewayInstanceServerConfigUserData(false, true),
+				// With cloud-init
+				Config: `
+					data "scaleway_instance_image" "ubuntu" {
+						architecture = "x86_64"
+						name         = "Ubuntu 20.04 Focal Fossa"
+					}
+
+					resource "scaleway_instance_server" "base" {
+						image = "${data.scaleway_instance_image.ubuntu.id}"
+						type  = "DEV1-S"
+						tags  = [ "terraform-test", "scaleway_instance_server", "user_data" ]
+
+						cloud_init = <<EOF
+#cloud-config
+apt_update: true
+apt_upgrade: true
+EOF
+					}`,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayInstanceServerExists(tt, "scaleway_instance_server.base"),
 					resource.TestCheckNoResourceAttr("scaleway_instance_server.base", "user_data"),
@@ -826,45 +906,6 @@ func testAccCheckScalewayInstanceServerDestroy(tt *TestTools) resource.TestCheck
 
 		return nil
 	}
-}
-
-func testAccCheckScalewayInstanceServerConfigUserData(withUserData, withCloudInit bool) string {
-	additionalUserData := ""
-	if withUserData {
-		additionalUserData += `
-  user_data {
-    key   = "plop"
-    value = "world"
-  }
-
-  user_data {
-    key   = "blanquette"
-    value = "hareng pomme à l'huile"
-  }`
-	}
-
-	if withCloudInit {
-		additionalUserData += `
-  cloud_init = <<EOF
-#cloud-config
-apt_update: true
-apt_upgrade: true
-EOF`
-	}
-
-	return fmt.Sprintf(`
-data "scaleway_image" "ubuntu" {
-  architecture = "x86_64"
-  name         = "Ubuntu 20.04 Focal Fossa"
-  most_recent  = true
-}
-
-resource "scaleway_instance_server" "base" {
-  image = "${data.scaleway_image.ubuntu.id}"
-  type  = "DEV1-S"
-  tags  = [ "terraform-test", "scaleway_instance_server", "user_data" ]
-%s
-}`, additionalUserData)
 }
 
 func testAccCheckScalewayInstanceServerConfigVolumes(withBlock bool, localVolumesInGB ...int) string {
