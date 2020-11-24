@@ -7,6 +7,7 @@ import (
 	"sort"
 	"time"
 
+	"github.com/dustin/go-humanize"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
@@ -158,4 +159,74 @@ func reachState(ctx context.Context, instanceAPI *instance.API, zone scw.Zone, s
 		}
 	}
 	return nil
+}
+
+// getServerType is a util to get a instance.ServerType by its commercialType
+func getServerType(apiInstance *instance.API, zone scw.Zone, commercialType string) *instance.ServerType {
+	serverType := (*instance.ServerType)(nil)
+
+	serverTypesRes, err := apiInstance.ListServersTypes(&instance.ListServersTypesRequest{
+		Zone: zone,
+	})
+	if err != nil {
+		l.Warningf("cannot get server types: %s", err)
+	} else {
+		serverType = serverTypesRes.Servers[commercialType]
+		if serverType == nil {
+			l.Warningf("unrecognized server type: %s", commercialType)
+		}
+	}
+
+	return serverType
+}
+
+
+// validateLocalVolumeSizes validates the total size of local volumes.
+func validateLocalVolumeSizes(volumes map[string]*instance.VolumeTemplate, serverType *instance.ServerType, commercialType string) error {
+	// Calculate local volume total size.
+	var localVolumeTotalSize scw.Size
+	for _, volume := range volumes {
+		if volume.VolumeType == instance.VolumeVolumeTypeLSSD {
+			localVolumeTotalSize += volume.Size
+		}
+	}
+
+	volumeConstraint := serverType.VolumesConstraint
+
+	// If no root volume provided, count the default root volume size added by the API.
+	if rootVolume := volumes["0"]; rootVolume == nil {
+		localVolumeTotalSize += volumeConstraint.MinSize
+	}
+
+	if localVolumeTotalSize < volumeConstraint.MinSize || localVolumeTotalSize > volumeConstraint.MaxSize {
+		min := humanize.Bytes(uint64(volumeConstraint.MinSize))
+		if volumeConstraint.MinSize == volumeConstraint.MaxSize {
+			return fmt.Errorf("%s total local volume size must be equal to %s", commercialType, min)
+		}
+
+		max := humanize.Bytes(uint64(volumeConstraint.MaxSize))
+		return fmt.Errorf("%s total local volume size must be between %s and %s", commercialType, min, max)
+	}
+
+	return nil
+}
+
+// sanitizeVolumeMap removes extra data for API validation.
+func sanitizeVolumeMap(serverName string, volumes map[string]*instance.VolumeTemplate) map[string]*instance.VolumeTemplate {
+	m := make(map[string]*instance.VolumeTemplate)
+
+	for index, v := range volumes {
+		v.Name = serverName + "-" + index
+
+		// Remove extra data for API validation.
+		switch {
+		case v.ID != "":
+			v = &instance.VolumeTemplate{ID: v.ID, Name: v.Name}
+		case index == "0" && v.Size != 0:
+			v = &instance.VolumeTemplate{Size: v.Size}
+		}
+		m[index] = v
+	}
+
+	return m
 }

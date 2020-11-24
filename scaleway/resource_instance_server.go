@@ -300,6 +300,26 @@ func resourceScalewayInstanceServerCreate(ctx context.Context, d *schema.Resourc
 		}
 	}
 
+	//
+	// Volumes.
+	//
+	// More format details in buildVolumeTemplate function.
+	//
+	serverType := getServerType(instanceAPI, req.Zone, req.CommercialType)
+	if len(req.Volumes) > 1 {
+		// Validate total local volume sizes.
+		if serverType != nil {
+			if err := validateLocalVolumeSizes(req.Volumes, serverType, req.CommercialType); err != nil {
+				return diag.FromErr(err)
+			}
+		} else {
+			l.Warningf("skip local volume size validation")
+		}
+
+		// Sanitize the volume map to respect API schemas
+		req.Volumes = sanitizeVolumeMap(req.Name, req.Volumes)
+	}
+
 	res, err := instanceAPI.CreateServer(req, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
