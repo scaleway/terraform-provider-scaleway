@@ -8,7 +8,7 @@ description: |-
 
 -> **Note:** The version 2 is not released yet but versions `v1.11+` allow you to do a smooth migration to the `v2`.
 In other words, there will be no breaking change between `v1.11+` and `v2`.
-The `v2` roadmap is available [here](https://github.com/terraform-providers/terraform-provider-scaleway/issues/125).
+The `v2` roadmap is available [here](https://github.com/scaleway/terraform-provider-scaleway/issues/125).
 
 This page guides you through the process of migrating your version 1 resources to their version 2 equivalent.
 To prepare the launch of all new Scaleway products, we completely changed the naming of all resources (as well as their attributes) in version 2 of the Terraform provider.
