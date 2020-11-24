@@ -82,9 +82,9 @@ All resources are from now on prefixed by `scaleway`, their product category and
 For instances an S3 bucket belongs to the `Storage` product category and is a resource of the `Object` product.
 Hence it is named: `scaleway_object_bucket`.
 
-### How can I migrate from existing code?
+### Migration guide for renamed resources
 
-Because the resources changed their name, we cannot using automatic state migration.
+Because the resources changed their name, we cannot use automatic state migration.
 We will first manually remove the resource from the terraform state and then use [`terraform import`](https://www.terraform.io/docs/import/usage.html) to import existing resources to a renamed resource.
 
 For instance, let's suppose that you have resource in `fr-par-1` such as:
