@@ -180,7 +180,6 @@ func getServerType(apiInstance *instance.API, zone scw.Zone, commercialType stri
 	return serverType
 }
 
-
 // validateLocalVolumeSizes validates the total size of local volumes.
 func validateLocalVolumeSizes(volumes map[string]*instance.VolumeTemplate, serverType *instance.ServerType, commercialType string) error {
 	// Calculate local volume total size.

@@ -290,35 +290,42 @@ func resourceScalewayInstanceServerCreate(ctx context.Context, d *schema.Resourc
 			Size: scw.Size(uint64(size.(int)) * gb),
 		}
 	}
+	serverType := getServerType(instanceAPI, req.Zone, req.CommercialType)
+	if serverType != nil {
+		// We had a local root volume if it is not already present
+		if rootVolume := req.Volumes["0"]; rootVolume == nil {
+			req.Volumes["0"] = &instance.VolumeTemplate{
+				Name:       newRandomName("vol"),
+				VolumeType: instance.VolumeVolumeTypeLSSD,
+				Size:       serverType.VolumesConstraint.MinSize,
+			}
+		}
+	}
 
 	if raw, ok := d.GetOk("additional_volume_ids"); ok {
 		for i, volumeID := range raw.([]interface{}) {
-			req.Volumes[strconv.Itoa(i+1)] = &instance.VolumeTemplate{
-				ID:   expandZonedID(volumeID).ID,
-				Name: newRandomName("vol"),
-			}
-		}
-	}
-
-	//
-	// Volumes.
-	//
-	// More format details in buildVolumeTemplate function.
-	//
-	serverType := getServerType(instanceAPI, req.Zone, req.CommercialType)
-	if len(req.Volumes) > 1 {
-		// Validate total local volume sizes.
-		if serverType != nil {
-			if err := validateLocalVolumeSizes(req.Volumes, serverType, req.CommercialType); err != nil {
+			// We have to get the volume to know whether it is a local or a block volume
+			vol, err := instanceAPI.GetVolume(&instance.GetVolumeRequest{
+				VolumeID: expandZonedID(volumeID).ID,
+			})
+			if err != nil {
 				return diag.FromErr(err)
 			}
-		} else {
-			l.Warningf("skip local volume size validation")
+			req.Volumes[strconv.Itoa(i+1)] = &instance.VolumeTemplate{
+				ID:         expandZonedID(volumeID).ID,
+				Name:       newRandomName("vol"),
+				VolumeType: vol.Volume.VolumeType,
+			}
 		}
-
-		// Sanitize the volume map to respect API schemas
-		req.Volumes = sanitizeVolumeMap(req.Name, req.Volumes)
 	}
+
+	// Validate total local volume sizes.
+	if err := validateLocalVolumeSizes(req.Volumes, serverType, req.CommercialType); err != nil {
+		return diag.FromErr(err)
+	}
+
+	// Sanitize the volume map to respect API schemas
+	req.Volumes = sanitizeVolumeMap(req.Name, req.Volumes)
 
 	res, err := instanceAPI.CreateServer(req, scw.WithContext(ctx))
 	if err != nil {
@@ -466,10 +473,6 @@ func resourceScalewayInstanceServerRead(ctx context.Context, d *schema.ResourceD
 
 			rootVolume["volume_id"] = newZonedID(zone, volume.ID).String()
 			rootVolume["size_in_gb"] = int(uint64(volume.Size) / gb)
-
-			if _, exist := rootVolume["delete_on_termination"]; !exist {
-				rootVolume["delete_on_termination"] = true // default value does not work on list
-			}
 
 			_ = d.Set("root_volume", []map[string]interface{}{rootVolume})
 		} else {

@@ -1032,6 +1032,7 @@ func TestAccScalewayInstanceServer_WithDefaultRootVolumeAndAdditionalVolume(t *t
 						size_in_gb = 100
 						type = "b_ssd"
 					}
+
 					resource "scaleway_instance_server" "main" {
 						type = "DEV1-L"
 						image = "ubuntu-bionic"
