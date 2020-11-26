@@ -143,7 +143,7 @@ to find either the right `label` or the right local image `ID` for a given `type
 - `placement_group_id` - (Optional) The [placement group](https://developers.scaleway.com/en/products/instance/api/#placement-groups-d8f653) the server is attached to.
 
 
-~> **Important:** Updates to `placement_group_id` may trigger a stop/start of the server.
+~> **Important:** When updating `placement_group_id` the `state` must be set to `stopped`, otherwise it will fail.
 
 - `root_volume` - (Optional) Root [volume](https://developers.scaleway.com/en/products/instance/api/#volumes-7e8a39) attached to the server on creation.
     - `size_in_gb` - (Required) Size of the root volume in gigabytes.
@@ -152,12 +152,14 @@ to find either the right `label` or the right local image `ID` for a given `type
     Updates to this field will recreate a new resource.
     - `delete_on_termination` - (Defaults to `true`) Forces deletion of the root volume on instance termination.
 
-~> **Important:** Updates to `root_volume.size_in_gb` will trigger a stop/start of the server.
+~> **Important:** Updates to `root_volume.size_in_gb` will be ignored after the creation of the server.
 
 - `additional_volume_ids` - (Optional) The [additional volumes](https://developers.scaleway.com/en/products/instance/api/#volumes-7e8a39)
 attached to the server. Updates to this field will trigger a stop/start of the server.
 
-~> **Important:** If this field contains local volumes, updates will trigger a stop/start of the server.
+~> **Important:** If this field contains local volumes, the `state` must be set to `stopped`, otherwise it will fail.
+
+~> **Important:** If this field contains local volumes, you have to first detach them, in one apply, and then delete the volume in another apply.
 
 - `enable_ipv6` - (Defaults to `false`) Determines if IPv6 is enabled for the server.
 
