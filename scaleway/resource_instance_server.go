@@ -25,6 +25,9 @@ func resourceScalewayInstanceServer() *schema.Resource {
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
+		Timeouts: &schema.ResourceTimeout{
+			Default: schema.DefaultTimeout(defaultInstanceServerWaitTimeout),
+		},
 		SchemaVersion: 0,
 		Schema: map[string]*schema.Schema{
 			"name": {
@@ -148,12 +151,6 @@ func resourceScalewayInstanceServer() *schema.Resource {
 				Type:        schema.TypeInt,
 				Computed:    true,
 				Description: "The IPv6 prefix length routed to the server.",
-			},
-			"disable_dynamic_ip": {
-				Type:        schema.TypeBool,
-				Optional:    true,
-				Default:     false,
-				Description: "Disable dynamic IP on the server",
 			},
 			"enable_dynamic_ip": {
 				Type:        schema.TypeBool,
@@ -491,8 +488,10 @@ func resourceScalewayInstanceServerUpdate(ctx context.Context, d *schema.Resourc
 		return diag.FromErr(err)
 	}
 
-	// This variable will be set to true if any state change requires a server reboot.
-	var forceReboot bool
+	wantedState := d.Get("state").(string)
+	isStopped := wantedState == InstanceServerStateStopped
+
+	var warnings diag.Diagnostics
 
 	////
 	// Construct UpdateServerRequest
@@ -507,8 +506,7 @@ func resourceScalewayInstanceServerUpdate(ctx context.Context, d *schema.Resourc
 	}
 
 	if d.HasChange("tags") {
-		tags := expandStrings(d.Get("tags"))
-		updateRequest.Tags = scw.StringsPtr(tags)
+		updateRequest.Tags = scw.StringsPtr(expandStrings(d.Get("tags")))
 	}
 
 	if d.HasChange("security_group_id") {
@@ -532,8 +530,19 @@ func resourceScalewayInstanceServerUpdate(ctx context.Context, d *schema.Resourc
 		volumes["0"] = &instance.VolumeTemplate{ID: expandZonedID(d.Get("root_volume.0.volume_id")).ID, Name: newRandomName("vol")} // name is ignored by the API, any name will work here
 
 		for i, volumeID := range raw.([]interface{}) {
-			// TODO: this will be refactored soon, before next release
-			// in the meantime it will throw an error if the volume is already attached somewhere
+			// local volumes can only be added when the instance is stopped
+			if !isStopped {
+				volumeResp, err := instanceAPI.GetVolume(&instance.GetVolumeRequest{
+					Zone:     zone,
+					VolumeID: expandZonedID(volumeID).ID,
+				})
+				if err != nil {
+					return diag.FromErr(err)
+				}
+				if volumeResp.Volume.VolumeType == instance.VolumeVolumeTypeLSSD {
+					return diag.FromErr(fmt.Errorf("instance must be stopped to change local volumes"))
+				}
+			}
 			volumes[strconv.Itoa(i+1)] = &instance.VolumeTemplate{
 				ID:   expandZonedID(volumeID).ID,
 				Name: newRandomName("vol"), // name is ignored by the API, any name will work here
@@ -541,7 +550,6 @@ func resourceScalewayInstanceServerUpdate(ctx context.Context, d *schema.Resourc
 		}
 
 		updateRequest.Volumes = &volumes
-		forceReboot = true
 	}
 
 	if d.HasChange("placement_group_id") {
@@ -549,7 +557,9 @@ func resourceScalewayInstanceServerUpdate(ctx context.Context, d *schema.Resourc
 		if placementGroupID == "" {
 			updateRequest.PlacementGroup = &instance.NullableStringValue{Null: true}
 		} else {
-			forceReboot = true
+			if !isStopped {
+				return diag.FromErr(fmt.Errorf("instance must be stopped to change placement group"))
+			}
 			updateRequest.PlacementGroup = &instance.NullableStringValue{Value: placementGroupID}
 		}
 	}
@@ -595,12 +605,22 @@ func resourceScalewayInstanceServerUpdate(ctx context.Context, d *schema.Resourc
 	if d.HasChanges("boot_type") {
 		bootType := instance.BootType(d.Get("boot_type").(string))
 		updateRequest.BootType = &bootType
-		forceReboot = true
+		if !isStopped {
+			warnings = append(warnings, diag.Diagnostic{
+				Severity: diag.Warning,
+				Summary:  "instance may need to be rebooted to use the new boot type",
+			})
+		}
 	}
 
 	if d.HasChanges("bootscript_id") {
 		updateRequest.Bootscript = expandStringPtr(d.Get("bootscript_id").(string))
-		forceReboot = true
+		if !isStopped {
+			warnings = append(warnings, diag.Diagnostic{
+				Severity: diag.Warning,
+				Summary:  "instance may need to be rebooted to use the new bootscript",
+			})
+		}
 	}
 
 	////
@@ -624,7 +644,12 @@ func resourceScalewayInstanceServerUpdate(ctx context.Context, d *schema.Resourc
 		// cloud init script is set in user data
 		if cloudInit, ok := d.GetOk("cloud_init"); ok {
 			userDataRequests.UserData["cloud-init"] = bytes.NewBufferString(cloudInit.(string))
-			forceReboot = true // instance must reboot when cloud init script change
+			if !isStopped {
+				warnings = append(warnings, diag.Diagnostic{
+					Severity: diag.Warning,
+					Summary:  "instance may need to be rebooted to use the new cloud init config",
+				})
+			}
 		}
 
 		err := instanceAPI.SetAllServerUserData(userDataRequests)
@@ -637,17 +662,6 @@ func resourceScalewayInstanceServerUpdate(ctx context.Context, d *schema.Resourc
 	// Apply changes
 	////
 
-	if forceReboot {
-		err = reachState(ctx, instanceAPI, zone, ID, InstanceServerStateStopped)
-		if err != nil {
-			return diag.FromErr(err)
-		}
-	}
-	_, err = instanceAPI.UpdateServer(updateRequest)
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
 	targetState, err := serverStateExpand(d.Get("state").(string))
 	if err != nil {
 		return diag.FromErr(err)
@@ -659,7 +673,12 @@ func resourceScalewayInstanceServerUpdate(ctx context.Context, d *schema.Resourc
 		return diag.FromErr(err)
 	}
 
-	return resourceScalewayInstanceServerRead(ctx, d, m)
+	_, err = instanceAPI.UpdateServer(updateRequest)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	return append(warnings, resourceScalewayInstanceServerRead(ctx, d, m)...)
 }
 
 func resourceScalewayInstanceServerDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {

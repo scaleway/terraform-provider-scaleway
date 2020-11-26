@@ -1,19 +1,15 @@
 package scaleway
 
 import (
-	"bytes"
 	"encoding/json"
 	"fmt"
 	"net"
 	"net/http"
 	"regexp"
 	"strings"
-	"text/template"
 	"time"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/scaleway/scaleway-sdk-go/namegenerator"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"golang.org/x/xerrors"
@@ -90,9 +86,29 @@ func parseLocalizedID(localizedID string) (locality string, ID string, err error
 	return tab[0], tab[1], nil
 }
 
+// parseLocalizedNestedID parses a localizedNestedID and extracts the resource locality, the inner and outer id.
+func parseLocalizedNestedID(localizedID string) (locality string, innerID, outerID string, err error) {
+	tab := strings.SplitN(localizedID, "/", -1)
+	if len(tab) != 3 {
+		return "", "", localizedID, fmt.Errorf("cant parse localized id: %s", localizedID)
+	}
+	return tab[0], tab[1], tab[2], nil
+}
+
 // parseZonedID parses a zonedID and extracts the resource zone and id.
 func parseZonedID(zonedID string) (zone scw.Zone, id string, err error) {
 	locality, id, err := parseLocalizedID(zonedID)
+	if err != nil {
+		return
+	}
+
+	zone, err = scw.ParseZone(locality)
+	return
+}
+
+// parseZonedNestedID parses a zonedNestedID and extracts the resource zone ,inner and outer ID.
+func parseZonedNestedID(zonedNestedID string) (zone scw.Zone, outerID, innerID string, err error) {
+	locality, innerID, outerID, err := parseLocalizedNestedID(zonedNestedID)
 	if err != nil {
 		return
 	}
@@ -124,6 +140,11 @@ func parseRegionalID(regionalID string) (region scw.Region, id string, err error
 // newZonedIDString constructs a unique identifier based on resource zone and id
 func newZonedIDString(zone scw.Zone, id string) string {
 	return fmt.Sprintf("%s/%s", zone, id)
+}
+
+// newZonedNestedIDString constructs a unique identifier based on resource zone, inner and outer IDs
+func newZonedNestedIDString(zone scw.Zone, outerID, innerID string) string {
+	return fmt.Sprintf("%s/%s/%s", zone, outerID, innerID)
 }
 
 // newRegionalIDString constructs a unique identifier based on resource region and id
@@ -277,37 +298,6 @@ func isUUID(s string) bool {
 	return UUIDRegex.MatchString(s)
 }
 
-// newTemplateFunc takes a go template string and returns a function that can be called to execute template.
-func newTemplateFunc(tplStr string) func(data interface{}) string {
-	t := template.Must(template.New("tpl").Parse(tplStr))
-	return func(tplParams interface{}) string {
-		buffer := bytes.Buffer{}
-		err := t.Execute(&buffer, tplParams)
-		if err != nil {
-			panic(err) // lintignore:R009
-		}
-		return buffer.String()
-	}
-}
-
-// testAccGetResourceAttr can be used in acceptance tests to extract value from state and store it in dest
-func testAccGetResourceAttr(resourceName string, attrName string, dest *string) resource.TestCheckFunc {
-	return func(state *terraform.State) error {
-		r, exist := state.RootModule().Resources[resourceName]
-		if !exist {
-			return fmt.Errorf("unknown ressource %s", resourceName)
-		}
-
-		a, exist := r.Primary.Attributes[attrName]
-		if !exist {
-			return fmt.Errorf("unknown ressource %s", resourceName)
-		}
-
-		*dest = a
-		return nil
-	}
-}
-
 func flattenTime(date *time.Time) interface{} {
 	if date != nil {
 		return date.Format(time.RFC3339)
@@ -349,10 +339,7 @@ func expandStringWithDefault(data interface{}, defaultValue string) string {
 }
 
 func expandStrings(data interface{}) []string {
-	if data == nil {
-		return nil
-	}
-	stringSlice := []string(nil)
+	stringSlice := []string{}
 	for _, s := range data.([]interface{}) {
 		stringSlice = append(stringSlice, s.(string))
 	}

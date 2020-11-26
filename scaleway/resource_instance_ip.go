@@ -17,6 +17,9 @@ func resourceScalewayInstanceIP() *schema.Resource {
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
+		Timeouts: &schema.ResourceTimeout{
+			Default: schema.DefaultTimeout(defaultInstanceIPTimeout),
+		},
 		SchemaVersion: 0,
 		Schema: map[string]*schema.Schema{
 			"address": {
@@ -105,7 +108,7 @@ func resourceScalewayInstanceIPDelete(ctx context.Context, d *schema.ResourceDat
 		Zone: zone,
 	}, scw.WithContext(ctx))
 
-	if err != nil && !is404Error(err) {
+	if err != nil && !is404Error(err) && !is403Error(err) {
 		return diag.FromErr(err)
 	}
 

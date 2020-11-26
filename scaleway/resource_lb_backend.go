@@ -19,6 +19,9 @@ func resourceScalewayLbBackend() *schema.Resource {
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
+		Timeouts: &schema.ResourceTimeout{
+			Default: schema.DefaultTimeout(defaultLbLbTimeout),
+		},
 		SchemaVersion: 0,
 		Schema: map[string]*schema.Schema{
 			"lb_id": {
@@ -52,6 +55,7 @@ func resourceScalewayLbBackend() *schema.Resource {
 				ValidateFunc: validation.StringInSlice([]string{
 					lb.ForwardPortAlgorithmRoundrobin.String(),
 					lb.ForwardPortAlgorithmLeastconn.String(),
+					lb.ForwardPortAlgorithmFirst.String(),
 				}, false),
 				Default:     lb.ForwardPortAlgorithmRoundrobin.String(),
 				Optional:    true,

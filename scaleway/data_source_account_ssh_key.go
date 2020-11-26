@@ -11,35 +11,25 @@ import (
 )
 
 func dataSourceScalewayAccountSSHKey() *schema.Resource {
+	dsSchema := datasourceSchemaFromResourceSchema(resourceScalewayAccountSSKKey().Schema)
+	addOptionalFieldsToSchema(dsSchema, "name")
+
+	dsSchema["name"].ConflictsWith = []string{"ssh_key_id"}
+	dsSchema["ssh_key_id"] = &schema.Schema{
+		Type:         schema.TypeString,
+		Optional:     true,
+		Description:  "The ID of the SSH key",
+		ValidateFunc: validationUUID(),
+	}
+
 	return &schema.Resource{
 		ReadContext: dataSourceScalewayAccountSSHKeyRead,
-		Schema: map[string]*schema.Schema{
-			"name": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Computed:    true,
-				Description: "The name of the SSH key",
-			},
-			"ssh_key_id": {
-				Type:         schema.TypeString,
-				Optional:     true,
-				Computed:     true,
-				Description:  "The ID of the SSH key",
-				ValidateFunc: validationUUIDorUUIDWithLocality(),
-			},
-			"public_key": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The public SSH key",
-			},
-			"organization_id": organizationIDSchema(),
-			"project_id":      projectIDSchema(),
-		},
+		Schema:      dsSchema,
 	}
 }
 
-func dataSourceScalewayAccountSSHKeyRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	accountAPI := accountAPI(m)
+func dataSourceScalewayAccountSSHKeyRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	accountAPI := accountAPI(meta)
 
 	var sshKey *account.SSHKey
 	sshKeyID, ok := d.GetOk("ssh_key_id")
@@ -67,11 +57,7 @@ func dataSourceScalewayAccountSSHKeyRead(ctx context.Context, d *schema.Resource
 	}
 
 	d.SetId(sshKey.ID)
-	_ = d.Set("name", sshKey.Name)
 	_ = d.Set("ssh_key_id", sshKey.ID)
-	_ = d.Set("public_key", sshKey.PublicKey)
-	_ = d.Set("organization_id", sshKey.OrganizationID)
-	_ = d.Set("project_id", sshKey.ProjectID)
 
-	return nil
+	return resourceScalewayAccountSSHKeyRead(ctx, d, meta)
 }

@@ -17,8 +17,12 @@ const (
 	InstanceServerStateStarted = "started"
 	InstanceServerStateStandby = "standby"
 
-	InstanceServerWaitForTimeout = 10 * time.Minute
-	InstanceVolumeDeleteTimeout  = 10 * time.Minute
+	defaultInstanceServerWaitTimeout        = 10 * time.Minute
+	defaultInstanceVolumeDeleteTimeout      = 10 * time.Minute
+	defaultInstanceSecurityGroupTimeout     = 1 * time.Minute
+	defaultInstanceSecurityGroupRuleTimeout = 1 * time.Minute
+	defaultInstancePlacementGroupTimeout    = 1 * time.Minute
+	defaultInstanceIPTimeout                = 1 * time.Minute
 )
 
 // instanceAPIWithZone returns a new instance API and the zone for a Create request
@@ -37,6 +41,15 @@ func instanceAPIWithZoneAndID(m interface{}, zonedID string) (*instance.API, scw
 
 	zone, ID, err := parseZonedID(zonedID)
 	return instanceAPI, zone, ID, err
+}
+
+// instanceAPIWithZoneAndNestedID returns an instance API with zone and inner/outer ID extracted from the state
+func instanceAPIWithZoneAndNestedID(m interface{}, zonedNestedID string) (*instance.API, scw.Zone, string, string, error) {
+	meta := m.(*Meta)
+	instanceAPI := instance.NewAPI(meta.scwClient)
+
+	zone, innerID, outerID, err := parseZonedNestedID(zonedNestedID)
+	return instanceAPI, zone, innerID, outerID, err
 }
 
 // hash hashes a string to a unique hashcode.
@@ -138,7 +151,7 @@ func reachState(ctx context.Context, instanceAPI *instance.API, zone scw.Zone, s
 			ServerID: serverID,
 			Action:   a,
 			Zone:     zone,
-			Timeout:  scw.TimeDurationPtr(InstanceServerWaitForTimeout),
+			Timeout:  scw.TimeDurationPtr(defaultInstanceServerWaitTimeout),
 		})
 		if err != nil {
 			return err

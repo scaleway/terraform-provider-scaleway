@@ -19,6 +19,9 @@ func resourceScalewayLb() *schema.Resource {
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
+		Timeouts: &schema.ResourceTimeout{
+			Default: schema.DefaultTimeout(defaultLbLbTimeout),
+		},
 		SchemaVersion: 0,
 		Schema: map[string]*schema.Schema{
 			"name": {
@@ -90,7 +93,7 @@ func resourceScalewayLbCreate(ctx context.Context, d *schema.ResourceData, m int
 	_, err = lbAPI.WaitForLb(&lb.WaitForLBRequest{
 		Region:  region,
 		LBID:    res.ID,
-		Timeout: scw.TimeDurationPtr(InstanceServerWaitForTimeout),
+		Timeout: scw.TimeDurationPtr(defaultInstanceServerWaitTimeout),
 	}, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
