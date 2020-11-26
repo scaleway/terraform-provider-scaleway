@@ -1,19 +1,15 @@
 package scaleway
 
 import (
-	"bytes"
 	"encoding/json"
 	"fmt"
 	"net"
 	"net/http"
 	"regexp"
 	"strings"
-	"text/template"
 	"time"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/scaleway/scaleway-sdk-go/namegenerator"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"golang.org/x/xerrors"
@@ -302,37 +298,6 @@ func isUUID(s string) bool {
 	return UUIDRegex.MatchString(s)
 }
 
-// newTemplateFunc takes a go template string and returns a function that can be called to execute template.
-func newTemplateFunc(tplStr string) func(data interface{}) string {
-	t := template.Must(template.New("tpl").Parse(tplStr))
-	return func(tplParams interface{}) string {
-		buffer := bytes.Buffer{}
-		err := t.Execute(&buffer, tplParams)
-		if err != nil {
-			panic(err) // lintignore:R009
-		}
-		return buffer.String()
-	}
-}
-
-// testAccGetResourceAttr can be used in acceptance tests to extract value from state and store it in dest
-func testAccGetResourceAttr(resourceName string, attrName string, dest *string) resource.TestCheckFunc {
-	return func(state *terraform.State) error {
-		r, exist := state.RootModule().Resources[resourceName]
-		if !exist {
-			return fmt.Errorf("unknown ressource %s", resourceName)
-		}
-
-		a, exist := r.Primary.Attributes[attrName]
-		if !exist {
-			return fmt.Errorf("unknown ressource %s", resourceName)
-		}
-
-		*dest = a
-		return nil
-	}
-}
-
 func flattenTime(date *time.Time) interface{} {
 	if date != nil {
 		return date.Format(time.RFC3339)
@@ -374,10 +339,7 @@ func expandStringWithDefault(data interface{}, defaultValue string) string {
 }
 
 func expandStrings(data interface{}) []string {
-	if data == nil {
-		return []string{}
-	}
-	stringSlice := []string(nil)
+	stringSlice := []string{}
 	for _, s := range data.([]interface{}) {
 		stringSlice = append(stringSlice, s.(string))
 	}
