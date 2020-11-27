@@ -4,11 +4,7 @@ description: |-
   Migrating your Scaleway provider from v1 to v2.
 ---
 
-# Migrating from v1 to v2
-
--> **Note:** The version 2 is not released yet but versions `v1.11+` allow you to do a smooth migration to the `v2`.
-In other words, there will be no breaking change between `v1.11+` and `v2`.
-The `v2` roadmap is available [here](https://github.com/scaleway/terraform-provider-scaleway/issues/125).
+# Migrating from Scaleway provider v1 to v2
 
 This page guides you through the process of migrating your version 1 resources to their version 2 equivalent.
 To prepare the launch of all new Scaleway products, we completely changed the naming of all resources (as well as their attributes) in version 2 of the Terraform provider.
@@ -17,9 +13,10 @@ To prepare the launch of all new Scaleway products, we completely changed the na
 
 ### Version configuration
 
--> **Note:** Before upgrading to `v2+`, it is recommended to upgrade to the most recent `1.X` version of the provider (`v1.11.0`) and ensure that your environment successfully runs [`terraform plan`](https://www.terraform.io/docs/commands/plan.html) without unexpected change or deprecation notice.
+-> **Note:** Before upgrading to `v2+`, it is recommended to upgrade to the most recent `1.X` version of the provider (`v1.17.2`) and ensure that your environment successfully runs [`terraform plan`](https://www.terraform.io/docs/commands/plan.html) without unexpected change or deprecation notice.
 
-It is recommended to use [version constraints when configuring Terraform providers](https://www.terraform.io/docs/configuration/providers.html#version-provider-versions). If you are following these recommendation, update the version constraints in your Terraform configuration and run [`terraform init`](https://www.terraform.io/docs/commands/init.html) to download the new version.
+It is recommended to use [version constraints when configuring Terraform providers](https://www.terraform.io/docs/configuration/providers.html#version-provider-versions).
+If you are following these recommendations, update the version constraints in your Terraform configuration and run [`terraform init`](https://www.terraform.io/docs/commands/init.html) to download the new version.
 
 Update to latest `1.X` version:
 
@@ -73,7 +70,7 @@ Below you find an overview of the changes in environment variables:
 This should be your access key (e.g. `SCWZFD9BPQ4TZ14SM1YS`).
 Your secret key (previously known as _token_) must be set in `SCW_SECRET_KEY` (`xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx`).
 
-Terraform can also read standard Scaleway configuration files.
+Terraform can also read standard [Scaleway configuration files](https://github.com/scaleway/scaleway-sdk-go/blob/master/scw/README.md).
 By doing so, you can use the same configuration between different tools such as the [CLI](https://github.com/scaleway/scaleway-cli) or [Packer](https://www.packer.io/docs/builders/scaleway).
 
 ## Resources
