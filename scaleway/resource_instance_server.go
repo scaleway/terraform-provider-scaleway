@@ -278,22 +278,26 @@ func resourceScalewayInstanceServerCreate(ctx context.Context, d *schema.Resourc
 		req.PlacementGroup = expandStringPtr(expandZonedID(placementGroupID).ID)
 	}
 
+	serverType := getServerType(instanceAPI, req.Zone, req.CommercialType)
+	if serverType == nil {
+		return diag.FromErr(fmt.Errorf("could not find a server type associated with %s", req.CommercialType))
+	}
+
 	req.Volumes = make(map[string]*instance.VolumeTemplate)
 	if size, ok := d.GetOk("root_volume.0.size_in_gb"); ok {
 		req.Volumes["0"] = &instance.VolumeTemplate{
 			Size: scw.Size(uint64(size.(int)) * gb),
 		}
-	}
-	serverType := getServerType(instanceAPI, req.Zone, req.CommercialType)
-	if serverType != nil {
-		// We had a local root volume if it is not already present
-		if rootVolume := req.Volumes["0"]; rootVolume == nil {
+	} else {
+		if serverType != nil {
+			// We had a local root volume if it is not already present
 			req.Volumes["0"] = &instance.VolumeTemplate{
 				Name:       newRandomName("vol"),
 				VolumeType: instance.VolumeVolumeTypeLSSD,
 				Size:       serverType.VolumesConstraint.MinSize,
 			}
 		}
+
 	}
 
 	if raw, ok := d.GetOk("additional_volume_ids"); ok {
@@ -306,8 +310,8 @@ func resourceScalewayInstanceServerCreate(ctx context.Context, d *schema.Resourc
 				return diag.FromErr(err)
 			}
 			req.Volumes[strconv.Itoa(i+1)] = &instance.VolumeTemplate{
-				ID:         expandZonedID(volumeID).ID,
-				Name:       newRandomName("vol"),
+				ID:         vol.Volume.ID,
+				Name:       vol.Volume.Name,
 				VolumeType: vol.Volume.VolumeType,
 			}
 		}
