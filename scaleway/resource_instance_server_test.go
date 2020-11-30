@@ -880,7 +880,7 @@ func TestAccScalewayInstanceServer_WithDefaultRootVolumeAndAdditionalVolume(t *t
 					}
 
 					resource "scaleway_instance_server" "main" {
-						type = "DEV1-L"
+						type = "DEV1-S"
 						image = "ubuntu-bionic"
 						root_volume {
 							delete_on_termination = false

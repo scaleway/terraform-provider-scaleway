@@ -211,6 +211,10 @@ func validateLocalVolumeSizes(volumes map[string]*instance.VolumeTemplate, serve
 }
 
 // sanitizeVolumeMap removes extra data for API validation.
+//
+// On the api side, there are two possibles validation schemas for volumes and the validator will be chosen dynamically depending on the passed JSON request
+// - With an image (in that case the root volume can be skipped because it is taken from the image)
+// - Without an image (in that case, the root volume must be defined)
 func sanitizeVolumeMap(serverName string, volumes map[string]*instance.VolumeTemplate) map[string]*instance.VolumeTemplate {
 	m := make(map[string]*instance.VolumeTemplate)
 
@@ -219,10 +223,16 @@ func sanitizeVolumeMap(serverName string, volumes map[string]*instance.VolumeTem
 
 		// Remove extra data for API validation.
 		switch {
+		// If a volume already got an ID it is passed as it to the API without specifying the volume type.
+		// TODO: Fix once instance accept volume type in the schema validation
 		case v.ID != "":
 			v = &instance.VolumeTemplate{ID: v.ID, Name: v.Name}
+		// For the root volume (index 0) if the specified size is not 0 it is considered as a new volume
+		// It does not have yet a volume ID, it is passed to the API with only the size to be dynamically created by the API
 		case index == "0" && v.Size != 0:
 			v = &instance.VolumeTemplate{Size: v.Size}
+		// If none of the above conditions are met, the volume is passed as it to the API
+		default:
 		}
 		m[index] = v
 	}
