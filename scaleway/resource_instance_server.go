@@ -289,15 +289,12 @@ func resourceScalewayInstanceServerCreate(ctx context.Context, d *schema.Resourc
 			Size: scw.Size(uint64(size.(int)) * gb),
 		}
 	} else {
-		if serverType != nil {
-			// We had a local root volume if it is not already present
-			req.Volumes["0"] = &instance.VolumeTemplate{
-				Name:       newRandomName("vol"),
-				VolumeType: instance.VolumeVolumeTypeLSSD,
-				Size:       serverType.VolumesConstraint.MinSize,
-			}
+		// We had a local root volume if it is not already present
+		req.Volumes["0"] = &instance.VolumeTemplate{
+			Name:       newRandomName("vol"),
+			VolumeType: instance.VolumeVolumeTypeLSSD,
+			Size:       serverType.VolumesConstraint.MinSize,
 		}
-
 	}
 
 	if raw, ok := d.GetOk("additional_volume_ids"); ok {
