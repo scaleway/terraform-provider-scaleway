@@ -1,6 +1,7 @@
 package scaleway
 
 import (
+	"context"
 	"flag"
 	"net/http"
 	"os"
@@ -92,6 +93,7 @@ type TestTools struct {
 	Meta              *Meta
 	ProviderFactories map[string]func() (*schema.Provider, error)
 	Cleanup           func()
+	ctx               context.Context
 }
 
 func NewTestTools(t *testing.T) *TestTools {
@@ -116,5 +118,6 @@ func NewTestTools(t *testing.T) *TestTools {
 			},
 		},
 		Cleanup: cleanup,
+		ctx:     context.Background(),
 	}
 }
