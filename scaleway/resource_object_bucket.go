@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -193,7 +192,7 @@ func resourceScalewayObjectBucketRead(ctx context.Context, d *schema.ResourceDat
 
 	// Read the CORS
 	corsResponse, err := s3Client.GetBucketCorsWithContext(ctx, &s3.GetBucketCorsInput{
-		Bucket: scw.StringPtr(d.Id()),
+		Bucket: scw.StringPtr(bucketName),
 	})
 
 	if err != nil && !isS3Err(err, "NoSuchCORSConfiguration", "") {
@@ -207,7 +206,7 @@ func resourceScalewayObjectBucketRead(ctx context.Context, d *schema.ResourceDat
 
 	// Read the versioning configuration
 	versioningResponse, err := s3Client.GetBucketVersioningWithContext(ctx, &s3.GetBucketVersioningInput{
-		Bucket: aws.String(bucketName),
+		Bucket: scw.StringPtr(bucketName),
 	})
 	if err != nil {
 		return diag.FromErr(err)
@@ -287,7 +286,7 @@ func resourceScalewayObjectBucketVersioningUpdate(ctx context.Context, s3conn *s
 	vc := expandObjectBucketVersioning(v)
 
 	i := &s3.PutBucketVersioningInput{
-		Bucket:                  aws.String(bucketName),
+		Bucket:                  scw.StringPtr(bucketName),
 		VersioningConfiguration: vc,
 	}
 	l.Debugf("S3 put bucket versioning: %#v", i)
@@ -301,15 +300,15 @@ func resourceScalewayObjectBucketVersioningUpdate(ctx context.Context, s3conn *s
 }
 
 func resourceScalewayS3BucketCorsUpdate(ctx context.Context, s3conn *s3.S3, d *schema.ResourceData) error {
-	bucket := d.Get("bucket").(string)
+	bucketName := d.Get("name").(string)
 	rawCors := d.Get("cors_rule").([]interface{})
 
 	if len(rawCors) == 0 {
 		// Delete CORS
-		l.Printf("[DEBUG] S3 bucket: %s, delete CORS", bucket)
+		l.Printf("[DEBUG] S3 bucket: %s, delete CORS", bucketName)
 
 		_, err := s3conn.DeleteBucketCorsWithContext(ctx, &s3.DeleteBucketCorsInput{
-			Bucket: scw.StringPtr(bucket),
+			Bucket: scw.StringPtr(bucketName),
 		})
 
 		if err != nil {
@@ -317,14 +316,14 @@ func resourceScalewayS3BucketCorsUpdate(ctx context.Context, s3conn *s3.S3, d *s
 		}
 	} else {
 		// Put CORS
-		rules := expandBucketCORS(rawCors, bucket)
+		rules := expandBucketCORS(rawCors, bucketName)
 		corsInput := &s3.PutBucketCorsInput{
-			Bucket: scw.StringPtr(bucket),
+			Bucket: scw.StringPtr(bucketName),
 			CORSConfiguration: &s3.CORSConfiguration{
 				CORSRules: rules,
 			},
 		}
-		l.Printf("[DEBUG] S3 bucket: %s, put CORS: %#v", bucket, corsInput)
+		l.Printf("[DEBUG] S3 bucket: %s, put CORS: %#v", bucketName, corsInput)
 
 		_, err := s3conn.PutBucketCorsWithContext(ctx, corsInput)
 		if err != nil {

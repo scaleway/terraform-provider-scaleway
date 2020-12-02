@@ -8,7 +8,6 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/service/s3"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/scaleway/scaleway-sdk-go/scw"
@@ -148,7 +147,7 @@ func testSweepStorageObjectBucket(_ string) error {
 func TestAccScalewayObjectBucket_Cors_Update(t *testing.T) {
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
-	bucketName := acctest.RandomWithPrefix("tf-test-bucket")
+	bucketName := "test-acc-scaleway-object-bucket-cors-update"
 	const resourceName = "scaleway_object_bucket.bucket"
 
 	resource.ParallelTest(t, resource.TestCase{
@@ -169,7 +168,7 @@ func TestAccScalewayObjectBucket_Cors_Update(t *testing.T) {
 						}
 					}`, bucketName),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayObjectBucketExists(tt, resourceName, bucketName),
+					testAccCheckScalewayObjectBucketExists(tt, resourceName),
 					testAccCheckScalewayObjectBucketCors(tt,
 						resourceName,
 						[]*s3.CORSRule{
@@ -230,7 +229,7 @@ func TestAccScalewayObjectBucket_Cors_Update(t *testing.T) {
 							max_age_seconds = 3000
 						}
 					}`, bucketName), Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayObjectBucketExists(tt, resourceName, bucketName),
+					testAccCheckScalewayObjectBucketExists(tt, resourceName),
 					testAccCheckScalewayObjectBucketCors(tt,
 						resourceName,
 						[]*s3.CORSRule{
@@ -252,7 +251,7 @@ func TestAccScalewayObjectBucket_Cors_Update(t *testing.T) {
 func TestAccScalewayObjectBucket_Cors_Delete(t *testing.T) {
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
-	bucketName := acctest.RandomWithPrefix("tf-test-bucket")
+	bucketName := "test-acc-scaleway-object-bucket-cors-delete"
 	resourceName := "scaleway_object_bucket.bucket"
 
 	resource.ParallelTest(t, resource.TestCase{
@@ -273,7 +272,7 @@ func TestAccScalewayObjectBucket_Cors_Delete(t *testing.T) {
 						}
 					}`, bucketName),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayObjectBucketExists(tt, resourceName, bucketName),
+					testAccCheckScalewayObjectBucketExists(tt, resourceName),
 					testAccCheckScalewayObjectCorsDeleted(tt, resourceName),
 				),
 				ExpectNonEmptyPlan: true,
@@ -306,8 +305,8 @@ func testAccCheckScalewayObjectCorsDeleted(tt *TestTools, resourceName string) r
 func TestAccScalewayObjectBucket_Cors_EmptyOrigin(t *testing.T) {
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
-	bucketName := acctest.RandomWithPrefix("tf-test-bucket")
-	resourceName := "scaleway_object_bucket.bucket"
+	bucketName := "test-acc-scaleway-object-bucket-cors-empty-origin"
+	const resourceName = "scaleway_object_bucket.bucket"
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
@@ -327,7 +326,7 @@ func TestAccScalewayObjectBucket_Cors_EmptyOrigin(t *testing.T) {
 						}
 					}`, bucketName),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayObjectBucketExists(tt, resourceName, bucketName),
+					testAccCheckScalewayObjectBucketExists(tt, resourceName),
 					testAccCheckScalewayObjectBucketCors(tt,
 						resourceName,
 						[]*s3.CORSRule{
@@ -365,7 +364,7 @@ func testAccCheckScalewayObjectBucketCors(tt *TestTools, n string, corsRules []*
 		})
 
 		out, err := s3Client.GetBucketCors(&s3.GetBucketCorsInput{
-			Bucket: scw.StringPtr(rs.Primary.ID),
+			Bucket: scw.StringPtr(rs.Primary.Attributes["name"]),
 		})
 
 		if err != nil {
@@ -406,7 +405,7 @@ func testAccCheckScalewayObjectBucketExists(tt *TestTools, n string) resource.Te
 			return err
 		}
 		_, err = s3Client.HeadBucket(&s3.HeadBucketInput{
-			Bucket: scw.StringPtr(rs.Primary.ID),
+			Bucket: scw.StringPtr(rs.Primary.Attributes["name"]),
 		})
 
 		if err != nil {

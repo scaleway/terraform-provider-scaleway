@@ -144,12 +144,12 @@ func expandObjectBucketVersioning(v []interface{}) *s3.VersioningConfiguration {
 		c := v[0].(map[string]interface{})
 
 		if c["enabled"].(bool) {
-			vc.Status = aws.String(s3.BucketVersioningStatusEnabled)
+			vc.Status = scw.StringPtr(s3.BucketVersioningStatusEnabled)
 		} else {
-			vc.Status = aws.String(s3.BucketVersioningStatusSuspended)
+			vc.Status = scw.StringPtr(s3.BucketVersioningStatusSuspended)
 		}
 	} else {
-		vc.Status = aws.String(s3.BucketVersioningStatusSuspended)
+		vc.Status = scw.StringPtr(s3.BucketVersioningStatusSuspended)
 	}
 	return vc
 }
