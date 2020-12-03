@@ -254,6 +254,27 @@ func TestAccScalewayObjectBucket_Cors_Delete(t *testing.T) {
 	bucketName := "test-acc-scaleway-object-bucket-cors-delete"
 	resourceName := "scaleway_object_bucket.bucket"
 
+	deleteBucketCors := func(tt *TestTools, n string) resource.TestCheckFunc {
+		return func(s *terraform.State) error {
+			rs, ok := s.RootModule().Resources[n]
+			if !ok {
+				return fmt.Errorf("not found: %s", n)
+			}
+
+			conn, err := newS3ClientFromMeta(tt.Meta)
+			if err != nil {
+				return err
+			}
+			_, err = conn.DeleteBucketCorsWithContext(tt.ctx, &s3.DeleteBucketCorsInput{
+				Bucket: scw.StringPtr(rs.Primary.Attributes["name"]),
+			})
+			if err != nil && !isS3Err(err, "NoSuchCORSConfiguration", "") {
+				return err
+			}
+			return nil
+		}
+	}
+
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
@@ -273,7 +294,7 @@ func TestAccScalewayObjectBucket_Cors_Delete(t *testing.T) {
 					}`, bucketName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayObjectBucketExists(tt, resourceName),
-					testAccCheckScalewayObjectCorsDeleted(tt, resourceName),
+					deleteBucketCors(tt, resourceName),
 				),
 				ExpectNonEmptyPlan: true,
 			},
@@ -354,17 +375,18 @@ func TestAccScalewayObjectBucket_Cors_EmptyOrigin(t *testing.T) {
 func testAccCheckScalewayObjectBucketCors(tt *TestTools, n string, corsRules []*s3.CORSRule) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs := s.RootModule().Resources[n]
+		bucketName := rs.Primary.Attributes["name"]
 		s3Client, err := newS3ClientFromMeta(tt.Meta)
 		if err != nil {
 			return err
 		}
 
-		_, err = conn.HeadBucketWithContext(tt.ctx, &s3.HeadBucketInput{
+		_, err = s3Client.HeadBucketWithContext(tt.ctx, &s3.HeadBucketInput{
 			Bucket: scw.StringPtr(bucketName),
 		})
 
 		out, err := s3Client.GetBucketCors(&s3.GetBucketCorsInput{
-			Bucket: scw.StringPtr(rs.Primary.Attributes["name"]),
+			Bucket: scw.StringPtr(bucketName),
 		})
 
 		if err != nil {
@@ -386,26 +408,26 @@ func testAccCheckScalewayObjectBucketCors(tt *TestTools, n string, corsRules []*
 }
 
 func testAccCheckScalewayObjectBucketExists(tt *TestTools, n string) resource.TestCheckFunc {
-	return func(s *terraform.State) error {
-		rs, ok := s.RootModule().Resources[n]
-		if !ok {
-			return fmt.Errorf("not found: %s", n)
-		}
-
-		out, err := conn.GetBucketVersioningWithContext(tt.ctx, &s3.GetBucketVersioningInput{
-			Bucket: scw.StringPtr(bucketName),
-		})
-
-		if rs.Primary.ID == "" {
-			return fmt.Errorf("no ID is set")
-		}
+	return func(state *terraform.State) error {
+		rs := state.RootModule().Resources[n]
+		bucketName := rs.Primary.Attributes["name"]
 
 		s3Client, err := newS3ClientFromMeta(tt.Meta)
 		if err != nil {
 			return err
 		}
+
+		rs, ok := state.RootModule().Resources[n]
+		if !ok {
+			return fmt.Errorf("not found: %s", n)
+		}
+
+		if rs.Primary.ID == "" {
+			return fmt.Errorf("no ID is set")
+		}
+
 		_, err = s3Client.HeadBucket(&s3.HeadBucketInput{
-			Bucket: scw.StringPtr(rs.Primary.Attributes["name"]),
+			Bucket: scw.StringPtr(bucketName),
 		})
 
 		if err != nil {
