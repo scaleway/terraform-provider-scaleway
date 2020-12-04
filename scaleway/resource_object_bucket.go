@@ -141,6 +141,54 @@ func resourceScalewayObjectBucketCreate(ctx context.Context, d *schema.ResourceD
 
 	d.SetId(newRegionalIDString(region, bucketName))
 
+	return resourceScalewayObjectBucketUpdate(ctx, d, meta)
+}
+
+func resourceScalewayObjectBucketUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	s3Client, _, bucketName, err := s3ClientWithRegionAndName(meta, d.Id())
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	if d.HasChange("acl") {
+		acl := d.Get("acl").(string)
+
+		_, err := s3Client.PutBucketAclWithContext(ctx, &s3.PutBucketAclInput{
+			Bucket: scw.StringPtr(bucketName),
+			ACL:    scw.StringPtr(acl),
+		})
+		if err != nil {
+			l.Errorf("Couldn't update bucket ACL: %s", err)
+			return diag.FromErr(fmt.Errorf("couldn't update bucket ACL: %s", err))
+		}
+	}
+
+	if d.HasChange("versioning") {
+		if err := resourceScalewayObjectBucketVersioningUpdate(ctx, s3Client, d); err != nil {
+			return diag.FromErr(err)
+		}
+	}
+
+	if d.HasChange("tags") {
+		tagsSet := expandObjectBucketTags(d.Get("tags"))
+
+		_, err = s3Client.PutBucketTaggingWithContext(ctx, &s3.PutBucketTaggingInput{
+			Bucket: scw.StringPtr(bucketName),
+			Tagging: &s3.Tagging{
+				TagSet: tagsSet,
+			},
+		})
+		if err != nil {
+			return diag.FromErr(err)
+		}
+	}
+
+	if d.HasChange("cors_rule") {
+		if err := resourceScalewayS3BucketCorsUpdate(ctx, s3Client, d); err != nil {
+			return diag.FromErr(err)
+		}
+	}
+
 	return resourceScalewayObjectBucketRead(ctx, d, meta)
 }
 
@@ -214,54 +262,6 @@ func resourceScalewayObjectBucketRead(ctx context.Context, d *schema.ResourceDat
 	_ = d.Set("versioning", flattenObjectBucketVersioning(versioningResponse))
 
 	return nil
-}
-
-func resourceScalewayObjectBucketUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	s3Client, _, bucketName, err := s3ClientWithRegionAndName(meta, d.Id())
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	if d.HasChange("acl") {
-		acl := d.Get("acl").(string)
-
-		_, err := s3Client.PutBucketAclWithContext(ctx, &s3.PutBucketAclInput{
-			Bucket: scw.StringPtr(bucketName),
-			ACL:    scw.StringPtr(acl),
-		})
-		if err != nil {
-			l.Errorf("Couldn't update bucket ACL: %s", err)
-			return diag.FromErr(fmt.Errorf("couldn't update bucket ACL: %s", err))
-		}
-	}
-
-	if d.HasChange("versioning") {
-		if err := resourceScalewayObjectBucketVersioningUpdate(ctx, s3Client, d); err != nil {
-			return diag.FromErr(err)
-		}
-	}
-
-	if d.HasChange("tags") {
-		tagsSet := expandObjectBucketTags(d.Get("tags"))
-
-		_, err = s3Client.PutBucketTaggingWithContext(ctx, &s3.PutBucketTaggingInput{
-			Bucket: scw.StringPtr(bucketName),
-			Tagging: &s3.Tagging{
-				TagSet: tagsSet,
-			},
-		})
-		if err != nil {
-			return diag.FromErr(err)
-		}
-	}
-
-	if d.HasChange("cors_rule") {
-		if err := resourceScalewayS3BucketCorsUpdate(ctx, s3Client, d); err != nil {
-			return diag.FromErr(err)
-		}
-	}
-
-	return resourceScalewayObjectBucketRead(ctx, d, meta)
 }
 
 func resourceScalewayObjectBucketDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {

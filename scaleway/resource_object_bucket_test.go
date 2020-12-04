@@ -192,7 +192,7 @@ func TestAccScalewayObjectBucket_Cors_Update(t *testing.T) {
 							return err
 						}
 						_, err = s3Client.PutBucketCors(&s3.PutBucketCorsInput{
-							Bucket: scw.StringPtr(rs.Primary.ID),
+							Bucket: scw.StringPtr(rs.Primary.Attributes["name"]),
 							CORSConfiguration: &s3.CORSConfiguration{
 								CORSRules: []*s3.CORSRule{
 									{
@@ -300,27 +300,6 @@ func TestAccScalewayObjectBucket_Cors_Delete(t *testing.T) {
 			},
 		},
 	})
-}
-
-func testAccCheckScalewayObjectCorsDeleted(tt *TestTools, resourceName string) resource.TestCheckFunc {
-	return func(state *terraform.State) error {
-		rs, ok := state.RootModule().Resources[resourceName]
-		if !ok {
-			return fmt.Errorf("not found: %s", resourceName)
-		}
-
-		s3Client, err := newS3ClientFromMeta(tt.Meta)
-		if err != nil {
-			return err
-		}
-		_, err = s3Client.DeleteBucketCors(&s3.DeleteBucketCorsInput{
-			Bucket: scw.StringPtr(rs.Primary.ID),
-		})
-		if err != nil && !isS3Err(err, "NoSuchCORSConfiguration", "") {
-			return err
-		}
-		return nil
-	}
 }
 
 func TestAccScalewayObjectBucket_Cors_EmptyOrigin(t *testing.T) {
