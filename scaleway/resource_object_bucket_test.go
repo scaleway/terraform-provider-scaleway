@@ -363,11 +363,13 @@ func testAccCheckScalewayObjectBucketCors(tt *TestTools, n string, corsRules []*
 		_, err = s3Client.HeadBucketWithContext(tt.ctx, &s3.HeadBucketInput{
 			Bucket: scw.StringPtr(bucketName),
 		})
+		if err != nil {
+			return err
+		}
 
 		out, err := s3Client.GetBucketCors(&s3.GetBucketCorsInput{
 			Bucket: scw.StringPtr(bucketName),
 		})
-
 		if err != nil {
 			if awsErr, ok := err.(awserr.Error); ok && awsErr.Code() != "NoSuchCORSConfiguration" {
 				return fmt.Errorf("GetBucketCors error: %v", err)
