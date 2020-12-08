@@ -12,8 +12,9 @@ Manages Scaleway Compute Instance IPs Reverse DNS.
 
 ```hcl
 resource "scaleway_instance_ip" "server_ip" {}
+
 resource "scaleway_instance_ip_reverse_dns" "reverse" {
-  ip_id = scaleway_instance_ip.server_ip.id
+  ip_id   = scaleway_instance_ip.server_ip.id
   reverse = "www.scaleway.com"
 }
 ```

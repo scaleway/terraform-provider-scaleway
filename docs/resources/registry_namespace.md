@@ -14,9 +14,9 @@ Creates and manages Scaleway Container Registry. For more information see [the d
 
 ```hcl
 resource "scaleway_registry_namespace" "main" {
-    name = "main_cr"
-    description = "Main container registry"
-    is_public = false
+  name        = "main_cr"
+  description = "Main container registry"
+  is_public   = false
 }
 ```
 
@@ -36,7 +36,7 @@ The following arguments are supported:
 
 - `organization_id` - (Defaults to [provider](../index.md#organization_id) `organization_id`) The ID of the organization the registry is associated with.
 
-## Attibutes Reference
+## Attributes Reference
 
 In addition to all arguments above, the following attibutes are exported:
 

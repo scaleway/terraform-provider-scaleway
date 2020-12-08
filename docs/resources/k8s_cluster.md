@@ -14,16 +14,16 @@ Creates and manages Scaleway Kubernetes clusters. For more information, see [the
 
 ```hcl
 resource "scaleway_k8s_cluster" "jack" {
-  name = "jack"
-  version = "1.18.0"
-  cni = "cilium"
+  name    = "jack"
+  version = "1.19.4"
+  cni     = "cilium"
 }
 
 resource "scaleway_k8s_pool" "john" {
   cluster_id = scaleway_k8s_cluster.jack.id
-  name = "john"
-  node_type = "GP1-XS"
-  size = 3
+  name       = "john"
+  node_type  = "DEV1-M"
+  size       = 1
 }
 ```
 
@@ -31,34 +31,34 @@ resource "scaleway_k8s_pool" "john" {
 
 ```hcl
 resource "scaleway_k8s_cluster" "john" {
-  name = "john"
-  description = "my awesome cluster"
-  version = "1.18.0"
-  cni = "calico"
+  name             = "john"
+  description      = "my awesome cluster"
+  version          = "1.18.0"
+  cni              = "calico"
   enable_dashboard = true
-  ingress = "traefik"
-  tags = ["i'm an awsome tag", "yay"]
+  ingress          = "traefik"
+  tags             = ["i'm an awsome tag", "yay"]
 
   autoscaler_config {
-    disable_scale_down = false
-    scale_down_delay_after_add = "5m"
-    estimator = "binpacking"
-    expander = "random"
-    ignore_daemonsets_utilization = true
-    balance_similar_node_groups = true
+    disable_scale_down              = false
+    scale_down_delay_after_add      = "5m"
+    estimator                       = "binpacking"
+    expander                        = "random"
+    ignore_daemonsets_utilization   = true
+    balance_similar_node_groups     = true
     expendable_pods_priority_cutoff = -5
   }
 }
 
 resource "scaleway_k8s_pool" "john" {
-  cluster_id = scaleway_k8s_cluster.john.id
-  name = "john"
-  node_type = "GP1-XS"
-  size = 3
+  cluster_id  = scaleway_k8s_cluster.john.id
+  name        = "john"
+  node_type   = "DEV1-M"
+  size        = 3
   autoscaling = true
   autohealing = true
-  min_size = 1
-  max_size = 5
+  min_size    = 1
+  max_size    = 5
 }
 ```
 
@@ -66,39 +66,40 @@ resource "scaleway_k8s_pool" "john" {
 
 ```hcl
 resource "scaleway_k8s_cluster" "joy" {
-  name = "joy"
+  name    = "joy"
   version = "1.18.0"
-  cni = "flannel"
+  cni     = "flannel"
 }
 
 resource "scaleway_k8s_pool" "john" {
   cluster_id = scaleway_k8s_cluster.joy.id
-  name = "john"
-  node_type = "GP1-XS"
-  size = 3
+  name       = "john"
+  node_type  = "DEV1-M"
+  size       = 1
 }
 
 resource "null_resource" "kubeconfig" {
-    depends_on = [scaleway_k8s_pool.john] # at least one pool here
-    triggers = {
-         host = scaleway_k8s_cluster.joy.kubeconfig[0].host
-         token = scaleway_k8s_cluster.joy.kubeconfig[0].token
-         cluster_ca_certificate = scaleway_k8s_cluster.joy.kubeconfig[0].cluster_ca_certificate
-    }
+  depends_on = [scaleway_k8s_pool.john] # at least one pool here
+  triggers = {
+    host                   = scaleway_k8s_cluster.joy.kubeconfig[0].host
+    token                  = scaleway_k8s_cluster.joy.kubeconfig[0].token
+    cluster_ca_certificate = scaleway_k8s_cluster.joy.kubeconfig[0].cluster_ca_certificate
+  }
 }
 
 provider "kubernetes" {
   load_config_file = "false"
 
-  host             = null_resource.kubeconfig.triggers.host
-  token            = null_resource.kubeconfig.triggers.token
+  host  = null_resource.kubeconfig.triggers.host
+  token = null_resource.kubeconfig.triggers.token
   cluster_ca_certificate = base64decode(
-     null_resource.kubeconfig.triggers.cluster_ca_certificate
+  null_resource.kubeconfig.triggers.cluster_ca_certificate
   )
 }
 ```
 
-Th `null_resource` is needed because when the cluter is created, it's status is `pool_required`, but the kubeconfig can already be downloaded. It leads the `kubernetes` provider to start creating its objects, but the DNS entry for the Kubernetes master is not yet ready, that's why it's needed to wait for at least a pool.
+The `null_resource` is needed because when the cluster is created, it's status is `pool_required`, but the kubeconfig can already be downloaded.
+It leads the `kubernetes` provider to start creating its objects, but the DNS entry for the Kubernetes master is not yet ready, that's why it's needed to wait for at least a pool.
 
 ## Arguments Reference
 
@@ -194,12 +195,13 @@ Before:
 
 ```hcl
 resource "scaleway_k8s_cluster" "jack" {
-  name = "jack"
+  name    = "jack"
   version = "1.18.0"
-  cni = "cilium"
+  cni     = "cilium"
+
   default_pool {
-    node_type = "GP1-XS"
-    size = 3
+    node_type = "DEV1-M"
+    size      = 1
   }
 }
 ```
@@ -208,16 +210,16 @@ After:
 
 ```hcl
 resource "scaleway_k8s_cluster" "jack" {
-  name = "jack"
+  name    = "jack"
   version = "1.18.0"
-  cni = "cilium"
+  cni     = "cilium"
 }
 
 resource "scaleway_k8s_pool" "default" {
   cluster_id = scaleway_k8s_cluster.jack.id
-  name = "default"
-  node_type = "GP1-XS"
-  size = 3
+  name       = "default"
+  node_type  = "DEV1-M"
+  size       = 1
 }
 ```
 

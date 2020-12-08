@@ -19,7 +19,7 @@ data "scaleway_account_ssh_key" "main" {
 
 resource "scaleway_baremetal_server" "base" {
   zone		  = "fr-par-2"
-  offer       = "GP-BM1-M"
+  offer       = "GP-BM1-S"
   os          = "d17d6872-0412-45d9-a198-af82c34d3c5c"
   ssh_key_ids = [data.scaleway_account_ssh_key.main]
 }

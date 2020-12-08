@@ -18,21 +18,21 @@ resource "scaleway_instance_security_group" "allow_all" {
 
 resource "scaleway_instance_security_group" "web" {
   inbound_default_policy = "drop" # By default we drop incoming traffic that do not match any inbound_rule
-  
+
   inbound_rule {
     action = "accept"
-    port = 22
-    ip = "212.47.225.64"
+    port   = 22
+    ip     = "212.47.225.64"
   }
-  
+
   inbound_rule {
     action = "accept"
-    port = 80
+    port   = 80
   }
-  
+
   inbound_rule {
-    action = "accept"
-    protocol = "UDP"
+    action     = "accept"
+    protocol   = "UDP"
     port_range = "22-23"
   }
 }
@@ -42,28 +42,28 @@ resource "scaleway_instance_security_group" "web" {
 
 ```hcl
 resource "scaleway_instance_security_group" "web" {
-  inbound_default_policy = "drop" # By default we drop incoming traffic that do not match any inbound_rule.
+  inbound_default_policy  = "drop" # By default we drop incoming traffic that do not match any inbound_rule.
   outbound_default_policy = "drop" # By default we drop outgoing traffic that do not match any outbound_rule.
-  
+
   inbound_rule {
     action = "drop"
-    ip = "1.1.1.1" # Banned IP
+    ip     = "1.1.1.1" # Banned IP
   }
-  
+
   inbound_rule {
     action = "accept"
-    port = 22
-    ip = "212.47.225.64"
+    port   = 22
+    ip     = "212.47.225.64"
   }
-  
+
   inbound_rule {
     action = "accept"
-    port = 443
+    port   = 443
   }
-  
+
   outbound_rule {
     action = "accept"
-    ip = "8.8.8.8" # Only allow outgoing connection to this IP.
+    ip     = "8.8.8.8" # Only allow outgoing connection to this IP.
   }
 }
 ```
