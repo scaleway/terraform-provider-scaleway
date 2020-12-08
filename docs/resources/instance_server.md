@@ -31,7 +31,7 @@ resource "scaleway_instance_volume" "data" {
 }
 
 resource "scaleway_instance_server" "web" {
-  type = "DEV1-L"
+  type = "DEV1-S"
   image = "ubuntu_focal"
 
   tags = [ "hello", "public" ]
@@ -50,7 +50,7 @@ resource "scaleway_instance_server" "web" {
 resource "scaleway_instance_ip" "ip" {}
 
 resource "scaleway_instance_server" "web" {
-  type = "DEV1-L"
+  type = "DEV1-S"
   image = "f974feac-abae-4365-b988-8ec7d1cec10d"
 
   tags = [ "hello", "public" ]
@@ -100,7 +100,7 @@ resource "scaleway_instance_server" "web" {
 
 ```hcl
 resource "scaleway_instance_server" "web" {
-  type = "DEV1-L"
+  type = "DEV1-S"
   image = "ubuntu_focal"
 
   tags = [ "web", "public" ]
