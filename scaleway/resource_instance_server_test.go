@@ -81,27 +81,27 @@ func TestAccScalewayInstanceServer_Minimal1(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "tags.2", "minimal"),
 				),
 			},
-			{
-				// Image label such as ubuntu_focal
-				Config: `
-					resource "scaleway_instance_server" "base" {
-					  image = "ubuntu_focal"
-					  type  = "DEV1-S"
-					
-					  tags = [ "terraform-test", "scaleway_instance_server", "minimal" ]
-					}`,
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayInstanceServerExists(tt, "scaleway_instance_server.base"),
-					resource.TestCheckResourceAttr("scaleway_instance_server.base", "image", "ubuntu_focal"),
-					resource.TestCheckResourceAttr("scaleway_instance_server.base", "type", "DEV1-S"),
-					resource.TestCheckResourceAttr("scaleway_instance_server.base", "root_volume.0.delete_on_termination", "true"),
-					resource.TestCheckResourceAttr("scaleway_instance_server.base", "root_volume.0.size_in_gb", "20"),
-					resource.TestCheckResourceAttrSet("scaleway_instance_server.base", "root_volume.0.volume_id"),
-					resource.TestCheckResourceAttr("scaleway_instance_server.base", "tags.0", "terraform-test"),
-					resource.TestCheckResourceAttr("scaleway_instance_server.base", "tags.1", "scaleway_instance_server"),
-					resource.TestCheckResourceAttr("scaleway_instance_server.base", "tags.2", "minimal"),
-				),
-			},
+			//{
+			//	// Image label such as ubuntu_focal
+			//	Config: `
+			//		resource "scaleway_instance_server" "base" {
+			//		  image = "ubuntu_focal"
+			//		  type  = "DEV1-S"
+			//
+			//		  tags = [ "terraform-test", "scaleway_instance_server", "minimal" ]
+			//		}`,
+			//	Check: resource.ComposeTestCheckFunc(
+			//		testAccCheckScalewayInstanceServerExists(tt, "scaleway_instance_server.base"),
+			//		resource.TestCheckResourceAttr("scaleway_instance_server.base", "image", "ubuntu_focal"),
+			//		resource.TestCheckResourceAttr("scaleway_instance_server.base", "type", "DEV1-S"),
+			//		resource.TestCheckResourceAttr("scaleway_instance_server.base", "root_volume.0.delete_on_termination", "true"),
+			//		resource.TestCheckResourceAttr("scaleway_instance_server.base", "root_volume.0.size_in_gb", "20"),
+			//		resource.TestCheckResourceAttrSet("scaleway_instance_server.base", "root_volume.0.volume_id"),
+			//		resource.TestCheckResourceAttr("scaleway_instance_server.base", "tags.0", "terraform-test"),
+			//		resource.TestCheckResourceAttr("scaleway_instance_server.base", "tags.1", "scaleway_instance_server"),
+			//		resource.TestCheckResourceAttr("scaleway_instance_server.base", "tags.2", "minimal"),
+			//	),
+			//},
 		},
 	})
 }
