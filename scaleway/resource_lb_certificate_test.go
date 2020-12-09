@@ -24,21 +24,19 @@ func TestAccScalewayLbCertificate_Basic(t *testing.T) {
 			{
 				Config: `
 					resource scaleway_lb_ip ip01 {
-						region = "fr-par"
 					}
 			
 					resource scaleway_lb lb01 {
 						ip_id = scaleway_lb_ip.ip01.id
 						name = "test-lb"
 						type = "lb-s"
-						region = "fr-par"
 					}
 			
 					resource scaleway_lb_certificate cert01 {
 						lb_id = scaleway_lb.lb01.id
 						name = "test-cert"
 					  	letsencrypt {
-							common_name = "${replace(scaleway_lb_ip.ip01.ip_address,".", "-")}.lb.fr-par.scw.cloud"
+							common_name = "${replace(scaleway_lb_ip.ip01.ip_address,".", "-")}.lb.${scaleway_lb.lb01.region}.scw.cloud"
 					  	}
 					}
 				`,
@@ -50,21 +48,19 @@ func TestAccScalewayLbCertificate_Basic(t *testing.T) {
 			{
 				Config: `
 					resource scaleway_lb_ip ip01 {
-						region = "fr-par"
 					}
 			
 					resource scaleway_lb lb01 {
 						ip_id  = scaleway_lb_ip.ip01.id
 						name   = "test-lb"
 						type   = "lb-s"
-					   region = "fr-par"
 					}
 			
 					resource scaleway_lb_certificate cert01 {
 						lb_id = scaleway_lb.lb01.id
 						name = "test-cert-new"
 						letsencrypt {
-							common_name = "${replace(scaleway_lb.lb01.ip_address, ".", "-")}.lb.fr-par.scw.cloud"
+							common_name = "${replace(scaleway_lb.lb01.ip_address, ".", "-")}.lb.${scaleway_lb.lb01.region}.scw.cloud"
 						}
 					}
 				`,
@@ -75,24 +71,22 @@ func TestAccScalewayLbCertificate_Basic(t *testing.T) {
 			{
 				Config: `
 					resource scaleway_lb_ip ip01 {
-						region = "fr-par"
 					}
 
 					resource scaleway_lb lb01 {
 						ip_id = scaleway_lb_ip.ip01.id
 						name = "test-lb"
 						type = "lb-s"
-					   region = "fr-par"
 					}
 
 					resource scaleway_lb_certificate cert01 {
 						lb_id = scaleway_lb.lb01.id
 						name = "test-cert"
 						letsencrypt {
-							common_name = "${replace(scaleway_lb.lb01.ip_address, ".", "-")}.lb.fr-par.scw.cloud"
+							common_name = "${replace(scaleway_lb.lb01.ip_address, ".", "-")}.lb.${scaleway_lb.lb01.region}.scw.cloud"
 							subject_alternative_name = [
-							  "sub1.${replace(scaleway_lb.lb01.ip_address, ".", "-")}.lb.fr-par.scw.cloud",
-							  "sub2.${replace(scaleway_lb.lb01.ip_address, ".", "-")}.lb.fr-par.scw.cloud"
+							  "sub1.${replace(scaleway_lb.lb01.ip_address, ".", "-")}.lb.${scaleway_lb.lb01.region}.scw.cloud",
+							  "sub2.${replace(scaleway_lb.lb01.ip_address, ".", "-")}.lb.${scaleway_lb.lb01.region}.scw.cloud"
 							]
 						}
 					}
@@ -106,14 +100,12 @@ func TestAccScalewayLbCertificate_Basic(t *testing.T) {
 			{
 				Config: `
 					resource scaleway_lb_ip ip01 {
-						region = "fr-par"
 					}
 
 					resource scaleway_lb lb01 {
 						ip_id = scaleway_lb_ip.ip01.id
 						name = "test-lb"
 						type = "lb-s"
-						region = "fr-par"
 					}
 
 					resource scaleway_lb_certificate cert01 {
