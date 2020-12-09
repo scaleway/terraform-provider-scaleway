@@ -94,7 +94,8 @@ func resourceScalewayRegistryNamespaceRead(ctx context.Context, d *schema.Resour
 
 	_ = d.Set("name", ns.Name)
 	_ = d.Set("description", ns.Description)
-	_ = d.Set("project_id", ns.OrganizationID)
+	_ = d.Set("organization_id", ns.OrganizationID)
+	_ = d.Set("project_id", ns.ProjectID)
 	_ = d.Set("is_public", ns.IsPublic)
 	_ = d.Set("endpoint", ns.Endpoint)
 	_ = d.Set("region", ns.Region)
