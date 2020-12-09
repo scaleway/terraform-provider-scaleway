@@ -19,9 +19,9 @@ resource "scaleway_lb_ip" "ip" {
 }
 
 resource "scaleway_lb" "base" {
-  ip_id = scaleway_lb_ip.ip.id
-  region      = "fr-par"
-  type        = "LB-S"
+  ip_id  = scaleway_lb_ip.ip.id
+  region = "fr-par"
+  type   = "LB-S"
 }
 ```
 
@@ -64,8 +64,8 @@ For instance, if you had the following:
 
 ```hcl
 resource "scaleway_lb" "base" {
-  region      = "fr-par"
-  type        = "LB-S"
+  region = "fr-par"
+  type   = "LB-S"
 }
 ```
 
@@ -76,9 +76,9 @@ resource "scaleway_lb_ip" "ip" {
 }
 
 resource "scaleway_lb" "base" {
-  ip_id = scaleway_lb_ip.ip.id
-  region      = "fr-par"
-  type        = "LB-S"
+  ip_id  = scaleway_lb_ip.ip.id
+  region = "fr-par"
+  type   = "LB-S"
 }
 ```
 
