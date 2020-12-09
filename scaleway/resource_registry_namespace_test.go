@@ -40,10 +40,13 @@ func testSweepRegistryNamespace(_ string) error {
 }
 
 func TestAccScalewayRegistryNamespace_Basic(t *testing.T) {
+	tt := NewTestTools(t)
+	defer tt.Cleanup()
+
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckScalewayRegistryNamespaceBetaDestroy,
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      testAccCheckScalewayRegistryNamespaceBetaDestroy(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -52,7 +55,7 @@ func TestAccScalewayRegistryNamespace_Basic(t *testing.T) {
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayRegistryNamespaceExists("scaleway_registry_namespace.cr01"),
+					testAccCheckScalewayRegistryNamespaceExists(tt, "scaleway_registry_namespace.cr01"),
 					resource.TestCheckResourceAttr("scaleway_registry_namespace.cr01", "name", "test-cr"),
 					testCheckResourceAttrUUID("scaleway_registry_namespace.cr01", "id"),
 				),
@@ -66,7 +69,7 @@ func TestAccScalewayRegistryNamespace_Basic(t *testing.T) {
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayRegistryNamespaceExists("scaleway_registry_namespace.cr01"),
+					testAccCheckScalewayRegistryNamespaceExists(tt, "scaleway_registry_namespace.cr01"),
 					resource.TestCheckResourceAttr("scaleway_registry_namespace.cr01", "description", "test registry namespace"),
 					resource.TestCheckResourceAttr("scaleway_registry_namespace.cr01", "is_public", "true"),
 					testCheckResourceAttrUUID("scaleway_registry_namespace.cr01", "id"),
@@ -76,14 +79,14 @@ func TestAccScalewayRegistryNamespace_Basic(t *testing.T) {
 	})
 }
 
-func testAccCheckScalewayRegistryNamespaceExists(n string) resource.TestCheckFunc {
-	return func(s *terraform.State) error {
-		rs, ok := s.RootModule().Resources[n]
+func testAccCheckScalewayRegistryNamespaceExists(tt *TestTools, n string) resource.TestCheckFunc {
+	return func(state *terraform.State) error {
+		rs, ok := state.RootModule().Resources[n]
 		if !ok {
 			return fmt.Errorf("resource not found: %s", n)
 		}
 
-		api, region, id, err := registryAPIWithRegionAndID(testAccProvider.Meta(), rs.Primary.ID)
+		api, region, id, err := registryAPIWithRegionAndID(tt.Meta, rs.Primary.ID)
 		if err != nil {
 			return nil
 		}
@@ -101,30 +104,32 @@ func testAccCheckScalewayRegistryNamespaceExists(n string) resource.TestCheckFun
 	}
 }
 
-func testAccCheckScalewayRegistryNamespaceBetaDestroy(s *terraform.State) error {
-	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "scaleway_registry_namespace" {
-			continue
+func testAccCheckScalewayRegistryNamespaceBetaDestroy(tt *TestTools) resource.TestCheckFunc {
+	return func(state *terraform.State) error {
+		for _, rs := range state.RootModule().Resources {
+			if rs.Type != "scaleway_registry_namespace" {
+				continue
+			}
+
+			api, region, id, err := registryAPIWithRegionAndID(tt.Meta, rs.Primary.ID)
+			if err != nil {
+				return err
+			}
+
+			_, err = api.DeleteNamespace(&registry.DeleteNamespaceRequest{
+				NamespaceID: id,
+				Region:      region,
+			})
+
+			if err == nil {
+				return fmt.Errorf("namespace (%s) still exists", rs.Primary.ID)
+			}
+
+			if !is404Error(err) {
+				return err
+			}
 		}
 
-		api, region, id, err := registryAPIWithRegionAndID(testAccProvider.Meta(), rs.Primary.ID)
-		if err != nil {
-			return err
-		}
-
-		_, err = api.DeleteNamespace(&registry.DeleteNamespaceRequest{
-			NamespaceID: id,
-			Region:      region,
-		})
-
-		if err == nil {
-			return fmt.Errorf("namespace (%s) still exists", rs.Primary.ID)
-		}
-
-		if !is404Error(err) {
-			return err
-		}
+		return nil
 	}
-
-	return nil
 }
