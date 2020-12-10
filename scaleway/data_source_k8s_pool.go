@@ -44,10 +44,11 @@ func dataSourceScalewayK8SPoolRead(ctx context.Context, d *schema.ResourceData, 
 
 	poolID, ok := d.GetOk("pool_id")
 	if !ok {
+		clusterID := expandRegionalID(d.Get("cluster_id"))
 		res, err := k8sAPI.ListPools(&k8s.ListPoolsRequest{
 			Region:    region,
 			Name:      expandStringPtr(d.Get("name")),
-			ClusterID: d.Get("cluster_id").(string),
+			ClusterID: clusterID.ID,
 		}, scw.WithContext(ctx))
 		if err != nil {
 			return diag.FromErr(err)
