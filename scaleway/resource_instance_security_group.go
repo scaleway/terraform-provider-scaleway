@@ -110,7 +110,7 @@ func resourceScalewayInstanceSecurityGroupCreate(ctx context.Context, d *schema.
 		Stateful:              d.Get("stateful").(bool),
 		InboundDefaultPolicy:  instance.SecurityGroupPolicy(d.Get("inbound_default_policy").(string)),
 		OutboundDefaultPolicy: instance.SecurityGroupPolicy(d.Get("outbound_default_policy").(string)),
-		EnableDefaultSecurity: expandBoolPtr(d.Get("enable_default_security").(bool)),
+		EnableDefaultSecurity: expandBoolPtr(d.Get("enable_default_security")),
 	}, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
