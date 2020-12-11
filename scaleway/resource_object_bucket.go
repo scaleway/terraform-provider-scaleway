@@ -247,8 +247,7 @@ func resourceScalewayObjectBucketRead(ctx context.Context, d *schema.ResourceDat
 		return diag.FromErr(fmt.Errorf("error getting S3 Bucket CORS configuration: %s", err))
 	}
 
-	corsRules := flattenBucketCORS(corsResponse)
-	_ = d.Set("cors_rule", corsRules)
+	_ = d.Set("cors_rule", flattenBucketCORS(corsResponse))
 
 	_ = d.Set("endpoint", fmt.Sprintf("https://%s.s3.%s.scw.cloud", bucketName, region))
 
@@ -305,7 +304,7 @@ func resourceScalewayS3BucketCorsUpdate(ctx context.Context, s3conn *s3.S3, d *s
 
 	if len(rawCors) == 0 {
 		// Delete CORS
-		l.Printf("[DEBUG] S3 bucket: %s, delete CORS", bucketName)
+		l.Debugf("S3 bucket: %s, delete CORS", bucketName)
 
 		_, err := s3conn.DeleteBucketCorsWithContext(ctx, &s3.DeleteBucketCorsInput{
 			Bucket: scw.StringPtr(bucketName),
@@ -323,7 +322,7 @@ func resourceScalewayS3BucketCorsUpdate(ctx context.Context, s3conn *s3.S3, d *s
 				CORSRules: rules,
 			},
 		}
-		l.Printf("[DEBUG] S3 bucket: %s, put CORS: %#v", bucketName, corsInput)
+		l.Debugf("S3 bucket: %s, put CORS: %#v", bucketName, corsInput)
 
 		_, err := s3conn.PutBucketCorsWithContext(ctx, corsInput)
 		if err != nil {
