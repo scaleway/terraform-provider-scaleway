@@ -77,6 +77,7 @@ func getHTTPRecoder(t *testing.T, update bool) (client *http.Client, cleanup fun
 
 	// Add a filter which removes Authorization headers from all requests:
 	r.AddFilter(func(i *cassette.Interaction) error {
+		i.Request.Headers = i.Request.Headers.Clone()
 		delete(i.Request.Headers, "x-auth-token")
 		delete(i.Request.Headers, "X-Auth-Token")
 		return nil

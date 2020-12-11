@@ -8,11 +8,11 @@ import (
 
 func TestAccScalewayLbCertificate_Basic(t *testing.T) {
 	/**
-	* Note regarding the usage of xip.io
-	* See the discussion on https://github.com/terraform-providers/terraform-provider-scaleway/pull/396
+	* See the discussion on https://github.com/scaleway/terraform-provider-scaleway/pull/396
 	* Long story short, scaleway API will not permit you to request a certificate in case common name is not pointed
 	* to the load balancer IP (which is unknown before creating it). In production, this can be overcome by introducing
-	* an additional step which creates a DNS record and depending on it, but for test purposes, xip.io is an ideal solution.
+	* an additional step which creates a DNS record and depending on it
+	* We use a DNS name like: 195-154-70-235.lb.fr-par.scw.cloud
 	 */
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
@@ -23,17 +23,20 @@ func TestAccScalewayLbCertificate_Basic(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: `
-					resource scaleway_lb_ip ip01 {}
+					resource scaleway_lb_ip ip01 {
+					}
+			
 					resource scaleway_lb lb01 {
 						ip_id = scaleway_lb_ip.ip01.id
 						name = "test-lb"
 						type = "lb-s"
 					}
+			
 					resource scaleway_lb_certificate cert01 {
 						lb_id = scaleway_lb.lb01.id
 						name = "test-cert"
 					  	letsencrypt {
-							common_name = "${scaleway_lb.lb01.ip_address}.xip.io"
+							common_name = "${replace(scaleway_lb_ip.ip01.ip_address,".", "-")}.lb.${scaleway_lb.lb01.region}.scw.cloud"
 					  	}
 					}
 				`,
@@ -44,18 +47,21 @@ func TestAccScalewayLbCertificate_Basic(t *testing.T) {
 			},
 			{
 				Config: `
-					resource scaleway_lb_ip ip01 {}
-					resource scaleway_lb lb01 {
-						ip_id = scaleway_lb_ip.ip01.id
-						name = "test-lb"
-						type = "lb-s"
+					resource scaleway_lb_ip ip01 {
 					}
+			
+					resource scaleway_lb lb01 {
+						ip_id  = scaleway_lb_ip.ip01.id
+						name   = "test-lb"
+						type   = "lb-s"
+					}
+			
 					resource scaleway_lb_certificate cert01 {
 						lb_id = scaleway_lb.lb01.id
 						name = "test-cert-new"
-					  	letsencrypt {
-							common_name = "${scaleway_lb.lb01.ip_address}.xip.io"
-					  	}
+						letsencrypt {
+							common_name = "${replace(scaleway_lb.lb01.ip_address, ".", "-")}.lb.${scaleway_lb.lb01.region}.scw.cloud"
+						}
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
@@ -64,24 +70,27 @@ func TestAccScalewayLbCertificate_Basic(t *testing.T) {
 			},
 			{
 				Config: `
-					resource scaleway_lb_ip ip01 {}
+					resource scaleway_lb_ip ip01 {
+					}
+
 					resource scaleway_lb lb01 {
 						ip_id = scaleway_lb_ip.ip01.id
 						name = "test-lb"
 						type = "lb-s"
 					}
+
 					resource scaleway_lb_certificate cert01 {
 						lb_id = scaleway_lb.lb01.id
 						name = "test-cert"
-					  	letsencrypt {
-							common_name = "${scaleway_lb.lb01.ip_address}.xip.io"
+						letsencrypt {
+							common_name = "${replace(scaleway_lb.lb01.ip_address, ".", "-")}.lb.${scaleway_lb.lb01.region}.scw.cloud"
 							subject_alternative_name = [
-							  "sub1.${scaleway_lb.lb01.ip_address}.xip.io",
-							  "sub2.${scaleway_lb.lb01.ip_address}.xip.io"
+							  "sub1.${replace(scaleway_lb.lb01.ip_address, ".", "-")}.lb.${scaleway_lb.lb01.region}.scw.cloud",
+							  "sub2.${replace(scaleway_lb.lb01.ip_address, ".", "-")}.lb.${scaleway_lb.lb01.region}.scw.cloud"
 							]
-					  	}
+						}
 					}
-				`,
+							`,
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("scaleway_lb_certificate.cert01", "name", "test-cert"),
 					resource.TestCheckResourceAttr("scaleway_lb_certificate.cert01", "letsencrypt.#", "1"),
@@ -90,12 +99,15 @@ func TestAccScalewayLbCertificate_Basic(t *testing.T) {
 			},
 			{
 				Config: `
-					resource scaleway_lb_ip ip01 {}
+					resource scaleway_lb_ip ip01 {
+					}
+
 					resource scaleway_lb lb01 {
 						ip_id = scaleway_lb_ip.ip01.id
 						name = "test-lb"
 						type = "lb-s"
 					}
+
 					resource scaleway_lb_certificate cert01 {
 						lb_id = scaleway_lb.lb01.id
 						name = "test-custom-cert"

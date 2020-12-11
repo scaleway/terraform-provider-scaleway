@@ -98,6 +98,8 @@ func Provider(config *ProviderConfig) plugin.ProviderFunc {
 				"scaleway_instance_volume":         dataSourceScalewayInstanceVolume(),
 				"scaleway_baremetal_offer":         dataSourceScalewayBaremetalOffer(),
 				"scaleway_rdb_instance":            dataSourceScalewayRDBInstance(),
+				"scaleway_k8s_cluster":             dataSourceScalewayK8SCluster(),
+				"scaleway_k8s_pool":                dataSourceScalewayK8SPool(),
 				"scaleway_lb_ip":                   dataSourceScalewayLbIP(),
 				"scaleway_marketplace_image":       dataSourceScalewayMarketplaceImage(),
 				"scaleway_registry_namespace":      dataSourceScalewayRegistryNamespace(),
@@ -134,6 +136,10 @@ func Provider(config *ProviderConfig) plugin.ProviderFunc {
 type Meta struct {
 	// scwClient is the Scaleway SDK client.
 	scwClient *scw.Client
+	// httpClient can be either a regular http.Client used to make real HTTP requests
+	// or it can be a http.Client used to record and replay cassettes which is useful
+	// to replay recorded interactions with APIs locally
+	httpClient *http.Client
 }
 
 type MetaConfig struct {
@@ -171,12 +177,11 @@ func buildMeta(config *MetaConfig) (*Meta, error) {
 		scw.WithProfile(profile),
 	}
 
-	defaultHTTPClient := &http.Client{Transport: newRetryableTransport(http.DefaultTransport)}
+	httpClient := &http.Client{Transport: newRetryableTransport(http.DefaultTransport)}
 	if config.httpClient != nil {
-		opts = append(opts, scw.WithHTTPClient(config.httpClient))
-	} else {
-		opts = append(opts, scw.WithHTTPClient(defaultHTTPClient))
+		httpClient = config.httpClient
 	}
+	opts = append(opts, scw.WithHTTPClient(httpClient))
 
 	scwClient, err := scw.NewClient(opts...)
 	if err != nil {
@@ -184,7 +189,8 @@ func buildMeta(config *MetaConfig) (*Meta, error) {
 	}
 
 	return &Meta{
-		scwClient: scwClient,
+		scwClient:  scwClient,
+		httpClient: httpClient,
 	}, nil
 }
 

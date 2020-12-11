@@ -17,17 +17,17 @@ This resource can be used to externalize rules from a `scaleway_instance_securit
 ### Basic
 
 ```hcl
-resource scaleway_instance_security_group sg01 {
-    external_rules = true
+resource "scaleway_instance_security_group" "sg01" {
+  external_rules = true
 }
 
-resource scaleway_instance_security_group_rules sgrs01 {
-    security_group_id = scaleway_instance_security_group.sg01.id
-    inbound_rule {
-        action = "accept"
-        port = 80
-        ip_range = "0.0.0.0/0"
-    }
+resource "scaleway_instance_security_group_rules" "sgrs01" {
+  security_group_id = scaleway_instance_security_group.sg01.id
+  inbound_rule {
+    action   = "accept"
+    port     = 80
+    ip_range = "0.0.0.0/0"
+  }
 }
 ```
 

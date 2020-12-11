@@ -278,21 +278,49 @@ func resourceScalewayInstanceServerCreate(ctx context.Context, d *schema.Resourc
 		req.PlacementGroup = expandStringPtr(expandZonedID(placementGroupID).ID)
 	}
 
+	serverType := getServerType(instanceAPI, req.Zone, req.CommercialType)
+	if serverType == nil {
+		return diag.FromErr(fmt.Errorf("could not find a server type associated with %s", req.CommercialType))
+	}
+
 	req.Volumes = make(map[string]*instance.VolumeTemplate)
 	if size, ok := d.GetOk("root_volume.0.size_in_gb"); ok {
 		req.Volumes["0"] = &instance.VolumeTemplate{
 			Size: scw.Size(uint64(size.(int)) * gb),
 		}
+	} else {
+		// We had a local root volume if it is not already present
+		req.Volumes["0"] = &instance.VolumeTemplate{
+			Name:       newRandomName("vol"),
+			VolumeType: instance.VolumeVolumeTypeLSSD,
+			Size:       serverType.VolumesConstraint.MinSize,
+		}
 	}
 
 	if raw, ok := d.GetOk("additional_volume_ids"); ok {
 		for i, volumeID := range raw.([]interface{}) {
+			// We have to get the volume to know whether it is a local or a block volume
+			vol, err := instanceAPI.GetVolume(&instance.GetVolumeRequest{
+				VolumeID: expandZonedID(volumeID).ID,
+			})
+			if err != nil {
+				return diag.FromErr(err)
+			}
 			req.Volumes[strconv.Itoa(i+1)] = &instance.VolumeTemplate{
-				ID:   expandZonedID(volumeID).ID,
-				Name: newRandomName("vol"),
+				ID:         vol.Volume.ID,
+				Name:       vol.Volume.Name,
+				VolumeType: vol.Volume.VolumeType,
 			}
 		}
 	}
+
+	// Validate total local volume sizes.
+	if err := validateLocalVolumeSizes(req.Volumes, serverType, req.CommercialType); err != nil {
+		return diag.FromErr(err)
+	}
+
+	// Sanitize the volume map to respect API schemas
+	req.Volumes = sanitizeVolumeMap(req.Name, req.Volumes)
 
 	res, err := instanceAPI.CreateServer(req, scw.WithContext(ctx))
 	if err != nil {
@@ -440,10 +468,6 @@ func resourceScalewayInstanceServerRead(ctx context.Context, d *schema.ResourceD
 
 			rootVolume["volume_id"] = newZonedID(zone, volume.ID).String()
 			rootVolume["size_in_gb"] = int(uint64(volume.Size) / gb)
-
-			if _, exist := rootVolume["delete_on_termination"]; !exist {
-				rootVolume["delete_on_termination"] = true // default value does not work on list
-			}
 
 			_ = d.Set("root_volume", []map[string]interface{}{rootVolume})
 		} else {

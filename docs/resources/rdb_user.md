@@ -16,15 +16,15 @@ Creates and manages Scaleway Database Users. For more information, see [the docu
 
 ```hcl
 resource "random_password" "db_password" {
-  length = 16
+  length  = 16
   special = true
 }
 
-resource scaleway_rdb_user db_admin {
+resource "scaleway_rdb_user" "db_admin" {
   instance_id = scaleway_rdb_instance.main.id
-  name = "titi"
-  password = random_password.db_password.result
-  is_admin = true
+  name        = "titi"
+  password    = random_password.db_password.result
+  is_admin    = true
 }
 ```
 

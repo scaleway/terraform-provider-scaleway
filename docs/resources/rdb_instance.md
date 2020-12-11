@@ -15,14 +15,14 @@ Creates and manages Scaleway Database Instances. For more information, see [the 
 ### Basic
 
 ```hcl
-resource scaleway_rdb_instance main {
-    name = "test-rdb"
-    node_type = "db-dev-s"
-    engine = "PostgreSQL-11"
-    is_ha_cluster = true
-    disable_backup = true
-    user_name = "my_initial_user"
-    password = "thiZ_is_v&ry_s3cret"
+resource "scaleway_rdb_instance" "main" {
+  name           = "test-rdb"
+  node_type      = "DB-DEV-S"
+  engine         = "PostgreSQL-11"
+  is_ha_cluster  = true
+  disable_backup = true
+  user_name      = "my_initial_user"
+  password       = "thiZ_is_v&ry_s3cret"
 }
 ```
 
