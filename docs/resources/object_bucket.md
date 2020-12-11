@@ -12,11 +12,11 @@ Creates and manages Scaleway object storage buckets. For more information, see [
 
 ```hcl
 resource "scaleway_object_bucket" "some_bucket" {
-    name = "some-unique-name"
-    acl = "private"
-    tags = {
-        key = "value"
-    }
+  name = "some-unique-name"
+  acl  = "private"
+  tags = {
+    key = "value"
+  }
 }
 ```
 

@@ -14,21 +14,21 @@ Creates and manages Scaleway Kubernetes cluster pools. For more information, see
 
 ```hcl
 resource "scaleway_k8s_cluster" "jack" {
-  name = "jack"
-  version = "1.18.0"
-  cni = "cilium"
+  name    = "jack"
+  version = "1.19.4"
+  cni     = "cilium"
 }
 
 resource "scaleway_k8s_pool" "bill" {
-  cluster_id = scaleway_k8s_cluster.jack.id
-  name = "bill"
-  node_type = "GP1-S"
-  size = 3
-  min_size = 0
-  max_size = 10
-  autoscaling = true
-  autohealing = true
-  container_runtime = "docker"
+  cluster_id         = scaleway_k8s_cluster.jack.id
+  name               = "bill"
+  node_type          = "DEV1-M"
+  size               = 3
+  min_size           = 0
+  max_size           = 10
+  autoscaling        = true
+  autohealing        = true
+  container_runtime  = "docker"
   placement_group_id = "1267e3fd-a51c-49ed-ad12-857092ee3a3d"
 }
 ```

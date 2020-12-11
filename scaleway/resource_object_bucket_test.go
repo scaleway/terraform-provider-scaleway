@@ -4,9 +4,7 @@ import (
 	"fmt"
 	"strings"
 	"testing"
-	"time"
 
-	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -25,11 +23,12 @@ func TestAccScalewayObjectBucket_Basic(t *testing.T) {
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
 
-	testBucketName := fmt.Sprintf("terraform-test-%d", time.Now().Unix())
-	testBucketNameAms := testBucketName + "ams"
-	testBucketNamePar := testBucketName + "par"
+	testBucketName := "test-acc-scaleway-object-bucket-basic"
+	testBucketNameAms := testBucketName + "-ams"
+	testBucketNamePar := testBucketName + "-par"
 	testBucketACL := "private"
 	testBucketUpdatedACL := "public-read"
+
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
@@ -220,7 +219,7 @@ func testAccCheckScalewayObjectBucketExists(tt *TestTools, n string, bucketName 
 		}
 
 		_, err = conn.HeadBucketWithContext(tt.ctx, &s3.HeadBucketInput{
-			Bucket: aws.String(bucketName),
+			Bucket: scw.StringPtr(bucketName),
 		})
 
 		if err != nil {
@@ -241,7 +240,7 @@ func testAccCheckScalewayObjectBucketVersioning(tt *TestTools, versioningStatus 
 		}
 
 		out, err := conn.GetBucketVersioningWithContext(tt.ctx, &s3.GetBucketVersioningInput{
-			Bucket: aws.String(bucketName),
+			Bucket: scw.StringPtr(bucketName),
 		})
 
 		if err != nil {

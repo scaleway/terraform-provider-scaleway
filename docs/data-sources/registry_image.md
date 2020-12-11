@@ -37,6 +37,8 @@ data "scaleway_registry_image" "my_image" {
 
 - `organization_id` - (Defaults to [provider](../index.md#organization_id) `organization_id`) The ID of the organization the image is associated with.
 
+- `project_id` - (Defaults to [provider](../index.md#project_id) `project_id`) The ID of the project the image is associated with.
+
 ## Attributes Reference
 
 In addition to all above arguments, the following attributes are exported:

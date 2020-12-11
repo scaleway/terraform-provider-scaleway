@@ -16,10 +16,10 @@ Creates and manages Scaleway Load-Balancer Backends. For more information, see [
 
 ```hcl
 resource "scaleway_lb_backend" "backend01" {
-    lb_id = scaleway_lb.lb01.id
-    name = "backend01"
-    forward_protocol = "http"
-    forward_port = "80"
+  lb_id            = scaleway_lb.lb01.id
+  name             = "backend01"
+  forward_protocol = "http"
+  forward_port     = "80"
 }
 ```
 
@@ -27,14 +27,14 @@ resource "scaleway_lb_backend" "backend01" {
 
 ```hcl
 resource "scaleway_lb_backend" "backend01" {
-    lb_id = scaleway_lb.lb01.id
-    name = "backend01"
-    forward_protocol = "http"
-    forward_port = "80"
+  lb_id            = scaleway_lb.lb01.id
+  name             = "backend01"
+  forward_protocol = "http"
+  forward_port     = "80"
 
-    health_check_http {
-      uri: "www.test.com/health"
-    }
+  health_check_http {
+    uri = "www.test.com/health"
+  }
 }
 ```
 

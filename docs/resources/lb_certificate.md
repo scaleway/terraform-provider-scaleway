@@ -15,30 +15,31 @@ Creates and manages Scaleway Load-Balancer Certificates. For more information, s
 ### Let's Encrypt
 
 ```hcl
-resource scaleway_lb_certificate cert01 {
-    lb_id = scaleway_lb.lb01.id
-    name = "cert1"
-    letsencrypt {
-        common_name = "example.org"
-        subject_alternative_name = [
-          "sub1.example.com",
-          "sub2.example.com"
-        ]
-    }
+resource "scaleway_lb_certificate" "cert01" {
+  lb_id = scaleway_lb.lb01.id
+  name  = "cert1"
+
+  letsencrypt {
+    common_name = "example.org"
+    subject_alternative_name = [
+      "sub1.example.com",
+      "sub2.example.com"
+    ]
+  }
 }
 ```
 
 ### Custom Certificate
 
 ```hcl
-resource scaleway_lb_certificate cert01 {
-    lb_id = scaleway_lb.lb01.id
-    name = "custom-cert"
-    custom_certificate {
-        certificate_chain = <<EOF
+resource "scaleway_lb_certificate" "cert01" {
+  lb_id = scaleway_lb.lb01.id
+  name  = "custom-cert"
+  custom_certificate {
+    certificate_chain = <<EOF
 CERTIFICATE_CHAIN_CONTENTS
 EOF
-    }
+  }
 }
 ```
 

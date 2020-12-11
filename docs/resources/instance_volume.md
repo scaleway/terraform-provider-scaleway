@@ -24,8 +24,8 @@ The following arguments are supported:
 
 - `type` - (Required) The type of the volume. The possible values are: `b_ssd` (Block SSD), `l_ssd` (Local SSD).
 - `size_in_gb` - (Optional) The size of the volume. Only one of `size_in_gb`, `from_volume_id` and `from_volume_id` should be specified.
-- `from_volume_id` - (Optional) If set, the new volume will be copied from this volume. Only one of `size_in_gb`, `from_volume_id` and `from_volume_id` should be specified.
-- ``from_snapshot_id`` - (Optional) If set, the new volume will be created from this snapshot. Only one of `size_in_gb`, `from_volume_id` and `from_volume_id` should be specified.
+- `from_volume_id` - (Optional) If set, the new volume will be copied from this volume. Only one of `size_in_gb`, `from_volume_id` and `from_snapshot_id` should be specified.
+- ``from_snapshot_id`` - (Optional) If set, the new volume will be created from this snapshot. Only one of `size_in_gb`, `from_volume_id` and `from_snapshot_id` should be specified.
 - `name` - (Optional) The name of the volume. If not provided it will be randomly generated.
 - `zone` - (Defaults to [provider](../index.md#zone) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which the volume should be created.
 - `organization_id` - (Defaults to [provider](../index.md#organization_id) `organization_id`) The ID of the organization the volume is associated with.

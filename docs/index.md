@@ -182,7 +182,7 @@ in this priority order.
 
 ## Scaleway S3-compatible
 
-[Scaleway object storage](https://www.scaleway.com/object-storage/) can be used to store your Terraform state.
+[Scaleway object storage](https://www.scaleway.com/en/object-storage/) can be used to store your Terraform state.
 Configure your backend as:
 
 ```

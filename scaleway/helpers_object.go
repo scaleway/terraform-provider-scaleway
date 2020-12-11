@@ -3,6 +3,7 @@ package scaleway
 import (
 	"errors"
 	"fmt"
+	"net/http"
 	"os"
 	"strings"
 	"time"
@@ -20,11 +21,12 @@ const (
 	defaultObjectBucketTimeout = 10 * time.Minute
 )
 
-func newS3Client(region, accessKey, secretKey string) (*s3.S3, error) {
+func newS3Client(httpClient *http.Client, region, accessKey, secretKey string) (*s3.S3, error) {
 	config := &aws.Config{}
 	config.WithRegion(region)
 	config.WithCredentials(credentials.NewStaticCredentials(accessKey, secretKey, ""))
 	config.WithEndpoint("https://s3." + region + ".scw.cloud")
+	config.WithHTTPClient(httpClient)
 	if strings.ToLower(os.Getenv("TF_LOG")) == "debug" {
 		config.WithLogLevel(aws.LogDebugWithHTTPBody)
 	}
@@ -40,7 +42,7 @@ func newS3ClientFromMeta(meta *Meta) (*s3.S3, error) {
 	region, _ := meta.scwClient.GetDefaultRegion()
 	accessKey, _ := meta.scwClient.GetAccessKey()
 	secretKey, _ := meta.scwClient.GetSecretKey()
-	return newS3Client(region.String(), accessKey, secretKey)
+	return newS3Client(meta.httpClient, region.String(), accessKey, secretKey)
 }
 
 func s3ClientWithRegion(d *schema.ResourceData, m interface{}) (*s3.S3, scw.Region, error) {
@@ -53,7 +55,7 @@ func s3ClientWithRegion(d *schema.ResourceData, m interface{}) (*s3.S3, scw.Regi
 	accessKey, _ := meta.scwClient.GetAccessKey()
 	secretKey, _ := meta.scwClient.GetSecretKey()
 
-	s3Client, err := newS3Client(region.String(), accessKey, secretKey)
+	s3Client, err := newS3Client(meta.httpClient, region.String(), accessKey, secretKey)
 	if err != nil {
 		return nil, "", err
 	}
@@ -69,7 +71,7 @@ func s3ClientWithRegionAndName(m interface{}, name string) (*s3.S3, scw.Region, 
 	}
 	accessKey, _ := meta.scwClient.GetAccessKey()
 	secretKey, _ := meta.scwClient.GetSecretKey()
-	s3Client, err := newS3Client(region.String(), accessKey, secretKey)
+	s3Client, err := newS3Client(meta.httpClient, region.String(), accessKey, secretKey)
 	if err != nil {
 		return nil, "", "", err
 	}

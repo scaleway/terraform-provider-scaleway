@@ -7,10 +7,13 @@ import (
 )
 
 func TestAccScalewayDataSourceRegistryNamespace_Basic(t *testing.T) {
+	tt := NewTestTools(t)
+	defer tt.Cleanup()
+
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckScalewayRegistryNamespaceBetaDestroy,
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      testAccCheckScalewayRegistryNamespaceBetaDestroy(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -27,7 +30,7 @@ func TestAccScalewayDataSourceRegistryNamespace_Basic(t *testing.T) {
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayRegistryNamespaceExists("scaleway_registry_namespace.test"),
+					testAccCheckScalewayRegistryNamespaceExists(tt, "scaleway_registry_namespace.test"),
 
 					resource.TestCheckResourceAttr("scaleway_registry_namespace.test", "name", "test-cr"),
 					resource.TestCheckResourceAttrSet("data.scaleway_registry_namespace.test", "id"),
@@ -58,7 +61,7 @@ func TestAccScalewayDataSourceRegistryNamespace_Basic(t *testing.T) {
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayRegistryNamespaceExists("scaleway_registry_namespace.test"),
+					testAccCheckScalewayRegistryNamespaceExists(tt, "scaleway_registry_namespace.test"),
 
 					resource.TestCheckResourceAttr("scaleway_registry_namespace.test", "name", "test-cr"),
 					resource.TestCheckResourceAttrSet("data.scaleway_registry_namespace.test", "id"),

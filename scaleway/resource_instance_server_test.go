@@ -863,3 +863,35 @@ func TestAccScalewayInstanceServer_AlterTags(t *testing.T) {
 		},
 	})
 }
+
+func TestAccScalewayInstanceServer_WithDefaultRootVolumeAndAdditionalVolume(t *testing.T) {
+	tt := NewTestTools(t)
+	defer tt.Cleanup()
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      testAccCheckScalewayInstanceServerDestroy(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource "scaleway_instance_volume" "data" {
+						size_in_gb = 100
+						type = "b_ssd"
+					}
+
+					resource "scaleway_instance_server" "main" {
+						type = "DEV1-S"
+						image = "ubuntu-bionic"
+						root_volume {
+							delete_on_termination = false
+					  	}
+						additional_volume_ids = [ scaleway_instance_volume.data.id ]
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayInstanceServerExists(tt, "scaleway_instance_server.main"),
+				),
+			},
+		},
+	})
+}
