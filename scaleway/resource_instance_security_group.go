@@ -241,7 +241,7 @@ func resourceScalewayInstanceSecurityGroupUpdate(ctx context.Context, d *schema.
 	}
 
 	if d.HasChange("enable_default_security") {
-		updateReq.EnableDefaultSecurity = expandBoolPtr(d.Get("enable_default_security").(bool))
+		updateReq.EnableDefaultSecurity = expandBoolPtr(d.Get("enable_default_security"))
 	}
 
 	// Only update name if one is provided in the state
