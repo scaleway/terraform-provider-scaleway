@@ -182,7 +182,7 @@ func expandBucketCORS(rawCors []interface{}, bucket string) []*s3.CORSRule {
 		corsMap := cors.(map[string]interface{})
 		r := &s3.CORSRule{}
 		for k, v := range corsMap {
-			l.Printf("[DEBUG] S3 bucket: %s, put CORS: %#v, %#v", bucket, k, v)
+			l.Debugf("S3 bucket: %s, put CORS: %#v, %#v", bucket, k, v)
 			if k == "max_age_seconds" {
 				r.MaxAgeSeconds = scw.Int64Ptr(int64(v.(int)))
 			} else {
