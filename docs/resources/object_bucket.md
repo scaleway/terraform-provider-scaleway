@@ -28,6 +28,20 @@ The following arguments are supported:
 * `tags` - (Optional) A list of tags (key / value) for the bucket.
 * `acl` - (Optional) The [canned ACL](https://docs.aws.amazon.com/AmazonS3/latest/dev/acl-overview.html#canned-acl) you want to apply to the bucket.
 * `region` - (Optional) The [region](https://developers.scaleway.com/en/quickstart/#region-definition) in which the bucket should be created.
+* `versioning` - (Optional) A state of [versioning](https://docs.aws.amazon.com/AmazonS3/latest/dev/Versioning.html) (documented below)
+* `cors_rule` - (Optional) A rule of [Cross-Origin Resource Sharing](https://docs.aws.amazon.com/AmazonS3/latest/dev/cors.html) (documented below).
+
+The `CORS` object supports the following:
+
+* `allowed_headers` (Optional) Specifies which headers are allowed.
+* `allowed_methods` (Required) Specifies which methods are allowed. Can be `GET`, `PUT`, `POST`, `DELETE` or `HEAD`.
+* `allowed_origins` (Required) Specifies which origins are allowed.
+* `expose_headers` (Optional) Specifies expose header in the response.
+* `max_age_seconds` (Optional) Specifies time in seconds that browser can cache the response for a preflight request.
+
+The `versioning` object supports the following:
+
+* `enabled` - (Optional) Enable versioning. Once you version-enable a bucket, it can never return to an unversioned state. You can, however, suspend versioning on that bucket.
 
 ## Attributes Reference
 
