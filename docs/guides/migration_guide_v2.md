@@ -75,14 +75,14 @@ By doing so, you can use the same configuration between different tools such as 
 
 ## Resources
 
-All resources are from now on prefixed by `scaleway`, their product category and their product name (`scaleway_{product-category-name}_{product-name}_{resource-name}`).
-For instances an S3 bucket belongs to the `Storage` product category and is a resource of the `Object` product.
+All resources are from now on prefixed by `scaleway` and their product name (`scaleway_{product-name}_{resource-name}`).
+For instances an S3 bucket belongs to the `object` product and is a resource of type `bucket`.
 Hence it is named: `scaleway_object_bucket`.
 
 ### Migration guide for renamed resources
 
 Because the resources changed their name, we cannot use automatic state migration.
-We will first manually remove the resource from the terraform state and then use [`terraform import`](https://www.terraform.io/docs/import/usage.html) to import existing resources to a renamed resource.
+We will first get the identifier of the resource, then remove the resource from the terraform state and then use [`terraform import`](https://www.terraform.io/docs/import/usage.html) to import existing resources to a renamed resource.
 
 For instance, let's suppose that you have resource in `fr-par-1` such as:
 
@@ -98,7 +98,27 @@ resource scaleway_server main {
 }
 ```
 
-First, let's delete the resource from your terraform state using the [`terraform state`](https://www.terraform.io/docs/commands/state/index.html) command.
+First, let's get the identifier of this resource and put it in a variable.
+You can do it using the [`terraform state`](https://www.terraform.io/docs/commands/state/index.html) command.
+
+```text
+$ terraform state show scaleway_server.main
+# scaleway_server.main:
+resource "scaleway_server" "main" {
+    boot_type    = "local"
+    enable_ipv6  = false
+    id           = "11111111-1111-1111-1111-111111111111"
+    image        = "cf44b8f5-77e2-42ed-8f1e-09ed5bb028fc"
+    name         = "foobar"
+    private_ip   = "10.68.74.121"
+    state        = "running"
+    state_detail = "booting kernel"
+    type         = "DEV1-S"
+}
+```
+
+So in that case, the id is "11111111-1111-1111-1111-111111111111".
+Now that we got the id, let's delete the resource from your terraform state.
 You can do it using: `terraform state rm scaleway_server.main`.
 
 Once this is done, refactor your terraform code to:
@@ -115,8 +135,21 @@ resource scaleway_instance_server main {
 }
 ```
 
-and run `terraform import scaleway_instance_server.main fr-par-1/11111111-1111-1111-1111-111111111111` where `11111111-1111-1111-1111-111111111111` is the id of your resource.
+We are now ready to import the new resource!
+Run `terraform import scaleway_instance_server.main fr-par-1/11111111-1111-1111-1111-111111111111` where `11111111-1111-1111-1111-111111111111` is the id of your resource.
 After importing, you can verify using `terraform apply` that you are in a desired state and that no changes need to be done.
+
+You can automate this using scripting:
+
+```shell
+#!/usr/bin/env bash
+
+OLD_RESOURCE_NAME="scaleway_server.main"
+NEW_RESOURCE_NAME="scaleway_instance_server.main"
+ID=$(terraform state get $OLD_RESOURCE_NAME.id)
+terraform rm $RESSOURCE_NAME
+terraform import $NEW_RESOURCE_NAME $ID
+```
 
 ### Instance
 
