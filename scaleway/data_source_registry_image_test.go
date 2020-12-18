@@ -31,7 +31,7 @@ func TestAccScalewayDataSourceRegistryImage_Basic(t *testing.T) {
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayRegistryImageExists("data.scaleway_registry_image.ubuntu"),
+					testAccCheckScalewayRegistryImageExists(tt, "data.scaleway_registry_image.ubuntu"),
 
 					resource.TestCheckResourceAttr("data.scaleway_registry_image.ubuntu", "name", "ubuntu"),
 					resource.TestCheckResourceAttr("data.scaleway_registry_image.ubuntu", "id", "fr-par/"+ubuntuImageID),
@@ -56,14 +56,14 @@ func TestAccScalewayDataSourceRegistryImage_Basic(t *testing.T) {
 	})
 }
 
-func testAccCheckScalewayRegistryImageExists(n string) resource.TestCheckFunc {
+func testAccCheckScalewayRegistryImageExists(tt *TestTools, n string) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		rs, ok := state.RootModule().Resources[n]
 		if !ok {
 			return fmt.Errorf("resource not found: %s", n)
 		}
 
-		api, region, id, err := registryAPIWithRegionAndID(testAccProvider.Meta(), rs.Primary.ID)
+		api, region, id, err := registryAPIWithRegionAndID(tt.Meta, rs.Primary.ID)
 		if err != nil {
 			return nil
 		}
