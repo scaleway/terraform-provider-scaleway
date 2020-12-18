@@ -494,19 +494,67 @@ func TestAccScalewayInstanceServer_AdditionalVolumes(t *testing.T) {
 		CheckDestroy:      testAccCheckScalewayInstanceServerDestroy(tt),
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckScalewayInstanceServerConfigVolumes(false, InstanceServerStateStarted),
+				// With additional local
+				Config: `
+					resource "scaleway_instance_volume" "local" {
+						size_in_gb = 10
+						type = "l_ssd"
+					}
+
+					resource "scaleway_instance_server" "base" {
+						image = "ubuntu_focal"
+						type = "DEV1-S"
+						
+						root_volume {
+							size_in_gb = 10
+						}
+
+						tags = [ "terraform-test", "scaleway_instance_server", "additional_volume_ids" ]
+
+						additional_volume_ids = [
+							scaleway_instance_volume.local.id
+						]
+					}
+				`,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayInstanceServerExists(tt, "scaleway_instance_server.base"),
-					resource.TestCheckResourceAttr("scaleway_instance_server.base", "root_volume.0.size_in_gb", "20"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.base", "root_volume.0.size_in_gb", "10"),
 				),
 			},
 			{
-				Config: testAccCheckScalewayInstanceServerConfigVolumes(true, InstanceServerStateStarted),
+				// With additional local and block
+				Config: `
+					resource "scaleway_instance_volume" "local" {
+						size_in_gb = 10
+						type = "l_ssd"
+					}
+
+					resource "scaleway_instance_volume" "block" {
+						size_in_gb = 10
+						type = "b_ssd"
+					}
+
+					resource "scaleway_instance_server" "base" {
+						image = "ubuntu_focal"
+						type = "DEV1-S"
+						
+						root_volume {
+							size_in_gb = 10
+						}
+
+						tags = [ "terraform-test", "scaleway_instance_server", "additional_volume_ids" ]
+
+						additional_volume_ids = [
+							scaleway_instance_volume.local.id,
+							scaleway_instance_volume.block.id
+						]
+					}
+				`,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayInstanceVolumeExists(tt, "scaleway_instance_volume.base_block"),
+					testAccCheckScalewayInstanceVolumeExists(tt, "scaleway_instance_volume.block"),
 					testAccCheckScalewayInstanceServerExists(tt, "scaleway_instance_server.base"),
-					resource.TestCheckResourceAttr("scaleway_instance_volume.base_block", "size_in_gb", "10"),
-					resource.TestCheckResourceAttr("scaleway_instance_server.base", "root_volume.0.size_in_gb", "20"),
+					resource.TestCheckResourceAttr("scaleway_instance_volume.block", "size_in_gb", "10"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.base", "root_volume.0.size_in_gb", "10"),
 				),
 			},
 		},
