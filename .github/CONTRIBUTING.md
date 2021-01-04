@@ -23,7 +23,7 @@ See [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md).
 
 ### Where to find us?
 
-- [Terraform provider Scaleway](https://github.com/terraform-providers/terraform-provider-scaleway/tree/master/website)
+- [Terraform provider Scaleway](https://github.com/scaleway/terraform-provider-scaleway/tree/master/website)
 - [Terraform mailing list](https://groups.google.com/group/terraform-tool)
 - Connect with us on [Scaleway Slack](https://slack.scaleway.com/) (#opensource)
 - Send us an [e-mail](mailto:opensource@scaleway.com)
