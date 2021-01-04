@@ -2,7 +2,6 @@ package scaleway
 
 import (
 	"fmt"
-	"strings"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -803,44 +802,6 @@ func testAccCheckScalewayInstanceServerDestroy(tt *TestTools) resource.TestCheck
 
 		return nil
 	}
-}
-
-func testAccCheckScalewayInstanceServerConfigVolumes(withBlock bool, state string, localVolumesInGB ...int) string {
-	additionalVolumeResources := ""
-	baseVolume := 20
-	var additionalVolumeIDs []string
-	for i, size := range localVolumesInGB {
-		additionalVolumeResources += fmt.Sprintf(`
-resource "scaleway_instance_volume" "base_volume%d" {
-  size_in_gb = %d
-  type       = "l_ssd"
-}`, i, size)
-		additionalVolumeIDs = append(additionalVolumeIDs, fmt.Sprintf(`"${scaleway_instance_volume.base_volume%d.id}"`, i))
-		baseVolume -= size
-	}
-
-	if withBlock {
-		additionalVolumeResources += `
-resource "scaleway_instance_volume" "base_block" {
-  size_in_gb = 10
-  type       = "b_ssd"
-}`
-		additionalVolumeIDs = append(additionalVolumeIDs, `"${scaleway_instance_volume.base_block.id}"`)
-	}
-	return fmt.Sprintf(`
-%s
-
-resource "scaleway_instance_server" "base" {
-  image = "ubuntu_focal"
-  type  = "DEV1-S"
-  root_volume {
-    size_in_gb = %d
-  }
-  tags = [ "terraform-test", "scaleway_instance_server", "additional_volume_ids" ]
-  state = "%s"
-
-  additional_volume_ids  = [ %s ]
-}`, additionalVolumeResources, baseVolume, state, strings.Join(additionalVolumeIDs, ","))
 }
 
 func TestAccScalewayInstanceServer_Bootscript(t *testing.T) {
