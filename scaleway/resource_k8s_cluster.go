@@ -283,15 +283,17 @@ func resourceScalewayK8SClusterCreate(ctx context.Context, d *schema.ResourceDat
 
 	req.AutoscalerConfig = autoscalerReq
 
-	autoUpgradeEnable, okAutoUpgradeEnable := d.GetOkExists("auto_upgrade.0.enable")
-	autoUpgradeStartHour, okAutoUpgradeStartHour := d.GetOkExists("auto_upgrade.0.maintenance_window_start_hour")
+	autoUpgradeEnable, okAutoUpgradeEnable := d.GetOk("auto_upgrade.0.enable")
+	autoUpgradeStartHour, okAutoUpgradeStartHour := d.GetOk("auto_upgrade.0.maintenance_window_start_hour")
 	autoUpgradeDay, okAutoUpgradeDay := d.GetOk("auto_upgrade.0.maintenance_window_day")
 
-	// check if either all or none of the auto upgrade attribute are set.
-	// if one auto upgrade attribute is set, they all must be set.
-	// if none is set, auto upgrade attributes will be computed.
-	if okAutoUpgradeEnable != okAutoUpgradeDay || okAutoUpgradeEnable != okAutoUpgradeStartHour {
-		return diag.FromErr(fmt.Errorf("all field or zero field of auto_upgrade must be set"))
+	if okAutoUpgradeEnable {
+		// check if either all or none of the auto upgrade attribute are set.
+		// if one auto upgrade attribute is set, they all must be set.
+		// if none is set, auto upgrade attributes will be computed.
+		if !(okAutoUpgradeDay && okAutoUpgradeStartHour) {
+			return diag.FromErr(fmt.Errorf("all field or zero field of auto_upgrade must be set"))
+		}
 	}
 
 	clusterAutoUpgradeEnabled := false

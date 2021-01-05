@@ -538,3 +538,35 @@ func testSweepComputeInstanceSecurityGroup(_ string) error {
 		return nil
 	})
 }
+
+func TestAccScalewayInstanceSecurityGroup_EnableDefaultSecurity(t *testing.T) {
+	tt := NewTestTools(t)
+	defer tt.Cleanup()
+	resource.Test(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      testAccCheckScalewayInstanceSecurityGroupDestroy(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource "scaleway_instance_security_group" "base" {
+						enable_default_security = false
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("scaleway_instance_security_group.base", "enable_default_security", "false"),
+				),
+			},
+			{
+				Config: `
+					resource "scaleway_instance_security_group" "base" {
+						enable_default_security = true
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("scaleway_instance_security_group.base", "enable_default_security", "true"),
+				),
+			},
+		},
+	})
+}
