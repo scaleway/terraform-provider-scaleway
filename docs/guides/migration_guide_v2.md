@@ -146,8 +146,8 @@ You can automate this using scripting:
 
 OLD_RESOURCE_NAME="scaleway_server.main"
 NEW_RESOURCE_NAME="scaleway_instance_server.main"
-ID=$(terraform state get $OLD_RESOURCE_NAME.id)
-terraform rm $RESSOURCE_NAME
+ID=$(terraform state show $OLD_RESOURCE_NAME | grep "id" | cut -d\= -f 2 | sed 's/"//g' | awk '{$1=$1};1')
+terraform state rm $OLD_RESOURCE_NAME
 terraform import $NEW_RESOURCE_NAME $ID
 ```
 
