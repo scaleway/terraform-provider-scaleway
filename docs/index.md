@@ -172,7 +172,7 @@ In addition to [generic provider arguments](https://www.terraform.io/docs/config
 | `region`          | `SCW_DEFAULT_REGION`                            | The [region](./guides/regions_and_zones.md#regions)  that will be used as default value for all resources.                             |           |
 | `zone`            | `SCW_DEFAULT_ZONE`                              | The [zone](./guides/regions_and_zones.md#zones) that will be used as default value for all resources.                                  |           |
 
-## Scaleway S3-compatible
+## Store terraform state on Scaleway S3-compatible object storage
 
 [Scaleway object storage](https://www.scaleway.com/en/object-storage/) can be used to store your Terraform state.
 Configure your backend as:
