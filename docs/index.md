@@ -30,7 +30,7 @@ terraform {
 
 ## Example
 
-Here is an example that will setup a web server with an additional volume, a public IP and a security group.
+Here is an example that will set up a web server with an additional volume, a public IP and a security group.
 
 You can test this config by creating a `test.tf` and run terraform commands from this directory:
 
@@ -40,11 +40,16 @@ You can test this config by creating a `test.tf` and run terraform commands from
 - Build the infrastructure: `terraform apply`
 
 ```hcl
+terraform {
+  required_providers {
+    scaleway = {
+      source = "scaleway/scaleway"
+    }
+  }
+  required_version = ">= 0.13"
+}
+
 provider "scaleway" {
-  access_key      = "<SCALEWAY-ACCESS-KEY>"
-  secret_key      = "<SCALEWAY-SECRET-KEY>"
-  organization_id = "<SCALEWAY-ORGANIZATION-ID>"
-  project_id      = "<SCALEWAY-PROJECT-ID>"
   zone            = "fr-par-1"
   region          = "fr-par"
 }
@@ -104,26 +109,12 @@ need to create a new one in the section "API Tokens" of the
 [Scaleway console](https://console.scaleway.com/account/credentials).
 Click on the "Generate new token" button to create them. Giving it a friendly-name is recommended.
 
-The Scaleway provider offers three ways of providing these credentials. The following methods are supported, in this priority order:
+The Scaleway provider offers three ways of providing these credentials.
+The following methods are supported, in this priority order:
 
+1. [Environment variables](#environment-variables)
 1. [Static credentials](#static-credentials)
-2. [Environment variables](#environment-variables)
-3. [Shared configuration file](#shared-configuration-file)
-
-### Static credentials
-
-!> **Warning**: Hard-coding credentials into any Terraform configuration is not recommended, and risks secret leakage should this file ever be committed to a public version control system.
-
-Static credentials can be provided by adding `access_key` and `secret_key` attributes in-line in the Scaleway provider block:
-
-Example:
-
-```hcl
-provider "scaleway" {
-  access_key = "my-access-key"
-  secret_key = "my-secret-key"
-}
-```
+1. [Shared configuration file](#shared-configuration-file)
 
 ### Environment variables
 
@@ -143,6 +134,21 @@ $ export SCW_SECRET_KEY="my-secret-key"
 $ terraform plan
 ```
 
+### Static credentials
+
+!> **Warning**: Hard-coding credentials into any Terraform configuration is not recommended, and risks secret leakage should this file ever be committed to a public version control system.
+
+Static credentials can be provided by adding `access_key` and `secret_key` attributes in-line in the Scaleway provider block:
+
+Example:
+
+```hcl
+provider "scaleway" {
+  access_key = "my-access-key"
+  secret_key = "my-secret-key"
+}
+```
+
 ### Shared configuration file
 
 It is a YAML configuration file shared between the majority of the
@@ -157,28 +163,14 @@ You can find more information about this configuration [in the documentation](ht
 
 In addition to [generic provider arguments](https://www.terraform.io/docs/configuration/providers.html) (e.g. `alias` and `version`), the following arguments are supported in the Scaleway provider block:
 
-- `access_key` - (Optional) The Scaleway access key. It must be provided, but it can also be sourced from
-the `SCW_ACCESS_KEY` [environment variable](#environment-variables), or via a [shared configuration file](#shared-configuration-file),
-in this priority order.
-
-- `secret_key` - (Optional) The Scaleway secert key. It must be provided, but it can also be sourced from
-the `SCW_SECRET_KEY` [environment variable](#environment-variables), or via a [shared configuration file](#shared-configuration-file),
-in this priority order.
-
-- `organization_id` - (Optional) The organization ID that will be used as default value for all resources. It can also be sourced from
-the `SCW_DEFAULT_ORGANIZATION_ID` [environment variable](https://github.com/scaleway/scaleway-sdk-go/blob/master/scw/README.md#environment-variables), or via a [shared configuration file](https://github.com/scaleway/scaleway-sdk-go/blob/master/scw/README.md#scaleway-config),
-in this priority order.
-
-- `project_id` - (Optional) The project ID that will be used as default value for all resources.
-  It can also be sourced from the `SCW_DEFAULT_PROJECT_ID` [environment variable](https://github.com/scaleway/scaleway-sdk-go/blob/master/scw/README.md#environment-variables), or via a [shared configuration file](https://github.com/scaleway/scaleway-sdk-go/blob/master/scw/README.md#scaleway-config), in this priority order.
-
-- `region` - (Optional) The [region](./guides/regions_and_zones.md#regions)  that will be used as default value for all resources. It can also be sourced from
-the `SCW_DEFAULT_REGION` [environment variable](https://github.com/scaleway/scaleway-sdk-go/blob/master/scw/README.md#environment-variables), or via a [shared configuration file](https://github.com/scaleway/scaleway-sdk-go/blob/master/scw/README.md#scaleway-config),
-in this priority order.
-
-- `zone` - (Optional) The [zone](./guides/regions_and_zones.md#zones) that will be used as default value for all resources. It can also be sourced from
-the `SCW_DEFAULT_ZONE` [environment variable](https://github.com/scaleway/scaleway-sdk-go/blob/master/scw/README.md#environment-variables), or via a [shared configuration file](https://github.com/scaleway/scaleway-sdk-go/blob/master/scw/README.md#scaleway-config),
-in this priority order.
+| Provider Argument | [Environment Variables](#environment-variables) | Description                                                                                                                            | Mandatory |
+|-------------------|-------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------|-----------|
+| `access_key`      | `SCW_ACCESS_KEY`                                | [Scaleway access key](https://console.scaleway.com/project/credentials)                                                                | ✅        |
+| `secret_key`      | `SCW_SECRET_KEY`                                | [Scaleway secret key](https://console.scaleway.com/project/credentials)                                                                | ✅        |
+| `organization_id` | `SCW_DEFAULT_ORGANIZATION_ID`                   | The [organization ID](https://console.scaleway.com/account/organization/profile) that will be used as default value for all resources. |           |
+| `project_id`      | `SCW_DEFAULT_PROJECT_ID`                        | The [project ID](https://console.scaleway.com/project/settings) that will be used as default value for all resources.                  |           |
+| `region`          | `SCW_DEFAULT_REGION`                            | The [region](./guides/regions_and_zones.md#regions)  that will be used as default value for all resources.                             |           |
+| `zone`            | `SCW_DEFAULT_ZONE`                              | The [zone](./guides/regions_and_zones.md#zones) that will be used as default value for all resources.                                  |           |
 
 ## Scaleway S3-compatible
 
@@ -203,7 +195,8 @@ terraform {
 Beware as no locking mechanism are yet supported.
 Using scaleway object storage as terraform backend is not suitable if you work in a team with a risk of simultaneous access to the same plan.
 
-Note: For security reason it's not recommended to store secrets in terraform files. If you want to configure the backend with environment var, you need to use `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` [source](https://www.terraform.io/docs/backends/types/s3.html#access_key).
+Note: For security reason it's not recommended to store secrets in terraform files.
+If you want to configure the backend with environment var, you need to use `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` [source](https://www.terraform.io/docs/backends/types/s3.html#access_key).
 
 ```bash
 export AWS_ACCESS_KEY_ID=$SCW_ACCESS_KEY
