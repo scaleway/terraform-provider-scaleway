@@ -73,6 +73,14 @@ Your secret key (previously known as _token_) must be set in `SCW_SECRET_KEY` (`
 Terraform can also read standard [Scaleway configuration files](https://github.com/scaleway/scaleway-sdk-go/blob/master/scw/README.md).
 By doing so, you can use the same configuration between different tools such as the [CLI](https://github.com/scaleway/scaleway-cli) or [Packer](https://www.packer.io/docs/builders/scaleway).
 
+#### Resolution order
+
+Here is the priority list for credentials sources from top to bottom:
+
+1. Environment variables
+1. Provider settings
+1. [Scaleway configuration files](https://github.com/scaleway/scaleway-sdk-go/blob/master/scw/README.md)
+
 ## Resources
 
 All resources are from now on prefixed by `scaleway` and their product name (`scaleway_{product-name}_{resource-name}`).
