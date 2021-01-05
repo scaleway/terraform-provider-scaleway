@@ -1,4 +1,4 @@
-module github.com/terraform-providers/terraform-provider-scaleway
+module github.com/scaleway/terraform-provider-scaleway
 
 require (
 	github.com/aws/aws-sdk-go v1.34.32

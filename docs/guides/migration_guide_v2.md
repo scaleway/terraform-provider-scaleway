@@ -4,9 +4,7 @@ description: |-
   Migrating your Scaleway provider from v1 to v2.
 ---
 
-# Migrating from v1 to v2
-
--> **Note:** The version 2 is not released yet but versions `v1.11+` allow you to do a smooth migration to the `v2`. In other words, there will be no breaking change between `v1.11+` and `v2`. The `v2` roadmap is available [here](https://github.com/terraform-providers/terraform-provider-scaleway/issues/125).
+# Migrating from Scaleway provider v1 to v2
 
 This page guides you through the process of migrating your version 1 resources to their version 2 equivalent.
 To prepare the launch of all new Scaleway products, we completely changed the naming of all resources (as well as their attributes) in version 2 of the Terraform provider.
@@ -15,9 +13,10 @@ To prepare the launch of all new Scaleway products, we completely changed the na
 
 ### Version configuration
 
--> **Note:** Before upgrading to `v2+`, it is recommended to upgrade to the most recent `1.X` version of the provider (`v1.11.0`) and ensure that your environment successfully runs [`terraform plan`](https://www.terraform.io/docs/commands/plan.html) without unexpected change or deprecation notice.
+-> **Note:** Before upgrading to `v2+`, it is recommended to upgrade to the most recent `1.X` version of the provider (`v1.17.2`) and ensure that your environment successfully runs [`terraform plan`](https://www.terraform.io/docs/commands/plan.html) without unexpected change or deprecation notice.
 
-It is recommended to use [version constraints when configuring Terraform providers](https://www.terraform.io/docs/configuration/providers.html#version-provider-versions). If you are following these recommendation, update the version constraints in your Terraform configuration and run [`terraform init`](https://www.terraform.io/docs/commands/init.html) to download the new version.
+It is recommended to use [version constraints when configuring Terraform providers](https://www.terraform.io/docs/configuration/providers.html#version-provider-versions).
+If you are following these recommendations, update the version constraints in your Terraform configuration and run [`terraform init`](https://www.terraform.io/docs/commands/init.html) to download the new version.
 
 Update to latest `1.X` version:
 
@@ -51,7 +50,8 @@ Below you find an overview of changes in the provider config:
 | `token`               | `secret_key`          |
 | `organization`        | `organization_id`     |
 
-~> **Important:** `access_key` should now only be used for your access key (e.g. `SCWZFD9BPQ4TZ14SM1YS`). Your secret key (previously known as _token_) must be set in `secret_key` (`xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx`).
+~> **Important:** `access_key` should now only be used for your access key (e.g. `SCWZFD9BPQ4TZ14SM1YS`).
+Your secret key (previously known as _token_) must be set in `secret_key` (`xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx`).
 
 Below you find an overview of the changes in environment variables:
 
@@ -66,11 +66,98 @@ Below you find an overview of the changes in environment variables:
 | `SCW_REGION`            | `SCW_DEFAULT_REGION`                        |
 | `SCW_TOKEN`             | `SCW_SECRET_KEY`                            |
 
-~> **Important:** `SCALEWAY_ACCESS_KEY` was changed to `SCW_ACCESS_KEY`. This should be your access key (e.g. `SCWZFD9BPQ4TZ14SM1YS`). Your secret key (previously known as _token_) must be set in `SCW_SECRET_KEY` (`xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx`).
+~> **Important:** `SCALEWAY_ACCESS_KEY` was changed to `SCW_ACCESS_KEY`.
+This should be your access key (e.g. `SCWZFD9BPQ4TZ14SM1YS`).
+Your secret key (previously known as _token_) must be set in `SCW_SECRET_KEY` (`xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx`).
+
+Terraform can also read standard [Scaleway configuration files](https://github.com/scaleway/scaleway-sdk-go/blob/master/scw/README.md).
+By doing so, you can use the same configuration between different tools such as the [CLI](https://github.com/scaleway/scaleway-cli) or [Packer](https://www.packer.io/docs/builders/scaleway).
+
+#### Resolution order
+
+Here is the priority list for credentials sources from top to bottom:
+
+1. Environment variables
+1. Provider settings
+1. [Scaleway configuration files](https://github.com/scaleway/scaleway-sdk-go/blob/master/scw/README.md)
 
 ## Resources
 
-All resources are from now on prefixed by `scaleway`, their product category and their product name (`scaleway_{product-category-name}_{product-name}_{resource-name}`). For instances an S3 bucket belongs to the `Storage` product category and is a resource of the `Object` product. Hence it is named: `scaleway_object_bucket`.
+All resources are from now on prefixed by `scaleway` and their product name (`scaleway_{product-name}_{resource-name}`).
+For instances an S3 bucket belongs to the `object` product and is a resource of type `bucket`.
+Hence it is named: `scaleway_object_bucket`.
+
+### Migration guide for renamed resources
+
+Because the resources changed their name, we cannot use automatic state migration.
+We will first get the identifier of the resource, then remove the resource from the terraform state and then use [`terraform import`](https://www.terraform.io/docs/import/usage.html) to import existing resources to a renamed resource.
+
+For instance, let's suppose that you have resource in `fr-par-1` such as:
+
+```hcl-terraform
+provider "scaleway" {
+    zone= "fr-par-1"
+}
+
+resource scaleway_server main {
+  name  = "foobar"
+  type  = "DEV1-S"
+  image = "cf44b8f5-77e2-42ed-8f1e-09ed5bb028fc"
+}
+```
+
+First, let's get the identifier of this resource and put it in a variable.
+You can do it using the [`terraform state`](https://www.terraform.io/docs/commands/state/index.html) command.
+
+```text
+$ terraform state show scaleway_server.main
+# scaleway_server.main:
+resource "scaleway_server" "main" {
+    boot_type    = "local"
+    enable_ipv6  = false
+    id           = "11111111-1111-1111-1111-111111111111"
+    image        = "cf44b8f5-77e2-42ed-8f1e-09ed5bb028fc"
+    name         = "foobar"
+    private_ip   = "10.68.74.121"
+    state        = "running"
+    state_detail = "booting kernel"
+    type         = "DEV1-S"
+}
+```
+
+So in that case, the id is "11111111-1111-1111-1111-111111111111".
+Now that we got the id, let's delete the resource from your terraform state.
+You can do it using: `terraform state rm scaleway_server.main`.
+
+Once this is done, refactor your terraform code to:
+
+```hcl-terraform
+provider "scaleway" {
+    zone= "fr-par-1"
+}
+
+resource scaleway_instance_server main {
+  name  = "foobar"
+  type  = "DEV1-S"
+  image = "cf44b8f5-77e2-42ed-8f1e-09ed5bb028fc"
+}
+```
+
+We are now ready to import the new resource!
+Run `terraform import scaleway_instance_server.main fr-par-1/11111111-1111-1111-1111-111111111111` where `11111111-1111-1111-1111-111111111111` is the id of your resource.
+After importing, you can verify using `terraform apply` that you are in a desired state and that no changes need to be done.
+
+You can automate this using scripting:
+
+```shell
+#!/usr/bin/env bash
+
+OLD_RESOURCE_NAME="scaleway_server.main"
+NEW_RESOURCE_NAME="scaleway_instance_server.main"
+ID=$(terraform state show $OLD_RESOURCE_NAME | grep "id" | cut -d\= -f 2 | sed 's/"//g' | awk '{$1=$1};1')
+terraform state rm $OLD_RESOURCE_NAME
+terraform import $NEW_RESOURCE_NAME $ID
+```
 
 ### Instance
 
@@ -81,7 +168,8 @@ This means that all old instance resources are now prefixed with `scaleway_insta
 
 `scaleway_server` was renamed to `scaleway_instance_server`.
 
-In version 1, attachments of volumes where done on the volume resource. But from now on, this is done on the `scaleway_instance_server` resource.
+In version 1, attachments of volumes where done on the volume resource.
+From now on, this is done on the `scaleway_instance_server` resource.
 
 Thus, to create a server with a volume attached:
 
@@ -118,12 +206,14 @@ resource "scaleway_instance_ip" "test_ip" {
 `scaleway_volume` was renamed to `scaleway_instance_volume`.
 The former attributes can still be used on the new volume resource.
 
-Additionally, from now on, you can also create new volumes based on other volumes or snapshots. For more information check the [new volume `scaleway_instance_volume` resource](../resources/instance_volume.md).
+Additionally, from now on, you can also create new volumes based on other volumes or snapshots.
+For more information check the [new volume `scaleway_instance_volume` resource](../resources/instance_volume.md).
 
 #### Renamed: `scaleway_ssh_key` -> `scaleway_account_ssk_key`
 
 `scaleway_ssh_key` was renamed to `scaleway_account_ssk_key`
-The `key` attribute has been renamed to `public_key`. A `name` required attribute and an `organization_id` optional attribute have been added.
+The `key` attribute has been renamed to `public_key`.
+A `name` required attribute and an `organization_id` optional attribute have been added.
 
 #### Removed: `scaleway_user_data`
 
@@ -143,7 +233,8 @@ Tokens should be created in the console.
 
 The `scaleway_volume_attachment` was removed in version 2.
 
-Volumes can in version 2 only be attached on the server resource. The [above example](#scaleway_server-gt-scaleway_instance_server) shows how this works.
+Volumes can in version 2 only be attached on the server resource.
+The [above example](#scaleway_server-gt-scaleway_instance_server) shows how this works.
 
 ### Storage
 
@@ -151,4 +242,5 @@ Volumes can in version 2 only be attached on the server resource. The [above exa
 
 The `scaleway_bucket` was moved to the `object` product in the `storage` product category.
 
-It's behaviour remained the same, but we also added an [`acl` attribute](../resources/object_bucket.md#acl). This attribute takes canned ACLs.
+It's behaviour remained the same, but we also added an [`acl` attribute](../resources/object_bucket.md#acl).
+This attribute takes canned ACLs.

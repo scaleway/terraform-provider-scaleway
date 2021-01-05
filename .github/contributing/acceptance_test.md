@@ -46,7 +46,7 @@ TF_ACC=1 go test ./scaleway -v -run=TestAccScalewayInstanceServerBasic1 -timeout
 === CONT  TestAccScalewayInstanceServerBasic1
 --- PASS: TestAccScalewayInstanceServerBasic1 (227.43s)
 PASS
-ok  	github.com/terraform-providers/terraform-provider-scaleway/scaleway	227.747s
+ok  	github.com/scaleway/terraform-provider-scaleway/scaleway	227.747s
 
 ```
 
@@ -75,7 +75,7 @@ TF_ACC=1 go test ./scaleway -v -run=TestAccScalewayInstanceSecurityGroup -timeou
 === RUN   TestAccScalewayInstanceSecurityGroupPortRange
 --- PASS: TestAccScalewayInstanceSecurityGroupPortRange (7.13s)
 PASS
-ok  	github.com/terraform-providers/terraform-provider-scaleway/scaleway	56.210s
+ok  	github.com/scaleway/terraform-provider-scaleway/scaleway	56.210s
 ```
 
 #### Writing an Acceptance Test
