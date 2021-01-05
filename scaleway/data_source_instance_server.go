@@ -50,12 +50,12 @@ func dataSourceScalewayInstanceServerRead(ctx context.Context, d *schema.Resourc
 		if err != nil {
 			return diag.FromErr(err)
 		}
-		for _, instance := range res.Servers {
-			if instance.Name == d.Get("name").(string) {
+		for _, server := range res.Servers {
+			if server.Name == d.Get("name").(string) {
 				if serverID != "" {
 					return diag.FromErr(fmt.Errorf("more than 1 server found with the same name %s", d.Get("name")))
 				}
-				serverID = instance.ID
+				serverID = server.ID
 			}
 		}
 		if serverID == "" {

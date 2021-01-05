@@ -154,7 +154,7 @@ func resourceScalewayInstanceSecurityGroupRead(ctx context.Context, d *schema.Re
 	_ = d.Set("enable_default_security", res.SecurityGroup.EnableDefaultSecurity)
 
 	if !d.Get("external_rules").(bool) {
-		inboundRules, outboundRules, err := getSecurityGroupRules(instanceAPI, zone, ID, d)
+		inboundRules, outboundRules, err := getSecurityGroupRules(ctx, instanceAPI, zone, ID, d)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -164,11 +164,11 @@ func resourceScalewayInstanceSecurityGroupRead(ctx context.Context, d *schema.Re
 	return nil
 }
 
-func getSecurityGroupRules(instanceAPI *instance.API, zone scw.Zone, securityGroupID string, d *schema.ResourceData) ([]interface{}, []interface{}, error) {
+func getSecurityGroupRules(ctx context.Context, instanceAPI *instance.API, zone scw.Zone, securityGroupID string, d *schema.ResourceData) ([]interface{}, []interface{}, error) {
 	resRules, err := instanceAPI.ListSecurityGroupRules(&instance.ListSecurityGroupRulesRequest{
 		Zone:            zone,
 		SecurityGroupID: expandID(securityGroupID),
-	}, scw.WithAllPages())
+	}, scw.WithAllPages(), scw.WithContext(ctx))
 	if err != nil {
 		return nil, nil, err
 	}

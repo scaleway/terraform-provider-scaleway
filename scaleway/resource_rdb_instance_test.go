@@ -152,7 +152,7 @@ func testAccCheckScalewayRdbInstanceDestroy(tt *TestTools) resource.TestCheckFun
 
 			// If no error resource still exist
 			if err == nil {
-				return fmt.Errorf("Instance (%s) still exists", rs.Primary.ID)
+				return fmt.Errorf("instance (%s) still exists", rs.Primary.ID)
 			}
 
 			// Unexpected api error we return it

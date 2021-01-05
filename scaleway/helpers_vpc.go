@@ -2,7 +2,7 @@ package scaleway
 
 import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	vpc "github.com/scaleway/scaleway-sdk-go/api/vpc/v1"
+	"github.com/scaleway/scaleway-sdk-go/api/vpc/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 )
 

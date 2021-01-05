@@ -9,7 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
-	k8s "github.com/scaleway/scaleway-sdk-go/api/k8s/v1"
+	"github.com/scaleway/scaleway-sdk-go/api/k8s/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 )
 
@@ -252,7 +252,7 @@ func resourceScalewayK8SClusterCreate(ctx context.Context, d *schema.ResourceDat
 	autoscalerReq := &k8s.CreateClusterRequestAutoscalerConfig{}
 
 	if scaleDownDisabled, ok := d.GetOk("autoscaler_config.0.disable_scale_down"); ok {
-		autoscalerReq.ScaleDownDisabled = scw.BoolPtr((scaleDownDisabled.(bool)))
+		autoscalerReq.ScaleDownDisabled = scw.BoolPtr(scaleDownDisabled.(bool))
 	}
 
 	if scaleDownDelayAfterAdd, ok := d.GetOk("autoscaler_config.0.scale_down_delay_after_add"); ok {
@@ -779,7 +779,7 @@ func resourceScalewayK8SClusterUpdate(ctx context.Context, d *schema.ResourceDat
 	autoscalerReq := &k8s.UpdateClusterRequestAutoscalerConfig{}
 
 	if d.HasChange("autoscaler_config.0.disable_scale_down") {
-		autoscalerReq.ScaleDownDisabled = scw.BoolPtr((d.Get("autoscaler_config.0.disable_scale_down").(bool)))
+		autoscalerReq.ScaleDownDisabled = scw.BoolPtr(d.Get("autoscaler_config.0.disable_scale_down").(bool))
 	}
 
 	if d.HasChange("autoscaler_config.0.scale_down_delay_after_add") {
