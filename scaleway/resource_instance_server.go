@@ -195,26 +195,11 @@ func resourceScalewayInstanceServer() *schema.Resource {
 				ValidateFunc: validation.StringLenBetween(0, 127998),
 			},
 			"user_data": {
-				Type:        schema.TypeSet,
+				Type:        schema.TypeMap,
 				Optional:    true,
-				MaxItems:    98,
 				Description: "The user data associated with the server", // TODO: document reserved keys (`cloud-init`)
-				Set:         userDataHash,
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"key": {
-							Type:         schema.TypeString,
-							Required:     true,
-							ValidateFunc: validationStringNotInSlice([]string{"cloud-init"}, true),
-							Description:  "A user data key, the value \"cloud-init\" is not allowed",
-						},
-						"value": {
-							Type:         schema.TypeString,
-							Required:     true,
-							ValidateFunc: validation.StringLenBetween(0, 127998),
-							Description:  "A user value",
-						},
-					},
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
 				},
 			},
 			"zone":            zoneSchema(),
@@ -341,11 +326,9 @@ func resourceScalewayInstanceServerCreate(ctx context.Context, d *schema.Resourc
 		UserData: make(map[string]io.Reader),
 	}
 
-	if allUserData, ok := d.GetOk("user_data"); ok {
-		userDataSet := allUserData.(*schema.Set)
-		for _, rawUserData := range userDataSet.List() {
-			userData := rawUserData.(map[string]interface{})
-			userDataRequests.UserData[userData["key"].(string)] = bytes.NewBufferString(userData["value"].(string))
+	if rawUserData, ok := d.GetOk("user_data"); ok {
+		for key, value := range rawUserData.(map[string]interface{}) {
+			userDataRequests.UserData[key] = bytes.NewBufferString(value.(string))
 		}
 	}
 
@@ -493,23 +476,20 @@ func resourceScalewayInstanceServerRead(ctx context.Context, d *schema.ResourceD
 		ServerID: ID,
 	}, scw.WithContext(ctx))
 
-	var userDataList []interface{}
+	userData := make(map[string]interface{})
 	for key, value := range allUserData.UserData {
-		userData, err := ioutil.ReadAll(value)
+		userDataValue, err := ioutil.ReadAll(value)
 		if err != nil {
 			return diag.FromErr(err)
 		}
-		if key != "cloud-init" {
-			userDataList = append(userDataList, map[string]interface{}{
-				"key":   key,
-				"value": string(userData),
-			})
-		} else {
-			_ = d.Set("cloud_init", string(userData))
-		}
+		//if key != "cloud-init" {
+		userData[key] = string(userDataValue)
+		//	} else {
+		//_ = d.Set("cloud_init", string(userDataValue))
+		//}
 	}
-	if len(userDataList) > 0 {
-		_ = d.Set("user_data", schema.NewSet(userDataHash, userDataList))
+	if len(userData) > 0 {
+		_ = d.Set("user_data", userData)
 	}
 
 	return nil
