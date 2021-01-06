@@ -286,7 +286,8 @@ func resourceScalewayInstanceServerCreate(ctx context.Context, d *schema.Resourc
 	req.Volumes = make(map[string]*instance.VolumeTemplate)
 	if size, ok := d.GetOk("root_volume.0.size_in_gb"); ok {
 		req.Volumes["0"] = &instance.VolumeTemplate{
-			Size: scw.Size(uint64(size.(int)) * gb),
+			Size:       scw.Size(uint64(size.(int)) * gb),
+			VolumeType: instance.VolumeVolumeTypeLSSD,
 		}
 	} else {
 		// We had a local root volume if it is not already present
@@ -310,6 +311,7 @@ func resourceScalewayInstanceServerCreate(ctx context.Context, d *schema.Resourc
 				ID:         vol.Volume.ID,
 				Name:       vol.Volume.Name,
 				VolumeType: vol.Volume.VolumeType,
+				Size:       vol.Volume.Size,
 			}
 		}
 	}
@@ -468,6 +470,7 @@ func resourceScalewayInstanceServerRead(ctx context.Context, d *schema.ResourceD
 
 			rootVolume["volume_id"] = newZonedID(zone, volume.ID).String()
 			rootVolume["size_in_gb"] = int(uint64(volume.Size) / gb)
+			rootVolume["delete_on_termination"] = d.Get("root_volume.0.delete_on_termination")
 
 			_ = d.Set("root_volume", []map[string]interface{}{rootVolume})
 		} else {
@@ -551,11 +554,15 @@ func resourceScalewayInstanceServerUpdate(ctx context.Context, d *schema.Resourc
 	volumes := map[string]*instance.VolumeTemplate{}
 
 	if raw, ok := d.GetOk("additional_volume_ids"); d.HasChange("additional_volume_ids") && ok {
-		volumes["0"] = &instance.VolumeTemplate{ID: expandZonedID(d.Get("root_volume.0.volume_id")).ID, Name: newRandomName("vol")} // name is ignored by the API, any name will work here
+		volumes["0"] = &instance.VolumeTemplate{
+			ID:   expandZonedID(d.Get("root_volume.0.volume_id")).ID,
+			Name: newRandomName("vol"), // name is ignored by the API, any name will work here
+		}
 
 		for i, volumeID := range raw.([]interface{}) {
+			volumeHasChange := d.HasChange("additional_volume_ids." + strconv.Itoa(i))
 			// local volumes can only be added when the instance is stopped
-			if !isStopped {
+			if volumeHasChange && !isStopped {
 				volumeResp, err := instanceAPI.GetVolume(&instance.GetVolumeRequest{
 					Zone:     zone,
 					VolumeID: expandZonedID(volumeID).ID,
@@ -563,8 +570,12 @@ func resourceScalewayInstanceServerUpdate(ctx context.Context, d *schema.Resourc
 				if err != nil {
 					return diag.FromErr(err)
 				}
-				if volumeResp.Volume.VolumeType == instance.VolumeVolumeTypeLSSD {
-					return diag.FromErr(fmt.Errorf("instance must be stopped to change local volumes"))
+
+				// We must be able to tell whether a volume is already present in the server or not
+				if volumeResp.Volume.Server != nil {
+					if volumeResp.Volume.VolumeType == instance.VolumeVolumeTypeLSSD && volumeResp.Volume.Server.ID != "" {
+						return diag.FromErr(fmt.Errorf("instance must be stopped to change local volumes"))
+					}
 				}
 			}
 			volumes[strconv.Itoa(i+1)] = &instance.VolumeTemplate{

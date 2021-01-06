@@ -61,7 +61,7 @@ func resourceScalewayInstanceSecurityGroupRulesRead(ctx context.Context, d *sche
 
 	_ = d.Set("security_group_id", securityGroupZonedID)
 
-	inboundRules, outboundRules, err := getSecurityGroupRules(instanceAPI, zone, securityGroupID, d)
+	inboundRules, outboundRules, err := getSecurityGroupRules(ctx, instanceAPI, zone, securityGroupID, d)
 	if err != nil {
 		return diag.FromErr(err)
 	}

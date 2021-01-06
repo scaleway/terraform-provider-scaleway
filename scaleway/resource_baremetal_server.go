@@ -6,7 +6,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
-	baremetal "github.com/scaleway/scaleway-sdk-go/api/baremetal/v1"
+	"github.com/scaleway/scaleway-sdk-go/api/baremetal/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	sdkValidation "github.com/scaleway/scaleway-sdk-go/validation"
 )

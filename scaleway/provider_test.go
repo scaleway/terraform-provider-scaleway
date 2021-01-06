@@ -19,23 +19,9 @@ import (
 )
 
 var (
-	// Deprecated
-	testAccProviders map[string]*schema.Provider
-	// Deprecated
-	testAccProvider *schema.Provider
-
 	// UpdateCassettes will update all cassettes of a given test
 	UpdateCassettes = flag.Bool("cassettes", os.Getenv("TF_UPDATE_CASSETTES") == "true", "Record Cassettes")
 )
-
-func init() {
-	p := Provider(DefaultProviderConfig())()
-	testAccProvider = p
-	version += "-tftest"
-	testAccProviders = map[string]*schema.Provider{
-		"scaleway": p,
-	}
-}
 
 func testAccPreCheck(_ *testing.T) {}
 
