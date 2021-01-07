@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net"
 	"net/http"
+	"regexp"
 	"strings"
 	"testing"
 
@@ -189,6 +190,8 @@ func testCheckResourceAttrFunc(name string, key string, test func(string) error)
 		return nil
 	}
 }
+
+var UUIDRegex = regexp.MustCompile(`[0-9a-fA-F]{8}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{12}`)
 
 func testCheckResourceAttrUUID(name string, key string) resource.TestCheckFunc {
 	return resource.TestMatchResourceAttr(name, key, UUIDRegex)

@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"net"
 	"net/http"
-	"regexp"
 	"strings"
 	"time"
 
@@ -180,7 +179,7 @@ func extractZone(d terraformResourceData, meta *Meta) (scw.Zone, error) {
 		return zone, nil
 	}
 
-	return scw.Zone(""), ErrZoneNotFound
+	return "", ErrZoneNotFound
 }
 
 // ErrRegionNotFound is returned when no region can be detected
@@ -200,7 +199,7 @@ func extractRegion(d terraformResourceData, meta *Meta) (scw.Region, error) {
 		return region, nil
 	}
 
-	return scw.Region(""), ErrRegionNotFound
+	return "", ErrRegionNotFound
 }
 
 // isHTTPCodeError returns true if err is an http error with code statusCode
@@ -282,13 +281,6 @@ func newRandomName(prefix string) string {
 }
 
 const gb uint64 = 1000 * 1000 * 1000
-
-var UUIDRegex = regexp.MustCompile(`[0-9a-fA-F]{8}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{12}`)
-
-// isUUID returns true if the given string have an UUID format.
-func isUUID(s string) bool {
-	return UUIDRegex.MatchString(s)
-}
 
 func flattenTime(date *time.Time) interface{} {
 	if date != nil {
@@ -420,7 +412,7 @@ func flattenIPNet(ipNet scw.IPNet) string {
 		// We panic as this should never happen.
 		panic(err) // lintignore:R009
 	}
-	return string(raw[1 : len(raw)-1])
+	return string(raw[1 : len(raw)-1]) // remove quotes
 }
 
 func validateDuration() schema.SchemaValidateFunc {
