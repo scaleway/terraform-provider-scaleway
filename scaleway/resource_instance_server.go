@@ -473,8 +473,7 @@ func resourceScalewayInstanceServerRead(ctx context.Context, d *schema.ResourceD
 
 			// By default we delete the root volume on termination
 			rootVolume["delete_on_termination"] = true
-			deleteOnTermination, deleteOnTerminationSpecified := d.GetOk("root_volume.0.delete_on_termination")
-			if deleteOnTerminationSpecified {
+			if deleteOnTermination, ok := d.GetOk("root_volume.0.delete_on_termination"); ok {
 				rootVolume["delete_on_termination"] = deleteOnTermination
 			}
 
