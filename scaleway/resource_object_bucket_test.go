@@ -147,7 +147,7 @@ func testSweepStorageObjectBucket(_ string) error {
 func TestAccScalewayObjectBucket_Cors_Update(t *testing.T) {
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
-	bucketName := "test-acc-scaleway-object-bucket-cors-update"
+	bucketName := "test-acc-scaleway-object-bucket-cors-update-000"
 	const resourceName = "scaleway_object_bucket.bucket"
 
 	resource.ParallelTest(t, resource.TestCase{
