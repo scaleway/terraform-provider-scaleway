@@ -470,7 +470,13 @@ func resourceScalewayInstanceServerRead(ctx context.Context, d *schema.ResourceD
 
 			rootVolume["volume_id"] = newZonedID(zone, volume.ID).String()
 			rootVolume["size_in_gb"] = int(uint64(volume.Size) / gb)
-			rootVolume["delete_on_termination"] = d.Get("root_volume.0.delete_on_termination")
+
+			// By default we delete the root volume on termination
+			rootVolume["delete_on_termination"] = true
+			deleteOnTermination, deleteOnTerminationSpecified := d.GetOk("root_volume.0.delete_on_termination")
+			if deleteOnTerminationSpecified {
+				rootVolume["delete_on_termination"] = deleteOnTermination
+			}
 
 			_ = d.Set("root_volume", []map[string]interface{}{rootVolume})
 		} else {
