@@ -97,8 +97,7 @@ func flattenObjectBucketTags(tagsSet []*s3.Tag) map[string]interface{} {
 }
 
 func expandObjectBucketTags(tags interface{}) []*s3.Tag {
-	tagsSet := make([]*s3.Tag, 0)
-
+	tagsSet := []*s3.Tag(nil)
 	for key, value := range tags.(map[string]interface{}) {
 		tagsSet = append(tagsSet, &s3.Tag{
 			Key:   &key,
@@ -126,30 +125,18 @@ func isS3Err(err error, code string, message string) bool {
 }
 
 func flattenObjectBucketVersioning(versioningResponse *s3.GetBucketVersioningOutput) []map[string]interface{} {
-	vcl := make([]map[string]interface{}, 0, 1)
-	vc := make(map[string]interface{})
-	if versioningResponse.Status != nil && aws.StringValue(versioningResponse.Status) == s3.BucketVersioningStatusEnabled {
-		vc["enabled"] = true
-	} else {
-		vc["enabled"] = false
-	}
-	vcl = append(vcl, vc)
+	vcl := []map[string]interface{}{{}}
+	vcl[0]["enabled"] = versioningResponse.Status != nil && *versioningResponse.Status == s3.BucketVersioningStatusEnabled
 	return vcl
 }
 
 func expandObjectBucketVersioning(v []interface{}) *s3.VersioningConfiguration {
 	vc := &s3.VersioningConfiguration{}
-
+	vc.Status = scw.StringPtr(s3.BucketVersioningStatusSuspended)
 	if len(v) > 0 {
-		c := v[0].(map[string]interface{})
-
-		if c["enabled"].(bool) {
+		if c := v[0].(map[string]interface{}); c["enabled"].(bool) {
 			vc.Status = scw.StringPtr(s3.BucketVersioningStatusEnabled)
-		} else {
-			vc.Status = scw.StringPtr(s3.BucketVersioningStatusSuspended)
 		}
-	} else {
-		vc.Status = scw.StringPtr(s3.BucketVersioningStatusSuspended)
 	}
 	return vc
 }

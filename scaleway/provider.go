@@ -9,7 +9,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/plugin"
 	"github.com/scaleway/scaleway-sdk-go/scw"
-	"github.com/scaleway/scaleway-sdk-go/validation"
 )
 
 // Provider config can be used to provide additional config when creating provider.
@@ -216,7 +215,6 @@ func loadProfile(d *schema.ResourceData) (*scw.Profile, error) {
 	envProfile := scw.LoadEnvProfile()
 
 	providerProfile := &scw.Profile{}
-
 	if d != nil {
 		if accessKey, exist := d.GetOk("access_key"); exist {
 			providerProfile.AccessKey = scw.StringPtr(accessKey.(string))
@@ -241,13 +239,13 @@ func loadProfile(d *schema.ResourceData) (*scw.Profile, error) {
 	// to the one of the defaultZone
 	if profile.DefaultZone != nil && *profile.DefaultZone != "" &&
 		(profile.DefaultRegion == nil || *profile.DefaultRegion == "") {
-		zone := *profile.DefaultZone
+		zone := scw.Zone(*profile.DefaultZone)
 		l.Debugf("guess region from %s zone", zone)
-		region := zone[:len(zone)-2]
-		if validation.IsRegion(region) {
-			profile.DefaultRegion = scw.StringPtr(region)
+		region, err := zone.Region()
+		if err == nil {
+			profile.DefaultRegion = scw.StringPtr(region.String())
 		} else {
-			l.Debugf("invalid guessed region '%s'", region)
+			l.Debugf("cannot guess region: %w", err)
 		}
 	}
 	return profile, nil

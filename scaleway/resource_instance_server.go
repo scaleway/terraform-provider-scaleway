@@ -318,7 +318,7 @@ func resourceScalewayInstanceServerCreate(ctx context.Context, d *schema.Resourc
 	}
 
 	// Validate total local volume sizes.
-	if err := validateLocalVolumeSizes(req.Volumes, serverType, req.CommercialType); err != nil {
+	if err = validateLocalVolumeSizes(req.Volumes, serverType, req.CommercialType); err != nil {
 		return diag.FromErr(err)
 	}
 

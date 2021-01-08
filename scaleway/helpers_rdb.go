@@ -18,7 +18,10 @@ func rdbAPIWithRegion(d *schema.ResourceData, m interface{}) (*rdb.API, scw.Regi
 	rdbAPI := rdb.NewAPI(meta.scwClient)
 
 	region, err := extractRegion(d, meta)
-	return rdbAPI, region, err
+	if err != nil {
+		return nil, "", err
+	}
+	return rdbAPI, region, nil
 }
 
 // rdbAPIWithRegionAndID returns an lb API with region and ID extracted from the state
@@ -27,7 +30,10 @@ func rdbAPIWithRegionAndID(m interface{}, id string) (*rdb.API, scw.Region, stri
 	rdbAPI := rdb.NewAPI(meta.scwClient)
 
 	region, ID, err := parseRegionalID(id)
-	return rdbAPI, region, ID, err
+	if err != nil {
+		return nil, "", "", err
+	}
+	return rdbAPI, region, ID, nil
 }
 
 func flattenRdbInstanceReadReplicas(readReplicas []*rdb.Endpoint) interface{} {
