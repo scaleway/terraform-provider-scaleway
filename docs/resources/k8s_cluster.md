@@ -157,7 +157,6 @@ The following arguments are supported:
 
 - `region` - (Defaults to [provider](../index.md#region) `region`) The [region](../guides/regions_and_zones.md#regions) in which the cluster should be created.
 
-- `organization_id` - (Defaults to [provider](../index.md#organization_id) `organization_id`) The ID of the organization the cluster is associated with.
 
 - `project_id` - (Defaults to [provider](../index.md#project_id) `project_id`) The ID of the project the cluster is associated with.
 
@@ -178,6 +177,7 @@ In addition to all above arguments, the following attributes are exported:
     - `token` - The token to connect to the Kubernetes API server.
 - `status` - The status of the Kubernetes cluster.
 - `upgrade_available` - Set to `true` if a newer Kubernetes version is available.
+- `organization_id` - The ID of the organization the cluster is associated with.
 
 ## Import
 

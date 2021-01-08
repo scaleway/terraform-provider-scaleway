@@ -6,9 +6,8 @@ description: |-
 
 # scaleway_lb_certificate
 
--> **Note:** This terraform resource is flagged beta and might include breaking change in future releases.
-
-Creates and manages Scaleway Load-Balancer Certificates. For more information, see [the documentation](https://developers.scaleway.com/en/products/lb/api).
+Creates and manages Scaleway Load-Balancer Certificates.
+For more information, see [the documentation](https://developers.scaleway.com/en/products/lb/api).
 
 ## Examples
 
@@ -73,7 +72,7 @@ The following arguments are supported:
 
 In addition to all arguments above, the following attributes are exported:
 
-- `id` - The ID of the loadbalancer certificate.
+- `id` - The ID of the load-balancer certificate.
 - `common_name` - Main domain of the certificate
 - `subject_alternative_name` - The alternative domain names of the certificate
 - `fingerprint` - The identifier (SHA-1) of the certificate

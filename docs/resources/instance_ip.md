@@ -19,7 +19,6 @@ resource "scaleway_instance_ip" "server_ip" {}
 The following arguments are supported:
 
 - `zone` - (Defaults to [provider](../index.md#zone) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which the IP should be reserved.
-- `organization_id` - (Defaults to [provider](../index.md#organization_id) `organization_id`) The ID of the organization the IP is associated with.
 - `project_id` - (Defaults to [provider](../index.md#project_id) `project_id`) The ID of the project the IP is associated with.
 
 ## Attributes Reference
@@ -29,6 +28,7 @@ In addition to all above arguments, the following attributes are exported:
 - `id` - The ID of the IP.
 - `address` - The IP address.
 - `reverse` - The reverse dns attached to this IP
+- `organization_id` - The ID of the organization the IP is associated with.
 
 ## Import
 

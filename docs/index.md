@@ -103,11 +103,11 @@ resource "scaleway_instance_server" "web" {
 
 ## Authentication
 
-The Scaleway authentication is based on an **access key** and a **secret key**.
+The Scaleway authentication is based on an **access key**, and a **secret key**.
 Since secret keys are only revealed one time (when it is first created) you might
-need to create a new one in the section "API Tokens" of the
-[Scaleway console](https://console.scaleway.com/account/credentials).
-Click on the "Generate new token" button to create them. Giving it a friendly-name is recommended.
+need to create a new one in the section "API Tokens" of the [Scaleway console](https://console.scaleway.com/account/credentials).
+Click on the "Generate new token" button to create them.
+Giving it a friendly-name is recommended.
 
 The Scaleway provider offers three ways of providing these credentials.
 The following methods are supported, in this priority order:
@@ -192,7 +192,7 @@ terraform {
 }
 ```
 
-Beware as no locking mechanism are yet supported.
+Be careful as no locking mechanism are yet supported.
 Using scaleway object storage as terraform backend is not suitable if you work in a team with a risk of simultaneous access to the same plan.
 
 Note: For security reason it's not recommended to store secrets in terraform files.

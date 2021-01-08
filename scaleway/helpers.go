@@ -241,8 +241,6 @@ func organizationIDSchema() *schema.Schema {
 	return &schema.Schema{
 		Type:         schema.TypeString,
 		Description:  "The organization_id you want to attach the resource to",
-		Optional:     true,
-		ForceNew:     true,
 		Computed:     true,
 		ValidateFunc: validationUUID(),
 	}

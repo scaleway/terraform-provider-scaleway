@@ -6,7 +6,8 @@ description: |-
 
 # scaleway_instance_volume
 
-Creates and manages Scaleway Compute Instance Volumes. For more information, see [the documentation](https://developers.scaleway.com/en/products/instance/api/#volumes-7e8a39).
+Creates and manages Scaleway Compute Instance Volumes.
+For more information, see [the documentation](https://developers.scaleway.com/en/products/instance/api/#volumes-7e8a39).
 
 ## Example
 
@@ -28,7 +29,6 @@ The following arguments are supported:
 - ``from_snapshot_id`` - (Optional) If set, the new volume will be created from this snapshot. Only one of `size_in_gb`, `from_volume_id` and `from_snapshot_id` should be specified.
 - `name` - (Optional) The name of the volume. If not provided it will be randomly generated.
 - `zone` - (Defaults to [provider](../index.md#zone) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which the volume should be created.
-- `organization_id` - (Defaults to [provider](../index.md#organization_id) `organization_id`) The ID of the organization the volume is associated with.
 - `project_id` - (Defaults to [provider](../index.md#project_id) `project_id`) The ID of the project the volume is associated with.
 
 ## Attributes Reference
@@ -37,6 +37,7 @@ In addition to all above arguments, the following attributes are exported:
 
 - `id` - The ID of the volume.
 - `server_id` - The id of the associated server.
+- `organization_id` - The ID of the organization the volume is associated with.
 
 ## Import
 

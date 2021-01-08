@@ -35,8 +35,6 @@ The following arguments are supported:
 
 - `region` - (Defaults to [provider](../index.md#region) `region`). The [region](../guides/regions_and_zones.md#regions) in which the namespace should be created.
 
-- `organization_id` - (Defaults to [provider](../index.md#organization_id) `organization_id`) The ID of the organization the namespace is associated with.
-
 - `project_id` - (Defaults to [provider](../index.md#project_id) `project_id`) The ID of the project the namespace is associated with.
 
 ## Attributes Reference
@@ -45,6 +43,7 @@ In addition to all arguments above, the following attributes are exported:
 
 - `id` - The ID of the namespace
 - `endpoint` - Endpoint reachable by Docker.
+- `organization_id` - The ID of the organization the namespace is associated with.
 
 ## Import
 

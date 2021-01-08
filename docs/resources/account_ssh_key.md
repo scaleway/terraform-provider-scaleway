@@ -23,7 +23,6 @@ The following arguments are supported:
 
 - `name` - (Required) The name of the SSH key.
 - `public_key` - (Required) The public SSH key to be added.
-- `organization_id` - (Defaults to [provider](../index.md#organization_id) `organization_id`) The ID of the organization the SSH key is associated with.
 - `project_id` - (Defaults to [provider](../index.md#project_id) `project_id`) The ID of the project the SSH key is associated with.
 
 ## Attributes Reference
@@ -31,6 +30,7 @@ The following arguments are supported:
 In addition to all above arguments, the following attributes are exported:
 
 - `id` - The ID of the SSH key.
+- `organization_id` - The ID of the organization the SSH key is associated with.
 
 ## Import
 

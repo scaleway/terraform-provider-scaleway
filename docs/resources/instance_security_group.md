@@ -116,7 +116,6 @@ The following arguments are supported:
 
 - `zone` - (Defaults to [provider](../index.md#zone) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which the security group should be created.
 
-- `organization_id` - (Defaults to [provider](../index.md#organization_id) `organization_id`) The ID of the organization the security group is associated with.
 
 - `project_id` - (Defaults to [provider](../index.md#project_id) `project_id`) The ID of the project the security group is associated with.
 
@@ -144,6 +143,7 @@ The `inbound_rule` and `outbound_rule` block supports:
 In addition to all above arguments, the following attributes are exported:
 
 - `id` - The ID of the security group.
+- `organization_id` - The ID of the organization the security group is associated with.
 
 ## Import
 

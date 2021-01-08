@@ -6,9 +6,8 @@ description: |-
 
 # scaleway_rdb_instance
 
--> **Note:** This terraform resource is flagged beta and might include breaking change in future releases.
-
-Creates and manages Scaleway Database Instances. For more information, see [the documentation](https://developers.scaleway.com/en/products/rdb/api).
+Creates and manages Scaleway Database Instances.
+For more information, see [the documentation](https://developers.scaleway.com/en/products/rdb/api).
 
 ## Examples
 
@@ -56,10 +55,7 @@ The following arguments are supported:
 
 - `region` - (Defaults to [provider](../index.md#region) `region`) The [region](../guides/regions_and_zones.md#regions) in which the Database Instance should be created.
 
-- `organization_id` - (Defaults to [provider](../index.md#organization_id) `organization_id`) The ID of the organization the Database Instance is associated with.
-
 - `project_id` - (Defaults to [provider](../index.md#project_id) `project_id`) The ID of the project the Database Instance is associated with.
-
 
 ## Attributes Reference
 
@@ -73,7 +69,7 @@ In addition to all arguments above, the following attributes are exported:
     - `port` - Port of the replica.
     - `name` - Name of the replica.
 - `certificate` - Certificate of the database instance.
-
+- `organization_id` - The ID of the organization the Database Instance is associated with.
 
 ## Import
 
