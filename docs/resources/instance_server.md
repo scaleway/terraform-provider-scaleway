@@ -100,22 +100,13 @@ resource "scaleway_instance_server" "web" {
 
 ```hcl
 resource "scaleway_instance_server" "web" {
-  type = "DEV1-S"
+  type  = "DEV1-S"
   image = "ubuntu_focal"
 
-  tags = [ "web", "public" ]
-
   user_data {
-    key = "plop"
-    value = "world"
+    foo        = "bar"
+    cloud-init = file("${path.module}/cloud-init.yml")
   }
-
-  user_data {
-    key = "xavier"
-    value = "niel"
-  }
-
-  cloud_init = file("${path.module}/cloud-init.yml")
 }
 ```
 
@@ -169,13 +160,12 @@ attached to the server. Updates to this field will trigger a stop/start of the s
 
 - `state` - (Defaults to `started`) The state of the server. Possible values are: `started`, `stopped` or `standby`.
 
-- `cloud_init` - (Optional) The cloud init script associated with this server. Updates to this field will trigger a stop/start of the server.
-
 - `user_data` - (Optional) The user data associated with the server.
-
-    - `key` - (Required) The user data key. The `cloud-init` key is reserved, please use `cloud_init` attribute instead.
-
-    - `value` - (Required) The user data content. It could be a string or a file content using [file](https://www.terraform.io/docs/configuration/functions/file.html) or [filebase64](https://www.terraform.io/docs/configuration/functions/filebase64.html) for example.
+  Use the `cloud-init` key to use [cloud-init](https://cloudinit.readthedocs.io/en/latest/) on your instance.
+  You can define values using:
+    - string
+    - UTF-8 encoded file content using [file](https://www.terraform.io/docs/configuration/functions/file.html)
+    - Binary files using [filebase64](https://www.terraform.io/docs/configuration/functions/filebase64.html).
 
 - `boot_type` - The boot Type of the server. Possible values are: `local`, `bootscript` or `rescue`.
 
