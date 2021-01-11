@@ -16,7 +16,7 @@ func TestAccScalewayDataSourceRDBInstance_Basic(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: `
-					resource "scaleway_rdb_instance_beta" "test" {
+					resource "scaleway_rdb_instance" "test" {
 						name = "test-terraform"
 						engine = "PostgreSQL-11"
 						node_type = "db-dev-s"
@@ -24,24 +24,24 @@ func TestAccScalewayDataSourceRDBInstance_Basic(t *testing.T) {
 			},
 			{
 				Config: `
-					resource "scaleway_rdb_instance_beta" "test" {
+					resource "scaleway_rdb_instance" "test" {
 						name = "test-terraform"
 						engine = "PostgreSQL-11"
 						node_type = "db-dev-s"
 					}
 
 					data "scaleway_rdb_instance" "test" {
-						name = scaleway_rdb_instance_beta.test.name
+						name = scaleway_rdb_instance.test.name
 					}
 
 					data "scaleway_rdb_instance" "test2" {
-						instance_id = scaleway_rdb_instance_beta.test.id
+						instance_id = scaleway_rdb_instance.test.id
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayRdbExists(tt, "scaleway_rdb_instance_beta.test"),
+					testAccCheckScalewayRdbExists(tt, "scaleway_rdb_instance.test"),
 
-					resource.TestCheckResourceAttr("scaleway_rdb_instance_beta.test", "name", "test-terraform"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.test", "name", "test-terraform"),
 					resource.TestCheckResourceAttrSet("data.scaleway_rdb_instance.test", "id"),
 
 					resource.TestCheckResourceAttr("data.scaleway_rdb_instance.test2", "name", "test-terraform"),

@@ -236,25 +236,24 @@ func resourceScalewayInstanceServerCreate(ctx context.Context, d *schema.Resourc
 
 	commercialType := d.Get("type").(string)
 
-	image := expandZonedID(d.Get("image"))
-	if !scwvalidation.IsUUID(image.ID) {
-		instanceAPI := marketplace.NewAPI(m.(*Meta).scwClient)
-		imageUUID, err := instanceAPI.GetLocalImageIDByLabel(&marketplace.GetLocalImageIDByLabelRequest{
+	imageUUID := expandZonedID(d.Get("image")).ID
+	if !scwvalidation.IsUUID(imageUUID) {
+		marketPlaceAPI := marketplace.NewAPI(m.(*Meta).scwClient)
+		imageUUID, err = marketPlaceAPI.GetLocalImageIDByLabel(&marketplace.GetLocalImageIDByLabelRequest{
 			CommercialType: commercialType,
 			Zone:           zone,
-			ImageLabel:     image.ID,
+			ImageLabel:     imageUUID,
 		})
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("could not get image '%s': %s", image, err))
+			return diag.FromErr(fmt.Errorf("could not get image '%s': %s", newZonedID(zone, imageUUID), err))
 		}
-		image = newZonedID(zone, imageUUID)
 	}
 
 	req := &instance.CreateServerRequest{
 		Zone:              zone,
 		Name:              expandOrGenerateString(d.Get("name"), "srv"),
 		Project:           expandStringPtr(d.Get("project_id")),
-		Image:             image.ID,
+		Image:             imageUUID,
 		CommercialType:    commercialType,
 		EnableIPv6:        d.Get("enable_ipv6").(bool),
 		SecurityGroup:     expandStringPtr(expandZonedID(d.Get("security_group_id")).ID),
@@ -355,7 +354,7 @@ func resourceScalewayInstanceServerCreate(ctx context.Context, d *schema.Resourc
 	}
 
 	if len(userDataRequests.UserData) > 0 {
-		err := instanceAPI.SetAllServerUserData(userDataRequests)
+		err = instanceAPI.SetAllServerUserData(userDataRequests)
 		if err != nil {
 			return diag.FromErr(err)
 		}
