@@ -12,6 +12,9 @@ func vpcAPIWithZone(d *schema.ResourceData, m interface{}) (*vpc.API, scw.Zone, 
 	vpcAPI := vpc.NewAPI(meta.scwClient)
 
 	zone, err := extractZone(d, meta)
+	if err != nil {
+		return nil, "", err
+	}
 	return vpcAPI, zone, err
 }
 
@@ -21,5 +24,8 @@ func vpcAPIWithZoneAndID(m interface{}, id string) (*vpc.API, scw.Zone, string, 
 	vpcAPI := vpc.NewAPI(meta.scwClient)
 
 	zone, ID, err := parseZonedID(id)
+	if err != nil {
+		return nil, "", "", err
+	}
 	return vpcAPI, zone, ID, err
 }
