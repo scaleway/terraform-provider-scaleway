@@ -32,7 +32,10 @@ func instanceAPIWithZone(d *schema.ResourceData, m interface{}) (*instance.API, 
 	instanceAPI := instance.NewAPI(meta.scwClient)
 
 	zone, err := extractZone(d, meta)
-	return instanceAPI, zone, err
+	if err != nil {
+		return nil, "", err
+	}
+	return instanceAPI, zone, nil
 }
 
 // instanceAPIWithZoneAndID returns an instance API with zone and ID extracted from the state
@@ -41,7 +44,10 @@ func instanceAPIWithZoneAndID(m interface{}, zonedID string) (*instance.API, scw
 	instanceAPI := instance.NewAPI(meta.scwClient)
 
 	zone, ID, err := parseZonedID(zonedID)
-	return instanceAPI, zone, ID, err
+	if err != nil {
+		return nil, "", "", err
+	}
+	return instanceAPI, zone, ID, nil
 }
 
 // instanceAPIWithZoneAndNestedID returns an instance API with zone and inner/outer ID extracted from the state
@@ -50,7 +56,10 @@ func instanceAPIWithZoneAndNestedID(m interface{}, zonedNestedID string) (*insta
 	instanceAPI := instance.NewAPI(meta.scwClient)
 
 	zone, innerID, outerID, err := parseZonedNestedID(zonedNestedID)
-	return instanceAPI, zone, innerID, outerID, err
+	if err != nil {
+		return nil, "", "", "", err
+	}
+	return instanceAPI, zone, innerID, outerID, nil
 }
 
 // hash hashes a string to a unique hashcode.

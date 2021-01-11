@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net"
 	"net/http"
+	"regexp"
 	"strings"
 	"testing"
 
@@ -46,15 +47,15 @@ func TestParseLocalizedID(t *testing.T) {
 		},
 	}
 
-	for _, testCase := range testCases {
-		t.Run(testCase.name, func(t *testing.T) {
-			locality, id, err := parseLocalizedID(testCase.localityID)
-			if testCase.err != "" {
-				require.EqualError(t, err, testCase.err)
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			locality, id, err := parseLocalizedID(tc.localityID)
+			if tc.err != "" {
+				require.EqualError(t, err, tc.err)
 			} else {
 				require.NoError(t, err)
-				assert.Equal(t, testCase.locality, locality)
-				assert.Equal(t, testCase.id, id)
+				assert.Equal(t, tc.locality, locality)
+				assert.Equal(t, tc.id, id)
 			}
 		})
 	}
@@ -86,15 +87,15 @@ func TestParseZonedID(t *testing.T) {
 		},
 	}
 
-	for _, testCase := range testCases {
-		t.Run(testCase.name, func(t *testing.T) {
-			zone, id, err := parseZonedID(testCase.localityID)
-			if testCase.err != "" {
-				require.EqualError(t, err, testCase.err)
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			zone, id, err := parseZonedID(tc.localityID)
+			if tc.err != "" {
+				require.EqualError(t, err, tc.err)
 			} else {
 				require.NoError(t, err)
-				assert.Equal(t, testCase.zone, zone)
-				assert.Equal(t, testCase.id, id)
+				assert.Equal(t, tc.zone, zone)
+				assert.Equal(t, tc.id, id)
 			}
 		})
 	}
@@ -126,15 +127,15 @@ func TestParseRegionID(t *testing.T) {
 		},
 	}
 
-	for _, testCase := range testCases {
-		t.Run(testCase.name, func(t *testing.T) {
-			region, id, err := parseRegionalID(testCase.localityID)
-			if testCase.err != "" {
-				require.EqualError(t, err, testCase.err)
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			region, id, err := parseRegionalID(tc.localityID)
+			if tc.err != "" {
+				require.EqualError(t, err, tc.err)
 			} else {
 				require.NoError(t, err)
-				assert.Equal(t, testCase.region, region)
-				assert.Equal(t, testCase.id, id)
+				assert.Equal(t, tc.region, region)
+				assert.Equal(t, tc.id, id)
 			}
 		})
 	}
@@ -189,6 +190,8 @@ func testCheckResourceAttrFunc(name string, key string, test func(string) error)
 		return nil
 	}
 }
+
+var UUIDRegex = regexp.MustCompile(`[0-9a-fA-F]{8}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{12}`)
 
 func testCheckResourceAttrUUID(name string, key string) resource.TestCheckFunc {
 	return resource.TestMatchResourceAttr(name, key, UUIDRegex)
