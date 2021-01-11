@@ -433,7 +433,7 @@ func testAccCheckScalewayK8SClusterConfigMinimal(version string) string {
 resource "scaleway_k8s_cluster" "minimal" {
 	cni = "calico"
 	version = "%s"
-	name = "ClusterBetaConfigMinimal"
+	name = "ClusterConfigMinimal"
 	tags = [ "terraform-test", "scaleway_k8s_cluster", "minimal" ]
 }`, version)
 }

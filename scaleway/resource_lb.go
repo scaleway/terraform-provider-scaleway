@@ -38,18 +38,18 @@ func resourceScalewayLb() *schema.Resource {
 				Description:      "The type of load-balancer you want to create",
 			},
 			"tags": {
-				Type: schema.TypeList,
+				Type:     schema.TypeList,
+				Optional: true,
 				Elem: &schema.Schema{
 					Type: schema.TypeString,
 				},
-				Optional:    true,
 				Description: "Array of tags to associate with the load-balancer",
 			},
 			"ip_id": {
 				Type:             schema.TypeString,
 				Required:         true,
-				Description:      "The load-balance public IP ID",
 				ForceNew:         true,
+				Description:      "The load-balance public IP ID",
 				DiffSuppressFunc: diffSuppressFuncLocality,
 			},
 			"ip_address": {

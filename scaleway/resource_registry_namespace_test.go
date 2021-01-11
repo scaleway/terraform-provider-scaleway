@@ -46,7 +46,7 @@ func TestAccScalewayRegistryNamespace_Basic(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      testAccCheckScalewayRegistryNamespaceBetaDestroy(tt),
+		CheckDestroy:      testAccCheckScalewayRegistryNamespaceDestroy(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -104,7 +104,7 @@ func testAccCheckScalewayRegistryNamespaceExists(tt *TestTools, n string) resour
 	}
 }
 
-func testAccCheckScalewayRegistryNamespaceBetaDestroy(tt *TestTools) resource.TestCheckFunc {
+func testAccCheckScalewayRegistryNamespaceDestroy(tt *TestTools) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		for _, rs := range state.RootModule().Resources {
 			if rs.Type != "scaleway_registry_namespace" {

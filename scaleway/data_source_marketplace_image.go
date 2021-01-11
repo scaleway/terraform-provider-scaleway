@@ -11,7 +11,7 @@ import (
 
 func dataSourceScalewayMarketplaceImage() *schema.Resource {
 	return &schema.Resource{
-		ReadContext: dataSourceScalewayMarketplaceImageReadBeta,
+		ReadContext: dataSourceScalewayMarketplaceImageRead,
 		Schema: map[string]*schema.Schema{
 			"label": {
 				Type:        schema.TypeString,
@@ -29,7 +29,7 @@ func dataSourceScalewayMarketplaceImage() *schema.Resource {
 	}
 }
 
-func dataSourceScalewayMarketplaceImageReadBeta(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func dataSourceScalewayMarketplaceImageRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	marketplaceAPI, zone, err := marketplaceAPIWithZone(d, m)
 	if err != nil {
 		return diag.FromErr(err)
