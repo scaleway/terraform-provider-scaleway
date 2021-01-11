@@ -61,6 +61,40 @@ resource "scaleway_instance_security_group_rules" "main" {
     content {
       action = "accept"
       ip     = inbound_rule.value
+      port   = 80
+    }
+  }
+}
+```
+
+You can also use object to assign IP and port in the same time.
+In your locals, you can use [objects](https://www.terraform.io/docs/configuration/types.html#structural-types) to encapsulate several values that will be used later on in the loop:
+
+```hcl
+resource "scaleway_instance_security_group" "main" {
+  description             = "test"
+  name                    = "terraform test"
+  inbound_default_policy  = "drop"
+  outbound_default_policy = "accept"
+}
+
+locals {
+  trusted = [
+    { ip = "1.2.3.4", port = "80" },
+    { ip = "5.6.7.8", port = "81" },
+    { ip = "9.10.11.12", port = "81" },
+  ]
+}
+
+resource "scaleway_instance_security_group_rules" "main" {
+  security_group_id = scaleway_instance_security_group.main.id
+
+  dynamic "inbound_rule" {
+    for_each = local.trusted
+    content {
+      action = "accept"
+      ip     = inbound_rule.value.ip
+      port   = inbound_rule.value.port
     }
   }
 }
