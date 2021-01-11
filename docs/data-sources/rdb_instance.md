@@ -31,6 +31,6 @@ data "scaleway_rdb_instance" "my_instance" {
 - `instance_id` - (Optional) The RDB instance ID.
   Only one of `name` and `instance_id` should be specified.
 
-- `region` - (Defaults to [provider](../index.html#region) `region`) The [region](../guides/regions_and_zones.html#zones) in which the RDB instance exists.
+- `region` - (Defaults to [provider](../index.md#region) `region`) The [region](../guides/regions_and_zones.md#zones) in which the RDB instance exists.
 
-- `organization_id` - (Defaults to [provider](../index.html#organization_id) `organization_id`) The ID of the organization the RDB instance is in.
+- `organization_id` - (Defaults to [provider](../index.md#organization_id) `organization_id`) The ID of the organization the RDB instance is in.
