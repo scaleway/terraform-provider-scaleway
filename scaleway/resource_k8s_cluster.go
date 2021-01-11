@@ -422,7 +422,8 @@ func resourceScalewayK8SClusterDefaultPoolRead(ctx context.Context, d *schema.Re
 	defaultPool["status"] = pool.Status.String()
 
 	if pool.PlacementGroupID != nil {
-		defaultPool["placement_group_id"] = newZonedIDStringFromRegion(region, *pool.PlacementGroupID) // TODO fix this ZonedIdFromRegion
+		zone := scw.Zone(region + "-1") // Placement groups are zoned resources.
+		defaultPool["placement_group_id"] = newZonedID(zone, *pool.PlacementGroupID)
 	}
 
 	err = d.Set("default_pool", []map[string]interface{}{defaultPool})

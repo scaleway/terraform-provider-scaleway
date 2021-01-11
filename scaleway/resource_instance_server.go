@@ -14,6 +14,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
 	"github.com/scaleway/scaleway-sdk-go/api/marketplace/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	scwvalidation "github.com/scaleway/scaleway-sdk-go/validation"
 )
 
 func resourceScalewayInstanceServer() *schema.Resource {
@@ -236,7 +237,7 @@ func resourceScalewayInstanceServerCreate(ctx context.Context, d *schema.Resourc
 	commercialType := d.Get("type").(string)
 
 	image := expandZonedID(d.Get("image"))
-	if !isUUID(image.ID) {
+	if !scwvalidation.IsUUID(image.ID) {
 		instanceAPI := marketplace.NewAPI(m.(*Meta).scwClient)
 		imageUUID, err := instanceAPI.GetLocalImageIDByLabel(&marketplace.GetLocalImageIDByLabelRequest{
 			CommercialType: commercialType,
@@ -317,7 +318,7 @@ func resourceScalewayInstanceServerCreate(ctx context.Context, d *schema.Resourc
 	}
 
 	// Validate total local volume sizes.
-	if err := validateLocalVolumeSizes(req.Volumes, serverType, req.CommercialType); err != nil {
+	if err = validateLocalVolumeSizes(req.Volumes, serverType, req.CommercialType); err != nil {
 		return diag.FromErr(err)
 	}
 
@@ -412,7 +413,7 @@ func resourceScalewayInstanceServerRead(ctx context.Context, d *schema.ResourceD
 
 	// Image could be empty in an import context.
 	image := expandRegionalID(d.Get("image").(string))
-	if response.Server.Image != nil && (image.ID == "" || isUUID(image.ID)) {
+	if response.Server.Image != nil && (image.ID == "" || scwvalidation.IsUUID(image.ID)) {
 		// TODO: If image is a label, check that response.Server.Image.ID match the label.
 		// It could be useful if the user edit the image with another tool.
 		_ = d.Set("image", newZonedID(zone, response.Server.Image.ID).String())
@@ -470,7 +471,12 @@ func resourceScalewayInstanceServerRead(ctx context.Context, d *schema.ResourceD
 
 			rootVolume["volume_id"] = newZonedID(zone, volume.ID).String()
 			rootVolume["size_in_gb"] = int(uint64(volume.Size) / gb)
-			rootVolume["delete_on_termination"] = d.Get("root_volume.0.delete_on_termination")
+
+			// By default we delete the root volume on termination
+			rootVolume["delete_on_termination"] = true
+			if deleteOnTermination, ok := d.GetOk("root_volume.0.delete_on_termination"); ok {
+				rootVolume["delete_on_termination"] = deleteOnTermination
+			}
 
 			_ = d.Set("root_volume", []map[string]interface{}{rootVolume})
 		} else {

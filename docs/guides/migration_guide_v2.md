@@ -21,20 +21,34 @@ If you are following these recommendations, update the version constraints in yo
 Update to latest `1.X` version:
 
 ```hcl
-provider "scaleway" {
-  # ... other configuration ...
+terraform {
+  required_providers {
+    scaleway = {
+      source = "scaleway/scaleway"
+      version = "~> 1.17"
+    }
+  }
+}
 
-  version = "~> 1.11"
+provider "scaleway" {
+  # ...
 }
 ```
 
 Update to latest 2.X version:
 
 ```hcl
-provider "scaleway" {
-  # ... other configuration ...
+terraform {
+  required_providers {
+    scaleway = {
+      source = "scaleway/scaleway"
+      version = "~> 2.0"
+    }
+  }
+}
 
-  version = "~> 2.0"
+provider "scaleway" {
+  # ...
 }
 ```
 

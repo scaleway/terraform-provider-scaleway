@@ -6,6 +6,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/scaleway-sdk-go/validation"
 )
 
 // validationUUID validates the schema is a UUID or the combination of a locality and a UUID
@@ -25,7 +26,7 @@ func validationUUID() func(interface{}, string) ([]string, []error) {
 			return nil, []error{fmt.Errorf("invalid UUID for key '%s': not a string", key)}
 		}
 
-		if !isUUID(uuid) {
+		if !validation.IsUUID(uuid) {
 			return nil, []error{fmt.Errorf("invalid UUID for key '%s': '%s' (%d): format should be 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx' (36) and contains valid hexadecimal characters", key, uuid, len(uuid))}
 		}
 
