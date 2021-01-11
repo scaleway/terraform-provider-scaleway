@@ -18,7 +18,10 @@ func registryAPIWithRegion(d *schema.ResourceData, m interface{}) (*registry.API
 	api := registry.NewAPI(meta.scwClient)
 
 	region, err := extractRegion(d, meta)
-	return api, region, err
+	if err != nil {
+		return nil, "", err
+	}
+	return api, region, nil
 }
 
 // registryAPIWithRegionAndID returns a new container registry API, region and ID.
@@ -27,5 +30,8 @@ func registryAPIWithRegionAndID(m interface{}, id string) (*registry.API, scw.Re
 	api := registry.NewAPI(meta.scwClient)
 
 	region, id, err := parseRegionalID(id)
-	return api, region, id, err
+	if err != nil {
+		return nil, "", "", err
+	}
+	return api, region, id, nil
 }

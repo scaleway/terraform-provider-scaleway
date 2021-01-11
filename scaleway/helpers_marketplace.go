@@ -12,5 +12,8 @@ func marketplaceAPIWithZone(d *schema.ResourceData, m interface{}) (*marketplace
 	marketplaceAPI := marketplace.NewAPI(meta.scwClient)
 
 	zone, err := extractZone(d, meta)
-	return marketplaceAPI, zone, err
+	if err != nil {
+		return nil, "", err
+	}
+	return marketplaceAPI, zone, nil
 }

@@ -20,7 +20,10 @@ func baremetalAPIWithZone(d *schema.ResourceData, m interface{}) (*baremetal.API
 	baremetalAPI := baremetal.NewAPI(meta.scwClient)
 
 	zone, err := extractZone(d, meta)
-	return baremetalAPI, zone, err
+	if err != nil {
+		return nil, "", err
+	}
+	return baremetalAPI, zone, nil
 }
 
 // instanceAPIWithZoneAndID returns an baremetal API with zone and ID extracted from the state
@@ -29,7 +32,10 @@ func baremetalAPIWithZoneAndID(m interface{}, id string) (*baremetal.API, ZonedI
 	baremetalAPI := baremetal.NewAPI(meta.scwClient)
 
 	zone, ID, err := parseZonedID(id)
-	return baremetalAPI, newZonedID(zone, ID), err
+	if err != nil {
+		return nil, ZonedID{}, err
+	}
+	return baremetalAPI, newZonedID(zone, ID), nil
 }
 
 func flattenBaremetalCPUs(cpus []*baremetal.CPU) interface{} {
