@@ -31,6 +31,41 @@ resource "scaleway_instance_security_group_rules" "sgrs01" {
 }
 ```
 
+### Simplify your rules using dynamic block and `for_each` loop
+
+You can use [`for_each` syntax](https://www.terraform.io/docs/configuration/meta-arguments/for_each.html) to simplify the definition of your rules.
+Let's suppose that your inbound default policy is to drop, but you want to build a list of exceptions to accept.
+Create a local containing your exceptions (`locals.trusted`) and use the `for_each` syntax in a [dynamic block](https://www.terraform.io/docs/configuration/expressions/dynamic-blocks.html):
+
+```hcl
+resource "scaleway_instance_security_group" "main" {
+  description = "test"
+  name        = "terraform test"
+  inbound_default_policy  = "drop"
+  outbound_default_policy = "accept"
+}
+
+locals {
+  trusted = [
+    "1.2.3.4",
+    "4.5.6.7",
+    "7.8.9.10"
+  ]
+}
+
+resource "scaleway_instance_security_group_rules" "main" {
+  security_group_id       = scaleway_instance_security_group.main.id
+
+  dynamic "inbound_rule" {
+    for_each = local.trusted
+    content {
+      action = "accept"
+      ip     = inbound_rule.value
+    }
+  }
+}
+```
+
 ## Arguments Reference
 
 The following arguments are supported:
