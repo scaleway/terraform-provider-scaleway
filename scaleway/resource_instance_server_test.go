@@ -108,48 +108,57 @@ func TestAccScalewayInstanceServer_Minimal1(t *testing.T) {
 func TestAccScalewayInstanceServer_RootVolume1(t *testing.T) {
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
-	t.Skip("C2S often don't start. This is an issue on API. This server type is deprecated anyway")
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheckScalewayInstanceServerDestroy(tt),
 		Steps: []resource.TestStep{
 			{
-				// 51 Gb
+				// 10 Gb
 				Config: `
+					resource "scaleway_instance_volume" "local" {
+						size_in_gb = 10
+						type = "l_ssd"
+					}
 					resource "scaleway_instance_server" "base" {
 						image = "ubuntu_focal"
-						type  = "C2S"
+						type  = "DEV1-S"
 						root_volume {
-							size_in_gb = 51
+							size_in_gb = 10
 							delete_on_termination = true
 						}
 						tags = [ "terraform-test", "scaleway_instance_server", "root_volume" ]
+						additional_volume_ids = [scaleway_instance_volume.local.id]
 					}`,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayInstanceServerExists(tt, "scaleway_instance_server.base"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "root_volume.0.delete_on_termination", "true"),
-					resource.TestCheckResourceAttr("scaleway_instance_server.base", "root_volume.0.size_in_gb", "51"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.base", "root_volume.0.size_in_gb", "10"),
 					resource.TestCheckResourceAttrSet("scaleway_instance_server.base", "root_volume.0.volume_id"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "tags.2", "root_volume"),
 				),
 			},
 			{
-				// 52 Gb
+				// 11 Gb
 				Config: `
+					resource "scaleway_instance_volume" "local" {
+						size_in_gb = 9
+						type = "l_ssd"
+					}
 					resource "scaleway_instance_server" "base" {
 						image = "ubuntu_focal"
-						type  = "C2S"
+						type  = "DEV1-S"
 						root_volume {
-							size_in_gb = 52
+							size_in_gb = 11
 							delete_on_termination = true
 						}
 						tags = [ "terraform-test", "scaleway_instance_server", "root_volume" ]
+						additional_volume_ids = [scaleway_instance_volume.local.id]
 					}`,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayInstanceServerExists(tt, "scaleway_instance_server.base"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "root_volume.0.delete_on_termination", "true"),
-					resource.TestCheckResourceAttr("scaleway_instance_server.base", "root_volume.0.size_in_gb", "52"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.base", "root_volume.0.size_in_gb", "11"),
 					resource.TestCheckResourceAttrSet("scaleway_instance_server.base", "root_volume.0.volume_id"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "tags.2", "root_volume"),
 				),
