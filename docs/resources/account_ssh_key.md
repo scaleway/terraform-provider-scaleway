@@ -30,7 +30,7 @@ The following arguments are supported:
 In addition to all above arguments, the following attributes are exported:
 
 - `id` - The ID of the SSH key.
-- `organization_id` - The ID of the organization the SSH key is associated with.
+- `organization_id` - The organization ID the SSH key is associated with.
 
 ## Import
 
