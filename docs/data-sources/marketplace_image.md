@@ -1,33 +1,26 @@
 ---
-page_title: "Scaleway: scaleway_marketplace_image"
+page_title: "scaleway_marketplace_image Data Source - terraform-provider-scaleway"
+subcategory: ""
 description: |-
-  Gets local image ID of an image from its label name.
+  
 ---
 
-# scaleway_marketplace_image
+# Data Source `scaleway_marketplace_image`
 
-Gets local image ID of an image from its label name.
 
-## Example Usage
 
-```hcl
-data "scaleway_marketplace_image" "my_image" {
-  label  = "ubuntu_focal"
-}
-```
 
-## Argument Reference
 
-- `label` - (Required) Exact label of the desired image. You can use [this endpoint](https://api-marketplace.scaleway.com/images?page=1&per_page=100)
-to find the right `label`.
+## Schema
 
-- `instance_type` - (Optional, default `DEV1-S`) The instance type the image is compatible with.
-You find all the available types on the [pricing page](https://www.scaleway.com/en/pricing/).
+### Required
 
-- `zone` - (Defaults to [provider](../index.md#zone) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which the image exists.
+- **label** (String) Exact label of the desired image
 
-## Attributes Reference
+### Optional
 
-In addition to all above arguments, the following attributes are exported:
+- **id** (String) The ID of this resource.
+- **instance_type** (String) The instance commercial type of the desired image
+- **zone** (String) The zone you want to attach the resource to
 
-- `id` - The ID of the image.
+

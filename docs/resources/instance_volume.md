@@ -1,48 +1,43 @@
 ---
-page_title: "Scaleway: scaleway_instance_volume"
+page_title: "scaleway_instance_volume Resource - terraform-provider-scaleway"
+subcategory: ""
 description: |-
-  Manages Scaleway Compute Instance Volumes.
+  
 ---
 
-# scaleway_instance_volume
+# Resource `scaleway_instance_volume`
 
-Creates and manages Scaleway Compute Instance Volumes.
-For more information, see [the documentation](https://developers.scaleway.com/en/products/instance/api/#volumes-7e8a39).
 
-## Example
 
-```hcl
-resource "scaleway_instance_volume" "server_volume" {
-    type       = "l_ssd"
-    name       = "some-volume-name"
-    size_in_gb = 20
-}
-```
 
-## Arguments Reference
 
-The following arguments are supported:
+## Schema
 
-- `type` - (Required) The type of the volume. The possible values are: `b_ssd` (Block SSD), `l_ssd` (Local SSD).
-- `size_in_gb` - (Optional) The size of the volume. Only one of `size_in_gb`, `from_volume_id` and `from_volume_id` should be specified.
-- `from_volume_id` - (Optional) If set, the new volume will be copied from this volume. Only one of `size_in_gb`, `from_volume_id` and `from_snapshot_id` should be specified.
-- ``from_snapshot_id`` - (Optional) If set, the new volume will be created from this snapshot. Only one of `size_in_gb`, `from_volume_id` and `from_snapshot_id` should be specified.
-- `name` - (Optional) The name of the volume. If not provided it will be randomly generated.
-- `zone` - (Defaults to [provider](../index.md#zone) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which the volume should be created.
-- `project_id` - (Defaults to [provider](../index.md#project_id) `project_id`) The ID of the project the volume is associated with.
+### Required
 
-## Attributes Reference
+- **type** (String) The volume type
 
-In addition to all above arguments, the following attributes are exported:
+### Optional
 
-- `id` - The ID of the volume.
-- `server_id` - The id of the associated server.
-- `organization_id` - The organization ID the volume is associated with.
+- **from_snapshot_id** (String) Create a volume based on a image
+- **from_volume_id** (String) Create a copy of an existing volume
+- **id** (String) The ID of this resource.
+- **name** (String) The name of the volume
+- **project_id** (String) The project_id you want to attach the resource to
+- **size_in_gb** (Number) The size of the volume in gigabyte
+- **timeouts** (Block, Optional) (see [below for nested schema](#nestedblock--timeouts))
+- **zone** (String) The zone you want to attach the resource to
 
-## Import
+### Read-only
 
-volumes can be imported using the `{zone}/{id}`, e.g.
+- **organization_id** (String) The organization_id you want to attach the resource to
+- **server_id** (String) The server associated with this volume
 
-```bash
-$ terraform import scaleway_instance_volume.server_volume fr-par-1/11111111-1111-1111-1111-111111111111
-```
+<a id="nestedblock--timeouts"></a>
+### Nested Schema for `timeouts`
+
+Optional:
+
+- **default** (String)
+
+

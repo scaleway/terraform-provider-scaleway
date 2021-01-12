@@ -1,61 +1,61 @@
 ---
-page_title: "Scaleway: scaleway_instance_security_group"
+page_title: "scaleway_instance_security_group Data Source - terraform-provider-scaleway"
+subcategory: ""
 description: |-
-  Gets information about a Security Group.
+  
 ---
 
-# scaleway_instance_security_group
+# Data Source `scaleway_instance_security_group`
 
-Gets information about a Security Group.
 
-## Example Usage
 
-```hcl
-# Get info by security group name
-data "scaleway_instance_security_group" "my_key" {
-  name  = "my-security-group-name"
-}
 
-# Get info by security group id
-data "scaleway_instance_security_group" "my_key" {
-  security_group_id = "11111111-1111-1111-1111-111111111111"
-}
-```
 
-## Argument Reference
+## Schema
 
-- `name` - (Optional) The security group name. Only one of `name` and `security_group_id` should be specified.
+### Optional
 
-- `security_group_id` - (Optional) The security group id. Only one of `name` and `security_group_id` should be specified.
+- **id** (String) The ID of this resource.
+- **name** (String) The name of the security group
+- **security_group_id** (String) The ID of the security group
+- **zone** (String) The zone you want to attach the resource to
 
-- `zone` - (Defaults to [provider](../index.md#zone) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which the security group exists.
+### Read-only
 
-## Attributes Reference
+- **description** (String) The description of the security group
+- **enable_default_security** (Boolean) Enable blocking of SMTP on IPv4 and IPv6
+- **external_rules** (Boolean)
+- **inbound_default_policy** (String) Default inbound traffic policy for this security group
+- **inbound_rule** (List of Object) Inbound rules for this security group (see [below for nested schema](#nestedatt--inbound_rule))
+- **organization_id** (String) The organization_id you want to attach the resource to
+- **outbound_default_policy** (String) Default outbound traffic policy for this security group
+- **outbound_rule** (List of Object) Outbound rules for this security group (see [below for nested schema](#nestedatt--outbound_rule))
+- **project_id** (String) The project_id you want to attach the resource to
+- **stateful** (Boolean) The stateful value of the security group
 
-In addition to all above arguments, the following attributes are exported:
+<a id="nestedatt--inbound_rule"></a>
+### Nested Schema for `inbound_rule`
 
-- `id` - The ID of the security group.
+Read-only:
 
-- `organization_id` - The ID of the organization the security group is associated with.
+- **action** (String)
+- **ip** (String)
+- **ip_range** (String)
+- **port** (Number)
+- **port_range** (String)
+- **protocol** (String)
 
-- `project_id` - The ID of the project the security group is associated with.
 
-- `inbound_default_policy` - The default policy on incoming traffic. Possible values are: `accept` or `drop`.
+<a id="nestedatt--outbound_rule"></a>
+### Nested Schema for `outbound_rule`
 
-- `outbound_default_policy` - The default policy on outgoing traffic. Possible values are: `accept` or `drop`.
+Read-only:
 
-- `inbound_rule` - A list of inbound rule to add to the security group. (Structure is documented below.)
+- **action** (String)
+- **ip** (String)
+- **ip_range** (String)
+- **port** (Number)
+- **port_range** (String)
+- **protocol** (String)
 
-- `outbound_rule` - A list of outbound rule to add to the security group. (Structure is documented below.)
 
-The `inbound_rule` and `outbound_rule` block supports:
-
-- `action` - The action to take when rule match. Possible values are: `accept` or `drop`.
-
-- `protocol`- The protocol this rule apply to. Possible values are: `TCP`, `UDP`, `ICMP` or `ANY`.
-
-- `port`- The port this rule apply to. If no port is specified, rule will apply to all port.
-
-- `ip`- The ip this rule apply to.
-
-- `ip_range`- The ip range (e.g `192.168.1.0/24`) this rule apply to.

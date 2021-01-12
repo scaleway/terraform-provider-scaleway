@@ -1,60 +1,64 @@
 ---
-page_title: "Scaleway: scaleway_object_bucket"
+page_title: "scaleway_object_bucket Resource - terraform-provider-scaleway"
+subcategory: ""
 description: |-
-  Manages Scaleway object storage buckets.
+  
 ---
 
-# scaleway_object_bucket
+# Resource `scaleway_object_bucket`
 
-Creates and manages Scaleway object storage buckets.
-For more information, see [the documentation](https://www.scaleway.com/en/docs/object-storage-feature/).
 
-## Example Usage
 
-```hcl
-resource "scaleway_object_bucket" "some_bucket" {
-  name = "some-unique-name"
-  acl  = "private"
-  tags = {
-    key = "value"
-  }
-}
-```
 
-## Arguments Reference
 
-The following arguments are supported:
+## Schema
 
-* `name` - (Required) The name of the bucket.
-* `tags` - (Optional) A list of tags (key / value) for the bucket.
-* `acl` - (Optional) The [canned ACL](https://docs.aws.amazon.com/AmazonS3/latest/dev/acl-overview.html#canned-acl) you want to apply to the bucket.
-* `region` - (Optional) The [region](https://developers.scaleway.com/en/quickstart/#region-definition) in which the bucket should be created.
-* `versioning` - (Optional) A state of [versioning](https://docs.aws.amazon.com/AmazonS3/latest/dev/Versioning.html) (documented below)
-* `cors_rule` - (Optional) A rule of [Cross-Origin Resource Sharing](https://docs.aws.amazon.com/AmazonS3/latest/dev/cors.html) (documented below).
+### Required
 
-The `CORS` object supports the following:
+- **name** (String) The name of the bucket
 
-* `allowed_headers` (Optional) Specifies which headers are allowed.
-* `allowed_methods` (Required) Specifies which methods are allowed. Can be `GET`, `PUT`, `POST`, `DELETE` or `HEAD`.
-* `allowed_origins` (Required) Specifies which origins are allowed.
-* `expose_headers` (Optional) Specifies expose header in the response.
-* `max_age_seconds` (Optional) Specifies time in seconds that browser can cache the response for a preflight request.
+### Optional
 
-The `versioning` object supports the following:
+- **acl** (String) ACL of the bucket: either 'public-read' or 'private'.
+- **cors_rule** (Block List) (see [below for nested schema](#nestedblock--cors_rule))
+- **id** (String) The ID of this resource.
+- **region** (String) The region you want to attach the resource to
+- **tags** (Map of String) The tags associated with this bucket
+- **timeouts** (Block, Optional) (see [below for nested schema](#nestedblock--timeouts))
+- **versioning** (Block List, Max: 1) (see [below for nested schema](#nestedblock--versioning))
 
-* `enabled` - (Optional) Enable versioning. Once you version-enable a bucket, it can never return to an unversioned state. You can, however, suspend versioning on that bucket.
+### Read-only
 
-## Attributes Reference
+- **endpoint** (String) Endpoint of the bucket
 
-In addition to all above arguments, the following attribute is exported:
+<a id="nestedblock--cors_rule"></a>
+### Nested Schema for `cors_rule`
 
-* `id` - The unique name of the bucket.
-* `endpoint` - The endpoint URL of the bucket
+Required:
 
-## Import
+- **allowed_methods** (List of String)
+- **allowed_origins** (List of String)
 
-Buckets can be imported using the `{region}/{bucketName}` identifier, e.g.
+Optional:
 
-```bash
-$ terraform import scaleway_object_bucket.some_bucket fr-par/some-bucket
-```
+- **allowed_headers** (List of String)
+- **expose_headers** (List of String)
+- **max_age_seconds** (Number)
+
+
+<a id="nestedblock--timeouts"></a>
+### Nested Schema for `timeouts`
+
+Optional:
+
+- **default** (String)
+
+
+<a id="nestedblock--versioning"></a>
+### Nested Schema for `versioning`
+
+Optional:
+
+- **enabled** (Boolean)
+
+

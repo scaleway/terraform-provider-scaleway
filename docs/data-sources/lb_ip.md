@@ -1,45 +1,30 @@
 ---
-page_title: "Scaleway: scaleway_lb_ip"
+page_title: "scaleway_lb_ip Data Source - terraform-provider-scaleway"
+subcategory: ""
 description: |-
-  Gets information about a Load Balancer IP.
+  
 ---
 
-# scaleway_lb_ip
+# Data Source `scaleway_lb_ip`
 
-Gets information about a Load Balancer IP.
 
-## Example Usage
 
-```hcl
-# Get info by IP address
-data "scaleway_lb_ip" "my_ip" {
-  ip_address = "0.0.0.0"
-}
 
-# Get info by IP ID
-data "scaleway_lb_ip" "my_ip" {
-  ip_id = "11111111-1111-1111-1111-111111111111"
-}
-```
 
-## Argument Reference
+## Schema
 
-- `ip_address` - (Optional) The IP address.
-  Only one of `ip_address` and `lb_id` should be specified.
+### Optional
 
-- `lb_id` - (Optional) The IP ID.
-  Only one of `ip_address` and `ip_id` should be specified.
+- **id** (String) The ID of this resource.
+- **ip_address** (String) The IP address
+- **ip_id** (String) The ID of the IP address
 
-- `region` - (Defaults to [provider](../index.md#region) `region`) The [region](../guides/regions_and_zones.md#zones) in which the LB IP exists.
+### Read-only
 
-- `project_id` - (Defaults to [provider](../index.md#project_id) `project_id`) The ID of the project the LB IP is associated with.
+- **lb_id** (String) The ID of the loadbalancer attached to this IP, if any
+- **organization_id** (String) The organization_id you want to attach the resource to
+- **project_id** (String) The project_id you want to attach the resource to
+- **region** (String) The region you want to attach the resource to
+- **reverse** (String) The reverse domain name for this IP
 
-## Attributes Reference
 
-In addition to all above arguments, the following attributes are exported:
-
-- `reverse` - The reverse domain associated with this IP.
-
-- `lb_id` - The associated load-balance ID if any
-
-- `organization_id` - (Defaults to [provider](../index.md#organization_id) `organization_id`) The ID of the organization the LB IP is associated with.

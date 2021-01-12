@@ -1,52 +1,36 @@
 ---
-page_title: "Scaleway: scaleway_rdb_user"
+page_title: "scaleway_rdb_user Resource - terraform-provider-scaleway"
+subcategory: ""
 description: |-
-  Manages Scaleway Database Users.
+  
 ---
 
-# scaleway_rdb_user
+# Resource `scaleway_rdb_user`
 
-Creates and manages Scaleway Database Users.
-For more information, see [the documentation](https://developers.scaleway.com/en/products/rdb/api).
 
-## Examples
 
-### Basic
 
-```hcl
-resource "random_password" "db_password" {
-  length  = 16
-  special = true
-}
 
-resource "scaleway_rdb_user" "db_admin" {
-  instance_id = scaleway_rdb_instance.main.id
-  name        = "titi"
-  password    = random_password.db_password.result
-  is_admin    = true
-}
-```
+## Schema
 
-## Arguments Reference
+### Required
 
-The following arguments are supported:
+- **instance_id** (String) Instance on which the user is created
+- **name** (String) Database user name
+- **password** (String, Sensitive) Database user password
 
-- `instance_id` - (Required) The instance on which to create the user.
+### Optional
 
-~> **Important:** Updates to `instance_id` will recreate the Database User.
+- **id** (String) The ID of this resource.
+- **is_admin** (Boolean) Grant admin permissions to database user
+- **region** (String) The region you want to attach the resource to
+- **timeouts** (Block, Optional) (see [below for nested schema](#nestedblock--timeouts))
 
-- `name` - (Required) Database User name.
+<a id="nestedblock--timeouts"></a>
+### Nested Schema for `timeouts`
 
-~> **Important:** Updates to `name` will recreate the Database User.
+Optional:
 
-- `password` - (Required) Database User password.
+- **default** (String)
 
-- `is_admin` - (Optional) Grant admin permissions to the Database User.
 
-## Import
-
-Database User can be imported using `{region}/{instance_id}/{name}`, e.g.
-
-```bash
-$ terraform import scaleway_rdb_user.admin fr-par/11111111-1111-1111-1111-111111111111/admin
-```

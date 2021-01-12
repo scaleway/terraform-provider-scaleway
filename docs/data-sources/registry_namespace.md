@@ -1,44 +1,31 @@
 ---
-page_title: "Scaleway: scaleway_registry_namespace"
+page_title: "scaleway_registry_namespace Data Source - terraform-provider-scaleway"
+subcategory: ""
 description: |-
-  Gets information about a registry namespace.
+  
 ---
 
-# scaleway_registry_namespace
+# Data Source `scaleway_registry_namespace`
 
-Gets information about a registry namespace.
 
-## Example Usage
 
-```hcl
-// Get info by namespace name
-data "scaleway_registry_namespace" "my_namespace" {
-  name = "my-namespace-name"
-}
 
-// Get info by namespace ID
-data "scaleway_registry_namespace" "my_namespace" {
-  namespace_id = "11111111-1111-1111-1111-111111111111"
-}
-```
 
-## Argument Reference
+## Schema
 
-- `name` - (Optional) The namespace name.
-  Only one of `name` and `namespace_id` should be specified.
+### Optional
 
-- `namespace_id` - (Optional) The namespace id.
-  Only one of `name` and `namespace_id` should be specified.
+- **id** (String) The ID of this resource.
+- **name** (String) The name of the container registry namespace
+- **namespace_id** (String) The ID of the registry namespace
+- **region** (String) The region you want to attach the resource to
 
-- `region` - (Defaults to [provider](../index.md#region) `region`) The [region](../guides/regions_and_zones.md#regions) in which the namespace exists.
+### Read-only
 
-- `project_id` - (Defaults to [provider](../index.md#project_id) `project_id`) The ID of the project the namespace is associated with.
+- **description** (String) The description of the container registry namespace
+- **endpoint** (String) The endpoint reachable by docker
+- **is_public** (Boolean) Define the default visibity policy
+- **organization_id** (String) The organization_id you want to attach the resource to
+- **project_id** (String) The project_id you want to attach the resource to
 
-## Attributes Reference
 
-In addition to all above arguments, the following attributes are exported:
-
-- `id` - The ID of the Registry Namespace.
-- `is_public` - The Namespace Privacy Policy: whether or not the images are public.
-- `endpoint` - The endpoint of the Registry Namespace.
-- `organization_id` - The organization ID the namespace is associated with.
