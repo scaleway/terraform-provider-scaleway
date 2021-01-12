@@ -293,7 +293,8 @@ func resourceScalewayK8SPoolRead(ctx context.Context, d *schema.ResourceData, m 
 	_ = d.Set("status", pool.Status)
 
 	if pool.PlacementGroupID != nil {
-		_ = d.Set("placement_group_id", newZonedIDStringFromRegion(region, *pool.PlacementGroupID)) // TODO fix this ZonedIdFromRegion
+		zone := scw.Zone(region + "-1") // Placement groups are zoned resources.
+		_ = d.Set("placement_group_id", newZonedID(zone, *pool.PlacementGroupID).String())
 	}
 
 	return nil

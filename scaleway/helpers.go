@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"net"
 	"net/http"
-	"regexp"
 	"strings"
 	"time"
 
@@ -152,14 +151,6 @@ func newRegionalIDString(region scw.Region, id string) string {
 	return fmt.Sprintf("%s/%s", region, id)
 }
 
-// deprecated and should not be used
-// newZonedIDStringFromRegion constructs a unique identifier based on resource region and id
-// but returns a zoned ID with the first zone in the region, i.e. adding `-1` to the region
-// TODO this function is a quick fix
-func newZonedIDStringFromRegion(region scw.Region, id string) string {
-	return fmt.Sprintf("%s-1/%s", region, id)
-}
-
 // terraformResourceData is an interface for *schema.ResourceData. (used for mock)
 type terraformResourceData interface {
 	HasChange(string) bool
@@ -188,7 +179,7 @@ func extractZone(d terraformResourceData, meta *Meta) (scw.Zone, error) {
 		return zone, nil
 	}
 
-	return scw.Zone(""), ErrZoneNotFound
+	return "", ErrZoneNotFound
 }
 
 // ErrRegionNotFound is returned when no region can be detected
@@ -208,7 +199,7 @@ func extractRegion(d terraformResourceData, meta *Meta) (scw.Region, error) {
 		return region, nil
 	}
 
-	return scw.Region(""), ErrRegionNotFound
+	return "", ErrRegionNotFound
 }
 
 // isHTTPCodeError returns true if err is an http error with code statusCode
@@ -287,13 +278,6 @@ func newRandomName(prefix string) string {
 }
 
 const gb uint64 = 1000 * 1000 * 1000
-
-var UUIDRegex = regexp.MustCompile(`[0-9a-fA-F]{8}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{12}`)
-
-// isUUID returns true if the given string have an UUID format.
-func isUUID(s string) bool {
-	return UUIDRegex.MatchString(s)
-}
 
 func flattenTime(date *time.Time) interface{} {
 	if date != nil {
@@ -425,7 +409,7 @@ func flattenIPNet(ipNet scw.IPNet) string {
 		// We panic as this should never happen.
 		panic(err) // lintignore:R009
 	}
-	return string(raw[1 : len(raw)-1])
+	return string(raw[1 : len(raw)-1]) // remove quotes
 }
 
 func validateDuration() schema.SchemaValidateFunc {

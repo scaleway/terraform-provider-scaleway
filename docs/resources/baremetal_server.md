@@ -32,7 +32,7 @@ The following arguments are supported:
 - `offer` - (Required) The offer name or UUID of the baremetal server.
   Use [this endpoint](https://developers.scaleway.com/en/products/baremetal/api/#get-334154) to find the right offer.
 
-~> **Important:** Updates to `offer_id` will recreate the server.
+~> **Important:** Updates to `offer` will recreate the server.
 
 - `os` - (Required) The UUID of the os to install on the server.
   Use [this endpoint](https://developers.scaleway.com/en/products/baremetal/api/#get-87598a) to find the right OS ID.

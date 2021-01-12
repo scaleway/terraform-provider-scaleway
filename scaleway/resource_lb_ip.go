@@ -14,7 +14,7 @@ func resourceScalewayLbIP() *schema.Resource {
 		CreateContext: resourceScalewayLbIPCreate,
 		ReadContext:   resourceScalewayLbIPRead,
 		UpdateContext: resourceScalewayLbIPUpdate,
-		DeleteContext: resourceScalewayLbIPBetaDelete,
+		DeleteContext: resourceScalewayLbIPDelete,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
@@ -120,7 +120,7 @@ func resourceScalewayLbIPUpdate(ctx context.Context, d *schema.ResourceData, m i
 	return resourceScalewayLbIPRead(ctx, d, m)
 }
 
-func resourceScalewayLbIPBetaDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceScalewayLbIPDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	lbAPI, region, ID, err := lbAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)

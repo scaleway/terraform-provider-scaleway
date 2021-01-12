@@ -174,7 +174,7 @@ func resourceScalewayLbFrontendCreate(ctx context.Context, d *schema.ResourceDat
 
 	d.SetId(newRegionalIDString(region, res.ID))
 
-	diagnostics := resourceScalewayLbFrontendBetaUpdateACL(ctx, d, lbAPI, region, res.ID)
+	diagnostics := resourceScalewayLbFrontendUpdateACL(ctx, d, lbAPI, region, res.ID)
 	if diagnostics != nil {
 		return diagnostics
 	}
@@ -238,7 +238,7 @@ func flattenLBACLs(ACLs []*lb.ACL) interface{} {
 	return rawACLs
 }
 
-func resourceScalewayLbFrontendBetaUpdateACL(ctx context.Context, d *schema.ResourceData, lbAPI *lb.API, region scw.Region, frontendID string) diag.Diagnostics {
+func resourceScalewayLbFrontendUpdateACL(ctx context.Context, d *schema.ResourceData, lbAPI *lb.API, region scw.Region, frontendID string) diag.Diagnostics {
 	//Fetch existing acl from the api. and convert it to a hashmap with index as key
 	resACL, err := lbAPI.ListACLs(&lb.ListACLsRequest{
 		Region:     region,
@@ -340,7 +340,7 @@ func resourceScalewayLbFrontendUpdate(ctx context.Context, d *schema.ResourceDat
 	}
 
 	//update acl
-	diagnostics := resourceScalewayLbFrontendBetaUpdateACL(ctx, d, lbAPI, region, ID)
+	diagnostics := resourceScalewayLbFrontendUpdateACL(ctx, d, lbAPI, region, ID)
 	if diagnostics != nil {
 		return diagnostics
 	}

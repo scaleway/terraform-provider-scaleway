@@ -26,7 +26,10 @@ func lbAPIWithRegion(d *schema.ResourceData, m interface{}) (*lb.API, scw.Region
 	lbAPI := lb.NewAPI(meta.scwClient)
 
 	region, err := extractRegion(d, meta)
-	return lbAPI, region, err
+	if err != nil {
+		return nil, "", err
+	}
+	return lbAPI, region, nil
 }
 
 // lbAPIWithRegionAndID returns an lb API with region and ID extracted from the state
@@ -35,7 +38,10 @@ func lbAPIWithRegionAndID(m interface{}, id string) (*lb.API, scw.Region, string
 	lbAPI := lb.NewAPI(meta.scwClient)
 
 	region, ID, err := parseRegionalID(id)
-	return lbAPI, region, ID, err
+	if err != nil {
+		return nil, "", "", err
+	}
+	return lbAPI, region, ID, nil
 }
 
 func flattenLbBackendMarkdownAction(action lb.OnMarkedDownAction) interface{} {
@@ -88,6 +94,7 @@ func expandLbACLAction(raw interface{}) *lb.ACLAction {
 		Type: lb.ACLActionType(rawMap["type"].(string)),
 	}
 }
+
 func flattenLbACLMatch(match *lb.ACLMatch) interface{} {
 	return []map[string]interface{}{
 		{
