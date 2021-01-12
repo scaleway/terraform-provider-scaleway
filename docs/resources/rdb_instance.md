@@ -69,7 +69,7 @@ In addition to all arguments above, the following attributes are exported:
     - `port` - Port of the replica.
     - `name` - Name of the replica.
 - `certificate` - Certificate of the database instance.
-- `organization_id` - The ID of the organization the Database Instance is associated with.
+- `organization_id` - The organization ID the Database Instance is associated with.
 
 ## Import
 
