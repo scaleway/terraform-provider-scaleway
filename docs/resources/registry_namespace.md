@@ -43,7 +43,7 @@ In addition to all arguments above, the following attributes are exported:
 
 - `id` - The ID of the namespace
 - `endpoint` - Endpoint reachable by Docker.
-- `organization_id` - The ID of the organization the namespace is associated with.
+- `organization_id` - The organization ID the namespace is associated with.
 
 ## Import
 
