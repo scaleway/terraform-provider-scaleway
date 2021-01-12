@@ -37,7 +37,7 @@ In addition to all above arguments, the following attributes are exported:
 
 - `id` - The ID of the volume.
 - `server_id` - The id of the associated server.
-- `organization_id` - The ID of the organization the volume is associated with.
+- `organization_id` - The organization ID the volume is associated with.
 
 ## Import
 
