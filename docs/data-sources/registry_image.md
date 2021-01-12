@@ -45,4 +45,4 @@ In addition to all above arguments, the following attributes are exported:
 - `size` - The size of the registry image.
 - `visibility` - The privacy policy of the registry image.
 - `tags` - The tags associated with the registry image
-- `organization_id` - The ID of the organization the image is associated with.
+- `organization_id` - The organization ID the image is associated with.
