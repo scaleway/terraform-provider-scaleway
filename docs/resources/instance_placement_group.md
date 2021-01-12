@@ -30,7 +30,7 @@ In addition to all above arguments, the following attributes are exported:
 
 - `id` - The ID of the placement group.
 - `policy_respected` - Is true when the policy is respected.
-- `organization_id` - The ID of the organization the placement group is associated with.
+- `organization_id` - The organization ID the placement group is associated with.
 
 ## Import
 
