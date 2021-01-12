@@ -19,6 +19,7 @@ jobs:
           - Object
           - Rdb
           - Registry
+          - VPC
     runs-on: ubuntu-latest
     steps:
       - name: Install Go
@@ -28,7 +29,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
       - name: Run Acceptance Tests
-        run: go test -v ./... -timeout=1h -run TestAccScaleway${{ matrix.products }}*
+        run: go test -v ./... -timeout=1h -run TestAccScaleway(DataSource)?${{ matrix.products }}*
         env:
           TF_LOG: DEBUG
           # https://www.terraform.io/docs/extend/testing/acceptance-tests/index.html#running-acceptance-tests
