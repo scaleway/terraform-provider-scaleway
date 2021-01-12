@@ -32,8 +32,6 @@ data "scaleway_registry_namespace" "my_namespace" {
 
 - `region` - (Defaults to [provider](../index.md#region) `region`) The [region](../guides/regions_and_zones.md#regions) in which the namespace exists.
 
-- `organization_id` - (Defaults to [provider](../index.md#organization_id) `organization_id`) The ID of the organization the namespace is associated with.
-
 - `project_id` - (Defaults to [provider](../index.md#project_id) `project_id`) The ID of the project the namespace is associated with.
 
 ## Attributes Reference
@@ -43,3 +41,4 @@ In addition to all above arguments, the following attributes are exported:
 - `id` - The ID of the Registry Namespace.
 - `is_public` - The Namespace Privacy Policy: whether or not the images are public.
 - `endpoint` - The endpoint of the Registry Namespace.
+- `organization_id` - The organization ID the namespace is associated with.

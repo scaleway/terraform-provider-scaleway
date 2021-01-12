@@ -230,12 +230,9 @@ func is403Error(err error) bool {
 // organizationIDSchema returns a standard schema for a organization_id
 func organizationIDSchema() *schema.Schema {
 	return &schema.Schema{
-		Type:         schema.TypeString,
-		Description:  "The organization_id you want to attach the resource to",
-		Optional:     true,
-		ForceNew:     true,
-		Computed:     true,
-		ValidateFunc: validationUUID(),
+		Type:        schema.TypeString,
+		Description: "The organization_id you want to attach the resource to",
+		Computed:    true,
 	}
 }
 

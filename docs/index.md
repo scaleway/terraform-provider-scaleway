@@ -103,11 +103,11 @@ resource "scaleway_instance_server" "web" {
 
 ## Authentication
 
-The Scaleway authentication is based on an **access key** and a **secret key**.
+The Scaleway authentication is based on an **access key**, and a **secret key**.
 Since secret keys are only revealed one time (when it is first created) you might
-need to create a new one in the section "API Tokens" of the
-[Scaleway console](https://console.scaleway.com/account/credentials).
-Click on the "Generate new token" button to create them. Giving it a friendly-name is recommended.
+need to create a new one in the section "API Keys" of the [Scaleway console](https://console.scaleway.com/project/credentials).
+Click on the "Generate new API key" button to create them.
+Giving it a friendly-name is recommended.
 
 The Scaleway provider offers three ways of providing these credentials.
 The following methods are supported, in this priority order:
@@ -163,14 +163,13 @@ You can find more information about this configuration [in the documentation](ht
 
 In addition to [generic provider arguments](https://www.terraform.io/docs/configuration/providers.html) (e.g. `alias` and `version`), the following arguments are supported in the Scaleway provider block:
 
-| Provider Argument | [Environment Variables](#environment-variables) | Description                                                                                                                            | Mandatory |
-|-------------------|-------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------|-----------|
-| `access_key`      | `SCW_ACCESS_KEY`                                | [Scaleway access key](https://console.scaleway.com/project/credentials)                                                                | ✅        |
-| `secret_key`      | `SCW_SECRET_KEY`                                | [Scaleway secret key](https://console.scaleway.com/project/credentials)                                                                | ✅        |
-| `organization_id` | `SCW_DEFAULT_ORGANIZATION_ID`                   | The [organization ID](https://console.scaleway.com/account/organization/profile) that will be used as default value for all resources. |           |
-| `project_id`      | `SCW_DEFAULT_PROJECT_ID`                        | The [project ID](https://console.scaleway.com/project/settings) that will be used as default value for all resources.                  |           |
-| `region`          | `SCW_DEFAULT_REGION`                            | The [region](./guides/regions_and_zones.md#regions)  that will be used as default value for all resources.                             |           |
-| `zone`            | `SCW_DEFAULT_ZONE`                              | The [zone](./guides/regions_and_zones.md#zones) that will be used as default value for all resources.                                  |           |
+| Provider Argument | [Environment Variables](#environment-variables) | Description                                                                                                                             | Mandatory |
+|-------------------|-------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------|-----------|
+| `access_key`      | `SCW_ACCESS_KEY`                                | [Scaleway access key](https://console.scaleway.com/project/credentials)                                                                 | ✅        |
+| `secret_key`      | `SCW_SECRET_KEY`                                | [Scaleway secret key](https://console.scaleway.com/project/credentials)                                                                 | ✅        |
+| `project_id`      | `SCW_DEFAULT_PROJECT_ID`                        | The [project ID](https://console.scaleway.com/project/settings) that will be used as default value for all resources.                   | ✅        |
+| `region`          | `SCW_DEFAULT_REGION`                            | The [region](./guides/regions_and_zones.md#regions)  that will be used as default value for all resources. (`fr-par` if none specified) |           |
+| `zone`            | `SCW_DEFAULT_ZONE`                              | The [zone](./guides/regions_and_zones.md#zones) that will be used as default value for all resources. (`fr-par-1` if none specified)    |           |
 
 ## Store terraform state on Scaleway S3-compatible object storage
 
@@ -192,7 +191,7 @@ terraform {
 }
 ```
 
-Beware as no locking mechanism are yet supported.
+Be careful as no locking mechanism are yet supported.
 Using scaleway object storage as terraform backend is not suitable if you work in a team with a risk of simultaneous access to the same plan.
 
 Note: For security reason it's not recommended to store secrets in terraform files.
