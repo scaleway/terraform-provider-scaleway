@@ -41,4 +41,4 @@ In addition to all above arguments, the following attributes are exported:
 - `id` - The ID of the Registry Namespace.
 - `is_public` - The Namespace Privacy Policy: whether or not the images are public.
 - `endpoint` - The endpoint of the Registry Namespace.
-- `organization_id` - The ID of the organization the namespace is associated with.
+- `organization_id` - The organization ID the namespace is associated with.
