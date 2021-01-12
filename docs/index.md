@@ -105,8 +105,8 @@ resource "scaleway_instance_server" "web" {
 
 The Scaleway authentication is based on an **access key**, and a **secret key**.
 Since secret keys are only revealed one time (when it is first created) you might
-need to create a new one in the section "API Tokens" of the [Scaleway console](https://console.scaleway.com/account/credentials).
-Click on the "Generate new token" button to create them.
+need to create a new one in the section "API Keys" of the [Scaleway console](https://console.scaleway.com/project/credentials).
+Click on the "Generate new API key" button to create them.
 Giving it a friendly-name is recommended.
 
 The Scaleway provider offers three ways of providing these credentials.
