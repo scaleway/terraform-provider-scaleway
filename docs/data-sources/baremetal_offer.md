@@ -1,79 +1,63 @@
 ---
-page_title: "Scaleway: scaleway_baremetal_offer"
+page_title: "scaleway_baremetal_offer Data Source - terraform-provider-scaleway"
+subcategory: ""
 description: |-
-  Gets information about a baremetal offer.
+  
 ---
 
-# scaleway_baremetal_offer
+# Data Source `scaleway_baremetal_offer`
 
-Gets information about a baremetal offer. For more information, see [the documentation](https://developers.scaleway.com/en/products/baremetal/api).
 
-## Example Usage
 
-```hcl
-# Get info by offer name
-data "scaleway_baremetal_offer" "my_offer" {
-  zone = "fr-par-2"
-  name = "HC-BM1-L"
-}
 
-# Get info by offer id
-data "scaleway_baremetal_offer" "my_offer" {
-  zone     = "fr-par-2"
-  offer_id = "3ab0dc29-2fd4-486e-88bf-d08fbf49214b"
-}
-```
 
-## Argument Reference
+## Schema
 
-- `name` - (Optional) The offer name. Only one of `name` and `offer_id` should be specified.
+### Optional
 
-- `offer_id` - (Optional) The offer id. Only one of `name` and `offer_id` should be specified.
+- **id** (String) The ID of this resource.
+- **include_disabled** (Boolean) Include disabled offers
+- **name** (String) Exact name of the desired offer
+- **offer_id** (String) ID of the desired offer
+- **zone** (String) The zone you want to attach the resource to
 
-- `allow_disabled` - (Optional, default `false`) Include disabled offers.
+### Read-only
 
-- `zone` - (Defaults to [provider](../index.md#zone) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which the offer should be created.
+- **bandwidth** (Number) Available Bandwidth with the offer
+- **commercial_range** (String) Commercial range of the offer
+- **cpu** (List of Object) CPU specifications of the offer (see [below for nested schema](#nestedatt--cpu))
+- **disk** (List of Object) Disk specifications of the offer (see [below for nested schema](#nestedatt--disk))
+- **memory** (List of Object) Memory specifications of the offer (see [below for nested schema](#nestedatt--memory))
+- **stock** (String) Stock status for this offer
 
-## Attributes Reference
+<a id="nestedatt--cpu"></a>
+### Nested Schema for `cpu`
 
-In addition to all above arguments, the following attributes are exported:
+Read-only:
 
-- `id` - The ID of the offer.
+- **core_count** (Number)
+- **frequency** (Number)
+- **name** (String)
+- **thread_count** (Number)
 
-- `bandwidth` - Available Bandwidth with the offer.
 
-- `commercial_range` - Commercial range of the offer.
+<a id="nestedatt--disk"></a>
+### Nested Schema for `disk`
 
-- `cpu` - A list of cpu specifications. (Structure is documented below.)
+Read-only:
 
-- `disk` - A list of disk specifications. (Structure is documented below.)
+- **capacity** (Number)
+- **type** (String)
 
-- `memory` - A list of memory specifications. (Structure is documented below.)
 
-- `stock` - Stock status for this offer. Possible values are: `empty`, `low` or `available`.
+<a id="nestedatt--memory"></a>
+### Nested Schema for `memory`
 
-The `cpu` block supports:
+Read-only:
 
-- `name` - Name of the CPU.
+- **capacity** (Number)
+- **frequency** (Number)
+- **is_ecc** (Boolean)
+- **type** (String)
 
-- `core_count`- Number of core on this CPU.
 
-- `frequency`- Frequency of the CPU in MHz.
-
-- `thread_count`- Number of thread on this CPU.
-
-The `disk` block supports:
-
-- `type` - Type of disk.
-
-- `capacity`- Capacity of the disk in GB.
-
-The `memory` block supports:
-
-- `type` - Type of memory.
-
-- `capacity`- Capacity of the memory in GB.
-
-- `frequency` - Frequency of the memory in MHz.
-
-- `is_ecc`- True if error-correcting code is available on this memory.

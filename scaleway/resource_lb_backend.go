@@ -164,9 +164,6 @@ func resourceScalewayLbBackend() *schema.Resource {
 				ConflictsWith: []string{"health_check_http", "health_check_https"},
 				Optional:      true,
 				Computed:      true,
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{},
-				},
 			},
 			"health_check_http": {
 				Type:          schema.TypeList,

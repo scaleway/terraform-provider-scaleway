@@ -1,43 +1,37 @@
 ---
-page_title: "Scaleway: scaleway_lb_ip"
+page_title: "scaleway_lb_ip Resource - terraform-provider-scaleway"
+subcategory: ""
 description: |-
-  Manages Scaleway Load-Balancers IPs.
+  
 ---
 
-# scaleway_lb_ip
-
-Creates and manages Scaleway Load-Balancers IPs.
-For more information, see [the documentation](https://developers.scaleway.com/en/products/lb/api).
-
-## Examples
-
-### Basic
-
-```hcl
-resource "scaleway_lb_ip" "ip" {
-    reverse = "my-reverse.com"
-}
-```
-
-## Arguments Reference
-
-The following arguments are supported:
-
-- `reverse` - (Optional) The reverse domain associated with this IP.
-
-## Attributes Reference
-
-In addition to all arguments above, the following attributes are exported:
-
-- `id` - The ID of the IP
-- `lb_id` - The associated load-balance ID if any
-- `ip_address` -  The IP Address
+# Resource `scaleway_lb_ip`
 
 
-## Import
 
-IPs can be imported using the `{region}/{id}`, e.g.
 
-```bash
-$ terraform import scaleway_lb_ip.ip01 fr-par/11111111-1111-1111-1111-111111111111
-```
+
+## Schema
+
+### Optional
+
+- **id** (String) The ID of this resource.
+- **project_id** (String) The project_id you want to attach the resource to
+- **region** (String) The region you want to attach the resource to
+- **reverse** (String) The reverse domain name for this IP
+- **timeouts** (Block, Optional) (see [below for nested schema](#nestedblock--timeouts))
+
+### Read-only
+
+- **ip_address** (String) The load-balancer public IP address
+- **lb_id** (String) The ID of the loadbalancer attached to this IP, if any
+- **organization_id** (String) The organization_id you want to attach the resource to
+
+<a id="nestedblock--timeouts"></a>
+### Nested Schema for `timeouts`
+
+Optional:
+
+- **default** (String)
+
+

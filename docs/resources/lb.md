@@ -1,106 +1,42 @@
 ---
-page_title: "Scaleway: scaleway_lb"
+page_title: "scaleway_lb Resource - terraform-provider-scaleway"
+subcategory: ""
 description: |-
-  Manages Scaleway Load-Balancers.
+  
 ---
 
-# scaleway_lb
-
-Creates and manages Scaleway Load-Balancers.
-For more information, see [the documentation](https://developers.scaleway.com/en/products/lb/api).
-
-## Examples
-
-### Basic
-
-```hcl
-resource "scaleway_lb_ip" "ip" {
-}
-
-resource "scaleway_lb" "base" {
-  ip_id  = scaleway_lb_ip.ip.id
-  region = "fr-par"
-  type   = "LB-S"
-}
-```
-
-## Arguments Reference
-
-The following arguments are supported:
-
-- `ip_id` - (Required) The ID of the associated IP. See below.
-
-~> **Important:** Updates to `ip_id` will recreate the load-balancer.
-
-- `type` - (Required) The type of the load-balancer.  For now only `LB-S` is available
-
-~> **Important:** Updates to `type` will recreate the load-balancer.
-
-- `name` - (Optional) The name of the load-balancer.
-
-- `tags` - (Optional) The tags associated with the load-balancers.
-
-- `region` - (Defaults to [provider](../index.md#region) `region`) The [region](../guides/regions_and_zones.md#regions) in which the load-balancer should be created.
+# Resource `scaleway_lb`
 
 
-- `project_id` - (Defaults to [provider](../index.md#project_id) `project_id`) The ID of the project the load-balancer is associated with.
 
-## Attributes Reference
 
-In addition to all arguments above, the following attributes are exported:
 
-- `id` - The ID of the load-balancer.
-- `ip_address` -  The load-balance public IP Address
-- `organization_id` - The organization ID the load-balancer is associated with.
+## Schema
 
-## IP ID
+### Required
 
-Since v1.15.0, `ip_id` is a required field. This means that now a separate `scaleway_lb_ip` is required.
-When importing, the IP needs to be imported as well as the LB.
-When upgrading to v1.15.0, you will need to create a new `scaleway_lb_ip` resource and import it.
+- **ip_id** (String) The load-balance public IP ID
+- **type** (String) The type of load-balancer you want to create
 
-For instance, if you had the following:
+### Optional
 
-```hcl
-resource "scaleway_lb" "base" {
-  region = "fr-par"
-  type   = "LB-S"
-}
-```
+- **id** (String) The ID of this resource.
+- **name** (String) Name of the lb
+- **project_id** (String) The project_id you want to attach the resource to
+- **region** (String) The region you want to attach the resource to
+- **tags** (List of String) Array of tags to associate with the load-balancer
+- **timeouts** (Block, Optional) (see [below for nested schema](#nestedblock--timeouts))
 
-You will need to update it to:
+### Read-only
 
-```hcl
-resource "scaleway_lb_ip" "ip" {
-}
+- **ip_address** (String) The load-balance public IP address
+- **organization_id** (String) The organization_id you want to attach the resource to
 
-resource "scaleway_lb" "base" {
-  ip_id  = scaleway_lb_ip.ip.id
-  region = "fr-par"
-  type   = "LB-S"
-}
-```
+<a id="nestedblock--timeouts"></a>
+### Nested Schema for `timeouts`
 
-And before running `terraform apply` you will need to import the IP with:
+Optional:
 
-```bash
-$ terraform import scaleway_lb_ip.ip fr-par/11111111-1111-1111-1111-111111111111
-```
+- **default** (String)
 
-The IP ID can either be found in the console, or you can run:
 
-```bash
-$ terraform state show scaleway_lb.base
-```
-
-and look for `ip_id`.
-
-## Import
-
-Load-Balancer can be imported using the `{region}/{id}`, e.g.
-
-```bash
-$ terraform import scaleway_lb.lb01 fr-par/11111111-1111-1111-1111-111111111111
-```
-
-Be aware that you will also need to import the `scaleway_lb_ip` resource.

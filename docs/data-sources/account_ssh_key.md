@@ -1,37 +1,28 @@
 ---
-page_title: "Scaleway: scaleway_account_ssh_key"
+page_title: "scaleway_account_ssh_key Data Source - terraform-provider-scaleway"
+subcategory: ""
 description: |-
-  Get information on a Scaleway SSH key.
+  
 ---
 
-# scaleway_account_ssh_key
+# Data Source `scaleway_account_ssh_key`
 
-Use this data source to get SSH key information based on its ID or name.
 
-## Example Usage
 
-```hcl
-# Get info by SSH key name
-data "scaleway_account_ssh_key" "my_key" {
-  name  = "my-key-name"
-}
 
-# Get info by SSH key id
-data "scaleway_account_ssh_key" "my_key" {
-  ssh_key_id = "11111111-1111-1111-1111-111111111111"
-}
-```
 
-## Argument Reference
+## Schema
 
-- `name` - The SSH key name. Only one of `name` and `ssh_key_id` should be specified.
-- `ssh_key_id` - The SSH key id. Only one of `name` and `ssh_key_id` should be specified.
-- `project_id` - (Defaults to [provider](../index.md#project_id) `project_id`) The ID of the project the SSH key is associated with.
+### Optional
 
-## Attributes Reference
+- **id** (String) The ID of this resource.
+- **name** (String) The name of the SSH key
+- **ssh_key_id** (String) The ID of the SSH key
 
-In addition to all above arguments, the following attributes are exported:
+### Read-only
 
-- `id` - The ID of the SSH public key.
-- `public_key` - The SSH public key string
-- `organization_id` - The ID of the organization the SSH key is associated with.
+- **organization_id** (String) The organization_id you want to attach the resource to
+- **project_id** (String) The project_id you want to attach the resource to
+- **public_key** (String) The public SSH key
+
+

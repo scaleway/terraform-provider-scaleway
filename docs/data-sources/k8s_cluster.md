@@ -1,108 +1,80 @@
 ---
-page_title: "Scaleway: scaleway_k8s_cluster"
+page_title: "scaleway_k8s_cluster Data Source - terraform-provider-scaleway"
+subcategory: ""
 description: |-
-  Gets information about a Kubernetes Cluster.
+  
 ---
 
-# scaleway_k8s_cluster
+# Data Source `scaleway_k8s_cluster`
 
-Gets information about a Kubernetes Cluster.
 
-## Example Usage
 
-```hcl
-# Get info by cluster name
-data "scaleway_k8s_cluster" "my_key" {
-  name  = "my-cluster-name"
-}
 
-# Get info by cluster id
-data "scaleway_k8s_cluster" "my_key" {
-  cluster_id = "11111111-1111-1111-1111-111111111111"
-}
-```
 
-## Argument Reference
+## Schema
 
-- `name` - (Optional) The cluster name. Only one of `name` and `cluster_id` should be specified.
+### Optional
 
-- `cluster_id` - (Optional) The cluster ID. Only one of `name` and `cluster_id` should be specified.
+- **cluster_id** (String) The ID of the cluster
+- **id** (String) The ID of this resource.
+- **name** (String) The name of the cluster
+- **region** (String) The region you want to attach the resource to
 
-- `region` - (Defaults to [provider](../index.md#region) `region`) The [region](../guides/regions_and_zones.md#regions) in which the cluster exists.
+### Read-only
 
-## Attributes Reference
+- **admission_plugins** (List of String) The list of admission plugins to enable on the cluster
+- **apiserver_url** (String) Kubernetes API server URL
+- **auto_upgrade** (List of Object) The auto upgrade configuration for the cluster (see [below for nested schema](#nestedatt--auto_upgrade))
+- **autoscaler_config** (List of Object) The autoscaler configuration for the cluster (see [below for nested schema](#nestedatt--autoscaler_config))
+- **cni** (String) The CNI plugin of the cluster
+- **created_at** (String) The date and time of the creation of the Kubernetes cluster
+- **description** (String) The description of the cluster
+- **enable_dashboard** (Boolean) Enable the dashboard on the cluster
+- **feature_gates** (List of String) The list of feature gates to enable on the cluster
+- **ingress** (String) The ingress to be deployed on the cluster
+- **kubeconfig** (List of Object) The kubeconfig configuration file of the Kubernetes cluster (see [below for nested schema](#nestedatt--kubeconfig))
+- **organization_id** (String) The organization_id you want to attach the resource to
+- **project_id** (String) The project_id you want to attach the resource to
+- **status** (String) The status of the cluster
+- **tags** (List of String) The tags associated with the cluster
+- **updated_at** (String) The date and time of the last update of the Kubernetes cluster
+- **upgrade_available** (Boolean) True if an upgrade is available
+- **version** (String) The version of the cluster
+- **wildcard_dns** (String) Wildcard DNS pointing to all the ready nodes
 
-In addition to all above arguments, the following attributes are exported:
+<a id="nestedatt--auto_upgrade"></a>
+### Nested Schema for `auto_upgrade`
 
-- `id` - The ID of the cluster.
+Read-only:
 
-- `created_at` - The creation date of the cluster.
+- **enable** (Boolean)
+- **maintenance_window_day** (String)
+- **maintenance_window_start_hour** (Number)
 
-- `updated_at` - The last update date of the cluster.
 
-- `apiserver_url` - The URL of the Kubernetes API server.
+<a id="nestedatt--autoscaler_config"></a>
+### Nested Schema for `autoscaler_config`
 
-- `wildcard_dns` - The DNS wildcard that points to all ready nodes.
+Read-only:
 
-- `kubeconfig`
+- **balance_similar_node_groups** (Boolean)
+- **disable_scale_down** (Boolean)
+- **estimator** (String)
+- **expander** (String)
+- **expendable_pods_priority_cutoff** (Number)
+- **ignore_daemonsets_utilization** (Boolean)
+- **scale_down_delay_after_add** (String)
+- **scale_down_unneeded_time** (String)
 
-    - `config_file` - The raw kubeconfig file.
 
-    - `host` - The URL of the Kubernetes API server.
+<a id="nestedatt--kubeconfig"></a>
+### Nested Schema for `kubeconfig`
 
-    - `cluster_ca_certificate` - The CA certificate of the Kubernetes API server.
+Read-only:
 
-    - `token` - The token to connect to the Kubernetes API server.
+- **cluster_ca_certificate** (String)
+- **config_file** (String)
+- **host** (String)
+- **token** (String)
 
-- `status` - The status of the Kubernetes cluster.
-
-- `upgrade_available` - True if a newer Kubernetes version is available.
-
-- `description` - A description for the Kubernetes cluster.
-
-- `version` - The version of the Kubernetes cluster.
-
-- `cni` - The Container Network Interface (CNI) for the Kubernetes cluster.
-
-- `enable_dashboard` - True if the [Kubernetes dashboard](https://github.com/kubernetes/dashboard) is enabled for the Kubernetes cluster.
-
-- `ingress` - The [ingress controller](https://kubernetes.io/docs/concepts/services-networking/ingress-controllers/) deployed on the Kubernetes cluster.
-
-- `tags` - The tags associated with the Kubernetes cluster.
-
-- `autoscaler_config` - The configuration options for the [Kubernetes cluster autoscaler](https://github.com/kubernetes/autoscaler/tree/master/cluster-autoscaler).
-
-    - `disable_scale_down` - True if the scale down feature of the autoscaler is disabled.
-
-    - `scale_down_delay_after_add` - The duration after scale up that scale down evaluation resumes.
-
-    - `scale_down_unneeded_time` - The duration a node should be unneeded before it is eligible for scale down.
-
-    - `estimator` - The type of resource estimator used in scale up.
-
-    - `expander` - The type of node group expander be used in scale up.
-
-    - `ignore_daemonsets_utilization` - True if ignoring DaemonSet pods when calculating resource utilization for scaling down is enabled.
-
-    - `balance_similar_node_groups` - True if detecting similar node groups and balance the number of nodes between them is enabled.
-
-    - `expendable_pods_priority_cutoff` - Pods with priority below cutoff will be expendable. They can be killed without any consideration during scale down and they don't cause scale up. Pods with null priority (PodPriority disabled) are non expendable.
-
-- `auto_upgrade` - The auto upgrade configuration.
-
-    - `enable` - True if Kubernetes patch version auto upgrades is enabled.
-
-    - `maintenance_window_start_hour` - The start hour (UTC) of the 2-hour auto upgrade maintenance window (0 to 23).
-
-    - `maintenance_window_day` - The day of the auto upgrade maintenance window (`monday` to `sunday`, or `any`).
-
-- `feature_gates` - The list of [feature gates](https://kubernetes.io/docs/reference/command-line-tools-reference/feature-gates/) enabled on the cluster.
-
-- `admission_plugins` - The list of [admission plugins](https://kubernetes.io/docs/reference/access-authn-authz/admission-controllers/) enabled on the cluster.
-
-- `region` - The [region](../guides/regions_and_zones.md#regions) in which the cluster is.
-
-- `organization_id` - The ID of the organization the cluster is associated with.
-
-- `project_id` - The ID of the project the cluster is associated with.
 

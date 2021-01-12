@@ -1,56 +1,33 @@
 ---
-page_title: "Scaleway: scaleway_instance_volume"
+page_title: "scaleway_instance_volume Data Source - terraform-provider-scaleway"
+subcategory: ""
 description: |-
-  Gets information about an instance volume.
+  
 ---
 
-# scaleway_instance_volume
-
-Gets information about an instance volume.
-
-## Example Usage
-
-```hcl
-# Get info by volume name
-data "scaleway_instance_volume" "my_volume" {
-  name = "my-volume-name"
-}
-
-# Get info by volume ID
-data "scaleway_instance_volume" "my_volume" {
-  volume_id = "11111111-1111-1111-1111-111111111111"
-}
-```
-
-## Argument Reference
-
-- `name` - (Optional) The volume name.
-  Only one of `name` and `volume_id` should be specified.
-
-- `volume_id` - (Optional) The volume id.
-  Only one of `name` and `volume_id` should be specified.
-
-- `zone` - (Defaults to [provider](../index.md#zone) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which the volume exists.
+# Data Source `scaleway_instance_volume`
 
 
-- `project_id` - (Defaults to [provider](../index.md#project_id) `project_id`) The ID of the project the volume is associated with.
 
-## Attributes Reference
 
-In addition to all above arguments, the following attributes are exported:
 
-- `volume_type` - The type of the volume.
-  `l_ssd` for local SSD, `b_ssd` for block storage SSD.
+## Schema
 
-- `creation_date` - Volume creation date.
+### Optional
 
-- `modification_date` - Volume last modification date.
+- **id** (String) The ID of this resource.
+- **name** (String) The name of the volume
+- **volume_id** (String) The ID of the volume
+- **zone** (String) The zone you want to attach the resource to
 
-- `state` - State of the volume. Possible values are `available`, `snapshotting` and `error`.
-  The default value is available.
+### Read-only
 
-- `size` - The volumes disk size (in bytes).
+- **from_snapshot_id** (String) Create a volume based on a image
+- **from_volume_id** (String) Create a copy of an existing volume
+- **organization_id** (String) The organization_id you want to attach the resource to
+- **project_id** (String) The project_id you want to attach the resource to
+- **server_id** (String) The server associated with this volume
+- **size_in_gb** (Number) The size of the volume in gigabyte
+- **type** (String) The volume type
 
-- `server` - Information about the server attached to the volume.
 
-- `organization_id` - The ID of the organization the volume is associated with.

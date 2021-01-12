@@ -1,80 +1,59 @@
 ---
-page_title: "Scaleway: scaleway_rdb_instance"
+page_title: "scaleway_rdb_instance Resource - terraform-provider-scaleway"
+subcategory: ""
 description: |-
-  Manages Scaleway Database Instances.
+  
 ---
 
-# scaleway_rdb_instance
+# Resource `scaleway_rdb_instance`
 
-Creates and manages Scaleway Database Instances.
-For more information, see [the documentation](https://developers.scaleway.com/en/products/rdb/api).
 
-## Examples
 
-### Basic
 
-```hcl
-resource "scaleway_rdb_instance" "main" {
-  name           = "test-rdb"
-  node_type      = "DB-DEV-S"
-  engine         = "PostgreSQL-11"
-  is_ha_cluster  = true
-  disable_backup = true
-  user_name      = "my_initial_user"
-  password       = "thiZ_is_v&ry_s3cret"
-}
-```
 
-## Arguments Reference
+## Schema
 
-The following arguments are supported:
+### Required
 
-- `node_type` - (Required) The type of database instance you want to create (e.g. `db-dev-s`).
+- **engine** (String) Database's engine version id
+- **node_type** (String) The type of database instance you want to create
 
-~> **Important:** Updates to `node_type` will upgrade the Database Instance to the desired `node_type` without any interruption. Keep in mind that you cannot downgrade a Database Instance.
+### Optional
 
-- `engine` - (Required) Database Instance's engine version (e.g. `PostgreSQL-11`).
+- **disable_backup** (Boolean) Disable automated backup for the database instance
+- **id** (String) The ID of this resource.
+- **is_ha_cluster** (Boolean) Enable or disable high availability for the database instance
+- **name** (String) Name of the database instance
+- **password** (String, Sensitive) Password for the first user of the database instance
+- **project_id** (String) The project_id you want to attach the resource to
+- **region** (String) The region you want to attach the resource to
+- **tags** (List of String) List of tags ["tag1", "tag2", ...] attached to a database instance
+- **timeouts** (Block, Optional) (see [below for nested schema](#nestedblock--timeouts))
+- **user_name** (String) Identifier for the first user of the database instance
 
-~> **Important:** Updates to `engine` will recreate the Database Instance.
+### Read-only
 
-- `user_name` - (Optional) Identifier for the first user of the database instance.
+- **certificate** (String) Certificate of the database instance
+- **endpoint_ip** (String) Endpoint IP of the database instance
+- **endpoint_port** (Number) Endpoint port of the database instance
+- **organization_id** (String) The organization_id you want to attach the resource to
+- **read_replicas** (List of Object) Read replicas of the database instance (see [below for nested schema](#nestedatt--read_replicas))
 
-~> **Important:** Updates to `user_name` will recreate the Database Instance.
+<a id="nestedblock--timeouts"></a>
+### Nested Schema for `timeouts`
 
-- `password` - (Optional) Password for the first user of the database instance.
+Optional:
 
-- `is_ha_cluster` - (Optional) Enable or disable high availability for the database instance.
+- **default** (String)
 
-~> **Important:** Updates to `is_ha_cluster` will recreate the Database Instance.
 
-- `name` - (Optional) The name of the Database Instance.
+<a id="nestedatt--read_replicas"></a>
+### Nested Schema for `read_replicas`
 
-- `disable_backup` - (Optional) Disable automated backup for the database instance.
+Read-only:
 
-- `tags` - (Optional) The tags associated with the Database Instance.
+- **ip** (String)
+- **name** (String)
+- **port** (Number)
 
-- `region` - (Defaults to [provider](../index.md#region) `region`) The [region](../guides/regions_and_zones.md#regions) in which the Database Instance should be created.
 
-- `project_id` - (Defaults to [provider](../index.md#project_id) `project_id`) The ID of the project the Database Instance is associated with.
-
-## Attributes Reference
-
-In addition to all arguments above, the following attributes are exported:
-
-- `id` - The ID of the Database Instance.
-- `endpoint_ip` - The IP of the Database Instance.
-- `endpoint_port` - The port of the Database Instance.
-- `read_replicas` - List of read replicas of the database instance.
-    - `ip` - IP of the replica.
-    - `port` - Port of the replica.
-    - `name` - Name of the replica.
-- `certificate` - Certificate of the database instance.
-- `organization_id` - The organization ID the Database Instance is associated with.
-
-## Import
-
-Database Instance can be imported using the `{region}/{id}`, e.g.
-
-```bash
-$ terraform import scaleway_rdb_instance.rdb01 fr-par/11111111-1111-1111-1111-111111111111
-```
