@@ -51,7 +51,7 @@ In addition to all arguments above, the following attributes are exported:
 
 - `id` - The ID of the load-balancer.
 - `ip_address` -  The load-balance public IP Address
-- `organization_id` - The ID of the organization the load-balancer is associated with.
+- `organization_id` - The organization ID the load-balancer is associated with.
 
 ## IP ID
 
