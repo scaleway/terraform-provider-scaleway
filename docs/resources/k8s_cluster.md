@@ -177,7 +177,7 @@ In addition to all above arguments, the following attributes are exported:
     - `token` - The token to connect to the Kubernetes API server.
 - `status` - The status of the Kubernetes cluster.
 - `upgrade_available` - Set to `true` if a newer Kubernetes version is available.
-- `organization_id` - The ID of the organization the cluster is associated with.
+- `organization_id` - The organization ID the cluster is associated with.
 
 ## Import
 
