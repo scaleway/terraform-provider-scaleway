@@ -32,7 +32,7 @@ The following arguments are supported:
 In addition to all above arguments, the following attributes are exported:
 
 - `id` - The ID of the private network.
-- `organization_id` - The ID of the organization the private network is associated with.
+- `organization_id` - The organization ID the private network is associated with.
 
 ## Import
 
