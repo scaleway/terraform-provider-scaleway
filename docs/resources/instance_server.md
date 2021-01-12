@@ -200,7 +200,7 @@ In addition to all above arguments, the following attributes are exported:
 - `ipv6_gateway` - The ipv6 gateway address. ( Only set when enable_ipv6 is set to true )
 - `ipv6_prefix_length` - The prefix length of the ipv6 subnet routed to the server. ( Only set when enable_ipv6 is set to true )
 - `boot_type` - The boot Type of the server. Possible values are: `local`, `bootscript` or `rescue`.
-- `organization_id` - The ID of the organization the server is associated with.
+- `organization_id` - The organization ID the server is associated with.
   If you intend to deploy your instance in another project than the default one use your `project_id` instead of the organization id.
 
 ## Import
