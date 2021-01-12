@@ -143,7 +143,7 @@ The `inbound_rule` and `outbound_rule` block supports:
 In addition to all above arguments, the following attributes are exported:
 
 - `id` - The ID of the security group.
-- `organization_id` - The ID of the organization the security group is associated with.
+- `organization_id` - The organization ID the security group is associated with.
 
 ## Import
 
