@@ -175,10 +175,49 @@ terraform import $NEW_RESOURCE_NAME $ID
 
 ### Instance
 
+#### Breaking changes
+
+##### User-data is a Map and cloud_init field is included in the user-data map
+
+User data are now saved as TypeMap instead of TypeSet.
+In particular, the `cloud_init` attribute is now managed as a common field in the user-data with the standard `cloud-init`.
+
+v1.X:
+
+```hcl
+resource "scaleway_instance_server" "web" {
+  type = "DEV1-S"
+  image = "ubuntu_focal"
+
+  user_data {
+    key = "foo"
+    value = "bar"
+  }
+
+  cloud_init = file("cloud-init.yml")
+}
+```
+
+v2.X:
+
+```hcl
+resource "scaleway_instance_server" "web" {
+  type = "DEV1-S"
+  image = "ubuntu_focal"
+
+  user_data {
+    foo = "bar"
+    cloud-init = file("cloud-init.yml")
+  }
+}
+```
+
+#### Renaming
+
 All the old instance resources have been regrouped under a new name: `Instance`.
 This means that all old instance resources are now prefixed with `scaleway_instance_`.
 
-#### Renamed: `scaleway_server` -> `scaleway_instance_server`
+##### Renamed: `scaleway_server` -> `scaleway_instance_server`
 
 `scaleway_server` was renamed to `scaleway_instance_server`.
 
@@ -206,7 +245,7 @@ resource "scaleway_instance_server" "web" {
 }
 ```
 
-#### Renamed: `scaleway_ip` -> `scaleway_instance_ip`
+##### Renamed: `scaleway_ip` -> `scaleway_instance_ip`
 
 `scaleway_ip` was renamed to `scaleway_instance_ip` and the `server` attribute, used to attach an IP has been moved to `scaleway_instance_server.id_id`
 
@@ -215,7 +254,7 @@ resource "scaleway_instance_ip" "test_ip" {
 }
 ```
 
-#### Renamed: `scaleway_volume` -> `scaleway_instance_volume`
+##### Renamed: `scaleway_volume` -> `scaleway_instance_volume`
 
 `scaleway_volume` was renamed to `scaleway_instance_volume`.
 The former attributes can still be used on the new volume resource.
@@ -223,27 +262,27 @@ The former attributes can still be used on the new volume resource.
 Additionally, from now on, you can also create new volumes based on other volumes or snapshots.
 For more information check the [new volume `scaleway_instance_volume` resource](../resources/instance_volume.md).
 
-#### Renamed: `scaleway_ssh_key` -> `scaleway_account_ssk_key`
+##### Renamed: `scaleway_ssh_key` -> `scaleway_account_ssk_key`
 
 `scaleway_ssh_key` was renamed to `scaleway_account_ssk_key`
 The `key` attribute has been renamed to `public_key`.
 A `name` required attribute and an `organization_id` optional attribute have been added.
 
-#### Removed: `scaleway_user_data`
+##### Removed: `scaleway_user_data`
 
 `scaleway_user_data` is now part of the `scaleway_instance_server` resource.
 
-#### Removed: `scaleway_token`
+##### Removed: `scaleway_token`
 
 The `scaleway_token` was removed in version 2.
 
 Tokens should be created in the console.
 
-#### Renamed: `scaleway_ip_reverse_dns` -> `scaleway_instance_ip_reverse_dns`
+##### Renamed: `scaleway_ip_reverse_dns` -> `scaleway_instance_ip_reverse_dns`
 
 `scaleway_ip_reverse_dns` was renamed to `scaleway_instance_ip_reverse_dns`.
 
-#### Removed: `scaleway_volume_attachment`
+##### Removed: `scaleway_volume_attachment`
 
 The `scaleway_volume_attachment` was removed in version 2.
 
