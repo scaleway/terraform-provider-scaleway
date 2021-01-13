@@ -54,7 +54,7 @@ func resourceScalewayInstanceVolume() *schema.Resource {
 				Optional:      true,
 				ForceNew:      true,
 				Description:   "Create a copy of an existing volume",
-				ValidateFunc:  validationUUID(),
+				ValidateFunc:  validationUUIDorUUIDWithLocality(),
 				ConflictsWith: []string{"from_snapshot_id", "size_in_gb"},
 			},
 			"from_snapshot_id": {
@@ -62,7 +62,7 @@ func resourceScalewayInstanceVolume() *schema.Resource {
 				Optional:      true,
 				ForceNew:      true,
 				Description:   "Create a volume based on a image",
-				ValidateFunc:  validationUUID(),
+				ValidateFunc:  validationUUIDorUUIDWithLocality(),
 				ConflictsWith: []string{"from_volume_id", "size_in_gb"},
 			},
 			"server_id": {
