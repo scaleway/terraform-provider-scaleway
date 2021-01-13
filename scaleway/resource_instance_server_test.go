@@ -433,8 +433,7 @@ EOF
 					}`,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayInstanceServerExists(tt, "scaleway_instance_server.base"),
-					resource.TestCheckNoResourceAttr("scaleway_instance_server.base", "user_data"),
-					resource.TestCheckResourceAttr("scaleway_instance_server.base", "cloud_init", "#cloud-config\napt_update: true\napt_upgrade: true\n"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.base", "user_data.cloud-init", "#cloud-config\napt_update: true\napt_upgrade: true\n"),
 				),
 			},
 		},

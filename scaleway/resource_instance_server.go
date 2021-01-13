@@ -641,7 +641,7 @@ func resourceScalewayInstanceServerUpdate(ctx context.Context, d *schema.Resourc
 	////
 	// Update server user data
 	////
-	if d.HasChanges("cloud_init", "user_data") {
+	if d.HasChanges("user_data") {
 		userDataRequests := &instance.SetAllServerUserDataRequest{
 			Zone:     zone,
 			ServerID: ID,
@@ -649,16 +649,10 @@ func resourceScalewayInstanceServerUpdate(ctx context.Context, d *schema.Resourc
 		}
 
 		if allUserData, ok := d.GetOk("user_data"); ok {
-			userDataSet := allUserData.(*schema.Set)
-			for _, rawUserData := range userDataSet.List() {
-				userData := rawUserData.(map[string]interface{})
-				userDataRequests.UserData[userData["key"].(string)] = bytes.NewBufferString(userData["value"].(string))
+			userDataMap := allUserData.(map[string]interface{})
+			for key, value := range userDataMap {
+				userDataRequests.UserData[key] = bytes.NewBufferString(value.(string))
 			}
-		}
-
-		// cloud init script is set in user data
-		if cloudInit, ok := d.GetOk("cloud_init"); ok {
-			userDataRequests.UserData["cloud-init"] = bytes.NewBufferString(cloudInit.(string))
 			if !isStopped {
 				warnings = append(warnings, diag.Diagnostic{
 					Severity: diag.Warning,
