@@ -59,7 +59,6 @@ func TestAccScalewayInstanceServer_Minimal1(t *testing.T) {
 		CheckDestroy:      testAccCheckScalewayInstanceServerDestroy(tt),
 		Steps: []resource.TestStep{
 			{
-				// Image id such as f974feac-abae-4365-b988-8ec7d1cec10d
 				Config: `
 					resource "scaleway_instance_server" "base" {
 					  image = "ubuntu_focal"
