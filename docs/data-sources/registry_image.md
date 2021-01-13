@@ -35,8 +35,6 @@ data "scaleway_registry_image" "my_image" {
 
 - `region` - (Defaults to [provider](../index.md#region) `region`) The [region](../guides/regions_and_zones.md#regions) in which the image exists.
 
-- `organization_id` - (Defaults to [provider](../index.md#organization_id) `organization_id`) The ID of the organization the image is associated with.
-
 - `project_id` - (Defaults to [provider](../index.md#project_id) `project_id`) The ID of the project the image is associated with.
 
 ## Attributes Reference
@@ -47,3 +45,4 @@ In addition to all above arguments, the following attributes are exported:
 - `size` - The size of the registry image.
 - `visibility` - The privacy policy of the registry image.
 - `tags` - The tags associated with the registry image
+- `organization_id` - The organization ID the image is associated with.

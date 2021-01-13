@@ -17,7 +17,7 @@ func TestAccScalewayLbFrontend_Basic(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      testAccCheckScalewayLbFrontendBetaDestroy(tt),
+		CheckDestroy:      testAccCheckScalewayLbFrontendDestroy(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -84,7 +84,7 @@ func TestAccScalewayLbAcl_Basic(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      testAccCheckScalewayLbFrontendBetaDestroy(tt),
+		CheckDestroy:      testAccCheckScalewayLbFrontendDestroy(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -346,7 +346,7 @@ func testAccCheckScalewayLbFrontendExists(tt *TestTools, n string) resource.Test
 	}
 }
 
-func testAccCheckScalewayLbFrontendBetaDestroy(tt *TestTools) resource.TestCheckFunc {
+func testAccCheckScalewayLbFrontendDestroy(tt *TestTools) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		for _, rs := range state.RootModule().Resources {
 			if rs.Type != "scaleway_lb_frontend" {

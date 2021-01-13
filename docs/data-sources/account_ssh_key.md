@@ -26,9 +26,7 @@ data "scaleway_account_ssh_key" "my_key" {
 
 - `name` - The SSH key name. Only one of `name` and `ssh_key_id` should be specified.
 - `ssh_key_id` - The SSH key id. Only one of `name` and `ssh_key_id` should be specified.
-- `organization_id` - (Defaults to [provider](../index.md#organization_id) `organization_id`) The ID of the organization the SSH key is associated with.
 - `project_id` - (Defaults to [provider](../index.md#project_id) `project_id`) The ID of the project the SSH key is associated with.
-
 
 ## Attributes Reference
 
@@ -36,3 +34,4 @@ In addition to all above arguments, the following attributes are exported:
 
 - `id` - The ID of the SSH public key.
 - `public_key` - The SSH public key string
+- `organization_id` - The ID of the organization the SSH key is associated with.

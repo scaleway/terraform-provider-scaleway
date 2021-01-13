@@ -56,7 +56,7 @@ func TestAccScalewayK8SCluster_PoolBasic(t *testing.T) {
 				Config: testAccCheckScalewayK8SPoolConfigMinimal(latestK8SVersion, false),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayK8SClusterExists(tt, "scaleway_k8s_cluster.minimal"),
-					testAccCheckScalewayK8SPoolBetaDestroy(tt, "scaleway_k8s_pool.minimal"),
+					testAccCheckScalewayK8SPoolDestroy(tt, "scaleway_k8s_pool.minimal"),
 				),
 			},
 		},
@@ -130,7 +130,7 @@ func TestAccScalewayK8SCluster_PoolWait(t *testing.T) {
 				Config: testAccCheckScalewayK8SPoolConfigWait(latestK8SVersion, false, 0),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayK8SClusterExists(tt, "scaleway_k8s_cluster.minimal"),
-					testAccCheckScalewayK8SPoolBetaDestroy(tt, "scaleway_k8s_pool.minimal"),
+					testAccCheckScalewayK8SPoolDestroy(tt, "scaleway_k8s_pool.minimal"),
 				),
 			},
 		},
@@ -160,7 +160,7 @@ func TestAccScalewayK8SCluster_PoolPlacementGroup(t *testing.T) {
 	})
 }
 
-func testAccCheckScalewayK8SPoolBetaDestroy(tt *TestTools, n string) resource.TestCheckFunc {
+func testAccCheckScalewayK8SPoolDestroy(tt *TestTools, n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
@@ -239,7 +239,7 @@ resource "scaleway_k8s_pool" "default" {
 	tags = [ "terraform-test", "scaleway_k8s_cluster", "default" ]
 }
 resource "scaleway_k8s_cluster" "minimal" {
-    name = "K8SPoolBetaConfigMinimal"
+    name = "K8SPoolConfigMinimal"
 	cni = "calico"
 	version = "%s"
 	tags = [ "terraform-test", "scaleway_k8s_cluster", "minimal" ]
@@ -275,7 +275,7 @@ resource "scaleway_k8s_pool" "default" {
 }
 
 resource "scaleway_k8s_cluster" "minimal" {
-    name = "PoolBetaConfigWait"
+    name = "PoolConfigWait"
 	cni = "calico"
 	version = "%s"
 	tags = [ "terraform-test", "scaleway_k8s_cluster", "minimal" ]

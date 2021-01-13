@@ -13,7 +13,7 @@ func TestAccScalewayDataSourceRegistryNamespace_Basic(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      testAccCheckScalewayRegistryNamespaceBetaDestroy(tt),
+		CheckDestroy:      testAccCheckScalewayRegistryNamespaceDestroy(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `

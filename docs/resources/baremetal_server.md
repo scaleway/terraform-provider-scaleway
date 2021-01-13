@@ -30,31 +30,20 @@ resource "scaleway_baremetal_server" "base" {
 The following arguments are supported:
 
 - `offer` - (Required) The offer name or UUID of the baremetal server.
-Use [this endpoint](https://developers.scaleway.com/en/products/baremetal/api/#get-334154) to find the right offer.
+  Use [this endpoint](https://developers.scaleway.com/en/products/baremetal/api/#get-334154) to find the right offer.
 
 ~> **Important:** Updates to `offer` will recreate the server.
 
 - `os` - (Required) The UUID of the os to install on the server.
-Use [this endpoint](https://developers.scaleway.com/en/products/baremetal/api/#get-87598a) to find the right OS ID.
-
-~> **Important:** Updates to `os` will reinstall the server.
-
+  Use [this endpoint](https://developers.scaleway.com/en/products/baremetal/api/#get-87598a) to find the right OS ID.
+  ~> **Important:** Updates to `os` will reinstall the server.
 - `ssh_key_ids` - (Required) List of SSH keys allowed to connect to the server.
-
-~> **Important:** Updates to `ssh_key_ids` will reinstall the server.
-
+  ~> **Important:** Updates to `ssh_key_ids` will reinstall the server.
 - `name` - (Optional) The name of the server.
-
 - `hostname` - (Optional) The hostname of the server.
-
 - `description` - (Optional) A description for the server.
-
 - `tags` - (Optional) The tags associated with the server.
-
 - `zone` - (Defaults to [provider](../index.md#zone) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which the server should be created.
-
-- `organization_id` - (Defaults to [provider](../index.md#organization_id) `organization_id`) The ID of the organization the server is associated with.
-
 - `project_id` - (Defaults to [provider](../index.md#project_id) `project_id`) The ID of the project the server is associated with.
 
 
@@ -71,6 +60,7 @@ In addition to all above arguments, the following attributes are exported:
     - `reverse` - The reverse of the IP.
     - `type` - The type of the IP.
 - `domain` - The domain of the server.
+- `organization_id` - The organization ID the server is associated with.
 
 ## Import
 

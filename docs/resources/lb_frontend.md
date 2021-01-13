@@ -6,8 +6,6 @@ description: |-
 
 # scaleway_lb_frontend
 
--> **Note:** This terraform resource is flagged beta and might include breaking change in future releases.
-
 Creates and manages Scaleway Load-Balancer Frontends. For more information, see [the documentation](https://developers.scaleway.com/en/products/lb/api).
 
 ## Examples

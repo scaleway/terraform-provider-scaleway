@@ -6,7 +6,8 @@ description: |-
 
 # scaleway_object_bucket
 
-Creates and manages Scaleway object storage buckets. For more information, see [the documentation](https://www.scaleway.com/en/docs/object-storage-feature/).
+Creates and manages Scaleway object storage buckets.
+For more information, see [the documentation](https://www.scaleway.com/en/docs/object-storage-feature/).
 
 ## Example Usage
 

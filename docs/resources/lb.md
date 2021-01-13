@@ -6,9 +6,8 @@ description: |-
 
 # scaleway_lb
 
--> **Note:** This terraform resource is flagged beta and might include breaking change in future releases.
-
-Creates and manages Scaleway Load-Balancers. For more information, see [the documentation](https://developers.scaleway.com/en/products/lb/api).
+Creates and manages Scaleway Load-Balancers.
+For more information, see [the documentation](https://developers.scaleway.com/en/products/lb/api).
 
 ## Examples
 
@@ -43,7 +42,6 @@ The following arguments are supported:
 
 - `region` - (Defaults to [provider](../index.md#region) `region`) The [region](../guides/regions_and_zones.md#regions) in which the load-balancer should be created.
 
-- `organization_id` - (Defaults to [provider](../index.md#organization_id) `organization_id`) The ID of the organization the load-balancer is associated with.
 
 - `project_id` - (Defaults to [provider](../index.md#project_id) `project_id`) The ID of the project the load-balancer is associated with.
 
@@ -53,6 +51,7 @@ In addition to all arguments above, the following attributes are exported:
 
 - `id` - The ID of the load-balancer.
 - `ip_address` -  The load-balance public IP Address
+- `organization_id` - The organization ID the load-balancer is associated with.
 
 ## IP ID
 
