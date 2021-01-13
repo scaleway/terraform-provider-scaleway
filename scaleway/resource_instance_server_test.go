@@ -354,7 +354,6 @@ func TestAccScalewayInstanceServer_UserData_WithCloudInitAtStart(t *testing.T) {
 		CheckDestroy:      testAccCheckScalewayInstanceServerDestroy(tt),
 		Steps: []resource.TestStep{
 			{
-				// With cloud-init and user data
 				Config: `
 				data "scaleway_instance_image" "ubuntu" {
 				 	architecture = "x86_64"
@@ -365,71 +364,19 @@ func TestAccScalewayInstanceServer_UserData_WithCloudInitAtStart(t *testing.T) {
 				 	image = "${data.scaleway_instance_image.ubuntu.id}"
 				 	type  = "DEV1-S"
 
-					user_data {
-				   		key   = "plop"
-				   		value = "world"
-				 	}
-				
-				 	user_data {
-				   		key   = "blanquette"
-				   		value = "hareng pomme à l'huile"
-				 	}
-					
-				 	cloud_init = <<EOF
+					user_data = {
+				   		foo   = "bar"
+						cloud-init =  <<EOF
 #cloud-config
 apt_update: true
 apt_upgrade: true
-EOF
+EOF 
+				 	}
 				}`,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayInstanceServerExists(tt, "scaleway_instance_server.base"),
-					resource.TestCheckResourceAttr("scaleway_instance_server.base", "user_data.0.key", "blanquette"),
-					resource.TestCheckResourceAttr("scaleway_instance_server.base", "user_data.0.value", "hareng pomme à l'huile"),
-					resource.TestCheckResourceAttr("scaleway_instance_server.base", "user_data.1.key", "plop"),
-					resource.TestCheckResourceAttr("scaleway_instance_server.base", "user_data.1.value", "world"),
-					resource.TestCheckResourceAttr("scaleway_instance_server.base", "cloud_init", "#cloud-config\napt_update: true\napt_upgrade: true\n"),
-				),
-			},
-			{
-				// With cloud-init and without user data
-				Config: `
-					data "scaleway_instance_image" "ubuntu" {
-						architecture = "x86_64"
-						name         = "Ubuntu 20.04 Focal Fossa"
-					}
-
-					resource "scaleway_instance_server" "base" {
-						image = "${data.scaleway_instance_image.ubuntu.id}"
-						type  = "DEV1-S"
-						cloud_init = <<EOF
-#cloud-config
-apt_update: true
-apt_upgrade: true
-EOF
-					}`,
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayInstanceServerExists(tt, "scaleway_instance_server.base"),
-					resource.TestCheckNoResourceAttr("scaleway_instance_server.base", "user_data"),
-					resource.TestCheckResourceAttr("scaleway_instance_server.base", "cloud_init", "#cloud-config\napt_update: true\napt_upgrade: true\n"),
-				),
-			},
-			{
-				// No user data nor cloud init
-				Config: `
-					data "scaleway_instance_image" "ubuntu" {
-					  architecture = "x86_64"
-					  name         = "Ubuntu 20.04 Focal Fossa"
-					}
-
-					resource "scaleway_instance_server" "base" {
-					  image = "${data.scaleway_instance_image.ubuntu.id}"
-					  type  = "DEV1-S"
-					  tags  = [ "terraform-test", "scaleway_instance_server", "user_data" ]
-					}`,
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayInstanceServerExists(tt, "scaleway_instance_server.base"),
-					resource.TestCheckNoResourceAttr("scaleway_instance_server.base", "user_data"),
-					resource.TestCheckResourceAttr("scaleway_instance_server.base", "cloud_init", ""),
+					resource.TestCheckResourceAttr("scaleway_instance_server.base", "user_data.foo", "bar"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.base", "user_data.cloud-init", "#cloud-config\napt_update: true\napt_upgrade: true\n"),
 				),
 			},
 		},
@@ -460,7 +407,6 @@ func TestAccScalewayInstanceServer_UserData_WithoutCloudInitAtStart(t *testing.T
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayInstanceServerExists(tt, "scaleway_instance_server.base"),
 					resource.TestCheckNoResourceAttr("scaleway_instance_server.base", "user_data"),
-					resource.TestCheckNoResourceAttr("scaleway_instance_server.base", "cloud_init"),
 				),
 			},
 			{
@@ -476,16 +422,17 @@ func TestAccScalewayInstanceServer_UserData_WithoutCloudInitAtStart(t *testing.T
 						type  = "DEV1-S"
 						tags  = [ "terraform-test", "scaleway_instance_server", "user_data" ]
 
-						cloud_init = <<EOF
+						user_data = {
+							cloud-init = <<EOF
 #cloud-config
 apt_update: true
 apt_upgrade: true
 EOF
+						}
 					}`,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayInstanceServerExists(tt, "scaleway_instance_server.base"),
-					resource.TestCheckNoResourceAttr("scaleway_instance_server.base", "user_data"),
-					resource.TestCheckResourceAttr("scaleway_instance_server.base", "cloud_init", "#cloud-config\napt_update: true\napt_upgrade: true\n"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.base", "user_data.cloud-init", "#cloud-config\napt_update: true\napt_upgrade: true\n"),
 				),
 			},
 		},

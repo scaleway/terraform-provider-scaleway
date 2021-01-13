@@ -3,7 +3,6 @@ package scaleway
 import (
 	"context"
 	"fmt"
-	"hash/crc32"
 	"sort"
 	"time"
 
@@ -60,28 +59,6 @@ func instanceAPIWithZoneAndNestedID(m interface{}, zonedNestedID string) (*insta
 		return nil, "", "", "", err
 	}
 	return instanceAPI, zone, innerID, outerID, nil
-}
-
-// hash hashes a string to a unique hashcode.
-//
-// crc32 returns a uint32, but for our use we need
-// and non negative integer. Here we cast to an integer
-// and invert it if the result is negative.
-func hash(s string) int {
-	v := int(crc32.ChecksumIEEE([]byte(s)))
-	if v >= 0 {
-		return v
-	}
-	if -v >= 0 {
-		return -v
-	}
-	// v == MinInt
-	return 0
-}
-
-func userDataHash(v interface{}) int {
-	userData := v.(map[string]interface{})
-	return hash(userData["key"].(string) + userData["value"].(string))
 }
 
 // orderVolumes return an ordered slice based on the volume map key "0", "1", "2",...
