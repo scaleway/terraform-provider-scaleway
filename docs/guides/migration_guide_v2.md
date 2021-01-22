@@ -205,7 +205,7 @@ resource "scaleway_instance_server" "web" {
   type = "DEV1-S"
   image = "ubuntu_focal"
 
-  user_data {
+  user_data = {
     foo = "bar"
     cloud-init = file("cloud-init.yml")
   }
