@@ -75,6 +75,7 @@ func Provider(config *ProviderConfig) plugin.ProviderFunc {
 				"scaleway_instance_server":               resourceScalewayInstanceServer(),
 				"scaleway_instance_placement_group":      resourceScalewayInstancePlacementGroup(),
 				"scaleway_instance_private_nic":          resourceScalewayInstancePrivateNIC(),
+				"scaleway_iot_hub":                       resourceScalewayIotHub(),
 				"scaleway_k8s_cluster":                   resourceScalewayK8SCluster(),
 				"scaleway_k8s_pool":                      resourceScalewayK8SPool(),
 				"scaleway_lb":                            resourceScalewayLb(),
