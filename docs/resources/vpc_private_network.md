@@ -14,7 +14,7 @@ For more information, see [the documentation](https://developers.scaleway.com/en
 ```hcl
 resource "scaleway_vpc_private_network" "pn_priv" {
     name = "subnet_demo"
-    tags = ["demo", "tarraform"]
+    tags = ["demo", "terraform"]
 }
 ```
 
