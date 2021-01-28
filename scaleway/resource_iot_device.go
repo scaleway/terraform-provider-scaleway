@@ -23,9 +23,10 @@ func resourceScalewayIotDevice() *schema.Resource {
 		SchemaVersion: 0,
 		Schema: map[string]*schema.Schema{
 			"hub_id": {
-				Type:        schema.TypeString,
-				Required:    true,
-				Description: "The ID of the hub on which this device will be created",
+				Type:             schema.TypeString,
+				Required:         true,
+				Description:      "The ID of the hub on which this device will be created",
+				DiffSuppressFunc: diffSuppressFuncLocality,
 			},
 			"name": {
 				Type:        schema.TypeString,
