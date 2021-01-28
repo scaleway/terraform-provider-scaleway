@@ -30,6 +30,7 @@ The following arguments are required:
 In addition to all above arguments, the following attributes are exported:
 
 - `id` - The ID of the private NIC.
+- ``mac_address` - The MAC address of the private NIC.
 
 ## Import
 
