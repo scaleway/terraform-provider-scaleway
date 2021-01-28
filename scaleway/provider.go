@@ -78,6 +78,7 @@ func Provider(config *ProviderConfig) plugin.ProviderFunc {
 				"scaleway_iot_hub":                       resourceScalewayIotHub(),
 				"scaleway_iot_device":                    resourceScalewayIotDevice(),
 				"scaleway_iot_route":                     resourceScalewayIotRoute(),
+				"scaleway_iot_network":                   resourceScalewayIotNetwork(),
 				"scaleway_k8s_cluster":                   resourceScalewayK8SCluster(),
 				"scaleway_k8s_pool":                      resourceScalewayK8SPool(),
 				"scaleway_lb":                            resourceScalewayLb(),
