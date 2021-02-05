@@ -126,10 +126,10 @@ func resourceScalewayAppleSiliconServerRead(ctx context.Context, d *schema.Resou
 	_ = d.Set("created_at", res.CreatedAt.Format(time.RFC3339))
 	_ = d.Set("updated_at", res.UpdatedAt.Format(time.RFC3339))
 	_ = d.Set("deletable_at", res.DeletableAt.Format(time.RFC3339))
-	_ = d.Set("ip", res.IP)
+	_ = d.Set("ip", res.IP.String())
 	_ = d.Set("vnc_url", res.VncURL)
 
-	_ = d.Set("zone", string(zone))
+	_ = d.Set("zone", zone.String())
 	_ = d.Set("organization_id", res.OrganizationID)
 	_ = d.Set("project_id", res.ProjectID)
 
