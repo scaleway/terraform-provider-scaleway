@@ -27,6 +27,7 @@ func resourceScalewayAppleSiliconServer() *schema.Resource {
 			"name": {
 				Type:        schema.TypeString,
 				Description: "Name of the server",
+				Computed:    true,
 				Optional:    true,
 			},
 			"type": {

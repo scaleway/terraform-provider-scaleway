@@ -9,7 +9,7 @@ import (
 )
 
 const (
-	defaultAppleSiliconServerTimeout = 60 * time.Minute
+	defaultAppleSiliconServerTimeout = 2 * time.Minute
 )
 
 // asAPIWithZone returns a new apple silicon API and the zone
