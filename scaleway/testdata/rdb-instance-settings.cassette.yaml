@@ -1,0 +1,38 @@
+---
+version: 1
+interactions:
+- request:
+    body: '{"project_id":"951df375-e094-4d26-97c1-ba548eeb9c42","name":"test-rdb","engine":"PostgreSQL-11","user_name":"my_initial_user","password":"thiZ_is_v\u0026ry_s3cret","node_type":"db-dev-s","is_ha_cluster":false,"disable_backup":true,"tags":[],"init_settings":[{"name":"max_connections","value":"200"},{"name":"max_parallel_workers_per_gather","value":"2"},{"name":"work_mem","value":"4"},{"name":"max_parallel_workers","value":"2"},{"name":"effective_cache_size","value":"1300"},{"name":"maintenance_work_mem","value":"150"}],"volume_type":"lssd","volume_size":0}'
+    form: {}
+    headers:
+      Content-Type:
+      - application/json
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.15.7; darwin; amd64) terraform-provider/develop
+        terraform/terraform-tests
+    url: https://api.scaleway.com/rdb/v1/regions/fr-par/instances
+    method: POST
+  response:
+    body: '{"message":"resource is not found","resource":"max_connections","resource_id":"","type":"not_found"}'
+    headers:
+      Content-Length:
+      - "100"
+      Content-Security-Policy:
+      - default-src 'none'; frame-ancestors 'none'
+      Content-Type:
+      - application/json
+      Date:
+      - Fri, 05 Feb 2021 14:14:04 GMT
+      Server:
+      - Scaleway API-Gateway
+      Strict-Transport-Security:
+      - max-age=63072000
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+      X-Request-Id:
+      - 80f5a144-648b-4532-b403-0d4546bf0995
+    status: 404 Not Found
+    code: 404
+    duration: ""

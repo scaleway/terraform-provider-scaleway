@@ -66,6 +66,11 @@ func resourceScalewayRdbInstance() *schema.Resource {
 				Optional:    true,
 				Description: "Password for the first user of the database instance",
 			},
+			"settings": {
+				Type:        schema.TypeMap,
+				Description: "List of engine settings to be set at database initialisation.",
+				Optional:    true,
+			},
 			"tags": {
 				Type: schema.TypeList,
 				Elem: &schema.Schema{
@@ -143,6 +148,10 @@ func resourceScalewayRdbInstanceCreate(ctx context.Context, d *schema.ResourceDa
 		Tags:          expandStrings(d.Get("tags")),
 	}
 
+	if rawSettings, ok := d.GetOk("settings"); ok {
+		createReq.InitSettings = expandInstanceSettings(rawSettings)
+	}
+
 	res, err := rdbAPI.CreateInstance(createReq, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
@@ -214,6 +223,9 @@ func resourceScalewayRdbInstanceRead(ctx context.Context, d *schema.ResourceData
 	}
 	_ = d.Set("certificate", string(certContent))
 
+	// set settings
+	_ = d.Set("settings", flattenInstanceSettings(res.Settings))
+
 	return nil
 }
 
@@ -243,6 +255,17 @@ func resourceScalewayRdbInstanceUpdate(ctx context.Context, d *schema.ResourceDa
 	if err != nil {
 		return diag.FromErr(err)
 	}
+
+	// Change settings
+	if d.HasChange("settings") {
+		_, err := rdbAPI.SetInstanceSettings(&rdb.SetInstanceSettingsRequest{
+			Settings: expandInstanceSettings(d.Get("settings")),
+		}, scw.WithContext(ctx))
+		if err != nil {
+			return diag.FromErr(err)
+		}
+	}
+
 	upgradeInstanceRequests := []rdb.UpgradeInstanceRequest(nil)
 	if d.HasChange("node_type") {
 		upgradeInstanceRequests = append(upgradeInstanceRequests,
