@@ -535,30 +535,32 @@ func resourceScalewayInstanceServerUpdate(ctx context.Context, d *schema.Resourc
 	volumes := map[string]*instance.VolumeTemplate{}
 
 	if raw, ok := d.GetOk("additional_volume_ids"); d.HasChange("additional_volume_ids") && ok {
+		// root volume which is always at index 0
 		volumes["0"] = &instance.VolumeTemplate{
-			ID:   expandZonedID(d.Get("root_volume.0.volume_id")).ID,
+			ID: expandZonedID(d.Get("root_volume.0.volume_id")).ID,
+			// VolumeType: instance.VolumeVolumeTypeLSSD, // Currently not accepted by the instance API
 			Name: newRandomName("vol"), // name is ignored by the API, any name will work here
 		}
 
+		// Additional volumes
 		for i, volumeID := range raw.([]interface{}) {
 			volumeHasChange := d.HasChange("additional_volume_ids." + strconv.Itoa(i))
-			// local volumes can only be added when the instance is stopped
-			if volumeHasChange && !isStopped {
-				volumeResp, err := instanceAPI.GetVolume(&instance.GetVolumeRequest{
-					Zone:     zone,
-					VolumeID: expandZonedID(volumeID).ID,
-				})
-				if err != nil {
-					return diag.FromErr(err)
-				}
+			volumeResp, err := instanceAPI.GetVolume(&instance.GetVolumeRequest{
+				Zone:     zone,
+				VolumeID: expandZonedID(volumeID).ID,
+			})
+			if err != nil {
+				return diag.FromErr(err)
+			}
 
+			if volumeResp.Volume.Server != nil {
+				// local volumes can only be added when the instance is stopped
 				// We must be able to tell whether a volume is already present in the server or not
-				if volumeResp.Volume.Server != nil {
-					if volumeResp.Volume.VolumeType == instance.VolumeVolumeTypeLSSD && volumeResp.Volume.Server.ID != "" {
-						return diag.FromErr(fmt.Errorf("instance must be stopped to change local volumes"))
-					}
+				if volumeHasChange && volumeResp.Volume.VolumeType == instance.VolumeVolumeTypeLSSD && volumeResp.Volume.Server.ID != "" && !isStopped {
+					return diag.FromErr(fmt.Errorf("instance must be stopped to change local volumes"))
 				}
 			}
+
 			volumes[strconv.Itoa(i+1)] = &instance.VolumeTemplate{
 				ID:   expandZonedID(volumeID).ID,
 				Name: newRandomName("vol"), // name is ignored by the API, any name will work here

@@ -859,3 +859,49 @@ func TestAccScalewayInstanceServer_WithDefaultRootVolumeAndAdditionalVolume(t *t
 		},
 	})
 }
+
+func TestAccScalewayInstanceServer_AddingBlock(t *testing.T) {
+	tt := NewTestTools(t)
+	defer tt.Cleanup()
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      testAccCheckScalewayInstanceServerDestroy(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource "scaleway_instance_server" "main" {
+					  name              = "foobar"
+					  image             = "ubuntu_focal"
+					  type              = "DEV1-S"
+					  root_volume {
+						delete_on_termination = true
+						size_in_gb            = 20
+					  }
+					}
+				`,
+			},
+			{
+				Config: `
+					resource "scaleway_instance_server" "main" {
+					  name              = "foobar"
+					  image             = "ubuntu_focal"
+					  type              = "DEV1-S"
+					  root_volume {
+						delete_on_termination = true
+						size_in_gb            = 20
+					  }
+					  additional_volume_ids = [ scaleway_instance_volume.main.id ]
+					}
+					
+					resource "scaleway_instance_volume" "main" {
+						type       = "b_ssd"
+						name       = "block volume"
+						size_in_gb = 35
+					}`,
+			},
+		},
+	})
+
+}
