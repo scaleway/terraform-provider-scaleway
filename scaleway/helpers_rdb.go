@@ -49,7 +49,7 @@ func flattenRdbInstanceReadReplicas(readReplicas []*rdb.Endpoint) interface{} {
 }
 
 func flattenInstanceSettings(settings []*rdb.InstanceSetting) interface{} {
-	res := map[string]string{}
+	res := make(map[string]string)
 	for _, value := range settings {
 		res[value.Name] = value.Value
 	}
