@@ -66,6 +66,14 @@ func resourceScalewayRdbInstance() *schema.Resource {
 				Optional:    true,
 				Description: "Password for the first user of the database instance",
 			},
+			"settings": {
+				Type: schema.TypeMap,
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
+				Description: "Map of engine settings to be set.",
+				Optional:    true,
+			},
 			"tags": {
 				Type: schema.TypeList,
 				Elem: &schema.Schema{
@@ -159,6 +167,17 @@ func resourceScalewayRdbInstanceCreate(ctx context.Context, d *schema.ResourceDa
 		return diag.FromErr(err)
 	}
 
+	if settings, ok := d.GetOk("settings"); ok {
+		_, err := rdbAPI.SetInstanceSettings(&rdb.SetInstanceSettingsRequest{
+			InstanceID: res.ID,
+			Region:     region,
+			Settings:   expandInstanceSettings(settings),
+		})
+		if err != nil {
+			return diag.FromErr(err)
+		}
+	}
+
 	return resourceScalewayRdbInstanceRead(ctx, d, m)
 }
 
@@ -214,6 +233,9 @@ func resourceScalewayRdbInstanceRead(ctx context.Context, d *schema.ResourceData
 	}
 	_ = d.Set("certificate", string(certContent))
 
+	// set settings
+	_ = d.Set("settings", flattenInstanceSettings(res.Settings))
+
 	return nil
 }
 
@@ -243,6 +265,19 @@ func resourceScalewayRdbInstanceUpdate(ctx context.Context, d *schema.ResourceDa
 	if err != nil {
 		return diag.FromErr(err)
 	}
+
+	// Change settings
+	if d.HasChange("settings") {
+		_, err := rdbAPI.SetInstanceSettings(&rdb.SetInstanceSettingsRequest{
+			InstanceID: ID,
+			Region:     region,
+			Settings:   expandInstanceSettings(d.Get("settings")),
+		}, scw.WithContext(ctx))
+		if err != nil {
+			return diag.FromErr(err)
+		}
+	}
+
 	upgradeInstanceRequests := []rdb.UpgradeInstanceRequest(nil)
 	if d.HasChange("node_type") {
 		upgradeInstanceRequests = append(upgradeInstanceRequests,
@@ -300,6 +335,17 @@ func resourceScalewayRdbInstanceUpdate(ctx context.Context, d *schema.ResourceDa
 func resourceScalewayRdbInstanceDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	rdbAPI, region, ID, err := rdbAPIWithRegionAndID(m, d.Id())
 	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	// We first wait in case the instance is in a transient state
+	_, err = rdbAPI.WaitForInstance(&rdb.WaitForInstanceRequest{
+		InstanceID: ID,
+		Region:     region,
+		Timeout:    scw.TimeDurationPtr(LbWaitForTimeout),
+	}, scw.WithContext(ctx))
+
+	if err != nil && !is404Error(err) {
 		return diag.FromErr(err)
 	}
 
