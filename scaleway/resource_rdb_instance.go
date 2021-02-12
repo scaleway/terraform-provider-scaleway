@@ -68,7 +68,7 @@ func resourceScalewayRdbInstance() *schema.Resource {
 			},
 			"settings": {
 				Type:        schema.TypeMap,
-				Description: "List of engine settings to be set at database initialisation.",
+				Description: "Map of engine settings to be set.",
 				Optional:    true,
 			},
 			"tags": {
