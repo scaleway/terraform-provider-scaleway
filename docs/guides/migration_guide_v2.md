@@ -206,7 +206,7 @@ resource "scaleway_instance_server" "web" {
   type = "DEV1-S"
   image = "ubuntu_focal"
 
-  user_data {
+  user_data = {
     foo = "bar"
     cloud-init = file("cloud-init.yml")
   }
@@ -248,7 +248,7 @@ resource "scaleway_instance_server" "web" {
 
 ##### Renamed: `scaleway_ip` -> `scaleway_instance_ip`
 
-`scaleway_ip` was renamed to `scaleway_instance_ip` and the `server` attribute, used to attach an IP has been moved to `scaleway_instance_server.id_id`
+`scaleway_ip` was renamed to `scaleway_instance_ip` and the `server` attribute, used to attach an IP has been moved to `scaleway_instance_server.ip_id`
 
 ```hcl
 resource "scaleway_instance_ip" "test_ip" {
