@@ -903,5 +903,4 @@ func TestAccScalewayInstanceServer_AddingBlock(t *testing.T) {
 			},
 		},
 	})
-
 }
