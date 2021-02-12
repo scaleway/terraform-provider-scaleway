@@ -67,7 +67,10 @@ func resourceScalewayRdbInstance() *schema.Resource {
 				Description: "Password for the first user of the database instance",
 			},
 			"settings": {
-				Type:        schema.TypeMap,
+				Type: schema.TypeMap,
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
 				Description: "Map of engine settings to be set.",
 				Optional:    true,
 			},
