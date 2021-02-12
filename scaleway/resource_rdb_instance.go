@@ -148,10 +148,6 @@ func resourceScalewayRdbInstanceCreate(ctx context.Context, d *schema.ResourceDa
 		Tags:          expandStrings(d.Get("tags")),
 	}
 
-	if rawSettings, ok := d.GetOk("settings"); ok {
-		createReq.InitSettings = expandInstanceSettings(rawSettings)
-	}
-
 	res, err := rdbAPI.CreateInstance(createReq, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
@@ -166,6 +162,17 @@ func resourceScalewayRdbInstanceCreate(ctx context.Context, d *schema.ResourceDa
 	}, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
+	}
+
+	if settings, ok := d.GetOk("settings"); ok {
+		_, err := rdbAPI.SetInstanceSettings(&rdb.SetInstanceSettingsRequest{
+			InstanceID: res.ID,
+			Region:     region,
+			Settings:   expandInstanceSettings(settings),
+		})
+		if err != nil {
+			return diag.FromErr(err)
+		}
 	}
 
 	return resourceScalewayRdbInstanceRead(ctx, d, m)
@@ -259,7 +266,9 @@ func resourceScalewayRdbInstanceUpdate(ctx context.Context, d *schema.ResourceDa
 	// Change settings
 	if d.HasChange("settings") {
 		_, err := rdbAPI.SetInstanceSettings(&rdb.SetInstanceSettingsRequest{
-			Settings: expandInstanceSettings(d.Get("settings")),
+			InstanceID: ID,
+			Region:     region,
+			Settings:   expandInstanceSettings(d.Get("settings")),
 		}, scw.WithContext(ctx))
 		if err != nil {
 			return diag.FromErr(err)
@@ -323,6 +332,17 @@ func resourceScalewayRdbInstanceUpdate(ctx context.Context, d *schema.ResourceDa
 func resourceScalewayRdbInstanceDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	rdbAPI, region, ID, err := rdbAPIWithRegionAndID(m, d.Id())
 	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	// We first wait in case the instance is in a transient state
+	_, err = rdbAPI.WaitForInstance(&rdb.WaitForInstanceRequest{
+		InstanceID: ID,
+		Region:     region,
+		Timeout:    scw.TimeDurationPtr(LbWaitForTimeout),
+	}, scw.WithContext(ctx))
+
+	if err != nil && !is404Error(err) {
 		return diag.FromErr(err)
 	}
 
