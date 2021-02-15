@@ -137,7 +137,7 @@ The following arguments are supported:
     - `balance_similar_node_groups` - (Defaults to `false`) Detect similar node groups and balance the number of nodes between them.
 
     - `expendable_pods_priority_cutoff` - (Defaults to `-10`) Pods with priority below cutoff will be expendable. They can be killed without any consideration during scale down and they don't cause scale up. Pods with null priority (PodPriority disabled) are non expendable.
-    
+
     - `scale_down_utilization_threshold` - (Defaults to `0.5`) Node utilization level, defined as sum of requested resources divided by capacity, below which a node can be considered for scale down
 
     - `max_graceful_termination_sec` - (Defaults to `600`) Maximum number of seconds the cluster autoscaler waits for pod termination when trying to scale down a node
