@@ -212,16 +212,16 @@ func clusterAutoscalerConfigFlatten(cluster *k8s.Cluster) []map[string]interface
 }
 
 func clusterOpenIDConnectConfigFlatten(cluster *k8s.Cluster) []map[string]interface{} {
-	oidcConfig := map[string]interface{}{}
-	oidcConfig["issuer_url"] = cluster.OpenIDConnectConfig.IssuerURL
-	oidcConfig["client_id"] = cluster.OpenIDConnectConfig.ClientID
-	oidcConfig["username_claim"] = cluster.OpenIDConnectConfig.UsernameClaim
-	oidcConfig["username_prefix"] = cluster.OpenIDConnectConfig.UsernamePrefix
-	oidcConfig["groups_claim"] = cluster.OpenIDConnectConfig.GroupsClaim
-	oidcConfig["groups_prefix"] = cluster.OpenIDConnectConfig.GroupsPrefix
-	oidcConfig["required_claim"] = cluster.OpenIDConnectConfig.RequiredClaim
+	openIDConnectConfig := map[string]interface{}{}
+	openIDConnectConfig["issuer_url"] = cluster.OpenIDConnectConfig.IssuerURL
+	openIDConnectConfig["client_id"] = cluster.OpenIDConnectConfig.ClientID
+	openIDConnectConfig["username_claim"] = cluster.OpenIDConnectConfig.UsernameClaim
+	openIDConnectConfig["username_prefix"] = cluster.OpenIDConnectConfig.UsernamePrefix
+	openIDConnectConfig["groups_claim"] = cluster.OpenIDConnectConfig.GroupsClaim
+	openIDConnectConfig["groups_prefix"] = cluster.OpenIDConnectConfig.GroupsPrefix
+	openIDConnectConfig["required_claim"] = cluster.OpenIDConnectConfig.RequiredClaim
 
-	return []map[string]interface{}{oidcConfig}
+	return []map[string]interface{}{openIDConnectConfig}
 }
 
 func clusterAutoUpgradeFlatten(cluster *k8s.Cluster) []map[string]interface{} {

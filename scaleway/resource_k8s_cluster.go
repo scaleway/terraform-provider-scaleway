@@ -310,38 +310,38 @@ func resourceScalewayK8SClusterCreate(ctx context.Context, d *schema.ResourceDat
 
 	req.AutoscalerConfig = autoscalerReq
 
-	oidcReq := &k8s.CreateClusterRequestOpenIDConnectConfig{}
+	createClusterRequestOpenIDConnectConfig := &k8s.CreateClusterRequestOpenIDConnectConfig{}
 
 	if issuerURL, ok := d.GetOk("open_id_connect_config.0.issuer_url"); ok {
-		req.OpenIDConnectConfig = oidcReq
-		oidcReq.IssuerURL = issuerURL.(string)
+		req.OpenIDConnectConfig = createClusterRequestOpenIDConnectConfig
+		createClusterRequestOpenIDConnectConfig.IssuerURL = issuerURL.(string)
 	}
 
 	if clientID, ok := d.GetOk("open_id_connect_config.0.client_id"); ok {
-		req.OpenIDConnectConfig = oidcReq
-		oidcReq.ClientID = clientID.(string)
+		req.OpenIDConnectConfig = createClusterRequestOpenIDConnectConfig
+		createClusterRequestOpenIDConnectConfig.ClientID = clientID.(string)
 	}
 
-	// oidcReq is always defined here
+	// createClusterRequestOpenIDConnectConfig is always defined here
 
 	if usernameClaim, ok := d.GetOk("open_id_connect_config.0.username_claim"); ok {
-		oidcReq.UsernameClaim = scw.StringPtr(usernameClaim.(string))
+		createClusterRequestOpenIDConnectConfig.UsernameClaim = scw.StringPtr(usernameClaim.(string))
 	}
 
 	if usernamePrefix, ok := d.GetOk("open_id_connect_config.0.username_prefix"); ok {
-		oidcReq.UsernamePrefix = scw.StringPtr(usernamePrefix.(string))
+		createClusterRequestOpenIDConnectConfig.UsernamePrefix = scw.StringPtr(usernamePrefix.(string))
 	}
 
 	if groupsClaim, ok := d.GetOk("open_id_connect_config.0.groups_claim"); ok {
-		oidcReq.GroupsClaim = scw.StringsPtr(expandStrings(groupsClaim))
+		createClusterRequestOpenIDConnectConfig.GroupsClaim = scw.StringsPtr(expandStrings(groupsClaim))
 	}
 
 	if groupsPrefix, ok := d.GetOk("open_id_connect_config.0.groups_prefix"); ok {
-		oidcReq.GroupsPrefix = scw.StringPtr(groupsPrefix.(string))
+		createClusterRequestOpenIDConnectConfig.GroupsPrefix = scw.StringPtr(groupsPrefix.(string))
 	}
 
 	if requiredClaim, ok := d.GetOk("open_id_connect_config.0.required_claim"); ok {
-		oidcReq.RequiredClaim = scw.StringsPtr(expandStrings(requiredClaim))
+		createClusterRequestOpenIDConnectConfig.RequiredClaim = scw.StringsPtr(expandStrings(requiredClaim))
 	}
 
 	autoUpgradeEnable, okAutoUpgradeEnable := d.GetOkExists("auto_upgrade.0.enable")
@@ -632,37 +632,37 @@ func resourceScalewayK8SClusterUpdate(ctx context.Context, d *schema.ResourceDat
 
 	updateRequest.AutoscalerConfig = autoscalerReq
 
-	oidcReq := &k8s.UpdateClusterRequestOpenIDConnectConfig{}
+	updateClusterRequestOpenIDConnectConfig := &k8s.UpdateClusterRequestOpenIDConnectConfig{}
 
 	if d.HasChange("open_id_connect_config.0.issuer_url") {
-		oidcReq.IssuerURL = scw.StringPtr(d.Get("open_id_connect_config.0.issuer_url").(string))
+		updateClusterRequestOpenIDConnectConfig.IssuerURL = scw.StringPtr(d.Get("open_id_connect_config.0.issuer_url").(string))
 	}
 
 	if d.HasChange("open_id_connect_config.0.client_id") {
-		oidcReq.ClientID = scw.StringPtr(d.Get("open_id_connect_config.0.client_id").(string))
+		updateClusterRequestOpenIDConnectConfig.ClientID = scw.StringPtr(d.Get("open_id_connect_config.0.client_id").(string))
 	}
 
 	if d.HasChange("open_id_connect_config.0.username_claim") {
-		oidcReq.UsernameClaim = scw.StringPtr(d.Get("open_id_connect_config.0.username_claim").(string))
+		updateClusterRequestOpenIDConnectConfig.UsernameClaim = scw.StringPtr(d.Get("open_id_connect_config.0.username_claim").(string))
 	}
 
 	if d.HasChange("open_id_connect_config.0.username_prefix") {
-		oidcReq.UsernamePrefix = scw.StringPtr(d.Get("open_id_connect_config.0.username_prefix").(string))
+		updateClusterRequestOpenIDConnectConfig.UsernamePrefix = scw.StringPtr(d.Get("open_id_connect_config.0.username_prefix").(string))
 	}
 
 	if d.HasChange("open_id_connect_config.0.groups_claim") {
-		oidcReq.GroupsClaim = scw.StringsPtr(expandStrings(d.Get("open_id_connect_config.0.groups_claim")))
+		updateClusterRequestOpenIDConnectConfig.GroupsClaim = scw.StringsPtr(expandStrings(d.Get("open_id_connect_config.0.groups_claim")))
 	}
 
 	if d.HasChange("open_id_connect_config.0.groups_prefix") {
-		oidcReq.GroupsPrefix = scw.StringPtr(d.Get("open_id_connect_config.0.groups_prefix").(string))
+		updateClusterRequestOpenIDConnectConfig.GroupsPrefix = scw.StringPtr(d.Get("open_id_connect_config.0.groups_prefix").(string))
 	}
 
 	if d.HasChange("open_id_connect_config.0.required_claim") {
-		oidcReq.RequiredClaim = scw.StringsPtr(expandStrings(d.Get("open_id_connect_config.0.required_claim")))
+		updateClusterRequestOpenIDConnectConfig.RequiredClaim = scw.StringsPtr(expandStrings(d.Get("open_id_connect_config.0.required_claim")))
 	}
 
-	updateRequest.OpenIDConnectConfig = oidcReq
+	updateRequest.OpenIDConnectConfig = updateClusterRequestOpenIDConnectConfig
 
 	////
 	// Apply Update
