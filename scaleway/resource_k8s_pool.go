@@ -105,6 +105,38 @@ func resourceScalewayK8SPool() *schema.Resource {
 				Default:     nil,
 				Description: "ID of the placement group",
 			},
+			"kubelet_args": {
+				Type: schema.TypeMap,
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
+				Optional:    true,
+				Description: "The Kubelet arguments to be used by this pool",
+			},
+			"upgrade_policy": {
+				Type:        schema.TypeList,
+				MaxItems:    1,
+				Optional:    true,
+				Computed:    true,
+				Description: "The Pool upgrade policy",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"max_unavailable": {
+							Type:        schema.TypeInt,
+							Optional:    true,
+							Default:     1,
+							Description: "The maximum number of nodes that can be not ready at the same time",
+						},
+						"max_surge": {
+							Type:        schema.TypeInt,
+							Optional:    true,
+							Default:     0,
+							Description: "The maximum number of nodes to be created during the upgrade",
+						},
+					},
+				},
+			},
+			"zone":   zoneSchema(),
 			"region": regionSchema(),
 			// Computed elements
 			"created_at": {
@@ -183,6 +215,8 @@ func resourceScalewayK8SPoolCreate(ctx context.Context, d *schema.ResourceData, 
 		Autohealing: d.Get("autohealing").(bool),
 		Size:        uint32(d.Get("size").(int)),
 		Tags:        expandStrings(d.Get("tags")),
+		Zone:        scw.Zone(d.Get("zone").(string)),
+		KubeletArgs: expandKubeletArgs(d.Get("kubelet_args")),
 	}
 
 	if placementGroupID, ok := d.GetOk("placement_group_id"); ok {
@@ -201,6 +235,18 @@ func resourceScalewayK8SPoolCreate(ctx context.Context, d *schema.ResourceData, 
 
 	if containerRuntime, ok := d.GetOk("container_runtime"); ok {
 		req.ContainerRuntime = k8s.Runtime(containerRuntime.(string))
+	}
+
+	upgradePolicyReq := &k8s.CreatePoolRequestUpgradePolicy{}
+
+	if maxSurge, ok := d.GetOk("upgrade_policy.0.max_surge"); ok {
+		req.UpgradePolicy = upgradePolicyReq
+		upgradePolicyReq.MaxSurge = scw.Uint32Ptr(uint32(maxSurge.(int)))
+	}
+
+	if maxUnavailable, ok := d.GetOk("upgrade_policy.0.max_unavailable"); ok {
+		req.UpgradePolicy = upgradePolicyReq
+		upgradePolicyReq.MaxUnavailable = scw.Uint32Ptr(uint32(maxUnavailable.(int)))
 	}
 
 	// check if the cluster is waiting for a pool
@@ -291,6 +337,9 @@ func resourceScalewayK8SPoolRead(ctx context.Context, d *schema.ResourceData, m 
 	_ = d.Set("updated_at", pool.UpdatedAt.Format(time.RFC3339))
 	_ = d.Set("nodes", nodes)
 	_ = d.Set("status", pool.Status)
+	_ = d.Set("kubelet_args", flattenKubeletArgs(pool.KubeletArgs))
+	_ = d.Set("zone", pool.Zone)
+	_ = d.Set("upgrade_policy", poolUpgradePolicyFlatten(pool))
 
 	if pool.PlacementGroupID != nil {
 		zone := scw.Zone(region + "-1") // Placement groups are zoned resources.
@@ -337,6 +386,23 @@ func resourceScalewayK8SPoolUpdate(ctx context.Context, d *schema.ResourceData, 
 	if d.HasChange("tags") {
 		updateRequest.Tags = scw.StringsPtr(expandStrings(d.Get("tags")))
 	}
+
+	if d.HasChange("kubelet_args") {
+		kubeletArgs := expandKubeletArgs(d.Get("kubelet_args"))
+		updateRequest.KubeletArgs = &kubeletArgs
+	}
+
+	upgradePolicyReq := &k8s.UpdatePoolRequestUpgradePolicy{}
+
+	if d.HasChange("upgrade_policy.0.max_surge") {
+		upgradePolicyReq.MaxSurge = scw.Uint32Ptr(uint32(d.Get("upgrade_policy.0.max_surge").(int)))
+	}
+
+	if d.HasChange("upgrade_policy.0.max_unavailable") {
+		upgradePolicyReq.MaxUnavailable = scw.Uint32Ptr(uint32(d.Get("upgrade_policy.0.max_unavailable").(int)))
+	}
+
+	updateRequest.UpgradePolicy = upgradePolicyReq
 
 	res, err := k8sAPI.UpdatePool(updateRequest, scw.WithContext(ctx))
 	if err != nil {

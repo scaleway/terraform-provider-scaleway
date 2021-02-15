@@ -142,6 +142,22 @@ func resourceScalewayK8SCluster() *schema.Resource {
 				Optional:    true,
 				Description: "The list of admission plugins to enable on the cluster",
 			},
+			"open_id_connect_config": {
+				Type:        schema.TypeList,
+				MaxItems:    1,
+				Optional:    true,
+				Computed:    true,
+				Description: "The OpenID Connect configuration of the cluster",
+				Elem:        openIDConnectConfigSchema(),
+			},
+			"apiserver_cert_sans": {
+				Type: schema.TypeList,
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
+				Optional:    true,
+				Description: "Additional Subject Alternative Names for the Kubernetes API server certificate",
+			},
 			"delete_additional_resources": {
 				Type:        schema.TypeBool,
 				Optional:    true,
@@ -231,14 +247,15 @@ func resourceScalewayK8SClusterCreate(ctx context.Context, d *schema.ResourceDat
 	}
 
 	req := &k8s.CreateClusterRequest{
-		Region:           region,
-		ProjectID:        expandStringPtr(d.Get("project_id")),
-		Name:             expandOrGenerateString(d.Get("name"), "cluster"),
-		Description:      description.(string),
-		Cni:              k8s.CNI(d.Get("cni").(string)),
-		Tags:             expandStrings(d.Get("tags")),
-		FeatureGates:     expandStrings(d.Get("feature_gates")),
-		AdmissionPlugins: expandStrings(d.Get("admission_plugins")),
+		Region:            region,
+		ProjectID:         expandStringPtr(d.Get("project_id")),
+		Name:              expandOrGenerateString(d.Get("name"), "cluster"),
+		Description:       description.(string),
+		Cni:               k8s.CNI(d.Get("cni").(string)),
+		Tags:              expandStrings(d.Get("tags")),
+		FeatureGates:      expandStrings(d.Get("feature_gates")),
+		AdmissionPlugins:  expandStrings(d.Get("admission_plugins")),
+		ApiserverCertSans: expandStrings(d.Get("apiserver_cert_sans")),
 	}
 
 	if dashboard, ok := d.GetOk("enable_dashboard"); ok {
@@ -279,9 +296,53 @@ func resourceScalewayK8SClusterCreate(ctx context.Context, d *schema.ResourceDat
 		autoscalerReq.BalanceSimilarNodeGroups = scw.BoolPtr(balanceSimilarNodeGroups.(bool))
 	}
 
+	if balanceSimilarNodeGroups, ok := d.GetOk("autoscaler_config.0.balance_similar_node_groups"); ok {
+		autoscalerReq.BalanceSimilarNodeGroups = scw.BoolPtr(balanceSimilarNodeGroups.(bool))
+	}
+
 	autoscalerReq.ExpendablePodsPriorityCutoff = scw.Int32Ptr(int32(d.Get("autoscaler_config.0.expendable_pods_priority_cutoff").(int)))
 
+	if utilizationThreshold, ok := d.GetOk("autoscaler_config.0.scale_down_utilization_threshold"); ok {
+		autoscalerReq.ScaleDownUtilizationThreshold = scw.Float32Ptr(float32(utilizationThreshold.(float64)))
+	}
+
+	autoscalerReq.MaxGracefulTerminationSec = scw.Uint32Ptr(uint32(d.Get("autoscaler_config.0.max_graceful_termination_sec").(int)))
+
 	req.AutoscalerConfig = autoscalerReq
+
+	oidcReq := &k8s.CreateClusterRequestOpenIDConnectConfig{}
+
+	if issuerURL, ok := d.GetOk("open_id_connect_config.0.issuer_url"); ok {
+		req.OpenIDConnectConfig = oidcReq
+		oidcReq.IssuerURL = issuerURL.(string)
+	}
+
+	if clientID, ok := d.GetOk("open_id_connect_config.0.client_id"); ok {
+		req.OpenIDConnectConfig = oidcReq
+		oidcReq.ClientID = clientID.(string)
+	}
+
+	// oidcReq is always defined here
+
+	if usernameClaim, ok := d.GetOk("open_id_connect_config.0.username_claim"); ok {
+		oidcReq.UsernameClaim = scw.StringPtr(usernameClaim.(string))
+	}
+
+	if usernamePrefix, ok := d.GetOk("open_id_connect_config.0.username_prefix"); ok {
+		oidcReq.UsernamePrefix = scw.StringPtr(usernamePrefix.(string))
+	}
+
+	if groupsClaim, ok := d.GetOk("open_id_connect_config.0.groups_claim"); ok {
+		oidcReq.GroupsClaim = scw.StringsPtr(expandStrings(groupsClaim))
+	}
+
+	if groupsPrefix, ok := d.GetOk("open_id_connect_config.0.groups_prefix"); ok {
+		oidcReq.GroupsPrefix = scw.StringPtr(groupsPrefix.(string))
+	}
+
+	if requiredClaim, ok := d.GetOk("open_id_connect_config.0.required_claim"); ok {
+		oidcReq.RequiredClaim = scw.StringsPtr(expandStrings(requiredClaim))
+	}
 
 	autoUpgradeEnable, okAutoUpgradeEnable := d.GetOkExists("auto_upgrade.0.enable")
 	autoUpgradeStartHour, okAutoUpgradeStartHour := d.GetOkExists("auto_upgrade.0.maintenance_window_start_hour")
@@ -325,147 +386,19 @@ func resourceScalewayK8SClusterCreate(ctx context.Context, d *schema.ResourceDat
 
 	req.Version = version
 
-	if _, ok := d.GetOk("default_pool"); ok {
-		defaultPoolReq := &k8s.CreateClusterRequestPoolConfig{
-			Name:        "default",
-			NodeType:    d.Get("default_pool.0.node_type").(string),
-			Autoscaling: d.Get("default_pool.0.autoscaling").(bool),
-			Autohealing: d.Get("default_pool.0.autohealing").(bool),
-			Size:        uint32(d.Get("default_pool.0.size").(int)),
-			Tags:        expandStrings(d.Get("default_pool.0.tags")),
-		}
-
-		if placementGroupID, ok := d.GetOk("default_pool.0.placement_group_id"); ok {
-			defaultPoolReq.PlacementGroupID = expandStringPtr(expandID(placementGroupID))
-		}
-
-		if minSize, ok := d.GetOk("default_pool.0.min_size"); ok {
-			defaultPoolReq.MinSize = scw.Uint32Ptr(uint32(minSize.(int)))
-		}
-
-		if maxSize, ok := d.GetOk("default_pool.0.max_size"); ok {
-			defaultPoolReq.MaxSize = scw.Uint32Ptr(uint32(maxSize.(int)))
-		}
-
-		if containerRuntime, ok := d.GetOk("default_pool.0.container_runtime"); ok {
-			defaultPoolReq.ContainerRuntime = k8s.Runtime(containerRuntime.(string))
-		}
-
-		req.Pools = []*k8s.CreateClusterRequestPoolConfig{defaultPoolReq}
-	}
-
 	res, err := k8sAPI.CreateCluster(req, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	if _, ok := d.GetOk("default_pool"); ok {
-		err = waitK8SCluster(ctx, k8sAPI, region, res.ID, k8s.ClusterStatusReady)
-		if err != nil {
-			return diag.FromErr(err)
-		}
-		if d.Get("default_pool.0.wait_for_pool_ready").(bool) { // wait for the pool status to be ready (if specified)
-			pool, err := readDefaultPool(ctx, d, m) // ensure that 'default_pool.0.pool_id' is set
-			if err != nil {
-				return diag.FromErr(err)
-			}
-
-			err = waitK8SPoolReady(ctx, k8sAPI, region, expandID(pool.ID))
-			if err != nil {
-				return diag.FromErr(err)
-			}
-		}
-	} else {
-		err = waitK8SCluster(ctx, k8sAPI, region, res.ID, k8s.ClusterStatusPoolRequired)
-		if err != nil {
-			return diag.FromErr(err)
-		}
+	err = waitK8SCluster(ctx, k8sAPI, region, res.ID, k8s.ClusterStatusPoolRequired)
+	if err != nil {
+		return diag.FromErr(err)
 	}
 
 	d.SetId(newRegionalIDString(region, res.ID))
 
 	return resourceScalewayK8SClusterRead(ctx, d, m)
-}
-
-// resourceScalewayK8SClusterDefaultPoolRead is only called after a resourceScalewayK8SClusterCreate
-// thus ensuring the uniqueness of the only pool listed
-func resourceScalewayK8SClusterDefaultPoolRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	k8sAPI, region, _, err := k8sAPIWithRegionAndID(m, d.Id())
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	pool, err := readDefaultPool(ctx, d, m)
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	nodes, err := getNodes(ctx, k8sAPI, pool)
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	defaultPool := map[string]interface{}{}
-	defaultPool["pool_id"] = newRegionalIDString(region, pool.ID)
-	defaultPool["node_type"] = pool.NodeType
-	defaultPool["autoscaling"] = pool.Autoscaling
-	defaultPool["autohealing"] = pool.Autohealing
-	defaultPool["size"] = pool.Size
-	defaultPool["min_size"] = pool.MinSize
-	defaultPool["max_size"] = pool.MaxSize
-	defaultPool["tags"] = pool.Tags
-	defaultPool["container_runtime"] = pool.ContainerRuntime
-	defaultPool["created_at"] = pool.CreatedAt.String()
-	defaultPool["updated_at"] = pool.UpdatedAt.String()
-	defaultPool["nodes"] = nodes
-	defaultPool["wait_for_pool_ready"] = d.Get("default_pool.0.wait_for_pool_ready")
-	defaultPool["status"] = pool.Status.String()
-
-	if pool.PlacementGroupID != nil {
-		zone := scw.Zone(region + "-1") // Placement groups are zoned resources.
-		defaultPool["placement_group_id"] = newZonedID(zone, *pool.PlacementGroupID)
-	}
-
-	err = d.Set("default_pool", []map[string]interface{}{defaultPool})
-	if err != nil {
-		return diag.FromErr(err)
-	}
-	return nil
-}
-
-func readDefaultPool(ctx context.Context, d *schema.ResourceData, m interface{}) (*k8s.Pool, error) {
-	k8sAPI, region, clusterID, err := k8sAPIWithRegionAndID(m, d.Id())
-	if err != nil {
-		return nil, err
-	}
-
-	var pool *k8s.Pool
-
-	if defaultPoolID, ok := d.GetOk("default_pool.0.pool_id"); ok {
-		poolResp, err := k8sAPI.GetPool(&k8s.GetPoolRequest{
-			Region: region,
-			PoolID: expandID(defaultPoolID.(string)),
-		}, scw.WithContext(ctx))
-		if err != nil {
-			return nil, err
-		}
-		pool = poolResp
-	} else {
-		response, err := k8sAPI.ListPools(&k8s.ListPoolsRequest{
-			Region:    region,
-			ClusterID: clusterID,
-		}, scw.WithContext(ctx))
-		if err != nil {
-			return nil, err
-		}
-
-		if len(response.Pools) != 1 {
-			return nil, fmt.Errorf("newly created pool on cluster %s has %d pools instead of 1", clusterID, len(response.Pools))
-		}
-
-		pool = response.Pools[0]
-	}
-	return pool, nil
 }
 
 func resourceScalewayK8SClusterRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
@@ -496,12 +429,15 @@ func resourceScalewayK8SClusterRead(ctx context.Context, d *schema.ResourceData,
 	_ = d.Set("description", response.Description)
 	_ = d.Set("cni", response.Cni)
 	_ = d.Set("tags", response.Tags)
+	_ = d.Set("apiserver_cert_sans", response.ApiserverCertSans)
 	_ = d.Set("created_at", response.CreatedAt.Format(time.RFC3339))
 	_ = d.Set("updated_at", response.UpdatedAt.Format(time.RFC3339))
 	_ = d.Set("apiserver_url", response.ClusterURL)
 	_ = d.Set("wildcard_dns", response.DNSWildcard)
 	_ = d.Set("status", response.Status.String())
 	_ = d.Set("upgrade_available", response.UpgradeAvailable)
+	_ = d.Set("feature_gates", response.FeatureGates)
+	_ = d.Set("admission_plugins", response.AdmissionPlugins)
 
 	// if autoupgrade is enabled, we only set the minor k8s version (x.y)
 	version := response.Version
@@ -515,15 +451,8 @@ func resourceScalewayK8SClusterRead(ctx context.Context, d *schema.ResourceData,
 
 	// autoscaler_config
 	_ = d.Set("autoscaler_config", clusterAutoscalerConfigFlatten(response))
+	_ = d.Set("open_id_connect_config", clusterOpenIDConnectConfigFlatten(response))
 	_ = d.Set("auto_upgrade", clusterAutoUpgradeFlatten(response))
-
-	// default_pool_config
-	if _, ok := d.GetOk("default_pool"); ok {
-		diagnostics := resourceScalewayK8SClusterDefaultPoolRead(ctx, d, m)
-		if diagnostics != nil {
-			return diagnostics
-		}
-	}
 
 	////
 	// Read kubeconfig
@@ -562,128 +491,6 @@ func resourceScalewayK8SClusterRead(ctx context.Context, d *schema.ResourceData,
 	return nil
 }
 
-// resourceScalewayK8SClusterDefaultPoolUpdate is only called after a resourceScalewayK8SClusterUpdate
-// thus guarating that "default_pool.id" is set
-func resourceScalewayK8SClusterDefaultPoolUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	k8sAPI, region, clusterID, err := k8sAPIWithRegionAndID(m, d.Id())
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	////
-	// Update default Pool
-	////
-	if d.HasChange("default_pool") {
-		defaultPoolID := d.Get("default_pool.0.pool_id").(string)
-
-		forceNew := false
-		oldPoolID := ""
-		if d.HasChanges("default_pool.0.container_runtime", "default_pool.0.node_type", "default_pool.0.placement_group_id") {
-			forceNew = true
-			oldPoolID = defaultPoolID
-		} else {
-			updateRequest := &k8s.UpdatePoolRequest{
-				Region: region,
-				PoolID: expandID(defaultPoolID),
-				Tags:   scw.StringsPtr(expandStrings(d.Get("default_pool.0.tags"))),
-			}
-
-			if autohealing, ok := d.GetOk("default_pool.0.autohealing"); ok {
-				updateRequest.Autohealing = scw.BoolPtr(autohealing.(bool))
-			}
-
-			if d.HasChange("default_pool.0.min_size") {
-				updateRequest.MinSize = scw.Uint32Ptr(uint32(d.Get("default_pool.0.min_size").(int)))
-			}
-
-			if d.HasChange("default_pool.0.max_size") {
-				updateRequest.MaxSize = scw.Uint32Ptr(uint32(d.Get("default_pool.0.max_size").(int)))
-			}
-
-			if autoscaling, ok := d.GetOk("default_pool.0.autoscaling"); ok {
-				updateRequest.Autoscaling = scw.BoolPtr(autoscaling.(bool))
-			}
-
-			if !d.Get("default_pool.0.autoscaling").(bool) {
-				if size, ok := d.GetOk("default_pool.0.size"); ok {
-					updateRequest.Size = scw.Uint32Ptr(uint32(size.(int)))
-				}
-			}
-
-			_, err := k8sAPI.UpdatePool(updateRequest, scw.WithContext(ctx))
-			if err != nil {
-				if !is404Error(err) {
-					return diag.FromErr(err)
-				}
-				l.Warningf("default node pool %s is not found, recreating a new one", defaultPoolID)
-				forceNew = true
-			}
-		}
-
-		if forceNew {
-			defaultPoolRequest := &k8s.CreatePoolRequest{
-				Region:      region,
-				ClusterID:   clusterID,
-				Name:        "default",
-				NodeType:    d.Get("default_pool.0.node_type").(string),
-				Autoscaling: d.Get("default_pool.0.autoscaling").(bool),
-				Autohealing: d.Get("default_pool.0.autohealing").(bool),
-				Size:        uint32(d.Get("default_pool.0.size").(int)),
-			}
-			if placementGroupID, ok := d.GetOk("default_pool.0.placement_group_id"); ok {
-				defaultPoolRequest.PlacementGroupID = expandStringPtr(expandID(placementGroupID))
-			}
-
-			if d.HasChange("default_pool.0.min_size") {
-				defaultPoolRequest.MinSize = scw.Uint32Ptr(uint32(d.Get("default_pool.0.min_size").(int)))
-			}
-
-			if d.HasChange("default_pool.0.max_size") {
-				defaultPoolRequest.MaxSize = scw.Uint32Ptr(uint32(d.Get("default_pool.0.max_size").(int)))
-			}
-
-			if containerRuntime, ok := d.GetOk("default_pool.0.container_runtime"); ok {
-				defaultPoolRequest.ContainerRuntime = k8s.Runtime(containerRuntime.(string))
-			}
-
-			defaultPoolRes, err := k8sAPI.CreatePool(defaultPoolRequest, scw.WithContext(ctx))
-			if err != nil {
-				return diag.FromErr(err)
-			}
-			defaultPoolID = newRegionalIDString(region, defaultPoolRes.ID)
-			defaultPool := map[string]interface{}{}
-			defaultPool["pool_id"] = defaultPoolID
-
-			_ = d.Set("default_pool", []map[string]interface{}{defaultPool})
-
-			if oldPoolID != "" {
-				// wait for new pool to be ready before deleting old one
-				err = waitK8SPoolReady(ctx, k8sAPI, region, expandID(defaultPoolID))
-				if err != nil {
-					return diag.FromErr(err)
-				}
-
-				_, err = k8sAPI.DeletePool(&k8s.DeletePoolRequest{
-					Region: region,
-					PoolID: expandID(oldPoolID),
-				}, scw.WithContext(ctx))
-				if err != nil {
-					return diag.FromErr(err)
-				}
-			}
-		}
-
-		if d.Get("default_pool.0.wait_for_pool_ready").(bool) { // wait for the pool to be ready if specified
-			err = waitK8SPoolReady(ctx, k8sAPI, region, expandID(defaultPoolID))
-			if err != nil {
-				return diag.FromErr(err)
-			}
-		}
-	}
-
-	return resourceScalewayK8SClusterDefaultPoolRead(ctx, d, m)
-}
-
 func resourceScalewayK8SClusterUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	k8sAPI, region, clusterID, err := k8sAPIWithRegionAndID(m, d.Id())
 	if err != nil {
@@ -711,6 +518,10 @@ func resourceScalewayK8SClusterUpdate(ctx context.Context, d *schema.ResourceDat
 	if d.HasChange("tags") {
 		tags := expandStrings(d.Get("tags"))
 		updateRequest.Tags = scw.StringsPtr(tags)
+	}
+
+	if d.HasChange("apiserver_cert_sans") {
+		updateRequest.ApiserverCertSans = scw.StringsPtr(expandStrings(d.Get("apiserver_cert_sans")))
 	}
 
 	if d.HasChange("feature_gates") {
@@ -811,7 +622,47 @@ func resourceScalewayK8SClusterUpdate(ctx context.Context, d *schema.ResourceDat
 		autoscalerReq.ExpendablePodsPriorityCutoff = scw.Int32Ptr(int32(d.Get("autoscaler_config.0.expendable_pods_priority_cutoff").(int)))
 	}
 
+	if d.HasChange("autoscaler_config.0.scale_down_utilization_threshold") {
+		autoscalerReq.ScaleDownUtilizationThreshold = scw.Float32Ptr(float32(d.Get("autoscaler_config.0.scale_down_utilization_threshold").(float64)))
+	}
+
+	if d.HasChange("autoscaler_config.0.max_graceful_termination_sec") {
+		autoscalerReq.MaxGracefulTerminationSec = scw.Uint32Ptr(uint32(d.Get("autoscaler_config.0.max_graceful_termination_sec").(int)))
+	}
+
 	updateRequest.AutoscalerConfig = autoscalerReq
+
+	oidcReq := &k8s.UpdateClusterRequestOpenIDConnectConfig{}
+
+	if d.HasChange("open_id_connect_config.0.issuer_url") {
+		oidcReq.IssuerURL = scw.StringPtr(d.Get("open_id_connect_config.0.issuer_url").(string))
+	}
+
+	if d.HasChange("open_id_connect_config.0.client_id") {
+		oidcReq.ClientID = scw.StringPtr(d.Get("open_id_connect_config.0.client_id").(string))
+	}
+
+	if d.HasChange("open_id_connect_config.0.username_claim") {
+		oidcReq.UsernameClaim = scw.StringPtr(d.Get("open_id_connect_config.0.username_claim").(string))
+	}
+
+	if d.HasChange("open_id_connect_config.0.username_prefix") {
+		oidcReq.UsernamePrefix = scw.StringPtr(d.Get("open_id_connect_config.0.username_prefix").(string))
+	}
+
+	if d.HasChange("open_id_connect_config.0.groups_claim") {
+		oidcReq.GroupsClaim = scw.StringsPtr(expandStrings(d.Get("open_id_connect_config.0.groups_claim")))
+	}
+
+	if d.HasChange("open_id_connect_config.0.groups_prefix") {
+		oidcReq.GroupsPrefix = scw.StringPtr(d.Get("open_id_connect_config.0.groups_prefix").(string))
+	}
+
+	if d.HasChange("open_id_connect_config.0.required_claim") {
+		oidcReq.RequiredClaim = scw.StringsPtr(expandStrings(d.Get("open_id_connect_config.0.required_claim")))
+	}
+
+	updateRequest.OpenIDConnectConfig = oidcReq
 
 	////
 	// Apply Update
@@ -844,12 +695,6 @@ func resourceScalewayK8SClusterUpdate(ctx context.Context, d *schema.ResourceDat
 		err = waitK8SCluster(ctx, k8sAPI, region, clusterID, k8s.ClusterStatusReady, k8s.ClusterStatusPoolRequired)
 		if err != nil {
 			return diag.FromErr(err)
-		}
-	}
-	if _, ok := d.GetOk("default_pool"); ok {
-		diagnostics := resourceScalewayK8SClusterDefaultPoolUpdate(ctx, d, m)
-		if diagnostics != nil {
-			return diagnostics
 		}
 	}
 
@@ -927,6 +772,7 @@ func autoscalerConfigSchema() *schema.Resource {
 					k8s.AutoscalerExpanderLeastWaste.String(),
 					k8s.AutoscalerExpanderMostPods.String(),
 					k8s.AutoscalerExpanderPriority.String(),
+					k8s.AutoscalerExpanderPrice.String(),
 				}, false),
 			},
 			"ignore_daemonsets_utilization": {
@@ -946,6 +792,66 @@ func autoscalerConfigSchema() *schema.Resource {
 				Optional:    true,
 				Default:     -10,
 				Description: "Pods with priority below cutoff will be expendable. They can be killed without any consideration during scale down and they don't cause scale up. Pods with null priority (PodPriority disabled) are non expendable",
+			},
+			"scale_down_utilization_threshold": {
+				Type:        schema.TypeFloat,
+				Optional:    true,
+				Default:     0.5,
+				Description: "Node utilization level, defined as sum of requested resources divided by capacity, below which a node can be considered for scale down",
+			},
+			"max_graceful_termination_sec": {
+				Type:        schema.TypeInt,
+				Optional:    true,
+				Default:     600,
+				Description: "Maximum number of seconds the cluster autoscaler waits for pod termination when trying to scale down a node",
+			},
+		},
+	}
+}
+
+func openIDConnectConfigSchema() *schema.Resource {
+	return &schema.Resource{
+		Schema: map[string]*schema.Schema{
+			"issuer_url": {
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: "URL of the provider which allows the API server to discover public signing keys",
+			},
+			"client_id": {
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: "A client id that all tokens must be issued for",
+			},
+			"username_claim": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "JWT claim to use as the user name",
+			},
+			"username_prefix": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "Prefix prepended to username",
+			},
+			"groups_claim": {
+				Type:        schema.TypeList,
+				Optional:    true,
+				Description: "JWT claim to use as the user's group",
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
+			},
+			"groups_prefix": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "Prefix prepended to group claims",
+			},
+			"required_claim": {
+				Type:        schema.TypeList,
+				Optional:    true,
+				Description: "Multiple key=value pairs that describes a required claim in the ID Token",
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
 			},
 		},
 	}

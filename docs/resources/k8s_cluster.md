@@ -137,6 +137,10 @@ The following arguments are supported:
     - `balance_similar_node_groups` - (Defaults to `false`) Detect similar node groups and balance the number of nodes between them.
 
     - `expendable_pods_priority_cutoff` - (Defaults to `-10`) Pods with priority below cutoff will be expendable. They can be killed without any consideration during scale down and they don't cause scale up. Pods with null priority (PodPriority disabled) are non expendable.
+    
+    - `scale_down_utilization_threshold` - (Defaults to `0.5`) Node utilization level, defined as sum of requested resources divided by capacity, below which a node can be considered for scale down
+
+    - `max_graceful_termination_sec` - (Defaults to `600`) Maximum number of seconds the cluster autoscaler waits for pod termination when trying to scale down a node
 
 - `auto_upgrade` - (Optional) The auto upgrade configuration.
 
@@ -151,12 +155,29 @@ The following arguments are supported:
 
 - `admission_plugins` - (Optional) The list of [admission plugins](https://kubernetes.io/docs/reference/access-authn-authz/admission-controllers/) to enable on the cluster.
 
+- `apiserver_cert_sans` - (Optional) Additional Subject Alternative Names for the Kubernetes API server certificate
+
+- `open_id_connect_config` - (Optional) The OpenID Connect configuration of the cluster
+
+    - `issuer_url` - (Required) URL of the provider which allows the API server to discover public signing keys
+
+    - `client_id` - (Required) A client id that all tokens must be issued for
+
+    - `username_claim` - (Optional) JWT claim to use as the user name
+
+    - `username_prefix` - (Optional) Prefix prepended to username
+
+    - `groups_claim` - (Optional) JWT claim to use as the user's group
+
+    - `groups_prefix` - (Optional) Prefix prepended to group claims
+
+    - `required_claim` - (Optional) Multiple key=value pairs that describes a required claim in the ID Token
+
 - `delete_additional_resources` - (Defaults to `false`) Delete additional resources like block volumes and loadbalancers that were created in Kubernetes on cluster deletion.
 
 - `default_pool` - (Deprecated) See below.
 
 - `region` - (Defaults to [provider](../index.md#region) `region`) The [region](../guides/regions_and_zones.md#regions) in which the cluster should be created.
-
 
 - `project_id` - (Defaults to [provider](../index.md#project_id) `project_id`) The ID of the project the cluster is associated with.
 
