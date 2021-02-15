@@ -160,6 +160,117 @@ func TestAccScalewayK8SCluster_PoolPlacementGroup(t *testing.T) {
 	})
 }
 
+func TestAccScalewayK8SCluster_PoolUpgradePolicy(t *testing.T) {
+	tt := NewTestTools(t)
+	defer tt.Cleanup()
+
+	latestK8SVersion := testAccScalewayK8SClusterGetLatestK8SVersion(tt)
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      testAccCheckScalewayK8SClusterDestroy(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckScalewayK8SPoolConfigUpgradePolicy(latestK8SVersion, 2, 3),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayK8SClusterExists(tt, "scaleway_k8s_cluster.upgrade_policy"),
+					testAccCheckScalewayK8SPoolExists(tt, "scaleway_k8s_pool.default"),
+					resource.TestCheckResourceAttr("scaleway_k8s_pool.default", "node_type", "gp1_xs"),
+					resource.TestCheckResourceAttr("scaleway_k8s_pool.default", "size", "1"),
+					resource.TestCheckResourceAttr("scaleway_k8s_pool.default", "autohealing", "true"),
+					resource.TestCheckResourceAttr("scaleway_k8s_pool.default", "autoscaling", "true"),
+					resource.TestCheckResourceAttr("scaleway_k8s_pool.default", "version", latestK8SVersion),
+					resource.TestCheckResourceAttrSet("scaleway_k8s_pool.default", "id"),
+					resource.TestCheckResourceAttr("scaleway_k8s_pool.default", "tags.0", "terraform-test"),
+					resource.TestCheckResourceAttr("scaleway_k8s_pool.default", "tags.1", "scaleway_k8s_cluster"),
+					resource.TestCheckResourceAttr("scaleway_k8s_pool.default", "tags.2", "upgrade_policy"),
+					resource.TestCheckResourceAttr("scaleway_k8s_pool.default", "upgrade_policy.0.max_surge", "2"),
+					resource.TestCheckResourceAttr("scaleway_k8s_pool.default", "upgrade_policy.0.max_unavailable", "3"),
+				),
+			},
+			{
+				Config: testAccCheckScalewayK8SPoolConfigUpgradePolicy(latestK8SVersion, 0, 1),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayK8SClusterExists(tt, "scaleway_k8s_cluster.upgrade_policy"),
+					testAccCheckScalewayK8SPoolExists(tt, "scaleway_k8s_pool.default"),
+					resource.TestCheckResourceAttr("scaleway_k8s_pool.default", "node_type", "gp1_xs"),
+					resource.TestCheckResourceAttr("scaleway_k8s_pool.default", "size", "1"),
+					resource.TestCheckResourceAttr("scaleway_k8s_pool.default", "autohealing", "true"),
+					resource.TestCheckResourceAttr("scaleway_k8s_pool.default", "autoscaling", "true"),
+					resource.TestCheckResourceAttr("scaleway_k8s_pool.default", "version", latestK8SVersion),
+					resource.TestCheckResourceAttrSet("scaleway_k8s_pool.default", "id"),
+					resource.TestCheckResourceAttr("scaleway_k8s_pool.default", "tags.0", "terraform-test"),
+					resource.TestCheckResourceAttr("scaleway_k8s_pool.default", "tags.1", "scaleway_k8s_cluster"),
+					resource.TestCheckResourceAttr("scaleway_k8s_pool.default", "tags.2", "upgrade_policy"),
+					resource.TestCheckResourceAttr("scaleway_k8s_pool.default", "upgrade_policy.0.max_surge", "0"),
+					resource.TestCheckResourceAttr("scaleway_k8s_pool.default", "upgrade_policy.0.max_unavailable", "1"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccScalewayK8SCluster_PoolKubeletArgs(t *testing.T) {
+	tt := NewTestTools(t)
+	defer tt.Cleanup()
+
+	latestK8SVersion := testAccScalewayK8SClusterGetLatestK8SVersion(tt)
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      testAccCheckScalewayK8SClusterDestroy(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckScalewayK8SPoolConfigKubeletArgs(latestK8SVersion, 1337),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayK8SClusterExists(tt, "scaleway_k8s_cluster.kubelet_args"),
+					testAccCheckScalewayK8SPoolExists(tt, "scaleway_k8s_pool.default"),
+					resource.TestCheckResourceAttr("scaleway_k8s_pool.default", "version", latestK8SVersion),
+					resource.TestCheckResourceAttrSet("scaleway_k8s_pool.default", "id"),
+					resource.TestCheckResourceAttr("scaleway_k8s_pool.default", "kubelet_args.maxPods", "1337"),
+				),
+			},
+			{
+				Config: testAccCheckScalewayK8SPoolConfigKubeletArgs(latestK8SVersion, 50),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayK8SClusterExists(tt, "scaleway_k8s_cluster.kubelet_args"),
+					testAccCheckScalewayK8SPoolExists(tt, "scaleway_k8s_pool.default"),
+					resource.TestCheckResourceAttr("scaleway_k8s_pool.default", "version", latestK8SVersion),
+					resource.TestCheckResourceAttrSet("scaleway_k8s_pool.default", "id"),
+					resource.TestCheckResourceAttr("scaleway_k8s_pool.default", "kubelet_args.maxPods", "50"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccScalewayK8SCluster_PoolZone(t *testing.T) {
+	tt := NewTestTools(t)
+	defer tt.Cleanup()
+
+	latestK8SVersion := testAccScalewayK8SClusterGetLatestK8SVersion(tt)
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      testAccCheckScalewayK8SClusterDestroy(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckScalewayK8SPoolConfigZone(latestK8SVersion, "fr-par-2"),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayK8SClusterExists(tt, "scaleway_k8s_cluster.zone"),
+					testAccCheckScalewayK8SPoolExists(tt, "scaleway_k8s_pool.default"),
+					resource.TestCheckResourceAttr("scaleway_k8s_pool.default", "version", latestK8SVersion),
+					resource.TestCheckResourceAttrSet("scaleway_k8s_pool.default", "id"),
+					resource.TestCheckResourceAttr("scaleway_k8s_pool.default", "zone", "fr-par-2"),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckScalewayK8SPoolDestroy(tt *TestTools, n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
@@ -305,4 +416,69 @@ resource "scaleway_k8s_cluster" "placement_group" {
 	version = "%s"
 	tags = [ "terraform-test", "scaleway_k8s_cluster", "placement_group" ]
 }`, version)
+}
+
+func testAccCheckScalewayK8SPoolConfigUpgradePolicy(version string, maxSurge, maxUnavailable int) string {
+	return fmt.Sprintf(`
+resource "scaleway_k8s_pool" "default" {
+    name = "default"
+	cluster_id = "${scaleway_k8s_cluster.upgrade_policy.id}"
+	node_type = "gp1_xs"
+	autohealing = true
+	autoscaling = true
+	size = 1
+	tags = [ "terraform-test", "scaleway_k8s_cluster", "upgrade_policy" ]
+	upgrade_policy {
+		max_surge = %d
+		max_unavailable = %d
+	}
+}
+resource "scaleway_k8s_cluster" "upgrade_policy" {
+    name = "K8SPoolConfigUpgradePolicy"
+	cni = "cilium"
+	version = "%s"
+	tags = [ "terraform-test", "scaleway_k8s_cluster", "upgrade_policy" ]
+}`, maxSurge, maxUnavailable, version)
+}
+
+func testAccCheckScalewayK8SPoolConfigKubeletArgs(version string, maxPods int) string {
+	return fmt.Sprintf(`
+resource "scaleway_k8s_pool" "default" {
+    name = "default"
+	cluster_id = "${scaleway_k8s_cluster.kubelet_args.id}"
+	node_type = "gp1_xs"
+	autohealing = true
+	autoscaling = true
+	size = 1
+	tags = [ "terraform-test", "scaleway_k8s_cluster", "kubelet_args" ]
+	kubelet_args = {
+		maxPods = %d
+	}
+}
+resource "scaleway_k8s_cluster" "kubelet_args" {
+    name = "K8SPoolConfigKubeletArgs"
+	cni = "cilium"
+	version = "%s"
+	tags = [ "terraform-test", "scaleway_k8s_cluster", "kubelet_args" ]
+}`, maxPods, version)
+}
+
+func testAccCheckScalewayK8SPoolConfigZone(version string, zone string) string {
+	return fmt.Sprintf(`
+resource "scaleway_k8s_pool" "default" {
+    name = "default"
+	cluster_id = "${scaleway_k8s_cluster.zone.id}"
+	node_type = "gp1_xs"
+	autohealing = true
+	autoscaling = true
+	size = 1
+	tags = [ "terraform-test", "scaleway_k8s_cluster", "zone" ]
+	zone = "%s"
+}
+resource "scaleway_k8s_cluster" "zone" {
+    name = "K8SPoolConfigZone"
+	cni = "cilium"
+	version = "%s"
+	tags = [ "terraform-test", "scaleway_k8s_cluster", "zone" ]
+}`, zone, version)
 }
