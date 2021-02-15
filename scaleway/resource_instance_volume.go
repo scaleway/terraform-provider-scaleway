@@ -43,9 +43,7 @@ func resourceScalewayInstanceVolume() *schema.Resource {
 			},
 			"size_in_gb": {
 				Type:          schema.TypeInt,
-				Computed:      true,
 				Optional:      true,
-				ForceNew:      true,
 				Description:   "The size of the volume in gigabyte",
 				ConflictsWith: []string{"from_snapshot_id", "from_volume_id"},
 			},
@@ -163,6 +161,25 @@ func resourceScalewayInstanceVolumeUpdate(ctx context.Context, d *schema.Resourc
 		}, scw.WithContext(ctx))
 		if err != nil {
 			return diag.FromErr(fmt.Errorf("couldn't update volume: %s", err))
+		}
+	}
+
+	if d.HasChange("size_in_gb") {
+		if d.Get("type") != instance.VolumeVolumeTypeBSSD.String() {
+			return diag.FromErr(fmt.Errorf("only block volume can be resized"))
+		}
+		if oldSize, newSize := d.GetChange("size_in_gb"); oldSize.(int) > newSize.(int) {
+			return diag.FromErr(fmt.Errorf("block volumes cannot be resized down"))
+		}
+
+		volumeSizeInBytes := scw.Size(uint64(d.Get("size_in_gb").(int)) * gb)
+		_, err := instanceAPI.UpdateVolume(&instance.UpdateVolumeRequest{
+			VolumeID: id,
+			Zone:     zone,
+			Size:     &volumeSizeInBytes,
+		}, scw.WithContext(ctx))
+		if err != nil {
+			return diag.FromErr(fmt.Errorf("couldn't resize volume: %s", err))
 		}
 	}
 
