@@ -47,3 +47,25 @@ func flattenRdbInstanceReadReplicas(readReplicas []*rdb.Endpoint) interface{} {
 	}
 	return replicasI
 }
+
+func flattenInstanceSettings(settings []*rdb.InstanceSetting) interface{} {
+	res := make(map[string]string)
+	for _, value := range settings {
+		res[value.Name] = value.Value
+	}
+
+	return res
+}
+
+func expandInstanceSettings(i interface{}) []*rdb.InstanceSetting {
+	rawRule := i.(map[string]interface{})
+	var res []*rdb.InstanceSetting
+	for key, value := range rawRule {
+		res = append(res, &rdb.InstanceSetting{
+			Name:  key,
+			Value: value.(string),
+		})
+	}
+
+	return res
+}

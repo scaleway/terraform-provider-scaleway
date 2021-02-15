@@ -51,6 +51,8 @@ The following arguments are supported:
 
 - `disable_backup` - (Optional) Disable automated backup for the database instance.
 
+- `settings` - Map of engine settings to be set.
+
 - `tags` - (Optional) The tags associated with the Database Instance.
 
 - `region` - (Defaults to [provider](../index.md#region) `region`) The [region](../guides/regions_and_zones.md#regions) in which the Database Instance should be created.

@@ -59,13 +59,14 @@ In order to unify configuration management across all scaleway developer tools, 
 Below you find an overview of changes in the provider config:
 
 | Old provider attribute | New provider attribute |
-| --------------------- | --------------------- |
-| `access_key`          | `access_key`          |
-| `token`               | `secret_key`          |
-| `organization`        | `organization_id`     |
+| --------------------- | ----------------------- |
+| `access_key`          | `access_key`            |
+| `token`               | `secret_key`            |
+| `organization`        | `project_id`            |
 
 ~> **Important:** `access_key` should now only be used for your access key (e.g. `SCWZFD9BPQ4TZ14SM1YS`).
 Your secret key (previously known as _token_) must be set in `secret_key` (`xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx`).
+You can use the value of your `organization_id` as your default `project_id` if you have not yet created a non default project.
 
 Below you find an overview of the changes in environment variables:
 
@@ -73,10 +74,10 @@ Below you find an overview of the changes in environment variables:
 | ----------------------- | ------------------------------------------- |
 | `SCALEWAY_ACCESS_KEY`   | `SCW_ACCESS_KEY`                            |
 | `SCALEWAY_TOKEN`        | `SCW_SECRET_KEY`                            |
-| `SCALEWAY_ORGANIZATION` | `SCW_DEFAULT_ORGANIZATION_ID`               |
+| `SCALEWAY_ORGANIZATION` | `SCW_DEFAULT_PROJECT_ID`                    |
 | `SCALEWAY_REGION`       | `SCW_DEFAULT_REGION` and `SCW_DEFAULT_ZONE` |
 | `SCW_TLSVERIFY`         | `SCW_INSECURE`                              |
-| `SCW_ORGANIZATION`      | `SCW_DEFAULT_ORGANIZATION_ID`               |
+| `SCW_ORGANIZATION`      | `SCW_DEFAULT_PROJECT_ID`                    |
 | `SCW_REGION`            | `SCW_DEFAULT_REGION`                        |
 | `SCW_TOKEN`             | `SCW_SECRET_KEY`                            |
 
@@ -205,7 +206,7 @@ resource "scaleway_instance_server" "web" {
   type = "DEV1-S"
   image = "ubuntu_focal"
 
-  user_data {
+  user_data = {
     foo = "bar"
     cloud-init = file("cloud-init.yml")
   }
@@ -247,7 +248,7 @@ resource "scaleway_instance_server" "web" {
 
 ##### Renamed: `scaleway_ip` -> `scaleway_instance_ip`
 
-`scaleway_ip` was renamed to `scaleway_instance_ip` and the `server` attribute, used to attach an IP has been moved to `scaleway_instance_server.id_id`
+`scaleway_ip` was renamed to `scaleway_instance_ip` and the `server` attribute, used to attach an IP has been moved to `scaleway_instance_server.ip_id`
 
 ```hcl
 resource "scaleway_instance_ip" "test_ip" {
@@ -266,7 +267,7 @@ For more information check the [new volume `scaleway_instance_volume` resource](
 
 `scaleway_ssh_key` was renamed to `scaleway_account_ssk_key`
 The `key` attribute has been renamed to `public_key`.
-A `name` required attribute and an `organization_id` optional attribute have been added.
+A `name` required attribute and a `project_id` optional attribute have been added.
 
 ##### Removed: `scaleway_user_data`
 

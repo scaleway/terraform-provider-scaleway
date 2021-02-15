@@ -66,6 +66,7 @@ func Provider(config *ProviderConfig) plugin.ProviderFunc {
 
 			ResourcesMap: map[string]*schema.Resource{
 				"scaleway_account_ssh_key":               resourceScalewayAccountSSKKey(),
+				"scaleway_apple_silicon_server":          resourceScalewayAppleSiliconServer(),
 				"scaleway_baremetal_server":              resourceScalewayBaremetalServer(),
 				"scaleway_instance_ip":                   resourceScalewayInstanceIP(),
 				"scaleway_instance_ip_reverse_dns":       resourceScalewayInstanceIPReverseDNS(),
@@ -75,6 +76,10 @@ func Provider(config *ProviderConfig) plugin.ProviderFunc {
 				"scaleway_instance_server":               resourceScalewayInstanceServer(),
 				"scaleway_instance_placement_group":      resourceScalewayInstancePlacementGroup(),
 				"scaleway_instance_private_nic":          resourceScalewayInstancePrivateNIC(),
+				"scaleway_iot_hub":                       resourceScalewayIotHub(),
+				"scaleway_iot_device":                    resourceScalewayIotDevice(),
+				"scaleway_iot_route":                     resourceScalewayIotRoute(),
+				"scaleway_iot_network":                   resourceScalewayIotNetwork(),
 				"scaleway_k8s_cluster":                   resourceScalewayK8SCluster(),
 				"scaleway_k8s_pool":                      resourceScalewayK8SPool(),
 				"scaleway_lb":                            resourceScalewayLb(),

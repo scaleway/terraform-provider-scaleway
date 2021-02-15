@@ -3,6 +3,7 @@ package scaleway
 import (
 	"context"
 	"fmt"
+	"strconv"
 	"strings"
 	"time"
 
@@ -198,7 +199,29 @@ func clusterAutoscalerConfigFlatten(cluster *k8s.Cluster) []map[string]interface
 	autoscalerConfig["balance_similar_node_groups"] = cluster.AutoscalerConfig.BalanceSimilarNodeGroups
 	autoscalerConfig["expendable_pods_priority_cutoff"] = cluster.AutoscalerConfig.ExpendablePodsPriorityCutoff
 
+	// need to convert a f32 to f64 without precision loss
+	thresholdF64, err := strconv.ParseFloat(fmt.Sprintf("%f", cluster.AutoscalerConfig.ScaleDownUtilizationThreshold), 64)
+	if err != nil {
+		// should never happen
+		return nil
+	}
+	autoscalerConfig["scale_down_utilization_threshold"] = thresholdF64
+	autoscalerConfig["max_graceful_termination_sec"] = cluster.AutoscalerConfig.MaxGracefulTerminationSec
+
 	return []map[string]interface{}{autoscalerConfig}
+}
+
+func clusterOpenIDConnectConfigFlatten(cluster *k8s.Cluster) []map[string]interface{} {
+	openIDConnectConfig := map[string]interface{}{}
+	openIDConnectConfig["issuer_url"] = cluster.OpenIDConnectConfig.IssuerURL
+	openIDConnectConfig["client_id"] = cluster.OpenIDConnectConfig.ClientID
+	openIDConnectConfig["username_claim"] = cluster.OpenIDConnectConfig.UsernameClaim
+	openIDConnectConfig["username_prefix"] = cluster.OpenIDConnectConfig.UsernamePrefix
+	openIDConnectConfig["groups_claim"] = cluster.OpenIDConnectConfig.GroupsClaim
+	openIDConnectConfig["groups_prefix"] = cluster.OpenIDConnectConfig.GroupsPrefix
+	openIDConnectConfig["required_claim"] = cluster.OpenIDConnectConfig.RequiredClaim
+
+	return []map[string]interface{}{openIDConnectConfig}
 }
 
 func clusterAutoUpgradeFlatten(cluster *k8s.Cluster) []map[string]interface{} {
@@ -208,4 +231,34 @@ func clusterAutoUpgradeFlatten(cluster *k8s.Cluster) []map[string]interface{} {
 	autoUpgrade["maintenance_window_day"] = cluster.AutoUpgrade.MaintenanceWindow.Day
 
 	return []map[string]interface{}{autoUpgrade}
+}
+
+func poolUpgradePolicyFlatten(pool *k8s.Pool) []map[string]interface{} {
+	upgradePolicy := map[string]interface{}{}
+	if pool.UpgradePolicy != nil {
+		upgradePolicy["max_surge"] = pool.UpgradePolicy.MaxSurge
+		upgradePolicy["max_unavailable"] = pool.UpgradePolicy.MaxUnavailable
+	}
+
+	return []map[string]interface{}{upgradePolicy}
+}
+
+func expandKubeletArgs(args interface{}) map[string]string {
+	kubeletArgs := map[string]string{}
+
+	for key, value := range args.(map[string]interface{}) {
+		kubeletArgs[key] = value.(string)
+	}
+
+	return kubeletArgs
+}
+
+func flattenKubeletArgs(args map[string]string) map[string]interface{} {
+	kubeletArgs := map[string]interface{}{}
+
+	for key, value := range args {
+		kubeletArgs[key] = value
+	}
+
+	return kubeletArgs
 }

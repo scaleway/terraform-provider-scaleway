@@ -65,6 +65,17 @@ The following arguments are supported:
 - `container_runtime` - (Defaults to `docker`) The container runtime of the pool.
 ~> **Important:** Updates to this field will recreate a new resource.
 
+- `kubelet_args` - (Optional) The Kubelet arguments to be used by this pool
+
+- `upgrade_policy` - (Optional) The Pool upgrade policy
+
+    - `max_surge` - (Defaults to `0`) The maximum number of nodes to be created during the upgrade
+
+    - `max_unavailable` - (Defaults to `1`) The maximum number of nodes that can be not ready at the same time
+
+- `zone` - (Defaults to [provider](../index.md#zone) `zone`) The [zone](../guides/regions_and_zones.md#regions) in which the pool should be created.
+~> **Important:** Updates to this field will recreate a new resource.
+
 - `region` - (Defaults to [provider](../index.md#region) `region`) The [region](../guides/regions_and_zones.md#regions) in which the pool should be created.
 
 - `wait_for_pool_ready` - (Default to `false`) Whether to wait for the pool to be ready.
