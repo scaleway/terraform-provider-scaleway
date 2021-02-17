@@ -72,6 +72,7 @@ func resourceScalewayRdbInstance() *schema.Resource {
 					Type: schema.TypeString,
 				},
 				Description: "Map of engine settings to be set.",
+				Computed:    true,
 				Optional:    true,
 			},
 			"tags": {
