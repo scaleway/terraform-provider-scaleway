@@ -7,6 +7,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/scaleway/scaleway-sdk-go/api/rdb/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 )
@@ -30,7 +31,27 @@ func resourceScalewayRdbACL() *schema.Resource {
 				Required:     true,
 				ForceNew:     true,
 				ValidateFunc: validationUUIDorUUIDWithLocality(),
-				Description:  "Instance on which the user is created",
+				Description:  "Instance on which the ACL is applied",
+			},
+			"acl_rules": {
+				Type:        schema.TypeList,
+				Required:    true,
+				Description: "List of ACL rules to apply",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"ip": {
+							Type:         schema.TypeString,
+							ValidateFunc: validation.IsIPAddress,
+							Required:     true,
+							Description:  "Target IP of the rules",
+						},
+						"description": {
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "Description of the rule",
+						},
+					},
+				},
 			},
 			// Common
 			"region": regionSchema(),
@@ -47,7 +68,7 @@ func resourceScalewayRdbACLCreate(ctx context.Context, d *schema.ResourceData, m
 	createReq := &rdb.SetInstanceACLRulesRequest{
 		Region:     region,
 		InstanceID: instanceID,
-		Rules:      nil,
+		Rules:      rdbACLExpand(d.Get("acl_rules")),
 	}
 
 	_, err = rdbAPI.SetInstanceACLRules(createReq, scw.WithContext(ctx))
@@ -86,7 +107,7 @@ func resourceScalewayRdbACLRead(ctx context.Context, d *schema.ResourceData, m i
 	}
 
 	_ = d.Set("instance_id", newRegionalID(region, instanceID).String())
-	_ = d.Set("acl_rules", res.Rules)
+	_ = d.Set("acl_rules", rdbACLRulesFlatten(res.Rules))
 
 	return nil
 }
@@ -103,15 +124,17 @@ func resourceScalewayRdbACLUpdate(ctx context.Context, d *schema.ResourceData, m
 		return diag.FromErr(err)
 	}
 
-	req := &rdb.SetInstanceACLRulesRequest{
-		Region:     region,
-		InstanceID: instanceID,
-		Rules:      nil,
-	}
+	if d.HasChange("ip_rules") {
+		req := &rdb.SetInstanceACLRulesRequest{
+			Region:     region,
+			InstanceID: instanceID,
+			Rules:      rdbACLExpand(d.Get("acl_rules")),
+		}
 
-	_, err = rdbAPI.SetInstanceACLRules(req, scw.WithContext(ctx))
-	if err != nil {
-		return diag.FromErr(err)
+		_, err = rdbAPI.SetInstanceACLRules(req, scw.WithContext(ctx))
+		if err != nil {
+			return diag.FromErr(err)
+		}
 	}
 
 	return resourceScalewayRdbACLRead(ctx, d, m)
@@ -147,4 +170,33 @@ func resourceScalewayRdbACLParseID(resourceID string) (instanceID string, err er
 		return "", fmt.Errorf("can't parse user resource id: %s", resourceID)
 	}
 	return idParts[1], nil
+}
+
+func rdbACLExpand(data interface{}) []*rdb.ACLRuleRequest {
+	type aclRule struct {
+		IP          string
+		Description string
+	}
+	var res []*rdb.ACLRuleRequest
+	for _, rule := range data.([]interface{}) {
+		r := rule.(map[string]interface{})
+		res = append(res, &rdb.ACLRuleRequest{
+			IP:          expandIPNet(r["ip"].(string)),
+			Description: r["description"].(string),
+		})
+	}
+
+	return res
+}
+
+func rdbACLRulesFlatten(rules []*rdb.ACLRule) []map[string]interface{} {
+	var res []map[string]interface{}
+	for _, rule := range rules {
+		r := map[string]interface{}{
+			"ip":          rule.IP.String(),
+			"description": rule.Description,
+		}
+		res = append(res, r)
+	}
+	return res
 }
