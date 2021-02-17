@@ -65,6 +65,16 @@ func resourceScalewayRdbACLCreate(ctx context.Context, d *schema.ResourceData, m
 		return diag.FromErr(err)
 	}
 	instanceID := d.Get("instance_id").(string)
+
+	//InstanceStatus.READY,
+	//	InstanceStatus.CONFIGURING,
+	//	InstanceStatus.BACKUPING,
+	//	InstanceStatus.SNAPSHOTTING,
+	_ = rdb.WaitForInstanceRequest{
+		InstanceID: instanceID,
+		Region:     region,
+	}
+
 	createReq := &rdb.SetInstanceACLRulesRequest{
 		Region:     region,
 		InstanceID: instanceID,
@@ -125,6 +135,15 @@ func resourceScalewayRdbACLUpdate(ctx context.Context, d *schema.ResourceData, m
 	}
 
 	if d.HasChange("ip_rules") {
+		//InstanceStatus.READY,
+		//	InstanceStatus.CONFIGURING,
+		//	InstanceStatus.BACKUPING,
+		//	InstanceStatus.SNAPSHOTTING,
+		_ = rdb.WaitForInstanceRequest{
+			InstanceID: instanceID,
+			Region:     region,
+		}
+
 		req := &rdb.SetInstanceACLRulesRequest{
 			Region:     region,
 			InstanceID: instanceID,
