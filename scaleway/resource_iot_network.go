@@ -104,8 +104,8 @@ func resourceScalewayIotNetworkCreate(ctx context.Context, d *schema.ResourceDat
 	return resourceScalewayIotNetworkRead(ctx, d, meta)
 }
 
-func resourceScalewayIotNetworkRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	iotAPI, region, networkID, err := iotAPIWithRegionAndID(m, d.Id())
+func resourceScalewayIotNetworkRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	iotAPI, region, networkID, err := iotAPIWithRegionAndID(meta, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -135,8 +135,8 @@ func resourceScalewayIotNetworkRead(ctx context.Context, d *schema.ResourceData,
 	return nil
 }
 
-func resourceScalewayIotNetworkDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	iotAPI, region, networkID, err := iotAPIWithRegionAndID(m, d.Id())
+func resourceScalewayIotNetworkDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	iotAPI, region, networkID, err := iotAPIWithRegionAndID(meta, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}

@@ -31,8 +31,8 @@ func dataSourceScalewayRDBInstance() *schema.Resource {
 	}
 }
 
-func dataSourceScalewayRDBInstanceRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	api, region, err := rdbAPIWithRegion(d, m)
+func dataSourceScalewayRDBInstanceRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	api, region, err := rdbAPIWithRegion(d, meta)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -61,5 +61,5 @@ func dataSourceScalewayRDBInstanceRead(ctx context.Context, d *schema.ResourceDa
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	return resourceScalewayRdbInstanceRead(ctx, d, m)
+	return resourceScalewayRdbInstanceRead(ctx, d, meta)
 }

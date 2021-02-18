@@ -44,17 +44,17 @@ func resourceScalewayInstanceSecurityGroupRules() *schema.Resource {
 	}
 }
 
-func resourceScalewayInstanceSecurityGroupRulesCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceScalewayInstanceSecurityGroupRulesCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	d.SetId(d.Get("security_group_id").(string))
 
 	// We call update instead of read as it will take care of creating rules.
-	return resourceScalewayInstanceSecurityGroupRulesUpdate(ctx, d, m)
+	return resourceScalewayInstanceSecurityGroupRulesUpdate(ctx, d, meta)
 }
 
-func resourceScalewayInstanceSecurityGroupRulesRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceScalewayInstanceSecurityGroupRulesRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	securityGroupZonedID := d.Id()
 
-	instanceAPI, zone, securityGroupID, err := instanceAPIWithZoneAndID(m, securityGroupZonedID)
+	instanceAPI, zone, securityGroupID, err := instanceAPIWithZoneAndID(meta, securityGroupZonedID)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -72,9 +72,9 @@ func resourceScalewayInstanceSecurityGroupRulesRead(ctx context.Context, d *sche
 	return nil
 }
 
-func resourceScalewayInstanceSecurityGroupRulesUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceScalewayInstanceSecurityGroupRulesUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	securityGroupZonedID := d.Id()
-	instanceAPI, zone, securityGroupID, err := instanceAPIWithZoneAndID(m, securityGroupZonedID)
+	instanceAPI, zone, securityGroupID, err := instanceAPIWithZoneAndID(meta, securityGroupZonedID)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -84,12 +84,12 @@ func resourceScalewayInstanceSecurityGroupRulesUpdate(ctx context.Context, d *sc
 		return diag.FromErr(err)
 	}
 
-	return resourceScalewayInstanceSecurityGroupRulesRead(ctx, d, m)
+	return resourceScalewayInstanceSecurityGroupRulesRead(ctx, d, meta)
 }
 
-func resourceScalewayInstanceSecurityGroupRulesDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceScalewayInstanceSecurityGroupRulesDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	securityGroupZonedID := d.Id()
-	instanceAPI, zone, securityGroupID, err := instanceAPIWithZoneAndID(m, securityGroupZonedID)
+	instanceAPI, zone, securityGroupID, err := instanceAPIWithZoneAndID(meta, securityGroupZonedID)
 	if err != nil {
 		return diag.FromErr(err)
 	}
