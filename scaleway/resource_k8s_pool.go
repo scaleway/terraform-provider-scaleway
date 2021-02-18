@@ -196,8 +196,8 @@ func resourceScalewayK8SPool() *schema.Resource {
 	}
 }
 
-func resourceScalewayK8SPoolCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	k8sAPI, region, err := k8sAPIWithRegion(d, m)
+func resourceScalewayK8SPoolCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	k8sAPI, region, err := k8sAPIWithRegion(d, meta)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -290,11 +290,11 @@ func resourceScalewayK8SPoolCreate(ctx context.Context, d *schema.ResourceData, 
 		}
 	}
 
-	return resourceScalewayK8SPoolRead(ctx, d, m)
+	return resourceScalewayK8SPoolRead(ctx, d, meta)
 }
 
-func resourceScalewayK8SPoolRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	k8sAPI, region, poolID, err := k8sAPIWithRegionAndID(m, d.Id())
+func resourceScalewayK8SPoolRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	k8sAPI, region, poolID, err := k8sAPIWithRegionAndID(meta, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -349,8 +349,8 @@ func resourceScalewayK8SPoolRead(ctx context.Context, d *schema.ResourceData, m 
 	return nil
 }
 
-func resourceScalewayK8SPoolUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	k8sAPI, region, poolID, err := k8sAPIWithRegionAndID(m, d.Id())
+func resourceScalewayK8SPoolUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	k8sAPI, region, poolID, err := k8sAPIWithRegionAndID(meta, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -416,11 +416,11 @@ func resourceScalewayK8SPoolUpdate(ctx context.Context, d *schema.ResourceData, 
 		}
 	}
 
-	return resourceScalewayK8SPoolRead(ctx, d, m)
+	return resourceScalewayK8SPoolRead(ctx, d, meta)
 }
 
-func resourceScalewayK8SPoolDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	k8sAPI, region, poolID, err := k8sAPIWithRegionAndID(m, d.Id())
+func resourceScalewayK8SPoolDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	k8sAPI, region, poolID, err := k8sAPIWithRegionAndID(meta, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}

@@ -47,8 +47,8 @@ func resourceScalewayLbIP() *schema.Resource {
 	}
 }
 
-func resourceScalewayLbIPCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	lbAPI, region, err := lbAPIWithRegion(d, m)
+func resourceScalewayLbIPCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	lbAPI, region, err := lbAPIWithRegion(d, meta)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -66,11 +66,11 @@ func resourceScalewayLbIPCreate(ctx context.Context, d *schema.ResourceData, m i
 
 	d.SetId(newRegionalIDString(region, res.ID))
 
-	return resourceScalewayLbIPRead(ctx, d, m)
+	return resourceScalewayLbIPRead(ctx, d, meta)
 }
 
-func resourceScalewayLbIPRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	lbAPI, region, ID, err := lbAPIWithRegionAndID(m, d.Id())
+func resourceScalewayLbIPRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	lbAPI, region, ID, err := lbAPIWithRegionAndID(meta, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -98,8 +98,8 @@ func resourceScalewayLbIPRead(ctx context.Context, d *schema.ResourceData, m int
 	return nil
 }
 
-func resourceScalewayLbIPUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	lbAPI, region, ID, err := lbAPIWithRegionAndID(m, d.Id())
+func resourceScalewayLbIPUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	lbAPI, region, ID, err := lbAPIWithRegionAndID(meta, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -117,11 +117,11 @@ func resourceScalewayLbIPUpdate(ctx context.Context, d *schema.ResourceData, m i
 		}
 	}
 
-	return resourceScalewayLbIPRead(ctx, d, m)
+	return resourceScalewayLbIPRead(ctx, d, meta)
 }
 
-func resourceScalewayLbIPDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	lbAPI, region, ID, err := lbAPIWithRegionAndID(m, d.Id())
+func resourceScalewayLbIPDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	lbAPI, region, ID, err := lbAPIWithRegionAndID(meta, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
