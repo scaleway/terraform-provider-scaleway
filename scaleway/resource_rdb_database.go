@@ -45,6 +45,8 @@ func resourceScalewayRdbDatabase() *schema.Resource {
 			"owner": {
 				Type:        schema.TypeString,
 				Description: "User that own the database",
+				Optional:    true,
+				Computed:    true,
 			},
 			"size": {
 				Type:        schema.TypeString,
@@ -57,8 +59,8 @@ func resourceScalewayRdbDatabase() *schema.Resource {
 	}
 }
 
-func resourceScalewayRdbDatabaseCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	rdbAPI, region, err := rdbAPIWithRegion(d, m)
+func resourceScalewayRdbDatabaseCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	rdbAPI, region, err := rdbAPIWithRegion(d, meta)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -76,11 +78,11 @@ func resourceScalewayRdbDatabaseCreate(ctx context.Context, d *schema.ResourceDa
 
 	d.SetId(resourceScalewayRdbDatabaseID(region, expandID(instanceID), res.Name))
 
-	return resourceScalewayRdbDatabaseRead(ctx, d, m)
+	return resourceScalewayRdbDatabaseRead(ctx, d, meta)
 }
 
-func resourceScalewayRdbDatabaseRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	rdbAPI, region, err := rdbAPIWithRegion(d, m)
+func resourceScalewayRdbDatabaseRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	rdbAPI, region, err := rdbAPIWithRegion(d, meta)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -117,8 +119,8 @@ func resourceScalewayRdbDatabaseRead(ctx context.Context, d *schema.ResourceData
 	return nil
 }
 
-func resourceScalewayRdbDatabaseDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	rdbAPI, region, err := rdbAPIWithRegion(d, m)
+func resourceScalewayRdbDatabaseDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	rdbAPI, region, err := rdbAPIWithRegion(d, meta)
 	if err != nil {
 		return diag.FromErr(err)
 	}
