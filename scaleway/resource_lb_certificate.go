@@ -115,7 +115,7 @@ func resourceScalewayLbCertificate() *schema.Resource {
 	}
 }
 
-func resourceScalewayLbCertificateCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceScalewayLbCertificateCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	region, lbID, err := parseRegionalID(d.Get("lb_id").(string))
 	if err != nil {
 		return diag.FromErr(err)
@@ -132,7 +132,7 @@ func resourceScalewayLbCertificateCreate(ctx context.Context, d *schema.Resource
 		return diag.FromErr(errors.New("you need to define either letsencrypt or custom_certificate configuration"))
 	}
 
-	lbAPI := lbAPI(m)
+	lbAPI := lbAPI(meta)
 	res, err := lbAPI.CreateCertificate(createReq, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
@@ -140,11 +140,11 @@ func resourceScalewayLbCertificateCreate(ctx context.Context, d *schema.Resource
 
 	d.SetId(newRegionalIDString(region, res.ID))
 
-	return resourceScalewayLbCertificateRead(ctx, d, m)
+	return resourceScalewayLbCertificateRead(ctx, d, meta)
 }
 
-func resourceScalewayLbCertificateRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	lbAPI, region, ID, err := lbAPIWithRegionAndID(m, d.Id())
+func resourceScalewayLbCertificateRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	lbAPI, region, ID, err := lbAPIWithRegionAndID(meta, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -172,8 +172,8 @@ func resourceScalewayLbCertificateRead(ctx context.Context, d *schema.ResourceDa
 	return nil
 }
 
-func resourceScalewayLbCertificateUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	lbAPI, region, ID, err := lbAPIWithRegionAndID(m, d.Id())
+func resourceScalewayLbCertificateUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	lbAPI, region, ID, err := lbAPIWithRegionAndID(meta, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -189,11 +189,11 @@ func resourceScalewayLbCertificateUpdate(ctx context.Context, d *schema.Resource
 		return diag.FromErr(err)
 	}
 
-	return resourceScalewayLbCertificateRead(ctx, d, m)
+	return resourceScalewayLbCertificateRead(ctx, d, meta)
 }
 
-func resourceScalewayLbCertificateDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	lbAPI, region, ID, err := lbAPIWithRegionAndID(m, d.Id())
+func resourceScalewayLbCertificateDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	lbAPI, region, ID, err := lbAPIWithRegionAndID(meta, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}

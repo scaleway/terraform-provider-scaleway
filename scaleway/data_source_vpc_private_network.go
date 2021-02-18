@@ -32,8 +32,7 @@ func dataSourceScalewayVPCPrivateNetwork() *schema.Resource {
 	}
 }
 
-func dataSourceScalewayVPCPrivateNetworkRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	meta := m.(*Meta)
+func dataSourceScalewayVPCPrivateNetworkRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	vpcAPI, zone, err := vpcAPIWithZone(d, meta)
 	if err != nil {
 		return diag.FromErr(err)
@@ -72,5 +71,5 @@ func dataSourceScalewayVPCPrivateNetworkRead(ctx context.Context, d *schema.Reso
 	zonedID := datasourceNewZonedID(privateNetworkID, zone)
 	d.SetId(zonedID)
 	_ = d.Set("private_network_id", zonedID)
-	return resourceScalewayVPCPrivateNetworkRead(ctx, d, m)
+	return resourceScalewayVPCPrivateNetworkRead(ctx, d, meta)
 }

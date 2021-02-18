@@ -231,8 +231,8 @@ func resourceScalewayK8SCluster() *schema.Resource {
 	}
 }
 
-func resourceScalewayK8SClusterCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	k8sAPI, region, err := k8sAPIWithRegion(d, m)
+func resourceScalewayK8SClusterCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	k8sAPI, region, err := k8sAPIWithRegion(d, meta)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -398,11 +398,11 @@ func resourceScalewayK8SClusterCreate(ctx context.Context, d *schema.ResourceDat
 
 	d.SetId(newRegionalIDString(region, res.ID))
 
-	return resourceScalewayK8SClusterRead(ctx, d, m)
+	return resourceScalewayK8SClusterRead(ctx, d, meta)
 }
 
-func resourceScalewayK8SClusterRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	k8sAPI, region, clusterID, err := k8sAPIWithRegionAndID(m, d.Id())
+func resourceScalewayK8SClusterRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	k8sAPI, region, clusterID, err := k8sAPIWithRegionAndID(meta, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -491,8 +491,8 @@ func resourceScalewayK8SClusterRead(ctx context.Context, d *schema.ResourceData,
 	return nil
 }
 
-func resourceScalewayK8SClusterUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	k8sAPI, region, clusterID, err := k8sAPIWithRegionAndID(m, d.Id())
+func resourceScalewayK8SClusterUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	k8sAPI, region, clusterID, err := k8sAPIWithRegionAndID(meta, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -698,11 +698,11 @@ func resourceScalewayK8SClusterUpdate(ctx context.Context, d *schema.ResourceDat
 		}
 	}
 
-	return resourceScalewayK8SClusterRead(ctx, d, m)
+	return resourceScalewayK8SClusterRead(ctx, d, meta)
 }
 
-func resourceScalewayK8SClusterDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	k8sAPI, region, clusterID, err := k8sAPIWithRegionAndID(m, d.Id())
+func resourceScalewayK8SClusterDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	k8sAPI, region, clusterID, err := k8sAPIWithRegionAndID(meta, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}

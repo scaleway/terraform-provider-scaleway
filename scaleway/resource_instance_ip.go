@@ -44,8 +44,8 @@ func resourceScalewayInstanceIP() *schema.Resource {
 	}
 }
 
-func resourceScalewayInstanceIPCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	instanceAPI, zone, err := instanceAPIWithZone(d, m)
+func resourceScalewayInstanceIPCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	instanceAPI, zone, err := instanceAPIWithZone(d, meta)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -59,11 +59,11 @@ func resourceScalewayInstanceIPCreate(ctx context.Context, d *schema.ResourceDat
 	}
 
 	d.SetId(newZonedIDString(zone, res.IP.ID))
-	return resourceScalewayInstanceIPRead(ctx, d, m)
+	return resourceScalewayInstanceIPRead(ctx, d, meta)
 }
 
-func resourceScalewayInstanceIPRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	instanceAPI, zone, ID, err := instanceAPIWithZoneAndID(m, d.Id())
+func resourceScalewayInstanceIPRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	instanceAPI, zone, ID, err := instanceAPIWithZoneAndID(meta, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -97,8 +97,8 @@ func resourceScalewayInstanceIPRead(ctx context.Context, d *schema.ResourceData,
 	return nil
 }
 
-func resourceScalewayInstanceIPDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	instanceAPI, zone, ID, err := instanceAPIWithZoneAndID(m, d.Id())
+func resourceScalewayInstanceIPDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	instanceAPI, zone, ID, err := instanceAPIWithZoneAndID(meta, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
