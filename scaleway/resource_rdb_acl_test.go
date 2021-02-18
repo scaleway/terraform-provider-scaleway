@@ -5,8 +5,6 @@ import (
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
-	"github.com/scaleway/scaleway-sdk-go/api/rdb/v1"
 )
 
 func init() {
@@ -57,40 +55,40 @@ func TestAccScalewayRdbACL_Basic(t *testing.T) {
 	})
 }
 
-func testAccCheckRdbACLExists(tt *TestTools, instance string, acl string) resource.TestCheckFunc {
-	return func(state *terraform.State) error {
-		instanceResource, ok := state.RootModule().Resources[instance]
-		if !ok {
-			return fmt.Errorf("resource not found: %s", instance)
-		}
-
-		userResource, ok := state.RootModule().Resources[acl]
-		if !ok {
-			return fmt.Errorf("resource not found: %s", acl)
-		}
-
-		rdbAPI, region, _, err := rdbAPIWithRegionAndID(tt.Meta, instanceResource.Primary.ID)
-		if err != nil {
-			return err
-		}
-
-		instanceID, err := resourceScalewayRdbACLParseID(userResource.Primary.ID)
-		if err != nil {
-			return err
-		}
-
-		aclRules, err := rdbAPI.ListInstanceACLRules(&rdb.ListInstanceACLRulesRequest{
-			Region:     region,
-			InstanceID: instanceID,
-		})
-		if err != nil {
-			return err
-		}
-
-		if len(aclRules.Rules) != 1 {
-			return fmt.Errorf("no acl rules found")
-		}
-
-		return nil
-	}
-}
+//func testAccCheckRdbACLExists(tt *TestTools, instance string, acl string) resource.TestCheckFunc {
+//	return func(state *terraform.State) error {
+//		instanceResource, ok := state.RootModule().Resources[instance]
+//		if !ok {
+//			return fmt.Errorf("resource not found: %s", instance)
+//		}
+//
+//		userResource, ok := state.RootModule().Resources[acl]
+//		if !ok {
+//			return fmt.Errorf("resource not found: %s", acl)
+//		}
+//
+//		rdbAPI, region, _, err := rdbAPIWithRegionAndID(tt.Meta, instanceResource.Primary.ID)
+//		if err != nil {
+//			return err
+//		}
+//
+//		instanceID, err := resourceScalewayRdbACLParseID(userResource.Primary.ID)
+//		if err != nil {
+//			return err
+//		}
+//
+//		aclRules, err := rdbAPI.ListInstanceACLRules(&rdb.ListInstanceACLRulesRequest{
+//			Region:     region,
+//			InstanceID: instanceID,
+//		})
+//		if err != nil {
+//			return err
+//		}
+//
+//		if len(aclRules.Rules) != 1 {
+//			return fmt.Errorf("no acl rules found")
+//		}
+//
+//		return nil
+//	}
+//}

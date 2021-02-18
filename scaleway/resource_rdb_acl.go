@@ -59,8 +59,8 @@ func resourceScalewayRdbACL() *schema.Resource {
 	}
 }
 
-func resourceScalewayRdbACLCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	rdbAPI, region, err := rdbAPIWithRegion(d, m)
+func resourceScalewayRdbACLCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	rdbAPI, region, err := rdbAPIWithRegion(d, meta)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -88,11 +88,11 @@ func resourceScalewayRdbACLCreate(ctx context.Context, d *schema.ResourceData, m
 
 	d.SetId(resourceScalewayRdbACLID(region, expandID(instanceID)))
 
-	return resourceScalewayRdbACLRead(ctx, d, m)
+	return resourceScalewayRdbACLRead(ctx, d, meta)
 }
 
-func resourceScalewayRdbACLRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	rdbAPI, region, err := rdbAPIWithRegion(d, m)
+func resourceScalewayRdbACLRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	rdbAPI, region, err := rdbAPIWithRegion(d, meta)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -122,8 +122,8 @@ func resourceScalewayRdbACLRead(ctx context.Context, d *schema.ResourceData, m i
 	return nil
 }
 
-func resourceScalewayRdbACLUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	rdbAPI, region, err := rdbAPIWithRegion(d, m)
+func resourceScalewayRdbACLUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	rdbAPI, region, err := rdbAPIWithRegion(d, meta)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -156,11 +156,11 @@ func resourceScalewayRdbACLUpdate(ctx context.Context, d *schema.ResourceData, m
 		}
 	}
 
-	return resourceScalewayRdbACLRead(ctx, d, m)
+	return resourceScalewayRdbACLRead(ctx, d, meta)
 }
 
-func resourceScalewayRdbACLDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	rdbAPI, region, err := rdbAPIWithRegion(d, m)
+func resourceScalewayRdbACLDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	rdbAPI, region, err := rdbAPIWithRegion(d, meta)
 	if err != nil {
 		return diag.FromErr(err)
 	}
