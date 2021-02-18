@@ -209,8 +209,8 @@ func resourceScalewayInstanceServer() *schema.Resource {
 	}
 }
 
-func resourceScalewayInstanceServerCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	instanceAPI, zone, err := instanceAPIWithZone(d, m)
+func resourceScalewayInstanceServerCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	instanceAPI, zone, err := instanceAPIWithZone(d, meta)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -223,7 +223,7 @@ func resourceScalewayInstanceServerCreate(ctx context.Context, d *schema.Resourc
 
 	imageUUID := expandZonedID(d.Get("image")).ID
 	if !scwvalidation.IsUUID(imageUUID) {
-		marketPlaceAPI := marketplace.NewAPI(m.(*Meta).scwClient)
+		marketPlaceAPI := marketplace.NewAPI(meta.(*Meta).scwClient)
 		imageUUID, err = marketPlaceAPI.GetLocalImageIDByLabel(&marketplace.GetLocalImageIDByLabelRequest{
 			CommercialType: commercialType,
 			Zone:           zone,
@@ -352,11 +352,11 @@ func resourceScalewayInstanceServerCreate(ctx context.Context, d *schema.Resourc
 		return diag.FromErr(err)
 	}
 
-	return resourceScalewayInstanceServerRead(ctx, d, m)
+	return resourceScalewayInstanceServerRead(ctx, d, meta)
 }
 
-func resourceScalewayInstanceServerRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	instanceAPI, zone, ID, err := instanceAPIWithZoneAndID(m, d.Id())
+func resourceScalewayInstanceServerRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	instanceAPI, zone, ID, err := instanceAPIWithZoneAndID(meta, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -490,8 +490,8 @@ func resourceScalewayInstanceServerRead(ctx context.Context, d *schema.ResourceD
 	return nil
 }
 
-func resourceScalewayInstanceServerUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	instanceAPI, zone, ID, err := instanceAPIWithZoneAndID(m, d.Id())
+func resourceScalewayInstanceServerUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	instanceAPI, zone, ID, err := instanceAPIWithZoneAndID(meta, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -688,11 +688,11 @@ func resourceScalewayInstanceServerUpdate(ctx context.Context, d *schema.Resourc
 		return diag.FromErr(err)
 	}
 
-	return append(warnings, resourceScalewayInstanceServerRead(ctx, d, m)...)
+	return append(warnings, resourceScalewayInstanceServerRead(ctx, d, meta)...)
 }
 
-func resourceScalewayInstanceServerDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	instanceAPI, zone, ID, err := instanceAPIWithZoneAndID(m, d.Id())
+func resourceScalewayInstanceServerDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	instanceAPI, zone, ID, err := instanceAPIWithZoneAndID(meta, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}

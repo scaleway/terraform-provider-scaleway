@@ -38,8 +38,8 @@ func resourceScalewayInstanceIPReverseDNS() *schema.Resource {
 	}
 }
 
-func resourceScalewayInstanceIPReverseDNSCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	instanceAPI, zone, err := instanceAPIWithZone(d, m)
+func resourceScalewayInstanceIPReverseDNSCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	instanceAPI, zone, err := instanceAPIWithZone(d, meta)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -54,11 +54,11 @@ func resourceScalewayInstanceIPReverseDNSCreate(ctx context.Context, d *schema.R
 	d.SetId(newZonedIDString(zone, res.IP.ID))
 
 	// We do not create any resource. We only need to update the IP.
-	return resourceScalewayInstanceIPReverseDNSUpdate(ctx, d, m)
+	return resourceScalewayInstanceIPReverseDNSUpdate(ctx, d, meta)
 }
 
-func resourceScalewayInstanceIPReverseDNSRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	instanceAPI, zone, ID, err := instanceAPIWithZoneAndID(m, d.Id())
+func resourceScalewayInstanceIPReverseDNSRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	instanceAPI, zone, ID, err := instanceAPIWithZoneAndID(meta, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -82,8 +82,8 @@ func resourceScalewayInstanceIPReverseDNSRead(ctx context.Context, d *schema.Res
 	return nil
 }
 
-func resourceScalewayInstanceIPReverseDNSUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	instanceAPI, zone, ID, err := instanceAPIWithZoneAndID(m, d.Id())
+func resourceScalewayInstanceIPReverseDNSUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	instanceAPI, zone, ID, err := instanceAPIWithZoneAndID(meta, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -108,11 +108,11 @@ func resourceScalewayInstanceIPReverseDNSUpdate(ctx context.Context, d *schema.R
 		}
 	}
 
-	return resourceScalewayInstanceIPReverseDNSRead(ctx, d, m)
+	return resourceScalewayInstanceIPReverseDNSRead(ctx, d, meta)
 }
 
-func resourceScalewayInstanceIPReverseDNSDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	instanceAPI, zone, ID, err := instanceAPIWithZoneAndID(m, d.Id())
+func resourceScalewayInstanceIPReverseDNSDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	instanceAPI, zone, ID, err := instanceAPIWithZoneAndID(meta, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}

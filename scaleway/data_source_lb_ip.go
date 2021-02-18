@@ -34,8 +34,8 @@ func dataSourceScalewayLbIP() *schema.Resource {
 	}
 }
 
-func dataSourceScalewayLbIPRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	api, region, err := lbAPIWithRegion(d, m)
+func dataSourceScalewayLbIPRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	api, region, err := lbAPIWithRegion(d, meta)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -65,5 +65,5 @@ func dataSourceScalewayLbIPRead(ctx context.Context, d *schema.ResourceData, m i
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	return resourceScalewayLbIPRead(ctx, d, m)
+	return resourceScalewayLbIPRead(ctx, d, meta)
 }
