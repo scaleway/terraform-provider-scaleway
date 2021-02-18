@@ -55,8 +55,8 @@ func resourceScalewayRdbUser() *schema.Resource {
 	}
 }
 
-func resourceScalewayRdbUserCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	rdbAPI, region, err := rdbAPIWithRegion(d, m)
+func resourceScalewayRdbUserCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	rdbAPI, region, err := rdbAPIWithRegion(d, meta)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -76,11 +76,11 @@ func resourceScalewayRdbUserCreate(ctx context.Context, d *schema.ResourceData, 
 
 	d.SetId(resourceScalewayRdbUserID(region, expandID(instanceID), res.Name))
 
-	return resourceScalewayRdbUserRead(ctx, d, m)
+	return resourceScalewayRdbUserRead(ctx, d, meta)
 }
 
-func resourceScalewayRdbUserRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	rdbAPI, region, err := rdbAPIWithRegion(d, m)
+func resourceScalewayRdbUserRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	rdbAPI, region, err := rdbAPIWithRegion(d, meta)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -115,8 +115,8 @@ func resourceScalewayRdbUserRead(ctx context.Context, d *schema.ResourceData, m 
 	return nil
 }
 
-func resourceScalewayRdbUserUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	rdbAPI, region, err := rdbAPIWithRegion(d, m)
+func resourceScalewayRdbUserUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	rdbAPI, region, err := rdbAPIWithRegion(d, meta)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -145,11 +145,11 @@ func resourceScalewayRdbUserUpdate(ctx context.Context, d *schema.ResourceData, 
 		return diag.FromErr(err)
 	}
 
-	return resourceScalewayRdbUserRead(ctx, d, m)
+	return resourceScalewayRdbUserRead(ctx, d, meta)
 }
 
-func resourceScalewayRdbUserDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	rdbAPI, region, err := rdbAPIWithRegion(d, m)
+func resourceScalewayRdbUserDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	rdbAPI, region, err := rdbAPIWithRegion(d, meta)
 	if err != nil {
 		return diag.FromErr(err)
 	}

@@ -34,8 +34,7 @@ func dataSourceScalewayK8SCluster() *schema.Resource {
 	}
 }
 
-func dataSourceScalewayK8SClusterRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	meta := m.(*Meta)
+func dataSourceScalewayK8SClusterRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	k8sAPI, region, err := k8sAPIWithRegion(d, meta)
 	if err != nil {
 		return diag.FromErr(err)
@@ -67,5 +66,5 @@ func dataSourceScalewayK8SClusterRead(ctx context.Context, d *schema.ResourceDat
 	regionalizedID := datasourceNewRegionalizedID(clusterID, region)
 	d.SetId(regionalizedID)
 	_ = d.Set("cluster_id", regionalizedID)
-	return resourceScalewayK8SClusterRead(ctx, d, m)
+	return resourceScalewayK8SClusterRead(ctx, d, meta)
 }
