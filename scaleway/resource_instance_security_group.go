@@ -95,8 +95,7 @@ func resourceScalewayInstanceSecurityGroup() *schema.Resource {
 	}
 }
 
-func resourceScalewayInstanceSecurityGroupCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	meta := m.(*Meta)
+func resourceScalewayInstanceSecurityGroupCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	instanceAPI, zone, err := instanceAPIWithZone(d, meta)
 	if err != nil {
 		return diag.FromErr(err)
@@ -119,14 +118,14 @@ func resourceScalewayInstanceSecurityGroupCreate(ctx context.Context, d *schema.
 	d.SetId(newZonedIDString(zone, res.SecurityGroup.ID))
 
 	if d.Get("external_rules").(bool) {
-		return resourceScalewayInstanceSecurityGroupRead(ctx, d, m)
+		return resourceScalewayInstanceSecurityGroupRead(ctx, d, meta)
 	}
 	// We call update instead of read as it will take care of creating rules.
-	return resourceScalewayInstanceSecurityGroupUpdate(ctx, d, m)
+	return resourceScalewayInstanceSecurityGroupUpdate(ctx, d, meta)
 }
 
-func resourceScalewayInstanceSecurityGroupRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	instanceAPI, zone, ID, err := instanceAPIWithZoneAndID(m, d.Id())
+func resourceScalewayInstanceSecurityGroupRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	instanceAPI, zone, ID, err := instanceAPIWithZoneAndID(meta, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -209,10 +208,11 @@ func getSecurityGroupRules(ctx context.Context, instanceAPI *instance.API, zone 
 	return stateRules[instance.SecurityGroupRuleDirectionInbound], stateRules[instance.SecurityGroupRuleDirectionOutbound], nil
 }
 
-func resourceScalewayInstanceSecurityGroupUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	meta := m.(*Meta)
-	instanceAPI := instance.NewAPI(meta.scwClient)
-
+func resourceScalewayInstanceSecurityGroupUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	instanceAPI, zone, err := instanceAPIWithZone(d, meta)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 	zone, ID, err := parseZonedID(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -261,7 +261,7 @@ func resourceScalewayInstanceSecurityGroupUpdate(ctx context.Context, d *schema.
 		}
 	}
 
-	return resourceScalewayInstanceSecurityGroupRead(ctx, d, m)
+	return resourceScalewayInstanceSecurityGroupRead(ctx, d, meta)
 }
 
 // updateSecurityGroupeRules handles updating SecurityGroupRules
@@ -370,10 +370,11 @@ func updateSecurityGroupeRules(ctx context.Context, d *schema.ResourceData, zone
 	return nil
 }
 
-func resourceScalewayInstanceSecurityGroupDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	meta := m.(*Meta)
-	instanceAPI := instance.NewAPI(meta.scwClient)
-
+func resourceScalewayInstanceSecurityGroupDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	instanceAPI, zone, err := instanceAPIWithZone(d, meta)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 	zone, ID, err := parseZonedID(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -391,7 +392,7 @@ func resourceScalewayInstanceSecurityGroupDelete(ctx context.Context, d *schema.
 	return nil
 }
 
-// securityGroupRuleSchema returns schema for inboud/outbout rule in security group
+// securityGroupRuleSchema returns schema for inbound/outbound rule in security group
 func securityGroupRuleSchema() *schema.Resource {
 	return &schema.Resource{
 		Schema: map[string]*schema.Schema{

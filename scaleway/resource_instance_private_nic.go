@@ -40,8 +40,7 @@ func resourceScalewayInstancePrivateNIC() *schema.Resource {
 	}
 }
 
-func resourceScalewayInstancePrivateNICCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	meta := m.(*Meta)
+func resourceScalewayInstancePrivateNICCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	instanceAPI, zone, err := instanceAPIWithZone(d, meta)
 	if err != nil {
 		return diag.FromErr(err)
@@ -69,13 +68,14 @@ func resourceScalewayInstancePrivateNICCreate(ctx context.Context, d *schema.Res
 		),
 	)
 
-	return resourceScalewayInstancePrivateNICRead(ctx, d, m)
+	return resourceScalewayInstancePrivateNICRead(ctx, d, meta)
 }
 
-func resourceScalewayInstancePrivateNICRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	meta := m.(*Meta)
-	instanceAPI := instance.NewAPI(meta.scwClient)
-
+func resourceScalewayInstancePrivateNICRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	instanceAPI, zone, err := instanceAPIWithZone(d, meta)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 	zone, innerID, outerID, err := parseZonedNestedID(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -102,9 +102,11 @@ func resourceScalewayInstancePrivateNICRead(ctx context.Context, d *schema.Resou
 	return nil
 }
 
-func resourceScalewayInstancePrivateNICUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	meta := m.(*Meta)
-	instanceAPI := instance.NewAPI(meta.scwClient)
+func resourceScalewayInstancePrivateNICUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	instanceAPI, zone, err := instanceAPIWithZone(d, meta)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	zone, innerID, outerID, err := parseZonedNestedID(d.Id())
 	if err != nil {
@@ -146,13 +148,14 @@ func resourceScalewayInstancePrivateNICUpdate(ctx context.Context, d *schema.Res
 		)
 	}
 
-	return resourceScalewayInstancePrivateNICRead(ctx, d, m)
+	return resourceScalewayInstancePrivateNICRead(ctx, d, meta)
 }
 
-func resourceScalewayInstancePrivateNICDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	meta := m.(*Meta)
-	instanceAPI := instance.NewAPI(meta.scwClient)
-
+func resourceScalewayInstancePrivateNICDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	instanceAPI, zone, err := instanceAPIWithZone(d, meta)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 	zone, innerID, outerID, err := parseZonedNestedID(d.Id())
 	if err != nil {
 		return diag.FromErr(err)

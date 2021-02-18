@@ -120,8 +120,8 @@ func resourceScalewayBaremetalServer() *schema.Resource {
 	}
 }
 
-func resourceScalewayBaremetalServerCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	baremetalAPI, zone, err := baremetalAPIWithZone(d, m)
+func resourceScalewayBaremetalServerCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	baremetalAPI, zone, err := baremetalAPIWithZone(d, meta)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -181,11 +181,11 @@ func resourceScalewayBaremetalServerCreate(ctx context.Context, d *schema.Resour
 		return diag.FromErr(err)
 	}
 
-	return resourceScalewayBaremetalServerRead(ctx, d, m)
+	return resourceScalewayBaremetalServerRead(ctx, d, meta)
 }
 
-func resourceScalewayBaremetalServerRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	baremetalAPI, zonedID, err := baremetalAPIWithZoneAndID(m, d.Id())
+func resourceScalewayBaremetalServerRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	baremetalAPI, zonedID, err := baremetalAPIWithZoneAndID(meta, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -227,8 +227,8 @@ func resourceScalewayBaremetalServerRead(ctx context.Context, d *schema.Resource
 	return nil
 }
 
-func resourceScalewayBaremetalServerUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	baremetalAPI, zonedID, err := baremetalAPIWithZoneAndID(m, d.Id())
+func resourceScalewayBaremetalServerUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	baremetalAPI, zonedID, err := baremetalAPIWithZoneAndID(meta, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -268,11 +268,11 @@ func resourceScalewayBaremetalServerUpdate(ctx context.Context, d *schema.Resour
 		}
 	}
 
-	return resourceScalewayBaremetalServerRead(ctx, d, m)
+	return resourceScalewayBaremetalServerRead(ctx, d, meta)
 }
 
-func resourceScalewayBaremetalServerDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	baremetalAPI, zonedID, err := baremetalAPIWithZoneAndID(m, d.Id())
+func resourceScalewayBaremetalServerDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	baremetalAPI, zonedID, err := baremetalAPIWithZoneAndID(meta, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}

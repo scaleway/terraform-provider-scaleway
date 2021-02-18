@@ -52,8 +52,7 @@ func resourceScalewayVPCPrivateNetwork() *schema.Resource {
 	}
 }
 
-func resourceScalewayVPCPrivateNetworkCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	meta := m.(*Meta)
+func resourceScalewayVPCPrivateNetworkCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	vpcAPI, zone, err := vpcAPIWithZone(d, meta)
 	if err != nil {
 		return diag.FromErr(err)
@@ -71,11 +70,11 @@ func resourceScalewayVPCPrivateNetworkCreate(ctx context.Context, d *schema.Reso
 
 	d.SetId(newZonedIDString(zone, res.ID))
 
-	return resourceScalewayVPCPrivateNetworkRead(ctx, d, m)
+	return resourceScalewayVPCPrivateNetworkRead(ctx, d, meta)
 }
 
-func resourceScalewayVPCPrivateNetworkRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	vpcAPI, zone, ID, err := vpcAPIWithZoneAndID(m, d.Id())
+func resourceScalewayVPCPrivateNetworkRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	vpcAPI, zone, ID, err := vpcAPIWithZoneAndID(meta, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -103,8 +102,8 @@ func resourceScalewayVPCPrivateNetworkRead(ctx context.Context, d *schema.Resour
 	return nil
 }
 
-func resourceScalewayVPCPrivateNetworkUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	vpcAPI, zone, ID, err := vpcAPIWithZoneAndID(m, d.Id())
+func resourceScalewayVPCPrivateNetworkUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	vpcAPI, zone, ID, err := vpcAPIWithZoneAndID(meta, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -123,11 +122,11 @@ func resourceScalewayVPCPrivateNetworkUpdate(ctx context.Context, d *schema.Reso
 		}
 	}
 
-	return resourceScalewayVPCPrivateNetworkRead(ctx, d, m)
+	return resourceScalewayVPCPrivateNetworkRead(ctx, d, meta)
 }
 
-func resourceScalewayVPCPrivateNetworkDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	vpcAPI, zone, ID, err := vpcAPIWithZoneAndID(m, d.Id())
+func resourceScalewayVPCPrivateNetworkDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	vpcAPI, zone, ID, err := vpcAPIWithZoneAndID(meta, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}

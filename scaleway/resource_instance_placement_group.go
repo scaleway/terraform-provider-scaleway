@@ -62,8 +62,8 @@ func resourceScalewayInstancePlacementGroup() *schema.Resource {
 	}
 }
 
-func resourceScalewayInstancePlacementGroupCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	instanceAPI, zone, err := instanceAPIWithZone(d, m)
+func resourceScalewayInstancePlacementGroupCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	instanceAPI, zone, err := instanceAPIWithZone(d, meta)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -80,11 +80,11 @@ func resourceScalewayInstancePlacementGroupCreate(ctx context.Context, d *schema
 	}
 
 	d.SetId(newZonedIDString(zone, res.PlacementGroup.ID))
-	return resourceScalewayInstancePlacementGroupRead(ctx, d, m)
+	return resourceScalewayInstancePlacementGroupRead(ctx, d, meta)
 }
 
-func resourceScalewayInstancePlacementGroupRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	instanceAPI, zone, ID, err := instanceAPIWithZoneAndID(m, d.Id())
+func resourceScalewayInstancePlacementGroupRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	instanceAPI, zone, ID, err := instanceAPIWithZoneAndID(meta, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -113,8 +113,8 @@ func resourceScalewayInstancePlacementGroupRead(ctx context.Context, d *schema.R
 	return nil
 }
 
-func resourceScalewayInstancePlacementGroupUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	instanceAPI, zone, ID, err := instanceAPIWithZoneAndID(m, d.Id())
+func resourceScalewayInstancePlacementGroupUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	instanceAPI, zone, ID, err := instanceAPIWithZoneAndID(meta, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -149,11 +149,11 @@ func resourceScalewayInstancePlacementGroupUpdate(ctx context.Context, d *schema
 		}
 	}
 
-	return resourceScalewayInstancePlacementGroupRead(ctx, d, m)
+	return resourceScalewayInstancePlacementGroupRead(ctx, d, meta)
 }
 
-func resourceScalewayInstancePlacementGroupDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	instanceAPI, zone, ID, err := instanceAPIWithZoneAndID(m, d.Id())
+func resourceScalewayInstancePlacementGroupDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	instanceAPI, zone, ID, err := instanceAPIWithZoneAndID(meta, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}

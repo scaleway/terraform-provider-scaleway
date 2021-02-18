@@ -236,8 +236,8 @@ func resourceScalewayLbBackend() *schema.Resource {
 	}
 }
 
-func resourceScalewayLbBackendCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	lbAPI := lbAPI(m)
+func resourceScalewayLbBackendCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	lbAPI := lbAPI(meta)
 
 	region, LbID, err := parseRegionalID(d.Get("lb_id").(string))
 	if err != nil {
@@ -283,11 +283,11 @@ func resourceScalewayLbBackendCreate(ctx context.Context, d *schema.ResourceData
 
 	d.SetId(newRegionalIDString(region, res.ID))
 
-	return resourceScalewayLbBackendRead(ctx, d, m)
+	return resourceScalewayLbBackendRead(ctx, d, meta)
 }
 
-func resourceScalewayLbBackendRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	lbAPI, region, ID, err := lbAPIWithRegionAndID(m, d.Id())
+func resourceScalewayLbBackendRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	lbAPI, region, ID, err := lbAPIWithRegionAndID(meta, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -330,8 +330,8 @@ func resourceScalewayLbBackendRead(ctx context.Context, d *schema.ResourceData, 
 	return nil
 }
 
-func resourceScalewayLbBackendUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	lbAPI, region, ID, err := lbAPIWithRegionAndID(m, d.Id())
+func resourceScalewayLbBackendUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	lbAPI, region, ID, err := lbAPIWithRegionAndID(meta, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -390,11 +390,11 @@ func resourceScalewayLbBackendUpdate(ctx context.Context, d *schema.ResourceData
 		return diag.FromErr(err)
 	}
 
-	return resourceScalewayLbBackendRead(ctx, d, m)
+	return resourceScalewayLbBackendRead(ctx, d, meta)
 }
 
-func resourceScalewayLbBackendDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	lbAPI, region, ID, err := lbAPIWithRegionAndID(m, d.Id())
+func resourceScalewayLbBackendDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	lbAPI, region, ID, err := lbAPIWithRegionAndID(meta, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}

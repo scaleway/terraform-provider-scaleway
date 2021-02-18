@@ -51,8 +51,8 @@ func resourceScalewayRegistryNamespace() *schema.Resource {
 	}
 }
 
-func resourceScalewayRegistryNamespaceCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	api, region, err := registryAPIWithRegion(d, m)
+func resourceScalewayRegistryNamespaceCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	api, region, err := registryAPIWithRegion(d, meta)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -70,11 +70,11 @@ func resourceScalewayRegistryNamespaceCreate(ctx context.Context, d *schema.Reso
 
 	d.SetId(newRegionalIDString(region, ns.ID))
 
-	return resourceScalewayRegistryNamespaceRead(ctx, d, m)
+	return resourceScalewayRegistryNamespaceRead(ctx, d, meta)
 }
 
-func resourceScalewayRegistryNamespaceRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	api, region, id, err := registryAPIWithRegionAndID(m, d.Id())
+func resourceScalewayRegistryNamespaceRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	api, region, id, err := registryAPIWithRegionAndID(meta, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -103,8 +103,8 @@ func resourceScalewayRegistryNamespaceRead(ctx context.Context, d *schema.Resour
 	return nil
 }
 
-func resourceScalewayRegistryNamespaceUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	api, region, id, err := registryAPIWithRegionAndID(m, d.Id())
+func resourceScalewayRegistryNamespaceUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	api, region, id, err := registryAPIWithRegionAndID(meta, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -120,11 +120,11 @@ func resourceScalewayRegistryNamespaceUpdate(ctx context.Context, d *schema.Reso
 		}
 	}
 
-	return resourceScalewayRegistryNamespaceRead(ctx, d, m)
+	return resourceScalewayRegistryNamespaceRead(ctx, d, meta)
 }
 
-func resourceScalewayRegistryNamespaceDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	api, region, id, err := registryAPIWithRegionAndID(m, d.Id())
+func resourceScalewayRegistryNamespaceDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	api, region, id, err := registryAPIWithRegionAndID(meta, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}

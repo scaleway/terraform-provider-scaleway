@@ -32,8 +32,8 @@ func dataSourceScalewayRegistryNamespace() *schema.Resource {
 	}
 }
 
-func dataSourceScalewayRegistryNamespaceRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	api, region, err := registryAPIWithRegion(d, m)
+func dataSourceScalewayRegistryNamespaceRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	api, region, err := registryAPIWithRegion(d, meta)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -60,5 +60,5 @@ func dataSourceScalewayRegistryNamespaceRead(ctx context.Context, d *schema.Reso
 	d.SetId(regionalID)
 	_ = d.Set("namespace_id", regionalID)
 
-	return resourceScalewayRegistryNamespaceRead(ctx, d, m)
+	return resourceScalewayRegistryNamespaceRead(ctx, d, meta)
 }
