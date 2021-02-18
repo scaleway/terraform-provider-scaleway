@@ -72,7 +72,7 @@ func resourceScalewayInstancePrivateNICCreate(ctx context.Context, d *schema.Res
 }
 
 func resourceScalewayInstancePrivateNICRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	instanceAPI, zone, err := instanceAPIWithZone(d, meta)
+	instanceAPI, _, err := instanceAPIWithZone(d, meta)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -103,7 +103,7 @@ func resourceScalewayInstancePrivateNICRead(ctx context.Context, d *schema.Resou
 }
 
 func resourceScalewayInstancePrivateNICUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	instanceAPI, zone, err := instanceAPIWithZone(d, meta)
+	instanceAPI, _, err := instanceAPIWithZone(d, meta)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -152,7 +152,7 @@ func resourceScalewayInstancePrivateNICUpdate(ctx context.Context, d *schema.Res
 }
 
 func resourceScalewayInstancePrivateNICDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	instanceAPI, zone, err := instanceAPIWithZone(d, meta)
+	instanceAPI, _, err := instanceAPIWithZone(d, meta)
 	if err != nil {
 		return diag.FromErr(err)
 	}

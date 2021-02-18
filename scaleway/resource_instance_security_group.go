@@ -209,7 +209,7 @@ func getSecurityGroupRules(ctx context.Context, instanceAPI *instance.API, zone 
 }
 
 func resourceScalewayInstanceSecurityGroupUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	instanceAPI, zone, err := instanceAPIWithZone(d, meta)
+	instanceAPI, _, err := instanceAPIWithZone(d, meta)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -371,7 +371,7 @@ func updateSecurityGroupeRules(ctx context.Context, d *schema.ResourceData, zone
 }
 
 func resourceScalewayInstanceSecurityGroupDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	instanceAPI, zone, err := instanceAPIWithZone(d, meta)
+	instanceAPI, _, err := instanceAPIWithZone(d, meta)
 	if err != nil {
 		return diag.FromErr(err)
 	}
