@@ -5,9 +5,6 @@ import (
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
-	"github.com/scaleway/scaleway-sdk-go/api/rdb/v1"
-	"github.com/scaleway/scaleway-sdk-go/scw"
 )
 
 func init() {
@@ -67,42 +64,42 @@ func TestAccScalewayRdbDatabaseBackup_Basic(t *testing.T) {
 	})
 }
 
-func testAccCheckRdbDatabaseBackupExists(tt *TestTools, instance string, databaseBackupName string) resource.TestCheckFunc {
-	return func(state *terraform.State) error {
-		instanceResource, ok := state.RootModule().Resources[instance]
-		if !ok {
-			return fmt.Errorf("resource not found: %s", instance)
-		}
-
-		userResource, ok := state.RootModule().Resources[databaseBackupName]
-		if !ok {
-			return fmt.Errorf("resource not found: %s", databaseBackupName)
-		}
-
-		rdbAPI, region, _, err := rdbAPIWithRegionAndID(tt.Meta, instanceResource.Primary.ID)
-		if err != nil {
-			return err
-		}
-
-		instanceID, databaseBackupName, err := resourceScalewayRdbDatabaseBackupParseID(userResource.Primary.ID)
-		if err != nil {
-			return err
-		}
-
-		databaseBackups, err := rdbAPI.ListDatabaseBackups(&rdb.ListDatabaseBackupsRequest{
-			Region:     region,
-			Name:       &databaseBackupName,
-			OrderBy:    "",
-			InstanceID: scw.StringPtr(instanceID),
-		})
-		if err != nil {
-			return err
-		}
-
-		if len(databaseBackups.DatabaseBackups) != 1 {
-			return fmt.Errorf("no database backup found")
-		}
-
-		return nil
-	}
-}
+//func testAccCheckRdbDatabaseBackupExists(tt *TestTools, instance string, databaseBackupName string) resource.TestCheckFunc {
+//	return func(state *terraform.State) error {
+//		instanceResource, ok := state.RootModule().Resources[instance]
+//		if !ok {
+//			return fmt.Errorf("resource not found: %s", instance)
+//		}
+//
+//		userResource, ok := state.RootModule().Resources[databaseBackupName]
+//		if !ok {
+//			return fmt.Errorf("resource not found: %s", databaseBackupName)
+//		}
+//
+//		rdbAPI, region, _, err := rdbAPIWithRegionAndID(tt.Meta, instanceResource.Primary.ID)
+//		if err != nil {
+//			return err
+//		}
+//
+//		instanceID, databaseBackupName, err := resourceScalewayRdbDatabaseBackupParseID(userResource.Primary.ID)
+//		if err != nil {
+//			return err
+//		}
+//
+//		databaseBackups, err := rdbAPI.ListDatabaseBackups(&rdb.ListDatabaseBackupsRequest{
+//			Region:     region,
+//			Name:       &databaseBackupName,
+//			OrderBy:    "",
+//			InstanceID: scw.StringPtr(instanceID),
+//		})
+//		if err != nil {
+//			return err
+//		}
+//
+//		if len(databaseBackups.DatabaseBackups) != 1 {
+//			return fmt.Errorf("no database backup found")
+//		}
+//
+//		return nil
+//	}
+//}

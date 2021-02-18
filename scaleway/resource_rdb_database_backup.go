@@ -44,8 +44,8 @@ func resourceScalewayRdbDatabaseBackup() *schema.Resource {
 	}
 }
 
-func resourceScalewayRdbDatabaseBackupCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	rdbAPI, region, err := rdbAPIWithRegion(d, m)
+func resourceScalewayRdbDatabaseBackupCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	rdbAPI, region, err := rdbAPIWithRegion(d, meta)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -65,11 +65,11 @@ func resourceScalewayRdbDatabaseBackupCreate(ctx context.Context, d *schema.Reso
 
 	d.SetId(resourceScalewayRdbDatabaseBackupID(region, expandID(instanceID), res.Name))
 
-	return resourceScalewayRdbDatabaseBackupRead(ctx, d, m)
+	return resourceScalewayRdbDatabaseBackupRead(ctx, d, meta)
 }
 
-func resourceScalewayRdbDatabaseBackupRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	rdbAPI, region, err := rdbAPIWithRegion(d, m)
+func resourceScalewayRdbDatabaseBackupRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	rdbAPI, region, err := rdbAPIWithRegion(d, meta)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -104,8 +104,8 @@ func resourceScalewayRdbDatabaseBackupRead(ctx context.Context, d *schema.Resour
 	return nil
 }
 
-func resourceScalewayRdbDatabaseBackupUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	rdbAPI, region, err := rdbAPIWithRegion(d, m)
+func resourceScalewayRdbDatabaseBackupUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	rdbAPI, region, err := rdbAPIWithRegion(d, meta)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -128,11 +128,11 @@ func resourceScalewayRdbDatabaseBackupUpdate(ctx context.Context, d *schema.Reso
 		return diag.FromErr(err)
 	}
 
-	return resourceScalewayRdbDatabaseBackupRead(ctx, d, m)
+	return resourceScalewayRdbDatabaseBackupRead(ctx, d, meta)
 }
 
-func resourceScalewayRdbDatabaseBackupDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	rdbAPI, region, err := rdbAPIWithRegion(d, m)
+func resourceScalewayRdbDatabaseBackupDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	rdbAPI, region, err := rdbAPIWithRegion(d, meta)
 	if err != nil {
 		return diag.FromErr(err)
 	}
