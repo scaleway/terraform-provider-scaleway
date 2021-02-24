@@ -12,20 +12,18 @@ import (
 func main() {
 	var debugMode bool
 
-	flag.BoolVar(&debugMode, "debuggable", false, "set to true to run the provider with support for debuggers like delve")
+	flag.BoolVar(&debugMode, "debug", false, "set to true to run the provider with support for debuggers like delve")
 	flag.Parse()
 
+	opts := &plugin.ServeOpts{ProviderFunc: scaleway.Provider(scaleway.DefaultProviderConfig())}
+
 	if debugMode {
-		err := plugin.Debug(context.Background(), "registry.terraform.io/scaleway/scaleway",
-			&plugin.ServeOpts{
-				ProviderFunc: scaleway.Provider(scaleway.DefaultProviderConfig()),
-			})
+		err := plugin.Debug(context.Background(), "registry.terraform.io/scaleway/scaleway", opts)
 		if err != nil {
 			log.Println(err.Error())
 		}
-	} else {
-		plugin.Serve(&plugin.ServeOpts{
-			ProviderFunc: scaleway.Provider(scaleway.DefaultProviderConfig()),
-		})
+		return
 	}
+
+	plugin.Serve(opts)
 }
