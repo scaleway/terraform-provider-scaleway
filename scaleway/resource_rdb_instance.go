@@ -72,6 +72,7 @@ func resourceScalewayRdbInstance() *schema.Resource {
 					Type: schema.TypeString,
 				},
 				Description: "Map of engine settings to be set.",
+				Computed:    true,
 				Optional:    true,
 			},
 			"tags": {
@@ -132,8 +133,8 @@ func resourceScalewayRdbInstance() *schema.Resource {
 	}
 }
 
-func resourceScalewayRdbInstanceCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	rdbAPI, region, err := rdbAPIWithRegion(d, m)
+func resourceScalewayRdbInstanceCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	rdbAPI, region, err := rdbAPIWithRegion(d, meta)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -178,11 +179,11 @@ func resourceScalewayRdbInstanceCreate(ctx context.Context, d *schema.ResourceDa
 		}
 	}
 
-	return resourceScalewayRdbInstanceRead(ctx, d, m)
+	return resourceScalewayRdbInstanceRead(ctx, d, meta)
 }
 
-func resourceScalewayRdbInstanceRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	rdbAPI, region, ID, err := rdbAPIWithRegionAndID(m, d.Id())
+func resourceScalewayRdbInstanceRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	rdbAPI, region, ID, err := rdbAPIWithRegionAndID(meta, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -239,8 +240,8 @@ func resourceScalewayRdbInstanceRead(ctx context.Context, d *schema.ResourceData
 	return nil
 }
 
-func resourceScalewayRdbInstanceUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	rdbAPI, region, ID, err := rdbAPIWithRegionAndID(m, d.Id())
+func resourceScalewayRdbInstanceUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	rdbAPI, region, ID, err := rdbAPIWithRegionAndID(meta, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -329,11 +330,11 @@ func resourceScalewayRdbInstanceUpdate(ctx context.Context, d *schema.ResourceDa
 		}
 	}
 
-	return resourceScalewayRdbInstanceRead(ctx, d, m)
+	return resourceScalewayRdbInstanceRead(ctx, d, meta)
 }
 
-func resourceScalewayRdbInstanceDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	rdbAPI, region, ID, err := rdbAPIWithRegionAndID(m, d.Id())
+func resourceScalewayRdbInstanceDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	rdbAPI, region, ID, err := rdbAPIWithRegionAndID(meta, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}

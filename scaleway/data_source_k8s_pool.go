@@ -35,8 +35,7 @@ func dataSourceScalewayK8SPool() *schema.Resource {
 	}
 }
 
-func dataSourceScalewayK8SPoolRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	meta := m.(*Meta)
+func dataSourceScalewayK8SPoolRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	k8sAPI, region, err := k8sAPIWithRegion(d, meta)
 	if err != nil {
 		return diag.FromErr(err)
@@ -69,5 +68,5 @@ func dataSourceScalewayK8SPoolRead(ctx context.Context, d *schema.ResourceData, 
 	regionalizedID := datasourceNewRegionalizedID(poolID, region)
 	d.SetId(regionalizedID)
 	_ = d.Set("pool_id", regionalizedID)
-	return resourceScalewayK8SPoolRead(ctx, d, m)
+	return resourceScalewayK8SPoolRead(ctx, d, meta)
 }

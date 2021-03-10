@@ -44,8 +44,8 @@ func resourceScalewayAccountSSKKey() *schema.Resource {
 	}
 }
 
-func resourceScalewayAccountSSHKeyCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	accountAPI := accountAPI(m)
+func resourceScalewayAccountSSHKeyCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	accountAPI := accountAPI(meta)
 
 	res, err := accountAPI.CreateSSHKey(&account.CreateSSHKeyRequest{
 		Name:      d.Get("name").(string),
@@ -58,11 +58,11 @@ func resourceScalewayAccountSSHKeyCreate(ctx context.Context, d *schema.Resource
 
 	d.SetId(res.ID)
 
-	return resourceScalewayAccountSSHKeyRead(ctx, d, m)
+	return resourceScalewayAccountSSHKeyRead(ctx, d, meta)
 }
 
-func resourceScalewayAccountSSHKeyRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	accountAPI := accountAPI(m)
+func resourceScalewayAccountSSHKeyRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	accountAPI := accountAPI(meta)
 
 	res, err := accountAPI.GetSSHKey(&account.GetSSHKeyRequest{
 		SSHKeyID: d.Id(),
@@ -83,8 +83,8 @@ func resourceScalewayAccountSSHKeyRead(ctx context.Context, d *schema.ResourceDa
 	return nil
 }
 
-func resourceScalewayAccountSSHKeyUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	accountAPI := accountAPI(m)
+func resourceScalewayAccountSSHKeyUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	accountAPI := accountAPI(meta)
 
 	if d.HasChange("name") {
 		_, err := accountAPI.UpdateSSHKey(&account.UpdateSSHKeyRequest{
@@ -96,11 +96,11 @@ func resourceScalewayAccountSSHKeyUpdate(ctx context.Context, d *schema.Resource
 		}
 	}
 
-	return resourceScalewayAccountSSHKeyRead(ctx, d, m)
+	return resourceScalewayAccountSSHKeyRead(ctx, d, meta)
 }
 
-func resourceScalewayAccountSSHKeyDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	accountAPI := accountAPI(m)
+func resourceScalewayAccountSSHKeyDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	accountAPI := accountAPI(meta)
 
 	err := accountAPI.DeleteSSHKey(&account.DeleteSSHKeyRequest{
 		SSHKeyID: d.Id(),
