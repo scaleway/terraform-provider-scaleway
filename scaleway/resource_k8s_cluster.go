@@ -55,24 +55,6 @@ func resourceScalewayK8SCluster() *schema.Resource {
 					k8s.CNIWeave.String(),
 				}, false),
 			},
-			"enable_dashboard": {
-				Type:        schema.TypeBool,
-				Optional:    true,
-				Default:     false,
-				Description: "Enable the dashboard on the cluster",
-			},
-			"ingress": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Default:     k8s.IngressNone.String(),
-				Description: "The ingress to be deployed on the cluster",
-				ValidateFunc: validation.StringInSlice([]string{
-					k8s.IngressNone.String(),
-					k8s.IngressTraefik.String(),
-					k8s.IngressTraefik2.String(),
-					k8s.IngressNginx.String(),
-				}, false),
-			},
 			"tags": {
 				Type: schema.TypeList,
 				Elem: &schema.Schema{
@@ -256,14 +238,6 @@ func resourceScalewayK8SClusterCreate(ctx context.Context, d *schema.ResourceDat
 		FeatureGates:      expandStrings(d.Get("feature_gates")),
 		AdmissionPlugins:  expandStrings(d.Get("admission_plugins")),
 		ApiserverCertSans: expandStrings(d.Get("apiserver_cert_sans")),
-	}
-
-	if dashboard, ok := d.GetOk("enable_dashboard"); ok {
-		req.EnableDashboard = dashboard.(bool)
-	}
-
-	if ingress, ok := d.GetOk("ingress"); ok {
-		req.Ingress = k8s.Ingress(ingress.(string))
 	}
 
 	autoscalerReq := &k8s.CreateClusterRequestAutoscalerConfig{}
@@ -530,14 +504,6 @@ func resourceScalewayK8SClusterUpdate(ctx context.Context, d *schema.ResourceDat
 
 	if d.HasChange("admission_plugins") {
 		updateRequest.AdmissionPlugins = scw.StringsPtr(expandStrings(d.Get("admission_plugins")))
-	}
-
-	if d.HasChange("ingress") {
-		updateRequest.Ingress = k8s.Ingress(d.Get("ingress").(string))
-	}
-
-	if d.HasChange("enable_dashboard") {
-		updateRequest.EnableDashboard = scw.BoolPtr(d.Get("enable_dashboard").(bool))
 	}
 
 	updateRequest.AutoUpgrade = &k8s.UpdateClusterRequestAutoUpgrade{}
