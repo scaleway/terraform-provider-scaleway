@@ -147,83 +147,6 @@ func TestAccScalewayK8SCluster_Basic(t *testing.T) {
 	})
 }
 
-func TestAccScalewayK8SCluster_IngressDashboard(t *testing.T) {
-	tt := NewTestTools(t)
-	defer tt.Cleanup()
-
-	latestK8SVersion := testAccScalewayK8SClusterGetLatestK8SVersion(tt)
-
-	resource.ParallelTest(t, resource.TestCase{
-		PreCheck: func() {
-			testAccPreCheck(t)
-		},
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      testAccCheckScalewayK8SClusterDestroy(tt),
-		Steps: []resource.TestStep{
-			{
-				Config: testAccCheckScalewayK8SClusterConfigIngressDashboard(latestK8SVersion, "nginx", false),
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayK8SClusterExists(tt, "scaleway_k8s_cluster.ingressdashboard"),
-					resource.TestCheckResourceAttr("scaleway_k8s_cluster.ingressdashboard", "version", latestK8SVersion),
-					resource.TestCheckResourceAttr("scaleway_k8s_cluster.ingressdashboard", "cni", "calico"),
-					resource.TestCheckResourceAttr("scaleway_k8s_cluster.ingressdashboard", "ingress", "nginx"),
-					resource.TestCheckResourceAttr("scaleway_k8s_cluster.ingressdashboard", "enable_dashboard", "false"),
-					resource.TestCheckResourceAttr("scaleway_k8s_cluster.ingressdashboard", "status", k8s.ClusterStatusPoolRequired.String()),
-					resource.TestCheckResourceAttrSet("scaleway_k8s_cluster.ingressdashboard", "kubeconfig.0.config_file"),
-					resource.TestCheckResourceAttrSet("scaleway_k8s_cluster.ingressdashboard", "kubeconfig.0.host"),
-					resource.TestCheckResourceAttrSet("scaleway_k8s_cluster.ingressdashboard", "kubeconfig.0.cluster_ca_certificate"),
-					resource.TestCheckResourceAttrSet("scaleway_k8s_cluster.ingressdashboard", "kubeconfig.0.token"),
-					resource.TestCheckResourceAttrSet("scaleway_k8s_cluster.ingressdashboard", "apiserver_url"),
-					resource.TestCheckResourceAttrSet("scaleway_k8s_cluster.ingressdashboard", "wildcard_dns"),
-					resource.TestCheckResourceAttr("scaleway_k8s_cluster.ingressdashboard", "tags.0", "terraform-test"),
-					resource.TestCheckResourceAttr("scaleway_k8s_cluster.ingressdashboard", "tags.1", "scaleway_k8s_cluster"),
-					resource.TestCheckResourceAttr("scaleway_k8s_cluster.ingressdashboard", "tags.2", "ingressdashboard"),
-				),
-			},
-			{
-				Config: testAccCheckScalewayK8SClusterConfigIngressDashboard(latestK8SVersion, "traefik", true),
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayK8SClusterExists(tt, "scaleway_k8s_cluster.ingressdashboard"),
-					resource.TestCheckResourceAttr("scaleway_k8s_cluster.ingressdashboard", "version", latestK8SVersion),
-					resource.TestCheckResourceAttr("scaleway_k8s_cluster.ingressdashboard", "cni", "calico"),
-					resource.TestCheckResourceAttr("scaleway_k8s_cluster.ingressdashboard", "ingress", "traefik"),
-					resource.TestCheckResourceAttr("scaleway_k8s_cluster.ingressdashboard", "enable_dashboard", "true"),
-					resource.TestCheckResourceAttr("scaleway_k8s_cluster.ingressdashboard", "status", k8s.ClusterStatusPoolRequired.String()),
-					resource.TestCheckResourceAttrSet("scaleway_k8s_cluster.ingressdashboard", "kubeconfig.0.config_file"),
-					resource.TestCheckResourceAttrSet("scaleway_k8s_cluster.ingressdashboard", "kubeconfig.0.host"),
-					resource.TestCheckResourceAttrSet("scaleway_k8s_cluster.ingressdashboard", "kubeconfig.0.cluster_ca_certificate"),
-					resource.TestCheckResourceAttrSet("scaleway_k8s_cluster.ingressdashboard", "kubeconfig.0.token"),
-					resource.TestCheckResourceAttrSet("scaleway_k8s_cluster.ingressdashboard", "apiserver_url"),
-					resource.TestCheckResourceAttrSet("scaleway_k8s_cluster.ingressdashboard", "wildcard_dns"),
-					resource.TestCheckResourceAttr("scaleway_k8s_cluster.ingressdashboard", "tags.0", "terraform-test"),
-					resource.TestCheckResourceAttr("scaleway_k8s_cluster.ingressdashboard", "tags.1", "scaleway_k8s_cluster"),
-					resource.TestCheckResourceAttr("scaleway_k8s_cluster.ingressdashboard", "tags.2", "ingressdashboard"),
-				),
-			},
-			{
-				Config: testAccCheckScalewayK8SClusterConfigIngressDashboard(latestK8SVersion, "traefik2", true),
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayK8SClusterExists(tt, "scaleway_k8s_cluster.ingressdashboard"),
-					resource.TestCheckResourceAttr("scaleway_k8s_cluster.ingressdashboard", "version", latestK8SVersion),
-					resource.TestCheckResourceAttr("scaleway_k8s_cluster.ingressdashboard", "cni", "calico"),
-					resource.TestCheckResourceAttr("scaleway_k8s_cluster.ingressdashboard", "ingress", "traefik2"),
-					resource.TestCheckResourceAttr("scaleway_k8s_cluster.ingressdashboard", "enable_dashboard", "true"),
-					resource.TestCheckResourceAttr("scaleway_k8s_cluster.ingressdashboard", "status", k8s.ClusterStatusPoolRequired.String()),
-					resource.TestCheckResourceAttrSet("scaleway_k8s_cluster.ingressdashboard", "kubeconfig.0.config_file"),
-					resource.TestCheckResourceAttrSet("scaleway_k8s_cluster.ingressdashboard", "kubeconfig.0.host"),
-					resource.TestCheckResourceAttrSet("scaleway_k8s_cluster.ingressdashboard", "kubeconfig.0.cluster_ca_certificate"),
-					resource.TestCheckResourceAttrSet("scaleway_k8s_cluster.ingressdashboard", "kubeconfig.0.token"),
-					resource.TestCheckResourceAttrSet("scaleway_k8s_cluster.ingressdashboard", "apiserver_url"),
-					resource.TestCheckResourceAttrSet("scaleway_k8s_cluster.ingressdashboard", "wildcard_dns"),
-					resource.TestCheckResourceAttr("scaleway_k8s_cluster.ingressdashboard", "tags.0", "terraform-test"),
-					resource.TestCheckResourceAttr("scaleway_k8s_cluster.ingressdashboard", "tags.1", "scaleway_k8s_cluster"),
-					resource.TestCheckResourceAttr("scaleway_k8s_cluster.ingressdashboard", "tags.2", "ingressdashboard"),
-				),
-			},
-		},
-	})
-}
-
 func TestAccScalewayK8SCluster_Autoscaling(t *testing.T) {
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
@@ -504,18 +427,6 @@ resource "scaleway_k8s_cluster" "minimal" {
 	name = "ClusterConfigMinimal"
 	tags = [ "terraform-test", "scaleway_k8s_cluster", "minimal" ]
 }`, version)
-}
-
-func testAccCheckScalewayK8SClusterConfigIngressDashboard(version string, ingress string, dashboard bool) string {
-	return fmt.Sprintf(`
-resource "scaleway_k8s_cluster" "ingressdashboard" {
-	cni = "calico"
-	version = "%s"
-	name = "ingress-dashboard"
-	ingress = "%s"
-	enable_dashboard = %t
-	tags = [ "terraform-test", "scaleway_k8s_cluster", "ingressdashboard" ]
-}`, version, ingress, dashboard)
 }
 
 func testAccCheckScalewayK8SClusterConfigAutoscaler(version string) string {
