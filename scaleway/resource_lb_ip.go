@@ -81,7 +81,7 @@ func resourceScalewayLbIPRead(ctx context.Context, d *schema.ResourceData, meta 
 	}, scw.WithContext(ctx))
 
 	if err != nil {
-		if is404Error(err) {
+		if is404Error(err) || is403Error(err) {
 			d.SetId("")
 			return nil
 		}
