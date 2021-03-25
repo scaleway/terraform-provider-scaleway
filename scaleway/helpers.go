@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/scaleway/scaleway-sdk-go/namegenerator"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"golang.org/x/xerrors"
@@ -250,25 +251,39 @@ func projectIDSchema() *schema.Schema {
 
 // zoneSchema returns a standard schema for a zone
 func zoneSchema() *schema.Schema {
+	var allZones []string
+	for _, z := range scw.AllZones {
+		allZones = append(allZones, z.String())
+	}
 	return &schema.Schema{
-		Type:         schema.TypeString,
-		Description:  "The zone you want to attach the resource to",
-		Optional:     true,
-		ForceNew:     true,
-		Computed:     true,
-		ValidateFunc: validationZone(),
+		Type:        schema.TypeString,
+		Description: "The zone you want to attach the resource to",
+		Optional:    true,
+		ForceNew:    true,
+		Computed:    true,
+		ValidateFunc: validation.StringInSlice(
+			allZones,
+			true,
+		),
 	}
 }
 
 // regionSchema returns a standard schema for a zone
 func regionSchema() *schema.Schema {
+	var allRegions []string
+	for _, z := range scw.AllRegions {
+		allRegions = append(allRegions, z.String())
+	}
 	return &schema.Schema{
-		Type:         schema.TypeString,
-		Description:  "The region you want to attach the resource to",
-		Optional:     true,
-		ForceNew:     true,
-		Computed:     true,
-		ValidateFunc: validationRegion(),
+		Type:        schema.TypeString,
+		Description: "The region you want to attach the resource to",
+		Optional:    true,
+		ForceNew:    true,
+		Computed:    true,
+		ValidateFunc: validation.StringInSlice(
+			allRegions,
+			true,
+		),
 	}
 }
 
@@ -432,19 +447,6 @@ func validateDuration() schema.SchemaValidateFunc {
 		_, err := time.ParseDuration(str)
 		if err != nil {
 			return nil, []error{fmt.Errorf("cannot parse duration for value %s", str)}
-		}
-		return nil, nil
-	}
-}
-
-func validateHour() schema.SchemaValidateFunc {
-	return func(i interface{}, s string) (strings []string, errors []error) {
-		integer, isInteger := i.(int)
-		if !isInteger {
-			return nil, []error{fmt.Errorf("%v is not an int", i)}
-		}
-		if integer < 0 || integer > 23 {
-			return nil, []error{fmt.Errorf("int is outside range 0-23 for value %d", integer)}
 		}
 		return nil, nil
 	}
