@@ -88,7 +88,7 @@ func resourceScalewayK8SCluster() *schema.Resource {
 							Type:         schema.TypeInt,
 							Required:     true,
 							Description:  "Start hour of the 2-hour maintenance window",
-							ValidateFunc: validateHour(),
+							ValidateFunc: validation.IntBetween(0, 23),
 						},
 						"maintenance_window_day": {
 							Type:        schema.TypeString,
