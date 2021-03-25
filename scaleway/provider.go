@@ -236,6 +236,9 @@ func loadProfile(d *schema.ResourceData) (*scw.Profile, error) {
 		if zone, exist := d.GetOk("zone"); exist {
 			providerProfile.DefaultZone = scw.StringPtr(zone.(string))
 		}
+		if apiURL, exist := d.GetOk("api_url"); exist {
+			providerProfile.APIURL = scw.StringPtr(apiURL.(string))
+		}
 	}
 
 	profile := scw.MergeProfiles(defaultZoneProfile, activeProfile, providerProfile, envProfile)
