@@ -32,8 +32,8 @@ func dataSourceScalewayLb() *schema.Resource {
 	}
 }
 
-func dataSourceScalewayLbRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	api, region, err := lbAPIWithRegion(d, m)
+func dataSourceScalewayLbRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	api, region, err := lbAPIWithRegion(d, meta)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -63,5 +63,5 @@ func dataSourceScalewayLbRead(ctx context.Context, d *schema.ResourceData, m int
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	return resourceScalewayLbRead(ctx, d, m)
+	return resourceScalewayLbRead(ctx, d, meta)
 }
