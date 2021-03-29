@@ -45,18 +45,8 @@ func Provider(config *ProviderConfig) plugin.ProviderFunc {
 					Description:  "The Scaleway project ID.",
 					ValidateFunc: validationUUID(),
 				},
-				"region": {
-					Type:         schema.TypeString,
-					Optional:     true,
-					Description:  "The Scaleway default region to use for your resources.",
-					ValidateFunc: validationRegion(),
-				},
-				"zone": {
-					Type:         schema.TypeString,
-					Optional:     true,
-					Description:  "The Scaleway default zone to use for your resources.",
-					ValidateFunc: validationZone(),
-				},
+				"region": regionSchema(),
+				"zone":   zoneSchema(),
 				"api_url": {
 					Type:        schema.TypeString,
 					Optional:    true,
@@ -236,6 +226,9 @@ func loadProfile(d *schema.ResourceData) (*scw.Profile, error) {
 		}
 		if zone, exist := d.GetOk("zone"); exist {
 			providerProfile.DefaultZone = scw.StringPtr(zone.(string))
+		}
+		if apiURL, exist := d.GetOk("api_url"); exist {
+			providerProfile.APIURL = scw.StringPtr(apiURL.(string))
 		}
 	}
 

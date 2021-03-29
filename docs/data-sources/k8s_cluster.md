@@ -64,10 +64,6 @@ In addition to all above arguments, the following attributes are exported:
 
 - `cni` - The Container Network Interface (CNI) for the Kubernetes cluster.
 
-- `enable_dashboard` - True if the [Kubernetes dashboard](https://github.com/kubernetes/dashboard) is enabled for the Kubernetes cluster.
-
-- `ingress` - The [ingress controller](https://kubernetes.io/docs/concepts/services-networking/ingress-controllers/) deployed on the Kubernetes cluster.
-
 - `tags` - The tags associated with the Kubernetes cluster.
 
 - `autoscaler_config` - The configuration options for the [Kubernetes cluster autoscaler](https://github.com/kubernetes/autoscaler/tree/master/cluster-autoscaler).
