@@ -49,7 +49,7 @@ func dataSourceScalewayLbRead(ctx context.Context, d *schema.ResourceData, meta 
 			return diag.FromErr(err)
 		}
 		if len(res.LBs) == 0 {
-			return diag.FromErr(fmt.Errorf("no lbs found with the address %s", d.Get("ip_address")))
+			return diag.FromErr(fmt.Errorf("no lbs found with the name %s", d.Get("name")))
 		}
 		if len(res.LBs) > 1 {
 			return diag.FromErr(fmt.Errorf("%d lbs found with the same name %s", len(res.LBs), d.Get("name")))
