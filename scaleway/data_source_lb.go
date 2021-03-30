@@ -39,7 +39,7 @@ func dataSourceScalewayLbRead(ctx context.Context, d *schema.ResourceData, meta 
 	}
 
 	lbID, ok := d.GetOk("lb_id")
-	if !ok { // Get LB by region.
+	if !ok { // Get LB by name.
 		res, err := api.ListLBs(&lb.ListLBsRequest{
 			Region:    region,
 			Name:      expandStringPtr(d.Get("name")),
