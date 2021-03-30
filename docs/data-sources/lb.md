@@ -40,8 +40,6 @@ In addition to all above arguments, the following attributes are exported:
 
 - `reverse` - The reverse domain associated with this IP.
 
-- `lb_id` - The associated load-balance ID if any
-
 - `organization_id` - (Defaults to [provider](../index.md#organization_id) `organization_id`) The ID of the organization the LB IP is associated with.
 
 
