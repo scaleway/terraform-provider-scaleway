@@ -24,8 +24,8 @@ data "scaleway_lb" "by_id" {
 
 ## Argument Reference
 
-- `ip_address` - (Optional) The IP address.
-  Only one of `ip_address` and `lb_id` should be specified.
+- `name` - (Optional) The IP address.
+  Only one of `name` and `lb_id` should be specified.
 
 - `lb_id` - (Optional) The ID.
   Only one of `ip_address` and `lb_id` should be specified.
@@ -38,7 +38,7 @@ data "scaleway_lb" "by_id" {
 
 In addition to all above arguments, the following attributes are exported:
 
-- `reverse` - The reverse domain associated with this IP.
+- `reverse` - The reverse domain associated with the IP of the LB.
 
 - `organization_id` - (Defaults to [provider](../index.md#organization_id) `organization_id`) The ID of the organization the LB IP is associated with.
 
