@@ -1,0 +1,2751 @@
+---
+version: 1
+interactions:
+- request:
+    body: '{"name":"TestAccScalewayDataSourceBaremetalServer_Basic","public_key":"ssh-ed25519
+      AAAAC3NzaC1lZDI1NTE5AAAAIM7HUxRyQtB2rnlhQUcbDGCZcTJg7OvoznOiyC9W6IxH opensource@scaleway.com","organization_id":"951df375-e094-4d26-97c1-ba548eeb9c42"}'
+    form: {}
+    headers:
+      Content-Type:
+      - application/json
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.16.2; darwin; amd64) terraform-provider/develop
+        terraform/terraform-tests
+    url: https://api.scaleway.com/account/v2alpha1/ssh-keys
+    method: POST
+  response:
+    body: '{"id":"1cc4c216-5aec-4761-bb89-0a301629588e","name":"TestAccScalewayDataSourceBaremetalServer_Basic","public_key":"ssh-ed25519
+      AAAAC3NzaC1lZDI1NTE5AAAAIM7HUxRyQtB2rnlhQUcbDGCZcTJg7OvoznOiyC9W6IxH opensource@scaleway.com","fingerprint":"256
+      MD5:17:d1:55:c9:1b:be:f2:b2:9a:92:33:d6:ac:16:de:41 opensource@scaleway.com
+      (ssh-ed25519)","created_at":"2020-09-17T14:12:08.601260Z","updated_at":"2021-03-30T13:29:35.096289Z","creation_info":{"address":"","user_agent":"","country_code":""},"organization_id":"951df375-e094-4d26-97c1-ba548eeb9c42","project_id":"951df375-e094-4d26-97c1-ba548eeb9c42"}'
+    headers:
+      Content-Length:
+      - "591"
+      Content-Security-Policy:
+      - default-src 'none'; frame-ancestors 'none'
+      Content-Type:
+      - application/json
+      Date:
+      - Tue, 30 Mar 2021 13:29:35 GMT
+      Server:
+      - Scaleway API-Gateway
+      Strict-Transport-Security:
+      - max-age=63072000
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+      X-Request-Id:
+      - 0d3696e3-f7b4-4b79-a482-abc25b1bdc01
+    status: 200 OK
+    code: 200
+    duration: ""
+- request:
+    body: ""
+    form: {}
+    headers:
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.16.2; darwin; amd64) terraform-provider/develop
+        terraform/terraform-tests
+    url: https://api.scaleway.com/account/v2alpha1/ssh-key/1cc4c216-5aec-4761-bb89-0a301629588e
+    method: GET
+  response:
+    body: '{"id":"1cc4c216-5aec-4761-bb89-0a301629588e","name":"TestAccScalewayDataSourceBaremetalServer_Basic","public_key":"ssh-ed25519
+      AAAAC3NzaC1lZDI1NTE5AAAAIM7HUxRyQtB2rnlhQUcbDGCZcTJg7OvoznOiyC9W6IxH opensource@scaleway.com","fingerprint":"256
+      MD5:17:d1:55:c9:1b:be:f2:b2:9a:92:33:d6:ac:16:de:41 opensource@scaleway.com
+      (ssh-ed25519)","created_at":"2020-09-17T14:12:08.601260Z","updated_at":"2021-03-30T13:29:35.096289Z","creation_info":{"address":"","user_agent":"","country_code":""},"organization_id":"951df375-e094-4d26-97c1-ba548eeb9c42","project_id":"951df375-e094-4d26-97c1-ba548eeb9c42"}'
+    headers:
+      Content-Length:
+      - "591"
+      Content-Security-Policy:
+      - default-src 'none'; frame-ancestors 'none'
+      Content-Type:
+      - application/json
+      Date:
+      - Tue, 30 Mar 2021 13:29:35 GMT
+      Server:
+      - Scaleway API-Gateway
+      Strict-Transport-Security:
+      - max-age=63072000
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+      X-Request-Id:
+      - 28f3b84d-3357-4f1d-9688-d648233ca6af
+    status: 200 OK
+    code: 200
+    duration: ""
+- request:
+    body: ""
+    form: {}
+    headers:
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.16.2; darwin; amd64) terraform-provider/develop
+        terraform/terraform-tests
+    url: https://api.scaleway.com/baremetal/v1/zones/fr-par-2/offers?page=1
+    method: GET
+  response:
+    body: '{"total_count":11,"offers":[{"id":"3ab0dc29-2fd4-486e-88bf-d08fbf49214b","name":"HC-BM1-L","stock":"empty","bandwidth":1000000000,"commercial_range":"high_cpu","disks":[{"capacity":1024000000000,"type":"NVMe"},{"capacity":1024000000000,"type":"NVMe"},{"capacity":1024000000000,"type":"NVMe"},{"capacity":1024000000000,"type":"NVMe"}],"enable":true,"cpus":[{"name":"Intel
+      Xeon Gold 5120","core_count":14,"thread_count":28,"frequency":2200},{"name":"Intel
+      Xeon Gold 5120","core_count":14,"thread_count":28,"frequency":2200}],"memories":[{"capacity":384000000000,"type":"DDR4","frequency":2133,"is_ecc":true}],"quota_name":"bmaas_high_cpu","price_per_hour":{"currency_code":"EUR","units":0,"nanos":996000000},"price_per_month":null,"persistent_memories":[],"raid_controllers":[]},{"id":"3b654f13-34e5-452a-bed8-4f7472d29593","name":"HM-BM1-S","stock":"empty","bandwidth":1000000000,"commercial_range":"high_memory","disks":[{"capacity":1024000000000,"type":"NVMe"},{"capacity":1024000000000,"type":"NVMe"}],"enable":true,"cpus":[{"name":"Intel
+      Xeon Silver 4114","core_count":10,"thread_count":20,"frequency":2200},{"name":"Intel
+      Xeon Silver 4114","core_count":10,"thread_count":20,"frequency":2200}],"memories":[{"capacity":192000000000,"type":"DDR4","frequency":2133,"is_ecc":true}],"quota_name":"bmaas_high_mem","price_per_hour":{"currency_code":"EUR","units":0,"nanos":477000000},"price_per_month":null,"persistent_memories":[],"raid_controllers":[]},{"id":"5363865f-2266-40f9-a43f-4f3aba251524","name":"HM-BM1-XL","stock":"empty","bandwidth":1000000000,"commercial_range":"high_memory","disks":[{"capacity":1024000000000,"type":"NVMe"},{"capacity":1024000000000,"type":"NVMe"},{"capacity":1024000000000,"type":"NVMe"},{"capacity":1024000000000,"type":"NVMe"},{"capacity":1024000000000,"type":"NVMe"},{"capacity":1024000000000,"type":"NVMe"},{"capacity":1024000000000,"type":"NVMe"},{"capacity":1024000000000,"type":"NVMe"}],"enable":true,"cpus":[{"name":"Intel
+      Xeon Gold 6140","core_count":18,"thread_count":36,"frequency":2300},{"name":"Intel
+      Xeon Gold 6140","core_count":18,"thread_count":36,"frequency":2300}],"memories":[{"capacity":768000000000,"type":"DDR4","frequency":2133,"is_ecc":true}],"quota_name":"bmaas_high_mem","price_per_hour":{"currency_code":"EUR","units":1,"nanos":724000000},"price_per_month":null,"persistent_memories":[],"raid_controllers":[]},{"id":"737f18c8-febc-4408-b69e-776bca0a3f48","name":"HC-BM1-S","stock":"available","bandwidth":1000000000,"commercial_range":"high_cpu","disks":[{"capacity":1024000000000,"type":"NVMe"},{"capacity":1024000000000,"type":"NVMe"}],"enable":true,"cpus":[{"name":"Intel
+      Xeon Silver 4114","core_count":10,"thread_count":20,"frequency":2200},{"name":"Intel
+      Xeon Silver 4114","core_count":10,"thread_count":20,"frequency":2200}],"memories":[{"capacity":128000000000,"type":"DDR4","frequency":2400,"is_ecc":true}],"quota_name":"bmaas_high_cpu","price_per_hour":{"currency_code":"EUR","units":0,"nanos":438000000},"price_per_month":null,"persistent_memories":[],"raid_controllers":[]},{"id":"7453ae10-1e5f-4a4d-98d9-0d835670294d","name":"UP-BM2-M","stock":"available","bandwidth":10000000000,"commercial_range":"ultimate_perf","disks":[{"capacity":1920000000000,"type":"NVMe"},{"capacity":1920000000000,"type":"NVMe"},{"capacity":1920000000000,"type":"NVMe"},{"capacity":1920000000000,"type":"NVMe"}],"enable":true,"cpus":[{"name":"AMD
+      Rome 7742","core_count":64,"thread_count":128,"frequency":2250},{"name":"AMD
+      Rome 7742","core_count":64,"thread_count":128,"frequency":2250}],"memories":[{"capacity":2048000000000,"type":"DDR4","frequency":2933,"is_ecc":true}],"quota_name":"bmaas_ultimate_perf","price_per_hour":{"currency_code":"EUR","units":7,"nanos":199900000},"price_per_month":null,"persistent_memories":[{"capacity":0,"type":"
+      ","frequency":0}],"raid_controllers":[]},{"id":"780d13fe-014d-4d51-9f0a-acacefd9f755","name":"HC-BM1-XS","stock":"low","bandwidth":1000000000,"commercial_range":"high_cpu","disks":[{"capacity":1024000000000,"type":"NVMe"},{"capacity":1024000000000,"type":"NVMe"}],"enable":true,"cpus":[{"name":"Intel
+      Xeon Silver 4114","core_count":10,"thread_count":20,"frequency":2200},{"name":"Intel
+      Xeon Silver 4114","core_count":10,"thread_count":20,"frequency":2200}],"memories":[{"capacity":96000000000,"type":"DDR4","frequency":2133,"is_ecc":true}],"quota_name":"bmaas_high_cpu","price_per_hour":{"currency_code":"EUR","units":0,"nanos":397000000},"price_per_month":null,"persistent_memories":[],"raid_controllers":[]},{"id":"7fde3890-9787-488c-ac89-c4e00a4e5f83","name":"GP-BM1-S","stock":"available","bandwidth":500000000,"commercial_range":"general_purpose","disks":[{"capacity":256000000000,"type":"SSD"},{"capacity":256000000000,"type":"SSD"}],"enable":true,"cpus":[{"name":"Intel
+      Xeon E3 1240v6","core_count":4,"thread_count":8,"frequency":3700}],"memories":[{"capacity":32000000000,"type":"DDR4","frequency":2133,"is_ecc":true}],"quota_name":"bmaas_gp","price_per_hour":{"currency_code":"EUR","units":0,"nanos":159000000},"price_per_month":null,"persistent_memories":[],"raid_controllers":[]},{"id":"8090d302-3545-4905-9cf3-bcb77a299f47","name":"GP-BM1-L","stock":"low","bandwidth":750000000,"commercial_range":"general_purpose","disks":[{"capacity":1024000000000,"type":"NVMe"},{"capacity":1024000000000,"type":"NVMe"}],"enable":true,"cpus":[{"name":"AMD
+      EPYC 7281","core_count":16,"thread_count":32,"frequency":2100}],"memories":[{"capacity":96000000000,"type":"DDR4","frequency":2133,"is_ecc":true}],"quota_name":"bmaas_gp","price_per_hour":{"currency_code":"EUR","units":0,"nanos":332000000},"price_per_month":null,"persistent_memories":[],"raid_controllers":[]},{"id":"964f9b38-577e-470f-a220-7d762f9e8672","name":"GP-BM1-M","stock":"empty","bandwidth":500000000,"commercial_range":"general_purpose","disks":[{"capacity":1024000000000,"type":"SSD"},{"capacity":1024000000000,"type":"SSD"},{"capacity":1024000000000,"type":"SSD"}],"enable":true,"cpus":[{"name":"Intel
+      Xeon E3 1240v6","core_count":4,"thread_count":8,"frequency":3700}],"memories":[{"capacity":64000000000,"type":"DDR4","frequency":2133,"is_ecc":true}],"quota_name":"bmaas_gp","price_per_hour":{"currency_code":"EUR","units":0,"nanos":266000000},"price_per_month":null,"persistent_memories":[],"raid_controllers":[]},{"id":"ac42eaf3-9d38-4f0c-aa8d-5fa4d99e2486","name":"UP-BM2-XL","stock":"available","bandwidth":10000000000,"commercial_range":"ultimate_perf","disks":[{"capacity":800000000000,"type":"SSD"},{"capacity":800000000000,"type":"SSD"},{"capacity":3200000000000,"type":"NVMe"},{"capacity":3200000000000,"type":"NVMe"},{"capacity":3200000000000,"type":"NVMe"},{"capacity":3200000000000,"type":"NVMe"},{"capacity":3200000000000,"type":"NVMe"},{"capacity":3200000000000,"type":"NVMe"}],"enable":true,"cpus":[{"name":"Intel
+      Xeon Platinum 8280","core_count":28,"thread_count":56,"frequency":2700},{"name":"Intel
+      Xeon Platinum 8280","core_count":28,"thread_count":56,"frequency":2700},{"name":"Intel
+      Xeon Platinum 8280","core_count":28,"thread_count":56,"frequency":2700},{"name":"Intel
+      Xeon Platinum 8280","core_count":28,"thread_count":56,"frequency":2700},{"name":"Intel
+      Xeon Platinum 8280","core_count":28,"thread_count":56,"frequency":2700},{"name":"Intel
+      Xeon Platinum 8280","core_count":28,"thread_count":56,"frequency":2700},{"name":"Intel
+      Xeon Platinum 8280","core_count":28,"thread_count":56,"frequency":2700},{"name":"Intel
+      Xeon Platinum 8280","core_count":28,"thread_count":56,"frequency":2700}],"memories":[{"capacity":1536000000000,"type":"DDR4","frequency":2933,"is_ecc":true}],"quota_name":"bmaas_ultimate_perf","price_per_hour":{"currency_code":"EUR","units":29,"nanos":999000000},"price_per_month":null,"persistent_memories":[{"capacity":6144000000000,"type":"Intel
+      Optane","frequency":2666}],"raid_controllers":[{"model":"530-8i","raid_level":["0","1"]}]},{"id":"c452f76a-2cda-4a1b-9658-a16952dc5ff0","name":"HM-BM1-M","stock":"empty","bandwidth":1000000000,"commercial_range":"high_memory","disks":[{"capacity":1024000000000,"type":"NVMe"},{"capacity":1024000000000,"type":"NVMe"},{"capacity":1024000000000,"type":"NVMe"}],"enable":true,"cpus":[{"name":"AMD
+      EPYC 7401P","core_count":24,"thread_count":48,"frequency":2000}],"memories":[{"capacity":256000000000,"type":"DDR4","frequency":2133,"is_ecc":true}],"quota_name":"bmaas_high_mem","price_per_hour":{"currency_code":"EUR","units":0,"nanos":531000000},"price_per_month":null,"persistent_memories":[],"raid_controllers":[]}]}'
+    headers:
+      Content-Security-Policy:
+      - default-src 'none'; frame-ancestors 'none'
+      Content-Type:
+      - application/json
+      Date:
+      - Tue, 30 Mar 2021 13:29:35 GMT
+      Server:
+      - Scaleway API-Gateway
+      Strict-Transport-Security:
+      - max-age=63072000
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+      X-Request-Id:
+      - ce09b5fc-ddaa-4c2a-83d9-fd8ef8bb167b
+    status: 200 OK
+    code: 200
+    duration: ""
+- request:
+    body: '{"offer_id":"7fde3890-9787-488c-ac89-c4e00a4e5f83","organization_id":"951df375-e094-4d26-97c1-ba548eeb9c42","name":"TestAccScalewayDataSourceBaremetalServer_Basic","description":"test
+      a description","tags":[],"install":null}'
+    form: {}
+    headers:
+      Content-Type:
+      - application/json
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.16.2; darwin; amd64) terraform-provider/develop
+        terraform/terraform-tests
+    url: https://api.scaleway.com/baremetal/v1/zones/fr-par-2/servers
+    method: POST
+  response:
+    body: '{"id":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b","organization_id":"951df375-e094-4d26-97c1-ba548eeb9c42","name":"TestAccScalewayDataSourceBaremetalServer_Basic","description":"test
+      a description","updated_at":"2021-03-30T13:29:35.734756974Z","created_at":"2021-03-30T13:29:35.734756974Z","status":"delivering","offer_id":"7fde3890-9787-488c-ac89-c4e00a4e5f83","install":null,"tags":[],"ips":[],"domain":"","boot_type":"normal","ping_status":"ping_status_unknown","project_id":"951df375-e094-4d26-97c1-ba548eeb9c42","zone":"fr-par-2"}'
+    headers:
+      Content-Length:
+      - "530"
+      Content-Security-Policy:
+      - default-src 'none'; frame-ancestors 'none'
+      Content-Type:
+      - application/json
+      Date:
+      - Tue, 30 Mar 2021 13:29:35 GMT
+      Server:
+      - Scaleway API-Gateway
+      Strict-Transport-Security:
+      - max-age=63072000
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+      X-Request-Id:
+      - c53b61cc-cfd9-49ef-893d-8f0e634d42ac
+    status: 200 OK
+    code: 200
+    duration: ""
+- request:
+    body: ""
+    form: {}
+    headers:
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.16.2; darwin; amd64) terraform-provider/develop
+        terraform/terraform-tests
+    url: https://api.scaleway.com/baremetal/v1/zones/fr-par-2/servers/eeaada0a-94e0-49b8-a229-9b3e9aa9977b
+    method: GET
+  response:
+    body: '{"id":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b","organization_id":"951df375-e094-4d26-97c1-ba548eeb9c42","name":"TestAccScalewayDataSourceBaremetalServer_Basic","description":"test
+      a description","updated_at":"2021-03-30T13:29:35.734757Z","created_at":"2021-03-30T13:29:35.734757Z","status":"delivering","offer_id":"7fde3890-9787-488c-ac89-c4e00a4e5f83","install":null,"tags":[],"ips":[],"domain":"","boot_type":"normal","ping_status":"ping_status_unknown","project_id":"951df375-e094-4d26-97c1-ba548eeb9c42","zone":"fr-par-2"}'
+    headers:
+      Content-Length:
+      - "524"
+      Content-Security-Policy:
+      - default-src 'none'; frame-ancestors 'none'
+      Content-Type:
+      - application/json
+      Date:
+      - Tue, 30 Mar 2021 13:29:35 GMT
+      Server:
+      - Scaleway API-Gateway
+      Strict-Transport-Security:
+      - max-age=63072000
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+      X-Request-Id:
+      - 288545f5-7d30-4181-a1e0-35b63a454f25
+    status: 200 OK
+    code: 200
+    duration: ""
+- request:
+    body: ""
+    form: {}
+    headers:
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.16.2; darwin; amd64) terraform-provider/develop
+        terraform/terraform-tests
+    url: https://api.scaleway.com/baremetal/v1/zones/fr-par-2/servers/eeaada0a-94e0-49b8-a229-9b3e9aa9977b
+    method: GET
+  response:
+    body: '{"id":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b","organization_id":"951df375-e094-4d26-97c1-ba548eeb9c42","name":"TestAccScalewayDataSourceBaremetalServer_Basic","description":"test
+      a description","updated_at":"2021-03-30T13:29:36.395500Z","created_at":"2021-03-30T13:29:35.734757Z","status":"delivering","offer_id":"7fde3890-9787-488c-ac89-c4e00a4e5f83","install":null,"tags":[],"ips":[],"domain":"","boot_type":"normal","ping_status":"ping_status_unknown","project_id":"951df375-e094-4d26-97c1-ba548eeb9c42","zone":"fr-par-2"}'
+    headers:
+      Content-Length:
+      - "524"
+      Content-Security-Policy:
+      - default-src 'none'; frame-ancestors 'none'
+      Content-Type:
+      - application/json
+      Date:
+      - Tue, 30 Mar 2021 13:29:50 GMT
+      Server:
+      - Scaleway API-Gateway
+      Strict-Transport-Security:
+      - max-age=63072000
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+      X-Request-Id:
+      - 447e353a-b26d-4cd6-aa95-867b82f31d6c
+    status: 200 OK
+    code: 200
+    duration: ""
+- request:
+    body: ""
+    form: {}
+    headers:
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.16.2; darwin; amd64) terraform-provider/develop
+        terraform/terraform-tests
+    url: https://api.scaleway.com/baremetal/v1/zones/fr-par-2/servers/eeaada0a-94e0-49b8-a229-9b3e9aa9977b
+    method: GET
+  response:
+    body: '{"id":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b","organization_id":"951df375-e094-4d26-97c1-ba548eeb9c42","name":"TestAccScalewayDataSourceBaremetalServer_Basic","description":"test
+      a description","updated_at":"2021-03-30T13:29:36.395500Z","created_at":"2021-03-30T13:29:35.734757Z","status":"delivering","offer_id":"7fde3890-9787-488c-ac89-c4e00a4e5f83","install":null,"tags":[],"ips":[],"domain":"","boot_type":"normal","ping_status":"ping_status_unknown","project_id":"951df375-e094-4d26-97c1-ba548eeb9c42","zone":"fr-par-2"}'
+    headers:
+      Content-Length:
+      - "524"
+      Content-Security-Policy:
+      - default-src 'none'; frame-ancestors 'none'
+      Content-Type:
+      - application/json
+      Date:
+      - Tue, 30 Mar 2021 13:30:06 GMT
+      Server:
+      - Scaleway API-Gateway
+      Strict-Transport-Security:
+      - max-age=63072000
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+      X-Request-Id:
+      - d2a276ca-07c4-4c4b-984e-60573fe0c8da
+    status: 200 OK
+    code: 200
+    duration: ""
+- request:
+    body: ""
+    form: {}
+    headers:
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.16.2; darwin; amd64) terraform-provider/develop
+        terraform/terraform-tests
+    url: https://api.scaleway.com/baremetal/v1/zones/fr-par-2/servers/eeaada0a-94e0-49b8-a229-9b3e9aa9977b
+    method: GET
+  response:
+    body: '{"id":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b","organization_id":"951df375-e094-4d26-97c1-ba548eeb9c42","name":"TestAccScalewayDataSourceBaremetalServer_Basic","description":"test
+      a description","updated_at":"2021-03-30T13:30:18.137749Z","created_at":"2021-03-30T13:29:35.734757Z","status":"ready","offer_id":"7fde3890-9787-488c-ac89-c4e00a4e5f83","install":null,"tags":[],"ips":[{"id":"ce011afa-fb99-455e-8c95-32aa858d2ef2","address":"2001:0bc8:6005:001b:dac4:97ff:fe5b:72a5","reverse":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b.fr-par-2.baremetal.scw.cloud","version":"IPv6","reverse_status":"pending","reverse_status_message":""},{"id":"d8a46574-bac0-4720-a3dc-e63fd680a07a","address":"51.159.31.183","reverse":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b.fr-par-2.baremetal.scw.cloud","version":"IPv4","reverse_status":"pending","reverse_status_message":""}],"domain":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b.fr-par-2.baremetal.scw.cloud","boot_type":"normal","ping_status":"ping_status_unknown","project_id":"951df375-e094-4d26-97c1-ba548eeb9c42","zone":"fr-par-2"}'
+    headers:
+      Content-Length:
+      - "1053"
+      Content-Security-Policy:
+      - default-src 'none'; frame-ancestors 'none'
+      Content-Type:
+      - application/json
+      Date:
+      - Tue, 30 Mar 2021 13:30:21 GMT
+      Server:
+      - Scaleway API-Gateway
+      Strict-Transport-Security:
+      - max-age=63072000
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+      X-Request-Id:
+      - 8a3c84da-d375-415c-935f-2a1145a1650a
+    status: 200 OK
+    code: 200
+    duration: ""
+- request:
+    body: '{"os_id":"d17d6872-0412-45d9-a198-af82c34d3c5c","hostname":"TestAccScalewayDataSourceBaremetalServer_Basic","ssh_key_ids":["1cc4c216-5aec-4761-bb89-0a301629588e"]}'
+    form: {}
+    headers:
+      Content-Type:
+      - application/json
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.16.2; darwin; amd64) terraform-provider/develop
+        terraform/terraform-tests
+    url: https://api.scaleway.com/baremetal/v1/zones/fr-par-2/servers/eeaada0a-94e0-49b8-a229-9b3e9aa9977b/install
+    method: POST
+  response:
+    body: '{"id":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b","organization_id":"951df375-e094-4d26-97c1-ba548eeb9c42","name":"TestAccScalewayDataSourceBaremetalServer_Basic","description":"test
+      a description","updated_at":"2021-03-30T13:30:18.137749Z","created_at":"2021-03-30T13:29:35.734757Z","status":"ready","offer_id":"7fde3890-9787-488c-ac89-c4e00a4e5f83","install":{"os_id":"d17d6872-0412-45d9-a198-af82c34d3c5c","hostname":"TestAccScalewayDataSourceBaremetalServer_Basic","ssh_key_ids":["1cc4c216-5aec-4761-bb89-0a301629588e"],"status":"to_install"},"tags":[],"ips":[{"id":"ce011afa-fb99-455e-8c95-32aa858d2ef2","address":"2001:0bc8:6005:001b:dac4:97ff:fe5b:72a5","reverse":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b.fr-par-2.baremetal.scw.cloud","version":"IPv6","reverse_status":"pending","reverse_status_message":""},{"id":"d8a46574-bac0-4720-a3dc-e63fd680a07a","address":"51.159.31.183","reverse":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b.fr-par-2.baremetal.scw.cloud","version":"IPv4","reverse_status":"pending","reverse_status_message":""}],"domain":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b.fr-par-2.baremetal.scw.cloud","boot_type":"normal","ping_status":"ping_status_unknown","project_id":"951df375-e094-4d26-97c1-ba548eeb9c42","zone":"fr-par-2"}'
+    headers:
+      Content-Length:
+      - "1234"
+      Content-Security-Policy:
+      - default-src 'none'; frame-ancestors 'none'
+      Content-Type:
+      - application/json
+      Date:
+      - Tue, 30 Mar 2021 13:30:21 GMT
+      Server:
+      - Scaleway API-Gateway
+      Strict-Transport-Security:
+      - max-age=63072000
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+      X-Request-Id:
+      - b5240fed-6c08-4803-9254-d68bcca23731
+    status: 200 OK
+    code: 200
+    duration: ""
+- request:
+    body: ""
+    form: {}
+    headers:
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.16.2; darwin; amd64) terraform-provider/develop
+        terraform/terraform-tests
+    url: https://api.scaleway.com/baremetal/v1/zones/fr-par-2/servers/eeaada0a-94e0-49b8-a229-9b3e9aa9977b
+    method: GET
+  response:
+    body: '{"id":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b","organization_id":"951df375-e094-4d26-97c1-ba548eeb9c42","name":"TestAccScalewayDataSourceBaremetalServer_Basic","description":"test
+      a description","updated_at":"2021-03-30T13:30:18.137749Z","created_at":"2021-03-30T13:29:35.734757Z","status":"ready","offer_id":"7fde3890-9787-488c-ac89-c4e00a4e5f83","install":{"os_id":"d17d6872-0412-45d9-a198-af82c34d3c5c","hostname":"TestAccScalewayDataSourceBaremetalServer_Basic","ssh_key_ids":["1cc4c216-5aec-4761-bb89-0a301629588e"],"status":"to_install"},"tags":[],"ips":[{"id":"ce011afa-fb99-455e-8c95-32aa858d2ef2","address":"2001:0bc8:6005:001b:dac4:97ff:fe5b:72a5","reverse":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b.fr-par-2.baremetal.scw.cloud","version":"IPv6","reverse_status":"pending","reverse_status_message":""},{"id":"d8a46574-bac0-4720-a3dc-e63fd680a07a","address":"51.159.31.183","reverse":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b.fr-par-2.baremetal.scw.cloud","version":"IPv4","reverse_status":"pending","reverse_status_message":""}],"domain":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b.fr-par-2.baremetal.scw.cloud","boot_type":"normal","ping_status":"ping_status_unknown","project_id":"951df375-e094-4d26-97c1-ba548eeb9c42","zone":"fr-par-2"}'
+    headers:
+      Content-Length:
+      - "1234"
+      Content-Security-Policy:
+      - default-src 'none'; frame-ancestors 'none'
+      Content-Type:
+      - application/json
+      Date:
+      - Tue, 30 Mar 2021 13:30:21 GMT
+      Server:
+      - Scaleway API-Gateway
+      Strict-Transport-Security:
+      - max-age=63072000
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+      X-Request-Id:
+      - f70ec6c9-2bac-4346-a516-c8cf3068e524
+    status: 200 OK
+    code: 200
+    duration: ""
+- request:
+    body: ""
+    form: {}
+    headers:
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.16.2; darwin; amd64) terraform-provider/develop
+        terraform/terraform-tests
+    url: https://api.scaleway.com/baremetal/v1/zones/fr-par-2/servers/eeaada0a-94e0-49b8-a229-9b3e9aa9977b
+    method: GET
+  response:
+    body: '{"id":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b","organization_id":"951df375-e094-4d26-97c1-ba548eeb9c42","name":"TestAccScalewayDataSourceBaremetalServer_Basic","description":"test
+      a description","updated_at":"2021-03-30T13:30:18.137749Z","created_at":"2021-03-30T13:29:35.734757Z","status":"ready","offer_id":"7fde3890-9787-488c-ac89-c4e00a4e5f83","install":{"os_id":"d17d6872-0412-45d9-a198-af82c34d3c5c","hostname":"TestAccScalewayDataSourceBaremetalServer_Basic","ssh_key_ids":["1cc4c216-5aec-4761-bb89-0a301629588e"],"status":"installing"},"tags":[],"ips":[{"id":"ce011afa-fb99-455e-8c95-32aa858d2ef2","address":"2001:0bc8:6005:001b:dac4:97ff:fe5b:72a5","reverse":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b.fr-par-2.baremetal.scw.cloud","version":"IPv6","reverse_status":"pending","reverse_status_message":""},{"id":"d8a46574-bac0-4720-a3dc-e63fd680a07a","address":"51.159.31.183","reverse":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b.fr-par-2.baremetal.scw.cloud","version":"IPv4","reverse_status":"pending","reverse_status_message":""}],"domain":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b.fr-par-2.baremetal.scw.cloud","boot_type":"normal","ping_status":"ping_status_unknown","project_id":"951df375-e094-4d26-97c1-ba548eeb9c42","zone":"fr-par-2"}'
+    headers:
+      Content-Length:
+      - "1234"
+      Content-Security-Policy:
+      - default-src 'none'; frame-ancestors 'none'
+      Content-Type:
+      - application/json
+      Date:
+      - Tue, 30 Mar 2021 13:30:36 GMT
+      Server:
+      - Scaleway API-Gateway
+      Strict-Transport-Security:
+      - max-age=63072000
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+      X-Request-Id:
+      - 01ee51c0-51e0-4178-a414-8da11a685d1a
+    status: 200 OK
+    code: 200
+    duration: ""
+- request:
+    body: ""
+    form: {}
+    headers:
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.16.2; darwin; amd64) terraform-provider/develop
+        terraform/terraform-tests
+    url: https://api.scaleway.com/baremetal/v1/zones/fr-par-2/servers/eeaada0a-94e0-49b8-a229-9b3e9aa9977b
+    method: GET
+  response:
+    body: '{"id":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b","organization_id":"951df375-e094-4d26-97c1-ba548eeb9c42","name":"TestAccScalewayDataSourceBaremetalServer_Basic","description":"test
+      a description","updated_at":"2021-03-30T13:30:18.137749Z","created_at":"2021-03-30T13:29:35.734757Z","status":"ready","offer_id":"7fde3890-9787-488c-ac89-c4e00a4e5f83","install":{"os_id":"d17d6872-0412-45d9-a198-af82c34d3c5c","hostname":"TestAccScalewayDataSourceBaremetalServer_Basic","ssh_key_ids":["1cc4c216-5aec-4761-bb89-0a301629588e"],"status":"installing"},"tags":[],"ips":[{"id":"ce011afa-fb99-455e-8c95-32aa858d2ef2","address":"2001:0bc8:6005:001b:dac4:97ff:fe5b:72a5","reverse":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b.fr-par-2.baremetal.scw.cloud","version":"IPv6","reverse_status":"pending","reverse_status_message":""},{"id":"d8a46574-bac0-4720-a3dc-e63fd680a07a","address":"51.159.31.183","reverse":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b.fr-par-2.baremetal.scw.cloud","version":"IPv4","reverse_status":"pending","reverse_status_message":""}],"domain":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b.fr-par-2.baremetal.scw.cloud","boot_type":"normal","ping_status":"ping_status_unknown","project_id":"951df375-e094-4d26-97c1-ba548eeb9c42","zone":"fr-par-2"}'
+    headers:
+      Content-Length:
+      - "1234"
+      Content-Security-Policy:
+      - default-src 'none'; frame-ancestors 'none'
+      Content-Type:
+      - application/json
+      Date:
+      - Tue, 30 Mar 2021 13:30:51 GMT
+      Server:
+      - Scaleway API-Gateway
+      Strict-Transport-Security:
+      - max-age=63072000
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+      X-Request-Id:
+      - da52010f-38bc-451b-a3b6-ed9d5094ffc9
+    status: 200 OK
+    code: 200
+    duration: ""
+- request:
+    body: ""
+    form: {}
+    headers:
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.16.2; darwin; amd64) terraform-provider/develop
+        terraform/terraform-tests
+    url: https://api.scaleway.com/baremetal/v1/zones/fr-par-2/servers/eeaada0a-94e0-49b8-a229-9b3e9aa9977b
+    method: GET
+  response:
+    body: '{"id":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b","organization_id":"951df375-e094-4d26-97c1-ba548eeb9c42","name":"TestAccScalewayDataSourceBaremetalServer_Basic","description":"test
+      a description","updated_at":"2021-03-30T13:30:18.137749Z","created_at":"2021-03-30T13:29:35.734757Z","status":"ready","offer_id":"7fde3890-9787-488c-ac89-c4e00a4e5f83","install":{"os_id":"d17d6872-0412-45d9-a198-af82c34d3c5c","hostname":"TestAccScalewayDataSourceBaremetalServer_Basic","ssh_key_ids":["1cc4c216-5aec-4761-bb89-0a301629588e"],"status":"installing"},"tags":[],"ips":[{"id":"ce011afa-fb99-455e-8c95-32aa858d2ef2","address":"2001:0bc8:6005:001b:dac4:97ff:fe5b:72a5","reverse":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b.fr-par-2.baremetal.scw.cloud","version":"IPv6","reverse_status":"pending","reverse_status_message":""},{"id":"d8a46574-bac0-4720-a3dc-e63fd680a07a","address":"51.159.31.183","reverse":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b.fr-par-2.baremetal.scw.cloud","version":"IPv4","reverse_status":"pending","reverse_status_message":""}],"domain":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b.fr-par-2.baremetal.scw.cloud","boot_type":"normal","ping_status":"ping_status_unknown","project_id":"951df375-e094-4d26-97c1-ba548eeb9c42","zone":"fr-par-2"}'
+    headers:
+      Content-Length:
+      - "1234"
+      Content-Security-Policy:
+      - default-src 'none'; frame-ancestors 'none'
+      Content-Type:
+      - application/json
+      Date:
+      - Tue, 30 Mar 2021 13:31:06 GMT
+      Server:
+      - Scaleway API-Gateway
+      Strict-Transport-Security:
+      - max-age=63072000
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+      X-Request-Id:
+      - 8b818754-6cfc-43de-b828-00d0c4680719
+    status: 200 OK
+    code: 200
+    duration: ""
+- request:
+    body: ""
+    form: {}
+    headers:
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.16.2; darwin; amd64) terraform-provider/develop
+        terraform/terraform-tests
+    url: https://api.scaleway.com/baremetal/v1/zones/fr-par-2/servers/eeaada0a-94e0-49b8-a229-9b3e9aa9977b
+    method: GET
+  response:
+    body: '{"id":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b","organization_id":"951df375-e094-4d26-97c1-ba548eeb9c42","name":"TestAccScalewayDataSourceBaremetalServer_Basic","description":"test
+      a description","updated_at":"2021-03-30T13:30:18.137749Z","created_at":"2021-03-30T13:29:35.734757Z","status":"ready","offer_id":"7fde3890-9787-488c-ac89-c4e00a4e5f83","install":{"os_id":"d17d6872-0412-45d9-a198-af82c34d3c5c","hostname":"TestAccScalewayDataSourceBaremetalServer_Basic","ssh_key_ids":["1cc4c216-5aec-4761-bb89-0a301629588e"],"status":"installing"},"tags":[],"ips":[{"id":"ce011afa-fb99-455e-8c95-32aa858d2ef2","address":"2001:0bc8:6005:001b:dac4:97ff:fe5b:72a5","reverse":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b.fr-par-2.baremetal.scw.cloud","version":"IPv6","reverse_status":"pending","reverse_status_message":""},{"id":"d8a46574-bac0-4720-a3dc-e63fd680a07a","address":"51.159.31.183","reverse":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b.fr-par-2.baremetal.scw.cloud","version":"IPv4","reverse_status":"pending","reverse_status_message":""}],"domain":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b.fr-par-2.baremetal.scw.cloud","boot_type":"normal","ping_status":"ping_status_unknown","project_id":"951df375-e094-4d26-97c1-ba548eeb9c42","zone":"fr-par-2"}'
+    headers:
+      Content-Length:
+      - "1234"
+      Content-Security-Policy:
+      - default-src 'none'; frame-ancestors 'none'
+      Content-Type:
+      - application/json
+      Date:
+      - Tue, 30 Mar 2021 13:31:21 GMT
+      Server:
+      - Scaleway API-Gateway
+      Strict-Transport-Security:
+      - max-age=63072000
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+      X-Request-Id:
+      - f644f364-8d75-4ed0-92a9-1601fb8e54a1
+    status: 200 OK
+    code: 200
+    duration: ""
+- request:
+    body: ""
+    form: {}
+    headers:
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.16.2; darwin; amd64) terraform-provider/develop
+        terraform/terraform-tests
+    url: https://api.scaleway.com/baremetal/v1/zones/fr-par-2/servers/eeaada0a-94e0-49b8-a229-9b3e9aa9977b
+    method: GET
+  response:
+    body: '{"id":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b","organization_id":"951df375-e094-4d26-97c1-ba548eeb9c42","name":"TestAccScalewayDataSourceBaremetalServer_Basic","description":"test
+      a description","updated_at":"2021-03-30T13:30:18.137749Z","created_at":"2021-03-30T13:29:35.734757Z","status":"ready","offer_id":"7fde3890-9787-488c-ac89-c4e00a4e5f83","install":{"os_id":"d17d6872-0412-45d9-a198-af82c34d3c5c","hostname":"TestAccScalewayDataSourceBaremetalServer_Basic","ssh_key_ids":["1cc4c216-5aec-4761-bb89-0a301629588e"],"status":"installing"},"tags":[],"ips":[{"id":"ce011afa-fb99-455e-8c95-32aa858d2ef2","address":"2001:0bc8:6005:001b:dac4:97ff:fe5b:72a5","reverse":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b.fr-par-2.baremetal.scw.cloud","version":"IPv6","reverse_status":"pending","reverse_status_message":""},{"id":"d8a46574-bac0-4720-a3dc-e63fd680a07a","address":"51.159.31.183","reverse":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b.fr-par-2.baremetal.scw.cloud","version":"IPv4","reverse_status":"pending","reverse_status_message":""}],"domain":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b.fr-par-2.baremetal.scw.cloud","boot_type":"normal","ping_status":"ping_status_unknown","project_id":"951df375-e094-4d26-97c1-ba548eeb9c42","zone":"fr-par-2"}'
+    headers:
+      Content-Length:
+      - "1234"
+      Content-Security-Policy:
+      - default-src 'none'; frame-ancestors 'none'
+      Content-Type:
+      - application/json
+      Date:
+      - Tue, 30 Mar 2021 13:31:36 GMT
+      Server:
+      - Scaleway API-Gateway
+      Strict-Transport-Security:
+      - max-age=63072000
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+      X-Request-Id:
+      - 3c707a04-d7c7-4819-a27a-dc2bc2dcca9c
+    status: 200 OK
+    code: 200
+    duration: ""
+- request:
+    body: ""
+    form: {}
+    headers:
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.16.2; darwin; amd64) terraform-provider/develop
+        terraform/terraform-tests
+    url: https://api.scaleway.com/baremetal/v1/zones/fr-par-2/servers/eeaada0a-94e0-49b8-a229-9b3e9aa9977b
+    method: GET
+  response:
+    body: '{"id":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b","organization_id":"951df375-e094-4d26-97c1-ba548eeb9c42","name":"TestAccScalewayDataSourceBaremetalServer_Basic","description":"test
+      a description","updated_at":"2021-03-30T13:30:18.137749Z","created_at":"2021-03-30T13:29:35.734757Z","status":"ready","offer_id":"7fde3890-9787-488c-ac89-c4e00a4e5f83","install":{"os_id":"d17d6872-0412-45d9-a198-af82c34d3c5c","hostname":"TestAccScalewayDataSourceBaremetalServer_Basic","ssh_key_ids":["1cc4c216-5aec-4761-bb89-0a301629588e"],"status":"installing"},"tags":[],"ips":[{"id":"ce011afa-fb99-455e-8c95-32aa858d2ef2","address":"2001:0bc8:6005:001b:dac4:97ff:fe5b:72a5","reverse":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b.fr-par-2.baremetal.scw.cloud","version":"IPv6","reverse_status":"pending","reverse_status_message":""},{"id":"d8a46574-bac0-4720-a3dc-e63fd680a07a","address":"51.159.31.183","reverse":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b.fr-par-2.baremetal.scw.cloud","version":"IPv4","reverse_status":"pending","reverse_status_message":""}],"domain":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b.fr-par-2.baremetal.scw.cloud","boot_type":"normal","ping_status":"ping_status_unknown","project_id":"951df375-e094-4d26-97c1-ba548eeb9c42","zone":"fr-par-2"}'
+    headers:
+      Content-Length:
+      - "1234"
+      Content-Security-Policy:
+      - default-src 'none'; frame-ancestors 'none'
+      Content-Type:
+      - application/json
+      Date:
+      - Tue, 30 Mar 2021 13:31:51 GMT
+      Server:
+      - Scaleway API-Gateway
+      Strict-Transport-Security:
+      - max-age=63072000
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+      X-Request-Id:
+      - 40b49bca-6c94-4cb5-993f-f6b35bca52ce
+    status: 200 OK
+    code: 200
+    duration: ""
+- request:
+    body: ""
+    form: {}
+    headers:
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.16.2; darwin; amd64) terraform-provider/develop
+        terraform/terraform-tests
+    url: https://api.scaleway.com/baremetal/v1/zones/fr-par-2/servers/eeaada0a-94e0-49b8-a229-9b3e9aa9977b
+    method: GET
+  response:
+    body: '{"id":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b","organization_id":"951df375-e094-4d26-97c1-ba548eeb9c42","name":"TestAccScalewayDataSourceBaremetalServer_Basic","description":"test
+      a description","updated_at":"2021-03-30T13:30:18.137749Z","created_at":"2021-03-30T13:29:35.734757Z","status":"ready","offer_id":"7fde3890-9787-488c-ac89-c4e00a4e5f83","install":{"os_id":"d17d6872-0412-45d9-a198-af82c34d3c5c","hostname":"TestAccScalewayDataSourceBaremetalServer_Basic","ssh_key_ids":["1cc4c216-5aec-4761-bb89-0a301629588e"],"status":"installing"},"tags":[],"ips":[{"id":"ce011afa-fb99-455e-8c95-32aa858d2ef2","address":"2001:0bc8:6005:001b:dac4:97ff:fe5b:72a5","reverse":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b.fr-par-2.baremetal.scw.cloud","version":"IPv6","reverse_status":"pending","reverse_status_message":""},{"id":"d8a46574-bac0-4720-a3dc-e63fd680a07a","address":"51.159.31.183","reverse":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b.fr-par-2.baremetal.scw.cloud","version":"IPv4","reverse_status":"pending","reverse_status_message":""}],"domain":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b.fr-par-2.baremetal.scw.cloud","boot_type":"normal","ping_status":"ping_status_unknown","project_id":"951df375-e094-4d26-97c1-ba548eeb9c42","zone":"fr-par-2"}'
+    headers:
+      Content-Length:
+      - "1234"
+      Content-Security-Policy:
+      - default-src 'none'; frame-ancestors 'none'
+      Content-Type:
+      - application/json
+      Date:
+      - Tue, 30 Mar 2021 13:32:06 GMT
+      Server:
+      - Scaleway API-Gateway
+      Strict-Transport-Security:
+      - max-age=63072000
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+      X-Request-Id:
+      - 536221e0-50d7-4b32-a327-81a6186884ab
+    status: 200 OK
+    code: 200
+    duration: ""
+- request:
+    body: ""
+    form: {}
+    headers:
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.16.2; darwin; amd64) terraform-provider/develop
+        terraform/terraform-tests
+    url: https://api.scaleway.com/baremetal/v1/zones/fr-par-2/servers/eeaada0a-94e0-49b8-a229-9b3e9aa9977b
+    method: GET
+  response:
+    body: '{"id":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b","organization_id":"951df375-e094-4d26-97c1-ba548eeb9c42","name":"TestAccScalewayDataSourceBaremetalServer_Basic","description":"test
+      a description","updated_at":"2021-03-30T13:30:18.137749Z","created_at":"2021-03-30T13:29:35.734757Z","status":"ready","offer_id":"7fde3890-9787-488c-ac89-c4e00a4e5f83","install":{"os_id":"d17d6872-0412-45d9-a198-af82c34d3c5c","hostname":"TestAccScalewayDataSourceBaremetalServer_Basic","ssh_key_ids":["1cc4c216-5aec-4761-bb89-0a301629588e"],"status":"installing"},"tags":[],"ips":[{"id":"ce011afa-fb99-455e-8c95-32aa858d2ef2","address":"2001:0bc8:6005:001b:dac4:97ff:fe5b:72a5","reverse":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b.fr-par-2.baremetal.scw.cloud","version":"IPv6","reverse_status":"pending","reverse_status_message":""},{"id":"d8a46574-bac0-4720-a3dc-e63fd680a07a","address":"51.159.31.183","reverse":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b.fr-par-2.baremetal.scw.cloud","version":"IPv4","reverse_status":"pending","reverse_status_message":""}],"domain":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b.fr-par-2.baremetal.scw.cloud","boot_type":"normal","ping_status":"ping_status_unknown","project_id":"951df375-e094-4d26-97c1-ba548eeb9c42","zone":"fr-par-2"}'
+    headers:
+      Content-Length:
+      - "1234"
+      Content-Security-Policy:
+      - default-src 'none'; frame-ancestors 'none'
+      Content-Type:
+      - application/json
+      Date:
+      - Tue, 30 Mar 2021 13:32:21 GMT
+      Server:
+      - Scaleway API-Gateway
+      Strict-Transport-Security:
+      - max-age=63072000
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+      X-Request-Id:
+      - 9fee4eee-fa6d-44c1-8080-7eded8f8539a
+    status: 200 OK
+    code: 200
+    duration: ""
+- request:
+    body: ""
+    form: {}
+    headers:
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.16.2; darwin; amd64) terraform-provider/develop
+        terraform/terraform-tests
+    url: https://api.scaleway.com/baremetal/v1/zones/fr-par-2/servers/eeaada0a-94e0-49b8-a229-9b3e9aa9977b
+    method: GET
+  response:
+    body: '{"id":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b","organization_id":"951df375-e094-4d26-97c1-ba548eeb9c42","name":"TestAccScalewayDataSourceBaremetalServer_Basic","description":"test
+      a description","updated_at":"2021-03-30T13:30:18.137749Z","created_at":"2021-03-30T13:29:35.734757Z","status":"ready","offer_id":"7fde3890-9787-488c-ac89-c4e00a4e5f83","install":{"os_id":"d17d6872-0412-45d9-a198-af82c34d3c5c","hostname":"TestAccScalewayDataSourceBaremetalServer_Basic","ssh_key_ids":["1cc4c216-5aec-4761-bb89-0a301629588e"],"status":"installing"},"tags":[],"ips":[{"id":"ce011afa-fb99-455e-8c95-32aa858d2ef2","address":"2001:0bc8:6005:001b:dac4:97ff:fe5b:72a5","reverse":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b.fr-par-2.baremetal.scw.cloud","version":"IPv6","reverse_status":"pending","reverse_status_message":""},{"id":"d8a46574-bac0-4720-a3dc-e63fd680a07a","address":"51.159.31.183","reverse":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b.fr-par-2.baremetal.scw.cloud","version":"IPv4","reverse_status":"pending","reverse_status_message":""}],"domain":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b.fr-par-2.baremetal.scw.cloud","boot_type":"normal","ping_status":"ping_status_unknown","project_id":"951df375-e094-4d26-97c1-ba548eeb9c42","zone":"fr-par-2"}'
+    headers:
+      Content-Length:
+      - "1234"
+      Content-Security-Policy:
+      - default-src 'none'; frame-ancestors 'none'
+      Content-Type:
+      - application/json
+      Date:
+      - Tue, 30 Mar 2021 13:32:37 GMT
+      Server:
+      - Scaleway API-Gateway
+      Strict-Transport-Security:
+      - max-age=63072000
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+      X-Request-Id:
+      - 1426e17a-46d4-4d46-8007-136a6f87c139
+    status: 200 OK
+    code: 200
+    duration: ""
+- request:
+    body: ""
+    form: {}
+    headers:
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.16.2; darwin; amd64) terraform-provider/develop
+        terraform/terraform-tests
+    url: https://api.scaleway.com/baremetal/v1/zones/fr-par-2/servers/eeaada0a-94e0-49b8-a229-9b3e9aa9977b
+    method: GET
+  response:
+    body: '{"id":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b","organization_id":"951df375-e094-4d26-97c1-ba548eeb9c42","name":"TestAccScalewayDataSourceBaremetalServer_Basic","description":"test
+      a description","updated_at":"2021-03-30T13:30:18.137749Z","created_at":"2021-03-30T13:29:35.734757Z","status":"ready","offer_id":"7fde3890-9787-488c-ac89-c4e00a4e5f83","install":{"os_id":"d17d6872-0412-45d9-a198-af82c34d3c5c","hostname":"TestAccScalewayDataSourceBaremetalServer_Basic","ssh_key_ids":["1cc4c216-5aec-4761-bb89-0a301629588e"],"status":"installing"},"tags":[],"ips":[{"id":"ce011afa-fb99-455e-8c95-32aa858d2ef2","address":"2001:0bc8:6005:001b:dac4:97ff:fe5b:72a5","reverse":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b.fr-par-2.baremetal.scw.cloud","version":"IPv6","reverse_status":"active","reverse_status_message":""},{"id":"d8a46574-bac0-4720-a3dc-e63fd680a07a","address":"51.159.31.183","reverse":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b.fr-par-2.baremetal.scw.cloud","version":"IPv4","reverse_status":"active","reverse_status_message":""}],"domain":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b.fr-par-2.baremetal.scw.cloud","boot_type":"normal","ping_status":"ping_status_unknown","project_id":"951df375-e094-4d26-97c1-ba548eeb9c42","zone":"fr-par-2"}'
+    headers:
+      Content-Length:
+      - "1232"
+      Content-Security-Policy:
+      - default-src 'none'; frame-ancestors 'none'
+      Content-Type:
+      - application/json
+      Date:
+      - Tue, 30 Mar 2021 13:32:52 GMT
+      Server:
+      - Scaleway API-Gateway
+      Strict-Transport-Security:
+      - max-age=63072000
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+      X-Request-Id:
+      - 09a8a401-fdb0-4271-8e12-64a8a7de2ccc
+    status: 200 OK
+    code: 200
+    duration: ""
+- request:
+    body: ""
+    form: {}
+    headers:
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.16.2; darwin; amd64) terraform-provider/develop
+        terraform/terraform-tests
+    url: https://api.scaleway.com/baremetal/v1/zones/fr-par-2/servers/eeaada0a-94e0-49b8-a229-9b3e9aa9977b
+    method: GET
+  response:
+    body: '{"id":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b","organization_id":"951df375-e094-4d26-97c1-ba548eeb9c42","name":"TestAccScalewayDataSourceBaremetalServer_Basic","description":"test
+      a description","updated_at":"2021-03-30T13:30:18.137749Z","created_at":"2021-03-30T13:29:35.734757Z","status":"ready","offer_id":"7fde3890-9787-488c-ac89-c4e00a4e5f83","install":{"os_id":"d17d6872-0412-45d9-a198-af82c34d3c5c","hostname":"TestAccScalewayDataSourceBaremetalServer_Basic","ssh_key_ids":["1cc4c216-5aec-4761-bb89-0a301629588e"],"status":"installing"},"tags":[],"ips":[{"id":"ce011afa-fb99-455e-8c95-32aa858d2ef2","address":"2001:0bc8:6005:001b:dac4:97ff:fe5b:72a5","reverse":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b.fr-par-2.baremetal.scw.cloud","version":"IPv6","reverse_status":"active","reverse_status_message":""},{"id":"d8a46574-bac0-4720-a3dc-e63fd680a07a","address":"51.159.31.183","reverse":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b.fr-par-2.baremetal.scw.cloud","version":"IPv4","reverse_status":"active","reverse_status_message":""}],"domain":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b.fr-par-2.baremetal.scw.cloud","boot_type":"normal","ping_status":"ping_status_unknown","project_id":"951df375-e094-4d26-97c1-ba548eeb9c42","zone":"fr-par-2"}'
+    headers:
+      Content-Length:
+      - "1232"
+      Content-Security-Policy:
+      - default-src 'none'; frame-ancestors 'none'
+      Content-Type:
+      - application/json
+      Date:
+      - Tue, 30 Mar 2021 13:33:07 GMT
+      Server:
+      - Scaleway API-Gateway
+      Strict-Transport-Security:
+      - max-age=63072000
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+      X-Request-Id:
+      - 367e7268-e3f2-4c3f-a90e-d5c814a25074
+    status: 200 OK
+    code: 200
+    duration: ""
+- request:
+    body: ""
+    form: {}
+    headers:
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.16.2; darwin; amd64) terraform-provider/develop
+        terraform/terraform-tests
+    url: https://api.scaleway.com/baremetal/v1/zones/fr-par-2/servers/eeaada0a-94e0-49b8-a229-9b3e9aa9977b
+    method: GET
+  response:
+    body: '{"id":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b","organization_id":"951df375-e094-4d26-97c1-ba548eeb9c42","name":"TestAccScalewayDataSourceBaremetalServer_Basic","description":"test
+      a description","updated_at":"2021-03-30T13:30:18.137749Z","created_at":"2021-03-30T13:29:35.734757Z","status":"ready","offer_id":"7fde3890-9787-488c-ac89-c4e00a4e5f83","install":{"os_id":"d17d6872-0412-45d9-a198-af82c34d3c5c","hostname":"TestAccScalewayDataSourceBaremetalServer_Basic","ssh_key_ids":["1cc4c216-5aec-4761-bb89-0a301629588e"],"status":"installing"},"tags":[],"ips":[{"id":"ce011afa-fb99-455e-8c95-32aa858d2ef2","address":"2001:0bc8:6005:001b:dac4:97ff:fe5b:72a5","reverse":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b.fr-par-2.baremetal.scw.cloud","version":"IPv6","reverse_status":"active","reverse_status_message":""},{"id":"d8a46574-bac0-4720-a3dc-e63fd680a07a","address":"51.159.31.183","reverse":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b.fr-par-2.baremetal.scw.cloud","version":"IPv4","reverse_status":"active","reverse_status_message":""}],"domain":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b.fr-par-2.baremetal.scw.cloud","boot_type":"normal","ping_status":"ping_status_unknown","project_id":"951df375-e094-4d26-97c1-ba548eeb9c42","zone":"fr-par-2"}'
+    headers:
+      Content-Length:
+      - "1232"
+      Content-Security-Policy:
+      - default-src 'none'; frame-ancestors 'none'
+      Content-Type:
+      - application/json
+      Date:
+      - Tue, 30 Mar 2021 13:33:22 GMT
+      Server:
+      - Scaleway API-Gateway
+      Strict-Transport-Security:
+      - max-age=63072000
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+      X-Request-Id:
+      - fbfc8f83-9ee7-4e80-b4f7-7b27248375d7
+    status: 200 OK
+    code: 200
+    duration: ""
+- request:
+    body: ""
+    form: {}
+    headers:
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.16.2; darwin; amd64) terraform-provider/develop
+        terraform/terraform-tests
+    url: https://api.scaleway.com/baremetal/v1/zones/fr-par-2/servers/eeaada0a-94e0-49b8-a229-9b3e9aa9977b
+    method: GET
+  response:
+    body: '{"id":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b","organization_id":"951df375-e094-4d26-97c1-ba548eeb9c42","name":"TestAccScalewayDataSourceBaremetalServer_Basic","description":"test
+      a description","updated_at":"2021-03-30T13:30:18.137749Z","created_at":"2021-03-30T13:29:35.734757Z","status":"ready","offer_id":"7fde3890-9787-488c-ac89-c4e00a4e5f83","install":{"os_id":"d17d6872-0412-45d9-a198-af82c34d3c5c","hostname":"TestAccScalewayDataSourceBaremetalServer_Basic","ssh_key_ids":["1cc4c216-5aec-4761-bb89-0a301629588e"],"status":"installing"},"tags":[],"ips":[{"id":"ce011afa-fb99-455e-8c95-32aa858d2ef2","address":"2001:0bc8:6005:001b:dac4:97ff:fe5b:72a5","reverse":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b.fr-par-2.baremetal.scw.cloud","version":"IPv6","reverse_status":"active","reverse_status_message":""},{"id":"d8a46574-bac0-4720-a3dc-e63fd680a07a","address":"51.159.31.183","reverse":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b.fr-par-2.baremetal.scw.cloud","version":"IPv4","reverse_status":"active","reverse_status_message":""}],"domain":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b.fr-par-2.baremetal.scw.cloud","boot_type":"normal","ping_status":"ping_status_unknown","project_id":"951df375-e094-4d26-97c1-ba548eeb9c42","zone":"fr-par-2"}'
+    headers:
+      Content-Length:
+      - "1232"
+      Content-Security-Policy:
+      - default-src 'none'; frame-ancestors 'none'
+      Content-Type:
+      - application/json
+      Date:
+      - Tue, 30 Mar 2021 13:33:37 GMT
+      Server:
+      - Scaleway API-Gateway
+      Strict-Transport-Security:
+      - max-age=63072000
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+      X-Request-Id:
+      - 63f089c8-f6fa-4d0f-9490-e405e4a8d4dd
+    status: 200 OK
+    code: 200
+    duration: ""
+- request:
+    body: ""
+    form: {}
+    headers:
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.16.2; darwin; amd64) terraform-provider/develop
+        terraform/terraform-tests
+    url: https://api.scaleway.com/baremetal/v1/zones/fr-par-2/servers/eeaada0a-94e0-49b8-a229-9b3e9aa9977b
+    method: GET
+  response:
+    body: '{"id":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b","organization_id":"951df375-e094-4d26-97c1-ba548eeb9c42","name":"TestAccScalewayDataSourceBaremetalServer_Basic","description":"test
+      a description","updated_at":"2021-03-30T13:30:18.137749Z","created_at":"2021-03-30T13:29:35.734757Z","status":"ready","offer_id":"7fde3890-9787-488c-ac89-c4e00a4e5f83","install":{"os_id":"d17d6872-0412-45d9-a198-af82c34d3c5c","hostname":"TestAccScalewayDataSourceBaremetalServer_Basic","ssh_key_ids":["1cc4c216-5aec-4761-bb89-0a301629588e"],"status":"installing"},"tags":[],"ips":[{"id":"ce011afa-fb99-455e-8c95-32aa858d2ef2","address":"2001:0bc8:6005:001b:dac4:97ff:fe5b:72a5","reverse":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b.fr-par-2.baremetal.scw.cloud","version":"IPv6","reverse_status":"active","reverse_status_message":""},{"id":"d8a46574-bac0-4720-a3dc-e63fd680a07a","address":"51.159.31.183","reverse":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b.fr-par-2.baremetal.scw.cloud","version":"IPv4","reverse_status":"active","reverse_status_message":""}],"domain":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b.fr-par-2.baremetal.scw.cloud","boot_type":"normal","ping_status":"ping_status_unknown","project_id":"951df375-e094-4d26-97c1-ba548eeb9c42","zone":"fr-par-2"}'
+    headers:
+      Content-Length:
+      - "1232"
+      Content-Security-Policy:
+      - default-src 'none'; frame-ancestors 'none'
+      Content-Type:
+      - application/json
+      Date:
+      - Tue, 30 Mar 2021 13:33:52 GMT
+      Server:
+      - Scaleway API-Gateway
+      Strict-Transport-Security:
+      - max-age=63072000
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+      X-Request-Id:
+      - 2dfb27db-c580-48fa-8105-d21c3cab5f7c
+    status: 200 OK
+    code: 200
+    duration: ""
+- request:
+    body: ""
+    form: {}
+    headers:
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.16.2; darwin; amd64) terraform-provider/develop
+        terraform/terraform-tests
+    url: https://api.scaleway.com/baremetal/v1/zones/fr-par-2/servers/eeaada0a-94e0-49b8-a229-9b3e9aa9977b
+    method: GET
+  response:
+    body: '{"id":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b","organization_id":"951df375-e094-4d26-97c1-ba548eeb9c42","name":"TestAccScalewayDataSourceBaremetalServer_Basic","description":"test
+      a description","updated_at":"2021-03-30T13:30:18.137749Z","created_at":"2021-03-30T13:29:35.734757Z","status":"ready","offer_id":"7fde3890-9787-488c-ac89-c4e00a4e5f83","install":{"os_id":"d17d6872-0412-45d9-a198-af82c34d3c5c","hostname":"TestAccScalewayDataSourceBaremetalServer_Basic","ssh_key_ids":["1cc4c216-5aec-4761-bb89-0a301629588e"],"status":"installing"},"tags":[],"ips":[{"id":"ce011afa-fb99-455e-8c95-32aa858d2ef2","address":"2001:0bc8:6005:001b:dac4:97ff:fe5b:72a5","reverse":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b.fr-par-2.baremetal.scw.cloud","version":"IPv6","reverse_status":"active","reverse_status_message":""},{"id":"d8a46574-bac0-4720-a3dc-e63fd680a07a","address":"51.159.31.183","reverse":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b.fr-par-2.baremetal.scw.cloud","version":"IPv4","reverse_status":"active","reverse_status_message":""}],"domain":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b.fr-par-2.baremetal.scw.cloud","boot_type":"normal","ping_status":"ping_status_unknown","project_id":"951df375-e094-4d26-97c1-ba548eeb9c42","zone":"fr-par-2"}'
+    headers:
+      Content-Length:
+      - "1232"
+      Content-Security-Policy:
+      - default-src 'none'; frame-ancestors 'none'
+      Content-Type:
+      - application/json
+      Date:
+      - Tue, 30 Mar 2021 13:34:07 GMT
+      Server:
+      - Scaleway API-Gateway
+      Strict-Transport-Security:
+      - max-age=63072000
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+      X-Request-Id:
+      - b6ea0cd0-b680-45bd-9b8b-88588c551e1a
+    status: 200 OK
+    code: 200
+    duration: ""
+- request:
+    body: ""
+    form: {}
+    headers:
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.16.2; darwin; amd64) terraform-provider/develop
+        terraform/terraform-tests
+    url: https://api.scaleway.com/baremetal/v1/zones/fr-par-2/servers/eeaada0a-94e0-49b8-a229-9b3e9aa9977b
+    method: GET
+  response:
+    body: '{"id":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b","organization_id":"951df375-e094-4d26-97c1-ba548eeb9c42","name":"TestAccScalewayDataSourceBaremetalServer_Basic","description":"test
+      a description","updated_at":"2021-03-30T13:30:18.137749Z","created_at":"2021-03-30T13:29:35.734757Z","status":"ready","offer_id":"7fde3890-9787-488c-ac89-c4e00a4e5f83","install":{"os_id":"d17d6872-0412-45d9-a198-af82c34d3c5c","hostname":"TestAccScalewayDataSourceBaremetalServer_Basic","ssh_key_ids":["1cc4c216-5aec-4761-bb89-0a301629588e"],"status":"installing"},"tags":[],"ips":[{"id":"ce011afa-fb99-455e-8c95-32aa858d2ef2","address":"2001:0bc8:6005:001b:dac4:97ff:fe5b:72a5","reverse":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b.fr-par-2.baremetal.scw.cloud","version":"IPv6","reverse_status":"active","reverse_status_message":""},{"id":"d8a46574-bac0-4720-a3dc-e63fd680a07a","address":"51.159.31.183","reverse":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b.fr-par-2.baremetal.scw.cloud","version":"IPv4","reverse_status":"active","reverse_status_message":""}],"domain":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b.fr-par-2.baremetal.scw.cloud","boot_type":"normal","ping_status":"ping_status_unknown","project_id":"951df375-e094-4d26-97c1-ba548eeb9c42","zone":"fr-par-2"}'
+    headers:
+      Content-Length:
+      - "1232"
+      Content-Security-Policy:
+      - default-src 'none'; frame-ancestors 'none'
+      Content-Type:
+      - application/json
+      Date:
+      - Tue, 30 Mar 2021 13:34:22 GMT
+      Server:
+      - Scaleway API-Gateway
+      Strict-Transport-Security:
+      - max-age=63072000
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+      X-Request-Id:
+      - a53b9636-6eab-4314-81b2-eca55763ae67
+    status: 200 OK
+    code: 200
+    duration: ""
+- request:
+    body: ""
+    form: {}
+    headers:
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.16.2; darwin; amd64) terraform-provider/develop
+        terraform/terraform-tests
+    url: https://api.scaleway.com/baremetal/v1/zones/fr-par-2/servers/eeaada0a-94e0-49b8-a229-9b3e9aa9977b
+    method: GET
+  response:
+    body: '{"id":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b","organization_id":"951df375-e094-4d26-97c1-ba548eeb9c42","name":"TestAccScalewayDataSourceBaremetalServer_Basic","description":"test
+      a description","updated_at":"2021-03-30T13:30:18.137749Z","created_at":"2021-03-30T13:29:35.734757Z","status":"ready","offer_id":"7fde3890-9787-488c-ac89-c4e00a4e5f83","install":{"os_id":"d17d6872-0412-45d9-a198-af82c34d3c5c","hostname":"TestAccScalewayDataSourceBaremetalServer_Basic","ssh_key_ids":["1cc4c216-5aec-4761-bb89-0a301629588e"],"status":"installing"},"tags":[],"ips":[{"id":"ce011afa-fb99-455e-8c95-32aa858d2ef2","address":"2001:0bc8:6005:001b:dac4:97ff:fe5b:72a5","reverse":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b.fr-par-2.baremetal.scw.cloud","version":"IPv6","reverse_status":"active","reverse_status_message":""},{"id":"d8a46574-bac0-4720-a3dc-e63fd680a07a","address":"51.159.31.183","reverse":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b.fr-par-2.baremetal.scw.cloud","version":"IPv4","reverse_status":"active","reverse_status_message":""}],"domain":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b.fr-par-2.baremetal.scw.cloud","boot_type":"normal","ping_status":"ping_status_unknown","project_id":"951df375-e094-4d26-97c1-ba548eeb9c42","zone":"fr-par-2"}'
+    headers:
+      Content-Length:
+      - "1232"
+      Content-Security-Policy:
+      - default-src 'none'; frame-ancestors 'none'
+      Content-Type:
+      - application/json
+      Date:
+      - Tue, 30 Mar 2021 13:34:37 GMT
+      Server:
+      - Scaleway API-Gateway
+      Strict-Transport-Security:
+      - max-age=63072000
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+      X-Request-Id:
+      - 0286aab7-daa1-40f5-b0ab-d6685052f5df
+    status: 200 OK
+    code: 200
+    duration: ""
+- request:
+    body: ""
+    form: {}
+    headers:
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.16.2; darwin; amd64) terraform-provider/develop
+        terraform/terraform-tests
+    url: https://api.scaleway.com/baremetal/v1/zones/fr-par-2/servers/eeaada0a-94e0-49b8-a229-9b3e9aa9977b
+    method: GET
+  response:
+    body: '{"id":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b","organization_id":"951df375-e094-4d26-97c1-ba548eeb9c42","name":"TestAccScalewayDataSourceBaremetalServer_Basic","description":"test
+      a description","updated_at":"2021-03-30T13:30:18.137749Z","created_at":"2021-03-30T13:29:35.734757Z","status":"ready","offer_id":"7fde3890-9787-488c-ac89-c4e00a4e5f83","install":{"os_id":"d17d6872-0412-45d9-a198-af82c34d3c5c","hostname":"TestAccScalewayDataSourceBaremetalServer_Basic","ssh_key_ids":["1cc4c216-5aec-4761-bb89-0a301629588e"],"status":"installing"},"tags":[],"ips":[{"id":"ce011afa-fb99-455e-8c95-32aa858d2ef2","address":"2001:0bc8:6005:001b:dac4:97ff:fe5b:72a5","reverse":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b.fr-par-2.baremetal.scw.cloud","version":"IPv6","reverse_status":"active","reverse_status_message":""},{"id":"d8a46574-bac0-4720-a3dc-e63fd680a07a","address":"51.159.31.183","reverse":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b.fr-par-2.baremetal.scw.cloud","version":"IPv4","reverse_status":"active","reverse_status_message":""}],"domain":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b.fr-par-2.baremetal.scw.cloud","boot_type":"normal","ping_status":"ping_status_unknown","project_id":"951df375-e094-4d26-97c1-ba548eeb9c42","zone":"fr-par-2"}'
+    headers:
+      Content-Length:
+      - "1232"
+      Content-Security-Policy:
+      - default-src 'none'; frame-ancestors 'none'
+      Content-Type:
+      - application/json
+      Date:
+      - Tue, 30 Mar 2021 13:34:52 GMT
+      Server:
+      - Scaleway API-Gateway
+      Strict-Transport-Security:
+      - max-age=63072000
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+      X-Request-Id:
+      - c07fbbce-24b6-47ec-9112-f4f270c2850e
+    status: 200 OK
+    code: 200
+    duration: ""
+- request:
+    body: ""
+    form: {}
+    headers:
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.16.2; darwin; amd64) terraform-provider/develop
+        terraform/terraform-tests
+    url: https://api.scaleway.com/baremetal/v1/zones/fr-par-2/servers/eeaada0a-94e0-49b8-a229-9b3e9aa9977b
+    method: GET
+  response:
+    body: '{"id":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b","organization_id":"951df375-e094-4d26-97c1-ba548eeb9c42","name":"TestAccScalewayDataSourceBaremetalServer_Basic","description":"test
+      a description","updated_at":"2021-03-30T13:30:18.137749Z","created_at":"2021-03-30T13:29:35.734757Z","status":"ready","offer_id":"7fde3890-9787-488c-ac89-c4e00a4e5f83","install":{"os_id":"d17d6872-0412-45d9-a198-af82c34d3c5c","hostname":"TestAccScalewayDataSourceBaremetalServer_Basic","ssh_key_ids":["1cc4c216-5aec-4761-bb89-0a301629588e"],"status":"installing"},"tags":[],"ips":[{"id":"ce011afa-fb99-455e-8c95-32aa858d2ef2","address":"2001:0bc8:6005:001b:dac4:97ff:fe5b:72a5","reverse":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b.fr-par-2.baremetal.scw.cloud","version":"IPv6","reverse_status":"active","reverse_status_message":""},{"id":"d8a46574-bac0-4720-a3dc-e63fd680a07a","address":"51.159.31.183","reverse":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b.fr-par-2.baremetal.scw.cloud","version":"IPv4","reverse_status":"active","reverse_status_message":""}],"domain":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b.fr-par-2.baremetal.scw.cloud","boot_type":"normal","ping_status":"ping_status_unknown","project_id":"951df375-e094-4d26-97c1-ba548eeb9c42","zone":"fr-par-2"}'
+    headers:
+      Content-Length:
+      - "1232"
+      Content-Security-Policy:
+      - default-src 'none'; frame-ancestors 'none'
+      Content-Type:
+      - application/json
+      Date:
+      - Tue, 30 Mar 2021 13:35:07 GMT
+      Server:
+      - Scaleway API-Gateway
+      Strict-Transport-Security:
+      - max-age=63072000
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+      X-Request-Id:
+      - 5b5ed86a-6cbf-4036-8b83-8ec21ee4972e
+    status: 200 OK
+    code: 200
+    duration: ""
+- request:
+    body: ""
+    form: {}
+    headers:
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.16.2; darwin; amd64) terraform-provider/develop
+        terraform/terraform-tests
+    url: https://api.scaleway.com/baremetal/v1/zones/fr-par-2/servers/eeaada0a-94e0-49b8-a229-9b3e9aa9977b
+    method: GET
+  response:
+    body: '{"id":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b","organization_id":"951df375-e094-4d26-97c1-ba548eeb9c42","name":"TestAccScalewayDataSourceBaremetalServer_Basic","description":"test
+      a description","updated_at":"2021-03-30T13:30:18.137749Z","created_at":"2021-03-30T13:29:35.734757Z","status":"ready","offer_id":"7fde3890-9787-488c-ac89-c4e00a4e5f83","install":{"os_id":"d17d6872-0412-45d9-a198-af82c34d3c5c","hostname":"TestAccScalewayDataSourceBaremetalServer_Basic","ssh_key_ids":["1cc4c216-5aec-4761-bb89-0a301629588e"],"status":"installing"},"tags":[],"ips":[{"id":"ce011afa-fb99-455e-8c95-32aa858d2ef2","address":"2001:0bc8:6005:001b:dac4:97ff:fe5b:72a5","reverse":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b.fr-par-2.baremetal.scw.cloud","version":"IPv6","reverse_status":"active","reverse_status_message":""},{"id":"d8a46574-bac0-4720-a3dc-e63fd680a07a","address":"51.159.31.183","reverse":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b.fr-par-2.baremetal.scw.cloud","version":"IPv4","reverse_status":"active","reverse_status_message":""}],"domain":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b.fr-par-2.baremetal.scw.cloud","boot_type":"normal","ping_status":"ping_status_unknown","project_id":"951df375-e094-4d26-97c1-ba548eeb9c42","zone":"fr-par-2"}'
+    headers:
+      Content-Length:
+      - "1232"
+      Content-Security-Policy:
+      - default-src 'none'; frame-ancestors 'none'
+      Content-Type:
+      - application/json
+      Date:
+      - Tue, 30 Mar 2021 13:35:23 GMT
+      Server:
+      - Scaleway API-Gateway
+      Strict-Transport-Security:
+      - max-age=63072000
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+      X-Request-Id:
+      - 3c8cec18-a971-4e73-a8fb-051934a8aa8b
+    status: 200 OK
+    code: 200
+    duration: ""
+- request:
+    body: ""
+    form: {}
+    headers:
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.16.2; darwin; amd64) terraform-provider/develop
+        terraform/terraform-tests
+    url: https://api.scaleway.com/baremetal/v1/zones/fr-par-2/servers/eeaada0a-94e0-49b8-a229-9b3e9aa9977b
+    method: GET
+  response:
+    body: '{"id":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b","organization_id":"951df375-e094-4d26-97c1-ba548eeb9c42","name":"TestAccScalewayDataSourceBaremetalServer_Basic","description":"test
+      a description","updated_at":"2021-03-30T13:30:18.137749Z","created_at":"2021-03-30T13:29:35.734757Z","status":"ready","offer_id":"7fde3890-9787-488c-ac89-c4e00a4e5f83","install":{"os_id":"d17d6872-0412-45d9-a198-af82c34d3c5c","hostname":"TestAccScalewayDataSourceBaremetalServer_Basic","ssh_key_ids":["1cc4c216-5aec-4761-bb89-0a301629588e"],"status":"installing"},"tags":[],"ips":[{"id":"ce011afa-fb99-455e-8c95-32aa858d2ef2","address":"2001:0bc8:6005:001b:dac4:97ff:fe5b:72a5","reverse":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b.fr-par-2.baremetal.scw.cloud","version":"IPv6","reverse_status":"active","reverse_status_message":""},{"id":"d8a46574-bac0-4720-a3dc-e63fd680a07a","address":"51.159.31.183","reverse":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b.fr-par-2.baremetal.scw.cloud","version":"IPv4","reverse_status":"active","reverse_status_message":""}],"domain":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b.fr-par-2.baremetal.scw.cloud","boot_type":"normal","ping_status":"ping_status_unknown","project_id":"951df375-e094-4d26-97c1-ba548eeb9c42","zone":"fr-par-2"}'
+    headers:
+      Content-Length:
+      - "1232"
+      Content-Security-Policy:
+      - default-src 'none'; frame-ancestors 'none'
+      Content-Type:
+      - application/json
+      Date:
+      - Tue, 30 Mar 2021 13:35:38 GMT
+      Server:
+      - Scaleway API-Gateway
+      Strict-Transport-Security:
+      - max-age=63072000
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+      X-Request-Id:
+      - ed99de6a-bd7f-4648-95d1-742d65c22471
+    status: 200 OK
+    code: 200
+    duration: ""
+- request:
+    body: ""
+    form: {}
+    headers:
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.16.2; darwin; amd64) terraform-provider/develop
+        terraform/terraform-tests
+    url: https://api.scaleway.com/baremetal/v1/zones/fr-par-2/servers/eeaada0a-94e0-49b8-a229-9b3e9aa9977b
+    method: GET
+  response:
+    body: '{"id":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b","organization_id":"951df375-e094-4d26-97c1-ba548eeb9c42","name":"TestAccScalewayDataSourceBaremetalServer_Basic","description":"test
+      a description","updated_at":"2021-03-30T13:30:18.137749Z","created_at":"2021-03-30T13:29:35.734757Z","status":"ready","offer_id":"7fde3890-9787-488c-ac89-c4e00a4e5f83","install":{"os_id":"d17d6872-0412-45d9-a198-af82c34d3c5c","hostname":"TestAccScalewayDataSourceBaremetalServer_Basic","ssh_key_ids":["1cc4c216-5aec-4761-bb89-0a301629588e"],"status":"installing"},"tags":[],"ips":[{"id":"ce011afa-fb99-455e-8c95-32aa858d2ef2","address":"2001:0bc8:6005:001b:dac4:97ff:fe5b:72a5","reverse":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b.fr-par-2.baremetal.scw.cloud","version":"IPv6","reverse_status":"active","reverse_status_message":""},{"id":"d8a46574-bac0-4720-a3dc-e63fd680a07a","address":"51.159.31.183","reverse":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b.fr-par-2.baremetal.scw.cloud","version":"IPv4","reverse_status":"active","reverse_status_message":""}],"domain":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b.fr-par-2.baremetal.scw.cloud","boot_type":"normal","ping_status":"ping_status_unknown","project_id":"951df375-e094-4d26-97c1-ba548eeb9c42","zone":"fr-par-2"}'
+    headers:
+      Content-Length:
+      - "1232"
+      Content-Security-Policy:
+      - default-src 'none'; frame-ancestors 'none'
+      Content-Type:
+      - application/json
+      Date:
+      - Tue, 30 Mar 2021 13:35:53 GMT
+      Server:
+      - Scaleway API-Gateway
+      Strict-Transport-Security:
+      - max-age=63072000
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+      X-Request-Id:
+      - d88a41ee-17a2-4c51-b407-e41de716e927
+    status: 200 OK
+    code: 200
+    duration: ""
+- request:
+    body: ""
+    form: {}
+    headers:
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.16.2; darwin; amd64) terraform-provider/develop
+        terraform/terraform-tests
+    url: https://api.scaleway.com/baremetal/v1/zones/fr-par-2/servers/eeaada0a-94e0-49b8-a229-9b3e9aa9977b
+    method: GET
+  response:
+    body: '{"id":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b","organization_id":"951df375-e094-4d26-97c1-ba548eeb9c42","name":"TestAccScalewayDataSourceBaremetalServer_Basic","description":"test
+      a description","updated_at":"2021-03-30T13:30:18.137749Z","created_at":"2021-03-30T13:29:35.734757Z","status":"ready","offer_id":"7fde3890-9787-488c-ac89-c4e00a4e5f83","install":{"os_id":"d17d6872-0412-45d9-a198-af82c34d3c5c","hostname":"TestAccScalewayDataSourceBaremetalServer_Basic","ssh_key_ids":["1cc4c216-5aec-4761-bb89-0a301629588e"],"status":"installing"},"tags":[],"ips":[{"id":"ce011afa-fb99-455e-8c95-32aa858d2ef2","address":"2001:0bc8:6005:001b:dac4:97ff:fe5b:72a5","reverse":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b.fr-par-2.baremetal.scw.cloud","version":"IPv6","reverse_status":"active","reverse_status_message":""},{"id":"d8a46574-bac0-4720-a3dc-e63fd680a07a","address":"51.159.31.183","reverse":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b.fr-par-2.baremetal.scw.cloud","version":"IPv4","reverse_status":"active","reverse_status_message":""}],"domain":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b.fr-par-2.baremetal.scw.cloud","boot_type":"normal","ping_status":"ping_status_up","project_id":"951df375-e094-4d26-97c1-ba548eeb9c42","zone":"fr-par-2"}'
+    headers:
+      Content-Length:
+      - "1227"
+      Content-Security-Policy:
+      - default-src 'none'; frame-ancestors 'none'
+      Content-Type:
+      - application/json
+      Date:
+      - Tue, 30 Mar 2021 13:36:08 GMT
+      Server:
+      - Scaleway API-Gateway
+      Strict-Transport-Security:
+      - max-age=63072000
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+      X-Request-Id:
+      - e914c4dd-c4f4-4c3f-adca-a0de67c93220
+    status: 200 OK
+    code: 200
+    duration: ""
+- request:
+    body: ""
+    form: {}
+    headers:
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.16.2; darwin; amd64) terraform-provider/develop
+        terraform/terraform-tests
+    url: https://api.scaleway.com/baremetal/v1/zones/fr-par-2/servers/eeaada0a-94e0-49b8-a229-9b3e9aa9977b
+    method: GET
+  response:
+    body: '{"id":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b","organization_id":"951df375-e094-4d26-97c1-ba548eeb9c42","name":"TestAccScalewayDataSourceBaremetalServer_Basic","description":"test
+      a description","updated_at":"2021-03-30T13:30:18.137749Z","created_at":"2021-03-30T13:29:35.734757Z","status":"ready","offer_id":"7fde3890-9787-488c-ac89-c4e00a4e5f83","install":{"os_id":"d17d6872-0412-45d9-a198-af82c34d3c5c","hostname":"TestAccScalewayDataSourceBaremetalServer_Basic","ssh_key_ids":["1cc4c216-5aec-4761-bb89-0a301629588e"],"status":"installing"},"tags":[],"ips":[{"id":"ce011afa-fb99-455e-8c95-32aa858d2ef2","address":"2001:0bc8:6005:001b:dac4:97ff:fe5b:72a5","reverse":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b.fr-par-2.baremetal.scw.cloud","version":"IPv6","reverse_status":"active","reverse_status_message":""},{"id":"d8a46574-bac0-4720-a3dc-e63fd680a07a","address":"51.159.31.183","reverse":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b.fr-par-2.baremetal.scw.cloud","version":"IPv4","reverse_status":"active","reverse_status_message":""}],"domain":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b.fr-par-2.baremetal.scw.cloud","boot_type":"normal","ping_status":"ping_status_up","project_id":"951df375-e094-4d26-97c1-ba548eeb9c42","zone":"fr-par-2"}'
+    headers:
+      Content-Length:
+      - "1227"
+      Content-Security-Policy:
+      - default-src 'none'; frame-ancestors 'none'
+      Content-Type:
+      - application/json
+      Date:
+      - Tue, 30 Mar 2021 13:36:23 GMT
+      Server:
+      - Scaleway API-Gateway
+      Strict-Transport-Security:
+      - max-age=63072000
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+      X-Request-Id:
+      - 915e9d98-93c0-4440-8138-64ab21e93ed3
+    status: 200 OK
+    code: 200
+    duration: ""
+- request:
+    body: ""
+    form: {}
+    headers:
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.16.2; darwin; amd64) terraform-provider/develop
+        terraform/terraform-tests
+    url: https://api.scaleway.com/baremetal/v1/zones/fr-par-2/servers/eeaada0a-94e0-49b8-a229-9b3e9aa9977b
+    method: GET
+  response:
+    body: '{"id":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b","organization_id":"951df375-e094-4d26-97c1-ba548eeb9c42","name":"TestAccScalewayDataSourceBaremetalServer_Basic","description":"test
+      a description","updated_at":"2021-03-30T13:30:18.137749Z","created_at":"2021-03-30T13:29:35.734757Z","status":"ready","offer_id":"7fde3890-9787-488c-ac89-c4e00a4e5f83","install":{"os_id":"d17d6872-0412-45d9-a198-af82c34d3c5c","hostname":"TestAccScalewayDataSourceBaremetalServer_Basic","ssh_key_ids":["1cc4c216-5aec-4761-bb89-0a301629588e"],"status":"installing"},"tags":[],"ips":[{"id":"ce011afa-fb99-455e-8c95-32aa858d2ef2","address":"2001:0bc8:6005:001b:dac4:97ff:fe5b:72a5","reverse":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b.fr-par-2.baremetal.scw.cloud","version":"IPv6","reverse_status":"active","reverse_status_message":""},{"id":"d8a46574-bac0-4720-a3dc-e63fd680a07a","address":"51.159.31.183","reverse":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b.fr-par-2.baremetal.scw.cloud","version":"IPv4","reverse_status":"active","reverse_status_message":""}],"domain":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b.fr-par-2.baremetal.scw.cloud","boot_type":"normal","ping_status":"ping_status_up","project_id":"951df375-e094-4d26-97c1-ba548eeb9c42","zone":"fr-par-2"}'
+    headers:
+      Content-Length:
+      - "1227"
+      Content-Security-Policy:
+      - default-src 'none'; frame-ancestors 'none'
+      Content-Type:
+      - application/json
+      Date:
+      - Tue, 30 Mar 2021 13:36:38 GMT
+      Server:
+      - Scaleway API-Gateway
+      Strict-Transport-Security:
+      - max-age=63072000
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+      X-Request-Id:
+      - b9f51d9f-4813-4aa5-be58-bca05d7d8b44
+    status: 200 OK
+    code: 200
+    duration: ""
+- request:
+    body: ""
+    form: {}
+    headers:
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.16.2; darwin; amd64) terraform-provider/develop
+        terraform/terraform-tests
+    url: https://api.scaleway.com/baremetal/v1/zones/fr-par-2/servers/eeaada0a-94e0-49b8-a229-9b3e9aa9977b
+    method: GET
+  response:
+    body: '{"id":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b","organization_id":"951df375-e094-4d26-97c1-ba548eeb9c42","name":"TestAccScalewayDataSourceBaremetalServer_Basic","description":"test
+      a description","updated_at":"2021-03-30T13:30:18.137749Z","created_at":"2021-03-30T13:29:35.734757Z","status":"ready","offer_id":"7fde3890-9787-488c-ac89-c4e00a4e5f83","install":{"os_id":"d17d6872-0412-45d9-a198-af82c34d3c5c","hostname":"TestAccScalewayDataSourceBaremetalServer_Basic","ssh_key_ids":["1cc4c216-5aec-4761-bb89-0a301629588e"],"status":"installing"},"tags":[],"ips":[{"id":"ce011afa-fb99-455e-8c95-32aa858d2ef2","address":"2001:0bc8:6005:001b:dac4:97ff:fe5b:72a5","reverse":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b.fr-par-2.baremetal.scw.cloud","version":"IPv6","reverse_status":"active","reverse_status_message":""},{"id":"d8a46574-bac0-4720-a3dc-e63fd680a07a","address":"51.159.31.183","reverse":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b.fr-par-2.baremetal.scw.cloud","version":"IPv4","reverse_status":"active","reverse_status_message":""}],"domain":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b.fr-par-2.baremetal.scw.cloud","boot_type":"normal","ping_status":"ping_status_up","project_id":"951df375-e094-4d26-97c1-ba548eeb9c42","zone":"fr-par-2"}'
+    headers:
+      Content-Length:
+      - "1227"
+      Content-Security-Policy:
+      - default-src 'none'; frame-ancestors 'none'
+      Content-Type:
+      - application/json
+      Date:
+      - Tue, 30 Mar 2021 13:36:53 GMT
+      Server:
+      - Scaleway API-Gateway
+      Strict-Transport-Security:
+      - max-age=63072000
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+      X-Request-Id:
+      - d98649fe-595f-4023-94f4-4ed22a9064e2
+    status: 200 OK
+    code: 200
+    duration: ""
+- request:
+    body: ""
+    form: {}
+    headers:
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.16.2; darwin; amd64) terraform-provider/develop
+        terraform/terraform-tests
+    url: https://api.scaleway.com/baremetal/v1/zones/fr-par-2/servers/eeaada0a-94e0-49b8-a229-9b3e9aa9977b
+    method: GET
+  response:
+    body: '{"id":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b","organization_id":"951df375-e094-4d26-97c1-ba548eeb9c42","name":"TestAccScalewayDataSourceBaremetalServer_Basic","description":"test
+      a description","updated_at":"2021-03-30T13:30:18.137749Z","created_at":"2021-03-30T13:29:35.734757Z","status":"ready","offer_id":"7fde3890-9787-488c-ac89-c4e00a4e5f83","install":{"os_id":"d17d6872-0412-45d9-a198-af82c34d3c5c","hostname":"TestAccScalewayDataSourceBaremetalServer_Basic","ssh_key_ids":["1cc4c216-5aec-4761-bb89-0a301629588e"],"status":"installing"},"tags":[],"ips":[{"id":"ce011afa-fb99-455e-8c95-32aa858d2ef2","address":"2001:0bc8:6005:001b:dac4:97ff:fe5b:72a5","reverse":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b.fr-par-2.baremetal.scw.cloud","version":"IPv6","reverse_status":"active","reverse_status_message":""},{"id":"d8a46574-bac0-4720-a3dc-e63fd680a07a","address":"51.159.31.183","reverse":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b.fr-par-2.baremetal.scw.cloud","version":"IPv4","reverse_status":"active","reverse_status_message":""}],"domain":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b.fr-par-2.baremetal.scw.cloud","boot_type":"normal","ping_status":"ping_status_up","project_id":"951df375-e094-4d26-97c1-ba548eeb9c42","zone":"fr-par-2"}'
+    headers:
+      Content-Length:
+      - "1227"
+      Content-Security-Policy:
+      - default-src 'none'; frame-ancestors 'none'
+      Content-Type:
+      - application/json
+      Date:
+      - Tue, 30 Mar 2021 13:37:08 GMT
+      Server:
+      - Scaleway API-Gateway
+      Strict-Transport-Security:
+      - max-age=63072000
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+      X-Request-Id:
+      - 1cb00044-5089-4c6f-b65a-a176cbf130a3
+    status: 200 OK
+    code: 200
+    duration: ""
+- request:
+    body: ""
+    form: {}
+    headers:
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.16.2; darwin; amd64) terraform-provider/develop
+        terraform/terraform-tests
+    url: https://api.scaleway.com/baremetal/v1/zones/fr-par-2/servers/eeaada0a-94e0-49b8-a229-9b3e9aa9977b
+    method: GET
+  response:
+    body: '{"id":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b","organization_id":"951df375-e094-4d26-97c1-ba548eeb9c42","name":"TestAccScalewayDataSourceBaremetalServer_Basic","description":"test
+      a description","updated_at":"2021-03-30T13:30:18.137749Z","created_at":"2021-03-30T13:29:35.734757Z","status":"ready","offer_id":"7fde3890-9787-488c-ac89-c4e00a4e5f83","install":{"os_id":"d17d6872-0412-45d9-a198-af82c34d3c5c","hostname":"TestAccScalewayDataSourceBaremetalServer_Basic","ssh_key_ids":["1cc4c216-5aec-4761-bb89-0a301629588e"],"status":"installing"},"tags":[],"ips":[{"id":"ce011afa-fb99-455e-8c95-32aa858d2ef2","address":"2001:0bc8:6005:001b:dac4:97ff:fe5b:72a5","reverse":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b.fr-par-2.baremetal.scw.cloud","version":"IPv6","reverse_status":"active","reverse_status_message":""},{"id":"d8a46574-bac0-4720-a3dc-e63fd680a07a","address":"51.159.31.183","reverse":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b.fr-par-2.baremetal.scw.cloud","version":"IPv4","reverse_status":"active","reverse_status_message":""}],"domain":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b.fr-par-2.baremetal.scw.cloud","boot_type":"normal","ping_status":"ping_status_up","project_id":"951df375-e094-4d26-97c1-ba548eeb9c42","zone":"fr-par-2"}'
+    headers:
+      Content-Length:
+      - "1227"
+      Content-Security-Policy:
+      - default-src 'none'; frame-ancestors 'none'
+      Content-Type:
+      - application/json
+      Date:
+      - Tue, 30 Mar 2021 13:37:23 GMT
+      Server:
+      - Scaleway API-Gateway
+      Strict-Transport-Security:
+      - max-age=63072000
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+      X-Request-Id:
+      - 21e19dd1-5a1c-42fb-af27-6f4c6dfe835a
+    status: 200 OK
+    code: 200
+    duration: ""
+- request:
+    body: ""
+    form: {}
+    headers:
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.16.2; darwin; amd64) terraform-provider/develop
+        terraform/terraform-tests
+    url: https://api.scaleway.com/baremetal/v1/zones/fr-par-2/servers/eeaada0a-94e0-49b8-a229-9b3e9aa9977b
+    method: GET
+  response:
+    body: '{"id":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b","organization_id":"951df375-e094-4d26-97c1-ba548eeb9c42","name":"TestAccScalewayDataSourceBaremetalServer_Basic","description":"test
+      a description","updated_at":"2021-03-30T13:30:18.137749Z","created_at":"2021-03-30T13:29:35.734757Z","status":"ready","offer_id":"7fde3890-9787-488c-ac89-c4e00a4e5f83","install":{"os_id":"d17d6872-0412-45d9-a198-af82c34d3c5c","hostname":"TestAccScalewayDataSourceBaremetalServer_Basic","ssh_key_ids":["1cc4c216-5aec-4761-bb89-0a301629588e"],"status":"installing"},"tags":[],"ips":[{"id":"ce011afa-fb99-455e-8c95-32aa858d2ef2","address":"2001:0bc8:6005:001b:dac4:97ff:fe5b:72a5","reverse":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b.fr-par-2.baremetal.scw.cloud","version":"IPv6","reverse_status":"active","reverse_status_message":""},{"id":"d8a46574-bac0-4720-a3dc-e63fd680a07a","address":"51.159.31.183","reverse":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b.fr-par-2.baremetal.scw.cloud","version":"IPv4","reverse_status":"active","reverse_status_message":""}],"domain":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b.fr-par-2.baremetal.scw.cloud","boot_type":"normal","ping_status":"ping_status_up","project_id":"951df375-e094-4d26-97c1-ba548eeb9c42","zone":"fr-par-2"}'
+    headers:
+      Content-Length:
+      - "1227"
+      Content-Security-Policy:
+      - default-src 'none'; frame-ancestors 'none'
+      Content-Type:
+      - application/json
+      Date:
+      - Tue, 30 Mar 2021 13:37:38 GMT
+      Server:
+      - Scaleway API-Gateway
+      Strict-Transport-Security:
+      - max-age=63072000
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+      X-Request-Id:
+      - 31ab0bff-f866-4bfc-979b-5187fa6cb1a1
+    status: 200 OK
+    code: 200
+    duration: ""
+- request:
+    body: ""
+    form: {}
+    headers:
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.16.2; darwin; amd64) terraform-provider/develop
+        terraform/terraform-tests
+    url: https://api.scaleway.com/baremetal/v1/zones/fr-par-2/servers/eeaada0a-94e0-49b8-a229-9b3e9aa9977b
+    method: GET
+  response:
+    body: '{"id":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b","organization_id":"951df375-e094-4d26-97c1-ba548eeb9c42","name":"TestAccScalewayDataSourceBaremetalServer_Basic","description":"test
+      a description","updated_at":"2021-03-30T13:30:18.137749Z","created_at":"2021-03-30T13:29:35.734757Z","status":"ready","offer_id":"7fde3890-9787-488c-ac89-c4e00a4e5f83","install":{"os_id":"d17d6872-0412-45d9-a198-af82c34d3c5c","hostname":"TestAccScalewayDataSourceBaremetalServer_Basic","ssh_key_ids":["1cc4c216-5aec-4761-bb89-0a301629588e"],"status":"installing"},"tags":[],"ips":[{"id":"ce011afa-fb99-455e-8c95-32aa858d2ef2","address":"2001:0bc8:6005:001b:dac4:97ff:fe5b:72a5","reverse":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b.fr-par-2.baremetal.scw.cloud","version":"IPv6","reverse_status":"active","reverse_status_message":""},{"id":"d8a46574-bac0-4720-a3dc-e63fd680a07a","address":"51.159.31.183","reverse":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b.fr-par-2.baremetal.scw.cloud","version":"IPv4","reverse_status":"active","reverse_status_message":""}],"domain":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b.fr-par-2.baremetal.scw.cloud","boot_type":"normal","ping_status":"ping_status_up","project_id":"951df375-e094-4d26-97c1-ba548eeb9c42","zone":"fr-par-2"}'
+    headers:
+      Content-Length:
+      - "1227"
+      Content-Security-Policy:
+      - default-src 'none'; frame-ancestors 'none'
+      Content-Type:
+      - application/json
+      Date:
+      - Tue, 30 Mar 2021 13:37:53 GMT
+      Server:
+      - Scaleway API-Gateway
+      Strict-Transport-Security:
+      - max-age=63072000
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+      X-Request-Id:
+      - 6b7fe90f-1b0f-4807-9279-07507a64b859
+    status: 200 OK
+    code: 200
+    duration: ""
+- request:
+    body: ""
+    form: {}
+    headers:
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.16.2; darwin; amd64) terraform-provider/develop
+        terraform/terraform-tests
+    url: https://api.scaleway.com/baremetal/v1/zones/fr-par-2/servers/eeaada0a-94e0-49b8-a229-9b3e9aa9977b
+    method: GET
+  response:
+    body: '{"id":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b","organization_id":"951df375-e094-4d26-97c1-ba548eeb9c42","name":"TestAccScalewayDataSourceBaremetalServer_Basic","description":"test
+      a description","updated_at":"2021-03-30T13:30:18.137749Z","created_at":"2021-03-30T13:29:35.734757Z","status":"ready","offer_id":"7fde3890-9787-488c-ac89-c4e00a4e5f83","install":{"os_id":"d17d6872-0412-45d9-a198-af82c34d3c5c","hostname":"TestAccScalewayDataSourceBaremetalServer_Basic","ssh_key_ids":["1cc4c216-5aec-4761-bb89-0a301629588e"],"status":"installing"},"tags":[],"ips":[{"id":"ce011afa-fb99-455e-8c95-32aa858d2ef2","address":"2001:0bc8:6005:001b:dac4:97ff:fe5b:72a5","reverse":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b.fr-par-2.baremetal.scw.cloud","version":"IPv6","reverse_status":"active","reverse_status_message":""},{"id":"d8a46574-bac0-4720-a3dc-e63fd680a07a","address":"51.159.31.183","reverse":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b.fr-par-2.baremetal.scw.cloud","version":"IPv4","reverse_status":"active","reverse_status_message":""}],"domain":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b.fr-par-2.baremetal.scw.cloud","boot_type":"normal","ping_status":"ping_status_up","project_id":"951df375-e094-4d26-97c1-ba548eeb9c42","zone":"fr-par-2"}'
+    headers:
+      Content-Length:
+      - "1227"
+      Content-Security-Policy:
+      - default-src 'none'; frame-ancestors 'none'
+      Content-Type:
+      - application/json
+      Date:
+      - Tue, 30 Mar 2021 13:38:08 GMT
+      Server:
+      - Scaleway API-Gateway
+      Strict-Transport-Security:
+      - max-age=63072000
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+      X-Request-Id:
+      - f481e3ee-6e0f-46e6-b1c1-fb8e07b63bff
+    status: 200 OK
+    code: 200
+    duration: ""
+- request:
+    body: ""
+    form: {}
+    headers:
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.16.2; darwin; amd64) terraform-provider/develop
+        terraform/terraform-tests
+    url: https://api.scaleway.com/baremetal/v1/zones/fr-par-2/servers/eeaada0a-94e0-49b8-a229-9b3e9aa9977b
+    method: GET
+  response:
+    body: '{"id":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b","organization_id":"951df375-e094-4d26-97c1-ba548eeb9c42","name":"TestAccScalewayDataSourceBaremetalServer_Basic","description":"test
+      a description","updated_at":"2021-03-30T13:30:18.137749Z","created_at":"2021-03-30T13:29:35.734757Z","status":"ready","offer_id":"7fde3890-9787-488c-ac89-c4e00a4e5f83","install":{"os_id":"d17d6872-0412-45d9-a198-af82c34d3c5c","hostname":"TestAccScalewayDataSourceBaremetalServer_Basic","ssh_key_ids":["1cc4c216-5aec-4761-bb89-0a301629588e"],"status":"installing"},"tags":[],"ips":[{"id":"ce011afa-fb99-455e-8c95-32aa858d2ef2","address":"2001:0bc8:6005:001b:dac4:97ff:fe5b:72a5","reverse":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b.fr-par-2.baremetal.scw.cloud","version":"IPv6","reverse_status":"active","reverse_status_message":""},{"id":"d8a46574-bac0-4720-a3dc-e63fd680a07a","address":"51.159.31.183","reverse":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b.fr-par-2.baremetal.scw.cloud","version":"IPv4","reverse_status":"active","reverse_status_message":""}],"domain":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b.fr-par-2.baremetal.scw.cloud","boot_type":"normal","ping_status":"ping_status_up","project_id":"951df375-e094-4d26-97c1-ba548eeb9c42","zone":"fr-par-2"}'
+    headers:
+      Content-Length:
+      - "1227"
+      Content-Security-Policy:
+      - default-src 'none'; frame-ancestors 'none'
+      Content-Type:
+      - application/json
+      Date:
+      - Tue, 30 Mar 2021 13:38:24 GMT
+      Server:
+      - Scaleway API-Gateway
+      Strict-Transport-Security:
+      - max-age=63072000
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+      X-Request-Id:
+      - 932d0864-756a-4c11-9344-05c03856a7d7
+    status: 200 OK
+    code: 200
+    duration: ""
+- request:
+    body: ""
+    form: {}
+    headers:
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.16.2; darwin; amd64) terraform-provider/develop
+        terraform/terraform-tests
+    url: https://api.scaleway.com/baremetal/v1/zones/fr-par-2/servers/eeaada0a-94e0-49b8-a229-9b3e9aa9977b
+    method: GET
+  response:
+    body: '{"id":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b","organization_id":"951df375-e094-4d26-97c1-ba548eeb9c42","name":"TestAccScalewayDataSourceBaremetalServer_Basic","description":"test
+      a description","updated_at":"2021-03-30T13:30:18.137749Z","created_at":"2021-03-30T13:29:35.734757Z","status":"ready","offer_id":"7fde3890-9787-488c-ac89-c4e00a4e5f83","install":{"os_id":"d17d6872-0412-45d9-a198-af82c34d3c5c","hostname":"TestAccScalewayDataSourceBaremetalServer_Basic","ssh_key_ids":["1cc4c216-5aec-4761-bb89-0a301629588e"],"status":"installing"},"tags":[],"ips":[{"id":"ce011afa-fb99-455e-8c95-32aa858d2ef2","address":"2001:0bc8:6005:001b:dac4:97ff:fe5b:72a5","reverse":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b.fr-par-2.baremetal.scw.cloud","version":"IPv6","reverse_status":"active","reverse_status_message":""},{"id":"d8a46574-bac0-4720-a3dc-e63fd680a07a","address":"51.159.31.183","reverse":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b.fr-par-2.baremetal.scw.cloud","version":"IPv4","reverse_status":"active","reverse_status_message":""}],"domain":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b.fr-par-2.baremetal.scw.cloud","boot_type":"normal","ping_status":"ping_status_up","project_id":"951df375-e094-4d26-97c1-ba548eeb9c42","zone":"fr-par-2"}'
+    headers:
+      Content-Length:
+      - "1227"
+      Content-Security-Policy:
+      - default-src 'none'; frame-ancestors 'none'
+      Content-Type:
+      - application/json
+      Date:
+      - Tue, 30 Mar 2021 13:38:39 GMT
+      Server:
+      - Scaleway API-Gateway
+      Strict-Transport-Security:
+      - max-age=63072000
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+      X-Request-Id:
+      - 9425a875-0461-4092-93d3-15ed77ef783d
+    status: 200 OK
+    code: 200
+    duration: ""
+- request:
+    body: ""
+    form: {}
+    headers:
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.16.2; darwin; amd64) terraform-provider/develop
+        terraform/terraform-tests
+    url: https://api.scaleway.com/baremetal/v1/zones/fr-par-2/servers/eeaada0a-94e0-49b8-a229-9b3e9aa9977b
+    method: GET
+  response:
+    body: '{"id":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b","organization_id":"951df375-e094-4d26-97c1-ba548eeb9c42","name":"TestAccScalewayDataSourceBaremetalServer_Basic","description":"test
+      a description","updated_at":"2021-03-30T13:30:18.137749Z","created_at":"2021-03-30T13:29:35.734757Z","status":"ready","offer_id":"7fde3890-9787-488c-ac89-c4e00a4e5f83","install":{"os_id":"d17d6872-0412-45d9-a198-af82c34d3c5c","hostname":"TestAccScalewayDataSourceBaremetalServer_Basic","ssh_key_ids":["1cc4c216-5aec-4761-bb89-0a301629588e"],"status":"installing"},"tags":[],"ips":[{"id":"ce011afa-fb99-455e-8c95-32aa858d2ef2","address":"2001:0bc8:6005:001b:dac4:97ff:fe5b:72a5","reverse":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b.fr-par-2.baremetal.scw.cloud","version":"IPv6","reverse_status":"active","reverse_status_message":""},{"id":"d8a46574-bac0-4720-a3dc-e63fd680a07a","address":"51.159.31.183","reverse":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b.fr-par-2.baremetal.scw.cloud","version":"IPv4","reverse_status":"active","reverse_status_message":""}],"domain":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b.fr-par-2.baremetal.scw.cloud","boot_type":"normal","ping_status":"ping_status_up","project_id":"951df375-e094-4d26-97c1-ba548eeb9c42","zone":"fr-par-2"}'
+    headers:
+      Content-Length:
+      - "1227"
+      Content-Security-Policy:
+      - default-src 'none'; frame-ancestors 'none'
+      Content-Type:
+      - application/json
+      Date:
+      - Tue, 30 Mar 2021 13:38:54 GMT
+      Server:
+      - Scaleway API-Gateway
+      Strict-Transport-Security:
+      - max-age=63072000
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+      X-Request-Id:
+      - 853f2724-eaaf-404f-9f55-ed8a5f2c657a
+    status: 200 OK
+    code: 200
+    duration: ""
+- request:
+    body: ""
+    form: {}
+    headers:
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.16.2; darwin; amd64) terraform-provider/develop
+        terraform/terraform-tests
+    url: https://api.scaleway.com/baremetal/v1/zones/fr-par-2/servers/eeaada0a-94e0-49b8-a229-9b3e9aa9977b
+    method: GET
+  response:
+    body: '{"id":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b","organization_id":"951df375-e094-4d26-97c1-ba548eeb9c42","name":"TestAccScalewayDataSourceBaremetalServer_Basic","description":"test
+      a description","updated_at":"2021-03-30T13:30:18.137749Z","created_at":"2021-03-30T13:29:35.734757Z","status":"ready","offer_id":"7fde3890-9787-488c-ac89-c4e00a4e5f83","install":{"os_id":"d17d6872-0412-45d9-a198-af82c34d3c5c","hostname":"TestAccScalewayDataSourceBaremetalServer_Basic","ssh_key_ids":["1cc4c216-5aec-4761-bb89-0a301629588e"],"status":"installing"},"tags":[],"ips":[{"id":"ce011afa-fb99-455e-8c95-32aa858d2ef2","address":"2001:0bc8:6005:001b:dac4:97ff:fe5b:72a5","reverse":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b.fr-par-2.baremetal.scw.cloud","version":"IPv6","reverse_status":"active","reverse_status_message":""},{"id":"d8a46574-bac0-4720-a3dc-e63fd680a07a","address":"51.159.31.183","reverse":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b.fr-par-2.baremetal.scw.cloud","version":"IPv4","reverse_status":"active","reverse_status_message":""}],"domain":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b.fr-par-2.baremetal.scw.cloud","boot_type":"normal","ping_status":"ping_status_up","project_id":"951df375-e094-4d26-97c1-ba548eeb9c42","zone":"fr-par-2"}'
+    headers:
+      Content-Length:
+      - "1227"
+      Content-Security-Policy:
+      - default-src 'none'; frame-ancestors 'none'
+      Content-Type:
+      - application/json
+      Date:
+      - Tue, 30 Mar 2021 13:39:09 GMT
+      Server:
+      - Scaleway API-Gateway
+      Strict-Transport-Security:
+      - max-age=63072000
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+      X-Request-Id:
+      - 2c1aef7a-e6ac-4338-9141-d7edc2673240
+    status: 200 OK
+    code: 200
+    duration: ""
+- request:
+    body: ""
+    form: {}
+    headers:
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.16.2; darwin; amd64) terraform-provider/develop
+        terraform/terraform-tests
+    url: https://api.scaleway.com/baremetal/v1/zones/fr-par-2/servers/eeaada0a-94e0-49b8-a229-9b3e9aa9977b
+    method: GET
+  response:
+    body: '{"id":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b","organization_id":"951df375-e094-4d26-97c1-ba548eeb9c42","name":"TestAccScalewayDataSourceBaremetalServer_Basic","description":"test
+      a description","updated_at":"2021-03-30T13:30:18.137749Z","created_at":"2021-03-30T13:29:35.734757Z","status":"ready","offer_id":"7fde3890-9787-488c-ac89-c4e00a4e5f83","install":{"os_id":"d17d6872-0412-45d9-a198-af82c34d3c5c","hostname":"TestAccScalewayDataSourceBaremetalServer_Basic","ssh_key_ids":["1cc4c216-5aec-4761-bb89-0a301629588e"],"status":"installing"},"tags":[],"ips":[{"id":"ce011afa-fb99-455e-8c95-32aa858d2ef2","address":"2001:0bc8:6005:001b:dac4:97ff:fe5b:72a5","reverse":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b.fr-par-2.baremetal.scw.cloud","version":"IPv6","reverse_status":"active","reverse_status_message":""},{"id":"d8a46574-bac0-4720-a3dc-e63fd680a07a","address":"51.159.31.183","reverse":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b.fr-par-2.baremetal.scw.cloud","version":"IPv4","reverse_status":"active","reverse_status_message":""}],"domain":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b.fr-par-2.baremetal.scw.cloud","boot_type":"normal","ping_status":"ping_status_up","project_id":"951df375-e094-4d26-97c1-ba548eeb9c42","zone":"fr-par-2"}'
+    headers:
+      Content-Length:
+      - "1227"
+      Content-Security-Policy:
+      - default-src 'none'; frame-ancestors 'none'
+      Content-Type:
+      - application/json
+      Date:
+      - Tue, 30 Mar 2021 13:39:24 GMT
+      Server:
+      - Scaleway API-Gateway
+      Strict-Transport-Security:
+      - max-age=63072000
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+      X-Request-Id:
+      - 72a0f1e2-9714-4f1e-8e97-880e0e75f6aa
+    status: 200 OK
+    code: 200
+    duration: ""
+- request:
+    body: ""
+    form: {}
+    headers:
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.16.2; darwin; amd64) terraform-provider/develop
+        terraform/terraform-tests
+    url: https://api.scaleway.com/baremetal/v1/zones/fr-par-2/servers/eeaada0a-94e0-49b8-a229-9b3e9aa9977b
+    method: GET
+  response:
+    body: '{"id":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b","organization_id":"951df375-e094-4d26-97c1-ba548eeb9c42","name":"TestAccScalewayDataSourceBaremetalServer_Basic","description":"test
+      a description","updated_at":"2021-03-30T13:30:18.137749Z","created_at":"2021-03-30T13:29:35.734757Z","status":"ready","offer_id":"7fde3890-9787-488c-ac89-c4e00a4e5f83","install":{"os_id":"d17d6872-0412-45d9-a198-af82c34d3c5c","hostname":"TestAccScalewayDataSourceBaremetalServer_Basic","ssh_key_ids":["1cc4c216-5aec-4761-bb89-0a301629588e"],"status":"installing"},"tags":[],"ips":[{"id":"ce011afa-fb99-455e-8c95-32aa858d2ef2","address":"2001:0bc8:6005:001b:dac4:97ff:fe5b:72a5","reverse":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b.fr-par-2.baremetal.scw.cloud","version":"IPv6","reverse_status":"active","reverse_status_message":""},{"id":"d8a46574-bac0-4720-a3dc-e63fd680a07a","address":"51.159.31.183","reverse":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b.fr-par-2.baremetal.scw.cloud","version":"IPv4","reverse_status":"active","reverse_status_message":""}],"domain":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b.fr-par-2.baremetal.scw.cloud","boot_type":"normal","ping_status":"ping_status_up","project_id":"951df375-e094-4d26-97c1-ba548eeb9c42","zone":"fr-par-2"}'
+    headers:
+      Content-Length:
+      - "1227"
+      Content-Security-Policy:
+      - default-src 'none'; frame-ancestors 'none'
+      Content-Type:
+      - application/json
+      Date:
+      - Tue, 30 Mar 2021 13:39:39 GMT
+      Server:
+      - Scaleway API-Gateway
+      Strict-Transport-Security:
+      - max-age=63072000
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+      X-Request-Id:
+      - a9921f10-0aa1-46b6-9e16-33d53fd650ab
+    status: 200 OK
+    code: 200
+    duration: ""
+- request:
+    body: ""
+    form: {}
+    headers:
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.16.2; darwin; amd64) terraform-provider/develop
+        terraform/terraform-tests
+    url: https://api.scaleway.com/baremetal/v1/zones/fr-par-2/servers/eeaada0a-94e0-49b8-a229-9b3e9aa9977b
+    method: GET
+  response:
+    body: '{"id":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b","organization_id":"951df375-e094-4d26-97c1-ba548eeb9c42","name":"TestAccScalewayDataSourceBaremetalServer_Basic","description":"test
+      a description","updated_at":"2021-03-30T13:30:18.137749Z","created_at":"2021-03-30T13:29:35.734757Z","status":"ready","offer_id":"7fde3890-9787-488c-ac89-c4e00a4e5f83","install":{"os_id":"d17d6872-0412-45d9-a198-af82c34d3c5c","hostname":"TestAccScalewayDataSourceBaremetalServer_Basic","ssh_key_ids":["1cc4c216-5aec-4761-bb89-0a301629588e"],"status":"installing"},"tags":[],"ips":[{"id":"ce011afa-fb99-455e-8c95-32aa858d2ef2","address":"2001:0bc8:6005:001b:dac4:97ff:fe5b:72a5","reverse":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b.fr-par-2.baremetal.scw.cloud","version":"IPv6","reverse_status":"active","reverse_status_message":""},{"id":"d8a46574-bac0-4720-a3dc-e63fd680a07a","address":"51.159.31.183","reverse":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b.fr-par-2.baremetal.scw.cloud","version":"IPv4","reverse_status":"active","reverse_status_message":""}],"domain":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b.fr-par-2.baremetal.scw.cloud","boot_type":"normal","ping_status":"ping_status_up","project_id":"951df375-e094-4d26-97c1-ba548eeb9c42","zone":"fr-par-2"}'
+    headers:
+      Content-Length:
+      - "1227"
+      Content-Security-Policy:
+      - default-src 'none'; frame-ancestors 'none'
+      Content-Type:
+      - application/json
+      Date:
+      - Tue, 30 Mar 2021 13:39:54 GMT
+      Server:
+      - Scaleway API-Gateway
+      Strict-Transport-Security:
+      - max-age=63072000
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+      X-Request-Id:
+      - b324a989-70cc-4ba0-bb83-55f28530fc8f
+    status: 200 OK
+    code: 200
+    duration: ""
+- request:
+    body: ""
+    form: {}
+    headers:
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.16.2; darwin; amd64) terraform-provider/develop
+        terraform/terraform-tests
+    url: https://api.scaleway.com/baremetal/v1/zones/fr-par-2/servers/eeaada0a-94e0-49b8-a229-9b3e9aa9977b
+    method: GET
+  response:
+    body: '{"id":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b","organization_id":"951df375-e094-4d26-97c1-ba548eeb9c42","name":"TestAccScalewayDataSourceBaremetalServer_Basic","description":"test
+      a description","updated_at":"2021-03-30T13:30:18.137749Z","created_at":"2021-03-30T13:29:35.734757Z","status":"ready","offer_id":"7fde3890-9787-488c-ac89-c4e00a4e5f83","install":{"os_id":"d17d6872-0412-45d9-a198-af82c34d3c5c","hostname":"TestAccScalewayDataSourceBaremetalServer_Basic","ssh_key_ids":["1cc4c216-5aec-4761-bb89-0a301629588e"],"status":"installing"},"tags":[],"ips":[{"id":"ce011afa-fb99-455e-8c95-32aa858d2ef2","address":"2001:0bc8:6005:001b:dac4:97ff:fe5b:72a5","reverse":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b.fr-par-2.baremetal.scw.cloud","version":"IPv6","reverse_status":"active","reverse_status_message":""},{"id":"d8a46574-bac0-4720-a3dc-e63fd680a07a","address":"51.159.31.183","reverse":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b.fr-par-2.baremetal.scw.cloud","version":"IPv4","reverse_status":"active","reverse_status_message":""}],"domain":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b.fr-par-2.baremetal.scw.cloud","boot_type":"normal","ping_status":"ping_status_up","project_id":"951df375-e094-4d26-97c1-ba548eeb9c42","zone":"fr-par-2"}'
+    headers:
+      Content-Length:
+      - "1227"
+      Content-Security-Policy:
+      - default-src 'none'; frame-ancestors 'none'
+      Content-Type:
+      - application/json
+      Date:
+      - Tue, 30 Mar 2021 13:40:09 GMT
+      Server:
+      - Scaleway API-Gateway
+      Strict-Transport-Security:
+      - max-age=63072000
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+      X-Request-Id:
+      - 01629485-abd9-4ec4-a5a3-f70b14303b12
+    status: 200 OK
+    code: 200
+    duration: ""
+- request:
+    body: ""
+    form: {}
+    headers:
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.16.2; darwin; amd64) terraform-provider/develop
+        terraform/terraform-tests
+    url: https://api.scaleway.com/baremetal/v1/zones/fr-par-2/servers/eeaada0a-94e0-49b8-a229-9b3e9aa9977b
+    method: GET
+  response:
+    body: '{"id":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b","organization_id":"951df375-e094-4d26-97c1-ba548eeb9c42","name":"TestAccScalewayDataSourceBaremetalServer_Basic","description":"test
+      a description","updated_at":"2021-03-30T13:30:18.137749Z","created_at":"2021-03-30T13:29:35.734757Z","status":"ready","offer_id":"7fde3890-9787-488c-ac89-c4e00a4e5f83","install":{"os_id":"d17d6872-0412-45d9-a198-af82c34d3c5c","hostname":"TestAccScalewayDataSourceBaremetalServer_Basic","ssh_key_ids":["1cc4c216-5aec-4761-bb89-0a301629588e"],"status":"completed"},"tags":[],"ips":[{"id":"ce011afa-fb99-455e-8c95-32aa858d2ef2","address":"2001:0bc8:6005:001b:dac4:97ff:fe5b:72a5","reverse":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b.fr-par-2.baremetal.scw.cloud","version":"IPv6","reverse_status":"active","reverse_status_message":""},{"id":"d8a46574-bac0-4720-a3dc-e63fd680a07a","address":"51.159.31.183","reverse":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b.fr-par-2.baremetal.scw.cloud","version":"IPv4","reverse_status":"active","reverse_status_message":""}],"domain":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b.fr-par-2.baremetal.scw.cloud","boot_type":"normal","ping_status":"ping_status_up","project_id":"951df375-e094-4d26-97c1-ba548eeb9c42","zone":"fr-par-2"}'
+    headers:
+      Content-Length:
+      - "1226"
+      Content-Security-Policy:
+      - default-src 'none'; frame-ancestors 'none'
+      Content-Type:
+      - application/json
+      Date:
+      - Tue, 30 Mar 2021 13:40:24 GMT
+      Server:
+      - Scaleway API-Gateway
+      Strict-Transport-Security:
+      - max-age=63072000
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+      X-Request-Id:
+      - 37871187-99d3-445c-bd9c-e0b7bac4b9ca
+    status: 200 OK
+    code: 200
+    duration: ""
+- request:
+    body: ""
+    form: {}
+    headers:
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.16.2; darwin; amd64) terraform-provider/develop
+        terraform/terraform-tests
+    url: https://api.scaleway.com/baremetal/v1/zones/fr-par-2/servers/eeaada0a-94e0-49b8-a229-9b3e9aa9977b
+    method: GET
+  response:
+    body: '{"id":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b","organization_id":"951df375-e094-4d26-97c1-ba548eeb9c42","name":"TestAccScalewayDataSourceBaremetalServer_Basic","description":"test
+      a description","updated_at":"2021-03-30T13:30:18.137749Z","created_at":"2021-03-30T13:29:35.734757Z","status":"ready","offer_id":"7fde3890-9787-488c-ac89-c4e00a4e5f83","install":{"os_id":"d17d6872-0412-45d9-a198-af82c34d3c5c","hostname":"TestAccScalewayDataSourceBaremetalServer_Basic","ssh_key_ids":["1cc4c216-5aec-4761-bb89-0a301629588e"],"status":"completed"},"tags":[],"ips":[{"id":"ce011afa-fb99-455e-8c95-32aa858d2ef2","address":"2001:0bc8:6005:001b:dac4:97ff:fe5b:72a5","reverse":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b.fr-par-2.baremetal.scw.cloud","version":"IPv6","reverse_status":"active","reverse_status_message":""},{"id":"d8a46574-bac0-4720-a3dc-e63fd680a07a","address":"51.159.31.183","reverse":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b.fr-par-2.baremetal.scw.cloud","version":"IPv4","reverse_status":"active","reverse_status_message":""}],"domain":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b.fr-par-2.baremetal.scw.cloud","boot_type":"normal","ping_status":"ping_status_up","project_id":"951df375-e094-4d26-97c1-ba548eeb9c42","zone":"fr-par-2"}'
+    headers:
+      Content-Length:
+      - "1226"
+      Content-Security-Policy:
+      - default-src 'none'; frame-ancestors 'none'
+      Content-Type:
+      - application/json
+      Date:
+      - Tue, 30 Mar 2021 13:40:24 GMT
+      Server:
+      - Scaleway API-Gateway
+      Strict-Transport-Security:
+      - max-age=63072000
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+      X-Request-Id:
+      - 91458c82-1306-4a4e-9481-8007707aa112
+    status: 200 OK
+    code: 200
+    duration: ""
+- request:
+    body: ""
+    form: {}
+    headers:
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.16.2; darwin; amd64) terraform-provider/develop
+        terraform/terraform-tests
+    url: https://api.scaleway.com/baremetal/v1/zones/fr-par-2/offers/7fde3890-9787-488c-ac89-c4e00a4e5f83
+    method: GET
+  response:
+    body: '{"id":"7fde3890-9787-488c-ac89-c4e00a4e5f83","name":"GP-BM1-S","stock":"available","bandwidth":500000000,"commercial_range":"general_purpose","disks":[{"capacity":256000000000,"type":"SSD"},{"capacity":256000000000,"type":"SSD"}],"enable":true,"cpus":[{"name":"Intel
+      Xeon E3 1240v6","core_count":4,"thread_count":8,"frequency":3700}],"memories":[{"capacity":32000000000,"type":"DDR4","frequency":2133,"is_ecc":true}],"quota_name":"bmaas_gp","price_per_hour":{"currency_code":"EUR","units":0,"nanos":159000000},"price_per_month":null,"persistent_memories":[],"raid_controllers":[]}'
+    headers:
+      Content-Length:
+      - "580"
+      Content-Security-Policy:
+      - default-src 'none'; frame-ancestors 'none'
+      Content-Type:
+      - application/json
+      Date:
+      - Tue, 30 Mar 2021 13:40:24 GMT
+      Server:
+      - Scaleway API-Gateway
+      Strict-Transport-Security:
+      - max-age=63072000
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+      X-Request-Id:
+      - 09f9f3a0-cb36-45a0-bcb6-275be25aa639
+    status: 200 OK
+    code: 200
+    duration: ""
+- request:
+    body: ""
+    form: {}
+    headers:
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.16.2; darwin; amd64) terraform-provider/develop
+        terraform/terraform-tests
+    url: https://api.scaleway.com/baremetal/v1/zones/fr-par-1/servers?name=TestAccScalewayDataSourceBaremetalServer_Basic&order_by=created_at_asc
+    method: GET
+  response:
+    body: '{"message":"unknown service"}'
+    headers:
+      Content-Length:
+      - "29"
+      Content-Security-Policy:
+      - default-src 'none'; frame-ancestors 'none'
+      Content-Type:
+      - application/json
+      Date:
+      - Tue, 30 Mar 2021 13:40:25 GMT
+      Server:
+      - Scaleway API-Gateway
+      Strict-Transport-Security:
+      - max-age=63072000
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+      X-Request-Id:
+      - f68bd347-6f6a-4f92-b86b-75bb833773ee
+    status: 501 Not Implemented
+    code: 501
+    duration: ""
+- request:
+    body: ""
+    form: {}
+    headers:
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.16.2; darwin; amd64) terraform-provider/develop
+        terraform/terraform-tests
+    url: https://api.scaleway.com/baremetal/v1/zones/fr-par-2/servers/eeaada0a-94e0-49b8-a229-9b3e9aa9977b
+    method: GET
+  response:
+    body: '{"id":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b","organization_id":"951df375-e094-4d26-97c1-ba548eeb9c42","name":"TestAccScalewayDataSourceBaremetalServer_Basic","description":"test
+      a description","updated_at":"2021-03-30T13:30:18.137749Z","created_at":"2021-03-30T13:29:35.734757Z","status":"ready","offer_id":"7fde3890-9787-488c-ac89-c4e00a4e5f83","install":{"os_id":"d17d6872-0412-45d9-a198-af82c34d3c5c","hostname":"TestAccScalewayDataSourceBaremetalServer_Basic","ssh_key_ids":["1cc4c216-5aec-4761-bb89-0a301629588e"],"status":"completed"},"tags":[],"ips":[{"id":"ce011afa-fb99-455e-8c95-32aa858d2ef2","address":"2001:0bc8:6005:001b:dac4:97ff:fe5b:72a5","reverse":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b.fr-par-2.baremetal.scw.cloud","version":"IPv6","reverse_status":"active","reverse_status_message":""},{"id":"d8a46574-bac0-4720-a3dc-e63fd680a07a","address":"51.159.31.183","reverse":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b.fr-par-2.baremetal.scw.cloud","version":"IPv4","reverse_status":"active","reverse_status_message":""}],"domain":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b.fr-par-2.baremetal.scw.cloud","boot_type":"normal","ping_status":"ping_status_up","project_id":"951df375-e094-4d26-97c1-ba548eeb9c42","zone":"fr-par-2"}'
+    headers:
+      Content-Length:
+      - "1226"
+      Content-Security-Policy:
+      - default-src 'none'; frame-ancestors 'none'
+      Content-Type:
+      - application/json
+      Date:
+      - Tue, 30 Mar 2021 13:40:25 GMT
+      Server:
+      - Scaleway API-Gateway
+      Strict-Transport-Security:
+      - max-age=63072000
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+      X-Request-Id:
+      - bf13d740-8e0c-4e74-a582-d7e036f0c7a5
+    status: 200 OK
+    code: 200
+    duration: ""
+- request:
+    body: ""
+    form: {}
+    headers:
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.16.2; darwin; amd64) terraform-provider/develop
+        terraform/terraform-tests
+    url: https://api.scaleway.com/baremetal/v1/zones/fr-par-2/offers/7fde3890-9787-488c-ac89-c4e00a4e5f83
+    method: GET
+  response:
+    body: '{"id":"7fde3890-9787-488c-ac89-c4e00a4e5f83","name":"GP-BM1-S","stock":"available","bandwidth":500000000,"commercial_range":"general_purpose","disks":[{"capacity":256000000000,"type":"SSD"},{"capacity":256000000000,"type":"SSD"}],"enable":true,"cpus":[{"name":"Intel
+      Xeon E3 1240v6","core_count":4,"thread_count":8,"frequency":3700}],"memories":[{"capacity":32000000000,"type":"DDR4","frequency":2133,"is_ecc":true}],"quota_name":"bmaas_gp","price_per_hour":{"currency_code":"EUR","units":0,"nanos":159000000},"price_per_month":null,"persistent_memories":[],"raid_controllers":[]}'
+    headers:
+      Content-Length:
+      - "580"
+      Content-Security-Policy:
+      - default-src 'none'; frame-ancestors 'none'
+      Content-Type:
+      - application/json
+      Date:
+      - Tue, 30 Mar 2021 13:40:25 GMT
+      Server:
+      - Scaleway API-Gateway
+      Strict-Transport-Security:
+      - max-age=63072000
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+      X-Request-Id:
+      - a71bc876-951a-43e8-b837-035e3ab4eef8
+    status: 200 OK
+    code: 200
+    duration: ""
+- request:
+    body: ""
+    form: {}
+    headers:
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.16.2; darwin; amd64) terraform-provider/develop
+        terraform/terraform-tests
+    url: https://api.scaleway.com/baremetal/v1/zones/fr-par-2/servers/eeaada0a-94e0-49b8-a229-9b3e9aa9977b
+    method: DELETE
+  response:
+    body: '{"id":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b","organization_id":"951df375-e094-4d26-97c1-ba548eeb9c42","name":"TestAccScalewayDataSourceBaremetalServer_Basic","description":"test
+      a description","updated_at":"2021-03-30T13:40:25.874523Z","created_at":"2021-03-30T13:29:35.734757Z","status":"deleting","offer_id":"7fde3890-9787-488c-ac89-c4e00a4e5f83","install":{"os_id":"d17d6872-0412-45d9-a198-af82c34d3c5c","hostname":"TestAccScalewayDataSourceBaremetalServer_Basic","ssh_key_ids":["1cc4c216-5aec-4761-bb89-0a301629588e"],"status":"completed"},"tags":[],"ips":[{"id":"ce011afa-fb99-455e-8c95-32aa858d2ef2","address":"2001:0bc8:6005:001b:dac4:97ff:fe5b:72a5","reverse":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b.fr-par-2.baremetal.scw.cloud","version":"IPv6","reverse_status":"active","reverse_status_message":""},{"id":"d8a46574-bac0-4720-a3dc-e63fd680a07a","address":"51.159.31.183","reverse":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b.fr-par-2.baremetal.scw.cloud","version":"IPv4","reverse_status":"active","reverse_status_message":""}],"domain":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b.fr-par-2.baremetal.scw.cloud","boot_type":"normal","ping_status":"ping_status_up","project_id":"951df375-e094-4d26-97c1-ba548eeb9c42","zone":"fr-par-2"}'
+    headers:
+      Content-Length:
+      - "1229"
+      Content-Security-Policy:
+      - default-src 'none'; frame-ancestors 'none'
+      Content-Type:
+      - application/json
+      Date:
+      - Tue, 30 Mar 2021 13:40:25 GMT
+      Server:
+      - Scaleway API-Gateway
+      Strict-Transport-Security:
+      - max-age=63072000
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+      X-Request-Id:
+      - ac1c9a4f-93d3-464e-ad71-80d34b88c8b0
+    status: 200 OK
+    code: 200
+    duration: ""
+- request:
+    body: ""
+    form: {}
+    headers:
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.16.2; darwin; amd64) terraform-provider/develop
+        terraform/terraform-tests
+    url: https://api.scaleway.com/baremetal/v1/zones/fr-par-2/servers/eeaada0a-94e0-49b8-a229-9b3e9aa9977b
+    method: GET
+  response:
+    body: '{"id":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b","organization_id":"951df375-e094-4d26-97c1-ba548eeb9c42","name":"TestAccScalewayDataSourceBaremetalServer_Basic","description":"test
+      a description","updated_at":"2021-03-30T13:40:25.874523Z","created_at":"2021-03-30T13:29:35.734757Z","status":"deleting","offer_id":"7fde3890-9787-488c-ac89-c4e00a4e5f83","install":{"os_id":"d17d6872-0412-45d9-a198-af82c34d3c5c","hostname":"TestAccScalewayDataSourceBaremetalServer_Basic","ssh_key_ids":["1cc4c216-5aec-4761-bb89-0a301629588e"],"status":"completed"},"tags":[],"ips":[{"id":"ce011afa-fb99-455e-8c95-32aa858d2ef2","address":"2001:0bc8:6005:001b:dac4:97ff:fe5b:72a5","reverse":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b.fr-par-2.baremetal.scw.cloud","version":"IPv6","reverse_status":"active","reverse_status_message":""},{"id":"d8a46574-bac0-4720-a3dc-e63fd680a07a","address":"51.159.31.183","reverse":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b.fr-par-2.baremetal.scw.cloud","version":"IPv4","reverse_status":"active","reverse_status_message":""}],"domain":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b.fr-par-2.baremetal.scw.cloud","boot_type":"normal","ping_status":"ping_status_up","project_id":"951df375-e094-4d26-97c1-ba548eeb9c42","zone":"fr-par-2"}'
+    headers:
+      Content-Length:
+      - "1229"
+      Content-Security-Policy:
+      - default-src 'none'; frame-ancestors 'none'
+      Content-Type:
+      - application/json
+      Date:
+      - Tue, 30 Mar 2021 13:40:25 GMT
+      Server:
+      - Scaleway API-Gateway
+      Strict-Transport-Security:
+      - max-age=63072000
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+      X-Request-Id:
+      - 2c477bd6-6212-48d2-9175-62b1917c7cd9
+    status: 200 OK
+    code: 200
+    duration: ""
+- request:
+    body: ""
+    form: {}
+    headers:
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.16.2; darwin; amd64) terraform-provider/develop
+        terraform/terraform-tests
+    url: https://api.scaleway.com/baremetal/v1/zones/fr-par-2/servers/eeaada0a-94e0-49b8-a229-9b3e9aa9977b
+    method: GET
+  response:
+    body: '{"id":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b","organization_id":"951df375-e094-4d26-97c1-ba548eeb9c42","name":"TestAccScalewayDataSourceBaremetalServer_Basic","description":"test
+      a description","updated_at":"2021-03-30T13:40:26.597161Z","created_at":"2021-03-30T13:29:35.734757Z","status":"deleting","offer_id":"7fde3890-9787-488c-ac89-c4e00a4e5f83","install":{"os_id":"d17d6872-0412-45d9-a198-af82c34d3c5c","hostname":"TestAccScalewayDataSourceBaremetalServer_Basic","ssh_key_ids":["1cc4c216-5aec-4761-bb89-0a301629588e"],"status":"completed"},"tags":[],"ips":[{"id":"ce011afa-fb99-455e-8c95-32aa858d2ef2","address":"2001:0bc8:6005:001b:dac4:97ff:fe5b:72a5","reverse":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b.fr-par-2.baremetal.scw.cloud","version":"IPv6","reverse_status":"active","reverse_status_message":""},{"id":"d8a46574-bac0-4720-a3dc-e63fd680a07a","address":"51.159.31.183","reverse":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b.fr-par-2.baremetal.scw.cloud","version":"IPv4","reverse_status":"active","reverse_status_message":""}],"domain":"","boot_type":"normal","ping_status":"ping_status_up","project_id":"951df375-e094-4d26-97c1-ba548eeb9c42","zone":"fr-par-2"}'
+    headers:
+      Content-Length:
+      - "1164"
+      Content-Security-Policy:
+      - default-src 'none'; frame-ancestors 'none'
+      Content-Type:
+      - application/json
+      Date:
+      - Tue, 30 Mar 2021 13:40:41 GMT
+      Server:
+      - Scaleway API-Gateway
+      Strict-Transport-Security:
+      - max-age=63072000
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+      X-Request-Id:
+      - 0de731c7-61bc-45b9-99d2-81f801906c31
+    status: 200 OK
+    code: 200
+    duration: ""
+- request:
+    body: ""
+    form: {}
+    headers:
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.16.2; darwin; amd64) terraform-provider/develop
+        terraform/terraform-tests
+    url: https://api.scaleway.com/baremetal/v1/zones/fr-par-2/servers/eeaada0a-94e0-49b8-a229-9b3e9aa9977b
+    method: GET
+  response:
+    body: '{"id":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b","organization_id":"951df375-e094-4d26-97c1-ba548eeb9c42","name":"TestAccScalewayDataSourceBaremetalServer_Basic","description":"test
+      a description","updated_at":"2021-03-30T13:40:26.597161Z","created_at":"2021-03-30T13:29:35.734757Z","status":"deleting","offer_id":"7fde3890-9787-488c-ac89-c4e00a4e5f83","install":{"os_id":"d17d6872-0412-45d9-a198-af82c34d3c5c","hostname":"TestAccScalewayDataSourceBaremetalServer_Basic","ssh_key_ids":["1cc4c216-5aec-4761-bb89-0a301629588e"],"status":"completed"},"tags":[],"ips":[{"id":"ce011afa-fb99-455e-8c95-32aa858d2ef2","address":"2001:0bc8:6005:001b:dac4:97ff:fe5b:72a5","reverse":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b.fr-par-2.baremetal.scw.cloud","version":"IPv6","reverse_status":"active","reverse_status_message":""},{"id":"d8a46574-bac0-4720-a3dc-e63fd680a07a","address":"51.159.31.183","reverse":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b.fr-par-2.baremetal.scw.cloud","version":"IPv4","reverse_status":"active","reverse_status_message":""}],"domain":"","boot_type":"normal","ping_status":"ping_status_up","project_id":"951df375-e094-4d26-97c1-ba548eeb9c42","zone":"fr-par-2"}'
+    headers:
+      Content-Length:
+      - "1164"
+      Content-Security-Policy:
+      - default-src 'none'; frame-ancestors 'none'
+      Content-Type:
+      - application/json
+      Date:
+      - Tue, 30 Mar 2021 13:40:56 GMT
+      Server:
+      - Scaleway API-Gateway
+      Strict-Transport-Security:
+      - max-age=63072000
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+      X-Request-Id:
+      - 7c9a0186-92e1-4679-9894-08173f840884
+    status: 200 OK
+    code: 200
+    duration: ""
+- request:
+    body: ""
+    form: {}
+    headers:
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.16.2; darwin; amd64) terraform-provider/develop
+        terraform/terraform-tests
+    url: https://api.scaleway.com/baremetal/v1/zones/fr-par-2/servers/eeaada0a-94e0-49b8-a229-9b3e9aa9977b
+    method: GET
+  response:
+    body: '{"id":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b","organization_id":"951df375-e094-4d26-97c1-ba548eeb9c42","name":"TestAccScalewayDataSourceBaremetalServer_Basic","description":"test
+      a description","updated_at":"2021-03-30T13:40:26.597161Z","created_at":"2021-03-30T13:29:35.734757Z","status":"deleting","offer_id":"7fde3890-9787-488c-ac89-c4e00a4e5f83","install":{"os_id":"d17d6872-0412-45d9-a198-af82c34d3c5c","hostname":"TestAccScalewayDataSourceBaremetalServer_Basic","ssh_key_ids":["1cc4c216-5aec-4761-bb89-0a301629588e"],"status":"completed"},"tags":[],"ips":[{"id":"ce011afa-fb99-455e-8c95-32aa858d2ef2","address":"2001:0bc8:6005:001b:dac4:97ff:fe5b:72a5","reverse":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b.fr-par-2.baremetal.scw.cloud","version":"IPv6","reverse_status":"active","reverse_status_message":""},{"id":"d8a46574-bac0-4720-a3dc-e63fd680a07a","address":"51.159.31.183","reverse":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b.fr-par-2.baremetal.scw.cloud","version":"IPv4","reverse_status":"active","reverse_status_message":""}],"domain":"","boot_type":"normal","ping_status":"ping_status_up","project_id":"951df375-e094-4d26-97c1-ba548eeb9c42","zone":"fr-par-2"}'
+    headers:
+      Content-Length:
+      - "1164"
+      Content-Security-Policy:
+      - default-src 'none'; frame-ancestors 'none'
+      Content-Type:
+      - application/json
+      Date:
+      - Tue, 30 Mar 2021 13:41:11 GMT
+      Server:
+      - Scaleway API-Gateway
+      Strict-Transport-Security:
+      - max-age=63072000
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+      X-Request-Id:
+      - 2707d2df-8b4a-4c3a-95bb-5cf8b4e6678b
+    status: 200 OK
+    code: 200
+    duration: ""
+- request:
+    body: ""
+    form: {}
+    headers:
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.16.2; darwin; amd64) terraform-provider/develop
+        terraform/terraform-tests
+    url: https://api.scaleway.com/baremetal/v1/zones/fr-par-2/servers/eeaada0a-94e0-49b8-a229-9b3e9aa9977b
+    method: GET
+  response:
+    body: '{"id":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b","organization_id":"951df375-e094-4d26-97c1-ba548eeb9c42","name":"TestAccScalewayDataSourceBaremetalServer_Basic","description":"test
+      a description","updated_at":"2021-03-30T13:40:26.597161Z","created_at":"2021-03-30T13:29:35.734757Z","status":"deleting","offer_id":"7fde3890-9787-488c-ac89-c4e00a4e5f83","install":{"os_id":"d17d6872-0412-45d9-a198-af82c34d3c5c","hostname":"TestAccScalewayDataSourceBaremetalServer_Basic","ssh_key_ids":["1cc4c216-5aec-4761-bb89-0a301629588e"],"status":"completed"},"tags":[],"ips":[{"id":"ce011afa-fb99-455e-8c95-32aa858d2ef2","address":"2001:0bc8:6005:001b:dac4:97ff:fe5b:72a5","reverse":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b.fr-par-2.baremetal.scw.cloud","version":"IPv6","reverse_status":"active","reverse_status_message":""},{"id":"d8a46574-bac0-4720-a3dc-e63fd680a07a","address":"51.159.31.183","reverse":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b.fr-par-2.baremetal.scw.cloud","version":"IPv4","reverse_status":"active","reverse_status_message":""}],"domain":"","boot_type":"normal","ping_status":"ping_status_up","project_id":"951df375-e094-4d26-97c1-ba548eeb9c42","zone":"fr-par-2"}'
+    headers:
+      Content-Length:
+      - "1164"
+      Content-Security-Policy:
+      - default-src 'none'; frame-ancestors 'none'
+      Content-Type:
+      - application/json
+      Date:
+      - Tue, 30 Mar 2021 13:41:26 GMT
+      Server:
+      - Scaleway API-Gateway
+      Strict-Transport-Security:
+      - max-age=63072000
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+      X-Request-Id:
+      - 005331c3-9c40-42ae-a0c9-a472a06ab43f
+    status: 200 OK
+    code: 200
+    duration: ""
+- request:
+    body: ""
+    form: {}
+    headers:
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.16.2; darwin; amd64) terraform-provider/develop
+        terraform/terraform-tests
+    url: https://api.scaleway.com/baremetal/v1/zones/fr-par-2/servers/eeaada0a-94e0-49b8-a229-9b3e9aa9977b
+    method: GET
+  response:
+    body: '{"id":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b","organization_id":"951df375-e094-4d26-97c1-ba548eeb9c42","name":"TestAccScalewayDataSourceBaremetalServer_Basic","description":"test
+      a description","updated_at":"2021-03-30T13:40:26.597161Z","created_at":"2021-03-30T13:29:35.734757Z","status":"deleting","offer_id":"7fde3890-9787-488c-ac89-c4e00a4e5f83","install":{"os_id":"d17d6872-0412-45d9-a198-af82c34d3c5c","hostname":"TestAccScalewayDataSourceBaremetalServer_Basic","ssh_key_ids":["1cc4c216-5aec-4761-bb89-0a301629588e"],"status":"completed"},"tags":[],"ips":[{"id":"ce011afa-fb99-455e-8c95-32aa858d2ef2","address":"2001:0bc8:6005:001b:dac4:97ff:fe5b:72a5","reverse":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b.fr-par-2.baremetal.scw.cloud","version":"IPv6","reverse_status":"active","reverse_status_message":""},{"id":"d8a46574-bac0-4720-a3dc-e63fd680a07a","address":"51.159.31.183","reverse":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b.fr-par-2.baremetal.scw.cloud","version":"IPv4","reverse_status":"active","reverse_status_message":""}],"domain":"","boot_type":"normal","ping_status":"ping_status_up","project_id":"951df375-e094-4d26-97c1-ba548eeb9c42","zone":"fr-par-2"}'
+    headers:
+      Content-Length:
+      - "1164"
+      Content-Security-Policy:
+      - default-src 'none'; frame-ancestors 'none'
+      Content-Type:
+      - application/json
+      Date:
+      - Tue, 30 Mar 2021 13:41:41 GMT
+      Server:
+      - Scaleway API-Gateway
+      Strict-Transport-Security:
+      - max-age=63072000
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+      X-Request-Id:
+      - 4651a856-89ad-4098-a16d-8e9efe932f1f
+    status: 200 OK
+    code: 200
+    duration: ""
+- request:
+    body: ""
+    form: {}
+    headers:
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.16.2; darwin; amd64) terraform-provider/develop
+        terraform/terraform-tests
+    url: https://api.scaleway.com/baremetal/v1/zones/fr-par-2/servers/eeaada0a-94e0-49b8-a229-9b3e9aa9977b
+    method: GET
+  response:
+    body: '{"id":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b","organization_id":"951df375-e094-4d26-97c1-ba548eeb9c42","name":"TestAccScalewayDataSourceBaremetalServer_Basic","description":"test
+      a description","updated_at":"2021-03-30T13:40:26.597161Z","created_at":"2021-03-30T13:29:35.734757Z","status":"deleting","offer_id":"7fde3890-9787-488c-ac89-c4e00a4e5f83","install":{"os_id":"d17d6872-0412-45d9-a198-af82c34d3c5c","hostname":"TestAccScalewayDataSourceBaremetalServer_Basic","ssh_key_ids":["1cc4c216-5aec-4761-bb89-0a301629588e"],"status":"completed"},"tags":[],"ips":[{"id":"ce011afa-fb99-455e-8c95-32aa858d2ef2","address":"2001:0bc8:6005:001b:dac4:97ff:fe5b:72a5","reverse":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b.fr-par-2.baremetal.scw.cloud","version":"IPv6","reverse_status":"active","reverse_status_message":""},{"id":"d8a46574-bac0-4720-a3dc-e63fd680a07a","address":"51.159.31.183","reverse":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b.fr-par-2.baremetal.scw.cloud","version":"IPv4","reverse_status":"active","reverse_status_message":""}],"domain":"","boot_type":"normal","ping_status":"ping_status_up","project_id":"951df375-e094-4d26-97c1-ba548eeb9c42","zone":"fr-par-2"}'
+    headers:
+      Content-Length:
+      - "1164"
+      Content-Security-Policy:
+      - default-src 'none'; frame-ancestors 'none'
+      Content-Type:
+      - application/json
+      Date:
+      - Tue, 30 Mar 2021 13:41:56 GMT
+      Server:
+      - Scaleway API-Gateway
+      Strict-Transport-Security:
+      - max-age=63072000
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+      X-Request-Id:
+      - aecc3d49-d5b5-43b8-bda5-37038cd3fe12
+    status: 200 OK
+    code: 200
+    duration: ""
+- request:
+    body: ""
+    form: {}
+    headers:
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.16.2; darwin; amd64) terraform-provider/develop
+        terraform/terraform-tests
+    url: https://api.scaleway.com/baremetal/v1/zones/fr-par-2/servers/eeaada0a-94e0-49b8-a229-9b3e9aa9977b
+    method: GET
+  response:
+    body: '{"id":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b","organization_id":"951df375-e094-4d26-97c1-ba548eeb9c42","name":"TestAccScalewayDataSourceBaremetalServer_Basic","description":"test
+      a description","updated_at":"2021-03-30T13:40:26.597161Z","created_at":"2021-03-30T13:29:35.734757Z","status":"deleting","offer_id":"7fde3890-9787-488c-ac89-c4e00a4e5f83","install":{"os_id":"d17d6872-0412-45d9-a198-af82c34d3c5c","hostname":"TestAccScalewayDataSourceBaremetalServer_Basic","ssh_key_ids":["1cc4c216-5aec-4761-bb89-0a301629588e"],"status":"completed"},"tags":[],"ips":[{"id":"ce011afa-fb99-455e-8c95-32aa858d2ef2","address":"2001:0bc8:6005:001b:dac4:97ff:fe5b:72a5","reverse":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b.fr-par-2.baremetal.scw.cloud","version":"IPv6","reverse_status":"active","reverse_status_message":""},{"id":"d8a46574-bac0-4720-a3dc-e63fd680a07a","address":"51.159.31.183","reverse":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b.fr-par-2.baremetal.scw.cloud","version":"IPv4","reverse_status":"active","reverse_status_message":""}],"domain":"","boot_type":"normal","ping_status":"ping_status_up","project_id":"951df375-e094-4d26-97c1-ba548eeb9c42","zone":"fr-par-2"}'
+    headers:
+      Content-Length:
+      - "1164"
+      Content-Security-Policy:
+      - default-src 'none'; frame-ancestors 'none'
+      Content-Type:
+      - application/json
+      Date:
+      - Tue, 30 Mar 2021 13:42:11 GMT
+      Server:
+      - Scaleway API-Gateway
+      Strict-Transport-Security:
+      - max-age=63072000
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+      X-Request-Id:
+      - bba2ee72-c356-4809-9830-d65e702d42cf
+    status: 200 OK
+    code: 200
+    duration: ""
+- request:
+    body: ""
+    form: {}
+    headers:
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.16.2; darwin; amd64) terraform-provider/develop
+        terraform/terraform-tests
+    url: https://api.scaleway.com/baremetal/v1/zones/fr-par-2/servers/eeaada0a-94e0-49b8-a229-9b3e9aa9977b
+    method: GET
+  response:
+    body: '{"id":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b","organization_id":"951df375-e094-4d26-97c1-ba548eeb9c42","name":"TestAccScalewayDataSourceBaremetalServer_Basic","description":"test
+      a description","updated_at":"2021-03-30T13:40:26.597161Z","created_at":"2021-03-30T13:29:35.734757Z","status":"deleting","offer_id":"7fde3890-9787-488c-ac89-c4e00a4e5f83","install":{"os_id":"d17d6872-0412-45d9-a198-af82c34d3c5c","hostname":"TestAccScalewayDataSourceBaremetalServer_Basic","ssh_key_ids":["1cc4c216-5aec-4761-bb89-0a301629588e"],"status":"completed"},"tags":[],"ips":[{"id":"ce011afa-fb99-455e-8c95-32aa858d2ef2","address":"2001:0bc8:6005:001b:dac4:97ff:fe5b:72a5","reverse":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b.fr-par-2.baremetal.scw.cloud","version":"IPv6","reverse_status":"active","reverse_status_message":""},{"id":"d8a46574-bac0-4720-a3dc-e63fd680a07a","address":"51.159.31.183","reverse":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b.fr-par-2.baremetal.scw.cloud","version":"IPv4","reverse_status":"active","reverse_status_message":""}],"domain":"","boot_type":"normal","ping_status":"ping_status_up","project_id":"951df375-e094-4d26-97c1-ba548eeb9c42","zone":"fr-par-2"}'
+    headers:
+      Content-Length:
+      - "1164"
+      Content-Security-Policy:
+      - default-src 'none'; frame-ancestors 'none'
+      Content-Type:
+      - application/json
+      Date:
+      - Tue, 30 Mar 2021 13:42:26 GMT
+      Server:
+      - Scaleway API-Gateway
+      Strict-Transport-Security:
+      - max-age=63072000
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+      X-Request-Id:
+      - 983c9c14-b9c9-4105-8e27-8d7921f1b814
+    status: 200 OK
+    code: 200
+    duration: ""
+- request:
+    body: ""
+    form: {}
+    headers:
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.16.2; darwin; amd64) terraform-provider/develop
+        terraform/terraform-tests
+    url: https://api.scaleway.com/baremetal/v1/zones/fr-par-2/servers/eeaada0a-94e0-49b8-a229-9b3e9aa9977b
+    method: GET
+  response:
+    body: '{"id":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b","organization_id":"951df375-e094-4d26-97c1-ba548eeb9c42","name":"TestAccScalewayDataSourceBaremetalServer_Basic","description":"test
+      a description","updated_at":"2021-03-30T13:40:26.597161Z","created_at":"2021-03-30T13:29:35.734757Z","status":"deleting","offer_id":"7fde3890-9787-488c-ac89-c4e00a4e5f83","install":{"os_id":"d17d6872-0412-45d9-a198-af82c34d3c5c","hostname":"TestAccScalewayDataSourceBaremetalServer_Basic","ssh_key_ids":["1cc4c216-5aec-4761-bb89-0a301629588e"],"status":"completed"},"tags":[],"ips":[{"id":"ce011afa-fb99-455e-8c95-32aa858d2ef2","address":"2001:0bc8:6005:001b:dac4:97ff:fe5b:72a5","reverse":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b.fr-par-2.baremetal.scw.cloud","version":"IPv6","reverse_status":"active","reverse_status_message":""},{"id":"d8a46574-bac0-4720-a3dc-e63fd680a07a","address":"51.159.31.183","reverse":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b.fr-par-2.baremetal.scw.cloud","version":"IPv4","reverse_status":"active","reverse_status_message":""}],"domain":"","boot_type":"normal","ping_status":"ping_status_up","project_id":"951df375-e094-4d26-97c1-ba548eeb9c42","zone":"fr-par-2"}'
+    headers:
+      Content-Length:
+      - "1164"
+      Content-Security-Policy:
+      - default-src 'none'; frame-ancestors 'none'
+      Content-Type:
+      - application/json
+      Date:
+      - Tue, 30 Mar 2021 13:42:41 GMT
+      Server:
+      - Scaleway API-Gateway
+      Strict-Transport-Security:
+      - max-age=63072000
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+      X-Request-Id:
+      - 72357c2e-0e5b-436d-811e-5c91413a1f29
+    status: 200 OK
+    code: 200
+    duration: ""
+- request:
+    body: ""
+    form: {}
+    headers:
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.16.2; darwin; amd64) terraform-provider/develop
+        terraform/terraform-tests
+    url: https://api.scaleway.com/baremetal/v1/zones/fr-par-2/servers/eeaada0a-94e0-49b8-a229-9b3e9aa9977b
+    method: GET
+  response:
+    body: '{"id":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b","organization_id":"951df375-e094-4d26-97c1-ba548eeb9c42","name":"TestAccScalewayDataSourceBaremetalServer_Basic","description":"test
+      a description","updated_at":"2021-03-30T13:40:26.597161Z","created_at":"2021-03-30T13:29:35.734757Z","status":"deleting","offer_id":"7fde3890-9787-488c-ac89-c4e00a4e5f83","install":{"os_id":"d17d6872-0412-45d9-a198-af82c34d3c5c","hostname":"TestAccScalewayDataSourceBaremetalServer_Basic","ssh_key_ids":["1cc4c216-5aec-4761-bb89-0a301629588e"],"status":"completed"},"tags":[],"ips":[{"id":"ce011afa-fb99-455e-8c95-32aa858d2ef2","address":"2001:0bc8:6005:001b:dac4:97ff:fe5b:72a5","reverse":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b.fr-par-2.baremetal.scw.cloud","version":"IPv6","reverse_status":"active","reverse_status_message":""},{"id":"d8a46574-bac0-4720-a3dc-e63fd680a07a","address":"51.159.31.183","reverse":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b.fr-par-2.baremetal.scw.cloud","version":"IPv4","reverse_status":"active","reverse_status_message":""}],"domain":"","boot_type":"normal","ping_status":"ping_status_up","project_id":"951df375-e094-4d26-97c1-ba548eeb9c42","zone":"fr-par-2"}'
+    headers:
+      Content-Length:
+      - "1164"
+      Content-Security-Policy:
+      - default-src 'none'; frame-ancestors 'none'
+      Content-Type:
+      - application/json
+      Date:
+      - Tue, 30 Mar 2021 13:42:57 GMT
+      Server:
+      - Scaleway API-Gateway
+      Strict-Transport-Security:
+      - max-age=63072000
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+      X-Request-Id:
+      - 5073f7a7-c9f2-4764-adeb-61fa598fe4f5
+    status: 200 OK
+    code: 200
+    duration: ""
+- request:
+    body: ""
+    form: {}
+    headers:
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.16.2; darwin; amd64) terraform-provider/develop
+        terraform/terraform-tests
+    url: https://api.scaleway.com/baremetal/v1/zones/fr-par-2/servers/eeaada0a-94e0-49b8-a229-9b3e9aa9977b
+    method: GET
+  response:
+    body: '{"id":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b","organization_id":"951df375-e094-4d26-97c1-ba548eeb9c42","name":"TestAccScalewayDataSourceBaremetalServer_Basic","description":"test
+      a description","updated_at":"2021-03-30T13:40:26.597161Z","created_at":"2021-03-30T13:29:35.734757Z","status":"deleting","offer_id":"7fde3890-9787-488c-ac89-c4e00a4e5f83","install":{"os_id":"d17d6872-0412-45d9-a198-af82c34d3c5c","hostname":"TestAccScalewayDataSourceBaremetalServer_Basic","ssh_key_ids":["1cc4c216-5aec-4761-bb89-0a301629588e"],"status":"completed"},"tags":[],"ips":[{"id":"ce011afa-fb99-455e-8c95-32aa858d2ef2","address":"2001:0bc8:6005:001b:dac4:97ff:fe5b:72a5","reverse":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b.fr-par-2.baremetal.scw.cloud","version":"IPv6","reverse_status":"active","reverse_status_message":""},{"id":"d8a46574-bac0-4720-a3dc-e63fd680a07a","address":"51.159.31.183","reverse":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b.fr-par-2.baremetal.scw.cloud","version":"IPv4","reverse_status":"active","reverse_status_message":""}],"domain":"","boot_type":"normal","ping_status":"ping_status_up","project_id":"951df375-e094-4d26-97c1-ba548eeb9c42","zone":"fr-par-2"}'
+    headers:
+      Content-Length:
+      - "1164"
+      Content-Security-Policy:
+      - default-src 'none'; frame-ancestors 'none'
+      Content-Type:
+      - application/json
+      Date:
+      - Tue, 30 Mar 2021 13:43:12 GMT
+      Server:
+      - Scaleway API-Gateway
+      Strict-Transport-Security:
+      - max-age=63072000
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+      X-Request-Id:
+      - 44c201b8-b106-4c6e-8bcd-fb5bfc7a44ea
+    status: 200 OK
+    code: 200
+    duration: ""
+- request:
+    body: ""
+    form: {}
+    headers:
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.16.2; darwin; amd64) terraform-provider/develop
+        terraform/terraform-tests
+    url: https://api.scaleway.com/baremetal/v1/zones/fr-par-2/servers/eeaada0a-94e0-49b8-a229-9b3e9aa9977b
+    method: GET
+  response:
+    body: '{"id":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b","organization_id":"951df375-e094-4d26-97c1-ba548eeb9c42","name":"TestAccScalewayDataSourceBaremetalServer_Basic","description":"test
+      a description","updated_at":"2021-03-30T13:40:26.597161Z","created_at":"2021-03-30T13:29:35.734757Z","status":"deleting","offer_id":"7fde3890-9787-488c-ac89-c4e00a4e5f83","install":{"os_id":"d17d6872-0412-45d9-a198-af82c34d3c5c","hostname":"TestAccScalewayDataSourceBaremetalServer_Basic","ssh_key_ids":["1cc4c216-5aec-4761-bb89-0a301629588e"],"status":"completed"},"tags":[],"ips":[{"id":"ce011afa-fb99-455e-8c95-32aa858d2ef2","address":"2001:0bc8:6005:001b:dac4:97ff:fe5b:72a5","reverse":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b.fr-par-2.baremetal.scw.cloud","version":"IPv6","reverse_status":"active","reverse_status_message":""},{"id":"d8a46574-bac0-4720-a3dc-e63fd680a07a","address":"51.159.31.183","reverse":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b.fr-par-2.baremetal.scw.cloud","version":"IPv4","reverse_status":"active","reverse_status_message":""}],"domain":"","boot_type":"normal","ping_status":"ping_status_up","project_id":"951df375-e094-4d26-97c1-ba548eeb9c42","zone":"fr-par-2"}'
+    headers:
+      Content-Length:
+      - "1164"
+      Content-Security-Policy:
+      - default-src 'none'; frame-ancestors 'none'
+      Content-Type:
+      - application/json
+      Date:
+      - Tue, 30 Mar 2021 13:43:27 GMT
+      Server:
+      - Scaleway API-Gateway
+      Strict-Transport-Security:
+      - max-age=63072000
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+      X-Request-Id:
+      - 137aab4c-3839-484b-8399-341066c02fda
+    status: 200 OK
+    code: 200
+    duration: ""
+- request:
+    body: ""
+    form: {}
+    headers:
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.16.2; darwin; amd64) terraform-provider/develop
+        terraform/terraform-tests
+    url: https://api.scaleway.com/baremetal/v1/zones/fr-par-2/servers/eeaada0a-94e0-49b8-a229-9b3e9aa9977b
+    method: GET
+  response:
+    body: '{"id":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b","organization_id":"951df375-e094-4d26-97c1-ba548eeb9c42","name":"TestAccScalewayDataSourceBaremetalServer_Basic","description":"test
+      a description","updated_at":"2021-03-30T13:40:26.597161Z","created_at":"2021-03-30T13:29:35.734757Z","status":"deleting","offer_id":"7fde3890-9787-488c-ac89-c4e00a4e5f83","install":{"os_id":"d17d6872-0412-45d9-a198-af82c34d3c5c","hostname":"TestAccScalewayDataSourceBaremetalServer_Basic","ssh_key_ids":["1cc4c216-5aec-4761-bb89-0a301629588e"],"status":"completed"},"tags":[],"ips":[{"id":"ce011afa-fb99-455e-8c95-32aa858d2ef2","address":"2001:0bc8:6005:001b:dac4:97ff:fe5b:72a5","reverse":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b.fr-par-2.baremetal.scw.cloud","version":"IPv6","reverse_status":"active","reverse_status_message":""},{"id":"d8a46574-bac0-4720-a3dc-e63fd680a07a","address":"51.159.31.183","reverse":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b.fr-par-2.baremetal.scw.cloud","version":"IPv4","reverse_status":"active","reverse_status_message":""}],"domain":"","boot_type":"normal","ping_status":"ping_status_up","project_id":"951df375-e094-4d26-97c1-ba548eeb9c42","zone":"fr-par-2"}'
+    headers:
+      Content-Length:
+      - "1164"
+      Content-Security-Policy:
+      - default-src 'none'; frame-ancestors 'none'
+      Content-Type:
+      - application/json
+      Date:
+      - Tue, 30 Mar 2021 13:43:42 GMT
+      Server:
+      - Scaleway API-Gateway
+      Strict-Transport-Security:
+      - max-age=63072000
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+      X-Request-Id:
+      - 1b599896-2967-4e7d-9f2f-bf2f8afb97e7
+    status: 200 OK
+    code: 200
+    duration: ""
+- request:
+    body: ""
+    form: {}
+    headers:
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.16.2; darwin; amd64) terraform-provider/develop
+        terraform/terraform-tests
+    url: https://api.scaleway.com/baremetal/v1/zones/fr-par-2/servers/eeaada0a-94e0-49b8-a229-9b3e9aa9977b
+    method: GET
+  response:
+    body: '{"id":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b","organization_id":"951df375-e094-4d26-97c1-ba548eeb9c42","name":"TestAccScalewayDataSourceBaremetalServer_Basic","description":"test
+      a description","updated_at":"2021-03-30T13:40:26.597161Z","created_at":"2021-03-30T13:29:35.734757Z","status":"deleting","offer_id":"7fde3890-9787-488c-ac89-c4e00a4e5f83","install":{"os_id":"d17d6872-0412-45d9-a198-af82c34d3c5c","hostname":"TestAccScalewayDataSourceBaremetalServer_Basic","ssh_key_ids":["1cc4c216-5aec-4761-bb89-0a301629588e"],"status":"completed"},"tags":[],"ips":[{"id":"ce011afa-fb99-455e-8c95-32aa858d2ef2","address":"2001:0bc8:6005:001b:dac4:97ff:fe5b:72a5","reverse":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b.fr-par-2.baremetal.scw.cloud","version":"IPv6","reverse_status":"active","reverse_status_message":""},{"id":"d8a46574-bac0-4720-a3dc-e63fd680a07a","address":"51.159.31.183","reverse":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b.fr-par-2.baremetal.scw.cloud","version":"IPv4","reverse_status":"active","reverse_status_message":""}],"domain":"","boot_type":"normal","ping_status":"ping_status_up","project_id":"951df375-e094-4d26-97c1-ba548eeb9c42","zone":"fr-par-2"}'
+    headers:
+      Content-Length:
+      - "1164"
+      Content-Security-Policy:
+      - default-src 'none'; frame-ancestors 'none'
+      Content-Type:
+      - application/json
+      Date:
+      - Tue, 30 Mar 2021 13:43:57 GMT
+      Server:
+      - Scaleway API-Gateway
+      Strict-Transport-Security:
+      - max-age=63072000
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+      X-Request-Id:
+      - af1f649b-b99f-43ea-bbb8-a49f6d5932f4
+    status: 200 OK
+    code: 200
+    duration: ""
+- request:
+    body: ""
+    form: {}
+    headers:
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.16.2; darwin; amd64) terraform-provider/develop
+        terraform/terraform-tests
+    url: https://api.scaleway.com/baremetal/v1/zones/fr-par-2/servers/eeaada0a-94e0-49b8-a229-9b3e9aa9977b
+    method: GET
+  response:
+    body: '{"id":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b","organization_id":"951df375-e094-4d26-97c1-ba548eeb9c42","name":"TestAccScalewayDataSourceBaremetalServer_Basic","description":"test
+      a description","updated_at":"2021-03-30T13:40:26.597161Z","created_at":"2021-03-30T13:29:35.734757Z","status":"deleting","offer_id":"7fde3890-9787-488c-ac89-c4e00a4e5f83","install":{"os_id":"d17d6872-0412-45d9-a198-af82c34d3c5c","hostname":"TestAccScalewayDataSourceBaremetalServer_Basic","ssh_key_ids":["1cc4c216-5aec-4761-bb89-0a301629588e"],"status":"completed"},"tags":[],"ips":[{"id":"ce011afa-fb99-455e-8c95-32aa858d2ef2","address":"2001:0bc8:6005:001b:dac4:97ff:fe5b:72a5","reverse":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b.fr-par-2.baremetal.scw.cloud","version":"IPv6","reverse_status":"active","reverse_status_message":""},{"id":"d8a46574-bac0-4720-a3dc-e63fd680a07a","address":"51.159.31.183","reverse":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b.fr-par-2.baremetal.scw.cloud","version":"IPv4","reverse_status":"active","reverse_status_message":""}],"domain":"","boot_type":"normal","ping_status":"ping_status_up","project_id":"951df375-e094-4d26-97c1-ba548eeb9c42","zone":"fr-par-2"}'
+    headers:
+      Content-Length:
+      - "1164"
+      Content-Security-Policy:
+      - default-src 'none'; frame-ancestors 'none'
+      Content-Type:
+      - application/json
+      Date:
+      - Tue, 30 Mar 2021 13:44:12 GMT
+      Server:
+      - Scaleway API-Gateway
+      Strict-Transport-Security:
+      - max-age=63072000
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+      X-Request-Id:
+      - 0cfcf342-e360-44aa-8ec2-d7fbb8dfb009
+    status: 200 OK
+    code: 200
+    duration: ""
+- request:
+    body: ""
+    form: {}
+    headers:
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.16.2; darwin; amd64) terraform-provider/develop
+        terraform/terraform-tests
+    url: https://api.scaleway.com/baremetal/v1/zones/fr-par-2/servers/eeaada0a-94e0-49b8-a229-9b3e9aa9977b
+    method: GET
+  response:
+    body: '{"id":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b","organization_id":"951df375-e094-4d26-97c1-ba548eeb9c42","name":"TestAccScalewayDataSourceBaremetalServer_Basic","description":"test
+      a description","updated_at":"2021-03-30T13:40:26.597161Z","created_at":"2021-03-30T13:29:35.734757Z","status":"deleting","offer_id":"7fde3890-9787-488c-ac89-c4e00a4e5f83","install":{"os_id":"d17d6872-0412-45d9-a198-af82c34d3c5c","hostname":"TestAccScalewayDataSourceBaremetalServer_Basic","ssh_key_ids":["1cc4c216-5aec-4761-bb89-0a301629588e"],"status":"completed"},"tags":[],"ips":[{"id":"ce011afa-fb99-455e-8c95-32aa858d2ef2","address":"2001:0bc8:6005:001b:dac4:97ff:fe5b:72a5","reverse":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b.fr-par-2.baremetal.scw.cloud","version":"IPv6","reverse_status":"active","reverse_status_message":""},{"id":"d8a46574-bac0-4720-a3dc-e63fd680a07a","address":"51.159.31.183","reverse":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b.fr-par-2.baremetal.scw.cloud","version":"IPv4","reverse_status":"active","reverse_status_message":""}],"domain":"","boot_type":"normal","ping_status":"ping_status_up","project_id":"951df375-e094-4d26-97c1-ba548eeb9c42","zone":"fr-par-2"}'
+    headers:
+      Content-Length:
+      - "1164"
+      Content-Security-Policy:
+      - default-src 'none'; frame-ancestors 'none'
+      Content-Type:
+      - application/json
+      Date:
+      - Tue, 30 Mar 2021 13:44:27 GMT
+      Server:
+      - Scaleway API-Gateway
+      Strict-Transport-Security:
+      - max-age=63072000
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+      X-Request-Id:
+      - d5d82f46-7694-4522-9631-60dbe006d635
+    status: 200 OK
+    code: 200
+    duration: ""
+- request:
+    body: ""
+    form: {}
+    headers:
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.16.2; darwin; amd64) terraform-provider/develop
+        terraform/terraform-tests
+    url: https://api.scaleway.com/baremetal/v1/zones/fr-par-2/servers/eeaada0a-94e0-49b8-a229-9b3e9aa9977b
+    method: GET
+  response:
+    body: '{"id":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b","organization_id":"951df375-e094-4d26-97c1-ba548eeb9c42","name":"TestAccScalewayDataSourceBaremetalServer_Basic","description":"test
+      a description","updated_at":"2021-03-30T13:40:26.597161Z","created_at":"2021-03-30T13:29:35.734757Z","status":"deleting","offer_id":"7fde3890-9787-488c-ac89-c4e00a4e5f83","install":{"os_id":"d17d6872-0412-45d9-a198-af82c34d3c5c","hostname":"TestAccScalewayDataSourceBaremetalServer_Basic","ssh_key_ids":["1cc4c216-5aec-4761-bb89-0a301629588e"],"status":"completed"},"tags":[],"ips":[{"id":"ce011afa-fb99-455e-8c95-32aa858d2ef2","address":"2001:0bc8:6005:001b:dac4:97ff:fe5b:72a5","reverse":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b.fr-par-2.baremetal.scw.cloud","version":"IPv6","reverse_status":"active","reverse_status_message":""},{"id":"d8a46574-bac0-4720-a3dc-e63fd680a07a","address":"51.159.31.183","reverse":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b.fr-par-2.baremetal.scw.cloud","version":"IPv4","reverse_status":"active","reverse_status_message":""}],"domain":"","boot_type":"normal","ping_status":"ping_status_up","project_id":"951df375-e094-4d26-97c1-ba548eeb9c42","zone":"fr-par-2"}'
+    headers:
+      Content-Length:
+      - "1164"
+      Content-Security-Policy:
+      - default-src 'none'; frame-ancestors 'none'
+      Content-Type:
+      - application/json
+      Date:
+      - Tue, 30 Mar 2021 13:44:42 GMT
+      Server:
+      - Scaleway API-Gateway
+      Strict-Transport-Security:
+      - max-age=63072000
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+      X-Request-Id:
+      - 949775aa-72ff-4df0-a216-6656b835367d
+    status: 200 OK
+    code: 200
+    duration: ""
+- request:
+    body: ""
+    form: {}
+    headers:
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.16.2; darwin; amd64) terraform-provider/develop
+        terraform/terraform-tests
+    url: https://api.scaleway.com/baremetal/v1/zones/fr-par-2/servers/eeaada0a-94e0-49b8-a229-9b3e9aa9977b
+    method: GET
+  response:
+    body: '{"id":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b","organization_id":"951df375-e094-4d26-97c1-ba548eeb9c42","name":"TestAccScalewayDataSourceBaremetalServer_Basic","description":"test
+      a description","updated_at":"2021-03-30T13:40:26.597161Z","created_at":"2021-03-30T13:29:35.734757Z","status":"deleting","offer_id":"7fde3890-9787-488c-ac89-c4e00a4e5f83","install":{"os_id":"d17d6872-0412-45d9-a198-af82c34d3c5c","hostname":"TestAccScalewayDataSourceBaremetalServer_Basic","ssh_key_ids":["1cc4c216-5aec-4761-bb89-0a301629588e"],"status":"completed"},"tags":[],"ips":[{"id":"ce011afa-fb99-455e-8c95-32aa858d2ef2","address":"2001:0bc8:6005:001b:dac4:97ff:fe5b:72a5","reverse":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b.fr-par-2.baremetal.scw.cloud","version":"IPv6","reverse_status":"active","reverse_status_message":""},{"id":"d8a46574-bac0-4720-a3dc-e63fd680a07a","address":"51.159.31.183","reverse":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b.fr-par-2.baremetal.scw.cloud","version":"IPv4","reverse_status":"active","reverse_status_message":""}],"domain":"","boot_type":"normal","ping_status":"ping_status_up","project_id":"951df375-e094-4d26-97c1-ba548eeb9c42","zone":"fr-par-2"}'
+    headers:
+      Content-Length:
+      - "1164"
+      Content-Security-Policy:
+      - default-src 'none'; frame-ancestors 'none'
+      Content-Type:
+      - application/json
+      Date:
+      - Tue, 30 Mar 2021 13:44:57 GMT
+      Server:
+      - Scaleway API-Gateway
+      Strict-Transport-Security:
+      - max-age=63072000
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+      X-Request-Id:
+      - 485d73d4-f084-4a9d-9a31-fbaf4633725f
+    status: 200 OK
+    code: 200
+    duration: ""
+- request:
+    body: ""
+    form: {}
+    headers:
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.16.2; darwin; amd64) terraform-provider/develop
+        terraform/terraform-tests
+    url: https://api.scaleway.com/baremetal/v1/zones/fr-par-2/servers/eeaada0a-94e0-49b8-a229-9b3e9aa9977b
+    method: GET
+  response:
+    body: '{"id":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b","organization_id":"951df375-e094-4d26-97c1-ba548eeb9c42","name":"TestAccScalewayDataSourceBaremetalServer_Basic","description":"test
+      a description","updated_at":"2021-03-30T13:40:26.597161Z","created_at":"2021-03-30T13:29:35.734757Z","status":"deleting","offer_id":"7fde3890-9787-488c-ac89-c4e00a4e5f83","install":{"os_id":"d17d6872-0412-45d9-a198-af82c34d3c5c","hostname":"TestAccScalewayDataSourceBaremetalServer_Basic","ssh_key_ids":["1cc4c216-5aec-4761-bb89-0a301629588e"],"status":"completed"},"tags":[],"ips":[{"id":"ce011afa-fb99-455e-8c95-32aa858d2ef2","address":"2001:0bc8:6005:001b:dac4:97ff:fe5b:72a5","reverse":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b.fr-par-2.baremetal.scw.cloud","version":"IPv6","reverse_status":"active","reverse_status_message":""},{"id":"d8a46574-bac0-4720-a3dc-e63fd680a07a","address":"51.159.31.183","reverse":"eeaada0a-94e0-49b8-a229-9b3e9aa9977b.fr-par-2.baremetal.scw.cloud","version":"IPv4","reverse_status":"active","reverse_status_message":""}],"domain":"","boot_type":"normal","ping_status":"ping_status_up","project_id":"951df375-e094-4d26-97c1-ba548eeb9c42","zone":"fr-par-2"}'
+    headers:
+      Content-Length:
+      - "1164"
+      Content-Security-Policy:
+      - default-src 'none'; frame-ancestors 'none'
+      Content-Type:
+      - application/json
+      Date:
+      - Tue, 30 Mar 2021 13:45:12 GMT
+      Server:
+      - Scaleway API-Gateway
+      Strict-Transport-Security:
+      - max-age=63072000
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+      X-Request-Id:
+      - 7524a679-a60d-4a71-92de-e1459cb10c01
+    status: 200 OK
+    code: 200
+    duration: ""
+- request:
+    body: ""
+    form: {}
+    headers:
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.16.2; darwin; amd64) terraform-provider/develop
+        terraform/terraform-tests
+    url: https://api.scaleway.com/baremetal/v1/zones/fr-par-2/servers/eeaada0a-94e0-49b8-a229-9b3e9aa9977b
+    method: GET
+  response:
+    body: '{"message":"Server not found"}'
+    headers:
+      Content-Length:
+      - "30"
+      Content-Security-Policy:
+      - default-src 'none'; frame-ancestors 'none'
+      Content-Type:
+      - application/json
+      Date:
+      - Tue, 30 Mar 2021 13:45:27 GMT
+      Server:
+      - Scaleway API-Gateway
+      Strict-Transport-Security:
+      - max-age=63072000
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+      X-Request-Id:
+      - 07dc06d0-5b9a-4dc3-8281-efcbeea46bc3
+    status: 404 Not Found
+    code: 404
+    duration: ""
+- request:
+    body: ""
+    form: {}
+    headers:
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.16.2; darwin; amd64) terraform-provider/develop
+        terraform/terraform-tests
+    url: https://api.scaleway.com/account/v2alpha1/ssh-key/1cc4c216-5aec-4761-bb89-0a301629588e
+    method: DELETE
+  response:
+    body: ""
+    headers:
+      Content-Security-Policy:
+      - default-src 'none'; frame-ancestors 'none'
+      Content-Type:
+      - application/json
+      Date:
+      - Tue, 30 Mar 2021 13:45:28 GMT
+      Server:
+      - Scaleway API-Gateway
+      Strict-Transport-Security:
+      - max-age=63072000
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+      X-Request-Id:
+      - 97ee803c-63bf-416b-8b13-e1afe3ae5390
+    status: 204 No Content
+    code: 204
+    duration: ""
+- request:
+    body: ""
+    form: {}
+    headers:
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.16.2; darwin; amd64) terraform-provider/develop
+        terraform/terraform-tests
+    url: https://api.scaleway.com/baremetal/v1/zones/fr-par-2/servers/eeaada0a-94e0-49b8-a229-9b3e9aa9977b
+    method: GET
+  response:
+    body: '{"message":"Server not found"}'
+    headers:
+      Content-Length:
+      - "30"
+      Content-Security-Policy:
+      - default-src 'none'; frame-ancestors 'none'
+      Content-Type:
+      - application/json
+      Date:
+      - Tue, 30 Mar 2021 13:45:28 GMT
+      Server:
+      - Scaleway API-Gateway
+      Strict-Transport-Security:
+      - max-age=63072000
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+      X-Request-Id:
+      - 242f8e9f-7868-4cfb-a3f5-be7085bd4b7f
+    status: 404 Not Found
+    code: 404
+    duration: ""
+- request:
+    body: ""
+    form: {}
+    headers:
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.16.2; darwin; amd64) terraform-provider/develop
+        terraform/terraform-tests
+    url: https://api.scaleway.com/baremetal/v1/zones/fr-par-2/servers/eeaada0a-94e0-49b8-a229-9b3e9aa9977b
+    method: GET
+  response:
+    body: '{"message":"Server not found"}'
+    headers:
+      Content-Length:
+      - "30"
+      Content-Security-Policy:
+      - default-src 'none'; frame-ancestors 'none'
+      Content-Type:
+      - application/json
+      Date:
+      - Tue, 30 Mar 2021 13:45:28 GMT
+      Server:
+      - Scaleway API-Gateway
+      Strict-Transport-Security:
+      - max-age=63072000
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+      X-Request-Id:
+      - 9ca61882-1cc5-403d-9fe6-1b8e7a5aa1dc
+    status: 404 Not Found
+    code: 404
+    duration: ""
