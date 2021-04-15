@@ -37,6 +37,10 @@ The following arguments are supported:
 
 ~> **Important:** Updates to `engine` will recreate the Database Instance.
 
+- `volume_type` - (Optional, default to `lssd`) Type of volume where data are stored (`bssd` or `lssd`).
+
+- `volume_size_in_gb` - (Optional) Volume size (in GB) when `volume_type` is set to `bssd`. Must be a multiple of 5000000000.
+
 - `user_name` - (Optional) Identifier for the first user of the database instance.
 
 ~> **Important:** Updates to `user_name` will recreate the Database Instance.
