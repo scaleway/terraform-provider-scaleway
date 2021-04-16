@@ -83,7 +83,7 @@ func resourceScalewayK8SPool() *schema.Resource {
 			"container_runtime": {
 				Type:        schema.TypeString,
 				Optional:    true,
-				Default:     k8s.RuntimeDocker.String(),
+				Default:     k8s.RuntimeContainerd.String(),
 				ForceNew:    true,
 				Description: "Container runtime for the pool",
 				ValidateFunc: validation.StringInSlice([]string{

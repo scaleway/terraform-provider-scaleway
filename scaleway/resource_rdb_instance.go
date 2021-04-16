@@ -2,11 +2,13 @@ package scaleway
 
 import (
 	"context"
+	"fmt"
 	"io/ioutil"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/scaleway/scaleway-sdk-go/api/rdb/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 )
@@ -72,6 +74,7 @@ func resourceScalewayRdbInstance() *schema.Resource {
 					Type: schema.TypeString,
 				},
 				Description: "Map of engine settings to be set.",
+				Computed:    true,
 				Optional:    true,
 			},
 			"tags": {
@@ -82,7 +85,22 @@ func resourceScalewayRdbInstance() *schema.Resource {
 				Optional:    true,
 				Description: "List of tags [\"tag1\", \"tag2\", ...] attached to a database instance",
 			},
-
+			"volume_type": {
+				Type:     schema.TypeString,
+				Default:  rdb.VolumeTypeLssd,
+				Optional: true,
+				ValidateFunc: validation.StringInSlice([]string{
+					rdb.VolumeTypeLssd.String(),
+					rdb.VolumeTypeBssd.String(),
+				}, false),
+				Description: "Type of volume where data are stored",
+			},
+			"volume_size_in_gb": {
+				Type:        schema.TypeInt,
+				Optional:    true,
+				Computed:    true,
+				Description: "Volume size (in GB) when volume_type is not lssd",
+			},
 			// Computed
 			"endpoint_ip": {
 				Type:        schema.TypeString,
@@ -149,6 +167,14 @@ func resourceScalewayRdbInstanceCreate(ctx context.Context, d *schema.ResourceDa
 		UserName:      d.Get("user_name").(string),
 		Password:      d.Get("password").(string),
 		Tags:          expandStrings(d.Get("tags")),
+		VolumeType:    rdb.VolumeType(d.Get("volume_type").(string)),
+	}
+
+	if size, ok := d.GetOk("volume_size_in_gb"); ok {
+		if createReq.VolumeType != rdb.VolumeTypeBssd {
+			return diag.FromErr(fmt.Errorf("volume_size_in_gb should be used with volume_type %s only", rdb.VolumeTypeBssd.String()))
+		}
+		createReq.VolumeSize = scw.Size(uint64(size.(int)) * uint64(scw.GB))
 	}
 
 	res, err := rdbAPI.CreateInstance(createReq, scw.WithContext(ctx))
@@ -213,6 +239,10 @@ func resourceScalewayRdbInstanceRead(ctx context.Context, d *schema.ResourceData
 	} else {
 		_ = d.Set("endpoint_ip", "")
 		_ = d.Set("endpoint_port", 0)
+	}
+	if res.Volume != nil {
+		_ = d.Set("volume_type", res.Volume.Type)
+		_ = d.Set("volume_size_in_gb", int(res.Volume.Size/scw.GB))
 	}
 	_ = d.Set("read_replicas", flattenRdbInstanceReadReplicas(res.ReadReplicas))
 	_ = d.Set("region", string(region))
@@ -279,6 +309,56 @@ func resourceScalewayRdbInstanceUpdate(ctx context.Context, d *schema.ResourceDa
 	}
 
 	upgradeInstanceRequests := []rdb.UpgradeInstanceRequest(nil)
+	if d.HasChanges("volume_type", "volume_size_in_gb") {
+		volType := rdb.VolumeType(d.Get("volume_type").(string))
+
+		switch volType {
+		case rdb.VolumeTypeBssd:
+			if d.HasChange("volume_type") {
+				upgradeInstanceRequests = append(upgradeInstanceRequests,
+					rdb.UpgradeInstanceRequest{
+						Region:     region,
+						InstanceID: ID,
+						VolumeType: &volType,
+					})
+			}
+			if d.HasChange("volume_size_in_gb") {
+				oldSizeInterface, newSizeInterface := d.GetChange("volume_size_in_gb")
+				oldSize := uint64(oldSizeInterface.(int))
+				newSize := uint64(newSizeInterface.(int))
+				if newSize < oldSize {
+					return diag.FromErr(fmt.Errorf("volume_size_in_gb cannot be decreased"))
+				}
+
+				if newSize%5 != 0 {
+					return diag.FromErr(fmt.Errorf("volume_size_in_gb must be a multiple of 5"))
+				}
+
+				upgradeInstanceRequests = append(upgradeInstanceRequests,
+					rdb.UpgradeInstanceRequest{
+						Region:     region,
+						InstanceID: ID,
+						VolumeSize: scw.Uint64Ptr(newSize * uint64(scw.GB)),
+					})
+			}
+		case rdb.VolumeTypeLssd:
+			_, ok := d.GetOk("volume_size_in_gb")
+			if d.HasChange("volume_size_in_gb") && ok {
+				return diag.FromErr(fmt.Errorf("volume_size_in_gb should be used with volume_type %s only", rdb.VolumeTypeBssd.String()))
+			}
+			if d.HasChange("volume_type") {
+				upgradeInstanceRequests = append(upgradeInstanceRequests,
+					rdb.UpgradeInstanceRequest{
+						Region:     region,
+						InstanceID: ID,
+						VolumeType: &volType,
+					})
+			}
+		default:
+			return diag.FromErr(fmt.Errorf("unknown volume_type %s", volType.String()))
+		}
+	}
+
 	if d.HasChange("node_type") {
 		upgradeInstanceRequests = append(upgradeInstanceRequests,
 			rdb.UpgradeInstanceRequest{
