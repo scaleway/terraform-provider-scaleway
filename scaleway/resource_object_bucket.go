@@ -172,12 +172,18 @@ func resourceScalewayObjectBucketUpdate(ctx context.Context, d *schema.ResourceD
 	if d.HasChange("tags") {
 		tagsSet := expandObjectBucketTags(d.Get("tags"))
 
-		_, err = s3Client.PutBucketTaggingWithContext(ctx, &s3.PutBucketTaggingInput{
-			Bucket: scw.StringPtr(bucketName),
-			Tagging: &s3.Tagging{
-				TagSet: tagsSet,
-			},
-		})
+		if len(tagsSet) > 0 {
+			_, err = s3Client.PutBucketTaggingWithContext(ctx, &s3.PutBucketTaggingInput{
+				Bucket: scw.StringPtr(bucketName),
+				Tagging: &s3.Tagging{
+					TagSet: tagsSet,
+				},
+			})
+		} else {
+			_, err = s3Client.DeleteBucketTaggingWithContext(ctx, &s3.DeleteBucketTaggingInput{
+				Bucket: scw.StringPtr(bucketName),
+			})
+		}
 		if err != nil {
 			return diag.FromErr(err)
 		}

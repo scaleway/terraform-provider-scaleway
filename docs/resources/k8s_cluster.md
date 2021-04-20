@@ -35,8 +35,6 @@ resource "scaleway_k8s_cluster" "john" {
   description      = "my awesome cluster"
   version          = "1.18.0"
   cni              = "calico"
-  enable_dashboard = true
-  ingress          = "traefik"
   tags             = ["i'm an awsome tag", "yay"]
 
   autoscaler_config {
@@ -113,10 +111,6 @@ The following arguments are supported:
 
 - `cni` - (Required) The Container Network Interface (CNI) for the Kubernetes cluster.
 ~> **Important:** Updates to this field will recreate a new resource.
-
-- `enable_dashboard` - (Defaults to `false`) Enables the [Kubernetes dashboard](https://github.com/kubernetes/dashboard) for the Kubernetes cluster.
-
-- `ingress` - (Defaults to `none`) The [ingress controller](https://kubernetes.io/docs/concepts/services-networking/ingress-controllers/) to be deployed on the Kubernetes cluster.
 
 - `tags` - (Optional) The tags associated with the Kubernetes cluster.
 
