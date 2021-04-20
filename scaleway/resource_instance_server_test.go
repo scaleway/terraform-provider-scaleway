@@ -859,3 +859,26 @@ func TestAccScalewayInstanceServer_WithDefaultRootVolumeAndAdditionalVolume(t *t
 		},
 	})
 }
+
+func TestAccScalewayInstanceServer_Enterprise(t *testing.T) {
+	tt := NewTestTools(t)
+	defer tt.Cleanup()
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      testAccCheckScalewayInstanceServerDestroy(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource "scaleway_instance_server" "main" {
+						type  = "ENT1-S"
+						image = "ubuntu_focal"
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayInstanceServerExists(tt, "scaleway_instance_server.main"),
+				),
+			},
+		},
+	})
+}
