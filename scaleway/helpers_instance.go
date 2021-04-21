@@ -23,6 +23,8 @@ const (
 	defaultInstanceSecurityGroupRuleTimeout = 1 * time.Minute
 	defaultInstancePlacementGroupTimeout    = 1 * time.Minute
 	defaultInstanceIPTimeout                = 1 * time.Minute
+
+	defaultInstanceSnapshotWaitTimeout = 1 * time.Hour
 )
 
 // instanceAPIWithZone returns a new instance API and the zone for a Create request
@@ -131,6 +133,19 @@ func reachState(ctx context.Context, instanceAPI *instance.API, zone scw.Zone, s
 	actions, exist := transitionMap[[2]instance.ServerState{fromState, toState}]
 	if !exist {
 		return fmt.Errorf("don't know how to reach state %s from state %s for server %s", toState, fromState, serverID)
+	}
+
+	// We need to check that all volumes are ready
+	for _, volume := range response.Server.Volumes {
+		if volume.State != instance.VolumeStateAvailable {
+			_, err = instanceAPI.WaitForVolume(&instance.WaitForVolumeRequest{
+				Zone:     zone,
+				VolumeID: volume.ID,
+			})
+			if err != nil {
+				return err
+			}
+		}
 	}
 
 	for _, a := range actions {
