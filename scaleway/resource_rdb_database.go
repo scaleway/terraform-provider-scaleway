@@ -45,7 +45,6 @@ func resourceScalewayRdbDatabase() *schema.Resource {
 			"owner": {
 				Type:        schema.TypeString,
 				Description: "User that own the database",
-				Optional:    true,
 				Computed:    true,
 			},
 			"size": {
