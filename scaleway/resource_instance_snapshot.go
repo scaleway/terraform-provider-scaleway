@@ -2,11 +2,11 @@ package scaleway
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 )
@@ -40,13 +40,8 @@ func resourceScalewayInstanceSnapshot() *schema.Resource {
 			},
 			"type": {
 				Type:        schema.TypeString,
-				Required:    true,
-				ForceNew:    true,
+				Computed:    true,
 				Description: "The volume type of the snapshot",
-				ValidateFunc: validation.StringInSlice([]string{
-					instance.VolumeVolumeTypeBSSD.String(),
-					instance.VolumeVolumeTypeLSSD.String(),
-				}, false),
 			},
 			"size_in_gb": {
 				Type:        schema.TypeInt,
@@ -56,7 +51,7 @@ func resourceScalewayInstanceSnapshot() *schema.Resource {
 			"created_at": {
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "The date and time of the creation of the Kubernetes cluster",
+				Description: "The date and time of the creation of the snapshot",
 			},
 			"zone":            zoneSchema(),
 			"organization_id": organizationIDSchema(),
@@ -113,23 +108,23 @@ func resourceScalewayInstanceSnapshotRead(ctx context.Context, d *schema.Resourc
 }
 
 func resourceScalewayInstanceSnapshotUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	//instanceAPI, zone, id, err := instanceAPIWithZoneAndID(meta, d.Id())
-	//if err != nil {
-	//	return diag.FromErr(err)
-	//}
+	instanceAPI, zone, id, err := instanceAPIWithZoneAndID(meta, d.Id())
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
-	//if d.HasChange("name") {
-	//	newName := d.Get("name").(string)
-	//
-	//	_, err = instanceAPI.UpdateSnapshot(&instance.UpdateSnapshotRequest{
-	//		SnapshotID: id,
-	//		Zone:       zone,
-	//		Name:       &newName,
-	//	}, scw.WithContext(ctx))
-	//	if err != nil {
-	//		return diag.FromErr(fmt.Errorf("couldn't update snapshot: %s", err))
-	//	}
-	//}
+	if d.HasChange("name") {
+		newName := d.Get("name").(string)
+
+		_, err = instanceAPI.UpdateSnapshot(&instance.UpdateSnapshotRequest{
+			SnapshotID: id,
+			Zone:       zone,
+			Name:       &newName,
+		}, scw.WithContext(ctx))
+		if err != nil {
+			return diag.FromErr(fmt.Errorf("couldn't update snapshot: %s", err))
+		}
+	}
 
 	return resourceScalewayInstanceSnapshotRead(ctx, d, meta)
 }

@@ -23,7 +23,6 @@ func TestAccScalewayInstanceSnapshot_BlockVolume(t *testing.T) {
 
 					resource "scaleway_instance_snapshot" "main" {
 						volume_id = scaleway_instance_volume.main.id
-						type = "b_ssd"
 					}`,
 			},
 		},
@@ -80,7 +79,42 @@ func TestAccScalewayInstanceSnapshot_ServerWithBlockVolume(t *testing.T) {
 
 					resource "scaleway_instance_snapshot" "main" {
 						volume_id = scaleway_instance_volume.block.id
-						type = "b_ssd"
+					}`,
+			},
+		},
+	})
+}
+
+func TestAccScalewayInstanceSnapshot_RenameSnapshot(t *testing.T) {
+	tt := NewTestTools(t)
+	defer tt.Cleanup()
+	resource.Test(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      testAccCheckScalewayInstanceVolumeDestroy(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource "scaleway_instance_volume" "main" {
+						type       = "b_ssd"
+						size_in_gb = 20
+					}
+
+					resource "scaleway_instance_snapshot" "main" {
+						volume_id = scaleway_instance_volume.main.id
+						name = "first_name"
+					}`,
+			},
+			{
+				Config: `
+					resource "scaleway_instance_volume" "main" {
+						type       = "b_ssd"
+						size_in_gb = 20
+					}
+
+					resource "scaleway_instance_snapshot" "main" {
+						volume_id = scaleway_instance_volume.main.id
+						name = "second_name"
 					}`,
 			},
 		},
