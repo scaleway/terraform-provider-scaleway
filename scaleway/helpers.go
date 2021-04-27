@@ -263,7 +263,7 @@ func zoneSchema() *schema.Schema {
 		Optional:         true,
 		ForceNew:         true,
 		Computed:         true,
-		ValidateDiagFunc: validateWithWarnings(allZones, "zone"),
+		ValidateDiagFunc: validateStringInSliceWithWarning(allZones, "zone"),
 	}
 }
 
@@ -279,12 +279,12 @@ func regionSchema() *schema.Schema {
 		Optional:         true,
 		ForceNew:         true,
 		Computed:         true,
-		ValidateDiagFunc: validateWithWarnings(allRegions, "region"),
+		ValidateDiagFunc: validateStringInSliceWithWarning(allRegions, "region"),
 	}
 }
 
-// validateWithWarnings helps to only returns warnings in case we got a non public locality passed
-func validateWithWarnings(correctValues []string, field string) func(i interface{}, path cty.Path) diag.Diagnostics {
+// validateStringInSliceWithWarning helps to only returns warnings in case we got a non public locality passed
+func validateStringInSliceWithWarning(correctValues []string, field string) func(i interface{}, path cty.Path) diag.Diagnostics {
 	return func(i interface{}, path cty.Path) diag.Diagnostics {
 		_, rawErr := validation.StringInSlice(correctValues, true)(i, field)
 		var res diag.Diagnostics
