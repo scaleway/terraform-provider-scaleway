@@ -2,7 +2,7 @@
 
 ## Unit testing
 
-In order to test the provider, you can simply run `make test`.
+You can test the provider, by running `make test`.
 
 ```sh
 make test
