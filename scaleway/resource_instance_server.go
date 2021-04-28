@@ -297,6 +297,7 @@ func resourceScalewayInstanceServerCreate(ctx context.Context, d *schema.Resourc
 		for i, volumeID := range raw.([]interface{}) {
 			// We have to get the volume to know whether it is a local or a block volume
 			vol, err := instanceAPI.GetVolume(&instance.GetVolumeRequest{
+				Zone:     zone,
 				VolumeID: expandZonedID(volumeID).ID,
 			})
 			if err != nil {
