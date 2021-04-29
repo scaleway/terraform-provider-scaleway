@@ -35,14 +35,14 @@ func TestAccScalewayRdbACL_Basic(t *testing.T) {
 					resource scaleway_rdb_acl main {
 						instance_id = scaleway_rdb_instance.main.id
 						acl_rules {
-								ip = "1.2.3.4"
-								description = "foo"
-							}
+							ip = "1.2.3.4"
+							description = "foo"
+						}
 
 						acl_rules {
-								ip = "4.5.6.7"
-								description = "bar"
-							}
+							ip = "4.5.6.7"
+							description = "bar"
+						}
 					}`, instanceName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("scaleway_rdb_acl.main", "acl_rules.0.ip", "1.2.3.4"),
