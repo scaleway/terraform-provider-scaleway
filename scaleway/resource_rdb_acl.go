@@ -65,6 +65,10 @@ func resourceScalewayRdbACLCreate(ctx context.Context, d *schema.ResourceData, m
 		return diag.FromErr(err)
 	}
 	instanceID := d.Get("instance_id").(string)
+	_, id, err := parseLocalizedID(instanceID)
+	if err == nil {
+		instanceID = id
+	}
 
 	//InstanceStatus.READY,
 	//	InstanceStatus.CONFIGURING,
@@ -97,10 +101,12 @@ func resourceScalewayRdbACLRead(ctx context.Context, d *schema.ResourceData, met
 		return diag.FromErr(err)
 	}
 
-	instanceID, err := resourceScalewayRdbACLParseID(d.Id())
+	iID, _ := d.GetOk("instance_id")
+	instanceID := iID.(string)
 
-	if err != nil {
-		return diag.FromErr(err)
+	_, id, err := parseLocalizedID(instanceID)
+	if err == nil {
+		instanceID = id
 	}
 
 	res, err := rdbAPI.ListInstanceACLRules(&rdb.ListInstanceACLRulesRequest{
