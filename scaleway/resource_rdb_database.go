@@ -45,7 +45,6 @@ func resourceScalewayRdbDatabase() *schema.Resource {
 			"owner": {
 				Type:        schema.TypeString,
 				Description: "User that own the database",
-				Optional:    true,
 				Computed:    true,
 			},
 			"size": {
@@ -87,7 +86,7 @@ func resourceScalewayRdbDatabaseRead(ctx context.Context, d *schema.ResourceData
 		return diag.FromErr(err)
 	}
 
-	instanceID, userName, err := resourceScalewayRdbDatabaseParseID(d.Id())
+	instanceID, databaseName, err := resourceScalewayRdbDatabaseParseID(d.Id())
 
 	if err != nil {
 		return diag.FromErr(err)
@@ -96,7 +95,7 @@ func resourceScalewayRdbDatabaseRead(ctx context.Context, d *schema.ResourceData
 	res, err := rdbAPI.ListDatabases(&rdb.ListDatabasesRequest{
 		Region:     region,
 		InstanceID: instanceID,
-		Name:       &userName,
+		Name:       &databaseName,
 	}, scw.WithContext(ctx))
 
 	if err != nil {
@@ -114,7 +113,7 @@ func resourceScalewayRdbDatabaseRead(ctx context.Context, d *schema.ResourceData
 	_ = d.Set("managed", database.Managed)
 	_ = d.Set("size", database.Size.String())
 
-	d.SetId(resourceScalewayRdbUserID(region, instanceID, database.Name))
+	d.SetId(resourceScalewayRdbDatabaseID(region, instanceID, database.Name))
 
 	return nil
 }
@@ -125,7 +124,7 @@ func resourceScalewayRdbDatabaseDelete(ctx context.Context, d *schema.ResourceDa
 		return diag.FromErr(err)
 	}
 
-	instanceID, userName, err := resourceScalewayRdbDatabaseParseID(d.Id())
+	instanceID, databaseName, err := resourceScalewayRdbDatabaseParseID(d.Id())
 
 	if err != nil {
 		return diag.FromErr(err)
@@ -134,7 +133,7 @@ func resourceScalewayRdbDatabaseDelete(ctx context.Context, d *schema.ResourceDa
 	err = rdbAPI.DeleteDatabase(&rdb.DeleteDatabaseRequest{
 		Region:     region,
 		InstanceID: instanceID,
-		Name:       userName,
+		Name:       databaseName,
 	}, scw.WithContext(ctx))
 
 	if err != nil && !is404Error(err) {

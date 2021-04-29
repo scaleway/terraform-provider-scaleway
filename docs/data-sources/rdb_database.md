@@ -7,29 +7,29 @@ description: |-
 
 # scaleway_rdb_instance
 
-Gets information about a RDB instance.
+Gets information about a RDB database.
 
 ## Example Usage
 
 ```hcl
-# Get info by name
-data "scaleway_rdb_instance" "my_instance" {
-  name = "foobar"
+# Get the database foobar hosted on instance id 11111111-1111-1111-1111-111111111111
+data "scaleway_rdb_database" "my_db" {
+  instance_id = "11111111-1111-1111-1111-111111111111"
+  name        = "foobar"
 }
-
-# Get info by instance ID
-data "scaleway_rdb_instance" "my_instance" {
+# Find the first database hosted on instance id 11111111-1111-1111-1111-111111111111
+data "scaleway_rdb_database" "my_db" {
   instance_id = "11111111-1111-1111-1111-111111111111"
 }
 ```
 
 ## Argument Reference
 
-- `name` - (Optional) The name of the RDB instance.
-  Only one of `name` and `instance_id` should be specified.
+- `instance_id` - (Required) The RDB instance ID.
 
-- `instance_id` - (Optional) The RDB instance ID.
-  Only one of `name` and `instance_id` should be specified.
+- `name` - (Optional) The name of the RDB instance.
+  If omitted, the first database, in alphabethical order, will be returned
+
 
 - `region` - (Defaults to [provider](../index.md#region) `region`) The [region](../guides/regions_and_zones.md#zones) in which the RDB instance exists.
 
