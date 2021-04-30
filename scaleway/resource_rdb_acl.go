@@ -41,7 +41,7 @@ func resourceScalewayRdbACL() *schema.Resource {
 					Schema: map[string]*schema.Schema{
 						"ip": {
 							Type:         schema.TypeString,
-							ValidateFunc: validation.IsIPAddress,
+							ValidateFunc: validation.IsCIDR,
 							Required:     true,
 							Description:  "Target IP of the rules",
 						},
