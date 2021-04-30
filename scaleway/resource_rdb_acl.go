@@ -134,13 +134,17 @@ func resourceScalewayRdbACLUpdate(ctx context.Context, d *schema.ResourceData, m
 		return diag.FromErr(err)
 	}
 
-	instanceID, err := resourceScalewayRdbACLParseID(d.Id())
+	instanceID := d.Get("instance_id").(string)
+	_, id, err := parseLocalizedID(instanceID)
+	if err == nil {
+		instanceID = id
+	}
 
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	if d.HasChange("ip_rules") {
+	if d.HasChange("acl_rules") {
 		//InstanceStatus.READY,
 		//	InstanceStatus.CONFIGURING,
 		//	InstanceStatus.BACKUPING,
