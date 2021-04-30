@@ -175,8 +175,19 @@ func resourceScalewayRdbACLDelete(ctx context.Context, d *schema.ResourceData, m
 		return diag.FromErr(err)
 	}
 
+	instanceID := d.Get("instance_id").(string)
+	_, id, err := parseLocalizedID(instanceID)
+	if err == nil {
+		instanceID = id
+	}
+	aclruleips := make([]string, 0)
+	for _, acl := range rdbACLExpand(d.Get("acl_rules")) {
+		aclruleips = append(aclruleips, acl.IP.String())
+	}
 	_, err = rdbAPI.DeleteInstanceACLRules(&rdb.DeleteInstanceACLRulesRequest{
-		Region: region,
+		Region:     region,
+		InstanceID: instanceID,
+		ACLRuleIPs: aclruleips,
 	}, scw.WithContext(ctx))
 
 	if err != nil && !is404Error(err) {
