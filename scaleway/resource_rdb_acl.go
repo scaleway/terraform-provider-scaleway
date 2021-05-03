@@ -101,8 +101,7 @@ func resourceScalewayRdbACLRead(ctx context.Context, d *schema.ResourceData, met
 		return diag.FromErr(err)
 	}
 
-	iID, _ := d.GetOk("instance_id")
-	instanceID := iID.(string)
+	instanceID := d.Id()
 
 	_, id, err := parseLocalizedID(instanceID)
 	if err == nil {
@@ -134,7 +133,7 @@ func resourceScalewayRdbACLUpdate(ctx context.Context, d *schema.ResourceData, m
 		return diag.FromErr(err)
 	}
 
-	instanceID := d.Get("instance_id").(string)
+	instanceID := d.Id()
 	_, id, err := parseLocalizedID(instanceID)
 	if err == nil {
 		instanceID = id
@@ -175,7 +174,7 @@ func resourceScalewayRdbACLDelete(ctx context.Context, d *schema.ResourceData, m
 		return diag.FromErr(err)
 	}
 
-	instanceID := d.Get("instance_id").(string)
+	instanceID := d.Id()
 	_, id, err := parseLocalizedID(instanceID)
 	if err == nil {
 		instanceID = id
