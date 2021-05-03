@@ -64,6 +64,7 @@ func Provider(config *ProviderConfig) plugin.ProviderFunc {
 				"scaleway_instance_security_group":       resourceScalewayInstanceSecurityGroup(),
 				"scaleway_instance_security_group_rules": resourceScalewayInstanceSecurityGroupRules(),
 				"scaleway_instance_server":               resourceScalewayInstanceServer(),
+				"scaleway_instance_snapshot":             resourceScalewayInstanceSnapshot(),
 				"scaleway_instance_placement_group":      resourceScalewayInstancePlacementGroup(),
 				"scaleway_instance_private_nic":          resourceScalewayInstancePrivateNIC(),
 				"scaleway_iot_hub":                       resourceScalewayIotHub(),
