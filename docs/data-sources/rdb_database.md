@@ -1,8 +1,8 @@
 ---
 layout: "scaleway"
-page_title: "Scaleway: scaleway_rdb_instance"
+page_title: "Scaleway: scaleway_rdb_database"
 description: |-
-  Gets information about an RDB instance.
+  Gets information about an RDB database.
 ---
 
 # scaleway_rdb_instance
