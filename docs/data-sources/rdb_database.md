@@ -5,7 +5,7 @@ description: |-
   Gets information about an RDB database.
 ---
 
-# scaleway_rdb_instance
+# scaleway_rdb_database
 
 Gets information about a RDB database.
 
