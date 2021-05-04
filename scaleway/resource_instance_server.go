@@ -269,17 +269,27 @@ func resourceScalewayInstanceServerCreate(ctx context.Context, d *schema.Resourc
 	}
 
 	req.Volumes = make(map[string]*instance.VolumeTemplate)
-	if size, ok := d.GetOk("root_volume.0.size_in_gb"); ok {
-		req.Volumes["0"] = &instance.VolumeTemplate{
-			Size:       scw.Size(uint64(size.(int)) * gb),
-			VolumeType: instance.VolumeVolumeTypeLSSD,
+	isBootOnBlock := serverType.VolumesConstraint.MaxSize == 0
+	if isBootOnBlock {
+		if size, ok := d.GetOk("root_volume.0.size_in_gb"); ok {
+			req.Volumes["0"] = &instance.VolumeTemplate{
+				Size:       scw.Size(uint64(size.(int)) * gb),
+				VolumeType: instance.VolumeVolumeTypeBSSD,
+			}
 		}
 	} else {
-		// We had a local root volume if it is not already present
-		req.Volumes["0"] = &instance.VolumeTemplate{
-			Name:       newRandomName("vol"),
-			VolumeType: instance.VolumeVolumeTypeLSSD,
-			Size:       serverType.VolumesConstraint.MinSize,
+		if size, ok := d.GetOk("root_volume.0.size_in_gb"); ok {
+			req.Volumes["0"] = &instance.VolumeTemplate{
+				Size:       scw.Size(uint64(size.(int)) * gb),
+				VolumeType: instance.VolumeVolumeTypeLSSD,
+			}
+		} else {
+			// We add a local root volume if it is not already present
+			req.Volumes["0"] = &instance.VolumeTemplate{
+				Name:       newRandomName("vol"),
+				VolumeType: instance.VolumeVolumeTypeLSSD,
+				Size:       serverType.VolumesConstraint.MinSize,
+			}
 		}
 	}
 
@@ -287,6 +297,7 @@ func resourceScalewayInstanceServerCreate(ctx context.Context, d *schema.Resourc
 		for i, volumeID := range raw.([]interface{}) {
 			// We have to get the volume to know whether it is a local or a block volume
 			vol, err := instanceAPI.GetVolume(&instance.GetVolumeRequest{
+				Zone:     zone,
 				VolumeID: expandZonedID(volumeID).ID,
 			})
 			if err != nil {

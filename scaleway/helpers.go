@@ -8,6 +8,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/hashicorp/go-cty/cty"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/scaleway/scaleway-sdk-go/namegenerator"
@@ -256,15 +258,12 @@ func zoneSchema() *schema.Schema {
 		allZones = append(allZones, z.String())
 	}
 	return &schema.Schema{
-		Type:        schema.TypeString,
-		Description: "The zone you want to attach the resource to",
-		Optional:    true,
-		ForceNew:    true,
-		Computed:    true,
-		ValidateFunc: validation.StringInSlice(
-			allZones,
-			true,
-		),
+		Type:             schema.TypeString,
+		Description:      "The zone you want to attach the resource to",
+		Optional:         true,
+		ForceNew:         true,
+		Computed:         true,
+		ValidateDiagFunc: validateStringInSliceWithWarning(allZones, "zone"),
 	}
 }
 
@@ -275,15 +274,28 @@ func regionSchema() *schema.Schema {
 		allRegions = append(allRegions, z.String())
 	}
 	return &schema.Schema{
-		Type:        schema.TypeString,
-		Description: "The region you want to attach the resource to",
-		Optional:    true,
-		ForceNew:    true,
-		Computed:    true,
-		ValidateFunc: validation.StringInSlice(
-			allRegions,
-			true,
-		),
+		Type:             schema.TypeString,
+		Description:      "The region you want to attach the resource to",
+		Optional:         true,
+		ForceNew:         true,
+		Computed:         true,
+		ValidateDiagFunc: validateStringInSliceWithWarning(allRegions, "region"),
+	}
+}
+
+// validateStringInSliceWithWarning helps to only returns warnings in case we got a non public locality passed
+func validateStringInSliceWithWarning(correctValues []string, field string) func(i interface{}, path cty.Path) diag.Diagnostics {
+	return func(i interface{}, path cty.Path) diag.Diagnostics {
+		_, rawErr := validation.StringInSlice(correctValues, true)(i, field)
+		var res diag.Diagnostics
+		for _, e := range rawErr {
+			res = append(res, diag.Diagnostic{
+				Severity:      diag.Warning,
+				Summary:       e.Error(),
+				AttributePath: path,
+			})
+		}
+		return res
 	}
 }
 

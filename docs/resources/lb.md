@@ -32,7 +32,7 @@ The following arguments are supported:
 
 ~> **Important:** Updates to `ip_id` will recreate the load-balancer.
 
-- `type` - (Required) The type of the load-balancer.  For now only `LB-S` is available
+- `type` - (Required) The type of the load-balancer.
 
 ~> **Important:** Updates to `type` will recreate the load-balancer.
 
