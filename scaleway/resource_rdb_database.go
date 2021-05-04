@@ -144,7 +144,7 @@ func resourceScalewayRdbDatabaseDelete(ctx context.Context, d *schema.ResourceDa
 }
 
 // Build the resource identifier
-// The resource identifier format is "Region/InstanceId/Database"
+// The resource identifier format is "Region/InstanceId/DatabaseName"
 func resourceScalewayRdbDatabaseID(region scw.Region, instanceID string, databaseName string) (resourceID string) {
 	return fmt.Sprintf("%s/%s/%s", region, instanceID, databaseName)
 }
