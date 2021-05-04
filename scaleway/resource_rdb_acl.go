@@ -202,15 +202,6 @@ func resourceScalewayRdbACLID(region scw.Region, instanceID string) (resourceID 
 	return fmt.Sprintf("%s/%s", region, instanceID)
 }
 
-// The resource identifier format is "Region/InstanceId/acl"
-func resourceScalewayRdbACLParseID(resourceID string) (instanceID string, err error) {
-	idParts := strings.Split(resourceID, "/")
-	if len(idParts) != 3 {
-		return "", fmt.Errorf("can't parse user resource id: %s", resourceID)
-	}
-	return idParts[1], nil
-}
-
 func rdbACLExpand(data interface{}) []*rdb.ACLRuleRequest {
 	type aclRule struct {
 		IP          string
