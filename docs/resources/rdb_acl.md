@@ -37,7 +37,7 @@ The following arguments are supported:
 
 - `project_id` - (Defaults to [provider](../index.md#project_id) `project_id`) The ID of the project the Database Instance is associated with.
 
-The acl_rules block supports:
+The `acl_rules` block supports:
 
 - `ip` - (Required) The ip range to whitelist in [CIDR notation](https://en.wikipedia.org/wiki/Classless_Inter-Domain_Routing#CIDR_notation)
 - `description` - (Optional) A simple text describing this rule
