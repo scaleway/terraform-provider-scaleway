@@ -41,7 +41,7 @@ func resourceScalewayRdbACL() *schema.Resource {
 					Schema: map[string]*schema.Schema{
 						"ip": {
 							Type:         schema.TypeString,
-							ValidateFunc: validation.IsIPAddress,
+							ValidateFunc: validation.IsCIDR,
 							Required:     true,
 							Description:  "Target IP of the rules",
 						},
@@ -65,6 +65,10 @@ func resourceScalewayRdbACLCreate(ctx context.Context, d *schema.ResourceData, m
 		return diag.FromErr(err)
 	}
 	instanceID := d.Get("instance_id").(string)
+	_, id, err := parseLocalizedID(instanceID)
+	if err == nil {
+		instanceID = id
+	}
 
 	//InstanceStatus.READY,
 	//	InstanceStatus.CONFIGURING,
@@ -97,10 +101,11 @@ func resourceScalewayRdbACLRead(ctx context.Context, d *schema.ResourceData, met
 		return diag.FromErr(err)
 	}
 
-	instanceID, err := resourceScalewayRdbACLParseID(d.Id())
+	instanceID := d.Id()
 
-	if err != nil {
-		return diag.FromErr(err)
+	_, id, err := parseLocalizedID(instanceID)
+	if err == nil {
+		instanceID = id
 	}
 
 	res, err := rdbAPI.ListInstanceACLRules(&rdb.ListInstanceACLRulesRequest{
@@ -128,13 +133,17 @@ func resourceScalewayRdbACLUpdate(ctx context.Context, d *schema.ResourceData, m
 		return diag.FromErr(err)
 	}
 
-	instanceID, err := resourceScalewayRdbACLParseID(d.Id())
+	instanceID := d.Id()
+	_, id, err := parseLocalizedID(instanceID)
+	if err == nil {
+		instanceID = id
+	}
 
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	if d.HasChange("ip_rules") {
+	if d.HasChange("acl_rules") {
 		//InstanceStatus.READY,
 		//	InstanceStatus.CONFIGURING,
 		//	InstanceStatus.BACKUPING,
@@ -165,8 +174,19 @@ func resourceScalewayRdbACLDelete(ctx context.Context, d *schema.ResourceData, m
 		return diag.FromErr(err)
 	}
 
+	instanceID := d.Id()
+	_, id, err := parseLocalizedID(instanceID)
+	if err == nil {
+		instanceID = id
+	}
+	aclruleips := make([]string, 0)
+	for _, acl := range rdbACLExpand(d.Get("acl_rules")) {
+		aclruleips = append(aclruleips, acl.IP.String())
+	}
 	_, err = rdbAPI.DeleteInstanceACLRules(&rdb.DeleteInstanceACLRulesRequest{
-		Region: region,
+		Region:     region,
+		InstanceID: instanceID,
+		ACLRuleIPs: aclruleips,
 	}, scw.WithContext(ctx))
 
 	if err != nil && !is404Error(err) {
