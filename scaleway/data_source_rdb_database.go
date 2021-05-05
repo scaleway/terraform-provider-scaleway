@@ -12,9 +12,7 @@ func dataSourceScalewayRDBDatabase() *schema.Resource {
 	// Generate datasource schema from resource
 	dsSchema := datasourceSchemaFromResourceSchema(resourceScalewayRdbDatabase().Schema)
 
-	dsSchema["instance_id"].Computed = false
-	dsSchema["instance_id"].Required = true
-	addOptionalFieldsToSchema(dsSchema, "name")
+	fixDatasourceSchemaFlags(dsSchema, true, "instance_id", "name")
 
 	return &schema.Resource{
 		ReadContext: dataSourceScalewayRDBDatabaseRead,

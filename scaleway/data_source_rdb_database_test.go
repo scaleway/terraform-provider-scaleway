@@ -41,9 +41,6 @@ func TestAccScalewayDataSourceRdbDatabase_Basic(t *testing.T) {
 						name        = scaleway_rdb_database.database.name
 						instance_id = scaleway_rdb_instance.server.id
 					}
-					data "scaleway_rdb_database" "find_by_instance" {
-						instance_id = scaleway_rdb_instance.server.id
-					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckRdbDatabaseExists(tt, "scaleway_rdb_instance.server", "scaleway_rdb_database.database"),
@@ -52,11 +49,6 @@ func TestAccScalewayDataSourceRdbDatabase_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("data.scaleway_rdb_database.find_by_name_and_instance", "managed", "true"),
 					resource.TestCheckResourceAttrSet("data.scaleway_rdb_database.find_by_name_and_instance", "owner"),
 					resource.TestCheckResourceAttrSet("data.scaleway_rdb_database.find_by_name_and_instance", "size"),
-
-					resource.TestCheckResourceAttr("data.scaleway_rdb_database.find_by_instance", "name", "rdb"),
-					resource.TestCheckResourceAttr("data.scaleway_rdb_database.find_by_instance", "managed", "true"),
-					resource.TestCheckResourceAttrSet("data.scaleway_rdb_database.find_by_instance", "owner"),
-					resource.TestCheckResourceAttrSet("data.scaleway_rdb_database.find_by_instance", "size"),
 				),
 			},
 		},
