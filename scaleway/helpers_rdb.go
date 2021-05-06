@@ -13,9 +13,14 @@ const (
 )
 
 // rdbAPIWithRegion returns a new lb API and the region for a Create request
-func rdbAPIWithRegion(d *schema.ResourceData, m interface{}) (*rdb.API, scw.Region, error) {
+func rdbAPIWithRegion(d *schema.ResourceData, m interface{}) (RdbApiInterface, scw.Region, error) {
 	meta := m.(*Meta)
-	rdbAPI := rdb.NewAPI(meta.scwClient)
+	var rdbAPI RdbApiInterface
+	if meta.mockedApi != nil {
+		rdbAPI = meta.mockedApi.(RdbApiInterface)
+	} else {
+		rdbAPI = rdb.NewAPI(meta.scwClient)
+	}
 
 	region, err := extractRegion(d, meta)
 	if err != nil {
