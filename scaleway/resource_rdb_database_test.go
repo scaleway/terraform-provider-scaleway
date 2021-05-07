@@ -124,12 +124,7 @@ func TestResourceScalewayRdbDatabaseReadWithRdbErrorIdReturnDiagnotics(t *testin
 		terraformVersion: "terraform-test-unit",
 	})
 	rdbApi := mock.NewMockRdbApiInterface(ctrl)
-	matcher := ListDatabasesRequestMatcher{
-		ExpectedRegion:       "fr-srr",
-		ExpectedInstanceID:   "1111-11111111-111111111111",
-		ExpectedDatabaseName: "dbname",
-	}
-	rdbApi.EXPECT().ListDatabases(matcher, gomock.Any()).Return(nil, errors.New("Error"))
+	rdbApi.EXPECT().ListDatabases(gomock.Any(), gomock.Any()).Return(nil, errors.New("Error"))
 	meta.mockedApi = rdbApi
 	ctx := mock.NewMockContext(ctrl)
 
@@ -259,12 +254,8 @@ func TestResourceScalewayRdbDatabaseCreateWithRdbErrorReturnDiagnotics(t *testin
 		terraformVersion: "terraform-test-unit",
 	})
 	rdbApi := mock.NewMockRdbApiInterface(ctrl)
-	matcher := CreateDatabaseRequestMatcher{
-		ExpectedRegion:       "fr-srr",
-		ExpectedInstanceID:   "1111-11111111-111111111111",
-		ExpectedDatabaseName: "dbname",
-	}
-	rdbApi.EXPECT().CreateDatabase(matcher, gomock.Any()).Return(nil, errors.New("Error"))
+
+	rdbApi.EXPECT().CreateDatabase(gomock.Any(), gomock.Any()).Return(nil, errors.New("Error"))
 	meta.mockedApi = rdbApi
 	ctx := mock.NewMockContext(ctrl)
 
