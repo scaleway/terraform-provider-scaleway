@@ -5,7 +5,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 )
 
-type RdbApiInterface interface {
+type RdbAPIInterface interface {
 	GetServiceInfo(req *rdb.GetServiceInfoRequest, opts ...scw.RequestOption) (*scw.ServiceInfo, error)
 	ListDatabaseEngines(req *rdb.ListDatabaseEnginesRequest, opts ...scw.RequestOption) (*rdb.ListDatabaseEnginesResponse, error)
 	ListNodeTypes(req *rdb.ListNodeTypesRequest, opts ...scw.RequestOption) (*rdb.ListNodeTypesResponse, error)

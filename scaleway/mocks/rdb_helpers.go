@@ -18,7 +18,6 @@ type ListDatabasesRequestMatcher struct {
 	ExpectedRegion       string
 	ExpectedInstanceID   string
 	ExpectedDatabaseName string
-	errorString          string
 }
 
 func (m ListDatabasesRequestMatcher) Matches(x interface{}) bool {
@@ -30,7 +29,7 @@ func (m ListDatabasesRequestMatcher) Matches(x interface{}) bool {
 	if req.InstanceID != m.ExpectedInstanceID {
 		return false
 	}
-	if fmt.Sprintf("%s", *req.Name) != m.ExpectedDatabaseName {
+	if *req.Name != m.ExpectedDatabaseName {
 		return false
 	}
 	return true
@@ -50,11 +49,11 @@ func NewTestDatabase() *rdb.Database {
 	return &db
 }
 
-func (m *MockRdbApiInterface) CreateDatabaseMustReturnError() {
+func (m *MockRdbAPIInterface) CreateDatabaseMustReturnError() {
 	m.EXPECT().CreateDatabase(gomock.Any(), gomock.Any()).Return(nil, errors.New("Error"))
 }
 
-func (m *MockRdbApiInterface) CreateDatabaseMustReturnDb(expectedRegion string) {
+func (m *MockRdbAPIInterface) CreateDatabaseMustReturnDB(expectedRegion string) {
 	matcher := CreateDatabaseRequestMatcher{
 		ExpectedRegion:       expectedRegion,
 		ExpectedInstanceID:   instanceID,
@@ -62,10 +61,10 @@ func (m *MockRdbApiInterface) CreateDatabaseMustReturnDb(expectedRegion string) 
 	}
 	m.EXPECT().CreateDatabase(matcher, gomock.Any()).Return(NewTestDatabase(), nil)
 }
-func (m *MockRdbApiInterface) ListDatabasesMustReturnError() {
+func (m *MockRdbAPIInterface) ListDatabasesMustReturnError() {
 	m.EXPECT().ListDatabases(gomock.Any(), gomock.Any()).Return(nil, errors.New("Error"))
 }
-func (m *MockRdbApiInterface) ListDatabasesMustReturnDb(expectedRegion string) {
+func (m *MockRdbAPIInterface) ListDatabasesMustReturnDB(expectedRegion string) {
 	matcher := ListDatabasesRequestMatcher{
 		ExpectedRegion:       expectedRegion,
 		ExpectedInstanceID:   instanceID,
@@ -78,14 +77,12 @@ func (m *MockRdbApiInterface) ListDatabasesMustReturnDb(expectedRegion string) {
 		TotalCount: 1,
 	}
 	m.EXPECT().ListDatabases(matcher, gomock.Any()).Return(&resp, nil)
-
 }
 
 type CreateDatabaseRequestMatcher struct {
 	ExpectedRegion       string
 	ExpectedInstanceID   string
 	ExpectedDatabaseName string
-	errorString          string
 }
 
 func (m CreateDatabaseRequestMatcher) Matches(x interface{}) bool {

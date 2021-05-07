@@ -137,8 +137,8 @@ type Meta struct {
 	// or it can be a http.Client used to record and replay cassettes which is useful
 	// to replay recorded interactions with APIs locally
 	httpClient *http.Client
-	// mockedApi allow to inject a mock of the API
-	mockedApi interface{}
+	// mockedAPI allow to inject a mock of the API
+	mockedAPI interface{}
 }
 
 type MetaConfig struct {

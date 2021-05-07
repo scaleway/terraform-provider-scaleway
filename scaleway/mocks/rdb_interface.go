@@ -12,31 +12,31 @@ import (
 	scw "github.com/scaleway/scaleway-sdk-go/scw"
 )
 
-// MockRdbApiInterface is a mock of RdbApiInterface interface.
-type MockRdbApiInterface struct {
+// MockRdbAPIInterface is a mock of RdbAPIInterface interface.
+type MockRdbAPIInterface struct {
 	ctrl     *gomock.Controller
-	recorder *MockRdbApiInterfaceMockRecorder
+	recorder *MockRdbAPIInterfaceMockRecorder
 }
 
-// MockRdbApiInterfaceMockRecorder is the mock recorder for MockRdbApiInterface.
-type MockRdbApiInterfaceMockRecorder struct {
-	mock *MockRdbApiInterface
+// MockRdbAPIInterfaceMockRecorder is the mock recorder for MockRdbAPIInterface.
+type MockRdbAPIInterfaceMockRecorder struct {
+	mock *MockRdbAPIInterface
 }
 
-// NewMockRdbApiInterface creates a new mock instance.
-func NewMockRdbApiInterface(ctrl *gomock.Controller) *MockRdbApiInterface {
-	mock := &MockRdbApiInterface{ctrl: ctrl}
-	mock.recorder = &MockRdbApiInterfaceMockRecorder{mock}
+// NewMockRdbAPIInterface creates a new mock instance.
+func NewMockRdbAPIInterface(ctrl *gomock.Controller) *MockRdbAPIInterface {
+	mock := &MockRdbAPIInterface{ctrl: ctrl}
+	mock.recorder = &MockRdbAPIInterfaceMockRecorder{mock}
 	return mock
 }
 
 // EXPECT returns an object that allows the caller to indicate expected use.
-func (m *MockRdbApiInterface) EXPECT() *MockRdbApiInterfaceMockRecorder {
+func (m *MockRdbAPIInterface) EXPECT() *MockRdbAPIInterfaceMockRecorder {
 	return m.recorder
 }
 
 // AddInstanceACLRules mocks base method.
-func (m *MockRdbApiInterface) AddInstanceACLRules(req *rdb.AddInstanceACLRulesRequest, opts ...scw.RequestOption) (*rdb.AddInstanceACLRulesResponse, error) {
+func (m *MockRdbAPIInterface) AddInstanceACLRules(req *rdb.AddInstanceACLRulesRequest, opts ...scw.RequestOption) (*rdb.AddInstanceACLRulesResponse, error) {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{req}
 	for _, a := range opts {
@@ -49,14 +49,14 @@ func (m *MockRdbApiInterface) AddInstanceACLRules(req *rdb.AddInstanceACLRulesRe
 }
 
 // AddInstanceACLRules indicates an expected call of AddInstanceACLRules.
-func (mr *MockRdbApiInterfaceMockRecorder) AddInstanceACLRules(req interface{}, opts ...interface{}) *gomock.Call {
+func (mr *MockRdbAPIInterfaceMockRecorder) AddInstanceACLRules(req interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{req}, opts...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddInstanceACLRules", reflect.TypeOf((*MockRdbApiInterface)(nil).AddInstanceACLRules), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddInstanceACLRules", reflect.TypeOf((*MockRdbAPIInterface)(nil).AddInstanceACLRules), varargs...)
 }
 
 // AddInstanceSettings mocks base method.
-func (m *MockRdbApiInterface) AddInstanceSettings(req *rdb.AddInstanceSettingsRequest, opts ...scw.RequestOption) (*rdb.AddInstanceSettingsResponse, error) {
+func (m *MockRdbAPIInterface) AddInstanceSettings(req *rdb.AddInstanceSettingsRequest, opts ...scw.RequestOption) (*rdb.AddInstanceSettingsResponse, error) {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{req}
 	for _, a := range opts {
@@ -69,14 +69,14 @@ func (m *MockRdbApiInterface) AddInstanceSettings(req *rdb.AddInstanceSettingsRe
 }
 
 // AddInstanceSettings indicates an expected call of AddInstanceSettings.
-func (mr *MockRdbApiInterfaceMockRecorder) AddInstanceSettings(req interface{}, opts ...interface{}) *gomock.Call {
+func (mr *MockRdbAPIInterfaceMockRecorder) AddInstanceSettings(req interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{req}, opts...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddInstanceSettings", reflect.TypeOf((*MockRdbApiInterface)(nil).AddInstanceSettings), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddInstanceSettings", reflect.TypeOf((*MockRdbAPIInterface)(nil).AddInstanceSettings), varargs...)
 }
 
 // CloneInstance mocks base method.
-func (m *MockRdbApiInterface) CloneInstance(req *rdb.CloneInstanceRequest, opts ...scw.RequestOption) (*rdb.Instance, error) {
+func (m *MockRdbAPIInterface) CloneInstance(req *rdb.CloneInstanceRequest, opts ...scw.RequestOption) (*rdb.Instance, error) {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{req}
 	for _, a := range opts {
@@ -89,14 +89,14 @@ func (m *MockRdbApiInterface) CloneInstance(req *rdb.CloneInstanceRequest, opts 
 }
 
 // CloneInstance indicates an expected call of CloneInstance.
-func (mr *MockRdbApiInterfaceMockRecorder) CloneInstance(req interface{}, opts ...interface{}) *gomock.Call {
+func (mr *MockRdbAPIInterfaceMockRecorder) CloneInstance(req interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{req}, opts...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CloneInstance", reflect.TypeOf((*MockRdbApiInterface)(nil).CloneInstance), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CloneInstance", reflect.TypeOf((*MockRdbAPIInterface)(nil).CloneInstance), varargs...)
 }
 
 // CreateDatabase mocks base method.
-func (m *MockRdbApiInterface) CreateDatabase(req *rdb.CreateDatabaseRequest, opts ...scw.RequestOption) (*rdb.Database, error) {
+func (m *MockRdbAPIInterface) CreateDatabase(req *rdb.CreateDatabaseRequest, opts ...scw.RequestOption) (*rdb.Database, error) {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{req}
 	for _, a := range opts {
@@ -109,14 +109,14 @@ func (m *MockRdbApiInterface) CreateDatabase(req *rdb.CreateDatabaseRequest, opt
 }
 
 // CreateDatabase indicates an expected call of CreateDatabase.
-func (mr *MockRdbApiInterfaceMockRecorder) CreateDatabase(req interface{}, opts ...interface{}) *gomock.Call {
+func (mr *MockRdbAPIInterfaceMockRecorder) CreateDatabase(req interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{req}, opts...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateDatabase", reflect.TypeOf((*MockRdbApiInterface)(nil).CreateDatabase), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateDatabase", reflect.TypeOf((*MockRdbAPIInterface)(nil).CreateDatabase), varargs...)
 }
 
 // CreateDatabaseBackup mocks base method.
-func (m *MockRdbApiInterface) CreateDatabaseBackup(req *rdb.CreateDatabaseBackupRequest, opts ...scw.RequestOption) (*rdb.DatabaseBackup, error) {
+func (m *MockRdbAPIInterface) CreateDatabaseBackup(req *rdb.CreateDatabaseBackupRequest, opts ...scw.RequestOption) (*rdb.DatabaseBackup, error) {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{req}
 	for _, a := range opts {
@@ -129,14 +129,14 @@ func (m *MockRdbApiInterface) CreateDatabaseBackup(req *rdb.CreateDatabaseBackup
 }
 
 // CreateDatabaseBackup indicates an expected call of CreateDatabaseBackup.
-func (mr *MockRdbApiInterfaceMockRecorder) CreateDatabaseBackup(req interface{}, opts ...interface{}) *gomock.Call {
+func (mr *MockRdbAPIInterfaceMockRecorder) CreateDatabaseBackup(req interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{req}, opts...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateDatabaseBackup", reflect.TypeOf((*MockRdbApiInterface)(nil).CreateDatabaseBackup), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateDatabaseBackup", reflect.TypeOf((*MockRdbAPIInterface)(nil).CreateDatabaseBackup), varargs...)
 }
 
 // CreateInstance mocks base method.
-func (m *MockRdbApiInterface) CreateInstance(req *rdb.CreateInstanceRequest, opts ...scw.RequestOption) (*rdb.Instance, error) {
+func (m *MockRdbAPIInterface) CreateInstance(req *rdb.CreateInstanceRequest, opts ...scw.RequestOption) (*rdb.Instance, error) {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{req}
 	for _, a := range opts {
@@ -149,14 +149,14 @@ func (m *MockRdbApiInterface) CreateInstance(req *rdb.CreateInstanceRequest, opt
 }
 
 // CreateInstance indicates an expected call of CreateInstance.
-func (mr *MockRdbApiInterfaceMockRecorder) CreateInstance(req interface{}, opts ...interface{}) *gomock.Call {
+func (mr *MockRdbAPIInterfaceMockRecorder) CreateInstance(req interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{req}, opts...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateInstance", reflect.TypeOf((*MockRdbApiInterface)(nil).CreateInstance), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateInstance", reflect.TypeOf((*MockRdbAPIInterface)(nil).CreateInstance), varargs...)
 }
 
 // CreateInstanceFromSnapshot mocks base method.
-func (m *MockRdbApiInterface) CreateInstanceFromSnapshot(req *rdb.CreateInstanceFromSnapshotRequest, opts ...scw.RequestOption) (*rdb.Instance, error) {
+func (m *MockRdbAPIInterface) CreateInstanceFromSnapshot(req *rdb.CreateInstanceFromSnapshotRequest, opts ...scw.RequestOption) (*rdb.Instance, error) {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{req}
 	for _, a := range opts {
@@ -169,14 +169,14 @@ func (m *MockRdbApiInterface) CreateInstanceFromSnapshot(req *rdb.CreateInstance
 }
 
 // CreateInstanceFromSnapshot indicates an expected call of CreateInstanceFromSnapshot.
-func (mr *MockRdbApiInterfaceMockRecorder) CreateInstanceFromSnapshot(req interface{}, opts ...interface{}) *gomock.Call {
+func (mr *MockRdbAPIInterfaceMockRecorder) CreateInstanceFromSnapshot(req interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{req}, opts...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateInstanceFromSnapshot", reflect.TypeOf((*MockRdbApiInterface)(nil).CreateInstanceFromSnapshot), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateInstanceFromSnapshot", reflect.TypeOf((*MockRdbAPIInterface)(nil).CreateInstanceFromSnapshot), varargs...)
 }
 
 // CreateSnapshot mocks base method.
-func (m *MockRdbApiInterface) CreateSnapshot(req *rdb.CreateSnapshotRequest, opts ...scw.RequestOption) (*rdb.Snapshot, error) {
+func (m *MockRdbAPIInterface) CreateSnapshot(req *rdb.CreateSnapshotRequest, opts ...scw.RequestOption) (*rdb.Snapshot, error) {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{req}
 	for _, a := range opts {
@@ -189,14 +189,14 @@ func (m *MockRdbApiInterface) CreateSnapshot(req *rdb.CreateSnapshotRequest, opt
 }
 
 // CreateSnapshot indicates an expected call of CreateSnapshot.
-func (mr *MockRdbApiInterfaceMockRecorder) CreateSnapshot(req interface{}, opts ...interface{}) *gomock.Call {
+func (mr *MockRdbAPIInterfaceMockRecorder) CreateSnapshot(req interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{req}, opts...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateSnapshot", reflect.TypeOf((*MockRdbApiInterface)(nil).CreateSnapshot), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateSnapshot", reflect.TypeOf((*MockRdbAPIInterface)(nil).CreateSnapshot), varargs...)
 }
 
 // CreateUser mocks base method.
-func (m *MockRdbApiInterface) CreateUser(req *rdb.CreateUserRequest, opts ...scw.RequestOption) (*rdb.User, error) {
+func (m *MockRdbAPIInterface) CreateUser(req *rdb.CreateUserRequest, opts ...scw.RequestOption) (*rdb.User, error) {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{req}
 	for _, a := range opts {
@@ -209,14 +209,14 @@ func (m *MockRdbApiInterface) CreateUser(req *rdb.CreateUserRequest, opts ...scw
 }
 
 // CreateUser indicates an expected call of CreateUser.
-func (mr *MockRdbApiInterfaceMockRecorder) CreateUser(req interface{}, opts ...interface{}) *gomock.Call {
+func (mr *MockRdbAPIInterfaceMockRecorder) CreateUser(req interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{req}, opts...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateUser", reflect.TypeOf((*MockRdbApiInterface)(nil).CreateUser), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateUser", reflect.TypeOf((*MockRdbAPIInterface)(nil).CreateUser), varargs...)
 }
 
 // DeleteDatabase mocks base method.
-func (m *MockRdbApiInterface) DeleteDatabase(req *rdb.DeleteDatabaseRequest, opts ...scw.RequestOption) error {
+func (m *MockRdbAPIInterface) DeleteDatabase(req *rdb.DeleteDatabaseRequest, opts ...scw.RequestOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{req}
 	for _, a := range opts {
@@ -228,14 +228,14 @@ func (m *MockRdbApiInterface) DeleteDatabase(req *rdb.DeleteDatabaseRequest, opt
 }
 
 // DeleteDatabase indicates an expected call of DeleteDatabase.
-func (mr *MockRdbApiInterfaceMockRecorder) DeleteDatabase(req interface{}, opts ...interface{}) *gomock.Call {
+func (mr *MockRdbAPIInterfaceMockRecorder) DeleteDatabase(req interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{req}, opts...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteDatabase", reflect.TypeOf((*MockRdbApiInterface)(nil).DeleteDatabase), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteDatabase", reflect.TypeOf((*MockRdbAPIInterface)(nil).DeleteDatabase), varargs...)
 }
 
 // DeleteDatabaseBackup mocks base method.
-func (m *MockRdbApiInterface) DeleteDatabaseBackup(req *rdb.DeleteDatabaseBackupRequest, opts ...scw.RequestOption) (*rdb.DatabaseBackup, error) {
+func (m *MockRdbAPIInterface) DeleteDatabaseBackup(req *rdb.DeleteDatabaseBackupRequest, opts ...scw.RequestOption) (*rdb.DatabaseBackup, error) {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{req}
 	for _, a := range opts {
@@ -248,14 +248,14 @@ func (m *MockRdbApiInterface) DeleteDatabaseBackup(req *rdb.DeleteDatabaseBackup
 }
 
 // DeleteDatabaseBackup indicates an expected call of DeleteDatabaseBackup.
-func (mr *MockRdbApiInterfaceMockRecorder) DeleteDatabaseBackup(req interface{}, opts ...interface{}) *gomock.Call {
+func (mr *MockRdbAPIInterfaceMockRecorder) DeleteDatabaseBackup(req interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{req}, opts...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteDatabaseBackup", reflect.TypeOf((*MockRdbApiInterface)(nil).DeleteDatabaseBackup), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteDatabaseBackup", reflect.TypeOf((*MockRdbAPIInterface)(nil).DeleteDatabaseBackup), varargs...)
 }
 
 // DeleteInstance mocks base method.
-func (m *MockRdbApiInterface) DeleteInstance(req *rdb.DeleteInstanceRequest, opts ...scw.RequestOption) (*rdb.Instance, error) {
+func (m *MockRdbAPIInterface) DeleteInstance(req *rdb.DeleteInstanceRequest, opts ...scw.RequestOption) (*rdb.Instance, error) {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{req}
 	for _, a := range opts {
@@ -268,14 +268,14 @@ func (m *MockRdbApiInterface) DeleteInstance(req *rdb.DeleteInstanceRequest, opt
 }
 
 // DeleteInstance indicates an expected call of DeleteInstance.
-func (mr *MockRdbApiInterfaceMockRecorder) DeleteInstance(req interface{}, opts ...interface{}) *gomock.Call {
+func (mr *MockRdbAPIInterfaceMockRecorder) DeleteInstance(req interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{req}, opts...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteInstance", reflect.TypeOf((*MockRdbApiInterface)(nil).DeleteInstance), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteInstance", reflect.TypeOf((*MockRdbAPIInterface)(nil).DeleteInstance), varargs...)
 }
 
 // DeleteInstanceACLRules mocks base method.
-func (m *MockRdbApiInterface) DeleteInstanceACLRules(req *rdb.DeleteInstanceACLRulesRequest, opts ...scw.RequestOption) (*rdb.DeleteInstanceACLRulesResponse, error) {
+func (m *MockRdbAPIInterface) DeleteInstanceACLRules(req *rdb.DeleteInstanceACLRulesRequest, opts ...scw.RequestOption) (*rdb.DeleteInstanceACLRulesResponse, error) {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{req}
 	for _, a := range opts {
@@ -288,14 +288,14 @@ func (m *MockRdbApiInterface) DeleteInstanceACLRules(req *rdb.DeleteInstanceACLR
 }
 
 // DeleteInstanceACLRules indicates an expected call of DeleteInstanceACLRules.
-func (mr *MockRdbApiInterfaceMockRecorder) DeleteInstanceACLRules(req interface{}, opts ...interface{}) *gomock.Call {
+func (mr *MockRdbAPIInterfaceMockRecorder) DeleteInstanceACLRules(req interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{req}, opts...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteInstanceACLRules", reflect.TypeOf((*MockRdbApiInterface)(nil).DeleteInstanceACLRules), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteInstanceACLRules", reflect.TypeOf((*MockRdbAPIInterface)(nil).DeleteInstanceACLRules), varargs...)
 }
 
 // DeleteInstanceSettings mocks base method.
-func (m *MockRdbApiInterface) DeleteInstanceSettings(req *rdb.DeleteInstanceSettingsRequest, opts ...scw.RequestOption) (*rdb.DeleteInstanceSettingsResponse, error) {
+func (m *MockRdbAPIInterface) DeleteInstanceSettings(req *rdb.DeleteInstanceSettingsRequest, opts ...scw.RequestOption) (*rdb.DeleteInstanceSettingsResponse, error) {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{req}
 	for _, a := range opts {
@@ -308,14 +308,14 @@ func (m *MockRdbApiInterface) DeleteInstanceSettings(req *rdb.DeleteInstanceSett
 }
 
 // DeleteInstanceSettings indicates an expected call of DeleteInstanceSettings.
-func (mr *MockRdbApiInterfaceMockRecorder) DeleteInstanceSettings(req interface{}, opts ...interface{}) *gomock.Call {
+func (mr *MockRdbAPIInterfaceMockRecorder) DeleteInstanceSettings(req interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{req}, opts...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteInstanceSettings", reflect.TypeOf((*MockRdbApiInterface)(nil).DeleteInstanceSettings), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteInstanceSettings", reflect.TypeOf((*MockRdbAPIInterface)(nil).DeleteInstanceSettings), varargs...)
 }
 
 // DeleteSnapshot mocks base method.
-func (m *MockRdbApiInterface) DeleteSnapshot(req *rdb.DeleteSnapshotRequest, opts ...scw.RequestOption) (*rdb.Snapshot, error) {
+func (m *MockRdbAPIInterface) DeleteSnapshot(req *rdb.DeleteSnapshotRequest, opts ...scw.RequestOption) (*rdb.Snapshot, error) {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{req}
 	for _, a := range opts {
@@ -328,14 +328,14 @@ func (m *MockRdbApiInterface) DeleteSnapshot(req *rdb.DeleteSnapshotRequest, opt
 }
 
 // DeleteSnapshot indicates an expected call of DeleteSnapshot.
-func (mr *MockRdbApiInterfaceMockRecorder) DeleteSnapshot(req interface{}, opts ...interface{}) *gomock.Call {
+func (mr *MockRdbAPIInterfaceMockRecorder) DeleteSnapshot(req interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{req}, opts...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteSnapshot", reflect.TypeOf((*MockRdbApiInterface)(nil).DeleteSnapshot), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteSnapshot", reflect.TypeOf((*MockRdbAPIInterface)(nil).DeleteSnapshot), varargs...)
 }
 
 // DeleteUser mocks base method.
-func (m *MockRdbApiInterface) DeleteUser(req *rdb.DeleteUserRequest, opts ...scw.RequestOption) error {
+func (m *MockRdbAPIInterface) DeleteUser(req *rdb.DeleteUserRequest, opts ...scw.RequestOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{req}
 	for _, a := range opts {
@@ -347,14 +347,14 @@ func (m *MockRdbApiInterface) DeleteUser(req *rdb.DeleteUserRequest, opts ...scw
 }
 
 // DeleteUser indicates an expected call of DeleteUser.
-func (mr *MockRdbApiInterfaceMockRecorder) DeleteUser(req interface{}, opts ...interface{}) *gomock.Call {
+func (mr *MockRdbAPIInterfaceMockRecorder) DeleteUser(req interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{req}, opts...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteUser", reflect.TypeOf((*MockRdbApiInterface)(nil).DeleteUser), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteUser", reflect.TypeOf((*MockRdbAPIInterface)(nil).DeleteUser), varargs...)
 }
 
 // ExportDatabaseBackup mocks base method.
-func (m *MockRdbApiInterface) ExportDatabaseBackup(req *rdb.ExportDatabaseBackupRequest, opts ...scw.RequestOption) (*rdb.DatabaseBackup, error) {
+func (m *MockRdbAPIInterface) ExportDatabaseBackup(req *rdb.ExportDatabaseBackupRequest, opts ...scw.RequestOption) (*rdb.DatabaseBackup, error) {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{req}
 	for _, a := range opts {
@@ -367,14 +367,14 @@ func (m *MockRdbApiInterface) ExportDatabaseBackup(req *rdb.ExportDatabaseBackup
 }
 
 // ExportDatabaseBackup indicates an expected call of ExportDatabaseBackup.
-func (mr *MockRdbApiInterfaceMockRecorder) ExportDatabaseBackup(req interface{}, opts ...interface{}) *gomock.Call {
+func (mr *MockRdbAPIInterfaceMockRecorder) ExportDatabaseBackup(req interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{req}, opts...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ExportDatabaseBackup", reflect.TypeOf((*MockRdbApiInterface)(nil).ExportDatabaseBackup), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ExportDatabaseBackup", reflect.TypeOf((*MockRdbAPIInterface)(nil).ExportDatabaseBackup), varargs...)
 }
 
 // GetDatabaseBackup mocks base method.
-func (m *MockRdbApiInterface) GetDatabaseBackup(req *rdb.GetDatabaseBackupRequest, opts ...scw.RequestOption) (*rdb.DatabaseBackup, error) {
+func (m *MockRdbAPIInterface) GetDatabaseBackup(req *rdb.GetDatabaseBackupRequest, opts ...scw.RequestOption) (*rdb.DatabaseBackup, error) {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{req}
 	for _, a := range opts {
@@ -387,14 +387,14 @@ func (m *MockRdbApiInterface) GetDatabaseBackup(req *rdb.GetDatabaseBackupReques
 }
 
 // GetDatabaseBackup indicates an expected call of GetDatabaseBackup.
-func (mr *MockRdbApiInterfaceMockRecorder) GetDatabaseBackup(req interface{}, opts ...interface{}) *gomock.Call {
+func (mr *MockRdbAPIInterfaceMockRecorder) GetDatabaseBackup(req interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{req}, opts...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetDatabaseBackup", reflect.TypeOf((*MockRdbApiInterface)(nil).GetDatabaseBackup), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetDatabaseBackup", reflect.TypeOf((*MockRdbAPIInterface)(nil).GetDatabaseBackup), varargs...)
 }
 
 // GetInstance mocks base method.
-func (m *MockRdbApiInterface) GetInstance(req *rdb.GetInstanceRequest, opts ...scw.RequestOption) (*rdb.Instance, error) {
+func (m *MockRdbAPIInterface) GetInstance(req *rdb.GetInstanceRequest, opts ...scw.RequestOption) (*rdb.Instance, error) {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{req}
 	for _, a := range opts {
@@ -407,14 +407,14 @@ func (m *MockRdbApiInterface) GetInstance(req *rdb.GetInstanceRequest, opts ...s
 }
 
 // GetInstance indicates an expected call of GetInstance.
-func (mr *MockRdbApiInterfaceMockRecorder) GetInstance(req interface{}, opts ...interface{}) *gomock.Call {
+func (mr *MockRdbAPIInterfaceMockRecorder) GetInstance(req interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{req}, opts...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetInstance", reflect.TypeOf((*MockRdbApiInterface)(nil).GetInstance), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetInstance", reflect.TypeOf((*MockRdbAPIInterface)(nil).GetInstance), varargs...)
 }
 
 // GetInstanceCertificate mocks base method.
-func (m *MockRdbApiInterface) GetInstanceCertificate(req *rdb.GetInstanceCertificateRequest, opts ...scw.RequestOption) (*scw.File, error) {
+func (m *MockRdbAPIInterface) GetInstanceCertificate(req *rdb.GetInstanceCertificateRequest, opts ...scw.RequestOption) (*scw.File, error) {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{req}
 	for _, a := range opts {
@@ -427,14 +427,14 @@ func (m *MockRdbApiInterface) GetInstanceCertificate(req *rdb.GetInstanceCertifi
 }
 
 // GetInstanceCertificate indicates an expected call of GetInstanceCertificate.
-func (mr *MockRdbApiInterfaceMockRecorder) GetInstanceCertificate(req interface{}, opts ...interface{}) *gomock.Call {
+func (mr *MockRdbAPIInterfaceMockRecorder) GetInstanceCertificate(req interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{req}, opts...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetInstanceCertificate", reflect.TypeOf((*MockRdbApiInterface)(nil).GetInstanceCertificate), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetInstanceCertificate", reflect.TypeOf((*MockRdbAPIInterface)(nil).GetInstanceCertificate), varargs...)
 }
 
 // GetInstanceLog mocks base method.
-func (m *MockRdbApiInterface) GetInstanceLog(req *rdb.GetInstanceLogRequest, opts ...scw.RequestOption) (*rdb.InstanceLog, error) {
+func (m *MockRdbAPIInterface) GetInstanceLog(req *rdb.GetInstanceLogRequest, opts ...scw.RequestOption) (*rdb.InstanceLog, error) {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{req}
 	for _, a := range opts {
@@ -447,14 +447,14 @@ func (m *MockRdbApiInterface) GetInstanceLog(req *rdb.GetInstanceLogRequest, opt
 }
 
 // GetInstanceLog indicates an expected call of GetInstanceLog.
-func (mr *MockRdbApiInterfaceMockRecorder) GetInstanceLog(req interface{}, opts ...interface{}) *gomock.Call {
+func (mr *MockRdbAPIInterfaceMockRecorder) GetInstanceLog(req interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{req}, opts...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetInstanceLog", reflect.TypeOf((*MockRdbApiInterface)(nil).GetInstanceLog), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetInstanceLog", reflect.TypeOf((*MockRdbAPIInterface)(nil).GetInstanceLog), varargs...)
 }
 
 // GetInstanceMetrics mocks base method.
-func (m *MockRdbApiInterface) GetInstanceMetrics(req *rdb.GetInstanceMetricsRequest, opts ...scw.RequestOption) (*rdb.InstanceMetrics, error) {
+func (m *MockRdbAPIInterface) GetInstanceMetrics(req *rdb.GetInstanceMetricsRequest, opts ...scw.RequestOption) (*rdb.InstanceMetrics, error) {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{req}
 	for _, a := range opts {
@@ -467,14 +467,14 @@ func (m *MockRdbApiInterface) GetInstanceMetrics(req *rdb.GetInstanceMetricsRequ
 }
 
 // GetInstanceMetrics indicates an expected call of GetInstanceMetrics.
-func (mr *MockRdbApiInterfaceMockRecorder) GetInstanceMetrics(req interface{}, opts ...interface{}) *gomock.Call {
+func (mr *MockRdbAPIInterfaceMockRecorder) GetInstanceMetrics(req interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{req}, opts...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetInstanceMetrics", reflect.TypeOf((*MockRdbApiInterface)(nil).GetInstanceMetrics), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetInstanceMetrics", reflect.TypeOf((*MockRdbAPIInterface)(nil).GetInstanceMetrics), varargs...)
 }
 
 // GetServiceInfo mocks base method.
-func (m *MockRdbApiInterface) GetServiceInfo(req *rdb.GetServiceInfoRequest, opts ...scw.RequestOption) (*scw.ServiceInfo, error) {
+func (m *MockRdbAPIInterface) GetServiceInfo(req *rdb.GetServiceInfoRequest, opts ...scw.RequestOption) (*scw.ServiceInfo, error) {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{req}
 	for _, a := range opts {
@@ -487,14 +487,14 @@ func (m *MockRdbApiInterface) GetServiceInfo(req *rdb.GetServiceInfoRequest, opt
 }
 
 // GetServiceInfo indicates an expected call of GetServiceInfo.
-func (mr *MockRdbApiInterfaceMockRecorder) GetServiceInfo(req interface{}, opts ...interface{}) *gomock.Call {
+func (mr *MockRdbAPIInterfaceMockRecorder) GetServiceInfo(req interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{req}, opts...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetServiceInfo", reflect.TypeOf((*MockRdbApiInterface)(nil).GetServiceInfo), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetServiceInfo", reflect.TypeOf((*MockRdbAPIInterface)(nil).GetServiceInfo), varargs...)
 }
 
 // GetSnapshot mocks base method.
-func (m *MockRdbApiInterface) GetSnapshot(req *rdb.GetSnapshotRequest, opts ...scw.RequestOption) (*rdb.Snapshot, error) {
+func (m *MockRdbAPIInterface) GetSnapshot(req *rdb.GetSnapshotRequest, opts ...scw.RequestOption) (*rdb.Snapshot, error) {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{req}
 	for _, a := range opts {
@@ -507,14 +507,14 @@ func (m *MockRdbApiInterface) GetSnapshot(req *rdb.GetSnapshotRequest, opts ...s
 }
 
 // GetSnapshot indicates an expected call of GetSnapshot.
-func (mr *MockRdbApiInterfaceMockRecorder) GetSnapshot(req interface{}, opts ...interface{}) *gomock.Call {
+func (mr *MockRdbAPIInterfaceMockRecorder) GetSnapshot(req interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{req}, opts...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSnapshot", reflect.TypeOf((*MockRdbApiInterface)(nil).GetSnapshot), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSnapshot", reflect.TypeOf((*MockRdbAPIInterface)(nil).GetSnapshot), varargs...)
 }
 
 // ListDatabaseBackups mocks base method.
-func (m *MockRdbApiInterface) ListDatabaseBackups(req *rdb.ListDatabaseBackupsRequest, opts ...scw.RequestOption) (*rdb.ListDatabaseBackupsResponse, error) {
+func (m *MockRdbAPIInterface) ListDatabaseBackups(req *rdb.ListDatabaseBackupsRequest, opts ...scw.RequestOption) (*rdb.ListDatabaseBackupsResponse, error) {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{req}
 	for _, a := range opts {
@@ -527,14 +527,14 @@ func (m *MockRdbApiInterface) ListDatabaseBackups(req *rdb.ListDatabaseBackupsRe
 }
 
 // ListDatabaseBackups indicates an expected call of ListDatabaseBackups.
-func (mr *MockRdbApiInterfaceMockRecorder) ListDatabaseBackups(req interface{}, opts ...interface{}) *gomock.Call {
+func (mr *MockRdbAPIInterfaceMockRecorder) ListDatabaseBackups(req interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{req}, opts...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListDatabaseBackups", reflect.TypeOf((*MockRdbApiInterface)(nil).ListDatabaseBackups), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListDatabaseBackups", reflect.TypeOf((*MockRdbAPIInterface)(nil).ListDatabaseBackups), varargs...)
 }
 
 // ListDatabaseEngines mocks base method.
-func (m *MockRdbApiInterface) ListDatabaseEngines(req *rdb.ListDatabaseEnginesRequest, opts ...scw.RequestOption) (*rdb.ListDatabaseEnginesResponse, error) {
+func (m *MockRdbAPIInterface) ListDatabaseEngines(req *rdb.ListDatabaseEnginesRequest, opts ...scw.RequestOption) (*rdb.ListDatabaseEnginesResponse, error) {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{req}
 	for _, a := range opts {
@@ -547,14 +547,14 @@ func (m *MockRdbApiInterface) ListDatabaseEngines(req *rdb.ListDatabaseEnginesRe
 }
 
 // ListDatabaseEngines indicates an expected call of ListDatabaseEngines.
-func (mr *MockRdbApiInterfaceMockRecorder) ListDatabaseEngines(req interface{}, opts ...interface{}) *gomock.Call {
+func (mr *MockRdbAPIInterfaceMockRecorder) ListDatabaseEngines(req interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{req}, opts...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListDatabaseEngines", reflect.TypeOf((*MockRdbApiInterface)(nil).ListDatabaseEngines), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListDatabaseEngines", reflect.TypeOf((*MockRdbAPIInterface)(nil).ListDatabaseEngines), varargs...)
 }
 
 // ListDatabases mocks base method.
-func (m *MockRdbApiInterface) ListDatabases(req *rdb.ListDatabasesRequest, opts ...scw.RequestOption) (*rdb.ListDatabasesResponse, error) {
+func (m *MockRdbAPIInterface) ListDatabases(req *rdb.ListDatabasesRequest, opts ...scw.RequestOption) (*rdb.ListDatabasesResponse, error) {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{req}
 	for _, a := range opts {
@@ -567,14 +567,14 @@ func (m *MockRdbApiInterface) ListDatabases(req *rdb.ListDatabasesRequest, opts 
 }
 
 // ListDatabases indicates an expected call of ListDatabases.
-func (mr *MockRdbApiInterfaceMockRecorder) ListDatabases(req interface{}, opts ...interface{}) *gomock.Call {
+func (mr *MockRdbAPIInterfaceMockRecorder) ListDatabases(req interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{req}, opts...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListDatabases", reflect.TypeOf((*MockRdbApiInterface)(nil).ListDatabases), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListDatabases", reflect.TypeOf((*MockRdbAPIInterface)(nil).ListDatabases), varargs...)
 }
 
 // ListInstanceACLRules mocks base method.
-func (m *MockRdbApiInterface) ListInstanceACLRules(req *rdb.ListInstanceACLRulesRequest, opts ...scw.RequestOption) (*rdb.ListInstanceACLRulesResponse, error) {
+func (m *MockRdbAPIInterface) ListInstanceACLRules(req *rdb.ListInstanceACLRulesRequest, opts ...scw.RequestOption) (*rdb.ListInstanceACLRulesResponse, error) {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{req}
 	for _, a := range opts {
@@ -587,14 +587,14 @@ func (m *MockRdbApiInterface) ListInstanceACLRules(req *rdb.ListInstanceACLRules
 }
 
 // ListInstanceACLRules indicates an expected call of ListInstanceACLRules.
-func (mr *MockRdbApiInterfaceMockRecorder) ListInstanceACLRules(req interface{}, opts ...interface{}) *gomock.Call {
+func (mr *MockRdbAPIInterfaceMockRecorder) ListInstanceACLRules(req interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{req}, opts...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListInstanceACLRules", reflect.TypeOf((*MockRdbApiInterface)(nil).ListInstanceACLRules), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListInstanceACLRules", reflect.TypeOf((*MockRdbAPIInterface)(nil).ListInstanceACLRules), varargs...)
 }
 
 // ListInstanceLogs mocks base method.
-func (m *MockRdbApiInterface) ListInstanceLogs(req *rdb.ListInstanceLogsRequest, opts ...scw.RequestOption) (*rdb.ListInstanceLogsResponse, error) {
+func (m *MockRdbAPIInterface) ListInstanceLogs(req *rdb.ListInstanceLogsRequest, opts ...scw.RequestOption) (*rdb.ListInstanceLogsResponse, error) {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{req}
 	for _, a := range opts {
@@ -607,14 +607,14 @@ func (m *MockRdbApiInterface) ListInstanceLogs(req *rdb.ListInstanceLogsRequest,
 }
 
 // ListInstanceLogs indicates an expected call of ListInstanceLogs.
-func (mr *MockRdbApiInterfaceMockRecorder) ListInstanceLogs(req interface{}, opts ...interface{}) *gomock.Call {
+func (mr *MockRdbAPIInterfaceMockRecorder) ListInstanceLogs(req interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{req}, opts...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListInstanceLogs", reflect.TypeOf((*MockRdbApiInterface)(nil).ListInstanceLogs), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListInstanceLogs", reflect.TypeOf((*MockRdbAPIInterface)(nil).ListInstanceLogs), varargs...)
 }
 
 // ListInstances mocks base method.
-func (m *MockRdbApiInterface) ListInstances(req *rdb.ListInstancesRequest, opts ...scw.RequestOption) (*rdb.ListInstancesResponse, error) {
+func (m *MockRdbAPIInterface) ListInstances(req *rdb.ListInstancesRequest, opts ...scw.RequestOption) (*rdb.ListInstancesResponse, error) {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{req}
 	for _, a := range opts {
@@ -627,14 +627,14 @@ func (m *MockRdbApiInterface) ListInstances(req *rdb.ListInstancesRequest, opts 
 }
 
 // ListInstances indicates an expected call of ListInstances.
-func (mr *MockRdbApiInterfaceMockRecorder) ListInstances(req interface{}, opts ...interface{}) *gomock.Call {
+func (mr *MockRdbAPIInterfaceMockRecorder) ListInstances(req interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{req}, opts...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListInstances", reflect.TypeOf((*MockRdbApiInterface)(nil).ListInstances), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListInstances", reflect.TypeOf((*MockRdbAPIInterface)(nil).ListInstances), varargs...)
 }
 
 // ListNodeTypes mocks base method.
-func (m *MockRdbApiInterface) ListNodeTypes(req *rdb.ListNodeTypesRequest, opts ...scw.RequestOption) (*rdb.ListNodeTypesResponse, error) {
+func (m *MockRdbAPIInterface) ListNodeTypes(req *rdb.ListNodeTypesRequest, opts ...scw.RequestOption) (*rdb.ListNodeTypesResponse, error) {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{req}
 	for _, a := range opts {
@@ -647,14 +647,14 @@ func (m *MockRdbApiInterface) ListNodeTypes(req *rdb.ListNodeTypesRequest, opts 
 }
 
 // ListNodeTypes indicates an expected call of ListNodeTypes.
-func (mr *MockRdbApiInterfaceMockRecorder) ListNodeTypes(req interface{}, opts ...interface{}) *gomock.Call {
+func (mr *MockRdbAPIInterfaceMockRecorder) ListNodeTypes(req interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{req}, opts...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListNodeTypes", reflect.TypeOf((*MockRdbApiInterface)(nil).ListNodeTypes), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListNodeTypes", reflect.TypeOf((*MockRdbAPIInterface)(nil).ListNodeTypes), varargs...)
 }
 
 // ListPrivileges mocks base method.
-func (m *MockRdbApiInterface) ListPrivileges(req *rdb.ListPrivilegesRequest, opts ...scw.RequestOption) (*rdb.ListPrivilegesResponse, error) {
+func (m *MockRdbAPIInterface) ListPrivileges(req *rdb.ListPrivilegesRequest, opts ...scw.RequestOption) (*rdb.ListPrivilegesResponse, error) {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{req}
 	for _, a := range opts {
@@ -667,14 +667,14 @@ func (m *MockRdbApiInterface) ListPrivileges(req *rdb.ListPrivilegesRequest, opt
 }
 
 // ListPrivileges indicates an expected call of ListPrivileges.
-func (mr *MockRdbApiInterfaceMockRecorder) ListPrivileges(req interface{}, opts ...interface{}) *gomock.Call {
+func (mr *MockRdbAPIInterfaceMockRecorder) ListPrivileges(req interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{req}, opts...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListPrivileges", reflect.TypeOf((*MockRdbApiInterface)(nil).ListPrivileges), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListPrivileges", reflect.TypeOf((*MockRdbAPIInterface)(nil).ListPrivileges), varargs...)
 }
 
 // ListSnapshots mocks base method.
-func (m *MockRdbApiInterface) ListSnapshots(req *rdb.ListSnapshotsRequest, opts ...scw.RequestOption) (*rdb.ListSnapshotsResponse, error) {
+func (m *MockRdbAPIInterface) ListSnapshots(req *rdb.ListSnapshotsRequest, opts ...scw.RequestOption) (*rdb.ListSnapshotsResponse, error) {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{req}
 	for _, a := range opts {
@@ -687,14 +687,14 @@ func (m *MockRdbApiInterface) ListSnapshots(req *rdb.ListSnapshotsRequest, opts 
 }
 
 // ListSnapshots indicates an expected call of ListSnapshots.
-func (mr *MockRdbApiInterfaceMockRecorder) ListSnapshots(req interface{}, opts ...interface{}) *gomock.Call {
+func (mr *MockRdbAPIInterfaceMockRecorder) ListSnapshots(req interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{req}, opts...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListSnapshots", reflect.TypeOf((*MockRdbApiInterface)(nil).ListSnapshots), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListSnapshots", reflect.TypeOf((*MockRdbAPIInterface)(nil).ListSnapshots), varargs...)
 }
 
 // ListUsers mocks base method.
-func (m *MockRdbApiInterface) ListUsers(req *rdb.ListUsersRequest, opts ...scw.RequestOption) (*rdb.ListUsersResponse, error) {
+func (m *MockRdbAPIInterface) ListUsers(req *rdb.ListUsersRequest, opts ...scw.RequestOption) (*rdb.ListUsersResponse, error) {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{req}
 	for _, a := range opts {
@@ -707,14 +707,14 @@ func (m *MockRdbApiInterface) ListUsers(req *rdb.ListUsersRequest, opts ...scw.R
 }
 
 // ListUsers indicates an expected call of ListUsers.
-func (mr *MockRdbApiInterfaceMockRecorder) ListUsers(req interface{}, opts ...interface{}) *gomock.Call {
+func (mr *MockRdbAPIInterfaceMockRecorder) ListUsers(req interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{req}, opts...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListUsers", reflect.TypeOf((*MockRdbApiInterface)(nil).ListUsers), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListUsers", reflect.TypeOf((*MockRdbAPIInterface)(nil).ListUsers), varargs...)
 }
 
 // PrepareInstanceLogs mocks base method.
-func (m *MockRdbApiInterface) PrepareInstanceLogs(req *rdb.PrepareInstanceLogsRequest, opts ...scw.RequestOption) (*rdb.PrepareInstanceLogsResponse, error) {
+func (m *MockRdbAPIInterface) PrepareInstanceLogs(req *rdb.PrepareInstanceLogsRequest, opts ...scw.RequestOption) (*rdb.PrepareInstanceLogsResponse, error) {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{req}
 	for _, a := range opts {
@@ -727,14 +727,14 @@ func (m *MockRdbApiInterface) PrepareInstanceLogs(req *rdb.PrepareInstanceLogsRe
 }
 
 // PrepareInstanceLogs indicates an expected call of PrepareInstanceLogs.
-func (mr *MockRdbApiInterfaceMockRecorder) PrepareInstanceLogs(req interface{}, opts ...interface{}) *gomock.Call {
+func (mr *MockRdbAPIInterfaceMockRecorder) PrepareInstanceLogs(req interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{req}, opts...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PrepareInstanceLogs", reflect.TypeOf((*MockRdbApiInterface)(nil).PrepareInstanceLogs), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PrepareInstanceLogs", reflect.TypeOf((*MockRdbAPIInterface)(nil).PrepareInstanceLogs), varargs...)
 }
 
 // RenewInstanceCertificate mocks base method.
-func (m *MockRdbApiInterface) RenewInstanceCertificate(req *rdb.RenewInstanceCertificateRequest, opts ...scw.RequestOption) error {
+func (m *MockRdbAPIInterface) RenewInstanceCertificate(req *rdb.RenewInstanceCertificateRequest, opts ...scw.RequestOption) error {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{req}
 	for _, a := range opts {
@@ -746,14 +746,14 @@ func (m *MockRdbApiInterface) RenewInstanceCertificate(req *rdb.RenewInstanceCer
 }
 
 // RenewInstanceCertificate indicates an expected call of RenewInstanceCertificate.
-func (mr *MockRdbApiInterfaceMockRecorder) RenewInstanceCertificate(req interface{}, opts ...interface{}) *gomock.Call {
+func (mr *MockRdbAPIInterfaceMockRecorder) RenewInstanceCertificate(req interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{req}, opts...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RenewInstanceCertificate", reflect.TypeOf((*MockRdbApiInterface)(nil).RenewInstanceCertificate), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RenewInstanceCertificate", reflect.TypeOf((*MockRdbAPIInterface)(nil).RenewInstanceCertificate), varargs...)
 }
 
 // RestoreDatabaseBackup mocks base method.
-func (m *MockRdbApiInterface) RestoreDatabaseBackup(req *rdb.RestoreDatabaseBackupRequest, opts ...scw.RequestOption) (*rdb.DatabaseBackup, error) {
+func (m *MockRdbAPIInterface) RestoreDatabaseBackup(req *rdb.RestoreDatabaseBackupRequest, opts ...scw.RequestOption) (*rdb.DatabaseBackup, error) {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{req}
 	for _, a := range opts {
@@ -766,14 +766,14 @@ func (m *MockRdbApiInterface) RestoreDatabaseBackup(req *rdb.RestoreDatabaseBack
 }
 
 // RestoreDatabaseBackup indicates an expected call of RestoreDatabaseBackup.
-func (mr *MockRdbApiInterfaceMockRecorder) RestoreDatabaseBackup(req interface{}, opts ...interface{}) *gomock.Call {
+func (mr *MockRdbAPIInterfaceMockRecorder) RestoreDatabaseBackup(req interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{req}, opts...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RestoreDatabaseBackup", reflect.TypeOf((*MockRdbApiInterface)(nil).RestoreDatabaseBackup), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RestoreDatabaseBackup", reflect.TypeOf((*MockRdbAPIInterface)(nil).RestoreDatabaseBackup), varargs...)
 }
 
 // SetInstanceACLRules mocks base method.
-func (m *MockRdbApiInterface) SetInstanceACLRules(req *rdb.SetInstanceACLRulesRequest, opts ...scw.RequestOption) (*rdb.SetInstanceACLRulesResponse, error) {
+func (m *MockRdbAPIInterface) SetInstanceACLRules(req *rdb.SetInstanceACLRulesRequest, opts ...scw.RequestOption) (*rdb.SetInstanceACLRulesResponse, error) {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{req}
 	for _, a := range opts {
@@ -786,14 +786,14 @@ func (m *MockRdbApiInterface) SetInstanceACLRules(req *rdb.SetInstanceACLRulesRe
 }
 
 // SetInstanceACLRules indicates an expected call of SetInstanceACLRules.
-func (mr *MockRdbApiInterfaceMockRecorder) SetInstanceACLRules(req interface{}, opts ...interface{}) *gomock.Call {
+func (mr *MockRdbAPIInterfaceMockRecorder) SetInstanceACLRules(req interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{req}, opts...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetInstanceACLRules", reflect.TypeOf((*MockRdbApiInterface)(nil).SetInstanceACLRules), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetInstanceACLRules", reflect.TypeOf((*MockRdbAPIInterface)(nil).SetInstanceACLRules), varargs...)
 }
 
 // SetInstanceSettings mocks base method.
-func (m *MockRdbApiInterface) SetInstanceSettings(req *rdb.SetInstanceSettingsRequest, opts ...scw.RequestOption) (*rdb.SetInstanceSettingsResponse, error) {
+func (m *MockRdbAPIInterface) SetInstanceSettings(req *rdb.SetInstanceSettingsRequest, opts ...scw.RequestOption) (*rdb.SetInstanceSettingsResponse, error) {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{req}
 	for _, a := range opts {
@@ -806,14 +806,14 @@ func (m *MockRdbApiInterface) SetInstanceSettings(req *rdb.SetInstanceSettingsRe
 }
 
 // SetInstanceSettings indicates an expected call of SetInstanceSettings.
-func (mr *MockRdbApiInterfaceMockRecorder) SetInstanceSettings(req interface{}, opts ...interface{}) *gomock.Call {
+func (mr *MockRdbAPIInterfaceMockRecorder) SetInstanceSettings(req interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{req}, opts...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetInstanceSettings", reflect.TypeOf((*MockRdbApiInterface)(nil).SetInstanceSettings), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetInstanceSettings", reflect.TypeOf((*MockRdbAPIInterface)(nil).SetInstanceSettings), varargs...)
 }
 
 // SetPrivilege mocks base method.
-func (m *MockRdbApiInterface) SetPrivilege(req *rdb.SetPrivilegeRequest, opts ...scw.RequestOption) (*rdb.Privilege, error) {
+func (m *MockRdbAPIInterface) SetPrivilege(req *rdb.SetPrivilegeRequest, opts ...scw.RequestOption) (*rdb.Privilege, error) {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{req}
 	for _, a := range opts {
@@ -826,14 +826,14 @@ func (m *MockRdbApiInterface) SetPrivilege(req *rdb.SetPrivilegeRequest, opts ..
 }
 
 // SetPrivilege indicates an expected call of SetPrivilege.
-func (mr *MockRdbApiInterfaceMockRecorder) SetPrivilege(req interface{}, opts ...interface{}) *gomock.Call {
+func (mr *MockRdbAPIInterfaceMockRecorder) SetPrivilege(req interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{req}, opts...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetPrivilege", reflect.TypeOf((*MockRdbApiInterface)(nil).SetPrivilege), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetPrivilege", reflect.TypeOf((*MockRdbAPIInterface)(nil).SetPrivilege), varargs...)
 }
 
 // UpdateDatabaseBackup mocks base method.
-func (m *MockRdbApiInterface) UpdateDatabaseBackup(req *rdb.UpdateDatabaseBackupRequest, opts ...scw.RequestOption) (*rdb.DatabaseBackup, error) {
+func (m *MockRdbAPIInterface) UpdateDatabaseBackup(req *rdb.UpdateDatabaseBackupRequest, opts ...scw.RequestOption) (*rdb.DatabaseBackup, error) {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{req}
 	for _, a := range opts {
@@ -846,14 +846,14 @@ func (m *MockRdbApiInterface) UpdateDatabaseBackup(req *rdb.UpdateDatabaseBackup
 }
 
 // UpdateDatabaseBackup indicates an expected call of UpdateDatabaseBackup.
-func (mr *MockRdbApiInterfaceMockRecorder) UpdateDatabaseBackup(req interface{}, opts ...interface{}) *gomock.Call {
+func (mr *MockRdbAPIInterfaceMockRecorder) UpdateDatabaseBackup(req interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{req}, opts...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateDatabaseBackup", reflect.TypeOf((*MockRdbApiInterface)(nil).UpdateDatabaseBackup), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateDatabaseBackup", reflect.TypeOf((*MockRdbAPIInterface)(nil).UpdateDatabaseBackup), varargs...)
 }
 
 // UpdateInstance mocks base method.
-func (m *MockRdbApiInterface) UpdateInstance(req *rdb.UpdateInstanceRequest, opts ...scw.RequestOption) (*rdb.Instance, error) {
+func (m *MockRdbAPIInterface) UpdateInstance(req *rdb.UpdateInstanceRequest, opts ...scw.RequestOption) (*rdb.Instance, error) {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{req}
 	for _, a := range opts {
@@ -866,14 +866,14 @@ func (m *MockRdbApiInterface) UpdateInstance(req *rdb.UpdateInstanceRequest, opt
 }
 
 // UpdateInstance indicates an expected call of UpdateInstance.
-func (mr *MockRdbApiInterfaceMockRecorder) UpdateInstance(req interface{}, opts ...interface{}) *gomock.Call {
+func (mr *MockRdbAPIInterfaceMockRecorder) UpdateInstance(req interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{req}, opts...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateInstance", reflect.TypeOf((*MockRdbApiInterface)(nil).UpdateInstance), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateInstance", reflect.TypeOf((*MockRdbAPIInterface)(nil).UpdateInstance), varargs...)
 }
 
 // UpdateSnapshot mocks base method.
-func (m *MockRdbApiInterface) UpdateSnapshot(req *rdb.UpdateSnapshotRequest, opts ...scw.RequestOption) (*rdb.Snapshot, error) {
+func (m *MockRdbAPIInterface) UpdateSnapshot(req *rdb.UpdateSnapshotRequest, opts ...scw.RequestOption) (*rdb.Snapshot, error) {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{req}
 	for _, a := range opts {
@@ -886,14 +886,14 @@ func (m *MockRdbApiInterface) UpdateSnapshot(req *rdb.UpdateSnapshotRequest, opt
 }
 
 // UpdateSnapshot indicates an expected call of UpdateSnapshot.
-func (mr *MockRdbApiInterfaceMockRecorder) UpdateSnapshot(req interface{}, opts ...interface{}) *gomock.Call {
+func (mr *MockRdbAPIInterfaceMockRecorder) UpdateSnapshot(req interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{req}, opts...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateSnapshot", reflect.TypeOf((*MockRdbApiInterface)(nil).UpdateSnapshot), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateSnapshot", reflect.TypeOf((*MockRdbAPIInterface)(nil).UpdateSnapshot), varargs...)
 }
 
 // UpdateUser mocks base method.
-func (m *MockRdbApiInterface) UpdateUser(req *rdb.UpdateUserRequest, opts ...scw.RequestOption) (*rdb.User, error) {
+func (m *MockRdbAPIInterface) UpdateUser(req *rdb.UpdateUserRequest, opts ...scw.RequestOption) (*rdb.User, error) {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{req}
 	for _, a := range opts {
@@ -906,14 +906,14 @@ func (m *MockRdbApiInterface) UpdateUser(req *rdb.UpdateUserRequest, opts ...scw
 }
 
 // UpdateUser indicates an expected call of UpdateUser.
-func (mr *MockRdbApiInterfaceMockRecorder) UpdateUser(req interface{}, opts ...interface{}) *gomock.Call {
+func (mr *MockRdbAPIInterfaceMockRecorder) UpdateUser(req interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{req}, opts...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateUser", reflect.TypeOf((*MockRdbApiInterface)(nil).UpdateUser), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateUser", reflect.TypeOf((*MockRdbAPIInterface)(nil).UpdateUser), varargs...)
 }
 
 // UpgradeInstance mocks base method.
-func (m *MockRdbApiInterface) UpgradeInstance(req *rdb.UpgradeInstanceRequest, opts ...scw.RequestOption) (*rdb.Instance, error) {
+func (m *MockRdbAPIInterface) UpgradeInstance(req *rdb.UpgradeInstanceRequest, opts ...scw.RequestOption) (*rdb.Instance, error) {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{req}
 	for _, a := range opts {
@@ -926,14 +926,14 @@ func (m *MockRdbApiInterface) UpgradeInstance(req *rdb.UpgradeInstanceRequest, o
 }
 
 // UpgradeInstance indicates an expected call of UpgradeInstance.
-func (mr *MockRdbApiInterfaceMockRecorder) UpgradeInstance(req interface{}, opts ...interface{}) *gomock.Call {
+func (mr *MockRdbAPIInterfaceMockRecorder) UpgradeInstance(req interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{req}, opts...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpgradeInstance", reflect.TypeOf((*MockRdbApiInterface)(nil).UpgradeInstance), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpgradeInstance", reflect.TypeOf((*MockRdbAPIInterface)(nil).UpgradeInstance), varargs...)
 }
 
 // WaitForInstance mocks base method.
-func (m *MockRdbApiInterface) WaitForInstance(req *rdb.WaitForInstanceRequest, opts ...scw.RequestOption) (*rdb.Instance, error) {
+func (m *MockRdbAPIInterface) WaitForInstance(req *rdb.WaitForInstanceRequest, opts ...scw.RequestOption) (*rdb.Instance, error) {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{req}
 	for _, a := range opts {
@@ -946,8 +946,8 @@ func (m *MockRdbApiInterface) WaitForInstance(req *rdb.WaitForInstanceRequest, o
 }
 
 // WaitForInstance indicates an expected call of WaitForInstance.
-func (mr *MockRdbApiInterfaceMockRecorder) WaitForInstance(req interface{}, opts ...interface{}) *gomock.Call {
+func (mr *MockRdbAPIInterfaceMockRecorder) WaitForInstance(req interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{req}, opts...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "WaitForInstance", reflect.TypeOf((*MockRdbApiInterface)(nil).WaitForInstance), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "WaitForInstance", reflect.TypeOf((*MockRdbAPIInterface)(nil).WaitForInstance), varargs...)
 }

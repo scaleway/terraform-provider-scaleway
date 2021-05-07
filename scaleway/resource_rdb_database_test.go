@@ -66,7 +66,7 @@ func testAccCheckRdbDatabaseExists(tt *TestTools, instance string, database stri
 			return fmt.Errorf("resource database not found: %s", database)
 		}
 
-		rdbAPI, region, _, err := rdbAPIWithRegionAndID(tt.Meta, instanceResource.Primary.ID)
+		rdbAPI, _, _, err := rdbAPIWithRegionAndID(tt.Meta, instanceResource.Primary.ID)
 		if err != nil {
 			return err
 		}
@@ -122,9 +122,9 @@ func TestResourceScalewayRdbDatabaseReadWithRdbErrorIdReturnDiagnotics(t *testin
 	meta, _ := buildMeta(&MetaConfig{
 		terraformVersion: "terraform-test-unit",
 	})
-	rdbApi := mock.NewMockRdbApiInterface(ctrl)
-	meta.mockedApi = rdbApi
-	rdbApi.ListDatabasesMustReturnError()
+	rdbAPI := mock.NewMockRdbAPIInterface(ctrl)
+	meta.mockedAPI = rdbAPI
+	rdbAPI.ListDatabasesMustReturnError()
 	ctx := mock.NewMockContext(ctrl)
 
 	diags := resourceScalewayRdbDatabaseRead(ctx, &data, meta)
@@ -142,9 +142,9 @@ func TestResourceScalewayRdbDatabaseReadSetResourceData(t *testing.T) {
 	meta, _ := buildMeta(&MetaConfig{
 		terraformVersion: "terraform-test-unit",
 	})
-	rdbApi := mock.NewMockRdbApiInterface(ctrl)
-	meta.mockedApi = rdbApi
-	rdbApi.ListDatabasesMustReturnDb("fr-srr")
+	rdbAPI := mock.NewMockRdbAPIInterface(ctrl)
+	meta.mockedAPI = rdbAPI
+	rdbAPI.ListDatabasesMustReturnDB("fr-srr")
 
 	diags := resourceScalewayRdbDatabaseRead(mock.NewMockContext(ctrl), data, meta)
 
@@ -157,8 +157,9 @@ func TestResourceScalewayRdbDatabaseReadSetResourceData(t *testing.T) {
 }
 func TestResourceScalewayRdbDatabaseParseIDWithWronglyFormatedIdReturnError(t *testing.T) {
 	assert := assert.New(t)
-	_, _, _, err := resourceScalewayRdbDatabaseParseID("notandid")
+	region, _, _, err := resourceScalewayRdbDatabaseParseID("notandid")
 	assert.Error(err)
+	assert.Empty(region)
 	assert.Equal("can't parse user resource id: notandid", err.Error())
 }
 
@@ -181,10 +182,10 @@ func TestResourceScalewayRdbDatabaseCreateWithRdbErrorReturnDiagnotics(t *testin
 	meta, _ := buildMeta(&MetaConfig{
 		terraformVersion: "terraform-test-unit",
 	})
-	rdbApi := mock.NewMockRdbApiInterface(ctrl)
+	rdbAPI := mock.NewMockRdbAPIInterface(ctrl)
 
-	rdbApi.CreateDatabaseMustReturnError()
-	meta.mockedApi = rdbApi
+	rdbAPI.CreateDatabaseMustReturnError()
+	meta.mockedAPI = rdbAPI
 
 	diags := resourceScalewayRdbDatabaseCreate(mock.NewMockContext(ctrl), data, meta)
 
@@ -203,10 +204,10 @@ func TestResourceScalewayRdbDatabaseCreateWithoutRegionalizedIdUseDefaultRegion(
 	meta, _ := buildMeta(&MetaConfig{
 		terraformVersion: "terraform-test-unit",
 	})
-	rdbApi := mock.NewMockRdbApiInterface(ctrl)
-	rdbApi.CreateDatabaseMustReturnDb("fr-par")
-	rdbApi.ListDatabasesMustReturnDb("fr-par")
-	meta.mockedApi = rdbApi
+	rdbAPI := mock.NewMockRdbAPIInterface(ctrl)
+	rdbAPI.CreateDatabaseMustReturnDB("fr-par")
+	rdbAPI.ListDatabasesMustReturnDB("fr-par")
+	meta.mockedAPI = rdbAPI
 
 	diags := resourceScalewayRdbDatabaseCreate(mock.NewMockContext(ctrl), data, meta)
 

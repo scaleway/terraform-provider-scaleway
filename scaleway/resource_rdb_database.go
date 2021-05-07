@@ -86,7 +86,7 @@ func resourceScalewayRdbDatabaseCreate(ctx context.Context, d *schema.ResourceDa
 }
 
 func resourceScalewayRdbDatabaseRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	rdbAPI, region, err := rdbAPIWithRegion(d, meta)
+	rdbAPI, _, err := rdbAPIWithRegion(d, meta)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -113,17 +113,17 @@ func resourceScalewayRdbDatabaseRead(ctx context.Context, d *schema.ResourceData
 
 	var database = res.Databases[0]
 	d.SetId(resourceScalewayRdbDatabaseID(region, instanceID, database.Name))
-	d.Set("instance_id", newRegionalID(region, instanceID).String())
-	d.Set("name", database.Name)
-	d.Set("owner", database.Owner)
-	d.Set("managed", database.Managed)
-	d.Set("size", database.Size.String())
+	_ = d.Set("instance_id", newRegionalID(region, instanceID).String())
+	_ = d.Set("name", database.Name)
+	_ = d.Set("owner", database.Owner)
+	_ = d.Set("managed", database.Managed)
+	_ = d.Set("size", database.Size.String())
 
 	return nil
 }
 
 func resourceScalewayRdbDatabaseDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	rdbAPI, region, err := rdbAPIWithRegion(d, meta)
+	rdbAPI, _, err := rdbAPIWithRegion(d, meta)
 	if err != nil {
 		return diag.FromErr(err)
 	}
