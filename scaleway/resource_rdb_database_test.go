@@ -213,3 +213,42 @@ func TestResourceScalewayRdbDatabaseCreateWithoutRegionalizedIdUseDefaultRegion(
 
 	assert.Len(diags, 0)
 }
+
+func TestResourceScalewayRdbDatabaseDeleteWithRdbErrorReturnDiagnotics(t *testing.T) {
+	assert := assert.New(t)
+	ctrl := gomock.NewController(t)
+
+	data := schema.TestResourceDataRaw(t, resourceScalewayRdbDatabase().Schema, make(map[string]interface{}))
+	data.SetId("fr-srr/1111-11111111-111111111111/dbname")
+	meta, _ := buildMeta(&MetaConfig{
+		terraformVersion: "terraform-test-unit",
+	})
+	rdbAPI := mock.NewMockRdbAPIInterface(ctrl)
+
+	rdbAPI.DeleteDatabaseMustReturnError()
+	meta.mockedAPI = rdbAPI
+
+	diags := resourceScalewayRdbDatabaseDelete(mock.NewMockContext(ctrl), data, meta)
+
+	assert.Len(diags, 1)
+	assert.Equal(diag.Error, diags[0].Severity)
+}
+
+func TestResourceScalewayRdbDatabaseDelete(t *testing.T) {
+	assert := assert.New(t)
+	ctrl := gomock.NewController(t)
+
+	data := schema.TestResourceDataRaw(t, resourceScalewayRdbDatabase().Schema, make(map[string]interface{}))
+	data.SetId("fr-srr/1111-11111111-111111111111/dbname")
+	meta, _ := buildMeta(&MetaConfig{
+		terraformVersion: "terraform-test-unit",
+	})
+	rdbAPI := mock.NewMockRdbAPIInterface(ctrl)
+
+	rdbAPI.DeleteDatabaseReturnNil("fr-srr")
+	meta.mockedAPI = rdbAPI
+
+	diags := resourceScalewayRdbDatabaseDelete(mock.NewMockContext(ctrl), data, meta)
+
+	assert.Len(diags, 0)
+}

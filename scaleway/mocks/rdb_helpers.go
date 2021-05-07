@@ -39,6 +39,31 @@ func (m ListDatabasesRequestMatcher) String() string {
 	return fmt.Sprintf("is equal to (%s, %s, %s)", m.ExpectedRegion, m.ExpectedInstanceID, m.ExpectedDatabaseName)
 }
 
+type DeleteDatabaseRequestMatcher struct {
+	ExpectedRegion       string
+	ExpectedInstanceID   string
+	ExpectedDatabaseName string
+}
+
+func (m DeleteDatabaseRequestMatcher) Matches(x interface{}) bool {
+	req := x.(*rdb.DeleteDatabaseRequest)
+
+	if req.Region.String() != m.ExpectedRegion {
+		return false
+	}
+	if req.InstanceID != m.ExpectedInstanceID {
+		return false
+	}
+	if req.Name != m.ExpectedDatabaseName {
+		return false
+	}
+	return true
+}
+
+func (m DeleteDatabaseRequestMatcher) String() string {
+	return fmt.Sprintf("is equal to (%s, %s, %s)", m.ExpectedRegion, m.ExpectedInstanceID, m.ExpectedDatabaseName)
+}
+
 func NewTestDatabase() *rdb.Database {
 	db := rdb.Database{
 		Name:    databaseName,
@@ -77,6 +102,19 @@ func (m *MockRdbAPIInterface) ListDatabasesMustReturnDB(expectedRegion string) {
 		TotalCount: 1,
 	}
 	m.EXPECT().ListDatabases(matcher, gomock.Any()).Return(&resp, nil)
+}
+
+func (m *MockRdbAPIInterface) DeleteDatabaseMustReturnError() {
+	m.EXPECT().DeleteDatabase(gomock.Any(), gomock.Any()).Return(errors.New("Error"))
+}
+
+func (m *MockRdbAPIInterface) DeleteDatabaseReturnNil(expectedRegion string) {
+	matcher := DeleteDatabaseRequestMatcher{
+		ExpectedRegion:       expectedRegion,
+		ExpectedInstanceID:   instanceID,
+		ExpectedDatabaseName: databaseName,
+	}
+	m.EXPECT().DeleteDatabase(matcher, gomock.Any()).Return(nil)
 }
 
 type CreateDatabaseRequestMatcher struct {
