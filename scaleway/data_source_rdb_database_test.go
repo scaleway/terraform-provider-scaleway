@@ -3,7 +3,11 @@ package scaleway
 import (
 	"testing"
 
+	"github.com/golang/mock/gomock"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	mock "github.com/scaleway/terraform-provider-scaleway/scaleway/mocks"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestAccScalewayDataSourceRdbDatabase_Basic(t *testing.T) {
@@ -53,4 +57,47 @@ func TestAccScalewayDataSourceRdbDatabase_Basic(t *testing.T) {
 			},
 		},
 	})
+}
+
+func TestDataSourceScalewayRdbDatabaseReadWithoutRegionalizedIDUseDefaultResource(t *testing.T) {
+	// init testing framework
+	assert := assert.New(t)
+	ctrl := gomock.NewController(t)
+	meta, rdbAPI := NewMeta(ctrl)
+	data := NewTestResourceDataRawForDataSourceScalewayRDBDatabase(t, "1111-11111111-111111111111")
+
+	// mocking
+	rdbAPI.ListDatabasesMustReturnDB("fr-par")
+
+	// run
+	diags := dataSourceScalewayRDBDatabaseRead(mock.NewMockContext(ctrl), data, meta)
+
+	// assertions
+	assert.Len(diags, 0)
+	assertResourceDatabase(assert, data, "fr-par")
+}
+
+func TestDataSourceScalewayRdbDatabaseReadWithRegionalizedIDUseDefaultResource(t *testing.T) {
+	// init testing framework
+	assert := assert.New(t)
+	ctrl := gomock.NewController(t)
+	meta, rdbAPI := NewMeta(ctrl)
+	data := NewTestResourceDataRawForDataSourceScalewayRDBDatabase(t, "fr-srr/1111-11111111-111111111111")
+
+	// mocking
+	rdbAPI.ListDatabasesMustReturnDB("fr-srr")
+
+	// run
+	diags := dataSourceScalewayRDBDatabaseRead(mock.NewMockContext(ctrl), data, meta)
+
+	// assertions
+	assert.Len(diags, 0)
+	assertResourceDatabase(assert, data, "fr-srr")
+}
+
+func NewTestResourceDataRawForDataSourceScalewayRDBDatabase(t *testing.T, uuid string) *schema.ResourceData {
+	raw := make(map[string]interface{})
+	raw["instance_id"] = uuid
+	raw["name"] = "dbname"
+	return schema.TestResourceDataRaw(t, dataSourceScalewayRDBDatabase().Schema, raw)
 }

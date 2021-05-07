@@ -114,47 +114,41 @@ func TestResourceScalewayRdbDatabaseReadWithoutIDReturnDiagnotics(t *testing.T) 
 }
 
 func TestResourceScalewayRdbDatabaseReadWithRdbErrorIdReturnDiagnotics(t *testing.T) {
+	// init
 	assert := assert.New(t)
 	ctrl := gomock.NewController(t)
+	meta, rdbAPI := NewMeta(ctrl)
+	data := NewTestResourceDataRawForResourceScalewayRDBDatabaseWithID(t)
 
-	data := schema.ResourceData{}
-	data.SetId("fr-srr/1111-11111111-111111111111/dbname")
-	meta, _ := buildMeta(&MetaConfig{
-		terraformVersion: "terraform-test-unit",
-	})
-	rdbAPI := mock.NewMockRdbAPIInterface(ctrl)
-	meta.mockedAPI = rdbAPI
+	// mocking
 	rdbAPI.ListDatabasesMustReturnError()
-	ctx := mock.NewMockContext(ctrl)
 
-	diags := resourceScalewayRdbDatabaseRead(ctx, &data, meta)
+	// run
+	diags := resourceScalewayRdbDatabaseRead(mock.NewMockContext(ctrl), data, meta)
 
+	// assertions
 	assert.Len(diags, 1)
 	assert.Equal(diag.Error, diags[0].Severity)
 }
 
 func TestResourceScalewayRdbDatabaseReadSetResourceData(t *testing.T) {
+	// init
 	assert := assert.New(t)
 	ctrl := gomock.NewController(t)
+	meta, rdbAPI := NewMeta(ctrl)
+	data := NewTestResourceDataRawForResourceScalewayRDBDatabaseWithID(t)
 
-	data := schema.TestResourceDataRaw(t, resourceScalewayRdbDatabase().Schema, make(map[string]interface{}))
-	data.SetId("fr-srr/1111-11111111-111111111111/dbname")
-	meta, _ := buildMeta(&MetaConfig{
-		terraformVersion: "terraform-test-unit",
-	})
-	rdbAPI := mock.NewMockRdbAPIInterface(ctrl)
-	meta.mockedAPI = rdbAPI
+	// mocking
 	rdbAPI.ListDatabasesMustReturnDB("fr-srr")
 
+	// run
 	diags := resourceScalewayRdbDatabaseRead(mock.NewMockContext(ctrl), data, meta)
 
+	// assertions
 	assert.Len(diags, 0)
-	assert.Equal("fr-srr/1111-11111111-111111111111", data.Get("instance_id"))
-	assert.Equal("dbname", data.Get("name"))
-	assert.Equal("dbowner", data.Get("owner"))
-	assert.True(data.Get("managed").(bool))
-	assert.Equal("42", data.Get("size"))
+	assertResourceDatabase(assert, data, "fr-srr")
 }
+
 func TestResourceScalewayRdbDatabaseParseIDWithWronglyFormatedIdReturnError(t *testing.T) {
 	assert := assert.New(t)
 	region, _, _, err := resourceScalewayRdbDatabaseParseID("notandid")
@@ -172,83 +166,103 @@ func TestResourceScalewayRdbDatabaseParseID(t *testing.T) {
 	assert.Equal("dbname", dbname)
 }
 func TestResourceScalewayRdbDatabaseCreateWithRdbErrorReturnDiagnotics(t *testing.T) {
+	// init testing framework
 	assert := assert.New(t)
 	ctrl := gomock.NewController(t)
+	meta, rdbAPI := NewMeta(ctrl)
+	data := NewTestResourceDataRawForResourceScalewayRDBDatabase(t, "fr-srr/1111-11111111-111111111111")
 
-	raw := make(map[string]interface{})
-	raw["instance_id"] = "fr-srr/1111-11111111-111111111111"
-	raw["name"] = "dbname"
-	data := schema.TestResourceDataRaw(t, resourceScalewayRdbDatabase().Schema, raw)
-	meta, _ := buildMeta(&MetaConfig{
-		terraformVersion: "terraform-test-unit",
-	})
-	rdbAPI := mock.NewMockRdbAPIInterface(ctrl)
-
+	// mocking
 	rdbAPI.CreateDatabaseMustReturnError()
-	meta.mockedAPI = rdbAPI
 
+	// run
 	diags := resourceScalewayRdbDatabaseCreate(mock.NewMockContext(ctrl), data, meta)
 
+	// assertions
 	assert.Len(diags, 1)
 	assert.Equal(diag.Error, diags[0].Severity)
 }
 
 func TestResourceScalewayRdbDatabaseCreateWithoutRegionalizedIdUseDefaultRegion(t *testing.T) {
+	// init testing framework
 	assert := assert.New(t)
 	ctrl := gomock.NewController(t)
+	meta, rdbAPI := NewMeta(ctrl)
+	data := NewTestResourceDataRawForResourceScalewayRDBDatabase(t, "1111-11111111-111111111111")
 
-	raw := make(map[string]interface{})
-	raw["instance_id"] = "1111-11111111-111111111111"
-	raw["name"] = "dbname"
-	data := schema.TestResourceDataRaw(t, resourceScalewayRdbDatabase().Schema, raw)
-	meta, _ := buildMeta(&MetaConfig{
-		terraformVersion: "terraform-test-unit",
-	})
-	rdbAPI := mock.NewMockRdbAPIInterface(ctrl)
+	// mocking
 	rdbAPI.CreateDatabaseMustReturnDB("fr-par")
 	rdbAPI.ListDatabasesMustReturnDB("fr-par")
-	meta.mockedAPI = rdbAPI
 
+	// run
 	diags := resourceScalewayRdbDatabaseCreate(mock.NewMockContext(ctrl), data, meta)
 
+	// assertions
 	assert.Len(diags, 0)
+	assertResourceDatabase(assert, data, "fr-par")
 }
 
 func TestResourceScalewayRdbDatabaseDeleteWithRdbErrorReturnDiagnotics(t *testing.T) {
+	// init testing framework
 	assert := assert.New(t)
 	ctrl := gomock.NewController(t)
+	meta, rdbAPI := NewMeta(ctrl)
+	data := NewTestResourceDataRawForResourceScalewayRDBDatabaseWithID(t)
 
-	data := schema.TestResourceDataRaw(t, resourceScalewayRdbDatabase().Schema, make(map[string]interface{}))
-	data.SetId("fr-srr/1111-11111111-111111111111/dbname")
-	meta, _ := buildMeta(&MetaConfig{
-		terraformVersion: "terraform-test-unit",
-	})
-	rdbAPI := mock.NewMockRdbAPIInterface(ctrl)
-
+	// mocking
 	rdbAPI.DeleteDatabaseMustReturnError()
-	meta.mockedAPI = rdbAPI
 
+	// run
 	diags := resourceScalewayRdbDatabaseDelete(mock.NewMockContext(ctrl), data, meta)
 
+	// assertions
 	assert.Len(diags, 1)
 	assert.Equal(diag.Error, diags[0].Severity)
 }
 
 func TestResourceScalewayRdbDatabaseDelete(t *testing.T) {
+	// init testing framework
 	assert := assert.New(t)
 	ctrl := gomock.NewController(t)
+	meta, rdbAPI := NewMeta(ctrl)
+	data := NewTestResourceDataRawForResourceScalewayRDBDatabaseWithID(t)
 
-	data := schema.TestResourceDataRaw(t, resourceScalewayRdbDatabase().Schema, make(map[string]interface{}))
-	data.SetId("fr-srr/1111-11111111-111111111111/dbname")
-	meta, _ := buildMeta(&MetaConfig{
-		terraformVersion: "terraform-test-unit",
-	})
-	rdbAPI := mock.NewMockRdbAPIInterface(ctrl)
-
+	// mocking
 	rdbAPI.DeleteDatabaseReturnNil("fr-srr")
-	meta.mockedAPI = rdbAPI
 
+	// run
 	diags := resourceScalewayRdbDatabaseDelete(mock.NewMockContext(ctrl), data, meta)
 
+	// assertions
 	assert.Len(diags, 0)
+}
+
+func NewTestResourceDataRawForResourceScalewayRDBDatabase(t *testing.T, uuid string) *schema.ResourceData {
+	raw := make(map[string]interface{})
+	raw["instance_id"] = uuid
+	raw["name"] = "dbname"
+	return schema.TestResourceDataRaw(t, resourceScalewayRdbDatabase().Schema, raw)
+}
+
+func NewTestResourceDataRawForResourceScalewayRDBDatabaseWithID(t *testing.T) *schema.ResourceData {
+	data := schema.TestResourceDataRaw(t, resourceScalewayRdbDatabase().Schema, make(map[string]interface{}))
+	data.SetId("fr-srr/1111-11111111-111111111111/dbname")
+	return data
+}
+
+func assertResourceDatabase(assert *assert.Assertions, data *schema.ResourceData, region string) {
+	assert.Equal(fmt.Sprintf("%s/1111-11111111-111111111111", region), data.Get("instance_id"))
+	assert.Equal("dbname", data.Get("name"))
+	assert.Equal("dbowner", data.Get("owner"))
+	assert.True(data.Get("managed").(bool))
+	assert.Equal("42", data.Get("size"))
+}
+
+func NewMeta(ctrl *gomock.Controller) (meta *Meta, rdbAPI *mock.MockRdbAPIInterface) {
+	meta, _ = buildMeta(&MetaConfig{
+		terraformVersion: "terraform-test-unit",
+	})
+	rdbAPI = mock.NewMockRdbAPIInterface(ctrl)
+	meta.mockedAPI = rdbAPI
+	return
 }
