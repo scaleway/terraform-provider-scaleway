@@ -1,7 +1,6 @@
 package scaleway
 
 import (
-	"errors"
 	"fmt"
 	"testing"
 
@@ -124,8 +123,8 @@ func TestResourceScalewayRdbDatabaseReadWithRdbErrorIdReturnDiagnotics(t *testin
 		terraformVersion: "terraform-test-unit",
 	})
 	rdbApi := mock.NewMockRdbApiInterface(ctrl)
-	rdbApi.EXPECT().ListDatabases(gomock.Any(), gomock.Any()).Return(nil, errors.New("Error"))
 	meta.mockedApi = rdbApi
+	rdbApi.ListDatabasesMustReturnError()
 	ctx := mock.NewMockContext(ctrl)
 
 	diags := resourceScalewayRdbDatabaseRead(ctx, &data, meta)
@@ -144,28 +143,10 @@ func TestResourceScalewayRdbDatabaseReadSetResourceData(t *testing.T) {
 		terraformVersion: "terraform-test-unit",
 	})
 	rdbApi := mock.NewMockRdbApiInterface(ctrl)
-	matcher := ListDatabasesRequestMatcher{
-		ExpectedRegion:       "fr-srr",
-		ExpectedInstanceID:   "1111-11111111-111111111111",
-		ExpectedDatabaseName: "dbname",
-	}
-	db := rdb.Database{
-		Name:    "dbname",
-		Owner:   "dbowner",
-		Managed: true,
-		Size:    42,
-	}
-	dbs := make([]*rdb.Database, 0)
-	dbs = append(dbs, &db)
-	resp := rdb.ListDatabasesResponse{
-		Databases:  dbs,
-		TotalCount: 1,
-	}
-	rdbApi.EXPECT().ListDatabases(matcher, gomock.Any()).Return(&resp, nil)
 	meta.mockedApi = rdbApi
-	ctx := mock.NewMockContext(ctrl)
+	rdbApi.ListDatabasesMustReturnDb("fr-srr")
 
-	diags := resourceScalewayRdbDatabaseRead(ctx, data, meta)
+	diags := resourceScalewayRdbDatabaseRead(mock.NewMockContext(ctrl), data, meta)
 
 	assert.Len(diags, 0)
 	assert.Equal("fr-srr/1111-11111111-111111111111", data.Get("instance_id"))
@@ -174,59 +155,6 @@ func TestResourceScalewayRdbDatabaseReadSetResourceData(t *testing.T) {
 	assert.True(data.Get("managed").(bool))
 	assert.Equal("42", data.Get("size"))
 }
-
-type CreateDatabaseRequestMatcher struct {
-	ExpectedRegion       string
-	ExpectedInstanceID   string
-	ExpectedDatabaseName string
-	errorString          string
-}
-
-func (m CreateDatabaseRequestMatcher) Matches(x interface{}) bool {
-	req := x.(*rdb.CreateDatabaseRequest)
-
-	if req.Region.String() != m.ExpectedRegion {
-		return false
-	}
-	if req.InstanceID != m.ExpectedInstanceID {
-		return false
-	}
-	if req.Name != m.ExpectedDatabaseName {
-		return false
-	}
-	return true
-}
-
-func (m CreateDatabaseRequestMatcher) String() string {
-	return fmt.Sprintf("is equal to (%s, %s, %s)", m.ExpectedRegion, m.ExpectedInstanceID, m.ExpectedDatabaseName)
-}
-
-type ListDatabasesRequestMatcher struct {
-	ExpectedRegion       string
-	ExpectedInstanceID   string
-	ExpectedDatabaseName string
-	errorString          string
-}
-
-func (m ListDatabasesRequestMatcher) Matches(x interface{}) bool {
-	req := x.(*rdb.ListDatabasesRequest)
-
-	if req.Region.String() != m.ExpectedRegion {
-		return false
-	}
-	if req.InstanceID != m.ExpectedInstanceID {
-		return false
-	}
-	if fmt.Sprintf("%s", *req.Name) != m.ExpectedDatabaseName {
-		return false
-	}
-	return true
-}
-
-func (m ListDatabasesRequestMatcher) String() string {
-	return fmt.Sprintf("is equal to (%s, %s, %s)", m.ExpectedRegion, m.ExpectedInstanceID, m.ExpectedDatabaseName)
-}
-
 func TestResourceScalewayRdbDatabaseParseIDWithWronglyFormatedIdReturnError(t *testing.T) {
 	assert := assert.New(t)
 	_, _, _, err := resourceScalewayRdbDatabaseParseID("notandid")
@@ -255,11 +183,10 @@ func TestResourceScalewayRdbDatabaseCreateWithRdbErrorReturnDiagnotics(t *testin
 	})
 	rdbApi := mock.NewMockRdbApiInterface(ctrl)
 
-	rdbApi.EXPECT().CreateDatabase(gomock.Any(), gomock.Any()).Return(nil, errors.New("Error"))
+	rdbApi.CreateDatabaseMustReturnError()
 	meta.mockedApi = rdbApi
-	ctx := mock.NewMockContext(ctrl)
 
-	diags := resourceScalewayRdbDatabaseCreate(ctx, data, meta)
+	diags := resourceScalewayRdbDatabaseCreate(mock.NewMockContext(ctrl), data, meta)
 
 	assert.Len(diags, 1)
 	assert.Equal(diag.Error, diags[0].Severity)

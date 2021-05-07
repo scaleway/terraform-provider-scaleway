@@ -64,8 +64,13 @@ func resourceScalewayRdbDatabaseCreate(ctx context.Context, d *schema.ResourceDa
 		return diag.FromErr(err)
 	}
 	locality, instanceID, err := parseLocalizedID(d.Get("instance_id").(string))
+	if err != nil {
+		instanceID = d.Get("instance_id").(string)
+	} else {
+		region = scw.Region(locality)
+	}
 	createReq := &rdb.CreateDatabaseRequest{
-		Region:     scw.Region(locality),
+		Region:     region,
 		InstanceID: instanceID,
 		Name:       d.Get("name").(string),
 	}
