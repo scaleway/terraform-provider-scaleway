@@ -191,3 +191,24 @@ func TestResourceScalewayRdbDatabaseCreateWithRdbErrorReturnDiagnotics(t *testin
 	assert.Len(diags, 1)
 	assert.Equal(diag.Error, diags[0].Severity)
 }
+
+func TestResourceScalewayRdbDatabaseCreateWithoutRegionalizedIdUseDefaultRegion(t *testing.T) {
+	assert := assert.New(t)
+	ctrl := gomock.NewController(t)
+
+	raw := make(map[string]interface{})
+	raw["instance_id"] = "1111-11111111-111111111111"
+	raw["name"] = "dbname"
+	data := schema.TestResourceDataRaw(t, resourceScalewayRdbDatabase().Schema, raw)
+	meta, _ := buildMeta(&MetaConfig{
+		terraformVersion: "terraform-test-unit",
+	})
+	rdbApi := mock.NewMockRdbApiInterface(ctrl)
+	rdbApi.CreateDatabaseMustReturnDb("fr-par")
+	rdbApi.ListDatabasesMustReturnDb("fr-par")
+	meta.mockedApi = rdbApi
+
+	diags := resourceScalewayRdbDatabaseCreate(mock.NewMockContext(ctrl), data, meta)
+
+	assert.Len(diags, 0)
+}
