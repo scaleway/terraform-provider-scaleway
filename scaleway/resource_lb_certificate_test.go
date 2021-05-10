@@ -36,7 +36,7 @@ func TestAccScalewayLbCertificate_Basic(t *testing.T) {
 						lb_id = scaleway_lb.lb01.id
 						name = "test-cert"
 					  	letsencrypt {
-							common_name = "${replace(scaleway_lb_ip.ip01.ip_address,".", "-")}.lb.${scaleway_lb.lb01.region}.scw.cloud"
+							common_name = "${replace(scaleway_lb_ip.ip01.ip_address,".", "-")}.lb.${scaleway_lb.lb01.zone}.scw.cloud"
 					  	}
 					}
 				`,
@@ -60,7 +60,7 @@ func TestAccScalewayLbCertificate_Basic(t *testing.T) {
 						lb_id = scaleway_lb.lb01.id
 						name = "test-cert-new"
 						letsencrypt {
-							common_name = "${replace(scaleway_lb.lb01.ip_address, ".", "-")}.lb.${scaleway_lb.lb01.region}.scw.cloud"
+							common_name = "${replace(scaleway_lb.lb01.ip_address, ".", "-")}.lb.${scaleway_lb.lb01.zone}.scw.cloud"
 						}
 					}
 				`,
@@ -83,10 +83,10 @@ func TestAccScalewayLbCertificate_Basic(t *testing.T) {
 						lb_id = scaleway_lb.lb01.id
 						name = "test-cert"
 						letsencrypt {
-							common_name = "${replace(scaleway_lb.lb01.ip_address, ".", "-")}.lb.${scaleway_lb.lb01.region}.scw.cloud"
+							common_name = "${replace(scaleway_lb.lb01.ip_address, ".", "-")}.lb.${scaleway_lb.lb01.zone}.scw.cloud"
 							subject_alternative_name = [
-							  "sub1.${replace(scaleway_lb.lb01.ip_address, ".", "-")}.lb.${scaleway_lb.lb01.region}.scw.cloud",
-							  "sub2.${replace(scaleway_lb.lb01.ip_address, ".", "-")}.lb.${scaleway_lb.lb01.region}.scw.cloud"
+							  "sub1.${replace(scaleway_lb.lb01.ip_address, ".", "-")}.lb.${scaleway_lb.lb01.zone}.scw.cloud",
+							  "sub2.${replace(scaleway_lb.lb01.ip_address, ".", "-")}.lb.${scaleway_lb.lb01.zone}.scw.cloud"
 							]
 						}
 					}

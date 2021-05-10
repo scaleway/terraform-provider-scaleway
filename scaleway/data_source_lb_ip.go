@@ -35,15 +35,15 @@ func dataSourceScalewayLbIP() *schema.Resource {
 }
 
 func dataSourceScalewayLbIPRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, err := lbAPIWithRegion(d, meta)
+	api, zone, err := lbAPIWithZone(d, meta)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	ipID, ok := d.GetOk("ip_id")
 	if !ok { // Get IP by region and IP address.
-		res, err := api.ListIPs(&lb.ListIPsRequest{
-			Region:    region,
+		res, err := api.ListIPs(&lb.ZonedAPIListIPsRequest{
+			Zone:    zone,
 			IPAddress: expandStringPtr(d.Get("ip_address")),
 			ProjectID: expandStringPtr(d.Get("project_id")),
 		}, scw.WithContext(ctx))
@@ -59,9 +59,9 @@ func dataSourceScalewayLbIPRead(ctx context.Context, d *schema.ResourceData, met
 		ipID = res.IPs[0].ID
 	}
 
-	regionalID := datasourceNewRegionalizedID(ipID, region)
-	d.SetId(regionalID)
-	err = d.Set("ip_id", regionalID)
+	zoneID := datasourceNewZonedID(ipID, zone)
+	d.SetId(zoneID)
+	err = d.Set("ip_id", zoneID)
 	if err != nil {
 		return diag.FromErr(err)
 	}

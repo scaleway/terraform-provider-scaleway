@@ -20,28 +20,28 @@ func lbAPI(m interface{}) *lb.API {
 	return lb.NewAPI(meta.scwClient)
 }
 
-// lbAPIWithRegion returns a new lb API and the region for a Create request
-func lbAPIWithRegion(d *schema.ResourceData, m interface{}) (*lb.API, scw.Region, error) {
+// lbAPIWithZone returns an lb API WITH zone for a Create request
+func lbAPIWithZone(d *schema.ResourceData, m interface{}) (*lb.ZonedAPI, scw.Zone, error) {
 	meta := m.(*Meta)
-	lbAPI := lb.NewAPI(meta.scwClient)
+	lbAPI := lb.NewZonedAPI(meta.scwClient)
 
-	region, err := extractRegion(d, meta)
+	zone, err := extractZone(d, meta)
 	if err != nil {
 		return nil, "", err
 	}
-	return lbAPI, region, nil
+	return lbAPI, zone, nil
 }
 
-// lbAPIWithRegionAndID returns an lb API with region and ID extracted from the state
-func lbAPIWithRegionAndID(m interface{}, id string) (*lb.API, scw.Region, string, error) {
+// lbAPIWithZoneAndID returns an lb API with zone and ID extracted from the state
+func lbAPIWithZoneAndID(m interface{}, id string) (*lb.ZonedAPI, scw.Zone, string, error) {
 	meta := m.(*Meta)
-	lbAPI := lb.NewAPI(meta.scwClient)
+	lbAPI := lb.NewZonedAPI(meta.scwClient)
 
-	region, ID, err := parseRegionalID(id)
+	zone, ID, err := parseZonedID(id)
 	if err != nil {
 		return nil, "", "", err
 	}
-	return lbAPI, region, ID, nil
+	return lbAPI, zone, ID, nil
 }
 
 func flattenLbBackendMarkdownAction(action lb.OnMarkedDownAction) interface{} {
