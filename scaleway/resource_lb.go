@@ -91,9 +91,10 @@ func resourceScalewayLbCreate(ctx context.Context, d *schema.ResourceData, meta 
 	d.SetId(newRegionalIDString(region, res.ID))
 
 	_, err = lbAPI.WaitForLb(&lb.WaitForLBRequest{
-		Region:  region,
-		LBID:    res.ID,
-		Timeout: scw.TimeDurationPtr(defaultInstanceServerWaitTimeout),
+		Region:        region,
+		LBID:          res.ID,
+		Timeout:       scw.TimeDurationPtr(defaultInstanceServerWaitTimeout),
+		RetryInterval: DefaultWaitRetryInterval,
 	}, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
@@ -174,9 +175,10 @@ func resourceScalewayLbDelete(ctx context.Context, d *schema.ResourceData, meta 
 	}
 
 	_, err = lbAPI.WaitForLb(&lb.WaitForLBRequest{
-		LBID:    ID,
-		Region:  region,
-		Timeout: scw.TimeDurationPtr(LbWaitForTimeout),
+		LBID:          ID,
+		Region:        region,
+		Timeout:       scw.TimeDurationPtr(LbWaitForTimeout),
+		RetryInterval: DefaultWaitRetryInterval,
 	}, scw.WithContext(ctx))
 
 	if err != nil && !is404Error(err) {
