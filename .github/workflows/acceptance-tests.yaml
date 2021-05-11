@@ -1,0 +1,42 @@
+name: Acceptance Tests
+
+on:
+  pull_request:
+
+jobs:
+  tests:
+    strategy:
+      fail-fast: false
+      matrix:
+        products:
+          - Account
+          - AppleSilicon
+          - Baremetal
+          - DomainRecord
+          - Instance
+          - Iot
+          - K8S
+          - Lb
+          - Marketplace
+          - Object
+          - Rdb
+          - Registry
+          - VPC
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: 1.17.1
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Run Acceptance Tests
+        run: go test -v ./... -timeout=1h -run "TestAccScaleway(DataSource)?${{ matrix.products }}.*"
+        env:
+          TF_LOG: DEBUG
+          TF_ACC: 1
+          TF_UPDATE_CASSETTES: false
+          TF_TEST_DOMAIN: scaleway-terraform.com
+          SCW_DEBUG: 0
+          SCW_ACCESS_KEY: "SCWXXXXXXXXXXXXXFAKE"
+          SCW_SECRET_KEY: "11111111-1111-1111-1111-111111111111"

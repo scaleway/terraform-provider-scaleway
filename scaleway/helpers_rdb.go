@@ -12,28 +12,30 @@ const (
 	defaultRdbInstanceTimeout = 15 * time.Minute
 )
 
+// newRdbAPI returns a new RDB API
+func newRdbAPI(m interface{}) *rdb.API {
+	meta := m.(*Meta)
+	return rdb.NewAPI(meta.scwClient)
+}
+
 // rdbAPIWithRegion returns a new lb API and the region for a Create request
 func rdbAPIWithRegion(d *schema.ResourceData, m interface{}) (*rdb.API, scw.Region, error) {
 	meta := m.(*Meta)
-	rdbAPI := rdb.NewAPI(meta.scwClient)
 
 	region, err := extractRegion(d, meta)
 	if err != nil {
 		return nil, "", err
 	}
-	return rdbAPI, region, nil
+	return newRdbAPI(m), region, nil
 }
 
 // rdbAPIWithRegionAndID returns an lb API with region and ID extracted from the state
 func rdbAPIWithRegionAndID(m interface{}, id string) (*rdb.API, scw.Region, string, error) {
-	meta := m.(*Meta)
-	rdbAPI := rdb.NewAPI(meta.scwClient)
-
 	region, ID, err := parseRegionalID(id)
 	if err != nil {
 		return nil, "", "", err
 	}
-	return rdbAPI, region, ID, nil
+	return newRdbAPI(m), region, ID, nil
 }
 
 func flattenRdbInstanceReadReplicas(readReplicas []*rdb.Endpoint) interface{} {

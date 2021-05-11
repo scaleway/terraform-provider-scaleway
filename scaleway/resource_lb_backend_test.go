@@ -27,7 +27,6 @@ func TestAccScalewayLbBackend_Basic(t *testing.T) {
 					}
 
 					resource scaleway_instance_ip ip01 {}
-					resource scaleway_instance_ip ip02 {}
 
 					resource scaleway_lb_backend bkd01 {
 						lb_id = scaleway_lb.lb01.id
@@ -72,7 +71,7 @@ func TestAccScalewayLbBackend_Basic(t *testing.T) {
 						forward_port_algorithm = "leastconn"
 						sticky_sessions = "cookie"
 						sticky_sessions_cookie_name = "session-id"
-						server_ips = [ scaleway_instance_ip.ip02.address ]
+						server_ips = [scaleway_instance_ip.ip01.address , scaleway_instance_ip.ip02.address ]
 						proxy_protocol = "none"
 						timeout_server = "1s"
 						timeout_connect = "2.5s"
@@ -86,7 +85,8 @@ func TestAccScalewayLbBackend_Basic(t *testing.T) {
 				`,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayLbBackendExists(tt, "scaleway_lb_backend.bkd01"),
-					resource.TestCheckResourceAttrPair("scaleway_lb_backend.bkd01", "server_ips.0", "scaleway_instance_ip.ip02", "address"),
+					resource.TestCheckResourceAttrPair("scaleway_lb_backend.bkd01", "server_ips.0", "scaleway_instance_ip.ip01", "address"),
+					resource.TestCheckResourceAttrPair("scaleway_lb_backend.bkd01", "server_ips.1", "scaleway_instance_ip.ip02", "address"),
 					resource.TestCheckResourceAttr("scaleway_lb_backend.bkd01", "health_check_delay", "10s"),
 					resource.TestCheckResourceAttr("scaleway_lb_backend.bkd01", "health_check_timeout", "15s"),
 					resource.TestCheckResourceAttr("scaleway_lb_backend.bkd01", "health_check_port", "81"),
@@ -195,14 +195,14 @@ func testAccCheckScalewayLbBackendExists(tt *TestTools, n string) resource.TestC
 			return fmt.Errorf("resource not found: %s", n)
 		}
 
-		lbAPI, region, ID, err := lbAPIWithRegionAndID(tt.Meta, rs.Primary.ID)
+		lbAPI, zone, ID, err := lbAPIWithZoneAndID(tt.Meta, rs.Primary.ID)
 		if err != nil {
 			return err
 		}
 
-		_, err = lbAPI.GetBackend(&lb.GetBackendRequest{
+		_, err = lbAPI.GetBackend(&lb.ZonedAPIGetBackendRequest{
 			BackendID: ID,
-			Region:    region,
+			Zone:      zone,
 		})
 		if err != nil {
 			return err
@@ -219,13 +219,13 @@ func testAccCheckScalewayLbBackendDestroy(tt *TestTools) resource.TestCheckFunc 
 				continue
 			}
 
-			lbAPI, region, ID, err := lbAPIWithRegionAndID(tt.Meta, rs.Primary.ID)
+			lbAPI, zone, ID, err := lbAPIWithZoneAndID(tt.Meta, rs.Primary.ID)
 			if err != nil {
 				return err
 			}
 
-			_, err = lbAPI.GetBackend(&lb.GetBackendRequest{
-				Region:    region,
+			_, err = lbAPI.GetBackend(&lb.ZonedAPIGetBackendRequest{
+				Zone:      zone,
 				BackendID: ID,
 			})
 

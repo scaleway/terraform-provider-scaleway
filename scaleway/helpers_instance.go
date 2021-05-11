@@ -139,8 +139,9 @@ func reachState(ctx context.Context, instanceAPI *instance.API, zone scw.Zone, s
 	for _, volume := range response.Server.Volumes {
 		if volume.State != instance.VolumeStateAvailable {
 			_, err = instanceAPI.WaitForVolume(&instance.WaitForVolumeRequest{
-				Zone:     zone,
-				VolumeID: volume.ID,
+				Zone:          zone,
+				VolumeID:      volume.ID,
+				RetryInterval: DefaultWaitRetryInterval,
 			})
 			if err != nil {
 				return err
@@ -150,10 +151,11 @@ func reachState(ctx context.Context, instanceAPI *instance.API, zone scw.Zone, s
 
 	for _, a := range actions {
 		err = instanceAPI.ServerActionAndWait(&instance.ServerActionAndWaitRequest{
-			ServerID: serverID,
-			Action:   a,
-			Zone:     zone,
-			Timeout:  scw.TimeDurationPtr(defaultInstanceServerWaitTimeout),
+			ServerID:      serverID,
+			Action:        a,
+			Zone:          zone,
+			Timeout:       scw.TimeDurationPtr(defaultInstanceServerWaitTimeout),
+			RetryInterval: DefaultWaitRetryInterval,
 		})
 		if err != nil {
 			return err

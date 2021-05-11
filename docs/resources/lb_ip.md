@@ -7,7 +7,7 @@ description: |-
 # scaleway_lb_ip
 
 Creates and manages Scaleway Load-Balancers IPs.
-For more information, see [the documentation](https://developers.scaleway.com/en/products/lb/api).
+For more information, see [the documentation](https://developers.scaleway.com/en/products/lb/zoned_api).
 
 ## Examples
 
@@ -36,8 +36,8 @@ In addition to all arguments above, the following attributes are exported:
 
 ## Import
 
-IPs can be imported using the `{region}/{id}`, e.g.
+IPs can be imported using the `{zone}/{id}`, e.g.
 
 ```bash
-$ terraform import scaleway_lb_ip.ip01 fr-par/11111111-1111-1111-1111-111111111111
+$ terraform import scaleway_lb_ip.ip01 fr-par-1/11111111-1111-1111-1111-111111111111
 ```

@@ -85,14 +85,14 @@ func testAccCheckScalewayLbFrontendExists(tt *TestTools, n string) resource.Test
 			return fmt.Errorf("resource not found: %s", n)
 		}
 
-		lbAPI, region, ID, err := lbAPIWithRegionAndID(tt.Meta, rs.Primary.ID)
+		lbAPI, zone, ID, err := lbAPIWithZoneAndID(tt.Meta, rs.Primary.ID)
 		if err != nil {
 			return err
 		}
 
-		_, err = lbAPI.GetFrontend(&lb.GetFrontendRequest{
+		_, err = lbAPI.GetFrontend(&lb.ZonedAPIGetFrontendRequest{
 			FrontendID: ID,
-			Region:     region,
+			Zone:       zone,
 		})
 
 		if err != nil {
@@ -110,13 +110,13 @@ func testAccCheckScalewayLbFrontendDestroy(tt *TestTools) resource.TestCheckFunc
 				continue
 			}
 
-			lbAPI, region, ID, err := lbAPIWithRegionAndID(tt.Meta, rs.Primary.ID)
+			lbAPI, zone, ID, err := lbAPIWithZoneAndID(tt.Meta, rs.Primary.ID)
 			if err != nil {
 				return err
 			}
 
-			_, err = lbAPI.GetFrontend(&lb.GetFrontendRequest{
-				Region:     region,
+			_, err = lbAPI.GetFrontend(&lb.ZonedAPIGetFrontendRequest{
+				Zone:       zone,
 				FrontendID: ID,
 			})
 

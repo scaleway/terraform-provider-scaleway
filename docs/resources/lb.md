@@ -7,7 +7,7 @@ description: |-
 # scaleway_lb
 
 Creates and manages Scaleway Load-Balancers.
-For more information, see [the documentation](https://developers.scaleway.com/en/products/lb/api).
+For more information, see [the documentation](https://developers.scaleway.com/en/products/lb/zoned_api).
 
 ## Examples
 
@@ -19,7 +19,7 @@ resource "scaleway_lb_ip" "ip" {
 
 resource "scaleway_lb" "base" {
   ip_id  = scaleway_lb_ip.ip.id
-  region = "fr-par"
+  zone = "fr-par-1"
   type   = "LB-S"
 }
 ```
@@ -40,8 +40,7 @@ The following arguments are supported:
 
 - `tags` - (Optional) The tags associated with the load-balancers.
 
-- `region` - (Defaults to [provider](../index.md#region) `region`) The [region](../guides/regions_and_zones.md#regions) in which the load-balancer should be created.
-
+- `zone` - (Defaults to [provider](../index.md#zone) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which the IP should be reserved.
 
 - `project_id` - (Defaults to [provider](../index.md#project_id) `project_id`) The ID of the project the load-balancer is associated with.
 
@@ -63,7 +62,7 @@ For instance, if you had the following:
 
 ```hcl
 resource "scaleway_lb" "base" {
-  region = "fr-par"
+  zone = "fr-par-1"
   type   = "LB-S"
 }
 ```
@@ -76,7 +75,7 @@ resource "scaleway_lb_ip" "ip" {
 
 resource "scaleway_lb" "base" {
   ip_id  = scaleway_lb_ip.ip.id
-  region = "fr-par"
+  zone = "fr-par-1"
   type   = "LB-S"
 }
 ```
@@ -97,10 +96,10 @@ and look for `ip_id`.
 
 ## Import
 
-Load-Balancer can be imported using the `{region}/{id}`, e.g.
+Load-Balancer can be imported using the `{zone}/{id}`, e.g.
 
 ```bash
-$ terraform import scaleway_lb.lb01 fr-par/11111111-1111-1111-1111-111111111111
+$ terraform import scaleway_lb.lb01 fr-par-1/11111111-1111-1111-1111-111111111111
 ```
 
 Be aware that you will also need to import the `scaleway_lb_ip` resource.

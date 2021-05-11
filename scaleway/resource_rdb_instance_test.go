@@ -168,6 +168,7 @@ func TestAccScalewayRdbInstance_Volume(t *testing.T) {
 						disable_backup = true
 						user_name = "my_initial_user"
 						password = "thiZ_is_v&ry_s3cret"
+						region= "nl-ams"
 						tags = [ "terraform-test", "scaleway_rdb_instance", "volume" ]
 					}
 				`,
@@ -186,6 +187,7 @@ func TestAccScalewayRdbInstance_Volume(t *testing.T) {
 						disable_backup = true
 						user_name = "my_initial_user"
 						password = "thiZ_is_v&ry_s3cret"
+						region= "nl-ams"
 						tags = [ "terraform-test", "scaleway_rdb_instance", "volume" ]
 						volume_type = "bssd"
 						volume_size_in_gb = 10
@@ -224,6 +226,34 @@ func testAccCheckScalewayRdbExists(tt *TestTools, n string) resource.TestCheckFu
 
 		return nil
 	}
+}
+
+func TestAccScalewayRdbInstance_Capitalize(t *testing.T) {
+	tt := NewTestTools(t)
+	defer tt.Cleanup()
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      testAccCheckScalewayRdbInstanceDestroy(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource scaleway_rdb_instance main {
+						name = "test-rdb"
+						node_type = "DB-DEV-S"
+						engine = "PostgreSQL-11"
+						is_ha_cluster = false
+						disable_backup = true
+						user_name = "my_initial_user"
+						password = "thiZ_is_v&ry_s3cret"
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayRdbExists(tt, "scaleway_rdb_instance.main"),
+				),
+			},
+		},
+	})
 }
 
 func testAccCheckScalewayRdbInstanceDestroy(tt *TestTools) resource.TestCheckFunc {
