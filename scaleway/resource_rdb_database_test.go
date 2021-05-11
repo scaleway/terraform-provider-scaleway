@@ -7,6 +7,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/scaleway/scaleway-sdk-go/api/rdb/v1"
+	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/stretchr/testify/assert"
 )
 
 func init() {
@@ -60,12 +62,12 @@ func testAccCheckRdbDatabaseExists(tt *TestTools, instance string, database stri
 			return fmt.Errorf("resource database not found: %s", database)
 		}
 
-		rdbAPI, region, _, err := rdbAPIWithRegionAndID(tt.Meta, instanceResource.Primary.ID)
+		rdbAPI, _, _, err := rdbAPIWithRegionAndID(tt.Meta, instanceResource.Primary.ID)
 		if err != nil {
 			return err
 		}
 
-		instanceID, databaseName, err := resourceScalewayRdbDatabaseParseID(databaseResource.Primary.ID)
+		region, instanceID, databaseName, err := resourceScalewayRdbDatabaseParseID(databaseResource.Primary.ID)
 		if err != nil {
 			return err
 		}
@@ -88,4 +90,21 @@ func testAccCheckRdbDatabaseExists(tt *TestTools, instance string, database stri
 
 		return nil
 	}
+}
+
+func TestResourceScalewayRdbDatabaseParseIDWithWronglyFormatedIdReturnError(t *testing.T) {
+	assert := assert.New(t)
+	region, _, _, err := resourceScalewayRdbDatabaseParseID("notandid")
+	assert.Error(err)
+	assert.Empty(region)
+	assert.Equal("can't parse user resource id: notandid", err.Error())
+}
+
+func TestResourceScalewayRdbDatabaseParseID(t *testing.T) {
+	assert := assert.New(t)
+	region, instanceID, dbname, err := resourceScalewayRdbDatabaseParseID("region/instanceid/dbname")
+	assert.NoError(err)
+	assert.Equal(scw.Region("region"), region)
+	assert.Equal("instanceid", instanceID)
+	assert.Equal("dbname", dbname)
 }

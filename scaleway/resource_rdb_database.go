@@ -28,7 +28,7 @@ func resourceScalewayRdbDatabase() *schema.Resource {
 				Type:         schema.TypeString,
 				Required:     true,
 				ForceNew:     true,
-				ValidateFunc: validationUUIDorUUIDWithLocality(),
+				ValidateFunc: validationUUIDWithLocality(),
 				Description:  "Instance on which the database is created",
 			},
 			"name": {
@@ -39,7 +39,7 @@ func resourceScalewayRdbDatabase() *schema.Resource {
 			},
 			"managed": {
 				Type:        schema.TypeBool,
-				Description: "Whether or notre the database is managed",
+				Description: "Whether or not the database is managed",
 				Computed:    true,
 			},
 			"owner": {
@@ -52,21 +52,23 @@ func resourceScalewayRdbDatabase() *schema.Resource {
 				Description: "Size of the database",
 				Computed:    true,
 			},
-			// Common
-			"region": regionSchema(),
 		},
 	}
 }
 
 func resourceScalewayRdbDatabaseCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	rdbAPI, region, err := rdbAPIWithRegion(d, meta)
+	rdbAPI := newRdbAPI(meta)
+
+	locality, instanceID, err := parseLocalizedID(d.Get("instance_id").(string))
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	instanceID := d.Get("instance_id").(string)
+
+	region := scw.Region(locality)
+
 	createReq := &rdb.CreateDatabaseRequest{
 		Region:     region,
-		InstanceID: expandID(instanceID),
+		InstanceID: instanceID,
 		Name:       d.Get("name").(string),
 	}
 
@@ -81,12 +83,9 @@ func resourceScalewayRdbDatabaseCreate(ctx context.Context, d *schema.ResourceDa
 }
 
 func resourceScalewayRdbDatabaseRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	rdbAPI, region, err := rdbAPIWithRegion(d, meta)
-	if err != nil {
-		return diag.FromErr(err)
-	}
+	rdbAPI := newRdbAPI(meta)
 
-	instanceID, databaseName, err := resourceScalewayRdbDatabaseParseID(d.Id())
+	region, instanceID, databaseName, err := resourceScalewayRdbDatabaseParseID(d.Id())
 
 	if err != nil {
 		return diag.FromErr(err)
@@ -107,24 +106,20 @@ func resourceScalewayRdbDatabaseRead(ctx context.Context, d *schema.ResourceData
 	}
 
 	var database = res.Databases[0]
+	d.SetId(resourceScalewayRdbDatabaseID(region, instanceID, database.Name))
 	_ = d.Set("instance_id", newRegionalID(region, instanceID).String())
 	_ = d.Set("name", database.Name)
 	_ = d.Set("owner", database.Owner)
 	_ = d.Set("managed", database.Managed)
 	_ = d.Set("size", database.Size.String())
 
-	d.SetId(resourceScalewayRdbDatabaseID(region, instanceID, database.Name))
-
 	return nil
 }
 
 func resourceScalewayRdbDatabaseDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	rdbAPI, region, err := rdbAPIWithRegion(d, meta)
-	if err != nil {
-		return diag.FromErr(err)
-	}
+	rdbAPI := newRdbAPI(meta)
 
-	instanceID, databaseName, err := resourceScalewayRdbDatabaseParseID(d.Id())
+	region, instanceID, databaseName, err := resourceScalewayRdbDatabaseParseID(d.Id())
 
 	if err != nil {
 		return diag.FromErr(err)
@@ -151,10 +146,10 @@ func resourceScalewayRdbDatabaseID(region scw.Region, instanceID string, databas
 
 // Extract instance ID and database from the resource identifier.
 // The resource identifier format is "Region/InstanceId/DatabaseId"
-func resourceScalewayRdbDatabaseParseID(resourceID string) (instanceID string, database string, err error) {
+func resourceScalewayRdbDatabaseParseID(resourceID string) (region scw.Region, instanceID string, database string, err error) {
 	idParts := strings.Split(resourceID, "/")
 	if len(idParts) != 3 {
-		return "", "", fmt.Errorf("can't parse user resource id: %s", resourceID)
+		return "", "", "", fmt.Errorf("can't parse user resource id: %s", resourceID)
 	}
-	return idParts[1], idParts[2], nil
+	return scw.Region(idParts[0]), idParts[1], idParts[2], nil
 }
