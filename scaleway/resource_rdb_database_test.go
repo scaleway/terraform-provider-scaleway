@@ -187,19 +187,32 @@ func TestResourceScalewayRdbDatabaseCreateWithoutRegionalizedIdUseDefaultRegion(
 	// init testing framework
 	assert := assert.New(t)
 	ctrl := gomock.NewController(t)
-	meta, rdbAPI := NewMeta(ctrl)
+	meta, _ := NewMeta(ctrl)
 	data := NewTestResourceDataRawForResourceScalewayRDBDatabase(t, "1111-11111111-111111111111")
 
-	// mocking
-	rdbAPI.CreateDatabaseMustReturnDB("fr-par")
-	rdbAPI.ListDatabasesMustReturnDB("fr-par")
+	// run
+	diags := resourceScalewayRdbDatabaseCreate(mock.NewMockContext(ctrl), data, meta)
+
+	// assertions
+	assert.Len(diags, 1)
+}
+
+func TestResourceScalewayRdbDatabaseCreateWithRegionalizedId(t *testing.T) {
+	// init testing framework
+	assert := assert.New(t)
+	ctrl := gomock.NewController(t)
+	meta, rdbAPI := NewMeta(ctrl)
+	data := NewTestResourceDataRawForResourceScalewayRDBDatabase(t, "bb-gre/1111-11111111-111111111111")
+
+	rdbAPI.CreateDatabaseMustReturnDB("bb-gre")
+	rdbAPI.ListDatabasesMustReturnDB("bb-gre")
 
 	// run
 	diags := resourceScalewayRdbDatabaseCreate(mock.NewMockContext(ctrl), data, meta)
 
 	// assertions
 	assert.Len(diags, 0)
-	assertResourceDatabase(assert, data, "fr-par")
+	assertResourceDatabase(assert, data, "bb-gre")
 }
 
 func TestResourceScalewayRdbDatabaseDeleteWithRdbErrorReturnDiagnotics(t *testing.T) {

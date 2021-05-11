@@ -12,33 +12,33 @@ const (
 	defaultRdbInstanceTimeout = 15 * time.Minute
 )
 
+// newRdbAPI returns a new RDB API
+func newRdbAPI(m interface{}) RdbAPIInterface {
+	meta := m.(*Meta)
+	if meta.mockedAPI != nil {
+		return meta.mockedAPI.(RdbAPIInterface)
+	}
+	return rdb.NewAPI(meta.scwClient)
+}
+
 // rdbAPIWithRegion returns a new lb API and the region for a Create request
 func rdbAPIWithRegion(d *schema.ResourceData, m interface{}) (RdbAPIInterface, scw.Region, error) {
 	meta := m.(*Meta)
-	var rdbAPI RdbAPIInterface
-	if meta.mockedAPI != nil {
-		rdbAPI = meta.mockedAPI.(RdbAPIInterface)
-	} else {
-		rdbAPI = rdb.NewAPI(meta.scwClient)
-	}
 
 	region, err := extractRegion(d, meta)
 	if err != nil {
 		return nil, "", err
 	}
-	return rdbAPI, region, nil
+	return newRdbAPI(m), region, nil
 }
 
 // rdbAPIWithRegionAndID returns an lb API with region and ID extracted from the state
-func rdbAPIWithRegionAndID(m interface{}, id string) (*rdb.API, scw.Region, string, error) {
-	meta := m.(*Meta)
-	rdbAPI := rdb.NewAPI(meta.scwClient)
-
+func rdbAPIWithRegionAndID(m interface{}, id string) (RdbAPIInterface, scw.Region, string, error) {
 	region, ID, err := parseRegionalID(id)
 	if err != nil {
 		return nil, "", "", err
 	}
-	return rdbAPI, region, ID, nil
+	return newRdbAPI(m), region, ID, nil
 }
 
 func flattenRdbInstanceReadReplicas(readReplicas []*rdb.Endpoint) interface{} {
