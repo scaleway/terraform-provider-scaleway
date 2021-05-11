@@ -54,7 +54,3 @@ website:
 	@echo "Use this site to preview markdown rendering: https://registry.terraform.io/tools/doc-preview"
 
 .PHONY: build test testacc vet fmt fmtcheck errcheck test-compile website
-
-mockgen:
-	@mockgen -source=scaleway/rdb_interface.go -destination=scaleway/mocks/rdb_interface.go -package=mocks
-	@mockgen -destination=scaleway/mocks/context.go -package=mocks context Context

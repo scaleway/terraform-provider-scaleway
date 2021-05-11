@@ -13,16 +13,13 @@ const (
 )
 
 // newRdbAPI returns a new RDB API
-func newRdbAPI(m interface{}) RdbAPIInterface {
+func newRdbAPI(m interface{}) *rdb.API {
 	meta := m.(*Meta)
-	if meta.mockedAPI != nil {
-		return meta.mockedAPI.(RdbAPIInterface)
-	}
 	return rdb.NewAPI(meta.scwClient)
 }
 
 // rdbAPIWithRegion returns a new lb API and the region for a Create request
-func rdbAPIWithRegion(d *schema.ResourceData, m interface{}) (RdbAPIInterface, scw.Region, error) {
+func rdbAPIWithRegion(d *schema.ResourceData, m interface{}) (*rdb.API, scw.Region, error) {
 	meta := m.(*Meta)
 
 	region, err := extractRegion(d, meta)
@@ -33,7 +30,7 @@ func rdbAPIWithRegion(d *schema.ResourceData, m interface{}) (RdbAPIInterface, s
 }
 
 // rdbAPIWithRegionAndID returns an lb API with region and ID extracted from the state
-func rdbAPIWithRegionAndID(m interface{}, id string) (RdbAPIInterface, scw.Region, string, error) {
+func rdbAPIWithRegionAndID(m interface{}, id string) (*rdb.API, scw.Region, string, error) {
 	region, ID, err := parseRegionalID(id)
 	if err != nil {
 		return nil, "", "", err
