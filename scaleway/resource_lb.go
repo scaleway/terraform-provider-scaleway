@@ -5,12 +5,11 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/api/lb/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
-
-	"github.com/hashicorp/go-cty/cty"
 )
 
 func resourceScalewayLb() *schema.Resource {
@@ -30,10 +29,10 @@ func resourceScalewayLb() *schema.Resource {
 			{
 				Version: 0,
 				Type: cty.Object(map[string]cty.Type{
-					"id": cty.String,
+					"id":    cty.String,
 					"ip_id": cty.String,
 				}),
-				Upgrade: resourceScalewayLbUpgradeIPID,
+				Upgrade: upgradeRegionalIPToZoneID,
 			},
 		},
 		Schema: map[string]*schema.Schema{
@@ -71,7 +70,7 @@ func resourceScalewayLb() *schema.Resource {
 				Description: "The load-balance public IP address",
 			},
 			"region":          regionSchema(),
-			"zone": 		 	zoneSchema(),
+			"zone":            zoneSchema(),
 			"organization_id": organizationIDSchema(),
 			"project_id":      projectIDSchema(),
 		},
@@ -85,7 +84,7 @@ func resourceScalewayLbCreate(ctx context.Context, d *schema.ResourceData, meta 
 	}
 
 	createReq := &lb.ZonedAPICreateLBRequest{
-		Zone:	   zone,
+		Zone:      zone,
 		IPID:      expandStringPtr(expandID(d.Get("ip_id"))),
 		ProjectID: expandStringPtr(d.Get("project_id")),
 		Name:      expandOrGenerateString(d.Get("name"), "lb"),
@@ -105,7 +104,7 @@ func resourceScalewayLbCreate(ctx context.Context, d *schema.ResourceData, meta 
 	d.SetId(newZonedIDString(zone, res.ID))
 	// wait for lb
 	_, err = lbAPI.WaitForLb(&lb.ZonedAPIWaitForLBRequest{
-		Zone:  zone,
+		Zone:    zone,
 		LBID:    res.ID,
 		Timeout: scw.TimeDurationPtr(defaultInstanceServerWaitTimeout),
 		RetryInterval: DefaultWaitRetryInterval,
@@ -126,7 +125,7 @@ func resourceScalewayLbRead(ctx context.Context, d *schema.ResourceData, meta in
 
 	res, err := lbAPI.GetLB(&lb.ZonedAPIGetLBRequest{
 		Zone: zone,
-		LBID:   ID,
+		LBID: ID,
 	}, scw.WithContext(ctx))
 
 	if err != nil {
@@ -144,7 +143,7 @@ func resourceScalewayLbRead(ctx context.Context, d *schema.ResourceData, meta in
 
 	_ = d.Set("name", res.Name)
 	_ = d.Set("zone", zone.String())
-	_  = d.Set("region", region.String())
+	_ = d.Set("region", region.String())
 	_ = d.Set("organization_id", res.OrganizationID)
 	_ = d.Set("project_id", res.ProjectID)
 	_ = d.Set("tags", res.Tags)
@@ -165,9 +164,9 @@ func resourceScalewayLbUpdate(ctx context.Context, d *schema.ResourceData, meta 
 	if d.HasChanges("name", "tags") {
 		req := &lb.ZonedAPIUpdateLBRequest{
 			Zone: zone,
-			LBID:   ID,
-			Name:   d.Get("name").(string),
-			Tags:   expandStrings(d.Get("tags")),
+			LBID: ID,
+			Name: d.Get("name").(string),
+			Tags: expandStrings(d.Get("tags")),
 		}
 
 		_, err = lbAPI.UpdateLB(req, scw.WithContext(ctx))
@@ -186,7 +185,7 @@ func resourceScalewayLbDelete(ctx context.Context, d *schema.ResourceData, meta 
 	}
 
 	err = lbAPI.DeleteLB(&lb.ZonedAPIDeleteLBRequest{
-		Zone:    zone,
+		Zone:      zone,
 		LBID:      ID,
 		ReleaseIP: false,
 	}, scw.WithContext(ctx))
@@ -197,7 +196,7 @@ func resourceScalewayLbDelete(ctx context.Context, d *schema.ResourceData, meta 
 
 	_, err = lbAPI.WaitForLb(&lb.ZonedAPIWaitForLBRequest{
 		LBID:    ID,
-		Zone:  zone,
+		Zone:    zone,
 		Timeout: scw.TimeDurationPtr(LbWaitForTimeout),
 		RetryInterval: DefaultWaitRetryInterval,
 	}, scw.WithContext(ctx))
@@ -209,40 +208,33 @@ func resourceScalewayLbDelete(ctx context.Context, d *schema.ResourceData, meta 
 	return nil
 }
 
-//resourceScalewayLbUpgradeZoned allow upgrade the zoned resource. Note: please create another method for future upgrades not related
-// from version 0 to 1.
-func resourceScalewayLbUpgradeIPID(ctx context.Context, rawState map[string]interface{}, meta interface{}) (map[string]interface{}, error) {
+// upgradeRegionalIPToZoneID allow upgrade the from regional to a zoned resource.
+// Note: please create another method for future upgrades not related
+func upgradeRegionalIPToZoneID(ctx context.Context, rawState map[string]interface{}, meta interface{}) (map[string]interface{}, error) {
+	var err error
 	select {
 	case <-ctx.Done():
 		return nil, ctx.Err()
 	default:
-		//TODO: check if the "-1" already is present
 		ipID, exist := rawState["ip_id"]
 		if !exist {
 			return nil, fmt.Errorf("upgrade: ip_id not exist")
 		}
-		// element ip_id: upgrade
-		locality, id, err := parseLocalizedID(ipID.(string))
-		// return error if locality not present
+		// zone key
+		rawState["ip_id"], err = addZoneToKey(ipID.(string))
 		if err != nil {
-			return nil, fmt.Errorf("upgrade: could not retrieve the locality from `ip_id`")
+			return nil, err
 		}
-		//  append zone 1 as default: e.g. fr-par-1
-		rawState["ip_id"] = fmt.Sprintf("%s-1/%s", locality, id)
-
 		// element id: upgrade
 		ID, exist := rawState["id"]
 		if !exist {
 			return nil, fmt.Errorf("upgrade: id not exist")
 		}
-		// set the id locality
-		locality, id, err = parseLocalizedID(ID.(string))
-		// return error if locality not present
+		// zone key
+		rawState["id"], err = addZoneToKey(ID.(string))
 		if err != nil {
-			return nil, fmt.Errorf("upgrade: could not retrieve the locality from `id`")
+			return nil, fmt.Errorf("upgrade: id not exist")
 		}
-		// element ip_id: append zone 1 as default: e.g. fr-par-1
-		rawState["id"] = fmt.Sprintf("%s-1/%s", locality, id)
 
 		return rawState, nil
 	}

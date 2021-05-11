@@ -3,6 +3,7 @@ package scaleway
 import (
 	"encoding/json"
 	"fmt"
+	validator "github.com/scaleway/scaleway-sdk-go/validation"
 	"net"
 	"net/http"
 	"strings"
@@ -82,6 +83,20 @@ func expandZonedID(id interface{}) ZonedID {
 	}
 
 	return zonedID
+}
+
+func addZoneToKey(element string) (string, error) {
+	locality, id, err := parseLocalizedID(element)
+	// return error if can't parse
+	if err != nil {
+		return "", fmt.Errorf("upgrade: could not retrieve the locality from `%s`", element)
+	}
+	// if locality is already zoned return
+	if validator.IsZone(locality) {
+		return element, nil
+	}
+	//  append zone 1 as default: e.g. fr-par-1
+	return fmt.Sprintf("%s-1/%s", locality, id), nil
 }
 
 // parseLocalizedID parses a localizedID and extracts the resource locality and id.

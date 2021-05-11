@@ -3,8 +3,8 @@ package scaleway
 import (
 	"context"
 	"fmt"
-	"github.com/hashicorp/go-cty/cty"
 
+	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
@@ -24,15 +24,15 @@ func resourceScalewayLbBackend() *schema.Resource {
 		Timeouts: &schema.ResourceTimeout{
 			Default: schema.DefaultTimeout(defaultLbLbTimeout),
 		},
-		SchemaVersion: 0,
+		SchemaVersion: 1,
 		StateUpgraders: []schema.StateUpgrader{
 			{
 				Version: 0,
 				Type: cty.Object(map[string]cty.Type{
-					"id": cty.String,
-					"ip_id": cty.String,
+					"id":    cty.String,
+					"lb_id": cty.String,
 				}),
-				Upgrade: resourceScalewayLbUpgradeLBID,
+				Upgrade: upgradeRegionalLBIDToZonedID,
 			},
 		},
 		Schema: map[string]*schema.Schema{
@@ -249,15 +249,11 @@ func resourceScalewayLbBackend() *schema.Resource {
 }
 
 func resourceScalewayLbBackendCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	lbAPI, defaultZone, err := lbAPIWithZone(d, meta)
+	lbAPI, zone, err := lbAPIWithZone(d, meta)
 
 	zone, LbID, err := parseZonedID(d.Get("lb_id").(string))
 	if err != nil {
 		return diag.FromErr(err)
-	}
-	// set default zone
-	if len(zone) == 0 {
-		zone = defaultZone
 	}
 
 	healthCheckPort := d.Get("health_check_port").(int)
@@ -266,7 +262,7 @@ func resourceScalewayLbBackendCreate(ctx context.Context, d *schema.ResourceData
 	}
 
 	createReq := &lb.ZonedAPICreateBackendRequest{
-		Zone:                   zone,
+		Zone:                     zone,
 		LBID:                     LbID,
 		Name:                     expandOrGenerateString(d.Get("name"), "lb-bkd"),
 		ForwardProtocol:          expandLbProtocol(d.Get("forward_protocol")),
@@ -309,7 +305,7 @@ func resourceScalewayLbBackendRead(ctx context.Context, d *schema.ResourceData, 
 	}
 
 	res, err := lbAPI.GetBackend(&lb.ZonedAPIGetBackendRequest{
-		Zone:    zone,
+		Zone:      zone,
 		BackendID: ID,
 	}, scw.WithContext(ctx))
 
@@ -353,7 +349,7 @@ func resourceScalewayLbBackendUpdate(ctx context.Context, d *schema.ResourceData
 	}
 
 	req := &lb.ZonedAPIUpdateBackendRequest{
-		Zone:                   zone,
+		Zone:                     zone,
 		BackendID:                ID,
 		Name:                     d.Get("name").(string),
 		ForwardProtocol:          expandLbProtocol(d.Get("forward_protocol")),
@@ -397,7 +393,7 @@ func resourceScalewayLbBackendUpdate(ctx context.Context, d *schema.ResourceData
 	}
 
 	// Update Backend servers
-	_, err = lbAPI.SetBackendServers(&lb. ZonedAPISetBackendServersRequest{
+	_, err = lbAPI.SetBackendServers(&lb.ZonedAPISetBackendServersRequest{
 		Zone:      zone,
 		BackendID: ID,
 		ServerIP:  expandStrings(d.Get("server_ips")),
@@ -427,43 +423,33 @@ func resourceScalewayLbBackendDelete(ctx context.Context, d *schema.ResourceData
 	return nil
 }
 
-
-
-//resourceScalewayLbUpgradeZoned allow upgrade the zoned resource. Note: please create another method for future upgrades not related
-// from version 0 to 1.
-func resourceScalewayLbUpgradeLBID(ctx context.Context, rawState map[string]interface{}, meta interface{}) (map[string]interface{}, error) {
+// upgradeRegionalIDToZonedID allow upgrade the from regional to a zoned resource.
+func upgradeRegionalLBIDToZonedID(ctx context.Context, rawState map[string]interface{}, meta interface{}) (map[string]interface{}, error) {
+	var err error
 	select {
 	case <-ctx.Done():
 		return nil, ctx.Err()
 	default:
-		//TODO: check if the "-1" already is present
-		ipID, exist := rawState["lb_id"]
+		lbID, exist := rawState["lb_id"]
 		if !exist {
-			return nil, fmt.Errorf("upgrade: ip_id not exist")
+			return nil, fmt.Errorf("upgrade: lb_id not exist")
 		}
-		// element lb_id: upgrade
-		locality, id, err := parseLocalizedID(ipID.(string))
-		// return error if locality not present
+		// zone key
+		rawState["lb_id"], err = addZoneToKey(lbID.(string))
 		if err != nil {
-			return nil, fmt.Errorf("upgrade: could not retrieve the locality from `lb_id`")
+			return nil, err
 		}
-		//  append zone 1 as default: e.g. fr-par-1
-		rawState["lb_id"] = fmt.Sprintf("%s-1/%s", locality, id)
-
 		// element id: upgrade
 		ID, exist := rawState["id"]
 		if !exist {
 			return nil, fmt.Errorf("upgrade: id not exist")
 		}
-		// set the id locality
-		locality, id, err = parseLocalizedID(ID.(string))
-		// return error if locality not present
+		// zone key
+		rawState["id"], err = addZoneToKey(ID.(string))
 		if err != nil {
-			return nil, fmt.Errorf("upgrade: could not retrieve the locality from `id`")
+			return nil, err
 		}
-		// element ip_id: append zone 1 as default: e.g. fr-par-1
-		rawState["id"] = fmt.Sprintf("%s-1/%s", locality, id)
-
+		// return rawState updated
 		return rawState, nil
 	}
 }

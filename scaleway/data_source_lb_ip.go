@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/api/lb/v1"
@@ -29,8 +30,19 @@ func dataSourceScalewayLbIP() *schema.Resource {
 	}
 
 	return &schema.Resource{
-		ReadContext: dataSourceScalewayLbIPRead,
-		Schema:      dsSchema,
+		ReadContext:   dataSourceScalewayLbIPRead,
+		Schema:        dsSchema,
+		SchemaVersion: 1,
+		StateUpgraders: []schema.StateUpgrader{
+			{
+				Version: 0,
+				Type: cty.Object(map[string]cty.Type{
+					"id": cty.String,
+					"ip_id": cty.String,
+				}),
+				Upgrade: upgradeRegionalIPToZoneID,
+			},
+		},
 	}
 }
 
@@ -43,7 +55,7 @@ func dataSourceScalewayLbIPRead(ctx context.Context, d *schema.ResourceData, met
 	ipID, ok := d.GetOk("ip_id")
 	if !ok { // Get IP by region and IP address.
 		res, err := api.ListIPs(&lb.ZonedAPIListIPsRequest{
-			Zone:    zone,
+			Zone:      zone,
 			IPAddress: expandStringPtr(d.Get("ip_address")),
 			ProjectID: expandStringPtr(d.Get("project_id")),
 		}, scw.WithContext(ctx))

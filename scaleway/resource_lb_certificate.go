@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 
+	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/api/lb/v1"
@@ -16,9 +17,19 @@ func resourceScalewayLbCertificate() *schema.Resource {
 		ReadContext:   resourceScalewayLbCertificateRead,
 		UpdateContext: resourceScalewayLbCertificateUpdate,
 		DeleteContext: resourceScalewayLbCertificateDelete,
-		SchemaVersion: 0,
+		SchemaVersion: 1,
 		Timeouts: &schema.ResourceTimeout{
 			Default: schema.DefaultTimeout(defaultLbLbTimeout),
+		},
+		StateUpgraders: []schema.StateUpgrader{
+			{
+				Version: 0,
+				Type: cty.Object(map[string]cty.Type{
+					"id":    cty.String,
+					"lb_id": cty.String,
+				}),
+				Upgrade: upgradeRegionalLBIDToZonedID,
+			},
 		},
 		Schema: map[string]*schema.Schema{
 			"lb_id": {
@@ -116,13 +127,13 @@ func resourceScalewayLbCertificate() *schema.Resource {
 }
 
 func resourceScalewayLbCertificateCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	region, lbID, err := parseRegionalID(d.Get("lb_id").(string))
+	zone, lbID, err := parseZonedID(d.Get("lb_id").(string))
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	createReq := &lb.CreateCertificateRequest{
-		Region:            region,
+	createReq := &lb.ZonedAPICreateCertificateRequest{
+		Zone:              zone,
 		LBID:              lbID,
 		Name:              expandOrGenerateString(d.Get("name"), "lb-cert"),
 		Letsencrypt:       expandLbLetsEncrypt(d.Get("letsencrypt")),
@@ -132,13 +143,13 @@ func resourceScalewayLbCertificateCreate(ctx context.Context, d *schema.Resource
 		return diag.FromErr(errors.New("you need to define either letsencrypt or custom_certificate configuration"))
 	}
 
-	lbAPI := lbAPI(meta)
+	lbAPI, zone, err := lbAPIWithZone(d, meta)
 	res, err := lbAPI.CreateCertificate(createReq, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	d.SetId(newRegionalIDString(region, res.ID))
+	d.SetId(newZonedIDString(zone, res.ID))
 
 	return resourceScalewayLbCertificateRead(ctx, d, meta)
 }
@@ -151,7 +162,7 @@ func resourceScalewayLbCertificateRead(ctx context.Context, d *schema.ResourceDa
 
 	res, err := lbAPI.GetCertificate(&lb.ZonedAPIGetCertificateRequest{
 		CertificateID: ID,
-		Zone:        zone,
+		Zone:          zone,
 	}, scw.WithContext(ctx))
 
 	if err != nil {
@@ -180,7 +191,7 @@ func resourceScalewayLbCertificateUpdate(ctx context.Context, d *schema.Resource
 
 	req := &lb.ZonedAPIUpdateCertificateRequest{
 		CertificateID: ID,
-		Zone: 		   zone,
+		Zone:          zone,
 		Name:          d.Get("name").(string),
 	}
 
@@ -199,7 +210,7 @@ func resourceScalewayLbCertificateDelete(ctx context.Context, d *schema.Resource
 	}
 
 	err = lbAPI.DeleteCertificate(&lb.ZonedAPIDeleteCertificateRequest{
-		Zone:        zone,
+		Zone:          zone,
 		CertificateID: ID,
 	}, scw.WithContext(ctx))
 

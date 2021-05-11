@@ -202,7 +202,7 @@ func testAccCheckScalewayLbBackendExists(tt *TestTools, n string) resource.TestC
 
 		_, err = lbAPI.GetBackend(&lb.ZonedAPIGetBackendRequest{
 			BackendID: ID,
-			Zone:    zone,
+			Zone:      zone,
 		})
 		if err != nil {
 			return err
@@ -225,7 +225,7 @@ func testAccCheckScalewayLbBackendDestroy(tt *TestTools) resource.TestCheckFunc 
 			}
 
 			_, err = lbAPI.GetBackend(&lb.ZonedAPIGetBackendRequest{
-				Zone:    zone,
+				Zone:      zone,
 				BackendID: ID,
 			})
 

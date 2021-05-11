@@ -92,7 +92,7 @@ func testAccCheckScalewayLbFrontendExists(tt *TestTools, n string) resource.Test
 
 		_, err = lbAPI.GetFrontend(&lb.ZonedAPIGetFrontendRequest{
 			FrontendID: ID,
-			Zone:     zone,
+			Zone:       zone,
 		})
 
 		if err != nil {
@@ -116,7 +116,7 @@ func testAccCheckScalewayLbFrontendDestroy(tt *TestTools) resource.TestCheckFunc
 			}
 
 			_, err = lbAPI.GetFrontend(&lb.ZonedAPIGetFrontendRequest{
-				Zone:     zone,
+				Zone:       zone,
 				FrontendID: ID,
 			})
 

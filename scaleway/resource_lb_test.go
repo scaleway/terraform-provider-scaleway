@@ -18,22 +18,22 @@ func init() {
 }
 
 func testSweepLB(_ string) error {
-	return sweepRegions([]scw.Region{scw.RegionFrPar, scw.RegionNlAms, scw.RegionPlWaw}, func(scwClient *scw.Client, region scw.Region) error {
-		lbAPI := lb.NewAPI(scwClient)
+	return sweepZones([]scw.Zone{scw.ZoneFrPar1, scw.ZoneNlAms1, scw.ZonePlWaw1}, func(scwClient *scw.Client, zone scw.Zone) error {
+		lbAPI := lb.NewZonedAPI(scwClient)
 
-		l.Debugf("sweeper: destroying the lbs in (%s)", region)
-		listLBs, err := lbAPI.ListLBs(&lb.ListLBsRequest{
-			Region: region,
+		l.Debugf("sweeper: destroying the lbs in (%s)", zone)
+		listLBs, err := lbAPI.ListLBs(&lb.ZonedAPIListLBsRequest{
+			Zone: zone,
 		}, scw.WithAllPages())
 		if err != nil {
-			return fmt.Errorf("error listing lbs in (%s) in sweeper: %s", region, err)
+			return fmt.Errorf("error listing lbs in (%s) in sweeper: %s", zone, err)
 		}
 
 		for _, l := range listLBs.LBs {
-			err := lbAPI.DeleteLB(&lb.DeleteLBRequest{
+			err := lbAPI.DeleteLB(&lb.ZonedAPIDeleteLBRequest{
 				LBID:      l.ID,
 				ReleaseIP: true,
-				Region:    region,
+				Zone:      zone,
 			})
 			if err != nil {
 				return fmt.Errorf("error deleting lb in sweeper: %s", err)
@@ -92,14 +92,14 @@ func testAccCheckScalewayLbExists(tt *TestTools, n string) resource.TestCheckFun
 			return fmt.Errorf("resource not found: %s", n)
 		}
 
-		lbAPI, region, ID, err := lbAPIWithRegionAndID(tt.Meta, rs.Primary.ID)
+		lbAPI, zone, ID, err := lbAPIWithZoneAndID(tt.Meta, rs.Primary.ID)
 		if err != nil {
 			return err
 		}
 
-		_, err = lbAPI.GetLB(&lb.GetLBRequest{
-			LBID:   ID,
-			Region: region,
+		_, err = lbAPI.GetLB(&lb.ZonedAPIGetLBRequest{
+			LBID: ID,
+			Zone: zone,
 		})
 
 		if err != nil {
@@ -117,14 +117,14 @@ func testAccCheckScalewayLbDestroy(tt *TestTools) resource.TestCheckFunc {
 				continue
 			}
 
-			lbAPI, region, ID, err := lbAPIWithRegionAndID(tt.Meta, rs.Primary.ID)
+			lbAPI, zone, ID, err := lbAPIWithZoneAndID(tt.Meta, rs.Primary.ID)
 			if err != nil {
 				return err
 			}
 
-			_, err = lbAPI.GetLB(&lb.GetLBRequest{
-				Region: region,
-				LBID:   ID,
+			_, err = lbAPI.GetLB(&lb.ZonedAPIGetLBRequest{
+				Zone: zone,
+				LBID: ID,
 			})
 
 			// If no error resource still exist

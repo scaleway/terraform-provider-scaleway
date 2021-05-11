@@ -222,7 +222,7 @@ func testAccCheckScalewayACLAreCorrect(tt *TestTools, frontendName string, expec
 
 		//fetch our acls from the scaleway
 		resACL, err := lbAPI.ListACLs(&lb.ZonedAPIListACLsRequest{
-			Zone:     zone,
+			Zone:       zone,
 			FrontendID: ID,
 		}, scw.WithAllPages())
 		if err != nil {
