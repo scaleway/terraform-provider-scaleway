@@ -17,6 +17,11 @@ import (
 	"golang.org/x/xerrors"
 )
 
+var (
+	// DefaultWaitRetryInterval is used to set the retry interval to 0 during acceptance tests
+	DefaultWaitRetryInterval *time.Duration
+)
+
 // RegionalID represents an ID that is linked with a region, eg fr-par/11111111-1111-1111-1111-111111111111
 type RegionalID struct {
 	ID     string

@@ -172,8 +172,10 @@ func resourceScalewayInstanceVolumeUpdate(ctx context.Context, d *schema.Resourc
 			return diag.FromErr(fmt.Errorf("block volumes cannot be resized down"))
 		}
 		_, err := instanceAPI.WaitForVolume(&instance.WaitForVolumeRequest{
-			VolumeID: id,
-			Zone:     zone}, scw.WithContext(ctx))
+			VolumeID:      id,
+			Zone:          zone,
+			RetryInterval: DefaultWaitRetryInterval,
+		}, scw.WithContext(ctx))
 		if err != nil {
 			return diag.FromErr(err)
 		}

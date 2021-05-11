@@ -95,7 +95,7 @@ func resourceScalewayAppleSiliconServerCreate(ctx context.Context, d *schema.Res
 	_, err = asAPI.WaitForServer(&applesilicon.WaitForServerRequest{
 		ServerID:      res.ID,
 		Timeout:       scw.TimeDurationPtr(defaultAppleSiliconServerTimeout),
-		RetryInterval: nil,
+		RetryInterval: DefaultWaitRetryInterval,
 	}, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
