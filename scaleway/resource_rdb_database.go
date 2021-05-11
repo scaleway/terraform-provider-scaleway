@@ -28,7 +28,7 @@ func resourceScalewayRdbDatabase() *schema.Resource {
 				Type:         schema.TypeString,
 				Required:     true,
 				ForceNew:     true,
-				ValidateFunc: validationUUIDorUUIDWithLocality(),
+				ValidateFunc: validationUUIDWithLocality(),
 				Description:  "Instance on which the database is created",
 			},
 			"name": {
@@ -52,8 +52,6 @@ func resourceScalewayRdbDatabase() *schema.Resource {
 				Description: "Size of the database",
 				Computed:    true,
 			},
-			// Common
-			"region": regionSchema(),
 		},
 	}
 }
