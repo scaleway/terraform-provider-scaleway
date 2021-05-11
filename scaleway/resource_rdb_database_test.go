@@ -139,14 +139,14 @@ func TestResourceScalewayRdbDatabaseReadSetResourceData(t *testing.T) {
 	data := NewTestResourceDataRawForResourceScalewayRDBDatabaseWithID(t)
 
 	// mocking
-	rdbAPI.ListDatabasesMustReturnDB("fr-srr")
+	rdbAPI.ListDatabasesMustReturnDB("bb-gre")
 
 	// run
 	diags := resourceScalewayRdbDatabaseRead(mock.NewMockContext(ctrl), data, meta)
 
 	// assertions
 	assert.Len(diags, 0)
-	assertResourceDatabase(assert, data, "fr-srr")
+	assertResourceDatabase(assert, data, "bb-gre")
 }
 
 func TestResourceScalewayRdbDatabaseParseIDWithWronglyFormatedIdReturnError(t *testing.T) {
@@ -170,7 +170,7 @@ func TestResourceScalewayRdbDatabaseCreateWithRdbErrorReturnDiagnotics(t *testin
 	assert := assert.New(t)
 	ctrl := gomock.NewController(t)
 	meta, rdbAPI := NewMeta(ctrl)
-	data := NewTestResourceDataRawForResourceScalewayRDBDatabase(t, "fr-srr/1111-11111111-111111111111")
+	data := NewTestResourceDataRawForResourceScalewayRDBDatabase(t, "bb-gre/1111-11111111-111111111111")
 
 	// mocking
 	rdbAPI.CreateDatabaseMustReturnError()
@@ -228,7 +228,7 @@ func TestResourceScalewayRdbDatabaseDelete(t *testing.T) {
 	data := NewTestResourceDataRawForResourceScalewayRDBDatabaseWithID(t)
 
 	// mocking
-	rdbAPI.DeleteDatabaseReturnNil("fr-srr")
+	rdbAPI.DeleteDatabaseReturnNil("bb-gre")
 
 	// run
 	diags := resourceScalewayRdbDatabaseDelete(mock.NewMockContext(ctrl), data, meta)
@@ -246,7 +246,7 @@ func NewTestResourceDataRawForResourceScalewayRDBDatabase(t *testing.T, uuid str
 
 func NewTestResourceDataRawForResourceScalewayRDBDatabaseWithID(t *testing.T) *schema.ResourceData {
 	data := schema.TestResourceDataRaw(t, resourceScalewayRdbDatabase().Schema, make(map[string]interface{}))
-	data.SetId("fr-srr/1111-11111111-111111111111/dbname")
+	data.SetId("bb-gre/1111-11111111-111111111111/dbname")
 	return data
 }
 

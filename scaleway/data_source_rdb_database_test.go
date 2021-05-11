@@ -82,17 +82,17 @@ func TestDataSourceScalewayRdbDatabaseReadWithRegionalizedIDUseDefaultResource(t
 	assert := assert.New(t)
 	ctrl := gomock.NewController(t)
 	meta, rdbAPI := NewMeta(ctrl)
-	data := NewTestResourceDataRawForDataSourceScalewayRDBDatabase(t, "fr-srr/1111-11111111-111111111111")
+	data := NewTestResourceDataRawForDataSourceScalewayRDBDatabase(t, "bb-gre/1111-11111111-111111111111")
 
 	// mocking
-	rdbAPI.ListDatabasesMustReturnDB("fr-srr")
+	rdbAPI.ListDatabasesMustReturnDB("bb-gre")
 
 	// run
 	diags := dataSourceScalewayRDBDatabaseRead(mock.NewMockContext(ctrl), data, meta)
 
 	// assertions
 	assert.Len(diags, 0)
-	assertResourceDatabase(assert, data, "fr-srr")
+	assertResourceDatabase(assert, data, "bb-gre")
 }
 
 func NewTestResourceDataRawForDataSourceScalewayRDBDatabase(t *testing.T, uuid string) *schema.ResourceData {
