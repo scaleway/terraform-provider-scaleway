@@ -1,13 +1,17 @@
 package scaleway
 
 import (
+	"encoding/json"
 	"fmt"
+	"strings"
 	"testing"
 
+	"github.com/dnaeon/go-vcr/cassette"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	account "github.com/scaleway/scaleway-sdk-go/api/account/v2alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/stretchr/testify/assert"
 )
 
 func init() {
@@ -40,11 +44,21 @@ func testSweepAccountSSHKey(_ string) error {
 		return nil
 	})
 }
+func newTestToolsAndNameAndSSHKey(t *testing.T) (tt *TestTools, name string) {
+	tt = NewTestTools(t)
+	expectedName := "ssh-key-name"
+	tt.Recorder.AddSaveFilter(newSSHKeyNameFilter(expectedName))
+	if *UpdateCassettes {
+		name = newRandomName("ssh-key")
+	} else {
+		name = expectedName
+	}
+	return
+}
 
 func TestAccScalewayAccountSSHKey_basic(t *testing.T) {
-	name := newRandomName("ssh-key")
+	tt, name := newTestToolsAndNameAndSSHKey(t)
 	SSHKey := "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIEEYrzDOZmhItdKaDAEqJQ4ORS2GyBMtBozYsK5kiXXX opensource@scaleway.com"
-	tt := NewTestTools(t)
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
@@ -83,9 +97,8 @@ func TestAccScalewayAccountSSHKey_basic(t *testing.T) {
 }
 
 func TestAccScalewayAccountSSHKey_WithNewLine(t *testing.T) {
-	name := newRandomName("ssh-key")
+	tt, name := newTestToolsAndNameAndSSHKey(t)
 	SSHKey := "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIDjfkdWCwkYlVQMDUfiZlVrmjaGOfBYnmkucssae8Iup opensource@scaleway.com"
-	tt := NewTestTools(t)
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
@@ -156,4 +169,96 @@ func testAccCheckScalewayAccountSSHKeyExists(tt *TestTools, n string) resource.T
 
 		return nil
 	}
+}
+
+func newSSHKeyNameFilter(expectedSSHKeyName string) func(i *cassette.Interaction) error {
+	return func(i *cassette.Interaction) error {
+		if i.Request.Body != "" {
+			var body account.CreateSSHKeyRequest
+			err := json.Unmarshal([]byte(i.Request.Body), &body)
+			if err != nil {
+				return err
+			}
+			keyname := expectedSSHKeyName
+			if strings.Contains(body.Name, "-updated") {
+				keyname = fmt.Sprintf("%s-updated", keyname)
+			}
+			body.Name = keyname
+			json, err := json.Marshal(body)
+			if err != nil {
+				return err
+			}
+			i.Request.Body = string(json)
+		}
+		if i.Response.Body != "" {
+			var body account.SSHKey
+			err := json.Unmarshal([]byte(i.Response.Body), &body)
+			if err != nil {
+				return err
+			}
+			keyname := expectedSSHKeyName
+			if strings.Contains(body.Name, "-updated") {
+				keyname = fmt.Sprintf("%s-updated", keyname)
+			}
+			body.Name = keyname
+			json, err := json.Marshal(body)
+			if err != nil {
+				return err
+			}
+			i.Response.Body = string(json)
+		}
+		return nil
+	}
+}
+
+func TestNewSSHKeyNameFilterWithRequestWithBodyContainingSSHKeyNameModifyTheBody(t *testing.T) {
+	assert := assert.New(t)
+	request := cassette.Request{
+		Body: fmt.Sprintf("{\"name\":\"%s\",\"public_key\":\"ssh-ed25519\"}", newRandomName("test")),
+	}
+	interaction := cassette.Interaction{Request: request}
+
+	err := newSSHKeyNameFilter("ssh-key-name")(&interaction)
+	assert.NoError(err)
+
+	assert.Equal("{\"name\":\"ssh-key-name\",\"public_key\":\"ssh-ed25519\"}", interaction.Request.Body)
+}
+
+func TestNewSSHKeyNameFilterWithResponseContainingSSHKeyNameModifyTheBody(t *testing.T) {
+	assert := assert.New(t)
+	response := cassette.Response{
+		Body: fmt.Sprintf("{\"id\":\"\",\"name\":\"%s\",\"public_key\":\"ssh-ed25519\",\"fingerprint\":\"\",\"created_at\":null,\"updated_at\":null,\"creation_info\":null,\"organization_id\":\"\",\"project_id\":\"\"}", newRandomName("test")),
+	}
+	interaction := cassette.Interaction{Response: response}
+
+	err := newSSHKeyNameFilter("ssh-key-name")(&interaction)
+	assert.NoError(err)
+
+	assert.Equal("{\"id\":\"\",\"name\":\"ssh-key-name\",\"public_key\":\"ssh-ed25519\",\"fingerprint\":\"\",\"created_at\":null,\"updated_at\":null,\"creation_info\":null,\"organization_id\":\"\",\"project_id\":\"\"}", interaction.Response.Body)
+}
+
+func TestNewSSHKeyNameFilterWithRequestWithBodyContainingUpdatedSSHKeyNameModifyTheBody(t *testing.T) {
+	assert := assert.New(t)
+	request := cassette.Request{
+		Body: fmt.Sprintf("{\"name\":\"%s-updated\",\"public_key\":\"ssh-ed25519\"}", newRandomName("test")),
+	}
+	interaction := cassette.Interaction{Request: request}
+
+	err := newSSHKeyNameFilter("ssh-key-name")(&interaction)
+	assert.NoError(err)
+
+	assert.Equal("{\"name\":\"ssh-key-name-updated\",\"public_key\":\"ssh-ed25519\"}", interaction.Request.Body)
+}
+
+func TestNewSSHKeyNameFilterWithResponseContainingUpdatedSSHKeyNameModifyTheBody(t *testing.T) {
+	assert := assert.New(t)
+	response := cassette.Response{
+		Body: fmt.Sprintf("{\"id\":\"\",\"name\":\"%s-updated\",\"public_key\":\"ssh-ed25519\",\"fingerprint\":\"\",\"created_at\":null,\"updated_at\":null,\"creation_info\":null,\"organization_id\":\"\",\"project_id\":\"\"}", newRandomName("test")),
+	}
+	interaction := cassette.Interaction{Response: response}
+
+	err := newSSHKeyNameFilter("ssh-key-name")(&interaction)
+	assert.NoError(err)
+
+	assert.Equal("{\"id\":\"\",\"name\":\"ssh-key-name-updated\",\"public_key\":\"ssh-ed25519\",\"fingerprint\":\"\",\"created_at\":null,\"updated_at\":null,\"creation_info\":null,\"organization_id\":\"\",\"project_id\":\"\"}", interaction.Response.Body)
 }

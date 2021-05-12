@@ -50,7 +50,7 @@ func getTestFilePath(t *testing.T, suffix string) string {
 //
 // It is important to add a `defer cleanup()` so the given cassette files are correctly
 // closed and saved after the requests.
-func getHTTPRecoder(t *testing.T, update bool) (client *http.Client, cleanup func(), err error) {
+func getHTTPRecoder(t *testing.T, update bool) (client *http.Client, cleanup func(), rec *recorder.Recorder, err error) {
 	recorderMode := recorder.ModeReplaying
 	if update {
 		recorderMode = recorder.ModeRecording
@@ -59,7 +59,7 @@ func getHTTPRecoder(t *testing.T, update bool) (client *http.Client, cleanup fun
 	// Setup recorder and scw client
 	r, err := recorder.NewAsMode(getTestFilePath(t, ".cassette"), recorderMode, nil)
 	if err != nil {
-		return nil, nil, err
+		return nil, nil, nil, err
 	}
 
 	// Add a filter which removes Authorization headers from all requests:
@@ -72,7 +72,7 @@ func getHTTPRecoder(t *testing.T, update bool) (client *http.Client, cleanup fun
 
 	return &http.Client{Transport: newRetryableTransport(r)}, func() {
 		assert.NoError(t, r.Stop()) // Make sure recorder is stopped once done with it
-	}, nil
+	}, r, nil
 }
 
 type TestTools struct {
@@ -81,11 +81,12 @@ type TestTools struct {
 	ProviderFactories map[string]func() (*schema.Provider, error)
 	Cleanup           func()
 	ctx               context.Context
+	Recorder          *recorder.Recorder
 }
 
 func NewTestTools(t *testing.T) *TestTools {
 	// Create an http client with recording capabilities
-	httpClient, cleanup, err := getHTTPRecoder(t, *UpdateCassettes)
+	httpClient, cleanup, recorder, err := getHTTPRecoder(t, *UpdateCassettes)
 	require.NoError(t, err)
 
 	// Create meta that will be passed in the provider config
@@ -109,7 +110,8 @@ func NewTestTools(t *testing.T) *TestTools {
 				return Provider(&ProviderConfig{Meta: meta})(), nil
 			},
 		},
-		Cleanup: cleanup,
-		ctx:     context.Background(),
+		Cleanup:  cleanup,
+		ctx:      context.Background(),
+		Recorder: recorder,
 	}
 }
