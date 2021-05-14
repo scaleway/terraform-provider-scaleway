@@ -46,7 +46,6 @@ func TestAccScalewayInstanceSnapshot_Server(t *testing.T) {
 
 					resource "scaleway_instance_snapshot" "main" {
 						volume_id = scaleway_instance_server.main.root_volume.0.volume_id
-						type = "l_ssd"
 					}`,
 			},
 		},
