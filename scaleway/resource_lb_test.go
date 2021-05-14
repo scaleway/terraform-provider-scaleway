@@ -1,7 +1,9 @@
 package scaleway
 
 import (
+	"context"
 	"fmt"
+	"reflect"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -139,5 +141,30 @@ func testAccCheckScalewayLbDestroy(tt *TestTools) resource.TestCheckFunc {
 		}
 
 		return nil
+	}
+}
+
+func testResourceIPV0() map[string]interface{} {
+	return map[string]interface{}{
+		"id":    "fr-par/22c61530-834c-4ab4-aa71-aaaa2ac9d45a",
+		"ip_id": "fr-par/b73a1e09-300c-4f29-8392-c2a3f30a19cd"}
+}
+
+func testResourceIPV1() map[string]interface{} {
+	return map[string]interface{}{
+		"id":    "fr-par-1/22c61530-834c-4ab4-aa71-aaaa2ac9d45a",
+		"ip_id": "fr-par-1/b73a1e09-300c-4f29-8392-c2a3f30a19cd",
+	}
+}
+
+func TestResourceIPRegionalUpgradeV0(t *testing.T) {
+	expected := testResourceIPV1()
+	actual, err := upgradeRegionalIPToZoneID(context.Background(), testResourceIPV0(), nil)
+	if err != nil {
+		t.Fatalf("error migrating state: %s", err)
+	}
+
+	if !reflect.DeepEqual(expected, actual) {
+		t.Fatalf("\n\nexpected:\n\n%#v\n\ngot:\n\n%#v\n\n", expected, actual)
 	}
 }

@@ -3,7 +3,6 @@ package scaleway
 import (
 	"context"
 
-	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/api/lb/v1"
@@ -26,12 +25,47 @@ func resourceScalewayLbIP() *schema.Resource {
 		StateUpgraders: []schema.StateUpgrader{
 			{
 				Version: 0,
-				Type: cty.Object(map[string]cty.Type{
-					"id":    cty.String,
-					"lb_id": cty.String,
-				}),
+				Type:    lbIPResourceV0().CoreConfigSchema().ImpliedType(),
 				Upgrade: upgradeRegionalLBIDToZonedID,
 			},
+		},
+		Schema: map[string]*schema.Schema{
+			"reverse": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Computed:    true,
+				Description: "The reverse domain name for this IP",
+			},
+			"region":          regionSchema(),
+			"zone":            zoneSchema(),
+			"organization_id": organizationIDSchema(),
+			"project_id":      projectIDSchema(),
+			// Computed
+			"ip_address": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The load-balancer public IP address",
+			},
+			"lb_id": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The ID of the loadbalancer attached to this IP, if any",
+			},
+		},
+	}
+}
+
+func lbIPResourceV0() *schema.Resource {
+	return &schema.Resource{
+		CreateContext: resourceScalewayLbIPCreate,
+		ReadContext:   resourceScalewayLbIPRead,
+		UpdateContext: resourceScalewayLbIPUpdate,
+		DeleteContext: resourceScalewayLbIPDelete,
+		Importer: &schema.ResourceImporter{
+			StateContext: schema.ImportStatePassthroughContext,
+		},
+		Timeouts: &schema.ResourceTimeout{
+			Default: schema.DefaultTimeout(defaultLbLbTimeout),
 		},
 		Schema: map[string]*schema.Schema{
 			"reverse": {

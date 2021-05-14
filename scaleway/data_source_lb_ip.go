@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/api/lb/v1"
@@ -34,16 +33,30 @@ func dataSourceScalewayLbIP() *schema.Resource {
 		Schema:        dsSchema,
 		SchemaVersion: 1,
 		StateUpgraders: []schema.StateUpgrader{
-			{
-				Version: 0,
-				Type: cty.Object(map[string]cty.Type{
-					"id": cty.String,
-					"ip_id": cty.String,
-				}),
-				Upgrade: upgradeRegionalIPToZoneID,
-			},
+			{Version: 0, Type: datalbIPResoureV0().CoreConfigSchema().ImpliedType(), Upgrade: upgradeRegionalIPToZoneID},
 		},
 	}
+}
+
+func datalbIPResoureV0() *schema.Resource {
+	// Generate datasource schema from resource
+	dsSchema := datasourceSchemaFromResourceSchema(resourceScalewayLbIP().Schema)
+
+	dsSchema["ip_address"] = &schema.Schema{
+		Type:          schema.TypeString,
+		Optional:      true,
+		Description:   "The IP address",
+		ConflictsWith: []string{"ip_id"},
+	}
+	dsSchema["ip_id"] = &schema.Schema{
+		Type:          schema.TypeString,
+		Optional:      true,
+		Description:   "The ID of the IP address",
+		ConflictsWith: []string{"ip_address"},
+		ValidateFunc:  validationUUIDorUUIDWithLocality(),
+	}
+
+	return &schema.Resource{ReadContext: dataSourceScalewayLbIPRead, Schema: dsSchema}
 }
 
 func dataSourceScalewayLbIPRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {

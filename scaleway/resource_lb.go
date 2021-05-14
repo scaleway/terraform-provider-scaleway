@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/api/lb/v1"
@@ -26,14 +25,61 @@ func resourceScalewayLb() *schema.Resource {
 		},
 		SchemaVersion: 1,
 		StateUpgraders: []schema.StateUpgrader{
-			{
-				Version: 0,
-				Type: cty.Object(map[string]cty.Type{
-					"id":    cty.String,
-					"ip_id": cty.String,
-				}),
-				Upgrade: upgradeRegionalIPToZoneID,
+			{Version: 0, Type: lbResourceV0().CoreConfigSchema().ImpliedType(), Upgrade: upgradeRegionalIPToZoneID},
+		},
+		Schema: map[string]*schema.Schema{
+			"name": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Computed:    true,
+				Description: "Name of the lb",
 			},
+			"type": {
+				Type:             schema.TypeString,
+				Required:         true,
+				ForceNew:         true,
+				DiffSuppressFunc: diffSuppressFuncIgnoreCase,
+				Description:      "The type of load-balancer you want to create",
+			},
+			"tags": {
+				Type:     schema.TypeList,
+				Optional: true,
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
+				Description: "Array of tags to associate with the load-balancer",
+			},
+			"ip_id": {
+				Type:             schema.TypeString,
+				Required:         true,
+				ForceNew:         true,
+				Description:      "The load-balance public IP ID",
+				DiffSuppressFunc: diffSuppressFuncLocality,
+			},
+			"ip_address": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The load-balance public IP address",
+			},
+			"region":          regionSchema(),
+			"zone":            zoneSchema(),
+			"organization_id": organizationIDSchema(),
+			"project_id":      projectIDSchema(),
+		},
+	}
+}
+
+func lbResourceV0() *schema.Resource {
+	return &schema.Resource{
+		CreateContext: resourceScalewayLbCreate,
+		ReadContext:   resourceScalewayLbRead,
+		UpdateContext: resourceScalewayLbUpdate,
+		DeleteContext: resourceScalewayLbDelete,
+		Importer: &schema.ResourceImporter{
+			StateContext: schema.ImportStatePassthroughContext,
+		},
+		Timeouts: &schema.ResourceTimeout{
+			Default: schema.DefaultTimeout(defaultLbLbTimeout),
 		},
 		Schema: map[string]*schema.Schema{
 			"name": {
@@ -104,9 +150,9 @@ func resourceScalewayLbCreate(ctx context.Context, d *schema.ResourceData, meta 
 	d.SetId(newZonedIDString(zone, res.ID))
 	// wait for lb
 	_, err = lbAPI.WaitForLb(&lb.ZonedAPIWaitForLBRequest{
-		Zone:    zone,
-		LBID:    res.ID,
-		Timeout: scw.TimeDurationPtr(defaultInstanceServerWaitTimeout),
+		Zone:          zone,
+		LBID:          res.ID,
+		Timeout:       scw.TimeDurationPtr(defaultInstanceServerWaitTimeout),
 		RetryInterval: DefaultWaitRetryInterval,
 	}, scw.WithContext(ctx))
 	// check err waiting process
@@ -195,9 +241,9 @@ func resourceScalewayLbDelete(ctx context.Context, d *schema.ResourceData, meta 
 	}
 
 	_, err = lbAPI.WaitForLb(&lb.ZonedAPIWaitForLBRequest{
-		LBID:    ID,
-		Zone:    zone,
-		Timeout: scw.TimeDurationPtr(LbWaitForTimeout),
+		LBID:          ID,
+		Zone:          zone,
+		Timeout:       scw.TimeDurationPtr(LbWaitForTimeout),
 		RetryInterval: DefaultWaitRetryInterval,
 	}, scw.WithContext(ctx))
 
@@ -236,6 +282,6 @@ func upgradeRegionalIPToZoneID(ctx context.Context, rawState map[string]interfac
 			return nil, fmt.Errorf("upgrade: id not exist")
 		}
 
-		return rawState, nil
+		return rawState, err
 	}
 }

@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
@@ -28,10 +27,7 @@ func resourceScalewayLbBackend() *schema.Resource {
 		StateUpgraders: []schema.StateUpgrader{
 			{
 				Version: 0,
-				Type: cty.Object(map[string]cty.Type{
-					"id":    cty.String,
-					"lb_id": cty.String,
-				}),
+				Type:    lbBackendResourceV0().CoreConfigSchema().ImpliedType(),
 				Upgrade: upgradeRegionalLBIDToZonedID,
 			},
 		},
@@ -248,9 +244,237 @@ func resourceScalewayLbBackend() *schema.Resource {
 	}
 }
 
-func resourceScalewayLbBackendCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	lbAPI, zone, err := lbAPIWithZone(d, meta)
+func lbBackendResourceV0() *schema.Resource {
+	return &schema.Resource{
+		CreateContext: resourceScalewayLbBackendCreate,
+		ReadContext:   resourceScalewayLbBackendRead,
+		UpdateContext: resourceScalewayLbBackendUpdate,
+		DeleteContext: resourceScalewayLbBackendDelete,
+		Importer: &schema.ResourceImporter{
+			StateContext: schema.ImportStatePassthroughContext,
+		},
+		Timeouts: &schema.ResourceTimeout{
+			Default: schema.DefaultTimeout(defaultLbLbTimeout),
+		},
+		Schema: map[string]*schema.Schema{
+			"lb_id": {
+				Type:        schema.TypeString,
+				Required:    true,
+				ForceNew:    true,
+				Description: "The load-balancer ID",
+			},
+			"name": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Computed:    true,
+				Description: "The name of the backend",
+			},
+			"forward_protocol": {
+				Type: schema.TypeString,
+				ValidateFunc: validation.StringInSlice([]string{
+					lb.ProtocolTCP.String(),
+					lb.ProtocolHTTP.String(),
+				}, false),
+				Required:    true,
+				Description: "Backend protocol",
+			},
+			"forward_port": {
+				Type:        schema.TypeInt,
+				Required:    true,
+				Description: "User sessions will be forwarded to this port of backend servers",
+			},
+			"forward_port_algorithm": {
+				Type: schema.TypeString,
+				ValidateFunc: validation.StringInSlice([]string{
+					lb.ForwardPortAlgorithmRoundrobin.String(),
+					lb.ForwardPortAlgorithmLeastconn.String(),
+					lb.ForwardPortAlgorithmFirst.String(),
+				}, false),
+				Default:     lb.ForwardPortAlgorithmRoundrobin.String(),
+				Optional:    true,
+				Description: "Load balancing algorithm",
+			},
+			"sticky_sessions": {
+				Type: schema.TypeString,
+				ValidateFunc: validation.StringInSlice([]string{
+					lb.StickySessionsTypeNone.String(),
+					lb.StickySessionsTypeCookie.String(),
+					lb.StickySessionsTypeTable.String(),
+				}, false),
+				Default:     lb.StickySessionsTypeNone.String(),
+				Optional:    true,
+				Description: "Load balancing algorithm",
+			},
+			"sticky_sessions_cookie_name": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "Cookie name for for sticky sessions",
+			},
+			"server_ips": {
+				Type: schema.TypeList,
+				Elem: &schema.Schema{
+					Type:         schema.TypeString,
+					ValidateFunc: validation.IsIPAddress,
+				},
+				Optional:    true,
+				Description: "Backend server IP addresses list (IPv4 or IPv6)",
+			},
+			"send_proxy_v2": {
+				Type:        schema.TypeBool,
+				Description: "Enables PROXY protocol version 2",
+				Optional:    true,
+				Default:     false,
+				Deprecated:  "Please use proxy_protocol instead",
+			},
+			"proxy_protocol": {
+				Type:        schema.TypeString,
+				Description: "Type of PROXY protocol to enable",
+				Optional:    true,
+				Default:     flattenLbProxyProtocol(lb.ProxyProtocolProxyProtocolNone).(string),
+				ValidateFunc: validation.StringInSlice([]string{
+					flattenLbProxyProtocol(lb.ProxyProtocolProxyProtocolNone).(string),
+					flattenLbProxyProtocol(lb.ProxyProtocolProxyProtocolV1).(string),
+					flattenLbProxyProtocol(lb.ProxyProtocolProxyProtocolV2).(string),
+					flattenLbProxyProtocol(lb.ProxyProtocolProxyProtocolV2Ssl).(string),
+					flattenLbProxyProtocol(lb.ProxyProtocolProxyProtocolV2SslCn).(string),
+				}, false),
+			},
+			// Timeouts
+			"timeout_server": {
+				Type:             schema.TypeString,
+				Optional:         true,
+				DiffSuppressFunc: diffSuppressFuncDuration,
+				ValidateFunc:     validateDuration(),
+				Description:      "Maximum server connection inactivity time",
+			},
+			"timeout_connect": {
+				Type:             schema.TypeString,
+				Optional:         true,
+				DiffSuppressFunc: diffSuppressFuncDuration,
+				ValidateFunc:     validateDuration(),
+				Description:      "Maximum initial server connection establishment time",
+			},
+			"timeout_tunnel": {
+				Type:             schema.TypeString,
+				Optional:         true,
+				DiffSuppressFunc: diffSuppressFuncDuration,
+				ValidateFunc:     validateDuration(),
+				Description:      "Maximum tunnel inactivity time",
+			},
 
+			// Health Check
+			"health_check_timeout": {
+				Type:             schema.TypeString,
+				Optional:         true,
+				DiffSuppressFunc: diffSuppressFuncDuration,
+				ValidateFunc:     validateDuration(),
+				Default:          "30s",
+				Description:      "Timeout before we consider a HC request failed",
+			},
+			"health_check_delay": {
+				Type:             schema.TypeString,
+				Optional:         true,
+				DiffSuppressFunc: diffSuppressFuncDuration,
+				ValidateFunc:     validateDuration(),
+				Default:          "60s",
+				Description:      "Interval between two HC requests",
+			},
+			"health_check_port": {
+				Type:        schema.TypeInt,
+				Optional:    true,
+				Computed:    true,
+				Description: "Port the HC requests will be send to. Default to `forward_port`",
+			},
+			"health_check_max_retries": {
+				Type:        schema.TypeInt,
+				Optional:    true,
+				Default:     2,
+				Description: "Number of allowed failed HC requests before the backend server is marked down",
+			},
+			"health_check_tcp": {
+				Type:          schema.TypeList,
+				MaxItems:      1,
+				ConflictsWith: []string{"health_check_http", "health_check_https"},
+				Optional:      true,
+				Computed:      true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{},
+				},
+			},
+			"health_check_http": {
+				Type:          schema.TypeList,
+				MaxItems:      1,
+				ConflictsWith: []string{"health_check_tcp", "health_check_https"},
+				Optional:      true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"uri": {
+							Type:        schema.TypeString,
+							Required:    true,
+							Description: "The HTTP endpoint URL to call for HC requests",
+						},
+						"method": {
+							Type:        schema.TypeString,
+							Default:     "GET",
+							Optional:    true,
+							Description: "The HTTP method to use for HC requests",
+						},
+						"code": {
+							Type:        schema.TypeInt,
+							Default:     200,
+							Optional:    true,
+							Description: "The expected HTTP status code",
+						},
+					},
+				},
+			},
+			"health_check_https": {
+				Type:          schema.TypeList,
+				MaxItems:      1,
+				ConflictsWith: []string{"health_check_tcp", "health_check_http"},
+				Optional:      true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"uri": {
+							Type:        schema.TypeString,
+							Required:    true,
+							Description: "The HTTPS endpoint URL to call for HC requests",
+						},
+						"method": {
+							Type:        schema.TypeString,
+							Default:     "GET",
+							Optional:    true,
+							Description: "The HTTP method to use for HC requests",
+						},
+						"code": {
+							Type:        schema.TypeInt,
+							Default:     200,
+							Optional:    true,
+							Description: "The expected HTTP status code",
+						},
+					},
+				},
+			},
+			"on_marked_down_action": {
+				Type: schema.TypeString,
+				ValidateFunc: validation.StringInSlice([]string{
+					"none",
+					lb.OnMarkedDownActionShutdownSessions.String(),
+				}, false),
+				Default:     "none",
+				Optional:    true,
+				Description: "Modify what occurs when a backend server is marked down",
+			},
+		},
+	}
+}
+
+func resourceScalewayLbBackendCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	lbAPI, _, err := lbAPIWithZone(d, meta)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+	// parse lb_id. It will be forced to a zoned lb
 	zone, LbID, err := parseZonedID(d.Get("lb_id").(string))
 	if err != nil {
 		return diag.FromErr(err)
@@ -430,24 +654,32 @@ func upgradeRegionalLBIDToZonedID(ctx context.Context, rawState map[string]inter
 	case <-ctx.Done():
 		return nil, ctx.Err()
 	default:
-		lbID, exist := rawState["lb_id"]
-		if !exist {
-			return nil, fmt.Errorf("upgrade: lb_id not exist")
-		}
-		// zone key
-		rawState["lb_id"], err = addZoneToKey(lbID.(string))
-		if err != nil {
-			return nil, err
-		}
 		// element id: upgrade
 		ID, exist := rawState["id"]
 		if !exist {
 			return nil, fmt.Errorf("upgrade: id not exist")
 		}
-		// zone key
 		rawState["id"], err = addZoneToKey(ID.(string))
 		if err != nil {
 			return nil, err
+		}
+		// check certificate_id
+		certificateID, exist := rawState["certificate_id"]
+		if exist {
+			// zone key
+			rawState["certificate_id"], err = addZoneToKey(certificateID.(string))
+			if err != nil {
+				return nil, err
+			}
+		}
+		// check backend_id
+		backendID, exist := rawState["backend_id"]
+		if exist {
+			// zone key
+			rawState["backend_id"], err = addZoneToKey(backendID.(string))
+			if err != nil {
+				return nil, err
+			}
 		}
 		// return rawState updated
 		return rawState, nil

@@ -14,12 +14,6 @@ const (
 	defaultLbLbTimeout = 10 * time.Minute
 )
 
-// lbAPI returns a new lb API
-func lbAPI(m interface{}) *lb.API {
-	meta := m.(*Meta)
-	return lb.NewAPI(meta.scwClient)
-}
-
 // lbAPIWithZone returns an lb API WITH zone for a Create request
 func lbAPIWithZone(d *schema.ResourceData, m interface{}) (*lb.ZonedAPI, scw.Zone, error) {
 	meta := m.(*Meta)
