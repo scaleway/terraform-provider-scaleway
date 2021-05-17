@@ -27,7 +27,7 @@ func resourceScalewayLbFrontend() *schema.Resource {
 		},
 		SchemaVersion: 1,
 		StateUpgraders: []schema.StateUpgrader{
-			{Version: 0, Type: elementToUpgrade(), Upgrade: upgradeRegionalIDToZonedID},
+			{Version: 0, Type: lbUpgradeV1SchemaType(), Upgrade: lbUpgradeV1SchemaUpgradeFunc},
 		},
 		Schema: map[string]*schema.Schema{
 			"lb_id": {
@@ -145,9 +145,6 @@ func resourceScalewayLbFrontend() *schema.Resource {
 								},
 							},
 						},
-						"region":          regionComputedSchema(),
-						"zone":            zoneSchema(),
-						"organization_id": organizationIDSchema(),
 					},
 				},
 			},
@@ -208,14 +205,7 @@ func resourceScalewayLbFrontendRead(ctx context.Context, d *schema.ResourceData,
 		return diag.FromErr(err)
 	}
 
-	region, err := res.LB.Zone.Region()
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
 	_ = d.Set("lb_id", newZonedIDString(zone, res.LB.ID))
-	_ = d.Set("zone", res.LB.Zone.String())
-	_ = d.Set("region", string(region))
 	_ = d.Set("backend_id", newZonedIDString(zone, res.Backend.ID))
 	_ = d.Set("name", res.Name)
 	_ = d.Set("inbound_port", int(res.InboundPort))

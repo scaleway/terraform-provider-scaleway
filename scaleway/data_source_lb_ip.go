@@ -33,7 +33,7 @@ func dataSourceScalewayLbIP() *schema.Resource {
 		Schema:        dsSchema,
 		SchemaVersion: 1,
 		StateUpgraders: []schema.StateUpgrader{
-			{Version: 0, Type: elementToUpgrade(), Upgrade: upgradeRegionalIDToZonedID},
+			{Version: 0, Type: lbUpgradeV1SchemaType(), Upgrade: lbUpgradeV1SchemaUpgradeFunc},
 		},
 	}
 }

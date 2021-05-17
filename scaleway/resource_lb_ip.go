@@ -23,11 +23,7 @@ func resourceScalewayLbIP() *schema.Resource {
 		},
 		SchemaVersion: 1,
 		StateUpgraders: []schema.StateUpgrader{
-			{
-				Version: 0,
-				Type:    elementToUpgrade(),
-				Upgrade: upgradeRegionalIDToZonedID,
-			},
+			{Version: 0, Type: lbUpgradeV1SchemaType(), Upgrade: lbUpgradeV1SchemaUpgradeFunc},
 		},
 		Schema: map[string]*schema.Schema{
 			"reverse": {

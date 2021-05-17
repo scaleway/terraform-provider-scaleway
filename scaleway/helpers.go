@@ -1,7 +1,6 @@
 package scaleway
 
 import (
-	"context"
 	"encoding/json"
 	"fmt"
 	"net"
@@ -15,7 +14,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/scaleway/scaleway-sdk-go/namegenerator"
 	"github.com/scaleway/scaleway-sdk-go/scw"
-	validator "github.com/scaleway/scaleway-sdk-go/validation"
 	"golang.org/x/xerrors"
 )
 
@@ -84,20 +82,6 @@ func expandZonedID(id interface{}) ZonedID {
 	}
 
 	return zonedID
-}
-
-func addZoneToKey(element string) (string, error) {
-	locality, id, err := parseLocalizedID(element)
-	// return error if can't parse
-	if err != nil {
-		return "", fmt.Errorf("upgrade: could not retrieve the locality from `%s`", element)
-	}
-	// if locality is already zoned return
-	if validator.IsZone(locality) {
-		return element, nil
-	}
-	//  append zone 1 as default: e.g. fr-par-1
-	return fmt.Sprintf("%s-1/%s", locality, id), nil
 }
 
 // parseLocalizedID parses a localizedID and extracts the resource locality and id.
@@ -518,31 +502,4 @@ func diffSuppressFuncIgnoreCaseAndHyphen(k, old, new string, d *schema.ResourceD
 // e.g. 2c1a1716-5570-4668-a50a-860c90beabf6 == fr-par-1/2c1a1716-5570-4668-a50a-860c90beabf6
 func diffSuppressFuncLocality(k, old, new string, d *schema.ResourceData) bool {
 	return expandID(old) == expandID(new)
-}
-
-// upgradeRegionalIDToZonedID allow upgrade the from regional to a zoned resource.
-func upgradeRegionalIDToZonedID(ctx context.Context, rawState map[string]interface{}, meta interface{}) (map[string]interface{}, error) {
-	var err error
-	select {
-	case <-ctx.Done():
-		return nil, ctx.Err()
-	default:
-		// element id: upgrade
-		ID, exist := rawState["id"]
-		if !exist {
-			return nil, fmt.Errorf("upgrade: id not exist")
-		}
-		rawState["id"], err = addZoneToKey(ID.(string))
-		if err != nil {
-			return nil, err
-		}
-		// return rawState updated
-		return rawState, nil
-	}
-}
-
-func elementToUpgrade() cty.Type {
-	return cty.Object(map[string]cty.Type{
-		"id": cty.String,
-	})
 }

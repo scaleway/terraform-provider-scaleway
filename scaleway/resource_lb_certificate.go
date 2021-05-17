@@ -21,11 +21,7 @@ func resourceScalewayLbCertificate() *schema.Resource {
 			Default: schema.DefaultTimeout(defaultLbLbTimeout),
 		},
 		StateUpgraders: []schema.StateUpgrader{
-			{
-				Version: 0,
-				Type:    elementToUpgrade(),
-				Upgrade: upgradeRegionalIDToZonedID,
-			},
+			{Version: 0, Type: lbUpgradeV1SchemaType(), Upgrade: lbUpgradeV1SchemaUpgradeFunc},
 		},
 		Schema: map[string]*schema.Schema{
 			"lb_id": {
@@ -73,14 +69,6 @@ func resourceScalewayLbCertificate() *schema.Resource {
 				Optional:      true,
 				ForceNew:      true,
 				Elem: &schema.Resource{
-					SchemaVersion: 1,
-					StateUpgraders: []schema.StateUpgrader{
-						{
-							Version: 0,
-							Type:    elementToUpgrade(),
-							Upgrade: upgradeRegionalIDToZonedID,
-						},
-					},
 					Schema: map[string]*schema.Schema{
 						"certificate_chain": {
 							Type:        schema.TypeString,
@@ -131,13 +119,13 @@ func resourceScalewayLbCertificate() *schema.Resource {
 }
 
 func resourceScalewayLbCertificateCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	fallBackZone, lbID, err := parseZonedID(d.Get("lb_id").(string))
+	zone, lbID, err := parseZonedID(d.Get("lb_id").(string))
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	createReq := &lb.ZonedAPICreateCertificateRequest{
-		Zone:              fallBackZone,
+		Zone:              zone,
 		LBID:              lbID,
 		Name:              expandOrGenerateString(d.Get("name"), "lb-cert"),
 		Letsencrypt:       expandLbLetsEncrypt(d.Get("letsencrypt")),
@@ -147,7 +135,7 @@ func resourceScalewayLbCertificateCreate(ctx context.Context, d *schema.Resource
 		return diag.FromErr(errors.New("you need to define either letsencrypt or custom_certificate configuration"))
 	}
 
-	lbAPI, zone, err := lbAPIWithZone(d, meta)
+	lbAPI, _, err := lbAPIWithZone(d, meta)
 	if err != nil {
 		return diag.FromErr(err)
 	}

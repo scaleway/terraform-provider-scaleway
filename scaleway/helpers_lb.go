@@ -1,12 +1,16 @@
 package scaleway
 
 import (
+	"context"
+	"fmt"
 	"strings"
 	"time"
 
+	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/api/lb/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	validator "github.com/scaleway/scaleway-sdk-go/validation"
 )
 
 const (
@@ -252,4 +256,40 @@ func expandLbProxyProtocol(raw interface{}) lb.ProxyProtocol {
 
 func flattenLbProxyProtocol(pp lb.ProxyProtocol) interface{} {
 	return strings.TrimPrefix(pp.String(), "proxy_protocol_")
+}
+
+func lbUpgradeV1SchemaType() cty.Type {
+	return cty.Object(map[string]cty.Type{
+		"id": cty.String,
+	})
+}
+
+// lbUpgradeV1UpgradeFunc allow upgrade the from regional to a zoned resource.
+func lbUpgradeV1SchemaUpgradeFunc(ctx context.Context, rawState map[string]interface{}, meta interface{}) (map[string]interface{}, error) {
+	var err error
+	// element id: upgrade
+	ID, exist := rawState["id"]
+	if !exist {
+		return nil, fmt.Errorf("upgrade: id not exist")
+	}
+	rawState["id"], err = lbUpgradeV1RegionalToZonedID(ID.(string))
+	if err != nil {
+		return nil, err
+	}
+	// return rawState updated
+	return rawState, nil
+}
+
+func lbUpgradeV1RegionalToZonedID(element string) (string, error) {
+	locality, id, err := parseLocalizedID(element)
+	// return error if can't parse
+	if err != nil {
+		return "", fmt.Errorf("upgrade: could not retrieve the locality from `%s`", element)
+	}
+	// if locality is already zoned return
+	if validator.IsZone(locality) {
+		return element, nil
+	}
+	//  append zone 1 as default: e.g. fr-par-1
+	return fmt.Sprintf("%s-1/%s", locality, id), nil
 }

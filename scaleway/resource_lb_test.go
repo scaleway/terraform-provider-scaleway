@@ -144,26 +144,20 @@ func testAccCheckScalewayLbDestroy(tt *TestTools) resource.TestCheckFunc {
 	}
 }
 
-func testResourceV0() map[string]interface{} {
-	return map[string]interface{}{
+func TestLbUpgradeV1SchemaUpgradeFunc(t *testing.T) {
+	v0Schema := map[string]interface{}{
 		"id": "fr-par/22c61530-834c-4ab4-aa71-aaaa2ac9d45a",
 	}
-}
-
-func testResourceV1() map[string]interface{} {
-	return map[string]interface{}{
+	v1Schema := map[string]interface{}{
 		"id": "fr-par-1/22c61530-834c-4ab4-aa71-aaaa2ac9d45a",
 	}
-}
 
-func TestResourceIPRegionalUpgradeV0(t *testing.T) {
-	expected := testResourceV1()
-	actual, err := upgradeRegionalIDToZonedID(context.Background(), testResourceV0(), nil)
+	actual, err := lbUpgradeV1SchemaUpgradeFunc(context.Background(), v0Schema, nil)
 	if err != nil {
 		t.Fatalf("error migrating state: %s", err)
 	}
 
-	if !reflect.DeepEqual(expected, actual) {
-		t.Fatalf("\n\nexpected:\n\n%#v\n\ngot:\n\n%#v\n\n", expected, actual)
+	if !reflect.DeepEqual(v1Schema, actual) {
+		t.Fatalf("\n\nexpected:\n\n%#v\n\ngot:\n\n%#v\n\n", v1Schema, actual)
 	}
 }
