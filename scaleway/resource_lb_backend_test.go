@@ -1,9 +1,7 @@
 package scaleway
 
 import (
-	"context"
 	"fmt"
-	"reflect"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -243,33 +241,5 @@ func testAccCheckScalewayLbBackendDestroy(tt *TestTools) resource.TestCheckFunc 
 		}
 
 		return nil
-	}
-}
-
-func testResourceLBV0() map[string]interface{} {
-	return map[string]interface{}{
-		"id":             "fr-par/22c61530-834c-4ab4-aa71-aaaa2ac9d45a",
-		"backend_id":     "fr-par/3a258f06-c866-4d84-a102-8d25d918b406",
-		"certificate_id": "fr-par/3a258f06-c866-4d84-a102-8d25d918b406",
-	}
-}
-
-func testResourceLBSV1() map[string]interface{} {
-	return map[string]interface{}{
-		"id":             "fr-par-1/22c61530-834c-4ab4-aa71-aaaa2ac9d45a",
-		"backend_id":     "fr-par-1/3a258f06-c866-4d84-a102-8d25d918b406",
-		"certificate_id": "fr-par-1/3a258f06-c866-4d84-a102-8d25d918b406",
-	}
-}
-
-func TestResourceLBUpgradeV0(t *testing.T) {
-	expected := testResourceLBSV1()
-	actual, err := upgradeRegionalLBIDToZonedID(context.Background(), testResourceLBV0(), nil)
-	if err != nil {
-		t.Fatalf("error migrating state: %s", err)
-	}
-
-	if !reflect.DeepEqual(expected, actual) {
-		t.Fatalf("\n\nexpected:\n\n%#v\n\ngot:\n\n%#v\n\n", expected, actual)
 	}
 }
