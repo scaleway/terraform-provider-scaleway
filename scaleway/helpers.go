@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	validator "github.com/scaleway/scaleway-sdk-go/validation"
 	"net"
 	"net/http"
 	"strings"
@@ -16,6 +15,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/scaleway/scaleway-sdk-go/namegenerator"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	validator "github.com/scaleway/scaleway-sdk-go/validation"
 	"golang.org/x/xerrors"
 )
 
