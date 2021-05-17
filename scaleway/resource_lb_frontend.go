@@ -27,7 +27,7 @@ func resourceScalewayLbFrontend() *schema.Resource {
 		},
 		SchemaVersion: 1,
 		StateUpgraders: []schema.StateUpgrader{
-			{Version: 0, Type: lbFrontendResourceV0().CoreConfigSchema().ImpliedType(), Upgrade: upgradeRegionalLBIDToZonedID},
+			{Version: 0, Type: elementToUpgrade(), Upgrade: upgradeRegionalIDToZonedID},
 		},
 		Schema: map[string]*schema.Schema{
 			"lb_id": {
@@ -145,145 +145,7 @@ func resourceScalewayLbFrontend() *schema.Resource {
 								},
 							},
 						},
-						"region":          regionSchema(),
-						"zone":            zoneSchema(),
-						"organization_id": organizationIDSchema(),
-					},
-				},
-			},
-		},
-	}
-}
-
-func lbFrontendResourceV0() *schema.Resource {
-	return &schema.Resource{
-		CreateContext: resourceScalewayLbFrontendCreate,
-		ReadContext:   resourceScalewayLbFrontendRead,
-		UpdateContext: resourceScalewayLbFrontendUpdate,
-		DeleteContext: resourceScalewayLbFrontendDelete,
-		Importer: &schema.ResourceImporter{
-			StateContext: schema.ImportStatePassthroughContext,
-		},
-		Timeouts: &schema.ResourceTimeout{
-			Default: schema.DefaultTimeout(defaultLbLbTimeout),
-		},
-		Schema: map[string]*schema.Schema{
-			"lb_id": {
-				Type:         schema.TypeString,
-				Required:     true,
-				ForceNew:     true,
-				ValidateFunc: validationUUIDorUUIDWithLocality(),
-				Description:  "The load-balancer ID",
-			},
-			"backend_id": {
-				Type:         schema.TypeString,
-				Required:     true,
-				ForceNew:     true,
-				ValidateFunc: validationUUIDorUUIDWithLocality(),
-				Description:  "The load-balancer backend ID",
-			},
-			"name": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Computed:    true,
-				Description: "The name of the frontend",
-			},
-			"inbound_port": {
-				Type:         schema.TypeInt,
-				Required:     true,
-				ValidateFunc: validation.IntBetween(0, math.MaxUint16),
-				Description:  "TCP port to listen on the front side",
-			},
-			"timeout_client": {
-				Type:             schema.TypeString,
-				Optional:         true,
-				DiffSuppressFunc: diffSuppressFuncDuration,
-				ValidateFunc:     validateDuration(),
-				Description:      "Set the maximum inactivity time on the client side",
-			},
-			"certificate_id": {
-				Type:         schema.TypeString,
-				Optional:     true,
-				ValidateFunc: validationUUIDorUUIDWithLocality(),
-				Description:  "Certificate ID",
-			},
-			"acl": {
-				Type:        schema.TypeList,
-				Optional:    true,
-				Description: "ACL rules",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"name": {
-							Type:        schema.TypeString,
-							Optional:    true,
-							Computed:    true,
-							Description: "The ACL name",
-						},
-						"action": {
-							Type:        schema.TypeList,
-							Required:    true,
-							Description: "Action to undertake when an ACL filter matches",
-							MaxItems:    1,
-							MinItems:    1,
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									"type": {
-										Type:     schema.TypeString,
-										Required: true,
-										ValidateFunc: validation.StringInSlice([]string{
-											lb.ACLActionTypeAllow.String(),
-											lb.ACLActionTypeDeny.String(),
-										}, false),
-										Description: "The action type",
-									},
-								},
-							},
-						},
-						"match": {
-							Type:        schema.TypeList,
-							Required:    true,
-							MaxItems:    1,
-							MinItems:    1,
-							Description: "The ACL match rule",
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									"ip_subnet": {
-										Type: schema.TypeList,
-										Elem: &schema.Schema{
-											Type: schema.TypeString,
-										},
-										Optional:    true,
-										Description: "A list of IPs or CIDR v4/v6 addresses of the client of the session to match",
-									},
-									"http_filter": {
-										Type:     schema.TypeString,
-										Optional: true,
-										Default:  lb.ACLHTTPFilterACLHTTPFilterNone.String(),
-										ValidateFunc: validation.StringInSlice([]string{
-											lb.ACLHTTPFilterACLHTTPFilterNone.String(),
-											lb.ACLHTTPFilterPathBegin.String(),
-											lb.ACLHTTPFilterPathEnd.String(),
-											lb.ACLHTTPFilterRegex.String(),
-										}, false),
-										Description: "The HTTP filter to match",
-									},
-									"http_filter_value": {
-										Type:        schema.TypeList,
-										Optional:    true,
-										Description: "A list of possible values to match for the given HTTP filter",
-										Elem: &schema.Schema{
-											Type: schema.TypeString,
-										},
-									},
-									"invert": {
-										Type:        schema.TypeBool,
-										Optional:    true,
-										Description: `If set to true, the condition will be of type "unless"`,
-									},
-								},
-							},
-						},
-						"region":          regionSchema(),
+						"region":          regionComputedSchema(),
 						"zone":            zoneSchema(),
 						"organization_id": organizationIDSchema(),
 					},
@@ -294,7 +156,7 @@ func lbFrontendResourceV0() *schema.Resource {
 }
 
 func resourceScalewayLbFrontendCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	lbAPI, zone, err := lbAPIWithZone(d, meta)
+	lbAPI, _, err := lbAPIWithZone(d, meta)
 	if err != nil {
 		return diag.FromErr(err)
 	}

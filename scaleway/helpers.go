@@ -1,6 +1,7 @@
 package scaleway
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	validator "github.com/scaleway/scaleway-sdk-go/validation"
@@ -303,6 +304,15 @@ func regionSchema() *schema.Schema {
 	}
 }
 
+// regionComputedSchema returns a standard schema for a zone
+func regionComputedSchema() *schema.Schema {
+	return &schema.Schema{
+		Type:        schema.TypeString,
+		Description: "The region of the resource",
+		Computed:    true,
+	}
+}
+
 // validateStringInSliceWithWarning helps to only returns warnings in case we got a non public locality passed
 func validateStringInSliceWithWarning(correctValues []string, field string) func(i interface{}, path cty.Path) diag.Diagnostics {
 	return func(i interface{}, path cty.Path) diag.Diagnostics {
@@ -508,4 +518,31 @@ func diffSuppressFuncIgnoreCaseAndHyphen(k, old, new string, d *schema.ResourceD
 // e.g. 2c1a1716-5570-4668-a50a-860c90beabf6 == fr-par-1/2c1a1716-5570-4668-a50a-860c90beabf6
 func diffSuppressFuncLocality(k, old, new string, d *schema.ResourceData) bool {
 	return expandID(old) == expandID(new)
+}
+
+// upgradeRegionalIDToZonedID allow upgrade the from regional to a zoned resource.
+func upgradeRegionalIDToZonedID(ctx context.Context, rawState map[string]interface{}, meta interface{}) (map[string]interface{}, error) {
+	var err error
+	select {
+	case <-ctx.Done():
+		return nil, ctx.Err()
+	default:
+		// element id: upgrade
+		ID, exist := rawState["id"]
+		if !exist {
+			return nil, fmt.Errorf("upgrade: id not exist")
+		}
+		rawState["id"], err = addZoneToKey(ID.(string))
+		if err != nil {
+			return nil, err
+		}
+		// return rawState updated
+		return rawState, nil
+	}
+}
+
+func elementToUpgrade() cty.Type {
+	return cty.Object(map[string]cty.Type{
+		"id": cty.String,
+	})
 }

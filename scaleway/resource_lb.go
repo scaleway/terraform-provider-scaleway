@@ -2,7 +2,6 @@ package scaleway
 
 import (
 	"context"
-	"fmt"
 	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -25,7 +24,7 @@ func resourceScalewayLb() *schema.Resource {
 		},
 		SchemaVersion: 1,
 		StateUpgraders: []schema.StateUpgrader{
-			{Version: 0, Type: lbResourceV0().CoreConfigSchema().ImpliedType(), Upgrade: upgradeRegionalIPToZoneID},
+			{Version: 0, Type: elementToUpgrade(), Upgrade: upgradeRegionalIDToZonedID},
 		},
 		Schema: map[string]*schema.Schema{
 			"name": {
@@ -61,61 +60,7 @@ func resourceScalewayLb() *schema.Resource {
 				Computed:    true,
 				Description: "The load-balance public IP address",
 			},
-			"region":          regionSchema(),
-			"zone":            zoneSchema(),
-			"organization_id": organizationIDSchema(),
-			"project_id":      projectIDSchema(),
-		},
-	}
-}
-
-func lbResourceV0() *schema.Resource {
-	return &schema.Resource{
-		CreateContext: resourceScalewayLbCreate,
-		ReadContext:   resourceScalewayLbRead,
-		UpdateContext: resourceScalewayLbUpdate,
-		DeleteContext: resourceScalewayLbDelete,
-		Importer: &schema.ResourceImporter{
-			StateContext: schema.ImportStatePassthroughContext,
-		},
-		Timeouts: &schema.ResourceTimeout{
-			Default: schema.DefaultTimeout(defaultLbLbTimeout),
-		},
-		Schema: map[string]*schema.Schema{
-			"name": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Computed:    true,
-				Description: "Name of the lb",
-			},
-			"type": {
-				Type:             schema.TypeString,
-				Required:         true,
-				ForceNew:         true,
-				DiffSuppressFunc: diffSuppressFuncIgnoreCase,
-				Description:      "The type of load-balancer you want to create",
-			},
-			"tags": {
-				Type:     schema.TypeList,
-				Optional: true,
-				Elem: &schema.Schema{
-					Type: schema.TypeString,
-				},
-				Description: "Array of tags to associate with the load-balancer",
-			},
-			"ip_id": {
-				Type:             schema.TypeString,
-				Required:         true,
-				ForceNew:         true,
-				Description:      "The load-balance public IP ID",
-				DiffSuppressFunc: diffSuppressFuncLocality,
-			},
-			"ip_address": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The load-balance public IP address",
-			},
-			"region":          regionSchema(),
+			"region":          regionComputedSchema(),
 			"zone":            zoneSchema(),
 			"organization_id": organizationIDSchema(),
 			"project_id":      projectIDSchema(),
@@ -252,36 +197,4 @@ func resourceScalewayLbDelete(ctx context.Context, d *schema.ResourceData, meta 
 	}
 
 	return nil
-}
-
-// upgradeRegionalIPToZoneID allow upgrade the from regional to a zoned resource.
-// Note: please create another method for future upgrades not related
-func upgradeRegionalIPToZoneID(ctx context.Context, rawState map[string]interface{}, meta interface{}) (map[string]interface{}, error) {
-	var err error
-	select {
-	case <-ctx.Done():
-		return nil, ctx.Err()
-	default:
-		ipID, exist := rawState["ip_id"]
-		if !exist {
-			return nil, fmt.Errorf("upgrade: ip_id not exist")
-		}
-		// zone key
-		rawState["ip_id"], err = addZoneToKey(ipID.(string))
-		if err != nil {
-			return nil, err
-		}
-		// element id: upgrade
-		ID, exist := rawState["id"]
-		if !exist {
-			return nil, fmt.Errorf("upgrade: id not exist")
-		}
-		// zone key
-		rawState["id"], err = addZoneToKey(ID.(string))
-		if err != nil {
-			return nil, fmt.Errorf("upgrade: id not exist")
-		}
-
-		return rawState, err
-	}
 }

@@ -33,30 +33,9 @@ func dataSourceScalewayLbIP() *schema.Resource {
 		Schema:        dsSchema,
 		SchemaVersion: 1,
 		StateUpgraders: []schema.StateUpgrader{
-			{Version: 0, Type: datalbIPResoureV0().CoreConfigSchema().ImpliedType(), Upgrade: upgradeRegionalIPToZoneID},
+			{Version: 0, Type: elementToUpgrade(), Upgrade: upgradeRegionalIDToZonedID},
 		},
 	}
-}
-
-func datalbIPResoureV0() *schema.Resource {
-	// Generate datasource schema from resource
-	dsSchema := datasourceSchemaFromResourceSchema(resourceScalewayLbIP().Schema)
-
-	dsSchema["ip_address"] = &schema.Schema{
-		Type:          schema.TypeString,
-		Optional:      true,
-		Description:   "The IP address",
-		ConflictsWith: []string{"ip_id"},
-	}
-	dsSchema["ip_id"] = &schema.Schema{
-		Type:          schema.TypeString,
-		Optional:      true,
-		Description:   "The ID of the IP address",
-		ConflictsWith: []string{"ip_address"},
-		ValidateFunc:  validationUUIDorUUIDWithLocality(),
-	}
-
-	return &schema.Resource{ReadContext: dataSourceScalewayLbIPRead, Schema: dsSchema}
 }
 
 func dataSourceScalewayLbIPRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {

@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 
-	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/api/lb/v1"
@@ -24,8 +23,8 @@ func resourceScalewayLbCertificate() *schema.Resource {
 		StateUpgraders: []schema.StateUpgrader{
 			{
 				Version: 0,
-				Type:    lbCertificateResourceV0().CoreConfigSchema().ImpliedType(),
-				Upgrade: upgradeRegionalLBIDToZonedID,
+				Type:    elementToUpgrade(),
+				Upgrade: upgradeRegionalIDToZonedID,
 			},
 		},
 		Schema: map[string]*schema.Schema{
@@ -78,124 +77,8 @@ func resourceScalewayLbCertificate() *schema.Resource {
 					StateUpgraders: []schema.StateUpgrader{
 						{
 							Version: 0,
-							Type: cty.Object(map[string]cty.Type{
-								"id": cty.String,
-							}),
-							Upgrade: upgradeRegionalLBIDToZonedID,
-						},
-					},
-					Schema: map[string]*schema.Schema{
-						"certificate_chain": {
-							Type:        schema.TypeString,
-							Required:    true,
-							Description: "The full PEM-formatted certificate chain",
-						},
-					},
-				},
-			},
-
-			// Readonly attributes
-			"common_name": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The main domain name of the certificate",
-			},
-			"subject_alternative_name": {
-				Type:        schema.TypeList,
-				Computed:    true,
-				Description: "The alternative domain names of the certificate",
-				Elem: &schema.Schema{
-					Type:        schema.TypeString,
-					Description: "The domain name",
-				},
-			},
-			"fingerprint": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The identifier (SHA-1) of the certificate",
-			},
-			"not_valid_before": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The not valid before validity bound timestamp",
-			},
-			"not_valid_after": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The not valid after validity bound timestamp",
-			},
-			"status": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The status of certificate",
-			},
-		},
-	}
-}
-
-func lbCertificateResourceV0() *schema.Resource {
-	return &schema.Resource{
-		CreateContext: resourceScalewayLbCertificateCreate,
-		ReadContext:   resourceScalewayLbCertificateRead,
-		UpdateContext: resourceScalewayLbCertificateUpdate,
-		DeleteContext: resourceScalewayLbCertificateDelete,
-		Timeouts: &schema.ResourceTimeout{
-			Default: schema.DefaultTimeout(defaultLbLbTimeout),
-		},
-		Schema: map[string]*schema.Schema{
-			"lb_id": {
-				Type:        schema.TypeString,
-				Required:    true,
-				ForceNew:    true,
-				Description: "The load-balancer ID",
-			},
-			"name": {
-				Type:        schema.TypeString,
-				Description: "The name of the load-balancer certificate",
-				Optional:    true,
-				Computed:    true,
-			},
-			"letsencrypt": {
-				ConflictsWith: []string{"custom_certificate"},
-				MaxItems:      1,
-				Description:   "The Let's Encrypt type certificate configuration",
-				Type:          schema.TypeList,
-				Optional:      true,
-				ForceNew:      true,
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"common_name": {
-							Type:        schema.TypeString,
-							Required:    true,
-							Description: "The main domain name of the certificate",
-						},
-						"subject_alternative_name": {
-							Type: schema.TypeList,
-							Elem: &schema.Schema{
-								Type: schema.TypeString,
-							},
-							Optional:    true,
-							Description: "The alternative domain names of the certificate",
-						},
-					},
-				},
-			},
-			"custom_certificate": {
-				ConflictsWith: []string{"letsencrypt"},
-				MaxItems:      1,
-				Type:          schema.TypeList,
-				Description:   "The custom type certificate type configuration",
-				Optional:      true,
-				ForceNew:      true,
-				Elem: &schema.Resource{
-					SchemaVersion: 1,
-					StateUpgraders: []schema.StateUpgrader{
-						{
-							Version: 0,
-							Type: cty.Object(map[string]cty.Type{
-								"id": cty.String,
-							}),
-							Upgrade: upgradeRegionalLBIDToZonedID,
+							Type:    elementToUpgrade(),
+							Upgrade: upgradeRegionalIDToZonedID,
 						},
 					},
 					Schema: map[string]*schema.Schema{
@@ -248,13 +131,13 @@ func lbCertificateResourceV0() *schema.Resource {
 }
 
 func resourceScalewayLbCertificateCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	zone, lbID, err := parseZonedID(d.Get("lb_id").(string))
+	fallBackZone, lbID, err := parseZonedID(d.Get("lb_id").(string))
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	createReq := &lb.ZonedAPICreateCertificateRequest{
-		Zone:              zone,
+		Zone:              fallBackZone,
 		LBID:              lbID,
 		Name:              expandOrGenerateString(d.Get("name"), "lb-cert"),
 		Letsencrypt:       expandLbLetsEncrypt(d.Get("letsencrypt")),
@@ -265,6 +148,9 @@ func resourceScalewayLbCertificateCreate(ctx context.Context, d *schema.Resource
 	}
 
 	lbAPI, zone, err := lbAPIWithZone(d, meta)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 	res, err := lbAPI.CreateCertificate(createReq, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
@@ -294,6 +180,7 @@ func resourceScalewayLbCertificateRead(ctx context.Context, d *schema.ResourceDa
 		return diag.FromErr(err)
 	}
 
+	_ = d.Set("lb_id", newZonedIDString(zone, res.LB.ID))
 	_ = d.Set("name", res.Name)
 	_ = d.Set("common_name", res.CommonName)
 	_ = d.Set("subject_alternative_name", res.SubjectAlternativeName)

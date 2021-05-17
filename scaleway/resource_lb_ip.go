@@ -25,8 +25,8 @@ func resourceScalewayLbIP() *schema.Resource {
 		StateUpgraders: []schema.StateUpgrader{
 			{
 				Version: 0,
-				Type:    lbIPResourceV0().CoreConfigSchema().ImpliedType(),
-				Upgrade: upgradeRegionalLBIDToZonedID,
+				Type:    elementToUpgrade(),
+				Upgrade: upgradeRegionalIDToZonedID,
 			},
 		},
 		Schema: map[string]*schema.Schema{
@@ -36,45 +36,7 @@ func resourceScalewayLbIP() *schema.Resource {
 				Computed:    true,
 				Description: "The reverse domain name for this IP",
 			},
-			"region":          regionSchema(),
-			"zone":            zoneSchema(),
-			"organization_id": organizationIDSchema(),
-			"project_id":      projectIDSchema(),
-			// Computed
-			"ip_address": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The load-balancer public IP address",
-			},
-			"lb_id": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The ID of the loadbalancer attached to this IP, if any",
-			},
-		},
-	}
-}
-
-func lbIPResourceV0() *schema.Resource {
-	return &schema.Resource{
-		CreateContext: resourceScalewayLbIPCreate,
-		ReadContext:   resourceScalewayLbIPRead,
-		UpdateContext: resourceScalewayLbIPUpdate,
-		DeleteContext: resourceScalewayLbIPDelete,
-		Importer: &schema.ResourceImporter{
-			StateContext: schema.ImportStatePassthroughContext,
-		},
-		Timeouts: &schema.ResourceTimeout{
-			Default: schema.DefaultTimeout(defaultLbLbTimeout),
-		},
-		Schema: map[string]*schema.Schema{
-			"reverse": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Computed:    true,
-				Description: "The reverse domain name for this IP",
-			},
-			"region":          regionSchema(),
+			"region":          regionComputedSchema(),
 			"zone":            zoneSchema(),
 			"organization_id": organizationIDSchema(),
 			"project_id":      projectIDSchema(),

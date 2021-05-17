@@ -144,22 +144,21 @@ func testAccCheckScalewayLbDestroy(tt *TestTools) resource.TestCheckFunc {
 	}
 }
 
-func testResourceIPV0() map[string]interface{} {
+func testResourceV0() map[string]interface{} {
 	return map[string]interface{}{
-		"id":    "fr-par/22c61530-834c-4ab4-aa71-aaaa2ac9d45a",
-		"ip_id": "fr-par/b73a1e09-300c-4f29-8392-c2a3f30a19cd"}
+		"id": "fr-par/22c61530-834c-4ab4-aa71-aaaa2ac9d45a",
+	}
 }
 
-func testResourceIPV1() map[string]interface{} {
+func testResourceV1() map[string]interface{} {
 	return map[string]interface{}{
-		"id":    "fr-par-1/22c61530-834c-4ab4-aa71-aaaa2ac9d45a",
-		"ip_id": "fr-par-1/b73a1e09-300c-4f29-8392-c2a3f30a19cd",
+		"id": "fr-par-1/22c61530-834c-4ab4-aa71-aaaa2ac9d45a",
 	}
 }
 
 func TestResourceIPRegionalUpgradeV0(t *testing.T) {
-	expected := testResourceIPV1()
-	actual, err := upgradeRegionalIPToZoneID(context.Background(), testResourceIPV0(), nil)
+	expected := testResourceV1()
+	actual, err := upgradeRegionalIDToZonedID(context.Background(), testResourceV0(), nil)
 	if err != nil {
 		t.Fatalf("error migrating state: %s", err)
 	}
