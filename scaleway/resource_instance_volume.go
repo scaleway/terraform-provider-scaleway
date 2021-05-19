@@ -171,6 +171,14 @@ func resourceScalewayInstanceVolumeUpdate(ctx context.Context, d *schema.Resourc
 		if oldSize, newSize := d.GetChange("size_in_gb"); oldSize.(int) > newSize.(int) {
 			return diag.FromErr(fmt.Errorf("block volumes cannot be resized down"))
 		}
+		_, err := instanceAPI.WaitForVolume(&instance.WaitForVolumeRequest{
+			VolumeID:      id,
+			Zone:          zone,
+			RetryInterval: DefaultWaitRetryInterval,
+		}, scw.WithContext(ctx))
+		if err != nil {
+			return diag.FromErr(err)
+		}
 		volumeSizeInBytes := scw.Size(uint64(d.Get("size_in_gb").(int)) * gb)
 		_, err = instanceAPI.UpdateVolume(&instance.UpdateVolumeRequest{
 			VolumeID: id,
@@ -180,7 +188,7 @@ func resourceScalewayInstanceVolumeUpdate(ctx context.Context, d *schema.Resourc
 		if err != nil {
 			return diag.FromErr(fmt.Errorf("couldn't resize volume: %s", err))
 		}
-		_, err := instanceAPI.WaitForVolume(&instance.WaitForVolumeRequest{
+		_, err = instanceAPI.WaitForVolume(&instance.WaitForVolumeRequest{
 			VolumeID:      id,
 			Zone:          zone,
 			RetryInterval: DefaultWaitRetryInterval,
