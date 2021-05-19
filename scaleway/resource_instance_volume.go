@@ -179,6 +179,7 @@ func resourceScalewayInstanceVolumeUpdate(ctx context.Context, d *schema.Resourc
 		if err != nil {
 			return diag.FromErr(err)
 		}
+
 		volumeSizeInBytes := scw.Size(uint64(d.Get("size_in_gb").(int)) * gb)
 		_, err = instanceAPI.UpdateVolume(&instance.UpdateVolumeRequest{
 			VolumeID: id,
