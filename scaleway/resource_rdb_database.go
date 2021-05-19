@@ -59,7 +59,7 @@ func resourceScalewayRdbDatabase() *schema.Resource {
 func resourceScalewayRdbDatabaseCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	rdbAPI := newRdbAPI(meta)
 
-	locality, instanceID, err := parseLocalizedID(d.Get("instance_id").(string))
+	region, instanceID, err := parseRegionalID(d.Get("instance_id").(string))
 	if err != nil {
 		return diag.FromErr(err)
 	}
