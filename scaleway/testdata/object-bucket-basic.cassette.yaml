@@ -2,23 +2,61 @@
 version: 1
 interactions:
 - request:
+    body: <CreateBucketConfiguration xmlns="http://s3.amazonaws.com/doc/2006-03-01/"><LocationConstraint>fr-par</LocationConstraint></CreateBucketConfiguration>
+    form: {}
+    headers:
+      Authorization:
+      - AWS4-HMAC-SHA256 Credential=SCWJ9FJYVF1SPS9HX0VZ/20210518/fr-par/s3/aws4_request,
+        SignedHeaders=content-length;host;x-amz-acl;x-amz-content-sha256;x-amz-date,
+        Signature=086580d3db51dbfea3119ab6d4f8d0f9c8179029e8d2f2b1205b972a23322236
+      Content-Length:
+      - "150"
+      User-Agent:
+      - aws-sdk-go/1.38.22 (go1.15.11; linux; amd64)
+      X-Amz-Acl:
+      - private
+      X-Amz-Content-Sha256:
+      - 2cb57fad7b7168921a4c94426cfcb9ee2953f126430595df844e22d50f029060
+      X-Amz-Date:
+      - 20210518T123645Z
+    url: https://test-acc-scaleway-object-bucket-basic-par.s3.fr-par.scw.cloud/
+    method: PUT
+  response:
+    body: ""
+    headers:
+      Content-Length:
+      - "0"
+      Content-Type:
+      - text/html; charset=UTF-8
+      Date:
+      - Tue, 18 May 2021 12:36:46 GMT
+      Location:
+      - /test-acc-scaleway-object-bucket-basic-par
+      X-Amz-Id-2:
+      - tx75ec5c47200c450e9dc66-0060a3b4dd
+      X-Amz-Request-Id:
+      - tx75ec5c47200c450e9dc66-0060a3b4dd
+    status: 200 OK
+    code: 200
+    duration: ""
+- request:
     body: <CreateBucketConfiguration xmlns="http://s3.amazonaws.com/doc/2006-03-01/"><LocationConstraint>nl-ams</LocationConstraint></CreateBucketConfiguration>
     form: {}
     headers:
       Authorization:
-      - AWS4-HMAC-SHA256 Credential=SCW8XT5JRAV4B0WQSHPE/20201203/nl-ams/s3/aws4_request,
+      - AWS4-HMAC-SHA256 Credential=SCWJ9FJYVF1SPS9HX0VZ/20210518/nl-ams/s3/aws4_request,
         SignedHeaders=content-length;host;x-amz-acl;x-amz-content-sha256;x-amz-date,
-        Signature=6039828b5bc10dec5460519fe281fe8314a082ad714a1827cc3bc7674a122c3b
+        Signature=8b60366a71367a00e67b95bb54b731223d003d6711cfb39fabf0542d2c90122d
       Content-Length:
       - "150"
       User-Agent:
-      - aws-sdk-go/1.34.32 (go1.15.5; darwin; amd64)
+      - aws-sdk-go/1.38.22 (go1.15.11; linux; amd64)
       X-Amz-Acl:
       - private
       X-Amz-Content-Sha256:
       - b86017d61d4ad22a838e75e918325b623687c3e84d631bc2b6435970bf12473d
       X-Amz-Date:
-      - 20201203T101700Z
+      - 20210518T123645Z
     url: https://test-acc-scaleway-object-bucket-basic-ams.s3.nl-ams.scw.cloud/
     method: PUT
   response:
@@ -29,35 +67,35 @@ interactions:
       Content-Type:
       - text/html; charset=UTF-8
       Date:
-      - Thu, 03 Dec 2020 10:17:00 GMT
+      - Tue, 18 May 2021 12:36:46 GMT
       Location:
       - /test-acc-scaleway-object-bucket-basic-ams
       X-Amz-Id-2:
-      - tx931620d20ef841df900ff-005fc8bb1c
+      - tx8d25379862464e8c86247-0060a3b4dd
       X-Amz-Request-Id:
-      - tx931620d20ef841df900ff-005fc8bb1c
+      - tx8d25379862464e8c86247-0060a3b4dd
     status: 200 OK
     code: 200
     duration: ""
 - request:
-    body: <CreateBucketConfiguration xmlns="http://s3.amazonaws.com/doc/2006-03-01/"><LocationConstraint>fr-par</LocationConstraint></CreateBucketConfiguration>
+    body: ""
     form: {}
     headers:
       Authorization:
-      - AWS4-HMAC-SHA256 Credential=SCW8XT5JRAV4B0WQSHPE/20201203/fr-par/s3/aws4_request,
-        SignedHeaders=content-length;host;x-amz-acl;x-amz-content-sha256;x-amz-date,
-        Signature=8352aaf41c11920ad608b2f3e86e2c7292b2c67a9a4a16cc6b03d25bbdd51e57
-      Content-Length:
-      - "150"
+      - AWS4-HMAC-SHA256 Credential=SCWJ9FJYVF1SPS9HX0VZ/20210518/fr-par/s3/aws4_request,
+        SignedHeaders=content-md5;host;x-amz-acl;x-amz-content-sha256;x-amz-date,
+        Signature=7ce1351c4d5db5accbd189b2c10f61d9838bd9e08173a8dd12d302831ebba4c0
+      Content-Md5:
+      - 1B2M2Y8AsgTpgAmY7PhCfg==
       User-Agent:
-      - aws-sdk-go/1.34.32 (go1.15.5; darwin; amd64)
+      - aws-sdk-go/1.38.22 (go1.15.11; linux; amd64)
       X-Amz-Acl:
       - private
       X-Amz-Content-Sha256:
-      - 2cb57fad7b7168921a4c94426cfcb9ee2953f126430595df844e22d50f029060
+      - e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
       X-Amz-Date:
-      - 20201203T101700Z
-    url: https://test-acc-scaleway-object-bucket-basic-par.s3.fr-par.scw.cloud/
+      - 20210518T123646Z
+    url: https://test-acc-scaleway-object-bucket-basic-par.s3.fr-par.scw.cloud/?acl=
     method: PUT
   response:
     body: ""
@@ -67,131 +105,32 @@ interactions:
       Content-Type:
       - text/html; charset=UTF-8
       Date:
-      - Thu, 03 Dec 2020 10:17:01 GMT
-      Location:
-      - /test-acc-scaleway-object-bucket-basic-par
+      - Tue, 18 May 2021 12:36:46 GMT
       X-Amz-Id-2:
-      - tx2a631d2acf0a4bdc83834-005fc8bb1c
+      - tx3f202b216b0744088dede-0060a3b4de
       X-Amz-Request-Id:
-      - tx2a631d2acf0a4bdc83834-005fc8bb1c
+      - tx3f202b216b0744088dede-0060a3b4de
     status: 200 OK
     code: 200
-    duration: ""
-- request:
-    body: ""
-    form: {}
-    headers:
-      Authorization:
-      - AWS4-HMAC-SHA256 Credential=SCW8XT5JRAV4B0WQSHPE/20201203/nl-ams/s3/aws4_request,
-        SignedHeaders=host;x-amz-content-sha256;x-amz-date, Signature=22e1701f9af668bc381ba1c7ebb06373a81a6867ad9a1554d0f070d7c6af0f08
-      User-Agent:
-      - aws-sdk-go/1.34.32 (go1.15.5; darwin; amd64)
-      X-Amz-Content-Sha256:
-      - e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
-      X-Amz-Date:
-      - 20201203T101700Z
-    url: https://test-acc-scaleway-object-bucket-basic-ams.s3.nl-ams.scw.cloud/
-    method: GET
-  response:
-    body: |-
-      <?xml version='1.0' encoding='UTF-8'?>
-      <ListBucketResult xmlns="http://s3.amazonaws.com/doc/2006-03-01/"><Name>test-acc-scaleway-object-bucket-basic-ams</Name><Prefix/><Marker/><MaxKeys>1000</MaxKeys><IsTruncated>false</IsTruncated></ListBucketResult>
-    headers:
-      Content-Length:
-      - "251"
-      Content-Type:
-      - application/xml
-      Date:
-      - Thu, 03 Dec 2020 10:17:01 GMT
-      X-Amz-Id-2:
-      - txb08d50ef5b224e50948ea-005fc8bb1c
-      X-Amz-Request-Id:
-      - txb08d50ef5b224e50948ea-005fc8bb1c
-    status: 200 OK
-    code: 200
-    duration: ""
-- request:
-    body: ""
-    form: {}
-    headers:
-      Authorization:
-      - AWS4-HMAC-SHA256 Credential=SCW8XT5JRAV4B0WQSHPE/20201203/fr-par/s3/aws4_request,
-        SignedHeaders=host;x-amz-content-sha256;x-amz-date, Signature=efa240fc10bc1cf4d9249f90cf980e5f544a64fa14798dcb4187009c2225b8e2
-      User-Agent:
-      - aws-sdk-go/1.34.32 (go1.15.5; darwin; amd64)
-      X-Amz-Content-Sha256:
-      - e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
-      X-Amz-Date:
-      - 20201203T101701Z
-    url: https://test-acc-scaleway-object-bucket-basic-par.s3.fr-par.scw.cloud/
-    method: GET
-  response:
-    body: |-
-      <?xml version='1.0' encoding='UTF-8'?>
-      <ListBucketResult xmlns="http://s3.amazonaws.com/doc/2006-03-01/"><Name>test-acc-scaleway-object-bucket-basic-par</Name><Prefix/><Marker/><MaxKeys>1000</MaxKeys><IsTruncated>false</IsTruncated></ListBucketResult>
-    headers:
-      Content-Length:
-      - "251"
-      Content-Type:
-      - application/xml
-      Date:
-      - Thu, 03 Dec 2020 10:17:01 GMT
-      X-Amz-Id-2:
-      - txa16256473c4e4ae4833f4-005fc8bb1d
-      X-Amz-Request-Id:
-      - txa16256473c4e4ae4833f4-005fc8bb1d
-    status: 200 OK
-    code: 200
-    duration: ""
-- request:
-    body: ""
-    form: {}
-    headers:
-      Authorization:
-      - AWS4-HMAC-SHA256 Credential=SCW8XT5JRAV4B0WQSHPE/20201203/nl-ams/s3/aws4_request,
-        SignedHeaders=host;x-amz-content-sha256;x-amz-date, Signature=d32d632860a4afa8024d45a35d949e67331fe24fa99cef6a2628ae72322e0486
-      User-Agent:
-      - aws-sdk-go/1.34.32 (go1.15.5; darwin; amd64)
-      X-Amz-Content-Sha256:
-      - e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
-      X-Amz-Date:
-      - 20201203T101701Z
-    url: https://test-acc-scaleway-object-bucket-basic-ams.s3.nl-ams.scw.cloud/?tagging=
-    method: GET
-  response:
-    body: |-
-      <?xml version='1.0' encoding='UTF-8'?>
-      <Error><Code>NoSuchTagSet</Code><Message>There is no tag set associated with the bucket or object.</Message><RequestId>tx6b70b439bd454109a9276-005fc8bb1d</RequestId><Headers/></Error>
-    headers:
-      Content-Type:
-      - application/xml
-      Date:
-      - Thu, 03 Dec 2020 10:17:01 GMT
-      X-Amz-Id-2:
-      - tx6b70b439bd454109a9276-005fc8bb1d
-      X-Amz-Request-Id:
-      - tx6b70b439bd454109a9276-005fc8bb1d
-    status: 404 Not Found
-    code: 404
     duration: ""
 - request:
     body: <CreateBucketConfiguration xmlns="http://s3.amazonaws.com/doc/2006-03-01/"><LocationConstraint>fr-par</LocationConstraint></CreateBucketConfiguration>
     form: {}
     headers:
       Authorization:
-      - AWS4-HMAC-SHA256 Credential=SCW8XT5JRAV4B0WQSHPE/20201203/fr-par/s3/aws4_request,
+      - AWS4-HMAC-SHA256 Credential=SCWJ9FJYVF1SPS9HX0VZ/20210518/fr-par/s3/aws4_request,
         SignedHeaders=content-length;host;x-amz-acl;x-amz-content-sha256;x-amz-date,
-        Signature=ec055dbd34c9dd1485318a9b0b51444e516269023a68e88c3f01b1e075ce64d1
+        Signature=03659f4e0f7c3f32487561867367a7da2c3d68f175b590bdf8a37f40ea1a2976
       Content-Length:
       - "150"
       User-Agent:
-      - aws-sdk-go/1.34.32 (go1.15.5; darwin; amd64)
+      - aws-sdk-go/1.38.22 (go1.15.11; linux; amd64)
       X-Amz-Acl:
       - private
       X-Amz-Content-Sha256:
       - 2cb57fad7b7168921a4c94426cfcb9ee2953f126430595df844e22d50f029060
       X-Amz-Date:
-      - 20201203T101700Z
+      - 20210518T123645Z
     url: https://test-acc-scaleway-object-bucket-basic.s3.fr-par.scw.cloud/
     method: PUT
   response:
@@ -202,99 +141,35 @@ interactions:
       Content-Type:
       - text/html; charset=UTF-8
       Date:
-      - Thu, 03 Dec 2020 10:17:01 GMT
+      - Tue, 18 May 2021 12:36:46 GMT
       Location:
       - /test-acc-scaleway-object-bucket-basic
       X-Amz-Id-2:
-      - tx17aad757e1d0445d95126-005fc8bb1c
+      - txc7deec772f374eb3a1e5a-0060a3b4dd
       X-Amz-Request-Id:
-      - tx17aad757e1d0445d95126-005fc8bb1c
+      - txc7deec772f374eb3a1e5a-0060a3b4dd
     status: 200 OK
     code: 200
     duration: ""
 - request:
-    body: ""
+    body: <Tagging xmlns="http://s3.amazonaws.com/doc/2006-03-01/"><TagSet><Tag><Key>foo</Key><Value>bar</Value></Tag><Tag><Key>baz</Key><Value>qux</Value></Tag></TagSet></Tagging>
     form: {}
     headers:
       Authorization:
-      - AWS4-HMAC-SHA256 Credential=SCW8XT5JRAV4B0WQSHPE/20201203/nl-ams/s3/aws4_request,
-        SignedHeaders=host;x-amz-content-sha256;x-amz-date, Signature=4c711ed6fb44855f494f1ccbbb5ebc6c3a1f558e1c052f364d78f270bff29311
-      User-Agent:
-      - aws-sdk-go/1.34.32 (go1.15.5; darwin; amd64)
-      X-Amz-Content-Sha256:
-      - e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
-      X-Amz-Date:
-      - 20201203T101701Z
-    url: https://test-acc-scaleway-object-bucket-basic-ams.s3.nl-ams.scw.cloud/?versioning=
-    method: GET
-  response:
-    body: |-
-      <?xml version='1.0' encoding='UTF-8'?>
-      <VersioningConfiguration xmlns="http://s3.amazonaws.com/doc/2006-03-01/"><Status>Suspended</Status></VersioningConfiguration>
-    headers:
-      Content-Length:
-      - "164"
-      Content-Type:
-      - text/plain
-      Date:
-      - Thu, 03 Dec 2020 10:17:01 GMT
-      X-Amz-Id-2:
-      - tx87a25009374f42cda6f92-005fc8bb1d
-      X-Amz-Request-Id:
-      - tx87a25009374f42cda6f92-005fc8bb1d
-    status: 200 OK
-    code: 200
-    duration: ""
-- request:
-    body: ""
-    form: {}
-    headers:
-      Authorization:
-      - AWS4-HMAC-SHA256 Credential=SCW8XT5JRAV4B0WQSHPE/20201203/fr-par/s3/aws4_request,
-        SignedHeaders=host;x-amz-content-sha256;x-amz-date, Signature=00abee1aad5320e244b25f50d471eebf7fa3103c1ccaa6e6784762169773358f
-      User-Agent:
-      - aws-sdk-go/1.34.32 (go1.15.5; darwin; amd64)
-      X-Amz-Content-Sha256:
-      - e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
-      X-Amz-Date:
-      - 20201203T101701Z
-    url: https://test-acc-scaleway-object-bucket-basic-par.s3.fr-par.scw.cloud/?tagging=
-    method: GET
-  response:
-    body: |-
-      <?xml version='1.0' encoding='UTF-8'?>
-      <Error><Code>NoSuchTagSet</Code><Message>There is no tag set associated with the bucket or object.</Message><RequestId>tx4310aa0f40e74d6b8490b-005fc8bb1d</RequestId><Headers/></Error>
-    headers:
-      Content-Type:
-      - application/xml
-      Date:
-      - Thu, 03 Dec 2020 10:17:01 GMT
-      X-Amz-Id-2:
-      - tx4310aa0f40e74d6b8490b-005fc8bb1d
-      X-Amz-Request-Id:
-      - tx4310aa0f40e74d6b8490b-005fc8bb1d
-    status: 404 Not Found
-    code: 404
-    duration: ""
-- request:
-    body: <Tagging xmlns="http://s3.amazonaws.com/doc/2006-03-01/"><TagSet><Tag><Key>foo</Key><Value>bar</Value></Tag></TagSet></Tagging>
-    form: {}
-    headers:
-      Authorization:
-      - AWS4-HMAC-SHA256 Credential=SCW8XT5JRAV4B0WQSHPE/20201203/fr-par/s3/aws4_request,
+      - AWS4-HMAC-SHA256 Credential=SCWJ9FJYVF1SPS9HX0VZ/20210518/nl-ams/s3/aws4_request,
         SignedHeaders=content-length;content-md5;host;x-amz-content-sha256;x-amz-date,
-        Signature=20b0facd4305d8e68311b8a3e1648f5e3e1724d85e73d62df7e4d7b3f6a64bcd
+        Signature=a9c35b302ceeb3352bc8cacdae9e23d93db1c915553857a8607362204bed9826
       Content-Length:
-      - "127"
+      - "170"
       Content-Md5:
-      - GLaI7og/rAKomUfPePCCFQ==
+      - ziaankj55BixQT31uaj1mQ==
       User-Agent:
-      - aws-sdk-go/1.34.32 (go1.15.5; darwin; amd64)
+      - aws-sdk-go/1.38.22 (go1.15.11; linux; amd64)
       X-Amz-Content-Sha256:
-      - d68cba1a39d89eb72e49b2e5b04058846b60e88e6e32eae42901c4f57a4727a8
+      - 2b07a62db7be0f847b7208b34535d7acbbfec23ff29c04b5ca0176500fb16a32
       X-Amz-Date:
-      - 20201203T101701Z
-    url: https://test-acc-scaleway-object-bucket-basic.s3.fr-par.scw.cloud/?tagging=
+      - 20210518T123646Z
+    url: https://test-acc-scaleway-object-bucket-basic-ams.s3.nl-ams.scw.cloud/?tagging=
     method: PUT
   response:
     body: ""
@@ -304,11 +179,11 @@ interactions:
       Content-Type:
       - text/html; charset=UTF-8
       Date:
-      - Thu, 03 Dec 2020 10:17:01 GMT
+      - Tue, 18 May 2021 12:36:46 GMT
       X-Amz-Id-2:
-      - tx4163d51897a14d3da293b-005fc8bb1d
+      - tx3c873e2bdad5422caef6c-0060a3b4de
       X-Amz-Request-Id:
-      - tx4163d51897a14d3da293b-005fc8bb1d
+      - tx3c873e2bdad5422caef6c-0060a3b4de
     status: 204 No Content
     code: 204
     duration: ""
@@ -317,177 +192,14 @@ interactions:
     form: {}
     headers:
       Authorization:
-      - AWS4-HMAC-SHA256 Credential=SCW8XT5JRAV4B0WQSHPE/20201203/fr-par/s3/aws4_request,
-        SignedHeaders=host;x-amz-content-sha256;x-amz-date, Signature=fca52d4de36f0f488e9ef1902230ed3926f09df451ccda16c48ba678e3121be4
+      - AWS4-HMAC-SHA256 Credential=SCWJ9FJYVF1SPS9HX0VZ/20210518/fr-par/s3/aws4_request,
+        SignedHeaders=host;x-amz-content-sha256;x-amz-date, Signature=a13c3a057beee7d59630396638ed52017225ec8371e0b6f91a3dd7ce0e986c93
       User-Agent:
-      - aws-sdk-go/1.34.32 (go1.15.5; darwin; amd64)
+      - aws-sdk-go/1.38.22 (go1.15.11; linux; amd64)
       X-Amz-Content-Sha256:
       - e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
       X-Amz-Date:
-      - 20201203T101701Z
-    url: https://test-acc-scaleway-object-bucket-basic-par.s3.fr-par.scw.cloud/?versioning=
-    method: GET
-  response:
-    body: |-
-      <?xml version='1.0' encoding='UTF-8'?>
-      <VersioningConfiguration xmlns="http://s3.amazonaws.com/doc/2006-03-01/"><Status>Suspended</Status></VersioningConfiguration>
-    headers:
-      Content-Length:
-      - "164"
-      Content-Type:
-      - text/plain
-      Date:
-      - Thu, 03 Dec 2020 10:17:01 GMT
-      X-Amz-Id-2:
-      - tx8ed0e24ebd224c068f644-005fc8bb1d
-      X-Amz-Request-Id:
-      - tx8ed0e24ebd224c068f644-005fc8bb1d
-    status: 200 OK
-    code: 200
-    duration: ""
-- request:
-    body: ""
-    form: {}
-    headers:
-      Authorization:
-      - AWS4-HMAC-SHA256 Credential=SCW8XT5JRAV4B0WQSHPE/20201203/fr-par/s3/aws4_request,
-        SignedHeaders=host;x-amz-content-sha256;x-amz-date, Signature=c9dc9887d2a5889b9945e8268e06e7a72e1d42a11b6997f460f23fe55dfe1670
-      User-Agent:
-      - aws-sdk-go/1.34.32 (go1.15.5; darwin; amd64)
-      X-Amz-Content-Sha256:
-      - e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
-      X-Amz-Date:
-      - 20201203T101701Z
-    url: https://test-acc-scaleway-object-bucket-basic.s3.fr-par.scw.cloud/
-    method: GET
-  response:
-    body: |-
-      <?xml version='1.0' encoding='UTF-8'?>
-      <ListBucketResult xmlns="http://s3.amazonaws.com/doc/2006-03-01/"><Name>test-acc-scaleway-object-bucket-basic</Name><Prefix/><Marker/><MaxKeys>1000</MaxKeys><IsTruncated>false</IsTruncated></ListBucketResult>
-    headers:
-      Content-Length:
-      - "247"
-      Content-Type:
-      - application/xml
-      Date:
-      - Thu, 03 Dec 2020 10:17:01 GMT
-      X-Amz-Id-2:
-      - tx19ce9579317d42cfa997a-005fc8bb1d
-      X-Amz-Request-Id:
-      - tx19ce9579317d42cfa997a-005fc8bb1d
-    status: 200 OK
-    code: 200
-    duration: ""
-- request:
-    body: ""
-    form: {}
-    headers:
-      Authorization:
-      - AWS4-HMAC-SHA256 Credential=SCW8XT5JRAV4B0WQSHPE/20201203/fr-par/s3/aws4_request,
-        SignedHeaders=host;x-amz-content-sha256;x-amz-date, Signature=2153f75aadfe3228207559c1e71ffa01e4bce6d7423ee77ad40eeeda0ed7e7b7
-      User-Agent:
-      - aws-sdk-go/1.34.32 (go1.15.5; darwin; amd64)
-      X-Amz-Content-Sha256:
-      - e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
-      X-Amz-Date:
-      - 20201203T101701Z
-    url: https://test-acc-scaleway-object-bucket-basic.s3.fr-par.scw.cloud/?tagging=
-    method: GET
-  response:
-    body: <Tagging xmlns="http://s3.amazonaws.com/doc/2006-03-01/"><TagSet><Tag><Key>foo</Key><Value>bar</Value></Tag></TagSet></Tagging>
-    headers:
-      Content-Length:
-      - "127"
-      Content-Type:
-      - application/xml
-      Date:
-      - Thu, 03 Dec 2020 10:17:01 GMT
-      X-Amz-Id-2:
-      - txd6737005acc6413b86ffd-005fc8bb1d
-      X-Amz-Request-Id:
-      - txd6737005acc6413b86ffd-005fc8bb1d
-    status: 200 OK
-    code: 200
-    duration: ""
-- request:
-    body: ""
-    form: {}
-    headers:
-      Authorization:
-      - AWS4-HMAC-SHA256 Credential=SCW8XT5JRAV4B0WQSHPE/20201203/fr-par/s3/aws4_request,
-        SignedHeaders=host;x-amz-content-sha256;x-amz-date, Signature=ee8b31278457d5401eeb04c44f8f18dfb5b7e8c88c3515f1cf714d98b265b85a
-      User-Agent:
-      - aws-sdk-go/1.34.32 (go1.15.5; darwin; amd64)
-      X-Amz-Content-Sha256:
-      - e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
-      X-Amz-Date:
-      - 20201203T101701Z
-    url: https://test-acc-scaleway-object-bucket-basic.s3.fr-par.scw.cloud/?versioning=
-    method: GET
-  response:
-    body: |-
-      <?xml version='1.0' encoding='UTF-8'?>
-      <VersioningConfiguration xmlns="http://s3.amazonaws.com/doc/2006-03-01/"><Status>Suspended</Status></VersioningConfiguration>
-    headers:
-      Content-Length:
-      - "164"
-      Content-Type:
-      - text/plain
-      Date:
-      - Thu, 03 Dec 2020 10:17:01 GMT
-      X-Amz-Id-2:
-      - txeb9f4749b36e4dc2ac3cd-005fc8bb1d
-      X-Amz-Request-Id:
-      - txeb9f4749b36e4dc2ac3cd-005fc8bb1d
-    status: 200 OK
-    code: 200
-    duration: ""
-- request:
-    body: ""
-    form: {}
-    headers:
-      Authorization:
-      - AWS4-HMAC-SHA256 Credential=SCW8XT5JRAV4B0WQSHPE/20201203/fr-par/s3/aws4_request,
-        SignedHeaders=host;x-amz-content-sha256;x-amz-date, Signature=b9dcce6085c2b4c18b9c84607cfef34ea10408dd3560aece4c14e9ed927eeeec
-      User-Agent:
-      - aws-sdk-go/1.34.32 (go1.15.5; darwin; amd64)
-      X-Amz-Content-Sha256:
-      - e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
-      X-Amz-Date:
-      - 20201203T101702Z
-    url: https://test-acc-scaleway-object-bucket-basic.s3.fr-par.scw.cloud/
-    method: GET
-  response:
-    body: |-
-      <?xml version='1.0' encoding='UTF-8'?>
-      <ListBucketResult xmlns="http://s3.amazonaws.com/doc/2006-03-01/"><Name>test-acc-scaleway-object-bucket-basic</Name><Prefix/><Marker/><MaxKeys>1000</MaxKeys><IsTruncated>false</IsTruncated></ListBucketResult>
-    headers:
-      Content-Length:
-      - "247"
-      Content-Type:
-      - application/xml
-      Date:
-      - Thu, 03 Dec 2020 10:17:02 GMT
-      X-Amz-Id-2:
-      - tx213599859c5c40e3b4297-005fc8bb1e
-      X-Amz-Request-Id:
-      - tx213599859c5c40e3b4297-005fc8bb1e
-    status: 200 OK
-    code: 200
-    duration: ""
-- request:
-    body: ""
-    form: {}
-    headers:
-      Authorization:
-      - AWS4-HMAC-SHA256 Credential=SCW8XT5JRAV4B0WQSHPE/20201203/fr-par/s3/aws4_request,
-        SignedHeaders=host;x-amz-content-sha256;x-amz-date, Signature=08a7d24dca3cba812fa1276e36277deb91541ddff531126e13638af24385d89f
-      User-Agent:
-      - aws-sdk-go/1.34.32 (go1.15.5; darwin; amd64)
-      X-Amz-Content-Sha256:
-      - e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
-      X-Amz-Date:
-      - 20201203T101702Z
+      - 20210518T123646Z
     url: https://test-acc-scaleway-object-bucket-basic-par.s3.fr-par.scw.cloud/
     method: GET
   response:
@@ -496,552 +208,206 @@ interactions:
       <ListBucketResult xmlns="http://s3.amazonaws.com/doc/2006-03-01/"><Name>test-acc-scaleway-object-bucket-basic-par</Name><Prefix/><Marker/><MaxKeys>1000</MaxKeys><IsTruncated>false</IsTruncated></ListBucketResult>
     headers:
       Content-Length:
-      - "251"
+      - "255"
       Content-Type:
       - application/xml
       Date:
-      - Thu, 03 Dec 2020 10:17:02 GMT
+      - Tue, 18 May 2021 12:36:46 GMT
       X-Amz-Id-2:
-      - tx93abd529ed314120b38cf-005fc8bb1e
+      - txa985ab78944b4705819e5-0060a3b4de
       X-Amz-Request-Id:
-      - tx93abd529ed314120b38cf-005fc8bb1e
+      - txa985ab78944b4705819e5-0060a3b4de
     status: 200 OK
     code: 200
     duration: ""
 - request:
-    body: ""
-    form: {}
-    headers:
-      Authorization:
-      - AWS4-HMAC-SHA256 Credential=SCW8XT5JRAV4B0WQSHPE/20201203/nl-ams/s3/aws4_request,
-        SignedHeaders=host;x-amz-content-sha256;x-amz-date, Signature=f4b6bf55221d297ddeb04d62622c8bee939db7982ce55db65b52aaff2c35cfcb
-      User-Agent:
-      - aws-sdk-go/1.34.32 (go1.15.5; darwin; amd64)
-      X-Amz-Content-Sha256:
-      - e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
-      X-Amz-Date:
-      - 20201203T101702Z
-    url: https://test-acc-scaleway-object-bucket-basic-ams.s3.nl-ams.scw.cloud/
-    method: GET
-  response:
-    body: |-
-      <?xml version='1.0' encoding='UTF-8'?>
-      <ListBucketResult xmlns="http://s3.amazonaws.com/doc/2006-03-01/"><Name>test-acc-scaleway-object-bucket-basic-ams</Name><Prefix/><Marker/><MaxKeys>1000</MaxKeys><IsTruncated>false</IsTruncated></ListBucketResult>
-    headers:
-      Content-Length:
-      - "251"
-      Content-Type:
-      - application/xml
-      Date:
-      - Thu, 03 Dec 2020 10:17:02 GMT
-      X-Amz-Id-2:
-      - tx3b470829e74d413f84c2b-005fc8bb1e
-      X-Amz-Request-Id:
-      - tx3b470829e74d413f84c2b-005fc8bb1e
-    status: 200 OK
-    code: 200
-    duration: ""
-- request:
-    body: ""
-    form: {}
-    headers:
-      Authorization:
-      - AWS4-HMAC-SHA256 Credential=SCW8XT5JRAV4B0WQSHPE/20201203/fr-par/s3/aws4_request,
-        SignedHeaders=host;x-amz-content-sha256;x-amz-date, Signature=2f4ec486e109d4fa92a3e8ac782aa0b33cdd9b37a55325bf7d09d4d3cc5e894d
-      User-Agent:
-      - aws-sdk-go/1.34.32 (go1.15.5; darwin; amd64)
-      X-Amz-Content-Sha256:
-      - e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
-      X-Amz-Date:
-      - 20201203T101702Z
-    url: https://test-acc-scaleway-object-bucket-basic-par.s3.fr-par.scw.cloud/?tagging=
-    method: GET
-  response:
-    body: |-
-      <?xml version='1.0' encoding='UTF-8'?>
-      <Error><Code>NoSuchTagSet</Code><Message>There is no tag set associated with the bucket or object.</Message><RequestId>txde4b1834e7b74fb0afe6c-005fc8bb1e</RequestId><Headers/></Error>
-    headers:
-      Content-Type:
-      - application/xml
-      Date:
-      - Thu, 03 Dec 2020 10:17:02 GMT
-      X-Amz-Id-2:
-      - txde4b1834e7b74fb0afe6c-005fc8bb1e
-      X-Amz-Request-Id:
-      - txde4b1834e7b74fb0afe6c-005fc8bb1e
-    status: 404 Not Found
-    code: 404
-    duration: ""
-- request:
-    body: ""
-    form: {}
-    headers:
-      Authorization:
-      - AWS4-HMAC-SHA256 Credential=SCW8XT5JRAV4B0WQSHPE/20201203/fr-par/s3/aws4_request,
-        SignedHeaders=host;x-amz-content-sha256;x-amz-date, Signature=b26e42ef3281c13f8c276b17d57887c4c247efb87364ec0b456017d9a60ade49
-      User-Agent:
-      - aws-sdk-go/1.34.32 (go1.15.5; darwin; amd64)
-      X-Amz-Content-Sha256:
-      - e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
-      X-Amz-Date:
-      - 20201203T101702Z
-    url: https://test-acc-scaleway-object-bucket-basic.s3.fr-par.scw.cloud/?tagging=
-    method: GET
-  response:
     body: <Tagging xmlns="http://s3.amazonaws.com/doc/2006-03-01/"><TagSet><Tag><Key>foo</Key><Value>bar</Value></Tag></TagSet></Tagging>
+    form: {}
     headers:
+      Authorization:
+      - AWS4-HMAC-SHA256 Credential=SCWJ9FJYVF1SPS9HX0VZ/20210518/fr-par/s3/aws4_request,
+        SignedHeaders=content-length;content-md5;host;x-amz-content-sha256;x-amz-date,
+        Signature=3c6ca566589b389f83c3d26048f98ecdd26cb0805ef914dc50388a84f40a1bd0
       Content-Length:
       - "127"
-      Content-Type:
-      - application/xml
-      Date:
-      - Thu, 03 Dec 2020 10:17:02 GMT
-      X-Amz-Id-2:
-      - tx2d97dd360eeb4071bd8a4-005fc8bb1e
-      X-Amz-Request-Id:
-      - tx2d97dd360eeb4071bd8a4-005fc8bb1e
-    status: 200 OK
-    code: 200
-    duration: ""
-- request:
-    body: ""
-    form: {}
-    headers:
-      Authorization:
-      - AWS4-HMAC-SHA256 Credential=SCW8XT5JRAV4B0WQSHPE/20201203/nl-ams/s3/aws4_request,
-        SignedHeaders=host;x-amz-content-sha256;x-amz-date, Signature=9518fd2688db3b5e72fd96499740fdc2c545087b04ea53a9e8312b1282798bd9
+      Content-Md5:
+      - GLaI7og/rAKomUfPePCCFQ==
       User-Agent:
-      - aws-sdk-go/1.34.32 (go1.15.5; darwin; amd64)
+      - aws-sdk-go/1.38.22 (go1.15.11; linux; amd64)
       X-Amz-Content-Sha256:
-      - e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+      - d68cba1a39d89eb72e49b2e5b04058846b60e88e6e32eae42901c4f57a4727a8
       X-Amz-Date:
-      - 20201203T101702Z
-    url: https://test-acc-scaleway-object-bucket-basic-ams.s3.nl-ams.scw.cloud/?tagging=
-    method: GET
-  response:
-    body: |-
-      <?xml version='1.0' encoding='UTF-8'?>
-      <Error><Code>NoSuchTagSet</Code><Message>There is no tag set associated with the bucket or object.</Message><RequestId>tx4cec59b3aefe4632b2d66-005fc8bb1e</RequestId><Headers/></Error>
-    headers:
-      Content-Type:
-      - application/xml
-      Date:
-      - Thu, 03 Dec 2020 10:17:02 GMT
-      X-Amz-Id-2:
-      - tx4cec59b3aefe4632b2d66-005fc8bb1e
-      X-Amz-Request-Id:
-      - tx4cec59b3aefe4632b2d66-005fc8bb1e
-    status: 404 Not Found
-    code: 404
-    duration: ""
-- request:
-    body: ""
-    form: {}
-    headers:
-      Authorization:
-      - AWS4-HMAC-SHA256 Credential=SCW8XT5JRAV4B0WQSHPE/20201203/fr-par/s3/aws4_request,
-        SignedHeaders=host;x-amz-content-sha256;x-amz-date, Signature=44607f6171db0490a9702bcb13c505d15564c56c01c7310ab9f3121c606c6ac1
-      User-Agent:
-      - aws-sdk-go/1.34.32 (go1.15.5; darwin; amd64)
-      X-Amz-Content-Sha256:
-      - e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
-      X-Amz-Date:
-      - 20201203T101702Z
-    url: https://test-acc-scaleway-object-bucket-basic-par.s3.fr-par.scw.cloud/?versioning=
-    method: GET
-  response:
-    body: |-
-      <?xml version='1.0' encoding='UTF-8'?>
-      <VersioningConfiguration xmlns="http://s3.amazonaws.com/doc/2006-03-01/"><Status>Suspended</Status></VersioningConfiguration>
-    headers:
-      Content-Length:
-      - "164"
-      Content-Type:
-      - text/plain
-      Date:
-      - Thu, 03 Dec 2020 10:17:02 GMT
-      X-Amz-Id-2:
-      - tx0238165477c745f2a0da6-005fc8bb1e
-      X-Amz-Request-Id:
-      - tx0238165477c745f2a0da6-005fc8bb1e
-    status: 200 OK
-    code: 200
-    duration: ""
-- request:
-    body: ""
-    form: {}
-    headers:
-      Authorization:
-      - AWS4-HMAC-SHA256 Credential=SCW8XT5JRAV4B0WQSHPE/20201203/fr-par/s3/aws4_request,
-        SignedHeaders=host;x-amz-content-sha256;x-amz-date, Signature=af671d2ea3f5facbde3509e25b20ced075dc5a66bf35d64ffc57beadf080554b
-      User-Agent:
-      - aws-sdk-go/1.34.32 (go1.15.5; darwin; amd64)
-      X-Amz-Content-Sha256:
-      - e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
-      X-Amz-Date:
-      - 20201203T101702Z
-    url: https://test-acc-scaleway-object-bucket-basic.s3.fr-par.scw.cloud/?versioning=
-    method: GET
-  response:
-    body: |-
-      <?xml version='1.0' encoding='UTF-8'?>
-      <VersioningConfiguration xmlns="http://s3.amazonaws.com/doc/2006-03-01/"><Status>Suspended</Status></VersioningConfiguration>
-    headers:
-      Content-Length:
-      - "164"
-      Content-Type:
-      - text/plain
-      Date:
-      - Thu, 03 Dec 2020 10:17:02 GMT
-      X-Amz-Id-2:
-      - tx97b777a1e4a346dfacb8d-005fc8bb1e
-      X-Amz-Request-Id:
-      - tx97b777a1e4a346dfacb8d-005fc8bb1e
-    status: 200 OK
-    code: 200
-    duration: ""
-- request:
-    body: ""
-    form: {}
-    headers:
-      Authorization:
-      - AWS4-HMAC-SHA256 Credential=SCW8XT5JRAV4B0WQSHPE/20201203/nl-ams/s3/aws4_request,
-        SignedHeaders=host;x-amz-content-sha256;x-amz-date, Signature=71337158d8a64cd44714e96194a579a6effbcb56a8785b50e977865962b52e63
-      User-Agent:
-      - aws-sdk-go/1.34.32 (go1.15.5; darwin; amd64)
-      X-Amz-Content-Sha256:
-      - e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
-      X-Amz-Date:
-      - 20201203T101702Z
-    url: https://test-acc-scaleway-object-bucket-basic-ams.s3.nl-ams.scw.cloud/?versioning=
-    method: GET
-  response:
-    body: |-
-      <?xml version='1.0' encoding='UTF-8'?>
-      <VersioningConfiguration xmlns="http://s3.amazonaws.com/doc/2006-03-01/"><Status>Suspended</Status></VersioningConfiguration>
-    headers:
-      Content-Length:
-      - "164"
-      Content-Type:
-      - text/plain
-      Date:
-      - Thu, 03 Dec 2020 10:17:02 GMT
-      X-Amz-Id-2:
-      - tx4e2891f1a66d431f819ef-005fc8bb1e
-      X-Amz-Request-Id:
-      - tx4e2891f1a66d431f819ef-005fc8bb1e
-    status: 200 OK
-    code: 200
-    duration: ""
-- request:
-    body: ""
-    form: {}
-    headers:
-      Authorization:
-      - AWS4-HMAC-SHA256 Credential=SCW8XT5JRAV4B0WQSHPE/20201203/fr-par/s3/aws4_request,
-        SignedHeaders=host;x-amz-content-sha256;x-amz-date, Signature=7ee0ba07c44399972813d0a55d921c372e6118e337a697ede7230d177a96ca38
-      User-Agent:
-      - aws-sdk-go/1.34.32 (go1.15.5; darwin; amd64)
-      X-Amz-Content-Sha256:
-      - e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
-      X-Amz-Date:
-      - 20201203T101703Z
-    url: https://test-acc-scaleway-object-bucket-basic.s3.fr-par.scw.cloud/
-    method: GET
-  response:
-    body: |-
-      <?xml version='1.0' encoding='UTF-8'?>
-      <ListBucketResult xmlns="http://s3.amazonaws.com/doc/2006-03-01/"><Name>test-acc-scaleway-object-bucket-basic</Name><Prefix/><Marker/><MaxKeys>1000</MaxKeys><IsTruncated>false</IsTruncated></ListBucketResult>
-    headers:
-      Content-Length:
-      - "247"
-      Content-Type:
-      - application/xml
-      Date:
-      - Thu, 03 Dec 2020 10:17:03 GMT
-      X-Amz-Id-2:
-      - tx17de469f661d4ea69b150-005fc8bb1f
-      X-Amz-Request-Id:
-      - tx17de469f661d4ea69b150-005fc8bb1f
-    status: 200 OK
-    code: 200
-    duration: ""
-- request:
-    body: ""
-    form: {}
-    headers:
-      Authorization:
-      - AWS4-HMAC-SHA256 Credential=SCW8XT5JRAV4B0WQSHPE/20201203/fr-par/s3/aws4_request,
-        SignedHeaders=host;x-amz-content-sha256;x-amz-date, Signature=a7c835208dfca6bc216603d67ea276d531059c6a15ba8ab59fc6226d9ad15348
-      User-Agent:
-      - aws-sdk-go/1.34.32 (go1.15.5; darwin; amd64)
-      X-Amz-Content-Sha256:
-      - e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
-      X-Amz-Date:
-      - 20201203T101703Z
-    url: https://test-acc-scaleway-object-bucket-basic-par.s3.fr-par.scw.cloud/
-    method: GET
-  response:
-    body: |-
-      <?xml version='1.0' encoding='UTF-8'?>
-      <ListBucketResult xmlns="http://s3.amazonaws.com/doc/2006-03-01/"><Name>test-acc-scaleway-object-bucket-basic-par</Name><Prefix/><Marker/><MaxKeys>1000</MaxKeys><IsTruncated>false</IsTruncated></ListBucketResult>
-    headers:
-      Content-Length:
-      - "251"
-      Content-Type:
-      - application/xml
-      Date:
-      - Thu, 03 Dec 2020 10:17:03 GMT
-      X-Amz-Id-2:
-      - txcf32f76158bb44a4b2cdf-005fc8bb1f
-      X-Amz-Request-Id:
-      - txcf32f76158bb44a4b2cdf-005fc8bb1f
-    status: 200 OK
-    code: 200
-    duration: ""
-- request:
-    body: ""
-    form: {}
-    headers:
-      Authorization:
-      - AWS4-HMAC-SHA256 Credential=SCW8XT5JRAV4B0WQSHPE/20201203/nl-ams/s3/aws4_request,
-        SignedHeaders=host;x-amz-content-sha256;x-amz-date, Signature=92f27628102b1fc588d1c36c3747e848e11db8694977ebc2e98053a84f92d028
-      User-Agent:
-      - aws-sdk-go/1.34.32 (go1.15.5; darwin; amd64)
-      X-Amz-Content-Sha256:
-      - e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
-      X-Amz-Date:
-      - 20201203T101703Z
-    url: https://test-acc-scaleway-object-bucket-basic-ams.s3.nl-ams.scw.cloud/
-    method: GET
-  response:
-    body: |-
-      <?xml version='1.0' encoding='UTF-8'?>
-      <ListBucketResult xmlns="http://s3.amazonaws.com/doc/2006-03-01/"><Name>test-acc-scaleway-object-bucket-basic-ams</Name><Prefix/><Marker/><MaxKeys>1000</MaxKeys><IsTruncated>false</IsTruncated></ListBucketResult>
-    headers:
-      Content-Length:
-      - "251"
-      Content-Type:
-      - application/xml
-      Date:
-      - Thu, 03 Dec 2020 10:17:03 GMT
-      X-Amz-Id-2:
-      - tx862a3167912f4dd790c30-005fc8bb1f
-      X-Amz-Request-Id:
-      - tx862a3167912f4dd790c30-005fc8bb1f
-    status: 200 OK
-    code: 200
-    duration: ""
-- request:
-    body: ""
-    form: {}
-    headers:
-      Authorization:
-      - AWS4-HMAC-SHA256 Credential=SCW8XT5JRAV4B0WQSHPE/20201203/fr-par/s3/aws4_request,
-        SignedHeaders=host;x-amz-content-sha256;x-amz-date, Signature=c4542e182fa4af4cea31aedcc175f29937137d75abdcf5cf307f1ddd39e1ee97
-      User-Agent:
-      - aws-sdk-go/1.34.32 (go1.15.5; darwin; amd64)
-      X-Amz-Content-Sha256:
-      - e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
-      X-Amz-Date:
-      - 20201203T101703Z
-    url: https://test-acc-scaleway-object-bucket-basic-par.s3.fr-par.scw.cloud/?tagging=
-    method: GET
-  response:
-    body: |-
-      <?xml version='1.0' encoding='UTF-8'?>
-      <Error><Code>NoSuchTagSet</Code><Message>There is no tag set associated with the bucket or object.</Message><RequestId>tx4d91dcc0d1ed4fdd8c605-005fc8bb1f</RequestId><Headers/></Error>
-    headers:
-      Content-Type:
-      - application/xml
-      Date:
-      - Thu, 03 Dec 2020 10:17:03 GMT
-      X-Amz-Id-2:
-      - tx4d91dcc0d1ed4fdd8c605-005fc8bb1f
-      X-Amz-Request-Id:
-      - tx4d91dcc0d1ed4fdd8c605-005fc8bb1f
-    status: 404 Not Found
-    code: 404
-    duration: ""
-- request:
-    body: ""
-    form: {}
-    headers:
-      Authorization:
-      - AWS4-HMAC-SHA256 Credential=SCW8XT5JRAV4B0WQSHPE/20201203/nl-ams/s3/aws4_request,
-        SignedHeaders=host;x-amz-content-sha256;x-amz-date, Signature=a53ddf66d7f298ae0e9564bcf35566c3faa5b511c8961cf3c38813171edecebb
-      User-Agent:
-      - aws-sdk-go/1.34.32 (go1.15.5; darwin; amd64)
-      X-Amz-Content-Sha256:
-      - e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
-      X-Amz-Date:
-      - 20201203T101703Z
-    url: https://test-acc-scaleway-object-bucket-basic-ams.s3.nl-ams.scw.cloud/?tagging=
-    method: GET
-  response:
-    body: |-
-      <?xml version='1.0' encoding='UTF-8'?>
-      <Error><Code>NoSuchTagSet</Code><Message>There is no tag set associated with the bucket or object.</Message><RequestId>tx543656b248f84397a479c-005fc8bb1f</RequestId><Headers/></Error>
-    headers:
-      Content-Type:
-      - application/xml
-      Date:
-      - Thu, 03 Dec 2020 10:17:03 GMT
-      X-Amz-Id-2:
-      - tx543656b248f84397a479c-005fc8bb1f
-      X-Amz-Request-Id:
-      - tx543656b248f84397a479c-005fc8bb1f
-    status: 404 Not Found
-    code: 404
-    duration: ""
-- request:
-    body: ""
-    form: {}
-    headers:
-      Authorization:
-      - AWS4-HMAC-SHA256 Credential=SCW8XT5JRAV4B0WQSHPE/20201203/fr-par/s3/aws4_request,
-        SignedHeaders=host;x-amz-content-sha256;x-amz-date, Signature=681f4af974b2896e2723f4ea6fdce858ed2af1391822f2ad916fd956d8fd23cf
-      User-Agent:
-      - aws-sdk-go/1.34.32 (go1.15.5; darwin; amd64)
-      X-Amz-Content-Sha256:
-      - e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
-      X-Amz-Date:
-      - 20201203T101703Z
+      - 20210518T123646Z
     url: https://test-acc-scaleway-object-bucket-basic.s3.fr-par.scw.cloud/?tagging=
-    method: GET
+    method: PUT
   response:
-    body: <Tagging xmlns="http://s3.amazonaws.com/doc/2006-03-01/"><TagSet><Tag><Key>foo</Key><Value>bar</Value></Tag></TagSet></Tagging>
+    body: ""
     headers:
       Content-Length:
-      - "127"
+      - "0"
       Content-Type:
-      - application/xml
+      - text/html; charset=UTF-8
       Date:
-      - Thu, 03 Dec 2020 10:17:03 GMT
+      - Tue, 18 May 2021 12:36:46 GMT
       X-Amz-Id-2:
-      - tx778ae2814917412c9d06a-005fc8bb1f
+      - txace01899e3e14590a10c2-0060a3b4de
       X-Amz-Request-Id:
-      - tx778ae2814917412c9d06a-005fc8bb1f
-    status: 200 OK
-    code: 200
+      - txace01899e3e14590a10c2-0060a3b4de
+    status: 204 No Content
+    code: 204
     duration: ""
 - request:
     body: ""
     form: {}
     headers:
       Authorization:
-      - AWS4-HMAC-SHA256 Credential=SCW8XT5JRAV4B0WQSHPE/20201203/fr-par/s3/aws4_request,
-        SignedHeaders=host;x-amz-content-sha256;x-amz-date, Signature=569135c877bca2d85d7e5c7417765e5f3495ca30bcc65670a2f22ed9bcd015ba
-      User-Agent:
-      - aws-sdk-go/1.34.32 (go1.15.5; darwin; amd64)
-      X-Amz-Content-Sha256:
-      - e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
-      X-Amz-Date:
-      - 20201203T101703Z
-    url: https://test-acc-scaleway-object-bucket-basic-par.s3.fr-par.scw.cloud/?versioning=
-    method: GET
-  response:
-    body: |-
-      <?xml version='1.0' encoding='UTF-8'?>
-      <VersioningConfiguration xmlns="http://s3.amazonaws.com/doc/2006-03-01/"><Status>Suspended</Status></VersioningConfiguration>
-    headers:
-      Content-Length:
-      - "164"
-      Content-Type:
-      - text/plain
-      Date:
-      - Thu, 03 Dec 2020 10:17:03 GMT
-      X-Amz-Id-2:
-      - tx6c18d056aa6946d4a688b-005fc8bb1f
-      X-Amz-Request-Id:
-      - tx6c18d056aa6946d4a688b-005fc8bb1f
-    status: 200 OK
-    code: 200
-    duration: ""
-- request:
-    body: ""
-    form: {}
-    headers:
-      Authorization:
-      - AWS4-HMAC-SHA256 Credential=SCW8XT5JRAV4B0WQSHPE/20201203/nl-ams/s3/aws4_request,
-        SignedHeaders=host;x-amz-content-sha256;x-amz-date, Signature=a3bf740773b7020fd3a2286153a6c81630cc6392d15d069a9bb9c2dcb0132ff2
-      User-Agent:
-      - aws-sdk-go/1.34.32 (go1.15.5; darwin; amd64)
-      X-Amz-Content-Sha256:
-      - e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
-      X-Amz-Date:
-      - 20201203T101703Z
-    url: https://test-acc-scaleway-object-bucket-basic-ams.s3.nl-ams.scw.cloud/?versioning=
-    method: GET
-  response:
-    body: |-
-      <?xml version='1.0' encoding='UTF-8'?>
-      <VersioningConfiguration xmlns="http://s3.amazonaws.com/doc/2006-03-01/"><Status>Suspended</Status></VersioningConfiguration>
-    headers:
-      Content-Length:
-      - "164"
-      Content-Type:
-      - text/plain
-      Date:
-      - Thu, 03 Dec 2020 10:17:03 GMT
-      X-Amz-Id-2:
-      - txcff030c15e5c4ffdb5414-005fc8bb1f
-      X-Amz-Request-Id:
-      - txcff030c15e5c4ffdb5414-005fc8bb1f
-    status: 200 OK
-    code: 200
-    duration: ""
-- request:
-    body: ""
-    form: {}
-    headers:
-      Authorization:
-      - AWS4-HMAC-SHA256 Credential=SCW8XT5JRAV4B0WQSHPE/20201203/fr-par/s3/aws4_request,
-        SignedHeaders=host;x-amz-content-sha256;x-amz-date, Signature=83d59d7d8dca1677d15eacf3a1b9e3e53160122b851e83a53c12ec9674f42014
-      User-Agent:
-      - aws-sdk-go/1.34.32 (go1.15.5; darwin; amd64)
-      X-Amz-Content-Sha256:
-      - e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
-      X-Amz-Date:
-      - 20201203T101703Z
-    url: https://test-acc-scaleway-object-bucket-basic.s3.fr-par.scw.cloud/?versioning=
-    method: GET
-  response:
-    body: |-
-      <?xml version='1.0' encoding='UTF-8'?>
-      <VersioningConfiguration xmlns="http://s3.amazonaws.com/doc/2006-03-01/"><Status>Suspended</Status></VersioningConfiguration>
-    headers:
-      Content-Length:
-      - "164"
-      Content-Type:
-      - text/plain
-      Date:
-      - Thu, 03 Dec 2020 10:17:03 GMT
-      X-Amz-Id-2:
-      - tx73c90f02d9e044b7b749c-005fc8bb1f
-      X-Amz-Request-Id:
-      - tx73c90f02d9e044b7b749c-005fc8bb1f
-    status: 200 OK
-    code: 200
-    duration: ""
-- request:
-    body: ""
-    form: {}
-    headers:
-      Authorization:
-      - AWS4-HMAC-SHA256 Credential=SCW8XT5JRAV4B0WQSHPE/20201203/fr-par/s3/aws4_request,
+      - AWS4-HMAC-SHA256 Credential=SCWJ9FJYVF1SPS9HX0VZ/20210518/nl-ams/s3/aws4_request,
         SignedHeaders=content-md5;host;x-amz-acl;x-amz-content-sha256;x-amz-date,
-        Signature=f86fa43859dc3a35a24ef8e7443cdf7905672cc520efd36602872852461f3e95
+        Signature=bf16187b6ac4c34638550bbf535c0a958b53272348c39c2e0aacc1d932acd564
       Content-Md5:
       - 1B2M2Y8AsgTpgAmY7PhCfg==
       User-Agent:
-      - aws-sdk-go/1.34.32 (go1.15.5; darwin; amd64)
+      - aws-sdk-go/1.38.22 (go1.15.11; linux; amd64)
       X-Amz-Acl:
-      - public-read
+      - private
       X-Amz-Content-Sha256:
       - e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
       X-Amz-Date:
-      - 20201203T101704Z
+      - 20210518T123646Z
+    url: https://test-acc-scaleway-object-bucket-basic-ams.s3.nl-ams.scw.cloud/?acl=
+    method: PUT
+  response:
+    body: ""
+    headers:
+      Content-Length:
+      - "0"
+      Content-Type:
+      - text/html; charset=UTF-8
+      Date:
+      - Tue, 18 May 2021 12:36:46 GMT
+      X-Amz-Id-2:
+      - tx5c8aaacc3974462199344-0060a3b4de
+      X-Amz-Request-Id:
+      - tx5c8aaacc3974462199344-0060a3b4de
+    status: 200 OK
+    code: 200
+    duration: ""
+- request:
+    body: ""
+    form: {}
+    headers:
+      Authorization:
+      - AWS4-HMAC-SHA256 Credential=SCWJ9FJYVF1SPS9HX0VZ/20210518/fr-par/s3/aws4_request,
+        SignedHeaders=host;x-amz-content-sha256;x-amz-date, Signature=e18cf15d42955b908619a4d61543e6f3c99e82284ef1c3e5de98f1afc39dc844
+      User-Agent:
+      - aws-sdk-go/1.38.22 (go1.15.11; linux; amd64)
+      X-Amz-Content-Sha256:
+      - e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+      X-Amz-Date:
+      - 20210518T123646Z
+    url: https://test-acc-scaleway-object-bucket-basic-par.s3.fr-par.scw.cloud/?tagging=
+    method: GET
+  response:
+    body: |-
+      <?xml version='1.0' encoding='UTF-8'?>
+      <Error><Code>NoSuchTagSet</Code><Message>There is no tag set associated with the bucket or object.</Message><RequestId>tx2d098a99dcce4913ac8ed-0060a3b4de</RequestId><Headers/></Error>
+    headers:
+      Content-Type:
+      - application/xml
+      Date:
+      - Tue, 18 May 2021 12:36:46 GMT
+      X-Amz-Id-2:
+      - tx2d098a99dcce4913ac8ed-0060a3b4de
+      X-Amz-Request-Id:
+      - tx2d098a99dcce4913ac8ed-0060a3b4de
+    status: 404 Not Found
+    code: 404
+    duration: ""
+- request:
+    body: <Tagging xmlns="http://s3.amazonaws.com/doc/2006-03-01/"><TagSet><Tag><Key>foo</Key><Value>bar</Value></Tag><Tag><Key>baz</Key><Value>qux</Value></Tag></TagSet></Tagging>
+    form: {}
+    headers:
+      Authorization:
+      - AWS4-HMAC-SHA256 Credential=SCWJ9FJYVF1SPS9HX0VZ/20210518/nl-ams/s3/aws4_request,
+        SignedHeaders=content-length;content-md5;host;x-amz-content-sha256;x-amz-date,
+        Signature=a9c35b302ceeb3352bc8cacdae9e23d93db1c915553857a8607362204bed9826
+      Content-Length:
+      - "170"
+      Content-Md5:
+      - ziaankj55BixQT31uaj1mQ==
+      User-Agent:
+      - aws-sdk-go/1.38.22 (go1.15.11; linux; amd64)
+      X-Amz-Content-Sha256:
+      - 2b07a62db7be0f847b7208b34535d7acbbfec23ff29c04b5ca0176500fb16a32
+      X-Amz-Date:
+      - 20210518T123646Z
+    url: https://test-acc-scaleway-object-bucket-basic-ams.s3.nl-ams.scw.cloud/?tagging=
+    method: PUT
+  response:
+    body: ""
+    headers:
+      Content-Length:
+      - "0"
+      Content-Type:
+      - text/html; charset=UTF-8
+      Date:
+      - Tue, 18 May 2021 12:36:46 GMT
+      X-Amz-Id-2:
+      - tx513a3c74088c4f89994d4-0060a3b4de
+      X-Amz-Request-Id:
+      - tx513a3c74088c4f89994d4-0060a3b4de
+    status: 204 No Content
+    code: 204
+    duration: ""
+- request:
+    body: ""
+    form: {}
+    headers:
+      Authorization:
+      - AWS4-HMAC-SHA256 Credential=SCWJ9FJYVF1SPS9HX0VZ/20210518/fr-par/s3/aws4_request,
+        SignedHeaders=host;x-amz-content-sha256;x-amz-date, Signature=5f0fcccfa1a738658676032cff3fa6478c13758160a2e1303b629c0fb59268f2
+      User-Agent:
+      - aws-sdk-go/1.38.22 (go1.15.11; linux; amd64)
+      X-Amz-Content-Sha256:
+      - e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+      X-Amz-Date:
+      - 20210518T123646Z
+    url: https://test-acc-scaleway-object-bucket-basic-par.s3.fr-par.scw.cloud/?cors=
+    method: GET
+  response:
+    body: |-
+      <?xml version='1.0' encoding='UTF-8'?>
+      <Error><Code>NoSuchCORSConfiguration</Code><Message>The CORS configuration does not exist</Message><RequestId>txee1c3e0a0c064c32a11c3-0060a3b4de</RequestId></Error>
+    headers:
+      Content-Type:
+      - application/xml
+      Date:
+      - Tue, 18 May 2021 12:36:46 GMT
+      X-Amz-Id-2:
+      - txee1c3e0a0c064c32a11c3-0060a3b4de
+      X-Amz-Request-Id:
+      - txee1c3e0a0c064c32a11c3-0060a3b4de
+    status: 404 Not Found
+    code: 404
+    duration: ""
+- request:
+    body: ""
+    form: {}
+    headers:
+      Authorization:
+      - AWS4-HMAC-SHA256 Credential=SCWJ9FJYVF1SPS9HX0VZ/20210518/fr-par/s3/aws4_request,
+        SignedHeaders=content-md5;host;x-amz-acl;x-amz-content-sha256;x-amz-date,
+        Signature=d553b0517af9327e40176823e991f1da694214477b87d9e25efb605ef7fcd35e
+      Content-Md5:
+      - 1B2M2Y8AsgTpgAmY7PhCfg==
+      User-Agent:
+      - aws-sdk-go/1.38.22 (go1.15.11; linux; amd64)
+      X-Amz-Acl:
+      - private
+      X-Amz-Content-Sha256:
+      - e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+      X-Amz-Date:
+      - 20210518T123646Z
     url: https://test-acc-scaleway-object-bucket-basic.s3.fr-par.scw.cloud/?acl=
     method: PUT
   response:
@@ -1052,32 +418,98 @@ interactions:
       Content-Type:
       - text/html; charset=UTF-8
       Date:
-      - Thu, 03 Dec 2020 10:17:04 GMT
+      - Tue, 18 May 2021 12:36:46 GMT
       X-Amz-Id-2:
-      - tx688cd4e27dfd40eb9b6fb-005fc8bb20
+      - tx0d47faa49d834d0eab2c4-0060a3b4de
       X-Amz-Request-Id:
-      - tx688cd4e27dfd40eb9b6fb-005fc8bb20
+      - tx0d47faa49d834d0eab2c4-0060a3b4de
     status: 200 OK
     code: 200
     duration: ""
 - request:
-    body: <Tagging xmlns="http://s3.amazonaws.com/doc/2006-03-01/"><TagSet></TagSet></Tagging>
+    body: ""
     form: {}
     headers:
       Authorization:
-      - AWS4-HMAC-SHA256 Credential=SCW8XT5JRAV4B0WQSHPE/20201203/fr-par/s3/aws4_request,
-        SignedHeaders=content-length;content-md5;host;x-amz-content-sha256;x-amz-date,
-        Signature=ae35a7e05d95d10821d883e6f4202c26d65dd76b4a76ee0211337c9f4bdf2107
-      Content-Length:
-      - "84"
-      Content-Md5:
-      - WLP1D+SVXa/6vT6Cg2jskA==
+      - AWS4-HMAC-SHA256 Credential=SCWJ9FJYVF1SPS9HX0VZ/20210518/nl-ams/s3/aws4_request,
+        SignedHeaders=host;x-amz-content-sha256;x-amz-date, Signature=058392cfba5e99966c080f5794e7a34d412a5a66fc6f8a18ed506417f55609b6
       User-Agent:
-      - aws-sdk-go/1.34.32 (go1.15.5; darwin; amd64)
+      - aws-sdk-go/1.38.22 (go1.15.11; linux; amd64)
       X-Amz-Content-Sha256:
-      - 59e8ceb9de371302ad45d27b3c7f88c2aad736d6eb014c34fff6d155753ff443
+      - e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
       X-Amz-Date:
-      - 20201203T101704Z
+      - 20210518T123646Z
+    url: https://test-acc-scaleway-object-bucket-basic-ams.s3.nl-ams.scw.cloud/
+    method: GET
+  response:
+    body: |-
+      <?xml version='1.0' encoding='UTF-8'?>
+      <ListBucketResult xmlns="http://s3.amazonaws.com/doc/2006-03-01/"><Name>test-acc-scaleway-object-bucket-basic-ams</Name><Prefix/><Marker/><MaxKeys>1000</MaxKeys><IsTruncated>false</IsTruncated></ListBucketResult>
+    headers:
+      Content-Length:
+      - "255"
+      Content-Type:
+      - application/xml
+      Date:
+      - Tue, 18 May 2021 12:36:46 GMT
+      X-Amz-Id-2:
+      - tx0c8663aaa34840cf8a55f-0060a3b4de
+      X-Amz-Request-Id:
+      - tx0c8663aaa34840cf8a55f-0060a3b4de
+    status: 200 OK
+    code: 200
+    duration: ""
+- request:
+    body: ""
+    form: {}
+    headers:
+      Authorization:
+      - AWS4-HMAC-SHA256 Credential=SCWJ9FJYVF1SPS9HX0VZ/20210518/fr-par/s3/aws4_request,
+        SignedHeaders=host;x-amz-content-sha256;x-amz-date, Signature=ccb5a049f277469c2b9012e5c3d5ec7ea614ddd6473fe2f2244a46e271860484
+      User-Agent:
+      - aws-sdk-go/1.38.22 (go1.15.11; linux; amd64)
+      X-Amz-Content-Sha256:
+      - e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+      X-Amz-Date:
+      - 20210518T123646Z
+    url: https://test-acc-scaleway-object-bucket-basic-par.s3.fr-par.scw.cloud/?versioning=
+    method: GET
+  response:
+    body: |-
+      <?xml version='1.0' encoding='UTF-8'?>
+      <VersioningConfiguration xmlns="http://s3.amazonaws.com/doc/2006-03-01/"><Status>Suspended</Status></VersioningConfiguration>
+    headers:
+      Content-Length:
+      - "164"
+      Content-Type:
+      - text/plain
+      Date:
+      - Tue, 18 May 2021 12:36:46 GMT
+      X-Amz-Id-2:
+      - tx7e8f889b098f4baba85dc-0060a3b4de
+      X-Amz-Request-Id:
+      - tx7e8f889b098f4baba85dc-0060a3b4de
+    status: 200 OK
+    code: 200
+    duration: ""
+- request:
+    body: <Tagging xmlns="http://s3.amazonaws.com/doc/2006-03-01/"><TagSet><Tag><Key>foo</Key><Value>bar</Value></Tag></TagSet></Tagging>
+    form: {}
+    headers:
+      Authorization:
+      - AWS4-HMAC-SHA256 Credential=SCWJ9FJYVF1SPS9HX0VZ/20210518/fr-par/s3/aws4_request,
+        SignedHeaders=content-length;content-md5;host;x-amz-content-sha256;x-amz-date,
+        Signature=3c6ca566589b389f83c3d26048f98ecdd26cb0805ef914dc50388a84f40a1bd0
+      Content-Length:
+      - "127"
+      Content-Md5:
+      - GLaI7og/rAKomUfPePCCFQ==
+      User-Agent:
+      - aws-sdk-go/1.38.22 (go1.15.11; linux; amd64)
+      X-Amz-Content-Sha256:
+      - d68cba1a39d89eb72e49b2e5b04058846b60e88e6e32eae42901c4f57a4727a8
+      X-Amz-Date:
+      - 20210518T123646Z
     url: https://test-acc-scaleway-object-bucket-basic.s3.fr-par.scw.cloud/?tagging=
     method: PUT
   response:
@@ -1088,11 +520,11 @@ interactions:
       Content-Type:
       - text/html; charset=UTF-8
       Date:
-      - Thu, 03 Dec 2020 10:17:04 GMT
+      - Tue, 18 May 2021 12:36:46 GMT
       X-Amz-Id-2:
-      - txd8672b80edd34141b39ec-005fc8bb20
+      - tx21037b15d95b43b097a69-0060a3b4de
       X-Amz-Request-Id:
-      - txd8672b80edd34141b39ec-005fc8bb20
+      - tx21037b15d95b43b097a69-0060a3b4de
     status: 204 No Content
     code: 204
     duration: ""
@@ -1101,14 +533,109 @@ interactions:
     form: {}
     headers:
       Authorization:
-      - AWS4-HMAC-SHA256 Credential=SCW8XT5JRAV4B0WQSHPE/20201203/fr-par/s3/aws4_request,
-        SignedHeaders=host;x-amz-content-sha256;x-amz-date, Signature=773dfe763ac7dea6b1eb43c9e6afbdb1fd0ea7ea8871712f4c726721f9f63dd8
+      - AWS4-HMAC-SHA256 Credential=SCWJ9FJYVF1SPS9HX0VZ/20210518/nl-ams/s3/aws4_request,
+        SignedHeaders=host;x-amz-content-sha256;x-amz-date, Signature=a6e3cc77de421a1453e8ec8668b451a523bd9cd50d626a40b5d2d59a6185c2b7
       User-Agent:
-      - aws-sdk-go/1.34.32 (go1.15.5; darwin; amd64)
+      - aws-sdk-go/1.38.22 (go1.15.11; linux; amd64)
       X-Amz-Content-Sha256:
       - e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
       X-Amz-Date:
-      - 20201203T101704Z
+      - 20210518T123646Z
+    url: https://test-acc-scaleway-object-bucket-basic-ams.s3.nl-ams.scw.cloud/?tagging=
+    method: GET
+  response:
+    body: <Tagging xmlns="http://s3.amazonaws.com/doc/2006-03-01/"><TagSet><Tag><Key>foo</Key><Value>bar</Value></Tag><Tag><Key>baz</Key><Value>qux</Value></Tag></TagSet></Tagging>
+    headers:
+      Content-Length:
+      - "170"
+      Content-Type:
+      - application/xml
+      Date:
+      - Tue, 18 May 2021 12:36:46 GMT
+      X-Amz-Id-2:
+      - txb2ad84a88929436c9b4fd-0060a3b4de
+      X-Amz-Request-Id:
+      - txb2ad84a88929436c9b4fd-0060a3b4de
+    status: 200 OK
+    code: 200
+    duration: ""
+- request:
+    body: ""
+    form: {}
+    headers:
+      Authorization:
+      - AWS4-HMAC-SHA256 Credential=SCWJ9FJYVF1SPS9HX0VZ/20210518/nl-ams/s3/aws4_request,
+        SignedHeaders=host;x-amz-content-sha256;x-amz-date, Signature=9c5add174005e6c96f5555a7e027b8fe7c0d0ffaf180621a5a92c72a7f2bb997
+      User-Agent:
+      - aws-sdk-go/1.38.22 (go1.15.11; linux; amd64)
+      X-Amz-Content-Sha256:
+      - e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+      X-Amz-Date:
+      - 20210518T123646Z
+    url: https://test-acc-scaleway-object-bucket-basic-ams.s3.nl-ams.scw.cloud/?cors=
+    method: GET
+  response:
+    body: |-
+      <?xml version='1.0' encoding='UTF-8'?>
+      <Error><Code>NoSuchCORSConfiguration</Code><Message>The CORS configuration does not exist</Message><RequestId>txf251b42211714626aa9e8-0060a3b4de</RequestId></Error>
+    headers:
+      Content-Type:
+      - application/xml
+      Date:
+      - Tue, 18 May 2021 12:36:46 GMT
+      X-Amz-Id-2:
+      - txf251b42211714626aa9e8-0060a3b4de
+      X-Amz-Request-Id:
+      - txf251b42211714626aa9e8-0060a3b4de
+    status: 404 Not Found
+    code: 404
+    duration: ""
+- request:
+    body: ""
+    form: {}
+    headers:
+      Authorization:
+      - AWS4-HMAC-SHA256 Credential=SCWJ9FJYVF1SPS9HX0VZ/20210518/nl-ams/s3/aws4_request,
+        SignedHeaders=host;x-amz-content-sha256;x-amz-date, Signature=a4d9aa8e9b5d4918e5a032b93f4c96ce3315f3698fc841d179793295c31600d8
+      User-Agent:
+      - aws-sdk-go/1.38.22 (go1.15.11; linux; amd64)
+      X-Amz-Content-Sha256:
+      - e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+      X-Amz-Date:
+      - 20210518T123646Z
+    url: https://test-acc-scaleway-object-bucket-basic-ams.s3.nl-ams.scw.cloud/?versioning=
+    method: GET
+  response:
+    body: |-
+      <?xml version='1.0' encoding='UTF-8'?>
+      <VersioningConfiguration xmlns="http://s3.amazonaws.com/doc/2006-03-01/"><Status>Suspended</Status></VersioningConfiguration>
+    headers:
+      Content-Length:
+      - "164"
+      Content-Type:
+      - text/plain
+      Date:
+      - Tue, 18 May 2021 12:36:46 GMT
+      X-Amz-Id-2:
+      - tx764a8f69d14f4824a5614-0060a3b4de
+      X-Amz-Request-Id:
+      - tx764a8f69d14f4824a5614-0060a3b4de
+    status: 200 OK
+    code: 200
+    duration: ""
+- request:
+    body: ""
+    form: {}
+    headers:
+      Authorization:
+      - AWS4-HMAC-SHA256 Credential=SCWJ9FJYVF1SPS9HX0VZ/20210518/fr-par/s3/aws4_request,
+        SignedHeaders=host;x-amz-content-sha256;x-amz-date, Signature=2eac8d72f06d2dcd604e8b6fb9c528122d54e8be816a2922132a78798378dafb
+      User-Agent:
+      - aws-sdk-go/1.38.22 (go1.15.11; linux; amd64)
+      X-Amz-Content-Sha256:
+      - e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+      X-Amz-Date:
+      - 20210518T123646Z
     url: https://test-acc-scaleway-object-bucket-basic.s3.fr-par.scw.cloud/
     method: GET
   response:
@@ -1117,15 +644,15 @@ interactions:
       <ListBucketResult xmlns="http://s3.amazonaws.com/doc/2006-03-01/"><Name>test-acc-scaleway-object-bucket-basic</Name><Prefix/><Marker/><MaxKeys>1000</MaxKeys><IsTruncated>false</IsTruncated></ListBucketResult>
     headers:
       Content-Length:
-      - "247"
+      - "251"
       Content-Type:
       - application/xml
       Date:
-      - Thu, 03 Dec 2020 10:17:04 GMT
+      - Tue, 18 May 2021 12:36:46 GMT
       X-Amz-Id-2:
-      - tx02d4e6e3fa614e57a18e7-005fc8bb20
+      - txaef75ee9bd5e4a97ab49a-0060a3b4de
       X-Amz-Request-Id:
-      - tx02d4e6e3fa614e57a18e7-005fc8bb20
+      - txaef75ee9bd5e4a97ab49a-0060a3b4de
     status: 200 OK
     code: 200
     duration: ""
@@ -1134,29 +661,29 @@ interactions:
     form: {}
     headers:
       Authorization:
-      - AWS4-HMAC-SHA256 Credential=SCW8XT5JRAV4B0WQSHPE/20201203/fr-par/s3/aws4_request,
-        SignedHeaders=host;x-amz-content-sha256;x-amz-date, Signature=972a75a8b2029c427618d63a5e7db7df2580e0388b9db8edf162f0a055c058b1
+      - AWS4-HMAC-SHA256 Credential=SCWJ9FJYVF1SPS9HX0VZ/20210518/fr-par/s3/aws4_request,
+        SignedHeaders=host;x-amz-content-sha256;x-amz-date, Signature=052ee75a628b6bf7a694a0b794b067876d57faa30f8b7b652749f527f4d2f4fd
       User-Agent:
-      - aws-sdk-go/1.34.32 (go1.15.5; darwin; amd64)
+      - aws-sdk-go/1.38.22 (go1.15.11; linux; amd64)
       X-Amz-Content-Sha256:
       - e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
       X-Amz-Date:
-      - 20201203T101704Z
+      - 20210518T123646Z
     url: https://test-acc-scaleway-object-bucket-basic.s3.fr-par.scw.cloud/?tagging=
     method: GET
   response:
-    body: <Tagging xmlns="http://s3.amazonaws.com/doc/2006-03-01/"><TagSet></TagSet></Tagging>
+    body: <Tagging xmlns="http://s3.amazonaws.com/doc/2006-03-01/"><TagSet><Tag><Key>foo</Key><Value>bar</Value></Tag></TagSet></Tagging>
     headers:
       Content-Length:
-      - "84"
+      - "127"
       Content-Type:
       - application/xml
       Date:
-      - Thu, 03 Dec 2020 10:17:04 GMT
+      - Tue, 18 May 2021 12:36:47 GMT
       X-Amz-Id-2:
-      - tx8cd090342e564c31acc58-005fc8bb20
+      - txdd3c957cf9624848a01a3-0060a3b4de
       X-Amz-Request-Id:
-      - tx8cd090342e564c31acc58-005fc8bb20
+      - txdd3c957cf9624848a01a3-0060a3b4de
     status: 200 OK
     code: 200
     duration: ""
@@ -1165,14 +692,1013 @@ interactions:
     form: {}
     headers:
       Authorization:
-      - AWS4-HMAC-SHA256 Credential=SCW8XT5JRAV4B0WQSHPE/20201203/fr-par/s3/aws4_request,
-        SignedHeaders=host;x-amz-content-sha256;x-amz-date, Signature=2e9663fe09995b691def3889bb0bd028fff549e35db2db14229ba6b094901915
+      - AWS4-HMAC-SHA256 Credential=SCWJ9FJYVF1SPS9HX0VZ/20210518/fr-par/s3/aws4_request,
+        SignedHeaders=host;x-amz-content-sha256;x-amz-date, Signature=aaa0861e66b0d7053b4f9f8106aaedc20f1b11ce9fdaaf45b9722ea2e81c14db
       User-Agent:
-      - aws-sdk-go/1.34.32 (go1.15.5; darwin; amd64)
+      - aws-sdk-go/1.38.22 (go1.15.11; linux; amd64)
       X-Amz-Content-Sha256:
       - e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
       X-Amz-Date:
-      - 20201203T101704Z
+      - 20210518T123647Z
+    url: https://test-acc-scaleway-object-bucket-basic.s3.fr-par.scw.cloud/?cors=
+    method: GET
+  response:
+    body: |-
+      <?xml version='1.0' encoding='UTF-8'?>
+      <Error><Code>NoSuchCORSConfiguration</Code><Message>The CORS configuration does not exist</Message><RequestId>tx484c1e3b580741c4bea65-0060a3b4df</RequestId></Error>
+    headers:
+      Content-Type:
+      - application/xml
+      Date:
+      - Tue, 18 May 2021 12:36:47 GMT
+      X-Amz-Id-2:
+      - tx484c1e3b580741c4bea65-0060a3b4df
+      X-Amz-Request-Id:
+      - tx484c1e3b580741c4bea65-0060a3b4df
+    status: 404 Not Found
+    code: 404
+    duration: ""
+- request:
+    body: ""
+    form: {}
+    headers:
+      Authorization:
+      - AWS4-HMAC-SHA256 Credential=SCWJ9FJYVF1SPS9HX0VZ/20210518/fr-par/s3/aws4_request,
+        SignedHeaders=host;x-amz-content-sha256;x-amz-date, Signature=b38f1059aa3fd791d4f1cea10aeb813b3d90730cee2774ea6c4a0499a827f311
+      User-Agent:
+      - aws-sdk-go/1.38.22 (go1.15.11; linux; amd64)
+      X-Amz-Content-Sha256:
+      - e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+      X-Amz-Date:
+      - 20210518T123647Z
+    url: https://test-acc-scaleway-object-bucket-basic.s3.fr-par.scw.cloud/?versioning=
+    method: GET
+  response:
+    body: |-
+      <?xml version='1.0' encoding='UTF-8'?>
+      <VersioningConfiguration xmlns="http://s3.amazonaws.com/doc/2006-03-01/"><Status>Suspended</Status></VersioningConfiguration>
+    headers:
+      Content-Length:
+      - "164"
+      Content-Type:
+      - text/plain
+      Date:
+      - Tue, 18 May 2021 12:36:47 GMT
+      X-Amz-Id-2:
+      - txf88e576f10ca4ccaa6b50-0060a3b4df
+      X-Amz-Request-Id:
+      - txf88e576f10ca4ccaa6b50-0060a3b4df
+    status: 200 OK
+    code: 200
+    duration: ""
+- request:
+    body: ""
+    form: {}
+    headers:
+      Authorization:
+      - AWS4-HMAC-SHA256 Credential=SCWJ9FJYVF1SPS9HX0VZ/20210518/nl-ams/s3/aws4_request,
+        SignedHeaders=host;x-amz-content-sha256;x-amz-date, Signature=601eba177619b18b62cf04604735c75c6e8cfe750c27ec1d596c6d101e401977
+      User-Agent:
+      - aws-sdk-go/1.38.22 (go1.15.11; linux; amd64)
+      X-Amz-Content-Sha256:
+      - e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+      X-Amz-Date:
+      - 20210518T123647Z
+    url: https://test-acc-scaleway-object-bucket-basic-ams.s3.nl-ams.scw.cloud/
+    method: GET
+  response:
+    body: |-
+      <?xml version='1.0' encoding='UTF-8'?>
+      <ListBucketResult xmlns="http://s3.amazonaws.com/doc/2006-03-01/"><Name>test-acc-scaleway-object-bucket-basic-ams</Name><Prefix/><Marker/><MaxKeys>1000</MaxKeys><IsTruncated>false</IsTruncated></ListBucketResult>
+    headers:
+      Content-Length:
+      - "255"
+      Content-Type:
+      - application/xml
+      Date:
+      - Tue, 18 May 2021 12:36:47 GMT
+      X-Amz-Id-2:
+      - txd2ce9873062a4432b45cf-0060a3b4df
+      X-Amz-Request-Id:
+      - txd2ce9873062a4432b45cf-0060a3b4df
+    status: 200 OK
+    code: 200
+    duration: ""
+- request:
+    body: ""
+    form: {}
+    headers:
+      Authorization:
+      - AWS4-HMAC-SHA256 Credential=SCWJ9FJYVF1SPS9HX0VZ/20210518/fr-par/s3/aws4_request,
+        SignedHeaders=host;x-amz-content-sha256;x-amz-date, Signature=83e451ea5b2d8fd2e1d878b0829489b1070bdc7a70eae7189867b2f9c8d32f16
+      User-Agent:
+      - aws-sdk-go/1.38.22 (go1.15.11; linux; amd64)
+      X-Amz-Content-Sha256:
+      - e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+      X-Amz-Date:
+      - 20210518T123647Z
+    url: https://test-acc-scaleway-object-bucket-basic-par.s3.fr-par.scw.cloud/
+    method: GET
+  response:
+    body: |-
+      <?xml version='1.0' encoding='UTF-8'?>
+      <ListBucketResult xmlns="http://s3.amazonaws.com/doc/2006-03-01/"><Name>test-acc-scaleway-object-bucket-basic-par</Name><Prefix/><Marker/><MaxKeys>1000</MaxKeys><IsTruncated>false</IsTruncated></ListBucketResult>
+    headers:
+      Content-Length:
+      - "255"
+      Content-Type:
+      - application/xml
+      Date:
+      - Tue, 18 May 2021 12:36:47 GMT
+      X-Amz-Id-2:
+      - tx96b04065a79f4aef84094-0060a3b4df
+      X-Amz-Request-Id:
+      - tx96b04065a79f4aef84094-0060a3b4df
+    status: 200 OK
+    code: 200
+    duration: ""
+- request:
+    body: ""
+    form: {}
+    headers:
+      Authorization:
+      - AWS4-HMAC-SHA256 Credential=SCWJ9FJYVF1SPS9HX0VZ/20210518/fr-par/s3/aws4_request,
+        SignedHeaders=host;x-amz-content-sha256;x-amz-date, Signature=7c2224e983306cd4d689e10767bca3e713451d486e94ca4c98c56f66c476feab
+      User-Agent:
+      - aws-sdk-go/1.38.22 (go1.15.11; linux; amd64)
+      X-Amz-Content-Sha256:
+      - e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+      X-Amz-Date:
+      - 20210518T123647Z
+    url: https://test-acc-scaleway-object-bucket-basic.s3.fr-par.scw.cloud/
+    method: GET
+  response:
+    body: |-
+      <?xml version='1.0' encoding='UTF-8'?>
+      <ListBucketResult xmlns="http://s3.amazonaws.com/doc/2006-03-01/"><Name>test-acc-scaleway-object-bucket-basic</Name><Prefix/><Marker/><MaxKeys>1000</MaxKeys><IsTruncated>false</IsTruncated></ListBucketResult>
+    headers:
+      Content-Length:
+      - "251"
+      Content-Type:
+      - application/xml
+      Date:
+      - Tue, 18 May 2021 12:36:47 GMT
+      X-Amz-Id-2:
+      - tx2440119ba6f14b40ab444-0060a3b4df
+      X-Amz-Request-Id:
+      - tx2440119ba6f14b40ab444-0060a3b4df
+    status: 200 OK
+    code: 200
+    duration: ""
+- request:
+    body: ""
+    form: {}
+    headers:
+      Authorization:
+      - AWS4-HMAC-SHA256 Credential=SCWJ9FJYVF1SPS9HX0VZ/20210518/nl-ams/s3/aws4_request,
+        SignedHeaders=host;x-amz-content-sha256;x-amz-date, Signature=a6552c27b8b525fa808ced7431d5bbd6b9d0f3f5e4913332c82410eb52563a14
+      User-Agent:
+      - aws-sdk-go/1.38.22 (go1.15.11; linux; amd64)
+      X-Amz-Content-Sha256:
+      - e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+      X-Amz-Date:
+      - 20210518T123647Z
+    url: https://test-acc-scaleway-object-bucket-basic-ams.s3.nl-ams.scw.cloud/?tagging=
+    method: GET
+  response:
+    body: <Tagging xmlns="http://s3.amazonaws.com/doc/2006-03-01/"><TagSet><Tag><Key>foo</Key><Value>bar</Value></Tag><Tag><Key>baz</Key><Value>qux</Value></Tag></TagSet></Tagging>
+    headers:
+      Content-Length:
+      - "170"
+      Content-Type:
+      - application/xml
+      Date:
+      - Tue, 18 May 2021 12:36:47 GMT
+      X-Amz-Id-2:
+      - txc5d1b42344cc4dc0b41f1-0060a3b4df
+      X-Amz-Request-Id:
+      - txc5d1b42344cc4dc0b41f1-0060a3b4df
+    status: 200 OK
+    code: 200
+    duration: ""
+- request:
+    body: ""
+    form: {}
+    headers:
+      Authorization:
+      - AWS4-HMAC-SHA256 Credential=SCWJ9FJYVF1SPS9HX0VZ/20210518/fr-par/s3/aws4_request,
+        SignedHeaders=host;x-amz-content-sha256;x-amz-date, Signature=3110b408fe78ea3a6509a5e69a35ef0886a6de0f3b7cf02ea2fefe8abaf8ce40
+      User-Agent:
+      - aws-sdk-go/1.38.22 (go1.15.11; linux; amd64)
+      X-Amz-Content-Sha256:
+      - e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+      X-Amz-Date:
+      - 20210518T123647Z
+    url: https://test-acc-scaleway-object-bucket-basic.s3.fr-par.scw.cloud/?tagging=
+    method: GET
+  response:
+    body: <Tagging xmlns="http://s3.amazonaws.com/doc/2006-03-01/"><TagSet><Tag><Key>foo</Key><Value>bar</Value></Tag></TagSet></Tagging>
+    headers:
+      Content-Length:
+      - "127"
+      Content-Type:
+      - application/xml
+      Date:
+      - Tue, 18 May 2021 12:36:47 GMT
+      X-Amz-Id-2:
+      - tx8afbc4e72d9945f2a5454-0060a3b4df
+      X-Amz-Request-Id:
+      - tx8afbc4e72d9945f2a5454-0060a3b4df
+    status: 200 OK
+    code: 200
+    duration: ""
+- request:
+    body: ""
+    form: {}
+    headers:
+      Authorization:
+      - AWS4-HMAC-SHA256 Credential=SCWJ9FJYVF1SPS9HX0VZ/20210518/fr-par/s3/aws4_request,
+        SignedHeaders=host;x-amz-content-sha256;x-amz-date, Signature=2177b70c69fc594617203d7b4862fdc7e9a442f1af6ca67684d5d5ceeb0fe0ce
+      User-Agent:
+      - aws-sdk-go/1.38.22 (go1.15.11; linux; amd64)
+      X-Amz-Content-Sha256:
+      - e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+      X-Amz-Date:
+      - 20210518T123647Z
+    url: https://test-acc-scaleway-object-bucket-basic-par.s3.fr-par.scw.cloud/?tagging=
+    method: GET
+  response:
+    body: |-
+      <?xml version='1.0' encoding='UTF-8'?>
+      <Error><Code>NoSuchTagSet</Code><Message>There is no tag set associated with the bucket or object.</Message><RequestId>txac1881cf51ad4ce1ade99-0060a3b4df</RequestId><Headers/></Error>
+    headers:
+      Content-Type:
+      - application/xml
+      Date:
+      - Tue, 18 May 2021 12:36:47 GMT
+      X-Amz-Id-2:
+      - txac1881cf51ad4ce1ade99-0060a3b4df
+      X-Amz-Request-Id:
+      - txac1881cf51ad4ce1ade99-0060a3b4df
+    status: 404 Not Found
+    code: 404
+    duration: ""
+- request:
+    body: ""
+    form: {}
+    headers:
+      Authorization:
+      - AWS4-HMAC-SHA256 Credential=SCWJ9FJYVF1SPS9HX0VZ/20210518/fr-par/s3/aws4_request,
+        SignedHeaders=host;x-amz-content-sha256;x-amz-date, Signature=aaa0861e66b0d7053b4f9f8106aaedc20f1b11ce9fdaaf45b9722ea2e81c14db
+      User-Agent:
+      - aws-sdk-go/1.38.22 (go1.15.11; linux; amd64)
+      X-Amz-Content-Sha256:
+      - e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+      X-Amz-Date:
+      - 20210518T123647Z
+    url: https://test-acc-scaleway-object-bucket-basic.s3.fr-par.scw.cloud/?cors=
+    method: GET
+  response:
+    body: |-
+      <?xml version='1.0' encoding='UTF-8'?>
+      <Error><Code>NoSuchCORSConfiguration</Code><Message>The CORS configuration does not exist</Message><RequestId>tx182fcaba7cba46fd95d96-0060a3b4df</RequestId></Error>
+    headers:
+      Content-Type:
+      - application/xml
+      Date:
+      - Tue, 18 May 2021 12:36:47 GMT
+      X-Amz-Id-2:
+      - tx182fcaba7cba46fd95d96-0060a3b4df
+      X-Amz-Request-Id:
+      - tx182fcaba7cba46fd95d96-0060a3b4df
+    status: 404 Not Found
+    code: 404
+    duration: ""
+- request:
+    body: ""
+    form: {}
+    headers:
+      Authorization:
+      - AWS4-HMAC-SHA256 Credential=SCWJ9FJYVF1SPS9HX0VZ/20210518/nl-ams/s3/aws4_request,
+        SignedHeaders=host;x-amz-content-sha256;x-amz-date, Signature=2cefad2618fd69df682b38e9219a05fe573bd8d314ef7c52c8460caa08ed53b9
+      User-Agent:
+      - aws-sdk-go/1.38.22 (go1.15.11; linux; amd64)
+      X-Amz-Content-Sha256:
+      - e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+      X-Amz-Date:
+      - 20210518T123647Z
+    url: https://test-acc-scaleway-object-bucket-basic-ams.s3.nl-ams.scw.cloud/?cors=
+    method: GET
+  response:
+    body: |-
+      <?xml version='1.0' encoding='UTF-8'?>
+      <Error><Code>NoSuchCORSConfiguration</Code><Message>The CORS configuration does not exist</Message><RequestId>txeb2e8eacb29444738bdab-0060a3b4df</RequestId></Error>
+    headers:
+      Content-Type:
+      - application/xml
+      Date:
+      - Tue, 18 May 2021 12:36:47 GMT
+      X-Amz-Id-2:
+      - txeb2e8eacb29444738bdab-0060a3b4df
+      X-Amz-Request-Id:
+      - txeb2e8eacb29444738bdab-0060a3b4df
+    status: 404 Not Found
+    code: 404
+    duration: ""
+- request:
+    body: ""
+    form: {}
+    headers:
+      Authorization:
+      - AWS4-HMAC-SHA256 Credential=SCWJ9FJYVF1SPS9HX0VZ/20210518/fr-par/s3/aws4_request,
+        SignedHeaders=host;x-amz-content-sha256;x-amz-date, Signature=20abb8c65f6a5b703be7a96870610725771e9bf5fbde83071bd8a5bbc8161776
+      User-Agent:
+      - aws-sdk-go/1.38.22 (go1.15.11; linux; amd64)
+      X-Amz-Content-Sha256:
+      - e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+      X-Amz-Date:
+      - 20210518T123647Z
+    url: https://test-acc-scaleway-object-bucket-basic-par.s3.fr-par.scw.cloud/?cors=
+    method: GET
+  response:
+    body: |-
+      <?xml version='1.0' encoding='UTF-8'?>
+      <Error><Code>NoSuchCORSConfiguration</Code><Message>The CORS configuration does not exist</Message><RequestId>tx16c94322bf3d438bbdbc8-0060a3b4df</RequestId></Error>
+    headers:
+      Content-Type:
+      - application/xml
+      Date:
+      - Tue, 18 May 2021 12:36:47 GMT
+      X-Amz-Id-2:
+      - tx16c94322bf3d438bbdbc8-0060a3b4df
+      X-Amz-Request-Id:
+      - tx16c94322bf3d438bbdbc8-0060a3b4df
+    status: 404 Not Found
+    code: 404
+    duration: ""
+- request:
+    body: ""
+    form: {}
+    headers:
+      Authorization:
+      - AWS4-HMAC-SHA256 Credential=SCWJ9FJYVF1SPS9HX0VZ/20210518/nl-ams/s3/aws4_request,
+        SignedHeaders=host;x-amz-content-sha256;x-amz-date, Signature=6b875f798398ba72fff12232fef0a73ea6dcfb5f9b3f198a1b783a478bbb1d71
+      User-Agent:
+      - aws-sdk-go/1.38.22 (go1.15.11; linux; amd64)
+      X-Amz-Content-Sha256:
+      - e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+      X-Amz-Date:
+      - 20210518T123647Z
+    url: https://test-acc-scaleway-object-bucket-basic-ams.s3.nl-ams.scw.cloud/?versioning=
+    method: GET
+  response:
+    body: |-
+      <?xml version='1.0' encoding='UTF-8'?>
+      <VersioningConfiguration xmlns="http://s3.amazonaws.com/doc/2006-03-01/"><Status>Suspended</Status></VersioningConfiguration>
+    headers:
+      Content-Length:
+      - "164"
+      Content-Type:
+      - text/plain
+      Date:
+      - Tue, 18 May 2021 12:36:47 GMT
+      X-Amz-Id-2:
+      - tx41d5c344a72a40cba5027-0060a3b4df
+      X-Amz-Request-Id:
+      - tx41d5c344a72a40cba5027-0060a3b4df
+    status: 200 OK
+    code: 200
+    duration: ""
+- request:
+    body: ""
+    form: {}
+    headers:
+      Authorization:
+      - AWS4-HMAC-SHA256 Credential=SCWJ9FJYVF1SPS9HX0VZ/20210518/fr-par/s3/aws4_request,
+        SignedHeaders=host;x-amz-content-sha256;x-amz-date, Signature=b38f1059aa3fd791d4f1cea10aeb813b3d90730cee2774ea6c4a0499a827f311
+      User-Agent:
+      - aws-sdk-go/1.38.22 (go1.15.11; linux; amd64)
+      X-Amz-Content-Sha256:
+      - e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+      X-Amz-Date:
+      - 20210518T123647Z
+    url: https://test-acc-scaleway-object-bucket-basic.s3.fr-par.scw.cloud/?versioning=
+    method: GET
+  response:
+    body: |-
+      <?xml version='1.0' encoding='UTF-8'?>
+      <VersioningConfiguration xmlns="http://s3.amazonaws.com/doc/2006-03-01/"><Status>Suspended</Status></VersioningConfiguration>
+    headers:
+      Content-Length:
+      - "164"
+      Content-Type:
+      - text/plain
+      Date:
+      - Tue, 18 May 2021 12:36:47 GMT
+      X-Amz-Id-2:
+      - txc1958cea54894ef5a6475-0060a3b4df
+      X-Amz-Request-Id:
+      - txc1958cea54894ef5a6475-0060a3b4df
+    status: 200 OK
+    code: 200
+    duration: ""
+- request:
+    body: ""
+    form: {}
+    headers:
+      Authorization:
+      - AWS4-HMAC-SHA256 Credential=SCWJ9FJYVF1SPS9HX0VZ/20210518/fr-par/s3/aws4_request,
+        SignedHeaders=host;x-amz-content-sha256;x-amz-date, Signature=913a028c23058288b3be517e7382632f03876cc1e3a3886dd0bd03585117a6f5
+      User-Agent:
+      - aws-sdk-go/1.38.22 (go1.15.11; linux; amd64)
+      X-Amz-Content-Sha256:
+      - e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+      X-Amz-Date:
+      - 20210518T123647Z
+    url: https://test-acc-scaleway-object-bucket-basic-par.s3.fr-par.scw.cloud/?versioning=
+    method: GET
+  response:
+    body: |-
+      <?xml version='1.0' encoding='UTF-8'?>
+      <VersioningConfiguration xmlns="http://s3.amazonaws.com/doc/2006-03-01/"><Status>Suspended</Status></VersioningConfiguration>
+    headers:
+      Content-Length:
+      - "164"
+      Content-Type:
+      - text/plain
+      Date:
+      - Tue, 18 May 2021 12:36:48 GMT
+      X-Amz-Id-2:
+      - txfd1cb13dd95946e792057-0060a3b4df
+      X-Amz-Request-Id:
+      - txfd1cb13dd95946e792057-0060a3b4df
+    status: 200 OK
+    code: 200
+    duration: ""
+- request:
+    body: ""
+    form: {}
+    headers:
+      Authorization:
+      - AWS4-HMAC-SHA256 Credential=SCWJ9FJYVF1SPS9HX0VZ/20210518/nl-ams/s3/aws4_request,
+        SignedHeaders=host;x-amz-content-sha256;x-amz-date, Signature=9b9087286512f0d24feafa239c30736b12252a388c07484dbd73a2a636886626
+      User-Agent:
+      - aws-sdk-go/1.38.22 (go1.15.11; linux; amd64)
+      X-Amz-Content-Sha256:
+      - e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+      X-Amz-Date:
+      - 20210518T123648Z
+    url: https://test-acc-scaleway-object-bucket-basic-ams.s3.nl-ams.scw.cloud/
+    method: GET
+  response:
+    body: |-
+      <?xml version='1.0' encoding='UTF-8'?>
+      <ListBucketResult xmlns="http://s3.amazonaws.com/doc/2006-03-01/"><Name>test-acc-scaleway-object-bucket-basic-ams</Name><Prefix/><Marker/><MaxKeys>1000</MaxKeys><IsTruncated>false</IsTruncated></ListBucketResult>
+    headers:
+      Content-Length:
+      - "255"
+      Content-Type:
+      - application/xml
+      Date:
+      - Tue, 18 May 2021 12:36:48 GMT
+      X-Amz-Id-2:
+      - txea75f60164a3494a8b4c9-0060a3b4e0
+      X-Amz-Request-Id:
+      - txea75f60164a3494a8b4c9-0060a3b4e0
+    status: 200 OK
+    code: 200
+    duration: ""
+- request:
+    body: ""
+    form: {}
+    headers:
+      Authorization:
+      - AWS4-HMAC-SHA256 Credential=SCWJ9FJYVF1SPS9HX0VZ/20210518/fr-par/s3/aws4_request,
+        SignedHeaders=host;x-amz-content-sha256;x-amz-date, Signature=1d8c1e14fc380c862689b05f7d38176bd799bde25f8d021350dba970ed640b41
+      User-Agent:
+      - aws-sdk-go/1.38.22 (go1.15.11; linux; amd64)
+      X-Amz-Content-Sha256:
+      - e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+      X-Amz-Date:
+      - 20210518T123648Z
+    url: https://test-acc-scaleway-object-bucket-basic-par.s3.fr-par.scw.cloud/
+    method: GET
+  response:
+    body: |-
+      <?xml version='1.0' encoding='UTF-8'?>
+      <ListBucketResult xmlns="http://s3.amazonaws.com/doc/2006-03-01/"><Name>test-acc-scaleway-object-bucket-basic-par</Name><Prefix/><Marker/><MaxKeys>1000</MaxKeys><IsTruncated>false</IsTruncated></ListBucketResult>
+    headers:
+      Content-Length:
+      - "255"
+      Content-Type:
+      - application/xml
+      Date:
+      - Tue, 18 May 2021 12:36:48 GMT
+      X-Amz-Id-2:
+      - txd3b05882f90545fcb7490-0060a3b4e0
+      X-Amz-Request-Id:
+      - txd3b05882f90545fcb7490-0060a3b4e0
+    status: 200 OK
+    code: 200
+    duration: ""
+- request:
+    body: ""
+    form: {}
+    headers:
+      Authorization:
+      - AWS4-HMAC-SHA256 Credential=SCWJ9FJYVF1SPS9HX0VZ/20210518/fr-par/s3/aws4_request,
+        SignedHeaders=host;x-amz-content-sha256;x-amz-date, Signature=83975f86bd9f490d5561a1bf40da87071715c8bfc3791261886d45bb8694ae42
+      User-Agent:
+      - aws-sdk-go/1.38.22 (go1.15.11; linux; amd64)
+      X-Amz-Content-Sha256:
+      - e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+      X-Amz-Date:
+      - 20210518T123648Z
+    url: https://test-acc-scaleway-object-bucket-basic.s3.fr-par.scw.cloud/
+    method: GET
+  response:
+    body: |-
+      <?xml version='1.0' encoding='UTF-8'?>
+      <ListBucketResult xmlns="http://s3.amazonaws.com/doc/2006-03-01/"><Name>test-acc-scaleway-object-bucket-basic</Name><Prefix/><Marker/><MaxKeys>1000</MaxKeys><IsTruncated>false</IsTruncated></ListBucketResult>
+    headers:
+      Content-Length:
+      - "251"
+      Content-Type:
+      - application/xml
+      Date:
+      - Tue, 18 May 2021 12:36:48 GMT
+      X-Amz-Id-2:
+      - tx1ca73a2b032549b6a8319-0060a3b4e0
+      X-Amz-Request-Id:
+      - tx1ca73a2b032549b6a8319-0060a3b4e0
+    status: 200 OK
+    code: 200
+    duration: ""
+- request:
+    body: ""
+    form: {}
+    headers:
+      Authorization:
+      - AWS4-HMAC-SHA256 Credential=SCWJ9FJYVF1SPS9HX0VZ/20210518/nl-ams/s3/aws4_request,
+        SignedHeaders=host;x-amz-content-sha256;x-amz-date, Signature=d6739c6639281b33b3a9a65dc2d2926ce969b3fe42bd9802e94f4b47d7d9a7c1
+      User-Agent:
+      - aws-sdk-go/1.38.22 (go1.15.11; linux; amd64)
+      X-Amz-Content-Sha256:
+      - e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+      X-Amz-Date:
+      - 20210518T123648Z
+    url: https://test-acc-scaleway-object-bucket-basic-ams.s3.nl-ams.scw.cloud/?tagging=
+    method: GET
+  response:
+    body: <Tagging xmlns="http://s3.amazonaws.com/doc/2006-03-01/"><TagSet><Tag><Key>foo</Key><Value>bar</Value></Tag><Tag><Key>baz</Key><Value>qux</Value></Tag></TagSet></Tagging>
+    headers:
+      Content-Length:
+      - "170"
+      Content-Type:
+      - application/xml
+      Date:
+      - Tue, 18 May 2021 12:36:48 GMT
+      X-Amz-Id-2:
+      - tx2af152ab1e104e628cf97-0060a3b4e0
+      X-Amz-Request-Id:
+      - tx2af152ab1e104e628cf97-0060a3b4e0
+    status: 200 OK
+    code: 200
+    duration: ""
+- request:
+    body: ""
+    form: {}
+    headers:
+      Authorization:
+      - AWS4-HMAC-SHA256 Credential=SCWJ9FJYVF1SPS9HX0VZ/20210518/fr-par/s3/aws4_request,
+        SignedHeaders=host;x-amz-content-sha256;x-amz-date, Signature=6b05de385e0e5cccd12212d60c652531906169420d8aeb9d93aecf7ff115121b
+      User-Agent:
+      - aws-sdk-go/1.38.22 (go1.15.11; linux; amd64)
+      X-Amz-Content-Sha256:
+      - e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+      X-Amz-Date:
+      - 20210518T123648Z
+    url: https://test-acc-scaleway-object-bucket-basic-par.s3.fr-par.scw.cloud/?tagging=
+    method: GET
+  response:
+    body: |-
+      <?xml version='1.0' encoding='UTF-8'?>
+      <Error><Code>NoSuchTagSet</Code><Message>There is no tag set associated with the bucket or object.</Message><RequestId>txfddbb44daa504482bb2d3-0060a3b4e0</RequestId><Headers/></Error>
+    headers:
+      Content-Type:
+      - application/xml
+      Date:
+      - Tue, 18 May 2021 12:36:48 GMT
+      X-Amz-Id-2:
+      - txfddbb44daa504482bb2d3-0060a3b4e0
+      X-Amz-Request-Id:
+      - txfddbb44daa504482bb2d3-0060a3b4e0
+    status: 404 Not Found
+    code: 404
+    duration: ""
+- request:
+    body: ""
+    form: {}
+    headers:
+      Authorization:
+      - AWS4-HMAC-SHA256 Credential=SCWJ9FJYVF1SPS9HX0VZ/20210518/fr-par/s3/aws4_request,
+        SignedHeaders=host;x-amz-content-sha256;x-amz-date, Signature=a0c5a6f807cf0964345ec7c38aabc8c368d6d43d52b474a4b01b47d25cf2ba2a
+      User-Agent:
+      - aws-sdk-go/1.38.22 (go1.15.11; linux; amd64)
+      X-Amz-Content-Sha256:
+      - e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+      X-Amz-Date:
+      - 20210518T123648Z
+    url: https://test-acc-scaleway-object-bucket-basic.s3.fr-par.scw.cloud/?tagging=
+    method: GET
+  response:
+    body: <Tagging xmlns="http://s3.amazonaws.com/doc/2006-03-01/"><TagSet><Tag><Key>foo</Key><Value>bar</Value></Tag></TagSet></Tagging>
+    headers:
+      Content-Length:
+      - "127"
+      Content-Type:
+      - application/xml
+      Date:
+      - Tue, 18 May 2021 12:36:48 GMT
+      X-Amz-Id-2:
+      - tx169946a2365c48089e3b6-0060a3b4e0
+      X-Amz-Request-Id:
+      - tx169946a2365c48089e3b6-0060a3b4e0
+    status: 200 OK
+    code: 200
+    duration: ""
+- request:
+    body: ""
+    form: {}
+    headers:
+      Authorization:
+      - AWS4-HMAC-SHA256 Credential=SCWJ9FJYVF1SPS9HX0VZ/20210518/nl-ams/s3/aws4_request,
+        SignedHeaders=host;x-amz-content-sha256;x-amz-date, Signature=c55078685dfd4d39d9c9887fb6ef236a4ccb332007773054be6194493d662788
+      User-Agent:
+      - aws-sdk-go/1.38.22 (go1.15.11; linux; amd64)
+      X-Amz-Content-Sha256:
+      - e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+      X-Amz-Date:
+      - 20210518T123648Z
+    url: https://test-acc-scaleway-object-bucket-basic-ams.s3.nl-ams.scw.cloud/?cors=
+    method: GET
+  response:
+    body: |-
+      <?xml version='1.0' encoding='UTF-8'?>
+      <Error><Code>NoSuchCORSConfiguration</Code><Message>The CORS configuration does not exist</Message><RequestId>tx473cc5813978445e817d9-0060a3b4e0</RequestId></Error>
+    headers:
+      Content-Type:
+      - application/xml
+      Date:
+      - Tue, 18 May 2021 12:36:48 GMT
+      X-Amz-Id-2:
+      - tx473cc5813978445e817d9-0060a3b4e0
+      X-Amz-Request-Id:
+      - tx473cc5813978445e817d9-0060a3b4e0
+    status: 404 Not Found
+    code: 404
+    duration: ""
+- request:
+    body: ""
+    form: {}
+    headers:
+      Authorization:
+      - AWS4-HMAC-SHA256 Credential=SCWJ9FJYVF1SPS9HX0VZ/20210518/fr-par/s3/aws4_request,
+        SignedHeaders=host;x-amz-content-sha256;x-amz-date, Signature=44155c4c351880b603fc441444bef90caf33dcd62f82b450043ee1486a227e7b
+      User-Agent:
+      - aws-sdk-go/1.38.22 (go1.15.11; linux; amd64)
+      X-Amz-Content-Sha256:
+      - e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+      X-Amz-Date:
+      - 20210518T123648Z
+    url: https://test-acc-scaleway-object-bucket-basic.s3.fr-par.scw.cloud/?cors=
+    method: GET
+  response:
+    body: |-
+      <?xml version='1.0' encoding='UTF-8'?>
+      <Error><Code>NoSuchCORSConfiguration</Code><Message>The CORS configuration does not exist</Message><RequestId>txc21a36ec75704ffca9bff-0060a3b4e0</RequestId></Error>
+    headers:
+      Content-Type:
+      - application/xml
+      Date:
+      - Tue, 18 May 2021 12:36:48 GMT
+      X-Amz-Id-2:
+      - txc21a36ec75704ffca9bff-0060a3b4e0
+      X-Amz-Request-Id:
+      - txc21a36ec75704ffca9bff-0060a3b4e0
+    status: 404 Not Found
+    code: 404
+    duration: ""
+- request:
+    body: ""
+    form: {}
+    headers:
+      Authorization:
+      - AWS4-HMAC-SHA256 Credential=SCWJ9FJYVF1SPS9HX0VZ/20210518/fr-par/s3/aws4_request,
+        SignedHeaders=host;x-amz-content-sha256;x-amz-date, Signature=cfc6d5c803d73d1cf87eed681621f2cda96e11ce22e9ed038c2ff29942229918
+      User-Agent:
+      - aws-sdk-go/1.38.22 (go1.15.11; linux; amd64)
+      X-Amz-Content-Sha256:
+      - e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+      X-Amz-Date:
+      - 20210518T123648Z
+    url: https://test-acc-scaleway-object-bucket-basic-par.s3.fr-par.scw.cloud/?cors=
+    method: GET
+  response:
+    body: |-
+      <?xml version='1.0' encoding='UTF-8'?>
+      <Error><Code>NoSuchCORSConfiguration</Code><Message>The CORS configuration does not exist</Message><RequestId>tx6c94f7f04619459fa5136-0060a3b4e0</RequestId></Error>
+    headers:
+      Content-Type:
+      - application/xml
+      Date:
+      - Tue, 18 May 2021 12:36:48 GMT
+      X-Amz-Id-2:
+      - tx6c94f7f04619459fa5136-0060a3b4e0
+      X-Amz-Request-Id:
+      - tx6c94f7f04619459fa5136-0060a3b4e0
+    status: 404 Not Found
+    code: 404
+    duration: ""
+- request:
+    body: ""
+    form: {}
+    headers:
+      Authorization:
+      - AWS4-HMAC-SHA256 Credential=SCWJ9FJYVF1SPS9HX0VZ/20210518/nl-ams/s3/aws4_request,
+        SignedHeaders=host;x-amz-content-sha256;x-amz-date, Signature=e0151822a479026277dd78880b5c7ad659f142b297ed6b65341a67af4e3a954b
+      User-Agent:
+      - aws-sdk-go/1.38.22 (go1.15.11; linux; amd64)
+      X-Amz-Content-Sha256:
+      - e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+      X-Amz-Date:
+      - 20210518T123648Z
+    url: https://test-acc-scaleway-object-bucket-basic-ams.s3.nl-ams.scw.cloud/?versioning=
+    method: GET
+  response:
+    body: |-
+      <?xml version='1.0' encoding='UTF-8'?>
+      <VersioningConfiguration xmlns="http://s3.amazonaws.com/doc/2006-03-01/"><Status>Suspended</Status></VersioningConfiguration>
+    headers:
+      Content-Length:
+      - "164"
+      Content-Type:
+      - text/plain
+      Date:
+      - Tue, 18 May 2021 12:36:48 GMT
+      X-Amz-Id-2:
+      - tx1644b7ba1f404a51a9707-0060a3b4e0
+      X-Amz-Request-Id:
+      - tx1644b7ba1f404a51a9707-0060a3b4e0
+    status: 200 OK
+    code: 200
+    duration: ""
+- request:
+    body: ""
+    form: {}
+    headers:
+      Authorization:
+      - AWS4-HMAC-SHA256 Credential=SCWJ9FJYVF1SPS9HX0VZ/20210518/fr-par/s3/aws4_request,
+        SignedHeaders=host;x-amz-content-sha256;x-amz-date, Signature=1b4c44c64c23d51ad10d267349298d32bf922a62e75cf16f538e78ad16688b6d
+      User-Agent:
+      - aws-sdk-go/1.38.22 (go1.15.11; linux; amd64)
+      X-Amz-Content-Sha256:
+      - e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+      X-Amz-Date:
+      - 20210518T123648Z
+    url: https://test-acc-scaleway-object-bucket-basic-par.s3.fr-par.scw.cloud/?versioning=
+    method: GET
+  response:
+    body: |-
+      <?xml version='1.0' encoding='UTF-8'?>
+      <VersioningConfiguration xmlns="http://s3.amazonaws.com/doc/2006-03-01/"><Status>Suspended</Status></VersioningConfiguration>
+    headers:
+      Content-Length:
+      - "164"
+      Content-Type:
+      - text/plain
+      Date:
+      - Tue, 18 May 2021 12:36:48 GMT
+      X-Amz-Id-2:
+      - tx524de1df2bc942eeaef5f-0060a3b4e0
+      X-Amz-Request-Id:
+      - tx524de1df2bc942eeaef5f-0060a3b4e0
+    status: 200 OK
+    code: 200
+    duration: ""
+- request:
+    body: ""
+    form: {}
+    headers:
+      Authorization:
+      - AWS4-HMAC-SHA256 Credential=SCWJ9FJYVF1SPS9HX0VZ/20210518/fr-par/s3/aws4_request,
+        SignedHeaders=host;x-amz-content-sha256;x-amz-date, Signature=2a89d6fced5d87cb74f383e0cf2647c66b2fa95b040c3d2928fa5716630c91ea
+      User-Agent:
+      - aws-sdk-go/1.38.22 (go1.15.11; linux; amd64)
+      X-Amz-Content-Sha256:
+      - e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+      X-Amz-Date:
+      - 20210518T123648Z
+    url: https://test-acc-scaleway-object-bucket-basic.s3.fr-par.scw.cloud/?versioning=
+    method: GET
+  response:
+    body: |-
+      <?xml version='1.0' encoding='UTF-8'?>
+      <VersioningConfiguration xmlns="http://s3.amazonaws.com/doc/2006-03-01/"><Status>Suspended</Status></VersioningConfiguration>
+    headers:
+      Content-Length:
+      - "164"
+      Content-Type:
+      - text/plain
+      Date:
+      - Tue, 18 May 2021 12:36:48 GMT
+      X-Amz-Id-2:
+      - tx50d1b10f5cf54dce99f63-0060a3b4e0
+      X-Amz-Request-Id:
+      - tx50d1b10f5cf54dce99f63-0060a3b4e0
+    status: 200 OK
+    code: 200
+    duration: ""
+- request:
+    body: <Tagging xmlns="http://s3.amazonaws.com/doc/2006-03-01/"><TagSet><Tag><Value>bar</Value><Key>foo</Key></Tag></TagSet></Tagging>
+    form: {}
+    headers:
+      Authorization:
+      - AWS4-HMAC-SHA256 Credential=SCWJ9FJYVF1SPS9HX0VZ/20210518/nl-ams/s3/aws4_request,
+        SignedHeaders=content-length;content-md5;host;x-amz-content-sha256;x-amz-date,
+        Signature=66e3083b29ac0aa653d23294fdc18932391d698900e86b4bb19955f8a15f3dd2
+      Content-Length:
+      - "127"
+      Content-Md5:
+      - 0WBWkA38piikJr5tP3fQMQ==
+      User-Agent:
+      - aws-sdk-go/1.38.22 (go1.15.11; linux; amd64)
+      X-Amz-Content-Sha256:
+      - a50e4ebc0e04bba8a5e11bfdafc2dd658697c169b625f8e3478b5af875fad7e5
+      X-Amz-Date:
+      - 20210518T123648Z
+    url: https://test-acc-scaleway-object-bucket-basic-ams.s3.nl-ams.scw.cloud/?tagging=
+    method: PUT
+  response:
+    body: ""
+    headers:
+      Content-Length:
+      - "0"
+      Content-Type:
+      - text/html; charset=UTF-8
+      Date:
+      - Tue, 18 May 2021 12:36:48 GMT
+      X-Amz-Id-2:
+      - txf795bdddd069439ca91a5-0060a3b4e0
+      X-Amz-Request-Id:
+      - txf795bdddd069439ca91a5-0060a3b4e0
+    status: 204 No Content
+    code: 204
+    duration: ""
+- request:
+    body: ""
+    form: {}
+    headers:
+      Authorization:
+      - AWS4-HMAC-SHA256 Credential=SCWJ9FJYVF1SPS9HX0VZ/20210518/fr-par/s3/aws4_request,
+        SignedHeaders=content-md5;host;x-amz-acl;x-amz-content-sha256;x-amz-date,
+        Signature=23f0eb1e780756c1a8fe2d3647cbfb3cb02e7b4f71d5f34314c9995734e95162
+      Content-Md5:
+      - 1B2M2Y8AsgTpgAmY7PhCfg==
+      User-Agent:
+      - aws-sdk-go/1.38.22 (go1.15.11; linux; amd64)
+      X-Amz-Acl:
+      - public-read
+      X-Amz-Content-Sha256:
+      - e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+      X-Amz-Date:
+      - 20210518T123648Z
+    url: https://test-acc-scaleway-object-bucket-basic.s3.fr-par.scw.cloud/?acl=
+    method: PUT
+  response:
+    body: ""
+    headers:
+      Content-Length:
+      - "0"
+      Content-Type:
+      - text/html; charset=UTF-8
+      Date:
+      - Tue, 18 May 2021 12:36:48 GMT
+      X-Amz-Id-2:
+      - tx1f2078b37c544fb7b79f1-0060a3b4e0
+      X-Amz-Request-Id:
+      - tx1f2078b37c544fb7b79f1-0060a3b4e0
+    status: 200 OK
+    code: 200
+    duration: ""
+- request:
+    body: ""
+    form: {}
+    headers:
+      Authorization:
+      - AWS4-HMAC-SHA256 Credential=SCWJ9FJYVF1SPS9HX0VZ/20210518/nl-ams/s3/aws4_request,
+        SignedHeaders=host;x-amz-content-sha256;x-amz-date, Signature=9b9087286512f0d24feafa239c30736b12252a388c07484dbd73a2a636886626
+      User-Agent:
+      - aws-sdk-go/1.38.22 (go1.15.11; linux; amd64)
+      X-Amz-Content-Sha256:
+      - e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+      X-Amz-Date:
+      - 20210518T123648Z
+    url: https://test-acc-scaleway-object-bucket-basic-ams.s3.nl-ams.scw.cloud/
+    method: GET
+  response:
+    body: |-
+      <?xml version='1.0' encoding='UTF-8'?>
+      <ListBucketResult xmlns="http://s3.amazonaws.com/doc/2006-03-01/"><Name>test-acc-scaleway-object-bucket-basic-ams</Name><Prefix/><Marker/><MaxKeys>1000</MaxKeys><IsTruncated>false</IsTruncated></ListBucketResult>
+    headers:
+      Content-Length:
+      - "255"
+      Content-Type:
+      - application/xml
+      Date:
+      - Tue, 18 May 2021 12:36:49 GMT
+      X-Amz-Id-2:
+      - txe2ca5961f5c84f7998e03-0060a3b4e0
+      X-Amz-Request-Id:
+      - txe2ca5961f5c84f7998e03-0060a3b4e0
+    status: 200 OK
+    code: 200
+    duration: ""
+- request:
+    body: ""
+    form: {}
+    headers:
+      Authorization:
+      - AWS4-HMAC-SHA256 Credential=SCWJ9FJYVF1SPS9HX0VZ/20210518/fr-par/s3/aws4_request,
+        SignedHeaders=host;x-amz-content-sha256;x-amz-date, Signature=cdb27e98dca7dcdc483d79c764b252f8f081e937836e3f4017b602b7aebb6c5f
+      User-Agent:
+      - aws-sdk-go/1.38.22 (go1.15.11; linux; amd64)
+      X-Amz-Content-Sha256:
+      - e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+      X-Amz-Date:
+      - 20210518T123648Z
+    url: https://test-acc-scaleway-object-bucket-basic.s3.fr-par.scw.cloud/?tagging=
+    method: DELETE
+  response:
+    body: ""
+    headers:
+      Content-Length:
+      - "0"
+      Content-Type:
+      - text/html; charset=UTF-8
+      Date:
+      - Tue, 18 May 2021 12:36:49 GMT
+      X-Amz-Id-2:
+      - tx15c576b9afee46bf89d70-0060a3b4e0
+      X-Amz-Request-Id:
+      - tx15c576b9afee46bf89d70-0060a3b4e0
+    status: 204 No Content
+    code: 204
+    duration: ""
+- request:
+    body: ""
+    form: {}
+    headers:
+      Authorization:
+      - AWS4-HMAC-SHA256 Credential=SCWJ9FJYVF1SPS9HX0VZ/20210518/nl-ams/s3/aws4_request,
+        SignedHeaders=host;x-amz-content-sha256;x-amz-date, Signature=7795cac8e938d362c717c5c807c0df7b44a7372d2b37029c3a5f80a47a5666b4
+      User-Agent:
+      - aws-sdk-go/1.38.22 (go1.15.11; linux; amd64)
+      X-Amz-Content-Sha256:
+      - e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+      X-Amz-Date:
+      - 20210518T123649Z
+    url: https://test-acc-scaleway-object-bucket-basic-ams.s3.nl-ams.scw.cloud/?tagging=
+    method: GET
+  response:
+    body: <Tagging xmlns="http://s3.amazonaws.com/doc/2006-03-01/"><TagSet><Tag><Value>bar</Value><Key>foo</Key></Tag></TagSet></Tagging>
+    headers:
+      Content-Length:
+      - "127"
+      Content-Type:
+      - application/xml
+      Date:
+      - Tue, 18 May 2021 12:36:49 GMT
+      X-Amz-Id-2:
+      - txbcf01517fe6f451fb02be-0060a3b4e1
+      X-Amz-Request-Id:
+      - txbcf01517fe6f451fb02be-0060a3b4e1
+    status: 200 OK
+    code: 200
+    duration: ""
+- request:
+    body: ""
+    form: {}
+    headers:
+      Authorization:
+      - AWS4-HMAC-SHA256 Credential=SCWJ9FJYVF1SPS9HX0VZ/20210518/fr-par/s3/aws4_request,
+        SignedHeaders=host;x-amz-content-sha256;x-amz-date, Signature=7d77797f6b2f3bd50e467bd1b268de2ad8b2beb021fb5d333ad1d9671ebfc57d
+      User-Agent:
+      - aws-sdk-go/1.38.22 (go1.15.11; linux; amd64)
+      X-Amz-Content-Sha256:
+      - e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+      X-Amz-Date:
+      - 20210518T123648Z
     url: https://test-acc-scaleway-object-bucket-basic-par.s3.fr-par.scw.cloud/
     method: DELETE
   response:
@@ -1183,11 +1709,11 @@ interactions:
       Content-Type:
       - text/html; charset=UTF-8
       Date:
-      - Thu, 03 Dec 2020 10:17:04 GMT
+      - Tue, 18 May 2021 12:36:49 GMT
       X-Amz-Id-2:
-      - tx290364983a9441f3b67e2-005fc8bb20
+      - tx3e43fc8610124d2ab8d13-0060a3b4e0
       X-Amz-Request-Id:
-      - tx290364983a9441f3b67e2-005fc8bb20
+      - tx3e43fc8610124d2ab8d13-0060a3b4e0
     status: 204 No Content
     code: 204
     duration: ""
@@ -1196,14 +1722,493 @@ interactions:
     form: {}
     headers:
       Authorization:
-      - AWS4-HMAC-SHA256 Credential=SCW8XT5JRAV4B0WQSHPE/20201203/nl-ams/s3/aws4_request,
-        SignedHeaders=host;x-amz-content-sha256;x-amz-date, Signature=9cc378a5f803c53073c40174f53fcfc5fa5480e453ec2698a597fa40754eac32
+      - AWS4-HMAC-SHA256 Credential=SCWJ9FJYVF1SPS9HX0VZ/20210518/nl-ams/s3/aws4_request,
+        SignedHeaders=host;x-amz-content-sha256;x-amz-date, Signature=81089b22452b5f7c08a51c5d09aeef3ab6a1dcadf26cb23927c4ac753cbf8be1
       User-Agent:
-      - aws-sdk-go/1.34.32 (go1.15.5; darwin; amd64)
+      - aws-sdk-go/1.38.22 (go1.15.11; linux; amd64)
       X-Amz-Content-Sha256:
       - e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
       X-Amz-Date:
-      - 20201203T101704Z
+      - 20210518T123649Z
+    url: https://test-acc-scaleway-object-bucket-basic-ams.s3.nl-ams.scw.cloud/?cors=
+    method: GET
+  response:
+    body: |-
+      <?xml version='1.0' encoding='UTF-8'?>
+      <Error><Code>NoSuchCORSConfiguration</Code><Message>The CORS configuration does not exist</Message><RequestId>tx07b1c864455344959e3b0-0060a3b4e1</RequestId></Error>
+    headers:
+      Content-Type:
+      - application/xml
+      Date:
+      - Tue, 18 May 2021 12:36:49 GMT
+      X-Amz-Id-2:
+      - tx07b1c864455344959e3b0-0060a3b4e1
+      X-Amz-Request-Id:
+      - tx07b1c864455344959e3b0-0060a3b4e1
+    status: 404 Not Found
+    code: 404
+    duration: ""
+- request:
+    body: ""
+    form: {}
+    headers:
+      Authorization:
+      - AWS4-HMAC-SHA256 Credential=SCWJ9FJYVF1SPS9HX0VZ/20210518/fr-par/s3/aws4_request,
+        SignedHeaders=host;x-amz-content-sha256;x-amz-date, Signature=6c0fce8aa2f0d8573cfcb1877dbd7ed5b0a5077a28876f389c9a26ed67337056
+      User-Agent:
+      - aws-sdk-go/1.38.22 (go1.15.11; linux; amd64)
+      X-Amz-Content-Sha256:
+      - e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+      X-Amz-Date:
+      - 20210518T123649Z
+    url: https://test-acc-scaleway-object-bucket-basic.s3.fr-par.scw.cloud/
+    method: GET
+  response:
+    body: |-
+      <?xml version='1.0' encoding='UTF-8'?>
+      <ListBucketResult xmlns="http://s3.amazonaws.com/doc/2006-03-01/"><Name>test-acc-scaleway-object-bucket-basic</Name><Prefix/><Marker/><MaxKeys>1000</MaxKeys><IsTruncated>false</IsTruncated></ListBucketResult>
+    headers:
+      Content-Length:
+      - "251"
+      Content-Type:
+      - application/xml
+      Date:
+      - Tue, 18 May 2021 12:36:49 GMT
+      X-Amz-Id-2:
+      - tx930c5e0e5c0e49859edd9-0060a3b4e1
+      X-Amz-Request-Id:
+      - tx930c5e0e5c0e49859edd9-0060a3b4e1
+    status: 200 OK
+    code: 200
+    duration: ""
+- request:
+    body: ""
+    form: {}
+    headers:
+      Authorization:
+      - AWS4-HMAC-SHA256 Credential=SCWJ9FJYVF1SPS9HX0VZ/20210518/nl-ams/s3/aws4_request,
+        SignedHeaders=host;x-amz-content-sha256;x-amz-date, Signature=fe84ca7c6534e7e5292145ebb1f05db31cb2e6f51a18a91890e198f3b7f34839
+      User-Agent:
+      - aws-sdk-go/1.38.22 (go1.15.11; linux; amd64)
+      X-Amz-Content-Sha256:
+      - e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+      X-Amz-Date:
+      - 20210518T123649Z
+    url: https://test-acc-scaleway-object-bucket-basic-ams.s3.nl-ams.scw.cloud/?versioning=
+    method: GET
+  response:
+    body: |-
+      <?xml version='1.0' encoding='UTF-8'?>
+      <VersioningConfiguration xmlns="http://s3.amazonaws.com/doc/2006-03-01/"><Status>Suspended</Status></VersioningConfiguration>
+    headers:
+      Content-Length:
+      - "164"
+      Content-Type:
+      - text/plain
+      Date:
+      - Tue, 18 May 2021 12:36:49 GMT
+      X-Amz-Id-2:
+      - tx9b727ed9da714894a3040-0060a3b4e1
+      X-Amz-Request-Id:
+      - tx9b727ed9da714894a3040-0060a3b4e1
+    status: 200 OK
+    code: 200
+    duration: ""
+- request:
+    body: ""
+    form: {}
+    headers:
+      Authorization:
+      - AWS4-HMAC-SHA256 Credential=SCWJ9FJYVF1SPS9HX0VZ/20210518/fr-par/s3/aws4_request,
+        SignedHeaders=host;x-amz-content-sha256;x-amz-date, Signature=58371639fd19708e8dea188175ca0d0b70949ae5e1fe821e5f3ff5d1530e0915
+      User-Agent:
+      - aws-sdk-go/1.38.22 (go1.15.11; linux; amd64)
+      X-Amz-Content-Sha256:
+      - e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+      X-Amz-Date:
+      - 20210518T123649Z
+    url: https://test-acc-scaleway-object-bucket-basic.s3.fr-par.scw.cloud/?tagging=
+    method: GET
+  response:
+    body: |-
+      <?xml version='1.0' encoding='UTF-8'?>
+      <Error><Code>NoSuchTagSet</Code><Message>There is no tag set associated with the bucket or object.</Message><RequestId>tx0d1809df4c824c6dbf98d-0060a3b4e1</RequestId><Headers/></Error>
+    headers:
+      Content-Type:
+      - application/xml
+      Date:
+      - Tue, 18 May 2021 12:36:49 GMT
+      X-Amz-Id-2:
+      - tx0d1809df4c824c6dbf98d-0060a3b4e1
+      X-Amz-Request-Id:
+      - tx0d1809df4c824c6dbf98d-0060a3b4e1
+    status: 404 Not Found
+    code: 404
+    duration: ""
+- request:
+    body: ""
+    form: {}
+    headers:
+      Authorization:
+      - AWS4-HMAC-SHA256 Credential=SCWJ9FJYVF1SPS9HX0VZ/20210518/fr-par/s3/aws4_request,
+        SignedHeaders=host;x-amz-content-sha256;x-amz-date, Signature=0865f16f6259c077909caed2770cf96f74322effa2d480571b2afdffb804b833
+      User-Agent:
+      - aws-sdk-go/1.38.22 (go1.15.11; linux; amd64)
+      X-Amz-Content-Sha256:
+      - e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+      X-Amz-Date:
+      - 20210518T123649Z
+    url: https://test-acc-scaleway-object-bucket-basic.s3.fr-par.scw.cloud/?cors=
+    method: GET
+  response:
+    body: |-
+      <?xml version='1.0' encoding='UTF-8'?>
+      <Error><Code>NoSuchCORSConfiguration</Code><Message>The CORS configuration does not exist</Message><RequestId>tx31bef57cee584d7ba5a31-0060a3b4e1</RequestId></Error>
+    headers:
+      Content-Type:
+      - application/xml
+      Date:
+      - Tue, 18 May 2021 12:36:49 GMT
+      X-Amz-Id-2:
+      - tx31bef57cee584d7ba5a31-0060a3b4e1
+      X-Amz-Request-Id:
+      - tx31bef57cee584d7ba5a31-0060a3b4e1
+    status: 404 Not Found
+    code: 404
+    duration: ""
+- request:
+    body: ""
+    form: {}
+    headers:
+      Authorization:
+      - AWS4-HMAC-SHA256 Credential=SCWJ9FJYVF1SPS9HX0VZ/20210518/fr-par/s3/aws4_request,
+        SignedHeaders=host;x-amz-content-sha256;x-amz-date, Signature=44d9dc86c3055d0605b1476b77fdc73187b1b2df9b51db8db416cd7ec4aff648
+      User-Agent:
+      - aws-sdk-go/1.38.22 (go1.15.11; linux; amd64)
+      X-Amz-Content-Sha256:
+      - e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+      X-Amz-Date:
+      - 20210518T123649Z
+    url: https://test-acc-scaleway-object-bucket-basic.s3.fr-par.scw.cloud/?versioning=
+    method: GET
+  response:
+    body: |-
+      <?xml version='1.0' encoding='UTF-8'?>
+      <VersioningConfiguration xmlns="http://s3.amazonaws.com/doc/2006-03-01/"><Status>Suspended</Status></VersioningConfiguration>
+    headers:
+      Content-Length:
+      - "164"
+      Content-Type:
+      - text/plain
+      Date:
+      - Tue, 18 May 2021 12:36:49 GMT
+      X-Amz-Id-2:
+      - tx58538f01887d41df82805-0060a3b4e1
+      X-Amz-Request-Id:
+      - tx58538f01887d41df82805-0060a3b4e1
+    status: 200 OK
+    code: 200
+    duration: ""
+- request:
+    body: ""
+    form: {}
+    headers:
+      Authorization:
+      - AWS4-HMAC-SHA256 Credential=SCWJ9FJYVF1SPS9HX0VZ/20210518/nl-ams/s3/aws4_request,
+        SignedHeaders=host;x-amz-content-sha256;x-amz-date, Signature=0f49f341921e0eb6762f329e7099c8e017c87009674e3cca105433a872900ade
+      User-Agent:
+      - aws-sdk-go/1.38.22 (go1.15.11; linux; amd64)
+      X-Amz-Content-Sha256:
+      - e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+      X-Amz-Date:
+      - 20210518T123649Z
+    url: https://test-acc-scaleway-object-bucket-basic-ams.s3.nl-ams.scw.cloud/
+    method: GET
+  response:
+    body: |-
+      <?xml version='1.0' encoding='UTF-8'?>
+      <ListBucketResult xmlns="http://s3.amazonaws.com/doc/2006-03-01/"><Name>test-acc-scaleway-object-bucket-basic-ams</Name><Prefix/><Marker/><MaxKeys>1000</MaxKeys><IsTruncated>false</IsTruncated></ListBucketResult>
+    headers:
+      Content-Length:
+      - "255"
+      Content-Type:
+      - application/xml
+      Date:
+      - Tue, 18 May 2021 12:36:50 GMT
+      X-Amz-Id-2:
+      - txa3b6eb523f07404f866dc-0060a3b4e1
+      X-Amz-Request-Id:
+      - txa3b6eb523f07404f866dc-0060a3b4e1
+    status: 200 OK
+    code: 200
+    duration: ""
+- request:
+    body: ""
+    form: {}
+    headers:
+      Authorization:
+      - AWS4-HMAC-SHA256 Credential=SCWJ9FJYVF1SPS9HX0VZ/20210518/fr-par/s3/aws4_request,
+        SignedHeaders=host;x-amz-content-sha256;x-amz-date, Signature=6c0fce8aa2f0d8573cfcb1877dbd7ed5b0a5077a28876f389c9a26ed67337056
+      User-Agent:
+      - aws-sdk-go/1.38.22 (go1.15.11; linux; amd64)
+      X-Amz-Content-Sha256:
+      - e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+      X-Amz-Date:
+      - 20210518T123649Z
+    url: https://test-acc-scaleway-object-bucket-basic.s3.fr-par.scw.cloud/
+    method: GET
+  response:
+    body: |-
+      <?xml version='1.0' encoding='UTF-8'?>
+      <ListBucketResult xmlns="http://s3.amazonaws.com/doc/2006-03-01/"><Name>test-acc-scaleway-object-bucket-basic</Name><Prefix/><Marker/><MaxKeys>1000</MaxKeys><IsTruncated>false</IsTruncated></ListBucketResult>
+    headers:
+      Content-Length:
+      - "251"
+      Content-Type:
+      - application/xml
+      Date:
+      - Tue, 18 May 2021 12:36:50 GMT
+      X-Amz-Id-2:
+      - tx7b81841d338a4d2e884f4-0060a3b4e1
+      X-Amz-Request-Id:
+      - tx7b81841d338a4d2e884f4-0060a3b4e1
+    status: 200 OK
+    code: 200
+    duration: ""
+- request:
+    body: ""
+    form: {}
+    headers:
+      Authorization:
+      - AWS4-HMAC-SHA256 Credential=SCWJ9FJYVF1SPS9HX0VZ/20210518/fr-par/s3/aws4_request,
+        SignedHeaders=host;x-amz-content-sha256;x-amz-date, Signature=b32babcbd704a9e3e1fe96415a153167c9d70e04d3547c0b93e9df9e6d7e5487
+      User-Agent:
+      - aws-sdk-go/1.38.22 (go1.15.11; linux; amd64)
+      X-Amz-Content-Sha256:
+      - e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+      X-Amz-Date:
+      - 20210518T123650Z
+    url: https://test-acc-scaleway-object-bucket-basic.s3.fr-par.scw.cloud/?tagging=
+    method: GET
+  response:
+    body: |-
+      <?xml version='1.0' encoding='UTF-8'?>
+      <Error><Code>NoSuchTagSet</Code><Message>There is no tag set associated with the bucket or object.</Message><RequestId>tx8c4c1515088549649cf1a-0060a3b4e2</RequestId><Headers/></Error>
+    headers:
+      Content-Type:
+      - application/xml
+      Date:
+      - Tue, 18 May 2021 12:36:50 GMT
+      X-Amz-Id-2:
+      - tx8c4c1515088549649cf1a-0060a3b4e2
+      X-Amz-Request-Id:
+      - tx8c4c1515088549649cf1a-0060a3b4e2
+    status: 404 Not Found
+    code: 404
+    duration: ""
+- request:
+    body: ""
+    form: {}
+    headers:
+      Authorization:
+      - AWS4-HMAC-SHA256 Credential=SCWJ9FJYVF1SPS9HX0VZ/20210518/nl-ams/s3/aws4_request,
+        SignedHeaders=host;x-amz-content-sha256;x-amz-date, Signature=067607c05aefc6e9d67975dd253a758880f439132f8fc5903764c39c9f90a5bd
+      User-Agent:
+      - aws-sdk-go/1.38.22 (go1.15.11; linux; amd64)
+      X-Amz-Content-Sha256:
+      - e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+      X-Amz-Date:
+      - 20210518T123650Z
+    url: https://test-acc-scaleway-object-bucket-basic-ams.s3.nl-ams.scw.cloud/?tagging=
+    method: GET
+  response:
+    body: <Tagging xmlns="http://s3.amazonaws.com/doc/2006-03-01/"><TagSet><Tag><Value>bar</Value><Key>foo</Key></Tag></TagSet></Tagging>
+    headers:
+      Content-Length:
+      - "127"
+      Content-Type:
+      - application/xml
+      Date:
+      - Tue, 18 May 2021 12:36:50 GMT
+      X-Amz-Id-2:
+      - tx4f8163c2aec34fd2bdf28-0060a3b4e2
+      X-Amz-Request-Id:
+      - tx4f8163c2aec34fd2bdf28-0060a3b4e2
+    status: 200 OK
+    code: 200
+    duration: ""
+- request:
+    body: ""
+    form: {}
+    headers:
+      Authorization:
+      - AWS4-HMAC-SHA256 Credential=SCWJ9FJYVF1SPS9HX0VZ/20210518/nl-ams/s3/aws4_request,
+        SignedHeaders=host;x-amz-content-sha256;x-amz-date, Signature=55078a652527df68b06f068267a48846b0e73052ef3e6562e226d6551e8f8e17
+      User-Agent:
+      - aws-sdk-go/1.38.22 (go1.15.11; linux; amd64)
+      X-Amz-Content-Sha256:
+      - e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+      X-Amz-Date:
+      - 20210518T123650Z
+    url: https://test-acc-scaleway-object-bucket-basic-ams.s3.nl-ams.scw.cloud/?cors=
+    method: GET
+  response:
+    body: |-
+      <?xml version='1.0' encoding='UTF-8'?>
+      <Error><Code>NoSuchCORSConfiguration</Code><Message>The CORS configuration does not exist</Message><RequestId>txa8f98ca21544441f951e5-0060a3b4e2</RequestId></Error>
+    headers:
+      Content-Type:
+      - application/xml
+      Date:
+      - Tue, 18 May 2021 12:36:50 GMT
+      X-Amz-Id-2:
+      - txa8f98ca21544441f951e5-0060a3b4e2
+      X-Amz-Request-Id:
+      - txa8f98ca21544441f951e5-0060a3b4e2
+    status: 404 Not Found
+    code: 404
+    duration: ""
+- request:
+    body: ""
+    form: {}
+    headers:
+      Authorization:
+      - AWS4-HMAC-SHA256 Credential=SCWJ9FJYVF1SPS9HX0VZ/20210518/fr-par/s3/aws4_request,
+        SignedHeaders=host;x-amz-content-sha256;x-amz-date, Signature=e52ce72576f88db293969e91c10e3f5c1184076c316c21d28fb38e807128e0b9
+      User-Agent:
+      - aws-sdk-go/1.38.22 (go1.15.11; linux; amd64)
+      X-Amz-Content-Sha256:
+      - e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+      X-Amz-Date:
+      - 20210518T123650Z
+    url: https://test-acc-scaleway-object-bucket-basic.s3.fr-par.scw.cloud/?cors=
+    method: GET
+  response:
+    body: |-
+      <?xml version='1.0' encoding='UTF-8'?>
+      <Error><Code>NoSuchCORSConfiguration</Code><Message>The CORS configuration does not exist</Message><RequestId>txa8625d489a364066bd254-0060a3b4e2</RequestId></Error>
+    headers:
+      Content-Type:
+      - application/xml
+      Date:
+      - Tue, 18 May 2021 12:36:50 GMT
+      X-Amz-Id-2:
+      - txa8625d489a364066bd254-0060a3b4e2
+      X-Amz-Request-Id:
+      - txa8625d489a364066bd254-0060a3b4e2
+    status: 404 Not Found
+    code: 404
+    duration: ""
+- request:
+    body: ""
+    form: {}
+    headers:
+      Authorization:
+      - AWS4-HMAC-SHA256 Credential=SCWJ9FJYVF1SPS9HX0VZ/20210518/nl-ams/s3/aws4_request,
+        SignedHeaders=host;x-amz-content-sha256;x-amz-date, Signature=17cc3a4d009eb5fc7b8e5576cc72b89fa63bce957630a9d705c8a02f6064d74d
+      User-Agent:
+      - aws-sdk-go/1.38.22 (go1.15.11; linux; amd64)
+      X-Amz-Content-Sha256:
+      - e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+      X-Amz-Date:
+      - 20210518T123650Z
+    url: https://test-acc-scaleway-object-bucket-basic-ams.s3.nl-ams.scw.cloud/?versioning=
+    method: GET
+  response:
+    body: |-
+      <?xml version='1.0' encoding='UTF-8'?>
+      <VersioningConfiguration xmlns="http://s3.amazonaws.com/doc/2006-03-01/"><Status>Suspended</Status></VersioningConfiguration>
+    headers:
+      Content-Length:
+      - "164"
+      Content-Type:
+      - text/plain
+      Date:
+      - Tue, 18 May 2021 12:36:50 GMT
+      X-Amz-Id-2:
+      - txca311e71eb744c7da74b8-0060a3b4e2
+      X-Amz-Request-Id:
+      - txca311e71eb744c7da74b8-0060a3b4e2
+    status: 200 OK
+    code: 200
+    duration: ""
+- request:
+    body: ""
+    form: {}
+    headers:
+      Authorization:
+      - AWS4-HMAC-SHA256 Credential=SCWJ9FJYVF1SPS9HX0VZ/20210518/fr-par/s3/aws4_request,
+        SignedHeaders=host;x-amz-content-sha256;x-amz-date, Signature=6392bdde5e7ed141fa30ced312ef8a948eb144f821a4ae5f653e1ba477a5428a
+      User-Agent:
+      - aws-sdk-go/1.38.22 (go1.15.11; linux; amd64)
+      X-Amz-Content-Sha256:
+      - e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+      X-Amz-Date:
+      - 20210518T123650Z
+    url: https://test-acc-scaleway-object-bucket-basic.s3.fr-par.scw.cloud/?versioning=
+    method: GET
+  response:
+    body: |-
+      <?xml version='1.0' encoding='UTF-8'?>
+      <VersioningConfiguration xmlns="http://s3.amazonaws.com/doc/2006-03-01/"><Status>Suspended</Status></VersioningConfiguration>
+    headers:
+      Content-Length:
+      - "164"
+      Content-Type:
+      - text/plain
+      Date:
+      - Tue, 18 May 2021 12:36:50 GMT
+      X-Amz-Id-2:
+      - tx0bfd3a168ba1440883037-0060a3b4e2
+      X-Amz-Request-Id:
+      - tx0bfd3a168ba1440883037-0060a3b4e2
+    status: 200 OK
+    code: 200
+    duration: ""
+- request:
+    body: ""
+    form: {}
+    headers:
+      Authorization:
+      - AWS4-HMAC-SHA256 Credential=SCWJ9FJYVF1SPS9HX0VZ/20210518/fr-par/s3/aws4_request,
+        SignedHeaders=host;x-amz-content-sha256;x-amz-date, Signature=83bcf93ccca5e044d87100ebfb4baf949ce5e2b59f9b76fd1cc97d544ad30d28
+      User-Agent:
+      - aws-sdk-go/1.38.22 (go1.15.11; linux; amd64)
+      X-Amz-Content-Sha256:
+      - e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+      X-Amz-Date:
+      - 20210518T123650Z
+    url: https://test-acc-scaleway-object-bucket-basic.s3.fr-par.scw.cloud/
+    method: DELETE
+  response:
+    body: ""
+    headers:
+      Content-Length:
+      - "0"
+      Content-Type:
+      - text/html; charset=UTF-8
+      Date:
+      - Tue, 18 May 2021 12:36:51 GMT
+      X-Amz-Id-2:
+      - tx9f85aee671824c5283b30-0060a3b4e2
+      X-Amz-Request-Id:
+      - tx9f85aee671824c5283b30-0060a3b4e2
+    status: 204 No Content
+    code: 204
+    duration: ""
+- request:
+    body: ""
+    form: {}
+    headers:
+      Authorization:
+      - AWS4-HMAC-SHA256 Credential=SCWJ9FJYVF1SPS9HX0VZ/20210518/nl-ams/s3/aws4_request,
+        SignedHeaders=host;x-amz-content-sha256;x-amz-date, Signature=6a3b95ee8afa24f4bcacf1708118ceb11c355f97f6e827ec4bbb4a800b7b27e9
+      User-Agent:
+      - aws-sdk-go/1.38.22 (go1.15.11; linux; amd64)
+      X-Amz-Content-Sha256:
+      - e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+      X-Amz-Date:
+      - 20210518T123650Z
     url: https://test-acc-scaleway-object-bucket-basic-ams.s3.nl-ams.scw.cloud/
     method: DELETE
   response:
@@ -1214,172 +2219,11 @@ interactions:
       Content-Type:
       - text/html; charset=UTF-8
       Date:
-      - Thu, 03 Dec 2020 10:17:04 GMT
+      - Tue, 18 May 2021 12:36:51 GMT
       X-Amz-Id-2:
-      - tx1cfc169e43a74118a48e3-005fc8bb20
+      - txa517ce10e9444db6b7c9f-0060a3b4e2
       X-Amz-Request-Id:
-      - tx1cfc169e43a74118a48e3-005fc8bb20
-    status: 204 No Content
-    code: 204
-    duration: ""
-- request:
-    body: ""
-    form: {}
-    headers:
-      Authorization:
-      - AWS4-HMAC-SHA256 Credential=SCW8XT5JRAV4B0WQSHPE/20201203/fr-par/s3/aws4_request,
-        SignedHeaders=host;x-amz-content-sha256;x-amz-date, Signature=6576959d05461ba29e94507ccd33571ff4ffa9e46489b5b2e136fc2f275c1685
-      User-Agent:
-      - aws-sdk-go/1.34.32 (go1.15.5; darwin; amd64)
-      X-Amz-Content-Sha256:
-      - e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
-      X-Amz-Date:
-      - 20201203T101704Z
-    url: https://test-acc-scaleway-object-bucket-basic.s3.fr-par.scw.cloud/?versioning=
-    method: GET
-  response:
-    body: |-
-      <?xml version='1.0' encoding='UTF-8'?>
-      <VersioningConfiguration xmlns="http://s3.amazonaws.com/doc/2006-03-01/"><Status>Suspended</Status></VersioningConfiguration>
-    headers:
-      Content-Length:
-      - "164"
-      Content-Type:
-      - text/plain
-      Date:
-      - Thu, 03 Dec 2020 10:17:04 GMT
-      X-Amz-Id-2:
-      - tx3896e6c62e6e47d98b286-005fc8bb20
-      X-Amz-Request-Id:
-      - tx3896e6c62e6e47d98b286-005fc8bb20
-    status: 200 OK
-    code: 200
-    duration: ""
-- request:
-    body: ""
-    form: {}
-    headers:
-      Authorization:
-      - AWS4-HMAC-SHA256 Credential=SCW8XT5JRAV4B0WQSHPE/20201203/fr-par/s3/aws4_request,
-        SignedHeaders=host;x-amz-content-sha256;x-amz-date, Signature=08260d5fe35c21fceff21c25cf4d40d5ba8f33d8947be4e19b10467c071b5426
-      User-Agent:
-      - aws-sdk-go/1.34.32 (go1.15.5; darwin; amd64)
-      X-Amz-Content-Sha256:
-      - e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
-      X-Amz-Date:
-      - 20201203T101705Z
-    url: https://test-acc-scaleway-object-bucket-basic.s3.fr-par.scw.cloud/
-    method: GET
-  response:
-    body: |-
-      <?xml version='1.0' encoding='UTF-8'?>
-      <ListBucketResult xmlns="http://s3.amazonaws.com/doc/2006-03-01/"><Name>test-acc-scaleway-object-bucket-basic</Name><Prefix/><Marker/><MaxKeys>1000</MaxKeys><IsTruncated>false</IsTruncated></ListBucketResult>
-    headers:
-      Content-Length:
-      - "247"
-      Content-Type:
-      - application/xml
-      Date:
-      - Thu, 03 Dec 2020 10:17:05 GMT
-      X-Amz-Id-2:
-      - tx4b5ae65e9fb9433880dbd-005fc8bb21
-      X-Amz-Request-Id:
-      - tx4b5ae65e9fb9433880dbd-005fc8bb21
-    status: 200 OK
-    code: 200
-    duration: ""
-- request:
-    body: ""
-    form: {}
-    headers:
-      Authorization:
-      - AWS4-HMAC-SHA256 Credential=SCW8XT5JRAV4B0WQSHPE/20201203/fr-par/s3/aws4_request,
-        SignedHeaders=host;x-amz-content-sha256;x-amz-date, Signature=6a67f7cdff2d7100e0154cb028463ceee88c936a32a537a42b9d1a182df9cd03
-      User-Agent:
-      - aws-sdk-go/1.34.32 (go1.15.5; darwin; amd64)
-      X-Amz-Content-Sha256:
-      - e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
-      X-Amz-Date:
-      - 20201203T101705Z
-    url: https://test-acc-scaleway-object-bucket-basic.s3.fr-par.scw.cloud/?tagging=
-    method: GET
-  response:
-    body: <Tagging xmlns="http://s3.amazonaws.com/doc/2006-03-01/"><TagSet></TagSet></Tagging>
-    headers:
-      Content-Length:
-      - "84"
-      Content-Type:
-      - application/xml
-      Date:
-      - Thu, 03 Dec 2020 10:17:05 GMT
-      X-Amz-Id-2:
-      - tx814f1843d97a49fe8171c-005fc8bb21
-      X-Amz-Request-Id:
-      - tx814f1843d97a49fe8171c-005fc8bb21
-    status: 200 OK
-    code: 200
-    duration: ""
-- request:
-    body: ""
-    form: {}
-    headers:
-      Authorization:
-      - AWS4-HMAC-SHA256 Credential=SCW8XT5JRAV4B0WQSHPE/20201203/fr-par/s3/aws4_request,
-        SignedHeaders=host;x-amz-content-sha256;x-amz-date, Signature=0fed98eb7dad9165614f8166b94e66e59cb95b79b0f761c376bffd2508e0a507
-      User-Agent:
-      - aws-sdk-go/1.34.32 (go1.15.5; darwin; amd64)
-      X-Amz-Content-Sha256:
-      - e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
-      X-Amz-Date:
-      - 20201203T101705Z
-    url: https://test-acc-scaleway-object-bucket-basic.s3.fr-par.scw.cloud/?versioning=
-    method: GET
-  response:
-    body: |-
-      <?xml version='1.0' encoding='UTF-8'?>
-      <VersioningConfiguration xmlns="http://s3.amazonaws.com/doc/2006-03-01/"><Status>Suspended</Status></VersioningConfiguration>
-    headers:
-      Content-Length:
-      - "164"
-      Content-Type:
-      - text/plain
-      Date:
-      - Thu, 03 Dec 2020 10:17:05 GMT
-      X-Amz-Id-2:
-      - tx85920cf3802f404b83919-005fc8bb21
-      X-Amz-Request-Id:
-      - tx85920cf3802f404b83919-005fc8bb21
-    status: 200 OK
-    code: 200
-    duration: ""
-- request:
-    body: ""
-    form: {}
-    headers:
-      Authorization:
-      - AWS4-HMAC-SHA256 Credential=SCW8XT5JRAV4B0WQSHPE/20201203/fr-par/s3/aws4_request,
-        SignedHeaders=host;x-amz-content-sha256;x-amz-date, Signature=22eb709fe6a6be29fd73a9284ee8569e22c98e14d6d839cf8fbd3af9ba54c652
-      User-Agent:
-      - aws-sdk-go/1.34.32 (go1.15.5; darwin; amd64)
-      X-Amz-Content-Sha256:
-      - e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
-      X-Amz-Date:
-      - 20201203T101706Z
-    url: https://test-acc-scaleway-object-bucket-basic.s3.fr-par.scw.cloud/
-    method: DELETE
-  response:
-    body: ""
-    headers:
-      Content-Length:
-      - "0"
-      Content-Type:
-      - text/html; charset=UTF-8
-      Date:
-      - Thu, 03 Dec 2020 10:17:06 GMT
-      X-Amz-Id-2:
-      - txd614adaacffa478db4581-005fc8bb22
-      X-Amz-Request-Id:
-      - txd614adaacffa478db4581-005fc8bb22
+      - txa517ce10e9444db6b7c9f-0060a3b4e2
     status: 204 No Content
     code: 204
     duration: ""
