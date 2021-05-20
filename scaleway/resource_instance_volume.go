@@ -194,6 +194,14 @@ func resourceScalewayInstanceVolumeUpdate(ctx context.Context, d *schema.Resourc
 		if err != nil {
 			return diag.FromErr(fmt.Errorf("couldn't resize volume: %s", err))
 		}
+		_, err = instanceAPI.WaitForVolume(&instance.WaitForVolumeRequest{
+			VolumeID:      id,
+			Zone:          zone,
+			RetryInterval: DefaultWaitRetryInterval,
+		}, scw.WithContext(ctx))
+		if err != nil {
+			return diag.FromErr(err)
+		}
 	}
 
 	return resourceScalewayInstanceVolumeRead(ctx, d, meta)
