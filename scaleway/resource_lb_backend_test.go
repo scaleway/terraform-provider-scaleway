@@ -27,7 +27,6 @@ func TestAccScalewayLbBackend_Basic(t *testing.T) {
 					}
 
 					resource scaleway_instance_ip ip01 {}
-					resource scaleway_instance_ip ip02 {}
 
 					resource scaleway_lb_backend bkd01 {
 						lb_id = scaleway_lb.lb01.id
