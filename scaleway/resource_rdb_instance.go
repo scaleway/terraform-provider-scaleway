@@ -185,9 +185,10 @@ func resourceScalewayRdbInstanceCreate(ctx context.Context, d *schema.ResourceDa
 	d.SetId(newRegionalIDString(region, res.ID))
 
 	_, err = rdbAPI.WaitForInstance(&rdb.WaitForInstanceRequest{
-		Region:     region,
-		InstanceID: res.ID,
-		Timeout:    scw.TimeDurationPtr(defaultInstanceServerWaitTimeout),
+		Region:        region,
+		InstanceID:    res.ID,
+		Timeout:       scw.TimeDurationPtr(defaultInstanceServerWaitTimeout),
+		RetryInterval: DefaultWaitRetryInterval,
 	}, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
@@ -383,9 +384,10 @@ func resourceScalewayRdbInstanceUpdate(ctx context.Context, d *schema.ResourceDa
 		}
 
 		_, err = rdbAPI.WaitForInstance(&rdb.WaitForInstanceRequest{
-			Region:     region,
-			InstanceID: ID,
-			Timeout:    scw.TimeDurationPtr(defaultInstanceServerWaitTimeout * 3), // upgrade takes some time
+			Region:        region,
+			InstanceID:    ID,
+			Timeout:       scw.TimeDurationPtr(defaultInstanceServerWaitTimeout * 3), // upgrade takes some time
+			RetryInterval: DefaultWaitRetryInterval,
 		}, scw.WithContext(ctx))
 		if err != nil {
 			return diag.FromErr(err)
@@ -420,9 +422,10 @@ func resourceScalewayRdbInstanceDelete(ctx context.Context, d *schema.ResourceDa
 
 	// We first wait in case the instance is in a transient state
 	_, err = rdbAPI.WaitForInstance(&rdb.WaitForInstanceRequest{
-		InstanceID: ID,
-		Region:     region,
-		Timeout:    scw.TimeDurationPtr(LbWaitForTimeout),
+		InstanceID:    ID,
+		Region:        region,
+		Timeout:       scw.TimeDurationPtr(LbWaitForTimeout),
+		RetryInterval: DefaultWaitRetryInterval,
 	}, scw.WithContext(ctx))
 
 	if err != nil && !is404Error(err) {
@@ -439,9 +442,10 @@ func resourceScalewayRdbInstanceDelete(ctx context.Context, d *schema.ResourceDa
 	}
 
 	_, err = rdbAPI.WaitForInstance(&rdb.WaitForInstanceRequest{
-		InstanceID: ID,
-		Region:     region,
-		Timeout:    scw.TimeDurationPtr(LbWaitForTimeout),
+		InstanceID:    ID,
+		Region:        region,
+		Timeout:       scw.TimeDurationPtr(LbWaitForTimeout),
+		RetryInterval: DefaultWaitRetryInterval,
 	}, scw.WithContext(ctx))
 
 	if err != nil && !is404Error(err) {

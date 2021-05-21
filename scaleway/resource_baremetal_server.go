@@ -153,9 +153,10 @@ func resourceScalewayBaremetalServerCreate(ctx context.Context, d *schema.Resour
 	d.SetId(newZonedID(server.Zone, server.ID).String())
 
 	_, err = baremetalAPI.WaitForServer(&baremetal.WaitForServerRequest{
-		Zone:     server.Zone,
-		ServerID: server.ID,
-		Timeout:  scw.TimeDurationPtr(baremetalServerWaitForTimeout),
+		Zone:          server.Zone,
+		ServerID:      server.ID,
+		Timeout:       scw.TimeDurationPtr(baremetalServerWaitForTimeout),
+		RetryInterval: DefaultWaitRetryInterval,
 	})
 	if err != nil {
 		return diag.FromErr(err)
@@ -173,9 +174,10 @@ func resourceScalewayBaremetalServerCreate(ctx context.Context, d *schema.Resour
 	}
 
 	_, err = baremetalAPI.WaitForServerInstall(&baremetal.WaitForServerInstallRequest{
-		Zone:     server.Zone,
-		ServerID: server.ID,
-		Timeout:  scw.TimeDurationPtr(baremetalServerWaitForTimeout),
+		Zone:          server.Zone,
+		ServerID:      server.ID,
+		Timeout:       scw.TimeDurationPtr(baremetalServerWaitForTimeout),
+		RetryInterval: DefaultWaitRetryInterval,
 	})
 	if err != nil {
 		return diag.FromErr(err)
@@ -259,9 +261,10 @@ func resourceScalewayBaremetalServerUpdate(ctx context.Context, d *schema.Resour
 		}
 
 		_, err = baremetalAPI.WaitForServerInstall(&baremetal.WaitForServerInstallRequest{
-			Zone:     server.Zone,
-			ServerID: server.ID,
-			Timeout:  scw.TimeDurationPtr(baremetalServerWaitForTimeout),
+			Zone:          server.Zone,
+			ServerID:      server.ID,
+			Timeout:       scw.TimeDurationPtr(baremetalServerWaitForTimeout),
+			RetryInterval: DefaultWaitRetryInterval,
 		})
 		if err != nil {
 			return diag.FromErr(err)
@@ -290,9 +293,10 @@ func resourceScalewayBaremetalServerDelete(ctx context.Context, d *schema.Resour
 	}
 
 	_, err = baremetalAPI.WaitForServer(&baremetal.WaitForServerRequest{
-		Zone:     server.Zone,
-		ServerID: server.ID,
-		Timeout:  scw.TimeDurationPtr(baremetalServerWaitForTimeout),
+		Zone:          server.Zone,
+		ServerID:      server.ID,
+		Timeout:       scw.TimeDurationPtr(baremetalServerWaitForTimeout),
+		RetryInterval: DefaultWaitRetryInterval,
 	})
 
 	if err != nil && !is404Error(err) {

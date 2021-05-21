@@ -9,6 +9,7 @@ import (
 	"regexp"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/dnaeon/go-vcr/cassette"
 	"github.com/dnaeon/go-vcr/recorder"
@@ -94,6 +95,11 @@ func NewTestTools(t *testing.T) *TestTools {
 		httpClient:       httpClient,
 	})
 	require.NoError(t, err)
+
+	if !*UpdateCassettes {
+		tmp := 0 * time.Second
+		DefaultWaitRetryInterval = &tmp
+	}
 
 	return &TestTools{
 		T:    t,

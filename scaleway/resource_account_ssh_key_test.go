@@ -42,7 +42,7 @@ func testSweepAccountSSHKey(_ string) error {
 }
 
 func TestAccScalewayAccountSSHKey_basic(t *testing.T) {
-	name := newRandomName("ssh-key")
+	name := "tf-test-account-ssh-key-basic"
 	SSHKey := "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIEEYrzDOZmhItdKaDAEqJQ4ORS2GyBMtBozYsK5kiXXX opensource@scaleway.com"
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
@@ -83,7 +83,7 @@ func TestAccScalewayAccountSSHKey_basic(t *testing.T) {
 }
 
 func TestAccScalewayAccountSSHKey_WithNewLine(t *testing.T) {
-	name := newRandomName("ssh-key")
+	name := "tf-test-account-ssh-key-newline"
 	SSHKey := "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIDjfkdWCwkYlVQMDUfiZlVrmjaGOfBYnmkucssae8Iup opensource@scaleway.com"
 	tt := NewTestTools(t)
 	defer tt.Cleanup()

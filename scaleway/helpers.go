@@ -17,6 +17,11 @@ import (
 	"golang.org/x/xerrors"
 )
 
+var (
+	// DefaultWaitRetryInterval is used to set the retry interval to 0 during acceptance tests
+	DefaultWaitRetryInterval *time.Duration
+)
+
 // RegionalID represents an ID that is linked with a region, eg fr-par/11111111-1111-1111-1111-111111111111
 type RegionalID struct {
 	ID     string
@@ -283,6 +288,15 @@ func regionSchema() *schema.Schema {
 	}
 }
 
+// regionComputedSchema returns a standard schema for a zone
+func regionComputedSchema() *schema.Schema {
+	return &schema.Schema{
+		Type:        schema.TypeString,
+		Description: "The region of the resource",
+		Computed:    true,
+	}
+}
+
 // validateStringInSliceWithWarning helps to only returns warnings in case we got a non public locality passed
 func validateStringInSliceWithWarning(correctValues []string, field string) func(i interface{}, path cty.Path) diag.Diagnostics {
 	return func(i interface{}, path cty.Path) diag.Diagnostics {
@@ -485,7 +499,7 @@ func diffSuppressFuncIgnoreCaseAndHyphen(k, old, new string, d *schema.ResourceD
 }
 
 // diffSuppressFuncLocality is a SuppressDiffFunc to remove the locality from an ID when checking diff.
-// e.g. 2c1a1716-5570-4668-a50a-860c90beabf6 == fr-par/2c1a1716-5570-4668-a50a-860c90beabf6
+// e.g. 2c1a1716-5570-4668-a50a-860c90beabf6 == fr-par-1/2c1a1716-5570-4668-a50a-860c90beabf6
 func diffSuppressFuncLocality(k, old, new string, d *schema.ResourceData) bool {
 	return expandID(old) == expandID(new)
 }

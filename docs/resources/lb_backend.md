@@ -88,8 +88,8 @@ In addition to all arguments above, the following attributes are exported:
 
 ## Import
 
-Load-Balancer backend can be imported using the `{region}/{id}`, e.g.
+Load-Balancer backend can be imported using the `{zone}/{id}`, e.g.
 
 ```bash
-$ terraform import scaleway_lb_backend.backend01 fr-par/11111111-1111-1111-1111-111111111111
+$ terraform import scaleway_lb_backend.backend01 fr-par-1/11111111-1111-1111-1111-111111111111
 ```

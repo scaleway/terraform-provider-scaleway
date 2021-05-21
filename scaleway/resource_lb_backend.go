@@ -22,7 +22,10 @@ func resourceScalewayLbBackend() *schema.Resource {
 		Timeouts: &schema.ResourceTimeout{
 			Default: schema.DefaultTimeout(defaultLbLbTimeout),
 		},
-		SchemaVersion: 0,
+		SchemaVersion: 1,
+		StateUpgraders: []schema.StateUpgrader{
+			{Version: 0, Type: lbUpgradeV1SchemaType(), Upgrade: lbUpgradeV1SchemaUpgradeFunc},
+		},
 		Schema: map[string]*schema.Schema{
 			"lb_id": {
 				Type:        schema.TypeString,
@@ -237,9 +240,12 @@ func resourceScalewayLbBackend() *schema.Resource {
 }
 
 func resourceScalewayLbBackendCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	lbAPI := lbAPI(meta)
-
-	region, LbID, err := parseRegionalID(d.Get("lb_id").(string))
+	lbAPI, _, err := lbAPIWithZone(d, meta)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+	// parse lb_id. It will be forced to a zoned lb
+	zone, LbID, err := parseZonedID(d.Get("lb_id").(string))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -249,8 +255,8 @@ func resourceScalewayLbBackendCreate(ctx context.Context, d *schema.ResourceData
 		healthCheckPort = d.Get("forward_port").(int)
 	}
 
-	createReq := &lb.CreateBackendRequest{
-		Region:                   region,
+	createReq := &lb.ZonedAPICreateBackendRequest{
+		Zone:                     zone,
 		LBID:                     LbID,
 		Name:                     expandOrGenerateString(d.Get("name"), "lb-bkd"),
 		ForwardProtocol:          expandLbProtocol(d.Get("forward_protocol")),
@@ -281,19 +287,19 @@ func resourceScalewayLbBackendCreate(ctx context.Context, d *schema.ResourceData
 		return diag.FromErr(err)
 	}
 
-	d.SetId(newRegionalIDString(region, res.ID))
+	d.SetId(newZonedIDString(zone, res.ID))
 
 	return resourceScalewayLbBackendRead(ctx, d, meta)
 }
 
 func resourceScalewayLbBackendRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	lbAPI, region, ID, err := lbAPIWithRegionAndID(meta, d.Id())
+	lbAPI, zone, ID, err := lbAPIWithZoneAndID(meta, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	res, err := lbAPI.GetBackend(&lb.GetBackendRequest{
-		Region:    region,
+	res, err := lbAPI.GetBackend(&lb.ZonedAPIGetBackendRequest{
+		Zone:      zone,
 		BackendID: ID,
 	}, scw.WithContext(ctx))
 
@@ -305,7 +311,7 @@ func resourceScalewayLbBackendRead(ctx context.Context, d *schema.ResourceData, 
 		return diag.FromErr(err)
 	}
 
-	_ = d.Set("lb_id", newRegionalIDString(region, res.LB.ID))
+	_ = d.Set("lb_id", newZonedIDString(zone, res.LB.ID))
 	_ = d.Set("name", res.Name)
 	_ = d.Set("forward_protocol", flattenLbProtocol(res.ForwardProtocol))
 	_ = d.Set("forward_port", res.ForwardPort)
@@ -331,13 +337,13 @@ func resourceScalewayLbBackendRead(ctx context.Context, d *schema.ResourceData, 
 }
 
 func resourceScalewayLbBackendUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	lbAPI, region, ID, err := lbAPIWithRegionAndID(meta, d.Id())
+	lbAPI, zone, ID, err := lbAPIWithZoneAndID(meta, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	req := &lb.UpdateBackendRequest{
-		Region:                   region,
+	req := &lb.ZonedAPIUpdateBackendRequest{
+		Zone:                     zone,
 		BackendID:                ID,
 		Name:                     d.Get("name").(string),
 		ForwardProtocol:          expandLbProtocol(d.Get("forward_protocol")),
@@ -359,8 +365,8 @@ func resourceScalewayLbBackendUpdate(ctx context.Context, d *schema.ResourceData
 	}
 
 	// Update Health Check
-	updateHCRequest := &lb.UpdateHealthCheckRequest{
-		Region:          region,
+	updateHCRequest := &lb.ZonedAPIUpdateHealthCheckRequest{
+		Zone:            zone,
 		BackendID:       ID,
 		Port:            int32(d.Get("health_check_port").(int)),
 		CheckMaxRetries: int32(d.Get("health_check_max_retries").(int)),
@@ -381,8 +387,8 @@ func resourceScalewayLbBackendUpdate(ctx context.Context, d *schema.ResourceData
 	}
 
 	// Update Backend servers
-	_, err = lbAPI.SetBackendServers(&lb.SetBackendServersRequest{
-		Region:    region,
+	_, err = lbAPI.SetBackendServers(&lb.ZonedAPISetBackendServersRequest{
+		Zone:      zone,
 		BackendID: ID,
 		ServerIP:  expandStrings(d.Get("server_ips")),
 	}, scw.WithContext(ctx))
@@ -394,13 +400,13 @@ func resourceScalewayLbBackendUpdate(ctx context.Context, d *schema.ResourceData
 }
 
 func resourceScalewayLbBackendDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	lbAPI, region, ID, err := lbAPIWithRegionAndID(meta, d.Id())
+	lbAPI, zone, ID, err := lbAPIWithZoneAndID(meta, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	err = lbAPI.DeleteBackend(&lb.DeleteBackendRequest{
-		Region:    region,
+	err = lbAPI.DeleteBackend(&lb.ZonedAPIDeleteBackendRequest{
+		Zone:      zone,
 		BackendID: ID,
 	}, scw.WithContext(ctx))
 

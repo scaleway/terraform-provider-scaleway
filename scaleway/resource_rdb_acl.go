@@ -2,8 +2,6 @@ package scaleway
 
 import (
 	"context"
-	"fmt"
-	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -60,14 +58,10 @@ func resourceScalewayRdbACL() *schema.Resource {
 }
 
 func resourceScalewayRdbACLCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	rdbAPI, region, err := rdbAPIWithRegion(d, meta)
+	instanceID := d.Get("instance_id").(string)
+	rdbAPI, region, ID, err := rdbAPIWithRegionAndID(meta, instanceID)
 	if err != nil {
 		return diag.FromErr(err)
-	}
-	instanceID := d.Get("instance_id").(string)
-	_, id, err := parseLocalizedID(instanceID)
-	if err == nil {
-		instanceID = id
 	}
 
 	//InstanceStatus.READY,
@@ -75,13 +69,13 @@ func resourceScalewayRdbACLCreate(ctx context.Context, d *schema.ResourceData, m
 	//	InstanceStatus.BACKUPING,
 	//	InstanceStatus.SNAPSHOTTING,
 	_ = rdb.WaitForInstanceRequest{
-		InstanceID: instanceID,
+		InstanceID: ID,
 		Region:     region,
 	}
 
 	createReq := &rdb.SetInstanceACLRulesRequest{
 		Region:     region,
-		InstanceID: instanceID,
+		InstanceID: ID,
 		Rules:      rdbACLExpand(d.Get("acl_rules")),
 	}
 
@@ -90,27 +84,20 @@ func resourceScalewayRdbACLCreate(ctx context.Context, d *schema.ResourceData, m
 		return diag.FromErr(err)
 	}
 
-	d.SetId(resourceScalewayRdbACLID(region, expandID(instanceID)))
+	d.SetId(instanceID)
 
 	return resourceScalewayRdbACLRead(ctx, d, meta)
 }
 
 func resourceScalewayRdbACLRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	rdbAPI, region, err := rdbAPIWithRegion(d, meta)
+	rdbAPI, region, ID, err := rdbAPIWithRegionAndID(meta, d.Get("instance_id").(string))
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	instanceID := d.Id()
-
-	_, id, err := parseLocalizedID(instanceID)
-	if err == nil {
-		instanceID = id
-	}
-
 	res, err := rdbAPI.ListInstanceACLRules(&rdb.ListInstanceACLRulesRequest{
 		Region:     region,
-		InstanceID: instanceID,
+		InstanceID: ID,
 	}, scw.WithContext(ctx))
 
 	if err != nil {
@@ -121,24 +108,16 @@ func resourceScalewayRdbACLRead(ctx context.Context, d *schema.ResourceData, met
 		return diag.FromErr(err)
 	}
 
-	_ = d.Set("instance_id", newRegionalID(region, instanceID).String())
+	id := newRegionalID(region, ID).String()
+	d.SetId(id)
+	_ = d.Set("instance_id", id)
 	_ = d.Set("acl_rules", rdbACLRulesFlatten(res.Rules))
 
 	return nil
 }
 
 func resourceScalewayRdbACLUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	rdbAPI, region, err := rdbAPIWithRegion(d, meta)
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	instanceID := d.Id()
-	_, id, err := parseLocalizedID(instanceID)
-	if err == nil {
-		instanceID = id
-	}
-
+	rdbAPI, region, ID, err := rdbAPIWithRegionAndID(meta, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -149,13 +128,13 @@ func resourceScalewayRdbACLUpdate(ctx context.Context, d *schema.ResourceData, m
 		//	InstanceStatus.BACKUPING,
 		//	InstanceStatus.SNAPSHOTTING,
 		_ = rdb.WaitForInstanceRequest{
-			InstanceID: instanceID,
+			InstanceID: ID,
 			Region:     region,
 		}
 
 		req := &rdb.SetInstanceACLRulesRequest{
 			Region:     region,
-			InstanceID: instanceID,
+			InstanceID: ID,
 			Rules:      rdbACLExpand(d.Get("acl_rules")),
 		}
 
@@ -169,15 +148,9 @@ func resourceScalewayRdbACLUpdate(ctx context.Context, d *schema.ResourceData, m
 }
 
 func resourceScalewayRdbACLDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	rdbAPI, region, err := rdbAPIWithRegion(d, meta)
+	rdbAPI, region, ID, err := rdbAPIWithRegionAndID(meta, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
-	}
-
-	instanceID := d.Id()
-	_, id, err := parseLocalizedID(instanceID)
-	if err == nil {
-		instanceID = id
 	}
 	aclruleips := make([]string, 0)
 	for _, acl := range rdbACLExpand(d.Get("acl_rules")) {
@@ -185,7 +158,7 @@ func resourceScalewayRdbACLDelete(ctx context.Context, d *schema.ResourceData, m
 	}
 	_, err = rdbAPI.DeleteInstanceACLRules(&rdb.DeleteInstanceACLRulesRequest{
 		Region:     region,
-		InstanceID: instanceID,
+		InstanceID: ID,
 		ACLRuleIPs: aclruleips,
 	}, scw.WithContext(ctx))
 
@@ -194,12 +167,6 @@ func resourceScalewayRdbACLDelete(ctx context.Context, d *schema.ResourceData, m
 	}
 
 	return nil
-}
-
-// Build the resource identifier
-// The resource identifier format is "Region/InstanceId/UserName"
-func resourceScalewayRdbACLID(region scw.Region, instanceID string) (resourceID string) {
-	return fmt.Sprintf("%s/%s", region, instanceID)
 }
 
 func rdbACLExpand(data interface{}) []*rdb.ACLRuleRequest {

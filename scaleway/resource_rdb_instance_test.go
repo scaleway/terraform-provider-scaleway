@@ -168,6 +168,7 @@ func TestAccScalewayRdbInstance_Volume(t *testing.T) {
 						disable_backup = true
 						user_name = "my_initial_user"
 						password = "thiZ_is_v&ry_s3cret"
+						region= "nl-ams"
 						tags = [ "terraform-test", "scaleway_rdb_instance", "volume" ]
 					}
 				`,
@@ -186,6 +187,7 @@ func TestAccScalewayRdbInstance_Volume(t *testing.T) {
 						disable_backup = true
 						user_name = "my_initial_user"
 						password = "thiZ_is_v&ry_s3cret"
+						region= "nl-ams"
 						tags = [ "terraform-test", "scaleway_rdb_instance", "volume" ]
 						volume_type = "bssd"
 						volume_size_in_gb = 10
