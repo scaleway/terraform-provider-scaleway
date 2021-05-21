@@ -25,10 +25,6 @@ data "scaleway_rdb_database" "my_db" {
 
 - `name` - (Required) The name of the RDB instance.
 
-- `region` - (Defaults to [provider](../index.md#region) `region`) The [region](../guides/regions_and_zones.md#zones) in which the RDB instance exists.
-
-- `organization_id` - (Defaults to [provider](../index.md#organization_id) `organization_id`) The ID of the organization the RDB instance is in.
-
 ## Attributes Reference
 
 In addition to all arguments above, the following attributes are exported:

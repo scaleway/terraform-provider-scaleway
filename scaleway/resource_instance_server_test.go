@@ -599,7 +599,6 @@ func TestAccScalewayInstanceServer_WithReservedIP(t *testing.T) {
 			{
 				Config: `
 					resource "scaleway_instance_ip" "first" {}
-					resource "scaleway_instance_ip" "second" {}
 					resource "scaleway_instance_server" "base" {
 						image = "ubuntu_focal"
 						type  = "DEV1-S"
