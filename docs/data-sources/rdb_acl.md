@@ -22,10 +22,6 @@ data "scaleway_rdb_acl" "my_acl" {
 
 - `instance_id` - (Required) The RDB instance ID.
 
-- `region` - (Defaults to [provider](../index.md#region) `region`) The [region](../guides/regions_and_zones.md#zones) in which the RDB instance exists.
-
-- `organization_id` - (Defaults to [provider](../index.md#organization_id) `organization_id`) The ID of the organization the RDB instance is in.
-
 ## Attribute Reference
 
 In addition to all above arguments, the following attributes are exported:
