@@ -64,10 +64,6 @@ func resourceScalewayRdbACLCreate(ctx context.Context, d *schema.ResourceData, m
 		return diag.FromErr(err)
 	}
 
-	//InstanceStatus.READY,
-	//	InstanceStatus.CONFIGURING,
-	//	InstanceStatus.BACKUPING,
-	//	InstanceStatus.SNAPSHOTTING,
 	_ = rdb.WaitForInstanceRequest{
 		InstanceID: ID,
 		Region:     region,
@@ -123,10 +119,6 @@ func resourceScalewayRdbACLUpdate(ctx context.Context, d *schema.ResourceData, m
 	}
 
 	if d.HasChange("acl_rules") {
-		//InstanceStatus.READY,
-		//	InstanceStatus.CONFIGURING,
-		//	InstanceStatus.BACKUPING,
-		//	InstanceStatus.SNAPSHOTTING,
 		_ = rdb.WaitForInstanceRequest{
 			InstanceID: ID,
 			Region:     region,
