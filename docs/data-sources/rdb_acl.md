@@ -12,9 +12,9 @@ Gets information about the RDB instance network Access Control List.
 ## Example Usage
 
 ```hcl
-# Get the database ACL for the instanceid 11111111-1111-1111-1111-111111111111
+# Get the database ACL for the instanceid 11111111-1111-1111-1111-111111111111 located in fr-par
 data "scaleway_rdb_acl" "my_acl" {
-  instance_id = "11111111-1111-1111-1111-111111111111"
+  instance_id = "fr-par/11111111-1111-1111-1111-111111111111"
 }
 ```
 
