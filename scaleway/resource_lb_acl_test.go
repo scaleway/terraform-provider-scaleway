@@ -215,14 +215,14 @@ func testAccCheckScalewayACLAreCorrect(tt *TestTools, frontendName string, expec
 			return fmt.Errorf("resource id is not set")
 		}
 
-		lbAPI, region, ID, err := lbAPIWithRegionAndID(tt.Meta, rs.Primary.ID)
+		lbAPI, zone, ID, err := lbAPIWithZoneAndID(tt.Meta, rs.Primary.ID)
 		if err != nil {
 			return err
 		}
 
 		//fetch our acls from the scaleway
-		resACL, err := lbAPI.ListACLs(&lb.ListACLsRequest{
-			Region:     region,
+		resACL, err := lbAPI.ListACLs(&lb.ZonedAPIListACLsRequest{
+			Zone:       zone,
 			FrontendID: ID,
 		}, scw.WithAllPages())
 		if err != nil {

@@ -18,18 +18,18 @@ func init() {
 }
 
 func testSweepLBIP(_ string) error {
-	return sweepRegions([]scw.Region{scw.RegionFrPar, scw.RegionNlAms, scw.RegionPlWaw}, func(scwClient *scw.Client, region scw.Region) error {
-		lbAPI := lb.NewAPI(scwClient)
+	return sweepZones([]scw.Zone{scw.ZoneFrPar1, scw.ZoneNlAms1, scw.ZonePlWaw1}, func(scwClient *scw.Client, region scw.Zone) error {
+		lbAPI := lb.NewZonedAPI(scwClient)
 
 		l.Debugf("sweeper: destroying the lb ips in (%s)", region)
-		listIPs, err := lbAPI.ListIPs(&lb.ListIPsRequest{}, scw.WithAllPages())
+		listIPs, err := lbAPI.ListIPs(&lb.ZonedAPIListIPsRequest{}, scw.WithAllPages())
 		if err != nil {
 			return fmt.Errorf("error listing lb ips in (%s) in sweeper: %s", region, err)
 		}
 
 		for _, ip := range listIPs.IPs {
 			if ip.LBID == nil {
-				err := lbAPI.ReleaseIP(&lb.ReleaseIPRequest{
+				err := lbAPI.ReleaseIP(&lb.ZonedAPIReleaseIPRequest{
 					IPID: ip.ID,
 				})
 				if err != nil {
@@ -84,14 +84,14 @@ func testAccCheckScalewayLbIPExists(tt *TestTools, n string) resource.TestCheckF
 			return fmt.Errorf("resource not found: %s", n)
 		}
 
-		lbAPI, region, ID, err := lbAPIWithRegionAndID(tt.Meta, rs.Primary.ID)
+		lbAPI, zone, ID, err := lbAPIWithZoneAndID(tt.Meta, rs.Primary.ID)
 		if err != nil {
 			return err
 		}
 
-		_, err = lbAPI.GetIP(&lb.GetIPRequest{
-			IPID:   ID,
-			Region: region,
+		_, err = lbAPI.GetIP(&lb.ZonedAPIGetIPRequest{
+			IPID: ID,
+			Zone: zone,
 		})
 
 		if err != nil {
@@ -109,14 +109,14 @@ func testAccCheckScalewayLbIPDestroy(tt *TestTools) resource.TestCheckFunc {
 				continue
 			}
 
-			lbAPI, region, ID, err := lbAPIWithRegionAndID(tt.Meta, rs.Primary.ID)
+			lbAPI, zone, ID, err := lbAPIWithZoneAndID(tt.Meta, rs.Primary.ID)
 			if err != nil {
 				return err
 			}
 
-			_, err = lbAPI.GetIP(&lb.GetIPRequest{
-				Region: region,
-				IPID:   ID,
+			_, err = lbAPI.GetIP(&lb.ZonedAPIGetIPRequest{
+				Zone: zone,
+				IPID: ID,
 			})
 
 			// If no error resource still exist

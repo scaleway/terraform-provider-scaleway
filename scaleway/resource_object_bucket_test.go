@@ -3,6 +3,7 @@ package scaleway
 import (
 	"fmt"
 	"reflect"
+	"regexp"
 	"strings"
 	"testing"
 
@@ -344,27 +345,7 @@ func TestAccScalewayObjectBucket_Cors_EmptyOrigin(t *testing.T) {
 							max_age_seconds = 3000
 						}
 					}`, bucketName),
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayObjectBucketExists(tt, resourceName),
-					testAccCheckScalewayObjectBucketCors(tt,
-						resourceName,
-						[]*s3.CORSRule{
-							{
-								AllowedHeaders: []*string{scw.StringPtr("*")},
-								AllowedMethods: []*string{scw.StringPtr("PUT"), scw.StringPtr("POST")},
-								AllowedOrigins: []*string{scw.StringPtr("")},
-								ExposeHeaders:  []*string{scw.StringPtr("x-amz-server-side-encryption"), scw.StringPtr("ETag")},
-								MaxAgeSeconds:  scw.Int64Ptr(3000),
-							},
-						},
-					),
-				),
-			},
-			{
-				ResourceName:            resourceName,
-				ImportState:             true,
-				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"force_destroy", "acl"},
+				ExpectError: regexp.MustCompile("error putting S3 CORS"),
 			},
 		},
 	})

@@ -41,6 +41,7 @@ func testSweepBaremetalServer(_ string) error {
 }
 
 func TestAccScalewayBaremetalServer_Basic(t *testing.T) {
+	t.Skip("Skipping Baremetal Server test as no stock is available currently")
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
 

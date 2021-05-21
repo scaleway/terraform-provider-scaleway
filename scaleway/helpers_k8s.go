@@ -104,9 +104,10 @@ func k8sGetLatestVersionFromMinor(ctx context.Context, k8sAPI *k8s.API, region s
 
 func waitK8SCluster(ctx context.Context, k8sAPI *k8s.API, region scw.Region, clusterID string, desiredStates ...k8s.ClusterStatus) error {
 	cluster, err := k8sAPI.WaitForCluster(&k8s.WaitForClusterRequest{
-		ClusterID: clusterID,
-		Region:    region,
-		Timeout:   scw.TimeDurationPtr(K8SClusterWaitForPoolRequiredTimeout),
+		ClusterID:     clusterID,
+		Region:        region,
+		Timeout:       scw.TimeDurationPtr(K8SClusterWaitForPoolRequiredTimeout),
+		RetryInterval: DefaultWaitRetryInterval,
 	}, scw.WithContext(ctx))
 	if err != nil {
 		return err
@@ -123,9 +124,10 @@ func waitK8SCluster(ctx context.Context, k8sAPI *k8s.API, region scw.Region, clu
 
 func waitK8SClusterDeleted(ctx context.Context, k8sAPI *k8s.API, region scw.Region, clusterID string) error {
 	cluster, err := k8sAPI.WaitForCluster(&k8s.WaitForClusterRequest{
-		ClusterID: clusterID,
-		Region:    region,
-		Timeout:   scw.TimeDurationPtr(K8SClusterWaitForDeletedTimeout),
+		ClusterID:     clusterID,
+		Region:        region,
+		Timeout:       scw.TimeDurationPtr(K8SClusterWaitForDeletedTimeout),
+		RetryInterval: DefaultWaitRetryInterval,
 	}, scw.WithContext(ctx))
 	if err != nil {
 		if is404Error(err) {
@@ -139,9 +141,10 @@ func waitK8SClusterDeleted(ctx context.Context, k8sAPI *k8s.API, region scw.Regi
 
 func waitK8SPoolReady(ctx context.Context, k8sAPI *k8s.API, region scw.Region, poolID string) error {
 	pool, err := k8sAPI.WaitForPool(&k8s.WaitForPoolRequest{
-		PoolID:  poolID,
-		Region:  region,
-		Timeout: scw.TimeDurationPtr(K8SPoolWaitForReadyTimeout),
+		PoolID:        poolID,
+		Region:        region,
+		Timeout:       scw.TimeDurationPtr(K8SPoolWaitForReadyTimeout),
+		RetryInterval: DefaultWaitRetryInterval,
 	}, scw.WithContext(ctx))
 
 	if err != nil {
