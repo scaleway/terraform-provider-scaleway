@@ -228,6 +228,34 @@ func testAccCheckScalewayRdbExists(tt *TestTools, n string) resource.TestCheckFu
 	}
 }
 
+func TestAccScalewayRdbInstance_Capitalize(t *testing.T) {
+	tt := NewTestTools(t)
+	defer tt.Cleanup()
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      testAccCheckScalewayRdbInstanceDestroy(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource scaleway_rdb_instance main {
+						name = "test-rdb"
+						node_type = "DB-DEV-S"
+						engine = "PostgreSQL-11"
+						is_ha_cluster = false
+						disable_backup = true
+						user_name = "my_initial_user"
+						password = "thiZ_is_v&ry_s3cret"
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayRdbExists(tt, "scaleway_rdb_instance.main"),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckScalewayRdbInstanceDestroy(tt *TestTools) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		for _, rs := range state.RootModule().Resources {
