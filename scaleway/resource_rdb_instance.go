@@ -34,9 +34,10 @@ func resourceScalewayRdbInstance() *schema.Resource {
 				Description: "Name of the database instance",
 			},
 			"node_type": {
-				Type:        schema.TypeString,
-				Required:    true,
-				Description: "The type of database instance you want to create",
+				Type:             schema.TypeString,
+				Required:         true,
+				Description:      "The type of database instance you want to create",
+				DiffSuppressFunc: diffSuppressFuncIgnoreCase,
 			},
 			"engine": {
 				Type:        schema.TypeString,
