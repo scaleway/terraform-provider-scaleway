@@ -27,6 +27,7 @@ data "scaleway_rdb_privilege" "find_priv" {
 - `user_name` - (Required) The user name.
 
 - `database_name` - (Required) The database name.
+
 ## Attributes Reference
 
 In addition to all arguments above, the following attributes are exported:
