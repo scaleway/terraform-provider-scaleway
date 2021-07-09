@@ -31,7 +31,7 @@ The following arguments are supported:
 
 - `database_name` - (Required) Name of the database (e.g. `my-db-name`).
 
-- `permission` - (Required) Permission to set. Valid values are `readonly`, `readwrite`, `all`, `custom` and `none`).
+- `permission` - (Required) Permission to set. Valid values are `readonly`, `readwrite`, `all`, `custom` and `none`.
 
 ## Attributes Reference
 
