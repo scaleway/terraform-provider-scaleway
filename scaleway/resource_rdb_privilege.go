@@ -2,10 +2,10 @@ package scaleway
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/scaleway/scaleway-sdk-go/api/rdb/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 )
@@ -42,10 +42,16 @@ func resourceScalewayRdbPrivilege() *schema.Resource {
 				Required:    true,
 			},
 			"permission": {
-				Type:         schema.TypeString,
-				Description:  "Privilege",
-				ValidateFunc: validationPrivilegePermission(),
-				Required:     true,
+				Type:        schema.TypeString,
+				Description: "Privilege",
+				ValidateFunc: validation.StringInSlice([]string{
+					rdb.PermissionReadonly.String(),
+					rdb.PermissionReadwrite.String(),
+					rdb.PermissionAll.String(),
+					rdb.PermissionCustom.String(),
+					rdb.PermissionNone.String(),
+				}, false),
+				Required: true,
 			},
 		},
 	}
@@ -135,20 +141,4 @@ func resourceScalewayRdbPrivilegeUpdate(ctx context.Context, d *schema.ResourceD
 func resourceScalewayRdbPrivilegeDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	_ = d.Set("permission", rdb.PermissionNone)
 	return resourceScalewayRdbPrivilegeUpdate(ctx, d, meta)
-}
-
-func validationPrivilegePermission() func(interface{}, string) ([]string, []error) {
-	return func(v interface{}, key string) (warnings []string, errors []error) {
-		sV, isString := v.(string)
-		if isString {
-			perm := rdb.Permission(sV)
-
-			switch perm {
-			case rdb.PermissionReadonly, rdb.PermissionReadwrite, rdb.PermissionAll, rdb.PermissionCustom, rdb.PermissionNone:
-				return
-			}
-			return nil, []error{fmt.Errorf("'%s' is not a valid permission", key)}
-		}
-		return nil, []error{fmt.Errorf("'%s' is not a string", key)}
-	}
 }

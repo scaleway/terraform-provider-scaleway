@@ -7,7 +7,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/scaleway/scaleway-sdk-go/api/rdb/v1"
-	"github.com/stretchr/testify/assert"
 )
 
 /*func init() {
@@ -142,29 +141,4 @@ func testAccCheckRdbPrivilegeExists(tt *TestTools, instance string, database str
 
 		return nil
 	}
-}
-
-func TestValidationPrivilegePermissionWithWrongPermissionReturnError(t *testing.T) {
-	assert := assert.New(t)
-	warnings, errors := validationPrivilegePermission()("NotAPermission", "key")
-	assert.Empty(warnings)
-	assert.Len(errors, 1)
-	assert.Error(errors[0])
-	assert.Equal("'key' is not a valid permission", errors[0].Error())
-}
-
-func TestValidationPrivilegePermissionWithoutStringReturnError(t *testing.T) {
-	assert := assert.New(t)
-	warnings, errors := validationPrivilegePermission()(1, "key")
-	assert.Empty(warnings)
-	assert.Len(errors, 1)
-	assert.Error(errors[0])
-	assert.Equal("'key' is not a string", errors[0].Error())
-}
-
-func TestValidationPrivilegePermission(t *testing.T) {
-	assert := assert.New(t)
-	warnings, errors := validationPrivilegePermission()("none", "key")
-	assert.Empty(warnings)
-	assert.Empty(errors)
 }
