@@ -32,4 +32,4 @@ data "scaleway_rdb_privilege" "find_priv" {
 
 In addition to all arguments above, the following attributes are exported:
 
-- `permission` - The permission for this user on the database
+- `permission` - The permission for this user on the database. Possible values are `readonly`, `readwrite`, `all`, `custom` and `none`).
