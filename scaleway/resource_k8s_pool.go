@@ -28,6 +28,7 @@ func resourceScalewayK8SPool() *schema.Resource {
 			"cluster_id": {
 				Type:        schema.TypeString,
 				Required:    true,
+				ForceNew:    true,
 				Description: "The ID of the cluster on which this pool will be created",
 			},
 			"name": {
