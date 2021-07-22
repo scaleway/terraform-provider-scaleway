@@ -15,7 +15,7 @@ For more information see [the documentation](https://developers.scaleway.com/en/
 
 ```hcl
 resource "scaleway_registry_namespace" "main" {
-  name        = "main_cr"
+  name        = "main-cr"
   description = "Main container registry"
   is_public   = false
 }
