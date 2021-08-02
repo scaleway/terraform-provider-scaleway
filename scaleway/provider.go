@@ -85,6 +85,7 @@ func Provider(config *ProviderConfig) plugin.ProviderFunc {
 				"scaleway_rdb_privilege":                 resourceScalewayRdbPrivilege(),
 				"scaleway_rdb_user":                      resourceScalewayRdbUser(),
 				"scaleway_object_bucket":                 resourceScalewayObjectBucket(),
+				"scaleway_vpc_public_gateway":            resourceScalewayVPCPublicGateway(),
 				"scaleway_vpc_private_network":           resourceScalewayVPCPrivateNetwork(),
 			},
 
