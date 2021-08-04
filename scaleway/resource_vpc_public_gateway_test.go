@@ -73,26 +73,18 @@ func TestAccScalewayVPCPublicGateway_Basic(t *testing.T) {
 			{
 				Config: fmt.Sprintf(`
 					resource scaleway_vpc_public_gateway main {
-						name = "%s"
+						name = "%s-new"
 						type = "VPC-GW-S"
 						tags = ["tag0", "tag1"]
+						upstream_dns_servers = [ "1.2.3.4", "4.3.2.1" ]
 					}
 				`, publicGatewayName),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayVPCPublicGatewayExists(
-						tt,
-						"scaleway_vpc_public_gateway.main",
-					),
-					resource.TestCheckResourceAttr(
-						"scaleway_vpc_public_gateway.main",
-						"tags.0",
-						"tag0",
-					),
-					resource.TestCheckResourceAttr(
-						"scaleway_vpc_public_gateway.main",
-						"tags.1",
-						"tag1",
-					),
+					testAccCheckScalewayVPCPublicGatewayExists(tt, "scaleway_vpc_public_gateway.main"),
+					resource.TestCheckResourceAttr("scaleway_vpc_public_gateway.main", "tags.0", "tag0"),
+					resource.TestCheckResourceAttr("scaleway_vpc_public_gateway.main", "tags.1", "tag1"),
+					resource.TestCheckResourceAttr("scaleway_vpc_public_gateway.main", "upstream_dns_servers.0", "1.2.3.4"),
+					resource.TestCheckResourceAttr("scaleway_vpc_public_gateway.main", "upstream_dns_servers.1", "4.3.2.1"),
 				),
 			},
 		},

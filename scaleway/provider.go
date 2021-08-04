@@ -106,6 +106,7 @@ func Provider(config *ProviderConfig) plugin.ProviderFunc {
 				"scaleway_marketplace_image":       dataSourceScalewayMarketplaceImage(),
 				"scaleway_registry_namespace":      dataSourceScalewayRegistryNamespace(),
 				"scaleway_registry_image":          dataSourceScalewayRegistryImage(),
+				"scaleway_vpc_public_gateway":      dataSourceScalewayVPCPublicGateway(),
 				"scaleway_vpc_private_network":     dataSourceScalewayVPCPrivateNetwork(),
 			},
 		}

@@ -24,17 +24,12 @@ func resourceScalewayVPCPublicGateway() *schema.Resource {
 			"name": {
 				Type:        schema.TypeString,
 				Optional:    true,
-				Description: "The name of the public gateway",
-			},
-			"description": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "Description of a public gateway",
+				Description: "name of the gateway",
 			},
 			"type": {
 				Type:             schema.TypeString,
 				Required:         true,
-				Description:      "The type of the gateway",
+				Description:      "gateway type",
 				DiffSuppressFunc: diffSuppressFuncIgnoreCase,
 			},
 			"upstream_dns_servers": {
@@ -84,8 +79,7 @@ func resourceScalewayVPCPublicGatewayCreate(ctx context.Context, d *schema.Resou
 	}
 
 	req := &vpcgw.CreateGatewayRequest{
-		Name: expandOrGenerateString(d.Get("name"), "pn"),
-		// TODO: Add the description field
+		Name:               expandOrGenerateString(d.Get("name"), "pn"),
 		Type:               d.Get("type").(string),
 		Tags:               expandStrings(d.Get("tags")),
 		UpstreamDNSServers: expandStrings(d.Get("upstream_dns_servers")),
@@ -100,6 +94,17 @@ func resourceScalewayVPCPublicGatewayCreate(ctx context.Context, d *schema.Resou
 	}
 
 	d.SetId(newZonedIDString(zone, res.ID))
+
+	_, err = vpcgwAPI.WaitForGateway(&vpcgw.WaitForGatewayRequest{
+		Zone:          zone,
+		GatewayID:     res.ID,
+		Timeout:       scw.TimeDurationPtr(defaultVPCGatewayTimeout),
+		RetryInterval: DefaultWaitRetryInterval,
+	}, scw.WithContext(ctx))
+	// check err waiting process
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	return resourceScalewayVPCPublicGatewayRead(ctx, d, meta)
 }
@@ -123,7 +128,6 @@ func resourceScalewayVPCPublicGatewayRead(ctx context.Context, d *schema.Resourc
 	}
 
 	_ = d.Set("name", gateway.Name)
-	// TODO: _ = d.Set("description", gateway.Description)
 	_ = d.Set("organization_id", gateway.OrganizationID)
 	_ = d.Set("project_id", gateway.ProjectID)
 	_ = d.Set("created_at", gateway.CreatedAt.Format(time.RFC3339))
@@ -142,12 +146,13 @@ func resourceScalewayVPCPublicGatewayUpdate(ctx context.Context, d *schema.Resou
 		return diag.FromErr(err)
 	}
 
-	if d.HasChanges("name", "tags") {
+	if d.HasChanges("name", "tags", "upstream_dns_servers") {
 		updateRequest := &vpcgw.UpdateGatewayRequest{
-			GatewayID: ID,
-			Zone:      zone,
-			Name:      scw.StringPtr(d.Get("name").(string)),
-			Tags:      scw.StringsPtr(expandStrings(d.Get("tags"))),
+			GatewayID:          ID,
+			Zone:               zone,
+			Name:               scw.StringPtr(d.Get("name").(string)),
+			Tags:               scw.StringsPtr(expandStrings(d.Get("tags"))),
+			UpstreamDNSServers: scw.StringsPtr(expandStrings(d.Get("upstream_dns_servers"))),
 		}
 
 		_, err = vpcgwAPI.UpdateGateway(updateRequest, scw.WithContext(ctx))
@@ -168,6 +173,17 @@ func resourceScalewayVPCPublicGatewayDelete(ctx context.Context, d *schema.Resou
 	err = vpcgwAPI.DeleteGateway(&vpcgw.DeleteGatewayRequest{
 		GatewayID: ID,
 		Zone:      zone,
+	}, scw.WithContext(ctx))
+
+	if err != nil && !is404Error(err) {
+		return diag.FromErr(err)
+	}
+
+	_, err = vpcgwAPI.WaitForGateway(&vpcgw.WaitForGatewayRequest{
+		GatewayID:     ID,
+		Zone:          zone,
+		Timeout:       scw.TimeDurationPtr(gatewayWaitForTimeout),
+		RetryInterval: DefaultWaitRetryInterval,
 	}, scw.WithContext(ctx))
 
 	if err != nil && !is404Error(err) {
