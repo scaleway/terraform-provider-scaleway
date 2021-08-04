@@ -92,6 +92,35 @@ func TestAccScalewayVPCPublicGateway_Basic(t *testing.T) {
 	})
 }
 
+func TestAccScalewayVPCPublicGateway_AttachToIP(t *testing.T) {
+	tt := NewTestTools(t)
+	defer tt.Cleanup()
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      testAccCheckScalewayVPCPublicGatewayDestroy(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`
+					resource scaleway_vpc_public_gateway_ip main {
+					}
+
+					resource scaleway_vpc_public_gateway main {
+						name = "foobar"
+						type = "VPC-GW-S"
+						ip_id = scaleway_vpc_public_gateway_ip.main.id
+					}
+				`),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayVPCPublicGatewayIPExists(tt, "scaleway_vpc_public_gateway_ip.main"),
+					testAccCheckScalewayVPCPublicGatewayExists(tt, "scaleway_vpc_public_gateway.main"),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckScalewayVPCPublicGatewayExists(tt *TestTools, n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]

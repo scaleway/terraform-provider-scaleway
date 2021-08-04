@@ -21,19 +21,23 @@ func resourceScalewayVPCPublicGatewayIP() *schema.Resource {
 		},
 		SchemaVersion: 0,
 		Schema: map[string]*schema.Schema{
-			"ip_id": {
+			"address": {
 				Type:        schema.TypeString,
-				Optional:    true,
+				Description: "the IP itself",
 				Computed:    true,
-				Description: "attach an existing IP to the gateway",
 			},
 			"tags": {
 				Type:        schema.TypeList,
 				Optional:    true,
-				Description: "The tags associated with public gateway",
+				Description: "The tags associated with public gateway IP",
 				Elem: &schema.Schema{
 					Type: schema.TypeString,
 				},
+			},
+			"reverse": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "reverse domain name for the IP address",
 			},
 			"project_id": projectIDSchema(),
 			"zone":       zoneSchema(),
@@ -42,12 +46,12 @@ func resourceScalewayVPCPublicGatewayIP() *schema.Resource {
 			"created_at": {
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "The date and time of the creation of the public gateway",
+				Description: "The date and time of the creation of the public gateway IP",
 			},
 			"updated_at": {
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "The date and time of the last update of the public gateway",
+				Description: "The date and time of the last update of the public gateway IP",
 			},
 		},
 	}
@@ -99,7 +103,7 @@ func resourceScalewayVPCPublicGatewayIPRead(ctx context.Context, d *schema.Resou
 	_ = d.Set("updated_at", ip.UpdatedAt.Format(time.RFC3339))
 	_ = d.Set("zone", zone)
 	_ = d.Set("tags", ip.Tags)
-	_ = d.Set("ip_id", ip.ID)
+	_ = d.Set("reverse", ip.Reverse)
 
 	return nil
 }
@@ -110,11 +114,12 @@ func resourceScalewayVPCPublicGatewayIPUpdate(ctx context.Context, d *schema.Res
 		return diag.FromErr(err)
 	}
 
-	if d.HasChanges("tags") {
+	if d.HasChanges("tags", "reverse") {
 		updateRequest := &vpcgw.UpdateIPRequest{
-			IPID: ID,
-			Zone: zone,
-			Tags: scw.StringsPtr(expandStrings(d.Get("tags"))),
+			IPID:    ID,
+			Zone:    zone,
+			Tags:    scw.StringsPtr(expandStrings(d.Get("tags"))),
+			Reverse: expandStringPtr(d.Get("reverse").(string)),
 		}
 
 		_, err = vpcgwAPI.UpdateIP(updateRequest, scw.WithContext(ctx))

@@ -57,33 +57,20 @@ func TestAccScalewayVPCPublicGatewayIP_Basic(t *testing.T) {
 					}
 				`),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayVPCPublicGatewayIPExists(
-						tt,
-						"scaleway_vpc_public_gateway_ip.main",
-					),
+					testAccCheckScalewayVPCPublicGatewayIPExists(tt, "scaleway_vpc_public_gateway_ip.main"),
 				),
 			},
 			{
 				Config: fmt.Sprintf(`
 					resource scaleway_vpc_public_gateway_ip main {
+						reverse = "example.com"
 						tags = ["tag0", "tag1"]
 					}
 				`),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayVPCPublicGatewayIPExists(
-						tt,
-						"scaleway_vpc_public_gateway_ip.main",
-					),
-					resource.TestCheckResourceAttr(
-						"scaleway_vpc_public_gateway_ip.main",
-						"tags.0",
-						"tag0",
-					),
-					resource.TestCheckResourceAttr(
-						"scaleway_vpc_public_gateway_ip.main",
-						"tags.1",
-						"tag1",
-					),
+					testAccCheckScalewayVPCPublicGatewayIPExists(tt, "scaleway_vpc_public_gateway_ip.main"),
+					resource.TestCheckResourceAttr("scaleway_vpc_public_gateway_ip.main", "tags.0", "tag0"),
+					resource.TestCheckResourceAttr("scaleway_vpc_public_gateway_ip.main", "tags.1", "tag1"),
 				),
 			},
 		},
