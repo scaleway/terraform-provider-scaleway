@@ -102,7 +102,7 @@ func TestAccScalewayVPCPublicGateway_AttachToIP(t *testing.T) {
 		CheckDestroy:      testAccCheckScalewayVPCPublicGatewayDestroy(tt),
 		Steps: []resource.TestStep{
 			{
-				Config: fmt.Sprintf(`
+				Config: `
 					resource scaleway_vpc_public_gateway_ip main {
 					}
 
@@ -111,7 +111,7 @@ func TestAccScalewayVPCPublicGateway_AttachToIP(t *testing.T) {
 						type = "VPC-GW-S"
 						ip_id = scaleway_vpc_public_gateway_ip.main.id
 					}
-				`),
+				`,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayVPCPublicGatewayIPExists(tt, "scaleway_vpc_public_gateway_ip.main"),
 					testAccCheckScalewayVPCPublicGatewayExists(tt, "scaleway_vpc_public_gateway.main"),

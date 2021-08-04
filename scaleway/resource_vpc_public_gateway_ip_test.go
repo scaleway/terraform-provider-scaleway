@@ -52,21 +52,21 @@ func TestAccScalewayVPCPublicGatewayIP_Basic(t *testing.T) {
 		CheckDestroy:      testAccCheckScalewayVPCPublicGatewayIPDestroy(tt),
 		Steps: []resource.TestStep{
 			{
-				Config: fmt.Sprintf(`
+				Config: `
 					resource scaleway_vpc_public_gateway_ip main {
 					}
-				`),
+				`,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayVPCPublicGatewayIPExists(tt, "scaleway_vpc_public_gateway_ip.main"),
 				),
 			},
 			{
-				Config: fmt.Sprintf(`
+				Config: `
 					resource scaleway_vpc_public_gateway_ip main {
 						reverse = "example.com"
 						tags = ["tag0", "tag1"]
 					}
-				`),
+				`,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayVPCPublicGatewayIPExists(tt, "scaleway_vpc_public_gateway_ip.main"),
 					resource.TestCheckResourceAttr("scaleway_vpc_public_gateway_ip.main", "tags.0", "tag0"),
