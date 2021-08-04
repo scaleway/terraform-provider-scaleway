@@ -99,7 +99,10 @@ func TestAccScalewayVPCPublicGateway_AttachToIP(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      testAccCheckScalewayVPCPublicGatewayDestroy(tt),
+		CheckDestroy: resource.ComposeAggregateTestCheckFunc(
+			testAccCheckScalewayVPCPublicGatewayIPDestroy(tt),
+			testAccCheckScalewayVPCPublicGatewayDestroy(tt),
+		),
 		Steps: []resource.TestStep{
 			{
 				Config: `
