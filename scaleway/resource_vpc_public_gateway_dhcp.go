@@ -109,7 +109,6 @@ func resourceScalewayVPCPublicGatewayDHCP() *schema.Resource {
 				Optional:    true,
 				Computed:    true,
 			},
-			// Computed elements
 			"organization_id": organizationIDSchema(),
 			"created_at": {
 				Type:        schema.TypeString,
@@ -195,23 +194,50 @@ func resourceScalewayVPCPublicGatewayDHCPRead(ctx context.Context, d *schema.Res
 		return diag.FromErr(err)
 	}
 
-	_ = d.Set("organization_id", dhcp.OrganizationID)
-	_ = d.Set("project_id", dhcp.ProjectID)
+	_ = d.Set("address", dhcp.Address.String())
 	_ = d.Set("created_at", dhcp.CreatedAt.Format(time.RFC3339))
-	_ = d.Set("updated_at", dhcp.UpdatedAt.Format(time.RFC3339))
+	_ = d.Set("dns_local_name", dhcp.DNSLocalName)
+	_ = d.Set("dns_search", dhcp.DNSSearch)
+	_ = d.Set("dns_server_override", dhcp.DNSServersOverride)
+	_ = d.Set("enable_dynamic", dhcp.EnableDynamic)
+	_ = d.Set("organization_id", dhcp.OrganizationID)
+	_ = d.Set("pool_high", dhcp.PoolLow.String())
+	_ = d.Set("pool_low", dhcp.PoolLow.String())
+	_ = d.Set("project_id", dhcp.ProjectID)
+	_ = d.Set("push_default_route", dhcp.PushDefaultRoute)
+	_ = d.Set("push_dns_server", dhcp.PushDNSServer)
 	_ = d.Set("rebind_timer", dhcp.RebindTimer.Seconds)
 	_ = d.Set("renew_timer", dhcp.RenewTimer.Seconds)
-	_ = d.Set("pool_low", dhcp.PoolLow.String())
-	_ = d.Set("pool_high", dhcp.PoolLow.String())
+	_ = d.Set("subnet", dhcp.Subnet.String())
+	_ = d.Set("updated_at", dhcp.UpdatedAt.Format(time.RFC3339))
+	_ = d.Set("valid_lifetime", dhcp.ValidLifetime.Seconds)
 	_ = d.Set("zone", zone)
 
 	return nil
 }
 
 func resourceScalewayVPCPublicGatewayDHCPUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	_, _, _, err := vpcgwAPIWithZoneAndID(meta, d.Id())
+	vpcgwAPI, zone, ID, err := vpcgwAPIWithZoneAndID(meta, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
+	}
+
+	if d.HasChanges("enable_dynamic", "push_default_route", "push_dns_servers", "dns_servers_override", "dns_search", "dns_local_name") {
+		req := &vpcgw.UpdateDHCPRequest{
+			DHCPID:             ID,
+			Zone:               zone,
+			EnableDynamic:      expandBoolPtr(d.Get("enable_dynamic")),
+			PushDefaultRoute:   expandBoolPtr(d.Get("push_default_route")),
+			PushDNSServer:      expandBoolPtr(d.Get("push_dns_servers")),
+			DNSServersOverride: expandStringsPtr(d.Get("dns_servers_override")),
+			DNSSearch:          expandStringsPtr(d.Get("dns_search")),
+			DNSLocalName:       expandStringPtr(d.Get("dns_local_name")),
+		}
+
+		_, err = vpcgwAPI.UpdateDHCP(req, scw.WithContext(ctx))
+		if err != nil {
+			return diag.FromErr(err)
+		}
 	}
 
 	return resourceScalewayVPCPublicGatewayRead(ctx, d, meta)
