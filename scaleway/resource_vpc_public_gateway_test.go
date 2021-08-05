@@ -118,6 +118,9 @@ func TestAccScalewayVPCPublicGateway_AttachToIP(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayVPCPublicGatewayIPExists(tt, "scaleway_vpc_public_gateway_ip.main"),
 					testAccCheckScalewayVPCPublicGatewayExists(tt, "scaleway_vpc_public_gateway.main"),
+					resource.TestCheckResourceAttrPair(
+						"scaleway_vpc_public_gateway.main", "ip_id",
+						"scaleway_vpc_public_gateway_ip.main", "id"),
 				),
 			},
 		},

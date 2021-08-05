@@ -139,7 +139,7 @@ func resourceScalewayVPCPublicGatewayRead(ctx context.Context, d *schema.Resourc
 	_ = d.Set("zone", zone)
 	_ = d.Set("tags", gateway.Tags)
 	_ = d.Set("upstream_dns_servers", gateway.UpstreamDNSServers)
-	_ = d.Set("ip_id", gateway.IP.ID)
+	_ = d.Set("ip_id", newZonedID(zone, gateway.IP.ID).String())
 
 	return nil
 }

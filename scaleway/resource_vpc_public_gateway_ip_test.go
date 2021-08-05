@@ -71,6 +71,7 @@ func TestAccScalewayVPCPublicGatewayIP_Basic(t *testing.T) {
 					testAccCheckScalewayVPCPublicGatewayIPExists(tt, "scaleway_vpc_public_gateway_ip.main"),
 					resource.TestCheckResourceAttr("scaleway_vpc_public_gateway_ip.main", "tags.0", "tag0"),
 					resource.TestCheckResourceAttr("scaleway_vpc_public_gateway_ip.main", "tags.1", "tag1"),
+					resource.TestCheckResourceAttr("scaleway_vpc_public_gateway_ip.main", "reverse", "example.com"),
 				),
 			},
 		},
