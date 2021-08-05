@@ -41,10 +41,11 @@ func resourceScalewayVPCPublicGateway() *schema.Resource {
 				},
 			},
 			"ip_id": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Computed:    true,
-				Description: "attach an existing IP to the gateway",
+				Type:             schema.TypeString,
+				Computed:         true,
+				Optional:         true,
+				Description:      "attach an existing IP to the gateway",
+				DiffSuppressFunc: diffSuppressFuncLocality,
 			},
 			"tags": {
 				Type:        schema.TypeList,
@@ -83,9 +84,12 @@ func resourceScalewayVPCPublicGatewayCreate(ctx context.Context, d *schema.Resou
 		Type:               d.Get("type").(string),
 		Tags:               expandStrings(d.Get("tags")),
 		UpstreamDNSServers: expandStrings(d.Get("upstream_dns_servers")),
-		IPID:               expandStringPtr(d.Get("ip_id").(string)),
 		ProjectID:          d.Get("project_id").(string),
 		Zone:               zone,
+	}
+
+	if ipID, ok := d.GetOk("ip_id"); ok {
+		req.IPID = expandStringPtr(expandZonedID(ipID).ID)
 	}
 
 	res, err := vpcgwAPI.CreateGateway(req, scw.WithContext(ctx))
@@ -135,7 +139,7 @@ func resourceScalewayVPCPublicGatewayRead(ctx context.Context, d *schema.Resourc
 	_ = d.Set("zone", zone)
 	_ = d.Set("tags", gateway.Tags)
 	_ = d.Set("upstream_dns_servers", gateway.UpstreamDNSServers)
-	_ = d.Set("ip_id", gateway.IP.ID)
+	_ = d.Set("ip_id", newZonedID(zone, gateway.IP.ID).String())
 
 	return nil
 }

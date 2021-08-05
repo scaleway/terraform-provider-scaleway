@@ -86,6 +86,7 @@ func Provider(config *ProviderConfig) plugin.ProviderFunc {
 				"scaleway_rdb_user":                      resourceScalewayRdbUser(),
 				"scaleway_object_bucket":                 resourceScalewayObjectBucket(),
 				"scaleway_vpc_public_gateway":            resourceScalewayVPCPublicGateway(),
+				"scaleway_vpc_public_gateway_ip":         resourceScalewayVPCPublicGatewayIP(),
 				"scaleway_vpc_private_network":           resourceScalewayVPCPrivateNetwork(),
 			},
 
@@ -107,6 +108,7 @@ func Provider(config *ProviderConfig) plugin.ProviderFunc {
 				"scaleway_registry_namespace":      dataSourceScalewayRegistryNamespace(),
 				"scaleway_registry_image":          dataSourceScalewayRegistryImage(),
 				"scaleway_vpc_public_gateway":      dataSourceScalewayVPCPublicGateway(),
+				"scaleway_vpc_public_gateway_ip":   dataSourceScalewayVPCPublicGatewayIP(),
 				"scaleway_vpc_private_network":     dataSourceScalewayVPCPrivateNetwork(),
 			},
 		}
