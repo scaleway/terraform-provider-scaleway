@@ -2,6 +2,7 @@ package scaleway
 
 import (
 	"context"
+	"net"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -25,44 +26,88 @@ func resourceScalewayVPCPublicGatewayDHCP() *schema.Resource {
 			"project_id": projectIDSchema(),
 			"zone":       zoneSchema(),
 			"subnet": {
+				Type:         schema.TypeString,
 				Description:  "subnet for the DHCP server",
 				ValidateFunc: validation.IsCIDR,
+				Required:     true,
 			},
 			"address": {
+				Type:        schema.TypeString,
 				Description: "Address: address of the DHCP server. This will be the gateway's address in the private network. Defaults to the first address of the subnet",
+				Optional:    true,
+				Computed:    true,
 			},
 			"pool_low": {
-				Description: "low IP (included) of the dynamic address pool. Defaults to the second address of the subnet.",
+				Type:         schema.TypeString,
+				Description:  "low IP (included) of the dynamic address pool. Defaults to the second address of the subnet.",
+				ValidateFunc: validation.IsIPAddress,
+				Computed:     true,
+				Optional:     true,
 			},
 			"pool_high": {
-				Description: "High IP (included) of the dynamic address pool. Defaults to the last address of the subnet.",
+				Type:         schema.TypeString,
+				Description:  "High IP (included) of the dynamic address pool. Defaults to the last address of the subnet.",
+				ValidateFunc: validation.IsIPAddress,
+				Computed:     true,
+				Optional:     true,
 			},
 			"enable_dynamic": {
+				Type:        schema.TypeBool,
 				Description: "Whether to enable dynamic pooling of IPs. By turning the dynamic pool off, only pre-existing DHCP reservations will be handed out. Defaults to true.",
+				Computed:    true,
+				Optional:    true,
 			},
 			"valid_lifetime": {
+				Type:        schema.TypeInt,
 				Description: "For how long, in seconds, will DHCP entries will be valid. Defaults to 1h (3600s).",
+				Computed:    true,
+				Optional:    true,
 			},
 			"renew_timer": {
+				Type:        schema.TypeInt,
 				Description: "After how long, in seconds, a renew will be attempted. Must be 30s lower than `rebind_timer`. Defaults to 50m (3000s).",
+				Computed:    true,
+				Optional:    true,
 			},
 			"rebind_timer": {
+				Type:        schema.TypeInt,
 				Description: "After how long, in seconds, a DHCP client will query for a new lease if previous renews fail. Must be 30s lower than `valid_lifetime`. Defaults to 51m (3060s).",
+				Computed:    true,
+				Optional:    true,
 			},
 			"push_default_route": {
+				Type:        schema.TypeBool,
 				Description: "Whether the gateway should push a default route to DHCP clients or only hand out IPs. Defaults to true",
+				Computed:    true,
+				Optional:    true,
 			},
 			"push_dns_server": {
+				Type:        schema.TypeBool,
 				Description: "Whether the gateway should push custom DNS servers to clients. This allows for instance hostname -> IP resolution. Defaults to true.",
+				Computed:    true,
+				Optional:    true,
 			},
 			"dns_server_override": {
+				Type:        schema.TypeList,
 				Description: "override the DNS server list pushed to DHCP clients, instead of the gateway itself",
+				Optional:    true,
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
 			},
 			"dns_search": {
+				Type:        schema.TypeList,
 				Description: "additional DNS search paths",
+				Optional:    true,
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
 			},
 			"dns_local_name": {
+				Type:        schema.TypeString,
 				Description: "TLD given to hostnames in the Private Network. Allowed characters are `a-z0-9-.`. Defaults to the slugified Private Network name if created along a GatewayNetwork, or else to `priv`.",
+				Optional:    true,
+				Computed:    true,
 			},
 			// Computed elements
 			"organization_id": organizationIDSchema(),
@@ -87,7 +132,39 @@ func resourceScalewayVPCPublicGatewayDHCPCreate(ctx context.Context, d *schema.R
 	}
 
 	req := &vpcgw.CreateDHCPRequest{
-		Zone: zone,
+		Zone:               zone,
+		ProjectID:          d.Get("project_id").(string),
+		Subnet:             expandIPNet(d.Get("subnet").(string)),
+		EnableDynamic:      expandBoolPtr(d.Get("enable_dynamic")),
+		PushDefaultRoute:   expandBoolPtr(d.Get("push_default_route")),
+		PushDNSServer:      expandBoolPtr(d.Get("push_dns_servers")),
+		DNSServersOverride: expandStringsPtr(d.Get("dns_servers_override")),
+		DNSSearch:          expandStringsPtr(d.Get("dns_search")),
+		DNSLocalName:       expandStringPtr(d.Get("dns_local_name")),
+	}
+
+	if address, ok := d.GetOk("address"); ok {
+		req.Address = scw.IPPtr(net.ParseIP(address.(string)))
+	}
+
+	if renewTimer, ok := d.GetOk("renew_timer"); ok {
+		req.RenewTimer = &scw.Duration{Seconds: renewTimer.(int64)}
+	}
+
+	if validLifetime, ok := d.GetOk("valid_lifetime"); ok {
+		req.ValidLifetime = &scw.Duration{Seconds: validLifetime.(int64)}
+	}
+
+	if rebindTimer, ok := d.GetOk("rebind_timer"); ok {
+		req.RebindTimer = &scw.Duration{Seconds: rebindTimer.(int64)}
+	}
+
+	if poolLow, ok := d.GetOk("pool_low"); ok {
+		req.PoolLow = scw.IPPtr(net.ParseIP(poolLow.(string)))
+	}
+
+	if poolHigh, ok := d.GetOk("pool_high"); ok {
+		req.PoolLow = scw.IPPtr(net.ParseIP(poolHigh.(string)))
 	}
 
 	res, err := vpcgwAPI.CreateDHCP(req, scw.WithContext(ctx))
@@ -122,6 +199,10 @@ func resourceScalewayVPCPublicGatewayDHCPRead(ctx context.Context, d *schema.Res
 	_ = d.Set("project_id", dhcp.ProjectID)
 	_ = d.Set("created_at", dhcp.CreatedAt.Format(time.RFC3339))
 	_ = d.Set("updated_at", dhcp.UpdatedAt.Format(time.RFC3339))
+	_ = d.Set("rebind_timer", dhcp.RebindTimer.Seconds)
+	_ = d.Set("renew_timer", dhcp.RenewTimer.Seconds)
+	_ = d.Set("pool_low", dhcp.PoolLow.String())
+	_ = d.Set("pool_high", dhcp.PoolLow.String())
 	_ = d.Set("zone", zone)
 
 	return nil

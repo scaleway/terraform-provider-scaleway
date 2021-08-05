@@ -19,24 +19,20 @@ func init() {
 func TestAccScalewayVPCPublicGatewayDHCP_Basic(t *testing.T) {
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
-	publicGatewayName := "public-gateway-test"
+
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheckScalewayVPCPublicGatewayDHCPDestroy(tt),
 		Steps: []resource.TestStep{
 			{
-				Config: fmt.Sprintf(`
-					resource scaleway_vpc_public_gateway main {
-						name = "%s"
-						type = "VPC-GW-S"
+				Config: `
+					resource scaleway_vpc_public_gateway_dhcp main {
+						subnet = "192.168.1.0/24"
 					}
-				`, publicGatewayName),
+				`,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayVPCPublicGatewayDHCPExists(
-						tt,
-						"scaleway_vpc_public_gateway_dhcp.main",
-					),
+					testAccCheckScalewayVPCPublicGatewayDHCPExists(tt, "scaleway_vpc_public_gateway_dhcp.main"),
 				),
 			},
 		},
@@ -55,9 +51,9 @@ func testAccCheckScalewayVPCPublicGatewayDHCPExists(tt *TestTools, n string) res
 			return err
 		}
 
-		_, err = vpcgwAPI.GetGateway(&vpcgw.GetGatewayRequest{
-			GatewayID: ID,
-			Zone:      zone,
+		_, err = vpcgwAPI.GetDHCP(&vpcgw.GetDHCPRequest{
+			DHCPID: ID,
+			Zone:   zone,
 		})
 
 		if err != nil {
