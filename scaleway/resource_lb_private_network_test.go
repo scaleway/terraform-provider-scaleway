@@ -134,7 +134,7 @@ func testAccCheckScalewayLbPrivateNetworkDestroy(tt *TestTools) resource.TestChe
 			}
 
 			if pn != nil {
-				fmt.Errorf("LB PN (%s) still exists", rs.Primary.Attributes["private_network_id"])
+				return fmt.Errorf("LB PN (%s) still exists", rs.Primary.Attributes["private_network_id"])
 			}
 		}
 

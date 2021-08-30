@@ -86,13 +86,13 @@ func resourceScalewayLbPrivateNetworkCreate(ctx context.Context, d *schema.Resou
 		return diag.FromErr(err)
 	}
 
-	zone_pn, pnID, err := parseZonedID(d.Get("private_network_id").(string))
+	zonePN, pnID, err := parseZonedID(d.Get("private_network_id").(string))
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	if zone_pn != zone {
-		return diag.Errorf("LB and Private Network must be in the same zone (got %s and %s)", zone, zone_pn)
+	if zonePN != zone {
+		return diag.Errorf("LB and Private Network must be in the same zone (got %s and %s)", zone, zonePN)
 	}
 
 	createReq := &lb.ZonedAPIAttachPrivateNetworkRequest{
@@ -109,7 +109,7 @@ func resourceScalewayLbPrivateNetworkCreate(ctx context.Context, d *schema.Resou
 	}
 
 	d.SetId(newZonedIDString(zone, res.PrivateNetworkID))
-	d.Set("status", res.Status)
+	_ = d.Set("status", res.Status)
 
 	return resourceScalewayLbPrivateNetworkRead(ctx, d, meta)
 }
@@ -132,7 +132,7 @@ func resourceScalewayLbPrivateNetworkRead(ctx context.Context, d *schema.Resourc
 
 	if err != nil {
 		if is404Error(err) {
-			d.Set("lb_id", "")
+			_ = d.Set("lb_id", "")
 			return nil
 		}
 		return diag.FromErr(err)
@@ -153,8 +153,8 @@ func resourceScalewayLbPrivateNetworkRead(ctx context.Context, d *schema.Resourc
 	return nil
 }
 
-func findPn(private_networks []*lb.PrivateNetwork, id string) *lb.PrivateNetwork {
-	for _, pn := range private_networks {
+func findPn(privateNetworks []*lb.PrivateNetwork, id string) *lb.PrivateNetwork {
+	for _, pn := range privateNetworks {
 		if pn.PrivateNetworkID == id {
 			return pn
 		}
