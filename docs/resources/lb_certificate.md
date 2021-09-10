@@ -7,7 +7,7 @@ description: |-
 # scaleway_lb_certificate
 
 Creates and manages Scaleway Load-Balancer Certificates.
-For more information, see [the documentation](https://developers.scaleway.com/en/products/lb/api).
+For more information, see [the documentation](https://developers.scaleway.com/en/products/lb/zoned_api).
 
 ## Examples
 
