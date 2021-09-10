@@ -7,7 +7,7 @@ description: |-
 # scaleway_lb_backend
 
 Creates and manages Scaleway Load-Balancer Backends.
-For more information, see [the documentation](https://developers.scaleway.com/en/products/lb/api).
+For more information, see [the documentation](https://developers.scaleway.com/en/products/lb/zoned_api).
 
 ## Examples
 
