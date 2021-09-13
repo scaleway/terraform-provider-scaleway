@@ -44,71 +44,9 @@ func TestAccScalewayIotDevice_Minimal(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: `
-						resource "scaleway_iot_device" "default" {
-							name = "default"
-							hub_id = scaleway_iot_hub.minimal.id
-						}
-						resource "scaleway_iot_hub" "minimal" {
-							name = "minimal"
-							product_plan = "plan_shared"
-						}`,
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayIotHubExists(tt, "scaleway_iot_hub.minimal"),
-					testAccCheckScalewayIotDeviceExists(tt, "scaleway_iot_device.default"),
-					resource.TestCheckResourceAttrSet("scaleway_iot_device.default", "id"),
-					resource.TestCheckResourceAttrSet("scaleway_iot_device.default", "hub_id"),
-					resource.TestCheckResourceAttrSet("scaleway_iot_device.default", "name"),
-					resource.TestCheckResourceAttr("scaleway_iot_device.default", "allow_insecure", "false"),
-					resource.TestCheckResourceAttr("scaleway_iot_device.default", "allow_multiple_connections", "false"),
-				),
-			},
-			{
-				Config: `
-						resource "scaleway_iot_device" "default" {
-							name = "default"
-							hub_id = scaleway_iot_hub.minimal.id
-							allow_insecure = true
-						}
-						resource "scaleway_iot_hub" "minimal" {
-							name = "minimal"
-							product_plan = "plan_shared"
-						}`,
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayIotHubExists(tt, "scaleway_iot_hub.minimal"),
-					testAccCheckScalewayIotDeviceExists(tt, "scaleway_iot_device.default"),
-					resource.TestCheckResourceAttrSet("scaleway_iot_device.default", "id"),
-					resource.TestCheckResourceAttrSet("scaleway_iot_device.default", "hub_id"),
-					resource.TestCheckResourceAttrSet("scaleway_iot_device.default", "name"),
-					resource.TestCheckResourceAttr("scaleway_iot_device.default", "allow_insecure", "true"),
-					resource.TestCheckResourceAttr("scaleway_iot_device.default", "allow_multiple_connections", "false"),
-				),
-			},
-			{
-				Config: `
-						resource "scaleway_iot_device" "default" {
-							name = "default"
-							hub_id = scaleway_iot_hub.minimal.id
-							allow_insecure = false
-						}
-						resource "scaleway_iot_hub" "minimal" {
-							name = "minimal"
-							product_plan = "plan_shared"
-						}`,
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayIotHubExists(tt, "scaleway_iot_hub.minimal"),
-					testAccCheckScalewayIotDeviceExists(tt, "scaleway_iot_device.default"),
-					resource.TestCheckResourceAttrSet("scaleway_iot_device.default", "id"),
-					resource.TestCheckResourceAttrSet("scaleway_iot_device.default", "hub_id"),
-					resource.TestCheckResourceAttrSet("scaleway_iot_device.default", "name"),
-					resource.TestCheckResourceAttr("scaleway_iot_device.default", "allow_insecure", "false"),
-					resource.TestCheckResourceAttr("scaleway_iot_device.default", "allow_multiple_connections", "false"),
-				),
-			},
-			{
-				Config: `
-						resource "scaleway_iot_device" "default" {
-							name = "default"
-							hub_id = scaleway_iot_hub.minimal.id
+						resource "scaleway_iot_device" "default-4" {
+							name = "default-4"
+							hub_id = scaleway_iot_hub.minimal-4.id
 							message_filters {
 								publish {
 									policy = "reject"
@@ -122,54 +60,116 @@ func TestAccScalewayIotDevice_Minimal(t *testing.T) {
 						}
 						resource "scaleway_iot_device" "empty" {
 							name = "empty"
-							hub_id = scaleway_iot_hub.minimal.id
+							hub_id = scaleway_iot_hub.minimal-4.id
 							message_filters {
 								publish { }
 								subscribe { }
 							}
 						}
-						resource "scaleway_iot_hub" "minimal" {
-							name = "minimal"
+						resource "scaleway_iot_hub" "minimal-4" {
+							name = "minimal-4"
 							product_plan = "plan_shared"
 						}`,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayIotHubExists(tt, "scaleway_iot_hub.minimal"),
-					testAccCheckScalewayIotDeviceExists(tt, "scaleway_iot_device.default"),
-					resource.TestCheckResourceAttrSet("scaleway_iot_device.default", "id"),
-					resource.TestCheckResourceAttrSet("scaleway_iot_device.default", "hub_id"),
-					resource.TestCheckResourceAttrSet("scaleway_iot_device.default", "name"),
-					resource.TestCheckResourceAttr("scaleway_iot_device.default", "allow_insecure", "false"),
-					resource.TestCheckResourceAttr("scaleway_iot_device.default", "allow_multiple_connections", "false"),
-					resource.TestCheckResourceAttr("scaleway_iot_device.default", "message_filters.0.publish.0.policy", "reject"),
-					resource.TestCheckResourceAttr("scaleway_iot_device.default", "message_filters.0.publish.0.topics.0", "1"),
-					resource.TestCheckResourceAttr("scaleway_iot_device.default", "message_filters.0.subscribe.0.policy", "accept"),
-					resource.TestCheckResourceAttr("scaleway_iot_device.default", "message_filters.0.subscribe.0.topics.0", "4"),
+					testAccCheckScalewayIotHubExists(tt, "scaleway_iot_hub.minimal-4"),
+					testAccCheckScalewayIotDeviceExists(tt, "scaleway_iot_device.default-4"),
+					resource.TestCheckResourceAttrSet("scaleway_iot_device.default-4", "id"),
+					resource.TestCheckResourceAttrSet("scaleway_iot_device.default-4", "hub_id"),
+					resource.TestCheckResourceAttrSet("scaleway_iot_device.default-4", "name"),
+					resource.TestCheckResourceAttr("scaleway_iot_device.default-4", "allow_insecure", "false"),
+					resource.TestCheckResourceAttr("scaleway_iot_device.default-4", "allow_multiple_connections", "false"),
+					resource.TestCheckResourceAttr("scaleway_iot_device.default-4", "message_filters.0.publish.0.policy", "reject"),
+					resource.TestCheckResourceAttr("scaleway_iot_device.default-4", "message_filters.0.publish.0.topics.0", "1"),
+					resource.TestCheckResourceAttr("scaleway_iot_device.default-4", "message_filters.0.subscribe.0.policy", "accept"),
+					resource.TestCheckResourceAttr("scaleway_iot_device.default-4", "message_filters.0.subscribe.0.topics.0", "4"),
 				),
 			},
 			{
 				Config: `
-						resource "scaleway_iot_device" "default" {
-							name = "default"
-							hub_id = scaleway_iot_hub.minimal.id
+						resource "scaleway_iot_device" "default-1" {
+							name = "default-1"
+							hub_id = scaleway_iot_hub.minimal-1.id
+						}
+						resource "scaleway_iot_hub" "minimal-1" {
+							name = "minimal-1"
+							product_plan = "plan_shared"
+						}`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayIotHubExists(tt, "scaleway_iot_hub.minimal-1"),
+					testAccCheckScalewayIotDeviceExists(tt, "scaleway_iot_device.default-1"),
+					resource.TestCheckResourceAttrSet("scaleway_iot_device.default-1", "id"),
+					resource.TestCheckResourceAttrSet("scaleway_iot_device.default-1", "hub_id"),
+					resource.TestCheckResourceAttrSet("scaleway_iot_device.default-1", "name"),
+					resource.TestCheckResourceAttr("scaleway_iot_device.default-1", "allow_insecure", "false"),
+					resource.TestCheckResourceAttr("scaleway_iot_device.default-1", "allow_multiple_connections", "false"),
+				),
+			},
+			{
+				Config: `
+						resource "scaleway_iot_device" "default-2" {
+							name = "default-2"
+							hub_id = scaleway_iot_hub.minimal-2.id
+							allow_insecure = true
+						}
+						resource "scaleway_iot_hub" "minimal-2" {
+							name = "minimal-2"
+							product_plan = "plan_shared"
+						}`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayIotHubExists(tt, "scaleway_iot_hub.minimal-2"),
+					testAccCheckScalewayIotDeviceExists(tt, "scaleway_iot_device.default-2"),
+					resource.TestCheckResourceAttrSet("scaleway_iot_device.default-2", "id"),
+					resource.TestCheckResourceAttrSet("scaleway_iot_device.default-2", "hub_id"),
+					resource.TestCheckResourceAttrSet("scaleway_iot_device.default-2", "name"),
+					resource.TestCheckResourceAttr("scaleway_iot_device.default-2", "allow_insecure", "true"),
+					resource.TestCheckResourceAttr("scaleway_iot_device.default-2", "allow_multiple_connections", "false"),
+				),
+			},
+			{
+				Config: `
+						resource "scaleway_iot_device" "default-3" {
+							name = "default-3"
+							hub_id = scaleway_iot_hub.minimal-3.id
+							allow_insecure = false
+						}
+						resource "scaleway_iot_hub" "minimal-3" {
+							name = "minimal-3"
+							product_plan = "plan_shared"
+						}`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayIotHubExists(tt, "scaleway_iot_hub.minimal-3"),
+					testAccCheckScalewayIotDeviceExists(tt, "scaleway_iot_device.default-3"),
+					resource.TestCheckResourceAttrSet("scaleway_iot_device.default-3", "id"),
+					resource.TestCheckResourceAttrSet("scaleway_iot_device.default-3", "hub_id"),
+					resource.TestCheckResourceAttrSet("scaleway_iot_device.default-3", "name"),
+					resource.TestCheckResourceAttr("scaleway_iot_device.default-3", "allow_insecure", "false"),
+					resource.TestCheckResourceAttr("scaleway_iot_device.default-3", "allow_multiple_connections", "false"),
+				),
+			},
+			{
+				Config: `
+						resource "scaleway_iot_device" "default-5" {
+							name = "default-5"
+							hub_id = scaleway_iot_hub.minimal-5.id
 							allow_insecure = true
 							certificate {
 								crt = <<EOF
 ` + customDevCert + `EOF
 							}
 						}
-						resource "scaleway_iot_hub" "minimal" {
-							name = "minimal"
+						resource "scaleway_iot_hub" "minimal-5" {
+							name = "minimal-5"
 							product_plan = "plan_shared"
 						}`,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayIotHubExists(tt, "scaleway_iot_hub.minimal"),
-					testAccCheckScalewayIotDeviceExists(tt, "scaleway_iot_device.default"),
-					resource.TestCheckResourceAttrSet("scaleway_iot_device.default", "id"),
-					resource.TestCheckResourceAttrSet("scaleway_iot_device.default", "hub_id"),
-					resource.TestCheckResourceAttrSet("scaleway_iot_device.default", "name"),
-					resource.TestCheckResourceAttr("scaleway_iot_device.default", "allow_insecure", "true"),
-					resource.TestCheckResourceAttr("scaleway_iot_device.default", "allow_multiple_connections", "false"),
-					resource.TestCheckResourceAttr("scaleway_iot_device.default", "certificate.0.crt", customDevCert),
+					testAccCheckScalewayIotHubExists(tt, "scaleway_iot_hub.minimal-5"),
+					testAccCheckScalewayIotDeviceExists(tt, "scaleway_iot_device.default-5"),
+					resource.TestCheckResourceAttrSet("scaleway_iot_device.default-5", "id"),
+					resource.TestCheckResourceAttrSet("scaleway_iot_device.default-5", "hub_id"),
+					resource.TestCheckResourceAttrSet("scaleway_iot_device.default-5", "name"),
+					resource.TestCheckResourceAttr("scaleway_iot_device.default-5", "allow_insecure", "true"),
+					resource.TestCheckResourceAttr("scaleway_iot_device.default-5", "allow_multiple_connections", "false"),
+					resource.TestCheckResourceAttr("scaleway_iot_device.default-5", "certificate.0.crt", customDevCert),
 				),
 			},
 		},
