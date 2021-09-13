@@ -7,7 +7,7 @@ description: |-
 # scaleway_lb
 
 Creates and manages Scaleway Load-Balancers.
-For more information, see [the documentation](https://developers.scaleway.com/en/products/lb/api).
+For more information, see [the documentation](https://developers.scaleway.com/en/products/lb/zoned_api).
 
 ## Examples
 
