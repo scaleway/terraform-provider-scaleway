@@ -2,6 +2,7 @@ package scaleway
 
 import (
 	"fmt"
+	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -113,12 +114,7 @@ func TestAccScalewayInstanceServer_RootVolume1(t *testing.T) {
 		CheckDestroy:      testAccCheckScalewayInstanceServerDestroy(tt),
 		Steps: []resource.TestStep{
 			{
-				// 10 Gb
 				Config: `
-					resource "scaleway_instance_volume" "local" {
-						size_in_gb = 10
-						type = "l_ssd"
-					}
 					resource "scaleway_instance_server" "base" {
 						image = "ubuntu_focal"
 						type  = "DEV1-S"
@@ -127,40 +123,8 @@ func TestAccScalewayInstanceServer_RootVolume1(t *testing.T) {
 							delete_on_termination = true
 						}
 						tags = [ "terraform-test", "scaleway_instance_server", "root_volume" ]
-						additional_volume_ids = [scaleway_instance_volume.local.id]
 					}`,
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayInstanceServerExists(tt, "scaleway_instance_server.base"),
-					resource.TestCheckResourceAttr("scaleway_instance_server.base", "root_volume.0.delete_on_termination", "true"),
-					resource.TestCheckResourceAttr("scaleway_instance_server.base", "root_volume.0.size_in_gb", "10"),
-					resource.TestCheckResourceAttrSet("scaleway_instance_server.base", "root_volume.0.volume_id"),
-					resource.TestCheckResourceAttr("scaleway_instance_server.base", "tags.2", "root_volume"),
-				),
-			},
-			{
-				// 11 Gb
-				Config: `
-					resource "scaleway_instance_volume" "local" {
-						size_in_gb = 9
-						type = "l_ssd"
-					}
-					resource "scaleway_instance_server" "base" {
-						image = "ubuntu_focal"
-						type  = "DEV1-S"
-						root_volume {
-							size_in_gb = 11
-							delete_on_termination = true
-						}
-						tags = [ "terraform-test", "scaleway_instance_server", "root_volume" ]
-						additional_volume_ids = [scaleway_instance_volume.local.id]
-					}`,
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayInstanceServerExists(tt, "scaleway_instance_server.base"),
-					resource.TestCheckResourceAttr("scaleway_instance_server.base", "root_volume.0.delete_on_termination", "true"),
-					resource.TestCheckResourceAttr("scaleway_instance_server.base", "root_volume.0.size_in_gb", "11"),
-					resource.TestCheckResourceAttrSet("scaleway_instance_server.base", "root_volume.0.volume_id"),
-					resource.TestCheckResourceAttr("scaleway_instance_server.base", "tags.2", "root_volume"),
-				),
+				ExpectError: regexp.MustCompile("total local volume size must be equal to 20 GB"),
 			},
 		},
 	})
@@ -635,7 +599,6 @@ func TestAccScalewayInstanceServer_WithReservedIP(t *testing.T) {
 			{
 				Config: `
 					resource "scaleway_instance_ip" "first" {}
-					resource "scaleway_instance_ip" "second" {}
 					resource "scaleway_instance_server" "base" {
 						image = "ubuntu_focal"
 						type  = "DEV1-S"
@@ -850,6 +813,65 @@ func TestAccScalewayInstanceServer_WithDefaultRootVolumeAndAdditionalVolume(t *t
 							delete_on_termination = false
 					  	}
 						additional_volume_ids = [ scaleway_instance_volume.data.id ]
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayInstanceServerExists(tt, "scaleway_instance_server.main"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccScalewayInstanceServer_Enterprise(t *testing.T) {
+	tt := NewTestTools(t)
+	defer tt.Cleanup()
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      testAccCheckScalewayInstanceServerDestroy(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource "scaleway_instance_server" "main" {
+						type  = "ENT1-S"
+						image = "ubuntu_focal"
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayInstanceServerExists(tt, "scaleway_instance_server.main"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccScalewayInstanceServer_ServerWithBlockNonDefaultZone(t *testing.T) {
+	tt := NewTestTools(t)
+	defer tt.Cleanup()
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      testAccCheckScalewayInstanceServerDestroy(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource "scaleway_instance_volume" "main" {
+						type       = "b_ssd"
+						name       = "main"
+						size_in_gb = 1
+						zone       = "nl-ams-1"
+					}
+
+					resource "scaleway_instance_server" "main" {
+						zone              = "nl-ams-1"
+						image             = "ubuntu_focal"
+						type              = "DEV1-S"
+						root_volume {
+							delete_on_termination = true
+							size_in_gb            = 20
+						}
+						additional_volume_ids = [scaleway_instance_volume.main.id]
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(

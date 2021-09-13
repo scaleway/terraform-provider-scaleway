@@ -6,7 +6,7 @@ description: |-
 
 # scaleway_lb_frontend
 
-Creates and manages Scaleway Load-Balancer Frontends. For more information, see [the documentation](https://developers.scaleway.com/en/products/lb/api).
+Creates and manages Scaleway Load-Balancer Frontends. For more information, see [the documentation](https://developers.scaleway.com/en/products/lb/zoned_api).
 
 ## Examples
 
@@ -126,8 +126,8 @@ In addition to all arguments above, the following attributes are exported:
 
 ## Import
 
-Load-Balancer frontend can be imported using the `{region}/{id}`, e.g.
+Load-Balancer frontend can be imported using the `{zone}/{id}`, e.g.
 
 ```bash
-$ terraform import scaleway_lb_frontend.frontend01 fr-par/11111111-1111-1111-1111-111111111111
+$ terraform import scaleway_lb_frontend.frontend01 fr-par-1/11111111-1111-1111-1111-111111111111
 ```

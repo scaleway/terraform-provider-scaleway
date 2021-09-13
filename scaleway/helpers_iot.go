@@ -27,8 +27,9 @@ func iotAPIWithRegionAndID(m interface{}, id string) (*iot.API, scw.Region, stri
 
 func waitIotHub(iotAPI *iot.API, region scw.Region, hubID string, desiredStates ...iot.HubStatus) error {
 	hub, err := iotAPI.WaitForHub(&iot.WaitForHubRequest{
-		HubID:  hubID,
-		Region: region,
+		HubID:         hubID,
+		Region:        region,
+		RetryInterval: DefaultWaitRetryInterval,
 	})
 	if err != nil {
 		return err

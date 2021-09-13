@@ -28,6 +28,7 @@ func resourceScalewayK8SPool() *schema.Resource {
 			"cluster_id": {
 				Type:        schema.TypeString,
 				Required:    true,
+				ForceNew:    true,
 				Description: "The ID of the cluster on which this pool will be created",
 			},
 			"name": {
@@ -83,7 +84,7 @@ func resourceScalewayK8SPool() *schema.Resource {
 			"container_runtime": {
 				Type:        schema.TypeString,
 				Optional:    true,
-				Default:     k8s.RuntimeDocker.String(),
+				Default:     k8s.RuntimeContainerd.String(),
 				ForceNew:    true,
 				Description: "Container runtime for the pool",
 				ValidateFunc: validation.StringInSlice([]string{

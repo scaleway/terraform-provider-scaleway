@@ -1,12 +1,16 @@
 package scaleway
 
 import (
+	"context"
+	"fmt"
 	"strings"
 	"time"
 
+	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/api/lb/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	validator "github.com/scaleway/scaleway-sdk-go/validation"
 )
 
 const (
@@ -14,34 +18,28 @@ const (
 	defaultLbLbTimeout = 10 * time.Minute
 )
 
-// lbAPI returns a new lb API
-func lbAPI(m interface{}) *lb.API {
+// lbAPIWithZone returns an lb API WITH zone for a Create request
+func lbAPIWithZone(d *schema.ResourceData, m interface{}) (*lb.ZonedAPI, scw.Zone, error) {
 	meta := m.(*Meta)
-	return lb.NewAPI(meta.scwClient)
-}
+	lbAPI := lb.NewZonedAPI(meta.scwClient)
 
-// lbAPIWithRegion returns a new lb API and the region for a Create request
-func lbAPIWithRegion(d *schema.ResourceData, m interface{}) (*lb.API, scw.Region, error) {
-	meta := m.(*Meta)
-	lbAPI := lb.NewAPI(meta.scwClient)
-
-	region, err := extractRegion(d, meta)
+	zone, err := extractZone(d, meta)
 	if err != nil {
 		return nil, "", err
 	}
-	return lbAPI, region, nil
+	return lbAPI, zone, nil
 }
 
-// lbAPIWithRegionAndID returns an lb API with region and ID extracted from the state
-func lbAPIWithRegionAndID(m interface{}, id string) (*lb.API, scw.Region, string, error) {
+// lbAPIWithZoneAndID returns an lb API with zone and ID extracted from the state
+func lbAPIWithZoneAndID(m interface{}, id string) (*lb.ZonedAPI, scw.Zone, string, error) {
 	meta := m.(*Meta)
-	lbAPI := lb.NewAPI(meta.scwClient)
+	lbAPI := lb.NewZonedAPI(meta.scwClient)
 
-	region, ID, err := parseRegionalID(id)
+	zone, ID, err := parseZonedID(id)
 	if err != nil {
 		return nil, "", "", err
 	}
-	return lbAPI, region, ID, nil
+	return lbAPI, zone, ID, nil
 }
 
 func flattenLbBackendMarkdownAction(action lb.OnMarkedDownAction) interface{} {
@@ -258,4 +256,40 @@ func expandLbProxyProtocol(raw interface{}) lb.ProxyProtocol {
 
 func flattenLbProxyProtocol(pp lb.ProxyProtocol) interface{} {
 	return strings.TrimPrefix(pp.String(), "proxy_protocol_")
+}
+
+func lbUpgradeV1SchemaType() cty.Type {
+	return cty.Object(map[string]cty.Type{
+		"id": cty.String,
+	})
+}
+
+// lbUpgradeV1UpgradeFunc allow upgrade the from regional to a zoned resource.
+func lbUpgradeV1SchemaUpgradeFunc(ctx context.Context, rawState map[string]interface{}, meta interface{}) (map[string]interface{}, error) {
+	var err error
+	// element id: upgrade
+	ID, exist := rawState["id"]
+	if !exist {
+		return nil, fmt.Errorf("upgrade: id not exist")
+	}
+	rawState["id"], err = lbUpgradeV1RegionalToZonedID(ID.(string))
+	if err != nil {
+		return nil, err
+	}
+	// return rawState updated
+	return rawState, nil
+}
+
+func lbUpgradeV1RegionalToZonedID(element string) (string, error) {
+	locality, id, err := parseLocalizedID(element)
+	// return error if can't parse
+	if err != nil {
+		return "", fmt.Errorf("upgrade: could not retrieve the locality from `%s`", element)
+	}
+	// if locality is already zoned return
+	if validator.IsZone(locality) {
+		return element, nil
+	}
+	//  append zone 1 as default: e.g. fr-par-1
+	return fmt.Sprintf("%s-1/%s", locality, id), nil
 }

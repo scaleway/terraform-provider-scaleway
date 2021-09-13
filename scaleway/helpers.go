@@ -8,11 +8,18 @@ import (
 	"strings"
 	"time"
 
+	"github.com/hashicorp/go-cty/cty"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/scaleway/scaleway-sdk-go/namegenerator"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"golang.org/x/xerrors"
+)
+
+var (
+	// DefaultWaitRetryInterval is used to set the retry interval to 0 during acceptance tests
+	DefaultWaitRetryInterval *time.Duration
 )
 
 // RegionalID represents an ID that is linked with a region, eg fr-par/11111111-1111-1111-1111-111111111111
@@ -256,15 +263,12 @@ func zoneSchema() *schema.Schema {
 		allZones = append(allZones, z.String())
 	}
 	return &schema.Schema{
-		Type:        schema.TypeString,
-		Description: "The zone you want to attach the resource to",
-		Optional:    true,
-		ForceNew:    true,
-		Computed:    true,
-		ValidateFunc: validation.StringInSlice(
-			allZones,
-			true,
-		),
+		Type:             schema.TypeString,
+		Description:      "The zone you want to attach the resource to",
+		Optional:         true,
+		ForceNew:         true,
+		Computed:         true,
+		ValidateDiagFunc: validateStringInSliceWithWarning(allZones, "zone"),
 	}
 }
 
@@ -275,15 +279,37 @@ func regionSchema() *schema.Schema {
 		allRegions = append(allRegions, z.String())
 	}
 	return &schema.Schema{
+		Type:             schema.TypeString,
+		Description:      "The region you want to attach the resource to",
+		Optional:         true,
+		ForceNew:         true,
+		Computed:         true,
+		ValidateDiagFunc: validateStringInSliceWithWarning(allRegions, "region"),
+	}
+}
+
+// regionComputedSchema returns a standard schema for a zone
+func regionComputedSchema() *schema.Schema {
+	return &schema.Schema{
 		Type:        schema.TypeString,
-		Description: "The region you want to attach the resource to",
-		Optional:    true,
-		ForceNew:    true,
+		Description: "The region of the resource",
 		Computed:    true,
-		ValidateFunc: validation.StringInSlice(
-			allRegions,
-			true,
-		),
+	}
+}
+
+// validateStringInSliceWithWarning helps to only returns warnings in case we got a non public locality passed
+func validateStringInSliceWithWarning(correctValues []string, field string) func(i interface{}, path cty.Path) diag.Diagnostics {
+	return func(i interface{}, path cty.Path) diag.Diagnostics {
+		_, rawErr := validation.StringInSlice(correctValues, true)(i, field)
+		var res diag.Diagnostics
+		for _, e := range rawErr {
+			res = append(res, diag.Diagnostic{
+				Severity:      diag.Warning,
+				Summary:       e.Error(),
+				AttributePath: path,
+			})
+		}
+		return res
 	}
 }
 
@@ -473,7 +499,7 @@ func diffSuppressFuncIgnoreCaseAndHyphen(k, old, new string, d *schema.ResourceD
 }
 
 // diffSuppressFuncLocality is a SuppressDiffFunc to remove the locality from an ID when checking diff.
-// e.g. 2c1a1716-5570-4668-a50a-860c90beabf6 == fr-par/2c1a1716-5570-4668-a50a-860c90beabf6
+// e.g. 2c1a1716-5570-4668-a50a-860c90beabf6 == fr-par-1/2c1a1716-5570-4668-a50a-860c90beabf6
 func diffSuppressFuncLocality(k, old, new string, d *schema.ResourceData) bool {
 	return expandID(old) == expandID(new)
 }

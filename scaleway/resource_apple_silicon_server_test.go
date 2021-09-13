@@ -41,6 +41,7 @@ func testSweepAppleSiliconServer(_ string) error {
 }
 
 func TestAccScalewayAppleSiliconServer_Basic(t *testing.T) {
+	t.Skip("Skipping AppleSilicon test as this kind of server can't be deleted before 24h")
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
 	resource.ParallelTest(t, resource.TestCase{

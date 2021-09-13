@@ -3,6 +3,7 @@ package scaleway
 import (
 	"fmt"
 	"reflect"
+	"regexp"
 	"strings"
 	"testing"
 
@@ -47,6 +48,10 @@ func TestAccScalewayObjectBucket_Basic(t *testing.T) {
 					resource "scaleway_object_bucket" "ams-bucket" {
 						name = "%s"
 						region = "nl-ams"
+						tags = {
+							foo = "bar"
+							baz = "qux"
+						}
 					}
 
 					resource "scaleway_object_bucket" "par-bucket" {
@@ -62,6 +67,9 @@ func TestAccScalewayObjectBucket_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_object_bucket.base", "endpoint", fmt.Sprintf("https://%s.s3.%s.scw.cloud", testBucketName, "fr-par")),
 
 					resource.TestCheckResourceAttr("scaleway_object_bucket.ams-bucket", "name", testBucketNameAms),
+					resource.TestCheckResourceAttr("scaleway_object_bucket.ams-bucket", "tags.%", "2"),
+					resource.TestCheckResourceAttr("scaleway_object_bucket.ams-bucket", "tags.foo", "bar"),
+					resource.TestCheckResourceAttr("scaleway_object_bucket.ams-bucket", "tags.baz", "qux"),
 					resource.TestCheckResourceAttr("scaleway_object_bucket.ams-bucket", "endpoint", fmt.Sprintf("https://%s.s3.%s.scw.cloud", testBucketNameAms, "nl-ams")),
 
 					resource.TestCheckResourceAttr("scaleway_object_bucket.par-bucket", "name", testBucketNamePar),
@@ -74,11 +82,23 @@ func TestAccScalewayObjectBucket_Basic(t *testing.T) {
 						name = "%s"
 						acl = "%s"
 					}
-				`, testBucketName, testBucketUpdatedACL),
+
+					resource "scaleway_object_bucket" "ams-bucket" {
+						name = "%s"
+						region = "nl-ams"
+						tags = {
+							foo = "bar"
+						}
+					}
+				`, testBucketName, testBucketUpdatedACL, testBucketNameAms),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("scaleway_object_bucket.base", "name", testBucketName),
 					resource.TestCheckResourceAttr("scaleway_object_bucket.base", "acl", testBucketUpdatedACL),
 					resource.TestCheckResourceAttr("scaleway_object_bucket.base", "tags.%", "0"),
+
+					resource.TestCheckResourceAttr("scaleway_object_bucket.ams-bucket", "name", testBucketNameAms),
+					resource.TestCheckResourceAttr("scaleway_object_bucket.ams-bucket", "tags.%", "1"),
+					resource.TestCheckResourceAttr("scaleway_object_bucket.ams-bucket", "tags.foo", "bar"),
 				),
 			},
 		},
@@ -325,27 +345,7 @@ func TestAccScalewayObjectBucket_Cors_EmptyOrigin(t *testing.T) {
 							max_age_seconds = 3000
 						}
 					}`, bucketName),
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayObjectBucketExists(tt, resourceName),
-					testAccCheckScalewayObjectBucketCors(tt,
-						resourceName,
-						[]*s3.CORSRule{
-							{
-								AllowedHeaders: []*string{scw.StringPtr("*")},
-								AllowedMethods: []*string{scw.StringPtr("PUT"), scw.StringPtr("POST")},
-								AllowedOrigins: []*string{scw.StringPtr("")},
-								ExposeHeaders:  []*string{scw.StringPtr("x-amz-server-side-encryption"), scw.StringPtr("ETag")},
-								MaxAgeSeconds:  scw.Int64Ptr(3000),
-							},
-						},
-					),
-				),
-			},
-			{
-				ResourceName:            resourceName,
-				ImportState:             true,
-				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"force_destroy", "acl"},
+				ExpectError: regexp.MustCompile("error putting S3 CORS"),
 			},
 		},
 	})
