@@ -24,7 +24,7 @@ data "scaleway_instance_ip" "my_ip" {
 
 ## Argument Reference
 
-- `address` - (Optional) The IP address to retrieve
+- `address` - (Optional) The IPv4 address to retrieve
   Only one of `address` and `id` should be specified.
 
 - `id` - (Optional) The ID of the IP address to retrieve

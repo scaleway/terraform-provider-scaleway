@@ -14,8 +14,6 @@ func dataSourceScalewayInstanceIP() *schema.Resource {
 	// Generate datasource schema from resource
 	dsSchema := datasourceSchemaFromResourceSchema(resourceScalewayInstanceIP().Schema)
 
-	// Set 'Optional' schema elements
-	addOptionalFieldsToSchema(dsSchema, "address")
 	dsSchema["id"] = &schema.Schema{
 		Type:          schema.TypeString,
 		Optional:      true,
