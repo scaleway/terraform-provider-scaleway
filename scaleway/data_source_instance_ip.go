@@ -5,6 +5,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 )
@@ -16,12 +17,20 @@ func dataSourceScalewayInstanceIP() *schema.Resource {
 	// Set 'Optional' schema elements
 	addOptionalFieldsToSchema(dsSchema, "address")
 	dsSchema["id"] = &schema.Schema{
-		Type:         schema.TypeString,
-		Optional:     true,
-		Description:  "The ID of the IP address",
-		ValidateFunc: validationUUIDWithLocality(),
+		Type:          schema.TypeString,
+		Optional:      true,
+		Description:   "The ID of the IP address",
+		ValidateFunc:  validationUUIDorUUIDWithLocality(),
+		ConflictsWith: []string{"address"},
 	}
-	dsSchema["address"].ConflictsWith = []string{"id"}
+	dsSchema["address"] = &schema.Schema{
+		Type:          schema.TypeString,
+		Computed:      false,
+		Optional:      true,
+		Description:   "The IP address",
+		ConflictsWith: []string{"id"},
+		ValidateFunc:  validation.IsIPv4Address,
+	}
 
 	return &schema.Resource{
 		ReadContext: dataSourceScalewayInstanceIPRead,
