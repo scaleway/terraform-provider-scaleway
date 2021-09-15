@@ -23,7 +23,6 @@ func dataSourceScalewayInstanceIP() *schema.Resource {
 	}
 	dsSchema["address"] = &schema.Schema{
 		Type:          schema.TypeString,
-		Computed:      false,
 		Optional:      true,
 		Description:   "The IP address",
 		ConflictsWith: []string{"id"},
