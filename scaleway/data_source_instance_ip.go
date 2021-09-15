@@ -42,27 +42,26 @@ func dataSourceScalewayInstanceIPRead(ctx context.Context, d *schema.ResourceDat
 		return diag.FromErr(err)
 	}
 
-	addr, ok := d.GetOk("address")
-
-	var search string
-	if ok {
-		search = addr.(string)
-	} else {
-		_, search, _ = parseLocalizedID(d.Get("id").(string))
-	}
-	res, err := instanceAPI.GetIP(&instance.GetIPRequest{
-		IP:   search,
-		Zone: zone,
-	}, scw.WithContext(ctx))
-	if err != nil {
-		// We check for 403 because instance API returns 403 for a deleted IP
-		if is404Error(err) || is403Error(err) {
-			d.SetId("")
-			return nil
+	id, ok := d.GetOk("id")
+	var ID string
+	if !ok {
+		res, err := instanceAPI.GetIP(&instance.GetIPRequest{
+			IP:   d.Get("address").(string),
+			Zone: zone,
+		}, scw.WithContext(ctx))
+		if err != nil {
+			// We check for 403 because instance API returns 403 for a deleted IP
+			if is404Error(err) || is403Error(err) {
+				d.SetId("")
+				return nil
+			}
+			return diag.FromErr(err)
 		}
-		return diag.FromErr(err)
+		ID = res.IP.ID
+	} else {
+		_, ID, _ = parseLocalizedID(id.(string))
 	}
-	d.SetId(newZonedIDString(zone, res.IP.ID))
+	d.SetId(newZonedIDString(zone, ID))
 
 	return resourceScalewayInstanceIPRead(ctx, d, meta)
 }
