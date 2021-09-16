@@ -15,7 +15,7 @@ func dataSourceScalewayLb() *schema.Resource {
 	dsSchema := datasourceSchemaFromResourceSchema(resourceScalewayLb().Schema)
 
 	// Set 'Optional' schema elements
-	addOptionalFieldsToSchema(dsSchema, "name", "region")
+	addOptionalFieldsToSchema(dsSchema, "name", "zone")
 
 	dsSchema["name"].ConflictsWith = []string{"lb_id"}
 	dsSchema["lb_id"] = &schema.Schema{
