@@ -216,3 +216,13 @@ func testCheckResourceAttrIPv6(name string, key string) resource.TestCheckFunc {
 		return nil
 	})
 }
+
+func testCheckResourceAttrIP(name string, key string) resource.TestCheckFunc {
+	return testCheckResourceAttrFunc(name, key, func(value string) error {
+		ip := net.ParseIP(value)
+		if ip == nil {
+			return fmt.Errorf("%s is not a valid IP", value)
+		}
+		return nil
+	})
+}
