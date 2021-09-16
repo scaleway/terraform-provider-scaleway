@@ -33,15 +33,15 @@ func dataSourceScalewayLb() *schema.Resource {
 }
 
 func dataSourceScalewayLbRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, err := lbAPIWithRegion(d, meta)
+	api, zone, err := lbAPIWithZone(d, meta)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	lbID, ok := d.GetOk("lb_id")
 	if !ok { // Get LB by name.
-		res, err := api.ListLBs(&lb.ListLBsRequest{
-			Region:    region,
+		res, err := api.ListLBs(&lb.ZonedAPIListLBsRequest{
+			Zone:      zone,
 			Name:      expandStringPtr(d.Get("name")),
 			ProjectID: expandStringPtr(d.Get("project_id")),
 		}, scw.WithContext(ctx))
@@ -57,9 +57,9 @@ func dataSourceScalewayLbRead(ctx context.Context, d *schema.ResourceData, meta 
 		lbID = res.LBs[0].ID
 	}
 
-	regionalID := datasourceNewRegionalizedID(lbID, region)
-	d.SetId(regionalID)
-	err = d.Set("lb_id", regionalID)
+	zonedID := datasourceNewZonedID(lbID, zone)
+	d.SetId(zonedID)
+	err = d.Set("lb_id", zonedID)
 	if err != nil {
 		return diag.FromErr(err)
 	}
