@@ -58,6 +58,7 @@ func Provider(config *ProviderConfig) plugin.ProviderFunc {
 				"scaleway_account_ssh_key":               resourceScalewayAccountSSKKey(),
 				"scaleway_apple_silicon_server":          resourceScalewayAppleSiliconServer(),
 				"scaleway_baremetal_server":              resourceScalewayBaremetalServer(),
+				"scaleway_domain_record":                 resourceScalewayDomainRecord(),
 				"scaleway_instance_ip":                   resourceScalewayInstanceIP(),
 				"scaleway_instance_ip_reverse_dns":       resourceScalewayInstanceIPReverseDNS(),
 				"scaleway_instance_volume":               resourceScalewayInstanceVolume(),
@@ -93,6 +94,7 @@ func Provider(config *ProviderConfig) plugin.ProviderFunc {
 
 			DataSourcesMap: map[string]*schema.Resource{
 				"scaleway_account_ssh_key":         dataSourceScalewayAccountSSHKey(),
+				"scaleway_instance_ip":             dataSourceScalewayInstanceIP(),
 				"scaleway_instance_security_group": dataSourceScalewayInstanceSecurityGroup(),
 				"scaleway_instance_server":         dataSourceScalewayInstanceServer(),
 				"scaleway_instance_image":          dataSourceScalewayInstanceImage(),
@@ -104,6 +106,7 @@ func Provider(config *ProviderConfig) plugin.ProviderFunc {
 				"scaleway_rdb_privilege":           dataSourceScalewayRDBPrivilege(),
 				"scaleway_k8s_cluster":             dataSourceScalewayK8SCluster(),
 				"scaleway_k8s_pool":                dataSourceScalewayK8SPool(),
+				"scaleway_lb":                      dataSourceScalewayLb(),
 				"scaleway_lb_ip":                   dataSourceScalewayLbIP(),
 				"scaleway_marketplace_image":       dataSourceScalewayMarketplaceImage(),
 				"scaleway_registry_namespace":      dataSourceScalewayRegistryNamespace(),

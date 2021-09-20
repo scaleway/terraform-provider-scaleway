@@ -188,7 +188,7 @@ func resourceScalewayRdbInstanceCreate(ctx context.Context, d *schema.ResourceDa
 	_, err = rdbAPI.WaitForInstance(&rdb.WaitForInstanceRequest{
 		Region:        region,
 		InstanceID:    res.ID,
-		Timeout:       scw.TimeDurationPtr(defaultInstanceServerWaitTimeout),
+		Timeout:       scw.TimeDurationPtr(defaultRdbInstanceTimeout),
 		RetryInterval: DefaultWaitRetryInterval,
 	}, scw.WithContext(ctx))
 	if err != nil {
