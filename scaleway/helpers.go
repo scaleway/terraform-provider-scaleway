@@ -370,7 +370,7 @@ func expandStrings(data interface{}) []string {
 
 func expandStringsPtr(data interface{}) *[]string {
 	var stringSlice []string
-	if data == nil {
+	if _, ok := data.([]interface{}); !ok || data == nil {
 		return &stringSlice
 	}
 	for _, s := range data.([]interface{}) {
@@ -380,10 +380,10 @@ func expandStringsPtr(data interface{}) *[]string {
 }
 
 func expandStringsOrEmpty(data interface{}) []string {
-	if data == nil {
-		return []string{}
+	var stringSlice []string
+	if _, ok := data.([]interface{}); !ok || data == nil {
+		return stringSlice
 	}
-	stringSlice := []string{}
 	for _, s := range data.([]interface{}) {
 		stringSlice = append(stringSlice, s.(string))
 	}

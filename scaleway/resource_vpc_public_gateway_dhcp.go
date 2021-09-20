@@ -27,87 +27,87 @@ func resourceScalewayVPCPublicGatewayDHCP() *schema.Resource {
 			"zone":       zoneSchema(),
 			"subnet": {
 				Type:         schema.TypeString,
-				Description:  "subnet for the DHCP server",
 				ValidateFunc: validation.IsCIDR,
 				Required:     true,
+				Description:  "Subnet for the DHCP server",
 			},
 			"address": {
 				Type:        schema.TypeString,
-				Description: "Address: address of the DHCP server. This will be the gateway's address in the private network. Defaults to the first address of the subnet",
 				Optional:    true,
 				Computed:    true,
+				Description: "Address: address of the DHCP server. This will be the gateway's address in the private network. Defaults to the first address of the subnet",
 			},
 			"pool_low": {
 				Type:         schema.TypeString,
-				Description:  "low IP (included) of the dynamic address pool. Defaults to the second address of the subnet.",
 				ValidateFunc: validation.IsIPAddress,
 				Computed:     true,
 				Optional:     true,
+				Description:  "Low IP (included) of the dynamic address pool. Defaults to the second address of the subnet.",
 			},
 			"pool_high": {
 				Type:         schema.TypeString,
-				Description:  "High IP (included) of the dynamic address pool. Defaults to the last address of the subnet.",
 				ValidateFunc: validation.IsIPAddress,
 				Computed:     true,
 				Optional:     true,
+				Description:  "High IP (included) of the dynamic address pool. Defaults to the last address of the subnet.",
 			},
 			"enable_dynamic": {
 				Type:        schema.TypeBool,
-				Description: "Whether to enable dynamic pooling of IPs. By turning the dynamic pool off, only pre-existing DHCP reservations will be handed out. Defaults to true.",
 				Computed:    true,
 				Optional:    true,
+				Description: "Whether to enable dynamic pooling of IPs. By turning the dynamic pool off, only pre-existing DHCP reservations will be handed out. Defaults to true.",
 			},
 			"valid_lifetime": {
 				Type:        schema.TypeInt,
-				Description: "For how long, in seconds, will DHCP entries will be valid. Defaults to 1h (3600s).",
 				Computed:    true,
 				Optional:    true,
+				Description: "For how long, in seconds, will DHCP entries will be valid. Defaults to 1h (3600s).",
 			},
 			"renew_timer": {
 				Type:        schema.TypeInt,
-				Description: "After how long, in seconds, a renew will be attempted. Must be 30s lower than `rebind_timer`. Defaults to 50m (3000s).",
 				Computed:    true,
 				Optional:    true,
+				Description: "After how long, in seconds, a renew will be attempted. Must be 30s lower than `rebind_timer`. Defaults to 50m (3000s).",
 			},
 			"rebind_timer": {
 				Type:        schema.TypeInt,
-				Description: "After how long, in seconds, a DHCP client will query for a new lease if previous renews fail. Must be 30s lower than `valid_lifetime`. Defaults to 51m (3060s).",
 				Computed:    true,
 				Optional:    true,
+				Description: "After how long, in seconds, a DHCP client will query for a new lease if previous renews fail. Must be 30s lower than `valid_lifetime`. Defaults to 51m (3060s).",
 			},
 			"push_default_route": {
 				Type:        schema.TypeBool,
-				Description: "Whether the gateway should push a default route to DHCP clients or only hand out IPs. Defaults to true",
 				Computed:    true,
 				Optional:    true,
+				Description: "Whether the gateway should push a default route to DHCP clients or only hand out IPs. Defaults to true",
 			},
 			"push_dns_server": {
 				Type:        schema.TypeBool,
-				Description: "Whether the gateway should push custom DNS servers to clients. This allows for instance hostname -> IP resolution. Defaults to true.",
 				Computed:    true,
 				Optional:    true,
+				Description: "Whether the gateway should push custom DNS servers to clients. This allows for instance hostname -> IP resolution. Defaults to true.",
 			},
 			"dns_server_override": {
-				Type:        schema.TypeList,
-				Description: "override the DNS server list pushed to DHCP clients, instead of the gateway itself",
-				Optional:    true,
+				Type:     schema.TypeList,
+				Optional: true,
 				Elem: &schema.Schema{
 					Type: schema.TypeString,
 				},
+				Description: "Override the DNS server list pushed to DHCP clients, instead of the gateway itself",
 			},
 			"dns_search": {
-				Type:        schema.TypeList,
-				Description: "additional DNS search paths",
-				Optional:    true,
+				Type:     schema.TypeList,
+				Optional: true,
 				Elem: &schema.Schema{
 					Type: schema.TypeString,
 				},
+				Description: "Additional DNS search paths",
 			},
 			"dns_local_name": {
 				Type:        schema.TypeString,
-				Description: "TLD given to hostnames in the Private Network. Allowed characters are `a-z0-9-.`. Defaults to the slugified Private Network name if created along a GatewayNetwork, or else to `priv`.",
 				Optional:    true,
 				Computed:    true,
+				Description: "TLD given to hostnames in the Private Network. Allowed characters are `a-z0-9-.`. Defaults to the slugified Private Network name if created along a GatewayNetwork, or else to `priv`.",
 			},
 			"organization_id": organizationIDSchema(),
 			"created_at": {
@@ -222,7 +222,8 @@ func resourceScalewayVPCPublicGatewayDHCPUpdate(ctx context.Context, d *schema.R
 		return diag.FromErr(err)
 	}
 
-	if d.HasChanges("enable_dynamic", "push_default_route", "push_dns_servers", "dns_servers_override", "dns_search", "dns_local_name") {
+	if d.HasChangesExcept("enable_dynamic", "push_default_route", "push_dns_servers", "dns_servers_override",
+		"dns_search", "dns_local_name") {
 		req := &vpcgw.UpdateDHCPRequest{
 			DHCPID:             ID,
 			Zone:               zone,
