@@ -20,13 +20,13 @@ func init() {
 func testSweepVPCPublicGateway(_ string) error {
 	return sweepZones(scw.AllZones, func(scwClient *scw.Client, zone scw.Zone) error {
 		vpcgwAPI := vpcgw.NewAPI(scwClient)
-		l.Debugf("sweeper: destroying the public gateways in (%s)", zone)
+		l.Debugf("sweeper: destroying the public gateways in (%+v)", zone)
 
 		listGatewayResponse, err := vpcgwAPI.ListGateways(&vpcgw.ListGatewaysRequest{
 			Zone: zone,
 		}, scw.WithAllPages())
 		if err != nil {
-			return fmt.Errorf("error listing public gateway in sweeper: %s", err)
+			return fmt.Errorf("error listing public gateway in sweeper: %w", err)
 		}
 
 		for _, gateway := range listGatewayResponse.Gateways {
@@ -35,7 +35,7 @@ func testSweepVPCPublicGateway(_ string) error {
 				GatewayID: gateway.ID,
 			})
 			if err != nil {
-				return fmt.Errorf("error deleting public gateway in sweeper: %s", err)
+				return fmt.Errorf("error deleting public gateway in sweeper: %w", err)
 			}
 		}
 		return nil

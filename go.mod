@@ -10,9 +10,7 @@ require (
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.7.0
 	github.com/scaleway/scaleway-sdk-go v1.0.0-beta.7.0.20210804084528-d11825fe1059
 	github.com/stretchr/testify v1.7.0
-	golang.org/x/mod v0.4.2 // indirect
-	golang.org/x/sys v0.0.0-20210511113859-b0526f3d8744 // indirect
-	golang.org/x/tools v0.1.0 // indirect
+	golang.org/x/tools v0.1.6 // indirect
 	golang.org/x/xerrors v0.0.0-20200804184101-5ec99f83aff1
 	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b // indirect
 )
