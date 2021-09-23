@@ -179,6 +179,8 @@ The following arguments are supported:
 
 - `name` - (Required) The name for the Kubernetes cluster.
 
+- `type` - (Optional) The type of Kubernetes cluster.
+
 - `description` - (Optional) A description for the Kubernetes cluster.
 
 - `version` - (Required) The version of the Kubernetes cluster.
