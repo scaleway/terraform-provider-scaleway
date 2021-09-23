@@ -338,6 +338,8 @@ func resourceScalewayDomainRecordRead(ctx context.Context, d *schema.ResourceDat
 	}
 
 	d.SetId(record.ID)
+	_ = d.Set("name", record.Name)
+	_ = d.Set("type", record.Type.String())
 	_ = d.Set("data", flattenDomainData(record.Data, record.Type))
 	_ = d.Set("ttl", int(record.TTL))
 	_ = d.Set("priority", int(record.Priority))

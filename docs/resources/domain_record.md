@@ -198,7 +198,7 @@ The following arguments are supported:
   
 - `priority` - (Optional, default: `0`) The priority of the record (mostly used with an `MX` record)
 
-**Dynamic records:**
+### Dynamic records
 
 - `geo_ip` - (Optional) The Geo IP feature provides DNS resolution, based on the user’s geographical location. You can define a default IP that resolves if no Geo IP rule matches, and specify IPs for each geographical zone. [Documentation and usage example](https://www.scaleway.com/en/docs/scaleway-dns/#-Geo-IP-Records)
     - `matches` - (Required) The list of matches. *(Can be more than 1)*
