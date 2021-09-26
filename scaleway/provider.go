@@ -233,6 +233,12 @@ func loadProfile(d *schema.ResourceData) (*scw.Profile, error) {
 
 	providerProfile := &scw.Profile{}
 	if d != nil {
+		if profileName, exist := d.GetOk("profile"); exist {
+			profileFromConfig, err := config.GetProfile(profileName.(string))
+			if err != nil {
+				providerProfile = profileFromConfig
+			}
+		}
 		if accessKey, exist := d.GetOk("access_key"); exist {
 			providerProfile.AccessKey = scw.StringPtr(accessKey.(string))
 		}
@@ -250,9 +256,6 @@ func loadProfile(d *schema.ResourceData) (*scw.Profile, error) {
 		}
 		if apiURL, exist := d.GetOk("api_url"); exist {
 			providerProfile.APIURL = scw.StringPtr(apiURL.(string))
-		}
-		if profileName, exist := d.GetOk("profile"); exist {
-			providerProfile, err = config.GetProfile(profileName.(string))
 		}
 	}
 
