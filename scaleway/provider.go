@@ -39,6 +39,11 @@ func Provider(config *ProviderConfig) plugin.ProviderFunc {
 					Description:  "The Scaleway secret Key.",
 					ValidateFunc: validationUUID(),
 				},
+				"profile": {
+					Type:        schema.TypeString,
+					Optional:    true, // To allow user to use `access_key`, `secret_key`, `project_id`...
+					Description: "The Scaleway profile to use.",
+				},
 				"project_id": {
 					Type:         schema.TypeString,
 					Optional:     true, // To allow user to use organization instead of project
@@ -245,6 +250,9 @@ func loadProfile(d *schema.ResourceData) (*scw.Profile, error) {
 		}
 		if apiURL, exist := d.GetOk("api_url"); exist {
 			providerProfile.APIURL = scw.StringPtr(apiURL.(string))
+		}
+		if profileName, exist := d.GetOk("profile"); exist {
+			providerProfile, err = config.GetProfile(profileName.(string))
 		}
 	}
 
