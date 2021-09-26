@@ -178,6 +178,33 @@ If it fails to detect credentials inline, or in the environment, Terraform will 
 You can optionally specify a different location with `SCW_CONFIG_PATH` environment variable.
 You can find more information about this configuration [in the documentation](https://github.com/scaleway/scaleway-sdk-go/blob/master/scw/README.md#scaleway-config).
 
+This method also supports a `profile` configuration:
+
+Example:
+
+If your shared configuration file contains:
+
+```yaml
+profiles:
+  myProfile:
+    access_key: xxxxxxxxxxxxxxxxxxxx
+    secret_key: xxxxxxxx-xxx-xxxx-xxxx-xxxxxxxxxxx
+    default_organization_id: xxxxxxxx-xxx-xxxx-xxxx-xxxxxxxxxxx 
+    default_project_id: xxxxxxxx-xxx-xxxx-xxxx-xxxxxxxxxxx
+    default_zone: fr-par-1
+    default_region: fr-par
+    api_url: https://api.scaleway.com
+    insecure: false
+```
+
+You can invoke and use this profile in the provider declaration:
+
+```hcl
+provider "scaleway" {
+  profile = "myProfile"
+}
+```
+
 ## Arguments Reference
 
 In addition to [generic provider arguments](https://www.terraform.io/docs/configuration/providers.html) (e.g. `alias` and `version`), the following arguments are supported in the Scaleway provider block:
