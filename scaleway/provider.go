@@ -235,7 +235,7 @@ func loadProfile(d *schema.ResourceData) (*scw.Profile, error) {
 	if d != nil {
 		if profileName, exist := d.GetOk("profile"); exist {
 			profileFromConfig, err := config.GetProfile(profileName.(string))
-			if err != nil {
+			if err == nil {
 				providerProfile = profileFromConfig
 			}
 		}
