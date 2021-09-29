@@ -158,14 +158,26 @@ func resourceScalewayLbFrontendCreate(ctx context.Context, d *schema.ResourceDat
 		return diag.FromErr(err)
 	}
 
-	zone, LbID, err := parseZonedID(d.Get("lb_id").(string))
+	zone, lbID, err := parseZonedID(d.Get("lb_id").(string))
 	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	retryInterval := DefaultWaitLBRetryInterval
+	_, err = lbAPI.WaitForLb(&lb.ZonedAPIWaitForLBRequest{
+		Zone:          zone,
+		LBID:          lbID,
+		Timeout:       scw.TimeDurationPtr(defaultInstanceServerWaitTimeout),
+		RetryInterval: &retryInterval,
+	}, scw.WithContext(ctx))
+
+	if err != nil && !is404Error(err) {
 		return diag.FromErr(err)
 	}
 
 	res, err := lbAPI.CreateFrontend(&lb.ZonedAPICreateFrontendRequest{
 		Zone:          zone,
-		LBID:          LbID,
+		LBID:          lbID,
 		Name:          expandOrGenerateString(d.Get("name"), "lb-frt"),
 		InboundPort:   int32(d.Get("inbound_port").(int)),
 		BackendID:     expandID(d.Get("backend_id")),

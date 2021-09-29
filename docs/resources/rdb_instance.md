@@ -23,6 +23,20 @@ resource "scaleway_rdb_instance" "main" {
   user_name      = "my_initial_user"
   password       = "thiZ_is_v&ry_s3cret"
 }
+
+# with backup schedule
+resource "scaleway_rdb_instance" "main" {
+  name          = "test-rdb"
+  node_type     = "DB-DEV-S"
+  engine        = "PostgreSQL-11"
+  is_ha_cluster = true
+  user_name     = "my_initial_user"
+  password      = "thiZ_is_v&ry_s3cret"
+  
+  disable_backup = true
+  backup_schedule_frequency = 24 # every day
+  backup_schedule_retention = 7  # keep it one week
+}
 ```
 
 ## Arguments Reference
@@ -55,11 +69,21 @@ The following arguments are supported:
 
 - `disable_backup` - (Optional) Disable automated backup for the database instance.
 
+- `backup_schedule_frequency` - (Optional) Backup schedule frequency in hours.
+
+- `backup_schedule_retention` - (Optional) Backup schedule retention in days.
+
 - `settings` - Map of engine settings to be set.
 
 - `tags` - (Optional) The tags associated with the Database Instance.
 
-- `region` - (Defaults to [provider](../index.md#region) `region`) The [region](../guides/regions_and_zones.md#regions) in which the Database Instance should be created.
+- `private_network` - (Optional) The private_network associated with the Database Instance.
+
+The `private_network` block supports:
+
+- `ip` - (Required) The ip range to assign to my instance in [CIDR notation](https://en.wikipedia.org/wiki/Classless_Inter-Domain_Routing#CIDR_notation)
+- `pn_id` - (Required) The private_network ID in which the Database Instance should be connected.
+    - The private network should be created in the same region and locality.
 
 - `project_id` - (Defaults to [provider](../index.md#project_id) `project_id`) The ID of the project the Database Instance is associated with.
 

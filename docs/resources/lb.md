@@ -21,6 +21,7 @@ resource "scaleway_lb" "base" {
   ip_id  = scaleway_lb_ip.ip.id
   zone = "fr-par-1"
   type   = "LB-S"
+  release_ip = true
 }
 ```
 
@@ -39,6 +40,8 @@ The following arguments are supported:
 - `name` - (Optional) The name of the load-balancer.
 
 - `tags` - (Optional) The tags associated with the load-balancers.
+
+- `release_ip` - (Defaults to false) The release_ip allow release the ip address associated with the load-balancers.
 
 - `zone` - (Defaults to [provider](../index.md#zone) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which the IP should be reserved.
 
@@ -77,6 +80,7 @@ resource "scaleway_lb" "base" {
   ip_id  = scaleway_lb_ip.ip.id
   zone = "fr-par-1"
   type   = "LB-S"
+  release_ip = true
 }
 ```
 

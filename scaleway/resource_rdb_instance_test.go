@@ -150,6 +150,82 @@ func TestAccScalewayRdbInstance_Settings(t *testing.T) {
 	})
 }
 
+func TestAccScalewayRdbInstance_Endpoints(t *testing.T) {
+	tt := NewTestTools(t)
+	defer tt.Cleanup()
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      testAccCheckScalewayRdbInstanceDestroy(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource scaleway_lb_ip ip01 {}
+					resource scaleway_rdb_instance main {
+						name = "test-rdb"
+						node_type = "db-dev-s"
+						engine = "PostgreSQL-11"
+						is_ha_cluster = false
+						disable_backup = true
+						user_name = "my_initial_user"
+						password = "thiZ_is_v&ry_s3cret"
+						load_balancer_id = "${scaleway_lb_ip.ip01.id}"
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayRdbExists(tt, "scaleway_rdb_instance.main"),
+					resource.TestCheckResourceAttrSet("scaleway_rdb_instance.main", "load_balancer_id"),
+				),
+			},
+		},
+	})
+}
+
+
+func TestAccScalewayRdbInstance_PrivateNetwork(t *testing.T) {
+	tt := NewTestTools(t)
+	defer tt.Cleanup()
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      testAccCheckScalewayRdbInstanceDestroy(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource scaleway_vpc_private_network pn01 {
+						name = "my_private_network"
+						tags = ["tag0", "tag1", "rdb_pn"]
+					}
+
+					resource scaleway_rdb_instance main {
+						name = "test-rdb"
+						node_type = "db-dev-s"
+						engine = "PostgreSQL-11"
+						is_ha_cluster = false
+						disable_backup = true
+						user_name = "my_initial_user"
+						password = "thiZ_is_v&ry_s3cret"
+						region= "fr-par"
+						tags = [ "terraform-test", "scaleway_rdb_instance", "volume", "rdb_pn" ]
+						volume_type = "bssd"
+						volume_size_in_gb = 10
+						private_network {
+							ip = "192.168.1.42/24"
+							pn_id = "${scaleway_vpc_private_network.pn01.id}"
+						}
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayRdbExists(tt, "scaleway_rdb_instance.main"),
+					resource.TestCheckResourceAttrSet("scaleway_rdb_instance.main", "private_network"),
+					resource.TestCheckResourceAttrSet("scaleway_rdb_instance.main", "private_network.0.pn_id"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "private_network.0.ip", "192.168.1.42/24"),
+				),
+			},
+		},
+	})
+}
+
 func TestAccScalewayRdbInstance_Volume(t *testing.T) {
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
@@ -197,6 +273,41 @@ func TestAccScalewayRdbInstance_Volume(t *testing.T) {
 					testAccCheckScalewayRdbExists(tt, "scaleway_rdb_instance.main"),
 					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "volume_type", "bssd"),
 					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "volume_size_in_gb", "10"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccScalewayRdbInstance_BackupSchedule(t *testing.T) {
+	tt := NewTestTools(t)
+	defer tt.Cleanup()
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      testAccCheckScalewayRdbInstanceDestroy(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource scaleway_rdb_instance main {
+						name                      = "test-rdb"
+						node_type                 = "db-dev-s"
+						engine                    = "PostgreSQL-11"
+						is_ha_cluster             = false
+						disable_backup            = false
+                        backup_schedule_frequency = 24
+                        backup_schedule_retention = 7
+						user_name                 = "my_initial_user"
+						password                  = "thiZ_is_v&ry_s3cret"
+						region                    = "nl-ams"
+						tags                      = [ "terraform-test", "scaleway_rdb_instance", "volume" ]
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayRdbExists(tt, "scaleway_rdb_instance.main"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "disable_backup", "false"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "backup_schedule_frequency", "24"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "backup_schedule_retention", "7"),
 				),
 			},
 		},

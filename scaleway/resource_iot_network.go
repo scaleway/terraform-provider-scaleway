@@ -98,7 +98,7 @@ func resourceScalewayIotNetworkCreate(ctx context.Context, d *schema.ResourceDat
 
 	d.SetId(newRegionalIDString(region, res.Network.ID))
 
-	// Secret key cannot be retreived later
+	// Secret key cannot be retrieved later
 	_ = d.Set("secret", res.Secret)
 
 	return resourceScalewayIotNetworkRead(ctx, d, meta)

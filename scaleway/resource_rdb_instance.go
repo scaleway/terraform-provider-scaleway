@@ -9,8 +9,12 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
-	"github.com/scaleway/scaleway-sdk-go/api/rdb/v1"
+	rdbV1 "github.com/scaleway/scaleway-sdk-go/api/rdb/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+)
+
+const (
+	defaultWaitRDBRetryInterval = 30 * time.Second
 )
 
 func resourceScalewayRdbInstance() *schema.Resource {
@@ -57,6 +61,18 @@ func resourceScalewayRdbInstance() *schema.Resource {
 				Default:     false,
 				Description: "Disable automated backup for the database instance",
 			},
+			"backup_schedule_frequency": {
+				Type:        schema.TypeInt,
+				Optional:    true,
+				Computed:    true,
+				Description: "Backup schedule frequency in hours",
+			},
+			"backup_schedule_retention": {
+				Type:        schema.TypeInt,
+				Optional:    true,
+				Computed:    true,
+				Description: "Backup schedule retention in days",
+			},
 			"user_name": {
 				Type:        schema.TypeString,
 				ForceNew:    true,
@@ -88,11 +104,11 @@ func resourceScalewayRdbInstance() *schema.Resource {
 			},
 			"volume_type": {
 				Type:     schema.TypeString,
-				Default:  rdb.VolumeTypeLssd,
+				Default:  rdbV1.VolumeTypeLssd,
 				Optional: true,
 				ValidateFunc: validation.StringInSlice([]string{
-					rdb.VolumeTypeLssd.String(),
-					rdb.VolumeTypeBssd.String(),
+					rdbV1.VolumeTypeLssd.String(),
+					rdbV1.VolumeTypeBssd.String(),
 				}, false),
 				Description: "Type of volume where data are stored",
 			},
@@ -101,6 +117,28 @@ func resourceScalewayRdbInstance() *schema.Resource {
 				Optional:    true,
 				Computed:    true,
 				Description: "Volume size (in GB) when volume_type is not lssd",
+			},
+			"private_network": {
+				Type:        schema.TypeList,
+				Optional:    true,
+				MaxItems:    1,
+				Description: "List of private network to expose your database instance",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"ip": {
+							Type:         schema.TypeString,
+							Required:     true,
+							ValidateFunc: validation.IsCIDR,
+							Description:  "The IP of your service",
+						},
+						"pn_id": {
+							Type:         schema.TypeString,
+							Required:     true,
+							ValidateFunc: validationUUIDorUUIDWithLocality(),
+							Description:  "The private network ID",
+						},
+					},
+				},
 			},
 			// Computed
 			"endpoint_ip": {
@@ -142,7 +180,6 @@ func resourceScalewayRdbInstance() *schema.Resource {
 				Computed:    true,
 				Description: "Certificate of the database instance",
 			},
-
 			// Common
 			"region":          regionSchema(),
 			"organization_id": organizationIDSchema(),
@@ -157,7 +194,7 @@ func resourceScalewayRdbInstanceCreate(ctx context.Context, d *schema.ResourceDa
 		return diag.FromErr(err)
 	}
 
-	createReq := &rdb.CreateInstanceRequest{
+	createReq := &rdbV1.CreateInstanceRequest{
 		Region:        region,
 		ProjectID:     expandStringPtr(d.Get("project_id")),
 		Name:          expandOrGenerateString(d.Get("name"), "rdb"),
@@ -168,12 +205,17 @@ func resourceScalewayRdbInstanceCreate(ctx context.Context, d *schema.ResourceDa
 		UserName:      d.Get("user_name").(string),
 		Password:      d.Get("password").(string),
 		Tags:          expandStrings(d.Get("tags")),
-		VolumeType:    rdb.VolumeType(d.Get("volume_type").(string)),
+		VolumeType:    rdbV1.VolumeType(d.Get("volume_type").(string)),
+	}
+
+	pn, pnExist := d.GetOk("private_network")
+	if pnExist {
+		createReq.InitEndpoints = expandPrivateNetwork(pn, pnExist)
 	}
 
 	if size, ok := d.GetOk("volume_size_in_gb"); ok {
-		if createReq.VolumeType != rdb.VolumeTypeBssd {
-			return diag.FromErr(fmt.Errorf("volume_size_in_gb should be used with volume_type %s only", rdb.VolumeTypeBssd.String()))
+		if createReq.VolumeType != rdbV1.VolumeTypeBssd {
+			return diag.FromErr(fmt.Errorf("volume_size_in_gb should be used with volume_type %s only", rdbV1.VolumeTypeBssd.String()))
 		}
 		createReq.VolumeSize = scw.Size(uint64(size.(int)) * uint64(scw.GB))
 	}
@@ -185,18 +227,40 @@ func resourceScalewayRdbInstanceCreate(ctx context.Context, d *schema.ResourceDa
 
 	d.SetId(newRegionalIDString(region, res.ID))
 
-	_, err = rdbAPI.WaitForInstance(&rdb.WaitForInstanceRequest{
+	retryInterval := defaultWaitRDBRetryInterval
+	_, err = rdbAPI.WaitForInstance(&rdbV1.WaitForInstanceRequest{
 		Region:        region,
 		InstanceID:    res.ID,
 		Timeout:       scw.TimeDurationPtr(defaultRdbInstanceTimeout),
-		RetryInterval: DefaultWaitRetryInterval,
+		RetryInterval: &retryInterval,
 	}, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
+	// Configure Schedule Backup
+	// BackupScheduleFrequency and BackupScheduleRetention can only configure after instance creation
+	if !d.Get("disable_backup").(bool) {
+		updateReq := &rdb.UpdateInstanceRequest{
+			Region:     region,
+			InstanceID: res.ID,
+		}
+		updateReq.IsBackupScheduleDisabled = scw.BoolPtr(d.Get("disable_backup").(bool))
+		if backupScheduleFrequency, okFrequency := d.GetOk("backup_schedule_frequency"); okFrequency {
+			updateReq.BackupScheduleFrequency = scw.Uint32Ptr(uint32(backupScheduleFrequency.(int)))
+		}
+		if backupScheduleRetention, okRetention := d.GetOk("backup_schedule_retention"); okRetention {
+			updateReq.BackupScheduleRetention = scw.Uint32Ptr(uint32(backupScheduleRetention.(int)))
+		}
+
+		_, err = rdbAPI.UpdateInstance(updateReq, scw.WithContext(ctx))
+		if err != nil {
+			return diag.FromErr(err)
+		}
+	}
+	// Configure Instance settings
 	if settings, ok := d.GetOk("settings"); ok {
-		_, err := rdbAPI.SetInstanceSettings(&rdb.SetInstanceSettingsRequest{
+		_, err := rdbAPI.SetInstanceSettings(&rdbV1.SetInstanceSettingsRequest{
 			InstanceID: res.ID,
 			Region:     region,
 			Settings:   expandInstanceSettings(settings),
@@ -215,7 +279,7 @@ func resourceScalewayRdbInstanceRead(ctx context.Context, d *schema.ResourceData
 		return diag.FromErr(err)
 	}
 
-	res, err := rdbAPI.GetInstance(&rdb.GetInstanceRequest{
+	res, err := rdbAPI.GetInstance(&rdbV1.GetInstanceRequest{
 		Region:     region,
 		InstanceID: ID,
 	}, scw.WithContext(ctx))
@@ -232,7 +296,7 @@ func resourceScalewayRdbInstanceRead(ctx context.Context, d *schema.ResourceData
 	_ = d.Set("engine", res.Engine)
 	_ = d.Set("is_ha_cluster", res.IsHaCluster)
 	_ = d.Set("disable_backup", res.BackupSchedule.Disabled)
-	_ = d.Set("user_name", d.Get("user_name").(string)) // user name and
+	_ = d.Set("user_name", d.Get("user_name").(string)) // username and
 	_ = d.Set("password", d.Get("password").(string))   // password are immutable
 	_ = d.Set("tags", res.Tags)
 	if res.Endpoint != nil {
@@ -252,7 +316,7 @@ func resourceScalewayRdbInstanceRead(ctx context.Context, d *schema.ResourceData
 	_ = d.Set("project_id", res.ProjectID)
 
 	// set certificate
-	cert, err := rdbAPI.GetInstanceCertificate(&rdb.GetInstanceCertificateRequest{
+	cert, err := rdbAPI.GetInstanceCertificate(&rdbV1.GetInstanceCertificateRequest{
 		Region:     region,
 		InstanceID: ID,
 	})
@@ -268,6 +332,9 @@ func resourceScalewayRdbInstanceRead(ctx context.Context, d *schema.ResourceData
 	// set settings
 	_ = d.Set("settings", flattenInstanceSettings(res.Settings))
 
+	// set private_network
+	_ = d.Set("private_network", flattenInstancePrivateNetwork(res.Endpoints))
+
 	return nil
 }
 
@@ -277,7 +344,7 @@ func resourceScalewayRdbInstanceUpdate(ctx context.Context, d *schema.ResourceDa
 		return diag.FromErr(err)
 	}
 
-	req := &rdb.UpdateInstanceRequest{
+	req := &rdbV1.UpdateInstanceRequest{
 		Region:     region,
 		InstanceID: ID,
 	}
@@ -288,7 +355,12 @@ func resourceScalewayRdbInstanceUpdate(ctx context.Context, d *schema.ResourceDa
 	if d.HasChange("disable_backup") {
 		req.IsBackupScheduleDisabled = scw.BoolPtr(d.Get("disable_backup").(bool))
 	}
-
+	if d.HasChange("backup_schedule_frequency") {
+		req.BackupScheduleFrequency = scw.Uint32Ptr(uint32(d.Get("backup_schedule_frequency").(int)))
+	}
+	if d.HasChange("backup_schedule_retention") {
+		req.BackupScheduleRetention = scw.Uint32Ptr(uint32(d.Get("backup_schedule_retention").(int)))
+	}
 	if d.HasChange("tags") {
 		req.Tags = scw.StringsPtr(expandStrings(d.Get("tags")))
 	}
@@ -297,10 +369,9 @@ func resourceScalewayRdbInstanceUpdate(ctx context.Context, d *schema.ResourceDa
 	if err != nil {
 		return diag.FromErr(err)
 	}
-
 	// Change settings
 	if d.HasChange("settings") {
-		_, err := rdbAPI.SetInstanceSettings(&rdb.SetInstanceSettingsRequest{
+		_, err := rdbAPI.SetInstanceSettings(&rdbV1.SetInstanceSettingsRequest{
 			InstanceID: ID,
 			Region:     region,
 			Settings:   expandInstanceSettings(d.Get("settings")),
@@ -310,15 +381,15 @@ func resourceScalewayRdbInstanceUpdate(ctx context.Context, d *schema.ResourceDa
 		}
 	}
 
-	upgradeInstanceRequests := []rdb.UpgradeInstanceRequest(nil)
+	upgradeInstanceRequests := []rdbV1.UpgradeInstanceRequest(nil)
 	if d.HasChanges("volume_type", "volume_size_in_gb") {
-		volType := rdb.VolumeType(d.Get("volume_type").(string))
+		volType := rdbV1.VolumeType(d.Get("volume_type").(string))
 
 		switch volType {
-		case rdb.VolumeTypeBssd:
+		case rdbV1.VolumeTypeBssd:
 			if d.HasChange("volume_type") {
 				upgradeInstanceRequests = append(upgradeInstanceRequests,
-					rdb.UpgradeInstanceRequest{
+					rdbV1.UpgradeInstanceRequest{
 						Region:     region,
 						InstanceID: ID,
 						VolumeType: &volType,
@@ -337,20 +408,20 @@ func resourceScalewayRdbInstanceUpdate(ctx context.Context, d *schema.ResourceDa
 				}
 
 				upgradeInstanceRequests = append(upgradeInstanceRequests,
-					rdb.UpgradeInstanceRequest{
+					rdbV1.UpgradeInstanceRequest{
 						Region:     region,
 						InstanceID: ID,
 						VolumeSize: scw.Uint64Ptr(newSize * uint64(scw.GB)),
 					})
 			}
-		case rdb.VolumeTypeLssd:
+		case rdbV1.VolumeTypeLssd:
 			_, ok := d.GetOk("volume_size_in_gb")
 			if d.HasChange("volume_size_in_gb") && ok {
-				return diag.FromErr(fmt.Errorf("volume_size_in_gb should be used with volume_type %s only", rdb.VolumeTypeBssd.String()))
+				return diag.FromErr(fmt.Errorf("volume_size_in_gb should be used with volume_type %s only", rdbV1.VolumeTypeBssd.String()))
 			}
 			if d.HasChange("volume_type") {
 				upgradeInstanceRequests = append(upgradeInstanceRequests,
-					rdb.UpgradeInstanceRequest{
+					rdbV1.UpgradeInstanceRequest{
 						Region:     region,
 						InstanceID: ID,
 						VolumeType: &volType,
@@ -363,7 +434,7 @@ func resourceScalewayRdbInstanceUpdate(ctx context.Context, d *schema.ResourceDa
 
 	if d.HasChange("node_type") {
 		upgradeInstanceRequests = append(upgradeInstanceRequests,
-			rdb.UpgradeInstanceRequest{
+			rdbV1.UpgradeInstanceRequest{
 				Region:     region,
 				InstanceID: ID,
 				NodeType:   expandStringPtr(d.Get("node_type")),
@@ -372,7 +443,7 @@ func resourceScalewayRdbInstanceUpdate(ctx context.Context, d *schema.ResourceDa
 
 	if d.HasChange("is_ha_cluster") {
 		upgradeInstanceRequests = append(upgradeInstanceRequests,
-			rdb.UpgradeInstanceRequest{
+			rdbV1.UpgradeInstanceRequest{
 				Region:     region,
 				InstanceID: ID,
 				EnableHa:   scw.BoolPtr(d.Get("is_ha_cluster").(bool)),
@@ -384,11 +455,12 @@ func resourceScalewayRdbInstanceUpdate(ctx context.Context, d *schema.ResourceDa
 			return diag.FromErr(err)
 		}
 
-		_, err = rdbAPI.WaitForInstance(&rdb.WaitForInstanceRequest{
+		retryInterval := defaultWaitRDBRetryInterval
+		_, err = rdbAPI.WaitForInstance(&rdbV1.WaitForInstanceRequest{
 			Region:        region,
 			InstanceID:    ID,
 			Timeout:       scw.TimeDurationPtr(defaultInstanceServerWaitTimeout * 3), // upgrade takes some time
-			RetryInterval: DefaultWaitRetryInterval,
+			RetryInterval: &retryInterval,
 		}, scw.WithContext(ctx))
 		if err != nil {
 			return diag.FromErr(err)
@@ -399,7 +471,7 @@ func resourceScalewayRdbInstanceUpdate(ctx context.Context, d *schema.ResourceDa
 	}
 
 	if d.HasChange("password") {
-		req := &rdb.UpdateUserRequest{
+		req := &rdbV1.UpdateUserRequest{
 			Region:     region,
 			InstanceID: ID,
 			Name:       d.Get("user_name").(string),
@@ -421,19 +493,20 @@ func resourceScalewayRdbInstanceDelete(ctx context.Context, d *schema.ResourceDa
 		return diag.FromErr(err)
 	}
 
+	retryInterval := defaultWaitRDBRetryInterval
 	// We first wait in case the instance is in a transient state
-	_, err = rdbAPI.WaitForInstance(&rdb.WaitForInstanceRequest{
+	_, err = rdbAPI.WaitForInstance(&rdbV1.WaitForInstanceRequest{
 		InstanceID:    ID,
 		Region:        region,
 		Timeout:       scw.TimeDurationPtr(LbWaitForTimeout),
-		RetryInterval: DefaultWaitRetryInterval,
+		RetryInterval: &retryInterval,
 	}, scw.WithContext(ctx))
 
 	if err != nil && !is404Error(err) {
 		return diag.FromErr(err)
 	}
 
-	_, err = rdbAPI.DeleteInstance(&rdb.DeleteInstanceRequest{
+	_, err = rdbAPI.DeleteInstance(&rdbV1.DeleteInstanceRequest{
 		Region:     region,
 		InstanceID: ID,
 	}, scw.WithContext(ctx))
@@ -442,11 +515,11 @@ func resourceScalewayRdbInstanceDelete(ctx context.Context, d *schema.ResourceDa
 		return diag.FromErr(err)
 	}
 
-	_, err = rdbAPI.WaitForInstance(&rdb.WaitForInstanceRequest{
+	_, err = rdbAPI.WaitForInstance(&rdbV1.WaitForInstanceRequest{
 		InstanceID:    ID,
 		Region:        region,
 		Timeout:       scw.TimeDurationPtr(LbWaitForTimeout),
-		RetryInterval: DefaultWaitRetryInterval,
+		RetryInterval: &retryInterval,
 	}, scw.WithContext(ctx))
 
 	if err != nil && !is404Error(err) {

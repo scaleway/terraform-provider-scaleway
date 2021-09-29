@@ -1,0 +1,37 @@
+---
+version: 1
+interactions:
+- request:
+    body: '{"project_id":"63a66ec9-a385-4194-bc15-04aa6921274a","name":"test-rdb","engine":"PostgreSQL-11","user_name":"my_initial_user","password":"thiZ_is_v\u0026ry_s3cret","node_type":"db-dev-s","is_ha_cluster":false,"disable_backup":true,"tags":["terraform-test","scaleway_rdb_instance","volume","rdb_pn"],"init_settings":null,"volume_type":"bssd","volume_size":10000000000,"init_endpoints":[{"private_network":{"private_network_id":"c6ba76a5-d8f5-4abb-89d2-5b1b8cc5e40d","service_ip":"192.168.1.42/24"}}]}'
+    form: {}
+    headers:
+      Content-Type:
+      - application/json
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.17.1; darwin; amd64) terraform-provider/develop terraform/terraform-tests
+    url: https://api.scaleway.com/rdb/v1/regions/fr-par/instances
+    method: POST
+  response:
+    body: '{"id":"56078d31-0713-4bd0-8b8b-cf89c1fa9075","name":"test-rdb","organization_id":"63a66ec9-a385-4194-bc15-04aa6921274a","project_id":"63a66ec9-a385-4194-bc15-04aa6921274a","status":"provisioning","engine":"PostgreSQL-11","endpoint":null,"tags":["terraform-test","scaleway_rdb_instance","volume","rdb_pn"],"settings":[],"backup_schedule":{"frequency":24,"retention":7,"disabled":true},"is_ha_cluster":false,"read_replicas":[],"node_type":"db-dev-s","volume":{"type":"bssd","size":10000000000},"init_settings":[],"endpoints":[{"ip":"192.168.1.42/24","port":5432,"name":null,"id":"8375f856-15ec-4cab-97bf-d62fa731f61a","private_network":{"private_network_id":"c6ba76a5-d8f5-4abb-89d2-5b1b8cc5e40d"}}],"created_at":"2021-10-01T12:01:03.903781Z","region":"fr-par"}'
+    headers:
+      Content-Length:
+      - "759"
+      Content-Security-Policy:
+      - default-src 'none'; frame-ancestors 'none'
+      Content-Type:
+      - application/json
+      Date:
+      - Fri, 01 Oct 2021 12:01:04 GMT
+      Server:
+      - Scaleway API-Gateway
+      Strict-Transport-Security:
+      - max-age=63072000
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+      X-Request-Id:
+      - f2cd5a3b-c3fd-4826-ac8e-76a1baf08034
+    status: 200 OK
+    code: 200
+    duration: ""

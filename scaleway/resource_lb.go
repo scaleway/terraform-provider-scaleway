@@ -3,11 +3,16 @@ package scaleway
 import (
 	"context"
 	"strings"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/api/lb/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+)
+
+const (
+	DefaultWaitLBRetryInterval = 30 * time.Second
 )
 
 func resourceScalewayLb() *schema.Resource {
@@ -59,6 +64,12 @@ func resourceScalewayLb() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The load-balance public IP address",
+			},
+			"release_ip": {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Default:     false,
+				Description: "Release the IPs related to this load-balancer",
 			},
 			"region":          regionComputedSchema(),
 			"zone":            zoneSchema(),
@@ -132,13 +143,20 @@ func resourceScalewayLbRead(ctx context.Context, d *schema.ResourceData, meta in
 		return diag.FromErr(err)
 	}
 
+	var relaseIPValue bool
+	releaseIPAddress, releaseIPPExist := d.GetOk("release_ip")
+	if releaseIPPExist {
+		relaseIPValue = *expandBoolPtr(releaseIPAddress)
+	}
+
+	_ = d.Set("release_ip", relaseIPValue)
 	_ = d.Set("name", res.Name)
 	_ = d.Set("zone", zone.String())
 	_ = d.Set("region", region.String())
 	_ = d.Set("organization_id", res.OrganizationID)
 	_ = d.Set("project_id", res.ProjectID)
 	_ = d.Set("tags", res.Tags)
-	// For now API return lowercase lb type. This should be fix in a near future on the API side
+	// For now API return lowercase lb type. This should be fixed in a near future on the API side
 	_ = d.Set("type", strings.ToUpper(res.Type))
 	_ = d.Set("ip_id", newZonedIDString(zone, res.IP[0].ID))
 	_ = d.Set("ip_address", res.IP[0].IPAddress)
@@ -160,6 +178,17 @@ func resourceScalewayLbUpdate(ctx context.Context, d *schema.ResourceData, meta 
 			Tags: expandStrings(d.Get("tags")),
 		}
 
+		_, err = lbAPI.WaitForLb(&lb.ZonedAPIWaitForLBRequest{
+			LBID:          ID,
+			Zone:          zone,
+			Timeout:       scw.TimeDurationPtr(LbWaitForTimeout),
+			RetryInterval: DefaultWaitRetryInterval,
+		}, scw.WithContext(ctx))
+
+		if err != nil && !is404Error(err) {
+			return diag.FromErr(err)
+		}
+
 		_, err = lbAPI.UpdateLB(req, scw.WithContext(ctx))
 		if err != nil {
 			return diag.FromErr(err)
@@ -175,21 +204,27 @@ func resourceScalewayLbDelete(ctx context.Context, d *schema.ResourceData, meta 
 		return diag.FromErr(err)
 	}
 
-	err = lbAPI.DeleteLB(&lb.ZonedAPIDeleteLBRequest{
-		Zone:      zone,
-		LBID:      ID,
-		ReleaseIP: false,
+	_, err = lbAPI.WaitForLb(&lb.ZonedAPIWaitForLBRequest{
+		LBID:          ID,
+		Zone:          zone,
+		Timeout:       scw.TimeDurationPtr(LbWaitForTimeout),
+		RetryInterval: DefaultWaitRetryInterval,
 	}, scw.WithContext(ctx))
 
 	if err != nil && !is404Error(err) {
 		return diag.FromErr(err)
 	}
 
-	_, err = lbAPI.WaitForLb(&lb.ZonedAPIWaitForLBRequest{
-		LBID:          ID,
-		Zone:          zone,
-		Timeout:       scw.TimeDurationPtr(LbWaitForTimeout),
-		RetryInterval: DefaultWaitRetryInterval,
+	var releaseAddressValue bool
+	releaseIPAddress, releaseIPPExist := d.GetOk("release_ip")
+	if releaseIPPExist {
+		releaseAddressValue = *expandBoolPtr(releaseIPAddress)
+	}
+
+	err = lbAPI.DeleteLB(&lb.ZonedAPIDeleteLBRequest{
+		Zone:      zone,
+		LBID:      ID,
+		ReleaseIP: releaseAddressValue,
 	}, scw.WithContext(ctx))
 
 	if err != nil && !is404Error(err) {
