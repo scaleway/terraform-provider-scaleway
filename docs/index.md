@@ -191,7 +191,7 @@ profiles:
     secret_key: xxxxxxxx-xxx-xxxx-xxxx-xxxxxxxxxxx
     default_organization_id: xxxxxxxx-xxx-xxxx-xxxx-xxxxxxxxxxx 
     default_project_id: xxxxxxxx-xxx-xxxx-xxxx-xxxxxxxxxxx
-    default_zone: fr-par-1
+    default_zone: fr-par-2
     default_region: fr-par
     api_url: https://api.scaleway.com
     insecure: false
@@ -201,7 +201,12 @@ You can invoke and use this profile in the provider declaration:
 
 ```hcl
 provider "scaleway" {
+  alias   = "p2"
   profile = "myProfile"
+}
+
+resource "scaleway_instance_ip" "server_ip" {
+  provider = scaleway.p2
 }
 ```
 
