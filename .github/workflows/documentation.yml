@@ -11,7 +11,7 @@ on:
       - docs/**
 
 env:
-  GO_VERSION: "1.14"
+  GO_VERSION: "1.17"
   GO111MODULE: on
 
 jobs:
@@ -47,5 +47,5 @@ jobs:
         with:
           path: ~/go/pkg/mod
           key: ${{ runner.os }}-go-pkg-mod-${{ hashFiles('go.sum') }}
-      - run: go install github.com/client9/misspell/cmd/misspell
+      - run: go install github.com/client9/misspell/cmd/misspell@latest
       - run: misspell -error -source text docs/
