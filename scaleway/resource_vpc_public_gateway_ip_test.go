@@ -58,6 +58,10 @@ func TestAccScalewayVPCPublicGatewayIP_Basic(t *testing.T) {
 				`,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayVPCPublicGatewayIPExists(tt, "scaleway_vpc_public_gateway_ip.main"),
+					resource.TestCheckResourceAttrSet("scaleway_vpc_public_gateway_ip.main", "reverse"),
+					resource.TestCheckResourceAttrSet("scaleway_vpc_public_gateway_ip.main", "address"),
+					resource.TestCheckResourceAttrSet("scaleway_vpc_public_gateway_ip.main", "created_at"),
+					resource.TestCheckResourceAttrSet("scaleway_vpc_public_gateway_ip.main", "updated_at"),
 				),
 			},
 			{
@@ -72,6 +76,25 @@ func TestAccScalewayVPCPublicGatewayIP_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_vpc_public_gateway_ip.main", "tags.0", "tag0"),
 					resource.TestCheckResourceAttr("scaleway_vpc_public_gateway_ip.main", "tags.1", "tag1"),
 					resource.TestCheckResourceAttr("scaleway_vpc_public_gateway_ip.main", "reverse", "example.com"),
+					resource.TestCheckResourceAttrSet("scaleway_vpc_public_gateway_ip.main", "address"),
+					resource.TestCheckResourceAttrSet("scaleway_vpc_public_gateway_ip.main", "created_at"),
+					resource.TestCheckResourceAttrSet("scaleway_vpc_public_gateway_ip.main", "updated_at"),
+				),
+			},
+			{
+				Config: `
+					resource scaleway_vpc_public_gateway_ip main {
+						tags = ["tag2", "tag3"]
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayVPCPublicGatewayIPExists(tt, "scaleway_vpc_public_gateway_ip.main"),
+					resource.TestCheckResourceAttr("scaleway_vpc_public_gateway_ip.main", "tags.0", "tag2"),
+					resource.TestCheckResourceAttr("scaleway_vpc_public_gateway_ip.main", "tags.1", "tag3"),
+					resource.TestCheckResourceAttrSet("scaleway_vpc_public_gateway_ip.main", "reverse"),
+					resource.TestCheckResourceAttrSet("scaleway_vpc_public_gateway_ip.main", "address"),
+					resource.TestCheckResourceAttrSet("scaleway_vpc_public_gateway_ip.main", "created_at"),
+					resource.TestCheckResourceAttrSet("scaleway_vpc_public_gateway_ip.main", "updated_at"),
 				),
 			},
 		},
