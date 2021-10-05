@@ -32,6 +32,13 @@ func resourceScalewayK8SCluster() *schema.Resource {
 				Required:    true,
 				Description: "The name of the cluster",
 			},
+			"type": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				ForceNew:    true,
+				Computed:    true,
+				Description: "The type of cluster",
+			},
 			"description": {
 				Type:        schema.TypeString,
 				Optional:    true,
@@ -53,6 +60,7 @@ func resourceScalewayK8SCluster() *schema.Resource {
 					k8s.CNICalico.String(),
 					k8s.CNIFlannel.String(),
 					k8s.CNIWeave.String(),
+					k8s.CNIKilo.String(),
 				}, false),
 			},
 			"tags": {
@@ -228,10 +236,16 @@ func resourceScalewayK8SClusterCreate(ctx context.Context, d *schema.ResourceDat
 		description = ""
 	}
 
+	clusterType, ok := d.GetOk("type")
+	if !ok {
+		clusterType = ""
+	}
+
 	req := &k8s.CreateClusterRequest{
 		Region:            region,
 		ProjectID:         expandStringPtr(d.Get("project_id")),
 		Name:              expandOrGenerateString(d.Get("name"), "cluster"),
+		Type:              clusterType.(string),
 		Description:       description.(string),
 		Cni:               k8s.CNI(d.Get("cni").(string)),
 		Tags:              expandStrings(d.Get("tags")),
@@ -365,7 +379,7 @@ func resourceScalewayK8SClusterCreate(ctx context.Context, d *schema.ResourceDat
 		return diag.FromErr(err)
 	}
 
-	err = waitK8SCluster(ctx, k8sAPI, region, res.ID, k8s.ClusterStatusPoolRequired)
+	err = waitK8SCluster(ctx, k8sAPI, region, res.ID, k8s.ClusterStatusReady, k8s.ClusterStatusPoolRequired)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -398,6 +412,7 @@ func resourceScalewayK8SClusterRead(ctx context.Context, d *schema.ResourceData,
 
 	_ = d.Set("region", string(region))
 	_ = d.Set("name", response.Name)
+	_ = d.Set("type", response.Type)
 	_ = d.Set("organization_id", response.OrganizationID)
 	_ = d.Set("project_id", response.ProjectID)
 	_ = d.Set("description", response.Description)
