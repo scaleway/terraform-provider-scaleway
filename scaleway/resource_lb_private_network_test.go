@@ -2,12 +2,18 @@ package scaleway
 
 import (
 	"fmt"
-	"testing"
-
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/scaleway/scaleway-sdk-go/api/lb/v1"
+	"testing"
 )
+
+func init() {
+	resource.AddTestSweepers("scaleway_lb_private_network", &resource.Sweeper{
+		Name:         "scaleway_lb_private_network",
+		Dependencies: []string{"scaleway_lb", "scaleway_lb_ip", "scaleway_vpc"},
+	})
+}
 
 func TestAccScalewayLbPrivateNetwork_Basic(t *testing.T) {
 	tt := NewTestTools(t)
@@ -19,19 +25,22 @@ func TestAccScalewayLbPrivateNetwork_Basic(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: `
+					resource scaleway_vpc_private_network pn01 {
+						name = "test-lb-pn"
+						depends_on = [scaleway_lb_ip.ip01, scaleway_lb.lb01]
+					}
 					resource scaleway_lb_ip ip01 {}
 					resource scaleway_lb lb01 {
 						ip_id = scaleway_lb_ip.ip01.id
 						name = "test-lb"
 						type = "lb-s"
 					}
-					resource scaleway_vpc_private_network pn01 {
-						name = "test-pn"
-					}
+
 					resource scaleway_lb_private_network lb01pn01 {
 						lb_id = scaleway_lb.lb01.id
 						private_network_id = scaleway_vpc_private_network.pn01.id
 						static_config = ["172.16.0.100", "172.16.0.101"]
+						depends_on = [scaleway_lb_ip.ip01, scaleway_lb.lb01, scaleway_vpc_private_network.pn01]
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
@@ -46,15 +55,18 @@ func TestAccScalewayLbPrivateNetwork_Basic(t *testing.T) {
 			},
 			{
 				Config: `
+					resource scaleway_vpc_private_network pn01 {
+						name = "test-lb-pn"
+					}
+
 					resource scaleway_lb_ip ip01 {}
+
 					resource scaleway_lb lb01 {
 						ip_id = scaleway_lb_ip.ip01.id
 						name = "test-lb"
 						type = "lb-s"
 					}
-					resource scaleway_vpc_private_network pn01 {
-						name = "test-pn"
-					}
+			
 					resource scaleway_lb_private_network lb01pn01 {
 						lb_id = scaleway_lb.lb01.id
 						private_network_id = scaleway_vpc_private_network.pn01.id
@@ -108,7 +120,6 @@ func testAccCheckScalewayLbPrivateNetworkExists(tt *TestTools, n string) resourc
 		if !ok {
 			return fmt.Errorf("resource not found: %s", n)
 		}
-
 		pn, err := getLbPrivateNetwork(tt, rs)
 		if err != nil {
 			return err
@@ -124,7 +135,7 @@ func testAccCheckScalewayLbPrivateNetworkExists(tt *TestTools, n string) resourc
 func testAccCheckScalewayLbPrivateNetworkDestroy(tt *TestTools) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		for _, rs := range state.RootModule().Resources {
-			if rs.Type != "scaleway_vpc_private_network" {
+			if rs.Type != "scaleway_lb_private_network" {
 				continue
 			}
 

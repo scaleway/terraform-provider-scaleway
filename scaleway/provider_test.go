@@ -84,7 +84,7 @@ type TestTools struct {
 }
 
 func NewTestTools(t *testing.T) *TestTools {
-	// Create an http client with recording capabilities
+	// Create a http client with recording capabilities
 	httpClient, cleanup, err := getHTTPRecoder(t, *UpdateCassettes)
 	require.NoError(t, err)
 

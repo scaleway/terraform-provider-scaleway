@@ -136,6 +136,7 @@ func resourceScalewayVPCPrivateNetworkDelete(ctx context.Context, d *schema.Reso
 		Zone:             zone,
 	}, scw.WithContext(ctx))
 
+
 	if err != nil && !is404Error(err) {
 		return diag.FromErr(err)
 	}
