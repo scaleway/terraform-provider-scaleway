@@ -183,11 +183,12 @@ func resourceScalewayVPCPublicGatewayDelete(ctx context.Context, d *schema.Resou
 		return diag.FromErr(err)
 	}
 
+	retryInterval := 30 * time.Second
 	_, err = vpcgwAPI.WaitForGateway(&vpcgw.WaitForGatewayRequest{
 		GatewayID:     ID,
 		Zone:          zone,
 		Timeout:       scw.TimeDurationPtr(gatewayWaitForTimeout),
-		RetryInterval: DefaultWaitRetryInterval,
+		RetryInterval: &retryInterval,
 	}, scw.WithContext(ctx))
 
 	if err != nil && !is404Error(err) {
