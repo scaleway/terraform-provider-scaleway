@@ -34,15 +34,16 @@ func resourceScalewayVPCPublicGatewayIP() *schema.Resource {
 					Type: schema.TypeString,
 				},
 			},
-			"reverse": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "reverse domain name for the IP address",
-			},
 			"project_id": projectIDSchema(),
 			"zone":       zoneSchema(),
 			// Computed elements
 			"organization_id": organizationIDSchema(),
+			"reverse": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Computed:    true,
+				Description: "reverse domain name for the IP address",
+			},
 			"created_at": {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -74,6 +75,20 @@ func resourceScalewayVPCPublicGatewayIPCreate(ctx context.Context, d *schema.Res
 		return diag.FromErr(err)
 	}
 
+	reverse := d.Get("reverse")
+	if len(reverse.(string)) > 0 {
+		updateRequest := &vpcgw.UpdateIPRequest{
+			IPID:    res.ID,
+			Zone:    zone,
+			Tags:    scw.StringsPtr(expandStrings(d.Get("tags"))),
+			Reverse: expandStringPtr(reverse.(string)),
+		}
+		_, err = vpcgwAPI.UpdateIP(updateRequest, scw.WithContext(ctx))
+		if err != nil {
+			return diag.FromErr(err)
+		}
+	}
+
 	d.SetId(newZonedIDString(zone, res.ID))
 
 	return resourceScalewayVPCPublicGatewayIPRead(ctx, d, meta)
@@ -98,6 +113,7 @@ func resourceScalewayVPCPublicGatewayIPRead(ctx context.Context, d *schema.Resou
 	}
 
 	_ = d.Set("organization_id", ip.OrganizationID)
+	_ = d.Set("address", ip.Address.String())
 	_ = d.Set("project_id", ip.ProjectID)
 	_ = d.Set("created_at", ip.CreatedAt.Format(time.RFC3339))
 	_ = d.Set("updated_at", ip.UpdatedAt.Format(time.RFC3339))
