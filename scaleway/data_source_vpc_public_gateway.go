@@ -38,7 +38,7 @@ func dataSourceScalewayVPCPublicGatewayRead(ctx context.Context, d *schema.Resou
 		return diag.FromErr(err)
 	}
 
-		publicGatewayID, ok := d.GetOk("public_gateway_id")
+	publicGatewayID, ok := d.GetOk("public_gateway_id")
 	if !ok {
 		res, err := vpcgwAPI.ListGateways(
 			&vpcgw.ListGatewaysRequest{

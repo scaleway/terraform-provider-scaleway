@@ -6,12 +6,14 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	vpcgw "github.com/scaleway/scaleway-sdk-go/api/vpcgw/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 )
 
 const (
 	retryIntervalVPCPublicGatewayNetwork = 30 * time.Second
+	cleanUpDHCP                          = true
 )
 
 func resourceScalewayVPCPublicGatewayNetwork() *schema.Resource {
@@ -35,7 +37,13 @@ func resourceScalewayVPCPublicGatewayNetwork() *schema.Resource {
 				Type:         schema.TypeString,
 				Required:     true,
 				ValidateFunc: validationUUIDorUUIDWithLocality(),
-				Description:  "The ID of the private network connect to",
+				Description:  "The ID of the private network where connect to",
+			},
+			"dhcp_id": {
+				Type:         schema.TypeString,
+				Optional:     true,
+				ValidateFunc: validationUUIDorUUIDWithLocality(),
+				Description:  "The ID of the dhcp network where connect to",
 			},
 			"enable_masquerade": {
 				Type:        schema.TypeBool,
@@ -43,17 +51,20 @@ func resourceScalewayVPCPublicGatewayNetwork() *schema.Resource {
 				Default:     false,
 				Description: "Enable masquerade on this network",
 			},
-			"dhcp_id": {
-				Type:         schema.TypeString,
-				Required:     true,
-				ValidateFunc: validationUUIDorUUIDWithLocality(),
-				Description:  "The ID of the dhcp network where connect to",
+			"enable_dhcp": {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Default:     true,
+				Description: "Enable DHCP on this network",
 			},
-			
-			"project_id": projectIDSchema(),
-			"zone":       zoneSchema(),
 			// Computed elements
-			"organization_id": organizationIDSchema(),
+			"static_address": {
+				Type:         schema.TypeString,
+				Description:  "The static IP address in CIDR on this network",
+				Optional:     true,
+				Computed:     true,
+				ValidateFunc: validation.IsCIDR,
+			},
 			"created_at": {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -64,39 +75,58 @@ func resourceScalewayVPCPublicGatewayNetwork() *schema.Resource {
 				Computed:    true,
 				Description: "The date and time of the last update of the public gateway",
 			},
+			"zone": zoneSchema(),
 		},
 	}
 }
 
 func resourceScalewayVPCPublicGatewayNetworkCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	vpcgwAPI, zone, err := vpcgwAPIWithZone(d, meta)
+	vpcgwNetworkAPI, zone, err := vpcgwAPIWithZone(d, meta)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	dhcpID := expandZonedID(d.Get("dhcp_id").(string)).ID
-	staticIPNet := expandIPNet(d.Get("static_address").(string))
+	gatewayID := expandZonedID(d.Get("gateway_id").(string)).ID
 	req := &vpcgw.CreateGatewayNetworkRequest{
-		GatewayID:        expandZonedID(d.Get("gateway_id").(string)).ID,
+		Zone:             zone,
+		GatewayID:        gatewayID,
 		PrivateNetworkID: expandZonedID(d.Get("private_network_id").(string)).ID,
 		EnableMasquerade: *expandBoolPtr(d.Get("enable_masquerade")),
 		DHCPID:           &dhcpID,
-		Address:          &staticIPNet,
-		Zone:             zone,
 		EnableDHCP:       expandBoolPtr(d.Get("enable_dhcp")),
 	}
 
-	res, err := vpcgwAPI.CreateGatewayNetwork(req, scw.WithContext(ctx))
+	staticAddress, staticAddressExist := d.GetOk("static_address")
+	if staticAddressExist {
+		address := expandIPNet(staticAddress.(string))
+		req.Address = &address
+	}
+
+	retryInterval := retryIntervalVPCPublicGatewayNetwork
+	//check gateway is in stable state.
+	_, err = vpcgwNetworkAPI.WaitForGateway(&vpcgw.WaitForGatewayRequest{
+		GatewayID:     gatewayID,
+		Zone:          zone,
+		Timeout:       scw.TimeDurationPtr(gatewayWaitForTimeout),
+		RetryInterval: &retryInterval,
+	}, scw.WithContext(ctx))
+
+	if err != nil && !is404Error(err) {
+		return diag.FromErr(err)
+	}
+	res, err := vpcgwNetworkAPI.CreateGatewayNetwork(req, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	d.SetId(newZonedIDString(zone, res.ID))
-
-	_, err = vpcgwAPI.WaitForGatewayNetwork(&vpcgw.WaitForGatewayNetworkRequest{
-		Zone:          zone,
-		Timeout:       scw.TimeDurationPtr(defaultVPCGatewayTimeout),
-		RetryInterval: DefaultWaitRetryInterval,
+	// set default interval
+	_, err = vpcgwNetworkAPI.WaitForGatewayNetwork(&vpcgw.WaitForGatewayNetworkRequest{
+		GatewayNetworkID: res.ID,
+		Timeout:          scw.TimeDurationPtr(defaultVPCGatewayTimeout),
+		RetryInterval:    &retryInterval,
+		Zone:             zone,
 	}, scw.WithContext(ctx))
 	// check err waiting process
 	if err != nil {
@@ -107,12 +137,12 @@ func resourceScalewayVPCPublicGatewayNetworkCreate(ctx context.Context, d *schem
 }
 
 func resourceScalewayVPCPublicGatewayNetworkRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	vpcgwAPI, zone, ID, err := vpcgwAPIWithZoneAndID(meta, d.Id())
+	vpcgwNetworkAPI, zone, ID, err := vpcgwAPIWithZoneAndID(meta, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	gatewayNetwork, err := vpcgwAPI.GetGatewayNetwork(&vpcgw.GetGatewayNetworkRequest{
+	gatewayNetwork, err := vpcgwNetworkAPI.GetGatewayNetwork(&vpcgw.GetGatewayNetworkRequest{
 		GatewayNetworkID: ID,
 		Zone:             zone,
 	}, scw.WithContext(ctx))
@@ -124,15 +154,25 @@ func resourceScalewayVPCPublicGatewayNetworkRead(ctx context.Context, d *schema.
 		return diag.FromErr(err)
 	}
 
-	_ = d.Set("gateway_id", gatewayNetwork.GatewayID)
-	_ = d.Set("private_network_id", gatewayNetwork.PrivateNetworkID)
-	_ = d.Set("mac_address", gatewayNetwork.MacAddress)
+	if dhcp := gatewayNetwork.DHCP; dhcp != nil {
+		_ = d.Set("dhcp_id", newZonedID(zone, dhcp.ID).String())
+	}
+
+	if staticAddress := gatewayNetwork.Address; staticAddress != nil {
+		_ = d.Set("static_address", flattenIPNet(*staticAddress))
+	}
+
+	if macAddress := gatewayNetwork.MacAddress; macAddress != nil {
+		_ = d.Set("static_address", *macAddress)
+	}
+
+	_ = d.Set("gateway_id", newZonedID(zone, gatewayNetwork.GatewayID).String())
+	_ = d.Set("private_network_id", newZonedID(zone, gatewayNetwork.PrivateNetworkID).String())
 	_ = d.Set("enable_masquerade", gatewayNetwork.EnableMasquerade)
 	_ = d.Set("enable_dhcp", gatewayNetwork.EnableDHCP)
-	_ = d.Set("static_address", gatewayNetwork.Address)
 	_ = d.Set("created_at", gatewayNetwork.CreatedAt.Format(time.RFC3339))
 	_ = d.Set("updated_at", gatewayNetwork.UpdatedAt.Format(time.RFC3339))
-	_ = d.Set("zone", zone)
+	_ = d.Set("zone", zone.String())
 
 	return nil
 }
@@ -170,22 +210,22 @@ func resourceScalewayVPCPublicGatewayNetworkDelete(ctx context.Context, d *schem
 		return diag.FromErr(err)
 	}
 
-	err = vpcgwAPI.DeleteGatewayNetwork(&vpcgw.DeleteGatewayNetworkRequest{
-		GatewayNetworkID: ID,
-		Zone:             zone,
-		CleanupDHCP:      *expandBoolPtr(d.Get("cleanup_dhcp")),
-	}, scw.WithContext(ctx))
-
-	if err != nil && !is404Error(err) {
-		return diag.FromErr(err)
-	}
-
-	retryInterval := retryIntervalVPCPublicGatewayNetwork
+	// check if network is a stable process
+	defaultInterval := retryIntervalVPCPublicGatewayNetwork
 	_, err = vpcgwAPI.WaitForGatewayNetwork(&vpcgw.WaitForGatewayNetworkRequest{
 		GatewayNetworkID: ID,
 		Zone:             zone,
-		Timeout:          scw.TimeDurationPtr(gatewayWaitForTimeout),
-		RetryInterval:    &retryInterval,
+		RetryInterval:    &defaultInterval,
+	})
+
+	if err != nil {
+		diag.FromErr(err)
+	}
+
+	err = vpcgwAPI.DeleteGatewayNetwork(&vpcgw.DeleteGatewayNetworkRequest{
+		GatewayNetworkID: ID,
+		Zone:             zone,
+		CleanupDHCP:      cleanUpDHCP,
 	}, scw.WithContext(ctx))
 
 	if err != nil && !is404Error(err) {
