@@ -86,14 +86,12 @@ func resourceScalewayVPCPublicGatewayNetworkCreate(ctx context.Context, d *schem
 		return diag.FromErr(err)
 	}
 
-	dhcpID := expandZonedID(d.Get("dhcp_id").(string)).ID
 	gatewayID := expandZonedID(d.Get("gateway_id").(string)).ID
 	req := &vpcgw.CreateGatewayNetworkRequest{
 		Zone:             zone,
 		GatewayID:        gatewayID,
 		PrivateNetworkID: expandZonedID(d.Get("private_network_id").(string)).ID,
 		EnableMasquerade: *expandBoolPtr(d.Get("enable_masquerade")),
-		DHCPID:           &dhcpID,
 		EnableDHCP:       expandBoolPtr(d.Get("enable_dhcp")),
 	}
 
@@ -101,6 +99,12 @@ func resourceScalewayVPCPublicGatewayNetworkCreate(ctx context.Context, d *schem
 	if staticAddressExist {
 		address := expandIPNet(staticAddress.(string))
 		req.Address = &address
+	}
+
+	dhcpID, dhcpExist := d.GetOk("dhcp_id")
+	if dhcpExist {
+		dhcpZoned := expandZonedID(dhcpID.(string))
+		req.DHCPID = &dhcpZoned.ID
 	}
 
 	retryInterval := retryIntervalVPCPublicGatewayNetwork
@@ -163,7 +167,7 @@ func resourceScalewayVPCPublicGatewayNetworkRead(ctx context.Context, d *schema.
 	}
 
 	if macAddress := gatewayNetwork.MacAddress; macAddress != nil {
-		_ = d.Set("static_address", *macAddress)
+		_ = d.Set("static_address", flattenStringPtr(macAddress).(string))
 	}
 
 	_ = d.Set("gateway_id", newZonedID(zone, gatewayNetwork.GatewayID).String())
@@ -213,17 +217,23 @@ func resourceScalewayVPCPublicGatewayNetworkDelete(ctx context.Context, d *schem
 		return diag.FromErr(err)
 	}
 
-	// check if network is a stable process
 	defaultInterval := retryIntervalVPCPublicGatewayNetwork
-	_, err = vpcgwAPI.WaitForGatewayNetwork(&vpcgw.WaitForGatewayNetworkRequest{
+	// check if network is a stable process
+	gwNetwork, err := vpcgwAPI.WaitForGatewayNetwork(&vpcgw.WaitForGatewayNetworkRequest{
 		GatewayNetworkID: ID,
 		Zone:             zone,
 		RetryInterval:    &defaultInterval,
 	})
-
 	if err != nil {
 		diag.FromErr(err)
 	}
+	//check gateway is in stable state.
+	_, err = vpcgwAPI.WaitForGateway(&vpcgw.WaitForGatewayRequest{
+		GatewayID:     gwNetwork.GatewayID,
+		Zone:          zone,
+		Timeout:       scw.TimeDurationPtr(gatewayWaitForTimeout),
+		RetryInterval: &defaultInterval,
+	}, scw.WithContext(ctx))
 
 	err = vpcgwAPI.DeleteGatewayNetwork(&vpcgw.DeleteGatewayNetworkRequest{
 		GatewayNetworkID: ID,

@@ -59,12 +59,65 @@ func TestAccScalewayVPCPublicNetwork_Basic(t *testing.T) {
 					resource scaleway_vpc_private_network pn01 {
 						name = "pn_test_network"
 					}
-
+			
 					resource scaleway_vpc_public_gateway_ip gw01 {
 					}
-
+			
 					resource scaleway_vpc_public_gateway_dhcp dhcp01 {
 						subnet = "192.168.1.0/24"
+					}
+			
+					resource scaleway_vpc_public_gateway pg01 {
+						name = "foobar"
+						type = "VPC-GW-S"
+						ip_id = scaleway_vpc_public_gateway_ip.gw01.id
+					}
+			
+					resource scaleway_vpc_public_gateway_network main {
+					    gateway_id = scaleway_vpc_public_gateway.pg01.id
+					    private_network_id = scaleway_vpc_private_network.pn01.id
+					    dhcp_id = scaleway_vpc_public_gateway_dhcp.dhcp01.id
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayVPCPublicGatewayNetworkExists(tt, "scaleway_vpc_public_gateway_network.main"),
+					resource.TestCheckResourceAttrSet("scaleway_vpc_public_gateway_network.main", "gateway_id"),
+				),
+			},
+			{
+				Config: `
+					resource scaleway_vpc_private_network pn01 {
+						name = "pn_test_network"
+					}
+			
+					resource scaleway_vpc_public_gateway_ip gw01 {
+					}
+			
+					resource scaleway_vpc_public_gateway pg01 {
+						name = "foobar"
+						type = "VPC-GW-S"
+						ip_id = scaleway_vpc_public_gateway_ip.gw01.id
+					}
+			
+					resource scaleway_vpc_public_gateway_network main {
+					    gateway_id = scaleway_vpc_public_gateway.pg01.id
+					    private_network_id = scaleway_vpc_private_network.pn01.id
+						enable_dhcp = false
+						enable_masquerade = true
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayVPCPublicGatewayNetworkExists(tt, "scaleway_vpc_public_gateway_network.main"),
+					resource.TestCheckResourceAttrSet("scaleway_vpc_public_gateway_network.main", "gateway_id"),
+				),
+			},
+			{
+				Config: `
+					resource scaleway_vpc_private_network pn01 {
+						name = "pn_test_network"
+					}
+
+					resource scaleway_vpc_public_gateway_ip gw01 {
 					}
 
 					resource scaleway_vpc_public_gateway pg01 {
@@ -76,7 +129,9 @@ func TestAccScalewayVPCPublicNetwork_Basic(t *testing.T) {
 					resource scaleway_vpc_public_gateway_network main {
 					    gateway_id = scaleway_vpc_public_gateway.pg01.id
 					    private_network_id = scaleway_vpc_private_network.pn01.id
-					    dhcp_id = scaleway_vpc_public_gateway_dhcp.dhcp01.id
+						enable_dhcp = false
+						enable_masquerade = true
+						static_address = "192.168.1.42/24"
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
