@@ -45,10 +45,10 @@ func TestAccScalewayRdbACL_Basic(t *testing.T) {
 						}
 					}`, instanceName),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("scaleway_rdb_acl.main", "acl_rules.0.ip", "1.2.3.4/32"),
-					resource.TestCheckResourceAttr("scaleway_rdb_acl.main", "acl_rules.0.description", "foo"),
-					resource.TestCheckResourceAttr("scaleway_rdb_acl.main", "acl_rules.1.ip", "4.5.6.7/32"),
-					resource.TestCheckResourceAttr("scaleway_rdb_acl.main", "acl_rules.1.description", "bar"),
+					resource.TestCheckResourceAttr("scaleway_rdb_acl.main", "acl_rules.0.ip", "4.5.6.7/32"),
+					resource.TestCheckResourceAttr("scaleway_rdb_acl.main", "acl_rules.0.description", "bar"),
+					resource.TestCheckResourceAttr("scaleway_rdb_acl.main", "acl_rules.1.ip", "1.2.3.4/32"),
+					resource.TestCheckResourceAttr("scaleway_rdb_acl.main", "acl_rules.1.description", "foo"),
 				),
 			},
 			{
@@ -73,10 +73,10 @@ func TestAccScalewayRdbACL_Basic(t *testing.T) {
 						}
 					}`, instanceName),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("scaleway_rdb_acl.main", "acl_rules.0.ip", "1.2.3.4/32"),
-					resource.TestCheckResourceAttr("scaleway_rdb_acl.main", "acl_rules.0.description", "foo"),
-					resource.TestCheckResourceAttr("scaleway_rdb_acl.main", "acl_rules.1.ip", "9.0.0.0/16"),
-					resource.TestCheckResourceAttr("scaleway_rdb_acl.main", "acl_rules.1.description", "baz"),
+					resource.TestCheckResourceAttr("scaleway_rdb_acl.main", "acl_rules.0.ip", "9.0.0.0/16"),
+					resource.TestCheckResourceAttr("scaleway_rdb_acl.main", "acl_rules.0.description", "baz"),
+					resource.TestCheckResourceAttr("scaleway_rdb_acl.main", "acl_rules.1.ip", "1.2.3.4/32"),
+					resource.TestCheckResourceAttr("scaleway_rdb_acl.main", "acl_rules.1.description", "foo"),
 				),
 			},
 		},
