@@ -32,7 +32,7 @@ func resourceScalewayRdbACL() *schema.Resource {
 				Description:  "Instance on which the ACL is applied",
 			},
 			"acl_rules": {
-				Type:        schema.TypeList,
+				Type:        schema.TypeSet,
 				Required:    true,
 				Description: "List of ACL rules to apply",
 				Elem: &schema.Resource{
