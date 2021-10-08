@@ -32,7 +32,7 @@ func resourceScalewayRdbACL() *schema.Resource {
 				Description:  "Instance on which the ACL is applied",
 			},
 			"acl_rules": {
-				Type:        schema.TypeList,
+				Type:        schema.TypeSet,
 				Required:    true,
 				Description: "List of ACL rules to apply",
 				Elem: &schema.Resource{
@@ -72,7 +72,7 @@ func resourceScalewayRdbACLCreate(ctx context.Context, d *schema.ResourceData, m
 	createReq := &rdb.SetInstanceACLRulesRequest{
 		Region:     region,
 		InstanceID: ID,
-		Rules:      rdbACLExpand(d.Get("acl_rules")),
+		Rules:      rdbACLExpand(d.Get("acl_rules").(*schema.Set)),
 	}
 
 	_, err = rdbAPI.SetInstanceACLRules(createReq, scw.WithContext(ctx))
@@ -127,7 +127,7 @@ func resourceScalewayRdbACLUpdate(ctx context.Context, d *schema.ResourceData, m
 		req := &rdb.SetInstanceACLRulesRequest{
 			Region:     region,
 			InstanceID: ID,
-			Rules:      rdbACLExpand(d.Get("acl_rules")),
+			Rules:      rdbACLExpand(d.Get("acl_rules").(*schema.Set)),
 		}
 
 		_, err = rdbAPI.SetInstanceACLRules(req, scw.WithContext(ctx))
@@ -145,7 +145,7 @@ func resourceScalewayRdbACLDelete(ctx context.Context, d *schema.ResourceData, m
 		return diag.FromErr(err)
 	}
 	aclruleips := make([]string, 0)
-	for _, acl := range rdbACLExpand(d.Get("acl_rules")) {
+	for _, acl := range rdbACLExpand(d.Get("acl_rules").(*schema.Set)) {
 		aclruleips = append(aclruleips, acl.IP.String())
 	}
 	_, err = rdbAPI.DeleteInstanceACLRules(&rdb.DeleteInstanceACLRulesRequest{
@@ -161,13 +161,13 @@ func resourceScalewayRdbACLDelete(ctx context.Context, d *schema.ResourceData, m
 	return nil
 }
 
-func rdbACLExpand(data interface{}) []*rdb.ACLRuleRequest {
+func rdbACLExpand(data *schema.Set) []*rdb.ACLRuleRequest {
 	type aclRule struct {
 		IP          string
 		Description string
 	}
 	var res []*rdb.ACLRuleRequest
-	for _, rule := range data.([]interface{}) {
+	for _, rule := range data.List() {
 		r := rule.(map[string]interface{})
 		res = append(res, &rdb.ACLRuleRequest{
 			IP:          expandIPNet(r["ip"].(string)),
