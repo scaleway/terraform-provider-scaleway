@@ -31,7 +31,7 @@ func resourceScalewayVPCPublicGatewayNetwork() *schema.Resource {
 				Type:         schema.TypeString,
 				Required:     true,
 				ValidateFunc: validationUUIDorUUIDWithLocality(),
-				Description:  "The ID of the gateway this network where connect to",
+				Description:  "The ID of the public gateway where connect to",
 			},
 			"private_network_id": {
 				Type:         schema.TypeString,
@@ -43,7 +43,7 @@ func resourceScalewayVPCPublicGatewayNetwork() *schema.Resource {
 				Type:         schema.TypeString,
 				Optional:     true,
 				ValidateFunc: validationUUIDorUUIDWithLocality(),
-				Description:  "The ID of the dhcp network where connect to",
+				Description:  "The ID of the public gateway DHCP config",
 			},
 			"enable_masquerade": {
 				Type:        schema.TypeBool,
@@ -55,7 +55,7 @@ func resourceScalewayVPCPublicGatewayNetwork() *schema.Resource {
 				Type:        schema.TypeBool,
 				Optional:    true,
 				Default:     true,
-				Description: "Enable DHCP on this network",
+				Description: "Enable DHCP config on this network",
 			},
 			// Computed elements
 			"static_address": {
@@ -185,14 +185,17 @@ func resourceScalewayVPCPublicGatewayNetworkUpdate(ctx context.Context, d *schem
 
 	if d.HasChanges("enable_masquerade", "dhcp_id", "enable_dhcp", "static_address") {
 		dhcpID := expandZonedID(d.Get("dhcp_id").(string)).ID
-		staticIPNet := expandIPNet(d.Get("static_address").(string))
 		updateRequest := &vpcgw.UpdateGatewayNetworkRequest{
 			GatewayNetworkID: ID,
 			Zone:             zone,
 			EnableMasquerade: expandBoolPtr(d.Get("enable_masquerade")),
 			EnableDHCP:       expandBoolPtr(d.Get("enable_dhcp")),
 			DHCPID:           &dhcpID,
-			Address:          &staticIPNet,
+		}
+		staticAddress, staticAddressExist := d.GetOk("static_address")
+		if staticAddressExist {
+			address := expandIPNet(staticAddress.(string))
+			updateRequest.Address = &address
 		}
 
 		_, err = vpcgwAPI.UpdateGatewayNetwork(updateRequest, scw.WithContext(ctx))
