@@ -224,8 +224,8 @@ func resourceScalewayVPCPublicGatewayNetworkDelete(ctx context.Context, d *schem
 		Zone:             zone,
 		RetryInterval:    &defaultInterval,
 	})
-	if err != nil {
-		diag.FromErr(err)
+	if err != nil && !is404Error(err) {
+		return diag.FromErr(err)
 	}
 	//check gateway is in stable state.
 	_, err = vpcgwAPI.WaitForGateway(&vpcgw.WaitForGatewayRequest{
@@ -234,6 +234,9 @@ func resourceScalewayVPCPublicGatewayNetworkDelete(ctx context.Context, d *schem
 		Timeout:       scw.TimeDurationPtr(gatewayWaitForTimeout),
 		RetryInterval: &defaultInterval,
 	}, scw.WithContext(ctx))
+	if err != nil && !is404Error(err) {
+		return diag.FromErr(err)
+	}
 
 	err = vpcgwAPI.DeleteGatewayNetwork(&vpcgw.DeleteGatewayNetworkRequest{
 		GatewayNetworkID: ID,
