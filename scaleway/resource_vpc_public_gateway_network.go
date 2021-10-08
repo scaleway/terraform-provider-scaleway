@@ -57,13 +57,17 @@ func resourceScalewayVPCPublicGatewayNetwork() *schema.Resource {
 				Default:     true,
 				Description: "Enable DHCP config on this network",
 			},
-			// Computed elements
 			"static_address": {
 				Type:         schema.TypeString,
 				Description:  "The static IP address in CIDR on this network",
 				Optional:     true,
-				Computed:     true,
 				ValidateFunc: validation.IsCIDR,
+			},
+			// Computed elements
+			"mac_address": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The mac address on this network",
 			},
 			"created_at": {
 				Type:        schema.TypeString,
@@ -167,7 +171,7 @@ func resourceScalewayVPCPublicGatewayNetworkRead(ctx context.Context, d *schema.
 	}
 
 	if macAddress := gatewayNetwork.MacAddress; macAddress != nil {
-		_ = d.Set("static_address", flattenStringPtr(macAddress).(string))
+		_ = d.Set("mac_address", flattenStringPtr(macAddress).(string))
 	}
 
 	_ = d.Set("gateway_id", newZonedID(zone, gatewayNetwork.GatewayID).String())

@@ -55,9 +55,9 @@ The following arguments are supported:
 In addition to all above arguments, the following attributes are exported:
 
 - `id` - The ID of the public gateway network.
-- `static_address` - The static IP address in CIDR format to use without DHCP.
-- `created_at` - The date and time of the creation of the public gateway.
-- `updated_at` - The date and time of the last update of the public gateway.
+- `mac_address` - The mac address of the creation of the gateway network.
+- `created_at` - The date and time of the creation of the gateway network.
+- `updated_at` - The date and time of the last update of the gateway network.
 
 ## Import
 

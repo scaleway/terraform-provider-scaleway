@@ -84,6 +84,18 @@ func TestAccScalewayVPCPublicNetwork_Basic(t *testing.T) {
 					resource.TestCheckResourceAttrSet("scaleway_vpc_public_gateway_network.main", "gateway_id"),
 				),
 			},
+		},
+	})
+}
+
+func TestAccScalewayVPCPublicNetwork_WithoutDHCP(t *testing.T) {
+	tt := NewTestTools(t)
+	defer tt.Cleanup()
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      testAccCheckScalewayVPCPublicGatewayNetworkDestroy(tt),
+		Steps: []resource.TestStep{
 			{
 				Config: `
 					resource scaleway_vpc_private_network pn01 {
@@ -99,33 +111,6 @@ func TestAccScalewayVPCPublicNetwork_Basic(t *testing.T) {
 						ip_id = scaleway_vpc_public_gateway_ip.gw01.id
 					}
 			
-					resource scaleway_vpc_public_gateway_network main {
-					    gateway_id = scaleway_vpc_public_gateway.pg01.id
-					    private_network_id = scaleway_vpc_private_network.pn01.id
-						enable_dhcp = false
-						enable_masquerade = true
-					}
-				`,
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayVPCPublicGatewayNetworkExists(tt, "scaleway_vpc_public_gateway_network.main"),
-					resource.TestCheckResourceAttrSet("scaleway_vpc_public_gateway_network.main", "gateway_id"),
-				),
-			},
-			{
-				Config: `
-					resource scaleway_vpc_private_network pn01 {
-						name = "pn_test_network"
-					}
-
-					resource scaleway_vpc_public_gateway_ip gw01 {
-					}
-
-					resource scaleway_vpc_public_gateway pg01 {
-						name = "foobar"
-						type = "VPC-GW-S"
-						ip_id = scaleway_vpc_public_gateway_ip.gw01.id
-					}
-
 					resource scaleway_vpc_public_gateway_network main {
 					    gateway_id = scaleway_vpc_public_gateway.pg01.id
 					    private_network_id = scaleway_vpc_private_network.pn01.id
