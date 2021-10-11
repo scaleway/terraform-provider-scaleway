@@ -10,6 +10,10 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 )
 
+const (
+	retryIntervalVPCPublicGatewayNetwork = 30 * time.Second
+)
+
 func resourceScalewayVPCPublicGateway() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceScalewayVPCPublicGatewayCreate,

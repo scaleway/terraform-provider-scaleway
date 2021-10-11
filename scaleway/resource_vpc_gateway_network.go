@@ -12,16 +12,16 @@ import (
 )
 
 const (
-	retryIntervalVPCPublicGatewayNetwork = 30 * time.Second
-	cleanUpDHCP                          = true
+	retryIntervalVPCGatewayNetwork = 30 * time.Second
+	cleanUpDHCP                    = true
 )
 
-func resourceScalewayVPCPublicGatewayNetwork() *schema.Resource {
+func resourceScalewayVPCGatewayNetwork() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: resourceScalewayVPCPublicGatewayNetworkCreate,
-		ReadContext:   resourceScalewayVPCPublicGatewayNetworkRead,
-		UpdateContext: resourceScalewayVPCPublicGatewayNetworkUpdate,
-		DeleteContext: resourceScalewayVPCPublicGatewayNetworkDelete,
+		CreateContext: resourceScalewayVPCGatewayNetworkCreate,
+		ReadContext:   resourceScalewayVPCGatewayNetworkRead,
+		UpdateContext: resourceScalewayVPCGatewayNetworkUpdate,
+		DeleteContext: resourceScalewayVPCGatewayNetworkDelete,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
@@ -72,19 +72,19 @@ func resourceScalewayVPCPublicGatewayNetwork() *schema.Resource {
 			"created_at": {
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "The date and time of the creation of the public gateway",
+				Description: "The date and time of the creation of the gateway network",
 			},
 			"updated_at": {
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "The date and time of the last update of the public gateway",
+				Description: "The date and time of the last update of the gateway network",
 			},
 			"zone": zoneSchema(),
 		},
 	}
 }
 
-func resourceScalewayVPCPublicGatewayNetworkCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceScalewayVPCGatewayNetworkCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	vpcgwNetworkAPI, zone, err := vpcgwAPIWithZone(d, meta)
 	if err != nil {
 		return diag.FromErr(err)
@@ -111,7 +111,7 @@ func resourceScalewayVPCPublicGatewayNetworkCreate(ctx context.Context, d *schem
 		req.DHCPID = &dhcpZoned.ID
 	}
 
-	retryInterval := retryIntervalVPCPublicGatewayNetwork
+	retryInterval := retryIntervalVPCGatewayNetwork
 	//check gateway is in stable state.
 	_, err = vpcgwNetworkAPI.WaitForGateway(&vpcgw.WaitForGatewayRequest{
 		GatewayID:     gatewayID,
@@ -141,10 +141,10 @@ func resourceScalewayVPCPublicGatewayNetworkCreate(ctx context.Context, d *schem
 		return diag.FromErr(err)
 	}
 
-	return resourceScalewayVPCPublicGatewayNetworkRead(ctx, d, meta)
+	return resourceScalewayVPCGatewayNetworkRead(ctx, d, meta)
 }
 
-func resourceScalewayVPCPublicGatewayNetworkRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceScalewayVPCGatewayNetworkRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	vpcgwNetworkAPI, zone, ID, err := vpcgwAPIWithZoneAndID(meta, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -185,7 +185,7 @@ func resourceScalewayVPCPublicGatewayNetworkRead(ctx context.Context, d *schema.
 	return nil
 }
 
-func resourceScalewayVPCPublicGatewayNetworkUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceScalewayVPCGatewayNetworkUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	vpcgwAPI, zone, ID, err := vpcgwAPIWithZoneAndID(meta, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -212,16 +212,16 @@ func resourceScalewayVPCPublicGatewayNetworkUpdate(ctx context.Context, d *schem
 		}
 	}
 
-	return resourceScalewayVPCPublicGatewayRead(ctx, d, meta)
+	return resourceScalewayVPCGatewayNetworkRead(ctx, d, meta)
 }
 
-func resourceScalewayVPCPublicGatewayNetworkDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceScalewayVPCGatewayNetworkDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	vpcgwAPI, zone, ID, err := vpcgwAPIWithZoneAndID(meta, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	defaultInterval := retryIntervalVPCPublicGatewayNetwork
+	defaultInterval := retryIntervalVPCGatewayNetwork
 	// check if network is a stable process
 	gwNetwork, err := vpcgwAPI.WaitForGatewayNetwork(&vpcgw.WaitForGatewayNetworkRequest{
 		GatewayNetworkID: ID,

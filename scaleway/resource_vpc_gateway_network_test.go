@@ -11,24 +11,24 @@ import (
 )
 
 func init() {
-	resource.AddTestSweepers("scaleway_public_gateway_network", &resource.Sweeper{
-		Name: "scaleway_public_gateway_network",
-		F:    testSweepVPCPublicGatewayNetwork,
+	resource.AddTestSweepers("scaleway_gateway_network", &resource.Sweeper{
+		Name: "scaleway_gateway_network",
+		F:    testSweepVPCGatewayNetwork,
 		// test depends upon PrivateNetwork, PublicGateway. Please add new resources for testing purpose.
-		Dependencies: []string{"scaleway_vpc", "scaleway_vpc_public_gateway_ip"},
+		Dependencies: []string{"scaleway_vpc", "scaleway_vpc_gateway_ip"},
 	})
 }
 
-func testSweepVPCPublicGatewayNetwork(_ string) error {
+func testSweepVPCGatewayNetwork(_ string) error {
 	return sweepZones(scw.AllZones, func(scwClient *scw.Client, zone scw.Zone) error {
 		vpcgwAPI := vpcgw.NewAPI(scwClient)
-		l.Debugf("sweeper: destroying the public gateway network in (%s)", zone)
+		l.Debugf("sweeper: destroying the gateway network in (%s)", zone)
 
 		listPNResponse, err := vpcgwAPI.ListGatewayNetworks(&vpcgw.ListGatewayNetworksRequest{
 			Zone: zone,
 		}, scw.WithAllPages())
 		if err != nil {
-			return fmt.Errorf("error listing public gateway network in sweeper: %s", err)
+			return fmt.Errorf("error listing gateway network in sweeper: %s", err)
 		}
 
 		for _, gn := range listPNResponse.GatewayNetworks {
@@ -39,7 +39,7 @@ func testSweepVPCPublicGatewayNetwork(_ string) error {
 				CleanupDHCP: true,
 			})
 			if err != nil {
-				return fmt.Errorf("error deleting public gateway network in sweeper: %s", err)
+				return fmt.Errorf("error deleting gateway network in sweeper: %s", err)
 			}
 		}
 		return nil
@@ -52,7 +52,7 @@ func TestAccScalewayVPCPublicNetwork_Basic(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      testAccCheckScalewayVPCPublicGatewayNetworkDestroy(tt),
+		CheckDestroy:      testAccCheckScalewayVPCGatewayNetworkDestroy(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -73,28 +73,28 @@ func TestAccScalewayVPCPublicNetwork_Basic(t *testing.T) {
 						ip_id = scaleway_vpc_public_gateway_ip.gw01.id
 					}
 			
-					resource scaleway_vpc_public_gateway_network main {
+					resource scaleway_vpc_gateway_network main {
 					    gateway_id = scaleway_vpc_public_gateway.pg01.id
 					    private_network_id = scaleway_vpc_private_network.pn01.id
 					    dhcp_id = scaleway_vpc_public_gateway_dhcp.dhcp01.id
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayVPCPublicGatewayNetworkExists(tt, "scaleway_vpc_public_gateway_network.main"),
-					resource.TestCheckResourceAttrSet("scaleway_vpc_public_gateway_network.main", "gateway_id"),
+					testAccCheckScalewayVPCGatewayNetworkExists(tt, "scaleway_vpc_gateway_network.main"),
+					resource.TestCheckResourceAttrSet("scaleway_vpc_gateway_network.main", "gateway_id"),
 				),
 			},
 		},
 	})
 }
 
-func TestAccScalewayVPCPublicNetwork_WithoutDHCP(t *testing.T) {
+func TestAccScalewayVPCGatewayNetwork_WithoutDHCP(t *testing.T) {
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      testAccCheckScalewayVPCPublicGatewayNetworkDestroy(tt),
+		CheckDestroy:      testAccCheckScalewayVPCGatewayNetworkDestroy(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -111,7 +111,7 @@ func TestAccScalewayVPCPublicNetwork_WithoutDHCP(t *testing.T) {
 						ip_id = scaleway_vpc_public_gateway_ip.gw01.id
 					}
 			
-					resource scaleway_vpc_public_gateway_network main {
+					resource scaleway_vpc_gateway_network main {
 					    gateway_id = scaleway_vpc_public_gateway.pg01.id
 					    private_network_id = scaleway_vpc_private_network.pn01.id
 						enable_dhcp = false
@@ -120,15 +120,15 @@ func TestAccScalewayVPCPublicNetwork_WithoutDHCP(t *testing.T) {
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayVPCPublicGatewayNetworkExists(tt, "scaleway_vpc_public_gateway_network.main"),
-					resource.TestCheckResourceAttrSet("scaleway_vpc_public_gateway_network.main", "gateway_id"),
+					testAccCheckScalewayVPCGatewayNetworkExists(tt, "scaleway_vpc_gateway_network.main"),
+					resource.TestCheckResourceAttrSet("scaleway_vpc_gateway_network.main", "gateway_id"),
 				),
 			},
 		},
 	})
 }
 
-func testAccCheckScalewayVPCPublicGatewayNetworkExists(tt *TestTools, n string) resource.TestCheckFunc {
+func testAccCheckScalewayVPCGatewayNetworkExists(tt *TestTools, n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
@@ -153,10 +153,10 @@ func testAccCheckScalewayVPCPublicGatewayNetworkExists(tt *TestTools, n string) 
 	}
 }
 
-func testAccCheckScalewayVPCPublicGatewayNetworkDestroy(tt *TestTools) resource.TestCheckFunc {
+func testAccCheckScalewayVPCGatewayNetworkDestroy(tt *TestTools) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		for _, rs := range state.RootModule().Resources {
-			if rs.Type != "scaleway_vpc_public_gateway_network" {
+			if rs.Type != "scaleway_vpc_gateway_network" {
 				continue
 			}
 
@@ -172,7 +172,7 @@ func testAccCheckScalewayVPCPublicGatewayNetworkDestroy(tt *TestTools) resource.
 
 			if err == nil {
 				return fmt.Errorf(
-					"VPC public gateway network %s still exists",
+					"VPC gateway network %s still exists",
 					rs.Primary.ID,
 				)
 			}
