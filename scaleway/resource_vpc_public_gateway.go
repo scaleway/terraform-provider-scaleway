@@ -10,6 +10,10 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 )
 
+const (
+	retryIntervalVPCPublicGatewayNetwork = 30 * time.Second
+)
+
 func resourceScalewayVPCPublicGateway() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceScalewayVPCPublicGatewayCreate,
@@ -99,11 +103,12 @@ func resourceScalewayVPCPublicGatewayCreate(ctx context.Context, d *schema.Resou
 
 	d.SetId(newZonedIDString(zone, res.ID))
 
+	defaultInterval := retryIntervalVPCPublicGatewayNetwork
 	_, err = vpcgwAPI.WaitForGateway(&vpcgw.WaitForGatewayRequest{
 		Zone:          zone,
 		GatewayID:     res.ID,
 		Timeout:       scw.TimeDurationPtr(defaultVPCGatewayTimeout),
-		RetryInterval: DefaultWaitRetryInterval,
+		RetryInterval: &defaultInterval,
 	}, scw.WithContext(ctx))
 	// check err waiting process
 	if err != nil {
@@ -174,21 +179,22 @@ func resourceScalewayVPCPublicGatewayDelete(ctx context.Context, d *schema.Resou
 		return diag.FromErr(err)
 	}
 
-	err = vpcgwAPI.DeleteGateway(&vpcgw.DeleteGatewayRequest{
-		GatewayID: ID,
-		Zone:      zone,
+	retryInterval := retryIntervalVPCPublicGatewayNetwork
+	//check if GatewayNetwork is available to delete
+	_, err = vpcgwAPI.WaitForGateway(&vpcgw.WaitForGatewayRequest{
+		GatewayID:     ID,
+		Zone:          zone,
+		Timeout:       scw.TimeDurationPtr(gatewayWaitForTimeout),
+		RetryInterval: &retryInterval,
 	}, scw.WithContext(ctx))
 
 	if err != nil && !is404Error(err) {
 		return diag.FromErr(err)
 	}
 
-	retryInterval := 30 * time.Second
-	_, err = vpcgwAPI.WaitForGateway(&vpcgw.WaitForGatewayRequest{
-		GatewayID:     ID,
-		Zone:          zone,
-		Timeout:       scw.TimeDurationPtr(gatewayWaitForTimeout),
-		RetryInterval: &retryInterval,
+	err = vpcgwAPI.DeleteGateway(&vpcgw.DeleteGatewayRequest{
+		GatewayID: ID,
+		Zone:      zone,
 	}, scw.WithContext(ctx))
 
 	if err != nil && !is404Error(err) {

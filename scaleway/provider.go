@@ -11,7 +11,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 )
 
-// Provider config can be used to provide additional config when creating provider.
+// ProviderConfig config can be used to provide additional config when creating provider.
 type ProviderConfig struct {
 	// Meta can be used to override Meta that will be used by the provider.
 	// This is useful for tests.
@@ -92,6 +92,7 @@ func Provider(config *ProviderConfig) plugin.ProviderFunc {
 				"scaleway_rdb_user":                      resourceScalewayRdbUser(),
 				"scaleway_object_bucket":                 resourceScalewayObjectBucket(),
 				"scaleway_vpc_public_gateway":            resourceScalewayVPCPublicGateway(),
+				"scaleway_vpc_gateway_network":           resourceScalewayVPCGatewayNetwork(),
 				"scaleway_vpc_public_gateway_dhcp":       resourceScalewayVPCPublicGatewayDHCP(),
 				"scaleway_vpc_public_gateway_ip":         resourceScalewayVPCPublicGatewayIP(),
 				"scaleway_vpc_private_network":           resourceScalewayVPCPrivateNetwork(),
