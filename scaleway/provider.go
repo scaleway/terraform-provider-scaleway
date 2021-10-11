@@ -92,7 +92,7 @@ func Provider(config *ProviderConfig) plugin.ProviderFunc {
 				"scaleway_rdb_user":                      resourceScalewayRdbUser(),
 				"scaleway_object_bucket":                 resourceScalewayObjectBucket(),
 				"scaleway_vpc_public_gateway":            resourceScalewayVPCPublicGateway(),
-				"scaleway_vpc_public_gateway_network":    resourceScalewayVPCPublicGatewayNetwork(),
+				"scaleway_vpc_gateway_network":           resourceScalewayVPCGatewayNetwork(),
 				"scaleway_vpc_public_gateway_dhcp":       resourceScalewayVPCPublicGatewayDHCP(),
 				"scaleway_vpc_public_gateway_ip":         resourceScalewayVPCPublicGatewayIP(),
 				"scaleway_vpc_private_network":           resourceScalewayVPCPrivateNetwork(),
