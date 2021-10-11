@@ -46,7 +46,7 @@ func testSweepVPCGatewayNetwork(_ string) error {
 	})
 }
 
-func TestAccScalewayVPCPublicNetwork_Basic(t *testing.T) {
+func TestAccScalewayVPCGatewayNetwork_Basic(t *testing.T) {
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
 	resource.ParallelTest(t, resource.TestCase{
