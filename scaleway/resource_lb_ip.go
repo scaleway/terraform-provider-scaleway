@@ -45,7 +45,7 @@ func resourceScalewayLbIP() *schema.Resource {
 			"lb_id": {
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "The ID of the loadbalancer attached to this IP, if any",
+				Description: "The ID of the load balancer attached to this IP, if any",
 			},
 		},
 	}

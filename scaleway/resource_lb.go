@@ -3,11 +3,16 @@ package scaleway
 import (
 	"context"
 	"strings"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/api/lb/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+)
+
+const (
+	DefaultWaitLBRetryInterval = 30 * time.Second
 )
 
 func resourceScalewayLb() *schema.Resource {
@@ -160,6 +165,17 @@ func resourceScalewayLbUpdate(ctx context.Context, d *schema.ResourceData, meta 
 			Tags: expandStrings(d.Get("tags")),
 		}
 
+		_, err = lbAPI.WaitForLb(&lb.ZonedAPIWaitForLBRequest{
+			LBID:          ID,
+			Zone:          zone,
+			Timeout:       scw.TimeDurationPtr(LbWaitForTimeout),
+			RetryInterval: DefaultWaitRetryInterval,
+		}, scw.WithContext(ctx))
+
+		if err != nil && !is404Error(err) {
+			return diag.FromErr(err)
+		}
+
 		_, err = lbAPI.UpdateLB(req, scw.WithContext(ctx))
 		if err != nil {
 			return diag.FromErr(err)
@@ -175,21 +191,21 @@ func resourceScalewayLbDelete(ctx context.Context, d *schema.ResourceData, meta 
 		return diag.FromErr(err)
 	}
 
-	err = lbAPI.DeleteLB(&lb.ZonedAPIDeleteLBRequest{
-		Zone:      zone,
-		LBID:      ID,
-		ReleaseIP: false,
+	_, err = lbAPI.WaitForLb(&lb.ZonedAPIWaitForLBRequest{
+		LBID:          ID,
+		Zone:          zone,
+		Timeout:       scw.TimeDurationPtr(LbWaitForTimeout),
+		RetryInterval: DefaultWaitRetryInterval,
 	}, scw.WithContext(ctx))
 
 	if err != nil && !is404Error(err) {
 		return diag.FromErr(err)
 	}
 
-	_, err = lbAPI.WaitForLb(&lb.ZonedAPIWaitForLBRequest{
-		LBID:          ID,
-		Zone:          zone,
-		Timeout:       scw.TimeDurationPtr(LbWaitForTimeout),
-		RetryInterval: DefaultWaitRetryInterval,
+	err = lbAPI.DeleteLB(&lb.ZonedAPIDeleteLBRequest{
+		Zone:      zone,
+		LBID:      ID,
+		ReleaseIP: false,
 	}, scw.WithContext(ctx))
 
 	if err != nil && !is404Error(err) {

@@ -30,7 +30,9 @@ func TestAccScalewayLbPrivateNetwork_Basic(t *testing.T) {
 						name = "test-lb-pn"
 						depends_on = [scaleway_lb_ip.ip01, scaleway_lb.lb01]
 					}
+
 					resource scaleway_lb_ip ip01 {}
+
 					resource scaleway_lb lb01 {
 						ip_id = scaleway_lb_ip.ip01.id
 						name = "test-lb"
@@ -41,7 +43,7 @@ func TestAccScalewayLbPrivateNetwork_Basic(t *testing.T) {
 						lb_id = scaleway_lb.lb01.id
 						private_network_id = scaleway_vpc_private_network.pn01.id
 						static_config = ["172.16.0.100", "172.16.0.101"]
-						depends_on = [scaleway_lb_ip.ip01, scaleway_lb.lb01, scaleway_vpc_private_network.pn01]
+						depends_on = [scaleway_vpc_private_network.pn01]
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
