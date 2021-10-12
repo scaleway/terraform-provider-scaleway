@@ -84,9 +84,22 @@ func resourceScalewayVPCPublicGatewayPATRuleCreate(ctx context.Context, d *schem
 		return diag.FromErr(err)
 	}
 
+	gatewayID := expandZonedID(d.Get("gateway_id").(string)).ID
+	retryInterval := retryIntervalVPCPublicGatewayNetwork
+	//check gateway is in stable state.
+	_, err = vpcgwAPI.WaitForGateway(&vpcgw.WaitForGatewayRequest{
+		GatewayID:     gatewayID,
+		Zone:          zone,
+		Timeout:       scw.TimeDurationPtr(gatewayWaitForTimeout),
+		RetryInterval: &retryInterval,
+	}, scw.WithContext(ctx))
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	req := &vpcgw.CreatePATRuleRequest{
 		Zone:        zone,
-		GatewayID:   expandZonedID(d.Get("gateway_id").(string)).ID,
+		GatewayID:   gatewayID,
 		PublicPort:  uint32(d.Get("public_port").(int)),
 		PrivateIP:   net.ParseIP(d.Get("private_ip").(string)),
 		PrivatePort: uint32(d.Get("private_port").(int)),
@@ -121,9 +134,10 @@ func resourceScalewayVPCPublicGatewayPATRuleRead(ctx context.Context, d *schema.
 		return diag.FromErr(err)
 	}
 
+	gatewayID := newZonedID(zone, patRules.GatewayID).String()
 	_ = d.Set("created_at", patRules.CreatedAt.Format(time.RFC3339))
 	_ = d.Set("updated_at", patRules.UpdatedAt.Format(time.RFC3339))
-	_ = d.Set("gateway_id", patRules.GatewayID)
+	_ = d.Set("gateway_id", gatewayID)
 	_ = d.Set("private_ip", patRules.PrivateIP.String())
 	_ = d.Set("private_port", patRules.PrivatePort)
 	_ = d.Set("public_port", patRules.PublicPort)
@@ -151,6 +165,7 @@ func resourceScalewayVPCPublicGatewayPATRuleUpdate(ctx context.Context, d *schem
 			PrivatePort: &privatePort,
 			Protocol:    vpcgw.PATRuleProtocol(d.Get("protocol").(string)),
 		}, scw.WithContext(ctx))
+
 		if err != nil {
 			if is404Error(err) {
 				d.SetId("")
@@ -158,7 +173,7 @@ func resourceScalewayVPCPublicGatewayPATRuleUpdate(ctx context.Context, d *schem
 			}
 			return diag.FromErr(err)
 		}
-		}
+	}
 
 	return resourceScalewayVPCPublicGatewayPATRuleRead(ctx, d, meta)
 }

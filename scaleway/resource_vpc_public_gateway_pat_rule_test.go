@@ -43,6 +43,7 @@ func TestAccScalewayVPCPublicGatewayPATRule_Basic(t *testing.T) {
 					    gateway_id = scaleway_vpc_public_gateway.pg01.id
 					    private_network_id = scaleway_vpc_private_network.pn01.id
 					    dhcp_id = scaleway_vpc_public_gateway_dhcp.dhcp01.id
+						depends_on = [scaleway_vpc_private_network.pn01]
 					}
 
 					resource scaleway_vpc_public_gateway_pat_rule main {
@@ -51,7 +52,7 @@ func TestAccScalewayVPCPublicGatewayPATRule_Basic(t *testing.T) {
 						private_port = 42
 						public_port = 42
 						protocol = "both"
-						depends_on = [scaleway_vpc_gateway_network.gn01]
+						depends_on = [scaleway_vpc_gateway_network.gn01, scaleway_vpc_private_network.pn01]
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
