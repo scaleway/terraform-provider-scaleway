@@ -133,7 +133,6 @@ func resourceScalewayVPCGatewayNetworkCreate(ctx context.Context, d *schema.Reso
 		return diag.FromErr(err)
 	}
 
-	d.SetId(newZonedIDString(zone, res.ID))
 	// set default interval
 	res, err = vpcgwNetworkAPI.WaitForGatewayNetwork(&vpcgw.WaitForGatewayNetworkRequest{
 		GatewayNetworkID: res.ID,
@@ -145,6 +144,7 @@ func resourceScalewayVPCGatewayNetworkCreate(ctx context.Context, d *schema.Reso
 	if err != nil {
 		return diag.FromErr(err)
 	}
+	d.SetId(newZonedIDString(zone, res.ID))
 
 	return resourceScalewayVPCGatewayNetworkRead(ctx, d, meta)
 }

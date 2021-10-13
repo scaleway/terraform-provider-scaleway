@@ -46,6 +46,7 @@ func TestAccScalewayVPCPublicGatewayPATRule_Basic(t *testing.T) {
 					    dhcp_id = scaleway_vpc_public_gateway_dhcp.dhcp01.id
 						depends_on = [scaleway_vpc_private_network.pn01]
 						cleanup_dhcp = true
+						enable_masquerade = true
 					}
 
 					resource scaleway_vpc_public_gateway_pat_rule main {
