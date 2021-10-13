@@ -78,6 +78,7 @@ func TestAccScalewayVPCGatewayNetwork_Basic(t *testing.T) {
 						private_network_id = scaleway_vpc_private_network.pn01.id
 						dhcp_id = scaleway_vpc_public_gateway_dhcp.dhcp01.id
 						cleanup_dhcp = true
+						depends_on = [scaleway_vpc_public_gateway_ip.gw01, scaleway_vpc_private_network.pn01]
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
@@ -127,6 +128,7 @@ func TestAccScalewayVPCGatewayNetwork_WithoutDHCP(t *testing.T) {
 						enable_dhcp = false
 						enable_masquerade = true
 						static_address = "192.168.1.42/24"
+						depends_on = [scaleway_vpc_public_gateway_ip.gw01, scaleway_vpc_private_network.pn01]
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
