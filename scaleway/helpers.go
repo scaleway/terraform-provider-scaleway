@@ -229,6 +229,11 @@ func is404Error(err error) bool {
 	return isHTTPCodeError(err, http.StatusNotFound) || xerrors.As(err, &notFoundError)
 }
 
+func is412Error(err error) bool {
+	preConditionFailedError := &scw.PreconditionFailedError{}
+	return isHTTPCodeError(err, http.StatusPreconditionFailed) || xerrors.As(err, &preConditionFailedError)
+}
+
 // is403Error returns true if err is an HTTP 403 error
 func is403Error(err error) bool {
 	permissionsDeniedError := &scw.PermissionsDeniedError{}

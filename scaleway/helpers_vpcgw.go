@@ -22,7 +22,7 @@ func vpcgwAPIWithZone(d *schema.ResourceData, m interface{}) (*vpcgw.API, scw.Zo
 	if err != nil {
 		return nil, "", err
 	}
-	return vpcgwAPI, zone, err
+	return vpcgwAPI, zone, nil
 }
 
 // vpcgwAPIWithZoneAndID
@@ -34,5 +34,5 @@ func vpcgwAPIWithZoneAndID(m interface{}, id string) (*vpcgw.API, scw.Zone, stri
 	if err != nil {
 		return nil, "", "", err
 	}
-	return vpcgwAPI, zone, ID, err
+	return vpcgwAPI, zone, ID, nil
 }
