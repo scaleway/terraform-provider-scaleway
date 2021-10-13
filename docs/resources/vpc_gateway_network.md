@@ -44,7 +44,7 @@ The following arguments are supported:
 - `gateway_id` - (Required) The ID of the public gateway.
 - `private_network_id` - (Required) The ID of the private network.
 - `dhcp_id` - (Required) The ID of the public gateway DHCP config.
-- `enable_masquerade` - (Defaults to false) Enable masquerade on this network
+- `enable_masquerade` - (Defaults to true) Enable masquerade on this network
 - `enable_dhcp` - (Defaults to true) Enable DHCP config on this network. It requires DHCP id.
 - `cleanup_dhcp` - (Defaults to false) Remove DHCP config on this network on destroy. It requires DHCP id.
 - `static_address` - Enable DHCP config on this network

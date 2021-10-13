@@ -47,7 +47,7 @@ func resourceScalewayVPCGatewayNetwork() *schema.Resource {
 			"enable_masquerade": {
 				Type:        schema.TypeBool,
 				Optional:    true,
-				Default:     false,
+				Default:     true,
 				Description: "Enable masquerade on this network",
 			},
 			"enable_dhcp": {
@@ -135,7 +135,7 @@ func resourceScalewayVPCGatewayNetworkCreate(ctx context.Context, d *schema.Reso
 
 	d.SetId(newZonedIDString(zone, res.ID))
 	// set default interval
-	_, err = vpcgwNetworkAPI.WaitForGatewayNetwork(&vpcgw.WaitForGatewayNetworkRequest{
+	res, err = vpcgwNetworkAPI.WaitForGatewayNetwork(&vpcgw.WaitForGatewayNetworkRequest{
 		GatewayNetworkID: res.ID,
 		Timeout:          scw.TimeDurationPtr(defaultVPCGatewayTimeout),
 		RetryInterval:    &retryInterval,

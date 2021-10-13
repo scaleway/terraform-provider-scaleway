@@ -78,6 +78,7 @@ func TestAccScalewayVPCGatewayNetwork_Basic(t *testing.T) {
 						private_network_id = scaleway_vpc_private_network.pn01.id
 						dhcp_id = scaleway_vpc_public_gateway_dhcp.dhcp01.id
 						cleanup_dhcp = true
+						enable_masquerade = true
 						depends_on = [scaleway_vpc_public_gateway_ip.gw01, scaleway_vpc_private_network.pn01]
 					}
 				`,
@@ -92,7 +93,7 @@ func TestAccScalewayVPCGatewayNetwork_Basic(t *testing.T) {
 					resource.TestCheckResourceAttrSet("scaleway_vpc_gateway_network.main", "zone"),
 					resource.TestCheckResourceAttr("scaleway_vpc_gateway_network.main", "enable_dhcp", "true"),
 					resource.TestCheckResourceAttr("scaleway_vpc_gateway_network.main", "cleanup_dhcp", "true"),
-					resource.TestCheckResourceAttr("scaleway_vpc_gateway_network.main", "enable_masquerade", "false"),
+					resource.TestCheckResourceAttr("scaleway_vpc_gateway_network.main", "enable_masquerade", "true"),
 				),
 			},
 		},
