@@ -11,8 +11,9 @@ import (
 
 func init() {
 	resource.AddTestSweepers("scaleway_vpc_public_gateway_pat_rule", &resource.Sweeper{
-		Name: "scaleway_vpc_public_gateway_pat_rule",
-		F:    testSweepVPCPublicGateway,
+		Name:         "scaleway_vpc_public_gateway_pat_rule",
+		F:            testSweepVPCPublicGateway,
+		Dependencies: []string{"scaleway_vpc_public_gateway_dhcp", "scaleway_vpc"},
 	})
 }
 
@@ -44,6 +45,7 @@ func TestAccScalewayVPCPublicGatewayPATRule_Basic(t *testing.T) {
 					    private_network_id = scaleway_vpc_private_network.pn01.id
 					    dhcp_id = scaleway_vpc_public_gateway_dhcp.dhcp01.id
 						depends_on = [scaleway_vpc_private_network.pn01]
+						cleanup_dhcp = true
 					}
 
 					resource scaleway_vpc_public_gateway_pat_rule main {
@@ -60,6 +62,14 @@ func TestAccScalewayVPCPublicGatewayPATRule_Basic(t *testing.T) {
 						tt,
 						"scaleway_vpc_public_gateway_pat_rule.main",
 					),
+					resource.TestCheckResourceAttrSet("scaleway_vpc_public_gateway_pat_rule.main", "gateway_id"),
+					resource.TestCheckResourceAttrSet("scaleway_vpc_public_gateway_pat_rule.main", "private_ip"),
+					resource.TestCheckResourceAttrSet("scaleway_vpc_public_gateway_pat_rule.main", "created_at"),
+					resource.TestCheckResourceAttrSet("scaleway_vpc_public_gateway_pat_rule.main", "updated_at"),
+					resource.TestCheckResourceAttrSet("scaleway_vpc_public_gateway_pat_rule.main", "protocol"),
+					resource.TestCheckResourceAttr("scaleway_vpc_public_gateway_pat_rule.main", "protocol", "both"),
+					resource.TestCheckResourceAttr("scaleway_vpc_public_gateway_pat_rule.main", "public_port", "42"),
+					resource.TestCheckResourceAttr("scaleway_vpc_public_gateway_pat_rule.main", "private_port", "42"),
 				),
 			},
 		},

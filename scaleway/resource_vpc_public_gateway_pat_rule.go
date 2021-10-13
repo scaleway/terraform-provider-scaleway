@@ -53,12 +53,13 @@ func resourceScalewayVPCPublicGatewayPATRule() *schema.Resource {
 			},
 			"protocol": {
 				Type:     schema.TypeString,
-				Required: true,
+				Optional: true,
 				ValidateFunc: validation.StringInSlice([]string{
 					vpcgw.PATRuleProtocolTCP.String(),
 					vpcgw.PATRuleProtocolUDP.String(),
 					vpcgw.PATRuleProtocolBoth.String(),
 				}, true),
+				Default:     "both",
 				Description: "The protocol used in the PAT rule",
 			},
 			"zone": zoneSchema(),
@@ -139,8 +140,8 @@ func resourceScalewayVPCPublicGatewayPATRuleRead(ctx context.Context, d *schema.
 	_ = d.Set("updated_at", patRules.UpdatedAt.Format(time.RFC3339))
 	_ = d.Set("gateway_id", gatewayID)
 	_ = d.Set("private_ip", patRules.PrivateIP.String())
-	_ = d.Set("private_port", patRules.PrivatePort)
-	_ = d.Set("public_port", patRules.PublicPort)
+	_ = d.Set("private_port", int(patRules.PrivatePort))
+	_ = d.Set("public_port", int(patRules.PublicPort))
 	_ = d.Set("protocol", patRules.Protocol.String())
 	_ = d.Set("zone", zone)
 
@@ -184,9 +185,45 @@ func resourceScalewayVPCPublicGatewayPATRuleDelete(ctx context.Context, d *schem
 		return diag.FromErr(err)
 	}
 
+	patRules, err := vpcgwAPI.GetPATRule(&vpcgw.GetPATRuleRequest{
+		PatRuleID: ID,
+		Zone:      zone,
+	}, scw.WithContext(ctx))
+	if err != nil {
+		if is404Error(err) {
+			d.SetId("")
+			return nil
+		}
+		return diag.FromErr(err)
+	}
+
+	retryInterval := retryIntervalVPCPublicGatewayNetwork
+	//check gateway is in stable state.
+	_, err = vpcgwAPI.WaitForGateway(&vpcgw.WaitForGatewayRequest{
+		GatewayID:     patRules.GatewayID,
+		Zone:          zone,
+		Timeout:       scw.TimeDurationPtr(gatewayWaitForTimeout),
+		RetryInterval: &retryInterval,
+	}, scw.WithContext(ctx))
+
+	if err != nil && !is404Error(err) {
+		return diag.FromErr(err)
+	}
+
 	err = vpcgwAPI.DeletePATRule(&vpcgw.DeletePATRuleRequest{
 		PatRuleID: ID,
 		Zone:      zone,
+	}, scw.WithContext(ctx))
+
+	if err != nil && !is404Error(err) {
+		return diag.FromErr(err)
+	}
+
+	_, err = vpcgwAPI.WaitForGateway(&vpcgw.WaitForGatewayRequest{
+		GatewayID:     patRules.GatewayID,
+		Zone:          zone,
+		Timeout:       scw.TimeDurationPtr(gatewayWaitForTimeout),
+		RetryInterval: &retryInterval,
 	}, scw.WithContext(ctx))
 
 	if err != nil && !is404Error(err) {

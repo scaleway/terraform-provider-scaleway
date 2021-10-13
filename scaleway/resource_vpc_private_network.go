@@ -137,6 +137,11 @@ func resourceScalewayVPCPrivateNetworkDelete(ctx context.Context, d *schema.Reso
 	}, scw.WithContext(ctx))
 
 	if err != nil && !is404Error(err) {
+		if is412Error(err) {
+			// TODO: manage this error
+			l.Warningf("error deleting private network in zone (%s): %s", zone, err)
+			return nil
+		}
 		return diag.FromErr(err)
 	}
 
