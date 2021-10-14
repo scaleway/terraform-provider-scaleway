@@ -203,6 +203,41 @@ func TestAccScalewayRdbInstance_Volume(t *testing.T) {
 	})
 }
 
+func TestAccScalewayRdbInstance_BackupSchedule(t *testing.T) {
+	tt := NewTestTools(t)
+	defer tt.Cleanup()
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      testAccCheckScalewayRdbInstanceDestroy(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource scaleway_rdb_instance main {
+						name                      = "test-rdb"
+						node_type                 = "db-dev-s"
+						engine                    = "PostgreSQL-11"
+						is_ha_cluster             = false
+						disable_backup            = false
+                        backup_schedule_frequency = 24
+                        backup_schedule_retention = 7
+						user_name                 = "my_initial_user"
+						password                  = "thiZ_is_v&ry_s3cret"
+						region                    = "nl-ams"
+						tags                      = [ "terraform-test", "scaleway_rdb_instance", "volume" ]
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayRdbExists(tt, "scaleway_rdb_instance.main"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "disable_backup", "false"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "backup_schedule_frequency", "24"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "backup_schedule_retention", "7"),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckScalewayRdbExists(tt *TestTools, n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]

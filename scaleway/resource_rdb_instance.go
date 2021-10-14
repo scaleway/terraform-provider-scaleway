@@ -57,6 +57,18 @@ func resourceScalewayRdbInstance() *schema.Resource {
 				Default:     false,
 				Description: "Disable automated backup for the database instance",
 			},
+			"backup_schedule_frequency": {
+				Type:        schema.TypeInt,
+				Optional:    true,
+				Computed:    true,
+				Description: "Backup schedule frequency in hours",
+			},
+			"backup_schedule_retention": {
+				Type:        schema.TypeInt,
+				Optional:    true,
+				Computed:    true,
+				Description: "Backup schedule retention in days",
+			},
 			"user_name": {
 				Type:        schema.TypeString,
 				ForceNew:    true,
@@ -195,6 +207,26 @@ func resourceScalewayRdbInstanceCreate(ctx context.Context, d *schema.ResourceDa
 		return diag.FromErr(err)
 	}
 
+	// Configure Schedule Backup
+	// BackupScheduleFrequency and BackupScheduleRetention can only configure after instance creation
+	updateReq := &rdb.UpdateInstanceRequest{
+		Region:     region,
+		InstanceID: res.ID,
+	}
+	updateReq.IsBackupScheduleDisabled = scw.BoolPtr(d.Get("disable_backup").(bool))
+	if backupScheduleFrequency, okFrequency := d.GetOk("backup_schedule_frequency"); okFrequency {
+		updateReq.BackupScheduleFrequency = scw.Uint32Ptr(uint32(backupScheduleFrequency.(int)))
+	}
+	if backupScheduleRetention, okRetention := d.GetOk("backup_schedule_retention"); okRetention {
+		updateReq.BackupScheduleRetention = scw.Uint32Ptr(uint32(backupScheduleRetention.(int)))
+	}
+
+	_, err = rdbAPI.UpdateInstance(updateReq, scw.WithContext(ctx))
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	// Configure Instance settings
 	if settings, ok := d.GetOk("settings"); ok {
 		_, err := rdbAPI.SetInstanceSettings(&rdb.SetInstanceSettingsRequest{
 			InstanceID: res.ID,
@@ -232,6 +264,8 @@ func resourceScalewayRdbInstanceRead(ctx context.Context, d *schema.ResourceData
 	_ = d.Set("engine", res.Engine)
 	_ = d.Set("is_ha_cluster", res.IsHaCluster)
 	_ = d.Set("disable_backup", res.BackupSchedule.Disabled)
+	_ = d.Set("backup_schedule_frequency", int(res.BackupSchedule.Frequency))
+	_ = d.Set("backup_schedule_retention", int(res.BackupSchedule.Retention))
 	_ = d.Set("user_name", d.Get("user_name").(string)) // user name and
 	_ = d.Set("password", d.Get("password").(string))   // password are immutable
 	_ = d.Set("tags", res.Tags)
@@ -288,7 +322,12 @@ func resourceScalewayRdbInstanceUpdate(ctx context.Context, d *schema.ResourceDa
 	if d.HasChange("disable_backup") {
 		req.IsBackupScheduleDisabled = scw.BoolPtr(d.Get("disable_backup").(bool))
 	}
-
+	if d.HasChange("backup_schedule_frequency") {
+		req.BackupScheduleFrequency = scw.Uint32Ptr(uint32(d.Get("backup_schedule_frequency").(int)))
+	}
+	if d.HasChange("backup_schedule_retention") {
+		req.BackupScheduleRetention = scw.Uint32Ptr(uint32(d.Get("backup_schedule_retention").(int)))
+	}
 	if d.HasChange("tags") {
 		req.Tags = scw.StringsPtr(expandStrings(d.Get("tags")))
 	}
@@ -297,7 +336,6 @@ func resourceScalewayRdbInstanceUpdate(ctx context.Context, d *schema.ResourceDa
 	if err != nil {
 		return diag.FromErr(err)
 	}
-
 	// Change settings
 	if d.HasChange("settings") {
 		_, err := rdbAPI.SetInstanceSettings(&rdb.SetInstanceSettingsRequest{
