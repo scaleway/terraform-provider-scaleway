@@ -23,6 +23,20 @@ resource "scaleway_rdb_instance" "main" {
   user_name      = "my_initial_user"
   password       = "thiZ_is_v&ry_s3cret"
 }
+
+# with backup schedule
+resource "scaleway_rdb_instance" "main" {
+  name          = "test-rdb"
+  node_type     = "DB-DEV-S"
+  engine        = "PostgreSQL-11"
+  is_ha_cluster = true
+  user_name     = "my_initial_user"
+  password      = "thiZ_is_v&ry_s3cret"
+  
+  disable_backup = true
+  backup_schedule_frequency = 24 # every day
+  backup_schedule_retention = 7  # keep it one week
+}
 ```
 
 ## Arguments Reference
@@ -54,6 +68,10 @@ The following arguments are supported:
 - `name` - (Optional) The name of the Database Instance.
 
 - `disable_backup` - (Optional) Disable automated backup for the database instance.
+
+- `backup_schedule_frequency` - (Optional) Backup schedule frequency in hours.
+
+- `backup_schedule_retention` - (Optional) Backup schedule retention in days.
 
 - `settings` - Map of engine settings to be set.
 
