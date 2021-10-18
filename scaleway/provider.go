@@ -97,6 +97,7 @@ func Provider(config *ProviderConfig) plugin.ProviderFunc {
 				"scaleway_vpc_gateway_network":           resourceScalewayVPCGatewayNetwork(),
 				"scaleway_vpc_public_gateway_dhcp":       resourceScalewayVPCPublicGatewayDHCP(),
 				"scaleway_vpc_public_gateway_ip":         resourceScalewayVPCPublicGatewayIP(),
+				"scaleway_vpc_public_gateway_pat_rule":   resourceScalewayVPCPublicGatewayPATRule(),
 				"scaleway_vpc_private_network":           resourceScalewayVPCPrivateNetwork(),
 			},
 
