@@ -209,23 +209,24 @@ func resourceScalewayRdbInstanceCreate(ctx context.Context, d *schema.ResourceDa
 
 	// Configure Schedule Backup
 	// BackupScheduleFrequency and BackupScheduleRetention can only configure after instance creation
-	updateReq := &rdb.UpdateInstanceRequest{
-		Region:     region,
-		InstanceID: res.ID,
-	}
-	updateReq.IsBackupScheduleDisabled = scw.BoolPtr(d.Get("disable_backup").(bool))
-	if backupScheduleFrequency, okFrequency := d.GetOk("backup_schedule_frequency"); okFrequency {
-		updateReq.BackupScheduleFrequency = scw.Uint32Ptr(uint32(backupScheduleFrequency.(int)))
-	}
-	if backupScheduleRetention, okRetention := d.GetOk("backup_schedule_retention"); okRetention {
-		updateReq.BackupScheduleRetention = scw.Uint32Ptr(uint32(backupScheduleRetention.(int)))
-	}
+	if !d.Get("disable_backup").(bool) {
+		updateReq := &rdb.UpdateInstanceRequest{
+			Region:     region,
+			InstanceID: res.ID,
+		}
+		updateReq.IsBackupScheduleDisabled = scw.BoolPtr(d.Get("disable_backup").(bool))
+		if backupScheduleFrequency, okFrequency := d.GetOk("backup_schedule_frequency"); okFrequency {
+			updateReq.BackupScheduleFrequency = scw.Uint32Ptr(uint32(backupScheduleFrequency.(int)))
+		}
+		if backupScheduleRetention, okRetention := d.GetOk("backup_schedule_retention"); okRetention {
+			updateReq.BackupScheduleRetention = scw.Uint32Ptr(uint32(backupScheduleRetention.(int)))
+		}
 
-	_, err = rdbAPI.UpdateInstance(updateReq, scw.WithContext(ctx))
-	if err != nil {
-		return diag.FromErr(err)
+		_, err = rdbAPI.UpdateInstance(updateReq, scw.WithContext(ctx))
+		if err != nil {
+			return diag.FromErr(err)
+		}
 	}
-
 	// Configure Instance settings
 	if settings, ok := d.GetOk("settings"); ok {
 		_, err := rdbAPI.SetInstanceSettings(&rdb.SetInstanceSettingsRequest{
