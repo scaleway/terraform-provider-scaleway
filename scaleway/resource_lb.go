@@ -205,7 +205,7 @@ func resourceScalewayLbDelete(ctx context.Context, d *schema.ResourceData, meta 
 	err = lbAPI.DeleteLB(&lb.ZonedAPIDeleteLBRequest{
 		Zone:      zone,
 		LBID:      ID,
-		ReleaseIP: false,
+		ReleaseIP: true,
 	}, scw.WithContext(ctx))
 
 	if err != nil && !is404Error(err) {

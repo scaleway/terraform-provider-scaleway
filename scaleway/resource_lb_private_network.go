@@ -2,7 +2,6 @@ package scaleway
 
 import (
 	"context"
-
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
@@ -101,7 +100,6 @@ func resourceScalewayLbPrivateNetworkCreate(ctx context.Context, d *schema.Resou
 		Timeout:       scw.TimeDurationPtr(defaultInstanceServerWaitTimeout),
 		RetryInterval: &retryInterval,
 	}, scw.WithContext(ctx))
-
 	if err != nil && !is404Error(err) {
 		return diag.FromErr(err)
 	}
@@ -116,6 +114,16 @@ func resourceScalewayLbPrivateNetworkCreate(ctx context.Context, d *schema.Resou
 
 	res, err := lbAPI.AttachPrivateNetwork(createReq, scw.WithContext(ctx))
 	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	_, err = lbAPI.WaitForLb(&lb.ZonedAPIWaitForLBRequest{
+		Zone:          zone,
+		LBID:          lbID,
+		Timeout:       scw.TimeDurationPtr(defaultInstanceServerWaitTimeout),
+		RetryInterval: &retryInterval,
+	}, scw.WithContext(ctx))
+	if err != nil && !is404Error(err) {
 		return diag.FromErr(err)
 	}
 
@@ -183,18 +191,6 @@ func resourceScalewayLbPrivateNetworkDelete(ctx context.Context, d *schema.Resou
 		return diag.FromErr(err)
 	}
 
-	// wait for lb
-	retryInterval := DefaultWaitLBRetryInterval
-	_, err = lbAPI.WaitForLb(&lb.ZonedAPIWaitForLBRequest{
-		Zone:          zone,
-		LBID:          lbID,
-		Timeout:       scw.TimeDurationPtr(defaultInstanceServerWaitTimeout),
-		RetryInterval: &retryInterval,
-	}, scw.WithContext(ctx))
-	if err != nil && !is404Error(err) {
-		return diag.FromErr(err)
-	}
-
 	err = lbAPI.DetachPrivateNetwork(&lb.ZonedAPIDetachPrivateNetworkRequest{
 		Zone:             zone,
 		LBID:             lbID,
@@ -205,6 +201,17 @@ func resourceScalewayLbPrivateNetworkDelete(ctx context.Context, d *schema.Resou
 			d.SetId("")
 			return nil
 		}
+		return diag.FromErr(err)
+	}
+
+	retryInterval := DefaultWaitLBRetryInterval
+	_, err = lbAPI.WaitForLb(&lb.ZonedAPIWaitForLBRequest{
+		Zone:          zone,
+		LBID:          lbID,
+		Timeout:       scw.TimeDurationPtr(defaultInstanceServerWaitTimeout),
+		RetryInterval: &retryInterval,
+	}, scw.WithContext(ctx))
+	if err != nil && !is404Error(err) {
 		return diag.FromErr(err)
 	}
 
