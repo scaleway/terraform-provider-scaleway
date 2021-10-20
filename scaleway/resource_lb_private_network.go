@@ -54,14 +54,11 @@ func resourceScalewayLbPrivateNetwork() *schema.Resource {
 			"dhcp_config": {
 				ConflictsWith: []string{"static_config"},
 				Description:   "Set to true if you want to let DHCP assign IP addresses",
-				Type:          schema.TypeList,
-				MaxItems:      1,
+				Default:       false,
+				Type:          schema.TypeBool,
 				Optional:      true,
 				Computed:      true,
 				ForceNew:      true,
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{},
-				},
 			},
 			// Readonly attributes
 			"status": {
@@ -108,8 +105,16 @@ func resourceScalewayLbPrivateNetworkCreate(ctx context.Context, d *schema.Resou
 		Zone:             zone,
 		LBID:             lbID,
 		PrivateNetworkID: pnID,
-		StaticConfig:     expandLbPrivateNetworkStaticConfig(d.Get("static_config")),
-		DHCPConfig:       expandLbPrivateNetworkDHCPConfig(d.Get("dhcp_config")),
+	}
+
+	dhcpConfig, dhcpConfigExist := d.GetOk("dhcp_config")
+	if dhcpConfigExist {
+		createReq.DHCPConfig = expandLbPrivateNetworkDHCPConfig(dhcpConfig)
+	}
+
+	staticConfig, staticConfigExist := d.GetOk("static_config")
+	if staticConfigExist {
+		createReq.StaticConfig = expandLbPrivateNetworkStaticConfig(staticConfig)
 	}
 
 	res, err := lbAPI.AttachPrivateNetwork(createReq, scw.WithContext(ctx))
@@ -162,10 +167,15 @@ func resourceScalewayLbPrivateNetworkRead(ctx context.Context, d *schema.Resourc
 		return nil
 	}
 
+	if pn.DHCPConfig != nil {
+		_ = d.Set("dhcp_config", true)
+	} else {
+		staticConfig := flattenLbPrivateNetworkStaticConfig(pn.StaticConfig).([]string)
+		_ = d.Set("static_config", staticConfig)
+	}
+
 	_ = d.Set("lb_id", newZonedIDString(zone, pn.LB.ID))
 	_ = d.Set("private_network_id", newZonedIDString(zone, pn.PrivateNetworkID))
-	_ = d.Set("static_config", flattenLbPrivateNetworkStaticConfig(pn.StaticConfig))
-	_ = d.Set("dhcp_config", flattenLbPrivateNetworkDHCPConfig(pn.DHCPConfig))
 	_ = d.Set("status", pn.Status)
 
 	return nil
