@@ -311,15 +311,8 @@ func flattenLbPrivateNetworkStaticConfig(cfg *lb.PrivateNetworkStaticConfig) int
 }
 
 func expandLbPrivateNetworkDHCPConfig(raw interface{}) *lb.PrivateNetworkDHCPConfig {
-	if raw == nil || len(raw.([]interface{})) < 1 {
+	if raw == nil || !raw.(bool) {
 		return nil
 	}
 	return &lb.PrivateNetworkDHCPConfig{}
-}
-
-func flattenLbPrivateNetworkDHCPConfig(cfg *lb.PrivateNetworkDHCPConfig) interface{} {
-	if cfg == nil {
-		return nil
-	}
-	return cfg
 }

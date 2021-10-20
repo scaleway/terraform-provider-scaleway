@@ -54,7 +54,6 @@ func resourceScalewayLbPrivateNetwork() *schema.Resource {
 			"dhcp_config": {
 				ConflictsWith: []string{"static_config"},
 				Description:   "Set to true if you want to let DHCP assign IP addresses",
-				Default:       false,
 				Type:          schema.TypeBool,
 				Optional:      true,
 				Computed:      true,
