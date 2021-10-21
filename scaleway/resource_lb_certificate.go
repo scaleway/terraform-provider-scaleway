@@ -129,18 +129,6 @@ func resourceScalewayLbCertificateCreate(ctx context.Context, d *schema.Resource
 		return diag.FromErr(err)
 	}
 
-	retryInterval := DefaultWaitLBRetryInterval
-	_, err = lbAPI.WaitForLb(&lb.ZonedAPIWaitForLBRequest{
-		Zone:          zone,
-		LBID:          lbID,
-		Timeout:       scw.TimeDurationPtr(defaultInstanceServerWaitTimeout),
-		RetryInterval: &retryInterval,
-	}, scw.WithContext(ctx))
-
-	if err != nil && !is404Error(err) {
-		return diag.FromErr(err)
-	}
-
 	createReq := &lb.ZonedAPICreateCertificateRequest{
 		Zone:              zone,
 		LBID:              lbID,
