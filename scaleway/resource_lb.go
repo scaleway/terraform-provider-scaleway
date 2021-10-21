@@ -143,6 +143,13 @@ func resourceScalewayLbRead(ctx context.Context, d *schema.ResourceData, meta in
 		return diag.FromErr(err)
 	}
 
+	var relaseIPValue bool
+	releaseIPAddress, releaseIPPExist := d.GetOk("release_ip")
+	if releaseIPPExist {
+		relaseIPValue = *expandBoolPtr(releaseIPAddress)
+	}
+
+	_ = d.Set("release_ip", relaseIPValue)
 	_ = d.Set("name", res.Name)
 	_ = d.Set("zone", zone.String())
 	_ = d.Set("region", region.String())
