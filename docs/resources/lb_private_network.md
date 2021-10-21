@@ -43,7 +43,7 @@ The following arguments are supported:
 - `private_network_id` - (Required) The ID of the Private Network to associate.
 
 - `static_config` - (Required) Define two local ip address of your choice for each load balancer instance. See below.
- 
+
 - `dhcp_config` - (Required) Set to true if you want to let DHCP assign IP addresses. See below.
 
 ~> **Important:**  Only one of static_config and dhcp_config may be set.
