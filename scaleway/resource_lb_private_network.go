@@ -106,10 +106,7 @@ func resourceScalewayLbPrivateNetworkCreate(ctx context.Context, d *schema.Resou
 		PrivateNetworkID: pnID,
 	}
 
-	dhcpConfig, dhcpConfigExist := d.GetOk("dhcp_config")
-	if dhcpConfigExist {
-		createReq.DHCPConfig = expandLbPrivateNetworkDHCPConfig(dhcpConfig)
-	}
+	createReq.DHCPConfig = expandLbPrivateNetworkDHCPConfig(d.Get("dhcp_config"))
 
 	staticConfig, staticConfigExist := d.GetOk("static_config")
 	if staticConfigExist {
@@ -168,11 +165,8 @@ func resourceScalewayLbPrivateNetworkRead(ctx context.Context, d *schema.Resourc
 
 	if pn.DHCPConfig != nil {
 		_ = d.Set("dhcp_config", true)
-	} else {
-		staticConfig := flattenLbPrivateNetworkStaticConfig(pn.StaticConfig).([]string)
-		_ = d.Set("static_config", staticConfig)
 	}
-
+	_ = d.Set("static_config", flattenLbPrivateNetworkStaticConfig(pn.StaticConfig))
 	_ = d.Set("lb_id", newZonedIDString(zone, pn.LB.ID))
 	_ = d.Set("private_network_id", newZonedIDString(zone, pn.PrivateNetworkID))
 	_ = d.Set("status", pn.Status)
@@ -186,6 +180,7 @@ func findPn(privateNetworks []*lb.PrivateNetwork, id string) *lb.PrivateNetwork 
 			return pn
 		}
 	}
+
 	return nil
 }
 

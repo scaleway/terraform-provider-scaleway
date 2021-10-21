@@ -65,6 +65,12 @@ func resourceScalewayLb() *schema.Resource {
 				Computed:    true,
 				Description: "The load-balance public IP address",
 			},
+			"release_ip": {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Default:     false,
+				Description: "Release the IPs related to this load-balancer",
+			},
 			"region":          regionComputedSchema(),
 			"zone":            zoneSchema(),
 			"organization_id": organizationIDSchema(),
@@ -202,10 +208,16 @@ func resourceScalewayLbDelete(ctx context.Context, d *schema.ResourceData, meta 
 		return diag.FromErr(err)
 	}
 
+	var releaseAddressValue bool
+	releaseIPAddress, releaseIPPExist := d.GetOk("release_ip")
+	if releaseIPPExist {
+		releaseAddressValue = *expandBoolPtr(releaseIPAddress)
+	}
+
 	err = lbAPI.DeleteLB(&lb.ZonedAPIDeleteLBRequest{
 		Zone:      zone,
 		LBID:      ID,
-		ReleaseIP: true,
+		ReleaseIP: releaseAddressValue,
 	}, scw.WithContext(ctx))
 
 	if err != nil && !is404Error(err) {

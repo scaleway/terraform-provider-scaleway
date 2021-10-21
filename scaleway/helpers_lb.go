@@ -303,10 +303,11 @@ func expandLbPrivateNetworkStaticConfig(raw interface{}) *lb.PrivateNetworkStati
 	}
 }
 
-func flattenLbPrivateNetworkStaticConfig(cfg *lb.PrivateNetworkStaticConfig) interface{} {
+func flattenLbPrivateNetworkStaticConfig(cfg *lb.PrivateNetworkStaticConfig) []string {
 	if cfg == nil {
 		return nil
 	}
+
 	return cfg.IPAddress
 }
 
