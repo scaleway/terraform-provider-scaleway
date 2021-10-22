@@ -293,3 +293,27 @@ func lbUpgradeV1RegionalToZonedID(element string) (string, error) {
 	//  append zone 1 as default: e.g. fr-par-1
 	return fmt.Sprintf("%s-1/%s", locality, id), nil
 }
+
+func expandLbPrivateNetworkStaticConfig(raw interface{}) *lb.PrivateNetworkStaticConfig {
+	if raw == nil || len(raw.([]interface{})) < 1 {
+		return nil
+	}
+	return &lb.PrivateNetworkStaticConfig{
+		IPAddress: expandStrings(raw),
+	}
+}
+
+func flattenLbPrivateNetworkStaticConfig(cfg *lb.PrivateNetworkStaticConfig) []string {
+	if cfg == nil {
+		return nil
+	}
+
+	return cfg.IPAddress
+}
+
+func expandLbPrivateNetworkDHCPConfig(raw interface{}) *lb.PrivateNetworkDHCPConfig {
+	if raw == nil || !raw.(bool) {
+		return nil
+	}
+	return &lb.PrivateNetworkDHCPConfig{}
+}

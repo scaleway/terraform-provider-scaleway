@@ -124,6 +124,11 @@ func resourceScalewayLbCertificateCreate(ctx context.Context, d *schema.Resource
 		return diag.FromErr(err)
 	}
 
+	lbAPI, _, err := lbAPIWithZone(d, meta)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	createReq := &lb.ZonedAPICreateCertificateRequest{
 		Zone:              zone,
 		LBID:              lbID,
@@ -135,10 +140,6 @@ func resourceScalewayLbCertificateCreate(ctx context.Context, d *schema.Resource
 		return diag.FromErr(errors.New("you need to define either letsencrypt or custom_certificate configuration"))
 	}
 
-	lbAPI, _, err := lbAPIWithZone(d, meta)
-	if err != nil {
-		return diag.FromErr(err)
-	}
 	res, err := lbAPI.CreateCertificate(createReq, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
