@@ -25,6 +25,12 @@ func dataSourceScalewayLb() *schema.Resource {
 		ValidateFunc:  validationUUIDorUUIDWithLocality(),
 		ConflictsWith: []string{"name"},
 	}
+	dsSchema["release_ip"] = &schema.Schema{
+		Type:        schema.TypeBool,
+		Optional:    true,
+		Default:     false,
+		Description: "Release the IPs related to this load-balancer",
+	}
 
 	return &schema.Resource{
 		ReadContext: dataSourceScalewayLbRead,
@@ -57,6 +63,16 @@ func dataSourceScalewayLbRead(ctx context.Context, d *schema.ResourceData, meta 
 		lbID = res.LBs[0].ID
 	}
 
+	var relaseIPValue bool
+	releaseIPAddress, releaseIPExist := d.GetOk("release_ip")
+	if releaseIPExist {
+		relaseIPValue = *expandBoolPtr(releaseIPAddress)
+	}
+
+	err = d.Set("release_ip", relaseIPValue)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 	zonedID := datasourceNewZonedID(lbID, zone)
 	d.SetId(zonedID)
 	err = d.Set("lb_id", zonedID)

@@ -255,6 +255,18 @@ func resourceScalewayLbBackendCreate(ctx context.Context, d *schema.ResourceData
 		healthCheckPort = d.Get("forward_port").(int)
 	}
 
+	retryInterval := DefaultWaitLBRetryInterval
+	_, err = lbAPI.WaitForLb(&lb.ZonedAPIWaitForLBRequest{
+		Zone:          zone,
+		LBID:          LbID,
+		Timeout:       scw.TimeDurationPtr(defaultInstanceServerWaitTimeout),
+		RetryInterval: &retryInterval,
+	}, scw.WithContext(ctx))
+
+	if err != nil && !is404Error(err) {
+		return diag.FromErr(err)
+	}
+
 	createReq := &lb.ZonedAPICreateBackendRequest{
 		Zone:                     zone,
 		LBID:                     LbID,

@@ -188,6 +188,14 @@ func TestAccScalewayLbAcl_Basic(t *testing.T) {
 					}),
 				),
 			},
+			{
+				Config: `
+					resource scaleway_lb_ip ip01 {}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet("scaleway_lb_ip.ip01", "id"),
+				),
+			},
 		},
 	})
 }
