@@ -7,7 +7,7 @@ description: |-
 # scaleway_vpc_public_gateway_ip
 
 Creates and manages Scaleway VPC Public Gateway IP.
-For more information, see [the documentation](https://developers.scaleway.com/en/products/vpc-gw/api/).
+For more information, see [the documentation](https://developers.scaleway.com/en/products/vpc-gw/api/v1).
 
 ## Example
 
