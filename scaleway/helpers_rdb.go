@@ -92,19 +92,34 @@ func expandPrivateNetwork(data interface{}, exist bool) []*rdbV1.EndpointSpec {
 	return res
 }
 
+func expandLoadBalancer(data interface{}) []*rdbV1.EndpointSpec {
+	if data == nil || !data.(bool) {
+		return nil
+	}
+
+	var res []*rdbV1.EndpointSpec
+
+	res = append(res, &rdbV1.EndpointSpec{
+		LoadBalancer: &rdbV1.EndpointSpecLoadBalancer{}})
+
+	return res
+}
+
 func flattenInstancePrivateNetwork(readEndpoints []*rdbV1.Endpoint) interface{} {
-	privateNetworkI := []map[string]interface{}(nil)
 	if len(readEndpoints) == 0 {
 		return nil
 	}
+
+	pnI := []map[string]interface{}(nil)
 	for _, readPN := range readEndpoints {
 		if readPN.PrivateNetwork != nil {
 			pn := readPN.PrivateNetwork
-			privateNetworkI = append(privateNetworkI, map[string]interface{}{
+			pnI = append(pnI, map[string]interface{}{
 				"ip":    flattenIPNet(pn.ServiceIP),
 				"pn_id": pn.PrivateNetworkID,
 			})
 		}
 	}
-	return privateNetworkI
+
+	return pnI
 }

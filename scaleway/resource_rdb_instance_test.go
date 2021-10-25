@@ -150,7 +150,7 @@ func TestAccScalewayRdbInstance_Settings(t *testing.T) {
 	})
 }
 
-func TestAccScalewayRdbInstance_Endpoints(t *testing.T) {
+func TestAccScalewayRdbInstance_LoadBalancer(t *testing.T) {
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
 	resource.ParallelTest(t, resource.TestCase{
@@ -160,7 +160,6 @@ func TestAccScalewayRdbInstance_Endpoints(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: `
-					resource scaleway_lb_ip ip01 {}
 					resource scaleway_rdb_instance main {
 						name = "test-rdb"
 						node_type = "db-dev-s"
@@ -169,18 +168,17 @@ func TestAccScalewayRdbInstance_Endpoints(t *testing.T) {
 						disable_backup = true
 						user_name = "my_initial_user"
 						password = "thiZ_is_v&ry_s3cret"
-						load_balancer_id = "${scaleway_lb_ip.ip01.id}"
+						load_balancer = true
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayRdbExists(tt, "scaleway_rdb_instance.main"),
-					resource.TestCheckResourceAttrSet("scaleway_rdb_instance.main", "load_balancer_id"),
+					resource.TestCheckResourceAttrSet("scaleway_rdb_instance.main", "load_balancer"),
 				),
 			},
 		},
 	})
 }
-
 
 func TestAccScalewayRdbInstance_PrivateNetwork(t *testing.T) {
 	tt := NewTestTools(t)
@@ -190,6 +188,17 @@ func TestAccScalewayRdbInstance_PrivateNetwork(t *testing.T) {
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheckScalewayRdbInstanceDestroy(tt),
 		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource scaleway_vpc_private_network pn01 {
+						name = "my_private_network"
+						tags = ["tag0", "tag1", "rdb_pn"]
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("scaleway_vpc_private_network.pn01", "name", "my_private_network"),
+				),
+			},
 			{
 				Config: `
 					resource scaleway_vpc_private_network pn01 {
@@ -217,9 +226,19 @@ func TestAccScalewayRdbInstance_PrivateNetwork(t *testing.T) {
 				`,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayRdbExists(tt, "scaleway_rdb_instance.main"),
-					resource.TestCheckResourceAttrSet("scaleway_rdb_instance.main", "private_network"),
-					resource.TestCheckResourceAttrSet("scaleway_rdb_instance.main", "private_network.0.pn_id"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "private_network.#", "1"),
 					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "private_network.0.ip", "192.168.1.42/24"),
+				),
+			},
+			{
+				Config: `
+					resource scaleway_vpc_private_network pn01 {
+						name = "my_private_network_without_attachment"
+						tags = ["tag0", "tag1", "rdb_pn"]
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("scaleway_vpc_private_network.pn01", "name", "my_private_network_without_attachment"),
 				),
 			},
 		},

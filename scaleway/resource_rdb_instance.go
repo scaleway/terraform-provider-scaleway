@@ -118,11 +118,19 @@ func resourceScalewayRdbInstance() *schema.Resource {
 				Computed:    true,
 				Description: "Volume size (in GB) when volume_type is not lssd",
 			},
+			"load_balancer": {
+				ConflictsWith: []string{"private_network"},
+				Type:          schema.TypeBool,
+				Optional:      true,
+				Default:       false,
+				Description:   "Expose data base exposed by a load-balancer",
+			},
 			"private_network": {
-				Type:        schema.TypeList,
-				Optional:    true,
-				MaxItems:    1,
-				Description: "List of private network to expose your database instance",
+				ConflictsWith: []string{"load_balancer"},
+				Type:          schema.TypeList,
+				Optional:      true,
+				MaxItems:      1,
+				Description:   "List of private network to expose your database instance",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"ip": {
@@ -213,6 +221,11 @@ func resourceScalewayRdbInstanceCreate(ctx context.Context, d *schema.ResourceDa
 		createReq.InitEndpoints = expandPrivateNetwork(pn, pnExist)
 	}
 
+	lb, lbExist := d.GetOk("load_balancer")
+	if lbExist {
+		createReq.InitEndpoints = expandLoadBalancer(lb)
+	}
+
 	if size, ok := d.GetOk("volume_size_in_gb"); ok {
 		if createReq.VolumeType != rdbV1.VolumeTypeBssd {
 			return diag.FromErr(fmt.Errorf("volume_size_in_gb should be used with volume_type %s only", rdbV1.VolumeTypeBssd.String()))
@@ -241,7 +254,7 @@ func resourceScalewayRdbInstanceCreate(ctx context.Context, d *schema.ResourceDa
 	// Configure Schedule Backup
 	// BackupScheduleFrequency and BackupScheduleRetention can only configure after instance creation
 	if !d.Get("disable_backup").(bool) {
-		updateReq := &rdb.UpdateInstanceRequest{
+		updateReq := &rdbV1.UpdateInstanceRequest{
 			Region:     region,
 			InstanceID: res.ID,
 		}
@@ -331,6 +344,9 @@ func resourceScalewayRdbInstanceRead(ctx context.Context, d *schema.ResourceData
 
 	// set settings
 	_ = d.Set("settings", flattenInstanceSettings(res.Settings))
+
+	lbBoolean := *expandBoolPtr(d.Get("load_balancer"))
+	_ = d.Set("load_balancer", lbBoolean)
 
 	// set private_network
 	_ = d.Set("private_network", flattenInstancePrivateNetwork(res.Endpoints))
@@ -514,7 +530,7 @@ func resourceScalewayRdbInstanceDelete(ctx context.Context, d *schema.ResourceDa
 	if err != nil && !is404Error(err) {
 		return diag.FromErr(err)
 	}
-
+	// Lastly wait in case the instance is in a transient state
 	_, err = rdbAPI.WaitForInstance(&rdbV1.WaitForInstanceRequest{
 		InstanceID:    ID,
 		Region:        region,

@@ -14,20 +14,20 @@ For more information, see [the documentation](https://developers.scaleway.com/en
 ### Basic
 
 ```hcl
-resource scaleway_vpc_private_network pn01 {
+resource "scaleway_vpc_private_network" "pn01" {
   name = "test-lb-pn"
 }
 
-resource scaleway_lb_ip ip01 {}
+resource "scaleway_lb_ip" "ip01" {}
 
-resource scaleway_lb lb01 {
+resource "scaleway_lb" "lb01" {
   ip_id = scaleway_lb_ip.ip01.id
   name = "test-lb"
   type = "lb-s"
   release_ip = true
 }
 
-resource scaleway_lb_private_network lb01pn01 {
+resource "scaleway_lb_private_network" "lb01pn01" {
   lb_id = scaleway_lb.lb01.id
   private_network_id = scaleway_vpc_private_network.pn01.id
   static_config = ["172.16.0.100", "172.16.0.101"]
