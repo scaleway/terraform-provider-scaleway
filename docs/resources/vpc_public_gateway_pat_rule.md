@@ -12,26 +12,26 @@ For more information, see [the documentation](https://developers.scaleway.com/en
 ## Example
 
 ```hcl
-resource scaleway_vpc_public_gateway pg01 {
+resource "scaleway_vpc_public_gateway" "pg01" {
   type = "VPC-GW-S"
 }
 
-resource scaleway_vpc_public_gateway_dhcp dhcp01 {
+resource "scaleway_vpc_public_gateway_dhcp" "dhcp01" {
   subnet = "192.168.1.0/24"
 }
 
-resource scaleway_vpc_private_network pn01 {
+resource "scaleway_vpc_private_network" "pn01" {
   name = "pn_test_network"
 }
 
-resource scaleway_vpc_gateway_network gn01 {
+resource "scaleway_vpc_gateway_network" "gn01" {
   gateway_id = scaleway_vpc_public_gateway.pg01.id
   private_network_id = scaleway_vpc_private_network.pn01.id
   dhcp_id = scaleway_vpc_public_gateway_dhcp.dhcp01.id
   cleanup_dhcp = true
 }
 
-resource scaleway_vpc_public_gateway_pat_rule main {
+resource "scaleway_vpc_public_gateway_pat_rule" "main" {
   gateway_id = scaleway_vpc_public_gateway.pg01.id
   private_ip = scaleway_vpc_public_gateway_dhcp.dhcp01.address
   private_port = 42

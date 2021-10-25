@@ -16,7 +16,7 @@ Creates and manages Scaleway IoT Hub Instances. For more information, see [the d
 ### Basic
 
 ```hcl
-resource scaleway_iot_hub main {
+resource "scaleway_iot_hub" "main" {
     name = "test-iot"
     product_plan = "plan_shared"
 }
