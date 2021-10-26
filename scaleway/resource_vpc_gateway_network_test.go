@@ -96,6 +96,25 @@ func TestAccScalewayVPCGatewayNetwork_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_vpc_gateway_network.main", "enable_masquerade", "true"),
 				),
 			},
+			{
+				Config: `
+					resource scaleway_vpc_private_network pn01 {
+						name = "pn_test_network"
+					}
+
+					resource scaleway_vpc_public_gateway_ip gw01 {
+					}
+
+					resource scaleway_vpc_public_gateway pg01 {
+						name = "foobar"
+						type = "VPC-GW-S"
+						ip_id = scaleway_vpc_public_gateway_ip.gw01.id
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet("scaleway_vpc_private_network.pn01", "name"),
+				),
+			},
 		},
 	})
 }

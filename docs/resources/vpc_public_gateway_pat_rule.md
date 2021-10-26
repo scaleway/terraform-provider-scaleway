@@ -7,7 +7,7 @@ Manages Scaleway VPC Public Gateways PAT rules.
 # scaleway_vpc_public_gateway_pat_rule
 
 Creates and manages Scaleway VPC Public Gateway PAT (Port Address Translation).
-For more information, see [the documentation](https://developers.scaleway.com/en/products/vpc-gw/api/#pat-rules-e75d10).
+For more information, see [the documentation](https://developers.scaleway.com/en/products/vpc-gw/api/v1#pat-rules-e75d10).
 
 ## Example
 

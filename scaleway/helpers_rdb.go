@@ -114,9 +114,10 @@ func flattenInstancePrivateNetwork(readEndpoints []*rdbV1.Endpoint) interface{} 
 	for _, readPN := range readEndpoints {
 		if readPN.PrivateNetwork != nil {
 			pn := readPN.PrivateNetwork
+			pnZonedID := newZonedIDString(pn.Zone, pn.PrivateNetworkID)
 			pnI = append(pnI, map[string]interface{}{
 				"ip":    flattenIPNet(pn.ServiceIP),
-				"pn_id": pn.PrivateNetworkID,
+				"pn_id": pnZonedID,
 			})
 		}
 	}
