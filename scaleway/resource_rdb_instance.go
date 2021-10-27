@@ -309,7 +309,9 @@ func resourceScalewayRdbInstanceRead(ctx context.Context, d *schema.ResourceData
 	_ = d.Set("engine", res.Engine)
 	_ = d.Set("is_ha_cluster", res.IsHaCluster)
 	_ = d.Set("disable_backup", res.BackupSchedule.Disabled)
-	_ = d.Set("user_name", d.Get("user_name").(string)) // username and
+	_ = d.Set("backup_schedule_frequency", int(res.BackupSchedule.Frequency))
+	_ = d.Set("backup_schedule_retention", int(res.BackupSchedule.Retention))
+	_ = d.Set("user_name", d.Get("user_name").(string)) // user name and
 	_ = d.Set("password", d.Get("password").(string))   // password are immutable
 	_ = d.Set("tags", res.Tags)
 	if res.Endpoint != nil {
@@ -530,6 +532,7 @@ func resourceScalewayRdbInstanceDelete(ctx context.Context, d *schema.ResourceDa
 	if err != nil && !is404Error(err) {
 		return diag.FromErr(err)
 	}
+
 	// Lastly wait in case the instance is in a transient state
 	_, err = rdbAPI.WaitForInstance(&rdbV1.WaitForInstanceRequest{
 		InstanceID:    ID,
