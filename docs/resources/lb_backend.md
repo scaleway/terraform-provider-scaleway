@@ -50,7 +50,7 @@ The following arguments are supported:
 - `forward_port`                - (Required) User sessions will be forwarded to this port of backend servers.
 - `forward_port_algorithm`      - (Default: `roundrobin`) Load balancing algorithm. Possible values are: `roundrobin`, `leastconn` and `first`.
 - `sticky_sessions`             - (Default: `none`) Load balancing algorithm. Possible values are: `none`, `cookie` and `table`.
-- `sticky_sessions_cookie_name` - (Optional) Cookie name for sticky sessions. Only applicable when sticky_sessions is set to `cookie`.
+- `sticky_sessions_cookie_name` - (Optional) Cookie name for for sticky sessions. Only applicable when sticky_sessions is set to `cookie`.
 - `server_ips`                  - (Optional) List of backend server IP addresses. Addresses can be either IPv4 or IPv6.
 - `send_proxy_v2`               - DEPRECATED please use `proxy_protocol` instead - (Default: `false`) Enables PROXY protocol version 2.
 - `proxy_protocol`              - (Default: `none`) Choose the type of PROXY protocol to enable (`none`, `v1`, `v2`, `v2_ssl`, `v2_ssl_cn`)

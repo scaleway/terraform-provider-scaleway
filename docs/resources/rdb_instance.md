@@ -99,7 +99,13 @@ In addition to all arguments above, the following attributes are exported:
     - `port` - Port of the replica.
     - `name` - Name of the replica.
 - `certificate` - Certificate of the database instance.
+- `load_balancer` - Load balancer endpoint. Only one of `private_network` and `load_balancer`.
 - `organization_id` - The organization ID the Database Instance is associated with.
+
+The `private_network` block attributes:
+
+- `zone` - (Defaults to [provider](../index.md#zone) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which the private network was created.
+
 
 ## Import
 

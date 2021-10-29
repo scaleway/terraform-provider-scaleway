@@ -118,19 +118,11 @@ func resourceScalewayRdbInstance() *schema.Resource {
 				Computed:    true,
 				Description: "Volume size (in GB) when volume_type is not lssd",
 			},
-			"load_balancer": {
-				ConflictsWith: []string{"private_network"},
-				Type:          schema.TypeBool,
-				Optional:      true,
-				Default:       false,
-				Description:   "Expose data base exposed by a load-balancer",
-			},
 			"private_network": {
-				ConflictsWith: []string{"load_balancer"},
-				Type:          schema.TypeList,
-				Optional:      true,
-				MaxItems:      1,
-				Description:   "List of private network to expose your database instance",
+				Type:        schema.TypeList,
+				Optional:    true,
+				MaxItems:    1,
+				Description: "List of private network to expose your database instance",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"ip": {
@@ -144,6 +136,11 @@ func resourceScalewayRdbInstance() *schema.Resource {
 							Required:     true,
 							ValidateFunc: validationUUIDorUUIDWithLocality(),
 							Description:  "The private network ID",
+						},
+						"zone": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The private network zone",
 						},
 					},
 				},
@@ -188,6 +185,11 @@ func resourceScalewayRdbInstance() *schema.Resource {
 				Computed:    true,
 				Description: "Certificate of the database instance",
 			},
+			"load_balancer": {
+				Type:        schema.TypeBool,
+				Computed:    true,
+				Description: "Load balancers to forward the traffic to the right node based on the node state.",
+			},
 			// Common
 			"region":          regionSchema(),
 			"organization_id": organizationIDSchema(),
@@ -219,11 +221,8 @@ func resourceScalewayRdbInstanceCreate(ctx context.Context, d *schema.ResourceDa
 	pn, pnExist := d.GetOk("private_network")
 	if pnExist {
 		createReq.InitEndpoints = expandPrivateNetwork(pn, pnExist)
-	}
-
-	lb, lbExist := d.GetOk("load_balancer")
-	if lbExist {
-		createReq.InitEndpoints = expandLoadBalancer(lb)
+	} else {
+		createReq.InitEndpoints = expandLoadBalancer()
 	}
 
 	if size, ok := d.GetOk("volume_size_in_gb"); ok {
@@ -347,11 +346,14 @@ func resourceScalewayRdbInstanceRead(ctx context.Context, d *schema.ResourceData
 	// set settings
 	_ = d.Set("settings", flattenInstanceSettings(res.Settings))
 
-	lbBoolean := *expandBoolPtr(d.Get("load_balancer"))
-	_ = d.Set("load_balancer", lbBoolean)
-
-	// set private_network
-	_ = d.Set("private_network", flattenInstancePrivateNetwork(res.Endpoints))
+	// set endpoints
+	hasLoadBalancerEndpoint := true
+	pnI, pnExist := flattenPrivateNetwork(res.Endpoints)
+	if pnExist {
+		_ = d.Set("private_network", pnI)
+		hasLoadBalancerEndpoint = false
+	}
+	_ = d.Set("load_balancer", hasLoadBalancerEndpoint)
 
 	return nil
 }

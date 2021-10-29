@@ -43,7 +43,7 @@ func flattenDomainGeoIP(config *domain.RecordGeoIPConfig) interface{} {
 	flattened = []map[string]interface{}{{}}
 	if config.Matches != nil && len(config.Matches) > 0 {
 		matches := []map[string]interface{}{}
-    
+
 		for _, match := range config.Matches {
 			rawMatch := map[string]interface{}{
 				"data": match.Data,
@@ -115,9 +115,9 @@ func flattenDomainHTTPService(config *domain.RecordHTTPServiceConfig) interface{
 	if config == nil {
 		return flattened
 	}
-  
+
 	ips := []interface{}{}
- 
+
 	if config.IPs != nil && len(config.IPs) > 0 {
 		for _, ip := range config.IPs {
 			ips = append(ips, ip.String())

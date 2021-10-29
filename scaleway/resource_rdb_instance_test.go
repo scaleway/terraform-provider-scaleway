@@ -168,7 +168,6 @@ func TestAccScalewayRdbInstance_LoadBalancer(t *testing.T) {
 						disable_backup = true
 						user_name = "my_initial_user"
 						password = "thiZ_is_v&ry_s3cret"
-						load_balancer = true
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
