@@ -6,7 +6,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
-	rdbV1 "github.com/scaleway/scaleway-sdk-go/api/rdb/v1"
+	"github.com/scaleway/scaleway-sdk-go/api/rdb/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 )
 
@@ -19,15 +19,15 @@ func init() {
 
 func testSweepRDBInstance(_ string) error {
 	return sweepRegions(scw.AllRegions, func(scwClient *scw.Client, region scw.Region) error {
-		rdbAPI := rdbV1.NewAPI(scwClient)
+		rdbAPI := rdb.NewAPI(scwClient)
 		l.Debugf("sweeper: destroying the rdb instance in (%s)", region)
-		listInstances, err := rdbAPI.ListInstances(&rdbV1.ListInstancesRequest{}, scw.WithAllPages())
+		listInstances, err := rdbAPI.ListInstances(&rdb.ListInstancesRequest{}, scw.WithAllPages())
 		if err != nil {
 			return fmt.Errorf("error listing rdb instances in (%s) in sweeper: %s", region, err)
 		}
 
 		for _, instance := range listInstances.Instances {
-			_, err := rdbAPI.DeleteInstance(&rdbV1.DeleteInstanceRequest{
+			_, err := rdbAPI.DeleteInstance(&rdb.DeleteInstanceRequest{
 				InstanceID: instance.ID,
 			})
 			if err != nil {
@@ -344,7 +344,7 @@ func testAccCheckScalewayRdbExists(tt *TestTools, n string) resource.TestCheckFu
 			return err
 		}
 
-		_, err = rdbAPI.GetInstance(&rdbV1.GetInstanceRequest{
+		_, err = rdbAPI.GetInstance(&rdb.GetInstanceRequest{
 			InstanceID: ID,
 			Region:     region,
 		})
@@ -397,7 +397,7 @@ func testAccCheckScalewayRdbInstanceDestroy(tt *TestTools) resource.TestCheckFun
 				return err
 			}
 
-			_, err = rdbAPI.GetInstance(&rdbV1.GetInstanceRequest{
+			_, err = rdbAPI.GetInstance(&rdb.GetInstanceRequest{
 				InstanceID: ID,
 				Region:     region,
 			})
