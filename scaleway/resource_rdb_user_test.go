@@ -19,7 +19,7 @@ func init() {
 func TestAccScalewayRdbUser_Basic(t *testing.T) {
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
-	instanceName := "TestAccScalewayRdbUser_Basic"
+	instanceName := "rdb-user-basic"
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,

@@ -64,9 +64,15 @@ func resourceScalewayRdbACLCreate(ctx context.Context, d *schema.ResourceData, m
 		return diag.FromErr(err)
 	}
 
-	_ = rdb.WaitForInstanceRequest{
-		InstanceID: ID,
-		Region:     region,
+	retryInterval := defaultWaitRDBRetryInterval
+	_, err = rdbAPI.WaitForInstance(&rdb.WaitForInstanceRequest{
+		Region:        region,
+		InstanceID:    ID,
+		Timeout:       scw.TimeDurationPtr(defaultRdbInstanceTimeout),
+		RetryInterval: &retryInterval,
+	}, scw.WithContext(ctx))
+	if err != nil {
+		return diag.FromErr(err)
 	}
 
 	createReq := &rdb.SetInstanceACLRulesRequest{
@@ -148,6 +154,18 @@ func resourceScalewayRdbACLDelete(ctx context.Context, d *schema.ResourceData, m
 	for _, acl := range rdbACLExpand(d.Get("acl_rules").(*schema.Set)) {
 		aclruleips = append(aclruleips, acl.IP.String())
 	}
+
+	retryInterval := defaultWaitRDBRetryInterval
+	_, err = rdbAPI.WaitForInstance(&rdb.WaitForInstanceRequest{
+		Region:        region,
+		InstanceID:    ID,
+		Timeout:       scw.TimeDurationPtr(defaultRdbInstanceTimeout),
+		RetryInterval: &retryInterval,
+	}, scw.WithContext(ctx))
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	_, err = rdbAPI.DeleteInstanceACLRules(&rdb.DeleteInstanceACLRulesRequest{
 		Region:     region,
 		InstanceID: ID,

@@ -51,7 +51,7 @@ func TestAccScalewayRdbInstance_Basic(t *testing.T) {
 				Config: `
 					resource scaleway_rdb_instance rdbBasic {
 						name = "test-rdb-basic"
-						node_type = "db-dev-s"
+						node_type = "DB-DEV-S"
 						engine = "PostgreSQL-11"
 						is_ha_cluster = false
 						disable_backup = true
@@ -72,44 +72,18 @@ func TestAccScalewayRdbInstance_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_rdb_instance.rdbBasic", "tags.0", "terraform-test"),
 					resource.TestCheckResourceAttr("scaleway_rdb_instance.rdbBasic", "tags.1", "scaleway_rdb_instance"),
 					resource.TestCheckResourceAttr("scaleway_rdb_instance.rdbBasic", "tags.2", "minimal"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.rdbBasic", "load_balancer", "true"),
 					resource.TestCheckResourceAttrSet("scaleway_rdb_instance.rdbBasic", "endpoint_ip"),
 					resource.TestCheckResourceAttrSet("scaleway_rdb_instance.rdbBasic", "endpoint_port"),
 					resource.TestCheckResourceAttrSet("scaleway_rdb_instance.rdbBasic", "certificate"),
 					resource.TestCheckResourceAttrSet("scaleway_rdb_instance.rdbBasic", "load_balancer"),
 				),
 			},
-			{
-				Config: `
-					resource scaleway_rdb_instance rdbBasic {
-						name = "test-rdb-basic"
-						node_type = "db-dev-m"
-						engine = "PostgreSQL-11"
-						is_ha_cluster = true
-						disable_backup = false
-						user_name = "my_initial_user"
-						password = "thiZ_is_v&ry_s8cret"
-						tags = [ "terraform-test", "scaleway_rdb_instance", "minimal" ]
-					}
-				`,
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayRdbExists(tt, "scaleway_rdb_instance.rdbBasic"),
-					resource.TestCheckResourceAttr("scaleway_rdb_instance.rdbBasic", "name", "test-rdb-basic"),
-					resource.TestCheckResourceAttr("scaleway_rdb_instance.rdbBasic", "node_type", "db-dev-m"),
-					resource.TestCheckResourceAttr("scaleway_rdb_instance.rdbBasic", "engine", "PostgreSQL-11"),
-					resource.TestCheckResourceAttr("scaleway_rdb_instance.rdbBasic", "is_ha_cluster", "true"),
-					resource.TestCheckResourceAttr("scaleway_rdb_instance.rdbBasic", "disable_backup", "false"),
-					resource.TestCheckResourceAttr("scaleway_rdb_instance.rdbBasic", "user_name", "my_initial_user"),
-					resource.TestCheckResourceAttr("scaleway_rdb_instance.rdbBasic", "password", "thiZ_is_v&ry_s8cret"),
-					resource.TestCheckResourceAttr("scaleway_rdb_instance.rdbBasic", "tags.0", "terraform-test"),
-					resource.TestCheckResourceAttr("scaleway_rdb_instance.rdbBasic", "tags.1", "scaleway_rdb_instance"),
-					resource.TestCheckResourceAttr("scaleway_rdb_instance.rdbBasic", "tags.2", "minimal"),
-				),
-			},
 		},
 	})
 }
 
-func TestAccScalewayRdbInstance_Settings(t *testing.T) {
+func TestAccScalewayRdbInstance_WithCluster(t *testing.T) {
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
 	resource.ParallelTest(t, resource.TestCase{
@@ -119,14 +93,17 @@ func TestAccScalewayRdbInstance_Settings(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: `
-					resource scaleway_rdb_instance rdbWithSettings {
-						name = "test-rdb-with-settings"
-						node_type = "db-dev-s"
+					resource scaleway_rdb_instance rdbWithCluster {
+						name = "test-rdb-with-cluster"
+						node_type = "db-dev-m"
 						engine = "PostgreSQL-11"
-						is_ha_cluster = false
-						disable_backup = true
+						is_ha_cluster = true
+						disable_backup = false
+                        backup_schedule_frequency = 24
+                        backup_schedule_retention = 7
 						user_name = "my_initial_user"
-						password = "thiZ_is_v&ry_s3cret"
+						password = "thiZ_is_v&ry_s8cret"
+						tags = [ "terraform-test", "scaleway_rdb_instance", "minimal" ]
 						settings = {
 							work_mem = "4"
 							max_connections = "200"
@@ -138,13 +115,25 @@ func TestAccScalewayRdbInstance_Settings(t *testing.T) {
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayRdbExists(tt, "scaleway_rdb_instance.rdbWithSettings"),
-					resource.TestCheckResourceAttr("scaleway_rdb_instance.rdbWithSettings", "settings.work_mem", "4"),
-					resource.TestCheckResourceAttr("scaleway_rdb_instance.rdbWithSettings", "settings.max_connections", "200"),
-					resource.TestCheckResourceAttr("scaleway_rdb_instance.rdbWithSettings", "settings.effective_cache_size", "1300"),
-					resource.TestCheckResourceAttr("scaleway_rdb_instance.rdbWithSettings", "settings.maintenance_work_mem", "150"),
-					resource.TestCheckResourceAttr("scaleway_rdb_instance.rdbWithSettings", "settings.max_parallel_workers", "2"),
-					resource.TestCheckResourceAttr("scaleway_rdb_instance.rdbWithSettings", "settings.max_parallel_workers_per_gather", "2"),
+					testAccCheckScalewayRdbExists(tt, "scaleway_rdb_instance.rdbWithCluster"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.rdbWithCluster", "name", "test-rdb-with-cluster"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.rdbWithCluster", "node_type", "db-dev-m"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.rdbWithCluster", "engine", "PostgreSQL-11"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.rdbWithCluster", "is_ha_cluster", "true"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.rdbWithCluster", "disable_backup", "false"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.rdbWithCluster", "backup_schedule_frequency", "24"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.rdbWithCluster", "backup_schedule_retention", "7"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.rdbWithCluster", "user_name", "my_initial_user"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.rdbWithCluster", "password", "thiZ_is_v&ry_s8cret"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.rdbWithCluster", "tags.0", "terraform-test"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.rdbWithCluster", "tags.1", "scaleway_rdb_instance"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.rdbWithCluster", "tags.2", "minimal"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.rdbWithCluster", "settings.work_mem", "4"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.rdbWithCluster", "settings.max_connections", "200"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.rdbWithCluster", "settings.effective_cache_size", "1300"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.rdbWithCluster", "settings.maintenance_work_mem", "150"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.rdbWithCluster", "settings.max_parallel_workers", "2"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.rdbWithCluster", "settings.max_parallel_workers_per_gather", "2"),
 				),
 			},
 		},
@@ -269,41 +258,6 @@ func TestAccScalewayRdbInstance_Volume(t *testing.T) {
 	})
 }
 
-func TestAccScalewayRdbInstance_BackupSchedule(t *testing.T) {
-	tt := NewTestTools(t)
-	defer tt.Cleanup()
-	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      testAccCheckScalewayRdbInstanceDestroy(tt),
-		Steps: []resource.TestStep{
-			{
-				Config: `
-					resource scaleway_rdb_instance rdbSchedule {
-						name                      = "test-rdb-schedule"
-						node_type                 = "db-dev-s"
-						engine                    = "PostgreSQL-11"
-						is_ha_cluster             = false
-						disable_backup            = false
-                        backup_schedule_frequency = 24
-                        backup_schedule_retention = 7
-						user_name                 = "my_initial_user"
-						password                  = "thiZ_is_v&ry_s3cret"
-						region                    = "nl-ams"
-						tags                      = [ "terraform-test", "scaleway_rdb_instance", "volume" ]
-					}
-				`,
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayRdbExists(tt, "scaleway_rdb_instance.rdbSchedule"),
-					resource.TestCheckResourceAttr("scaleway_rdb_instance.rdbSchedule", "disable_backup", "false"),
-					resource.TestCheckResourceAttr("scaleway_rdb_instance.rdbSchedule", "backup_schedule_frequency", "24"),
-					resource.TestCheckResourceAttr("scaleway_rdb_instance.rdbSchedule", "backup_schedule_retention", "7"),
-				),
-			},
-		},
-	})
-}
-
 func testAccCheckScalewayRdbExists(tt *TestTools, n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
@@ -327,34 +281,6 @@ func testAccCheckScalewayRdbExists(tt *TestTools, n string) resource.TestCheckFu
 
 		return nil
 	}
-}
-
-func TestAccScalewayRdbInstance_Capitalize(t *testing.T) {
-	tt := NewTestTools(t)
-	defer tt.Cleanup()
-	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      testAccCheckScalewayRdbInstanceDestroy(tt),
-		Steps: []resource.TestStep{
-			{
-				Config: `
-					resource scaleway_rdb_instance rdbCapitalize {
-						name = "test-rdb-capitalize"
-						node_type = "DB-DEV-S"
-						engine = "PostgreSQL-11"
-						is_ha_cluster = false
-						disable_backup = true
-						user_name = "my_initial_user"
-						password = "thiZ_is_v&ry_s3cret"
-					}
-				`,
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayRdbExists(tt, "scaleway_rdb_instance.rdbCapitalize"),
-				),
-			},
-		},
-	})
 }
 
 func testAccCheckScalewayRdbInstanceDestroy(tt *TestTools) resource.TestCheckFunc {
