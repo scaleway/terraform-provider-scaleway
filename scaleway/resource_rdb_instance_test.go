@@ -166,8 +166,8 @@ func TestAccScalewayRdbInstance_PrivateNetwork(t *testing.T) {
 						tags = ["tag0", "tag1", "rdb_pn"]
 					}
 
-					resource scaleway_rdb_instance rdbPN {
-						name = "test-rdb-with-pn"
+					resource scaleway_rdb_instance main {
+						name = "test-rdb"
 						node_type = "db-dev-s"
 						engine = "PostgreSQL-11"
 						is_ha_cluster = false
@@ -185,9 +185,9 @@ func TestAccScalewayRdbInstance_PrivateNetwork(t *testing.T) {
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayRdbExists(tt, "scaleway_rdb_instance.rdbPN"),
-					resource.TestCheckResourceAttr("scaleway_rdb_instance.rdbPN", "private_network.#", "1"),
-					resource.TestCheckResourceAttr("scaleway_rdb_instance.rdbPN", "private_network.0.ip", "192.168.1.42/24"),
+					testAccCheckScalewayRdbExists(tt, "scaleway_rdb_instance.main"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "private_network.#", "1"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "private_network.0.ip", "192.168.1.42/24"),
 				),
 			},
 			{
@@ -215,7 +215,7 @@ func TestAccScalewayRdbInstance_Volume(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: `
-					resource scaleway_rdb_instance rdbVolume {
+					resource scaleway_rdb_instance main {
 						name = "test-rdb-volume"
 						node_type = "db-dev-s"
 						engine = "PostgreSQL-11"
@@ -228,13 +228,13 @@ func TestAccScalewayRdbInstance_Volume(t *testing.T) {
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayRdbExists(tt, "scaleway_rdb_instance.rdbVolume"),
-					resource.TestCheckResourceAttr("scaleway_rdb_instance.rdbVolume", "volume_type", "lssd"),
+					testAccCheckScalewayRdbExists(tt, "scaleway_rdb_instance.main"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "volume_type", "lssd"),
 				),
 			},
 			{
 				Config: `
-					resource scaleway_rdb_instance rdbVolume {
+					resource scaleway_rdb_instance main {
 						name = "test-rdb-volume"
 						node_type = "db-dev-s"
 						engine = "PostgreSQL-11"
@@ -249,9 +249,9 @@ func TestAccScalewayRdbInstance_Volume(t *testing.T) {
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayRdbExists(tt, "scaleway_rdb_instance.rdbVolume"),
-					resource.TestCheckResourceAttr("scaleway_rdb_instance.rdbVolume", "volume_type", "bssd"),
-					resource.TestCheckResourceAttr("scaleway_rdb_instance.rdbVolume", "volume_size_in_gb", "10"),
+					testAccCheckScalewayRdbExists(tt, "scaleway_rdb_instance.main"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "volume_type", "bssd"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "volume_size_in_gb", "10"),
 				),
 			},
 		},
