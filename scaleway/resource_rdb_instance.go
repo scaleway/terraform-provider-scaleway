@@ -13,6 +13,10 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 )
 
+const (
+	defaultWaitRDBRetryInterval = 30 * time.Second
+)
+
 func resourceScalewayRdbInstance() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceScalewayRdbInstanceCreate,
@@ -114,6 +118,33 @@ func resourceScalewayRdbInstance() *schema.Resource {
 				Computed:    true,
 				Description: "Volume size (in GB) when volume_type is not lssd",
 			},
+			"private_network": {
+				Type:        schema.TypeList,
+				Optional:    true,
+				MaxItems:    1,
+				Description: "List of private network to expose your database instance",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"ip": {
+							Type:         schema.TypeString,
+							Required:     true,
+							ValidateFunc: validation.IsCIDR,
+							Description:  "The IP of your service",
+						},
+						"pn_id": {
+							Type:         schema.TypeString,
+							Required:     true,
+							ValidateFunc: validationUUIDorUUIDWithLocality(),
+							Description:  "The private network ID",
+						},
+						"zone": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The private network zone",
+						},
+					},
+				},
+			},
 			// Computed
 			"endpoint_ip": {
 				Type:        schema.TypeString,
@@ -154,7 +185,11 @@ func resourceScalewayRdbInstance() *schema.Resource {
 				Computed:    true,
 				Description: "Certificate of the database instance",
 			},
-
+			"load_balancer": {
+				Type:        schema.TypeBool,
+				Computed:    true,
+				Description: "Load balancers to forward the traffic to the right node based on the node state.",
+			},
 			// Common
 			"region":          regionSchema(),
 			"organization_id": organizationIDSchema(),
@@ -183,6 +218,13 @@ func resourceScalewayRdbInstanceCreate(ctx context.Context, d *schema.ResourceDa
 		VolumeType:    rdb.VolumeType(d.Get("volume_type").(string)),
 	}
 
+	pn, pnExist := d.GetOk("private_network")
+	if pnExist {
+		createReq.InitEndpoints = expandPrivateNetwork(pn, pnExist)
+	} else {
+		createReq.InitEndpoints = expandLoadBalancer()
+	}
+
 	if size, ok := d.GetOk("volume_size_in_gb"); ok {
 		if createReq.VolumeType != rdb.VolumeTypeBssd {
 			return diag.FromErr(fmt.Errorf("volume_size_in_gb should be used with volume_type %s only", rdb.VolumeTypeBssd.String()))
@@ -197,11 +239,12 @@ func resourceScalewayRdbInstanceCreate(ctx context.Context, d *schema.ResourceDa
 
 	d.SetId(newRegionalIDString(region, res.ID))
 
+	retryInterval := defaultWaitRDBRetryInterval
 	_, err = rdbAPI.WaitForInstance(&rdb.WaitForInstanceRequest{
 		Region:        region,
 		InstanceID:    res.ID,
 		Timeout:       scw.TimeDurationPtr(defaultRdbInstanceTimeout),
-		RetryInterval: DefaultWaitRetryInterval,
+		RetryInterval: &retryInterval,
 	}, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
@@ -302,6 +345,15 @@ func resourceScalewayRdbInstanceRead(ctx context.Context, d *schema.ResourceData
 
 	// set settings
 	_ = d.Set("settings", flattenInstanceSettings(res.Settings))
+
+	// set endpoints
+	hasLoadBalancerEndpoint := true
+	pnI, pnExist := flattenPrivateNetwork(res.Endpoints)
+	if pnExist {
+		_ = d.Set("private_network", pnI)
+		hasLoadBalancerEndpoint = false
+	}
+	_ = d.Set("load_balancer", hasLoadBalancerEndpoint)
 
 	return nil
 }
@@ -423,11 +475,12 @@ func resourceScalewayRdbInstanceUpdate(ctx context.Context, d *schema.ResourceDa
 			return diag.FromErr(err)
 		}
 
+		retryInterval := defaultWaitRDBRetryInterval
 		_, err = rdbAPI.WaitForInstance(&rdb.WaitForInstanceRequest{
 			Region:        region,
 			InstanceID:    ID,
 			Timeout:       scw.TimeDurationPtr(defaultInstanceServerWaitTimeout * 3), // upgrade takes some time
-			RetryInterval: DefaultWaitRetryInterval,
+			RetryInterval: &retryInterval,
 		}, scw.WithContext(ctx))
 		if err != nil {
 			return diag.FromErr(err)
@@ -460,12 +513,13 @@ func resourceScalewayRdbInstanceDelete(ctx context.Context, d *schema.ResourceDa
 		return diag.FromErr(err)
 	}
 
+	retryInterval := defaultWaitRDBRetryInterval
 	// We first wait in case the instance is in a transient state
 	_, err = rdbAPI.WaitForInstance(&rdb.WaitForInstanceRequest{
 		InstanceID:    ID,
 		Region:        region,
 		Timeout:       scw.TimeDurationPtr(LbWaitForTimeout),
-		RetryInterval: DefaultWaitRetryInterval,
+		RetryInterval: &retryInterval,
 	}, scw.WithContext(ctx))
 
 	if err != nil && !is404Error(err) {
@@ -481,11 +535,12 @@ func resourceScalewayRdbInstanceDelete(ctx context.Context, d *schema.ResourceDa
 		return diag.FromErr(err)
 	}
 
+	// Lastly wait in case the instance is in a transient state
 	_, err = rdbAPI.WaitForInstance(&rdb.WaitForInstanceRequest{
 		InstanceID:    ID,
 		Region:        region,
 		Timeout:       scw.TimeDurationPtr(LbWaitForTimeout),
-		RetryInterval: DefaultWaitRetryInterval,
+		RetryInterval: &retryInterval,
 	}, scw.WithContext(ctx))
 
 	if err != nil && !is404Error(err) {

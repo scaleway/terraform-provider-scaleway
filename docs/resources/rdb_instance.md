@@ -37,6 +37,30 @@ resource "scaleway_rdb_instance" "main" {
   backup_schedule_frequency = 24 # every day
   backup_schedule_retention = 7  # keep it one week
 }
+
+# with private network
+resource scaleway_vpc_private_network pn01 {
+    name = "my_private_network"
+    tags = ["tag0", "tag1", "rdb_pn"]
+}
+
+resource scaleway_rdb_instance main {
+    name = "test-rdb"
+    node_type = "db-dev-s"
+    engine = "PostgreSQL-11"
+    is_ha_cluster = false
+    disable_backup = true
+    user_name = "my_initial_user"
+    password = "thiZ_is_v&ry_s3cret"
+    region= "fr-par"
+    tags = [ "terraform-test", "scaleway_rdb_instance", "volume", "rdb_pn" ]
+    volume_type = "bssd"
+    volume_size_in_gb = 10
+    private_network {
+        ip = "192.168.1.42/24"
+        pn_id = "${scaleway_vpc_private_network.pn01.id}"
+    }
+}
 ```
 
 ## Arguments Reference

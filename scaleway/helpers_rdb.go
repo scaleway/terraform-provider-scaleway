@@ -71,3 +71,49 @@ func expandInstanceSettings(i interface{}) []*rdb.InstanceSetting {
 
 	return res
 }
+
+func expandPrivateNetwork(data interface{}, exist bool) []*rdb.EndpointSpec {
+	if data == nil || !exist {
+		return nil
+	}
+
+	var res []*rdb.EndpointSpec
+	for _, pn := range data.([]interface{}) {
+		r := pn.(map[string]interface{})
+		spec := &rdb.EndpointSpec{
+			PrivateNetwork: &rdb.EndpointSpecPrivateNetwork{
+				PrivateNetworkID: expandID(r["pn_id"].(string)),
+				ServiceIP:        expandIPNet(r["ip"].(string)),
+			},
+		}
+		res = append(res, spec)
+	}
+
+	return res
+}
+
+func expandLoadBalancer() []*rdb.EndpointSpec {
+	var res []*rdb.EndpointSpec
+
+	res = append(res, &rdb.EndpointSpec{
+		LoadBalancer: &rdb.EndpointSpecLoadBalancer{}})
+
+	return res
+}
+
+func flattenPrivateNetwork(readEndpoints []*rdb.Endpoint) (interface{}, bool) {
+	pnI := []map[string]interface{}(nil)
+	for _, readPN := range readEndpoints {
+		if readPN.PrivateNetwork != nil {
+			pn := readPN.PrivateNetwork
+			pnZonedID := newZonedIDString(pn.Zone, pn.PrivateNetworkID)
+			pnI = append(pnI, map[string]interface{}{
+				"ip":    flattenIPNet(pn.ServiceIP),
+				"pn_id": pnZonedID,
+			})
+			return pnI, true
+		}
+	}
+
+	return pnI, false
+}
