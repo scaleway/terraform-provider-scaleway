@@ -83,6 +83,62 @@ func flattenLbACLAction(action *lb.ACLAction) interface{} {
 	}
 }
 
+func expandPrivateNetworks(data interface{}, lbID string) ([]*lb.ZonedAPIAttachPrivateNetworkRequest, error) {
+	if data == nil {
+		return nil, nil
+	}
+
+	var res []*lb.ZonedAPIAttachPrivateNetworkRequest
+	for _, pn := range data.([]interface{}) {
+		r := pn.(map[string]interface{})
+		zonePN, pnID, err := parseZonedID(r["private_network_id"].(string))
+		if err != nil {
+			return nil, err
+		}
+		pnRequest := &lb.ZonedAPIAttachPrivateNetworkRequest{
+			PrivateNetworkID: pnID,
+			Zone:             zonePN,
+			LBID:             lbID,
+		}
+
+		staticConfig := r["static_config"]
+		if len(staticConfig.([]interface{})) > 0 {
+			pnRequest.StaticConfig = expandLbPrivateNetworkStaticConfig(staticConfig)
+		} else {
+			pnRequest.DHCPConfig = expandLbPrivateNetworkDHCPConfig(r["dhcp_config"])
+		}
+
+		res = append(res, pnRequest)
+	}
+
+	return res, nil
+}
+
+func flattenPrivateNetworkConfigs(resList *lb.ListLBPrivateNetworksResponse) interface{} {
+	if len(resList.PrivateNetwork) == 0 || resList == nil {
+		return nil
+	}
+
+	pnConfigs := resList.PrivateNetwork
+	pnI := []map[string]interface{}(nil)
+	var dhcpConfigExist bool
+	for _, pn := range pnConfigs {
+		if pn.DHCPConfig != nil {
+			dhcpConfigExist = true
+		}
+		pnZonedID := newZonedIDString(pn.LB.Zone, pn.PrivateNetworkID)
+		pnI = append(pnI, map[string]interface{}{
+			"private_network_id": pnZonedID,
+			"dhcp_config":        dhcpConfigExist,
+			"status":             pn.Status,
+			"zone":               pn.LB.Zone,
+			"static_config":      flattenLbPrivateNetworkStaticConfig(pn.StaticConfig),
+		})
+	}
+
+	return pnI
+}
+
 func expandLbACLAction(raw interface{}) *lb.ACLAction {
 	if raw == nil || len(raw.([]interface{})) != 1 {
 		return nil

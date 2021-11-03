@@ -58,22 +58,45 @@ func TestAccScalewayLbLb_WithIP(t *testing.T) {
 				Config: `
 					resource scaleway_lb_ip ip01 {
 					}
+					
+					resource scaleway_vpc_private_network pnLB01 {
+						name = "test-lb-with-pn-dhcp"
+					}
 
 					resource scaleway_lb lb01 {
 					    ip_id = scaleway_lb_ip.ip01.id
 						name = "test-lb"
 						type = "LB-S"
-						release_ip = true
+						release_ip = false
+						private_network {
+							private_network_id = scaleway_vpc_private_network.pnLB01.id
+							dhcp_config = true
+						}
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayLbExists(tt, "scaleway_lb.lb01"),
 					testAccCheckScalewayLbIPExists(tt, "scaleway_lb_ip.ip01"),
 					resource.TestCheckResourceAttr("scaleway_lb.lb01", "name", "test-lb"),
-					resource.TestCheckResourceAttr("scaleway_lb.lb01", "release_ip", "true"),
+					resource.TestCheckResourceAttr("scaleway_lb.lb01", "release_ip", "false"),
+					resource.TestCheckResourceAttr("scaleway_lb.lb01", "private_network.0.dhcp_config", "true"),
 					testCheckResourceAttrUUID("scaleway_lb.lb01", "ip_id"),
 					testCheckResourceAttrIPv4("scaleway_lb.lb01", "ip_address"),
 					resource.TestCheckResourceAttrPair("scaleway_lb.lb01", "ip_id", "scaleway_lb_ip.ip01", "id"),
+				),
+			},
+			{
+				Config: `
+					resource scaleway_lb_ip ip01 {
+					}
+
+					resource scaleway_vpc_private_network pnLB01 {
+						name = "test-lb-without-attachment"
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayLbIPExists(tt, "scaleway_lb_ip.ip01"),
+					resource.TestCheckResourceAttrSet("scaleway_vpc_private_network.pnLB01", "name"),
 				),
 			},
 			{
