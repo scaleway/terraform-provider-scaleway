@@ -2,12 +2,12 @@ package scaleway
 
 import (
 	"context"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"strings"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/scaleway/scaleway-sdk-go/api/lb/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 )
