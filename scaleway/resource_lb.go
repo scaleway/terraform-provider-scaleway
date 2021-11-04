@@ -345,5 +345,15 @@ func resourceScalewayLbDelete(ctx context.Context, d *schema.ResourceData, meta 
 		return diag.FromErr(err)
 	}
 
+	_, err = lbAPI.WaitForLb(&lb.ZonedAPIWaitForLBRequest{
+		LBID:          ID,
+		Zone:          zone,
+		Timeout:       scw.TimeDurationPtr(LbWaitForTimeout),
+		RetryInterval: &retryInterval,
+	}, scw.WithContext(ctx))
+	if err != nil && !is404Error(err) {
+		return diag.FromErr(err)
+	}
+
 	return nil
 }

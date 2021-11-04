@@ -65,7 +65,7 @@ func TestAccScalewayLbLb_WithIP(t *testing.T) {
 
 					resource scaleway_lb lb01 {
 					    ip_id = scaleway_lb_ip.ip01.id
-						name = "test-lb"
+						name = "test-lb-with-dhcp"
 						type = "LB-S"
 						release_ip = false
 						private_network {
@@ -77,7 +77,7 @@ func TestAccScalewayLbLb_WithIP(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayLbExists(tt, "scaleway_lb.lb01"),
 					testAccCheckScalewayLbIPExists(tt, "scaleway_lb_ip.ip01"),
-					resource.TestCheckResourceAttr("scaleway_lb.lb01", "name", "test-lb"),
+					resource.TestCheckResourceAttr("scaleway_lb.lb01", "name", "test-lb-with-dhcp"),
 					resource.TestCheckResourceAttr("scaleway_lb.lb01", "release_ip", "false"),
 					resource.TestCheckResourceAttr("scaleway_lb.lb01", "private_network.0.dhcp_config", "true"),
 					testCheckResourceAttrUUID("scaleway_lb.lb01", "ip_id"),
@@ -91,21 +91,37 @@ func TestAccScalewayLbLb_WithIP(t *testing.T) {
 					}
 
 					resource scaleway_vpc_private_network pnLB01 {
-						name = "test-lb-without-attachment"
+						name = "pn-with-lb-static"
+					}
+
+					resource scaleway_lb lb01 {
+					    ip_id = scaleway_lb_ip.ip01.id
+						name = "test-lb-with-static"
+						type = "LB-S"
+						release_ip = true
+						private_network {
+							private_network_id = scaleway_vpc_private_network.pnLB01.id
+							static_config = ["172.16.0.100", "172.16.0.101"]
+						}
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayLbIPExists(tt, "scaleway_lb_ip.ip01"),
 					resource.TestCheckResourceAttrSet("scaleway_vpc_private_network.pnLB01", "name"),
+					resource.TestCheckResourceAttr("scaleway_lb.lb01",
+						"private_network.0.static_config.0", "172.16.0.100"),
+					resource.TestCheckResourceAttr("scaleway_lb.lb01",
+						"private_network.0.static_config.1", "172.16.0.101"),
 				),
 			},
 			{
 				Config: `
-					resource scaleway_lb_ip ip01 {
+					resource scaleway_vpc_private_network pnLB01 {
+						name = "test-lb-without-attachment"
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayLbIPExists(tt, "scaleway_lb_ip.ip01"),
+					resource.TestCheckResourceAttrSet("scaleway_vpc_private_network.pnLB01", "name"),
 				),
 			},
 		},
