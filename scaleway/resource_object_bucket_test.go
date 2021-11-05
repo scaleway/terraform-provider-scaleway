@@ -9,6 +9,7 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/service/s3"
+	sdkacctest "github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/scaleway/scaleway-sdk-go/scw"
@@ -25,12 +26,11 @@ func TestAccScalewayObjectBucket_Basic(t *testing.T) {
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
 
-	testBucketName := "test-acc-scaleway-object-bucket-basic"
-	testBucketNameAms := testBucketName + "-ams"
-	testBucketNamePar := testBucketName + "-par"
 	testBucketACL := "private"
 	testBucketUpdatedACL := "public-read"
-
+	bucketBasic := sdkacctest.RandomWithPrefix("test-acc-scaleway-object-bucket-basic-")
+	bucketAms := sdkacctest.RandomWithPrefix("test-acc-scaleway-object-bucket-ams-")
+	bucketPar := sdkacctest.RandomWithPrefix("test-acc-scaleway-object-bucket-par-")
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
@@ -38,14 +38,14 @@ func TestAccScalewayObjectBucket_Basic(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
-					resource "scaleway_object_bucket" "base" {
+					resource "scaleway_object_bucket" "base-01" {
 						name = "%s"
 						tags = {
 							foo = "bar"
 						}
 					}
 
-					resource "scaleway_object_bucket" "ams-bucket" {
+					resource "scaleway_object_bucket" "ams-bucket-01" {
 						name = "%s"
 						region = "nl-ams"
 						tags = {
@@ -54,51 +54,51 @@ func TestAccScalewayObjectBucket_Basic(t *testing.T) {
 						}
 					}
 
-					resource "scaleway_object_bucket" "par-bucket" {
+					resource "scaleway_object_bucket" "par-bucket-01" {
 						name = "%s"
 						region = "fr-par"
 					}
-				`, testBucketName, testBucketNameAms, testBucketNamePar),
+				`, bucketBasic, bucketAms, bucketPar),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("scaleway_object_bucket.base", "name", testBucketName),
-					resource.TestCheckResourceAttr("scaleway_object_bucket.base", "acl", testBucketACL),
-					resource.TestCheckResourceAttr("scaleway_object_bucket.base", "tags.%", "1"),
-					resource.TestCheckResourceAttr("scaleway_object_bucket.base", "tags.foo", "bar"),
-					resource.TestCheckResourceAttr("scaleway_object_bucket.base", "endpoint", fmt.Sprintf("https://%s.s3.%s.scw.cloud", testBucketName, "fr-par")),
+					resource.TestCheckResourceAttr("scaleway_object_bucket.base-01", "name", bucketBasic),
+					resource.TestCheckResourceAttr("scaleway_object_bucket.base-01", "acl", testBucketACL),
+					resource.TestCheckResourceAttr("scaleway_object_bucket.base-01", "tags.%", "1"),
+					resource.TestCheckResourceAttr("scaleway_object_bucket.base-01", "tags.foo", "bar"),
+					resource.TestCheckResourceAttr("scaleway_object_bucket.base-01", "endpoint", fmt.Sprintf("https://%s.s3.%s.scw.cloud", bucketBasic, "fr-par")),
 
-					resource.TestCheckResourceAttr("scaleway_object_bucket.ams-bucket", "name", testBucketNameAms),
-					resource.TestCheckResourceAttr("scaleway_object_bucket.ams-bucket", "tags.%", "2"),
-					resource.TestCheckResourceAttr("scaleway_object_bucket.ams-bucket", "tags.foo", "bar"),
-					resource.TestCheckResourceAttr("scaleway_object_bucket.ams-bucket", "tags.baz", "qux"),
-					resource.TestCheckResourceAttr("scaleway_object_bucket.ams-bucket", "endpoint", fmt.Sprintf("https://%s.s3.%s.scw.cloud", testBucketNameAms, "nl-ams")),
+					resource.TestCheckResourceAttr("scaleway_object_bucket.ams-bucket-01", "name", bucketAms),
+					resource.TestCheckResourceAttr("scaleway_object_bucket.ams-bucket-01", "tags.%", "2"),
+					resource.TestCheckResourceAttr("scaleway_object_bucket.ams-bucket-01", "tags.foo", "bar"),
+					resource.TestCheckResourceAttr("scaleway_object_bucket.ams-bucket-01", "tags.baz", "qux"),
+					resource.TestCheckResourceAttr("scaleway_object_bucket.ams-bucket-01", "endpoint", fmt.Sprintf("https://%s.s3.%s.scw.cloud", bucketAms, "nl-ams")),
 
-					resource.TestCheckResourceAttr("scaleway_object_bucket.par-bucket", "name", testBucketNamePar),
-					resource.TestCheckResourceAttr("scaleway_object_bucket.par-bucket", "endpoint", fmt.Sprintf("https://%s.s3.%s.scw.cloud", testBucketNamePar, "fr-par")),
+					resource.TestCheckResourceAttr("scaleway_object_bucket.par-bucket-01", "name", bucketPar),
+					resource.TestCheckResourceAttr("scaleway_object_bucket.par-bucket-01", "endpoint", fmt.Sprintf("https://%s.s3.%s.scw.cloud", bucketPar, "fr-par")),
 				),
 			},
 			{
 				Config: fmt.Sprintf(`
-					resource "scaleway_object_bucket" "base" {
+					resource "scaleway_object_bucket" "base-01" {
 						name = "%s"
 						acl = "%s"
 					}
 
-					resource "scaleway_object_bucket" "ams-bucket" {
+					resource "scaleway_object_bucket" "ams-bucket-01" {
 						name = "%s"
 						region = "nl-ams"
 						tags = {
 							foo = "bar"
 						}
 					}
-				`, testBucketName, testBucketUpdatedACL, testBucketNameAms),
+				`, bucketBasic, testBucketUpdatedACL, bucketAms),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("scaleway_object_bucket.base", "name", testBucketName),
-					resource.TestCheckResourceAttr("scaleway_object_bucket.base", "acl", testBucketUpdatedACL),
-					resource.TestCheckResourceAttr("scaleway_object_bucket.base", "tags.%", "0"),
+					resource.TestCheckResourceAttr("scaleway_object_bucket.base-01", "name", bucketBasic),
+					resource.TestCheckResourceAttr("scaleway_object_bucket.base-01", "acl", testBucketUpdatedACL),
+					resource.TestCheckResourceAttr("scaleway_object_bucket.base-01", "tags.%", "0"),
 
-					resource.TestCheckResourceAttr("scaleway_object_bucket.ams-bucket", "name", testBucketNameAms),
-					resource.TestCheckResourceAttr("scaleway_object_bucket.ams-bucket", "tags.%", "1"),
-					resource.TestCheckResourceAttr("scaleway_object_bucket.ams-bucket", "tags.foo", "bar"),
+					resource.TestCheckResourceAttr("scaleway_object_bucket.ams-bucket-01", "name", bucketAms),
+					resource.TestCheckResourceAttr("scaleway_object_bucket.ams-bucket-01", "tags.%", "1"),
+					resource.TestCheckResourceAttr("scaleway_object_bucket.ams-bucket-01", "tags.foo", "bar"),
 				),
 			},
 		},
@@ -167,9 +167,10 @@ func testSweepStorageObjectBucket(_ string) error {
 func TestAccScalewayObjectBucket_Cors_Update(t *testing.T) {
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
-	bucketName := "test-acc-scaleway-object-bucket-cors-update-000"
-	const resourceName = "scaleway_object_bucket.bucket"
 
+	randName := sdkacctest.RandomWithPrefix("bucket")
+	resourceName := "scaleway_object_bucket." + randName
+	bucketName := sdkacctest.RandomWithPrefix("test-acc-scaleway-object-bucket-cors-update")
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
@@ -177,7 +178,7 @@ func TestAccScalewayObjectBucket_Cors_Update(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
-					resource "scaleway_object_bucket" "bucket" {
+					resource "scaleway_object_bucket" "%s" {
 						name = %[1]q
 						cors_rule {
 							allowed_headers = ["*"]
@@ -186,7 +187,7 @@ func TestAccScalewayObjectBucket_Cors_Update(t *testing.T) {
 							expose_headers  = ["x-amz-server-side-encryption", "ETag"]
 							max_age_seconds = 3000
 						}
-					}`, bucketName),
+					}`, randName, bucketName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayObjectBucketExists(tt, resourceName),
 					testAccCheckScalewayObjectBucketCors(tt,
@@ -239,7 +240,7 @@ func TestAccScalewayObjectBucket_Cors_Update(t *testing.T) {
 			},
 			{
 				Config: fmt.Sprintf(`
-					resource "scaleway_object_bucket" "bucket" {
+					resource "scaleway_object_bucket" "%s" {
 						name = %[1]q
 						cors_rule {
 							allowed_headers = ["*"]
@@ -248,7 +249,7 @@ func TestAccScalewayObjectBucket_Cors_Update(t *testing.T) {
 							expose_headers  = ["x-amz-server-side-encryption", "ETag"]
 							max_age_seconds = 3000
 						}
-					}`, bucketName), Check: resource.ComposeTestCheckFunc(
+					}`, randName, bucketName), Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayObjectBucketExists(tt, resourceName),
 					testAccCheckScalewayObjectBucketCors(tt,
 						resourceName,
@@ -271,9 +272,10 @@ func TestAccScalewayObjectBucket_Cors_Update(t *testing.T) {
 func TestAccScalewayObjectBucket_Cors_Delete(t *testing.T) {
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
-	bucketName := "test-acc-scaleway-object-bucket-cors-delete"
-	resourceName := "scaleway_object_bucket.bucket"
 
+	randName := sdkacctest.RandomWithPrefix("bucket")
+	resourceName := "scaleway_object_bucket." + randName
+	bucketName := sdkacctest.RandomWithPrefix("test-acc-scaleway-object-bucket-cors-delete")
 	deleteBucketCors := func(tt *TestTools, n string) resource.TestCheckFunc {
 		return func(s *terraform.State) error {
 			rs, ok := s.RootModule().Resources[n]
@@ -302,7 +304,7 @@ func TestAccScalewayObjectBucket_Cors_Delete(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
-					resource "scaleway_object_bucket" "bucket" {
+					resource "scaleway_object_bucket" "%s" {
 						name = %[1]q
 						cors_rule {
 							allowed_headers = ["*"]
@@ -311,7 +313,7 @@ func TestAccScalewayObjectBucket_Cors_Delete(t *testing.T) {
 							expose_headers  = ["x-amz-server-side-encryption", "ETag"]
 							max_age_seconds = 3000
 						}
-					}`, bucketName),
+					}`, randName, bucketName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayObjectBucketExists(tt, resourceName),
 					deleteBucketCors(tt, resourceName),
@@ -325,9 +327,9 @@ func TestAccScalewayObjectBucket_Cors_Delete(t *testing.T) {
 func TestAccScalewayObjectBucket_Cors_EmptyOrigin(t *testing.T) {
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
-	bucketName := "test-acc-scaleway-object-bucket-cors-empty-origin"
-	const resourceName = "scaleway_object_bucket.bucket"
 
+	randName := sdkacctest.RandomWithPrefix("bucket")
+	bucketName := sdkacctest.RandomWithPrefix("test-acc-scaleway-object-bucket-cors-empty-origin")
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
@@ -335,7 +337,7 @@ func TestAccScalewayObjectBucket_Cors_EmptyOrigin(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
-					resource "scaleway_object_bucket" "bucket" {
+					resource "scaleway_object_bucket" "%s" {
 						name = %[1]q
 						cors_rule {
 							allowed_headers = ["*"]
@@ -344,7 +346,7 @@ func TestAccScalewayObjectBucket_Cors_EmptyOrigin(t *testing.T) {
 							expose_headers  = ["x-amz-server-side-encryption", "ETag"]
 							max_age_seconds = 3000
 						}
-					}`, bucketName),
+					}`, randName, bucketName),
 				ExpectError: regexp.MustCompile("error putting S3 CORS"),
 			},
 		},
@@ -391,32 +393,35 @@ func testAccCheckScalewayObjectBucketCors(tt *TestTools, n string, corsRules []*
 func testAccCheckScalewayObjectBucketExists(tt *TestTools, n string) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		rs := state.RootModule().Resources[n]
-		bucketName := rs.Primary.Attributes["name"]
+		if rs != nil {
+			bucketName := rs.Primary.Attributes["name"]
 
-		s3Client, err := newS3ClientFromMeta(tt.Meta)
-		if err != nil {
-			return err
-		}
-
-		rs, ok := state.RootModule().Resources[n]
-		if !ok {
-			return fmt.Errorf("not found: %s", n)
-		}
-
-		if rs.Primary.ID == "" {
-			return fmt.Errorf("no ID is set")
-		}
-
-		_, err = s3Client.HeadBucket(&s3.HeadBucketInput{
-			Bucket: scw.StringPtr(bucketName),
-		})
-
-		if err != nil {
-			if isS3Err(err, s3.ErrCodeNoSuchBucket, "") {
-				return fmt.Errorf("s3 bucket not found")
+			s3Client, err := newS3ClientFromMeta(tt.Meta)
+			if err != nil {
+				return err
 			}
-			return err
+
+			rs, ok := state.RootModule().Resources[n]
+			if !ok {
+				return fmt.Errorf("not found: %s", n)
+			}
+
+			if rs.Primary.ID == "" {
+				return fmt.Errorf("no ID is set")
+			}
+
+			_, err = s3Client.HeadBucket(&s3.HeadBucketInput{
+				Bucket: scw.StringPtr(bucketName),
+			})
+
+			if err != nil {
+				if isS3Err(err, s3.ErrCodeNoSuchBucket, "") {
+					return fmt.Errorf("s3 bucket not found")
+				}
+				return err
+			}
+			return nil
 		}
-		return nil
+		return fmt.Errorf("resource not found")
 	}
 }
