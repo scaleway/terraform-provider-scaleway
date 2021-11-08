@@ -404,35 +404,35 @@ func testAccCheckScalewayObjectBucketCors(tt *TestTools, n string, corsRules []*
 func testAccCheckScalewayObjectBucketExists(tt *TestTools, n string) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		rs := state.RootModule().Resources[n]
-		if rs != nil {
-			bucketName := rs.Primary.Attributes["name"]
-
-			s3Client, err := newS3ClientFromMeta(tt.Meta)
-			if err != nil {
-				return err
-			}
-
-			rs, ok := state.RootModule().Resources[n]
-			if !ok {
-				return fmt.Errorf("not found: %s", n)
-			}
-
-			if rs.Primary.ID == "" {
-				return fmt.Errorf("no ID is set")
-			}
-
-			_, err = s3Client.HeadBucket(&s3.HeadBucketInput{
-				Bucket: scw.StringPtr(bucketName),
-			})
-
-			if err != nil {
-				if isS3Err(err, s3.ErrCodeNoSuchBucket, "") {
-					return fmt.Errorf("s3 bucket not found")
-				}
-				return err
-			}
-			return nil
+		if rs == nil {
+			return fmt.Errorf("resource not found")
 		}
-		return fmt.Errorf("resource not found")
+		bucketName := rs.Primary.Attributes["name"]
+
+		s3Client, err := newS3ClientFromMeta(tt.Meta)
+		if err != nil {
+			return err
+		}
+
+		rs, ok := state.RootModule().Resources[n]
+		if !ok {
+			return fmt.Errorf("not found: %s", n)
+		}
+
+		if rs.Primary.ID == "" {
+			return fmt.Errorf("no ID is set")
+		}
+
+		_, err = s3Client.HeadBucket(&s3.HeadBucketInput{
+			Bucket: scw.StringPtr(bucketName),
+		})
+
+		if err != nil {
+			if isS3Err(err, s3.ErrCodeNoSuchBucket, "") {
+				return fmt.Errorf("s3 bucket not found")
+			}
+			return err
+		}
+		return nil
 	}
 }
