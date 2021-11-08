@@ -87,7 +87,7 @@ func resourceScalewayLb() *schema.Resource {
 							Description:  "The Private Network ID",
 						},
 						"static_config": {
-							Description: "Define two local IP addresses of your choice for each load balancer instance",
+							Description: "Define two IP addresses in the subnet of your private network that will be assigned for the principal and standby node of your load balancer.",
 							Type:        schema.TypeList,
 							Optional:    true,
 							Computed:    true,
