@@ -51,26 +51,26 @@ func TestAccScalewayRegistryNamespace_Basic(t *testing.T) {
 			{
 				Config: `
 					resource scaleway_registry_namespace cr01 {
-						name = "test-cr"
+						name = "test-cr-ns-01"
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayRegistryNamespaceExists(tt, "scaleway_registry_namespace.cr01"),
-					resource.TestCheckResourceAttr("scaleway_registry_namespace.cr01", "name", "test-cr"),
+					resource.TestCheckResourceAttr("scaleway_registry_namespace.cr01", "name", "test-cr-ns-01"),
 					testCheckResourceAttrUUID("scaleway_registry_namespace.cr01", "id"),
 				),
 			},
 			{
 				Config: `
 					resource scaleway_registry_namespace cr01 {
-						name = "test-cr"
-						description = "test registry namespace"
+						name = "test-cr-ns-01"
+						description = "test registry namespace 01"
 						is_public = true
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayRegistryNamespaceExists(tt, "scaleway_registry_namespace.cr01"),
-					resource.TestCheckResourceAttr("scaleway_registry_namespace.cr01", "description", "test registry namespace"),
+					resource.TestCheckResourceAttr("scaleway_registry_namespace.cr01", "description", "test registry namespace 01"),
 					resource.TestCheckResourceAttr("scaleway_registry_namespace.cr01", "is_public", "true"),
 					testCheckResourceAttrUUID("scaleway_registry_namespace.cr01", "id"),
 				),
