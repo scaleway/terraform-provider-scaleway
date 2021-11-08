@@ -137,11 +137,7 @@ func resourceScalewayRdbInstance() *schema.Resource {
 							ValidateFunc: validationUUIDorUUIDWithLocality(),
 							Description:  "The private network ID",
 						},
-						"zone": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The private network zone",
-						},
+						"zone": zoneSchema(),
 					},
 				},
 			},
