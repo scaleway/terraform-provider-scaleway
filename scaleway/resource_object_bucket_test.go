@@ -173,8 +173,7 @@ func TestAccScalewayObjectBucket_Cors_Update(t *testing.T) {
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
 
-	randName := sdkacctest.RandomWithPrefix("bucket")
-	resourceName := "scaleway_object_bucket." + randName
+	resourceName := "scaleway_object_bucket.bucket"
 	bucketName := sdkacctest.RandomWithPrefix("test-acc-scaleway-object-bucket-cors-update")
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
@@ -183,7 +182,7 @@ func TestAccScalewayObjectBucket_Cors_Update(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
-					resource "scaleway_object_bucket" "%s" {
+					resource "scaleway_object_bucket" "bucket" {
 						name = %[1]q
 						cors_rule {
 							allowed_headers = ["*"]
@@ -192,7 +191,7 @@ func TestAccScalewayObjectBucket_Cors_Update(t *testing.T) {
 							expose_headers  = ["x-amz-server-side-encryption", "ETag"]
 							max_age_seconds = 3000
 						}
-					}`, randName, bucketName),
+					}`, bucketName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayObjectBucketExists(tt, resourceName),
 					testAccCheckScalewayObjectBucketCors(tt,
@@ -245,7 +244,7 @@ func TestAccScalewayObjectBucket_Cors_Update(t *testing.T) {
 			},
 			{
 				Config: fmt.Sprintf(`
-					resource "scaleway_object_bucket" "%s" {
+					resource "scaleway_object_bucket" "bucket" {
 						name = %[1]q
 						cors_rule {
 							allowed_headers = ["*"]
@@ -254,7 +253,7 @@ func TestAccScalewayObjectBucket_Cors_Update(t *testing.T) {
 							expose_headers  = ["x-amz-server-side-encryption", "ETag"]
 							max_age_seconds = 3000
 						}
-					}`, randName, bucketName), Check: resource.ComposeTestCheckFunc(
+					}`, bucketName), Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayObjectBucketExists(tt, resourceName),
 					testAccCheckScalewayObjectBucketCors(tt,
 						resourceName,
@@ -281,8 +280,7 @@ func TestAccScalewayObjectBucket_Cors_Delete(t *testing.T) {
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
 
-	randName := sdkacctest.RandomWithPrefix("bucket")
-	resourceName := "scaleway_object_bucket." + randName
+	resourceName := "scaleway_object_bucket.bucket"
 	bucketName := sdkacctest.RandomWithPrefix("test-acc-scaleway-object-bucket-cors-delete")
 	deleteBucketCors := func(tt *TestTools, n string) resource.TestCheckFunc {
 		return func(s *terraform.State) error {
@@ -312,7 +310,7 @@ func TestAccScalewayObjectBucket_Cors_Delete(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
-					resource "scaleway_object_bucket" "%s" {
+					resource "scaleway_object_bucket" "bucket" {
 						name = %[1]q
 						cors_rule {
 							allowed_headers = ["*"]
@@ -321,7 +319,7 @@ func TestAccScalewayObjectBucket_Cors_Delete(t *testing.T) {
 							expose_headers  = ["x-amz-server-side-encryption", "ETag"]
 							max_age_seconds = 3000
 						}
-					}`, randName, bucketName),
+					}`, bucketName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayObjectBucketExists(tt, resourceName),
 					deleteBucketCors(tt, resourceName),
@@ -339,8 +337,7 @@ func TestAccScalewayObjectBucket_Cors_EmptyOrigin(t *testing.T) {
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
 
-	randName := sdkacctest.RandomWithPrefix("bucket")
-	bucketName := sdkacctest.RandomWithPrefix("test-acc-scaleway-object-bucket-cors-empty-origin")
+	bucketName := sdkacctest.RandomWithPrefix("test-acc-scaleway-object-cors-empty-origin")
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
@@ -348,7 +345,7 @@ func TestAccScalewayObjectBucket_Cors_EmptyOrigin(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
-					resource "scaleway_object_bucket" "%s" {
+					resource "scaleway_object_bucket" "bucket" {
 						name = %[1]q
 						cors_rule {
 							allowed_headers = ["*"]
@@ -357,7 +354,7 @@ func TestAccScalewayObjectBucket_Cors_EmptyOrigin(t *testing.T) {
 							expose_headers  = ["x-amz-server-side-encryption", "ETag"]
 							max_age_seconds = 3000
 						}
-					}`, randName, bucketName),
+					}`, bucketName),
 				ExpectError: regexp.MustCompile("error putting S3 CORS"),
 			},
 		},
