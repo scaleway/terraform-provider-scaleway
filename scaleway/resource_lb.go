@@ -75,7 +75,7 @@ func resourceScalewayLb() *schema.Resource {
 			"private_network": {
 				Type:        schema.TypeList,
 				Optional:    true,
-				MaxItems:    1,
+				MaxItems:    8,
 				Description: "List of private network to connect with your load balancer",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -173,15 +173,15 @@ func resourceScalewayLbCreate(ctx context.Context, d *schema.ResourceData, meta 
 			if err != nil && !is404Error(err) {
 				return diag.FromErr(err)
 			}
-			_, err = lbAPI.WaitForLb(&lb.ZonedAPIWaitForLBRequest{
-				Zone:          zone,
-				LBID:          res.ID,
-				Timeout:       scw.TimeDurationPtr(defaultInstanceServerWaitTimeout),
-				RetryInterval: &retryInterval,
-			}, scw.WithContext(ctx))
-			if err != nil && !is404Error(err) {
-				return diag.FromErr(err)
-			}
+		}
+		_, err = lbAPI.WaitForLb(&lb.ZonedAPIWaitForLBRequest{
+			Zone:          zone,
+			LBID:          res.ID,
+			Timeout:       scw.TimeDurationPtr(defaultInstanceServerWaitTimeout),
+			RetryInterval: &retryInterval,
+		}, scw.WithContext(ctx))
+		if err != nil && !is404Error(err) {
+			return diag.FromErr(err)
 		}
 	}
 
@@ -272,6 +272,68 @@ func resourceScalewayLbUpdate(ctx context.Context, d *schema.ResourceData, meta 
 			return diag.FromErr(err)
 		}
 	}
+	////
+	// Attach / Detach Private Networks
+	////
+	if d.HasChangesExcept("private_network") {
+		retryInterval := DefaultWaitLBRetryInterval
+		// check that pns are in a stable state
+		pns, err := lbAPI.WaitForLBPN(&lb.ZonedAPIWaitForLBPNRequest{
+			Zone:          zone,
+			LBID:          ID,
+			Timeout:       scw.TimeDurationPtr(defaultInstanceServerWaitTimeout),
+			RetryInterval: &retryInterval},
+			scw.WithContext(ctx))
+		if err != nil && !is404Error(err) {
+			return diag.FromErr(err)
+		}
+		// detach private networks
+		for _, pn := range pns {
+			err = lbAPI.DetachPrivateNetwork(&lb.ZonedAPIDetachPrivateNetworkRequest{
+				Zone:             zone,
+				LBID:             ID,
+				PrivateNetworkID: pn.PrivateNetworkID,
+			})
+			if err != nil && !is404Error(err) {
+				return diag.FromErr(err)
+			}
+		}
+
+		//attach private network
+		pnConfigs, pnExist := d.GetOk("private_network")
+		if pnExist {
+			pnConfigs, err := expandPrivateNetworks(pnConfigs, ID)
+			if err != nil {
+				return diag.FromErr(err)
+			}
+
+			for _, config := range pnConfigs {
+				_, err := lbAPI.AttachPrivateNetwork(config, scw.WithContext(ctx))
+				if err != nil && !is404Error(err) {
+					return diag.FromErr(err)
+				}
+				_, err = lbAPI.WaitForLb(&lb.ZonedAPIWaitForLBRequest{
+					Zone:          zone,
+					LBID:          ID,
+					Timeout:       scw.TimeDurationPtr(defaultInstanceServerWaitTimeout),
+					RetryInterval: &retryInterval,
+				}, scw.WithContext(ctx))
+				if err != nil && !is404Error(err) {
+					return diag.FromErr(err)
+				}
+			}
+
+			_, err = lbAPI.WaitForLBPN(&lb.ZonedAPIWaitForLBPNRequest{
+				Zone:          zone,
+				LBID:          ID,
+				Timeout:       scw.TimeDurationPtr(defaultInstanceServerWaitTimeout),
+				RetryInterval: &retryInterval},
+				scw.WithContext(ctx))
+			if err != nil && !is404Error(err) {
+				return diag.FromErr(err)
+			}
+		}
+	}
 
 	return resourceScalewayLbRead(ctx, d, meta)
 }
@@ -313,16 +375,16 @@ func resourceScalewayLbDelete(ctx context.Context, d *schema.ResourceData, meta 
 			if err != nil && !is404Error(err) {
 				return diag.FromErr(err)
 			}
+		}
 
-			_, err := lbAPI.WaitForLb(&lb.ZonedAPIWaitForLBRequest{
-				LBID:          ID,
-				Zone:          zone,
-				Timeout:       scw.TimeDurationPtr(LbWaitForTimeout),
-				RetryInterval: &retryInterval,
-			}, scw.WithContext(ctx))
-			if err != nil && !is404Error(err) {
-				return diag.FromErr(err)
-			}
+		_, err = lbAPI.WaitForLb(&lb.ZonedAPIWaitForLBRequest{
+			LBID:          ID,
+			Zone:          zone,
+			Timeout:       scw.TimeDurationPtr(LbWaitForTimeout),
+			RetryInterval: &retryInterval,
+		}, scw.WithContext(ctx))
+		if err != nil && !is404Error(err) {
+			return diag.FromErr(err)
 		}
 	}
 
