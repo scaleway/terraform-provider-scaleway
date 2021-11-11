@@ -27,7 +27,9 @@ func resourceScalewayInstanceServer() *schema.Resource {
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 		Timeouts: &schema.ResourceTimeout{
-			Default: schema.DefaultTimeout(defaultInstanceServerWaitTimeout),
+			Create: schema.DefaultTimeout(defaultInstanceServerWaitTimeout),
+			Update: schema.DefaultTimeout(defaultInstanceServerWaitTimeout),
+			Delete: schema.DefaultTimeout(defaultInstanceServerWaitTimeout),
 		},
 		SchemaVersion: 0,
 		Schema: map[string]*schema.Schema{
@@ -358,7 +360,7 @@ func resourceScalewayInstanceServerCreate(ctx context.Context, d *schema.Resourc
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	err = reachState(ctx, instanceAPI, zone, res.Server.ID, targetState)
+	err = reachState(ctx, instanceAPI, zone, res.Server.ID, targetState, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -689,7 +691,7 @@ func resourceScalewayInstanceServerUpdate(ctx context.Context, d *schema.Resourc
 	}
 
 	// reach expected state
-	err = reachState(ctx, instanceAPI, zone, ID, targetState)
+	err = reachState(ctx, instanceAPI, zone, ID, targetState, d.Timeout(schema.TimeoutUpdate))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -709,7 +711,7 @@ func resourceScalewayInstanceServerDelete(ctx context.Context, d *schema.Resourc
 	}
 
 	// reach stopped state
-	err = reachState(ctx, instanceAPI, zone, ID, instance.ServerStateStopped)
+	err = reachState(ctx, instanceAPI, zone, ID, instance.ServerStateStopped, d.Timeout(schema.TimeoutDelete))
 	if is404Error(err) {
 		return nil
 	}

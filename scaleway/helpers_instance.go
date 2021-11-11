@@ -107,7 +107,7 @@ func serverStateExpand(rawState string) (instance.ServerState, error) {
 	return apiState, nil
 }
 
-func reachState(ctx context.Context, instanceAPI *instance.API, zone scw.Zone, serverID string, toState instance.ServerState) error {
+func reachState(ctx context.Context, instanceAPI *instance.API, zone scw.Zone, serverID string, toState instance.ServerState, serverActionTimeout time.Duration) error {
 	response, err := instanceAPI.GetServer(&instance.GetServerRequest{
 		Zone:     zone,
 		ServerID: serverID,
@@ -154,7 +154,7 @@ func reachState(ctx context.Context, instanceAPI *instance.API, zone scw.Zone, s
 			ServerID:      serverID,
 			Action:        a,
 			Zone:          zone,
-			Timeout:       scw.TimeDurationPtr(defaultInstanceServerWaitTimeout),
+			Timeout:       scw.TimeDurationPtr(serverActionTimeout),
 			RetryInterval: DefaultWaitRetryInterval,
 		})
 		if err != nil {
