@@ -65,7 +65,7 @@ func TestAccScalewayLbLb_WithIP(t *testing.T) {
 
 					resource scaleway_lb lb01 {
 					    ip_id = scaleway_lb_ip.ip01.id
-						name = "test-lb-with-dhcp"
+						name = "test-lb-with-dhcp-1"
 						type = "LB-S"
 						release_ip = false
 						private_network {
@@ -77,7 +77,7 @@ func TestAccScalewayLbLb_WithIP(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayLbExists(tt, "scaleway_lb.lb01"),
 					testAccCheckScalewayLbIPExists(tt, "scaleway_lb_ip.ip01"),
-					resource.TestCheckResourceAttr("scaleway_lb.lb01", "name", "test-lb-with-dhcp"),
+					resource.TestCheckResourceAttr("scaleway_lb.lb01", "name", "test-lb-with-dhcp-1"),
 					resource.TestCheckResourceAttr("scaleway_lb.lb01", "release_ip", "false"),
 					resource.TestCheckResourceAttr("scaleway_lb.lb01", "private_network.0.dhcp_config", "true"),
 					testCheckResourceAttrUUID("scaleway_lb.lb01", "ip_id"),
@@ -96,7 +96,7 @@ func TestAccScalewayLbLb_WithIP(t *testing.T) {
 
 					resource scaleway_lb lb01 {
 					    ip_id = scaleway_lb_ip.ip01.id
-						name = "test-lb-with-static"
+						name = "test-lb-with-pn-static-2"
 						type = "LB-S"
 						release_ip = false
 						private_network {
@@ -129,7 +129,7 @@ func TestAccScalewayLbLb_WithIP(t *testing.T) {
 
 					resource scaleway_lb lb01 {
 					    ip_id = scaleway_lb_ip.ip01.id
-						name = "test-lb-with-static-to-update-with-two-pn"
+						name = "test-lb-with-static-to-update-with-two-pn-3"
 						type = "LB-S"
 						release_ip = false
 						private_network {
@@ -138,8 +138,8 @@ func TestAccScalewayLbLb_WithIP(t *testing.T) {
 						}
 
 						private_network {
-							private_network_id = scaleway_vpc_private_network.pnLB01.id
-							static_config = ["172.16.0.102", "172.16.0.103"]
+							private_network_id = scaleway_vpc_private_network.pnLB02.id
+							static_config = ["172.16.0.105", "172.16.0.106"]
 						}
 					}
 				`,
@@ -151,9 +151,51 @@ func TestAccScalewayLbLb_WithIP(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_lb.lb01",
 						"private_network.0.static_config.1", "172.16.0.101"),
 					resource.TestCheckResourceAttr("scaleway_lb.lb01",
-						"private_network.1.static_config.0", "172.16.0.102"),
+						"private_network.1.static_config.0", "172.16.0.105"),
 					resource.TestCheckResourceAttr("scaleway_lb.lb01",
-						"private_network.1.static_config.1", "172.16.0.103"),
+						"private_network.1.static_config.1", "172.16.0.106"),
+				),
+			},
+			{
+				Config: `
+					resource scaleway_lb_ip ip01 {
+					}
+
+					resource scaleway_vpc_private_network pnLB01 {
+						name = "pn-with-lb-to-add"
+					}
+
+					resource scaleway_vpc_private_network pnLB02 {
+						name = "pn-with-lb-to-add"
+					}
+
+					resource scaleway_lb lb01 {
+					    ip_id = scaleway_lb_ip.ip01.id
+						name = "test-lb-with-static-to-update-with-two-pn-4"
+						type = "LB-S"
+						release_ip = false
+						private_network {
+							private_network_id = scaleway_vpc_private_network.pnLB01.id
+							static_config = ["172.16.0.100", "172.16.0.101"]
+						}
+
+						private_network {
+							private_network_id = scaleway_vpc_private_network.pnLB02.id
+							static_config = ["172.16.0.105", "172.16.0.107"]
+						}
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet("scaleway_vpc_private_network.pnLB01", "name"),
+					resource.TestCheckResourceAttr("scaleway_lb.lb01", "private_network.#", "2"),
+					resource.TestCheckResourceAttr("scaleway_lb.lb01",
+						"private_network.0.static_config.0", "172.16.0.100"),
+					resource.TestCheckResourceAttr("scaleway_lb.lb01",
+						"private_network.0.static_config.1", "172.16.0.101"),
+					resource.TestCheckResourceAttr("scaleway_lb.lb01",
+						"private_network.1.static_config.0", "172.16.0.105"),
+					resource.TestCheckResourceAttr("scaleway_lb.lb01",
+						"private_network.1.static_config.1", "172.16.0.107"),
 				),
 			},
 			{
@@ -171,12 +213,12 @@ func TestAccScalewayLbLb_WithIP(t *testing.T) {
 
 					resource scaleway_lb lb01 {
 					    ip_id = scaleway_lb_ip.ip01.id
-						name = "test-lb-with-static-to-update"
+						name = "test-lb-with-only-one-pn-is-conserved-5"
 						type = "LB-S"
 						release_ip = false
 						private_network {
-							private_network_id = scaleway_vpc_private_network.pnLB02.id
-							static_config = ["172.16.0.102", "172.16.0.103"]
+							private_network_id = scaleway_vpc_private_network.pnLB01.id
+							static_config = ["172.16.0.100", "172.16.0.101"]
 						}
 					}
 				`,
@@ -184,8 +226,8 @@ func TestAccScalewayLbLb_WithIP(t *testing.T) {
 					resource.TestCheckResourceAttrSet("scaleway_vpc_private_network.pnLB01", "name"),
 					resource.TestCheckResourceAttrSet("scaleway_vpc_private_network.pnLB02", "name"),
 					resource.TestCheckResourceAttr("scaleway_lb.lb01", "private_network.#", "1"),
-					resource.TestCheckResourceAttr("scaleway_lb.lb01", "private_network.0.static_config.0", "172.16.0.102"),
-					resource.TestCheckResourceAttr("scaleway_lb.lb01", "private_network.0.static_config.1", "172.16.0.103"),
+					resource.TestCheckResourceAttr("scaleway_lb.lb01", "private_network.0.static_config.0", "172.16.0.100"),
+					resource.TestCheckResourceAttr("scaleway_lb.lb01", "private_network.0.static_config.1", "172.16.0.101"),
 				),
 			},
 			{

@@ -82,7 +82,6 @@ func resourceScalewayLb() *schema.Resource {
 						"private_network_id": {
 							Type:         schema.TypeString,
 							Required:     true,
-							ForceNew:     true,
 							ValidateFunc: validationUUIDorUUIDWithLocality(),
 							Description:  "The Private Network ID",
 						},
@@ -91,7 +90,6 @@ func resourceScalewayLb() *schema.Resource {
 							Type:        schema.TypeList,
 							Optional:    true,
 							Computed:    true,
-							ForceNew:    true,
 							Elem: &schema.Schema{
 								Type:         schema.TypeString,
 								ValidateFunc: validation.IsIPAddress,
@@ -102,7 +100,6 @@ func resourceScalewayLb() *schema.Resource {
 							Type:        schema.TypeBool,
 							Optional:    true,
 							Computed:    true,
-							ForceNew:    true,
 						},
 						// Readonly attributes
 						"status": {
@@ -287,15 +284,22 @@ func resourceScalewayLbUpdate(ctx context.Context, d *schema.ResourceData, meta 
 		if err != nil && !is404Error(err) {
 			return diag.FromErr(err)
 		}
+		// select only private networks that has change
+		pnToDetach, err := privateNetworksToDetach(pns, d.Get("private_network"))
+		if err != nil {
+			diag.FromErr(err)
+		}
 		// detach private networks
-		for _, pn := range pns {
-			err = lbAPI.DetachPrivateNetwork(&lb.ZonedAPIDetachPrivateNetworkRequest{
-				Zone:             zone,
-				LBID:             ID,
-				PrivateNetworkID: pn.PrivateNetworkID,
-			})
-			if err != nil && !is404Error(err) {
-				return diag.FromErr(err)
+		for pnID, detach := range pnToDetach {
+			if detach {
+				err = lbAPI.DetachPrivateNetwork(&lb.ZonedAPIDetachPrivateNetworkRequest{
+					Zone:             zone,
+					LBID:             ID,
+					PrivateNetworkID: pnID,
+				})
+				if err != nil && !is404Error(err) {
+					return diag.FromErr(err)
+				}
 			}
 		}
 
@@ -308,16 +312,22 @@ func resourceScalewayLbUpdate(ctx context.Context, d *schema.ResourceData, meta 
 			}
 
 			for _, config := range pnConfigs {
-				_, err := lbAPI.AttachPrivateNetwork(config, scw.WithContext(ctx))
-				if err != nil && !is404Error(err) {
-					return diag.FromErr(err)
+				// check private network is already in config
+				if detach, exist := pnToDetach[config.PrivateNetworkID]; exist && !detach {
+					continue
 				}
+				// check load balancer state
 				_, err = lbAPI.WaitForLb(&lb.ZonedAPIWaitForLBRequest{
 					Zone:          zone,
 					LBID:          ID,
 					Timeout:       scw.TimeDurationPtr(defaultInstanceServerWaitTimeout),
 					RetryInterval: &retryInterval,
 				}, scw.WithContext(ctx))
+				if err != nil && !is404Error(err) {
+					return diag.FromErr(err)
+				}
+				// attach updated private networks
+				_, err := lbAPI.AttachPrivateNetwork(config, scw.WithContext(ctx))
 				if err != nil && !is404Error(err) {
 					return diag.FromErr(err)
 				}

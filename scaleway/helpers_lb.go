@@ -3,6 +3,7 @@ package scaleway
 import (
 	"context"
 	"fmt"
+	"reflect"
 	"strings"
 	"time"
 
@@ -112,6 +113,66 @@ func expandPrivateNetworks(data interface{}, lbID string) ([]*lb.ZonedAPIAttachP
 	}
 
 	return res, nil
+}
+
+func isPrivateNetworkEqual(A, B interface{}) bool {
+	// Find out the diff Private Network or not
+	if _, ok := A.(*lb.PrivateNetwork); ok {
+		if _, ok := B.(*lb.PrivateNetwork); ok {
+			if A.(*lb.PrivateNetwork).PrivateNetworkID == B.(*lb.PrivateNetwork).PrivateNetworkID {
+				// if both has dhcp config should not update
+				if A.(*lb.PrivateNetwork).DHCPConfig != nil && B.(*lb.PrivateNetwork).DHCPConfig != nil {
+					return true
+				}
+				// check static config
+				aConfig := A.(*lb.PrivateNetwork).StaticConfig
+				if aConfig != nil {
+					bConfig := B.(*lb.PrivateNetwork).StaticConfig
+					if bConfig != nil {
+						// check if static config is different
+						return reflect.DeepEqual(aConfig.IPAddress, bConfig.IPAddress)
+					}
+				}
+			}
+		}
+	}
+	return false
+}
+
+func newPrivateNetwork(raw map[string]interface{}) *lb.PrivateNetwork {
+	_, pnID, _ := parseZonedID(raw["private_network_id"].(string))
+
+	pn := &lb.PrivateNetwork{PrivateNetworkID: pnID}
+	staticConfig := raw["static_config"]
+	if len(staticConfig.([]interface{})) > 0 {
+		pn.StaticConfig = expandLbPrivateNetworkStaticConfig(staticConfig)
+	} else {
+		pn.DHCPConfig = expandLbPrivateNetworkDHCPConfig(raw["dhcp_config"])
+	}
+
+	return pn
+}
+func privateNetworksToDetach(pns []*lb.PrivateNetwork, updates interface{}) (map[string]bool, error) {
+	actions := make(map[string]bool, len(pns))
+	configs := make(map[string]*lb.PrivateNetwork, len(pns))
+	// set detached all as default
+	for _, pn := range pns {
+		actions[pn.PrivateNetworkID] = true
+		configs[pn.PrivateNetworkID] = pn
+	}
+	//check if private network still exist or is different
+	for _, pn := range updates.([]interface{}) {
+		r := pn.(map[string]interface{})
+		_, pnID, err := parseZonedID(r["private_network_id"].(string))
+		if err != nil {
+			return nil, err
+		}
+		if _, exist := actions[pnID]; exist {
+			// check if config are equal
+			actions[pnID] = !isPrivateNetworkEqual(configs[pnID], newPrivateNetwork(r))
+		}
+	}
+2	return actions, nil
 }
 
 func flattenPrivateNetworkConfigs(resList *lb.ListLBPrivateNetworksResponse) interface{} {
