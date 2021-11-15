@@ -172,7 +172,7 @@ func privateNetworksToDetach(pns []*lb.PrivateNetwork, updates interface{}) (map
 			actions[pnID] = !isPrivateNetworkEqual(configs[pnID], newPrivateNetwork(r))
 		}
 	}
-2	return actions, nil
+	return actions, nil
 }
 
 func flattenPrivateNetworkConfigs(resList *lb.ListLBPrivateNetworksResponse) interface{} {
