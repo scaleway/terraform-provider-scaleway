@@ -3,6 +3,7 @@ package scaleway
 import (
 	"context"
 	"fmt"
+	"reflect"
 	"strings"
 	"time"
 
@@ -81,6 +82,120 @@ func flattenLbACLAction(action *lb.ACLAction) interface{} {
 			"type": action.Type,
 		},
 	}
+}
+
+func expandPrivateNetworks(data interface{}, lbID string) ([]*lb.ZonedAPIAttachPrivateNetworkRequest, error) {
+	if data == nil {
+		return nil, nil
+	}
+
+	var res []*lb.ZonedAPIAttachPrivateNetworkRequest
+	for _, pn := range data.([]interface{}) {
+		r := pn.(map[string]interface{})
+		zonePN, pnID, err := parseZonedID(r["private_network_id"].(string))
+		if err != nil {
+			return nil, err
+		}
+		pnRequest := &lb.ZonedAPIAttachPrivateNetworkRequest{
+			PrivateNetworkID: pnID,
+			Zone:             zonePN,
+			LBID:             lbID,
+		}
+
+		staticConfig := r["static_config"]
+		if len(staticConfig.([]interface{})) > 0 {
+			pnRequest.StaticConfig = expandLbPrivateNetworkStaticConfig(staticConfig)
+		} else {
+			pnRequest.DHCPConfig = expandLbPrivateNetworkDHCPConfig(r["dhcp_config"])
+		}
+
+		res = append(res, pnRequest)
+	}
+
+	return res, nil
+}
+
+func isPrivateNetworkEqual(A, B interface{}) bool {
+	// Find out the diff Private Network or not
+	if _, ok := A.(*lb.PrivateNetwork); ok {
+		if _, ok := B.(*lb.PrivateNetwork); ok {
+			if A.(*lb.PrivateNetwork).PrivateNetworkID == B.(*lb.PrivateNetwork).PrivateNetworkID {
+				// if both has dhcp config should not update
+				if A.(*lb.PrivateNetwork).DHCPConfig != nil && B.(*lb.PrivateNetwork).DHCPConfig != nil {
+					return true
+				}
+				// check static config
+				aConfig := A.(*lb.PrivateNetwork).StaticConfig
+				bConfig := B.(*lb.PrivateNetwork).StaticConfig
+				if aConfig != nil && bConfig != nil {
+					// check if static config is different
+					return reflect.DeepEqual(aConfig.IPAddress, bConfig.IPAddress)
+				}
+			}
+		}
+	}
+	return false
+}
+
+func newPrivateNetwork(raw map[string]interface{}) *lb.PrivateNetwork {
+	_, pnID, _ := parseZonedID(raw["private_network_id"].(string))
+
+	pn := &lb.PrivateNetwork{PrivateNetworkID: pnID}
+	staticConfig := raw["static_config"]
+	if len(staticConfig.([]interface{})) > 0 {
+		pn.StaticConfig = expandLbPrivateNetworkStaticConfig(staticConfig)
+	} else {
+		pn.DHCPConfig = expandLbPrivateNetworkDHCPConfig(raw["dhcp_config"])
+	}
+
+	return pn
+}
+func privateNetworksToDetach(pns []*lb.PrivateNetwork, updates interface{}) (map[string]bool, error) {
+	actions := make(map[string]bool, len(pns))
+	configs := make(map[string]*lb.PrivateNetwork, len(pns))
+	// set detached all as default
+	for _, pn := range pns {
+		actions[pn.PrivateNetworkID] = true
+		configs[pn.PrivateNetworkID] = pn
+	}
+	//check if private network still exist or is different
+	for _, pn := range updates.([]interface{}) {
+		r := pn.(map[string]interface{})
+		_, pnID, err := parseZonedID(r["private_network_id"].(string))
+		if err != nil {
+			return nil, err
+		}
+		if _, exist := actions[pnID]; exist {
+			// check if config are equal
+			actions[pnID] = !isPrivateNetworkEqual(configs[pnID], newPrivateNetwork(r))
+		}
+	}
+	return actions, nil
+}
+
+func flattenPrivateNetworkConfigs(resList *lb.ListLBPrivateNetworksResponse) interface{} {
+	if len(resList.PrivateNetwork) == 0 || resList == nil {
+		return nil
+	}
+
+	pnConfigs := resList.PrivateNetwork
+	pnI := []map[string]interface{}(nil)
+	var dhcpConfigExist bool
+	for _, pn := range pnConfigs {
+		if pn.DHCPConfig != nil {
+			dhcpConfigExist = true
+		}
+		pnZonedID := newZonedIDString(pn.LB.Zone, pn.PrivateNetworkID)
+		pnI = append(pnI, map[string]interface{}{
+			"private_network_id": pnZonedID,
+			"dhcp_config":        dhcpConfigExist,
+			"status":             pn.Status,
+			"zone":               pn.LB.Zone,
+			"static_config":      flattenLbPrivateNetworkStaticConfig(pn.StaticConfig),
+		})
+	}
+
+	return pnI
 }
 
 func expandLbACLAction(raw interface{}) *lb.ACLAction {
