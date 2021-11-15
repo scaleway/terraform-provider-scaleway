@@ -126,12 +126,10 @@ func isPrivateNetworkEqual(A, B interface{}) bool {
 				}
 				// check static config
 				aConfig := A.(*lb.PrivateNetwork).StaticConfig
-				if aConfig != nil {
-					bConfig := B.(*lb.PrivateNetwork).StaticConfig
-					if bConfig != nil {
-						// check if static config is different
-						return reflect.DeepEqual(aConfig.IPAddress, bConfig.IPAddress)
-					}
+				bConfig := B.(*lb.PrivateNetwork).StaticConfig
+				if aConfig != nil && bConfig != nil {
+					// check if static config is different
+					return reflect.DeepEqual(aConfig.IPAddress, bConfig.IPAddress)
 				}
 			}
 		}
