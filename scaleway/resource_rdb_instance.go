@@ -184,7 +184,7 @@ func resourceScalewayRdbInstance() *schema.Resource {
 			"load_balancer": {
 				Type:        schema.TypeBool,
 				Computed:    true,
-				Description: "Load balancers to forward the traffic to the right node based on the node state.",
+				Description: "Load balancer of the database instance",
 			},
 			// Common
 			"region":          regionSchema(),
@@ -495,6 +495,72 @@ func resourceScalewayRdbInstanceUpdate(ctx context.Context, d *schema.ResourceDa
 		}
 
 		_, err = rdbAPI.UpdateUser(req, scw.WithContext(ctx))
+		if err != nil {
+			return diag.FromErr(err)
+		}
+	}
+
+	if d.HasChanges("private_network") {
+		retryInterval := defaultWaitRDBRetryInterval
+		// retrieve state
+		res, err := rdbAPI.WaitForInstance(&rdb.WaitForInstanceRequest{
+			Region:        region,
+			InstanceID:    ID,
+			Timeout:       scw.TimeDurationPtr(defaultInstanceServerWaitTimeout * 3), // upgrade takes some time
+			RetryInterval: &retryInterval,
+		}, scw.WithContext(ctx))
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		// get endpoints to detach. It will handle only private networks
+		endPointsToRemove, err := endpointsToRemove(res.Endpoints, d.Get("private_network"))
+		if err != nil {
+			diag.FromErr(err)
+		}
+		for endPointID, remove := range endPointsToRemove {
+			if remove {
+				err := rdbAPI.DeleteEndpoint(
+					&rdb.DeleteEndpointRequest{
+						EndpointID: endPointID, Region: region},
+					scw.WithContext(ctx))
+				if err != nil {
+					diag.FromErr(err)
+				}
+			}
+		}
+
+		// retrieve state
+		res, err = rdbAPI.WaitForInstance(&rdb.WaitForInstanceRequest{
+			Region:        region,
+			InstanceID:    ID,
+			Timeout:       scw.TimeDurationPtr(defaultInstanceServerWaitTimeout * 3), // upgrade takes some time
+			RetryInterval: &retryInterval,
+		}, scw.WithContext(ctx))
+		if err != nil {
+			return diag.FromErr(err)
+		}
+
+		// set new endpoints
+		pn, pnExist := d.GetOk("private_network")
+		if pnExist {
+			privateEndpoints := expandPrivateNetwork(pn, pnExist)
+			for _, e := range privateEndpoints {
+				_, err := rdbAPI.CreateEndpoint(
+					&rdb.CreateEndpointRequest{Region: region, InstanceID: ID, EndpointSpec: e},
+					scw.WithContext(ctx))
+				if err != nil {
+					diag.FromErr(err)
+				}
+			}
+		}
+
+		// retrieve state
+		_, err = rdbAPI.WaitForInstance(&rdb.WaitForInstanceRequest{
+			Region:        region,
+			InstanceID:    ID,
+			Timeout:       scw.TimeDurationPtr(defaultInstanceServerWaitTimeout * 3), // upgrade takes some time
+			RetryInterval: &retryInterval,
+		}, scw.WithContext(ctx))
 		if err != nil {
 			return diag.FromErr(err)
 		}
