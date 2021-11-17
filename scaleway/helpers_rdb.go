@@ -1,6 +1,7 @@
 package scaleway
 
 import (
+	"context"
 	"reflect"
 	"time"
 
@@ -71,6 +72,16 @@ func expandInstanceSettings(i interface{}) []*rdb.InstanceSetting {
 	}
 
 	return res
+}
+
+func waitInstance(ctx context.Context, api *rdb.API, region scw.Region, id string) (*rdb.Instance, error) {
+	retryInterval := defaultWaitRDBRetryInterval
+	return api.WaitForInstance(&rdb.WaitForInstanceRequest{
+		Region:        region,
+		InstanceID:    id,
+		Timeout:       scw.TimeDurationPtr(defaultInstanceServerWaitTimeout * 3), // upgrade takes some time
+		RetryInterval: &retryInterval,
+	}, scw.WithContext(ctx))
 }
 
 func expandPrivateNetwork(data interface{}, exist bool) []*rdb.EndpointSpec {

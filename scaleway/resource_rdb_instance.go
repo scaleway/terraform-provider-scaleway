@@ -235,14 +235,8 @@ func resourceScalewayRdbInstanceCreate(ctx context.Context, d *schema.ResourceDa
 
 	d.SetId(newRegionalIDString(region, res.ID))
 
-	retryInterval := defaultWaitRDBRetryInterval
-	_, err = rdbAPI.WaitForInstance(&rdb.WaitForInstanceRequest{
-		Region:        region,
-		InstanceID:    res.ID,
-		Timeout:       scw.TimeDurationPtr(defaultRdbInstanceTimeout),
-		RetryInterval: &retryInterval,
-	}, scw.WithContext(ctx))
-	if err != nil {
+	_, err = waitInstance(ctx, rdbAPI, region, res.ID)
+	if err != nil && !is404Error(err) {
 		return diag.FromErr(err)
 	}
 
@@ -381,6 +375,11 @@ func resourceScalewayRdbInstanceUpdate(ctx context.Context, d *schema.ResourceDa
 		req.Tags = scw.StringsPtr(expandStrings(d.Get("tags")))
 	}
 
+	_, err = waitInstance(ctx, rdbAPI, region, ID)
+	if err != nil && !is404Error(err) {
+		return diag.FromErr(err)
+	}
+
 	_, err = rdbAPI.UpdateInstance(req, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
@@ -466,18 +465,12 @@ func resourceScalewayRdbInstanceUpdate(ctx context.Context, d *schema.ResourceDa
 			})
 	}
 	for _, request := range upgradeInstanceRequests {
-		_, err = rdbAPI.UpgradeInstance(&request, scw.WithContext(ctx))
-		if err != nil {
+		_, err = waitInstance(ctx, rdbAPI, region, ID)
+		if err != nil && !is404Error(err) {
 			return diag.FromErr(err)
 		}
 
-		retryInterval := defaultWaitRDBRetryInterval
-		_, err = rdbAPI.WaitForInstance(&rdb.WaitForInstanceRequest{
-			Region:        region,
-			InstanceID:    ID,
-			Timeout:       scw.TimeDurationPtr(defaultInstanceServerWaitTimeout * 3), // upgrade takes some time
-			RetryInterval: &retryInterval,
-		}, scw.WithContext(ctx))
+		_, err = rdbAPI.UpgradeInstance(&request, scw.WithContext(ctx))
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -501,15 +494,9 @@ func resourceScalewayRdbInstanceUpdate(ctx context.Context, d *schema.ResourceDa
 	}
 
 	if d.HasChanges("private_network") {
-		retryInterval := defaultWaitRDBRetryInterval
 		// retrieve state
-		res, err := rdbAPI.WaitForInstance(&rdb.WaitForInstanceRequest{
-			Region:        region,
-			InstanceID:    ID,
-			Timeout:       scw.TimeDurationPtr(defaultInstanceServerWaitTimeout * 3), // upgrade takes some time
-			RetryInterval: &retryInterval,
-		}, scw.WithContext(ctx))
-		if err != nil {
+		res, err := waitInstance(ctx, rdbAPI, region, ID)
+		if err != nil && !is404Error(err) {
 			return diag.FromErr(err)
 		}
 		// get endpoints to detach. It will handle only private networks
@@ -530,13 +517,8 @@ func resourceScalewayRdbInstanceUpdate(ctx context.Context, d *schema.ResourceDa
 		}
 
 		// retrieve state
-		res, err = rdbAPI.WaitForInstance(&rdb.WaitForInstanceRequest{
-			Region:        region,
-			InstanceID:    ID,
-			Timeout:       scw.TimeDurationPtr(defaultInstanceServerWaitTimeout * 3), // upgrade takes some time
-			RetryInterval: &retryInterval,
-		}, scw.WithContext(ctx))
-		if err != nil {
+		_, err = waitInstance(ctx, rdbAPI, region, ID)
+		if err != nil && !is404Error(err) {
 			return diag.FromErr(err)
 		}
 
@@ -554,14 +536,8 @@ func resourceScalewayRdbInstanceUpdate(ctx context.Context, d *schema.ResourceDa
 			}
 		}
 
-		// retrieve state
-		_, err = rdbAPI.WaitForInstance(&rdb.WaitForInstanceRequest{
-			Region:        region,
-			InstanceID:    ID,
-			Timeout:       scw.TimeDurationPtr(defaultInstanceServerWaitTimeout * 3), // upgrade takes some time
-			RetryInterval: &retryInterval,
-		}, scw.WithContext(ctx))
-		if err != nil {
+		_, err = waitInstance(ctx, rdbAPI, region, ID)
+		if err != nil && !is404Error(err) {
 			return diag.FromErr(err)
 		}
 	}
@@ -575,14 +551,11 @@ func resourceScalewayRdbInstanceDelete(ctx context.Context, d *schema.ResourceDa
 		return diag.FromErr(err)
 	}
 
-	retryInterval := defaultWaitRDBRetryInterval
 	// We first wait in case the instance is in a transient state
-	_, err = rdbAPI.WaitForInstance(&rdb.WaitForInstanceRequest{
-		InstanceID:    ID,
-		Region:        region,
-		Timeout:       scw.TimeDurationPtr(LbWaitForTimeout),
-		RetryInterval: &retryInterval,
-	}, scw.WithContext(ctx))
+	_, err = waitInstance(ctx, rdbAPI, region, ID)
+	if err != nil && !is404Error(err) {
+		return diag.FromErr(err)
+	}
 
 	if err != nil && !is404Error(err) {
 		return diag.FromErr(err)
@@ -598,13 +571,7 @@ func resourceScalewayRdbInstanceDelete(ctx context.Context, d *schema.ResourceDa
 	}
 
 	// Lastly wait in case the instance is in a transient state
-	_, err = rdbAPI.WaitForInstance(&rdb.WaitForInstanceRequest{
-		InstanceID:    ID,
-		Region:        region,
-		Timeout:       scw.TimeDurationPtr(LbWaitForTimeout),
-		RetryInterval: &retryInterval,
-	}, scw.WithContext(ctx))
-
+	_, err = waitInstance(ctx, rdbAPI, region, ID)
 	if err != nil && !is404Error(err) {
 		return diag.FromErr(err)
 	}

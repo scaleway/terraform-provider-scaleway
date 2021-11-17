@@ -10,7 +10,7 @@ import (
 func TestAccScalewayDataSourceRDBAcl_Basic(t *testing.T) {
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
-	instanceName := "data-source-rdb-acl-basic"
+	instanceName := "TestAccScalewayDataSourceRDBAcl_Basic"
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
@@ -39,8 +39,7 @@ func TestAccScalewayDataSourceRDBAcl_Basic(t *testing.T) {
 					}
 					`, instanceName),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("scaleway_rdb_acl.main", "acl_rules.1.ip", "1.2.3.4/32"),
-					resource.TestCheckResourceAttr("scaleway_rdb_acl.main", "acl_rules.0.ip", "4.5.6.7/32"),
+					resource.TestCheckResourceAttr("scaleway_rdb_acl.main", "acl_rules.0.ip", "1.2.3.4/32"),
 				),
 			},
 			{
@@ -69,20 +68,8 @@ func TestAccScalewayDataSourceRDBAcl_Basic(t *testing.T) {
 
 					}`, instanceName),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("scaleway_rdb_acl.main", "acl_rules.1.ip", "1.2.3.4/32"),
-					resource.TestCheckResourceAttr("scaleway_rdb_acl.main", "acl_rules.0.ip", "4.5.6.7/32"),
-				),
-			},
-			{
-				Config: fmt.Sprintf(`
-					resource "scaleway_rdb_instance" "main" {
-						name = "%s"
-						node_type = "db-dev-s"
-						engine = "PostgreSQL-12"
-						is_ha_cluster = false
-					}`, instanceName),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "name", "data-source-rdb-acl-basic"),
+					resource.TestCheckResourceAttr("scaleway_rdb_acl.main", "acl_rules.0.ip", "1.2.3.4/32"),
+					resource.TestCheckResourceAttr("data.scaleway_rdb_acl.maindata", "acl_rules.0.ip", "1.2.3.4/32"),
 				),
 			},
 		},
