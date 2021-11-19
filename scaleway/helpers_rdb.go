@@ -95,7 +95,7 @@ func expandPrivateNetwork(data interface{}, exist bool) []*rdb.EndpointSpec {
 		spec := &rdb.EndpointSpec{
 			PrivateNetwork: &rdb.EndpointSpecPrivateNetwork{
 				PrivateNetworkID: expandID(r["pn_id"].(string)),
-				ServiceIP:        expandIPNet(r["ip"].(string)),
+				ServiceIP:        expandIPNet(r["ip_net"].(string)),
 			},
 		}
 		res = append(res, spec)
@@ -133,7 +133,7 @@ func endpointsToRemove(endPoints []*rdb.Endpoint, updates interface{}) (map[stri
 			return nil, err
 		}
 
-		pnUpdated := newEndPointPrivateNetworkDetails(id, r["ip"].(string), locality)
+		pnUpdated := newEndPointPrivateNetworkDetails(id, r["ip_net"].(string), locality)
 		endpoint, exist := endpoints[pnZonedID]
 		if !exist {
 			continue
@@ -165,19 +165,42 @@ func isEndPointEqual(A, B interface{}) bool {
 	return false
 }
 
-func flattenPrivateNetwork(readEndpoints []*rdb.Endpoint) (interface{}, bool) {
+func flattenPrivateNetwork(endpoints []*rdb.Endpoint) (interface{}, bool) {
 	pnI := []map[string]interface{}(nil)
-	for _, readPN := range readEndpoints {
-		if readPN.PrivateNetwork != nil {
-			pn := readPN.PrivateNetwork
+	for _, endpoint := range endpoints {
+		if endpoint.PrivateNetwork != nil {
+			pn := endpoint.PrivateNetwork
 			pnZonedID := newZonedIDString(pn.Zone, pn.PrivateNetworkID)
 			pnI = append(pnI, map[string]interface{}{
-				"ip":    flattenIPNet(pn.ServiceIP),
-				"pn_id": pnZonedID,
+				"endpoint_id": endpoint.ID,
+				"ip":          flattenIPPtr(endpoint.IP),
+				"port":        int(endpoint.Port),
+				"name":        endpoint.Name,
+				"ip_net":      flattenIPNet(pn.ServiceIP),
+				"pn_id":       pnZonedID,
+				"hostname":    flattenStringPtr(endpoint.Hostname),
 			})
 			return pnI, true
 		}
 	}
 
 	return pnI, false
+}
+
+func flattenLoadBalancer(endpoints []*rdb.Endpoint) interface{} {
+	flat := []map[string]interface{}(nil)
+	for _, endpoint := range endpoints {
+		if endpoint.LoadBalancer != nil {
+			flat = append(flat, map[string]interface{}{
+				"endpoint_id": endpoint.ID,
+				"ip":          flattenIPPtr(endpoint.IP),
+				"port":        int(endpoint.Port),
+				"name":        endpoint.Name,
+				"hostname":    flattenStringPtr(endpoint.Hostname),
+			})
+			return flat
+		}
+	}
+
+	return flat
 }

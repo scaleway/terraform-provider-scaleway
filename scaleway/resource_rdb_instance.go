@@ -125,17 +125,50 @@ func resourceScalewayRdbInstance() *schema.Resource {
 				Description: "List of private network to expose your database instance",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"ip": {
+						"ip_net": {
 							Type:         schema.TypeString,
 							Required:     true,
 							ValidateFunc: validation.IsCIDR,
-							Description:  "The IP of your service",
+							Description:  "The subnet of your private network",
 						},
 						"pn_id": {
 							Type:         schema.TypeString,
 							Required:     true,
 							ValidateFunc: validationUUIDorUUIDWithLocality(),
 							Description:  "The private network ID",
+						},
+						// Computed
+						"endpoint_id": {
+							Type:        schema.TypeString,
+							Optional:    true,
+							Computed:    true,
+							Description: "The endpoint ID",
+						},
+						"ip": {
+							Type:         schema.TypeString,
+							Optional:     true,
+							Computed:     true,
+							ValidateFunc: validation.IsIPAddress,
+							Description:  "The IP of your private service",
+						},
+						"port": {
+							Type:         schema.TypeInt,
+							Optional:     true,
+							Computed:     true,
+							ValidateFunc: validation.IsPortNumber,
+							Description:  "The port of your private service",
+						},
+						"name": {
+							Type:        schema.TypeString,
+							Optional:    true,
+							Computed:    true,
+							Description: "The name of your private service",
+						},
+						"hostname": {
+							Type:        schema.TypeString,
+							Optional:    true,
+							Computed:    true,
+							Description: "The hostname of your endpoint",
 						},
 						"zone": zoneSchema(),
 					},
@@ -182,9 +215,46 @@ func resourceScalewayRdbInstance() *schema.Resource {
 				Description: "Certificate of the database instance",
 			},
 			"load_balancer": {
-				Type:        schema.TypeBool,
+				Type:        schema.TypeList,
 				Computed:    true,
 				Description: "Load balancer of the database instance",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						// Computed
+						"endpoint_id": {
+							Type:        schema.TypeString,
+							Optional:    true,
+							Computed:    true,
+							Description: "The endpoint ID",
+						},
+						"ip": {
+							Type:         schema.TypeString,
+							Optional:     true,
+							Computed:     true,
+							ValidateFunc: validation.IsIPAddress,
+							Description:  "The IP of your load balancer service",
+						},
+						"port": {
+							Type:         schema.TypeInt,
+							Optional:     true,
+							Computed:     true,
+							ValidateFunc: validation.IsPortNumber,
+							Description:  "The port of your load balancer service",
+						},
+						"name": {
+							Type:        schema.TypeString,
+							Optional:    true,
+							Computed:    true,
+							Description: "The name of your load balancer service",
+						},
+						"hostname": {
+							Type:        schema.TypeString,
+							Optional:    true,
+							Computed:    true,
+							Description: "The hostname of your endpoint",
+						},
+					},
+				},
 			},
 			// Common
 			"region":          regionSchema(),
@@ -235,11 +305,6 @@ func resourceScalewayRdbInstanceCreate(ctx context.Context, d *schema.ResourceDa
 
 	d.SetId(newRegionalIDString(region, res.ID))
 
-	_, err = waitInstance(ctx, rdbAPI, region, res.ID)
-	if err != nil && !is404Error(err) {
-		return diag.FromErr(err)
-	}
-
 	// Configure Schedule Backup
 	// BackupScheduleFrequency and BackupScheduleRetention can only configure after instance creation
 	if !d.Get("disable_backup").(bool) {
@@ -255,6 +320,11 @@ func resourceScalewayRdbInstanceCreate(ctx context.Context, d *schema.ResourceDa
 			updateReq.BackupScheduleRetention = scw.Uint32Ptr(uint32(backupScheduleRetention.(int)))
 		}
 
+		_, err = waitInstance(ctx, rdbAPI, region, res.ID)
+		if err != nil && !is404Error(err) {
+			return diag.FromErr(err)
+		}
+
 		_, err = rdbAPI.UpdateInstance(updateReq, scw.WithContext(ctx))
 		if err != nil {
 			return diag.FromErr(err)
@@ -262,6 +332,11 @@ func resourceScalewayRdbInstanceCreate(ctx context.Context, d *schema.ResourceDa
 	}
 	// Configure Instance settings
 	if settings, ok := d.GetOk("settings"); ok {
+		res, err = waitInstance(ctx, rdbAPI, region, res.ID)
+		if err != nil && !is404Error(err) {
+			return diag.FromErr(err)
+		}
+
 		_, err := rdbAPI.SetInstanceSettings(&rdb.SetInstanceSettingsRequest{
 			InstanceID: res.ID,
 			Region:     region,
@@ -281,15 +356,9 @@ func resourceScalewayRdbInstanceRead(ctx context.Context, d *schema.ResourceData
 		return diag.FromErr(err)
 	}
 
-	res, err := rdbAPI.GetInstance(&rdb.GetInstanceRequest{
-		Region:     region,
-		InstanceID: ID,
-	}, scw.WithContext(ctx))
-	if err != nil {
-		if is404Error(err) {
-			d.SetId("")
-			return nil
-		}
+	// verify resource is ready
+	res, err := waitInstance(ctx, rdbAPI, region, ID)
+	if err != nil && !is404Error(err) {
 		return diag.FromErr(err)
 	}
 
@@ -337,13 +406,11 @@ func resourceScalewayRdbInstanceRead(ctx context.Context, d *schema.ResourceData
 	_ = d.Set("settings", flattenInstanceSettings(res.Settings))
 
 	// set endpoints
-	hasLoadBalancerEndpoint := true
 	pnI, pnExist := flattenPrivateNetwork(res.Endpoints)
 	if pnExist {
 		_ = d.Set("private_network", pnI)
-		hasLoadBalancerEndpoint = false
 	}
-	_ = d.Set("load_balancer", hasLoadBalancerEndpoint)
+	_ = d.Set("load_balancer", flattenLoadBalancer(res.Endpoints))
 
 	return nil
 }
@@ -386,6 +453,10 @@ func resourceScalewayRdbInstanceUpdate(ctx context.Context, d *schema.ResourceDa
 	}
 	// Change settings
 	if d.HasChange("settings") {
+		_, err = waitInstance(ctx, rdbAPI, region, ID)
+		if err != nil && !is404Error(err) {
+			return diag.FromErr(err)
+		}
 		_, err := rdbAPI.SetInstanceSettings(&rdb.SetInstanceSettingsRequest{
 			InstanceID: ID,
 			Region:     region,
@@ -480,6 +551,11 @@ func resourceScalewayRdbInstanceUpdate(ctx context.Context, d *schema.ResourceDa
 	}
 
 	if d.HasChange("password") {
+		_, err := waitInstance(ctx, rdbAPI, region, ID)
+		if err != nil && !is404Error(err) {
+			return diag.FromErr(err)
+		}
+
 		req := &rdb.UpdateUserRequest{
 			Region:     region,
 			InstanceID: ID,
@@ -499,6 +575,7 @@ func resourceScalewayRdbInstanceUpdate(ctx context.Context, d *schema.ResourceDa
 		if err != nil && !is404Error(err) {
 			return diag.FromErr(err)
 		}
+
 		// get endpoints to detach. It will handle only private networks
 		endPointsToRemove, err := endpointsToRemove(res.Endpoints, d.Get("private_network"))
 		if err != nil {
@@ -534,11 +611,6 @@ func resourceScalewayRdbInstanceUpdate(ctx context.Context, d *schema.ResourceDa
 					diag.FromErr(err)
 				}
 			}
-		}
-
-		_, err = waitInstance(ctx, rdbAPI, region, ID)
-		if err != nil && !is404Error(err) {
-			return diag.FromErr(err)
 		}
 	}
 

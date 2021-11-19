@@ -72,11 +72,12 @@ func TestAccScalewayRdbInstance_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "tags.0", "terraform-test"),
 					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "tags.1", "scaleway_rdb_instance"),
 					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "tags.2", "minimal"),
-					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "load_balancer", "true"),
 					resource.TestCheckResourceAttrSet("scaleway_rdb_instance.main", "endpoint_ip"),
 					resource.TestCheckResourceAttrSet("scaleway_rdb_instance.main", "endpoint_port"),
 					resource.TestCheckResourceAttrSet("scaleway_rdb_instance.main", "certificate"),
-					resource.TestCheckResourceAttrSet("scaleway_rdb_instance.main", "load_balancer"),
+					resource.TestCheckResourceAttrSet("scaleway_rdb_instance.main", "load_balancer.0.ip"),
+					resource.TestCheckResourceAttrSet("scaleway_rdb_instance.main", "load_balancer.0.endpoint_id"),
+					resource.TestCheckResourceAttrSet("scaleway_rdb_instance.main", "load_balancer.0.port"),
 				),
 			},
 		},
@@ -136,6 +137,7 @@ func TestAccScalewayRdbInstance_Settings(t *testing.T) {
 						name = "test-rdb"
 						node_type = "db-dev-s"
 						disable_backup = true
+						engine = "PostgreSQL-11"
 						user_name = "my_initial_user"
 						password = "thiZ_is_v&ry_s3cret"
 						settings = {
@@ -202,6 +204,7 @@ func TestAccScalewayRdbInstance_PrivateNetwork(t *testing.T) {
 				Config: `
 					resource scaleway_vpc_private_network pn01 {
 						name = "my_private_network"
+						zone = "nl-ams-1"
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
@@ -212,6 +215,7 @@ func TestAccScalewayRdbInstance_PrivateNetwork(t *testing.T) {
 				Config: `
 					resource scaleway_vpc_private_network pn01 {
 						name = "my_private_network"
+						zone = "nl-ams-1"
 					}
 
 					resource scaleway_rdb_instance main {
@@ -222,12 +226,12 @@ func TestAccScalewayRdbInstance_PrivateNetwork(t *testing.T) {
 						disable_backup = true
 						user_name = "my_initial_user"
 						password = "thiZ_is_v&ry_s3cret"
-						region= "fr-par"
+						region= "nl-ams"
 						tags = [ "terraform-test", "scaleway_rdb_instance", "volume", "rdb_pn" ]
 						volume_type = "bssd"
 						volume_size_in_gb = 10
 						private_network {
-							ip = "192.168.1.42/24"
+							ip_net = "192.168.1.42/24"
 							pn_id = "${scaleway_vpc_private_network.pn01.id}"
 						}
 					}
@@ -235,51 +239,19 @@ func TestAccScalewayRdbInstance_PrivateNetwork(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayRdbExists(tt, "scaleway_rdb_instance.main"),
 					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "private_network.#", "1"),
-					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "private_network.0.ip", "192.168.1.42/24"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "private_network.0.ip_net", "192.168.1.42/24"),
 				),
 			},
 			{
 				Config: `
 					resource scaleway_vpc_private_network pn01 {
 						name = "my_private_network_to_be_replaced"
+						zone = "nl-ams-1"
 					}
 
 					resource scaleway_vpc_private_network pn02 {
 						name = "my_private_network"
-					}
-
-					resource scaleway_rdb_instance main {
-						name = "test-rdb-updated"
-						node_type = "db-dev-s"
-						engine = "PostgreSQL-11"
-						is_ha_cluster = false
-						disable_backup = true
-						user_name = "my_initial_user"
-						password = "thiZ_is_v&ry_s3cret"
-						region= "fr-par"
-						tags = [ "terraform-test", "scaleway_rdb_instance", "volume", "rdb_pn" ]
-						volume_type = "bssd"
-						volume_size_in_gb = 10
-						private_network {
-							ip = "192.168.1.43/24"
-							pn_id = "${scaleway_vpc_private_network.pn02.id}"
-						}
-					}
-				`,
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayRdbExists(tt, "scaleway_rdb_instance.main"),
-					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "private_network.#", "1"),
-					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "private_network.0.ip", "192.168.1.43/24"),
-				),
-			},
-			{
-				Config: `
-					resource scaleway_vpc_private_network pn01 {
-						name = "my_private_network_to_be_replaced"
-					}
-
-					resource scaleway_vpc_private_network pn02 {
-						name = "my_private_network"
+						zone = "nl-ams-1"
 					}
 
 					resource scaleway_rdb_instance main {
@@ -290,31 +262,147 @@ func TestAccScalewayRdbInstance_PrivateNetwork(t *testing.T) {
 						disable_backup = true
 						user_name = "my_initial_user"
 						password = "thiZ_is_v&ry_s3cret"
-						region= "fr-par"
-						tags = [ "terraform-test", "scaleway_rdb_instance", "volume" ]
+						region= "nl-ams"
+						tags = [ "terraform-test", "scaleway_rdb_instance", "volume", "rdb_pn" ]
 						volume_type = "bssd"
 						volume_size_in_gb = 10
+						private_network {
+							ip_net = "192.168.1.254/24"
+							pn_id = "${scaleway_vpc_private_network.pn02.id}"
+						}
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayRdbExists(tt, "scaleway_rdb_instance.main"),
-					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "load_balancer", "true"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "private_network.#", "1"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "private_network.0.ip_net", "192.168.1.254/24"),
 				),
 			},
 			{
 				Config: `
 					resource scaleway_vpc_private_network pn01 {
-						name = "my_private_network_without_attachment"
+						name = "my_private_network_to_be_replaced"
+						zone = "nl-ams-1"
 					}
 
 					resource scaleway_vpc_private_network pn02 {
-						name = "my_private_network_without_attachment"
+						name = "my_private_network"
+						zone = "nl-ams-1"
+					}
+
+					resource scaleway_vpc_public_gateway_dhcp main {
+						subnet = "192.168.1.0/24"
+						zone = "nl-ams-1"
+					}
+
+					resource scaleway_vpc_public_gateway_ip main {
+						zone = "nl-ams-1"
+					}
+
+					resource scaleway_vpc_public_gateway main {
+						name = "foobar"
+						type = "VPC-GW-S"
+						zone = "nl-ams-1"
+						ip_id = scaleway_vpc_public_gateway_ip.main.id
+					}
+
+					resource scaleway_vpc_gateway_network main {
+						gateway_id = scaleway_vpc_public_gateway.main.id
+						private_network_id = scaleway_vpc_private_network.pn02.id
+						dhcp_id = scaleway_vpc_public_gateway_dhcp.main.id
+						cleanup_dhcp = true
+						enable_masquerade = true
+						zone = "nl-ams-1"
+						depends_on = [scaleway_vpc_public_gateway_ip.main, scaleway_vpc_private_network.pn02]
+					}
+
+					resource scaleway_rdb_instance main {
+						name = "test-rdb"
+						node_type = "db-dev-s"
+						engine = "PostgreSQL-11"
+						is_ha_cluster = false
+						disable_backup = true
+						user_name = "my_initial_user"
+						password = "thiZ_is_v&ry_s3cret"
+						region= "nl-ams"
+						tags = [ "terraform-test", "scaleway_rdb_instance", "volume", "rdb_pn" ]
+						volume_type = "bssd"
+						volume_size_in_gb = 10
+						private_network {
+							ip_net = "192.168.1.254/24" #pool high
+							pn_id = "${scaleway_vpc_private_network.pn02.id}"
+						}
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("scaleway_vpc_private_network.pn01", "name", "my_private_network_without_attachment"),
-					resource.TestCheckResourceAttr("scaleway_vpc_private_network.pn02", "name", "my_private_network_without_attachment"),
+					testAccCheckScalewayRdbExists(tt, "scaleway_rdb_instance.main"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "private_network.0.ip_net", "192.168.1.254/24"),
 				),
+			},
+			{
+				Config: `
+					resource scaleway_vpc_private_network pn02 {
+						name = "my_private_network"
+						zone = "nl-ams-1"
+					}
+
+					resource scaleway_vpc_public_gateway_dhcp main {
+						subnet = "192.168.1.0/24"
+						zone = "nl-ams-1"
+					}
+
+					resource scaleway_vpc_public_gateway_ip main {
+						zone = "nl-ams-1"
+					}
+
+					resource scaleway_vpc_public_gateway main {
+						name = "foobar"
+						type = "VPC-GW-S"
+						zone = "nl-ams-1"
+						ip_id = scaleway_vpc_public_gateway_ip.main.id
+					}
+
+					resource scaleway_vpc_gateway_network main {
+						gateway_id = scaleway_vpc_public_gateway.main.id
+						private_network_id = scaleway_vpc_private_network.pn02.id
+						dhcp_id = scaleway_vpc_public_gateway_dhcp.main.id
+						cleanup_dhcp = true
+						enable_masquerade = true
+						zone = "nl-ams-1"
+						depends_on = [scaleway_vpc_public_gateway_ip.main, scaleway_vpc_private_network.pn02]
+					}
+				`,
+			},
+			{
+				Config: `
+					resource scaleway_vpc_private_network pn02 {
+						name = "my_private_network_without_attachment"
+						zone = "nl-ams-1"
+					}
+
+					resource scaleway_vpc_public_gateway_ip main {
+						zone = "nl-ams-1"
+					}
+
+					resource scaleway_vpc_public_gateway main {
+						name = "foobar"
+						type = "VPC-GW-S"
+						zone = "nl-ams-1"
+						ip_id = scaleway_vpc_public_gateway_ip.main.id
+					}
+				`,
+			},
+			{
+				Config: `
+					resource scaleway_vpc_private_network pn02 {
+						name = "my_private_network_without_attachment"
+						zone = "nl-ams-1"
+					}
+
+					resource scaleway_vpc_public_gateway_ip main {
+						zone = "nl-ams-1"
+					}
+				`,
 			},
 		},
 	})
