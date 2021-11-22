@@ -70,7 +70,7 @@ resource "scaleway_lb" "base" {
 }
 ```
 
-You will need c it to:
+You will need to update it to:
 
 ```hcl
 resource "scaleway_lb_ip" "ip" {
