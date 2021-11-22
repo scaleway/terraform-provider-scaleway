@@ -3,12 +3,13 @@ package scaleway
 import (
 	"context"
 	"fmt"
-	"strings"
-
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/api/rdb/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"strings"
+	"time"
 )
 
 func resourceScalewayRdbDatabase() *schema.Resource {
@@ -64,18 +65,33 @@ func resourceScalewayRdbDatabaseCreate(ctx context.Context, d *schema.ResourceDa
 		return diag.FromErr(err)
 	}
 
+	_, err = waitInstance(ctx, rdbAPI, region, instanceID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	createReq := &rdb.CreateDatabaseRequest{
 		Region:     region,
 		InstanceID: instanceID,
 		Name:       d.Get("name").(string),
 	}
 
-	res, err := rdbAPI.CreateDatabase(createReq, scw.WithContext(ctx))
+	err = resource.RetryContext(ctx, 1*time.Minute, func() *resource.RetryError {
+		_, err := rdbAPI.CreateDatabase(createReq, scw.WithContext(ctx))
+		if err != nil {
+			// WIP
+			return &resource.RetryError{Err: err, Retryable: true}
+		}
+
+		return nil
+	})
+
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	d.SetId(resourceScalewayRdbDatabaseID(region, expandID(instanceID), res.Name))
+
+	//d.SetId(resourceScalewayRdbDatabaseID(region, expandID(instanceID), res.Name))
 
 	return resourceScalewayRdbDatabaseRead(ctx, d, meta)
 }
@@ -84,7 +100,11 @@ func resourceScalewayRdbDatabaseRead(ctx context.Context, d *schema.ResourceData
 	rdbAPI := newRdbAPI(meta)
 
 	region, instanceID, databaseName, err := resourceScalewayRdbDatabaseParseID(d.Id())
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
+	_, err = waitInstance(ctx, rdbAPI, region, instanceID)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -118,7 +138,11 @@ func resourceScalewayRdbDatabaseDelete(ctx context.Context, d *schema.ResourceDa
 	rdbAPI := newRdbAPI(meta)
 
 	region, instanceID, databaseName, err := resourceScalewayRdbDatabaseParseID(d.Id())
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
+	_, err = waitInstance(ctx, rdbAPI, region, instanceID)
 	if err != nil {
 		return diag.FromErr(err)
 	}
