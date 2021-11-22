@@ -13,6 +13,10 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 )
 
+const (
+	defaultWaitRDBRetryInterval = 30 * time.Second
+)
+
 func resourceScalewayRdbInstance() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceScalewayRdbInstanceCreate,
@@ -114,6 +118,62 @@ func resourceScalewayRdbInstance() *schema.Resource {
 				Computed:    true,
 				Description: "Volume size (in GB) when volume_type is not lssd",
 			},
+			"private_network": {
+				Type:        schema.TypeList,
+				Optional:    true,
+				MaxItems:    1,
+				Description: "List of private network to expose your database instance",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"ip_net": {
+							Type:         schema.TypeString,
+							Required:     true,
+							ValidateFunc: validation.IsCIDR,
+							Description:  "The ip net of your private network",
+						},
+						"pn_id": {
+							Type:         schema.TypeString,
+							Required:     true,
+							ValidateFunc: validationUUIDorUUIDWithLocality(),
+							Description:  "The private network ID",
+						},
+						// Computed
+						"endpoint_id": {
+							Type:        schema.TypeString,
+							Optional:    true,
+							Computed:    true,
+							Description: "The endpoint ID",
+						},
+						"ip": {
+							Type:         schema.TypeString,
+							Optional:     true,
+							Computed:     true,
+							ValidateFunc: validation.IsIPAddress,
+							Description:  "The IP of your private service",
+						},
+						"port": {
+							Type:         schema.TypeInt,
+							Optional:     true,
+							Computed:     true,
+							ValidateFunc: validation.IsPortNumber,
+							Description:  "The port of your private service",
+						},
+						"name": {
+							Type:        schema.TypeString,
+							Optional:    true,
+							Computed:    true,
+							Description: "The name of your private service",
+						},
+						"hostname": {
+							Type:        schema.TypeString,
+							Optional:    true,
+							Computed:    true,
+							Description: "The hostname of your endpoint",
+						},
+						"zone": zoneSchema(),
+					},
+				},
+			},
 			// Computed
 			"endpoint_ip": {
 				Type:        schema.TypeString,
@@ -154,7 +214,48 @@ func resourceScalewayRdbInstance() *schema.Resource {
 				Computed:    true,
 				Description: "Certificate of the database instance",
 			},
-
+			"load_balancer": {
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "Load balancer of the database instance",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						// Computed
+						"endpoint_id": {
+							Type:        schema.TypeString,
+							Optional:    true,
+							Computed:    true,
+							Description: "The endpoint ID",
+						},
+						"ip": {
+							Type:         schema.TypeString,
+							Optional:     true,
+							Computed:     true,
+							ValidateFunc: validation.IsIPAddress,
+							Description:  "The IP of your load balancer service",
+						},
+						"port": {
+							Type:         schema.TypeInt,
+							Optional:     true,
+							Computed:     true,
+							ValidateFunc: validation.IsPortNumber,
+							Description:  "The port of your load balancer service",
+						},
+						"name": {
+							Type:        schema.TypeString,
+							Optional:    true,
+							Computed:    true,
+							Description: "The name of your load balancer service",
+						},
+						"hostname": {
+							Type:        schema.TypeString,
+							Optional:    true,
+							Computed:    true,
+							Description: "The hostname of your endpoint",
+						},
+					},
+				},
+			},
 			// Common
 			"region":          regionSchema(),
 			"organization_id": organizationIDSchema(),
@@ -183,6 +284,13 @@ func resourceScalewayRdbInstanceCreate(ctx context.Context, d *schema.ResourceDa
 		VolumeType:    rdb.VolumeType(d.Get("volume_type").(string)),
 	}
 
+	pn, pnExist := d.GetOk("private_network")
+	if pnExist {
+		createReq.InitEndpoints = expandPrivateNetwork(pn, pnExist)
+	} else {
+		createReq.InitEndpoints = expandLoadBalancer()
+	}
+
 	if size, ok := d.GetOk("volume_size_in_gb"); ok {
 		if createReq.VolumeType != rdb.VolumeTypeBssd {
 			return diag.FromErr(fmt.Errorf("volume_size_in_gb should be used with volume_type %s only", rdb.VolumeTypeBssd.String()))
@@ -196,16 +304,6 @@ func resourceScalewayRdbInstanceCreate(ctx context.Context, d *schema.ResourceDa
 	}
 
 	d.SetId(newRegionalIDString(region, res.ID))
-
-	_, err = rdbAPI.WaitForInstance(&rdb.WaitForInstanceRequest{
-		Region:        region,
-		InstanceID:    res.ID,
-		Timeout:       scw.TimeDurationPtr(defaultRdbInstanceTimeout),
-		RetryInterval: DefaultWaitRetryInterval,
-	}, scw.WithContext(ctx))
-	if err != nil {
-		return diag.FromErr(err)
-	}
 
 	// Configure Schedule Backup
 	// BackupScheduleFrequency and BackupScheduleRetention can only configure after instance creation
@@ -222,6 +320,11 @@ func resourceScalewayRdbInstanceCreate(ctx context.Context, d *schema.ResourceDa
 			updateReq.BackupScheduleRetention = scw.Uint32Ptr(uint32(backupScheduleRetention.(int)))
 		}
 
+		_, err = waitInstance(ctx, rdbAPI, region, res.ID)
+		if err != nil && !is404Error(err) {
+			return diag.FromErr(err)
+		}
+
 		_, err = rdbAPI.UpdateInstance(updateReq, scw.WithContext(ctx))
 		if err != nil {
 			return diag.FromErr(err)
@@ -229,6 +332,11 @@ func resourceScalewayRdbInstanceCreate(ctx context.Context, d *schema.ResourceDa
 	}
 	// Configure Instance settings
 	if settings, ok := d.GetOk("settings"); ok {
+		res, err = waitInstance(ctx, rdbAPI, region, res.ID)
+		if err != nil && !is404Error(err) {
+			return diag.FromErr(err)
+		}
+
 		_, err := rdbAPI.SetInstanceSettings(&rdb.SetInstanceSettingsRequest{
 			InstanceID: res.ID,
 			Region:     region,
@@ -248,15 +356,9 @@ func resourceScalewayRdbInstanceRead(ctx context.Context, d *schema.ResourceData
 		return diag.FromErr(err)
 	}
 
-	res, err := rdbAPI.GetInstance(&rdb.GetInstanceRequest{
-		Region:     region,
-		InstanceID: ID,
-	}, scw.WithContext(ctx))
-	if err != nil {
-		if is404Error(err) {
-			d.SetId("")
-			return nil
-		}
+	// verify resource is ready
+	res, err := waitInstance(ctx, rdbAPI, region, ID)
+	if err != nil && !is404Error(err) {
 		return diag.FromErr(err)
 	}
 
@@ -303,6 +405,13 @@ func resourceScalewayRdbInstanceRead(ctx context.Context, d *schema.ResourceData
 	// set settings
 	_ = d.Set("settings", flattenInstanceSettings(res.Settings))
 
+	// set endpoints
+	pnI, pnExist := flattenPrivateNetwork(res.Endpoints)
+	if pnExist {
+		_ = d.Set("private_network", pnI)
+	}
+	_ = d.Set("load_balancer", flattenLoadBalancer(res.Endpoints))
+
 	return nil
 }
 
@@ -333,12 +442,21 @@ func resourceScalewayRdbInstanceUpdate(ctx context.Context, d *schema.ResourceDa
 		req.Tags = scw.StringsPtr(expandStrings(d.Get("tags")))
 	}
 
+	_, err = waitInstance(ctx, rdbAPI, region, ID)
+	if err != nil && !is404Error(err) {
+		return diag.FromErr(err)
+	}
+
 	_, err = rdbAPI.UpdateInstance(req, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
 	}
 	// Change settings
 	if d.HasChange("settings") {
+		_, err = waitInstance(ctx, rdbAPI, region, ID)
+		if err != nil && !is404Error(err) {
+			return diag.FromErr(err)
+		}
 		_, err := rdbAPI.SetInstanceSettings(&rdb.SetInstanceSettingsRequest{
 			InstanceID: ID,
 			Region:     region,
@@ -418,17 +536,12 @@ func resourceScalewayRdbInstanceUpdate(ctx context.Context, d *schema.ResourceDa
 			})
 	}
 	for _, request := range upgradeInstanceRequests {
-		_, err = rdbAPI.UpgradeInstance(&request, scw.WithContext(ctx))
-		if err != nil {
+		_, err = waitInstance(ctx, rdbAPI, region, ID)
+		if err != nil && !is404Error(err) {
 			return diag.FromErr(err)
 		}
 
-		_, err = rdbAPI.WaitForInstance(&rdb.WaitForInstanceRequest{
-			Region:        region,
-			InstanceID:    ID,
-			Timeout:       scw.TimeDurationPtr(defaultInstanceServerWaitTimeout * 3), // upgrade takes some time
-			RetryInterval: DefaultWaitRetryInterval,
-		}, scw.WithContext(ctx))
+		_, err = rdbAPI.UpgradeInstance(&request, scw.WithContext(ctx))
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -438,6 +551,11 @@ func resourceScalewayRdbInstanceUpdate(ctx context.Context, d *schema.ResourceDa
 	}
 
 	if d.HasChange("password") {
+		_, err := waitInstance(ctx, rdbAPI, region, ID)
+		if err != nil && !is404Error(err) {
+			return diag.FromErr(err)
+		}
+
 		req := &rdb.UpdateUserRequest{
 			Region:     region,
 			InstanceID: ID,
@@ -451,6 +569,51 @@ func resourceScalewayRdbInstanceUpdate(ctx context.Context, d *schema.ResourceDa
 		}
 	}
 
+	if d.HasChanges("private_network") {
+		// retrieve state
+		res, err := waitInstance(ctx, rdbAPI, region, ID)
+		if err != nil && !is404Error(err) {
+			return diag.FromErr(err)
+		}
+
+		// get endpoints to detach. It will handle only private networks
+		endPointsToRemove, err := endpointsToRemove(res.Endpoints, d.Get("private_network"))
+		if err != nil {
+			diag.FromErr(err)
+		}
+		for endPointID, remove := range endPointsToRemove {
+			if remove {
+				err := rdbAPI.DeleteEndpoint(
+					&rdb.DeleteEndpointRequest{
+						EndpointID: endPointID, Region: region},
+					scw.WithContext(ctx))
+				if err != nil {
+					diag.FromErr(err)
+				}
+			}
+		}
+
+		// retrieve state
+		_, err = waitInstance(ctx, rdbAPI, region, ID)
+		if err != nil && !is404Error(err) {
+			return diag.FromErr(err)
+		}
+
+		// set new endpoints
+		pn, pnExist := d.GetOk("private_network")
+		if pnExist {
+			privateEndpoints := expandPrivateNetwork(pn, pnExist)
+			for _, e := range privateEndpoints {
+				_, err := rdbAPI.CreateEndpoint(
+					&rdb.CreateEndpointRequest{Region: region, InstanceID: ID, EndpointSpec: e},
+					scw.WithContext(ctx))
+				if err != nil {
+					diag.FromErr(err)
+				}
+			}
+		}
+	}
+
 	return resourceScalewayRdbInstanceRead(ctx, d, meta)
 }
 
@@ -461,12 +624,10 @@ func resourceScalewayRdbInstanceDelete(ctx context.Context, d *schema.ResourceDa
 	}
 
 	// We first wait in case the instance is in a transient state
-	_, err = rdbAPI.WaitForInstance(&rdb.WaitForInstanceRequest{
-		InstanceID:    ID,
-		Region:        region,
-		Timeout:       scw.TimeDurationPtr(LbWaitForTimeout),
-		RetryInterval: DefaultWaitRetryInterval,
-	}, scw.WithContext(ctx))
+	_, err = waitInstance(ctx, rdbAPI, region, ID)
+	if err != nil && !is404Error(err) {
+		return diag.FromErr(err)
+	}
 
 	if err != nil && !is404Error(err) {
 		return diag.FromErr(err)
@@ -481,13 +642,8 @@ func resourceScalewayRdbInstanceDelete(ctx context.Context, d *schema.ResourceDa
 		return diag.FromErr(err)
 	}
 
-	_, err = rdbAPI.WaitForInstance(&rdb.WaitForInstanceRequest{
-		InstanceID:    ID,
-		Region:        region,
-		Timeout:       scw.TimeDurationPtr(LbWaitForTimeout),
-		RetryInterval: DefaultWaitRetryInterval,
-	}, scw.WithContext(ctx))
-
+	// Lastly wait in case the instance is in a transient state
+	_, err = waitInstance(ctx, rdbAPI, region, ID)
 	if err != nil && !is404Error(err) {
 		return diag.FromErr(err)
 	}
