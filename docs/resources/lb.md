@@ -70,7 +70,7 @@ resource "scaleway_lb" "base" {
 }
 ```
 
-You will need to update it to:
+You will need c it to:
 
 ```hcl
 resource "scaleway_lb_ip" "ip" {
@@ -83,6 +83,46 @@ resource "scaleway_lb" "base" {
   release_ip = true
 }
 ```
+
+## Private Network
+
+```hcl
+resource scaleway_lb_ip ip01 {
+}
+
+resource scaleway_vpc_private_network pnLB01 {
+    name = "pn-with-lb-static"
+}
+
+resource scaleway_lb lb01 {
+    ip_id = scaleway_lb_ip.ip01.id
+    name = "test-lb-with-pn-static-2"
+    type = "LB-S"
+    release_ip = false
+    private_network {
+        private_network_id = scaleway_vpc_private_network.pnLB01.id
+        static_config = ["172.16.0.100", "172.16.0.101"]
+    }
+}
+```
+
+~> **Important:** Updates to `private_network` will recreate the attachment.
+
+- `private_network_id` - (Required) The ID of the Private Network to associate.
+
+- `static_config` - (Optional) Define two local ip address of your choice for each load balancer instance. See below.
+
+- `dhcp_config` - (Optional) Set to true if you want to let DHCP assign IP addresses. See below.
+
+~> **Important:**  Only one of static_config and dhcp_config may be set.
+
+- `zone` - (Defaults to [provider](../index.md#zone) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which the private network was created.
+
+## Attributes Reference
+
+In addition to all arguments above, the following attributes are exported:
+
+- `status` -  The Private Network attachment status
 
 And before running `terraform apply` you will need to import the IP with:
 
