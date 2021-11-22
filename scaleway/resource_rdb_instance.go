@@ -129,7 +129,7 @@ func resourceScalewayRdbInstance() *schema.Resource {
 							Type:         schema.TypeString,
 							Required:     true,
 							ValidateFunc: validation.IsCIDR,
-							Description:  "The subnet of your private network",
+							Description:  "The ip net of your private network",
 						},
 						"pn_id": {
 							Type:         schema.TypeString,

@@ -306,6 +306,16 @@ func TestAccScalewayRdbInstance_PrivateNetwork(t *testing.T) {
 						ip_id = scaleway_vpc_public_gateway_ip.main.id
 					}
 
+					resource scaleway_vpc_public_gateway_pat_rule main {
+						gateway_id = scaleway_vpc_public_gateway.main.id
+						private_ip = scaleway_vpc_public_gateway_dhcp.main.address
+						private_port = scaleway_rdb_instance.main.private_network.0.port
+						public_port = 42
+						protocol = "both"
+						zone = "nl-ams-1"
+						depends_on = [scaleway_vpc_gateway_network.main, scaleway_vpc_private_network.pn02]
+					}
+
 					resource scaleway_vpc_gateway_network main {
 						gateway_id = scaleway_vpc_public_gateway.main.id
 						private_network_id = scaleway_vpc_private_network.pn02.id
@@ -345,6 +355,26 @@ func TestAccScalewayRdbInstance_PrivateNetwork(t *testing.T) {
 						name = "my_private_network"
 						zone = "nl-ams-1"
 					}
+				`,
+			},
+		},
+	})
+}
+
+func TestAccScalewayRdbInstance_PrivateNetwork_DHCP(t *testing.T) {
+	tt := NewTestTools(t)
+	defer tt.Cleanup()
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      testAccCheckScalewayRdbInstanceDestroy(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource scaleway_vpc_private_network pn02 {
+						name = "my_private_network"
+						zone = "nl-ams-1"
+					}
 
 					resource scaleway_vpc_public_gateway_dhcp main {
 						subnet = "192.168.1.0/24"
@@ -362,6 +392,16 @@ func TestAccScalewayRdbInstance_PrivateNetwork(t *testing.T) {
 						ip_id = scaleway_vpc_public_gateway_ip.main.id
 					}
 
+					resource scaleway_vpc_public_gateway_pat_rule main {
+						gateway_id = scaleway_vpc_public_gateway.main.id
+						private_ip = scaleway_vpc_public_gateway_dhcp.main.address
+						private_port = scaleway_rdb_instance.main.private_network.0.port
+						public_port = 42
+						protocol = "both"
+						zone = "nl-ams-1"
+						depends_on = [scaleway_vpc_gateway_network.main, scaleway_vpc_private_network.pn02]
+					}
+
 					resource scaleway_vpc_gateway_network main {
 						gateway_id = scaleway_vpc_public_gateway.main.id
 						private_network_id = scaleway_vpc_private_network.pn02.id
@@ -371,35 +411,34 @@ func TestAccScalewayRdbInstance_PrivateNetwork(t *testing.T) {
 						zone = "nl-ams-1"
 						depends_on = [scaleway_vpc_public_gateway_ip.main, scaleway_vpc_private_network.pn02]
 					}
+
+					resource scaleway_rdb_instance main {
+						name = "test-rdb"
+						node_type = "db-dev-s"
+						engine = "PostgreSQL-11"
+						is_ha_cluster = false
+						disable_backup = true
+						user_name = "my_initial_user"
+						password = "thiZ_is_v&ry_s3cret"
+						region= "nl-ams"
+						tags = [ "terraform-test", "scaleway_rdb_instance", "volume", "rdb_pn" ]
+						volume_type = "bssd"
+						volume_size_in_gb = 10
+						private_network {
+							ip_net = "192.168.1.254/24" #pool high
+							pn_id = "${scaleway_vpc_private_network.pn02.id}"
+						}
+					}
 				`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayRdbExists(tt, "scaleway_rdb_instance.main"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "private_network.0.ip_net", "192.168.1.254/24"),
+				),
 			},
 			{
 				Config: `
 					resource scaleway_vpc_private_network pn02 {
-						name = "my_private_network_without_attachment"
-						zone = "nl-ams-1"
-					}
-
-					resource scaleway_vpc_public_gateway_ip main {
-						zone = "nl-ams-1"
-					}
-
-					resource scaleway_vpc_public_gateway main {
-						name = "foobar"
-						type = "VPC-GW-S"
-						zone = "nl-ams-1"
-						ip_id = scaleway_vpc_public_gateway_ip.main.id
-					}
-				`,
-			},
-			{
-				Config: `
-					resource scaleway_vpc_private_network pn02 {
-						name = "my_private_network_without_attachment"
-						zone = "nl-ams-1"
-					}
-
-					resource scaleway_vpc_public_gateway_ip main {
+						name = "my_private_network"
 						zone = "nl-ams-1"
 					}
 				`,

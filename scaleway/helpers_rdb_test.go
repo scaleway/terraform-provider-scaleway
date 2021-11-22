@@ -85,7 +85,7 @@ func TestEndpointsToRemove(t *testing.T) {
 						IP: net.IPv4(1, 1, 1, 1), Mask: net.CIDRMask(24, 32)}},
 					Zone: scw.ZoneFrPar1},
 			}},
-			Updates: []interface{}{map[string]interface{}{"pn_id": "fr-par-1/6ba7b810-9dad-11d1-80b4-00c04fd430c8", "ip": "192.168.1.43/24"}},
+			Updates: []interface{}{map[string]interface{}{"pn_id": "fr-par-1/6ba7b810-9dad-11d1-80b4-00c04fd430c8", "ip_net": "192.168.1.43/24"}},
 			Expected: map[string]bool{
 				"6ba7b810-9dad-11d1-80b4-00c04fd430c1": true,
 			},
@@ -99,14 +99,14 @@ func TestEndpointsToRemove(t *testing.T) {
 						IP: net.IPv4(1, 1, 1, 1), Mask: net.CIDRMask(24, 32)}},
 					Zone: scw.ZoneFrPar1},
 			}},
-			Updates: []interface{}{map[string]interface{}{"pn_id": "fr-par-1/6ba7b810-9dad-11d1-80b4-00c04fd430c8", "ip": "1.1.1.1/24"}},
+			Updates: []interface{}{map[string]interface{}{"pn_id": "fr-par-1/6ba7b810-9dad-11d1-80b4-00c04fd430c8", "ip_net": "1.1.1.1/24"}},
 			Expected: map[string]bool{
 				"6ba7b810-9dad-11d1-80b4-00c04fd430c1": false,
 			},
 		},
 		{
 			name:     "shouldAddPrivateNetwork",
-			Updates:  []interface{}{map[string]interface{}{"pn_id": "fr-par-1/6ba7b810-9dad-11d1-80b4-00c04fd430c8", "ip": "1.1.1.1/24"}},
+			Updates:  []interface{}{map[string]interface{}{"pn_id": "fr-par-1/6ba7b810-9dad-11d1-80b4-00c04fd430c8", "ip_net": "1.1.1.1/24"}},
 			Expected: map[string]bool{},
 		},
 	}

@@ -38,10 +38,40 @@ resource "scaleway_rdb_instance" "main" {
   backup_schedule_retention = 7  # keep it one week
 }
 
-# with private network
-resource scaleway_vpc_private_network pn01 {
+# with private network and dhcp configuration
+resource scaleway_vpc_private_network pn02 {
     name = "my_private_network"
-    tags = ["tag0", "tag1", "rdb_pn"]
+}
+
+resource scaleway_vpc_public_gateway_dhcp main {
+    subnet = "192.168.1.0/24"
+}
+
+resource scaleway_vpc_public_gateway_ip main {
+}
+
+resource scaleway_vpc_public_gateway main {
+    name = "foobar"
+    type = "VPC-GW-S"
+    ip_id = scaleway_vpc_public_gateway_ip.main.id
+}
+
+resource scaleway_vpc_public_gateway_pat_rule main {
+    gateway_id = scaleway_vpc_public_gateway.main.id
+    private_ip = scaleway_vpc_public_gateway_dhcp.main.address
+    private_port = scaleway_rdb_instance.main.private_network.0.port
+    public_port = 42
+    protocol = "both"
+    depends_on = [scaleway_vpc_gateway_network.main, scaleway_vpc_private_network.pn02]
+}
+
+resource scaleway_vpc_gateway_network main {
+    gateway_id = scaleway_vpc_public_gateway.main.id
+    private_network_id = scaleway_vpc_private_network.pn02.id
+    dhcp_id = scaleway_vpc_public_gateway_dhcp.main.id
+    cleanup_dhcp = true
+    enable_masquerade = true
+    depends_on = [scaleway_vpc_public_gateway_ip.main, scaleway_vpc_private_network.pn02]
 }
 
 resource scaleway_rdb_instance main {
@@ -57,8 +87,8 @@ resource scaleway_rdb_instance main {
     volume_type = "bssd"
     volume_size_in_gb = 10
     private_network {
-        ip = "192.168.1.42/24"
-        pn_id = "${scaleway_vpc_private_network.pn01.id}"
+        ip_net = "192.168.1.254/24" #pool high
+        pn_id = "${scaleway_vpc_private_network.pn02.id}"
     }
 }
 ```
@@ -105,6 +135,13 @@ The following arguments are supported:
 
 - `project_id` - (Defaults to [provider](../index.md#project_id) `project_id`) The ID of the project the Database Instance is associated with.
 
+## Private Network
+
+~> **Important:** Updates to `private_network` will recreate the attachment Instance.
+
+- `ip_net` - (Required) The IP network where to con.
+- `pn_id` - (Required) The ID of the private network. If not provided it will be randomly generated.
+
 ## Attributes Reference
 
 In addition to all arguments above, the following attributes are exported:
@@ -116,6 +153,18 @@ In addition to all arguments above, the following attributes are exported:
     - `ip` - IP of the replica.
     - `port` - Port of the replica.
     - `name` - Name of the replica.
+- `load_balancer` - List of load balancer endpoints of the database instance.
+    - `endpoint_id` - The ID of the endpoint of the load balancer.
+    - `ip` - IP of the endpoint.
+    - `port` - Port of the endpoint.
+    - `name` - Name of the endpoint.
+    - `hostname` - Name of the endpoint.
+- `private_network` - List of private networks endpoints of the database instance.
+    - `endpoint_id` - The ID of the endpoint of the private network.
+    - `ip` - IP of the endpoint.
+    - `port` - Port of the endpoint.
+    - `name` - Name of the endpoint.
+    - `hostname` - Name of the endpoint.
 - `certificate` - Certificate of the database instance.
 - `organization_id` - The organization ID the Database Instance is associated with.
 
