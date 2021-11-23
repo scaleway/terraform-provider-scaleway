@@ -135,11 +135,6 @@ func resourceScalewayRdbDatabaseRead(ctx context.Context, d *schema.ResourceData
 		return diag.FromErr(err)
 	}
 
-	_, err = waitInstance(ctx, rdbAPI, region, instanceID)
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
 	database, err := getDatabase(ctx, rdbAPI, region, instanceID, databaseName)
 	if err != nil {
 		return diag.FromErr(err)
