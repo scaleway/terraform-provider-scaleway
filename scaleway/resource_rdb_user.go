@@ -72,12 +72,6 @@ func resourceScalewayRdbUserCreate(ctx context.Context, d *schema.ResourceData, 
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	instanceID := d.Get("instance_id").(string)
-
-	ins, err := waitInstance(ctx, rdbAPI, region, expandID(instanceID))
-	if err != nil {
-		return diag.FromErr(err)
-	}
 
 	createReq := &rdb.CreateUserRequest{
 		Region:     region,
@@ -114,11 +108,6 @@ func resourceScalewayRdbUserCreate(ctx context.Context, d *schema.ResourceData, 
 func resourceScalewayRdbUserRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	rdbAPI := newRdbAPI(meta)
 	region, instanceID, userName, err := resourceScalewayRdbUserParseID(d.Id())
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	instanceID, userName, err := resourceScalewayRdbUserParseID(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -160,11 +149,6 @@ func resourceScalewayRdbUserUpdate(ctx context.Context, d *schema.ResourceData, 
 		return diag.FromErr(err)
 	}
 
-	instanceID, userName, err := resourceScalewayRdbUserParseID(d.Id())
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
 	_, err = waitInstance(ctx, rdbAPI, region, instanceID)
 	if err != nil {
 		return diag.FromErr(err)
@@ -195,11 +179,6 @@ func resourceScalewayRdbUserDelete(ctx context.Context, d *schema.ResourceData, 
 	rdbAPI := newRdbAPI(meta)
 	// resource depends on the instance locality
 	region, instanceID, userName, err := resourceScalewayRdbUserParseID(d.Id())
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	instanceID, userName, err := resourceScalewayRdbUserParseID(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}

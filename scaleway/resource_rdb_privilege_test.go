@@ -110,17 +110,17 @@ func testAccCheckRdbPrivilegeExists(tt *TestTools, instance string, database str
 			return fmt.Errorf("resource not found: %s", user)
 		}
 
-		rdbAPI, region, _, err := rdbAPIWithRegionAndID(tt.Meta, instanceResource.Primary.ID)
+		rdbAPI, _, _, err := rdbAPIWithRegionAndID(tt.Meta, instanceResource.Primary.ID)
 		if err != nil {
 			return err
 		}
 
-		_, instanceID, databaseName, err := resourceScalewayRdbDatabaseParseID(databaseResource.Primary.ID)
+		_, _, databaseName, err := resourceScalewayRdbDatabaseParseID(databaseResource.Primary.ID)
 		if err != nil {
 			return err
 		}
 
-		_, _, userName, err := resourceScalewayRdbUserParseID(userResource.Primary.ID)
+		region, instanceID, userName, err := resourceScalewayRdbUserParseID(userResource.Primary.ID)
 		if err != nil {
 			return err
 		}
