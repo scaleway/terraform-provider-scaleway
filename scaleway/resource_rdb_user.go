@@ -3,6 +3,7 @@ package scaleway
 import (
 	"context"
 	"fmt"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"strings"
 	"time"
 
