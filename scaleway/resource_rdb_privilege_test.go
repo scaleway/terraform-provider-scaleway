@@ -120,7 +120,7 @@ func testAccCheckRdbPrivilegeExists(tt *TestTools, instance string, database str
 			return err
 		}
 
-		_, userName, err := resourceScalewayRdbUserParseID(userResource.Primary.ID)
+		_, _, userName, err := resourceScalewayRdbUserParseID(userResource.Primary.ID)
 		if err != nil {
 			return err
 		}
