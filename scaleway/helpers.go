@@ -240,6 +240,13 @@ func is403Error(err error) bool {
 	return isHTTPCodeError(err, http.StatusForbidden) || xerrors.As(err, &permissionsDeniedError)
 }
 
+// is409Error return true is err is an HTTP 409 error
+func is409Error(err error) bool {
+	//check transient error
+	transientStateError := &scw.TransientStateError{}
+	return isHTTPCodeError(err, http.StatusConflict) || xerrors.As(err, &transientStateError)
+}
+
 // organizationIDSchema returns a standard schema for a organization_id
 func organizationIDSchema() *schema.Schema {
 	return &schema.Schema{
