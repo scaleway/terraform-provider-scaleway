@@ -45,10 +45,10 @@ func TestAccScalewayDataSourceRdbInstance_Basic(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayRdbExists(tt, "scaleway_rdb_instance.test"),
 
-					resource.TestCheckResourceAttr("scaleway_rdb_instance.test", "name", "test-terraform"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.test", "name", randName),
 					resource.TestCheckResourceAttrSet("data.scaleway_rdb_instance.test", "id"),
 
-					resource.TestCheckResourceAttr("data.scaleway_rdb_instance.test2", "name", "test-terraform"),
+					resource.TestCheckResourceAttr("data.scaleway_rdb_instance.test2", "name", randName),
 					resource.TestCheckResourceAttrSet("data.scaleway_rdb_instance.test2", "id"),
 				),
 			},
