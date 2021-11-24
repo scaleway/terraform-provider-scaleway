@@ -1,31 +1,35 @@
 package scaleway
 
 import (
+	"fmt"
 	"testing"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 )
 
 func TestAccScalewayDataSourceRdbInstance_Basic(t *testing.T) {
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
+	// instance name should be unique
+	randName := acctest.RandomWithPrefix("test-terraform-data-instance")
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheckScalewayRdbInstanceDestroy(tt),
 		Steps: []resource.TestStep{
 			{
-				Config: `
+				Config: fmt.Sprintf(`
 					resource "scaleway_rdb_instance" "test" {
-						name = "test-terraform"
+						name = "%s"
 						engine = "PostgreSQL-11"
 						node_type = "db-dev-s"
-					}`,
+					}`, randName),
 			},
 			{
-				Config: `
+				Config: fmt.Sprintf(`
 					resource "scaleway_rdb_instance" "test" {
-						name = "test-terraform"
+						name = "%s"
 						engine = "PostgreSQL-11"
 						node_type = "db-dev-s"
 					}
@@ -37,7 +41,7 @@ func TestAccScalewayDataSourceRdbInstance_Basic(t *testing.T) {
 					data "scaleway_rdb_instance" "test2" {
 						instance_id = scaleway_rdb_instance.test.id
 					}
-				`,
+				`, randName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayRdbExists(tt, "scaleway_rdb_instance.test"),
 
