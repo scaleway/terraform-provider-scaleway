@@ -134,7 +134,7 @@ func TestAccScalewayRdbInstance_Settings(t *testing.T) {
 			{
 				Config: `
 					resource scaleway_rdb_instance main {
-						name = "test-rdb"
+						name = "test-rdb-settings"
 						node_type = "db-dev-s"
 						disable_backup = true
 						engine = "PostgreSQL-11"
@@ -175,7 +175,7 @@ func TestAccScalewayRdbInstance_Capitalize(t *testing.T) {
 			{
 				Config: `
 					resource scaleway_rdb_instance main {
-						name = "test-rdb"
+						name = "test-rdb-capitalize"
 						node_type = "DB-DEV-S"
 						engine = "PostgreSQL-11"
 						is_ha_cluster = false
@@ -219,7 +219,7 @@ func TestAccScalewayRdbInstance_PrivateNetwork(t *testing.T) {
 					}
 
 					resource scaleway_rdb_instance main {
-						name = "test-rdb"
+						name = "test-rdb-pn"
 						node_type = "db-dev-s"
 						engine = "PostgreSQL-11"
 						is_ha_cluster = false
@@ -255,7 +255,7 @@ func TestAccScalewayRdbInstance_PrivateNetwork(t *testing.T) {
 					}
 
 					resource scaleway_rdb_instance main {
-						name = "test-rdb"
+						name = "test-rdb-pn"
 						node_type = "db-dev-s"
 						engine = "PostgreSQL-11"
 						is_ha_cluster = false
@@ -327,7 +327,7 @@ func TestAccScalewayRdbInstance_PrivateNetwork(t *testing.T) {
 					}
 
 					resource scaleway_rdb_instance main {
-						name = "test-rdb"
+						name = "test-rdb-pn"
 						node_type = "db-dev-s"
 						engine = "PostgreSQL-11"
 						is_ha_cluster = false
@@ -413,7 +413,7 @@ func TestAccScalewayRdbInstance_PrivateNetwork_DHCP(t *testing.T) {
 					}
 
 					resource scaleway_rdb_instance main {
-						name = "test-rdb"
+						name = "test-rdb-pn-dhcp"
 						node_type = "db-dev-s"
 						engine = "PostgreSQL-11"
 						is_ha_cluster = false
@@ -458,7 +458,7 @@ func TestAccScalewayRdbInstance_BackupSchedule(t *testing.T) {
 			{
 				Config: `
 					resource scaleway_rdb_instance main {
-						name                      = "test-rdb"
+						name                      = "test-rdb-backup-schedule"
 						node_type                 = "db-dev-s"
 						engine                    = "PostgreSQL-11"
 						is_ha_cluster             = false
@@ -492,7 +492,7 @@ func TestAccScalewayRdbInstance_Volume(t *testing.T) {
 			{
 				Config: `
 					resource scaleway_rdb_instance main {
-						name = "test-rdb"
+						name = "test-rdb-volume"
 						node_type = "db-dev-s"
 						engine = "PostgreSQL-11"
 						is_ha_cluster = false
@@ -511,7 +511,7 @@ func TestAccScalewayRdbInstance_Volume(t *testing.T) {
 			{
 				Config: `
 					resource scaleway_rdb_instance main {
-						name = "test-rdb"
+						name = "test-rdb-volume"
 						node_type = "db-dev-s"
 						engine = "PostgreSQL-11"
 						is_ha_cluster = false
