@@ -13,8 +13,9 @@ import (
 
 func init() {
 	resource.AddTestSweepers("scaleway_instance_server", &resource.Sweeper{
-		Name: "scaleway_instance_server",
-		F:    testSweepInstanceServer,
+		Name:         "scaleway_instance_server",
+		F:            testSweepInstanceServer,
+		Dependencies: []string{"scaleway_vpc"},
 	})
 }
 
@@ -876,6 +877,67 @@ func TestAccScalewayInstanceServer_ServerWithBlockNonDefaultZone(t *testing.T) {
 				`,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayInstanceServerExists(tt, "scaleway_instance_server.main"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccScalewayInstanceServer_PrivateNetwork(t *testing.T) {
+	tt := NewTestTools(t)
+	defer tt.Cleanup()
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      testAccCheckScalewayInstanceServerDestroy(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource scaleway_vpc_private_network pn01 {
+						name = "private_network_instance"
+					}
+
+					resource "scaleway_instance_server" "base" {
+					  image = "ubuntu_focal"
+					  type  = "DEV1-S"
+
+				  	  tags = [ "private_network" ]
+					  private_network {
+						pn_id = scaleway_vpc_private_network.pn01.id
+					  }
+					}`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayInstanceServerExists(tt, "scaleway_instance_server.base"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.base", "private_network.#", "1"),
+					resource.TestCheckResourceAttrSet("scaleway_instance_server.base", "private_network.0.pn_id"),
+					resource.TestCheckResourceAttrSet("scaleway_instance_server.base", "private_network.0.mac_address"),
+					resource.TestCheckResourceAttrSet("scaleway_instance_server.base", "private_network.0.status"),
+					resource.TestCheckResourceAttrSet("scaleway_instance_server.base", "private_network.0.zone"),
+				),
+			},
+			{
+				// Image label such as ubuntu_focal
+				Config: `
+					resource scaleway_vpc_private_network pn01 {
+						name = "private_network_instance"
+					}
+
+					resource "scaleway_instance_server" "base" {
+					  image = "ubuntu_focal"
+					  type  = "DEV1-S"
+
+				  	  tags = [ "private_network" ]
+					  private_network {
+						pn_id = scaleway_vpc_private_network.pn01.id
+					  }
+					}`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayInstanceServerExists(tt, "scaleway_instance_server.base"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.base", "private_network.#", "1"),
+					resource.TestCheckResourceAttrSet("scaleway_instance_server.base", "private_network.0.pn_id"),
+					resource.TestCheckResourceAttrSet("scaleway_instance_server.base", "private_network.0.mac_address"),
+					resource.TestCheckResourceAttrSet("scaleway_instance_server.base", "private_network.0.status"),
+					resource.TestCheckResourceAttrSet("scaleway_instance_server.base", "private_network.0.zone"),
 				),
 			},
 		},

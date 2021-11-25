@@ -202,6 +202,34 @@ func resourceScalewayInstanceServer() *schema.Resource {
 					Type: schema.TypeString,
 				},
 			},
+			"private_network": {
+				Type:        schema.TypeList,
+				Optional:    true,
+				MaxItems:    8,
+				Description: "List of private network to connect with your instance",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"pn_id": {
+							Type:         schema.TypeString,
+							Required:     true,
+							ValidateFunc: validationUUIDorUUIDWithLocality(),
+							Description:  "The Private Network ID",
+						},
+						// Computed
+						"mac_address": {
+							Type:        schema.TypeString,
+							Description: "MAC address of the NIC",
+							Computed:    true,
+						},
+						"status": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The private NIC state",
+						},
+						"zone": zoneSchema(),
+					},
+				},
+			},
 			"zone":            zoneSchema(),
 			"organization_id": organizationIDSchema(),
 			"project_id":      projectIDSchema(),
@@ -363,6 +391,27 @@ func resourceScalewayInstanceServerCreate(ctx context.Context, d *schema.Resourc
 		return diag.FromErr(err)
 	}
 
+	////
+	// Private Network
+	////
+	if rawPNICs, ok := d.GetOk("private_network"); ok {
+		vpcAPI, err := vpcAPI(meta)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		pnRequest, err := preparePrivateNIC(ctx, rawPNICs, res.Server, vpcAPI)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		// compute attachment
+		for _, q := range pnRequest {
+			_, err := instanceAPI.CreatePrivateNIC(q, scw.WithContext(ctx))
+			if err != nil {
+				return diag.FromErr(err)
+			}
+		}
+	}
+
 	return resourceScalewayInstanceServerRead(ctx, d, meta)
 }
 
@@ -496,6 +545,22 @@ func resourceScalewayInstanceServerRead(ctx context.Context, d *schema.ResourceD
 	}
 	if len(userData) > 0 {
 		_ = d.Set("user_data", userData)
+	}
+
+	////
+	// Read server private networks
+	////
+	resPNICs, err := instanceAPI.ListPrivateNICs(&instance.ListPrivateNICsRequest{Zone: zone, ServerID: ID})
+	if err != nil && !is404Error(err) {
+		diag.FromErr(err)
+	}
+	// flatten private networks
+	privateNetworkData, err := privateNICFlatten(resPNICs, zone)
+	if err != nil {
+		diag.FromErr(err)
+	}
+	if len(privateNetworkData.([]map[string]interface{})) > 0 {
+		_ = d.Set("private_network", privateNetworkData)
 	}
 
 	return nil

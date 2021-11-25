@@ -3,6 +3,7 @@ package scaleway
 import (
 	"context"
 	"fmt"
+	"github.com/scaleway/scaleway-sdk-go/api/vpc/v1"
 	"sort"
 	"time"
 
@@ -241,4 +242,51 @@ func sanitizeVolumeMap(serverName string, volumes map[string]*instance.VolumeTem
 	}
 
 	return m
+}
+
+func preparePrivateNIC(
+	ctx context.Context, data interface{},
+	server *instance.Server, vpcAPI *vpc.API) ([]*instance.CreatePrivateNICRequest, error) {
+	if data == nil {
+		return nil, nil
+	}
+
+	var res []*instance.CreatePrivateNICRequest
+
+	for _, pn := range data.([]interface{}) {
+		r := pn.(map[string]interface{})
+		zonedID, pnExist := r["pn_id"]
+		privateNetworkID := expandID(zonedID.(string))
+		if pnExist {
+			currentPN, err := vpcAPI.GetPrivateNetwork(&vpc.GetPrivateNetworkRequest{
+				PrivateNetworkID: expandID(privateNetworkID),
+				Zone:             server.Zone,
+			}, scw.WithContext(ctx))
+			if err != nil {
+				return nil, err
+			}
+			query := &instance.CreatePrivateNICRequest{
+				Zone: currentPN.Zone, ServerID: server.ID, PrivateNetworkID: currentPN.ID}
+			res = append(res, query)
+		}
+	}
+
+	return res, nil
+}
+
+func privateNICFlatten(l *instance.ListPrivateNICsResponse, zone scw.Zone) (interface{}, error) {
+	if l == nil {
+		return nil, nil
+	}
+	privateNetworks := []map[string]interface{}(nil)
+	for _, pn := range l.PrivateNics {
+		privateNetworks = append(privateNetworks, map[string]interface{}{
+			"pn_id":       newZonedID(zone, pn.PrivateNetworkID).String(),
+			"mac_address": pn.MacAddress,
+			"status":      pn.State.String(),
+			"zone":        zone.String(),
+		})
+	}
+
+	return privateNetworks, nil
 }
