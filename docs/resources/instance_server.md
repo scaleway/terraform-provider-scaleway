@@ -109,6 +109,7 @@ resource "scaleway_instance_server" "web" {
   }
 }
 ```
+
 ### With private network
 
 ```hcl
@@ -185,8 +186,8 @@ attached to the server. Updates to this field will trigger a stop/start of the s
     - Binary files using [filebase64](https://www.terraform.io/docs/configuration/functions/filebase64.html).
 
 - `private_network` - (Optional) The private network associated with the server.
-  Use the `pn_id` key to attach a [private_network](https://developers.scaleway.com/en/products/instance/api/#private-nics-a42eea) on your instance.
- 
+   Use the `pn_id` key to attach a [private_network](https://developers.scaleway.com/en/products/instance/api/#private-nics-a42eea) on your instance.
+
 - `boot_type` - The boot Type of the server. Possible values are: `local`, `bootscript` or `rescue`.
 
 - `bootscript_id` - The ID of the bootscript to use  (set boot_type to `bootscript`).
