@@ -90,7 +90,7 @@ func testAccCheckRdbUserExists(tt *TestTools, instance string, user string) reso
 			return err
 		}
 
-		instanceID, userName, err := resourceScalewayRdbUserParseID(userResource.Primary.ID)
+		_, instanceID, userName, err := resourceScalewayRdbUserParseID(userResource.Primary.ID)
 		if err != nil {
 			return err
 		}
