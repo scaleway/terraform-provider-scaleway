@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
@@ -21,7 +22,9 @@ func resourceScalewayInstanceSnapshot() *schema.Resource {
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 		Timeouts: &schema.ResourceTimeout{
-			Default: schema.DefaultTimeout(defaultInstanceSnapshotWaitTimeout),
+			Create: schema.DefaultTimeout(defaultInstanceSnapshotWaitTimeout),
+			Update: schema.DefaultTimeout(defaultInstanceSnapshotWaitTimeout),
+			Delete: schema.DefaultTimeout(defaultInstanceSnapshotWaitTimeout),
 		},
 		SchemaVersion: 0,
 		Schema: map[string]*schema.Schema{
@@ -78,6 +81,17 @@ func resourceScalewayInstanceSnapshotCreate(ctx context.Context, d *schema.Resou
 		return diag.FromErr(err)
 	}
 
+	_, err = instanceAPI.WaitForSnapshot(&instance.WaitForSnapshotRequest{
+		SnapshotID:    res.Snapshot.ID,
+		Zone:          zone,
+		Timeout:       scw.TimeDurationPtr(d.Timeout(schema.TimeoutCreate)),
+		RetryInterval: DefaultWaitRetryInterval,
+	}, scw.WithContext(ctx))
+
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	d.SetId(newZonedIDString(zone, res.Snapshot.ID))
 	return resourceScalewayInstanceSnapshotRead(ctx, d, meta)
 }
@@ -126,6 +140,16 @@ func resourceScalewayInstanceSnapshotUpdate(ctx context.Context, d *schema.Resou
 		}
 	}
 
+	_, err = instanceAPI.WaitForSnapshot(&instance.WaitForSnapshotRequest{
+		SnapshotID:    id,
+		Zone:          zone,
+		Timeout:       scw.TimeDurationPtr(d.Timeout(schema.TimeoutUpdate)),
+		RetryInterval: DefaultWaitRetryInterval,
+	}, scw.WithContext(ctx))
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	return resourceScalewayInstanceSnapshotRead(ctx, d, meta)
 }
 
@@ -138,20 +162,27 @@ func resourceScalewayInstanceSnapshotDelete(ctx context.Context, d *schema.Resou
 	_, err = instanceAPI.WaitForSnapshot(&instance.WaitForSnapshotRequest{
 		SnapshotID:    id,
 		Zone:          zone,
+		Timeout:       scw.TimeDurationPtr(d.Timeout(schema.TimeoutUpdate)),
 		RetryInterval: DefaultWaitRetryInterval,
 	})
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	err = instanceAPI.DeleteSnapshot(&instance.DeleteSnapshotRequest{
-		SnapshotID: id,
-		Zone:       zone,
-	}, scw.WithContext(ctx))
-	if err != nil {
-		if !is404Error(err) {
-			return diag.FromErr(err)
+	err = resource.Retry(d.Timeout(schema.TimeoutDelete), func() *resource.RetryError {
+		err := instanceAPI.DeleteSnapshot(&instance.DeleteSnapshotRequest{
+			SnapshotID: id,
+			Zone:       zone,
+		}, scw.WithContext(ctx))
+		if err != nil {
+			if !is404Error(err) {
+				return resource.NonRetryableError(err)
+			}
 		}
+		return nil
+	})
+	if err != nil {
+		return diag.FromErr(err)
 	}
 
 	return nil
