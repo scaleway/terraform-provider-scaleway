@@ -18,7 +18,7 @@ const (
 	InstanceServerStateStandby = "standby"
 
 	defaultInstanceServerWaitTimeout        = 10 * time.Minute
-	defaultInstanceVolumeDeleteTimeout      = 10 * time.Minute
+	defaultInstanceVolumeWaitTimeout        = 10 * time.Minute
 	defaultInstanceSecurityGroupTimeout     = 1 * time.Minute
 	defaultInstanceSecurityGroupRuleTimeout = 1 * time.Minute
 	defaultInstancePlacementGroupTimeout    = 1 * time.Minute
@@ -107,7 +107,7 @@ func serverStateExpand(rawState string) (instance.ServerState, error) {
 	return apiState, nil
 }
 
-func reachState(ctx context.Context, instanceAPI *instance.API, zone scw.Zone, serverID string, toState instance.ServerState, serverActionTimeout time.Duration) error {
+func reachState(ctx context.Context, instanceAPI *instance.API, zone scw.Zone, serverID string, toState instance.ServerState, serverWaitTimeout time.Duration) error {
 	response, err := instanceAPI.GetServer(&instance.GetServerRequest{
 		Zone:     zone,
 		ServerID: serverID,
@@ -141,6 +141,7 @@ func reachState(ctx context.Context, instanceAPI *instance.API, zone scw.Zone, s
 			_, err = instanceAPI.WaitForVolume(&instance.WaitForVolumeRequest{
 				Zone:          zone,
 				VolumeID:      volume.ID,
+				Timeout:       scw.TimeDurationPtr(serverWaitTimeout),
 				RetryInterval: DefaultWaitRetryInterval,
 			})
 			if err != nil {
@@ -154,7 +155,7 @@ func reachState(ctx context.Context, instanceAPI *instance.API, zone scw.Zone, s
 			ServerID:      serverID,
 			Action:        a,
 			Zone:          zone,
-			Timeout:       scw.TimeDurationPtr(serverActionTimeout),
+			Timeout:       scw.TimeDurationPtr(serverWaitTimeout),
 			RetryInterval: DefaultWaitRetryInterval,
 		})
 		if err != nil {

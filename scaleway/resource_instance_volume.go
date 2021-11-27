@@ -22,7 +22,9 @@ func resourceScalewayInstanceVolume() *schema.Resource {
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 		Timeouts: &schema.ResourceTimeout{
-			Default: schema.DefaultTimeout(defaultInstanceVolumeDeleteTimeout),
+			Create: schema.DefaultTimeout(defaultInstanceVolumeWaitTimeout),
+			Update: schema.DefaultTimeout(defaultInstanceVolumeWaitTimeout),
+			Delete: schema.DefaultTimeout(defaultInstanceVolumeWaitTimeout),
 		},
 		Schema: map[string]*schema.Schema{
 			"name": {
@@ -106,6 +108,16 @@ func resourceScalewayInstanceVolumeCreate(ctx context.Context, d *schema.Resourc
 		return diag.FromErr(fmt.Errorf("couldn't create volume: %s", err))
 	}
 
+	_, err = instanceAPI.WaitForVolume(&instance.WaitForVolumeRequest{
+		Zone:          zone,
+		VolumeID:      res.Volume.ID,
+		Timeout:       scw.TimeDurationPtr(d.Timeout(schema.TimeoutCreate)),
+		RetryInterval: DefaultWaitRetryInterval,
+	})
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	d.SetId(newZonedIDString(zone, res.Volume.ID))
 
 	return resourceScalewayInstanceVolumeRead(ctx, d, meta)
@@ -179,6 +191,7 @@ func resourceScalewayInstanceVolumeUpdate(ctx context.Context, d *schema.Resourc
 		_, err := instanceAPI.WaitForVolume(&instance.WaitForVolumeRequest{
 			VolumeID:      id,
 			Zone:          zone,
+			Timeout:       scw.TimeDurationPtr(d.Timeout(schema.TimeoutUpdate)),
 			RetryInterval: DefaultWaitRetryInterval,
 		}, scw.WithContext(ctx))
 		if err != nil {
@@ -197,6 +210,7 @@ func resourceScalewayInstanceVolumeUpdate(ctx context.Context, d *schema.Resourc
 		_, err = instanceAPI.WaitForVolume(&instance.WaitForVolumeRequest{
 			VolumeID:      id,
 			Zone:          zone,
+			Timeout:       scw.TimeDurationPtr(d.Timeout(schema.TimeoutUpdate)),
 			RetryInterval: DefaultWaitRetryInterval,
 		}, scw.WithContext(ctx))
 		if err != nil {
