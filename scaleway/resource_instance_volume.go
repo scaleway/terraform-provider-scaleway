@@ -113,7 +113,7 @@ func resourceScalewayInstanceVolumeCreate(ctx context.Context, d *schema.Resourc
 		VolumeID:      res.Volume.ID,
 		Timeout:       scw.TimeDurationPtr(d.Timeout(schema.TimeoutCreate)),
 		RetryInterval: DefaultWaitRetryInterval,
-	})
+	}, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -227,7 +227,7 @@ func resourceScalewayInstanceVolumeDelete(ctx context.Context, d *schema.Resourc
 		return diag.FromErr(err)
 	}
 
-	err = resource.Retry(d.Timeout(schema.TimeoutDelete), func() *resource.RetryError {
+	err = resource.RetryContext(ctx, d.Timeout(schema.TimeoutDelete), func() *resource.RetryError {
 		volumeResp, err := instanceAPI.GetVolume(&instance.GetVolumeRequest{
 			Zone:     zone,
 			VolumeID: id,
