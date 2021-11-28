@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	applesilicon "github.com/scaleway/scaleway-sdk-go/api/applesilicon/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
@@ -17,7 +18,9 @@ func resourceScalewayAppleSiliconServer() *schema.Resource {
 		UpdateContext: resourceScalewayAppleSiliconServerUpdate,
 		DeleteContext: resourceScalewayAppleSiliconServerDelete,
 		Timeouts: &schema.ResourceTimeout{
-			Default: schema.DefaultTimeout(defaultAppleSiliconServerTimeout),
+			Create: schema.DefaultTimeout(defaultAppleSiliconServerTimeout),
+			Update: schema.DefaultTimeout(defaultAppleSiliconServerTimeout),
+			Delete: schema.DefaultTimeout(defaultAppleSiliconServerTimeout),
 		},
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
@@ -94,7 +97,7 @@ func resourceScalewayAppleSiliconServerCreate(ctx context.Context, d *schema.Res
 
 	_, err = asAPI.WaitForServer(&applesilicon.WaitForServerRequest{
 		ServerID:      res.ID,
-		Timeout:       scw.TimeDurationPtr(defaultAppleSiliconServerTimeout),
+		Timeout:       scw.TimeDurationPtr(d.Timeout(schema.TimeoutCreate)),
 		RetryInterval: DefaultWaitRetryInterval,
 	}, scw.WithContext(ctx))
 	if err != nil {
@@ -157,6 +160,16 @@ func resourceScalewayAppleSiliconServerUpdate(ctx context.Context, d *schema.Res
 		return diag.FromErr(err)
 	}
 
+	_, err = asAPI.WaitForServer(&applesilicon.WaitForServerRequest{
+		ServerID:      ID,
+		Zone:          zone,
+		Timeout:       scw.TimeDurationPtr(d.Timeout(schema.TimeoutUpdate)),
+		RetryInterval: DefaultWaitRetryInterval,
+	}, scw.WithContext(ctx))
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	return resourceScalewayAppleSiliconServerRead(ctx, d, meta)
 }
 
@@ -172,6 +185,21 @@ func resourceScalewayAppleSiliconServerDelete(ctx context.Context, d *schema.Res
 	}, scw.WithContext(ctx))
 
 	if err != nil && !is404Error(err) {
+		return diag.FromErr(err)
+	}
+
+	err = resource.RetryContext(ctx, d.Timeout(schema.TimeoutDelete), func() *resource.RetryError {
+		err := asAPI.DeleteServer(&applesilicon.DeleteServerRequest{
+			Zone:     zone,
+			ServerID: ID,
+		}, scw.WithContext(ctx))
+
+		if err != nil && !is404Error(err) {
+			return resource.NonRetryableError(err)
+		}
+		return nil
+	})
+	if err != nil {
 		return diag.FromErr(err)
 	}
 
