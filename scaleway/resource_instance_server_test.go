@@ -3,6 +3,7 @@ package scaleway
 import (
 	"fmt"
 	"regexp"
+	"strings"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -691,6 +692,48 @@ func testAccCheckScalewayInstanceServerExists(tt *TestTools, n string) resource.
 	}
 }
 
+func testAccCheckScalewayInstancePrivateNICsExists(tt *TestTools, n string) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		rs, ok := s.RootModule().Resources[n]
+		if !ok {
+			return fmt.Errorf("resource not found: %s", n)
+		}
+
+		instanceAPI, zone, ID, err := instanceAPIWithZoneAndID(tt.Meta, rs.Primary.ID)
+		if err != nil {
+			return err
+		}
+
+		res, err := instanceAPI.ListPrivateNICs(&instance.ListPrivateNICsRequest{ServerID: ID, Zone: zone})
+		if err != nil {
+			return err
+		}
+
+		privateNetworksOnServer := make(map[string]struct{})
+		// build current private networks on server
+		for _, key := range res.PrivateNics {
+			privateNetworksOnServer[key.PrivateNetworkID] = struct{}{}
+		}
+
+		privateNetworksToCheckOnSchema := make(map[string]struct{})
+		// build terraform private networks
+		for key, value := range rs.Primary.Attributes {
+			if strings.Contains(key, "pn_id") {
+				privateNetworksToCheckOnSchema[expandID(value)] = struct{}{}
+			}
+		}
+
+		// check if private networks are present on server
+		for pnKey := range privateNetworksToCheckOnSchema {
+			if _, exist := privateNetworksOnServer[pnKey]; !exist {
+				return fmt.Errorf("private network does not exist")
+			}
+		}
+
+		return nil
+	}
+}
+
 func testAccCheckScalewayInstanceServerDestroy(tt *TestTools) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		for _, rs := range state.RootModule().Resources {
@@ -906,7 +949,7 @@ func TestAccScalewayInstanceServer_PrivateNetwork(t *testing.T) {
 					  }
 					}`,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayInstanceServerExists(tt, "scaleway_instance_server.base"),
+					testAccCheckScalewayInstancePrivateNICsExists(tt, "scaleway_instance_server.base"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "private_network.#", "1"),
 					resource.TestCheckResourceAttrSet("scaleway_instance_server.base", "private_network.0.pn_id"),
 					resource.TestCheckResourceAttrSet("scaleway_instance_server.base", "private_network.0.mac_address"),
@@ -935,7 +978,7 @@ func TestAccScalewayInstanceServer_PrivateNetwork(t *testing.T) {
 					  }
 					}`,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayInstanceServerExists(tt, "scaleway_instance_server.base"),
+					testAccCheckScalewayInstancePrivateNICsExists(tt, "scaleway_instance_server.base"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "private_network.#", "1"),
 					resource.TestCheckResourceAttrSet("scaleway_instance_server.base", "private_network.0.pn_id"),
 					resource.TestCheckResourceAttrSet("scaleway_instance_server.base", "private_network.0.mac_address"),
@@ -968,7 +1011,7 @@ func TestAccScalewayInstanceServer_PrivateNetwork(t *testing.T) {
 					  }
 					}`,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayInstanceServerExists(tt, "scaleway_instance_server.base"),
+					testAccCheckScalewayInstancePrivateNICsExists(tt, "scaleway_instance_server.base"),
 					resource.TestCheckResourceAttrPair("scaleway_instance_server.base",
 						"private_network.0.pn_id",
 						"scaleway_vpc_private_network.pn02", "id"),
