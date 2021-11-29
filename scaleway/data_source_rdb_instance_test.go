@@ -10,7 +10,7 @@ import (
 func TestAccScalewayDataSourceRdbInstance_Basic(t *testing.T) {
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
-	randName := "test-terraform"
+	instanceName := "test-terraform"
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
@@ -22,7 +22,7 @@ func TestAccScalewayDataSourceRdbInstance_Basic(t *testing.T) {
 						name = "%s"
 						engine = "PostgreSQL-11"
 						node_type = "db-dev-s"
-					}`, randName),
+					}`, instanceName),
 			},
 			{
 				Config: fmt.Sprintf(`
@@ -39,14 +39,14 @@ func TestAccScalewayDataSourceRdbInstance_Basic(t *testing.T) {
 					data "scaleway_rdb_instance" "test2" {
 						instance_id = scaleway_rdb_instance.test.id
 					}
-				`, randName),
+				`, instanceName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayRdbExists(tt, "scaleway_rdb_instance.test"),
 
-					resource.TestCheckResourceAttr("scaleway_rdb_instance.test", "name", randName),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.test", "name", instanceName),
 					resource.TestCheckResourceAttrSet("data.scaleway_rdb_instance.test", "id"),
 
-					resource.TestCheckResourceAttr("data.scaleway_rdb_instance.test2", "name", randName),
+					resource.TestCheckResourceAttr("data.scaleway_rdb_instance.test2", "name", instanceName),
 					resource.TestCheckResourceAttrSet("data.scaleway_rdb_instance.test2", "id"),
 				),
 			},
