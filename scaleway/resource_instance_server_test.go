@@ -901,7 +901,6 @@ func TestAccScalewayInstanceServer_PrivateNetwork(t *testing.T) {
 					  image = "ubuntu_focal"
 					  type  = "DEV1-S"
 			
-				  	  tags = [ "private_network" ]
 					  private_network {
 						pn_id = scaleway_vpc_private_network.pn01.id
 					  }
@@ -931,7 +930,6 @@ func TestAccScalewayInstanceServer_PrivateNetwork(t *testing.T) {
 					  image = "ubuntu_focal"
 					  type  = "DEV1-S"
 			
-				  	  tags = [ "private_network" ]
 					  private_network {
 						pn_id = scaleway_vpc_private_network.pn02.id
 					  }
@@ -961,7 +959,6 @@ func TestAccScalewayInstanceServer_PrivateNetwork(t *testing.T) {
 					  image = "ubuntu_focal"
 					  type  = "DEV1-S"
 
-				  	  tags = [ "private_network" ]
 					  private_network {
 						pn_id = scaleway_vpc_private_network.pn02.id
 					  }
@@ -1000,9 +997,7 @@ func TestAccScalewayInstanceServer_PrivateNetwork(t *testing.T) {
 			
 					resource "scaleway_instance_server" "base" {
 					  image = "ubuntu_focal"
-					  type  = "DEV1-S"
-			
-				  	  tags = [ "any_private_network" ]
+					  type  = "DEV1-S"	
 					}`,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayInstanceServerExists(tt, "scaleway_instance_server.base"),
