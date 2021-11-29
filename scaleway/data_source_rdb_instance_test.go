@@ -10,7 +10,6 @@ import (
 func TestAccScalewayDataSourceRdbInstance_Basic(t *testing.T) {
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
-	// instance name should be unique
 	randName := "test-terraform"
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
