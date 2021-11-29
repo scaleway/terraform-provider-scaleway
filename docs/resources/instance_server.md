@@ -198,14 +198,17 @@ attached to the server. Updates to this field will trigger a stop/start of the s
 
 ## Private Network
 
-~> **Important:** Updates to `private_network` will recreate the attachment Instance.
+~> **Important:** Updates to `private_network` will recreate a new private network interface.
 
 - `pn_id` - (Required) The private network ID where to connect.
 - `mac_address` The private NIC MAC address.
 - `status` The private NIC state.
-- `zone` - (Defaults to [provider](../index.md#zone) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which the server should be created.
+- `zone` - (Defaults to [provider](../index.md#zone) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which the server must be created.
 
+~> **Important:**
 
+- You can only attach an instance in the same [zone](../guides/regions_and_zones.md#zones) as a private network.
+- Instance supports maximum 8 different private networks.
 
 ## Attributes Reference
 
