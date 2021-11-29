@@ -4,11 +4,11 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	"github.com/google/go-cmp/cmp"
 	"io"
 	"io/ioutil"
 	"strconv"
 
+	"github.com/google/go-cmp/cmp"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
@@ -551,17 +551,15 @@ func resourceScalewayInstanceServerRead(ctx context.Context, d *schema.ResourceD
 	////
 	// Read server private networks
 	////
-	resPNICs, err := instanceAPI.ListPrivateNICs(&instance.ListPrivateNICsRequest{Zone: zone, ServerID: ID})
-	if err != nil && !is404Error(err) {
-		diag.FromErr(err)
-	}
-	// flatten private networks
-	privateNetworkData, err := privateNICFlatten(resPNICs, zone)
+	ph, err := newPrivateNICHandler(ctx, instanceAPI, ID, zone)
 	if err != nil {
 		diag.FromErr(err)
 	}
-	if len(privateNetworkData.([]map[string]interface{})) > 0 {
-		_ = d.Set("private_network", privateNetworkData)
+
+	// set private networks
+	err = ph.set(d)
+	if err != nil {
+		diag.FromErr(err)
 	}
 
 	return nil
@@ -749,12 +747,12 @@ func resourceScalewayInstanceServerUpdate(ctx context.Context, d *schema.Resourc
 	// Update server private network
 	////
 	if d.HasChanges("private_network") {
+		ph, err := newPrivateNICHandler(ctx, instanceAPI, ID, zone)
+		if err != nil {
+			diag.FromErr(err)
+		}
 		if raw, ok := d.GetOk("private_network"); ok {
 			// retrieve all current private network interfaces
-			ph, err := newPrivateNICHandler(ctx, instanceAPI, ID, zone)
-			if err != nil {
-				diag.FromErr(err)
-			}
 			for index := range raw.([]interface{}) {
 				pnKey := fmt.Sprintf("private_network.%d.pn_id", index)
 				if d.HasChange(pnKey) {
@@ -772,7 +770,17 @@ func resourceScalewayInstanceServerUpdate(ctx context.Context, d *schema.Resourc
 				}
 			}
 		} else {
-			fmt.Println(raw)
+			// retrieve old private network config
+			o, _ := d.GetChange("private_network")
+			for _, raw := range o.([]interface{}) {
+				pn, pnExist := raw.(map[string]interface{})
+				if pnExist {
+					err := ph.detach(pn["pn_id"])
+					if err != nil {
+						diag.FromErr(err)
+					}
+				}
+			}
 		}
 	}
 	////
@@ -822,12 +830,12 @@ func (ph *PrivateNICsHandler) flatPrivateNICs() error {
 	}
 
 	ph.privateNICsMap = privateNICsMap
-	return  nil
+	return nil
 }
 
 func (ph *PrivateNICsHandler) detach(o interface{}) error {
 	oPtr := expandStringPtr(o)
-	if oPtr != nil {
+	if oPtr != nil && len(*oPtr) > 0 {
 		// check if old private network still exist on instance server
 		if p, ok := ph.privateNICsMap[expandID(*oPtr)]; ok {
 			// detach private NIC
@@ -851,7 +859,7 @@ func (ph *PrivateNICsHandler) attach(n interface{}) error {
 		privateNetworkID := expandID(*nPtr)
 		if _, ok := ph.privateNICsMap[privateNetworkID]; !ok {
 			_, err := ph.instanceAPI.CreatePrivateNIC(&instance.CreatePrivateNICRequest{
-				Zone: ph.zone,
+				Zone:     ph.zone,
 				ServerID: ph.serverID, PrivateNetworkID: privateNetworkID})
 			if err != nil {
 				return err
@@ -860,6 +868,35 @@ func (ph *PrivateNICsHandler) attach(n interface{}) error {
 	}
 
 	return nil
+}
+
+func (ph *PrivateNICsHandler) set(d *schema.ResourceData) error {
+	raw := d.Get("private_network")
+	privateNetworks := []map[string]interface{}(nil)
+	for index := range raw.([]interface{}) {
+		pnKey := fmt.Sprintf("private_network.%d.pn_id", index)
+		keyValue := d.Get(pnKey)
+		keyRaw, err := ph.get(keyValue.(string))
+		if err != nil {
+			return err
+		}
+		privateNetworks = append(privateNetworks, keyRaw.(map[string]interface{}))
+	}
+	return d.Set("private_network", privateNetworks)
+}
+
+func (ph *PrivateNICsHandler) get(key string) (interface{}, error) {
+	locality, id, err := parseLocalizedID(key)
+	if err != nil {
+		return nil, err
+	}
+	pn := ph.privateNICsMap[id]
+	return map[string]interface{}{
+		"pn_id":       key,
+		"mac_address": pn.MacAddress,
+		"status":      pn.State.String(),
+		"zone":        locality,
+	}, nil
 }
 
 func resourceScalewayInstanceServerDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {

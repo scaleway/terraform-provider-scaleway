@@ -3,13 +3,13 @@ package scaleway
 import (
 	"context"
 	"fmt"
-	"github.com/scaleway/scaleway-sdk-go/api/vpc/v1"
 	"sort"
 	"time"
 
 	"github.com/dustin/go-humanize"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
+	"github.com/scaleway/scaleway-sdk-go/api/vpc/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 )
 
@@ -272,21 +272,4 @@ func preparePrivateNIC(
 	}
 
 	return res, nil
-}
-
-func privateNICFlatten(l *instance.ListPrivateNICsResponse, zone scw.Zone) (interface{}, error) {
-	if l == nil {
-		return nil, nil
-	}
-	privateNetworks := []map[string]interface{}(nil)
-	for _, pn := range l.PrivateNics {
-		privateNetworks = append(privateNetworks, map[string]interface{}{
-			"pn_id":       newZonedID(zone, pn.PrivateNetworkID).String(),
-			"mac_address": pn.MacAddress,
-			"status":      pn.State.String(),
-			"zone":        zone.String(),
-		})
-	}
-
-	return privateNetworks, nil
 }

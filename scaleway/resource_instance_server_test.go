@@ -918,7 +918,6 @@ func TestAccScalewayInstanceServer_PrivateNetwork(t *testing.T) {
 				),
 			},
 			{
-				// Image label such as ubuntu_focal
 				Config: `
 					resource scaleway_vpc_private_network pn01 {
 						name = "private_network_instance"
@@ -949,7 +948,6 @@ func TestAccScalewayInstanceServer_PrivateNetwork(t *testing.T) {
 				),
 			},
 			{
-				// Image label such as ubuntu_focal
 				Config: `
 					resource scaleway_vpc_private_network pn01 {
 						name = "private_network_instance"
@@ -974,23 +972,23 @@ func TestAccScalewayInstanceServer_PrivateNetwork(t *testing.T) {
 					}`,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayInstanceServerExists(tt, "scaleway_instance_server.base"),
+					resource.TestCheckResourceAttrPair("scaleway_instance_server.base",
+						"private_network.0.pn_id",
+						"scaleway_vpc_private_network.pn02", "id"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "private_network.#", "2"),
 					resource.TestCheckResourceAttrSet("scaleway_instance_server.base", "private_network.0.pn_id"),
 					resource.TestCheckResourceAttrSet("scaleway_instance_server.base", "private_network.0.mac_address"),
 					resource.TestCheckResourceAttrSet("scaleway_instance_server.base", "private_network.0.status"),
 					resource.TestCheckResourceAttrSet("scaleway_instance_server.base", "private_network.0.zone"),
+					resource.TestCheckResourceAttrPair("scaleway_instance_server.base", "private_network.1.pn_id",
+						"scaleway_vpc_private_network.pn01", "id"),
 					resource.TestCheckResourceAttrSet("scaleway_instance_server.base", "private_network.1.pn_id"),
 					resource.TestCheckResourceAttrSet("scaleway_instance_server.base", "private_network.1.mac_address"),
 					resource.TestCheckResourceAttrSet("scaleway_instance_server.base", "private_network.1.status"),
 					resource.TestCheckResourceAttrSet("scaleway_instance_server.base", "private_network.1.zone"),
-					resource.TestCheckResourceAttrPair("scaleway_instance_server.base", "private_network.0.pn_id",
-						"scaleway_vpc_private_network.pn02", "id"),
-					resource.TestCheckResourceAttrPair("scaleway_instance_server.base", "private_network.1.pn_id",
-						"scaleway_vpc_private_network.pn01", "id"),
 				),
 			},
 			{
-				// Image label such as ubuntu_focal
 				Config: `
 					resource scaleway_vpc_private_network pn01 {
 						name = "private_network_instance"
