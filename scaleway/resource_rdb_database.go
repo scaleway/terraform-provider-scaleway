@@ -13,6 +13,8 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 )
 
+const databaseCreationTimeout = 2 * time.Minute
+
 func resourceScalewayRdbDatabase() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceScalewayRdbDatabaseCreate,
@@ -78,7 +80,7 @@ func resourceScalewayRdbDatabaseCreate(ctx context.Context, d *schema.ResourceDa
 
 	var db *rdb.Database
 	//  wrapper around StateChangeConf that will just retry the database creation
-	err = resource.RetryContext(context.Background(), 2*time.Minute, func() *resource.RetryError {
+	err = resource.RetryContext(context.Background(), databaseCreationTimeout, func() *resource.RetryError {
 		currentDB, errCreateDB := rdbAPI.CreateDatabase(createReq, scw.WithContext(ctx))
 		if errCreateDB != nil {
 			// WIP: Issue on creation/write database. Need a database stable status
