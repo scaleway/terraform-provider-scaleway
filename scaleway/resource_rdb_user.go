@@ -4,12 +4,16 @@ import (
 	"context"
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/api/rdb/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 )
+
+const readWriteDataBaseTimeOut = 2 * time.Minute
 
 func resourceScalewayRdbUser() *schema.Resource {
 	return &schema.Resource{
@@ -56,37 +60,59 @@ func resourceScalewayRdbUser() *schema.Resource {
 }
 
 func resourceScalewayRdbUserCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	rdbAPI, region, err := rdbAPIWithRegion(d, meta)
+	rdbAPI := newRdbAPI(meta)
+	// resource depends on the instance locality
+	regionalID := d.Get("instance_id").(string)
+	region, instanceID, err := parseRegionalID(regionalID)
+	if err != nil {
+		diag.FromErr(err)
+	}
+
+	ins, err := waitInstance(ctx, rdbAPI, region, instanceID)
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	instanceID := d.Get("instance_id").(string)
+
 	createReq := &rdb.CreateUserRequest{
 		Region:     region,
-		InstanceID: expandID(instanceID),
+		InstanceID: ins.ID,
 		Name:       d.Get("name").(string),
 		Password:   d.Get("password").(string),
 		IsAdmin:    d.Get("is_admin").(bool),
 	}
 
-	res, err := rdbAPI.CreateUser(createReq, scw.WithContext(ctx))
+	var user *rdb.User
+	//  wrapper around StateChangeConf that will just retry the write on database
+	err = resource.RetryContext(context.Background(), readWriteDataBaseTimeOut, func() *resource.RetryError {
+		currentUser, errCreateDB := rdbAPI.CreateUser(createReq, scw.WithContext(ctx))
+		if errCreateDB != nil {
+			// WIP: Issue on creation/write database. Need a database stable status
+			if is409Error(errCreateDB) {
+				return resource.RetryableError(errCreateDB)
+			}
+			return resource.NonRetryableError(errCreateDB)
+		}
+		// set database information
+		user = currentUser
+		return nil
+	})
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	d.SetId(resourceScalewayRdbUserID(region, expandID(instanceID), res.Name))
+	d.SetId(resourceScalewayRdbUserID(region, expandID(instanceID), user.Name))
 
 	return resourceScalewayRdbUserRead(ctx, d, meta)
 }
 
 func resourceScalewayRdbUserRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	rdbAPI, region, err := rdbAPIWithRegion(d, meta)
+	rdbAPI := newRdbAPI(meta)
+	region, instanceID, userName, err := resourceScalewayRdbUserParseID(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	instanceID, userName, err := resourceScalewayRdbUserParseID(d.Id())
-
+	_, err = waitInstance(ctx, rdbAPI, region, instanceID)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -116,13 +142,14 @@ func resourceScalewayRdbUserRead(ctx context.Context, d *schema.ResourceData, me
 }
 
 func resourceScalewayRdbUserUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	rdbAPI, region, err := rdbAPIWithRegion(d, meta)
+	rdbAPI := newRdbAPI(meta)
+	// resource depends on the instance locality
+	region, instanceID, userName, err := resourceScalewayRdbUserParseID(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	instanceID, userName, err := resourceScalewayRdbUserParseID(d.Id())
-
+	_, err = waitInstance(ctx, rdbAPI, region, instanceID)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -149,13 +176,14 @@ func resourceScalewayRdbUserUpdate(ctx context.Context, d *schema.ResourceData, 
 }
 
 func resourceScalewayRdbUserDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	rdbAPI, region, err := rdbAPIWithRegion(d, meta)
+	rdbAPI := newRdbAPI(meta)
+	// resource depends on the instance locality
+	region, instanceID, userName, err := resourceScalewayRdbUserParseID(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	instanceID, userName, err := resourceScalewayRdbUserParseID(d.Id())
-
+	_, err = waitInstance(ctx, rdbAPI, region, instanceID)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -181,10 +209,10 @@ func resourceScalewayRdbUserID(region scw.Region, instanceID string, userName st
 
 // Extract instance ID and username from the resource identifier.
 // The resource identifier format is "Region/InstanceId/UserName"
-func resourceScalewayRdbUserParseID(resourceID string) (instanceID string, userName string, err error) {
+func resourceScalewayRdbUserParseID(resourceID string) (region scw.Region, instanceID string, userName string, err error) {
 	idParts := strings.Split(resourceID, "/")
 	if len(idParts) != 3 {
-		return "", "", fmt.Errorf("can't parse user resource id: %s", resourceID)
+		return "", "", "", fmt.Errorf("can't parse user resource id: %s", resourceID)
 	}
-	return idParts[1], idParts[2], nil
+	return scw.Region(idParts[0]), idParts[1], idParts[2], nil
 }
