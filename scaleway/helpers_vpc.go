@@ -1,6 +1,8 @@
 package scaleway
 
 import (
+	"fmt"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/api/vpc/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
@@ -28,4 +30,13 @@ func vpcAPIWithZoneAndID(m interface{}, id string) (*vpc.API, scw.Zone, string, 
 		return nil, "", "", err
 	}
 	return vpcAPI, zone, ID, err
+}
+
+func vpcAPI(m interface{}) (*vpc.API, error) {
+	meta, ok := m.(*Meta)
+	if !ok {
+		return nil, fmt.Errorf("wrong type: %T", m)
+	}
+
+	return vpc.NewAPI(meta.scwClient), nil
 }
