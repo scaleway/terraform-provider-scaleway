@@ -8,6 +8,7 @@ import (
 	"io/ioutil"
 	"strconv"
 
+	"github.com/google/go-cmp/cmp"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
@@ -202,6 +203,34 @@ func resourceScalewayInstanceServer() *schema.Resource {
 					Type: schema.TypeString,
 				},
 			},
+			"private_network": {
+				Type:        schema.TypeList,
+				Optional:    true,
+				MaxItems:    8,
+				Description: "List of private network to connect with your instance",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"pn_id": {
+							Type:         schema.TypeString,
+							Required:     true,
+							ValidateFunc: validationUUIDorUUIDWithLocality(),
+							Description:  "The Private Network ID",
+						},
+						// Computed
+						"mac_address": {
+							Type:        schema.TypeString,
+							Description: "MAC address of the NIC",
+							Computed:    true,
+						},
+						"status": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The private NIC state",
+						},
+						"zone": zoneSchema(),
+					},
+				},
+			},
 			"zone":            zoneSchema(),
 			"organization_id": organizationIDSchema(),
 			"project_id":      projectIDSchema(),
@@ -363,6 +392,27 @@ func resourceScalewayInstanceServerCreate(ctx context.Context, d *schema.Resourc
 		return diag.FromErr(err)
 	}
 
+	////
+	// Private Network
+	////
+	if rawPNICs, ok := d.GetOk("private_network"); ok {
+		vpcAPI, err := vpcAPI(meta)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		pnRequest, err := preparePrivateNIC(ctx, rawPNICs, res.Server, vpcAPI)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		// compute attachment
+		for _, q := range pnRequest {
+			_, err := instanceAPI.CreatePrivateNIC(q, scw.WithContext(ctx))
+			if err != nil {
+				return diag.FromErr(err)
+			}
+		}
+	}
+
 	return resourceScalewayInstanceServerRead(ctx, d, meta)
 }
 
@@ -496,6 +546,20 @@ func resourceScalewayInstanceServerRead(ctx context.Context, d *schema.ResourceD
 	}
 	if len(userData) > 0 {
 		_ = d.Set("user_data", userData)
+	}
+
+	////
+	// Read server private networks
+	////
+	ph, err := newPrivateNICHandler(ctx, instanceAPI, ID, zone)
+	if err != nil {
+		diag.FromErr(err)
+	}
+
+	// set private networks
+	err = ph.set(d)
+	if err != nil {
+		diag.FromErr(err)
 	}
 
 	return nil
@@ -679,6 +743,46 @@ func resourceScalewayInstanceServerUpdate(ctx context.Context, d *schema.Resourc
 		}
 	}
 
+	////
+	// Update server private network
+	////
+	if d.HasChanges("private_network") {
+		ph, err := newPrivateNICHandler(ctx, instanceAPI, ID, zone)
+		if err != nil {
+			diag.FromErr(err)
+		}
+		if raw, ok := d.GetOk("private_network"); ok {
+			// retrieve all current private network interfaces
+			for index := range raw.([]interface{}) {
+				pnKey := fmt.Sprintf("private_network.%d.pn_id", index)
+				if d.HasChange(pnKey) {
+					o, n := d.GetChange(pnKey)
+					if !cmp.Equal(n, o) {
+						err := ph.detach(o)
+						if err != nil {
+							diag.FromErr(err)
+						}
+						err = ph.attach(n)
+						if err != nil {
+							diag.FromErr(err)
+						}
+					}
+				}
+			}
+		} else {
+			// retrieve old private network config
+			o, _ := d.GetChange("private_network")
+			for _, raw := range o.([]interface{}) {
+				pn, pnExist := raw.(map[string]interface{})
+				if pnExist {
+					err := ph.detach(pn["pn_id"])
+					if err != nil {
+						diag.FromErr(err)
+					}
+				}
+			}
+		}
+	}
 	////
 	// Apply changes
 	////
