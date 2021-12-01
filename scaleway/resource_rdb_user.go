@@ -70,7 +70,7 @@ func resourceScalewayRdbUserCreate(ctx context.Context, d *schema.ResourceData, 
 
 	ins, err := waitInstance(ctx, rdbAPI, region, instanceID)
 	if err != nil {
-		diag.FromErr(err)
+		return diag.FromErr(err)
 	}
 
 	createReq := &rdb.CreateUserRequest{

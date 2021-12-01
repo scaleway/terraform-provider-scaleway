@@ -553,13 +553,13 @@ func resourceScalewayInstanceServerRead(ctx context.Context, d *schema.ResourceD
 	////
 	ph, err := newPrivateNICHandler(ctx, instanceAPI, ID, zone)
 	if err != nil {
-		diag.FromErr(err)
+		return diag.FromErr(err)
 	}
 
 	// set private networks
 	err = ph.set(d)
 	if err != nil {
-		diag.FromErr(err)
+		return diag.FromErr(err)
 	}
 
 	return nil
