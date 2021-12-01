@@ -3,7 +3,6 @@ package scaleway
 import (
 	"context"
 	"fmt"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"strings"
 	"time"
 
@@ -74,11 +73,6 @@ func resourceScalewayRdbUserCreate(ctx context.Context, d *schema.ResourceData, 
 		diag.FromErr(err)
 	}
 
-	ins, err := waitInstance(ctx, rdbAPI, region, instanceID)
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
 	createReq := &rdb.CreateUserRequest{
 		Region:     region,
 		InstanceID: ins.ID,
@@ -114,11 +108,6 @@ func resourceScalewayRdbUserCreate(ctx context.Context, d *schema.ResourceData, 
 func resourceScalewayRdbUserRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	rdbAPI := newRdbAPI(meta)
 	region, instanceID, userName, err := resourceScalewayRdbUserParseID(d.Id())
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	instanceID, userName, err := resourceScalewayRdbUserParseID(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -160,11 +149,6 @@ func resourceScalewayRdbUserUpdate(ctx context.Context, d *schema.ResourceData, 
 		return diag.FromErr(err)
 	}
 
-	instanceID, userName, err := resourceScalewayRdbUserParseID(d.Id())
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
 	_, err = waitInstance(ctx, rdbAPI, region, instanceID)
 	if err != nil {
 		return diag.FromErr(err)
@@ -195,11 +179,6 @@ func resourceScalewayRdbUserDelete(ctx context.Context, d *schema.ResourceData, 
 	rdbAPI := newRdbAPI(meta)
 	// resource depends on the instance locality
 	region, instanceID, userName, err := resourceScalewayRdbUserParseID(d.Id())
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	instanceID, userName, err := resourceScalewayRdbUserParseID(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
