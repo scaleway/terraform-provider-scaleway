@@ -11,6 +11,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/api/rdb/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"strings"
+	"time"
 )
 
 func resourceScalewayRdbDatabase() *schema.Resource {
@@ -126,6 +128,11 @@ func getDatabase(ctx context.Context, api *rdb.API,
 func resourceScalewayRdbDatabaseRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	rdbAPI := newRdbAPI(meta)
 	region, instanceID, databaseName, err := resourceScalewayRdbDatabaseParseID(d.Id())
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	_, err = waitInstance(ctx, rdbAPI, region, instanceID)
 	if err != nil {
 		return diag.FromErr(err)
 	}
