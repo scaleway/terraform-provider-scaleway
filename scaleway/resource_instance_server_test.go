@@ -880,6 +880,7 @@ func TestAccScalewayInstanceServer_Enterprise(t *testing.T) {
 					resource "scaleway_instance_server" "main" {
 						type  = "ENT1-S"
 						image = "ubuntu_focal"
+						zone  = "fr-par-2"
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
