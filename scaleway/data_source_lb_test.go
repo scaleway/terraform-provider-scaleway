@@ -21,7 +21,7 @@ func TestAccScalewayDataSourceLb_Basic(t *testing.T) {
 
 					resource scaleway_lb main {
 					    ip_id = scaleway_lb_ip.main.id
-						name = "test-lb"
+						name = "data-test-lb"
 						type = "LB-S"
 					}
 					
