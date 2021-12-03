@@ -321,14 +321,9 @@ func TestAccScalewayInstanceServer_UserData_WithCloudInitAtStart(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: `
-				data "scaleway_instance_image" "ubuntu" {
-				 	architecture = "x86_64"
-				 	name         = "Ubuntu 20.04 Focal Fossa"
-				}
-
 				resource "scaleway_instance_server" "base" {
-				 	image = "${data.scaleway_instance_image.ubuntu.id}"
-				 	type  = "DEV1-S"
+					image = "ubuntu-focal"
+					type  = "DEV1-S"
 
 					user_data = {
 				   		foo   = "bar"
@@ -360,14 +355,12 @@ func TestAccScalewayInstanceServer_UserData_WithoutCloudInitAtStart(t *testing.T
 			{
 				// Without cloud-init
 				Config: `
-					data "scaleway_instance_image" "ubuntu" {
-						architecture = "x86_64"
-						name         = "Ubuntu 20.04 Focal Fossa"
-					}
-
 					resource "scaleway_instance_server" "base" {
-						image = "${data.scaleway_instance_image.ubuntu.id}"
+						image = "ubuntu-focal"
 						type  = "DEV1-S"
+						root_volume {
+							size_in_gb = 20
+						}
 						tags  = [ "terraform-test", "scaleway_instance_server", "user_data" ]
 					}`,
 				Check: resource.ComposeTestCheckFunc(
@@ -378,16 +371,13 @@ func TestAccScalewayInstanceServer_UserData_WithoutCloudInitAtStart(t *testing.T
 			{
 				// With cloud-init
 				Config: `
-					data "scaleway_instance_image" "ubuntu" {
-						architecture = "x86_64"
-						name         = "Ubuntu 20.04 Focal Fossa"
-					}
-
 					resource "scaleway_instance_server" "base" {
-						image = "${data.scaleway_instance_image.ubuntu.id}"
+						image = "ubuntu_focal"
 						type  = "DEV1-S"
 						tags  = [ "terraform-test", "scaleway_instance_server", "user_data" ]
-
+						root_volume {
+							size_in_gb = 20
+						}
 						user_data = {
 							cloud-init = <<EOF
 #cloud-config
