@@ -65,6 +65,11 @@ func resourceScalewayRdbPrivilegeCreate(ctx context.Context, d *schema.ResourceD
 		return diag.FromErr(err)
 	}
 
+	_, err = waitInstance(ctx, rdbAPI, region, instanceID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	createReq := &rdb.SetPrivilegeRequest{
 		Region:       region,
 		InstanceID:   instanceID,
@@ -91,6 +96,11 @@ func resourceScalewayRdbPrivilegeRead(ctx context.Context, d *schema.ResourceDat
 
 	dbName, _ := d.Get("database_name").(string)
 	userName, _ := d.Get("user_name").(string)
+
+	_, err = waitInstance(ctx, rdbAPI, region, instanceID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	res, err := rdbAPI.ListPrivileges(&rdb.ListPrivilegesRequest{
 		Region:       region,
@@ -123,6 +133,11 @@ func resourceScalewayRdbPrivilegeUpdate(ctx context.Context, d *schema.ResourceD
 		return diag.FromErr(err)
 	}
 
+	_, err = waitInstance(ctx, rdbAPI, region, instanceID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	updateReq := &rdb.SetPrivilegeRequest{
 		Region:       region,
 		InstanceID:   instanceID,
@@ -132,6 +147,11 @@ func resourceScalewayRdbPrivilegeUpdate(ctx context.Context, d *schema.ResourceD
 	}
 	_, err = rdbAPI.SetPrivilege(updateReq, scw.WithContext(ctx))
 	if err != nil && !is404Error(err) {
+		return diag.FromErr(err)
+	}
+
+	_, err = waitInstance(ctx, rdbAPI, region, instanceID)
+	if err != nil {
 		return diag.FromErr(err)
 	}
 
