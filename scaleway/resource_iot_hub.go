@@ -2,8 +2,10 @@ package scaleway
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	iot "github.com/scaleway/scaleway-sdk-go/api/iot/v1"
@@ -18,6 +20,11 @@ func resourceScalewayIotHub() *schema.Resource {
 		DeleteContext: resourceScalewayIotHubDelete,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
+		},
+		Timeouts: &schema.ResourceTimeout{
+			Create: schema.DefaultTimeout(defaultIotHubWaitTimeout),
+			Update: schema.DefaultTimeout(defaultIotHubWaitTimeout),
+			Delete: schema.DefaultTimeout(defaultIotHubWaitTimeout),
 		},
 		SchemaVersion: 0,
 		Schema: map[string]*schema.Schema{
@@ -142,7 +149,7 @@ func resourceScalewayIotHubCreate(ctx context.Context, d *schema.ResourceData, m
 		return diag.FromErr(err)
 	}
 
-	err = waitIotHub(iotAPI, region, res.ID, iot.HubStatusReady)
+	err = waitIotHub(iotAPI, region, res.ID, d.Timeout(schema.TimeoutCreate), iot.HubStatusReady)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -183,7 +190,7 @@ func resourceScalewayIotHubCreate(ctx context.Context, d *schema.ResourceData, m
 			return diag.FromErr(err)
 		}
 
-		err = waitIotHub(iotAPI, region, res.ID, iot.HubStatusDisabled)
+		err = waitIotHub(iotAPI, region, res.ID, d.Timeout(schema.TimeoutCreate), iot.HubStatusDisabled)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -262,7 +269,7 @@ func resourceScalewayIotHubUpdate(ctx context.Context, d *schema.ResourceData, m
 			return diag.FromErr(err)
 		}
 
-		err = waitIotHub(iotAPI, region, hubID, iot.HubStatusReady, iot.HubStatusDisabled)
+		err = waitIotHub(iotAPI, region, hubID, d.Timeout(schema.TimeoutUpdate), iot.HubStatusReady, iot.HubStatusDisabled)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -331,15 +338,33 @@ func resourceScalewayIotHubDelete(ctx context.Context, d *schema.ResourceData, m
 	////
 	// Delete hub
 	////
-	err = iotAPI.DeleteHub(&iot.DeleteHubRequest{
-		Region: region,
-		HubID:  hubID,
-		// Don't force delete if devices. This avoids deleting a hub by mistake
-	}, scw.WithContext(ctx))
-	if err != nil {
-		if is404Error(err) {
-			return nil
+	err = resource.RetryContext(ctx, d.Timeout(schema.TimeoutDelete), func() *resource.RetryError {
+		iotHub, err := iotAPI.GetHub(&iot.GetHubRequest{
+			Region: region,
+			HubID:  hubID,
+		})
+		if err != nil {
+			if is404Error(err) {
+				return nil
+			}
+			return resource.NonRetryableError(err)
 		}
+
+		if iotHub.DeviceCount > 0 {
+			return resource.RetryableError(fmt.Errorf("hub still has devices attached"))
+		}
+
+		err = iotAPI.DeleteHub(&iot.DeleteHubRequest{
+			Region: region,
+			HubID:  hubID,
+			// Don't force delete if devices. This avoids deleting a hub by mistake
+		}, scw.WithContext(ctx))
+		if err != nil {
+			return resource.NonRetryableError(err)
+		}
+		return nil
+	})
+	if err != nil {
 		return diag.FromErr(err)
 	}
 
