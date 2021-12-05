@@ -196,7 +196,11 @@ func resourceScalewayLbRead(ctx context.Context, d *schema.ResourceData, meta in
 		LBID: ID,
 	}, scw.WithContext(ctx))
 
-	if err != nil && !is404Error(err) {
+	if err != nil {
+		if is404Error(err) {
+			d.SetId("")
+			return nil
+		}
 		return diag.FromErr(err)
 	}
 	// set the region from zone
