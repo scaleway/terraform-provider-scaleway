@@ -2,9 +2,11 @@ package scaleway
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/scaleway/scaleway-sdk-go/api/k8s/v1"
@@ -21,7 +23,9 @@ func resourceScalewayK8SPool() *schema.Resource {
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 		Timeouts: &schema.ResourceTimeout{
-			Default: schema.DefaultTimeout(defaultK8SPoolTimeout),
+			Create: schema.DefaultTimeout(defaultK8SPoolTimeout),
+			Update: schema.DefaultTimeout(defaultK8SPoolTimeout),
+			Delete: schema.DefaultTimeout(defaultK8SPoolTimeout),
 		},
 		SchemaVersion: 0,
 		Schema: map[string]*schema.Schema{
@@ -264,7 +268,7 @@ func resourceScalewayK8SPoolCreate(ctx context.Context, d *schema.ResourceData, 
 	if cluster.Status == k8s.ClusterStatusPoolRequired {
 		waitForCluster = true
 	} else if cluster.Status == k8s.ClusterStatusCreating {
-		err = waitK8SCluster(ctx, k8sAPI, region, cluster.ID, k8s.ClusterStatusReady)
+		err = waitK8SCluster(ctx, k8sAPI, region, cluster.ID, d.Timeout(schema.TimeoutCreate), k8s.ClusterStatusReady)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -278,14 +282,14 @@ func resourceScalewayK8SPoolCreate(ctx context.Context, d *schema.ResourceData, 
 	d.SetId(newRegionalIDString(region, res.ID))
 
 	if waitForCluster {
-		err = waitK8SCluster(ctx, k8sAPI, region, cluster.ID, k8s.ClusterStatusReady)
+		err = waitK8SCluster(ctx, k8sAPI, region, cluster.ID, d.Timeout(schema.TimeoutCreate), k8s.ClusterStatusReady)
 		if err != nil {
 			return diag.FromErr(err)
 		}
 	}
 
 	if d.Get("wait_for_pool_ready").(bool) { // wait for the pool to be ready if specified (including all its nodes)
-		err = waitK8SPoolReady(ctx, k8sAPI, region, res.ID)
+		err = waitK8SPoolReady(ctx, k8sAPI, region, res.ID, d.Timeout(schema.TimeoutCreate))
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -411,7 +415,7 @@ func resourceScalewayK8SPoolUpdate(ctx context.Context, d *schema.ResourceData, 
 	}
 
 	if d.Get("wait_for_pool_ready").(bool) { // wait for the pool to be ready if specified (including all its nodes)
-		err = waitK8SPoolReady(ctx, k8sAPI, region, res.ID)
+		err = waitK8SPoolReady(ctx, k8sAPI, region, res.ID, d.Timeout(schema.TimeoutUpdate))
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -429,14 +433,21 @@ func resourceScalewayK8SPoolDelete(ctx context.Context, d *schema.ResourceData, 
 	////
 	// Delete Pool
 	////
-	_, err = k8sAPI.DeletePool(&k8s.DeletePoolRequest{
-		Region: region,
-		PoolID: poolID,
-	}, scw.WithContext(ctx))
-	if err != nil {
-		if !is404Error(err) {
-			return diag.FromErr(err)
+	err = resource.RetryContext(ctx, d.Timeout(schema.TimeoutDelete), func() *resource.RetryError {
+		_, err = k8sAPI.DeletePool(&k8s.DeletePoolRequest{
+			Region: region,
+			PoolID: poolID,
+		}, scw.WithContext(ctx))
+		if err != nil {
+			if is404Error(err) {
+				return nil
+			}
+			return resource.NonRetryableError(err)
 		}
+		return resource.RetryableError(fmt.Errorf("iot pool deletion timed out after %s", d.Timeout(schema.TimeoutDelete)))
+	})
+	if err != nil {
+		return diag.FromErr(err)
 	}
 
 	return nil

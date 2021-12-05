@@ -38,11 +38,8 @@ type KubeconfigStruct struct {
 }
 
 const (
-	defaultK8SClusterTimeout             = 10 * time.Minute
-	defaultK8SPoolTimeout                = 10 * time.Minute
-	K8SClusterWaitForPoolRequiredTimeout = 10 * time.Minute
-	K8SClusterWaitForDeletedTimeout      = 10 * time.Minute
-	K8SPoolWaitForReadyTimeout           = 10 * time.Minute
+	defaultK8SClusterTimeout = 10 * time.Minute
+	defaultK8SPoolTimeout    = 10 * time.Minute
 )
 
 func k8sAPIWithRegion(d *schema.ResourceData, m interface{}) (*k8s.API, scw.Region, error) {
@@ -102,11 +99,11 @@ func k8sGetLatestVersionFromMinor(ctx context.Context, k8sAPI *k8s.API, region s
 	return "", fmt.Errorf("no available upstream version found for %s", version)
 }
 
-func waitK8SCluster(ctx context.Context, k8sAPI *k8s.API, region scw.Region, clusterID string, desiredStates ...k8s.ClusterStatus) error {
+func waitK8SCluster(ctx context.Context, k8sAPI *k8s.API, region scw.Region, clusterID string, timeout time.Duration, desiredStates ...k8s.ClusterStatus) error {
 	cluster, err := k8sAPI.WaitForCluster(&k8s.WaitForClusterRequest{
 		ClusterID:     clusterID,
 		Region:        region,
-		Timeout:       scw.TimeDurationPtr(K8SClusterWaitForPoolRequiredTimeout),
+		Timeout:       scw.TimeDurationPtr(timeout),
 		RetryInterval: DefaultWaitRetryInterval,
 	}, scw.WithContext(ctx))
 	if err != nil {
@@ -122,11 +119,11 @@ func waitK8SCluster(ctx context.Context, k8sAPI *k8s.API, region scw.Region, clu
 	return fmt.Errorf("cluster %s has state %s, wants one of %+q", clusterID, cluster.Status, desiredStates)
 }
 
-func waitK8SClusterDeleted(ctx context.Context, k8sAPI *k8s.API, region scw.Region, clusterID string) error {
+func waitK8SClusterDeleted(ctx context.Context, k8sAPI *k8s.API, region scw.Region, clusterID string, timeout time.Duration) error {
 	cluster, err := k8sAPI.WaitForCluster(&k8s.WaitForClusterRequest{
 		ClusterID:     clusterID,
 		Region:        region,
-		Timeout:       scw.TimeDurationPtr(K8SClusterWaitForDeletedTimeout),
+		Timeout:       scw.TimeDurationPtr(timeout),
 		RetryInterval: DefaultWaitRetryInterval,
 	}, scw.WithContext(ctx))
 	if err != nil {
@@ -139,11 +136,11 @@ func waitK8SClusterDeleted(ctx context.Context, k8sAPI *k8s.API, region scw.Regi
 	return fmt.Errorf("cluster %s has state %s, wants %s", clusterID, cluster.Status, k8s.ClusterStatusDeleted)
 }
 
-func waitK8SPoolReady(ctx context.Context, k8sAPI *k8s.API, region scw.Region, poolID string) error {
+func waitK8SPoolReady(ctx context.Context, k8sAPI *k8s.API, region scw.Region, poolID string, timeout time.Duration) error {
 	pool, err := k8sAPI.WaitForPool(&k8s.WaitForPoolRequest{
 		PoolID:        poolID,
 		Region:        region,
-		Timeout:       scw.TimeDurationPtr(K8SPoolWaitForReadyTimeout),
+		Timeout:       scw.TimeDurationPtr(timeout),
 		RetryInterval: DefaultWaitRetryInterval,
 	}, scw.WithContext(ctx))
 

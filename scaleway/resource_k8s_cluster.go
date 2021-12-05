@@ -23,7 +23,9 @@ func resourceScalewayK8SCluster() *schema.Resource {
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 		Timeouts: &schema.ResourceTimeout{
-			Default: schema.DefaultTimeout(defaultK8SClusterTimeout),
+			Create: schema.DefaultTimeout(defaultK8SClusterTimeout),
+			Update: schema.DefaultTimeout(defaultK8SClusterTimeout),
+			Delete: schema.DefaultTimeout(defaultK8SClusterTimeout),
 		},
 		SchemaVersion: 0,
 		Schema: map[string]*schema.Schema{
@@ -379,7 +381,7 @@ func resourceScalewayK8SClusterCreate(ctx context.Context, d *schema.ResourceDat
 		return diag.FromErr(err)
 	}
 
-	err = waitK8SCluster(ctx, k8sAPI, region, res.ID, k8s.ClusterStatusReady, k8s.ClusterStatusPoolRequired)
+	err = waitK8SCluster(ctx, k8sAPI, region, res.ID, d.Timeout(schema.TimeoutCreate), k8s.ClusterStatusReady, k8s.ClusterStatusPoolRequired)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -653,7 +655,7 @@ func resourceScalewayK8SClusterUpdate(ctx context.Context, d *schema.ResourceDat
 		return diag.FromErr(err)
 	}
 
-	err = waitK8SCluster(ctx, k8sAPI, region, clusterID, k8s.ClusterStatusReady, k8s.ClusterStatusPoolRequired)
+	err = waitK8SCluster(ctx, k8sAPI, region, clusterID, d.Timeout(schema.TimeoutUpdate), k8s.ClusterStatusReady, k8s.ClusterStatusPoolRequired)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -673,7 +675,7 @@ func resourceScalewayK8SClusterUpdate(ctx context.Context, d *schema.ResourceDat
 			return diag.FromErr(err)
 		}
 
-		err = waitK8SCluster(ctx, k8sAPI, region, clusterID, k8s.ClusterStatusReady, k8s.ClusterStatusPoolRequired)
+		err = waitK8SCluster(ctx, k8sAPI, region, clusterID, d.Timeout(schema.TimeoutUpdate), k8s.ClusterStatusReady, k8s.ClusterStatusPoolRequired)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -705,7 +707,7 @@ func resourceScalewayK8SClusterDelete(ctx context.Context, d *schema.ResourceDat
 		return diag.FromErr(err)
 	}
 
-	err = waitK8SClusterDeleted(ctx, k8sAPI, region, clusterID)
+	err = waitK8SClusterDeleted(ctx, k8sAPI, region, clusterID, d.Timeout(schema.TimeoutDelete))
 	if err != nil {
 		return diag.FromErr(err)
 	}
