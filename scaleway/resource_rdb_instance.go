@@ -321,7 +321,7 @@ func resourceScalewayRdbInstanceCreate(ctx context.Context, d *schema.ResourceDa
 		}
 
 		_, err = waitInstance(ctx, rdbAPI, region, res.ID)
-		if err != nil && !is404Error(err) {
+		if err != nil {
 			return diag.FromErr(err)
 		}
 
@@ -333,7 +333,7 @@ func resourceScalewayRdbInstanceCreate(ctx context.Context, d *schema.ResourceDa
 	// Configure Instance settings
 	if settings, ok := d.GetOk("settings"); ok {
 		res, err = waitInstance(ctx, rdbAPI, region, res.ID)
-		if err != nil && !is404Error(err) {
+		if err != nil {
 			return diag.FromErr(err)
 		}
 
@@ -358,7 +358,7 @@ func resourceScalewayRdbInstanceRead(ctx context.Context, d *schema.ResourceData
 
 	// verify resource is ready
 	res, err := waitInstance(ctx, rdbAPI, region, ID)
-	if err != nil && !is404Error(err) {
+	if err != nil {
 		return diag.FromErr(err)
 	}
 
@@ -443,7 +443,7 @@ func resourceScalewayRdbInstanceUpdate(ctx context.Context, d *schema.ResourceDa
 	}
 
 	_, err = waitInstance(ctx, rdbAPI, region, ID)
-	if err != nil && !is404Error(err) {
+	if err != nil {
 		return diag.FromErr(err)
 	}
 
@@ -552,7 +552,7 @@ func resourceScalewayRdbInstanceUpdate(ctx context.Context, d *schema.ResourceDa
 
 	if d.HasChange("password") {
 		_, err := waitInstance(ctx, rdbAPI, region, ID)
-		if err != nil && !is404Error(err) {
+		if err != nil {
 			return diag.FromErr(err)
 		}
 
@@ -572,7 +572,7 @@ func resourceScalewayRdbInstanceUpdate(ctx context.Context, d *schema.ResourceDa
 	if d.HasChanges("private_network") {
 		// retrieve state
 		res, err := waitInstance(ctx, rdbAPI, region, ID)
-		if err != nil && !is404Error(err) {
+		if err != nil {
 			return diag.FromErr(err)
 		}
 
@@ -595,7 +595,7 @@ func resourceScalewayRdbInstanceUpdate(ctx context.Context, d *schema.ResourceDa
 
 		// retrieve state
 		_, err = waitInstance(ctx, rdbAPI, region, ID)
-		if err != nil && !is404Error(err) {
+		if err != nil {
 			return diag.FromErr(err)
 		}
 
@@ -625,11 +625,7 @@ func resourceScalewayRdbInstanceDelete(ctx context.Context, d *schema.ResourceDa
 
 	// We first wait in case the instance is in a transient state
 	_, err = waitInstance(ctx, rdbAPI, region, ID)
-	if err != nil && !is404Error(err) {
-		return diag.FromErr(err)
-	}
-
-	if err != nil && !is404Error(err) {
+	if err != nil {
 		return diag.FromErr(err)
 	}
 
@@ -638,7 +634,7 @@ func resourceScalewayRdbInstanceDelete(ctx context.Context, d *schema.ResourceDa
 		InstanceID: ID,
 	}, scw.WithContext(ctx))
 
-	if err != nil && !is404Error(err) {
+	if err != nil {
 		return diag.FromErr(err)
 	}
 
