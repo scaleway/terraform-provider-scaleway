@@ -2,6 +2,7 @@ package scaleway
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -193,11 +194,13 @@ func resourceScalewayAppleSiliconServerDelete(ctx context.Context, d *schema.Res
 			Zone:     zone,
 			ServerID: ID,
 		}, scw.WithContext(ctx))
-
-		if err != nil && !is404Error(err) {
+		if err != nil {
+			if is404Error(err) {
+				return nil
+			}
 			return resource.NonRetryableError(err)
 		}
-		return nil
+		return resource.RetryableError(fmt.Errorf("apple silicon server deletion timed out after %s", d.Timeout(schema.TimeoutDelete)))
 	})
 	if err != nil {
 		return diag.FromErr(err)

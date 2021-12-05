@@ -351,7 +351,7 @@ func resourceScalewayIotHubDelete(ctx context.Context, d *schema.ResourceData, m
 		}
 
 		if iotHub.DeviceCount > 0 {
-			return resource.RetryableError(fmt.Errorf("hub still has devices attached"))
+			return resource.RetryableError(fmt.Errorf("iot hub still has devices attached"))
 		}
 
 		err = iotAPI.DeleteHub(&iot.DeleteHubRequest{
@@ -362,7 +362,7 @@ func resourceScalewayIotHubDelete(ctx context.Context, d *schema.ResourceData, m
 		if err != nil {
 			return resource.NonRetryableError(err)
 		}
-		return nil
+		return resource.RetryableError(fmt.Errorf("iot hub deletion timed out after %s", d.Timeout(schema.TimeoutDelete)))
 	})
 	if err != nil {
 		return diag.FromErr(err)

@@ -252,7 +252,7 @@ func resourceScalewayInstanceVolumeDelete(ctx context.Context, d *schema.Resourc
 		if err != nil {
 			return resource.NonRetryableError(err)
 		}
-		return nil
+		return resource.RetryableError(fmt.Errorf("instance volume deletion timed out after %s", d.Timeout(schema.TimeoutDelete)))
 	})
 	if err != nil {
 		return diag.FromErr(err)

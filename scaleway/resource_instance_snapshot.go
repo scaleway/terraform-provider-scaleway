@@ -162,7 +162,7 @@ func resourceScalewayInstanceSnapshotDelete(ctx context.Context, d *schema.Resou
 	_, err = instanceAPI.WaitForSnapshot(&instance.WaitForSnapshotRequest{
 		SnapshotID:    id,
 		Zone:          zone,
-		Timeout:       scw.TimeDurationPtr(d.Timeout(schema.TimeoutUpdate)),
+		Timeout:       scw.TimeDurationPtr(d.Timeout(schema.TimeoutDelete)),
 		RetryInterval: DefaultWaitRetryInterval,
 	})
 	if err != nil {
@@ -175,11 +175,12 @@ func resourceScalewayInstanceSnapshotDelete(ctx context.Context, d *schema.Resou
 			Zone:       zone,
 		}, scw.WithContext(ctx))
 		if err != nil {
-			if !is404Error(err) {
-				return resource.NonRetryableError(err)
+			if is404Error(err) {
+				return nil
 			}
+			return resource.NonRetryableError(err)
 		}
-		return nil
+		return resource.RetryableError(fmt.Errorf("instance snapshot deletion timed out after %s", d.Timeout(schema.TimeoutDelete)))
 	})
 	if err != nil {
 		return diag.FromErr(err)
