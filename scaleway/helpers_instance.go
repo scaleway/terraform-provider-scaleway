@@ -9,6 +9,7 @@ import (
 	"github.com/dustin/go-humanize"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
+	"github.com/scaleway/scaleway-sdk-go/api/vpc/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 )
 
@@ -242,4 +243,135 @@ func sanitizeVolumeMap(serverName string, volumes map[string]*instance.VolumeTem
 	}
 
 	return m
+}
+
+func preparePrivateNIC(
+	ctx context.Context, data interface{},
+	server *instance.Server, vpcAPI *vpc.API) ([]*instance.CreatePrivateNICRequest, error) {
+	if data == nil {
+		return nil, nil
+	}
+
+	var res []*instance.CreatePrivateNICRequest
+
+	for _, pn := range data.([]interface{}) {
+		r := pn.(map[string]interface{})
+		zonedID, pnExist := r["pn_id"]
+		privateNetworkID := expandID(zonedID.(string))
+		if pnExist {
+			currentPN, err := vpcAPI.GetPrivateNetwork(&vpc.GetPrivateNetworkRequest{
+				PrivateNetworkID: expandID(privateNetworkID),
+				Zone:             server.Zone,
+			}, scw.WithContext(ctx))
+			if err != nil {
+				return nil, err
+			}
+			query := &instance.CreatePrivateNICRequest{
+				Zone:             currentPN.Zone,
+				ServerID:         server.ID,
+				PrivateNetworkID: currentPN.ID}
+			res = append(res, query)
+		}
+	}
+
+	return res, nil
+}
+
+type privateNICsHandler struct {
+	ctx            context.Context
+	instanceAPI    *instance.API
+	serverID       string
+	privateNICsMap map[string]*instance.PrivateNIC
+	zone           scw.Zone
+}
+
+func newPrivateNICHandler(ctx context.Context, api *instance.API, server string, zone scw.Zone) (*privateNICsHandler, error) {
+	handler := &privateNICsHandler{
+		ctx:         ctx,
+		instanceAPI: api,
+		serverID:    server,
+		zone:        zone}
+	return handler, handler.flatPrivateNICs()
+}
+
+func (ph *privateNICsHandler) flatPrivateNICs() error {
+	privateNICsMap := make(map[string]*instance.PrivateNIC)
+	res, err := ph.instanceAPI.ListPrivateNICs(&instance.ListPrivateNICsRequest{Zone: ph.zone, ServerID: ph.serverID})
+	if err != nil {
+		return err
+	}
+	for _, p := range res.PrivateNics {
+		privateNICsMap[p.PrivateNetworkID] = p
+	}
+
+	ph.privateNICsMap = privateNICsMap
+	return nil
+}
+
+func (ph *privateNICsHandler) detach(o interface{}) error {
+	oPtr := expandStringPtr(o)
+	if oPtr != nil && len(*oPtr) > 0 {
+		// check if old private network still exist on instance server
+		if p, ok := ph.privateNICsMap[expandID(*oPtr)]; ok {
+			// detach private NIC
+			err := ph.instanceAPI.DeletePrivateNIC(&instance.DeletePrivateNICRequest{
+				PrivateNicID: expandID(p.ID),
+				Zone:         ph.zone,
+				ServerID:     ph.serverID},
+				scw.WithContext(ph.ctx))
+			if err != nil {
+				return err
+			}
+		}
+	}
+
+	return nil
+}
+
+func (ph *privateNICsHandler) attach(n interface{}) error {
+	nPtr := expandStringPtr(n)
+	if nPtr != nil {
+		// check if new private network was already attached on instance server
+		privateNetworkID := expandID(*nPtr)
+		if _, ok := ph.privateNICsMap[privateNetworkID]; !ok {
+			_, err := ph.instanceAPI.CreatePrivateNIC(&instance.CreatePrivateNICRequest{
+				Zone:             ph.zone,
+				ServerID:         ph.serverID,
+				PrivateNetworkID: privateNetworkID})
+			if err != nil {
+				return err
+			}
+		}
+	}
+
+	return nil
+}
+
+func (ph *privateNICsHandler) set(d *schema.ResourceData) error {
+	raw := d.Get("private_network")
+	privateNetworks := []map[string]interface{}(nil)
+	for index := range raw.([]interface{}) {
+		pnKey := fmt.Sprintf("private_network.%d.pn_id", index)
+		keyValue := d.Get(pnKey)
+		keyRaw, err := ph.get(keyValue.(string))
+		if err != nil {
+			return err
+		}
+		privateNetworks = append(privateNetworks, keyRaw.(map[string]interface{}))
+	}
+	return d.Set("private_network", privateNetworks)
+}
+
+func (ph *privateNICsHandler) get(key string) (interface{}, error) {
+	locality, id, err := parseLocalizedID(key)
+	if err != nil {
+		return nil, err
+	}
+	pn := ph.privateNICsMap[id]
+	return map[string]interface{}{
+		"pn_id":       key,
+		"mac_address": pn.MacAddress,
+		"status":      pn.State.String(),
+		"zone":        locality,
+	}, nil
 }

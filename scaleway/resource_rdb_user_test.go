@@ -85,12 +85,12 @@ func testAccCheckRdbUserExists(tt *TestTools, instance string, user string) reso
 			return fmt.Errorf("resource not found: %s", user)
 		}
 
-		rdbAPI, region, _, err := rdbAPIWithRegionAndID(tt.Meta, instanceResource.Primary.ID)
+		rdbAPI, _, _, err := rdbAPIWithRegionAndID(tt.Meta, instanceResource.Primary.ID)
 		if err != nil {
 			return err
 		}
 
-		_, instanceID, userName, err := resourceScalewayRdbUserParseID(userResource.Primary.ID)
+		region, instanceID, userName, err := resourceScalewayRdbUserParseID(userResource.Primary.ID)
 		if err != nil {
 			return err
 		}
