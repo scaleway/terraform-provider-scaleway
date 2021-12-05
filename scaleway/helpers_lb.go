@@ -15,7 +15,6 @@ import (
 )
 
 const (
-	LbWaitForTimeout   = 10 * time.Minute
 	defaultLbLbTimeout = 10 * time.Minute
 )
 

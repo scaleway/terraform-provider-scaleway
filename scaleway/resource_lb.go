@@ -26,7 +26,9 @@ func resourceScalewayLb() *schema.Resource {
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 		Timeouts: &schema.ResourceTimeout{
-			Default: schema.DefaultTimeout(defaultLbLbTimeout),
+			Create: schema.DefaultTimeout(defaultLbLbTimeout),
+			Update: schema.DefaultTimeout(defaultLbLbTimeout),
+			Delete: schema.DefaultTimeout(defaultLbLbTimeout),
 		},
 		SchemaVersion: 1,
 		StateUpgraders: []schema.StateUpgrader{
@@ -149,7 +151,7 @@ func resourceScalewayLbCreate(ctx context.Context, d *schema.ResourceData, meta 
 	_, err = lbAPI.WaitForLb(&lb.ZonedAPIWaitForLBRequest{
 		Zone:          zone,
 		LBID:          res.ID,
-		Timeout:       scw.TimeDurationPtr(defaultInstanceServerWaitTimeout),
+		Timeout:       scw.TimeDurationPtr(d.Timeout(schema.TimeoutCreate)),
 		RetryInterval: &retryInterval,
 	}, scw.WithContext(ctx))
 	// check err waiting process
@@ -174,7 +176,7 @@ func resourceScalewayLbCreate(ctx context.Context, d *schema.ResourceData, meta 
 		_, err = lbAPI.WaitForLb(&lb.ZonedAPIWaitForLBRequest{
 			Zone:          zone,
 			LBID:          res.ID,
-			Timeout:       scw.TimeDurationPtr(defaultInstanceServerWaitTimeout),
+			Timeout:       scw.TimeDurationPtr(d.Timeout(schema.TimeoutCreate)),
 			RetryInterval: &retryInterval,
 		}, scw.WithContext(ctx))
 		if err != nil && !is404Error(err) {
@@ -260,7 +262,7 @@ func resourceScalewayLbUpdate(ctx context.Context, d *schema.ResourceData, meta 
 		_, err = lbAPI.WaitForLb(&lb.ZonedAPIWaitForLBRequest{
 			LBID:          ID,
 			Zone:          zone,
-			Timeout:       scw.TimeDurationPtr(LbWaitForTimeout),
+			Timeout:       scw.TimeDurationPtr(d.Timeout(schema.TimeoutUpdate)),
 			RetryInterval: DefaultWaitRetryInterval,
 		}, scw.WithContext(ctx))
 
@@ -282,7 +284,7 @@ func resourceScalewayLbUpdate(ctx context.Context, d *schema.ResourceData, meta 
 		pns, err := lbAPI.WaitForLBPN(&lb.ZonedAPIWaitForLBPNRequest{
 			Zone:          zone,
 			LBID:          ID,
-			Timeout:       scw.TimeDurationPtr(defaultInstanceServerWaitTimeout),
+			Timeout:       scw.TimeDurationPtr(d.Timeout(schema.TimeoutUpdate)),
 			RetryInterval: &retryInterval},
 			scw.WithContext(ctx))
 		if err != nil && !is404Error(err) {
@@ -324,7 +326,7 @@ func resourceScalewayLbUpdate(ctx context.Context, d *schema.ResourceData, meta 
 				_, err = lbAPI.WaitForLb(&lb.ZonedAPIWaitForLBRequest{
 					Zone:          zone,
 					LBID:          ID,
-					Timeout:       scw.TimeDurationPtr(defaultInstanceServerWaitTimeout),
+					Timeout:       scw.TimeDurationPtr(d.Timeout(schema.TimeoutUpdate)),
 					RetryInterval: &retryInterval,
 				}, scw.WithContext(ctx))
 				if err != nil && !is404Error(err) {
@@ -340,7 +342,7 @@ func resourceScalewayLbUpdate(ctx context.Context, d *schema.ResourceData, meta 
 			_, err = lbAPI.WaitForLBPN(&lb.ZonedAPIWaitForLBPNRequest{
 				Zone:          zone,
 				LBID:          ID,
-				Timeout:       scw.TimeDurationPtr(defaultInstanceServerWaitTimeout),
+				Timeout:       scw.TimeDurationPtr(d.Timeout(schema.TimeoutUpdate)),
 				RetryInterval: &retryInterval},
 				scw.WithContext(ctx))
 			if err != nil && !is404Error(err) {
@@ -363,7 +365,7 @@ func resourceScalewayLbDelete(ctx context.Context, d *schema.ResourceData, meta 
 	currentLB, err := lbAPI.WaitForLb(&lb.ZonedAPIWaitForLBRequest{
 		LBID:          ID,
 		Zone:          zone,
-		Timeout:       scw.TimeDurationPtr(LbWaitForTimeout),
+		Timeout:       scw.TimeDurationPtr(d.Timeout(schema.TimeoutDelete)),
 		RetryInterval: &retryInterval,
 	}, scw.WithContext(ctx))
 	if err != nil && !is404Error(err) {
@@ -394,7 +396,7 @@ func resourceScalewayLbDelete(ctx context.Context, d *schema.ResourceData, meta 
 		_, err = lbAPI.WaitForLb(&lb.ZonedAPIWaitForLBRequest{
 			LBID:          ID,
 			Zone:          zone,
-			Timeout:       scw.TimeDurationPtr(LbWaitForTimeout),
+			Timeout:       scw.TimeDurationPtr(d.Timeout(schema.TimeoutDelete)),
 			RetryInterval: &retryInterval,
 		}, scw.WithContext(ctx))
 		if err != nil && !is404Error(err) {
@@ -420,7 +422,7 @@ func resourceScalewayLbDelete(ctx context.Context, d *schema.ResourceData, meta 
 	_, err = lbAPI.WaitForLb(&lb.ZonedAPIWaitForLBRequest{
 		LBID:          ID,
 		Zone:          zone,
-		Timeout:       scw.TimeDurationPtr(LbWaitForTimeout),
+		Timeout:       scw.TimeDurationPtr(d.Timeout(schema.TimeoutDelete)),
 		RetryInterval: &retryInterval,
 	}, scw.WithContext(ctx))
 	if err != nil && !is404Error(err) {
