@@ -24,7 +24,7 @@ func testSweepInstanceServer(_ string) error {
 	return sweepZones(scw.AllZones, func(scwClient *scw.Client, zone scw.Zone) error {
 		instanceAPI := instance.NewAPI(scwClient)
 		l.Debugf("sweeper: destroying the instance server in (%s)", zone)
-		listServers, err := instanceAPI.ListServers(&instance.ListServersRequest{}, scw.WithAllPages())
+		listServers, err := instanceAPI.ListServers(&instance.ListServersRequest{Zone: zone}, scw.WithAllPages())
 		if err != nil {
 			l.Warningf("error listing servers in (%s) in sweeper: %s", zone, err)
 			return nil
@@ -33,6 +33,7 @@ func testSweepInstanceServer(_ string) error {
 		for _, srv := range listServers.Servers {
 			if srv.State == instance.ServerStateStopped || srv.State == instance.ServerStateStoppedInPlace {
 				err := instanceAPI.DeleteServer(&instance.DeleteServerRequest{
+					Zone:     zone,
 					ServerID: srv.ID,
 				})
 				if err != nil {
