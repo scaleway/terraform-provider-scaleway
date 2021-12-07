@@ -833,9 +833,13 @@ func resourceScalewayInstanceServerDelete(ctx context.Context, d *schema.Resourc
 	// Related to https://github.com/hashicorp/terraform-plugin-sdk/issues/142
 	_, rootVolumeAttributeSet := d.GetOk("root_volume")
 	if d.Get("root_volume.0.delete_on_termination").(bool) || !rootVolumeAttributeSet {
+		volumeID, volumeExist := d.GetOk("root_volume.0.volume_id")
+		if !volumeExist {
+			return diag.Errorf("volume ID not found")
+		}
 		err = instanceAPI.DeleteVolume(&instance.DeleteVolumeRequest{
 			Zone:     zone,
-			VolumeID: expandZonedID(d.Get("root_volume.0.volume_id")).ID,
+			VolumeID: expandID(volumeID),
 		})
 		if err != nil && !is404Error(err) {
 			return diag.FromErr(err)

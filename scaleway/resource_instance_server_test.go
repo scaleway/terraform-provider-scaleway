@@ -24,7 +24,7 @@ func testSweepInstanceServer(_ string) error {
 	return sweepZones(scw.AllZones, func(scwClient *scw.Client, zone scw.Zone) error {
 		instanceAPI := instance.NewAPI(scwClient)
 		l.Debugf("sweeper: destroying the instance server in (%s)", zone)
-		listServers, err := instanceAPI.ListServers(&instance.ListServersRequest{}, scw.WithAllPages())
+		listServers, err := instanceAPI.ListServers(&instance.ListServersRequest{Zone: zone}, scw.WithAllPages())
 		if err != nil {
 			l.Warningf("error listing servers in (%s) in sweeper: %s", zone, err)
 			return nil
@@ -33,6 +33,7 @@ func testSweepInstanceServer(_ string) error {
 		for _, srv := range listServers.Servers {
 			if srv.State == instance.ServerStateStopped || srv.State == instance.ServerStateStoppedInPlace {
 				err := instanceAPI.DeleteServer(&instance.DeleteServerRequest{
+					Zone:     zone,
 					ServerID: srv.ID,
 				})
 				if err != nil {
@@ -321,14 +322,9 @@ func TestAccScalewayInstanceServer_UserData_WithCloudInitAtStart(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: `
-				data "scaleway_instance_image" "ubuntu" {
-				 	architecture = "x86_64"
-				 	name         = "Ubuntu 20.04 Focal Fossa"
-				}
-
 				resource "scaleway_instance_server" "base" {
-				 	image = "${data.scaleway_instance_image.ubuntu.id}"
-				 	type  = "DEV1-S"
+					image = "ubuntu_focal"
+					type  = "DEV1-S"
 
 					user_data = {
 				   		foo   = "bar"
@@ -360,14 +356,12 @@ func TestAccScalewayInstanceServer_UserData_WithoutCloudInitAtStart(t *testing.T
 			{
 				// Without cloud-init
 				Config: `
-					data "scaleway_instance_image" "ubuntu" {
-						architecture = "x86_64"
-						name         = "Ubuntu 20.04 Focal Fossa"
-					}
-
 					resource "scaleway_instance_server" "base" {
-						image = "${data.scaleway_instance_image.ubuntu.id}"
+						image = "ubuntu_focal"
 						type  = "DEV1-S"
+						root_volume {
+							size_in_gb = 20
+						}
 						tags  = [ "terraform-test", "scaleway_instance_server", "user_data" ]
 					}`,
 				Check: resource.ComposeTestCheckFunc(
@@ -378,16 +372,13 @@ func TestAccScalewayInstanceServer_UserData_WithoutCloudInitAtStart(t *testing.T
 			{
 				// With cloud-init
 				Config: `
-					data "scaleway_instance_image" "ubuntu" {
-						architecture = "x86_64"
-						name         = "Ubuntu 20.04 Focal Fossa"
-					}
-
 					resource "scaleway_instance_server" "base" {
-						image = "${data.scaleway_instance_image.ubuntu.id}"
+						image = "ubuntu_focal"
 						type  = "DEV1-S"
 						tags  = [ "terraform-test", "scaleway_instance_server", "user_data" ]
-
+						root_volume {
+							size_in_gb = 20
+						}
 						user_data = {
 							cloud-init = <<EOF
 #cloud-config
