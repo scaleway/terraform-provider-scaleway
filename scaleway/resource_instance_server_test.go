@@ -323,7 +323,7 @@ func TestAccScalewayInstanceServer_UserData_WithCloudInitAtStart(t *testing.T) {
 			{
 				Config: `
 				resource "scaleway_instance_server" "base" {
-					image = "ubuntu-focal"
+					image = "ubuntu_focal"
 					type  = "DEV1-S"
 
 					user_data = {
