@@ -357,7 +357,7 @@ func TestAccScalewayInstanceServer_UserData_WithoutCloudInitAtStart(t *testing.T
 				// Without cloud-init
 				Config: `
 					resource "scaleway_instance_server" "base" {
-						image = "ubuntu-focal"
+						image = "ubuntu_focal"
 						type  = "DEV1-S"
 						root_volume {
 							size_in_gb = 20
