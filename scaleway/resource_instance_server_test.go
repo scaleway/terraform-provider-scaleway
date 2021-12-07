@@ -14,9 +14,8 @@ import (
 
 func init() {
 	resource.AddTestSweepers("scaleway_instance_server", &resource.Sweeper{
-		Name:         "scaleway_instance_server",
-		F:            testSweepInstanceServer,
-		Dependencies: []string{"scaleway_vpc"},
+		Name: "scaleway_instance_server",
+		F:    testSweepInstanceServer,
 	})
 }
 
@@ -41,6 +40,7 @@ func testSweepInstanceServer(_ string) error {
 				}
 			} else if srv.State == instance.ServerStateRunning {
 				_, err := instanceAPI.ServerAction(&instance.ServerActionRequest{
+					Zone:     zone,
 					ServerID: srv.ID,
 					Action:   instance.ServerActionTerminate,
 				})

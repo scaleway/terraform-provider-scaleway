@@ -15,7 +15,7 @@ func init() {
 		Name: "scaleway_gateway_network",
 		F:    testSweepVPCGatewayNetwork,
 		// test depends upon PrivateNetwork, PublicGateway. Please add new resources for testing purpose.
-		Dependencies: []string{"scaleway_vpc", "scaleway_vpc_gateway_ip"},
+		Dependencies: []string{"scaleway_vpc_gateway_ip"},
 	})
 }
 
