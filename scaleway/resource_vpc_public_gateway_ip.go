@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	vpcgw "github.com/scaleway/scaleway-sdk-go/api/vpcgw/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
@@ -153,10 +154,19 @@ func resourceScalewayVPCPublicGatewayIPDelete(ctx context.Context, d *schema.Res
 		return diag.FromErr(err)
 	}
 
-	err = vpcgwAPI.DeleteIP(&vpcgw.DeleteIPRequest{
-		IPID: ID,
-		Zone: zone,
-	}, scw.WithContext(ctx))
+	err = retryVPCContext(ctx, retryGWTimeout, func() *resource.RetryError {
+		errDeleteIP := vpcgwAPI.DeleteIP(&vpcgw.DeleteIPRequest{
+			IPID: ID,
+			Zone: zone,
+		}, scw.WithContext(ctx))
+		if errDeleteIP != nil {
+			if is409Error(errDeleteIP) || is412Error(errDeleteIP) {
+				return resource.RetryableError(errDeleteIP)
+			}
+			return resource.NonRetryableError(errDeleteIP)
+		}
+		return nil
+	})
 
 	if err != nil && !is404Error(err) {
 		return diag.FromErr(err)

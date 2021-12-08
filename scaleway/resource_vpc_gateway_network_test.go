@@ -14,8 +14,6 @@ func init() {
 	resource.AddTestSweepers("scaleway_gateway_network", &resource.Sweeper{
 		Name: "scaleway_gateway_network",
 		F:    testSweepVPCGatewayNetwork,
-		// test depends upon PrivateNetwork, PublicGateway. Please add new resources for testing purpose.
-		Dependencies: []string{"scaleway_vpc_gateway_ip"},
 	})
 }
 
@@ -65,12 +63,6 @@ func TestAccScalewayVPCGatewayNetwork_Basic(t *testing.T) {
 
 					resource scaleway_vpc_public_gateway_dhcp dhcp01 {
 						subnet = "192.168.1.0/24"
-					}
-
-					resource scaleway_vpc_public_gateway pg01 {
-						name = "foobar"
-						type = "VPC-GW-S"
-						ip_id = scaleway_vpc_public_gateway_ip.gw01.id
 					}
 				`,
 			},
