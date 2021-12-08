@@ -14,8 +14,8 @@ import (
 )
 
 const (
-	retryIntervalVPCGatewayNetwork = 30 * time.Second
-	readGWTimeout                  = 30 * time.Second
+	retryIntervalVPCGatewayNetwork = 1 * time.Minute
+	readGWTimeout                  = 1 * time.Minute
 )
 
 func resourceScalewayVPCGatewayNetwork() *schema.Resource {
@@ -98,7 +98,19 @@ func resourceScalewayVPCGatewayNetworkCreate(ctx context.Context, d *schema.Reso
 		return diag.FromErr(err)
 	}
 
+	retryInterval := retryIntervalVPCGatewayNetwork
 	gatewayID := expandZonedID(d.Get("gateway_id").(string)).ID
+	//check gateway is in stable state.
+	_, err = vpcgwNetworkAPI.WaitForGateway(&vpcgw.WaitForGatewayRequest{
+		GatewayID:     gatewayID,
+		Zone:          zone,
+		Timeout:       scw.TimeDurationPtr(gatewayWaitForTimeout),
+		RetryInterval: &retryInterval,
+	}, scw.WithContext(ctx))
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	req := &vpcgw.CreateGatewayNetworkRequest{
 		Zone:             zone,
 		GatewayID:        gatewayID,
@@ -119,7 +131,6 @@ func resourceScalewayVPCGatewayNetworkCreate(ctx context.Context, d *schema.Reso
 		req.DHCPID = &dhcpZoned.ID
 	}
 
-	retryInterval := retryIntervalVPCGatewayNetwork
 	//check gateway is in stable state.
 	_, err = vpcgwNetworkAPI.WaitForGateway(&vpcgw.WaitForGatewayRequest{
 		GatewayID:     gatewayID,
@@ -127,10 +138,10 @@ func resourceScalewayVPCGatewayNetworkCreate(ctx context.Context, d *schema.Reso
 		Timeout:       scw.TimeDurationPtr(gatewayWaitForTimeout),
 		RetryInterval: &retryInterval,
 	}, scw.WithContext(ctx))
-
-	if err != nil && !is404Error(err) {
+	if err != nil {
 		return diag.FromErr(err)
 	}
+
 	res, err := vpcgwNetworkAPI.CreateGatewayNetwork(req, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
