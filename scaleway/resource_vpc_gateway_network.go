@@ -15,7 +15,7 @@ import (
 
 const (
 	retryIntervalVPCGatewayNetwork = 30 * time.Second
-	readGWTimeout                  = 10 * time.Second
+	readGWTimeout                  = 30 * time.Second
 )
 
 func resourceScalewayVPCGatewayNetwork() *schema.Resource {
@@ -163,6 +163,18 @@ func resourceScalewayVPCGatewayNetworkRead(ctx context.Context, d *schema.Resour
 		Zone:             zone,
 	}
 
+	retryInterval := retryIntervalVPCGatewayNetwork
+	_, err = vpcgwNetworkAPI.WaitForGatewayNetwork(&vpcgw.WaitForGatewayNetworkRequest{
+		GatewayNetworkID: ID,
+		Timeout:          scw.TimeDurationPtr(defaultVPCGatewayTimeout),
+		RetryInterval:    &retryInterval,
+		Zone:             zone,
+	}, scw.WithContext(ctx))
+	// check err waiting process
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	var gwn *vpcgw.GatewayNetwork
 	err = resource.RetryContext(ctx, readGWTimeout, func() *resource.RetryError {
 		currentGW, errReadVPC := vpcgwNetworkAPI.GetGatewayNetwork(readGWNetwork, scw.WithContext(ctx))
@@ -170,8 +182,6 @@ func resourceScalewayVPCGatewayNetworkRead(ctx context.Context, d *schema.Resour
 			return resource.RetryableError(fmt.Errorf("missing attribute"))
 		}
 		if errReadVPC != nil {
-			// WIP: Issue on read gateway network. Not all he attributes are not assigned on creation.
-			// we should retrieve then soon as they are available.
 			return resource.NonRetryableError(errReadVPC)
 		}
 		gwn = currentGW
@@ -223,6 +233,18 @@ func gatewayNetworkAttributeIsMissing(gwn *vpcgw.GatewayNetwork) bool {
 
 func resourceScalewayVPCGatewayNetworkUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	vpcgwAPI, zone, ID, err := vpcgwAPIWithZoneAndID(meta, d.Id())
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	retryInterval := retryIntervalVPCGatewayNetwork
+	_, err = vpcgwAPI.WaitForGatewayNetwork(&vpcgw.WaitForGatewayNetworkRequest{
+		GatewayNetworkID: ID,
+		Timeout:          scw.TimeDurationPtr(defaultVPCGatewayTimeout),
+		RetryInterval:    &retryInterval,
+		Zone:             zone,
+	}, scw.WithContext(ctx))
+	// check err waiting process
 	if err != nil {
 		return diag.FromErr(err)
 	}
