@@ -516,7 +516,9 @@ func testSweepComputeInstanceSecurityGroup(_ string) error {
 		instanceAPI := instance.NewAPI(scwClient)
 		l.Debugf("sweeper: destroying the security groups in (%s)", zone)
 
-		listResp, err := instanceAPI.ListSecurityGroups(&instance.ListSecurityGroupsRequest{}, scw.WithAllPages())
+		listResp, err := instanceAPI.ListSecurityGroups(&instance.ListSecurityGroupsRequest{
+			Zone: zone,
+		}, scw.WithAllPages())
 		if err != nil {
 			l.Warningf("error listing security groups in sweeper: %s", err)
 			return nil
@@ -528,6 +530,7 @@ func testSweepComputeInstanceSecurityGroup(_ string) error {
 				continue
 			}
 			err = instanceAPI.DeleteSecurityGroup(&instance.DeleteSecurityGroupRequest{
+				Zone:            zone,
 				SecurityGroupID: securityGroup.ID,
 			})
 			if err != nil {

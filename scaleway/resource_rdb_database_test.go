@@ -11,13 +11,6 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func init() {
-	resource.AddTestSweepers("scaleway_rdb_database", &resource.Sweeper{
-		Name: "scaleway_rdb_database",
-		F:    testSweepRDBInstance,
-	})
-}
-
 func TestAccScalewayRdbDatabase_Basic(t *testing.T) {
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
