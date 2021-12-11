@@ -75,13 +75,14 @@ func testSweepK8SCluster(_ string) error {
 		k8sAPI := k8s.NewAPI(scwClient)
 
 		l.Debugf("sweeper: destroying the k8s cluster in (%s)", region)
-		listClusters, err := k8sAPI.ListClusters(&k8s.ListClustersRequest{}, scw.WithAllPages())
+		listClusters, err := k8sAPI.ListClusters(&k8s.ListClustersRequest{Region: region}, scw.WithAllPages())
 		if err != nil {
 			return fmt.Errorf("error listing clusters in (%s) in sweeper: %s", region, err)
 		}
 
 		for _, cluster := range listClusters.Clusters {
 			_, err := k8sAPI.DeleteCluster(&k8s.DeleteClusterRequest{
+				Region:    region,
 				ClusterID: cluster.ID,
 			})
 			if err != nil {

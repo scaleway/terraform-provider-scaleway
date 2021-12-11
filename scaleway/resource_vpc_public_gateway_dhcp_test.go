@@ -9,13 +9,6 @@ import (
 	vpcgw "github.com/scaleway/scaleway-sdk-go/api/vpcgw/v1beta1"
 )
 
-func init() {
-	resource.AddTestSweepers("scaleway_vpc_public_gateway_dhcp", &resource.Sweeper{
-		Name: "scaleway_vpc_public_gateway_dhcp",
-		F:    testSweepVPCPublicGateway,
-	})
-}
-
 func TestAccScalewayVPCPublicGatewayDHCP_Basic(t *testing.T) {
 	tt := NewTestTools(t)
 	defer tt.Cleanup()

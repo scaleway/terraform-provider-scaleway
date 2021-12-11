@@ -12,9 +12,8 @@ import (
 
 func init() {
 	resource.AddTestSweepers("scaleway_instance_ip", &resource.Sweeper{
-		Name:         "scaleway_instance_ip",
-		F:            testSweepInstanceIP,
-		Dependencies: []string{"scaleway_instance_server"},
+		Name: "scaleway_instance_ip",
+		F:    testSweepInstanceIP,
 	})
 }
 
@@ -22,7 +21,7 @@ func testSweepInstanceIP(_ string) error {
 	return sweepZones(scw.AllZones, func(scwClient *scw.Client, zone scw.Zone) error {
 		instanceAPI := instance.NewAPI(scwClient)
 
-		listIPs, err := instanceAPI.ListIPs(&instance.ListIPsRequest{}, scw.WithAllPages())
+		listIPs, err := instanceAPI.ListIPs(&instance.ListIPsRequest{Zone: zone}, scw.WithAllPages())
 		if err != nil {
 			l.Warningf("error listing ips in (%s) in sweeper: %s", zone, err)
 			return nil
@@ -30,7 +29,8 @@ func testSweepInstanceIP(_ string) error {
 
 		for _, ip := range listIPs.IPs {
 			err := instanceAPI.DeleteIP(&instance.DeleteIPRequest{
-				IP: ip.ID,
+				IP:   ip.ID,
+				Zone: zone,
 			})
 			if err != nil {
 				return fmt.Errorf("error deleting ip in sweeper: %s", err)

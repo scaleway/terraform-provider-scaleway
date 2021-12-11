@@ -9,13 +9,6 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/api/rdb/v1"
 )
 
-func init() {
-	resource.AddTestSweepers("scaleway_rdb_user", &resource.Sweeper{
-		Name: "scaleway_rdb_user",
-		F:    testSweepRDBInstance,
-	})
-}
-
 func TestAccScalewayRdbUser_Basic(t *testing.T) {
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
