@@ -10,6 +10,7 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
@@ -823,12 +824,20 @@ func resourceScalewayInstanceServerDelete(ctx context.Context, d *schema.Resourc
 		return diag.FromErr(err)
 	}
 
-	err = instanceAPI.DeleteServer(&instance.DeleteServerRequest{
-		Zone:     zone,
-		ServerID: ID,
-	}, scw.WithContext(ctx))
-
-	if err != nil && !is404Error(err) {
+	err = resource.RetryContext(ctx, d.Timeout(schema.TimeoutDelete), func() *resource.RetryError {
+		err = instanceAPI.DeleteServer(&instance.DeleteServerRequest{
+			Zone:     zone,
+			ServerID: ID,
+		}, scw.WithContext(ctx))
+		if err != nil {
+			if is404Error(err) {
+				return nil
+			}
+			return resource.NonRetryableError(err)
+		}
+		return resource.RetryableError(fmt.Errorf("instance server deletion timed out after %s", d.Timeout(schema.TimeoutDelete)))
+	})
+	if err != nil {
 		return diag.FromErr(err)
 	}
 
