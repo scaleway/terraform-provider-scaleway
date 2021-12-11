@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"strings"
-	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -12,8 +11,6 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/api/rdb/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 )
-
-const createDatabaseTimeout = 2 * time.Minute
 
 func resourceScalewayRdbDatabase() *schema.Resource {
 	return &schema.Resource{
@@ -24,7 +21,8 @@ func resourceScalewayRdbDatabase() *schema.Resource {
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 		Timeouts: &schema.ResourceTimeout{
-			Default: schema.DefaultTimeout(defaultRdbInstanceTimeout),
+			Create: schema.DefaultTimeout(createDatabaseTimeout),
+			Delete: schema.DefaultTimeout(defaultRdbInstanceTimeout),
 		},
 		SchemaVersion: 0,
 		Schema: map[string]*schema.Schema{
@@ -67,7 +65,7 @@ func resourceScalewayRdbDatabaseCreate(ctx context.Context, d *schema.ResourceDa
 		return diag.FromErr(err)
 	}
 
-	_, err = waitInstance(ctx, rdbAPI, region, instanceID)
+	_, err = waitInstance(ctx, rdbAPI, region, instanceID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -80,7 +78,7 @@ func resourceScalewayRdbDatabaseCreate(ctx context.Context, d *schema.ResourceDa
 
 	var db *rdb.Database
 	//  wrapper around StateChangeConf that will just retry the database creation
-	err = resource.RetryContext(context.Background(), createDatabaseTimeout, func() *resource.RetryError {
+	err = resource.RetryContext(context.Background(), d.Timeout(schema.TimeoutCreate), func() *resource.RetryError {
 		currentDB, errCreateDB := rdbAPI.CreateDatabase(createReq, scw.WithContext(ctx))
 		if errCreateDB != nil {
 			// WIP: Issue on creation/write database. Need a database stable status
@@ -97,7 +95,7 @@ func resourceScalewayRdbDatabaseCreate(ctx context.Context, d *schema.ResourceDa
 		return diag.FromErr(err)
 	}
 
-	_, err = waitInstance(ctx, rdbAPI, region, instanceID)
+	_, err = waitInstance(ctx, rdbAPI, region, instanceID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -131,7 +129,7 @@ func resourceScalewayRdbDatabaseRead(ctx context.Context, d *schema.ResourceData
 		return diag.FromErr(err)
 	}
 
-	_, err = waitInstance(ctx, rdbAPI, region, instanceID)
+	_, err = waitInstance(ctx, rdbAPI, region, instanceID, defaultRdbInstanceTimeout)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -158,18 +156,26 @@ func resourceScalewayRdbDatabaseDelete(ctx context.Context, d *schema.ResourceDa
 		return diag.FromErr(err)
 	}
 
-	_, err = waitInstance(ctx, rdbAPI, region, instanceID)
+	_, err = waitInstance(ctx, rdbAPI, region, instanceID, d.Timeout(schema.TimeoutDelete))
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	err = rdbAPI.DeleteDatabase(&rdb.DeleteDatabaseRequest{
-		Region:     region,
-		InstanceID: instanceID,
-		Name:       databaseName,
-	}, scw.WithContext(ctx))
-
-	if err != nil && !is404Error(err) {
+	err = resource.RetryContext(ctx, d.Timeout(schema.TimeoutDelete), func() *resource.RetryError {
+		err = rdbAPI.DeleteDatabase(&rdb.DeleteDatabaseRequest{
+			Region:     region,
+			InstanceID: instanceID,
+			Name:       databaseName,
+		}, scw.WithContext(ctx))
+		if err != nil {
+			if is404Error(err) {
+				return nil
+			}
+			return resource.NonRetryableError(err)
+		}
+		return resource.RetryableError(fmt.Errorf("rdb database deletion timed out after %s", d.Timeout(schema.TimeoutDelete)))
+	})
+	if err != nil {
 		return diag.FromErr(err)
 	}
 

@@ -64,7 +64,7 @@ func resourceScalewayRdbACLCreate(ctx context.Context, d *schema.ResourceData, m
 		return diag.FromErr(err)
 	}
 
-	_, err = waitInstance(ctx, rdbAPI, region, expandID(instanceID))
+	_, err = waitInstance(ctx, rdbAPI, region, expandID(instanceID), defaultRdbInstanceTimeout)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -91,7 +91,7 @@ func resourceScalewayRdbACLRead(ctx context.Context, d *schema.ResourceData, met
 		return diag.FromErr(err)
 	}
 
-	_, err = waitInstance(ctx, rdbAPI, region, instanceID)
+	_, err = waitInstance(ctx, rdbAPI, region, instanceID, defaultRdbInstanceTimeout)
 	if err != nil && !is404Error(err) {
 		return diag.FromErr(err)
 	}
@@ -123,7 +123,7 @@ func resourceScalewayRdbACLUpdate(ctx context.Context, d *schema.ResourceData, m
 		return diag.FromErr(err)
 	}
 
-	_, err = waitInstance(ctx, rdbAPI, region, instanceID)
+	_, err = waitInstance(ctx, rdbAPI, region, instanceID, defaultRdbInstanceTimeout)
 	if err != nil && !is404Error(err) {
 		return diag.FromErr(err)
 	}
@@ -159,7 +159,7 @@ func resourceScalewayRdbACLDelete(ctx context.Context, d *schema.ResourceData, m
 		aclRuleIPs = append(aclRuleIPs, acl.IP.String())
 	}
 
-	_, err = waitInstance(ctx, rdbAPI, region, instanceID)
+	_, err = waitInstance(ctx, rdbAPI, region, instanceID, defaultRdbInstanceTimeout)
 	if err != nil && !is404Error(err) {
 		return diag.FromErr(err)
 	}

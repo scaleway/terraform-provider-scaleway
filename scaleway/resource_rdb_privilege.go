@@ -65,7 +65,7 @@ func resourceScalewayRdbPrivilegeCreate(ctx context.Context, d *schema.ResourceD
 		return diag.FromErr(err)
 	}
 
-	_, err = waitInstance(ctx, rdbAPI, region, instanceID)
+	_, err = waitInstance(ctx, rdbAPI, region, instanceID, defaultRdbInstanceTimeout)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -97,7 +97,7 @@ func resourceScalewayRdbPrivilegeRead(ctx context.Context, d *schema.ResourceDat
 	dbName, _ := d.Get("database_name").(string)
 	userName, _ := d.Get("user_name").(string)
 
-	_, err = waitInstance(ctx, rdbAPI, region, instanceID)
+	_, err = waitInstance(ctx, rdbAPI, region, instanceID, defaultRdbInstanceTimeout)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -133,7 +133,7 @@ func resourceScalewayRdbPrivilegeUpdate(ctx context.Context, d *schema.ResourceD
 		return diag.FromErr(err)
 	}
 
-	_, err = waitInstance(ctx, rdbAPI, region, instanceID)
+	_, err = waitInstance(ctx, rdbAPI, region, instanceID, defaultRdbInstanceTimeout)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -150,7 +150,7 @@ func resourceScalewayRdbPrivilegeUpdate(ctx context.Context, d *schema.ResourceD
 		return diag.FromErr(err)
 	}
 
-	_, err = waitInstance(ctx, rdbAPI, region, instanceID)
+	_, err = waitInstance(ctx, rdbAPI, region, instanceID, defaultRdbInstanceTimeout)
 	if err != nil {
 		return diag.FromErr(err)
 	}

@@ -11,7 +11,8 @@ import (
 )
 
 const (
-	defaultRdbInstanceTimeout = 15 * time.Minute
+	defaultRdbInstanceTimeout = 45 * time.Minute
+	createDatabaseTimeout     = 2 * time.Minute
 )
 
 // newRdbAPI returns a new RDB API
@@ -74,12 +75,12 @@ func expandInstanceSettings(i interface{}) []*rdb.InstanceSetting {
 	return res
 }
 
-func waitInstance(ctx context.Context, api *rdb.API, region scw.Region, id string) (*rdb.Instance, error) {
+func waitInstance(ctx context.Context, api *rdb.API, region scw.Region, id string, timeout time.Duration) (*rdb.Instance, error) {
 	retryInterval := defaultWaitRDBRetryInterval
 	return api.WaitForInstance(&rdb.WaitForInstanceRequest{
 		Region:        region,
 		InstanceID:    id,
-		Timeout:       scw.TimeDurationPtr(defaultInstanceServerWaitTimeout * 3), // upgrade takes some time
+		Timeout:       scw.TimeDurationPtr(timeout), // upgrade takes some time
 		RetryInterval: &retryInterval,
 	}, scw.WithContext(ctx))
 }
