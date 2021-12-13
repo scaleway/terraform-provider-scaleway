@@ -7,6 +7,7 @@ import (
 	"io"
 	"io/ioutil"
 	"strconv"
+	"time"
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -659,16 +660,19 @@ func resourceScalewayInstanceServerUpdate(ctx context.Context, d *schema.Resourc
 	// Update reserved IP
 	////
 	if d.HasChange("ip_id") {
+
 		server, err := instanceAPI.GetServer(&instance.GetServerRequest{
 			Zone:     zone,
 			ServerID: ID,
 		})
+
 		if err != nil {
 			return diag.FromErr(err)
 		}
-		newIPID := expandZonedID(d.Get("ip_id")).ID
 
+		newIPID := expandZonedID(d.Get("ip_id")).ID
 		// If an IP is already attached and it's not a dynamic IP we detach it.
+
 		if server.Server.PublicIP != nil && !server.Server.PublicIP.Dynamic {
 			_, err = instanceAPI.UpdateIP(&instance.UpdateIPRequest{
 				Zone:   zone,
@@ -678,8 +682,11 @@ func resourceScalewayInstanceServerUpdate(ctx context.Context, d *schema.Resourc
 			if err != nil {
 				return diag.FromErr(err)
 			}
+			//we wait to ensure to not detach the new ip.
+			if newIPID != "" {
+				time.Sleep(5 * time.Second)
+			}
 		}
-
 		// If a new IP is provided, we attach it to the server
 		if newIPID != "" {
 			_, err = instanceAPI.UpdateIP(&instance.UpdateIPRequest{
