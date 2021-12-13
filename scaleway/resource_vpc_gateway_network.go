@@ -2,9 +2,11 @@ package scaleway
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	vpcgw "github.com/scaleway/scaleway-sdk-go/api/vpcgw/v1beta1"
@@ -13,6 +15,7 @@ import (
 
 const (
 	retryIntervalVPCGatewayNetwork = 30 * time.Second
+	readGWTimeout                  = 10 * time.Second
 )
 
 func resourceScalewayVPCGatewayNetwork() *schema.Resource {
@@ -155,31 +158,42 @@ func resourceScalewayVPCGatewayNetworkRead(ctx context.Context, d *schema.Resour
 		return diag.FromErr(err)
 	}
 
-	gatewayNetwork, err := vpcgwNetworkAPI.GetGatewayNetwork(&vpcgw.GetGatewayNetworkRequest{
+	readGWNetwork := &vpcgw.GetGatewayNetworkRequest{
 		GatewayNetworkID: ID,
 		Zone:             zone,
-	}, scw.WithContext(ctx))
-	if err != nil {
-		if is404Error(err) {
-			d.SetId("")
-			return nil
+	}
+
+	var gwn *vpcgw.GatewayNetwork
+	err = resource.RetryContext(ctx, readGWTimeout, func() *resource.RetryError {
+		currentGW, errReadVPC := vpcgwNetworkAPI.GetGatewayNetwork(readGWNetwork, scw.WithContext(ctx))
+		if gatewayNetworkAttributeIsMissing(currentGW) {
+			return resource.RetryableError(fmt.Errorf("missing attribute"))
 		}
+		if errReadVPC != nil {
+			// WIP: Issue on read gateway network. Not all he attributes are not assigned on creation.
+			// we should retrieve then soon as they are available.
+			return resource.NonRetryableError(errReadVPC)
+		}
+		gwn = currentGW
+		return nil
+	})
+	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	if dhcp := gatewayNetwork.DHCP; dhcp != nil {
+	if dhcp := gwn.DHCP; dhcp != nil {
 		_ = d.Set("dhcp_id", newZonedID(zone, dhcp.ID).String())
 	}
 
-	if staticAddress := gatewayNetwork.Address; staticAddress != nil {
+	if staticAddress := gwn.Address; staticAddress != nil {
 		_ = d.Set("static_address", flattenIPNet(*staticAddress))
 	}
 
-	if macAddress := gatewayNetwork.MacAddress; macAddress != nil {
+	if macAddress := gwn.MacAddress; macAddress != nil {
 		_ = d.Set("mac_address", flattenStringPtr(macAddress).(string))
 	}
 
-	if enableDHCP := gatewayNetwork.EnableDHCP; enableDHCP {
+	if enableDHCP := gwn.EnableDHCP; enableDHCP {
 		_ = d.Set("enable_dhcp", enableDHCP)
 	}
 
@@ -189,15 +203,22 @@ func resourceScalewayVPCGatewayNetworkRead(ctx context.Context, d *schema.Resour
 		cleanUpDHCPValue = *expandBoolPtr(cleanUpDHCP)
 	}
 
-	_ = d.Set("gateway_id", newZonedID(zone, gatewayNetwork.GatewayID).String())
-	_ = d.Set("private_network_id", newZonedID(zone, gatewayNetwork.PrivateNetworkID).String())
-	_ = d.Set("enable_masquerade", gatewayNetwork.EnableMasquerade)
+	_ = d.Set("gateway_id", newZonedID(zone, gwn.GatewayID).String())
+	_ = d.Set("private_network_id", newZonedID(zone, gwn.PrivateNetworkID).String())
+	_ = d.Set("enable_masquerade", gwn.EnableMasquerade)
 	_ = d.Set("cleanup_dhcp", cleanUpDHCPValue)
-	_ = d.Set("created_at", gatewayNetwork.CreatedAt.Format(time.RFC3339))
-	_ = d.Set("updated_at", gatewayNetwork.UpdatedAt.Format(time.RFC3339))
+	_ = d.Set("created_at", gwn.CreatedAt.Format(time.RFC3339))
+	_ = d.Set("updated_at", gwn.UpdatedAt.Format(time.RFC3339))
 	_ = d.Set("zone", zone.String())
 
 	return nil
+}
+
+func gatewayNetworkAttributeIsMissing(gwn *vpcgw.GatewayNetwork) bool {
+	if gwn.MacAddress == nil {
+		return true
+	}
+	return len(*gwn.MacAddress) == 0
 }
 
 func resourceScalewayVPCGatewayNetworkUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
