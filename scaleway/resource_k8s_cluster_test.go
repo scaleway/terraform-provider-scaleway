@@ -81,7 +81,22 @@ func testSweepK8SCluster(_ string) error {
 		}
 
 		for _, cluster := range listClusters.Clusters {
-			_, err := k8sAPI.DeleteCluster(&k8s.DeleteClusterRequest{
+			//remove pools
+			listPools, err := k8sAPI.ListPools(&k8s.ListPoolsRequest{Region: region, ClusterID: cluster.ID}, scw.WithAllPages())
+			if err != nil {
+				return fmt.Errorf("error listing pool in (%s) in sweeper: %s", region, err)
+			}
+
+			for _, pool := range listPools.Pools {
+				_, err := k8sAPI.DeletePool(&k8s.DeletePoolRequest{
+					Region: region,
+					PoolID: pool.ID,
+				})
+				if err != nil {
+					return fmt.Errorf("error deleting pool in sweeper: %s", err)
+				}
+			}
+			_, err = k8sAPI.DeleteCluster(&k8s.DeleteClusterRequest{
 				Region:    region,
 				ClusterID: cluster.ID,
 			})
