@@ -5,7 +5,6 @@ import (
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/api/vpc/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
@@ -59,26 +58,16 @@ func resourceScalewayVPCPrivateNetworkCreate(ctx context.Context, d *schema.Reso
 		return diag.FromErr(err)
 	}
 
-	var pn *vpc.PrivateNetwork
-	err = retryVPCContext(ctx, retryGWTimeout, func() *resource.RetryError {
-		res, errPN := vpcAPI.CreatePrivateNetwork(&vpc.CreatePrivateNetworkRequest{
-			Name:      expandOrGenerateString(d.Get("name"), "pn"),
-			Tags:      expandStrings(d.Get("tags")),
-			ProjectID: d.Get("project_id").(string),
-			Zone:      zone,
-		}, scw.WithContext(ctx))
-		if errPN != nil {
-			if is409Error(errPN) {
-				return resource.RetryableError(errPN)
-			}
-			return resource.NonRetryableError(errPN)
-		}
-		pn = res
-		return nil
-	})
+	pn, err := vpcAPI.CreatePrivateNetwork(&vpc.CreatePrivateNetworkRequest{
+		Name:      expandOrGenerateString(d.Get("name"), "pn"),
+		Tags:      expandStrings(d.Get("tags")),
+		ProjectID: d.Get("project_id").(string),
+		Zone:      zone,
+	}, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
 	}
+
 	d.SetId(newZonedIDString(zone, pn.ID))
 
 	return resourceScalewayVPCPrivateNetworkRead(ctx, d, meta)
@@ -142,20 +131,18 @@ func resourceScalewayVPCPrivateNetworkDelete(ctx context.Context, d *schema.Reso
 		return diag.FromErr(err)
 	}
 
-	err = retryVPCContext(ctx, retryGWTimeout, func() *resource.RetryError {
-		errPN := vpcAPI.DeletePrivateNetwork(&vpc.DeletePrivateNetworkRequest{
-			PrivateNetworkID: ID,
-			Zone:             zone,
-		}, scw.WithContext(ctx))
-		if errPN != nil {
-			if is409Error(errPN) || is412Error(errPN) {
-				return resource.RetryableError(errPN)
-			}
-			return resource.NonRetryableError(errPN)
-		}
-		return nil
-	})
+	var warnings diag.Diagnostics
+	err = vpcAPI.DeletePrivateNetwork(&vpc.DeletePrivateNetworkRequest{
+		PrivateNetworkID: ID,
+		Zone:             zone,
+	}, scw.WithContext(ctx))
 	if err != nil {
+		if is409Error(err) || is412Error(err) || is404Error(err) {
+			return append(warnings, diag.Diagnostic{
+				Severity: diag.Warning,
+				Summary:  err.Error(),
+			})
+		}
 		return diag.FromErr(err)
 	}
 

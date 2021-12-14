@@ -145,13 +145,9 @@ func TestAccScalewayVPCGatewayNetwork_WithoutDHCP(t *testing.T) {
 						name = "pn_test_network"
 					}
 
-					resource scaleway_vpc_public_gateway_ip gw01 {
-					}	
-
 					resource scaleway_vpc_public_gateway pg01 {
 						name = "foobar"
 						type = "VPC-GW-S"
-						ip_id = scaleway_vpc_public_gateway_ip.gw01.id
 					}
 
 					resource scaleway_vpc_gateway_network main {
@@ -160,7 +156,6 @@ func TestAccScalewayVPCGatewayNetwork_WithoutDHCP(t *testing.T) {
 						enable_dhcp = false
 						enable_masquerade = true
 						static_address = "192.168.1.42/24"
-						depends_on = [scaleway_vpc_public_gateway_ip.gw01, scaleway_vpc_private_network.pn01]
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
