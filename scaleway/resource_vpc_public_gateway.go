@@ -104,8 +104,13 @@ func resourceScalewayVPCPublicGatewayCreate(ctx context.Context, d *schema.Resou
 
 	d.SetId(newZonedIDString(zone, res.ID))
 
-	handler := newVPCHandler(ctx, vpcgwAPI, zone)
-	_, err = handler.waitGateway(res.ID)
+	retryInterval := retryGWTimeout
+	_, err = vpcgwAPI.WaitForGateway(&vpcgw.WaitForGatewayRequest{
+		GatewayID:     res.ID,
+		Timeout:       scw.TimeDurationPtr(defaultVPCGatewayTimeout),
+		RetryInterval: &retryInterval,
+		Zone:          zone,
+	}, scw.WithContext(ctx))
 	// check err waiting process
 	if err != nil {
 		return diag.FromErr(err)
@@ -120,9 +125,13 @@ func resourceScalewayVPCPublicGatewayRead(ctx context.Context, d *schema.Resourc
 		return diag.FromErr(err)
 	}
 
-	handler := newVPCHandler(ctx, vpcgwAPI, zone)
-	gateway, err := handler.waitGateway(ID)
-	// check err waiting process
+	retryInterval := retryGWTimeout
+	gateway, err := vpcgwAPI.WaitForGateway(&vpcgw.WaitForGatewayRequest{
+		GatewayID:     ID,
+		Timeout:       scw.TimeDurationPtr(defaultVPCGatewayTimeout),
+		RetryInterval: &retryInterval,
+		Zone:          zone,
+	}, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -146,15 +155,20 @@ func resourceScalewayVPCPublicGatewayUpdate(ctx context.Context, d *schema.Resou
 		return diag.FromErr(err)
 	}
 
-	handler := newVPCHandler(ctx, vpcgwAPI, zone)
-	_, err = handler.waitGateway(ID)
+	retryInterval := retryGWTimeout
+	gateway, err := vpcgwAPI.WaitForGateway(&vpcgw.WaitForGatewayRequest{
+		GatewayID:     ID,
+		Timeout:       scw.TimeDurationPtr(defaultVPCGatewayTimeout),
+		RetryInterval: &retryInterval,
+		Zone:          zone,
+	}, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	if d.HasChanges("name", "tags", "upstream_dns_servers") {
 		updateRequest := &vpcgw.UpdateGatewayRequest{
-			GatewayID:          ID,
+			GatewayID:          gateway.ID,
 			Zone:               zone,
 			Name:               scw.StringPtr(d.Get("name").(string)),
 			Tags:               scw.StringsPtr(expandStrings(d.Get("tags"))),
@@ -167,7 +181,12 @@ func resourceScalewayVPCPublicGatewayUpdate(ctx context.Context, d *schema.Resou
 		}
 	}
 
-	_, err = handler.waitGateway(ID)
+	_, err = vpcgwAPI.WaitForGateway(&vpcgw.WaitForGatewayRequest{
+		GatewayID:     ID,
+		Timeout:       scw.TimeDurationPtr(defaultVPCGatewayTimeout),
+		RetryInterval: &retryInterval,
+		Zone:          zone,
+	}, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -181,8 +200,13 @@ func resourceScalewayVPCPublicGatewayDelete(ctx context.Context, d *schema.Resou
 		return diag.FromErr(err)
 	}
 
-	handler := newVPCHandler(ctx, vpcgwAPI, zone)
-	_, err = handler.waitGateway(ID)
+	retryInterval := retryGWTimeout
+	_, err = vpcgwAPI.WaitForGateway(&vpcgw.WaitForGatewayRequest{
+		GatewayID:     ID,
+		Timeout:       scw.TimeDurationPtr(defaultVPCGatewayTimeout),
+		RetryInterval: &retryInterval,
+		Zone:          zone,
+	}, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
 	}

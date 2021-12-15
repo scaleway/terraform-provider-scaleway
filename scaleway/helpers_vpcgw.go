@@ -1,7 +1,6 @@
 package scaleway
 
 import (
-	"context"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -36,34 +35,4 @@ func vpcgwAPIWithZoneAndID(m interface{}, id string) (*vpcgw.API, scw.Zone, stri
 		return nil, "", "", err
 	}
 	return vpcgwAPI, zone, ID, nil
-}
-
-type vpcHandler struct {
-	ctx  context.Context
-	api  *vpcgw.API
-	zone scw.Zone
-}
-
-func newVPCHandler(ctx context.Context, api *vpcgw.API, zone scw.Zone) *vpcHandler {
-	return &vpcHandler{ctx: ctx, api: api, zone: zone}
-}
-
-func (vpcH *vpcHandler) waitGNetwork(gwNetworkID string) (*vpcgw.GatewayNetwork, error) {
-	retryInterval := retryIntervalVPCGatewayNetwork
-	return vpcH.api.WaitForGatewayNetwork(&vpcgw.WaitForGatewayNetworkRequest{
-		GatewayNetworkID: gwNetworkID,
-		Timeout:          scw.TimeDurationPtr(defaultVPCGatewayTimeout),
-		RetryInterval:    &retryInterval,
-		Zone:             vpcH.zone,
-	}, scw.WithContext(vpcH.ctx))
-}
-
-func (vpcH *vpcHandler) waitGateway(gwID string) (*vpcgw.Gateway, error) {
-	retryInterval := retryGWTimeout
-	return vpcH.api.WaitForGateway(&vpcgw.WaitForGatewayRequest{
-		GatewayID:     gwID,
-		Timeout:       scw.TimeDurationPtr(defaultVPCGatewayTimeout),
-		RetryInterval: &retryInterval,
-		Zone:          vpcH.zone,
-	}, scw.WithContext(vpcH.ctx))
 }
