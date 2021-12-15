@@ -82,7 +82,10 @@ func testSweepK8SCluster(_ string) error {
 
 		for _, cluster := range listClusters.Clusters {
 			//remove pools
-			listPools, err := k8sAPI.ListPools(&k8s.ListPoolsRequest{Region: region, ClusterID: cluster.ID}, scw.WithAllPages())
+			listPools, err := k8sAPI.ListPools(&k8s.ListPoolsRequest{
+				Region:    region,
+				ClusterID: cluster.ID,
+			}, scw.WithAllPages())
 			if err != nil {
 				return fmt.Errorf("error listing pool in (%s) in sweeper: %s", region, err)
 			}
@@ -450,7 +453,7 @@ func testAccCheckScalewayK8SClusterConfigAutoscaler(version string) string {
 resource "scaleway_k8s_cluster" "autoscaler" {
 	cni = "calico"
 	version = "%s"
-	name = "autoscaler"
+	name = "autoscaler-01"
 	autoscaler_config {
 		disable_scale_down = true
 		scale_down_delay_after_add = "20m"
@@ -472,7 +475,7 @@ func testAccCheckScalewayK8SClusterConfigAutoscalerChange(version string) string
 resource "scaleway_k8s_cluster" "autoscaler" {
 	cni = "calico"
 	version = "%s"
-	name = "autoscaler"
+	name = "autoscaler-02"
 	autoscaler_config {
 		disable_scale_down = false
 		scale_down_delay_after_add = "20m"
