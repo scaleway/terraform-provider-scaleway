@@ -153,12 +153,18 @@ func resourceScalewayVPCPublicGatewayIPDelete(ctx context.Context, d *schema.Res
 		return diag.FromErr(err)
 	}
 
+	var warnings diag.Diagnostics
 	err = vpcgwAPI.DeleteIP(&vpcgw.DeleteIPRequest{
 		IPID: ID,
 		Zone: zone,
 	}, scw.WithContext(ctx))
-
-	if err != nil && !is404Error(err) {
+	if err != nil {
+		if is409Error(err) || is412Error(err) || is404Error(err) {
+			return append(warnings, diag.Diagnostic{
+				Severity: diag.Warning,
+				Summary:  err.Error(),
+			})
+		}
 		return diag.FromErr(err)
 	}
 
