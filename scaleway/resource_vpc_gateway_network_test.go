@@ -14,8 +14,6 @@ func init() {
 	resource.AddTestSweepers("scaleway_gateway_network", &resource.Sweeper{
 		Name: "scaleway_gateway_network",
 		F:    testSweepVPCGatewayNetwork,
-		// test depends upon PrivateNetwork, PublicGateway. Please add new resources for testing purpose.
-		Dependencies: []string{"scaleway_vpc_gateway_ip"},
 	})
 }
 
@@ -54,6 +52,20 @@ func TestAccScalewayVPCGatewayNetwork_Basic(t *testing.T) {
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheckScalewayVPCGatewayNetworkDestroy(tt),
 		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource scaleway_vpc_private_network pn01 {
+						name = "pn_test_network"
+					}
+
+					resource scaleway_vpc_public_gateway_ip gw01 {
+					}
+
+					resource scaleway_vpc_public_gateway_dhcp dhcp01 {
+						subnet = "192.168.1.0/24"
+					}
+				`,
+			},
 			{
 				Config: `
 					resource scaleway_vpc_private_network pn01 {
@@ -133,13 +145,9 @@ func TestAccScalewayVPCGatewayNetwork_WithoutDHCP(t *testing.T) {
 						name = "pn_test_network"
 					}
 
-					resource scaleway_vpc_public_gateway_ip gw01 {
-					}	
-
 					resource scaleway_vpc_public_gateway pg01 {
 						name = "foobar"
 						type = "VPC-GW-S"
-						ip_id = scaleway_vpc_public_gateway_ip.gw01.id
 					}
 
 					resource scaleway_vpc_gateway_network main {
@@ -148,7 +156,6 @@ func TestAccScalewayVPCGatewayNetwork_WithoutDHCP(t *testing.T) {
 						enable_dhcp = false
 						enable_masquerade = true
 						static_address = "192.168.1.42/24"
-						depends_on = [scaleway_vpc_public_gateway_ip.gw01, scaleway_vpc_private_network.pn01]
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
