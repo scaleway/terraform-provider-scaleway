@@ -58,7 +58,7 @@ func resourceScalewayVPCPrivateNetworkCreate(ctx context.Context, d *schema.Reso
 		return diag.FromErr(err)
 	}
 
-	res, err := vpcAPI.CreatePrivateNetwork(&vpc.CreatePrivateNetworkRequest{
+	pn, err := vpcAPI.CreatePrivateNetwork(&vpc.CreatePrivateNetworkRequest{
 		Name:      expandOrGenerateString(d.Get("name"), "pn"),
 		Tags:      expandStrings(d.Get("tags")),
 		ProjectID: d.Get("project_id").(string),
@@ -68,7 +68,7 @@ func resourceScalewayVPCPrivateNetworkCreate(ctx context.Context, d *schema.Reso
 		return diag.FromErr(err)
 	}
 
-	d.SetId(newZonedIDString(zone, res.ID))
+	d.SetId(newZonedIDString(zone, pn.ID))
 
 	return resourceScalewayVPCPrivateNetworkRead(ctx, d, meta)
 }
@@ -131,16 +131,17 @@ func resourceScalewayVPCPrivateNetworkDelete(ctx context.Context, d *schema.Reso
 		return diag.FromErr(err)
 	}
 
+	var warnings diag.Diagnostics
 	err = vpcAPI.DeletePrivateNetwork(&vpc.DeletePrivateNetworkRequest{
 		PrivateNetworkID: ID,
 		Zone:             zone,
 	}, scw.WithContext(ctx))
-
-	if err != nil && !is404Error(err) {
-		if is412Error(err) {
-			// TODO: manage this error
-			l.Warningf("error deleting private network in zone (%s): %s", zone, err)
-			return nil
+	if err != nil {
+		if is409Error(err) || is412Error(err) || is404Error(err) {
+			return append(warnings, diag.Diagnostic{
+				Severity: diag.Warning,
+				Summary:  err.Error(),
+			})
 		}
 		return diag.FromErr(err)
 	}
