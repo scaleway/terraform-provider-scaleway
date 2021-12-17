@@ -153,7 +153,7 @@ func resourceScalewayLbCreate(ctx context.Context, d *schema.ResourceData, meta 
 		RetryInterval: &retryInterval,
 	}, scw.WithContext(ctx))
 	// check err waiting process
-	if err != nil && !is404Error(err) {
+	if err != nil {
 		return diag.FromErr(err)
 	}
 
@@ -177,7 +177,7 @@ func resourceScalewayLbCreate(ctx context.Context, d *schema.ResourceData, meta 
 			Timeout:       scw.TimeDurationPtr(defaultInstanceServerWaitTimeout),
 			RetryInterval: &retryInterval,
 		}, scw.WithContext(ctx))
-		if err != nil && !is404Error(err) {
+		if err != nil {
 			return diag.FromErr(err)
 		}
 	}
@@ -196,7 +196,11 @@ func resourceScalewayLbRead(ctx context.Context, d *schema.ResourceData, meta in
 		LBID: ID,
 	}, scw.WithContext(ctx))
 
-	if err != nil && !is404Error(err) {
+	if err != nil {
+		if is404Error(err) || is403Error(err) {
+			d.SetId("")
+			return nil
+		}
 		return diag.FromErr(err)
 	}
 	// set the region from zone
