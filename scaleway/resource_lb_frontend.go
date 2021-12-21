@@ -363,7 +363,7 @@ func resourceScalewayLbFrontendUpdate(ctx context.Context, d *schema.ResourceDat
 	}
 
 	retryInterval := DefaultWaitLBRetryInterval
-	zone, lbID, err := parseZonedID(d.Get("lb_id").(string))
+	_, lbID, err := parseZonedID(d.Get("lb_id").(string))
 	if err != nil {
 		return diag.FromErr(err)
 	}
