@@ -263,6 +263,10 @@ func resourceScalewayLbBackendCreate(ctx context.Context, d *schema.ResourceData
 		RetryInterval: &retryInterval,
 	}, scw.WithContext(ctx))
 	if err != nil {
+		if is403Error(err) {
+			d.SetId("")
+			return nil
+		}
 		return diag.FromErr(err)
 	}
 
@@ -305,6 +309,10 @@ func resourceScalewayLbBackendCreate(ctx context.Context, d *schema.ResourceData
 		RetryInterval: &retryInterval,
 	}, scw.WithContext(ctx))
 	if err != nil {
+		if is403Error(err) {
+			d.SetId("")
+			return nil
+		}
 		return diag.FromErr(err)
 	}
 
@@ -325,7 +333,7 @@ func resourceScalewayLbBackendRead(ctx context.Context, d *schema.ResourceData, 
 	}, scw.WithContext(ctx))
 
 	if err != nil {
-		if is404Error(err) || is403Error(err) {
+		if is403Error(err) {
 			d.SetId("")
 			return nil
 		}
@@ -362,8 +370,13 @@ func resourceScalewayLbBackendRead(ctx context.Context, d *schema.ResourceData, 
 		RetryInterval: &retryInterval,
 	}, scw.WithContext(ctx))
 	if err != nil {
+		if is403Error(err) {
+			d.SetId("")
+			return nil
+		}
 		return diag.FromErr(err)
 	}
+
 	return nil
 }
 
@@ -386,6 +399,10 @@ func resourceScalewayLbBackendUpdate(ctx context.Context, d *schema.ResourceData
 		RetryInterval: &retryInterval,
 	}, scw.WithContext(ctx))
 	if err != nil {
+		if is403Error(err) {
+			d.SetId("")
+			return nil
+		}
 		return diag.FromErr(err)
 	}
 
@@ -450,6 +467,10 @@ func resourceScalewayLbBackendUpdate(ctx context.Context, d *schema.ResourceData
 		RetryInterval: &retryInterval,
 	}, scw.WithContext(ctx))
 	if err != nil {
+		if is403Error(err) {
+			d.SetId("")
+			return nil
+		}
 		return diag.FromErr(err)
 	}
 
@@ -475,6 +496,10 @@ func resourceScalewayLbBackendDelete(ctx context.Context, d *schema.ResourceData
 		RetryInterval: &retryInterval,
 	}, scw.WithContext(ctx))
 	if err != nil {
+		if is403Error(err) {
+			d.SetId("")
+			return nil
+		}
 		return diag.FromErr(err)
 	}
 
@@ -494,6 +519,10 @@ func resourceScalewayLbBackendDelete(ctx context.Context, d *schema.ResourceData
 		RetryInterval: &retryInterval,
 	}, scw.WithContext(ctx))
 	if err != nil {
+		if is403Error(err) {
+			d.SetId("")
+			return nil
+		}
 		return diag.FromErr(err)
 	}
 

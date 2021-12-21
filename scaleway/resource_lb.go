@@ -191,11 +191,13 @@ func resourceScalewayLbRead(ctx context.Context, d *schema.ResourceData, meta in
 		return diag.FromErr(err)
 	}
 
-	res, err := lbAPI.GetLB(&lb.ZonedAPIGetLBRequest{
-		Zone: zone,
-		LBID: ID,
+	retryInterval := DefaultWaitLBRetryInterval
+	res, err := lbAPI.WaitForLb(&lb.ZonedAPIWaitForLBRequest{
+		Zone:          zone,
+		LBID:          ID,
+		Timeout:       scw.TimeDurationPtr(defaultInstanceServerWaitTimeout),
+		RetryInterval: &retryInterval,
 	}, scw.WithContext(ctx))
-
 	if err != nil {
 		if is404Error(err) || is403Error(err) {
 			d.SetId("")

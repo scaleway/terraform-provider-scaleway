@@ -147,8 +147,11 @@ func resourceScalewayLbCertificateCreate(ctx context.Context, d *schema.Resource
 		Timeout:       scw.TimeDurationPtr(defaultInstanceServerWaitTimeout),
 		RetryInterval: &retryInterval,
 	}, scw.WithContext(ctx))
-	// check err waiting process
 	if err != nil {
+		if is403Error(err) {
+			d.SetId("")
+			return nil
+		}
 		return diag.FromErr(err)
 	}
 
@@ -164,6 +167,10 @@ func resourceScalewayLbCertificateCreate(ctx context.Context, d *schema.Resource
 		RetryInterval: &retryInterval,
 	}, scw.WithContext(ctx))
 	if err != nil {
+		if is403Error(err) {
+			d.SetId("")
+			return nil
+		}
 		return diag.FromErr(err)
 	}
 
@@ -235,6 +242,10 @@ func resourceScalewayLbCertificateUpdate(ctx context.Context, d *schema.Resource
 		RetryInterval: &retryInterval,
 	}, scw.WithContext(ctx))
 	if err != nil {
+		if is403Error(err) {
+			d.SetId("")
+			return nil
+		}
 		return diag.FromErr(err)
 	}
 
@@ -256,6 +267,10 @@ func resourceScalewayLbCertificateUpdate(ctx context.Context, d *schema.Resource
 		RetryInterval: &retryInterval,
 	}, scw.WithContext(ctx))
 	if err != nil {
+		if is403Error(err) {
+			d.SetId("")
+			return nil
+		}
 		return diag.FromErr(err)
 	}
 
@@ -284,6 +299,10 @@ func resourceScalewayLbCertificateDelete(ctx context.Context, d *schema.Resource
 		RetryInterval: &retryInterval,
 	}, scw.WithContext(ctx))
 	if err != nil {
+		if is403Error(err) {
+			d.SetId("")
+			return nil
+		}
 		return diag.FromErr(err)
 	}
 
@@ -302,6 +321,10 @@ func resourceScalewayLbCertificateDelete(ctx context.Context, d *schema.Resource
 		RetryInterval: &retryInterval,
 	}, scw.WithContext(ctx))
 	if err != nil {
+		if is403Error(err) {
+			d.SetId("")
+			return nil
+		}
 		return diag.FromErr(err)
 	}
 
