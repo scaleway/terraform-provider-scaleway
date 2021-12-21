@@ -7,6 +7,7 @@ import (
 	"io"
 	"io/ioutil"
 	"strconv"
+	"time"
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -16,6 +17,10 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/api/marketplace/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	scwvalidation "github.com/scaleway/scaleway-sdk-go/validation"
+)
+
+const (
+	retryInstanceServerInterval = 30 * time.Second
 )
 
 func resourceScalewayInstanceServer() *schema.Resource {
@@ -354,6 +359,16 @@ func resourceScalewayInstanceServerCreate(ctx context.Context, d *schema.Resourc
 		return diag.FromErr(err)
 	}
 
+	_, err = instanceAPI.WaitForServer(&instance.WaitForServerRequest{
+		Zone:          zone,
+		ServerID:      res.Server.ID,
+		Timeout:       scw.TimeDurationPtr(defaultInstanceServerWaitTimeout),
+		RetryInterval: scw.TimeDurationPtr(retryInstanceServerInterval),
+	})
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	d.SetId(newZonedID(zone, res.Server.ID).String())
 
 	////
@@ -377,6 +392,16 @@ func resourceScalewayInstanceServerCreate(ctx context.Context, d *schema.Resourc
 	}
 
 	if len(userDataRequests.UserData) > 0 {
+		_, err := instanceAPI.WaitForServer(&instance.WaitForServerRequest{
+			Zone:          zone,
+			ServerID:      res.Server.ID,
+			Timeout:       scw.TimeDurationPtr(defaultInstanceServerWaitTimeout),
+			RetryInterval: scw.TimeDurationPtr(retryInstanceServerInterval),
+		})
+		if err != nil {
+			return diag.FromErr(err)
+		}
+
 		err = instanceAPI.SetAllServerUserData(userDataRequests)
 		if err != nil {
 			return diag.FromErr(err)
@@ -406,7 +431,17 @@ func resourceScalewayInstanceServerCreate(ctx context.Context, d *schema.Resourc
 		}
 		// compute attachment
 		for _, q := range pnRequest {
-			_, err := instanceAPI.CreatePrivateNIC(q, scw.WithContext(ctx))
+			_, err := instanceAPI.WaitForServer(&instance.WaitForServerRequest{
+				Zone:          zone,
+				ServerID:      res.Server.ID,
+				Timeout:       scw.TimeDurationPtr(defaultInstanceServerWaitTimeout),
+				RetryInterval: scw.TimeDurationPtr(retryInstanceServerInterval),
+			})
+			if err != nil {
+				return diag.FromErr(err)
+			}
+
+			_, err = instanceAPI.CreatePrivateNIC(q, scw.WithContext(ctx))
 			if err != nil {
 				return diag.FromErr(err)
 			}
@@ -422,63 +457,61 @@ func resourceScalewayInstanceServerRead(ctx context.Context, d *schema.ResourceD
 		return diag.FromErr(err)
 	}
 
+	server, err := instanceAPI.WaitForServer(&instance.WaitForServerRequest{
+		Zone:          zone,
+		ServerID:      ID,
+		Timeout:       scw.TimeDurationPtr(defaultInstanceServerWaitTimeout),
+		RetryInterval: scw.TimeDurationPtr(retryInstanceServerInterval),
+	})
+	if err != nil {
+		return diag.FromErr(err)
+	}
 	////
 	// Read Server
 	////
-	response, err := instanceAPI.GetServer(&instance.GetServerRequest{
-		Zone:     zone,
-		ServerID: ID,
-	}, scw.WithContext(ctx))
-	if err != nil {
-		if is404Error(err) {
-			d.SetId("")
-			return nil
-		}
-		return diag.FromErr(err)
-	}
-	state, err := serverStateFlatten(response.Server.State)
+	state, err := serverStateFlatten(server.State)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	_ = d.Set("state", state)
 	_ = d.Set("zone", string(zone))
-	_ = d.Set("name", response.Server.Name)
-	_ = d.Set("boot_type", response.Server.BootType)
-	_ = d.Set("bootscript_id", response.Server.Bootscript.ID)
-	_ = d.Set("type", response.Server.CommercialType)
-	_ = d.Set("tags", response.Server.Tags)
-	_ = d.Set("security_group_id", newZonedID(zone, response.Server.SecurityGroup.ID).String())
-	_ = d.Set("enable_ipv6", response.Server.EnableIPv6)
-	_ = d.Set("enable_dynamic_ip", response.Server.DynamicIPRequired)
-	_ = d.Set("organization_id", response.Server.Organization)
-	_ = d.Set("project_id", response.Server.Project)
+	_ = d.Set("name", server.Name)
+	_ = d.Set("boot_type", server.BootType)
+	_ = d.Set("bootscript_id", server.Bootscript.ID)
+	_ = d.Set("type", server.CommercialType)
+	_ = d.Set("tags", server.Tags)
+	_ = d.Set("security_group_id", newZonedID(zone, server.SecurityGroup.ID).String())
+	_ = d.Set("enable_ipv6", server.EnableIPv6)
+	_ = d.Set("enable_dynamic_ip", server.DynamicIPRequired)
+	_ = d.Set("organization_id", server.Organization)
+	_ = d.Set("project_id", server.Project)
 
 	// Image could be empty in an import context.
 	image := expandRegionalID(d.Get("image").(string))
-	if response.Server.Image != nil && (image.ID == "" || scwvalidation.IsUUID(image.ID)) {
-		// TODO: If image is a label, check that response.Server.Image.ID match the label.
+	if server.Image != nil && (image.ID == "" || scwvalidation.IsUUID(image.ID)) {
+		// TODO: If image is a label, check that server.Image.ID match the label.
 		// It could be useful if the user edit the image with another tool.
-		_ = d.Set("image", newZonedID(zone, response.Server.Image.ID).String())
+		_ = d.Set("image", newZonedID(zone, server.Image.ID).String())
 	}
 
-	if response.Server.PlacementGroup != nil {
-		_ = d.Set("placement_group_id", newZonedID(zone, response.Server.PlacementGroup.ID).String())
-		_ = d.Set("placement_group_policy_respected", response.Server.PlacementGroup.PolicyRespected)
+	if server.PlacementGroup != nil {
+		_ = d.Set("placement_group_id", newZonedID(zone, server.PlacementGroup.ID).String())
+		_ = d.Set("placement_group_policy_respected", server.PlacementGroup.PolicyRespected)
 	}
 
-	if response.Server.PrivateIP != nil {
-		_ = d.Set("private_ip", flattenStringPtr(response.Server.PrivateIP))
+	if server.PrivateIP != nil {
+		_ = d.Set("private_ip", flattenStringPtr(server.PrivateIP))
 	}
 
-	if response.Server.PublicIP != nil {
-		_ = d.Set("public_ip", response.Server.PublicIP.Address.String())
+	if server.PublicIP != nil {
+		_ = d.Set("public_ip", server.PublicIP.Address.String())
 		d.SetConnInfo(map[string]string{
 			"type": "ssh",
-			"host": response.Server.PublicIP.Address.String(),
+			"host": server.PublicIP.Address.String(),
 		})
-		if !response.Server.PublicIP.Dynamic {
-			_ = d.Set("ip_id", newZonedID(zone, response.Server.PublicIP.ID).String())
+		if !server.PublicIP.Dynamic {
+			_ = d.Set("ip_id", newZonedID(zone, server.PublicIP.ID).String())
 		} else {
 			_ = d.Set("ip_id", "")
 		}
@@ -488,10 +521,10 @@ func resourceScalewayInstanceServerRead(ctx context.Context, d *schema.ResourceD
 		d.SetConnInfo(nil)
 	}
 
-	if response.Server.IPv6 != nil {
-		_ = d.Set("ipv6_address", response.Server.IPv6.Address.String())
-		_ = d.Set("ipv6_gateway", response.Server.IPv6.Gateway.String())
-		prefixLength, err := strconv.Atoi(response.Server.IPv6.Netmask)
+	if server.IPv6 != nil {
+		_ = d.Set("ipv6_address", server.IPv6.Address.String())
+		_ = d.Set("ipv6_gateway", server.IPv6.Gateway.String())
+		prefixLength, err := strconv.Atoi(server.IPv6.Netmask)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -503,7 +536,7 @@ func resourceScalewayInstanceServerRead(ctx context.Context, d *schema.ResourceD
 	}
 
 	var additionalVolumesIDs []string
-	for i, volume := range orderVolumes(response.Server.Volumes) {
+	for i, volume := range orderVolumes(server.Volumes) {
 		if i == 0 {
 			rootVolume := map[string]interface{}{}
 
@@ -576,12 +609,21 @@ func resourceScalewayInstanceServerUpdate(ctx context.Context, d *schema.Resourc
 
 	var warnings diag.Diagnostics
 
+	server, err := instanceAPI.WaitForServer(&instance.WaitForServerRequest{
+		Zone:          zone,
+		ServerID:      ID,
+		Timeout:       scw.TimeDurationPtr(defaultInstanceServerWaitTimeout),
+		RetryInterval: scw.TimeDurationPtr(retryInstanceServerInterval),
+	})
+	if err != nil {
+		return diag.FromErr(err)
+	}
 	////
 	// Construct UpdateServerRequest
 	////
 	updateRequest := &instance.UpdateServerRequest{
 		Zone:     zone,
-		ServerID: ID,
+		ServerID: server.ID,
 	}
 
 	if d.HasChange("name") {
@@ -659,34 +701,66 @@ func resourceScalewayInstanceServerUpdate(ctx context.Context, d *schema.Resourc
 	// Update reserved IP
 	////
 	if d.HasChange("ip_id") {
-		server, err := instanceAPI.GetServer(&instance.GetServerRequest{
-			Zone:     zone,
-			ServerID: ID,
+		server, err := instanceAPI.WaitForServer(&instance.WaitForServerRequest{
+			Zone:          zone,
+			ServerID:      ID,
+			Timeout:       scw.TimeDurationPtr(defaultInstanceServerWaitTimeout),
+			RetryInterval: scw.TimeDurationPtr(retryInstanceServerInterval),
 		})
+
 		if err != nil {
 			return diag.FromErr(err)
 		}
-		newIPID := expandZonedID(d.Get("ip_id")).ID
 
+		newIPID := expandZonedID(d.Get("ip_id")).ID
 		// If an IP is already attached and it's not a dynamic IP we detach it.
-		if server.Server.PublicIP != nil && !server.Server.PublicIP.Dynamic {
+		if server.PublicIP != nil && !server.PublicIP.Dynamic {
 			_, err = instanceAPI.UpdateIP(&instance.UpdateIPRequest{
 				Zone:   zone,
-				IP:     server.Server.PublicIP.ID,
+				IP:     server.PublicIP.ID,
 				Server: &instance.NullableStringValue{Null: true},
 			})
 			if err != nil {
 				return diag.FromErr(err)
 			}
+			//we wait to ensure to not detach the new ip.
+			_, err := instanceAPI.WaitForServer(&instance.WaitForServerRequest{
+				Zone:          zone,
+				ServerID:      ID,
+				Timeout:       scw.TimeDurationPtr(defaultInstanceServerWaitTimeout),
+				RetryInterval: scw.TimeDurationPtr(retryInstanceServerInterval),
+			})
+			if err != nil {
+				return diag.FromErr(err)
+			}
 		}
-
 		// If a new IP is provided, we attach it to the server
 		if newIPID != "" {
+			_, err := instanceAPI.WaitForServer(&instance.WaitForServerRequest{
+				Zone:          zone,
+				ServerID:      ID,
+				Timeout:       scw.TimeDurationPtr(defaultInstanceServerWaitTimeout),
+				RetryInterval: scw.TimeDurationPtr(retryInstanceServerInterval),
+			})
+			if err != nil {
+				return diag.FromErr(err)
+			}
+
 			_, err = instanceAPI.UpdateIP(&instance.UpdateIPRequest{
 				Zone:   zone,
 				IP:     newIPID,
 				Server: &instance.NullableStringValue{Value: ID},
 			}, scw.WithContext(ctx))
+			if err != nil {
+				return diag.FromErr(err)
+			}
+
+			_, err = instanceAPI.WaitForServer(&instance.WaitForServerRequest{
+				Zone:          zone,
+				ServerID:      ID,
+				Timeout:       scw.TimeDurationPtr(defaultInstanceServerWaitTimeout),
+				RetryInterval: scw.TimeDurationPtr(retryInstanceServerInterval),
+			})
 			if err != nil {
 				return diag.FromErr(err)
 			}
@@ -737,7 +811,17 @@ func resourceScalewayInstanceServerUpdate(ctx context.Context, d *schema.Resourc
 			}
 		}
 
-		err := instanceAPI.SetAllServerUserData(userDataRequests)
+		_, err := instanceAPI.WaitForServer(&instance.WaitForServerRequest{
+			Zone:          zone,
+			ServerID:      ID,
+			Timeout:       scw.TimeDurationPtr(defaultInstanceServerWaitTimeout),
+			RetryInterval: scw.TimeDurationPtr(retryInstanceServerInterval),
+		})
+		if err != nil {
+			return diag.FromErr(err)
+		}
+
+		err = instanceAPI.SetAllServerUserData(userDataRequests)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -758,7 +842,17 @@ func resourceScalewayInstanceServerUpdate(ctx context.Context, d *schema.Resourc
 				if d.HasChange(pnKey) {
 					o, n := d.GetChange(pnKey)
 					if !cmp.Equal(n, o) {
-						err := ph.detach(o)
+						_, err := instanceAPI.WaitForServer(&instance.WaitForServerRequest{
+							Zone:          zone,
+							ServerID:      ID,
+							Timeout:       scw.TimeDurationPtr(defaultInstanceServerWaitTimeout),
+							RetryInterval: scw.TimeDurationPtr(retryInstanceServerInterval),
+						})
+						if err != nil {
+							return diag.FromErr(err)
+						}
+
+						err = ph.detach(o)
 						if err != nil {
 							diag.FromErr(err)
 						}
@@ -775,7 +869,17 @@ func resourceScalewayInstanceServerUpdate(ctx context.Context, d *schema.Resourc
 			for _, raw := range o.([]interface{}) {
 				pn, pnExist := raw.(map[string]interface{})
 				if pnExist {
-					err := ph.detach(pn["pn_id"])
+					_, err := instanceAPI.WaitForServer(&instance.WaitForServerRequest{
+						Zone:          zone,
+						ServerID:      ID,
+						Timeout:       scw.TimeDurationPtr(defaultInstanceServerWaitTimeout),
+						RetryInterval: scw.TimeDurationPtr(retryInstanceServerInterval),
+					})
+					if err != nil {
+						return diag.FromErr(err)
+					}
+
+					err = ph.detach(pn["pn_id"])
 					if err != nil {
 						diag.FromErr(err)
 					}
@@ -798,7 +902,27 @@ func resourceScalewayInstanceServerUpdate(ctx context.Context, d *schema.Resourc
 		return diag.FromErr(err)
 	}
 
+	_, err = instanceAPI.WaitForServer(&instance.WaitForServerRequest{
+		Zone:          zone,
+		ServerID:      ID,
+		Timeout:       scw.TimeDurationPtr(defaultInstanceServerWaitTimeout),
+		RetryInterval: scw.TimeDurationPtr(retryInstanceServerInterval),
+	})
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	_, err = instanceAPI.UpdateServer(updateRequest)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	_, err = instanceAPI.WaitForServer(&instance.WaitForServerRequest{
+		Zone:          zone,
+		ServerID:      ID,
+		Timeout:       scw.TimeDurationPtr(defaultInstanceServerWaitTimeout),
+		RetryInterval: scw.TimeDurationPtr(retryInstanceServerInterval),
+	})
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -817,6 +941,16 @@ func resourceScalewayInstanceServerDelete(ctx context.Context, d *schema.Resourc
 	if is404Error(err) {
 		return nil
 	}
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	_, err = instanceAPI.WaitForServer(&instance.WaitForServerRequest{
+		Zone:          zone,
+		ServerID:      ID,
+		Timeout:       scw.TimeDurationPtr(defaultInstanceServerWaitTimeout),
+		RetryInterval: scw.TimeDurationPtr(retryInstanceServerInterval),
+	})
 	if err != nil {
 		return diag.FromErr(err)
 	}
