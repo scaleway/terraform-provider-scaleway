@@ -73,6 +73,24 @@ func TestAccScalewayLbIP_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_lb_ip.ip01", "reverse", "myreverse.com"),
 				),
 			},
+			{
+				Config: `
+					resource scaleway_lb_ip ip01 {
+						reverse = "myreverse.com"
+					}
+
+					resource scaleway_lb main {
+					    ip_id = scaleway_lb_ip.ip01.id
+						name = "test-lb-with-release-ip"
+						type = "LB-S"
+						release_ip = true
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayLbExists(tt, "scaleway_lb.main"),
+					testAccCheckScalewayLbIPExists(tt, "scaleway_lb_ip.ip01"),
+				),
+			},
 		},
 	})
 }

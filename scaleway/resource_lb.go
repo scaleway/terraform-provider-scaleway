@@ -368,7 +368,7 @@ func resourceScalewayLbDelete(ctx context.Context, d *schema.ResourceData, meta 
 		Timeout:       scw.TimeDurationPtr(LbWaitForTimeout),
 		RetryInterval: &retryInterval,
 	}, scw.WithContext(ctx))
-	if err != nil && !is404Error(err) {
+	if err != nil {
 		return diag.FromErr(err)
 	}
 
