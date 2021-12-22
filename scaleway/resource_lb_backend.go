@@ -262,8 +262,11 @@ func resourceScalewayLbBackendCreate(ctx context.Context, d *schema.ResourceData
 		Timeout:       scw.TimeDurationPtr(defaultInstanceServerWaitTimeout),
 		RetryInterval: &retryInterval,
 	}, scw.WithContext(ctx))
-
-	if err != nil && !is404Error(err) {
+	if err != nil {
+		if is403Error(err) {
+			d.SetId("")
+			return nil
+		}
 		return diag.FromErr(err)
 	}
 
@@ -299,6 +302,20 @@ func resourceScalewayLbBackendCreate(ctx context.Context, d *schema.ResourceData
 		return diag.FromErr(err)
 	}
 
+	_, err = lbAPI.WaitForLb(&lb.ZonedAPIWaitForLBRequest{
+		Zone:          zone,
+		LBID:          res.LB.ID,
+		Timeout:       scw.TimeDurationPtr(defaultInstanceServerWaitTimeout),
+		RetryInterval: &retryInterval,
+	}, scw.WithContext(ctx))
+	if err != nil {
+		if is403Error(err) {
+			d.SetId("")
+			return nil
+		}
+		return diag.FromErr(err)
+	}
+
 	d.SetId(newZonedIDString(zone, res.ID))
 
 	return resourceScalewayLbBackendRead(ctx, d, meta)
@@ -316,7 +333,7 @@ func resourceScalewayLbBackendRead(ctx context.Context, d *schema.ResourceData, 
 	}, scw.WithContext(ctx))
 
 	if err != nil {
-		if is404Error(err) {
+		if is403Error(err) {
 			d.SetId("")
 			return nil
 		}
@@ -345,12 +362,47 @@ func resourceScalewayLbBackendRead(ctx context.Context, d *schema.ResourceData, 
 	_ = d.Set("health_check_http", flattenLbHCHTTP(res.HealthCheck.HTTPConfig))
 	_ = d.Set("health_check_https", flattenLbHCHTTPS(res.HealthCheck.HTTPSConfig))
 
+	retryInterval := DefaultWaitLBRetryInterval
+	_, err = lbAPI.WaitForLb(&lb.ZonedAPIWaitForLBRequest{
+		Zone:          zone,
+		LBID:          res.LB.ID,
+		Timeout:       scw.TimeDurationPtr(defaultInstanceServerWaitTimeout),
+		RetryInterval: &retryInterval,
+	}, scw.WithContext(ctx))
+	if err != nil {
+		if is403Error(err) {
+			d.SetId("")
+			return nil
+		}
+		return diag.FromErr(err)
+	}
+
 	return nil
 }
 
 func resourceScalewayLbBackendUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	lbAPI, zone, ID, err := lbAPIWithZoneAndID(meta, d.Id())
 	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	_, LbID, err := parseZonedID(d.Get("lb_id").(string))
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	retryInterval := DefaultWaitLBRetryInterval
+	_, err = lbAPI.WaitForLb(&lb.ZonedAPIWaitForLBRequest{
+		Zone:          zone,
+		LBID:          LbID,
+		Timeout:       scw.TimeDurationPtr(defaultInstanceServerWaitTimeout),
+		RetryInterval: &retryInterval,
+	}, scw.WithContext(ctx))
+	if err != nil {
+		if is403Error(err) {
+			d.SetId("")
+			return nil
+		}
 		return diag.FromErr(err)
 	}
 
@@ -408,6 +460,20 @@ func resourceScalewayLbBackendUpdate(ctx context.Context, d *schema.ResourceData
 		return diag.FromErr(err)
 	}
 
+	_, err = lbAPI.WaitForLb(&lb.ZonedAPIWaitForLBRequest{
+		Zone:          zone,
+		LBID:          LbID,
+		Timeout:       scw.TimeDurationPtr(defaultInstanceServerWaitTimeout),
+		RetryInterval: &retryInterval,
+	}, scw.WithContext(ctx))
+	if err != nil {
+		if is403Error(err) {
+			d.SetId("")
+			return nil
+		}
+		return diag.FromErr(err)
+	}
+
 	return resourceScalewayLbBackendRead(ctx, d, meta)
 }
 
@@ -417,12 +483,46 @@ func resourceScalewayLbBackendDelete(ctx context.Context, d *schema.ResourceData
 		return diag.FromErr(err)
 	}
 
+	_, LbID, err := parseZonedID(d.Get("lb_id").(string))
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	retryInterval := DefaultWaitLBRetryInterval
+	_, err = lbAPI.WaitForLb(&lb.ZonedAPIWaitForLBRequest{
+		Zone:          zone,
+		LBID:          LbID,
+		Timeout:       scw.TimeDurationPtr(defaultInstanceServerWaitTimeout),
+		RetryInterval: &retryInterval,
+	}, scw.WithContext(ctx))
+	if err != nil {
+		if is403Error(err) {
+			d.SetId("")
+			return nil
+		}
+		return diag.FromErr(err)
+	}
+
 	err = lbAPI.DeleteBackend(&lb.ZonedAPIDeleteBackendRequest{
 		Zone:      zone,
 		BackendID: ID,
 	}, scw.WithContext(ctx))
 
 	if err != nil && !is404Error(err) {
+		return diag.FromErr(err)
+	}
+
+	_, err = lbAPI.WaitForLb(&lb.ZonedAPIWaitForLBRequest{
+		Zone:          zone,
+		LBID:          LbID,
+		Timeout:       scw.TimeDurationPtr(defaultInstanceServerWaitTimeout),
+		RetryInterval: &retryInterval,
+	}, scw.WithContext(ctx))
+	if err != nil {
+		if is403Error(err) {
+			d.SetId("")
+			return nil
+		}
 		return diag.FromErr(err)
 	}
 
