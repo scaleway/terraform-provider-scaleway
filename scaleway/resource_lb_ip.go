@@ -92,6 +92,23 @@ func resourceScalewayLbIPRead(ctx context.Context, d *schema.ResourceData, meta 
 		return diag.FromErr(err)
 	}
 
+	// check lb state if it is attached
+	if res.LBID != nil {
+		_, err = lbAPI.WaitForLb(&lb.ZonedAPIWaitForLBRequest{
+			Zone:          zone,
+			LBID:          *res.LBID,
+			Timeout:       scw.TimeDurationPtr(defaultInstanceServerWaitTimeout),
+			RetryInterval: scw.TimeDurationPtr(DefaultWaitLBRetryInterval),
+		}, scw.WithContext(ctx))
+		if err != nil {
+			if is403Error(err) {
+				d.SetId("")
+				return nil
+			}
+			return diag.FromErr(err)
+		}
+	}
+
 	// set the region from zone
 	region, err := zone.Region()
 	if err != nil {
@@ -115,6 +132,35 @@ func resourceScalewayLbIPUpdate(ctx context.Context, d *schema.ResourceData, met
 		return diag.FromErr(err)
 	}
 
+	res, err := lbAPI.GetIP(&lb.ZonedAPIGetIPRequest{
+		Zone: zone,
+		IPID: ID,
+	}, scw.WithContext(ctx))
+
+	if err != nil {
+		if is404Error(err) || is403Error(err) {
+			d.SetId("")
+			return nil
+		}
+		return diag.FromErr(err)
+	}
+
+	if res.LBID != nil {
+		_, err = lbAPI.WaitForLb(&lb.ZonedAPIWaitForLBRequest{
+			Zone:          zone,
+			LBID:          *res.LBID,
+			Timeout:       scw.TimeDurationPtr(defaultInstanceServerWaitTimeout),
+			RetryInterval: scw.TimeDurationPtr(DefaultWaitLBRetryInterval),
+		}, scw.WithContext(ctx))
+		if err != nil {
+			if is403Error(err) {
+				d.SetId("")
+				return nil
+			}
+			return diag.FromErr(err)
+		}
+	}
+
 	if d.HasChange("reverse") {
 		req := &lb.ZonedAPIUpdateIPRequest{
 			Zone:    zone,
@@ -128,6 +174,22 @@ func resourceScalewayLbIPUpdate(ctx context.Context, d *schema.ResourceData, met
 		}
 	}
 
+	if res.LBID != nil {
+		_, err = lbAPI.WaitForLb(&lb.ZonedAPIWaitForLBRequest{
+			Zone:          zone,
+			LBID:          *res.LBID,
+			Timeout:       scw.TimeDurationPtr(defaultInstanceServerWaitTimeout),
+			RetryInterval: scw.TimeDurationPtr(DefaultWaitLBRetryInterval),
+		}, scw.WithContext(ctx))
+		if err != nil {
+			if is403Error(err) {
+				d.SetId("")
+				return nil
+			}
+			return diag.FromErr(err)
+		}
+	}
+
 	return resourceScalewayLbIPRead(ctx, d, meta)
 }
 
@@ -135,6 +197,36 @@ func resourceScalewayLbIPDelete(ctx context.Context, d *schema.ResourceData, met
 	lbAPI, zone, ID, err := lbAPIWithZoneAndID(meta, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
+	}
+
+	res, err := lbAPI.GetIP(&lb.ZonedAPIGetIPRequest{
+		Zone: zone,
+		IPID: ID,
+	}, scw.WithContext(ctx))
+
+	if err != nil {
+		if is404Error(err) || is403Error(err) {
+			d.SetId("")
+			return nil
+		}
+		return diag.FromErr(err)
+	}
+
+	// check lb state
+	if res.LBID != nil {
+		_, err = lbAPI.WaitForLb(&lb.ZonedAPIWaitForLBRequest{
+			Zone:          zone,
+			LBID:          *res.LBID,
+			Timeout:       scw.TimeDurationPtr(defaultInstanceServerWaitTimeout),
+			RetryInterval: scw.TimeDurationPtr(DefaultWaitLBRetryInterval),
+		}, scw.WithContext(ctx))
+		if err != nil {
+			if is403Error(err) {
+				d.SetId("")
+				return nil
+			}
+			return diag.FromErr(err)
+		}
 	}
 
 	err = lbAPI.ReleaseIP(&lb.ZonedAPIReleaseIPRequest{
