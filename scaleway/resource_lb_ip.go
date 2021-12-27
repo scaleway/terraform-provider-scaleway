@@ -238,5 +238,22 @@ func resourceScalewayLbIPDelete(ctx context.Context, d *schema.ResourceData, met
 		return diag.FromErr(err)
 	}
 
+	// check lb state
+	if res.LBID != nil {
+		_, err = lbAPI.WaitForLb(&lb.ZonedAPIWaitForLBRequest{
+			Zone:          zone,
+			LBID:          *res.LBID,
+			Timeout:       scw.TimeDurationPtr(defaultInstanceServerWaitTimeout),
+			RetryInterval: scw.TimeDurationPtr(DefaultWaitLBRetryInterval),
+		}, scw.WithContext(ctx))
+		if err != nil {
+			if is404Error(err) || is403Error(err) {
+				d.SetId("")
+				return nil
+			}
+			return diag.FromErr(err)
+		}
+	}
+
 	return nil
 }
