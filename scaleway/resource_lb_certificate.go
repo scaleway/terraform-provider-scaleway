@@ -249,29 +249,31 @@ func resourceScalewayLbCertificateUpdate(ctx context.Context, d *schema.Resource
 		return diag.FromErr(err)
 	}
 
-	req := &lb.ZonedAPIUpdateCertificateRequest{
-		CertificateID: ID,
-		Zone:          zone,
-		Name:          d.Get("name").(string),
-	}
-
-	_, err = lbAPI.UpdateCertificate(req, scw.WithContext(ctx))
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	_, err = lbAPI.WaitForLb(&lb.ZonedAPIWaitForLBRequest{
-		Zone:          zone,
-		LBID:          cert.LB.ID,
-		Timeout:       scw.TimeDurationPtr(defaultInstanceServerWaitTimeout),
-		RetryInterval: &retryInterval,
-	}, scw.WithContext(ctx))
-	if err != nil {
-		if is403Error(err) {
-			d.SetId("")
-			return nil
+	if d.HasChange("name") {
+		req := &lb.ZonedAPIUpdateCertificateRequest{
+			CertificateID: ID,
+			Zone:          zone,
+			Name:          d.Get("name").(string),
 		}
-		return diag.FromErr(err)
+
+		cert, err = lbAPI.UpdateCertificate(req, scw.WithContext(ctx))
+		if err != nil {
+			return diag.FromErr(err)
+		}
+
+		_, err = lbAPI.WaitForLb(&lb.ZonedAPIWaitForLBRequest{
+			Zone:          zone,
+			LBID:          cert.LB.ID,
+			Timeout:       scw.TimeDurationPtr(defaultInstanceServerWaitTimeout),
+			RetryInterval: &retryInterval,
+		}, scw.WithContext(ctx))
+		if err != nil {
+			if is403Error(err) {
+				d.SetId("")
+				return nil
+			}
+			return diag.FromErr(err)
+		}
 	}
 
 	return resourceScalewayLbCertificateRead(ctx, d, meta)

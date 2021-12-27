@@ -132,6 +132,20 @@ func testAccCheckScalewayLbIPDestroy(tt *TestTools) resource.TestCheckFunc {
 				return err
 			}
 
+			lbID, lbExist := rs.Primary.Attributes["lb_id"]
+			if lbExist && len(lbID) > 0 {
+				_, err = lbAPI.WaitForLb(&lb.ZonedAPIWaitForLBRequest{
+					Zone:          zone,
+					LBID:          lbID,
+					Timeout:       scw.TimeDurationPtr(defaultInstanceServerWaitTimeout),
+					RetryInterval: scw.TimeDurationPtr(DefaultWaitLBRetryInterval),
+				})
+				// Unexpected api error we return it
+				if !is404Error(err) {
+					return err
+				}
+			}
+
 			_, err = lbAPI.GetIP(&lb.ZonedAPIGetIPRequest{
 				Zone: zone,
 				IPID: ID,
