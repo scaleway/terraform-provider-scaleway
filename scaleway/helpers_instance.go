@@ -78,6 +78,20 @@ func orderVolumes(v map[string]*instance.Volume) []*instance.Volume {
 	return orderedVolumes
 }
 
+// orderServerVolumes return an ordered slice based on the volume map key "0", "1", "2",...
+func orderServerVolumes(v map[string]*instance.VolumeServer) []*instance.VolumeServer {
+	indexes := []string{}
+	for index := range v {
+		indexes = append(indexes, index)
+	}
+	sort.Strings(indexes)
+	var orderedVolumes []*instance.VolumeServer
+	for _, index := range indexes {
+		orderedVolumes = append(orderedVolumes, v[index])
+	}
+	return orderedVolumes
+}
+
 // serverStateFlatten converts the API state to terraform state or return an error.
 func serverStateFlatten(fromState instance.ServerState) (string, error) {
 	switch fromState {
@@ -138,7 +152,7 @@ func reachState(ctx context.Context, instanceAPI *instance.API, zone scw.Zone, s
 
 	// We need to check that all volumes are ready
 	for _, volume := range response.Server.Volumes {
-		if volume.State != instance.VolumeStateAvailable {
+		if volume.State != instance.VolumeServerStateAvailable {
 			_, err = instanceAPI.WaitForVolume(&instance.WaitForVolumeRequest{
 				Zone:          zone,
 				VolumeID:      volume.ID,
@@ -185,7 +199,7 @@ func getServerType(apiInstance *instance.API, zone scw.Zone, commercialType stri
 }
 
 // validateLocalVolumeSizes validates the total size of local volumes.
-func validateLocalVolumeSizes(volumes map[string]*instance.VolumeTemplate, serverType *instance.ServerType, commercialType string) error {
+func validateLocalVolumeSizes(volumes map[string]*instance.VolumeServerTemplate, serverType *instance.ServerType, commercialType string) error {
 	// Calculate local volume total size.
 	var localVolumeTotalSize scw.Size
 	for _, volume := range volumes {
@@ -219,8 +233,8 @@ func validateLocalVolumeSizes(volumes map[string]*instance.VolumeTemplate, serve
 // On the api side, there are two possibles validation schemas for volumes and the validator will be chosen dynamically depending on the passed JSON request
 // - With an image (in that case the root volume can be skipped because it is taken from the image)
 // - Without an image (in that case, the root volume must be defined)
-func sanitizeVolumeMap(serverName string, volumes map[string]*instance.VolumeTemplate) map[string]*instance.VolumeTemplate {
-	m := make(map[string]*instance.VolumeTemplate)
+func sanitizeVolumeMap(serverName string, volumes map[string]*instance.VolumeServerTemplate) map[string]*instance.VolumeServerTemplate {
+	m := make(map[string]*instance.VolumeServerTemplate)
 
 	for index, v := range volumes {
 		v.Name = serverName + "-" + index
@@ -230,11 +244,11 @@ func sanitizeVolumeMap(serverName string, volumes map[string]*instance.VolumeTem
 		// If a volume already got an ID it is passed as it to the API without specifying the volume type.
 		// TODO: Fix once instance accept volume type in the schema validation
 		case v.ID != "":
-			v = &instance.VolumeTemplate{ID: v.ID, Name: v.Name}
+			v = &instance.VolumeServerTemplate{ID: v.ID, Name: v.Name}
 		// For the root volume (index 0) if the specified size is not 0 it is considered as a new volume
 		// It does not have yet a volume ID, it is passed to the API with only the size to be dynamically created by the API
 		case index == "0" && v.Size != 0:
-			v = &instance.VolumeTemplate{Size: v.Size}
+			v = &instance.VolumeServerTemplate{Size: v.Size}
 		// If none of the above conditions are met, the volume is passed as it to the API
 		default:
 		}
