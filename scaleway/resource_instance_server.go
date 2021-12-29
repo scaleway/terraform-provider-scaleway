@@ -545,7 +545,7 @@ func resourceScalewayInstanceServerRead(ctx context.Context, d *schema.ResourceD
 	}
 
 	var additionalVolumesIDs []string
-	for i, volume := range orderServerVolumes(server.Volumes) {
+	for i, volume := range sortVolumeServer(server.Volumes) {
 		if i == 0 {
 			rootVolume := map[string]interface{}{}
 

@@ -78,18 +78,18 @@ func orderVolumes(v map[string]*instance.Volume) []*instance.Volume {
 	return orderedVolumes
 }
 
-// orderServerVolumes return an ordered slice based on the volume map key "0", "1", "2",...
-func orderServerVolumes(v map[string]*instance.VolumeServer) []*instance.VolumeServer {
+// sortVolumeServer return an ordered slice based on the volume map key "0", "1", "2",...
+func sortVolumeServer(v map[string]*instance.VolumeServer) []*instance.VolumeServer {
 	var indexes []string
 	for index := range v {
 		indexes = append(indexes, index)
 	}
 	sort.Strings(indexes)
-	var orderedVolumes []*instance.VolumeServer
+	var sortedVolumes []*instance.VolumeServer
 	for _, index := range indexes {
-		orderedVolumes = append(orderedVolumes, v[index])
+		sortedVolumes = append(sortedVolumes, v[index])
 	}
-	return orderedVolumes
+	return sortedVolumes
 }
 
 // serverStateFlatten converts the API state to terraform state or return an error.
