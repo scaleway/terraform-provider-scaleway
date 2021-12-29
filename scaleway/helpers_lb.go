@@ -17,7 +17,7 @@ import (
 const (
 	LbWaitForTimeout   = 10 * time.Minute
 	defaultLbLbTimeout = 10 * time.Minute
-	retryLbIPInterval  = 1 * time.Minute
+	retryLbIPInterval  = 5 * time.Second
 )
 
 // lbAPIWithZone returns an lb API WITH zone for a Create request
