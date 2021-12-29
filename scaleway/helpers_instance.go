@@ -66,7 +66,7 @@ func instanceAPIWithZoneAndNestedID(m interface{}, zonedNestedID string) (*insta
 
 // orderVolumes return an ordered slice based on the volume map key "0", "1", "2",...
 func orderVolumes(v map[string]*instance.Volume) []*instance.Volume {
-	indexes := []string{}
+	var indexes []string
 	for index := range v {
 		indexes = append(indexes, index)
 	}
@@ -80,7 +80,7 @@ func orderVolumes(v map[string]*instance.Volume) []*instance.Volume {
 
 // orderServerVolumes return an ordered slice based on the volume map key "0", "1", "2",...
 func orderServerVolumes(v map[string]*instance.VolumeServer) []*instance.VolumeServer {
-	indexes := []string{}
+	var indexes []string
 	for index := range v {
 		indexes = append(indexes, index)
 	}
@@ -244,11 +244,16 @@ func sanitizeVolumeMap(serverName string, volumes map[string]*instance.VolumeSer
 		// If a volume already got an ID it is passed as it to the API without specifying the volume type.
 		// TODO: Fix once instance accept volume type in the schema validation
 		case v.ID != "":
-			v = &instance.VolumeServerTemplate{ID: v.ID, Name: v.Name}
+			v = &instance.VolumeServerTemplate{
+				ID:   v.ID,
+				Name: v.Name,
+			}
 		// For the root volume (index 0) if the specified size is not 0 it is considered as a new volume
 		// It does not have yet a volume ID, it is passed to the API with only the size to be dynamically created by the API
 		case index == "0" && v.Size != 0:
-			v = &instance.VolumeServerTemplate{Size: v.Size}
+			v = &instance.VolumeServerTemplate{
+				Size: v.Size,
+			}
 		// If none of the above conditions are met, the volume is passed as it to the API
 		default:
 		}

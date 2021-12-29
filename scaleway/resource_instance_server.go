@@ -302,8 +302,6 @@ func resourceScalewayInstanceServerCreate(ctx context.Context, d *schema.Resourc
 		return diag.FromErr(fmt.Errorf("could not find a server type associated with %s", req.CommercialType))
 	}
 
-	projectID := expandStringPtr(d.Get("project_id"))
-
 	req.Volumes = make(map[string]*instance.VolumeServerTemplate)
 	isBootOnBlock := serverType.VolumesConstraint.MaxSize == 0
 	if isBootOnBlock {
@@ -311,7 +309,6 @@ func resourceScalewayInstanceServerCreate(ctx context.Context, d *schema.Resourc
 			req.Volumes["0"] = &instance.VolumeServerTemplate{
 				Size:       scw.Size(uint64(size.(int)) * gb),
 				VolumeType: instance.VolumeVolumeTypeBSSD,
-				Project:    projectID,
 			}
 		}
 	} else {
@@ -319,7 +316,6 @@ func resourceScalewayInstanceServerCreate(ctx context.Context, d *schema.Resourc
 			req.Volumes["0"] = &instance.VolumeServerTemplate{
 				Size:       scw.Size(uint64(size.(int)) * gb),
 				VolumeType: instance.VolumeVolumeTypeLSSD,
-				Project:    projectID,
 			}
 		} else {
 			// We add a local root volume if it is not already present
@@ -327,7 +323,6 @@ func resourceScalewayInstanceServerCreate(ctx context.Context, d *schema.Resourc
 				Name:       newRandomName("vol"),
 				VolumeType: instance.VolumeVolumeTypeLSSD,
 				Size:       serverType.VolumesConstraint.MinSize,
-				Project:    projectID,
 			}
 		}
 	}
@@ -347,7 +342,6 @@ func resourceScalewayInstanceServerCreate(ctx context.Context, d *schema.Resourc
 				Name:       vol.Volume.Name,
 				VolumeType: vol.Volume.VolumeType,
 				Size:       vol.Volume.Size,
-				Project:    projectID,
 			}
 		}
 	}
@@ -610,7 +604,6 @@ func resourceScalewayInstanceServerUpdate(ctx context.Context, d *schema.Resourc
 		return diag.FromErr(err)
 	}
 
-	projectID := expandStringPtr(d.Get("project_id"))
 	wantedState := d.Get("state").(string)
 	isStopped := wantedState == InstanceServerStateStopped
 
@@ -662,7 +655,6 @@ func resourceScalewayInstanceServerUpdate(ctx context.Context, d *schema.Resourc
 		volumes["0"] = &instance.VolumeServerTemplate{
 			ID:      expandZonedID(d.Get("root_volume.0.volume_id")).ID,
 			Name:    newRandomName("vol"), // name is ignored by the API, any name will work here
-			Project: projectID,
 		}
 
 		for i, volumeID := range raw.([]interface{}) {
@@ -687,7 +679,6 @@ func resourceScalewayInstanceServerUpdate(ctx context.Context, d *schema.Resourc
 			volumes[strconv.Itoa(i+1)] = &instance.VolumeServerTemplate{
 				ID:      expandZonedID(volumeID).ID,
 				Name:    newRandomName("vol"), // name is ignored by the API, any name will work here
-				Project: projectID,
 			}
 		}
 
