@@ -2,9 +2,9 @@ package scaleway
 
 import (
 	"context"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/api/lb/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
@@ -246,7 +246,7 @@ func resourceScalewayLbIPDelete(ctx context.Context, d *schema.ResourceData, met
 	}
 
 	// check lb state
-	if ip.LBID != nil {
+	if ip != nil && ip.LBID != nil {
 		_, err = lbAPI.WaitForLbInstances(&lb.ZonedAPIWaitForLBInstancesRequest{
 			LBID:          ID,
 			Zone:          zone,
@@ -272,7 +272,7 @@ func resourceScalewayLbIPDelete(ctx context.Context, d *schema.ResourceData, met
 	}
 
 	// check lb state
-	if ip.LBID != nil {
+	if ip != nil && ip.LBID != nil {
 		_, err = lbAPI.WaitForLbInstances(&lb.ZonedAPIWaitForLBInstancesRequest{
 			LBID:          ID,
 			Zone:          zone,
