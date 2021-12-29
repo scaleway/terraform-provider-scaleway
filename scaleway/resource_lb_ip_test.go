@@ -1,6 +1,7 @@
 package scaleway
 
 import (
+	"context"
 	"fmt"
 	"testing"
 
@@ -18,18 +19,19 @@ func init() {
 }
 
 func testSweepLBIP(_ string) error {
-	return sweepZones([]scw.Zone{scw.ZoneFrPar1, scw.ZoneNlAms1, scw.ZonePlWaw1}, func(scwClient *scw.Client, region scw.Zone) error {
+	return sweepZones([]scw.Zone{scw.ZoneFrPar1, scw.ZoneNlAms1, scw.ZonePlWaw1}, func(scwClient *scw.Client, zone scw.Zone) error {
 		lbAPI := lb.NewZonedAPI(scwClient)
 
-		l.Debugf("sweeper: destroying the lb ips in (%s)", region)
-		listIPs, err := lbAPI.ListIPs(&lb.ZonedAPIListIPsRequest{}, scw.WithAllPages())
+		l.Debugf("sweeper: destroying the lb ips in zone (%s)", zone)
+		listIPs, err := lbAPI.ListIPs(&lb.ZonedAPIListIPsRequest{Zone: zone}, scw.WithAllPages())
 		if err != nil {
-			return fmt.Errorf("error listing lb ips in (%s) in sweeper: %s", region, err)
+			return fmt.Errorf("error listing lb ips in (%s) in sweeper: %s", zone, err)
 		}
 
 		for _, ip := range listIPs.IPs {
 			if ip.LBID == nil {
 				err := lbAPI.ReleaseIP(&lb.ZonedAPIReleaseIPRequest{
+					Zone: zone,
 					IPID: ip.ID,
 				})
 				if err != nil {
@@ -146,9 +148,16 @@ func testAccCheckScalewayLbIPDestroy(tt *TestTools) resource.TestCheckFunc {
 				}
 			}
 
-			_, err = lbAPI.GetIP(&lb.ZonedAPIGetIPRequest{
-				Zone: zone,
-				IPID: ID,
+			err = resource.RetryContext(context.Background(), retryLbIPInterval, func() *resource.RetryError {
+				_, errGet := lbAPI.GetIP(&lb.ZonedAPIGetIPRequest{
+					Zone: zone,
+					IPID: ID,
+				})
+				if is403Error(errGet) {
+					return resource.RetryableError(errGet)
+				}
+
+				return resource.NonRetryableError(errGet)
 			})
 
 			// If no error resource still exist

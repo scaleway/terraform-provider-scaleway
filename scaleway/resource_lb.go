@@ -361,12 +361,11 @@ func resourceScalewayLbDelete(ctx context.Context, d *schema.ResourceData, meta 
 	}
 
 	// check if current lb is on stable state
-	retryInterval := DefaultWaitLBRetryInterval
-	currentLB, err := lbAPI.WaitForLb(&lb.ZonedAPIWaitForLBRequest{
+	currentLB, err := lbAPI.WaitForLbInstances(&lb.ZonedAPIWaitForLBInstancesRequest{
 		LBID:          ID,
 		Zone:          zone,
 		Timeout:       scw.TimeDurationPtr(LbWaitForTimeout),
-		RetryInterval: &retryInterval,
+		RetryInterval: scw.TimeDurationPtr(DefaultWaitLBRetryInterval),
 	}, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
@@ -393,11 +392,11 @@ func resourceScalewayLbDelete(ctx context.Context, d *schema.ResourceData, meta 
 			}
 		}
 
-		_, err = lbAPI.WaitForLb(&lb.ZonedAPIWaitForLBRequest{
+		_, err = lbAPI.WaitForLbInstances(&lb.ZonedAPIWaitForLBInstancesRequest{
 			LBID:          ID,
 			Zone:          zone,
 			Timeout:       scw.TimeDurationPtr(LbWaitForTimeout),
-			RetryInterval: &retryInterval,
+			RetryInterval: scw.TimeDurationPtr(DefaultWaitLBRetryInterval),
 		}, scw.WithContext(ctx))
 		if err != nil && !is404Error(err) {
 			return diag.FromErr(err)
@@ -419,11 +418,11 @@ func resourceScalewayLbDelete(ctx context.Context, d *schema.ResourceData, meta 
 		return diag.FromErr(err)
 	}
 
-	_, err = lbAPI.WaitForLb(&lb.ZonedAPIWaitForLBRequest{
+	_, err = lbAPI.WaitForLbInstances(&lb.ZonedAPIWaitForLBInstancesRequest{
 		LBID:          ID,
 		Zone:          zone,
 		Timeout:       scw.TimeDurationPtr(LbWaitForTimeout),
-		RetryInterval: &retryInterval,
+		RetryInterval: scw.TimeDurationPtr(DefaultWaitLBRetryInterval),
 	}, scw.WithContext(ctx))
 	if err != nil && !is404Error(err) {
 		return diag.FromErr(err)
