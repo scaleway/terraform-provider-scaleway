@@ -104,6 +104,12 @@ func resourceScalewayInstanceServer() *schema.Resource {
 							Default:     true,
 							Description: "Force deletion of the root volume on instance termination",
 						},
+						"boot": {
+							Type:        schema.TypeBool,
+							Optional:    true,
+							Default:     false,
+							Description: "Set the volume where the boot the server",
+						},
 						"volume_id": {
 							Type:        schema.TypeString,
 							Computed:    true,
@@ -304,11 +310,13 @@ func resourceScalewayInstanceServerCreate(ctx context.Context, d *schema.Resourc
 
 	req.Volumes = make(map[string]*instance.VolumeServerTemplate)
 	isBootOnBlock := serverType.VolumesConstraint.MaxSize == 0
+	isBoot := expandBoolPtr(d.Get("root_volume.0.boot"))
 	if isBootOnBlock {
 		if size, ok := d.GetOk("root_volume.0.size_in_gb"); ok {
 			req.Volumes["0"] = &instance.VolumeServerTemplate{
 				Size:       scw.Size(uint64(size.(int)) * gb),
 				VolumeType: instance.VolumeVolumeTypeBSSD,
+				Boot:       *isBoot,
 			}
 		}
 	} else {
@@ -316,6 +324,7 @@ func resourceScalewayInstanceServerCreate(ctx context.Context, d *schema.Resourc
 			req.Volumes["0"] = &instance.VolumeServerTemplate{
 				Size:       scw.Size(uint64(size.(int)) * gb),
 				VolumeType: instance.VolumeVolumeTypeLSSD,
+				Boot:       *isBoot,
 			}
 		} else {
 			// We add a local root volume if it is not already present
@@ -653,8 +662,8 @@ func resourceScalewayInstanceServerUpdate(ctx context.Context, d *schema.Resourc
 
 	if raw, ok := d.GetOk("additional_volume_ids"); d.HasChange("additional_volume_ids") && ok {
 		volumes["0"] = &instance.VolumeServerTemplate{
-			ID:      expandZonedID(d.Get("root_volume.0.volume_id")).ID,
-			Name:    newRandomName("vol"), // name is ignored by the API, any name will work here
+			ID:   expandZonedID(d.Get("root_volume.0.volume_id")).ID,
+			Name: newRandomName("vol"), // name is ignored by the API, any name will work here
 		}
 
 		for i, volumeID := range raw.([]interface{}) {
@@ -677,8 +686,8 @@ func resourceScalewayInstanceServerUpdate(ctx context.Context, d *schema.Resourc
 				}
 			}
 			volumes[strconv.Itoa(i+1)] = &instance.VolumeServerTemplate{
-				ID:      expandZonedID(volumeID).ID,
-				Name:    newRandomName("vol"), // name is ignored by the API, any name will work here
+				ID:   expandZonedID(volumeID).ID,
+				Name: newRandomName("vol"), // name is ignored by the API, any name will work here
 			}
 		}
 
