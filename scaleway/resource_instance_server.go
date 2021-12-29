@@ -95,7 +95,7 @@ func resourceScalewayInstanceServer() *schema.Resource {
 							Type:        schema.TypeInt,
 							Optional:    true,
 							Computed:    true,
-							ForceNew:    true, // todo: don't force new but stop server and create new volume instead
+							ForceNew:    true,
 							Description: "Size of the root volume in gigabytes",
 						},
 						"delete_on_termination": {
@@ -103,6 +103,12 @@ func resourceScalewayInstanceServer() *schema.Resource {
 							Optional:    true,
 							Default:     true,
 							Description: "Force deletion of the root volume on instance termination",
+						},
+						"boot": {
+							Type:        schema.TypeBool,
+							Optional:    true,
+							Default:     false,
+							Description: "Set the volume where the boot the server",
 						},
 						"volume_id": {
 							Type:        schema.TypeString,
@@ -302,24 +308,27 @@ func resourceScalewayInstanceServerCreate(ctx context.Context, d *schema.Resourc
 		return diag.FromErr(fmt.Errorf("could not find a server type associated with %s", req.CommercialType))
 	}
 
-	req.Volumes = make(map[string]*instance.VolumeTemplate)
+	req.Volumes = make(map[string]*instance.VolumeServerTemplate)
 	isBootOnBlock := serverType.VolumesConstraint.MaxSize == 0
+	isBoot := expandBoolPtr(d.Get("root_volume.0.boot"))
 	if isBootOnBlock {
 		if size, ok := d.GetOk("root_volume.0.size_in_gb"); ok {
-			req.Volumes["0"] = &instance.VolumeTemplate{
+			req.Volumes["0"] = &instance.VolumeServerTemplate{
 				Size:       scw.Size(uint64(size.(int)) * gb),
 				VolumeType: instance.VolumeVolumeTypeBSSD,
+				Boot:       *isBoot,
 			}
 		}
 	} else {
 		if size, ok := d.GetOk("root_volume.0.size_in_gb"); ok {
-			req.Volumes["0"] = &instance.VolumeTemplate{
+			req.Volumes["0"] = &instance.VolumeServerTemplate{
 				Size:       scw.Size(uint64(size.(int)) * gb),
 				VolumeType: instance.VolumeVolumeTypeLSSD,
+				Boot:       *isBoot,
 			}
 		} else {
 			// We add a local root volume if it is not already present
-			req.Volumes["0"] = &instance.VolumeTemplate{
+			req.Volumes["0"] = &instance.VolumeServerTemplate{
 				Name:       newRandomName("vol"),
 				VolumeType: instance.VolumeVolumeTypeLSSD,
 				Size:       serverType.VolumesConstraint.MinSize,
@@ -337,7 +346,7 @@ func resourceScalewayInstanceServerCreate(ctx context.Context, d *schema.Resourc
 			if err != nil {
 				return diag.FromErr(err)
 			}
-			req.Volumes[strconv.Itoa(i+1)] = &instance.VolumeTemplate{
+			req.Volumes[strconv.Itoa(i+1)] = &instance.VolumeServerTemplate{
 				ID:         vol.Volume.ID,
 				Name:       vol.Volume.Name,
 				VolumeType: vol.Volume.VolumeType,
@@ -536,7 +545,7 @@ func resourceScalewayInstanceServerRead(ctx context.Context, d *schema.ResourceD
 	}
 
 	var additionalVolumesIDs []string
-	for i, volume := range orderVolumes(server.Volumes) {
+	for i, volume := range sortVolumeServer(server.Volumes) {
 		if i == 0 {
 			rootVolume := map[string]interface{}{}
 
@@ -649,10 +658,10 @@ func resourceScalewayInstanceServerUpdate(ctx context.Context, d *schema.Resourc
 		updateRequest.DynamicIPRequired = scw.BoolPtr(d.Get("enable_dynamic_ip").(bool))
 	}
 
-	volumes := map[string]*instance.VolumeTemplate{}
+	volumes := map[string]*instance.VolumeServerTemplate{}
 
 	if raw, ok := d.GetOk("additional_volume_ids"); d.HasChange("additional_volume_ids") && ok {
-		volumes["0"] = &instance.VolumeTemplate{
+		volumes["0"] = &instance.VolumeServerTemplate{
 			ID:   expandZonedID(d.Get("root_volume.0.volume_id")).ID,
 			Name: newRandomName("vol"), // name is ignored by the API, any name will work here
 		}
@@ -676,7 +685,7 @@ func resourceScalewayInstanceServerUpdate(ctx context.Context, d *schema.Resourc
 					}
 				}
 			}
-			volumes[strconv.Itoa(i+1)] = &instance.VolumeTemplate{
+			volumes[strconv.Itoa(i+1)] = &instance.VolumeServerTemplate{
 				ID:   expandZonedID(volumeID).ID,
 				Name: newRandomName("vol"), // name is ignored by the API, any name will work here
 			}
@@ -712,8 +721,8 @@ func resourceScalewayInstanceServerUpdate(ctx context.Context, d *schema.Resourc
 			return diag.FromErr(err)
 		}
 
-		newIPID := expandZonedID(d.Get("ip_id")).ID
-		// If an IP is already attached and it's not a dynamic IP we detach it.
+		ipID := expandZonedID(d.Get("ip_id")).ID
+		// If an IP is already attached, and it's not a dynamic IP we detach it.
 		if server.PublicIP != nil && !server.PublicIP.Dynamic {
 			_, err = instanceAPI.UpdateIP(&instance.UpdateIPRequest{
 				Zone:   zone,
@@ -735,7 +744,7 @@ func resourceScalewayInstanceServerUpdate(ctx context.Context, d *schema.Resourc
 			}
 		}
 		// If a new IP is provided, we attach it to the server
-		if newIPID != "" {
+		if ipID != "" {
 			_, err := instanceAPI.WaitForServer(&instance.WaitForServerRequest{
 				Zone:          zone,
 				ServerID:      ID,
@@ -748,7 +757,7 @@ func resourceScalewayInstanceServerUpdate(ctx context.Context, d *schema.Resourc
 
 			_, err = instanceAPI.UpdateIP(&instance.UpdateIPRequest{
 				Zone:   zone,
-				IP:     newIPID,
+				IP:     ipID,
 				Server: &instance.NullableStringValue{Value: ID},
 			}, scw.WithContext(ctx))
 			if err != nil {
