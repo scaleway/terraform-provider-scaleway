@@ -25,6 +25,7 @@ func resourceScalewayVPCPrivateNetwork() *schema.Resource {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Description: "The name of the private network",
+				Computed:    true,
 			},
 			"tags": {
 				Type:        schema.TypeList,
