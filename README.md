@@ -1,4 +1,8 @@
-# Scaleway Terraform Provider
+<a href="https://terraform.io">
+    <img src="https://www.datocms-assets.com/2885/1629941242-logo-terraform-main.svg" alt="Terraform logo" title="Terraform" vertical-align="right" height="50" />
+</a>
+
+# Terraform Provider for Scaleway
 
 - [Provider Documentation Website](https://www.terraform.io/docs/providers/scaleway/index.html)
 - [![Gitter chat](https://badges.gitter.im/hashicorp-terraform/Lobby.png)](https://gitter.im/hashicorp-terraform/Lobby)
@@ -7,8 +11,6 @@
 
 [slack-scaleway]: https://slack.scaleway.com/
 [slack-terraform]: https://scaleway-community.slack.com/app_redirect?channel=terraform
-
-<img src="https://cdn.rawgit.com/hashicorp/terraform-website/master/content/source/assets/images/logo-hashicorp.svg" width="600px">
 
 ## Requirements
 
@@ -40,6 +42,8 @@ See the [Scaleway Provider Documentation](https://registry.terraform.io/provider
 If you wish to work on the provider, you'll first need [Go](http://www.golang.org) installed on your machine (version 1.13+ is *required*). You'll also need to correctly setup a [GOPATH](http://golang.org/doc/code.html#GOPATH), as well as adding `$GOPATH/bin` to your `$PATH`.
 
 To compile the provider, run `make build`. This will build the provider and put the provider binary in the `$GOPATH/bin` directory.
+
+You have the option to [override](https://www.terraform.io/cli/config/config-file#development-overrides-for-provider-developers) the intended version
 
 ```sh
 $ make build
