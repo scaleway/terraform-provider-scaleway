@@ -368,7 +368,7 @@ func resourceScalewayK8SClusterCreate(ctx context.Context, d *schema.ResourceDat
 	if versionIsOnlyMinor {
 		version, err = k8sGetLatestVersionFromMinor(ctx, k8sAPI, region, version)
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("minor version x.y must be used with auto upgrade enabled"))
+			return diag.FromErr(err)
 		}
 	}
 
