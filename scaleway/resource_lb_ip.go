@@ -248,7 +248,7 @@ func resourceScalewayLbIPDelete(ctx context.Context, d *schema.ResourceData, met
 	// check lb state
 	if ip != nil && ip.LBID != nil {
 		_, err = lbAPI.WaitForLbInstances(&lb.ZonedAPIWaitForLBInstancesRequest{
-			LBID:          ID,
+			LBID:          *ip.LBID,
 			Zone:          zone,
 			Timeout:       scw.TimeDurationPtr(LbWaitForTimeout),
 			RetryInterval: scw.TimeDurationPtr(DefaultWaitLBRetryInterval),
@@ -274,7 +274,7 @@ func resourceScalewayLbIPDelete(ctx context.Context, d *schema.ResourceData, met
 	// check lb state
 	if ip != nil && ip.LBID != nil {
 		_, err = lbAPI.WaitForLbInstances(&lb.ZonedAPIWaitForLBInstancesRequest{
-			LBID:          ID,
+			LBID:          *ip.LBID,
 			Zone:          zone,
 			Timeout:       scw.TimeDurationPtr(LbWaitForTimeout),
 			RetryInterval: scw.TimeDurationPtr(DefaultWaitLBRetryInterval),
