@@ -1,5 +1,5 @@
 <a href="https://terraform.io">
-    <img src="https://www.datocms-assets.com/2885/1629941242-logo-terraform-main.svg" alt="Terraform logo" title="Terraform" vertical-align="right" height="50" />
+    <img src=".github/terraform_logo.svg" alt="Terraform logo" title="Terraform" vertical-align="right" height="50" />
 </a>
 
 # Terraform Provider for Scaleway
