@@ -6,7 +6,7 @@ import (
 	"log"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/plugin"
-	"github.com/scaleway/terraform-provider-scaleway/scaleway/v2"
+	"github.com/scaleway/terraform-provider-scaleway/v2/scaleway"
 )
 
 func main() {
