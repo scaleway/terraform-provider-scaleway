@@ -56,7 +56,7 @@ In addition to all arguments above, the following attributes are exported:
 - `organization_id` - The organization ID the load-balancer is associated with.
 
 ~> **Important:** `release_ip` will not be supported. This prevents the destruction of the IP from releasing a LBs.
-The `resource_lb_ip` will the only to handle those IPs.
+The `resource_lb_ip` will be the only resource that handles those IPs.
 ## IP ID
 
 Since v1.15.0, `ip_id` is a required field. This means that now a separate `scaleway_lb_ip` is required.
