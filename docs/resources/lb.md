@@ -21,7 +21,7 @@ resource "scaleway_lb" "base" {
   ip_id  = scaleway_lb_ip.ip.id
   zone = "fr-par-1"
   type   = "LB-S"
-  release_ip = true
+  release_ip = false
 }
 ```
 
@@ -55,6 +55,8 @@ In addition to all arguments above, the following attributes are exported:
 - `ip_address` -  The load-balance public IP Address
 - `organization_id` - The organization ID the load-balancer is associated with.
 
+~> **Important:** `release_ip` will not be supported. This prevents the destruction of the IP from releasing a LBs.
+The `resource_lb_ip` will the only to handle those IPs.
 ## IP ID
 
 Since v1.15.0, `ip_id` is a required field. This means that now a separate `scaleway_lb_ip` is required.
@@ -80,7 +82,7 @@ resource "scaleway_lb" "base" {
   ip_id  = scaleway_lb_ip.ip.id
   zone = "fr-par-1"
   type   = "LB-S"
-  release_ip = true
+  release_ip = false
 }
 ```
 
