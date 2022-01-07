@@ -85,7 +85,6 @@ func TestAccScalewayLbIP_Basic(t *testing.T) {
 					    ip_id = scaleway_lb_ip.ip01.id
 						name = "test-lb-with-release-ip"
 						type = "LB-S"
-						release_ip = true
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(

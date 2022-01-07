@@ -63,13 +63,7 @@ func dataSourceScalewayLbRead(ctx context.Context, d *schema.ResourceData, meta 
 		lbID = res.LBs[0].ID
 	}
 
-	var relaseIPValue bool
-	releaseIPAddress, releaseIPExist := d.GetOk("release_ip")
-	if releaseIPExist {
-		relaseIPValue = *expandBoolPtr(releaseIPAddress)
-	}
-
-	err = d.Set("release_ip", relaseIPValue)
+	err = d.Set("release_ip", false)
 	if err != nil {
 		return diag.FromErr(err)
 	}

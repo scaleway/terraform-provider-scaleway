@@ -71,6 +71,7 @@ func resourceScalewayLb() *schema.Resource {
 				Optional:    true,
 				Default:     false,
 				Description: "Release the IPs related to this load-balancer",
+				Deprecated:  "The resource ip will be destroyed by it's own resource. Please set this to `false`",
 			},
 			"private_network": {
 				Type:        schema.TypeList,
@@ -211,13 +212,7 @@ func resourceScalewayLbRead(ctx context.Context, d *schema.ResourceData, meta in
 		return diag.FromErr(err)
 	}
 
-	var relaseIPValue bool
-	releaseIPAddress, releaseIPPExist := d.GetOk("release_ip")
-	if releaseIPPExist {
-		relaseIPValue = *expandBoolPtr(releaseIPAddress)
-	}
-
-	_ = d.Set("release_ip", relaseIPValue)
+	_ = d.Set("release_ip", false)
 	_ = d.Set("name", res.Name)
 	_ = d.Set("zone", zone.String())
 	_ = d.Set("region", region.String())
@@ -403,16 +398,10 @@ func resourceScalewayLbDelete(ctx context.Context, d *schema.ResourceData, meta 
 		}
 	}
 
-	var releaseAddressValue bool
-	releaseIPAddress, releaseIPPExist := d.GetOk("release_ip")
-	if releaseIPPExist {
-		releaseAddressValue = *expandBoolPtr(releaseIPAddress)
-	}
-
 	err = lbAPI.DeleteLB(&lb.ZonedAPIDeleteLBRequest{
 		Zone:      zone,
 		LBID:      ID,
-		ReleaseIP: releaseAddressValue,
+		ReleaseIP: false,
 	}, scw.WithContext(ctx))
 	if err != nil && !is404Error(err) {
 		return diag.FromErr(err)
