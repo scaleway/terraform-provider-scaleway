@@ -135,7 +135,7 @@ func testAccCheckScalewayLbIPDestroy(tt *TestTools) resource.TestCheckFunc {
 
 			lbID, lbExist := rs.Primary.Attributes["lb_id"]
 			if lbExist && len(lbID) > 0 {
-				_, err = lbAPI.WaitForLb(&lb.ZonedAPIWaitForLBRequest{
+				_, err = lbAPI.WaitForLbInstances(&lb.ZonedAPIWaitForLBInstancesRequest{
 					Zone:          zone,
 					LBID:          lbID,
 					Timeout:       scw.TimeDurationPtr(defaultInstanceServerWaitTimeout),
