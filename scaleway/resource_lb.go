@@ -193,7 +193,7 @@ func resourceScalewayLbRead(ctx context.Context, d *schema.ResourceData, meta in
 	}
 
 	retryInterval := DefaultWaitLBRetryInterval
-	res, err := lbAPI.WaitForLb(&lb.ZonedAPIWaitForLBRequest{
+	res, err := lbAPI.WaitForLbInstances(&lb.ZonedAPIWaitForLBInstancesRequest{
 		Zone:          zone,
 		LBID:          ID,
 		Timeout:       scw.TimeDurationPtr(defaultInstanceServerWaitTimeout),

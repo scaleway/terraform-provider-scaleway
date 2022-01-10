@@ -32,6 +32,15 @@ func testSweepLB(_ string) error {
 		}
 
 		for _, l := range listLBs.LBs {
+			_, err = lbAPI.WaitForLbInstances(&lb.ZonedAPIWaitForLBInstancesRequest{
+				LBID:          l.ID,
+				Zone:          zone,
+				Timeout:       scw.TimeDurationPtr(LbWaitForTimeout),
+				RetryInterval: scw.TimeDurationPtr(DefaultWaitLBRetryInterval),
+			})
+			if err != nil {
+				return fmt.Errorf("error waiting for lb in sweeper: %s", err)
+			}
 			err := lbAPI.DeleteLB(&lb.ZonedAPIDeleteLBRequest{
 				LBID:      l.ID,
 				ReleaseIP: true,
