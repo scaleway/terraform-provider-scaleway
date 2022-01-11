@@ -254,49 +254,49 @@ func resourceScalewayK8SClusterCreate(ctx context.Context, d *schema.ResourceDat
 		ApiserverCertSans: expandStrings(d.Get("apiserver_cert_sans")),
 	}
 
-	autoscalerReq := &k8s.CreateClusterRequestAutoscalerConfig{}
+	autoscalingReq := &k8s.CreateClusterRequestAutoscalerConfig{}
 
 	if scaleDownDisabled, ok := d.GetOk("autoscaler_config.0.disable_scale_down"); ok {
-		autoscalerReq.ScaleDownDisabled = scw.BoolPtr(scaleDownDisabled.(bool))
+		autoscalingReq.ScaleDownDisabled = scw.BoolPtr(scaleDownDisabled.(bool))
 	}
 
 	if scaleDownDelayAfterAdd, ok := d.GetOk("autoscaler_config.0.scale_down_delay_after_add"); ok {
-		autoscalerReq.ScaleDownDelayAfterAdd = expandStringPtr(scaleDownDelayAfterAdd)
+		autoscalingReq.ScaleDownDelayAfterAdd = expandStringPtr(scaleDownDelayAfterAdd)
 	}
 
 	if scaleDownUneededTime, ok := d.GetOk("autoscaler_config.0.scale_down_unneeded_time"); ok {
-		autoscalerReq.ScaleDownUnneededTime = expandStringPtr(scaleDownUneededTime)
+		autoscalingReq.ScaleDownUnneededTime = expandStringPtr(scaleDownUneededTime)
 	}
 
 	if estimator, ok := d.GetOk("autoscaler_config.0.estimator"); ok {
-		autoscalerReq.Estimator = k8s.AutoscalerEstimator(estimator.(string))
+		autoscalingReq.Estimator = k8s.AutoscalerEstimator(estimator.(string))
 	}
 
 	if expander, ok := d.GetOk("autoscaler_config.0.expander"); ok {
-		autoscalerReq.Expander = k8s.AutoscalerExpander(expander.(string))
+		autoscalingReq.Expander = k8s.AutoscalerExpander(expander.(string))
 	}
 
 	if ignoreDaemonsetsUtilization, ok := d.GetOk("autoscaler_config.0.ignore_daemonsets_utilization"); ok {
-		autoscalerReq.IgnoreDaemonsetsUtilization = scw.BoolPtr(ignoreDaemonsetsUtilization.(bool))
+		autoscalingReq.IgnoreDaemonsetsUtilization = scw.BoolPtr(ignoreDaemonsetsUtilization.(bool))
 	}
 
 	if balanceSimilarNodeGroups, ok := d.GetOk("autoscaler_config.0.balance_similar_node_groups"); ok {
-		autoscalerReq.BalanceSimilarNodeGroups = scw.BoolPtr(balanceSimilarNodeGroups.(bool))
+		autoscalingReq.BalanceSimilarNodeGroups = scw.BoolPtr(balanceSimilarNodeGroups.(bool))
 	}
 
 	if balanceSimilarNodeGroups, ok := d.GetOk("autoscaler_config.0.balance_similar_node_groups"); ok {
-		autoscalerReq.BalanceSimilarNodeGroups = scw.BoolPtr(balanceSimilarNodeGroups.(bool))
+		autoscalingReq.BalanceSimilarNodeGroups = scw.BoolPtr(balanceSimilarNodeGroups.(bool))
 	}
 
-	autoscalerReq.ExpendablePodsPriorityCutoff = scw.Int32Ptr(int32(d.Get("autoscaler_config.0.expendable_pods_priority_cutoff").(int)))
+	autoscalingReq.ExpendablePodsPriorityCutoff = scw.Int32Ptr(int32(d.Get("autoscaler_config.0.expendable_pods_priority_cutoff").(int)))
 
 	if utilizationThreshold, ok := d.GetOk("autoscaler_config.0.scale_down_utilization_threshold"); ok {
-		autoscalerReq.ScaleDownUtilizationThreshold = scw.Float32Ptr(float32(utilizationThreshold.(float64)))
+		autoscalingReq.ScaleDownUtilizationThreshold = scw.Float32Ptr(float32(utilizationThreshold.(float64)))
 	}
 
-	autoscalerReq.MaxGracefulTerminationSec = scw.Uint32Ptr(uint32(d.Get("autoscaler_config.0.max_graceful_termination_sec").(int)))
+	autoscalingReq.MaxGracefulTerminationSec = scw.Uint32Ptr(uint32(d.Get("autoscaler_config.0.max_graceful_termination_sec").(int)))
 
-	req.AutoscalerConfig = autoscalerReq
+	req.AutoscalerConfig = autoscalingReq
 
 	createClusterRequestOpenIDConnectConfig := &k8s.CreateClusterRequestOpenIDConnectConfig{}
 
@@ -379,7 +379,7 @@ func resourceScalewayK8SClusterCreate(ctx context.Context, d *schema.ResourceDat
 		return diag.FromErr(err)
 	}
 
-	err = waitK8SCluster(ctx, k8sAPI, region, res.ID, k8s.ClusterStatusReady, k8s.ClusterStatusPoolRequired)
+	res, err = waitK8SClusterPool(ctx, k8sAPI, region, res.ID)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -653,7 +653,7 @@ func resourceScalewayK8SClusterUpdate(ctx context.Context, d *schema.ResourceDat
 		return diag.FromErr(err)
 	}
 
-	err = waitK8SCluster(ctx, k8sAPI, region, clusterID, k8s.ClusterStatusReady, k8s.ClusterStatusPoolRequired)
+	_, err = waitK8SCluster(ctx, k8sAPI, region, clusterID)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -673,7 +673,7 @@ func resourceScalewayK8SClusterUpdate(ctx context.Context, d *schema.ResourceDat
 			return diag.FromErr(err)
 		}
 
-		err = waitK8SCluster(ctx, k8sAPI, region, clusterID, k8s.ClusterStatusReady, k8s.ClusterStatusPoolRequired)
+		_, err = waitK8SClusterPool(ctx, k8sAPI, region, clusterID)
 		if err != nil {
 			return diag.FromErr(err)
 		}

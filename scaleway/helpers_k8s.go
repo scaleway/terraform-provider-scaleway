@@ -102,24 +102,22 @@ func k8sGetLatestVersionFromMinor(ctx context.Context, k8sAPI *k8s.API, region s
 	return "", fmt.Errorf("no available upstream version found for %s", version)
 }
 
-func waitK8SCluster(ctx context.Context, k8sAPI *k8s.API, region scw.Region, clusterID string, desiredStates ...k8s.ClusterStatus) error {
-	cluster, err := k8sAPI.WaitForCluster(&k8s.WaitForClusterRequest{
+func waitK8SCluster(ctx context.Context, k8sAPI *k8s.API, region scw.Region, clusterID string) (*k8s.Cluster, error) {
+	return k8sAPI.WaitForCluster(&k8s.WaitForClusterRequest{
 		ClusterID:     clusterID,
 		Region:        region,
 		Timeout:       scw.TimeDurationPtr(K8SClusterWaitForPoolRequiredTimeout),
 		RetryInterval: DefaultWaitRetryInterval,
 	}, scw.WithContext(ctx))
-	if err != nil {
-		return err
-	}
+}
 
-	for _, desiredState := range desiredStates {
-		if cluster.Status == desiredState {
-			return nil
-		}
-	}
-
-	return fmt.Errorf("cluster %s has state %s, wants one of %+q", clusterID, cluster.Status, desiredStates)
+func waitK8SClusterPool(ctx context.Context, k8sAPI *k8s.API, region scw.Region, clusterID string) (*k8s.Cluster, error) {
+	return k8sAPI.WaitForClusterPool(&k8s.WaitForClusterRequest{
+		ClusterID:     clusterID,
+		Region:        region,
+		Timeout:       scw.TimeDurationPtr(K8SClusterWaitForPoolRequiredTimeout),
+		RetryInterval: DefaultWaitRetryInterval,
+	}, scw.WithContext(ctx))
 }
 
 func waitK8SClusterDeleted(ctx context.Context, k8sAPI *k8s.API, region scw.Region, clusterID string) error {
