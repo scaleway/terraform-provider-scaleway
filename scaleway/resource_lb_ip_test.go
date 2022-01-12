@@ -139,7 +139,7 @@ func testAccCheckScalewayLbIPDestroy(tt *TestTools) resource.TestCheckFunc {
 					Zone:          zone,
 					LBID:          lbID,
 					Timeout:       scw.TimeDurationPtr(defaultInstanceServerWaitTimeout),
-					RetryInterval: scw.TimeDurationPtr(DefaultWaitLBRetryInterval),
+					RetryInterval: scw.TimeDurationPtr(defaultWaitLBRetryInterval),
 				})
 				// Unexpected api error we return it
 				if !is404Error(err) {
