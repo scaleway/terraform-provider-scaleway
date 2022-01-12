@@ -13,7 +13,7 @@ import (
 )
 
 const (
-	DefaultWaitLBRetryInterval = 30 * time.Second
+	defaultWaitLBRetryInterval = 30 * time.Second
 )
 
 func resourceScalewayLb() *schema.Resource {
@@ -146,7 +146,7 @@ func resourceScalewayLbCreate(ctx context.Context, d *schema.ResourceData, meta 
 
 	d.SetId(newZonedIDString(zone, res.ID))
 	// wait for lb
-	retryInterval := DefaultWaitLBRetryInterval
+	retryInterval := defaultWaitLBRetryInterval
 	_, err = lbAPI.WaitForLb(&lb.ZonedAPIWaitForLBRequest{
 		Zone:          zone,
 		LBID:          res.ID,
@@ -192,7 +192,7 @@ func resourceScalewayLbRead(ctx context.Context, d *schema.ResourceData, meta in
 		return diag.FromErr(err)
 	}
 
-	retryInterval := DefaultWaitLBRetryInterval
+	retryInterval := defaultWaitLBRetryInterval
 	res, err := lbAPI.WaitForLbInstances(&lb.ZonedAPIWaitForLBInstancesRequest{
 		Zone:          zone,
 		LBID:          ID,
@@ -257,7 +257,7 @@ func resourceScalewayLbUpdate(ctx context.Context, d *schema.ResourceData, meta 
 		_, err = lbAPI.WaitForLb(&lb.ZonedAPIWaitForLBRequest{
 			LBID:          ID,
 			Zone:          zone,
-			Timeout:       scw.TimeDurationPtr(LbWaitForTimeout),
+			Timeout:       scw.TimeDurationPtr(lbWaitForTimeout),
 			RetryInterval: DefaultWaitRetryInterval,
 		}, scw.WithContext(ctx))
 
@@ -274,7 +274,7 @@ func resourceScalewayLbUpdate(ctx context.Context, d *schema.ResourceData, meta 
 	// Attach / Detach Private Networks
 	////
 	if d.HasChangesExcept("private_network") {
-		retryInterval := DefaultWaitLBRetryInterval
+		retryInterval := defaultWaitLBRetryInterval
 		// check that pns are in a stable state
 		pns, err := lbAPI.WaitForLBPN(&lb.ZonedAPIWaitForLBPNRequest{
 			Zone:          zone,
@@ -359,8 +359,8 @@ func resourceScalewayLbDelete(ctx context.Context, d *schema.ResourceData, meta 
 	currentLB, err := lbAPI.WaitForLbInstances(&lb.ZonedAPIWaitForLBInstancesRequest{
 		LBID:          ID,
 		Zone:          zone,
-		Timeout:       scw.TimeDurationPtr(LbWaitForTimeout),
-		RetryInterval: scw.TimeDurationPtr(DefaultWaitLBRetryInterval),
+		Timeout:       scw.TimeDurationPtr(lbWaitForTimeout),
+		RetryInterval: scw.TimeDurationPtr(defaultWaitLBRetryInterval),
 	}, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
@@ -390,8 +390,8 @@ func resourceScalewayLbDelete(ctx context.Context, d *schema.ResourceData, meta 
 		_, err = lbAPI.WaitForLbInstances(&lb.ZonedAPIWaitForLBInstancesRequest{
 			LBID:          ID,
 			Zone:          zone,
-			Timeout:       scw.TimeDurationPtr(LbWaitForTimeout),
-			RetryInterval: scw.TimeDurationPtr(DefaultWaitLBRetryInterval),
+			Timeout:       scw.TimeDurationPtr(lbWaitForTimeout),
+			RetryInterval: scw.TimeDurationPtr(defaultWaitLBRetryInterval),
 		}, scw.WithContext(ctx))
 		if err != nil && !is404Error(err) {
 			return diag.FromErr(err)
@@ -410,8 +410,8 @@ func resourceScalewayLbDelete(ctx context.Context, d *schema.ResourceData, meta 
 	_, err = lbAPI.WaitForLbInstances(&lb.ZonedAPIWaitForLBInstancesRequest{
 		LBID:          ID,
 		Zone:          zone,
-		Timeout:       scw.TimeDurationPtr(LbWaitForTimeout),
-		RetryInterval: scw.TimeDurationPtr(DefaultWaitLBRetryInterval),
+		Timeout:       scw.TimeDurationPtr(lbWaitForTimeout),
+		RetryInterval: scw.TimeDurationPtr(defaultWaitLBRetryInterval),
 	}, scw.WithContext(ctx))
 	if err != nil && !is404Error(err) {
 		return diag.FromErr(err)
