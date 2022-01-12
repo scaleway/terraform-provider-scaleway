@@ -254,49 +254,49 @@ func resourceScalewayK8SClusterCreate(ctx context.Context, d *schema.ResourceDat
 		ApiserverCertSans: expandStrings(d.Get("apiserver_cert_sans")),
 	}
 
-	autoscalingReq := &k8s.CreateClusterRequestAutoscalerConfig{}
+	autoscalerReq := &k8s.CreateClusterRequestAutoscalerConfig{}
 
 	if scaleDownDisabled, ok := d.GetOk("autoscaler_config.0.disable_scale_down"); ok {
-		autoscalingReq.ScaleDownDisabled = scw.BoolPtr(scaleDownDisabled.(bool))
+		autoscalerReq.ScaleDownDisabled = scw.BoolPtr(scaleDownDisabled.(bool))
 	}
 
 	if scaleDownDelayAfterAdd, ok := d.GetOk("autoscaler_config.0.scale_down_delay_after_add"); ok {
-		autoscalingReq.ScaleDownDelayAfterAdd = expandStringPtr(scaleDownDelayAfterAdd)
+		autoscalerReq.ScaleDownDelayAfterAdd = expandStringPtr(scaleDownDelayAfterAdd)
 	}
 
 	if scaleDownUneededTime, ok := d.GetOk("autoscaler_config.0.scale_down_unneeded_time"); ok {
-		autoscalingReq.ScaleDownUnneededTime = expandStringPtr(scaleDownUneededTime)
+		autoscalerReq.ScaleDownUnneededTime = expandStringPtr(scaleDownUneededTime)
 	}
 
 	if estimator, ok := d.GetOk("autoscaler_config.0.estimator"); ok {
-		autoscalingReq.Estimator = k8s.AutoscalerEstimator(estimator.(string))
+		autoscalerReq.Estimator = k8s.AutoscalerEstimator(estimator.(string))
 	}
 
 	if expander, ok := d.GetOk("autoscaler_config.0.expander"); ok {
-		autoscalingReq.Expander = k8s.AutoscalerExpander(expander.(string))
+		autoscalerReq.Expander = k8s.AutoscalerExpander(expander.(string))
 	}
 
 	if ignoreDaemonsetsUtilization, ok := d.GetOk("autoscaler_config.0.ignore_daemonsets_utilization"); ok {
-		autoscalingReq.IgnoreDaemonsetsUtilization = scw.BoolPtr(ignoreDaemonsetsUtilization.(bool))
+		autoscalerReq.IgnoreDaemonsetsUtilization = scw.BoolPtr(ignoreDaemonsetsUtilization.(bool))
 	}
 
 	if balanceSimilarNodeGroups, ok := d.GetOk("autoscaler_config.0.balance_similar_node_groups"); ok {
-		autoscalingReq.BalanceSimilarNodeGroups = scw.BoolPtr(balanceSimilarNodeGroups.(bool))
+		autoscalerReq.BalanceSimilarNodeGroups = scw.BoolPtr(balanceSimilarNodeGroups.(bool))
 	}
 
 	if balanceSimilarNodeGroups, ok := d.GetOk("autoscaler_config.0.balance_similar_node_groups"); ok {
-		autoscalingReq.BalanceSimilarNodeGroups = scw.BoolPtr(balanceSimilarNodeGroups.(bool))
+		autoscalerReq.BalanceSimilarNodeGroups = scw.BoolPtr(balanceSimilarNodeGroups.(bool))
 	}
 
-	autoscalingReq.ExpendablePodsPriorityCutoff = scw.Int32Ptr(int32(d.Get("autoscaler_config.0.expendable_pods_priority_cutoff").(int)))
+	autoscalerReq.ExpendablePodsPriorityCutoff = scw.Int32Ptr(int32(d.Get("autoscaler_config.0.expendable_pods_priority_cutoff").(int)))
 
 	if utilizationThreshold, ok := d.GetOk("autoscaler_config.0.scale_down_utilization_threshold"); ok {
-		autoscalingReq.ScaleDownUtilizationThreshold = scw.Float32Ptr(float32(utilizationThreshold.(float64)))
+		autoscalerReq.ScaleDownUtilizationThreshold = scw.Float32Ptr(float32(utilizationThreshold.(float64)))
 	}
 
-	autoscalingReq.MaxGracefulTerminationSec = scw.Uint32Ptr(uint32(d.Get("autoscaler_config.0.max_graceful_termination_sec").(int)))
+	autoscalerReq.MaxGracefulTerminationSec = scw.Uint32Ptr(uint32(d.Get("autoscaler_config.0.max_graceful_termination_sec").(int)))
 
-	req.AutoscalerConfig = autoscalingReq
+	req.AutoscalerConfig = autoscalerReq
 
 	createClusterRequestOpenIDConnectConfig := &k8s.CreateClusterRequestOpenIDConnectConfig{}
 
@@ -398,10 +398,7 @@ func resourceScalewayK8SClusterRead(ctx context.Context, d *schema.ResourceData,
 	////
 	// Read Cluster
 	////
-	response, err := k8sAPI.GetCluster(&k8s.GetClusterRequest{
-		Region:    region,
-		ClusterID: clusterID,
-	}, scw.WithContext(ctx))
+	cluster, err := waitK8SCluster(ctx, k8sAPI, region, clusterID)
 	if err != nil {
 		if is404Error(err) {
 			d.SetId("")
@@ -411,26 +408,26 @@ func resourceScalewayK8SClusterRead(ctx context.Context, d *schema.ResourceData,
 	}
 
 	_ = d.Set("region", string(region))
-	_ = d.Set("name", response.Name)
-	_ = d.Set("type", response.Type)
-	_ = d.Set("organization_id", response.OrganizationID)
-	_ = d.Set("project_id", response.ProjectID)
-	_ = d.Set("description", response.Description)
-	_ = d.Set("cni", response.Cni)
-	_ = d.Set("tags", response.Tags)
-	_ = d.Set("apiserver_cert_sans", response.ApiserverCertSans)
-	_ = d.Set("created_at", response.CreatedAt.Format(time.RFC3339))
-	_ = d.Set("updated_at", response.UpdatedAt.Format(time.RFC3339))
-	_ = d.Set("apiserver_url", response.ClusterURL)
-	_ = d.Set("wildcard_dns", response.DNSWildcard)
-	_ = d.Set("status", response.Status.String())
-	_ = d.Set("upgrade_available", response.UpgradeAvailable)
-	_ = d.Set("feature_gates", response.FeatureGates)
-	_ = d.Set("admission_plugins", response.AdmissionPlugins)
+	_ = d.Set("name", cluster.Name)
+	_ = d.Set("type", cluster.Type)
+	_ = d.Set("organization_id", cluster.OrganizationID)
+	_ = d.Set("project_id", cluster.ProjectID)
+	_ = d.Set("description", cluster.Description)
+	_ = d.Set("cni", cluster.Cni)
+	_ = d.Set("tags", cluster.Tags)
+	_ = d.Set("apiserver_cert_sans", cluster.ApiserverCertSans)
+	_ = d.Set("created_at", cluster.CreatedAt.Format(time.RFC3339))
+	_ = d.Set("updated_at", cluster.UpdatedAt.Format(time.RFC3339))
+	_ = d.Set("apiserver_url", cluster.ClusterURL)
+	_ = d.Set("wildcard_dns", cluster.DNSWildcard)
+	_ = d.Set("status", cluster.Status.String())
+	_ = d.Set("upgrade_available", cluster.UpgradeAvailable)
+	_ = d.Set("feature_gates", cluster.FeatureGates)
+	_ = d.Set("admission_plugins", cluster.AdmissionPlugins)
 
 	// if autoupgrade is enabled, we only set the minor k8s version (x.y)
-	version := response.Version
-	if response.AutoUpgrade != nil && response.AutoUpgrade.Enabled {
+	version := cluster.Version
+	if cluster.AutoUpgrade != nil && cluster.AutoUpgrade.Enabled {
 		version, err = k8sGetMinorVersionFromFull(version)
 		if err != nil {
 			return diag.FromErr(err)
@@ -439,9 +436,9 @@ func resourceScalewayK8SClusterRead(ctx context.Context, d *schema.ResourceData,
 	_ = d.Set("version", version)
 
 	// autoscaler_config
-	_ = d.Set("autoscaler_config", clusterAutoscalerConfigFlatten(response))
-	_ = d.Set("open_id_connect_config", clusterOpenIDConnectConfigFlatten(response))
-	_ = d.Set("auto_upgrade", clusterAutoUpgradeFlatten(response))
+	_ = d.Set("autoscaler_config", clusterAutoscalerConfigFlatten(cluster))
+	_ = d.Set("open_id_connect_config", clusterOpenIDConnectConfigFlatten(cluster))
+	_ = d.Set("auto_upgrade", clusterAutoUpgradeFlatten(cluster))
 
 	////
 	// Read kubeconfig
@@ -673,7 +670,7 @@ func resourceScalewayK8SClusterUpdate(ctx context.Context, d *schema.ResourceDat
 			return diag.FromErr(err)
 		}
 
-		_, err = waitK8SClusterPool(ctx, k8sAPI, region, clusterID)
+		_, err = waitK8SCluster(ctx, k8sAPI, region, clusterID)
 		if err != nil {
 			return diag.FromErr(err)
 		}

@@ -149,10 +149,10 @@ func waitK8SPoolReady(ctx context.Context, k8sAPI *k8s.API, region scw.Region, p
 		return err
 	}
 
-	if pool.Status == k8s.PoolStatusReady {
-		return nil
+	if pool.Status != k8s.PoolStatusReady {
+		return fmt.Errorf("pool %s has state %s, wants %s", poolID, pool.Status, k8s.PoolStatusReady)
 	}
-	return fmt.Errorf("pool %s has state %s, wants %s", poolID, pool.Status, k8s.PoolStatusReady)
+	return nil
 }
 
 // convert a list of nodes to a list of map
