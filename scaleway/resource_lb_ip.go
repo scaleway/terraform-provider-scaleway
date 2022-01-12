@@ -111,7 +111,7 @@ func resourceScalewayLbIPRead(ctx context.Context, d *schema.ResourceData, meta 
 			Zone:          zone,
 			LBID:          *ip.LBID,
 			Timeout:       scw.TimeDurationPtr(defaultInstanceServerWaitTimeout),
-			RetryInterval: scw.TimeDurationPtr(DefaultWaitLBRetryInterval),
+			RetryInterval: scw.TimeDurationPtr(defaultWaitLBRetryInterval),
 		}, scw.WithContext(ctx))
 		if err != nil {
 			if is403Error(err) {
@@ -175,7 +175,7 @@ func resourceScalewayLbIPUpdate(ctx context.Context, d *schema.ResourceData, met
 			Zone:          zone,
 			LBID:          *ip.LBID,
 			Timeout:       scw.TimeDurationPtr(defaultInstanceServerWaitTimeout),
-			RetryInterval: scw.TimeDurationPtr(DefaultWaitLBRetryInterval),
+			RetryInterval: scw.TimeDurationPtr(defaultWaitLBRetryInterval),
 		}, scw.WithContext(ctx))
 		if err != nil {
 			if is403Error(err) {
@@ -204,7 +204,7 @@ func resourceScalewayLbIPUpdate(ctx context.Context, d *schema.ResourceData, met
 			Zone:          zone,
 			LBID:          *ip.LBID,
 			Timeout:       scw.TimeDurationPtr(defaultInstanceServerWaitTimeout),
-			RetryInterval: scw.TimeDurationPtr(DefaultWaitLBRetryInterval),
+			RetryInterval: scw.TimeDurationPtr(defaultWaitLBRetryInterval),
 		}, scw.WithContext(ctx))
 		if err != nil {
 			if is403Error(err) {
@@ -250,8 +250,8 @@ func resourceScalewayLbIPDelete(ctx context.Context, d *schema.ResourceData, met
 		_, err = lbAPI.WaitForLbInstances(&lb.ZonedAPIWaitForLBInstancesRequest{
 			LBID:          *ip.LBID,
 			Zone:          zone,
-			Timeout:       scw.TimeDurationPtr(LbWaitForTimeout),
-			RetryInterval: scw.TimeDurationPtr(DefaultWaitLBRetryInterval),
+			Timeout:       scw.TimeDurationPtr(lbWaitForTimeout),
+			RetryInterval: scw.TimeDurationPtr(defaultWaitLBRetryInterval),
 		}, scw.WithContext(ctx))
 		if err != nil {
 			if is403Error(err) {
@@ -276,8 +276,8 @@ func resourceScalewayLbIPDelete(ctx context.Context, d *schema.ResourceData, met
 		_, err = lbAPI.WaitForLbInstances(&lb.ZonedAPIWaitForLBInstancesRequest{
 			LBID:          *ip.LBID,
 			Zone:          zone,
-			Timeout:       scw.TimeDurationPtr(LbWaitForTimeout),
-			RetryInterval: scw.TimeDurationPtr(DefaultWaitLBRetryInterval),
+			Timeout:       scw.TimeDurationPtr(lbWaitForTimeout),
+			RetryInterval: scw.TimeDurationPtr(defaultWaitLBRetryInterval),
 		}, scw.WithContext(ctx))
 		if err != nil {
 			if is404Error(err) || is403Error(err) {

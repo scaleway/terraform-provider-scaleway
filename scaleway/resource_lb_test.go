@@ -35,8 +35,8 @@ func testSweepLB(_ string) error {
 			_, err = lbAPI.WaitForLbInstances(&lb.ZonedAPIWaitForLBInstancesRequest{
 				LBID:          l.ID,
 				Zone:          zone,
-				Timeout:       scw.TimeDurationPtr(LbWaitForTimeout),
-				RetryInterval: scw.TimeDurationPtr(DefaultWaitLBRetryInterval),
+				Timeout:       scw.TimeDurationPtr(lbWaitForTimeout),
+				RetryInterval: scw.TimeDurationPtr(defaultWaitLBRetryInterval),
 			})
 			if err != nil {
 				return fmt.Errorf("error waiting for lb in sweeper: %s", err)
