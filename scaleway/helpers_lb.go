@@ -15,7 +15,7 @@ import (
 )
 
 const (
-	LbWaitForTimeout   = 10 * time.Minute
+	lbWaitForTimeout   = 10 * time.Minute
 	defaultLbLbTimeout = 10 * time.Minute
 	retryLbIPInterval  = 5 * time.Second
 )
