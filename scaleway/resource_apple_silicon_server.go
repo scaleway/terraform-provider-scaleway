@@ -101,7 +101,7 @@ func resourceScalewayAppleSiliconServerCreate(ctx context.Context, d *schema.Res
 		return diag.FromErr(err)
 	}
 
-	return resourceScalewayRdbInstanceRead(ctx, d, meta)
+	return resourceScalewayAppleSiliconServerRead(ctx, d, meta)
 }
 
 func resourceScalewayAppleSiliconServerRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
