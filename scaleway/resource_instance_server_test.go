@@ -932,15 +932,15 @@ func TestAccScalewayInstanceServer_PrivateNetwork(t *testing.T) {
 						name = "private_network_instance"
 						zone = "fr-par-2"
 					}
-			
+
 					resource "scaleway_instance_server" "base" {
-					  image = "ubuntu_focal"
-					  type  = "DEV1-S"
-					  zone = "fr-par-2"
-			
-					  private_network {
-						pn_id = scaleway_vpc_private_network.internal.id
-					  }
+						image = "ubuntu_focal"
+						type  = "DEV1-S"
+						zone = "fr-par-2"
+
+						private_network {
+							pn_id = scaleway_vpc_private_network.internal.id
+						}
 					}`,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayInstancePrivateNICsExists(tt, "scaleway_instance_server.base"),
@@ -958,15 +958,15 @@ func TestAccScalewayInstanceServer_PrivateNetwork(t *testing.T) {
 					resource scaleway_vpc_private_network pn01 {
 						name = "private_network_instance"
 					}
-			
+
 					resource "scaleway_instance_server" "base" {
-					  image = "ubuntu_focal"
-					  type  = "DEV1-S"
-                      zone  = "fr-par-1"
-			
-					  private_network {
-						pn_id = scaleway_vpc_private_network.pn01.id
-					  }
+						image = "ubuntu_focal"
+						type  = "DEV1-S"
+						zone  = "fr-par-1"
+
+						private_network {
+							pn_id = scaleway_vpc_private_network.pn01.id
+						}
 					}`,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayInstancePrivateNICsExists(tt, "scaleway_instance_server.base"),
@@ -984,18 +984,18 @@ func TestAccScalewayInstanceServer_PrivateNetwork(t *testing.T) {
 					resource scaleway_vpc_private_network pn01 {
 						name = "private_network_instance"
 					}
-			
+
 					resource scaleway_vpc_private_network pn02 {
 						name = "private_network_instance_02"
 					}
-			
+
 					resource "scaleway_instance_server" "base" {
-					  image = "ubuntu_focal"
-					  type  = "DEV1-S"
-			
-					  private_network {
-						pn_id = scaleway_vpc_private_network.pn02.id
-					  }
+						image = "ubuntu_focal"
+						type  = "DEV1-S"
+
+						private_network {
+							pn_id = scaleway_vpc_private_network.pn02.id
+						}
 					}`,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayInstancePrivateNICsExists(tt, "scaleway_instance_server.base"),
@@ -1019,16 +1019,16 @@ func TestAccScalewayInstanceServer_PrivateNetwork(t *testing.T) {
 					}
 
 					resource "scaleway_instance_server" "base" {
-					  image = "ubuntu_focal"
-					  type  = "DEV1-S"
+						image = "ubuntu_focal"
+						type  = "DEV1-S"
 
-					  private_network {
-						pn_id = scaleway_vpc_private_network.pn02.id
-					  }
+						private_network {
+							pn_id = scaleway_vpc_private_network.pn02.id
+						}
 
-					  private_network {
-						pn_id = scaleway_vpc_private_network.pn01.id
-					  }
+						private_network {
+							pn_id = scaleway_vpc_private_network.pn01.id
+						}
 					}`,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayInstancePrivateNICsExists(tt, "scaleway_instance_server.base"),
@@ -1053,14 +1053,14 @@ func TestAccScalewayInstanceServer_PrivateNetwork(t *testing.T) {
 					resource scaleway_vpc_private_network pn01 {
 						name = "private_network_instance"
 					}
-			
+
 					resource scaleway_vpc_private_network pn02 {
 						name = "private_network_instance_02"
 					}
-			
+
 					resource "scaleway_instance_server" "base" {
-					  image = "ubuntu_focal"
-					  type  = "DEV1-S"	
+						image = "ubuntu_focal"
+						type  = "DEV1-S"	
 					}`,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayInstanceServerExists(tt, "scaleway_instance_server.base"),
