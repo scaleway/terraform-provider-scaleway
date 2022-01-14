@@ -385,7 +385,10 @@ func (ph *privateNICsHandler) get(key string) (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
-	pn := ph.privateNICsMap[id]
+	pn, ok := ph.privateNICsMap[id]
+	if !ok {
+		return nil, fmt.Errorf("could not find private network ID %s on locality %s", key, locality)
+	}
 	return map[string]interface{}{
 		"pn_id":       key,
 		"mac_address": pn.MacAddress,
