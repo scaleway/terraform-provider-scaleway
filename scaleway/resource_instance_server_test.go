@@ -928,6 +928,33 @@ func TestAccScalewayInstanceServer_PrivateNetwork(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: `
+					resource scaleway_vpc_private_network internal {
+						name = "private_network_instance"
+						zone = "fr-par-2"
+					}
+			
+					resource "scaleway_instance_server" "base" {
+					  image = "ubuntu_focal"
+					  type  = "DEV1-S"
+					  zone = "fr-par-2"
+			
+					  private_network {
+						pn_id = scaleway_vpc_private_network.internal.id
+					  }
+					}`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayInstancePrivateNICsExists(tt, "scaleway_instance_server.base"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.base", "private_network.#", "1"),
+					resource.TestCheckResourceAttrSet("scaleway_instance_server.base", "private_network.0.pn_id"),
+					resource.TestCheckResourceAttrSet("scaleway_instance_server.base", "private_network.0.mac_address"),
+					resource.TestCheckResourceAttrSet("scaleway_instance_server.base", "private_network.0.status"),
+					resource.TestCheckResourceAttrSet("scaleway_instance_server.base", "private_network.0.zone"),
+					resource.TestCheckResourceAttrPair("scaleway_instance_server.base", "private_network.0.pn_id",
+						"scaleway_vpc_private_network.internal", "id"),
+				),
+			},
+			{
+				Config: `
 					resource scaleway_vpc_private_network pn01 {
 						name = "private_network_instance"
 					}
@@ -935,6 +962,7 @@ func TestAccScalewayInstanceServer_PrivateNetwork(t *testing.T) {
 					resource "scaleway_instance_server" "base" {
 					  image = "ubuntu_focal"
 					  type  = "DEV1-S"
+                      zone  = "fr-par-1"
 			
 					  private_network {
 						pn_id = scaleway_vpc_private_network.pn01.id
