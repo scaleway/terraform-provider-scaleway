@@ -454,6 +454,7 @@ resource "scaleway_k8s_cluster" "autoscaler" {
 	cni = "calico"
 	version = "%s"
 	name = "autoscaler-01"
+	region = "nl-ams"
 	autoscaler_config {
 		disable_scale_down = true
 		scale_down_delay_after_add = "20m"
@@ -476,6 +477,7 @@ resource "scaleway_k8s_cluster" "autoscaler" {
 	cni = "calico"
 	version = "%s"
 	name = "autoscaler-02"
+	region = "nl-ams"
 	autoscaler_config {
 		disable_scale_down = false
 		scale_down_delay_after_add = "20m"
