@@ -24,15 +24,15 @@ func TestAccScalewayDataSourceK8SCluster_Basic(t *testing.T) {
 						version = "%s"
 						cni     = "cilium"
 					  	tags    = [ "terraform-test", "data_scaleway_k8s_cluster", "basic" ]
-					}`, clusterName, version),
-			},
-			{
-				Config: fmt.Sprintf(`
-					resource "scaleway_k8s_cluster" "main" {
-					  	name 	= "%s"
-						version = "%s"
-						cni     = "cilium"
-					  	tags    = [ "terraform-test", "data_scaleway_k8s_cluster", "basic" ]
+					}
+
+					resource "scaleway_k8s_pool" "default" {
+						name = "default"
+						cluster_id = "${scaleway_k8s_cluster.main.id}"
+						node_type = "gp1_xs"
+						autohealing = true
+						autoscaling = true
+						size = 1
 					}
 					
 					data "scaleway_k8s_cluster" "prod" {
