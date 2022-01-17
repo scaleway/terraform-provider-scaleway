@@ -42,7 +42,7 @@ const (
 	defaultK8SPoolTimeout                = 10 * time.Minute
 	K8SClusterWaitForPoolRequiredTimeout = 10 * time.Minute
 	K8SClusterWaitForDeletedTimeout      = 10 * time.Minute
-	K8SPoolWaitForReadyTimeout           = 10 * time.Minute
+	K8SPoolWaitForReadyTimeout           = 15 * time.Minute
 )
 
 func k8sAPIWithRegion(d *schema.ResourceData, m interface{}) (*k8s.API, scw.Region, error) {
