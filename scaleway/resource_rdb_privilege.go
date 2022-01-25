@@ -3,9 +3,9 @@ package scaleway
 import (
 	"context"
 	"fmt"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/scaleway/scaleway-sdk-go/api/rdb/v1"

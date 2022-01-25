@@ -27,7 +27,7 @@ func TestAccScalewayRdbPrivilege_Basic(t *testing.T) {
 						is_ha_cluster = false
 						tags = [ "terraform-test", "scaleway_rdb_user", "minimal" ]
 					}
-			
+
 					resource "scaleway_rdb_database" "db01" {
 						instance_id = scaleway_rdb_instance.main.id
 						name = "foo"
