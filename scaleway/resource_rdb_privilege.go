@@ -2,6 +2,8 @@ package scaleway
 
 import (
 	"context"
+	"fmt"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -28,7 +30,7 @@ func resourceScalewayRdbPrivilege() *schema.Resource {
 				Type:         schema.TypeString,
 				Required:     true,
 				ForceNew:     true,
-				ValidateFunc: validationUUIDorUUIDWithLocality(),
+				ValidateFunc: validationUUIDWithLocality(),
 				Description:  "Instance on which the database is created",
 			},
 			"user_name": {
@@ -70,15 +72,36 @@ func resourceScalewayRdbPrivilegeCreate(ctx context.Context, d *schema.ResourceD
 		return diag.FromErr(err)
 	}
 
+	userName, _ := d.Get("user_name").(string)
 	createReq := &rdb.SetPrivilegeRequest{
 		Region:       region,
 		InstanceID:   instanceID,
 		DatabaseName: d.Get("database_name").(string),
-		UserName:     d.Get("user_name").(string),
+		UserName:     userName,
 		Permission:   rdb.Permission(d.Get("permission").(string)),
 	}
 
-	_, err = rdbAPI.SetPrivilege(createReq, scw.WithContext(ctx))
+	//  wrapper around StateChangeConf that will just retry  write on database
+	err = resource.RetryContext(context.Background(), readWriteDataBaseTimeOut, func() *resource.RetryError {
+		_, errSetPrivilege := rdbAPI.SetPrivilege(createReq, scw.WithContext(ctx))
+		if errSetPrivilege != nil {
+			// WIP: Issue on creation/write database. Need a database stable status
+			if is409Error(errSetPrivilege) {
+				_, errWait := waitInstance(ctx, rdbAPI, region, instanceID)
+				if errWait != nil {
+					return resource.NonRetryableError(errWait)
+				}
+				return resource.RetryableError(errSetPrivilege)
+			}
+			return resource.NonRetryableError(errSetPrivilege)
+		}
+		return nil
+	})
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	_, err = waitInstance(ctx, rdbAPI, region, instanceID)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -102,6 +125,20 @@ func resourceScalewayRdbPrivilegeRead(ctx context.Context, d *schema.ResourceDat
 		return diag.FromErr(err)
 	}
 
+	listUsers, err := rdbAPI.ListUsers(&rdb.ListUsersRequest{
+		Region:     region,
+		InstanceID: instanceID,
+		Name:       &userName,
+	}, scw.WithContext(ctx))
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	if len(listUsers.Users) == 0 {
+		d.SetId("")
+		return nil
+	}
+
 	res, err := rdbAPI.ListPrivileges(&rdb.ListPrivilegesRequest{
 		Region:       region,
 		InstanceID:   instanceID,
@@ -117,6 +154,9 @@ func resourceScalewayRdbPrivilegeRead(ctx context.Context, d *schema.ResourceDat
 		return diag.FromErr(err)
 	}
 
+	if len(res.Privileges) == 0 {
+		return diag.FromErr(fmt.Errorf("couldn't retrieve privileges for user[%s] on database [%s]", userName, dbName))
+	}
 	var privilege = res.Privileges[0]
 	_ = d.Set("database_name", privilege.DatabaseName)
 	_ = d.Set("user_name", privilege.UserName)
@@ -138,15 +178,49 @@ func resourceScalewayRdbPrivilegeUpdate(ctx context.Context, d *schema.ResourceD
 		return diag.FromErr(err)
 	}
 
+	userName, _ := d.Get("user_name").(string)
+	listUsers, err := rdbAPI.ListUsers(&rdb.ListUsersRequest{
+		Region:     region,
+		InstanceID: instanceID,
+		Name:       &userName,
+	}, scw.WithContext(ctx))
+	if err != nil {
+		if is404Error(err) {
+			d.SetId("")
+			return nil
+		}
+		return diag.FromErr(err)
+	}
+
+	if len(listUsers.Users) == 0 {
+		d.SetId("")
+		return nil
+	}
+
 	updateReq := &rdb.SetPrivilegeRequest{
 		Region:       region,
 		InstanceID:   instanceID,
 		DatabaseName: d.Get("database_name").(string),
-		UserName:     d.Get("user_name").(string),
+		UserName:     userName,
 		Permission:   rdb.Permission(d.Get("permission").(string)),
 	}
-	_, err = rdbAPI.SetPrivilege(updateReq, scw.WithContext(ctx))
-	if err != nil && !is404Error(err) {
+
+	//  wrapper around StateChangeConf that will just retry the database creation
+	err = resource.RetryContext(context.Background(), defaultRdbInstanceTimeout, func() *resource.RetryError {
+		_, errSet := rdbAPI.SetPrivilege(updateReq, scw.WithContext(ctx))
+		if errSet != nil {
+			if is409Error(errSet) {
+				_, errWait := waitInstance(ctx, rdbAPI, region, instanceID)
+				if errWait != nil {
+					return resource.NonRetryableError(errWait)
+				}
+				return resource.RetryableError(errSet)
+			}
+			return resource.NonRetryableError(errSet)
+		}
+		return nil
+	})
+	if err != nil {
 		return diag.FromErr(err)
 	}
 
@@ -159,6 +233,86 @@ func resourceScalewayRdbPrivilegeUpdate(ctx context.Context, d *schema.ResourceD
 }
 
 func resourceScalewayRdbPrivilegeDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	rdbAPI := newRdbAPI(meta)
+	region, instanceID, err := parseRegionalID(d.Get("instance_id").(string))
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	_, err = waitInstance(ctx, rdbAPI, region, instanceID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	_ = d.Set("permission", rdb.PermissionNone)
-	return resourceScalewayRdbPrivilegeUpdate(ctx, d, meta)
+	userName, _ := d.Get("user_name").(string)
+	listUsers, err := rdbAPI.ListUsers(&rdb.ListUsersRequest{
+		Region:     region,
+		InstanceID: instanceID,
+		Name:       &userName,
+	}, scw.WithContext(ctx))
+	if err != nil {
+		if is404Error(err) {
+			d.SetId("")
+			return nil
+		}
+		return diag.FromErr(err)
+	}
+
+	if len(listUsers.Users) == 0 {
+		d.SetId("")
+		return nil
+	}
+
+	updateReq := &rdb.SetPrivilegeRequest{
+		Region:       region,
+		InstanceID:   instanceID,
+		DatabaseName: d.Get("database_name").(string),
+		UserName:     userName,
+		Permission:   rdb.PermissionNone,
+	}
+
+	//  wrapper around StateChangeConf that will just retry the database creation
+	err = resource.RetryContext(context.Background(), defaultRdbInstanceTimeout, func() *resource.RetryError {
+		// check if user exist on retry
+		listUsers, errUserExist := rdbAPI.ListUsers(&rdb.ListUsersRequest{
+			Region:     region,
+			InstanceID: instanceID,
+			Name:       &userName,
+		}, scw.WithContext(ctx))
+		if err != nil {
+			if is404Error(err) {
+				d.SetId("")
+				return nil
+			}
+			return resource.NonRetryableError(errUserExist)
+		}
+
+		if len(listUsers.Users) == 0 {
+			d.SetId("")
+			return nil
+		}
+		_, errSet := rdbAPI.SetPrivilege(updateReq, scw.WithContext(ctx))
+		if errSet != nil {
+			if is409Error(errSet) {
+				_, errWait := waitInstance(ctx, rdbAPI, region, instanceID)
+				if errWait != nil {
+					return resource.NonRetryableError(errWait)
+				}
+				return resource.RetryableError(errSet)
+			}
+			return resource.NonRetryableError(errSet)
+		}
+		return nil
+	})
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	_, err = waitInstance(ctx, rdbAPI, region, instanceID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	return nil
 }

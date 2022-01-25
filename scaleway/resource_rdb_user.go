@@ -82,15 +82,19 @@ func resourceScalewayRdbUserCreate(ctx context.Context, d *schema.ResourceData, 
 	}
 
 	var user *rdb.User
-	//  wrapper around StateChangeConf that will just retry the write on database
+	//  wrapper around StateChangeConf that will just retry write on database
 	err = resource.RetryContext(context.Background(), readWriteDataBaseTimeOut, func() *resource.RetryError {
-		currentUser, errCreateDB := rdbAPI.CreateUser(createReq, scw.WithContext(ctx))
-		if errCreateDB != nil {
+		currentUser, errCreateUser := rdbAPI.CreateUser(createReq, scw.WithContext(ctx))
+		if errCreateUser != nil {
 			// WIP: Issue on creation/write database. Need a database stable status
-			if is409Error(errCreateDB) {
-				return resource.RetryableError(errCreateDB)
+			if is409Error(errCreateUser) {
+				_, errWait := waitInstance(ctx, rdbAPI, region, ins.ID)
+				if errWait != nil {
+					return resource.NonRetryableError(errWait)
+				}
+				return resource.RetryableError(errCreateUser)
 			}
-			return resource.NonRetryableError(errCreateDB)
+			return resource.NonRetryableError(errCreateUser)
 		}
 		// set database information
 		user = currentUser
@@ -188,11 +192,26 @@ func resourceScalewayRdbUserDelete(ctx context.Context, d *schema.ResourceData, 
 		return diag.FromErr(err)
 	}
 
-	err = rdbAPI.DeleteUser(&rdb.DeleteUserRequest{
-		Region:     region,
-		InstanceID: instanceID,
-		Name:       userName,
-	}, scw.WithContext(ctx))
+	err = resource.RetryContext(context.Background(), readWriteDataBaseTimeOut, func() *resource.RetryError {
+		errDeleteUser := rdbAPI.DeleteUser(&rdb.DeleteUserRequest{
+			Region:     region,
+			InstanceID: instanceID,
+			Name:       userName,
+		}, scw.WithContext(ctx))
+		if errDeleteUser != nil {
+			// WIP: Issue on creation/write database. Need a database stable status
+			if is409Error(errDeleteUser) {
+				_, errWait := waitInstance(ctx, rdbAPI, region, instanceID)
+				if errWait != nil {
+					return resource.NonRetryableError(errWait)
+				}
+				return resource.RetryableError(errDeleteUser)
+			}
+			return resource.NonRetryableError(errDeleteUser)
+		}
+		// set database information
+		return nil
+	})
 
 	if err != nil && !is404Error(err) {
 		return diag.FromErr(err)
