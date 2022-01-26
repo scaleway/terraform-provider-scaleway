@@ -346,16 +346,15 @@ func flattenDuration(duration *time.Duration) interface{} {
 	return ""
 }
 
-func expandDuration(data interface{}) *time.Duration {
+func expandDuration(data interface{}) (*time.Duration, error) {
 	if data == nil || data == "" {
-		return nil
+		return nil, nil
 	}
 	d, err := time.ParseDuration(data.(string))
 	if err != nil {
-		// We panic as this should never happened. Data from state should be validate using a validate func
-		panic(err) // lintignore:R009
+		return nil, err
 	}
-	return &d
+	return &d, nil
 }
 
 func expandOrGenerateString(data interface{}, prefix string) string {
@@ -463,28 +462,26 @@ func expandInt32Ptr(data interface{}) *int32 {
 	return scw.Int32Ptr(int32(data.(int)))
 }
 
-func expandIPNet(raw string) scw.IPNet {
+func expandIPNet(raw string) (scw.IPNet, error) {
 	if raw == "" {
-		return scw.IPNet{}
+		return scw.IPNet{}, nil
 	}
 	var ipNet scw.IPNet
 	raw = `"` + raw + `"`
 	err := json.Unmarshal([]byte(raw), &ipNet)
 	if err != nil {
-		// We panic as this should never happen. Data from state should be validate using a validate func
-		panic(fmt.Errorf("%s could not be marshaled: %v", raw, err)) // lintignore:R009
+		return scw.IPNet{}, fmt.Errorf("%s could not be marshaled: %v", raw, err)
 	}
 
-	return ipNet
+	return ipNet, nil
 }
 
-func flattenIPNet(ipNet scw.IPNet) string {
+func flattenIPNet(ipNet scw.IPNet) (string, error) {
 	raw, err := json.Marshal(ipNet)
 	if err != nil {
-		// We panic as this should never happen.
-		panic(err) // lintignore:R009
+		return "", err
 	}
-	return string(raw[1 : len(raw)-1]) // remove quotes
+	return string(raw[1 : len(raw)-1]), nil // remove quotes
 }
 
 func validateDuration() schema.SchemaValidateFunc {

@@ -69,10 +69,14 @@ func resourceScalewayRdbACLCreate(ctx context.Context, d *schema.ResourceData, m
 		return diag.FromErr(err)
 	}
 
+	aclRules, err := rdbACLExpand(d.Get("acl_rules").(*schema.Set))
+	if err != nil {
+		return diag.FromErr(err)
+	}
 	createReq := &rdb.SetInstanceACLRulesRequest{
 		Region:     region,
 		InstanceID: ID,
-		Rules:      rdbACLExpand(d.Get("acl_rules").(*schema.Set)),
+		Rules:      aclRules,
 	}
 
 	_, err = rdbAPI.SetInstanceACLRules(createReq, scw.WithContext(ctx))
@@ -134,10 +138,14 @@ func resourceScalewayRdbACLUpdate(ctx context.Context, d *schema.ResourceData, m
 			Region:     region,
 		}
 
+		aclRules, err := rdbACLExpand(d.Get("acl_rules").(*schema.Set))
+		if err != nil {
+			return diag.FromErr(err)
+		}
 		req := &rdb.SetInstanceACLRulesRequest{
 			Region:     region,
 			InstanceID: instanceID,
-			Rules:      rdbACLExpand(d.Get("acl_rules").(*schema.Set)),
+			Rules:      aclRules,
 		}
 
 		_, err = rdbAPI.SetInstanceACLRules(req, scw.WithContext(ctx))
@@ -155,7 +163,11 @@ func resourceScalewayRdbACLDelete(ctx context.Context, d *schema.ResourceData, m
 		return diag.FromErr(err)
 	}
 	aclRuleIPs := make([]string, 0)
-	for _, acl := range rdbACLExpand(d.Get("acl_rules").(*schema.Set)) {
+	aclRules, err := rdbACLExpand(d.Get("acl_rules").(*schema.Set))
+	if err != nil {
+		return diag.FromErr(err)
+	}
+	for _, acl := range aclRules {
 		aclRuleIPs = append(aclRuleIPs, acl.IP.String())
 	}
 
@@ -177,17 +189,21 @@ func resourceScalewayRdbACLDelete(ctx context.Context, d *schema.ResourceData, m
 	return nil
 }
 
-func rdbACLExpand(data *schema.Set) []*rdb.ACLRuleRequest {
+func rdbACLExpand(data *schema.Set) ([]*rdb.ACLRuleRequest, error) {
 	var res []*rdb.ACLRuleRequest
 	for _, rule := range data.List() {
 		r := rule.(map[string]interface{})
+		ip, err := expandIPNet(r["ip"].(string))
+		if err != nil {
+			return res, err
+		}
 		res = append(res, &rdb.ACLRuleRequest{
-			IP:          expandIPNet(r["ip"].(string)),
+			IP:          ip,
 			Description: r["description"].(string),
 		})
 	}
 
-	return res
+	return res, nil
 }
 
 func rdbACLRulesFlatten(rules []*rdb.ACLRule) []map[string]interface{} {

@@ -286,7 +286,10 @@ func resourceScalewayRdbInstanceCreate(ctx context.Context, d *schema.ResourceDa
 
 	pn, pnExist := d.GetOk("private_network")
 	if pnExist {
-		createReq.InitEndpoints = expandPrivateNetwork(pn, pnExist)
+		createReq.InitEndpoints, err = expandPrivateNetwork(pn, pnExist)
+		if err != nil {
+			return diag.FromErr(err)
+		}
 	} else {
 		createReq.InitEndpoints = expandLoadBalancer()
 	}
@@ -546,8 +549,10 @@ func resourceScalewayRdbInstanceUpdate(ctx context.Context, d *schema.ResourceDa
 			return diag.FromErr(err)
 		}
 
-		// Wait for the instance to settle after upgrading
-		time.Sleep(30 * time.Second) // lintignore:R018
+		_, err = waitInstance(ctx, rdbAPI, region, ID)
+		if err != nil && !is404Error(err) {
+			return diag.FromErr(err)
+		}
 	}
 
 	if d.HasChange("password") {
@@ -602,7 +607,10 @@ func resourceScalewayRdbInstanceUpdate(ctx context.Context, d *schema.ResourceDa
 		// set new endpoints
 		pn, pnExist := d.GetOk("private_network")
 		if pnExist {
-			privateEndpoints := expandPrivateNetwork(pn, pnExist)
+			privateEndpoints, err := expandPrivateNetwork(pn, pnExist)
+			if err != nil {
+				return diag.FromErr(err)
+			}
 			for _, e := range privateEndpoints {
 				_, err := rdbAPI.CreateEndpoint(
 					&rdb.CreateEndpointRequest{Region: region, InstanceID: ID, EndpointSpec: e},
