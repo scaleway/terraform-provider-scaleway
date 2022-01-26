@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net"
 	"net/http"
+	"strconv"
 	"strings"
 	"time"
 
@@ -467,8 +468,7 @@ func expandIPNet(raw string) (scw.IPNet, error) {
 		return scw.IPNet{}, nil
 	}
 	var ipNet scw.IPNet
-	raw = `"` + raw + `"`
-	err := json.Unmarshal([]byte(raw), &ipNet)
+	err := json.Unmarshal([]byte(strconv.Quote(raw)), &ipNet)
 	if err != nil {
 		return scw.IPNet{}, fmt.Errorf("%s could not be marshaled: %v", raw, err)
 	}
