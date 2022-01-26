@@ -44,13 +44,24 @@ func testAccCheckScalewayVPCPublicGatewayDHCPExists(tt *TestTools, n string) res
 			return err
 		}
 
-		_, err = vpcgwAPI.GetDHCP(&vpcgw.GetDHCPRequest{
+		dhcp, err := vpcgwAPI.GetDHCP(&vpcgw.GetDHCPRequest{
 			DHCPID: ID,
 			Zone:   zone,
 		})
 
 		if err != nil {
 			return err
+		}
+
+		// Test default values
+		if !dhcp.EnableDynamic {
+			return fmt.Errorf("enable_dynamic is false, should default to true")
+		}
+		if !dhcp.PushDefaultRoute {
+			return fmt.Errorf("push_default_route is false, should default to true")
+		}
+		if !dhcp.PushDNSServer {
+			return fmt.Errorf("push_dns_server is false, should default to true")
 		}
 
 		return nil
