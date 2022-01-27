@@ -118,7 +118,10 @@ func resourceScalewayVPCGatewayNetworkCreate(ctx context.Context, d *schema.Reso
 	}
 	staticAddress, staticAddressExist := d.GetOk("static_address")
 	if staticAddressExist {
-		address := expandIPNet(staticAddress.(string))
+		address, err := expandIPNet(staticAddress.(string))
+		if err != nil {
+			return diag.FromErr(err)
+		}
 		req.Address = &address
 	}
 
@@ -194,7 +197,11 @@ func resourceScalewayVPCGatewayNetworkRead(ctx context.Context, d *schema.Resour
 	}
 
 	if staticAddress := gatewayNetwork.Address; staticAddress != nil {
-		_ = d.Set("static_address", flattenIPNet(*staticAddress))
+		staticAddressValue, err := flattenIPNet(*staticAddress)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		_ = d.Set("static_address", staticAddressValue)
 	}
 
 	if macAddress := gatewayNetwork.MacAddress; macAddress != nil {
@@ -274,7 +281,10 @@ func resourceScalewayVPCGatewayNetworkUpdate(ctx context.Context, d *schema.Reso
 		}
 		staticAddress, staticAddressExist := d.GetOk("static_address")
 		if staticAddressExist {
-			address := expandIPNet(staticAddress.(string))
+			address, err := expandIPNet(staticAddress.(string))
+			if err != nil {
+				return diag.FromErr(err)
+			}
 			updateRequest.Address = &address
 		}
 
