@@ -130,10 +130,14 @@ func resourceScalewayVPCPublicGatewayDHCPCreate(ctx context.Context, d *schema.R
 		return diag.FromErr(err)
 	}
 
+	subnet, err := expandIPNet(d.Get("subnet").(string))
+	if err != nil {
+		return diag.FromErr(err)
+	}
 	req := &vpcgw.CreateDHCPRequest{
 		Zone:               zone,
 		ProjectID:          d.Get("project_id").(string),
-		Subnet:             expandIPNet(d.Get("subnet").(string)),
+		Subnet:             subnet,
 		EnableDynamic:      expandBoolPtr(d.Get("enable_dynamic")),
 		PushDefaultRoute:   expandBoolPtr(d.Get("push_default_route")),
 		PushDNSServer:      expandBoolPtr(d.Get("push_dns_servers")),
