@@ -270,6 +270,26 @@ func resourceScalewayLbBackendCreate(ctx context.Context, d *schema.ResourceData
 		return diag.FromErr(err)
 	}
 
+	healthCheckoutTimeout, err := expandDuration(d.Get("health_check_timeout"))
+	if err != nil {
+		return diag.FromErr(err)
+	}
+	healthCheckDelay, err := expandDuration(d.Get("health_check_delay"))
+	if err != nil {
+		return diag.FromErr(err)
+	}
+	timeoutServer, err := expandDuration(d.Get("timeout_server"))
+	if err != nil {
+		return diag.FromErr(err)
+	}
+	timeoutConnect, err := expandDuration(d.Get("timeout_connect"))
+	if err != nil {
+		return diag.FromErr(err)
+	}
+	timeoutTunnel, err := expandDuration(d.Get("timeout_tunnel"))
+	if err != nil {
+		return diag.FromErr(err)
+	}
 	createReq := &lb.ZonedAPICreateBackendRequest{
 		Zone:                     zone,
 		LBID:                     LbID,
@@ -282,8 +302,8 @@ func resourceScalewayLbBackendCreate(ctx context.Context, d *schema.ResourceData
 		HealthCheck: &lb.HealthCheck{
 			Port:            int32(healthCheckPort),
 			CheckMaxRetries: int32(d.Get("health_check_max_retries").(int)),
-			CheckTimeout:    expandDuration(d.Get("health_check_timeout")),
-			CheckDelay:      expandDuration(d.Get("health_check_delay")),
+			CheckTimeout:    healthCheckoutTimeout,
+			CheckDelay:      healthCheckDelay,
 			TCPConfig:       expandLbHCTCP(d.Get("health_check_tcp")),
 			HTTPConfig:      expandLbHCHTTP(d.Get("health_check_http")),
 			HTTPSConfig:     expandLbHCHTTPS(d.Get("health_check_https")),
@@ -291,9 +311,9 @@ func resourceScalewayLbBackendCreate(ctx context.Context, d *schema.ResourceData
 		ServerIP:           expandStrings(d.Get("server_ips")),
 		SendProxyV2:        d.Get("send_proxy_v2").(bool),
 		ProxyProtocol:      expandLbProxyProtocol(d.Get("proxy_protocol")),
-		TimeoutServer:      expandDuration(d.Get("timeout_server")),
-		TimeoutConnect:     expandDuration(d.Get("timeout_connect")),
-		TimeoutTunnel:      expandDuration(d.Get("timeout_tunnel")),
+		TimeoutServer:      timeoutServer,
+		TimeoutConnect:     timeoutConnect,
+		TimeoutTunnel:      timeoutTunnel,
 		OnMarkedDownAction: expandLbBackendMarkdownAction(d.Get("on_marked_down_action")),
 	}
 
@@ -406,6 +426,19 @@ func resourceScalewayLbBackendUpdate(ctx context.Context, d *schema.ResourceData
 		return diag.FromErr(err)
 	}
 
+	timeoutServer, err := expandDuration(d.Get("timeout_server"))
+	if err != nil {
+		return diag.FromErr(err)
+	}
+	timeoutConnect, err := expandDuration(d.Get("timeout_connect"))
+	if err != nil {
+		return diag.FromErr(err)
+	}
+	timeoutTunnel, err := expandDuration(d.Get("timeout_tunnel"))
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	req := &lb.ZonedAPIUpdateBackendRequest{
 		Zone:                     zone,
 		BackendID:                ID,
@@ -417,9 +450,9 @@ func resourceScalewayLbBackendUpdate(ctx context.Context, d *schema.ResourceData
 		StickySessionsCookieName: d.Get("sticky_sessions_cookie_name").(string),
 		SendProxyV2:              d.Get("send_proxy_v2").(bool),
 		ProxyProtocol:            expandLbProxyProtocol(d.Get("proxy_protocol")),
-		TimeoutServer:            expandDuration(d.Get("timeout_server")),
-		TimeoutConnect:           expandDuration(d.Get("timeout_connect")),
-		TimeoutTunnel:            expandDuration(d.Get("timeout_tunnel")),
+		TimeoutServer:            timeoutServer,
+		TimeoutConnect:           timeoutConnect,
+		TimeoutTunnel:            timeoutTunnel,
 		OnMarkedDownAction:       expandLbBackendMarkdownAction(d.Get("on_marked_down_action")),
 	}
 
@@ -428,14 +461,22 @@ func resourceScalewayLbBackendUpdate(ctx context.Context, d *schema.ResourceData
 		return diag.FromErr(err)
 	}
 
+	healthCheckoutTimeout, err := expandDuration(d.Get("health_check_timeout"))
+	if err != nil {
+		return diag.FromErr(err)
+	}
+	healthCheckDelay, err := expandDuration(d.Get("health_check_delay"))
+	if err != nil {
+		return diag.FromErr(err)
+	}
 	// Update Health Check
 	updateHCRequest := &lb.ZonedAPIUpdateHealthCheckRequest{
 		Zone:            zone,
 		BackendID:       ID,
 		Port:            int32(d.Get("health_check_port").(int)),
 		CheckMaxRetries: int32(d.Get("health_check_max_retries").(int)),
-		CheckTimeout:    expandDuration(d.Get("health_check_timeout")),
-		CheckDelay:      expandDuration(d.Get("health_check_delay")),
+		CheckTimeout:    healthCheckoutTimeout,
+		CheckDelay:      healthCheckDelay,
 		HTTPConfig:      expandLbHCHTTP(d.Get("health_check_http")),
 		HTTPSConfig:     expandLbHCHTTPS(d.Get("health_check_https")),
 	}
