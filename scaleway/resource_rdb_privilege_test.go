@@ -20,7 +20,7 @@ func TestAccScalewayRdbPrivilege_Basic(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: `
-					resource "scaleway_rdb_instance" "main" {
+					resource "scaleway_rdb_instance" "instance" {
 						name = "database_privilege_test"
 						node_type = "db-dev-s"
 						engine = "PostgreSQL-12"
@@ -29,56 +29,134 @@ func TestAccScalewayRdbPrivilege_Basic(t *testing.T) {
 					}
 
 					resource "scaleway_rdb_database" "db01" {
-						instance_id = scaleway_rdb_instance.main.id
+						instance_id = scaleway_rdb_instance.instance.id
 						name = "foo"
 					}
 
 					resource "scaleway_rdb_user" "foo1" {
-						instance_id = scaleway_rdb_instance.main.id
+						instance_id = scaleway_rdb_instance.instance.id
 						name = "user_01"
 						password = "R34lP4sSw#Rd"
-						is_admin = false
+						is_admin = true
 					}
 
 					resource "scaleway_rdb_privilege" "priv_admin" {
-						instance_id   = scaleway_rdb_instance.main.id
-						user_name     = "user_01"
-						database_name = "rdb"
+						instance_id   = scaleway_rdb_instance.instance.id
+						user_name     = scaleway_rdb_user.foo1.name
+						database_name = scaleway_rdb_database.db01.name
+						permission    = "all"
+					}
+					`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckRdbPrivilegeExists(tt, "scaleway_rdb_instance.instance", "scaleway_rdb_database.db01", "scaleway_rdb_user.foo1"),
+					resource.TestCheckResourceAttr("scaleway_rdb_privilege.priv_admin", "permission", "all"),
+				),
+			},
+			{
+				Config: `
+					resource "scaleway_rdb_instance" "instance" {
+						name = "database_privilege_test"
+						node_type = "db-dev-s"
+						engine = "PostgreSQL-12"
+						is_ha_cluster = false
+						tags = [ "terraform-test", "scaleway_rdb_user", "minimal" ]
+					}
+
+					resource "scaleway_rdb_database" "db01" {
+						instance_id = scaleway_rdb_instance.instance.id
+						name = "foo"
+					}
+
+					resource "scaleway_rdb_user" "foo1" {
+						instance_id = scaleway_rdb_instance.instance.id
+						name = "user_01"
+						password = "R34lP4sSw#Rd"
+						is_admin = true
+					}
+
+					resource "scaleway_rdb_privilege" "priv_admin" {
+						instance_id   = scaleway_rdb_instance.instance.id
+						user_name     = scaleway_rdb_user.foo1.name
+						database_name = scaleway_rdb_database.db01.name
 						permission    = "all"
 					}
 
 					resource "scaleway_rdb_user" "foo2" {
-						instance_id = scaleway_rdb_instance.main.id
+						instance_id = scaleway_rdb_instance.instance.id
 						name = "user_02"
 						password = "R34lP4sSw#Rd"
-						is_admin = false
 					}
 
 					resource "scaleway_rdb_privilege" "priv_foo_02" {
-						instance_id   = scaleway_rdb_instance.main.id
-						user_name     = "user_02"
-						database_name = "rdb"
+						instance_id   = scaleway_rdb_instance.instance.id
+						user_name     = scaleway_rdb_user.foo2.name
+						database_name = scaleway_rdb_database.db01.name
+						permission    = "readwrite"
+					}
+					`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckRdbPrivilegeExists(tt, "scaleway_rdb_instance.instance", "scaleway_rdb_database.db01", "scaleway_rdb_user.foo2"),
+					resource.TestCheckResourceAttr("scaleway_rdb_privilege.priv_foo_02", "permission", "readwrite"),
+				),
+			},
+			{
+				Config: `
+					resource "scaleway_rdb_instance" "instance" {
+						name = "database_privilege_test"
+						node_type = "db-dev-s"
+						engine = "PostgreSQL-12"
+						is_ha_cluster = false
+						tags = [ "terraform-test", "scaleway_rdb_user", "minimal" ]
+					}
+
+					resource "scaleway_rdb_database" "db01" {
+						instance_id = scaleway_rdb_instance.instance.id
+						name = "foo"
+					}
+
+					resource "scaleway_rdb_user" "foo1" {
+						instance_id = scaleway_rdb_instance.instance.id
+						name = "user_01"
+						password = "R34lP4sSw#Rd"
+						is_admin = true
+					}
+
+					resource "scaleway_rdb_privilege" "priv_admin" {
+						instance_id   = scaleway_rdb_instance.instance.id
+						user_name     = scaleway_rdb_user.foo1.name
+						database_name = scaleway_rdb_database.db01.name
+						permission    = "all"
+					}
+
+					resource "scaleway_rdb_user" "foo2" {
+						instance_id = scaleway_rdb_instance.instance.id
+						name = "user_02"
+						password = "R34lP4sSw#Rd"
+					}
+
+					resource "scaleway_rdb_privilege" "priv_foo_02" {
+						instance_id   = scaleway_rdb_instance.instance.id
+						user_name     = scaleway_rdb_user.foo2.name
+						database_name = scaleway_rdb_database.db01.name
 						permission    = "readwrite"
 					}
 
 					resource "scaleway_rdb_user" "foo3" {
-						instance_id = scaleway_rdb_instance.main.id
+						instance_id = scaleway_rdb_instance.instance.id
 						name = "user_03"
 						password = "R34lP4sSw#Rd"
-						is_admin = false
 					}
 
-					resource "scaleway_rdb_privilege" "priv_foo_01" {
-						instance_id   = scaleway_rdb_instance.main.id
-						user_name     = "user_03"
-						database_name = "rdb"
+					resource "scaleway_rdb_privilege" "priv_foo_03" {
+						instance_id   = scaleway_rdb_instance.instance.id
+						user_name     = scaleway_rdb_user.foo3.name
+						database_name = scaleway_rdb_database.db01.name
 						permission    = "none"
 					}
 					`,
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("scaleway_rdb_privilege.priv_admin", "permission", "all"),
-					resource.TestCheckResourceAttr("scaleway_rdb_privilege.priv_foo_01", "permission", "none"),
-					resource.TestCheckResourceAttr("scaleway_rdb_privilege.priv_foo_02", "permission", "readwrite"),
+					testAccCheckRdbPrivilegeExists(tt, "scaleway_rdb_instance.instance", "scaleway_rdb_database.db01", "scaleway_rdb_user.foo3"),
+					resource.TestCheckResourceAttr("scaleway_rdb_privilege.priv_foo_03", "permission", "none"),
 				),
 			},
 			{
@@ -90,18 +168,18 @@ func TestAccScalewayRdbPrivilege_Basic(t *testing.T) {
 						is_ha_cluster = false
 						tags = [ "terraform-test", "scaleway_rdb_user", "minimal" ]
 					}
-			
+
 					resource "scaleway_rdb_database" "db" {
 						instance_id = scaleway_rdb_instance.instance.id
 						name = "foo"
 					}
-			
+
 					resource "scaleway_rdb_user" "foo" {
 						instance_id = scaleway_rdb_instance.instance.id
 						name = "foo"
 						password = "R34lP4sSw#Rd"
 					}
-			
+
 					resource "scaleway_rdb_privilege" "priv" {
 						instance_id   = scaleway_rdb_instance.instance.id
 						user_name     = scaleway_rdb_user.foo.name
@@ -122,18 +200,18 @@ func TestAccScalewayRdbPrivilege_Basic(t *testing.T) {
 						is_ha_cluster = false
 						tags = [ "terraform-test", "scaleway_rdb_user", "minimal" ]
 					}
-			
+
 					resource "scaleway_rdb_database" "db" {
 						instance_id = scaleway_rdb_instance.instance.id
 						name = "foo"
 					}
-			
+
 					resource "scaleway_rdb_user" "foo" {
 						instance_id = scaleway_rdb_instance.instance.id
 						name = "foo"
 						password = "R34lP4sSw#Rd"
 					}
-			
+
 					resource "scaleway_rdb_privilege" "priv" {
 						instance_id   = scaleway_rdb_instance.instance.id
 						user_name     = scaleway_rdb_user.foo.name

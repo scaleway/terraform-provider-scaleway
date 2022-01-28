@@ -82,10 +82,9 @@ func resourceScalewayRdbPrivilegeCreate(ctx context.Context, d *schema.ResourceD
 	}
 
 	//  wrapper around StateChangeConf that will just retry  write on database
-	err = resource.RetryContext(context.Background(), readWriteDataBaseTimeOut, func() *resource.RetryError {
+	err = resource.RetryContext(ctx, readWriteDataBaseTimeOut, func() *resource.RetryError {
 		_, errSetPrivilege := rdbAPI.SetPrivilege(createReq, scw.WithContext(ctx))
 		if errSetPrivilege != nil {
-			// WIP: Issue on creation/write database. Need a database stable status
 			if is409Error(errSetPrivilege) {
 				_, errWait := waitInstance(ctx, rdbAPI, region, instanceID)
 				if errWait != nil {
@@ -134,7 +133,7 @@ func resourceScalewayRdbPrivilegeRead(ctx context.Context, d *schema.ResourceDat
 		return diag.FromErr(err)
 	}
 
-	if len(listUsers.Users) == 0 {
+	if listUsers == nil || len(listUsers.Users) == 0 {
 		d.SetId("")
 		return nil
 	}
@@ -192,7 +191,7 @@ func resourceScalewayRdbPrivilegeUpdate(ctx context.Context, d *schema.ResourceD
 		return diag.FromErr(err)
 	}
 
-	if len(listUsers.Users) == 0 {
+	if listUsers == nil || len(listUsers.Users) == 0 {
 		d.SetId("")
 		return nil
 	}
@@ -206,7 +205,7 @@ func resourceScalewayRdbPrivilegeUpdate(ctx context.Context, d *schema.ResourceD
 	}
 
 	//  wrapper around StateChangeConf that will just retry the database creation
-	err = resource.RetryContext(context.Background(), defaultRdbInstanceTimeout, func() *resource.RetryError {
+	err = resource.RetryContext(ctx, defaultRdbInstanceTimeout, func() *resource.RetryError {
 		_, errSet := rdbAPI.SetPrivilege(updateReq, scw.WithContext(ctx))
 		if errSet != nil {
 			if is409Error(errSet) {
@@ -259,7 +258,7 @@ func resourceScalewayRdbPrivilegeDelete(ctx context.Context, d *schema.ResourceD
 		return diag.FromErr(err)
 	}
 
-	if len(listUsers.Users) == 0 {
+	if listUsers != nil || len(listUsers.Users) == 0 {
 		d.SetId("")
 		return nil
 	}
@@ -273,7 +272,7 @@ func resourceScalewayRdbPrivilegeDelete(ctx context.Context, d *schema.ResourceD
 	}
 
 	//  wrapper around StateChangeConf that will just retry the database creation
-	err = resource.RetryContext(context.Background(), defaultRdbInstanceTimeout, func() *resource.RetryError {
+	err = resource.RetryContext(ctx, defaultRdbInstanceTimeout, func() *resource.RetryError {
 		// check if user exist on retry
 		listUsers, errUserExist := rdbAPI.ListUsers(&rdb.ListUsersRequest{
 			Region:     region,
@@ -288,7 +287,7 @@ func resourceScalewayRdbPrivilegeDelete(ctx context.Context, d *schema.ResourceD
 			return resource.NonRetryableError(errUserExist)
 		}
 
-		if len(listUsers.Users) == 0 {
+		if listUsers != nil || len(listUsers.Users) == 0 {
 			d.SetId("")
 			return nil
 		}

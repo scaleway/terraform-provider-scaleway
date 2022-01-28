@@ -83,10 +83,9 @@ func resourceScalewayRdbUserCreate(ctx context.Context, d *schema.ResourceData, 
 
 	var user *rdb.User
 	//  wrapper around StateChangeConf that will just retry write on database
-	err = resource.RetryContext(context.Background(), readWriteDataBaseTimeOut, func() *resource.RetryError {
+	err = resource.RetryContext(ctx, readWriteDataBaseTimeOut, func() *resource.RetryError {
 		currentUser, errCreateUser := rdbAPI.CreateUser(createReq, scw.WithContext(ctx))
 		if errCreateUser != nil {
-			// WIP: Issue on creation/write database. Need a database stable status
 			if is409Error(errCreateUser) {
 				_, errWait := waitInstance(ctx, rdbAPI, region, ins.ID)
 				if errWait != nil {
@@ -192,14 +191,13 @@ func resourceScalewayRdbUserDelete(ctx context.Context, d *schema.ResourceData, 
 		return diag.FromErr(err)
 	}
 
-	err = resource.RetryContext(context.Background(), readWriteDataBaseTimeOut, func() *resource.RetryError {
+	err = resource.RetryContext(ctx, readWriteDataBaseTimeOut, func() *resource.RetryError {
 		errDeleteUser := rdbAPI.DeleteUser(&rdb.DeleteUserRequest{
 			Region:     region,
 			InstanceID: instanceID,
 			Name:       userName,
 		}, scw.WithContext(ctx))
 		if errDeleteUser != nil {
-			// WIP: Issue on creation/write database. Need a database stable status
 			if is409Error(errDeleteUser) {
 				_, errWait := waitInstance(ctx, rdbAPI, region, instanceID)
 				if errWait != nil {
