@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
@@ -130,11 +129,6 @@ func resourceScalewayObjectBucket() *schema.Resource {
 							MaxItems: 1,
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
-									"date": {
-										Type:         schema.TypeString,
-										Optional:     true,
-										ValidateFunc: validBucketLifecycleTimestamp,
-									},
 									"days": {
 										Type:         schema.TypeInt,
 										Optional:     true,
@@ -165,13 +159,9 @@ func resourceScalewayObjectBucket() *schema.Resource {
 							Type:     schema.TypeSet,
 							Optional: true,
 							Set:      transitionHash,
+							MaxItems: 1,
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
-									"date": {
-										Type:         schema.TypeString,
-										Optional:     true,
-										ValidateFunc: validBucketLifecycleTimestamp,
-									},
 									"days": {
 										Type:         schema.TypeInt,
 										Optional:     true,
@@ -390,13 +380,7 @@ func resourceBucketLifecycleUpdate(ctx context.Context, conn *s3.S3, d *schema.R
 		if len(expiration) > 0 && expiration[0] != nil {
 			e := expiration[0].(map[string]interface{})
 			i := &s3.LifecycleExpiration{}
-			if val, ok := e["date"].(string); ok && val != "" {
-				t, err := time.Parse(time.RFC3339, fmt.Sprintf("%sT00:00:00Z", val))
-				if err != nil {
-					return fmt.Errorf("error parsing SCW S3 bucket lifecycle expiration date: %s", err.Error())
-				}
-				i.Date = aws.Time(t)
-			} else if val, ok := e["days"].(int); ok && val > 0 {
+			if val, ok := e["days"].(int); ok && val > 0 {
 				i.Days = aws.Int64(int64(val))
 			} else if val, ok := e["expired_object_delete_marker"].(bool); ok {
 				i.ExpiredObjectDeleteMarker = aws.Bool(val)
@@ -423,13 +407,7 @@ func resourceBucketLifecycleUpdate(ctx context.Context, conn *s3.S3, d *schema.R
 			for _, transition := range transitions {
 				transition := transition.(map[string]interface{})
 				i := &s3.Transition{}
-				if val, ok := transition["date"].(string); ok && val != "" {
-					t, err := time.Parse(time.RFC3339, fmt.Sprintf("%sT00:00:00Z", val))
-					if err != nil {
-						return fmt.Errorf("error parsing SCW S3 bucket lifecycle expiration date: %s", err.Error())
-					}
-					i.Date = aws.Time(t)
-				} else if val, ok := transition["days"].(int); ok && val >= 0 {
+				if val, ok := transition["days"].(int); ok && val >= 0 {
 					i.Days = aws.Int64(int64(val))
 				}
 				if val, ok := transition["storage_class"].(string); ok && val != "" {
@@ -477,10 +455,10 @@ func resourceBucketLifecycleUpdate(ctx context.Context, conn *s3.S3, d *schema.R
 	}
 
 	_, err := retryOnAWSCode(ctx, s3.ErrCodeNoSuchBucket, func() (interface{}, error) {
-		return conn.PutBucketLifecycleConfiguration(i)
+		return conn.PutBucketLifecycleConfigurationWithContext(ctx, i)
 	})
 	if err != nil {
-		return fmt.Errorf("error putting S3 lifecycle: %s", err)
+		return fmt.Errorf("error putting Object Storage lifecycle: %s", err)
 	}
 
 	return nil
@@ -533,17 +511,31 @@ func resourceScalewayObjectBucketRead(ctx context.Context, d *schema.ResourceDat
 	_ = d.Set("endpoint", objectBucketEndpointURL(bucketName, region))
 
 	// Read the CORS
-	corsResponse, errCors := s3Client.GetBucketCorsWithContext(ctx, &s3.GetBucketCorsInput{
+	corsResponse, err := s3Client.GetBucketCorsWithContext(ctx, &s3.GetBucketCorsInput{
+		Bucket: scw.StringPtr(bucketName),
+	})
+
+	if err != nil && !isS3Err(err, "NoSuchCORSConfiguration", "") {
+		return diag.FromErr(fmt.Errorf("error getting S3 Bucket CORS configuration: %s", err))
+	}
+
+	_ = d.Set("cors_rule", flattenBucketCORS(corsResponse))
+
+	_ = d.Set("endpoint", fmt.Sprintf("https://%s.s3.%s.scw.cloud", bucketName, region))
+
+	// Read the versioning configuration
+	versioningResponse, err := s3Client.GetBucketVersioningWithContext(ctx, &s3.GetBucketVersioningInput{
 		Bucket: scw.StringPtr(bucketName),
 	})
 	if err != nil {
-		return diag.FromErr(errCors)
+		return diag.FromErr(err)
 	}
+	_ = d.Set("versioning", flattenObjectBucketVersioning(versioningResponse))
 
 	// Read the lifecycle configuration
 	lifecycleResponse, err := retryOnAWSCode(ctx, s3.ErrCodeNoSuchBucket, func() (interface{}, error) {
 		return s3Client.GetBucketLifecycleConfigurationWithContext(ctx, &s3.GetBucketLifecycleConfigurationInput{
-			Bucket: aws.String(d.Id()),
+			Bucket: scw.StringPtr(bucketName),
 		})
 	})
 	if err != nil && !tfawserr.ErrMessageContains(err, "NoSuchLifecycleConfiguration", "") {
@@ -608,9 +600,6 @@ func resourceScalewayObjectBucketRead(ctx context.Context, d *schema.ResourceDat
 			// expiration
 			if lifecycleRule.Expiration != nil {
 				e := make(map[string]interface{})
-				if lifecycleRule.Expiration.Date != nil {
-					e["date"] = (aws.TimeValue(lifecycleRule.Expiration.Date)).Format("2006-01-02")
-				}
 				if lifecycleRule.Expiration.Days != nil {
 					e["days"] = int(aws.Int64Value(lifecycleRule.Expiration.Days))
 				}
@@ -632,9 +621,6 @@ func resourceScalewayObjectBucketRead(ctx context.Context, d *schema.ResourceDat
 				transitions := make([]interface{}, 0, len(lifecycleRule.Transitions))
 				for _, v := range lifecycleRule.Transitions {
 					t := make(map[string]interface{})
-					if v.Date != nil {
-						t["date"] = (aws.TimeValue(v.Date)).Format("2006-01-02")
-					}
 					if v.Days != nil {
 						t["days"] = int(aws.Int64Value(v.Days))
 					}
@@ -667,24 +653,6 @@ func resourceScalewayObjectBucketRead(ctx context.Context, d *schema.ResourceDat
 	if err := d.Set("lifecycle_rule", lifecycleRules); err != nil {
 		return diag.FromErr(fmt.Errorf("error setting lifecycle_rule: %s", err))
 	}
-
-	// bucket cors
-	if err != nil && !isS3Err(err, "NoSuchCORSConfiguration", "") {
-		return diag.FromErr(fmt.Errorf("error getting S3 Bucket CORS configuration: %s", err))
-	}
-
-	_ = d.Set("cors_rule", flattenBucketCORS(corsResponse))
-
-	_ = d.Set("endpoint", fmt.Sprintf("https://%s.s3.%s.scw.cloud", bucketName, region))
-
-	// Read the versioning configuration
-	versioningResponse, err := s3Client.GetBucketVersioningWithContext(ctx, &s3.GetBucketVersioningInput{
-		Bucket: scw.StringPtr(bucketName),
-	})
-	if err != nil {
-		return diag.FromErr(err)
-	}
-	_ = d.Set("versioning", flattenObjectBucketVersioning(versioningResponse))
 
 	return nil
 }
