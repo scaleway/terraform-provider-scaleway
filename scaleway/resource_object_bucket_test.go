@@ -34,7 +34,7 @@ func TestAccScalewayObjectBucket_Basic(t *testing.T) {
 	bucketAms := sdkacctest.RandomWithPrefix("test-acc-scaleway-object-bucket-ams-")
 	bucketPar := sdkacctest.RandomWithPrefix("test-acc-scaleway-object-bucket-par-")
 	bucketLifecycle := sdkacctest.RandomWithPrefix("test-acc-scaleway-object-bucket-lifecycle")
-	resourceNameLifecycle := "scaleway_object_bucket.par-bucket-01"
+	resourceNameLifecycle := "scaleway_object_bucket.par-bucket-lifecycle"
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
@@ -111,6 +111,76 @@ func TestAccScalewayObjectBucket_Basic(t *testing.T) {
 						name = "%s"
 						region = "fr-par"
 						acl = "private"
+
+						lifecycle_rule {
+							id      = "id1"
+							prefix  = "path1/"
+							enabled = true
+
+							expiration {
+							  days = 365
+							}
+
+							transition {
+							  days          = 30
+							  storage_class = "STANDARD"
+							}
+						}
+					}
+				`, bucketLifecycle),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("scaleway_object_bucket.par-bucket-lifecycle", "name", bucketLifecycle),
+					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.0.id", "id1"),
+					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.0.prefix", "path1/"),
+					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.0.expiration.0.days", "365"),
+					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.0.expiration.0.expired_object_delete_marker", "false"),
+					resource.TestCheckTypeSetElemNestedAttrs(resourceNameLifecycle, "lifecycle_rule.0.transition.*", map[string]string{
+						"days":          "30",
+						"storage_class": "STANDARD",
+					}),
+				),
+			},
+			{
+				Config: fmt.Sprintf(`
+					resource "scaleway_object_bucket" "par-bucket-lifecycle"{
+						name = "%s"
+						region = "fr-par"
+						acl = "private"
+
+						lifecycle_rule {
+							id      = "id1"
+							prefix  = "path1/"
+							enabled = true
+
+							expiration {
+							  days = 365
+							}
+
+							transition {
+							  days          = 90
+							  storage_class = "ONEZONE_IA"
+							}
+						}
+					}
+				`, bucketLifecycle),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("scaleway_object_bucket.par-bucket-lifecycle", "name", bucketLifecycle),
+					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.0.id", "id1"),
+					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.0.prefix", "path1/"),
+					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.0.expiration.0.days", "365"),
+					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.0.expiration.0.expired_object_delete_marker", "false"),
+					resource.TestCheckTypeSetElemNestedAttrs(resourceNameLifecycle, "lifecycle_rule.0.transition.*", map[string]string{
+						"days":          "90",
+						"storage_class": "ONEZONE_IA",
+					}),
+				),
+			},
+			{
+				Config: fmt.Sprintf(`
+					resource "scaleway_object_bucket" "par-bucket-lifecycle"{
+						name = "%s"
+						region = "fr-par"
+						acl = "private"
 			
 						lifecycle_rule {
 							id      = "id1"
@@ -122,80 +192,59 @@ func TestAccScalewayObjectBucket_Basic(t *testing.T) {
 							}
 			
 							transition {
-							  days          = 30
-							  storage_class = "STANDARD_IA"
-							}
-			
-							transition {
-							  days          = 90
-							  storage_class = "ONEZONE_IA"
-							}
-			
-							transition {
 							  days          = 120
 							  storage_class = "GLACIER"
 							}
 						}
-			
+
 						lifecycle_rule {
 							id      = "id2"
 							prefix  = "path2/"
 							enabled = true
 			
 							expiration {
-							  date = "2016-01-12"
+							  days = "50"
 							}
 						}
-			
+
 						lifecycle_rule {
 							id      = "id3"
 							prefix  = "path3/"
 							enabled = true
 			
-							transition {
-							  days          = 0
-							  storage_class = "GLACIER"
+							tags = {
+							  "tagKey"    = "tagValue"
+							  "terraform" = "hashicorp"
+							}
+
+							expiration {
+							  days = "1"
 							}
 						}
-			
+
 						lifecycle_rule {
 							id      = "id4"
-							prefix  = "path4/"
 							enabled = true
 			
 							tags = {
 							  "tagKey"    = "tagValue"
 							  "terraform" = "hashicorp"
 							}
-			
-							expiration {
-							  date = "2016-01-12"
+
+							transition {
+							  days          = 0
+							  storage_class = "GLACIER"
 							}
 						}
-			
+
 						lifecycle_rule {
 							id      = "id5"
 							enabled = true
-			
-							tags = {
-							  "tagKey"    = "tagValue"
-							  "terraform" = "hashicorp"
-							}
-			
-							transition {
-							  days          = 0
-							  storage_class = "GLACIER"
-							}
-						}
-			
-						lifecycle_rule {
-							id      = "id6"
-							enabled = true
-			
+
 							tags = {
 							  "tagKey" = "tagValue"
 							}
-			
+
 							transition {
 							  days          = 0
 							  storage_class = "GLACIER"
@@ -208,47 +257,29 @@ func TestAccScalewayObjectBucket_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.0.id", "id1"),
 					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.0.prefix", "path1/"),
 					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.0.expiration.0.days", "365"),
-					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.0.expiration.0.date", ""),
 					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.0.expiration.0.expired_object_delete_marker", "false"),
 					resource.TestCheckTypeSetElemNestedAttrs(resourceNameLifecycle, "lifecycle_rule.0.transition.*", map[string]string{
-						"date":          "",
-						"days":          "30",
-						"storage_class": "STANDARD_IA",
-					}),
-					resource.TestCheckTypeSetElemNestedAttrs(resourceNameLifecycle, "lifecycle_rule.0.transition.*", map[string]string{
-						"date":          "",
-						"days":          "90",
-						"storage_class": "ONEZONE_IA",
-					}),
-					resource.TestCheckTypeSetElemNestedAttrs(resourceNameLifecycle, "lifecycle_rule.0.transition.*", map[string]string{
-						"date":          "",
 						"days":          "120",
 						"storage_class": "GLACIER",
 					}),
 					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.1.id", "id2"),
 					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.1.prefix", "path2/"),
-					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.1.expiration.0.date", "2016-01-12"),
-					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.1.expiration.0.days", "0"),
+					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.1.expiration.0.days", "50"),
 					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.1.expiration.0.expired_object_delete_marker", "false"),
 					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.2.id", "id3"),
 					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.2.prefix", "path3/"),
-					resource.TestCheckTypeSetElemNestedAttrs(resourceNameLifecycle, "lifecycle_rule.2.transition.*", map[string]string{
-						"days": "0",
-					}),
+					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.2.tags.tagKey", "tagValue"),
+					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.2.tags.terraform", "hashicorp"),
 					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.3.id", "id4"),
-					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.3.prefix", "path4/"),
 					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.3.tags.tagKey", "tagValue"),
 					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.3.tags.terraform", "hashicorp"),
-					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.4.id", "id5"),
-					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.4.tags.tagKey", "tagValue"),
-					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.4.tags.terraform", "hashicorp"),
-					resource.TestCheckTypeSetElemNestedAttrs(resourceNameLifecycle, "lifecycle_rule.4.transition.*", map[string]string{
+					resource.TestCheckTypeSetElemNestedAttrs(resourceNameLifecycle, "lifecycle_rule.3.transition.*", map[string]string{
 						"days":          "0",
 						"storage_class": "GLACIER",
 					}),
-					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.5.id", "id6"),
-					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.5.tags.tagKey", "tagValue"),
-					resource.TestCheckTypeSetElemNestedAttrs(resourceNameLifecycle, "lifecycle_rule.5.transition.*", map[string]string{
+					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.4.id", "id5"),
+					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.4.tags.tagKey", "tagValue"),
+					resource.TestCheckTypeSetElemNestedAttrs(resourceNameLifecycle, "lifecycle_rule.4.transition.*", map[string]string{
 						"days":          "0",
 						"storage_class": "GLACIER",
 					}),
