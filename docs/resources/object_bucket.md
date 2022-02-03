@@ -1,7 +1,7 @@
 ---
 page_title: "Scaleway: scaleway_object_bucket"
 description: |-
-  Gets information about  Scaleway object storage buckets.
+  Manages Scaleway object storage buckets.
 ---
 
 # scaleway_object_bucket
