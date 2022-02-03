@@ -93,8 +93,9 @@ func resourceScalewayObjectBucket() *schema.Resource {
 				},
 			},
 			"lifecycle_rule": {
-				Type:     schema.TypeList,
-				Optional: true,
+				Type:        schema.TypeList,
+				Optional:    true,
+				Description: "Lifecycle configuration is a set of rules that define actions that Scaleway Object Storage applies to a group of objects",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"id": {
@@ -102,10 +103,12 @@ func resourceScalewayObjectBucket() *schema.Resource {
 							Optional:     true,
 							Computed:     true,
 							ValidateFunc: validation.StringLenBetween(0, 255),
+							Description:  "Unique identifier for the rule",
 						},
 						"prefix": {
-							Type:     schema.TypeString,
-							Optional: true,
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "The prefix identifying one or more objects to which the rule applies",
 						},
 						"tags": {
 							Type: schema.TypeMap,
@@ -116,42 +119,49 @@ func resourceScalewayObjectBucket() *schema.Resource {
 							Description: "The tags associated with the bucket lifecycle",
 						},
 						"enabled": {
-							Type:     schema.TypeBool,
-							Required: true,
+							Type:        schema.TypeBool,
+							Required:    true,
+							Description: "Specifies if the configuration rule is Enabled or Disabled",
 						},
 						"abort_incomplete_multipart_upload_days": {
-							Type:     schema.TypeInt,
-							Optional: true,
+							Type:        schema.TypeInt,
+							Optional:    true,
+							Description: "Specifies the number of days after initiating a multipart upload when the multipart upload must be completed",
 						},
 						"expiration": {
-							Type:     schema.TypeList,
-							Optional: true,
-							MaxItems: 1,
+							Type:        schema.TypeList,
+							Optional:    true,
+							MaxItems:    1,
+							Description: "Specifies a period in the object's expire",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"days": {
 										Type:         schema.TypeInt,
 										Required:     true,
 										ValidateFunc: validation.IntAtLeast(0),
+										Description:  "Specifies the number of days after object creation when the specific rule action takes effect",
 									},
 								},
 							},
 						},
 						"transition": {
-							Type:     schema.TypeSet,
-							Optional: true,
-							Set:      transitionHash,
+							Type:        schema.TypeSet,
+							Optional:    true,
+							Set:         transitionHash,
+							Description: "Define when objects transition to another storage class",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"days": {
 										Type:         schema.TypeInt,
 										Optional:     true,
 										ValidateFunc: validation.IntAtLeast(0),
+										Description:  "Specifies the number of days after object creation when the specific rule action takes effect",
 									},
 									"storage_class": {
 										Type:         schema.TypeString,
 										Required:     true,
 										ValidateFunc: validation.StringInSlice(TransitionSCWStorageClassValues(), false),
+										Description:  "Specifies the Scaleway Object Storage class to which you want the object to transition",
 									},
 								},
 							},
@@ -161,16 +171,18 @@ func resourceScalewayObjectBucket() *schema.Resource {
 			},
 			"region": regionSchema(),
 			"versioning": {
-				Type:     schema.TypeList,
-				Optional: true,
-				Computed: true,
-				MaxItems: 1,
+				Type:        schema.TypeList,
+				Optional:    true,
+				Computed:    true,
+				MaxItems:    1,
+				Description: "Allow multiple versions of an object in the same bucket",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"enabled": {
-							Type:     schema.TypeBool,
-							Optional: true,
-							Default:  false,
+							Description: "Enable versioning. Once you version-enable a bucket, it can never return to an unversioned state",
+							Type:        schema.TypeBool,
+							Optional:    true,
+							Default:     false,
 						},
 					},
 				},

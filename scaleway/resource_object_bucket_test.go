@@ -281,6 +281,47 @@ func TestAccScalewayObjectBucket_Basic(t *testing.T) {
 					}),
 				),
 			},
+			{
+				Config: fmt.Sprintf(`
+					resource "scaleway_object_bucket" "par-bucket-lifecycle"{
+						name = "%s"
+						region = "fr-par"
+						acl = "private"
+
+						lifecycle_rule {
+							id      = "id1"
+							prefix  = "path1/"
+							enabled = true
+							abort_incomplete_multipart_upload_days = 30
+						}
+					}
+				`, bucketLifecycle),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("scaleway_object_bucket.par-bucket-lifecycle", "name", bucketLifecycle),
+					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.0.id", "id1"),
+					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.0.prefix", "path1/"),
+					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.0.abort_incomplete_multipart_upload_days", "30"),
+				),
+			},
+			{
+				Config: fmt.Sprintf(`
+					resource "scaleway_object_bucket" "par-bucket-lifecycle"{
+						name = "%s"
+						region = "fr-par"
+						acl = "private"
+
+						lifecycle_rule {
+							prefix  = "path1/"
+							enabled = true
+							abort_incomplete_multipart_upload_days = 30
+						}
+					}
+				`, bucketLifecycle),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet(resourceNameLifecycle, "lifecycle_rule.0.id"),
+					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.0.abort_incomplete_multipart_upload_days", "30"),
+				),
+			},
 		},
 	})
 }
