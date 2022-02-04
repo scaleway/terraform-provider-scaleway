@@ -24,11 +24,15 @@ data "scaleway_lb_ip" "my_ip" {
 
 ## Argument Reference
 
+The following arguments are supported:
+
 - `ip_address` - (Optional) The IP address.
   Only one of `ip_address` and `lb_id` should be specified.
 
 - `ip_id` - (Optional) The IP ID.
   Only one of `ip_address` and `ip_id` should be specified.
+
+- `zone` - (Defaults to [provider](../index.md#zone) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which the IP should be reserved.
 
 ## Attributes Reference
 
