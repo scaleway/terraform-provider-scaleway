@@ -271,18 +271,23 @@ func projectIDSchema() *schema.Schema {
 
 // zoneSchema returns a standard schema for a zone
 func zoneSchema() *schema.Schema {
-	var allZones []string
-	for _, z := range scw.AllZones {
-		allZones = append(allZones, z.String())
-	}
 	return &schema.Schema{
 		Type:             schema.TypeString,
 		Description:      "The zone you want to attach the resource to",
 		Optional:         true,
 		ForceNew:         true,
 		Computed:         true,
-		ValidateDiagFunc: validateStringInSliceWithWarning(allZones, "zone"),
+		ValidateDiagFunc: validateStringInSliceWithWarning(AllZones(), "zone"),
 	}
+}
+
+func AllZones() []string {
+	var allZones []string
+	for _, z := range scw.AllZones {
+		allZones = append(allZones, z.String())
+	}
+
+	return allZones
 }
 
 // regionSchema returns a standard schema for a zone
