@@ -54,6 +54,19 @@ func TestAccScalewayLbIP_Basic(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: `
+					resource scaleway_lb_ip ipZone {
+						zone = "nl-ams-1"
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayLbIPExists(tt, "scaleway_lb_ip.ipZone"),
+					testCheckResourceAttrIPv4("scaleway_lb_ip.ipZone", "ip_address"),
+					resource.TestCheckResourceAttrSet("scaleway_lb_ip.ipZone", "reverse"),
+					resource.TestCheckResourceAttr("scaleway_lb_ip.ipZone", "zone", "nl-ams-1"),
+				),
+			},
+			{
+				Config: `
 					resource scaleway_lb_ip ip01 {
 					}
 				`,
@@ -61,6 +74,7 @@ func TestAccScalewayLbIP_Basic(t *testing.T) {
 					testAccCheckScalewayLbIPExists(tt, "scaleway_lb_ip.ip01"),
 					testCheckResourceAttrIPv4("scaleway_lb_ip.ip01", "ip_address"),
 					resource.TestCheckResourceAttrSet("scaleway_lb_ip.ip01", "reverse"),
+					resource.TestCheckResourceAttr("scaleway_lb_ip.ip01", "zone", "fr-par-1"),
 				),
 			},
 			{
