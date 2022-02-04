@@ -163,7 +163,6 @@ func newRegionalIDString(region scw.Region, id string) string {
 // terraformResourceData is an interface for *schema.ResourceData. (used for mock)
 type terraformResourceData interface {
 	HasChange(string) bool
-	GetOkExists(string) (interface{}, bool)
 	GetOk(string) (interface{}, bool)
 	Get(string) interface{}
 	Set(string, interface{}) error
@@ -178,7 +177,7 @@ var ErrZoneNotFound = fmt.Errorf("could not detect zone. Scaleway uses regions a
 //  - zone field of the resource data
 //  - default zone from config
 func extractZone(d terraformResourceData, meta *Meta) (scw.Zone, error) {
-	rawZone, exist := d.GetOkExists("zone")
+	rawZone, exist := d.GetOk("zone")
 	if exist {
 		return scw.ParseZone(rawZone.(string))
 	}
@@ -198,7 +197,7 @@ var ErrRegionNotFound = fmt.Errorf("could not detect region")
 //  - region field of the resource data
 //  - default region from config
 func extractRegion(d terraformResourceData, meta *Meta) (scw.Region, error) {
-	rawRegion, exist := d.GetOkExists("region")
+	rawRegion, exist := d.GetOk("region")
 	if exist {
 		return scw.ParseRegion(rawRegion.(string))
 	}

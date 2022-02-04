@@ -33,14 +33,7 @@ func resourceScalewayLbIP() *schema.Resource {
 				Computed:    true,
 				Description: "The reverse domain name for this IP",
 			},
-			"zone": {
-				Type:             schema.TypeString,
-				Description:      "The zone you want to attach the resource to",
-				Optional:         true,
-				ForceNew:         true,
-				ValidateDiagFunc: validateStringInSliceWithWarning(AllZones(), "zone"),
-				Default:          scw.ZoneFrPar1,
-			},
+			"zone": zoneSchema(),
 			// Computed
 			"organization_id": organizationIDSchema(),
 			"project_id":      projectIDSchema(),
