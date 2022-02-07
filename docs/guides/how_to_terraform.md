@@ -1,7 +1,7 @@
 # How to init your infrastructure with Terraform
 
-Scaleway's products are can be used and deployed through Terraform.
-The purpose of this guide is to help them deploying their first infrastructure in terraform, according some good practices.
+Scaleway's products can be used and deployed through Terraform.
+The purpose of this guide is to help users deploy their first infrastructure in Terraform, according to some good practices.
 
 
 ## The workflow
