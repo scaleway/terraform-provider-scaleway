@@ -21,26 +21,26 @@ func TestAccScalewayDataSourceLb_Basic(t *testing.T) {
 
 					resource scaleway_lb main {
 					    ip_id = scaleway_lb_ip.main.id
-						name = "test-lb"
+						name = "data-test-lb"
 						type = "LB-S"
 					}
 					
-					data "scaleway_lb" "test" {
+					data "scaleway_lb" "testByID" {
 						lb_id = "${scaleway_lb.main.id}"
 					}
 					
-					data "scaleway_lb" "test2" {
+					data "scaleway_lb" "testByName" {
 						name = "${scaleway_lb.main.name}"
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayLbExists(tt, "data.scaleway_lb.test"),
-					testAccCheckScalewayLbExists(tt, "data.scaleway_lb.test2"),
+					testAccCheckScalewayLbExists(tt, "data.scaleway_lb.testByID"),
+					testAccCheckScalewayLbExists(tt, "data.scaleway_lb.testByName"),
 					resource.TestCheckResourceAttrPair(
-						"data.scaleway_lb.test", "name",
+						"data.scaleway_lb.testByID", "name",
 						"scaleway_lb.main", "name"),
 					resource.TestCheckResourceAttrPair(
-						"data.scaleway_lb.test2", "id",
+						"data.scaleway_lb.testByName", "id",
 						"scaleway_lb.main", "id"),
 				),
 			},

@@ -17,29 +17,30 @@ func init() {
 	})
 }
 
-func testSweepIotHub(zone string) error {
-	scwClient, err := sharedClientForZone(scw.Zone(zone))
-	if err != nil {
-		return fmt.Errorf("error getting client in sweeper: %s", err)
-	}
-	iotAPI := iot.NewAPI(scwClient)
-
-	l.Debugf("sweeper: destroying the iot hub in (%s)", zone)
-	listHubs, err := iotAPI.ListHubs(&iot.ListHubsRequest{}, scw.WithAllPages())
-	if err != nil {
-		return fmt.Errorf("error listing hubs in (%s) in sweeper: %s", zone, err)
-	}
-
-	for _, hub := range listHubs.Hubs {
-		err := iotAPI.DeleteHub(&iot.DeleteHubRequest{
-			HubID: hub.ID,
-		})
+func testSweepIotHub(_ string) error {
+	return sweepRegions(scw.AllRegions, func(scwClient *scw.Client, region scw.Region) error {
+		iotAPI := iot.NewAPI(scwClient)
+		l.Debugf("sweeper: destroying the iot hub in (%s)", region)
+		listHubs, err := iotAPI.ListHubs(&iot.ListHubsRequest{Region: region}, scw.WithAllPages())
 		if err != nil {
-			return fmt.Errorf("error deleting hub in sweeper: %s", err)
+			l.Debugf("sweeper: destroying the iot hub in (%s)", region)
+			return fmt.Errorf("error listing hubs in (%s) in sweeper: %s", region, err)
 		}
-	}
 
-	return nil
+		deleteDevices := true
+		for _, hub := range listHubs.Hubs {
+			err := iotAPI.DeleteHub(&iot.DeleteHubRequest{
+				HubID:         hub.ID,
+				Region:        hub.Region,
+				DeleteDevices: &deleteDevices,
+			})
+			if err != nil {
+				return fmt.Errorf("error deleting hub in sweeper: %s", err)
+			}
+		}
+
+		return nil
+	})
 }
 
 func TestAccScalewayIotHub_Minimal(t *testing.T) {

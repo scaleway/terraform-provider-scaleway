@@ -163,25 +163,32 @@ func resourceScalewayLbFrontendCreate(ctx context.Context, d *schema.ResourceDat
 		return diag.FromErr(err)
 	}
 
-	retryInterval := DefaultWaitLBRetryInterval
+	retryInterval := defaultWaitLBRetryInterval
 	_, err = lbAPI.WaitForLb(&lb.ZonedAPIWaitForLBRequest{
 		Zone:          zone,
 		LBID:          lbID,
 		Timeout:       scw.TimeDurationPtr(defaultInstanceServerWaitTimeout),
 		RetryInterval: &retryInterval,
 	}, scw.WithContext(ctx))
-
-	if err != nil && !is404Error(err) {
+	if err != nil {
+		if is403Error(err) {
+			d.SetId("")
+			return nil
+		}
 		return diag.FromErr(err)
 	}
 
+	timeoutClient, err := expandDuration(d.Get("timeout_client"))
+	if err != nil {
+		return diag.FromErr(err)
+	}
 	res, err := lbAPI.CreateFrontend(&lb.ZonedAPICreateFrontendRequest{
 		Zone:          zone,
 		LBID:          lbID,
 		Name:          expandOrGenerateString(d.Get("name"), "lb-frt"),
 		InboundPort:   int32(d.Get("inbound_port").(int)),
 		BackendID:     expandID(d.Get("backend_id")),
-		TimeoutClient: expandDuration(d.Get("timeout_client")),
+		TimeoutClient: timeoutClient,
 		CertificateID: expandStringPtr(expandID(d.Get("certificate_id"))),
 	}, scw.WithContext(ctx))
 	if err != nil {
@@ -204,11 +211,30 @@ func resourceScalewayLbFrontendRead(ctx context.Context, d *schema.ResourceData,
 		return diag.FromErr(err)
 	}
 
+	_, lbID, err := parseZonedID(d.Get("lb_id").(string))
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	retryInterval := defaultWaitLBRetryInterval
+	_, err = lbAPI.WaitForLb(&lb.ZonedAPIWaitForLBRequest{
+		Zone:          zone,
+		LBID:          lbID,
+		Timeout:       scw.TimeDurationPtr(defaultInstanceServerWaitTimeout),
+		RetryInterval: &retryInterval,
+	}, scw.WithContext(ctx))
+	if err != nil {
+		if is403Error(err) {
+			d.SetId("")
+			return nil
+		}
+		return diag.FromErr(err)
+	}
+
 	res, err := lbAPI.GetFrontend(&lb.ZonedAPIGetFrontendRequest{
 		Zone:       zone,
 		FrontendID: ID,
 	}, scw.WithContext(ctx))
-
 	if err != nil {
 		if is404Error(err) {
 			d.SetId("")
@@ -340,13 +366,37 @@ func resourceScalewayLbFrontendUpdate(ctx context.Context, d *schema.ResourceDat
 		return diag.FromErr(err)
 	}
 
+	retryInterval := defaultWaitLBRetryInterval
+	_, lbID, err := parseZonedID(d.Get("lb_id").(string))
+	if err != nil {
+		return diag.FromErr(err)
+	}
+	_, err = lbAPI.WaitForLb(&lb.ZonedAPIWaitForLBRequest{
+		Zone:          zone,
+		LBID:          lbID,
+		Timeout:       scw.TimeDurationPtr(defaultInstanceServerWaitTimeout),
+		RetryInterval: &retryInterval,
+	}, scw.WithContext(ctx))
+	// check err waiting process
+	if err != nil {
+		if is403Error(err) {
+			d.SetId("")
+			return nil
+		}
+		return diag.FromErr(err)
+	}
+
+	timeoutClient, err := expandDuration(d.Get("timeout_client"))
+	if err != nil {
+		return diag.FromErr(err)
+	}
 	req := &lb.ZonedAPIUpdateFrontendRequest{
 		Zone:          zone,
 		FrontendID:    ID,
 		Name:          d.Get("name").(string),
 		InboundPort:   int32(d.Get("inbound_port").(int)),
 		BackendID:     expandID(d.Get("backend_id")),
-		TimeoutClient: expandDuration(d.Get("timeout_client")),
+		TimeoutClient: timeoutClient,
 		CertificateID: expandStringPtr(expandID(d.Get("certificate_id"))),
 	}
 

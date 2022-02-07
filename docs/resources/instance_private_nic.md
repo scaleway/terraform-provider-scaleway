@@ -37,5 +37,5 @@ In addition to all above arguments, the following attributes are exported:
 Private NICs can be imported using the `{zone}/{server_id}/{private_nic_id}`, e.g.
 
 ```bash
-$ terraform import scaleway_instance_volume.server_volume fr-par-1/11111111-1111-1111-1111-111111111111/22222222-2222-2222-2222-222222222222
+$ terraform import scaleway_instance_private_nic.pnic01 fr-par-1/11111111-1111-1111-1111-111111111111/22222222-2222-2222-2222-222222222222
 ```

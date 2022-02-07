@@ -21,7 +21,9 @@ func testSweepInstancePlacementGroup(_ string) error {
 	return sweepZones(scw.AllZones, func(scwClient *scw.Client, zone scw.Zone) error {
 		instanceAPI := instance.NewAPI(scwClient)
 		l.Debugf("sweeper: destroying the instance placement group in (%s)", zone)
-		listPlacementGroups, err := instanceAPI.ListPlacementGroups(&instance.ListPlacementGroupsRequest{}, scw.WithAllPages())
+		listPlacementGroups, err := instanceAPI.ListPlacementGroups(&instance.ListPlacementGroupsRequest{
+			Zone: zone,
+		}, scw.WithAllPages())
 		if err != nil {
 			l.Warningf("error listing placement groups in (%s) in sweeper: %s", zone, err)
 			return nil
@@ -29,6 +31,7 @@ func testSweepInstancePlacementGroup(_ string) error {
 
 		for _, pg := range listPlacementGroups.PlacementGroups {
 			err := instanceAPI.DeletePlacementGroup(&instance.DeletePlacementGroupRequest{
+				Zone:             zone,
 				PlacementGroupID: pg.ID,
 			})
 			if err != nil {

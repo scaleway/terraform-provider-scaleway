@@ -12,7 +12,8 @@ import (
 )
 
 const (
-	retryIntervalVPCGatewayNetwork = 30 * time.Second
+	retryIntervalVPCGatewayNetwork = 1 * time.Minute
+	retryGWTimeout                 = 2 * time.Minute
 )
 
 func resourceScalewayVPCGatewayNetwork() *schema.Resource {
@@ -95,18 +96,32 @@ func resourceScalewayVPCGatewayNetworkCreate(ctx context.Context, d *schema.Reso
 		return diag.FromErr(err)
 	}
 
+	retryInterval := retryGWTimeout
 	gatewayID := expandZonedID(d.Get("gateway_id").(string)).ID
+	gw, err := vpcgwNetworkAPI.WaitForGateway(&vpcgw.WaitForGatewayRequest{
+		GatewayID:     gatewayID,
+		Timeout:       scw.TimeDurationPtr(defaultVPCGatewayTimeout),
+		RetryInterval: &retryInterval,
+		Zone:          zone,
+	}, scw.WithContext(ctx))
+	// check err waiting process
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	req := &vpcgw.CreateGatewayNetworkRequest{
 		Zone:             zone,
-		GatewayID:        gatewayID,
+		GatewayID:        gw.ID,
 		PrivateNetworkID: expandZonedID(d.Get("private_network_id").(string)).ID,
 		EnableMasquerade: *expandBoolPtr(d.Get("enable_masquerade")),
 		EnableDHCP:       expandBoolPtr(d.Get("enable_dhcp")),
 	}
-
 	staticAddress, staticAddressExist := d.GetOk("static_address")
 	if staticAddressExist {
-		address := expandIPNet(staticAddress.(string))
+		address, err := expandIPNet(staticAddress.(string))
+		if err != nil {
+			return diag.FromErr(err)
+		}
 		req.Address = &address
 	}
 
@@ -116,35 +131,34 @@ func resourceScalewayVPCGatewayNetworkCreate(ctx context.Context, d *schema.Reso
 		req.DHCPID = &dhcpZoned.ID
 	}
 
-	retryInterval := retryIntervalVPCGatewayNetwork
-	//check gateway is in stable state.
-	_, err = vpcgwNetworkAPI.WaitForGateway(&vpcgw.WaitForGatewayRequest{
-		GatewayID:     gatewayID,
-		Zone:          zone,
-		Timeout:       scw.TimeDurationPtr(gatewayWaitForTimeout),
-		RetryInterval: &retryInterval,
-	}, scw.WithContext(ctx))
-
-	if err != nil && !is404Error(err) {
-		return diag.FromErr(err)
-	}
-	res, err := vpcgwNetworkAPI.CreateGatewayNetwork(req, scw.WithContext(ctx))
+	gatewayNetwork, err := vpcgwNetworkAPI.CreateGatewayNetwork(req, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	// set default interval
-	res, err = vpcgwNetworkAPI.WaitForGatewayNetwork(&vpcgw.WaitForGatewayNetworkRequest{
-		GatewayNetworkID: res.ID,
-		Timeout:          scw.TimeDurationPtr(defaultVPCGatewayTimeout),
-		RetryInterval:    &retryInterval,
-		Zone:             zone,
+	gw, err = vpcgwNetworkAPI.WaitForGateway(&vpcgw.WaitForGatewayRequest{
+		GatewayID:     gatewayID,
+		Timeout:       scw.TimeDurationPtr(defaultVPCGatewayTimeout),
+		RetryInterval: &retryInterval,
+		Zone:          zone,
 	}, scw.WithContext(ctx))
 	// check err waiting process
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	d.SetId(newZonedIDString(zone, res.ID))
+
+	retryInterval = retryIntervalVPCGatewayNetwork
+	gatewayNetwork, err = vpcgwNetworkAPI.WaitForGatewayNetwork(&vpcgw.WaitForGatewayNetworkRequest{
+		GatewayNetworkID: gatewayNetwork.ID,
+		Timeout:          scw.TimeDurationPtr(defaultVPCGatewayTimeout),
+		RetryInterval:    &retryInterval,
+		Zone:             zone,
+	}, scw.WithContext(ctx))
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	d.SetId(newZonedIDString(zone, gatewayNetwork.ID))
 
 	return resourceScalewayVPCGatewayNetworkRead(ctx, d, meta)
 }
@@ -155,15 +169,26 @@ func resourceScalewayVPCGatewayNetworkRead(ctx context.Context, d *schema.Resour
 		return diag.FromErr(err)
 	}
 
-	gatewayNetwork, err := vpcgwNetworkAPI.GetGatewayNetwork(&vpcgw.GetGatewayNetworkRequest{
+	readGWNetwork := &vpcgw.GetGatewayNetworkRequest{
 		GatewayNetworkID: ID,
 		Zone:             zone,
+	}
+
+	gatewayID := expandZonedID(d.Get("gateway_id").(string)).ID
+	retryInterval := retryGWTimeout
+	_, err = vpcgwNetworkAPI.WaitForGateway(&vpcgw.WaitForGatewayRequest{
+		GatewayID:     gatewayID,
+		Timeout:       scw.TimeDurationPtr(defaultVPCGatewayTimeout),
+		RetryInterval: &retryInterval,
+		Zone:          zone,
 	}, scw.WithContext(ctx))
+	// check err waiting process
 	if err != nil {
-		if is404Error(err) {
-			d.SetId("")
-			return nil
-		}
+		return diag.FromErr(err)
+	}
+
+	gatewayNetwork, err := vpcgwNetworkAPI.GetGatewayNetwork(readGWNetwork, scw.WithContext(ctx))
+	if err != nil {
 		return diag.FromErr(err)
 	}
 
@@ -172,7 +197,11 @@ func resourceScalewayVPCGatewayNetworkRead(ctx context.Context, d *schema.Resour
 	}
 
 	if staticAddress := gatewayNetwork.Address; staticAddress != nil {
-		_ = d.Set("static_address", flattenIPNet(*staticAddress))
+		staticAddressValue, err := flattenIPNet(*staticAddress)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		_ = d.Set("static_address", staticAddressValue)
 	}
 
 	if macAddress := gatewayNetwork.MacAddress; macAddress != nil {
@@ -187,6 +216,17 @@ func resourceScalewayVPCGatewayNetworkRead(ctx context.Context, d *schema.Resour
 	cleanUpDHCP, cleanUpDHCPExist := d.GetOk("cleanup_dhcp")
 	if cleanUpDHCPExist {
 		cleanUpDHCPValue = *expandBoolPtr(cleanUpDHCP)
+	}
+
+	retryInterval = retryIntervalVPCGatewayNetwork
+	gatewayNetwork, err = vpcgwNetworkAPI.WaitForGatewayNetwork(&vpcgw.WaitForGatewayNetworkRequest{
+		GatewayNetworkID: gatewayNetwork.ID,
+		Timeout:          scw.TimeDurationPtr(defaultVPCGatewayTimeout),
+		RetryInterval:    &retryInterval,
+		Zone:             zone,
+	}, scw.WithContext(ctx))
+	if err != nil {
+		return diag.FromErr(err)
 	}
 
 	_ = d.Set("gateway_id", newZonedID(zone, gatewayNetwork.GatewayID).String())
@@ -206,6 +246,30 @@ func resourceScalewayVPCGatewayNetworkUpdate(ctx context.Context, d *schema.Reso
 		return diag.FromErr(err)
 	}
 
+	gatewayID := expandZonedID(d.Get("gateway_id").(string)).ID
+	retryInterval := retryGWTimeout
+	_, err = vpcgwAPI.WaitForGateway(&vpcgw.WaitForGatewayRequest{
+		GatewayID:     gatewayID,
+		Timeout:       scw.TimeDurationPtr(defaultVPCGatewayTimeout),
+		RetryInterval: &retryInterval,
+		Zone:          zone,
+	}, scw.WithContext(ctx))
+	// check err waiting process
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	retryInterval = retryIntervalVPCGatewayNetwork
+	_, err = vpcgwAPI.WaitForGatewayNetwork(&vpcgw.WaitForGatewayNetworkRequest{
+		GatewayNetworkID: ID,
+		Timeout:          scw.TimeDurationPtr(defaultVPCGatewayTimeout),
+		RetryInterval:    &retryInterval,
+		Zone:             zone,
+	}, scw.WithContext(ctx))
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	if d.HasChanges("enable_masquerade", "dhcp_id", "enable_dhcp", "static_address") {
 		dhcpID := expandZonedID(d.Get("dhcp_id").(string)).ID
 		updateRequest := &vpcgw.UpdateGatewayNetworkRequest{
@@ -217,7 +281,10 @@ func resourceScalewayVPCGatewayNetworkUpdate(ctx context.Context, d *schema.Reso
 		}
 		staticAddress, staticAddressExist := d.GetOk("static_address")
 		if staticAddressExist {
-			address := expandIPNet(staticAddress.(string))
+			address, err := expandIPNet(staticAddress.(string))
+			if err != nil {
+				return diag.FromErr(err)
+			}
 			updateRequest.Address = &address
 		}
 
@@ -225,6 +292,28 @@ func resourceScalewayVPCGatewayNetworkUpdate(ctx context.Context, d *schema.Reso
 		if err != nil {
 			return diag.FromErr(err)
 		}
+	}
+
+	_, err = vpcgwAPI.WaitForGatewayNetwork(&vpcgw.WaitForGatewayNetworkRequest{
+		GatewayNetworkID: ID,
+		Timeout:          scw.TimeDurationPtr(defaultVPCGatewayTimeout),
+		RetryInterval:    &retryInterval,
+		Zone:             zone,
+	}, scw.WithContext(ctx))
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	retryInterval = retryGWTimeout
+	_, err = vpcgwAPI.WaitForGateway(&vpcgw.WaitForGatewayRequest{
+		GatewayID:     gatewayID,
+		Timeout:       scw.TimeDurationPtr(defaultVPCGatewayTimeout),
+		RetryInterval: &retryInterval,
+		Zone:          zone,
+	}, scw.WithContext(ctx))
+	// check err waiting process
+	if err != nil {
+		return diag.FromErr(err)
 	}
 
 	return resourceScalewayVPCGatewayNetworkRead(ctx, d, meta)
@@ -236,44 +325,49 @@ func resourceScalewayVPCGatewayNetworkDelete(ctx context.Context, d *schema.Reso
 		return diag.FromErr(err)
 	}
 
-	defaultInterval := retryIntervalVPCGatewayNetwork
-	// check if network is a stable process
+	gatewayID := expandZonedID(d.Get("gateway_id").(string)).ID
+	retryInterval := retryGWTimeout
+	_, err = vpcgwAPI.WaitForGateway(&vpcgw.WaitForGatewayRequest{
+		GatewayID:     gatewayID,
+		Timeout:       scw.TimeDurationPtr(defaultVPCGatewayTimeout),
+		RetryInterval: &retryInterval,
+		Zone:          zone,
+	}, scw.WithContext(ctx))
+	// check err waiting process
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	retryInterval = retryIntervalVPCGatewayNetwork
 	gwNetwork, err := vpcgwAPI.WaitForGatewayNetwork(&vpcgw.WaitForGatewayNetworkRequest{
 		GatewayNetworkID: ID,
+		Timeout:          scw.TimeDurationPtr(defaultVPCGatewayTimeout),
+		RetryInterval:    &retryInterval,
 		Zone:             zone,
-		RetryInterval:    &defaultInterval,
-	})
-	if err != nil && !is404Error(err) {
-		return diag.FromErr(err)
-	}
-	//check gateway is in stable state.
-	_, err = vpcgwAPI.WaitForGateway(&vpcgw.WaitForGatewayRequest{
-		GatewayID:     gwNetwork.GatewayID,
-		Zone:          zone,
-		Timeout:       scw.TimeDurationPtr(gatewayWaitForTimeout),
-		RetryInterval: &defaultInterval,
 	}, scw.WithContext(ctx))
-	if err != nil && !is404Error(err) {
+	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	err = vpcgwAPI.DeleteGatewayNetwork(&vpcgw.DeleteGatewayNetworkRequest{
-		GatewayNetworkID: ID,
+	req := &vpcgw.DeleteGatewayNetworkRequest{
+		GatewayNetworkID: gwNetwork.ID,
 		Zone:             zone,
 		CleanupDHCP:      *expandBoolPtr(d.Get("cleanup_dhcp")),
-	}, scw.WithContext(ctx))
+	}
 
-	if err != nil && !is404Error(err) {
+	err = vpcgwAPI.DeleteGatewayNetwork(req, scw.WithContext(ctx))
+	if err != nil {
 		return diag.FromErr(err)
 	}
-	//check gateway is in stable state.
-	_, err = vpcgwAPI.WaitForGateway(&vpcgw.WaitForGatewayRequest{
-		GatewayID:     gwNetwork.GatewayID,
-		Zone:          zone,
-		Timeout:       scw.TimeDurationPtr(gatewayWaitForTimeout),
-		RetryInterval: &defaultInterval,
-	}, scw.WithContext(ctx))
 
+	//check gateway is in stable state.
+	retryInterval = retryGWTimeout
+	_, err = vpcgwAPI.WaitForGateway(&vpcgw.WaitForGatewayRequest{
+		GatewayID:     gatewayID,
+		Timeout:       scw.TimeDurationPtr(defaultVPCGatewayTimeout),
+		RetryInterval: &retryInterval,
+		Zone:          zone,
+	}, scw.WithContext(ctx))
 	if err != nil && !is404Error(err) {
 		return diag.FromErr(err)
 	}

@@ -21,7 +21,7 @@ func TestAccScalewayDataSourceMarketplaceImage_Basic(t *testing.T) {
 					`,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayInstanceImageExists(tt, "data.scaleway_marketplace_image.test1"),
-					resource.TestCheckResourceAttr("data.scaleway_marketplace_image.test1", "id", "fr-par-1/16152446-99ed-4795-9d3f-87ec2f5b891d"),
+					resource.TestCheckResourceAttr("data.scaleway_marketplace_image.test1", "label", "ubuntu_focal"),
 				),
 			},
 		},

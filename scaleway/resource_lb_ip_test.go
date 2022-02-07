@@ -1,6 +1,7 @@
 package scaleway
 
 import (
+	"context"
 	"fmt"
 	"testing"
 
@@ -18,18 +19,19 @@ func init() {
 }
 
 func testSweepLBIP(_ string) error {
-	return sweepZones([]scw.Zone{scw.ZoneFrPar1, scw.ZoneNlAms1, scw.ZonePlWaw1}, func(scwClient *scw.Client, region scw.Zone) error {
+	return sweepZones([]scw.Zone{scw.ZoneFrPar1, scw.ZoneNlAms1, scw.ZonePlWaw1}, func(scwClient *scw.Client, zone scw.Zone) error {
 		lbAPI := lb.NewZonedAPI(scwClient)
 
-		l.Debugf("sweeper: destroying the lb ips in (%s)", region)
-		listIPs, err := lbAPI.ListIPs(&lb.ZonedAPIListIPsRequest{}, scw.WithAllPages())
+		l.Debugf("sweeper: destroying the lb ips in zone (%s)", zone)
+		listIPs, err := lbAPI.ListIPs(&lb.ZonedAPIListIPsRequest{Zone: zone}, scw.WithAllPages())
 		if err != nil {
-			return fmt.Errorf("error listing lb ips in (%s) in sweeper: %s", region, err)
+			return fmt.Errorf("error listing lb ips in (%s) in sweeper: %s", zone, err)
 		}
 
 		for _, ip := range listIPs.IPs {
 			if ip.LBID == nil {
 				err := lbAPI.ReleaseIP(&lb.ZonedAPIReleaseIPRequest{
+					Zone: zone,
 					IPID: ip.ID,
 				})
 				if err != nil {
@@ -73,6 +75,23 @@ func TestAccScalewayLbIP_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_lb_ip.ip01", "reverse", "myreverse.com"),
 				),
 			},
+			{
+				Config: `
+					resource scaleway_lb_ip ip01 {
+						reverse = "myreverse.com"
+					}
+
+					resource scaleway_lb main {
+					    ip_id = scaleway_lb_ip.ip01.id
+						name = "test-lb-with-release-ip"
+						type = "LB-S"
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayLbExists(tt, "scaleway_lb.main"),
+					testAccCheckScalewayLbIPExists(tt, "scaleway_lb_ip.ip01"),
+				),
+			},
 		},
 	})
 }
@@ -114,9 +133,30 @@ func testAccCheckScalewayLbIPDestroy(tt *TestTools) resource.TestCheckFunc {
 				return err
 			}
 
-			_, err = lbAPI.GetIP(&lb.ZonedAPIGetIPRequest{
-				Zone: zone,
-				IPID: ID,
+			lbID, lbExist := rs.Primary.Attributes["lb_id"]
+			if lbExist && len(lbID) > 0 {
+				_, err = lbAPI.WaitForLbInstances(&lb.ZonedAPIWaitForLBInstancesRequest{
+					Zone:          zone,
+					LBID:          lbID,
+					Timeout:       scw.TimeDurationPtr(defaultInstanceServerWaitTimeout),
+					RetryInterval: scw.TimeDurationPtr(defaultWaitLBRetryInterval),
+				})
+				// Unexpected api error we return it
+				if !is404Error(err) {
+					return err
+				}
+			}
+
+			err = resource.RetryContext(context.Background(), retryLbIPInterval, func() *resource.RetryError {
+				_, errGet := lbAPI.GetIP(&lb.ZonedAPIGetIPRequest{
+					Zone: zone,
+					IPID: ID,
+				})
+				if is403Error(errGet) {
+					return resource.RetryableError(errGet)
+				}
+
+				return resource.NonRetryableError(errGet)
 			})
 
 			// If no error resource still exist

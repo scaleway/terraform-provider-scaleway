@@ -42,7 +42,7 @@ const (
 	defaultK8SPoolTimeout                = 10 * time.Minute
 	K8SClusterWaitForPoolRequiredTimeout = 10 * time.Minute
 	K8SClusterWaitForDeletedTimeout      = 10 * time.Minute
-	K8SPoolWaitForReadyTimeout           = 10 * time.Minute
+	K8SPoolWaitForReadyTimeout           = 15 * time.Minute
 )
 
 func k8sAPIWithRegion(d *schema.ResourceData, m interface{}) (*k8s.API, scw.Region, error) {
@@ -102,24 +102,22 @@ func k8sGetLatestVersionFromMinor(ctx context.Context, k8sAPI *k8s.API, region s
 	return "", fmt.Errorf("no available upstream version found for %s", version)
 }
 
-func waitK8SCluster(ctx context.Context, k8sAPI *k8s.API, region scw.Region, clusterID string, desiredStates ...k8s.ClusterStatus) error {
-	cluster, err := k8sAPI.WaitForCluster(&k8s.WaitForClusterRequest{
+func waitK8SCluster(ctx context.Context, k8sAPI *k8s.API, region scw.Region, clusterID string) (*k8s.Cluster, error) {
+	return k8sAPI.WaitForCluster(&k8s.WaitForClusterRequest{
 		ClusterID:     clusterID,
 		Region:        region,
 		Timeout:       scw.TimeDurationPtr(K8SClusterWaitForPoolRequiredTimeout),
 		RetryInterval: DefaultWaitRetryInterval,
 	}, scw.WithContext(ctx))
-	if err != nil {
-		return err
-	}
+}
 
-	for _, desiredState := range desiredStates {
-		if cluster.Status == desiredState {
-			return nil
-		}
-	}
-
-	return fmt.Errorf("cluster %s has state %s, wants one of %+q", clusterID, cluster.Status, desiredStates)
+func waitK8SClusterPool(ctx context.Context, k8sAPI *k8s.API, region scw.Region, clusterID string) (*k8s.Cluster, error) {
+	return k8sAPI.WaitForClusterPool(&k8s.WaitForClusterRequest{
+		ClusterID:     clusterID,
+		Region:        region,
+		Timeout:       scw.TimeDurationPtr(K8SClusterWaitForPoolRequiredTimeout),
+		RetryInterval: DefaultWaitRetryInterval,
+	}, scw.WithContext(ctx))
 }
 
 func waitK8SClusterDeleted(ctx context.Context, k8sAPI *k8s.API, region scw.Region, clusterID string) error {
@@ -151,10 +149,10 @@ func waitK8SPoolReady(ctx context.Context, k8sAPI *k8s.API, region scw.Region, p
 		return err
 	}
 
-	if pool.Status == k8s.PoolStatusReady {
-		return nil
+	if pool.Status != k8s.PoolStatusReady {
+		return fmt.Errorf("pool %s has state %s, wants %s", poolID, pool.Status, k8s.PoolStatusReady)
 	}
-	return fmt.Errorf("pool %s has state %s, wants %s", poolID, pool.Status, k8s.PoolStatusReady)
+	return nil
 }
 
 // convert a list of nodes to a list of map

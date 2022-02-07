@@ -298,3 +298,37 @@ The `scaleway_bucket` was moved to the `object` product in the `storage` product
 
 It's behaviour remained the same, but we also added an [`acl` attribute](../resources/object_bucket.md#acl).
 This attribute takes canned ACLs.
+
+### LoadBalancer
+
+#### Remove: `scaleway_lb.release_ip`
+
+The attribute `scaleway_lb.release_ip` will be deprecated on the provider's next releases.
+
+It's behaviour remain the same, but the IPs will be managed by the resource `scaleway_lb_ip`.
+This prevents the destruction of the IP from releasing the LBs resources.
+
+v1.X
+
+```shell
+resource scaleway_lb_ip ip01 {
+}
+resource scaleway_lb main {
+    ip_id = scaleway_lb_ip.ip01.id
+    name = "release-ip"
+    type = "LB-S"
+    release_ip = true
+}
+```
+
+v2.X
+
+```shell
+resource scaleway_lb_ip ip01 {
+}
+resource scaleway_lb main {
+    ip_id = scaleway_lb_ip.ip01.id
+    name = "release-ip"
+    type = "LB-S"
+}
+```

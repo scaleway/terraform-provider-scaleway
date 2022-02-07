@@ -14,7 +14,7 @@ jobs:
           - Account
           - AppleSilicon
           - Baremetal
-          - DomainRecord
+          - Domain
           - Instance
           - Iot
           - K8S
@@ -63,6 +63,7 @@ jobs:
       - name: Run sweepers
         run: make sweep
         env:
+          TF_TEST_DOMAIN: scaleway-terraform.com
           SCW_ACCESS_KEY: ${{ secrets.SCW_ACCESS_KEY }}
           SCW_SECRET_KEY: ${{ secrets.SCW_SECRET_KEY }}
           SCW_DEFAULT_ORGANIZATION_ID: ${{ secrets.SCW_DEFAULT_ORGANIZATION_ID }}
