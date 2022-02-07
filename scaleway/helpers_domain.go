@@ -10,6 +10,7 @@ import (
 
 const (
 	defaultDomainRecordTimeout = 30 * time.Second
+	defaultDomainZoneTimeout   = 30 * time.Second
 )
 
 // domainAPI returns a new domain API.

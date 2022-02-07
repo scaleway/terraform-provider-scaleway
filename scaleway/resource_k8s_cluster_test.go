@@ -75,13 +75,32 @@ func testSweepK8SCluster(_ string) error {
 		k8sAPI := k8s.NewAPI(scwClient)
 
 		l.Debugf("sweeper: destroying the k8s cluster in (%s)", region)
-		listClusters, err := k8sAPI.ListClusters(&k8s.ListClustersRequest{}, scw.WithAllPages())
+		listClusters, err := k8sAPI.ListClusters(&k8s.ListClustersRequest{Region: region}, scw.WithAllPages())
 		if err != nil {
 			return fmt.Errorf("error listing clusters in (%s) in sweeper: %s", region, err)
 		}
 
 		for _, cluster := range listClusters.Clusters {
-			_, err := k8sAPI.DeleteCluster(&k8s.DeleteClusterRequest{
+			//remove pools
+			listPools, err := k8sAPI.ListPools(&k8s.ListPoolsRequest{
+				Region:    region,
+				ClusterID: cluster.ID,
+			}, scw.WithAllPages())
+			if err != nil {
+				return fmt.Errorf("error listing pool in (%s) in sweeper: %s", region, err)
+			}
+
+			for _, pool := range listPools.Pools {
+				_, err := k8sAPI.DeletePool(&k8s.DeletePoolRequest{
+					Region: region,
+					PoolID: pool.ID,
+				})
+				if err != nil {
+					return fmt.Errorf("error deleting pool in sweeper: %s", err)
+				}
+			}
+			_, err = k8sAPI.DeleteCluster(&k8s.DeleteClusterRequest{
+				Region:    region,
 				ClusterID: cluster.ID,
 			})
 			if err != nil {
@@ -263,7 +282,7 @@ func TestAccScalewayK8SCluster_OIDC(t *testing.T) {
 					testAccCheckScalewayK8SClusterExists(tt, "scaleway_k8s_cluster.oidc"),
 					resource.TestCheckResourceAttr("scaleway_k8s_cluster.oidc", "version", latestK8SVersion),
 					resource.TestCheckResourceAttr("scaleway_k8s_cluster.oidc", "cni", "cilium"),
-					resource.TestCheckResourceAttr("scaleway_k8s_cluster.oidc", "status", k8s.ClusterStatusPoolRequired.String()),
+					resource.TestCheckResourceAttr("scaleway_k8s_cluster.oidc", "status", k8s.ClusterStatusReady.String()),
 					resource.TestCheckResourceAttrSet("scaleway_k8s_cluster.oidc", "kubeconfig.0.config_file"),
 					resource.TestCheckResourceAttrSet("scaleway_k8s_cluster.oidc", "kubeconfig.0.host"),
 					resource.TestCheckResourceAttrSet("scaleway_k8s_cluster.oidc", "kubeconfig.0.cluster_ca_certificate"),
@@ -434,7 +453,8 @@ func testAccCheckScalewayK8SClusterConfigAutoscaler(version string) string {
 resource "scaleway_k8s_cluster" "autoscaler" {
 	cni = "calico"
 	version = "%s"
-	name = "autoscaler"
+	name = "autoscaler-01"
+	region = "nl-ams"
 	autoscaler_config {
 		disable_scale_down = true
 		scale_down_delay_after_add = "20m"
@@ -456,7 +476,8 @@ func testAccCheckScalewayK8SClusterConfigAutoscalerChange(version string) string
 resource "scaleway_k8s_cluster" "autoscaler" {
 	cni = "calico"
 	version = "%s"
-	name = "autoscaler"
+	name = "autoscaler-02"
+	region = "nl-ams"
 	autoscaler_config {
 		disable_scale_down = false
 		scale_down_delay_after_add = "20m"
@@ -485,7 +506,18 @@ resource "scaleway_k8s_cluster" "oidc" {
 		groups_prefix = "pouf"
 	}
 	tags = [ "terraform-test", "scaleway_k8s_cluster", "oidc-config" ]
-}`, version)
+}
+
+resource "scaleway_k8s_pool" "minimal" {
+    name = "minimal"
+	cluster_id = "${scaleway_k8s_cluster.oidc.id}"
+	node_type = "gp1_xs"
+	autohealing = true
+	autoscaling = true
+	size = 1
+	tags = [ "terraform-test", "scaleway_k8s_cluster", "minimal" ]
+}
+`, version)
 }
 
 func testAccCheckScalewayK8SClusterConfigOIDCChange(version string) string {
@@ -502,7 +534,18 @@ resource "scaleway_k8s_cluster" "oidc" {
 		username_prefix = "boo"
 	}
 	tags = [ "terraform-test", "scaleway_k8s_cluster", "oidc-config" ]
-}`, version)
+}
+
+resource "scaleway_k8s_pool" "oidc" {
+    name = "minimal"
+	cluster_id = "${scaleway_k8s_cluster.oidc.id}"
+	node_type = "gp1_xs"
+	autohealing = true
+	autoscaling = true
+	size = 1
+	tags = [ "terraform-test", "scaleway_k8s_cluster", "minimal" ]
+}
+`, version)
 }
 
 func testAccCheckScalewayK8SClusterAutoUpgrade(enable bool, day string, hour uint64, version string) string {

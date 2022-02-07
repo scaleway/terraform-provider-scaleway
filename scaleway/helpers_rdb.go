@@ -84,24 +84,28 @@ func waitInstance(ctx context.Context, api *rdb.API, region scw.Region, id strin
 	}, scw.WithContext(ctx))
 }
 
-func expandPrivateNetwork(data interface{}, exist bool) []*rdb.EndpointSpec {
+func expandPrivateNetwork(data interface{}, exist bool) ([]*rdb.EndpointSpec, error) {
 	if data == nil || !exist {
-		return nil
+		return nil, nil
 	}
 
 	var res []*rdb.EndpointSpec
 	for _, pn := range data.([]interface{}) {
 		r := pn.(map[string]interface{})
+		ip, err := expandIPNet(r["ip_net"].(string))
+		if err != nil {
+			return res, err
+		}
 		spec := &rdb.EndpointSpec{
 			PrivateNetwork: &rdb.EndpointSpecPrivateNetwork{
 				PrivateNetworkID: expandID(r["pn_id"].(string)),
-				ServiceIP:        expandIPNet(r["ip_net"].(string)),
+				ServiceIP:        ip,
 			},
 		}
 		res = append(res, spec)
 	}
 
-	return res
+	return res, nil
 }
 
 func expandLoadBalancer() []*rdb.EndpointSpec {
@@ -133,7 +137,10 @@ func endpointsToRemove(endPoints []*rdb.Endpoint, updates interface{}) (map[stri
 			return nil, err
 		}
 
-		pnUpdated := newEndPointPrivateNetworkDetails(id, r["ip_net"].(string), locality)
+		pnUpdated, err := newEndPointPrivateNetworkDetails(id, r["ip_net"].(string), locality)
+		if err != nil {
+			return nil, err
+		}
 		endpoint, exist := endpoints[pnZonedID]
 		if !exist {
 			continue
@@ -145,12 +152,16 @@ func endpointsToRemove(endPoints []*rdb.Endpoint, updates interface{}) (map[stri
 	return actions, nil
 }
 
-func newEndPointPrivateNetworkDetails(id, ip, locality string) *rdb.EndpointPrivateNetworkDetails {
+func newEndPointPrivateNetworkDetails(id, ip, locality string) (*rdb.EndpointPrivateNetworkDetails, error) {
+	serviceIP, err := expandIPNet(ip)
+	if err != nil {
+		return nil, err
+	}
 	return &rdb.EndpointPrivateNetworkDetails{
 		PrivateNetworkID: id,
-		ServiceIP:        expandIPNet(ip),
+		ServiceIP:        serviceIP,
 		Zone:             scw.Zone(locality),
-	}
+	}, nil
 }
 
 func isEndPointEqual(A, B interface{}) bool {
@@ -171,12 +182,16 @@ func flattenPrivateNetwork(endpoints []*rdb.Endpoint) (interface{}, bool) {
 		if endpoint.PrivateNetwork != nil {
 			pn := endpoint.PrivateNetwork
 			pnZonedID := newZonedIDString(pn.Zone, pn.PrivateNetworkID)
+			serviceIP, err := flattenIPNet(pn.ServiceIP)
+			if err != nil {
+				return pnI, false
+			}
 			pnI = append(pnI, map[string]interface{}{
 				"endpoint_id": endpoint.ID,
 				"ip":          flattenIPPtr(endpoint.IP),
 				"port":        int(endpoint.Port),
 				"name":        endpoint.Name,
-				"ip_net":      flattenIPNet(pn.ServiceIP),
+				"ip_net":      serviceIP,
 				"pn_id":       pnZonedID,
 				"hostname":    flattenStringPtr(endpoint.Hostname),
 			})

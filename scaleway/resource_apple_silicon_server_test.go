@@ -18,10 +18,10 @@ func init() {
 }
 
 func testSweepAppleSiliconServer(_ string) error {
-	return sweepZones(scw.AllZones, func(scwClient *scw.Client, zone scw.Zone) error {
+	return sweepZones([]scw.Zone{scw.ZoneFrPar1}, func(scwClient *scw.Client, zone scw.Zone) error {
 		asAPI := applesilicon.NewAPI(scwClient)
 		l.Debugf("sweeper: destroying the apple silicon instance in (%s)", zone)
-		listServers, err := asAPI.ListServers(&applesilicon.ListServersRequest{}, scw.WithAllPages())
+		listServers, err := asAPI.ListServers(&applesilicon.ListServersRequest{Zone: zone}, scw.WithAllPages())
 		if err != nil {
 			return fmt.Errorf("error listing apple silicon servers in (%s) in sweeper: %s", zone, err)
 		}

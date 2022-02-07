@@ -53,8 +53,8 @@ func resourceScalewayVPCPublicGatewayDHCP() *schema.Resource {
 			},
 			"enable_dynamic": {
 				Type:        schema.TypeBool,
-				Computed:    true,
 				Optional:    true,
+				Default:     true,
 				Description: "Whether to enable dynamic pooling of IPs. By turning the dynamic pool off, only pre-existing DHCP reservations will be handed out. Defaults to true.",
 			},
 			"valid_lifetime": {
@@ -77,14 +77,14 @@ func resourceScalewayVPCPublicGatewayDHCP() *schema.Resource {
 			},
 			"push_default_route": {
 				Type:        schema.TypeBool,
-				Computed:    true,
 				Optional:    true,
+				Default:     true,
 				Description: "Whether the gateway should push a default route to DHCP clients or only hand out IPs. Defaults to true",
 			},
 			"push_dns_server": {
 				Type:        schema.TypeBool,
-				Computed:    true,
 				Optional:    true,
+				Default:     true,
 				Description: "Whether the gateway should push custom DNS servers to clients. This allows for instance hostname -> IP resolution. Defaults to true.",
 			},
 			"dns_server_override": {
@@ -130,10 +130,14 @@ func resourceScalewayVPCPublicGatewayDHCPCreate(ctx context.Context, d *schema.R
 		return diag.FromErr(err)
 	}
 
+	subnet, err := expandIPNet(d.Get("subnet").(string))
+	if err != nil {
+		return diag.FromErr(err)
+	}
 	req := &vpcgw.CreateDHCPRequest{
 		Zone:               zone,
 		ProjectID:          d.Get("project_id").(string),
-		Subnet:             expandIPNet(d.Get("subnet").(string)),
+		Subnet:             subnet,
 		EnableDynamic:      expandBoolPtr(d.Get("enable_dynamic")),
 		PushDefaultRoute:   expandBoolPtr(d.Get("push_default_route")),
 		PushDNSServer:      expandBoolPtr(d.Get("push_dns_servers")),

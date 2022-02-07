@@ -29,7 +29,7 @@ func init() {
 	if testDomainPtr != nil && *testDomainPtr != "" {
 		testDomain = *testDomainPtr
 	} else {
-		l.Errorf("environment variable TF_TEST_DOMAIN is required")
+		l.Infof("environment variable TF_TEST_DOMAIN is required")
 
 		return
 	}
@@ -44,8 +44,7 @@ func init() {
 	}
 
 	if isReserved {
-		l.Errorf("TF_TEST_DOMAIN cannot be a Scaleway required domain. Please use another one.")
-
+		l.Warningf("TF_TEST_DOMAIN cannot be a Scaleway required domain. Please use another one.")
 		return
 	}
 

@@ -9,14 +9,6 @@ import (
 	vpcgw "github.com/scaleway/scaleway-sdk-go/api/vpcgw/v1beta1"
 )
 
-func init() {
-	resource.AddTestSweepers("scaleway_vpc_public_gateway_pat_rule", &resource.Sweeper{
-		Name:         "scaleway_vpc_public_gateway_pat_rule",
-		F:            testSweepVPCPublicGateway,
-		Dependencies: []string{"scaleway_vpc_public_gateway_dhcp", "scaleway_vpc"},
-	})
-}
-
 func TestAccScalewayVPCPublicGatewayPATRule_Basic(t *testing.T) {
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
@@ -26,6 +18,21 @@ func TestAccScalewayVPCPublicGatewayPATRule_Basic(t *testing.T) {
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheckScalewayVPCPublicGatewayPATRuleDestroy(tt),
 		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource scaleway_vpc_public_gateway pg01 {
+						type = "VPC-GW-S"
+					}
+
+					resource scaleway_vpc_public_gateway_dhcp dhcp01 {
+						subnet = "192.168.1.0/24"
+					}
+
+					resource scaleway_vpc_private_network pn01 {
+						name = "pn_test_network"
+					}
+				`,
+			},
 			{
 				Config: `
 					resource scaleway_vpc_public_gateway pg01 {

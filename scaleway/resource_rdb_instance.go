@@ -286,7 +286,10 @@ func resourceScalewayRdbInstanceCreate(ctx context.Context, d *schema.ResourceDa
 
 	pn, pnExist := d.GetOk("private_network")
 	if pnExist {
-		createReq.InitEndpoints = expandPrivateNetwork(pn, pnExist)
+		createReq.InitEndpoints, err = expandPrivateNetwork(pn, pnExist)
+		if err != nil {
+			return diag.FromErr(err)
+		}
 	} else {
 		createReq.InitEndpoints = expandLoadBalancer()
 	}
@@ -321,7 +324,7 @@ func resourceScalewayRdbInstanceCreate(ctx context.Context, d *schema.ResourceDa
 		}
 
 		_, err = waitInstance(ctx, rdbAPI, region, res.ID)
-		if err != nil && !is404Error(err) {
+		if err != nil {
 			return diag.FromErr(err)
 		}
 
@@ -333,7 +336,7 @@ func resourceScalewayRdbInstanceCreate(ctx context.Context, d *schema.ResourceDa
 	// Configure Instance settings
 	if settings, ok := d.GetOk("settings"); ok {
 		res, err = waitInstance(ctx, rdbAPI, region, res.ID)
-		if err != nil && !is404Error(err) {
+		if err != nil {
 			return diag.FromErr(err)
 		}
 
@@ -358,7 +361,7 @@ func resourceScalewayRdbInstanceRead(ctx context.Context, d *schema.ResourceData
 
 	// verify resource is ready
 	res, err := waitInstance(ctx, rdbAPI, region, ID)
-	if err != nil && !is404Error(err) {
+	if err != nil {
 		return diag.FromErr(err)
 	}
 
@@ -443,7 +446,7 @@ func resourceScalewayRdbInstanceUpdate(ctx context.Context, d *schema.ResourceDa
 	}
 
 	_, err = waitInstance(ctx, rdbAPI, region, ID)
-	if err != nil && !is404Error(err) {
+	if err != nil {
 		return diag.FromErr(err)
 	}
 
@@ -546,13 +549,15 @@ func resourceScalewayRdbInstanceUpdate(ctx context.Context, d *schema.ResourceDa
 			return diag.FromErr(err)
 		}
 
-		// Wait for the instance to settle after upgrading
-		time.Sleep(30 * time.Second) // lintignore:R018
+		_, err = waitInstance(ctx, rdbAPI, region, ID)
+		if err != nil && !is404Error(err) {
+			return diag.FromErr(err)
+		}
 	}
 
 	if d.HasChange("password") {
 		_, err := waitInstance(ctx, rdbAPI, region, ID)
-		if err != nil && !is404Error(err) {
+		if err != nil {
 			return diag.FromErr(err)
 		}
 
@@ -572,7 +577,7 @@ func resourceScalewayRdbInstanceUpdate(ctx context.Context, d *schema.ResourceDa
 	if d.HasChanges("private_network") {
 		// retrieve state
 		res, err := waitInstance(ctx, rdbAPI, region, ID)
-		if err != nil && !is404Error(err) {
+		if err != nil {
 			return diag.FromErr(err)
 		}
 
@@ -595,14 +600,17 @@ func resourceScalewayRdbInstanceUpdate(ctx context.Context, d *schema.ResourceDa
 
 		// retrieve state
 		_, err = waitInstance(ctx, rdbAPI, region, ID)
-		if err != nil && !is404Error(err) {
+		if err != nil {
 			return diag.FromErr(err)
 		}
 
 		// set new endpoints
 		pn, pnExist := d.GetOk("private_network")
 		if pnExist {
-			privateEndpoints := expandPrivateNetwork(pn, pnExist)
+			privateEndpoints, err := expandPrivateNetwork(pn, pnExist)
+			if err != nil {
+				return diag.FromErr(err)
+			}
 			for _, e := range privateEndpoints {
 				_, err := rdbAPI.CreateEndpoint(
 					&rdb.CreateEndpointRequest{Region: region, InstanceID: ID, EndpointSpec: e},
@@ -625,11 +633,7 @@ func resourceScalewayRdbInstanceDelete(ctx context.Context, d *schema.ResourceDa
 
 	// We first wait in case the instance is in a transient state
 	_, err = waitInstance(ctx, rdbAPI, region, ID)
-	if err != nil && !is404Error(err) {
-		return diag.FromErr(err)
-	}
-
-	if err != nil && !is404Error(err) {
+	if err != nil {
 		return diag.FromErr(err)
 	}
 
@@ -638,7 +642,7 @@ func resourceScalewayRdbInstanceDelete(ctx context.Context, d *schema.ResourceDa
 		InstanceID: ID,
 	}, scw.WithContext(ctx))
 
-	if err != nil && !is404Error(err) {
+	if err != nil {
 		return diag.FromErr(err)
 	}
 
