@@ -30,7 +30,7 @@ data "scaleway_lb" "by_id" {
 - `lb_id` - (Optional) The ID.
   Only one of `ip_address` and `lb_id` should be specified.
 
-- `zone` - (Defaults to [provider](../index.md#zone) `region`) The [region](../guides/regions_and_zones.md#zones) in which the LB exists.
+- `zone` - (Optional) (Defaults to [provider](../index.md#zone) `region`) The [region](../guides/regions_and_zones.md#zones) in which the LB exists.
 
 - `project_id` - (Defaults to [provider](../index.md#project_id) `project_id`) The ID of the project the LB is associated with.
 

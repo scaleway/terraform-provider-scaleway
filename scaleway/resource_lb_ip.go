@@ -33,11 +33,10 @@ func resourceScalewayLbIP() *schema.Resource {
 				Computed:    true,
 				Description: "The reverse domain name for this IP",
 			},
-			"region":          regionComputedSchema(),
-			"zone":            zoneSchema(),
+			"zone": zoneSchema(),
+			// Computed
 			"organization_id": organizationIDSchema(),
 			"project_id":      projectIDSchema(),
-			// Computed
 			"ip_address": {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -48,6 +47,7 @@ func resourceScalewayLbIP() *schema.Resource {
 				Computed:    true,
 				Description: "The ID of the load balancer attached to this IP, if any",
 			},
+			"region": regionComputedSchema(),
 		},
 	}
 }
@@ -56,6 +56,11 @@ func resourceScalewayLbIPCreate(ctx context.Context, d *schema.ResourceData, met
 	lbAPI, zone, err := lbAPIWithZone(d, meta)
 	if err != nil {
 		return diag.FromErr(err)
+	}
+
+	zoneAttribute, ok := d.GetOk("zone")
+	if ok {
+		zone = scw.Zone(zoneAttribute.(string))
 	}
 
 	createReq := &lb.ZonedAPICreateIPRequest{
