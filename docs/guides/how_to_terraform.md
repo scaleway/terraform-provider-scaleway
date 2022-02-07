@@ -6,7 +6,7 @@ The purpose of this guide is to help users deploy their first infrastructure in 
 
 ## The workflow
 
-In order to deploy your infrastructure properly, we would recommend to follow the following workflow, as detailled in the blog article.
+To deploy your infrastructure, we recommend you follow the workflow, as detailed in the blog article.
 
 List of availability zones by regions:
 
