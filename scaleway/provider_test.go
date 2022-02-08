@@ -1,8 +1,10 @@
 package scaleway
 
 import (
+	"bytes"
 	"context"
 	"flag"
+	"io/ioutil"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -62,11 +64,25 @@ func getHTTPRecoder(t *testing.T, update bool) (client *http.Client, cleanup fun
 		return nil, nil, err
 	}
 
+	// Setup custom matcher
+	r.SetMatcher(func(r *http.Request, i cassette.Request) bool {
+		if r.Body == nil {
+			return cassette.DefaultMatcher(r, i)
+		}
+		var b bytes.Buffer
+		if _, err := b.ReadFrom(r.Body); err != nil {
+			return false
+		}
+		r.Body = ioutil.NopCloser(&b)
+		return cassette.DefaultMatcher(r, i) && (b.String() == "" || b.String() == i.Body)
+	})
+
 	// Add a filter which removes Authorization headers from all requests:
 	r.AddFilter(func(i *cassette.Interaction) error {
 		i.Request.Headers = i.Request.Headers.Clone()
 		delete(i.Request.Headers, "x-auth-token")
 		delete(i.Request.Headers, "X-Auth-Token")
+		delete(i.Request.Headers, "Authorization")
 		return nil
 	})
 
