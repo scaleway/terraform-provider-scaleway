@@ -67,7 +67,6 @@ func getHTTPRecoder(t *testing.T, update bool) (client *http.Client, cleanup fun
 		i.Request.Headers = i.Request.Headers.Clone()
 		delete(i.Request.Headers, "x-auth-token")
 		delete(i.Request.Headers, "X-Auth-Token")
-		delete(i.Request.Headers, "Authorization")
 		return nil
 	})
 
