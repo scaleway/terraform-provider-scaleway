@@ -1,6 +1,7 @@
 package scaleway
 
 import (
+	"context"
 	"fmt"
 	"reflect"
 	"regexp"
@@ -33,6 +34,8 @@ func TestAccScalewayObjectBucket_Basic(t *testing.T) {
 	bucketBasic := sdkacctest.RandomWithPrefix("test-acc-scaleway-object-bucket-basic-")
 	bucketAms := sdkacctest.RandomWithPrefix("test-acc-scaleway-object-bucket-ams-")
 	bucketPar := sdkacctest.RandomWithPrefix("test-acc-scaleway-object-bucket-par-")
+	bucketLifecycle := sdkacctest.RandomWithPrefix("test-acc-scaleway-object-bucket-lifecycle")
+	resourceNameLifecycle := "scaleway_object_bucket.par-bucket-lifecycle"
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
@@ -101,6 +104,228 @@ func TestAccScalewayObjectBucket_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_object_bucket.ams-bucket-01", "name", bucketAms),
 					resource.TestCheckResourceAttr("scaleway_object_bucket.ams-bucket-01", "tags.%", "1"),
 					resource.TestCheckResourceAttr("scaleway_object_bucket.ams-bucket-01", "tags.foo", "bar"),
+				),
+			},
+			{
+				Config: fmt.Sprintf(`
+					resource "scaleway_object_bucket" "par-bucket-lifecycle"{
+						name = "%s"
+						region = "fr-par"
+						acl = "private"
+
+						lifecycle_rule {
+							id      = "id1"
+							prefix  = "path1/"
+							enabled = true
+
+							expiration {
+							  days = 365
+							}
+
+							transition {
+							  days          = 30
+							  storage_class = "STANDARD"
+							}
+						}
+					}
+				`, bucketLifecycle),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckBucketLifecycleConfigurationExists(tt, resourceNameLifecycle),
+					resource.TestCheckResourceAttr("scaleway_object_bucket.par-bucket-lifecycle", "name", bucketLifecycle),
+					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.0.id", "id1"),
+					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.0.prefix", "path1/"),
+					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.0.expiration.0.days", "365"),
+					resource.TestCheckTypeSetElemNestedAttrs(resourceNameLifecycle, "lifecycle_rule.0.transition.*", map[string]string{
+						"days":          "30",
+						"storage_class": "STANDARD",
+					}),
+				),
+			},
+			{
+				Config: fmt.Sprintf(`
+					resource "scaleway_object_bucket" "par-bucket-lifecycle"{
+						name = "%s"
+						region = "fr-par"
+						acl = "private"
+
+						lifecycle_rule {
+							id      = "id1"
+							prefix  = "path1/"
+							enabled = true
+
+							expiration {
+							  days = 365
+							}
+
+							transition {
+							  days          = 90
+							  storage_class = "ONEZONE_IA"
+							}
+						}
+					}
+				`, bucketLifecycle),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckBucketLifecycleConfigurationExists(tt, resourceNameLifecycle),
+					resource.TestCheckResourceAttr("scaleway_object_bucket.par-bucket-lifecycle", "name", bucketLifecycle),
+					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.0.id", "id1"),
+					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.0.prefix", "path1/"),
+					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.0.expiration.0.days", "365"),
+					resource.TestCheckTypeSetElemNestedAttrs(resourceNameLifecycle, "lifecycle_rule.0.transition.*", map[string]string{
+						"days":          "90",
+						"storage_class": "ONEZONE_IA",
+					}),
+				),
+			},
+			{
+				Config: fmt.Sprintf(`
+					resource "scaleway_object_bucket" "par-bucket-lifecycle"{
+						name = "%s"
+						region = "fr-par"
+						acl = "private"
+
+						lifecycle_rule {
+							id      = "id1"
+							prefix  = "path1/"
+							enabled = true
+
+							expiration {
+							  days = 365
+							}
+
+							transition {
+							  days          = 120
+							  storage_class = "GLACIER"
+							}
+						}
+
+						lifecycle_rule {
+							id      = "id2"
+							prefix  = "path2/"
+							enabled = true
+
+							expiration {
+							  days = "50"
+							}
+						}
+
+						lifecycle_rule {
+							id      = "id3"
+							prefix  = "path3/"
+							enabled = true
+
+							tags = {
+							  "tagKey"    = "tagValue"
+							  "terraform" = "hashicorp"
+							}
+
+							expiration {
+							  days = "1"
+							}
+						}
+
+						lifecycle_rule {
+							id      = "id4"
+							enabled = true
+
+							tags = {
+							  "tagKey"    = "tagValue"
+							  "terraform" = "hashicorp"
+							}
+
+							transition {
+							  days          = 0
+							  storage_class = "GLACIER"
+							}
+						}
+
+						lifecycle_rule {
+							id      = "id5"
+							enabled = true
+
+							tags = {
+							  "tagKey" = "tagValue"
+							}
+
+							transition {
+							  days          = 0
+							  storage_class = "GLACIER"
+							}
+						}
+					}
+				`, bucketLifecycle),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckBucketLifecycleConfigurationExists(tt, resourceNameLifecycle),
+					resource.TestCheckResourceAttr("scaleway_object_bucket.par-bucket-lifecycle", "name", bucketLifecycle),
+					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.0.id", "id1"),
+					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.0.prefix", "path1/"),
+					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.0.expiration.0.days", "365"),
+					resource.TestCheckTypeSetElemNestedAttrs(resourceNameLifecycle, "lifecycle_rule.0.transition.*", map[string]string{
+						"days":          "120",
+						"storage_class": "GLACIER",
+					}),
+					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.1.id", "id2"),
+					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.1.prefix", "path2/"),
+					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.1.expiration.0.days", "50"),
+					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.2.id", "id3"),
+					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.2.prefix", "path3/"),
+					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.2.tags.tagKey", "tagValue"),
+					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.2.tags.terraform", "hashicorp"),
+					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.3.id", "id4"),
+					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.3.tags.tagKey", "tagValue"),
+					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.3.tags.terraform", "hashicorp"),
+					resource.TestCheckTypeSetElemNestedAttrs(resourceNameLifecycle, "lifecycle_rule.3.transition.*", map[string]string{
+						"days":          "0",
+						"storage_class": "GLACIER",
+					}),
+					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.4.id", "id5"),
+					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.4.tags.tagKey", "tagValue"),
+					resource.TestCheckTypeSetElemNestedAttrs(resourceNameLifecycle, "lifecycle_rule.4.transition.*", map[string]string{
+						"days":          "0",
+						"storage_class": "GLACIER",
+					}),
+				),
+			},
+			{
+				Config: fmt.Sprintf(`
+					resource "scaleway_object_bucket" "par-bucket-lifecycle"{
+						name = "%s"
+						region = "fr-par"
+						acl = "private"
+
+						lifecycle_rule {
+							id      = "id1"
+							prefix  = "path1/"
+							enabled = true
+							abort_incomplete_multipart_upload_days = 30
+						}
+					}
+				`, bucketLifecycle),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckBucketLifecycleConfigurationExists(tt, resourceNameLifecycle),
+					resource.TestCheckResourceAttr("scaleway_object_bucket.par-bucket-lifecycle", "name", bucketLifecycle),
+					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.0.id", "id1"),
+					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.0.prefix", "path1/"),
+					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.0.abort_incomplete_multipart_upload_days", "30"),
+				),
+			},
+			{
+				Config: fmt.Sprintf(`
+					resource "scaleway_object_bucket" "par-bucket-lifecycle"{
+						name = "%s"
+						region = "fr-par"
+						acl = "private"
+
+						lifecycle_rule {
+							prefix  = "path1/"
+							enabled = true
+							abort_incomplete_multipart_upload_days = 30
+						}
+					}
+				`, bucketLifecycle),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckBucketLifecycleConfigurationExists(tt, resourceNameLifecycle),
+					resource.TestCheckResourceAttrSet(resourceNameLifecycle, "lifecycle_rule.0.id"),
+					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.0.abort_incomplete_multipart_upload_days", "30"),
 				),
 			},
 		},
@@ -296,7 +521,7 @@ func TestAccScalewayObjectBucket_Cors_Delete(t *testing.T) {
 			_, err = conn.DeleteBucketCorsWithContext(tt.ctx, &s3.DeleteBucketCorsInput{
 				Bucket: scw.StringPtr(rs.Primary.Attributes["name"]),
 			})
-			if err != nil && !isS3Err(err, "NoSuchCORSConfiguration", "") {
+			if err != nil && !isS3Err(err, ErrCodeNoSuchCORSConfiguration, "") {
 				return err
 			}
 			return nil
@@ -381,7 +606,7 @@ func testAccCheckScalewayObjectBucketCors(tt *TestTools, n string, corsRules []*
 			Bucket: scw.StringPtr(bucketName),
 		})
 		if err != nil {
-			if awsErr, ok := err.(awserr.Error); ok && awsErr.Code() != "NoSuchCORSConfiguration" {
+			if awsErr, ok := err.(awserr.Error); ok && awsErr.Code() != ErrCodeNoSuchCORSConfiguration {
 				return fmt.Errorf("GetBucketCors error: %v", err)
 			}
 		}
@@ -430,6 +655,44 @@ func testAccCheckScalewayObjectBucketExists(tt *TestTools, n string) resource.Te
 			}
 			return err
 		}
+		return nil
+	}
+}
+
+func testAccCheckBucketLifecycleConfigurationExists(tt *TestTools, n string) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		rs, ok := s.RootModule().Resources[n]
+		if !ok {
+			return fmt.Errorf("not found: %s", n)
+		}
+
+		if rs.Primary.ID == "" {
+			return fmt.Errorf("no ID is set")
+		}
+
+		s3Client, err := newS3ClientFromMeta(tt.Meta)
+		if err != nil {
+			return err
+		}
+
+		bucketRegionalID := expandRegionalID(rs.Primary.ID)
+
+		input := &s3.GetBucketLifecycleConfigurationInput{
+			Bucket: expandStringPtr(bucketRegionalID.ID),
+		}
+
+		output, err := retryOnAWSCode(context.Background(), ErrCodeNoSuchLifecycleConfiguration, func() (interface{}, error) {
+			return s3Client.GetBucketLifecycleConfiguration(input)
+		})
+
+		if err != nil {
+			return err
+		}
+
+		if config, ok := output.(*s3.GetBucketLifecycleConfigurationOutput); !ok || config == nil {
+			return fmt.Errorf("object Storage Bucket Replication Configuration for bucket (%s) not found", rs.Primary.ID)
+		}
+
 		return nil
 	}
 }

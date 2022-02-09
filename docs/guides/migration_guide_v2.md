@@ -296,7 +296,7 @@ The [above example](#scaleway_server-gt-scaleway_instance_server) shows how this
 
 The `scaleway_bucket` was moved to the `object` product in the `storage` product category.
 
-It's behaviour remained the same, but we also added an [`acl` attribute](../resources/object_bucket.md#acl).
+It's behaviour remained the same, but we also added an [`acl` attribute](../resources/object_bucket.md#the-acl).
 This attribute takes canned ACLs.
 
 ### LoadBalancer
