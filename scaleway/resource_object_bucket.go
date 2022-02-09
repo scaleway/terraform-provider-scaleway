@@ -444,7 +444,7 @@ func resourceScalewayObjectBucketRead(ctx context.Context, d *schema.ResourceDat
 		Bucket: scw.StringPtr(bucketName),
 	})
 	if err != nil {
-		if s3err, ok := err.(awserr.Error); !ok || s3err.Code() != "NoSuchTagSet" {
+		if s3err, ok := err.(awserr.Error); !ok || s3err.Code() != ErrCodeNoSuchTagSet {
 			return diag.FromErr(fmt.Errorf("couldn't read tags from bucket: %s", err))
 		}
 	} else {
@@ -460,7 +460,7 @@ func resourceScalewayObjectBucketRead(ctx context.Context, d *schema.ResourceDat
 		Bucket: scw.StringPtr(bucketName),
 	})
 
-	if err != nil && !isS3Err(err, "NoSuchCORSConfiguration", "") {
+	if err != nil && !isS3Err(err, ErrCodeNoSuchCORSConfiguration, "") {
 		return diag.FromErr(fmt.Errorf("error getting S3 Bucket CORS configuration: %s", err))
 	}
 
@@ -483,7 +483,7 @@ func resourceScalewayObjectBucketRead(ctx context.Context, d *schema.ResourceDat
 			Bucket: scw.StringPtr(bucketName),
 		})
 	})
-	if err != nil && !tfawserr.ErrMessageContains(err, "NoSuchLifecycleConfiguration", "") {
+	if err != nil && !tfawserr.ErrMessageContains(err, ErrCodeNoSuchLifecycleConfiguration, "") {
 		return diag.FromErr(err)
 	}
 
