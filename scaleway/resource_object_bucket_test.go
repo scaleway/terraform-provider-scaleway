@@ -1,6 +1,7 @@
 package scaleway
 
 import (
+	"context"
 	"fmt"
 	"reflect"
 	"regexp"
@@ -129,6 +130,7 @@ func TestAccScalewayObjectBucket_Basic(t *testing.T) {
 					}
 				`, bucketLifecycle),
 				Check: resource.ComposeTestCheckFunc(
+					testAccCheckBucketLifecycleConfigurationExists(tt, resourceNameLifecycle),
 					resource.TestCheckResourceAttr("scaleway_object_bucket.par-bucket-lifecycle", "name", bucketLifecycle),
 					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.0.id", "id1"),
 					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.0.prefix", "path1/"),
@@ -163,6 +165,7 @@ func TestAccScalewayObjectBucket_Basic(t *testing.T) {
 					}
 				`, bucketLifecycle),
 				Check: resource.ComposeTestCheckFunc(
+					testAccCheckBucketLifecycleConfigurationExists(tt, resourceNameLifecycle),
 					resource.TestCheckResourceAttr("scaleway_object_bucket.par-bucket-lifecycle", "name", bucketLifecycle),
 					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.0.id", "id1"),
 					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.0.prefix", "path1/"),
@@ -251,6 +254,7 @@ func TestAccScalewayObjectBucket_Basic(t *testing.T) {
 					}
 				`, bucketLifecycle),
 				Check: resource.ComposeTestCheckFunc(
+					testAccCheckBucketLifecycleConfigurationExists(tt, resourceNameLifecycle),
 					resource.TestCheckResourceAttr("scaleway_object_bucket.par-bucket-lifecycle", "name", bucketLifecycle),
 					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.0.id", "id1"),
 					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.0.prefix", "path1/"),
@@ -297,6 +301,7 @@ func TestAccScalewayObjectBucket_Basic(t *testing.T) {
 					}
 				`, bucketLifecycle),
 				Check: resource.ComposeTestCheckFunc(
+					testAccCheckBucketLifecycleConfigurationExists(tt, resourceNameLifecycle),
 					resource.TestCheckResourceAttr("scaleway_object_bucket.par-bucket-lifecycle", "name", bucketLifecycle),
 					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.0.id", "id1"),
 					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.0.prefix", "path1/"),
@@ -318,6 +323,7 @@ func TestAccScalewayObjectBucket_Basic(t *testing.T) {
 					}
 				`, bucketLifecycle),
 				Check: resource.ComposeTestCheckFunc(
+					testAccCheckBucketLifecycleConfigurationExists(tt, resourceNameLifecycle),
 					resource.TestCheckResourceAttrSet(resourceNameLifecycle, "lifecycle_rule.0.id"),
 					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.0.abort_incomplete_multipart_upload_days", "30"),
 				),
@@ -515,7 +521,7 @@ func TestAccScalewayObjectBucket_Cors_Delete(t *testing.T) {
 			_, err = conn.DeleteBucketCorsWithContext(tt.ctx, &s3.DeleteBucketCorsInput{
 				Bucket: scw.StringPtr(rs.Primary.Attributes["name"]),
 			})
-			if err != nil && !isS3Err(err, "NoSuchCORSConfiguration", "") {
+			if err != nil && !isS3Err(err, ErrCodeNoSuchCORSConfiguration, "") {
 				return err
 			}
 			return nil
@@ -600,7 +606,7 @@ func testAccCheckScalewayObjectBucketCors(tt *TestTools, n string, corsRules []*
 			Bucket: scw.StringPtr(bucketName),
 		})
 		if err != nil {
-			if awsErr, ok := err.(awserr.Error); ok && awsErr.Code() != "NoSuchCORSConfiguration" {
+			if awsErr, ok := err.(awserr.Error); ok && awsErr.Code() != ErrCodeNoSuchCORSConfiguration {
 				return fmt.Errorf("GetBucketCors error: %v", err)
 			}
 		}
@@ -649,6 +655,44 @@ func testAccCheckScalewayObjectBucketExists(tt *TestTools, n string) resource.Te
 			}
 			return err
 		}
+		return nil
+	}
+}
+
+func testAccCheckBucketLifecycleConfigurationExists(tt *TestTools, n string) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		rs, ok := s.RootModule().Resources[n]
+		if !ok {
+			return fmt.Errorf("not found: %s", n)
+		}
+
+		if rs.Primary.ID == "" {
+			return fmt.Errorf("no ID is set")
+		}
+
+		s3Client, err := newS3ClientFromMeta(tt.Meta)
+		if err != nil {
+			return err
+		}
+
+		bucketRegionalID := expandRegionalID(rs.Primary.ID)
+
+		input := &s3.GetBucketLifecycleConfigurationInput{
+			Bucket: expandStringPtr(bucketRegionalID.ID),
+		}
+
+		output, err := retryOnAWSCode(context.Background(), ErrCodeNoSuchLifecycleConfiguration, func() (interface{}, error) {
+			return s3Client.GetBucketLifecycleConfiguration(input)
+		})
+
+		if err != nil {
+			return err
+		}
+
+		if config, ok := output.(*s3.GetBucketLifecycleConfigurationOutput); !ok || config == nil {
+			return fmt.Errorf("object Storage Bucket Replication Configuration for bucket (%s) not found", rs.Primary.ID)
+		}
+
 		return nil
 	}
 }
