@@ -263,6 +263,11 @@ func resourceScalewayDomainRecordRead(ctx context.Context, d *schema.ResourceDat
 	var dnsZone string
 	var projectID string
 
+	currentData, existData := d.GetOk("data")
+	if !existData {
+		return diag.FromErr(fmt.Errorf("no such data found"))
+	}
+
 	// check if this is an inline import. Like: "terraform import scaleway_domain_record.www subdomain.domain.tld/11111111-1111-1111-1111-111111111111"
 	if strings.Contains(d.Id(), "/") {
 		tab := strings.SplitN(d.Id(), "/", -1)
@@ -309,7 +314,8 @@ func resourceScalewayDomainRecordRead(ctx context.Context, d *schema.ResourceDat
 		}
 
 		for _, r := range res.Records {
-			if flattenDomainData(r.Data, r.Type).(string) == d.Get("data").(string) {
+			flattedData := flattenDomainData(r.Data, r.Type).(string)
+			if strings.ToLower(currentData.(string)) == flattedData {
 				record = r
 				break
 			}
@@ -341,7 +347,7 @@ func resourceScalewayDomainRecordRead(ctx context.Context, d *schema.ResourceDat
 	_ = d.Set("dns_zone", dnsZone)
 	_ = d.Set("name", record.Name)
 	_ = d.Set("type", record.Type.String())
-	_ = d.Set("data", flattenDomainData(record.Data, record.Type))
+	_ = d.Set("data", currentData.(string))
 	_ = d.Set("ttl", int(record.TTL))
 	_ = d.Set("priority", int(record.Priority))
 	_ = d.Set("geo_ip", flattenDomainGeoIP(record.GeoIPConfig))
