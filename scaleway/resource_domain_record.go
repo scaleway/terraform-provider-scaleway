@@ -295,10 +295,18 @@ func resourceScalewayDomainRecordRead(ctx context.Context, d *schema.ResourceDat
 	} else {
 		dnsZone = d.Get("dns_zone").(string)
 
+		recordTypeRaw, recordtTypeExist := d.GetOk("type")
+		if !recordtTypeExist {
+			return diag.FromErr(fmt.Errorf("record type not found"))
+		}
+		recordType := domain.RecordType(recordTypeRaw.(string))
+		if recordType == domain.RecordTypeUnknown {
+			return diag.FromErr(fmt.Errorf("record type unknow"))
+		}
 		res, err := domainAPI.ListDNSZoneRecords(&domain.ListDNSZoneRecordsRequest{
 			DNSZone: dnsZone,
 			Name:    d.Get("name").(string),
-			Type:    domain.RecordType(d.Get("type").(string)),
+			Type:    recordType,
 		}, scw.WithAllPages())
 
 		if err != nil {

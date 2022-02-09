@@ -140,19 +140,28 @@ func TestAccScalewayDomainRecord_Basic(t *testing.T) {
 			},
 			{
 				Config: fmt.Sprintf(`
+				resource "scaleway_domain_record" "tf_A" {
+						dns_zone = %[1]q
+						name     = "%s"
+						type     = "%s"
+						data     = "%s"
+						ttl      = %d
+						priority = %d
+				}
+
 				resource "scaleway_domain_record" "tf_MX" {
-					dns_zone = "%s"
-					name     = "%s"
+					dns_zone = %[1]q
+					name     = "record_mx"
 					type     = "MX"
 					data     = "ASPMX.L.GOOGLE.COM."
 					ttl      = 600
 					priority = 1
 				}
-			`, testDNSZone, name),
+			`, testDNSZone, name, recordType, dataUpdated, ttlUpdated, priorityUpdated),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayDomainRecordExists(tt, "scaleway_domain_record.tf_MX"),
 					resource.TestCheckResourceAttr("scaleway_domain_record.tf_MX", "dns_zone", testDNSZone),
-					resource.TestCheckResourceAttr("scaleway_domain_record.tf_MX", "name", name),
+					resource.TestCheckResourceAttr("scaleway_domain_record.tf_MX", "name", "record_mx"),
 					resource.TestCheckResourceAttr("scaleway_domain_record.tf_MX", "type", "MX"),
 					resource.TestCheckResourceAttr("scaleway_domain_record.tf_MX", "data", "ASPMX.L.GOOGLE.COM."),
 					resource.TestCheckResourceAttr("scaleway_domain_record.tf_MX", "ttl", "600"),
