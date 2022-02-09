@@ -263,11 +263,7 @@ func resourceScalewayDomainRecordRead(ctx context.Context, d *schema.ResourceDat
 	var dnsZone string
 	var projectID string
 
-	currentData, existData := d.GetOk("data")
-	if !existData {
-		return diag.FromErr(fmt.Errorf("no such data found"))
-	}
-
+	currentData := d.Get("data")
 	// check if this is an inline import. Like: "terraform import scaleway_domain_record.www subdomain.domain.tld/11111111-1111-1111-1111-111111111111"
 	if strings.Contains(d.Id(), "/") {
 		tab := strings.SplitN(d.Id(), "/", -1)
@@ -343,6 +339,10 @@ func resourceScalewayDomainRecordRead(ctx context.Context, d *schema.ResourceDat
 		projectID = z.ProjectID
 	}
 
+	// retrieve data from record
+	if len(currentData.(string)) == 0 {
+		currentData = flattenDomainData(record.Data, record.Type).(string)
+	}
 	d.SetId(record.ID)
 	_ = d.Set("dns_zone", dnsZone)
 	_ = d.Set("name", record.Name)
