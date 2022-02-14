@@ -53,7 +53,6 @@ func resourceScalewayAppleSiliconServer() *schema.Resource {
 			"state": {
 				Type:        schema.TypeString,
 				Optional:    true,
-				Computed:    true,
 				Default:     applesilicon.ServerStatusStarting.String(),
 				Description: "The state of the server",
 				ValidateFunc: validation.StringInSlice([]string{
