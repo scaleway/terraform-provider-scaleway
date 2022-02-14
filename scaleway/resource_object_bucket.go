@@ -88,6 +88,12 @@ func resourceScalewayObjectBucket() *schema.Resource {
 					},
 				},
 			},
+			"force_destroy": {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Default:     false,
+				Description: "Delete objects in bucket",
+			},
 			"region": regionSchema(),
 			"versioning": {
 				Type:     schema.TypeList,
@@ -273,6 +279,13 @@ func resourceScalewayObjectBucketDelete(ctx context.Context, d *schema.ResourceD
 	s3Client, _, bucketName, err := s3ClientWithRegionAndName(meta, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
+	}
+
+	if d.Get("force_destroy").(bool) {
+		err = deleteS3Objects(ctx, s3Client, bucketName)
+		if err != nil {
+			return diag.FromErr(err)
+		}
 	}
 
 	_, err = s3Client.DeleteBucketWithContext(ctx, &s3.DeleteBucketInput{

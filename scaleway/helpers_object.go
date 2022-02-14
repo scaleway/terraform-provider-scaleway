@@ -1,6 +1,7 @@
 package scaleway
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"net/http"
@@ -194,4 +195,36 @@ func expandBucketCORS(rawCors []interface{}, bucket string) []*s3.CORSRule {
 		rules = append(rules, r)
 	}
 	return rules
+}
+
+func deleteS3Object(conn *s3.S3, bucketName string, object *s3.Object) error {
+	_, err := conn.DeleteObject(&s3.DeleteObjectInput{
+		Bucket: scw.StringPtr(bucketName),
+		Key:    object.Key,
+	})
+	return err
+}
+
+func deleteS3Objects(ctx context.Context, conn *s3.S3, bucketName string) error {
+	var err error
+	listInput := &s3.ListObjectsInput{
+		Bucket: scw.StringPtr(bucketName),
+	}
+	listErr := conn.ListObjectsPagesWithContext(ctx, listInput, func(page *s3.ListObjectsOutput, lastPage bool) bool {
+		for _, object := range page.Contents {
+			err = deleteS3Object(conn, bucketName, object)
+			if err != nil {
+				err = fmt.Errorf("failed to delete S3 object: %s", err)
+				return false
+			}
+		}
+		return true
+	})
+	if listErr != nil {
+		return fmt.Errorf("error listing S3 objects: %s", err)
+	}
+	if err != nil {
+		return err
+	}
+	return nil
 }
