@@ -12,37 +12,12 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 )
 
-type KubeconfigStruct struct {
-	APIVersion string `yaml:"apiVersion"`
-	Clusters   []struct {
-		Name    string `yaml:"name"`
-		Cluster struct {
-			CertificateAuthorityData string `yaml:"certificate-authority-data"`
-			Server                   string `yaml:"server"`
-		} `yaml:"cluster"`
-	} `yaml:"clusters"`
-	Contexts []struct {
-		Name    string `yaml:"name"`
-		Context struct {
-			Cluster string `yaml:"cluster"`
-			User    string `yaml:"user"`
-		} `yaml:"context"`
-	} `yaml:"contexts"`
-	Kind  string `yaml:"kind"`
-	Users []struct {
-		Name string `yaml:"name"`
-		User struct {
-			Token string `yaml:"token"`
-		} `yaml:"user"`
-	} `yaml:"users"`
-}
-
 const (
 	defaultK8SClusterTimeout             = 10 * time.Minute
 	defaultK8SPoolTimeout                = 10 * time.Minute
-	K8SClusterWaitForPoolRequiredTimeout = 10 * time.Minute
-	K8SClusterWaitForDeletedTimeout      = 10 * time.Minute
-	K8SPoolWaitForReadyTimeout           = 15 * time.Minute
+	k8sClusterWaitForPoolRequiredTimeout = 10 * time.Minute
+	k8sClusterWaitForDeletedTimeout      = 10 * time.Minute
+	k8sPoolWaitForReadyTimeout           = 15 * time.Minute
 )
 
 func k8sAPIWithRegion(d *schema.ResourceData, m interface{}) (*k8s.API, scw.Region, error) {
@@ -106,7 +81,7 @@ func waitK8SCluster(ctx context.Context, k8sAPI *k8s.API, region scw.Region, clu
 	return k8sAPI.WaitForCluster(&k8s.WaitForClusterRequest{
 		ClusterID:     clusterID,
 		Region:        region,
-		Timeout:       scw.TimeDurationPtr(K8SClusterWaitForPoolRequiredTimeout),
+		Timeout:       scw.TimeDurationPtr(k8sClusterWaitForPoolRequiredTimeout),
 		RetryInterval: DefaultWaitRetryInterval,
 	}, scw.WithContext(ctx))
 }
@@ -115,7 +90,7 @@ func waitK8SClusterPool(ctx context.Context, k8sAPI *k8s.API, region scw.Region,
 	return k8sAPI.WaitForClusterPool(&k8s.WaitForClusterRequest{
 		ClusterID:     clusterID,
 		Region:        region,
-		Timeout:       scw.TimeDurationPtr(K8SClusterWaitForPoolRequiredTimeout),
+		Timeout:       scw.TimeDurationPtr(k8sClusterWaitForPoolRequiredTimeout),
 		RetryInterval: DefaultWaitRetryInterval,
 	}, scw.WithContext(ctx))
 }
@@ -124,7 +99,7 @@ func waitK8SClusterDeleted(ctx context.Context, k8sAPI *k8s.API, region scw.Regi
 	cluster, err := k8sAPI.WaitForCluster(&k8s.WaitForClusterRequest{
 		ClusterID:     clusterID,
 		Region:        region,
-		Timeout:       scw.TimeDurationPtr(K8SClusterWaitForDeletedTimeout),
+		Timeout:       scw.TimeDurationPtr(k8sClusterWaitForDeletedTimeout),
 		RetryInterval: DefaultWaitRetryInterval,
 	}, scw.WithContext(ctx))
 	if err != nil {
@@ -141,7 +116,7 @@ func waitK8SPoolReady(ctx context.Context, k8sAPI *k8s.API, region scw.Region, p
 	pool, err := k8sAPI.WaitForPool(&k8s.WaitForPoolRequest{
 		PoolID:        poolID,
 		Region:        region,
-		Timeout:       scw.TimeDurationPtr(K8SPoolWaitForReadyTimeout),
+		Timeout:       scw.TimeDurationPtr(k8sPoolWaitForReadyTimeout),
 		RetryInterval: DefaultWaitRetryInterval,
 	}, scw.WithContext(ctx))
 

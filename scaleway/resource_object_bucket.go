@@ -291,6 +291,7 @@ func resourceScalewayObjectBucketUpdate(ctx context.Context, d *schema.ResourceD
 	return resourceScalewayObjectBucketRead(ctx, d, meta)
 }
 
+//gocyclo:ignore
 func resourceBucketLifecycleUpdate(ctx context.Context, conn *s3.S3, d *schema.ResourceData) error {
 	bucket := d.Get("name").(string)
 
@@ -409,6 +410,7 @@ func resourceBucketLifecycleUpdate(ctx context.Context, conn *s3.S3, d *schema.R
 	return nil
 }
 
+//gocyclo:ignore
 func resourceScalewayObjectBucketRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	s3Client, region, bucketName, err := s3ClientWithRegionAndName(meta, d.Id())
 	if err != nil {

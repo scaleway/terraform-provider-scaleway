@@ -223,6 +223,7 @@ func resourceScalewayLbIPUpdate(ctx context.Context, d *schema.ResourceData, met
 	return resourceScalewayLbIPRead(ctx, d, meta)
 }
 
+//gocyclo:ignore
 func resourceScalewayLbIPDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	lbAPI, zone, ID, err := lbAPIWithZoneAndID(meta, d.Id())
 	if err != nil {

@@ -221,6 +221,7 @@ func resourceScalewayK8SCluster() *schema.Resource {
 	}
 }
 
+//gocyclo:ignore
 func resourceScalewayK8SClusterCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	k8sAPI, region, err := k8sAPIWithRegion(d, meta)
 	if err != nil {
@@ -477,6 +478,7 @@ func resourceScalewayK8SClusterRead(ctx context.Context, d *schema.ResourceData,
 	return nil
 }
 
+//gocyclo:ignore
 func resourceScalewayK8SClusterUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	k8sAPI, region, clusterID, err := k8sAPIWithRegionAndID(meta, d.Id())
 	if err != nil {
