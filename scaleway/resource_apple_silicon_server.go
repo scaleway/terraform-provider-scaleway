@@ -6,6 +6,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	applesilicon "github.com/scaleway/scaleway-sdk-go/api/applesilicon/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 )
@@ -35,8 +36,9 @@ func resourceScalewayAppleSiliconServer() *schema.Resource {
 				Description: "Type of the server",
 				Required:    true,
 				ForceNew:    true,
+				ValidateFunc: validation.StringInSlice([]string{
+					AppleSiliconM1Type}, false),
 			},
-
 			// Computed
 			"ip": {
 				Type:        schema.TypeString,
@@ -48,7 +50,25 @@ func resourceScalewayAppleSiliconServer() *schema.Resource {
 				Description: "VNC url use to connect remotely to the desktop GUI",
 				Computed:    true,
 			},
-
+			"state": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Computed:    true,
+				Default:     applesilicon.ServerStatusStarting.String(),
+				Description: "The state of the server",
+				ValidateFunc: validation.StringInSlice([]string{
+					applesilicon.ServerStatusUnknownStatus.String(),
+					applesilicon.ServerStatusStarting.String(),
+					applesilicon.ServerStatusReady.String(),
+					applesilicon.ServerStatusError.String(),
+					applesilicon.ServerStatusRebooting.String(),
+					applesilicon.ServerStatusUpdating.String(),
+					applesilicon.ServerStatusLocking.String(),
+					applesilicon.ServerStatusLocked.String(),
+					applesilicon.ServerStatusUnlocking.String(),
+					applesilicon.ServerStatusReinstalling.String(),
+				}, false),
+			},
 			"created_at": {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -124,6 +144,7 @@ func resourceScalewayAppleSiliconServerRead(ctx context.Context, d *schema.Resou
 
 	_ = d.Set("name", res.Name)
 	_ = d.Set("type", res.Type)
+	_ = d.Set("state", res.Status.String())
 	_ = d.Set("created_at", res.CreatedAt.Format(time.RFC3339))
 	_ = d.Set("updated_at", res.UpdatedAt.Format(time.RFC3339))
 	_ = d.Set("deletable_at", res.DeletableAt.Format(time.RFC3339))
