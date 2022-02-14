@@ -433,3 +433,62 @@ func testAccCheckScalewayObjectBucketExists(tt *TestTools, n string) resource.Te
 		return nil
 	}
 }
+
+func TestAccScalewayObjectBucketDestroy_force(t *testing.T) {
+	if !*UpdateCassettes {
+		t.Skip("Skipping ObjectStorage test as this kind of resource can't be deleted before 24h")
+	}
+	tt := NewTestTools(t)
+	defer tt.Cleanup()
+
+	resourceName := "scaleway_object_bucket.bucket"
+	bucketName := sdkacctest.RandomWithPrefix("test-acc-scaleway-object-bucket-force")
+
+	addObjectToBucket := func(tt *TestTools, n string) resource.TestCheckFunc {
+		return func(s *terraform.State) error {
+			rs, ok := s.RootModule().Resources[n]
+			if !ok {
+				return fmt.Errorf("not found: %s", n)
+			}
+
+			conn, err := newS3ClientFromMeta(tt.Meta)
+			if err != nil {
+				return err
+			}
+			_, err = conn.PutObject(&s3.PutObjectInput{
+				Bucket: scw.StringPtr(rs.Primary.Attributes["name"]),
+				Key:    scw.StringPtr("test-file"),
+			})
+			if err != nil {
+				return fmt.Errorf("failed to put object in test bucket: %s", err)
+			}
+			conn.PutObject(&s3.PutObjectInput{
+				Bucket: scw.StringPtr(rs.Primary.Attributes["name"]),
+				Key:    scw.StringPtr("folder/test-file-in-folder"),
+			})
+			if err != nil {
+				return fmt.Errorf("failed to put object in test bucket sub folder: %s", err)
+			}
+			return nil
+		}
+	}
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      testAccCheckScalewayObjectBucketDestroy(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`
+					resource "scaleway_object_bucket" "bucket" {
+						name = %[1]q
+						force_destroy = true
+					}`, bucketName),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayObjectBucketExists(tt, resourceName),
+					addObjectToBucket(tt, resourceName),
+				),
+			},
+		},
+	})
+}
