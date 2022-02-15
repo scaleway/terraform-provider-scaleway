@@ -40,7 +40,7 @@ The following arguments are supported:
 In addition to all above arguments, the following attributes are exported:
 
 - `id` - The ID of the server.
-- `state` - (Defaults to `starting`) The state of the server. Check the possible values on
+- `state` - The state of the server. Check the possible values on
   our [sdk](https://github.com/scaleway/scaleway-sdk-go/blob/master/api/applesilicon/v1alpha1/applesilicon_sdk.go#L103).
 - `ip` - IPv4 address of the server (IPv4 address).
 - `vnc_url` - URL of the VNC.

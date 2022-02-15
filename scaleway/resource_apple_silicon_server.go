@@ -54,18 +54,6 @@ func resourceScalewayAppleSiliconServer() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The state of the server",
-				ValidateFunc: validation.StringInSlice([]string{
-					applesilicon.ServerStatusUnknownStatus.String(),
-					applesilicon.ServerStatusStarting.String(),
-					applesilicon.ServerStatusReady.String(),
-					applesilicon.ServerStatusError.String(),
-					applesilicon.ServerStatusRebooting.String(),
-					applesilicon.ServerStatusUpdating.String(),
-					applesilicon.ServerStatusLocking.String(),
-					applesilicon.ServerStatusLocked.String(),
-					applesilicon.ServerStatusUnlocking.String(),
-					applesilicon.ServerStatusReinstalling.String(),
-				}, false),
 			},
 			"created_at": {
 				Type:        schema.TypeString,
