@@ -197,6 +197,7 @@ func resourceScalewayK8SPool() *schema.Resource {
 	}
 }
 
+//gocyclo:ignore
 func resourceScalewayK8SPoolCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	k8sAPI, region, err := k8sAPIWithRegion(d, meta)
 	if err != nil {

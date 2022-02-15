@@ -231,6 +231,7 @@ func resourceScalewayRdbPrivilegeUpdate(ctx context.Context, d *schema.ResourceD
 	return nil
 }
 
+//gocyclo:ignore
 func resourceScalewayRdbPrivilegeDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	rdbAPI := newRdbAPI(meta)
 	region, instanceID, err := parseRegionalID(d.Get("instance_id").(string))

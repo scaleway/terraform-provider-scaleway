@@ -90,7 +90,7 @@ func NewTestTools(t *testing.T) *TestTools {
 	require.NoError(t, err)
 
 	// Create meta that will be passed in the provider config
-	meta, err := buildMeta(&MetaConfig{
+	meta, err := buildMeta(&metaConfig{
 		providerSchema:   nil,
 		terraformVersion: "terraform-tests",
 		httpClient:       httpClient,

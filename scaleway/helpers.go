@@ -277,11 +277,11 @@ func zoneSchema() *schema.Schema {
 		Optional:         true,
 		ForceNew:         true,
 		Computed:         true,
-		ValidateDiagFunc: validateStringInSliceWithWarning(AllZones(), "zone"),
+		ValidateDiagFunc: validateStringInSliceWithWarning(allZones(), "zone"),
 	}
 }
 
-func AllZones() []string {
+func allZones() []string {
 	var allZones []string
 	for _, z := range scw.AllZones {
 		allZones = append(allZones, z.String())

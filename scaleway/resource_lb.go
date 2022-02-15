@@ -240,6 +240,7 @@ func resourceScalewayLbRead(ctx context.Context, d *schema.ResourceData, meta in
 	return nil
 }
 
+//gocyclo:ignore
 func resourceScalewayLbUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	lbAPI, zone, ID, err := lbAPIWithZoneAndID(meta, d.Id())
 	if err != nil {
