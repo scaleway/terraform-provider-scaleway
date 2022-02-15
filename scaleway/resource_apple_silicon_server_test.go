@@ -59,7 +59,7 @@ func TestAccScalewayAppleSiliconServer_Basic(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayAppleSiliconExists(tt, "scaleway_apple_silicon_server.main"),
 					resource.TestCheckResourceAttr("scaleway_apple_silicon_server.main", "name", "test-m1"),
-					resource.TestCheckResourceAttr("scaleway_apple_silicon_server.main", "type", "M1-M"),
+					resource.TestCheckResourceAttr("scaleway_apple_silicon_server.main", "type", AppleSiliconM1Type),
 					// Computed
 					resource.TestCheckResourceAttrSet("scaleway_apple_silicon_server.main", "ip"),
 					resource.TestCheckResourceAttrSet("scaleway_apple_silicon_server.main", "vnc_url"),
