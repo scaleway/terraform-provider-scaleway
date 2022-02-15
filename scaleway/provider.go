@@ -138,7 +138,7 @@ func Provider(config *ProviderConfig) plugin.ProviderFunc {
 				return config.Meta, nil
 			}
 
-			meta, err := buildMeta(&MetaConfig{
+			meta, err := buildMeta(&metaConfig{
 				providerSchema:   data,
 				terraformVersion: terraformVersion,
 			})
@@ -164,7 +164,7 @@ type Meta struct {
 	httpClient *http.Client
 }
 
-type MetaConfig struct {
+type metaConfig struct {
 	providerSchema   *schema.ResourceData
 	terraformVersion string
 	forceZone        scw.Zone
@@ -172,7 +172,7 @@ type MetaConfig struct {
 }
 
 // providerConfigure creates the Meta object containing the SDK client.
-func buildMeta(config *MetaConfig) (*Meta, error) {
+func buildMeta(config *metaConfig) (*Meta, error) {
 	////
 	// Load Profile
 	////
@@ -216,6 +216,7 @@ func buildMeta(config *MetaConfig) (*Meta, error) {
 	}, nil
 }
 
+//gocyclo:ignore
 func loadProfile(d *schema.ResourceData) (*scw.Profile, error) {
 	config, err := scw.LoadConfig()
 	// If the config file do not exist, don't return an error as we may find config in ENV or flags.

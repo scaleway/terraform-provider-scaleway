@@ -418,6 +418,7 @@ func resourceScalewayRdbInstanceRead(ctx context.Context, d *schema.ResourceData
 	return nil
 }
 
+//gocyclo:ignore
 func resourceScalewayRdbInstanceUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	rdbAPI, region, ID, err := rdbAPIWithRegionAndID(meta, d.Id())
 	if err != nil {

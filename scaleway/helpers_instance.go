@@ -14,8 +14,11 @@ import (
 )
 
 const (
+	// InstanceServerStateStopped transient state of the instance event stop
 	InstanceServerStateStopped = "stopped"
+	// InstanceServerStateStarted transient state of the instance event start
 	InstanceServerStateStarted = "started"
+	// InstanceServerStateStandby transient state of the instance event waiting third action or rescue mode
 	InstanceServerStateStandby = "standby"
 
 	defaultInstanceServerWaitTimeout        = 10 * time.Minute

@@ -4,6 +4,8 @@
 - [![Gitter chat](https://badges.gitter.im/hashicorp-terraform/Lobby.png)](https://gitter.im/hashicorp-terraform/Lobby)
 - Mailing list: [Google Groups](http://groups.google.com/group/terraform-tool)
 - Slack: [Scaleway-community Slack][slack-scaleway] ([#terraform][slack-terraform])
+- [![Go Report Card](https://goreportcard.com/badge/github.com/terraform-providers/terraform-provider-scaleway)](https://goreportcard.com/report/github.com/terraform-providers/terraform-provider-scaleway)
+    
 
 [slack-scaleway]: https://slack.scaleway.com/
 [slack-terraform]: https://scaleway-community.slack.com/app_redirect?channel=terraform
