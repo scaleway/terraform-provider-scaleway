@@ -42,7 +42,6 @@ func resourceScalewayDomainRecord() *schema.Resource {
 				Type:        schema.TypeBool,
 				Description: "Does the DNS zone is the root zone or not",
 				Computed:    true,
-				Default:     nil,
 			},
 			"name": {
 				Type:        schema.TypeString,
