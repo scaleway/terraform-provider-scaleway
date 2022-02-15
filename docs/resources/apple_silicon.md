@@ -13,10 +13,10 @@ see [the documentation](https://www.scaleway.com/en/docs/compute/apple-silicon/c
 ### Basic
 
 ```hcl
-    resource scaleway_apple_silicon_server server {
-        name = "test-m1"
-        type = "M1-M"
-    }
+resource scaleway_apple_silicon_server server {
+    name = "test-m1"
+    type = "M1-M"
+}
 ```
 
 ## Arguments Reference
