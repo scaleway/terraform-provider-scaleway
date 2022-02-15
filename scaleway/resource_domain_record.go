@@ -437,7 +437,7 @@ func resourceScalewayDomainRecordDelete(ctx context.Context, d *schema.ResourceD
 	if !d.Get("keep_empty_zone").(bool) && d.Get("root_zone") != nil && !d.Get("root_zone").(bool) {
 		res, err := domainAPI.ListDNSZoneRecords(&domain.ListDNSZoneRecordsRequest{
 			DNSZone: d.Get("dns_zone").(string),
-		}, scw.WithAllPages())
+		})
 
 		if err != nil {
 			if is404Error(err) {
