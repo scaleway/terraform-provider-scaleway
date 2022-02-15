@@ -15,7 +15,7 @@ To prepare the launch of all new Scaleway products, we completely changed the na
 
 -> **Note:** Before upgrading to `v2+`, it is recommended to upgrade to the most recent `1.X` version of the provider (`v1.17.2`) and ensure that your environment successfully runs [`terraform plan`](https://www.terraform.io/docs/commands/plan.html) without unexpected change or deprecation notice.
 
-It is recommended to use [version constraints when configuring Terraform providers](https://www.terraform.io/docs/configuration/providers.html#version-provider-versions).
+It is recommended to use [version constraints when configuring Terraform providers](https://www.terraform.io/language/providers/configuration#version-provider-versions).
 If you are following these recommendations, update the version constraints in your Terraform configuration and run [`terraform init`](https://www.terraform.io/docs/commands/init.html) to download the new version.
 
 Update to latest `1.X` version:
