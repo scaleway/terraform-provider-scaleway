@@ -13,7 +13,7 @@ interactions:
     url: https://api.scaleway.com/domain/v2beta1/dns-zones/test-data-source.scaleway-terraform.com/records
     method: PATCH
   response:
-    body: '{"records":[{"id":"6788b77f-edd1-40fb-afb0-5c9894feaa40","data":"1.2.3.4","name":"www","priority":10,"ttl":3600,"type":"A","comment":null}]}'
+    body: '{"records":[{"id":"52c4b946-b8aa-4b80-a2a8-ad5e66266520","data":"1.2.3.4","name":"www","priority":10,"ttl":3600,"type":"A","comment":null}]}'
     headers:
       Content-Length:
       - "140"
@@ -22,7 +22,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Tue, 15 Feb 2022 15:31:18 GMT
+      - Thu, 17 Feb 2022 13:34:22 GMT
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -32,7 +32,7 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - 15e30286-ac34-4b40-b0df-c0fac5f097e1
+      - 0c1dd0b4-290e-4083-b48c-ab23a4cb0cc5
     status: 200 OK
     code: 200
     duration: ""
@@ -46,7 +46,7 @@ interactions:
     url: https://api.scaleway.com/domain/v2beta1/dns-zones/test-data-source.scaleway-terraform.com/records?name=www&order_by=name_asc&page=1&type=A
     method: GET
   response:
-    body: '{"total_count":1,"records":[{"id":"6788b77f-edd1-40fb-afb0-5c9894feaa40","data":"1.2.3.4","name":"www","priority":10,"ttl":3600,"type":"A","comment":null}]}'
+    body: '{"total_count":1,"records":[{"id":"52c4b946-b8aa-4b80-a2a8-ad5e66266520","data":"1.2.3.4","name":"www","priority":10,"ttl":3600,"type":"A","comment":null}]}'
     headers:
       Content-Length:
       - "156"
@@ -55,7 +55,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Tue, 15 Feb 2022 15:31:18 GMT
+      - Thu, 17 Feb 2022 13:34:23 GMT
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -65,7 +65,7 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - 658b9f64-a343-421c-b01f-543c117bb415
+      - 4758c99d-536c-466e-9e5e-ec46cdee19ab
     status: 200 OK
     code: 200
     duration: ""
@@ -79,7 +79,7 @@ interactions:
     url: https://api.scaleway.com/domain/v2beta1/dns-zones?dns_zone=test-data-source.scaleway-terraform.com&domain=&order_by=domain_asc&page=1
     method: GET
   response:
-    body: '{"total_count":1,"dns_zones":[{"domain":"scaleway-terraform.com","subdomain":"test-data-source","ns":["ns0.dom.scw.cloud","ns1.dom.scw.cloud"],"ns_default":["ns0.dom.scw.cloud","ns1.dom.scw.cloud"],"ns_master":[],"status":"pending","message":null,"updated_at":"2022-02-15T15:31:18Z","project_id":"951df375-e094-4d26-97c1-ba548eeb9c42"}]}'
+    body: '{"total_count":1,"dns_zones":[{"domain":"scaleway-terraform.com","subdomain":"test-data-source","ns":["ns0.dom.scw.cloud","ns1.dom.scw.cloud"],"ns_default":["ns0.dom.scw.cloud","ns1.dom.scw.cloud"],"ns_master":[],"status":"pending","message":null,"updated_at":"2022-02-17T13:34:22Z","project_id":"105bdce1-64c0-48ab-899d-868455867ecf"}]}'
     headers:
       Content-Length:
       - "337"
@@ -88,7 +88,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Tue, 15 Feb 2022 15:31:18 GMT
+      - Thu, 17 Feb 2022 13:34:23 GMT
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -98,7 +98,40 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - fe51c874-d09f-4740-9172-05d7b762fd64
+      - 65294f4b-f1a5-49ec-9314-e7d8744b9862
+    status: 200 OK
+    code: 200
+    duration: ""
+- request:
+    body: ""
+    form: {}
+    headers:
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.17.6; linux; amd64) terraform-provider/develop
+        terraform/terraform-tests
+    url: https://api.scaleway.com/domain/v2beta1/dns-zones/test-data-source.scaleway-terraform.com/records?name=&order_by=name_asc&page=1&type=unknown
+    method: GET
+  response:
+    body: '{"total_count":3,"records":[{"id":"261f2383-c24d-484c-a032-0924e029c01d","data":"ns0.dom.scw.cloud.","name":"","priority":0,"ttl":600,"type":"NS","comment":null},{"id":"79648c07-400e-4867-8e29-96d86114b736","data":"ns1.dom.scw.cloud.","name":"","priority":0,"ttl":600,"type":"NS","comment":null},{"id":"52c4b946-b8aa-4b80-a2a8-ad5e66266520","data":"1.2.3.4","name":"www","priority":10,"ttl":3600,"type":"A","comment":null}]}'
+    headers:
+      Content-Length:
+      - "424"
+      Content-Security-Policy:
+      - default-src 'none'; frame-ancestors 'none'
+      Content-Type:
+      - application/json
+      Date:
+      - Thu, 17 Feb 2022 13:34:23 GMT
+      Server:
+      - Scaleway API-Gateway
+      Strict-Transport-Security:
+      - max-age=63072000
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+      X-Request-Id:
+      - d1f4c019-fc8e-4dc4-89d9-3b41ce77ff8a
     status: 200 OK
     code: 200
     duration: ""
@@ -112,7 +145,7 @@ interactions:
     url: https://api.scaleway.com/domain/v2beta1/dns-zones/test-data-source.scaleway-terraform.com/records?name=www&order_by=name_asc&page=1&type=A
     method: GET
   response:
-    body: '{"total_count":1,"records":[{"id":"6788b77f-edd1-40fb-afb0-5c9894feaa40","data":"1.2.3.4","name":"www","priority":10,"ttl":3600,"type":"A","comment":null}]}'
+    body: '{"total_count":1,"records":[{"id":"52c4b946-b8aa-4b80-a2a8-ad5e66266520","data":"1.2.3.4","name":"www","priority":10,"ttl":3600,"type":"A","comment":null}]}'
     headers:
       Content-Length:
       - "156"
@@ -121,7 +154,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Tue, 15 Feb 2022 15:31:18 GMT
+      - Thu, 17 Feb 2022 13:34:23 GMT
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -131,40 +164,7 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - ae24ee76-abe2-4be7-9111-de84148cc696
-    status: 200 OK
-    code: 200
-    duration: ""
-- request:
-    body: ""
-    form: {}
-    headers:
-      User-Agent:
-      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.17.6; linux; amd64) terraform-provider/develop
-        terraform/terraform-tests
-    url: https://api.scaleway.com/domain/v2beta1/dns-zones/test-data-source.scaleway-terraform.com/records?name=&order_by=name_asc&page=1&type=unknown
-    method: GET
-  response:
-    body: '{"total_count":3,"records":[{"id":"49c499ee-9e65-44f7-a5df-c9ac599412d0","data":"ns0.dom.scw.cloud.","name":"","priority":0,"ttl":600,"type":"NS","comment":null},{"id":"0b5ae61f-7380-4de6-bbc6-b68420196aea","data":"ns1.dom.scw.cloud.","name":"","priority":0,"ttl":600,"type":"NS","comment":null},{"id":"6788b77f-edd1-40fb-afb0-5c9894feaa40","data":"1.2.3.4","name":"www","priority":10,"ttl":3600,"type":"A","comment":null}]}'
-    headers:
-      Content-Length:
-      - "424"
-      Content-Security-Policy:
-      - default-src 'none'; frame-ancestors 'none'
-      Content-Type:
-      - application/json
-      Date:
-      - Tue, 15 Feb 2022 15:31:18 GMT
-      Server:
-      - Scaleway API-Gateway
-      Strict-Transport-Security:
-      - max-age=63072000
-      X-Content-Type-Options:
-      - nosniff
-      X-Frame-Options:
-      - DENY
-      X-Request-Id:
-      - 81ea981c-f9cd-4f83-8b72-97a12ad1836a
+      - 6be429c7-7215-4f77-a46c-0092e848832c
     status: 200 OK
     code: 200
     duration: ""
@@ -178,7 +178,7 @@ interactions:
     url: https://api.scaleway.com/domain/v2beta1/dns-zones?dns_zone=test-data-source.scaleway-terraform.com&domain=&order_by=domain_asc&page=1
     method: GET
   response:
-    body: '{"total_count":1,"dns_zones":[{"domain":"scaleway-terraform.com","subdomain":"test-data-source","ns":["ns0.dom.scw.cloud","ns1.dom.scw.cloud"],"ns_default":["ns0.dom.scw.cloud","ns1.dom.scw.cloud"],"ns_master":[],"status":"pending","message":null,"updated_at":"2022-02-15T15:31:18Z","project_id":"951df375-e094-4d26-97c1-ba548eeb9c42"}]}'
+    body: '{"total_count":1,"dns_zones":[{"domain":"scaleway-terraform.com","subdomain":"test-data-source","ns":["ns0.dom.scw.cloud","ns1.dom.scw.cloud"],"ns_default":["ns0.dom.scw.cloud","ns1.dom.scw.cloud"],"ns_master":[],"status":"pending","message":null,"updated_at":"2022-02-17T13:34:22Z","project_id":"105bdce1-64c0-48ab-899d-868455867ecf"}]}'
     headers:
       Content-Length:
       - "337"
@@ -187,7 +187,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Tue, 15 Feb 2022 15:31:18 GMT
+      - Thu, 17 Feb 2022 13:34:23 GMT
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -197,7 +197,7 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - 389d3334-279d-4198-b8ff-20141c2a90d2
+      - 693fbe76-3fef-4a2d-92b7-2570c277c9dd
     status: 200 OK
     code: 200
     duration: ""
@@ -211,7 +211,7 @@ interactions:
     url: https://api.scaleway.com/domain/v2beta1/dns-zones/test-data-source.scaleway-terraform.com/records?name=&order_by=name_asc&page=1&type=unknown
     method: GET
   response:
-    body: '{"total_count":3,"records":[{"id":"49c499ee-9e65-44f7-a5df-c9ac599412d0","data":"ns0.dom.scw.cloud.","name":"","priority":0,"ttl":600,"type":"NS","comment":null},{"id":"0b5ae61f-7380-4de6-bbc6-b68420196aea","data":"ns1.dom.scw.cloud.","name":"","priority":0,"ttl":600,"type":"NS","comment":null},{"id":"6788b77f-edd1-40fb-afb0-5c9894feaa40","data":"1.2.3.4","name":"www","priority":10,"ttl":3600,"type":"A","comment":null}]}'
+    body: '{"total_count":3,"records":[{"id":"261f2383-c24d-484c-a032-0924e029c01d","data":"ns0.dom.scw.cloud.","name":"","priority":0,"ttl":600,"type":"NS","comment":null},{"id":"79648c07-400e-4867-8e29-96d86114b736","data":"ns1.dom.scw.cloud.","name":"","priority":0,"ttl":600,"type":"NS","comment":null},{"id":"52c4b946-b8aa-4b80-a2a8-ad5e66266520","data":"1.2.3.4","name":"www","priority":10,"ttl":3600,"type":"A","comment":null}]}'
     headers:
       Content-Length:
       - "424"
@@ -220,7 +220,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Tue, 15 Feb 2022 15:31:18 GMT
+      - Thu, 17 Feb 2022 13:34:23 GMT
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -230,7 +230,7 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - 10baa430-2dc3-4670-a057-1c976b361f48
+      - 4b589a05-c41a-4cf9-98d5-ea509cf9f90b
     status: 200 OK
     code: 200
     duration: ""
@@ -244,7 +244,7 @@ interactions:
     url: https://api.scaleway.com/domain/v2beta1/dns-zones?dns_zone=test-data-source.scaleway-terraform.com&domain=&order_by=domain_asc&page=1
     method: GET
   response:
-    body: '{"total_count":1,"dns_zones":[{"domain":"scaleway-terraform.com","subdomain":"test-data-source","ns":["ns0.dom.scw.cloud","ns1.dom.scw.cloud"],"ns_default":["ns0.dom.scw.cloud","ns1.dom.scw.cloud"],"ns_master":[],"status":"pending","message":null,"updated_at":"2022-02-15T15:31:18Z","project_id":"951df375-e094-4d26-97c1-ba548eeb9c42"}]}'
+    body: '{"total_count":1,"dns_zones":[{"domain":"scaleway-terraform.com","subdomain":"test-data-source","ns":["ns0.dom.scw.cloud","ns1.dom.scw.cloud"],"ns_default":["ns0.dom.scw.cloud","ns1.dom.scw.cloud"],"ns_master":[],"status":"pending","message":null,"updated_at":"2022-02-17T13:34:22Z","project_id":"105bdce1-64c0-48ab-899d-868455867ecf"}]}'
     headers:
       Content-Length:
       - "337"
@@ -253,7 +253,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Tue, 15 Feb 2022 15:31:18 GMT
+      - Thu, 17 Feb 2022 13:34:23 GMT
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -263,7 +263,7 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - 55d18f1d-fe4d-436b-9425-a34254254fa6
+      - d2fe0ee8-077a-4042-803a-10184c9ca313
     status: 200 OK
     code: 200
     duration: ""
@@ -277,7 +277,7 @@ interactions:
     url: https://api.scaleway.com/domain/v2beta1/dns-zones/test-data-source.scaleway-terraform.com/records?name=&order_by=name_asc&type=unknown
     method: GET
   response:
-    body: '{"total_count":3,"records":[{"id":"49c499ee-9e65-44f7-a5df-c9ac599412d0","data":"ns0.dom.scw.cloud.","name":"","priority":0,"ttl":600,"type":"NS","comment":null},{"id":"0b5ae61f-7380-4de6-bbc6-b68420196aea","data":"ns1.dom.scw.cloud.","name":"","priority":0,"ttl":600,"type":"NS","comment":null},{"id":"6788b77f-edd1-40fb-afb0-5c9894feaa40","data":"1.2.3.4","name":"www","priority":10,"ttl":3600,"type":"A","comment":null}]}'
+    body: '{"total_count":3,"records":[{"id":"261f2383-c24d-484c-a032-0924e029c01d","data":"ns0.dom.scw.cloud.","name":"","priority":0,"ttl":600,"type":"NS","comment":null},{"id":"79648c07-400e-4867-8e29-96d86114b736","data":"ns1.dom.scw.cloud.","name":"","priority":0,"ttl":600,"type":"NS","comment":null},{"id":"52c4b946-b8aa-4b80-a2a8-ad5e66266520","data":"1.2.3.4","name":"www","priority":10,"ttl":3600,"type":"A","comment":null}]}'
     headers:
       Content-Length:
       - "424"
@@ -286,7 +286,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Tue, 15 Feb 2022 15:31:19 GMT
+      - Thu, 17 Feb 2022 13:34:24 GMT
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -296,7 +296,7 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - c5b424c6-a080-4df8-9c8b-79a90c21365a
+      - 28dbeada-133e-4ee6-ab08-83fd23fd5cdf
     status: 200 OK
     code: 200
     duration: ""
@@ -310,7 +310,7 @@ interactions:
     url: https://api.scaleway.com/domain/v2beta1/dns-zones/test-data-source.scaleway-terraform.com/records?name=&order_by=name_asc&type=unknown
     method: GET
   response:
-    body: '{"total_count":3,"records":[{"id":"49c499ee-9e65-44f7-a5df-c9ac599412d0","data":"ns0.dom.scw.cloud.","name":"","priority":0,"ttl":600,"type":"NS","comment":null},{"id":"0b5ae61f-7380-4de6-bbc6-b68420196aea","data":"ns1.dom.scw.cloud.","name":"","priority":0,"ttl":600,"type":"NS","comment":null},{"id":"6788b77f-edd1-40fb-afb0-5c9894feaa40","data":"1.2.3.4","name":"www","priority":10,"ttl":3600,"type":"A","comment":null}]}'
+    body: '{"total_count":3,"records":[{"id":"261f2383-c24d-484c-a032-0924e029c01d","data":"ns0.dom.scw.cloud.","name":"","priority":0,"ttl":600,"type":"NS","comment":null},{"id":"79648c07-400e-4867-8e29-96d86114b736","data":"ns1.dom.scw.cloud.","name":"","priority":0,"ttl":600,"type":"NS","comment":null},{"id":"52c4b946-b8aa-4b80-a2a8-ad5e66266520","data":"1.2.3.4","name":"www","priority":10,"ttl":3600,"type":"A","comment":null}]}'
     headers:
       Content-Length:
       - "424"
@@ -319,7 +319,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Tue, 15 Feb 2022 15:31:19 GMT
+      - Thu, 17 Feb 2022 13:34:24 GMT
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -329,40 +329,7 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - a1a69711-3934-41b3-8928-6014531ffa49
-    status: 200 OK
-    code: 200
-    duration: ""
-- request:
-    body: ""
-    form: {}
-    headers:
-      User-Agent:
-      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.17.6; linux; amd64) terraform-provider/develop
-        terraform/terraform-tests
-    url: https://api.scaleway.com/domain/v2beta1/dns-zones/test-data-source.scaleway-terraform.com/records?name=&order_by=name_asc&page=1&type=unknown
-    method: GET
-  response:
-    body: '{"total_count":3,"records":[{"id":"49c499ee-9e65-44f7-a5df-c9ac599412d0","data":"ns0.dom.scw.cloud.","name":"","priority":0,"ttl":600,"type":"NS","comment":null},{"id":"0b5ae61f-7380-4de6-bbc6-b68420196aea","data":"ns1.dom.scw.cloud.","name":"","priority":0,"ttl":600,"type":"NS","comment":null},{"id":"6788b77f-edd1-40fb-afb0-5c9894feaa40","data":"1.2.3.4","name":"www","priority":10,"ttl":3600,"type":"A","comment":null}]}'
-    headers:
-      Content-Length:
-      - "424"
-      Content-Security-Policy:
-      - default-src 'none'; frame-ancestors 'none'
-      Content-Type:
-      - application/json
-      Date:
-      - Tue, 15 Feb 2022 15:31:19 GMT
-      Server:
-      - Scaleway API-Gateway
-      Strict-Transport-Security:
-      - max-age=63072000
-      X-Content-Type-Options:
-      - nosniff
-      X-Frame-Options:
-      - DENY
-      X-Request-Id:
-      - 3493f786-9190-4ed6-9450-63e825bb3383
+      - 66d95962-1df2-4927-9c24-d20bd2121b24
     status: 200 OK
     code: 200
     duration: ""
@@ -376,7 +343,7 @@ interactions:
     url: https://api.scaleway.com/domain/v2beta1/dns-zones/test-data-source.scaleway-terraform.com/records?name=www&order_by=name_asc&page=1&type=A
     method: GET
   response:
-    body: '{"total_count":1,"records":[{"id":"6788b77f-edd1-40fb-afb0-5c9894feaa40","data":"1.2.3.4","name":"www","priority":10,"ttl":3600,"type":"A","comment":null}]}'
+    body: '{"total_count":1,"records":[{"id":"52c4b946-b8aa-4b80-a2a8-ad5e66266520","data":"1.2.3.4","name":"www","priority":10,"ttl":3600,"type":"A","comment":null}]}'
     headers:
       Content-Length:
       - "156"
@@ -385,7 +352,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Tue, 15 Feb 2022 15:31:19 GMT
+      - Thu, 17 Feb 2022 13:34:24 GMT
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -395,40 +362,7 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - 95a5a60b-96c4-4fbe-a5bb-a01685601c2d
-    status: 200 OK
-    code: 200
-    duration: ""
-- request:
-    body: ""
-    form: {}
-    headers:
-      User-Agent:
-      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.17.6; linux; amd64) terraform-provider/develop
-        terraform/terraform-tests
-    url: https://api.scaleway.com/domain/v2beta1/dns-zones?dns_zone=test-data-source.scaleway-terraform.com&domain=&order_by=domain_asc&page=1
-    method: GET
-  response:
-    body: '{"total_count":1,"dns_zones":[{"domain":"scaleway-terraform.com","subdomain":"test-data-source","ns":["ns0.dom.scw.cloud","ns1.dom.scw.cloud"],"ns_default":["ns0.dom.scw.cloud","ns1.dom.scw.cloud"],"ns_master":[],"status":"pending","message":null,"updated_at":"2022-02-15T15:31:18Z","project_id":"951df375-e094-4d26-97c1-ba548eeb9c42"}]}'
-    headers:
-      Content-Length:
-      - "337"
-      Content-Security-Policy:
-      - default-src 'none'; frame-ancestors 'none'
-      Content-Type:
-      - application/json
-      Date:
-      - Tue, 15 Feb 2022 15:31:19 GMT
-      Server:
-      - Scaleway API-Gateway
-      Strict-Transport-Security:
-      - max-age=63072000
-      X-Content-Type-Options:
-      - nosniff
-      X-Frame-Options:
-      - DENY
-      X-Request-Id:
-      - 95dd1175-1ecb-462e-9491-27962a727361
+      - fe9a1ada-62d4-4a1c-a702-0d7ff1a8b321
     status: 200 OK
     code: 200
     duration: ""
@@ -442,7 +376,7 @@ interactions:
     url: https://api.scaleway.com/domain/v2beta1/dns-zones/test-data-source.scaleway-terraform.com/records?name=&order_by=name_asc&page=1&type=unknown
     method: GET
   response:
-    body: '{"total_count":3,"records":[{"id":"49c499ee-9e65-44f7-a5df-c9ac599412d0","data":"ns0.dom.scw.cloud.","name":"","priority":0,"ttl":600,"type":"NS","comment":null},{"id":"0b5ae61f-7380-4de6-bbc6-b68420196aea","data":"ns1.dom.scw.cloud.","name":"","priority":0,"ttl":600,"type":"NS","comment":null},{"id":"6788b77f-edd1-40fb-afb0-5c9894feaa40","data":"1.2.3.4","name":"www","priority":10,"ttl":3600,"type":"A","comment":null}]}'
+    body: '{"total_count":3,"records":[{"id":"261f2383-c24d-484c-a032-0924e029c01d","data":"ns0.dom.scw.cloud.","name":"","priority":0,"ttl":600,"type":"NS","comment":null},{"id":"79648c07-400e-4867-8e29-96d86114b736","data":"ns1.dom.scw.cloud.","name":"","priority":0,"ttl":600,"type":"NS","comment":null},{"id":"52c4b946-b8aa-4b80-a2a8-ad5e66266520","data":"1.2.3.4","name":"www","priority":10,"ttl":3600,"type":"A","comment":null}]}'
     headers:
       Content-Length:
       - "424"
@@ -451,7 +385,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Tue, 15 Feb 2022 15:31:19 GMT
+      - Thu, 17 Feb 2022 13:34:24 GMT
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -461,7 +395,7 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - c76ae984-8c37-4ece-a403-e2d24c2dc9f9
+      - 2e097dd2-733f-4045-b5f3-f8b42b040a7a
     status: 200 OK
     code: 200
     duration: ""
@@ -475,7 +409,7 @@ interactions:
     url: https://api.scaleway.com/domain/v2beta1/dns-zones?dns_zone=test-data-source.scaleway-terraform.com&domain=&order_by=domain_asc&page=1
     method: GET
   response:
-    body: '{"total_count":1,"dns_zones":[{"domain":"scaleway-terraform.com","subdomain":"test-data-source","ns":["ns0.dom.scw.cloud","ns1.dom.scw.cloud"],"ns_default":["ns0.dom.scw.cloud","ns1.dom.scw.cloud"],"ns_master":[],"status":"pending","message":null,"updated_at":"2022-02-15T15:31:18Z","project_id":"951df375-e094-4d26-97c1-ba548eeb9c42"}]}'
+    body: '{"total_count":1,"dns_zones":[{"domain":"scaleway-terraform.com","subdomain":"test-data-source","ns":["ns0.dom.scw.cloud","ns1.dom.scw.cloud"],"ns_default":["ns0.dom.scw.cloud","ns1.dom.scw.cloud"],"ns_master":[],"status":"pending","message":null,"updated_at":"2022-02-17T13:34:22Z","project_id":"105bdce1-64c0-48ab-899d-868455867ecf"}]}'
     headers:
       Content-Length:
       - "337"
@@ -484,7 +418,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Tue, 15 Feb 2022 15:31:20 GMT
+      - Thu, 17 Feb 2022 13:34:24 GMT
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -494,7 +428,73 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - fb9eed2b-1d6b-492b-bf77-e89b5853e7bf
+      - 77021835-810b-4c6e-ad6e-78e30f905af2
+    status: 200 OK
+    code: 200
+    duration: ""
+- request:
+    body: ""
+    form: {}
+    headers:
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.17.6; linux; amd64) terraform-provider/develop
+        terraform/terraform-tests
+    url: https://api.scaleway.com/domain/v2beta1/dns-zones/test-data-source.scaleway-terraform.com/records?name=&order_by=name_asc&page=1&type=unknown
+    method: GET
+  response:
+    body: '{"total_count":3,"records":[{"id":"261f2383-c24d-484c-a032-0924e029c01d","data":"ns0.dom.scw.cloud.","name":"","priority":0,"ttl":600,"type":"NS","comment":null},{"id":"79648c07-400e-4867-8e29-96d86114b736","data":"ns1.dom.scw.cloud.","name":"","priority":0,"ttl":600,"type":"NS","comment":null},{"id":"52c4b946-b8aa-4b80-a2a8-ad5e66266520","data":"1.2.3.4","name":"www","priority":10,"ttl":3600,"type":"A","comment":null}]}'
+    headers:
+      Content-Length:
+      - "424"
+      Content-Security-Policy:
+      - default-src 'none'; frame-ancestors 'none'
+      Content-Type:
+      - application/json
+      Date:
+      - Thu, 17 Feb 2022 13:34:24 GMT
+      Server:
+      - Scaleway API-Gateway
+      Strict-Transport-Security:
+      - max-age=63072000
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+      X-Request-Id:
+      - 39ce1d42-205c-4eb6-978f-5988bbbd3b7d
+    status: 200 OK
+    code: 200
+    duration: ""
+- request:
+    body: ""
+    form: {}
+    headers:
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.17.6; linux; amd64) terraform-provider/develop
+        terraform/terraform-tests
+    url: https://api.scaleway.com/domain/v2beta1/dns-zones?dns_zone=test-data-source.scaleway-terraform.com&domain=&order_by=domain_asc&page=1
+    method: GET
+  response:
+    body: '{"total_count":1,"dns_zones":[{"domain":"scaleway-terraform.com","subdomain":"test-data-source","ns":["ns0.dom.scw.cloud","ns1.dom.scw.cloud"],"ns_default":["ns0.dom.scw.cloud","ns1.dom.scw.cloud"],"ns_master":[],"status":"pending","message":null,"updated_at":"2022-02-17T13:34:22Z","project_id":"105bdce1-64c0-48ab-899d-868455867ecf"}]}'
+    headers:
+      Content-Length:
+      - "337"
+      Content-Security-Policy:
+      - default-src 'none'; frame-ancestors 'none'
+      Content-Type:
+      - application/json
+      Date:
+      - Thu, 17 Feb 2022 13:34:24 GMT
+      Server:
+      - Scaleway API-Gateway
+      Strict-Transport-Security:
+      - max-age=63072000
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+      X-Request-Id:
+      - 45e20ddd-5e1f-4c8d-98dc-3bec326e58ff
     status: 200 OK
     code: 200
     duration: ""
@@ -508,7 +508,7 @@ interactions:
     url: https://api.scaleway.com/domain/v2beta1/dns-zones/test-data-source.scaleway-terraform.com/records?name=www&order_by=name_asc&page=1&type=A
     method: GET
   response:
-    body: '{"total_count":1,"records":[{"id":"6788b77f-edd1-40fb-afb0-5c9894feaa40","data":"1.2.3.4","name":"www","priority":10,"ttl":3600,"type":"A","comment":null}]}'
+    body: '{"total_count":1,"records":[{"id":"52c4b946-b8aa-4b80-a2a8-ad5e66266520","data":"1.2.3.4","name":"www","priority":10,"ttl":3600,"type":"A","comment":null}]}'
     headers:
       Content-Length:
       - "156"
@@ -517,7 +517,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Tue, 15 Feb 2022 15:31:20 GMT
+      - Thu, 17 Feb 2022 13:34:25 GMT
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -527,7 +527,7 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - dae8b73d-b73b-4207-a36d-4e81b25d9cc0
+      - 21c45a57-cbad-485f-b63f-db2e2b3427d5
     status: 200 OK
     code: 200
     duration: ""
@@ -541,7 +541,7 @@ interactions:
     url: https://api.scaleway.com/domain/v2beta1/dns-zones?dns_zone=test-data-source.scaleway-terraform.com&domain=&order_by=domain_asc&page=1
     method: GET
   response:
-    body: '{"total_count":1,"dns_zones":[{"domain":"scaleway-terraform.com","subdomain":"test-data-source","ns":["ns0.dom.scw.cloud","ns1.dom.scw.cloud"],"ns_default":["ns0.dom.scw.cloud","ns1.dom.scw.cloud"],"ns_master":[],"status":"pending","message":null,"updated_at":"2022-02-15T15:31:18Z","project_id":"951df375-e094-4d26-97c1-ba548eeb9c42"}]}'
+    body: '{"total_count":1,"dns_zones":[{"domain":"scaleway-terraform.com","subdomain":"test-data-source","ns":["ns0.dom.scw.cloud","ns1.dom.scw.cloud"],"ns_default":["ns0.dom.scw.cloud","ns1.dom.scw.cloud"],"ns_master":[],"status":"pending","message":null,"updated_at":"2022-02-17T13:34:22Z","project_id":"105bdce1-64c0-48ab-899d-868455867ecf"}]}'
     headers:
       Content-Length:
       - "337"
@@ -550,7 +550,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Tue, 15 Feb 2022 15:31:20 GMT
+      - Thu, 17 Feb 2022 13:34:25 GMT
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -560,7 +560,7 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - aae98b09-5776-4cf1-8770-b4b3806a2606
+      - 2d04aa78-bb6c-4ef8-b1b4-369299d08a10
     status: 200 OK
     code: 200
     duration: ""
@@ -574,7 +574,7 @@ interactions:
     url: https://api.scaleway.com/domain/v2beta1/dns-zones/test-data-source.scaleway-terraform.com/records?name=www&order_by=name_asc&page=1&type=A
     method: GET
   response:
-    body: '{"total_count":1,"records":[{"id":"6788b77f-edd1-40fb-afb0-5c9894feaa40","data":"1.2.3.4","name":"www","priority":10,"ttl":3600,"type":"A","comment":null}]}'
+    body: '{"total_count":1,"records":[{"id":"52c4b946-b8aa-4b80-a2a8-ad5e66266520","data":"1.2.3.4","name":"www","priority":10,"ttl":3600,"type":"A","comment":null}]}'
     headers:
       Content-Length:
       - "156"
@@ -583,7 +583,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Tue, 15 Feb 2022 15:31:20 GMT
+      - Thu, 17 Feb 2022 13:34:25 GMT
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -593,7 +593,7 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - a488e996-43db-4621-ac76-6b74e649ced1
+      - 7bb2e181-6f55-45ee-a48e-d9332e3eeccf
     status: 200 OK
     code: 200
     duration: ""
@@ -607,7 +607,7 @@ interactions:
     url: https://api.scaleway.com/domain/v2beta1/dns-zones/test-data-source.scaleway-terraform.com/records?name=&order_by=name_asc&page=1&type=unknown
     method: GET
   response:
-    body: '{"total_count":3,"records":[{"id":"49c499ee-9e65-44f7-a5df-c9ac599412d0","data":"ns0.dom.scw.cloud.","name":"","priority":0,"ttl":600,"type":"NS","comment":null},{"id":"0b5ae61f-7380-4de6-bbc6-b68420196aea","data":"ns1.dom.scw.cloud.","name":"","priority":0,"ttl":600,"type":"NS","comment":null},{"id":"6788b77f-edd1-40fb-afb0-5c9894feaa40","data":"1.2.3.4","name":"www","priority":10,"ttl":3600,"type":"A","comment":null}]}'
+    body: '{"total_count":3,"records":[{"id":"261f2383-c24d-484c-a032-0924e029c01d","data":"ns0.dom.scw.cloud.","name":"","priority":0,"ttl":600,"type":"NS","comment":null},{"id":"79648c07-400e-4867-8e29-96d86114b736","data":"ns1.dom.scw.cloud.","name":"","priority":0,"ttl":600,"type":"NS","comment":null},{"id":"52c4b946-b8aa-4b80-a2a8-ad5e66266520","data":"1.2.3.4","name":"www","priority":10,"ttl":3600,"type":"A","comment":null}]}'
     headers:
       Content-Length:
       - "424"
@@ -616,7 +616,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Tue, 15 Feb 2022 15:31:20 GMT
+      - Thu, 17 Feb 2022 13:34:25 GMT
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -626,7 +626,7 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - 740123e6-1d40-4224-88a0-5431db32b1e0
+      - b5d0da45-7d34-4acc-836a-8d2d7e1a4f6a
     status: 200 OK
     code: 200
     duration: ""
@@ -640,7 +640,7 @@ interactions:
     url: https://api.scaleway.com/domain/v2beta1/dns-zones?dns_zone=test-data-source.scaleway-terraform.com&domain=&order_by=domain_asc&page=1
     method: GET
   response:
-    body: '{"total_count":1,"dns_zones":[{"domain":"scaleway-terraform.com","subdomain":"test-data-source","ns":["ns0.dom.scw.cloud","ns1.dom.scw.cloud"],"ns_default":["ns0.dom.scw.cloud","ns1.dom.scw.cloud"],"ns_master":[],"status":"pending","message":null,"updated_at":"2022-02-15T15:31:18Z","project_id":"951df375-e094-4d26-97c1-ba548eeb9c42"}]}'
+    body: '{"total_count":1,"dns_zones":[{"domain":"scaleway-terraform.com","subdomain":"test-data-source","ns":["ns0.dom.scw.cloud","ns1.dom.scw.cloud"],"ns_default":["ns0.dom.scw.cloud","ns1.dom.scw.cloud"],"ns_master":[],"status":"pending","message":null,"updated_at":"2022-02-17T13:34:22Z","project_id":"105bdce1-64c0-48ab-899d-868455867ecf"}]}'
     headers:
       Content-Length:
       - "337"
@@ -649,7 +649,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Tue, 15 Feb 2022 15:31:21 GMT
+      - Thu, 17 Feb 2022 13:34:25 GMT
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -659,7 +659,7 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - 797a7785-ce7a-4fa1-a725-9e78c0825f34
+      - c4b73f50-c9d4-48e7-b62d-c18d2a022297
     status: 200 OK
     code: 200
     duration: ""
@@ -673,7 +673,7 @@ interactions:
     url: https://api.scaleway.com/domain/v2beta1/dns-zones/test-data-source.scaleway-terraform.com/records?name=&order_by=name_asc&page=1&type=unknown
     method: GET
   response:
-    body: '{"total_count":3,"records":[{"id":"49c499ee-9e65-44f7-a5df-c9ac599412d0","data":"ns0.dom.scw.cloud.","name":"","priority":0,"ttl":600,"type":"NS","comment":null},{"id":"0b5ae61f-7380-4de6-bbc6-b68420196aea","data":"ns1.dom.scw.cloud.","name":"","priority":0,"ttl":600,"type":"NS","comment":null},{"id":"6788b77f-edd1-40fb-afb0-5c9894feaa40","data":"1.2.3.4","name":"www","priority":10,"ttl":3600,"type":"A","comment":null}]}'
+    body: '{"total_count":3,"records":[{"id":"261f2383-c24d-484c-a032-0924e029c01d","data":"ns0.dom.scw.cloud.","name":"","priority":0,"ttl":600,"type":"NS","comment":null},{"id":"79648c07-400e-4867-8e29-96d86114b736","data":"ns1.dom.scw.cloud.","name":"","priority":0,"ttl":600,"type":"NS","comment":null},{"id":"52c4b946-b8aa-4b80-a2a8-ad5e66266520","data":"1.2.3.4","name":"www","priority":10,"ttl":3600,"type":"A","comment":null}]}'
     headers:
       Content-Length:
       - "424"
@@ -682,7 +682,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Tue, 15 Feb 2022 15:31:21 GMT
+      - Thu, 17 Feb 2022 13:34:25 GMT
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -692,7 +692,7 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - 3c38ac8d-da49-4fa3-a0de-2df26ab9df80
+      - 3feb182b-2e88-4e8c-8747-ac7106e36b86
     status: 200 OK
     code: 200
     duration: ""
@@ -706,7 +706,7 @@ interactions:
     url: https://api.scaleway.com/domain/v2beta1/dns-zones?dns_zone=test-data-source.scaleway-terraform.com&domain=&order_by=domain_asc&page=1
     method: GET
   response:
-    body: '{"total_count":1,"dns_zones":[{"domain":"scaleway-terraform.com","subdomain":"test-data-source","ns":["ns0.dom.scw.cloud","ns1.dom.scw.cloud"],"ns_default":["ns0.dom.scw.cloud","ns1.dom.scw.cloud"],"ns_master":[],"status":"pending","message":null,"updated_at":"2022-02-15T15:31:18Z","project_id":"951df375-e094-4d26-97c1-ba548eeb9c42"}]}'
+    body: '{"total_count":1,"dns_zones":[{"domain":"scaleway-terraform.com","subdomain":"test-data-source","ns":["ns0.dom.scw.cloud","ns1.dom.scw.cloud"],"ns_default":["ns0.dom.scw.cloud","ns1.dom.scw.cloud"],"ns_master":[],"status":"pending","message":null,"updated_at":"2022-02-17T13:34:22Z","project_id":"105bdce1-64c0-48ab-899d-868455867ecf"}]}'
     headers:
       Content-Length:
       - "337"
@@ -715,7 +715,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Tue, 15 Feb 2022 15:31:21 GMT
+      - Thu, 17 Feb 2022 13:34:25 GMT
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -725,7 +725,7 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - f265aab0-221d-44ef-af70-1e2110351f2e
+      - a5a63b1b-0769-45bd-9f93-01a12439bc56
     status: 200 OK
     code: 200
     duration: ""
@@ -739,7 +739,7 @@ interactions:
     url: https://api.scaleway.com/domain/v2beta1/dns-zones/test-data-source.scaleway-terraform.com/records?name=&order_by=name_asc&page=1&type=unknown
     method: GET
   response:
-    body: '{"total_count":3,"records":[{"id":"49c499ee-9e65-44f7-a5df-c9ac599412d0","data":"ns0.dom.scw.cloud.","name":"","priority":0,"ttl":600,"type":"NS","comment":null},{"id":"0b5ae61f-7380-4de6-bbc6-b68420196aea","data":"ns1.dom.scw.cloud.","name":"","priority":0,"ttl":600,"type":"NS","comment":null},{"id":"6788b77f-edd1-40fb-afb0-5c9894feaa40","data":"1.2.3.4","name":"www","priority":10,"ttl":3600,"type":"A","comment":null}]}'
+    body: '{"total_count":3,"records":[{"id":"261f2383-c24d-484c-a032-0924e029c01d","data":"ns0.dom.scw.cloud.","name":"","priority":0,"ttl":600,"type":"NS","comment":null},{"id":"79648c07-400e-4867-8e29-96d86114b736","data":"ns1.dom.scw.cloud.","name":"","priority":0,"ttl":600,"type":"NS","comment":null},{"id":"52c4b946-b8aa-4b80-a2a8-ad5e66266520","data":"1.2.3.4","name":"www","priority":10,"ttl":3600,"type":"A","comment":null}]}'
     headers:
       Content-Length:
       - "424"
@@ -748,7 +748,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Tue, 15 Feb 2022 15:31:21 GMT
+      - Thu, 17 Feb 2022 13:34:26 GMT
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -758,7 +758,7 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - 24097c25-06be-4de0-9648-15874371ab49
+      - 99681edc-675a-419a-a445-316d0862705c
     status: 200 OK
     code: 200
     duration: ""
@@ -772,7 +772,7 @@ interactions:
     url: https://api.scaleway.com/domain/v2beta1/dns-zones/test-data-source.scaleway-terraform.com/records?name=www&order_by=name_asc&page=1&type=A
     method: GET
   response:
-    body: '{"total_count":1,"records":[{"id":"6788b77f-edd1-40fb-afb0-5c9894feaa40","data":"1.2.3.4","name":"www","priority":10,"ttl":3600,"type":"A","comment":null}]}'
+    body: '{"total_count":1,"records":[{"id":"52c4b946-b8aa-4b80-a2a8-ad5e66266520","data":"1.2.3.4","name":"www","priority":10,"ttl":3600,"type":"A","comment":null}]}'
     headers:
       Content-Length:
       - "156"
@@ -781,7 +781,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Tue, 15 Feb 2022 15:31:21 GMT
+      - Thu, 17 Feb 2022 13:34:26 GMT
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -791,7 +791,7 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - 226b848e-60b1-4609-a14b-baf1b4f65fa7
+      - 6a162736-ac48-4071-bf06-89a8da76fe78
     status: 200 OK
     code: 200
     duration: ""
@@ -805,16 +805,16 @@ interactions:
     url: https://api.scaleway.com/domain/v2beta1/dns-zones?dns_zone=test-data-source.scaleway-terraform.com&domain=&order_by=domain_asc&page=1
     method: GET
   response:
-    body: '{"total_count":1,"dns_zones":[{"domain":"scaleway-terraform.com","subdomain":"test-data-source","ns":["ns0.dom.scw.cloud","ns1.dom.scw.cloud"],"ns_default":["ns0.dom.scw.cloud","ns1.dom.scw.cloud"],"ns_master":[],"status":"pending","message":null,"updated_at":"2022-02-15T15:31:18Z","project_id":"951df375-e094-4d26-97c1-ba548eeb9c42"}]}'
+    body: '{"total_count":1,"dns_zones":[{"domain":"scaleway-terraform.com","subdomain":"test-data-source","ns":["ns0.dom.scw.cloud","ns1.dom.scw.cloud"],"ns_default":["ns0.dom.scw.cloud","ns1.dom.scw.cloud"],"ns_master":[],"status":"active","message":null,"updated_at":"2022-02-17T13:34:26Z","project_id":"105bdce1-64c0-48ab-899d-868455867ecf"}]}'
     headers:
       Content-Length:
-      - "337"
+      - "336"
       Content-Security-Policy:
       - default-src 'none'; frame-ancestors 'none'
       Content-Type:
       - application/json
       Date:
-      - Tue, 15 Feb 2022 15:31:21 GMT
+      - Thu, 17 Feb 2022 13:34:26 GMT
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -824,7 +824,7 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - 46ad4c18-df89-4b98-8293-0d49449b19ee
+      - 6816bf67-4656-4ad3-907b-918bea9e1a9f
     status: 200 OK
     code: 200
     duration: ""
@@ -838,7 +838,7 @@ interactions:
     url: https://api.scaleway.com/domain/v2beta1/dns-zones/test-data-source.scaleway-terraform.com/records?name=&order_by=name_asc&page=1&type=unknown
     method: GET
   response:
-    body: '{"total_count":3,"records":[{"id":"49c499ee-9e65-44f7-a5df-c9ac599412d0","data":"ns0.dom.scw.cloud.","name":"","priority":0,"ttl":600,"type":"NS","comment":null},{"id":"0b5ae61f-7380-4de6-bbc6-b68420196aea","data":"ns1.dom.scw.cloud.","name":"","priority":0,"ttl":600,"type":"NS","comment":null},{"id":"6788b77f-edd1-40fb-afb0-5c9894feaa40","data":"1.2.3.4","name":"www","priority":10,"ttl":3600,"type":"A","comment":null}]}'
+    body: '{"total_count":3,"records":[{"id":"261f2383-c24d-484c-a032-0924e029c01d","data":"ns0.dom.scw.cloud.","name":"","priority":0,"ttl":600,"type":"NS","comment":null},{"id":"79648c07-400e-4867-8e29-96d86114b736","data":"ns1.dom.scw.cloud.","name":"","priority":0,"ttl":600,"type":"NS","comment":null},{"id":"52c4b946-b8aa-4b80-a2a8-ad5e66266520","data":"1.2.3.4","name":"www","priority":10,"ttl":3600,"type":"A","comment":null}]}'
     headers:
       Content-Length:
       - "424"
@@ -847,7 +847,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Tue, 15 Feb 2022 15:31:21 GMT
+      - Thu, 17 Feb 2022 13:34:26 GMT
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -857,7 +857,7 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - dcca17d5-c159-40d4-8c97-6c1f3331ac89
+      - bae0cb2c-9981-4a8f-945e-8e359325de10
     status: 200 OK
     code: 200
     duration: ""
@@ -871,16 +871,16 @@ interactions:
     url: https://api.scaleway.com/domain/v2beta1/dns-zones?dns_zone=test-data-source.scaleway-terraform.com&domain=&order_by=domain_asc&page=1
     method: GET
   response:
-    body: '{"total_count":1,"dns_zones":[{"domain":"scaleway-terraform.com","subdomain":"test-data-source","ns":["ns0.dom.scw.cloud","ns1.dom.scw.cloud"],"ns_default":["ns0.dom.scw.cloud","ns1.dom.scw.cloud"],"ns_master":[],"status":"pending","message":null,"updated_at":"2022-02-15T15:31:18Z","project_id":"951df375-e094-4d26-97c1-ba548eeb9c42"}]}'
+    body: '{"total_count":1,"dns_zones":[{"domain":"scaleway-terraform.com","subdomain":"test-data-source","ns":["ns0.dom.scw.cloud","ns1.dom.scw.cloud"],"ns_default":["ns0.dom.scw.cloud","ns1.dom.scw.cloud"],"ns_master":[],"status":"active","message":null,"updated_at":"2022-02-17T13:34:26Z","project_id":"105bdce1-64c0-48ab-899d-868455867ecf"}]}'
     headers:
       Content-Length:
-      - "337"
+      - "336"
       Content-Security-Policy:
       - default-src 'none'; frame-ancestors 'none'
       Content-Type:
       - application/json
       Date:
-      - Tue, 15 Feb 2022 15:31:21 GMT
+      - Thu, 17 Feb 2022 13:34:26 GMT
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -890,7 +890,7 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - 085740ce-2234-4b98-bc3c-f1875a144ba6
+      - 5eaaa059-9fb7-4cff-97fa-e21414bdf741
     status: 200 OK
     code: 200
     duration: ""
@@ -904,7 +904,7 @@ interactions:
     url: https://api.scaleway.com/domain/v2beta1/dns-zones/test-data-source.scaleway-terraform.com/records?name=www&order_by=name_asc&page=1&type=A
     method: GET
   response:
-    body: '{"total_count":1,"records":[{"id":"6788b77f-edd1-40fb-afb0-5c9894feaa40","data":"1.2.3.4","name":"www","priority":10,"ttl":3600,"type":"A","comment":null}]}'
+    body: '{"total_count":1,"records":[{"id":"52c4b946-b8aa-4b80-a2a8-ad5e66266520","data":"1.2.3.4","name":"www","priority":10,"ttl":3600,"type":"A","comment":null}]}'
     headers:
       Content-Length:
       - "156"
@@ -913,7 +913,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Tue, 15 Feb 2022 15:31:22 GMT
+      - Thu, 17 Feb 2022 13:34:27 GMT
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -923,7 +923,7 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - 1c02a278-79c2-4c77-8b7c-827e24a2c392
+      - d90340b8-349b-4be8-b1a8-ce52efe81312
     status: 200 OK
     code: 200
     duration: ""
@@ -937,16 +937,16 @@ interactions:
     url: https://api.scaleway.com/domain/v2beta1/dns-zones?dns_zone=test-data-source.scaleway-terraform.com&domain=&order_by=domain_asc&page=1
     method: GET
   response:
-    body: '{"total_count":1,"dns_zones":[{"domain":"scaleway-terraform.com","subdomain":"test-data-source","ns":["ns0.dom.scw.cloud","ns1.dom.scw.cloud"],"ns_default":["ns0.dom.scw.cloud","ns1.dom.scw.cloud"],"ns_master":[],"status":"pending","message":null,"updated_at":"2022-02-15T15:31:18Z","project_id":"951df375-e094-4d26-97c1-ba548eeb9c42"}]}'
+    body: '{"total_count":1,"dns_zones":[{"domain":"scaleway-terraform.com","subdomain":"test-data-source","ns":["ns0.dom.scw.cloud","ns1.dom.scw.cloud"],"ns_default":["ns0.dom.scw.cloud","ns1.dom.scw.cloud"],"ns_master":[],"status":"active","message":null,"updated_at":"2022-02-17T13:34:26Z","project_id":"105bdce1-64c0-48ab-899d-868455867ecf"}]}'
     headers:
       Content-Length:
-      - "337"
+      - "336"
       Content-Security-Policy:
       - default-src 'none'; frame-ancestors 'none'
       Content-Type:
       - application/json
       Date:
-      - Tue, 15 Feb 2022 15:31:22 GMT
+      - Thu, 17 Feb 2022 13:34:27 GMT
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -956,12 +956,12 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - df4a3b03-01cf-4b0d-bacd-0cc9e9249982
+      - 990a37ac-523a-4596-99c2-f9ed5e387b8a
     status: 200 OK
     code: 200
     duration: ""
 - request:
-    body: '{"changes":[{"delete":{"id":"6788b77f-edd1-40fb-afb0-5c9894feaa40"}}],"return_all_records":false,"disallow_new_zone_creation":false,"serial":null}'
+    body: '{"changes":[{"delete":{"id":"52c4b946-b8aa-4b80-a2a8-ad5e66266520"}}],"return_all_records":false,"disallow_new_zone_creation":false,"serial":null}'
     form: {}
     headers:
       Content-Type:
@@ -981,7 +981,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Tue, 15 Feb 2022 15:31:23 GMT
+      - Thu, 17 Feb 2022 13:34:28 GMT
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -991,7 +991,7 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - fb314734-0ac8-486b-b222-f24661466fd1
+      - 1716c106-d343-4020-9dca-a3c0e1102914
     status: 200 OK
     code: 200
     duration: ""
@@ -1005,7 +1005,7 @@ interactions:
     url: https://api.scaleway.com/domain/v2beta1/dns-zones/test-data-source.scaleway-terraform.com/records?name=&order_by=name_asc&type=unknown
     method: GET
   response:
-    body: '{"total_count":2,"records":[{"id":"49c499ee-9e65-44f7-a5df-c9ac599412d0","data":"ns0.dom.scw.cloud.","name":"","priority":0,"ttl":600,"type":"NS","comment":null},{"id":"0b5ae61f-7380-4de6-bbc6-b68420196aea","data":"ns1.dom.scw.cloud.","name":"","priority":0,"ttl":600,"type":"NS","comment":null}]}'
+    body: '{"total_count":2,"records":[{"id":"261f2383-c24d-484c-a032-0924e029c01d","data":"ns0.dom.scw.cloud.","name":"","priority":0,"ttl":600,"type":"NS","comment":null},{"id":"79648c07-400e-4867-8e29-96d86114b736","data":"ns1.dom.scw.cloud.","name":"","priority":0,"ttl":600,"type":"NS","comment":null}]}'
     headers:
       Content-Length:
       - "297"
@@ -1014,7 +1014,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Tue, 15 Feb 2022 15:31:23 GMT
+      - Thu, 17 Feb 2022 13:34:28 GMT
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -1024,7 +1024,40 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - d82bf815-83db-4fae-aec2-43ad9eafb7c9
+      - c5748155-e8e4-46ec-86db-bc8d5f66f291
+    status: 200 OK
+    code: 200
+    duration: ""
+- request:
+    body: ""
+    form: {}
+    headers:
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.17.6; linux; amd64) terraform-provider/develop
+        terraform/terraform-tests
+    url: https://api.scaleway.com/domain/v2beta1/dns-zones/test-data-source.scaleway-terraform.com?project_id=105bdce1-64c0-48ab-899d-868455867ecf
+    method: DELETE
+  response:
+    body: '{}'
+    headers:
+      Content-Length:
+      - "2"
+      Content-Security-Policy:
+      - default-src 'none'; frame-ancestors 'none'
+      Content-Type:
+      - application/json
+      Date:
+      - Thu, 17 Feb 2022 13:34:28 GMT
+      Server:
+      - Scaleway API-Gateway
+      Strict-Transport-Security:
+      - max-age=63072000
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+      X-Request-Id:
+      - 90070c92-fd35-416c-9705-4e5e6d228904
     status: 200 OK
     code: 200
     duration: ""
@@ -1040,7 +1073,7 @@ interactions:
     url: https://api.scaleway.com/domain/v2beta1/dns-zones/test-data-source-geo-ip.scaleway-terraform.com/records
     method: PATCH
   response:
-    body: '{"records":[{"id":"1d1ecc1e-2d3f-42b1-9bbe-f900a6aaeebe","data":"1.2.3.4","name":"tf_geo_ip","priority":0,"ttl":3600,"type":"A","comment":null,"geo_ip_config":{"matches":[{"countries":["FR"],"continents":["EU"],"data":"1.2.3.4"},{"countries":[],"continents":["NA"],"data":"1.2.3.5"}],"default":"1.2.3.4"}}]}'
+    body: '{"records":[{"id":"55ad7a1c-847a-4687-8265-5e18d3712016","data":"1.2.3.4","name":"tf_geo_ip","priority":0,"ttl":3600,"type":"A","comment":null,"geo_ip_config":{"matches":[{"countries":["FR"],"continents":["EU"],"data":"1.2.3.4"},{"countries":[],"continents":["NA"],"data":"1.2.3.5"}],"default":"1.2.3.4"}}]}'
     headers:
       Content-Length:
       - "307"
@@ -1049,7 +1082,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Tue, 15 Feb 2022 15:31:23 GMT
+      - Thu, 17 Feb 2022 13:34:28 GMT
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -1059,40 +1092,7 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - 222d2387-7bea-467b-94d6-5a70b46a5341
-    status: 200 OK
-    code: 200
-    duration: ""
-- request:
-    body: ""
-    form: {}
-    headers:
-      User-Agent:
-      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.17.6; linux; amd64) terraform-provider/develop
-        terraform/terraform-tests
-    url: https://api.scaleway.com/domain/v2beta1/dns-zones/test-data-source.scaleway-terraform.com?project_id=951df375-e094-4d26-97c1-ba548eeb9c42
-    method: DELETE
-  response:
-    body: '{}'
-    headers:
-      Content-Length:
-      - "2"
-      Content-Security-Policy:
-      - default-src 'none'; frame-ancestors 'none'
-      Content-Type:
-      - application/json
-      Date:
-      - Tue, 15 Feb 2022 15:31:23 GMT
-      Server:
-      - Scaleway API-Gateway
-      Strict-Transport-Security:
-      - max-age=63072000
-      X-Content-Type-Options:
-      - nosniff
-      X-Frame-Options:
-      - DENY
-      X-Request-Id:
-      - 1632e549-bed5-4140-9f45-057bd22ea065
+      - 836afc3a-5c93-434e-9870-0c46c40d1749
     status: 200 OK
     code: 200
     duration: ""
@@ -1106,7 +1106,7 @@ interactions:
     url: https://api.scaleway.com/domain/v2beta1/dns-zones/test-data-source-geo-ip.scaleway-terraform.com/records?name=tf_geo_ip&order_by=name_asc&page=1&type=A
     method: GET
   response:
-    body: '{"total_count":1,"records":[{"id":"1d1ecc1e-2d3f-42b1-9bbe-f900a6aaeebe","data":"1.2.3.4","name":"tf_geo_ip","priority":0,"ttl":3600,"type":"A","comment":null,"geo_ip_config":{"matches":[{"countries":["FR"],"continents":["EU"],"data":"1.2.3.4"},{"countries":[],"continents":["NA"],"data":"1.2.3.5"}],"default":"1.2.3.4"}}]}'
+    body: '{"total_count":1,"records":[{"id":"55ad7a1c-847a-4687-8265-5e18d3712016","data":"1.2.3.4","name":"tf_geo_ip","priority":0,"ttl":3600,"type":"A","comment":null,"geo_ip_config":{"matches":[{"countries":["FR"],"continents":["EU"],"data":"1.2.3.4"},{"countries":[],"continents":["NA"],"data":"1.2.3.5"}],"default":"1.2.3.4"}}]}'
     headers:
       Content-Length:
       - "323"
@@ -1115,7 +1115,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Tue, 15 Feb 2022 15:31:23 GMT
+      - Thu, 17 Feb 2022 13:34:29 GMT
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -1125,7 +1125,7 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - b6a5f43a-3e70-4666-9614-eaedb7024499
+      - 5711b695-1b9c-4d52-b3e7-56aa9cae34d5
     status: 200 OK
     code: 200
     duration: ""
@@ -1139,7 +1139,7 @@ interactions:
     url: https://api.scaleway.com/domain/v2beta1/dns-zones?dns_zone=test-data-source-geo-ip.scaleway-terraform.com&domain=&order_by=domain_asc&page=1
     method: GET
   response:
-    body: '{"total_count":1,"dns_zones":[{"domain":"scaleway-terraform.com","subdomain":"test-data-source-geo-ip","ns":["ns0.dom.scw.cloud","ns1.dom.scw.cloud"],"ns_default":["ns0.dom.scw.cloud","ns1.dom.scw.cloud"],"ns_master":[],"status":"pending","message":null,"updated_at":"2022-02-15T15:31:23Z","project_id":"951df375-e094-4d26-97c1-ba548eeb9c42"}]}'
+    body: '{"total_count":1,"dns_zones":[{"domain":"scaleway-terraform.com","subdomain":"test-data-source-geo-ip","ns":["ns0.dom.scw.cloud","ns1.dom.scw.cloud"],"ns_default":["ns0.dom.scw.cloud","ns1.dom.scw.cloud"],"ns_master":[],"status":"pending","message":null,"updated_at":"2022-02-17T13:34:28Z","project_id":"105bdce1-64c0-48ab-899d-868455867ecf"}]}'
     headers:
       Content-Length:
       - "344"
@@ -1148,7 +1148,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Tue, 15 Feb 2022 15:31:24 GMT
+      - Thu, 17 Feb 2022 13:34:29 GMT
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -1158,7 +1158,7 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - 5b95a9ae-52e5-4a39-ac1a-8ee45b6901a6
+      - 2be5d360-ea41-4173-adbc-8684ed3bebfd
     status: 200 OK
     code: 200
     duration: ""
@@ -1172,7 +1172,7 @@ interactions:
     url: https://api.scaleway.com/domain/v2beta1/dns-zones/test-data-source-geo-ip.scaleway-terraform.com/records?name=&order_by=name_asc&page=1&type=unknown
     method: GET
   response:
-    body: '{"total_count":3,"records":[{"id":"2bc00b81-b61e-4b83-b42f-772dc0d82754","data":"ns0.dom.scw.cloud.","name":"","priority":0,"ttl":600,"type":"NS","comment":null},{"id":"076a24b8-c322-406a-9fe1-6583194f2620","data":"ns1.dom.scw.cloud.","name":"","priority":0,"ttl":600,"type":"NS","comment":null},{"id":"1d1ecc1e-2d3f-42b1-9bbe-f900a6aaeebe","data":"1.2.3.4","name":"tf_geo_ip","priority":0,"ttl":3600,"type":"A","comment":null,"geo_ip_config":{"matches":[{"countries":["FR"],"continents":["EU"],"data":"1.2.3.4"},{"countries":[],"continents":["NA"],"data":"1.2.3.5"}],"default":"1.2.3.4"}}]}'
+    body: '{"total_count":3,"records":[{"id":"93800010-6e72-4de7-a822-964efcef8f32","data":"ns0.dom.scw.cloud.","name":"","priority":0,"ttl":600,"type":"NS","comment":null},{"id":"0202e2cc-a8ab-4487-a1c5-5f946e7ccfda","data":"ns1.dom.scw.cloud.","name":"","priority":0,"ttl":600,"type":"NS","comment":null},{"id":"55ad7a1c-847a-4687-8265-5e18d3712016","data":"1.2.3.4","name":"tf_geo_ip","priority":0,"ttl":3600,"type":"A","comment":null,"geo_ip_config":{"matches":[{"countries":["FR"],"continents":["EU"],"data":"1.2.3.4"},{"countries":[],"continents":["NA"],"data":"1.2.3.5"}],"default":"1.2.3.4"}}]}'
     headers:
       Content-Length:
       - "591"
@@ -1181,7 +1181,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Tue, 15 Feb 2022 15:31:24 GMT
+      - Thu, 17 Feb 2022 13:34:29 GMT
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -1191,7 +1191,7 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - 9a46fe9e-fb02-4a86-a2e3-37b4f2edb798
+      - 17280b9b-403f-4eb9-853b-b8a10979fbb8
     status: 200 OK
     code: 200
     duration: ""
@@ -1205,7 +1205,7 @@ interactions:
     url: https://api.scaleway.com/domain/v2beta1/dns-zones?dns_zone=test-data-source-geo-ip.scaleway-terraform.com&domain=&order_by=domain_asc&page=1
     method: GET
   response:
-    body: '{"total_count":1,"dns_zones":[{"domain":"scaleway-terraform.com","subdomain":"test-data-source-geo-ip","ns":["ns0.dom.scw.cloud","ns1.dom.scw.cloud"],"ns_default":["ns0.dom.scw.cloud","ns1.dom.scw.cloud"],"ns_master":[],"status":"pending","message":null,"updated_at":"2022-02-15T15:31:23Z","project_id":"951df375-e094-4d26-97c1-ba548eeb9c42"}]}'
+    body: '{"total_count":1,"dns_zones":[{"domain":"scaleway-terraform.com","subdomain":"test-data-source-geo-ip","ns":["ns0.dom.scw.cloud","ns1.dom.scw.cloud"],"ns_default":["ns0.dom.scw.cloud","ns1.dom.scw.cloud"],"ns_master":[],"status":"pending","message":null,"updated_at":"2022-02-17T13:34:28Z","project_id":"105bdce1-64c0-48ab-899d-868455867ecf"}]}'
     headers:
       Content-Length:
       - "344"
@@ -1214,7 +1214,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Tue, 15 Feb 2022 15:31:24 GMT
+      - Thu, 17 Feb 2022 13:34:29 GMT
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -1224,7 +1224,7 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - 4750d309-6290-4d23-84b9-8eaa60d56811
+      - 77c3f91e-85b3-4bf9-b929-8511f03d5861
     status: 200 OK
     code: 200
     duration: ""
@@ -1238,7 +1238,7 @@ interactions:
     url: https://api.scaleway.com/domain/v2beta1/dns-zones/test-data-source-geo-ip.scaleway-terraform.com/records?name=&order_by=name_asc&type=unknown
     method: GET
   response:
-    body: '{"total_count":3,"records":[{"id":"2bc00b81-b61e-4b83-b42f-772dc0d82754","data":"ns0.dom.scw.cloud.","name":"","priority":0,"ttl":600,"type":"NS","comment":null},{"id":"076a24b8-c322-406a-9fe1-6583194f2620","data":"ns1.dom.scw.cloud.","name":"","priority":0,"ttl":600,"type":"NS","comment":null},{"id":"1d1ecc1e-2d3f-42b1-9bbe-f900a6aaeebe","data":"1.2.3.4","name":"tf_geo_ip","priority":0,"ttl":3600,"type":"A","comment":null,"geo_ip_config":{"matches":[{"countries":["FR"],"continents":["EU"],"data":"1.2.3.4"},{"countries":[],"continents":["NA"],"data":"1.2.3.5"}],"default":"1.2.3.4"}}]}'
+    body: '{"total_count":3,"records":[{"id":"93800010-6e72-4de7-a822-964efcef8f32","data":"ns0.dom.scw.cloud.","name":"","priority":0,"ttl":600,"type":"NS","comment":null},{"id":"0202e2cc-a8ab-4487-a1c5-5f946e7ccfda","data":"ns1.dom.scw.cloud.","name":"","priority":0,"ttl":600,"type":"NS","comment":null},{"id":"55ad7a1c-847a-4687-8265-5e18d3712016","data":"1.2.3.4","name":"tf_geo_ip","priority":0,"ttl":3600,"type":"A","comment":null,"geo_ip_config":{"matches":[{"countries":["FR"],"continents":["EU"],"data":"1.2.3.4"},{"countries":[],"continents":["NA"],"data":"1.2.3.5"}],"default":"1.2.3.4"}}]}'
     headers:
       Content-Length:
       - "591"
@@ -1247,7 +1247,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Tue, 15 Feb 2022 15:31:24 GMT
+      - Thu, 17 Feb 2022 13:34:29 GMT
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -1257,7 +1257,7 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - d19d1f40-369b-4527-9979-9e221834c3f3
+      - 6c4116ea-6e88-4688-8202-5c71b338ae02
     status: 200 OK
     code: 200
     duration: ""
@@ -1271,7 +1271,7 @@ interactions:
     url: https://api.scaleway.com/domain/v2beta1/dns-zones/test-data-source-geo-ip.scaleway-terraform.com/records?name=&order_by=name_asc&page=1&type=unknown
     method: GET
   response:
-    body: '{"total_count":3,"records":[{"id":"2bc00b81-b61e-4b83-b42f-772dc0d82754","data":"ns0.dom.scw.cloud.","name":"","priority":0,"ttl":600,"type":"NS","comment":null},{"id":"076a24b8-c322-406a-9fe1-6583194f2620","data":"ns1.dom.scw.cloud.","name":"","priority":0,"ttl":600,"type":"NS","comment":null},{"id":"1d1ecc1e-2d3f-42b1-9bbe-f900a6aaeebe","data":"1.2.3.4","name":"tf_geo_ip","priority":0,"ttl":3600,"type":"A","comment":null,"geo_ip_config":{"matches":[{"countries":["FR"],"continents":["EU"],"data":"1.2.3.4"},{"countries":[],"continents":["NA"],"data":"1.2.3.5"}],"default":"1.2.3.4"}}]}'
+    body: '{"total_count":3,"records":[{"id":"93800010-6e72-4de7-a822-964efcef8f32","data":"ns0.dom.scw.cloud.","name":"","priority":0,"ttl":600,"type":"NS","comment":null},{"id":"0202e2cc-a8ab-4487-a1c5-5f946e7ccfda","data":"ns1.dom.scw.cloud.","name":"","priority":0,"ttl":600,"type":"NS","comment":null},{"id":"55ad7a1c-847a-4687-8265-5e18d3712016","data":"1.2.3.4","name":"tf_geo_ip","priority":0,"ttl":3600,"type":"A","comment":null,"geo_ip_config":{"matches":[{"countries":["FR"],"continents":["EU"],"data":"1.2.3.4"},{"countries":[],"continents":["NA"],"data":"1.2.3.5"}],"default":"1.2.3.4"}}]}'
     headers:
       Content-Length:
       - "591"
@@ -1280,7 +1280,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Tue, 15 Feb 2022 15:31:24 GMT
+      - Thu, 17 Feb 2022 13:34:30 GMT
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -1290,7 +1290,7 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - c6d125d6-0688-4001-af4e-47c4f077de51
+      - 098686af-1065-47fa-8fed-a7f67eb1c19c
     status: 200 OK
     code: 200
     duration: ""
@@ -1304,7 +1304,7 @@ interactions:
     url: https://api.scaleway.com/domain/v2beta1/dns-zones?dns_zone=test-data-source-geo-ip.scaleway-terraform.com&domain=&order_by=domain_asc&page=1
     method: GET
   response:
-    body: '{"total_count":1,"dns_zones":[{"domain":"scaleway-terraform.com","subdomain":"test-data-source-geo-ip","ns":["ns0.dom.scw.cloud","ns1.dom.scw.cloud"],"ns_default":["ns0.dom.scw.cloud","ns1.dom.scw.cloud"],"ns_master":[],"status":"pending","message":null,"updated_at":"2022-02-15T15:31:23Z","project_id":"951df375-e094-4d26-97c1-ba548eeb9c42"}]}'
+    body: '{"total_count":1,"dns_zones":[{"domain":"scaleway-terraform.com","subdomain":"test-data-source-geo-ip","ns":["ns0.dom.scw.cloud","ns1.dom.scw.cloud"],"ns_default":["ns0.dom.scw.cloud","ns1.dom.scw.cloud"],"ns_master":[],"status":"pending","message":null,"updated_at":"2022-02-17T13:34:28Z","project_id":"105bdce1-64c0-48ab-899d-868455867ecf"}]}'
     headers:
       Content-Length:
       - "344"
@@ -1313,7 +1313,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Tue, 15 Feb 2022 15:31:24 GMT
+      - Thu, 17 Feb 2022 13:34:30 GMT
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -1323,7 +1323,7 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - 351f3cb0-e361-4f94-bb42-018b77d37788
+      - 6a447474-8438-4618-afa1-4095bec4f8cd
     status: 200 OK
     code: 200
     duration: ""
@@ -1337,7 +1337,7 @@ interactions:
     url: https://api.scaleway.com/domain/v2beta1/dns-zones/test-data-source-geo-ip.scaleway-terraform.com/records?name=tf_geo_ip&order_by=name_asc&page=1&type=A
     method: GET
   response:
-    body: '{"total_count":1,"records":[{"id":"1d1ecc1e-2d3f-42b1-9bbe-f900a6aaeebe","data":"1.2.3.4","name":"tf_geo_ip","priority":0,"ttl":3600,"type":"A","comment":null,"geo_ip_config":{"matches":[{"countries":["FR"],"continents":["EU"],"data":"1.2.3.4"},{"countries":[],"continents":["NA"],"data":"1.2.3.5"}],"default":"1.2.3.4"}}]}'
+    body: '{"total_count":1,"records":[{"id":"55ad7a1c-847a-4687-8265-5e18d3712016","data":"1.2.3.4","name":"tf_geo_ip","priority":0,"ttl":3600,"type":"A","comment":null,"geo_ip_config":{"matches":[{"countries":["FR"],"continents":["EU"],"data":"1.2.3.4"},{"countries":[],"continents":["NA"],"data":"1.2.3.5"}],"default":"1.2.3.4"}}]}'
     headers:
       Content-Length:
       - "323"
@@ -1346,7 +1346,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Tue, 15 Feb 2022 15:31:25 GMT
+      - Thu, 17 Feb 2022 13:34:30 GMT
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -1356,7 +1356,7 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - 5e6bd816-b51b-4d2d-8870-fd4745a35c49
+      - 5070500c-60ce-4e67-bc9e-b8dbc428b16a
     status: 200 OK
     code: 200
     duration: ""
@@ -1370,7 +1370,7 @@ interactions:
     url: https://api.scaleway.com/domain/v2beta1/dns-zones?dns_zone=test-data-source-geo-ip.scaleway-terraform.com&domain=&order_by=domain_asc&page=1
     method: GET
   response:
-    body: '{"total_count":1,"dns_zones":[{"domain":"scaleway-terraform.com","subdomain":"test-data-source-geo-ip","ns":["ns0.dom.scw.cloud","ns1.dom.scw.cloud"],"ns_default":["ns0.dom.scw.cloud","ns1.dom.scw.cloud"],"ns_master":[],"status":"pending","message":null,"updated_at":"2022-02-15T15:31:23Z","project_id":"951df375-e094-4d26-97c1-ba548eeb9c42"}]}'
+    body: '{"total_count":1,"dns_zones":[{"domain":"scaleway-terraform.com","subdomain":"test-data-source-geo-ip","ns":["ns0.dom.scw.cloud","ns1.dom.scw.cloud"],"ns_default":["ns0.dom.scw.cloud","ns1.dom.scw.cloud"],"ns_master":[],"status":"pending","message":null,"updated_at":"2022-02-17T13:34:28Z","project_id":"105bdce1-64c0-48ab-899d-868455867ecf"}]}'
     headers:
       Content-Length:
       - "344"
@@ -1379,7 +1379,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Tue, 15 Feb 2022 15:31:25 GMT
+      - Thu, 17 Feb 2022 13:34:30 GMT
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -1389,7 +1389,7 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - b1c4e05f-d3e4-4733-9513-803371fca781
+      - 49c061e5-5909-4342-99b0-08c8a87dc5d1
     status: 200 OK
     code: 200
     duration: ""
@@ -1403,7 +1403,7 @@ interactions:
     url: https://api.scaleway.com/domain/v2beta1/dns-zones/test-data-source-geo-ip.scaleway-terraform.com/records?name=&order_by=name_asc&page=1&type=unknown
     method: GET
   response:
-    body: '{"total_count":3,"records":[{"id":"2bc00b81-b61e-4b83-b42f-772dc0d82754","data":"ns0.dom.scw.cloud.","name":"","priority":0,"ttl":600,"type":"NS","comment":null},{"id":"076a24b8-c322-406a-9fe1-6583194f2620","data":"ns1.dom.scw.cloud.","name":"","priority":0,"ttl":600,"type":"NS","comment":null},{"id":"1d1ecc1e-2d3f-42b1-9bbe-f900a6aaeebe","data":"1.2.3.4","name":"tf_geo_ip","priority":0,"ttl":3600,"type":"A","comment":null,"geo_ip_config":{"matches":[{"countries":["FR"],"continents":["EU"],"data":"1.2.3.4"},{"countries":[],"continents":["NA"],"data":"1.2.3.5"}],"default":"1.2.3.4"}}]}'
+    body: '{"total_count":3,"records":[{"id":"93800010-6e72-4de7-a822-964efcef8f32","data":"ns0.dom.scw.cloud.","name":"","priority":0,"ttl":600,"type":"NS","comment":null},{"id":"0202e2cc-a8ab-4487-a1c5-5f946e7ccfda","data":"ns1.dom.scw.cloud.","name":"","priority":0,"ttl":600,"type":"NS","comment":null},{"id":"55ad7a1c-847a-4687-8265-5e18d3712016","data":"1.2.3.4","name":"tf_geo_ip","priority":0,"ttl":3600,"type":"A","comment":null,"geo_ip_config":{"matches":[{"countries":["FR"],"continents":["EU"],"data":"1.2.3.4"},{"countries":[],"continents":["NA"],"data":"1.2.3.5"}],"default":"1.2.3.4"}}]}'
     headers:
       Content-Length:
       - "591"
@@ -1412,7 +1412,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Tue, 15 Feb 2022 15:31:25 GMT
+      - Thu, 17 Feb 2022 13:34:30 GMT
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -1422,7 +1422,7 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - 3d885ba0-e7fc-48bd-93f8-966e25fa9cf6
+      - 0e7817c3-0c95-436c-86a6-01f6f7ea2879
     status: 200 OK
     code: 200
     duration: ""
@@ -1436,7 +1436,7 @@ interactions:
     url: https://api.scaleway.com/domain/v2beta1/dns-zones?dns_zone=test-data-source-geo-ip.scaleway-terraform.com&domain=&order_by=domain_asc&page=1
     method: GET
   response:
-    body: '{"total_count":1,"dns_zones":[{"domain":"scaleway-terraform.com","subdomain":"test-data-source-geo-ip","ns":["ns0.dom.scw.cloud","ns1.dom.scw.cloud"],"ns_default":["ns0.dom.scw.cloud","ns1.dom.scw.cloud"],"ns_master":[],"status":"pending","message":null,"updated_at":"2022-02-15T15:31:23Z","project_id":"951df375-e094-4d26-97c1-ba548eeb9c42"}]}'
+    body: '{"total_count":1,"dns_zones":[{"domain":"scaleway-terraform.com","subdomain":"test-data-source-geo-ip","ns":["ns0.dom.scw.cloud","ns1.dom.scw.cloud"],"ns_default":["ns0.dom.scw.cloud","ns1.dom.scw.cloud"],"ns_master":[],"status":"pending","message":null,"updated_at":"2022-02-17T13:34:28Z","project_id":"105bdce1-64c0-48ab-899d-868455867ecf"}]}'
     headers:
       Content-Length:
       - "344"
@@ -1445,7 +1445,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Tue, 15 Feb 2022 15:31:25 GMT
+      - Thu, 17 Feb 2022 13:34:30 GMT
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -1455,7 +1455,7 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - 0e5178e3-2f79-4f0f-9715-edf697399828
+      - 3b70b824-63d4-47d3-96cd-fdd55a07069d
     status: 200 OK
     code: 200
     duration: ""
@@ -1469,7 +1469,7 @@ interactions:
     url: https://api.scaleway.com/domain/v2beta1/dns-zones/test-data-source-geo-ip.scaleway-terraform.com/records?name=&order_by=name_asc&page=1&type=unknown
     method: GET
   response:
-    body: '{"total_count":3,"records":[{"id":"2bc00b81-b61e-4b83-b42f-772dc0d82754","data":"ns0.dom.scw.cloud.","name":"","priority":0,"ttl":600,"type":"NS","comment":null},{"id":"076a24b8-c322-406a-9fe1-6583194f2620","data":"ns1.dom.scw.cloud.","name":"","priority":0,"ttl":600,"type":"NS","comment":null},{"id":"1d1ecc1e-2d3f-42b1-9bbe-f900a6aaeebe","data":"1.2.3.4","name":"tf_geo_ip","priority":0,"ttl":3600,"type":"A","comment":null,"geo_ip_config":{"matches":[{"countries":["FR"],"continents":["EU"],"data":"1.2.3.4"},{"countries":[],"continents":["NA"],"data":"1.2.3.5"}],"default":"1.2.3.4"}}]}'
+    body: '{"total_count":3,"records":[{"id":"93800010-6e72-4de7-a822-964efcef8f32","data":"ns0.dom.scw.cloud.","name":"","priority":0,"ttl":600,"type":"NS","comment":null},{"id":"0202e2cc-a8ab-4487-a1c5-5f946e7ccfda","data":"ns1.dom.scw.cloud.","name":"","priority":0,"ttl":600,"type":"NS","comment":null},{"id":"55ad7a1c-847a-4687-8265-5e18d3712016","data":"1.2.3.4","name":"tf_geo_ip","priority":0,"ttl":3600,"type":"A","comment":null,"geo_ip_config":{"matches":[{"countries":["FR"],"continents":["EU"],"data":"1.2.3.4"},{"countries":[],"continents":["NA"],"data":"1.2.3.5"}],"default":"1.2.3.4"}}]}'
     headers:
       Content-Length:
       - "591"
@@ -1478,7 +1478,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Tue, 15 Feb 2022 15:31:26 GMT
+      - Thu, 17 Feb 2022 13:34:31 GMT
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -1488,7 +1488,7 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - 23ea518c-0754-4989-898d-373c0ded1762
+      - 2e83f88d-e80a-433f-8c7e-40388fd442d8
     status: 200 OK
     code: 200
     duration: ""
@@ -1502,7 +1502,7 @@ interactions:
     url: https://api.scaleway.com/domain/v2beta1/dns-zones?dns_zone=test-data-source-geo-ip.scaleway-terraform.com&domain=&order_by=domain_asc&page=1
     method: GET
   response:
-    body: '{"total_count":1,"dns_zones":[{"domain":"scaleway-terraform.com","subdomain":"test-data-source-geo-ip","ns":["ns0.dom.scw.cloud","ns1.dom.scw.cloud"],"ns_default":["ns0.dom.scw.cloud","ns1.dom.scw.cloud"],"ns_master":[],"status":"pending","message":null,"updated_at":"2022-02-15T15:31:23Z","project_id":"951df375-e094-4d26-97c1-ba548eeb9c42"}]}'
+    body: '{"total_count":1,"dns_zones":[{"domain":"scaleway-terraform.com","subdomain":"test-data-source-geo-ip","ns":["ns0.dom.scw.cloud","ns1.dom.scw.cloud"],"ns_default":["ns0.dom.scw.cloud","ns1.dom.scw.cloud"],"ns_master":[],"status":"pending","message":null,"updated_at":"2022-02-17T13:34:28Z","project_id":"105bdce1-64c0-48ab-899d-868455867ecf"}]}'
     headers:
       Content-Length:
       - "344"
@@ -1511,7 +1511,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Tue, 15 Feb 2022 15:31:26 GMT
+      - Thu, 17 Feb 2022 13:34:31 GMT
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -1521,7 +1521,7 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - ff5e1a67-7f10-4429-8624-812718aa807e
+      - 69a86d65-2455-498e-9165-ff240024c5ea
     status: 200 OK
     code: 200
     duration: ""
@@ -1535,7 +1535,7 @@ interactions:
     url: https://api.scaleway.com/domain/v2beta1/dns-zones/test-data-source-geo-ip.scaleway-terraform.com/records?name=tf_geo_ip&order_by=name_asc&page=1&type=A
     method: GET
   response:
-    body: '{"total_count":1,"records":[{"id":"1d1ecc1e-2d3f-42b1-9bbe-f900a6aaeebe","data":"1.2.3.4","name":"tf_geo_ip","priority":0,"ttl":3600,"type":"A","comment":null,"geo_ip_config":{"matches":[{"countries":["FR"],"continents":["EU"],"data":"1.2.3.4"},{"countries":[],"continents":["NA"],"data":"1.2.3.5"}],"default":"1.2.3.4"}}]}'
+    body: '{"total_count":1,"records":[{"id":"55ad7a1c-847a-4687-8265-5e18d3712016","data":"1.2.3.4","name":"tf_geo_ip","priority":0,"ttl":3600,"type":"A","comment":null,"geo_ip_config":{"matches":[{"countries":["FR"],"continents":["EU"],"data":"1.2.3.4"},{"countries":[],"continents":["NA"],"data":"1.2.3.5"}],"default":"1.2.3.4"}}]}'
     headers:
       Content-Length:
       - "323"
@@ -1544,7 +1544,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Tue, 15 Feb 2022 15:31:26 GMT
+      - Thu, 17 Feb 2022 13:34:31 GMT
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -1554,7 +1554,7 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - fefef8a7-17e2-482d-ad56-d40da8171baa
+      - 28131abc-0e20-4454-a1bd-32c4cf66c684
     status: 200 OK
     code: 200
     duration: ""
@@ -1568,7 +1568,7 @@ interactions:
     url: https://api.scaleway.com/domain/v2beta1/dns-zones?dns_zone=test-data-source-geo-ip.scaleway-terraform.com&domain=&order_by=domain_asc&page=1
     method: GET
   response:
-    body: '{"total_count":1,"dns_zones":[{"domain":"scaleway-terraform.com","subdomain":"test-data-source-geo-ip","ns":["ns0.dom.scw.cloud","ns1.dom.scw.cloud"],"ns_default":["ns0.dom.scw.cloud","ns1.dom.scw.cloud"],"ns_master":[],"status":"pending","message":null,"updated_at":"2022-02-15T15:31:23Z","project_id":"951df375-e094-4d26-97c1-ba548eeb9c42"}]}'
+    body: '{"total_count":1,"dns_zones":[{"domain":"scaleway-terraform.com","subdomain":"test-data-source-geo-ip","ns":["ns0.dom.scw.cloud","ns1.dom.scw.cloud"],"ns_default":["ns0.dom.scw.cloud","ns1.dom.scw.cloud"],"ns_master":[],"status":"pending","message":null,"updated_at":"2022-02-17T13:34:28Z","project_id":"105bdce1-64c0-48ab-899d-868455867ecf"}]}'
     headers:
       Content-Length:
       - "344"
@@ -1577,7 +1577,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Tue, 15 Feb 2022 15:31:26 GMT
+      - Thu, 17 Feb 2022 13:34:31 GMT
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -1587,12 +1587,12 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - 214cec42-9ea0-4a3a-8a03-2afe68f8b1ba
+      - e92df0ba-6306-46df-b575-d488afe76392
     status: 200 OK
     code: 200
     duration: ""
 - request:
-    body: '{"changes":[{"delete":{"id":"1d1ecc1e-2d3f-42b1-9bbe-f900a6aaeebe"}}],"return_all_records":false,"disallow_new_zone_creation":false,"serial":null}'
+    body: '{"changes":[{"delete":{"id":"55ad7a1c-847a-4687-8265-5e18d3712016"}}],"return_all_records":false,"disallow_new_zone_creation":false,"serial":null}'
     form: {}
     headers:
       Content-Type:
@@ -1612,7 +1612,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Tue, 15 Feb 2022 15:31:27 GMT
+      - Thu, 17 Feb 2022 13:34:32 GMT
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -1622,7 +1622,7 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - 1a1e3e2b-9172-4142-a50c-2bd6443225c8
+      - e250772e-09e1-4857-84b5-7d82987bbea3
     status: 200 OK
     code: 200
     duration: ""
@@ -1636,7 +1636,7 @@ interactions:
     url: https://api.scaleway.com/domain/v2beta1/dns-zones/test-data-source-geo-ip.scaleway-terraform.com/records?name=&order_by=name_asc&type=unknown
     method: GET
   response:
-    body: '{"total_count":2,"records":[{"id":"2bc00b81-b61e-4b83-b42f-772dc0d82754","data":"ns0.dom.scw.cloud.","name":"","priority":0,"ttl":600,"type":"NS","comment":null},{"id":"076a24b8-c322-406a-9fe1-6583194f2620","data":"ns1.dom.scw.cloud.","name":"","priority":0,"ttl":600,"type":"NS","comment":null}]}'
+    body: '{"total_count":2,"records":[{"id":"93800010-6e72-4de7-a822-964efcef8f32","data":"ns0.dom.scw.cloud.","name":"","priority":0,"ttl":600,"type":"NS","comment":null},{"id":"0202e2cc-a8ab-4487-a1c5-5f946e7ccfda","data":"ns1.dom.scw.cloud.","name":"","priority":0,"ttl":600,"type":"NS","comment":null}]}'
     headers:
       Content-Length:
       - "297"
@@ -1645,7 +1645,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Tue, 15 Feb 2022 15:31:27 GMT
+      - Thu, 17 Feb 2022 13:34:32 GMT
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -1655,7 +1655,7 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - bb7b6877-c659-405b-82be-17ae99b3be52
+      - 24384c2a-4039-483f-b189-e68d3c5dccb5
     status: 200 OK
     code: 200
     duration: ""
@@ -1666,7 +1666,7 @@ interactions:
       User-Agent:
       - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.17.6; linux; amd64) terraform-provider/develop
         terraform/terraform-tests
-    url: https://api.scaleway.com/domain/v2beta1/dns-zones/test-data-source-geo-ip.scaleway-terraform.com?project_id=951df375-e094-4d26-97c1-ba548eeb9c42
+    url: https://api.scaleway.com/domain/v2beta1/dns-zones/test-data-source-geo-ip.scaleway-terraform.com?project_id=105bdce1-64c0-48ab-899d-868455867ecf
     method: DELETE
   response:
     body: '{}'
@@ -1678,7 +1678,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Tue, 15 Feb 2022 15:31:28 GMT
+      - Thu, 17 Feb 2022 13:34:33 GMT
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -1688,7 +1688,7 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - 150231ed-ae09-4652-b71b-58d1c1fc72ee
+      - ef900a3a-c165-436f-8d6f-254b536d8f7f
     status: 200 OK
     code: 200
     duration: ""
@@ -1704,7 +1704,7 @@ interactions:
     url: https://api.scaleway.com/domain/v2beta1/dns-zones/test-data-source-http-service.scaleway-terraform.com/records
     method: PATCH
   response:
-    body: '{"records":[{"id":"a2819759-4226-43e5-816d-68b0e6433437","data":"1.2.3.4","name":"tf_http_service","priority":0,"ttl":3600,"type":"A","comment":null,"http_service_config":{"ips":["1.2.3.4","4.3.2.1"],"must_contain":"up","url":"http://mywebsite.com/health","user_agent":"scw_service_up","strategy":"hashed"}}]}'
+    body: '{"records":[{"id":"45bc7dc3-65c5-471f-b8d0-a20cc6cd222b","data":"1.2.3.4","name":"tf_http_service","priority":0,"ttl":3600,"type":"A","comment":null,"http_service_config":{"ips":["1.2.3.4","4.3.2.1"],"must_contain":"up","url":"http://mywebsite.com/health","user_agent":"scw_service_up","strategy":"hashed"}}]}'
     headers:
       Content-Length:
       - "309"
@@ -1713,7 +1713,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Tue, 15 Feb 2022 15:31:28 GMT
+      - Thu, 17 Feb 2022 13:34:33 GMT
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -1723,7 +1723,7 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - 36867c4b-5b98-4cfb-b102-78a2c0ced561
+      - eec2eb00-84b9-4b6c-9662-c8931526abe9
     status: 200 OK
     code: 200
     duration: ""
@@ -1737,7 +1737,7 @@ interactions:
     url: https://api.scaleway.com/domain/v2beta1/dns-zones/test-data-source-http-service.scaleway-terraform.com/records?name=tf_http_service&order_by=name_asc&page=1&type=A
     method: GET
   response:
-    body: '{"total_count":1,"records":[{"id":"a2819759-4226-43e5-816d-68b0e6433437","data":"1.2.3.4","name":"tf_http_service","priority":0,"ttl":3600,"type":"A","comment":null,"http_service_config":{"ips":["1.2.3.4","4.3.2.1"],"must_contain":"up","url":"http://mywebsite.com/health","user_agent":"scw_service_up","strategy":"hashed"}}]}'
+    body: '{"total_count":1,"records":[{"id":"45bc7dc3-65c5-471f-b8d0-a20cc6cd222b","data":"1.2.3.4","name":"tf_http_service","priority":0,"ttl":3600,"type":"A","comment":null,"http_service_config":{"ips":["1.2.3.4","4.3.2.1"],"must_contain":"up","url":"http://mywebsite.com/health","user_agent":"scw_service_up","strategy":"hashed"}}]}'
     headers:
       Content-Length:
       - "325"
@@ -1746,7 +1746,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Tue, 15 Feb 2022 15:31:28 GMT
+      - Thu, 17 Feb 2022 13:34:33 GMT
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -1756,7 +1756,7 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - 49d2f85d-8c67-4880-b5f9-bc70180a9c90
+      - 06f728ff-0765-413b-b4c5-73834c46f3fe
     status: 200 OK
     code: 200
     duration: ""
@@ -1770,7 +1770,7 @@ interactions:
     url: https://api.scaleway.com/domain/v2beta1/dns-zones?dns_zone=test-data-source-http-service.scaleway-terraform.com&domain=&order_by=domain_asc&page=1
     method: GET
   response:
-    body: '{"total_count":1,"dns_zones":[{"domain":"scaleway-terraform.com","subdomain":"test-data-source-http-service","ns":["ns0.dom.scw.cloud","ns1.dom.scw.cloud"],"ns_default":["ns0.dom.scw.cloud","ns1.dom.scw.cloud"],"ns_master":[],"status":"pending","message":null,"updated_at":"2022-02-15T15:31:28Z","project_id":"951df375-e094-4d26-97c1-ba548eeb9c42"}]}'
+    body: '{"total_count":1,"dns_zones":[{"domain":"scaleway-terraform.com","subdomain":"test-data-source-http-service","ns":["ns0.dom.scw.cloud","ns1.dom.scw.cloud"],"ns_default":["ns0.dom.scw.cloud","ns1.dom.scw.cloud"],"ns_master":[],"status":"pending","message":null,"updated_at":"2022-02-17T13:34:33Z","project_id":"105bdce1-64c0-48ab-899d-868455867ecf"}]}'
     headers:
       Content-Length:
       - "350"
@@ -1779,7 +1779,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Tue, 15 Feb 2022 15:31:28 GMT
+      - Thu, 17 Feb 2022 13:34:33 GMT
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -1789,7 +1789,7 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - e951ed76-b729-43fe-942e-3a91b7cb14f1
+      - 3be51e56-e856-44f6-b4f1-db137278b334
     status: 200 OK
     code: 200
     duration: ""
@@ -1803,7 +1803,7 @@ interactions:
     url: https://api.scaleway.com/domain/v2beta1/dns-zones/test-data-source-http-service.scaleway-terraform.com/records?name=&order_by=name_asc&page=1&type=unknown
     method: GET
   response:
-    body: '{"total_count":3,"records":[{"id":"e714fb48-5c2c-4b8f-a545-daf70955f81e","data":"ns0.dom.scw.cloud.","name":"","priority":0,"ttl":600,"type":"NS","comment":null},{"id":"1747b26f-9822-496c-a6b0-d07fcc6b4358","data":"ns1.dom.scw.cloud.","name":"","priority":0,"ttl":600,"type":"NS","comment":null},{"id":"a2819759-4226-43e5-816d-68b0e6433437","data":"1.2.3.4","name":"tf_http_service","priority":0,"ttl":3600,"type":"A","comment":null,"http_service_config":{"ips":["1.2.3.4","4.3.2.1"],"must_contain":"up","url":"http://mywebsite.com/health","user_agent":"scw_service_up","strategy":"hashed"}}]}'
+    body: '{"total_count":3,"records":[{"id":"6d64c54e-f85c-4514-90ce-f6e26a5f4c44","data":"ns0.dom.scw.cloud.","name":"","priority":0,"ttl":600,"type":"NS","comment":null},{"id":"96f395fb-c7ed-4d54-9f1d-24c55dd0ef67","data":"ns1.dom.scw.cloud.","name":"","priority":0,"ttl":600,"type":"NS","comment":null},{"id":"45bc7dc3-65c5-471f-b8d0-a20cc6cd222b","data":"1.2.3.4","name":"tf_http_service","priority":0,"ttl":3600,"type":"A","comment":null,"http_service_config":{"ips":["1.2.3.4","4.3.2.1"],"must_contain":"up","url":"http://mywebsite.com/health","user_agent":"scw_service_up","strategy":"hashed"}}]}'
     headers:
       Content-Length:
       - "593"
@@ -1812,7 +1812,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Tue, 15 Feb 2022 15:31:28 GMT
+      - Thu, 17 Feb 2022 13:34:33 GMT
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -1822,7 +1822,7 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - bf4ebac0-1ccf-47fa-9173-10cbaed47602
+      - 3f0925ae-45cd-46f6-9134-68576c2f6c51
     status: 200 OK
     code: 200
     duration: ""
@@ -1836,7 +1836,7 @@ interactions:
     url: https://api.scaleway.com/domain/v2beta1/dns-zones?dns_zone=test-data-source-http-service.scaleway-terraform.com&domain=&order_by=domain_asc&page=1
     method: GET
   response:
-    body: '{"total_count":1,"dns_zones":[{"domain":"scaleway-terraform.com","subdomain":"test-data-source-http-service","ns":["ns0.dom.scw.cloud","ns1.dom.scw.cloud"],"ns_default":["ns0.dom.scw.cloud","ns1.dom.scw.cloud"],"ns_master":[],"status":"pending","message":null,"updated_at":"2022-02-15T15:31:28Z","project_id":"951df375-e094-4d26-97c1-ba548eeb9c42"}]}'
+    body: '{"total_count":1,"dns_zones":[{"domain":"scaleway-terraform.com","subdomain":"test-data-source-http-service","ns":["ns0.dom.scw.cloud","ns1.dom.scw.cloud"],"ns_default":["ns0.dom.scw.cloud","ns1.dom.scw.cloud"],"ns_master":[],"status":"pending","message":null,"updated_at":"2022-02-17T13:34:33Z","project_id":"105bdce1-64c0-48ab-899d-868455867ecf"}]}'
     headers:
       Content-Length:
       - "350"
@@ -1845,7 +1845,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Tue, 15 Feb 2022 15:31:28 GMT
+      - Thu, 17 Feb 2022 13:34:33 GMT
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -1855,7 +1855,7 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - 03785ebc-d912-4fe5-b9e4-85c8290c76e0
+      - df7e5374-855d-4b88-9fc3-bcc053773485
     status: 200 OK
     code: 200
     duration: ""
@@ -1869,7 +1869,7 @@ interactions:
     url: https://api.scaleway.com/domain/v2beta1/dns-zones/test-data-source-http-service.scaleway-terraform.com/records?name=&order_by=name_asc&type=unknown
     method: GET
   response:
-    body: '{"total_count":3,"records":[{"id":"e714fb48-5c2c-4b8f-a545-daf70955f81e","data":"ns0.dom.scw.cloud.","name":"","priority":0,"ttl":600,"type":"NS","comment":null},{"id":"1747b26f-9822-496c-a6b0-d07fcc6b4358","data":"ns1.dom.scw.cloud.","name":"","priority":0,"ttl":600,"type":"NS","comment":null},{"id":"a2819759-4226-43e5-816d-68b0e6433437","data":"1.2.3.4","name":"tf_http_service","priority":0,"ttl":3600,"type":"A","comment":null,"http_service_config":{"ips":["1.2.3.4","4.3.2.1"],"must_contain":"up","url":"http://mywebsite.com/health","user_agent":"scw_service_up","strategy":"hashed"}}]}'
+    body: '{"total_count":3,"records":[{"id":"6d64c54e-f85c-4514-90ce-f6e26a5f4c44","data":"ns0.dom.scw.cloud.","name":"","priority":0,"ttl":600,"type":"NS","comment":null},{"id":"96f395fb-c7ed-4d54-9f1d-24c55dd0ef67","data":"ns1.dom.scw.cloud.","name":"","priority":0,"ttl":600,"type":"NS","comment":null},{"id":"45bc7dc3-65c5-471f-b8d0-a20cc6cd222b","data":"1.2.3.4","name":"tf_http_service","priority":0,"ttl":3600,"type":"A","comment":null,"http_service_config":{"ips":["1.2.3.4","4.3.2.1"],"must_contain":"up","url":"http://mywebsite.com/health","user_agent":"scw_service_up","strategy":"hashed"}}]}'
     headers:
       Content-Length:
       - "593"
@@ -1878,7 +1878,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Tue, 15 Feb 2022 15:31:29 GMT
+      - Thu, 17 Feb 2022 13:34:34 GMT
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -1888,7 +1888,7 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - dc2a858d-8833-42cd-b14c-0beb12586e93
+      - b15304a9-5a51-44f4-a43a-f4a7fd93b85b
     status: 200 OK
     code: 200
     duration: ""
@@ -1902,7 +1902,7 @@ interactions:
     url: https://api.scaleway.com/domain/v2beta1/dns-zones/test-data-source-http-service.scaleway-terraform.com/records?name=&order_by=name_asc&page=1&type=unknown
     method: GET
   response:
-    body: '{"total_count":3,"records":[{"id":"e714fb48-5c2c-4b8f-a545-daf70955f81e","data":"ns0.dom.scw.cloud.","name":"","priority":0,"ttl":600,"type":"NS","comment":null},{"id":"1747b26f-9822-496c-a6b0-d07fcc6b4358","data":"ns1.dom.scw.cloud.","name":"","priority":0,"ttl":600,"type":"NS","comment":null},{"id":"a2819759-4226-43e5-816d-68b0e6433437","data":"1.2.3.4","name":"tf_http_service","priority":0,"ttl":3600,"type":"A","comment":null,"http_service_config":{"ips":["1.2.3.4","4.3.2.1"],"must_contain":"up","url":"http://mywebsite.com/health","user_agent":"scw_service_up","strategy":"hashed"}}]}'
+    body: '{"total_count":3,"records":[{"id":"6d64c54e-f85c-4514-90ce-f6e26a5f4c44","data":"ns0.dom.scw.cloud.","name":"","priority":0,"ttl":600,"type":"NS","comment":null},{"id":"96f395fb-c7ed-4d54-9f1d-24c55dd0ef67","data":"ns1.dom.scw.cloud.","name":"","priority":0,"ttl":600,"type":"NS","comment":null},{"id":"45bc7dc3-65c5-471f-b8d0-a20cc6cd222b","data":"1.2.3.4","name":"tf_http_service","priority":0,"ttl":3600,"type":"A","comment":null,"http_service_config":{"ips":["1.2.3.4","4.3.2.1"],"must_contain":"up","url":"http://mywebsite.com/health","user_agent":"scw_service_up","strategy":"hashed"}}]}'
     headers:
       Content-Length:
       - "593"
@@ -1911,7 +1911,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Tue, 15 Feb 2022 15:31:29 GMT
+      - Thu, 17 Feb 2022 13:34:34 GMT
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -1921,7 +1921,7 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - 27ef821c-f7fa-4f37-aa3f-370fa17cfad1
+      - 4b7f3c75-090a-477e-83cf-dc96c67faccf
     status: 200 OK
     code: 200
     duration: ""
@@ -1935,7 +1935,7 @@ interactions:
     url: https://api.scaleway.com/domain/v2beta1/dns-zones?dns_zone=test-data-source-http-service.scaleway-terraform.com&domain=&order_by=domain_asc&page=1
     method: GET
   response:
-    body: '{"total_count":1,"dns_zones":[{"domain":"scaleway-terraform.com","subdomain":"test-data-source-http-service","ns":["ns0.dom.scw.cloud","ns1.dom.scw.cloud"],"ns_default":["ns0.dom.scw.cloud","ns1.dom.scw.cloud"],"ns_master":[],"status":"pending","message":null,"updated_at":"2022-02-15T15:31:28Z","project_id":"951df375-e094-4d26-97c1-ba548eeb9c42"}]}'
+    body: '{"total_count":1,"dns_zones":[{"domain":"scaleway-terraform.com","subdomain":"test-data-source-http-service","ns":["ns0.dom.scw.cloud","ns1.dom.scw.cloud"],"ns_default":["ns0.dom.scw.cloud","ns1.dom.scw.cloud"],"ns_master":[],"status":"pending","message":null,"updated_at":"2022-02-17T13:34:33Z","project_id":"105bdce1-64c0-48ab-899d-868455867ecf"}]}'
     headers:
       Content-Length:
       - "350"
@@ -1944,7 +1944,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Tue, 15 Feb 2022 15:31:29 GMT
+      - Thu, 17 Feb 2022 13:34:34 GMT
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -1954,7 +1954,7 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - 268d0c03-5b52-46b9-bc97-69b4dc8f57f9
+      - 3bc8c54a-24db-4e78-8dc6-1a8bcf8f2121
     status: 200 OK
     code: 200
     duration: ""
@@ -1968,7 +1968,7 @@ interactions:
     url: https://api.scaleway.com/domain/v2beta1/dns-zones/test-data-source-http-service.scaleway-terraform.com/records?name=tf_http_service&order_by=name_asc&page=1&type=A
     method: GET
   response:
-    body: '{"total_count":1,"records":[{"id":"a2819759-4226-43e5-816d-68b0e6433437","data":"1.2.3.4","name":"tf_http_service","priority":0,"ttl":3600,"type":"A","comment":null,"http_service_config":{"ips":["1.2.3.4","4.3.2.1"],"must_contain":"up","url":"http://mywebsite.com/health","user_agent":"scw_service_up","strategy":"hashed"}}]}'
+    body: '{"total_count":1,"records":[{"id":"45bc7dc3-65c5-471f-b8d0-a20cc6cd222b","data":"1.2.3.4","name":"tf_http_service","priority":0,"ttl":3600,"type":"A","comment":null,"http_service_config":{"ips":["1.2.3.4","4.3.2.1"],"must_contain":"up","url":"http://mywebsite.com/health","user_agent":"scw_service_up","strategy":"hashed"}}]}'
     headers:
       Content-Length:
       - "325"
@@ -1977,7 +1977,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Tue, 15 Feb 2022 15:31:29 GMT
+      - Thu, 17 Feb 2022 13:34:34 GMT
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -1987,7 +1987,7 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - 30476616-ee85-4926-9e18-64e2dadd9539
+      - f7bc4775-613f-4101-8d7b-59ff0899e349
     status: 200 OK
     code: 200
     duration: ""
@@ -2001,7 +2001,7 @@ interactions:
     url: https://api.scaleway.com/domain/v2beta1/dns-zones?dns_zone=test-data-source-http-service.scaleway-terraform.com&domain=&order_by=domain_asc&page=1
     method: GET
   response:
-    body: '{"total_count":1,"dns_zones":[{"domain":"scaleway-terraform.com","subdomain":"test-data-source-http-service","ns":["ns0.dom.scw.cloud","ns1.dom.scw.cloud"],"ns_default":["ns0.dom.scw.cloud","ns1.dom.scw.cloud"],"ns_master":[],"status":"pending","message":null,"updated_at":"2022-02-15T15:31:28Z","project_id":"951df375-e094-4d26-97c1-ba548eeb9c42"}]}'
+    body: '{"total_count":1,"dns_zones":[{"domain":"scaleway-terraform.com","subdomain":"test-data-source-http-service","ns":["ns0.dom.scw.cloud","ns1.dom.scw.cloud"],"ns_default":["ns0.dom.scw.cloud","ns1.dom.scw.cloud"],"ns_master":[],"status":"pending","message":null,"updated_at":"2022-02-17T13:34:33Z","project_id":"105bdce1-64c0-48ab-899d-868455867ecf"}]}'
     headers:
       Content-Length:
       - "350"
@@ -2010,7 +2010,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Tue, 15 Feb 2022 15:31:29 GMT
+      - Thu, 17 Feb 2022 13:34:34 GMT
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -2020,7 +2020,7 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - 3fa80f37-5428-4210-8674-22a7b17efd9c
+      - fe828a08-527f-42be-97b5-307446b0f391
     status: 200 OK
     code: 200
     duration: ""
@@ -2034,7 +2034,7 @@ interactions:
     url: https://api.scaleway.com/domain/v2beta1/dns-zones/test-data-source-http-service.scaleway-terraform.com/records?name=&order_by=name_asc&page=1&type=unknown
     method: GET
   response:
-    body: '{"total_count":3,"records":[{"id":"e714fb48-5c2c-4b8f-a545-daf70955f81e","data":"ns0.dom.scw.cloud.","name":"","priority":0,"ttl":600,"type":"NS","comment":null},{"id":"1747b26f-9822-496c-a6b0-d07fcc6b4358","data":"ns1.dom.scw.cloud.","name":"","priority":0,"ttl":600,"type":"NS","comment":null},{"id":"a2819759-4226-43e5-816d-68b0e6433437","data":"1.2.3.4","name":"tf_http_service","priority":0,"ttl":3600,"type":"A","comment":null,"http_service_config":{"ips":["1.2.3.4","4.3.2.1"],"must_contain":"up","url":"http://mywebsite.com/health","user_agent":"scw_service_up","strategy":"hashed"}}]}'
+    body: '{"total_count":3,"records":[{"id":"6d64c54e-f85c-4514-90ce-f6e26a5f4c44","data":"ns0.dom.scw.cloud.","name":"","priority":0,"ttl":600,"type":"NS","comment":null},{"id":"96f395fb-c7ed-4d54-9f1d-24c55dd0ef67","data":"ns1.dom.scw.cloud.","name":"","priority":0,"ttl":600,"type":"NS","comment":null},{"id":"45bc7dc3-65c5-471f-b8d0-a20cc6cd222b","data":"1.2.3.4","name":"tf_http_service","priority":0,"ttl":3600,"type":"A","comment":null,"http_service_config":{"ips":["1.2.3.4","4.3.2.1"],"must_contain":"up","url":"http://mywebsite.com/health","user_agent":"scw_service_up","strategy":"hashed"}}]}'
     headers:
       Content-Length:
       - "593"
@@ -2043,7 +2043,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Tue, 15 Feb 2022 15:31:30 GMT
+      - Thu, 17 Feb 2022 13:34:34 GMT
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -2053,7 +2053,7 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - 31a56bd3-cdab-4246-aa1e-ee07971dfec1
+      - 0f4a29ed-64c0-4693-b39b-e19dab9b330a
     status: 200 OK
     code: 200
     duration: ""
@@ -2067,7 +2067,7 @@ interactions:
     url: https://api.scaleway.com/domain/v2beta1/dns-zones?dns_zone=test-data-source-http-service.scaleway-terraform.com&domain=&order_by=domain_asc&page=1
     method: GET
   response:
-    body: '{"total_count":1,"dns_zones":[{"domain":"scaleway-terraform.com","subdomain":"test-data-source-http-service","ns":["ns0.dom.scw.cloud","ns1.dom.scw.cloud"],"ns_default":["ns0.dom.scw.cloud","ns1.dom.scw.cloud"],"ns_master":[],"status":"pending","message":null,"updated_at":"2022-02-15T15:31:28Z","project_id":"951df375-e094-4d26-97c1-ba548eeb9c42"}]}'
+    body: '{"total_count":1,"dns_zones":[{"domain":"scaleway-terraform.com","subdomain":"test-data-source-http-service","ns":["ns0.dom.scw.cloud","ns1.dom.scw.cloud"],"ns_default":["ns0.dom.scw.cloud","ns1.dom.scw.cloud"],"ns_master":[],"status":"pending","message":null,"updated_at":"2022-02-17T13:34:33Z","project_id":"105bdce1-64c0-48ab-899d-868455867ecf"}]}'
     headers:
       Content-Length:
       - "350"
@@ -2076,7 +2076,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Tue, 15 Feb 2022 15:31:30 GMT
+      - Thu, 17 Feb 2022 13:34:35 GMT
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -2086,7 +2086,7 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - da84163a-024a-4a28-b4b7-9987cb7de36c
+      - 303f5ba9-6493-42d1-92f5-f3da24b200b3
     status: 200 OK
     code: 200
     duration: ""
@@ -2100,7 +2100,7 @@ interactions:
     url: https://api.scaleway.com/domain/v2beta1/dns-zones/test-data-source-http-service.scaleway-terraform.com/records?name=&order_by=name_asc&page=1&type=unknown
     method: GET
   response:
-    body: '{"total_count":3,"records":[{"id":"e714fb48-5c2c-4b8f-a545-daf70955f81e","data":"ns0.dom.scw.cloud.","name":"","priority":0,"ttl":600,"type":"NS","comment":null},{"id":"1747b26f-9822-496c-a6b0-d07fcc6b4358","data":"ns1.dom.scw.cloud.","name":"","priority":0,"ttl":600,"type":"NS","comment":null},{"id":"a2819759-4226-43e5-816d-68b0e6433437","data":"1.2.3.4","name":"tf_http_service","priority":0,"ttl":3600,"type":"A","comment":null,"http_service_config":{"ips":["1.2.3.4","4.3.2.1"],"must_contain":"up","url":"http://mywebsite.com/health","user_agent":"scw_service_up","strategy":"hashed"}}]}'
+    body: '{"total_count":3,"records":[{"id":"6d64c54e-f85c-4514-90ce-f6e26a5f4c44","data":"ns0.dom.scw.cloud.","name":"","priority":0,"ttl":600,"type":"NS","comment":null},{"id":"96f395fb-c7ed-4d54-9f1d-24c55dd0ef67","data":"ns1.dom.scw.cloud.","name":"","priority":0,"ttl":600,"type":"NS","comment":null},{"id":"45bc7dc3-65c5-471f-b8d0-a20cc6cd222b","data":"1.2.3.4","name":"tf_http_service","priority":0,"ttl":3600,"type":"A","comment":null,"http_service_config":{"ips":["1.2.3.4","4.3.2.1"],"must_contain":"up","url":"http://mywebsite.com/health","user_agent":"scw_service_up","strategy":"hashed"}}]}'
     headers:
       Content-Length:
       - "593"
@@ -2109,7 +2109,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Tue, 15 Feb 2022 15:31:30 GMT
+      - Thu, 17 Feb 2022 13:34:35 GMT
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -2119,7 +2119,7 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - 044a1509-817e-4e7e-bdea-5be8fb824eb3
+      - ced45bb4-9212-4c93-a858-b81cd35b0a4d
     status: 200 OK
     code: 200
     duration: ""
@@ -2133,7 +2133,7 @@ interactions:
     url: https://api.scaleway.com/domain/v2beta1/dns-zones?dns_zone=test-data-source-http-service.scaleway-terraform.com&domain=&order_by=domain_asc&page=1
     method: GET
   response:
-    body: '{"total_count":1,"dns_zones":[{"domain":"scaleway-terraform.com","subdomain":"test-data-source-http-service","ns":["ns0.dom.scw.cloud","ns1.dom.scw.cloud"],"ns_default":["ns0.dom.scw.cloud","ns1.dom.scw.cloud"],"ns_master":[],"status":"pending","message":null,"updated_at":"2022-02-15T15:31:28Z","project_id":"951df375-e094-4d26-97c1-ba548eeb9c42"}]}'
+    body: '{"total_count":1,"dns_zones":[{"domain":"scaleway-terraform.com","subdomain":"test-data-source-http-service","ns":["ns0.dom.scw.cloud","ns1.dom.scw.cloud"],"ns_default":["ns0.dom.scw.cloud","ns1.dom.scw.cloud"],"ns_master":[],"status":"pending","message":null,"updated_at":"2022-02-17T13:34:33Z","project_id":"105bdce1-64c0-48ab-899d-868455867ecf"}]}'
     headers:
       Content-Length:
       - "350"
@@ -2142,7 +2142,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Tue, 15 Feb 2022 15:31:30 GMT
+      - Thu, 17 Feb 2022 13:34:35 GMT
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -2152,7 +2152,7 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - 7f3c4cf1-566e-4c84-9557-38a6eaf78618
+      - d4a86527-e6ff-45ef-a3e1-e9a24ccc1dfe
     status: 200 OK
     code: 200
     duration: ""
@@ -2166,7 +2166,7 @@ interactions:
     url: https://api.scaleway.com/domain/v2beta1/dns-zones/test-data-source-http-service.scaleway-terraform.com/records?name=tf_http_service&order_by=name_asc&page=1&type=A
     method: GET
   response:
-    body: '{"total_count":1,"records":[{"id":"a2819759-4226-43e5-816d-68b0e6433437","data":"1.2.3.4","name":"tf_http_service","priority":0,"ttl":3600,"type":"A","comment":null,"http_service_config":{"ips":["1.2.3.4","4.3.2.1"],"must_contain":"up","url":"http://mywebsite.com/health","user_agent":"scw_service_up","strategy":"hashed"}}]}'
+    body: '{"total_count":1,"records":[{"id":"45bc7dc3-65c5-471f-b8d0-a20cc6cd222b","data":"1.2.3.4","name":"tf_http_service","priority":0,"ttl":3600,"type":"A","comment":null,"http_service_config":{"ips":["1.2.3.4","4.3.2.1"],"must_contain":"up","url":"http://mywebsite.com/health","user_agent":"scw_service_up","strategy":"hashed"}}]}'
     headers:
       Content-Length:
       - "325"
@@ -2175,7 +2175,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Tue, 15 Feb 2022 15:31:31 GMT
+      - Thu, 17 Feb 2022 13:34:35 GMT
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -2185,7 +2185,7 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - 1d95f5f5-3b79-49eb-aaae-f6f508e73178
+      - f285bb69-2560-45e5-8936-9b873504df09
     status: 200 OK
     code: 200
     duration: ""
@@ -2199,7 +2199,7 @@ interactions:
     url: https://api.scaleway.com/domain/v2beta1/dns-zones?dns_zone=test-data-source-http-service.scaleway-terraform.com&domain=&order_by=domain_asc&page=1
     method: GET
   response:
-    body: '{"total_count":1,"dns_zones":[{"domain":"scaleway-terraform.com","subdomain":"test-data-source-http-service","ns":["ns0.dom.scw.cloud","ns1.dom.scw.cloud"],"ns_default":["ns0.dom.scw.cloud","ns1.dom.scw.cloud"],"ns_master":[],"status":"pending","message":null,"updated_at":"2022-02-15T15:31:28Z","project_id":"951df375-e094-4d26-97c1-ba548eeb9c42"}]}'
+    body: '{"total_count":1,"dns_zones":[{"domain":"scaleway-terraform.com","subdomain":"test-data-source-http-service","ns":["ns0.dom.scw.cloud","ns1.dom.scw.cloud"],"ns_default":["ns0.dom.scw.cloud","ns1.dom.scw.cloud"],"ns_master":[],"status":"pending","message":null,"updated_at":"2022-02-17T13:34:33Z","project_id":"105bdce1-64c0-48ab-899d-868455867ecf"}]}'
     headers:
       Content-Length:
       - "350"
@@ -2208,7 +2208,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Tue, 15 Feb 2022 15:31:31 GMT
+      - Thu, 17 Feb 2022 13:34:35 GMT
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -2218,12 +2218,12 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - 0a7b336d-ebec-48ed-9f05-a3a22916a734
+      - d7efe0c0-da91-4777-8144-9f734be429ba
     status: 200 OK
     code: 200
     duration: ""
 - request:
-    body: '{"changes":[{"delete":{"id":"a2819759-4226-43e5-816d-68b0e6433437"}}],"return_all_records":false,"disallow_new_zone_creation":false,"serial":null}'
+    body: '{"changes":[{"delete":{"id":"45bc7dc3-65c5-471f-b8d0-a20cc6cd222b"}}],"return_all_records":false,"disallow_new_zone_creation":false,"serial":null}'
     form: {}
     headers:
       Content-Type:
@@ -2243,7 +2243,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Tue, 15 Feb 2022 15:31:31 GMT
+      - Thu, 17 Feb 2022 13:34:36 GMT
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -2253,7 +2253,7 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - 50b3cfa5-12ab-49b1-a6c2-3ef985e09845
+      - 06ee5f39-1f00-4cde-ac3f-56e513d00656
     status: 200 OK
     code: 200
     duration: ""
@@ -2267,7 +2267,7 @@ interactions:
     url: https://api.scaleway.com/domain/v2beta1/dns-zones/test-data-source-http-service.scaleway-terraform.com/records?name=&order_by=name_asc&type=unknown
     method: GET
   response:
-    body: '{"total_count":2,"records":[{"id":"e714fb48-5c2c-4b8f-a545-daf70955f81e","data":"ns0.dom.scw.cloud.","name":"","priority":0,"ttl":600,"type":"NS","comment":null},{"id":"1747b26f-9822-496c-a6b0-d07fcc6b4358","data":"ns1.dom.scw.cloud.","name":"","priority":0,"ttl":600,"type":"NS","comment":null}]}'
+    body: '{"total_count":2,"records":[{"id":"6d64c54e-f85c-4514-90ce-f6e26a5f4c44","data":"ns0.dom.scw.cloud.","name":"","priority":0,"ttl":600,"type":"NS","comment":null},{"id":"96f395fb-c7ed-4d54-9f1d-24c55dd0ef67","data":"ns1.dom.scw.cloud.","name":"","priority":0,"ttl":600,"type":"NS","comment":null}]}'
     headers:
       Content-Length:
       - "297"
@@ -2276,7 +2276,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Tue, 15 Feb 2022 15:31:32 GMT
+      - Thu, 17 Feb 2022 13:34:36 GMT
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -2286,7 +2286,7 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - caa7700b-800d-4b0a-8f21-7189758dc030
+      - a75a72eb-9634-4b66-9125-a037cfcacb44
     status: 200 OK
     code: 200
     duration: ""
@@ -2297,7 +2297,7 @@ interactions:
       User-Agent:
       - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.17.6; linux; amd64) terraform-provider/develop
         terraform/terraform-tests
-    url: https://api.scaleway.com/domain/v2beta1/dns-zones/test-data-source-http-service.scaleway-terraform.com?project_id=951df375-e094-4d26-97c1-ba548eeb9c42
+    url: https://api.scaleway.com/domain/v2beta1/dns-zones/test-data-source-http-service.scaleway-terraform.com?project_id=105bdce1-64c0-48ab-899d-868455867ecf
     method: DELETE
   response:
     body: '{}'
@@ -2309,7 +2309,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Tue, 15 Feb 2022 15:31:32 GMT
+      - Thu, 17 Feb 2022 13:34:37 GMT
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -2319,7 +2319,7 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - 09604252-0cf0-4428-8f14-96af135f3445
+      - 2fb0a641-40e8-40df-96c8-3857810ddcf2
     status: 200 OK
     code: 200
     duration: ""
@@ -2335,7 +2335,7 @@ interactions:
     url: https://api.scaleway.com/domain/v2beta1/dns-zones/test-data-source-view.scaleway-terraform.com/records
     method: PATCH
   response:
-    body: '{"records":[{"id":"fca7d3be-ac53-4579-b5fb-714096799fb8","data":"1.2.3.4","name":"tf_view","priority":0,"ttl":3600,"type":"A","comment":null,"view_config":{"views":[{"subnet":"100.0.0.0/16","data":"1.2.3.4"},{"subnet":"100.1.0.0/16","data":"4.3.2.1"}]}}]}'
+    body: '{"records":[{"id":"2501927e-5b72-4f94-ba64-189e66e4afc0","data":"1.2.3.4","name":"tf_view","priority":0,"ttl":3600,"type":"A","comment":null,"view_config":{"views":[{"subnet":"100.0.0.0/16","data":"1.2.3.4"},{"subnet":"100.1.0.0/16","data":"4.3.2.1"}]}}]}'
     headers:
       Content-Length:
       - "255"
@@ -2344,7 +2344,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Tue, 15 Feb 2022 15:31:32 GMT
+      - Thu, 17 Feb 2022 13:34:37 GMT
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -2354,7 +2354,7 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - 39a465f5-e1f4-493f-9dd5-064c87e54a4f
+      - 79f7ee92-e57f-41e0-b250-bba382ad60ce
     status: 200 OK
     code: 200
     duration: ""
@@ -2368,7 +2368,7 @@ interactions:
     url: https://api.scaleway.com/domain/v2beta1/dns-zones/test-data-source-view.scaleway-terraform.com/records?name=tf_view&order_by=name_asc&page=1&type=A
     method: GET
   response:
-    body: '{"total_count":1,"records":[{"id":"fca7d3be-ac53-4579-b5fb-714096799fb8","data":"1.2.3.4","name":"tf_view","priority":0,"ttl":3600,"type":"A","comment":null,"view_config":{"views":[{"subnet":"100.0.0.0/16","data":"1.2.3.4"},{"subnet":"100.1.0.0/16","data":"4.3.2.1"}]}}]}'
+    body: '{"total_count":1,"records":[{"id":"2501927e-5b72-4f94-ba64-189e66e4afc0","data":"1.2.3.4","name":"tf_view","priority":0,"ttl":3600,"type":"A","comment":null,"view_config":{"views":[{"subnet":"100.0.0.0/16","data":"1.2.3.4"},{"subnet":"100.1.0.0/16","data":"4.3.2.1"}]}}]}'
     headers:
       Content-Length:
       - "271"
@@ -2377,7 +2377,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Tue, 15 Feb 2022 15:31:32 GMT
+      - Thu, 17 Feb 2022 13:34:37 GMT
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -2387,7 +2387,7 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - 332f2cd8-3dee-47b9-9817-1e6fe01837fb
+      - eddbaca9-cde5-40fa-a906-bd91b92a1f5d
     status: 200 OK
     code: 200
     duration: ""
@@ -2401,7 +2401,7 @@ interactions:
     url: https://api.scaleway.com/domain/v2beta1/dns-zones?dns_zone=test-data-source-view.scaleway-terraform.com&domain=&order_by=domain_asc&page=1
     method: GET
   response:
-    body: '{"total_count":1,"dns_zones":[{"domain":"scaleway-terraform.com","subdomain":"test-data-source-view","ns":["ns0.dom.scw.cloud","ns1.dom.scw.cloud"],"ns_default":["ns0.dom.scw.cloud","ns1.dom.scw.cloud"],"ns_master":[],"status":"pending","message":null,"updated_at":"2022-02-15T15:31:32Z","project_id":"951df375-e094-4d26-97c1-ba548eeb9c42"}]}'
+    body: '{"total_count":1,"dns_zones":[{"domain":"scaleway-terraform.com","subdomain":"test-data-source-view","ns":["ns0.dom.scw.cloud","ns1.dom.scw.cloud"],"ns_default":["ns0.dom.scw.cloud","ns1.dom.scw.cloud"],"ns_master":[],"status":"pending","message":null,"updated_at":"2022-02-17T13:34:37Z","project_id":"105bdce1-64c0-48ab-899d-868455867ecf"}]}'
     headers:
       Content-Length:
       - "342"
@@ -2410,7 +2410,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Tue, 15 Feb 2022 15:31:32 GMT
+      - Thu, 17 Feb 2022 13:34:37 GMT
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -2420,7 +2420,7 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - 2c6da91b-b669-40fb-ada9-1da3673356e5
+      - 1062299b-8dbf-4a57-b163-f32647a86d20
     status: 200 OK
     code: 200
     duration: ""
@@ -2434,7 +2434,7 @@ interactions:
     url: https://api.scaleway.com/domain/v2beta1/dns-zones/test-data-source-view.scaleway-terraform.com/records?name=&order_by=name_asc&page=1&type=unknown
     method: GET
   response:
-    body: '{"total_count":3,"records":[{"id":"049e23cd-527e-4e17-9c2a-6f9f4a38f345","data":"ns0.dom.scw.cloud.","name":"","priority":0,"ttl":600,"type":"NS","comment":null},{"id":"e2007d07-eb90-448e-b3a2-507ad8d0d011","data":"ns1.dom.scw.cloud.","name":"","priority":0,"ttl":600,"type":"NS","comment":null},{"id":"fca7d3be-ac53-4579-b5fb-714096799fb8","data":"1.2.3.4","name":"tf_view","priority":0,"ttl":3600,"type":"A","comment":null,"view_config":{"views":[{"subnet":"100.0.0.0/16","data":"1.2.3.4"},{"subnet":"100.1.0.0/16","data":"4.3.2.1"}]}}]}'
+    body: '{"total_count":3,"records":[{"id":"35a0205f-042a-4456-9b33-aee3b624fa20","data":"ns0.dom.scw.cloud.","name":"","priority":0,"ttl":600,"type":"NS","comment":null},{"id":"099b9c78-18b6-4991-8464-a31f3aea7583","data":"ns1.dom.scw.cloud.","name":"","priority":0,"ttl":600,"type":"NS","comment":null},{"id":"2501927e-5b72-4f94-ba64-189e66e4afc0","data":"1.2.3.4","name":"tf_view","priority":0,"ttl":3600,"type":"A","comment":null,"view_config":{"views":[{"subnet":"100.0.0.0/16","data":"1.2.3.4"},{"subnet":"100.1.0.0/16","data":"4.3.2.1"}]}}]}'
     headers:
       Content-Length:
       - "539"
@@ -2443,7 +2443,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Tue, 15 Feb 2022 15:31:32 GMT
+      - Thu, 17 Feb 2022 13:34:37 GMT
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -2453,7 +2453,7 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - ae024d53-c5da-47ad-81cf-c17e4e23d7f9
+      - dab54401-206d-4e85-a97c-3cc7d064b378
     status: 200 OK
     code: 200
     duration: ""
@@ -2467,7 +2467,7 @@ interactions:
     url: https://api.scaleway.com/domain/v2beta1/dns-zones?dns_zone=test-data-source-view.scaleway-terraform.com&domain=&order_by=domain_asc&page=1
     method: GET
   response:
-    body: '{"total_count":1,"dns_zones":[{"domain":"scaleway-terraform.com","subdomain":"test-data-source-view","ns":["ns0.dom.scw.cloud","ns1.dom.scw.cloud"],"ns_default":["ns0.dom.scw.cloud","ns1.dom.scw.cloud"],"ns_master":[],"status":"pending","message":null,"updated_at":"2022-02-15T15:31:32Z","project_id":"951df375-e094-4d26-97c1-ba548eeb9c42"}]}'
+    body: '{"total_count":1,"dns_zones":[{"domain":"scaleway-terraform.com","subdomain":"test-data-source-view","ns":["ns0.dom.scw.cloud","ns1.dom.scw.cloud"],"ns_default":["ns0.dom.scw.cloud","ns1.dom.scw.cloud"],"ns_master":[],"status":"pending","message":null,"updated_at":"2022-02-17T13:34:37Z","project_id":"105bdce1-64c0-48ab-899d-868455867ecf"}]}'
     headers:
       Content-Length:
       - "342"
@@ -2476,7 +2476,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Tue, 15 Feb 2022 15:31:32 GMT
+      - Thu, 17 Feb 2022 13:34:37 GMT
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -2486,7 +2486,7 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - b9cf76a1-27d1-4f78-862b-f6d91ec22a76
+      - be70fd2a-063a-4ef8-909f-3d5c32501686
     status: 200 OK
     code: 200
     duration: ""
@@ -2500,7 +2500,7 @@ interactions:
     url: https://api.scaleway.com/domain/v2beta1/dns-zones/test-data-source-view.scaleway-terraform.com/records?name=&order_by=name_asc&type=unknown
     method: GET
   response:
-    body: '{"total_count":3,"records":[{"id":"049e23cd-527e-4e17-9c2a-6f9f4a38f345","data":"ns0.dom.scw.cloud.","name":"","priority":0,"ttl":600,"type":"NS","comment":null},{"id":"e2007d07-eb90-448e-b3a2-507ad8d0d011","data":"ns1.dom.scw.cloud.","name":"","priority":0,"ttl":600,"type":"NS","comment":null},{"id":"fca7d3be-ac53-4579-b5fb-714096799fb8","data":"1.2.3.4","name":"tf_view","priority":0,"ttl":3600,"type":"A","comment":null,"view_config":{"views":[{"subnet":"100.0.0.0/16","data":"1.2.3.4"},{"subnet":"100.1.0.0/16","data":"4.3.2.1"}]}}]}'
+    body: '{"total_count":3,"records":[{"id":"35a0205f-042a-4456-9b33-aee3b624fa20","data":"ns0.dom.scw.cloud.","name":"","priority":0,"ttl":600,"type":"NS","comment":null},{"id":"099b9c78-18b6-4991-8464-a31f3aea7583","data":"ns1.dom.scw.cloud.","name":"","priority":0,"ttl":600,"type":"NS","comment":null},{"id":"2501927e-5b72-4f94-ba64-189e66e4afc0","data":"1.2.3.4","name":"tf_view","priority":0,"ttl":3600,"type":"A","comment":null,"view_config":{"views":[{"subnet":"100.0.0.0/16","data":"1.2.3.4"},{"subnet":"100.1.0.0/16","data":"4.3.2.1"}]}}]}'
     headers:
       Content-Length:
       - "539"
@@ -2509,7 +2509,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Tue, 15 Feb 2022 15:31:33 GMT
+      - Thu, 17 Feb 2022 13:34:37 GMT
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -2519,7 +2519,7 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - ab2caa45-e78b-416b-a371-2bcea3c90ec4
+      - b11543a3-d2ab-480b-b906-4d16fa1adee7
     status: 200 OK
     code: 200
     duration: ""
@@ -2533,7 +2533,7 @@ interactions:
     url: https://api.scaleway.com/domain/v2beta1/dns-zones/test-data-source-view.scaleway-terraform.com/records?name=&order_by=name_asc&page=1&type=unknown
     method: GET
   response:
-    body: '{"total_count":3,"records":[{"id":"049e23cd-527e-4e17-9c2a-6f9f4a38f345","data":"ns0.dom.scw.cloud.","name":"","priority":0,"ttl":600,"type":"NS","comment":null},{"id":"e2007d07-eb90-448e-b3a2-507ad8d0d011","data":"ns1.dom.scw.cloud.","name":"","priority":0,"ttl":600,"type":"NS","comment":null},{"id":"fca7d3be-ac53-4579-b5fb-714096799fb8","data":"1.2.3.4","name":"tf_view","priority":0,"ttl":3600,"type":"A","comment":null,"view_config":{"views":[{"subnet":"100.0.0.0/16","data":"1.2.3.4"},{"subnet":"100.1.0.0/16","data":"4.3.2.1"}]}}]}'
+    body: '{"total_count":3,"records":[{"id":"35a0205f-042a-4456-9b33-aee3b624fa20","data":"ns0.dom.scw.cloud.","name":"","priority":0,"ttl":600,"type":"NS","comment":null},{"id":"099b9c78-18b6-4991-8464-a31f3aea7583","data":"ns1.dom.scw.cloud.","name":"","priority":0,"ttl":600,"type":"NS","comment":null},{"id":"2501927e-5b72-4f94-ba64-189e66e4afc0","data":"1.2.3.4","name":"tf_view","priority":0,"ttl":3600,"type":"A","comment":null,"view_config":{"views":[{"subnet":"100.0.0.0/16","data":"1.2.3.4"},{"subnet":"100.1.0.0/16","data":"4.3.2.1"}]}}]}'
     headers:
       Content-Length:
       - "539"
@@ -2542,7 +2542,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Tue, 15 Feb 2022 15:31:33 GMT
+      - Thu, 17 Feb 2022 13:34:38 GMT
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -2552,7 +2552,7 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - 1456d046-861b-4a68-8316-a8bd1f7c3f6a
+      - c4a42402-c939-4476-9ab2-c4458af277a9
     status: 200 OK
     code: 200
     duration: ""
@@ -2566,7 +2566,7 @@ interactions:
     url: https://api.scaleway.com/domain/v2beta1/dns-zones?dns_zone=test-data-source-view.scaleway-terraform.com&domain=&order_by=domain_asc&page=1
     method: GET
   response:
-    body: '{"total_count":1,"dns_zones":[{"domain":"scaleway-terraform.com","subdomain":"test-data-source-view","ns":["ns0.dom.scw.cloud","ns1.dom.scw.cloud"],"ns_default":["ns0.dom.scw.cloud","ns1.dom.scw.cloud"],"ns_master":[],"status":"pending","message":null,"updated_at":"2022-02-15T15:31:32Z","project_id":"951df375-e094-4d26-97c1-ba548eeb9c42"}]}'
+    body: '{"total_count":1,"dns_zones":[{"domain":"scaleway-terraform.com","subdomain":"test-data-source-view","ns":["ns0.dom.scw.cloud","ns1.dom.scw.cloud"],"ns_default":["ns0.dom.scw.cloud","ns1.dom.scw.cloud"],"ns_master":[],"status":"pending","message":null,"updated_at":"2022-02-17T13:34:37Z","project_id":"105bdce1-64c0-48ab-899d-868455867ecf"}]}'
     headers:
       Content-Length:
       - "342"
@@ -2575,7 +2575,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Tue, 15 Feb 2022 15:31:33 GMT
+      - Thu, 17 Feb 2022 13:34:38 GMT
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -2585,7 +2585,7 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - 70539c88-2992-462b-b079-1e08a61e84d6
+      - 81810fa3-b194-4153-97df-1afc34675741
     status: 200 OK
     code: 200
     duration: ""
@@ -2599,7 +2599,7 @@ interactions:
     url: https://api.scaleway.com/domain/v2beta1/dns-zones/test-data-source-view.scaleway-terraform.com/records?name=tf_view&order_by=name_asc&page=1&type=A
     method: GET
   response:
-    body: '{"total_count":1,"records":[{"id":"fca7d3be-ac53-4579-b5fb-714096799fb8","data":"1.2.3.4","name":"tf_view","priority":0,"ttl":3600,"type":"A","comment":null,"view_config":{"views":[{"subnet":"100.0.0.0/16","data":"1.2.3.4"},{"subnet":"100.1.0.0/16","data":"4.3.2.1"}]}}]}'
+    body: '{"total_count":1,"records":[{"id":"2501927e-5b72-4f94-ba64-189e66e4afc0","data":"1.2.3.4","name":"tf_view","priority":0,"ttl":3600,"type":"A","comment":null,"view_config":{"views":[{"subnet":"100.0.0.0/16","data":"1.2.3.4"},{"subnet":"100.1.0.0/16","data":"4.3.2.1"}]}}]}'
     headers:
       Content-Length:
       - "271"
@@ -2608,7 +2608,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Tue, 15 Feb 2022 15:31:34 GMT
+      - Thu, 17 Feb 2022 13:34:38 GMT
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -2618,7 +2618,7 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - 854caf78-7704-4cd3-b113-407269bf7a93
+      - 550a2619-2e0e-433f-bd60-0675f56e7b95
     status: 200 OK
     code: 200
     duration: ""
@@ -2632,7 +2632,7 @@ interactions:
     url: https://api.scaleway.com/domain/v2beta1/dns-zones?dns_zone=test-data-source-view.scaleway-terraform.com&domain=&order_by=domain_asc&page=1
     method: GET
   response:
-    body: '{"total_count":1,"dns_zones":[{"domain":"scaleway-terraform.com","subdomain":"test-data-source-view","ns":["ns0.dom.scw.cloud","ns1.dom.scw.cloud"],"ns_default":["ns0.dom.scw.cloud","ns1.dom.scw.cloud"],"ns_master":[],"status":"pending","message":null,"updated_at":"2022-02-15T15:31:32Z","project_id":"951df375-e094-4d26-97c1-ba548eeb9c42"}]}'
+    body: '{"total_count":1,"dns_zones":[{"domain":"scaleway-terraform.com","subdomain":"test-data-source-view","ns":["ns0.dom.scw.cloud","ns1.dom.scw.cloud"],"ns_default":["ns0.dom.scw.cloud","ns1.dom.scw.cloud"],"ns_master":[],"status":"pending","message":null,"updated_at":"2022-02-17T13:34:37Z","project_id":"105bdce1-64c0-48ab-899d-868455867ecf"}]}'
     headers:
       Content-Length:
       - "342"
@@ -2641,7 +2641,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Tue, 15 Feb 2022 15:31:34 GMT
+      - Thu, 17 Feb 2022 13:34:38 GMT
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -2651,7 +2651,7 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - c386f14f-5dea-421b-b5df-1f7fe521d411
+      - 91ca3361-a899-4114-b91b-322eae3230c6
     status: 200 OK
     code: 200
     duration: ""
@@ -2665,7 +2665,7 @@ interactions:
     url: https://api.scaleway.com/domain/v2beta1/dns-zones/test-data-source-view.scaleway-terraform.com/records?name=&order_by=name_asc&page=1&type=unknown
     method: GET
   response:
-    body: '{"total_count":3,"records":[{"id":"049e23cd-527e-4e17-9c2a-6f9f4a38f345","data":"ns0.dom.scw.cloud.","name":"","priority":0,"ttl":600,"type":"NS","comment":null},{"id":"e2007d07-eb90-448e-b3a2-507ad8d0d011","data":"ns1.dom.scw.cloud.","name":"","priority":0,"ttl":600,"type":"NS","comment":null},{"id":"fca7d3be-ac53-4579-b5fb-714096799fb8","data":"1.2.3.4","name":"tf_view","priority":0,"ttl":3600,"type":"A","comment":null,"view_config":{"views":[{"subnet":"100.0.0.0/16","data":"1.2.3.4"},{"subnet":"100.1.0.0/16","data":"4.3.2.1"}]}}]}'
+    body: '{"total_count":3,"records":[{"id":"35a0205f-042a-4456-9b33-aee3b624fa20","data":"ns0.dom.scw.cloud.","name":"","priority":0,"ttl":600,"type":"NS","comment":null},{"id":"099b9c78-18b6-4991-8464-a31f3aea7583","data":"ns1.dom.scw.cloud.","name":"","priority":0,"ttl":600,"type":"NS","comment":null},{"id":"2501927e-5b72-4f94-ba64-189e66e4afc0","data":"1.2.3.4","name":"tf_view","priority":0,"ttl":3600,"type":"A","comment":null,"view_config":{"views":[{"subnet":"100.0.0.0/16","data":"1.2.3.4"},{"subnet":"100.1.0.0/16","data":"4.3.2.1"}]}}]}'
     headers:
       Content-Length:
       - "539"
@@ -2674,7 +2674,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Tue, 15 Feb 2022 15:31:34 GMT
+      - Thu, 17 Feb 2022 13:34:38 GMT
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -2684,7 +2684,7 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - 186a7daf-13e9-41bd-813f-e1dac23e2a56
+      - bcfc9cad-8a49-4c28-a19e-91115fc0e975
     status: 200 OK
     code: 200
     duration: ""
@@ -2698,7 +2698,7 @@ interactions:
     url: https://api.scaleway.com/domain/v2beta1/dns-zones?dns_zone=test-data-source-view.scaleway-terraform.com&domain=&order_by=domain_asc&page=1
     method: GET
   response:
-    body: '{"total_count":1,"dns_zones":[{"domain":"scaleway-terraform.com","subdomain":"test-data-source-view","ns":["ns0.dom.scw.cloud","ns1.dom.scw.cloud"],"ns_default":["ns0.dom.scw.cloud","ns1.dom.scw.cloud"],"ns_master":[],"status":"pending","message":null,"updated_at":"2022-02-15T15:31:32Z","project_id":"951df375-e094-4d26-97c1-ba548eeb9c42"}]}'
+    body: '{"total_count":1,"dns_zones":[{"domain":"scaleway-terraform.com","subdomain":"test-data-source-view","ns":["ns0.dom.scw.cloud","ns1.dom.scw.cloud"],"ns_default":["ns0.dom.scw.cloud","ns1.dom.scw.cloud"],"ns_master":[],"status":"pending","message":null,"updated_at":"2022-02-17T13:34:37Z","project_id":"105bdce1-64c0-48ab-899d-868455867ecf"}]}'
     headers:
       Content-Length:
       - "342"
@@ -2707,7 +2707,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Tue, 15 Feb 2022 15:31:34 GMT
+      - Thu, 17 Feb 2022 13:34:38 GMT
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -2717,7 +2717,7 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - 8c1cf4c7-78ff-457e-89e7-ebe2ff1a422b
+      - 12d382bf-25de-46d6-a662-1aa92f4e22ec
     status: 200 OK
     code: 200
     duration: ""
@@ -2731,7 +2731,7 @@ interactions:
     url: https://api.scaleway.com/domain/v2beta1/dns-zones/test-data-source-view.scaleway-terraform.com/records?name=&order_by=name_asc&page=1&type=unknown
     method: GET
   response:
-    body: '{"total_count":3,"records":[{"id":"049e23cd-527e-4e17-9c2a-6f9f4a38f345","data":"ns0.dom.scw.cloud.","name":"","priority":0,"ttl":600,"type":"NS","comment":null},{"id":"e2007d07-eb90-448e-b3a2-507ad8d0d011","data":"ns1.dom.scw.cloud.","name":"","priority":0,"ttl":600,"type":"NS","comment":null},{"id":"fca7d3be-ac53-4579-b5fb-714096799fb8","data":"1.2.3.4","name":"tf_view","priority":0,"ttl":3600,"type":"A","comment":null,"view_config":{"views":[{"subnet":"100.0.0.0/16","data":"1.2.3.4"},{"subnet":"100.1.0.0/16","data":"4.3.2.1"}]}}]}'
+    body: '{"total_count":3,"records":[{"id":"35a0205f-042a-4456-9b33-aee3b624fa20","data":"ns0.dom.scw.cloud.","name":"","priority":0,"ttl":600,"type":"NS","comment":null},{"id":"099b9c78-18b6-4991-8464-a31f3aea7583","data":"ns1.dom.scw.cloud.","name":"","priority":0,"ttl":600,"type":"NS","comment":null},{"id":"2501927e-5b72-4f94-ba64-189e66e4afc0","data":"1.2.3.4","name":"tf_view","priority":0,"ttl":3600,"type":"A","comment":null,"view_config":{"views":[{"subnet":"100.0.0.0/16","data":"1.2.3.4"},{"subnet":"100.1.0.0/16","data":"4.3.2.1"}]}}]}'
     headers:
       Content-Length:
       - "539"
@@ -2740,7 +2740,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Tue, 15 Feb 2022 15:31:34 GMT
+      - Thu, 17 Feb 2022 13:34:39 GMT
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -2750,7 +2750,7 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - 7fde6b8b-8d81-4afa-a045-b4c110a74848
+      - 419bef78-908d-4321-9d0a-3138c0635794
     status: 200 OK
     code: 200
     duration: ""
@@ -2764,7 +2764,7 @@ interactions:
     url: https://api.scaleway.com/domain/v2beta1/dns-zones?dns_zone=test-data-source-view.scaleway-terraform.com&domain=&order_by=domain_asc&page=1
     method: GET
   response:
-    body: '{"total_count":1,"dns_zones":[{"domain":"scaleway-terraform.com","subdomain":"test-data-source-view","ns":["ns0.dom.scw.cloud","ns1.dom.scw.cloud"],"ns_default":["ns0.dom.scw.cloud","ns1.dom.scw.cloud"],"ns_master":[],"status":"pending","message":null,"updated_at":"2022-02-15T15:31:32Z","project_id":"951df375-e094-4d26-97c1-ba548eeb9c42"}]}'
+    body: '{"total_count":1,"dns_zones":[{"domain":"scaleway-terraform.com","subdomain":"test-data-source-view","ns":["ns0.dom.scw.cloud","ns1.dom.scw.cloud"],"ns_default":["ns0.dom.scw.cloud","ns1.dom.scw.cloud"],"ns_master":[],"status":"pending","message":null,"updated_at":"2022-02-17T13:34:37Z","project_id":"105bdce1-64c0-48ab-899d-868455867ecf"}]}'
     headers:
       Content-Length:
       - "342"
@@ -2773,7 +2773,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Tue, 15 Feb 2022 15:31:34 GMT
+      - Thu, 17 Feb 2022 13:34:39 GMT
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -2783,7 +2783,7 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - f53fced9-4320-4771-919d-c46e8e5a4ccf
+      - 8f41362b-49d4-405f-ad41-5d2036f64ff8
     status: 200 OK
     code: 200
     duration: ""
@@ -2797,7 +2797,7 @@ interactions:
     url: https://api.scaleway.com/domain/v2beta1/dns-zones/test-data-source-view.scaleway-terraform.com/records?name=tf_view&order_by=name_asc&page=1&type=A
     method: GET
   response:
-    body: '{"total_count":1,"records":[{"id":"fca7d3be-ac53-4579-b5fb-714096799fb8","data":"1.2.3.4","name":"tf_view","priority":0,"ttl":3600,"type":"A","comment":null,"view_config":{"views":[{"subnet":"100.0.0.0/16","data":"1.2.3.4"},{"subnet":"100.1.0.0/16","data":"4.3.2.1"}]}}]}'
+    body: '{"total_count":1,"records":[{"id":"2501927e-5b72-4f94-ba64-189e66e4afc0","data":"1.2.3.4","name":"tf_view","priority":0,"ttl":3600,"type":"A","comment":null,"view_config":{"views":[{"subnet":"100.0.0.0/16","data":"1.2.3.4"},{"subnet":"100.1.0.0/16","data":"4.3.2.1"}]}}]}'
     headers:
       Content-Length:
       - "271"
@@ -2806,7 +2806,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Tue, 15 Feb 2022 15:31:35 GMT
+      - Thu, 17 Feb 2022 13:34:39 GMT
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -2816,7 +2816,7 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - 282c5d1d-d06b-4c91-831d-e608f1de1d78
+      - 1f02a77e-f0e8-43a8-b1aa-59e73ad04851
     status: 200 OK
     code: 200
     duration: ""
@@ -2830,7 +2830,7 @@ interactions:
     url: https://api.scaleway.com/domain/v2beta1/dns-zones?dns_zone=test-data-source-view.scaleway-terraform.com&domain=&order_by=domain_asc&page=1
     method: GET
   response:
-    body: '{"total_count":1,"dns_zones":[{"domain":"scaleway-terraform.com","subdomain":"test-data-source-view","ns":["ns0.dom.scw.cloud","ns1.dom.scw.cloud"],"ns_default":["ns0.dom.scw.cloud","ns1.dom.scw.cloud"],"ns_master":[],"status":"pending","message":null,"updated_at":"2022-02-15T15:31:32Z","project_id":"951df375-e094-4d26-97c1-ba548eeb9c42"}]}'
+    body: '{"total_count":1,"dns_zones":[{"domain":"scaleway-terraform.com","subdomain":"test-data-source-view","ns":["ns0.dom.scw.cloud","ns1.dom.scw.cloud"],"ns_default":["ns0.dom.scw.cloud","ns1.dom.scw.cloud"],"ns_master":[],"status":"pending","message":null,"updated_at":"2022-02-17T13:34:37Z","project_id":"105bdce1-64c0-48ab-899d-868455867ecf"}]}'
     headers:
       Content-Length:
       - "342"
@@ -2839,7 +2839,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Tue, 15 Feb 2022 15:31:35 GMT
+      - Thu, 17 Feb 2022 13:34:39 GMT
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -2849,12 +2849,12 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - f9b14f49-3b4c-4c0e-885a-eda9507c7961
+      - cdbbf268-06fa-470c-a1b5-47e9c903aa60
     status: 200 OK
     code: 200
     duration: ""
 - request:
-    body: '{"changes":[{"delete":{"id":"fca7d3be-ac53-4579-b5fb-714096799fb8"}}],"return_all_records":false,"disallow_new_zone_creation":false,"serial":null}'
+    body: '{"changes":[{"delete":{"id":"2501927e-5b72-4f94-ba64-189e66e4afc0"}}],"return_all_records":false,"disallow_new_zone_creation":false,"serial":null}'
     form: {}
     headers:
       Content-Type:
@@ -2874,7 +2874,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Tue, 15 Feb 2022 15:31:36 GMT
+      - Thu, 17 Feb 2022 13:34:40 GMT
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -2884,7 +2884,7 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - 299d349c-2ae2-44ec-9c7a-a75d7c2d8707
+      - f2ac2e44-df8e-45e2-81ed-73d65cafcf22
     status: 200 OK
     code: 200
     duration: ""
@@ -2898,7 +2898,7 @@ interactions:
     url: https://api.scaleway.com/domain/v2beta1/dns-zones/test-data-source-view.scaleway-terraform.com/records?name=&order_by=name_asc&type=unknown
     method: GET
   response:
-    body: '{"total_count":2,"records":[{"id":"049e23cd-527e-4e17-9c2a-6f9f4a38f345","data":"ns0.dom.scw.cloud.","name":"","priority":0,"ttl":600,"type":"NS","comment":null},{"id":"e2007d07-eb90-448e-b3a2-507ad8d0d011","data":"ns1.dom.scw.cloud.","name":"","priority":0,"ttl":600,"type":"NS","comment":null}]}'
+    body: '{"total_count":2,"records":[{"id":"35a0205f-042a-4456-9b33-aee3b624fa20","data":"ns0.dom.scw.cloud.","name":"","priority":0,"ttl":600,"type":"NS","comment":null},{"id":"099b9c78-18b6-4991-8464-a31f3aea7583","data":"ns1.dom.scw.cloud.","name":"","priority":0,"ttl":600,"type":"NS","comment":null}]}'
     headers:
       Content-Length:
       - "297"
@@ -2907,7 +2907,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Tue, 15 Feb 2022 15:31:36 GMT
+      - Thu, 17 Feb 2022 13:34:40 GMT
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -2917,7 +2917,7 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - f573057d-3647-4761-8566-744e6cd3ec69
+      - d05aa900-01a5-4723-a459-f93a7fa40bcf
     status: 200 OK
     code: 200
     duration: ""
@@ -2928,7 +2928,7 @@ interactions:
       User-Agent:
       - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.17.6; linux; amd64) terraform-provider/develop
         terraform/terraform-tests
-    url: https://api.scaleway.com/domain/v2beta1/dns-zones/test-data-source-view.scaleway-terraform.com?project_id=951df375-e094-4d26-97c1-ba548eeb9c42
+    url: https://api.scaleway.com/domain/v2beta1/dns-zones/test-data-source-view.scaleway-terraform.com?project_id=105bdce1-64c0-48ab-899d-868455867ecf
     method: DELETE
   response:
     body: '{}'
@@ -2940,7 +2940,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Tue, 15 Feb 2022 15:31:36 GMT
+      - Thu, 17 Feb 2022 13:34:40 GMT
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -2950,7 +2950,7 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - 20c23a84-3752-4185-b635-c8205270db95
+      - 32578caa-aa8c-45f6-bb90-633805ed8383
     status: 200 OK
     code: 200
     duration: ""
@@ -2966,7 +2966,7 @@ interactions:
     url: https://api.scaleway.com/domain/v2beta1/dns-zones/test-data-source-weighted.scaleway-terraform.com/records
     method: PATCH
   response:
-    body: '{"records":[{"id":"9490c9bb-8791-45dd-8be6-2284ab598a04","data":"1.2.3.4","name":"tf_weighted","priority":0,"ttl":3600,"type":"A","comment":null,"weighted_config":{"weighted_ips":[{"ip":"1.2.3.4","weight":1},{"ip":"4.3.2.1","weight":2}]}}]}'
+    body: '{"records":[{"id":"66755cb2-eef2-47f7-804c-884d415e4749","data":"1.2.3.4","name":"tf_weighted","priority":0,"ttl":3600,"type":"A","comment":null,"weighted_config":{"weighted_ips":[{"ip":"1.2.3.4","weight":1},{"ip":"4.3.2.1","weight":2}]}}]}'
     headers:
       Content-Length:
       - "240"
@@ -2975,7 +2975,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Tue, 15 Feb 2022 15:31:36 GMT
+      - Thu, 17 Feb 2022 13:34:40 GMT
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -2985,7 +2985,7 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - 3cf67128-a3be-42d1-8311-46013f845089
+      - 9801096b-e992-4be6-a38e-942820c85bea
     status: 200 OK
     code: 200
     duration: ""
@@ -2999,7 +2999,7 @@ interactions:
     url: https://api.scaleway.com/domain/v2beta1/dns-zones/test-data-source-weighted.scaleway-terraform.com/records?name=tf_weighted&order_by=name_asc&page=1&type=A
     method: GET
   response:
-    body: '{"total_count":1,"records":[{"id":"9490c9bb-8791-45dd-8be6-2284ab598a04","data":"1.2.3.4","name":"tf_weighted","priority":0,"ttl":3600,"type":"A","comment":null,"weighted_config":{"weighted_ips":[{"ip":"1.2.3.4","weight":1},{"ip":"4.3.2.1","weight":2}]}}]}'
+    body: '{"total_count":1,"records":[{"id":"66755cb2-eef2-47f7-804c-884d415e4749","data":"1.2.3.4","name":"tf_weighted","priority":0,"ttl":3600,"type":"A","comment":null,"weighted_config":{"weighted_ips":[{"ip":"1.2.3.4","weight":1},{"ip":"4.3.2.1","weight":2}]}}]}'
     headers:
       Content-Length:
       - "256"
@@ -3008,7 +3008,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Tue, 15 Feb 2022 15:31:37 GMT
+      - Thu, 17 Feb 2022 13:34:41 GMT
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -3018,7 +3018,7 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - 9c841d87-89aa-4edc-a2ad-6972734fd286
+      - dc9e0ce6-6135-4cc6-8991-95aa852d425b
     status: 200 OK
     code: 200
     duration: ""
@@ -3032,7 +3032,7 @@ interactions:
     url: https://api.scaleway.com/domain/v2beta1/dns-zones?dns_zone=test-data-source-weighted.scaleway-terraform.com&domain=&order_by=domain_asc&page=1
     method: GET
   response:
-    body: '{"total_count":1,"dns_zones":[{"domain":"scaleway-terraform.com","subdomain":"test-data-source-weighted","ns":["ns0.dom.scw.cloud","ns1.dom.scw.cloud"],"ns_default":["ns0.dom.scw.cloud","ns1.dom.scw.cloud"],"ns_master":[],"status":"pending","message":null,"updated_at":"2022-02-15T15:31:36Z","project_id":"951df375-e094-4d26-97c1-ba548eeb9c42"}]}'
+    body: '{"total_count":1,"dns_zones":[{"domain":"scaleway-terraform.com","subdomain":"test-data-source-weighted","ns":["ns0.dom.scw.cloud","ns1.dom.scw.cloud"],"ns_default":["ns0.dom.scw.cloud","ns1.dom.scw.cloud"],"ns_master":[],"status":"pending","message":null,"updated_at":"2022-02-17T13:34:40Z","project_id":"105bdce1-64c0-48ab-899d-868455867ecf"}]}'
     headers:
       Content-Length:
       - "346"
@@ -3041,7 +3041,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Tue, 15 Feb 2022 15:31:37 GMT
+      - Thu, 17 Feb 2022 13:34:41 GMT
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -3051,7 +3051,7 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - c42f1019-a37a-4fb9-b0c2-e0c61655cb90
+      - aa902d3a-85cb-4c22-acdc-4c53a94c21cf
     status: 200 OK
     code: 200
     duration: ""
@@ -3065,7 +3065,7 @@ interactions:
     url: https://api.scaleway.com/domain/v2beta1/dns-zones/test-data-source-weighted.scaleway-terraform.com/records?name=&order_by=name_asc&page=1&type=unknown
     method: GET
   response:
-    body: '{"total_count":3,"records":[{"id":"5b4103ca-b2d3-40b6-98c4-455c67bee564","data":"ns0.dom.scw.cloud.","name":"","priority":0,"ttl":600,"type":"NS","comment":null},{"id":"a8d448cc-1322-42b8-a095-6eff434a71f0","data":"ns1.dom.scw.cloud.","name":"","priority":0,"ttl":600,"type":"NS","comment":null},{"id":"9490c9bb-8791-45dd-8be6-2284ab598a04","data":"1.2.3.4","name":"tf_weighted","priority":0,"ttl":3600,"type":"A","comment":null,"weighted_config":{"weighted_ips":[{"ip":"1.2.3.4","weight":1},{"ip":"4.3.2.1","weight":2}]}}]}'
+    body: '{"total_count":3,"records":[{"id":"f9566a3e-c717-4859-bf1f-1f909f6b864d","data":"ns0.dom.scw.cloud.","name":"","priority":0,"ttl":600,"type":"NS","comment":null},{"id":"b5d5befb-a264-446d-9f1c-c0267c08f606","data":"ns1.dom.scw.cloud.","name":"","priority":0,"ttl":600,"type":"NS","comment":null},{"id":"66755cb2-eef2-47f7-804c-884d415e4749","data":"1.2.3.4","name":"tf_weighted","priority":0,"ttl":3600,"type":"A","comment":null,"weighted_config":{"weighted_ips":[{"ip":"1.2.3.4","weight":1},{"ip":"4.3.2.1","weight":2}]}}]}'
     headers:
       Content-Length:
       - "524"
@@ -3074,7 +3074,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Tue, 15 Feb 2022 15:31:37 GMT
+      - Thu, 17 Feb 2022 13:34:41 GMT
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -3084,7 +3084,7 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - 9e19d740-6756-417e-8583-740f256a99ee
+      - 83a854ef-f6b5-41d6-852f-bd63f54d1dbc
     status: 200 OK
     code: 200
     duration: ""
@@ -3098,16 +3098,16 @@ interactions:
     url: https://api.scaleway.com/domain/v2beta1/dns-zones?dns_zone=test-data-source-weighted.scaleway-terraform.com&domain=&order_by=domain_asc&page=1
     method: GET
   response:
-    body: '{"total_count":1,"dns_zones":[{"domain":"scaleway-terraform.com","subdomain":"test-data-source-weighted","ns":["ns0.dom.scw.cloud","ns1.dom.scw.cloud"],"ns_default":["ns0.dom.scw.cloud","ns1.dom.scw.cloud"],"ns_master":[],"status":"active","message":null,"updated_at":"2022-02-15T15:31:37Z","project_id":"951df375-e094-4d26-97c1-ba548eeb9c42"}]}'
+    body: '{"total_count":1,"dns_zones":[{"domain":"scaleway-terraform.com","subdomain":"test-data-source-weighted","ns":["ns0.dom.scw.cloud","ns1.dom.scw.cloud"],"ns_default":["ns0.dom.scw.cloud","ns1.dom.scw.cloud"],"ns_master":[],"status":"pending","message":null,"updated_at":"2022-02-17T13:34:40Z","project_id":"105bdce1-64c0-48ab-899d-868455867ecf"}]}'
     headers:
       Content-Length:
-      - "345"
+      - "346"
       Content-Security-Policy:
       - default-src 'none'; frame-ancestors 'none'
       Content-Type:
       - application/json
       Date:
-      - Tue, 15 Feb 2022 15:31:37 GMT
+      - Thu, 17 Feb 2022 13:34:41 GMT
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -3117,7 +3117,7 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - 32e312f6-957f-436d-b9f3-a8e295f36768
+      - 9b8cc65f-2ea6-409b-b680-f4207db878c2
     status: 200 OK
     code: 200
     duration: ""
@@ -3131,7 +3131,7 @@ interactions:
     url: https://api.scaleway.com/domain/v2beta1/dns-zones/test-data-source-weighted.scaleway-terraform.com/records?name=&order_by=name_asc&type=unknown
     method: GET
   response:
-    body: '{"total_count":3,"records":[{"id":"5b4103ca-b2d3-40b6-98c4-455c67bee564","data":"ns0.dom.scw.cloud.","name":"","priority":0,"ttl":600,"type":"NS","comment":null},{"id":"a8d448cc-1322-42b8-a095-6eff434a71f0","data":"ns1.dom.scw.cloud.","name":"","priority":0,"ttl":600,"type":"NS","comment":null},{"id":"9490c9bb-8791-45dd-8be6-2284ab598a04","data":"1.2.3.4","name":"tf_weighted","priority":0,"ttl":3600,"type":"A","comment":null,"weighted_config":{"weighted_ips":[{"ip":"1.2.3.4","weight":1},{"ip":"4.3.2.1","weight":2}]}}]}'
+    body: '{"total_count":3,"records":[{"id":"f9566a3e-c717-4859-bf1f-1f909f6b864d","data":"ns0.dom.scw.cloud.","name":"","priority":0,"ttl":600,"type":"NS","comment":null},{"id":"b5d5befb-a264-446d-9f1c-c0267c08f606","data":"ns1.dom.scw.cloud.","name":"","priority":0,"ttl":600,"type":"NS","comment":null},{"id":"66755cb2-eef2-47f7-804c-884d415e4749","data":"1.2.3.4","name":"tf_weighted","priority":0,"ttl":3600,"type":"A","comment":null,"weighted_config":{"weighted_ips":[{"ip":"1.2.3.4","weight":1},{"ip":"4.3.2.1","weight":2}]}}]}'
     headers:
       Content-Length:
       - "524"
@@ -3140,7 +3140,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Tue, 15 Feb 2022 15:31:37 GMT
+      - Thu, 17 Feb 2022 13:34:41 GMT
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -3150,7 +3150,7 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - 76e07ca5-1ca3-4091-8893-cabfe05fc812
+      - 89ef3fd2-6dd1-4291-9b7c-661281d24dc1
     status: 200 OK
     code: 200
     duration: ""
@@ -3164,7 +3164,7 @@ interactions:
     url: https://api.scaleway.com/domain/v2beta1/dns-zones/test-data-source-weighted.scaleway-terraform.com/records?name=&order_by=name_asc&page=1&type=unknown
     method: GET
   response:
-    body: '{"total_count":3,"records":[{"id":"5b4103ca-b2d3-40b6-98c4-455c67bee564","data":"ns0.dom.scw.cloud.","name":"","priority":0,"ttl":600,"type":"NS","comment":null},{"id":"a8d448cc-1322-42b8-a095-6eff434a71f0","data":"ns1.dom.scw.cloud.","name":"","priority":0,"ttl":600,"type":"NS","comment":null},{"id":"9490c9bb-8791-45dd-8be6-2284ab598a04","data":"1.2.3.4","name":"tf_weighted","priority":0,"ttl":3600,"type":"A","comment":null,"weighted_config":{"weighted_ips":[{"ip":"1.2.3.4","weight":1},{"ip":"4.3.2.1","weight":2}]}}]}'
+    body: '{"total_count":3,"records":[{"id":"f9566a3e-c717-4859-bf1f-1f909f6b864d","data":"ns0.dom.scw.cloud.","name":"","priority":0,"ttl":600,"type":"NS","comment":null},{"id":"b5d5befb-a264-446d-9f1c-c0267c08f606","data":"ns1.dom.scw.cloud.","name":"","priority":0,"ttl":600,"type":"NS","comment":null},{"id":"66755cb2-eef2-47f7-804c-884d415e4749","data":"1.2.3.4","name":"tf_weighted","priority":0,"ttl":3600,"type":"A","comment":null,"weighted_config":{"weighted_ips":[{"ip":"1.2.3.4","weight":1},{"ip":"4.3.2.1","weight":2}]}}]}'
     headers:
       Content-Length:
       - "524"
@@ -3173,7 +3173,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Tue, 15 Feb 2022 15:31:38 GMT
+      - Thu, 17 Feb 2022 13:34:42 GMT
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -3183,7 +3183,7 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - 478e9a08-bc43-4656-a898-201fc761ebd2
+      - 5ac3fc53-a4fc-4195-8c1a-64b2724cd35d
     status: 200 OK
     code: 200
     duration: ""
@@ -3197,16 +3197,16 @@ interactions:
     url: https://api.scaleway.com/domain/v2beta1/dns-zones?dns_zone=test-data-source-weighted.scaleway-terraform.com&domain=&order_by=domain_asc&page=1
     method: GET
   response:
-    body: '{"total_count":1,"dns_zones":[{"domain":"scaleway-terraform.com","subdomain":"test-data-source-weighted","ns":["ns0.dom.scw.cloud","ns1.dom.scw.cloud"],"ns_default":["ns0.dom.scw.cloud","ns1.dom.scw.cloud"],"ns_master":[],"status":"active","message":null,"updated_at":"2022-02-15T15:31:37Z","project_id":"951df375-e094-4d26-97c1-ba548eeb9c42"}]}'
+    body: '{"total_count":1,"dns_zones":[{"domain":"scaleway-terraform.com","subdomain":"test-data-source-weighted","ns":["ns0.dom.scw.cloud","ns1.dom.scw.cloud"],"ns_default":["ns0.dom.scw.cloud","ns1.dom.scw.cloud"],"ns_master":[],"status":"pending","message":null,"updated_at":"2022-02-17T13:34:40Z","project_id":"105bdce1-64c0-48ab-899d-868455867ecf"}]}'
     headers:
       Content-Length:
-      - "345"
+      - "346"
       Content-Security-Policy:
       - default-src 'none'; frame-ancestors 'none'
       Content-Type:
       - application/json
       Date:
-      - Tue, 15 Feb 2022 15:31:38 GMT
+      - Thu, 17 Feb 2022 13:34:42 GMT
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -3216,7 +3216,7 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - 84e99d04-7fc6-43e7-9150-f06d6df84352
+      - 545a4d73-c4d7-41da-8cf5-d3c9540b25ea
     status: 200 OK
     code: 200
     duration: ""
@@ -3230,7 +3230,7 @@ interactions:
     url: https://api.scaleway.com/domain/v2beta1/dns-zones/test-data-source-weighted.scaleway-terraform.com/records?name=tf_weighted&order_by=name_asc&page=1&type=A
     method: GET
   response:
-    body: '{"total_count":1,"records":[{"id":"9490c9bb-8791-45dd-8be6-2284ab598a04","data":"1.2.3.4","name":"tf_weighted","priority":0,"ttl":3600,"type":"A","comment":null,"weighted_config":{"weighted_ips":[{"ip":"1.2.3.4","weight":1},{"ip":"4.3.2.1","weight":2}]}}]}'
+    body: '{"total_count":1,"records":[{"id":"66755cb2-eef2-47f7-804c-884d415e4749","data":"1.2.3.4","name":"tf_weighted","priority":0,"ttl":3600,"type":"A","comment":null,"weighted_config":{"weighted_ips":[{"ip":"1.2.3.4","weight":1},{"ip":"4.3.2.1","weight":2}]}}]}'
     headers:
       Content-Length:
       - "256"
@@ -3239,7 +3239,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Tue, 15 Feb 2022 15:31:38 GMT
+      - Thu, 17 Feb 2022 13:34:42 GMT
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -3249,7 +3249,7 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - 81381e70-4935-499f-b5da-863aa0dec706
+      - 8fcc865e-caa5-4bef-83c6-3c8902e8f3c1
     status: 200 OK
     code: 200
     duration: ""
@@ -3263,16 +3263,16 @@ interactions:
     url: https://api.scaleway.com/domain/v2beta1/dns-zones?dns_zone=test-data-source-weighted.scaleway-terraform.com&domain=&order_by=domain_asc&page=1
     method: GET
   response:
-    body: '{"total_count":1,"dns_zones":[{"domain":"scaleway-terraform.com","subdomain":"test-data-source-weighted","ns":["ns0.dom.scw.cloud","ns1.dom.scw.cloud"],"ns_default":["ns0.dom.scw.cloud","ns1.dom.scw.cloud"],"ns_master":[],"status":"active","message":null,"updated_at":"2022-02-15T15:31:37Z","project_id":"951df375-e094-4d26-97c1-ba548eeb9c42"}]}'
+    body: '{"total_count":1,"dns_zones":[{"domain":"scaleway-terraform.com","subdomain":"test-data-source-weighted","ns":["ns0.dom.scw.cloud","ns1.dom.scw.cloud"],"ns_default":["ns0.dom.scw.cloud","ns1.dom.scw.cloud"],"ns_master":[],"status":"pending","message":null,"updated_at":"2022-02-17T13:34:40Z","project_id":"105bdce1-64c0-48ab-899d-868455867ecf"}]}'
     headers:
       Content-Length:
-      - "345"
+      - "346"
       Content-Security-Policy:
       - default-src 'none'; frame-ancestors 'none'
       Content-Type:
       - application/json
       Date:
-      - Tue, 15 Feb 2022 15:31:38 GMT
+      - Thu, 17 Feb 2022 13:34:42 GMT
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -3282,7 +3282,7 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - 55e16921-ffc5-411f-b163-27dfd3aefe56
+      - 88563f47-9abe-4274-99b9-5f0c0ad8c522
     status: 200 OK
     code: 200
     duration: ""
@@ -3296,7 +3296,7 @@ interactions:
     url: https://api.scaleway.com/domain/v2beta1/dns-zones/test-data-source-weighted.scaleway-terraform.com/records?name=&order_by=name_asc&page=1&type=unknown
     method: GET
   response:
-    body: '{"total_count":3,"records":[{"id":"5b4103ca-b2d3-40b6-98c4-455c67bee564","data":"ns0.dom.scw.cloud.","name":"","priority":0,"ttl":600,"type":"NS","comment":null},{"id":"a8d448cc-1322-42b8-a095-6eff434a71f0","data":"ns1.dom.scw.cloud.","name":"","priority":0,"ttl":600,"type":"NS","comment":null},{"id":"9490c9bb-8791-45dd-8be6-2284ab598a04","data":"1.2.3.4","name":"tf_weighted","priority":0,"ttl":3600,"type":"A","comment":null,"weighted_config":{"weighted_ips":[{"ip":"1.2.3.4","weight":1},{"ip":"4.3.2.1","weight":2}]}}]}'
+    body: '{"total_count":3,"records":[{"id":"f9566a3e-c717-4859-bf1f-1f909f6b864d","data":"ns0.dom.scw.cloud.","name":"","priority":0,"ttl":600,"type":"NS","comment":null},{"id":"b5d5befb-a264-446d-9f1c-c0267c08f606","data":"ns1.dom.scw.cloud.","name":"","priority":0,"ttl":600,"type":"NS","comment":null},{"id":"66755cb2-eef2-47f7-804c-884d415e4749","data":"1.2.3.4","name":"tf_weighted","priority":0,"ttl":3600,"type":"A","comment":null,"weighted_config":{"weighted_ips":[{"ip":"1.2.3.4","weight":1},{"ip":"4.3.2.1","weight":2}]}}]}'
     headers:
       Content-Length:
       - "524"
@@ -3305,7 +3305,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Tue, 15 Feb 2022 15:31:39 GMT
+      - Thu, 17 Feb 2022 13:34:42 GMT
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -3315,7 +3315,7 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - a22bde29-91d7-4160-ac64-3a35355bfbc1
+      - e08b11ff-7bbc-458f-9d24-7ddbdfd174ab
     status: 200 OK
     code: 200
     duration: ""
@@ -3329,16 +3329,16 @@ interactions:
     url: https://api.scaleway.com/domain/v2beta1/dns-zones?dns_zone=test-data-source-weighted.scaleway-terraform.com&domain=&order_by=domain_asc&page=1
     method: GET
   response:
-    body: '{"total_count":1,"dns_zones":[{"domain":"scaleway-terraform.com","subdomain":"test-data-source-weighted","ns":["ns0.dom.scw.cloud","ns1.dom.scw.cloud"],"ns_default":["ns0.dom.scw.cloud","ns1.dom.scw.cloud"],"ns_master":[],"status":"active","message":null,"updated_at":"2022-02-15T15:31:37Z","project_id":"951df375-e094-4d26-97c1-ba548eeb9c42"}]}'
+    body: '{"total_count":1,"dns_zones":[{"domain":"scaleway-terraform.com","subdomain":"test-data-source-weighted","ns":["ns0.dom.scw.cloud","ns1.dom.scw.cloud"],"ns_default":["ns0.dom.scw.cloud","ns1.dom.scw.cloud"],"ns_master":[],"status":"pending","message":null,"updated_at":"2022-02-17T13:34:40Z","project_id":"105bdce1-64c0-48ab-899d-868455867ecf"}]}'
     headers:
       Content-Length:
-      - "345"
+      - "346"
       Content-Security-Policy:
       - default-src 'none'; frame-ancestors 'none'
       Content-Type:
       - application/json
       Date:
-      - Tue, 15 Feb 2022 15:31:39 GMT
+      - Thu, 17 Feb 2022 13:34:42 GMT
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -3348,7 +3348,7 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - 1bb229f4-b23d-4943-aa02-67ac60617867
+      - b2c9cfb8-edb2-4122-9ecb-8210d226b123
     status: 200 OK
     code: 200
     duration: ""
@@ -3362,7 +3362,7 @@ interactions:
     url: https://api.scaleway.com/domain/v2beta1/dns-zones/test-data-source-weighted.scaleway-terraform.com/records?name=&order_by=name_asc&page=1&type=unknown
     method: GET
   response:
-    body: '{"total_count":3,"records":[{"id":"5b4103ca-b2d3-40b6-98c4-455c67bee564","data":"ns0.dom.scw.cloud.","name":"","priority":0,"ttl":600,"type":"NS","comment":null},{"id":"a8d448cc-1322-42b8-a095-6eff434a71f0","data":"ns1.dom.scw.cloud.","name":"","priority":0,"ttl":600,"type":"NS","comment":null},{"id":"9490c9bb-8791-45dd-8be6-2284ab598a04","data":"1.2.3.4","name":"tf_weighted","priority":0,"ttl":3600,"type":"A","comment":null,"weighted_config":{"weighted_ips":[{"ip":"1.2.3.4","weight":1},{"ip":"4.3.2.1","weight":2}]}}]}'
+    body: '{"total_count":3,"records":[{"id":"f9566a3e-c717-4859-bf1f-1f909f6b864d","data":"ns0.dom.scw.cloud.","name":"","priority":0,"ttl":600,"type":"NS","comment":null},{"id":"b5d5befb-a264-446d-9f1c-c0267c08f606","data":"ns1.dom.scw.cloud.","name":"","priority":0,"ttl":600,"type":"NS","comment":null},{"id":"66755cb2-eef2-47f7-804c-884d415e4749","data":"1.2.3.4","name":"tf_weighted","priority":0,"ttl":3600,"type":"A","comment":null,"weighted_config":{"weighted_ips":[{"ip":"1.2.3.4","weight":1},{"ip":"4.3.2.1","weight":2}]}}]}'
     headers:
       Content-Length:
       - "524"
@@ -3371,7 +3371,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Tue, 15 Feb 2022 15:31:39 GMT
+      - Thu, 17 Feb 2022 13:34:43 GMT
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -3381,7 +3381,7 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - f4815c59-f216-435e-9ad7-11c460762682
+      - a60195e6-ef4d-4edd-9146-cbc1e2c2202e
     status: 200 OK
     code: 200
     duration: ""
@@ -3395,16 +3395,16 @@ interactions:
     url: https://api.scaleway.com/domain/v2beta1/dns-zones?dns_zone=test-data-source-weighted.scaleway-terraform.com&domain=&order_by=domain_asc&page=1
     method: GET
   response:
-    body: '{"total_count":1,"dns_zones":[{"domain":"scaleway-terraform.com","subdomain":"test-data-source-weighted","ns":["ns0.dom.scw.cloud","ns1.dom.scw.cloud"],"ns_default":["ns0.dom.scw.cloud","ns1.dom.scw.cloud"],"ns_master":[],"status":"active","message":null,"updated_at":"2022-02-15T15:31:37Z","project_id":"951df375-e094-4d26-97c1-ba548eeb9c42"}]}'
+    body: '{"total_count":1,"dns_zones":[{"domain":"scaleway-terraform.com","subdomain":"test-data-source-weighted","ns":["ns0.dom.scw.cloud","ns1.dom.scw.cloud"],"ns_default":["ns0.dom.scw.cloud","ns1.dom.scw.cloud"],"ns_master":[],"status":"pending","message":null,"updated_at":"2022-02-17T13:34:40Z","project_id":"105bdce1-64c0-48ab-899d-868455867ecf"}]}'
     headers:
       Content-Length:
-      - "345"
+      - "346"
       Content-Security-Policy:
       - default-src 'none'; frame-ancestors 'none'
       Content-Type:
       - application/json
       Date:
-      - Tue, 15 Feb 2022 15:31:39 GMT
+      - Thu, 17 Feb 2022 13:34:43 GMT
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -3414,12 +3414,12 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - 08bbbe10-1685-4577-aee8-4f1c912398cc
+      - 1ccb2cc5-625c-4031-98e0-6dec08825250
     status: 200 OK
     code: 200
     duration: ""
 - request:
-    body: '{"changes":[{"delete":{"id":"9490c9bb-8791-45dd-8be6-2284ab598a04"}}],"return_all_records":false,"disallow_new_zone_creation":false,"serial":null}'
+    body: '{"changes":[{"delete":{"id":"66755cb2-eef2-47f7-804c-884d415e4749"}}],"return_all_records":false,"disallow_new_zone_creation":false,"serial":null}'
     form: {}
     headers:
       Content-Type:
@@ -3439,7 +3439,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Tue, 15 Feb 2022 15:31:40 GMT
+      - Thu, 17 Feb 2022 13:34:43 GMT
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -3449,7 +3449,7 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - 0ad95e07-5aea-4da2-b82a-2d0282729f34
+      - 29035abf-9ee6-4a51-b46c-db36cc771a30
     status: 200 OK
     code: 200
     duration: ""
@@ -3463,7 +3463,7 @@ interactions:
     url: https://api.scaleway.com/domain/v2beta1/dns-zones/test-data-source-weighted.scaleway-terraform.com/records?name=&order_by=name_asc&type=unknown
     method: GET
   response:
-    body: '{"total_count":2,"records":[{"id":"5b4103ca-b2d3-40b6-98c4-455c67bee564","data":"ns0.dom.scw.cloud.","name":"","priority":0,"ttl":600,"type":"NS","comment":null},{"id":"a8d448cc-1322-42b8-a095-6eff434a71f0","data":"ns1.dom.scw.cloud.","name":"","priority":0,"ttl":600,"type":"NS","comment":null}]}'
+    body: '{"total_count":2,"records":[{"id":"f9566a3e-c717-4859-bf1f-1f909f6b864d","data":"ns0.dom.scw.cloud.","name":"","priority":0,"ttl":600,"type":"NS","comment":null},{"id":"b5d5befb-a264-446d-9f1c-c0267c08f606","data":"ns1.dom.scw.cloud.","name":"","priority":0,"ttl":600,"type":"NS","comment":null}]}'
     headers:
       Content-Length:
       - "297"
@@ -3472,7 +3472,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Tue, 15 Feb 2022 15:31:40 GMT
+      - Thu, 17 Feb 2022 13:34:43 GMT
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -3482,7 +3482,7 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - 2a31bf0c-8056-47e3-a14c-21a246cbc5b5
+      - 78bd9ee2-c48f-4ec4-a0f7-bc9ab7b4e5e5
     status: 200 OK
     code: 200
     duration: ""
@@ -3493,7 +3493,7 @@ interactions:
       User-Agent:
       - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.17.6; linux; amd64) terraform-provider/develop
         terraform/terraform-tests
-    url: https://api.scaleway.com/domain/v2beta1/dns-zones/test-data-source-weighted.scaleway-terraform.com?project_id=951df375-e094-4d26-97c1-ba548eeb9c42
+    url: https://api.scaleway.com/domain/v2beta1/dns-zones/test-data-source-weighted.scaleway-terraform.com?project_id=105bdce1-64c0-48ab-899d-868455867ecf
     method: DELETE
   response:
     body: '{}'
@@ -3505,7 +3505,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Tue, 15 Feb 2022 15:31:40 GMT
+      - Thu, 17 Feb 2022 13:34:44 GMT
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -3515,7 +3515,7 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - f0d82e73-2385-43b9-a31a-a5687c2e3612
+      - 9e788262-3f6c-4ad3-bcca-05c2e7f07273
     status: 200 OK
     code: 200
     duration: ""
@@ -3538,7 +3538,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Tue, 15 Feb 2022 15:31:40 GMT
+      - Thu, 17 Feb 2022 13:34:44 GMT
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -3548,7 +3548,7 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - 52f6e68f-3abb-443c-9032-47982ebd2591
+      - 8dfba673-5f65-4e71-a061-09f5adaaa446
     status: 403 Forbidden
     code: 403
     duration: ""

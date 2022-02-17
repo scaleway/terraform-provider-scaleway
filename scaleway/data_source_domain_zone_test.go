@@ -13,7 +13,7 @@ func TestAccScalewayDataSourceDomainZone_Basic(t *testing.T) {
 
 	testDNSZone := "test-zone"
 
-	resource.ParallelTest(t, resource.TestCase{
+	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheckScalewayDomainZoneDestroy(tt),
