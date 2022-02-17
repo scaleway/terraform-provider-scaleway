@@ -91,8 +91,10 @@ func resourceScalewayDomainZoneCreate(ctx context.Context, d *schema.ResourceDat
 		ProjectID: expandStringPtr(d.Get("project_id")),
 		DNSZone:   zoneName,
 	}, scw.WithContext(ctx))
-
 	if err != nil {
+		if is409Error(err) {
+			return resourceScalewayDomainZoneRead(ctx, d, meta)
+		}
 		return diag.FromErr(err)
 	}
 
