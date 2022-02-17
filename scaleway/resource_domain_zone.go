@@ -92,9 +92,6 @@ func resourceScalewayDomainZoneCreate(ctx context.Context, d *schema.ResourceDat
 		DNSZone:   zoneName,
 	}, scw.WithContext(ctx))
 	if err != nil {
-		if is409Error(err) {
-			return resourceScalewayDomainZoneRead(ctx, d, meta)
-		}
 		return diag.FromErr(err)
 	}
 
@@ -115,6 +112,9 @@ func resourceScalewayDomainZoneCreate(ctx context.Context, d *schema.ResourceDat
 	}, scw.WithContext(ctx))
 
 	if err != nil {
+		if is409Error(err) {
+			return resourceScalewayDomainZoneRead(ctx, d, meta)
+		}
 		return diag.FromErr(err)
 	}
 	d.SetId(fmt.Sprintf("%s.%s", dnsZone.Subdomain, dnsZone.Domain))
@@ -179,21 +179,12 @@ func resourceScalewayDomainZoneUpdate(ctx context.Context, d *schema.ResourceDat
 func resourceScalewayDomainZoneDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	domainAPI := newDomainAPI(meta)
 
-	_, err := domainAPI.ListDNSZones(&domain.ListDNSZonesRequest{
-		ProjectID: expandStringPtr(d.Get("project_id")),
-		DNSZone:   d.Id(),
-	}, scw.WithContext(ctx))
-	if err != nil {
-		d.SetId("")
-		return nil
-	}
-
-	_, err = domainAPI.DeleteDNSZone(&domain.DeleteDNSZoneRequest{
+	_, err := domainAPI.DeleteDNSZone(&domain.DeleteDNSZoneRequest{
 		ProjectID: d.Get("project_id").(string),
 		DNSZone:   d.Id(),
 	}, scw.WithContext(ctx))
 
-	if err != nil && !is404Error(err) {
+	if err != nil && !is404Error(err) && !is403Error(err) {
 		return diag.FromErr(err)
 	}
 
