@@ -101,6 +101,28 @@ func TestAccScalewayFunctionNamespace_Basic(t *testing.T) {
 	})
 }
 
+func TestAccScalewayFunctionNamespace_NoName(t *testing.T) {
+	tt := NewTestTools(t)
+	defer tt.Cleanup()
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      testAccCheckScalewayFunctionNamespaceDestroy(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource scaleway_function_namespace main {
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayFunctionNamespaceExists(tt, "scaleway_function_namespace.main"),
+				),
+			},
+		},
+	})
+}
+
 func TestAccScalewayFunctionNamespace_EnvironmentVariables(t *testing.T) {
 	tt := NewTestTools(t)
 	defer tt.Cleanup()

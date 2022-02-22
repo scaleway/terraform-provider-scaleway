@@ -25,7 +25,8 @@ func resourceScalewayFunctionNamespace() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 			"name": {
 				Type:        schema.TypeString,
-				Required:    true,
+				Computed:    true,
+				Optional:    true,
 				Description: "The name of the function namespace",
 			},
 			"description": {
@@ -64,7 +65,7 @@ func resourceScalewayFunctionNamespaceCreate(ctx context.Context, d *schema.Reso
 	ns, err := api.CreateNamespace(&function.CreateNamespaceRequest{
 		Description:          expandStringPtr(d.Get("description").(string)),
 		EnvironmentVariables: expandMapStringStringPtr(d.Get("environment_variables")),
-		Name:                 expandOrGenerateString(d.Get("name").(string), "fn-ns-"),
+		Name:                 expandOrGenerateString(d.Get("name").(string), "func-"),
 		ProjectID:            d.Get("project_id").(string),
 		Region:               region,
 	}, scw.WithContext(ctx))
