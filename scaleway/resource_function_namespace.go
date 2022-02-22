@@ -26,6 +26,7 @@ func resourceScalewayFunctionNamespace() *schema.Resource {
 			"name": {
 				Type:        schema.TypeString,
 				Computed:    true,
+				ForceNew:    true,
 				Optional:    true,
 				Description: "The name of the function namespace",
 			},
