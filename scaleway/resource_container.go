@@ -155,7 +155,7 @@ func resourceScalewayContainer() *schema.Resource {
 func resourceScalewayContainerCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	api, region, err := containerAPIWithRegion(d, meta)
 	if err != nil {
-		return diag.FromErr(err)
+		return err
 	}
 
 	namespaceID := d.Get("namespace_id")
@@ -184,7 +184,7 @@ func resourceScalewayContainerCreate(ctx context.Context, d *schema.ResourceData
 func resourceScalewayContainerRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	api, region, containerID, err := containerAPIWithRegionAndID(meta, d.Id())
 	if err != nil {
-		return diag.FromErr(err)
+		return err
 	}
 
 	namespaceID := d.Get("namespace_id")
@@ -236,7 +236,23 @@ func resourceScalewayContainerRead(ctx context.Context, d *schema.ResourceData, 
 func resourceScalewayContainerUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	api, region, containerID, err := containerAPIWithRegionAndID(meta, d.Id())
 	if err != nil {
-		return diag.FromErr(err)
+		return err
+	}
+
+	_, containerID, errID := parseRegionalID(d.Id())
+	if err != nil {
+		return diag.FromErr(errID)
+	}
+
+	namespaceID := d.Get("namespace_id")
+	// verify name space state
+	_, err = apiHandler.waitForNameSpace(expandStringPtr(namespaceID))
+	if err != nil {
+		return err
+	}
+
+	req := &container.UpdateContainerRequest{
+		ContainerID: containerID,
 	}
 
 	namespaceID := d.Get("namespace_id")
@@ -363,7 +379,7 @@ func resourceScalewayContainerUpdate(ctx context.Context, d *schema.ResourceData
 func resourceScalewayContainerDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	api, region, containerID, err := containerAPIWithRegionAndID(meta, d.Id())
 	if err != nil {
-		return diag.FromErr(err)
+		return err
 	}
 
 	namespaceID := d.Get("namespace_id")

@@ -575,3 +575,10 @@ func expandMapStringStringPtr(data interface{}) *map[string]string {
 	}
 	return &m
 }
+func toUint32(number interface{}) *uint32 {
+	return scw.Uint32Ptr(number.(uint32))
+}
+
+func toDuration(seconds interface{}) *scw.Duration {
+	return &scw.Duration{Seconds: seconds.(int64)}
+}
