@@ -39,6 +39,9 @@ func resourceScalewayFunctionNamespace() *schema.Resource {
 				Type:        schema.TypeMap,
 				Optional:    true,
 				Description: "The environment variables of the function namespace",
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
 			},
 			"registry_endpoint": {
 				Type:        schema.TypeString,

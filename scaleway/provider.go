@@ -107,6 +107,7 @@ func Provider(config *ProviderConfig) plugin.ProviderFunc {
 				"scaleway_baremetal_offer":             dataSourceScalewayBaremetalOffer(),
 				"scaleway_domain_record":               dataSourceScalewayDomainRecord(),
 				"scaleway_domain_zone":                 dataSourceScalewayDomainZone(),
+				"scaleway_function_namespace":          dataSourceScalewayFunctionNamespace(),
 				"scaleway_instance_ip":                 dataSourceScalewayInstanceIP(),
 				"scaleway_instance_security_group":     dataSourceScalewayInstanceSecurityGroup(),
 				"scaleway_instance_server":             dataSourceScalewayInstanceServer(),
