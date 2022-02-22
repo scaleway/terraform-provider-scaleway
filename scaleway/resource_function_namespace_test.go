@@ -79,6 +79,71 @@ func TestAccScalewayFunctionNamespace_Basic(t *testing.T) {
 					testCheckResourceAttrUUID("scaleway_function_namespace.main", "id"),
 				),
 			},
+			{
+				Config: `
+					resource scaleway_function_namespace main {
+						name = "test-cr-ns-01"
+						environment_variables = {
+							"test" = "test"
+						}
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayFunctionNamespaceExists(tt, "scaleway_function_namespace.main"),
+					resource.TestCheckResourceAttr("scaleway_function_namespace.main", "description", "test function namespace 01"),
+					resource.TestCheckResourceAttr("scaleway_function_namespace.main", "name", "test-cr-ns-01"),
+					resource.TestCheckResourceAttr("scaleway_function_namespace.main", "environment_variables.test", "test"),
+
+					testCheckResourceAttrUUID("scaleway_function_namespace.main", "id"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccScalewayFunctionNamespace_EnvironmentVariables(t *testing.T) {
+	tt := NewTestTools(t)
+	defer tt.Cleanup()
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      testAccCheckScalewayFunctionNamespaceDestroy(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource scaleway_function_namespace main {
+						name = "tf-env-test"
+						environment_variables = {
+							"test" = "test"
+						}
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayFunctionNamespaceExists(tt, "scaleway_function_namespace.main"),
+					resource.TestCheckResourceAttr("scaleway_function_namespace.main", "name", "tf-env-test"),
+					resource.TestCheckResourceAttr("scaleway_function_namespace.main", "environment_variables.test", "test"),
+
+					testCheckResourceAttrUUID("scaleway_function_namespace.main", "id"),
+				),
+			},
+			{
+				Config: `
+					resource scaleway_function_namespace main {
+						name = "tf-env-test"
+						environment_variables = {
+							"foo" = "bar"
+						}
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayFunctionNamespaceExists(tt, "scaleway_function_namespace.main"),
+					resource.TestCheckResourceAttr("scaleway_function_namespace.main", "name", "tf-env-test"),
+					resource.TestCheckResourceAttr("scaleway_function_namespace.main", "environment_variables.foo", "bar"),
+
+					testCheckResourceAttrUUID("scaleway_function_namespace.main", "id"),
+				),
+			},
 		},
 	})
 }

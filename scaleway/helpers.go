@@ -544,5 +544,8 @@ func expandMapStringStringPtr(data interface{}) *map[string]string {
 		return nil
 	}
 	m := make(map[string]string)
+	for k, v := range data.(map[string]interface{}) {
+		m[k] = v.(string)
+	}
 	return &m
 }

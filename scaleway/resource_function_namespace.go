@@ -114,11 +114,12 @@ func resourceScalewayFunctionNamespaceUpdate(ctx context.Context, d *schema.Reso
 		return diag.FromErr(err)
 	}
 
-	if d.HasChanges("description") {
+	if d.HasChanges("description", "environment_variables") {
 		if _, err := api.UpdateNamespace(&function.UpdateNamespaceRequest{
-			Region:      region,
-			NamespaceID: id,
-			Description: expandStringPtr(d.Get("description")),
+			Region:               region,
+			NamespaceID:          id,
+			Description:          expandStringPtr(d.Get("description")),
+			EnvironmentVariables: expandMapStringStringPtr(d.Get("environment_variables")),
 		}, scw.WithContext(ctx)); err != nil {
 			return diag.FromErr(err)
 		}
