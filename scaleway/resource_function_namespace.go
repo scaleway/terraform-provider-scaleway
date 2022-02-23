@@ -5,6 +5,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	function "github.com/scaleway/scaleway-sdk-go/api/function/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 )
@@ -40,8 +41,10 @@ func resourceScalewayFunctionNamespace() *schema.Resource {
 				Optional:    true,
 				Description: "The environment variables of the function namespace",
 				Elem: &schema.Schema{
-					Type: schema.TypeString,
+					Type:         schema.TypeString,
+					ValidateFunc: validation.StringLenBetween(0, 1000),
 				},
+				ValidateDiagFunc: validation.MapKeyLenBetween(0, 100),
 			},
 			"registry_endpoint": {
 				Type:        schema.TypeString,
