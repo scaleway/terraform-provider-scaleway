@@ -197,22 +197,58 @@ func expandBucketCORS(rawCors []interface{}, bucket string) []*s3.CORSRule {
 	return rules
 }
 
-func deleteS3Object(conn *s3.S3, bucketName string, object *s3.Object) error {
-	_, err := conn.DeleteObject(&s3.DeleteObjectInput{
+func deleteS3ObjectVersion(conn *s3.S3, bucketName string, key string, versionID string, force bool) error {
+	input := &s3.DeleteObjectInput{
 		Bucket: scw.StringPtr(bucketName),
-		Key:    object.Key,
-	})
+		Key:    scw.StringPtr(key),
+	}
+	if versionID != "" {
+		input.VersionId = scw.StringPtr(versionID)
+	}
+	if force {
+		input.BypassGovernanceRetention = scw.BoolPtr(force)
+	}
+
+	_, err := conn.DeleteObject(input)
 	return err
 }
 
-func deleteS3Objects(ctx context.Context, conn *s3.S3, bucketName string) error {
+func deleteS3ObjectVersions(ctx context.Context, conn *s3.S3, bucketName string, force bool) error {
 	var err error
-	listInput := &s3.ListObjectsInput{
+	listInput := &s3.ListObjectVersionsInput{
 		Bucket: scw.StringPtr(bucketName),
 	}
-	listErr := conn.ListObjectsPagesWithContext(ctx, listInput, func(page *s3.ListObjectsOutput, lastPage bool) bool {
-		for _, object := range page.Contents {
-			err = deleteS3Object(conn, bucketName, object)
+	listErr := conn.ListObjectVersionsPagesWithContext(ctx, listInput, func(page *s3.ListObjectVersionsOutput, lastPage bool) bool {
+		for _, objectVersion := range page.Versions {
+			objectKey := aws.StringValue(objectVersion.Key)
+			objectVersionID := aws.StringValue(objectVersion.VersionId)
+			err = deleteS3ObjectVersion(conn, bucketName, objectKey, objectVersionID, force)
+
+			if isS3Err(err, "AccessDenied", "") && force {
+				objectHead, err := conn.HeadObject(&s3.HeadObjectInput{
+					Bucket:    scw.StringPtr(bucketName),
+					Key:       objectVersion.Key,
+					VersionId: objectVersion.VersionId,
+				})
+				if err != nil {
+					err = fmt.Errorf("failed to get S3 object meta data: %s", err)
+					return false
+				}
+				if aws.StringValue(objectHead.ObjectLockLegalHoldStatus) == s3.ObjectLockLegalHoldStatusOn {
+					_, err := conn.PutObjectLegalHold(&s3.PutObjectLegalHoldInput{
+						Bucket:    scw.StringPtr(bucketName),
+						Key:       objectVersion.Key,
+						VersionId: objectVersion.VersionId,
+						LegalHold: &s3.ObjectLockLegalHold{
+							Status: scw.StringPtr(s3.ObjectLockLegalHoldStatusOff),
+						},
+					})
+					if err != nil {
+						err = fmt.Errorf("failed to put S3 object legal hold: %s", err)
+					}
+					err = deleteS3ObjectVersion(conn, bucketName, objectKey, objectVersionID, force)
+				}
+			}
 			if err != nil {
 				err = fmt.Errorf("failed to delete S3 object: %s", err)
 				return false
@@ -222,6 +258,25 @@ func deleteS3Objects(ctx context.Context, conn *s3.S3, bucketName string) error 
 	})
 	if listErr != nil {
 		return fmt.Errorf("error listing S3 objects: %s", err)
+	}
+	if err != nil {
+		return err
+	}
+	listErr = conn.ListObjectVersionsPagesWithContext(ctx, listInput, func(page *s3.ListObjectVersionsOutput, lastPage bool) bool {
+		for _, deleteMarkerEntry := range page.DeleteMarkers {
+			deleteMarkerKey := aws.StringValue(deleteMarkerEntry.Key)
+			deleteMarkerVersionsID := aws.StringValue(deleteMarkerEntry.VersionId)
+			err = deleteS3ObjectVersion(conn, bucketName, deleteMarkerKey, deleteMarkerVersionsID, force)
+
+			if err != nil {
+				err = fmt.Errorf("failed to delete S3 object delete marker: %s", err)
+				return false
+			}
+		}
+		return true
+	})
+	if listErr != nil {
+		return fmt.Errorf("error listing S3 objects for delete markers: %s", err)
 	}
 	if err != nil {
 		return err
