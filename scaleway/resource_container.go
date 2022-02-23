@@ -155,7 +155,7 @@ func resourceScalewayContainer() *schema.Resource {
 func resourceScalewayContainerCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	api, region, err := containerAPIWithRegion(d, meta)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	namespaceID := d.Get("namespace_id")
@@ -236,22 +236,63 @@ func resourceScalewayContainerRead(ctx context.Context, d *schema.ResourceData, 
 func resourceScalewayContainerUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	api, region, containerID, err := containerAPIWithRegionAndID(meta, d.Id())
 	if err != nil {
-		return err
-	}
-
-	_, containerID, errID := parseRegionalID(d.Id())
-	if err != nil {
-		return diag.FromErr(errID)
+		return diag.FromErr(err)
 	}
 
 	namespaceID := d.Get("namespace_id")
 	// verify name space state
-	_, err = apiHandler.waitForNameSpace(expandStringPtr(namespaceID))
+	_, err = api.WaitForNamespace(&container.WaitForNamespaceRequest{
+		NamespaceID:   expandID(namespaceID),
+		Region:        region,
+		Timeout:       scw.TimeDurationPtr(defaultRegistryNamespaceTimeout),
+		RetryInterval: DefaultWaitRetryInterval,
+	}, scw.WithContext(ctx))
 	if err != nil {
-		return err
+		return diag.Errorf("unexpected namespace error: %s", err)
 	}
 
+	// check for container state
+	_, err = api.WaitForContainer(&container.WaitForContainerRequest{ContainerID: containerID,
+		Region:        region,
+		Timeout:       scw.TimeDurationPtr(defaultContainerTimeout),
+		RetryInterval: DefaultWaitRetryInterval,
+	}, scw.WithContext(ctx))
+	if err != nil {
+		return diag.Errorf("unexpected waiting container error: %s", err)
+	}
+
+	// Warning or Errors can be collected as warnings
+	var diags diag.Diagnostics
+
+	// check triggers associated
+	triggers, errList := api.ListCrons(&container.ListCronsRequest{
+		Region:      region,
+		ContainerID: containerID,
+	}, scw.WithContext(ctx))
+	if errList != nil {
+		return diag.FromErr(errList)
+	}
+
+	// wait for triggers state
+	for _, c := range triggers.Crons {
+		_, err := api.WaitForCron(&container.WaitForCronRequest{
+			CronID:        c.ID,
+			Region:        region,
+			Timeout:       scw.TimeDurationPtr(defaultContainerTimeout),
+			RetryInterval: DefaultWaitRetryInterval,
+		}, scw.WithContext(ctx))
+		if err != nil {
+			diags = append(diags, diag.Diagnostic{
+				Severity: diag.Warning,
+				Summary:  "Warning waiting cron job",
+				Detail:   err.Error(),
+			})
+		}
+	}
+
+	// update container
 	req := &container.UpdateContainerRequest{
+		Region:      region,
 		ContainerID: containerID,
 	}
 
@@ -379,7 +420,7 @@ func resourceScalewayContainerUpdate(ctx context.Context, d *schema.ResourceData
 func resourceScalewayContainerDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	api, region, containerID, err := containerAPIWithRegionAndID(meta, d.Id())
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	namespaceID := d.Get("namespace_id")
