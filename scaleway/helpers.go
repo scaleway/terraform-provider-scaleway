@@ -379,7 +379,7 @@ func expandStringWithDefault(data interface{}, defaultValue string) string {
 }
 
 func expandStrings(data interface{}) []string {
-	stringSlice := []string{}
+	var stringSlice []string
 	for _, s := range data.([]interface{}) {
 		stringSlice = append(stringSlice, s.(string))
 	}

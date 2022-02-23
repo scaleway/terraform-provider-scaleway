@@ -2,10 +2,12 @@ package scaleway
 
 import (
 	"context"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	container "github.com/scaleway/scaleway-sdk-go/api/container/v1beta1"
+	"github.com/scaleway/scaleway-sdk-go/scw"
 )
 
 const (
@@ -134,59 +136,76 @@ func resourceScalewayContainer() *schema.Resource {
 				Description: "The cron status",
 				Computed:    true,
 			},
+			"redeploy": {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Description: "Allow redeploy container",
+				Default:     false,
+			},
 			"region": regionSchema(),
 		},
 	}
 }
 
 func resourceScalewayContainerCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	apiHandler, err := newContainerHandler(ctx, d, meta)
+	api, region, err := containerAPIWithRegion(d, meta)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	namespaceID := d.Get("namespace_id")
 	// verify name space state
-	_, err = apiHandler.waitForNameSpace(expandStringPtr(namespaceID))
+	_, err = api.WaitForNamespace(&container.WaitForNamespaceRequest{
+		NamespaceID:   expandID(namespaceID),
+		Region:        region,
+		Timeout:       scw.TimeDurationPtr(defaultRegistryNamespaceTimeout),
+		RetryInterval: DefaultWaitRetryInterval,
+	}, scw.WithContext(ctx))
 	if err != nil {
-		return err
+		return diag.Errorf("unexpected namespace error: %s", err)
 	}
 
-	c, err := apiHandler.waitForContainerCreation(d)
+	req := setCreateContainerRequest(d, region)
+	res, err := api.CreateContainer(req, scw.WithContext(ctx))
 	if err != nil {
-		return err
+		return diag.Errorf("unexpected waiting container error: %s", err)
 	}
 
-	d.SetId(newRegionalIDString(apiHandler.region, c.ID))
+	d.SetId(newRegionalIDString(region, res.ID))
 
 	return resourceScalewayContainerRead(ctx, d, meta)
 }
 
 func resourceScalewayContainerRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	apiHandler, err := newContainerHandler(ctx, d, meta)
+	api, region, containerID, err := containerAPIWithRegionAndID(meta, d.Id())
 	if err != nil {
-		return err
-	}
-
-	_, id, errID := parseRegionalID(d.Id())
-	if err != nil {
-		return diag.FromErr(errID)
+		return diag.FromErr(err)
 	}
 
 	namespaceID := d.Get("namespace_id")
 	// verify name space state
-	ns, err := apiHandler.waitForNameSpace(expandStringPtr(namespaceID))
+	_, err = api.WaitForNamespace(&container.WaitForNamespaceRequest{
+		NamespaceID:   expandID(namespaceID),
+		Region:        region,
+		Timeout:       scw.TimeDurationPtr(defaultRegistryNamespaceTimeout),
+		RetryInterval: DefaultWaitRetryInterval,
+	}, scw.WithContext(ctx))
 	if err != nil {
-		return err
+		return diag.Errorf("unexpected namespace error: %s", err)
 	}
 
-	co, err := apiHandler.waitForContainer(id)
+	// check for container state
+	co, err := api.WaitForContainer(&container.WaitForContainerRequest{ContainerID: containerID,
+		Region:        region,
+		Timeout:       scw.TimeDurationPtr(defaultContainerTimeout),
+		RetryInterval: DefaultWaitRetryInterval,
+	}, scw.WithContext(ctx))
 	if err != nil {
-		return err
+		return diag.Errorf("unexpected waiting container error: %s", err)
 	}
 
 	_ = d.Set("name", co.Name)
-	_ = d.Set("namespace_id", newRegionalID(apiHandler.region, ns.ID))
+	_ = d.Set("namespace_id", newRegionalID(region, co.NamespaceID))
 	_ = d.Set("status", co.Status.String())
 	_ = d.Set("error_message", co.ErrorMessage)
 	_ = d.Set("environment_variables", flattenMap(co.EnvironmentVariables))
@@ -195,38 +214,80 @@ func resourceScalewayContainerRead(ctx context.Context, d *schema.ResourceData, 
 	_ = d.Set("max_scale", int(co.MemoryLimit))
 	_ = d.Set("cpu_limit", int(co.CPULimit))
 	_ = d.Set("timeout", flattenDuration(co.Timeout.ToTimeDuration()))
-	_ = d.Set("privacy", co.Privacy)
-	_ = d.Set("description", co.Description)
+	_ = d.Set("privacy", co.Privacy.String())
+	_ = d.Set("description", *co.Description)
 	_ = d.Set("registry_image", co.RegistryImage)
-	_ = d.Set("max_concurrency", co.MaxConcurrency)
+	_ = d.Set("max_concurrency", int(co.MaxConcurrency))
 	_ = d.Set("domain_name", co.DomainName)
 	_ = d.Set("protocol", co.Protocol.String())
 	_ = d.Set("cron_status", co.Status.String())
-	_ = d.Set("port", co.Port)
-	_ = d.Set("region", co.Region)
+	_ = d.Set("port", int(co.Port))
+	_ = d.Set("redeploy", *expandBoolPtr(d.Get("redeploy")))
+	_ = d.Set("region", co.Region.String())
 
 	return nil
 }
 
 func resourceScalewayContainerUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	apiHandler, err := newContainerHandler(ctx, d, meta)
+	api, region, containerID, err := containerAPIWithRegionAndID(meta, d.Id())
 	if err != nil {
-		return err
-	}
-
-	_, containerID, errID := parseRegionalID(d.Id())
-	if err != nil {
-		return diag.FromErr(errID)
+		return diag.FromErr(err)
 	}
 
 	namespaceID := d.Get("namespace_id")
 	// verify name space state
-	_, err = apiHandler.waitForNameSpace(expandStringPtr(namespaceID))
+	_, err = api.WaitForNamespace(&container.WaitForNamespaceRequest{
+		NamespaceID:   expandID(namespaceID),
+		Region:        region,
+		Timeout:       scw.TimeDurationPtr(defaultRegistryNamespaceTimeout),
+		RetryInterval: DefaultWaitRetryInterval,
+	}, scw.WithContext(ctx))
 	if err != nil {
-		return err
+		return diag.Errorf("unexpected namespace error: %s", err)
 	}
 
+	// check for container state
+	_, err = api.WaitForContainer(&container.WaitForContainerRequest{ContainerID: containerID,
+		Region:        region,
+		Timeout:       scw.TimeDurationPtr(defaultContainerTimeout),
+		RetryInterval: DefaultWaitRetryInterval,
+	}, scw.WithContext(ctx))
+	if err != nil {
+		return diag.Errorf("unexpected waiting container error: %s", err)
+	}
+
+	// Warning or Errors can be collected as warnings
+	var diags diag.Diagnostics
+
+	// check triggers associated
+	triggers, errList := api.ListCrons(&container.ListCronsRequest{
+		Region:      region,
+		ContainerID: containerID,
+	}, scw.WithContext(ctx))
+	if errList != nil {
+		return diag.FromErr(errList)
+	}
+
+	// wait for triggers state
+	for _, c := range triggers.Crons {
+		_, err := api.WaitForCron(&container.WaitForCronRequest{
+			CronID:        c.ID,
+			Region:        region,
+			Timeout:       scw.TimeDurationPtr(defaultContainerTimeout),
+			RetryInterval: DefaultWaitRetryInterval,
+		}, scw.WithContext(ctx))
+		if err != nil {
+			diags = append(diags, diag.Diagnostic{
+				Severity: diag.Warning,
+				Summary:  "Warning waiting cron job",
+				Detail:   err.Error(),
+			})
+		}
+	}
+
+	// update container
 	req := &container.UpdateContainerRequest{
+		Region:      region,
 		ContainerID: containerID,
 	}
 
@@ -251,31 +312,117 @@ func resourceScalewayContainerUpdate(ctx context.Context, d *schema.ResourceData
 		req.Timeout = toDuration(d.Get("timeout"))
 	}
 
-	errUpdate := apiHandler.waitForUpdate(req)
-	if err != nil {
-		return errUpdate
+	if d.HasChanges("privacy") {
+		req.Privacy = container.ContainerPrivacy(*expandStringPtr(d.Get("privacy")))
 	}
 
-	return resourceScalewayContainerRead(ctx, d, meta)
+	if d.HasChanges("description") {
+		req.Description = expandStringPtr(d.Get("description"))
+	}
+
+	if d.HasChanges("registry_image") {
+		req.RegistryImage = expandStringPtr(d.Get("registry_image"))
+	}
+
+	if d.HasChanges("domain_name") {
+		req.DomainName = expandStringPtr(d.Get("domain_name"))
+	}
+
+	if d.HasChanges("max_concurrency") {
+		req.MaxConcurrency = toUint32(d.Get("max_concurrency"))
+	}
+
+	if d.HasChanges("protocol") {
+		req.Protocol = container.ContainerProtocol(*expandStringPtr(d.Get("protocol")))
+	}
+
+	if d.HasChanges("port") {
+		req.Port = toUint32(d.Get("port"))
+	}
+
+	if d.HasChanges("redeploy") {
+		req.Redeploy = expandBoolPtr(d.Get("redeploy"))
+	}
+
+	_, err = api.UpdateContainer(
+		req,
+		scw.WithContext(ctx),
+	)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	return append(diags, resourceScalewayContainerRead(ctx, d, meta)...)
 }
 
 func resourceScalewayContainerDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	apiHandler, err := newContainerHandler(ctx, d, meta)
+	api, region, containerID, err := containerAPIWithRegionAndID(meta, d.Id())
 	if err != nil {
-		return err
-	}
-
-	_, containerID, errID := parseRegionalID(d.Id())
-	if err != nil {
-		return diag.FromErr(errID)
+		return diag.FromErr(err)
 	}
 
 	namespaceID := d.Get("namespace_id")
 	// verify name space state
-	_, err = apiHandler.waitForNameSpace(expandStringPtr(namespaceID))
+	_, err = api.WaitForNamespace(&container.WaitForNamespaceRequest{
+		NamespaceID:   expandID(namespaceID),
+		Region:        region,
+		Timeout:       scw.TimeDurationPtr(defaultRegistryNamespaceTimeout),
+		RetryInterval: DefaultWaitRetryInterval,
+	}, scw.WithContext(ctx))
 	if err != nil {
-		return err
+		return diag.Errorf("unexpected namespace error: %s", err)
 	}
 
-	return apiHandler.waitForDelete(containerID)
+	// check for container state
+	_, err = api.WaitForContainer(&container.WaitForContainerRequest{ContainerID: containerID,
+		Region:        region,
+		Timeout:       scw.TimeDurationPtr(defaultContainerTimeout),
+		RetryInterval: DefaultWaitRetryInterval,
+	}, scw.WithContext(ctx))
+	if err != nil {
+		return diag.Errorf("unexpected waiting container error: %s", err)
+	}
+
+	// Warning or Errors can be collected as warnings
+	var diags diag.Diagnostics
+
+	// check triggers associated
+	triggers, errList := api.ListCrons(&container.ListCronsRequest{
+		Region:      region,
+		ContainerID: containerID,
+	}, scw.WithContext(ctx))
+	if errList != nil {
+		return diag.FromErr(errList)
+	}
+
+	// wait for triggers state
+	for _, c := range triggers.Crons {
+		_, err := api.WaitForCron(&container.WaitForCronRequest{
+			CronID:        c.ID,
+			Region:        region,
+			Timeout:       scw.TimeDurationPtr(defaultContainerTimeout),
+			RetryInterval: DefaultWaitRetryInterval,
+		}, scw.WithContext(ctx))
+		if err != nil {
+			diags = append(diags, diag.Diagnostic{
+				Severity: diag.Warning,
+				Summary:  "Warning waiting cron job",
+				Detail:   err.Error(),
+			})
+		}
+	}
+
+	// delete triggers
+
+	// delete container
+	_, err = api.DeleteContainer(&container.DeleteContainerRequest{
+		Region:      region,
+		ContainerID: containerID},
+		scw.WithContext(ctx),
+	)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	return diags
 }
