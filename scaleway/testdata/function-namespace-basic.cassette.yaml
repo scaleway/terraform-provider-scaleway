@@ -1,0 +1,38 @@
+---
+version: 1
+interactions:
+- request:
+    body: '{"name":"test-cr-ns-01","environment_variables":{},"project_id":"951df375-e094-4d26-97c1-ba548eeb9c42","description":null,"secret_environment_variables":null}'
+    form: {}
+    headers:
+      Content-Type:
+      - application/json
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.17.6; darwin; amd64) terraform-provider/develop
+        terraform/terraform-tests
+    url: https://api.scaleway.com/functions/v1beta1/regions/fr-par/namespaces
+    method: POST
+  response:
+    body: '{"message":"Namespace already exist"}'
+    headers:
+      Content-Length:
+      - "37"
+      Content-Security-Policy:
+      - default-src 'none'; frame-ancestors 'none'
+      Content-Type:
+      - application/json
+      Date:
+      - Tue, 22 Feb 2022 13:34:01 GMT
+      Server:
+      - Scaleway API-Gateway
+      Strict-Transport-Security:
+      - max-age=63072000
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+      X-Request-Id:
+      - 4c1bc438-56cb-4bdf-9fe5-3d45603e2073
+    status: 409 Conflict
+    code: 409
+    duration: ""
