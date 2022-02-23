@@ -91,7 +91,7 @@ func resourceScalewayFunctionNamespaceRead(ctx context.Context, d *schema.Resour
 		return diag.FromErr(err)
 	}
 
-	ns, err := api.GetNamespace(&function.GetNamespaceRequest{
+	ns, err := api.WaitForNamespace(&function.WaitForNamespaceRequest{
 		Region:      region,
 		NamespaceID: id,
 	}, scw.WithContext(ctx))
@@ -122,10 +122,22 @@ func resourceScalewayFunctionNamespaceUpdate(ctx context.Context, d *schema.Reso
 		return diag.FromErr(err)
 	}
 
+	ns, err := api.WaitForNamespace(&function.WaitForNamespaceRequest{
+		Region:      region,
+		NamespaceID: id,
+	}, scw.WithContext(ctx))
+	if err != nil {
+		if is404Error(err) {
+			d.SetId("")
+			return nil
+		}
+		return diag.FromErr(err)
+	}
+
 	if d.HasChanges("description", "environment_variables") {
 		if _, err := api.UpdateNamespace(&function.UpdateNamespaceRequest{
 			Region:               region,
-			NamespaceID:          id,
+			NamespaceID:          ns.ID,
 			Description:          expandStringPtr(d.Get("description")),
 			EnvironmentVariables: expandMapStringStringPtr(d.Get("environment_variables")),
 		}, scw.WithContext(ctx)); err != nil {
