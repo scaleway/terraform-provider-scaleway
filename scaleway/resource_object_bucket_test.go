@@ -483,6 +483,9 @@ func TestAccScalewayObjectBucketDestroy_force(t *testing.T) {
 					resource "scaleway_object_bucket" "bucket" {
 						name = %[1]q
 						force_destroy = true
+						versioning {
+							enabled = true
+						}
 					}`, bucketName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayObjectBucketExists(tt, resourceName),
