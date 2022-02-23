@@ -31,7 +31,7 @@ The following arguments are supported:
 * `region` - (Optional) The [region](https://developers.scaleway.com/en/quickstart/#region-definition) in which the bucket should be created.
 * `versioning` - (Optional) A state of [versioning](https://docs.aws.amazon.com/AmazonS3/latest/dev/Versioning.html) (documented below)
 * `cors_rule` - (Optional) A rule of [Cross-Origin Resource Sharing](https://docs.aws.amazon.com/AmazonS3/latest/dev/cors.html) (documented below).
-* `force_destroy` - (Optional) Enable deletion of objects in bucket before destroying
+* `force_destroy` - (Optional) Enable deletion of objects in bucket before destroying, locked objects or under legal hold are also deleted and **not** recoverable
 
 The `CORS` object supports the following:
 
