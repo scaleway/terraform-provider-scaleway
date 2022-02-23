@@ -53,6 +53,11 @@ func resourceScalewayContainer() *schema.Resource {
 				Type:        schema.TypeMap,
 				Optional:    true,
 				Description: "The environment variables to be injected into your container at runtime ",
+				Elem: &schema.Schema{
+					Type:         schema.TypeString,
+					ValidateFunc: validation.StringLenBetween(0, 1000),
+				},
+				ValidateDiagFunc: validation.MapKeyLenBetween(0, 100),
 			},
 			"min_scale": {
 				Type:        schema.TypeInt,
