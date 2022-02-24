@@ -1,0 +1,238 @@
+---
+version: 1
+interactions:
+- request:
+    body: '{"name":"tf-func--crazy-shamir","environment_variables":{},"project_id":"951df375-e094-4d26-97c1-ba548eeb9c42","description":null,"secret_environment_variables":null}'
+    form: {}
+    headers:
+      Content-Type:
+      - application/json
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.17.6; darwin; amd64) terraform-provider/develop
+        terraform/terraform-tests
+    url: https://api.scaleway.com/functions/v1beta1/regions/fr-par/namespaces
+    method: POST
+  response:
+    body: '{"id":"77d92be8-4bc6-49a3-ba0d-3dcf02cb894e","name":"tf-func--crazy-shamir","environment_variables":{},"organization_id":"951df375-e094-4d26-97c1-ba548eeb9c42","project_id":"951df375-e094-4d26-97c1-ba548eeb9c42","status":"pending","registry_namespace_id":"","error_message":null,"registry_endpoint":"","description":"","secret_environment_variables":[],"region":"fr-par"}'
+    headers:
+      Content-Length:
+      - "371"
+      Content-Security-Policy:
+      - default-src 'none'; frame-ancestors 'none'
+      Content-Type:
+      - application/json
+      Date:
+      - Thu, 24 Feb 2022 14:04:13 GMT
+      Server:
+      - Scaleway API-Gateway
+      Strict-Transport-Security:
+      - max-age=63072000
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+      X-Request-Id:
+      - 4fb8af5a-f999-4f37-b8f0-295812931f74
+    status: 200 OK
+    code: 200
+    duration: ""
+- request:
+    body: ""
+    form: {}
+    headers:
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.17.6; darwin; amd64) terraform-provider/develop
+        terraform/terraform-tests
+    url: https://api.scaleway.com/functions/v1beta1/regions/fr-par/namespaces/77d92be8-4bc6-49a3-ba0d-3dcf02cb894e
+    method: GET
+  response:
+    body: '{"id":"77d92be8-4bc6-49a3-ba0d-3dcf02cb894e","name":"tf-func--crazy-shamir","environment_variables":{},"organization_id":"951df375-e094-4d26-97c1-ba548eeb9c42","project_id":"951df375-e094-4d26-97c1-ba548eeb9c42","status":"pending","registry_namespace_id":"","error_message":null,"registry_endpoint":"","description":"","secret_environment_variables":[],"region":"fr-par"}'
+    headers:
+      Content-Length:
+      - "371"
+      Content-Security-Policy:
+      - default-src 'none'; frame-ancestors 'none'
+      Content-Type:
+      - application/json
+      Date:
+      - Thu, 24 Feb 2022 14:04:13 GMT
+      Server:
+      - Scaleway API-Gateway
+      Strict-Transport-Security:
+      - max-age=63072000
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+      X-Request-Id:
+      - 2778d5c0-9289-4de1-8604-7bb1486cc154
+    status: 200 OK
+    code: 200
+    duration: ""
+- request:
+    body: ""
+    form: {}
+    headers:
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.17.6; darwin; amd64) terraform-provider/develop
+        terraform/terraform-tests
+    url: https://api.scaleway.com/functions/v1beta1/regions/fr-par/namespaces/77d92be8-4bc6-49a3-ba0d-3dcf02cb894e
+    method: GET
+  response:
+    body: '{"id":"77d92be8-4bc6-49a3-ba0d-3dcf02cb894e","name":"tf-func--crazy-shamir","environment_variables":{},"organization_id":"951df375-e094-4d26-97c1-ba548eeb9c42","project_id":"951df375-e094-4d26-97c1-ba548eeb9c42","status":"ready","registry_namespace_id":"301a97bc-cc18-48d6-980c-bb5ce0964da7","error_message":null,"registry_endpoint":"rg.fr-par.scw.cloud/funcscwtffunccrazyshamirxlmv8ztt","description":"","secret_environment_variables":[],"region":"fr-par"}'
+    headers:
+      Content-Length:
+      - "457"
+      Content-Security-Policy:
+      - default-src 'none'; frame-ancestors 'none'
+      Content-Type:
+      - application/json
+      Date:
+      - Thu, 24 Feb 2022 14:04:18 GMT
+      Server:
+      - Scaleway API-Gateway
+      Strict-Transport-Security:
+      - max-age=63072000
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+      X-Request-Id:
+      - b1867ae8-b528-40f0-b2ad-457669efffc0
+    status: 200 OK
+    code: 200
+    duration: ""
+- request:
+    body: '{"name":"foobar","namespace_id":"77d92be8-4bc6-49a3-ba0d-3dcf02cb894e","environment_variables":{"test":"test"},"min_scale":0,"max_scale":20,"runtime":"node14","memory_limit":128,"timeout":null,"handler":"handler.handle","privacy":"private","description":null,"secret_environment_variables":null,"http_option":null}'
+    form: {}
+    headers:
+      Content-Type:
+      - application/json
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.17.6; darwin; amd64) terraform-provider/develop
+        terraform/terraform-tests
+    url: https://api.scaleway.com/functions/v1beta1/regions/fr-par/functions
+    method: POST
+  response:
+    body: '{"id":"1d2b0171-2132-4679-aae5-fdcb720c4a7b","name":"foobar","namespace_id":"77d92be8-4bc6-49a3-ba0d-3dcf02cb894e","status":"created","environment_variables":{"test":"test"},"min_scale":0,"max_scale":20,"runtime":"node14","memory_limit":128,"cpu_limit":70,"timeout":"300s","handler":"handler.handle","error_message":null,"privacy":"private","description":"","domain_name":"tffunccrazyshamirxlmv8ztt-foobar.functions.fnc.fr-par.scw.cloud","secret_environment_variables":[],"http_option":"","region":"fr-par"}'
+    headers:
+      Content-Length:
+      - "507"
+      Content-Security-Policy:
+      - default-src 'none'; frame-ancestors 'none'
+      Content-Type:
+      - application/json
+      Date:
+      - Thu, 24 Feb 2022 14:04:18 GMT
+      Server:
+      - Scaleway API-Gateway
+      Strict-Transport-Security:
+      - max-age=63072000
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+      X-Request-Id:
+      - d3a2efaa-d7a5-48d8-86c1-1a949fc71b44
+    status: 200 OK
+    code: 200
+    duration: ""
+- request:
+    body: ""
+    form: {}
+    headers:
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.17.6; darwin; amd64) terraform-provider/develop
+        terraform/terraform-tests
+    url: https://api.scaleway.com/functions/v1beta1/regions/fr-par/namespaces/1d2b0171-2132-4679-aae5-fdcb720c4a7b
+    method: GET
+  response:
+    body: '{"message":"Namespace was not found"}'
+    headers:
+      Content-Length:
+      - "37"
+      Content-Security-Policy:
+      - default-src 'none'; frame-ancestors 'none'
+      Content-Type:
+      - application/json
+      Date:
+      - Thu, 24 Feb 2022 14:04:18 GMT
+      Server:
+      - Scaleway API-Gateway
+      Strict-Transport-Security:
+      - max-age=63072000
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+      X-Request-Id:
+      - 23c721a8-01aa-4c17-9c9a-cb3cbff135e3
+    status: 404 Not Found
+    code: 404
+    duration: ""
+- request:
+    body: ""
+    form: {}
+    headers:
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.17.6; darwin; amd64) terraform-provider/develop
+        terraform/terraform-tests
+    url: https://api.scaleway.com/functions/v1beta1/regions/fr-par/namespaces/77d92be8-4bc6-49a3-ba0d-3dcf02cb894e
+    method: GET
+  response:
+    body: '{"id":"77d92be8-4bc6-49a3-ba0d-3dcf02cb894e","name":"tf-func--crazy-shamir","environment_variables":{},"organization_id":"951df375-e094-4d26-97c1-ba548eeb9c42","project_id":"951df375-e094-4d26-97c1-ba548eeb9c42","status":"ready","registry_namespace_id":"301a97bc-cc18-48d6-980c-bb5ce0964da7","error_message":null,"registry_endpoint":"rg.fr-par.scw.cloud/funcscwtffunccrazyshamirxlmv8ztt","description":"","secret_environment_variables":[],"region":"fr-par"}'
+    headers:
+      Content-Length:
+      - "457"
+      Content-Security-Policy:
+      - default-src 'none'; frame-ancestors 'none'
+      Content-Type:
+      - application/json
+      Date:
+      - Thu, 24 Feb 2022 14:04:19 GMT
+      Server:
+      - Scaleway API-Gateway
+      Strict-Transport-Security:
+      - max-age=63072000
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+      X-Request-Id:
+      - b9a439a5-5057-4a3b-ad3a-e44f0b5ae0ab
+    status: 200 OK
+    code: 200
+    duration: ""
+- request:
+    body: ""
+    form: {}
+    headers:
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.17.6; darwin; amd64) terraform-provider/develop
+        terraform/terraform-tests
+    url: https://api.scaleway.com/functions/v1beta1/regions/fr-par/namespaces/77d92be8-4bc6-49a3-ba0d-3dcf02cb894e
+    method: DELETE
+  response:
+    body: '{"id":"77d92be8-4bc6-49a3-ba0d-3dcf02cb894e","name":"tf-func--crazy-shamir","environment_variables":{},"organization_id":"951df375-e094-4d26-97c1-ba548eeb9c42","project_id":"951df375-e094-4d26-97c1-ba548eeb9c42","status":"deleting","registry_namespace_id":"301a97bc-cc18-48d6-980c-bb5ce0964da7","error_message":null,"registry_endpoint":"rg.fr-par.scw.cloud/funcscwtffunccrazyshamirxlmv8ztt","description":"","secret_environment_variables":[],"region":"fr-par"}'
+    headers:
+      Content-Length:
+      - "460"
+      Content-Security-Policy:
+      - default-src 'none'; frame-ancestors 'none'
+      Content-Type:
+      - application/json
+      Date:
+      - Thu, 24 Feb 2022 14:04:19 GMT
+      Server:
+      - Scaleway API-Gateway
+      Strict-Transport-Security:
+      - max-age=63072000
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+      X-Request-Id:
+      - d84ec753-0804-4599-b9ba-5c7f769a7e1d
+    status: 200 OK
+    code: 200
+    duration: ""

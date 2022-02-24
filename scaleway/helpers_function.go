@@ -10,6 +10,7 @@ import (
 
 const (
 	defaultFunctionNamespaceTimeout = 5 * time.Minute
+	defaultFunctionTimeout          = 5 * time.Minute
 )
 
 // functionAPIWithRegion returns a new container registry API and the region.
