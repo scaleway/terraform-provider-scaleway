@@ -47,7 +47,7 @@ func dataSourceScalewayContainerNamespaceRead(ctx context.Context, d *schema.Res
 			return diag.FromErr(err)
 		}
 		if len(res.Namespaces) == 0 {
-			return diag.FromErr(fmt.Errorf("no container namespaces found with the name %s", d.Get("name")))
+			return diag.FromErr(fmt.Errorf("no container namespace found with the name %s", d.Get("name")))
 		}
 		if len(res.Namespaces) > 1 {
 			return diag.FromErr(fmt.Errorf("%d container namespaces found with the same name %s", len(res.Namespaces), d.Get("name")))
