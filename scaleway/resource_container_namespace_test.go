@@ -90,7 +90,7 @@ func TestAccScalewayContainerNamespace_Basic(t *testing.T) {
 				`,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayContainerNamespaceExists(tt, "scaleway_container_namespace.main"),
-					resource.TestCheckResourceAttr("scaleway_container_namespace.main", "description", "test container namespace 01"),
+					resource.TestCheckResourceAttr("scaleway_container_namespace.main", "description", ""),
 					resource.TestCheckResourceAttr("scaleway_container_namespace.main", "name", "test-cr-ns-01"),
 					resource.TestCheckResourceAttr("scaleway_container_namespace.main", "environment_variables.test", "test"),
 
