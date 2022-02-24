@@ -12,7 +12,7 @@ Gets information about a container namespace.
 
 ```hcl
 // Get info by namespace name
-data "scaleway_container_namespace" "my_namespace" {
+data "scaleway_container_namespace" "by_name" {
   name = "my-namespace-name"
 }
 
