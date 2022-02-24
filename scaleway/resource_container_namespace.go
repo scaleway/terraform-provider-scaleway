@@ -72,7 +72,7 @@ func resourceScalewayContainerNamespaceCreate(ctx context.Context, d *schema.Res
 	ns, err := api.CreateNamespace(&container.CreateNamespaceRequest{
 		Description:          expandStringPtr(d.Get("description").(string)),
 		EnvironmentVariables: expandMapStringStringPtr(d.Get("environment_variables")),
-		Name:                 expandOrGenerateString(d.Get("name").(string), "func-"),
+		Name:                 expandOrGenerateString(d.Get("name").(string), "scw-container"),
 		ProjectID:            d.Get("project_id").(string),
 		Region:               region,
 	}, scw.WithContext(ctx))
@@ -136,15 +136,8 @@ func resourceScalewayContainerNamespaceUpdate(ctx context.Context, d *schema.Res
 	}
 
 	if d.HasChange("description") {
-		if d, ok := d.GetOk("description"); ok {
-			req.Description = expandStringPtr(d)
-		}
-		//description :=  expandStringPtr(d.Get("description"))
-		//if description == nil {
-		//	str := ""
-		//	description = &str
-		//}
-		//req.Description = description
+		description := d.Get("description").(string)
+		req.Description = &description
 	}
 
 	if d.HasChanges("environment_variables") {
