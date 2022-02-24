@@ -96,6 +96,15 @@ func resourceScalewayFunction() *schema.Resource {
 				Required:    true,
 				Description: "Handler of the function. Depends on the runtime https://developers.scaleway.com/en/products/functions/api/#create-a-function",
 			},
+			"http_option": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "HTTPOption: configure how HTTP and HTTPS requests are handled (redirected or enabled)",
+				ValidateFunc: validation.StringInSlice([]string{
+					"redirected", // Responds to HTTP request with a 302 redirect to ask the clients to use HTTPS.
+					"enabled",    // Serve both HTTP and HTTPS traffic.
+				}, false),
+			},
 			"organization_id": organizationIDSchema(),
 			"project_id":      projectIDSchema(),
 		},
@@ -116,15 +125,16 @@ func resourceScalewayFunctionCreate(ctx context.Context, d *schema.ResourceData,
 	req := &function.CreateFunctionRequest{
 		Description:          expandStringPtr(d.Get("description").(string)),
 		EnvironmentVariables: expandMapStringStringPtr(d.Get("environment_variables")),
-		Name:                 expandOrGenerateString(d.Get("name").(string), "func"),
-		Privacy:              function.FunctionPrivacy(d.Get("privacy").(string)),
-		Runtime:              function.FunctionRuntime(d.Get("runtime").(string)),
+		HTTPOption:           expandStringPtr(d.Get("http_option").(string)),
 		Handler:              expandStringPtr(d.Get("handler").(string)),
-		Region:               region,
-		MinScale:             expandUint32Ptr(d.Get("min_scale")),
 		MaxScale:             expandUint32Ptr(d.Get("max_scale")),
 		MemoryLimit:          expandUint32Ptr(d.Get("memory_limit")),
+		MinScale:             expandUint32Ptr(d.Get("min_scale")),
+		Name:                 expandOrGenerateString(d.Get("name").(string), "func"),
 		NamespaceID:          namespace,
+		Privacy:              function.FunctionPrivacy(d.Get("privacy").(string)),
+		Region:               region,
+		Runtime:              function.FunctionRuntime(d.Get("runtime").(string)),
 	}
 
 	if timeout, ok := d.GetOk("timeout"); ok {
@@ -163,6 +173,7 @@ func resourceScalewayFunctionRead(ctx context.Context, d *schema.ResourceData, m
 	_ = d.Set("description", f.Description)
 	_ = d.Set("environment_variables", f.EnvironmentVariables)
 	_ = d.Set("handler", f.Handler)
+	_ = d.Set("http_option", f.HTTPOption)
 	_ = d.Set("max_scale", int(f.MaxScale))
 	_ = d.Set("memory_limit", int(f.MemoryLimit))
 	_ = d.Set("min_scale", int(f.MinScale))
@@ -202,6 +213,10 @@ func resourceScalewayFunctionUpdate(ctx context.Context, d *schema.ResourceData,
 
 	if d.HasChange("description") {
 		req.Description = expandStringPtr(d.Get("description"))
+	}
+
+	if d.HasChange("http_option") {
+		req.HTTPOption = expandStringPtr(d.Get("http_option"))
 	}
 
 	if d.HasChange("memory_limit") {
