@@ -31,10 +31,11 @@ func resourceScalewayFunction() *schema.Resource {
 				ForceNew:    true,
 			},
 			"name": {
-				Type:        schema.TypeString,
-				ForceNew:    true,
-				Optional:    true,
-				Description: "The name of the function namespace",
+				Type:         schema.TypeString,
+				ForceNew:     true,
+				Optional:     true,
+				Description:  "The name of the function namespace",
+				ValidateFunc: validation.StringLenBetween(1, 20),
 			},
 			"description": {
 				Type:        schema.TypeString,
@@ -184,6 +185,7 @@ func resourceScalewayFunctionRead(ctx context.Context, d *schema.ResourceData, m
 	_ = d.Set("max_scale", int(f.MaxScale))
 	_ = d.Set("memory_limit", int(f.MemoryLimit))
 	_ = d.Set("min_scale", int(f.MinScale))
+	_ = d.Set("name", f.Name)
 	_ = d.Set("privacy", f.Privacy.String())
 	_ = d.Set("region", f.Region.String())
 	_ = d.Set("timeout", flattenDuration(f.Timeout.ToTimeDuration()))
