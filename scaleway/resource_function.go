@@ -105,6 +105,13 @@ func resourceScalewayFunction() *schema.Resource {
 					"enabled",    // Serve both HTTP and HTTPS traffic.
 				}, false),
 			},
+			"timeout": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Holds the max duration (in seconds) the function is allowed for responding to a request",
+				Optional:    true,
+			},
+			"region":          regionSchema(),
 			"organization_id": organizationIDSchema(),
 			"project_id":      projectIDSchema(),
 		},
@@ -178,7 +185,7 @@ func resourceScalewayFunctionRead(ctx context.Context, d *schema.ResourceData, m
 	_ = d.Set("memory_limit", int(f.MemoryLimit))
 	_ = d.Set("min_scale", int(f.MinScale))
 	_ = d.Set("privacy", f.Privacy.String())
-	_ = d.Set("region", f.Region)
+	_ = d.Set("region", f.Region.String())
 	_ = d.Set("timeout", flattenDuration(f.Timeout.ToTimeDuration()))
 
 	return nil
