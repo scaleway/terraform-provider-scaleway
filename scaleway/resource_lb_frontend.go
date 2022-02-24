@@ -153,14 +153,14 @@ func resourceScalewayLbFrontend() *schema.Resource {
 }
 
 func resourceScalewayLbFrontendCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	lbAPI, _, err := lbAPIWithZone(d, meta)
+	lbAPI, zone, err := lbAPIWithZone(d, meta)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	zone, lbID, err := parseZonedID(d.Get("lb_id").(string))
-	if err != nil {
-		return diag.FromErr(err)
+	lbID := expandID(d.Get("lb_id"))
+	if len(lbID) == 0 {
+		return diag.Errorf("load balancer id wrong format: %v", d.Get("lb_id").(string))
 	}
 
 	retryInterval := defaultWaitLBRetryInterval
@@ -211,9 +211,9 @@ func resourceScalewayLbFrontendRead(ctx context.Context, d *schema.ResourceData,
 		return diag.FromErr(err)
 	}
 
-	_, lbID, err := parseZonedID(d.Get("lb_id").(string))
-	if err != nil {
-		return diag.FromErr(err)
+	lbID := expandID(d.Get("lb_id"))
+	if len(lbID) == 0 {
+		return diag.Errorf("load balancer id wrong format: %v", d.Get("lb_id").(string))
 	}
 
 	retryInterval := defaultWaitLBRetryInterval
