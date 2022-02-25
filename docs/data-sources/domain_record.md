@@ -33,7 +33,7 @@ data "scaleway_domain_record" "by_id" {
 - `name` - (Required) The name of the record (can be an empty string for a root record).
   Cannot be used with `record_id`.
 
-- `type` - (Required) The type of the record (`A`, `AAAA`, `MX`, `CNAME`, `ALIAS`, `NS`, `PTR`, `SRV`, `TXT`, `TLSA`, or `CAA`).
+- `type` - (Required) The type of the record (`A`, `AAAA`, `MX`, `CNAME`, `DNAME`, `ALIAS`, `NS`, `PTR`, `SRV`, `TXT`, `TLSA`, or `CAA`).
   Cannot be used with `record_id`.
 
 - `data` - (Required) The content of the record (an IPv4 for an `A`, a string for a `TXT`...).

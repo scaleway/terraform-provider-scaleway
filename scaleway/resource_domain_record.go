@@ -57,6 +57,7 @@ func resourceScalewayDomainRecord() *schema.Resource {
 					domain.RecordTypeAAAA.String(),
 					domain.RecordTypeALIAS.String(),
 					domain.RecordTypeCNAME.String(),
+					domain.RecordTypeDNAME.String(),
 					domain.RecordTypeMX.String(),
 					domain.RecordTypeNS.String(),
 					domain.RecordTypePTR.String(),
@@ -281,6 +282,7 @@ func resourceScalewayDomainRecordRead(ctx context.Context, d *schema.ResourceDat
 
 		res, err := domainAPI.ListDNSZoneRecords(&domain.ListDNSZoneRecordsRequest{
 			DNSZone: dnsZone,
+			Id:      id,
 		}, scw.WithAllPages())
 
 		if err != nil {
@@ -292,10 +294,8 @@ func resourceScalewayDomainRecordRead(ctx context.Context, d *schema.ResourceDat
 		}
 
 		for _, r := range res.Records {
-			if r.ID == id {
-				record = r
-				break
-			}
+			record = r
+			break
 		}
 	} else {
 		dnsZone = d.Get("dns_zone").(string)
