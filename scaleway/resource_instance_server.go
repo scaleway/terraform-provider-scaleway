@@ -249,6 +249,7 @@ func resourceScalewayInstanceServer() *schema.Resource {
 	}
 }
 
+//gocyclo:ignore
 func resourceScalewayInstanceServerCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	instanceAPI, zone, err := instanceAPIWithZone(d, meta)
 	if err != nil {
@@ -460,6 +461,7 @@ func resourceScalewayInstanceServerCreate(ctx context.Context, d *schema.Resourc
 	return resourceScalewayInstanceServerRead(ctx, d, meta)
 }
 
+//gocyclo:ignore
 func resourceScalewayInstanceServerRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	instanceAPI, zone, ID, err := instanceAPIWithZoneAndID(meta, d.Id())
 	if err != nil {
@@ -607,6 +609,7 @@ func resourceScalewayInstanceServerRead(ctx context.Context, d *schema.ResourceD
 	return nil
 }
 
+//gocyclo:ignore
 func resourceScalewayInstanceServerUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	instanceAPI, zone, ID, err := instanceAPIWithZoneAndID(meta, d.Id())
 	if err != nil {

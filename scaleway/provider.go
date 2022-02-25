@@ -65,6 +65,7 @@ func Provider(config *ProviderConfig) plugin.ProviderFunc {
 				"scaleway_baremetal_server":              resourceScalewayBaremetalServer(),
 				"scaleway_domain_record":                 resourceScalewayDomainRecord(),
 				"scaleway_domain_zone":                   resourceScalewayDomainZone(),
+				"scaleway_function_namespace":            resourceScalewayFunctionNamespace(),
 				"scaleway_instance_ip":                   resourceScalewayInstanceIP(),
 				"scaleway_instance_ip_reverse_dns":       resourceScalewayInstanceIPReverseDNS(),
 				"scaleway_instance_volume":               resourceScalewayInstanceVolume(),
@@ -102,31 +103,33 @@ func Provider(config *ProviderConfig) plugin.ProviderFunc {
 			},
 
 			DataSourcesMap: map[string]*schema.Resource{
-				"scaleway_account_ssh_key":         dataSourceScalewayAccountSSHKey(),
-				"scaleway_baremetal_offer":         dataSourceScalewayBaremetalOffer(),
-				"scaleway_domain_record":           dataSourceScalewayDomainRecord(),
-				"scaleway_domain_zone":             dataSourceScalewayDomainZone(),
-				"scaleway_instance_ip":             dataSourceScalewayInstanceIP(),
-				"scaleway_instance_security_group": dataSourceScalewayInstanceSecurityGroup(),
-				"scaleway_instance_server":         dataSourceScalewayInstanceServer(),
-				"scaleway_instance_image":          dataSourceScalewayInstanceImage(),
-				"scaleway_instance_volume":         dataSourceScalewayInstanceVolume(),
-				"scaleway_k8s_cluster":             dataSourceScalewayK8SCluster(),
-				"scaleway_k8s_pool":                dataSourceScalewayK8SPool(),
-				"scaleway_lb":                      dataSourceScalewayLb(),
-				"scaleway_lb_ip":                   dataSourceScalewayLbIP(),
-				"scaleway_marketplace_image":       dataSourceScalewayMarketplaceImage(),
-				"scaleway_object_bucket":           dataSourceScalewayObjectBucket(),
-				"scaleway_rdb_acl":                 dataSourceScalewayRDBACL(),
-				"scaleway_rdb_instance":            dataSourceScalewayRDBInstance(),
-				"scaleway_rdb_database":            dataSourceScalewayRDBDatabase(),
-				"scaleway_rdb_privilege":           dataSourceScalewayRDBPrivilege(),
-				"scaleway_registry_namespace":      dataSourceScalewayRegistryNamespace(),
-				"scaleway_registry_image":          dataSourceScalewayRegistryImage(),
-				"scaleway_vpc_public_gateway":      dataSourceScalewayVPCPublicGateway(),
-				"scaleway_vpc_public_gateway_dhcp": dataSourceScalewayVPCPublicGatewayDHCP(),
-				"scaleway_vpc_public_gateway_ip":   dataSourceScalewayVPCPublicGatewayIP(),
-				"scaleway_vpc_private_network":     dataSourceScalewayVPCPrivateNetwork(),
+				"scaleway_account_ssh_key":             dataSourceScalewayAccountSSHKey(),
+				"scaleway_baremetal_offer":             dataSourceScalewayBaremetalOffer(),
+				"scaleway_domain_record":               dataSourceScalewayDomainRecord(),
+				"scaleway_domain_zone":                 dataSourceScalewayDomainZone(),
+				"scaleway_function_namespace":          dataSourceScalewayFunctionNamespace(),
+				"scaleway_instance_ip":                 dataSourceScalewayInstanceIP(),
+				"scaleway_instance_security_group":     dataSourceScalewayInstanceSecurityGroup(),
+				"scaleway_instance_server":             dataSourceScalewayInstanceServer(),
+				"scaleway_instance_image":              dataSourceScalewayInstanceImage(),
+				"scaleway_instance_volume":             dataSourceScalewayInstanceVolume(),
+				"scaleway_k8s_cluster":                 dataSourceScalewayK8SCluster(),
+				"scaleway_k8s_pool":                    dataSourceScalewayK8SPool(),
+				"scaleway_lb":                          dataSourceScalewayLb(),
+				"scaleway_lb_ip":                       dataSourceScalewayLbIP(),
+				"scaleway_marketplace_image":           dataSourceScalewayMarketplaceImage(),
+				"scaleway_object_bucket":               dataSourceScalewayObjectBucket(),
+				"scaleway_rdb_acl":                     dataSourceScalewayRDBACL(),
+				"scaleway_rdb_instance":                dataSourceScalewayRDBInstance(),
+				"scaleway_rdb_database":                dataSourceScalewayRDBDatabase(),
+				"scaleway_rdb_privilege":               dataSourceScalewayRDBPrivilege(),
+				"scaleway_registry_namespace":          dataSourceScalewayRegistryNamespace(),
+				"scaleway_registry_image":              dataSourceScalewayRegistryImage(),
+				"scaleway_vpc_public_gateway":          dataSourceScalewayVPCPublicGateway(),
+				"scaleway_vpc_public_gateway_dhcp":     dataSourceScalewayVPCPublicGatewayDHCP(),
+				"scaleway_vpc_public_gateway_ip":       dataSourceScalewayVPCPublicGatewayIP(),
+				"scaleway_vpc_private_network":         dataSourceScalewayVPCPrivateNetwork(),
+				"scaleway_vpc_public_gateway_pat_rule": dataSourceScalewayVPCPublicGatewayPATRule(),
 			},
 		}
 
@@ -138,7 +141,7 @@ func Provider(config *ProviderConfig) plugin.ProviderFunc {
 				return config.Meta, nil
 			}
 
-			meta, err := buildMeta(&MetaConfig{
+			meta, err := buildMeta(&metaConfig{
 				providerSchema:   data,
 				terraformVersion: terraformVersion,
 			})
@@ -164,7 +167,7 @@ type Meta struct {
 	httpClient *http.Client
 }
 
-type MetaConfig struct {
+type metaConfig struct {
 	providerSchema   *schema.ResourceData
 	terraformVersion string
 	forceZone        scw.Zone
@@ -172,7 +175,7 @@ type MetaConfig struct {
 }
 
 // providerConfigure creates the Meta object containing the SDK client.
-func buildMeta(config *MetaConfig) (*Meta, error) {
+func buildMeta(config *metaConfig) (*Meta, error) {
 	////
 	// Load Profile
 	////
@@ -216,6 +219,7 @@ func buildMeta(config *MetaConfig) (*Meta, error) {
 	}, nil
 }
 
+//gocyclo:ignore
 func loadProfile(d *schema.ResourceData) (*scw.Profile, error) {
 	config, err := scw.LoadConfig()
 	// If the config file do not exist, don't return an error as we may find config in ENV or flags.

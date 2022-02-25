@@ -38,6 +38,11 @@ func resourceScalewayDomainRecord() *schema.Resource {
 				Optional:    true,
 				Default:     false,
 			},
+			"root_zone": {
+				Type:        schema.TypeBool,
+				Description: "Does the DNS zone is the root zone or not",
+				Computed:    true,
+			},
 			"name": {
 				Type:        schema.TypeString,
 				Description: "The name of the record",
@@ -263,6 +268,7 @@ func resourceScalewayDomainRecordRead(ctx context.Context, d *schema.ResourceDat
 	var dnsZone string
 	var projectID string
 
+	currentData := d.Get("data")
 	// check if this is an inline import. Like: "terraform import scaleway_domain_record.www subdomain.domain.tld/11111111-1111-1111-1111-111111111111"
 	if strings.Contains(d.Id(), "/") {
 		tab := strings.SplitN(d.Id(), "/", -1)
@@ -294,10 +300,18 @@ func resourceScalewayDomainRecordRead(ctx context.Context, d *schema.ResourceDat
 	} else {
 		dnsZone = d.Get("dns_zone").(string)
 
+		recordTypeRaw, recordtTypeExist := d.GetOk("type")
+		if !recordtTypeExist {
+			return diag.FromErr(fmt.Errorf("record type not found"))
+		}
+		recordType := domain.RecordType(recordTypeRaw.(string))
+		if recordType == domain.RecordTypeUnknown {
+			return diag.FromErr(fmt.Errorf("record type unknow"))
+		}
 		res, err := domainAPI.ListDNSZoneRecords(&domain.ListDNSZoneRecordsRequest{
 			DNSZone: dnsZone,
 			Name:    d.Get("name").(string),
-			Type:    domain.RecordType(d.Get("type").(string)),
+			Type:    recordType,
 		}, scw.WithAllPages())
 
 		if err != nil {
@@ -309,7 +323,8 @@ func resourceScalewayDomainRecordRead(ctx context.Context, d *schema.ResourceDat
 		}
 
 		for _, r := range res.Records {
-			if flattenDomainData(r.Data, r.Type).(string) == d.Get("data").(string) {
+			flattedData := flattenDomainData(r.Data, r.Type).(string)
+			if strings.ToLower(currentData.(string)) == flattedData {
 				record = r
 				break
 			}
@@ -335,13 +350,18 @@ func resourceScalewayDomainRecordRead(ctx context.Context, d *schema.ResourceDat
 
 	for _, z := range res.DNSZones {
 		projectID = z.ProjectID
+		_ = d.Set("root_zone", (z.Subdomain == ""))
 	}
 
+	// retrieve data from record
+	if len(currentData.(string)) == 0 {
+		currentData = flattenDomainData(record.Data, record.Type).(string)
+	}
 	d.SetId(record.ID)
 	_ = d.Set("dns_zone", dnsZone)
 	_ = d.Set("name", record.Name)
 	_ = d.Set("type", record.Type.String())
-	_ = d.Set("data", flattenDomainData(record.Data, record.Type))
+	_ = d.Set("data", currentData.(string))
 	_ = d.Set("ttl", int(record.TTL))
 	_ = d.Set("priority", int(record.Priority))
 	_ = d.Set("geo_ip", flattenDomainGeoIP(record.GeoIPConfig))
@@ -412,11 +432,11 @@ func resourceScalewayDomainRecordDelete(ctx context.Context, d *schema.ResourceD
 	}
 	d.SetId("")
 
-	// if the zone have only NS records, then delete the all zone
-	if !d.Get("keep_empty_zone").(bool) {
+	// for non root zone, if the zone have only NS records, then delete the zone
+	if !d.Get("keep_empty_zone").(bool) && d.Get("root_zone") != nil && !d.Get("root_zone").(bool) {
 		res, err := domainAPI.ListDNSZoneRecords(&domain.ListDNSZoneRecordsRequest{
 			DNSZone: d.Get("dns_zone").(string),
-		}, scw.WithAllPages())
+		})
 
 		if err != nil {
 			if is404Error(err) {

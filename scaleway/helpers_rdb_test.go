@@ -65,7 +65,7 @@ func TestEndpointsToRemove(t *testing.T) {
 	}{
 		{
 			name: "removeAll",
-			Endpoints: []*rdb.Endpoint{&rdb.Endpoint{
+			Endpoints: []*rdb.Endpoint{{
 				ID: "6ba7b810-9dad-11d1-80b4-00c04fd430c1",
 				PrivateNetwork: &rdb.EndpointPrivateNetworkDetails{PrivateNetworkID: "6ba7b810-9dad-11d1-80b4-00c04fd430c8",
 					ServiceIP: scw.IPNet{IPNet: net.IPNet{
@@ -78,7 +78,7 @@ func TestEndpointsToRemove(t *testing.T) {
 		},
 		{
 			name: "shouldUpdatePrivateNetwork",
-			Endpoints: []*rdb.Endpoint{&rdb.Endpoint{
+			Endpoints: []*rdb.Endpoint{{
 				ID: "6ba7b810-9dad-11d1-80b4-00c04fd430c1",
 				PrivateNetwork: &rdb.EndpointPrivateNetworkDetails{PrivateNetworkID: "6ba7b810-9dad-11d1-80b4-00c04fd430c8",
 					ServiceIP: scw.IPNet{IPNet: net.IPNet{
@@ -92,7 +92,7 @@ func TestEndpointsToRemove(t *testing.T) {
 		},
 		{
 			name: "shouldNotUpdatePrivateNetwork",
-			Endpoints: []*rdb.Endpoint{&rdb.Endpoint{
+			Endpoints: []*rdb.Endpoint{{
 				ID: "6ba7b810-9dad-11d1-80b4-00c04fd430c1",
 				PrivateNetwork: &rdb.EndpointPrivateNetworkDetails{PrivateNetworkID: "6ba7b810-9dad-11d1-80b4-00c04fd430c8",
 					ServiceIP: scw.IPNet{IPNet: net.IPNet{

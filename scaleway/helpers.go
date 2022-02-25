@@ -11,6 +11,7 @@ import (
 
 	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/scaleway/scaleway-sdk-go/namegenerator"
@@ -276,11 +277,11 @@ func zoneSchema() *schema.Schema {
 		Optional:         true,
 		ForceNew:         true,
 		Computed:         true,
-		ValidateDiagFunc: validateStringInSliceWithWarning(AllZones(), "zone"),
+		ValidateDiagFunc: validateStringInSliceWithWarning(allZones(), "zone"),
 	}
 }
 
-func AllZones() []string {
+func allZones() []string {
 	var allZones []string
 	for _, z := range scw.AllZones {
 		allZones = append(allZones, z.String())
@@ -526,4 +527,25 @@ func diffSuppressFuncIgnoreCaseAndHyphen(k, old, new string, d *schema.ResourceD
 // e.g. 2c1a1716-5570-4668-a50a-860c90beabf6 == fr-par-1/2c1a1716-5570-4668-a50a-860c90beabf6
 func diffSuppressFuncLocality(k, old, new string, d *schema.ResourceData) bool {
 	return expandID(old) == expandID(new)
+}
+
+// TimedOut returns true if the error represents a "wait timed out" condition.
+// Specifically, TimedOut returns true if the error matches all these conditions:
+//  * err is of type resource.TimeoutError
+//  * TimeoutError.LastError is nil
+func TimedOut(err error) bool {
+	// This explicitly does *not* match wrapped TimeoutErrors
+	timeoutErr, ok := err.(*resource.TimeoutError) //nolint:errorlint // Explicitly does *not* match wrapped TimeoutErrors
+	return ok && timeoutErr.LastError == nil
+}
+
+func expandMapStringStringPtr(data interface{}) *map[string]string {
+	if data == nil {
+		return nil
+	}
+	m := make(map[string]string)
+	for k, v := range data.(map[string]interface{}) {
+		m[k] = v.(string)
+	}
+	return &m
 }

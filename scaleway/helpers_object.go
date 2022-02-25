@@ -1,9 +1,11 @@
 package scaleway
 
 import (
+	"bytes"
 	"context"
 	"errors"
 	"fmt"
+	"hash/crc32"
 	"net/http"
 	"os"
 	"strings"
@@ -14,12 +16,15 @@ import (
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
+	"github.com/hashicorp/aws-sdk-go-base/tfawserr"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 )
 
 const (
 	defaultObjectBucketTimeout = 10 * time.Minute
+	retryOnAWSAPI              = 2 * time.Minute
 )
 
 func newS3Client(httpClient *http.Client, region, accessKey, secretKey string) (*s3.S3, error) {
@@ -282,4 +287,78 @@ func deleteS3ObjectVersions(ctx context.Context, conn *s3.S3, bucketName string,
 		return err
 	}
 	return nil
+}
+func transitionHash(v interface{}) int {
+	var buf bytes.Buffer
+	m, ok := v.(map[string]interface{})
+
+	if !ok {
+		return 0
+	}
+
+	if v, ok := m["days"]; ok {
+		buf.WriteString(fmt.Sprintf("%d-", v.(int)))
+	}
+	if v, ok := m["storage_class"]; ok {
+		buf.WriteString(fmt.Sprintf("%s-", v.(string)))
+	}
+	return StringHashcode(buf.String())
+}
+
+// StringHashcode hashes a string to a unique hashcode.
+//
+// crc32 returns a uint32, but for our use we need
+// and non-negative integer. Here we cast to an integer
+// and invert it if the result is negative.
+func StringHashcode(s string) int {
+	v := int(crc32.ChecksumIEEE([]byte(s)))
+	if v >= 0 {
+		return v
+	}
+	if -v >= 0 {
+		return -v
+	}
+	// v == MinInt
+	return 0
+}
+
+func retryOnAWSCode(ctx context.Context, code string, f func() (interface{}, error)) (interface{}, error) {
+	var resp interface{}
+	err := resource.RetryContext(ctx, retryOnAWSAPI, func() *resource.RetryError {
+		var err error
+		resp, err = f()
+		if err != nil {
+			if tfawserr.ErrCodeEquals(err, code) {
+				return resource.RetryableError(err)
+			}
+			return resource.NonRetryableError(err)
+		}
+		return nil
+	})
+
+	if TimedOut(err) {
+		resp, err = f()
+	}
+
+	return resp, err
+}
+
+const (
+	// TransitionStorageClassStandard is a TransitionStorageClass enum value
+	TransitionStorageClassStandard = "STANDARD"
+
+	// TransitionStorageClassGlacier is a TransitionStorageClass enum value
+	TransitionStorageClassGlacier = "GLACIER"
+
+	// TransitionStorageClassOnezoneIa is a TransitionStorageClass enum value
+	TransitionStorageClassOnezoneIa = "ONEZONE_IA"
+)
+
+// TransitionSCWStorageClassValues returns all elements of the TransitionStorageClass enum supported by scaleway
+func TransitionSCWStorageClassValues() []string {
+	return []string{
+		TransitionStorageClassStandard,
+		TransitionStorageClassGlacier,
+		TransitionStorageClassOnezoneIa,
+	}
 }
