@@ -72,7 +72,7 @@ func resourceScalewayContainerNamespaceCreate(ctx context.Context, d *schema.Res
 	ns, err := api.CreateNamespace(&container.CreateNamespaceRequest{
 		Description:          expandStringPtr(d.Get("description").(string)),
 		EnvironmentVariables: expandMapStringStringPtr(d.Get("environment_variables")),
-		Name:                 expandOrGenerateString(d.Get("name").(string), "scw-container"),
+		Name:                 expandOrGenerateString(d.Get("name").(string), "ns"),
 		ProjectID:            d.Get("project_id").(string),
 		Region:               region,
 	}, scw.WithContext(ctx))
