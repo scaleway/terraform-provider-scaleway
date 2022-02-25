@@ -229,7 +229,7 @@ func deleteS3ObjectVersions(ctx context.Context, conn *s3.S3, bucketName string,
 			objectVersionID := aws.StringValue(objectVersion.VersionId)
 			err = deleteS3ObjectVersion(conn, bucketName, objectKey, objectVersionID, force)
 
-			if isS3Err(err, "AccessDenied", "") && force {
+			if isS3Err(err, ErrCodeAccessDenied, "") && force {
 				objectHead, err := conn.HeadObject(&s3.HeadObjectInput{
 					Bucket:    scw.StringPtr(bucketName),
 					Key:       objectVersion.Key,
