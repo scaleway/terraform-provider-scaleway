@@ -218,6 +218,38 @@ func deleteS3ObjectVersion(conn *s3.S3, bucketName string, key string, versionID
 	return err
 }
 
+// removeS3ObjectVersionLegalHold remove legal hold from an ObjectVersion if it is on
+// returns true if legal hold was removed
+func removeS3ObjectVersionLegalHold(conn *s3.S3, bucketName string, objectVersion *s3.ObjectVersion) (bool, error) {
+	objectHead, err := conn.HeadObject(&s3.HeadObjectInput{
+		Bucket:    scw.StringPtr(bucketName),
+		Key:       objectVersion.Key,
+		VersionId: objectVersion.VersionId,
+	})
+	if err != nil {
+		err = fmt.Errorf("failed to get S3 object meta data: %s", err)
+		return false, err
+	}
+	if aws.StringValue(objectHead.ObjectLockLegalHoldStatus) != s3.ObjectLockLegalHoldStatusOn {
+		return false, nil
+
+	}
+	_, err = conn.PutObjectLegalHold(&s3.PutObjectLegalHoldInput{
+		Bucket:    scw.StringPtr(bucketName),
+		Key:       objectVersion.Key,
+		VersionId: objectVersion.VersionId,
+		LegalHold: &s3.ObjectLockLegalHold{
+			Status: scw.StringPtr(s3.ObjectLockLegalHoldStatusOff),
+		},
+	})
+	if err != nil {
+		err = fmt.Errorf("failed to put S3 object legal hold: %s", err)
+		return false, err
+	}
+	return true, nil
+
+}
+
 func deleteS3ObjectVersions(ctx context.Context, conn *s3.S3, bucketName string, force bool) error {
 	var err error
 	listInput := &s3.ListObjectVersionsInput{
@@ -230,27 +262,12 @@ func deleteS3ObjectVersions(ctx context.Context, conn *s3.S3, bucketName string,
 			err = deleteS3ObjectVersion(conn, bucketName, objectKey, objectVersionID, force)
 
 			if isS3Err(err, ErrCodeAccessDenied, "") && force {
-				objectHead, err := conn.HeadObject(&s3.HeadObjectInput{
-					Bucket:    scw.StringPtr(bucketName),
-					Key:       objectVersion.Key,
-					VersionId: objectVersion.VersionId,
-				})
-				if err != nil {
-					err = fmt.Errorf("failed to get S3 object meta data: %s", err)
+				legalHoldRemoved, errLegal := removeS3ObjectVersionLegalHold(conn, bucketName, objectVersion)
+				if errLegal != nil {
+					err = fmt.Errorf("failed to remove legal hold: %s", errLegal)
 					return false
 				}
-				if aws.StringValue(objectHead.ObjectLockLegalHoldStatus) == s3.ObjectLockLegalHoldStatusOn {
-					_, err := conn.PutObjectLegalHold(&s3.PutObjectLegalHoldInput{
-						Bucket:    scw.StringPtr(bucketName),
-						Key:       objectVersion.Key,
-						VersionId: objectVersion.VersionId,
-						LegalHold: &s3.ObjectLockLegalHold{
-							Status: scw.StringPtr(s3.ObjectLockLegalHoldStatusOff),
-						},
-					})
-					if err != nil {
-						err = fmt.Errorf("failed to put S3 object legal hold: %s", err)
-					}
+				if legalHoldRemoved {
 					err = deleteS3ObjectVersion(conn, bucketName, objectKey, objectVersionID, force)
 				}
 			}
@@ -288,6 +305,7 @@ func deleteS3ObjectVersions(ctx context.Context, conn *s3.S3, bucketName string,
 	}
 	return nil
 }
+
 func transitionHash(v interface{}) int {
 	var buf bytes.Buffer
 	m, ok := v.(map[string]interface{})
