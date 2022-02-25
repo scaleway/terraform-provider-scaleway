@@ -12,4 +12,6 @@ const (
 	ErrCodeNoSuchLifecycleConfiguration = "NoSuchLifecycleConfiguration"
 	// ErrCodeAccessDenied action on resource is denied
 	ErrCodeAccessDenied = "AccessDenied"
+	// ErrCodeBucketNotEmpty bucket is not empty
+	ErrCodeBucketNotEmpty = "BucketNotEmpty"
 )

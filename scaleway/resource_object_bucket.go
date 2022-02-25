@@ -598,7 +598,7 @@ func resourceScalewayObjectBucketDelete(ctx context.Context, d *schema.ResourceD
 		return nil
 	}
 
-	if isS3Err(err, "BucketNotEmpty", "") {
+	if isS3Err(err, ErrCodeBucketNotEmpty, "") {
 		if d.Get("force_destroy").(bool) {
 			err = deleteS3ObjectVersions(ctx, s3Client, bucketName, true)
 			if err != nil {
