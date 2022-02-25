@@ -20,7 +20,7 @@ func resourceScalewayContainerNamespace() *schema.Resource {
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 		Timeouts: &schema.ResourceTimeout{
-			Default: schema.DefaultTimeout(defaultContainerTimeout),
+			Default: schema.DefaultTimeout(defaultContainerNamespaceTimeout),
 		},
 		SchemaVersion: 0,
 		Schema: map[string]*schema.Schema{

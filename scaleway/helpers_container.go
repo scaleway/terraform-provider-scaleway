@@ -9,7 +9,7 @@ import (
 )
 
 const (
-	defaultContainerTimeout = 20 * time.Second
+	defaultContainerNamespaceTimeout = 20 * time.Second
 )
 
 // containerAPIWithRegion returns a new container API and the region.
