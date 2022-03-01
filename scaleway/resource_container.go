@@ -24,15 +24,20 @@ func resourceScalewayContainer() *schema.Resource {
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 		Timeouts: &schema.ResourceTimeout{
-			Default: schema.DefaultTimeout(defaultContainerTimeout),
+			Default: schema.DefaultTimeout(defaultContainerNamespaceTimeout),
 		},
 		SchemaVersion: 0,
 		Schema: map[string]*schema.Schema{
 			"name": {
 				Type:        schema.TypeString,
-				Required:    true,
+				Optional:    true,
 				ForceNew:    true,
+				Computed:    true,
 				Description: "The container name",
+				Elem: &schema.Schema{
+					Type:         schema.TypeString,
+					ValidateFunc: validation.StringLenBetween(0, 20),
+				},
 			},
 			"description": {
 				Type:        schema.TypeString,
@@ -42,12 +47,7 @@ func resourceScalewayContainer() *schema.Resource {
 			"namespace_id": {
 				Type:        schema.TypeString,
 				Required:    true,
-				Description: "The namespace associated with the container",
-			},
-			"status": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "The container status",
+				Description: "The container namespace associated",
 			},
 			"environment_variables": {
 				Type:        schema.TypeMap,
@@ -63,34 +63,32 @@ func resourceScalewayContainer() *schema.Resource {
 				Type:        schema.TypeInt,
 				Optional:    true,
 				Description: "The minimum of running container instances continuously (default: 0)",
-				Default:     0,
+				//Default:     0,
 			},
 			"max_scale": {
 				Type:        schema.TypeInt,
 				Optional:    true,
 				Description: "The maximum of number of instances this container can scale to (default: 20)",
-				Default:     20,
+				//Default:     20,
 			},
 			"memory_limit": {
 				Type:        schema.TypeInt,
 				Optional:    true,
 				Description: "The memory computing resources in MB to allocate to each container",
+				//Default:     128,
 			},
 			"cpu_limit": {
 				Type:        schema.TypeInt,
 				Optional:    true,
+				Computed:    true,
 				Description: "The CPU computing resources to allocate to each container",
 			},
 			"timeout": {
 				Type:         schema.TypeString,
 				Optional:     true,
+				Computed:     true,
 				Description:  "The maximum amount of time in seconds during which your container can process a request before we stop it.",
 				ValidateFunc: validateDuration(),
-			},
-			"error_message": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The error description",
 			},
 			"privacy": {
 				Type:        schema.TypeString,
@@ -106,6 +104,7 @@ func resourceScalewayContainer() *schema.Resource {
 			"registry_image": {
 				Type:        schema.TypeString,
 				Optional:    true,
+				Computed:    true,
 				Description: "The registry image address where your container is stored.",
 			},
 			"max_concurrency": {
@@ -113,11 +112,12 @@ func resourceScalewayContainer() *schema.Resource {
 				Optional:         true,
 				Description:      "The maximum the number of simultaneous requests your container can handle at the same time.",
 				ValidateDiagFunc: validateMaxLimit(containerMaxLimit),
-				Default:          80,
+				//Default:          80,
 			},
 			"domain_name": {
 				Type:        schema.TypeString,
 				Optional:    true,
+				Computed:    true,
 				Description: "The container domain name.",
 			},
 			"protocol": {
@@ -135,12 +135,9 @@ func resourceScalewayContainer() *schema.Resource {
 				Type:        schema.TypeInt,
 				Optional:    true,
 				Description: "The port to expose the container",
+				//Default:     8080,
 			},
-			"cron_status": {
-				Type:        schema.TypeString,
-				Description: "The cron status",
-				Computed:    true,
-			},
+
 			"redeploy": {
 				Type:        schema.TypeBool,
 				Optional:    true,
@@ -148,6 +145,23 @@ func resourceScalewayContainer() *schema.Resource {
 				Default:     false,
 			},
 			"region": regionSchema(),
+			// computed
+			"status": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The container status",
+				Computed:    true,
+			},
+			"cron_status": {
+				Type:        schema.TypeString,
+				Description: "The cron status",
+				Computed:    true,
+			},
+			"error_message": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The error description",
+			},
 		},
 	}
 }
@@ -184,16 +198,14 @@ func resourceScalewayContainerCreate(ctx context.Context, d *schema.ResourceData
 func resourceScalewayContainerRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	api, region, containerID, err := containerAPIWithRegionAndID(meta, d.Id())
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	namespaceID := d.Get("namespace_id")
 	// verify name space state
 	_, err = api.WaitForNamespace(&container.WaitForNamespaceRequest{
-		NamespaceID:   expandID(namespaceID),
-		Region:        region,
-		Timeout:       scw.TimeDurationPtr(defaultRegistryNamespaceTimeout),
-		RetryInterval: DefaultWaitRetryInterval,
+		NamespaceID: expandID(namespaceID),
+		Region:      region,
 	}, scw.WithContext(ctx))
 	if err != nil {
 		return diag.Errorf("unexpected namespace error: %s", err)
@@ -201,16 +213,14 @@ func resourceScalewayContainerRead(ctx context.Context, d *schema.ResourceData, 
 
 	// check for container state
 	co, err := api.WaitForContainer(&container.WaitForContainerRequest{ContainerID: containerID,
-		Region:        region,
-		Timeout:       scw.TimeDurationPtr(defaultContainerTimeout),
-		RetryInterval: DefaultWaitRetryInterval,
+		Region: region,
 	}, scw.WithContext(ctx))
 	if err != nil {
 		return diag.Errorf("unexpected waiting container error: %s", err)
 	}
 
 	_ = d.Set("name", co.Name)
-	_ = d.Set("namespace_id", newRegionalID(region, co.NamespaceID))
+	_ = d.Set("namespace_id", newRegionalID(region, co.NamespaceID).String())
 	_ = d.Set("status", co.Status.String())
 	_ = d.Set("error_message", co.ErrorMessage)
 	_ = d.Set("environment_variables", flattenMap(co.EnvironmentVariables))
@@ -242,10 +252,8 @@ func resourceScalewayContainerUpdate(ctx context.Context, d *schema.ResourceData
 	namespaceID := d.Get("namespace_id")
 	// verify name space state
 	_, err = api.WaitForNamespace(&container.WaitForNamespaceRequest{
-		NamespaceID:   expandID(namespaceID),
-		Region:        region,
-		Timeout:       scw.TimeDurationPtr(defaultRegistryNamespaceTimeout),
-		RetryInterval: DefaultWaitRetryInterval,
+		NamespaceID: expandID(namespaceID),
+		Region:      region,
 	}, scw.WithContext(ctx))
 	if err != nil {
 		return diag.Errorf("unexpected namespace error: %s", err)
@@ -253,9 +261,7 @@ func resourceScalewayContainerUpdate(ctx context.Context, d *schema.ResourceData
 
 	// check for container state
 	_, err = api.WaitForContainer(&container.WaitForContainerRequest{ContainerID: containerID,
-		Region:        region,
-		Timeout:       scw.TimeDurationPtr(defaultContainerTimeout),
-		RetryInterval: DefaultWaitRetryInterval,
+		Region: region,
 	}, scw.WithContext(ctx))
 	if err != nil {
 		return diag.Errorf("unexpected waiting container error: %s", err)
@@ -265,12 +271,12 @@ func resourceScalewayContainerUpdate(ctx context.Context, d *schema.ResourceData
 	var diags diag.Diagnostics
 
 	// check triggers associated
-	triggers, errList := api.ListCrons(&container.ListCronsRequest{
+	triggers, err := api.ListCrons(&container.ListCronsRequest{
 		Region:      region,
 		ContainerID: containerID,
 	}, scw.WithContext(ctx))
-	if errList != nil {
-		return diag.FromErr(errList)
+	if err != nil {
+		return diag.FromErr(err)
 	}
 
 	// wait for triggers state
@@ -278,64 +284,7 @@ func resourceScalewayContainerUpdate(ctx context.Context, d *schema.ResourceData
 		_, err := api.WaitForCron(&container.WaitForCronRequest{
 			CronID:        c.ID,
 			Region:        region,
-			Timeout:       scw.TimeDurationPtr(defaultContainerTimeout),
-			RetryInterval: DefaultWaitRetryInterval,
-		}, scw.WithContext(ctx))
-		if err != nil {
-			diags = append(diags, diag.Diagnostic{
-				Severity: diag.Warning,
-				Summary:  "Warning waiting cron job",
-				Detail:   err.Error(),
-			})
-		}
-	}
-
-	// update container
-	req := &container.UpdateContainerRequest{
-		Region:      region,
-		ContainerID: containerID,
-	}
-
-	namespaceID := d.Get("namespace_id")
-	// verify name space state
-	_, err = api.WaitForNamespace(&container.WaitForNamespaceRequest{
-		NamespaceID:   expandID(namespaceID),
-		Region:        region,
-		Timeout:       scw.TimeDurationPtr(defaultRegistryNamespaceTimeout),
-		RetryInterval: DefaultWaitRetryInterval,
-	}, scw.WithContext(ctx))
-	if err != nil {
-		return diag.Errorf("unexpected namespace error: %s", err)
-	}
-
-	// check for container state
-	_, err = api.WaitForContainer(&container.WaitForContainerRequest{ContainerID: containerID,
-		Region:        region,
-		Timeout:       scw.TimeDurationPtr(defaultContainerTimeout),
-		RetryInterval: DefaultWaitRetryInterval,
-	}, scw.WithContext(ctx))
-	if err != nil {
-		return diag.Errorf("unexpected waiting container error: %s", err)
-	}
-
-	// Warning or Errors can be collected as warnings
-	var diags diag.Diagnostics
-
-	// check triggers associated
-	triggers, errList := api.ListCrons(&container.ListCronsRequest{
-		Region:      region,
-		ContainerID: containerID,
-	}, scw.WithContext(ctx))
-	if errList != nil {
-		return diag.FromErr(errList)
-	}
-
-	// wait for triggers state
-	for _, c := range triggers.Crons {
-		_, err := api.WaitForCron(&container.WaitForCronRequest{
-			CronID:        c.ID,
-			Region:        region,
-			Timeout:       scw.TimeDurationPtr(defaultContainerTimeout),
+			Timeout:       scw.TimeDurationPtr(defaultContainerNamespaceTimeout),
 			RetryInterval: DefaultWaitRetryInterval,
 		}, scw.WithContext(ctx))
 		if err != nil {
@@ -355,7 +304,7 @@ func resourceScalewayContainerUpdate(ctx context.Context, d *schema.ResourceData
 
 	if d.HasChanges("environment_variables") {
 		envVariablesRaw := d.Get("environment_variables")
-		req.EnvironmentVariables = expandMapStr(envVariablesRaw)
+		req.EnvironmentVariables = expandMapStringStringPtr(envVariablesRaw)
 	}
 
 	if d.HasChanges("min_scale") {
@@ -426,10 +375,8 @@ func resourceScalewayContainerDelete(ctx context.Context, d *schema.ResourceData
 	namespaceID := d.Get("namespace_id")
 	// verify name space state
 	_, err = api.WaitForNamespace(&container.WaitForNamespaceRequest{
-		NamespaceID:   expandID(namespaceID),
-		Region:        region,
-		Timeout:       scw.TimeDurationPtr(defaultRegistryNamespaceTimeout),
-		RetryInterval: DefaultWaitRetryInterval,
+		NamespaceID: expandID(namespaceID),
+		Region:      region,
 	}, scw.WithContext(ctx))
 	if err != nil {
 		return diag.Errorf("unexpected namespace error: %s", err)
@@ -437,9 +384,7 @@ func resourceScalewayContainerDelete(ctx context.Context, d *schema.ResourceData
 
 	// check for container state
 	_, err = api.WaitForContainer(&container.WaitForContainerRequest{ContainerID: containerID,
-		Region:        region,
-		Timeout:       scw.TimeDurationPtr(defaultContainerTimeout),
-		RetryInterval: DefaultWaitRetryInterval,
+		Region: region,
 	}, scw.WithContext(ctx))
 	if err != nil {
 		return diag.Errorf("unexpected waiting container error: %s", err)
@@ -460,10 +405,8 @@ func resourceScalewayContainerDelete(ctx context.Context, d *schema.ResourceData
 	// wait for triggers state
 	for _, c := range triggers.Crons {
 		_, err := api.WaitForCron(&container.WaitForCronRequest{
-			CronID:        c.ID,
-			Region:        region,
-			Timeout:       scw.TimeDurationPtr(defaultContainerTimeout),
-			RetryInterval: DefaultWaitRetryInterval,
+			CronID: c.ID,
+			Region: region,
 		}, scw.WithContext(ctx))
 		if err != nil {
 			diags = append(diags, diag.Diagnostic{
