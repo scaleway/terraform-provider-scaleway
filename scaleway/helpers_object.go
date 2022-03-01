@@ -232,7 +232,6 @@ func removeS3ObjectVersionLegalHold(conn *s3.S3, bucketName string, objectVersio
 	}
 	if aws.StringValue(objectHead.ObjectLockLegalHoldStatus) != s3.ObjectLockLegalHoldStatusOn {
 		return false, nil
-
 	}
 	_, err = conn.PutObjectLegalHold(&s3.PutObjectLegalHoldInput{
 		Bucket:    scw.StringPtr(bucketName),
@@ -247,7 +246,6 @@ func removeS3ObjectVersionLegalHold(conn *s3.S3, bucketName string, objectVersio
 		return false, err
 	}
 	return true, nil
-
 }
 
 func deleteS3ObjectVersions(ctx context.Context, conn *s3.S3, bucketName string, force bool) error {
