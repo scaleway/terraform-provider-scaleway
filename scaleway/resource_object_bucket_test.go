@@ -659,7 +659,7 @@ func testAccCheckScalewayObjectBucketExists(tt *TestTools, n string) resource.Te
 	}
 }
 
-func TestAccScalewayObjectBucketDestroy_force(t *testing.T) {
+func TestAccScalewayObjectBucket_DestroyForce(t *testing.T) {
 	if !*UpdateCassettes {
 		t.Skip("Skipping ObjectStorage test as this kind of resource can't be deleted before 24h")
 	}
@@ -687,7 +687,7 @@ func TestAccScalewayObjectBucketDestroy_force(t *testing.T) {
 			if err != nil {
 				return fmt.Errorf("failed to put object in test bucket: %s", err)
 			}
-			conn.PutObject(&s3.PutObjectInput{
+			_, err = conn.PutObject(&s3.PutObjectInput{
 				Bucket: scw.StringPtr(rs.Primary.Attributes["name"]),
 				Key:    scw.StringPtr("folder/test-file-in-folder"),
 			})
