@@ -61,34 +61,33 @@ func resourceScalewayContainer() *schema.Resource {
 			},
 			"min_scale": {
 				Type:        schema.TypeInt,
+				Computed:    true,
 				Optional:    true,
-				Description: "The minimum of running container instances continuously (default: 0)",
-				//Default:     0,
+				Description: "The minimum of running container instances continuously. Defaults to 0",
 			},
 			"max_scale": {
 				Type:        schema.TypeInt,
+				Computed:    true,
 				Optional:    true,
-				Description: "The maximum of number of instances this container can scale to (default: 20)",
-				//Default:     20,
+				Description: "The maximum of number of instances this container can scale to. Default to 20",
 			},
 			"memory_limit": {
 				Type:        schema.TypeInt,
+				Computed:    true,
 				Optional:    true,
-				Description: "The memory computing resources in MB to allocate to each container",
-				//Default:     128,
+				Description: "The memory computing resources in MB to allocate to each container. Defaults to 128",
 			},
 			"cpu_limit": {
 				Type:        schema.TypeInt,
-				Optional:    true,
 				Computed:    true,
-				Description: "The CPU computing resources to allocate to each container",
+				Optional:    true,
+				Description: "The CPU computing resources to allocate to each container. Defaults  to 70",
 			},
 			"timeout": {
-				Type:         schema.TypeString,
-				Optional:     true,
-				Computed:     true,
-				Description:  "The maximum amount of time in seconds during which your container can process a request before we stop it.",
-				ValidateFunc: validateDuration(),
+				Type:        schema.TypeInt,
+				Computed:    true,
+				Optional:    true,
+				Description: "The maximum amount of time in seconds during which your container can process a request before we stop it. Defaults to (300s).",
 			},
 			"privacy": {
 				Type:        schema.TypeString,
@@ -110,9 +109,9 @@ func resourceScalewayContainer() *schema.Resource {
 			"max_concurrency": {
 				Type:             schema.TypeInt,
 				Optional:         true,
-				Description:      "The maximum the number of simultaneous requests your container can handle at the same time.",
+				Computed:         true,
+				Description:      "The maximum the number of simultaneous requests your container can handle at the same time. Defaults to 50",
 				ValidateDiagFunc: validateMaxLimit(containerMaxLimit),
-				//Default:          80,
 			},
 			"domain_name": {
 				Type:        schema.TypeString,
@@ -123,8 +122,8 @@ func resourceScalewayContainer() *schema.Resource {
 			"protocol": {
 				Type:        schema.TypeString,
 				Optional:    true,
-				Description: "The communication protocol. default (unknown_protocol)",
-				Default:     container.ContainerProtocolUnknownProtocol.String(),
+				Description: "The communication protocol. default (http1)",
+				Default:     container.ContainerProtocolHTTP1.String(),
 				ValidateFunc: validation.StringInSlice([]string{
 					container.ContainerProtocolH2c.String(),
 					container.ContainerProtocolHTTP1.String(),
@@ -133,9 +132,9 @@ func resourceScalewayContainer() *schema.Resource {
 			},
 			"port": {
 				Type:        schema.TypeInt,
+				Computed:    true,
 				Optional:    true,
-				Description: "The port to expose the container",
-				//Default:     8080,
+				Description: "The port to expose the container. Defaults to 8080",
 			},
 
 			"redeploy": {
@@ -184,7 +183,11 @@ func resourceScalewayContainerCreate(ctx context.Context, d *schema.ResourceData
 		return diag.Errorf("unexpected namespace error: %s", err)
 	}
 
-	req := setCreateContainerRequest(d, region)
+	req, err := setCreateContainerRequest(d, region)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	res, err := api.CreateContainer(req, scw.WithContext(ctx))
 	if err != nil {
 		return diag.Errorf("unexpected waiting container error: %s", err)
@@ -226,9 +229,9 @@ func resourceScalewayContainerRead(ctx context.Context, d *schema.ResourceData, 
 	_ = d.Set("environment_variables", flattenMap(co.EnvironmentVariables))
 	_ = d.Set("min_scale", int(co.MinScale))
 	_ = d.Set("max_scale", int(co.MaxScale))
-	_ = d.Set("max_scale", int(co.MemoryLimit))
+	_ = d.Set("memory_limit", int(co.MemoryLimit))
 	_ = d.Set("cpu_limit", int(co.CPULimit))
-	_ = d.Set("timeout", flattenDuration(co.Timeout.ToTimeDuration()))
+	_ = d.Set("timeout", co.Timeout.Seconds)
 	_ = d.Set("privacy", co.Privacy.String())
 	_ = d.Set("description", *co.Description)
 	_ = d.Set("registry_image", co.RegistryImage)
@@ -320,7 +323,8 @@ func resourceScalewayContainerUpdate(ctx context.Context, d *schema.ResourceData
 	}
 
 	if d.HasChanges("timeout") {
-		req.Timeout = toDuration(d.Get("timeout"))
+		timeout := d.Get("timeout")
+		req.Timeout = &scw.Duration{Seconds: timeout.(int64)}
 	}
 
 	if d.HasChanges("privacy") {
