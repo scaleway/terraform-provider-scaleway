@@ -332,7 +332,7 @@ func resourceScalewayInstanceServerCreate(ctx context.Context, d *schema.Resourc
 			req.Volumes["0"] = &instance.VolumeServerTemplate{
 				Name:       newRandomName("vol"),
 				VolumeType: instance.VolumeVolumeTypeLSSD,
-				Size:       serverType.VolumesConstraint.MinSize,
+				Size:       serverType.VolumesConstraint.MaxSize,
 			}
 		}
 	}
