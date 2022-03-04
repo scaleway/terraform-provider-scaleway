@@ -36,7 +36,7 @@ func containerAPIWithRegionAndID(m interface{}, id string) (*container.API, scw.
 	return api, region, id, nil
 }
 
-func setCreateContainerRequest(d *schema.ResourceData, region scw.Region) *container.CreateContainerRequest {
+func setCreateContainerRequest(d *schema.ResourceData, region scw.Region) (*container.CreateContainerRequest, error) {
 	// required
 	nameRaw := d.Get("name")
 	namespaceID := d.Get("namespace_id")
@@ -90,5 +90,5 @@ func setCreateContainerRequest(d *schema.ResourceData, region scw.Region) *conta
 		req.DomainName = expandStringPtr(domainName)
 	}
 
-	return req
+	return req, nil
 }
