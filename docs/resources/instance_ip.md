@@ -29,6 +29,7 @@ In addition to all above arguments, the following attributes are exported:
 - `address` - The IP address.
 - `reverse` - The reverse dns attached to this IP
 - `organization_id` - The organization ID the IP is associated with.
+- `tags` - The tags associated with the IP.
 
 ## Import
 
