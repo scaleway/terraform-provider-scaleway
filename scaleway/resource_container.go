@@ -81,7 +81,7 @@ func resourceScalewayContainer() *schema.Resource {
 				Type:        schema.TypeInt,
 				Computed:    true,
 				Optional:    true,
-				Description: "The CPU computing resources to allocate to each container. Defaults  to 70",
+				Description: "The amount of vCPU computing resources to allocate to each container. Defaults  to 70",
 			},
 			"timeout": {
 				Type:        schema.TypeInt,
@@ -426,7 +426,8 @@ func resourceScalewayContainerDelete(ctx context.Context, d *schema.ResourceData
 	// delete container
 	_, err = api.DeleteContainer(&container.DeleteContainerRequest{
 		Region:      region,
-		ContainerID: containerID},
+		ContainerID: containerID,
+	},
 		scw.WithContext(ctx),
 	)
 	if err != nil {

@@ -29,7 +29,6 @@ func TestAccScalewayContainer_Basic(t *testing.T) {
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayContainerNamespaceExists(tt, "scaleway_container_namespace.main"),
 					testAccCheckScalewayContainerExists(tt, "scaleway_container.main"),
 					testCheckResourceAttrUUID("scaleway_container_namespace.main", "id"),
 					testCheckResourceAttrUUID("scaleway_container.main", "id"),
@@ -58,9 +57,7 @@ func TestAccScalewayContainer_Basic(t *testing.T) {
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayContainerNamespaceExists(tt, "scaleway_container_namespace.main"),
 					testAccCheckScalewayContainerExists(tt, "scaleway_container.main"),
-					testCheckResourceAttrUUID("scaleway_container_namespace.main", "id"),
 					testCheckResourceAttrUUID("scaleway_container.main", "id"),
 					resource.TestCheckResourceAttr("scaleway_container.main", "name", "my-container-tf"),
 					resource.TestCheckResourceAttr("scaleway_container.main", "port", "8080"),
@@ -78,93 +75,138 @@ func TestAccScalewayContainer_Basic(t *testing.T) {
 			{
 				Config: `
 					resource scaleway_registry_namespace main {
-						name = "test-for-cotainer-as-a-service"
+						name = "test-for-container-as-a-service-public"
 						description = "test registry namespace for container as a service"
 						is_public = true
 					}
 
 					resource scaleway_container_namespace main {
-						name = "test-cr-ns-01"
-						description = "test container namespace 01"
+						name = "test-cr-ns"
+						description = "test container namespace namespace"
 					}
 
 					resource scaleway_container main {
-						name = "my-container-tf"
+						name = "my-container-01"
+						description = "test container"
 						namespace_id = scaleway_container_namespace.main.id
 						registry_image = scaleway_registry_namespace.main.endpoint
 					}
-						`,
+				`,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayContainerNamespaceExists(tt, "scaleway_container_namespace.main"),
-					resource.TestCheckResourceAttr("scaleway_container_namespace.main", "description", "test container namespace 01"),
-					resource.TestCheckResourceAttr("scaleway_container_namespace.main", "name", "test-cr-ns-01"),
-					testCheckResourceAttrUUID("scaleway_container_namespace.main", "id"),
+					testAccCheckScalewayContainerExists(tt, "scaleway_container.main"),
+					testCheckResourceAttrUUID("scaleway_container", "id"),
+					resource.TestCheckResourceAttr("scaleway_container.main", "name", "my-container-01"),
+					resource.TestCheckResourceAttr("scaleway_container.main", "description", "test container"),
 				),
 			},
-			/*			{
-							Config: `
-								resource scaleway_container_namespace main {
-									name = "test-cr-ns-01"
-									environment_variables = {
-										"test" = "test"
-									}
-								}
-							`,
-							Check: resource.ComposeTestCheckFunc(
-								testAccCheckScalewayContainerNamespaceExists(tt, "scaleway_container_namespace.main"),
-								resource.TestCheckResourceAttr("scaleway_container_namespace.main", "description", ""),
-								resource.TestCheckResourceAttr("scaleway_container_namespace.main", "name", "test-cr-ns-01"),
-								resource.TestCheckResourceAttr("scaleway_container_namespace.main", "environment_variables.test", "test"),
+			{
+				Config: `
+					resource scaleway_registry_namespace main {
+						name = "test-for-container-as-a-service"
+						description = "test registry namespace for container as a service"
+						is_public = true
+					}
 
-								testCheckResourceAttrUUID("scaleway_container_namespace.main", "id"),
-							),
-						},
-						{
-							Config: `
-								resource scaleway_container_namespace main {
-								}
-							`,
-							Check: resource.ComposeTestCheckFunc(
-								testAccCheckScalewayContainerNamespaceExists(tt, "scaleway_container_namespace.main"),
-								resource.TestCheckResourceAttrSet("scaleway_container_namespace.main", "name"),
-								resource.TestCheckResourceAttrSet("scaleway_container_namespace.main", "registry_endpoint"),
-								resource.TestCheckResourceAttrSet("scaleway_container_namespace.main", "registry_namespace_id"),
-							),
-						},
-						{
-							Config: `
-								resource scaleway_container_namespace main {
-									name = "tf-env-test"
-									environment_variables = {
-										"test" = "test"
-									}
-								}
-							`,
-							Check: resource.ComposeTestCheckFunc(
-								testAccCheckScalewayContainerNamespaceExists(tt, "scaleway_container_namespace.main"),
-								resource.TestCheckResourceAttr("scaleway_container_namespace.main", "name", "tf-env-test"),
-								resource.TestCheckResourceAttr("scaleway_container_namespace.main", "environment_variables.test", "test"),
+					resource scaleway_container_namespace main {
+						name = "test-cr-ns"
+						description = "test container namespace"
+					}
 
-								testCheckResourceAttrUUID("scaleway_container_namespace.main", "id"),
-							),
-						},
-						{
-							Config: `
-								resource scaleway_container_namespace main {
-									name = "tf-env-test"
-									environment_variables = {
-										"foo" = "bar"
-									}
-								}
-							`,
-							Check: resource.ComposeTestCheckFunc(
-								testAccCheckScalewayContainerNamespaceExists(tt, "scaleway_container_namespace.main"),
-								resource.TestCheckResourceAttr("scaleway_container_namespace.main", "name", "tf-env-test"),
-								resource.TestCheckResourceAttr("scaleway_container_namespace.main", "environment_variables.foo", "bar"),
+					resource scaleway_container main {
+						name = "my-container-01"
+						description = "environment variables test"
+						namespace_id = scaleway_container_namespace.main.id
+						registry_image = scaleway_registry_namespace.main.endpoint
+						environment_variables = {
+							"test" = "test"
+						}
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayContainerExists(tt, "scaleway_container.main"),
+					resource.TestCheckResourceAttr("scaleway_container.main", "description", "environment variables test"),
+					resource.TestCheckResourceAttr("scaleway_container.main", "environment_variables.test", "test"),
+				),
+			},
+			{
+				Config: `
+					resource scaleway_registry_namespace main {
+						name = "test-for-container-as-a-service"
+						description = "test registry namespace for container as a service"
+						is_public = true
+					}
 
-								testCheckResourceAttrUUID("scaleway_container_namespace.main", "id"),
-							),
-						},*/
+					resource scaleway_container_namespace main {
+						name = "test-cr-ns"
+						description = "test container namespace"
+					}
+
+					resource scaleway_container main {
+						name = "my-container-01"
+						description = "environment variables updated"
+						namespace_id = scaleway_container_namespace.main.id
+						registry_image = scaleway_registry_namespace.main.endpoint
+						environment_variables = {
+							"foo" = "bar"
+						}
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("scaleway_container.main", "description", "environment variables updated"),
+					resource.TestCheckResourceAttr("scaleway_container.main", "environment_variables.foo", "bar"),
+				),
+			},
+			{
+				Config: `
+					resource scaleway_registry_namespace main {
+						name = "test-for-container-as-a-service"
+						description = "test registry namespace for container as a service"
+						is_public = true
+					}
+
+					resource scaleway_container_namespace main {
+						name = "test-cr-ns"
+						description = "test container"
+					}
+
+					resource scaleway_container main {
+						name = "my-container-02"
+						description = "environment variables test"
+						namespace_id = scaleway_container_namespace.main.id
+						registry_image = scaleway_registry_namespace.main.endpoint
+						port = 9090
+						cpu_limit = 140
+						memory_limit = 256
+						min_scale = 3
+						max_scale = 5
+						timeout = 600
+						max_concurrency = 80
+						privacy = private
+						protocol = h2c
+						redeploy = true
+
+						environment_variables = {
+							"foo" = "var"
+						}
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayContainerExists(tt, "scaleway_container.main"),
+					testCheckResourceAttrUUID("scaleway_container_namespace.main", "id"),
+					testCheckResourceAttrUUID("scaleway_container.main", "id"),
+					resource.TestCheckResourceAttr("scaleway_container.main", "name", "my-container-02"),
+					resource.TestCheckResourceAttr("scaleway_container.main", "port", "9090"),
+					resource.TestCheckResourceAttr("scaleway_container.main", "cpu_limit", "140"),
+					resource.TestCheckResourceAttr("scaleway_container.main", "memory_limit", "256"),
+					resource.TestCheckResourceAttr("scaleway_container.main", "min_scale", "3"),
+					resource.TestCheckResourceAttr("scaleway_container.main", "max_scale", "5"),
+					resource.TestCheckResourceAttr("scaleway_container.main", "timeout", "600"),
+					resource.TestCheckResourceAttr("scaleway_container.main", "max_concurrency", "80"),
+					resource.TestCheckResourceAttr("scaleway_container.main", "redeploy", "true"),
+					resource.TestCheckResourceAttr("scaleway_container.main", "privacy", container.ContainerPrivacyPrivate.String()),
+					resource.TestCheckResourceAttr("scaleway_container.main", "protocol", container.ContainerProtocolH2c.String()),
+				),
+			},
 		},
 	})
 }
