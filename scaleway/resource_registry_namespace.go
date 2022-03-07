@@ -79,7 +79,7 @@ func resourceScalewayRegistryNamespaceRead(ctx context.Context, d *schema.Resour
 		return diag.FromErr(err)
 	}
 
-	ns, err := api.GetNamespace(&registry.GetNamespaceRequest{
+	ns, err := api.WaitForNamespace(&registry.WaitForNamespaceRequest{
 		Region:      region,
 		NamespaceID: id,
 	}, scw.WithContext(ctx))
@@ -109,6 +109,19 @@ func resourceScalewayRegistryNamespaceUpdate(ctx context.Context, d *schema.Reso
 		return diag.FromErr(err)
 	}
 
+	_, err = api.WaitForNamespace(&registry.WaitForNamespaceRequest{
+		Region:      region,
+		NamespaceID: id,
+	}, scw.WithContext(ctx))
+
+	if err != nil {
+		if is404Error(err) {
+			d.SetId("")
+			return nil
+		}
+		return diag.FromErr(err)
+	}
+
 	if d.HasChanges("description", "is_public") {
 		if _, err := api.UpdateNamespace(&registry.UpdateNamespaceRequest{
 			Region:      region,
@@ -126,6 +139,19 @@ func resourceScalewayRegistryNamespaceUpdate(ctx context.Context, d *schema.Reso
 func resourceScalewayRegistryNamespaceDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	api, region, id, err := registryAPIWithRegionAndID(meta, d.Id())
 	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	_, err = api.WaitForNamespace(&registry.WaitForNamespaceRequest{
+		Region:      region,
+		NamespaceID: id,
+	}, scw.WithContext(ctx))
+
+	if err != nil {
+		if is404Error(err) {
+			d.SetId("")
+			return nil
+		}
 		return diag.FromErr(err)
 	}
 
