@@ -138,6 +138,8 @@ The `inbound_rule` and `outbound_rule` block supports:
 
 - `ip_range`- (Optional) The ip range (e.g `192.168.1.0/24`) this rule applies to. If no `ip` nor `ip_range` are specified, rule will apply to all ip. Only one of `ip` and `ip_range` should be specified.
 
+- `tags`- (Optional) The tags of the security group.
+
 ## Attributes Reference
 
 In addition to all above arguments, the following attributes are exported:
