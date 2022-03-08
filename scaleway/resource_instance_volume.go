@@ -68,6 +68,14 @@ func resourceScalewayInstanceVolume() *schema.Resource {
 				Computed:    true,
 				Description: "The server associated with this volume",
 			},
+			"tags": {
+				Type: schema.TypeList,
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
+				Optional:    true,
+				Description: "The tags associated with the volume",
+			},
 			"organization_id": organizationIDSchema(),
 			"project_id":      projectIDSchema(),
 			"zone":            zoneSchema(),
@@ -86,6 +94,7 @@ func resourceScalewayInstanceVolumeCreate(ctx context.Context, d *schema.Resourc
 		Name:       expandOrGenerateString(d.Get("name"), "vol"),
 		VolumeType: instance.VolumeVolumeType(d.Get("type").(string)),
 		Project:    expandStringPtr(d.Get("project_id")),
+		Tags:       expandStrings(d.Get("tags")),
 	}
 
 	if size, ok := d.GetOk("size_in_gb"); ok {
@@ -134,6 +143,7 @@ func resourceScalewayInstanceVolumeRead(ctx context.Context, d *schema.ResourceD
 	_ = d.Set("project_id", res.Volume.Project)
 	_ = d.Set("zone", string(zone))
 	_ = d.Set("type", res.Volume.VolumeType.String())
+	_ = d.Set("tags", res.Volume.Tags)
 
 	_, fromVolume := d.GetOk("from_volume_id")
 	_, fromSnapshot := d.GetOk("from_snapshot_id")
@@ -156,17 +166,18 @@ func resourceScalewayInstanceVolumeUpdate(ctx context.Context, d *schema.Resourc
 		return diag.FromErr(err)
 	}
 
+	req := &instance.UpdateVolumeRequest{
+		VolumeID: id,
+		Zone:     zone,
+	}
+
 	if d.HasChange("name") {
 		newName := d.Get("name").(string)
+		req.Name = &newName
+	}
 
-		_, err = instanceAPI.UpdateVolume(&instance.UpdateVolumeRequest{
-			VolumeID: id,
-			Zone:     zone,
-			Name:     &newName,
-		}, scw.WithContext(ctx))
-		if err != nil {
-			return diag.FromErr(fmt.Errorf("couldn't update volume: %s", err))
-		}
+	if d.HasChange("tags") {
+		req.Tags = scw.StringsPtr(expandStrings(d.Get("tags")))
 	}
 
 	if d.HasChange("size_in_gb") {
@@ -202,6 +213,11 @@ func resourceScalewayInstanceVolumeUpdate(ctx context.Context, d *schema.Resourc
 		if err != nil {
 			return diag.FromErr(err)
 		}
+	}
+
+	_, err = instanceAPI.UpdateVolume(req, scw.WithContext(ctx))
+	if err != nil {
+		return diag.FromErr(fmt.Errorf("couldn't update volume: %s", err))
 	}
 
 	return resourceScalewayInstanceVolumeRead(ctx, d, meta)
