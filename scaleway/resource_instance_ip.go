@@ -13,6 +13,7 @@ func resourceScalewayInstanceIP() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceScalewayInstanceIPCreate,
 		ReadContext:   resourceScalewayInstanceIPRead,
+		UpdateContext: resourceScalewayInstanceIPUpdate,
 		DeleteContext: resourceScalewayInstanceIPDelete,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
@@ -37,6 +38,14 @@ func resourceScalewayInstanceIP() *schema.Resource {
 				Computed:    true,
 				Description: "The server associated with this IP",
 			},
+			"tags": {
+				Type: schema.TypeList,
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
+				Optional:    true,
+				Description: "The tags associated with the ip",
+			},
 			"zone":            zoneSchema(),
 			"organization_id": organizationIDSchema(),
 			"project_id":      projectIDSchema(),
@@ -53,12 +62,35 @@ func resourceScalewayInstanceIPCreate(ctx context.Context, d *schema.ResourceDat
 	res, err := instanceAPI.CreateIP(&instance.CreateIPRequest{
 		Zone:    zone,
 		Project: expandStringPtr(d.Get("project_id")),
+		Tags:    expandStrings(d.Get("tags")),
 	}, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	d.SetId(newZonedIDString(zone, res.IP.ID))
+	return resourceScalewayInstanceIPRead(ctx, d, meta)
+}
+
+func resourceScalewayInstanceIPUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	instanceAPI, zone, ID, err := instanceAPIWithZoneAndID(meta, d.Id())
+	if err != nil {
+		return diag.FromErr(err)
+	}
+	req := &instance.UpdateIPRequest{
+		IP:   ID,
+		Zone: zone,
+	}
+
+	if d.HasChange("tags") {
+		req.Tags = scw.StringsPtr(expandStrings(d.Get("tags")))
+	}
+
+	_, err = instanceAPI.UpdateIP(req, scw.WithContext(ctx))
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	return resourceScalewayInstanceIPRead(ctx, d, meta)
 }
 
@@ -87,6 +119,7 @@ func resourceScalewayInstanceIPRead(ctx context.Context, d *schema.ResourceData,
 	_ = d.Set("organization_id", res.IP.Organization)
 	_ = d.Set("project_id", res.IP.Project)
 	_ = d.Set("reverse", res.IP.Reverse)
+	_ = d.Set("tags", res.IP.Tags)
 
 	if res.IP.Server != nil {
 		_ = d.Set("server_id", newZonedIDString(res.IP.Zone, res.IP.Server.ID))

@@ -93,6 +93,48 @@ func TestAccScalewayInstanceIP_WithZone(t *testing.T) {
 	})
 }
 
+func TestAccScalewayInstanceIP_Tags(t *testing.T) {
+	tt := NewTestTools(t)
+	defer tt.Cleanup()
+	resource.ParallelTest(t, resource.TestCase{
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      testAccCheckScalewayInstanceIPDestroy(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+						resource "scaleway_instance_ip" "main" {}
+					`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayInstanceIPExists(tt, "scaleway_instance_ip.main"),
+					resource.TestCheckNoResourceAttr("scaleway_instance_ip.main", "tags"),
+				),
+			},
+			{
+				Config: `
+						resource "scaleway_instance_ip" "main" {
+							tags = ["foo", "bar"]
+						}
+					`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayInstanceIPExists(tt, "scaleway_instance_ip.main"),
+					resource.TestCheckResourceAttr("scaleway_instance_ip.main", "tags.0", "foo"),
+					resource.TestCheckResourceAttr("scaleway_instance_ip.main", "tags.1", "bar"),
+				),
+			},
+			{
+				Config: `
+						resource "scaleway_instance_ip" "main" {
+						}
+					`,
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckNoResourceAttr("scaleway_instance_ip.main", "tags"),
+					testAccCheckScalewayInstanceIPExists(tt, "scaleway_instance_ip.main"),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckScalewayInstanceIPExists(tt *TestTools, name string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[name]

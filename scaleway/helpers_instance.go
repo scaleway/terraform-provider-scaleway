@@ -251,11 +251,12 @@ func sanitizeVolumeMap(serverName string, volumes map[string]*instance.VolumeSer
 				ID:   v.ID,
 				Name: v.Name,
 			}
-		// For the root volume (index 0) if the specified size is not 0 it is considered as a new volume
-		// It does not have yet a volume ID, it is passed to the API with only the size to be dynamically created by the API
-		case index == "0" && v.Size != 0:
+		// For the root volume (index 0) if the size is 0, it is considered as a volume created from an image.
+		// The size is not passed to the API, so it's computed by the API
+		case index == "0" && v.Size == 0:
 			v = &instance.VolumeServerTemplate{
-				Size: v.Size,
+				VolumeType: v.VolumeType,
+				Boot:       v.Boot,
 			}
 		// If none of the above conditions are met, the volume is passed as it to the API
 		default:

@@ -88,6 +88,14 @@ func resourceScalewayInstanceSecurityGroup() *schema.Resource {
 				Optional:    true,
 				Default:     true,
 			},
+			"tags": {
+				Type: schema.TypeList,
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
+				Optional:    true,
+				Description: "The tags associated with the security group",
+			},
 			"zone":            zoneSchema(),
 			"organization_id": organizationIDSchema(),
 			"project_id":      projectIDSchema(),
@@ -110,6 +118,7 @@ func resourceScalewayInstanceSecurityGroupCreate(ctx context.Context, d *schema.
 		InboundDefaultPolicy:  instance.SecurityGroupPolicy(d.Get("inbound_default_policy").(string)),
 		OutboundDefaultPolicy: instance.SecurityGroupPolicy(d.Get("outbound_default_policy").(string)),
 		EnableDefaultSecurity: expandBoolPtr(d.Get("enable_default_security")),
+		Tags:                  expandStrings(d.Get("tags")),
 	}, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
@@ -151,6 +160,7 @@ func resourceScalewayInstanceSecurityGroupRead(ctx context.Context, d *schema.Re
 	_ = d.Set("inbound_default_policy", res.SecurityGroup.InboundDefaultPolicy.String())
 	_ = d.Set("outbound_default_policy", res.SecurityGroup.OutboundDefaultPolicy.String())
 	_ = d.Set("enable_default_security", res.SecurityGroup.EnableDefaultSecurity)
+	_ = d.Set("tags", res.SecurityGroup.Tags)
 
 	if !d.Get("external_rules").(bool) {
 		inboundRules, outboundRules, err := getSecurityGroupRules(ctx, instanceAPI, zone, ID, d)
@@ -257,6 +267,10 @@ func resourceScalewayInstanceSecurityGroupUpdate(ctx context.Context, d *schema.
 
 	if d.HasChange("enable_default_security") {
 		updateReq.EnableDefaultSecurity = expandBoolPtr(d.Get("enable_default_security"))
+	}
+
+	if d.HasChange("tags") {
+		updateReq.Tags = scw.StringsPtr(expandStrings(d.Get("tags")))
 	}
 
 	// Only update name if one is provided in the state
