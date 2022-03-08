@@ -71,6 +71,7 @@ func resourceScalewayInstanceIPCreate(ctx context.Context, d *schema.ResourceDat
 	d.SetId(newZonedIDString(zone, res.IP.ID))
 	return resourceScalewayInstanceIPRead(ctx, d, meta)
 }
+
 func resourceScalewayInstanceIPUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	instanceAPI, zone, ID, err := instanceAPIWithZoneAndID(meta, d.Id())
 	if err != nil {
