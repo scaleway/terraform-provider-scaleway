@@ -2,6 +2,10 @@ package scaleway
 
 import (
 	"fmt"
+	"github.com/ory/dockertest/v3"
+	"github.com/scaleway/scaleway-sdk-go/api/registry/v1"
+	"github.com/stretchr/testify/require"
+	"net/http"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -99,6 +103,65 @@ func TestAccScalewayContainer_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_container.main", "description", "test container"),
 				),
 			},
+		},
+	})
+}
+
+func TestAccScalewayContainer_WithIMG(t *testing.T) {
+	tt := NewTestTools(t)
+	defer tt.Cleanup()
+
+	addImageToRegistry := func(tt *TestTools, n string) resource.TestCheckFunc {
+		return func(s *terraform.State) error {
+			rs, ok := s.RootModule().Resources[n]
+			if !ok {
+				return fmt.Errorf("not found: %s", n)
+			}
+			api, region, id, err := registryAPIWithRegionAndID(tt.Meta, rs.Primary.ID)
+			if err != nil {
+				return nil
+			}
+
+			ns, err := api.GetNamespace(&registry.GetNamespaceRequest{
+				NamespaceID: id,
+				Region:      region,
+			})
+			if err != nil {
+				return err
+			}
+
+			pool, err := dockertest.NewPool(ns.Endpoint)
+			require.NoError(t, err, "could not connect to Docker")
+
+			resource, err := pool.Run("docker-gs-ping", "latest", []string{})
+			require.NoError(t, err, "could not start container")
+
+			t.Cleanup(func() {
+				require.NoError(t, pool.Purge(resource), "failed to remove container")
+			})
+
+			var resp *http.Response
+
+			err = pool.Retry(func() error {
+				resp, err = http.Get(fmt.Sprint("http://localhost:", resource.GetPort("8080/tcp"), "/"))
+				if err != nil {
+					t.Log("container not ready, waiting...")
+					return err
+				}
+				return nil
+			})
+			require.NoError(t, err, "HTTP error")
+			defer resp.Body.Close()
+
+			return nil
+		}
+	}
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      testAccCheckScalewayContainerDestroy(tt),
+		Steps: []resource.TestStep{
 			{
 				Config: `
 					resource scaleway_registry_namespace main {
@@ -109,51 +172,11 @@ func TestAccScalewayContainer_Basic(t *testing.T) {
 
 					resource scaleway_container_namespace main {
 						name = "test-cr-ns"
-						description = "test container namespace"
-					}
-
-					resource scaleway_container main {
-						name = "my-container-01"
-						description = "environment variables test"
-						namespace_id = scaleway_container_namespace.main.id
-						registry_image = scaleway_registry_namespace.main.endpoint
-						environment_variables = {
-							"test" = "test"
-						}
+						description = "test container"
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayContainerExists(tt, "scaleway_container.main"),
-					resource.TestCheckResourceAttr("scaleway_container.main", "description", "environment variables test"),
-					resource.TestCheckResourceAttr("scaleway_container.main", "environment_variables.test", "test"),
-				),
-			},
-			{
-				Config: `
-					resource scaleway_registry_namespace main {
-						name = "test-for-container-as-a-service"
-						description = "test registry namespace for container as a service"
-						is_public = true
-					}
-
-					resource scaleway_container_namespace main {
-						name = "test-cr-ns"
-						description = "test container namespace"
-					}
-
-					resource scaleway_container main {
-						name = "my-container-01"
-						description = "environment variables updated"
-						namespace_id = scaleway_container_namespace.main.id
-						registry_image = scaleway_registry_namespace.main.endpoint
-						environment_variables = {
-							"foo" = "bar"
-						}
-					}
-				`,
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("scaleway_container.main", "description", "environment variables updated"),
-					resource.TestCheckResourceAttr("scaleway_container.main", "environment_variables.foo", "bar"),
+					addImageToRegistry(tt, "scaleway_registry_namespace.main"),
 				),
 			},
 			{
@@ -173,7 +196,7 @@ func TestAccScalewayContainer_Basic(t *testing.T) {
 						name = "my-container-02"
 						description = "environment variables test"
 						namespace_id = scaleway_container_namespace.main.id
-						registry_image = scaleway_registry_namespace.main.endpoint
+						registry_image = "${scaleway_registry_namespace.main.endpoint}/docker-gs-ping"
 						port = 9090
 						cpu_limit = 140
 						memory_limit = 256
@@ -210,7 +233,6 @@ func TestAccScalewayContainer_Basic(t *testing.T) {
 		},
 	})
 }
-
 func testAccCheckScalewayContainerExists(tt *TestTools, n string) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		rs, ok := state.RootModule().Resources[n]
