@@ -48,6 +48,14 @@ func resourceScalewayInstanceSnapshot() *schema.Resource {
 				Computed:    true,
 				Description: "The size of the snapshot in gigabyte",
 			},
+			"tags": {
+				Type: schema.TypeList,
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
+				Optional:    true,
+				Description: "The tags associated with the snapshot",
+			},
 			"created_at": {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -71,6 +79,7 @@ func resourceScalewayInstanceSnapshotCreate(ctx context.Context, d *schema.Resou
 		Project:  expandStringPtr(d.Get("project_id")),
 		Name:     expandOrGenerateString(d.Get("name"), "snap"),
 		VolumeID: expandZonedID(d.Get("volume_id").(string)).ID,
+		Tags:     expandStrings(d.Get("tags")),
 	}
 
 	res, err := instanceAPI.CreateSnapshot(req, scw.WithContext(ctx))
@@ -103,6 +112,7 @@ func resourceScalewayInstanceSnapshotRead(ctx context.Context, d *schema.Resourc
 	_ = d.Set("name", snapshot.Snapshot.Name)
 	_ = d.Set("created_at", snapshot.Snapshot.CreationDate.Format(time.RFC3339))
 	_ = d.Set("type", snapshot.Snapshot.VolumeType.String())
+	_ = d.Set("tags", snapshot.Snapshot.Tags)
 
 	return nil
 }
@@ -113,17 +123,23 @@ func resourceScalewayInstanceSnapshotUpdate(ctx context.Context, d *schema.Resou
 		return diag.FromErr(err)
 	}
 
+	req := &instance.UpdateSnapshotRequest{
+		SnapshotID: id,
+		Zone:       zone,
+	}
+
 	if d.HasChange("name") {
 		newName := d.Get("name").(string)
+		req.Name = &newName
+	}
 
-		_, err = instanceAPI.UpdateSnapshot(&instance.UpdateSnapshotRequest{
-			SnapshotID: id,
-			Zone:       zone,
-			Name:       &newName,
-		}, scw.WithContext(ctx))
-		if err != nil {
-			return diag.FromErr(fmt.Errorf("couldn't update snapshot: %s", err))
-		}
+	if d.HasChange("tags") {
+		req.Tags = scw.StringsPtr(expandStrings(d.Get("tags")))
+	}
+
+	_, err = instanceAPI.UpdateSnapshot(req, scw.WithContext(ctx))
+	if err != nil {
+		return diag.FromErr(fmt.Errorf("couldn't update snapshot: %s", err))
 	}
 
 	return resourceScalewayInstanceSnapshotRead(ctx, d, meta)
