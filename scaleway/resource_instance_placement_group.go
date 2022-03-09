@@ -55,6 +55,14 @@ func resourceScalewayInstancePlacementGroup() *schema.Resource {
 				Computed:    true,
 				Description: "Is true when the policy is respected.",
 			},
+			"tags": {
+				Type: schema.TypeList,
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
+				Optional:    true,
+				Description: "The tags associated with the placement group",
+			},
 			"zone":            zoneSchema(),
 			"organization_id": organizationIDSchema(),
 			"project_id":      projectIDSchema(),
@@ -74,6 +82,7 @@ func resourceScalewayInstancePlacementGroupCreate(ctx context.Context, d *schema
 		Project:    expandStringPtr(d.Get("project_id")),
 		PolicyMode: instance.PlacementGroupPolicyMode(d.Get("policy_mode").(string)),
 		PolicyType: instance.PlacementGroupPolicyType(d.Get("policy_type").(string)),
+		Tags:       expandStrings(d.Get("tags")),
 	}, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
@@ -109,6 +118,7 @@ func resourceScalewayInstancePlacementGroupRead(ctx context.Context, d *schema.R
 	_ = d.Set("policy_mode", res.PlacementGroup.PolicyMode.String())
 	_ = d.Set("policy_type", res.PlacementGroup.PolicyType.String())
 	_ = d.Set("policy_respected", res.PlacementGroup.PolicyRespected)
+	_ = d.Set("tags", res.PlacementGroup.Tags)
 
 	return nil
 }
@@ -139,6 +149,11 @@ func resourceScalewayInstancePlacementGroupUpdate(ctx context.Context, d *schema
 	if d.HasChange("policy_type") {
 		policyType := instance.PlacementGroupPolicyType(d.Get("policy_type").(string))
 		req.PolicyType = &policyType
+		hasChanged = true
+	}
+
+	if d.HasChange("tags") {
+		req.Tags = scw.StringsPtr(expandStrings(d.Get("tags")))
 		hasChanged = true
 	}
 

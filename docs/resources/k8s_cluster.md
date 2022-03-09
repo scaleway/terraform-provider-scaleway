@@ -135,6 +135,8 @@ provider "helm" {
 }
 
 resource "scaleway_lb_ip" "nginx_ip" {
+  zone       = "fr-par-1"
+  project_id = scaleway_k8s_cluster.joy.project_id
 }
 
 resource "helm_release" "nginx_ingress" {
@@ -157,6 +159,12 @@ resource "helm_release" "nginx_ingress" {
   set {
     name = "controller.service.annotations.service\\.beta\\.kubernetes\\.io/scw-loadbalancer-proxy-protocol-v2"
     value = "true"
+  }
+
+  // indicates in which zone to create the loadbalancer
+  set {
+    name = "controller.service.annotations.service\\.beta\\.kubernetes\\.io/scw-loadbalancer-zone"
+    value = scaleway_lb_ip.nginx_ip.zone
   }
 
   // enable to avoid node forwarding

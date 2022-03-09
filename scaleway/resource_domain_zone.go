@@ -3,6 +3,7 @@ package scaleway
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -82,15 +83,38 @@ func resourceScalewayDomainZone() *schema.Resource {
 func resourceScalewayDomainZoneCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	domainAPI := newDomainAPI(meta)
 
+	domainName := strings.ToLower(d.Get("domain").(string))
+	subdomainName := strings.ToLower(d.Get("subdomain").(string))
+	zoneName := fmt.Sprintf("%s.%s", subdomainName, domainName)
+
+	zones, err := domainAPI.ListDNSZones(&domain.ListDNSZonesRequest{
+		ProjectID: expandStringPtr(d.Get("project_id")),
+		DNSZone:   zoneName,
+	}, scw.WithContext(ctx))
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	for i := range zones.DNSZones {
+		if zones.DNSZones[i].Domain == domainName && zones.DNSZones[i].Subdomain == subdomainName {
+			d.SetId(fmt.Sprintf("%s.%s", subdomainName, domainName))
+
+			return resourceScalewayDomainZoneRead(ctx, d, meta)
+		}
+	}
+
 	var dnsZone *domain.DNSZone
 
-	dnsZone, err := domainAPI.CreateDNSZone(&domain.CreateDNSZoneRequest{
+	dnsZone, err = domainAPI.CreateDNSZone(&domain.CreateDNSZoneRequest{
 		ProjectID: d.Get("project_id").(string),
-		Domain:    d.Get("domain").(string),
-		Subdomain: d.Get("subdomain").(string),
+		Domain:    domainName,
+		Subdomain: subdomainName,
 	}, scw.WithContext(ctx))
 
 	if err != nil {
+		if is409Error(err) {
+			return resourceScalewayDomainZoneRead(ctx, d, meta)
+		}
 		return diag.FromErr(err)
 	}
 	d.SetId(fmt.Sprintf("%s.%s", dnsZone.Subdomain, dnsZone.Domain))
@@ -160,7 +184,7 @@ func resourceScalewayDomainZoneDelete(ctx context.Context, d *schema.ResourceDat
 		DNSZone:   d.Id(),
 	}, scw.WithContext(ctx))
 
-	if err != nil && !is404Error(err) {
+	if err != nil && !is404Error(err) && !is403Error(err) {
 		return diag.FromErr(err)
 	}
 

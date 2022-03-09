@@ -12,6 +12,10 @@ const (
 	defaultAppleSiliconServerTimeout = 2 * time.Minute
 )
 
+const (
+	AppleSiliconM1Type = "M1-M"
+)
+
 // asAPIWithZone returns a new apple silicon API and the zone
 func asAPIWithZone(d *schema.ResourceData, m interface{}) (*applesilicon.API, scw.Zone, error) {
 	meta := m.(*Meta)

@@ -38,6 +38,11 @@ func resourceScalewayDomainRecord() *schema.Resource {
 				Optional:    true,
 				Default:     false,
 			},
+			"root_zone": {
+				Type:        schema.TypeBool,
+				Description: "Does the DNS zone is the root zone or not",
+				Computed:    true,
+			},
 			"name": {
 				Type:        schema.TypeString,
 				Description: "The name of the record",
@@ -345,6 +350,7 @@ func resourceScalewayDomainRecordRead(ctx context.Context, d *schema.ResourceDat
 
 	for _, z := range res.DNSZones {
 		projectID = z.ProjectID
+		_ = d.Set("root_zone", (z.Subdomain == ""))
 	}
 
 	// retrieve data from record
@@ -426,11 +432,11 @@ func resourceScalewayDomainRecordDelete(ctx context.Context, d *schema.ResourceD
 	}
 	d.SetId("")
 
-	// if the zone have only NS records, then delete the all zone
-	if !d.Get("keep_empty_zone").(bool) {
+	// for non root zone, if the zone have only NS records, then delete the zone
+	if !d.Get("keep_empty_zone").(bool) && d.Get("root_zone") != nil && !d.Get("root_zone").(bool) {
 		res, err := domainAPI.ListDNSZoneRecords(&domain.ListDNSZoneRecordsRequest{
 			DNSZone: d.Get("dns_zone").(string),
-		}, scw.WithAllPages())
+		})
 
 		if err != nil {
 			if is404Error(err) {

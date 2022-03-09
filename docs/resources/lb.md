@@ -15,11 +15,12 @@ For more information, see [the documentation](https://developers.scaleway.com/en
 
 ```hcl
 resource "scaleway_lb_ip" "ip" {
+  zone = "fr-par-1"
 }
 
 resource "scaleway_lb" "base" {
   ip_id  = scaleway_lb_ip.ip.id
-  zone = "fr-par-1"
+  zone   = scaleway_lb_ip.ip.zone
   type   = "LB-S"
   release_ip = false
 }

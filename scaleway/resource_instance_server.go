@@ -98,6 +98,17 @@ func resourceScalewayInstanceServer() *schema.Resource {
 							ForceNew:    true,
 							Description: "Size of the root volume in gigabytes",
 						},
+						"volume_type": {
+							Type:        schema.TypeString,
+							Optional:    true,
+							Computed:    true,
+							ForceNew:    true,
+							Description: "Volume type of the root volume",
+							ValidateFunc: validation.StringInSlice([]string{
+								instance.VolumeVolumeTypeBSSD.String(),
+								instance.VolumeVolumeTypeLSSD.String(),
+							}, false),
+						},
 						"delete_on_termination": {
 							Type:        schema.TypeBool,
 							Optional:    true,
@@ -312,29 +323,32 @@ func resourceScalewayInstanceServerCreate(ctx context.Context, d *schema.Resourc
 	req.Volumes = make(map[string]*instance.VolumeServerTemplate)
 	isBootOnBlock := serverType.VolumesConstraint.MaxSize == 0
 	isBoot := expandBoolPtr(d.Get("root_volume.0.boot"))
-	if isBootOnBlock {
-		if size, ok := d.GetOk("root_volume.0.size_in_gb"); ok {
-			req.Volumes["0"] = &instance.VolumeServerTemplate{
-				Size:       scw.Size(uint64(size.(int)) * gb),
-				VolumeType: instance.VolumeVolumeTypeBSSD,
-				Boot:       *isBoot,
-			}
-		}
-	} else {
-		if size, ok := d.GetOk("root_volume.0.size_in_gb"); ok {
-			req.Volumes["0"] = &instance.VolumeServerTemplate{
-				Size:       scw.Size(uint64(size.(int)) * gb),
-				VolumeType: instance.VolumeVolumeTypeLSSD,
-				Boot:       *isBoot,
-			}
+	volumeType := d.Get("root_volume.0.volume_type").(string)
+	sizeInput := d.Get("root_volume.0.size_in_gb").(int)
+
+	// If the volumeType is not defined, define it depending of the offer
+	if volumeType == "" {
+		if isBootOnBlock {
+			volumeType = instance.VolumeVolumeTypeBSSD.String()
 		} else {
-			// We add a local root volume if it is not already present
-			req.Volumes["0"] = &instance.VolumeServerTemplate{
-				Name:       newRandomName("vol"),
-				VolumeType: instance.VolumeVolumeTypeLSSD,
-				Size:       serverType.VolumesConstraint.MinSize,
-			}
+			volumeType = instance.VolumeVolumeTypeLSSD.String()
 		}
+	}
+
+	var size scw.Size
+	if sizeInput == 0 && volumeType == instance.VolumeVolumeTypeLSSD.String() {
+		// Compute the size so it will be valid against the local volume constraints
+		// It wouldn't be valid if another local volume is added, but in this case
+		// the user would be informed that it does not fulfill the local volume constraints
+		size = serverType.VolumesConstraint.MaxSize
+	} else {
+		size = scw.Size(uint64(sizeInput) * gb)
+	}
+
+	req.Volumes["0"] = &instance.VolumeServerTemplate{
+		VolumeType: instance.VolumeVolumeType(volumeType),
+		Size:       size,
+		Boot:       *isBoot,
 	}
 
 	if raw, ok := d.GetOk("additional_volume_ids"); ok {
@@ -560,6 +574,7 @@ func resourceScalewayInstanceServerRead(ctx context.Context, d *schema.ResourceD
 			rootVolume["size_in_gb"] = int(uint64(volume.Size) / gb)
 			_, rootVolumeAttributeSet := d.GetOk("root_volume") // Related to https://github.com/hashicorp/terraform-plugin-sdk/issues/142
 			rootVolume["delete_on_termination"] = d.Get("root_volume.0.delete_on_termination").(bool) || !rootVolumeAttributeSet
+			rootVolume["volume_type"] = volume.VolumeType
 
 			_ = d.Set("root_volume", []map[string]interface{}{rootVolume})
 		} else {

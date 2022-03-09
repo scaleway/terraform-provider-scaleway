@@ -421,6 +421,49 @@ func TestAccScalewayInstanceSecurityGroup_WithPortRange(t *testing.T) {
 	})
 }
 
+func TestAccScalewayInstanceSecurityGroup_Tags(t *testing.T) {
+	tt := NewTestTools(t)
+	defer tt.Cleanup()
+	resource.Test(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      testAccCheckScalewayInstanceSecurityGroupDestroy(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource "scaleway_instance_security_group" "main" {
+						tags = [ "foo", "bar" ]
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("scaleway_instance_security_group.main", "tags.0", "foo"),
+					resource.TestCheckResourceAttr("scaleway_instance_security_group.main", "tags.1", "bar"),
+				),
+			},
+			{
+				Config: `
+					resource "scaleway_instance_security_group" "main" {
+						tags = [ "foo", "buzz" ]
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("scaleway_instance_security_group.main", "tags.0", "foo"),
+					resource.TestCheckResourceAttr("scaleway_instance_security_group.main", "tags.1", "buzz"),
+				),
+			},
+			{
+				Config: `
+					resource "scaleway_instance_security_group" "main" {
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckNoResourceAttr("scaleway_instance_security_group.main", "tags"),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckScalewayInstanceSecurityGroupRuleMatch(tt *TestTools, name string, index int, expected *instance.SecurityGroupRule) resource.TestCheckFunc {
 	return testAccCheckScalewayInstanceSecurityGroupRuleIs(tt, name, expected.Direction, index, func(actual *instance.SecurityGroupRule) error {
 		if ok, _ := securityGroupRuleEquals(expected, actual); !ok {
