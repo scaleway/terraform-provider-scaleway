@@ -211,26 +211,6 @@ func resourceScalewayLbFrontendRead(ctx context.Context, d *schema.ResourceData,
 		return diag.FromErr(err)
 	}
 
-	lbID := expandID(d.Get("lb_id"))
-	if lbID == "" {
-		return diag.Errorf("load balancer id wrong format: %v", d.Get("lb_id").(string))
-	}
-
-	retryInterval := defaultWaitLBRetryInterval
-	_, err = lbAPI.WaitForLb(&lb.ZonedAPIWaitForLBRequest{
-		Zone:          zone,
-		LBID:          lbID,
-		Timeout:       scw.TimeDurationPtr(defaultInstanceServerWaitTimeout),
-		RetryInterval: &retryInterval,
-	}, scw.WithContext(ctx))
-	if err != nil {
-		if is403Error(err) {
-			d.SetId("")
-			return nil
-		}
-		return diag.FromErr(err)
-	}
-
 	res, err := lbAPI.GetFrontend(&lb.ZonedAPIGetFrontendRequest{
 		Zone:       zone,
 		FrontendID: ID,
