@@ -159,7 +159,7 @@ func resourceScalewayLbFrontendCreate(ctx context.Context, d *schema.ResourceDat
 	}
 
 	lbID := expandID(d.Get("lb_id"))
-	if len(lbID) == 0 {
+	if lbID == "" {
 		return diag.Errorf("load balancer id wrong format: %v", d.Get("lb_id").(string))
 	}
 
@@ -212,7 +212,7 @@ func resourceScalewayLbFrontendRead(ctx context.Context, d *schema.ResourceData,
 	}
 
 	lbID := expandID(d.Get("lb_id"))
-	if len(lbID) == 0 {
+	if lbID == "" {
 		return diag.Errorf("load balancer id wrong format: %v", d.Get("lb_id").(string))
 	}
 
