@@ -394,35 +394,6 @@ func resourceScalewayContainerDelete(ctx context.Context, d *schema.ResourceData
 		return diag.Errorf("unexpected waiting container error: %s", err)
 	}
 
-	// Warning or Errors can be collected as warnings
-	var diags diag.Diagnostics
-
-	// check triggers associated
-	triggers, errList := api.ListCrons(&container.ListCronsRequest{
-		Region:      region,
-		ContainerID: containerID,
-	}, scw.WithContext(ctx))
-	if errList != nil {
-		return diag.FromErr(errList)
-	}
-
-	// wait for triggers state
-	for _, c := range triggers.Crons {
-		_, err := api.WaitForCron(&container.WaitForCronRequest{
-			CronID: c.ID,
-			Region: region,
-		}, scw.WithContext(ctx))
-		if err != nil {
-			diags = append(diags, diag.Diagnostic{
-				Severity: diag.Warning,
-				Summary:  "Warning waiting cron job",
-				Detail:   err.Error(),
-			})
-		}
-	}
-
-	// delete triggers
-
 	// delete container
 	_, err = api.DeleteContainer(&container.DeleteContainerRequest{
 		Region:      region,
@@ -434,5 +405,5 @@ func resourceScalewayContainerDelete(ctx context.Context, d *schema.ResourceData
 		return diag.FromErr(err)
 	}
 
-	return diags
+	return nil
 }

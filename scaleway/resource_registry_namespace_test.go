@@ -66,11 +66,11 @@ func TestAccScalewayRegistryNamespace_Basic(t *testing.T) {
 			},
 			{
 				Config: `
-					resource scaleway_registry_namespace cr01 {
-						name = "test-cr-ns-01"
-						description = "test registry namespace 01"
-						is_public = true
-					}
+						resource scaleway_registry_namespace cr01 {
+							name = "test-cr-ns-01"
+							description = "test registry namespace 01"
+							is_public = true
+						}
 				`,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayRegistryNamespaceExists(tt, "scaleway_registry_namespace.cr01"),

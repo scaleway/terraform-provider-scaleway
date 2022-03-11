@@ -1,16 +1,21 @@
 package scaleway
 
 import (
+	"bufio"
+	"context"
+	"encoding/base64"
+	"encoding/json"
 	"fmt"
-	"github.com/ory/dockertest/v3"
-	"github.com/scaleway/scaleway-sdk-go/api/registry/v1"
-	"github.com/stretchr/testify/require"
-	"net/http"
+	"io"
 	"testing"
 
+	"github.com/docker/docker/api/types"
+	"github.com/docker/docker/client"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	container "github.com/scaleway/scaleway-sdk-go/api/container/v1beta1"
+	"github.com/scaleway/scaleway-sdk-go/api/registry/v1"
+	"github.com/stretchr/testify/require"
 )
 
 // We must add registry for the sweeper
@@ -76,33 +81,6 @@ func TestAccScalewayContainer_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_container.main", "protocol", container.ContainerProtocolHTTP1.String()),
 				),
 			},
-			{
-				Config: `
-					resource scaleway_registry_namespace main {
-						name = "test-for-container-as-a-service-public"
-						description = "test registry namespace for container as a service"
-						is_public = true
-					}
-
-					resource scaleway_container_namespace main {
-						name = "test-cr-ns"
-						description = "test container namespace namespace"
-					}
-
-					resource scaleway_container main {
-						name = "my-container-01"
-						description = "test container"
-						namespace_id = scaleway_container_namespace.main.id
-						registry_image = scaleway_registry_namespace.main.endpoint
-					}
-				`,
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayContainerExists(tt, "scaleway_container.main"),
-					testCheckResourceAttrUUID("scaleway_container", "id"),
-					resource.TestCheckResourceAttr("scaleway_container.main", "name", "my-container-01"),
-					resource.TestCheckResourceAttr("scaleway_container.main", "description", "test container"),
-				),
-			},
 		},
 	})
 }
@@ -126,46 +104,81 @@ func TestAccScalewayContainer_WithIMG(t *testing.T) {
 				NamespaceID: id,
 				Region:      region,
 			})
-			if err != nil {
-				return err
+			require.NoError(t, err, "could not get namespace")
+
+			meta := tt.Meta
+			var errorMessage ErrorRegistryMessage
+
+			accessKey, _ := meta.scwClient.GetAccessKey()
+			secretKey, _ := meta.scwClient.GetSecretKey()
+			authConfig := types.AuthConfig{
+				ServerAddress: ns.Endpoint,
+				Username:      accessKey,
+				Password:      secretKey,
 			}
 
-			pool, err := dockertest.NewPool(ns.Endpoint)
+			cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
 			require.NoError(t, err, "could not connect to Docker")
 
-			resource, err := pool.Run("docker-gs-ping", "latest", []string{})
-			require.NoError(t, err, "could not start container")
+			encodedJSON, err := json.Marshal(authConfig)
+			require.NoError(t, err, "could not marshal auth config")
 
-			t.Cleanup(func() {
-				require.NoError(t, pool.Purge(resource), "failed to remove container")
-			})
+			ctx := context.Background()
+			authStr := base64.URLEncoding.EncodeToString(encodedJSON)
 
-			var resp *http.Response
+			out, err := cli.ImagePull(ctx, "docker.io/library/alpine", types.ImagePullOptions{})
+			require.NoError(t, err, "could not pull image")
 
-			err = pool.Retry(func() error {
-				resp, err = http.Get(fmt.Sprint("http://localhost:", resource.GetPort("8080/tcp"), "/"))
-				if err != nil {
-					t.Log("container not ready, waiting...")
-					return err
+			defer out.Close()
+
+			buffIOReader := bufio.NewReader(out)
+			for {
+				streamBytes, err := buffIOReader.ReadBytes('\n')
+				if err == io.EOF {
+					break
 				}
-				return nil
-			})
-			require.NoError(t, err, "HTTP error")
-			defer resp.Body.Close()
+				err = json.Unmarshal(streamBytes, &errorMessage)
+				require.NoError(t, err, "could not unmarshal error")
+				if errorMessage.Error != "" {
+					return fmt.Errorf(errorMessage.Error)
+				}
+			}
+
+			err = cli.ImageTag(ctx, "docker.io/library/alpine:latest", ns.Endpoint+"/alpine:test")
+			require.NoError(t, err, "could not tag image")
+
+			pusher, err := cli.ImagePush(ctx, ns.Endpoint+"/alpine:test", types.ImagePushOptions{RegistryAuth: authStr})
+			require.NoError(t, err, "could not push image")
+
+			defer pusher.Close()
+
+			buffIOReader = bufio.NewReader(pusher)
+			for {
+				streamBytes, err := buffIOReader.ReadBytes('\n')
+				if err == io.EOF {
+					break
+				}
+				err = json.Unmarshal(streamBytes, &errorMessage)
+				require.NoError(t, err, "could not unmarshal error")
+				if errorMessage.Error != "" {
+					return fmt.Errorf(errorMessage.Error)
+				}
+			}
 
 			return nil
 		}
 	}
 
+	registryNameSpace := "test-for-container-as-a-service3"
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheckScalewayContainerDestroy(tt),
 		Steps: []resource.TestStep{
 			{
-				Config: `
+				Config: fmt.Sprintf(`
 					resource scaleway_registry_namespace main {
-						name = "test-for-container-as-a-service"
+						name = "%s"
 						description = "test registry namespace for container as a service"
 						is_public = true
 					}
@@ -174,15 +187,15 @@ func TestAccScalewayContainer_WithIMG(t *testing.T) {
 						name = "test-cr-ns"
 						description = "test container"
 					}
-				`,
+				`, registryNameSpace),
 				Check: resource.ComposeTestCheckFunc(
 					addImageToRegistry(tt, "scaleway_registry_namespace.main"),
 				),
 			},
 			{
-				Config: `
+				Config: fmt.Sprintf(`
 					resource scaleway_registry_namespace main {
-						name = "test-for-container-as-a-service"
+						name = "%s"
 						description = "test registry namespace for container as a service"
 						is_public = true
 					}
@@ -196,29 +209,29 @@ func TestAccScalewayContainer_WithIMG(t *testing.T) {
 						name = "my-container-02"
 						description = "environment variables test"
 						namespace_id = scaleway_container_namespace.main.id
-						registry_image = "${scaleway_registry_namespace.main.endpoint}/docker-gs-ping"
-						port = 9090
+						registry_image = "${scaleway_registry_namespace.main.endpoint}/alpine:test"
+						port = 9997
 						cpu_limit = 140
 						memory_limit = 256
 						min_scale = 3
 						max_scale = 5
 						timeout = 600
 						max_concurrency = 80
-						privacy = private
-						protocol = h2c
+						privacy = "private"
+						protocol = "h2c"
 						redeploy = true
 
 						environment_variables = {
 							"foo" = "var"
 						}
 					}
-				`,
+				`, registryNameSpace),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayContainerExists(tt, "scaleway_container.main"),
 					testCheckResourceAttrUUID("scaleway_container_namespace.main", "id"),
 					testCheckResourceAttrUUID("scaleway_container.main", "id"),
 					resource.TestCheckResourceAttr("scaleway_container.main", "name", "my-container-02"),
-					resource.TestCheckResourceAttr("scaleway_container.main", "port", "9090"),
+					resource.TestCheckResourceAttr("scaleway_container.main", "port", "9997"),
 					resource.TestCheckResourceAttr("scaleway_container.main", "cpu_limit", "140"),
 					resource.TestCheckResourceAttr("scaleway_container.main", "memory_limit", "256"),
 					resource.TestCheckResourceAttr("scaleway_container.main", "min_scale", "3"),
