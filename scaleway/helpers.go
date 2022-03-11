@@ -508,7 +508,8 @@ func validateMaxLimit(max uint64) schema.SchemaValidateDiagFunc {
 	return func(i interface{}, path cty.Path) diag.Diagnostics {
 		maxPath := path.IndexInt(i.(int))
 		log.Printf("[DEBUG] SCW Max Limit path: %s: value %v", maxPath, i)
-		valueMax := cty.NumberUIntVal(i.(uint64))
+		iInt := i.(int)
+		valueMax := cty.NumberUIntVal(uint64(iInt))
 		isGreater := valueMax.GreaterThan(cty.NumberUIntVal(max))
 		if cty.True != isGreater {
 			return nil
@@ -522,7 +523,7 @@ func flattenMap(m map[string]string) interface{} {
 	if m == nil {
 		return nil
 	}
-	flattenedMap := map[string]interface{}(nil)
+	flattenedMap := make(map[string]interface{})
 	for k, v := range m {
 		flattenedMap[k] = v
 	}

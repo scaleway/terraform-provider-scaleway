@@ -71,7 +71,12 @@ func setCreateContainerRequest(d *schema.ResourceData, region scw.Region) (*cont
 	}
 
 	if timeout, ok := d.GetOk("timeout"); ok {
-		req.Timeout = &scw.Duration{Seconds: timeout.(int64)}
+		timeInt := timeout.(int)
+		req.Timeout = &scw.Duration{Seconds: int64(timeInt)}
+	}
+
+	if port, ok := d.GetOk("port"); ok {
+		req.Port = scw.Uint32Ptr(uint32(port.(int)))
 	}
 
 	if description, ok := d.GetOk("description"); ok {
