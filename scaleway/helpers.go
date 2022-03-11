@@ -108,7 +108,7 @@ func parseLocalizedNestedID(localizedID string) (locality string, innerID, outer
 func parseZonedID(zonedID string) (zone scw.Zone, id string, err error) {
 	locality, id, err := parseLocalizedID(zonedID)
 	if err != nil {
-		return
+		return zone, id, err
 	}
 
 	zone, err = scw.ParseZone(locality)
