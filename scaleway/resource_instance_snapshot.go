@@ -126,15 +126,8 @@ func resourceScalewayInstanceSnapshotUpdate(ctx context.Context, d *schema.Resou
 	req := &instance.UpdateSnapshotRequest{
 		SnapshotID: id,
 		Zone:       zone,
-	}
-
-	if d.HasChange("name") {
-		newName := d.Get("name").(string)
-		req.Name = &newName
-	}
-
-	if d.HasChange("tags") {
-		req.Tags = scw.StringsPtr(expandStrings(d.Get("tags")))
+		Tags:       scw.StringsPtr(expandStrings(d.Get("tags"))),
+		Name:       scw.StringPtr(d.Get("name").(string)),
 	}
 
 	_, err = instanceAPI.UpdateSnapshot(req, scw.WithContext(ctx))
