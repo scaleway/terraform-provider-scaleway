@@ -42,8 +42,8 @@ func setCreateContainerRequest(d *schema.ResourceData, region scw.Region) (*cont
 	namespaceID := d.Get("namespace_id")
 
 	name := expandOrGenerateString(nameRaw.(string), "co")
-	privacyType := d.Get("privacy") // default unknown_privacy
-	protocol := d.Get("protocol")   // default unknown_protocol
+	privacyType := d.Get("privacy")
+	protocol := d.Get("protocol")
 
 	req := &container.CreateContainerRequest{
 		Region:      region,

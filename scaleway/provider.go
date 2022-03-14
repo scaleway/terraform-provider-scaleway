@@ -110,6 +110,7 @@ func Provider(config *ProviderConfig) plugin.ProviderFunc {
 				"scaleway_domain_record":               dataSourceScalewayDomainRecord(),
 				"scaleway_domain_zone":                 dataSourceScalewayDomainZone(),
 				"scaleway_container_namespace":         dataSourceScalewayContainerNamespace(),
+				"scaleway_container":                   dataSourceScalewayContainer(),
 				"scaleway_function_namespace":          dataSourceScalewayFunctionNamespace(),
 				"scaleway_instance_ip":                 dataSourceScalewayInstanceIP(),
 				"scaleway_instance_security_group":     dataSourceScalewayInstanceSecurityGroup(),

@@ -3,7 +3,6 @@ package scaleway
 import (
 	"encoding/json"
 	"fmt"
-	"log"
 	"net"
 	"net/http"
 	"strconv"
@@ -501,21 +500,6 @@ func validateDuration() schema.SchemaValidateFunc {
 			return nil, []error{fmt.Errorf("cannot parse duration for value %s", str)}
 		}
 		return nil, nil
-	}
-}
-
-func validateMaxLimit(max uint64) schema.SchemaValidateDiagFunc {
-	return func(i interface{}, path cty.Path) diag.Diagnostics {
-		maxPath := path.IndexInt(i.(int))
-		log.Printf("[DEBUG] SCW Max Limit path: %s: value %v", maxPath, i)
-		iInt := i.(int)
-		valueMax := cty.NumberUIntVal(uint64(iInt))
-		isGreater := valueMax.GreaterThan(cty.NumberUIntVal(max))
-		if cty.True != isGreater {
-			return nil
-		}
-
-		return diag.FromErr(fmt.Errorf("%v overpass max limit", i))
 	}
 }
 

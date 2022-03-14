@@ -35,7 +35,7 @@ resource scaleway_container main {
     max_concurrency = 80
     privacy = "private"
     protocol = "h2c"
-    redeploy = true
+    deploy = true
 
     environment_variables = {
         "foo" = "var"
@@ -43,24 +43,25 @@ resource scaleway_container main {
 }
 ```
 
-
 ## Arguments Reference
 
-The following arguments are supported:
+The following arguments are required:
 
-- `name` - (Required) The unique name of the container namespace.
-
-~> **Important** Updates to `name` will recreate the container.
-
-- `description` (Optional) The description of the container.
+- `name` - (Required) The unique name of the container name.
 
 - `namespace_id` - (Required) The container namespace ID of the container.
 
-- `region` - (Defaults to [provider](../index.md#region) `region`). The [region](../guides/regions_and_zones.md#regions) in which the namespace should be created.
+~> **Important** Updates to `name` will recreate the container.
 
-- `project_id` - (Defaults to [provider](../index.md#project_id) `project_id`) The ID of the project the namespace is associated with.
+## Attributes Reference
 
-- `environment_variables` - The environment variables of the container.
+In addition to all arguments above, the following attributes are exported:
+
+- `id` - The ID of the container
+
+- `description` The description of the container.
+
+- `environment_variables` - The [environment](https://www.scaleway.com/en/docs/compute/containers/concepts/#environment-variables) variables of the container.
 
 - `min_scale` - The minimum of running container instances continuously. Defaults to 0.
 
@@ -72,31 +73,24 @@ The following arguments are supported:
 
 - `timeout` - The maximum amount of time in seconds during which your container can process a request before we stop it. Defaults to 300s.
 
-- `privacy` - The privacy type access.
+- `privacy` - The privacy type define the way to authenticate to your container. Please check our dedicated [section](https://developers.scaleway.com/en/products/containers/api/#protocol-9dd4c8).
 
 - `registry_image` - The registry image address. e.g: **"rg.fr-par.scw.cloud/$NAMESPACE/$IMAGE"**.
 
-- `max_concurrency` - The maximum the number of simultaneous requests your container can handle at the same time. Defaults to 50.
+- `max_concurrency` - The maximum number of simultaneous requests your container can handle at the same time. Defaults to 50.
 
 - `domain_name` - The container domain name.
 
-- `protocol` - The communication protocol. Defaults to http1.
+- `protocol` - The communication [protocol](https://developers.scaleway.com/en/products/containers/api/#protocol-9dd4c8) http1 or h2c. Defaults to http1.
 
 - `port` - The port to expose the container. Defaults to 8080.
 
-- `redeploy` - Allow deploy container.
+- `deploy` - Boolean indicating whether the container is on a production environment.
 
-
-## Attributes Reference
-
-In addition to all arguments above, the following attributes are exported:
-
-- `id` - The ID of the container
-- `organization_id` - The organization ID the container is associated with.
 - `status` - The container status.
+
 - `cron_status` - The cron status of the container.
+
 - `error_message` - The error message of the container.
 
-```bash
-$ terraform import scaleway_container.main fr-par/11111111-1111-1111-1111-111111111111
-```
+- `region` - (Defaults to [provider](../index.md#region) `region`) The [region](../guides/regions_and_zones.md#regions) in which the container was created.

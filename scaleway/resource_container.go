@@ -11,7 +11,7 @@ import (
 )
 
 const (
-	containerMaxLimit uint64 = 80
+	containerMaxConcurrencyLimit int = 80
 )
 
 func resourceScalewayContainer() *schema.Resource {
@@ -34,10 +34,6 @@ func resourceScalewayContainer() *schema.Resource {
 				ForceNew:    true,
 				Computed:    true,
 				Description: "The container name",
-				Elem: &schema.Schema{
-					Type:         schema.TypeString,
-					ValidateFunc: validation.StringLenBetween(0, 20),
-				},
 			},
 			"description": {
 				Type:        schema.TypeString,
@@ -52,7 +48,7 @@ func resourceScalewayContainer() *schema.Resource {
 			"environment_variables": {
 				Type:        schema.TypeMap,
 				Optional:    true,
-				Description: "The environment variables to be injected into your container at runtime ",
+				Description: "The environment variables to be injected into your container at runtime.",
 				Elem: &schema.Schema{
 					Type:         schema.TypeString,
 					ValidateFunc: validation.StringLenBetween(0, 1000),
@@ -63,39 +59,38 @@ func resourceScalewayContainer() *schema.Resource {
 				Type:        schema.TypeInt,
 				Computed:    true,
 				Optional:    true,
-				Description: "The minimum of running container instances continuously. Defaults to 0",
+				Description: "The minimum of running container instances continuously. Defaults to 0.",
 			},
 			"max_scale": {
 				Type:        schema.TypeInt,
 				Computed:    true,
 				Optional:    true,
-				Description: "The maximum of number of instances this container can scale to. Default to 20",
+				Description: "The maximum of number of instances this container can scale to. Default to 20.",
 			},
 			"memory_limit": {
 				Type:        schema.TypeInt,
 				Computed:    true,
 				Optional:    true,
-				Description: "The memory computing resources in MB to allocate to each container. Defaults to 128",
+				Description: "The memory computing resources in MB to allocate to each container. Defaults to 128.",
 			},
 			"cpu_limit": {
 				Type:        schema.TypeInt,
 				Computed:    true,
 				Optional:    true,
-				Description: "The amount of vCPU computing resources to allocate to each container. Defaults  to 70",
+				Description: "The amount of vCPU computing resources to allocate to each container. Defaults to 70.",
 			},
 			"timeout": {
 				Type:        schema.TypeInt,
 				Computed:    true,
 				Optional:    true,
-				Description: "The maximum amount of time in seconds during which your container can process a request before we stop it. Defaults to (300s).",
+				Description: "The maximum amount of time in seconds during which your container can process a request before we stop it. Defaults to 300s.",
 			},
 			"privacy": {
 				Type:        schema.TypeString,
 				Optional:    true,
-				Description: "The privacy type",
+				Description: "The privacy type define the way to authenticate to your container",
 				Default:     container.ContainerPrivacyPublic,
 				ValidateFunc: validation.StringInSlice([]string{
-					container.ContainerPrivacyUnknownPrivacy.String(),
 					container.ContainerPrivacyPublic.String(),
 					container.ContainerPrivacyPrivate.String(),
 				}, false),
@@ -104,14 +99,14 @@ func resourceScalewayContainer() *schema.Resource {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Computed:    true,
-				Description: "The registry image address where your container is stored.",
+				Description: "The scaleway registry image address",
 			},
 			"max_concurrency": {
-				Type:             schema.TypeInt,
-				Optional:         true,
-				Computed:         true,
-				Description:      "The maximum the number of simultaneous requests your container can handle at the same time. Defaults to 50",
-				ValidateDiagFunc: validateMaxLimit(containerMaxLimit),
+				Type:         schema.TypeInt,
+				Optional:     true,
+				Computed:     true,
+				Description:  "The maximum the number of simultaneous requests your container can handle at the same time. Defaults to 50.",
+				ValidateFunc: validation.IntAtMost(containerMaxConcurrencyLimit),
 			},
 			"domain_name": {
 				Type:        schema.TypeString,
@@ -122,13 +117,11 @@ func resourceScalewayContainer() *schema.Resource {
 			"protocol": {
 				Type:        schema.TypeString,
 				Optional:    true,
-				Description: "The communication protocol. default (http1)",
+				Description: "The communication protocol http1 or h2c. Defaults to http1.",
 				Default:     container.ContainerProtocolHTTP1.String(),
 				ValidateFunc: validation.StringInSlice([]string{
 					container.ContainerProtocolH2c.String(),
-					container.ContainerProtocolHTTP1.String(),
-					container.ContainerProtocolUnknownProtocol.String()},
-					false),
+					container.ContainerProtocolHTTP1.String()}, false),
 			},
 			"port": {
 				Type:        schema.TypeInt,
@@ -136,14 +129,12 @@ func resourceScalewayContainer() *schema.Resource {
 				Optional:    true,
 				Description: "The port to expose the container. Defaults to 8080",
 			},
-
-			"redeploy": {
+			"deploy": {
 				Type:        schema.TypeBool,
 				Optional:    true,
-				Description: "Allow redeploy container",
+				Description: "This allows you to control your production environment",
 				Default:     false,
 			},
-			"region": regionSchema(),
 			// computed
 			"status": {
 				Type:        schema.TypeString,
@@ -161,6 +152,7 @@ func resourceScalewayContainer() *schema.Resource {
 				Computed:    true,
 				Description: "The error description",
 			},
+			"region": regionComputedSchema(),
 		},
 	}
 }
@@ -171,6 +163,9 @@ func resourceScalewayContainerCreate(ctx context.Context, d *schema.ResourceData
 		return diag.FromErr(err)
 	}
 
+	if region.String() == "" {
+		region = scw.RegionFrPar
+	}
 	namespaceID := d.Get("namespace_id")
 	// verify name space state
 	_, err = api.WaitForNamespace(&container.WaitForNamespaceRequest{
@@ -190,7 +185,29 @@ func resourceScalewayContainerCreate(ctx context.Context, d *schema.ResourceData
 
 	res, err := api.CreateContainer(req, scw.WithContext(ctx))
 	if err != nil {
-		return diag.Errorf("unexpected waiting container error: %s", err)
+		return diag.Errorf("creation container error: %s", err)
+	}
+
+	// check if container should be deployed
+	shouldDeploy := d.Get("deploy")
+	if *expandBoolPtr(shouldDeploy) {
+		_, err := api.WaitForContainer(&container.WaitForContainerRequest{
+			ContainerID: res.ID,
+			Region:      region,
+		}, scw.WithContext(ctx))
+		if err != nil {
+			return diag.Errorf("unexpected waiting container error: %s", err)
+		}
+
+		reqUpdate := &container.UpdateContainerRequest{
+			Region:      res.Region,
+			ContainerID: res.ID,
+			Redeploy:    expandBoolPtr(shouldDeploy),
+		}
+		_, err = api.UpdateContainer(reqUpdate, scw.WithContext(ctx))
+		if err != nil {
+			return diag.FromErr(err)
+		}
 	}
 
 	d.SetId(newRegionalIDString(region, res.ID))
@@ -204,19 +221,9 @@ func resourceScalewayContainerRead(ctx context.Context, d *schema.ResourceData, 
 		return diag.FromErr(err)
 	}
 
-	namespaceID := d.Get("namespace_id")
-	// verify name space state
-	_, err = api.WaitForNamespace(&container.WaitForNamespaceRequest{
-		NamespaceID: expandID(namespaceID),
+	co, err := api.WaitForContainer(&container.WaitForContainerRequest{
+		ContainerID: containerID,
 		Region:      region,
-	}, scw.WithContext(ctx))
-	if err != nil {
-		return diag.Errorf("unexpected namespace error: %s", err)
-	}
-
-	// check for container state
-	co, err := api.WaitForContainer(&container.WaitForContainerRequest{ContainerID: containerID,
-		Region: region,
 	}, scw.WithContext(ctx))
 	if err != nil {
 		return diag.Errorf("unexpected waiting container error: %s", err)
@@ -233,14 +240,14 @@ func resourceScalewayContainerRead(ctx context.Context, d *schema.ResourceData, 
 	_ = d.Set("cpu_limit", int(co.CPULimit))
 	_ = d.Set("timeout", co.Timeout.Seconds)
 	_ = d.Set("privacy", co.Privacy.String())
-	_ = d.Set("description", *co.Description)
+	_ = d.Set("description", scw.StringPtr(*co.Description))
 	_ = d.Set("registry_image", co.RegistryImage)
 	_ = d.Set("max_concurrency", int(co.MaxConcurrency))
 	_ = d.Set("domain_name", co.DomainName)
 	_ = d.Set("protocol", co.Protocol.String())
 	_ = d.Set("cron_status", co.Status.String())
 	_ = d.Set("port", int(co.Port))
-	_ = d.Set("redeploy", *expandBoolPtr(d.Get("redeploy")))
+	_ = d.Set("deploy", scw.BoolPtr(*expandBoolPtr(d.Get("deploy"))))
 	_ = d.Set("region", co.Region.String())
 
 	return nil
@@ -263,8 +270,9 @@ func resourceScalewayContainerUpdate(ctx context.Context, d *schema.ResourceData
 	}
 
 	// check for container state
-	_, err = api.WaitForContainer(&container.WaitForContainerRequest{ContainerID: containerID,
-		Region: region,
+	_, err = api.WaitForContainer(&container.WaitForContainerRequest{
+		ContainerID: containerID,
+		Region:      region,
 	}, scw.WithContext(ctx))
 	if err != nil {
 		return diag.Errorf("unexpected waiting container error: %s", err)
@@ -355,14 +363,11 @@ func resourceScalewayContainerUpdate(ctx context.Context, d *schema.ResourceData
 		req.Port = toUint32(d.Get("port"))
 	}
 
-	if d.HasChanges("redeploy") {
-		req.Redeploy = expandBoolPtr(d.Get("redeploy"))
+	if d.HasChanges("deploy") {
+		req.Redeploy = expandBoolPtr(d.Get("deploy"))
 	}
 
-	_, err = api.UpdateContainer(
-		req,
-		scw.WithContext(ctx),
-	)
+	_, err = api.UpdateContainer(req, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -374,16 +379,6 @@ func resourceScalewayContainerDelete(ctx context.Context, d *schema.ResourceData
 	api, region, containerID, err := containerAPIWithRegionAndID(meta, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
-	}
-
-	namespaceID := d.Get("namespace_id")
-	// verify name space state
-	_, err = api.WaitForNamespace(&container.WaitForNamespaceRequest{
-		NamespaceID: expandID(namespaceID),
-		Region:      region,
-	}, scw.WithContext(ctx))
-	if err != nil {
-		return diag.Errorf("unexpected namespace error: %s", err)
 	}
 
 	// check for container state
@@ -398,9 +393,7 @@ func resourceScalewayContainerDelete(ctx context.Context, d *schema.ResourceData
 	_, err = api.DeleteContainer(&container.DeleteContainerRequest{
 		Region:      region,
 		ContainerID: containerID,
-	},
-		scw.WithContext(ctx),
-	)
+	}, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
 	}

@@ -39,6 +39,7 @@ func TestAccScalewayDataSourceContainer_Basic(t *testing.T) {
 					testAccCheckScalewayContainerExists(tt, "scaleway_container.main"),
 					resource.TestCheckResourceAttr("scaleway_container.main", "name", "test-container-data"),
 					resource.TestCheckResourceAttrSet("data.scaleway_container.by_name", "id"),
+					resource.TestCheckResourceAttrSet("data.scaleway_container.by_name", "name"),
 
 					resource.TestCheckResourceAttr("data.scaleway_container.by_id", "name", "test-container-data"),
 					resource.TestCheckResourceAttrSet("data.scaleway_container.by_id", "id"),

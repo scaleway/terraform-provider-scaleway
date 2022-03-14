@@ -181,5 +181,16 @@ func resourceScalewayContainerNamespaceDelete(ctx context.Context, d *schema.Res
 		return diag.FromErr(err)
 	}
 
+	_, err = api.WaitForNamespace(&container.WaitForNamespaceRequest{
+		Region:      region,
+		NamespaceID: id,
+	}, scw.WithContext(ctx))
+	if err != nil {
+		if is404Error(err) {
+			d.SetId("")
+			return nil
+		}
+		return diag.FromErr(err)
+	}
 	return nil
 }
