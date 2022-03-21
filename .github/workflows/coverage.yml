@@ -13,8 +13,10 @@ jobs:
         with:
           go-version: '1.18'
       - name: Run coverage
-        run: go test -race -coverprofile=coverage.out -covermode=atomic ./...
+        run: go test -coverprofile=coverage.out -covermode=atomic ./...
         env:
           TF_ACC: 1 # It runs the integration test through the cassettes and not with real API calls
+          TF_TEST_DOMAIN: scaleway-terraform.com
+          TF_UPDATE_CASSETTES: false
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v2
