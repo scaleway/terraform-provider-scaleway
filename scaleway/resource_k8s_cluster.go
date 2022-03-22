@@ -380,12 +380,19 @@ func resourceScalewayK8SClusterCreate(ctx context.Context, d *schema.ResourceDat
 		return diag.FromErr(err)
 	}
 
+<<<<<<< HEAD
+<<<<<<< HEAD
 	res, err = waitK8SClusterPool(ctx, k8sAPI, region, res.ID, d.Timeout(schema.TimeoutCreate))
+=======
+=======
+	d.SetId(newRegionalIDString(region, res.ID))
+
+>>>>>>> 31f8aa84 (Fix)
+	res, err = waitK8SClusterPool(ctx, d, meta)
+>>>>>>> 46a6a6e7 (Refactor to enable easily the adding of timeout)
 	if err != nil {
 		return diag.FromErr(err)
 	}
-
-	d.SetId(newRegionalIDString(region, res.ID))
 
 	return resourceScalewayK8SClusterRead(ctx, d, meta)
 }
@@ -399,7 +406,11 @@ func resourceScalewayK8SClusterRead(ctx context.Context, d *schema.ResourceData,
 	////
 	// Read Cluster
 	////
+<<<<<<< HEAD
 	cluster, err := waitK8SCluster(ctx, k8sAPI, region, clusterID, d.Timeout(schema.TimeoutRead))
+=======
+	cluster, err := waitK8SCluster(ctx, d, meta)
+>>>>>>> 46a6a6e7 (Refactor to enable easily the adding of timeout)
 	if err != nil {
 		if is404Error(err) {
 			d.SetId("")
@@ -652,7 +663,11 @@ func resourceScalewayK8SClusterUpdate(ctx context.Context, d *schema.ResourceDat
 		return diag.FromErr(err)
 	}
 
+<<<<<<< HEAD
 	_, err = waitK8SCluster(ctx, k8sAPI, region, clusterID, d.Timeout(schema.TimeoutUpdate))
+=======
+	_, err = waitK8SCluster(ctx, d, meta)
+>>>>>>> 46a6a6e7 (Refactor to enable easily the adding of timeout)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -672,7 +687,11 @@ func resourceScalewayK8SClusterUpdate(ctx context.Context, d *schema.ResourceDat
 			return diag.FromErr(err)
 		}
 
+<<<<<<< HEAD
 		_, err = waitK8SCluster(ctx, k8sAPI, region, clusterID, d.Timeout(schema.TimeoutUpdate))
+=======
+		_, err = waitK8SCluster(ctx, d, meta)
+>>>>>>> 46a6a6e7 (Refactor to enable easily the adding of timeout)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -704,7 +723,11 @@ func resourceScalewayK8SClusterDelete(ctx context.Context, d *schema.ResourceDat
 		return diag.FromErr(err)
 	}
 
+<<<<<<< HEAD
 	err = waitK8SClusterDeleted(ctx, k8sAPI, region, clusterID, d.Timeout(schema.TimeoutDelete))
+=======
+	err = waitK8SClusterDeleted(ctx, d, meta)
+>>>>>>> 46a6a6e7 (Refactor to enable easily the adding of timeout)
 	if err != nil {
 		return diag.FromErr(err)
 	}

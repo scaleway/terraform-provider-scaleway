@@ -89,14 +89,16 @@ func resourceScalewayVPCPublicGatewayPATRuleCreate(ctx context.Context, d *schem
 	}
 
 	gatewayID := expandZonedID(d.Get("gateway_id").(string)).ID
-	retryInterval := retryIntervalVPCPublicGatewayNetwork
+<<<<<<< HEAD
+<<<<<<< HEAD
 	//check gateway is in stable state.
-	_, err = vpcgwAPI.WaitForGateway(&vpcgw.WaitForGatewayRequest{
-		GatewayID:     gatewayID,
-		Zone:          zone,
-		Timeout:       scw.TimeDurationPtr(d.Timeout(schema.TimeoutCreate)),
-		RetryInterval: &retryInterval,
-	}, scw.WithContext(ctx))
+	_, err = waitForVPCPublicGateway(ctx, vpcgwAPI, gatewayID, zone, d.Timeout(schema.TimeoutCreate))
+=======
+	_, err = waitForVPCPublicGateway(ctx, d, meta)
+>>>>>>> 46a6a6e7 (Refactor to enable easily the adding of timeout)
+=======
+	_, err = waitForVPCPublicGatewayPATRule(ctx, d, meta)
+>>>>>>> ae637140 (pat rule)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -115,18 +117,21 @@ func resourceScalewayVPCPublicGatewayPATRuleCreate(ctx context.Context, d *schem
 		return diag.FromErr(err)
 	}
 
+<<<<<<< HEAD
+<<<<<<< HEAD
 	//check gateway is in stable state.
-	_, err = vpcgwAPI.WaitForGateway(&vpcgw.WaitForGatewayRequest{
-		GatewayID:     res.GatewayID,
-		Zone:          zone,
-		Timeout:       scw.TimeDurationPtr(d.Timeout(schema.TimeoutCreate)),
-		RetryInterval: &retryInterval,
-	}, scw.WithContext(ctx))
+	_, err = waitForVPCPublicGateway(ctx, vpcgwAPI, res.GatewayID, zone, d.Timeout(schema.TimeoutCreate))
+=======
+	_, err = waitForVPCPublicGateway(ctx, d, meta)
+>>>>>>> 46a6a6e7 (Refactor to enable easily the adding of timeout)
+=======
+	d.SetId(newZonedIDString(zone, res.ID))
+
+	_, err = waitForVPCGatewayPATRule(ctx, d, meta)
+>>>>>>> 31f8aa84 (Fix)
 	if err != nil {
 		return diag.FromErr(err)
 	}
-
-	d.SetId(newZonedIDString(zone, res.ID))
 
 	return resourceScalewayVPCPublicGatewayPATRuleRead(ctx, d, meta)
 }
@@ -168,7 +173,7 @@ func resourceScalewayVPCPublicGatewayPATRuleUpdate(ctx context.Context, d *schem
 		return diag.FromErr(err)
 	}
 
-	patRules, err := vpcgwAPI.GetPATRule(&vpcgw.GetPATRuleRequest{
+	_, err = vpcgwAPI.GetPATRule(&vpcgw.GetPATRuleRequest{
 		PatRuleID: ID,
 		Zone:      zone,
 	}, scw.WithContext(ctx))
@@ -176,14 +181,16 @@ func resourceScalewayVPCPublicGatewayPATRuleUpdate(ctx context.Context, d *schem
 		return diag.FromErr(err)
 	}
 
-	retryInterval := retryIntervalVPCPublicGatewayNetwork
+<<<<<<< HEAD
+<<<<<<< HEAD
 	//check gateway is in stable state.
-	_, err = vpcgwAPI.WaitForGateway(&vpcgw.WaitForGatewayRequest{
-		GatewayID:     patRules.GatewayID,
-		Zone:          zone,
-		Timeout:       scw.TimeDurationPtr(d.Timeout(schema.TimeoutUpdate)),
-		RetryInterval: &retryInterval,
-	}, scw.WithContext(ctx))
+	_, err = waitForVPCPublicGateway(ctx, vpcgwAPI, patRules.GatewayID, zone, d.Timeout(schema.TimeoutUpdate))
+=======
+	_, err = waitForVPCPublicGateway(ctx, d, meta)
+>>>>>>> 46a6a6e7 (Refactor to enable easily the adding of timeout)
+=======
+	_, err = waitForVPCPublicGatewayPATRule(ctx, d, meta)
+>>>>>>> ae637140 (pat rule)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -219,7 +226,7 @@ func resourceScalewayVPCPublicGatewayPATRuleDelete(ctx context.Context, d *schem
 		return diag.FromErr(err)
 	}
 
-	patRules, err := vpcgwAPI.GetPATRule(&vpcgw.GetPATRuleRequest{
+	_, err = vpcgwAPI.GetPATRule(&vpcgw.GetPATRuleRequest{
 		PatRuleID: ID,
 		Zone:      zone,
 	}, scw.WithContext(ctx))
@@ -231,14 +238,16 @@ func resourceScalewayVPCPublicGatewayPATRuleDelete(ctx context.Context, d *schem
 		return diag.FromErr(err)
 	}
 
-	retryInterval := retryIntervalVPCPublicGatewayNetwork
+<<<<<<< HEAD
+<<<<<<< HEAD
 	//check gateway is in stable state.
-	_, err = vpcgwAPI.WaitForGateway(&vpcgw.WaitForGatewayRequest{
-		GatewayID:     patRules.GatewayID,
-		Zone:          zone,
-		Timeout:       scw.TimeDurationPtr(d.Timeout(schema.TimeoutDelete)),
-		RetryInterval: &retryInterval,
-	}, scw.WithContext(ctx))
+	_, err = waitForVPCPublicGateway(ctx, vpcgwAPI, patRules.GatewayID, zone, d.Timeout(schema.TimeoutDelete))
+=======
+	_, err = waitForVPCPublicGateway(ctx, d, meta)
+>>>>>>> 46a6a6e7 (Refactor to enable easily the adding of timeout)
+=======
+	_, err = waitForVPCPublicGatewayPATRule(ctx, d, meta)
+>>>>>>> ae637140 (pat rule)
 
 	if err != nil && !is404Error(err) {
 		return diag.FromErr(err)
@@ -253,13 +262,15 @@ func resourceScalewayVPCPublicGatewayPATRuleDelete(ctx context.Context, d *schem
 		return diag.FromErr(err)
 	}
 
-	_, err = vpcgwAPI.WaitForGateway(&vpcgw.WaitForGatewayRequest{
-		GatewayID:     patRules.GatewayID,
-		Zone:          zone,
-		Timeout:       scw.TimeDurationPtr(d.Timeout(schema.TimeoutDelete)),
-		RetryInterval: &retryInterval,
-	}, scw.WithContext(ctx))
-
+<<<<<<< HEAD
+<<<<<<< HEAD
+	_, err = waitForVPCPublicGateway(ctx, vpcgwAPI, patRules.GatewayID, zone, d.Timeout(schema.TimeoutDelete))
+=======
+	_, err = waitForVPCPublicGateway(ctx, d, meta)
+>>>>>>> 46a6a6e7 (Refactor to enable easily the adding of timeout)
+=======
+	_, err = waitForVPCPublicGatewayPATRule(ctx, d, meta)
+>>>>>>> ae637140 (pat rule)
 	if err != nil && !is404Error(err) {
 		return diag.FromErr(err)
 	}

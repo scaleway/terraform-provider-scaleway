@@ -91,12 +91,7 @@ func resourceScalewayContainerNamespaceRead(ctx context.Context, d *schema.Resou
 		return diag.FromErr(err)
 	}
 
-	ns, err := api.WaitForNamespace(&container.WaitForNamespaceRequest{
-		Region:        region,
-		NamespaceID:   id,
-		RetryInterval: DefaultWaitRetryInterval,
-	}, scw.WithContext(ctx))
-
+	ns, err := waitForContainerNamespace(ctx, d, meta)
 	if err != nil {
 		if is404Error(err) {
 			d.SetId("")
@@ -118,22 +113,18 @@ func resourceScalewayContainerNamespaceRead(ctx context.Context, d *schema.Resou
 }
 
 func resourceScalewayContainerNamespaceUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, id, err := containerAPIWithRegionAndID(meta, d.Id())
+	api, _, _, err := containerAPIWithRegionAndID(meta, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	ns, err := api.WaitForNamespace(&container.WaitForNamespaceRequest{
-		Region:        region,
-		NamespaceID:   id,
-		RetryInterval: DefaultWaitRetryInterval,
-	}, scw.WithContext(ctx))
+	ns, err := waitForContainerNamespace(ctx, d, meta)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	req := &container.UpdateNamespaceRequest{
-		Region:      region,
+		Region:      ns.Region,
 		NamespaceID: ns.ID,
 	}
 
@@ -159,11 +150,7 @@ func resourceScalewayContainerNamespaceDelete(ctx context.Context, d *schema.Res
 		return diag.FromErr(err)
 	}
 
-	_, err = api.WaitForNamespace(&container.WaitForNamespaceRequest{
-		Region:        region,
-		NamespaceID:   id,
-		RetryInterval: DefaultWaitRetryInterval,
-	}, scw.WithContext(ctx))
+	_, err = waitForContainerNamespace(ctx, d, meta)
 	if err != nil {
 		if is404Error(err) {
 			d.SetId("")

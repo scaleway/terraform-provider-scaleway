@@ -79,13 +79,7 @@ func resourceScalewayRegistryNamespaceRead(ctx context.Context, d *schema.Resour
 		return diag.FromErr(err)
 	}
 
-	ns, err := api.WaitForNamespace(&registry.WaitForNamespaceRequest{
-		Region:        region,
-		NamespaceID:   id,
-		Timeout:       scw.TimeDurationPtr(d.Timeout(schema.TimeoutRead)),
-		RetryInterval: DefaultWaitRetryInterval,
-	}, scw.WithContext(ctx))
-
+	ns, err := waitForRegistryNamespace(ctx, d, meta, d.Timeout(schema.TimeoutRead))
 	if err != nil {
 		if is404Error(err) {
 			d.SetId("")
@@ -111,13 +105,11 @@ func resourceScalewayRegistryNamespaceUpdate(ctx context.Context, d *schema.Reso
 		return diag.FromErr(err)
 	}
 
-	_, err = api.WaitForNamespace(&registry.WaitForNamespaceRequest{
-		Region:        region,
-		NamespaceID:   id,
-		RetryInterval: DefaultWaitRetryInterval,
-		Timeout:       scw.TimeDurationPtr(d.Timeout(schema.TimeoutUpdate)),
-	}, scw.WithContext(ctx))
-
+<<<<<<< HEAD
+	_, err = waitForRegistryNamespace(ctx, api, region, id, d.Timeout(schema.TimeoutUpdate))
+=======
+	_, err = waitForRegistryNamespace(ctx, d, meta)
+>>>>>>> 46a6a6e7 (Refactor to enable easily the adding of timeout)
 	if err != nil {
 		if is404Error(err) {
 			d.SetId("")
@@ -146,13 +138,11 @@ func resourceScalewayRegistryNamespaceDelete(ctx context.Context, d *schema.Reso
 		return diag.FromErr(err)
 	}
 
-	_, err = api.WaitForNamespace(&registry.WaitForNamespaceRequest{
-		Region:        region,
-		NamespaceID:   id,
-		RetryInterval: DefaultWaitRetryInterval,
-		Timeout:       scw.TimeDurationPtr(d.Timeout(schema.TimeoutDelete)),
-	}, scw.WithContext(ctx))
-
+<<<<<<< HEAD
+	_, err = waitForRegistryNamespace(ctx, api, region, id, d.Timeout(schema.TimeoutDelete))
+=======
+	_, err = waitForRegistryNamespace(ctx, d, meta)
+>>>>>>> 46a6a6e7 (Refactor to enable easily the adding of timeout)
 	if err != nil {
 		if is404Error(err) {
 			d.SetId("")

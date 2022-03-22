@@ -1,6 +1,7 @@
 package scaleway
 
 import (
+	"context"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -9,7 +10,8 @@ import (
 )
 
 const (
-	defaultRegistryNamespaceTimeout = 5 * time.Minute
+	defaultRegistryNamespaceTimeout       = 5 * time.Minute
+	defaultRegistryNamespaceRetryInterval = 5 * time.Second
 )
 
 type ErrorRegistryMessage struct {
@@ -38,4 +40,30 @@ func registryAPIWithRegionAndID(m interface{}, id string) (*registry.API, scw.Re
 		return nil, "", "", err
 	}
 	return api, region, id, nil
+}
+
+func waitForRegistryNamespace(ctx context.Context, d schema.ResourceData, meta interface{}, timeout time.Duration) (*registry.Namespace, error) {
+	api, region, id, err := registryAPIWithRegionAndID(meta, d.Id())
+	if err != nil {
+		return nil, err
+	}
+
+	retryInterval := defaultRegistryNamespaceRetryInterval
+
+	if DefaultWaitRetryInterval != nil {
+		retryInterval = *DefaultWaitRetryInterval
+	}
+
+	ns, err := api.WaitForNamespace(&registry.WaitForNamespaceRequest{
+		Region:        region,
+		NamespaceID:   id,
+		RetryInterval: &retryInterval,
+<<<<<<< HEAD
+		Timeout:       scw.TimeDurationPtr(timeout),
+=======
+		Timeout:       scw.TimeDurationPtr(defaultRegistryNamespaceTimeout),
+>>>>>>> 0d6f27de (Add explicit timeout)
+	}, scw.WithContext(ctx))
+
+	return ns, err
 }

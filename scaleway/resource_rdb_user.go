@@ -65,14 +65,22 @@ func resourceScalewayRdbUserCreate(ctx context.Context, d *schema.ResourceData, 
 		diag.FromErr(err)
 	}
 
-	ins, err := waitInstance(ctx, rdbAPI, region, instanceID, d.Timeout(schema.TimeoutCreate))
+<<<<<<< HEAD
+<<<<<<< HEAD
+	ins, err := waitForRDBInstance(ctx, rdbAPI, region, instanceID, d.Timeout(schema.TimeoutCreate))
+=======
+	ins, err := waitForRDBInstance(ctx, d, meta)
+>>>>>>> 46a6a6e7 (Refactor to enable easily the adding of timeout)
+=======
+	_, err = waitForRDBUser(ctx, d, meta)
+>>>>>>> 9b1cc96c (Fix rdbUser)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	createReq := &rdb.CreateUserRequest{
 		Region:     region,
-		InstanceID: ins.ID,
+		InstanceID: instanceID,
 		Name:       d.Get("name").(string),
 		Password:   d.Get("password").(string),
 		IsAdmin:    d.Get("is_admin").(bool),
@@ -84,7 +92,15 @@ func resourceScalewayRdbUserCreate(ctx context.Context, d *schema.ResourceData, 
 		currentUser, errCreateUser := rdbAPI.CreateUser(createReq, scw.WithContext(ctx))
 		if errCreateUser != nil {
 			if is409Error(errCreateUser) {
-				_, errWait := waitInstance(ctx, rdbAPI, region, ins.ID, d.Timeout(schema.TimeoutCreate))
+<<<<<<< HEAD
+<<<<<<< HEAD
+				_, errWait := waitForRDBInstance(ctx, rdbAPI, region, ins.ID, d.Timeout(schema.TimeoutCreate))
+=======
+				_, errWait := waitForRDBInstance(ctx, d, meta)
+>>>>>>> 46a6a6e7 (Refactor to enable easily the adding of timeout)
+=======
+				_, errWait := waitForRDBUser(ctx, d, meta)
+>>>>>>> 9b1cc96c (Fix rdbUser)
 				if errWait != nil {
 					return resource.NonRetryableError(errWait)
 				}
@@ -112,7 +128,15 @@ func resourceScalewayRdbUserRead(ctx context.Context, d *schema.ResourceData, me
 		return diag.FromErr(err)
 	}
 
-	_, err = waitInstance(ctx, rdbAPI, region, instanceID, d.Timeout(schema.TimeoutRead))
+<<<<<<< HEAD
+<<<<<<< HEAD
+	_, err = waitForRDBInstance(ctx, rdbAPI, region, instanceID, d.Timeout(schema.TimeoutRead))
+=======
+	_, err = waitForRDBInstance(ctx, d, meta)
+>>>>>>> 46a6a6e7 (Refactor to enable easily the adding of timeout)
+=======
+	_, err = waitForRDBUser(ctx, d, meta)
+>>>>>>> 9b1cc96c (Fix rdbUser)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -149,7 +173,15 @@ func resourceScalewayRdbUserUpdate(ctx context.Context, d *schema.ResourceData, 
 		return diag.FromErr(err)
 	}
 
-	_, err = waitInstance(ctx, rdbAPI, region, instanceID, d.Timeout(schema.TimeoutUpdate))
+<<<<<<< HEAD
+<<<<<<< HEAD
+	_, err = waitForRDBInstance(ctx, rdbAPI, region, instanceID, d.Timeout(schema.TimeoutUpdate))
+=======
+	_, err = waitForRDBInstance(ctx, d, meta)
+>>>>>>> 46a6a6e7 (Refactor to enable easily the adding of timeout)
+=======
+	_, err = waitForRDBUser(ctx, d, meta)
+>>>>>>> 9b1cc96c (Fix rdbUser)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -183,7 +215,15 @@ func resourceScalewayRdbUserDelete(ctx context.Context, d *schema.ResourceData, 
 		return diag.FromErr(err)
 	}
 
-	_, err = waitInstance(ctx, rdbAPI, region, instanceID, d.Timeout(schema.TimeoutDelete))
+<<<<<<< HEAD
+<<<<<<< HEAD
+	_, err = waitForRDBInstance(ctx, rdbAPI, region, instanceID, d.Timeout(schema.TimeoutDelete))
+=======
+	_, err = waitForRDBInstance(ctx, d, meta)
+>>>>>>> 46a6a6e7 (Refactor to enable easily the adding of timeout)
+=======
+	_, err = waitForRDBUser(ctx, d, meta)
+>>>>>>> 9b1cc96c (Fix rdbUser)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -196,7 +236,15 @@ func resourceScalewayRdbUserDelete(ctx context.Context, d *schema.ResourceData, 
 		}, scw.WithContext(ctx))
 		if errDeleteUser != nil {
 			if is409Error(errDeleteUser) {
-				_, errWait := waitInstance(ctx, rdbAPI, region, instanceID, d.Timeout(schema.TimeoutDelete))
+<<<<<<< HEAD
+<<<<<<< HEAD
+				_, errWait := waitForRDBInstance(ctx, rdbAPI, region, instanceID, d.Timeout(schema.TimeoutDelete))
+=======
+				_, errWait := waitForRDBInstance(ctx, d, meta)
+>>>>>>> 46a6a6e7 (Refactor to enable easily the adding of timeout)
+=======
+				_, errWait := waitForRDBUser(ctx, d, meta)
+>>>>>>> 9b1cc96c (Fix rdbUser)
 				if errWait != nil {
 					return resource.NonRetryableError(errWait)
 				}

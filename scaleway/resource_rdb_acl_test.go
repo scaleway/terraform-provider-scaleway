@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 )
 
 func init() {
@@ -76,12 +77,14 @@ func TestAccScalewayRdbACL_Basic(t *testing.T) {
 							description = "bar"
 						}
 					}`, instanceName),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("scaleway_rdb_acl.main", "acl_rules.0.ip", "4.5.6.7/32"),
-					resource.TestCheckResourceAttr("scaleway_rdb_acl.main", "acl_rules.0.description", "bar"),
-					resource.TestCheckResourceAttr("scaleway_rdb_acl.main", "acl_rules.1.ip", "1.2.3.4/32"),
-					resource.TestCheckResourceAttr("scaleway_rdb_acl.main", "acl_rules.1.description", "foo"),
-				),
+				Check: func(state *terraform.State) error {
+					return resource.ComposeTestCheckFunc(
+						resource.TestCheckResourceAttr("scaleway_rdb_acl.main", "acl_rules.0.ip", "4.5.6.7/32"),
+						resource.TestCheckResourceAttr("scaleway_rdb_acl.main", "acl_rules.0.description", "bar"),
+						resource.TestCheckResourceAttr("scaleway_rdb_acl.main", "acl_rules.1.ip", "1.2.3.4/32"),
+						resource.TestCheckResourceAttr("scaleway_rdb_acl.main", "acl_rules.1.description", "foo"),
+					)(state)
+				},
 			},
 			{
 				Config: fmt.Sprintf(`

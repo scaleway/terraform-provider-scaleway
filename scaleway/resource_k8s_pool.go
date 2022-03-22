@@ -265,7 +265,11 @@ func resourceScalewayK8SPoolCreate(ctx context.Context, d *schema.ResourceData, 
 	if cluster.Status == k8s.ClusterStatusPoolRequired {
 		waitForCluster = true
 	} else if cluster.Status == k8s.ClusterStatusCreating {
+<<<<<<< HEAD
 		_, err = waitK8SCluster(ctx, k8sAPI, region, cluster.ID, d.Timeout(schema.TimeoutCreate))
+=======
+		_, err = waitK8SCluster(ctx, d, meta)
+>>>>>>> 46a6a6e7 (Refactor to enable easily the adding of timeout)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -279,14 +283,22 @@ func resourceScalewayK8SPoolCreate(ctx context.Context, d *schema.ResourceData, 
 	d.SetId(newRegionalIDString(region, res.ID))
 
 	if d.Get("wait_for_pool_ready").(bool) { // wait for the pool to be ready if specified (including all its nodes)
+<<<<<<< HEAD
 		err = waitK8SPoolReady(ctx, k8sAPI, region, res.ID, d.Timeout(schema.TimeoutCreate))
+=======
+		_, err = waitK8SPoolReady(ctx, d, meta)
+>>>>>>> 46a6a6e7 (Refactor to enable easily the adding of timeout)
 		if err != nil {
 			return diag.FromErr(err)
 		}
 	}
 
 	if waitForCluster {
+<<<<<<< HEAD
 		_, err = waitK8SCluster(ctx, k8sAPI, region, cluster.ID, d.Timeout(schema.TimeoutCreate))
+=======
+		_, err = waitK8SCluster(ctx, d, meta)
+>>>>>>> 46a6a6e7 (Refactor to enable easily the adding of timeout)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -406,13 +418,17 @@ func resourceScalewayK8SPoolUpdate(ctx context.Context, d *schema.ResourceData, 
 
 	updateRequest.UpgradePolicy = upgradePolicyReq
 
-	res, err := k8sAPI.UpdatePool(updateRequest, scw.WithContext(ctx))
+	_, err = k8sAPI.UpdatePool(updateRequest, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	if d.Get("wait_for_pool_ready").(bool) { // wait for the pool to be ready if specified (including all its nodes)
+<<<<<<< HEAD
 		err = waitK8SPoolReady(ctx, k8sAPI, region, res.ID, d.Timeout(schema.TimeoutUpdate))
+=======
+		_, err = waitK8SPoolReady(ctx, d, meta)
+>>>>>>> 46a6a6e7 (Refactor to enable easily the adding of timeout)
 		if err != nil {
 			return diag.FromErr(err)
 		}

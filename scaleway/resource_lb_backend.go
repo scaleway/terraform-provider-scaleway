@@ -255,13 +255,15 @@ func resourceScalewayLbBackendCreate(ctx context.Context, d *schema.ResourceData
 		healthCheckPort = d.Get("forward_port").(int)
 	}
 
-	retryInterval := defaultWaitLBRetryInterval
-	_, err = lbAPI.WaitForLb(&lb.ZonedAPIWaitForLBRequest{
-		Zone:          zone,
-		LBID:          LbID,
-		Timeout:       scw.TimeDurationPtr(d.Timeout(schema.TimeoutCreate)),
-		RetryInterval: &retryInterval,
-	}, scw.WithContext(ctx))
+<<<<<<< HEAD
+<<<<<<< HEAD
+	_, err = waitForLB(ctx, d, meta, d.Timeout(schema.TimeoutCreate))
+=======
+	_, err = waitForLB(ctx, d, meta)
+>>>>>>> 46a6a6e7 (Refactor to enable easily the adding of timeout)
+=======
+	_, err = waitForLBBackend(ctx, d, meta)
+>>>>>>> af050acc (Fix)
 	if err != nil {
 		if is403Error(err) {
 			d.SetId("")
@@ -322,12 +324,15 @@ func resourceScalewayLbBackendCreate(ctx context.Context, d *schema.ResourceData
 		return diag.FromErr(err)
 	}
 
-	_, err = lbAPI.WaitForLb(&lb.ZonedAPIWaitForLBRequest{
-		Zone:          zone,
-		LBID:          res.LB.ID,
-		Timeout:       scw.TimeDurationPtr(d.Timeout(schema.TimeoutCreate)),
-		RetryInterval: &retryInterval,
-	}, scw.WithContext(ctx))
+<<<<<<< HEAD
+<<<<<<< HEAD
+	_, err = waitForLB(ctx, d, meta, d.Timeout(schema.TimeoutCreate))
+=======
+	_, err = waitForLB(ctx, d, meta)
+>>>>>>> 46a6a6e7 (Refactor to enable easily the adding of timeout)
+=======
+	_, err = waitForLBBackend(ctx, d, meta)
+>>>>>>> af050acc (Fix)
 	if err != nil {
 		if is403Error(err) {
 			d.SetId("")
@@ -382,13 +387,15 @@ func resourceScalewayLbBackendRead(ctx context.Context, d *schema.ResourceData, 
 	_ = d.Set("health_check_http", flattenLbHCHTTP(res.HealthCheck.HTTPConfig))
 	_ = d.Set("health_check_https", flattenLbHCHTTPS(res.HealthCheck.HTTPSConfig))
 
-	retryInterval := defaultWaitLBRetryInterval
-	_, err = lbAPI.WaitForLb(&lb.ZonedAPIWaitForLBRequest{
-		Zone:          zone,
-		LBID:          res.LB.ID,
-		Timeout:       scw.TimeDurationPtr(d.Timeout(schema.TimeoutRead)),
-		RetryInterval: &retryInterval,
-	}, scw.WithContext(ctx))
+<<<<<<< HEAD
+<<<<<<< HEAD
+	_, err = waitForLB(ctx, d, meta, d.Timeout(schema.TimeoutRead))
+=======
+	_, err = waitForLB(ctx, d, meta)
+>>>>>>> 46a6a6e7 (Refactor to enable easily the adding of timeout)
+=======
+	_, err = waitForLBBackend(ctx, d, meta)
+>>>>>>> af050acc (Fix)
 	if err != nil {
 		if is403Error(err) {
 			d.SetId("")
@@ -407,18 +414,16 @@ func resourceScalewayLbBackendUpdate(ctx context.Context, d *schema.ResourceData
 		return diag.FromErr(err)
 	}
 
+<<<<<<< HEAD
 	_, LbID, err := parseZonedID(d.Get("lb_id").(string))
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	retryInterval := defaultWaitLBRetryInterval
-	_, err = lbAPI.WaitForLb(&lb.ZonedAPIWaitForLBRequest{
-		Zone:          zone,
-		LBID:          LbID,
-		Timeout:       scw.TimeDurationPtr(d.Timeout(schema.TimeoutUpdate)),
-		RetryInterval: &retryInterval,
-	}, scw.WithContext(ctx))
+	_, err = waitForLB(ctx, d, meta, d.Timeout(schema.TimeoutUpdate))
+=======
+	_, err = waitForLBBackend(ctx, d, meta)
+>>>>>>> 46a6a6e7 (Refactor to enable easily the adding of timeout)
 	if err != nil {
 		if is403Error(err) {
 			d.SetId("")
@@ -502,12 +507,15 @@ func resourceScalewayLbBackendUpdate(ctx context.Context, d *schema.ResourceData
 		return diag.FromErr(err)
 	}
 
-	_, err = lbAPI.WaitForLb(&lb.ZonedAPIWaitForLBRequest{
-		Zone:          zone,
-		LBID:          LbID,
-		Timeout:       scw.TimeDurationPtr(d.Timeout(schema.TimeoutUpdate)),
-		RetryInterval: &retryInterval,
-	}, scw.WithContext(ctx))
+<<<<<<< HEAD
+<<<<<<< HEAD
+	_, err = waitForLB(ctx, d, meta, d.Timeout(schema.TimeoutUpdate))
+=======
+	_, err = waitForLB(ctx, d, meta)
+>>>>>>> 46a6a6e7 (Refactor to enable easily the adding of timeout)
+=======
+	_, err = waitForLBBackend(ctx, d, meta)
+>>>>>>> af050acc (Fix)
 	if err != nil {
 		if is403Error(err) {
 			d.SetId("")
@@ -525,18 +533,23 @@ func resourceScalewayLbBackendDelete(ctx context.Context, d *schema.ResourceData
 		return diag.FromErr(err)
 	}
 
-	_, LbID, err := parseZonedID(d.Get("lb_id").(string))
+<<<<<<< HEAD
+	_, _, err = parseZonedID(d.Get("lb_id").(string))
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	retryInterval := defaultWaitLBRetryInterval
-	_, err = lbAPI.WaitForLb(&lb.ZonedAPIWaitForLBRequest{
-		Zone:          zone,
-		LBID:          LbID,
-		Timeout:       scw.TimeDurationPtr(d.Timeout(schema.TimeoutDelete)),
-		RetryInterval: &retryInterval,
-	}, scw.WithContext(ctx))
+<<<<<<< HEAD
+<<<<<<< HEAD
+	_, err = waitForLB(ctx, d, meta, d.Timeout(schema.TimeoutDelete))
+=======
+	_, err = waitForLB(ctx, d, meta)
+>>>>>>> 46a6a6e7 (Refactor to enable easily the adding of timeout)
+=======
+=======
+>>>>>>> a559bb23 (Fix)
+	_, err = waitForLBBackend(ctx, d, meta)
+>>>>>>> af050acc (Fix)
 	if err != nil {
 		if is403Error(err) {
 			d.SetId("")
@@ -554,12 +567,15 @@ func resourceScalewayLbBackendDelete(ctx context.Context, d *schema.ResourceData
 		return diag.FromErr(err)
 	}
 
-	_, err = lbAPI.WaitForLb(&lb.ZonedAPIWaitForLBRequest{
-		Zone:          zone,
-		LBID:          LbID,
-		Timeout:       scw.TimeDurationPtr(d.Timeout(schema.TimeoutDelete)),
-		RetryInterval: &retryInterval,
-	}, scw.WithContext(ctx))
+<<<<<<< HEAD
+<<<<<<< HEAD
+	_, err = waitForLB(ctx, d, meta, d.Timeout(schema.TimeoutDelete))
+=======
+	_, err = waitForLB(ctx, d, meta)
+>>>>>>> 46a6a6e7 (Refactor to enable easily the adding of timeout)
+=======
+	_, err = waitForLBBackend(ctx, d, meta)
+>>>>>>> af050acc (Fix)
 	if err != nil {
 		if is403Error(err) {
 			d.SetId("")

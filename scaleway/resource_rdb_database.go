@@ -67,7 +67,15 @@ func resourceScalewayRdbDatabaseCreate(ctx context.Context, d *schema.ResourceDa
 		return diag.FromErr(err)
 	}
 
-	_, err = waitInstance(ctx, rdbAPI, region, instanceID, d.Timeout(schema.TimeoutCreate))
+<<<<<<< HEAD
+<<<<<<< HEAD
+	_, err = waitForRDBInstance(ctx, rdbAPI, region, instanceID, d.Timeout(schema.TimeoutCreate))
+=======
+	_, err = waitForRDBInstance(ctx, d, meta)
+>>>>>>> 46a6a6e7 (Refactor to enable easily the adding of timeout)
+=======
+	_, err = waitForRDBDatabase(ctx, d, meta)
+>>>>>>> 9656b33f (Fix)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -97,7 +105,15 @@ func resourceScalewayRdbDatabaseCreate(ctx context.Context, d *schema.ResourceDa
 		return diag.FromErr(err)
 	}
 
-	_, err = waitInstance(ctx, rdbAPI, region, instanceID, d.Timeout(schema.TimeoutCreate))
+<<<<<<< HEAD
+<<<<<<< HEAD
+	_, err = waitForRDBInstance(ctx, rdbAPI, region, instanceID, d.Timeout(schema.TimeoutCreate))
+=======
+	_, err = waitForRDBInstance(ctx, d, meta)
+>>>>>>> 46a6a6e7 (Refactor to enable easily the adding of timeout)
+=======
+	_, err = waitForRDBDatabase(ctx, d, meta)
+>>>>>>> 9656b33f (Fix)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -125,18 +141,25 @@ func getDatabase(ctx context.Context, api *rdb.API, r scw.Region, instanceID, db
 }
 
 func resourceScalewayRdbDatabaseRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	rdbAPI := newRdbAPI(meta)
-	region, instanceID, databaseName, err := resourceScalewayRdbDatabaseParseID(d.Id())
+	region, instanceID, _, err := resourceScalewayRdbDatabaseParseID(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	_, err = waitInstance(ctx, rdbAPI, region, instanceID, d.Timeout(schema.TimeoutRead))
+<<<<<<< HEAD
+<<<<<<< HEAD
+	_, err = waitForRDBInstance(ctx, rdbAPI, region, instanceID, d.Timeout(schema.TimeoutRead))
+=======
+	_, err = waitForRDBInstance(ctx, d, meta)
+>>>>>>> 46a6a6e7 (Refactor to enable easily the adding of timeout)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	database, err := getDatabase(ctx, rdbAPI, region, instanceID, databaseName)
+=======
+	database, err := waitForRDBDatabase(ctx, d, meta)
+>>>>>>> 31f8aa84 (Fix)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -158,7 +181,15 @@ func resourceScalewayRdbDatabaseDelete(ctx context.Context, d *schema.ResourceDa
 		return diag.FromErr(err)
 	}
 
-	_, err = waitInstance(ctx, rdbAPI, region, instanceID, d.Timeout(schema.TimeoutDelete))
+<<<<<<< HEAD
+<<<<<<< HEAD
+	_, err = waitForRDBInstance(ctx, rdbAPI, region, instanceID, d.Timeout(schema.TimeoutDelete))
+=======
+	_, err = waitForRDBInstance(ctx, d, meta)
+>>>>>>> 46a6a6e7 (Refactor to enable easily the adding of timeout)
+=======
+	_, err = waitForRDBDatabase(ctx, d, meta)
+>>>>>>> 31f8aa84 (Fix)
 	if err != nil {
 		return diag.FromErr(err)
 	}

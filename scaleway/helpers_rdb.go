@@ -5,6 +5,7 @@ import (
 	"reflect"
 	"time"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/api/rdb/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
@@ -74,14 +75,147 @@ func expandInstanceSettings(i interface{}) []*rdb.InstanceSetting {
 	return res
 }
 
-func waitInstance(ctx context.Context, api *rdb.API, region scw.Region, id string, timeout time.Duration) (*rdb.Instance, error) {
+<<<<<<< HEAD
+func waitForRDBInstance(ctx context.Context, api *rdb.API, region scw.Region, id string, timeout time.Duration) (*rdb.Instance, error) {
+=======
+func waitForRDBInstance(ctx context.Context, d *schema.ResourceData, meta interface{}) (*rdb.Instance, error) {
+	api, region, instanceID, err := rdbAPIWithRegionAndID(meta, d.Id())
+	if err != nil {
+		return nil, err
+	}
+
+>>>>>>> 46a6a6e7 (Refactor to enable easily the adding of timeout)
 	retryInterval := defaultWaitRDBRetryInterval
+
+	if DefaultWaitRetryInterval != nil {
+		retryInterval = *DefaultWaitRetryInterval
+	}
+
 	return api.WaitForInstance(&rdb.WaitForInstanceRequest{
 		Region:        region,
+<<<<<<< HEAD
 		InstanceID:    id,
 		Timeout:       scw.TimeDurationPtr(timeout),
+=======
+		InstanceID:    instanceID,
+		Timeout:       scw.TimeDurationPtr(defaultInstanceServerWaitTimeout * 3), // upgrade takes some time
+>>>>>>> 46a6a6e7 (Refactor to enable easily the adding of timeout)
 		RetryInterval: &retryInterval,
 	}, scw.WithContext(ctx))
+}
+
+func waitForRDBUser(ctx context.Context, d *schema.ResourceData, meta interface{}) (*rdb.User, error) {
+	api, region, err := rdbAPIWithRegion(d, meta)
+	if err != nil {
+		return nil, err
+	}
+
+	regionalID := d.Get("instance_id").(string)
+	_, instanceID, err := parseRegionalID(regionalID)
+	if err != nil {
+		diag.FromErr(err)
+	}
+
+	retryInterval := defaultWaitRDBRetryInterval
+
+	if DefaultWaitRetryInterval != nil {
+		retryInterval = *DefaultWaitRetryInterval
+	}
+
+	_, err = api.WaitForInstance(&rdb.WaitForInstanceRequest{
+		Region:        region,
+		InstanceID:    instanceID,
+		Timeout:       scw.TimeDurationPtr(defaultInstanceServerWaitTimeout * 3), // upgrade takes some time
+		RetryInterval: &retryInterval,
+	}, scw.WithContext(ctx))
+
+	return nil, err
+}
+
+func waitForRDBPrivilege(ctx context.Context, d *schema.ResourceData, meta interface{}) (*rdb.Privilege, error) {
+	api, region, err := rdbAPIWithRegion(d, meta)
+	if err != nil {
+		return nil, err
+	}
+
+	regionalID := d.Get("instance_id").(string)
+	_, instanceID, err := parseRegionalID(regionalID)
+	if err != nil {
+		diag.FromErr(err)
+	}
+
+	retryInterval := defaultWaitRDBRetryInterval
+
+	if DefaultWaitRetryInterval != nil {
+		retryInterval = *DefaultWaitRetryInterval
+	}
+
+	_, err = api.WaitForInstance(&rdb.WaitForInstanceRequest{
+		Region:        region,
+		InstanceID:    instanceID,
+		Timeout:       scw.TimeDurationPtr(defaultInstanceServerWaitTimeout * 3), // upgrade takes some time
+		RetryInterval: &retryInterval,
+	}, scw.WithContext(ctx))
+
+	return nil, err
+}
+
+func waitForRDBDatabase(ctx context.Context, d *schema.ResourceData, meta interface{}) (*rdb.Database, error) {
+	region, instanceID, databaseName, err := resourceScalewayRdbDatabaseParseID(d.Id())
+	if err != nil {
+		return nil, err
+	}
+
+	api, _, _, err := rdbAPIWithRegionAndID(meta, d.Id())
+	if err != nil {
+		return nil, err
+	}
+
+	retryInterval := defaultWaitRDBRetryInterval
+
+	if DefaultWaitRetryInterval != nil {
+		retryInterval = *DefaultWaitRetryInterval
+	}
+
+	_, err = api.WaitForInstance(&rdb.WaitForInstanceRequest{
+		Region:        region,
+		InstanceID:    instanceID,
+		Timeout:       scw.TimeDurationPtr(defaultInstanceServerWaitTimeout * 3), // upgrade takes some time
+		RetryInterval: &retryInterval,
+	}, scw.WithContext(ctx))
+	if err != nil {
+		return nil, err
+	}
+
+	database, err := getDatabase(ctx, api, region, instanceID, databaseName)
+
+	return database, err
+}
+
+func waitForRDBACL(ctx context.Context, d *schema.ResourceData, meta interface{}) (interface{}, error) {
+	api, region, err := rdbAPIWithRegion(d, meta)
+	if err != nil {
+		return nil, err
+	}
+	instanceID := expandZonedID(d.Get("instance_id").(string)).ID
+
+	retryInterval := defaultWaitRDBRetryInterval
+
+	if DefaultWaitRetryInterval != nil {
+		retryInterval = *DefaultWaitRetryInterval
+	}
+
+	_, err = api.WaitForInstance(&rdb.WaitForInstanceRequest{
+		Region:        region,
+		InstanceID:    instanceID,
+		Timeout:       scw.TimeDurationPtr(defaultInstanceServerWaitTimeout * 3), // upgrade takes some time
+		RetryInterval: &retryInterval,
+	}, scw.WithContext(ctx))
+	if err != nil {
+		return nil, err
+	}
+
+	return nil, err
 }
 
 func expandPrivateNetwork(data interface{}, exist bool) ([]*rdb.EndpointSpec, error) {
