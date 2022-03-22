@@ -92,8 +92,9 @@ func resourceScalewayContainerNamespaceRead(ctx context.Context, d *schema.Resou
 	}
 
 	ns, err := api.WaitForNamespace(&container.WaitForNamespaceRequest{
-		Region:      region,
-		NamespaceID: id,
+		Region:        region,
+		NamespaceID:   id,
+		RetryInterval: DefaultWaitRetryInterval
 	}, scw.WithContext(ctx))
 
 	if err != nil {
@@ -125,6 +126,7 @@ func resourceScalewayContainerNamespaceUpdate(ctx context.Context, d *schema.Res
 	ns, err := api.WaitForNamespace(&container.WaitForNamespaceRequest{
 		Region:      region,
 		NamespaceID: id,
+		RetryInterval: DefaultWaitRetryInterval,
 	}, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
@@ -160,6 +162,7 @@ func resourceScalewayContainerNamespaceDelete(ctx context.Context, d *schema.Res
 	_, err = api.WaitForNamespace(&container.WaitForNamespaceRequest{
 		Region:      region,
 		NamespaceID: id,
+		RetryInterval: DefaultWaitRetryInterval,
 	}, scw.WithContext(ctx))
 	if err != nil {
 		return nil
