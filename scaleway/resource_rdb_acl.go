@@ -134,8 +134,9 @@ func resourceScalewayRdbACLUpdate(ctx context.Context, d *schema.ResourceData, m
 
 	if d.HasChange("acl_rules") {
 		_ = rdb.WaitForInstanceRequest{
-			InstanceID: instanceID,
-			Region:     region,
+			InstanceID:    instanceID,
+			Region:        region,
+			RetryInterval: DefaultWaitRetryInterval,
 		}
 
 		aclRules, err := rdbACLExpand(d.Get("acl_rules").(*schema.Set))
