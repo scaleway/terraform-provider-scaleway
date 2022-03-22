@@ -42,13 +42,8 @@ func TestAccScalewayCassettes_Validator(t *testing.T) {
 
 func checkErrorCode(c *cassette.Cassette) error {
 	for _, i := range c.Interactions {
-		switch i.Code {
-		case http.StatusInternalServerError:
+		if !checkErrCode(i, c, http.StatusConflict, http.StatusInternalServerError) {
 			return fmt.Errorf("status: %v founded on %s. method: %s, url %s", i.Code, c.Name, i.Request.Method, i.Request.URL)
-		case http.StatusConflict:
-			if !checkExceptions(c) {
-				return fmt.Errorf("status: %v founded on %s. method: %s, url %s", i.Code, c.Name, i.Request.Method, i.Request.URL)
-			}
 		}
 	}
 
@@ -62,11 +57,22 @@ func exceptionsCassettesCases() map[string]struct{} {
 		"testdata/data-source-rdb-privilege-basic.cassette.yaml": {}}
 }
 
-func checkExceptions(c *cassette.Cassette) bool {
+func checkErrCode(i *cassette.Interaction, c *cassette.Cassette, codes ...int) bool {
 	exceptions := exceptionsCassettesCases()
-	_, exist := exceptions[c.File]
-	return exist
+	_, isException := exceptions[c.File]
+	if isException {
+		return isException
+	}
+
+	for _, httpCode := range codes {
+		if i.Code == httpCode {
+			return true
+		}
+	}
+
+	return true
 }
+
 func fileNameWithoutExtSuffix(fileName string) string {
 	return strings.TrimSuffix(fileName, filepath.Ext(fileName))
 }
