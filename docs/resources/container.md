@@ -1,12 +1,12 @@
 ---
 page_title: "Scaleway: scaleway_container"
 description: |-
-Gets information about a container.
+    Manages Scaleway Containers.
 ---
 
 # scaleway_container
 
-Gets information about the Scaleway Container.
+Creates and manages Scaleway Container.
 
 For more information consult the [documentation](https://www.scaleway.com/en/docs/faq/serverless-containers/).
 
@@ -18,23 +18,29 @@ You can check also our [containers guide](https://www.scaleway.com/en/docs/compu
 
 ```hcl
 resource scaleway_container_namespace main {
+    name = "my-ns-test"
+    description = "test container"
 }
 
 resource scaleway_container main {
-    name = "test-container-data"
+    name = "my-container-02"
+    description = "environment variables test"
     namespace_id = scaleway_container_namespace.main.id
-}
+    registry_image = "${scaleway_container_namespace.main.endpoint}/alpine:test"
+    port = 9997
+    cpu_limit = 140
+    memory_limit = 256
+    min_scale = 3
+    max_scale = 5
+    timeout = 600
+    max_concurrency = 80
+    privacy = "private"
+    protocol = "h2c"
+    deploy = true
 
-// Get info by container name
-data "scaleway_container" "by_name" {
-    namespace_id = scaleway_container_namespace.main.id
-    name = scaleway_container.main.name
-}
-
-// Get info by container ID
-data "scaleway_container" "by_id" {
-    namespace_id = scaleway_container_namespace.main.id
-    container_id = scaleway_container.main.id
+    environment_variables = {
+        "foo" = "var"
+    }
 }
 ```
 
@@ -124,11 +130,11 @@ The `memory_limit` (in MB) must correspond with the right amount of vCPU.
 
 Please check our [price](https://www.scaleway.com/en/docs/faq/serverless-containers/#prices) section for more details.
 
-| Memory (in MB)      | vCPU |
-| ----------- | ----------- |
-| 128      | 70m       |
-| 256      | 140m       |
-| 512      | 280m       |
-| 1024      | 560m       |
+| Memory (in MB) | vCPU |
+|----------------|------|
+| 128            | 70m  |
+| 256            | 140m |
+| 512            | 280m |
+| 1024           | 560m |
 
 **Note:** 560mCPU accounts roughly for half of one CPU power of a Scaleway General Purpose instance

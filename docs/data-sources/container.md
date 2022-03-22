@@ -1,12 +1,12 @@
 ---
 page_title: "Scaleway: scaleway_container"
 description: |-
-Gets information about a container.
+    Gets information about a container.
 ---
-
 # scaleway_container
 
-Creates and manages Scaleway Container.
+Gets information about the Scaleway Container.
+
 For more information consult the [documentation](https://www.scaleway.com/en/docs/faq/serverless-containers/).
 
 For more details about the limitation check [containers-limitations](https://www.scaleway.com/en/docs/compute/containers/reference-content/containers-limitations/).
@@ -17,29 +17,23 @@ You can check also our [containers guide](https://www.scaleway.com/en/docs/compu
 
 ```hcl
 resource scaleway_container_namespace main {
-    name = "%s"
-    description = "test container"
 }
 
 resource scaleway_container main {
-    name = "my-container-02"
-    description = "environment variables test"
+    name = "test-container-data"
     namespace_id = scaleway_container_namespace.main.id
-    registry_image = "${scaleway_container_namespace.main.endpoint}/alpine:test"
-    port = 9997
-    cpu_limit = 140
-    memory_limit = 256
-    min_scale = 3
-    max_scale = 5
-    timeout = 600
-    max_concurrency = 80
-    privacy = "private"
-    protocol = "h2c"
-    deploy = true
+}
 
-    environment_variables = {
-        "foo" = "var"
-    }
+// Get info by container name
+data "scaleway_container" "by_name" {
+    namespace_id = scaleway_container_namespace.main.id
+    name = scaleway_container.main.name
+}
+
+// Get info by container ID
+data "scaleway_container" "by_id" {
+    namespace_id = scaleway_container_namespace.main.id
+    container_id = scaleway_container.main.id
 }
 ```
 
