@@ -94,7 +94,9 @@ The following arguments are supported:
 
 - `timeout_client` - (Optional) Maximum inactivity time on the client side. (e.g.: `1s`)
 
-- `certificate_id` - (Optional) Certificate ID that should be used by the frontend.
+- `certificate_id` - (Deprecated) Certificate ID that should be used by the frontend.
+ 
+- `certificate_ids` - (Optional) Collection of Certificate IDs that should be used by the frontend.
 
 - `acl` - (Optional) A list of ACL rules to apply to the load-balancer frontend.  Defined below.
 

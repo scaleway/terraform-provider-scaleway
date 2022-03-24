@@ -68,6 +68,22 @@ func resourceScalewayLbFrontend() *schema.Resource {
 				Optional:     true,
 				ValidateFunc: validationUUIDorUUIDWithLocality(),
 				Description:  "Certificate ID",
+				Deprecated: "This field will no be longer supported. Please use certificate_ids",
+			},
+			"certificate_ids": {
+				Type:         schema.TypeSet,
+				Optional:     true,
+				Description:  "Collection of Certificate IDs",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"certificate_id": {
+							Type:         schema.TypeString,
+							ValidateFunc: validationUUID(),
+							Required:     true,
+							Description:  "Certificate ID",
+						},
+					},
+				},
 			},
 			"acl": {
 				Type:        schema.TypeList,
@@ -182,15 +198,22 @@ func resourceScalewayLbFrontendCreate(ctx context.Context, d *schema.ResourceDat
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	res, err := lbAPI.CreateFrontend(&lb.ZonedAPICreateFrontendRequest{
+
+	createFrontendRequest := &lb.ZonedAPICreateFrontendRequest{
 		Zone:          zone,
 		LBID:          lbID,
 		Name:          expandOrGenerateString(d.Get("name"), "lb-frt"),
 		InboundPort:   int32(d.Get("inbound_port").(int)),
 		BackendID:     expandID(d.Get("backend_id")),
 		TimeoutClient: timeoutClient,
-		CertificateID: expandStringPtr(expandID(d.Get("certificate_id"))),
-	}, scw.WithContext(ctx))
+	}
+
+	certificatesRaw, certificatesExist := d.GetOk("certificate_ids")
+	if certificatesExist {
+		createFrontendRequest.CertificateIDs = expandSlideIDsPtr(certificatesRaw)
+	}
+
+	res, err := lbAPI.CreateFrontend(createFrontendRequest, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -233,6 +256,10 @@ func resourceScalewayLbFrontendRead(ctx context.Context, d *schema.ResourceData,
 		_ = d.Set("certificate_id", newZonedIDString(zone, res.Certificate.ID))
 	} else {
 		_ = d.Set("certificate_id", "")
+	}
+
+	if len(res.CertificateIDs) > 0 {
+		_ = d.Set("certificate_ids", flattenSliceIDsWithKey(res.CertificateIDs, "certificate_id", zone))
 	}
 
 	//read related acls.
@@ -377,7 +404,10 @@ func resourceScalewayLbFrontendUpdate(ctx context.Context, d *schema.ResourceDat
 		InboundPort:   int32(d.Get("inbound_port").(int)),
 		BackendID:     expandID(d.Get("backend_id")),
 		TimeoutClient: timeoutClient,
-		CertificateID: expandStringPtr(expandID(d.Get("certificate_id"))),
+	}
+
+	if d.HasChanges("certificate_ids") {
+		req.CertificateIDs = expandSlideIDsPtr(d.Get("certificate_ids"))
 	}
 
 	_, err = lbAPI.UpdateFrontend(req, scw.WithContext(ctx))

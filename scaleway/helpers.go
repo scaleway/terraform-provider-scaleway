@@ -396,6 +396,17 @@ func expandStringsPtr(data interface{}) *[]string {
 	return &stringSlice
 }
 
+func expandSlideIDsPtr(rawIDs interface{}) *[]string {
+	var stringSlice []string
+	if _, ok := rawIDs.([]interface{}); !ok || rawIDs == nil {
+		return &stringSlice
+	}
+	for _, s := range rawIDs.([]interface{}) {
+		stringSlice = append(stringSlice, expandID(s.(string)))
+	}
+	return &stringSlice
+}
+
 func expandStringsOrEmpty(data interface{}) []string {
 	var stringSlice []string
 	if _, ok := data.([]interface{}); !ok || data == nil {
@@ -436,6 +447,16 @@ func flattenSliceStringPtr(s []*string) interface{} {
 	res := make([]interface{}, 0, len(s))
 	for _, strPtr := range s {
 		res = append(res, flattenStringPtr(strPtr))
+	}
+	return res
+}
+
+func flattenSliceIDsWithKey(certificates []string, key string, zone scw.Zone) interface{} {
+	res := []map[string]interface{}(nil)
+	for _, certificateID := range certificates {
+		res = append(res, map[string]interface{}{
+			key:      newZonedIDString(zone, certificateID),
+		})
 	}
 	return res
 }
