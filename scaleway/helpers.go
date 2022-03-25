@@ -451,13 +451,12 @@ func flattenSliceStringPtr(s []*string) interface{} {
 	return res
 }
 
-func flattenSliceIDsWithKey(certificates []string, key string, zone scw.Zone) interface{} {
-	res := []map[string]interface{}(nil)
+func flattenSliceIDs(certificates []string, zone scw.Zone) interface{} {
+	res := []interface{}(nil)
 	for _, certificateID := range certificates {
-		res = append(res, map[string]interface{}{
-			key:      newZonedIDString(zone, certificateID),
-		})
+		res = append(res, newZonedIDString(zone, certificateID))
 	}
+
 	return res
 }
 

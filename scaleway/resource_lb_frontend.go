@@ -64,26 +64,19 @@ func resourceScalewayLbFrontend() *schema.Resource {
 				Description:      "Set the maximum inactivity time on the client side",
 			},
 			"certificate_id": {
-				Type:         schema.TypeString,
-				Optional:     true,
-				ValidateFunc: validationUUIDorUUIDWithLocality(),
-				Description:  "Certificate ID",
-				Deprecated: "This field will no be longer supported. Please use certificate_ids",
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Certificate ID",
+				Deprecated:  "Please use certificate_ids",
 			},
 			"certificate_ids": {
-				Type:         schema.TypeSet,
-				Optional:     true,
-				Description:  "Collection of Certificate IDs",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"certificate_id": {
-							Type:         schema.TypeString,
-							ValidateFunc: validationUUID(),
-							Required:     true,
-							Description:  "Certificate ID",
-						},
-					},
+				Type:     schema.TypeList,
+				Optional: true,
+				Elem: &schema.Schema{
+					Type:         schema.TypeString,
+					ValidateFunc: validationUUIDorUUIDWithLocality(),
 				},
+				Description: "Collection of Certificate IDs related to the load balancer and domain",
 			},
 			"acl": {
 				Type:        schema.TypeList,
@@ -259,7 +252,7 @@ func resourceScalewayLbFrontendRead(ctx context.Context, d *schema.ResourceData,
 	}
 
 	if len(res.CertificateIDs) > 0 {
-		_ = d.Set("certificate_ids", flattenSliceIDsWithKey(res.CertificateIDs, "certificate_id", zone))
+		_ = d.Set("certificate_ids", flattenSliceIDs(res.CertificateIDs, zone))
 	}
 
 	//read related acls.
