@@ -396,7 +396,7 @@ func expandStringsPtr(data interface{}) *[]string {
 	return &stringSlice
 }
 
-func expandSlideIDsPtr(rawIDs interface{}) *[]string {
+func expandSliceIDsPtr(rawIDs interface{}) *[]string {
 	var stringSlice []string
 	if _, ok := rawIDs.([]interface{}); !ok || rawIDs == nil {
 		return &stringSlice
