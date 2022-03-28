@@ -203,7 +203,7 @@ func resourceScalewayLbFrontendCreate(ctx context.Context, d *schema.ResourceDat
 
 	certificatesRaw, certificatesExist := d.GetOk("certificate_ids")
 	if certificatesExist {
-		createFrontendRequest.CertificateIDs = expandSlideIDsPtr(certificatesRaw)
+		createFrontendRequest.CertificateIDs = expandSliceIDsPtr(certificatesRaw)
 	}
 
 	res, err := lbAPI.CreateFrontend(createFrontendRequest, scw.WithContext(ctx))
@@ -400,7 +400,7 @@ func resourceScalewayLbFrontendUpdate(ctx context.Context, d *schema.ResourceDat
 	}
 
 	if d.HasChanges("certificate_ids") {
-		req.CertificateIDs = expandSlideIDsPtr(d.Get("certificate_ids"))
+		req.CertificateIDs = expandSliceIDsPtr(d.Get("certificate_ids"))
 	}
 
 	_, err = lbAPI.UpdateFrontend(req, scw.WithContext(ctx))

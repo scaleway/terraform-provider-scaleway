@@ -81,14 +81,24 @@ func TestAccScalewayLbFrontend_Basic(t *testing.T) {
 func TestAccScalewayLbFrontend_Certificate(t *testing.T) {
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
+	testDNSZone := fmt.Sprintf("test.%s", testDomain)
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheckScalewayLbFrontendDestroy(tt),
 		Steps: []resource.TestStep{
 			{
-				Config: `
+				Config: fmt.Sprintf(`
 					resource scaleway_lb_ip ip01 {}
+
+					resource "scaleway_domain_record" "tf_A" {
+						dns_zone = %[1]q
+						name     = "test"
+						type     = "A"
+						data     = "${scaleway_lb_ip.ip01.ip_address}"
+						ttl      = 3600
+						priority = 1
+					}
 
 					resource scaleway_lb lb01 {
 						ip_id = scaleway_lb_ip.ip01.id
@@ -98,8 +108,8 @@ func TestAccScalewayLbFrontend_Certificate(t *testing.T) {
 
 					resource scaleway_lb_backend bkd01 {
 						lb_id = scaleway_lb.lb01.id
-						forward_protocol = "tcp"
-						forward_port = 443
+						forward_protocol = "http"
+						forward_port = 80
 						proxy_protocol = "none"
 					}
 
@@ -111,18 +121,27 @@ func TestAccScalewayLbFrontend_Certificate(t *testing.T) {
 					  	}
 					}
 
+					resource scaleway_lb_certificate cert02 {
+						lb_id = scaleway_lb.lb01.id
+						name = "test-cert-front-end2"
+					  	letsencrypt {
+							common_name = %[2]q
+					  	}
+					}
+
 					resource scaleway_lb_frontend frt01 {
 						lb_id = scaleway_lb.lb01.id
 						backend_id = scaleway_lb_backend.bkd01.id
-						inbound_port = 443
-						certificate_ids = [scaleway_lb_certificate.cert01.id]
+						inbound_port = 80
+						certificate_ids = [scaleway_lb_certificate.cert01.id, scaleway_lb_certificate.cert02.id]
 					}
-				`,
+				`, testDomain, testDNSZone),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayLbFrontendExists(tt, "scaleway_lb_frontend.frt01"),
 					testAccCheckScalewayFrontendCertificateExist(tt, "scaleway_lb_frontend.frt01", "scaleway_lb_certificate.cert01"),
+					testAccCheckScalewayFrontendCertificateExist(tt, "scaleway_lb_frontend.frt01", "scaleway_lb_certificate.cert02"),
 					resource.TestCheckResourceAttr("scaleway_lb_frontend.frt01",
-						"certificate_ids.#", "1"),
+						"certificate_ids.#", "2"),
 				),
 			},
 		},
