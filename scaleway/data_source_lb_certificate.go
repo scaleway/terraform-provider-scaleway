@@ -25,12 +25,6 @@ func dataSourceScalewayLbCertificate() *schema.Resource {
 		ValidateFunc:  validationUUIDorUUIDWithLocality(),
 		ConflictsWith: []string{"name"},
 	}
-/*	dsSchema["lb_id"] = &schema.Schema{
-		Type:         schema.TypeString,
-		Optional:     true,
-		Description:  "The ID of the load-balancer",
-		ValidateFunc: validationUUIDorUUIDWithLocality(),
-	}*/
 
 	return &schema.Resource{
 		ReadContext: dataSourceScalewayLbCertificateRead,
