@@ -106,6 +106,7 @@ func Provider(config *ProviderConfig) plugin.ProviderFunc {
 			DataSourcesMap: map[string]*schema.Resource{
 				"scaleway_account_ssh_key":             dataSourceScalewayAccountSSHKey(),
 				"scaleway_baremetal_offer":             dataSourceScalewayBaremetalOffer(),
+				"scaleway_baremetal_os":                dataSourceScalewayBaremetalOs(),
 				"scaleway_domain_record":               dataSourceScalewayDomainRecord(),
 				"scaleway_domain_zone":                 dataSourceScalewayDomainZone(),
 				"scaleway_container_namespace":         dataSourceScalewayContainerNamespace(),
