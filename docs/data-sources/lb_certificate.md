@@ -49,10 +49,10 @@ data "scaleway_lb_certificate" "byName" {
 The following arguments are supported:
 
 - `certificate_id` - (Optional) The certificate id.
-  - Only one of `name` and `certificate_id` should be specified.
+    - Only one of `name` and `certificate_id` should be specified.
 
 - `name` - (Optional) The name of the certificate backend.
-  - When using a certificate `name` you should specify the `lb-id`
+    - When using a certificate `name` you should specify the `lb-id`
 
 - `lb_id` - (Required) The load-balancer ID this certificate is attached to.
 
