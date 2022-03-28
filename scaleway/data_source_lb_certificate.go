@@ -12,10 +12,10 @@ import (
 
 func dataSourceScalewayLbCertificate() *schema.Resource {
 	// Generate datasource schema from resource
-	dsSchema := datasourceSchemaFromResourceSchema(resourceScalewayLb().Schema)
+	dsSchema := datasourceSchemaFromResourceSchema(resourceScalewayLbCertificate().Schema)
 
 	// Set 'Optional' schema elements
-	addOptionalFieldsToSchema(dsSchema, "name", "zone")
+	addOptionalFieldsToSchema(dsSchema, "name", "lb_id")
 
 	dsSchema["name"].ConflictsWith = []string{"certificate_id"}
 	dsSchema["certificate_id"] = &schema.Schema{
@@ -25,12 +25,12 @@ func dataSourceScalewayLbCertificate() *schema.Resource {
 		ValidateFunc:  validationUUIDorUUIDWithLocality(),
 		ConflictsWith: []string{"name"},
 	}
-	dsSchema["lb_id"] = &schema.Schema{
+/*	dsSchema["lb_id"] = &schema.Schema{
 		Type:         schema.TypeString,
 		Optional:     true,
 		Description:  "The ID of the load-balancer",
 		ValidateFunc: validationUUIDorUUIDWithLocality(),
-	}
+	}*/
 
 	return &schema.Resource{
 		ReadContext: dataSourceScalewayLbCertificateRead,
@@ -49,7 +49,7 @@ func dataSourceScalewayLbCertificateRead(ctx context.Context, d *schema.Resource
 		res, err := api.ListCertificates(&lb.ZonedAPIListCertificatesRequest{
 			Zone: zone,
 			Name: expandStringPtr(d.Get("name")),
-			//LBID: expandID(d.Get("lb_id")),
+			LBID: expandID(d.Get("lb_id")),
 		}, scw.WithContext(ctx))
 		if err != nil {
 			return diag.FromErr(err)
