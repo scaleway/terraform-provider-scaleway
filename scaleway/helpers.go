@@ -396,6 +396,17 @@ func expandStringsPtr(data interface{}) *[]string {
 	return &stringSlice
 }
 
+func expandSliceIDsPtr(rawIDs interface{}) *[]string {
+	var stringSlice []string
+	if _, ok := rawIDs.([]interface{}); !ok || rawIDs == nil {
+		return &stringSlice
+	}
+	for _, s := range rawIDs.([]interface{}) {
+		stringSlice = append(stringSlice, expandID(s.(string)))
+	}
+	return &stringSlice
+}
+
 func expandStringsOrEmpty(data interface{}) []string {
 	var stringSlice []string
 	if _, ok := data.([]interface{}); !ok || data == nil {
@@ -437,6 +448,15 @@ func flattenSliceStringPtr(s []*string) interface{} {
 	for _, strPtr := range s {
 		res = append(res, flattenStringPtr(strPtr))
 	}
+	return res
+}
+
+func flattenSliceIDs(certificates []string, zone scw.Zone) interface{} {
+	res := []interface{}(nil)
+	for _, certificateID := range certificates {
+		res = append(res, newZonedIDString(zone, certificateID))
+	}
+
 	return res
 }
 

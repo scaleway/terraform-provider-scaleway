@@ -8,7 +8,7 @@ description: |-
 
 Creates and manages Scaleway Load-Balancer Frontends. For more information, see [the documentation](https://developers.scaleway.com/en/products/lb/zoned_api).
 
-## Examples
+## Examples Usage
 
 ### Basic
 
@@ -18,6 +18,40 @@ resource "scaleway_lb_frontend" "frontend01" {
   backend_id   = scaleway_lb_backend.backend01.id
   name         = "frontend01"
   inbound_port = "80"
+}
+```
+
+## With Certificate
+
+```hcl
+resource scaleway_lb_ip ip01 {}
+
+resource scaleway_lb lb01 {
+    ip_id = scaleway_lb_ip.ip01.id
+    name = "test-lb"
+    type = "lb-s"
+}
+
+resource scaleway_lb_backend bkd01 {
+    lb_id = scaleway_lb.lb01.id
+    forward_protocol = "tcp"
+    forward_port = 443
+    proxy_protocol = "none"
+}
+
+resource scaleway_lb_certificate cert01 {
+    lb_id = scaleway_lb.lb01.id
+    name = "test-cert-front-end"
+    letsencrypt {
+        common_name = "${replace(scaleway_lb_ip.ip01.ip_address,".", "-")}.lb.${scaleway_lb.lb01.region}.scw.cloud"
+    }
+}
+
+resource scaleway_lb_frontend frt01 {
+    lb_id = scaleway_lb.lb01.id
+    backend_id = scaleway_lb_backend.bkd01.id
+    inbound_port = 443
+    certificate_ids = [scaleway_lb_certificate.cert01.id]
 }
 ```
 
@@ -94,7 +128,7 @@ The following arguments are supported:
 
 - `timeout_client` - (Optional) Maximum inactivity time on the client side. (e.g.: `1s`)
 
-- `certificate_id` - (Optional) Certificate ID that should be used by the frontend.
+- `certificate_ids` - (Optional) List of Certificate IDs that should be used by the frontend.
 
 - `acl` - (Optional) A list of ACL rules to apply to the load-balancer frontend.  Defined below.
 
@@ -123,6 +157,8 @@ The following arguments are supported:
 In addition to all arguments above, the following attributes are exported:
 
 - `id` - The ID of the load-balancer frontend.
+- `certificate_id` - (Deprecated) first certificate ID used by the frontend.
+
 
 ## Import
 
