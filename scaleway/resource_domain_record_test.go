@@ -76,6 +76,27 @@ func TestAccScalewayDomainRecord_Basic(t *testing.T) {
 				Config: fmt.Sprintf(`
 					resource "scaleway_domain_record" "tf_A" {
 						dns_zone = "%s"
+						type     = "%s"
+						data     = "%s"
+						ttl      = %d
+						priority = %d
+					}
+				`, testDNSZone, recordType, data, ttl, priority),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayDomainRecordExists(tt, "scaleway_domain_record.tf_A"),
+					resource.TestCheckResourceAttr("scaleway_domain_record.tf_A", "dns_zone", testDNSZone),
+					resource.TestCheckResourceAttr("scaleway_domain_record.tf_A", "name", ""),
+					resource.TestCheckResourceAttr("scaleway_domain_record.tf_A", "type", recordType),
+					resource.TestCheckResourceAttr("scaleway_domain_record.tf_A", "data", data),
+					resource.TestCheckResourceAttr("scaleway_domain_record.tf_A", "ttl", fmt.Sprint(ttl)),
+					resource.TestCheckResourceAttr("scaleway_domain_record.tf_A", "priority", fmt.Sprint(priority)),
+					testCheckResourceAttrUUID("scaleway_domain_record.tf_A", "id"),
+				),
+			},
+			{
+				Config: fmt.Sprintf(`
+					resource "scaleway_domain_record" "tf_A" {
+						dns_zone = "%s"
 						name     = "%s"
 						type     = "%s"
 						data     = "%s"
