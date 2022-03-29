@@ -8,7 +8,7 @@ Manages Scaleway Load-Balancer Certificates.
 
 Get information about Scaleway Load-Balancer Certificates.
 
-This data source can prove useful when a module accepts an LB Certificate as an input variable and needs to, for example, determine the security a certificate for your LB Frontend associated with your domain, etc.
+This data source can prove useful when a module accepts an LB Certificate as an input variable and needs to, for example, determine the security of a certificate for your LB Frontend associated with your domain, etc.
 
 For more information, see [the documentation](https://developers.scaleway.com/en/products/lb/zoned_api/#certificate-330754).
 
