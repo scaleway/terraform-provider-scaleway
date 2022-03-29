@@ -451,6 +451,14 @@ func flattenSliceStringPtr(s []*string) interface{} {
 	return res
 }
 
+func flattenSliceString(s []string) interface{} {
+	res := make([]interface{}, 0, len(s))
+	for _, strPtr := range s {
+		res = append(res, strPtr)
+	}
+	return res
+}
+
 func flattenSliceIDs(certificates []string, zone scw.Zone) interface{} {
 	res := []interface{}(nil)
 	for _, certificateID := range certificates {
