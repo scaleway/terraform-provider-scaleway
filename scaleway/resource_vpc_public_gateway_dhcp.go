@@ -144,7 +144,7 @@ func resourceScalewayVPCPublicGatewayDHCPCreate(ctx context.Context, d *schema.R
 		req.PushDefaultRoute = expandBoolPtr(pushDefaultRoute)
 	}
 
-	if pushDNServer, ok := d.GetOk("push_default_route"); ok {
+	if pushDNServer, ok := d.GetOk("push_dns_server"); ok {
 		req.PushDNSServer = expandBoolPtr(pushDNServer)
 	}
 
@@ -244,17 +244,76 @@ func resourceScalewayVPCPublicGatewayDHCPUpdate(ctx context.Context, d *schema.R
 		return diag.FromErr(err)
 	}
 
-	if d.HasChangesExcept("enable_dynamic", "push_default_route", "push_dns_server", "dns_servers_override",
-		"dns_search", "dns_local_name") {
+	if d.HasChangesExcept("subnet", "address", "pool_low", "pool_high",
+		"enable_dynamic", "push_default_route", "push_dns_server", "dns_servers_override",
+		"dns_search", "dns_local_name", "renew_timer", "valid_lifetime", "rebind_timer") {
 		req := &vpcgw.UpdateDHCPRequest{
-			DHCPID:             ID,
-			Zone:               zone,
-			EnableDynamic:      expandBoolPtr(d.Get("enable_dynamic")),
-			PushDefaultRoute:   expandBoolPtr(d.Get("push_default_route")),
-			PushDNSServer:      expandBoolPtr(d.Get("push_dns_server")),
-			DNSServersOverride: expandStringsPtr(d.Get("dns_servers_override")),
-			DNSSearch:          expandStringsPtr(d.Get("dns_search")),
-			DNSLocalName:       expandStringPtr(d.Get("dns_local_name")),
+			DHCPID: ID,
+			Zone:   zone,
+		}
+
+		if subnetRaw, ok := d.GetOk("subnet"); ok {
+			subnet, err := expandIPNet(subnetRaw.(string))
+			if err != nil {
+				return diag.FromErr(err)
+			}
+			req.Subnet = &subnet
+		}
+
+		if address, ok := d.GetOk("address"); ok {
+			req.Address = scw.IPPtr(net.ParseIP(address.(string)))
+		}
+
+		if poolLow, ok := d.GetOk("pool_low"); ok {
+			req.PoolLow = scw.IPPtr(net.ParseIP(poolLow.(string)))
+		}
+
+		if poolHigh, ok := d.GetOk("pool_low"); ok {
+			req.PoolHigh = scw.IPPtr(net.ParseIP(poolHigh.(string)))
+		}
+
+		if pushDefaultRoute, ok := d.GetOk("push_default_route"); ok {
+			req.PushDefaultRoute = expandBoolPtr(pushDefaultRoute)
+		}
+
+		if pushDNServer, ok := d.GetOk("push_dns_server"); ok {
+			req.PushDNSServer = expandBoolPtr(pushDNServer)
+		}
+
+		if enableDynamic, ok := d.GetOk("enable_dynamic"); ok {
+			req.EnableDynamic = expandBoolPtr(enableDynamic)
+		}
+
+		if dnsServerOverride, ok := d.GetOk("dns_servers_override"); ok {
+			req.DNSServersOverride = expandStringsPtr(dnsServerOverride)
+		}
+
+		if dnsSearch, ok := d.GetOk("dns_search"); ok {
+			req.DNSSearch = expandStringsPtr(dnsSearch)
+		}
+
+		if dsnLocalName, ok := d.GetOk("dns_local_name"); ok {
+			req.DNSLocalName = expandStringPtr(dsnLocalName)
+		}
+
+		if renewTimer, ok := d.GetOk("renew_timer"); ok {
+			req.RenewTimer = &scw.Duration{Seconds: renewTimer.(int64)}
+		}
+
+		if validLifetime, ok := d.GetOk("valid_lifetime"); ok {
+			req.ValidLifetime = &scw.Duration{Seconds: validLifetime.(int64)}
+		}
+
+		if rebindTimer, ok := d.GetOk("rebind_timer"); ok {
+			req.RebindTimer = &scw.Duration{Seconds: rebindTimer.(int64)}
+		}
+
+		if poolLow, ok := d.GetOk("pool_low"); ok {
+			req.PoolLow = scw.IPPtr(net.ParseIP(poolLow.(string)))
+		}
+
+		if poolHigh, ok := d.GetOk("pool_high"); ok {
+			req.PoolLow = scw.IPPtr(net.ParseIP(poolHigh.(string)))
 		}
 
 		_, err = vpcgwAPI.UpdateDHCP(req, scw.WithContext(ctx))
