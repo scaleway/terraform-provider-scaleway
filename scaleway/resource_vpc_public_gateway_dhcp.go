@@ -244,68 +244,74 @@ func resourceScalewayVPCPublicGatewayDHCPUpdate(ctx context.Context, d *schema.R
 		return diag.FromErr(err)
 	}
 
-	if d.HasChanges("subnet", "address", "pool_low", "pool_high",
-		"enable_dynamic", "push_default_route", "push_dns_server", "dns_servers_override",
-		"dns_search", "dns_local_name", "renew_timer", "valid_lifetime", "rebind_timer") {
-		req := &vpcgw.UpdateDHCPRequest{
-			DHCPID: ID,
-			Zone:   zone,
-		}
+	req := &vpcgw.UpdateDHCPRequest{
+		DHCPID: ID,
+		Zone:   zone,
+	}
 
-		if subnetRaw, ok := d.GetOk("subnet"); ok {
-			subnet, err := expandIPNet(subnetRaw.(string))
-			if err != nil {
-				return diag.FromErr(err)
-			}
-			req.Subnet = &subnet
-		}
-
-		if address, ok := d.GetOk("address"); ok {
-			req.Address = scw.IPPtr(net.ParseIP(address.(string)))
-		}
-
-		req.PushDNSServer = expandBoolPtr(d.Get("push_dns_server"))
-
-		req.EnableDynamic = expandBoolPtr(d.Get("enable_dynamic"))
-
-		req.PushDefaultRoute = expandBoolPtr(d.Get("push_default_route"))
-
-		if dnsServerOverride, ok := d.GetOk("dns_servers_override"); ok {
-			req.DNSServersOverride = expandStringsPtr(dnsServerOverride)
-		}
-
-		if dnsSearch, ok := d.GetOk("dns_search"); ok {
-			req.DNSSearch = expandStringsPtr(dnsSearch)
-		}
-
-		if dsnLocalName, ok := d.GetOk("dns_local_name"); ok {
-			req.DNSLocalName = expandStringPtr(dsnLocalName)
-		}
-
-		if renewTimer, ok := d.GetOk("renew_timer"); ok {
-			req.RenewTimer = &scw.Duration{Seconds: int64(renewTimer.(int))}
-		}
-
-		if validLifetime, ok := d.GetOk("valid_lifetime"); ok {
-			req.ValidLifetime = &scw.Duration{Seconds: int64(validLifetime.(int))}
-		}
-
-		if rebindTimer, ok := d.GetOk("rebind_timer"); ok {
-			req.RebindTimer = &scw.Duration{Seconds: int64(rebindTimer.(int))}
-		}
-
-		if poolLow, ok := d.GetOk("pool_low"); ok {
-			req.PoolLow = scw.IPPtr(net.ParseIP(poolLow.(string)))
-		}
-
-		if poolHigh, ok := d.GetOk("pool_high"); ok {
-			req.PoolHigh = scw.IPPtr(net.ParseIP(poolHigh.(string)))
-		}
-
-		_, err = vpcgwAPI.UpdateDHCP(req, scw.WithContext(ctx))
+	if subnetRaw, ok := d.GetOk("subnet"); ok {
+		subnet, err := expandIPNet(subnetRaw.(string))
 		if err != nil {
 			return diag.FromErr(err)
 		}
+		req.Subnet = &subnet
+	}
+
+	if ok := d.HasChange("address"); ok {
+		req.Address = scw.IPPtr(net.ParseIP(d.Get("address").(string)))
+	}
+
+	if ok := d.HasChange("push_dns_server"); ok {
+		req.PushDNSServer = expandBoolPtr(d.Get("push_dns_server"))
+	}
+
+	if ok := d.HasChange("enable_dynamic"); ok {
+		req.EnableDynamic = expandBoolPtr(d.Get("enable_dynamic"))
+	}
+
+	if ok := d.HasChange("push_default_route"); ok {
+		req.PushDefaultRoute = expandBoolPtr(d.Get("push_default_route"))
+	}
+
+	if ok := d.HasChange("dns_local_name"); ok {
+		req.DNSLocalName = expandStringPtr(d.Get("dns_local_name"))
+	}
+
+	if ok := d.HasChange("renew_timer"); ok {
+		req.RenewTimer = &scw.Duration{Seconds: int64(d.Get("renew_timer").(int))}
+	}
+
+	if ok := d.HasChange("valid_lifetime"); ok {
+		req.ValidLifetime = &scw.Duration{Seconds: int64(d.Get("valid_lifetime").(int))}
+	}
+
+	if ok := d.HasChange("rebind_timer"); ok {
+		req.RebindTimer = &scw.Duration{Seconds: int64(d.Get("rebind_timer").(int))}
+	}
+
+	if ok := d.HasChange("pool_low"); ok {
+		req.PoolLow = scw.IPPtr(net.ParseIP(d.Get("pool_low").(string)))
+	}
+
+	if ok := d.HasChange("pool_high"); ok {
+		req.PoolHigh = scw.IPPtr(net.ParseIP(d.Get("pool_high").(string)))
+	}
+
+	if d.HasChangesExcept("dns_servers_override") {
+		if dnsServerOverride, ok := d.GetOk("dns_servers_override"); ok {
+			req.DNSServersOverride = expandStringsPtr(dnsServerOverride)
+		}
+	}
+
+	if d.HasChangesExcept("dns_search") {
+		if dnsSearch, ok := d.GetOk("dns_search"); ok {
+			req.DNSSearch = expandStringsPtr(dnsSearch)
+		}
+	}
+
+	_, err = vpcgwAPI.UpdateDHCP(req, scw.WithContext(ctx))
+	if err != nil {
+		return diag.FromErr(err)
 	}
 
 	return resourceScalewayVPCPublicGatewayDHCPRead(ctx, d, meta)
