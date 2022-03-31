@@ -82,7 +82,7 @@ func resourceScalewayVPCPublicGatewayDHCPCReservationCreate(ctx context.Context,
 		return diag.FromErr(err)
 	}
 
-	gatewayNetworkID := d.Get("gateway_network_id").(string)
+	gatewayNetworkID := expandID(d.Get("gateway_network_id"))
 	_, err = vpcgwAPI.WaitForGatewayNetwork(&vpcgw.WaitForGatewayNetworkRequest{
 		GatewayNetworkID: gatewayNetworkID},
 		scw.WithContext(ctx))
@@ -90,14 +90,12 @@ func resourceScalewayVPCPublicGatewayDHCPCReservationCreate(ctx context.Context,
 		return diag.FromErr(err)
 	}
 
-	req := &vpcgw.CreateDHCPEntryRequest{
+	res, err := vpcgwAPI.CreateDHCPEntry(&vpcgw.CreateDHCPEntryRequest{
 		Zone:             zone,
 		MacAddress:       macAddress.String(),
 		IPAddress:        ip,
 		GatewayNetworkID: gatewayNetworkID,
-	}
-
-	res, err := vpcgwAPI.CreateDHCPEntry(req, scw.WithContext(ctx))
+	}, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -136,7 +134,7 @@ func resourceScalewayVPCPublicGatewayDHCPReservationRead(ctx context.Context, d 
 	_ = d.Set("mac_address", entry.MacAddress)
 	_ = d.Set("hostname", entry.Hostname)
 	_ = d.Set("type", entry.Type.String())
-	_ = d.Set("gateway_network_id", entry.GatewayNetworkID)
+	_ = d.Set("gateway_network_id", newZonedIDString(zone, entry.GatewayNetworkID))
 	_ = d.Set("created_at", entry.CreatedAt.Format(time.RFC3339))
 	_ = d.Set("updated_at", entry.UpdatedAt.Format(time.RFC3339))
 	_ = d.Set("zone", zone)
@@ -176,7 +174,7 @@ func resourceScalewayVPCPublicGatewayDHCPReservationDelete(ctx context.Context, 
 		return diag.FromErr(err)
 	}
 
-	gatewayNetworkID := d.Get("gateway_network_id").(string)
+	gatewayNetworkID := expandID(d.Get("gateway_network_id"))
 	_, err = vpcgwAPI.WaitForGatewayNetwork(&vpcgw.WaitForGatewayNetworkRequest{
 		GatewayNetworkID: gatewayNetworkID},
 		scw.WithContext(ctx))
