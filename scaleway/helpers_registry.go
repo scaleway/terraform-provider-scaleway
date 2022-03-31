@@ -12,6 +12,10 @@ const (
 	defaultRegistryNamespaceTimeout = 5 * time.Minute
 )
 
+type ErrorRegistryMessage struct {
+	Error string
+}
+
 // registryAPIWithRegion returns a new container registry API and the region.
 func registryAPIWithRegion(d *schema.ResourceData, m interface{}) (*registry.API, scw.Region, error) {
 	meta := m.(*Meta)

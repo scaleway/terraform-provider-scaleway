@@ -46,6 +46,12 @@ You can force the test domain with an environment var:
 export TF_TEST_DOMAIN=your-domain.tld
 ```
 
+For testing the container API with your own image you can force the environment var:
+
+```shell
+export  TF_TEST_DOCKER_IMG=your_image
+```
+
 To ease debugging you can also set:
 ```sh
 export TF_LOG=DEBUG

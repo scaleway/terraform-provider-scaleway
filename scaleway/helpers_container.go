@@ -35,3 +35,65 @@ func containerAPIWithRegionAndID(m interface{}, id string) (*container.API, scw.
 	}
 	return api, region, id, nil
 }
+
+func setCreateContainerRequest(d *schema.ResourceData, region scw.Region) (*container.CreateContainerRequest, error) {
+	// required
+	nameRaw := d.Get("name")
+	namespaceID := d.Get("namespace_id")
+
+	name := expandOrGenerateString(nameRaw.(string), "co")
+	privacyType := d.Get("privacy")
+	protocol := d.Get("protocol")
+
+	req := &container.CreateContainerRequest{
+		Region:      region,
+		NamespaceID: expandID(namespaceID),
+		Name:        name,
+		Privacy:     container.ContainerPrivacy(privacyType.(string)),
+		Protocol:    container.ContainerProtocol(*expandStringPtr(protocol)),
+	}
+
+	// optional
+	if envVariablesRaw, ok := d.GetOk("environment_variables"); ok {
+		req.EnvironmentVariables = expandMapStringStringPtr(envVariablesRaw)
+	}
+
+	if minScale, ok := d.GetOk("min_scale"); ok {
+		req.MinScale = scw.Uint32Ptr(uint32(minScale.(int)))
+	}
+
+	if maxScale, ok := d.GetOk("max_scale"); ok {
+		req.MaxScale = scw.Uint32Ptr(uint32(maxScale.(int)))
+	}
+
+	if memoryLimit, ok := d.GetOk("memory_limit"); ok {
+		req.MemoryLimit = scw.Uint32Ptr(uint32(memoryLimit.(int)))
+	}
+
+	if timeout, ok := d.GetOk("timeout"); ok {
+		timeInt := timeout.(int)
+		req.Timeout = &scw.Duration{Seconds: int64(timeInt)}
+	}
+
+	if port, ok := d.GetOk("port"); ok {
+		req.Port = scw.Uint32Ptr(uint32(port.(int)))
+	}
+
+	if description, ok := d.GetOk("description"); ok {
+		req.Description = expandStringPtr(description)
+	}
+
+	if registryImage, ok := d.GetOk("registry_image"); ok {
+		req.RegistryImage = expandStringPtr(registryImage)
+	}
+
+	if maxConcurrency, ok := d.GetOk("max_concurrency"); ok {
+		req.MaxConcurrency = scw.Uint32Ptr(uint32(maxConcurrency.(int)))
+	}
+
+	if domainName, ok := d.GetOk("domain_name"); ok {
+		req.DomainName = expandStringPtr(domainName)
+	}
+
+	return req, nil
+}

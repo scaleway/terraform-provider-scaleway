@@ -378,7 +378,7 @@ func expandStringWithDefault(data interface{}, defaultValue string) string {
 }
 
 func expandStrings(data interface{}) []string {
-	stringSlice := []string{}
+	var stringSlice []string
 	for _, s := range data.([]interface{}) {
 		stringSlice = append(stringSlice, s.(string))
 	}
@@ -531,6 +531,17 @@ func validateDuration() schema.SchemaValidateFunc {
 	}
 }
 
+func flattenMap(m map[string]string) interface{} {
+	if m == nil {
+		return nil
+	}
+	flattenedMap := make(map[string]interface{})
+	for k, v := range m {
+		flattenedMap[k] = v
+	}
+	return flattenedMap
+}
+
 func diffSuppressFuncDuration(k, old, new string, d *schema.ResourceData) bool {
 	if old == new {
 		return true
@@ -576,4 +587,8 @@ func expandMapStringStringPtr(data interface{}) *map[string]string {
 		m[k] = v.(string)
 	}
 	return &m
+}
+
+func toUint32(number interface{}) *uint32 {
+	return scw.Uint32Ptr(number.(uint32))
 }
