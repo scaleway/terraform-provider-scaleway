@@ -84,8 +84,9 @@ func resourceScalewayVPCPublicGatewayDHCPCReservationCreate(ctx context.Context,
 
 	gatewayNetworkID := expandID(d.Get("gateway_network_id"))
 	_, err = vpcgwAPI.WaitForGatewayNetwork(&vpcgw.WaitForGatewayNetworkRequest{
-		GatewayNetworkID: gatewayNetworkID},
-		scw.WithContext(ctx))
+		GatewayNetworkID: gatewayNetworkID,
+		Zone:             zone,
+	}, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -103,8 +104,9 @@ func resourceScalewayVPCPublicGatewayDHCPCReservationCreate(ctx context.Context,
 	d.SetId(newZonedIDString(zone, res.ID))
 
 	_, err = vpcgwAPI.WaitForGatewayNetwork(&vpcgw.WaitForGatewayNetworkRequest{
-		GatewayNetworkID: gatewayNetworkID},
-		scw.WithContext(ctx))
+		Zone:             zone,
+		GatewayNetworkID: gatewayNetworkID,
+	}, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -176,8 +178,9 @@ func resourceScalewayVPCPublicGatewayDHCPReservationDelete(ctx context.Context, 
 
 	gatewayNetworkID := expandID(d.Get("gateway_network_id"))
 	_, err = vpcgwAPI.WaitForGatewayNetwork(&vpcgw.WaitForGatewayNetworkRequest{
-		GatewayNetworkID: gatewayNetworkID},
-		scw.WithContext(ctx))
+		GatewayNetworkID: gatewayNetworkID,
+		Zone:             zone,
+	}, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -192,8 +195,9 @@ func resourceScalewayVPCPublicGatewayDHCPReservationDelete(ctx context.Context, 
 	}
 
 	_, err = vpcgwAPI.WaitForGatewayNetwork(&vpcgw.WaitForGatewayNetworkRequest{
-		GatewayNetworkID: gatewayNetworkID},
-		scw.WithContext(ctx))
+		GatewayNetworkID: gatewayNetworkID,
+		Zone:             zone,
+	}, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
 	}
