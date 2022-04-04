@@ -32,7 +32,7 @@ func resourceScalewayVPCPublicGatewayDHCPReservation() *schema.Resource {
 			"ip_address": {
 				Type:         schema.TypeString,
 				Required:     true,
-				Description:  "The IP address to give to the machine (IP address).",
+				Description:  "The IP address to give to the machine (IPv4 address).",
 				ValidateFunc: validation.IsIPAddress,
 			},
 			"mac_address": {
