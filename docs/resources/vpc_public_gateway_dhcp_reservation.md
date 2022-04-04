@@ -10,7 +10,7 @@ Creates and manages the [Scaleway DHCP Reservations](https://www.scaleway.com/en
 
 The static associations are used to assign IP addresses based on the MAC addresses of the Instance.
 
-Statically assigned IP addresses should fall within the configured subnet, but be outside the dynamic range.
+Statically assigned IP addresses should fall within the configured subnet, but be outside of the dynamic range.
 
 For more information, see [the documentation](https://developers.scaleway.com/en/products/vpc-gw/api/v1/#dhcp-c05544) and [configuration guide](https://www.scaleway.com/en/docs/network/vpc/how-to/configure-a-public-gateway/#how-to-review-and-configure-dhcp).
 
