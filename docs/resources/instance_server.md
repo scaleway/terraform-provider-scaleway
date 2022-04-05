@@ -8,6 +8,8 @@ description: |-
 
 Creates and manages Scaleway Compute Instance servers. For more information, see [the documentation](https://developers.scaleway.com/en/products/instance/api/#servers-8bf7d7).
 
+Please check our [FAQ - Instances](https://www.scaleway.com/en/docs/faq/instances).
+
 ## Examples
 
 ### Basic
@@ -139,6 +141,10 @@ Updates to this field will recreate a new resource.
 
 - `image` - (Required) The UUID or the label of the base image used by the server. You can use [this endpoint](https://api-marketplace.scaleway.com/images?page=1&per_page=100)
 to find either the right `label` or the right local image `ID` for a given `type`.
+
+You can check the available labels with our [CLI](https://www.scaleway.com/en/docs/compute/instances/api-cli/creating-managing-instances-with-cliv2/). ```scw marketplace image list```
+
+To retrieve more information by label please use: ```scw marketplace image get label=<LABEL>```
 
 [//]: # (TODO: Improve me)
 
