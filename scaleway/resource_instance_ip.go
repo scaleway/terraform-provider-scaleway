@@ -119,7 +119,9 @@ func resourceScalewayInstanceIPRead(ctx context.Context, d *schema.ResourceData,
 	_ = d.Set("organization_id", res.IP.Organization)
 	_ = d.Set("project_id", res.IP.Project)
 	_ = d.Set("reverse", res.IP.Reverse)
-	_ = d.Set("tags", res.IP.Tags)
+	if len(res.IP.Tags) > 0 {
+		_ = d.Set("tags", flattenSliceString(res.IP.Tags))
+	}
 
 	if res.IP.Server != nil {
 		_ = d.Set("server_id", newZonedIDString(res.IP.Zone, res.IP.Server.ID))

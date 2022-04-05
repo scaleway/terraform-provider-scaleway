@@ -1,13 +1,13 @@
 ---
 page_title: "Scaleway: scaleway_rdb_acl"
 description: |-
-  Manages Scaleway Database Instances.
+  Manages Scaleway Database ACL rules.
 ---
 
 # scaleway_rdb_acl
 
-Creates and manages Scaleway Database instance autorized IPs.
-For more information, see [the documentation](https://developers.scaleway.com/en/products/rdb/api).
+Creates and manages Scaleway Database instance authorized IPs.
+For more information, see [the documentation](https://developers.scaleway.com/en/products/rdb/api/#acl-rules-allowed-ips).
 
 ## Examples
 
@@ -36,7 +36,7 @@ The following arguments are supported:
 The `acl_rules` block supports:
 
 - `ip` - (Required) The ip range to whitelist in [CIDR notation](https://en.wikipedia.org/wiki/Classless_Inter-Domain_Routing#CIDR_notation)
-- `description` - (Optional) A simple text describing this rule
+- `description` - (Optional) A simple text describing this rule. Default description: `IP allowed`
 
 
 ## Attributes Reference
