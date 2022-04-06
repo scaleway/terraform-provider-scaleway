@@ -88,6 +88,17 @@ func resourceScalewayInstanceSnapshotCreate(ctx context.Context, d *schema.Resou
 	}
 
 	d.SetId(newZonedIDString(zone, res.Snapshot.ID))
+
+	_, err = instanceAPI.WaitForSnapshot(&instance.WaitForSnapshotRequest{
+		SnapshotID:    res.Snapshot.ID,
+		Zone:          zone,
+		RetryInterval: DefaultWaitRetryInterval,
+		Timeout:       scw.TimeDurationPtr(d.Timeout(schema.TimeoutCreate)),
+	})
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	return resourceScalewayInstanceSnapshotRead(ctx, d, meta)
 }
 
@@ -148,6 +159,7 @@ func resourceScalewayInstanceSnapshotDelete(ctx context.Context, d *schema.Resou
 		SnapshotID:    id,
 		Zone:          zone,
 		RetryInterval: DefaultWaitRetryInterval,
+		Timeout:       scw.TimeDurationPtr(d.Timeout(schema.TimeoutDelete)),
 	})
 	if err != nil {
 		return diag.FromErr(err)

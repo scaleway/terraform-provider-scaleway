@@ -386,7 +386,7 @@ func resourceScalewayInstanceServerCreate(ctx context.Context, d *schema.Resourc
 	_, err = instanceAPI.WaitForServer(&instance.WaitForServerRequest{
 		Zone:          zone,
 		ServerID:      res.Server.ID,
-		Timeout:       scw.TimeDurationPtr(defaultInstanceServerWaitTimeout),
+		Timeout:       scw.TimeDurationPtr(d.Timeout(schema.TimeoutCreate)),
 		RetryInterval: scw.TimeDurationPtr(retryInstanceServerInterval),
 	})
 	if err != nil {
@@ -419,7 +419,7 @@ func resourceScalewayInstanceServerCreate(ctx context.Context, d *schema.Resourc
 		_, err := instanceAPI.WaitForServer(&instance.WaitForServerRequest{
 			Zone:          zone,
 			ServerID:      res.Server.ID,
-			Timeout:       scw.TimeDurationPtr(defaultInstanceServerWaitTimeout),
+			Timeout:       scw.TimeDurationPtr(d.Timeout(schema.TimeoutCreate)),
 			RetryInterval: scw.TimeDurationPtr(retryInstanceServerInterval),
 		})
 		if err != nil {
@@ -458,7 +458,7 @@ func resourceScalewayInstanceServerCreate(ctx context.Context, d *schema.Resourc
 			_, err := instanceAPI.WaitForServer(&instance.WaitForServerRequest{
 				Zone:          zone,
 				ServerID:      res.Server.ID,
-				Timeout:       scw.TimeDurationPtr(defaultInstanceServerWaitTimeout),
+				Timeout:       scw.TimeDurationPtr(d.Timeout(schema.TimeoutCreate)),
 				RetryInterval: scw.TimeDurationPtr(retryInstanceServerInterval),
 			})
 			if err != nil {
@@ -485,7 +485,7 @@ func resourceScalewayInstanceServerRead(ctx context.Context, d *schema.ResourceD
 	server, err := instanceAPI.WaitForServer(&instance.WaitForServerRequest{
 		Zone:          zone,
 		ServerID:      ID,
-		Timeout:       scw.TimeDurationPtr(defaultInstanceServerWaitTimeout),
+		Timeout:       scw.TimeDurationPtr(d.Timeout(schema.TimeoutRead)),
 		RetryInterval: scw.TimeDurationPtr(retryInstanceServerInterval),
 	})
 	if err != nil {
@@ -639,7 +639,7 @@ func resourceScalewayInstanceServerUpdate(ctx context.Context, d *schema.Resourc
 	server, err := instanceAPI.WaitForServer(&instance.WaitForServerRequest{
 		Zone:          zone,
 		ServerID:      ID,
-		Timeout:       scw.TimeDurationPtr(defaultInstanceServerWaitTimeout),
+		Timeout:       scw.TimeDurationPtr(d.Timeout(schema.TimeoutUpdate)),
 		RetryInterval: scw.TimeDurationPtr(retryInstanceServerInterval),
 	})
 	if err != nil {
@@ -731,7 +731,7 @@ func resourceScalewayInstanceServerUpdate(ctx context.Context, d *schema.Resourc
 		server, err := instanceAPI.WaitForServer(&instance.WaitForServerRequest{
 			Zone:          zone,
 			ServerID:      ID,
-			Timeout:       scw.TimeDurationPtr(defaultInstanceServerWaitTimeout),
+			Timeout:       scw.TimeDurationPtr(d.Timeout(schema.TimeoutUpdate)),
 			RetryInterval: scw.TimeDurationPtr(retryInstanceServerInterval),
 		})
 
@@ -754,7 +754,7 @@ func resourceScalewayInstanceServerUpdate(ctx context.Context, d *schema.Resourc
 			_, err := instanceAPI.WaitForServer(&instance.WaitForServerRequest{
 				Zone:          zone,
 				ServerID:      ID,
-				Timeout:       scw.TimeDurationPtr(defaultInstanceServerWaitTimeout),
+				Timeout:       scw.TimeDurationPtr(d.Timeout(schema.TimeoutUpdate)),
 				RetryInterval: scw.TimeDurationPtr(retryInstanceServerInterval),
 			})
 			if err != nil {
@@ -766,7 +766,7 @@ func resourceScalewayInstanceServerUpdate(ctx context.Context, d *schema.Resourc
 			_, err := instanceAPI.WaitForServer(&instance.WaitForServerRequest{
 				Zone:          zone,
 				ServerID:      ID,
-				Timeout:       scw.TimeDurationPtr(defaultInstanceServerWaitTimeout),
+				Timeout:       scw.TimeDurationPtr(d.Timeout(schema.TimeoutUpdate)),
 				RetryInterval: scw.TimeDurationPtr(retryInstanceServerInterval),
 			})
 			if err != nil {
@@ -785,7 +785,7 @@ func resourceScalewayInstanceServerUpdate(ctx context.Context, d *schema.Resourc
 			_, err = instanceAPI.WaitForServer(&instance.WaitForServerRequest{
 				Zone:          zone,
 				ServerID:      ID,
-				Timeout:       scw.TimeDurationPtr(defaultInstanceServerWaitTimeout),
+				Timeout:       scw.TimeDurationPtr(d.Timeout(schema.TimeoutUpdate)),
 				RetryInterval: scw.TimeDurationPtr(retryInstanceServerInterval),
 			})
 			if err != nil {
@@ -841,7 +841,7 @@ func resourceScalewayInstanceServerUpdate(ctx context.Context, d *schema.Resourc
 		_, err := instanceAPI.WaitForServer(&instance.WaitForServerRequest{
 			Zone:          zone,
 			ServerID:      ID,
-			Timeout:       scw.TimeDurationPtr(defaultInstanceServerWaitTimeout),
+			Timeout:       scw.TimeDurationPtr(d.Timeout(schema.TimeoutUpdate)),
 			RetryInterval: scw.TimeDurationPtr(retryInstanceServerInterval),
 		})
 		if err != nil {
@@ -872,7 +872,7 @@ func resourceScalewayInstanceServerUpdate(ctx context.Context, d *schema.Resourc
 						_, err := instanceAPI.WaitForServer(&instance.WaitForServerRequest{
 							Zone:          zone,
 							ServerID:      ID,
-							Timeout:       scw.TimeDurationPtr(defaultInstanceServerWaitTimeout),
+							Timeout:       scw.TimeDurationPtr(d.Timeout(schema.TimeoutUpdate)),
 							RetryInterval: scw.TimeDurationPtr(retryInstanceServerInterval),
 						})
 						if err != nil {
@@ -899,7 +899,7 @@ func resourceScalewayInstanceServerUpdate(ctx context.Context, d *schema.Resourc
 					_, err := instanceAPI.WaitForServer(&instance.WaitForServerRequest{
 						Zone:          zone,
 						ServerID:      ID,
-						Timeout:       scw.TimeDurationPtr(defaultInstanceServerWaitTimeout),
+						Timeout:       scw.TimeDurationPtr(d.Timeout(schema.TimeoutUpdate)),
 						RetryInterval: scw.TimeDurationPtr(retryInstanceServerInterval),
 					})
 					if err != nil {
@@ -932,7 +932,7 @@ func resourceScalewayInstanceServerUpdate(ctx context.Context, d *schema.Resourc
 	_, err = instanceAPI.WaitForServer(&instance.WaitForServerRequest{
 		Zone:          zone,
 		ServerID:      ID,
-		Timeout:       scw.TimeDurationPtr(defaultInstanceServerWaitTimeout),
+		Timeout:       scw.TimeDurationPtr(d.Timeout(schema.TimeoutUpdate)),
 		RetryInterval: scw.TimeDurationPtr(retryInstanceServerInterval),
 	})
 	if err != nil {
@@ -947,7 +947,7 @@ func resourceScalewayInstanceServerUpdate(ctx context.Context, d *schema.Resourc
 	_, err = instanceAPI.WaitForServer(&instance.WaitForServerRequest{
 		Zone:          zone,
 		ServerID:      ID,
-		Timeout:       scw.TimeDurationPtr(defaultInstanceServerWaitTimeout),
+		Timeout:       scw.TimeDurationPtr(d.Timeout(schema.TimeoutUpdate)),
 		RetryInterval: scw.TimeDurationPtr(retryInstanceServerInterval),
 	})
 	if err != nil {
@@ -975,7 +975,7 @@ func resourceScalewayInstanceServerDelete(ctx context.Context, d *schema.Resourc
 	_, err = instanceAPI.WaitForServer(&instance.WaitForServerRequest{
 		Zone:          zone,
 		ServerID:      ID,
-		Timeout:       scw.TimeDurationPtr(defaultInstanceServerWaitTimeout),
+		Timeout:       scw.TimeDurationPtr(d.Timeout(schema.TimeoutDelete)),
 		RetryInterval: scw.TimeDurationPtr(retryInstanceServerInterval),
 	})
 	if err != nil {
