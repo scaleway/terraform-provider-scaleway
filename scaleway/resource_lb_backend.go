@@ -259,7 +259,7 @@ func resourceScalewayLbBackendCreate(ctx context.Context, d *schema.ResourceData
 	_, err = lbAPI.WaitForLb(&lb.ZonedAPIWaitForLBRequest{
 		Zone:          zone,
 		LBID:          LbID,
-		Timeout:       scw.TimeDurationPtr(defaultInstanceServerWaitTimeout),
+		Timeout:       scw.TimeDurationPtr(d.Timeout(schema.TimeoutCreate)),
 		RetryInterval: &retryInterval,
 	}, scw.WithContext(ctx))
 	if err != nil {
@@ -325,7 +325,7 @@ func resourceScalewayLbBackendCreate(ctx context.Context, d *schema.ResourceData
 	_, err = lbAPI.WaitForLb(&lb.ZonedAPIWaitForLBRequest{
 		Zone:          zone,
 		LBID:          res.LB.ID,
-		Timeout:       scw.TimeDurationPtr(defaultInstanceServerWaitTimeout),
+		Timeout:       scw.TimeDurationPtr(d.Timeout(schema.TimeoutCreate)),
 		RetryInterval: &retryInterval,
 	}, scw.WithContext(ctx))
 	if err != nil {
@@ -386,7 +386,7 @@ func resourceScalewayLbBackendRead(ctx context.Context, d *schema.ResourceData, 
 	_, err = lbAPI.WaitForLb(&lb.ZonedAPIWaitForLBRequest{
 		Zone:          zone,
 		LBID:          res.LB.ID,
-		Timeout:       scw.TimeDurationPtr(defaultInstanceServerWaitTimeout),
+		Timeout:       scw.TimeDurationPtr(d.Timeout(schema.TimeoutRead)),
 		RetryInterval: &retryInterval,
 	}, scw.WithContext(ctx))
 	if err != nil {
@@ -416,7 +416,7 @@ func resourceScalewayLbBackendUpdate(ctx context.Context, d *schema.ResourceData
 	_, err = lbAPI.WaitForLb(&lb.ZonedAPIWaitForLBRequest{
 		Zone:          zone,
 		LBID:          LbID,
-		Timeout:       scw.TimeDurationPtr(defaultInstanceServerWaitTimeout),
+		Timeout:       scw.TimeDurationPtr(d.Timeout(schema.TimeoutUpdate)),
 		RetryInterval: &retryInterval,
 	}, scw.WithContext(ctx))
 	if err != nil {
@@ -505,7 +505,7 @@ func resourceScalewayLbBackendUpdate(ctx context.Context, d *schema.ResourceData
 	_, err = lbAPI.WaitForLb(&lb.ZonedAPIWaitForLBRequest{
 		Zone:          zone,
 		LBID:          LbID,
-		Timeout:       scw.TimeDurationPtr(defaultInstanceServerWaitTimeout),
+		Timeout:       scw.TimeDurationPtr(d.Timeout(schema.TimeoutUpdate)),
 		RetryInterval: &retryInterval,
 	}, scw.WithContext(ctx))
 	if err != nil {
@@ -534,7 +534,7 @@ func resourceScalewayLbBackendDelete(ctx context.Context, d *schema.ResourceData
 	_, err = lbAPI.WaitForLb(&lb.ZonedAPIWaitForLBRequest{
 		Zone:          zone,
 		LBID:          LbID,
-		Timeout:       scw.TimeDurationPtr(defaultInstanceServerWaitTimeout),
+		Timeout:       scw.TimeDurationPtr(d.Timeout(schema.TimeoutDelete)),
 		RetryInterval: &retryInterval,
 	}, scw.WithContext(ctx))
 	if err != nil {
@@ -557,7 +557,7 @@ func resourceScalewayLbBackendDelete(ctx context.Context, d *schema.ResourceData
 	_, err = lbAPI.WaitForLb(&lb.ZonedAPIWaitForLBRequest{
 		Zone:          zone,
 		LBID:          LbID,
-		Timeout:       scw.TimeDurationPtr(defaultInstanceServerWaitTimeout),
+		Timeout:       scw.TimeDurationPtr(d.Timeout(schema.TimeoutDelete)),
 		RetryInterval: &retryInterval,
 	}, scw.WithContext(ctx))
 	if err != nil {
