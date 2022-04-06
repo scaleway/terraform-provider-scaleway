@@ -449,7 +449,7 @@ func resourceScalewayRdbInstanceUpdate(ctx context.Context, d *schema.ResourceDa
 	if d.HasChange("backup_schedule_retention") {
 		req.BackupScheduleRetention = scw.Uint32Ptr(uint32(d.Get("backup_schedule_retention").(int)))
 	}
-	if d.HasChangeExcept("tags") {
+	if d.HasChange("tags") {
 		req.Tags = scw.StringsPtr(expandStrings(d.Get("tags")))
 	}
 
