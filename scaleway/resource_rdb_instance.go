@@ -73,6 +73,12 @@ func resourceScalewayRdbInstance() *schema.Resource {
 				Computed:    true,
 				Description: "Backup schedule retention in days",
 			},
+			"backup_same_region": {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Computed:    true,
+				Description: "Boolean to store logical backups in the same region as the database instance",
+			},
 			"user_name": {
 				Type:        schema.TypeString,
 				ForceNew:    true,
@@ -315,6 +321,12 @@ func resourceScalewayRdbInstanceCreate(ctx context.Context, d *schema.ResourceDa
 			Region:     region,
 			InstanceID: res.ID,
 		}
+
+		backupSameRegion, backupSameRegionExist := d.GetOk("backup_same_region")
+		if backupSameRegionExist {
+			updateReq.BackupSameRegion = expandBoolPtr(backupSameRegion)
+		}
+
 		updateReq.IsBackupScheduleDisabled = scw.BoolPtr(d.Get("disable_backup").(bool))
 		if backupScheduleFrequency, okFrequency := d.GetOk("backup_schedule_frequency"); okFrequency {
 			updateReq.BackupScheduleFrequency = scw.Uint32Ptr(uint32(backupScheduleFrequency.(int)))
@@ -372,6 +384,7 @@ func resourceScalewayRdbInstanceRead(ctx context.Context, d *schema.ResourceData
 	_ = d.Set("disable_backup", res.BackupSchedule.Disabled)
 	_ = d.Set("backup_schedule_frequency", int(res.BackupSchedule.Frequency))
 	_ = d.Set("backup_schedule_retention", int(res.BackupSchedule.Retention))
+	_ = d.Set("backup_same_region", res.BackupSameRegion)
 	_ = d.Set("user_name", d.Get("user_name").(string)) // user name and
 	_ = d.Set("password", d.Get("password").(string))   // password are immutable
 	_ = d.Set("tags", res.Tags)
@@ -441,6 +454,9 @@ func resourceScalewayRdbInstanceUpdate(ctx context.Context, d *schema.ResourceDa
 	}
 	if d.HasChange("backup_schedule_retention") {
 		req.BackupScheduleRetention = scw.Uint32Ptr(uint32(d.Get("backup_schedule_retention").(int)))
+	}
+	if d.HasChange("backup_same_region") {
+		req.BackupSameRegion = expandBoolPtr(d.Get("backup_same_region"))
 	}
 	if d.HasChange("tags") {
 		req.Tags = scw.StringsPtr(expandStrings(d.Get("tags")))
