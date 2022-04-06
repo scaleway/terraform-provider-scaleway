@@ -67,7 +67,7 @@ func resourceScalewayRdbDatabaseCreate(ctx context.Context, d *schema.ResourceDa
 		return diag.FromErr(err)
 	}
 
-	_, err = waitInstance(ctx, rdbAPI, region, instanceID)
+	_, err = waitInstance(ctx, rdbAPI, region, instanceID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -97,7 +97,7 @@ func resourceScalewayRdbDatabaseCreate(ctx context.Context, d *schema.ResourceDa
 		return diag.FromErr(err)
 	}
 
-	_, err = waitInstance(ctx, rdbAPI, region, instanceID)
+	_, err = waitInstance(ctx, rdbAPI, region, instanceID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -131,7 +131,7 @@ func resourceScalewayRdbDatabaseRead(ctx context.Context, d *schema.ResourceData
 		return diag.FromErr(err)
 	}
 
-	_, err = waitInstance(ctx, rdbAPI, region, instanceID)
+	_, err = waitInstance(ctx, rdbAPI, region, instanceID, d.Timeout(schema.TimeoutRead))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -158,7 +158,7 @@ func resourceScalewayRdbDatabaseDelete(ctx context.Context, d *schema.ResourceDa
 		return diag.FromErr(err)
 	}
 
-	_, err = waitInstance(ctx, rdbAPI, region, instanceID)
+	_, err = waitInstance(ctx, rdbAPI, region, instanceID, d.Timeout(schema.TimeoutDelete))
 	if err != nil {
 		return diag.FromErr(err)
 	}
