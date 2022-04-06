@@ -499,6 +499,7 @@ func TestAccScalewayRdbInstance_BackupSchedule(t *testing.T) {
 						disable_backup            = false
                         backup_schedule_frequency = 24
                         backup_schedule_retention = 7
+						backup_same_region        = true
 						user_name                 = "my_initial_user"
 						password                  = "thiZ_is_v&ry_s3cret"
 						region                    = "nl-ams"
@@ -510,6 +511,7 @@ func TestAccScalewayRdbInstance_BackupSchedule(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "disable_backup", "false"),
 					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "backup_schedule_frequency", "24"),
 					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "backup_schedule_retention", "7"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "backup_same_region", "true"),
 				),
 			},
 		}})

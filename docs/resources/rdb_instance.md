@@ -127,6 +127,8 @@ The following arguments are supported:
 
 - `backup_schedule_retention` - (Optional) Backup schedule retention in days.
 
+- `backup_same_region` - (Optional) Boolean to store logical backups in the same region as the database instance.
+
 - `settings` - Map of engine settings to be set.
 
 - `tags` - (Optional) The tags associated with the Database Instance.
