@@ -107,7 +107,7 @@ func resourceScalewayVPCPublicGatewayCreate(ctx context.Context, d *schema.Resou
 	retryInterval := retryGWTimeout
 	_, err = vpcgwAPI.WaitForGateway(&vpcgw.WaitForGatewayRequest{
 		GatewayID:     res.ID,
-		Timeout:       scw.TimeDurationPtr(defaultVPCGatewayTimeout),
+		Timeout:       scw.TimeDurationPtr(d.Timeout(schema.TimeoutCreate)),
 		RetryInterval: &retryInterval,
 		Zone:          zone,
 	}, scw.WithContext(ctx))
@@ -128,7 +128,7 @@ func resourceScalewayVPCPublicGatewayRead(ctx context.Context, d *schema.Resourc
 	retryInterval := retryGWTimeout
 	gateway, err := vpcgwAPI.WaitForGateway(&vpcgw.WaitForGatewayRequest{
 		GatewayID:     ID,
-		Timeout:       scw.TimeDurationPtr(defaultVPCGatewayTimeout),
+		Timeout:       scw.TimeDurationPtr(d.Timeout(schema.TimeoutRead)),
 		RetryInterval: &retryInterval,
 		Zone:          zone,
 	}, scw.WithContext(ctx))
@@ -158,7 +158,7 @@ func resourceScalewayVPCPublicGatewayUpdate(ctx context.Context, d *schema.Resou
 	retryInterval := retryGWTimeout
 	gateway, err := vpcgwAPI.WaitForGateway(&vpcgw.WaitForGatewayRequest{
 		GatewayID:     ID,
-		Timeout:       scw.TimeDurationPtr(defaultVPCGatewayTimeout),
+		Timeout:       scw.TimeDurationPtr(d.Timeout(schema.TimeoutUpdate)),
 		RetryInterval: &retryInterval,
 		Zone:          zone,
 	}, scw.WithContext(ctx))
@@ -183,7 +183,7 @@ func resourceScalewayVPCPublicGatewayUpdate(ctx context.Context, d *schema.Resou
 
 	_, err = vpcgwAPI.WaitForGateway(&vpcgw.WaitForGatewayRequest{
 		GatewayID:     ID,
-		Timeout:       scw.TimeDurationPtr(defaultVPCGatewayTimeout),
+		Timeout:       scw.TimeDurationPtr(d.Timeout(schema.TimeoutUpdate)),
 		RetryInterval: &retryInterval,
 		Zone:          zone,
 	}, scw.WithContext(ctx))
@@ -203,7 +203,7 @@ func resourceScalewayVPCPublicGatewayDelete(ctx context.Context, d *schema.Resou
 	retryInterval := retryGWTimeout
 	_, err = vpcgwAPI.WaitForGateway(&vpcgw.WaitForGatewayRequest{
 		GatewayID:     ID,
-		Timeout:       scw.TimeDurationPtr(defaultVPCGatewayTimeout),
+		Timeout:       scw.TimeDurationPtr(d.Timeout(schema.TimeoutDelete)),
 		RetryInterval: &retryInterval,
 		Zone:          zone,
 	}, scw.WithContext(ctx))
