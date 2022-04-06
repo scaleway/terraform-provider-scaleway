@@ -36,7 +36,7 @@ The following arguments are supported:
 The `acl_rules` block supports:
 
 - `ip` - (Required) The ip range to whitelist in [CIDR notation](https://en.wikipedia.org/wiki/Classless_Inter-Domain_Routing#CIDR_notation)
-- `description` - (Optional) A simple text describing this rule. Default description: `IP allowed`
+- `description` - (Optional) A text describing this rule. Default description: `IP allowed`
 
 
 ## Attributes Reference
