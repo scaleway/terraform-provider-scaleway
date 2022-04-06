@@ -149,8 +149,8 @@ The following arguments are supported:
 In addition to all arguments above, the following attributes are exported:
 
 - `id` - The ID of the Database Instance.
-- `endpoint_ip` - The IP of the Database Instance.
-- `endpoint_port` - The port of the Database Instance.
+- `endpoint_ip` - (Deprecated) The IP of the Database Instance.
+- `endpoint_port` - (Deprecated) The port of the Database Instance.
 - `read_replicas` - List of read replicas of the database instance.
     - `ip` - IP of the replica.
     - `port` - Port of the replica.

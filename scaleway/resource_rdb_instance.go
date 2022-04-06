@@ -185,6 +185,7 @@ func resourceScalewayRdbInstance() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "Endpoint IP of the database instance",
+				Deprecated:  "Please use the private_network or the load_balancer attribute",
 			},
 			"endpoint_port": {
 				Type:        schema.TypeInt,
@@ -286,8 +287,12 @@ func resourceScalewayRdbInstanceCreate(ctx context.Context, d *schema.ResourceDa
 		DisableBackup: d.Get("disable_backup").(bool),
 		UserName:      d.Get("user_name").(string),
 		Password:      d.Get("password").(string),
-		Tags:          expandStrings(d.Get("tags")),
 		VolumeType:    rdb.VolumeType(d.Get("volume_type").(string)),
+	}
+
+	rawTag, tagExist := d.GetOk("tags")
+	if tagExist {
+		createReq.Tags = expandStrings(rawTag)
 	}
 
 	pn, pnExist := d.GetOk("private_network")
@@ -387,7 +392,9 @@ func resourceScalewayRdbInstanceRead(ctx context.Context, d *schema.ResourceData
 	_ = d.Set("backup_same_region", res.BackupSameRegion)
 	_ = d.Set("user_name", d.Get("user_name").(string)) // user name and
 	_ = d.Set("password", d.Get("password").(string))   // password are immutable
-	_ = d.Set("tags", res.Tags)
+	if len(res.Tags) > 0 {
+		_ = d.Set("tags", flattenSliceString(res.Tags))
+	}
 	if res.Endpoint != nil {
 		_ = d.Set("endpoint_ip", flattenIPPtr(res.Endpoint.IP))
 		_ = d.Set("endpoint_port", int(res.Endpoint.Port))
