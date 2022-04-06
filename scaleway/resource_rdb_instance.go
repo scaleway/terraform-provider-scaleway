@@ -323,7 +323,7 @@ func resourceScalewayRdbInstanceCreate(ctx context.Context, d *schema.ResourceDa
 			updateReq.BackupScheduleRetention = scw.Uint32Ptr(uint32(backupScheduleRetention.(int)))
 		}
 
-		_, err = waitInstance(ctx, rdbAPI, region, res.ID)
+		_, err = waitInstance(ctx, rdbAPI, region, res.ID, d.Timeout(schema.TimeoutCreate))
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -335,7 +335,7 @@ func resourceScalewayRdbInstanceCreate(ctx context.Context, d *schema.ResourceDa
 	}
 	// Configure Instance settings
 	if settings, ok := d.GetOk("settings"); ok {
-		res, err = waitInstance(ctx, rdbAPI, region, res.ID)
+		res, err = waitInstance(ctx, rdbAPI, region, res.ID, d.Timeout(schema.TimeoutCreate))
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -360,7 +360,7 @@ func resourceScalewayRdbInstanceRead(ctx context.Context, d *schema.ResourceData
 	}
 
 	// verify resource is ready
-	res, err := waitInstance(ctx, rdbAPI, region, ID)
+	res, err := waitInstance(ctx, rdbAPI, region, ID, d.Timeout(schema.TimeoutRead))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -446,7 +446,7 @@ func resourceScalewayRdbInstanceUpdate(ctx context.Context, d *schema.ResourceDa
 		req.Tags = scw.StringsPtr(expandStrings(d.Get("tags")))
 	}
 
-	_, err = waitInstance(ctx, rdbAPI, region, ID)
+	_, err = waitInstance(ctx, rdbAPI, region, ID, d.Timeout(schema.TimeoutUpdate))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -457,7 +457,7 @@ func resourceScalewayRdbInstanceUpdate(ctx context.Context, d *schema.ResourceDa
 	}
 	// Change settings
 	if d.HasChange("settings") {
-		_, err = waitInstance(ctx, rdbAPI, region, ID)
+		_, err = waitInstance(ctx, rdbAPI, region, ID, d.Timeout(schema.TimeoutUpdate))
 		if err != nil && !is404Error(err) {
 			return diag.FromErr(err)
 		}
@@ -540,7 +540,7 @@ func resourceScalewayRdbInstanceUpdate(ctx context.Context, d *schema.ResourceDa
 			})
 	}
 	for _, request := range upgradeInstanceRequests {
-		_, err = waitInstance(ctx, rdbAPI, region, ID)
+		_, err = waitInstance(ctx, rdbAPI, region, ID, d.Timeout(schema.TimeoutUpdate))
 		if err != nil && !is404Error(err) {
 			return diag.FromErr(err)
 		}
@@ -550,14 +550,14 @@ func resourceScalewayRdbInstanceUpdate(ctx context.Context, d *schema.ResourceDa
 			return diag.FromErr(err)
 		}
 
-		_, err = waitInstance(ctx, rdbAPI, region, ID)
+		_, err = waitInstance(ctx, rdbAPI, region, ID, d.Timeout(schema.TimeoutUpdate))
 		if err != nil && !is404Error(err) {
 			return diag.FromErr(err)
 		}
 	}
 
 	if d.HasChange("password") {
-		_, err := waitInstance(ctx, rdbAPI, region, ID)
+		_, err := waitInstance(ctx, rdbAPI, region, ID, d.Timeout(schema.TimeoutUpdate))
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -577,7 +577,7 @@ func resourceScalewayRdbInstanceUpdate(ctx context.Context, d *schema.ResourceDa
 
 	if d.HasChanges("private_network") {
 		// retrieve state
-		res, err := waitInstance(ctx, rdbAPI, region, ID)
+		res, err := waitInstance(ctx, rdbAPI, region, ID, d.Timeout(schema.TimeoutUpdate))
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -600,7 +600,7 @@ func resourceScalewayRdbInstanceUpdate(ctx context.Context, d *schema.ResourceDa
 		}
 
 		// retrieve state
-		_, err = waitInstance(ctx, rdbAPI, region, ID)
+		_, err = waitInstance(ctx, rdbAPI, region, ID, d.Timeout(schema.TimeoutUpdate))
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -633,7 +633,7 @@ func resourceScalewayRdbInstanceDelete(ctx context.Context, d *schema.ResourceDa
 	}
 
 	// We first wait in case the instance is in a transient state
-	_, err = waitInstance(ctx, rdbAPI, region, ID)
+	_, err = waitInstance(ctx, rdbAPI, region, ID, d.Timeout(schema.TimeoutDelete))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -648,7 +648,7 @@ func resourceScalewayRdbInstanceDelete(ctx context.Context, d *schema.ResourceDa
 	}
 
 	// Lastly wait in case the instance is in a transient state
-	_, err = waitInstance(ctx, rdbAPI, region, ID)
+	_, err = waitInstance(ctx, rdbAPI, region, ID, d.Timeout(schema.TimeoutDelete))
 	if err != nil && !is404Error(err) {
 		return diag.FromErr(err)
 	}

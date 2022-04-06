@@ -82,6 +82,7 @@ func resourceScalewayRegistryNamespaceRead(ctx context.Context, d *schema.Resour
 	ns, err := api.WaitForNamespace(&registry.WaitForNamespaceRequest{
 		Region:        region,
 		NamespaceID:   id,
+		Timeout:       scw.TimeDurationPtr(d.Timeout(schema.TimeoutRead)),
 		RetryInterval: DefaultWaitRetryInterval,
 	}, scw.WithContext(ctx))
 
@@ -114,6 +115,7 @@ func resourceScalewayRegistryNamespaceUpdate(ctx context.Context, d *schema.Reso
 		Region:        region,
 		NamespaceID:   id,
 		RetryInterval: DefaultWaitRetryInterval,
+		Timeout:       scw.TimeDurationPtr(d.Timeout(schema.TimeoutUpdate)),
 	}, scw.WithContext(ctx))
 
 	if err != nil {
@@ -148,6 +150,7 @@ func resourceScalewayRegistryNamespaceDelete(ctx context.Context, d *schema.Reso
 		Region:        region,
 		NamespaceID:   id,
 		RetryInterval: DefaultWaitRetryInterval,
+		Timeout:       scw.TimeDurationPtr(d.Timeout(schema.TimeoutDelete)),
 	}, scw.WithContext(ctx))
 
 	if err != nil {
