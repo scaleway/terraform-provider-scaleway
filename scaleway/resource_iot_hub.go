@@ -142,7 +142,7 @@ func resourceScalewayIotHubCreate(ctx context.Context, d *schema.ResourceData, m
 		return diag.FromErr(err)
 	}
 
-	err = waitIotHub(iotAPI, region, res.ID, iot.HubStatusReady)
+	err = waitIotHub(iotAPI, region, res.ID, d.Timeout(schema.TimeoutCreate), iot.HubStatusReady)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -183,7 +183,7 @@ func resourceScalewayIotHubCreate(ctx context.Context, d *schema.ResourceData, m
 			return diag.FromErr(err)
 		}
 
-		err = waitIotHub(iotAPI, region, res.ID, iot.HubStatusDisabled)
+		err = waitIotHub(iotAPI, region, res.ID, d.Timeout(schema.TimeoutCreate), iot.HubStatusDisabled)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -262,7 +262,7 @@ func resourceScalewayIotHubUpdate(ctx context.Context, d *schema.ResourceData, m
 			return diag.FromErr(err)
 		}
 
-		err = waitIotHub(iotAPI, region, hubID, iot.HubStatusReady, iot.HubStatusDisabled)
+		err = waitIotHub(iotAPI, region, hubID, d.Timeout(schema.TimeoutUpdate), iot.HubStatusReady, iot.HubStatusDisabled)
 		if err != nil {
 			return diag.FromErr(err)
 		}
