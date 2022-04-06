@@ -2,6 +2,7 @@ package scaleway
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	iot "github.com/scaleway/scaleway-sdk-go/api/iot/v1"
@@ -25,11 +26,12 @@ func iotAPIWithRegionAndID(m interface{}, id string) (*iot.API, scw.Region, stri
 	return iotAPI, region, ID, err
 }
 
-func waitIotHub(iotAPI *iot.API, region scw.Region, hubID string, desiredStates ...iot.HubStatus) error {
+func waitIotHub(iotAPI *iot.API, region scw.Region, hubID string, timeout time.Duration, desiredStates ...iot.HubStatus) error {
 	hub, err := iotAPI.WaitForHub(&iot.WaitForHubRequest{
 		HubID:         hubID,
 		Region:        region,
 		RetryInterval: DefaultWaitRetryInterval,
+		Timeout:       scw.TimeDurationPtr(timeout),
 	})
 	if err != nil {
 		return err
