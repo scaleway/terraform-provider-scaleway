@@ -23,6 +23,9 @@ func resourceScalewayVPCPublicGatewayPATRule() *schema.Resource {
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 		SchemaVersion: 0,
+		Timeouts: &schema.ResourceTimeout{
+			Default: schema.DefaultTimeout(gatewayWaitForTimeout),
+		},
 		Schema: map[string]*schema.Schema{
 			"gateway_id": {
 				Type:         schema.TypeString,
@@ -91,7 +94,7 @@ func resourceScalewayVPCPublicGatewayPATRuleCreate(ctx context.Context, d *schem
 	_, err = vpcgwAPI.WaitForGateway(&vpcgw.WaitForGatewayRequest{
 		GatewayID:     gatewayID,
 		Zone:          zone,
-		Timeout:       scw.TimeDurationPtr(gatewayWaitForTimeout),
+		Timeout:       scw.TimeDurationPtr(d.Timeout(schema.TimeoutCreate)),
 		RetryInterval: &retryInterval,
 	}, scw.WithContext(ctx))
 	if err != nil {
@@ -116,7 +119,7 @@ func resourceScalewayVPCPublicGatewayPATRuleCreate(ctx context.Context, d *schem
 	_, err = vpcgwAPI.WaitForGateway(&vpcgw.WaitForGatewayRequest{
 		GatewayID:     res.GatewayID,
 		Zone:          zone,
-		Timeout:       scw.TimeDurationPtr(gatewayWaitForTimeout),
+		Timeout:       scw.TimeDurationPtr(d.Timeout(schema.TimeoutCreate)),
 		RetryInterval: &retryInterval,
 	}, scw.WithContext(ctx))
 	if err != nil {
@@ -178,7 +181,7 @@ func resourceScalewayVPCPublicGatewayPATRuleUpdate(ctx context.Context, d *schem
 	_, err = vpcgwAPI.WaitForGateway(&vpcgw.WaitForGatewayRequest{
 		GatewayID:     patRules.GatewayID,
 		Zone:          zone,
-		Timeout:       scw.TimeDurationPtr(gatewayWaitForTimeout),
+		Timeout:       scw.TimeDurationPtr(d.Timeout(schema.TimeoutUpdate)),
 		RetryInterval: &retryInterval,
 	}, scw.WithContext(ctx))
 	if err != nil {
@@ -233,7 +236,7 @@ func resourceScalewayVPCPublicGatewayPATRuleDelete(ctx context.Context, d *schem
 	_, err = vpcgwAPI.WaitForGateway(&vpcgw.WaitForGatewayRequest{
 		GatewayID:     patRules.GatewayID,
 		Zone:          zone,
-		Timeout:       scw.TimeDurationPtr(gatewayWaitForTimeout),
+		Timeout:       scw.TimeDurationPtr(d.Timeout(schema.TimeoutDelete)),
 		RetryInterval: &retryInterval,
 	}, scw.WithContext(ctx))
 
@@ -253,7 +256,7 @@ func resourceScalewayVPCPublicGatewayPATRuleDelete(ctx context.Context, d *schem
 	_, err = vpcgwAPI.WaitForGateway(&vpcgw.WaitForGatewayRequest{
 		GatewayID:     patRules.GatewayID,
 		Zone:          zone,
-		Timeout:       scw.TimeDurationPtr(gatewayWaitForTimeout),
+		Timeout:       scw.TimeDurationPtr(d.Timeout(schema.TimeoutDelete)),
 		RetryInterval: &retryInterval,
 	}, scw.WithContext(ctx))
 
