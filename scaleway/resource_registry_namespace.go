@@ -74,11 +74,6 @@ func resourceScalewayRegistryNamespaceCreate(ctx context.Context, d *schema.Reso
 }
 
 func resourceScalewayRegistryNamespaceRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, id, err := registryAPIWithRegionAndID(meta, d.Id())
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
 	ns, err := waitForRegistryNamespace(ctx, d, meta, d.Timeout(schema.TimeoutRead))
 	if err != nil {
 		if is404Error(err) {
@@ -105,11 +100,7 @@ func resourceScalewayRegistryNamespaceUpdate(ctx context.Context, d *schema.Reso
 		return diag.FromErr(err)
 	}
 
-<<<<<<< HEAD
-	_, err = waitForRegistryNamespace(ctx, api, region, id, d.Timeout(schema.TimeoutUpdate))
-=======
-	_, err = waitForRegistryNamespace(ctx, d, meta)
->>>>>>> 46a6a6e7 (Refactor to enable easily the adding of timeout)
+	_, err = waitForRegistryNamespace(ctx, d, meta, d.Timeout(schema.TimeoutUpdate))
 	if err != nil {
 		if is404Error(err) {
 			d.SetId("")
@@ -138,11 +129,7 @@ func resourceScalewayRegistryNamespaceDelete(ctx context.Context, d *schema.Reso
 		return diag.FromErr(err)
 	}
 
-<<<<<<< HEAD
-	_, err = waitForRegistryNamespace(ctx, api, region, id, d.Timeout(schema.TimeoutDelete))
-=======
-	_, err = waitForRegistryNamespace(ctx, d, meta)
->>>>>>> 46a6a6e7 (Refactor to enable easily the adding of timeout)
+	_, err = waitForRegistryNamespace(ctx, d, meta, d.Timeout(schema.TimeoutDelete))
 	if err != nil {
 		if is404Error(err) {
 			d.SetId("")

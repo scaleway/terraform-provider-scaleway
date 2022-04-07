@@ -141,11 +141,7 @@ func resourceScalewayLbCertificateCreate(ctx context.Context, d *schema.Resource
 		return diag.FromErr(errors.New("you need to define either letsencrypt or custom_certificate configuration"))
 	}
 
-<<<<<<< HEAD
-	_, err = waitForLB(ctx, d, meta, d.Timeout(schema.TimeoutCreate))
-=======
-	_, err = waitForLBCertificate(ctx, d, meta)
->>>>>>> 46318573 (fix lb certificate)
+	_, err = waitForLBCertificate(ctx, d, meta, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
 		if is403Error(err) {
 			d.SetId("")
@@ -164,11 +160,7 @@ func resourceScalewayLbCertificateCreate(ctx context.Context, d *schema.Resource
 		return diag.FromErr(err)
 	}
 
-<<<<<<< HEAD
-	_, err = waitForLB(ctx, d, meta, d.Timeout(schema.TimeoutCreate))
-=======
-	_, err = waitForLBCertificate(ctx, d, meta)
->>>>>>> 46318573 (fix lb certificate)
+	_, err = waitForLBCertificate(ctx, d, meta, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
 		if is403Error(err) {
 			d.SetId("")
@@ -198,11 +190,7 @@ func resourceScalewayLbCertificateRead(ctx context.Context, d *schema.ResourceDa
 		return diag.FromErr(fmt.Errorf("certificate with error state"))
 	}
 
-<<<<<<< HEAD
-	_, err = waitForLB(ctx, d, meta, d.Timeout(schema.TimeoutRead))
-=======
-	_, err = waitForLBCertificate(ctx, d, meta)
->>>>>>> 46318573 (fix lb certificate)
+	_, err = waitForLBCertificate(ctx, d, meta, d.Timeout(schema.TimeoutRead))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -250,11 +238,7 @@ func resourceScalewayLbCertificateUpdate(ctx context.Context, d *schema.Resource
 			return diag.FromErr(err)
 		}
 
-<<<<<<< HEAD
-		_, err = waitForLB(ctx, d, meta, d.Timeout(schema.TimeoutUpdate))
-=======
-		_, err = waitForLBCertificate(ctx, d, meta)
->>>>>>> 46318573 (fix lb certificate)
+		_, err = waitForLBCertificate(ctx, d, meta, d.Timeout(schema.TimeoutUpdate))
 		if err != nil {
 			if is403Error(err) {
 				d.SetId("")
@@ -275,15 +259,6 @@ func resourceScalewayLbCertificateDelete(ctx context.Context, d *schema.Resource
 
 	_, err = waitForLBCertificate(ctx, d, meta, d.Timeout(schema.TimeoutDelete))
 	if err != nil {
-		return diag.FromErr(err)
-	}
-
-<<<<<<< HEAD
-	_, err = waitForLB(ctx, d, meta, d.Timeout(schema.TimeoutDelete))
-=======
-	_, err = waitForLBCertificate(ctx, d, meta)
->>>>>>> 46318573 (fix lb certificate)
-	if err != nil {
 		if is403Error(err) {
 			d.SetId("")
 			return nil
@@ -299,11 +274,7 @@ func resourceScalewayLbCertificateDelete(ctx context.Context, d *schema.Resource
 		return diag.FromErr(err)
 	}
 
-<<<<<<< HEAD
-	_, err = waitForLB(ctx, d, meta, d.Timeout(schema.TimeoutDelete))
-=======
-	_, err = waitForLBCertificate(ctx, d, meta)
->>>>>>> 46318573 (fix lb certificate)
+	_, err = waitForLBCertificate(ctx, d, meta, d.Timeout(schema.TimeoutDelete))
 	if err != nil {
 		if is403Error(err) {
 			d.SetId("")

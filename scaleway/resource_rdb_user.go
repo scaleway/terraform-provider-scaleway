@@ -65,15 +65,7 @@ func resourceScalewayRdbUserCreate(ctx context.Context, d *schema.ResourceData, 
 		diag.FromErr(err)
 	}
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-	ins, err := waitForRDBInstance(ctx, rdbAPI, region, instanceID, d.Timeout(schema.TimeoutCreate))
-=======
-	ins, err := waitForRDBInstance(ctx, d, meta)
->>>>>>> 46a6a6e7 (Refactor to enable easily the adding of timeout)
-=======
-	_, err = waitForRDBUser(ctx, d, meta)
->>>>>>> 9b1cc96c (Fix rdbUser)
+	_, err = waitForRDBUser(ctx, d, meta, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -92,15 +84,7 @@ func resourceScalewayRdbUserCreate(ctx context.Context, d *schema.ResourceData, 
 		currentUser, errCreateUser := rdbAPI.CreateUser(createReq, scw.WithContext(ctx))
 		if errCreateUser != nil {
 			if is409Error(errCreateUser) {
-<<<<<<< HEAD
-<<<<<<< HEAD
-				_, errWait := waitForRDBInstance(ctx, rdbAPI, region, ins.ID, d.Timeout(schema.TimeoutCreate))
-=======
-				_, errWait := waitForRDBInstance(ctx, d, meta)
->>>>>>> 46a6a6e7 (Refactor to enable easily the adding of timeout)
-=======
-				_, errWait := waitForRDBUser(ctx, d, meta)
->>>>>>> 9b1cc96c (Fix rdbUser)
+				_, errWait := waitForRDBUser(ctx, d, meta, d.Timeout(schema.TimeoutCreate))
 				if errWait != nil {
 					return resource.NonRetryableError(errWait)
 				}
@@ -128,15 +112,7 @@ func resourceScalewayRdbUserRead(ctx context.Context, d *schema.ResourceData, me
 		return diag.FromErr(err)
 	}
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-	_, err = waitForRDBInstance(ctx, rdbAPI, region, instanceID, d.Timeout(schema.TimeoutRead))
-=======
-	_, err = waitForRDBInstance(ctx, d, meta)
->>>>>>> 46a6a6e7 (Refactor to enable easily the adding of timeout)
-=======
-	_, err = waitForRDBUser(ctx, d, meta)
->>>>>>> 9b1cc96c (Fix rdbUser)
+	_, err = waitForRDBUser(ctx, d, meta, d.Timeout(schema.TimeoutRead))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -173,15 +149,7 @@ func resourceScalewayRdbUserUpdate(ctx context.Context, d *schema.ResourceData, 
 		return diag.FromErr(err)
 	}
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-	_, err = waitForRDBInstance(ctx, rdbAPI, region, instanceID, d.Timeout(schema.TimeoutUpdate))
-=======
-	_, err = waitForRDBInstance(ctx, d, meta)
->>>>>>> 46a6a6e7 (Refactor to enable easily the adding of timeout)
-=======
-	_, err = waitForRDBUser(ctx, d, meta)
->>>>>>> 9b1cc96c (Fix rdbUser)
+	_, err = waitForRDBUser(ctx, d, meta, d.Timeout(schema.TimeoutUpdate))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -215,15 +183,7 @@ func resourceScalewayRdbUserDelete(ctx context.Context, d *schema.ResourceData, 
 		return diag.FromErr(err)
 	}
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-	_, err = waitForRDBInstance(ctx, rdbAPI, region, instanceID, d.Timeout(schema.TimeoutDelete))
-=======
-	_, err = waitForRDBInstance(ctx, d, meta)
->>>>>>> 46a6a6e7 (Refactor to enable easily the adding of timeout)
-=======
-	_, err = waitForRDBUser(ctx, d, meta)
->>>>>>> 9b1cc96c (Fix rdbUser)
+	_, err = waitForRDBUser(ctx, d, meta, d.Timeout(schema.TimeoutDelete))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -236,15 +196,7 @@ func resourceScalewayRdbUserDelete(ctx context.Context, d *schema.ResourceData, 
 		}, scw.WithContext(ctx))
 		if errDeleteUser != nil {
 			if is409Error(errDeleteUser) {
-<<<<<<< HEAD
-<<<<<<< HEAD
-				_, errWait := waitForRDBInstance(ctx, rdbAPI, region, instanceID, d.Timeout(schema.TimeoutDelete))
-=======
-				_, errWait := waitForRDBInstance(ctx, d, meta)
->>>>>>> 46a6a6e7 (Refactor to enable easily the adding of timeout)
-=======
-				_, errWait := waitForRDBUser(ctx, d, meta)
->>>>>>> 9b1cc96c (Fix rdbUser)
+				_, errWait := waitForRDBUser(ctx, d, meta, d.Timeout(schema.TimeoutDelete))
 				if errWait != nil {
 					return resource.NonRetryableError(errWait)
 				}

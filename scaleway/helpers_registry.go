@@ -42,14 +42,13 @@ func registryAPIWithRegionAndID(m interface{}, id string) (*registry.API, scw.Re
 	return api, region, id, nil
 }
 
-func waitForRegistryNamespace(ctx context.Context, d schema.ResourceData, meta interface{}, timeout time.Duration) (*registry.Namespace, error) {
+func waitForRegistryNamespace(ctx context.Context, d *schema.ResourceData, meta interface{}, timeout time.Duration) (*registry.Namespace, error) {
 	api, region, id, err := registryAPIWithRegionAndID(meta, d.Id())
 	if err != nil {
 		return nil, err
 	}
 
 	retryInterval := defaultRegistryNamespaceRetryInterval
-
 	if DefaultWaitRetryInterval != nil {
 		retryInterval = *DefaultWaitRetryInterval
 	}
@@ -58,11 +57,7 @@ func waitForRegistryNamespace(ctx context.Context, d schema.ResourceData, meta i
 		Region:        region,
 		NamespaceID:   id,
 		RetryInterval: &retryInterval,
-<<<<<<< HEAD
 		Timeout:       scw.TimeDurationPtr(timeout),
-=======
-		Timeout:       scw.TimeDurationPtr(defaultRegistryNamespaceTimeout),
->>>>>>> 0d6f27de (Add explicit timeout)
 	}, scw.WithContext(ctx))
 
 	return ns, err

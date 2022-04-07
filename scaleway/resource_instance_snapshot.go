@@ -155,11 +155,7 @@ func resourceScalewayInstanceSnapshotDelete(ctx context.Context, d *schema.Resou
 		return diag.FromErr(err)
 	}
 
-<<<<<<< HEAD
 	_, err = waitForInstanceSnapshot(ctx, d, meta, d.Timeout(schema.TimeoutDelete))
-=======
-	_, err = waitForInstanceSnapshot(ctx, d, meta)
->>>>>>> 46a6a6e7 (Refactor to enable easily the adding of timeout)
 	if err != nil {
 		return diag.FromErr(err)
 	}

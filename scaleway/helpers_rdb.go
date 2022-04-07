@@ -75,36 +75,26 @@ func expandInstanceSettings(i interface{}) []*rdb.InstanceSetting {
 	return res
 }
 
-<<<<<<< HEAD
-func waitForRDBInstance(ctx context.Context, api *rdb.API, region scw.Region, id string, timeout time.Duration) (*rdb.Instance, error) {
-=======
-func waitForRDBInstance(ctx context.Context, d *schema.ResourceData, meta interface{}) (*rdb.Instance, error) {
+func waitForRDBInstance(ctx context.Context, d *schema.ResourceData, meta interface{}, timeout time.Duration) (*rdb.Instance, error) {
 	api, region, instanceID, err := rdbAPIWithRegionAndID(meta, d.Id())
 	if err != nil {
 		return nil, err
 	}
 
->>>>>>> 46a6a6e7 (Refactor to enable easily the adding of timeout)
 	retryInterval := defaultWaitRDBRetryInterval
-
 	if DefaultWaitRetryInterval != nil {
 		retryInterval = *DefaultWaitRetryInterval
 	}
 
 	return api.WaitForInstance(&rdb.WaitForInstanceRequest{
 		Region:        region,
-<<<<<<< HEAD
-		InstanceID:    id,
 		Timeout:       scw.TimeDurationPtr(timeout),
-=======
 		InstanceID:    instanceID,
-		Timeout:       scw.TimeDurationPtr(defaultInstanceServerWaitTimeout * 3), // upgrade takes some time
->>>>>>> 46a6a6e7 (Refactor to enable easily the adding of timeout)
 		RetryInterval: &retryInterval,
 	}, scw.WithContext(ctx))
 }
 
-func waitForRDBUser(ctx context.Context, d *schema.ResourceData, meta interface{}) (*rdb.User, error) {
+func waitForRDBUser(ctx context.Context, d *schema.ResourceData, meta interface{}, timeout time.Duration) (*rdb.User, error) {
 	api, region, err := rdbAPIWithRegion(d, meta)
 	if err != nil {
 		return nil, err
@@ -132,7 +122,7 @@ func waitForRDBUser(ctx context.Context, d *schema.ResourceData, meta interface{
 	return nil, err
 }
 
-func waitForRDBPrivilege(ctx context.Context, d *schema.ResourceData, meta interface{}) (*rdb.Privilege, error) {
+func waitForRDBPrivilege(ctx context.Context, d *schema.ResourceData, meta interface{}, timeout time.Duration) (*rdb.Privilege, error) {
 	api, region, err := rdbAPIWithRegion(d, meta)
 	if err != nil {
 		return nil, err
@@ -160,7 +150,7 @@ func waitForRDBPrivilege(ctx context.Context, d *schema.ResourceData, meta inter
 	return nil, err
 }
 
-func waitForRDBDatabase(ctx context.Context, d *schema.ResourceData, meta interface{}) (*rdb.Database, error) {
+func waitForRDBDatabase(ctx context.Context, d *schema.ResourceData, meta interface{}, timeout time.Duration) (*rdb.Database, error) {
 	region, instanceID, databaseName, err := resourceScalewayRdbDatabaseParseID(d.Id())
 	if err != nil {
 		return nil, err
@@ -172,7 +162,6 @@ func waitForRDBDatabase(ctx context.Context, d *schema.ResourceData, meta interf
 	}
 
 	retryInterval := defaultWaitRDBRetryInterval
-
 	if DefaultWaitRetryInterval != nil {
 		retryInterval = *DefaultWaitRetryInterval
 	}
@@ -180,7 +169,7 @@ func waitForRDBDatabase(ctx context.Context, d *schema.ResourceData, meta interf
 	_, err = api.WaitForInstance(&rdb.WaitForInstanceRequest{
 		Region:        region,
 		InstanceID:    instanceID,
-		Timeout:       scw.TimeDurationPtr(defaultInstanceServerWaitTimeout * 3), // upgrade takes some time
+		Timeout:       scw.TimeDurationPtr(timeout),
 		RetryInterval: &retryInterval,
 	}, scw.WithContext(ctx))
 	if err != nil {
@@ -192,7 +181,7 @@ func waitForRDBDatabase(ctx context.Context, d *schema.ResourceData, meta interf
 	return database, err
 }
 
-func waitForRDBACL(ctx context.Context, d *schema.ResourceData, meta interface{}) (interface{}, error) {
+func waitForRDBACL(ctx context.Context, d *schema.ResourceData, meta interface{}, timeout time.Duration) (interface{}, error) {
 	api, region, err := rdbAPIWithRegion(d, meta)
 	if err != nil {
 		return nil, err

@@ -65,15 +65,7 @@ func resourceScalewayRdbACLCreate(ctx context.Context, d *schema.ResourceData, m
 		return diag.FromErr(err)
 	}
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-	_, err = waitForRDBInstance(ctx, rdbAPI, region, expandID(instanceID), d.Timeout(schema.TimeoutCreate))
-=======
-	_, err = waitForRDBInstance(ctx, d, meta)
->>>>>>> 46a6a6e7 (Refactor to enable easily the adding of timeout)
-=======
-	_, err = waitForRDBACL(ctx, d, meta)
->>>>>>> 31f8aa84 (Fix)
+	_, err = waitForRDBACL(ctx, d, meta, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -104,15 +96,7 @@ func resourceScalewayRdbACLRead(ctx context.Context, d *schema.ResourceData, met
 		return diag.FromErr(err)
 	}
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-	_, err = waitForRDBInstance(ctx, rdbAPI, region, instanceID, d.Timeout(schema.TimeoutRead))
-=======
-	_, err = waitForRDBInstance(ctx, d, meta)
->>>>>>> 46a6a6e7 (Refactor to enable easily the adding of timeout)
-=======
-	_, err = waitForRDBACL(ctx, d, meta)
->>>>>>> 31f8aa84 (Fix)
+	_, err = waitForRDBACL(ctx, d, meta, d.Timeout(schema.TimeoutRead))
 	if err != nil && !is404Error(err) {
 		return diag.FromErr(err)
 	}
@@ -144,29 +128,14 @@ func resourceScalewayRdbACLUpdate(ctx context.Context, d *schema.ResourceData, m
 		return diag.FromErr(err)
 	}
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-	_, err = waitForRDBInstance(ctx, rdbAPI, region, instanceID, d.Timeout(schema.TimeoutUpdate))
-=======
-	_, err = waitForRDBInstance(ctx, d, meta)
->>>>>>> 46a6a6e7 (Refactor to enable easily the adding of timeout)
-=======
-	_, err = waitForRDBACL(ctx, d, meta)
->>>>>>> 31f8aa84 (Fix)
+	_, err = waitForRDBACL(ctx, d, meta, d.Timeout(schema.TimeoutUpdate))
 	if err != nil && !is404Error(err) {
 		return diag.FromErr(err)
 	}
 
 	if d.HasChange("acl_rules") {
-<<<<<<< HEAD
-<<<<<<< HEAD
-		_, err := waitForRDBInstance(ctx, rdbAPI, region, instanceID, d.Timeout(schema.TimeoutUpdate))
-=======
-		_, err := waitForRDBInstance(ctx, d, meta)
->>>>>>> 46a6a6e7 (Refactor to enable easily the adding of timeout)
-=======
-		_, err := waitForRDBACL(ctx, d, meta)
->>>>>>> 31f8aa84 (Fix)
+		_, err := waitForRDBACL(ctx, d, meta, d.Timeout(schema.TimeoutUpdate))
+
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -204,15 +173,7 @@ func resourceScalewayRdbACLDelete(ctx context.Context, d *schema.ResourceData, m
 		aclRuleIPs = append(aclRuleIPs, acl.IP.String())
 	}
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-	_, err = waitForRDBInstance(ctx, rdbAPI, region, instanceID, d.Timeout(schema.TimeoutDelete))
-=======
-	_, err = waitForRDBInstance(ctx, d, meta)
->>>>>>> 46a6a6e7 (Refactor to enable easily the adding of timeout)
-=======
-	_, err = waitForRDBACL(ctx, d, meta)
->>>>>>> 31f8aa84 (Fix)
+	_, err = waitForRDBACL(ctx, d, meta, d.Timeout(schema.TimeoutDelete))
 	if err != nil && !is404Error(err) {
 		return diag.FromErr(err)
 	}

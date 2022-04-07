@@ -100,12 +100,8 @@ func resourceScalewayVPCPublicGatewayCreate(ctx context.Context, d *schema.Resou
 
 	d.SetId(newZonedIDString(zone, res.ID))
 
-<<<<<<< HEAD
 	// check err waiting process
-	_, err = waitForVPCPublicGateway(ctx, vpcgwAPI, res.ID, zone, d.Timeout(schema.TimeoutCreate))
-=======
-	_, err = waitForVPCPublicGateway(ctx, d, meta)
->>>>>>> 46a6a6e7 (Refactor to enable easily the adding of timeout)
+	_, err = waitForVPCPublicGateway(ctx, d, meta, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -114,16 +110,7 @@ func resourceScalewayVPCPublicGatewayCreate(ctx context.Context, d *schema.Resou
 }
 
 func resourceScalewayVPCPublicGatewayRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-<<<<<<< HEAD
-	vpcgwAPI, zone, ID, err := vpcgwAPIWithZoneAndID(meta, d.Id())
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	gateway, err := waitForVPCPublicGateway(ctx, vpcgwAPI, ID, zone, d.Timeout(schema.TimeoutRead))
-=======
-	gateway, err := waitForVPCPublicGateway(ctx, d, meta)
->>>>>>> 46a6a6e7 (Refactor to enable easily the adding of timeout)
+	gateway, err := waitForVPCPublicGateway(ctx, d, meta, d.Timeout(schema.TimeoutRead))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -147,11 +134,7 @@ func resourceScalewayVPCPublicGatewayUpdate(ctx context.Context, d *schema.Resou
 		return diag.FromErr(err)
 	}
 
-<<<<<<< HEAD
-	gateway, err := waitForVPCPublicGateway(ctx, vpcgwAPI, ID, zone, d.Timeout(schema.TimeoutUpdate))
-=======
-	gateway, err := waitForVPCPublicGateway(ctx, d, meta)
->>>>>>> 46a6a6e7 (Refactor to enable easily the adding of timeout)
+	gateway, err := waitForVPCPublicGateway(ctx, d, meta, d.Timeout(schema.TimeoutUpdate))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -171,11 +154,7 @@ func resourceScalewayVPCPublicGatewayUpdate(ctx context.Context, d *schema.Resou
 		}
 	}
 
-<<<<<<< HEAD
-	_, err = waitForVPCPublicGateway(ctx, vpcgwAPI, ID, zone, d.Timeout(schema.TimeoutUpdate))
-=======
-	_, err = waitForVPCPublicGateway(ctx, d, meta)
->>>>>>> 46a6a6e7 (Refactor to enable easily the adding of timeout)
+	_, err = waitForVPCPublicGateway(ctx, d, meta, d.Timeout(schema.TimeoutUpdate))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -189,11 +168,7 @@ func resourceScalewayVPCPublicGatewayDelete(ctx context.Context, d *schema.Resou
 		return diag.FromErr(err)
 	}
 
-<<<<<<< HEAD
-	_, err = waitForVPCPublicGateway(ctx, vpcgwAPI, ID, zone, d.Timeout(schema.TimeoutDelete))
-=======
-	_, err = waitForVPCPublicGateway(ctx, d, meta)
->>>>>>> 46a6a6e7 (Refactor to enable easily the adding of timeout)
+	_, err = waitForVPCPublicGateway(ctx, d, meta, d.Timeout(schema.TimeoutDelete))
 	if err != nil {
 		return diag.FromErr(err)
 	}

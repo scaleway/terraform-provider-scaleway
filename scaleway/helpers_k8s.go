@@ -75,15 +75,11 @@ func k8sGetLatestVersionFromMinor(ctx context.Context, k8sAPI *k8s.API, region s
 	return "", fmt.Errorf("no available upstream version found for %s", version)
 }
 
-<<<<<<< HEAD
-func waitK8SCluster(ctx context.Context, k8sAPI *k8s.API, region scw.Region, clusterID string, timeout time.Duration) (*k8s.Cluster, error) {
-=======
-func waitK8SCluster(ctx context.Context, d *schema.ResourceData, meta interface{}) (*k8s.Cluster, error) {
+func waitK8SCluster(ctx context.Context, d *schema.ResourceData, meta interface{}, timeout time.Duration) (*k8s.Cluster, error) {
 	api, region, clusterID, err := k8sAPIWithRegionAndID(meta, d.Id())
 	if err != nil {
 		return nil, err
 	}
->>>>>>> 46a6a6e7 (Refactor to enable easily the adding of timeout)
 
 	retryInterval := defaultK8SRetryInterval
 
@@ -101,18 +97,13 @@ func waitK8SCluster(ctx context.Context, d *schema.ResourceData, meta interface{
 	return cluster, err
 }
 
-<<<<<<< HEAD
-func waitK8SClusterPool(ctx context.Context, k8sAPI *k8s.API, region scw.Region, clusterID string, timeout time.Duration) (*k8s.Cluster, error) {
-=======
-func waitK8SClusterPool(ctx context.Context, d *schema.ResourceData, meta interface{}) (*k8s.Cluster, error) {
+func waitK8SClusterPool(ctx context.Context, d *schema.ResourceData, meta interface{}, timeout time.Duration) (*k8s.Cluster, error) {
 	api, region, clusterID, err := k8sAPIWithRegionAndID(meta, d.Id())
 	if err != nil {
 		return nil, err
 	}
 
->>>>>>> 46a6a6e7 (Refactor to enable easily the adding of timeout)
 	retryInterval := defaultK8SRetryInterval
-
 	if DefaultWaitRetryInterval != nil {
 		retryInterval = *DefaultWaitRetryInterval
 	}
@@ -125,18 +116,13 @@ func waitK8SClusterPool(ctx context.Context, d *schema.ResourceData, meta interf
 	}, scw.WithContext(ctx))
 }
 
-<<<<<<< HEAD
-func waitK8SClusterDeleted(ctx context.Context, k8sAPI *k8s.API, region scw.Region, clusterID string, timeout time.Duration) error {
-=======
-func waitK8SClusterDeleted(ctx context.Context, d *schema.ResourceData, meta interface{}) error {
+func waitK8SClusterDeleted(ctx context.Context, d *schema.ResourceData, meta interface{}, timeout time.Duration) error {
 	api, region, clusterID, err := k8sAPIWithRegionAndID(meta, d.Id())
 	if err != nil {
 		return err
 	}
 
->>>>>>> 46a6a6e7 (Refactor to enable easily the adding of timeout)
 	retryInterval := defaultK8SRetryInterval
-
 	if DefaultWaitRetryInterval != nil {
 		retryInterval = *DefaultWaitRetryInterval
 	}
@@ -158,18 +144,13 @@ func waitK8SClusterDeleted(ctx context.Context, d *schema.ResourceData, meta int
 	return fmt.Errorf("cluster %s has state %s, wants %s", clusterID, cluster.Status, k8s.ClusterStatusDeleted)
 }
 
-<<<<<<< HEAD
-func waitK8SPoolReady(ctx context.Context, k8sAPI *k8s.API, region scw.Region, poolID string, timeout time.Duration) error {
-=======
-func waitK8SPoolReady(ctx context.Context, d *schema.ResourceData, meta interface{}) (*k8s.Pool, error) {
+func waitK8SPoolReady(ctx context.Context, d *schema.ResourceData, meta interface{}, timeout time.Duration) (*k8s.Pool, error) {
 	api, region, poolID, err := k8sAPIWithRegionAndID(meta, d.Id())
 	if err != nil {
 		return nil, err
 	}
 
->>>>>>> 46a6a6e7 (Refactor to enable easily the adding of timeout)
 	retryInterval := defaultK8SRetryInterval
-
 	if DefaultWaitRetryInterval != nil {
 		retryInterval = *DefaultWaitRetryInterval
 	}

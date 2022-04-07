@@ -15,7 +15,6 @@ import (
 )
 
 const (
-	lbWaitForTimeout   = 10 * time.Minute
 	defaultLbLbTimeout = 10 * time.Minute
 	retryLbIPInterval  = 5 * time.Second
 )
@@ -445,7 +444,6 @@ func waitForLB(ctx context.Context, d *schema.ResourceData, meta interface{}, ti
 		return nil, err
 	}
 
-
 	retryInterval := defaultWaitLBRetryInterval
 	if DefaultWaitRetryInterval != nil {
 		retryInterval = *DefaultWaitRetryInterval
@@ -461,7 +459,6 @@ func waitForLB(ctx context.Context, d *schema.ResourceData, meta interface{}, ti
 	return loadBalancer, err
 }
 
-<<<<<<< HEAD
 func waitForLBCertificate(ctx context.Context, d *schema.ResourceData, meta interface{}, timeout time.Duration) (*lb.Certificate, error) {
 	lbAPI, _, err := lbAPIWithZone(d, meta)
 	if err != nil {
@@ -469,92 +466,106 @@ func waitForLBCertificate(ctx context.Context, d *schema.ResourceData, meta inte
 	}
 	// parse lb_id. It will be forced to a zoned lb
 	zone, LbID, err := parseZonedID(d.Get("lb_id").(string))
-=======
-func waitForLBBackend(ctx context.Context, d *schema.ResourceData, meta interface{}) (*lb.LB, error) {
-	api, zone, _, err := lbAPIWithZoneAndID(meta, d.Id())
-	if err != nil {
-		return nil, err
-	}
-
-	_, LbID, err := parseZonedID(d.Get("lb_id").(string))
->>>>>>> 46a6a6e7 (Refactor to enable easily the adding of timeout)
 	if err != nil {
 		return nil, err
 	}
 
 	retryInterval := defaultWaitLBRetryInterval
-
 	if DefaultWaitRetryInterval != nil {
 		retryInterval = *DefaultWaitRetryInterval
 	}
 
-<<<<<<< HEAD
 	certificate, err := lbAPI.WaitForLBCertificate(&lb.ZonedAPIWaitForLBCertificateRequest{
 		CertID:        LbID,
-		Zone:          zone,
 		Timeout:       scw.TimeDurationPtr(timeout),
-=======
-	loadBalancer, err := api.WaitForLb(&lb.ZonedAPIWaitForLBRequest{
-		LBID:          LbID,
 		Zone:          zone,
-		Timeout:       scw.TimeDurationPtr(lbWaitForTimeout),
-		RetryInterval: &retryInterval,
-	}, scw.WithContext(ctx))
-
-	return loadBalancer, err
-}
-
-func waitForLBFrontend(ctx context.Context, d *schema.ResourceData, meta interface{}) (*lb.LB, error) {
-	api, zone, _, err := lbAPIWithZoneAndID(meta, d.Id())
-	if err != nil {
-		return nil, err
-	}
-
-	_, LbID, err := parseZonedID(d.Get("lb_id").(string))
-	if err != nil {
-		return nil, err
-	}
-
-	retryInterval := defaultWaitLBRetryInterval
-
-	if DefaultWaitRetryInterval != nil {
-		retryInterval = *DefaultWaitRetryInterval
-	}
-
-	loadBalancer, err := api.WaitForLb(&lb.ZonedAPIWaitForLBRequest{
-		LBID:          LbID,
-		Zone:          zone,
-		Timeout:       scw.TimeDurationPtr(lbWaitForTimeout),
-		RetryInterval: &retryInterval,
-	}, scw.WithContext(ctx))
-
-	return loadBalancer, err
-}
-
-func waitForLBCertificate(ctx context.Context, d *schema.ResourceData, meta interface{}) (*lb.Certificate, error) {
-	api, zone, ID, err := lbAPIWithZoneAndID(meta, d.Id())
-	if err != nil {
-		return nil, err
-	}
-
-	retryInterval := defaultWaitLBRetryInterval
-
-	if DefaultWaitRetryInterval != nil {
-		retryInterval = *DefaultWaitRetryInterval
-	}
-
-	certificate, err := api.WaitForLBCertificate(&lb.ZonedAPIWaitForLBCertificateRequest{
-		CertID:        ID,
-		Zone:          zone,
-		Timeout:       scw.TimeDurationPtr(defaultLbLbTimeout),
->>>>>>> 46a6a6e7 (Refactor to enable easily the adding of timeout)
 		RetryInterval: &retryInterval,
 	}, scw.WithContext(ctx))
 
 	return certificate, err
 }
 
-<<<<<<< HEAD
+func waitForLBIP(ctx context.Context, d *schema.ResourceData, meta interface{}, timeout time.Duration) (*lb.LB, error) {
+	api, zone, _, err := lbAPIWithZoneAndID(meta, d.Id())
+	if err != nil {
+		return nil, err
+	}
+
+	_, LbID, err := parseZonedID(d.Get("lb_id").(string))
+	if err != nil {
+		return nil, err
+	}
+
+	retryInterval := defaultWaitLBRetryInterval
+
+	if DefaultWaitRetryInterval != nil {
+		retryInterval = *DefaultWaitRetryInterval
+	}
+
+	loadBalancer, err := api.WaitForLb(&lb.ZonedAPIWaitForLBRequest{
+		LBID:          LbID,
+		Zone:          zone,
+		Timeout:       scw.TimeDurationPtr(timeout),
+		RetryInterval: &retryInterval,
+	}, scw.WithContext(ctx))
+
+	return loadBalancer, err
+}
+
+func waitForLBBackend(ctx context.Context, d *schema.ResourceData, meta interface{}, timeout time.Duration) (*lb.LB, error) {
+	api, zone, _, err := lbAPIWithZoneAndID(meta, d.Id())
+	if err != nil {
+		return nil, err
+	}
+
+	_, LbID, err := parseZonedID(d.Get("lb_id").(string))
+	if err != nil {
+		return nil, err
+	}
+
+	retryInterval := defaultWaitLBRetryInterval
+
+	if DefaultWaitRetryInterval != nil {
+		retryInterval = *DefaultWaitRetryInterval
+	}
+
+	loadBalancer, err := api.WaitForLb(&lb.ZonedAPIWaitForLBRequest{
+		LBID:          LbID,
+		Zone:          zone,
+		Timeout:       scw.TimeDurationPtr(timeout),
+		RetryInterval: &retryInterval,
+	}, scw.WithContext(ctx))
+
+	return loadBalancer, err
+}
+
+func waitForLBFrontend(ctx context.Context, d *schema.ResourceData, meta interface{}, timeout time.Duration) (*lb.LB, error) {
+	api, zone, _, err := lbAPIWithZoneAndID(meta, d.Id())
+	if err != nil {
+		return nil, err
+	}
+
+	_, LbID, err := parseZonedID(d.Get("lb_id").(string))
+	if err != nil {
+		return nil, err
+	}
+
+	retryInterval := defaultWaitLBRetryInterval
+
+	if DefaultWaitRetryInterval != nil {
+		retryInterval = *DefaultWaitRetryInterval
+	}
+
+	loadBalancer, err := api.WaitForLb(&lb.ZonedAPIWaitForLBRequest{
+		LBID:          LbID,
+		Zone:          zone,
+		Timeout:       scw.TimeDurationPtr(timeout),
+		RetryInterval: &retryInterval,
+	}, scw.WithContext(ctx))
+
+	return loadBalancer, err
+}
+
 func waitForLbInstances(ctx context.Context, d *schema.ResourceData, meta interface{}, timeout time.Duration) (*lb.LB, error) {
 	lbAPI, _, err := lbAPIWithZone(d, meta)
 	if err != nil {
@@ -562,36 +573,25 @@ func waitForLbInstances(ctx context.Context, d *schema.ResourceData, meta interf
 	}
 	// parse lb_id. It will be forced to a zoned lb
 	zone, LbID, err := parseZonedID(d.Get("lb_id").(string))
-=======
-func waitForLbInstances(ctx context.Context, d *schema.ResourceData, meta interface{}) (*lb.LB, error) {
-	api, zone, ID, err := lbAPIWithZoneAndID(meta, d.Id())
->>>>>>> 46a6a6e7 (Refactor to enable easily the adding of timeout)
 	if err != nil {
 		return nil, err
 	}
 
 	retryInterval := defaultWaitLBRetryInterval
-
 	if DefaultWaitRetryInterval != nil {
 		retryInterval = *DefaultWaitRetryInterval
 	}
 
-	loadBalancer, err := api.WaitForLbInstances(&lb.ZonedAPIWaitForLBInstancesRequest{
+	loadBalancer, err := lbAPI.WaitForLbInstances(&lb.ZonedAPIWaitForLBInstancesRequest{
 		Zone:          zone,
-<<<<<<< HEAD
 		LBID:          LbID,
 		Timeout:       scw.TimeDurationPtr(timeout),
-=======
-		LBID:          ID,
-		Timeout:       scw.TimeDurationPtr(defaultInstanceServerWaitTimeout),
->>>>>>> 46a6a6e7 (Refactor to enable easily the adding of timeout)
 		RetryInterval: &retryInterval,
 	}, scw.WithContext(ctx))
 
 	return loadBalancer, err
 }
 
-<<<<<<< HEAD
 func waitForLBPN(ctx context.Context, d *schema.ResourceData, meta interface{}, timeout time.Duration) ([]*lb.PrivateNetwork, error) {
 	lbAPI, _, err := lbAPIWithZone(d, meta)
 	if err != nil {
@@ -599,21 +599,16 @@ func waitForLBPN(ctx context.Context, d *schema.ResourceData, meta interface{}, 
 	}
 	// parse lb_id. It will be forced to a zoned lb
 	zone, LbID, err := parseZonedID(d.Get("lb_id").(string))
-=======
-func waitForLBPN(ctx context.Context, d *schema.ResourceData, meta interface{}) ([]*lb.PrivateNetwork, error) {
-	api, zone, ID, err := lbAPIWithZoneAndID(meta, d.Id())
->>>>>>> 46a6a6e7 (Refactor to enable easily the adding of timeout)
 	if err != nil {
 		return nil, err
 	}
 
 	retryInterval := defaultWaitLBRetryInterval
-
 	if DefaultWaitRetryInterval != nil {
 		retryInterval = *DefaultWaitRetryInterval
 	}
 
-	privateNetworks, err := api.WaitForLBPN(&lb.ZonedAPIWaitForLBPNRequest{
+	privateNetworks, err := lbAPI.WaitForLBPN(&lb.ZonedAPIWaitForLBPNRequest{
 		Zone:          zone,
 		LBID:          LbID,
 		Timeout:       scw.TimeDurationPtr(timeout),

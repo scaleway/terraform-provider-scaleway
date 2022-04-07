@@ -67,15 +67,7 @@ func resourceScalewayRdbPrivilegeCreate(ctx context.Context, d *schema.ResourceD
 		return diag.FromErr(err)
 	}
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-	_, err = waitForRDBInstance(ctx, rdbAPI, region, instanceID, d.Timeout(schema.TimeoutCreate))
-=======
-	_, err = waitForRDBInstance(ctx, d, meta)
->>>>>>> 46a6a6e7 (Refactor to enable easily the adding of timeout)
-=======
-	_, err = waitForRDBPrivilege(ctx, d, meta)
->>>>>>> ecd01210 (update rdb privileges)
+	_, err = waitForRDBPrivilege(ctx, d, meta, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -94,15 +86,7 @@ func resourceScalewayRdbPrivilegeCreate(ctx context.Context, d *schema.ResourceD
 		_, errSetPrivilege := rdbAPI.SetPrivilege(createReq, scw.WithContext(ctx))
 		if errSetPrivilege != nil {
 			if is409Error(errSetPrivilege) {
-<<<<<<< HEAD
-<<<<<<< HEAD
-				_, errWait := waitForRDBInstance(ctx, rdbAPI, region, instanceID, d.Timeout(schema.TimeoutCreate))
-=======
-				_, errWait := waitForRDBInstance(ctx, d, meta)
->>>>>>> 46a6a6e7 (Refactor to enable easily the adding of timeout)
-=======
-				_, errWait := waitForRDBPrivilege(ctx, d, meta)
->>>>>>> ecd01210 (update rdb privileges)
+				_, errWait := waitForRDBPrivilege(ctx, d, meta, d.Timeout(schema.TimeoutCreate))
 				if errWait != nil {
 					return resource.NonRetryableError(errWait)
 				}
@@ -116,15 +100,7 @@ func resourceScalewayRdbPrivilegeCreate(ctx context.Context, d *schema.ResourceD
 		return diag.FromErr(err)
 	}
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-	_, err = waitForRDBInstance(ctx, rdbAPI, region, instanceID, d.Timeout(schema.TimeoutCreate))
-=======
-	_, err = waitForRDBInstance(ctx, d, meta)
->>>>>>> 46a6a6e7 (Refactor to enable easily the adding of timeout)
-=======
-	_, err = waitForRDBPrivilege(ctx, d, meta)
->>>>>>> ecd01210 (update rdb privileges)
+	_, err = waitForRDBPrivilege(ctx, d, meta, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -143,15 +119,7 @@ func resourceScalewayRdbPrivilegeRead(ctx context.Context, d *schema.ResourceDat
 	dbName, _ := d.Get("database_name").(string)
 	userName, _ := d.Get("user_name").(string)
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-	_, err = waitForRDBInstance(ctx, rdbAPI, region, instanceID, d.Timeout(schema.TimeoutRead))
-=======
-	_, err = waitForRDBInstance(ctx, d, meta)
->>>>>>> 46a6a6e7 (Refactor to enable easily the adding of timeout)
-=======
-	_, err = waitForRDBPrivilege(ctx, d, meta)
->>>>>>> ecd01210 (update rdb privileges)
+	_, err = waitForRDBPrivilege(ctx, d, meta, d.Timeout(schema.TimeoutRead))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -204,15 +172,7 @@ func resourceScalewayRdbPrivilegeUpdate(ctx context.Context, d *schema.ResourceD
 		return diag.FromErr(err)
 	}
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-	_, err = waitForRDBInstance(ctx, rdbAPI, region, instanceID, d.Timeout(schema.TimeoutUpdate))
-=======
-	_, err = waitForRDBInstance(ctx, d, meta)
->>>>>>> 46a6a6e7 (Refactor to enable easily the adding of timeout)
-=======
-	_, err = waitForRDBPrivilege(ctx, d, meta)
->>>>>>> ecd01210 (update rdb privileges)
+	_, err = waitForRDBPrivilege(ctx, d, meta, d.Timeout(schema.TimeoutUpdate))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -249,15 +209,7 @@ func resourceScalewayRdbPrivilegeUpdate(ctx context.Context, d *schema.ResourceD
 		_, errSet := rdbAPI.SetPrivilege(updateReq, scw.WithContext(ctx))
 		if errSet != nil {
 			if is409Error(errSet) {
-<<<<<<< HEAD
-<<<<<<< HEAD
-				_, errWait := waitForRDBInstance(ctx, rdbAPI, region, instanceID, d.Timeout(schema.TimeoutUpdate))
-=======
-				_, errWait := waitForRDBInstance(ctx, d, meta)
->>>>>>> 46a6a6e7 (Refactor to enable easily the adding of timeout)
-=======
-				_, errWait := waitForRDBPrivilege(ctx, d, meta)
->>>>>>> ecd01210 (update rdb privileges)
+				_, errWait := waitForRDBPrivilege(ctx, d, meta, d.Timeout(schema.TimeoutUpdate))
 				if errWait != nil {
 					return resource.NonRetryableError(errWait)
 				}
@@ -271,15 +223,7 @@ func resourceScalewayRdbPrivilegeUpdate(ctx context.Context, d *schema.ResourceD
 		return diag.FromErr(err)
 	}
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-	_, err = waitForRDBInstance(ctx, rdbAPI, region, instanceID, d.Timeout(schema.TimeoutUpdate))
-=======
-	_, err = waitForRDBInstance(ctx, d, meta)
->>>>>>> 46a6a6e7 (Refactor to enable easily the adding of timeout)
-=======
-	_, err = waitForRDBPrivilege(ctx, d, meta)
->>>>>>> ecd01210 (update rdb privileges)
+	_, err = waitForRDBPrivilege(ctx, d, meta, d.Timeout(schema.TimeoutUpdate))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -295,15 +239,7 @@ func resourceScalewayRdbPrivilegeDelete(ctx context.Context, d *schema.ResourceD
 		return diag.FromErr(err)
 	}
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-	_, err = waitForRDBInstance(ctx, rdbAPI, region, instanceID, d.Timeout(schema.TimeoutDelete))
-=======
-	_, err = waitForRDBInstance(ctx, d, meta)
->>>>>>> 46a6a6e7 (Refactor to enable easily the adding of timeout)
-=======
-	_, err = waitForRDBPrivilege(ctx, d, meta)
->>>>>>> ecd01210 (update rdb privileges)
+	_, err = waitForRDBPrivilege(ctx, d, meta, d.Timeout(schema.TimeoutDelete))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -359,15 +295,7 @@ func resourceScalewayRdbPrivilegeDelete(ctx context.Context, d *schema.ResourceD
 		_, errSet := rdbAPI.SetPrivilege(updateReq, scw.WithContext(ctx))
 		if errSet != nil {
 			if is409Error(errSet) {
-<<<<<<< HEAD
-<<<<<<< HEAD
-				_, errWait := waitForRDBInstance(ctx, rdbAPI, region, instanceID, d.Timeout(schema.TimeoutDelete))
-=======
-				_, errWait := waitForRDBInstance(ctx, d, meta)
->>>>>>> 46a6a6e7 (Refactor to enable easily the adding of timeout)
-=======
-				_, errWait := waitForRDBPrivilege(ctx, d, meta)
->>>>>>> ecd01210 (update rdb privileges)
+				_, errWait := waitForRDBPrivilege(ctx, d, meta, d.Timeout(schema.TimeoutDelete))
 				if errWait != nil {
 					return resource.NonRetryableError(errWait)
 				}
@@ -381,15 +309,7 @@ func resourceScalewayRdbPrivilegeDelete(ctx context.Context, d *schema.ResourceD
 		return diag.FromErr(err)
 	}
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-	_, err = waitForRDBInstance(ctx, rdbAPI, region, instanceID, d.Timeout(schema.TimeoutDelete))
-=======
-	_, err = waitForRDBInstance(ctx, d, meta)
->>>>>>> 46a6a6e7 (Refactor to enable easily the adding of timeout)
-=======
-	_, err = waitForRDBPrivilege(ctx, d, meta)
->>>>>>> ecd01210 (update rdb privileges)
+	_, err = waitForRDBPrivilege(ctx, d, meta, d.Timeout(schema.TimeoutDelete))
 	if err != nil {
 		return diag.FromErr(err)
 	}

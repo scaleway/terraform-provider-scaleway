@@ -24,7 +24,7 @@ func resourceScalewayVPCPublicGatewayPATRule() *schema.Resource {
 		},
 		SchemaVersion: 0,
 		Timeouts: &schema.ResourceTimeout{
-			Default: schema.DefaultTimeout(gatewayWaitForTimeout),
+			Default: schema.DefaultTimeout(defaultVPCGatewayTimeout),
 		},
 		Schema: map[string]*schema.Schema{
 			"gateway_id": {
@@ -89,16 +89,7 @@ func resourceScalewayVPCPublicGatewayPATRuleCreate(ctx context.Context, d *schem
 	}
 
 	gatewayID := expandZonedID(d.Get("gateway_id").(string)).ID
-<<<<<<< HEAD
-<<<<<<< HEAD
-	//check gateway is in stable state.
-	_, err = waitForVPCPublicGateway(ctx, vpcgwAPI, gatewayID, zone, d.Timeout(schema.TimeoutCreate))
-=======
-	_, err = waitForVPCPublicGateway(ctx, d, meta)
->>>>>>> 46a6a6e7 (Refactor to enable easily the adding of timeout)
-=======
-	_, err = waitForVPCPublicGatewayPATRule(ctx, d, meta)
->>>>>>> ae637140 (pat rule)
+	_, err = waitForVPCPublicGatewayPATRule(ctx, d, meta, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -117,18 +108,9 @@ func resourceScalewayVPCPublicGatewayPATRuleCreate(ctx context.Context, d *schem
 		return diag.FromErr(err)
 	}
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-	//check gateway is in stable state.
-	_, err = waitForVPCPublicGateway(ctx, vpcgwAPI, res.GatewayID, zone, d.Timeout(schema.TimeoutCreate))
-=======
-	_, err = waitForVPCPublicGateway(ctx, d, meta)
->>>>>>> 46a6a6e7 (Refactor to enable easily the adding of timeout)
-=======
 	d.SetId(newZonedIDString(zone, res.ID))
 
-	_, err = waitForVPCGatewayPATRule(ctx, d, meta)
->>>>>>> 31f8aa84 (Fix)
+	_, err = waitForVPCGatewayPATRule(ctx, d, meta, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -181,16 +163,8 @@ func resourceScalewayVPCPublicGatewayPATRuleUpdate(ctx context.Context, d *schem
 		return diag.FromErr(err)
 	}
 
-<<<<<<< HEAD
-<<<<<<< HEAD
 	//check gateway is in stable state.
-	_, err = waitForVPCPublicGateway(ctx, vpcgwAPI, patRules.GatewayID, zone, d.Timeout(schema.TimeoutUpdate))
-=======
-	_, err = waitForVPCPublicGateway(ctx, d, meta)
->>>>>>> 46a6a6e7 (Refactor to enable easily the adding of timeout)
-=======
-	_, err = waitForVPCPublicGatewayPATRule(ctx, d, meta)
->>>>>>> ae637140 (pat rule)
+	_, err = waitForVPCPublicGatewayPATRule(ctx, d, meta, d.Timeout(schema.TimeoutUpdate))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -238,17 +212,8 @@ func resourceScalewayVPCPublicGatewayPATRuleDelete(ctx context.Context, d *schem
 		return diag.FromErr(err)
 	}
 
-<<<<<<< HEAD
-<<<<<<< HEAD
 	//check gateway is in stable state.
-	_, err = waitForVPCPublicGateway(ctx, vpcgwAPI, patRules.GatewayID, zone, d.Timeout(schema.TimeoutDelete))
-=======
-	_, err = waitForVPCPublicGateway(ctx, d, meta)
->>>>>>> 46a6a6e7 (Refactor to enable easily the adding of timeout)
-=======
-	_, err = waitForVPCPublicGatewayPATRule(ctx, d, meta)
->>>>>>> ae637140 (pat rule)
-
+	_, err = waitForVPCPublicGatewayPATRule(ctx, d, meta, d.Timeout(schema.TimeoutDelete))
 	if err != nil && !is404Error(err) {
 		return diag.FromErr(err)
 	}
@@ -262,15 +227,7 @@ func resourceScalewayVPCPublicGatewayPATRuleDelete(ctx context.Context, d *schem
 		return diag.FromErr(err)
 	}
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-	_, err = waitForVPCPublicGateway(ctx, vpcgwAPI, patRules.GatewayID, zone, d.Timeout(schema.TimeoutDelete))
-=======
-	_, err = waitForVPCPublicGateway(ctx, d, meta)
->>>>>>> 46a6a6e7 (Refactor to enable easily the adding of timeout)
-=======
-	_, err = waitForVPCPublicGatewayPATRule(ctx, d, meta)
->>>>>>> ae637140 (pat rule)
+	_, err = waitForVPCPublicGatewayPATRule(ctx, d, meta, d.Timeout(schema.TimeoutDelete))
 	if err != nil && !is404Error(err) {
 		return diag.FromErr(err)
 	}

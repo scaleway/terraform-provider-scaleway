@@ -67,15 +67,7 @@ func resourceScalewayRdbDatabaseCreate(ctx context.Context, d *schema.ResourceDa
 		return diag.FromErr(err)
 	}
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-	_, err = waitForRDBInstance(ctx, rdbAPI, region, instanceID, d.Timeout(schema.TimeoutCreate))
-=======
-	_, err = waitForRDBInstance(ctx, d, meta)
->>>>>>> 46a6a6e7 (Refactor to enable easily the adding of timeout)
-=======
-	_, err = waitForRDBDatabase(ctx, d, meta)
->>>>>>> 9656b33f (Fix)
+	_, err = waitForRDBDatabase(ctx, d, meta, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -105,15 +97,7 @@ func resourceScalewayRdbDatabaseCreate(ctx context.Context, d *schema.ResourceDa
 		return diag.FromErr(err)
 	}
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-	_, err = waitForRDBInstance(ctx, rdbAPI, region, instanceID, d.Timeout(schema.TimeoutCreate))
-=======
-	_, err = waitForRDBInstance(ctx, d, meta)
->>>>>>> 46a6a6e7 (Refactor to enable easily the adding of timeout)
-=======
-	_, err = waitForRDBDatabase(ctx, d, meta)
->>>>>>> 9656b33f (Fix)
+	_, err = waitForRDBDatabase(ctx, d, meta, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -146,20 +130,7 @@ func resourceScalewayRdbDatabaseRead(ctx context.Context, d *schema.ResourceData
 		return diag.FromErr(err)
 	}
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-	_, err = waitForRDBInstance(ctx, rdbAPI, region, instanceID, d.Timeout(schema.TimeoutRead))
-=======
-	_, err = waitForRDBInstance(ctx, d, meta)
->>>>>>> 46a6a6e7 (Refactor to enable easily the adding of timeout)
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	database, err := getDatabase(ctx, rdbAPI, region, instanceID, databaseName)
-=======
-	database, err := waitForRDBDatabase(ctx, d, meta)
->>>>>>> 31f8aa84 (Fix)
+	database, err := waitForRDBDatabase(ctx, d, meta, d.Timeout(schema.TimeoutRead))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -181,15 +152,7 @@ func resourceScalewayRdbDatabaseDelete(ctx context.Context, d *schema.ResourceDa
 		return diag.FromErr(err)
 	}
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-	_, err = waitForRDBInstance(ctx, rdbAPI, region, instanceID, d.Timeout(schema.TimeoutDelete))
-=======
-	_, err = waitForRDBInstance(ctx, d, meta)
->>>>>>> 46a6a6e7 (Refactor to enable easily the adding of timeout)
-=======
-	_, err = waitForRDBDatabase(ctx, d, meta)
->>>>>>> 31f8aa84 (Fix)
+	_, err = waitForRDBDatabase(ctx, d, meta, d.Timeout(schema.TimeoutDelete))
 	if err != nil {
 		return diag.FromErr(err)
 	}

@@ -250,11 +250,7 @@ func resourceScalewayBaremetalServerUpdate(ctx context.Context, d *schema.Resour
 			return diag.FromErr(err)
 		}
 
-<<<<<<< HEAD
 		_, err = waitForBaremetalServerInstall(ctx, d, meta, d.Timeout(schema.TimeoutUpdate))
-=======
-		_, err = waitForBaremetalServerInstall(ctx, d, meta)
->>>>>>> 46a6a6e7 (Refactor to enable easily the adding of timeout)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -281,12 +277,7 @@ func resourceScalewayBaremetalServerDelete(ctx context.Context, d *schema.Resour
 		return diag.FromErr(err)
 	}
 
-<<<<<<< HEAD
 	_, err = waitForBaremetalServer(ctx, d, meta, d.Timeout(schema.TimeoutDelete))
-=======
-	_, err = waitForBaremetalServer(ctx, d, meta)
-
->>>>>>> 46a6a6e7 (Refactor to enable easily the adding of timeout)
 	if err != nil && !is404Error(err) {
 		return diag.FromErr(err)
 	}

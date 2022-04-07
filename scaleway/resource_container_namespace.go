@@ -86,11 +86,6 @@ func resourceScalewayContainerNamespaceCreate(ctx context.Context, d *schema.Res
 }
 
 func resourceScalewayContainerNamespaceRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, id, err := containerAPIWithRegionAndID(meta, d.Id())
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
 	ns, err := waitForContainerNamespace(ctx, d, meta)
 	if err != nil {
 		if is404Error(err) {

@@ -47,11 +47,7 @@ func waitIotHub(ctx context.Context, d *schema.ResourceData, meta interface{}, t
 		HubID:         hubID,
 		Region:        region,
 		RetryInterval: &retryInterval,
-<<<<<<< HEAD
 		Timeout:       scw.TimeDurationPtr(timeout),
-=======
-		Timeout:       scw.TimeDurationPtr(defaultIoTHubTimeout),
->>>>>>> 0d6f27de (Add explicit timeout)
 	}, scw.WithContext(ctx))
 
 	return hub, err

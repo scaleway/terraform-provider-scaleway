@@ -418,7 +418,6 @@ func waitForInstanceSnapshot(ctx context.Context, d *schema.ResourceData, meta i
 		Zone:          zone,
 		Timeout:       scw.TimeDurationPtr(timeout),
 		RetryInterval: &retryInterval,
-		Timeout:       scw.TimeDurationPtr(defaultInstanceSnapshotWaitTimeout),
 	}, scw.WithContext(ctx))
 
 	return snapshot, err
@@ -440,7 +439,6 @@ func waitForInstanceVolume(ctx context.Context, d *schema.ResourceData, meta int
 		Zone:          zone,
 		Timeout:       scw.TimeDurationPtr(timeout),
 		RetryInterval: &retryInterval,
-		Timeout:       scw.TimeDurationPtr(defaultInstanceVolumeDeleteTimeout),
 	}, scw.WithContext(ctx))
 	return volume, err
 }

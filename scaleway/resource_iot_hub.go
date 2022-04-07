@@ -19,6 +19,9 @@ func resourceScalewayIotHub() *schema.Resource {
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
+		Timeouts: &schema.ResourceTimeout{
+			Default: schema.DefaultTimeout(defaultIoTHubTimeout),
+		},
 		SchemaVersion: 0,
 		Schema: map[string]*schema.Schema{
 			"enabled": {
@@ -143,11 +146,7 @@ func resourceScalewayIotHubCreate(ctx context.Context, d *schema.ResourceData, m
 	}
 	d.SetId(newRegionalIDString(region, res.ID))
 
-<<<<<<< HEAD
-	_, err = waitIotHub(ctx, iotAPI, region, res.ID, d.Timeout(schema.TimeoutCreate))
-=======
-	_, err = waitIotHub(ctx, d, meta)
->>>>>>> 46a6a6e7 (Refactor to enable easily the adding of timeout)
+	_, err = waitIotHub(ctx, d, meta, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -188,11 +187,7 @@ func resourceScalewayIotHubCreate(ctx context.Context, d *schema.ResourceData, m
 			return diag.FromErr(err)
 		}
 
-<<<<<<< HEAD
-		_, err = waitIotHub(ctx, iotAPI, region, res.ID, d.Timeout(schema.TimeoutCreate))
-=======
-		_, err = waitIotHub(ctx, d, meta)
->>>>>>> 46a6a6e7 (Refactor to enable easily the adding of timeout)
+		_, err = waitIotHub(ctx, d, meta, d.Timeout(schema.TimeoutCreate))
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -269,11 +264,7 @@ func resourceScalewayIotHubUpdate(ctx context.Context, d *schema.ResourceData, m
 			return diag.FromErr(err)
 		}
 
-<<<<<<< HEAD
-		_, err = waitIotHub(ctx, iotAPI, region, hubID, d.Timeout(schema.TimeoutUpdate))
-=======
-		_, err = waitIotHub(ctx, d, meta)
->>>>>>> 46a6a6e7 (Refactor to enable easily the adding of timeout)
+		_, err = waitIotHub(ctx, d, meta, d.Timeout(schema.TimeoutUpdate))
 		if err != nil {
 			return diag.FromErr(err)
 		}

@@ -32,9 +32,6 @@ func testSweepLB(_ string) error {
 		}
 
 		for _, l := range listLBs.LBs {
-<<<<<<< HEAD
-			_, err = waitForLbInstances(context.Background(), lbAPI, zone, l.ID, 0)
-=======
 			retryInterval := defaultWaitLBRetryInterval
 
 			if DefaultWaitRetryInterval != nil {
@@ -47,7 +44,6 @@ func testSweepLB(_ string) error {
 				Timeout:       scw.TimeDurationPtr(defaultInstanceServerWaitTimeout),
 				RetryInterval: &retryInterval,
 			}, scw.WithContext(context.Background()))
->>>>>>> 46a6a6e7 (Refactor to enable easily the adding of timeout)
 			if err != nil {
 				return fmt.Errorf("error waiting for lb in sweeper: %s", err)
 			}

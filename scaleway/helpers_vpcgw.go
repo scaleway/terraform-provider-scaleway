@@ -38,13 +38,11 @@ func vpcgwAPIWithZoneAndID(m interface{}, id string) (*vpcgw.API, scw.Zone, stri
 	return vpcgwAPI, zone, ID, nil
 }
 
-<<<<<<< HEAD
 func waitForVPCPublicGateway(ctx context.Context, d *schema.ResourceData, meta interface{}, timeout time.Duration) (*vpcgw.Gateway, error) {
-	api, zone, err := vpcgwAPIWithZone(d, meta)
-=======
-func waitForVPCPublicGateway(ctx context.Context, d *schema.ResourceData, meta interface{}) (*vpcgw.Gateway, error) {
 	api, zone, ID, err := vpcgwAPIWithZoneAndID(meta, d.Id())
->>>>>>> 31f8aa84 (Fix)
+	if err != nil {
+		return nil, err
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -55,13 +53,8 @@ func waitForVPCPublicGateway(ctx context.Context, d *schema.ResourceData, meta i
 	}
 
 	gateway, err := api.WaitForGateway(&vpcgw.WaitForGatewayRequest{
-<<<<<<< HEAD
-		GatewayID:     gatewayID,
 		Timeout:       scw.TimeDurationPtr(timeout),
-=======
 		GatewayID:     ID,
-		Timeout:       scw.TimeDurationPtr(defaultVPCGatewayTimeout),
->>>>>>> 31f8aa84 (Fix)
 		RetryInterval: &retryInterval,
 		Zone:          zone,
 	}, scw.WithContext(ctx))
@@ -69,7 +62,7 @@ func waitForVPCPublicGateway(ctx context.Context, d *schema.ResourceData, meta i
 	return gateway, err
 }
 
-func waitForVPCPublicGatewayPATRule(ctx context.Context, d *schema.ResourceData, meta interface{}) (*vpcgw.Gateway, error) {
+func waitForVPCPublicGatewayPATRule(ctx context.Context, d *schema.ResourceData, meta interface{}, timeout time.Duration) (*vpcgw.Gateway, error) {
 	api, zone, err := vpcgwAPIWithZone(d, meta)
 	if err != nil {
 		return nil, err
@@ -91,7 +84,7 @@ func waitForVPCPublicGatewayPATRule(ctx context.Context, d *schema.ResourceData,
 	return gateway, err
 }
 
-func waitForVPCGatewayNetwork(ctx context.Context, d *schema.ResourceData, meta interface{}) (*vpcgw.GatewayNetwork, error) {
+func waitForVPCGatewayNetwork(ctx context.Context, d *schema.ResourceData, meta interface{}, timeout time.Duration) (*vpcgw.GatewayNetwork, error) {
 	api, zone, ID, err := vpcgwAPIWithZoneAndID(meta, d.Id())
 	if err != nil {
 		return nil, err
@@ -128,7 +121,7 @@ func waitForVPCGatewayNetwork(ctx context.Context, d *schema.ResourceData, meta 
 	return gwNetwork, err
 }
 
-func waitForVPCGatewayPATRule(ctx context.Context, d *schema.ResourceData, meta interface{}) (*vpcgw.GatewayNetwork, error) {
+func waitForVPCGatewayPATRule(ctx context.Context, d *schema.ResourceData, meta interface{}, timeout time.Duration) (*vpcgw.GatewayNetwork, error) {
 	api, zone, ID, err := vpcgwAPIWithZoneAndID(meta, d.Id())
 	if err != nil {
 		return nil, err

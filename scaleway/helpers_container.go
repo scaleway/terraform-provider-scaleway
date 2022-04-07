@@ -38,7 +38,6 @@ func containerAPIWithRegionAndID(m interface{}, id string) (*container.API, scw.
 	return api, region, id, nil
 }
 
-<<<<<<< HEAD
 func setCreateContainerRequest(d *schema.ResourceData, region scw.Region) (*container.CreateContainerRequest, error) {
 	// required
 	nameRaw := d.Get("name")
@@ -101,17 +100,13 @@ func setCreateContainerRequest(d *schema.ResourceData, region scw.Region) (*cont
 	return req, nil
 }
 
-func waitForContainerNamespace(ctx context.Context, api *container.API, id string, region scw.Region) (*container.Namespace, error) {
-=======
 func waitForContainerNamespace(ctx context.Context, d *schema.ResourceData, meta interface{}) (*container.Namespace, error) {
 	api, region, id, err := containerAPIWithRegionAndID(meta, d.Id())
 	if err != nil {
 		return nil, err
 	}
 
->>>>>>> 46a6a6e7 (Refactor to enable easily the adding of timeout)
 	retryInterval := defaultContainerRetryInterval
-
 	if DefaultWaitRetryInterval != nil {
 		retryInterval = *DefaultWaitRetryInterval
 	}

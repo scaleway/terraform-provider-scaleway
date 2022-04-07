@@ -149,7 +149,6 @@ func testAccCheckScalewayLbIPDestroy(tt *TestTools) resource.TestCheckFunc {
 
 			lbID, lbExist := rs.Primary.Attributes["lb_id"]
 			if lbExist && len(lbID) > 0 {
-
 				retryInterval := defaultWaitLBRetryInterval
 
 				if DefaultWaitRetryInterval != nil {

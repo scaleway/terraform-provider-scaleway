@@ -146,12 +146,8 @@ func resourceScalewayLbCreate(ctx context.Context, d *schema.ResourceData, meta 
 
 	d.SetId(newZonedIDString(zone, res.ID))
 
-<<<<<<< HEAD
 	// check err waiting process
 	_, err = waitForLB(ctx, d, meta, d.Timeout(schema.TimeoutCreate))
-=======
-	_, err = waitForLB(ctx, d, meta)
->>>>>>> 46a6a6e7 (Refactor to enable easily the adding of timeout)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -170,11 +166,7 @@ func resourceScalewayLbCreate(ctx context.Context, d *schema.ResourceData, meta 
 				return diag.FromErr(err)
 			}
 		}
-<<<<<<< HEAD
 		_, err = waitForLB(ctx, d, meta, d.Timeout(schema.TimeoutCreate))
-=======
-		_, err = waitForLB(ctx, d, meta)
->>>>>>> 46a6a6e7 (Refactor to enable easily the adding of timeout)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -189,11 +181,7 @@ func resourceScalewayLbRead(ctx context.Context, d *schema.ResourceData, meta in
 		return diag.FromErr(err)
 	}
 
-<<<<<<< HEAD
 	res, err := waitForLbInstances(ctx, d, meta, d.Timeout(schema.TimeoutRead))
-=======
-	res, err := waitForLbInstances(ctx, d, meta)
->>>>>>> 46a6a6e7 (Refactor to enable easily the adding of timeout)
 	if err != nil {
 		if is404Error(err) || is403Error(err) {
 			d.SetId("")
@@ -250,11 +238,7 @@ func resourceScalewayLbUpdate(ctx context.Context, d *schema.ResourceData, meta 
 			Tags: expandStrings(d.Get("tags")),
 		}
 
-<<<<<<< HEAD
 		_, err = waitForLB(ctx, d, meta, d.Timeout(schema.TimeoutUpdate))
-=======
-		_, err = waitForLB(ctx, d, meta)
->>>>>>> 46a6a6e7 (Refactor to enable easily the adding of timeout)
 		if err != nil && !is404Error(err) {
 			return diag.FromErr(err)
 		}
@@ -269,11 +253,7 @@ func resourceScalewayLbUpdate(ctx context.Context, d *schema.ResourceData, meta 
 	////
 	if d.HasChangesExcept("private_network") {
 		// check that pns are in a stable state
-<<<<<<< HEAD
 		pns, err := waitForLBPN(ctx, d, meta, d.Timeout(schema.TimeoutUpdate))
-=======
-		pns, err := waitForLBPN(ctx, d, meta)
->>>>>>> 46a6a6e7 (Refactor to enable easily the adding of timeout)
 		if err != nil && !is404Error(err) {
 			return diag.FromErr(err)
 		}
@@ -310,11 +290,7 @@ func resourceScalewayLbUpdate(ctx context.Context, d *schema.ResourceData, meta 
 					continue
 				}
 				// check load balancer state
-<<<<<<< HEAD
 				_, err = waitForLB(ctx, d, meta, d.Timeout(schema.TimeoutUpdate))
-=======
-				_, err = waitForLB(ctx, d, meta)
->>>>>>> 46a6a6e7 (Refactor to enable easily the adding of timeout)
 				if err != nil && !is404Error(err) {
 					return diag.FromErr(err)
 				}
@@ -325,11 +301,7 @@ func resourceScalewayLbUpdate(ctx context.Context, d *schema.ResourceData, meta 
 				}
 			}
 
-<<<<<<< HEAD
 			_, err = waitForLBPN(ctx, d, meta, d.Timeout(schema.TimeoutUpdate))
-=======
-			_, err = waitForLBPN(ctx, d, meta)
->>>>>>> 46a6a6e7 (Refactor to enable easily the adding of timeout)
 			if err != nil && !is404Error(err) {
 				return diag.FromErr(err)
 			}
@@ -346,11 +318,7 @@ func resourceScalewayLbDelete(ctx context.Context, d *schema.ResourceData, meta 
 	}
 
 	// check if current lb is on stable state
-<<<<<<< HEAD
 	currentLB, err := waitForLbInstances(ctx, d, meta, d.Timeout(schema.TimeoutDelete))
-=======
-	currentLB, err := waitForLbInstances(ctx, d, meta)
->>>>>>> 46a6a6e7 (Refactor to enable easily the adding of timeout)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -376,11 +344,7 @@ func resourceScalewayLbDelete(ctx context.Context, d *schema.ResourceData, meta 
 			}
 		}
 
-<<<<<<< HEAD
 		_, err = waitForLbInstances(ctx, d, meta, d.Timeout(schema.TimeoutDelete))
-=======
-		_, err = waitForLbInstances(ctx, d, meta)
->>>>>>> 46a6a6e7 (Refactor to enable easily the adding of timeout)
 		if err != nil && !is404Error(err) {
 			return diag.FromErr(err)
 		}
@@ -395,11 +359,7 @@ func resourceScalewayLbDelete(ctx context.Context, d *schema.ResourceData, meta 
 		return diag.FromErr(err)
 	}
 
-<<<<<<< HEAD
 	_, err = waitForLbInstances(ctx, d, meta, d.Timeout(schema.TimeoutDelete))
-=======
-	_, err = waitForLbInstances(ctx, d, meta)
->>>>>>> 46a6a6e7 (Refactor to enable easily the adding of timeout)
 	if err != nil && !is404Error(err) {
 		return diag.FromErr(err)
 	}
