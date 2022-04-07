@@ -38,7 +38,7 @@ func TestAccScalewayInstanceSecurityGroup_Basic(t *testing.T) {
 					resource "scaleway_instance_security_group" "base" {
 						name = "sg-name"
 						inbound_default_policy = "drop"
-						
+						tags = ["terraform-test"]
 						inbound_rule {
 							action = "accept"
 							port = 80
@@ -56,6 +56,8 @@ func TestAccScalewayInstanceSecurityGroup_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_instance_security_group.base", "name", "sg-name"),
 					resource.TestCheckResourceAttr("scaleway_instance_security_group.base", "inbound_default_policy", "drop"),
 					resource.TestCheckResourceAttr("scaleway_instance_security_group.base", "outbound_default_policy", "accept"),
+					resource.TestCheckResourceAttr("scaleway_instance_security_group.base", "tags.#", "1"),
+					resource.TestCheckResourceAttr("scaleway_instance_security_group.base", "tags.0", "terraform-test"),
 					resource.TestCheckResourceAttr("scaleway_instance_security_group.base", "inbound_rule.#", "2"),
 					resource.TestCheckResourceAttr("scaleway_instance_security_group.base", "inbound_rule.0.action", "accept"),
 					resource.TestCheckResourceAttr("scaleway_instance_security_group.base", "inbound_rule.0.protocol", "TCP"),
@@ -88,7 +90,8 @@ func TestAccScalewayInstanceSecurityGroup_Basic(t *testing.T) {
 					resource "scaleway_instance_security_group" "base" {
 						name = "sg-name"
 						inbound_default_policy = "accept"
-			
+						tags = ["terraform-test", "second-tag"]
+
 						inbound_rule {
 							action = "drop"
 							port = 80
@@ -113,6 +116,9 @@ func TestAccScalewayInstanceSecurityGroup_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_instance_security_group.base", "name", "sg-name"),
 					resource.TestCheckResourceAttr("scaleway_instance_security_group.base", "inbound_default_policy", "accept"),
 					resource.TestCheckResourceAttr("scaleway_instance_security_group.base", "outbound_default_policy", "accept"),
+					resource.TestCheckResourceAttr("scaleway_instance_security_group.base", "tags.#", "2"),
+					resource.TestCheckResourceAttr("scaleway_instance_security_group.base", "tags.0", "terraform-test"),
+					resource.TestCheckResourceAttr("scaleway_instance_security_group.base", "tags.1", "second-tag"),
 					resource.TestCheckResourceAttr("scaleway_instance_security_group.base", "inbound_rule.#", "3"),
 					resource.TestCheckResourceAttr("scaleway_instance_security_group.base", "inbound_rule.0.action", "drop"),
 					resource.TestCheckResourceAttr("scaleway_instance_security_group.base", "inbound_rule.0.protocol", "TCP"),
@@ -157,10 +163,13 @@ func TestAccScalewayInstanceSecurityGroup_Basic(t *testing.T) {
 					resource "scaleway_instance_security_group" "base" {
 						name = "sg-name"
 						inbound_default_policy = "accept"
+						tags = ["terraform-test"]
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("scaleway_instance_security_group.base", "inbound_rule.#", "0"),
+					resource.TestCheckResourceAttr("scaleway_instance_security_group.base", "tags.#", "1"),
+					resource.TestCheckResourceAttr("scaleway_instance_security_group.base", "tags.0", "terraform-test"),
 				),
 			},
 		},
