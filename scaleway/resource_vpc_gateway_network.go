@@ -130,7 +130,7 @@ func resourceScalewayVPCGatewayNetworkCreate(ctx context.Context, d *schema.Reso
 
 	d.SetId(newZonedIDString(zone, gatewayNetwork.ID))
 
-	_, err = waitForVPCGatewayNetwork(ctx, d, meta, 0)
+	_, err = waitForVPCGatewayNetwork(ctx, d, meta, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -185,7 +185,7 @@ func resourceScalewayVPCGatewayNetworkRead(ctx context.Context, d *schema.Resour
 		cleanUpDHCPValue = *expandBoolPtr(cleanUpDHCP)
 	}
 
-	gatewayNetwork, err = waitForVPCGatewayNetwork(ctx, d, meta, 0)
+	gatewayNetwork, err = waitForVPCGatewayNetwork(ctx, d, meta, d.Timeout(schema.TimeoutRead))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -207,12 +207,7 @@ func resourceScalewayVPCGatewayNetworkUpdate(ctx context.Context, d *schema.Reso
 		return diag.FromErr(err)
 	}
 
-	_, err = waitForVPCPublicGateway(ctx, d, meta, d.Timeout(schema.TimeoutUpdate))
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	_, err = waitForVPCGatewayNetwork(ctx, d, meta, 0)
+	_, err = waitForVPCGatewayNetwork(ctx, d, meta, d.Timeout(schema.TimeoutUpdate))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -241,11 +236,6 @@ func resourceScalewayVPCGatewayNetworkUpdate(ctx context.Context, d *schema.Reso
 		}
 	}
 
-	_, err = waitForVPCGatewayNetwork(ctx, d, meta, 0)
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
 	_, err = waitForVPCGatewayNetwork(ctx, d, meta, d.Timeout(schema.TimeoutUpdate))
 	if err != nil {
 		return diag.FromErr(err)
@@ -260,7 +250,7 @@ func resourceScalewayVPCGatewayNetworkDelete(ctx context.Context, d *schema.Reso
 		return diag.FromErr(err)
 	}
 
-	gwNetwork, err := waitForVPCGatewayNetwork(ctx, d, meta, 0)
+	gwNetwork, err := waitForVPCGatewayNetwork(ctx, d, meta, d.Timeout(schema.TimeoutDelete))
 	if err != nil {
 		return diag.FromErr(err)
 	}

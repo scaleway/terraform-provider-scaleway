@@ -110,7 +110,7 @@ func resourceScalewayVPCPublicGatewayPATRuleCreate(ctx context.Context, d *schem
 
 	d.SetId(newZonedIDString(zone, res.ID))
 
-	_, err = waitForVPCGatewayPATRule(ctx, d, meta, d.Timeout(schema.TimeoutCreate))
+	_, err = waitForVPCPublicGatewayPATRule(ctx, d, meta, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
 		return diag.FromErr(err)
 	}
