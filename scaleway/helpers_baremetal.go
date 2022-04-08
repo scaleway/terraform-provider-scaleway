@@ -1,6 +1,7 @@
 package scaleway
 
 import (
+	"context"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -12,6 +13,7 @@ const (
 	baremetalServerWaitForTimeout   = 60 * time.Minute
 	baremetalServerRetryFuncTimeout = baremetalServerWaitForTimeout + time.Minute // some RetryFunc are calling a WaitFor
 	defaultBaremetalServerTimeout   = baremetalServerRetryFuncTimeout + time.Minute
+	baremetalRetryInterval          = 5 * time.Second
 )
 
 // instanceAPIWithZone returns a new baremetal API and the zone for a Create request
@@ -98,4 +100,36 @@ func flattenBaremetalIPs(ips []*baremetal.IP) interface{} {
 		})
 	}
 	return flattendIPs
+}
+
+func waitForBaremetalServer(ctx context.Context, api *baremetal.API, zone scw.Zone, ID string, timeout time.Duration) (*baremetal.Server, error) {
+	retryInterval := baremetalRetryInterval
+	if DefaultWaitRetryInterval != nil {
+		retryInterval = *DefaultWaitRetryInterval
+	}
+
+	server, err := api.WaitForServer(&baremetal.WaitForServerRequest{
+		Zone:          zone,
+		ServerID:      ID,
+		Timeout:       scw.TimeDurationPtr(timeout),
+		RetryInterval: &retryInterval,
+	}, scw.WithContext(ctx))
+
+	return server, err
+}
+
+func waitForBaremetalServerInstall(ctx context.Context, api *baremetal.API, zone scw.Zone, ID string, timeout time.Duration) (*baremetal.Server, error) {
+	retryInterval := baremetalRetryInterval
+	if DefaultWaitRetryInterval != nil {
+		retryInterval = *DefaultWaitRetryInterval
+	}
+
+	server, err := api.WaitForServerInstall(&baremetal.WaitForServerInstallRequest{
+		Zone:          zone,
+		ServerID:      ID,
+		Timeout:       scw.TimeDurationPtr(timeout),
+		RetryInterval: &retryInterval,
+	}, scw.WithContext(ctx))
+
+	return server, err
 }
