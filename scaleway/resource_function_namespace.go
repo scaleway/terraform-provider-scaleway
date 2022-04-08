@@ -82,21 +82,16 @@ func resourceScalewayFunctionNamespaceCreate(ctx context.Context, d *schema.Reso
 
 	d.SetId(newRegionalIDString(region, ns.ID))
 
-	return resourceScalewayFunctionNamespaceRead(ctx, d, meta)
-}
-
-func resourceScalewayFunctionNamespaceRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, id, err := functionAPIWithRegionAndID(meta, d.Id())
+	_, err = waitForFunctionNamespace(ctx, d, meta, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	ns, err := api.WaitForNamespace(&function.WaitForNamespaceRequest{
-		Region:        region,
-		NamespaceID:   id,
-		RetryInterval: DefaultWaitRetryInterval,
-	}, scw.WithContext(ctx))
+	return resourceScalewayFunctionNamespaceRead(ctx, d, meta)
+}
 
+func resourceScalewayFunctionNamespaceRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	ns, err := waitForFunctionNamespace(ctx, d, meta, d.Timeout(schema.TimeoutRead))
 	if err != nil {
 		if is404Error(err) {
 			d.SetId("")
@@ -118,16 +113,12 @@ func resourceScalewayFunctionNamespaceRead(ctx context.Context, d *schema.Resour
 }
 
 func resourceScalewayFunctionNamespaceUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, id, err := functionAPIWithRegionAndID(meta, d.Id())
+	api, _, _, err := functionAPIWithRegionAndID(meta, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	ns, err := api.WaitForNamespace(&function.WaitForNamespaceRequest{
-		Region:        region,
-		NamespaceID:   id,
-		RetryInterval: DefaultWaitRetryInterval,
-	}, scw.WithContext(ctx))
+	ns, err := waitForFunctionNamespace(ctx, d, meta, d.Timeout(schema.TimeoutUpdate))
 	if err != nil {
 		if is404Error(err) {
 			d.SetId("")
@@ -137,7 +128,7 @@ func resourceScalewayFunctionNamespaceUpdate(ctx context.Context, d *schema.Reso
 	}
 
 	req := &function.UpdateNamespaceRequest{
-		Region:      region,
+		Region:      ns.Region,
 		NamespaceID: ns.ID,
 	}
 
@@ -162,11 +153,7 @@ func resourceScalewayFunctionNamespaceDelete(ctx context.Context, d *schema.Reso
 		return diag.FromErr(err)
 	}
 
-	_, err = api.WaitForNamespace(&function.WaitForNamespaceRequest{
-		Region:        region,
-		NamespaceID:   id,
-		RetryInterval: DefaultWaitRetryInterval,
-	}, scw.WithContext(ctx))
+	_, err = waitForFunctionNamespace(ctx, d, meta, d.Timeout(schema.TimeoutDelete))
 	if err != nil {
 		return nil
 	}
