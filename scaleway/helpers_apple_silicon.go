@@ -1,6 +1,7 @@
 package scaleway
 
 import (
+	"context"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -9,7 +10,8 @@ import (
 )
 
 const (
-	defaultAppleSiliconServerTimeout = 2 * time.Minute
+	defaultAppleSiliconServerTimeout       = 2 * time.Minute
+	defaultAppleSiliconServerRetryInterval = 5 * time.Second
 )
 
 const (
@@ -38,4 +40,26 @@ func asAPIWithZoneAndID(m interface{}, id string) (*applesilicon.API, scw.Zone, 
 		return nil, "", "", err
 	}
 	return asAPI, zone, ID, nil
+}
+
+func waitForAppleSiliconServer(ctx context.Context, d *schema.ResourceData, meta interface{}) (*applesilicon.Server, error) {
+	api, zone, ID, err := asAPIWithZoneAndID(meta, d.Id())
+	if err != nil {
+		return nil, err
+	}
+
+	retryInterval := defaultAppleSiliconServerRetryInterval
+
+	if DefaultWaitRetryInterval != nil {
+		retryInterval = *DefaultWaitRetryInterval
+	}
+
+	server, err := api.WaitForServer(&applesilicon.WaitForServerRequest{
+		ServerID:      ID,
+		Zone:          zone,
+		Timeout:       scw.TimeDurationPtr(defaultAppleSiliconServerTimeout),
+		RetryInterval: &retryInterval,
+	}, scw.WithContext(ctx))
+
+	return server, err
 }
