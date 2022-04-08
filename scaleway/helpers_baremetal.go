@@ -102,20 +102,15 @@ func flattenBaremetalIPs(ips []*baremetal.IP) interface{} {
 	return flattendIPs
 }
 
-func waitForBaremetalServer(ctx context.Context, d *schema.ResourceData, meta interface{}, timeout time.Duration) (*baremetal.Server, error) {
-	api, zonedID, err := baremetalAPIWithZoneAndID(meta, d.Id())
-	if err != nil {
-		return nil, err
-	}
-
+func waitForBaremetalServer(ctx context.Context, api *baremetal.API, zone scw.Zone, ID string, timeout time.Duration) (*baremetal.Server, error) {
 	retryInterval := baremetalRetryInterval
 	if DefaultWaitRetryInterval != nil {
 		retryInterval = *DefaultWaitRetryInterval
 	}
 
 	server, err := api.WaitForServer(&baremetal.WaitForServerRequest{
-		Zone:          zonedID.Zone,
-		ServerID:      zonedID.ID,
+		Zone:          zone,
+		ServerID:      ID,
 		Timeout:       scw.TimeDurationPtr(timeout),
 		RetryInterval: &retryInterval,
 	}, scw.WithContext(ctx))
@@ -123,20 +118,15 @@ func waitForBaremetalServer(ctx context.Context, d *schema.ResourceData, meta in
 	return server, err
 }
 
-func waitForBaremetalServerInstall(ctx context.Context, d *schema.ResourceData, meta interface{}, timeout time.Duration) (*baremetal.Server, error) {
-	baremetalAPI, ID, err := baremetalAPIWithZoneAndID(meta, d.Id())
-	if err != nil {
-		return nil, err
-	}
-
+func waitForBaremetalServerInstall(ctx context.Context, api *baremetal.API, zone scw.Zone, ID string, timeout time.Duration) (*baremetal.Server, error) {
 	retryInterval := baremetalRetryInterval
 	if DefaultWaitRetryInterval != nil {
 		retryInterval = *DefaultWaitRetryInterval
 	}
 
-	server, err := baremetalAPI.WaitForServerInstall(&baremetal.WaitForServerInstallRequest{
-		Zone:          ID.Zone,
-		ServerID:      ID.ID,
+	server, err := api.WaitForServerInstall(&baremetal.WaitForServerInstallRequest{
+		Zone:          zone,
+		ServerID:      ID,
 		Timeout:       scw.TimeDurationPtr(timeout),
 		RetryInterval: &retryInterval,
 	}, scw.WithContext(ctx))

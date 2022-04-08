@@ -152,7 +152,7 @@ func resourceScalewayBaremetalServerCreate(ctx context.Context, d *schema.Resour
 
 	d.SetId(newZonedID(server.Zone, server.ID).String())
 
-	_, err = waitForBaremetalServer(ctx, d, meta, d.Timeout(schema.TimeoutCreate))
+	_, err = waitForBaremetalServer(ctx, baremetalAPI, zone, server.ID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -168,7 +168,7 @@ func resourceScalewayBaremetalServerCreate(ctx context.Context, d *schema.Resour
 		return diag.FromErr(err)
 	}
 
-	_, err = waitForBaremetalServerInstall(ctx, d, meta, d.Timeout(schema.TimeoutCreate))
+	_, err = waitForBaremetalServerInstall(ctx, baremetalAPI, zone, server.ID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -250,7 +250,7 @@ func resourceScalewayBaremetalServerUpdate(ctx context.Context, d *schema.Resour
 			return diag.FromErr(err)
 		}
 
-		_, err = waitForBaremetalServerInstall(ctx, d, meta, d.Timeout(schema.TimeoutUpdate))
+		_, err = waitForBaremetalServerInstall(ctx, baremetalAPI, zonedID.Zone, zonedID.ID, d.Timeout(schema.TimeoutUpdate))
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -269,7 +269,6 @@ func resourceScalewayBaremetalServerDelete(ctx context.Context, d *schema.Resour
 		Zone:     zonedID.Zone,
 		ServerID: zonedID.ID,
 	}, scw.WithContext(ctx))
-
 	if err != nil {
 		if is404Error(err) {
 			return nil
@@ -277,7 +276,7 @@ func resourceScalewayBaremetalServerDelete(ctx context.Context, d *schema.Resour
 		return diag.FromErr(err)
 	}
 
-	_, err = waitForBaremetalServer(ctx, d, meta, d.Timeout(schema.TimeoutDelete))
+	_, err = waitForBaremetalServer(ctx, baremetalAPI, zonedID.Zone, zonedID.ID, d.Timeout(schema.TimeoutDelete))
 	if err != nil && !is404Error(err) {
 		return diag.FromErr(err)
 	}
