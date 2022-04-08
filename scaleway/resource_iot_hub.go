@@ -330,18 +330,17 @@ func resourceScalewayIotHubDelete(ctx context.Context, d *schema.ResourceData, m
 		return diag.FromErr(err)
 	}
 
-	////
-	// Delete hub
-	////
 	err = iotAPI.DeleteHub(&iot.DeleteHubRequest{
 		Region: region,
 		HubID:  hubID,
 		// Don't force delete if devices. This avoids deleting a hub by mistake
 	}, scw.WithContext(ctx))
-	if err != nil {
-		if is404Error(err) {
-			return nil
-		}
+	if err != nil && !is404Error(err) {
+		return diag.FromErr(err)
+	}
+
+	_, err = waitIotHub(ctx, d, meta, d.Timeout(schema.TimeoutCreate))
+	if err != nil && !is404Error(err) {
 		return diag.FromErr(err)
 	}
 
