@@ -147,7 +147,11 @@ func resourceScalewayRegistryNamespaceDelete(ctx context.Context, d *schema.Reso
 		Region:      region,
 		NamespaceID: id,
 	}, scw.WithContext(ctx))
+	if err != nil && !is404Error(err) {
+		return diag.FromErr(err)
+	}
 
+	_, err = waitForRegistryNamespace(ctx, d, meta, d.Timeout(schema.TimeoutDelete))
 	if err != nil && !is404Error(err) {
 		return diag.FromErr(err)
 	}
