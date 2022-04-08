@@ -142,19 +142,26 @@ func testAccCheckScalewayLbIPDestroy(tt *TestTools) resource.TestCheckFunc {
 				continue
 			}
 
-			lbAPI, zone, ID, err := lbAPIWithZoneAndID(tt.Meta, rs.Primary.ID)
+			api, zone, ID, err := lbAPIWithZoneAndID(tt.Meta, rs.Primary.ID)
 			if err != nil {
 				return err
 			}
 
 			lbID, lbExist := rs.Primary.Attributes["lb_id"]
 			if lbExist && len(lbID) > 0 {
-				_, err = lbAPI.WaitForLbInstances(&lb.ZonedAPIWaitForLBInstancesRequest{
+				retryInterval := defaultWaitLBRetryInterval
+
+				if DefaultWaitRetryInterval != nil {
+					retryInterval = *DefaultWaitRetryInterval
+				}
+
+				_, err := api.WaitForLbInstances(&lb.ZonedAPIWaitForLBInstancesRequest{
 					Zone:          zone,
-					LBID:          lbID,
+					LBID:          ID,
 					Timeout:       scw.TimeDurationPtr(defaultInstanceServerWaitTimeout),
-					RetryInterval: scw.TimeDurationPtr(defaultWaitLBRetryInterval),
-				})
+					RetryInterval: &retryInterval,
+				}, scw.WithContext(context.Background()))
+
 				// Unexpected api error we return it
 				if !is404Error(err) {
 					return err
@@ -162,7 +169,7 @@ func testAccCheckScalewayLbIPDestroy(tt *TestTools) resource.TestCheckFunc {
 			}
 
 			err = resource.RetryContext(context.Background(), retryLbIPInterval, func() *resource.RetryError {
-				_, errGet := lbAPI.GetIP(&lb.ZonedAPIGetIPRequest{
+				_, errGet := api.GetIP(&lb.ZonedAPIGetIPRequest{
 					Zone: zone,
 					IPID: ID,
 				})

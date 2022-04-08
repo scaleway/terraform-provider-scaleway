@@ -112,12 +112,7 @@ func resourceScalewayLbIPRead(ctx context.Context, d *schema.ResourceData, meta 
 
 	// check lb state if it is attached
 	if ip.LBID != nil {
-		_, err = lbAPI.WaitForLb(&lb.ZonedAPIWaitForLBRequest{
-			Zone:          zone,
-			LBID:          *ip.LBID,
-			Timeout:       scw.TimeDurationPtr(d.Timeout(schema.TimeoutRead)),
-			RetryInterval: scw.TimeDurationPtr(defaultWaitLBRetryInterval),
-		}, scw.WithContext(ctx))
+		_, err = waitForLBIP(ctx, d, meta, d.Timeout(schema.TimeoutRead))
 		if err != nil {
 			if is403Error(err) {
 				d.SetId("")
@@ -176,12 +171,7 @@ func resourceScalewayLbIPUpdate(ctx context.Context, d *schema.ResourceData, met
 	}
 
 	if ip.LBID != nil {
-		_, err = lbAPI.WaitForLb(&lb.ZonedAPIWaitForLBRequest{
-			Zone:          zone,
-			LBID:          *ip.LBID,
-			Timeout:       scw.TimeDurationPtr(d.Timeout(schema.TimeoutUpdate)),
-			RetryInterval: scw.TimeDurationPtr(defaultWaitLBRetryInterval),
-		}, scw.WithContext(ctx))
+		_, err = waitForLBIP(ctx, d, meta, d.Timeout(schema.TimeoutUpdate))
 		if err != nil {
 			if is403Error(err) {
 				d.SetId("")
@@ -205,12 +195,7 @@ func resourceScalewayLbIPUpdate(ctx context.Context, d *schema.ResourceData, met
 	}
 
 	if ip.LBID != nil {
-		_, err = lbAPI.WaitForLb(&lb.ZonedAPIWaitForLBRequest{
-			Zone:          zone,
-			LBID:          *ip.LBID,
-			Timeout:       scw.TimeDurationPtr(d.Timeout(schema.TimeoutUpdate)),
-			RetryInterval: scw.TimeDurationPtr(defaultWaitLBRetryInterval),
-		}, scw.WithContext(ctx))
+		_, err = waitForLBIP(ctx, d, meta, d.Timeout(schema.TimeoutUpdate))
 		if err != nil {
 			if is403Error(err) {
 				d.SetId("")
@@ -253,12 +238,7 @@ func resourceScalewayLbIPDelete(ctx context.Context, d *schema.ResourceData, met
 
 	// check lb state
 	if ip != nil && ip.LBID != nil {
-		_, err = lbAPI.WaitForLbInstances(&lb.ZonedAPIWaitForLBInstancesRequest{
-			LBID:          *ip.LBID,
-			Zone:          zone,
-			Timeout:       scw.TimeDurationPtr(d.Timeout(schema.TimeoutDelete)),
-			RetryInterval: scw.TimeDurationPtr(defaultWaitLBRetryInterval),
-		}, scw.WithContext(ctx))
+		_, err = waitForLBIP(ctx, d, meta, d.Timeout(schema.TimeoutDelete))
 		if err != nil {
 			if is403Error(err) {
 				d.SetId("")
@@ -279,12 +259,7 @@ func resourceScalewayLbIPDelete(ctx context.Context, d *schema.ResourceData, met
 
 	// check lb state
 	if ip != nil && ip.LBID != nil {
-		_, err = lbAPI.WaitForLbInstances(&lb.ZonedAPIWaitForLBInstancesRequest{
-			LBID:          *ip.LBID,
-			Zone:          zone,
-			Timeout:       scw.TimeDurationPtr(d.Timeout(schema.TimeoutDelete)),
-			RetryInterval: scw.TimeDurationPtr(defaultWaitLBRetryInterval),
-		}, scw.WithContext(ctx))
+		_, err = waitForLBIP(ctx, d, meta, d.Timeout(schema.TimeoutDelete))
 		if err != nil {
 			if is404Error(err) || is403Error(err) {
 				d.SetId("")
