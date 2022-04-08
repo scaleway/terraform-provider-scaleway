@@ -65,7 +65,7 @@ func resourceScalewayRdbACLCreate(ctx context.Context, d *schema.ResourceData, m
 		return diag.FromErr(err)
 	}
 
-	_, err = waitForRDBInstance(ctx, rdbAPI, region, ID, d.Timeout(schema.TimeoutCreate))
+	_, err = waitForRDBInstance(ctx, rdbAPI, region, expandID(instanceID), d.Timeout(schema.TimeoutCreate))
 	if err != nil {
 		return diag.FromErr(err)
 	}
