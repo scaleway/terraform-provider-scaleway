@@ -70,22 +70,16 @@ func resourceScalewayRegistryNamespaceCreate(ctx context.Context, d *schema.Reso
 
 	d.SetId(newRegionalIDString(region, ns.ID))
 
-	return resourceScalewayRegistryNamespaceRead(ctx, d, meta)
-}
-
-func resourceScalewayRegistryNamespaceRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, id, err := registryAPIWithRegionAndID(meta, d.Id())
+	_, err = waitForRegistryNamespace(ctx, d, meta, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	ns, err := api.WaitForNamespace(&registry.WaitForNamespaceRequest{
-		Region:        region,
-		NamespaceID:   id,
-		Timeout:       scw.TimeDurationPtr(d.Timeout(schema.TimeoutRead)),
-		RetryInterval: DefaultWaitRetryInterval,
-	}, scw.WithContext(ctx))
+	return resourceScalewayRegistryNamespaceRead(ctx, d, meta)
+}
 
+func resourceScalewayRegistryNamespaceRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	ns, err := waitForRegistryNamespace(ctx, d, meta, d.Timeout(schema.TimeoutRead))
 	if err != nil {
 		if is404Error(err) {
 			d.SetId("")
@@ -111,13 +105,7 @@ func resourceScalewayRegistryNamespaceUpdate(ctx context.Context, d *schema.Reso
 		return diag.FromErr(err)
 	}
 
-	_, err = api.WaitForNamespace(&registry.WaitForNamespaceRequest{
-		Region:        region,
-		NamespaceID:   id,
-		RetryInterval: DefaultWaitRetryInterval,
-		Timeout:       scw.TimeDurationPtr(d.Timeout(schema.TimeoutUpdate)),
-	}, scw.WithContext(ctx))
-
+	_, err = waitForRegistryNamespace(ctx, d, meta, d.Timeout(schema.TimeoutUpdate))
 	if err != nil {
 		if is404Error(err) {
 			d.SetId("")
@@ -146,13 +134,7 @@ func resourceScalewayRegistryNamespaceDelete(ctx context.Context, d *schema.Reso
 		return diag.FromErr(err)
 	}
 
-	_, err = api.WaitForNamespace(&registry.WaitForNamespaceRequest{
-		Region:        region,
-		NamespaceID:   id,
-		RetryInterval: DefaultWaitRetryInterval,
-		Timeout:       scw.TimeDurationPtr(d.Timeout(schema.TimeoutDelete)),
-	}, scw.WithContext(ctx))
-
+	_, err = waitForRegistryNamespace(ctx, d, meta, d.Timeout(schema.TimeoutDelete))
 	if err != nil {
 		if is404Error(err) {
 			d.SetId("")
