@@ -42,14 +42,13 @@ func asAPIWithZoneAndID(m interface{}, id string) (*applesilicon.API, scw.Zone, 
 	return asAPI, zone, ID, nil
 }
 
-func waitForAppleSiliconServer(ctx context.Context, d *schema.ResourceData, meta interface{}) (*applesilicon.Server, error) {
+func waitForAppleSiliconServer(ctx context.Context, d *schema.ResourceData, meta interface{}, timeout time.Duration) (*applesilicon.Server, error) {
 	api, zone, ID, err := asAPIWithZoneAndID(meta, d.Id())
 	if err != nil {
 		return nil, err
 	}
 
 	retryInterval := defaultAppleSiliconServerRetryInterval
-
 	if DefaultWaitRetryInterval != nil {
 		retryInterval = *DefaultWaitRetryInterval
 	}
@@ -57,7 +56,7 @@ func waitForAppleSiliconServer(ctx context.Context, d *schema.ResourceData, meta
 	server, err := api.WaitForServer(&applesilicon.WaitForServerRequest{
 		ServerID:      ID,
 		Zone:          zone,
-		Timeout:       scw.TimeDurationPtr(defaultAppleSiliconServerTimeout),
+		Timeout:       scw.TimeDurationPtr(timeout),
 		RetryInterval: &retryInterval,
 	}, scw.WithContext(ctx))
 

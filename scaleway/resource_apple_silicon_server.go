@@ -98,7 +98,7 @@ func resourceScalewayAppleSiliconServerCreate(ctx context.Context, d *schema.Res
 
 	d.SetId(newZonedIDString(zone, res.ID))
 
-	_, err = waitForAppleSiliconServer(ctx, d, meta)
+	_, err = waitForAppleSiliconServer(ctx, d, meta, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
 		return diag.FromErr(err)
 	}
