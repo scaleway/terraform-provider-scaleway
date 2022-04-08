@@ -24,7 +24,7 @@ func resourceScalewayVPCPublicGatewayPATRule() *schema.Resource {
 		},
 		SchemaVersion: 0,
 		Timeouts: &schema.ResourceTimeout{
-			Default: schema.DefaultTimeout(gatewayWaitForTimeout),
+			Default: schema.DefaultTimeout(defaultVPCGatewayTimeout),
 		},
 		Schema: map[string]*schema.Schema{
 			"gateway_id": {
@@ -89,14 +89,7 @@ func resourceScalewayVPCPublicGatewayPATRuleCreate(ctx context.Context, d *schem
 	}
 
 	gatewayID := expandZonedID(d.Get("gateway_id").(string)).ID
-	retryInterval := retryIntervalVPCPublicGatewayNetwork
-	//check gateway is in stable state.
-	_, err = vpcgwAPI.WaitForGateway(&vpcgw.WaitForGatewayRequest{
-		GatewayID:     gatewayID,
-		Zone:          zone,
-		Timeout:       scw.TimeDurationPtr(d.Timeout(schema.TimeoutCreate)),
-		RetryInterval: &retryInterval,
-	}, scw.WithContext(ctx))
+	_, err = waitForVPCPublicGatewayPATRule(ctx, d, meta, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -115,18 +108,12 @@ func resourceScalewayVPCPublicGatewayPATRuleCreate(ctx context.Context, d *schem
 		return diag.FromErr(err)
 	}
 
-	//check gateway is in stable state.
-	_, err = vpcgwAPI.WaitForGateway(&vpcgw.WaitForGatewayRequest{
-		GatewayID:     res.GatewayID,
-		Zone:          zone,
-		Timeout:       scw.TimeDurationPtr(d.Timeout(schema.TimeoutCreate)),
-		RetryInterval: &retryInterval,
-	}, scw.WithContext(ctx))
+	d.SetId(newZonedIDString(zone, res.ID))
+
+	_, err = waitForVPCGatewayPATRule(ctx, d, meta, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
 		return diag.FromErr(err)
 	}
-
-	d.SetId(newZonedIDString(zone, res.ID))
 
 	return resourceScalewayVPCPublicGatewayPATRuleRead(ctx, d, meta)
 }
@@ -168,7 +155,7 @@ func resourceScalewayVPCPublicGatewayPATRuleUpdate(ctx context.Context, d *schem
 		return diag.FromErr(err)
 	}
 
-	patRules, err := vpcgwAPI.GetPATRule(&vpcgw.GetPATRuleRequest{
+	_, err = vpcgwAPI.GetPATRule(&vpcgw.GetPATRuleRequest{
 		PatRuleID: ID,
 		Zone:      zone,
 	}, scw.WithContext(ctx))
@@ -176,14 +163,8 @@ func resourceScalewayVPCPublicGatewayPATRuleUpdate(ctx context.Context, d *schem
 		return diag.FromErr(err)
 	}
 
-	retryInterval := retryIntervalVPCPublicGatewayNetwork
 	//check gateway is in stable state.
-	_, err = vpcgwAPI.WaitForGateway(&vpcgw.WaitForGatewayRequest{
-		GatewayID:     patRules.GatewayID,
-		Zone:          zone,
-		Timeout:       scw.TimeDurationPtr(d.Timeout(schema.TimeoutUpdate)),
-		RetryInterval: &retryInterval,
-	}, scw.WithContext(ctx))
+	_, err = waitForVPCPublicGatewayPATRule(ctx, d, meta, d.Timeout(schema.TimeoutUpdate))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -219,7 +200,7 @@ func resourceScalewayVPCPublicGatewayPATRuleDelete(ctx context.Context, d *schem
 		return diag.FromErr(err)
 	}
 
-	patRules, err := vpcgwAPI.GetPATRule(&vpcgw.GetPATRuleRequest{
+	_, err = vpcgwAPI.GetPATRule(&vpcgw.GetPATRuleRequest{
 		PatRuleID: ID,
 		Zone:      zone,
 	}, scw.WithContext(ctx))
@@ -231,15 +212,8 @@ func resourceScalewayVPCPublicGatewayPATRuleDelete(ctx context.Context, d *schem
 		return diag.FromErr(err)
 	}
 
-	retryInterval := retryIntervalVPCPublicGatewayNetwork
 	//check gateway is in stable state.
-	_, err = vpcgwAPI.WaitForGateway(&vpcgw.WaitForGatewayRequest{
-		GatewayID:     patRules.GatewayID,
-		Zone:          zone,
-		Timeout:       scw.TimeDurationPtr(d.Timeout(schema.TimeoutDelete)),
-		RetryInterval: &retryInterval,
-	}, scw.WithContext(ctx))
-
+	_, err = waitForVPCPublicGatewayPATRule(ctx, d, meta, d.Timeout(schema.TimeoutDelete))
 	if err != nil && !is404Error(err) {
 		return diag.FromErr(err)
 	}
@@ -253,13 +227,7 @@ func resourceScalewayVPCPublicGatewayPATRuleDelete(ctx context.Context, d *schem
 		return diag.FromErr(err)
 	}
 
-	_, err = vpcgwAPI.WaitForGateway(&vpcgw.WaitForGatewayRequest{
-		GatewayID:     patRules.GatewayID,
-		Zone:          zone,
-		Timeout:       scw.TimeDurationPtr(d.Timeout(schema.TimeoutDelete)),
-		RetryInterval: &retryInterval,
-	}, scw.WithContext(ctx))
-
+	_, err = waitForVPCPublicGatewayPATRule(ctx, d, meta, d.Timeout(schema.TimeoutDelete))
 	if err != nil && !is404Error(err) {
 		return diag.FromErr(err)
 	}
