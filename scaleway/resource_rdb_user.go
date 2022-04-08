@@ -65,14 +65,14 @@ func resourceScalewayRdbUserCreate(ctx context.Context, d *schema.ResourceData, 
 		diag.FromErr(err)
 	}
 
-	ins, err := waitInstance(ctx, rdbAPI, region, instanceID, d.Timeout(schema.TimeoutCreate))
+	_, err = waitForRDBUser(ctx, d, meta, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	createReq := &rdb.CreateUserRequest{
 		Region:     region,
-		InstanceID: ins.ID,
+		InstanceID: instanceID,
 		Name:       d.Get("name").(string),
 		Password:   d.Get("password").(string),
 		IsAdmin:    d.Get("is_admin").(bool),
@@ -84,7 +84,7 @@ func resourceScalewayRdbUserCreate(ctx context.Context, d *schema.ResourceData, 
 		currentUser, errCreateUser := rdbAPI.CreateUser(createReq, scw.WithContext(ctx))
 		if errCreateUser != nil {
 			if is409Error(errCreateUser) {
-				_, errWait := waitInstance(ctx, rdbAPI, region, ins.ID, d.Timeout(schema.TimeoutCreate))
+				_, errWait := waitForRDBUser(ctx, d, meta, d.Timeout(schema.TimeoutCreate))
 				if errWait != nil {
 					return resource.NonRetryableError(errWait)
 				}
@@ -112,7 +112,7 @@ func resourceScalewayRdbUserRead(ctx context.Context, d *schema.ResourceData, me
 		return diag.FromErr(err)
 	}
 
-	_, err = waitInstance(ctx, rdbAPI, region, instanceID, d.Timeout(schema.TimeoutRead))
+	_, err = waitForRDBUser(ctx, d, meta, d.Timeout(schema.TimeoutRead))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -149,7 +149,7 @@ func resourceScalewayRdbUserUpdate(ctx context.Context, d *schema.ResourceData, 
 		return diag.FromErr(err)
 	}
 
-	_, err = waitInstance(ctx, rdbAPI, region, instanceID, d.Timeout(schema.TimeoutUpdate))
+	_, err = waitForRDBUser(ctx, d, meta, d.Timeout(schema.TimeoutUpdate))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -183,7 +183,7 @@ func resourceScalewayRdbUserDelete(ctx context.Context, d *schema.ResourceData, 
 		return diag.FromErr(err)
 	}
 
-	_, err = waitInstance(ctx, rdbAPI, region, instanceID, d.Timeout(schema.TimeoutDelete))
+	_, err = waitForRDBUser(ctx, d, meta, d.Timeout(schema.TimeoutDelete))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -196,7 +196,7 @@ func resourceScalewayRdbUserDelete(ctx context.Context, d *schema.ResourceData, 
 		}, scw.WithContext(ctx))
 		if errDeleteUser != nil {
 			if is409Error(errDeleteUser) {
-				_, errWait := waitInstance(ctx, rdbAPI, region, instanceID, d.Timeout(schema.TimeoutDelete))
+				_, errWait := waitForRDBUser(ctx, d, meta, d.Timeout(schema.TimeoutDelete))
 				if errWait != nil {
 					return resource.NonRetryableError(errWait)
 				}
