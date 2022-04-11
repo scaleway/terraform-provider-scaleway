@@ -1,6 +1,7 @@
 package scaleway
 
 import (
+	"context"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -10,6 +11,7 @@ import (
 
 const (
 	defaultContainerNamespaceTimeout = 20 * time.Second
+	defaultContainerRetryInterval    = 5 * time.Second
 )
 
 // containerAPIWithRegion returns a new container API and the region.
@@ -96,4 +98,20 @@ func setCreateContainerRequest(d *schema.ResourceData, region scw.Region) (*cont
 	}
 
 	return req, nil
+}
+
+func waitForContainerNamespace(ctx context.Context, containerAPI *container.API, region scw.Region, id string, timeout time.Duration) (*container.Namespace, error) {
+	retryInterval := defaultContainerRetryInterval
+	if DefaultWaitRetryInterval != nil {
+		retryInterval = *DefaultWaitRetryInterval
+	}
+
+	ns, err := containerAPI.WaitForNamespace(&container.WaitForNamespaceRequest{
+		Region:        region,
+		NamespaceID:   id,
+		RetryInterval: &retryInterval,
+		Timeout:       scw.TimeDurationPtr(timeout),
+	}, scw.WithContext(ctx))
+
+	return ns, err
 }
