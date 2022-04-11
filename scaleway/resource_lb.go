@@ -181,7 +181,7 @@ func resourceScalewayLbRead(ctx context.Context, d *schema.ResourceData, meta in
 		return diag.FromErr(err)
 	}
 
-	res, err := waitForLbInstances(ctx, d, meta, d.Timeout(schema.TimeoutRead))
+	lb, err := waitForLbInstances(ctx, lbAPI, zone, ID, d.Timeout(schema.TimeoutRead))
 	if err != nil {
 		if is404Error(err) || is403Error(err) {
 			d.SetId("")
@@ -196,16 +196,16 @@ func resourceScalewayLbRead(ctx context.Context, d *schema.ResourceData, meta in
 	}
 
 	_ = d.Set("release_ip", false)
-	_ = d.Set("name", res.Name)
-	_ = d.Set("zone", zone.String())
+	_ = d.Set("name", lb.Name)
+	_ = d.Set("zone", lb.Zone.String())
 	_ = d.Set("region", region.String())
-	_ = d.Set("organization_id", res.OrganizationID)
-	_ = d.Set("project_id", res.ProjectID)
-	_ = d.Set("tags", res.Tags)
+	_ = d.Set("organization_id", lb.OrganizationID)
+	_ = d.Set("project_id", lb.ProjectID)
+	_ = d.Set("tags", lb.Tags)
 	// For now API return lowercase lb type. This should be fixed in a near future on the API side
-	_ = d.Set("type", strings.ToUpper(res.Type))
-	_ = d.Set("ip_id", newZonedIDString(zone, res.IP[0].ID))
-	_ = d.Set("ip_address", res.IP[0].IPAddress)
+	_ = d.Set("type", strings.ToUpper(lb.Type))
+	_ = d.Set("ip_id", newZonedIDString(zone, lb.IP[0].ID))
+	_ = d.Set("ip_address", lb.IP[0].IPAddress)
 
 	// retrieve attached private networks
 	resPN, err := lbAPI.ListLBPrivateNetworks(&lbSDK.ZonedAPIListLBPrivateNetworksRequest{
@@ -253,7 +253,7 @@ func resourceScalewayLbUpdate(ctx context.Context, d *schema.ResourceData, meta 
 	////
 	if d.HasChangesExcept("private_network") {
 		// check that pns are in a stable state
-		pns, err := waitForLB(ctx, lbAPI, zone, ID, d.Timeout(schema.TimeoutUpdate))
+		pns, err := waitForLBPN(ctx, lbAPI, zone, ID, d.Timeout(schema.TimeoutUpdate))
 		if err != nil && !is404Error(err) {
 			return diag.FromErr(err)
 		}
@@ -318,7 +318,7 @@ func resourceScalewayLbDelete(ctx context.Context, d *schema.ResourceData, meta 
 	}
 
 	// check if current lb is on stable state
-	currentLB, err := waitForLbInstances(ctx, d, meta, d.Timeout(schema.TimeoutDelete))
+	currentLB, err := waitForLbInstances(ctx, lbAPI, zone, ID, d.Timeout(schema.TimeoutDelete))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -344,7 +344,7 @@ func resourceScalewayLbDelete(ctx context.Context, d *schema.ResourceData, meta 
 			}
 		}
 
-		_, err = waitForLbInstances(ctx, d, meta, d.Timeout(schema.TimeoutDelete))
+		_, err = waitForLbInstances(ctx, lbAPI, zone, ID, d.Timeout(schema.TimeoutDelete))
 		if err != nil && !is404Error(err) {
 			return diag.FromErr(err)
 		}
@@ -359,7 +359,7 @@ func resourceScalewayLbDelete(ctx context.Context, d *schema.ResourceData, meta 
 		return diag.FromErr(err)
 	}
 
-	_, err = waitForLbInstances(ctx, d, meta, d.Timeout(schema.TimeoutDelete))
+	_, err = waitForLbInstances(ctx, lbAPI, zone, ID, d.Timeout(schema.TimeoutDelete))
 	if err != nil && !is404Error(err) {
 		return diag.FromErr(err)
 	}
