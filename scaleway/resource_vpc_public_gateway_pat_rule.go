@@ -200,7 +200,7 @@ func resourceScalewayVPCPublicGatewayPATRuleDelete(ctx context.Context, d *schem
 		return diag.FromErr(err)
 	}
 
-	_, err = vpcgwAPI.GetPATRule(&vpcgw.GetPATRuleRequest{
+	patRule, err := vpcgwAPI.GetPATRule(&vpcgw.GetPATRuleRequest{
 		PatRuleID: ID,
 		Zone:      zone,
 	}, scw.WithContext(ctx))
@@ -213,7 +213,7 @@ func resourceScalewayVPCPublicGatewayPATRuleDelete(ctx context.Context, d *schem
 	}
 
 	//check gateway is in stable state.
-	_, err = waitForVPCPublicGateway(ctx, vpcgwAPI, zone, ID, d.Timeout(schema.TimeoutDelete))
+	_, err = waitForVPCPublicGateway(ctx, vpcgwAPI, zone, patRule.GatewayID, d.Timeout(schema.TimeoutDelete))
 	if err != nil && !is404Error(err) {
 		return diag.FromErr(err)
 	}
@@ -227,7 +227,7 @@ func resourceScalewayVPCPublicGatewayPATRuleDelete(ctx context.Context, d *schem
 		return diag.FromErr(err)
 	}
 
-	_, err = waitForVPCPublicGateway(ctx, vpcgwAPI, zone, ID, d.Timeout(schema.TimeoutDelete))
+	_, err = waitForVPCPublicGateway(ctx, vpcgwAPI, zone, patRule.GatewayID, d.Timeout(schema.TimeoutDelete))
 	if err != nil && !is404Error(err) {
 		return diag.FromErr(err)
 	}

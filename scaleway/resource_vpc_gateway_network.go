@@ -86,14 +86,14 @@ func resourceScalewayVPCGatewayNetwork() *schema.Resource {
 }
 
 func resourceScalewayVPCGatewayNetworkCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, zone, err := vpcgwAPIWithZone(d, meta)
+	vpcgwAPI, zone, err := vpcgwAPIWithZone(d, meta)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	gatewayID := expandZonedID(d.Get("gateway_id").(string)).ID
 
-	_, err = waitForVPCPublicGateway(ctx, api, zone, gatewayID, d.Timeout(schema.TimeoutCreate))
+	_, err = waitForVPCPublicGateway(ctx, vpcgwAPI, zone, gatewayID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -120,19 +120,19 @@ func resourceScalewayVPCGatewayNetworkCreate(ctx context.Context, d *schema.Reso
 		req.DHCPID = &dhcpZoned.ID
 	}
 
-	gatewayNetwork, err := api.CreateGatewayNetwork(req, scw.WithContext(ctx))
+	gatewayNetwork, err := vpcgwAPI.CreateGatewayNetwork(req, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	_, err = waitForVPCPublicGateway(ctx, api, zone, gatewayID, d.Timeout(schema.TimeoutCreate))
+	_, err = waitForVPCPublicGateway(ctx, vpcgwAPI, zone, gatewayID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	d.SetId(newZonedIDString(zone, gatewayNetwork.ID))
 
-	_, err = waitForVPCGatewayNetwork(ctx, api, zone, gatewayID, d.Timeout(schema.TimeoutCreate))
+	_, err = waitForVPCGatewayNetwork(ctx, vpcgwAPI, zone, gatewayID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
 		return diag.FromErr(err)
 	}
