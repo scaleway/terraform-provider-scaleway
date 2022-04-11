@@ -316,7 +316,7 @@ func resourceScalewayLbBackendCreate(ctx context.Context, d *schema.ResourceData
 		return diag.FromErr(err)
 	}
 
-	_, err = waitForLB(ctx, lbAPI, zone, LbID, d.Timeout(schema.TimeoutCreate))
+	_, err = waitForLB(ctx, lbAPI, zone, res.LB.ID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
 		if is403Error(err) {
 			d.SetId("")
@@ -390,12 +390,12 @@ func resourceScalewayLbBackendUpdate(ctx context.Context, d *schema.ResourceData
 		return diag.FromErr(err)
 	}
 
-	_, _, err = parseZonedID(d.Get("lb_id").(string))
+	_, lbID, err := parseZonedID(d.Get("lb_id").(string))
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	_, err = waitForLB(ctx, lbAPI, zone, ID, d.Timeout(schema.TimeoutUpdate))
+	_, err = waitForLB(ctx, lbAPI, zone, lbID, d.Timeout(schema.TimeoutUpdate))
 	if err != nil {
 		if is403Error(err) {
 			d.SetId("")
@@ -479,7 +479,7 @@ func resourceScalewayLbBackendUpdate(ctx context.Context, d *schema.ResourceData
 		return diag.FromErr(err)
 	}
 
-	_, err = waitForLB(ctx, lbAPI, zone, ID, d.Timeout(schema.TimeoutUpdate))
+	_, err = waitForLB(ctx, lbAPI, zone, lbID, d.Timeout(schema.TimeoutUpdate))
 	if err != nil {
 		if is403Error(err) {
 			d.SetId("")
@@ -502,7 +502,7 @@ func resourceScalewayLbBackendDelete(ctx context.Context, d *schema.ResourceData
 		return diag.FromErr(err)
 	}
 
-	_, err = waitForLB(ctx, lbAPI, zone, ID, d.Timeout(schema.TimeoutDelete))
+	_, err = waitForLB(ctx, lbAPI, zone, lbID, d.Timeout(schema.TimeoutDelete))
 	if err != nil {
 		if is403Error(err) {
 			d.SetId("")
