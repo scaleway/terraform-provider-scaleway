@@ -157,7 +157,7 @@ func testAccCheckScalewayLbIPDestroy(tt *TestTools) resource.TestCheckFunc {
 
 				_, err := lbAPI.WaitForLbInstances(&lbSDK.ZonedAPIWaitForLBInstancesRequest{
 					Zone:          zone,
-					LBID:          ID,
+					LBID:          lbID,
 					Timeout:       scw.TimeDurationPtr(defaultInstanceServerWaitTimeout),
 					RetryInterval: &retryInterval,
 				}, scw.WithContext(context.Background()))
