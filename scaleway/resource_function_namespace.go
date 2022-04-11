@@ -160,14 +160,18 @@ func resourceScalewayFunctionNamespaceDelete(ctx context.Context, d *schema.Reso
 
 	_, err = waitForFunctionNamespace(ctx, api, region, id, d.Timeout(schema.TimeoutDelete))
 	if err != nil {
-		return nil
+		return diag.FromErr(err)
 	}
 
 	_, err = api.DeleteNamespace(&function.DeleteNamespaceRequest{
 		Region:      region,
 		NamespaceID: id,
 	}, scw.WithContext(ctx))
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
+	_, err = waitForFunctionNamespace(ctx, api, region, id, d.Timeout(schema.TimeoutDelete))
 	if err != nil && !is404Error(err) {
 		return diag.FromErr(err)
 	}
