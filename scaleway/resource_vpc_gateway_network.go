@@ -93,14 +93,14 @@ func resourceScalewayVPCGatewayNetworkCreate(ctx context.Context, d *schema.Reso
 
 	gatewayID := expandZonedID(d.Get("gateway_id").(string)).ID
 
-	_, err = waitForVPCPublicGateway(ctx, vpcgwAPI, zone, gatewayID, d.Timeout(schema.TimeoutCreate))
+	gateway, err := waitForVPCPublicGateway(ctx, vpcgwAPI, zone, gatewayID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	req := &vpcgw.CreateGatewayNetworkRequest{
 		Zone:             zone,
-		GatewayID:        expandZonedID(d.Get("gateway_id").(string)).ID,
+		GatewayID:        gateway.ID,
 		PrivateNetworkID: expandZonedID(d.Get("private_network_id").(string)).ID,
 		EnableMasquerade: *expandBoolPtr(d.Get("enable_masquerade")),
 		EnableDHCP:       expandBoolPtr(d.Get("enable_dhcp")),
@@ -150,6 +150,10 @@ func resourceScalewayVPCGatewayNetworkRead(ctx context.Context, d *schema.Resour
 	if err != nil {
 		return diag.FromErr(err)
 	}
+	_, err = waitForVPCPublicGateway(ctx, vpcgwAPI, zone, gatewayNetwork.GatewayID, d.Timeout(schema.TimeoutRead))
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	if dhcp := gatewayNetwork.DHCP; dhcp != nil {
 		_ = d.Set("dhcp_id", newZonedID(zone, dhcp.ID).String())
@@ -177,7 +181,7 @@ func resourceScalewayVPCGatewayNetworkRead(ctx context.Context, d *schema.Resour
 		cleanUpDHCPValue = *expandBoolPtr(cleanUpDHCP)
 	}
 
-	gatewayNetwork, err = waitForVPCGatewayNetwork(ctx, vpcgwAPI, zone, ID, d.Timeout(schema.TimeoutRead))
+	gatewayNetwork, err = waitForVPCGatewayNetwork(ctx, vpcgwAPI, zone, gatewayNetwork.ID, d.Timeout(schema.TimeoutRead))
 	if err != nil {
 		return diag.FromErr(err)
 	}
