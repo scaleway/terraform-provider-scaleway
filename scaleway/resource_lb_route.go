@@ -77,12 +77,12 @@ func resourceScalewayLbRouteCreate(ctx context.Context, d *schema.ResourceData, 
 		},
 	}
 
-	res, err := lbAPI.CreateRoute(createReq, scw.WithContext(ctx))
+	route, err := lbAPI.CreateRoute(createReq, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	d.SetId(newZonedIDString(zone, res.ID))
+	d.SetId(newZonedIDString(zone, route.ID))
 
 	return resourceScalewayLbRouteRead(ctx, d, meta)
 }
@@ -93,7 +93,7 @@ func resourceScalewayLbRouteRead(ctx context.Context, d *schema.ResourceData, me
 		return diag.FromErr(err)
 	}
 
-	res, err := lbAPI.GetRoute(&lbSDK.ZonedAPIGetRouteRequest{
+	route, err := lbAPI.GetRoute(&lbSDK.ZonedAPIGetRouteRequest{
 		Zone:    zone,
 		RouteID: ID,
 	}, scw.WithContext(ctx))
@@ -106,10 +106,10 @@ func resourceScalewayLbRouteRead(ctx context.Context, d *schema.ResourceData, me
 		return diag.FromErr(err)
 	}
 
-	_ = d.Set("frontend_id", newZonedIDString(zone, res.FrontendID))
-	_ = d.Set("backend_id", newZonedIDString(zone, res.BackendID))
-	if res.Match != nil && res.Match.Sni != nil {
-		_ = d.Set("match_sni", res.Match.Sni)
+	_ = d.Set("frontend_id", newZonedIDString(zone, route.FrontendID))
+	_ = d.Set("backend_id", newZonedIDString(zone, route.BackendID))
+	if route.Match != nil && route.Match.Sni != nil {
+		_ = d.Set("match_sni", route.Match.Sni)
 	}
 
 	return nil
