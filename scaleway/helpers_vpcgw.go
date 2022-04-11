@@ -60,12 +60,12 @@ func waitForVPCGatewayNetwork(ctx context.Context, api *vpcgw.API, zone scw.Zone
 		retryIntervalGWNetwork = *DefaultWaitRetryInterval
 	}
 
-	gwNetwork, err := api.WaitForGatewayNetwork(&vpcgw.WaitForGatewayNetworkRequest{
+	gatewayNetwork, err := api.WaitForGatewayNetwork(&vpcgw.WaitForGatewayNetworkRequest{
 		GatewayNetworkID: id,
 		Timeout:          scw.TimeDurationPtr(timeout),
 		RetryInterval:    &retryIntervalGWNetwork,
 		Zone:             zone,
 	}, scw.WithContext(ctx))
 
-	return gwNetwork, err
+	return gatewayNetwork, err
 }
