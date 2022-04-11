@@ -170,12 +170,12 @@ func resourceScalewayLbCertificateCreate(ctx context.Context, d *schema.Resource
 }
 
 func resourceScalewayLbCertificateRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, zone, ID, err := lbAPIWithZoneAndID(meta, d.Id())
+	lbAPI, zone, ID, err := lbAPIWithZoneAndID(meta, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	cert, err := waitForLB(ctx, api, zone, ID, d.Timeout(schema.TimeoutRead))
+	cert, err := waitForLB(ctx, lbAPI, zone, ID, d.Timeout(schema.TimeoutRead))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -185,7 +185,7 @@ func resourceScalewayLbCertificateRead(ctx context.Context, d *schema.ResourceDa
 		return diag.FromErr(fmt.Errorf("certificate with error state"))
 	}
 
-	_, err = waitForLBCertificate(ctx, d, meta, d.Timeout(schema.TimeoutRead))
+	_, err = waitForLB(ctx, lbAPI, zone, ID, d.Timeout(schema.TimeoutRead))
 	if err != nil {
 		return diag.FromErr(err)
 	}

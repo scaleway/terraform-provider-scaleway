@@ -240,7 +240,7 @@ func resourceScalewayLbBackend() *schema.Resource {
 }
 
 func resourceScalewayLbBackendCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, _, err := lbAPIWithZone(d, meta)
+	lbAPI, _, err := lbAPIWithZone(d, meta)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -255,7 +255,7 @@ func resourceScalewayLbBackendCreate(ctx context.Context, d *schema.ResourceData
 		healthCheckPort = d.Get("forward_port").(int)
 	}
 
-	_, err = waitForLB(ctx, api, zone, LbID, d.Timeout(schema.TimeoutCreate))
+	_, err = waitForLB(ctx, lbAPI, zone, LbID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
 		if is403Error(err) {
 			d.SetId("")
@@ -311,12 +311,12 @@ func resourceScalewayLbBackendCreate(ctx context.Context, d *schema.ResourceData
 		OnMarkedDownAction: expandLbBackendMarkdownAction(d.Get("on_marked_down_action")),
 	}
 
-	res, err := api.CreateBackend(createReq, scw.WithContext(ctx))
+	res, err := lbAPI.CreateBackend(createReq, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	_, err = waitForLB(ctx, api, zone, LbID, d.Timeout(schema.TimeoutCreate))
+	_, err = waitForLB(ctx, lbAPI, zone, LbID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
 		if is403Error(err) {
 			d.SetId("")
@@ -331,12 +331,12 @@ func resourceScalewayLbBackendCreate(ctx context.Context, d *schema.ResourceData
 }
 
 func resourceScalewayLbBackendRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, zone, ID, err := lbAPIWithZoneAndID(meta, d.Id())
+	lbAPI, zone, ID, err := lbAPIWithZoneAndID(meta, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	backend, err := api.GetBackend(&lb.ZonedAPIGetBackendRequest{
+	backend, err := lbAPI.GetBackend(&lb.ZonedAPIGetBackendRequest{
 		Zone:      zone,
 		BackendID: ID,
 	}, scw.WithContext(ctx))
@@ -371,7 +371,7 @@ func resourceScalewayLbBackendRead(ctx context.Context, d *schema.ResourceData, 
 	_ = d.Set("health_check_http", flattenLbHCHTTP(backend.HealthCheck.HTTPConfig))
 	_ = d.Set("health_check_https", flattenLbHCHTTPS(backend.HealthCheck.HTTPSConfig))
 
-	_, err = waitForLB(ctx, api, zone, backend.LB.ID, d.Timeout(schema.TimeoutRead))
+	_, err = waitForLB(ctx, lbAPI, zone, backend.LB.ID, d.Timeout(schema.TimeoutRead))
 	if err != nil {
 		if is403Error(err) {
 			d.SetId("")
@@ -385,7 +385,7 @@ func resourceScalewayLbBackendRead(ctx context.Context, d *schema.ResourceData, 
 
 //gocyclo:ignore
 func resourceScalewayLbBackendUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, zone, ID, err := lbAPIWithZoneAndID(meta, d.Id())
+	lbAPI, zone, ID, err := lbAPIWithZoneAndID(meta, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -395,7 +395,7 @@ func resourceScalewayLbBackendUpdate(ctx context.Context, d *schema.ResourceData
 		return diag.FromErr(err)
 	}
 
-	_, err = waitForLB(ctx, api, zone, ID, d.Timeout(schema.TimeoutUpdate))
+	_, err = waitForLB(ctx, lbAPI, zone, ID, d.Timeout(schema.TimeoutUpdate))
 	if err != nil {
 		if is403Error(err) {
 			d.SetId("")
@@ -434,7 +434,7 @@ func resourceScalewayLbBackendUpdate(ctx context.Context, d *schema.ResourceData
 		OnMarkedDownAction:       expandLbBackendMarkdownAction(d.Get("on_marked_down_action")),
 	}
 
-	_, err = api.UpdateBackend(req, scw.WithContext(ctx))
+	_, err = lbAPI.UpdateBackend(req, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -464,13 +464,13 @@ func resourceScalewayLbBackendUpdate(ctx context.Context, d *schema.ResourceData
 		updateHCRequest.TCPConfig = expandLbHCTCP(d.Get("health_check_tcp"))
 	}
 
-	_, err = api.UpdateHealthCheck(updateHCRequest, scw.WithContext(ctx))
+	_, err = lbAPI.UpdateHealthCheck(updateHCRequest, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	// Update Backend servers
-	_, err = api.SetBackendServers(&lb.ZonedAPISetBackendServersRequest{
+	_, err = lbAPI.SetBackendServers(&lb.ZonedAPISetBackendServersRequest{
 		Zone:      zone,
 		BackendID: ID,
 		ServerIP:  expandStrings(d.Get("server_ips")),
@@ -479,7 +479,7 @@ func resourceScalewayLbBackendUpdate(ctx context.Context, d *schema.ResourceData
 		return diag.FromErr(err)
 	}
 
-	_, err = waitForLB(ctx, api, zone, ID, d.Timeout(schema.TimeoutUpdate))
+	_, err = waitForLB(ctx, lbAPI, zone, ID, d.Timeout(schema.TimeoutUpdate))
 	if err != nil {
 		if is403Error(err) {
 			d.SetId("")
@@ -492,17 +492,17 @@ func resourceScalewayLbBackendUpdate(ctx context.Context, d *schema.ResourceData
 }
 
 func resourceScalewayLbBackendDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, zone, ID, err := lbAPIWithZoneAndID(meta, d.Id())
+	lbAPI, zone, ID, err := lbAPIWithZoneAndID(meta, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	_, _, err = parseZonedID(d.Get("lb_id").(string))
+	_, lbID, err := parseZonedID(d.Get("lb_id").(string))
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	_, err = waitForLB(ctx, api, zone, ID, d.Timeout(schema.TimeoutDelete))
+	_, err = waitForLB(ctx, lbAPI, zone, ID, d.Timeout(schema.TimeoutDelete))
 	if err != nil {
 		if is403Error(err) {
 			d.SetId("")
@@ -511,7 +511,7 @@ func resourceScalewayLbBackendDelete(ctx context.Context, d *schema.ResourceData
 		return diag.FromErr(err)
 	}
 
-	err = api.DeleteBackend(&lb.ZonedAPIDeleteBackendRequest{
+	err = lbAPI.DeleteBackend(&lb.ZonedAPIDeleteBackendRequest{
 		Zone:      zone,
 		BackendID: ID,
 	}, scw.WithContext(ctx))
@@ -520,7 +520,7 @@ func resourceScalewayLbBackendDelete(ctx context.Context, d *schema.ResourceData
 		return diag.FromErr(err)
 	}
 
-	_, err = waitForLBBackend(ctx, d, meta, d.Timeout(schema.TimeoutDelete))
+	_, err = waitForLB(ctx, lbAPI, zone, lbID, d.Timeout(schema.TimeoutDelete))
 	if err != nil {
 		if is403Error(err) {
 			d.SetId("")
