@@ -103,14 +103,14 @@ func resourceScalewayVPCPublicGatewayPATRuleCreate(ctx context.Context, d *schem
 		Protocol:    vpcgw.PATRuleProtocol(d.Get("protocol").(string)),
 	}
 
-	res, err := vpcgwAPI.CreatePATRule(req, scw.WithContext(ctx))
+	patRule, err := vpcgwAPI.CreatePATRule(req, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	d.SetId(newZonedIDString(zone, res.ID))
+	d.SetId(newZonedIDString(zone, patRule.ID))
 
-	_, err = waitForVPCPublicGateway(ctx, vpcgwAPI, zone, gatewayID, d.Timeout(schema.TimeoutCreate))
+	_, err = waitForVPCPublicGateway(ctx, vpcgwAPI, zone, patRule.GatewayID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
 		return diag.FromErr(err)
 	}
