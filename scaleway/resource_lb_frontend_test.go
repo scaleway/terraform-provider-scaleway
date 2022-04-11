@@ -6,7 +6,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
-	"github.com/scaleway/scaleway-sdk-go/api/lb/v1"
+	lbSDK "github.com/scaleway/scaleway-sdk-go/api/lb/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/stretchr/testify/assert"
 )
@@ -164,7 +164,7 @@ func testAccCheckScalewayFrontendCertificateExist(tt *TestTools, f, c string) re
 			return err
 		}
 
-		frEnd, err := lbAPI.GetFrontend(&lb.ZonedAPIGetFrontendRequest{
+		frEnd, err := lbAPI.GetFrontend(&lbSDK.ZonedAPIGetFrontendRequest{
 			FrontendID: ID,
 			Zone:       zone,
 		})
@@ -194,7 +194,7 @@ func testAccCheckScalewayLbFrontendExists(tt *TestTools, n string) resource.Test
 			return err
 		}
 
-		_, err = lbAPI.GetFrontend(&lb.ZonedAPIGetFrontendRequest{
+		_, err = lbAPI.GetFrontend(&lbSDK.ZonedAPIGetFrontendRequest{
 			FrontendID: ID,
 			Zone:       zone,
 		})
@@ -219,7 +219,7 @@ func testAccCheckScalewayLbFrontendDestroy(tt *TestTools) resource.TestCheckFunc
 				return err
 			}
 
-			_, err = lbAPI.GetFrontend(&lb.ZonedAPIGetFrontendRequest{
+			_, err = lbAPI.GetFrontend(&lbSDK.ZonedAPIGetFrontendRequest{
 				Zone:       zone,
 				FrontendID: ID,
 			})
@@ -240,27 +240,27 @@ func testAccCheckScalewayLbFrontendDestroy(tt *TestTools) resource.TestCheckFunc
 }
 
 func TestAclEqual(t *testing.T) {
-	aclA := &lb.ACL{
+	aclA := &lbSDK.ACL{
 		Name: "test-acl",
-		Match: &lb.ACLMatch{
+		Match: &lbSDK.ACLMatch{
 			IPSubnet:        scw.StringSlicePtr([]string{"192.168.0.1", "192.168.0.2", "192.168.10.0/24"}),
-			HTTPFilter:      lb.ACLHTTPFilterACLHTTPFilterNone,
+			HTTPFilter:      lbSDK.ACLHTTPFilterACLHTTPFilterNone,
 			HTTPFilterValue: nil,
 			Invert:          true,
 		},
-		Action:   &lb.ACLAction{Type: lb.ACLActionTypeAllow},
+		Action:   &lbSDK.ACLAction{Type: lbSDK.ACLActionTypeAllow},
 		Frontend: nil,
 		Index:    1,
 	}
-	aclB := &lb.ACL{
+	aclB := &lbSDK.ACL{
 		Name: "test-acl",
-		Match: &lb.ACLMatch{
+		Match: &lbSDK.ACLMatch{
 			IPSubnet:        scw.StringSlicePtr([]string{"192.168.0.1", "192.168.0.2", "192.168.10.0/24"}),
-			HTTPFilter:      lb.ACLHTTPFilterACLHTTPFilterNone,
+			HTTPFilter:      lbSDK.ACLHTTPFilterACLHTTPFilterNone,
 			HTTPFilterValue: nil,
 			Invert:          true,
 		},
-		Action:   &lb.ACLAction{Type: lb.ACLActionTypeAllow},
+		Action:   &lbSDK.ACLAction{Type: lbSDK.ACLActionTypeAllow},
 		Frontend: nil,
 		Index:    1,
 	}
@@ -274,11 +274,11 @@ func TestAclEqual(t *testing.T) {
 	//check action
 	aclA.Action = nil
 	assert.False(t, aclEquals(aclA, aclB))
-	aclA.Action = &lb.ACLAction{Type: lb.ACLActionTypeAllow}
+	aclA.Action = &lbSDK.ACLAction{Type: lbSDK.ACLActionTypeAllow}
 	assert.True(t, aclEquals(aclA, aclB))
-	aclA.Action = &lb.ACLAction{Type: lb.ACLActionTypeDeny}
+	aclA.Action = &lbSDK.ACLAction{Type: lbSDK.ACLActionTypeDeny}
 	assert.False(t, aclEquals(aclA, aclB))
-	aclA.Action = &lb.ACLAction{Type: lb.ACLActionTypeAllow}
+	aclA.Action = &lbSDK.ACLAction{Type: lbSDK.ACLActionTypeAllow}
 	assert.True(t, aclEquals(aclA, aclB))
 
 	//check match

@@ -9,7 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
-	"github.com/scaleway/scaleway-sdk-go/api/lb/v1"
+	lbSDK "github.com/scaleway/scaleway-sdk-go/api/lb/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 )
 
@@ -102,8 +102,8 @@ func resourceScalewayLbFrontend() *schema.Resource {
 										Type:     schema.TypeString,
 										Required: true,
 										ValidateFunc: validation.StringInSlice([]string{
-											lb.ACLActionTypeAllow.String(),
-											lb.ACLActionTypeDeny.String(),
+											lbSDK.ACLActionTypeAllow.String(),
+											lbSDK.ACLActionTypeDeny.String(),
 										}, false),
 										Description: "The action type",
 									},
@@ -129,12 +129,12 @@ func resourceScalewayLbFrontend() *schema.Resource {
 									"http_filter": {
 										Type:     schema.TypeString,
 										Optional: true,
-										Default:  lb.ACLHTTPFilterACLHTTPFilterNone.String(),
+										Default:  lbSDK.ACLHTTPFilterACLHTTPFilterNone.String(),
 										ValidateFunc: validation.StringInSlice([]string{
-											lb.ACLHTTPFilterACLHTTPFilterNone.String(),
-											lb.ACLHTTPFilterPathBegin.String(),
-											lb.ACLHTTPFilterPathEnd.String(),
-											lb.ACLHTTPFilterRegex.String(),
+											lbSDK.ACLHTTPFilterACLHTTPFilterNone.String(),
+											lbSDK.ACLHTTPFilterPathBegin.String(),
+											lbSDK.ACLHTTPFilterPathEnd.String(),
+											lbSDK.ACLHTTPFilterRegex.String(),
 										}, false),
 										Description: "The HTTP filter to match",
 									},
@@ -186,7 +186,7 @@ func resourceScalewayLbFrontendCreate(ctx context.Context, d *schema.ResourceDat
 		return diag.FromErr(err)
 	}
 
-	createFrontendRequest := &lb.ZonedAPICreateFrontendRequest{
+	createFrontendRequest := &lbSDK.ZonedAPICreateFrontendRequest{
 		Zone:          zone,
 		LBID:          lbID,
 		Name:          expandOrGenerateString(d.Get("name"), "lb-frt"),
@@ -221,7 +221,7 @@ func resourceScalewayLbFrontendRead(ctx context.Context, d *schema.ResourceData,
 		return diag.FromErr(err)
 	}
 
-	res, err := api.GetFrontend(&lb.ZonedAPIGetFrontendRequest{
+	res, err := api.GetFrontend(&lbSDK.ZonedAPIGetFrontendRequest{
 		Zone:       zone,
 		FrontendID: ID,
 	}, scw.WithContext(ctx))
@@ -250,7 +250,7 @@ func resourceScalewayLbFrontendRead(ctx context.Context, d *schema.ResourceData,
 	}
 
 	//read related acls.
-	resACL, err := api.ListACLs(&lb.ZonedAPIListACLsRequest{
+	resACL, err := api.ListACLs(&lbSDK.ZonedAPIListACLsRequest{
 		Zone:       zone,
 		FrontendID: ID,
 	}, scw.WithAllPages(), scw.WithContext(ctx))
@@ -263,7 +263,7 @@ func resourceScalewayLbFrontendRead(ctx context.Context, d *schema.ResourceData,
 	return nil
 }
 
-func flattenLBACLs(ACLs []*lb.ACL) interface{} {
+func flattenLBACLs(ACLs []*lbSDK.ACL) interface{} {
 	sort.Slice(ACLs, func(i, j int) bool {
 		return ACLs[i].Index < ACLs[j].Index
 	})
@@ -274,16 +274,16 @@ func flattenLBACLs(ACLs []*lb.ACL) interface{} {
 	return rawACLs
 }
 
-func resourceScalewayLbFrontendUpdateACL(ctx context.Context, d *schema.ResourceData, lbAPI *lb.ZonedAPI, zone scw.Zone, frontendID string) diag.Diagnostics {
+func resourceScalewayLbFrontendUpdateACL(ctx context.Context, d *schema.ResourceData, lbAPI *lbSDK.ZonedAPI, zone scw.Zone, frontendID string) diag.Diagnostics {
 	//Fetch existing acl from the api. and convert it to a hashmap with index as key
-	resACL, err := lbAPI.ListACLs(&lb.ZonedAPIListACLsRequest{
+	resACL, err := lbAPI.ListACLs(&lbSDK.ZonedAPIListACLsRequest{
 		Zone:       zone,
 		FrontendID: frontendID,
 	}, scw.WithAllPages(), scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	apiACLs := make(map[int32]*lb.ACL)
+	apiACLs := make(map[int32]*lbSDK.ACL)
 	for _, acl := range resACL.ACLs {
 		apiACLs[acl.Index] = acl
 	}
@@ -306,7 +306,7 @@ func resourceScalewayLbFrontendUpdateACL(ctx context.Context, d *schema.Resource
 			if aclEquals(stateACL, apiACL) {
 				continue
 			}
-			_, err = lbAPI.UpdateACL(&lb.ZonedAPIUpdateACLRequest{
+			_, err = lbAPI.UpdateACL(&lbSDK.ZonedAPIUpdateACLRequest{
 				Zone:   zone,
 				ACLID:  apiACL.ID,
 				Name:   stateACL.Name,
@@ -320,7 +320,7 @@ func resourceScalewayLbFrontendUpdateACL(ctx context.Context, d *schema.Resource
 			continue
 		}
 		//old acl doesn't exist, create a new one
-		_, err = lbAPI.CreateACL(&lb.ZonedAPICreateACLRequest{
+		_, err = lbAPI.CreateACL(&lbSDK.ZonedAPICreateACLRequest{
 			Zone:       zone,
 			FrontendID: frontendID,
 			Name:       expandOrGenerateString(stateACL.Name, "lb-acl"),
@@ -334,7 +334,7 @@ func resourceScalewayLbFrontendUpdateACL(ctx context.Context, d *schema.Resource
 	}
 	//we've finished with all new acl, delete any remaining old one which were not dealt with yet
 	for _, acl := range apiACLs {
-		err = lbAPI.DeleteACL(&lb.ZonedAPIDeleteACLRequest{
+		err = lbAPI.DeleteACL(&lbSDK.ZonedAPIDeleteACLRequest{
 			Zone:  zone,
 			ACLID: acl.ID,
 		}, scw.WithContext(ctx))
@@ -345,9 +345,9 @@ func resourceScalewayLbFrontendUpdateACL(ctx context.Context, d *schema.Resource
 	return nil
 }
 
-func expandsLBACLs(raw interface{}) []*lb.ACL {
+func expandsLBACLs(raw interface{}) []*lbSDK.ACL {
 	d := raw.([]interface{})
-	newACL := make([]*lb.ACL, 0)
+	newACL := make([]*lbSDK.ACL, 0)
 	for _, rawACL := range d {
 		newACL = append(newACL, expandLbACL(rawACL))
 	}
@@ -379,7 +379,7 @@ func resourceScalewayLbFrontendUpdate(ctx context.Context, d *schema.ResourceDat
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	req := &lb.ZonedAPIUpdateFrontendRequest{
+	req := &lbSDK.ZonedAPIUpdateFrontendRequest{
 		Zone:          zone,
 		FrontendID:    ID,
 		Name:          d.Get("name").(string),
@@ -412,7 +412,7 @@ func resourceScalewayLbFrontendDelete(ctx context.Context, d *schema.ResourceDat
 		return diag.FromErr(err)
 	}
 
-	err = api.DeleteFrontend(&lb.ZonedAPIDeleteFrontendRequest{
+	err = api.DeleteFrontend(&lbSDK.ZonedAPIDeleteFrontendRequest{
 		Zone:       zone,
 		FrontendID: ID,
 	}, scw.WithContext(ctx))
@@ -424,7 +424,7 @@ func resourceScalewayLbFrontendDelete(ctx context.Context, d *schema.ResourceDat
 	return nil
 }
 
-func aclEquals(aclA, aclB *lb.ACL) bool {
+func aclEquals(aclA, aclB *lbSDK.ACL) bool {
 	if aclA.Name != aclB.Name {
 		return false
 	}

@@ -8,7 +8,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
-	"github.com/scaleway/scaleway-sdk-go/api/lb/v1"
+	lbSDK "github.com/scaleway/scaleway-sdk-go/api/lb/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 )
 
@@ -21,10 +21,10 @@ func init() {
 
 func testSweepLB(_ string) error {
 	return sweepZones([]scw.Zone{scw.ZoneFrPar1, scw.ZoneNlAms1, scw.ZonePlWaw1}, func(scwClient *scw.Client, zone scw.Zone) error {
-		lbAPI := lb.NewZonedAPI(scwClient)
+		lbAPI := lbSDK.NewZonedAPI(scwClient)
 
 		l.Debugf("sweeper: destroying the lbs in (%s)", zone)
-		listLBs, err := lbAPI.ListLBs(&lb.ZonedAPIListLBsRequest{
+		listLBs, err := lbAPI.ListLBs(&lbSDK.ZonedAPIListLBsRequest{
 			Zone: zone,
 		}, scw.WithAllPages())
 		if err != nil {
@@ -38,7 +38,7 @@ func testSweepLB(_ string) error {
 				retryInterval = *DefaultWaitRetryInterval
 			}
 
-			_, err := lbAPI.WaitForLbInstances(&lb.ZonedAPIWaitForLBInstancesRequest{
+			_, err := lbAPI.WaitForLbInstances(&lbSDK.ZonedAPIWaitForLBInstancesRequest{
 				Zone:          zone,
 				LBID:          l.ID,
 				Timeout:       scw.TimeDurationPtr(defaultInstanceServerWaitTimeout),
@@ -47,7 +47,7 @@ func testSweepLB(_ string) error {
 			if err != nil {
 				return fmt.Errorf("error waiting for lb in sweeper: %s", err)
 			}
-			err = lbAPI.DeleteLB(&lb.ZonedAPIDeleteLBRequest{
+			err = lbAPI.DeleteLB(&lbSDK.ZonedAPIDeleteLBRequest{
 				LBID:      l.ID,
 				ReleaseIP: true,
 				Zone:      zone,
@@ -307,7 +307,7 @@ func testAccCheckScalewayLbExists(tt *TestTools, n string) resource.TestCheckFun
 			return err
 		}
 
-		_, err = lbAPI.GetLB(&lb.ZonedAPIGetLBRequest{
+		_, err = lbAPI.GetLB(&lbSDK.ZonedAPIGetLBRequest{
 			LBID: ID,
 			Zone: zone,
 		})
@@ -332,7 +332,7 @@ func testAccCheckScalewayLbDestroy(tt *TestTools) resource.TestCheckFunc {
 				return err
 			}
 
-			_, err = lbAPI.GetLB(&lb.ZonedAPIGetLBRequest{
+			_, err = lbAPI.GetLB(&lbSDK.ZonedAPIGetLBRequest{
 				Zone: zone,
 				LBID: ID,
 			})

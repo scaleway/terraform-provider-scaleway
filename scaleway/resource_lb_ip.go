@@ -6,7 +6,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/scaleway/scaleway-sdk-go/api/lb/v1"
+	lbSDK "github.com/scaleway/scaleway-sdk-go/api/lb/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 )
 
@@ -63,7 +63,7 @@ func resourceScalewayLbIPCreate(ctx context.Context, d *schema.ResourceData, met
 		zone = scw.Zone(zoneAttribute.(string))
 	}
 
-	createReq := &lb.ZonedAPICreateIPRequest{
+	createReq := &lbSDK.ZonedAPICreateIPRequest{
 		Zone:      zone,
 		ProjectID: expandStringPtr(d.Get("project_id")),
 		Reverse:   expandStringPtr(d.Get("reverse")),
@@ -85,9 +85,9 @@ func resourceScalewayLbIPRead(ctx context.Context, d *schema.ResourceData, meta 
 		return diag.FromErr(err)
 	}
 
-	var ip *lb.IP
+	var ip *lbSDK.IP
 	err = resource.RetryContext(ctx, d.Timeout(schema.TimeoutRead), func() *resource.RetryError {
-		res, errGet := api.GetIP(&lb.ZonedAPIGetIPRequest{
+		res, errGet := api.GetIP(&lbSDK.ZonedAPIGetIPRequest{
 			Zone: zone,
 			IPID: ID,
 		}, scw.WithContext(ctx))
@@ -145,9 +145,9 @@ func resourceScalewayLbIPUpdate(ctx context.Context, d *schema.ResourceData, met
 		return diag.FromErr(err)
 	}
 
-	var ip *lb.IP
+	var ip *lbSDK.IP
 	err = resource.RetryContext(ctx, d.Timeout(schema.TimeoutUpdate), func() *resource.RetryError {
-		res, errGet := api.GetIP(&lb.ZonedAPIGetIPRequest{
+		res, errGet := api.GetIP(&lbSDK.ZonedAPIGetIPRequest{
 			Zone: zone,
 			IPID: ID,
 		}, scw.WithContext(ctx))
@@ -182,7 +182,7 @@ func resourceScalewayLbIPUpdate(ctx context.Context, d *schema.ResourceData, met
 	}
 
 	if d.HasChange("reverse") {
-		req := &lb.ZonedAPIUpdateIPRequest{
+		req := &lbSDK.ZonedAPIUpdateIPRequest{
 			Zone:    zone,
 			IPID:    ID,
 			Reverse: expandStringPtr(d.Get("reverse")),
@@ -215,9 +215,9 @@ func resourceScalewayLbIPDelete(ctx context.Context, d *schema.ResourceData, met
 		return diag.FromErr(err)
 	}
 
-	var ip *lb.IP
+	var ip *lbSDK.IP
 	err = resource.RetryContext(ctx, d.Timeout(schema.TimeoutDelete), func() *resource.RetryError {
-		res, errGet := api.GetIP(&lb.ZonedAPIGetIPRequest{
+		res, errGet := api.GetIP(&lbSDK.ZonedAPIGetIPRequest{
 			Zone: zone,
 			IPID: ID,
 		}, scw.WithContext(ctx))
@@ -248,7 +248,7 @@ func resourceScalewayLbIPDelete(ctx context.Context, d *schema.ResourceData, met
 		}
 	}
 
-	err = api.ReleaseIP(&lb.ZonedAPIReleaseIPRequest{
+	err = api.ReleaseIP(&lbSDK.ZonedAPIReleaseIPRequest{
 		Zone: zone,
 		IPID: ID,
 	}, scw.WithContext(ctx))

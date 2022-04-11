@@ -7,7 +7,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/scaleway/scaleway-sdk-go/api/lb/v1"
+	lbSDK "github.com/scaleway/scaleway-sdk-go/api/lb/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 )
 
@@ -130,7 +130,7 @@ func resourceScalewayLbCertificateCreate(ctx context.Context, d *schema.Resource
 		return diag.FromErr(err)
 	}
 
-	createReq := &lb.ZonedAPICreateCertificateRequest{
+	createReq := &lbSDK.ZonedAPICreateCertificateRequest{
 		Zone:              zone,
 		LBID:              lbID,
 		Name:              expandOrGenerateString(d.Get("name"), "lb-cert"),
@@ -181,7 +181,7 @@ func resourceScalewayLbCertificateRead(ctx context.Context, d *schema.ResourceDa
 	}
 
 	// check if cert is on error state
-	if cert.Status == lb.CertificateStatusError {
+	if cert.Status == lbSDK.CertificateStatusError {
 		return diag.FromErr(fmt.Errorf("certificate with error state"))
 	}
 
@@ -217,7 +217,7 @@ func resourceScalewayLbCertificateUpdate(ctx context.Context, d *schema.Resource
 	}
 
 	if d.HasChange("name") {
-		req := &lb.ZonedAPIUpdateCertificateRequest{
+		req := &lbSDK.ZonedAPIUpdateCertificateRequest{
 			CertificateID: ID,
 			Zone:          zone,
 			Name:          d.Get("name").(string),
@@ -256,7 +256,7 @@ func resourceScalewayLbCertificateDelete(ctx context.Context, d *schema.Resource
 		return diag.FromErr(err)
 	}
 
-	err = api.DeleteCertificate(&lb.ZonedAPIDeleteCertificateRequest{
+	err = api.DeleteCertificate(&lbSDK.ZonedAPIDeleteCertificateRequest{
 		Zone:          zone,
 		CertificateID: ID,
 	}, scw.WithContext(ctx))

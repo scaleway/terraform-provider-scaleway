@@ -6,7 +6,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
-	"github.com/scaleway/scaleway-sdk-go/api/lb/v1"
+	lbSDK "github.com/scaleway/scaleway-sdk-go/api/lb/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 )
 
@@ -42,8 +42,8 @@ func resourceScalewayLbBackend() *schema.Resource {
 			"forward_protocol": {
 				Type: schema.TypeString,
 				ValidateFunc: validation.StringInSlice([]string{
-					lb.ProtocolTCP.String(),
-					lb.ProtocolHTTP.String(),
+					lbSDK.ProtocolTCP.String(),
+					lbSDK.ProtocolHTTP.String(),
 				}, false),
 				Required:    true,
 				Description: "Backend protocol",
@@ -56,22 +56,22 @@ func resourceScalewayLbBackend() *schema.Resource {
 			"forward_port_algorithm": {
 				Type: schema.TypeString,
 				ValidateFunc: validation.StringInSlice([]string{
-					lb.ForwardPortAlgorithmRoundrobin.String(),
-					lb.ForwardPortAlgorithmLeastconn.String(),
-					lb.ForwardPortAlgorithmFirst.String(),
+					lbSDK.ForwardPortAlgorithmRoundrobin.String(),
+					lbSDK.ForwardPortAlgorithmLeastconn.String(),
+					lbSDK.ForwardPortAlgorithmFirst.String(),
 				}, false),
-				Default:     lb.ForwardPortAlgorithmRoundrobin.String(),
+				Default:     lbSDK.ForwardPortAlgorithmRoundrobin.String(),
 				Optional:    true,
 				Description: "Load balancing algorithm",
 			},
 			"sticky_sessions": {
 				Type: schema.TypeString,
 				ValidateFunc: validation.StringInSlice([]string{
-					lb.StickySessionsTypeNone.String(),
-					lb.StickySessionsTypeCookie.String(),
-					lb.StickySessionsTypeTable.String(),
+					lbSDK.StickySessionsTypeNone.String(),
+					lbSDK.StickySessionsTypeCookie.String(),
+					lbSDK.StickySessionsTypeTable.String(),
 				}, false),
-				Default:     lb.StickySessionsTypeNone.String(),
+				Default:     lbSDK.StickySessionsTypeNone.String(),
 				Optional:    true,
 				Description: "Load balancing algorithm",
 			},
@@ -100,13 +100,13 @@ func resourceScalewayLbBackend() *schema.Resource {
 				Type:        schema.TypeString,
 				Description: "Type of PROXY protocol to enable",
 				Optional:    true,
-				Default:     flattenLbProxyProtocol(lb.ProxyProtocolProxyProtocolNone).(string),
+				Default:     flattenLbProxyProtocol(lbSDK.ProxyProtocolProxyProtocolNone).(string),
 				ValidateFunc: validation.StringInSlice([]string{
-					flattenLbProxyProtocol(lb.ProxyProtocolProxyProtocolNone).(string),
-					flattenLbProxyProtocol(lb.ProxyProtocolProxyProtocolV1).(string),
-					flattenLbProxyProtocol(lb.ProxyProtocolProxyProtocolV2).(string),
-					flattenLbProxyProtocol(lb.ProxyProtocolProxyProtocolV2Ssl).(string),
-					flattenLbProxyProtocol(lb.ProxyProtocolProxyProtocolV2SslCn).(string),
+					flattenLbProxyProtocol(lbSDK.ProxyProtocolProxyProtocolNone).(string),
+					flattenLbProxyProtocol(lbSDK.ProxyProtocolProxyProtocolV1).(string),
+					flattenLbProxyProtocol(lbSDK.ProxyProtocolProxyProtocolV2).(string),
+					flattenLbProxyProtocol(lbSDK.ProxyProtocolProxyProtocolV2Ssl).(string),
+					flattenLbProxyProtocol(lbSDK.ProxyProtocolProxyProtocolV2SslCn).(string),
 				}, false),
 			},
 			// Timeouts
@@ -229,7 +229,7 @@ func resourceScalewayLbBackend() *schema.Resource {
 				Type: schema.TypeString,
 				ValidateFunc: validation.StringInSlice([]string{
 					"none",
-					lb.OnMarkedDownActionShutdownSessions.String(),
+					lbSDK.OnMarkedDownActionShutdownSessions.String(),
 				}, false),
 				Default:     "none",
 				Optional:    true,
@@ -284,7 +284,7 @@ func resourceScalewayLbBackendCreate(ctx context.Context, d *schema.ResourceData
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	createReq := &lb.ZonedAPICreateBackendRequest{
+	createReq := &lbSDK.ZonedAPICreateBackendRequest{
 		Zone:                     zone,
 		LBID:                     lbID,
 		Name:                     expandOrGenerateString(d.Get("name"), "lb-bkd"),
@@ -293,7 +293,7 @@ func resourceScalewayLbBackendCreate(ctx context.Context, d *schema.ResourceData
 		ForwardPortAlgorithm:     expandLbForwardPortAlgorithm(d.Get("forward_port_algorithm")),
 		StickySessions:           expandLbStickySessionsType(d.Get("sticky_sessions")),
 		StickySessionsCookieName: d.Get("sticky_sessions_cookie_name").(string),
-		HealthCheck: &lb.HealthCheck{
+		HealthCheck: &lbSDK.HealthCheck{
 			Port:            int32(healthCheckPort),
 			CheckMaxRetries: int32(d.Get("health_check_max_retries").(int)),
 			CheckTimeout:    healthCheckoutTimeout,
@@ -336,7 +336,7 @@ func resourceScalewayLbBackendRead(ctx context.Context, d *schema.ResourceData, 
 		return diag.FromErr(err)
 	}
 
-	backend, err := lbAPI.GetBackend(&lb.ZonedAPIGetBackendRequest{
+	backend, err := lbAPI.GetBackend(&lbSDK.ZonedAPIGetBackendRequest{
 		Zone:      zone,
 		BackendID: ID,
 	}, scw.WithContext(ctx))
@@ -417,7 +417,7 @@ func resourceScalewayLbBackendUpdate(ctx context.Context, d *schema.ResourceData
 		return diag.FromErr(err)
 	}
 
-	req := &lb.ZonedAPIUpdateBackendRequest{
+	req := &lbSDK.ZonedAPIUpdateBackendRequest{
 		Zone:                     zone,
 		BackendID:                ID,
 		Name:                     d.Get("name").(string),
@@ -448,7 +448,7 @@ func resourceScalewayLbBackendUpdate(ctx context.Context, d *schema.ResourceData
 		return diag.FromErr(err)
 	}
 	// Update Health Check
-	updateHCRequest := &lb.ZonedAPIUpdateHealthCheckRequest{
+	updateHCRequest := &lbSDK.ZonedAPIUpdateHealthCheckRequest{
 		Zone:            zone,
 		BackendID:       ID,
 		Port:            int32(d.Get("health_check_port").(int)),
@@ -470,7 +470,7 @@ func resourceScalewayLbBackendUpdate(ctx context.Context, d *schema.ResourceData
 	}
 
 	// Update Backend servers
-	_, err = lbAPI.SetBackendServers(&lb.ZonedAPISetBackendServersRequest{
+	_, err = lbAPI.SetBackendServers(&lbSDK.ZonedAPISetBackendServersRequest{
 		Zone:      zone,
 		BackendID: ID,
 		ServerIP:  expandStrings(d.Get("server_ips")),
@@ -511,7 +511,7 @@ func resourceScalewayLbBackendDelete(ctx context.Context, d *schema.ResourceData
 		return diag.FromErr(err)
 	}
 
-	err = lbAPI.DeleteBackend(&lb.ZonedAPIDeleteBackendRequest{
+	err = lbAPI.DeleteBackend(&lbSDK.ZonedAPIDeleteBackendRequest{
 		Zone:      zone,
 		BackendID: ID,
 	}, scw.WithContext(ctx))
