@@ -82,7 +82,7 @@ func resourceScalewayContainerNamespaceCreate(ctx context.Context, d *schema.Res
 
 	d.SetId(newRegionalIDString(region, ns.ID))
 
-	_, err = waitForContainerNamespace(ctx, d, meta, d.Timeout(schema.TimeoutCreate))
+	_, err = waitForContainerNamespace(ctx, api, region, ns.ID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -91,7 +91,12 @@ func resourceScalewayContainerNamespaceCreate(ctx context.Context, d *schema.Res
 }
 
 func resourceScalewayContainerNamespaceRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	ns, err := waitForContainerNamespace(ctx, d, meta, d.Timeout(schema.TimeoutRead))
+	api, region, id, err := containerAPIWithRegionAndID(meta, d.Id())
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	ns, err := waitForContainerNamespace(ctx, api, region, id, d.Timeout(schema.TimeoutRead))
 	if err != nil {
 		if is404Error(err) {
 			d.SetId("")
@@ -113,12 +118,12 @@ func resourceScalewayContainerNamespaceRead(ctx context.Context, d *schema.Resou
 }
 
 func resourceScalewayContainerNamespaceUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, _, _, err := containerAPIWithRegionAndID(meta, d.Id())
+	api, region, id, err := containerAPIWithRegionAndID(meta, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	ns, err := waitForContainerNamespace(ctx, d, meta, d.Timeout(schema.TimeoutUpdate))
+	ns, err := waitForContainerNamespace(ctx, api, region, id, d.Timeout(schema.TimeoutUpdate))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -150,7 +155,7 @@ func resourceScalewayContainerNamespaceDelete(ctx context.Context, d *schema.Res
 		return diag.FromErr(err)
 	}
 
-	_, err = waitForContainerNamespace(ctx, d, meta, d.Timeout(schema.TimeoutDelete))
+	_, err = waitForContainerNamespace(ctx, api, region, id, d.Timeout(schema.TimeoutDelete))
 	if err != nil {
 		if is404Error(err) {
 			d.SetId("")
@@ -163,15 +168,11 @@ func resourceScalewayContainerNamespaceDelete(ctx context.Context, d *schema.Res
 		Region:      region,
 		NamespaceID: id,
 	}, scw.WithContext(ctx))
-
 	if err != nil && !is404Error(err) {
 		return diag.FromErr(err)
 	}
 
-	_, err = api.WaitForNamespace(&container.WaitForNamespaceRequest{
-		Region:      region,
-		NamespaceID: id,
-	}, scw.WithContext(ctx))
+	_, err = waitForContainerNamespace(ctx, api, region, id, d.Timeout(schema.TimeoutDelete))
 	if err != nil {
 		if is404Error(err) {
 			d.SetId("")
@@ -179,5 +180,6 @@ func resourceScalewayContainerNamespaceDelete(ctx context.Context, d *schema.Res
 		}
 		return diag.FromErr(err)
 	}
+
 	return nil
 }

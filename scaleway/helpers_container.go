@@ -100,18 +100,13 @@ func setCreateContainerRequest(d *schema.ResourceData, region scw.Region) (*cont
 	return req, nil
 }
 
-func waitForContainerNamespace(ctx context.Context, d *schema.ResourceData, meta interface{}, timeout time.Duration) (*container.Namespace, error) {
-	api, region, id, err := containerAPIWithRegionAndID(meta, d.Id())
-	if err != nil {
-		return nil, err
-	}
-
+func waitForContainerNamespace(ctx context.Context, containerAPI *container.API, region scw.Region, id string, timeout time.Duration) (*container.Namespace, error) {
 	retryInterval := defaultContainerRetryInterval
 	if DefaultWaitRetryInterval != nil {
 		retryInterval = *DefaultWaitRetryInterval
 	}
 
-	ns, err := api.WaitForNamespace(&container.WaitForNamespaceRequest{
+	ns, err := containerAPI.WaitForNamespace(&container.WaitForNamespaceRequest{
 		Region:        region,
 		NamespaceID:   id,
 		RetryInterval: &retryInterval,
