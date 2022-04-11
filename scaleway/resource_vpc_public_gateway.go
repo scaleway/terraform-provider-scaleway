@@ -101,7 +101,7 @@ func resourceScalewayVPCPublicGatewayCreate(ctx context.Context, d *schema.Resou
 	d.SetId(newZonedIDString(zone, res.ID))
 
 	// check err waiting process
-	_, err = waitForVPCPublicGateway(ctx, d, meta, d.Timeout(schema.TimeoutCreate))
+	_, err = waitForVPCPublicGateway(ctx, vpcgwAPI, zone, res.ID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -110,7 +110,12 @@ func resourceScalewayVPCPublicGatewayCreate(ctx context.Context, d *schema.Resou
 }
 
 func resourceScalewayVPCPublicGatewayRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	gateway, err := waitForVPCPublicGateway(ctx, d, meta, d.Timeout(schema.TimeoutRead))
+	vpcgwAPI, zone, id, err := vpcgwAPIWithZoneAndID(meta, d.Id())
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	gateway, err := waitForVPCPublicGateway(ctx, vpcgwAPI, zone, id, d.Timeout(schema.TimeoutRead))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -129,12 +134,12 @@ func resourceScalewayVPCPublicGatewayRead(ctx context.Context, d *schema.Resourc
 }
 
 func resourceScalewayVPCPublicGatewayUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	vpcgwAPI, _, _, err := vpcgwAPIWithZoneAndID(meta, d.Id())
+	vpcgwAPI, zone, id, err := vpcgwAPIWithZoneAndID(meta, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	gateway, err := waitForVPCPublicGateway(ctx, d, meta, d.Timeout(schema.TimeoutUpdate))
+	gateway, err := waitForVPCPublicGateway(ctx, vpcgwAPI, zone, id, d.Timeout(schema.TimeoutUpdate))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -154,7 +159,7 @@ func resourceScalewayVPCPublicGatewayUpdate(ctx context.Context, d *schema.Resou
 		}
 	}
 
-	_, err = waitForVPCPublicGateway(ctx, d, meta, d.Timeout(schema.TimeoutUpdate))
+	_, err = waitForVPCPublicGateway(ctx, vpcgwAPI, zone, id, d.Timeout(schema.TimeoutUpdate))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -163,20 +168,25 @@ func resourceScalewayVPCPublicGatewayUpdate(ctx context.Context, d *schema.Resou
 }
 
 func resourceScalewayVPCPublicGatewayDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	vpcgwAPI, zone, ID, err := vpcgwAPIWithZoneAndID(meta, d.Id())
+	vpcgwAPI, zone, id, err := vpcgwAPIWithZoneAndID(meta, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	_, err = waitForVPCPublicGateway(ctx, d, meta, d.Timeout(schema.TimeoutDelete))
+	_, err = waitForVPCPublicGateway(ctx, vpcgwAPI, zone, id, d.Timeout(schema.TimeoutDelete))
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	err = vpcgwAPI.DeleteGateway(&vpcgw.DeleteGatewayRequest{
-		GatewayID: ID,
+		GatewayID: id,
 		Zone:      zone,
 	}, scw.WithContext(ctx))
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	_, err = waitForVPCPublicGateway(ctx, vpcgwAPI, zone, id, d.Timeout(schema.TimeoutDelete))
 	if err != nil && !is404Error(err) {
 		return diag.FromErr(err)
 	}

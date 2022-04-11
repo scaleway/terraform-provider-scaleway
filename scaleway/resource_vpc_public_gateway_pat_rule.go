@@ -89,7 +89,7 @@ func resourceScalewayVPCPublicGatewayPATRuleCreate(ctx context.Context, d *schem
 	}
 
 	gatewayID := expandZonedID(d.Get("gateway_id").(string)).ID
-	_, err = waitForVPCPublicGatewayPATRule(ctx, d, meta, d.Timeout(schema.TimeoutCreate))
+	_, err = waitForVPCPublicGateway(ctx, vpcgwAPI, zone, gatewayID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -110,7 +110,7 @@ func resourceScalewayVPCPublicGatewayPATRuleCreate(ctx context.Context, d *schem
 
 	d.SetId(newZonedIDString(zone, res.ID))
 
-	_, err = waitForVPCPublicGatewayPATRule(ctx, d, meta, d.Timeout(schema.TimeoutCreate))
+	_, err = waitForVPCPublicGateway(ctx, vpcgwAPI, zone, gatewayID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -164,7 +164,7 @@ func resourceScalewayVPCPublicGatewayPATRuleUpdate(ctx context.Context, d *schem
 	}
 
 	//check gateway is in stable state.
-	_, err = waitForVPCPublicGatewayPATRule(ctx, d, meta, d.Timeout(schema.TimeoutUpdate))
+	_, err = waitForVPCPublicGateway(ctx, vpcgwAPI, zone, ID, d.Timeout(schema.TimeoutUpdate))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -213,7 +213,7 @@ func resourceScalewayVPCPublicGatewayPATRuleDelete(ctx context.Context, d *schem
 	}
 
 	//check gateway is in stable state.
-	_, err = waitForVPCPublicGatewayPATRule(ctx, d, meta, d.Timeout(schema.TimeoutDelete))
+	_, err = waitForVPCPublicGateway(ctx, vpcgwAPI, zone, ID, d.Timeout(schema.TimeoutDelete))
 	if err != nil && !is404Error(err) {
 		return diag.FromErr(err)
 	}
@@ -227,7 +227,7 @@ func resourceScalewayVPCPublicGatewayPATRuleDelete(ctx context.Context, d *schem
 		return diag.FromErr(err)
 	}
 
-	_, err = waitForVPCPublicGatewayPATRule(ctx, d, meta, d.Timeout(schema.TimeoutDelete))
+	_, err = waitForVPCPublicGateway(ctx, vpcgwAPI, zone, ID, d.Timeout(schema.TimeoutDelete))
 	if err != nil && !is404Error(err) {
 		return diag.FromErr(err)
 	}
