@@ -142,7 +142,7 @@ func testAccCheckScalewayLbIPDestroy(tt *TestTools) resource.TestCheckFunc {
 				continue
 			}
 
-			api, zone, ID, err := lbAPIWithZoneAndID(tt.Meta, rs.Primary.ID)
+			lbAPI, zone, ID, err := lbAPIWithZoneAndID(tt.Meta, rs.Primary.ID)
 			if err != nil {
 				return err
 			}
@@ -155,7 +155,7 @@ func testAccCheckScalewayLbIPDestroy(tt *TestTools) resource.TestCheckFunc {
 					retryInterval = *DefaultWaitRetryInterval
 				}
 
-				_, err := api.WaitForLbInstances(&lbSDK.ZonedAPIWaitForLBInstancesRequest{
+				_, err := lbAPI.WaitForLbInstances(&lbSDK.ZonedAPIWaitForLBInstancesRequest{
 					Zone:          zone,
 					LBID:          ID,
 					Timeout:       scw.TimeDurationPtr(defaultInstanceServerWaitTimeout),
@@ -169,7 +169,7 @@ func testAccCheckScalewayLbIPDestroy(tt *TestTools) resource.TestCheckFunc {
 			}
 
 			err = resource.RetryContext(context.Background(), retryLbIPInterval, func() *resource.RetryError {
-				_, errGet := api.GetIP(&lbSDK.ZonedAPIGetIPRequest{
+				_, errGet := lbAPI.GetIP(&lbSDK.ZonedAPIGetIPRequest{
 					Zone: zone,
 					IPID: ID,
 				})
