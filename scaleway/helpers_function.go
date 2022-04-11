@@ -38,18 +38,13 @@ func functionAPIWithRegionAndID(m interface{}, id string) (*function.API, scw.Re
 	return api, region, id, nil
 }
 
-func waitForFunctionNamespace(ctx context.Context, d *schema.ResourceData, meta interface{}, timeout time.Duration) (*function.Namespace, error) {
-	api, region, id, err := functionAPIWithRegionAndID(meta, d.Id())
-	if err != nil {
-		return nil, err
-	}
-
+func waitForFunctionNamespace(ctx context.Context, functionAPI *function.API, region scw.Region, id string, timeout time.Duration) (*function.Namespace, error) {
 	retryInterval := defaultFunctionRetryInterval
 	if DefaultWaitRetryInterval != nil {
 		retryInterval = *DefaultWaitRetryInterval
 	}
 
-	ns, err := api.WaitForNamespace(&function.WaitForNamespaceRequest{
+	ns, err := functionAPI.WaitForNamespace(&function.WaitForNamespaceRequest{
 		Region:        region,
 		NamespaceID:   id,
 		RetryInterval: &retryInterval,
