@@ -240,8 +240,6 @@ func sanitizeVolumeMap(serverName string, volumes map[string]*instance.VolumeSer
 	m := make(map[string]*instance.VolumeServerTemplate)
 
 	for index, v := range volumes {
-		v.Name = serverName + "-" + index
-
 		// Remove extra data for API validation.
 		switch {
 		// If a volume already got an ID it is passed as it to the API without specifying the volume type.
