@@ -80,14 +80,14 @@ func resourceScalewayLbIPCreate(ctx context.Context, d *schema.ResourceData, met
 }
 
 func resourceScalewayLbIPRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, zone, ID, err := lbAPIWithZoneAndID(meta, d.Id())
+	lbAPI, zone, ID, err := lbAPIWithZoneAndID(meta, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	var ip *lbSDK.IP
 	err = resource.RetryContext(ctx, d.Timeout(schema.TimeoutRead), func() *resource.RetryError {
-		res, errGet := api.GetIP(&lbSDK.ZonedAPIGetIPRequest{
+		res, errGet := lbAPI.GetIP(&lbSDK.ZonedAPIGetIPRequest{
 			Zone: zone,
 			IPID: ID,
 		}, scw.WithContext(ctx))
@@ -112,7 +112,7 @@ func resourceScalewayLbIPRead(ctx context.Context, d *schema.ResourceData, meta 
 
 	// check lb state if it is attached
 	if ip.LBID != nil {
-		_, err = waitForLB(ctx, api, zone, ID, d.Timeout(schema.TimeoutRead))
+		_, err = waitForLB(ctx, lbAPI, zone, ID, d.Timeout(schema.TimeoutRead))
 		if err != nil {
 			if is403Error(err) {
 				d.SetId("")
@@ -140,14 +140,14 @@ func resourceScalewayLbIPRead(ctx context.Context, d *schema.ResourceData, meta 
 }
 
 func resourceScalewayLbIPUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, zone, ID, err := lbAPIWithZoneAndID(meta, d.Id())
+	lbAPI, zone, ID, err := lbAPIWithZoneAndID(meta, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	var ip *lbSDK.IP
 	err = resource.RetryContext(ctx, d.Timeout(schema.TimeoutUpdate), func() *resource.RetryError {
-		res, errGet := api.GetIP(&lbSDK.ZonedAPIGetIPRequest{
+		res, errGet := lbAPI.GetIP(&lbSDK.ZonedAPIGetIPRequest{
 			Zone: zone,
 			IPID: ID,
 		}, scw.WithContext(ctx))
@@ -171,7 +171,7 @@ func resourceScalewayLbIPUpdate(ctx context.Context, d *schema.ResourceData, met
 	}
 
 	if ip.LBID != nil {
-		_, err = waitForLB(ctx, api, zone, *ip.LBID, d.Timeout(schema.TimeoutUpdate))
+		_, err = waitForLB(ctx, lbAPI, zone, *ip.LBID, d.Timeout(schema.TimeoutUpdate))
 		if err != nil {
 			if is403Error(err) {
 				d.SetId("")
@@ -188,14 +188,14 @@ func resourceScalewayLbIPUpdate(ctx context.Context, d *schema.ResourceData, met
 			Reverse: expandStringPtr(d.Get("reverse")),
 		}
 
-		_, err = api.UpdateIP(req, scw.WithContext(ctx))
+		_, err = lbAPI.UpdateIP(req, scw.WithContext(ctx))
 		if err != nil {
 			return diag.FromErr(err)
 		}
 	}
 
 	if ip.LBID != nil {
-		_, err = waitForLB(ctx, api, zone, *ip.LBID, d.Timeout(schema.TimeoutUpdate))
+		_, err = waitForLB(ctx, lbAPI, zone, *ip.LBID, d.Timeout(schema.TimeoutUpdate))
 		if err != nil {
 			if is403Error(err) {
 				d.SetId("")
@@ -210,14 +210,14 @@ func resourceScalewayLbIPUpdate(ctx context.Context, d *schema.ResourceData, met
 
 //gocyclo:ignore
 func resourceScalewayLbIPDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, zone, ID, err := lbAPIWithZoneAndID(meta, d.Id())
+	lbAPI, zone, ID, err := lbAPIWithZoneAndID(meta, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	var ip *lbSDK.IP
 	err = resource.RetryContext(ctx, d.Timeout(schema.TimeoutDelete), func() *resource.RetryError {
-		res, errGet := api.GetIP(&lbSDK.ZonedAPIGetIPRequest{
+		res, errGet := lbAPI.GetIP(&lbSDK.ZonedAPIGetIPRequest{
 			Zone: zone,
 			IPID: ID,
 		}, scw.WithContext(ctx))
@@ -238,7 +238,7 @@ func resourceScalewayLbIPDelete(ctx context.Context, d *schema.ResourceData, met
 
 	// check lb state
 	if ip != nil && ip.LBID != nil {
-		_, err = waitForLB(ctx, api, zone, *ip.LBID, d.Timeout(schema.TimeoutDelete))
+		_, err = waitForLB(ctx, lbAPI, zone, *ip.LBID, d.Timeout(schema.TimeoutDelete))
 		if err != nil {
 			if is403Error(err) {
 				d.SetId("")
@@ -248,7 +248,7 @@ func resourceScalewayLbIPDelete(ctx context.Context, d *schema.ResourceData, met
 		}
 	}
 
-	err = api.ReleaseIP(&lbSDK.ZonedAPIReleaseIPRequest{
+	err = lbAPI.ReleaseIP(&lbSDK.ZonedAPIReleaseIPRequest{
 		Zone: zone,
 		IPID: ID,
 	}, scw.WithContext(ctx))
@@ -259,7 +259,7 @@ func resourceScalewayLbIPDelete(ctx context.Context, d *schema.ResourceData, met
 
 	// check lb state
 	if ip != nil && ip.LBID != nil {
-		_, err = waitForLB(ctx, api, zone, *ip.LBID, d.Timeout(schema.TimeoutDelete))
+		_, err = waitForLB(ctx, lbAPI, zone, *ip.LBID, d.Timeout(schema.TimeoutDelete))
 		if err != nil {
 			if is404Error(err) || is403Error(err) {
 				d.SetId("")
