@@ -124,7 +124,7 @@ func resourceScalewayVPCPublicGatewayPATRuleRead(ctx context.Context, d *schema.
 		return diag.FromErr(err)
 	}
 
-	patRules, err := vpcgwAPI.GetPATRule(&vpcgw.GetPATRuleRequest{
+	patRule, err := vpcgwAPI.GetPATRule(&vpcgw.GetPATRuleRequest{
 		PatRuleID: ID,
 		Zone:      zone,
 	}, scw.WithContext(ctx))
@@ -136,14 +136,14 @@ func resourceScalewayVPCPublicGatewayPATRuleRead(ctx context.Context, d *schema.
 		return diag.FromErr(err)
 	}
 
-	gatewayID := newZonedID(zone, patRules.GatewayID).String()
-	_ = d.Set("created_at", patRules.CreatedAt.Format(time.RFC3339))
-	_ = d.Set("updated_at", patRules.UpdatedAt.Format(time.RFC3339))
+	gatewayID := newZonedID(zone, patRule.GatewayID).String()
+	_ = d.Set("created_at", patRule.CreatedAt.Format(time.RFC3339))
+	_ = d.Set("updated_at", patRule.UpdatedAt.Format(time.RFC3339))
 	_ = d.Set("gateway_id", gatewayID)
-	_ = d.Set("private_ip", patRules.PrivateIP.String())
-	_ = d.Set("private_port", int(patRules.PrivatePort))
-	_ = d.Set("public_port", int(patRules.PublicPort))
-	_ = d.Set("protocol", patRules.Protocol.String())
+	_ = d.Set("private_ip", patRule.PrivateIP.String())
+	_ = d.Set("private_port", int(patRule.PrivatePort))
+	_ = d.Set("public_port", int(patRule.PublicPort))
+	_ = d.Set("protocol", patRule.Protocol.String())
 	_ = d.Set("zone", zone)
 
 	return nil
@@ -155,7 +155,7 @@ func resourceScalewayVPCPublicGatewayPATRuleUpdate(ctx context.Context, d *schem
 		return diag.FromErr(err)
 	}
 
-	_, err = vpcgwAPI.GetPATRule(&vpcgw.GetPATRuleRequest{
+	patRule, err := vpcgwAPI.GetPATRule(&vpcgw.GetPATRuleRequest{
 		PatRuleID: ID,
 		Zone:      zone,
 	}, scw.WithContext(ctx))
@@ -164,7 +164,7 @@ func resourceScalewayVPCPublicGatewayPATRuleUpdate(ctx context.Context, d *schem
 	}
 
 	//check gateway is in stable state.
-	_, err = waitForVPCPublicGateway(ctx, vpcgwAPI, zone, ID, d.Timeout(schema.TimeoutUpdate))
+	_, err = waitForVPCPublicGateway(ctx, vpcgwAPI, zone, patRule.GatewayID, d.Timeout(schema.TimeoutUpdate))
 	if err != nil {
 		return diag.FromErr(err)
 	}
