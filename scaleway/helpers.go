@@ -592,3 +592,7 @@ func expandMapStringStringPtr(data interface{}) *map[string]string {
 func toUint32(number interface{}) *uint32 {
 	return scw.Uint32Ptr(number.(uint32))
 }
+
+func errorCheck(err error, message string) bool {
+	return strings.Contains(err.Error(), message)
+}
