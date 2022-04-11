@@ -112,7 +112,7 @@ func resourceScalewayLbIPRead(ctx context.Context, d *schema.ResourceData, meta 
 
 	// check lb state if it is attached
 	if ip.LBID != nil {
-		_, err = waitForLB(ctx, lbAPI, zone, ID, d.Timeout(schema.TimeoutRead))
+		_, err = waitForLB(ctx, lbAPI, zone, *ip.LBID, d.Timeout(schema.TimeoutRead))
 		if err != nil {
 			if is403Error(err) {
 				d.SetId("")
