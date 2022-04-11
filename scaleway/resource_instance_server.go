@@ -292,10 +292,14 @@ func resourceScalewayInstanceServerCreate(ctx context.Context, d *schema.Resourc
 		Project:           expandStringPtr(d.Get("project_id")),
 		Image:             imageUUID,
 		CommercialType:    commercialType,
-		EnableIPv6:        d.Get("enable_ipv6").(bool),
 		SecurityGroup:     expandStringPtr(expandZonedID(d.Get("security_group_id")).ID),
 		DynamicIPRequired: scw.BoolPtr(d.Get("enable_dynamic_ip").(bool)),
 		Tags:              expandStrings(d.Get("tags")),
+	}
+
+	enableIPv6, ok := d.GetOk("enable_ipv6")
+	if ok {
+		req.EnableIPv6 = enableIPv6.(bool)
 	}
 
 	if bootScriptID, ok := d.GetOk("bootscript_id"); ok {
@@ -337,6 +341,7 @@ func resourceScalewayInstanceServerCreate(ctx context.Context, d *schema.Resourc
 
 	var size scw.Size
 	if sizeInput == 0 && volumeType == instance.VolumeVolumeTypeLSSD.String() {
+		// Compute the size so it will be valid against the local volume constraints
 		// Compute the size so it will be valid against the local volume constraints
 		// It wouldn't be valid if another local volume is added, but in this case
 		// the user would be informed that it does not fulfill the local volume constraints
@@ -505,7 +510,9 @@ func resourceScalewayInstanceServerRead(ctx context.Context, d *schema.ResourceD
 	_ = d.Set("boot_type", server.BootType)
 	_ = d.Set("bootscript_id", server.Bootscript.ID)
 	_ = d.Set("type", server.CommercialType)
-	_ = d.Set("tags", server.Tags)
+	if len(server.Tags) > 0 {
+		_ = d.Set("tags", server.Tags)
+	}
 	_ = d.Set("security_group_id", newZonedID(zone, server.SecurityGroup.ID).String())
 	_ = d.Set("enable_ipv6", server.EnableIPv6)
 	_ = d.Set("enable_dynamic_ip", server.DynamicIPRequired)
@@ -581,7 +588,9 @@ func resourceScalewayInstanceServerRead(ctx context.Context, d *schema.ResourceD
 			additionalVolumesIDs = append(additionalVolumesIDs, newZonedID(zone, volume.ID).String())
 		}
 	}
-	_ = d.Set("additional_volume_ids", additionalVolumesIDs)
+	if len(additionalVolumesIDs) > 0 {
+		_ = d.Set("additional_volume_ids", additionalVolumesIDs)
+	}
 
 	////
 	// Read server user data
@@ -918,25 +927,16 @@ func resourceScalewayInstanceServerUpdate(ctx context.Context, d *schema.Resourc
 	// Apply changes
 	////
 
-	targetState, err := serverStateExpand(d.Get("state").(string))
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	// reach expected state
-	err = reachState(ctx, instanceAPI, zone, ID, targetState)
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	_, err = instanceAPI.WaitForServer(&instance.WaitForServerRequest{
-		Zone:          zone,
-		ServerID:      ID,
-		Timeout:       scw.TimeDurationPtr(d.Timeout(schema.TimeoutUpdate)),
-		RetryInterval: scw.TimeDurationPtr(retryInstanceServerInterval),
-	})
-	if err != nil {
-		return diag.FromErr(err)
+	if d.HasChange("state") {
+		targetState, err := serverStateExpand(d.Get("state").(string))
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		// reach expected state
+		err = reachState(ctx, instanceAPI, zone, ID, targetState)
+		if err != nil {
+			return diag.FromErr(err)
+		}
 	}
 
 	_, err = instanceAPI.UpdateServer(updateRequest)

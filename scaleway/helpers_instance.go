@@ -110,7 +110,7 @@ func serverStateFlatten(fromState instance.ServerState) (string, error) {
 	return "", fmt.Errorf("server is in an invalid state, someone else might be executing action at the same time")
 }
 
-// serverStateExpand converts a terraform state  to an API state or return an error.
+// serverStateExpand converts terraform state to an API state or return an error.
 func serverStateExpand(rawState string) (instance.ServerState, error) {
 	apiState, exist := map[string]instance.ServerState{
 		InstanceServerStateStopped: instance.ServerStateStopped,
