@@ -380,12 +380,12 @@ func resourceScalewayK8SClusterCreate(ctx context.Context, d *schema.ResourceDat
 		return diag.FromErr(err)
 	}
 
+	d.SetId(newRegionalIDString(region, res.ID))
+
 	res, err = waitK8SClusterPool(ctx, k8sAPI, region, res.ID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
 		return diag.FromErr(err)
 	}
-
-	d.SetId(newRegionalIDString(region, res.ID))
 
 	return resourceScalewayK8SClusterRead(ctx, d, meta)
 }
