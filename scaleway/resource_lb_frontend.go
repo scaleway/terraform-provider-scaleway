@@ -360,13 +360,13 @@ func resourceScalewayLbFrontendUpdate(ctx context.Context, d *schema.ResourceDat
 		return diag.FromErr(err)
 	}
 
-	_, _, err = parseZonedID(d.Get("lb_id").(string))
+	_, lbID, err := parseZonedID(d.Get("lb_id").(string))
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	// check err waiting process
-	_, err = waitForLB(ctx, lbAPI, zone, ID, d.Timeout(schema.TimeoutUpdate))
+	_, err = waitForLB(ctx, lbAPI, zone, lbID, d.Timeout(schema.TimeoutUpdate))
 	if err != nil {
 		if is403Error(err) {
 			d.SetId("")
