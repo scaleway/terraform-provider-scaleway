@@ -53,7 +53,7 @@ func resourceScalewayLbIP() *schema.Resource {
 }
 
 func resourceScalewayLbIPCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, zone, err := lbAPIWithZone(d, meta)
+	lbAPI, zone, err := lbAPIWithZone(d, meta)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -69,7 +69,7 @@ func resourceScalewayLbIPCreate(ctx context.Context, d *schema.ResourceData, met
 		Reverse:   expandStringPtr(d.Get("reverse")),
 	}
 
-	res, err := api.CreateIP(createReq, scw.WithContext(ctx))
+	res, err := lbAPI.CreateIP(createReq, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
 	}
