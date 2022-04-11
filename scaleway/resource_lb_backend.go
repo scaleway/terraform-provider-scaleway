@@ -245,7 +245,7 @@ func resourceScalewayLbBackendCreate(ctx context.Context, d *schema.ResourceData
 		return diag.FromErr(err)
 	}
 	// parse lb_id. It will be forced to a zoned lb
-	zone, LbID, err := parseZonedID(d.Get("lb_id").(string))
+	zone, lbID, err := parseZonedID(d.Get("lb_id").(string))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -255,7 +255,7 @@ func resourceScalewayLbBackendCreate(ctx context.Context, d *schema.ResourceData
 		healthCheckPort = d.Get("forward_port").(int)
 	}
 
-	_, err = waitForLB(ctx, lbAPI, zone, LbID, d.Timeout(schema.TimeoutCreate))
+	_, err = waitForLB(ctx, lbAPI, zone, lbID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
 		if is403Error(err) {
 			d.SetId("")
@@ -286,7 +286,7 @@ func resourceScalewayLbBackendCreate(ctx context.Context, d *schema.ResourceData
 	}
 	createReq := &lb.ZonedAPICreateBackendRequest{
 		Zone:                     zone,
-		LBID:                     LbID,
+		LBID:                     lbID,
 		Name:                     expandOrGenerateString(d.Get("name"), "lb-bkd"),
 		ForwardProtocol:          expandLbProtocol(d.Get("forward_protocol")),
 		ForwardPort:              int32(d.Get("forward_port").(int)),
