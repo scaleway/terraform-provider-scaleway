@@ -93,15 +93,15 @@ func resourceScalewayVPCPublicGatewayCreate(ctx context.Context, d *schema.Resou
 		req.IPID = expandStringPtr(expandZonedID(ipID).ID)
 	}
 
-	res, err := vpcgwAPI.CreateGateway(req, scw.WithContext(ctx))
+	gateway, err := vpcgwAPI.CreateGateway(req, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	d.SetId(newZonedIDString(zone, res.ID))
+	d.SetId(newZonedIDString(zone, gateway.ID))
 
 	// check err waiting process
-	_, err = waitForVPCPublicGateway(ctx, vpcgwAPI, zone, res.ID, d.Timeout(schema.TimeoutCreate))
+	_, err = waitForVPCPublicGateway(ctx, vpcgwAPI, zone, gateway.ID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
 		return diag.FromErr(err)
 	}
