@@ -121,7 +121,7 @@ func resourceScalewayLb() *schema.Resource {
 }
 
 func resourceScalewayLbCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	lbAPI, zone, err := lbAPIWithZone(d, meta)
+	api, zone, err := lbAPIWithZone(d, meta)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -139,7 +139,7 @@ func resourceScalewayLbCreate(ctx context.Context, d *schema.ResourceData, meta 
 			createReq.Tags = append(createReq.Tags, tag.(string))
 		}
 	}
-	res, err := lbAPI.CreateLB(createReq, scw.WithContext(ctx))
+	res, err := api.CreateLB(createReq, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -147,7 +147,7 @@ func resourceScalewayLbCreate(ctx context.Context, d *schema.ResourceData, meta 
 	d.SetId(newZonedIDString(zone, res.ID))
 
 	// check err waiting process
-	_, err = waitForLB(ctx, d, meta, d.Timeout(schema.TimeoutCreate))
+	_, err = waitForLB(ctx, api, zone, res.ID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -161,12 +161,12 @@ func resourceScalewayLbCreate(ctx context.Context, d *schema.ResourceData, meta 
 		}
 
 		for _, config := range pnConfigs {
-			_, err := lbAPI.AttachPrivateNetwork(config, scw.WithContext(ctx))
+			_, err := api.AttachPrivateNetwork(config, scw.WithContext(ctx))
 			if err != nil && !is404Error(err) {
 				return diag.FromErr(err)
 			}
 		}
-		_, err = waitForLB(ctx, d, meta, d.Timeout(schema.TimeoutCreate))
+		_, err = waitForLB(ctx, api, zone, res.ID, d.Timeout(schema.TimeoutCreate))
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -225,7 +225,7 @@ func resourceScalewayLbRead(ctx context.Context, d *schema.ResourceData, meta in
 
 //gocyclo:ignore
 func resourceScalewayLbUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	lbAPI, zone, ID, err := lbAPIWithZoneAndID(meta, d.Id())
+	api, zone, ID, err := lbAPIWithZoneAndID(meta, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -238,12 +238,12 @@ func resourceScalewayLbUpdate(ctx context.Context, d *schema.ResourceData, meta 
 			Tags: expandStrings(d.Get("tags")),
 		}
 
-		_, err = waitForLB(ctx, d, meta, d.Timeout(schema.TimeoutUpdate))
+		_, err = waitForLB(ctx, api, zone, ID, d.Timeout(schema.TimeoutUpdate))
 		if err != nil && !is404Error(err) {
 			return diag.FromErr(err)
 		}
 
-		_, err = lbAPI.UpdateLB(req, scw.WithContext(ctx))
+		_, err = api.UpdateLB(req, scw.WithContext(ctx))
 		if err != nil && !is404Error(err) {
 			return diag.FromErr(err)
 		}
@@ -253,7 +253,7 @@ func resourceScalewayLbUpdate(ctx context.Context, d *schema.ResourceData, meta 
 	////
 	if d.HasChangesExcept("private_network") {
 		// check that pns are in a stable state
-		pns, err := waitForLBPN(ctx, d, meta, d.Timeout(schema.TimeoutUpdate))
+		pns, err := waitForLB(ctx, api, zone, ID, d.Timeout(schema.TimeoutUpdate))
 		if err != nil && !is404Error(err) {
 			return diag.FromErr(err)
 		}
@@ -265,7 +265,7 @@ func resourceScalewayLbUpdate(ctx context.Context, d *schema.ResourceData, meta 
 		// detach private networks
 		for pnID, detach := range pnToDetach {
 			if detach {
-				err = lbAPI.DetachPrivateNetwork(&lb.ZonedAPIDetachPrivateNetworkRequest{
+				err = api.DetachPrivateNetwork(&lb.ZonedAPIDetachPrivateNetworkRequest{
 					Zone:             zone,
 					LBID:             ID,
 					PrivateNetworkID: pnID,
@@ -290,18 +290,18 @@ func resourceScalewayLbUpdate(ctx context.Context, d *schema.ResourceData, meta 
 					continue
 				}
 				// check load balancer state
-				_, err = waitForLB(ctx, d, meta, d.Timeout(schema.TimeoutUpdate))
+				_, err = waitForLB(ctx, api, zone, ID, d.Timeout(schema.TimeoutUpdate))
 				if err != nil && !is404Error(err) {
 					return diag.FromErr(err)
 				}
 				// attach updated private networks
-				_, err := lbAPI.AttachPrivateNetwork(config, scw.WithContext(ctx))
+				_, err := api.AttachPrivateNetwork(config, scw.WithContext(ctx))
 				if err != nil && !is404Error(err) {
 					return diag.FromErr(err)
 				}
 			}
 
-			_, err = waitForLBPN(ctx, d, meta, d.Timeout(schema.TimeoutUpdate))
+			_, err = waitForLB(ctx, api, zone, ID, d.Timeout(schema.TimeoutUpdate))
 			if err != nil && !is404Error(err) {
 				return diag.FromErr(err)
 			}

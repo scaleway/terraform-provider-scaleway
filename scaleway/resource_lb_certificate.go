@@ -125,7 +125,7 @@ func resourceScalewayLbCertificateCreate(ctx context.Context, d *schema.Resource
 		return diag.FromErr(err)
 	}
 
-	lbAPI, _, err := lbAPIWithZone(d, meta)
+	api, _, err := lbAPIWithZone(d, meta)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -141,7 +141,7 @@ func resourceScalewayLbCertificateCreate(ctx context.Context, d *schema.Resource
 		return diag.FromErr(errors.New("you need to define either letsencrypt or custom_certificate configuration"))
 	}
 
-	_, err = waitForLBCertificate(ctx, d, meta, d.Timeout(schema.TimeoutCreate))
+	_, err = waitForLB(ctx, api, zone, lbID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
 		if is403Error(err) {
 			d.SetId("")
@@ -150,17 +150,12 @@ func resourceScalewayLbCertificateCreate(ctx context.Context, d *schema.Resource
 		return diag.FromErr(err)
 	}
 
-	res, err := lbAPI.CreateCertificate(createReq, scw.WithContext(ctx))
+	res, err := api.CreateCertificate(createReq, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	_, err = waitForLBCertificate(ctx, d, meta, d.Timeout(schema.TimeoutCreate))
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	_, err = waitForLBCertificate(ctx, d, meta, d.Timeout(schema.TimeoutCreate))
+	_, err = waitForLB(ctx, api, zone, res.LB.ID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
 		if is403Error(err) {
 			d.SetId("")
@@ -175,12 +170,12 @@ func resourceScalewayLbCertificateCreate(ctx context.Context, d *schema.Resource
 }
 
 func resourceScalewayLbCertificateRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	_, zone, _, err := lbAPIWithZoneAndID(meta, d.Id())
+	api, zone, ID, err := lbAPIWithZoneAndID(meta, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	cert, err := waitForLBCertificate(ctx, d, meta, d.Timeout(schema.TimeoutRead))
+	cert, err := waitForLB(ctx, api, zone, ID, d.Timeout(schema.TimeoutRead))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -207,17 +202,12 @@ func resourceScalewayLbCertificateRead(ctx context.Context, d *schema.ResourceDa
 }
 
 func resourceScalewayLbCertificateUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	lbAPI, zone, ID, err := lbAPIWithZoneAndID(meta, d.Id())
+	api, zone, ID, err := lbAPIWithZoneAndID(meta, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	_, err = waitForLBCertificate(ctx, d, meta, d.Timeout(schema.TimeoutUpdate))
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	_, err = waitForLB(ctx, d, meta, d.Timeout(schema.TimeoutUpdate))
+	_, err = waitForLB(ctx, api, zone, ID, d.Timeout(schema.TimeoutUpdate))
 	if err != nil {
 		if is403Error(err) {
 			d.SetId("")
@@ -233,7 +223,7 @@ func resourceScalewayLbCertificateUpdate(ctx context.Context, d *schema.Resource
 			Name:          d.Get("name").(string),
 		}
 
-		_, err = lbAPI.UpdateCertificate(req, scw.WithContext(ctx))
+		_, err = api.UpdateCertificate(req, scw.WithContext(ctx))
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -252,7 +242,7 @@ func resourceScalewayLbCertificateUpdate(ctx context.Context, d *schema.Resource
 }
 
 func resourceScalewayLbCertificateDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	lbAPI, zone, ID, err := lbAPIWithZoneAndID(meta, d.Id())
+	api, zone, ID, err := lbAPIWithZoneAndID(meta, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -266,7 +256,7 @@ func resourceScalewayLbCertificateDelete(ctx context.Context, d *schema.Resource
 		return diag.FromErr(err)
 	}
 
-	err = lbAPI.DeleteCertificate(&lb.ZonedAPIDeleteCertificateRequest{
+	err = api.DeleteCertificate(&lb.ZonedAPIDeleteCertificateRequest{
 		Zone:          zone,
 		CertificateID: ID,
 	}, scw.WithContext(ctx))

@@ -214,12 +214,12 @@ func testAccCheckScalewayLbFrontendDestroy(tt *TestTools) resource.TestCheckFunc
 				continue
 			}
 
-			lbAPI, zone, ID, err := lbAPIWithZoneAndID(tt.Meta, rs.Primary.ID)
+			api, zone, ID, err := lbAPIWithZoneAndID(tt.Meta, rs.Primary.ID)
 			if err != nil {
 				return err
 			}
 
-			_, err = lbAPI.GetFrontend(&lb.ZonedAPIGetFrontendRequest{
+			_, err = api.GetFrontend(&lb.ZonedAPIGetFrontendRequest{
 				Zone:       zone,
 				FrontendID: ID,
 			})
