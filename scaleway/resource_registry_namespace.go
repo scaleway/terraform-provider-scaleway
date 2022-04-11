@@ -70,7 +70,7 @@ func resourceScalewayRegistryNamespaceCreate(ctx context.Context, d *schema.Reso
 
 	d.SetId(newRegionalIDString(region, ns.ID))
 
-	_, err = waitForRegistryNamespace(ctx, d, meta, d.Timeout(schema.TimeoutCreate))
+	_, err = waitForRegistryNamespace(ctx, api, region, ns.ID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -79,7 +79,12 @@ func resourceScalewayRegistryNamespaceCreate(ctx context.Context, d *schema.Reso
 }
 
 func resourceScalewayRegistryNamespaceRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	ns, err := waitForRegistryNamespace(ctx, d, meta, d.Timeout(schema.TimeoutRead))
+	api, region, id, err := registryAPIWithRegionAndID(meta, d.Id())
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	ns, err := waitForRegistryNamespace(ctx, api, region, id, d.Timeout(schema.TimeoutRead))
 	if err != nil {
 		if is404Error(err) {
 			d.SetId("")
@@ -105,7 +110,7 @@ func resourceScalewayRegistryNamespaceUpdate(ctx context.Context, d *schema.Reso
 		return diag.FromErr(err)
 	}
 
-	_, err = waitForRegistryNamespace(ctx, d, meta, d.Timeout(schema.TimeoutUpdate))
+	_, err = waitForRegistryNamespace(ctx, api, region, id, d.Timeout(schema.TimeoutUpdate))
 	if err != nil {
 		if is404Error(err) {
 			d.SetId("")
@@ -134,7 +139,7 @@ func resourceScalewayRegistryNamespaceDelete(ctx context.Context, d *schema.Reso
 		return diag.FromErr(err)
 	}
 
-	_, err = waitForRegistryNamespace(ctx, d, meta, d.Timeout(schema.TimeoutDelete))
+	_, err = waitForRegistryNamespace(ctx, api, region, id, d.Timeout(schema.TimeoutDelete))
 	if err != nil {
 		if is404Error(err) {
 			d.SetId("")
@@ -151,7 +156,7 @@ func resourceScalewayRegistryNamespaceDelete(ctx context.Context, d *schema.Reso
 		return diag.FromErr(err)
 	}
 
-	_, err = waitForRegistryNamespace(ctx, d, meta, d.Timeout(schema.TimeoutDelete))
+	_, err = waitForRegistryNamespace(ctx, api, region, id, d.Timeout(schema.TimeoutDelete))
 	if err != nil && !is404Error(err) {
 		return diag.FromErr(err)
 	}
