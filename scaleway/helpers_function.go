@@ -1,6 +1,7 @@
 package scaleway
 
 import (
+	"context"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -10,6 +11,7 @@ import (
 
 const (
 	defaultFunctionNamespaceTimeout = 5 * time.Minute
+	defaultFunctionRetryInterval    = 5 * time.Second
 )
 
 // functionAPIWithRegion returns a new container registry API and the region.
@@ -34,4 +36,20 @@ func functionAPIWithRegionAndID(m interface{}, id string) (*function.API, scw.Re
 		return nil, "", "", err
 	}
 	return api, region, id, nil
+}
+
+func waitForFunctionNamespace(ctx context.Context, functionAPI *function.API, region scw.Region, id string, timeout time.Duration) (*function.Namespace, error) {
+	retryInterval := defaultFunctionRetryInterval
+	if DefaultWaitRetryInterval != nil {
+		retryInterval = *DefaultWaitRetryInterval
+	}
+
+	ns, err := functionAPI.WaitForNamespace(&function.WaitForNamespaceRequest{
+		Region:        region,
+		NamespaceID:   id,
+		RetryInterval: &retryInterval,
+		Timeout:       scw.TimeDurationPtr(timeout),
+	}, scw.WithContext(ctx))
+
+	return ns, err
 }
