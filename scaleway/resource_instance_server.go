@@ -983,6 +983,17 @@ func resourceScalewayInstanceServerDelete(ctx context.Context, d *schema.Resourc
 			log.Print("[WARN] Failed to detach eip of server")
 		}
 	}
+	// Remove instance from placement group to free it even if instance won't stop
+	if _, ok := d.GetOk("placement_group_id"); ok {
+		_, err := instanceAPI.UpdateServer(&instance.UpdateServerRequest{
+			Zone:           zone,
+			PlacementGroup: &instance.NullableStringValue{Null: true},
+			ServerID:       ID,
+		})
+		if err != nil {
+			log.Print("[WARN] Failed remove server from instance group")
+		}
+	}
 	// reach stopped state
 	err = reachState(ctx, instanceAPI, zone, ID, instance.ServerStateStopped)
 	if is404Error(err) {
