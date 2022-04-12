@@ -75,6 +75,8 @@ func resourceScalewayVPCPublicGatewayIPCreate(ctx context.Context, d *schema.Res
 		return diag.FromErr(err)
 	}
 
+	d.SetId(newZonedIDString(zone, res.ID))
+
 	reverse := d.Get("reverse")
 	if len(reverse.(string)) > 0 {
 		updateRequest := &vpcgw.UpdateIPRequest{
@@ -88,8 +90,6 @@ func resourceScalewayVPCPublicGatewayIPCreate(ctx context.Context, d *schema.Res
 			return diag.FromErr(err)
 		}
 	}
-
-	d.SetId(newZonedIDString(zone, res.ID))
 
 	return resourceScalewayVPCPublicGatewayIPRead(ctx, d, meta)
 }
