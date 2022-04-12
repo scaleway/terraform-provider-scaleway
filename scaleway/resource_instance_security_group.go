@@ -119,10 +119,10 @@ func resourceScalewayInstanceSecurityGroupCreate(ctx context.Context, d *schema.
 		OutboundDefaultPolicy: instance.SecurityGroupPolicy(d.Get("outbound_default_policy").(string)),
 		EnableDefaultSecurity: expandBoolPtr(d.Get("enable_default_security")),
 	}
-	//tags := expandStrings(d.Get("tags"))
-	//if len(tags) > 0 {
-	//	req.Tags = tags
-	//}
+	tags := expandStrings(d.Get("tags"))
+	if len(tags) > 0 {
+		req.Tags = tags
+	}
 	res, err := instanceAPI.CreateSecurityGroup(req, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
@@ -267,7 +267,12 @@ func resourceScalewayInstanceSecurityGroupUpdate(ctx context.Context, d *schema.
 		Description:           expandStringPtr(description),
 		InboundDefaultPolicy:  &inboundDefaultPolicy,
 		OutboundDefaultPolicy: &outboundDefaultPolicy,
-		Tags:                  scw.StringsPtr(expandStrings(d.Get("tags"))),
+		Tags:                  scw.StringsPtr([]string{}),
+	}
+
+	tags := expandStrings(d.Get("tags"))
+	if len(tags) > 0 {
+		updateReq.Tags = scw.StringsPtr(expandStrings(d.Get("tags")))
 	}
 
 	if d.HasChange("enable_default_security") {
