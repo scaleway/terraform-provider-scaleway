@@ -102,6 +102,7 @@ func TestAccScalewayInstanceSnapshot_RenameSnapshot(t *testing.T) {
 					resource "scaleway_instance_snapshot" "main" {
 						volume_id = scaleway_instance_volume.main.id
 						name = "first_name"
+						tags = ["test-terraform"]
 					}`,
 			},
 			{
@@ -114,6 +115,7 @@ func TestAccScalewayInstanceSnapshot_RenameSnapshot(t *testing.T) {
 					resource "scaleway_instance_snapshot" "main" {
 						volume_id = scaleway_instance_volume.main.id
 						name = "second_name"
+						tags = ["test-terraform"]
 					}`,
 			},
 		},
