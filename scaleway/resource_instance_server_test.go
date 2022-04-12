@@ -2,7 +2,6 @@ package scaleway
 
 import (
 	"fmt"
-	"regexp"
 	"strings"
 	"testing"
 
@@ -197,7 +196,9 @@ func TestAccScalewayInstanceServer_RootVolume1(t *testing.T) {
 						}
 						tags = [ "terraform-test", "scaleway_instance_server", "root_volume" ]
 					}`,
-				ExpectError: regexp.MustCompile("total local volume size must be equal to 20 GB"),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayInstanceServerExists(tt, "scaleway_instance_server.base"),
+				),
 			},
 		},
 	})
@@ -885,11 +886,12 @@ func TestAccScalewayInstanceServer_AlterTags(t *testing.T) {
 						type  = "DEV1-L"
 						state = "stopped"
 						image = "ubuntu_focal"
+						tags = [ "front" ]
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayInstanceServerExists(tt, "scaleway_instance_server.base"),
-					resource.TestCheckNoResourceAttr("scaleway_instance_server.base", "tags"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.base", "tags.0", "front"),
 				),
 			},
 		},

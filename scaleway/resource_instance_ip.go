@@ -71,6 +71,20 @@ func resourceScalewayInstanceIPCreate(ctx context.Context, d *schema.ResourceDat
 		return diag.FromErr(err)
 	}
 
+	reverseRaw, ok := d.GetOk("reverse")
+	if ok {
+		reverseStrPtr := expandStringPtr(reverseRaw)
+		req := &instance.UpdateIPRequest{
+			IP:      res.IP.ID,
+			Reverse: &instance.NullableStringValue{Value: *reverseStrPtr},
+			Zone:    zone,
+		}
+		_, err = instanceAPI.UpdateIP(req, scw.WithContext(ctx))
+		if err != nil {
+			return diag.FromErr(err)
+		}
+	}
+
 	d.SetId(newZonedIDString(zone, res.IP.ID))
 	return resourceScalewayInstanceIPRead(ctx, d, meta)
 }
