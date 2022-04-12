@@ -267,7 +267,7 @@ func resourceScalewayInstanceSecurityGroupUpdate(ctx context.Context, d *schema.
 		Description:           expandStringPtr(description),
 		InboundDefaultPolicy:  &inboundDefaultPolicy,
 		OutboundDefaultPolicy: &outboundDefaultPolicy,
-		//Tags:                  scw.StringsPtr(expandStrings(d.Get("tags"))),
+		Tags:                  scw.StringsPtr(expandStrings(d.Get("tags"))),
 	}
 
 	if d.HasChange("enable_default_security") {

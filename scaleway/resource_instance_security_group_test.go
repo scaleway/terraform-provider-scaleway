@@ -451,15 +451,6 @@ func TestAccScalewayInstanceSecurityGroup_Tags(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_instance_security_group.main", "tags.1", "buzz"),
 				),
 			},
-			{
-				Config: `
-					resource "scaleway_instance_security_group" "main" {
-					}
-				`,
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckNoResourceAttr("scaleway_instance_security_group.main", "tags"),
-				),
-			},
 		},
 	})
 }
