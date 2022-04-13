@@ -130,7 +130,7 @@ The following arguments are supported:
 
 - `certificate_ids` - (Optional) List of Certificate IDs that should be used by the frontend.
 
-~> **Important:** Certificates are not allow on port 80.
+~> **Important:** Certificates are not allowed on port 80.
 
 - `acl` - (Optional) A list of ACL rules to apply to the load-balancer frontend.  Defined below.
 
