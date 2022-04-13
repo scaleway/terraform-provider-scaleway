@@ -2,6 +2,7 @@ package scaleway
 
 import (
 	"context"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -118,10 +119,6 @@ func resourceScalewayIotHubCreate(ctx context.Context, d *schema.ResourceData, m
 		return diag.FromErr(err)
 	}
 
-	////
-	// Create cluster
-	////
-
 	req := &iot.CreateHubRequest{
 		Region:      region,
 		Name:        expandOrGenerateString(d.Get("name"), "hub"),
@@ -146,7 +143,7 @@ func resourceScalewayIotHubCreate(ctx context.Context, d *schema.ResourceData, m
 	}
 	d.SetId(newRegionalIDString(region, res.ID))
 
-	_, err = waitIotHub(ctx, d, meta, d.Timeout(schema.TimeoutCreate))
+	_, err = waitIotHub(ctx, iotAPI, region, res.ID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -187,7 +184,7 @@ func resourceScalewayIotHubCreate(ctx context.Context, d *schema.ResourceData, m
 			return diag.FromErr(err)
 		}
 
-		_, err = waitIotHub(ctx, d, meta, d.Timeout(schema.TimeoutCreate))
+		_, err = waitIotHub(ctx, iotAPI, region, res.ID, d.Timeout(schema.TimeoutCreate))
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -202,9 +199,6 @@ func resourceScalewayIotHubRead(ctx context.Context, d *schema.ResourceData, met
 		return diag.FromErr(err)
 	}
 
-	////
-	// Read Hub
-	////
 	response, err := iotAPI.GetHub(&iot.GetHubRequest{
 		Region: region,
 		HubID:  hubID,
@@ -224,8 +218,8 @@ func resourceScalewayIotHubRead(ctx context.Context, d *schema.ResourceData, met
 	_ = d.Set("status", response.Status.String())
 	_ = d.Set("product_plan", response.ProductPlan.String())
 	_ = d.Set("endpoint", response.Endpoint)
-	_ = d.Set("created_at", response.CreatedAt.String())
-	_ = d.Set("updated_at", response.UpdatedAt.String())
+	_ = d.Set("created_at", response.CreatedAt.Format(time.RFC3339))
+	_ = d.Set("updated_at", response.UpdatedAt.Format(time.RFC3339))
 	_ = d.Set("enabled", response.Enabled)
 	_ = d.Set("device_count", int(response.DeviceCount))
 	_ = d.Set("connected_device_count", int(response.ConnectedDeviceCount))
@@ -264,7 +258,7 @@ func resourceScalewayIotHubUpdate(ctx context.Context, d *schema.ResourceData, m
 			return diag.FromErr(err)
 		}
 
-		_, err = waitIotHub(ctx, d, meta, d.Timeout(schema.TimeoutUpdate))
+		_, err = waitIotHub(ctx, iotAPI, region, hubID, d.Timeout(schema.TimeoutUpdate))
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -325,21 +319,21 @@ func resourceScalewayIotHubUpdate(ctx context.Context, d *schema.ResourceData, m
 }
 
 func resourceScalewayIotHubDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	iotAPI, region, hubID, err := iotAPIWithRegionAndID(meta, d.Id())
+	iotAPI, region, id, err := iotAPIWithRegionAndID(meta, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	err = iotAPI.DeleteHub(&iot.DeleteHubRequest{
 		Region: region,
-		HubID:  hubID,
+		HubID:  id,
 		// Don't force delete if devices. This avoids deleting a hub by mistake
 	}, scw.WithContext(ctx))
 	if err != nil && !is404Error(err) {
 		return diag.FromErr(err)
 	}
 
-	_, err = waitIotHub(ctx, d, meta, d.Timeout(schema.TimeoutCreate))
+	_, err = waitIotHub(ctx, iotAPI, region, id, d.Timeout(schema.TimeoutDelete))
 	if err != nil && !is404Error(err) {
 		return diag.FromErr(err)
 	}

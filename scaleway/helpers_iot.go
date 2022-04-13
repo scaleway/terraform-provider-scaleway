@@ -31,19 +31,14 @@ func iotAPIWithRegionAndID(m interface{}, id string) (*iot.API, scw.Region, stri
 	return iotAPI, region, ID, err
 }
 
-func waitIotHub(ctx context.Context, d *schema.ResourceData, meta interface{}, timeout time.Duration) (*iot.Hub, error) {
-	api, region, hubID, err := iotAPIWithRegionAndID(meta, d.Id())
-	if err != nil {
-		return nil, err
-	}
-
+func waitIotHub(ctx context.Context, api *iot.API, region scw.Region, id string, timeout time.Duration) (*iot.Hub, error) {
 	retryInterval := defaultIoTRetryInterval
 	if DefaultWaitRetryInterval != nil {
 		retryInterval = *DefaultWaitRetryInterval
 	}
 
 	hub, err := api.WaitForHub(&iot.WaitForHubRequest{
-		HubID:         hubID,
+		HubID:         id,
 		Region:        region,
 		RetryInterval: &retryInterval,
 		Timeout:       scw.TimeDurationPtr(timeout),

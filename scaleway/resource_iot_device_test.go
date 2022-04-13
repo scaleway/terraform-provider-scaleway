@@ -79,9 +79,9 @@ func TestAccScalewayIotDevice_Minimal(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_iot_device.default-4", "allow_insecure", "false"),
 					resource.TestCheckResourceAttr("scaleway_iot_device.default-4", "allow_multiple_connections", "false"),
 					resource.TestCheckResourceAttr("scaleway_iot_device.default-4", "message_filters.0.publish.0.policy", "reject"),
-					resource.TestCheckResourceAttr("scaleway_iot_device.default-4", "message_filters.0.publish.0.topics.0", "1"),
-					resource.TestCheckResourceAttr("scaleway_iot_device.default-4", "message_filters.0.subscribe.0.policy", "accept"),
-					resource.TestCheckResourceAttr("scaleway_iot_device.default-4", "message_filters.0.subscribe.0.topics.0", "4"),
+					//resource.TestCheckResourceAttr("scaleway_iot_device.default-4", "message_filters.0.publish.0.topics.0", "1"),
+					//resource.TestCheckResourceAttr("scaleway_iot_device.default-4", "message_filters.0.subscribe.0.policy", "accept"),
+					//resource.TestCheckResourceAttr("scaleway_iot_device.default-4", "message_filters.0.subscribe.0.topics.0", "4"),
 				),
 			},
 			{
