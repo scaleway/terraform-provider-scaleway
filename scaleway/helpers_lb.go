@@ -189,8 +189,8 @@ func flattenPrivateNetworkConfigs(resList *lbSDK.ListLBPrivateNetworksResponse) 
 		pnI = append(pnI, map[string]interface{}{
 			"private_network_id": pnZonedID,
 			"dhcp_config":        dhcpConfigExist,
-			"status":             pn.Status,
-			"zone":               pn.LB.Zone,
+			"status":             pn.Status.String(),
+			"zone":               pn.LB.Zone.String(),
 			"static_config":      flattenLbPrivateNetworkStaticConfig(pn.StaticConfig),
 		})
 	}
@@ -479,4 +479,20 @@ func waitForLBPN(ctx context.Context, lbAPI *lbSDK.ZonedAPI, zone scw.Zone, LbID
 	}, scw.WithContext(ctx))
 
 	return privateNetworks, err
+}
+
+func waitForLBCertificate(ctx context.Context, lbAPI *lbSDK.ZonedAPI, zone scw.Zone, id string, timeout time.Duration) (*lbSDK.Certificate, error) {
+	retryInterval := defaultWaitLBRetryInterval
+	if DefaultWaitRetryInterval != nil {
+		retryInterval = *DefaultWaitRetryInterval
+	}
+
+	certificate, err := lbAPI.WaitForLBCertificate(&lbSDK.ZonedAPIWaitForLBCertificateRequest{
+		CertID:        id,
+		Zone:          zone,
+		Timeout:       scw.TimeDurationPtr(timeout),
+		RetryInterval: &retryInterval,
+	}, scw.WithContext(ctx))
+
+	return certificate, err
 }

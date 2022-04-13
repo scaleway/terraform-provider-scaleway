@@ -301,7 +301,7 @@ func resourceScalewayLbUpdate(ctx context.Context, d *schema.ResourceData, meta 
 				}
 			}
 
-			_, err = waitForLB(ctx, lbAPI, zone, ID, d.Timeout(schema.TimeoutUpdate))
+			_, err = waitForLBPN(ctx, lbAPI, zone, ID, d.Timeout(schema.TimeoutUpdate))
 			if err != nil && !is404Error(err) {
 				return diag.FromErr(err)
 			}

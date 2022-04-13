@@ -412,11 +412,20 @@ func resourceScalewayLbFrontendDelete(ctx context.Context, d *schema.ResourceDat
 		return diag.FromErr(err)
 	}
 
+	_, lbID, err := parseZonedID(d.Get("lb_id").(string))
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	err = lbAPI.DeleteFrontend(&lbSDK.ZonedAPIDeleteFrontendRequest{
 		Zone:       zone,
 		FrontendID: ID,
 	}, scw.WithContext(ctx))
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
+	_, err = waitForLB(ctx, lbAPI, zone, lbID, d.Timeout(schema.TimeoutDelete))
 	if err != nil && !is404Error(err) {
 		return diag.FromErr(err)
 	}
