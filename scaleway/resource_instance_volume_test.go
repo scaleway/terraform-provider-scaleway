@@ -58,11 +58,13 @@ func TestAccScalewayInstanceVolume_Basic(t *testing.T) {
 					resource "scaleway_instance_volume" "test" {
 						type       = "l_ssd"
 						size_in_gb = 20
+						tags = ["test-terraform"]
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayInstanceVolumeExists(tt, "scaleway_instance_volume.test"),
 					resource.TestCheckResourceAttr("scaleway_instance_volume.test", "size_in_gb", "20"),
+					resource.TestCheckResourceAttr("scaleway_instance_volume.test", "tags.0", "test-terraform"),
 				),
 			},
 			{
@@ -77,6 +79,7 @@ func TestAccScalewayInstanceVolume_Basic(t *testing.T) {
 					testAccCheckScalewayInstanceVolumeExists(tt, "scaleway_instance_volume.test"),
 					resource.TestCheckResourceAttr("scaleway_instance_volume.test", "name", "terraform-test"),
 					resource.TestCheckResourceAttr("scaleway_instance_volume.test", "size_in_gb", "20"),
+					resource.TestCheckResourceAttr("scaleway_instance_volume.test", "tags.#", "0"),
 				),
 			},
 		},

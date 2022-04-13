@@ -94,7 +94,10 @@ func resourceScalewayInstanceVolumeCreate(ctx context.Context, d *schema.Resourc
 		Name:       expandOrGenerateString(d.Get("name"), "vol"),
 		VolumeType: instance.VolumeVolumeType(d.Get("type").(string)),
 		Project:    expandStringPtr(d.Get("project_id")),
-		Tags:       expandStrings(d.Get("tags")),
+	}
+	tags := expandStrings(d.Get("tags"))
+	if len(tags) > 0 {
+		createVolumeRequest.Tags = tags
 	}
 
 	if size, ok := d.GetOk("size_in_gb"); ok {
@@ -179,6 +182,7 @@ func resourceScalewayInstanceVolumeUpdate(ctx context.Context, d *schema.Resourc
 	req := &instance.UpdateVolumeRequest{
 		VolumeID: id,
 		Zone:     zone,
+		Tags:     scw.StringsPtr([]string{}),
 	}
 
 	if d.HasChange("name") {
@@ -186,7 +190,8 @@ func resourceScalewayInstanceVolumeUpdate(ctx context.Context, d *schema.Resourc
 		req.Name = &newName
 	}
 
-	if d.HasChange("tags") {
+	tags := expandStrings(d.Get("tags"))
+	if d.HasChange("tags") && len(tags) > 0 {
 		req.Tags = scw.StringsPtr(expandStrings(d.Get("tags")))
 	}
 
