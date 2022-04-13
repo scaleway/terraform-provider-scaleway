@@ -88,7 +88,8 @@ func TestAccScalewayInstanceSecurityGroup_Basic(t *testing.T) {
 					resource "scaleway_instance_security_group" "base" {
 						name = "sg-name"
 						inbound_default_policy = "accept"
-			
+						tags = [ "test-terraform" ]
+
 						inbound_rule {
 							action = "drop"
 							port = 80
@@ -111,6 +112,7 @@ func TestAccScalewayInstanceSecurityGroup_Basic(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayInstanceSecurityGroupExists(tt, "scaleway_instance_security_group.base"),
 					resource.TestCheckResourceAttr("scaleway_instance_security_group.base", "name", "sg-name"),
+					resource.TestCheckResourceAttr("scaleway_instance_security_group.base", "tags.0", "test-terraform"),
 					resource.TestCheckResourceAttr("scaleway_instance_security_group.base", "inbound_default_policy", "accept"),
 					resource.TestCheckResourceAttr("scaleway_instance_security_group.base", "outbound_default_policy", "accept"),
 					resource.TestCheckResourceAttr("scaleway_instance_security_group.base", "inbound_rule.#", "3"),
@@ -160,6 +162,7 @@ func TestAccScalewayInstanceSecurityGroup_Basic(t *testing.T) {
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("scaleway_instance_security_group.base", "tags.#", "0"),
 					resource.TestCheckResourceAttr("scaleway_instance_security_group.base", "inbound_rule.#", "0"),
 				),
 			},
@@ -329,6 +332,7 @@ func TestAccScalewayInstanceSecurityGroup_RemovePort(t *testing.T) {
 			{
 				Config: `
 					resource "scaleway_instance_security_group" "base" {
+						tags = [ "test-terraform" ]
 						inbound_rule {
 							action = "accept"
 							ip_range = "0.0.0.0/0"
@@ -345,6 +349,8 @@ func TestAccScalewayInstanceSecurityGroup_RemovePort(t *testing.T) {
 						Protocol:     instance.SecurityGroupRuleProtocolTCP,
 						Action:       instance.SecurityGroupRuleActionAccept,
 					}),
+					resource.TestCheckResourceAttr("scaleway_instance_security_group.base", "tags.#", "1"),
+					resource.TestCheckResourceAttr("scaleway_instance_security_group.base", "tags.0", "test-terraform"),
 				),
 			},
 			{
@@ -365,6 +371,7 @@ func TestAccScalewayInstanceSecurityGroup_RemovePort(t *testing.T) {
 						Protocol:     instance.SecurityGroupRuleProtocolTCP,
 						Action:       instance.SecurityGroupRuleActionAccept,
 					}),
+					resource.TestCheckResourceAttr("scaleway_instance_security_group.base", "tags.#", "0"),
 				),
 			},
 		},
