@@ -128,7 +128,7 @@ func TestAccScalewayInstanceSnapshot_RenameSnapshot(t *testing.T) {
 						size_in_gb = 20
 					}
 
-					resource "c" "main" {
+					resource "scaleway_instance_snapshot" "main" {
 						volume_id = scaleway_instance_volume.main.id
 						name = "second_name"
 					}`,
