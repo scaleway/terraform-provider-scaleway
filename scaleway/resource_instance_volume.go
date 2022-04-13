@@ -198,7 +198,7 @@ func resourceScalewayInstanceVolumeUpdate(ctx context.Context, d *schema.Resourc
 			return diag.FromErr(fmt.Errorf("block volumes cannot be resized down"))
 		}
 
-		_, err = waitForInstanceVolume(ctx, d, meta, d.Timeout(schema.TimeoutUpdate))
+		_, err = waitForInstanceVolume(ctx, instanceAPI, zone, id, d.Timeout(schema.TimeoutUpdate))
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -212,7 +212,7 @@ func resourceScalewayInstanceVolumeUpdate(ctx context.Context, d *schema.Resourc
 		if err != nil {
 			return diag.FromErr(fmt.Errorf("couldn't resize volume: %s", err))
 		}
-		_, err = waitForInstanceVolume(ctx, d, meta, d.Timeout(schema.TimeoutUpdate))
+		_, err = waitForInstanceVolume(ctx, instanceAPI, zone, id, d.Timeout(schema.TimeoutUpdate))
 		if err != nil {
 			return diag.FromErr(err)
 		}

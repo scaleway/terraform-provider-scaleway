@@ -400,12 +400,7 @@ func (ph *privateNICsHandler) get(key string) (interface{}, error) {
 	}, nil
 }
 
-func waitForInstanceSnapshot(ctx context.Context, d *schema.ResourceData, meta interface{}, timeout time.Duration) (*instance.Snapshot, error) {
-	api, zone, id, err := instanceAPIWithZoneAndID(meta, d.Id())
-	if err != nil {
-		return nil, err
-	}
-
+func waitForInstanceSnapshot(ctx context.Context, api *instance.API, zone scw.Zone, id string, timeout time.Duration) (*instance.Snapshot, error) {
 	retryInterval := defaultInstanceRetryInterval
 	if DefaultWaitRetryInterval != nil {
 		retryInterval = *DefaultWaitRetryInterval
@@ -421,19 +416,14 @@ func waitForInstanceSnapshot(ctx context.Context, d *schema.ResourceData, meta i
 	return snapshot, err
 }
 
-func waitForInstanceVolume(ctx context.Context, d *schema.ResourceData, meta interface{}, timeout time.Duration) (*instance.Volume, error) {
-	instanceAPI, zone, ID, err := instanceAPIWithZoneAndID(meta, d.Id())
-	if err != nil {
-		return nil, err
-	}
-
+func waitForInstanceVolume(ctx context.Context, api *instance.API, zone scw.Zone, id string, timeout time.Duration) (*instance.Volume, error) {
 	retryInterval := defaultInstanceRetryInterval
 	if DefaultWaitRetryInterval != nil {
 		retryInterval = *DefaultWaitRetryInterval
 	}
 
-	volume, err := instanceAPI.WaitForVolume(&instance.WaitForVolumeRequest{
-		VolumeID:      ID,
+	volume, err := api.WaitForVolume(&instance.WaitForVolumeRequest{
+		VolumeID:      id,
 		Zone:          zone,
 		Timeout:       scw.TimeDurationPtr(timeout),
 		RetryInterval: &retryInterval,
@@ -441,12 +431,7 @@ func waitForInstanceVolume(ctx context.Context, d *schema.ResourceData, meta int
 	return volume, err
 }
 
-func waitForInstanceServer(ctx context.Context, d *schema.ResourceData, meta interface{}, timeout time.Duration) (*instance.Server, error) {
-	api, zone, ID, err := instanceAPIWithZoneAndID(meta, d.Id())
-	if err != nil {
-		return nil, err
-	}
-
+func waitForInstanceServer(ctx context.Context, api *instance.API, zone scw.Zone, id string, timeout time.Duration) (*instance.Server, error) {
 	retryInterval := defaultInstanceRetryInterval
 	if DefaultWaitRetryInterval != nil {
 		retryInterval = *DefaultWaitRetryInterval
@@ -454,7 +439,7 @@ func waitForInstanceServer(ctx context.Context, d *schema.ResourceData, meta int
 
 	server, err := api.WaitForServer(&instance.WaitForServerRequest{
 		Zone:          zone,
-		ServerID:      ID,
+		ServerID:      id,
 		Timeout:       scw.TimeDurationPtr(timeout),
 		RetryInterval: &retryInterval,
 	}, scw.WithContext(ctx))

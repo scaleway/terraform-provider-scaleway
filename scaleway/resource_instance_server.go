@@ -386,7 +386,7 @@ func resourceScalewayInstanceServerCreate(ctx context.Context, d *schema.Resourc
 
 	d.SetId(newZonedID(zone, res.Server.ID).String())
 
-	_, err = waitForInstanceServer(ctx, d, meta, d.Timeout(schema.TimeoutCreate))
+	_, err = waitForInstanceServer(ctx, instanceAPI, zone, res.Server.ID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -412,7 +412,7 @@ func resourceScalewayInstanceServerCreate(ctx context.Context, d *schema.Resourc
 	}
 
 	if len(userDataRequests.UserData) > 0 {
-		_, err := waitForInstanceServer(ctx, d, meta, d.Timeout(schema.TimeoutCreate))
+		_, err := waitForInstanceServer(ctx, instanceAPI, zone, res.Server.ID, d.Timeout(schema.TimeoutCreate))
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -446,7 +446,7 @@ func resourceScalewayInstanceServerCreate(ctx context.Context, d *schema.Resourc
 		}
 		// compute attachment
 		for _, q := range pnRequest {
-			_, err := waitForInstanceServer(ctx, d, meta, d.Timeout(schema.TimeoutCreate))
+			_, err := waitForInstanceServer(ctx, instanceAPI, zone, res.Server.ID, d.Timeout(schema.TimeoutCreate))
 			if err != nil {
 				return diag.FromErr(err)
 			}
@@ -463,12 +463,12 @@ func resourceScalewayInstanceServerCreate(ctx context.Context, d *schema.Resourc
 
 //gocyclo:ignore
 func resourceScalewayInstanceServerRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	instanceAPI, zone, ID, err := instanceAPIWithZoneAndID(meta, d.Id())
+	instanceAPI, zone, id, err := instanceAPIWithZoneAndID(meta, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	server, err := waitForInstanceServer(ctx, d, meta, d.Timeout(schema.TimeoutRead))
+	server, err := waitForInstanceServer(ctx, instanceAPI, zone, id, d.Timeout(schema.TimeoutRead))
 	if err != nil {
 		if errorCheck(err, "is not found") {
 			log.Printf("[WARN] instance %s not found droping from state", d.Id())
@@ -549,6 +549,14 @@ func resourceScalewayInstanceServerRead(ctx context.Context, d *schema.ResourceD
 			_ = d.Set("ipv6_prefix_length", nil)
 		}
 
+		////
+		// Read server user data
+		////
+		allUserData, _ := instanceAPI.GetAllServerUserData(&instance.GetAllServerUserDataRequest{
+			Zone:     zone,
+			ServerID: id,
+		}, scw.WithContext(ctx))
+
 		var additionalVolumesIDs []string
 		for i, volume := range sortVolumeServer(server.Volumes) {
 			if i == 0 {
@@ -613,6 +621,14 @@ func resourceScalewayInstanceServerRead(ctx context.Context, d *schema.ResourceD
 			return diag.FromErr(err)
 		}
 
+		////
+		// Read server private networks
+		////
+		ph, err := newPrivateNICHandler(ctx, instanceAPI, id, zone)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+
 		return nil
 	}
 	return nil
@@ -620,7 +636,7 @@ func resourceScalewayInstanceServerRead(ctx context.Context, d *schema.ResourceD
 
 //gocyclo:ignore
 func resourceScalewayInstanceServerUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	instanceAPI, zone, ID, err := instanceAPIWithZoneAndID(meta, d.Id())
+	instanceAPI, zone, id, err := instanceAPIWithZoneAndID(meta, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -630,7 +646,7 @@ func resourceScalewayInstanceServerUpdate(ctx context.Context, d *schema.Resourc
 
 	var warnings diag.Diagnostics
 
-	server, err := waitForInstanceServer(ctx, d, meta, d.Timeout(schema.TimeoutUpdate))
+	server, err := waitForInstanceServer(ctx, instanceAPI, zone, id, d.Timeout(schema.TimeoutUpdate))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -717,7 +733,7 @@ func resourceScalewayInstanceServerUpdate(ctx context.Context, d *schema.Resourc
 	// Update reserved IP
 	////
 	if d.HasChange("ip_id") {
-		server, err := waitForInstanceServer(ctx, d, meta, d.Timeout(schema.TimeoutUpdate))
+		server, err := waitForInstanceServer(ctx, instanceAPI, zone, id, d.Timeout(schema.TimeoutUpdate))
 
 		if err != nil {
 			return diag.FromErr(err)
@@ -735,14 +751,14 @@ func resourceScalewayInstanceServerUpdate(ctx context.Context, d *schema.Resourc
 				return diag.FromErr(err)
 			}
 			//we wait to ensure to not detach the new ip.
-			_, err := waitForInstanceServer(ctx, d, meta, d.Timeout(schema.TimeoutUpdate))
+			_, err := waitForInstanceServer(ctx, instanceAPI, zone, id, d.Timeout(schema.TimeoutUpdate))
 			if err != nil {
 				return diag.FromErr(err)
 			}
 		}
 		// If a new IP is provided, we attach it to the server
 		if ipID != "" {
-			_, err := waitForInstanceServer(ctx, d, meta, d.Timeout(schema.TimeoutUpdate))
+			_, err := waitForInstanceServer(ctx, instanceAPI, zone, id, d.Timeout(schema.TimeoutUpdate))
 			if err != nil {
 				return diag.FromErr(err)
 			}
@@ -750,13 +766,13 @@ func resourceScalewayInstanceServerUpdate(ctx context.Context, d *schema.Resourc
 			_, err = instanceAPI.UpdateIP(&instance.UpdateIPRequest{
 				Zone:   zone,
 				IP:     ipID,
-				Server: &instance.NullableStringValue{Value: ID},
+				Server: &instance.NullableStringValue{Value: id},
 			}, scw.WithContext(ctx))
 			if err != nil {
 				return diag.FromErr(err)
 			}
 
-			_, err = waitForInstanceServer(ctx, d, meta, d.Timeout(schema.TimeoutUpdate))
+			_, err = waitForInstanceServer(ctx, instanceAPI, zone, id, d.Timeout(schema.TimeoutUpdate))
 			if err != nil {
 				return diag.FromErr(err)
 			}
@@ -790,7 +806,7 @@ func resourceScalewayInstanceServerUpdate(ctx context.Context, d *schema.Resourc
 	if d.HasChanges("user_data") {
 		userDataRequests := &instance.SetAllServerUserDataRequest{
 			Zone:     zone,
-			ServerID: ID,
+			ServerID: id,
 			UserData: make(map[string]io.Reader),
 		}
 
@@ -807,7 +823,7 @@ func resourceScalewayInstanceServerUpdate(ctx context.Context, d *schema.Resourc
 			}
 		}
 
-		_, err := waitForInstanceServer(ctx, d, meta, d.Timeout(schema.TimeoutUpdate))
+		_, err := waitForInstanceServer(ctx, instanceAPI, zone, id, d.Timeout(schema.TimeoutUpdate))
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -822,7 +838,7 @@ func resourceScalewayInstanceServerUpdate(ctx context.Context, d *schema.Resourc
 	// Update server private network
 	////
 	if d.HasChanges("private_network") {
-		ph, err := newPrivateNICHandler(ctx, instanceAPI, ID, zone)
+		ph, err := newPrivateNICHandler(ctx, instanceAPI, id, zone)
 		if err != nil {
 			diag.FromErr(err)
 		}
@@ -833,7 +849,7 @@ func resourceScalewayInstanceServerUpdate(ctx context.Context, d *schema.Resourc
 				if d.HasChange(pnKey) {
 					o, n := d.GetChange(pnKey)
 					if !cmp.Equal(n, o) {
-						_, err := waitForInstanceServer(ctx, d, meta, d.Timeout(schema.TimeoutUpdate))
+						_, err := waitForInstanceServer(ctx, instanceAPI, zone, id, d.Timeout(schema.TimeoutUpdate))
 						if err != nil {
 							return diag.FromErr(err)
 						}
@@ -855,7 +871,7 @@ func resourceScalewayInstanceServerUpdate(ctx context.Context, d *schema.Resourc
 			for _, raw := range o.([]interface{}) {
 				pn, pnExist := raw.(map[string]interface{})
 				if pnExist {
-					_, err := waitForInstanceServer(ctx, d, meta, d.Timeout(schema.TimeoutUpdate))
+					_, err := waitForInstanceServer(ctx, instanceAPI, zone, id, d.Timeout(schema.TimeoutUpdate))
 					if err != nil {
 						return diag.FromErr(err)
 					}
@@ -919,7 +935,7 @@ func resourceScalewayInstanceServerUpdate(ctx context.Context, d *schema.Resourc
 }
 
 func resourceScalewayInstanceServerDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	instanceAPI, zone, ID, err := instanceAPIWithZoneAndID(meta, d.Id())
+	instanceAPI, zone, id, err := instanceAPIWithZoneAndID(meta, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -946,7 +962,7 @@ func resourceScalewayInstanceServerDelete(ctx context.Context, d *schema.Resourc
 		}
 	}
 	// reach stopped state
-	err = reachState(ctx, instanceAPI, zone, ID, instance.ServerStateStopped)
+	err = reachState(ctx, instanceAPI, zone, id, instance.ServerStateStopped)
 	if is404Error(err) {
 		return nil
 	}
@@ -954,14 +970,14 @@ func resourceScalewayInstanceServerDelete(ctx context.Context, d *schema.Resourc
 		return diag.FromErr(err)
 	}
 
-	_, err = waitForInstanceServer(ctx, d, meta, d.Timeout(schema.TimeoutDelete))
+	_, err = waitForInstanceServer(ctx, instanceAPI, zone, id, d.Timeout(schema.TimeoutDelete))
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	err = instanceAPI.DeleteServer(&instance.DeleteServerRequest{
 		Zone:     zone,
-		ServerID: ID,
+		ServerID: id,
 	}, scw.WithContext(ctx))
 
 	if err != nil && !is404Error(err) {
