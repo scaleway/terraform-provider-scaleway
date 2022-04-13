@@ -882,25 +882,19 @@ func resourceScalewayInstanceServerUpdate(ctx context.Context, d *schema.Resourc
 		if err != nil {
 			return diag.FromErr(err)
 		}
-		_, err = waitForInstanceServer(ctx, instanceAPI, zone, id, d.Timeout(schema.TimeoutUpdate))
-		if err != nil {
-			return diag.FromErr(err)
-		}
-
-		_, err = instanceAPI.UpdateServer(updateRequest)
-		if err != nil {
-			return diag.FromErr(err)
-		}
-
-		_, err = waitForInstanceServer(ctx, instanceAPI, zone, id, d.Timeout(schema.TimeoutUpdate))
-		if err != nil {
-			return diag.FromErr(err)
-		}
-
-		return append(warnings, resourceScalewayInstanceServerRead(ctx, d, meta)...)
 	}
 
-	return resourceScalewayInstanceServerRead(ctx, d, meta)
+	_, err = instanceAPI.UpdateServer(updateRequest)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	_, err = waitForInstanceServer(ctx, instanceAPI, zone, id, d.Timeout(schema.TimeoutUpdate))
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	return append(warnings, resourceScalewayInstanceServerRead(ctx, d, meta)...)
 }
 
 func resourceScalewayInstanceServerDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
