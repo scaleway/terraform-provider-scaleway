@@ -189,7 +189,12 @@ func resourceScalewayLbCertificateRead(ctx context.Context, d *schema.ResourceDa
 
 	// check if cert is on error state
 	if certificate.Status == lbSDK.CertificateStatusError {
-		return diag.FromErr(fmt.Errorf("certificate with error state"))
+		return diag.Diagnostics{
+			diag.Diagnostic{
+				Severity: diag.Error,
+				Summary:  fmt.Sprintf("certificate %s with error state", certificate.ID),
+			},
+		}
 	}
 
 	_, err = waitForLBCertificate(ctx, lbAPI, zone, certificate.ID, d.Timeout(schema.TimeoutRead))
