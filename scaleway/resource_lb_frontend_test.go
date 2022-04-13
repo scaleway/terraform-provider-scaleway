@@ -109,7 +109,7 @@ func TestAccScalewayLbFrontend_Certificate(t *testing.T) {
 					resource scaleway_lb_backend bkd01 {
 						lb_id = scaleway_lb.lb01.id
 						forward_protocol = "http"
-						forward_port = 80
+						forward_port = 443
 						proxy_protocol = "none"
 					}
 
@@ -132,7 +132,7 @@ func TestAccScalewayLbFrontend_Certificate(t *testing.T) {
 					resource scaleway_lb_frontend frt01 {
 						lb_id = scaleway_lb.lb01.id
 						backend_id = scaleway_lb_backend.bkd01.id
-						inbound_port = 80
+						inbound_port = 443
 						certificate_ids = [scaleway_lb_certificate.cert01.id, scaleway_lb_certificate.cert02.id]
 					}
 				`, testDomain, testDNSZone),
