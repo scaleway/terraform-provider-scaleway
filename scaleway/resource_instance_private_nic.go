@@ -81,7 +81,7 @@ func resourceScalewayInstancePrivateNICRead(ctx context.Context, d *schema.Resou
 		return diag.FromErr(err)
 	}
 
-	res, err := instanceAPI.GetPrivateNIC(&instance.GetPrivateNICRequest{
+	res, err := instanceAPI.WaitForPrivateNIC(&instance.WaitForPrivateNICRequest{
 		ServerID:     outerID,
 		PrivateNicID: innerID,
 		Zone:         zone,
@@ -95,9 +95,9 @@ func resourceScalewayInstancePrivateNICRead(ctx context.Context, d *schema.Resou
 	}
 
 	_ = d.Set("zone", zone)
-	_ = d.Set("server_id", newZonedID(zone, res.PrivateNic.ServerID).String())
-	_ = d.Set("private_network_id", newZonedID(zone, res.PrivateNic.PrivateNetworkID).String())
-	_ = d.Set("mac_address", res.PrivateNic.MacAddress)
+	_ = d.Set("server_id", newZonedID(zone, res.ServerID).String())
+	_ = d.Set("private_network_id", newZonedID(zone, res.PrivateNetworkID).String())
+	_ = d.Set("mac_address", res.MacAddress)
 
 	return nil
 }
@@ -114,6 +114,15 @@ func resourceScalewayInstancePrivateNICUpdate(ctx context.Context, d *schema.Res
 	}
 
 	if d.HasChanges("private_network_id", "server_id") {
+		_, err := instanceAPI.WaitForPrivateNIC(&instance.WaitForPrivateNICRequest{
+			ServerID:     outerID,
+			PrivateNicID: innerID,
+			Zone:         zone,
+		}, scw.WithContext(ctx))
+		if err != nil {
+			return diag.FromErr(err)
+		}
+
 		// delete previous private NIC
 		err = instanceAPI.DeletePrivateNIC(&instance.DeletePrivateNICRequest{
 			ServerID:     outerID,
@@ -157,6 +166,15 @@ func resourceScalewayInstancePrivateNICDelete(ctx context.Context, d *schema.Res
 		return diag.FromErr(err)
 	}
 	zone, innerID, outerID, err := parseZonedNestedID(d.Id())
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	_, err = instanceAPI.WaitForPrivateNIC(&instance.WaitForPrivateNICRequest{
+		ServerID:     outerID,
+		PrivateNicID: innerID,
+		Zone:         zone,
+	}, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
 	}

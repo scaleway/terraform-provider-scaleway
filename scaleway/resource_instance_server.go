@@ -471,7 +471,19 @@ func resourceScalewayInstanceServerCreate(ctx context.Context, d *schema.Resourc
 				return diag.FromErr(err)
 			}
 
-			_, err = instanceAPI.CreatePrivateNIC(q, scw.WithContext(ctx))
+			pn, err := instanceAPI.CreatePrivateNIC(q, scw.WithContext(ctx))
+			if err != nil {
+				return diag.FromErr(err)
+			}
+			l.Debugf("private network created (ID: %s, status: %s)", pn.PrivateNic.ID, pn.PrivateNic.State)
+
+			_, err = instanceAPI.WaitForPrivateNIC(&instance.WaitForPrivateNICRequest{
+				ServerID:      res.Server.ID,
+				PrivateNicID:  pn.PrivateNic.ID,
+				Zone:          zone,
+				Timeout:       scw.TimeDurationPtr(d.Timeout(schema.TimeoutCreate)),
+				RetryInterval: scw.TimeDurationPtr(retryInstanceServerInterval),
+			}, scw.WithContext(ctx))
 			if err != nil {
 				return diag.FromErr(err)
 			}

@@ -331,10 +331,21 @@ func (ph *privateNICsHandler) flatPrivateNICs() error {
 func (ph *privateNICsHandler) detach(o interface{}) error {
 	oPtr := expandStringPtr(o)
 	if oPtr != nil && len(*oPtr) > 0 {
+		idPN := expandID(*oPtr)
 		// check if old private network still exist on instance server
-		if p, ok := ph.privateNICsMap[expandID(*oPtr)]; ok {
+		if p, ok := ph.privateNICsMap[idPN]; ok {
+			_, err := ph.instanceAPI.WaitForPrivateNIC(&instance.WaitForPrivateNICRequest{
+				ServerID:      ph.serverID,
+				PrivateNicID:  expandID(p.ID),
+				Zone:          ph.zone,
+				Timeout:       scw.TimeDurationPtr(d.Timeout(schema.TimeoutCreate)),
+				RetryInterval: scw.TimeDurationPtr(retryInstanceServerInterval),
+			}, scw.WithContext(ph.ctx))
+			if err != nil {
+				return err
+			}
 			// detach private NIC
-			err := ph.instanceAPI.DeletePrivateNIC(&instance.DeletePrivateNICRequest{
+			err = ph.instanceAPI.DeletePrivateNIC(&instance.DeletePrivateNICRequest{
 				PrivateNicID: expandID(p.ID),
 				Zone:         ph.zone,
 				ServerID:     ph.serverID},
