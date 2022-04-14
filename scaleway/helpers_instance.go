@@ -469,3 +469,20 @@ func waitForInstanceServer(ctx context.Context, api *instance.API, zone scw.Zone
 
 	return server, err
 }
+
+func waitForPrivateNIC(ctx context.Context, instanceAPI *instance.API, zone scw.Zone, serverID string, privateNICID string, timeout time.Duration) (*instance.PrivateNIC, error) {
+	retryInterval := defaultInstanceRetryInterval
+	if DefaultWaitRetryInterval != nil {
+		retryInterval = *DefaultWaitRetryInterval
+	}
+
+	nic, err := instanceAPI.WaitForPrivateNIC(&instance.WaitForPrivateNICRequest{
+		ServerID:      serverID,
+		PrivateNicID:  privateNICID,
+		Zone:          zone,
+		Timeout:       scw.TimeDurationPtr(timeout),
+		RetryInterval: scw.TimeDurationPtr(retryInterval),
+	}, scw.WithContext(ctx))
+
+	return nic, err
+}

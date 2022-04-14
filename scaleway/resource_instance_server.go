@@ -460,13 +460,7 @@ func resourceScalewayInstanceServerCreate(ctx context.Context, d *schema.Resourc
 			}
 			l.Debugf("private network created (ID: %s, status: %s)", pn.PrivateNic.ID, pn.PrivateNic.State)
 
-			_, err = instanceAPI.WaitForPrivateNIC(&instance.WaitForPrivateNICRequest{
-				ServerID:      res.Server.ID,
-				PrivateNicID:  pn.PrivateNic.ID,
-				Zone:          zone,
-				Timeout:       scw.TimeDurationPtr(d.Timeout(schema.TimeoutCreate)),
-				RetryInterval: scw.TimeDurationPtr(retryInstancePrivateNICInterval),
-			}, scw.WithContext(ctx))
+			_, err = waitForPrivateNIC(ctx, instanceAPI, zone, res.Server.ID, pn.PrivateNic.ID, d.Timeout(schema.TimeoutCreate))
 			if err != nil {
 				return diag.FromErr(err)
 			}
@@ -853,11 +847,11 @@ func resourceScalewayInstanceServerUpdate(ctx context.Context, d *schema.Resourc
 							return diag.FromErr(err)
 						}
 
-						err = ph.detach(o, d.Timeout(schema.TimeoutDelete))
+						err = ph.detach(o, d.Timeout(schema.TimeoutUpdate))
 						if err != nil {
 							diag.FromErr(err)
 						}
-						err = ph.attach(n, d.Timeout(schema.TimeoutCreate))
+						err = ph.attach(n, d.Timeout(schema.TimeoutUpdate))
 						if err != nil {
 							diag.FromErr(err)
 						}
@@ -875,7 +869,7 @@ func resourceScalewayInstanceServerUpdate(ctx context.Context, d *schema.Resourc
 						return diag.FromErr(err)
 					}
 
-					err = ph.detach(pn["pn_id"], d.Timeout(schema.TimeoutDelete))
+					err = ph.detach(pn["pn_id"], d.Timeout(schema.TimeoutUpdate))
 					if err != nil {
 						diag.FromErr(err)
 					}
