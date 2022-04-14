@@ -38,6 +38,7 @@ func TestAccScalewayInstanceSecurityGroup_Basic(t *testing.T) {
 					resource "scaleway_instance_security_group" "base" {
 						name = "sg-name"
 						inbound_default_policy = "drop"
+						tags = [ "test-terraform" ]
 						
 						inbound_rule {
 							action = "accept"
@@ -88,6 +89,7 @@ func TestAccScalewayInstanceSecurityGroup_Basic(t *testing.T) {
 					resource "scaleway_instance_security_group" "base" {
 						name = "sg-name"
 						inbound_default_policy = "accept"
+						tags = [ "test-terraform" ]
 			
 						inbound_rule {
 							action = "drop"
@@ -157,6 +159,7 @@ func TestAccScalewayInstanceSecurityGroup_Basic(t *testing.T) {
 					resource "scaleway_instance_security_group" "base" {
 						name = "sg-name"
 						inbound_default_policy = "accept"
+						tags = [ "test-terraform" ]
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
@@ -188,6 +191,7 @@ func TestAccScalewayInstanceSecurityGroup_ICMP(t *testing.T) {
 							port = 80
 							ip_range = "0.0.0.0/0"
 						}
+						tags = [ "test-terraform" ]
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
@@ -213,6 +217,7 @@ func TestAccScalewayInstanceSecurityGroup_ICMP(t *testing.T) {
 							protocol = "ICMP"
 							ip = "8.8.8.8"
 						}
+						tags = [ "test-terraform" ]
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
@@ -245,11 +250,12 @@ func TestAccScalewayInstanceSecurityGroup_ANY(t *testing.T) {
 			{
 				Config: `
 					locals {
-					  ips_to_ban = ["1.1.1.1", "2.2.2.2", "3.3.3.3"]
+						ips_to_ban = ["1.1.1.1", "2.2.2.2", "3.3.3.3"]
 					}
 					
 					resource "scaleway_instance_security_group" "ban_ips" {
-					  inbound_default_policy = "accept"
+						tags = [ "test-terraform" ]
+						inbound_default_policy = "accept"
 					
 						dynamic "inbound_rule" {
 						for_each = local.ips_to_ban
@@ -295,6 +301,7 @@ func TestAccScalewayInstanceSecurityGroup_WithNoPort(t *testing.T) {
 							action = "accept"
 							ip_range = "0.0.0.0/0"
 						}
+						tags = [ "test-terraform" ]
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
@@ -325,6 +332,7 @@ func TestAccScalewayInstanceSecurityGroup_RemovePort(t *testing.T) {
 			{
 				Config: `
 					resource "scaleway_instance_security_group" "base" {
+						tags = [ "test-terraform" ]
 						inbound_rule {
 							action = "accept"
 							ip_range = "0.0.0.0/0"
@@ -346,6 +354,7 @@ func TestAccScalewayInstanceSecurityGroup_RemovePort(t *testing.T) {
 			{
 				Config: `
 					resource "scaleway_instance_security_group" "base" {
+						tags = [ "test-terraform" ]
 						inbound_rule {
 							action = "accept"
 							ip_range = "0.0.0.0/0"
@@ -378,6 +387,7 @@ func TestAccScalewayInstanceSecurityGroup_WithPortRange(t *testing.T) {
 			{
 				Config: `
 					resource "scaleway_instance_security_group" "base" {
+						tags = [ "test-terraform" ]
 						inbound_rule {
 							action = "accept"
 							port_range = "1-1024"
@@ -392,6 +402,7 @@ func TestAccScalewayInstanceSecurityGroup_WithPortRange(t *testing.T) {
 			{
 				Config: `
 					resource "scaleway_instance_security_group" "base" {
+						tags = [ "test-terraform" ]
 						inbound_rule {
 							action = "accept"
 							port = "22"
@@ -406,6 +417,7 @@ func TestAccScalewayInstanceSecurityGroup_WithPortRange(t *testing.T) {
 			{
 				Config: `
 					resource "scaleway_instance_security_group" "base" {
+						tags = [ "test-terraform" ]
 						inbound_rule {
 							action = "accept"
 							port_range = "1-1024"
@@ -449,15 +461,6 @@ func TestAccScalewayInstanceSecurityGroup_Tags(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("scaleway_instance_security_group.main", "tags.0", "foo"),
 					resource.TestCheckResourceAttr("scaleway_instance_security_group.main", "tags.1", "buzz"),
-				),
-			},
-			{
-				Config: `
-					resource "scaleway_instance_security_group" "main" {
-					}
-				`,
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckNoResourceAttr("scaleway_instance_security_group.main", "tags"),
 				),
 			},
 		},
@@ -613,6 +616,7 @@ func TestAccScalewayInstanceSecurityGroup_EnableDefaultSecurity(t *testing.T) {
 			{
 				Config: `
 					resource "scaleway_instance_security_group" "base" {
+						tags = [ "test-terraform" ]
 						enable_default_security = false
 					}
 				`,
@@ -623,6 +627,7 @@ func TestAccScalewayInstanceSecurityGroup_EnableDefaultSecurity(t *testing.T) {
 			{
 				Config: `
 					resource "scaleway_instance_security_group" "base" {
+						tags = [ "test-terraform" ]
 						enable_default_security = true
 					}
 				`,

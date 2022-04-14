@@ -110,7 +110,7 @@ func serverStateFlatten(fromState instance.ServerState) (string, error) {
 	return "", fmt.Errorf("server is in an invalid state, someone else might be executing action at the same time")
 }
 
-// serverStateExpand converts a terraform state  to an API state or return an error.
+// serverStateExpand converts terraform state to an API state or return an error.
 func serverStateExpand(rawState string) (instance.ServerState, error) {
 	apiState, exist := map[string]instance.ServerState{
 		InstanceServerStateStopped: instance.ServerStateStopped,
@@ -240,8 +240,6 @@ func sanitizeVolumeMap(serverName string, volumes map[string]*instance.VolumeSer
 	m := make(map[string]*instance.VolumeServerTemplate)
 
 	for index, v := range volumes {
-		v.Name = serverName + "-" + index
-
 		// Remove extra data for API validation.
 		switch {
 		// If a volume already got an ID it is passed as it to the API without specifying the volume type.

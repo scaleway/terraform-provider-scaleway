@@ -58,14 +58,31 @@ func resourceScalewayInstanceIPCreate(ctx context.Context, d *schema.ResourceDat
 	if err != nil {
 		return diag.FromErr(err)
 	}
-
-	res, err := instanceAPI.CreateIP(&instance.CreateIPRequest{
+	iprequest := &instance.CreateIPRequest{
 		Zone:    zone,
 		Project: expandStringPtr(d.Get("project_id")),
-		Tags:    expandStrings(d.Get("tags")),
-	}, scw.WithContext(ctx))
+	}
+	tags := expandStrings(d.Get("tags"))
+	if len(tags) > 0 {
+		iprequest.Tags = tags
+	}
+	res, err := instanceAPI.CreateIP(iprequest, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
+	}
+
+	reverseRaw, ok := d.GetOk("reverse")
+	if ok {
+		reverseStrPtr := expandStringPtr(reverseRaw)
+		req := &instance.UpdateIPRequest{
+			IP:      res.IP.ID,
+			Reverse: &instance.NullableStringValue{Value: *reverseStrPtr},
+			Zone:    zone,
+		}
+		_, err = instanceAPI.UpdateIP(req, scw.WithContext(ctx))
+		if err != nil {
+			return diag.FromErr(err)
+		}
 	}
 
 	d.SetId(newZonedIDString(zone, res.IP.ID))
