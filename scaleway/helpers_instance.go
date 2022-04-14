@@ -22,6 +22,7 @@ const (
 	InstanceServerStateStandby = "standby"
 
 	defaultInstanceServerWaitTimeout        = 10 * time.Minute
+	defaultInstancePrivateNICWaitTimeout    = 10 * time.Minute
 	defaultInstanceVolumeDeleteTimeout      = 10 * time.Minute
 	defaultInstanceSecurityGroupTimeout     = 1 * time.Minute
 	defaultInstanceSecurityGroupRuleTimeout = 1 * time.Minute
@@ -328,7 +329,7 @@ func (ph *privateNICsHandler) flatPrivateNICs() error {
 	return nil
 }
 
-func (ph *privateNICsHandler) detach(o interface{}) error {
+func (ph *privateNICsHandler) detach(o interface{}, timeout time.Duration) error {
 	oPtr := expandStringPtr(o)
 	if oPtr != nil && len(*oPtr) > 0 {
 		idPN := expandID(*oPtr)
@@ -338,8 +339,8 @@ func (ph *privateNICsHandler) detach(o interface{}) error {
 				ServerID:      ph.serverID,
 				PrivateNicID:  expandID(p.ID),
 				Zone:          ph.zone,
-				Timeout:       scw.TimeDurationPtr(d.Timeout(schema.TimeoutCreate)),
-				RetryInterval: scw.TimeDurationPtr(retryInstanceServerInterval),
+				Timeout:       scw.TimeDurationPtr(timeout),
+				RetryInterval: scw.TimeDurationPtr(retryInstancePrivateNICInterval),
 			}, scw.WithContext(ph.ctx))
 			if err != nil {
 				return err
@@ -359,16 +360,27 @@ func (ph *privateNICsHandler) detach(o interface{}) error {
 	return nil
 }
 
-func (ph *privateNICsHandler) attach(n interface{}) error {
+func (ph *privateNICsHandler) attach(n interface{}, timeout time.Duration) error {
 	nPtr := expandStringPtr(n)
 	if nPtr != nil {
 		// check if new private network was already attached on instance server
 		privateNetworkID := expandID(*nPtr)
 		if _, ok := ph.privateNICsMap[privateNetworkID]; !ok {
-			_, err := ph.instanceAPI.CreatePrivateNIC(&instance.CreatePrivateNICRequest{
+			pn, err := ph.instanceAPI.CreatePrivateNIC(&instance.CreatePrivateNICRequest{
 				Zone:             ph.zone,
 				ServerID:         ph.serverID,
 				PrivateNetworkID: privateNetworkID})
+			if err != nil {
+				return err
+			}
+
+			_, err = ph.instanceAPI.WaitForPrivateNIC(&instance.WaitForPrivateNICRequest{
+				ServerID:      ph.serverID,
+				PrivateNicID:  pn.PrivateNic.ID,
+				Zone:          ph.zone,
+				Timeout:       scw.TimeDurationPtr(timeout),
+				RetryInterval: scw.TimeDurationPtr(retryInstancePrivateNICInterval),
+			}, scw.WithContext(ph.ctx))
 			if err != nil {
 				return err
 			}

@@ -232,6 +232,9 @@ func resourceScalewayInstanceServer() *schema.Resource {
 				MaxItems:    8,
 				Description: "List of private network to connect with your instance",
 				Elem: &schema.Resource{
+					Timeouts: &schema.ResourceTimeout{
+						Default: schema.DefaultTimeout(defaultInstancePrivateNICWaitTimeout),
+					},
 					Schema: map[string]*schema.Schema{
 						"pn_id": {
 							Type:         schema.TypeString,
@@ -482,7 +485,7 @@ func resourceScalewayInstanceServerCreate(ctx context.Context, d *schema.Resourc
 				PrivateNicID:  pn.PrivateNic.ID,
 				Zone:          zone,
 				Timeout:       scw.TimeDurationPtr(d.Timeout(schema.TimeoutCreate)),
-				RetryInterval: scw.TimeDurationPtr(retryInstanceServerInterval),
+				RetryInterval: scw.TimeDurationPtr(retryInstancePrivateNICInterval),
 			}, scw.WithContext(ctx))
 			if err != nil {
 				return diag.FromErr(err)
@@ -910,11 +913,11 @@ func resourceScalewayInstanceServerUpdate(ctx context.Context, d *schema.Resourc
 							return diag.FromErr(err)
 						}
 
-						err = ph.detach(o)
+						err = ph.detach(o, d.Timeout(schema.TimeoutDelete))
 						if err != nil {
 							diag.FromErr(err)
 						}
-						err = ph.attach(n)
+						err = ph.attach(n, d.Timeout(schema.TimeoutCreate))
 						if err != nil {
 							diag.FromErr(err)
 						}
@@ -937,7 +940,7 @@ func resourceScalewayInstanceServerUpdate(ctx context.Context, d *schema.Resourc
 						return diag.FromErr(err)
 					}
 
-					err = ph.detach(pn["pn_id"])
+					err = ph.detach(pn["pn_id"], d.Timeout(schema.TimeoutDelete))
 					if err != nil {
 						diag.FromErr(err)
 					}
