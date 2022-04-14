@@ -144,7 +144,7 @@ func TestAccScalewayInstancePlacementGroup_Tags(t *testing.T) {
 					`,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayInstancePlacementGroupExists(tt, "scaleway_instance_placement_group.main"),
-					resource.TestCheckNoResourceAttr("scaleway_instance_placement_group.main", "tags"),
+					resource.TestCheckResourceAttr("scaleway_instance_placement_group.main", "tags.#", "0"),
 				),
 			},
 			{
@@ -165,7 +165,7 @@ func TestAccScalewayInstancePlacementGroup_Tags(t *testing.T) {
 						}
 					`,
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckNoResourceAttr("scaleway_instance_placement_group.main", "tags"),
+					resource.TestCheckResourceAttr("scaleway_instance_placement_group.main", "tags.#", "0"),
 					testAccCheckScalewayInstancePlacementGroupExists(tt, "scaleway_instance_placement_group.main"),
 				),
 			},

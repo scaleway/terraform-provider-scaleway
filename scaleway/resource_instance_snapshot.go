@@ -79,7 +79,10 @@ func resourceScalewayInstanceSnapshotCreate(ctx context.Context, d *schema.Resou
 		Project:  expandStringPtr(d.Get("project_id")),
 		Name:     expandOrGenerateString(d.Get("name"), "snap"),
 		VolumeID: expandZonedID(d.Get("volume_id").(string)).ID,
-		Tags:     expandStrings(d.Get("tags")),
+	}
+	tags := expandStrings(d.Get("tags"))
+	if len(tags) > 0 {
+		req.Tags = tags
 	}
 
 	res, err := instanceAPI.CreateSnapshot(req, scw.WithContext(ctx))
@@ -137,8 +140,13 @@ func resourceScalewayInstanceSnapshotUpdate(ctx context.Context, d *schema.Resou
 	req := &instance.UpdateSnapshotRequest{
 		SnapshotID: id,
 		Zone:       zone,
-		Tags:       scw.StringsPtr(expandStrings(d.Get("tags"))),
 		Name:       scw.StringPtr(d.Get("name").(string)),
+		Tags:       scw.StringsPtr([]string{}),
+	}
+
+	tags := expandStrings(d.Get("tags"))
+	if d.HasChange("tags") && len(tags) > 0 {
+		req.Tags = scw.StringsPtr(expandStrings(d.Get("tags")))
 	}
 
 	_, err = instanceAPI.UpdateSnapshot(req, scw.WithContext(ctx))
