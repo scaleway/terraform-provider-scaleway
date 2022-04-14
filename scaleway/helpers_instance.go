@@ -336,13 +336,7 @@ func (ph *privateNICsHandler) detach(o interface{}, timeout time.Duration) error
 		idPN := expandID(*oPtr)
 		// check if old private network still exist on instance server
 		if p, ok := ph.privateNICsMap[idPN]; ok {
-			_, err := ph.instanceAPI.WaitForPrivateNIC(&instance.WaitForPrivateNICRequest{
-				ServerID:      ph.serverID,
-				PrivateNicID:  expandID(p.ID),
-				Zone:          ph.zone,
-				Timeout:       scw.TimeDurationPtr(timeout),
-				RetryInterval: scw.TimeDurationPtr(retryInstancePrivateNICInterval),
-			}, scw.WithContext(ph.ctx))
+			_, err := waitForPrivateNIC(ph.ctx, ph.instanceAPI, ph.zone, ph.serverID, expandID(p.ID), timeout)
 			if err != nil {
 				return err
 			}
@@ -375,13 +369,7 @@ func (ph *privateNICsHandler) attach(n interface{}, timeout time.Duration) error
 				return err
 			}
 
-			_, err = ph.instanceAPI.WaitForPrivateNIC(&instance.WaitForPrivateNICRequest{
-				ServerID:      ph.serverID,
-				PrivateNicID:  pn.PrivateNic.ID,
-				Zone:          ph.zone,
-				Timeout:       scw.TimeDurationPtr(timeout),
-				RetryInterval: scw.TimeDurationPtr(retryInstancePrivateNICInterval),
-			}, scw.WithContext(ph.ctx))
+			_, err = waitForPrivateNIC(ph.ctx, ph.instanceAPI, ph.zone, ph.serverID, pn.PrivateNic.ID, timeout)
 			if err != nil {
 				return err
 			}
