@@ -83,6 +83,37 @@ func TestAccScalewayRdbInstance_Basic(t *testing.T) {
 					resource.TestCheckResourceAttrSet("scaleway_rdb_instance.main", "load_balancer.0.port"),
 				),
 			},
+			{
+				Config: `
+					resource scaleway_rdb_instance main {
+						name = "test-rdb-basic"
+						node_type = "db-dev-s"
+						engine = "PostgreSQL-11"
+						is_ha_cluster = false
+						disable_backup = true
+						user_name = "my_initial_user"
+						password = "thiZ_is_v&ry_s3cret"
+						tags = [ "terraform-change-tag" ]
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayRdbExists(tt, "scaleway_rdb_instance.main"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "name", "test-rdb-basic"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "node_type", "db-dev-s"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "engine", "PostgreSQL-11"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "is_ha_cluster", "false"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "disable_backup", "true"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "user_name", "my_initial_user"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "password", "thiZ_is_v&ry_s3cret"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "tags.0", "terraform-change-tag"),
+					resource.TestCheckResourceAttrSet("scaleway_rdb_instance.main", "endpoint_ip"),
+					resource.TestCheckResourceAttrSet("scaleway_rdb_instance.main", "endpoint_port"),
+					resource.TestCheckResourceAttrSet("scaleway_rdb_instance.main", "certificate"),
+					resource.TestCheckResourceAttrSet("scaleway_rdb_instance.main", "load_balancer.0.ip"),
+					resource.TestCheckResourceAttrSet("scaleway_rdb_instance.main", "load_balancer.0.endpoint_id"),
+					resource.TestCheckResourceAttrSet("scaleway_rdb_instance.main", "load_balancer.0.port"),
+				),
+			},
 		},
 	})
 }
@@ -468,6 +499,7 @@ func TestAccScalewayRdbInstance_BackupSchedule(t *testing.T) {
 						disable_backup            = false
                         backup_schedule_frequency = 24
                         backup_schedule_retention = 7
+						backup_same_region        = true
 						user_name                 = "my_initial_user"
 						password                  = "thiZ_is_v&ry_s3cret"
 						region                    = "nl-ams"
@@ -479,6 +511,7 @@ func TestAccScalewayRdbInstance_BackupSchedule(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "disable_backup", "false"),
 					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "backup_schedule_frequency", "24"),
 					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "backup_schedule_retention", "7"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "backup_same_region", "true"),
 				),
 			},
 		}})

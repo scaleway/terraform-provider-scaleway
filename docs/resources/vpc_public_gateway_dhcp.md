@@ -7,7 +7,7 @@ description: |-
 # scaleway_vpc_public_gateway_dhcp
 
 Creates and manages Scaleway VPC Public Gateway DHCP.
-For more information, see [the documentation](https://developers.scaleway.com/en/products/vpc-gw/api/v1).
+For more information, see [the documentation](https://developers.scaleway.com/en/products/vpc-gw/api/v1/#dhcp-c05544).
 
 ## Example
 
@@ -29,7 +29,7 @@ The following arguments are supported:
 - `pool_high` - (Optional) High IP (excluded) of the dynamic address pool. Defaults to the last address of the subnet.
 - `enable_dynamic` - (Optional) Whether to enable dynamic pooling of IPs. By turning the dynamic pool off, only pre-existing DHCP reservations will be handed out. Defaults to `true`.
 - `valid_lifetime` - (Optional) For how long, in seconds, will DHCP entries will be valid. Defaults to 1h (3600s).
-- `renew_timer` - (Optional) After how long, in seconds, a renew will be attempted. Must be 30s lower than `rebind_timer`. Defaults to 50m (3000s).
+- `renew_timer` - (Optional) After how long, in seconds, a renewal will be attempted. Must be 30s lower than `rebind_timer`. Defaults to 50m (3000s).
 - `rebind_timer` - (Optional) After how long, in seconds, a DHCP client will query for a new lease if previous renews fail. Must be 30s lower than `valid_lifetime`. Defaults to 51m (3060s).
 - `push_default_route` - (Optional) Whether the gateway should push a default route to DHCP clients or only hand out IPs. Defaults to `true`.
 - `push_dns_server` - (Optional) Whether the gateway should push custom DNS servers to clients. This allows for instance hostname -> IP resolution. Defaults to `true`.

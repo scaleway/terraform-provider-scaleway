@@ -378,7 +378,7 @@ func expandStringWithDefault(data interface{}, defaultValue string) string {
 }
 
 func expandStrings(data interface{}) []string {
-	stringSlice := []string{}
+	var stringSlice []string
 	for _, s := range data.([]interface{}) {
 		stringSlice = append(stringSlice, s.(string))
 	}
@@ -392,6 +392,17 @@ func expandStringsPtr(data interface{}) *[]string {
 	}
 	for _, s := range data.([]interface{}) {
 		stringSlice = append(stringSlice, s.(string))
+	}
+	return &stringSlice
+}
+
+func expandSliceIDsPtr(rawIDs interface{}) *[]string {
+	var stringSlice []string
+	if _, ok := rawIDs.([]interface{}); !ok || rawIDs == nil {
+		return &stringSlice
+	}
+	for _, s := range rawIDs.([]interface{}) {
+		stringSlice = append(stringSlice, expandID(s.(string)))
 	}
 	return &stringSlice
 }
@@ -437,6 +448,23 @@ func flattenSliceStringPtr(s []*string) interface{} {
 	for _, strPtr := range s {
 		res = append(res, flattenStringPtr(strPtr))
 	}
+	return res
+}
+
+func flattenSliceString(s []string) interface{} {
+	res := make([]interface{}, 0, len(s))
+	for _, strPtr := range s {
+		res = append(res, strPtr)
+	}
+	return res
+}
+
+func flattenSliceIDs(certificates []string, zone scw.Zone) interface{} {
+	res := []interface{}(nil)
+	for _, certificateID := range certificates {
+		res = append(res, newZonedIDString(zone, certificateID))
+	}
+
 	return res
 }
 
@@ -503,6 +531,17 @@ func validateDuration() schema.SchemaValidateFunc {
 	}
 }
 
+func flattenMap(m map[string]string) interface{} {
+	if m == nil {
+		return nil
+	}
+	flattenedMap := make(map[string]interface{})
+	for k, v := range m {
+		flattenedMap[k] = v
+	}
+	return flattenedMap
+}
+
 func diffSuppressFuncDuration(k, old, new string, d *schema.ResourceData) bool {
 	if old == new {
 		return true
@@ -548,4 +587,12 @@ func expandMapStringStringPtr(data interface{}) *map[string]string {
 		m[k] = v.(string)
 	}
 	return &m
+}
+
+func toUint32(number interface{}) *uint32 {
+	return scw.Uint32Ptr(number.(uint32))
+}
+
+func errorCheck(err error, message string) bool {
+	return strings.Contains(err.Error(), message)
 }

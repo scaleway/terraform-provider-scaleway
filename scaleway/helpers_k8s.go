@@ -13,11 +13,9 @@ import (
 )
 
 const (
-	defaultK8SClusterTimeout             = 10 * time.Minute
-	defaultK8SPoolTimeout                = 10 * time.Minute
-	k8sClusterWaitForPoolRequiredTimeout = 10 * time.Minute
-	k8sClusterWaitForDeletedTimeout      = 10 * time.Minute
-	k8sPoolWaitForReadyTimeout           = 15 * time.Minute
+	defaultK8SClusterTimeout = 15 * time.Minute
+	defaultK8SPoolTimeout    = 15 * time.Minute
+	defaultK8SRetryInterval  = 5 * time.Second
 )
 
 func k8sAPIWithRegion(d *schema.ResourceData, m interface{}) (*k8s.API, scw.Region, error) {
@@ -77,31 +75,49 @@ func k8sGetLatestVersionFromMinor(ctx context.Context, k8sAPI *k8s.API, region s
 	return "", fmt.Errorf("no available upstream version found for %s", version)
 }
 
-func waitK8SCluster(ctx context.Context, k8sAPI *k8s.API, region scw.Region, clusterID string) (*k8s.Cluster, error) {
-	return k8sAPI.WaitForCluster(&k8s.WaitForClusterRequest{
-		ClusterID:     clusterID,
-		Region:        region,
-		Timeout:       scw.TimeDurationPtr(k8sClusterWaitForPoolRequiredTimeout),
-		RetryInterval: DefaultWaitRetryInterval,
-	}, scw.WithContext(ctx))
-}
+func waitK8SCluster(ctx context.Context, k8sAPI *k8s.API, region scw.Region, clusterID string, timeout time.Duration) (*k8s.Cluster, error) {
+	retryInterval := defaultK8SRetryInterval
+	if DefaultWaitRetryInterval != nil {
+		retryInterval = *DefaultWaitRetryInterval
+	}
 
-func waitK8SClusterPool(ctx context.Context, k8sAPI *k8s.API, region scw.Region, clusterID string) (*k8s.Cluster, error) {
-	return k8sAPI.WaitForClusterPool(&k8s.WaitForClusterRequest{
-		ClusterID:     clusterID,
-		Region:        region,
-		Timeout:       scw.TimeDurationPtr(k8sClusterWaitForPoolRequiredTimeout),
-		RetryInterval: DefaultWaitRetryInterval,
-	}, scw.WithContext(ctx))
-}
-
-func waitK8SClusterDeleted(ctx context.Context, k8sAPI *k8s.API, region scw.Region, clusterID string) error {
 	cluster, err := k8sAPI.WaitForCluster(&k8s.WaitForClusterRequest{
 		ClusterID:     clusterID,
 		Region:        region,
-		Timeout:       scw.TimeDurationPtr(k8sClusterWaitForDeletedTimeout),
-		RetryInterval: DefaultWaitRetryInterval,
+		Timeout:       scw.TimeDurationPtr(timeout),
+		RetryInterval: &retryInterval,
 	}, scw.WithContext(ctx))
+
+	return cluster, err
+}
+
+func waitK8SClusterPool(ctx context.Context, k8sAPI *k8s.API, region scw.Region, clusterID string, timeout time.Duration) (*k8s.Cluster, error) {
+	retryInterval := defaultK8SRetryInterval
+	if DefaultWaitRetryInterval != nil {
+		retryInterval = *DefaultWaitRetryInterval
+	}
+
+	return k8sAPI.WaitForClusterPool(&k8s.WaitForClusterRequest{
+		ClusterID:     clusterID,
+		Region:        region,
+		Timeout:       scw.TimeDurationPtr(timeout),
+		RetryInterval: &retryInterval,
+	}, scw.WithContext(ctx))
+}
+
+func waitK8SClusterDeleted(ctx context.Context, k8sAPI *k8s.API, region scw.Region, clusterID string, timeout time.Duration) error {
+	retryInterval := defaultK8SRetryInterval
+	if DefaultWaitRetryInterval != nil {
+		retryInterval = *DefaultWaitRetryInterval
+	}
+
+	cluster, err := k8sAPI.WaitForCluster(&k8s.WaitForClusterRequest{
+		ClusterID:     clusterID,
+		Region:        region,
+		Timeout:       scw.TimeDurationPtr(timeout),
+		RetryInterval: &retryInterval,
+	}, scw.WithContext(ctx))
+
 	if err != nil {
 		if is404Error(err) {
 			return nil
@@ -112,22 +128,27 @@ func waitK8SClusterDeleted(ctx context.Context, k8sAPI *k8s.API, region scw.Regi
 	return fmt.Errorf("cluster %s has state %s, wants %s", clusterID, cluster.Status, k8s.ClusterStatusDeleted)
 }
 
-func waitK8SPoolReady(ctx context.Context, k8sAPI *k8s.API, region scw.Region, poolID string) error {
+func waitK8SPoolReady(ctx context.Context, k8sAPI *k8s.API, region scw.Region, poolID string, timeout time.Duration) (*k8s.Pool, error) {
+	retryInterval := defaultK8SRetryInterval
+	if DefaultWaitRetryInterval != nil {
+		retryInterval = *DefaultWaitRetryInterval
+	}
+
 	pool, err := k8sAPI.WaitForPool(&k8s.WaitForPoolRequest{
 		PoolID:        poolID,
 		Region:        region,
-		Timeout:       scw.TimeDurationPtr(k8sPoolWaitForReadyTimeout),
-		RetryInterval: DefaultWaitRetryInterval,
+		Timeout:       scw.TimeDurationPtr(timeout),
+		RetryInterval: &retryInterval,
 	}, scw.WithContext(ctx))
 
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	if pool.Status != k8s.PoolStatusReady {
-		return fmt.Errorf("pool %s has state %s, wants %s", poolID, pool.Status, k8s.PoolStatusReady)
+		return nil, fmt.Errorf("pool %s has state %s, wants %s", poolID, pool.Status, k8s.PoolStatusReady)
 	}
-	return nil
+	return pool, nil
 }
 
 // convert a list of nodes to a list of map

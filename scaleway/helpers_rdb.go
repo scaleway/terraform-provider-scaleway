@@ -74,12 +74,16 @@ func expandInstanceSettings(i interface{}) []*rdb.InstanceSetting {
 	return res
 }
 
-func waitInstance(ctx context.Context, api *rdb.API, region scw.Region, id string) (*rdb.Instance, error) {
+func waitForRDBInstance(ctx context.Context, api *rdb.API, region scw.Region, id string, timeout time.Duration) (*rdb.Instance, error) {
 	retryInterval := defaultWaitRDBRetryInterval
+	if DefaultWaitRetryInterval != nil {
+		retryInterval = *DefaultWaitRetryInterval
+	}
+
 	return api.WaitForInstance(&rdb.WaitForInstanceRequest{
 		Region:        region,
+		Timeout:       scw.TimeDurationPtr(timeout),
 		InstanceID:    id,
-		Timeout:       scw.TimeDurationPtr(defaultInstanceServerWaitTimeout * 3), // upgrade takes some time
 		RetryInterval: &retryInterval,
 	}, scw.WithContext(ctx))
 }

@@ -117,6 +117,16 @@ func resourceScalewayInstanceVolumeCreate(ctx context.Context, d *schema.Resourc
 
 	d.SetId(newZonedIDString(zone, res.Volume.ID))
 
+	_, err = instanceAPI.WaitForVolume(&instance.WaitForVolumeRequest{
+		VolumeID:      res.Volume.ID,
+		Zone:          zone,
+		RetryInterval: DefaultWaitRetryInterval,
+		Timeout:       scw.TimeDurationPtr(d.Timeout(schema.TimeoutCreate)),
+	}, scw.WithContext(ctx))
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	return resourceScalewayInstanceVolumeRead(ctx, d, meta)
 }
 
@@ -191,6 +201,7 @@ func resourceScalewayInstanceVolumeUpdate(ctx context.Context, d *schema.Resourc
 			VolumeID:      id,
 			Zone:          zone,
 			RetryInterval: DefaultWaitRetryInterval,
+			Timeout:       scw.TimeDurationPtr(d.Timeout(schema.TimeoutUpdate)),
 		}, scw.WithContext(ctx))
 		if err != nil {
 			return diag.FromErr(err)
@@ -209,6 +220,7 @@ func resourceScalewayInstanceVolumeUpdate(ctx context.Context, d *schema.Resourc
 			VolumeID:      id,
 			Zone:          zone,
 			RetryInterval: DefaultWaitRetryInterval,
+			Timeout:       scw.TimeDurationPtr(d.Timeout(schema.TimeoutUpdate)),
 		}, scw.WithContext(ctx))
 		if err != nil {
 			return diag.FromErr(err)

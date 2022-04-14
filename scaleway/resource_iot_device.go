@@ -3,6 +3,7 @@ package scaleway
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -181,10 +182,6 @@ func resourceScalewayIotDeviceCreate(ctx context.Context, d *schema.ResourceData
 		return diag.FromErr(err)
 	}
 
-	////
-	// Create device
-	////
-
 	req := &iot.CreateDeviceRequest{
 		Region: region,
 		HubID:  expandID(d.Get("hub_id")),
@@ -245,7 +242,7 @@ func resourceScalewayIotDeviceCreate(ctx context.Context, d *schema.ResourceData
 
 	d.SetId(newRegionalIDString(region, res.Device.ID))
 
-	// If user certifcate is provided.
+	// If user certificate is provided.
 	if devCrt, ok := d.GetOk("certificate.0.crt"); ok {
 		// Set user certificate to device.
 		// It cannot currently be added in the create device request.
@@ -258,7 +255,7 @@ func resourceScalewayIotDeviceCreate(ctx context.Context, d *schema.ResourceData
 			return diag.FromErr(err)
 		}
 	} else {
-		// Update certificate and key as they cannot be retreived later.
+		// Update certificate and key as they cannot be retrieved later.
 		cert := map[string]interface{}{
 			"crt": res.Certificate.Crt,
 			"key": res.Certificate.Key,
@@ -275,9 +272,6 @@ func resourceScalewayIotDeviceRead(ctx context.Context, d *schema.ResourceData, 
 		return diag.FromErr(err)
 	}
 
-	////
-	// Read Device
-	////
 	device, err := iotAPI.GetDevice(&iot.GetDeviceRequest{
 		Region:   region,
 		DeviceID: deviceID,
@@ -293,9 +287,9 @@ func resourceScalewayIotDeviceRead(ctx context.Context, d *schema.ResourceData, 
 	_ = d.Set("name", device.Name)
 	_ = d.Set("status", device.Status)
 	_ = d.Set("hub_id", newRegionalID(region, device.HubID).String())
-	_ = d.Set("created_at", device.CreatedAt.String())
-	_ = d.Set("updated_at", device.UpdatedAt.String())
-	_ = d.Set("last_activity_at", device.LastActivityAt.String())
+	_ = d.Set("created_at", device.CreatedAt.Format(time.RFC3339))
+	_ = d.Set("updated_at", device.UpdatedAt.Format(time.RFC3339))
+	_ = d.Set("last_activity_at", device.LastActivityAt.Format(time.RFC3339))
 	_ = d.Set("allow_insecure", device.AllowInsecure)
 	_ = d.Set("allow_multiple_connections", device.AllowMultipleConnections)
 	_ = d.Set("is_connected", device.IsConnected)
@@ -336,11 +330,8 @@ func resourceScalewayIotDeviceRead(ctx context.Context, d *schema.ResourceData, 
 		_ = d.Set("message_filters", []map[string]interface{}{mf})
 	}
 
-	////
 	// Read Device certificate
-	////
-
-	// As we cannot read the key, we get back it from cache and do not change it.
+	// As we cannot read the key, we get back it from state and do not change it.
 	if devCrtKey, ok := d.GetOk("certificate.0.key"); ok {
 		devCrt, err := iotAPI.GetDeviceCertificate(&iot.GetDeviceCertificateRequest{
 			Region:   region,
@@ -366,9 +357,6 @@ func resourceScalewayIotDeviceUpdate(ctx context.Context, d *schema.ResourceData
 		return diag.FromErr(err)
 	}
 
-	////
-	// Update Device
-	////
 	updateRequest := &iot.UpdateDeviceRequest{
 		Region:   region,
 		DeviceID: deviceID,
@@ -425,9 +413,7 @@ func resourceScalewayIotDeviceUpdate(ctx context.Context, d *schema.ResourceData
 		return diag.FromErr(err)
 	}
 
-	////
 	// Set the device certificate if changed
-	////
 	if d.HasChange("certificate.0.crt") {
 		_, err := iotAPI.SetDeviceCertificate(&iot.SetDeviceCertificateRequest{
 			Region:         region,
@@ -448,9 +434,6 @@ func resourceScalewayIotDeviceDelete(ctx context.Context, d *schema.ResourceData
 		return diag.FromErr(err)
 	}
 
-	////
-	// Delete Device
-	////
 	err = iotAPI.DeleteDevice(&iot.DeleteDeviceRequest{
 		Region:   region,
 		DeviceID: deviceID,
