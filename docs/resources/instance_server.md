@@ -183,8 +183,8 @@ attached to the server. Updates to this field will trigger a stop/start of the s
   Use the `cloud-init` key to use [cloud-init](https://cloudinit.readthedocs.io/en/latest/) on your instance.
   You can define values using:
     - string
-    - UTF-8 encoded file content using [file](https://www.terraform.io/docs/configuration/functions/file.html)
-    - Binary files using [filebase64](https://www.terraform.io/docs/configuration/functions/filebase64.html).
+    - UTF-8 encoded file content using [file](https://www.terraform.io/language/functions/file)
+    - Binary files using [filebase64](https://www.terraform.io/language/functions/filebase64).
 
 - `private_network` - (Optional) The private network associated with the server.
    Use the `pn_id` key to attach a [private_network](https://developers.scaleway.com/en/products/instance/api/#private-nics-a42eea) on your instance.
