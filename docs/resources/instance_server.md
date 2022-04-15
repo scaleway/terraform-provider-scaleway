@@ -8,6 +8,8 @@ description: |-
 
 Creates and manages Scaleway Compute Instance servers. For more information, see [the documentation](https://developers.scaleway.com/en/products/instance/api/#servers-8bf7d7).
 
+Please check our [FAQ - Instances](https://www.scaleway.com/en/docs/faq/instances).
+
 ## Examples
 
 ### Basic
@@ -135,12 +137,12 @@ The following arguments are supported:
 You find all the available types on the [pricing page](https://www.scaleway.com/en/pricing/).
 Updates to this field will recreate a new resource.
 
-[//]: # (TODO: Improve me)
-
 - `image` - (Required) The UUID or the label of the base image used by the server. You can use [this endpoint](https://api-marketplace.scaleway.com/images?page=1&per_page=100)
 to find either the right `label` or the right local image `ID` for a given `type`.
 
-[//]: # (TODO: Improve me)
+You can check the available labels with our [CLI](https://www.scaleway.com/en/docs/compute/instances/api-cli/creating-managing-instances-with-cliv2/). ```scw marketplace image list```
+
+To retrieve more information by label please use: ```scw marketplace image get label=<LABEL>```
 
 - `name` - (Optional) The name of the server.
 
@@ -181,8 +183,8 @@ attached to the server. Updates to this field will trigger a stop/start of the s
   Use the `cloud-init` key to use [cloud-init](https://cloudinit.readthedocs.io/en/latest/) on your instance.
   You can define values using:
     - string
-    - UTF-8 encoded file content using [file](https://www.terraform.io/docs/configuration/functions/file.html)
-    - Binary files using [filebase64](https://www.terraform.io/docs/configuration/functions/filebase64.html).
+    - UTF-8 encoded file content using [file](https://www.terraform.io/language/functions/file)
+    - Binary files using [filebase64](https://www.terraform.io/language/functions/filebase64).
 
 - `private_network` - (Optional) The private network associated with the server.
    Use the `pn_id` key to attach a [private_network](https://developers.scaleway.com/en/products/instance/api/#private-nics-a42eea) on your instance.

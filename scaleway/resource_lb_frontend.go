@@ -176,7 +176,7 @@ func resourceScalewayLbFrontendCreate(ctx context.Context, d *schema.ResourceDat
 	_, err = lbAPI.WaitForLb(&lb.ZonedAPIWaitForLBRequest{
 		Zone:          zone,
 		LBID:          lbID,
-		Timeout:       scw.TimeDurationPtr(defaultInstanceServerWaitTimeout),
+		Timeout:       scw.TimeDurationPtr(d.Timeout(schema.TimeoutCreate)),
 		RetryInterval: &retryInterval,
 	}, scw.WithContext(ctx))
 	if err != nil {
@@ -374,7 +374,7 @@ func resourceScalewayLbFrontendUpdate(ctx context.Context, d *schema.ResourceDat
 	_, err = lbAPI.WaitForLb(&lb.ZonedAPIWaitForLBRequest{
 		Zone:          zone,
 		LBID:          lbID,
-		Timeout:       scw.TimeDurationPtr(defaultInstanceServerWaitTimeout),
+		Timeout:       scw.TimeDurationPtr(d.Timeout(schema.TimeoutUpdate)),
 		RetryInterval: &retryInterval,
 	}, scw.WithContext(ctx))
 	// check err waiting process

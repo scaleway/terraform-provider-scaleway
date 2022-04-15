@@ -1,6 +1,7 @@
 package scaleway
 
 import (
+	"context"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -9,8 +10,8 @@ import (
 )
 
 const (
-	gatewayWaitForTimeout    = 10 * time.Minute
 	defaultVPCGatewayTimeout = 10 * time.Minute
+	defaultVPCGatewayRetry   = 5 * time.Second
 )
 
 // vpcgwAPIWithZone returns a new VPC API and the zone for a Create request
@@ -35,4 +36,36 @@ func vpcgwAPIWithZoneAndID(m interface{}, id string) (*vpcgw.API, scw.Zone, stri
 		return nil, "", "", err
 	}
 	return vpcgwAPI, zone, ID, nil
+}
+
+func waitForVPCPublicGateway(ctx context.Context, api *vpcgw.API, zone scw.Zone, id string, timeout time.Duration) (*vpcgw.Gateway, error) {
+	retryInterval := defaultVPCGatewayRetry
+	if DefaultWaitRetryInterval != nil {
+		retryInterval = *DefaultWaitRetryInterval
+	}
+
+	gateway, err := api.WaitForGateway(&vpcgw.WaitForGatewayRequest{
+		Timeout:       scw.TimeDurationPtr(timeout),
+		GatewayID:     id,
+		RetryInterval: &retryInterval,
+		Zone:          zone,
+	}, scw.WithContext(ctx))
+
+	return gateway, err
+}
+
+func waitForVPCGatewayNetwork(ctx context.Context, api *vpcgw.API, zone scw.Zone, id string, timeout time.Duration) (*vpcgw.GatewayNetwork, error) {
+	retryIntervalGWNetwork := defaultVPCGatewayRetry
+	if DefaultWaitRetryInterval != nil {
+		retryIntervalGWNetwork = *DefaultWaitRetryInterval
+	}
+
+	gatewayNetwork, err := api.WaitForGatewayNetwork(&vpcgw.WaitForGatewayNetworkRequest{
+		GatewayNetworkID: id,
+		Timeout:          scw.TimeDurationPtr(timeout),
+		RetryInterval:    &retryIntervalGWNetwork,
+		Zone:             zone,
+	}, scw.WithContext(ctx))
+
+	return gatewayNetwork, err
 }

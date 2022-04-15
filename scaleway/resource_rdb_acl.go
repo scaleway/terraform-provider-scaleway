@@ -46,6 +46,7 @@ func resourceScalewayRdbACL() *schema.Resource {
 						"description": {
 							Type:        schema.TypeString,
 							Optional:    true,
+							Computed:    true,
 							Description: "Description of the rule",
 						},
 					},
@@ -64,7 +65,7 @@ func resourceScalewayRdbACLCreate(ctx context.Context, d *schema.ResourceData, m
 		return diag.FromErr(err)
 	}
 
-	_, err = waitInstance(ctx, rdbAPI, region, expandID(instanceID))
+	_, err = waitForRDBInstance(ctx, rdbAPI, region, expandID(instanceID), d.Timeout(schema.TimeoutCreate))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -95,7 +96,7 @@ func resourceScalewayRdbACLRead(ctx context.Context, d *schema.ResourceData, met
 		return diag.FromErr(err)
 	}
 
-	_, err = waitInstance(ctx, rdbAPI, region, instanceID)
+	_, err = waitForRDBInstance(ctx, rdbAPI, region, instanceID, d.Timeout(schema.TimeoutRead))
 	if err != nil && !is404Error(err) {
 		return diag.FromErr(err)
 	}
@@ -127,16 +128,15 @@ func resourceScalewayRdbACLUpdate(ctx context.Context, d *schema.ResourceData, m
 		return diag.FromErr(err)
 	}
 
-	_, err = waitInstance(ctx, rdbAPI, region, instanceID)
+	_, err = waitForRDBInstance(ctx, rdbAPI, region, instanceID, d.Timeout(schema.TimeoutUpdate))
 	if err != nil && !is404Error(err) {
 		return diag.FromErr(err)
 	}
 
 	if d.HasChange("acl_rules") {
-		_ = rdb.WaitForInstanceRequest{
-			InstanceID:    instanceID,
-			Region:        region,
-			RetryInterval: DefaultWaitRetryInterval,
+		_, err := waitForRDBInstance(ctx, rdbAPI, region, instanceID, d.Timeout(schema.TimeoutUpdate))
+		if err != nil {
+			return diag.FromErr(err)
 		}
 
 		aclRules, err := rdbACLExpand(d.Get("acl_rules").(*schema.Set))
@@ -172,7 +172,7 @@ func resourceScalewayRdbACLDelete(ctx context.Context, d *schema.ResourceData, m
 		aclRuleIPs = append(aclRuleIPs, acl.IP.String())
 	}
 
-	_, err = waitInstance(ctx, rdbAPI, region, instanceID)
+	_, err = waitForRDBInstance(ctx, rdbAPI, region, instanceID, d.Timeout(schema.TimeoutDelete))
 	if err != nil && !is404Error(err) {
 		return diag.FromErr(err)
 	}

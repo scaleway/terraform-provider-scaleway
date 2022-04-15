@@ -86,7 +86,7 @@ func resourceScalewayLbIPRead(ctx context.Context, d *schema.ResourceData, meta 
 	}
 
 	var ip *lb.IP
-	err = resource.RetryContext(ctx, retryLbIPInterval, func() *resource.RetryError {
+	err = resource.RetryContext(ctx, d.Timeout(schema.TimeoutRead), func() *resource.RetryError {
 		res, errGet := lbAPI.GetIP(&lb.ZonedAPIGetIPRequest{
 			Zone: zone,
 			IPID: ID,
@@ -115,7 +115,7 @@ func resourceScalewayLbIPRead(ctx context.Context, d *schema.ResourceData, meta 
 		_, err = lbAPI.WaitForLb(&lb.ZonedAPIWaitForLBRequest{
 			Zone:          zone,
 			LBID:          *ip.LBID,
-			Timeout:       scw.TimeDurationPtr(defaultInstanceServerWaitTimeout),
+			Timeout:       scw.TimeDurationPtr(d.Timeout(schema.TimeoutRead)),
 			RetryInterval: scw.TimeDurationPtr(defaultWaitLBRetryInterval),
 		}, scw.WithContext(ctx))
 		if err != nil {
@@ -151,7 +151,7 @@ func resourceScalewayLbIPUpdate(ctx context.Context, d *schema.ResourceData, met
 	}
 
 	var ip *lb.IP
-	err = resource.RetryContext(ctx, retryLbIPInterval, func() *resource.RetryError {
+	err = resource.RetryContext(ctx, d.Timeout(schema.TimeoutUpdate), func() *resource.RetryError {
 		res, errGet := lbAPI.GetIP(&lb.ZonedAPIGetIPRequest{
 			Zone: zone,
 			IPID: ID,
@@ -179,7 +179,7 @@ func resourceScalewayLbIPUpdate(ctx context.Context, d *schema.ResourceData, met
 		_, err = lbAPI.WaitForLb(&lb.ZonedAPIWaitForLBRequest{
 			Zone:          zone,
 			LBID:          *ip.LBID,
-			Timeout:       scw.TimeDurationPtr(defaultInstanceServerWaitTimeout),
+			Timeout:       scw.TimeDurationPtr(d.Timeout(schema.TimeoutUpdate)),
 			RetryInterval: scw.TimeDurationPtr(defaultWaitLBRetryInterval),
 		}, scw.WithContext(ctx))
 		if err != nil {
@@ -208,7 +208,7 @@ func resourceScalewayLbIPUpdate(ctx context.Context, d *schema.ResourceData, met
 		_, err = lbAPI.WaitForLb(&lb.ZonedAPIWaitForLBRequest{
 			Zone:          zone,
 			LBID:          *ip.LBID,
-			Timeout:       scw.TimeDurationPtr(defaultInstanceServerWaitTimeout),
+			Timeout:       scw.TimeDurationPtr(d.Timeout(schema.TimeoutUpdate)),
 			RetryInterval: scw.TimeDurationPtr(defaultWaitLBRetryInterval),
 		}, scw.WithContext(ctx))
 		if err != nil {
@@ -231,7 +231,7 @@ func resourceScalewayLbIPDelete(ctx context.Context, d *schema.ResourceData, met
 	}
 
 	var ip *lb.IP
-	err = resource.RetryContext(ctx, retryLbIPInterval, func() *resource.RetryError {
+	err = resource.RetryContext(ctx, d.Timeout(schema.TimeoutDelete), func() *resource.RetryError {
 		res, errGet := lbAPI.GetIP(&lb.ZonedAPIGetIPRequest{
 			Zone: zone,
 			IPID: ID,
@@ -256,7 +256,7 @@ func resourceScalewayLbIPDelete(ctx context.Context, d *schema.ResourceData, met
 		_, err = lbAPI.WaitForLbInstances(&lb.ZonedAPIWaitForLBInstancesRequest{
 			LBID:          *ip.LBID,
 			Zone:          zone,
-			Timeout:       scw.TimeDurationPtr(lbWaitForTimeout),
+			Timeout:       scw.TimeDurationPtr(d.Timeout(schema.TimeoutDelete)),
 			RetryInterval: scw.TimeDurationPtr(defaultWaitLBRetryInterval),
 		}, scw.WithContext(ctx))
 		if err != nil {
@@ -282,7 +282,7 @@ func resourceScalewayLbIPDelete(ctx context.Context, d *schema.ResourceData, met
 		_, err = lbAPI.WaitForLbInstances(&lb.ZonedAPIWaitForLBInstancesRequest{
 			LBID:          *ip.LBID,
 			Zone:          zone,
-			Timeout:       scw.TimeDurationPtr(lbWaitForTimeout),
+			Timeout:       scw.TimeDurationPtr(d.Timeout(schema.TimeoutDelete)),
 			RetryInterval: scw.TimeDurationPtr(defaultWaitLBRetryInterval),
 		}, scw.WithContext(ctx))
 		if err != nil {

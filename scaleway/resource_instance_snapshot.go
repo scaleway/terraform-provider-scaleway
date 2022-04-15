@@ -79,7 +79,10 @@ func resourceScalewayInstanceSnapshotCreate(ctx context.Context, d *schema.Resou
 		Project:  expandStringPtr(d.Get("project_id")),
 		Name:     expandOrGenerateString(d.Get("name"), "snap"),
 		VolumeID: expandZonedID(d.Get("volume_id").(string)).ID,
-		Tags:     expandStrings(d.Get("tags")),
+	}
+	tags := expandStrings(d.Get("tags"))
+	if len(tags) > 0 {
+		req.Tags = tags
 	}
 
 	res, err := instanceAPI.CreateSnapshot(req, scw.WithContext(ctx))
@@ -88,6 +91,17 @@ func resourceScalewayInstanceSnapshotCreate(ctx context.Context, d *schema.Resou
 	}
 
 	d.SetId(newZonedIDString(zone, res.Snapshot.ID))
+
+	_, err = instanceAPI.WaitForSnapshot(&instance.WaitForSnapshotRequest{
+		SnapshotID:    res.Snapshot.ID,
+		Zone:          zone,
+		RetryInterval: DefaultWaitRetryInterval,
+		Timeout:       scw.TimeDurationPtr(d.Timeout(schema.TimeoutCreate)),
+	})
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	return resourceScalewayInstanceSnapshotRead(ctx, d, meta)
 }
 
@@ -126,8 +140,13 @@ func resourceScalewayInstanceSnapshotUpdate(ctx context.Context, d *schema.Resou
 	req := &instance.UpdateSnapshotRequest{
 		SnapshotID: id,
 		Zone:       zone,
-		Tags:       scw.StringsPtr(expandStrings(d.Get("tags"))),
 		Name:       scw.StringPtr(d.Get("name").(string)),
+		Tags:       scw.StringsPtr([]string{}),
+	}
+
+	tags := expandStrings(d.Get("tags"))
+	if d.HasChange("tags") && len(tags) > 0 {
+		req.Tags = scw.StringsPtr(expandStrings(d.Get("tags")))
 	}
 
 	_, err = instanceAPI.UpdateSnapshot(req, scw.WithContext(ctx))
@@ -144,11 +163,7 @@ func resourceScalewayInstanceSnapshotDelete(ctx context.Context, d *schema.Resou
 		return diag.FromErr(err)
 	}
 
-	_, err = instanceAPI.WaitForSnapshot(&instance.WaitForSnapshotRequest{
-		SnapshotID:    id,
-		Zone:          zone,
-		RetryInterval: DefaultWaitRetryInterval,
-	})
+	_, err = waitForInstanceSnapshot(ctx, instanceAPI, zone, id, d.Timeout(schema.TimeoutDelete))
 	if err != nil {
 		return diag.FromErr(err)
 	}
