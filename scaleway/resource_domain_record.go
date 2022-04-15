@@ -260,6 +260,11 @@ func resourceScalewayDomainRecordCreate(ctx context.Context, d *schema.ResourceD
 		return diag.FromErr(err)
 	}
 
+	_, err = waitForDNSZone(ctx, domainAPI, dnsZone, d.Timeout(schema.TimeoutCreate))
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	return resourceScalewayDomainRecordRead(ctx, d, meta)
 }
 
@@ -407,6 +412,11 @@ func resourceScalewayDomainRecordUpdate(ctx context.Context, d *schema.ResourceD
 		if err != nil {
 			return diag.FromErr(err)
 		}
+
+		_, err = waitForDNSZone(ctx, domainAPI, d.Get("dns_zone").(string), d.Timeout(schema.TimeoutUpdate))
+		if err != nil {
+			return diag.FromErr(err)
+		}
 	}
 
 	return resourceScalewayDomainRecordRead(ctx, d, meta)
@@ -432,7 +442,15 @@ func resourceScalewayDomainRecordDelete(ctx context.Context, d *schema.ResourceD
 	}
 	d.SetId("")
 
-	// for non root zone, if the zone have only NS records, then delete the zone
+	_, err = waitForDNSZone(ctx, domainAPI, d.Get("dns_zone").(string), d.Timeout(schema.TimeoutDelete))
+	if err != nil {
+		if is404Error(err) {
+			return nil
+		}
+		return diag.FromErr(err)
+	}
+
+	// for non-root zone, if the zone have only NS records, then delete the zone
 	if !d.Get("keep_empty_zone").(bool) && d.Get("root_zone") != nil && !d.Get("root_zone").(bool) {
 		res, err := domainAPI.ListDNSZoneRecords(&domain.ListDNSZoneRecordsRequest{
 			DNSZone: d.Get("dns_zone").(string),
@@ -451,6 +469,7 @@ func resourceScalewayDomainRecordDelete(ctx context.Context, d *schema.ResourceD
 				hasRecords = true
 				break
 			}
+			l.Debugf("record [%s], type [%s]", r.Name, r.Type)
 		}
 
 		if !hasRecords {
@@ -460,7 +479,7 @@ func resourceScalewayDomainRecordDelete(ctx context.Context, d *schema.ResourceD
 			})
 
 			if err != nil {
-				if is404Error(err) {
+				if is404Error(err) && is403Error(err) {
 					return nil
 				}
 				return diag.FromErr(err)

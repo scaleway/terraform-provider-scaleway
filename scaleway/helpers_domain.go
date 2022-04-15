@@ -1,16 +1,19 @@
 package scaleway
 
 import (
+	"context"
 	"net"
 	"strings"
 	"time"
 
 	domain "github.com/scaleway/scaleway-sdk-go/api/domain/v2beta1"
+	"github.com/scaleway/scaleway-sdk-go/scw"
 )
 
 const (
-	defaultDomainRecordTimeout = 30 * time.Second
-	defaultDomainZoneTimeout   = 30 * time.Second
+	defaultDomainRecordTimeout     = 30 * time.Second
+	defaultDomainZoneTimeout       = 30 * time.Second
+	defaultDomainZoneRetryInterval = 5 * time.Second
 )
 
 // domainAPI returns a new domain API.
@@ -237,4 +240,17 @@ func expandDomainView(i interface{}, ok bool) *domain.RecordViewConfig {
 	return &domain.RecordViewConfig{
 		Views: views,
 	}
+}
+
+func waitForDNSZone(ctx context.Context, domainAPI *domain.API, dnsZone string, timeout time.Duration) (*domain.DNSZone, error) {
+	retryInterval := defaultDomainZoneRetryInterval
+	if DefaultWaitRetryInterval != nil {
+		retryInterval = *DefaultWaitRetryInterval
+	}
+
+	return domainAPI.WaitForDNSZone(&domain.WaitForDNSZoneRequest{
+		DNSZone:      dnsZone,
+		Timeout:       scw.TimeDurationPtr(timeout),
+		RetryInterval: scw.TimeDurationPtr(retryInterval),
+	}, scw.WithContext(ctx))
 }
