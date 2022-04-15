@@ -171,28 +171,28 @@ func TestAccScalewayAccountSSHKey_ChangeResourceName(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: `
-					resource "scaleway_account_ssh_key" "main" {
+					resource "scaleway_account_ssh_key" "first" {
 						name 	   = "` + name + `"
 						public_key = "\n\n` + SSHKey + `\n\n"
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayAccountSSHKeyExists(tt, "scaleway_account_ssh_key.main"),
-					resource.TestCheckResourceAttr("scaleway_account_ssh_key.main", "name", name),
-					resource.TestCheckResourceAttr("scaleway_account_ssh_key.main", "public_key", SSHKey),
+					testAccCheckScalewayAccountSSHKeyExists(tt, "scaleway_account_ssh_key.first"),
+					resource.TestCheckResourceAttr("scaleway_account_ssh_key.first", "name", name),
+					resource.TestCheckResourceAttr("scaleway_account_ssh_key.first", "public_key", SSHKey),
 				),
 			},
 			{
 				Config: `
-					resource "scaleway_account_ssh_key" "main2" {
+					resource "scaleway_account_ssh_key" "second" {
 						name 	   = "` + name + `"
 						public_key = "\n\n` + SSHKey + `\n\n"
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayAccountSSHKeyExists(tt, "scaleway_account_ssh_key.main"),
-					resource.TestCheckResourceAttr("scaleway_account_ssh_key.main", "name", name),
-					resource.TestCheckResourceAttr("scaleway_account_ssh_key.main", "public_key", SSHKey),
+					testAccCheckScalewayAccountSSHKeyExists(tt, "scaleway_account_ssh_key.second"),
+					resource.TestCheckResourceAttr("scaleway_account_ssh_key.second", "name", name),
+					resource.TestCheckResourceAttr("scaleway_account_ssh_key.second", "public_key", SSHKey),
 				),
 			},
 		},
