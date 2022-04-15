@@ -23,7 +23,7 @@ func TestAccScalewayDataSourceBaremetalServer_Basic(t *testing.T) {
 			{
 				Config: fmt.Sprintf(`
 					resource "scaleway_account_ssh_key" "main" {
-						name 	   = "%s"
+						name       = "%s"
 						public_key = "%s"
 					}
 					
@@ -31,7 +31,7 @@ func TestAccScalewayDataSourceBaremetalServer_Basic(t *testing.T) {
 						name        = "%s"
 						zone        = "fr-par-2"
 						description = "test a description"
-						offer       = "GP-BM1-S"
+						offer       = "EM-A210R-HDD"
 						os          = "d17d6872-0412-45d9-a198-af82c34d3c5c"
 					
 						ssh_key_ids = [ scaleway_account_ssh_key.main.id ]
