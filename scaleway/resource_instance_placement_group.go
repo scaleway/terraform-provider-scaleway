@@ -131,6 +131,7 @@ func resourceScalewayInstancePlacementGroupUpdate(ctx context.Context, d *schema
 	req := &instance.UpdatePlacementGroupRequest{
 		Zone:             zone,
 		PlacementGroupID: ID,
+		Tags:             scw.StringsPtr([]string{}),
 	}
 
 	hasChanged := false
@@ -153,7 +154,9 @@ func resourceScalewayInstancePlacementGroupUpdate(ctx context.Context, d *schema
 	}
 
 	if d.HasChange("tags") {
-		req.Tags = scw.StringsPtr(expandStrings(d.Get("tags")))
+		if len(expandStrings(d.Get("tags"))) > 0 {
+			req.Tags = scw.StringsPtr(expandStrings(d.Get("tags")))
+		}
 		hasChanged = true
 	}
 

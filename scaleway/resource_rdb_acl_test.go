@@ -25,6 +25,38 @@ func TestAccScalewayRdbACL_Basic(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
+					resource "scaleway_instance_ip" "front1_ip" {
+					}
+
+					resource "scaleway_instance_ip" "front2_ip" {
+					}
+
+					resource scaleway_rdb_instance main {
+						name = "%s"
+						node_type = "db-dev-s"
+						engine = "PostgreSQL-12"
+						is_ha_cluster = false
+					}
+
+					resource "scaleway_rdb_acl" "main" {
+					  instance_id = scaleway_rdb_instance.main.id
+
+					  acl_rules {
+						ip = "${scaleway_instance_ip.front1_ip.address}/32"
+					  }
+
+					  acl_rules {
+						ip = "${scaleway_instance_ip.front2_ip.address}/32"
+					  }
+					}
+				`, instanceName),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet("scaleway_rdb_acl.main", "acl_rules.0.description"),
+					resource.TestCheckResourceAttrSet("scaleway_rdb_acl.main", "acl_rules.1.description"),
+				),
+			},
+			{
+				Config: fmt.Sprintf(`
 					resource scaleway_rdb_instance main {
 						name = "%s"
 						node_type = "db-dev-s"

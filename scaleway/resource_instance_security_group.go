@@ -109,7 +109,7 @@ func resourceScalewayInstanceSecurityGroupCreate(ctx context.Context, d *schema.
 		return diag.FromErr(err)
 	}
 
-	res, err := instanceAPI.CreateSecurityGroup(&instance.CreateSecurityGroupRequest{
+	req := &instance.CreateSecurityGroupRequest{
 		Name:                  expandOrGenerateString(d.Get("name"), "sg"),
 		Zone:                  zone,
 		Project:               expandStringPtr(d.Get("project_id")),
@@ -118,8 +118,12 @@ func resourceScalewayInstanceSecurityGroupCreate(ctx context.Context, d *schema.
 		InboundDefaultPolicy:  instance.SecurityGroupPolicy(d.Get("inbound_default_policy").(string)),
 		OutboundDefaultPolicy: instance.SecurityGroupPolicy(d.Get("outbound_default_policy").(string)),
 		EnableDefaultSecurity: expandBoolPtr(d.Get("enable_default_security")),
-		Tags:                  expandStrings(d.Get("tags")),
-	}, scw.WithContext(ctx))
+	}
+	tags := expandStrings(d.Get("tags"))
+	if len(tags) > 0 {
+		req.Tags = tags
+	}
+	res, err := instanceAPI.CreateSecurityGroup(req, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -263,14 +267,16 @@ func resourceScalewayInstanceSecurityGroupUpdate(ctx context.Context, d *schema.
 		Description:           expandStringPtr(description),
 		InboundDefaultPolicy:  &inboundDefaultPolicy,
 		OutboundDefaultPolicy: &outboundDefaultPolicy,
+		Tags:                  scw.StringsPtr([]string{}),
+	}
+
+	tags := expandStrings(d.Get("tags"))
+	if len(tags) > 0 {
+		updateReq.Tags = scw.StringsPtr(expandStrings(d.Get("tags")))
 	}
 
 	if d.HasChange("enable_default_security") {
 		updateReq.EnableDefaultSecurity = expandBoolPtr(d.Get("enable_default_security"))
-	}
-
-	if d.HasChange("tags") {
-		updateReq.Tags = scw.StringsPtr(expandStrings(d.Get("tags")))
 	}
 
 	// Only update name if one is provided in the state

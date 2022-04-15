@@ -188,7 +188,7 @@ The following arguments are supported:
 
 - `keep_empty_zone` - (Optional, default: `false`) When destroying a resource, if only NS records remain and this is set to `false`, the zone will be deleted. Please note, each zone not deleted will [cost you money](https://www.scaleway.com/en/dns/)
 
-- `name` - (Required) The name of the record (can be an empty string for a root record).
+- `name` - (Optional) The name of the record (can be an empty string for a root record).
 
 - `type` - (Required) The type of the record (`A`, `AAAA`, `MX`, `CNAME`, `DNAME`, `ALIAS`, `NS`, `PTR`, `SRV`, `TXT`, `TLSA`, or `CAA`).
 

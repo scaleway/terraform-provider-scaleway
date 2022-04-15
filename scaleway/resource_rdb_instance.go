@@ -73,6 +73,12 @@ func resourceScalewayRdbInstance() *schema.Resource {
 				Computed:    true,
 				Description: "Backup schedule retention in days",
 			},
+			"backup_same_region": {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Computed:    true,
+				Description: "Boolean to store logical backups in the same region as the database instance",
+			},
 			"user_name": {
 				Type:        schema.TypeString,
 				ForceNew:    true,
@@ -179,6 +185,7 @@ func resourceScalewayRdbInstance() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "Endpoint IP of the database instance",
+				Deprecated:  "Please use the private_network or the load_balancer attribute",
 			},
 			"endpoint_port": {
 				Type:        schema.TypeInt,
@@ -280,8 +287,12 @@ func resourceScalewayRdbInstanceCreate(ctx context.Context, d *schema.ResourceDa
 		DisableBackup: d.Get("disable_backup").(bool),
 		UserName:      d.Get("user_name").(string),
 		Password:      d.Get("password").(string),
-		Tags:          expandStrings(d.Get("tags")),
 		VolumeType:    rdb.VolumeType(d.Get("volume_type").(string)),
+	}
+
+	rawTag, tagExist := d.GetOk("tags")
+	if tagExist {
+		createReq.Tags = expandStrings(rawTag)
 	}
 
 	pn, pnExist := d.GetOk("private_network")
@@ -315,6 +326,12 @@ func resourceScalewayRdbInstanceCreate(ctx context.Context, d *schema.ResourceDa
 			Region:     region,
 			InstanceID: res.ID,
 		}
+
+		backupSameRegion, backupSameRegionExist := d.GetOk("backup_same_region")
+		if backupSameRegionExist {
+			updateReq.BackupSameRegion = expandBoolPtr(backupSameRegion)
+		}
+
 		updateReq.IsBackupScheduleDisabled = scw.BoolPtr(d.Get("disable_backup").(bool))
 		if backupScheduleFrequency, okFrequency := d.GetOk("backup_schedule_frequency"); okFrequency {
 			updateReq.BackupScheduleFrequency = scw.Uint32Ptr(uint32(backupScheduleFrequency.(int)))
@@ -323,7 +340,7 @@ func resourceScalewayRdbInstanceCreate(ctx context.Context, d *schema.ResourceDa
 			updateReq.BackupScheduleRetention = scw.Uint32Ptr(uint32(backupScheduleRetention.(int)))
 		}
 
-		_, err = waitInstance(ctx, rdbAPI, region, res.ID)
+		_, err = waitForRDBInstance(ctx, rdbAPI, region, res.ID, d.Timeout(schema.TimeoutCreate))
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -335,7 +352,7 @@ func resourceScalewayRdbInstanceCreate(ctx context.Context, d *schema.ResourceDa
 	}
 	// Configure Instance settings
 	if settings, ok := d.GetOk("settings"); ok {
-		res, err = waitInstance(ctx, rdbAPI, region, res.ID)
+		res, err = waitForRDBInstance(ctx, rdbAPI, region, res.ID, d.Timeout(schema.TimeoutCreate))
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -360,7 +377,7 @@ func resourceScalewayRdbInstanceRead(ctx context.Context, d *schema.ResourceData
 	}
 
 	// verify resource is ready
-	res, err := waitInstance(ctx, rdbAPI, region, ID)
+	res, err := waitForRDBInstance(ctx, rdbAPI, region, ID, d.Timeout(schema.TimeoutRead))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -372,9 +389,12 @@ func resourceScalewayRdbInstanceRead(ctx context.Context, d *schema.ResourceData
 	_ = d.Set("disable_backup", res.BackupSchedule.Disabled)
 	_ = d.Set("backup_schedule_frequency", int(res.BackupSchedule.Frequency))
 	_ = d.Set("backup_schedule_retention", int(res.BackupSchedule.Retention))
+	_ = d.Set("backup_same_region", res.BackupSameRegion)
 	_ = d.Set("user_name", d.Get("user_name").(string)) // user name and
 	_ = d.Set("password", d.Get("password").(string))   // password are immutable
-	_ = d.Set("tags", res.Tags)
+	if len(res.Tags) > 0 {
+		_ = d.Set("tags", flattenSliceString(res.Tags))
+	}
 	if res.Endpoint != nil {
 		_ = d.Set("endpoint_ip", flattenIPPtr(res.Endpoint.IP))
 		_ = d.Set("endpoint_port", int(res.Endpoint.Port))
@@ -442,11 +462,14 @@ func resourceScalewayRdbInstanceUpdate(ctx context.Context, d *schema.ResourceDa
 	if d.HasChange("backup_schedule_retention") {
 		req.BackupScheduleRetention = scw.Uint32Ptr(uint32(d.Get("backup_schedule_retention").(int)))
 	}
+	if d.HasChange("backup_same_region") {
+		req.BackupSameRegion = expandBoolPtr(d.Get("backup_same_region"))
+	}
 	if d.HasChange("tags") {
 		req.Tags = scw.StringsPtr(expandStrings(d.Get("tags")))
 	}
 
-	_, err = waitInstance(ctx, rdbAPI, region, ID)
+	_, err = waitForRDBInstance(ctx, rdbAPI, region, ID, d.Timeout(schema.TimeoutUpdate))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -457,7 +480,7 @@ func resourceScalewayRdbInstanceUpdate(ctx context.Context, d *schema.ResourceDa
 	}
 	// Change settings
 	if d.HasChange("settings") {
-		_, err = waitInstance(ctx, rdbAPI, region, ID)
+		_, err = waitForRDBInstance(ctx, rdbAPI, region, ID, d.Timeout(schema.TimeoutUpdate))
 		if err != nil && !is404Error(err) {
 			return diag.FromErr(err)
 		}
@@ -540,7 +563,7 @@ func resourceScalewayRdbInstanceUpdate(ctx context.Context, d *schema.ResourceDa
 			})
 	}
 	for _, request := range upgradeInstanceRequests {
-		_, err = waitInstance(ctx, rdbAPI, region, ID)
+		_, err = waitForRDBInstance(ctx, rdbAPI, region, ID, d.Timeout(schema.TimeoutUpdate))
 		if err != nil && !is404Error(err) {
 			return diag.FromErr(err)
 		}
@@ -550,14 +573,14 @@ func resourceScalewayRdbInstanceUpdate(ctx context.Context, d *schema.ResourceDa
 			return diag.FromErr(err)
 		}
 
-		_, err = waitInstance(ctx, rdbAPI, region, ID)
+		_, err = waitForRDBInstance(ctx, rdbAPI, region, ID, d.Timeout(schema.TimeoutUpdate))
 		if err != nil && !is404Error(err) {
 			return diag.FromErr(err)
 		}
 	}
 
 	if d.HasChange("password") {
-		_, err := waitInstance(ctx, rdbAPI, region, ID)
+		_, err := waitForRDBInstance(ctx, rdbAPI, region, ID, d.Timeout(schema.TimeoutUpdate))
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -577,7 +600,7 @@ func resourceScalewayRdbInstanceUpdate(ctx context.Context, d *schema.ResourceDa
 
 	if d.HasChanges("private_network") {
 		// retrieve state
-		res, err := waitInstance(ctx, rdbAPI, region, ID)
+		res, err := waitForRDBInstance(ctx, rdbAPI, region, ID, d.Timeout(schema.TimeoutUpdate))
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -600,7 +623,7 @@ func resourceScalewayRdbInstanceUpdate(ctx context.Context, d *schema.ResourceDa
 		}
 
 		// retrieve state
-		_, err = waitInstance(ctx, rdbAPI, region, ID)
+		_, err = waitForRDBInstance(ctx, rdbAPI, region, ID, d.Timeout(schema.TimeoutUpdate))
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -633,7 +656,7 @@ func resourceScalewayRdbInstanceDelete(ctx context.Context, d *schema.ResourceDa
 	}
 
 	// We first wait in case the instance is in a transient state
-	_, err = waitInstance(ctx, rdbAPI, region, ID)
+	_, err = waitForRDBInstance(ctx, rdbAPI, region, ID, d.Timeout(schema.TimeoutDelete))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -648,7 +671,7 @@ func resourceScalewayRdbInstanceDelete(ctx context.Context, d *schema.ResourceDa
 	}
 
 	// Lastly wait in case the instance is in a transient state
-	_, err = waitInstance(ctx, rdbAPI, region, ID)
+	_, err = waitForRDBInstance(ctx, rdbAPI, region, ID, d.Timeout(schema.TimeoutDelete))
 	if err != nil && !is404Error(err) {
 		return diag.FromErr(err)
 	}

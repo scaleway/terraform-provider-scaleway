@@ -2,7 +2,6 @@ package scaleway
 
 import (
 	"fmt"
-	"regexp"
 	"strings"
 	"testing"
 
@@ -108,6 +107,76 @@ func TestAccScalewayInstanceServer_Minimal1(t *testing.T) {
 	})
 }
 
+func TestAccScalewayInstanceServer_Minimal2(t *testing.T) {
+	tt := NewTestTools(t)
+	defer tt.Cleanup()
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      testAccCheckScalewayInstanceServerDestroy(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource "scaleway_instance_server" "base" {
+					  image = "ubuntu_focal"
+					  type  = "DEV1-S"
+					}`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayInstanceServerExists(tt, "scaleway_instance_server.base"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.base", "image", "ubuntu_focal"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.base", "type", "DEV1-S"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.base", "root_volume.0.delete_on_termination", "true"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.base", "root_volume.0.size_in_gb", "20"),
+					resource.TestCheckResourceAttrSet("scaleway_instance_server.base", "root_volume.0.volume_id"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.base", "enable_dynamic_ip", "false"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.base", "state", "started"),
+				),
+			},
+			{
+				Config: `
+					resource "scaleway_instance_server" main {
+					  image = "ubuntu_focal"
+					  type  = "DEV1-S"
+					  root_volume {
+						volume_type = "l_ssd"
+					  }
+					}`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayInstanceServerExists(tt, "scaleway_instance_server.main"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.main", "image", "ubuntu_focal"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.main", "type", "DEV1-S"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.main", "root_volume.0.delete_on_termination", "true"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.main", "root_volume.0.size_in_gb", "20"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.main", "root_volume.0.volume_type", "l_ssd"),
+					resource.TestCheckResourceAttrSet("scaleway_instance_server.main", "root_volume.0.volume_id"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.main", "enable_dynamic_ip", "false"),
+				),
+			},
+			{
+				Config: `
+					resource "scaleway_instance_server" main2 {
+					  image = "ubuntu_focal"
+					  type  = "DEV1-S"
+					  root_volume {
+						volume_type = "l_ssd"
+						size_in_gb  = 20
+					  }
+					}`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayInstanceServerExists(tt, "scaleway_instance_server.main2"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.main2", "image", "ubuntu_focal"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.main2", "type", "DEV1-S"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.main2", "root_volume.0.delete_on_termination", "true"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.main2", "root_volume.0.size_in_gb", "20"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.main2", "root_volume.0.volume_type", "l_ssd"),
+					resource.TestCheckResourceAttrSet("scaleway_instance_server.main2", "root_volume.0.volume_id"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.main2", "enable_dynamic_ip", "false"),
+				),
+			},
+		},
+	})
+}
+
 func TestAccScalewayInstanceServer_RootVolume1(t *testing.T) {
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
@@ -127,7 +196,9 @@ func TestAccScalewayInstanceServer_RootVolume1(t *testing.T) {
 						}
 						tags = [ "terraform-test", "scaleway_instance_server", "root_volume" ]
 					}`,
-				ExpectError: regexp.MustCompile("total local volume size must be equal to 20 GB"),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayInstanceServerExists(tt, "scaleway_instance_server.base"),
+				),
 			},
 		},
 	})
@@ -815,11 +886,12 @@ func TestAccScalewayInstanceServer_AlterTags(t *testing.T) {
 						type  = "DEV1-L"
 						state = "stopped"
 						image = "ubuntu_focal"
+						tags = [ "front" ]
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayInstanceServerExists(tt, "scaleway_instance_server.base"),
-					resource.TestCheckNoResourceAttr("scaleway_instance_server.base", "tags"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.base", "tags.0", "front"),
 				),
 			},
 		},

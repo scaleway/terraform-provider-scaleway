@@ -18,7 +18,9 @@ func resourceScalewayInstancePrivateNIC() *schema.Resource {
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
-
+		Timeouts: &schema.ResourceTimeout{
+			Default: schema.DefaultTimeout(defaultInstancePrivateNICWaitTimeout),
+		},
 		Schema: map[string]*schema.Schema{
 			"server_id": {
 				Type:        schema.TypeString,
@@ -52,7 +54,7 @@ func resourceScalewayInstancePrivateNICCreate(ctx context.Context, d *schema.Res
 		PrivateNetworkID: expandZonedID(d.Get("private_network_id").(string)).ID,
 	}
 
-	res, err := instanceAPI.CreatePrivateNIC(
+	privateNIC, err := instanceAPI.CreatePrivateNIC(
 		createPrivateNICRequest,
 		scw.WithContext(ctx),
 	)
@@ -60,11 +62,16 @@ func resourceScalewayInstancePrivateNICCreate(ctx context.Context, d *schema.Res
 		return diag.FromErr(err)
 	}
 
+	_, err = waitForPrivateNIC(ctx, instanceAPI, zone, privateNIC.PrivateNic.ServerID, privateNIC.PrivateNic.ID, d.Timeout(schema.TimeoutCreate))
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	d.SetId(
 		newZonedNestedIDString(
 			zone,
-			res.PrivateNic.ServerID,
-			res.PrivateNic.ID,
+			privateNIC.PrivateNic.ServerID,
+			privateNIC.PrivateNic.ID,
 		),
 	)
 
@@ -76,16 +83,12 @@ func resourceScalewayInstancePrivateNICRead(ctx context.Context, d *schema.Resou
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	zone, innerID, outerID, err := parseZonedNestedID(d.Id())
+	zone, privateNICID, serverID, err := parseZonedNestedID(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	res, err := instanceAPI.GetPrivateNIC(&instance.GetPrivateNICRequest{
-		ServerID:     outerID,
-		PrivateNicID: innerID,
-		Zone:         zone,
-	}, scw.WithContext(ctx))
+	privateNIC, err := waitForPrivateNIC(ctx, instanceAPI, zone, serverID, privateNICID, d.Timeout(schema.TimeoutRead))
 	if err != nil {
 		if is404Error(err) {
 			d.SetId("")
@@ -95,9 +98,9 @@ func resourceScalewayInstancePrivateNICRead(ctx context.Context, d *schema.Resou
 	}
 
 	_ = d.Set("zone", zone)
-	_ = d.Set("server_id", newZonedID(zone, res.PrivateNic.ServerID).String())
-	_ = d.Set("private_network_id", newZonedID(zone, res.PrivateNic.PrivateNetworkID).String())
-	_ = d.Set("mac_address", res.PrivateNic.MacAddress)
+	_ = d.Set("server_id", newZonedID(zone, privateNIC.ServerID).String())
+	_ = d.Set("private_network_id", newZonedID(zone, privateNIC.PrivateNetworkID).String())
+	_ = d.Set("mac_address", privateNIC.MacAddress)
 
 	return nil
 }
@@ -108,22 +111,33 @@ func resourceScalewayInstancePrivateNICUpdate(ctx context.Context, d *schema.Res
 		return diag.FromErr(err)
 	}
 
-	zone, innerID, outerID, err := parseZonedNestedID(d.Id())
+	zone, privateNICID, serverID, err := parseZonedNestedID(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	if d.HasChanges("private_network_id", "server_id") {
+		_, err = waitForPrivateNIC(ctx, instanceAPI, zone, serverID, privateNICID, d.Timeout(schema.TimeoutUpdate))
+		if err != nil {
+			return diag.FromErr(err)
+		}
+
 		// delete previous private NIC
 		err = instanceAPI.DeletePrivateNIC(&instance.DeletePrivateNICRequest{
-			ServerID:     outerID,
-			PrivateNicID: innerID,
+			ServerID:     serverID,
+			PrivateNicID: privateNICID,
 			Zone:         zone,
 		}, scw.WithContext(ctx))
 
 		if err != nil && !is404Error(err) {
 			return diag.FromErr(err)
 		}
+
+		_, err = waitForPrivateNIC(ctx, instanceAPI, zone, serverID, privateNICID, d.Timeout(schema.TimeoutUpdate))
+		if err != nil && !is404Error(err) {
+			return diag.FromErr(err)
+		}
+
 		// create the new one
 		createPrivateNICRequest := &instance.CreatePrivateNICRequest{
 			Zone:             zone,
@@ -131,7 +145,7 @@ func resourceScalewayInstancePrivateNICUpdate(ctx context.Context, d *schema.Res
 			PrivateNetworkID: expandZonedID(d.Get("private_network_id").(string)).ID,
 		}
 
-		res, err := instanceAPI.CreatePrivateNIC(
+		privateNIC, err := instanceAPI.CreatePrivateNIC(
 			createPrivateNICRequest,
 			scw.WithContext(ctx),
 		)
@@ -139,11 +153,16 @@ func resourceScalewayInstancePrivateNICUpdate(ctx context.Context, d *schema.Res
 			return diag.FromErr(err)
 		}
 
+		_, err = waitForPrivateNIC(ctx, instanceAPI, zone, serverID, privateNICID, d.Timeout(schema.TimeoutUpdate))
+		if err != nil {
+			return diag.FromErr(err)
+		}
+
 		d.SetId(
 			newZonedNestedIDString(
 				zone,
-				res.PrivateNic.ServerID,
-				res.PrivateNic.ID,
+				privateNIC.PrivateNic.ServerID,
+				privateNIC.PrivateNic.ID,
 			),
 		)
 	}
@@ -156,17 +175,27 @@ func resourceScalewayInstancePrivateNICDelete(ctx context.Context, d *schema.Res
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	zone, innerID, outerID, err := parseZonedNestedID(d.Id())
+	zone, privateNICID, serverID, err := parseZonedNestedID(d.Id())
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	_, err = waitForPrivateNIC(ctx, instanceAPI, zone, serverID, privateNICID, d.Timeout(schema.TimeoutDelete))
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	err = instanceAPI.DeletePrivateNIC(&instance.DeletePrivateNICRequest{
-		ServerID:     outerID,
-		PrivateNicID: innerID,
+		ServerID:     serverID,
+		PrivateNicID: privateNICID,
 		Zone:         zone,
 	}, scw.WithContext(ctx))
 
+	if err != nil && !is404Error(err) {
+		return diag.FromErr(err)
+	}
+
+	_, err = waitForPrivateNIC(ctx, instanceAPI, zone, serverID, privateNICID, d.Timeout(schema.TimeoutDelete))
 	if err != nil && !is404Error(err) {
 		return diag.FromErr(err)
 	}

@@ -70,21 +70,6 @@ func TestAccScalewayIotHub_Minimal(t *testing.T) {
 				Config: `
 						resource "scaleway_iot_hub" "minimal" {
 							name = "minimal"
-							product_plan = "plan_dedicated"
-						}`,
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayIotHubExists(tt, "scaleway_iot_hub.minimal"),
-					resource.TestCheckResourceAttr("scaleway_iot_hub.minimal", "product_plan", "plan_dedicated"),
-					resource.TestCheckResourceAttr("scaleway_iot_hub.minimal", "status", iot.HubStatusReady.String()),
-					resource.TestCheckResourceAttrSet("scaleway_iot_hub.minimal", "endpoint"),
-					resource.TestCheckResourceAttr("scaleway_iot_hub.minimal", "device_count", "0"),
-					resource.TestCheckResourceAttr("scaleway_iot_hub.minimal", "connected_device_count", "0"),
-				),
-			},
-			{
-				Config: `
-						resource "scaleway_iot_hub" "minimal" {
-							name = "minimal"
 							product_plan = "plan_shared"
 							enabled = false
 						}`,
@@ -96,6 +81,33 @@ func TestAccScalewayIotHub_Minimal(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_iot_hub.minimal", "connected_device_count", "0"),
 					resource.TestCheckResourceAttr("scaleway_iot_hub.minimal", "enabled", "false"),
 					resource.TestCheckResourceAttr("scaleway_iot_hub.minimal", "product_plan", "plan_shared"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccScalewayIotHub_Dedicated(t *testing.T) {
+	tt := NewTestTools(t)
+	defer tt.Cleanup()
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      testAccCheckScalewayIotHubDestroy(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+						resource "scaleway_iot_hub" "minimal" {
+							name = "minimal"
+							product_plan = "plan_dedicated"
+						}`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayIotHubExists(tt, "scaleway_iot_hub.minimal"),
+					resource.TestCheckResourceAttr("scaleway_iot_hub.minimal", "product_plan", "plan_dedicated"),
+					resource.TestCheckResourceAttr("scaleway_iot_hub.minimal", "status", iot.HubStatusReady.String()),
+					resource.TestCheckResourceAttrSet("scaleway_iot_hub.minimal", "endpoint"),
+					resource.TestCheckResourceAttr("scaleway_iot_hub.minimal", "device_count", "0"),
+					resource.TestCheckResourceAttr("scaleway_iot_hub.minimal", "connected_device_count", "0"),
 				),
 			},
 		},

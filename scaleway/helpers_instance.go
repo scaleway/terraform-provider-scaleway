@@ -22,11 +22,13 @@ const (
 	InstanceServerStateStandby = "standby"
 
 	defaultInstanceServerWaitTimeout        = 10 * time.Minute
+	defaultInstancePrivateNICWaitTimeout    = 10 * time.Minute
 	defaultInstanceVolumeDeleteTimeout      = 10 * time.Minute
 	defaultInstanceSecurityGroupTimeout     = 1 * time.Minute
 	defaultInstanceSecurityGroupRuleTimeout = 1 * time.Minute
 	defaultInstancePlacementGroupTimeout    = 1 * time.Minute
 	defaultInstanceIPTimeout                = 1 * time.Minute
+	defaultInstanceRetryInterval            = 5 * time.Second
 
 	defaultInstanceSnapshotWaitTimeout = 1 * time.Hour
 )
@@ -110,7 +112,7 @@ func serverStateFlatten(fromState instance.ServerState) (string, error) {
 	return "", fmt.Errorf("server is in an invalid state, someone else might be executing action at the same time")
 }
 
-// serverStateExpand converts a terraform state  to an API state or return an error.
+// serverStateExpand converts terraform state to an API state or return an error.
 func serverStateExpand(rawState string) (instance.ServerState, error) {
 	apiState, exist := map[string]instance.ServerState{
 		InstanceServerStateStopped: instance.ServerStateStopped,
@@ -240,8 +242,6 @@ func sanitizeVolumeMap(serverName string, volumes map[string]*instance.VolumeSer
 	m := make(map[string]*instance.VolumeServerTemplate)
 
 	for index, v := range volumes {
-		v.Name = serverName + "-" + index
-
 		// Remove extra data for API validation.
 		switch {
 		// If a volume already got an ID it is passed as it to the API without specifying the volume type.
@@ -330,13 +330,18 @@ func (ph *privateNICsHandler) flatPrivateNICs() error {
 	return nil
 }
 
-func (ph *privateNICsHandler) detach(o interface{}) error {
+func (ph *privateNICsHandler) detach(o interface{}, timeout time.Duration) error {
 	oPtr := expandStringPtr(o)
 	if oPtr != nil && len(*oPtr) > 0 {
+		idPN := expandID(*oPtr)
 		// check if old private network still exist on instance server
-		if p, ok := ph.privateNICsMap[expandID(*oPtr)]; ok {
+		if p, ok := ph.privateNICsMap[idPN]; ok {
+			_, err := waitForPrivateNIC(ph.ctx, ph.instanceAPI, ph.zone, ph.serverID, expandID(p.ID), timeout)
+			if err != nil {
+				return err
+			}
 			// detach private NIC
-			err := ph.instanceAPI.DeletePrivateNIC(&instance.DeletePrivateNICRequest{
+			err = ph.instanceAPI.DeletePrivateNIC(&instance.DeletePrivateNICRequest{
 				PrivateNicID: expandID(p.ID),
 				Zone:         ph.zone,
 				ServerID:     ph.serverID},
@@ -350,16 +355,21 @@ func (ph *privateNICsHandler) detach(o interface{}) error {
 	return nil
 }
 
-func (ph *privateNICsHandler) attach(n interface{}) error {
+func (ph *privateNICsHandler) attach(n interface{}, timeout time.Duration) error {
 	nPtr := expandStringPtr(n)
 	if nPtr != nil {
 		// check if new private network was already attached on instance server
 		privateNetworkID := expandID(*nPtr)
 		if _, ok := ph.privateNICsMap[privateNetworkID]; !ok {
-			_, err := ph.instanceAPI.CreatePrivateNIC(&instance.CreatePrivateNICRequest{
+			pn, err := ph.instanceAPI.CreatePrivateNIC(&instance.CreatePrivateNICRequest{
 				Zone:             ph.zone,
 				ServerID:         ph.serverID,
 				PrivateNetworkID: privateNetworkID})
+			if err != nil {
+				return err
+			}
+
+			_, err = waitForPrivateNIC(ph.ctx, ph.instanceAPI, ph.zone, ph.serverID, pn.PrivateNic.ID, timeout)
 			if err != nil {
 				return err
 			}
@@ -399,4 +409,68 @@ func (ph *privateNICsHandler) get(key string) (interface{}, error) {
 		"status":      pn.State.String(),
 		"zone":        locality,
 	}, nil
+}
+
+func waitForInstanceSnapshot(ctx context.Context, api *instance.API, zone scw.Zone, id string, timeout time.Duration) (*instance.Snapshot, error) {
+	retryInterval := defaultInstanceRetryInterval
+	if DefaultWaitRetryInterval != nil {
+		retryInterval = *DefaultWaitRetryInterval
+	}
+
+	snapshot, err := api.WaitForSnapshot(&instance.WaitForSnapshotRequest{
+		SnapshotID:    id,
+		Zone:          zone,
+		Timeout:       scw.TimeDurationPtr(timeout),
+		RetryInterval: &retryInterval,
+	}, scw.WithContext(ctx))
+
+	return snapshot, err
+}
+
+func waitForInstanceVolume(ctx context.Context, api *instance.API, zone scw.Zone, id string, timeout time.Duration) (*instance.Volume, error) {
+	retryInterval := defaultInstanceRetryInterval
+	if DefaultWaitRetryInterval != nil {
+		retryInterval = *DefaultWaitRetryInterval
+	}
+
+	volume, err := api.WaitForVolume(&instance.WaitForVolumeRequest{
+		VolumeID:      id,
+		Zone:          zone,
+		Timeout:       scw.TimeDurationPtr(timeout),
+		RetryInterval: &retryInterval,
+	}, scw.WithContext(ctx))
+	return volume, err
+}
+
+func waitForInstanceServer(ctx context.Context, api *instance.API, zone scw.Zone, id string, timeout time.Duration) (*instance.Server, error) {
+	retryInterval := defaultInstanceRetryInterval
+	if DefaultWaitRetryInterval != nil {
+		retryInterval = *DefaultWaitRetryInterval
+	}
+
+	server, err := api.WaitForServer(&instance.WaitForServerRequest{
+		Zone:          zone,
+		ServerID:      id,
+		Timeout:       scw.TimeDurationPtr(timeout),
+		RetryInterval: &retryInterval,
+	}, scw.WithContext(ctx))
+
+	return server, err
+}
+
+func waitForPrivateNIC(ctx context.Context, instanceAPI *instance.API, zone scw.Zone, serverID string, privateNICID string, timeout time.Duration) (*instance.PrivateNIC, error) {
+	retryInterval := defaultInstanceRetryInterval
+	if DefaultWaitRetryInterval != nil {
+		retryInterval = *DefaultWaitRetryInterval
+	}
+
+	nic, err := instanceAPI.WaitForPrivateNIC(&instance.WaitForPrivateNICRequest{
+		ServerID:      serverID,
+		PrivateNicID:  privateNICID,
+		Zone:          zone,
+		Timeout:       scw.TimeDurationPtr(timeout),
+		RetryInterval: scw.TimeDurationPtr(retryInterval),
+	}, scw.WithContext(ctx))
+
+	return nic, err
 }

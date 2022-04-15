@@ -192,10 +192,6 @@ func resourceScalewayIotRouteCreate(ctx context.Context, d *schema.ResourceData,
 		return diag.FromErr(err)
 	}
 
-	////
-	// Create route
-	////
-
 	req := &iot.CreateRouteRequest{
 		Region: region,
 		Name:   expandOrGenerateString(d.Get("name"), "route"),
@@ -248,13 +244,10 @@ func resourceScalewayIotRouteRead(ctx context.Context, d *schema.ResourceData, m
 		return diag.FromErr(err)
 	}
 
-	////
-	// Read Route
-	////
 	response, err := iotAPI.GetRoute(&iot.GetRouteRequest{
 		Region:  region,
 		RouteID: routeID,
-	})
+	}, scw.WithContext(ctx))
 	if err != nil {
 		if is404Error(err) {
 			d.SetId("")
@@ -307,13 +300,10 @@ func resourceScalewayIotRouteDelete(ctx context.Context, d *schema.ResourceData,
 		return diag.FromErr(err)
 	}
 
-	////
-	// Delete route
-	////
 	err = iotAPI.DeleteRoute(&iot.DeleteRouteRequest{
 		Region:  region,
 		RouteID: routeID,
-	})
+	}, scw.WithContext(ctx))
 	if err != nil {
 		if is404Error(err) {
 			return nil

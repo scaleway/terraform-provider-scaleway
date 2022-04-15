@@ -121,16 +121,6 @@ func TestAccScalewayInstanceIP_Tags(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_instance_ip.main", "tags.1", "bar"),
 				),
 			},
-			{
-				Config: `
-						resource "scaleway_instance_ip" "main" {
-						}
-					`,
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckNoResourceAttr("scaleway_instance_ip.main", "tags"),
-					testAccCheckScalewayInstanceIPExists(tt, "scaleway_instance_ip.main"),
-				),
-			},
 		},
 	})
 }

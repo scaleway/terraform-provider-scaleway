@@ -47,7 +47,7 @@ func resourceScalewayDomainRecord() *schema.Resource {
 				Type:        schema.TypeString,
 				Description: "The name of the record",
 				ForceNew:    true,
-				Required:    true,
+				Optional:    true,
 			},
 			"type": {
 				Type:        schema.TypeString,
