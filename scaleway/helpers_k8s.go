@@ -13,8 +13,8 @@ import (
 )
 
 const (
-	defaultK8SClusterTimeout = 15 * time.Minute
-	defaultK8SPoolTimeout    = 15 * time.Minute
+	defaultK8SClusterTimeout = 30 * time.Minute
+	defaultK8SPoolTimeout    = 30 * time.Minute
 	defaultK8SRetryInterval  = 5 * time.Second
 )
 
