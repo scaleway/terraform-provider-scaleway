@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/plugin"
@@ -149,7 +150,7 @@ func Provider(config *ProviderConfig) plugin.ProviderFunc {
 				return config.Meta, nil
 			}
 
-			meta, err := buildMeta(&metaConfig{
+			meta, err := buildMeta(ctx, &metaConfig{
 				providerSchema:   data,
 				terraformVersion: terraformVersion,
 			})
@@ -183,11 +184,11 @@ type metaConfig struct {
 }
 
 // providerConfigure creates the Meta object containing the SDK client.
-func buildMeta(config *metaConfig) (*Meta, error) {
+func buildMeta(ctx context.Context, config *metaConfig) (*Meta, error) {
 	////
 	// Load Profile
 	////
-	profile, err := loadProfile(config.providerSchema)
+	profile, err := loadProfile(ctx, config.providerSchema)
 	if err != nil {
 		return nil, err
 	}
@@ -228,7 +229,7 @@ func buildMeta(config *metaConfig) (*Meta, error) {
 }
 
 //gocyclo:ignore
-func loadProfile(d *schema.ResourceData) (*scw.Profile, error) {
+func loadProfile(ctx context.Context, d *schema.ResourceData) (*scw.Profile, error) {
 	config, err := scw.LoadConfig()
 	// If the config file do not exist, don't return an error as we may find config in ENV or flags.
 	if _, isNotFoundError := err.(*scw.ConfigFileNotFoundError); isNotFoundError {
@@ -284,12 +285,12 @@ func loadProfile(d *schema.ResourceData) (*scw.Profile, error) {
 	if profile.DefaultZone != nil && *profile.DefaultZone != "" &&
 		(profile.DefaultRegion == nil || *profile.DefaultRegion == "") {
 		zone := scw.Zone(*profile.DefaultZone)
-		l.Debugf("guess region from %s zone", zone)
+		tflog.Debug(ctx, fmt.Sprintf("guess region from %s zone", zone))
 		region, err := zone.Region()
 		if err == nil {
 			profile.DefaultRegion = scw.StringPtr(region.String())
 		} else {
-			l.Debugf("cannot guess region: %w", err)
+			tflog.Debug(ctx, fmt.Sprintf("cannot guess region: %s", err.Error()))
 		}
 	}
 	return profile, nil

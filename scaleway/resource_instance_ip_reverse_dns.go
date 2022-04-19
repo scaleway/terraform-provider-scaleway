@@ -2,7 +2,9 @@ package scaleway
 
 import (
 	"context"
+	"fmt"
 
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
@@ -55,7 +57,7 @@ func resourceScalewayInstanceIPReverseDNSCreate(ctx context.Context, d *schema.R
 
 	_, ok := d.GetOk("reverse")
 	if ok {
-		l.Debugf("updating IP %q reverse to %q\n", d.Id(), d.Get("reverse"))
+		tflog.Debug(ctx, fmt.Sprintf("updating IP %q reverse to %q\n", d.Id(), d.Get("reverse")))
 
 		updateReverseReq := &instance.UpdateIPRequest{
 			Zone: zone,
@@ -109,7 +111,7 @@ func resourceScalewayInstanceIPReverseDNSUpdate(ctx context.Context, d *schema.R
 	}
 
 	if d.HasChange("reverse") {
-		l.Debugf("updating IP %q reverse to %q\n", d.Id(), d.Get("reverse"))
+		tflog.Debug(ctx, fmt.Sprintf("updating IP %q reverse to %q\n", d.Id(), d.Get("reverse")))
 
 		updateReverseReq := &instance.UpdateIPRequest{
 			Zone: zone,
