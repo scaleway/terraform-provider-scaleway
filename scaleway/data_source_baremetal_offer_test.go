@@ -21,7 +21,7 @@ func TestAccScalewayDataSourceBaremetalOffer_Basic(t *testing.T) {
 				Config: `
 					data "scaleway_baremetal_offer" "test1" {
 						zone = "fr-par-2"
-						name = "EM-A210R-SATA"
+						name = "EM-A210R-HDD"
 					}
 					
 					data "scaleway_baremetal_offer" "test2" {
@@ -35,10 +35,10 @@ func TestAccScalewayDataSourceBaremetalOffer_Basic(t *testing.T) {
 				`,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayBaremetalOfferExists(tt, "data.scaleway_baremetal_offer.test1"),
-					resource.TestCheckResourceAttr("data.scaleway_baremetal_offer.test1", "name", "EM-A210R-SATA"),
+					resource.TestCheckResourceAttr("data.scaleway_baremetal_offer.test1", "name", "EM-A210R-HDD"),
 					testAccCheckScalewayBaremetalOfferExists(tt, "data.scaleway_baremetal_offer.test2"),
 					resource.TestCheckResourceAttr("data.scaleway_baremetal_offer.test2", "offer_id", "fr-par-2/25dcf38b-c90c-4b18-97a2-6956e9d1e113"),
-					resource.TestCheckResourceAttr("data.scaleway_baremetal_offer.test2", "name", "EM-A210R-SATA"),
+					resource.TestCheckResourceAttr("data.scaleway_baremetal_offer.test2", "name", "EM-A210R-HDD"),
 					resource.TestCheckResourceAttr("data.scaleway_baremetal_offer.test2", "commercial_range", "aluminium"),
 					resource.TestCheckResourceAttr("data.scaleway_baremetal_offer.test2", "include_disabled", "false"),
 					resource.TestCheckResourceAttr("data.scaleway_baremetal_offer.test2", "bandwidth", "1000000000"),
@@ -57,7 +57,7 @@ func TestAccScalewayDataSourceBaremetalOffer_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("data.scaleway_baremetal_offer.test2", "memory.0.frequency", "3200"),
 					resource.TestCheckResourceAttr("data.scaleway_baremetal_offer.test2", "memory.0.is_ecc", "true"),
 					testAccCheckScalewayBaremetalOfferExists(tt, "data.scaleway_baremetal_offer.test3"),
-					resource.TestCheckResourceAttr("data.scaleway_baremetal_offer.test3", "name", "EM-A210R-SATA"),
+					resource.TestCheckResourceAttr("data.scaleway_baremetal_offer.test3", "name", "EM-A210R-HDD"),
 				),
 			},
 		},
