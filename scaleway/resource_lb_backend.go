@@ -6,7 +6,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
-	"github.com/scaleway/scaleway-sdk-go/api/lb/v1"
+	lbSDK "github.com/scaleway/scaleway-sdk-go/api/lb/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 )
 
@@ -42,8 +42,8 @@ func resourceScalewayLbBackend() *schema.Resource {
 			"forward_protocol": {
 				Type: schema.TypeString,
 				ValidateFunc: validation.StringInSlice([]string{
-					lb.ProtocolTCP.String(),
-					lb.ProtocolHTTP.String(),
+					lbSDK.ProtocolTCP.String(),
+					lbSDK.ProtocolHTTP.String(),
 				}, false),
 				Required:    true,
 				Description: "Backend protocol",
@@ -56,22 +56,22 @@ func resourceScalewayLbBackend() *schema.Resource {
 			"forward_port_algorithm": {
 				Type: schema.TypeString,
 				ValidateFunc: validation.StringInSlice([]string{
-					lb.ForwardPortAlgorithmRoundrobin.String(),
-					lb.ForwardPortAlgorithmLeastconn.String(),
-					lb.ForwardPortAlgorithmFirst.String(),
+					lbSDK.ForwardPortAlgorithmRoundrobin.String(),
+					lbSDK.ForwardPortAlgorithmLeastconn.String(),
+					lbSDK.ForwardPortAlgorithmFirst.String(),
 				}, false),
-				Default:     lb.ForwardPortAlgorithmRoundrobin.String(),
+				Default:     lbSDK.ForwardPortAlgorithmRoundrobin.String(),
 				Optional:    true,
 				Description: "Load balancing algorithm",
 			},
 			"sticky_sessions": {
 				Type: schema.TypeString,
 				ValidateFunc: validation.StringInSlice([]string{
-					lb.StickySessionsTypeNone.String(),
-					lb.StickySessionsTypeCookie.String(),
-					lb.StickySessionsTypeTable.String(),
+					lbSDK.StickySessionsTypeNone.String(),
+					lbSDK.StickySessionsTypeCookie.String(),
+					lbSDK.StickySessionsTypeTable.String(),
 				}, false),
-				Default:     lb.StickySessionsTypeNone.String(),
+				Default:     lbSDK.StickySessionsTypeNone.String(),
 				Optional:    true,
 				Description: "Load balancing algorithm",
 			},
@@ -100,13 +100,13 @@ func resourceScalewayLbBackend() *schema.Resource {
 				Type:        schema.TypeString,
 				Description: "Type of PROXY protocol to enable",
 				Optional:    true,
-				Default:     flattenLbProxyProtocol(lb.ProxyProtocolProxyProtocolNone).(string),
+				Default:     flattenLbProxyProtocol(lbSDK.ProxyProtocolProxyProtocolNone).(string),
 				ValidateFunc: validation.StringInSlice([]string{
-					flattenLbProxyProtocol(lb.ProxyProtocolProxyProtocolNone).(string),
-					flattenLbProxyProtocol(lb.ProxyProtocolProxyProtocolV1).(string),
-					flattenLbProxyProtocol(lb.ProxyProtocolProxyProtocolV2).(string),
-					flattenLbProxyProtocol(lb.ProxyProtocolProxyProtocolV2Ssl).(string),
-					flattenLbProxyProtocol(lb.ProxyProtocolProxyProtocolV2SslCn).(string),
+					flattenLbProxyProtocol(lbSDK.ProxyProtocolProxyProtocolNone).(string),
+					flattenLbProxyProtocol(lbSDK.ProxyProtocolProxyProtocolV1).(string),
+					flattenLbProxyProtocol(lbSDK.ProxyProtocolProxyProtocolV2).(string),
+					flattenLbProxyProtocol(lbSDK.ProxyProtocolProxyProtocolV2Ssl).(string),
+					flattenLbProxyProtocol(lbSDK.ProxyProtocolProxyProtocolV2SslCn).(string),
 				}, false),
 			},
 			// Timeouts
@@ -229,7 +229,7 @@ func resourceScalewayLbBackend() *schema.Resource {
 				Type: schema.TypeString,
 				ValidateFunc: validation.StringInSlice([]string{
 					"none",
-					lb.OnMarkedDownActionShutdownSessions.String(),
+					lbSDK.OnMarkedDownActionShutdownSessions.String(),
 				}, false),
 				Default:     "none",
 				Optional:    true,
@@ -245,7 +245,7 @@ func resourceScalewayLbBackendCreate(ctx context.Context, d *schema.ResourceData
 		return diag.FromErr(err)
 	}
 	// parse lb_id. It will be forced to a zoned lb
-	zone, LbID, err := parseZonedID(d.Get("lb_id").(string))
+	zone, lbID, err := parseZonedID(d.Get("lb_id").(string))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -255,13 +255,7 @@ func resourceScalewayLbBackendCreate(ctx context.Context, d *schema.ResourceData
 		healthCheckPort = d.Get("forward_port").(int)
 	}
 
-	retryInterval := defaultWaitLBRetryInterval
-	_, err = lbAPI.WaitForLb(&lb.ZonedAPIWaitForLBRequest{
-		Zone:          zone,
-		LBID:          LbID,
-		Timeout:       scw.TimeDurationPtr(d.Timeout(schema.TimeoutCreate)),
-		RetryInterval: &retryInterval,
-	}, scw.WithContext(ctx))
+	_, err = waitForLB(ctx, lbAPI, zone, lbID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
 		if is403Error(err) {
 			d.SetId("")
@@ -290,16 +284,16 @@ func resourceScalewayLbBackendCreate(ctx context.Context, d *schema.ResourceData
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	createReq := &lb.ZonedAPICreateBackendRequest{
+	createReq := &lbSDK.ZonedAPICreateBackendRequest{
 		Zone:                     zone,
-		LBID:                     LbID,
+		LBID:                     lbID,
 		Name:                     expandOrGenerateString(d.Get("name"), "lb-bkd"),
 		ForwardProtocol:          expandLbProtocol(d.Get("forward_protocol")),
 		ForwardPort:              int32(d.Get("forward_port").(int)),
 		ForwardPortAlgorithm:     expandLbForwardPortAlgorithm(d.Get("forward_port_algorithm")),
 		StickySessions:           expandLbStickySessionsType(d.Get("sticky_sessions")),
 		StickySessionsCookieName: d.Get("sticky_sessions_cookie_name").(string),
-		HealthCheck: &lb.HealthCheck{
+		HealthCheck: &lbSDK.HealthCheck{
 			Port:            int32(healthCheckPort),
 			CheckMaxRetries: int32(d.Get("health_check_max_retries").(int)),
 			CheckTimeout:    healthCheckoutTimeout,
@@ -322,12 +316,7 @@ func resourceScalewayLbBackendCreate(ctx context.Context, d *schema.ResourceData
 		return diag.FromErr(err)
 	}
 
-	_, err = lbAPI.WaitForLb(&lb.ZonedAPIWaitForLBRequest{
-		Zone:          zone,
-		LBID:          res.LB.ID,
-		Timeout:       scw.TimeDurationPtr(d.Timeout(schema.TimeoutCreate)),
-		RetryInterval: &retryInterval,
-	}, scw.WithContext(ctx))
+	_, err = waitForLB(ctx, lbAPI, zone, res.LB.ID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
 		if is403Error(err) {
 			d.SetId("")
@@ -347,7 +336,7 @@ func resourceScalewayLbBackendRead(ctx context.Context, d *schema.ResourceData, 
 		return diag.FromErr(err)
 	}
 
-	res, err := lbAPI.GetBackend(&lb.ZonedAPIGetBackendRequest{
+	backend, err := lbAPI.GetBackend(&lbSDK.ZonedAPIGetBackendRequest{
 		Zone:      zone,
 		BackendID: ID,
 	}, scw.WithContext(ctx))
@@ -360,35 +349,29 @@ func resourceScalewayLbBackendRead(ctx context.Context, d *schema.ResourceData, 
 		return diag.FromErr(err)
 	}
 
-	_ = d.Set("lb_id", newZonedIDString(zone, res.LB.ID))
-	_ = d.Set("name", res.Name)
-	_ = d.Set("forward_protocol", flattenLbProtocol(res.ForwardProtocol))
-	_ = d.Set("forward_port", res.ForwardPort)
-	_ = d.Set("forward_port_algorithm", flattenLbForwardPortAlgorithm(res.ForwardPortAlgorithm))
-	_ = d.Set("sticky_sessions", flattenLbStickySessionsType(res.StickySessions))
-	_ = d.Set("sticky_sessions_cookie_name", res.StickySessionsCookieName)
-	_ = d.Set("server_ips", res.Pool)
-	_ = d.Set("send_proxy_v2", res.SendProxyV2)
-	_ = d.Set("proxy_protocol", flattenLbProxyProtocol(res.ProxyProtocol))
-	_ = d.Set("timeout_server", flattenDuration(res.TimeoutServer))
-	_ = d.Set("timeout_connect", flattenDuration(res.TimeoutConnect))
-	_ = d.Set("timeout_tunnel", flattenDuration(res.TimeoutTunnel))
-	_ = d.Set("health_check_port", res.HealthCheck.Port)
-	_ = d.Set("health_check_max_retries", res.HealthCheck.CheckMaxRetries)
-	_ = d.Set("health_check_timeout", flattenDuration(res.HealthCheck.CheckTimeout))
-	_ = d.Set("health_check_delay", flattenDuration(res.HealthCheck.CheckDelay))
-	_ = d.Set("on_marked_down_action", flattenLbBackendMarkdownAction(res.OnMarkedDownAction))
-	_ = d.Set("health_check_tcp", flattenLbHCTCP(res.HealthCheck.TCPConfig))
-	_ = d.Set("health_check_http", flattenLbHCHTTP(res.HealthCheck.HTTPConfig))
-	_ = d.Set("health_check_https", flattenLbHCHTTPS(res.HealthCheck.HTTPSConfig))
+	_ = d.Set("lb_id", newZonedIDString(zone, backend.LB.ID))
+	_ = d.Set("name", backend.Name)
+	_ = d.Set("forward_protocol", flattenLbProtocol(backend.ForwardProtocol))
+	_ = d.Set("forward_port", backend.ForwardPort)
+	_ = d.Set("forward_port_algorithm", flattenLbForwardPortAlgorithm(backend.ForwardPortAlgorithm))
+	_ = d.Set("sticky_sessions", flattenLbStickySessionsType(backend.StickySessions))
+	_ = d.Set("sticky_sessions_cookie_name", backend.StickySessionsCookieName)
+	_ = d.Set("server_ips", backend.Pool)
+	_ = d.Set("send_proxy_v2", backend.SendProxyV2)
+	_ = d.Set("proxy_protocol", flattenLbProxyProtocol(backend.ProxyProtocol))
+	_ = d.Set("timeout_server", flattenDuration(backend.TimeoutServer))
+	_ = d.Set("timeout_connect", flattenDuration(backend.TimeoutConnect))
+	_ = d.Set("timeout_tunnel", flattenDuration(backend.TimeoutTunnel))
+	_ = d.Set("health_check_port", backend.HealthCheck.Port)
+	_ = d.Set("health_check_max_retries", backend.HealthCheck.CheckMaxRetries)
+	_ = d.Set("health_check_timeout", flattenDuration(backend.HealthCheck.CheckTimeout))
+	_ = d.Set("health_check_delay", flattenDuration(backend.HealthCheck.CheckDelay))
+	_ = d.Set("on_marked_down_action", flattenLbBackendMarkdownAction(backend.OnMarkedDownAction))
+	_ = d.Set("health_check_tcp", flattenLbHCTCP(backend.HealthCheck.TCPConfig))
+	_ = d.Set("health_check_http", flattenLbHCHTTP(backend.HealthCheck.HTTPConfig))
+	_ = d.Set("health_check_https", flattenLbHCHTTPS(backend.HealthCheck.HTTPSConfig))
 
-	retryInterval := defaultWaitLBRetryInterval
-	_, err = lbAPI.WaitForLb(&lb.ZonedAPIWaitForLBRequest{
-		Zone:          zone,
-		LBID:          res.LB.ID,
-		Timeout:       scw.TimeDurationPtr(d.Timeout(schema.TimeoutRead)),
-		RetryInterval: &retryInterval,
-	}, scw.WithContext(ctx))
+	_, err = waitForLB(ctx, lbAPI, zone, backend.LB.ID, d.Timeout(schema.TimeoutRead))
 	if err != nil {
 		if is403Error(err) {
 			d.SetId("")
@@ -407,18 +390,12 @@ func resourceScalewayLbBackendUpdate(ctx context.Context, d *schema.ResourceData
 		return diag.FromErr(err)
 	}
 
-	_, LbID, err := parseZonedID(d.Get("lb_id").(string))
+	_, lbID, err := parseZonedID(d.Get("lb_id").(string))
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	retryInterval := defaultWaitLBRetryInterval
-	_, err = lbAPI.WaitForLb(&lb.ZonedAPIWaitForLBRequest{
-		Zone:          zone,
-		LBID:          LbID,
-		Timeout:       scw.TimeDurationPtr(d.Timeout(schema.TimeoutUpdate)),
-		RetryInterval: &retryInterval,
-	}, scw.WithContext(ctx))
+	_, err = waitForLB(ctx, lbAPI, zone, lbID, d.Timeout(schema.TimeoutUpdate))
 	if err != nil {
 		if is403Error(err) {
 			d.SetId("")
@@ -440,7 +417,7 @@ func resourceScalewayLbBackendUpdate(ctx context.Context, d *schema.ResourceData
 		return diag.FromErr(err)
 	}
 
-	req := &lb.ZonedAPIUpdateBackendRequest{
+	req := &lbSDK.ZonedAPIUpdateBackendRequest{
 		Zone:                     zone,
 		BackendID:                ID,
 		Name:                     d.Get("name").(string),
@@ -471,7 +448,7 @@ func resourceScalewayLbBackendUpdate(ctx context.Context, d *schema.ResourceData
 		return diag.FromErr(err)
 	}
 	// Update Health Check
-	updateHCRequest := &lb.ZonedAPIUpdateHealthCheckRequest{
+	updateHCRequest := &lbSDK.ZonedAPIUpdateHealthCheckRequest{
 		Zone:            zone,
 		BackendID:       ID,
 		Port:            int32(d.Get("health_check_port").(int)),
@@ -493,7 +470,7 @@ func resourceScalewayLbBackendUpdate(ctx context.Context, d *schema.ResourceData
 	}
 
 	// Update Backend servers
-	_, err = lbAPI.SetBackendServers(&lb.ZonedAPISetBackendServersRequest{
+	_, err = lbAPI.SetBackendServers(&lbSDK.ZonedAPISetBackendServersRequest{
 		Zone:      zone,
 		BackendID: ID,
 		ServerIP:  expandStrings(d.Get("server_ips")),
@@ -502,12 +479,7 @@ func resourceScalewayLbBackendUpdate(ctx context.Context, d *schema.ResourceData
 		return diag.FromErr(err)
 	}
 
-	_, err = lbAPI.WaitForLb(&lb.ZonedAPIWaitForLBRequest{
-		Zone:          zone,
-		LBID:          LbID,
-		Timeout:       scw.TimeDurationPtr(d.Timeout(schema.TimeoutUpdate)),
-		RetryInterval: &retryInterval,
-	}, scw.WithContext(ctx))
+	_, err = waitForLB(ctx, lbAPI, zone, lbID, d.Timeout(schema.TimeoutUpdate))
 	if err != nil {
 		if is403Error(err) {
 			d.SetId("")
@@ -525,18 +497,12 @@ func resourceScalewayLbBackendDelete(ctx context.Context, d *schema.ResourceData
 		return diag.FromErr(err)
 	}
 
-	_, LbID, err := parseZonedID(d.Get("lb_id").(string))
+	_, lbID, err := parseZonedID(d.Get("lb_id").(string))
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	retryInterval := defaultWaitLBRetryInterval
-	_, err = lbAPI.WaitForLb(&lb.ZonedAPIWaitForLBRequest{
-		Zone:          zone,
-		LBID:          LbID,
-		Timeout:       scw.TimeDurationPtr(d.Timeout(schema.TimeoutDelete)),
-		RetryInterval: &retryInterval,
-	}, scw.WithContext(ctx))
+	_, err = waitForLB(ctx, lbAPI, zone, lbID, d.Timeout(schema.TimeoutDelete))
 	if err != nil {
 		if is403Error(err) {
 			d.SetId("")
@@ -545,7 +511,7 @@ func resourceScalewayLbBackendDelete(ctx context.Context, d *schema.ResourceData
 		return diag.FromErr(err)
 	}
 
-	err = lbAPI.DeleteBackend(&lb.ZonedAPIDeleteBackendRequest{
+	err = lbAPI.DeleteBackend(&lbSDK.ZonedAPIDeleteBackendRequest{
 		Zone:      zone,
 		BackendID: ID,
 	}, scw.WithContext(ctx))
@@ -554,12 +520,7 @@ func resourceScalewayLbBackendDelete(ctx context.Context, d *schema.ResourceData
 		return diag.FromErr(err)
 	}
 
-	_, err = lbAPI.WaitForLb(&lb.ZonedAPIWaitForLBRequest{
-		Zone:          zone,
-		LBID:          LbID,
-		Timeout:       scw.TimeDurationPtr(d.Timeout(schema.TimeoutDelete)),
-		RetryInterval: &retryInterval,
-	}, scw.WithContext(ctx))
+	_, err = waitForLB(ctx, lbAPI, zone, lbID, d.Timeout(schema.TimeoutDelete))
 	if err != nil {
 		if is403Error(err) {
 			d.SetId("")

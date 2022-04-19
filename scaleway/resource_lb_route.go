@@ -5,7 +5,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/scaleway/scaleway-sdk-go/api/lb/v1"
+	lbSDK "github.com/scaleway/scaleway-sdk-go/api/lb/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 )
 
@@ -68,21 +68,21 @@ func resourceScalewayLbRouteCreate(ctx context.Context, d *schema.ResourceData, 
 		return diag.Errorf("Frontend and Backend must be in the same zone (got %s and %s)", frontZone, backZone)
 	}
 
-	createReq := &lb.ZonedAPICreateRouteRequest{
+	createReq := &lbSDK.ZonedAPICreateRouteRequest{
 		Zone:       frontZone,
 		FrontendID: frontID,
 		BackendID:  backID,
-		Match: &lb.RouteMatch{
+		Match: &lbSDK.RouteMatch{
 			Sni: expandStringPtr(d.Get("match_sni")),
 		},
 	}
 
-	res, err := lbAPI.CreateRoute(createReq, scw.WithContext(ctx))
+	route, err := lbAPI.CreateRoute(createReq, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	d.SetId(newZonedIDString(zone, res.ID))
+	d.SetId(newZonedIDString(zone, route.ID))
 
 	return resourceScalewayLbRouteRead(ctx, d, meta)
 }
@@ -93,7 +93,7 @@ func resourceScalewayLbRouteRead(ctx context.Context, d *schema.ResourceData, me
 		return diag.FromErr(err)
 	}
 
-	res, err := lbAPI.GetRoute(&lb.ZonedAPIGetRouteRequest{
+	route, err := lbAPI.GetRoute(&lbSDK.ZonedAPIGetRouteRequest{
 		Zone:    zone,
 		RouteID: ID,
 	}, scw.WithContext(ctx))
@@ -106,10 +106,10 @@ func resourceScalewayLbRouteRead(ctx context.Context, d *schema.ResourceData, me
 		return diag.FromErr(err)
 	}
 
-	_ = d.Set("frontend_id", newZonedIDString(zone, res.FrontendID))
-	_ = d.Set("backend_id", newZonedIDString(zone, res.BackendID))
-	if res.Match != nil && res.Match.Sni != nil {
-		_ = d.Set("match_sni", res.Match.Sni)
+	_ = d.Set("frontend_id", newZonedIDString(zone, route.FrontendID))
+	_ = d.Set("backend_id", newZonedIDString(zone, route.BackendID))
+	if route.Match != nil && route.Match.Sni != nil {
+		_ = d.Set("match_sni", route.Match.Sni)
 	}
 
 	return nil
@@ -130,11 +130,11 @@ func resourceScalewayLbRouteUpdate(ctx context.Context, d *schema.ResourceData, 
 		return diag.Errorf("Route and Backend must be in the same zone (got %s and %s)", zone, backZone)
 	}
 
-	req := &lb.ZonedAPIUpdateRouteRequest{
+	req := &lbSDK.ZonedAPIUpdateRouteRequest{
 		Zone:      zone,
 		RouteID:   ID,
 		BackendID: backID,
-		Match: &lb.RouteMatch{
+		Match: &lbSDK.RouteMatch{
 			Sni: expandStringPtr(d.Get("match_sni")),
 		},
 	}
@@ -153,7 +153,7 @@ func resourceScalewayLbRouteDelete(ctx context.Context, d *schema.ResourceData, 
 		return diag.FromErr(err)
 	}
 
-	err = lbAPI.DeleteRoute(&lb.ZonedAPIDeleteRouteRequest{
+	err = lbAPI.DeleteRoute(&lbSDK.ZonedAPIDeleteRouteRequest{
 		Zone:    zone,
 		RouteID: ID,
 	}, scw.WithContext(ctx))

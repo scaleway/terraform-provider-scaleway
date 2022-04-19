@@ -6,7 +6,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
-	"github.com/scaleway/scaleway-sdk-go/api/lb/v1"
+	lbSDK "github.com/scaleway/scaleway-sdk-go/api/lb/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/stretchr/testify/assert"
 )
@@ -78,27 +78,27 @@ func TestAccScalewayLbFrontend_Basic(t *testing.T) {
 	})
 }
 
+// TODO: Refactor this test to enable testing of several custom domain names
+//
+// Let's encrypt currently has a limit of 50 certificates per week and a limit of 5 certificates per week per set of domains (including alternative names).
+// So we need to change the list of alternative domain names to be able to test more than one domain name.
+// One possible way to circumvent this limitation is to generate for a random set of alternative domain names that are all subdomains of the main test domain.
+// For instance: *.test.scaleway-terraform.com which is a wildcard domain name.
+// And we generate certificate for foo.test.scaleway-terraform.com, bar.test.scaleway-terraform.com, baz.test.scaleway-terraform.com, etc.
+// Even changing one alternative domaine name is enough to count as a new certificate (which is rate limited by the 50 certificates per week limit and not the 5 duplicate certificates per week limit).
+// The only limitation is that all subdomains must resolve to the same IP address.
 func TestAccScalewayLbFrontend_Certificate(t *testing.T) {
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
-	testDNSZone := fmt.Sprintf("test.%s", testDomain)
+
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheckScalewayLbFrontendDestroy(tt),
 		Steps: []resource.TestStep{
 			{
-				Config: fmt.Sprintf(`
+				Config: `
 					resource scaleway_lb_ip ip01 {}
-
-					resource "scaleway_domain_record" "tf_A" {
-						dns_zone = %[1]q
-						name     = "test"
-						type     = "A"
-						data     = "${scaleway_lb_ip.ip01.ip_address}"
-						ttl      = 3600
-						priority = 1
-					}
 
 					resource scaleway_lb lb01 {
 						ip_id = scaleway_lb_ip.ip01.id
@@ -121,27 +121,17 @@ func TestAccScalewayLbFrontend_Certificate(t *testing.T) {
 					  	}
 					}
 
-					resource scaleway_lb_certificate cert02 {
-						lb_id = scaleway_lb.lb01.id
-						name = "test-cert-front-end2"
-					  	letsencrypt {
-							common_name = %[2]q
-					  	}
-					}
-
 					resource scaleway_lb_frontend frt01 {
 						lb_id = scaleway_lb.lb01.id
 						backend_id = scaleway_lb_backend.bkd01.id
 						inbound_port = 443
-						certificate_ids = [scaleway_lb_certificate.cert01.id, scaleway_lb_certificate.cert02.id]
+						certificate_ids = [scaleway_lb_certificate.cert01.id]
 					}
-				`, testDomain, testDNSZone),
+				`,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayLbFrontendExists(tt, "scaleway_lb_frontend.frt01"),
 					testAccCheckScalewayFrontendCertificateExist(tt, "scaleway_lb_frontend.frt01", "scaleway_lb_certificate.cert01"),
-					testAccCheckScalewayFrontendCertificateExist(tt, "scaleway_lb_frontend.frt01", "scaleway_lb_certificate.cert02"),
-					resource.TestCheckResourceAttr("scaleway_lb_frontend.frt01",
-						"certificate_ids.#", "2"),
+					resource.TestCheckResourceAttr("scaleway_lb_frontend.frt01", "certificate_ids.#", "1"),
 				),
 			},
 		},
@@ -164,7 +154,7 @@ func testAccCheckScalewayFrontendCertificateExist(tt *TestTools, f, c string) re
 			return err
 		}
 
-		frEnd, err := lbAPI.GetFrontend(&lb.ZonedAPIGetFrontendRequest{
+		frEnd, err := lbAPI.GetFrontend(&lbSDK.ZonedAPIGetFrontendRequest{
 			FrontendID: ID,
 			Zone:       zone,
 		})
@@ -194,7 +184,7 @@ func testAccCheckScalewayLbFrontendExists(tt *TestTools, n string) resource.Test
 			return err
 		}
 
-		_, err = lbAPI.GetFrontend(&lb.ZonedAPIGetFrontendRequest{
+		_, err = lbAPI.GetFrontend(&lbSDK.ZonedAPIGetFrontendRequest{
 			FrontendID: ID,
 			Zone:       zone,
 		})
@@ -219,7 +209,7 @@ func testAccCheckScalewayLbFrontendDestroy(tt *TestTools) resource.TestCheckFunc
 				return err
 			}
 
-			_, err = lbAPI.GetFrontend(&lb.ZonedAPIGetFrontendRequest{
+			_, err = lbAPI.GetFrontend(&lbSDK.ZonedAPIGetFrontendRequest{
 				Zone:       zone,
 				FrontendID: ID,
 			})
@@ -240,27 +230,27 @@ func testAccCheckScalewayLbFrontendDestroy(tt *TestTools) resource.TestCheckFunc
 }
 
 func TestAclEqual(t *testing.T) {
-	aclA := &lb.ACL{
+	aclA := &lbSDK.ACL{
 		Name: "test-acl",
-		Match: &lb.ACLMatch{
+		Match: &lbSDK.ACLMatch{
 			IPSubnet:        scw.StringSlicePtr([]string{"192.168.0.1", "192.168.0.2", "192.168.10.0/24"}),
-			HTTPFilter:      lb.ACLHTTPFilterACLHTTPFilterNone,
+			HTTPFilter:      lbSDK.ACLHTTPFilterACLHTTPFilterNone,
 			HTTPFilterValue: nil,
 			Invert:          true,
 		},
-		Action:   &lb.ACLAction{Type: lb.ACLActionTypeAllow},
+		Action:   &lbSDK.ACLAction{Type: lbSDK.ACLActionTypeAllow},
 		Frontend: nil,
 		Index:    1,
 	}
-	aclB := &lb.ACL{
+	aclB := &lbSDK.ACL{
 		Name: "test-acl",
-		Match: &lb.ACLMatch{
+		Match: &lbSDK.ACLMatch{
 			IPSubnet:        scw.StringSlicePtr([]string{"192.168.0.1", "192.168.0.2", "192.168.10.0/24"}),
-			HTTPFilter:      lb.ACLHTTPFilterACLHTTPFilterNone,
+			HTTPFilter:      lbSDK.ACLHTTPFilterACLHTTPFilterNone,
 			HTTPFilterValue: nil,
 			Invert:          true,
 		},
-		Action:   &lb.ACLAction{Type: lb.ACLActionTypeAllow},
+		Action:   &lbSDK.ACLAction{Type: lbSDK.ACLActionTypeAllow},
 		Frontend: nil,
 		Index:    1,
 	}
@@ -274,11 +264,11 @@ func TestAclEqual(t *testing.T) {
 	//check action
 	aclA.Action = nil
 	assert.False(t, aclEquals(aclA, aclB))
-	aclA.Action = &lb.ACLAction{Type: lb.ACLActionTypeAllow}
+	aclA.Action = &lbSDK.ACLAction{Type: lbSDK.ACLActionTypeAllow}
 	assert.True(t, aclEquals(aclA, aclB))
-	aclA.Action = &lb.ACLAction{Type: lb.ACLActionTypeDeny}
+	aclA.Action = &lbSDK.ACLAction{Type: lbSDK.ACLActionTypeDeny}
 	assert.False(t, aclEquals(aclA, aclB))
-	aclA.Action = &lb.ACLAction{Type: lb.ACLActionTypeAllow}
+	aclA.Action = &lbSDK.ACLAction{Type: lbSDK.ACLActionTypeAllow}
 	assert.True(t, aclEquals(aclA, aclB))
 
 	//check match

@@ -6,7 +6,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/scaleway/scaleway-sdk-go/api/lb/v1"
+	lbSDK "github.com/scaleway/scaleway-sdk-go/api/lb/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 )
 
@@ -46,7 +46,7 @@ func dataSourceScalewayLbRead(ctx context.Context, d *schema.ResourceData, meta 
 
 	lbID, ok := d.GetOk("lb_id")
 	if !ok { // Get LB by name.
-		res, err := api.ListLBs(&lb.ZonedAPIListLBsRequest{
+		res, err := api.ListLBs(&lbSDK.ZonedAPIListLBsRequest{
 			Zone:      zone,
 			Name:      expandStringPtr(d.Get("name")),
 			ProjectID: expandStringPtr(d.Get("project_id")),

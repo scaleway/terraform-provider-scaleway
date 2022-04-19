@@ -9,7 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
-	"github.com/scaleway/scaleway-sdk-go/api/lb/v1"
+	lbSDK "github.com/scaleway/scaleway-sdk-go/api/lb/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 )
 
@@ -102,8 +102,8 @@ func resourceScalewayLbFrontend() *schema.Resource {
 										Type:     schema.TypeString,
 										Required: true,
 										ValidateFunc: validation.StringInSlice([]string{
-											lb.ACLActionTypeAllow.String(),
-											lb.ACLActionTypeDeny.String(),
+											lbSDK.ACLActionTypeAllow.String(),
+											lbSDK.ACLActionTypeDeny.String(),
 										}, false),
 										Description: "The action type",
 									},
@@ -129,12 +129,12 @@ func resourceScalewayLbFrontend() *schema.Resource {
 									"http_filter": {
 										Type:     schema.TypeString,
 										Optional: true,
-										Default:  lb.ACLHTTPFilterACLHTTPFilterNone.String(),
+										Default:  lbSDK.ACLHTTPFilterACLHTTPFilterNone.String(),
 										ValidateFunc: validation.StringInSlice([]string{
-											lb.ACLHTTPFilterACLHTTPFilterNone.String(),
-											lb.ACLHTTPFilterPathBegin.String(),
-											lb.ACLHTTPFilterPathEnd.String(),
-											lb.ACLHTTPFilterRegex.String(),
+											lbSDK.ACLHTTPFilterACLHTTPFilterNone.String(),
+											lbSDK.ACLHTTPFilterPathBegin.String(),
+											lbSDK.ACLHTTPFilterPathEnd.String(),
+											lbSDK.ACLHTTPFilterRegex.String(),
 										}, false),
 										Description: "The HTTP filter to match",
 									},
@@ -172,13 +172,7 @@ func resourceScalewayLbFrontendCreate(ctx context.Context, d *schema.ResourceDat
 		return diag.Errorf("load balancer id wrong format: %v", d.Get("lb_id").(string))
 	}
 
-	retryInterval := defaultWaitLBRetryInterval
-	_, err = lbAPI.WaitForLb(&lb.ZonedAPIWaitForLBRequest{
-		Zone:          zone,
-		LBID:          lbID,
-		Timeout:       scw.TimeDurationPtr(d.Timeout(schema.TimeoutCreate)),
-		RetryInterval: &retryInterval,
-	}, scw.WithContext(ctx))
+	_, err = waitForLB(ctx, lbAPI, zone, lbID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
 		if is403Error(err) {
 			d.SetId("")
@@ -192,7 +186,7 @@ func resourceScalewayLbFrontendCreate(ctx context.Context, d *schema.ResourceDat
 		return diag.FromErr(err)
 	}
 
-	createFrontendRequest := &lb.ZonedAPICreateFrontendRequest{
+	createFrontendRequest := &lbSDK.ZonedAPICreateFrontendRequest{
 		Zone:          zone,
 		LBID:          lbID,
 		Name:          expandOrGenerateString(d.Get("name"), "lb-frt"),
@@ -206,14 +200,14 @@ func resourceScalewayLbFrontendCreate(ctx context.Context, d *schema.ResourceDat
 		createFrontendRequest.CertificateIDs = expandSliceIDsPtr(certificatesRaw)
 	}
 
-	res, err := lbAPI.CreateFrontend(createFrontendRequest, scw.WithContext(ctx))
+	frontend, err := lbAPI.CreateFrontend(createFrontendRequest, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	d.SetId(newZonedIDString(zone, res.ID))
+	d.SetId(newZonedIDString(zone, frontend.ID))
 
-	diagnostics := resourceScalewayLbFrontendUpdateACL(ctx, d, lbAPI, zone, res.ID)
+	diagnostics := resourceScalewayLbFrontendUpdateACL(ctx, d, lbAPI, zone, frontend.ID)
 	if diagnostics != nil {
 		return diagnostics
 	}
@@ -227,7 +221,7 @@ func resourceScalewayLbFrontendRead(ctx context.Context, d *schema.ResourceData,
 		return diag.FromErr(err)
 	}
 
-	res, err := lbAPI.GetFrontend(&lb.ZonedAPIGetFrontendRequest{
+	frontend, err := lbAPI.GetFrontend(&lbSDK.ZonedAPIGetFrontendRequest{
 		Zone:       zone,
 		FrontendID: ID,
 	}, scw.WithContext(ctx))
@@ -239,24 +233,24 @@ func resourceScalewayLbFrontendRead(ctx context.Context, d *schema.ResourceData,
 		return diag.FromErr(err)
 	}
 
-	_ = d.Set("lb_id", newZonedIDString(zone, res.LB.ID))
-	_ = d.Set("backend_id", newZonedIDString(zone, res.Backend.ID))
-	_ = d.Set("name", res.Name)
-	_ = d.Set("inbound_port", int(res.InboundPort))
-	_ = d.Set("timeout_client", flattenDuration(res.TimeoutClient))
+	_ = d.Set("lb_id", newZonedIDString(zone, frontend.LB.ID))
+	_ = d.Set("backend_id", newZonedIDString(zone, frontend.Backend.ID))
+	_ = d.Set("name", frontend.Name)
+	_ = d.Set("inbound_port", int(frontend.InboundPort))
+	_ = d.Set("timeout_client", flattenDuration(frontend.TimeoutClient))
 
-	if res.Certificate != nil {
-		_ = d.Set("certificate_id", newZonedIDString(zone, res.Certificate.ID))
+	if frontend.Certificate != nil {
+		_ = d.Set("certificate_id", newZonedIDString(zone, frontend.Certificate.ID))
 	} else {
 		_ = d.Set("certificate_id", "")
 	}
 
-	if len(res.CertificateIDs) > 0 {
-		_ = d.Set("certificate_ids", flattenSliceIDs(res.CertificateIDs, zone))
+	if len(frontend.CertificateIDs) > 0 {
+		_ = d.Set("certificate_ids", flattenSliceIDs(frontend.CertificateIDs, zone))
 	}
 
 	//read related acls.
-	resACL, err := lbAPI.ListACLs(&lb.ZonedAPIListACLsRequest{
+	resACL, err := lbAPI.ListACLs(&lbSDK.ZonedAPIListACLsRequest{
 		Zone:       zone,
 		FrontendID: ID,
 	}, scw.WithAllPages(), scw.WithContext(ctx))
@@ -269,7 +263,7 @@ func resourceScalewayLbFrontendRead(ctx context.Context, d *schema.ResourceData,
 	return nil
 }
 
-func flattenLBACLs(ACLs []*lb.ACL) interface{} {
+func flattenLBACLs(ACLs []*lbSDK.ACL) interface{} {
 	sort.Slice(ACLs, func(i, j int) bool {
 		return ACLs[i].Index < ACLs[j].Index
 	})
@@ -280,16 +274,16 @@ func flattenLBACLs(ACLs []*lb.ACL) interface{} {
 	return rawACLs
 }
 
-func resourceScalewayLbFrontendUpdateACL(ctx context.Context, d *schema.ResourceData, lbAPI *lb.ZonedAPI, zone scw.Zone, frontendID string) diag.Diagnostics {
+func resourceScalewayLbFrontendUpdateACL(ctx context.Context, d *schema.ResourceData, lbAPI *lbSDK.ZonedAPI, zone scw.Zone, frontendID string) diag.Diagnostics {
 	//Fetch existing acl from the api. and convert it to a hashmap with index as key
-	resACL, err := lbAPI.ListACLs(&lb.ZonedAPIListACLsRequest{
+	resACL, err := lbAPI.ListACLs(&lbSDK.ZonedAPIListACLsRequest{
 		Zone:       zone,
 		FrontendID: frontendID,
 	}, scw.WithAllPages(), scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	apiACLs := make(map[int32]*lb.ACL)
+	apiACLs := make(map[int32]*lbSDK.ACL)
 	for _, acl := range resACL.ACLs {
 		apiACLs[acl.Index] = acl
 	}
@@ -312,7 +306,7 @@ func resourceScalewayLbFrontendUpdateACL(ctx context.Context, d *schema.Resource
 			if aclEquals(stateACL, apiACL) {
 				continue
 			}
-			_, err = lbAPI.UpdateACL(&lb.ZonedAPIUpdateACLRequest{
+			_, err = lbAPI.UpdateACL(&lbSDK.ZonedAPIUpdateACLRequest{
 				Zone:   zone,
 				ACLID:  apiACL.ID,
 				Name:   stateACL.Name,
@@ -326,7 +320,7 @@ func resourceScalewayLbFrontendUpdateACL(ctx context.Context, d *schema.Resource
 			continue
 		}
 		//old acl doesn't exist, create a new one
-		_, err = lbAPI.CreateACL(&lb.ZonedAPICreateACLRequest{
+		_, err = lbAPI.CreateACL(&lbSDK.ZonedAPICreateACLRequest{
 			Zone:       zone,
 			FrontendID: frontendID,
 			Name:       expandOrGenerateString(stateACL.Name, "lb-acl"),
@@ -340,7 +334,7 @@ func resourceScalewayLbFrontendUpdateACL(ctx context.Context, d *schema.Resource
 	}
 	//we've finished with all new acl, delete any remaining old one which were not dealt with yet
 	for _, acl := range apiACLs {
-		err = lbAPI.DeleteACL(&lb.ZonedAPIDeleteACLRequest{
+		err = lbAPI.DeleteACL(&lbSDK.ZonedAPIDeleteACLRequest{
 			Zone:  zone,
 			ACLID: acl.ID,
 		}, scw.WithContext(ctx))
@@ -351,9 +345,9 @@ func resourceScalewayLbFrontendUpdateACL(ctx context.Context, d *schema.Resource
 	return nil
 }
 
-func expandsLBACLs(raw interface{}) []*lb.ACL {
+func expandsLBACLs(raw interface{}) []*lbSDK.ACL {
 	d := raw.([]interface{})
-	newACL := make([]*lb.ACL, 0)
+	newACL := make([]*lbSDK.ACL, 0)
 	for _, rawACL := range d {
 		newACL = append(newACL, expandLbACL(rawACL))
 	}
@@ -366,18 +360,13 @@ func resourceScalewayLbFrontendUpdate(ctx context.Context, d *schema.ResourceDat
 		return diag.FromErr(err)
 	}
 
-	retryInterval := defaultWaitLBRetryInterval
 	_, lbID, err := parseZonedID(d.Get("lb_id").(string))
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	_, err = lbAPI.WaitForLb(&lb.ZonedAPIWaitForLBRequest{
-		Zone:          zone,
-		LBID:          lbID,
-		Timeout:       scw.TimeDurationPtr(d.Timeout(schema.TimeoutUpdate)),
-		RetryInterval: &retryInterval,
-	}, scw.WithContext(ctx))
+
 	// check err waiting process
+	_, err = waitForLB(ctx, lbAPI, zone, lbID, d.Timeout(schema.TimeoutUpdate))
 	if err != nil {
 		if is403Error(err) {
 			d.SetId("")
@@ -390,7 +379,7 @@ func resourceScalewayLbFrontendUpdate(ctx context.Context, d *schema.ResourceDat
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	req := &lb.ZonedAPIUpdateFrontendRequest{
+	req := &lbSDK.ZonedAPIUpdateFrontendRequest{
 		Zone:          zone,
 		FrontendID:    ID,
 		Name:          d.Get("name").(string),
@@ -423,11 +412,20 @@ func resourceScalewayLbFrontendDelete(ctx context.Context, d *schema.ResourceDat
 		return diag.FromErr(err)
 	}
 
-	err = lbAPI.DeleteFrontend(&lb.ZonedAPIDeleteFrontendRequest{
+	_, lbID, err := parseZonedID(d.Get("lb_id").(string))
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	err = lbAPI.DeleteFrontend(&lbSDK.ZonedAPIDeleteFrontendRequest{
 		Zone:       zone,
 		FrontendID: ID,
 	}, scw.WithContext(ctx))
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
+	_, err = waitForLB(ctx, lbAPI, zone, lbID, d.Timeout(schema.TimeoutDelete))
 	if err != nil && !is404Error(err) {
 		return diag.FromErr(err)
 	}
@@ -435,7 +433,7 @@ func resourceScalewayLbFrontendDelete(ctx context.Context, d *schema.ResourceDat
 	return nil
 }
 
-func aclEquals(aclA, aclB *lb.ACL) bool {
+func aclEquals(aclA, aclB *lbSDK.ACL) bool {
 	if aclA.Name != aclB.Name {
 		return false
 	}

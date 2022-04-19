@@ -6,7 +6,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
-	"github.com/scaleway/scaleway-sdk-go/api/lb/v1"
+	lbSDK "github.com/scaleway/scaleway-sdk-go/api/lb/v1"
 )
 
 func TestAccScalewayLbBackend_Basic(t *testing.T) {
@@ -200,7 +200,7 @@ func testAccCheckScalewayLbBackendExists(tt *TestTools, n string) resource.TestC
 			return err
 		}
 
-		_, err = lbAPI.GetBackend(&lb.ZonedAPIGetBackendRequest{
+		_, err = lbAPI.GetBackend(&lbSDK.ZonedAPIGetBackendRequest{
 			BackendID: ID,
 			Zone:      zone,
 		})
@@ -224,7 +224,7 @@ func testAccCheckScalewayLbBackendDestroy(tt *TestTools) resource.TestCheckFunc 
 				return err
 			}
 
-			_, err = lbAPI.GetBackend(&lb.ZonedAPIGetBackendRequest{
+			_, err = lbAPI.GetBackend(&lbSDK.ZonedAPIGetBackendRequest{
 				Zone:      zone,
 				BackendID: ID,
 			})

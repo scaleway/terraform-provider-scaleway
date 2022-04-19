@@ -6,7 +6,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/scaleway/scaleway-sdk-go/api/lb/v1"
+	lbSDK "github.com/scaleway/scaleway-sdk-go/api/lb/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 )
 
@@ -46,7 +46,7 @@ func dataSourceScalewayLbIPRead(ctx context.Context, d *schema.ResourceData, met
 
 	ipID, ok := d.GetOk("ip_id")
 	if !ok { // Get IP by region and IP address.
-		res, err := api.ListIPs(&lb.ZonedAPIListIPsRequest{
+		res, err := api.ListIPs(&lbSDK.ZonedAPIListIPsRequest{
 			Zone:      zone,
 			IPAddress: expandStringPtr(d.Get("ip_address")),
 			ProjectID: expandStringPtr(d.Get("project_id")),
