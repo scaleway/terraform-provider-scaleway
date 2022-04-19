@@ -17,6 +17,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/hashicorp/aws-sdk-go-base/tfawserr"
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/scw"
@@ -169,13 +170,13 @@ func flattenBucketCORS(corsResponse interface{}) []map[string]interface{} {
 	return corsRules
 }
 
-func expandBucketCORS(rawCors []interface{}, bucket string) []*s3.CORSRule {
+func expandBucketCORS(ctx context.Context, rawCors []interface{}, bucket string) []*s3.CORSRule {
 	rules := make([]*s3.CORSRule, 0, len(rawCors))
 	for _, cors := range rawCors {
 		corsMap := cors.(map[string]interface{})
 		r := &s3.CORSRule{}
 		for k, v := range corsMap {
-			l.Debugf("S3 bucket: %s, put CORS: %#v, %#v", bucket, k, v)
+			tflog.Debug(ctx, fmt.Sprintf("S3 bucket: %s, put CORS: %#v, %#v", bucket, k, v))
 			if k == "max_age_seconds" {
 				r.MaxAgeSeconds = scw.Int64Ptr(int64(v.(int)))
 			} else {
