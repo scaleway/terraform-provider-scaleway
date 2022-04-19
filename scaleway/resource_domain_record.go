@@ -288,7 +288,7 @@ func resourceScalewayDomainRecordRead(ctx context.Context, d *schema.ResourceDat
 		res, err := domainAPI.ListDNSZoneRecords(&domain.ListDNSZoneRecordsRequest{
 			DNSZone: dnsZone,
 			ID:      &id,
-		}, scw.WithAllPages())
+		}, scw.WithAllPages(), scw.WithContext(ctx))
 
 		if err != nil {
 			if is404Error(err) {
@@ -443,7 +443,7 @@ func resourceScalewayDomainRecordDelete(ctx context.Context, d *schema.ResourceD
 	d.SetId("")
 
 	_, err = waitForDNSZone(ctx, domainAPI, d.Get("dns_zone").(string), d.Timeout(schema.TimeoutDelete))
-	if err != nil {
+	if err != nil && !ErrCodeEquals(err, domain.ErrCodeNoSuchDNSZone) {
 		if is404Error(err) {
 			return nil
 		}
@@ -479,10 +479,10 @@ func resourceScalewayDomainRecordDelete(ctx context.Context, d *schema.ResourceD
 			})
 
 			if err != nil {
-				if is404Error(err) && is403Error(err) {
+				if is404Error(err) || is403Error(err) {
 					return nil
 				}
-				return diag.FromErr(err)
+				return nil
 			}
 		}
 	}

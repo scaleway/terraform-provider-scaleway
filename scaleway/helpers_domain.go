@@ -249,7 +249,7 @@ func waitForDNSZone(ctx context.Context, domainAPI *domain.API, dnsZone string, 
 	}
 
 	return domainAPI.WaitForDNSZone(&domain.WaitForDNSZoneRequest{
-		DNSZone:      dnsZone,
+		DNSZone:       dnsZone,
 		Timeout:       scw.TimeDurationPtr(timeout),
 		RetryInterval: scw.TimeDurationPtr(retryInterval),
 	}, scw.WithContext(ctx))
