@@ -282,7 +282,7 @@ func resourceScalewayDomainRecordRead(ctx context.Context, d *schema.ResourceDat
 
 		res, err := domainAPI.ListDNSZoneRecords(&domain.ListDNSZoneRecordsRequest{
 			DNSZone: dnsZone,
-			Id:      id,
+			ID:      &id,
 		}, scw.WithAllPages())
 
 		if err != nil {
