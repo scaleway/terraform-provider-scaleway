@@ -10,6 +10,7 @@ import (
 	"strconv"
 
 	"github.com/google/go-cmp/cmp"
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
@@ -318,7 +319,7 @@ func resourceScalewayInstanceServerCreate(ctx context.Context, d *schema.Resourc
 		req.PlacementGroup = expandStringPtr(expandZonedID(placementGroupID).ID)
 	}
 
-	serverType := getServerType(instanceAPI, req.Zone, req.CommercialType)
+	serverType := getServerType(ctx, instanceAPI, req.Zone, req.CommercialType)
 	if serverType == nil {
 		return diag.FromErr(fmt.Errorf("could not find a server type associated with %s", req.CommercialType))
 	}
@@ -458,7 +459,7 @@ func resourceScalewayInstanceServerCreate(ctx context.Context, d *schema.Resourc
 			if err != nil {
 				return diag.FromErr(err)
 			}
-			l.Debugf("private network created (ID: %s, status: %s)", pn.PrivateNic.ID, pn.PrivateNic.State)
+			tflog.Debug(ctx, fmt.Sprintf("private network created (ID: %s, status: %s)", pn.PrivateNic.ID, pn.PrivateNic.State))
 
 			_, err = waitForPrivateNIC(ctx, instanceAPI, zone, res.Server.ID, pn.PrivateNic.ID, d.Timeout(schema.TimeoutCreate))
 			if err != nil {
