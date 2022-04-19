@@ -39,10 +39,12 @@ func TestAccScalewayDataSourceBaremetalServer_Basic(t *testing.T) {
 
 					data "scaleway_baremetal_server" "by_name" {
 						name = "${scaleway_baremetal_server.main.name}"
+						zone = "fr-par-2"
 					}
 					
 					data "scaleway_baremetal_server" "by_id" {
 						server_id = "${scaleway_baremetal_server.main.id}"
+						zone = "fr-par-2"
 					}
 				`, SSHKeyName, SSHKey, name),
 				Check: resource.ComposeTestCheckFunc(

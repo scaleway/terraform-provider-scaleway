@@ -15,7 +15,7 @@ func dataSourceScalewayBaremetalServer() *schema.Resource {
 	dsSchema := datasourceSchemaFromResourceSchema(resourceScalewayBaremetalServer().Schema)
 
 	// Set 'Optional' schema elements
-	addOptionalFieldsToSchema(dsSchema, "name")
+	addOptionalFieldsToSchema(dsSchema, "name", "zone")
 
 	dsSchema["name"].ConflictsWith = []string{"server_id"}
 	dsSchema["server_id"] = &schema.Schema{
