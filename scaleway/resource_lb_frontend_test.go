@@ -78,6 +78,21 @@ func TestAccScalewayLbFrontend_Basic(t *testing.T) {
 	})
 }
 
+// de votre coté vous allez rester limité par LE sur le nombre de certif issue pour un domain précis malheureusement (Certificates per Registered Domain (50 per week))
+// donc tu tombes sur Duplicate Certificate limit of 5 per week
+//11 h 29
+//pour que vous puissez déjà passer à 50 par semaine au lieu de 5 faudrait que tu random sur plein de sous-domain à ton domain de test
+//11 h 30
+//tu te fais un dns entry *.test.scaleway-terraform.com
+//11 h 30
+//et dans ton test tu random sur un chiffre x.test.scaleway-terraform.com
+//11 h 30
+//comme ça déjà vous pourrez run plus de test
+// ça reste sur le même domain de base donc tout xxxxxx.test.scaleway-terraform.com compte pour les 50
+// mais si tu fais varier le sous-domain ouais au moins c’est pas juste 5
+// tu peux laisser en domain principal le test.scaleway-terraform.com juste tu rajoutes des alt domain name avec un autre au pif X.test.scaleway-terraform.com
+// c’est vraiment le set de domain complet qui est check, si une chaine de 5 domain name, tu en fais varier qu’un seul c’est bon
+// la seule limitation c’est qu’ils soient résolu aussi sur l’ip du challnge
 func TestAccScalewayLbFrontend_Certificate(t *testing.T) {
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
