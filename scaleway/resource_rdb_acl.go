@@ -32,7 +32,7 @@ func resourceScalewayRdbACL() *schema.Resource {
 				Description:  "Instance on which the ACL is applied",
 			},
 			"acl_rules": {
-				Type:        schema.TypeSet,
+				Type:        schema.TypeList,
 				Required:    true,
 				Description: "List of ACL rules to apply",
 				Elem: &schema.Resource{
@@ -70,7 +70,7 @@ func resourceScalewayRdbACLCreate(ctx context.Context, d *schema.ResourceData, m
 		return diag.FromErr(err)
 	}
 
-	aclRules, err := rdbACLExpand(d.Get("acl_rules").(*schema.Set))
+	aclRules, err := rdbACLExpand(d.Get("acl_rules").([]interface{}))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -139,7 +139,7 @@ func resourceScalewayRdbACLUpdate(ctx context.Context, d *schema.ResourceData, m
 			return diag.FromErr(err)
 		}
 
-		aclRules, err := rdbACLExpand(d.Get("acl_rules").(*schema.Set))
+		aclRules, err := rdbACLExpand(d.Get("acl_rules").([]interface{}))
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -164,7 +164,7 @@ func resourceScalewayRdbACLDelete(ctx context.Context, d *schema.ResourceData, m
 		return diag.FromErr(err)
 	}
 	aclRuleIPs := make([]string, 0)
-	aclRules, err := rdbACLExpand(d.Get("acl_rules").(*schema.Set))
+	aclRules, err := rdbACLExpand(d.Get("acl_rules").([]interface{}))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -182,7 +182,11 @@ func resourceScalewayRdbACLDelete(ctx context.Context, d *schema.ResourceData, m
 		InstanceID: instanceID,
 		ACLRuleIPs: aclRuleIPs,
 	}, scw.WithContext(ctx))
+	if err != nil && !is404Error(err) {
+		return diag.FromErr(err)
+	}
 
+	_, err = waitForRDBInstance(ctx, rdbAPI, region, instanceID, d.Timeout(schema.TimeoutDelete))
 	if err != nil && !is404Error(err) {
 		return diag.FromErr(err)
 	}
@@ -190,9 +194,9 @@ func resourceScalewayRdbACLDelete(ctx context.Context, d *schema.ResourceData, m
 	return nil
 }
 
-func rdbACLExpand(data *schema.Set) ([]*rdb.ACLRuleRequest, error) {
+func rdbACLExpand(data []interface{}) ([]*rdb.ACLRuleRequest, error) {
 	var res []*rdb.ACLRuleRequest
-	for _, rule := range data.List() {
+	for _, rule := range data {
 		r := rule.(map[string]interface{})
 		ip, err := expandIPNet(r["ip"].(string))
 		if err != nil {
