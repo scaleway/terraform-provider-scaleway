@@ -154,10 +154,7 @@ func resourceScalewayVPCPublicGatewayDHCPReservationUpdate(ctx context.Context, 
 		}
 
 		gatewayNetworkID := expandID(d.Get("gateway_network_id"))
-		_, err = vpcgwAPI.WaitForGatewayNetwork(&vpcgw.WaitForGatewayNetworkRequest{
-			GatewayNetworkID: gatewayNetworkID,
-			Zone:             zone,
-		}, scw.WithContext(ctx))
+		_, err = waitForVPCGatewayNetwork(ctx, vpcgwAPI, zone, gatewayNetworkID, d.Timeout(schema.TimeoutUpdate))
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -166,12 +163,6 @@ func resourceScalewayVPCPublicGatewayDHCPReservationUpdate(ctx context.Context, 
 			DHCPEntryID: ID,
 			Zone:        zone,
 			IPAddress:   scw.IPPtr(ip),
-		}
-
-		gatewayNetworkID := expandID(d.Get("gateway_network_id"))
-		_, err = waitForVPCGatewayNetwork(ctx, vpcgwAPI, zone, gatewayNetworkID, d.Timeout(schema.TimeoutUpdate))
-		if err != nil {
-			return diag.FromErr(err)
 		}
 
 		_, err = vpcgwAPI.UpdateDHCPEntry(req, scw.WithContext(ctx))
