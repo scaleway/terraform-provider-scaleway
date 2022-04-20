@@ -1,10 +1,13 @@
 package scaleway
 
 import (
+	"context"
 	"fmt"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
+	"github.com/scaleway/scaleway-sdk-go/scw"
 )
 
 func dataSourceScalewayInstanceServer() *schema.Resource {
@@ -24,39 +27,43 @@ func dataSourceScalewayInstanceServer() *schema.Resource {
 	}
 
 	return &schema.Resource{
-		Read: dataSourceScalewayInstanceServerRead,
+		ReadContext: dataSourceScalewayInstanceServerRead,
 
 		Schema: dsSchema,
 	}
 }
 
-func dataSourceScalewayInstanceServerRead(d *schema.ResourceData, m interface{}) error {
-	meta := m.(*Meta)
-	instanceApi, zone, err := instanceAPIWithZone(d, meta)
+func dataSourceScalewayInstanceServerRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	instanceAPI, zone, err := instanceAPIWithZone(d, meta)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	serverID, ok := d.GetOk("server_id")
 	if !ok {
-		res, err := instanceApi.ListServers(&instance.ListServersRequest{
-			Zone: zone,
-			Name: String(d.Get("name").(string)),
-		})
+		res, err := instanceAPI.ListServers(&instance.ListServersRequest{
+			Zone:    zone,
+			Name:    expandStringPtr(d.Get("name")),
+			Project: expandStringPtr(d.Get("project_id")),
+		}, scw.WithContext(ctx))
 		if err != nil {
-			return err
+			return diag.FromErr(err)
 		}
-		if len(res.Servers) == 0 {
-			return fmt.Errorf("no server found with the name %s", d.Get("name"))
+		for _, server := range res.Servers {
+			if server.Name == d.Get("name").(string) {
+				if serverID != "" {
+					return diag.FromErr(fmt.Errorf("more than 1 server found with the same name %s", d.Get("name")))
+				}
+				serverID = server.ID
+			}
 		}
-		if len(res.Servers) > 1 {
-			return fmt.Errorf("%d servers found with the same name %s", len(res.Servers), d.Get("name"))
+		if serverID == "" {
+			return diag.FromErr(fmt.Errorf("no server found with the name %s", d.Get("name")))
 		}
-		serverID = res.Servers[0].ID
 	}
 
 	zonedID := datasourceNewZonedID(serverID, zone)
 	d.SetId(zonedID)
 	_ = d.Set("server_id", zonedID)
-	return resourceScalewayInstanceServerRead(d, m)
+	return resourceScalewayInstanceServerRead(ctx, d, meta)
 }

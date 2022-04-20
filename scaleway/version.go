@@ -1,4 +1,4 @@
 package scaleway
 
-// version is a variable because we modify it in provider_test.go
-var version = "v1.13.0"
+// This variable is set by go releaser on release
+var version = "develop"

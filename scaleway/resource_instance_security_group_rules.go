@@ -1,19 +1,24 @@
 package scaleway
 
 import (
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"context"
+
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 func resourceScalewayInstanceSecurityGroupRules() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceScalewayInstanceSecurityGroupRulesCreate,
-		Read:   resourceScalewayInstanceSecurityGroupRulesRead,
-		Update: resourceScalewayInstanceSecurityGroupRulesUpdate,
-		Delete: resourceScalewayInstanceSecurityGroupRulesDelete,
+		CreateContext: resourceScalewayInstanceSecurityGroupRulesCreate,
+		ReadContext:   resourceScalewayInstanceSecurityGroupRulesRead,
+		UpdateContext: resourceScalewayInstanceSecurityGroupRulesUpdate,
+		DeleteContext: resourceScalewayInstanceSecurityGroupRulesDelete,
 		Importer: &schema.ResourceImporter{
-			State: customImporterState,
+			StateContext: schema.ImportStatePassthroughContext,
 		},
-
+		Timeouts: &schema.ResourceTimeout{
+			Default: schema.DefaultTimeout(defaultInstanceSecurityGroupRuleTimeout),
+		},
 		Schema: map[string]*schema.Schema{
 			"security_group_id": {
 				Type:     schema.TypeString,
@@ -39,73 +44,62 @@ func resourceScalewayInstanceSecurityGroupRules() *schema.Resource {
 	}
 }
 
-func customImporterState(d *schema.ResourceData, m interface{}) ([]*schema.ResourceData, error) {
-	// importZonedID is the ID set by the user when using the Terraform's import function.
-	// It should be a SecurityGroupZonedID.
-	importZonedID := d.Id()
-
-	_ = d.Set("security_group_id", importZonedID)
-	d.SetId(importZonedID)
-
-	return []*schema.ResourceData{d}, nil
-}
-
-func resourceScalewayInstanceSecurityGroupRulesCreate(d *schema.ResourceData, m interface{}) error {
+func resourceScalewayInstanceSecurityGroupRulesCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	d.SetId(d.Get("security_group_id").(string))
 
 	// We call update instead of read as it will take care of creating rules.
-	return resourceScalewayInstanceSecurityGroupRulesUpdate(d, m)
+	return resourceScalewayInstanceSecurityGroupRulesUpdate(ctx, d, meta)
 }
 
-func resourceScalewayInstanceSecurityGroupRulesRead(d *schema.ResourceData, m interface{}) error {
+func resourceScalewayInstanceSecurityGroupRulesRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	securityGroupZonedID := d.Id()
 
-	instanceApi, zone, securityGroupID, err := instanceAPIWithZoneAndID(m, securityGroupZonedID)
+	instanceAPI, zone, securityGroupID, err := instanceAPIWithZoneAndID(meta, securityGroupZonedID)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
-	d.Set("security_group_id", securityGroupZonedID)
+	_ = d.Set("security_group_id", securityGroupZonedID)
 
-	inboundRules, outboundRules, err := getSecurityGroupRules(instanceApi, zone, securityGroupID, d)
+	inboundRules, outboundRules, err := getSecurityGroupRules(ctx, instanceAPI, zone, securityGroupID, d)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
-	d.Set("inbound_rule", inboundRules)
-	d.Set("outbound_rule", outboundRules)
+	_ = d.Set("inbound_rule", inboundRules)
+	_ = d.Set("outbound_rule", outboundRules)
 
 	return nil
 }
 
-func resourceScalewayInstanceSecurityGroupRulesUpdate(d *schema.ResourceData, m interface{}) error {
+func resourceScalewayInstanceSecurityGroupRulesUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	securityGroupZonedID := d.Id()
-	instanceApi, zone, securityGroupID, err := instanceAPIWithZoneAndID(m, securityGroupZonedID)
+	instanceAPI, zone, securityGroupID, err := instanceAPIWithZoneAndID(meta, securityGroupZonedID)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
-	err = updateSecurityGroupeRules(d, zone, securityGroupID, instanceApi)
+	err = updateSecurityGroupeRules(ctx, d, zone, securityGroupID, instanceAPI)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
-	return resourceScalewayInstanceSecurityGroupRulesRead(d, m)
+	return resourceScalewayInstanceSecurityGroupRulesRead(ctx, d, meta)
 }
 
-func resourceScalewayInstanceSecurityGroupRulesDelete(d *schema.ResourceData, m interface{}) error {
+func resourceScalewayInstanceSecurityGroupRulesDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	securityGroupZonedID := d.Id()
-	instanceApi, zone, securityGroupID, err := instanceAPIWithZoneAndID(m, securityGroupZonedID)
+	instanceAPI, zone, securityGroupID, err := instanceAPIWithZoneAndID(meta, securityGroupZonedID)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
-	d.Set("inbound_rule", nil)
-	d.Set("outbound_rule", nil)
+	_ = d.Set("inbound_rule", nil)
+	_ = d.Set("outbound_rule", nil)
 
-	err = updateSecurityGroupeRules(d, zone, securityGroupID, instanceApi)
+	err = updateSecurityGroupeRules(ctx, d, zone, securityGroupID, instanceAPI)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	return nil

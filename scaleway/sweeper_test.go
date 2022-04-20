@@ -1,13 +1,11 @@
 package scaleway
 
 import (
-	"fmt"
-	"os"
+	"context"
 	"testing"
 
 	"github.com/aws/aws-sdk-go/service/s3"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	api "github.com/nicolai86/scaleway-sdk"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 )
 
@@ -15,85 +13,53 @@ func TestMain(m *testing.M) {
 	resource.TestMain(m)
 }
 
-// sharedDeprecatedClientForRegion returns a scaleway deprecated client needed for the sweeper
-// functions for a given region {par1,ams1}
-func sharedDeprecatedClientForRegion(region string) (*api.API, error) {
-	meta, err := buildTestConfigForTests(region)
-	if err != nil {
-		return nil, err
+func sweepZones(zones []scw.Zone, f func(scwClient *scw.Client, zone scw.Zone) error) error {
+	for _, zone := range zones {
+		client, err := sharedClientForZone(zone)
+		if err != nil {
+			return err
+		}
+		err = f(client, zone)
+		if err != nil {
+			l.Warningf("error running sweepZones, ignoring: %s", err)
+		}
 	}
-
-	// configures a default client for the region, using the above env vars
-	err = meta.bootstrapDeprecatedClient()
-	if err != nil {
-		return nil, fmt.Errorf("error getting Scaleway client: %#v", err)
-	}
-
-	return meta.deprecatedClient, nil
+	return nil
 }
 
-// sharedClientForRegion returns a Scaleway client needed for the sweeper
-// functions for a given region {fr-par,nl-ams}
-func sharedClientForRegion(region string) (*scw.Client, error) {
-	meta, err := buildTestConfigForTests(region)
+func sweepRegions(regions []scw.Region, f func(scwClient *scw.Client, region scw.Region) error) error {
+	for _, region := range regions {
+		return sweepZones(region.GetZones(), func(scwClient *scw.Client, zone scw.Zone) error {
+			r, _ := zone.Region()
+			return f(scwClient, r)
+		})
+	}
+	return nil
+}
+
+// sharedClientForZone returns a Scaleway client needed for the sweeper
+// functions for a given zone
+func sharedClientForZone(zone scw.Zone) (*scw.Client, error) {
+	ctx := context.Background()
+	meta, err := buildMeta(ctx, &metaConfig{
+		terraformVersion: "terraform-tests",
+		forceZone:        zone,
+	})
 	if err != nil {
 		return nil, err
 	}
-
-	// configures a default client for the region, using the above env vars
-	err = meta.bootstrapScwClient()
-	if err != nil {
-		return nil, fmt.Errorf("error getting Scaleway client: %s", err)
-	}
-
 	return meta.scwClient, nil
 }
 
-// buildTestConfigForTests creates a Config objects based on the region
-// and the config variables needed for testing.
-func buildTestConfigForTests(region string) (*Meta, error) {
-	organizationID := os.Getenv("SCW_DEFAULT_ORGANIZATION_ID")
-	if organizationID == "" {
-		organizationID = os.Getenv("SCALEWAY_ORGANIZATION")
-	}
-	if organizationID == "" {
-		return nil, fmt.Errorf("empty SCW_DEFAULT_ORGANIZATION_ID")
-	}
-
-	secretKey := os.Getenv("SCW_SECRET_KEY")
-	if secretKey == "" {
-		secretKey = os.Getenv("SCALEWAY_TOKEN")
-	}
-	if secretKey == "" {
-		return nil, fmt.Errorf("empty SCW_SECRET_KEY")
-	}
-
-	parsedRegion, err := scw.ParseRegion(region)
-	if err != nil {
-		return nil, err
-	}
-
-	return &Meta{
-		DefaultOrganizationID: organizationID,
-		SecretKey:             secretKey,
-		DefaultRegion:         parsedRegion,
-	}, nil
-}
-
 // sharedS3ClientForRegion returns a common S3 client needed for the sweeper
-func sharedS3ClientForRegion(region string) (*s3.S3, error) {
-
-	meta, err := buildTestConfigForTests(region)
+func sharedS3ClientForRegion(region scw.Region) (*s3.S3, error) {
+	ctx := context.Background()
+	meta, err := buildMeta(ctx, &metaConfig{
+		terraformVersion: "terraform-tests",
+		forceZone:        region.GetZones()[0],
+	})
 	if err != nil {
 		return nil, err
 	}
-
-	// configures a default client for the region, using the above env vars
-	err = meta.bootstrapS3Client()
-	if err != nil {
-		return nil, fmt.Errorf("error getting S3 client: %#v", err)
-	}
-
-	return meta.s3Client, nil
-
+	return newS3ClientFromMeta(meta)
 }

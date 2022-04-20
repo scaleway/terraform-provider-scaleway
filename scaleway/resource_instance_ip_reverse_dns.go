@@ -1,18 +1,27 @@
 package scaleway
 
 import (
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"context"
+	"fmt"
+
+	"github.com/hashicorp/terraform-plugin-log/tflog"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
+	"github.com/scaleway/scaleway-sdk-go/scw"
 )
 
-func resourceScalewayInstanceIPReverseDns() *schema.Resource {
+func resourceScalewayInstanceIPReverseDNS() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceScalewayInstanceIPReverseDnsCreate,
-		Read:   resourceScalewayInstanceIPReverseDnsRead,
-		Update: resourceScalewayInstanceIPReverseDnsUpdate,
-		Delete: resourceScalewayInstanceIPReverseDnsDelete,
+		CreateContext: resourceScalewayInstanceIPReverseDNSCreate,
+		ReadContext:   resourceScalewayInstanceIPReverseDNSRead,
+		UpdateContext: resourceScalewayInstanceIPReverseDNSUpdate,
+		DeleteContext: resourceScalewayInstanceIPReverseDNSDelete,
 		Importer: &schema.ResourceImporter{
-			State: schema.ImportStatePassthrough,
+			StateContext: schema.ImportStatePassthroughContext,
+		},
+		Timeouts: &schema.ResourceTimeout{
+			Default: schema.DefaultTimeout(defaultInstanceIPTimeout),
 		},
 		SchemaVersion: 0,
 		Schema: map[string]*schema.Schema{
@@ -31,35 +40,55 @@ func resourceScalewayInstanceIPReverseDns() *schema.Resource {
 	}
 }
 
-func resourceScalewayInstanceIPReverseDnsCreate(d *schema.ResourceData, m interface{}) error {
-	instanceAPI, zone, err := instanceAPIWithZone(d, m)
+func resourceScalewayInstanceIPReverseDNSCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	instanceAPI, zone, err := instanceAPIWithZone(d, meta)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	res, err := instanceAPI.GetIP(&instance.GetIPRequest{
 		IP:   expandID(d.Get("ip_id")),
 		Zone: zone,
-	})
+	}, scw.WithContext(ctx))
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
-	d.SetId(newZonedId(zone, res.IP.ID))
+	d.SetId(newZonedIDString(zone, res.IP.ID))
 
-	// We do not create any resource. We only need to update the IP.
-	return resourceScalewayInstanceIPReverseDnsUpdate(d, m)
+	_, ok := d.GetOk("reverse")
+	if ok {
+		tflog.Debug(ctx, fmt.Sprintf("updating IP %q reverse to %q\n", d.Id(), d.Get("reverse")))
+
+		updateReverseReq := &instance.UpdateIPRequest{
+			Zone: zone,
+			IP:   res.IP.ID,
+		}
+
+		reverse := d.Get("reverse").(string)
+		if reverse == "" {
+			updateReverseReq.Reverse = &instance.NullableStringValue{Null: true}
+		} else {
+			updateReverseReq.Reverse = &instance.NullableStringValue{Value: reverse}
+		}
+		_, err = instanceAPI.UpdateIP(updateReverseReq, scw.WithContext(ctx))
+		if err != nil {
+			return diag.FromErr(err)
+		}
+	}
+
+	return resourceScalewayInstanceIPReverseDNSRead(ctx, d, meta)
 }
 
-func resourceScalewayInstanceIPReverseDnsRead(d *schema.ResourceData, m interface{}) error {
-	instanceAPI, zone, ID, err := instanceAPIWithZoneAndID(m, d.Id())
+func resourceScalewayInstanceIPReverseDNSRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	instanceAPI, zone, ID, err := instanceAPIWithZoneAndID(meta, d.Id())
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	res, err := instanceAPI.GetIP(&instance.GetIPRequest{
 		IP:   ID,
 		Zone: zone,
-	})
+	}, scw.WithContext(ctx))
 
 	if err != nil {
 		// We check for 403 because instance API returns 403 for a deleted IP
@@ -67,7 +96,7 @@ func resourceScalewayInstanceIPReverseDnsRead(d *schema.ResourceData, m interfac
 			d.SetId("")
 			return nil
 		}
-		return err
+		return diag.FromErr(err)
 	}
 
 	_ = d.Set("zone", string(zone))
@@ -75,14 +104,14 @@ func resourceScalewayInstanceIPReverseDnsRead(d *schema.ResourceData, m interfac
 	return nil
 }
 
-func resourceScalewayInstanceIPReverseDnsUpdate(d *schema.ResourceData, m interface{}) error {
-	instanceAPI, zone, ID, err := instanceAPIWithZoneAndID(m, d.Id())
+func resourceScalewayInstanceIPReverseDNSUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	instanceAPI, zone, ID, err := instanceAPIWithZoneAndID(meta, d.Id())
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	if d.HasChange("reverse") {
-		l.Debugf("updating IP %q reverse to %q\n", d.Id(), d.Get("reverse"))
+		tflog.Debug(ctx, fmt.Sprintf("updating IP %q reverse to %q\n", d.Id(), d.Get("reverse")))
 
 		updateReverseReq := &instance.UpdateIPRequest{
 			Zone: zone,
@@ -95,19 +124,19 @@ func resourceScalewayInstanceIPReverseDnsUpdate(d *schema.ResourceData, m interf
 		} else {
 			updateReverseReq.Reverse = &instance.NullableStringValue{Value: reverse}
 		}
-		_, err = instanceAPI.UpdateIP(updateReverseReq)
+		_, err = instanceAPI.UpdateIP(updateReverseReq, scw.WithContext(ctx))
 		if err != nil {
-			return err
+			return diag.FromErr(err)
 		}
 	}
 
-	return resourceScalewayInstanceIPReverseDnsRead(d, m)
+	return resourceScalewayInstanceIPReverseDNSRead(ctx, d, meta)
 }
 
-func resourceScalewayInstanceIPReverseDnsDelete(d *schema.ResourceData, m interface{}) error {
-	instanceAPI, zone, ID, err := instanceAPIWithZoneAndID(m, d.Id())
+func resourceScalewayInstanceIPReverseDNSDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	instanceAPI, zone, ID, err := instanceAPIWithZoneAndID(meta, d.Id())
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	// Unset the reverse dns on the IP
@@ -116,9 +145,9 @@ func resourceScalewayInstanceIPReverseDnsDelete(d *schema.ResourceData, m interf
 		IP:      ID,
 		Reverse: &instance.NullableStringValue{Null: true},
 	}
-	_, err = instanceAPI.UpdateIP(updateReverseReq)
+	_, err = instanceAPI.UpdateIP(updateReverseReq, scw.WithContext(ctx))
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	d.SetId("")

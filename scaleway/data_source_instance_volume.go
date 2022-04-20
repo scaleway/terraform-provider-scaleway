@@ -1,10 +1,13 @@
 package scaleway
 
 import (
+	"context"
 	"fmt"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	instance "github.com/scaleway/scaleway-sdk-go/api/instance/v1"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
+	"github.com/scaleway/scaleway-sdk-go/scw"
 )
 
 func dataSourceScalewayInstanceVolume() *schema.Resource {
@@ -24,41 +27,45 @@ func dataSourceScalewayInstanceVolume() *schema.Resource {
 	dsSchema["name"].ConflictsWith = []string{"volume_id"}
 
 	return &schema.Resource{
-		Read:   dataSourceScalewayInstanceVolumeRead,
-		Schema: dsSchema,
+		ReadContext: dataSourceScalewayInstanceVolumeRead,
+		Schema:      dsSchema,
 	}
 }
 
-func dataSourceScalewayInstanceVolumeRead(d *schema.ResourceData, m interface{}) error {
-	meta := m.(*Meta)
-	instanceApi, zone, err := instanceAPIWithZone(d, meta)
+func dataSourceScalewayInstanceVolumeRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	instanceAPI, zone, err := instanceAPIWithZone(d, meta)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	volumeID, ok := d.GetOk("volume_id")
 	if !ok { // Get volumes by zone and name.
-		res, err := instanceApi.ListVolumes(&instance.ListVolumesRequest{
-			Zone: zone,
-			Name: String(d.Get("name").(string)),
-		})
+		res, err := instanceAPI.ListVolumes(&instance.ListVolumesRequest{
+			Zone:    zone,
+			Name:    expandStringPtr(d.Get("name")),
+			Project: expandStringPtr(d.Get("project_id")),
+		}, scw.WithContext(ctx))
 		if err != nil {
-			return err
+			return diag.FromErr(err)
 		}
-		if len(res.Volumes) == 0 {
-			return fmt.Errorf("no volume found with the name %s", d.Get("name"))
+		for _, volume := range res.Volumes {
+			if volume.Name == d.Get("name").(string) {
+				if volumeID != "" {
+					return diag.FromErr(fmt.Errorf("more than 1 volume found with the same name %s", d.Get("name")))
+				}
+				volumeID = volume.ID
+			}
 		}
-		if len(res.Volumes) > 1 {
-			return fmt.Errorf("%d volumes found with the same name %s", len(res.Volumes), d.Get("name"))
+		if volumeID == "" {
+			return diag.FromErr(fmt.Errorf("no volume found with the name %s", d.Get("name")))
 		}
-		volumeID = res.Volumes[0].ID
 	}
 
 	zonedID := datasourceNewZonedID(volumeID, zone)
 	d.SetId(zonedID)
 	err = d.Set("volume_id", zonedID)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
-	return resourceScalewayInstanceVolumeRead(d, m)
+	return resourceScalewayInstanceVolumeRead(ctx, d, meta)
 }

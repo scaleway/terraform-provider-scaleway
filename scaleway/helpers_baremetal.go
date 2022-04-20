@@ -1,21 +1,20 @@
 package scaleway
 
 import (
-	"fmt"
-	"strings"
+	"context"
 	"time"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	baremetal "github.com/scaleway/scaleway-sdk-go/api/baremetal/v1alpha1"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/scaleway/scaleway-sdk-go/api/baremetal/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 )
 
 const (
 	baremetalServerWaitForTimeout   = 60 * time.Minute
 	baremetalServerRetryFuncTimeout = baremetalServerWaitForTimeout + time.Minute // some RetryFunc are calling a WaitFor
+	defaultBaremetalServerTimeout   = baremetalServerRetryFuncTimeout + time.Minute
+	baremetalRetryInterval          = 5 * time.Second
 )
-
-var baremetalServerResourceTimeout = baremetalServerRetryFuncTimeout + time.Minute
 
 // instanceAPIWithZone returns a new baremetal API and the zone for a Create request
 func baremetalAPIWithZone(d *schema.ResourceData, m interface{}) (*baremetal.API, scw.Zone, error) {
@@ -23,53 +22,22 @@ func baremetalAPIWithZone(d *schema.ResourceData, m interface{}) (*baremetal.API
 	baremetalAPI := baremetal.NewAPI(meta.scwClient)
 
 	zone, err := extractZone(d, meta)
-	return baremetalAPI, zone, err
+	if err != nil {
+		return nil, "", err
+	}
+	return baremetalAPI, zone, nil
 }
 
 // instanceAPIWithZoneAndID returns an baremetal API with zone and ID extracted from the state
-func baremetalAPIWithZoneAndID(m interface{}, id string) (*baremetal.API, scw.Zone, string, error) {
+func baremetalAPIWithZoneAndID(m interface{}, id string) (*baremetal.API, ZonedID, error) {
 	meta := m.(*Meta)
 	baremetalAPI := baremetal.NewAPI(meta.scwClient)
 
 	zone, ID, err := parseZonedID(id)
-	return baremetalAPI, zone, ID, err
-}
-
-// TODO: Remove it when SDK will handle it.
-// baremetalOfferByName call baremetal API to get an offer by its exact name.
-func baremetalOfferByName(baremetalAPI *baremetal.API, zone scw.Zone, offerName string) (*baremetal.Offer, error) {
-	offerRes, err := baremetalAPI.ListOffers(&baremetal.ListOffersRequest{
-		Zone: zone,
-	}, scw.WithAllPages())
 	if err != nil {
-		return nil, err
+		return nil, ZonedID{}, err
 	}
-
-	offerName = strings.ToUpper(offerName)
-	for _, offer := range offerRes.Offers {
-		if offer.Name == offerName {
-			return offer, nil
-		}
-	}
-	return nil, fmt.Errorf("cannot find the offer %s", offerName)
-}
-
-// TODO: Remove it when SDK will handle it.
-// baremetalOfferByID call baremetal API to get an offer by its exact name.
-func baremetalOfferByID(baremetalAPI *baremetal.API, zone scw.Zone, offerID string) (*baremetal.Offer, error) {
-	offerRes, err := baremetalAPI.ListOffers(&baremetal.ListOffersRequest{
-		Zone: zone,
-	}, scw.WithAllPages())
-	if err != nil {
-		return nil, err
-	}
-
-	for _, offer := range offerRes.Offers {
-		if offer.ID == offerID {
-			return offer, nil
-		}
-	}
-	return nil, fmt.Errorf("cannot find the offer %s", offerID)
+	return baremetalAPI, newZonedID(zone, ID), nil
 }
 
 func flattenBaremetalCPUs(cpus []*baremetal.CPU) interface{} {
@@ -80,9 +48,9 @@ func flattenBaremetalCPUs(cpus []*baremetal.CPU) interface{} {
 	for _, cpu := range cpus {
 		flattenedCPUs = append(flattenedCPUs, map[string]interface{}{
 			"name":         cpu.Name,
-			"core_count":   cpu.Cores,
+			"core_count":   cpu.CoreCount,
 			"frequency":    cpu.Frequency,
-			"thread_count": cpu.Threads,
+			"thread_count": cpu.ThreadCount,
 		})
 	}
 	return flattenedCPUs
@@ -112,7 +80,7 @@ func flattenBaremetalMemory(memories []*baremetal.Memory) interface{} {
 			"type":      memory.Type,
 			"capacity":  memory.Capacity,
 			"frequency": memory.Frequency,
-			"ecc":       memory.Ecc,
+			"is_ecc":    memory.IsEcc,
 		})
 	}
 	return flattenedMemories
@@ -126,9 +94,42 @@ func flattenBaremetalIPs(ips []*baremetal.IP) interface{} {
 	for _, ip := range ips {
 		flattendIPs = append(flattendIPs, map[string]interface{}{
 			"id":      ip.ID,
-			"address": ip.Address,
+			"address": ip.Address.String(),
 			"reverse": ip.Reverse,
+			"version": ip.Version.String(),
 		})
 	}
 	return flattendIPs
+}
+
+func waitForBaremetalServer(ctx context.Context, api *baremetal.API, zone scw.Zone, ID string, timeout time.Duration) (*baremetal.Server, error) {
+	retryInterval := baremetalRetryInterval
+	if DefaultWaitRetryInterval != nil {
+		retryInterval = *DefaultWaitRetryInterval
+	}
+
+	server, err := api.WaitForServer(&baremetal.WaitForServerRequest{
+		Zone:          zone,
+		ServerID:      ID,
+		Timeout:       scw.TimeDurationPtr(timeout),
+		RetryInterval: &retryInterval,
+	}, scw.WithContext(ctx))
+
+	return server, err
+}
+
+func waitForBaremetalServerInstall(ctx context.Context, api *baremetal.API, zone scw.Zone, ID string, timeout time.Duration) (*baremetal.Server, error) {
+	retryInterval := baremetalRetryInterval
+	if DefaultWaitRetryInterval != nil {
+		retryInterval = *DefaultWaitRetryInterval
+	}
+
+	server, err := api.WaitForServerInstall(&baremetal.WaitForServerInstallRequest{
+		Zone:          zone,
+		ServerID:      ID,
+		Timeout:       scw.TimeDurationPtr(timeout),
+		RetryInterval: &retryInterval,
+	}, scw.WithContext(ctx))
+
+	return server, err
 }

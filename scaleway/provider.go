@@ -1,320 +1,298 @@
 package scaleway
 
 import (
+	"context"
 	"fmt"
-	"os"
-	"sort"
-	"sync"
+	"net/http"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/terraform"
-	"github.com/mitchellh/go-homedir"
-	scwLogger "github.com/scaleway/scaleway-sdk-go/logger"
+	"github.com/hashicorp/terraform-plugin-log/tflog"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/plugin"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 )
 
-var mu = sync.Mutex{}
+// ProviderConfig config can be used to provide additional config when creating provider.
+type ProviderConfig struct {
+	// Meta can be used to override Meta that will be used by the provider.
+	// This is useful for tests.
+	Meta *Meta
+}
+
+// DefaultProviderConfig return default ProviderConfig struct
+func DefaultProviderConfig() *ProviderConfig {
+	return &ProviderConfig{}
+}
 
 // Provider returns a terraform.ResourceProvider.
-func Provider() terraform.ResourceProvider {
+func Provider(config *ProviderConfig) plugin.ProviderFunc {
+	return func() *schema.Provider {
+		p := &schema.Provider{
+			Schema: map[string]*schema.Schema{
+				"access_key": {
+					Type:        schema.TypeString,
+					Optional:    true,
+					Description: "The Scaleway access key.",
+				},
+				"secret_key": {
+					Type:         schema.TypeString,
+					Optional:     true, // To allow user to use deprecated `token`.
+					Description:  "The Scaleway secret Key.",
+					ValidateFunc: validationUUID(),
+				},
+				"profile": {
+					Type:        schema.TypeString,
+					Optional:    true, // To allow user to use `access_key`, `secret_key`, `project_id`...
+					Description: "The Scaleway profile to use.",
+				},
+				"project_id": {
+					Type:         schema.TypeString,
+					Optional:     true, // To allow user to use organization instead of project
+					Description:  "The Scaleway project ID.",
+					ValidateFunc: validationUUID(),
+				},
+				"region": regionSchema(),
+				"zone":   zoneSchema(),
+				"api_url": {
+					Type:        schema.TypeString,
+					Optional:    true,
+					Description: "The Scaleway API URL to use.",
+				},
+			},
 
-	// Init the SDK logger.
-	scwLogger.SetLogger(l)
+			ResourcesMap: map[string]*schema.Resource{
+				"scaleway_account_ssh_key":                     resourceScalewayAccountSSKKey(),
+				"scaleway_apple_silicon_server":                resourceScalewayAppleSiliconServer(),
+				"scaleway_baremetal_server":                    resourceScalewayBaremetalServer(),
+				"scaleway_container_namespace":                 resourceScalewayContainerNamespace(),
+				"scaleway_domain_record":                       resourceScalewayDomainRecord(),
+				"scaleway_domain_zone":                         resourceScalewayDomainZone(),
+				"scaleway_function_namespace":                  resourceScalewayFunctionNamespace(),
+				"scaleway_instance_ip":                         resourceScalewayInstanceIP(),
+				"scaleway_instance_ip_reverse_dns":             resourceScalewayInstanceIPReverseDNS(),
+				"scaleway_instance_volume":                     resourceScalewayInstanceVolume(),
+				"scaleway_instance_security_group":             resourceScalewayInstanceSecurityGroup(),
+				"scaleway_instance_security_group_rules":       resourceScalewayInstanceSecurityGroupRules(),
+				"scaleway_instance_server":                     resourceScalewayInstanceServer(),
+				"scaleway_instance_snapshot":                   resourceScalewayInstanceSnapshot(),
+				"scaleway_instance_placement_group":            resourceScalewayInstancePlacementGroup(),
+				"scaleway_instance_private_nic":                resourceScalewayInstancePrivateNIC(),
+				"scaleway_iot_hub":                             resourceScalewayIotHub(),
+				"scaleway_iot_device":                          resourceScalewayIotDevice(),
+				"scaleway_iot_route":                           resourceScalewayIotRoute(),
+				"scaleway_iot_network":                         resourceScalewayIotNetwork(),
+				"scaleway_k8s_cluster":                         resourceScalewayK8SCluster(),
+				"scaleway_k8s_pool":                            resourceScalewayK8SPool(),
+				"scaleway_lb":                                  resourceScalewayLb(),
+				"scaleway_lb_ip":                               resourceScalewayLbIP(),
+				"scaleway_lb_backend":                          resourceScalewayLbBackend(),
+				"scaleway_lb_certificate":                      resourceScalewayLbCertificate(),
+				"scaleway_lb_frontend":                         resourceScalewayLbFrontend(),
+				"scaleway_lb_route":                            resourceScalewayLbRoute(),
+				"scaleway_registry_namespace":                  resourceScalewayRegistryNamespace(),
+				"scaleway_container":                           resourceScalewayContainer(),
+				"scaleway_rdb_acl":                             resourceScalewayRdbACL(),
+				"scaleway_rdb_database":                        resourceScalewayRdbDatabase(),
+				"scaleway_rdb_instance":                        resourceScalewayRdbInstance(),
+				"scaleway_rdb_privilege":                       resourceScalewayRdbPrivilege(),
+				"scaleway_rdb_user":                            resourceScalewayRdbUser(),
+				"scaleway_object_bucket":                       resourceScalewayObjectBucket(),
+				"scaleway_vpc_public_gateway":                  resourceScalewayVPCPublicGateway(),
+				"scaleway_vpc_gateway_network":                 resourceScalewayVPCGatewayNetwork(),
+				"scaleway_vpc_public_gateway_dhcp":             resourceScalewayVPCPublicGatewayDHCP(),
+				"scaleway_vpc_public_gateway_dhcp_reservation": resourceScalewayVPCPublicGatewayDHCPReservation(),
+				"scaleway_vpc_public_gateway_ip":               resourceScalewayVPCPublicGatewayIP(),
+				"scaleway_vpc_public_gateway_pat_rule":         resourceScalewayVPCPublicGatewayPATRule(),
+				"scaleway_vpc_private_network":                 resourceScalewayVPCPrivateNetwork(),
+			},
 
-	// Try to migrate config
-	_, err := scw.MigrateLegacyConfig()
-	if err != nil {
-		l.Errorf("cannot migrate configuration: %s", err)
-		return nil
-	}
-
-	// Load active profile
-	var activeProfile *scw.Profile
-	scwConfig, err := scw.LoadConfig()
-	if err != nil {
-		l.Warningf("cannot load configuration: %s", err)
-	} else {
-		activeProfile, err = scwConfig.GetActiveProfile()
-		if err != nil {
-			l.Errorf("cannot load configuration: %s", err)
+			DataSourcesMap: map[string]*schema.Resource{
+				"scaleway_account_ssh_key":             dataSourceScalewayAccountSSHKey(),
+				"scaleway_baremetal_offer":             dataSourceScalewayBaremetalOffer(),
+				"scaleway_baremetal_os":                dataSourceScalewayBaremetalOs(),
+				"scaleway_baremetal_server":            dataSourceScalewayBaremetalServer(),
+				"scaleway_domain_record":               dataSourceScalewayDomainRecord(),
+				"scaleway_domain_zone":                 dataSourceScalewayDomainZone(),
+				"scaleway_container_namespace":         dataSourceScalewayContainerNamespace(),
+				"scaleway_container":                   dataSourceScalewayContainer(),
+				"scaleway_function_namespace":          dataSourceScalewayFunctionNamespace(),
+				"scaleway_instance_ip":                 dataSourceScalewayInstanceIP(),
+				"scaleway_instance_security_group":     dataSourceScalewayInstanceSecurityGroup(),
+				"scaleway_instance_server":             dataSourceScalewayInstanceServer(),
+				"scaleway_instance_image":              dataSourceScalewayInstanceImage(),
+				"scaleway_instance_volume":             dataSourceScalewayInstanceVolume(),
+				"scaleway_k8s_cluster":                 dataSourceScalewayK8SCluster(),
+				"scaleway_k8s_pool":                    dataSourceScalewayK8SPool(),
+				"scaleway_lb":                          dataSourceScalewayLb(),
+				"scaleway_lb_certificate":              dataSourceScalewayLbCertificate(),
+				"scaleway_lb_ip":                       dataSourceScalewayLbIP(),
+				"scaleway_marketplace_image":           dataSourceScalewayMarketplaceImage(),
+				"scaleway_object_bucket":               dataSourceScalewayObjectBucket(),
+				"scaleway_rdb_acl":                     dataSourceScalewayRDBACL(),
+				"scaleway_rdb_instance":                dataSourceScalewayRDBInstance(),
+				"scaleway_rdb_database":                dataSourceScalewayRDBDatabase(),
+				"scaleway_rdb_privilege":               dataSourceScalewayRDBPrivilege(),
+				"scaleway_registry_namespace":          dataSourceScalewayRegistryNamespace(),
+				"scaleway_registry_image":              dataSourceScalewayRegistryImage(),
+				"scaleway_vpc_public_gateway":          dataSourceScalewayVPCPublicGateway(),
+				"scaleway_vpc_public_gateway_dhcp":     dataSourceScalewayVPCPublicGatewayDHCP(),
+				"scaleway_vpc_public_gateway_ip":       dataSourceScalewayVPCPublicGatewayIP(),
+				"scaleway_vpc_private_network":         dataSourceScalewayVPCPrivateNetwork(),
+				"scaleway_vpc_public_gateway_pat_rule": dataSourceScalewayVPCPublicGatewayPATRule(),
+			},
 		}
-	}
 
-	// load env
-	envProfile := scw.LoadEnvProfile()
+		p.ConfigureContextFunc = func(ctx context.Context, data *schema.ResourceData) (interface{}, diag.Diagnostics) {
+			terraformVersion := p.TerraformVersion
 
-	p := &schema.Provider{
-		Schema: map[string]*schema.Schema{
-			"access_key": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "The Scaleway access key.",
-				DefaultFunc: func() (interface{}, error) {
-					// Keep the deprecated behavior
-					if accessKey := os.Getenv("SCALEWAY_ACCESS_KEY"); accessKey != "" {
-						l.Warningf("SCALEWAY_ACCESS_KEY is deprecated, please use SCW_ACCESS_KEY instead")
-						return accessKey, nil
-					}
 
-					// Add special case temporary until acceptance test are fixed.
-					if accessKey := os.Getenv("SCALEWAY_ACCESS_KEY_"); accessKey != "" {
-						l.Warningf("SCALEWAY_ACCESS_KEY_ is deprecated, please use SCW_ACCESS_KEY instead")
-						return accessKey, nil
-					}
-					if envProfile.AccessKey != nil {
-						return *envProfile.AccessKey, nil
-					}
-					if activeProfile != nil && activeProfile.AccessKey != nil {
-						return *activeProfile.AccessKey, nil
-					}
-					return nil, nil
-				},
-			},
-			"secret_key": {
-				Type:        schema.TypeString,
-				Optional:    true, // To allow user to use deprecated `token`.
-				Description: "The Scaleway secret Key.",
-				DefaultFunc: func() (interface{}, error) {
-					// No error is returned here to allow user to use deprecated `token`.
-					if envProfile.SecretKey != nil {
-						return *envProfile.SecretKey, nil
-					}
-					if activeProfile != nil && activeProfile.SecretKey != nil {
-						return *activeProfile.SecretKey, nil
-					}
+			// If we provide meta in config use it. This is useful for tests
+			if config.Meta != nil {
+				return config.Meta, nil
+			}
 
-					// Keep the deprecated behavior from 'token'.
-					for _, k := range []string{"SCALEWAY_TOKEN", "SCALEWAY_ACCESS_KEY"} {
-						if os.Getenv(k) != "" {
-							l.Warningf("%s is deprecated, please use SCW_SECRET_KEY instead", k)
-							return os.Getenv(k), nil
-						}
-					}
-					if path, err := homedir.Expand("~/.scwrc"); err == nil {
-						scwAPIKey, _, err := readDeprecatedScalewayConfig(path)
-						if err != nil {
-							// No error is returned here to allow user to use `secret_key`.
-							l.Errorf("cannot parse deprecated config file: %s", err)
-							return nil, nil
-						}
-						// Depreciation log is already handled by scw config.
-						return scwAPIKey, nil
-					}
-					// No error is returned here to allow user to use `secret_key`.
-					return nil, nil
-				},
-				ValidateFunc: validationUUID(),
-			},
-			"organization_id": {
-				Type:        schema.TypeString,
-				Optional:    true, // To allow user to use deprecated `organization`.
-				Description: "The Scaleway organization ID.",
-				DefaultFunc: schema.SchemaDefaultFunc(func() (interface{}, error) {
-					if envProfile.DefaultOrganizationID != nil {
-						return *envProfile.DefaultOrganizationID, nil
-					}
-					if activeProfile != nil && activeProfile.DefaultOrganizationID != nil {
-						return *activeProfile.DefaultOrganizationID, nil
-					}
-
-					// Keep the deprecated behavior of 'organization'.
-					if organization := os.Getenv("SCALEWAY_ORGANIZATION"); organization != "" {
-						l.Warningf("SCALEWAY_ORGANIZATION is deprecated, please use SCW_DEFAULT_ORGANIZATION_ID instead")
-						return organization, nil
-					}
-					if path, err := homedir.Expand("~/.scwrc"); err == nil {
-						_, scwOrganization, err := readDeprecatedScalewayConfig(path)
-						if err != nil {
-							// No error is returned here to allow user to use `organization_id`.
-							l.Errorf("cannot parse deprecated config file: %s", err)
-							return nil, nil
-						}
-						return scwOrganization, nil
-					}
-					// No error is returned here to allow user to use `organization_id`.
-					return nil, nil
-				}),
-				ValidateFunc: validationUUID(),
-			},
-			"region": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "The Scaleway default region to use for your resources.",
-				DefaultFunc: func() (interface{}, error) {
-					// Keep the deprecated behavior
-					// Note: The deprecated region format conversion is handled in `config.GetDeprecatedClient`.
-					if region := os.Getenv("SCALEWAY_REGION"); region != "" {
-						l.Warningf("SCALEWAY_REGION is deprecated, please use SCW_DEFAULT_REGION instead")
-						return region, nil
-					}
-					if envProfile.DefaultRegion != nil {
-						return *envProfile.DefaultRegion, nil
-					}
-					if activeProfile != nil && activeProfile.DefaultRegion != nil {
-						return *activeProfile.DefaultRegion, nil
-					}
-					return string(scw.RegionFrPar), nil
-				},
-				ValidateFunc: validationRegion(),
-			},
-			"zone": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "The Scaleway default zone to use for your resources.",
-				DefaultFunc: func() (interface{}, error) {
-					if envProfile.DefaultZone != nil {
-						return *envProfile.DefaultZone, nil
-					}
-					if activeProfile != nil && activeProfile.DefaultZone != nil {
-						return *activeProfile.DefaultZone, nil
-					}
-					return nil, nil
-				},
-				ValidateFunc: validationZone(),
-			},
-
-			// Deprecated values
-			"token": {
-				Type:       schema.TypeString,
-				Optional:   true, // To allow user to use `secret_key`.
-				Deprecated: "Use `secret_key` instead.",
-			},
-			"organization": {
-				Type:       schema.TypeString,
-				Optional:   true, // To allow user to use `organization_id`.
-				Deprecated: "Use `organization_id` instead.",
-			},
-		},
-
-		ResourcesMap: map[string]*schema.Resource{
-			"scaleway_account_ssh_key":               resourceScalewayAccountSSKKey(),
-			"scaleway_baremetal_server_beta":         resourceScalewayBaremetalServerBeta(),
-			"scaleway_bucket":                        resourceScalewayBucket(),
-			"scaleway_instance_ip":                   resourceScalewayInstanceIP(),
-			"scaleway_instance_ip_reverse_dns":       resourceScalewayInstanceIPReverseDns(),
-			"scaleway_instance_volume":               resourceScalewayInstanceVolume(),
-			"scaleway_instance_security_group":       resourceScalewayInstanceSecurityGroup(),
-			"scaleway_instance_security_group_rules": resourceScalewayInstanceSecurityGroupRules(),
-			"scaleway_instance_server":               resourceScalewayInstanceServer(),
-			"scaleway_instance_placement_group":      resourceScalewayInstancePlacementGroup(),
-			"scaleway_k8s_cluster_beta":              resourceScalewayK8SClusterBeta(),
-			"scaleway_k8s_pool_beta":                 resourceScalewayK8SPoolBeta(),
-			"scaleway_lb_beta":                       resourceScalewayLbBeta(),
-			"scaleway_lb_backend_beta":               resourceScalewayLbBackendBeta(),
-			"scaleway_lb_certificate_beta":           resourceScalewayLbCertificateBeta(),
-			"scaleway_lb_frontend_beta":              resourceScalewayLbFrontendBeta(),
-			"scaleway_lb_subscriber_beta":            resourceScalewayLbSubscriberBeta(),
-			"scaleway_registry_namespace_beta":       resourceScalewayRegistryNamespaceBeta(),
-			"scaleway_rdb_instance_beta":             resourceScalewayRdbInstanceBeta(),
-			"scaleway_object_bucket":                 resourceScalewayObjectBucket(),
-			"scaleway_user_data":                     resourceScalewayUserData(),
-			"scaleway_server":                        resourceScalewayServer(),
-			"scaleway_token":                         resourceScalewayToken(),
-			"scaleway_ssh_key":                       resourceScalewaySSHKey(),
-			"scaleway_ip":                            resourceScalewayIP(),
-			"scaleway_ip_reverse_dns":                resourceScalewayIPReverseDNS(),
-			"scaleway_security_group":                resourceScalewaySecurityGroup(),
-			"scaleway_security_group_rule":           resourceScalewaySecurityGroupRule(),
-			"scaleway_volume":                        resourceScalewayVolume(),
-			"scaleway_volume_attachment":             resourceScalewayVolumeAttachment(),
-		},
-
-		DataSourcesMap: map[string]*schema.Resource{
-			"scaleway_bootscript":              dataSourceScalewayBootscript(),
-			"scaleway_image":                   dataSourceScalewayImage(),
-			"scaleway_security_group":          dataSourceScalewaySecurityGroup(),
-			"scaleway_volume":                  dataSourceScalewayVolume(),
-			"scaleway_account_ssh_key":         dataSourceScalewayAccountSSHKey(),
-			"scaleway_instance_security_group": dataSourceScalewayInstanceSecurityGroup(),
-			"scaleway_instance_server":         dataSourceScalewayInstanceServer(),
-			"scaleway_instance_image":          dataSourceScalewayInstanceImage(),
-			"scaleway_instance_volume":         dataSourceScalewayInstanceVolume(),
-			"scaleway_baremetal_offer_beta":    dataSourceScalewayBaremetalOfferBeta(),
-			"scaleway_marketplace_image_beta":  dataSourceScalewayMarketplaceImageBeta(),
-			"scaleway_registry_namespace_beta": dataSourceScalewayRegistryNamespaceBeta(),
-			"scaleway_registry_image_beta":     dataSourceScalewayRegistryImageBeta(),
-		},
-	}
-
-	p.ConfigureFunc = func(data *schema.ResourceData) (i interface{}, e error) {
-		terraformVersion := p.TerraformVersion
-		if terraformVersion == "" {
-			// Terraform 0.12 introduced this field to the protocol
-			// We can therefore assume that if it's missing it's 0.10 or 0.11
-			terraformVersion = "0.11+compatible"
+			meta, err := buildMeta(ctx, &metaConfig{
+				providerSchema:   data,
+				terraformVersion: terraformVersion,
+			})
+			if err != nil {
+				return nil, diag.FromErr(err)
+			}
+			return meta, nil
 		}
-		return providerConfigure(data, terraformVersion)
-	}
 
-	return p
+		return p
+	}
+}
+
+// Meta contains config and SDK clients used by resources.
+//
+// This meta value is passed into all resources.
+type Meta struct {
+	// scwClient is the Scaleway SDK client.
+	scwClient *scw.Client
+	// httpClient can be either a regular http.Client used to make real HTTP requests
+	// or it can be a http.Client used to record and replay cassettes which is useful
+	// to replay recorded interactions with APIs locally
+	httpClient *http.Client
+}
+
+type metaConfig struct {
+	providerSchema   *schema.ResourceData
+	terraformVersion string
+	forceZone        scw.Zone
+	httpClient       *http.Client
 }
 
 // providerConfigure creates the Meta object containing the SDK client.
-func providerConfigure(d *schema.ResourceData, terraformVersion string) (interface{}, error) {
-	apiKey := ""
-	if v, ok := d.Get("secret_key").(string); ok {
-		apiKey = v
-	} else if v, ok := d.Get("token").(string); ok {
-		apiKey = v
-	} else {
-		if v, ok := d.Get("access_key").(string); ok {
-			l.Warningf("you seem to use the access_key instead of secret_key in the provider. This bogus behavior is deprecated, please use the `secret_key` field instead.")
-			apiKey = v
+func buildMeta(ctx context.Context, config *metaConfig) (*Meta, error) {
+	////
+	// Load Profile
+	////
+	profile, err := loadProfile(ctx, config.providerSchema)
+	if err != nil {
+		return nil, err
+	}
+	if config.forceZone != "" {
+		region, err := config.forceZone.Region()
+		if err != nil {
+			return nil, err
 		}
+		profile.DefaultRegion = scw.StringPtr(region.String())
+		profile.DefaultZone = scw.StringPtr(config.forceZone.String())
 	}
 
-	organizationID := d.Get("organization_id").(string)
-	if organizationID == "" {
-		organizationID = d.Get("organization").(string)
+	// TODO validated profile
+
+	////
+	// Create scaleway SDK client
+	////
+	opts := []scw.ClientOption{
+		scw.WithUserAgent(fmt.Sprintf("terraform-provider/%s terraform/%s", version, config.terraformVersion)),
+		scw.WithProfile(profile),
 	}
 
-	if apiKey == "" {
-		if path, err := homedir.Expand("~/.scwrc"); err == nil {
-			scwAPIKey, scwOrganization, err := readDeprecatedScalewayConfig(path)
-			if err != nil {
-				return nil, fmt.Errorf("error loading credentials from SCW: %s", err)
+	httpClient := &http.Client{Transport: newRetryableTransport(http.DefaultTransport)}
+	if config.httpClient != nil {
+		httpClient = config.httpClient
+	}
+	opts = append(opts, scw.WithHTTPClient(httpClient))
+
+	scwClient, err := scw.NewClient(opts...)
+	if err != nil {
+		return nil, err
+	}
+
+	return &Meta{
+		scwClient:  scwClient,
+		httpClient: httpClient,
+	}, nil
+}
+
+//gocyclo:ignore
+func loadProfile(ctx context.Context, d *schema.ResourceData) (*scw.Profile, error) {
+	config, err := scw.LoadConfig()
+	// If the config file do not exist, don't return an error as we may find config in ENV or flags.
+	if _, isNotFoundError := err.(*scw.ConfigFileNotFoundError); isNotFoundError {
+		config = &scw.Config{}
+	} else if err != nil {
+		return nil, err
+	}
+
+	// By default we set default zone and region to fr-par
+	defaultZoneProfile := &scw.Profile{
+		DefaultRegion: scw.StringPtr(scw.RegionFrPar.String()),
+		DefaultZone:   scw.StringPtr(scw.ZoneFrPar1.String()),
+	}
+
+	activeProfile, err := config.GetActiveProfile()
+	if err != nil {
+		return nil, err
+	}
+	envProfile := scw.LoadEnvProfile()
+
+	providerProfile := &scw.Profile{}
+	if d != nil {
+		if profileName, exist := d.GetOk("profile"); exist {
+			profileFromConfig, err := config.GetProfile(profileName.(string))
+			if err == nil {
+				providerProfile = profileFromConfig
 			}
-			apiKey = scwAPIKey
-			organizationID = scwOrganization
+		}
+		if accessKey, exist := d.GetOk("access_key"); exist {
+			providerProfile.AccessKey = scw.StringPtr(accessKey.(string))
+		}
+		if secretKey, exist := d.GetOk("secret_key"); exist {
+			providerProfile.SecretKey = scw.StringPtr(secretKey.(string))
+		}
+		if projectID, exist := d.GetOk("project_id"); exist {
+			providerProfile.DefaultProjectID = scw.StringPtr(projectID.(string))
+		}
+		if region, exist := d.GetOk("region"); exist {
+			providerProfile.DefaultRegion = scw.StringPtr(region.(string))
+		}
+		if zone, exist := d.GetOk("zone"); exist {
+			providerProfile.DefaultZone = scw.StringPtr(zone.(string))
+		}
+		if apiURL, exist := d.GetOk("api_url"); exist {
+			providerProfile.APIURL = scw.StringPtr(apiURL.(string))
 		}
 	}
 
-	rawRegion := d.Get("region").(string)
-	region, err := scw.ParseRegion(rawRegion)
-	if err != nil {
-		return nil, err
-	}
+	profile := scw.MergeProfiles(defaultZoneProfile, activeProfile, providerProfile, envProfile)
 
-	rawZone := d.Get("zone").(string)
-	zone, err := scw.ParseZone(rawZone)
-	if err != nil {
-		return nil, err
-	}
-
-	meta := &Meta{
-		AccessKey:             d.Get("access_key").(string),
-		SecretKey:             apiKey,
-		DefaultOrganizationID: organizationID,
-		DefaultRegion:         region,
-		DefaultZone:           zone,
-		TerraformVersion:      terraformVersion,
-	}
-
-	err = meta.bootstrap()
-	if err != nil {
-		return nil, err
-	}
-
-	// fetch known scaleway server types to support validation in r/server
-	if len(commercialServerTypes) == 0 {
-		if availability, err := meta.deprecatedClient.GetServerAvailabilities(); err == nil {
-			commercialServerTypes = availability.CommercialTypes()
-			sort.StringSlice(commercialServerTypes).Sort()
-		}
-		if os.Getenv("DISABLE_SCALEWAY_SERVER_TYPE_VALIDATION") != "" {
-			commercialServerTypes = commercialServerTypes[:0]
+	// If profile have a defaultZone but no defaultRegion we set the defaultRegion
+	// to the one of the defaultZone
+	if profile.DefaultZone != nil && *profile.DefaultZone != "" &&
+		(profile.DefaultRegion == nil || *profile.DefaultRegion == "") {
+		zone := scw.Zone(*profile.DefaultZone)
+		tflog.Debug(ctx, fmt.Sprintf("guess region from %s zone", zone))
+		region, err := zone.Region()
+		if err == nil {
+			profile.DefaultRegion = scw.StringPtr(region.String())
+		} else {
+			tflog.Debug(ctx, fmt.Sprintf("cannot guess region: %s", err.Error()))
 		}
 	}
-
-	return meta, nil
+	return profile, nil
 }

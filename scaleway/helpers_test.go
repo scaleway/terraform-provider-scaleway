@@ -4,155 +4,149 @@ import (
 	"fmt"
 	"net"
 	"net/http"
+	"regexp"
 	"strings"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/terraform"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
 func TestParseLocalizedID(t *testing.T) {
-
 	testCases := []struct {
 		name       string
-		localityId string
+		localityID string
 		id         string
 		locality   string
 		err        string
 	}{
 		{
 			name:       "simple",
-			localityId: "fr-par-1/my-id",
+			localityID: "fr-par-1/my-id",
 			id:         "my-id",
 			locality:   "fr-par-1",
 		},
 		{
 			name:       "id with a region",
-			localityId: "fr-par/my-id",
+			localityID: "fr-par/my-id",
 			id:         "my-id",
 			locality:   "fr-par",
 		},
 		{
 			name:       "empty",
-			localityId: "",
+			localityID: "",
 			err:        "cant parse localized id: ",
 		},
 		{
 			name:       "without locality",
-			localityId: "my-id",
+			localityID: "my-id",
 			err:        "cant parse localized id: my-id",
 		},
 	}
 
-	for _, testCase := range testCases {
-		t.Run(testCase.name, func(t *testing.T) {
-			locality, id, err := parseLocalizedID(testCase.localityId)
-			if testCase.err != "" {
-				require.EqualError(t, err, testCase.err)
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			locality, id, err := parseLocalizedID(tc.localityID)
+			if tc.err != "" {
+				require.EqualError(t, err, tc.err)
 			} else {
 				require.NoError(t, err)
-				assert.Equal(t, testCase.locality, locality)
-				assert.Equal(t, testCase.id, id)
+				assert.Equal(t, tc.locality, locality)
+				assert.Equal(t, tc.id, id)
 			}
 		})
 	}
-
 }
 
 func TestParseZonedID(t *testing.T) {
-
 	testCases := []struct {
 		name       string
-		localityId string
+		localityID string
 		id         string
 		zone       scw.Zone
 		err        string
 	}{
 		{
 			name:       "simple",
-			localityId: "fr-par-1/my-id",
+			localityID: "fr-par-1/my-id",
 			id:         "my-id",
 			zone:       scw.ZoneFrPar1,
 		},
 		{
 			name:       "empty",
-			localityId: "",
+			localityID: "",
 			err:        "cant parse localized id: ",
 		},
 		{
 			name:       "without locality",
-			localityId: "my-id",
+			localityID: "my-id",
 			err:        "cant parse localized id: my-id",
 		},
 	}
 
-	for _, testCase := range testCases {
-		t.Run(testCase.name, func(t *testing.T) {
-			zone, id, err := parseZonedID(testCase.localityId)
-			if testCase.err != "" {
-				require.EqualError(t, err, testCase.err)
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			zone, id, err := parseZonedID(tc.localityID)
+			if tc.err != "" {
+				require.EqualError(t, err, tc.err)
 			} else {
 				require.NoError(t, err)
-				assert.Equal(t, testCase.zone, zone)
-				assert.Equal(t, testCase.id, id)
+				assert.Equal(t, tc.zone, zone)
+				assert.Equal(t, tc.id, id)
 			}
 		})
 	}
-
 }
 
 func TestParseRegionID(t *testing.T) {
-
 	testCases := []struct {
 		name       string
-		localityId string
+		localityID string
 		id         string
 		region     scw.Region
 		err        string
 	}{
 		{
 			name:       "simple",
-			localityId: "fr-par/my-id",
+			localityID: "fr-par/my-id",
 			id:         "my-id",
 			region:     scw.RegionFrPar,
 		},
 		{
 			name:       "empty",
-			localityId: "",
+			localityID: "",
 			err:        "cant parse localized id: ",
 		},
 		{
 			name:       "without locality",
-			localityId: "my-id",
+			localityID: "my-id",
 			err:        "cant parse localized id: my-id",
 		},
 	}
 
-	for _, testCase := range testCases {
-		t.Run(testCase.name, func(t *testing.T) {
-			region, id, err := parseRegionalID(testCase.localityId)
-			if testCase.err != "" {
-				require.EqualError(t, err, testCase.err)
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			region, id, err := parseRegionalID(tc.localityID)
+			if tc.err != "" {
+				require.EqualError(t, err, tc.err)
 			} else {
 				require.NoError(t, err)
-				assert.Equal(t, testCase.region, region)
-				assert.Equal(t, testCase.id, id)
+				assert.Equal(t, tc.region, region)
+				assert.Equal(t, tc.id, id)
 			}
 		})
 	}
-
 }
 
 func TestNewZonedId(t *testing.T) {
-	assert.Equal(t, "fr-par-1/my-id", newZonedId(scw.ZoneFrPar1, "my-id"))
+	assert.Equal(t, "fr-par-1/my-id", newZonedIDString(scw.ZoneFrPar1, "my-id"))
 }
 
 func TestNewRegionalId(t *testing.T) {
-	assert.Equal(t, "fr-par/my-id", newRegionalId(scw.RegionFrPar, "my-id"))
+	assert.Equal(t, "fr-par/my-id", newRegionalIDString(scw.RegionFrPar, "my-id"))
 }
 
 func TestIsHTTPCodeError(t *testing.T) {
@@ -179,54 +173,6 @@ func TestGetRandomName(t *testing.T) {
 	assert.True(t, strings.HasPrefix(name, "tf-test-"))
 }
 
-func TestDiffSuppressFuncLabelUUID(t *testing.T) {
-	testCases := []struct {
-		name    string
-		old     string
-		new     string
-		isEqual bool
-	}{
-		{
-			name:    "no label changes",
-			old:     "foo/11111111-1111-1111-1111-111111111111",
-			new:     "foo",
-			isEqual: true,
-		},
-		{
-			name:    "no UUID changes",
-			old:     "foo/11111111-1111-1111-1111-111111111111",
-			new:     "11111111-1111-1111-1111-111111111111",
-			isEqual: true,
-		},
-		{
-			name:    "UUID changes",
-			old:     "foo/11111111-1111-1111-1111-111111111111",
-			new:     "22222222-2222-2222-2222-222222222222",
-			isEqual: false,
-		},
-		{
-			name:    "To label",
-			old:     "foo/11111111-1111-1111-1111-111111111111",
-			new:     "foo",
-			isEqual: true,
-		},
-		{
-			name:    "To label change",
-			old:     "foo/11111111-1111-1111-1111-111111111111",
-			new:     "bar",
-			isEqual: false,
-		},
-	}
-
-	fakeResourceData := &schema.ResourceData{}
-
-	for _, c := range testCases {
-		t.Run(c.name, func(t *testing.T) {
-			assert.Equal(t, c.isEqual, diffSuppressFuncLabelUUID("", c.old, c.new, fakeResourceData))
-		})
-	}
-}
-
 func testCheckResourceAttrFunc(name string, key string, test func(string) error) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[name]
@@ -244,6 +190,8 @@ func testCheckResourceAttrFunc(name string, key string, test func(string) error)
 		return nil
 	}
 }
+
+var UUIDRegex = regexp.MustCompile(`[0-9a-fA-F]{8}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{12}`)
 
 func testCheckResourceAttrUUID(name string, key string) resource.TestCheckFunc {
 	return resource.TestMatchResourceAttr(name, key, UUIDRegex)
@@ -267,4 +215,35 @@ func testCheckResourceAttrIPv6(name string, key string) resource.TestCheckFunc {
 		}
 		return nil
 	})
+}
+
+func testCheckResourceAttrIP(name string, key string) resource.TestCheckFunc {
+	return testCheckResourceAttrFunc(name, key, func(value string) error {
+		ip := net.ParseIP(value)
+		if ip == nil {
+			return fmt.Errorf("%s is not a valid IP", value)
+		}
+		return nil
+	})
+}
+
+func TestStringHashcode(t *testing.T) {
+	v := "hello, world"
+	expected := StringHashcode(v)
+	for i := 0; i < 100; i++ {
+		actual := StringHashcode(v)
+		if actual != expected {
+			t.Fatalf("bad: %#v\n\t%#v", actual, expected)
+		}
+	}
+}
+
+func TestStringHashcode_positiveIndex(t *testing.T) {
+	// "2338615298" hashes to uint32(2147483648) which is math.MinInt32
+	ips := []string{"192.168.1.3", "192.168.1.5", "2338615298"}
+	for _, ip := range ips {
+		if index := StringHashcode(ip); index < 0 {
+			t.Fatalf("Bad Index %#v for ip %s", index, ip)
+		}
+	}
 }

@@ -1,21 +1,26 @@
 package scaleway
 
 import (
+	"context"
 	"strings"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	account "github.com/scaleway/scaleway-sdk-go/api/account/v2alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 )
 
 func resourceScalewayAccountSSKKey() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceScalewayAccountSSHKeyCreate,
-		Read:   resourceScalewayAccountSSHKeyRead,
-		Update: resourceScalewayAccountSSHKeyUpdate,
-		Delete: resourceScalewayAccountSSHKeyDelete,
+		CreateContext: resourceScalewayAccountSSHKeyCreate,
+		ReadContext:   resourceScalewayAccountSSHKeyRead,
+		UpdateContext: resourceScalewayAccountSSHKeyUpdate,
+		DeleteContext: resourceScalewayAccountSSHKeyDelete,
 		Importer: &schema.ResourceImporter{
-			State: schema.ImportStatePassthrough,
+			StateContext: schema.ImportStatePassthroughContext,
+		},
+		Timeouts: &schema.ResourceTimeout{
+			Default: schema.DefaultTimeout(defaultAccountSSHKeyTimeout),
 		},
 		Schema: map[string]*schema.Schema{
 			"name": {
@@ -34,72 +39,74 @@ func resourceScalewayAccountSSKKey() *schema.Resource {
 				},
 			},
 			"organization_id": organizationIDSchema(),
+			"project_id":      projectIDSchema(),
 		},
 	}
 }
 
-func resourceScalewayAccountSSHKeyCreate(d *schema.ResourceData, m interface{}) error {
-	accountAPI := accountAPI(m)
+func resourceScalewayAccountSSHKeyCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	accountAPI := accountAPI(meta)
 
 	res, err := accountAPI.CreateSSHKey(&account.CreateSSHKeyRequest{
-		Name:           d.Get("name").(string),
-		PublicKey:      strings.Trim(d.Get("public_key").(string), "\n"),
-		OrganizationID: d.Get("organization_id").(string),
-	})
+		Name:      d.Get("name").(string),
+		PublicKey: strings.Trim(d.Get("public_key").(string), "\n"),
+		ProjectID: expandStringPtr(d.Get("project_id")),
+	}, scw.WithContext(ctx))
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	d.SetId(res.ID)
 
-	return resourceScalewayAccountSSHKeyRead(d, m)
+	return resourceScalewayAccountSSHKeyRead(ctx, d, meta)
 }
 
-func resourceScalewayAccountSSHKeyRead(d *schema.ResourceData, m interface{}) error {
-	accountAPI := accountAPI(m)
+func resourceScalewayAccountSSHKeyRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	accountAPI := accountAPI(meta)
 
 	res, err := accountAPI.GetSSHKey(&account.GetSSHKeyRequest{
 		SSHKeyID: d.Id(),
-	})
+	}, scw.WithContext(ctx))
 	if err != nil {
 		if is404Error(err) {
 			d.SetId("")
 			return nil
 		}
-		return err
+		return diag.FromErr(err)
 	}
 
 	_ = d.Set("name", res.Name)
 	_ = d.Set("public_key", res.PublicKey)
 	_ = d.Set("organization_id", res.OrganizationID)
+	_ = d.Set("project_id", res.ProjectID)
 
 	return nil
 }
 
-func resourceScalewayAccountSSHKeyUpdate(d *schema.ResourceData, m interface{}) error {
-	accountAPI := accountAPI(m)
+func resourceScalewayAccountSSHKeyUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	accountAPI := accountAPI(meta)
 
 	if d.HasChange("name") {
 		_, err := accountAPI.UpdateSSHKey(&account.UpdateSSHKeyRequest{
 			SSHKeyID: d.Id(),
-			Name:     scw.StringPtr(d.Get("name").(string)),
-		})
+			Name:     expandStringPtr(d.Get("name")),
+		}, scw.WithContext(ctx))
 		if err != nil {
-			return err
+			return diag.FromErr(err)
 		}
 	}
 
-	return resourceScalewayAccountSSHKeyRead(d, m)
+	return resourceScalewayAccountSSHKeyRead(ctx, d, meta)
 }
 
-func resourceScalewayAccountSSHKeyDelete(d *schema.ResourceData, m interface{}) error {
-	accountAPI := accountAPI(m)
+func resourceScalewayAccountSSHKeyDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	accountAPI := accountAPI(meta)
 
 	err := accountAPI.DeleteSSHKey(&account.DeleteSSHKeyRequest{
 		SSHKeyID: d.Id(),
-	})
+	}, scw.WithContext(ctx))
 	if err != nil && !is404Error(err) {
-		return err
+		return diag.FromErr(err)
 	}
 
 	return nil
