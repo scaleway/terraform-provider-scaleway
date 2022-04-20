@@ -1,7 +1,9 @@
 package scaleway
 
 import (
+	"bytes"
 	"context"
+	"net"
 	"sort"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -210,7 +212,7 @@ func rdbACLExpand(data []interface{}) ([]*rdb.ACLRuleRequest, error) {
 	}
 
 	sort.Slice(res, func(i, j int) bool {
-		return res[i].IP.String() < res[j].IP.String()
+		return bytes.Compare(res[i].IP.IP, res[j].IP.IP) < 0
 	})
 
 	return res, nil
@@ -227,7 +229,9 @@ func rdbACLRulesFlatten(rules []*rdb.ACLRule) []map[string]interface{} {
 	}
 
 	sort.Slice(res, func(i, j int) bool {
-		return res[i]["ip"].(string) < res[j]["ip"].(string)
+		ipI, _, _ := net.ParseCIDR(res[i]["ip"].(string))
+		ipJ, _, _ := net.ParseCIDR(res[j]["ip"].(string))
+		return bytes.Compare(ipI, ipJ) < 0
 	})
 
 	return res
