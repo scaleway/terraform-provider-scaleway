@@ -324,6 +324,28 @@ func flattenLbHCHTTPS(config *lbSDK.HealthCheckHTTPSConfig) interface{} {
 	}
 }
 
+func flattenLbSubscriberURI(config *lbSDK.SubscriberEmailConfig) interface{} {
+	if config == nil {
+		return nil
+	}
+	return []map[string]interface{}{
+		{
+			"email": config.Email,
+		},
+	}
+}
+
+func flattenLbSubscriberWebhook(config *lbSDK.SubscriberWebhookConfig) interface{} {
+	if config == nil {
+		return nil
+	}
+	return []map[string]interface{}{
+		{
+			"uri": config.URI,
+		},
+	}
+}
+
 func expandLbHCHTTPS(raw interface{}) *lbSDK.HealthCheckHTTPSConfig {
 	if raw == nil || len(raw.([]interface{})) != 1 {
 		return nil
@@ -365,30 +387,30 @@ func expandLbCustomCertificate(raw interface{}) *lbSDK.CreateCertificateRequestC
 	return config
 }
 
-func expandLbSubscriberEmailConfig(raw interface{}) *lb.SubscriberEmailConfig {
+func expandLbSubscriberEmailConfig(raw interface{}) *lbSDK.SubscriberEmailConfig {
 	if raw == nil || len(raw.([]interface{})) != 1 {
 		return nil
 	}
 
 	rawMap := raw.([]interface{})[0].(map[string]interface{})
-	config := &lb.SubscriberEmailConfig{
+	config := &lbSDK.SubscriberEmailConfig{
 		Email: rawMap["email"].(string),
 	}
 	return config
 }
 
-func expandLbSubscriberWebhookConfig(raw interface{}) *lb.SubscriberWebhookConfig {
+func expandLbSubscriberWebhookConfig(raw interface{}) *lbSDK.SubscriberWebhookConfig {
 	if raw == nil || len(raw.([]interface{})) != 1 {
 		return nil
 	}
 
 	rawMap := raw.([]interface{})[0].(map[string]interface{})
-	config := &lb.SubscriberWebhookConfig{
+	config := &lbSDK.SubscriberWebhookConfig{
 		URI: rawMap["uri"].(string),
 	}
 	return config
 }
-  
+
 func expandLbProxyProtocol(raw interface{}) lbSDK.ProxyProtocol {
 	return lbSDK.ProxyProtocol("proxy_protocol_" + raw.(string))
 }

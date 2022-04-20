@@ -89,6 +89,7 @@ func Provider(config *ProviderConfig) plugin.ProviderFunc {
 				"scaleway_lb_certificate":                      resourceScalewayLbCertificate(),
 				"scaleway_lb_frontend":                         resourceScalewayLbFrontend(),
 				"scaleway_lb_route":                            resourceScalewayLbRoute(),
+				"scaleway_lb_subscriber":                       resourceScalewayLbSubscriber(),
 				"scaleway_registry_namespace":                  resourceScalewayRegistryNamespace(),
 				"scaleway_container":                           resourceScalewayContainer(),
 				"scaleway_rdb_acl":                             resourceScalewayRdbACL(),
@@ -144,7 +145,6 @@ func Provider(config *ProviderConfig) plugin.ProviderFunc {
 
 		p.ConfigureContextFunc = func(ctx context.Context, data *schema.ResourceData) (interface{}, diag.Diagnostics) {
 			terraformVersion := p.TerraformVersion
-
 
 			// If we provide meta in config use it. This is useful for tests
 			if config.Meta != nil {
