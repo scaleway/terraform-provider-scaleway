@@ -6,7 +6,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/scaleway/scaleway-sdk-go/api/lb/v1"
+	lbSDK "github.com/scaleway/scaleway-sdk-go/api/lb/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 )
 
@@ -40,7 +40,7 @@ func dataSourceScalewayLbCertificateRead(ctx context.Context, d *schema.Resource
 
 	crtID, ok := d.GetOk("certificate_id")
 	if !ok { // Get LB by name.
-		res, err := api.ListCertificates(&lb.ZonedAPIListCertificatesRequest{
+		res, err := api.ListCertificates(&lbSDK.ZonedAPIListCertificatesRequest{
 			Zone: zone,
 			Name: expandStringPtr(d.Get("name")),
 			LBID: expandID(d.Get("lb_id")),

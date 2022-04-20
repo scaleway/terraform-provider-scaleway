@@ -9,21 +9,20 @@ import (
 
 	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/scaleway/scaleway-sdk-go/api/lb/v1"
+	lbSDK "github.com/scaleway/scaleway-sdk-go/api/lb/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	validator "github.com/scaleway/scaleway-sdk-go/validation"
 )
 
 const (
-	lbWaitForTimeout   = 10 * time.Minute
 	defaultLbLbTimeout = 10 * time.Minute
 	retryLbIPInterval  = 5 * time.Second
 )
 
 // lbAPIWithZone returns an lb API WITH zone for a Create request
-func lbAPIWithZone(d *schema.ResourceData, m interface{}) (*lb.ZonedAPI, scw.Zone, error) {
+func lbAPIWithZone(d *schema.ResourceData, m interface{}) (*lbSDK.ZonedAPI, scw.Zone, error) {
 	meta := m.(*Meta)
-	lbAPI := lb.NewZonedAPI(meta.scwClient)
+	lbAPI := lbSDK.NewZonedAPI(meta.scwClient)
 
 	zone, err := extractZone(d, meta)
 	if err != nil {
@@ -33,9 +32,9 @@ func lbAPIWithZone(d *schema.ResourceData, m interface{}) (*lb.ZonedAPI, scw.Zon
 }
 
 // lbAPIWithZoneAndID returns an lb API with zone and ID extracted from the state
-func lbAPIWithZoneAndID(m interface{}, id string) (*lb.ZonedAPI, scw.Zone, string, error) {
+func lbAPIWithZoneAndID(m interface{}, id string) (*lbSDK.ZonedAPI, scw.Zone, string, error) {
 	meta := m.(*Meta)
-	lbAPI := lb.NewZonedAPI(meta.scwClient)
+	lbAPI := lbSDK.NewZonedAPI(meta.scwClient)
 
 	zone, ID, err := parseZonedID(id)
 	if err != nil {
@@ -44,14 +43,14 @@ func lbAPIWithZoneAndID(m interface{}, id string) (*lb.ZonedAPI, scw.Zone, strin
 	return lbAPI, zone, ID, nil
 }
 
-func flattenLbBackendMarkdownAction(action lb.OnMarkedDownAction) interface{} {
-	if action == lb.OnMarkedDownActionOnMarkedDownActionNone {
+func flattenLbBackendMarkdownAction(action lbSDK.OnMarkedDownAction) interface{} {
+	if action == lbSDK.OnMarkedDownActionOnMarkedDownActionNone {
 		return "none"
 	}
 	return action.String()
 }
 
-func flattenLbACL(acl *lb.ACL) interface{} {
+func flattenLbACL(acl *lbSDK.ACL) interface{} {
 	res := map[string]interface{}{
 		"name":   acl.Name,
 		"match":  flattenLbACLMatch(acl.Match),
@@ -61,23 +60,23 @@ func flattenLbACL(acl *lb.ACL) interface{} {
 }
 
 // expandLbACL transforms a state acl to an api one.
-func expandLbACL(i interface{}) *lb.ACL {
+func expandLbACL(i interface{}) *lbSDK.ACL {
 	rawRule := i.(map[string]interface{})
-	acl := &lb.ACL{
+	acl := &lbSDK.ACL{
 		Name:   rawRule["name"].(string),
 		Match:  expandLbACLMatch(rawRule["match"]),
 		Action: expandLbACLAction(rawRule["action"]),
 	}
 
 	//remove http filter values if we do not pass any http filter
-	if acl.Match.HTTPFilter == "" || acl.Match.HTTPFilter == lb.ACLHTTPFilterACLHTTPFilterNone {
-		acl.Match.HTTPFilter = lb.ACLHTTPFilterACLHTTPFilterNone
+	if acl.Match.HTTPFilter == "" || acl.Match.HTTPFilter == lbSDK.ACLHTTPFilterACLHTTPFilterNone {
+		acl.Match.HTTPFilter = lbSDK.ACLHTTPFilterACLHTTPFilterNone
 		acl.Match.HTTPFilterValue = []*string{}
 	}
 
 	return acl
 }
-func flattenLbACLAction(action *lb.ACLAction) interface{} {
+func flattenLbACLAction(action *lbSDK.ACLAction) interface{} {
 	return []map[string]interface{}{
 		{
 			"type": action.Type,
@@ -85,19 +84,19 @@ func flattenLbACLAction(action *lb.ACLAction) interface{} {
 	}
 }
 
-func expandPrivateNetworks(data interface{}, lbID string) ([]*lb.ZonedAPIAttachPrivateNetworkRequest, error) {
+func expandPrivateNetworks(data interface{}, lbID string) ([]*lbSDK.ZonedAPIAttachPrivateNetworkRequest, error) {
 	if data == nil {
 		return nil, nil
 	}
 
-	var res []*lb.ZonedAPIAttachPrivateNetworkRequest
+	var res []*lbSDK.ZonedAPIAttachPrivateNetworkRequest
 	for _, pn := range data.([]interface{}) {
 		r := pn.(map[string]interface{})
 		zonePN, pnID, err := parseZonedID(r["private_network_id"].(string))
 		if err != nil {
 			return nil, err
 		}
-		pnRequest := &lb.ZonedAPIAttachPrivateNetworkRequest{
+		pnRequest := &lbSDK.ZonedAPIAttachPrivateNetworkRequest{
 			PrivateNetworkID: pnID,
 			Zone:             zonePN,
 			LBID:             lbID,
@@ -118,16 +117,16 @@ func expandPrivateNetworks(data interface{}, lbID string) ([]*lb.ZonedAPIAttachP
 
 func isPrivateNetworkEqual(A, B interface{}) bool {
 	// Find out the diff Private Network or not
-	if _, ok := A.(*lb.PrivateNetwork); ok {
-		if _, ok := B.(*lb.PrivateNetwork); ok {
-			if A.(*lb.PrivateNetwork).PrivateNetworkID == B.(*lb.PrivateNetwork).PrivateNetworkID {
+	if _, ok := A.(*lbSDK.PrivateNetwork); ok {
+		if _, ok := B.(*lbSDK.PrivateNetwork); ok {
+			if A.(*lbSDK.PrivateNetwork).PrivateNetworkID == B.(*lbSDK.PrivateNetwork).PrivateNetworkID {
 				// if both has dhcp config should not update
-				if A.(*lb.PrivateNetwork).DHCPConfig != nil && B.(*lb.PrivateNetwork).DHCPConfig != nil {
+				if A.(*lbSDK.PrivateNetwork).DHCPConfig != nil && B.(*lbSDK.PrivateNetwork).DHCPConfig != nil {
 					return true
 				}
 				// check static config
-				aConfig := A.(*lb.PrivateNetwork).StaticConfig
-				bConfig := B.(*lb.PrivateNetwork).StaticConfig
+				aConfig := A.(*lbSDK.PrivateNetwork).StaticConfig
+				bConfig := B.(*lbSDK.PrivateNetwork).StaticConfig
 				if aConfig != nil && bConfig != nil {
 					// check if static config is different
 					return reflect.DeepEqual(aConfig.IPAddress, bConfig.IPAddress)
@@ -138,10 +137,10 @@ func isPrivateNetworkEqual(A, B interface{}) bool {
 	return false
 }
 
-func newPrivateNetwork(raw map[string]interface{}) *lb.PrivateNetwork {
+func newPrivateNetwork(raw map[string]interface{}) *lbSDK.PrivateNetwork {
 	_, pnID, _ := parseZonedID(raw["private_network_id"].(string))
 
-	pn := &lb.PrivateNetwork{PrivateNetworkID: pnID}
+	pn := &lbSDK.PrivateNetwork{PrivateNetworkID: pnID}
 	staticConfig := raw["static_config"]
 	if len(staticConfig.([]interface{})) > 0 {
 		pn.StaticConfig = expandLbPrivateNetworkStaticConfig(staticConfig)
@@ -151,9 +150,9 @@ func newPrivateNetwork(raw map[string]interface{}) *lb.PrivateNetwork {
 
 	return pn
 }
-func privateNetworksToDetach(pns []*lb.PrivateNetwork, updates interface{}) (map[string]bool, error) {
+func privateNetworksToDetach(pns []*lbSDK.PrivateNetwork, updates interface{}) (map[string]bool, error) {
 	actions := make(map[string]bool, len(pns))
-	configs := make(map[string]*lb.PrivateNetwork, len(pns))
+	configs := make(map[string]*lbSDK.PrivateNetwork, len(pns))
 	// set detached all as default
 	for _, pn := range pns {
 		actions[pn.PrivateNetworkID] = true
@@ -174,7 +173,7 @@ func privateNetworksToDetach(pns []*lb.PrivateNetwork, updates interface{}) (map
 	return actions, nil
 }
 
-func flattenPrivateNetworkConfigs(resList *lb.ListLBPrivateNetworksResponse) interface{} {
+func flattenPrivateNetworkConfigs(resList *lbSDK.ListLBPrivateNetworksResponse) interface{} {
 	if len(resList.PrivateNetwork) == 0 || resList == nil {
 		return nil
 	}
@@ -190,8 +189,8 @@ func flattenPrivateNetworkConfigs(resList *lb.ListLBPrivateNetworksResponse) int
 		pnI = append(pnI, map[string]interface{}{
 			"private_network_id": pnZonedID,
 			"dhcp_config":        dhcpConfigExist,
-			"status":             pn.Status,
-			"zone":               pn.LB.Zone,
+			"status":             pn.Status.String(),
+			"zone":               pn.LB.Zone.String(),
 			"static_config":      flattenLbPrivateNetworkStaticConfig(pn.StaticConfig),
 		})
 	}
@@ -199,17 +198,17 @@ func flattenPrivateNetworkConfigs(resList *lb.ListLBPrivateNetworksResponse) int
 	return pnI
 }
 
-func expandLbACLAction(raw interface{}) *lb.ACLAction {
+func expandLbACLAction(raw interface{}) *lbSDK.ACLAction {
 	if raw == nil || len(raw.([]interface{})) != 1 {
 		return nil
 	}
 	rawMap := raw.([]interface{})[0].(map[string]interface{})
-	return &lb.ACLAction{
-		Type: lb.ACLActionType(rawMap["type"].(string)),
+	return &lbSDK.ACLAction{
+		Type: lbSDK.ACLActionType(rawMap["type"].(string)),
 	}
 }
 
-func flattenLbACLMatch(match *lb.ACLMatch) interface{} {
+func flattenLbACLMatch(match *lbSDK.ACLMatch) interface{} {
 	return []map[string]interface{}{
 		{
 			"ip_subnet":         flattenSliceStringPtr(match.IPSubnet),
@@ -220,7 +219,7 @@ func flattenLbACLMatch(match *lb.ACLMatch) interface{} {
 	}
 }
 
-func expandLbACLMatch(raw interface{}) *lb.ACLMatch {
+func expandLbACLMatch(raw interface{}) *lbSDK.ACLMatch {
 	if raw == nil || len(raw.([]interface{})) != 1 {
 		return nil
 	}
@@ -232,46 +231,46 @@ func expandLbACLMatch(raw interface{}) *lb.ACLMatch {
 		ipSubnet = []*string{expandStringPtr("0.0.0.0/0")}
 	}
 
-	return &lb.ACLMatch{
+	return &lbSDK.ACLMatch{
 		IPSubnet:        ipSubnet,
-		HTTPFilter:      lb.ACLHTTPFilter(rawMap["http_filter"].(string)),
+		HTTPFilter:      lbSDK.ACLHTTPFilter(rawMap["http_filter"].(string)),
 		HTTPFilterValue: expandSliceStringPtr(rawMap["http_filter_value"].([]interface{})),
 		Invert:          rawMap["invert"].(bool),
 	}
 }
 
-func expandLbBackendMarkdownAction(raw interface{}) lb.OnMarkedDownAction {
+func expandLbBackendMarkdownAction(raw interface{}) lbSDK.OnMarkedDownAction {
 	if raw == "none" {
-		return lb.OnMarkedDownActionOnMarkedDownActionNone
+		return lbSDK.OnMarkedDownActionOnMarkedDownActionNone
 	}
-	return lb.OnMarkedDownAction(raw.(string))
+	return lbSDK.OnMarkedDownAction(raw.(string))
 }
 
-func flattenLbProtocol(protocol lb.Protocol) interface{} {
+func flattenLbProtocol(protocol lbSDK.Protocol) interface{} {
 	return protocol.String()
 }
 
-func expandLbProtocol(raw interface{}) lb.Protocol {
-	return lb.Protocol(raw.(string))
+func expandLbProtocol(raw interface{}) lbSDK.Protocol {
+	return lbSDK.Protocol(raw.(string))
 }
 
-func flattenLbForwardPortAlgorithm(algo lb.ForwardPortAlgorithm) interface{} {
+func flattenLbForwardPortAlgorithm(algo lbSDK.ForwardPortAlgorithm) interface{} {
 	return algo.String()
 }
 
-func expandLbForwardPortAlgorithm(raw interface{}) lb.ForwardPortAlgorithm {
-	return lb.ForwardPortAlgorithm(raw.(string))
+func expandLbForwardPortAlgorithm(raw interface{}) lbSDK.ForwardPortAlgorithm {
+	return lbSDK.ForwardPortAlgorithm(raw.(string))
 }
 
-func flattenLbStickySessionsType(t lb.StickySessionsType) interface{} {
+func flattenLbStickySessionsType(t lbSDK.StickySessionsType) interface{} {
 	return t.String()
 }
 
-func expandLbStickySessionsType(raw interface{}) lb.StickySessionsType {
-	return lb.StickySessionsType(raw.(string))
+func expandLbStickySessionsType(raw interface{}) lbSDK.StickySessionsType {
+	return lbSDK.StickySessionsType(raw.(string))
 }
 
-func flattenLbHCTCP(config *lb.HealthCheckTCPConfig) interface{} {
+func flattenLbHCTCP(config *lbSDK.HealthCheckTCPConfig) interface{} {
 	if config == nil {
 		return nil
 	}
@@ -280,14 +279,14 @@ func flattenLbHCTCP(config *lb.HealthCheckTCPConfig) interface{} {
 	}
 }
 
-func expandLbHCTCP(raw interface{}) *lb.HealthCheckTCPConfig {
+func expandLbHCTCP(raw interface{}) *lbSDK.HealthCheckTCPConfig {
 	if raw == nil || len(raw.([]interface{})) != 1 {
 		return nil
 	}
-	return &lb.HealthCheckTCPConfig{}
+	return &lbSDK.HealthCheckTCPConfig{}
 }
 
-func flattenLbHCHTTP(config *lb.HealthCheckHTTPConfig) interface{} {
+func flattenLbHCHTTP(config *lbSDK.HealthCheckHTTPConfig) interface{} {
 	if config == nil {
 		return nil
 	}
@@ -300,19 +299,19 @@ func flattenLbHCHTTP(config *lb.HealthCheckHTTPConfig) interface{} {
 	}
 }
 
-func expandLbHCHTTP(raw interface{}) *lb.HealthCheckHTTPConfig {
+func expandLbHCHTTP(raw interface{}) *lbSDK.HealthCheckHTTPConfig {
 	if raw == nil || len(raw.([]interface{})) != 1 {
 		return nil
 	}
 	rawMap := raw.([]interface{})[0].(map[string]interface{})
-	return &lb.HealthCheckHTTPConfig{
+	return &lbSDK.HealthCheckHTTPConfig{
 		URI:    rawMap["uri"].(string),
 		Method: rawMap["method"].(string),
 		Code:   expandInt32Ptr(rawMap["code"]),
 	}
 }
 
-func flattenLbHCHTTPS(config *lb.HealthCheckHTTPSConfig) interface{} {
+func flattenLbHCHTTPS(config *lbSDK.HealthCheckHTTPSConfig) interface{} {
 	if config == nil {
 		return nil
 	}
@@ -325,27 +324,27 @@ func flattenLbHCHTTPS(config *lb.HealthCheckHTTPSConfig) interface{} {
 	}
 }
 
-func expandLbHCHTTPS(raw interface{}) *lb.HealthCheckHTTPSConfig {
+func expandLbHCHTTPS(raw interface{}) *lbSDK.HealthCheckHTTPSConfig {
 	if raw == nil || len(raw.([]interface{})) != 1 {
 		return nil
 	}
 
 	rawMap := raw.([]interface{})[0].(map[string]interface{})
-	return &lb.HealthCheckHTTPSConfig{
+	return &lbSDK.HealthCheckHTTPSConfig{
 		URI:    rawMap["uri"].(string),
 		Method: rawMap["method"].(string),
 		Code:   expandInt32Ptr(rawMap["code"]),
 	}
 }
 
-func expandLbLetsEncrypt(raw interface{}) *lb.CreateCertificateRequestLetsencryptConfig {
+func expandLbLetsEncrypt(raw interface{}) *lbSDK.CreateCertificateRequestLetsencryptConfig {
 	if raw == nil || len(raw.([]interface{})) != 1 {
 		return nil
 	}
 
 	rawMap := raw.([]interface{})[0].(map[string]interface{})
 	alternativeNames := rawMap["subject_alternative_name"].([]interface{})
-	config := &lb.CreateCertificateRequestLetsencryptConfig{
+	config := &lbSDK.CreateCertificateRequestLetsencryptConfig{
 		CommonName: rawMap["common_name"].(string),
 	}
 	for _, alternativeName := range alternativeNames {
@@ -354,23 +353,23 @@ func expandLbLetsEncrypt(raw interface{}) *lb.CreateCertificateRequestLetsencryp
 	return config
 }
 
-func expandLbCustomCertificate(raw interface{}) *lb.CreateCertificateRequestCustomCertificate {
+func expandLbCustomCertificate(raw interface{}) *lbSDK.CreateCertificateRequestCustomCertificate {
 	if raw == nil || len(raw.([]interface{})) != 1 {
 		return nil
 	}
 
 	rawMap := raw.([]interface{})[0].(map[string]interface{})
-	config := &lb.CreateCertificateRequestCustomCertificate{
+	config := &lbSDK.CreateCertificateRequestCustomCertificate{
 		CertificateChain: rawMap["certificate_chain"].(string),
 	}
 	return config
 }
 
-func expandLbProxyProtocol(raw interface{}) lb.ProxyProtocol {
-	return lb.ProxyProtocol("proxy_protocol_" + raw.(string))
+func expandLbProxyProtocol(raw interface{}) lbSDK.ProxyProtocol {
+	return lbSDK.ProxyProtocol("proxy_protocol_" + raw.(string))
 }
 
-func flattenLbProxyProtocol(pp lb.ProxyProtocol) interface{} {
+func flattenLbProxyProtocol(pp lbSDK.ProxyProtocol) interface{} {
 	return strings.TrimPrefix(pp.String(), "proxy_protocol_")
 }
 
@@ -410,16 +409,16 @@ func lbUpgradeV1RegionalToZonedID(element string) (string, error) {
 	return fmt.Sprintf("%s-1/%s", locality, id), nil
 }
 
-func expandLbPrivateNetworkStaticConfig(raw interface{}) *lb.PrivateNetworkStaticConfig {
+func expandLbPrivateNetworkStaticConfig(raw interface{}) *lbSDK.PrivateNetworkStaticConfig {
 	if raw == nil || len(raw.([]interface{})) < 1 {
 		return nil
 	}
-	return &lb.PrivateNetworkStaticConfig{
+	return &lbSDK.PrivateNetworkStaticConfig{
 		IPAddress: expandStrings(raw),
 	}
 }
 
-func flattenLbPrivateNetworkStaticConfig(cfg *lb.PrivateNetworkStaticConfig) []string {
+func flattenLbPrivateNetworkStaticConfig(cfg *lbSDK.PrivateNetworkStaticConfig) []string {
 	if cfg == nil {
 		return nil
 	}
@@ -427,9 +426,73 @@ func flattenLbPrivateNetworkStaticConfig(cfg *lb.PrivateNetworkStaticConfig) []s
 	return cfg.IPAddress
 }
 
-func expandLbPrivateNetworkDHCPConfig(raw interface{}) *lb.PrivateNetworkDHCPConfig {
+func expandLbPrivateNetworkDHCPConfig(raw interface{}) *lbSDK.PrivateNetworkDHCPConfig {
 	if raw == nil || !raw.(bool) {
 		return nil
 	}
-	return &lb.PrivateNetworkDHCPConfig{}
+	return &lbSDK.PrivateNetworkDHCPConfig{}
+}
+
+func waitForLB(ctx context.Context, lbAPI *lbSDK.ZonedAPI, zone scw.Zone, LbID string, timeout time.Duration) (*lbSDK.LB, error) {
+	retryInterval := defaultWaitLBRetryInterval
+	if DefaultWaitRetryInterval != nil {
+		retryInterval = *DefaultWaitRetryInterval
+	}
+
+	loadBalancer, err := lbAPI.WaitForLb(&lbSDK.ZonedAPIWaitForLBRequest{
+		LBID:          LbID,
+		Zone:          zone,
+		Timeout:       scw.TimeDurationPtr(timeout),
+		RetryInterval: &retryInterval,
+	}, scw.WithContext(ctx))
+
+	return loadBalancer, err
+}
+
+func waitForLbInstances(ctx context.Context, lbAPI *lbSDK.ZonedAPI, zone scw.Zone, lbID string, timeout time.Duration) (*lbSDK.LB, error) {
+	retryInterval := defaultWaitLBRetryInterval
+	if DefaultWaitRetryInterval != nil {
+		retryInterval = *DefaultWaitRetryInterval
+	}
+
+	loadBalancer, err := lbAPI.WaitForLbInstances(&lbSDK.ZonedAPIWaitForLBInstancesRequest{
+		Zone:          zone,
+		LBID:          lbID,
+		Timeout:       scw.TimeDurationPtr(timeout),
+		RetryInterval: &retryInterval,
+	}, scw.WithContext(ctx))
+
+	return loadBalancer, err
+}
+
+func waitForLBPN(ctx context.Context, lbAPI *lbSDK.ZonedAPI, zone scw.Zone, LbID string, timeout time.Duration) ([]*lbSDK.PrivateNetwork, error) {
+	retryInterval := defaultWaitLBRetryInterval
+	if DefaultWaitRetryInterval != nil {
+		retryInterval = *DefaultWaitRetryInterval
+	}
+
+	privateNetworks, err := lbAPI.WaitForLBPN(&lbSDK.ZonedAPIWaitForLBPNRequest{
+		LBID:          LbID,
+		Zone:          zone,
+		Timeout:       scw.TimeDurationPtr(timeout),
+		RetryInterval: &retryInterval,
+	}, scw.WithContext(ctx))
+
+	return privateNetworks, err
+}
+
+func waitForLBCertificate(ctx context.Context, lbAPI *lbSDK.ZonedAPI, zone scw.Zone, id string, timeout time.Duration) (*lbSDK.Certificate, error) {
+	retryInterval := defaultWaitLBRetryInterval
+	if DefaultWaitRetryInterval != nil {
+		retryInterval = *DefaultWaitRetryInterval
+	}
+
+	certificate, err := lbAPI.WaitForLBCertificate(&lbSDK.ZonedAPIWaitForLBCertificateRequest{
+		CertID:        id,
+		Zone:          zone,
+		Timeout:       scw.TimeDurationPtr(timeout),
+		RetryInterval: &retryInterval,
+	}, scw.WithContext(ctx))
+
+	return certificate, err
 }

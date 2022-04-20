@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/dustin/go-humanize"
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
 	"github.com/scaleway/scaleway-sdk-go/api/vpc/v1"
@@ -185,18 +186,18 @@ func reachState(ctx context.Context, instanceAPI *instance.API, zone scw.Zone, s
 }
 
 // getServerType is a util to get a instance.ServerType by its commercialType
-func getServerType(apiInstance *instance.API, zone scw.Zone, commercialType string) *instance.ServerType {
+func getServerType(ctx context.Context, apiInstance *instance.API, zone scw.Zone, commercialType string) *instance.ServerType {
 	serverType := (*instance.ServerType)(nil)
 
 	serverTypesRes, err := apiInstance.ListServersTypes(&instance.ListServersTypesRequest{
 		Zone: zone,
 	})
 	if err != nil {
-		l.Warningf("cannot get server types: %s", err)
+		tflog.Warn(ctx, fmt.Sprintf("cannot get server types: %s", err))
 	} else {
 		serverType = serverTypesRes.Servers[commercialType]
 		if serverType == nil {
-			l.Warningf("unrecognized server type: %s", commercialType)
+			tflog.Warn(ctx, fmt.Sprintf("unrecognized server type: %s", commercialType))
 		}
 	}
 

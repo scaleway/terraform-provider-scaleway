@@ -85,12 +85,13 @@ type TestTools struct {
 }
 
 func NewTestTools(t *testing.T) *TestTools {
+	ctx := context.Background()
 	// Create a http client with recording capabilities
 	httpClient, cleanup, err := getHTTPRecoder(t, *UpdateCassettes)
 	require.NoError(t, err)
 
 	// Create meta that will be passed in the provider config
-	meta, err := buildMeta(&metaConfig{
+	meta, err := buildMeta(ctx, &metaConfig{
 		providerSchema:   nil,
 		terraformVersion: "terraform-tests",
 		httpClient:       httpClient,
@@ -111,6 +112,6 @@ func NewTestTools(t *testing.T) *TestTools {
 			},
 		},
 		Cleanup: cleanup,
-		ctx:     context.Background(),
+		ctx:     ctx,
 	}
 }
