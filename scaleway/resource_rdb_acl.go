@@ -2,6 +2,7 @@ package scaleway
 
 import (
 	"context"
+	"sort"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -208,6 +209,10 @@ func rdbACLExpand(data []interface{}) ([]*rdb.ACLRuleRequest, error) {
 		})
 	}
 
+	sort.Slice(res, func(i, j int) bool {
+		return res[i].IP.String() < res[j].IP.String()
+	})
+
 	return res, nil
 }
 
@@ -220,5 +225,10 @@ func rdbACLRulesFlatten(rules []*rdb.ACLRule) []map[string]interface{} {
 		}
 		res = append(res, r)
 	}
+
+	sort.Slice(res, func(i, j int) bool {
+		return res[i]["ip"].(string) < res[j]["ip"].(string)
+	})
+
 	return res
 }
