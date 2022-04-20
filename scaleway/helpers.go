@@ -2,6 +2,7 @@ package scaleway
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net"
 	"net/http"
@@ -595,4 +596,19 @@ func toUint32(number interface{}) *uint32 {
 
 func errorCheck(err error, message string) bool {
 	return strings.Contains(err.Error(), message)
+}
+
+// ErrCodeEquals returns true if the error matches all these conditions:
+//  * err is of type scw.Error
+//  * Error.Error() equals one of the passed codes
+func ErrCodeEquals(err error, codes ...string) bool {
+	var scwErr scw.SdkError
+	if errors.As(err, &scwErr) {
+		for _, code := range codes {
+			if scwErr.Error() == code {
+				return true
+			}
+		}
+	}
+	return false
 }
