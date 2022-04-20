@@ -7,7 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 )
 
-func TestAccScalewayDataSourceRDBAcl_Basic(t *testing.T) {
+func TestAccScalewayDataSourceRdbAcl_Basic(t *testing.T) {
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
 	instanceName := "TestAccScalewayDataSourceRDBAcl_Basic"
@@ -63,9 +63,9 @@ func TestAccScalewayDataSourceRDBAcl_Basic(t *testing.T) {
 							description = "bar"
 						}
 					}
+
 					data "scaleway_rdb_acl" "maindata" {
 						instance_id = scaleway_rdb_instance.main.id
-
 					}`, instanceName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("scaleway_rdb_acl.main", "acl_rules.0.ip", "1.2.3.4/32"),
