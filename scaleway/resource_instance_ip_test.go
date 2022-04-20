@@ -230,20 +230,20 @@ func testAccCheckScalewayInstanceIPDestroy(tt *TestTools) resource.TestCheckFunc
 				return err
 			}
 
-			_, err = instanceAPI.GetIP(&instance.GetIPRequest{
+			_, errIP := instanceAPI.GetIP(&instance.GetIPRequest{
 				Zone: zone,
 				IP:   id,
 			})
 
 			// If no error resource still exist
-			if err == nil {
+			if errIP == nil {
 				return fmt.Errorf("resource %s(%s) still exist", rs.Type, rs.Primary.ID)
 			}
 
 			// Unexpected api error we return it
 			// We check for 403 because instance API return 403 for deleted IP
-			if !is404Error(err) && !is403Error(err) {
-				return err
+			if !is404Error(errIP) && !is403Error(errIP) {
+				return errIP
 			}
 		}
 
