@@ -135,6 +135,7 @@ func resourceScalewayLbFrontend() *schema.Resource {
 											lbSDK.ACLHTTPFilterPathBegin.String(),
 											lbSDK.ACLHTTPFilterPathEnd.String(),
 											lbSDK.ACLHTTPFilterRegex.String(),
+											lbSDK.ACLHTTPFilterHTTPHeaderMatch.String(),
 										}, false),
 										Description: "The HTTP filter to match",
 									},
@@ -145,6 +146,11 @@ func resourceScalewayLbFrontend() *schema.Resource {
 										Elem: &schema.Schema{
 											Type: schema.TypeString,
 										},
+									},
+									"http_filter_option": {
+										Type:        schema.TypeString,
+										Optional:    true,
+										Description: "You can use this field with http_header_match acl type to set the header name to filter",
 									},
 									"invert": {
 										Type:        schema.TypeBool,

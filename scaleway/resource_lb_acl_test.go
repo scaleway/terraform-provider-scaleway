@@ -90,6 +90,18 @@ func TestAccScalewayLbAcl_Basic(t *testing.T) {
 								type = "deny"
 							}
 						}
+
+						acl {
+							match {
+								http_filter = "http_header_match"
+								http_filter_value = ["example.com"]
+								http_filter_option = "Host"
+							}
+
+							action {
+								type = "allow"
+							}
+						}
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
@@ -138,6 +150,14 @@ func TestAccScalewayLbAcl_Basic(t *testing.T) {
 								HTTPFilterValue: []*string{},
 							},
 							Action: &lbSDK.ACLAction{Type: lbSDK.ACLActionTypeDeny},
+						},
+						{
+							Match: &lbSDK.ACLMatch{
+								HTTPFilter:       lbSDK.ACLHTTPFilterHTTPHeaderMatch,
+								HTTPFilterValue:  scw.StringSlicePtr([]string{"example.com"}),
+								HTTPFilterOption: scw.StringPtr("Host"),
+							},
+							Action: &lbSDK.ACLAction{Type: lbSDK.ACLActionTypeAllow},
 						},
 					}),
 				),
