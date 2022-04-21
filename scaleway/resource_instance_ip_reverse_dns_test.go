@@ -42,11 +42,6 @@ func TestAccScalewayInstanceIPReverseDns_Basic(t *testing.T) {
 				Config: `
 					resource "scaleway_instance_ip" "ip" {}
 				`,
-			},
-			{
-				Config: `
-					resource "scaleway_instance_ip" "ip" {}
-				`,
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("scaleway_instance_ip.ip", "reverse", ""),
 				),

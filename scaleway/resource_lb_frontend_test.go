@@ -85,7 +85,7 @@ func TestAccScalewayLbFrontend_Basic(t *testing.T) {
 // One possible way to circumvent this limitation is to generate for a random set of alternative domain names that are all subdomains of the main test domain.
 // For instance: *.test.scaleway-terraform.com which is a wildcard domain name.
 // And we generate certificate for foo.test.scaleway-terraform.com, bar.test.scaleway-terraform.com, baz.test.scaleway-terraform.com, etc.
-// Even changing one alternative domaine name is enough to count as a new certificate (which is rate limited by the 50 certificates per week limit and not the 5 duplicate certificates per week limit).
+// Even changing one alternative domain name is enough to count as a new certificate (which is rate limited by the 50 certificates per week limit and not the 5 duplicate certificates per week limit).
 // The only limitation is that all subdomains must resolve to the same IP address.
 func TestAccScalewayLbFrontend_Certificate(t *testing.T) {
 	tt := NewTestTools(t)

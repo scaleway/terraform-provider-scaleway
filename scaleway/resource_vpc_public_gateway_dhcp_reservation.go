@@ -22,6 +22,9 @@ func resourceScalewayVPCPublicGatewayDHCPReservation() *schema.Resource {
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
+		Timeouts: &schema.ResourceTimeout{
+			Default: schema.DefaultTimeout(defaultVPCGatewayTimeout),
+		},
 		SchemaVersion: 0,
 		Schema: map[string]*schema.Schema{
 			"gateway_network_id": {
@@ -83,10 +86,7 @@ func resourceScalewayVPCPublicGatewayDHCPCReservationCreate(ctx context.Context,
 	}
 
 	gatewayNetworkID := expandID(d.Get("gateway_network_id"))
-	_, err = vpcgwAPI.WaitForGatewayNetwork(&vpcgw.WaitForGatewayNetworkRequest{
-		GatewayNetworkID: gatewayNetworkID,
-		Zone:             zone,
-	}, scw.WithContext(ctx))
+	_, err = waitForVPCGatewayNetwork(ctx, vpcgwAPI, zone, gatewayNetworkID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -103,10 +103,7 @@ func resourceScalewayVPCPublicGatewayDHCPCReservationCreate(ctx context.Context,
 
 	d.SetId(newZonedIDString(zone, res.ID))
 
-	_, err = vpcgwAPI.WaitForGatewayNetwork(&vpcgw.WaitForGatewayNetworkRequest{
-		Zone:             zone,
-		GatewayNetworkID: gatewayNetworkID,
-	}, scw.WithContext(ctx))
+	_, err = waitForVPCGatewayNetwork(ctx, vpcgwAPI, zone, gatewayNetworkID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -150,11 +147,18 @@ func resourceScalewayVPCPublicGatewayDHCPReservationUpdate(ctx context.Context, 
 		return diag.FromErr(err)
 	}
 
-	if d.HasChangesExcept("ip_address") {
+	if d.HasChanges("ip_address") {
 		ip := net.ParseIP(d.Get("ip_address").(string))
 		if ip == nil {
 			return diag.FromErr(fmt.Errorf("could not parse ip_address"))
 		}
+
+		gatewayNetworkID := expandID(d.Get("gateway_network_id"))
+		_, err = waitForVPCGatewayNetwork(ctx, vpcgwAPI, zone, gatewayNetworkID, d.Timeout(schema.TimeoutUpdate))
+		if err != nil {
+			return diag.FromErr(err)
+		}
+
 		req := &vpcgw.UpdateDHCPEntryRequest{
 			DHCPEntryID: ID,
 			Zone:        zone,
@@ -162,6 +166,11 @@ func resourceScalewayVPCPublicGatewayDHCPReservationUpdate(ctx context.Context, 
 		}
 
 		_, err = vpcgwAPI.UpdateDHCPEntry(req, scw.WithContext(ctx))
+		if err != nil {
+			return diag.FromErr(err)
+		}
+
+		_, err = waitForVPCGatewayNetwork(ctx, vpcgwAPI, zone, gatewayNetworkID, d.Timeout(schema.TimeoutUpdate))
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -177,10 +186,7 @@ func resourceScalewayVPCPublicGatewayDHCPReservationDelete(ctx context.Context, 
 	}
 
 	gatewayNetworkID := expandID(d.Get("gateway_network_id"))
-	_, err = vpcgwAPI.WaitForGatewayNetwork(&vpcgw.WaitForGatewayNetworkRequest{
-		GatewayNetworkID: gatewayNetworkID,
-		Zone:             zone,
-	}, scw.WithContext(ctx))
+	_, err = waitForVPCGatewayNetwork(ctx, vpcgwAPI, zone, gatewayNetworkID, d.Timeout(schema.TimeoutDelete))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -194,10 +200,7 @@ func resourceScalewayVPCPublicGatewayDHCPReservationDelete(ctx context.Context, 
 		return diag.FromErr(err)
 	}
 
-	_, err = vpcgwAPI.WaitForGatewayNetwork(&vpcgw.WaitForGatewayNetworkRequest{
-		GatewayNetworkID: gatewayNetworkID,
-		Zone:             zone,
-	}, scw.WithContext(ctx))
+	_, err = waitForVPCGatewayNetwork(ctx, vpcgwAPI, zone, gatewayNetworkID, d.Timeout(schema.TimeoutDelete))
 	if err != nil {
 		return diag.FromErr(err)
 	}
