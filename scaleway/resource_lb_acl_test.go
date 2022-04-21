@@ -93,9 +93,10 @@ func TestAccScalewayLbAcl_Basic(t *testing.T) {
 
 						acl {
 							match {
+								ip_subnet = ["0.0.0.0/0"]
 								http_filter = "http_header_match"
 								http_filter_value = ["example.com"]
-								http_filter_option = "Host"
+								http_filter_option = "host"
 							}
 
 							action {
@@ -153,9 +154,10 @@ func TestAccScalewayLbAcl_Basic(t *testing.T) {
 						},
 						{
 							Match: &lbSDK.ACLMatch{
+								IPSubnet:         scw.StringSlicePtr([]string{"0.0.0.0/0"}),
 								HTTPFilter:       lbSDK.ACLHTTPFilterHTTPHeaderMatch,
 								HTTPFilterValue:  scw.StringSlicePtr([]string{"example.com"}),
-								HTTPFilterOption: scw.StringPtr("Host"),
+								HTTPFilterOption: scw.StringPtr("host"),
 							},
 							Action: &lbSDK.ACLAction{Type: lbSDK.ACLActionTypeAllow},
 						},
