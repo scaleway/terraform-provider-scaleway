@@ -164,6 +164,7 @@ The following arguments are supported:
        Possible values are: `acl_http_filter_none`, `path_begin`, `path_end`, `http_header_match` or `regex`.
 
     - `http_filter_value` - (Optional) A list of possible values to match for the given HTTP filter.
+      Keep in mind that in the case of `http_header_match` the HTTP header field name is case-insensitive.
 
     - `http_value_option` - (Optional) If you have `http_filter` at `http_header_match`, you can use this field to filter on the HTTP header's value.
 
