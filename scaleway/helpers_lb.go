@@ -211,10 +211,11 @@ func expandLbACLAction(raw interface{}) *lbSDK.ACLAction {
 func flattenLbACLMatch(match *lbSDK.ACLMatch) interface{} {
 	return []map[string]interface{}{
 		{
-			"ip_subnet":         flattenSliceStringPtr(match.IPSubnet),
-			"http_filter":       match.HTTPFilter.String(),
-			"http_filter_value": flattenSliceStringPtr(match.HTTPFilterValue),
-			"invert":            match.Invert,
+			"ip_subnet":          flattenSliceStringPtr(match.IPSubnet),
+			"http_filter":        match.HTTPFilter.String(),
+			"http_filter_value":  flattenSliceStringPtr(match.HTTPFilterValue),
+			"http_filter_option": match.HTTPFilterOption,
+			"invert":             match.Invert,
 		},
 	}
 }
@@ -232,10 +233,11 @@ func expandLbACLMatch(raw interface{}) *lbSDK.ACLMatch {
 	}
 
 	return &lbSDK.ACLMatch{
-		IPSubnet:        ipSubnet,
-		HTTPFilter:      lbSDK.ACLHTTPFilter(rawMap["http_filter"].(string)),
-		HTTPFilterValue: expandSliceStringPtr(rawMap["http_filter_value"].([]interface{})),
-		Invert:          rawMap["invert"].(bool),
+		IPSubnet:         ipSubnet,
+		HTTPFilter:       lbSDK.ACLHTTPFilter(rawMap["http_filter"].(string)),
+		HTTPFilterValue:  expandSliceStringPtr(rawMap["http_filter_value"].([]interface{})),
+		HTTPFilterOption: expandStringPtr(rawMap["http_filter_option"].(string)),
+		Invert:           rawMap["invert"].(bool),
 	}
 }
 
