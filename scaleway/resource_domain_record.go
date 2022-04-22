@@ -278,23 +278,13 @@ func resourceScalewayDomainRecordCreate(ctx context.Context, d *schema.ResourceD
 		Name:    d.Get("name").(string),
 		Type:    recordType,
 	}, scw.WithAllPages(), scw.WithContext(ctx))
-
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	var currentRecord *domain.Record
-	for _, r := range dnsZoneData.Records {
-		flattedData := flattenDomainData(strings.ToLower(r.Data), r.Type).(string)
-		flattenCurrentData := flattenDomainData(strings.ToLower(recordData), r.Type).(string)
-		if flattenCurrentData == flattedData {
-			currentRecord = r
-			break
-		}
-	}
-
-	if currentRecord == nil {
-		return diag.Errorf("record with data %s not found", recordData)
+	currentRecord, err := getRecordFromData(recordData, dnsZoneData.Records)
+	if err != nil {
+		return diag.FromErr(err)
 	}
 
 	recordID := fmt.Sprintf("%s/%s", dnsZone, currentRecord.ID)
