@@ -412,7 +412,7 @@ func resourceScalewayDomainRecordRead(ctx context.Context, d *schema.ResourceDat
 func resourceScalewayDomainRecordUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	domainAPI := newDomainAPI(meta)
 
-	if d.HasChanges("dns_zone", "keep_empty_zone", "name", "type", "ttl", "geo_ip", "view", "weighted") {
+	if d.HasChanges("dns_zone", "keep_empty_zone", "name", "type", "ttl", "geo_ip", "view", "weighted", "http_service") {
 		recordID := d.Id()
 		geoIP, okGeoIP := d.GetOk("geo_ip")
 		_, err := domainAPI.UpdateDNSZoneRecords(&domain.UpdateDNSZoneRecordsRequest{

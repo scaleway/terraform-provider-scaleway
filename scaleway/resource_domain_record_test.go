@@ -388,6 +388,39 @@ func TestAccScalewayDomainRecord_HTTPService(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
+					resource "scaleway_domain_record" "tf_A_http_service" {
+						dns_zone = "%s"
+						name     = "%s"
+						type     = "%s"
+						data     = "%s"
+						http_service {
+							ips          = ["1.2.3.4", "4.3.2.1"]
+							must_contain = "up"
+							url          = "http://mywebsite.com/health"
+							user_agent   = "scw_service_up"
+							strategy     = "hashed"
+						}
+					}
+				`, testDNSZone, name, recordType, data),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayDomainRecordExists(tt, "scaleway_domain_record.tf_A_http_service"),
+					resource.TestCheckResourceAttr("scaleway_domain_record.tf_A_http_service", "dns_zone", testDNSZone),
+					resource.TestCheckResourceAttr("scaleway_domain_record.tf_A_http_service", "name", name),
+					resource.TestCheckResourceAttr("scaleway_domain_record.tf_A_http_service", "type", recordType),
+					resource.TestCheckResourceAttr("scaleway_domain_record.tf_A_http_service", "data", data),
+					resource.TestCheckResourceAttr("scaleway_domain_record.tf_A_http_service", "ttl", fmt.Sprint(ttl)),
+					resource.TestCheckResourceAttr("scaleway_domain_record.tf_A_http_service", "priority", fmt.Sprint(priority)),
+					resource.TestCheckResourceAttr("scaleway_domain_record.tf_A_http_service", "http_service.0.ips.0", "1.2.3.4"),
+					resource.TestCheckResourceAttr("scaleway_domain_record.tf_A_http_service", "http_service.0.ips.1", "4.3.2.1"),
+					resource.TestCheckResourceAttr("scaleway_domain_record.tf_A_http_service", "http_service.0.must_contain", "up"),
+					resource.TestCheckResourceAttr("scaleway_domain_record.tf_A_http_service", "http_service.0.url", "http://mywebsite.com/health"),
+					resource.TestCheckResourceAttr("scaleway_domain_record.tf_A_http_service", "http_service.0.user_agent", "scw_service_up"),
+					resource.TestCheckResourceAttr("scaleway_domain_record.tf_A_http_service", "http_service.0.strategy", "hashed"),
+					testCheckResourceAttrUUID("scaleway_domain_record.tf_A_http_service", "id"),
+				),
+			},
+			{
+				Config: fmt.Sprintf(`
 				resource "scaleway_domain_record" "tf_A_http_service" {
 					dns_zone = "%s"
 					name     = "%s"
