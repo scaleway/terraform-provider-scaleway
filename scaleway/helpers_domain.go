@@ -30,8 +30,8 @@ func flattenDomainData(data string, recordType domain.RecordType) interface{} {
 		if len(dataSplit) == 2 {
 			return dataSplit[1]
 		}
-	default:
-		return data
+	case domain.RecordTypeTXT:
+		data = strings.Trim(data, "\"")
 	}
 
 	return data
