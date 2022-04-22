@@ -28,6 +28,20 @@ func TestAccScalewayInstanceIPReverseDns_Basic(t *testing.T) {
 						ttl      = 3600
 						priority = 1
 					}
+				`, testDomain, testDNSZone),
+			},
+			{
+				Config: fmt.Sprintf(`
+					resource "scaleway_instance_ip" "main" {}
+					
+					resource "scaleway_domain_record" "tf_A" {
+						dns_zone = %[1]q
+						name     = "tf"
+						type     = "A"
+						data     = "${scaleway_instance_ip.main.address}"
+						ttl      = 3600
+						priority = 1
+					}
 
 					resource "scaleway_instance_ip_reverse_dns" "base" {
 						ip_id = scaleway_instance_ip.main.id
