@@ -295,6 +295,50 @@ func TestAccScalewayLbLb_WithIP(t *testing.T) {
 	})
 }
 
+func TestAccScalewayLbLb_TwoPrivateNetworks(t *testing.T) {
+	tt := NewTestTools(t)
+	defer tt.Cleanup()
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      testAccCheckScalewayLbDestroy(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource "scaleway_vpc_private_network" "pn01" {
+						name = "pn01"
+					}
+					
+					resource "scaleway_vpc_private_network" "pn02" {
+						name = "pn02"
+					}
+					
+					resource "scaleway_lb_ip" "main" {
+					}
+					
+					resource "scaleway_lb" "main" {
+						ip_id = scaleway_lb_ip.main.id
+						type  = "LB-S"
+					
+						private_network {
+							private_network_id = scaleway_vpc_private_network.pn01.id
+							dhcp_config        = true
+						}
+					
+						private_network {
+							private_network_id = scaleway_vpc_private_network.pn02.id
+							dhcp_config        = true
+						}
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayLbExists(tt, "scaleway_lb.main"),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckScalewayLbExists(tt *TestTools, n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
