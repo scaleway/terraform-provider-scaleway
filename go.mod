@@ -11,7 +11,7 @@ require (
 	github.com/hashicorp/go-retryablehttp v0.7.1
 	github.com/hashicorp/terraform-plugin-log v0.3.0
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.14.0
-	github.com/scaleway/scaleway-sdk-go v1.0.0-beta.9.0.20220419094512-76deec7b31e7
+	github.com/scaleway/scaleway-sdk-go v1.0.0-beta.9.0.20220425121900-20ed4de943e7
 	github.com/stretchr/testify v1.7.1
 	golang.org/x/xerrors v0.0.0-20220411194840-2f41105eb62f
 
