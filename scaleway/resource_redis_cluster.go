@@ -133,10 +133,6 @@ func resourceScalewayRedisClusterUpdate(ctx context.Context, d *schema.ResourceD
 	req := &redis.UpdateClusterRequest{
 		Zone:      zone,
 		ClusterID: ID,
-		Name:      nil,
-		Tags:      nil,
-		UserName:  nil,
-		Password:  nil,
 	}
 
 	if d.HasChange("name") {
