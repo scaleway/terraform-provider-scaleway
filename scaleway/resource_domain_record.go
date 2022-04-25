@@ -403,63 +403,63 @@ func resourceScalewayDomainRecordUpdate(ctx context.Context, d *schema.ResourceD
 	domainAPI := newDomainAPI(meta)
 
 	recordID := d.Id()
-	updateRequest := &domain.UpdateDNSZoneRecordsRequest{}
-	updateRequest.DNSZone = d.Get("dns_zone").(string)
-	updateRequest.ReturnAllRecords = scw.BoolPtr(false)
-	recordUpdates := &domain.Record{Name: d.Get("name").(string)}
+	req := &domain.UpdateDNSZoneRecordsRequest{}
+	req.DNSZone = d.Get("dns_zone").(string)
+	req.ReturnAllRecords = scw.BoolPtr(false)
+	record := &domain.Record{Name: d.Get("name").(string)}
 
 	hasChange := false
 	if d.HasChanges("geo_ip") {
 		if geoIP, ok := d.GetOk("geo_ip"); ok {
-			recordUpdates.GeoIPConfig = expandDomainGeoIPConfig(d.Get("data").(string), geoIP, ok)
+			record.GeoIPConfig = expandDomainGeoIPConfig(d.Get("data").(string), geoIP, ok)
 		}
 		hasChange = true
 	}
 
 	if d.HasChange("name") {
-		recordUpdates.Name = d.Get("name").(string)
+		record.Name = d.Get("name").(string)
 		hasChange = true
 	}
 
 	if d.HasChange("data") {
-		recordUpdates.Data = d.Get("data").(string)
+		record.Data = d.Get("data").(string)
 		hasChange = true
 	}
 
 	if d.HasChange("priority") {
-		recordUpdates.Priority = uint32(d.Get("priority").(int))
+		record.Priority = uint32(d.Get("priority").(int))
 		hasChange = true
 	}
 
 	if d.HasChange("ttl") {
-		recordUpdates.TTL = uint32(d.Get("ttl").(int))
+		record.TTL = uint32(d.Get("ttl").(int))
 		hasChange = true
 	}
 
 	if d.HasChange("type") {
-		recordUpdates.Type = domain.RecordType(d.Get("type").(string))
+		record.Type = domain.RecordType(d.Get("type").(string))
 		hasChange = true
 	}
 
 	if d.HasChanges("http_service") {
-		recordUpdates.HTTPServiceConfig = expandDomainHTTPService(d.GetOk("http_service"))
+		record.HTTPServiceConfig = expandDomainHTTPService(d.GetOk("http_service"))
 		hasChange = true
 	}
 
 	if d.HasChanges("weighted") {
-		recordUpdates.WeightedConfig = expandDomainWeighted(d.GetOk("weighted"))
+		record.WeightedConfig = expandDomainWeighted(d.GetOk("weighted"))
 		hasChange = true
 	}
 
 	if d.HasChanges("view") {
-		recordUpdates.ViewConfig = expandDomainView(d.GetOk("view"))
+		record.ViewConfig = expandDomainView(d.GetOk("view"))
 		hasChange = true
 	}
 
-	updateRequest.Changes = []*domain.RecordChange{{Set: &domain.RecordChangeSet{ID: &recordID, Records: []*domain.Record{recordUpdates}}}}
+	req.Changes = []*domain.RecordChange{{Set: &domain.RecordChangeSet{ID: &recordID, Records: []*domain.Record{record}}}}
 
 	if hasChange || d.HasChanges("dns_zone", "keep_empty_zone") {
-		_, err := domainAPI.UpdateDNSZoneRecords(updateRequest)
+		_, err := domainAPI.UpdateDNSZoneRecords(req)
 		if err != nil {
 			return diag.FromErr(err)
 		}
