@@ -86,6 +86,11 @@ func resourceScalewayRedisClusterCreate(ctx context.Context, d *schema.ResourceD
 
 	d.SetId(newZonedIDString(zone, res.ID))
 
+	_, err = waitForRedisCluster(ctx, redisAPI, zone, res.ID, d.Timeout(schema.TimeoutDelete))
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	return resourceScalewayRedisClusterRead(ctx, d, meta)
 }
 func resourceScalewayRedisClusterRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -94,18 +99,22 @@ func resourceScalewayRedisClusterRead(ctx context.Context, d *schema.ResourceDat
 		return diag.FromErr(err)
 	}
 
-	res, _ := waitForRedisCluster(ctx, redisAPI, zone, ID, d.Timeout(schema.TimeoutRead))
+	getReq := &redis.GetClusterRequest{
+		Zone:      zone,
+		ClusterID: ID,
+	}
+	cluster, err := redisAPI.GetCluster(getReq, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	_ = d.Set("name", res.Name)
-	_ = d.Set("node_type", res.NodeType)
+	_ = d.Set("name", cluster.Name)
+	_ = d.Set("node_type", cluster.NodeType)
 	_ = d.Set("user_name", d.Get("user_name").(string))
 	_ = d.Set("password", d.Get("password").(string))
 	_ = d.Set("zone", string(zone))
-	_ = d.Set("project_id", res.ProjectID)
-	_ = d.Set("version", res.Version)
+	_ = d.Set("project_id", cluster.ProjectID)
+	_ = d.Set("version", cluster.Version)
 	return nil
 }
 
@@ -140,6 +149,11 @@ func resourceScalewayRedisClusterUpdate(ctx context.Context, d *schema.ResourceD
 	}
 
 	_, err = redisAPI.UpdateCluster(req, scw.WithContext(ctx))
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	_, err = waitForRedisCluster(ctx, redisAPI, zone, ID, d.Timeout(schema.TimeoutDelete))
 	if err != nil {
 		return diag.FromErr(err)
 	}
