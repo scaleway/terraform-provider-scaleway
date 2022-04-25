@@ -402,12 +402,12 @@ func resourceScalewayDomainRecordRead(ctx context.Context, d *schema.ResourceDat
 func resourceScalewayDomainRecordUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	domainAPI := newDomainAPI(meta)
 
-	recordID := d.Id()
-	req := &domain.UpdateDNSZoneRecordsRequest{}
-	req.DNSZone = d.Get("dns_zone").(string)
-	req.ReturnAllRecords = scw.BoolPtr(false)
-	record := &domain.Record{Name: d.Get("name").(string)}
+	req := &domain.UpdateDNSZoneRecordsRequest{
+		DNSZone:          d.Get("dns_zone").(string),
+		ReturnAllRecords: scw.BoolPtr(false),
+	}
 
+	record := &domain.Record{Name: d.Get("name").(string)}
 	hasChange := false
 	if d.HasChanges("geo_ip") {
 		if geoIP, ok := d.GetOk("geo_ip"); ok {
@@ -456,7 +456,14 @@ func resourceScalewayDomainRecordUpdate(ctx context.Context, d *schema.ResourceD
 		hasChange = true
 	}
 
-	req.Changes = []*domain.RecordChange{{Set: &domain.RecordChangeSet{ID: &recordID, Records: []*domain.Record{record}}}}
+	req.Changes = []*domain.RecordChange{
+		{
+			Set: &domain.RecordChangeSet{
+				ID:      scw.StringPtr(expandID(d.Id())),
+				Records: []*domain.Record{record},
+			},
+		},
+	}
 
 	if hasChange || d.HasChanges("dns_zone", "keep_empty_zone") {
 		_, err := domainAPI.UpdateDNSZoneRecords(req)
