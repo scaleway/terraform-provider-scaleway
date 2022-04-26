@@ -11,7 +11,7 @@ import (
 
 const (
 	defaultRedisClusterTimeout           = 15 * time.Minute
-	defaultWaitRedisClusterRetryInterval = 10 * time.Second
+	defaultWaitRedisClusterRetryInterval = 5 * time.Second
 )
 
 // newRedisApi returns a new Redis API
