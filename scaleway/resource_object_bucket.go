@@ -425,6 +425,7 @@ func resourceScalewayObjectBucketRead(ctx context.Context, d *schema.ResourceDat
 	}
 
 	_ = d.Set("name", bucketName)
+	_ = d.Set("region", region)
 
 	// We do not read `acl` attribute because it could be impossible to find
 	// the right canned ACL from a complex ACL object.
