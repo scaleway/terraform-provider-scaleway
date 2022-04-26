@@ -194,6 +194,84 @@ func TestAccScalewayDomainRecord_Basic(t *testing.T) {
 	})
 }
 
+func TestAccScalewayDomainRecord_Basic2(t *testing.T) {
+	tt := NewTestTools(t)
+	defer tt.Cleanup()
+
+	testDNSZone := fmt.Sprintf("test-basic.%s", testDomain)
+	l.Debugf("TestAccScalewayDomainRecord_Basic: test dns zone: %s", testDNSZone)
+
+	recordType := "A"
+	data := "127.0.0.1"
+	ttl := 3600
+	priority := 0
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      testAccCheckScalewayDomainRecordDestroy(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`
+					resource "scaleway_domain_record" "tf_A" {
+						dns_zone = %[1]q
+						type     = "%s"
+						data     = "%s"
+						ttl      = %d
+						priority = %d
+					}
+
+					resource "scaleway_domain_record" "aws_mx" {
+					  dns_zone = %[1]q
+					  name     = ""
+					  type     = "MX"
+					  data     = "10 feedback-smtp.eu-west-1.amazonses.com."
+					  ttl      = 300
+					}
+					
+					resource "scaleway_domain_record" "mx" {
+					  dns_zone = %[1]q
+					  name     = ""
+					  type     = "MX"
+					  data     = "0 mail.scaleway.com."
+					  ttl      = 300
+					}
+					
+					resource "scaleway_domain_record" "txt_dmarc" {
+					  dns_zone = %[1]q
+					  name     = "_dmarc"
+					  type     = "TXT"
+					  data     = "v=DMARC1; p=quarantine; adkim=s"
+					  ttl      = 3600
+					}
+				`, testDNSZone, recordType, data, ttl, priority),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayDomainRecordExists(tt, "scaleway_domain_record.tf_A"),
+					testAccCheckScalewayDomainRecordExists(tt, "scaleway_domain_record.mx"),
+					testAccCheckScalewayDomainRecordExists(tt, "scaleway_domain_record.txt_dmarc"),
+					resource.TestCheckResourceAttr("scaleway_domain_record.tf_A", "dns_zone", testDNSZone),
+					resource.TestCheckResourceAttr("scaleway_domain_record.tf_A", "name", ""),
+					resource.TestCheckResourceAttr("scaleway_domain_record.tf_A", "type", recordType),
+					resource.TestCheckResourceAttr("scaleway_domain_record.tf_A", "data", data),
+					resource.TestCheckResourceAttr("scaleway_domain_record.tf_A", "ttl", fmt.Sprint(ttl)),
+					resource.TestCheckResourceAttr("scaleway_domain_record.tf_A", "priority", fmt.Sprint(priority)),
+					testCheckResourceAttrUUID("scaleway_domain_record.tf_A", "id"),
+					testAccCheckScalewayDomainRecordExists(tt, "scaleway_domain_record.aws_mx"),
+					resource.TestCheckResourceAttr("scaleway_domain_record.aws_mx", "dns_zone", testDNSZone),
+					resource.TestCheckResourceAttr("scaleway_domain_record.aws_mx", "name", ""),
+					resource.TestCheckResourceAttr("scaleway_domain_record.aws_mx", "type", "MX"),
+					resource.TestCheckResourceAttr("scaleway_domain_record.aws_mx", "data", "10 feedback-smtp.eu-west-1.amazonses.com."),
+					resource.TestCheckResourceAttr("scaleway_domain_record.aws_mx", "ttl", "300"),
+					resource.TestCheckResourceAttr("scaleway_domain_record.aws_mx", "priority", "10"),
+					testCheckResourceAttrUUID("scaleway_domain_record.aws_mx", "id"),
+					testCheckResourceAttrUUID("scaleway_domain_record.mx", "id"),
+					testCheckResourceAttrUUID("scaleway_domain_record.txt_dmarc", "id"),
+				),
+			},
+		},
+	})
+}
+
 func TestAccScalewayDomainRecord_GeoIP(t *testing.T) {
 	tt := NewTestTools(t)
 	defer tt.Cleanup()

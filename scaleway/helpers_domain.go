@@ -2,6 +2,7 @@ package scaleway
 
 import (
 	"context"
+	"fmt"
 	"net"
 	"strings"
 	"time"
@@ -30,11 +31,29 @@ func flattenDomainData(data string, recordType domain.RecordType) interface{} {
 		if len(dataSplit) == 2 {
 			return dataSplit[1]
 		}
-	default:
-		return data
+	case domain.RecordTypeTXT:
+		return strings.Trim(data, "\"")
 	}
 
 	return data
+}
+
+func getRecordFromData(data string, records []*domain.Record) (*domain.Record, error) {
+	var currentRecord *domain.Record
+	for _, r := range records {
+		flattedData := flattenDomainData(strings.ToLower(r.Data), r.Type).(string)
+		flattenCurrentData := flattenDomainData(strings.ToLower(data), r.Type).(string)
+		if flattenCurrentData == flattedData {
+			currentRecord = r
+			break
+		}
+	}
+
+	if currentRecord == nil {
+		return nil, fmt.Errorf("record with data %s not found", data)
+	}
+
+	return currentRecord, nil
 }
 
 func flattenDomainGeoIP(config *domain.RecordGeoIPConfig) interface{} {
