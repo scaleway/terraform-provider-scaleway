@@ -118,7 +118,9 @@ func resourceScalewayVPCPublicGatewayIPRead(ctx context.Context, d *schema.Resou
 	_ = d.Set("created_at", ip.CreatedAt.Format(time.RFC3339))
 	_ = d.Set("updated_at", ip.UpdatedAt.Format(time.RFC3339))
 	_ = d.Set("zone", zone)
-	_ = d.Set("tags", ip.Tags)
+	if len(ip.Tags) > 0 {
+		_ = d.Set("tags", ip.Tags)
+	}
 	_ = d.Set("reverse", ip.Reverse)
 
 	return nil

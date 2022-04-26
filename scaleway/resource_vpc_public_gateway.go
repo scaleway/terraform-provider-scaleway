@@ -126,8 +126,12 @@ func resourceScalewayVPCPublicGatewayRead(ctx context.Context, d *schema.Resourc
 	_ = d.Set("created_at", gateway.CreatedAt.Format(time.RFC3339))
 	_ = d.Set("updated_at", gateway.UpdatedAt.Format(time.RFC3339))
 	_ = d.Set("zone", gateway.Zone)
-	_ = d.Set("tags", gateway.Tags)
-	_ = d.Set("upstream_dns_servers", gateway.UpstreamDNSServers)
+	if len(gateway.Tags) > 0 {
+		_ = d.Set("tags", gateway.Tags)
+	}
+	if len(gateway.UpstreamDNSServers) > 0 {
+		_ = d.Set("upstream_dns_servers", gateway.UpstreamDNSServers)
+	}
 	_ = d.Set("ip_id", newZonedID(gateway.Zone, gateway.IP.ID).String())
 
 	return nil

@@ -98,7 +98,9 @@ func resourceScalewayVPCPrivateNetworkRead(ctx context.Context, d *schema.Resour
 	_ = d.Set("created_at", pn.CreatedAt.Format(time.RFC3339))
 	_ = d.Set("updated_at", pn.UpdatedAt.Format(time.RFC3339))
 	_ = d.Set("zone", zone)
-	_ = d.Set("tags", pn.Tags)
+	if len(pn.Tags) > 0 {
+		_ = d.Set("tags", pn.Tags)
+	}
 
 	return nil
 }
