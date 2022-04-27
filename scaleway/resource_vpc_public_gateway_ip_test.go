@@ -46,16 +46,26 @@ func TestAccScalewayVPCPublicGatewayIP_Basic(t *testing.T) {
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
 
+	testDNSZone := fmt.Sprintf("tf.%s", testDomain)
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheckScalewayVPCPublicGatewayIPDestroy(tt),
 		Steps: []resource.TestStep{
 			{
-				Config: `
+				Config: fmt.Sprintf(`
+					resource "scaleway_domain_record" "tf_A" {
+						dns_zone = %[1]q
+						name     = "tf"
+						type     = "A"
+						data     = "${scaleway_vpc_public_gateway_ip.main.address}"
+						ttl      = 3600
+						priority = 1
+					}
+
 					resource scaleway_vpc_public_gateway_ip main {
 					}
-				`,
+				`, testDomain),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayVPCPublicGatewayIPExists(tt, "scaleway_vpc_public_gateway_ip.main"),
 					resource.TestCheckResourceAttrSet("scaleway_vpc_public_gateway_ip.main", "reverse"),
@@ -65,17 +75,26 @@ func TestAccScalewayVPCPublicGatewayIP_Basic(t *testing.T) {
 				),
 			},
 			{
-				Config: `
+				Config: fmt.Sprintf(`
+					resource "scaleway_domain_record" "tf_A" {
+						dns_zone = %[1]q
+						name     = "tf"
+						type     = "A"
+						data     = "${scaleway_vpc_public_gateway_ip.main.address}"
+						ttl      = 3600
+						priority = 1
+					}
+
 					resource scaleway_vpc_public_gateway_ip main {
-						reverse = "example.com"
+						reverse = %[2]q
 						tags = ["tag0", "tag1"]
 					}
-				`,
+				`, testDomain, testDNSZone),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayVPCPublicGatewayIPExists(tt, "scaleway_vpc_public_gateway_ip.main"),
 					resource.TestCheckResourceAttr("scaleway_vpc_public_gateway_ip.main", "tags.0", "tag0"),
 					resource.TestCheckResourceAttr("scaleway_vpc_public_gateway_ip.main", "tags.1", "tag1"),
-					resource.TestCheckResourceAttr("scaleway_vpc_public_gateway_ip.main", "reverse", "example.com"),
+					resource.TestCheckResourceAttr("scaleway_vpc_public_gateway_ip.main", "reverse", testDNSZone),
 					resource.TestCheckResourceAttrSet("scaleway_vpc_public_gateway_ip.main", "address"),
 					resource.TestCheckResourceAttrSet("scaleway_vpc_public_gateway_ip.main", "created_at"),
 					resource.TestCheckResourceAttrSet("scaleway_vpc_public_gateway_ip.main", "updated_at"),
