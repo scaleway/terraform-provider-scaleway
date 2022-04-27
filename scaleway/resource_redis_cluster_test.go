@@ -52,6 +52,9 @@ func TestAccScalewayRedisCluster_Basic(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: `
+					provider "scaleway" {
+						zone = "fr-par-1"
+					}
 					resource "scaleway_redis_cluster" "main" {
     					name = "test_redis_basic"
     					version = "6.2.6"
@@ -61,6 +64,7 @@ func TestAccScalewayRedisCluster_Basic(t *testing.T) {
 						tags = [ "test1" ]
 						cluster_size = 1
 						tls_enabled = "true"
+						zone = "fr-par-2"
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
@@ -73,10 +77,14 @@ func TestAccScalewayRedisCluster_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "tags.0", "test1"),
 					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "cluster_size", "1"),
 					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "tls_enabled", "true"),
+					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "zone", "fr-par-2"),
 				),
 			},
 			{
 				Config: `
+					provider "scaleway" {
+						zone = "fr-par-1"
+					}
 					resource "scaleway_redis_cluster" "main" {
     					name = "test_redis_basic_edit"
     					version = "6.2.6"
@@ -86,6 +94,7 @@ func TestAccScalewayRedisCluster_Basic(t *testing.T) {
 						tags = [ "test1", "other_tag" ]
 						cluster_size = 1
 						tls_enabled = "true"
+						zone = "fr-par-2"
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
@@ -99,6 +108,7 @@ func TestAccScalewayRedisCluster_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "tags.1", "other_tag"),
 					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "cluster_size", "1"),
 					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "tls_enabled", "true"),
+					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "zone", "fr-par-2"),
 				),
 			},
 		},
