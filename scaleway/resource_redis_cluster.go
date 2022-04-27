@@ -100,7 +100,7 @@ func resourceScalewayRedisClusterCreate(ctx context.Context, d *schema.ResourceD
 	}
 	clusterSize, clusterSizeExist := d.GetOk("cluster_size")
 	if clusterSizeExist {
-		createReq.ClusterSize = scw.Int32Ptr(clusterSize.(int32))
+		createReq.ClusterSize = scw.Int32Ptr(int32(clusterSize.(int)))
 	}
 	tlsEnabled, tlsEnabledExist := d.GetOk("tls_enabled")
 	if tlsEnabledExist {

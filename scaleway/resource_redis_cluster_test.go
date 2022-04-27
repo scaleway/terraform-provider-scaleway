@@ -58,6 +58,9 @@ func TestAccScalewayRedisCluster_Basic(t *testing.T) {
     					node_type = "MDB-BETA-M"
     					user_name = "my_initial_user"
     					password = "thiZ_is_v&ry_s3cret"
+						tags = [ "test1" ]
+						cluster_size = 1
+						tls_enabled = "true"
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
@@ -67,6 +70,9 @@ func TestAccScalewayRedisCluster_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "node_type", "MDB-BETA-M"),
 					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "user_name", "my_initial_user"),
 					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "password", "thiZ_is_v&ry_s3cret"),
+					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "tags.0", "test1"),
+					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "cluster_size", "1"),
+					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "tls_enabled", "true"),
 				),
 			},
 			{
@@ -75,8 +81,11 @@ func TestAccScalewayRedisCluster_Basic(t *testing.T) {
     					name = "test_redis_basic_edit"
     					version = "6.2.6"
     					node_type = "MDB-BETA-M"
-    					user_name = "my_initial_user"
-    					password = "thiZ_is_v&ry_s3cret"
+    					user_name = "new_user"
+    					password = "thiZ_is_A_n3w_passw0rd"
+						tags = [ "test1", "other_tag" ]
+						cluster_size = 1
+						tls_enabled = "true"
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
@@ -84,8 +93,12 @@ func TestAccScalewayRedisCluster_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "name", "test_redis_basic_edit"),
 					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "version", "6.2.6"),
 					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "node_type", "MDB-BETA-M"),
-					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "user_name", "my_initial_user"),
-					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "password", "thiZ_is_v&ry_s3cret"),
+					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "user_name", "new_user"),
+					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "password", "thiZ_is_A_n3w_passw0rd"),
+					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "tags.0", "test1"),
+					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "tags.1", "other_tag"),
+					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "cluster_size", "1"),
+					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "tls_enabled", "true"),
 				),
 			},
 		},
