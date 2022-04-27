@@ -65,6 +65,12 @@ func resourceScalewayRedisCluster() *schema.Resource {
 				Optional:    true,
 				Description: "Number of nodes for the cluster.",
 			},
+			"tls_enabled": {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Description: "Whether or not TLS is enabled.",
+				ForceNew:    true,
+			},
 			// Common
 			"zone":       zoneSchema(),
 			"project_id": projectIDSchema(),
@@ -79,14 +85,13 @@ func resourceScalewayRedisClusterCreate(ctx context.Context, d *schema.ResourceD
 	}
 
 	createReq := &redis.CreateClusterRequest{
-		Zone:       zone,
-		ProjectID:  d.Get("project_id").(string),
-		Name:       expandOrGenerateString(d.Get("name"), "redis"),
-		Version:    d.Get("version").(string),
-		NodeType:   d.Get("node_type").(string),
-		UserName:   d.Get("user_name").(string),
-		Password:   d.Get("password").(string),
-		TLSEnabled: false,
+		Zone:      zone,
+		ProjectID: d.Get("project_id").(string),
+		Name:      expandOrGenerateString(d.Get("name"), "redis"),
+		Version:   d.Get("version").(string),
+		NodeType:  d.Get("node_type").(string),
+		UserName:  d.Get("user_name").(string),
+		Password:  d.Get("password").(string),
 	}
 
 	tags, tagsExist := d.GetOk("tags")
@@ -96,6 +101,10 @@ func resourceScalewayRedisClusterCreate(ctx context.Context, d *schema.ResourceD
 	clusterSize, clusterSizeExist := d.GetOk("cluster_size")
 	if clusterSizeExist {
 		createReq.ClusterSize = scw.Int32Ptr(clusterSize.(int32))
+	}
+	tlsEnabled, tlsEnabledExist := d.GetOk("tls_enabled")
+	if tlsEnabledExist {
+		createReq.TLSEnabled = tlsEnabled.(bool)
 	}
 
 	res, err := redisAPI.CreateCluster(createReq, scw.WithContext(ctx))
