@@ -52,6 +52,14 @@ func resourceScalewayRedisCluster() *schema.Resource {
 				Required:    true,
 				Description: "Password of the user",
 			},
+			"tags": {
+				Type:     schema.TypeList,
+				Optional: true,
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
+				Description: "List of tags [\"tag1\", \"tag2\", ...] attached to a redis cluster",
+			},
 			// Common
 			"zone":       zoneSchema(),
 			"project_id": projectIDSchema(),
@@ -70,7 +78,6 @@ func resourceScalewayRedisClusterCreate(ctx context.Context, d *schema.ResourceD
 		ProjectID:       d.Get("project_id").(string),
 		Name:            expandOrGenerateString(d.Get("name"), "redis"),
 		Version:         d.Get("version").(string),
-		Tags:            nil,
 		NodeType:        d.Get("node_type").(string),
 		UserName:        d.Get("user_name").(string),
 		Password:        d.Get("password").(string),
@@ -79,6 +86,11 @@ func resourceScalewayRedisClusterCreate(ctx context.Context, d *schema.ResourceD
 		Endpoints:       nil,
 		TLSEnabled:      false,
 		ClusterSettings: nil,
+	}
+
+	tags, tagsExist := d.GetOk("tags")
+	if tagsExist {
+		createReq.Tags = expandStrings(tags)
 	}
 
 	res, err := redisAPI.CreateCluster(createReq, scw.WithContext(ctx))
@@ -144,6 +156,9 @@ func resourceScalewayRedisClusterUpdate(ctx context.Context, d *schema.ResourceD
 	}
 	if d.HasChange("password") {
 		req.Password = expandStringPtr(d.Get("password"))
+	}
+	if d.HasChange("tags") {
+		req.Tags = expandStrings(d.Get("tags"))
 	}
 
 	_, err = waitForRedisCluster(ctx, redisAPI, zone, ID, d.Timeout(schema.TimeoutUpdate))
