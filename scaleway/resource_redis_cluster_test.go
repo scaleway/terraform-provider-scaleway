@@ -105,6 +105,68 @@ func TestAccScalewayRedisCluster_Basic(t *testing.T) {
 	})
 }
 
+func TestAccScalewayRedisCluster_Migrate(t *testing.T) {
+	tt := NewTestTools(t)
+	defer tt.Cleanup()
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      testAccCheckScalewayRedisClusterDestroy(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource "scaleway_redis_cluster" "main" {
+    					name = "test_redis_basic"
+    					version = "6.2.6"
+    					node_type = "MDB-BETA-M"
+    					user_name = "my_initial_user"
+    					password = "thiZ_is_v&ry_s3cret"
+						tags = [ "test1" ]
+						cluster_size = 1
+						tls_enabled = "true"
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayRedisExists(tt, "scaleway_redis_cluster.main"),
+					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "name", "test_redis_basic"),
+					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "version", "6.2.6"),
+					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "node_type", "MDB-BETA-M"),
+					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "user_name", "my_initial_user"),
+					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "password", "thiZ_is_v&ry_s3cret"),
+					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "tags.0", "test1"),
+					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "cluster_size", "1"),
+					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "tls_enabled", "true"),
+				),
+			},
+			{
+				Config: `
+					resource "scaleway_redis_cluster" "main" {
+    					name = "test_redis_basic"
+    					version = "6.2.6"
+    					node_type = "MDB-BETA-L"
+    					user_name = "my_initial_user"
+    					password = "thiZ_is_v&ry_s3cret"
+						tags = [ "test1" ]
+						cluster_size = 1
+						tls_enabled = "true"
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayRedisExists(tt, "scaleway_redis_cluster.main"),
+					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "name", "test_redis_basic"),
+					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "version", "6.2.6"),
+					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "node_type", "MDB-BETA-L"),
+					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "user_name", "my_initial_user"),
+					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "password", "thiZ_is_v&ry_s3cret"),
+					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "tags.0", "test1"),
+					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "cluster_size", "1"),
+					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "tls_enabled", "true"),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckScalewayRedisClusterDestroy(tt *TestTools) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		for _, rs := range state.RootModule().Resources {

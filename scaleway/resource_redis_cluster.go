@@ -114,7 +114,7 @@ func resourceScalewayRedisClusterCreate(ctx context.Context, d *schema.ResourceD
 
 	d.SetId(newZonedIDString(zone, res.ID))
 
-	_, err = waitForRedisCluster(ctx, redisAPI, zone, res.ID, d.Timeout(schema.TimeoutDelete))
+	_, err = waitForRedisCluster(ctx, redisAPI, zone, res.ID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -186,7 +186,45 @@ func resourceScalewayRedisClusterUpdate(ctx context.Context, d *schema.ResourceD
 		return diag.FromErr(err)
 	}
 
-	_, err = waitForRedisCluster(ctx, redisAPI, zone, ID, d.Timeout(schema.TimeoutDelete))
+	migrateClusterRequests := []redis.MigrateClusterRequest(nil)
+	if d.HasChange("cluster_size") {
+		migrateClusterRequests = append(migrateClusterRequests, redis.MigrateClusterRequest{
+			Zone:        zone,
+			ClusterID:   ID,
+			ClusterSize: scw.Uint32Ptr(uint32(d.Get("cluster_size").(int))),
+		})
+	}
+	if d.HasChange("version") {
+		migrateClusterRequests = append(migrateClusterRequests, redis.MigrateClusterRequest{
+			Zone:      zone,
+			ClusterID: ID,
+			Version:   expandStringPtr(d.Get("version")),
+		})
+	}
+	if d.HasChange("node_type") {
+		migrateClusterRequests = append(migrateClusterRequests, redis.MigrateClusterRequest{
+			Zone:      zone,
+			ClusterID: ID,
+			NodeType:  expandStringPtr(d.Get("node_type")),
+		})
+	}
+	for _, request := range migrateClusterRequests {
+		_, err = waitForRedisCluster(ctx, redisAPI, zone, ID, d.Timeout(schema.TimeoutUpdate))
+		if err != nil && !is404Error(err) {
+			return diag.FromErr(err)
+		}
+		_, err = redisAPI.MigrateCluster(&request, scw.WithContext(ctx))
+		if err != nil {
+			return diag.FromErr(err)
+		}
+
+		_, err = waitForRedisCluster(ctx, redisAPI, zone, ID, d.Timeout(schema.TimeoutUpdate))
+		if err != nil && !is404Error(err) {
+			return diag.FromErr(err)
+		}
+	}
+
+	_, err = waitForRedisCluster(ctx, redisAPI, zone, ID, d.Timeout(schema.TimeoutUpdate))
 	if err != nil {
 		return diag.FromErr(err)
 	}
