@@ -2,6 +2,7 @@ package scaleway
 
 import (
 	"context"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -68,6 +69,16 @@ func resourceScalewayRedisCluster() *schema.Resource {
 				Optional:    true,
 				Description: "Whether or not TLS is enabled.",
 				ForceNew:    true,
+			},
+			"created_at": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The date and time of the creation of the Redis cluster",
+			},
+			"updated_at": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The date and time of the last update of the Redis cluster",
 			},
 			// Common
 			"zone":       zoneSchema(),
@@ -142,10 +153,13 @@ func resourceScalewayRedisClusterRead(ctx context.Context, d *schema.ResourceDat
 	_ = d.Set("node_type", cluster.NodeType)
 	_ = d.Set("user_name", d.Get("user_name").(string))
 	_ = d.Set("password", d.Get("password").(string))
-	_ = d.Set("zone", string(zone))
+	_ = d.Set("zone", cluster.Zone.String())
 	_ = d.Set("project_id", cluster.ProjectID)
 	_ = d.Set("version", cluster.Version)
 	_ = d.Set("tags", cluster.Tags)
+	_ = d.Set("cluster_size", cluster.ClusterSize)
+	_ = d.Set("created_at", cluster.CreatedAt.Format(time.RFC3339))
+	_ = d.Set("updated_at", cluster.UpdatedAt.Format(time.RFC3339))
 
 	return nil
 }
