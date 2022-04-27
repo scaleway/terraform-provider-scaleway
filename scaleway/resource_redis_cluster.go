@@ -60,6 +60,11 @@ func resourceScalewayRedisCluster() *schema.Resource {
 				},
 				Description: "List of tags [\"tag1\", \"tag2\", ...] attached to a redis cluster",
 			},
+			"cluster_size": {
+				Type:        schema.TypeInt,
+				Optional:    true,
+				Description: "Number of nodes for the cluster.",
+			},
 			// Common
 			"zone":       zoneSchema(),
 			"project_id": projectIDSchema(),
@@ -74,23 +79,23 @@ func resourceScalewayRedisClusterCreate(ctx context.Context, d *schema.ResourceD
 	}
 
 	createReq := &redis.CreateClusterRequest{
-		Zone:            zone,
-		ProjectID:       d.Get("project_id").(string),
-		Name:            expandOrGenerateString(d.Get("name"), "redis"),
-		Version:         d.Get("version").(string),
-		NodeType:        d.Get("node_type").(string),
-		UserName:        d.Get("user_name").(string),
-		Password:        d.Get("password").(string),
-		ClusterSize:     nil,
-		ACLRules:        nil,
-		Endpoints:       nil,
-		TLSEnabled:      false,
-		ClusterSettings: nil,
+		Zone:       zone,
+		ProjectID:  d.Get("project_id").(string),
+		Name:       expandOrGenerateString(d.Get("name"), "redis"),
+		Version:    d.Get("version").(string),
+		NodeType:   d.Get("node_type").(string),
+		UserName:   d.Get("user_name").(string),
+		Password:   d.Get("password").(string),
+		TLSEnabled: false,
 	}
 
 	tags, tagsExist := d.GetOk("tags")
 	if tagsExist {
 		createReq.Tags = expandStrings(tags)
+	}
+	clusterSize, clusterSizeExist := d.GetOk("cluster_size")
+	if clusterSizeExist {
+		createReq.ClusterSize = scw.Int32Ptr(clusterSize.(int32))
 	}
 
 	res, err := redisAPI.CreateCluster(createReq, scw.WithContext(ctx))
@@ -133,6 +138,7 @@ func resourceScalewayRedisClusterRead(ctx context.Context, d *schema.ResourceDat
 	_ = d.Set("zone", string(zone))
 	_ = d.Set("project_id", cluster.ProjectID)
 	_ = d.Set("version", cluster.Version)
+	_ = d.Set("tags", cluster.Tags)
 
 	return nil
 }
