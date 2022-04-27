@@ -156,10 +156,13 @@ func resourceScalewayRedisClusterRead(ctx context.Context, d *schema.ResourceDat
 	_ = d.Set("zone", cluster.Zone.String())
 	_ = d.Set("project_id", cluster.ProjectID)
 	_ = d.Set("version", cluster.Version)
-	_ = d.Set("tags", cluster.Tags)
 	_ = d.Set("cluster_size", cluster.ClusterSize)
 	_ = d.Set("created_at", cluster.CreatedAt.Format(time.RFC3339))
 	_ = d.Set("updated_at", cluster.UpdatedAt.Format(time.RFC3339))
+
+	if len(cluster.Tags) > 0 {
+		_ = d.Set("tags", cluster.Tags)
+	}
 
 	return nil
 }
