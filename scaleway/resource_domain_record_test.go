@@ -21,7 +21,8 @@ var (
 		regexp.MustCompile(`.*scaleway\..*`),
 		regexp.MustCompile(`.*dedibox.*`),
 	}
-	testDomain = ""
+	testDomain     = ""
+	testDomainZone = ""
 )
 
 func init() {
@@ -49,6 +50,17 @@ func init() {
 	}
 
 	l.Infof("start domain record test with domain: %s", testDomain)
+
+	testDomainZonePtr := flag.String("test-domain-zone", os.Getenv("TF_TEST_DOMAIN_ZONE"), "Test domain zone")
+	if testDomainZonePtr != nil && *testDomainZonePtr != "" {
+		testDomainZone = *testDomainZonePtr
+	} else {
+		l.Infof("environment variable TF_TEST_DOMAIN_ZONE is required")
+
+		return
+	}
+
+	l.Infof("start domain record test with domain zone: %s", testDomainZone)
 }
 
 func TestAccScalewayDomainRecord_Basic(t *testing.T) {

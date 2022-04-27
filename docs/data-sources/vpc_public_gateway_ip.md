@@ -8,6 +8,8 @@ description: |-
 
 Gets information about a public gateway IP.
 
+For further information please check the API [documentation](https://developers.scaleway.com/en/products/vpc-gw/api/v1/#get-66f0c0)
+
 ## Example Usage
 
 ```hcl
