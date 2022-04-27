@@ -4,7 +4,11 @@
 ARG VARIANT="1.18-bullseye"
 FROM mcr.microsoft.com/vscode/devcontainers/go:0-${VARIANT}
 
-# [Optional] Uncomment the next lines to use go get to install anything else you need
-# USER vscode
-# RUN go get -x <your-dependency-or-tool>
 COPY .terraformrc /home/vscode/.terraformrc
+
+# Check out the latest release available on github <https://github.com/scaleway/scaleway-cli/releases/latest>
+ARG SCW_CLI_VERSION="2.5.1"
+# Download the release from github
+RUN curl -o /usr/local/bin/scw -L "https://github.com/scaleway/scaleway-cli/releases/download/v${SCW_CLI_VERSION}/scaleway-cli_${SCW_CLI_VERSION}_linux_amd64"
+# Allow executing file as program
+RUN chmod +x /usr/local/bin/scw
