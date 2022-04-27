@@ -46,7 +46,7 @@ func TestAccScalewayVPCPublicGatewayIP_Basic(t *testing.T) {
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
 
-	testDNSZone := fmt.Sprintf("tf.%s", testDomain)
+	testDNSZone := fmt.Sprintf("%s.%s", testDomainZone, testDomain)
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
