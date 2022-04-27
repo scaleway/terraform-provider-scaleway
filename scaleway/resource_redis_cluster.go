@@ -62,6 +62,7 @@ func resourceScalewayRedisCluster() *schema.Resource {
 			"cluster_size": {
 				Type:        schema.TypeInt,
 				Optional:    true,
+				Computed:    true,
 				Description: "Number of nodes for the cluster.",
 			},
 			"tls_enabled": {
@@ -130,6 +131,7 @@ func resourceScalewayRedisClusterCreate(ctx context.Context, d *schema.ResourceD
 
 	return resourceScalewayRedisClusterRead(ctx, d, meta)
 }
+
 func resourceScalewayRedisClusterRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	redisAPI, zone, ID, err := redisAPIWithZoneAndID(meta, d.Id())
 	if err != nil {
