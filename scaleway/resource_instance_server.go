@@ -581,7 +581,6 @@ func resourceScalewayInstanceServerRead(ctx context.Context, d *schema.ResourceD
 			}
 		}
 
-		_ = d.Set("additional_volume_ids", additionalVolumesIDs)
 		if len(additionalVolumesIDs) > 0 {
 			_ = d.Set("additional_volume_ids", additionalVolumesIDs)
 		}

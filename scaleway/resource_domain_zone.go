@@ -148,9 +148,17 @@ func resourceScalewayDomainZoneRead(ctx context.Context, d *schema.ResourceData,
 
 	_ = d.Set("subdomain", zone.Subdomain)
 	_ = d.Set("domain", zone.Domain)
-	_ = d.Set("ns", zone.Ns)
-	_ = d.Set("ns_default", zone.NsDefault)
-	_ = d.Set("ns_master", zone.NsMaster)
+	if len(zone.Ns) > 0 {
+		_ = d.Set("ns", zone.Ns)
+	}
+
+	if len(zone.NsDefault) > 0 {
+		_ = d.Set("ns_default", zone.NsDefault)
+	}
+
+	if len(zone.NsMaster) > 0 {
+		_ = d.Set("ns_master", zone.NsMaster)
+	}
 	_ = d.Set("status", zone.Status.String())
 	_ = d.Set("message", zone.Message)
 	_ = d.Set("updated_at", zone.UpdatedAt.String())

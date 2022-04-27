@@ -356,7 +356,9 @@ func resourceScalewayLbBackendRead(ctx context.Context, d *schema.ResourceData, 
 	_ = d.Set("forward_port_algorithm", flattenLbForwardPortAlgorithm(backend.ForwardPortAlgorithm))
 	_ = d.Set("sticky_sessions", flattenLbStickySessionsType(backend.StickySessions))
 	_ = d.Set("sticky_sessions_cookie_name", backend.StickySessionsCookieName)
-	_ = d.Set("server_ips", backend.Pool)
+	if len(backend.Pool) > 0 {
+		_ = d.Set("server_ips", backend.Pool)
+	}
 	_ = d.Set("send_proxy_v2", backend.SendProxyV2)
 	_ = d.Set("proxy_protocol", flattenLbProxyProtocol(backend.ProxyProtocol))
 	_ = d.Set("timeout_server", flattenDuration(backend.TimeoutServer))

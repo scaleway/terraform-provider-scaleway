@@ -118,7 +118,9 @@ func resourceScalewayInstancePlacementGroupRead(ctx context.Context, d *schema.R
 	_ = d.Set("policy_mode", res.PlacementGroup.PolicyMode.String())
 	_ = d.Set("policy_type", res.PlacementGroup.PolicyType.String())
 	_ = d.Set("policy_respected", res.PlacementGroup.PolicyRespected)
-	_ = d.Set("tags", res.PlacementGroup.Tags)
+	if len(res.PlacementGroup.Tags) > 0 {
+		_ = d.Set("tags", res.PlacementGroup.Tags)
+	}
 
 	return nil
 }

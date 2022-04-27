@@ -207,9 +207,13 @@ func resourceScalewayBaremetalServerRead(ctx context.Context, d *schema.Resource
 	_ = d.Set("organization_id", server.OrganizationID)
 	_ = d.Set("project_id", server.ProjectID)
 	_ = d.Set("offer_id", newZonedID(server.Zone, offer.ID).String())
-	_ = d.Set("tags", server.Tags)
+	if len(server.Tags) > 0 {
+		_ = d.Set("tags", server.Tags)
+	}
 	_ = d.Set("domain", server.Domain)
-	_ = d.Set("ips", flattenBaremetalIPs(server.IPs))
+	if len(server.IPs) > 0 {
+		_ = d.Set("ips", flattenBaremetalIPs(server.IPs))
+	}
 	if server.Install != nil {
 		_ = d.Set("os_id", newZonedID(server.Zone, server.Install.OsID).String())
 		_ = d.Set("ssh_key_ids", server.Install.SSHKeyIDs)
