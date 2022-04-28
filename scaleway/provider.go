@@ -133,6 +133,7 @@ func Provider(config *ProviderConfig) plugin.ProviderFunc {
 				"scaleway_rdb_instance":                dataSourceScalewayRDBInstance(),
 				"scaleway_rdb_database":                dataSourceScalewayRDBDatabase(),
 				"scaleway_rdb_privilege":               dataSourceScalewayRDBPrivilege(),
+				"scaleway_redis_cluster":               dataSourceScalewayRedisCluster(),
 				"scaleway_registry_namespace":          dataSourceScalewayRegistryNamespace(),
 				"scaleway_registry_image":              dataSourceScalewayRegistryImage(),
 				"scaleway_vpc_public_gateway":          dataSourceScalewayVPCPublicGateway(),
