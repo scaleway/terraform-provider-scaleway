@@ -84,14 +84,14 @@ func TestAccScalewayVPCPublicGatewayPATRule_Basic(t *testing.T) {
 	})
 }
 
-func TestAccScalewayVPCPublicGatewayDHCP_WithPatRule(t *testing.T) {
+func TestAccScalewayVPCPublicGatewayPATRule_WithInstance(t *testing.T) {
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      testAccCheckScalewayVPCPublicGatewayDHCPDestroy(tt),
+		CheckDestroy:      testAccCheckScalewayVPCPublicGatewayPATRuleDestroy(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -165,9 +165,15 @@ func TestAccScalewayVPCPublicGatewayDHCP_WithPatRule(t *testing.T) {
 					testAccCheckScalewayVPCPublicGatewayDHCPExists(tt, "scaleway_vpc_public_gateway_dhcp.main"),
 					testAccCheckScalewayVPCPublicGatewayPATRuleExists(tt, "scaleway_vpc_public_gateway_pat_rule.main"),
 					resource.TestCheckResourceAttr("scaleway_vpc_public_gateway_dhcp.main", "subnet", "10.0.0.0/24"),
+					resource.TestCheckResourceAttr("scaleway_vpc_public_gateway_pat_rule.main", "protocol", "tcp"),
+					resource.TestCheckResourceAttr("scaleway_vpc_public_gateway_pat_rule.main", "public_port", "2023"),
+					resource.TestCheckResourceAttr("scaleway_vpc_public_gateway_pat_rule.main", "private_port", "22"),
 					resource.TestCheckResourceAttrPair(
 						"scaleway_vpc_public_gateway_pat_rule.main", "private_ip",
 						"scaleway_vpc_public_gateway_dhcp_reservation.main", "ip_address"),
+					resource.TestCheckResourceAttrPair(
+						"scaleway_vpc_public_gateway_pat_rule.main", "gateway_id",
+						"scaleway_vpc_public_gateway.main", "id"),
 				),
 			},
 		},
