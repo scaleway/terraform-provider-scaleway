@@ -84,6 +84,96 @@ func TestAccScalewayVPCPublicGatewayPATRule_Basic(t *testing.T) {
 	})
 }
 
+func TestAccScalewayVPCPublicGatewayDHCP_WithPatRule(t *testing.T) {
+	tt := NewTestTools(t)
+	defer tt.Cleanup()
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      testAccCheckScalewayVPCPublicGatewayDHCPDestroy(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					### Scaleway Private Network
+					resource "scaleway_vpc_private_network" "main" {
+					  name = "My Private Network"
+					}
+					
+					### IP for Public Gateway
+					resource "scaleway_vpc_public_gateway_ip" "main" {
+					}
+					
+					### DHCP Space of VPC
+					resource "scaleway_vpc_public_gateway_dhcp" "main" {
+					  subnet = "10.0.0.0/24"
+					}
+					
+					### The Public Gateway with the Attached IP
+					resource "scaleway_vpc_public_gateway" "main" {
+					  name  = "The Public Gateway"
+					  type  = "VPC-GW-S"
+					  ip_id = scaleway_vpc_public_gateway_ip.main.id
+					}
+					
+					### VPC Gateway Network
+					resource "scaleway_vpc_gateway_network" "main" {
+					  gateway_id         = scaleway_vpc_public_gateway.main.id
+					  private_network_id = scaleway_vpc_private_network.main.id
+					  dhcp_id            = scaleway_vpc_public_gateway_dhcp.main.id
+					  cleanup_dhcp       = true
+					  enable_masquerade  = true
+					  depends_on = [
+						scaleway_vpc_public_gateway_ip.main,
+						scaleway_vpc_private_network.main
+					  ]
+					}
+					
+					### Scaleway Instance
+					resource "scaleway_instance_server" "main" {
+					  name        = "Scaleway Instance"
+					  type        = "DEV1-S"
+					  image       = "debian_bullseye"
+					  enable_ipv6 = false
+					
+					  private_network {
+						pn_id = scaleway_vpc_private_network.main.id
+					  }
+					}
+					
+					### DHCP Reservation for Instance
+					resource "scaleway_vpc_public_gateway_dhcp_reservation" "main" {
+					  gateway_network_id = scaleway_vpc_gateway_network.main.id
+					  mac_address        = scaleway_instance_server.main.private_network.0.mac_address
+					  ip_address         = "10.0.0.3"
+					}
+					
+					### PAT RULE for SSH Port
+					resource "scaleway_vpc_public_gateway_pat_rule" "main" {
+					  gateway_id   = scaleway_vpc_public_gateway.main.id
+					  private_ip   = scaleway_vpc_public_gateway_dhcp_reservation.main.ip_address
+					  private_port = 22
+					  public_port  = 2023
+					  protocol     = "tcp"
+					  depends_on = [
+						scaleway_vpc_gateway_network.main,
+						scaleway_vpc_private_network.main
+					  ]
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayVPCPublicGatewayDHCPExists(tt, "scaleway_vpc_public_gateway_dhcp.main"),
+					testAccCheckScalewayVPCPublicGatewayPATRuleExists(tt, "scaleway_vpc_public_gateway_pat_rule.main"),
+					resource.TestCheckResourceAttr("scaleway_vpc_public_gateway_dhcp.main", "subnet", "10.0.0.0/24"),
+					resource.TestCheckResourceAttrPair(
+						"scaleway_vpc_public_gateway_pat_rule.main", "private_ip",
+						"scaleway_vpc_public_gateway_dhcp_reservation.main", "ip_address"),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckScalewayVPCPublicGatewayPATRuleExists(tt *TestTools, n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
