@@ -205,9 +205,7 @@ func resourceScalewayLbCertificateRead(ctx context.Context, d *schema.ResourceDa
 	_ = d.Set("lb_id", newZonedIDString(zone, certificate.LB.ID))
 	_ = d.Set("name", certificate.Name)
 	_ = d.Set("common_name", certificate.CommonName)
-	if len(certificate.SubjectAlternativeName) > 0 {
-		_ = d.Set("subject_alternative_name", certificate.SubjectAlternativeName)
-	}
+	_ = d.Set("subject_alternative_name", certificate.SubjectAlternativeName)
 	_ = d.Set("fingerprint", certificate.Fingerprint)
 	_ = d.Set("not_valid_before", flattenTime(certificate.NotValidBefore))
 	_ = d.Set("not_valid_after", flattenTime(certificate.NotValidAfter))
