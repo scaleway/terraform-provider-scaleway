@@ -13,7 +13,7 @@ import (
 )
 
 const (
-	defaultWaitLBRetryInterval = 30 * time.Second
+	defaultWaitLBRetryInterval = 5 * time.Second
 )
 
 func resourceScalewayLb() *schema.Resource {
