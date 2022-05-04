@@ -140,7 +140,7 @@ func resourceScalewayVPCPublicGatewayRead(ctx context.Context, d *schema.Resourc
 	_ = d.Set("upstream_dns_servers", gateway.UpstreamDNSServers)
 	_ = d.Set("ip_id", newZonedID(gateway.Zone, gateway.IP.ID).String())
 	_ = d.Set("bastion_enabled", gateway.BastionEnabled)
-	_ = d.Set("bastion_port", gateway.BastionPort)
+	_ = d.Set("bastion_port", int(gateway.BastionPort))
 
 	return nil
 }
@@ -156,21 +156,34 @@ func resourceScalewayVPCPublicGatewayUpdate(ctx context.Context, d *schema.Resou
 		return diag.FromErr(err)
 	}
 
-	if d.HasChanges("name", "tags", "upstream_dns_servers", "bastion_enabled", "bastion_port") {
-		updateRequest := &vpcgw.UpdateGatewayRequest{
-			GatewayID:          gateway.ID,
-			Zone:               gateway.Zone,
-			Name:               scw.StringPtr(d.Get("name").(string)),
-			Tags:               scw.StringsPtr(expandStrings(d.Get("tags"))),
-			EnableBastion:      scw.BoolPtr(d.Get("enable_bastion").(bool)),
-			BastionPort:        scw.Uint32Ptr(uint32(d.Get("bastion_port").(int))),
-			UpstreamDNSServers: scw.StringsPtr(expandStrings(d.Get("upstream_dns_servers"))),
-		}
+	updateRequest := &vpcgw.UpdateGatewayRequest{
+		GatewayID: gateway.ID,
+		Zone:      gateway.Zone,
+	}
 
-		_, err = vpcgwAPI.UpdateGateway(updateRequest, scw.WithContext(ctx))
-		if err != nil {
-			return diag.FromErr(err)
-		}
+	if d.HasChanges("name") {
+		updateRequest.Name = scw.StringPtr(d.Get("name").(string))
+	}
+
+	if d.HasChange("tags") {
+		updateRequest.Tags = scw.StringsPtr(expandStrings(d.Get("tags")))
+	}
+
+	if d.HasChange("bastion_port") {
+		updateRequest.BastionPort = scw.Uint32Ptr(uint32(d.Get("bastion_port").(int)))
+	}
+
+	if d.HasChange("enable_bastion") {
+		updateRequest.EnableBastion = scw.BoolPtr(d.Get("enable_bastion").(bool))
+	}
+
+	if d.HasChange("upstream_dns_servers") {
+		updateRequest.UpstreamDNSServers = scw.StringsPtr(expandStrings(d.Get("upstream_dns_servers")))
+	}
+
+	_, err = vpcgwAPI.UpdateGateway(updateRequest, scw.WithContext(ctx))
+	if err != nil {
+		return diag.FromErr(err)
 	}
 
 	_, err = waitForVPCPublicGateway(ctx, vpcgwAPI, zone, id, d.Timeout(schema.TimeoutUpdate))
