@@ -117,6 +117,10 @@ func resourceScalewayVPCPublicGatewayRead(ctx context.Context, d *schema.Resourc
 
 	gateway, err := waitForVPCPublicGateway(ctx, vpcgwAPI, zone, id, d.Timeout(schema.TimeoutRead))
 	if err != nil {
+		if is404Error(err) {
+			d.SetId("")
+			return nil
+		}
 		return diag.FromErr(err)
 	}
 
