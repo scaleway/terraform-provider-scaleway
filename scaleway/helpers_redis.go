@@ -86,3 +86,23 @@ func flattenRedisACLs(aclRules []*redis.ACLRule) interface{} {
 	}
 	return flat
 }
+
+func expandRedisSettings(i interface{}) []*redis.ClusterSetting {
+	rawSettings := i.(map[string]interface{})
+	settings := []*redis.ClusterSetting(nil)
+	for key, value := range rawSettings {
+		settings = append(settings, &redis.ClusterSetting{
+			Name:  key,
+			Value: value.(string),
+		})
+	}
+	return settings
+}
+
+func flattenRedisSettings(settings []*redis.ClusterSetting) interface{} {
+	rawSettings := make(map[string]string)
+	for _, setting := range settings {
+		rawSettings[setting.Name] = setting.Value
+	}
+	return rawSettings
+}
