@@ -187,7 +187,7 @@ The following arguments are supported:
 
 - `name` - (Required) The name for the Kubernetes cluster.
 
-- `type` - (Optional) The type of Kubernetes cluster.
+- `type` - (Optional) The type of Kubernetes cluster. Possible values are: `kapsule` or `multicloud`.
 
 - `description` - (Optional) A description for the Kubernetes cluster.
 

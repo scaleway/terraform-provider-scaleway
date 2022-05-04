@@ -109,6 +109,19 @@ resource "scaleway_lb_frontend" "frontend01" {
       invert            = "true"
     }
   }
+
+  # Allow upstream http requests that have an HTTP header "foo" that matches "bar"
+  acl {
+    action {
+      type = "allow"
+    }
+
+    match {
+      http_filter       = "http_header_match"
+      http_filter_value = "foo"
+      http_value_option = "bar"
+    }
+  }
 }
 ```
 
@@ -148,9 +161,12 @@ The following arguments are supported:
 
     - `http_filter` - (Optional) The HTTP filter to match. This filter is supported only if your backend protocol has an HTTP forward protocol.
        It extracts the request's URL path, which starts at the first slash and ends before the question mark (without the host part).
-       Possible values are: `acl_http_filter_none`, `path_begin`, `path_end` or `regex`.
+       Possible values are: `acl_http_filter_none`, `path_begin`, `path_end`, `http_header_match` or `regex`.
 
     - `http_filter_value` - (Optional) A list of possible values to match for the given HTTP filter.
+      Keep in mind that in the case of `http_header_match` the HTTP header field name is case-insensitive.
+
+    - `http_value_option` - (Optional) If you have `http_filter` at `http_header_match`, you can use this field to filter on the HTTP header's value.
 
     - `invert` - (Optional) If set to `true`, the condition will be of type "unless".
 
