@@ -22,7 +22,7 @@ func TestAccScalewayDataSourceBaremetalOS_Basic(t *testing.T) {
 				Config: `
 					data "scaleway_baremetal_os" "by_name" {
 						name = "Ubuntu"
-						version = "20.04"
+						version = "20.04 LTS (Focal Fossa)"
 					}
 					
 					data "scaleway_baremetal_os" "by_id" {
