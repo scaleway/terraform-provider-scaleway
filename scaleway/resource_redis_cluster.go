@@ -81,6 +81,31 @@ func resourceScalewayRedisCluster() *schema.Resource {
 				Computed:    true,
 				Description: "The date and time of the last update of the Redis cluster",
 			},
+			"acl": {
+				Type:        schema.TypeList,
+				Description: "List of acl rules.",
+				Optional:    true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"id": {
+							Type:        schema.TypeString,
+							Description: "ID of the rule (UUID format).",
+							Computed:    true,
+						},
+						"ip": {
+							Type:        schema.TypeString,
+							Description: "IPv4 network address of the rule (IP network).",
+							Required:    true,
+						},
+						"description": {
+							Type:        schema.TypeString,
+							Description: "Description of the rule.",
+							Optional:    true,
+							Computed:    true,
+						},
+					},
+				},
+			},
 			// Common
 			"zone":       zoneSchema(),
 			"project_id": projectIDSchema(),
@@ -115,6 +140,14 @@ func resourceScalewayRedisClusterCreate(ctx context.Context, d *schema.ResourceD
 	tlsEnabled, tlsEnabledExist := d.GetOk("tls_enabled")
 	if tlsEnabledExist {
 		createReq.TLSEnabled = tlsEnabled.(bool)
+	}
+	aclRules, aclRulesExist := d.GetOk("acl")
+	if aclRulesExist {
+		rules, err := expandRedisACLSpecs(aclRules)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		createReq.ACLRules = rules
 	}
 
 	res, err := redisAPI.CreateCluster(createReq, scw.WithContext(ctx))
@@ -161,6 +194,7 @@ func resourceScalewayRedisClusterRead(ctx context.Context, d *schema.ResourceDat
 	_ = d.Set("cluster_size", cluster.ClusterSize)
 	_ = d.Set("created_at", cluster.CreatedAt.Format(time.RFC3339))
 	_ = d.Set("updated_at", cluster.UpdatedAt.Format(time.RFC3339))
+	_ = d.Set("acl", flattenRedisACLs(cluster.ACLRules))
 
 	if len(cluster.Tags) > 0 {
 		_ = d.Set("tags", cluster.Tags)
@@ -191,6 +225,12 @@ func resourceScalewayRedisClusterUpdate(ctx context.Context, d *schema.ResourceD
 	}
 	if d.HasChange("tags") {
 		req.Tags = expandStrings(d.Get("tags"))
+	}
+	if d.HasChange("acl") {
+		diagnostics := resourceScalewayRedisClusterUpdateACL(ctx, d, redisAPI, zone, ID)
+		if diagnostics != nil {
+			return diagnostics
+		}
 	}
 
 	_, err = waitForRedisCluster(ctx, redisAPI, zone, ID, d.Timeout(schema.TimeoutUpdate))
@@ -247,6 +287,24 @@ func resourceScalewayRedisClusterUpdate(ctx context.Context, d *schema.ResourceD
 	}
 
 	return resourceScalewayRedisClusterRead(ctx, d, meta)
+}
+
+func resourceScalewayRedisClusterUpdateACL(ctx context.Context, d *schema.ResourceData, redisAPI *redis.API, zone scw.Zone, clusterID string) diag.Diagnostics {
+	rules, err := expandRedisACLSpecs(d.Get("acl"))
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	_, err = redisAPI.SetACLRules(&redis.SetACLRulesRequest{
+		Zone:      zone,
+		ClusterID: clusterID,
+		ACLRules:  rules,
+	}, scw.WithContext(ctx))
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	return nil
 }
 
 func resourceScalewayRedisClusterDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
