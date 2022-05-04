@@ -265,7 +265,7 @@ func TestAccScalewayK8SCluster_OIDC(t *testing.T) {
 					resource.TestCheckResourceAttrSet("scaleway_k8s_cluster.oidc", "kubeconfig.0.token"),
 					resource.TestCheckResourceAttrSet("scaleway_k8s_cluster.oidc", "apiserver_url"),
 					resource.TestCheckResourceAttrSet("scaleway_k8s_cluster.oidc", "wildcard_dns"),
-					resource.TestCheckResourceAttr("scaleway_k8s_cluster.oidc", "open_id_connect_config.0.issuer_url", "https://api.scaleway.com"),
+					resource.TestCheckResourceAttr("scaleway_k8s_cluster.oidc", "open_id_connect_config.0.issuer_url", "https://accounts.google.com/.well-known/openid-configuration"),
 					resource.TestCheckResourceAttr("scaleway_k8s_cluster.oidc", "open_id_connect_config.0.client_id", "my-super-id"),
 					resource.TestCheckResourceAttr("scaleway_k8s_cluster.oidc", "open_id_connect_config.0.username_claim", "mario"),
 					resource.TestCheckResourceAttr("scaleway_k8s_cluster.oidc", "open_id_connect_config.0.groups_prefix", "pouf"),
@@ -289,7 +289,7 @@ func TestAccScalewayK8SCluster_OIDC(t *testing.T) {
 					resource.TestCheckResourceAttrSet("scaleway_k8s_cluster.oidc", "kubeconfig.0.token"),
 					resource.TestCheckResourceAttrSet("scaleway_k8s_cluster.oidc", "apiserver_url"),
 					resource.TestCheckResourceAttrSet("scaleway_k8s_cluster.oidc", "wildcard_dns"),
-					resource.TestCheckResourceAttr("scaleway_k8s_cluster.oidc", "open_id_connect_config.0.issuer_url", "https://secretapi.scaleway.com"),
+					resource.TestCheckResourceAttr("scaleway_k8s_cluster.oidc", "open_id_connect_config.0.issuer_url", "https://accounts.google.com/.well-known/openid-configuration"),
 					resource.TestCheckResourceAttr("scaleway_k8s_cluster.oidc", "open_id_connect_config.0.client_id", "my-even-more-awesome-id"),
 					resource.TestCheckResourceAttr("scaleway_k8s_cluster.oidc", "open_id_connect_config.0.username_claim", "luigi"),
 					resource.TestCheckResourceAttr("scaleway_k8s_cluster.oidc", "open_id_connect_config.0.username_prefix", "boo"),
@@ -499,7 +499,7 @@ resource "scaleway_k8s_cluster" "oidc" {
 	version = "%s"
 	name = "oidc"
 	open_id_connect_config {
-		issuer_url = "https://api.scaleway.com"
+		issuer_url = "https://accounts.google.com/.well-known/openid-configuration"
 		client_id = "my-super-id"
 		username_claim = "mario"
 		groups_claim = [ "k8s", "admin" ]
@@ -527,7 +527,7 @@ resource "scaleway_k8s_cluster" "oidc" {
 	version = "%s"
 	name = "oidc"
 	open_id_connect_config {
-		issuer_url = "https://secretapi.scaleway.com"
+		issuer_url = "https://accounts.google.com/.well-known/openid-configuration"
 		client_id = "my-even-more-awesome-id"
 		username_claim = "luigi"
 		groups_claim = [ ]

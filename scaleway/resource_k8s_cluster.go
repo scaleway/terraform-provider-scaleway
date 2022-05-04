@@ -436,7 +436,6 @@ func resourceScalewayK8SClusterRead(ctx context.Context, d *schema.ResourceData,
 	}
 	_ = d.Set("version", version)
 
-	// autoscaler_config
 	_ = d.Set("autoscaler_config", clusterAutoscalerConfigFlatten(cluster))
 	_ = d.Set("open_id_connect_config", clusterOpenIDConnectConfigFlatten(cluster))
 	_ = d.Set("auto_upgrade", clusterAutoUpgradeFlatten(cluster))
