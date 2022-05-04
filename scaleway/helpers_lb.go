@@ -3,6 +3,7 @@ package scaleway
 import (
 	"context"
 	"fmt"
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"reflect"
 	"strings"
 	"time"
@@ -173,15 +174,14 @@ func privateNetworksToDetach(pns []*lbSDK.PrivateNetwork, updates interface{}) (
 	return actions, nil
 }
 
-func flattenPrivateNetworkConfigs(resList *lbSDK.ListLBPrivateNetworksResponse) interface{} {
-	if len(resList.PrivateNetwork) == 0 || resList == nil {
+func flattenPrivateNetworkConfigs(privateNetworks []*lbSDK.PrivateNetwork) interface{} {
+	if len(privateNetworks) == 0 || privateNetworks == nil {
 		return nil
 	}
 
-	pnConfigs := resList.PrivateNetwork
 	pnI := []map[string]interface{}(nil)
 	var dhcpConfigExist bool
-	for _, pn := range pnConfigs {
+	for _, pn := range privateNetworks {
 		if pn.DHCPConfig != nil {
 			dhcpConfigExist = true
 		}
@@ -497,4 +497,38 @@ func waitForLBCertificate(ctx context.Context, lbAPI *lbSDK.ZonedAPI, zone scw.Z
 	}, scw.WithContext(ctx))
 
 	return certificate, err
+}
+
+func attachLBPrivateNetwork(ctx context.Context, lbAPI *lbSDK.ZonedAPI, zone scw.Zone, pnConfigs []*lbSDK.ZonedAPIAttachPrivateNetworkRequest, timeout time.Duration) ([]*lbSDK.PrivateNetwork, error) {
+	var privateNetworks []*lbSDK.PrivateNetwork
+
+	for _, config := range pnConfigs {
+		pn, err := lbAPI.AttachPrivateNetwork(config, scw.WithContext(ctx))
+		if err != nil && !is404Error(err) {
+			return nil, err
+		}
+
+		privateNetworks, err = waitForLBPN(ctx, lbAPI, zone, pn.LB.ID, timeout)
+		if err != nil && !is404Error(err) {
+			return nil, err
+		}
+
+		for _, pn := range privateNetworks {
+			if pn.Status == lbSDK.PrivateNetworkStatusError {
+				err = lbAPI.DetachPrivateNetwork(&lbSDK.ZonedAPIDetachPrivateNetworkRequest{
+					Zone:             zone,
+					LBID:             pn.LB.ID,
+					PrivateNetworkID: pn.PrivateNetworkID,
+				}, scw.WithContext(ctx))
+				if err != nil && !is404Error(err) {
+					return nil, err
+				}
+				tflog.Debug(ctx, fmt.Sprintf("DHCP config: %v", pn.DHCPConfig))
+				tflog.Debug(ctx, fmt.Sprintf("Static config: %v", pn.StaticConfig))
+				return nil, fmt.Errorf("attaching private network with id: %s on error state. please check your config", pn.PrivateNetworkID)
+			}
+		}
+	}
+
+	return privateNetworks, nil
 }
