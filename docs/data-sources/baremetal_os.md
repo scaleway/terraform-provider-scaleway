@@ -9,13 +9,15 @@ description: |-
 Gets information about a baremetal operating system.
 For more information, see [the documentation](https://developers.scaleway.com/en/products/baremetal/api).
 
+You can also use the [scaleway-cli](https://github.com/scaleway/scaleway-cli) with `scw baremetal os list` to list all available operating systems.
+
 ## Example Usage
 
 ```hcl
 # Get info by os name and version
 data "scaleway_baremetal_os" "by_name" {
   name = "Ubuntu"
-  version = "20.04"
+  version = "20.04 LTS (Focal Fossa)"
 }
 
 # Get info by os id
