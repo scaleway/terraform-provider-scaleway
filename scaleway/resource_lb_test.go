@@ -265,7 +265,7 @@ func TestAccScalewayLbLb_WithIP(t *testing.T) {
 	})
 }
 
-func TestAccScalewayLbLb_WithMultiConfigs(t *testing.T) {
+func TestAccScalewayLbLb_WithSeveralPrivateNetworks(t *testing.T) {
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
 	resource.ParallelTest(t, resource.TestCase{
@@ -325,7 +325,6 @@ func TestAccScalewayLbLb_WithMultiConfigs(t *testing.T) {
 						pn_id = scaleway_vpc_private_network.pn.id
 					}
 				}
-				
 				
 				resource scaleway_lb lb01 {
 					ip_id = scaleway_lb_ip.ip01.id
