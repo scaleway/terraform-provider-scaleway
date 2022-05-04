@@ -133,6 +133,10 @@ func resourceScalewayDomainZoneRead(ctx context.Context, d *schema.ResourceData,
 	}, scw.WithContext(ctx))
 
 	if err != nil {
+		if is404Error(err) {
+			d.SetId("")
+			return nil
+		}
 		return diag.FromErr(err)
 	}
 
