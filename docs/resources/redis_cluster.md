@@ -23,6 +23,11 @@ resource "scaleway_redis_cluster" "main" {
   tags = [ "test", "redis" ]
   cluster_size = 1
   tls_enabled = "true"
+  
+  acl {
+    ip = "0.0.0.0/0"
+    description = "Allow all"
+  }
 }
 ```
 
@@ -55,6 +60,13 @@ The following arguments are supported:
 - `tls_enabled` - (Defaults to false) Whether TLS is enabled or not.
 
 - `project_id` - (Defaults to [provider](../index.md) `project_id`) The ID of the project the Redis Cluster is associated with.
+
+- `acl` - (Optional) List of acl rules, this is cluster's authorized IPs.
+
+The `acl` block supports:
+
+- `ip` - (Required) The ip range to whitelist in [CIDR notation](https://en.wikipedia.org/wiki/Classless_Inter-Domain_Routing#CIDR_notation)
+- `description` - (Optional) A text describing this rule. Default description: `Allow IP`
 
 ## Attributes Reference
 
