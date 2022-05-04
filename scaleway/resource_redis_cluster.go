@@ -106,6 +106,14 @@ func resourceScalewayRedisCluster() *schema.Resource {
 					},
 				},
 			},
+			"settings": {
+				Type:        schema.TypeMap,
+				Description: "Map of settings to define for the cluster.",
+				Optional:    true,
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
+			},
 			// Common
 			"zone":       zoneSchema(),
 			"project_id": projectIDSchema(),
@@ -148,6 +156,10 @@ func resourceScalewayRedisClusterCreate(ctx context.Context, d *schema.ResourceD
 			return diag.FromErr(err)
 		}
 		createReq.ACLRules = rules
+	}
+	settings, settingsExist := d.GetOk("settings")
+	if settingsExist {
+		createReq.ClusterSettings = expandRedisSettings(settings)
 	}
 
 	res, err := redisAPI.CreateCluster(createReq, scw.WithContext(ctx))
@@ -195,6 +207,7 @@ func resourceScalewayRedisClusterRead(ctx context.Context, d *schema.ResourceDat
 	_ = d.Set("created_at", cluster.CreatedAt.Format(time.RFC3339))
 	_ = d.Set("updated_at", cluster.UpdatedAt.Format(time.RFC3339))
 	_ = d.Set("acl", flattenRedisACLs(cluster.ACLRules))
+	_ = d.Set("settings", flattenRedisSettings(cluster.ClusterSettings))
 
 	if len(cluster.Tags) > 0 {
 		_ = d.Set("tags", cluster.Tags)
@@ -228,6 +241,12 @@ func resourceScalewayRedisClusterUpdate(ctx context.Context, d *schema.ResourceD
 	}
 	if d.HasChange("acl") {
 		diagnostics := resourceScalewayRedisClusterUpdateACL(ctx, d, redisAPI, zone, ID)
+		if diagnostics != nil {
+			return diagnostics
+		}
+	}
+	if d.HasChange("settings") {
+		diagnostics := resourceScalewayRedisClusterUpdateSettings(ctx, d, redisAPI, zone, ID)
 		if diagnostics != nil {
 			return diagnostics
 		}
@@ -299,6 +318,21 @@ func resourceScalewayRedisClusterUpdateACL(ctx context.Context, d *schema.Resour
 		Zone:      zone,
 		ClusterID: clusterID,
 		ACLRules:  rules,
+	}, scw.WithContext(ctx))
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	return nil
+}
+
+func resourceScalewayRedisClusterUpdateSettings(ctx context.Context, d *schema.ResourceData, redisAPI *redis.API, zone scw.Zone, clusterID string) diag.Diagnostics {
+	settings := expandRedisSettings(d.Get("settings"))
+
+	_, err := redisAPI.SetClusterSettings(&redis.SetClusterSettingsRequest{
+		Zone:      zone,
+		ClusterID: clusterID,
+		Settings:  settings,
 	}, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
