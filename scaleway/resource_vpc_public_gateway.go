@@ -56,6 +56,16 @@ func resourceScalewayVPCPublicGateway() *schema.Resource {
 					Type: schema.TypeString,
 				},
 			},
+			"bastion_enabled": {
+				Type:        schema.TypeBool,
+				Description: "Enable SSH bastion on the gateway",
+				Optional:    true,
+			},
+			"bastion_port": {
+				Type:        schema.TypeInt,
+				Description: "Port of the SSH bastion",
+				Optional:    true,
+			},
 			"project_id": projectIDSchema(),
 			"zone":       zoneSchema(),
 			// Computed elements
@@ -129,6 +139,8 @@ func resourceScalewayVPCPublicGatewayRead(ctx context.Context, d *schema.Resourc
 	_ = d.Set("tags", gateway.Tags)
 	_ = d.Set("upstream_dns_servers", gateway.UpstreamDNSServers)
 	_ = d.Set("ip_id", newZonedID(gateway.Zone, gateway.IP.ID).String())
+	_ = d.Set("bastion_enabled", gateway.BastionEnabled)
+	_ = d.Set("bastion_port", gateway.BastionPort)
 
 	return nil
 }
@@ -144,12 +156,14 @@ func resourceScalewayVPCPublicGatewayUpdate(ctx context.Context, d *schema.Resou
 		return diag.FromErr(err)
 	}
 
-	if d.HasChanges("name", "tags", "upstream_dns_servers") {
+	if d.HasChanges("name", "tags", "upstream_dns_servers", "bastion_enabled", "bastion_port") {
 		updateRequest := &vpcgw.UpdateGatewayRequest{
 			GatewayID:          gateway.ID,
 			Zone:               gateway.Zone,
 			Name:               scw.StringPtr(d.Get("name").(string)),
 			Tags:               scw.StringsPtr(expandStrings(d.Get("tags"))),
+			EnableBastion:      scw.BoolPtr(d.Get("enable_bastion").(bool)),
+			BastionPort:        scw.Uint32Ptr(uint32(d.Get("bastion_port").(int))),
 			UpstreamDNSServers: scw.StringsPtr(expandStrings(d.Get("upstream_dns_servers"))),
 		}
 
