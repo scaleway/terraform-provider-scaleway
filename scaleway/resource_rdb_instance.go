@@ -379,6 +379,10 @@ func resourceScalewayRdbInstanceRead(ctx context.Context, d *schema.ResourceData
 	// verify resource is ready
 	res, err := waitForRDBInstance(ctx, rdbAPI, region, ID, d.Timeout(schema.TimeoutRead))
 	if err != nil {
+		if is404Error(err) {
+			d.SetId("")
+			return nil
+		}
 		return diag.FromErr(err)
 	}
 
