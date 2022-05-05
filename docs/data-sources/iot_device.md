@@ -26,11 +26,10 @@ data "scaleway_iot_device" "my_device" {
 
 ## Argument Reference
 
-- `name` - (Optional) The name of the Hub. 
+- `name` - (Optional) The name of the Hub.
   Only one of the `name` and `device_id` should be specified.
 
 - `device_id` - (Optional) The device ID.
   Only one of the `name` and `device_id` should be specified.
-
 
 - `region` - (Default to [provider](../index.md) `region`) The [region](../guides/regions_and_zones.md#zones) in which the hub exists.
