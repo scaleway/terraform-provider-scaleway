@@ -30,6 +30,11 @@ func TestAccScalewayDataSourceIotDevice_Basic(t *testing.T) {
 						name = scaleway_iot_device.test.name
 					}
 
+					data "scaleway_iot_device" "by_name_and_hub" {
+						name = scaleway_iot_device.test.name
+						hub_id = scaleway_iot_hub.test.id
+					}
+
 					data "scaleway_iot_device" "by_id" {
 						device_id = scaleway_iot_device.test.id
 					}
@@ -39,6 +44,9 @@ func TestAccScalewayDataSourceIotDevice_Basic(t *testing.T) {
 
 					resource.TestCheckResourceAttr("data.scaleway_iot_device.by_name", "name", "test_iot_device_datasource"),
 					resource.TestCheckResourceAttrSet("data.scaleway_iot_device.by_name", "id"),
+
+					resource.TestCheckResourceAttr("data.scaleway_iot_device.by_name_and_hub", "name", "test_iot_device_datasource"),
+					resource.TestCheckResourceAttrSet("data.scaleway_iot_device.by_name_and_hub", "id"),
 
 					resource.TestCheckResourceAttr("data.scaleway_iot_device.by_id", "name", "test_iot_device_datasource"),
 					resource.TestCheckResourceAttrSet("data.scaleway_iot_device.by_id", "id"),

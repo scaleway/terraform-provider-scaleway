@@ -14,6 +14,7 @@ func dataSourceScalewayIotDevice() *schema.Resource {
 	addOptionalFieldsToSchema(dsSchema, "name", "region")
 
 	dsSchema["name"].ConflictsWith = []string{"device_id"}
+	dsSchema["hub_id"].Optional = true
 	dsSchema["device_id"] = &schema.Schema{
 		Type:          schema.TypeString,
 		Optional:      true,
@@ -36,9 +37,17 @@ func dataSourceScalewayIotDeviceRead(ctx context.Context, d *schema.ResourceData
 
 	deviceID, ok := d.GetOk("device_id")
 	if !ok {
+		hubID, hubIDExists := d.GetOk("hub_id")
+		if hubIDExists {
+			_, hubID, err = parseRegionalID(hubID.(string))
+			if err != nil {
+				return diag.FromErr(err)
+			}
+		}
 		res, err := api.ListDevices(&iot.ListDevicesRequest{
 			Region: region,
 			Name:   expandStringPtr(d.Get("name")),
+			HubID:  expandStringPtr(hubID),
 		})
 		if err != nil {
 			return diag.FromErr(err)
