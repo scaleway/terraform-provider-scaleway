@@ -199,9 +199,7 @@ func resourceScalewayLbRead(ctx context.Context, d *schema.ResourceData, meta in
 	_ = d.Set("region", region.String())
 	_ = d.Set("organization_id", lb.OrganizationID)
 	_ = d.Set("project_id", lb.ProjectID)
-	if len(lb.Tags) > 0 {
-		_ = d.Set("tags", lb.Tags)
-	}
+	_ = d.Set("tags", lb.Tags)
 	// For now API return lowercase lb type. This should be fixed in a near future on the API side
 	_ = d.Set("type", strings.ToUpper(lb.Type))
 	_ = d.Set("ip_id", newZonedIDString(zone, lb.IP[0].ID))
