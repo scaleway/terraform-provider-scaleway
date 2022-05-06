@@ -6,6 +6,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	redis "github.com/scaleway/scaleway-sdk-go/api/redis/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 )
@@ -70,6 +71,70 @@ func resourceScalewayRedisCluster() *schema.Resource {
 				Description: "Whether or not TLS is enabled.",
 				ForceNew:    true,
 			},
+			"private_network": {
+				Type:     schema.TypeList,
+				Optional: true,
+				//MaxItems:    1,
+				Description: "Private network specs details",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"id": {
+							Type:     schema.TypeString,
+							Computed: true,
+							//Optional: true,
+							//ValidateFunc: validationUUIDorUUIDWithLocality(),
+							Description: "UUID of the endpoint to be connected to the cluster",
+						},
+						"private_network_id": {
+							Type:         schema.TypeString,
+							Required:     true,
+							ValidateFunc: validationUUIDorUUIDWithLocality(),
+							Description:  "UUID of the private network to be connected to the cluster",
+						},
+						"service_ips": {
+							Type:     schema.TypeList,
+							Required: true,
+							Elem: &schema.Schema{
+								Type:         schema.TypeString,
+								ValidateFunc: validation.IsCIDR,
+							},
+							Description: "List of IPv4 addresses of the private network with a CIDR notation",
+						},
+						"zone": zoneSchema(),
+					},
+				},
+			},
+			//Computed
+			"public_network": {
+				Type:        schema.TypeList,
+				Optional:    true,
+				Computed:    true,
+				MaxItems:    1,
+				Description: "Public network specs details",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"id": {
+							Type: schema.TypeString,
+							//ValidateFunc: validationUUIDorUUIDWithLocality(),
+							Computed: true,
+						},
+						"port": {
+							Type:     schema.TypeInt,
+							Computed: true,
+							//ValidateFunc: validation.IsPortNumber,
+							Description: "TCP port of the endpoint",
+						},
+						"ips": {
+							Type: schema.TypeList,
+							Elem: &schema.Schema{
+								Type: schema.TypeString,
+								//ValidateFunc: validation.IsIPAddress,
+							},
+							Computed: true,
+						},
+					},
+				},
+			},
 			"created_at": {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -114,6 +179,15 @@ func resourceScalewayRedisClusterCreate(ctx context.Context, d *schema.ResourceD
 	tlsEnabled, tlsEnabledExist := d.GetOk("tls_enabled")
 	if tlsEnabledExist {
 		createReq.TLSEnabled = tlsEnabled.(bool)
+	}
+
+	privN, privNExists := d.GetOk("private_network")
+	if privNExists {
+		pnSpecs, err := expandRedisPrivateNetwork(privN)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		createReq.Endpoints = pnSpecs
 	}
 
 	res, err := redisAPI.CreateCluster(createReq, scw.WithContext(ctx))
@@ -163,6 +237,13 @@ func resourceScalewayRedisClusterRead(ctx context.Context, d *schema.ResourceDat
 	if len(cluster.Tags) > 0 {
 		_ = d.Set("tags", cluster.Tags)
 	}
+
+	//set endpoints
+	pnI, pnExists := flattenRedisPrivateNetwork(cluster.Endpoints)
+	if pnExists {
+		_ = d.Set("private_network", pnI)
+	}
+	_ = d.Set("public_network", flattenRedisPublicNetwork(cluster.Endpoints))
 
 	return nil
 }
@@ -228,6 +309,7 @@ func resourceScalewayRedisClusterUpdate(ctx context.Context, d *schema.ResourceD
 		if err != nil && !is404Error(err) {
 			return diag.FromErr(err)
 		}
+
 		_, err = redisAPI.MigrateCluster(&request, scw.WithContext(ctx))
 		if err != nil {
 			return diag.FromErr(err)
@@ -235,6 +317,37 @@ func resourceScalewayRedisClusterUpdate(ctx context.Context, d *schema.ResourceD
 
 		_, err = waitForRedisCluster(ctx, redisAPI, zone, ID, d.Timeout(schema.TimeoutUpdate))
 		if err != nil && !is404Error(err) {
+			return diag.FromErr(err)
+		}
+	}
+
+	if d.HasChanges("private_network") {
+		//retrieve state
+		cluster, err := waitForRedisCluster(ctx, redisAPI, zone, ID, d.Timeout(schema.TimeoutUpdate))
+		if err != nil {
+			return diag.FromErr(err)
+		}
+
+		// get new desired state of endpoints
+		rawNewEndpoints := d.Get("private_network")
+		newEndpoints, epErr := expandRedisPrivateNetwork(rawNewEndpoints)
+		if epErr != nil {
+			return diag.FromErr(epErr)
+		}
+
+		//send request
+		_, err = redisAPI.SetEndpoints(&redis.SetEndpointsRequest{
+			Zone:      cluster.Zone,
+			ClusterID: cluster.ID,
+			Endpoints: newEndpoints,
+		})
+		//TODO: jeter un oeil aux requests options
+		if err != nil {
+			return diag.FromErr(err)
+		}
+
+		_, err = waitForRedisCluster(ctx, redisAPI, zone, ID, d.Timeout(schema.TimeoutUpdate))
+		if err != nil {
 			return diag.FromErr(err)
 		}
 	}

@@ -177,6 +177,76 @@ func TestAccScalewayRedisCluster_Migrate(t *testing.T) {
 	})
 }
 
+func TestAccScalewayRedisCluster_Endpoints(t *testing.T) {
+	tt := NewTestTools(t)
+	defer tt.Cleanup()
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      testAccCheckScalewayRedisClusterDestroy(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource "scaleway_redis_cluster" "main" {
+						name = "test_redis_endpoints"
+    					version = "6.2.6"
+    					node_type = "MDB-BETA-M"
+    					user_name = "my_initial_user"
+    					password = "thiZ_is_v&ry_s3cret"
+						cluster_size = 1
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayRedisExists(tt, "scaleway_redis_cluster.main"),
+					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "name", "test_redis_endpoints"),
+					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "version", "6.2.6"),
+					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "node_type", "MDB-BETA-M"),
+					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "user_name", "my_initial_user"),
+					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "password", "thiZ_is_v&ry_s3cret"),
+					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "cluster_size", "1"),
+					resource.TestCheckResourceAttrSet("scaleway_redis_cluster.main", "public_network.id"),
+					resource.TestCheckResourceAttrSet("scaleway_redis_cluster.main", "public_network.ips"),
+					resource.TestCheckResourceAttrSet("scaleway_redis_cluster.main", "public_network.port"),
+				),
+			},
+			{
+				Config: `
+					resource "scaleway_vpc_private_network" "pn" {
+    					name = "privateN"
+					}
+					resource "scaleway_redis_cluster" "main" {
+						name =			"test_redis_endpoints"
+    					version = 		"6.2.6"
+    					node_type = 	"MDB-BETA-M"
+    					user_name = 	"my_initial_user"
+    					password = 		"thiZ_is_v&ry_s3cret"
+						cluster_size = 	1
+						private_network {
+							private_network_id = "${scaleway_vpc_private_network.pn.id}"
+							service_ips = [
+								"10.12.1.0/20",
+							]
+						}
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayRedisExists(tt, "scaleway_redis_cluster.main"),
+					testAccCheckScalewayRedisExists(tt, "scaleway_vpc_private_network.pn"),
+					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "name", "test_redis_endpoints"),
+					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "version", "6.2.6"),
+					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "node_type", "MDB-BETA-M"),
+					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "user_name", "my_initial_user"),
+					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "password", "thiZ_is_v&ry_s3cret"),
+					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "cluster_size", "1"),
+					resource.TestCheckResourceAttrSet("scaleway_redis_cluster.main", "private_network.id"),
+					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "private_network.id", "${scaleway_vpc_private_network.pn.id}"),
+					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "private_network.service_ips.0", "10.12.1.0/20"),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckScalewayRedisClusterDestroy(tt *TestTools) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		for _, rs := range state.RootModule().Resources {

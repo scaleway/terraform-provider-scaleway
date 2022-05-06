@@ -53,3 +53,65 @@ func waitForRedisCluster(ctx context.Context, api *redis.API, zone scw.Zone, id 
 		RetryInterval: &retryInterval,
 	}, scw.WithContext(ctx))
 }
+
+func expandRedisPrivateNetwork(data interface{}) ([]*redis.EndpointSpec, error) {
+	if data == nil {
+		return nil, nil
+	}
+	var epSpecs []*redis.EndpointSpec
+
+	for _, rawPN := range data.([]interface{}) {
+		pn := rawPN.(map[string]interface{})
+		id := expandID(pn["id"].(string))
+		rawIPs := pn["service_ips"].([]interface{})
+		ips := []scw.IPNet(nil)
+		for _, rawIP := range rawIPs {
+			ip, err := expandIPNet(rawIP.(string))
+			if err != nil {
+				return epSpecs, err
+			}
+			ips = append(ips, ip)
+		}
+		spec := &redis.EndpointSpecPrivateNetworkSpec{
+			ID:         id,
+			ServiceIPs: ips,
+		}
+		epSpecs = append(epSpecs, &redis.EndpointSpec{PrivateNetwork: spec})
+	}
+	return epSpecs, nil
+}
+
+func flattenRedisPrivateNetwork(endpoints []*redis.Endpoint) (interface{}, bool) {
+	pnFlat := []map[string]interface{}(nil)
+	for _, endpoint := range endpoints {
+		if endpoint.PrivateNetwork != nil {
+			pn := endpoint.PrivateNetwork
+			pnZonedID := newZonedIDString(pn.Zone, pn.ID)
+			serviceIps := []interface{}(nil)
+			for _, ip := range pn.ServiceIPs {
+				serviceIps = append(serviceIps, ip.String())
+			}
+			pnFlat = append(pnFlat, map[string]interface{}{
+				"id":                 endpoint.ID,
+				"zone":               pn.Zone,
+				"private_network_id": pnZonedID,
+				"service_ips":        serviceIps,
+			})
+		}
+	}
+	return pnFlat, len(pnFlat) != 0
+}
+
+func flattenRedisPublicNetwork(endpoints []*redis.Endpoint) interface{} {
+	pnFlat := []map[string]interface{}(nil)
+	for _, endpoint := range endpoints {
+		if endpoint.PublicNetwork != nil {
+			pnFlat = append(pnFlat, map[string]interface{}{
+				"id":   endpoint.ID,
+				"port": endpoint.Port,
+				"ips":  endpoint.IPs,
+			})
+		}
+	}
+	return nil
+}
