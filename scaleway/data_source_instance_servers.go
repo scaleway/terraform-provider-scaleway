@@ -14,10 +14,7 @@ func dataSourceScalewayInstanceServers() *schema.Resource {
 		ReadContext: dataSourceScalewayInstanceServersRead,
 		Schema: map[string]*schema.Schema{
 			"name": {
-				Type: schema.TypeString,
-				Elem: &schema.Schema{
-					Type: schema.TypeString,
-				},
+				Type:        schema.TypeString,
 				Optional:    true,
 				Description: "Servers with a name matching it are listed.",
 			},
