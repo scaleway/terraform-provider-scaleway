@@ -391,6 +391,12 @@ func resourceScalewayRedisClusterUpdate(ctx context.Context, d *schema.ResourceD
 			return diag.FromErr(epErr)
 		}
 
+		if len(newEndpoints) == 0 {
+			newEndpoints = append(newEndpoints, &redis.EndpointSpec{
+				PublicNetwork: &redis.EndpointSpecPublicNetworkSpec{},
+			})
+		}
+
 		//send request
 		_, err = redisAPI.SetEndpoints(&redis.SetEndpointsRequest{
 			Zone:      cluster.Zone,

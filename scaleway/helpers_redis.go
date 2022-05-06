@@ -63,7 +63,7 @@ func expandRedisPrivateNetwork(data interface{}) ([]*redis.EndpointSpec, error) 
 
 	for _, rawPN := range data.([]interface{}) {
 		pn := rawPN.(map[string]interface{})
-		pnId := expandID(pn["id"].(string))
+		pnID := expandID(pn["id"].(string))
 		rawIPs := pn["service_ips"].([]interface{})
 		ips := []scw.IPNet(nil)
 		for _, rawIP := range rawIPs {
@@ -74,7 +74,7 @@ func expandRedisPrivateNetwork(data interface{}) ([]*redis.EndpointSpec, error) 
 			ips = append(ips, ip)
 		}
 		spec := &redis.EndpointSpecPrivateNetworkSpec{
-			ID:         pnId,
+			ID:         pnID,
 			ServiceIPs: ips,
 		}
 		epSpecs = append(epSpecs, &redis.EndpointSpec{PrivateNetwork: spec})
@@ -132,8 +132,8 @@ func flattenRedisSettings(settings []*redis.ClusterSetting) interface{} {
 		rawSettings[setting.Name] = setting.Value
 	}
 	return rawSettings
-
 }
+
 func flattenRedisPrivateNetwork(endpoints []*redis.Endpoint) (interface{}, bool) {
 	pnFlat := []map[string]interface{}(nil)
 	for _, endpoint := range endpoints {
