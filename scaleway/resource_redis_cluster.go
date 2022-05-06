@@ -113,10 +113,8 @@ func resourceScalewayRedisCluster() *schema.Resource {
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"id": {
-							Type:     schema.TypeString,
-							Computed: true,
-							//Optional: true,
-							//ValidateFunc: validationUUIDorUUIDWithLocality(),
+							Type:        schema.TypeString,
+							Computed:    true,
 							Description: "UUID of the endpoint to be connected to the cluster",
 						},
 						"private_network_id": {
@@ -148,36 +146,23 @@ func resourceScalewayRedisCluster() *schema.Resource {
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"id": {
-							Type: schema.TypeString,
-							//ValidateFunc: validationUUIDorUUIDWithLocality(),
+							Type:     schema.TypeString,
 							Computed: true,
 						},
 						"port": {
-							Type:     schema.TypeInt,
-							Computed: true,
-							//ValidateFunc: validation.IsPortNumber,
+							Type:        schema.TypeInt,
+							Computed:    true,
 							Description: "TCP port of the endpoint",
 						},
 						"ips": {
 							Type: schema.TypeList,
 							Elem: &schema.Schema{
 								Type: schema.TypeString,
-								//ValidateFunc: validation.IsIPAddress,
 							},
 							Computed: true,
 						},
 					},
 				},
-			},
-				"created_at": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The date and time of the creation of the Redis cluster",
-			},
-			"updated_at": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The date and time of the last update of the Redis cluster",
 			},
 			"created_at": {
 				Type:        schema.TypeString,
@@ -188,6 +173,7 @@ func resourceScalewayRedisCluster() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The date and time of the last update of the Redis cluster",
+			},
 			// Common
 			"zone":       zoneSchema(),
 			"project_id": projectIDSchema(),
@@ -423,7 +409,6 @@ func resourceScalewayRedisClusterUpdate(ctx context.Context, d *schema.ResourceD
 	}
 
 	_, err = waitForRedisCluster(ctx, redisAPI, zone, ID, d.Timeout(schema.TimeoutUpdate))
-	_, err = waitForRedisCluster(ctx, redisAPI, zone, ID, d.Timeout(schema.TimeoutUpdate))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -461,7 +446,7 @@ func resourceScalewayRedisClusterUpdateSettings(ctx context.Context, d *schema.R
 		return diag.FromErr(err)
 	}
 
-	return resourceScalewayRedisClusterRead(ctx, d, meta)
+	return nil
 }
 
 func resourceScalewayRedisClusterDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {

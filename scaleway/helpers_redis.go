@@ -82,42 +82,9 @@ func expandRedisPrivateNetwork(data interface{}) ([]*redis.EndpointSpec, error) 
 	return epSpecs, nil
 }
 
-func flattenRedisPrivateNetwork(endpoints []*redis.Endpoint) (interface{}, bool) {
-	pnFlat := []map[string]interface{}(nil)
-	for _, endpoint := range endpoints {
-		if endpoint.PrivateNetwork != nil {
-			pn := endpoint.PrivateNetwork
-			pnZonedID := newZonedIDString(pn.Zone, pn.ID)
-			serviceIps := []interface{}(nil)
-			for _, ip := range pn.ServiceIPs {
-				serviceIps = append(serviceIps, ip.String())
-			}
-			pnFlat = append(pnFlat, map[string]interface{}{
-				"id":                 endpoint.ID,
-				"zone":               pn.Zone,
-				"private_network_id": pnZonedID,
-				"service_ips":        serviceIps,
-			})
-		}
-	}
-	return pnFlat, len(pnFlat) != 0
-}
-
-func flattenRedisPublicNetwork(endpoints []*redis.Endpoint) interface{} {
-	pnFlat := []map[string]interface{}(nil)
-	for _, endpoint := range endpoints {
-		if endpoint.PublicNetwork != nil {
-			pnFlat = append(pnFlat, map[string]interface{}{
-				"id":   endpoint.ID,
-				"port": endpoint.Port,
-				"ips":  endpoint.IPs,
-			})
-		}
-	}
-	return nil
 func expandRedisACLSpecs(i interface{}) ([]*redis.ACLRuleSpec, error) {
 	rules := []*redis.ACLRuleSpec(nil)
-
+	
 	for _, aclRule := range i.([]interface{}) {
 		rawRule := aclRule.(map[string]interface{})
 		rule := &redis.ACLRuleSpec{}
@@ -131,7 +98,7 @@ func expandRedisACLSpecs(i interface{}) ([]*redis.ACLRuleSpec, error) {
 		rule.IP = ip
 		rules = append(rules, rule)
 	}
-
+	
 	return rules, nil
 }
 
@@ -165,4 +132,39 @@ func flattenRedisSettings(settings []*redis.ClusterSetting) interface{} {
 		rawSettings[setting.Name] = setting.Value
 	}
 	return rawSettings
+
+}
+func flattenRedisPrivateNetwork(endpoints []*redis.Endpoint) (interface{}, bool) {
+	pnFlat := []map[string]interface{}(nil)
+	for _, endpoint := range endpoints {
+		if endpoint.PrivateNetwork != nil {
+			pn := endpoint.PrivateNetwork
+			pnZonedID := newZonedIDString(pn.Zone, pn.ID)
+			serviceIps := []interface{}(nil)
+			for _, ip := range pn.ServiceIPs {
+				serviceIps = append(serviceIps, ip.String())
+			}
+			pnFlat = append(pnFlat, map[string]interface{}{
+				"id":                 endpoint.ID,
+				"zone":               pn.Zone,
+				"private_network_id": pnZonedID,
+				"service_ips":        serviceIps,
+			})
+		}
+	}
+	return pnFlat, len(pnFlat) != 0
+}
+
+func flattenRedisPublicNetwork(endpoints []*redis.Endpoint) interface{} {
+	pnFlat := []map[string]interface{}(nil)
+	for _, endpoint := range endpoints {
+		if endpoint.PublicNetwork != nil {
+			pnFlat = append(pnFlat, map[string]interface{}{
+				"id":   endpoint.ID,
+				"port": endpoint.Port,
+				"ips":  endpoint.IPs,
+			})
+		}
+	}
+	return nil
 }
