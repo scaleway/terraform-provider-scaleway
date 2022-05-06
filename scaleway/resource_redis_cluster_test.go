@@ -177,6 +177,137 @@ func TestAccScalewayRedisCluster_Migrate(t *testing.T) {
 	})
 }
 
+func TestAccScalewayRedisCluster_ACL(t *testing.T) {
+	tt := NewTestTools(t)
+	defer tt.Cleanup()
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      testAccCheckScalewayRedisClusterDestroy(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource "scaleway_redis_cluster" "main" {
+    					name = "test_redis_acl"
+    					version = "6.2.6"
+    					node_type = "MDB-BETA-M"
+    					user_name = "my_initial_user"
+    					password = "thiZ_is_v&ry_s3cret"
+						acl {
+							ip = "0.0.0.0/0"
+							description = "An acl description"
+						}
+						acl {
+							ip = "192.168.10.0/24"
+							description = "A second acl description"
+						}
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayRedisExists(tt, "scaleway_redis_cluster.main"),
+					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "name", "test_redis_acl"),
+					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "version", "6.2.6"),
+					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "node_type", "MDB-BETA-M"),
+					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "user_name", "my_initial_user"),
+					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "password", "thiZ_is_v&ry_s3cret"),
+					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "acl.0.ip", "0.0.0.0/0"),
+					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "acl.0.description", "An acl description"),
+					resource.TestCheckResourceAttrSet("scaleway_redis_cluster.main", "acl.0.id"),
+					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "acl.1.ip", "192.168.10.0/24"),
+					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "acl.1.description", "A second acl description"),
+					resource.TestCheckResourceAttrSet("scaleway_redis_cluster.main", "acl.1.id"),
+				),
+			},
+			{
+				Config: `
+					resource "scaleway_redis_cluster" "main" {
+    					name = "test_redis_acl"
+    					version = "6.2.6"
+    					node_type = "MDB-BETA-M"
+    					user_name = "my_initial_user"
+    					password = "thiZ_is_v&ry_s3cret"
+						acl {
+							ip = "192.168.11.0/24"
+							description = "Another acl description"
+						}
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayRedisExists(tt, "scaleway_redis_cluster.main"),
+					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "name", "test_redis_acl"),
+					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "version", "6.2.6"),
+					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "node_type", "MDB-BETA-M"),
+					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "user_name", "my_initial_user"),
+					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "password", "thiZ_is_v&ry_s3cret"),
+					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "acl.0.ip", "192.168.11.0/24"),
+					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "acl.0.description", "Another acl description"),
+					resource.TestCheckResourceAttrSet("scaleway_redis_cluster.main", "acl.0.id"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccScalewayRedisCluster_Settings(t *testing.T) {
+	tt := NewTestTools(t)
+	defer tt.Cleanup()
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      testAccCheckScalewayRedisClusterDestroy(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource "scaleway_redis_cluster" "main" {
+    					name = "test_redis_settings"
+    					version = "6.2.6"
+    					node_type = "MDB-BETA-M"
+    					user_name = "my_initial_user"
+    					password = "thiZ_is_v&ry_s3cret"
+						settings = {
+							"tcp-keepalive" = "150"
+							"maxclients" = "5000"
+						}
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayRedisExists(tt, "scaleway_redis_cluster.main"),
+					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "name", "test_redis_settings"),
+					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "version", "6.2.6"),
+					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "node_type", "MDB-BETA-M"),
+					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "user_name", "my_initial_user"),
+					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "password", "thiZ_is_v&ry_s3cret"),
+					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "settings.tcp-keepalive", "150"),
+					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "settings.maxclients", "5000"),
+				),
+			},
+			{
+				Config: `
+					resource "scaleway_redis_cluster" "main" {
+    					name = "test_redis_settings"
+    					version = "6.2.6"
+    					node_type = "MDB-BETA-M"
+    					user_name = "my_initial_user"
+    					password = "thiZ_is_v&ry_s3cret"
+						settings = {
+							"maxclients" = "2000"
+						}
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayRedisExists(tt, "scaleway_redis_cluster.main"),
+					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "name", "test_redis_settings"),
+					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "version", "6.2.6"),
+					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "node_type", "MDB-BETA-M"),
+					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "user_name", "my_initial_user"),
+					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "password", "thiZ_is_v&ry_s3cret"),
+					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "settings.maxclients", "2000"),
+				),
+			},
+		},
+	})
+}
+
 func TestAccScalewayRedisCluster_Endpoints(t *testing.T) {
 	tt := NewTestTools(t)
 	defer tt.Cleanup()

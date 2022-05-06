@@ -1,17 +1,17 @@
 module github.com/scaleway/terraform-provider-scaleway/v2
 
 require (
-	github.com/aws/aws-sdk-go v1.43.39
+	github.com/aws/aws-sdk-go v1.44.4
 	github.com/dnaeon/go-vcr v1.2.0
 	github.com/docker/docker v20.10.14+incompatible
 	github.com/dustin/go-humanize v1.0.0
-	github.com/google/go-cmp v0.5.7
+	github.com/google/go-cmp v0.5.8
 	github.com/hashicorp/aws-sdk-go-base v1.1.0
 	github.com/hashicorp/go-cty v1.4.1-0.20200414143053-d3edf31b6320
 	github.com/hashicorp/go-retryablehttp v0.7.1
 	github.com/hashicorp/terraform-plugin-log v0.3.0
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.14.0
-	github.com/scaleway/scaleway-sdk-go v1.0.0-beta.9.0.20220425121900-20ed4de943e7
+	github.com/scaleway/scaleway-sdk-go v1.0.0-beta.9.0.20220426161756-58bfb7aeb801
 	github.com/stretchr/testify v1.7.1
 	golang.org/x/xerrors v0.0.0-20220411194840-2f41105eb62f
 

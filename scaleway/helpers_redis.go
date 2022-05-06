@@ -2,6 +2,7 @@ package scaleway
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -114,4 +115,54 @@ func flattenRedisPublicNetwork(endpoints []*redis.Endpoint) interface{} {
 		}
 	}
 	return nil
+func expandRedisACLSpecs(i interface{}) ([]*redis.ACLRuleSpec, error) {
+	rules := []*redis.ACLRuleSpec(nil)
+
+	for _, aclRule := range i.([]interface{}) {
+		rawRule := aclRule.(map[string]interface{})
+		rule := &redis.ACLRuleSpec{}
+		if ruleDescription, hasDescription := rawRule["description"]; hasDescription {
+			rule.Description = ruleDescription.(string)
+		}
+		ip, err := expandIPNet(rawRule["ip"].(string))
+		if err != nil {
+			return nil, fmt.Errorf("failed to validate acl ip (%s): %w", rawRule["ip"].(string), err)
+		}
+		rule.IP = ip
+		rules = append(rules, rule)
+	}
+
+	return rules, nil
+}
+
+func flattenRedisACLs(aclRules []*redis.ACLRule) interface{} {
+	flat := []map[string]interface{}(nil)
+	for _, acl := range aclRules {
+		flat = append(flat, map[string]interface{}{
+			"id":          acl.ID,
+			"ip":          acl.IP.String(),
+			"description": flattenStringPtr(acl.Description),
+		})
+	}
+	return flat
+}
+
+func expandRedisSettings(i interface{}) []*redis.ClusterSetting {
+	rawSettings := i.(map[string]interface{})
+	settings := []*redis.ClusterSetting(nil)
+	for key, value := range rawSettings {
+		settings = append(settings, &redis.ClusterSetting{
+			Name:  key,
+			Value: value.(string),
+		})
+	}
+	return settings
+}
+
+func flattenRedisSettings(settings []*redis.ClusterSetting) interface{} {
+	rawSettings := make(map[string]string)
+	for _, setting := range settings {
+		rawSettings[setting.Name] = setting.Value
+	}
+	return rawSettings
 }

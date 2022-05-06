@@ -23,6 +23,28 @@ resource "scaleway_redis_cluster" "main" {
   tags = [ "test", "redis" ]
   cluster_size = 1
   tls_enabled = "true"
+  
+  acl {
+    ip = "0.0.0.0/0"
+    description = "Allow all"
+  }
+}
+```
+
+### With settings
+
+```hcl
+resource "scaleway_redis_cluster" "main" {
+  name = "test_redis_basic"
+  version = "6.2.6"
+  node_type = "MDB-BETA-M"
+  user_name = "my_initial_user"
+  password = "thiZ_is_v&ry_s3cret"
+  
+  settings = {
+    "maxclients" = "1000"
+    "tcp-keepalive" = "120"
+  }
 }
 ```
 
@@ -55,6 +77,15 @@ The following arguments are supported:
 - `tls_enabled` - (Defaults to false) Whether TLS is enabled or not.
 
 - `project_id` - (Defaults to [provider](../index.md) `project_id`) The ID of the project the Redis Cluster is associated with.
+
+- `acl` - (Optional) List of acl rules, this is cluster's authorized IPs.
+
+The `acl` block supports:
+
+- `ip` - (Required) The ip range to whitelist in [CIDR notation](https://en.wikipedia.org/wiki/Classless_Inter-Domain_Routing#CIDR_notation)
+- `description` - (Optional) A text describing this rule. Default description: `Allow IP`
+
+- `settings` - (Optional) Map of settings for redis cluster. Available settings can be found by listing redis versions with scaleway API or CLI
 
 ## Attributes Reference
 
