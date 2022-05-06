@@ -52,9 +52,6 @@ func TestAccScalewayRedisCluster_Basic(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: `
-					provider "scaleway" {
-						zone = "fr-par-1"
-					}
 					resource "scaleway_redis_cluster" "main" {
     					name = "test_redis_basic"
     					version = "6.2.6"
@@ -82,9 +79,6 @@ func TestAccScalewayRedisCluster_Basic(t *testing.T) {
 			},
 			{
 				Config: `
-					provider "scaleway" {
-						zone = "fr-par-1"
-					}
 					resource "scaleway_redis_cluster" "main" {
     					name = "test_redis_basic_edit"
     					version = "6.2.6"
@@ -320,11 +314,12 @@ func TestAccScalewayRedisCluster_Endpoints(t *testing.T) {
 				Config: `
 					resource "scaleway_redis_cluster" "main" {
 						name = "test_redis_endpoints"
-    					version = "6.2.6"
-    					node_type = "MDB-BETA-M"
-    					user_name = "my_initial_user"
-    					password = "thiZ_is_v&ry_s3cret"
+						version = "6.2.6"
+						node_type = "MDB-BETA-M"
+						user_name = "my_initial_user"
+						password = "thiZ_is_v&ry_s3cret"
 						cluster_size = 1
+						zone = "fr-par-2"
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
@@ -335,25 +330,27 @@ func TestAccScalewayRedisCluster_Endpoints(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "user_name", "my_initial_user"),
 					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "password", "thiZ_is_v&ry_s3cret"),
 					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "cluster_size", "1"),
-					resource.TestCheckResourceAttrSet("scaleway_redis_cluster.main", "public_network.id"),
-					resource.TestCheckResourceAttrSet("scaleway_redis_cluster.main", "public_network.ips"),
-					resource.TestCheckResourceAttrSet("scaleway_redis_cluster.main", "public_network.port"),
+					resource.TestCheckResourceAttrSet("scaleway_redis_cluster.main", "public_network.0.id"),
+					resource.TestCheckResourceAttrSet("scaleway_redis_cluster.main", "public_network.0.ips.#"),
+					resource.TestCheckResourceAttrSet("scaleway_redis_cluster.main", "public_network.0.port"),
 				),
 			},
 			{
 				Config: `
 					resource "scaleway_vpc_private_network" "pn" {
-    					name = "privateN"
+						name = "private-network"
+						zone = "fr-par-2"
 					}
 					resource "scaleway_redis_cluster" "main" {
 						name =			"test_redis_endpoints"
-    					version = 		"6.2.6"
-    					node_type = 	"MDB-BETA-M"
-    					user_name = 	"my_initial_user"
-    					password = 		"thiZ_is_v&ry_s3cret"
+						version = 		"6.2.6"
+						node_type = 	"MDB-BETA-M"
+						user_name = 	"my_initial_user"
+						password = 		"thiZ_is_v&ry_s3cret"
 						cluster_size = 	1
+						zone = 			"fr-par-2"
 						private_network {
-							private_network_id = "${scaleway_vpc_private_network.pn.id}"
+							id = "${scaleway_vpc_private_network.pn.id}"
 							service_ips = [
 								"10.12.1.0/20",
 							]
@@ -362,18 +359,62 @@ func TestAccScalewayRedisCluster_Endpoints(t *testing.T) {
 				`,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayRedisExists(tt, "scaleway_redis_cluster.main"),
-					testAccCheckScalewayRedisExists(tt, "scaleway_vpc_private_network.pn"),
+					testAccCheckScalewayVPCPrivateNetworkExists(tt, "scaleway_vpc_private_network.pn"),
 					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "name", "test_redis_endpoints"),
 					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "version", "6.2.6"),
 					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "node_type", "MDB-BETA-M"),
 					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "user_name", "my_initial_user"),
 					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "password", "thiZ_is_v&ry_s3cret"),
 					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "cluster_size", "1"),
-					resource.TestCheckResourceAttrSet("scaleway_redis_cluster.main", "private_network.id"),
-					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "private_network.id", "${scaleway_vpc_private_network.pn.id}"),
-					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "private_network.service_ips.0", "10.12.1.0/20"),
+					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "private_network.0.service_ips.#", "10.12.1.0/20"),
+					resource.TestCheckResourceAttrSet("scaleway_redis_cluster.main", "private_network.0.endpoint_id"),
+					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "private_network.0.id", "fr-par-2/${scaleway_vpc_private_network.pn.id}"),
 				),
 			},
+			//{
+			//	Config: `
+			//		resource "scaleway_vpc_private_network" "pn" {
+			//			name = "private-network"
+			//		}
+			//		resource "scaleway_vpc_private_network" "pn2" {
+			//			//			name = "private-network-2"
+			//			//		}
+			//		resource "scaleway_redis_cluster" "main" {
+			//			name =			"test_redis_endpoints"
+			//			version = 		"6.2.6"
+			//			node_type = 	"MDB-BETA-M"
+			//			user_name = 	"my_initial_user"
+			//			password = 		"thiZ_is_v&ry_s3cret"
+			//			cluster_size = 	1
+			//			zone = "fr-par-2"
+			//			private_network {
+			//				id = "${scaleway_vpc_private_network.pn.id}"
+			//				service_ips = [
+			//					"10.12.1.0/20",
+			//				]
+			//			}
+			//			private_network {
+			//			//				id = "${scaleway_vpc_private_network.pn2.id}"
+			//			//				service_ips = [
+			//			//					"192.12.1.0/20",
+			//			//				]
+			//			//			}
+			//		}
+			//	`,
+			//	Check: resource.ComposeTestCheckFunc(
+			//		testAccCheckScalewayRedisExists(tt, "scaleway_redis_cluster.main"),
+			//		testAccCheckScalewayVPCPrivateNetworkExists(tt, "scaleway_vpc_private_network.pn"),
+			//		resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "name", "test_redis_endpoints"),
+			//		resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "version", "6.2.6"),
+			//		resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "node_type", "MDB-BETA-M"),
+			//		resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "user_name", "my_initial_user"),
+			//		resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "password", "thiZ_is_v&ry_s3cret"),
+			//		resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "cluster_size", "1"),
+			//		resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "private_network.0.id", "fr-par-2/${scaleway_vpc_private_network.pn.id}"),
+			//		resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "private_network.0.service_ips.#", "10.12.1.0/20"),
+			//		resource.TestCheckResourceAttrSet("scaleway_redis_cluster.main", "private_network.0.endpoint_id"),
+			//	),
+			//},
 		},
 	})
 }

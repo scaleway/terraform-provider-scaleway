@@ -112,12 +112,12 @@ func resourceScalewayRedisCluster() *schema.Resource {
 				Description: "Private network specs details",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"id": {
+						"endpoint_id": {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "UUID of the endpoint to be connected to the cluster",
 						},
-						"private_network_id": {
+						"id": {
 							Type:         schema.TypeString,
 							Required:     true,
 							ValidateFunc: validationUUIDorUUIDWithLocality(),
@@ -396,8 +396,7 @@ func resourceScalewayRedisClusterUpdate(ctx context.Context, d *schema.ResourceD
 			Zone:      cluster.Zone,
 			ClusterID: cluster.ID,
 			Endpoints: newEndpoints,
-		})
-		//TODO: jeter un oeil aux requests options
+		}, scw.WithContext(ctx))
 		if err != nil {
 			return diag.FromErr(err)
 		}

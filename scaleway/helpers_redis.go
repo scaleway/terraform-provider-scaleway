@@ -63,7 +63,7 @@ func expandRedisPrivateNetwork(data interface{}) ([]*redis.EndpointSpec, error) 
 
 	for _, rawPN := range data.([]interface{}) {
 		pn := rawPN.(map[string]interface{})
-		id := expandID(pn["id"].(string))
+		pnId := expandID(pn["id"].(string))
 		rawIPs := pn["service_ips"].([]interface{})
 		ips := []scw.IPNet(nil)
 		for _, rawIP := range rawIPs {
@@ -74,7 +74,7 @@ func expandRedisPrivateNetwork(data interface{}) ([]*redis.EndpointSpec, error) 
 			ips = append(ips, ip)
 		}
 		spec := &redis.EndpointSpecPrivateNetworkSpec{
-			ID:         id,
+			ID:         pnId,
 			ServiceIPs: ips,
 		}
 		epSpecs = append(epSpecs, &redis.EndpointSpec{PrivateNetwork: spec})
@@ -84,7 +84,7 @@ func expandRedisPrivateNetwork(data interface{}) ([]*redis.EndpointSpec, error) 
 
 func expandRedisACLSpecs(i interface{}) ([]*redis.ACLRuleSpec, error) {
 	rules := []*redis.ACLRuleSpec(nil)
-	
+
 	for _, aclRule := range i.([]interface{}) {
 		rawRule := aclRule.(map[string]interface{})
 		rule := &redis.ACLRuleSpec{}
@@ -98,7 +98,7 @@ func expandRedisACLSpecs(i interface{}) ([]*redis.ACLRuleSpec, error) {
 		rule.IP = ip
 		rules = append(rules, rule)
 	}
-	
+
 	return rules, nil
 }
 
@@ -145,10 +145,10 @@ func flattenRedisPrivateNetwork(endpoints []*redis.Endpoint) (interface{}, bool)
 				serviceIps = append(serviceIps, ip.String())
 			}
 			pnFlat = append(pnFlat, map[string]interface{}{
-				"id":                 endpoint.ID,
-				"zone":               pn.Zone,
-				"private_network_id": pnZonedID,
-				"service_ips":        serviceIps,
+				"endpoint_id": endpoint.ID,
+				"zone":        pn.Zone,
+				"id":          pnZonedID,
+				"service_ips": serviceIps,
 			})
 		}
 	}
@@ -159,12 +159,17 @@ func flattenRedisPublicNetwork(endpoints []*redis.Endpoint) interface{} {
 	pnFlat := []map[string]interface{}(nil)
 	for _, endpoint := range endpoints {
 		if endpoint.PublicNetwork != nil {
+			ipsFlat := []interface{}(nil)
+			for _, ip := range endpoint.IPs {
+				ipsFlat = append(ipsFlat, ip.String())
+			}
 			pnFlat = append(pnFlat, map[string]interface{}{
 				"id":   endpoint.ID,
-				"port": endpoint.Port,
-				"ips":  endpoint.IPs,
+				"port": int(endpoint.Port),
+				"ips":  ipsFlat,
 			})
+			return pnFlat
 		}
 	}
-	return nil
+	return pnFlat
 }
