@@ -54,5 +54,5 @@ In addition to all above arguments, the following attributes are exported:
 - `id` - The zone of the servers
 
 - `servers` - List of found servers
-  - `id` - The ID of the server.
-  - `public_ip` - The public IPv4 address of the server.
+    - `id` - The ID of the server.
+    - `public_ip` - The public IPv4 address of the server.
