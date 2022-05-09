@@ -163,6 +163,89 @@ func TestAccScalewayRdbPrivilege_Basic(t *testing.T) {
 	})
 }
 
+func TestAccScalewayRdbPrivilege_ConcurrentPrivileges(t *testing.T) {
+	tt := NewTestTools(t)
+	defer tt.Cleanup()
+	instanceName := "TestAccScalewayRdbPrivilege_Basic"
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      testAccCheckScalewayRdbInstanceDestroy(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`
+					locals {
+						permissions = {
+							"application-default" = {
+								user_name     = "application"
+								database_name = "default"
+								permission    = "all"
+							},
+							"application-core" = {
+								user_name     = "application"
+								database_name = "core"
+								permission    = "all"
+							},
+							"user-core" = {
+								user_name     = "user"
+								database_name = "core"
+								permission    = "readonly"
+							}
+					  	}
+					}
+
+					resource "scaleway_rdb_instance" "main" {
+						name           = "%s"
+						node_type      = "DB-DEV-S"
+						engine         = "PostgreSQL-11"
+						disable_backup = true
+						user_name      = "my_initial_user"
+						password       = "thiZ_is_v&ry_s3cret"
+					}
+
+					resource "scaleway_rdb_database" "databases" {
+						instance_id = scaleway_rdb_instance.main.id
+						name        = "core"
+					}
+
+					resource "scaleway_rdb_database" "default" {
+						instance_id = scaleway_rdb_instance.main.id
+						name        = "default"
+					}
+
+					resource "scaleway_rdb_user" "user" {
+						instance_id = scaleway_rdb_instance.main.id
+						name = "user"
+						password = "thiZ_is_v&ry_s3cret"
+					}
+					
+					resource "scaleway_rdb_user" "application" {
+						instance_id = scaleway_rdb_instance.main.id
+						name = "application"
+						password = "thiZ_is_v&ry_s3cret"
+					}
+					
+					resource "scaleway_rdb_privilege" "permission" {
+						for_each = local.permissions
+					
+						instance_id = scaleway_rdb_instance.main.id
+					
+						user_name     = each.value.user_name
+						database_name = each.value.database_name
+						permission    = each.value.permission
+					
+						depends_on = [scaleway_rdb_user.user, scaleway_rdb_database.databases]
+					}
+					`, instanceName),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckRdbPrivilegeExists(tt, "scaleway_rdb_instance.instance", "scaleway_rdb_database.db01", "scaleway_rdb_user.foo1"),
+					resource.TestCheckResourceAttr("scaleway_rdb_privilege.priv_admin", "permission", "all"),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckRdbPrivilegeExists(tt *TestTools, instance string, database string, user string) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		instanceResource, ok := state.RootModule().Resources[instance]
