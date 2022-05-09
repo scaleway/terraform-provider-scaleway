@@ -288,7 +288,7 @@ Tokens should be created in the console.
 The `scaleway_volume_attachment` was removed in version 2.
 
 Volumes can in version 2 only be attached on the server resource.
-The [above example](#scaleway_server-gt-scaleway_instance_server) shows how this works.
+The [above example](#renamed-scaleway_volume---scaleway_instance_volume) shows how this works.
 
 ### Storage
 
