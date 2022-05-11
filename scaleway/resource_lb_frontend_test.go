@@ -137,6 +137,7 @@ func TestAccScalewayLbFrontend_Certificate(t *testing.T) {
 		},
 	})
 }
+
 func testAccCheckScalewayFrontendCertificateExist(tt *TestTools, f, c string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[f]

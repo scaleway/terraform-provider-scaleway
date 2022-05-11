@@ -222,6 +222,191 @@ func TestAccScalewayLbAcl_Basic(t *testing.T) {
 	})
 }
 
+func TestAccScalewayLbAcl_FrontendLoop(t *testing.T) {
+	tt := NewTestTools(t)
+	defer tt.Cleanup()
+
+	acls := []*lbSDK.ACL{
+		{
+			Name: "Allow VPN-DEV1-2.",
+			Match: &lbSDK.ACLMatch{
+				IPSubnet:        scw.StringSlicePtr([]string{"163.172.1.2", "51.210.1.2"}),
+				Invert:          false,
+				HTTPFilter:      lbSDK.ACLHTTPFilterACLHTTPFilterNone,
+				HTTPFilterValue: []*string{},
+			},
+			Action: &lbSDK.ACLAction{Type: lbSDK.ACLActionTypeAllow},
+		},
+		{
+			Name: "Allow GitLab Runner QA.",
+			Match: &lbSDK.ACLMatch{
+				IPSubnet:        scw.StringSlicePtr([]string{"51.68.1.1", "51.68.1.2"}),
+				Invert:          false,
+				HTTPFilter:      lbSDK.ACLHTTPFilterACLHTTPFilterNone,
+				HTTPFilterValue: []*string{},
+			},
+			Action: &lbSDK.ACLAction{Type: lbSDK.ACLActionTypeAllow},
+		},
+		{
+			Name: "Allow GitLab DevSecOps.",
+			Match: &lbSDK.ACLMatch{
+				IPSubnet:        scw.StringSlicePtr([]string{"51.210.1.1", "51.210.1.2"}),
+				Invert:          false,
+				HTTPFilter:      lbSDK.ACLHTTPFilterACLHTTPFilterNone,
+				HTTPFilterValue: []*string{},
+			},
+			Action: &lbSDK.ACLAction{Type: lbSDK.ACLActionTypeAllow},
+		},
+		{
+			Name: "Allow VPN Collaborateur",
+			Match: &lbSDK.ACLMatch{
+				IPSubnet:        scw.StringSlicePtr([]string{"212.47.1.1"}),
+				Invert:          false,
+				HTTPFilter:      lbSDK.ACLHTTPFilterACLHTTPFilterNone,
+				HTTPFilterValue: []*string{},
+			},
+			Action: &lbSDK.ACLAction{Type: lbSDK.ACLActionTypeAllow},
+		},
+		{
+			Name: "Allow Caumartin workplace",
+			Match: &lbSDK.ACLMatch{
+				IPSubnet:        scw.StringSlicePtr([]string{"92.154.1.1"}),
+				Invert:          false,
+				HTTPFilter:      lbSDK.ACLHTTPFilterACLHTTPFilterNone,
+				HTTPFilterValue: []*string{},
+			},
+			Action: &lbSDK.ACLAction{Type: lbSDK.ACLActionTypeAllow},
+		},
+		{
+			Name: "Deny all",
+			Match: &lbSDK.ACLMatch{
+				IPSubnet:        scw.StringSlicePtr([]string{"0.0.0.0/0"}),
+				HTTPFilter:      lbSDK.ACLHTTPFilterACLHTTPFilterNone,
+				Invert:          false,
+				HTTPFilterValue: []*string{},
+			},
+			Action: &lbSDK.ACLAction{Type: lbSDK.ACLActionTypeDeny},
+		},
+	}
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      testAccCheckScalewayLbFrontendDestroy(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource "scaleway_lb_ip" "ip" {
+					}
+
+					resource "scaleway_lb" "main" {
+						ip_id  = scaleway_lb_ip.ip.id
+						zone   = scaleway_lb_ip.ip.zone
+						type   = "LB-S"
+					}
+
+					resource "scaleway_lb_backend" "backend01" {
+						lb_id            = scaleway_lb.main.id
+						name             = "backend01"
+						forward_protocol = "http"
+						forward_port     = "80"
+					}
+
+					resource "scaleway_lb_frontend" "lb_swarm_frontend_80" {
+						lb_id        = scaleway_lb.main.id
+						backend_id   = scaleway_lb_backend.backend01.id
+						name         = "lb_swarm_frontend_80"
+						inbound_port = "80"
+					
+						dynamic "acl" {
+							for_each = local.acl_loadbalancer
+							content {
+								name = acl.value.description
+
+								action {
+									type = acl.value.action
+								}
+
+								match {
+									ip_subnet = acl.value.ips
+									invert    = acl.value.invert
+								}
+							}
+						}
+					}
+
+					resource "scaleway_lb_frontend" "lb_swarm_frontend_443" {
+						lb_id        = scaleway_lb.main.id
+						backend_id   = scaleway_lb_backend.backend01.id
+						name         = "lb_swarm_frontend_443"
+						inbound_port = "443"
+					
+						dynamic "acl" {
+							for_each = local.acl_loadbalancer
+							content {
+								name = acl.value.description
+
+								action {
+									type = acl.value.action
+								}
+
+								match {
+									ip_subnet = acl.value.ips
+									invert    = acl.value.invert
+								}
+							}
+						}
+					}
+
+					locals {
+						acl_loadbalancer = [
+							{
+								ips         = ["163.172.1.2", "51.210.1.2"]
+								description = "Allow VPN-DEV1-2."
+								action      = "allow"
+								invert      = false
+							},
+							{
+								ips         = ["51.68.1.1", "51.68.1.2"]
+								description = "Allow GitLab Runner QA."
+								action      = "allow"
+								invert      = false
+							},
+							{
+								ips         = ["51.210.1.1", "51.210.1.2"]
+								description = "Allow GitLab DevSecOps."
+								action      = "allow"
+								invert      = false
+							},
+							{
+								ips         = ["212.47.1.1"]
+								description = "Allow VPN Collaborateur"
+								action      = "allow"
+								invert      = false
+							},
+							{
+								ips         = ["92.154.1.1"]
+								description = "Allow Caumartin workplace"
+								action      = "allow"
+								invert      = false
+							},
+							{
+								ips         = ["0.0.0.0/0"]
+								description = "Deny all"
+								action      = "deny"
+								invert      = false
+							}
+						]
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayACLAreCorrect(tt, "scaleway_lb_frontend.lb_swarm_frontend_80", acls),
+					testAccCheckScalewayACLAreCorrect(tt, "scaleway_lb_frontend.lb_swarm_frontend_443", acls),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckScalewayACLAreCorrect(tt *TestTools, frontendName string, expectedAcls []*lbSDK.ACL) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		//define a wrapper for acl comparison
