@@ -3,7 +3,6 @@ package scaleway
 import (
 	"bytes"
 	"context"
-	"net"
 	"sort"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -120,7 +119,7 @@ func resourceScalewayRdbACLRead(ctx context.Context, d *schema.ResourceData, met
 	id := newRegionalID(region, instanceID).String()
 	d.SetId(id)
 	_ = d.Set("instance_id", id)
-	_ = d.Set("acl_rules", rdbACLRulesFlatten(res.Rules))
+	_ = d.Set("acl_rules", rdbACLRulesFlatten(res.Rules, d.Get("acl_rules").([]interface{})))
 
 	return nil
 }
@@ -218,21 +217,27 @@ func rdbACLExpand(data []interface{}) ([]*rdb.ACLRuleRequest, error) {
 	return res, nil
 }
 
-func rdbACLRulesFlatten(rules []*rdb.ACLRule) []map[string]interface{} {
+func rdbACLRulesFlatten(rules []*rdb.ACLRule, data []interface{}) []map[string]interface{} {
 	var res []map[string]interface{}
+	m := make(map[string]*rdb.ACLRule)
 	for _, rule := range rules {
-		r := map[string]interface{}{
-			"ip":          rule.IP.String(),
-			"description": rule.Description,
-		}
-		res = append(res, r)
+		m[rule.IP.String()] = rule
 	}
 
-	sort.Slice(res, func(i, j int) bool {
-		ipI, _, _ := net.ParseCIDR(res[i]["ip"].(string))
-		ipJ, _, _ := net.ParseCIDR(res[j]["ip"].(string))
-		return bytes.Compare(ipI, ipJ) < 0
-	})
+	for _, rule := range data {
+		currentRule := rule.(map[string]interface{})
+		ip, err := expandIPNet(currentRule["ip"].(string))
+		if err != nil {
+			return nil // append errors
+		}
 
+		aclRule := m[ip.String()]
+		r := map[string]interface{}{
+			"ip":          aclRule.IP.String(),
+			"description": aclRule.Description,
+		}
+		// Add element on schema order
+		res = append(res, r)
+	}
 	return res
 }
