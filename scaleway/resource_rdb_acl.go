@@ -222,21 +222,21 @@ func rdbACLExpand(data []interface{}) ([]*rdb.ACLRuleRequest, error) {
 	return res, nil
 }
 
-func rdbACLRulesFlattenFromSchema(rules []*rdb.ACLRule, data []interface{}) []map[string]interface{} {
+func rdbACLRulesFlattenFromSchema(rules []*rdb.ACLRule, dataFromSchema []interface{}) []map[string]interface{} {
 	var res []map[string]interface{}
-	m := make(map[string]*rdb.ACLRule)
+	ruleMap := make(map[string]*rdb.ACLRule)
 	for _, rule := range rules {
-		m[rule.IP.String()] = rule
+		ruleMap[rule.IP.String()] = rule
 	}
 
-	for _, rule := range data {
-		currentRule := rule.(map[string]interface{})
+	for _, ruleFromSchema := range dataFromSchema {
+		currentRule := ruleFromSchema.(map[string]interface{})
 		ip, err := expandIPNet(currentRule["ip"].(string))
 		if err != nil {
 			return nil // append errors
 		}
 
-		aclRule := m[ip.String()]
+		aclRule := ruleMap[ip.String()]
 		r := map[string]interface{}{
 			"ip":          aclRule.IP.String(),
 			"description": aclRule.Description,
