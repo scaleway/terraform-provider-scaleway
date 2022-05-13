@@ -138,6 +138,10 @@ func getDatabase(ctx context.Context, api *rdb.API, r scw.Region, instanceID, db
 		return nil, err
 	}
 
+	if len(res.Databases) == 0 {
+		return nil, fmt.Errorf("database %s not found", dbName)
+	}
+
 	return res.Databases[0], nil
 }
 
