@@ -3,12 +3,14 @@ package scaleway
 import (
 	"context"
 	"fmt"
+	"regexp"
 	"strings"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/scaleway/scaleway-sdk-go/api/rdb/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 )
@@ -40,6 +42,21 @@ func resourceScalewayRdbDatabase() *schema.Resource {
 				Description: "Database name",
 				Required:    true,
 				ForceNew:    true,
+				ValidateFunc: validation.All(
+					validation.StringLenBetween(1, 63),
+					validation.StringNotInSlice([]string{
+						"information_schema",
+						"mysql",
+						"performance_schema",
+						"postgres",
+						"rdb",
+						"rdb",
+						"sys",
+						"template0",
+						"template1",
+					}, false),
+					validation.StringMatch(regexp.MustCompile(`^[a-zA-Z\d_$-]*$`), ""),
+				),
 			},
 			"managed": {
 				Type:        schema.TypeBool,

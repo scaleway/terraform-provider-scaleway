@@ -18,6 +18,20 @@ resource "scaleway_rdb_privilege" "priv" {
   user_name     = "my-db-user"
   database_name = "my-db-name"
   permission    = "all"
+
+  depends_on = [scaleway_rdb_user.main, scaleway_rdb_database.main]
+}
+
+resource "scaleway_rdb_user" "main" {
+  instance_id = scaleway_rdb_instance.pgsql.id
+  name        = "foobar"
+  password    = "thiZ_is_v&ry_s3cret"
+  is_admin    = false
+}
+
+resource "scaleway_rdb_database" "main" {
+  instance_id = scaleway_rdb_instance.pgsql.id
+  name        = "foobar"
 }
 ```
 
