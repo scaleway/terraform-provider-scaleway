@@ -41,6 +41,7 @@ func resourceScalewayVPCPublicGatewayDHCPReservation() *schema.Resource {
 			"mac_address": {
 				Type:         schema.TypeString,
 				Required:     true,
+				ForceNew:     true,
 				Description:  "The MAC address to give a static entry to.",
 				ValidateFunc: validation.IsMACAddress,
 			},
