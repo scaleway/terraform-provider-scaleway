@@ -55,7 +55,7 @@ func resourceScalewayRdbDatabase() *schema.Resource {
 						"template0",
 						"template1",
 					}, false),
-					validation.StringMatch(regexp.MustCompile(`^[a-zA-Z\d_$-]*$`), ""),
+					validation.StringMatch(regexp.MustCompile(`^[a-zA-Z\d_$-]*$`), "database name must contain only alphanumeric characters, underscores and dashes and it must start with a letter"),
 				),
 			},
 			"managed": {
