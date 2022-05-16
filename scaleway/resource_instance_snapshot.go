@@ -178,5 +178,12 @@ func resourceScalewayInstanceSnapshotDelete(ctx context.Context, d *schema.Resou
 		}
 	}
 
+	_, err = waitForInstanceSnapshot(ctx, instanceAPI, zone, id, d.Timeout(schema.TimeoutDelete))
+	if err != nil {
+		if !is404Error(err) {
+			return diag.FromErr(err)
+		}
+	}
+
 	return nil
 }

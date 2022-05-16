@@ -952,7 +952,11 @@ func resourceScalewayInstanceServerDelete(ctx context.Context, d *schema.Resourc
 		Zone:     zone,
 		ServerID: id,
 	}, scw.WithContext(ctx))
+	if err != nil && !is404Error(err) {
+		return diag.FromErr(err)
+	}
 
+	_, err = waitForInstanceServer(ctx, instanceAPI, zone, id, d.Timeout(schema.TimeoutDelete))
 	if err != nil && !is404Error(err) {
 		return diag.FromErr(err)
 	}

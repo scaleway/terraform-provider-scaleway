@@ -1,9 +1,12 @@
 package scaleway
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	lbSDK "github.com/scaleway/scaleway-sdk-go/api/lb/v1"
 )
 
 func TestAccScalewayLbCertificate_Basic(t *testing.T) {
@@ -19,7 +22,11 @@ func TestAccScalewayLbCertificate_Basic(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      testAccCheckScalewayLbDestroy(tt),
+		CheckDestroy: resource.ComposeTestCheckFunc(
+			testAccCheckScalewayLbDestroy(tt),
+			testAccCheckScalewayLbIPDestroy(tt),
+			testAccCheckScalewayLbCertificateDestroy(tt),
+		),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -216,4 +223,36 @@ EOF
 			},
 		},
 	})
+}
+
+func testAccCheckScalewayLbCertificateDestroy(tt *TestTools) resource.TestCheckFunc {
+	return func(state *terraform.State) error {
+		for _, rs := range state.RootModule().Resources {
+			if rs.Type != "scaleway_lb_certificate" {
+				continue
+			}
+
+			lbAPI, zone, ID, err := lbAPIWithZoneAndID(tt.Meta, rs.Primary.ID)
+			if err != nil {
+				return err
+			}
+
+			_, err = lbAPI.GetCertificate(&lbSDK.ZonedAPIGetCertificateRequest{
+				CertificateID: ID,
+				Zone:          zone,
+			})
+
+			// If no error resource still exist
+			if err == nil {
+				return fmt.Errorf("LB Certificate (%s) still exists", rs.Primary.ID)
+			}
+
+			// Unexpected api error we return it
+			if !is404Error(err) {
+				return err
+			}
+		}
+
+		return nil
+	}
 }
