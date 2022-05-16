@@ -3,6 +3,8 @@ package scaleway
 import (
 	"bytes"
 	"context"
+	"fmt"
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"net"
 	"sort"
 
@@ -121,7 +123,13 @@ func resourceScalewayRdbACLRead(ctx context.Context, d *schema.ResourceData, met
 	d.SetId(id)
 	_ = d.Set("instance_id", id)
 	if aclRulesRaw, ok := d.GetOk("acl_rules"); ok {
-		_ = d.Set("acl_rules", rdbACLRulesFlattenFromSchema(res.Rules, aclRulesRaw.([]interface{})))
+		aclRules, mergeErrors := mergeRulesACLToSchema(res.Rules, aclRulesRaw.([]interface{}))
+		if len(mergeErrors) > 0 {
+			for _, w := range mergeErrors {
+				tflog.Warn(ctx, fmt.Sprintf("%s", w))
+			}
+		}
+		_ = d.Set("acl_rules", aclRules)
 	} else {
 		_ = d.Set("acl_rules", rdbACLRulesFlatten(res.Rules))
 	}
@@ -233,7 +241,7 @@ func rdbACLRulesFlattenFromSchema(rules []*rdb.ACLRule, dataFromSchema []interfa
 		currentRule := ruleFromSchema.(map[string]interface{})
 		ip, err := expandIPNet(currentRule["ip"].(string))
 		if err != nil {
-			return nil // append errors
+			errors = append(errors, err)
 		}
 
 		aclRule := ruleMap[ip.String()]
@@ -241,9 +249,26 @@ func rdbACLRulesFlattenFromSchema(rules []*rdb.ACLRule, dataFromSchema []interfa
 			"ip":          aclRule.IP.String(),
 			"description": aclRule.Description,
 		}
-		// Add element on schema order
-		res = append(res, r)
 	}
+
+	return append(res, mergeDiffToSchema(ruleExist, m)...), errors
+}
+
+func mergeDiffToSchema(rulesFromSchema map[string]struct{}, currentRules map[string]*rdb.ACLRule) []map[string]interface{} {
+	var res []map[string]interface{}
+
+	for ruleIP, info := range currentRules {
+		_, ok := rulesFromSchema[ruleIP]
+		// check if new rule has been added on config
+		if !ok {
+			r := map[string]interface{}{
+				"ip":          info.IP.String(),
+				"description": info.Description,
+			}
+			res = append(res, r)
+		}
+	}
+
 	return res
 }
 
