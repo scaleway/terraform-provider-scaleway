@@ -3,9 +3,11 @@ package scaleway
 import (
 	"bytes"
 	"context"
+	"fmt"
 	"net"
 	"sort"
 
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
@@ -120,7 +122,17 @@ func resourceScalewayRdbACLRead(ctx context.Context, d *schema.ResourceData, met
 	id := newRegionalID(region, instanceID).String()
 	d.SetId(id)
 	_ = d.Set("instance_id", id)
-	_ = d.Set("acl_rules", rdbACLRulesFlatten(res.Rules))
+	if aclRulesRaw, ok := d.GetOk("acl_rules"); ok {
+		aclRules, mergeErrors := rdbACLRulesFlattenFromSchema(res.Rules, aclRulesRaw.([]interface{}))
+		if len(mergeErrors) > 0 {
+			for _, w := range mergeErrors {
+				tflog.Warn(ctx, fmt.Sprintf("%s", w))
+			}
+		}
+		_ = d.Set("acl_rules", aclRules)
+	} else {
+		_ = d.Set("acl_rules", rdbACLRulesFlatten(res.Rules))
+	}
 
 	return nil
 }
@@ -218,6 +230,52 @@ func rdbACLExpand(data []interface{}) ([]*rdb.ACLRuleRequest, error) {
 	return res, nil
 }
 
+func rdbACLRulesFlattenFromSchema(rules []*rdb.ACLRule, dataFromSchema []interface{}) ([]map[string]interface{}, []error) {
+	var res []map[string]interface{}
+	var errors []error
+	ruleMap := make(map[string]*rdb.ACLRule)
+	for _, rule := range rules {
+		ruleMap[rule.IP.String()] = rule
+	}
+
+	ruleMapFromSchema := map[string]struct{}{}
+	for _, ruleFromSchema := range dataFromSchema {
+		currentRule := ruleFromSchema.(map[string]interface{})
+		ip, err := expandIPNet(currentRule["ip"].(string))
+		if err != nil {
+			errors = append(errors, err)
+		}
+
+		aclRule := ruleMap[ip.String()]
+		ruleMapFromSchema[ip.String()] = struct{}{}
+		r := map[string]interface{}{
+			"ip":          aclRule.IP.String(),
+			"description": aclRule.Description,
+		}
+		res = append(res, r)
+	}
+
+	return append(res, mergeDiffToSchema(ruleMapFromSchema, ruleMap)...), errors
+}
+
+func mergeDiffToSchema(rulesFromSchema map[string]struct{}, ruleMap map[string]*rdb.ACLRule) []map[string]interface{} {
+	var res []map[string]interface{}
+
+	for ruleIP, info := range ruleMap {
+		_, ok := rulesFromSchema[ruleIP]
+		// check if new rule has been added on config
+		if !ok {
+			r := map[string]interface{}{
+				"ip":          info.IP.String(),
+				"description": info.Description,
+			}
+			res = append(res, r)
+		}
+	}
+
+	return res
+}
+
 func rdbACLRulesFlatten(rules []*rdb.ACLRule) []map[string]interface{} {
 	var res []map[string]interface{}
 	for _, rule := range rules {
@@ -233,6 +291,5 @@ func rdbACLRulesFlatten(rules []*rdb.ACLRule) []map[string]interface{} {
 		ipJ, _, _ := net.ParseCIDR(res[j]["ip"].(string))
 		return bytes.Compare(ipI, ipJ) < 0
 	})
-
 	return res
 }
