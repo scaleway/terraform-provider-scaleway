@@ -49,6 +49,7 @@ func resourceScalewayLbCertificate() *schema.Resource {
 						"common_name": {
 							Type:        schema.TypeString,
 							Required:    true,
+							ForceNew:    true,
 							Description: "The main domain name of the certificate",
 						},
 						"subject_alternative_name": {
@@ -57,6 +58,7 @@ func resourceScalewayLbCertificate() *schema.Resource {
 								Type: schema.TypeString,
 							},
 							Optional:    true,
+							ForceNew:    true,
 							Description: "The alternative domain names of the certificate",
 						},
 					},
