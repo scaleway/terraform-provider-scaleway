@@ -123,7 +123,7 @@ func resourceScalewayRdbACLRead(ctx context.Context, d *schema.ResourceData, met
 	d.SetId(id)
 	_ = d.Set("instance_id", id)
 	if aclRulesRaw, ok := d.GetOk("acl_rules"); ok {
-		aclRules, mergeErrors := mergeRulesACLToSchema(res.Rules, aclRulesRaw.([]interface{}))
+		aclRules, mergeErrors := rdbACLRulesFlattenFromSchema(res.Rules, aclRulesRaw.([]interface{}))
 		if len(mergeErrors) > 0 {
 			for _, w := range mergeErrors {
 				tflog.Warn(ctx, fmt.Sprintf("%s", w))
@@ -230,13 +230,15 @@ func rdbACLExpand(data []interface{}) ([]*rdb.ACLRuleRequest, error) {
 	return res, nil
 }
 
-func rdbACLRulesFlattenFromSchema(rules []*rdb.ACLRule, dataFromSchema []interface{}) []map[string]interface{} {
+func rdbACLRulesFlattenFromSchema(rules []*rdb.ACLRule, dataFromSchema []interface{}) ([]map[string]interface{}, []error) {
 	var res []map[string]interface{}
+	var errors []error
 	ruleMap := make(map[string]*rdb.ACLRule)
 	for _, rule := range rules {
 		ruleMap[rule.IP.String()] = rule
 	}
 
+	ruleMapFromSchema := map[string]struct{}{}
 	for _, ruleFromSchema := range dataFromSchema {
 		currentRule := ruleFromSchema.(map[string]interface{})
 		ip, err := expandIPNet(currentRule["ip"].(string))
@@ -245,19 +247,21 @@ func rdbACLRulesFlattenFromSchema(rules []*rdb.ACLRule, dataFromSchema []interfa
 		}
 
 		aclRule := ruleMap[ip.String()]
+		ruleMapFromSchema[ip.String()] = struct{}{}
 		r := map[string]interface{}{
 			"ip":          aclRule.IP.String(),
 			"description": aclRule.Description,
 		}
+		res = append(res, r)
 	}
 
-	return append(res, mergeDiffToSchema(ruleExist, m)...), errors
+	return append(res, mergeDiffToSchema(ruleMapFromSchema, ruleMap)...), errors
 }
 
-func mergeDiffToSchema(rulesFromSchema map[string]struct{}, currentRules map[string]*rdb.ACLRule) []map[string]interface{} {
+func mergeDiffToSchema(rulesFromSchema map[string]struct{}, ruleMap map[string]*rdb.ACLRule) []map[string]interface{} {
 	var res []map[string]interface{}
 
-	for ruleIP, info := range currentRules {
+	for ruleIP, info := range ruleMap {
 		_, ok := rulesFromSchema[ruleIP]
 		// check if new rule has been added on config
 		if !ok {
