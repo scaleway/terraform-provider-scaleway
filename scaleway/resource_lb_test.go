@@ -271,7 +271,16 @@ func TestAccScalewayLbLb_WithSeveralPrivateNetworks(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      testAccCheckScalewayLbDestroy(tt),
+		CheckDestroy: resource.ComposeTestCheckFunc(
+			testAccCheckScalewayInstanceServerDestroy(tt),
+			testAccCheckScalewayLbDestroy(tt),
+			testAccCheckScalewayLbIPDestroy(tt),
+			testAccCheckScalewayVPCGatewayNetworkDestroy(tt),
+			testAccCheckScalewayVPCPrivateNetworkDestroy(tt),
+			testAccCheckScalewayVPCPublicGatewayDHCPDestroy(tt),
+			testAccCheckScalewayVPCPublicGatewayDestroy(tt),
+			testAccCheckScalewayVPCPublicGatewayIPDestroy(tt),
+		),
 		Steps: []resource.TestStep{
 			{
 				Config: `
