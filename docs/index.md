@@ -252,3 +252,13 @@ If you want to configure the backend with environment var, you need to use `AWS_
 export AWS_ACCESS_KEY_ID=$SCW_ACCESS_KEY
 export AWS_SECRET_ACCESS_KEY=$SCW_SECRET_KEY
 ```
+
+## Debugging a deployment
+
+In case you want to [debug a deployment](https://www.terraform.io/internals/debugging), you can use the following command to increase the level of verbosity.
+
+`SCW_DEBUG=1 TF_LOG=WARN TF_LOG_PROVIDER=DEBUG terraform apply`
+
+- `SCW_DEBUG`: set the debug level of the scaleway SDK.
+- `TF_LOG`: set the level of the Terraform logging.
+- `TF_LOG_PROVIDER`: set the level of the Scaleway Terraform provider logging.
