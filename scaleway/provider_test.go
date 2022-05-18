@@ -3,6 +3,7 @@ package scaleway
 import (
 	"context"
 	"flag"
+	"fmt"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -13,6 +14,7 @@ import (
 
 	"github.com/dnaeon/go-vcr/cassette"
 	"github.com/dnaeon/go-vcr/recorder"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/strcase"
 	"github.com/stretchr/testify/assert"
@@ -114,4 +116,67 @@ func NewTestTools(t *testing.T) *TestTools {
 		Cleanup: cleanup,
 		ctx:     ctx,
 	}
+}
+
+func TestAccScalewayProvider_SSHKeys(t *testing.T) {
+	tt := NewTestTools(t)
+	defer tt.Cleanup()
+
+	SSHKeyName := "TestAccScalewayProvider_SSHKeys"
+	SSHKey := "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIM7HUxRyQtB2rnlhQUcbDGCZcTJg7OvoznOiyC9WIxH opensource@scaleway.com"
+	ctx := context.Background()
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck: func() { testAccPreCheck(t) },
+		ProviderFactories: func() map[string]func() (*schema.Provider, error) {
+			metaProd, err := buildMeta(ctx, &metaConfig{
+				terraformVersion: "terraform-tests",
+			})
+			require.NoError(t, err)
+
+			metaDev, err := buildMeta(ctx, &metaConfig{
+				terraformVersion: "terraform-tests",
+			})
+			require.NoError(t, err)
+
+			return map[string]func() (*schema.Provider, error){
+				"prod": func() (*schema.Provider, error) {
+					return Provider(&ProviderConfig{Meta: metaProd})(), nil
+				},
+				"dev": func() (*schema.Provider, error) {
+					return Provider(&ProviderConfig{Meta: metaDev})(), nil
+				},
+			}
+		}(),
+		CheckDestroy: testAccCheckScalewayAccountSSHKeyDestroy(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`
+					provider "prod" {
+						profile = "prod"
+					}
+
+					provider "dev" {
+						profile = "dev"	
+					}
+
+					resource "scaleway_account_ssh_key" "prod" {
+						provider   = "prod" 
+						name 	   = "%[1]s"
+						public_key = "%[2]s"
+					}
+
+					resource "scaleway_account_ssh_key" "dev" {
+						provider   = "dev" 
+						name 	   = "%[1]s"
+						public_key = "%[2]s"
+					}
+				`, SSHKeyName, SSHKey),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayAccountSSHKeyExists(tt, "scaleway_account_ssh_key.prod"),
+					testAccCheckScalewayAccountSSHKeyExists(tt, "scaleway_account_ssh_key.dev"),
+				),
+			},
+		},
+	})
 }
