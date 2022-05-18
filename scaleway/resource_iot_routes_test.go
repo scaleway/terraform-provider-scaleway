@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"testing"
 
+	sdkacctest "github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	iot "github.com/scaleway/scaleway-sdk-go/api/iot/v1"
@@ -71,9 +72,12 @@ func TestAccScalewayIotRoute_RDB(t *testing.T) {
 }
 
 func TestAccScalewayIotRoute_S3(t *testing.T) {
+	if !*UpdateCassettes {
+		t.Skip("Skipping ObjectStorage test as this kind of resource can't be deleted before 24h")
+	}
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
-	bucketName := "test-acc-scaleway-iot-route-s3"
+	bucketName := sdkacctest.RandomWithPrefix("test-acc-scaleway-iot-route-s3")
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
@@ -111,7 +115,7 @@ func TestAccScalewayIotRoute_S3(t *testing.T) {
 						}
 						`, bucketName),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayObjectBucketExists(tt, bucketName),
+					testAccCheckScalewayObjectBucketExists(tt, "scaleway_object_bucket.minimal"),
 					testAccCheckScalewayIotHubExists(tt, "scaleway_iot_hub.minimal"),
 					testAccCheckScalewayIotRouteExists(tt, "scaleway_iot_route.default"),
 					resource.TestCheckResourceAttrSet("scaleway_iot_route.default", "id"),
