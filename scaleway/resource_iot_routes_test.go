@@ -87,7 +87,6 @@ func TestAccScalewayIotRoute_S3(t *testing.T) {
 			{
 				Config: fmt.Sprintf(`
 						resource "scaleway_object_bucket" "minimal" {
-							region = "fr-par"
 							name = "%s"
 						}
 
@@ -107,9 +106,12 @@ func TestAccScalewayIotRoute_S3(t *testing.T) {
 								object_prefix = "foo"
 								strategy      = "per_topic"
 							}
+							
+							depends_on = [scaleway_object_bucket.minimal]
 						}
 						`, bucketName),
 				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayObjectBucketExists(tt, bucketName),
 					testAccCheckScalewayIotHubExists(tt, "scaleway_iot_hub.minimal"),
 					testAccCheckScalewayIotRouteExists(tt, "scaleway_iot_route.default"),
 					resource.TestCheckResourceAttrSet("scaleway_iot_route.default", "id"),
