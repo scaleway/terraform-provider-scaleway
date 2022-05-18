@@ -105,13 +105,12 @@ Kubernetes pools can be imported using the `{region}/{id}`, e.g.
 $ terraform import scaleway_k8s_pool.mypool fr-par/11111111-1111-1111-1111-111111111111
 ```
 
-
 ## Upgrading a pool
 
 As your needs evolve, you can migrate your workflow from one pool to another.
 Pools have a unique name, and they also have an immutable type.
 Just changing the pool node-type will recreate a new pool which could lead to service disruption.
-To migrate your application with as little downtime as possible we recommend using the following workflow: 
+To migrate your application with as little downtime as possible we recommend using the following workflow:
 
 ### General workflow to upgrade a pool
 
@@ -129,7 +128,7 @@ resource "scaleway_k8s_pool" "kubernetes_cluster_workers_1" {
   cluster_id    = scaleway_k8s_cluster.kubernetes_cluster.id
   name          = "${var.kubernetes_cluster_id}_${var.node_type}_1"
   node_type     = "${var.node_type}"
-  
+
   # use Scaleway built-in cluster autoscaler
   autoscaling         = true
   autohealing         = true
