@@ -203,10 +203,8 @@ func expandDomainWeighted(i interface{}, ok bool) *domain.RecordWeightedConfig {
 		return nil
 	}
 
-	raw := i.([]interface{})
-
 	weightedIPs := []*domain.RecordWeightedConfigWeightedIP{}
-	if len(raw) > 0 {
+	if raw := i.([]interface{}); len(raw) > 0 {
 		for _, rawWeighted := range raw {
 			rawMap := rawWeighted.(map[string]interface{})
 			weightedIPs = append(weightedIPs, &domain.RecordWeightedConfigWeightedIP{
@@ -244,10 +242,8 @@ func expandDomainView(i interface{}, ok bool) *domain.RecordViewConfig {
 		return nil
 	}
 
-	raw := i.([]interface{})
-
 	views := []*domain.RecordViewConfigView{}
-	if len(raw) > 0 {
+	if raw := i.([]interface{}); len(raw) > 0 {
 		for _, rawWeighted := range raw {
 			rawMap := rawWeighted.(map[string]interface{})
 			views = append(views, &domain.RecordViewConfigView{
@@ -256,6 +252,7 @@ func expandDomainView(i interface{}, ok bool) *domain.RecordViewConfig {
 			})
 		}
 	}
+
 	return &domain.RecordViewConfig{
 		Views: views,
 	}
