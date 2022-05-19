@@ -97,7 +97,7 @@ func resourceScalewayVPCPublicGatewayCreate(ctx context.Context, d *schema.Resou
 		UpstreamDNSServers: expandStrings(d.Get("upstream_dns_servers")),
 		ProjectID:          d.Get("project_id").(string),
 		EnableBastion:      d.Get("bastion_enabled").(bool),
-		BastionPort:        expandUint32Ptr(d.Get("bastion_port").(int32)),
+		BastionPort:        expandUint32Ptr(d.Get("bastion_port").(int)),
 		Zone:               zone,
 	}
 
