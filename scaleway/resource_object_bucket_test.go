@@ -504,6 +504,7 @@ func TestAccScalewayObjectBucket_Cors_Delete(t *testing.T) {
 	}
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
+	ctx := context.Background()
 
 	resourceName := "scaleway_object_bucket.bucket"
 	bucketName := sdkacctest.RandomWithPrefix("test-acc-scaleway-object-bucket-cors-delete")
@@ -518,7 +519,7 @@ func TestAccScalewayObjectBucket_Cors_Delete(t *testing.T) {
 			if err != nil {
 				return err
 			}
-			_, err = conn.DeleteBucketCorsWithContext(tt.ctx, &s3.DeleteBucketCorsInput{
+			_, err = conn.DeleteBucketCorsWithContext(ctx, &s3.DeleteBucketCorsInput{
 				Bucket: scw.StringPtr(rs.Primary.Attributes["name"]),
 			})
 			if err != nil && !isS3Err(err, ErrCodeNoSuchCORSConfiguration, "") {
@@ -588,6 +589,8 @@ func TestAccScalewayObjectBucket_Cors_EmptyOrigin(t *testing.T) {
 
 func testAccCheckScalewayObjectBucketCors(tt *TestTools, n string, corsRules []*s3.CORSRule) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
+		ctx := context.Background()
+
 		rs := s.RootModule().Resources[n]
 		bucketName := rs.Primary.Attributes["name"]
 		s3Client, err := newS3ClientFromMeta(tt.Meta)
@@ -595,7 +598,7 @@ func testAccCheckScalewayObjectBucketCors(tt *TestTools, n string, corsRules []*
 			return err
 		}
 
-		_, err = s3Client.HeadBucketWithContext(tt.ctx, &s3.HeadBucketInput{
+		_, err = s3Client.HeadBucketWithContext(ctx, &s3.HeadBucketInput{
 			Bucket: scw.StringPtr(bucketName),
 		})
 		if err != nil {
