@@ -29,6 +29,7 @@ func testAccScalewayK8SClusterGetLatestK8SVersion(tt *TestTools) string {
 	}
 	return ""
 }
+
 func testAccScalewayK8SClusterGetLatestK8SVersionMinor(tt *TestTools) string {
 	api := k8s.NewAPI(tt.Meta.scwClient)
 	versions, err := api.ListVersions(&k8s.ListVersionsRequest{})
@@ -81,7 +82,7 @@ func testSweepK8SCluster(_ string) error {
 		}
 
 		for _, cluster := range listClusters.Clusters {
-			//remove pools
+			// remove pools
 			listPools, err := k8sAPI.ListPools(&k8s.ListPoolsRequest{
 				Region:    region,
 				ClusterID: cluster.ID,

@@ -514,7 +514,8 @@ func TestAccScalewayRdbInstance_BackupSchedule(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "backup_same_region", "true"),
 				),
 			},
-		}})
+		},
+	})
 }
 
 func TestAccScalewayRdbInstance_Volume(t *testing.T) {

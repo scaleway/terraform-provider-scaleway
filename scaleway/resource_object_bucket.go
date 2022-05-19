@@ -650,7 +650,6 @@ func resourceScalewayS3BucketCorsUpdate(ctx context.Context, s3conn *s3.S3, d *s
 		_, err := s3conn.DeleteBucketCorsWithContext(ctx, &s3.DeleteBucketCorsInput{
 			Bucket: scw.StringPtr(bucketName),
 		})
-
 		if err != nil {
 			return fmt.Errorf("error deleting S3 CORS: %w", err)
 		}

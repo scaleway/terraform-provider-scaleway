@@ -46,7 +46,8 @@ func TestAccScalewayDataSourceAccountSSHKey_Basic(t *testing.T) {
 					testAccCheckScalewayAccountSSHKeyExists(tt, "data.scaleway_account_ssh_key.stg"),
 					resource.TestCheckResourceAttr("data.scaleway_account_ssh_key.stg", "name", sshKeyName),
 					resource.TestCheckResourceAttr("data.scaleway_account_ssh_key.stg", "public_key", dataSourceAccountSSHKey),
-				)},
+				),
+			},
 		},
 	})
 }

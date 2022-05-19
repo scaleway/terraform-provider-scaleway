@@ -102,7 +102,6 @@ func resourceScalewayInstancePlacementGroupRead(ctx context.Context, d *schema.R
 		Zone:             zone,
 		PlacementGroupID: ID,
 	}, scw.WithContext(ctx))
-
 	if err != nil {
 		if is404Error(err) {
 			d.SetId("")

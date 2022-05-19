@@ -122,7 +122,6 @@ func resourceScalewayRdbUserRead(ctx context.Context, d *schema.ResourceData, me
 		InstanceID: instanceID,
 		Name:       &userName,
 	}, scw.WithContext(ctx))
-
 	if err != nil {
 		if is404Error(err) {
 			d.SetId("")
@@ -131,7 +130,7 @@ func resourceScalewayRdbUserRead(ctx context.Context, d *schema.ResourceData, me
 		return diag.FromErr(err)
 	}
 
-	var user = res.Users[0]
+	user := res.Users[0]
 	_ = d.Set("instance_id", newRegionalID(region, instanceID).String())
 	_ = d.Set("name", user.Name)
 	_ = d.Set("is_admin", user.IsAdmin)
