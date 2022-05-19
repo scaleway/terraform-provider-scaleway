@@ -97,7 +97,7 @@ func resourceScalewayRdbDatabaseCreate(ctx context.Context, d *schema.ResourceDa
 
 	var db *rdb.Database
 	//  wrapper around StateChangeConf that will just retry the database creation
-	err = resource.RetryContext(context.Background(), createDatabaseTimeout, func() *resource.RetryError {
+	err = resource.RetryContext(ctx, createDatabaseTimeout, func() *resource.RetryError {
 		currentDB, errCreateDB := rdbAPI.CreateDatabase(createReq, scw.WithContext(ctx))
 		if errCreateDB != nil {
 			// WIP: Issue on creation/write database. Need a database stable status
