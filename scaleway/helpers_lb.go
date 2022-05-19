@@ -69,7 +69,7 @@ func expandLbACL(i interface{}) *lbSDK.ACL {
 		Action: expandLbACLAction(rawRule["action"]),
 	}
 
-	//remove http filter values if we do not pass any http filter
+	// remove http filter values if we do not pass any http filter
 	if acl.Match.HTTPFilter == "" || acl.Match.HTTPFilter == lbSDK.ACLHTTPFilterACLHTTPFilterNone {
 		acl.Match.HTTPFilter = lbSDK.ACLHTTPFilterACLHTTPFilterNone
 		acl.Match.HTTPFilterValue = []*string{}
@@ -77,6 +77,7 @@ func expandLbACL(i interface{}) *lbSDK.ACL {
 
 	return acl
 }
+
 func flattenLbACLAction(action *lbSDK.ACLAction) interface{} {
 	return []map[string]interface{}{
 		{
@@ -151,6 +152,7 @@ func newPrivateNetwork(raw map[string]interface{}) *lbSDK.PrivateNetwork {
 
 	return pn
 }
+
 func privateNetworksToDetach(pns []*lbSDK.PrivateNetwork, updates interface{}) (map[string]bool, error) {
 	actions := make(map[string]bool, len(pns))
 	configs := make(map[string]*lbSDK.PrivateNetwork, len(pns))
@@ -159,7 +161,7 @@ func privateNetworksToDetach(pns []*lbSDK.PrivateNetwork, updates interface{}) (
 		actions[pn.PrivateNetworkID] = true
 		configs[pn.PrivateNetworkID] = pn
 	}
-	//check if private network still exist or is different
+	// check if private network still exist or is different
 	for _, pn := range updates.([]interface{}) {
 		r := pn.(map[string]interface{})
 		_, pnID, err := parseZonedID(r["private_network_id"].(string))
@@ -226,7 +228,7 @@ func expandLbACLMatch(raw interface{}) *lbSDK.ACLMatch {
 	}
 	rawMap := raw.([]interface{})[0].(map[string]interface{})
 
-	//scaleway api require ip subnet, so if we did not specify one, just put 0.0.0.0/0 instead
+	// scaleway api require ip subnet, so if we did not specify one, just put 0.0.0.0/0 instead
 	ipSubnet := expandSliceStringPtr(rawMap["ip_subnet"].([]interface{}))
 	if len(ipSubnet) == 0 {
 		ipSubnet = []*string{expandStringPtr("0.0.0.0/0")}

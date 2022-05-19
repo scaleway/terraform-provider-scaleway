@@ -20,10 +20,8 @@ import (
 	"golang.org/x/xerrors"
 )
 
-var (
-	// DefaultWaitRetryInterval is used to set the retry interval to 0 during acceptance tests
-	DefaultWaitRetryInterval *time.Duration
-)
+// DefaultWaitRetryInterval is used to set the retry interval to 0 during acceptance tests
+var DefaultWaitRetryInterval *time.Duration
 
 // RegionalID represents an ID that is linked with a region, eg fr-par/11111111-1111-1111-1111-111111111111
 type RegionalID struct {
@@ -244,7 +242,7 @@ func is403Error(err error) bool {
 
 // is409Error return true is err is an HTTP 409 error
 func is409Error(err error) bool {
-	//check transient error
+	// check transient error
 	transientStateError := &scw.TransientStateError{}
 	return isHTTPCodeError(err, http.StatusConflict) || xerrors.As(err, &transientStateError)
 }

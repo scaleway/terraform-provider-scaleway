@@ -618,7 +618,8 @@ func resourceScalewayRdbInstanceUpdate(ctx context.Context, d *schema.ResourceDa
 			if remove {
 				err := rdbAPI.DeleteEndpoint(
 					&rdb.DeleteEndpointRequest{
-						EndpointID: endPointID, Region: region},
+						EndpointID: endPointID, Region: region,
+					},
 					scw.WithContext(ctx))
 				if err != nil {
 					diag.FromErr(err)
