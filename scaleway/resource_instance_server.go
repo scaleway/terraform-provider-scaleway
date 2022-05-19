@@ -848,11 +848,11 @@ func resourceScalewayInstanceServerUpdate(ctx context.Context, d *schema.Resourc
 							return diag.FromErr(err)
 						}
 
-						err = ph.detach(o, d.Timeout(schema.TimeoutUpdate))
+						err = ph.detach(ctx, o, d.Timeout(schema.TimeoutUpdate))
 						if err != nil {
 							diag.FromErr(err)
 						}
-						err = ph.attach(n, d.Timeout(schema.TimeoutUpdate))
+						err = ph.attach(ctx, n, d.Timeout(schema.TimeoutUpdate))
 						if err != nil {
 							diag.FromErr(err)
 						}
@@ -870,7 +870,7 @@ func resourceScalewayInstanceServerUpdate(ctx context.Context, d *schema.Resourc
 						return diag.FromErr(err)
 					}
 
-					err = ph.detach(pn["pn_id"], d.Timeout(schema.TimeoutUpdate))
+					err = ph.detach(ctx, pn["pn_id"], d.Timeout(schema.TimeoutUpdate))
 					if err != nil {
 						diag.FromErr(err)
 					}
