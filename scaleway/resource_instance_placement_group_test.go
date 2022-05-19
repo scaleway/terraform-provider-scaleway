@@ -35,7 +35,7 @@ func testSweepInstancePlacementGroup(_ string) error {
 				PlacementGroupID: pg.ID,
 			})
 			if err != nil {
-				return fmt.Errorf("error deleting placement group in sweeper: %s", err)
+				return fmt.Errorf("error deleting placement group in sweeper: %w", err)
 			}
 		}
 

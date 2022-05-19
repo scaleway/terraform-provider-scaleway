@@ -26,7 +26,7 @@ func testSweepVPCPrivateNetwork(_ string) error {
 			Zone: zone,
 		}, scw.WithAllPages())
 		if err != nil {
-			return fmt.Errorf("error listing private network in sweeper: %s", err)
+			return fmt.Errorf("error listing private network in sweeper: %w", err)
 		}
 
 		for _, pn := range listPNResponse.PrivateNetworks {
@@ -35,7 +35,7 @@ func testSweepVPCPrivateNetwork(_ string) error {
 				PrivateNetworkID: pn.ID,
 			})
 			if err != nil {
-				return fmt.Errorf("error deleting private network in sweeper: %s", err)
+				return fmt.Errorf("error deleting private network in sweeper: %w", err)
 			}
 		}
 		return nil

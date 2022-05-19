@@ -115,7 +115,7 @@ func resourceScalewayInstanceVolumeCreate(ctx context.Context, d *schema.Resourc
 
 	res, err := instanceAPI.CreateVolume(createVolumeRequest, scw.WithContext(ctx))
 	if err != nil {
-		return diag.FromErr(fmt.Errorf("couldn't create volume: %s", err))
+		return diag.FromErr(fmt.Errorf("couldn't create volume: %w", err))
 	}
 
 	d.SetId(newZonedIDString(zone, res.Volume.ID))
@@ -148,7 +148,7 @@ func resourceScalewayInstanceVolumeRead(ctx context.Context, d *schema.ResourceD
 			d.SetId("")
 			return nil
 		}
-		return diag.FromErr(fmt.Errorf("couldn't read volume: %v", err))
+		return diag.FromErr(fmt.Errorf("couldn't read volume: %w", err))
 	}
 
 	_ = d.Set("name", res.Volume.Name)
@@ -215,7 +215,7 @@ func resourceScalewayInstanceVolumeUpdate(ctx context.Context, d *schema.Resourc
 			Size:     &volumeSizeInBytes,
 		}, scw.WithContext(ctx))
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("couldn't resize volume: %s", err))
+			return diag.FromErr(fmt.Errorf("couldn't resize volume: %w", err))
 		}
 		_, err = waitForInstanceVolume(ctx, instanceAPI, zone, id, d.Timeout(schema.TimeoutUpdate))
 		if err != nil {
@@ -225,7 +225,7 @@ func resourceScalewayInstanceVolumeUpdate(ctx context.Context, d *schema.Resourc
 
 	_, err = instanceAPI.UpdateVolume(req, scw.WithContext(ctx))
 	if err != nil {
-		return diag.FromErr(fmt.Errorf("couldn't update volume: %s", err))
+		return diag.FromErr(fmt.Errorf("couldn't update volume: %w", err))
 	}
 
 	return resourceScalewayInstanceVolumeRead(ctx, d, meta)

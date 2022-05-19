@@ -282,7 +282,7 @@ func resourceScalewayInstanceServerCreate(ctx context.Context, d *schema.Resourc
 			ImageLabel:     imageUUID,
 		})
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("could not get image '%s': %s", newZonedID(zone, imageUUID), err))
+			return diag.FromErr(fmt.Errorf("could not get image '%s': %w", newZonedID(zone, imageUUID), err))
 		}
 	}
 

@@ -33,7 +33,7 @@ func testSweepInstanceIP(_ string) error {
 				Zone: zone,
 			})
 			if err != nil {
-				return fmt.Errorf("error deleting ip in sweeper: %s", err)
+				return fmt.Errorf("error deleting ip in sweeper: %w", err)
 			}
 		}
 

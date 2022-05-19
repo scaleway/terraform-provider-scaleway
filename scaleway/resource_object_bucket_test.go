@@ -2,6 +2,7 @@ package scaleway
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"reflect"
 	"regexp"
@@ -350,11 +351,12 @@ func testAccCheckScalewayObjectBucketDestroy(tt *TestTools) resource.TestCheckFu
 				Bucket: &bucketName,
 			})
 			if err != nil {
-				if s3err, ok := err.(awserr.Error); ok && s3err.Code() == s3.ErrCodeNoSuchBucket {
+				var s3err awserr.Error
+				if ok := errors.Is(err, s3err); ok && s3err.Code() == s3.ErrCodeNoSuchBucket {
 					// bucket doesn't exist
 					continue
 				}
-				return fmt.Errorf("couldn't get bucket to verify if it stil exists: %s", err)
+				return fmt.Errorf("couldn't get bucket to verify if it stil exists: %w", err)
 			}
 
 			return fmt.Errorf("bucket should be deleted")
@@ -367,12 +369,12 @@ func testSweepStorageObjectBucket(_ string) error {
 	return sweepRegions([]scw.Region{scw.RegionFrPar, scw.RegionNlAms, scw.RegionPlWaw}, func(scwClient *scw.Client, region scw.Region) error {
 		s3client, err := sharedS3ClientForRegion(region)
 		if err != nil {
-			return fmt.Errorf("error getting client: %s", err)
+			return fmt.Errorf("error getting client: %w", err)
 		}
 
 		listBucketResponse, err := s3client.ListBuckets(&s3.ListBucketsInput{})
 		if err != nil {
-			return fmt.Errorf("couldn't list buckets: %s", err)
+			return fmt.Errorf("couldn't list buckets: %w", err)
 		}
 
 		for _, bucket := range listBucketResponse.Buckets {
@@ -382,7 +384,7 @@ func testSweepStorageObjectBucket(_ string) error {
 					Bucket: bucket.Name,
 				})
 				if err != nil {
-					return fmt.Errorf("error deleting bucket in Sweeper: %s", err)
+					return fmt.Errorf("error deleting bucket in Sweeper: %w", err)
 				}
 			}
 		}
@@ -606,8 +608,9 @@ func testAccCheckScalewayObjectBucketCors(tt *TestTools, n string, corsRules []*
 			Bucket: scw.StringPtr(bucketName),
 		})
 		if err != nil {
-			if awsErr, ok := err.(awserr.Error); ok && awsErr.Code() != ErrCodeNoSuchCORSConfiguration {
-				return fmt.Errorf("GetBucketCors error: %v", err)
+			var awsErr awserr.Error
+			if ok := errors.Is(err, awsErr); ok && awsErr.Code() != ErrCodeNoSuchCORSConfiguration {
+				return fmt.Errorf("GetBucketCors error: %w", err)
 			}
 		}
 
@@ -685,14 +688,14 @@ func TestAccScalewayObjectBucket_DestroyForce(t *testing.T) {
 				Key:    scw.StringPtr("test-file"),
 			})
 			if err != nil {
-				return fmt.Errorf("failed to put object in test bucket: %s", err)
+				return fmt.Errorf("failed to put object in test bucket: %w", err)
 			}
 			_, err = conn.PutObject(&s3.PutObjectInput{
 				Bucket: scw.StringPtr(rs.Primary.Attributes["name"]),
 				Key:    scw.StringPtr("folder/test-file-in-folder"),
 			})
 			if err != nil {
-				return fmt.Errorf("failed to put object in test bucket sub folder: %s", err)
+				return fmt.Errorf("failed to put object in test bucket sub folder: %w", err)
 			}
 			return nil
 		}

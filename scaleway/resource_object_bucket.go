@@ -2,6 +2,7 @@ package scaleway
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log"
 
@@ -253,7 +254,7 @@ func resourceScalewayObjectBucketUpdate(ctx context.Context, d *schema.ResourceD
 		})
 		if err != nil {
 			tflog.Error(ctx, fmt.Sprintf("Couldn't update bucket ACL: %s", err))
-			return diag.FromErr(fmt.Errorf("couldn't update bucket ACL: %s", err))
+			return diag.FromErr(fmt.Errorf("couldn't update bucket ACL: %w", err))
 		}
 	}
 
@@ -311,7 +312,7 @@ func resourceBucketLifecycleUpdate(ctx context.Context, conn *s3.S3, d *schema.R
 
 		_, err := conn.DeleteBucketLifecycle(i)
 		if err != nil {
-			return fmt.Errorf("error removing S3 lifecycle: %s", err)
+			return fmt.Errorf("error removing S3 lifecycle: %w", err)
 		}
 		return nil
 	}
@@ -411,7 +412,7 @@ func resourceBucketLifecycleUpdate(ctx context.Context, conn *s3.S3, d *schema.R
 		return conn.PutBucketLifecycleConfigurationWithContext(ctx, i)
 	})
 	if err != nil {
-		return fmt.Errorf("error putting Object Storage lifecycle: %s", err)
+		return fmt.Errorf("error putting Object Storage lifecycle: %w", err)
 	}
 
 	return nil
@@ -440,12 +441,13 @@ func resourceScalewayObjectBucketRead(ctx context.Context, d *schema.ResourceDat
 		Bucket: scw.StringPtr(bucketName),
 	})
 	if err != nil {
-		if s3err, ok := err.(awserr.Error); ok && s3err.Code() == s3.ErrCodeNoSuchBucket {
+		var s3err awserr.Error
+		if ok := errors.Is(err, s3err); ok && s3err.Code() == s3.ErrCodeNoSuchBucket {
 			tflog.Error(ctx, fmt.Sprintf("Bucket %q was not found - removing from state!", bucketName))
 			d.SetId("")
 			return nil
 		}
-		return diag.FromErr(fmt.Errorf("couldn't read bucket: %s", err))
+		return diag.FromErr(fmt.Errorf("couldn't read bucket: %w", err))
 	}
 
 	var tagsSet []*s3.Tag
@@ -454,8 +456,9 @@ func resourceScalewayObjectBucketRead(ctx context.Context, d *schema.ResourceDat
 		Bucket: scw.StringPtr(bucketName),
 	})
 	if err != nil {
-		if s3err, ok := err.(awserr.Error); !ok || s3err.Code() != ErrCodeNoSuchTagSet {
-			return diag.FromErr(fmt.Errorf("couldn't read tags from bucket: %s", err))
+		var s3err awserr.Error
+		if ok := errors.Is(err, s3err); !ok || s3err.Code() != ErrCodeNoSuchTagSet {
+			return diag.FromErr(fmt.Errorf("couldn't read tags from bucket: %w", err))
 		}
 	} else {
 		tagsSet = tagsResponse.TagSet
@@ -471,7 +474,7 @@ func resourceScalewayObjectBucketRead(ctx context.Context, d *schema.ResourceDat
 	})
 
 	if err != nil && !isS3Err(err, ErrCodeNoSuchCORSConfiguration, "") {
-		return diag.FromErr(fmt.Errorf("error getting S3 Bucket CORS configuration: %s", err))
+		return diag.FromErr(fmt.Errorf("error getting S3 Bucket CORS configuration: %w", err))
 	}
 
 	_ = d.Set("cors_rule", flattenBucketCORS(corsResponse))
@@ -580,7 +583,7 @@ func resourceScalewayObjectBucketRead(ctx context.Context, d *schema.ResourceDat
 		}
 	}
 	if err := d.Set("lifecycle_rule", lifecycleRules); err != nil {
-		return diag.FromErr(fmt.Errorf("error setting lifecycle_rule: %s", err))
+		return diag.FromErr(fmt.Errorf("error setting lifecycle_rule: %w", err))
 	}
 
 	return nil
@@ -604,7 +607,7 @@ func resourceScalewayObjectBucketDelete(ctx context.Context, d *schema.ResourceD
 		if d.Get("force_destroy").(bool) {
 			err = deleteS3ObjectVersions(ctx, s3Client, bucketName, true)
 			if err != nil {
-				return diag.FromErr(fmt.Errorf("error S3 bucket force_destroy: %s", err))
+				return diag.FromErr(fmt.Errorf("error S3 bucket force_destroy: %w", err))
 			}
 			// Try to delete bucket again after deleting objects
 			return resourceScalewayObjectBucketDelete(ctx, d, meta)
@@ -630,7 +633,7 @@ func resourceScalewayObjectBucketVersioningUpdate(ctx context.Context, s3conn *s
 
 	_, err := s3conn.PutBucketVersioningWithContext(ctx, i)
 	if err != nil {
-		return fmt.Errorf("error putting S3 versioning: %s", err)
+		return fmt.Errorf("error putting S3 versioning: %w", err)
 	}
 
 	return nil
@@ -649,7 +652,7 @@ func resourceScalewayS3BucketCorsUpdate(ctx context.Context, s3conn *s3.S3, d *s
 		})
 
 		if err != nil {
-			return fmt.Errorf("error deleting S3 CORS: %s", err)
+			return fmt.Errorf("error deleting S3 CORS: %w", err)
 		}
 	} else {
 		// Put CORS
@@ -664,7 +667,7 @@ func resourceScalewayS3BucketCorsUpdate(ctx context.Context, s3conn *s3.S3, d *s
 
 		_, err := s3conn.PutBucketCorsWithContext(ctx, corsInput)
 		if err != nil {
-			return fmt.Errorf("error putting S3 CORS: %s", err)
+			return fmt.Errorf("error putting S3 CORS: %w", err)
 		}
 	}
 

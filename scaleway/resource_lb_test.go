@@ -28,7 +28,7 @@ func testSweepLB(_ string) error {
 			Zone: zone,
 		}, scw.WithAllPages())
 		if err != nil {
-			return fmt.Errorf("error listing lbs in (%s) in sweeper: %s", zone, err)
+			return fmt.Errorf("error listing lbs in (%s) in sweeper: %w", zone, err)
 		}
 
 		for _, l := range listLBs.LBs {
@@ -45,7 +45,7 @@ func testSweepLB(_ string) error {
 				RetryInterval: &retryInterval,
 			}, scw.WithContext(context.Background()))
 			if err != nil {
-				return fmt.Errorf("error waiting for lb in sweeper: %s", err)
+				return fmt.Errorf("error waiting for lb in sweeper: %w", err)
 			}
 			err = lbAPI.DeleteLB(&lbSDK.ZonedAPIDeleteLBRequest{
 				LBID:      l.ID,
@@ -53,7 +53,7 @@ func testSweepLB(_ string) error {
 				Zone:      zone,
 			})
 			if err != nil {
-				return fmt.Errorf("error deleting lb in sweeper: %s", err)
+				return fmt.Errorf("error deleting lb in sweeper: %w", err)
 			}
 		}
 

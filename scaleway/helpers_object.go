@@ -228,7 +228,7 @@ func removeS3ObjectVersionLegalHold(conn *s3.S3, bucketName string, objectVersio
 		VersionId: objectVersion.VersionId,
 	})
 	if err != nil {
-		err = fmt.Errorf("failed to get S3 object meta data: %s", err)
+		err = fmt.Errorf("failed to get S3 object meta data: %w", err)
 		return false, err
 	}
 	if aws.StringValue(objectHead.ObjectLockLegalHoldStatus) != s3.ObjectLockLegalHoldStatusOn {
@@ -243,7 +243,7 @@ func removeS3ObjectVersionLegalHold(conn *s3.S3, bucketName string, objectVersio
 		},
 	})
 	if err != nil {
-		err = fmt.Errorf("failed to put S3 object legal hold: %s", err)
+		err = fmt.Errorf("failed to put S3 object legal hold: %w", err)
 		return false, err
 	}
 	return true, nil
@@ -263,7 +263,7 @@ func deleteS3ObjectVersions(ctx context.Context, conn *s3.S3, bucketName string,
 			if isS3Err(err, ErrCodeAccessDenied, "") && force {
 				legalHoldRemoved, errLegal := removeS3ObjectVersionLegalHold(conn, bucketName, objectVersion)
 				if errLegal != nil {
-					err = fmt.Errorf("failed to remove legal hold: %s", errLegal)
+					err = fmt.Errorf("failed to remove legal hold: %w", errLegal)
 					return false
 				}
 				if legalHoldRemoved {
@@ -271,14 +271,14 @@ func deleteS3ObjectVersions(ctx context.Context, conn *s3.S3, bucketName string,
 				}
 			}
 			if err != nil {
-				err = fmt.Errorf("failed to delete S3 object: %s", err)
+				err = fmt.Errorf("failed to delete S3 object: %w", err)
 				return false
 			}
 		}
 		return true
 	})
 	if listErr != nil {
-		return fmt.Errorf("error listing S3 objects: %s", err)
+		return fmt.Errorf("error listing S3 objects: %w", err)
 	}
 	if err != nil {
 		return err
@@ -290,14 +290,14 @@ func deleteS3ObjectVersions(ctx context.Context, conn *s3.S3, bucketName string,
 			err = deleteS3ObjectVersion(conn, bucketName, deleteMarkerKey, deleteMarkerVersionsID, force)
 
 			if err != nil {
-				err = fmt.Errorf("failed to delete S3 object delete marker: %s", err)
+				err = fmt.Errorf("failed to delete S3 object delete marker: %w", err)
 				return false
 			}
 		}
 		return true
 	})
 	if listErr != nil {
-		return fmt.Errorf("error listing S3 objects for delete markers: %s", err)
+		return fmt.Errorf("error listing S3 objects for delete markers: %w", err)
 	}
 	if err != nil {
 		return err

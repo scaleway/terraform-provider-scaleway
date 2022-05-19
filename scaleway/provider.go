@@ -2,6 +2,7 @@ package scaleway
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
 
@@ -236,7 +237,8 @@ func buildMeta(ctx context.Context, config *metaConfig) (*Meta, error) {
 func loadProfile(ctx context.Context, d *schema.ResourceData) (*scw.Profile, error) {
 	config, err := scw.LoadConfig()
 	// If the config file do not exist, don't return an error as we may find config in ENV or flags.
-	if _, isNotFoundError := err.(*scw.ConfigFileNotFoundError); isNotFoundError {
+	var _t0 *scw.ConfigFileNotFoundError
+	if isNotFoundError := errors.Is(err, _t0); isNotFoundError {
 		config = &scw.Config{}
 	} else if err != nil {
 		return nil, err

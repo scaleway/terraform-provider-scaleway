@@ -185,7 +185,7 @@ func testCheckResourceAttrFunc(name string, key string, test func(string) error)
 		}
 		err := test(value)
 		if err != nil {
-			return fmt.Errorf("test for %s %s did not pass test: %s", name, key, err)
+			return fmt.Errorf("test for %s %s did not pass test: %w", name, key, err)
 		}
 		return nil
 	}

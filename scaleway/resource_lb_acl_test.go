@@ -256,7 +256,7 @@ func testAccCheckScalewayACLAreCorrect(tt *TestTools, frontendName string, expec
 			FrontendID: ID,
 		}, scw.WithAllPages())
 		if err != nil {
-			return fmt.Errorf("error on getting acl list [%s]", err)
+			return fmt.Errorf("error on getting acl list [%w]", err)
 		}
 
 		//verify that the count of api acl is the same as we are expecting it to be

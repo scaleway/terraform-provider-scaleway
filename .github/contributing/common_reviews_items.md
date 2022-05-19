@@ -45,7 +45,7 @@ Below are style-based items that _may_ be noted during review and are recommende
 - [ ] __Avoids CustomizeDiff__: Usage of `CustomizeDiff` is generally discouraged.
 - [ ] __Implements Error Message Context__: Returning errors from resource `Create`, `Read`, `Update`, and `Delete` functions should include additional messaging about the location or cause of the error for operators and code maintainers by wrapping with [`fmt.Errorf()`](https://godoc.org/golang.org/x/exp/errors/fmt#Errorf).
   - An example `Delete` API error: `return fmt.Errorf("error deleting {SERVICE} {THING} (%s): %s", d.Id(), err)`
-  - An example `d.Set()` error: `return fmt.Errorf("error setting {ATTRIBUTE}: %s", err)`
+  - An example `d.Set()` error: `return fmt.Errorf("error setting {ATTRIBUTE}: %w", err)`
 - [ ] __Implements Warning Logging With Resource State Removal__: If a resource is removed outside of Terraform (e.g. via different tool, API, or web UI), `d.SetId("")` and `return nil` can be used in the resource `Read` function to trigger resource recreation.
   When this occurs, a warning log message should be printed beforehand: `log.Printf("[WARN] {SERVICE} {THING} (%s) not found, removing from state", d.Id())`
 - [ ] __Uses Elem with TypeMap__: While provider schema validation does not error when the `Elem` configuration is not present with `Type: schema.TypeMap` attributes, including the explicit `Elem: &schema.Schema{Type: schema.TypeString}` is recommended.

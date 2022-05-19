@@ -24,7 +24,7 @@ func testSweepRegistryNamespace(_ string) error {
 		listNamespaces, err := registryAPI.ListNamespaces(
 			&registry.ListNamespacesRequest{Region: region}, scw.WithAllPages())
 		if err != nil {
-			return fmt.Errorf("error listing namespaces in (%s) in sweeper: %s", region, err)
+			return fmt.Errorf("error listing namespaces in (%s) in sweeper: %w", region, err)
 		}
 
 		for _, ns := range listNamespaces.Namespaces {
@@ -35,7 +35,7 @@ func testSweepRegistryNamespace(_ string) error {
 			if err != nil {
 				l.Debugf("sweeper: error (%s)", err)
 
-				return fmt.Errorf("error deleting namespace in sweeper: %s", err)
+				return fmt.Errorf("error deleting namespace in sweeper: %w", err)
 			}
 		}
 

@@ -33,7 +33,7 @@ func testSweepBaremetalServer(_ string) error {
 				ServerID: server.ID,
 			})
 			if err != nil {
-				return fmt.Errorf("error deleting server in sweeper: %s", err)
+				return fmt.Errorf("error deleting server in sweeper: %w", err)
 			}
 		}
 

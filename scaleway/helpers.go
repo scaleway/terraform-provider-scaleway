@@ -504,7 +504,7 @@ func expandIPNet(raw string) (scw.IPNet, error) {
 	var ipNet scw.IPNet
 	err := json.Unmarshal([]byte(strconv.Quote(raw)), &ipNet)
 	if err != nil {
-		return scw.IPNet{}, fmt.Errorf("%s could not be marshaled: %v", raw, err)
+		return scw.IPNet{}, fmt.Errorf("%s could not be marshaled: %w", raw, err)
 	}
 
 	return ipNet, nil
