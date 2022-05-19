@@ -187,7 +187,7 @@ func testAccCheckScalewayContainerExists(tt *TestTools, n string) resource.TestC
 
 		api, region, id, err := containerAPIWithRegionAndID(tt.Meta, rs.Primary.ID)
 		if err != nil {
-			return nil
+			return err
 		}
 
 		_, err = api.GetContainer(&container.GetContainerRequest{
@@ -241,7 +241,7 @@ func testConfigContainerNamespace(tt *TestTools, n string) resource.TestCheckFun
 		}
 		api, region, id, err := containerAPIWithRegionAndID(tt.Meta, rs.Primary.ID)
 		if err != nil {
-			return nil
+			return err
 		}
 
 		ns, err := api.WaitForNamespace(&container.WaitForNamespaceRequest{
