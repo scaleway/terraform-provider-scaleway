@@ -92,7 +92,7 @@ func testAccCheckScalewayRegistryNamespaceExists(tt *TestTools, n string) resour
 
 		api, region, id, err := registryAPIWithRegionAndID(tt.Meta, rs.Primary.ID)
 		if err != nil {
-			return nil
+			return err
 		}
 
 		_, err = api.GetNamespace(&registry.GetNamespaceRequest{
