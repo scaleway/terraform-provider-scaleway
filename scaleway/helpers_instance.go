@@ -301,7 +301,6 @@ func preparePrivateNIC(
 }
 
 type privateNICsHandler struct {
-	ctx            context.Context
 	instanceAPI    *instance.API
 	serverID       string
 	privateNICsMap map[string]*instance.PrivateNIC
@@ -310,7 +309,6 @@ type privateNICsHandler struct {
 
 func newPrivateNICHandler(ctx context.Context, api *instance.API, server string, zone scw.Zone) (*privateNICsHandler, error) {
 	handler := &privateNICsHandler{
-		ctx:         ctx,
 		instanceAPI: api,
 		serverID:    server,
 		zone:        zone}
@@ -331,13 +329,13 @@ func (ph *privateNICsHandler) flatPrivateNICs() error {
 	return nil
 }
 
-func (ph *privateNICsHandler) detach(o interface{}, timeout time.Duration) error {
+func (ph *privateNICsHandler) detach(ctx context.Context, o interface{}, timeout time.Duration) error {
 	oPtr := expandStringPtr(o)
 	if oPtr != nil && len(*oPtr) > 0 {
 		idPN := expandID(*oPtr)
 		// check if old private network still exist on instance server
 		if p, ok := ph.privateNICsMap[idPN]; ok {
-			_, err := waitForPrivateNIC(ph.ctx, ph.instanceAPI, ph.zone, ph.serverID, expandID(p.ID), timeout)
+			_, err := waitForPrivateNIC(ctx, ph.instanceAPI, ph.zone, ph.serverID, expandID(p.ID), timeout)
 			if err != nil {
 				return err
 			}
@@ -346,7 +344,7 @@ func (ph *privateNICsHandler) detach(o interface{}, timeout time.Duration) error
 				PrivateNicID: expandID(p.ID),
 				Zone:         ph.zone,
 				ServerID:     ph.serverID},
-				scw.WithContext(ph.ctx))
+				scw.WithContext(ctx))
 			if err != nil {
 				return err
 			}
@@ -356,7 +354,7 @@ func (ph *privateNICsHandler) detach(o interface{}, timeout time.Duration) error
 	return nil
 }
 
-func (ph *privateNICsHandler) attach(n interface{}, timeout time.Duration) error {
+func (ph *privateNICsHandler) attach(ctx context.Context, n interface{}, timeout time.Duration) error {
 	if nPtr := expandStringPtr(n); nPtr != nil {
 		// check if new private network was already attached on instance server
 		privateNetworkID := expandID(*nPtr)
@@ -369,7 +367,7 @@ func (ph *privateNICsHandler) attach(n interface{}, timeout time.Duration) error
 				return err
 			}
 
-			_, err = waitForPrivateNIC(ph.ctx, ph.instanceAPI, ph.zone, ph.serverID, pn.PrivateNic.ID, timeout)
+			_, err = waitForPrivateNIC(ctx, ph.instanceAPI, ph.zone, ph.serverID, pn.PrivateNic.ID, timeout)
 			if err != nil {
 				return err
 			}
