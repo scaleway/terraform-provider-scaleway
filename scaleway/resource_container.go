@@ -2,16 +2,20 @@ package scaleway
 
 import (
 	"context"
-
+	"fmt"
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
+	"github.com/robfig/cron"
 	container "github.com/scaleway/scaleway-sdk-go/api/container/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"time"
 )
 
 const (
-	containerMaxConcurrencyLimit int = 80
+	containerMaxConcurrencyLimit      int = 80
+	defaultWaitContainerRetryInterval     = 30 * time.Second
 )
 
 func resourceScalewayContainer() *schema.Resource {
@@ -136,6 +140,21 @@ func resourceScalewayContainer() *schema.Resource {
 				Description: "This allows you to control your production environment",
 				Default:     false,
 			},
+			"cron_job": {
+				Type:        schema.TypeList,
+				Optional:    true,
+				Description: "Specifies how to run a job periodically on a given schedule, written in Cron format.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"schedule": {
+							Type:         schema.TypeString,
+							Required:     true,
+							ValidateFunc: validateCronExpression(),
+							Description:  "Cron format string, e.g. 0 * * * * or @hourly, as schedule time of its jobs to be created and executed.",
+						},
+					},
+				},
+			},
 			// computed
 			"status": {
 				Type:        schema.TypeString,
@@ -211,9 +230,37 @@ func resourceScalewayContainerCreate(ctx context.Context, d *schema.ResourceData
 		}
 	}
 
+	if cronJobsRaw, ok := d.GetOk("cron_job"); ok {
+		cronJobRequests := createCronJobsRequest(res.ID, region, cronJobsRaw)
+		cronErrors := createCronJobs(ctx, api, cronJobRequests, d.Timeout(schema.TimeoutCreate))
+		if len(cronErrors) > 0 {
+			for _, cronErr := range cronErrors {
+				tflog.Error(ctx, cronErr.Error())
+			}
+		}
+	}
+
 	d.SetId(newRegionalIDString(region, res.ID))
 
 	return resourceScalewayContainerRead(ctx, d, meta)
+}
+
+func createCronJobs(ctx context.Context, api *container.API, cronJobs []*container.CreateCronRequest, timeout time.Duration) []error {
+	var errors []error
+	for _, r := range cronJobs {
+		cron, err := api.CreateCron(r, scw.WithContext(ctx))
+		if err != nil {
+			errors = append(errors, err)
+		}
+		tflog.Info(ctx, fmt.Sprintf("[INFO] Submitted new cron job: %#v", r.Schedule))
+		_, err = waitForContainerCron(ctx, api, cron.ID, r.Region, timeout)
+		if err != nil {
+			errors = append(errors, err)
+		}
+		tflog.Info(ctx, "[INFO] cron job ready")
+	}
+
+	return errors
 }
 
 func resourceScalewayContainerRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -251,6 +298,17 @@ func resourceScalewayContainerRead(ctx context.Context, d *schema.ResourceData, 
 	_ = d.Set("deploy", scw.BoolPtr(*expandBoolPtr(d.Get("deploy"))))
 	_ = d.Set("region", co.Region.String())
 
+	// read Container Cron Jobs
+	cronJobs, err := api.ListCrons(&container.ListCronsRequest{
+		ContainerID: co.ID,
+		Region:      co.Region,
+	})
+	_ = d.Set("cron_job", flattenContainerCronJobs(d.Get("cron_job").([]interface{}), cronJobs.Crons))
+	return nil
+}
+
+func flattenContainerCronJobs(rawJobs []interface{}, cronJobs []*container.Cron) error {
+	//TODO: check rawJobs and set data. Set cronJobs if there are new jobs
 	return nil
 }
 
@@ -401,4 +459,50 @@ func resourceScalewayContainerDelete(ctx context.Context, d *schema.ResourceData
 	}
 
 	return nil
+}
+
+func validateCronExpression() schema.SchemaValidateFunc {
+	return func(i interface{}, k string) (s []string, es []error) {
+		v, ok := i.(string)
+		if !ok {
+			es = append(es, fmt.Errorf("expected type of '%s' to be string", k))
+			return
+		}
+		_, err := cron.ParseStandard(v)
+		if err != nil {
+			es = append(es, fmt.Errorf("'%s' should be an valid Cron expression", k))
+		}
+		return
+	}
+}
+
+func createCronJobsRequest(containerID string, region scw.Region, raw interface{}) []*container.CreateCronRequest {
+	var requests []*container.CreateCronRequest
+
+	for _, cronJob := range raw.([]interface{}) {
+		config := cronJob.(map[string]interface{})
+		requests = append(requests, &container.CreateCronRequest{
+			ContainerID: expandID(containerID),
+			Region:      region,
+			Schedule:    config["schedule"].(string),
+		})
+	}
+
+	return requests
+}
+
+func waitForContainerCron(ctx context.Context, api *container.API, cronID string, region scw.Region, timeout time.Duration) (*container.Cron, error) {
+	retryInterval := defaultWaitContainerRetryInterval
+	if DefaultWaitRetryInterval != nil {
+		retryInterval = *DefaultWaitRetryInterval
+	}
+
+	request := container.WaitForCronRequest{
+		CronID:        cronID,
+		Region:        region,
+		Timeout:       scw.TimeDurationPtr(timeout),
+		RetryInterval: &retryInterval,
+	}
+
+	return api.WaitForCron(&request, scw.WithContext(ctx))
 }

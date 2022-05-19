@@ -96,6 +96,116 @@ func TestAccScalewayContainer_Basic(t *testing.T) {
 	})
 }
 
+func TestAccScalewayContainer_WhitCron(t *testing.T) {
+	tt := NewTestTools(t)
+	defer tt.Cleanup()
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      testAccCheckScalewayContainerDestroy(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource scaleway_container_namespace main {
+					}
+
+					resource scaleway_container main {
+						namespace_id = scaleway_container_namespace.main.id
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayContainerExists(tt, "scaleway_container.main"),
+					testCheckResourceAttrUUID("scaleway_container_namespace.main", "id"),
+					testCheckResourceAttrUUID("scaleway_container.main", "id"),
+					resource.TestCheckResourceAttrSet("scaleway_container.main", "name"),
+					resource.TestCheckResourceAttrSet("scaleway_container.main", "registry_image"),
+					resource.TestCheckResourceAttrSet("scaleway_container.main", "domain_name"),
+					resource.TestCheckResourceAttrSet("scaleway_container.main", "max_concurrency"),
+					resource.TestCheckResourceAttrSet("scaleway_container.main", "domain_name"),
+					resource.TestCheckResourceAttrSet("scaleway_container.main", "protocol"),
+					resource.TestCheckResourceAttrSet("scaleway_container.main", "cpu_limit"),
+					resource.TestCheckResourceAttrSet("scaleway_container.main", "timeout"),
+					resource.TestCheckResourceAttrSet("scaleway_container.main", "memory_limit"),
+					resource.TestCheckResourceAttrSet("scaleway_container.main", "max_scale"),
+					resource.TestCheckResourceAttrSet("scaleway_container.main", "min_scale"),
+					resource.TestCheckResourceAttrSet("scaleway_container.main", "privacy"),
+				),
+			},
+			{
+				Config: `
+					resource scaleway_container_namespace main {
+					}
+
+					resource scaleway_container main {
+						name = "my-container-tf"
+						namespace_id = scaleway_container_namespace.main.id
+
+						cron_job {
+							schedule = "5 4 * * *" #cron at 04:05
+						}
+
+						cron_job {
+							schedule = "5 4 1 * *" #cron at 04:05 on day-of-month 1
+						}
+
+						cron_job {
+							schedule = "5 4 1 2 *" #cron at at 04:05 on day-of-month 1 in February
+						}
+
+						cron_job {
+							schedule = "5 4 1 2 3" #cron at 04:05 on day-of-month 1 and on Wednesday in February
+						}
+
+						cron_job {
+							schedule = "0/2 0 1 1 *" #cron at every 2nd minute from 0 through 59 past hour 0 on day-of-month 1 in January
+						}
+
+						cron_job {
+							schedule = "0-10 0 1 1 *" #cron at every minute from 0 through 10 past hour 0 on day-of-month 1 in January
+						}
+
+						cron_job {
+							schedule = "0,5 0 1 1 *" #cron at minute 0 and 5 past hour 0 on day-of-month 1 in January
+						}
+
+						cron_job {
+							schedule = "0 0 * * SUN" #cron at 00:00 on Sunday and Monday
+						}
+
+						cron_job {
+							schedule = "0 0 * JAN *" #cron at 00:00 in January
+						}
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayContainerExists(tt, "scaleway_container.main"),
+					testCheckResourceAttrUUID("scaleway_container.main", "id"),
+					resource.TestCheckResourceAttr("scaleway_container.main", "name", "my-container-tf"),
+					resource.TestCheckResourceAttr("scaleway_container.main", "port", "8080"),
+					resource.TestCheckResourceAttr("scaleway_container.main", "cpu_limit", "70"),
+					resource.TestCheckResourceAttr("scaleway_container.main", "memory_limit", "128"),
+					resource.TestCheckResourceAttr("scaleway_container.main", "min_scale", "0"),
+					resource.TestCheckResourceAttr("scaleway_container.main", "max_scale", "20"),
+					resource.TestCheckResourceAttr("scaleway_container.main", "timeout", "300"),
+					resource.TestCheckResourceAttr("scaleway_container.main", "max_concurrency", "50"),
+					resource.TestCheckResourceAttr("scaleway_container.main", "deploy", "false"),
+					resource.TestCheckResourceAttr("scaleway_container.main", "privacy", container.ContainerPrivacyPublic.String()),
+					resource.TestCheckResourceAttr("scaleway_container.main", "protocol", container.ContainerProtocolHTTP1.String()),
+					resource.TestCheckResourceAttr("scaleway_container.main", "cron_job.0.schedule", "5 4 * * *"),
+					resource.TestCheckResourceAttr("scaleway_container.main", "cron_job.1.schedule", "5 4 1 * *"),
+					resource.TestCheckResourceAttr("scaleway_container.main", "cron_job.2.schedule", "5 4 1 2 *"),
+					resource.TestCheckResourceAttr("scaleway_container.main", "cron_job.3.schedule", "5 4 1 2 3"),
+					resource.TestCheckResourceAttr("scaleway_container.main", "cron_job.4.schedule", "0/2 0 1 1 *"),
+					resource.TestCheckResourceAttr("scaleway_container.main", "cron_job.5.schedule", "0-10 0 1 1 *"),
+					resource.TestCheckResourceAttr("scaleway_container.main", "cron_job.6.schedule", "0,5 0 1 1 *"),
+					resource.TestCheckResourceAttr("scaleway_container.main", "cron_job.7.schedule", "0 0 * * SUN"),
+					resource.TestCheckResourceAttr("scaleway_container.main", "cron_job.7.schedule", "0 0 * JAN *"),
+				),
+			},
+		},
+	})
+}
+
 func TestAccScalewayContainer_WithIMG(t *testing.T) {
 	if !*UpdateCassettes {
 		t.Skip("Skipping Container test with image as this kind of test  can't dump docker pushing process on cassettes")
