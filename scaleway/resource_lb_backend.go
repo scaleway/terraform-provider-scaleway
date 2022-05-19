@@ -340,7 +340,6 @@ func resourceScalewayLbBackendRead(ctx context.Context, d *schema.ResourceData, 
 		Zone:      zone,
 		BackendID: ID,
 	}, scw.WithContext(ctx))
-
 	if err != nil {
 		if is403Error(err) {
 			d.SetId("")

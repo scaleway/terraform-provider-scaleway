@@ -749,7 +749,6 @@ func testAccCheckBucketLifecycleConfigurationExists(tt *TestTools, n string) res
 		output, err := retryOnAWSCode(context.Background(), ErrCodeNoSuchLifecycleConfiguration, func() (interface{}, error) {
 			return s3Client.GetBucketLifecycleConfiguration(input)
 		})
-
 		if err != nil {
 			return err
 		}

@@ -151,7 +151,7 @@ func resourceScalewayLbCreate(ctx context.Context, d *schema.ResourceData, meta 
 		return diag.FromErr(err)
 	}
 
-	//attach private network
+	// attach private network
 	pnConfigs, pnExist := d.GetOk("private_network")
 	if pnExist {
 		pnConfigs, err := expandPrivateNetworks(pnConfigs, lb.ID)
@@ -271,7 +271,7 @@ func resourceScalewayLbUpdate(ctx context.Context, d *schema.ResourceData, meta 
 			}
 		}
 
-		//attach private network
+		// attach private network
 		pnConfigs, pnExist := d.GetOk("private_network")
 		if pnExist {
 			pnConfigs, err := expandPrivateNetworks(pnConfigs, ID)

@@ -97,7 +97,6 @@ func resourceScalewayLbRouteRead(ctx context.Context, d *schema.ResourceData, me
 		Zone:    zone,
 		RouteID: ID,
 	}, scw.WithContext(ctx))
-
 	if err != nil {
 		if is404Error(err) {
 			d.SetId("")
