@@ -27,6 +27,7 @@ linters:
     - gomoddirectives # Manage the use of 'replace', 'retract', and 'excludes' directives in go.mod. [fast: true, auto-fix: false]
     - gomodguard # Allow and block list linter for direct Go module dependencies. This is different from depguard where there are different block types for example version constraints and module recommendations. [fast: true, auto-fix: false]
     - goprintffuncname # Checks that printf-like functions are named with `f` at the end [fast: true, auto-fix: false]
+    - gosec #(gas): Inspects source code for security problems [fast: false, auto-fix: false]
     - gosimple #(megacheck): Linter for Go source code that specializes in simplifying a code [fast: false, auto-fix: false]
     - govet #(vet, vetshadow): Vet examines Go source code and reports suspicious constructs, such as Printf calls whose arguments do not align with the format string [fast: false, auto-fix: false]
     - grouper # An analyzer to analyze expression groups. [fast: true, auto-fix: false]
@@ -41,6 +42,7 @@ linters:
     - noctx # noctx finds sending http request without context.Context [fast: false, auto-fix: false]
     - nolintlint # Reports ill-formed or insufficient nolint directives [fast: true, auto-fix: false]
     - nosprintfhostport # Checks for misuse of Sprintf to construct a host with port in a URL. [fast: true, auto-fix: false]
+    - predeclared # find code that shadows one of Go's predeclared identifiers [fast: true, auto-fix: false]
     - promlinter # Check Prometheus metrics naming via promlint [fast: true, auto-fix: false]
     - revive # Fast, configurable, extensible, flexible, and beautiful linter for Go. Drop-in replacement of golint. [fast: false, auto-fix: false]
     - rowserrcheck # checks whether Err of rows is checked successfully [fast: false, auto-fix: false]
@@ -74,7 +76,6 @@ linters:
     - goerr113 # Golang linter to check the errors handling expressions [fast: false, auto-fix: false]
     - gofumpt # Gofumpt checks whether code was gofumpt-ed. [fast: true, auto-fix: true]
     - gomnd # An analyzer to detect magic numbers. [fast: true, auto-fix: false]
-    - gosec #(gas): Inspects source code for security problems [fast: false, auto-fix: false]
     - lll # Reports long lines [fast: true, auto-fix: false]
     - maintidx # maintidx measures the maintainability index of each function. [fast: true, auto-fix: false]
     - nestif # Reports deeply nested if statements [fast: true, auto-fix: false]
@@ -98,3 +99,6 @@ issues:
       linters:
         - stylecheck
         - gosec
+
+  max-issues-per-linter: 0
+  max-same-issues: 0
