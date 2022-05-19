@@ -58,6 +58,7 @@ linters:
     - typecheck # Like the front-end of a Go compiler, parses and type-checks Go code [fast: false, auto-fix: false]
     - unconvert # Remove unnecessary type conversions [fast: false, auto-fix: false]
     - varcheck # Finds unused global variables and constants [fast: false, auto-fix: false]
+    - wastedassign # wastedassign finds wasted assignment statements. [fast: false, auto-fix: false]
     - whitespace # Tool for detection of leading and trailing whitespace [fast: true, auto-fix: true]
 
   disable:
@@ -65,7 +66,6 @@ linters:
     - dupl # Tool for code clone detection [fast: true, auto-fix: false]
     - errorlint # errorlint is a linter for that can be used to find code that will cause problems with the error wrapping scheme introduced in Go 1.13. [fast: false, auto-fix: false]
     - exhaustive # check exhaustiveness of enum switch statements [fast: false, auto-fix: false]
-    - exhaustruct # Checks if all structure fields are initialized [fast: false, auto-fix: false]
     - forcetypeassert # finds forced type assertions [fast: true, auto-fix: false]
     - funlen # Tool for detection of long functions [fast: true, auto-fix: false]
     - gochecknoglobals # check that no global variables exist [fast: true, auto-fix: false]
@@ -81,13 +81,9 @@ linters:
     - nestif # Reports deeply nested if statements [fast: true, auto-fix: false]
     - nilnil # Checks that there is no simultaneous return of `nil` error and an invalid value. [fast: false, auto-fix: false]
     - nlreturn # nlreturn checks for a new line before return and branch statements to increase code clarity [fast: true, auto-fix: false]
-    - paralleltest # paralleltest detects missing usage of t.Parallel() method in your Go test [fast: true, auto-fix: false]
-    - prealloc # Finds slice declarations that could potentially be preallocated [fast: true, auto-fix: false]
     - staticcheck #(megacheck): Staticcheck is a go vet on steroids, applying a ton of static analysis checks [fast: false, auto-fix: false]
-    - unparam # Reports unused function parameters [fast: false, auto-fix: false]
     - unused #(megacheck): Checks Go code for unused constants, variables, functions and types [fast: false, auto-fix: false]
     - varnamelen # checks that the length of a variable's name matches its scope [fast: false, auto-fix: false]
-    - wastedassign # wastedassign finds wasted assignment statements. [fast: false, auto-fix: false]
     - wrapcheck # Checks that errors returned from external packages are wrapped [fast: false, auto-fix: false]
     - wsl # Whitespace Linter - Forces you to use empty lines! [fast: true, auto-fix: false]
 
