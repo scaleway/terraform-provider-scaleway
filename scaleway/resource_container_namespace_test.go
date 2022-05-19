@@ -156,7 +156,7 @@ func testAccCheckScalewayContainerNamespaceExists(tt *TestTools, n string) resou
 
 		api, region, id, err := containerAPIWithRegionAndID(tt.Meta, rs.Primary.ID)
 		if err != nil {
-			return nil
+			return err
 		}
 
 		_, err = api.GetNamespace(&container.GetNamespaceRequest{
