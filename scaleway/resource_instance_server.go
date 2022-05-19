@@ -599,11 +599,11 @@ func resourceScalewayInstanceServerRead(ctx context.Context, d *schema.ResourceD
 			if err != nil {
 				return diag.FromErr(err)
 			}
-			//if key != "cloud-init" {
+			// if key != "cloud-init" {
 			userData[key] = string(userDataValue)
 			//	} else {
-			//_ = d.Set("cloud_init", string(userDataValue))
-			//}
+			// _ = d.Set("cloud_init", string(userDataValue))
+			// }
 		}
 		if len(userData) > 0 {
 			_ = d.Set("user_data", userData)
@@ -744,7 +744,7 @@ func resourceScalewayInstanceServerUpdate(ctx context.Context, d *schema.Resourc
 			if err != nil {
 				return diag.FromErr(err)
 			}
-			//we wait to ensure to not detach the new ip.
+			// we wait to ensure to not detach the new ip.
 			_, err := waitForInstanceServer(ctx, instanceAPI, zone, id, d.Timeout(schema.TimeoutUpdate))
 			if err != nil {
 				return diag.FromErr(err)

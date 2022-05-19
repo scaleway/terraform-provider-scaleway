@@ -69,7 +69,7 @@ func expandLbACL(i interface{}) *lbSDK.ACL {
 		Action: expandLbACLAction(rawRule["action"]),
 	}
 
-	//remove http filter values if we do not pass any http filter
+	// remove http filter values if we do not pass any http filter
 	if acl.Match.HTTPFilter == "" || acl.Match.HTTPFilter == lbSDK.ACLHTTPFilterACLHTTPFilterNone {
 		acl.Match.HTTPFilter = lbSDK.ACLHTTPFilterACLHTTPFilterNone
 		acl.Match.HTTPFilterValue = []*string{}
@@ -116,18 +116,18 @@ func expandPrivateNetworks(data interface{}, lbID string) ([]*lbSDK.ZonedAPIAtta
 	return res, nil
 }
 
-func isPrivateNetworkEqual(A, B interface{}) bool {
+func isPrivateNetworkEqual(a, b interface{}) bool {
 	// Find out the diff Private Network or not
-	if _, ok := A.(*lbSDK.PrivateNetwork); ok {
-		if _, ok := B.(*lbSDK.PrivateNetwork); ok {
-			if A.(*lbSDK.PrivateNetwork).PrivateNetworkID == B.(*lbSDK.PrivateNetwork).PrivateNetworkID {
+	if _, ok := a.(*lbSDK.PrivateNetwork); ok {
+		if _, ok := b.(*lbSDK.PrivateNetwork); ok {
+			if a.(*lbSDK.PrivateNetwork).PrivateNetworkID == b.(*lbSDK.PrivateNetwork).PrivateNetworkID {
 				// if both has dhcp config should not update
-				if A.(*lbSDK.PrivateNetwork).DHCPConfig != nil && B.(*lbSDK.PrivateNetwork).DHCPConfig != nil {
+				if a.(*lbSDK.PrivateNetwork).DHCPConfig != nil && b.(*lbSDK.PrivateNetwork).DHCPConfig != nil {
 					return true
 				}
 				// check static config
-				aConfig := A.(*lbSDK.PrivateNetwork).StaticConfig
-				bConfig := B.(*lbSDK.PrivateNetwork).StaticConfig
+				aConfig := a.(*lbSDK.PrivateNetwork).StaticConfig
+				bConfig := b.(*lbSDK.PrivateNetwork).StaticConfig
 				if aConfig != nil && bConfig != nil {
 					// check if static config is different
 					return reflect.DeepEqual(aConfig.IPAddress, bConfig.IPAddress)
@@ -159,7 +159,7 @@ func privateNetworksToDetach(pns []*lbSDK.PrivateNetwork, updates interface{}) (
 		actions[pn.PrivateNetworkID] = true
 		configs[pn.PrivateNetworkID] = pn
 	}
-	//check if private network still exist or is different
+	// check if private network still exist or is different
 	for _, pn := range updates.([]interface{}) {
 		r := pn.(map[string]interface{})
 		_, pnID, err := parseZonedID(r["private_network_id"].(string))
@@ -226,7 +226,7 @@ func expandLbACLMatch(raw interface{}) *lbSDK.ACLMatch {
 	}
 	rawMap := raw.([]interface{})[0].(map[string]interface{})
 
-	//scaleway api require ip subnet, so if we did not specify one, just put 0.0.0.0/0 instead
+	// scaleway api require ip subnet, so if we did not specify one, just put 0.0.0.0/0 instead
 	ipSubnet := expandSliceStringPtr(rawMap["ip_subnet"].([]interface{}))
 	if len(ipSubnet) == 0 {
 		ipSubnet = []*string{expandStringPtr("0.0.0.0/0")}
@@ -435,14 +435,14 @@ func expandLbPrivateNetworkDHCPConfig(raw interface{}) *lbSDK.PrivateNetworkDHCP
 	return &lbSDK.PrivateNetworkDHCPConfig{}
 }
 
-func waitForLB(ctx context.Context, lbAPI *lbSDK.ZonedAPI, zone scw.Zone, LbID string, timeout time.Duration) (*lbSDK.LB, error) {
+func waitForLB(ctx context.Context, lbAPI *lbSDK.ZonedAPI, zone scw.Zone, lbID string, timeout time.Duration) (*lbSDK.LB, error) {
 	retryInterval := defaultWaitLBRetryInterval
 	if DefaultWaitRetryInterval != nil {
 		retryInterval = *DefaultWaitRetryInterval
 	}
 
 	loadBalancer, err := lbAPI.WaitForLb(&lbSDK.ZonedAPIWaitForLBRequest{
-		LBID:          LbID,
+		LBID:          lbID,
 		Zone:          zone,
 		Timeout:       scw.TimeDurationPtr(timeout),
 		RetryInterval: &retryInterval,
@@ -467,14 +467,14 @@ func waitForLbInstances(ctx context.Context, lbAPI *lbSDK.ZonedAPI, zone scw.Zon
 	return loadBalancer, err
 }
 
-func waitForLBPN(ctx context.Context, lbAPI *lbSDK.ZonedAPI, zone scw.Zone, LbID string, timeout time.Duration) ([]*lbSDK.PrivateNetwork, error) {
+func waitForLBPN(ctx context.Context, lbAPI *lbSDK.ZonedAPI, zone scw.Zone, lbID string, timeout time.Duration) ([]*lbSDK.PrivateNetwork, error) {
 	retryInterval := defaultWaitLBRetryInterval
 	if DefaultWaitRetryInterval != nil {
 		retryInterval = *DefaultWaitRetryInterval
 	}
 
 	privateNetworks, err := lbAPI.WaitForLBPN(&lbSDK.ZonedAPIWaitForLBPNRequest{
-		LBID:          LbID,
+		LBID:          lbID,
 		Zone:          zone,
 		Timeout:       scw.TimeDurationPtr(timeout),
 		RetryInterval: &retryInterval,

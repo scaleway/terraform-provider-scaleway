@@ -256,12 +256,12 @@ func TestAclEqual(t *testing.T) {
 	}
 	assert.True(t, aclEquals(aclA, aclB))
 
-	//change name
+	// change name
 	aclA.Name = "nope"
 	assert.False(t, aclEquals(aclA, aclB))
 	aclA.Name = aclB.Name
 
-	//check action
+	// check action
 	aclA.Action = nil
 	assert.False(t, aclEquals(aclA, aclB))
 	aclA.Action = &lbSDK.ACLAction{Type: lbSDK.ACLActionTypeAllow}
@@ -271,7 +271,7 @@ func TestAclEqual(t *testing.T) {
 	aclA.Action = &lbSDK.ACLAction{Type: lbSDK.ACLActionTypeAllow}
 	assert.True(t, aclEquals(aclA, aclB))
 
-	//check match
+	// check match
 	aclA.Match.IPSubnet = scw.StringSlicePtr([]string{"192.168.0.1", "192.168.0.2", "192.168.10.0/24", "0.0.0.0"})
 	assert.False(t, aclEquals(aclA, aclB))
 }

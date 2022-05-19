@@ -81,7 +81,7 @@ func testSweepK8SCluster(_ string) error {
 		}
 
 		for _, cluster := range listClusters.Clusters {
-			//remove pools
+			// remove pools
 			listPools, err := k8sAPI.ListPools(&k8s.ListPoolsRequest{
 				Region:    region,
 				ClusterID: cluster.ID,
