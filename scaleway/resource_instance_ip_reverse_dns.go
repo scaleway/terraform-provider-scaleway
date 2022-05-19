@@ -55,8 +55,7 @@ func resourceScalewayInstanceIPReverseDNSCreate(ctx context.Context, d *schema.R
 	}
 	d.SetId(newZonedIDString(zone, res.IP.ID))
 
-	_, ok := d.GetOk("reverse")
-	if ok {
+	if _, ok := d.GetOk("reverse"); ok {
 		tflog.Debug(ctx, fmt.Sprintf("updating IP %q reverse to %q\n", d.Id(), d.Get("reverse")))
 
 		updateReverseReq := &instance.UpdateIPRequest{

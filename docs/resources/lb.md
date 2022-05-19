@@ -28,32 +28,22 @@ resource "scaleway_lb" "base" {
 ### Multiple configurations
 
 ```hcl
-### IP for LB IP
-resource scaleway_lb_ip ip01 {
-}
-
 ### IP for Public Gateway
 resource "scaleway_vpc_public_gateway_ip" "main" {
 }
 
 ### Scaleway Private Network
 resource scaleway_vpc_private_network main {
-    name = "private network with static config"
 }
 
-### The Public Gateway with the Attached IP
+### VPC Public Gateway Network
 resource "scaleway_vpc_public_gateway" "main" {
     name  = "tf-test-public-gw"
     type  = "VPC-GW-S"
     ip_id = scaleway_vpc_public_gateway_ip.main.id
 }
 
-### Scaleway Private Network
-resource "scaleway_vpc_private_network" "pn" {
-    name = "private network with a DHCP config"
-}
-
-### DHCP Space of VPC
+### VPC Public Gateway Network DHCP config
 resource "scaleway_vpc_public_gateway_dhcp" "main" {
     subnet = "10.0.0.0/24"
 }
@@ -61,7 +51,7 @@ resource "scaleway_vpc_public_gateway_dhcp" "main" {
 ### VPC Gateway Network
 resource "scaleway_vpc_gateway_network" "main" {
     gateway_id         = scaleway_vpc_public_gateway.main.id
-    private_network_id = scaleway_vpc_private_network.pn.id
+    private_network_id = scaleway_vpc_private_network.main.id
     dhcp_id            = scaleway_vpc_public_gateway_dhcp.main.id
     cleanup_dhcp       = true
     enable_masquerade  = true
@@ -75,23 +65,32 @@ resource "scaleway_instance_server" "main" {
     enable_ipv6 = false
 
     private_network {
-        pn_id = scaleway_vpc_private_network.pn.id
+        pn_id = scaleway_vpc_private_network.main.id
     }
 }
 
+### IP for LB IP
+resource scaleway_lb_ip ip01 {
+}
 
+### Scaleway Private Network
+resource scaleway_vpc_private_network "static" {
+    name = "private network with static config"
+}
+
+### Scaleway Load Balancer
 resource scaleway_lb lb01 {
     ip_id = scaleway_lb_ip.ip01.id
     name = "test-lb-with-private-network-configs"
     type = "LB-S"
 
     private_network {
-        private_network_id = scaleway_vpc_private_network.main.id
+        private_network_id = scaleway_vpc_private_network.static.id
         static_config = ["172.16.0.100", "172.16.0.101"]
     }
 
     private_network {
-        private_network_id = scaleway_vpc_private_network.pn.id
+        private_network_id = scaleway_vpc_private_network.main.id
         dhcp_config = true
     }
 

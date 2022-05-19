@@ -28,6 +28,7 @@ func testAccPreCheck(_ *testing.T) {}
 
 // getTestFilePath returns a valid filename path based on the go test name and suffix. (Take care of non fs friendly char)
 func getTestFilePath(t *testing.T, suffix string) string {
+	t.Helper()
 	specialChars := regexp.MustCompile(`[\\?%*:|"<>. ]`)
 
 	// Replace nested tests separators.
@@ -51,6 +52,7 @@ func getTestFilePath(t *testing.T, suffix string) string {
 // It is important to add a `defer cleanup()` so the given cassette files are correctly
 // closed and saved after the requests.
 func getHTTPRecoder(t *testing.T, update bool) (client *http.Client, cleanup func(), err error) {
+	t.Helper()
 	recorderMode := recorder.ModeReplaying
 	if update {
 		recorderMode = recorder.ModeRecording
@@ -85,6 +87,7 @@ type TestTools struct {
 }
 
 func NewTestTools(t *testing.T) *TestTools {
+	t.Helper()
 	ctx := context.Background()
 	// Create a http client with recording capabilities
 	httpClient, cleanup, err := getHTTPRecoder(t, *UpdateCassettes)

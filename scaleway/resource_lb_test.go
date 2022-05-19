@@ -265,7 +265,7 @@ func TestAccScalewayLbLb_WithIP(t *testing.T) {
 	})
 }
 
-func TestAccScalewayLbLb_WithSeveralPrivateNetworks(t *testing.T) {
+func TestAccScalewayLbLb_WithPrivateNetworksOnDHCPConfig(t *testing.T) {
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
 	resource.ParallelTest(t, resource.TestCase{
@@ -284,24 +284,23 @@ func TestAccScalewayLbLb_WithSeveralPrivateNetworks(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: `
-				resource "scaleway_vpc_private_network" dhcp_network {
-					name = "private network with a DHCP config"
-				}
-
-				resource scaleway_vpc_private_network static_network {
-					name = "private network with static config"
-				}
-
-
+				### IP for Public Gateway
 				resource "scaleway_vpc_public_gateway_ip" "main" {
 				}
 
+				### The Public Gateway with the Attached IP
 				resource "scaleway_vpc_public_gateway" "main" {
 					name  = "tf-test-public-gw"
 					type  = "VPC-GW-S"
 					ip_id = scaleway_vpc_public_gateway_ip.main.id
 				}
 				
+				### Scaleway Private Network
+				resource "scaleway_vpc_private_network" "main" {
+					name = "private network with a DHCP config"
+				}
+				
+				### DHCP Space of VPC
 				resource "scaleway_vpc_public_gateway_dhcp" "main" {
 					subnet = "10.0.0.0/24"
 				}
@@ -309,7 +308,7 @@ func TestAccScalewayLbLb_WithSeveralPrivateNetworks(t *testing.T) {
 				### VPC Gateway Network
 				resource "scaleway_vpc_gateway_network" "main" {
 					gateway_id         = scaleway_vpc_public_gateway.main.id
-					private_network_id = scaleway_vpc_private_network.dhcp_network.id
+					private_network_id = scaleway_vpc_private_network.main.id
 					dhcp_id            = scaleway_vpc_public_gateway_dhcp.main.id
 					cleanup_dhcp       = true
 					enable_masquerade  = true
@@ -323,27 +322,21 @@ func TestAccScalewayLbLb_WithSeveralPrivateNetworks(t *testing.T) {
 					enable_ipv6 = false
 				
 					private_network {
-						pn_id = scaleway_vpc_private_network.dhcp_network.id
+						pn_id = scaleway_vpc_private_network.main.id
 					}
-
-					depends_on = [scaleway_vpc_private_network.dhcp_network]
 				}
 
+				### IP for LB IP
 				resource scaleway_lb_ip ip01 {
 				}
-
+				
 				resource scaleway_lb lb01 {
 					ip_id = scaleway_lb_ip.ip01.id
 					name = "test-lb-with-private-network-configs"
 					type = "LB-S"
 				
 					private_network {
-						private_network_id = scaleway_vpc_private_network.static_network.id
-						static_config = ["172.16.0.100", "172.16.0.101"]
-					}
-				
-					private_network {
-						private_network_id = scaleway_vpc_private_network.dhcp_network.id
+						private_network_id = scaleway_vpc_private_network.main.id
 						dhcp_config = true
 					}
 				
@@ -353,18 +346,19 @@ func TestAccScalewayLbLb_WithSeveralPrivateNetworks(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayLbExists(tt, "scaleway_lb.lb01"),
 					testAccCheckScalewayLbIPExists(tt, "scaleway_lb_ip.ip01"),
-					resource.TestCheckResourceAttrSet("scaleway_vpc_private_network.dhcp_network", "name"),
-					resource.TestCheckResourceAttrSet("scaleway_vpc_private_network.static_network", "name"),
-					resource.TestCheckResourceAttr("scaleway_lb.lb01",
-						"private_network.0.static_config.0", "172.16.0.100"),
-					resource.TestCheckResourceAttr("scaleway_lb.lb01",
-						"private_network.0.static_config.1", "172.16.0.101"),
+					resource.TestCheckResourceAttrSet("scaleway_vpc_private_network.main", "name"),
+					resource.TestCheckResourceAttrPair(
+						"scaleway_lb.lb01", "private_network.0.private_network_id",
+						"scaleway_vpc_private_network.main", "id"),
+					resource.TestCheckResourceAttrPair(
+						"scaleway_instance_server.main", "private_network.0.pn_id",
+						"scaleway_vpc_private_network.main", "id"),
 					resource.TestCheckResourceAttr("scaleway_lb.lb01",
 						"private_network.0.status", lbSDK.PrivateNetworkStatusReady.String()),
 					resource.TestCheckResourceAttr("scaleway_lb.lb01",
-						"private_network.1.dhcp_config", "true"),
+						"private_network.0.dhcp_config", "true"),
 					resource.TestCheckResourceAttr("scaleway_lb.lb01",
-						"private_network.1.status", lbSDK.PrivateNetworkStatusReady.String()),
+						"private_network.0.status", lbSDK.PrivateNetworkStatusReady.String()),
 				),
 			},
 		},
