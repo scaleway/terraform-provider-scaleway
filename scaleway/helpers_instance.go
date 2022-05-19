@@ -357,8 +357,7 @@ func (ph *privateNICsHandler) detach(o interface{}, timeout time.Duration) error
 }
 
 func (ph *privateNICsHandler) attach(n interface{}, timeout time.Duration) error {
-	nPtr := expandStringPtr(n)
-	if nPtr != nil {
+	if nPtr := expandStringPtr(n); nPtr != nil {
 		// check if new private network was already attached on instance server
 		privateNetworkID := expandID(*nPtr)
 		if _, ok := ph.privateNICsMap[privateNetworkID]; !ok {
