@@ -28,6 +28,7 @@ linters:
     - gomoddirectives # Manage the use of 'replace', 'retract', and 'excludes' directives in go.mod. [fast: true, auto-fix: false]
     - gomodguard # Allow and block list linter for direct Go module dependencies. This is different from depguard where there are different block types for example version constraints and module recommendations. [fast: true, auto-fix: false]
     - goprintffuncname # Checks that printf-like functions are named with `f` at the end [fast: true, auto-fix: false]
+    - gosec #(gas): Inspects source code for security problems [fast: false, auto-fix: false]
     - gosimple #(megacheck): Linter for Go source code that specializes in simplifying a code [fast: false, auto-fix: false]
     - govet #(vet, vetshadow): Vet examines Go source code and reports suspicious constructs, such as Printf calls whose arguments do not align with the format string [fast: false, auto-fix: false]
     - grouper # An analyzer to analyze expression groups. [fast: true, auto-fix: false]
@@ -75,13 +76,11 @@ linters:
     - godox # Tool for detection of FIXME, TODO and other comment keywords [fast: true, auto-fix: false]
     - goerr113 # Golang linter to check the errors handling expressions [fast: false, auto-fix: false]
     - gomnd # An analyzer to detect magic numbers. [fast: true, auto-fix: false]
-    - gosec #(gas): Inspects source code for security problems [fast: false, auto-fix: false]
     - lll # Reports long lines [fast: true, auto-fix: false]
     - maintidx # maintidx measures the maintainability index of each function. [fast: true, auto-fix: false]
     - nestif # Reports deeply nested if statements [fast: true, auto-fix: false]
     - nilnil # Checks that there is no simultaneous return of `nil` error and an invalid value. [fast: false, auto-fix: false]
     - nlreturn # nlreturn checks for a new line before return and branch statements to increase code clarity [fast: true, auto-fix: false]
-    - nonamedreturns # Reports all named returns [fast: true, auto-fix: false]
     - paralleltest # paralleltest detects missing usage of t.Parallel() method in your Go test [fast: true, auto-fix: false]
     - prealloc # Finds slice declarations that could potentially be preallocated [fast: true, auto-fix: false]
     - staticcheck #(megacheck): Staticcheck is a go vet on steroids, applying a ton of static analysis checks [fast: false, auto-fix: false]
@@ -102,3 +101,6 @@ issues:
       linters:
         - stylecheck
         - gosec
+
+  max-issues-per-linter: 0
+  max-same-issues: 0
