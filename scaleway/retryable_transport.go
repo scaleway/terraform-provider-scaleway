@@ -26,7 +26,7 @@ func newRetryableTransport(defaultTransport http.RoundTripper) http.RoundTripper
 		if resp == nil || resp.StatusCode == http.StatusTooManyRequests {
 			return true, err
 		}
-		return retryablehttp.DefaultRetryPolicy(ctx, resp, err)
+		return retryablehttp.DefaultRetryPolicy(ctx, resp, err) //nolint:wrapcheck
 	}
 
 	return &retryableTransport{c}
@@ -54,5 +54,5 @@ func (c *retryableTransport) RoundTrip(r *http.Request) (*http.Response, error) 
 	for key, val := range r.Header {
 		req.Header.Set(key, val[0])
 	}
-	return c.Client.Do(req)
+	return c.Client.Do(req) //nolint:wrapcheck
 }

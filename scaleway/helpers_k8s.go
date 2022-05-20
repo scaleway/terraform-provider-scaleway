@@ -100,12 +100,17 @@ func waitK8SClusterPool(ctx context.Context, k8sAPI *k8s.API, region scw.Region,
 		retryInterval = *DefaultWaitRetryInterval
 	}
 
-	return k8sAPI.WaitForClusterPool(&k8s.WaitForClusterRequest{
+	cluster, err := k8sAPI.WaitForClusterPool(&k8s.WaitForClusterRequest{
 		ClusterID:     clusterID,
 		Region:        region,
 		Timeout:       scw.TimeDurationPtr(timeout),
 		RetryInterval: &retryInterval,
 	}, scw.WithContext(ctx))
+	if err != nil {
+		return nil, fmt.Errorf("error waiting for cluster pool: %w", err)
+	}
+
+	return cluster, nil
 }
 
 func waitK8SClusterDeleted(ctx context.Context, k8sAPI *k8s.API, region scw.Region, clusterID string, timeout time.Duration) error {
