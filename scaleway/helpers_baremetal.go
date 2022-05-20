@@ -116,7 +116,7 @@ func waitForBaremetalServer(ctx context.Context, api *baremetal.API, zone scw.Zo
 		RetryInterval: &retryInterval,
 	}, scw.WithContext(ctx))
 	if err != nil {
-		return nil, fmt.Errorf("error waiting for baremetal server %s: %s", ID, err)
+		return nil, fmt.Errorf("error waiting for baremetal server %s: %s", serverID, err)
 	}
 
 	return server, nil
