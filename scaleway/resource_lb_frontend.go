@@ -269,12 +269,12 @@ func resourceScalewayLbFrontendRead(ctx context.Context, d *schema.ResourceData,
 	return nil
 }
 
-func flattenLBACLs(ACLs []*lbSDK.ACL) interface{} {
-	sort.Slice(ACLs, func(i, j int) bool {
-		return ACLs[i].Index < ACLs[j].Index
+func flattenLBACLs(acls []*lbSDK.ACL) interface{} {
+	sort.Slice(acls, func(i, j int) bool {
+		return acls[i].Index < acls[j].Index
 	})
-	rawACLs := make([]interface{}, 0, len(ACLs))
-	for _, apiACL := range ACLs {
+	rawACLs := make([]interface{}, 0, len(acls))
+	for _, apiACL := range acls {
 		rawACLs = append(rawACLs, flattenLbACL(apiACL))
 	}
 	return rawACLs
@@ -403,7 +403,6 @@ func resourceScalewayLbFrontendUpdate(ctx context.Context, d *schema.ResourceDat
 		return diag.FromErr(err)
 	}
 
-	// update acl
 	diagnostics := resourceScalewayLbFrontendUpdateACL(ctx, d, lbAPI, zone, ID)
 	if diagnostics != nil {
 		return diagnostics
