@@ -31,7 +31,7 @@ func getTestFilePath(t *testing.T, suffix string) string {
 	specialChars := regexp.MustCompile(`[\\?%*:|"<>. ]`)
 
 	// Replace nested tests separators.
-	fileName := strings.Replace(t.Name(), "/", "-", -1)
+	fileName := strings.ReplaceAll(t.Name(), "/", "-")
 
 	fileName = strcase.ToBashArg(fileName)
 

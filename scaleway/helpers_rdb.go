@@ -175,12 +175,12 @@ func newEndPointPrivateNetworkDetails(id, ip, locality string) (*rdb.EndpointPri
 	}, nil
 }
 
-func isEndPointEqual(A, B interface{}) bool {
+func isEndPointEqual(a, b interface{}) bool {
 	// Find out the diff Private Network or not
-	if _, ok := A.(*rdb.EndpointPrivateNetworkDetails); ok {
-		if _, ok := B.(*rdb.EndpointPrivateNetworkDetails); ok {
-			detailsA := A.(*rdb.EndpointPrivateNetworkDetails)
-			detailsB := B.(*rdb.EndpointPrivateNetworkDetails)
+	if _, ok := a.(*rdb.EndpointPrivateNetworkDetails); ok {
+		if _, ok := b.(*rdb.EndpointPrivateNetworkDetails); ok {
+			detailsA := a.(*rdb.EndpointPrivateNetworkDetails)
+			detailsB := b.(*rdb.EndpointPrivateNetworkDetails)
 			return reflect.DeepEqual(detailsA, detailsB)
 		}
 	}

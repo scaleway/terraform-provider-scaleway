@@ -17,7 +17,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/scaleway/scaleway-sdk-go/namegenerator"
 	"github.com/scaleway/scaleway-sdk-go/scw"
-	"golang.org/x/xerrors"
 )
 
 // DefaultWaitRetryInterval is used to set the retry interval to 0 during acceptance tests
@@ -42,7 +41,7 @@ func newRegionalID(region scw.Region, id string) RegionalID {
 
 func expandRegionalID(id interface{}) RegionalID {
 	regionalID := RegionalID{}
-	tab := strings.SplitN(id.(string), "/", -1)
+	tab := strings.Split(id.(string), "/")
 	if len(tab) != 2 {
 		regionalID.ID = id.(string)
 	} else {
@@ -73,7 +72,7 @@ func newZonedID(zone scw.Zone, id string) ZonedID {
 
 func expandZonedID(id interface{}) ZonedID {
 	zonedID := ZonedID{}
-	tab := strings.SplitN(id.(string), "/", -1)
+	tab := strings.Split(id.(string), "/")
 	if len(tab) != 2 {
 		zonedID.ID = id.(string)
 	} else {
@@ -86,8 +85,8 @@ func expandZonedID(id interface{}) ZonedID {
 }
 
 // parseLocalizedID parses a localizedID and extracts the resource locality and id.
-func parseLocalizedID(localizedID string) (locality string, ID string, err error) {
-	tab := strings.SplitN(localizedID, "/", -1)
+func parseLocalizedID(localizedID string) (locality string, id string, err error) {
+	tab := strings.Split(localizedID, "/")
 	if len(tab) != 2 {
 		return "", localizedID, fmt.Errorf("cant parse localized id: %s", localizedID)
 	}
@@ -96,7 +95,7 @@ func parseLocalizedID(localizedID string) (locality string, ID string, err error
 
 // parseLocalizedNestedID parses a localizedNestedID and extracts the resource locality, the inner and outer id.
 func parseLocalizedNestedID(localizedID string) (locality string, innerID, outerID string, err error) {
-	tab := strings.SplitN(localizedID, "/", -1)
+	tab := strings.Split(localizedID, "/")
 	if len(tab) != 3 {
 		return "", "", localizedID, fmt.Errorf("cant parse localized id: %s", localizedID)
 	}
@@ -225,7 +224,7 @@ func isHTTPCodeError(err error, statusCode int) bool {
 	}
 
 	responseError := &scw.ResponseError{}
-	if xerrors.As(err, &responseError) && responseError.StatusCode == statusCode {
+	if errors.As(err, &responseError) && responseError.StatusCode == statusCode {
 		return true
 	}
 	return false
@@ -234,25 +233,25 @@ func isHTTPCodeError(err error, statusCode int) bool {
 // is404Error returns true if err is an HTTP 404 error
 func is404Error(err error) bool {
 	notFoundError := &scw.ResourceNotFoundError{}
-	return isHTTPCodeError(err, http.StatusNotFound) || xerrors.As(err, &notFoundError)
+	return isHTTPCodeError(err, http.StatusNotFound) || errors.As(err, &notFoundError)
 }
 
 func is412Error(err error) bool {
 	preConditionFailedError := &scw.PreconditionFailedError{}
-	return isHTTPCodeError(err, http.StatusPreconditionFailed) || xerrors.As(err, &preConditionFailedError)
+	return isHTTPCodeError(err, http.StatusPreconditionFailed) || errors.As(err, &preConditionFailedError)
 }
 
 // is403Error returns true if err is an HTTP 403 error
 func is403Error(err error) bool {
 	permissionsDeniedError := &scw.PermissionsDeniedError{}
-	return isHTTPCodeError(err, http.StatusForbidden) || xerrors.As(err, &permissionsDeniedError)
+	return isHTTPCodeError(err, http.StatusForbidden) || errors.As(err, &permissionsDeniedError)
 }
 
 // is409Error return true is err is an HTTP 409 error
 func is409Error(err error) bool {
 	// check transient error
 	transientStateError := &scw.TransientStateError{}
-	return isHTTPCodeError(err, http.StatusConflict) || xerrors.As(err, &transientStateError)
+	return isHTTPCodeError(err, http.StatusConflict) || errors.As(err, &transientStateError)
 }
 
 // organizationIDSchema returns a standard schema for a organization_id
@@ -566,7 +565,7 @@ func diffSuppressFuncIgnoreCase(k, oldValue, newValue string, d *schema.Resource
 }
 
 func diffSuppressFuncIgnoreCaseAndHyphen(k, oldValue, newValue string, d *schema.ResourceData) bool {
-	return strings.Replace(strings.ToLower(oldValue), "-", "_", -1) == strings.Replace(strings.ToLower(newValue), "-", "_", -1)
+	return strings.ReplaceAll(strings.ToLower(oldValue), "-", "_") == strings.ReplaceAll(strings.ToLower(newValue), "-", "_")
 }
 
 // diffSuppressFuncLocality is a SuppressDiffFunc to remove the locality from an ID when checking diff.

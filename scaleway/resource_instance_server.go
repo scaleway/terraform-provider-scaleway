@@ -602,8 +602,8 @@ func resourceScalewayInstanceServerRead(ctx context.Context, d *schema.ResourceD
 			// if key != "cloud-init" {
 			userData[key] = string(userDataValue)
 			//	} else {
-			//_ = d.Set("cloud_init", string(userDataValue))
-			//}
+			// _ = d.Set("cloud_init", string(userDataValue))
+			// }
 		}
 		if len(userData) > 0 {
 			_ = d.Set("user_data", userData)
