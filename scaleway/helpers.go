@@ -494,6 +494,13 @@ func expandInt32Ptr(data interface{}) *int32 {
 	return scw.Int32Ptr(int32(data.(int)))
 }
 
+func expandUint32Ptr(data interface{}) *uint32 {
+	if data == nil || data == "" {
+		return nil
+	}
+	return scw.Uint32Ptr(uint32(data.(int)))
+}
+
 func expandIPNet(raw string) (scw.IPNet, error) {
 	if raw == "" {
 		return scw.IPNet{}, nil
