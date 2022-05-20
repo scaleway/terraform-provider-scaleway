@@ -77,6 +77,7 @@ func expandLbACL(i interface{}) *lbSDK.ACL {
 
 	return acl
 }
+
 func flattenLbACLAction(action *lbSDK.ACLAction) interface{} {
 	return []map[string]interface{}{
 		{
@@ -151,6 +152,7 @@ func newPrivateNetwork(raw map[string]interface{}) *lbSDK.PrivateNetwork {
 
 	return pn
 }
+
 func privateNetworksToDetach(pns []*lbSDK.PrivateNetwork, updates interface{}) (map[string]bool, error) {
 	actions := make(map[string]bool, len(pns))
 	configs := make(map[string]*lbSDK.PrivateNetwork, len(pns))

@@ -81,7 +81,6 @@ func testAccCheckScalewayBaremetalOfferExists(tt *TestTools, n string) resource.
 		resp, err := baremetalAPI.ListOffers(&baremetal.ListOffersRequest{
 			Zone: zone,
 		}, scw.WithAllPages())
-
 		if err != nil {
 			return err
 		}

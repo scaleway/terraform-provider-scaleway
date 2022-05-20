@@ -728,7 +728,6 @@ func resourceScalewayInstanceServerUpdate(ctx context.Context, d *schema.Resourc
 	////
 	if d.HasChange("ip_id") {
 		server, err := waitForInstanceServer(ctx, instanceAPI, zone, id, d.Timeout(schema.TimeoutUpdate))
-
 		if err != nil {
 			return diag.FromErr(err)
 		}

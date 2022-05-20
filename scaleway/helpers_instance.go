@@ -270,7 +270,8 @@ func sanitizeVolumeMap(serverName string, volumes map[string]*instance.VolumeSer
 
 func preparePrivateNIC(
 	ctx context.Context, data interface{},
-	server *instance.Server, vpcAPI *vpc.API) ([]*instance.CreatePrivateNICRequest, error) {
+	server *instance.Server, vpcAPI *vpc.API,
+) ([]*instance.CreatePrivateNICRequest, error) {
 	if data == nil {
 		return nil, nil
 	}
@@ -292,7 +293,8 @@ func preparePrivateNIC(
 			query := &instance.CreatePrivateNICRequest{
 				Zone:             currentPN.Zone,
 				ServerID:         server.ID,
-				PrivateNetworkID: currentPN.ID}
+				PrivateNetworkID: currentPN.ID,
+			}
 			res = append(res, query)
 		}
 	}
@@ -311,7 +313,8 @@ func newPrivateNICHandler(ctx context.Context, api *instance.API, server string,
 	handler := &privateNICsHandler{
 		instanceAPI: api,
 		serverID:    server,
-		zone:        zone}
+		zone:        zone,
+	}
 	return handler, handler.flatPrivateNICs()
 }
 
@@ -343,7 +346,8 @@ func (ph *privateNICsHandler) detach(ctx context.Context, o interface{}, timeout
 			err = ph.instanceAPI.DeletePrivateNIC(&instance.DeletePrivateNICRequest{
 				PrivateNicID: expandID(p.ID),
 				Zone:         ph.zone,
-				ServerID:     ph.serverID},
+				ServerID:     ph.serverID,
+			},
 				scw.WithContext(ctx))
 			if err != nil {
 				return err
@@ -362,7 +366,8 @@ func (ph *privateNICsHandler) attach(ctx context.Context, n interface{}, timeout
 			pn, err := ph.instanceAPI.CreatePrivateNIC(&instance.CreatePrivateNICRequest{
 				Zone:             ph.zone,
 				ServerID:         ph.serverID,
-				PrivateNetworkID: privateNetworkID})
+				PrivateNetworkID: privateNetworkID,
+			})
 			if err != nil {
 				return err
 			}

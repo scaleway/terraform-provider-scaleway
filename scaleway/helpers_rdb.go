@@ -116,7 +116,8 @@ func expandLoadBalancer() []*rdb.EndpointSpec {
 	var res []*rdb.EndpointSpec
 
 	res = append(res, &rdb.EndpointSpec{
-		LoadBalancer: &rdb.EndpointSpecLoadBalancer{}})
+		LoadBalancer: &rdb.EndpointSpecLoadBalancer{},
+	})
 
 	return res
 }

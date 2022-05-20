@@ -29,6 +29,7 @@ func testAccScalewayK8SClusterGetLatestK8SVersion(tt *TestTools) string {
 	}
 	return ""
 }
+
 func testAccScalewayK8SClusterGetLatestK8SVersionMinor(tt *TestTools) string {
 	api := k8s.NewAPI(tt.Meta.scwClient)
 	versions, err := api.ListVersions(&k8s.ListVersionsRequest{})

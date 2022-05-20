@@ -18,9 +18,7 @@ import (
 	container "github.com/scaleway/scaleway-sdk-go/api/container/v1beta1"
 )
 
-var (
-	testDockerIMG = ""
-)
+var testDockerIMG = ""
 
 func init() {
 	testDockerIMGPtr := flag.String("test-image", os.Getenv("TF_TEST_DOCKER_IMG"), "Test image")
@@ -32,6 +30,7 @@ func init() {
 	}
 	l.Infof("start container registry with image: %s", testDockerIMG)
 }
+
 func TestAccScalewayContainer_Basic(t *testing.T) {
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
@@ -299,8 +298,8 @@ func testConfigContainerNamespace(tt *TestTools, n string) resource.TestCheckFun
 			}
 		}
 
-		var imageTag = testDockerIMG + ":latest"
-		var scwTag = ns.RegistryEndpoint + "/alpine:test"
+		imageTag := testDockerIMG + ":latest"
+		scwTag := ns.RegistryEndpoint + "/alpine:test"
 
 		err = cli.ImageTag(ctx, imageTag, scwTag)
 		if err != nil {

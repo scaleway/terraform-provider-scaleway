@@ -37,7 +37,8 @@ func resourceScalewayAppleSiliconServer() *schema.Resource {
 				Required:    true,
 				ForceNew:    true,
 				ValidateFunc: validation.StringInSlice([]string{
-					AppleSiliconM1Type}, false),
+					AppleSiliconM1Type,
+				}, false),
 			},
 			// Computed
 			"ip": {
