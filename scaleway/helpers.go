@@ -557,7 +557,7 @@ func diffSuppressFuncIgnoreCase(k, oldValue, newValue string, d *schema.Resource
 }
 
 func diffSuppressFuncIgnoreCaseAndHyphen(k, oldValue, newValue string, d *schema.ResourceData) bool {
-	return strings.Replace(strings.ToLower(oldValue), "-", "_", -1) == strings.Replace(strings.ToLower(newValue), "-", "_", -1)
+	return strings.ReplaceAll(strings.ToLower(oldValue), "-", "_") == strings.ReplaceAll(strings.ToLower(newValue), "-", "_")
 }
 
 // diffSuppressFuncLocality is a SuppressDiffFunc to remove the locality from an ID when checking diff.
