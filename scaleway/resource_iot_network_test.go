@@ -42,7 +42,8 @@ func TestAccScalewayIotNetwork_Minimal(t *testing.T) {
 					resource.TestCheckResourceAttrSet("scaleway_iot_network.default", "secret"),
 					resource.TestCheckResourceAttrSet("scaleway_iot_network.default", "created_at"),
 				),
-			}},
+			},
+		},
 	})
 }
 
@@ -55,7 +56,6 @@ func TestAccScalewayIotNetwork_RESTWithTopicPrefix(t *testing.T) {
 		// Destruction is done via the hub destruction.
 		CheckDestroy: testAccCheckScalewayIotHubDestroy(tt),
 		Steps: []resource.TestStep{
-
 			{
 				Config: `
 						resource "scaleway_iot_hub" "minimal" {
