@@ -410,7 +410,7 @@ func resourceScalewayRdbInstanceRead(ctx context.Context, d *schema.ResourceData
 		_ = d.Set("volume_type", res.Volume.Type)
 		_ = d.Set("volume_size_in_gb", int(res.Volume.Size/scw.GB))
 	}
-	_ = d.Set("read_replicas", flattenRdbInstanceReadReplicas(res.ReadReplicas))
+	_ = d.Set("read_replicas", []string{})
 	_ = d.Set("region", string(region))
 	_ = d.Set("organization_id", res.OrganizationID)
 	_ = d.Set("project_id", res.ProjectID)
