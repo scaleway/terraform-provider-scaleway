@@ -65,6 +65,7 @@ func resourceScalewayVPCPublicGateway() *schema.Resource {
 				Type:        schema.TypeInt,
 				Description: "Port of the SSH bastion",
 				Optional:    true,
+				Computed:    true,
 			},
 			"project_id": projectIDSchema(),
 			"zone":       zoneSchema(),
