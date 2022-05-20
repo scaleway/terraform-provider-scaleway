@@ -145,7 +145,7 @@ func testAccCheckScalewayVPCPublicGatewayDHCPExists(tt *TestTools, n string) res
 		})
 
 		if err != nil {
-			return err
+			return fmt.Errorf("error getting DHCP: %s", err)
 		}
 
 		return nil
@@ -178,7 +178,11 @@ func testAccCheckScalewayVPCPublicGatewayDHCPDestroy(tt *TestTools) resource.Tes
 
 			// Unexpected api error we return it
 			if !is404Error(err) {
-				return err
+				return fmt.Errorf(
+					"error on reading VPC public gateway DHCP config %s : %s",
+					rs.Primary.ID,
+					err,
+				)
 			}
 		}
 

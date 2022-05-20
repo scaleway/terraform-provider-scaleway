@@ -163,7 +163,7 @@ func testAccCheckScalewayInstanceSnapShotExists(tt *TestTools, n string) resourc
 		})
 
 		if err != nil {
-			return err
+			return fmt.Errorf("failed to find snapshot %s: %s", rs.Primary.ID, err)
 		}
 
 		return nil
@@ -194,7 +194,7 @@ func testAccCheckScalewayInstanceSnapshotDestroy(tt *TestTools) resource.TestChe
 
 			// Unexpected api error we return it
 			if !is404Error(err) {
-				return err
+				return fmt.Errorf("unexpected error when testing snapshot (%s) : %s", rs.Primary.ID, err)
 			}
 		}
 

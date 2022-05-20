@@ -2,6 +2,7 @@ package scaleway
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -50,6 +51,9 @@ func waitForFunctionNamespace(ctx context.Context, functionAPI *function.API, re
 		RetryInterval: &retryInterval,
 		Timeout:       scw.TimeDurationPtr(timeout),
 	}, scw.WithContext(ctx))
+	if err != nil {
+		return nil, fmt.Errorf("error waiting for namespace %q: %s", id, err)
+	}
 
-	return ns, err
+	return ns, nil
 }

@@ -454,7 +454,7 @@ func TestAccScalewayObjectBucket_Cors_Update(t *testing.T) {
 							},
 						})
 						if err != nil && !isS3Err(err, "NoSuchCORSConfiguration", "") {
-							return err
+							return fmt.Errorf("error putting bucket cors: %s", err)
 						}
 						return nil
 					},
@@ -523,7 +523,7 @@ func TestAccScalewayObjectBucket_Cors_Delete(t *testing.T) {
 				Bucket: scw.StringPtr(rs.Primary.Attributes["name"]),
 			})
 			if err != nil && !isS3Err(err, ErrCodeNoSuchCORSConfiguration, "") {
-				return err
+				return fmt.Errorf("error deleting bucket cors: %s", err)
 			}
 			return nil
 		}
@@ -602,7 +602,7 @@ func testAccCheckScalewayObjectBucketCors(tt *TestTools, n string, corsRules []*
 			Bucket: scw.StringPtr(bucketName),
 		})
 		if err != nil {
-			return err
+			return fmt.Errorf("error getting bucket %q: %s", bucketName, err)
 		}
 
 		out, err := s3Client.GetBucketCors(&s3.GetBucketCorsInput{
@@ -656,7 +656,7 @@ func testAccCheckScalewayObjectBucketExists(tt *TestTools, n string) resource.Te
 			if isS3Err(err, s3.ErrCodeNoSuchBucket, "") {
 				return fmt.Errorf("s3 bucket not found")
 			}
-			return err
+			return fmt.Errorf("error getting s3 bucket: %v", err)
 		}
 		return nil
 	}

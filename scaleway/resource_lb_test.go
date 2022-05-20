@@ -383,7 +383,7 @@ func testAccCheckScalewayLbExists(tt *TestTools, n string) resource.TestCheckFun
 		})
 
 		if err != nil {
-			return err
+			return fmt.Errorf("error getting LB: %s", err)
 		}
 
 		return nil
@@ -414,7 +414,7 @@ func testAccCheckScalewayLbDestroy(tt *TestTools) resource.TestCheckFunc {
 
 			// Unexpected api error we return it
 			if !is404Error(err) {
-				return err
+				return fmt.Errorf("load Balancer (%s) still exists", rs.Primary.ID)
 			}
 		}
 

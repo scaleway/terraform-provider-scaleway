@@ -199,7 +199,7 @@ func buildMeta(ctx context.Context, config *metaConfig) (*Meta, error) {
 	if config.forceZone != "" {
 		region, err := config.forceZone.Region()
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("failed to get region from zone: %w", err)
 		}
 		profile.DefaultRegion = scw.StringPtr(region.String())
 		profile.DefaultZone = scw.StringPtr(config.forceZone.String())
@@ -223,7 +223,7 @@ func buildMeta(ctx context.Context, config *metaConfig) (*Meta, error) {
 
 	scwClient, err := scw.NewClient(opts...)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error creating Scaleway SDK client: %s", err)
 	}
 
 	return &Meta{
@@ -239,7 +239,7 @@ func loadProfile(ctx context.Context, d *schema.ResourceData) (*scw.Profile, err
 	if _, isNotFoundError := err.(*scw.ConfigFileNotFoundError); isNotFoundError {
 		config = &scw.Config{}
 	} else if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error loading config: %s", err)
 	}
 
 	// By default we set default zone and region to fr-par
@@ -250,7 +250,7 @@ func loadProfile(ctx context.Context, d *schema.ResourceData) (*scw.Profile, err
 
 	activeProfile, err := config.GetActiveProfile()
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to get active profile: %w", err)
 	}
 	envProfile := scw.LoadEnvProfile()
 

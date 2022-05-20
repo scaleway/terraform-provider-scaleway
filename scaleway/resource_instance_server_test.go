@@ -747,7 +747,7 @@ func testAccCheckScalewayInstanceServerExists(tt *TestTools, n string) resource.
 
 		_, err = instanceAPI.GetServer(&instance.GetServerRequest{ServerID: ID, Zone: zone})
 		if err != nil {
-			return err
+			return fmt.Errorf("error getting server: %s", err)
 		}
 
 		return nil
@@ -768,7 +768,7 @@ func testAccCheckScalewayInstancePrivateNICsExists(tt *TestTools, n string) reso
 
 		res, err := instanceAPI.ListPrivateNICs(&instance.ListPrivateNICsRequest{ServerID: ID, Zone: zone})
 		if err != nil {
-			return err
+			return fmt.Errorf("error listing private nic: %w", err)
 		}
 
 		privateNetworksOnServer := make(map[string]struct{})
@@ -820,7 +820,7 @@ func testAccCheckScalewayInstanceServerDestroy(tt *TestTools) resource.TestCheck
 
 			// Unexpected api error we return it
 			if !is404Error(err) {
-				return err
+				return fmt.Errorf("error on destroy instance server (%s) %s", rs.Primary.ID, err)
 			}
 		}
 

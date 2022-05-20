@@ -2,6 +2,7 @@ package scaleway
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -114,8 +115,11 @@ func waitForBaremetalServer(ctx context.Context, api *baremetal.API, zone scw.Zo
 		Timeout:       scw.TimeDurationPtr(timeout),
 		RetryInterval: &retryInterval,
 	}, scw.WithContext(ctx))
+	if err != nil {
+		return nil, fmt.Errorf("error waiting for baremetal server %s: %s", ID, err)
+	}
 
-	return server, err
+	return server, nil
 }
 
 func waitForBaremetalServerInstall(ctx context.Context, api *baremetal.API, zone scw.Zone, ID string, timeout time.Duration) (*baremetal.Server, error) {
@@ -130,6 +134,9 @@ func waitForBaremetalServerInstall(ctx context.Context, api *baremetal.API, zone
 		Timeout:       scw.TimeDurationPtr(timeout),
 		RetryInterval: &retryInterval,
 	}, scw.WithContext(ctx))
+	if err != nil {
+		return nil, fmt.Errorf("error waiting for server install: %s", err)
+	}
 
-	return server, err
+	return server, nil
 }

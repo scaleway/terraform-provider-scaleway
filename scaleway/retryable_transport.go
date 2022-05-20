@@ -3,6 +3,7 @@ package scaleway
 import (
 	"bytes"
 	"context"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -42,13 +43,13 @@ func (c *retryableTransport) RoundTrip(r *http.Request) (*http.Response, error) 
 	if r.Body != nil {
 		bs, err := ioutil.ReadAll(r.Body)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("failed to read HTTP body: %v", err)
 		}
 		body = bytes.NewReader(bs)
 	}
 	req, err := retryablehttp.NewRequest(r.Method, r.URL.String(), body)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to create HTTP request: %v", err)
 	}
 	for key, val := range r.Header {
 		req.Header.Set(key, val[0])

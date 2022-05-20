@@ -160,7 +160,7 @@ func testAccCheckScalewayFrontendCertificateExist(tt *TestTools, f, c string) re
 			Zone:       zone,
 		})
 		if err != nil {
-			return err
+			return fmt.Errorf("error getting frontend %s: %q", rs.Primary.ID, err)
 		}
 
 		for _, id := range frEnd.CertificateIDs {
@@ -191,7 +191,7 @@ func testAccCheckScalewayLbFrontendExists(tt *TestTools, n string) resource.Test
 		})
 
 		if err != nil {
-			return err
+			return fmt.Errorf("frontend not found: %s", n)
 		}
 
 		return nil
@@ -222,7 +222,7 @@ func testAccCheckScalewayLbFrontendDestroy(tt *TestTools) resource.TestCheckFunc
 
 			// Unexpected api error we return it
 			if !is404Error(err) {
-				return err
+				return fmt.Errorf("unexpected error reading LB Frontend (%s): %s", rs.Primary.ID, err)
 			}
 		}
 

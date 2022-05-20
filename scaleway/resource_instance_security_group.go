@@ -183,7 +183,7 @@ func getSecurityGroupRules(ctx context.Context, instanceAPI *instance.API, zone 
 		SecurityGroupID: expandID(securityGroupID),
 	}, scw.WithAllPages(), scw.WithContext(ctx))
 	if err != nil {
-		return nil, nil, err
+		return nil, nil, fmt.Errorf("error listing security group rules: %w", err)
 	}
 	sort.Slice(resRules.Rules, func(i, j int) bool {
 		return resRules.Rules[i].Position < resRules.Rules[j].Position
@@ -324,7 +324,7 @@ func updateSecurityGroupeRules(ctx context.Context, d *schema.ResourceData, zone
 		SecurityGroupID: expandID(securityGroupID),
 	}, scw.WithAllPages(), scw.WithContext(ctx))
 	if err != nil {
-		return err
+		return fmt.Errorf("error listing security group rules: %s", err)
 	}
 	sort.Slice(resRules.Rules, func(i, j int) bool {
 		return resRules.Rules[i].Position < resRules.Rules[j].Position
@@ -358,7 +358,7 @@ func updateSecurityGroupeRules(ctx context.Context, d *schema.ResourceData, zone
 					Direction:       direction,
 				}, scw.WithContext(ctx))
 				if err != nil {
-					return err
+					return fmt.Errorf("error creating security group rule: %s", err)
 				}
 				continue
 			}
@@ -387,7 +387,7 @@ func updateSecurityGroupeRules(ctx context.Context, d *schema.ResourceData, zone
 					Direction:           &direction,
 				}, scw.WithContext(ctx))
 				if err != nil {
-					return err
+					return fmt.Errorf("error updating security group rule: %s", err)
 				}
 			}
 		}
@@ -400,7 +400,7 @@ func updateSecurityGroupeRules(ctx context.Context, d *schema.ResourceData, zone
 				SecurityGroupRuleID: apiRules[direction][index].ID,
 			}, scw.WithContext(ctx))
 			if err != nil {
-				return err
+				return fmt.Errorf("error deleting security group rule: %s", err)
 			}
 		}
 	}

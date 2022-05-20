@@ -504,7 +504,7 @@ func testAccCheckScalewayInstanceSecurityGroupRuleIs(tt *TestTools, name string,
 			Zone:            zone,
 		}, scw.WithAllPages())
 		if err != nil {
-			return err
+			return fmt.Errorf("error listing security group rules: %v", err)
 		}
 		sort.Slice(resRules.Rules, func(i, j int) bool {
 			return resRules.Rules[i].Position < resRules.Rules[j].Position
@@ -545,7 +545,7 @@ func testAccCheckScalewayInstanceSecurityGroupExists(tt *TestTools, n string) re
 		})
 
 		if err != nil {
-			return err
+			return fmt.Errorf("error getting security group: %v", err)
 		}
 
 		return nil
@@ -577,7 +577,7 @@ func testAccCheckScalewayInstanceSecurityGroupDestroy(tt *TestTools) resource.Te
 
 			// Unexpected api error we return it
 			if !is404Error(err) {
-				return err
+				return fmt.Errorf("unexpected error reading security group (%s) : %s", rs.Primary.ID, err)
 			}
 		}
 

@@ -47,12 +47,17 @@ func waitForRedisCluster(ctx context.Context, api *redis.API, zone scw.Zone, id 
 		retryInterval = *DefaultWaitRetryInterval
 	}
 
-	return api.WaitForCluster(&redis.WaitForClusterRequest{
+	cluster, err := api.WaitForCluster(&redis.WaitForClusterRequest{
 		Zone:          zone,
 		Timeout:       scw.TimeDurationPtr(timeout),
 		ClusterID:     id,
 		RetryInterval: &retryInterval,
 	}, scw.WithContext(ctx))
+	if err != nil {
+		return nil, fmt.Errorf("error waiting for redis cluster %q: %s", id, err)
+	}
+
+	return cluster, nil
 }
 
 func expandRedisACLSpecs(i interface{}) ([]*redis.ACLRuleSpec, error) {

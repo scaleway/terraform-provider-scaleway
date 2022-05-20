@@ -205,7 +205,7 @@ func testAccCheckScalewayLbBackendExists(tt *TestTools, n string) resource.TestC
 			Zone:      zone,
 		})
 		if err != nil {
-			return err
+			return fmt.Errorf("error getting backend: %s", err)
 		}
 
 		return nil
@@ -236,7 +236,7 @@ func testAccCheckScalewayLbBackendDestroy(tt *TestTools) resource.TestCheckFunc 
 
 			// Unexpected api error we return it
 			if !is404Error(err) {
-				return err
+				return fmt.Errorf("unexpected error when getting LB Backend (%s): %s", rs.Primary.ID, err)
 			}
 		}
 

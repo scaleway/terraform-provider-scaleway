@@ -2,6 +2,7 @@ package scaleway
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -43,8 +44,11 @@ func waitIotHub(ctx context.Context, api *iot.API, region scw.Region, id string,
 		RetryInterval: &retryInterval,
 		Timeout:       scw.TimeDurationPtr(timeout),
 	}, scw.WithContext(ctx))
+	if err != nil {
+		return nil, fmt.Errorf("error waiting for IoT Hub (%s): %s", id, err)
+	}
 
-	return hub, err
+	return hub, nil
 }
 
 func extractRestHeaders(d *schema.ResourceData, key string) map[string]string {

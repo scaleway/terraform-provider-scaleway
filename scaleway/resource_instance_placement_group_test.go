@@ -191,7 +191,7 @@ func testAccCheckScalewayInstancePlacementGroupExists(tt *TestTools, n string) r
 		})
 
 		if err != nil {
-			return err
+			return fmt.Errorf("error getting instance placement group: %s", err)
 		}
 
 		return nil
@@ -222,7 +222,7 @@ func testAccCheckScalewayInstancePlacementGroupDestroy(tt *TestTools) resource.T
 
 			// Unexpected api error we return it
 			if !is404Error(err) {
-				return err
+				return fmt.Errorf("unexpected error when getting placement group (%s): %s", rs.Primary.ID, err)
 			}
 		}
 		return nil

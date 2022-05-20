@@ -77,7 +77,7 @@ func dataSourceScalewayRegistryImageRead(d *schema.ResourceData, meta interface{
 			NamespaceID: namespaceID,
 		})
 		if err != nil {
-			return err
+			return fmt.Errorf("error listing images: %w", err)
 		}
 		if len(res.Images) == 0 {
 			return fmt.Errorf("no images found with the name %s", d.Get("name"))
@@ -92,7 +92,7 @@ func dataSourceScalewayRegistryImageRead(d *schema.ResourceData, meta interface{
 			ImageID: expandID(imageID),
 		})
 		if err != nil {
-			return err
+			return fmt.Errorf("error getting image: %w", err)
 		}
 		image = res
 	}

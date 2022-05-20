@@ -138,7 +138,7 @@ func testAccCheckScalewayIotHubDestroy(tt *TestTools) resource.TestCheckFunc {
 
 			// Unexpected api error we return it
 			if !is404Error(err) {
-				return err
+				return fmt.Errorf("unexpected error when getting hub (%s) : %s", rs.Primary.ID, err)
 			}
 		}
 		return nil
@@ -162,7 +162,7 @@ func testAccCheckScalewayIotHubExists(tt *TestTools, n string) resource.TestChec
 			HubID:  hubID,
 		})
 		if err != nil {
-			return err
+			return fmt.Errorf("error getting hub (%s) : %s", rs.Primary.ID, err)
 		}
 
 		return nil

@@ -101,7 +101,7 @@ func testAccCheckScalewayRegistryNamespaceExists(tt *TestTools, n string) resour
 		})
 
 		if err != nil {
-			return err
+			return fmt.Errorf("error getting registry namespace: %s", err)
 		}
 
 		return nil
@@ -130,7 +130,7 @@ func testAccCheckScalewayRegistryNamespaceDestroy(tt *TestTools) resource.TestCh
 			}
 
 			if !is404Error(err) {
-				return err
+				return fmt.Errorf("error getting namespace (%s): %w", rs.Primary.ID, err)
 			}
 		}
 

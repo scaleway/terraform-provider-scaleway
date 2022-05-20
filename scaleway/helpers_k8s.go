@@ -60,7 +60,7 @@ func k8sGetLatestVersionFromMinor(ctx context.Context, k8sAPI *k8s.API, region s
 		Region: region,
 	}, scw.WithContext(ctx))
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("error listing verions: %w", err)
 	}
 
 	for _, v := range versionsResp.Versions {
@@ -87,8 +87,11 @@ func waitK8SCluster(ctx context.Context, k8sAPI *k8s.API, region scw.Region, clu
 		Timeout:       scw.TimeDurationPtr(timeout),
 		RetryInterval: &retryInterval,
 	}, scw.WithContext(ctx))
+	if err != nil {
+		return nil, fmt.Errorf("error waiting for cluster: %w", err)
+	}
 
-	return cluster, err
+	return cluster, nil
 }
 
 func waitK8SClusterPool(ctx context.Context, k8sAPI *k8s.API, region scw.Region, clusterID string, timeout time.Duration) (*k8s.Cluster, error) {
@@ -121,7 +124,7 @@ func waitK8SClusterDeleted(ctx context.Context, k8sAPI *k8s.API, region scw.Regi
 		if is404Error(err) {
 			return nil
 		}
-		return err
+		return fmt.Errorf("error waiting for cluster to be deleted: %w", err)
 	}
 
 	return fmt.Errorf("cluster %s has state %s, wants %s", clusterID, cluster.Status, k8s.ClusterStatusDeleted)
@@ -140,7 +143,7 @@ func waitK8SPoolReady(ctx context.Context, k8sAPI *k8s.API, region scw.Region, p
 		RetryInterval: &retryInterval,
 	}, scw.WithContext(ctx))
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error waiting for pool %s to be ready: %s", poolID, err)
 	}
 
 	if pool.Status != k8s.PoolStatusReady {
@@ -176,7 +179,7 @@ func getNodes(ctx context.Context, k8sAPI *k8s.API, pool *k8s.Pool) ([]map[strin
 
 	nodes, err := k8sAPI.ListNodes(req, scw.WithAllPages(), scw.WithContext(ctx))
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to list nodes: %s", err)
 	}
 
 	return convertNodes(nodes), nil

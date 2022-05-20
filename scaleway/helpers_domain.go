@@ -264,9 +264,14 @@ func waitForDNSZone(ctx context.Context, domainAPI *domain.API, dnsZone string, 
 		retryInterval = *DefaultWaitRetryInterval
 	}
 
-	return domainAPI.WaitForDNSZone(&domain.WaitForDNSZoneRequest{
+	zone, err := domainAPI.WaitForDNSZone(&domain.WaitForDNSZoneRequest{
 		DNSZone:       dnsZone,
 		Timeout:       scw.TimeDurationPtr(timeout),
 		RetryInterval: scw.TimeDurationPtr(retryInterval),
 	}, scw.WithContext(ctx))
+	if err != nil {
+		return nil, fmt.Errorf("error waiting for DNS zone %s: %s", dnsZone, err)
+	}
+
+	return zone, nil
 }

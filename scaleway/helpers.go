@@ -179,7 +179,11 @@ var ErrZoneNotFound = fmt.Errorf("could not detect zone. Scaleway uses regions a
 func extractZone(d terraformResourceData, meta *Meta) (scw.Zone, error) {
 	rawZone, exist := d.GetOk("zone")
 	if exist {
-		return scw.ParseZone(rawZone.(string))
+		zone, err := scw.ParseZone(rawZone.(string))
+		if err != nil {
+			return "", fmt.Errorf("invalid zone: %s", err)
+		}
+		return zone, nil
 	}
 
 	zone, exist := meta.scwClient.GetDefaultZone()
@@ -199,7 +203,11 @@ var ErrRegionNotFound = fmt.Errorf("could not detect region")
 func extractRegion(d terraformResourceData, meta *Meta) (scw.Region, error) {
 	rawRegion, exist := d.GetOk("region")
 	if exist {
-		return scw.ParseRegion(rawRegion.(string))
+		region, err := scw.ParseRegion(rawRegion.(string))
+		if err != nil {
+			return "", fmt.Errorf("invalid region: %s", err)
+		}
+		return region, nil
 	}
 
 	region, exist := meta.scwClient.GetDefaultRegion()
@@ -357,7 +365,7 @@ func expandDuration(data interface{}) (*time.Duration, error) {
 	}
 	d, err := time.ParseDuration(data.(string))
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error parsing duration: %w", err)
 	}
 	return &d, nil
 }
@@ -511,7 +519,7 @@ func expandIPNet(raw string) (scw.IPNet, error) {
 func flattenIPNet(ipNet scw.IPNet) (string, error) {
 	raw, err := json.Marshal(ipNet)
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("%v could not be marshaled: %v", ipNet, err)
 	}
 	return string(raw[1 : len(raw)-1]), nil // remove quotes
 }

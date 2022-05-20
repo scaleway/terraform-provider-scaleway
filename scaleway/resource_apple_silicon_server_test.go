@@ -89,7 +89,7 @@ func testAccCheckScalewayAppleSiliconExists(tt *TestTools, n string) resource.Te
 		})
 
 		if err != nil {
-			return err
+			return fmt.Errorf("server not found: %s", err)
 		}
 
 		return nil
@@ -120,7 +120,7 @@ func testAccCheckScalewayAppleSiliconServerDestroy(tt *TestTools) resource.TestC
 
 			// Unexpected api error we return it
 			if !is404Error(err) {
-				return err
+				return fmt.Errorf("unexpected error when getting server (%s): %s", rs.Primary.ID, err)
 			}
 		}
 

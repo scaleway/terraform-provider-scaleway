@@ -234,7 +234,7 @@ func testAccCheckScalewayIotDeviceExists(tt *TestTools, n string) resource.TestC
 			DeviceID: deviceID,
 		})
 		if err != nil {
-			return err
+			return fmt.Errorf("error getting IoT device: %s", err)
 		}
 
 		return nil

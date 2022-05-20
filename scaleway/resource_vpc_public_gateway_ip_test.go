@@ -138,7 +138,7 @@ func testAccCheckScalewayVPCPublicGatewayIPExists(tt *TestTools, n string) resou
 		})
 
 		if err != nil {
-			return err
+			return fmt.Errorf("error getting IP: %s", err)
 		}
 
 		return nil
@@ -171,7 +171,11 @@ func testAccCheckScalewayVPCPublicGatewayIPDestroy(tt *TestTools) resource.TestC
 
 			// Unexpected api error we return it
 			if !is404Error(err) {
-				return err
+				return fmt.Errorf(
+					"error waiting for VPC public gateway ip (%s) to be destroyed: %s",
+					rs.Primary.ID,
+					err,
+				)
 			}
 		}
 

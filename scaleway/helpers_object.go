@@ -40,7 +40,7 @@ func newS3Client(httpClient *http.Client, region, accessKey, secretKey string) (
 
 	s, err := session.NewSession(config)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error creating S3 session: %s", err)
 	}
 	return s3.New(s), nil
 }
@@ -216,7 +216,11 @@ func deleteS3ObjectVersion(conn *s3.S3, bucketName string, key string, versionID
 	}
 
 	_, err := conn.DeleteObject(input)
-	return err
+	if err != nil {
+		return fmt.Errorf("error deleting object version %q: %s", key, err)
+	}
+
+	return nil
 }
 
 // removeS3ObjectVersionLegalHold remove legal hold from an ObjectVersion if it is on

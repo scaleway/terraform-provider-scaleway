@@ -67,7 +67,7 @@ func testAccCheckScalewayInstanceImageExists(tt *TestTools, n string) resource.T
 		})
 
 		if err != nil {
-			return err
+			return fmt.Errorf("error getting instance image: %s", err)
 		}
 
 		return nil

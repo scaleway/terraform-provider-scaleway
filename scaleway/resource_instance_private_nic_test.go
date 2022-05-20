@@ -69,7 +69,7 @@ func testAccCheckScalewayInstancePrivateNICExists(tt *TestTools, n string) resou
 			Zone:         zone,
 		})
 		if err != nil {
-			return err
+			return fmt.Errorf("error getting private nic: %s", err)
 		}
 
 		return nil
@@ -103,7 +103,11 @@ func testAccCheckScalewayInstancePrivateNICDestroy(tt *TestTools) resource.TestC
 
 			// Unexpected api error we return it
 			if !is404Error(err) {
-				return err
+				return fmt.Errorf(
+					"error waiting for instance private NIC (%s) to be destroyed: %s",
+					rs.Primary.ID,
+					err,
+				)
 			}
 		}
 

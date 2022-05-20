@@ -139,7 +139,7 @@ func testAccCheckScalewayBaremetalServerExists(tt *TestTools, n string) resource
 			Zone:     zonedID.Zone,
 		})
 		if err != nil {
-			return err
+			return fmt.Errorf("failed to get baremetal server: %v", err)
 		}
 
 		return nil
@@ -170,7 +170,7 @@ func testAccCheckScalewayBaremetalServerDestroy(tt *TestTools) resource.TestChec
 
 			// Unexpected api error we return it
 			if !is404Error(err) {
-				return err
+				return fmt.Errorf("unexpected error when getting server (%s) : %s", rs.Primary.ID, err)
 			}
 		}
 		return nil

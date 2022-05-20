@@ -449,8 +449,11 @@ func waitForLB(ctx context.Context, lbAPI *lbSDK.ZonedAPI, zone scw.Zone, LbID s
 		Timeout:       scw.TimeDurationPtr(timeout),
 		RetryInterval: &retryInterval,
 	}, scw.WithContext(ctx))
+	if err != nil {
+		return nil, fmt.Errorf("error waiting for lb: %w", err)
+	}
 
-	return loadBalancer, err
+	return loadBalancer, nil
 }
 
 func waitForLbInstances(ctx context.Context, lbAPI *lbSDK.ZonedAPI, zone scw.Zone, lbID string, timeout time.Duration) (*lbSDK.LB, error) {
@@ -465,8 +468,11 @@ func waitForLbInstances(ctx context.Context, lbAPI *lbSDK.ZonedAPI, zone scw.Zon
 		Timeout:       scw.TimeDurationPtr(timeout),
 		RetryInterval: &retryInterval,
 	}, scw.WithContext(ctx))
+	if err != nil {
+		return nil, fmt.Errorf("error waiting for lb instances: %w", err)
+	}
 
-	return loadBalancer, err
+	return loadBalancer, nil
 }
 
 func waitForLBPN(ctx context.Context, lbAPI *lbSDK.ZonedAPI, zone scw.Zone, LbID string, timeout time.Duration) ([]*lbSDK.PrivateNetwork, error) {
@@ -481,8 +487,11 @@ func waitForLBPN(ctx context.Context, lbAPI *lbSDK.ZonedAPI, zone scw.Zone, LbID
 		Timeout:       scw.TimeDurationPtr(timeout),
 		RetryInterval: &retryInterval,
 	}, scw.WithContext(ctx))
+	if err != nil {
+		return nil, fmt.Errorf("error waiting for lb private networks: %w", err)
+	}
 
-	return privateNetworks, err
+	return privateNetworks, nil
 }
 
 func waitForLBCertificate(ctx context.Context, lbAPI *lbSDK.ZonedAPI, zone scw.Zone, id string, timeout time.Duration) (*lbSDK.Certificate, error) {
@@ -497,8 +506,11 @@ func waitForLBCertificate(ctx context.Context, lbAPI *lbSDK.ZonedAPI, zone scw.Z
 		Timeout:       scw.TimeDurationPtr(timeout),
 		RetryInterval: &retryInterval,
 	}, scw.WithContext(ctx))
+	if err != nil {
+		return nil, fmt.Errorf("error waiting for lb certificate: %w", err)
+	}
 
-	return certificate, err
+	return certificate, nil
 }
 
 func attachLBPrivateNetwork(ctx context.Context, lbAPI *lbSDK.ZonedAPI, zone scw.Zone, pnConfigs []*lbSDK.ZonedAPIAttachPrivateNetworkRequest, timeout time.Duration) ([]*lbSDK.PrivateNetwork, error) {
@@ -507,7 +519,7 @@ func attachLBPrivateNetwork(ctx context.Context, lbAPI *lbSDK.ZonedAPI, zone scw
 	for _, config := range pnConfigs {
 		pn, err := lbAPI.AttachPrivateNetwork(config, scw.WithContext(ctx))
 		if err != nil && !is404Error(err) {
-			return nil, err
+			return nil, fmt.Errorf("error attaching private network: %w", err)
 		}
 
 		privateNetworks, err = waitForLBPN(ctx, lbAPI, zone, pn.LB.ID, timeout)
@@ -523,7 +535,7 @@ func attachLBPrivateNetwork(ctx context.Context, lbAPI *lbSDK.ZonedAPI, zone scw
 					PrivateNetworkID: pn.PrivateNetworkID,
 				}, scw.WithContext(ctx))
 				if err != nil && !is404Error(err) {
-					return nil, err
+					return nil, fmt.Errorf("error detaching private network: %w", err)
 				}
 				tflog.Debug(ctx, fmt.Sprintf("DHCP config: %v", pn.DHCPConfig))
 				tflog.Debug(ctx, fmt.Sprintf("Static config: %v", pn.StaticConfig))

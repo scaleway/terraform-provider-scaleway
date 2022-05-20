@@ -320,7 +320,7 @@ func testAccCheckScalewayRedisClusterDestroy(tt *TestTools) resource.TestCheckFu
 			}
 
 			if !is404Error(err) {
-				return err
+				return fmt.Errorf("error getting cluster (%s) : %s", rs.Primary.ID, err)
 			}
 		}
 		return nil
@@ -345,7 +345,7 @@ func testAccCheckScalewayRedisExists(tt *TestTools, n string) resource.TestCheck
 		})
 
 		if err != nil {
-			return err
+			return fmt.Errorf("cluster (%s) not found", rs.Primary.ID)
 		}
 		return nil
 	}

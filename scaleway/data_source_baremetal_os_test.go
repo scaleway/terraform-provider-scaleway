@@ -66,7 +66,7 @@ func testAccCheckScalewayBaremetalOsExists(tt *TestTools, n string) resource.Tes
 		})
 
 		if err != nil {
-			return err
+			return fmt.Errorf("error getting OS: %s", err)
 		}
 
 		return nil

@@ -589,7 +589,7 @@ func testAccCheckScalewayRdbExists(tt *TestTools, n string) resource.TestCheckFu
 		})
 
 		if err != nil {
-			return err
+			return fmt.Errorf("error getting RDB instance: %s", err)
 		}
 
 		return nil
@@ -620,7 +620,7 @@ func testAccCheckScalewayRdbInstanceDestroy(tt *TestTools) resource.TestCheckFun
 
 			// Unexpected api error we return it
 			if !is404Error(err) {
-				return err
+				return fmt.Errorf("unexpected error when trying to check if RDB instance (%s) is destroyed: %s", rs.Primary.ID, err)
 			}
 		}
 

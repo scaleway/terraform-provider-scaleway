@@ -3,6 +3,7 @@ package scaleway
 import (
 	"context"
 	"flag"
+	"fmt"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -59,7 +60,7 @@ func getHTTPRecoder(t *testing.T, update bool) (client *http.Client, cleanup fun
 	// Setup recorder and scw client
 	r, err := recorder.NewAsMode(getTestFilePath(t, ".cassette"), recorderMode, nil)
 	if err != nil {
-		return nil, nil, err
+		return nil, nil, fmt.Errorf("failed to create recorder: %s", err)
 	}
 
 	// Add a filter which removes Authorization headers from all requests:
