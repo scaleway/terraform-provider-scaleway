@@ -3,6 +3,8 @@ package scaleway
 import (
 	"context"
 	"fmt"
+	"time"
+
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -10,7 +12,6 @@ import (
 	"github.com/robfig/cron"
 	container "github.com/scaleway/scaleway-sdk-go/api/container/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
-	"time"
 )
 
 const (
@@ -141,16 +142,27 @@ func resourceScalewayContainer() *schema.Resource {
 				Default:     false,
 			},
 			"cron_job": {
-				Type:        schema.TypeList,
+				Type:        schema.TypeSet,
 				Optional:    true,
+				Set:         cronContainerHash,
 				Description: "Specifies how to run a job periodically on a given schedule, written in Cron format.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
+						"cron_job_id": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The Cron Job ID",
+						},
 						"schedule": {
 							Type:         schema.TypeString,
 							Required:     true,
 							ValidateFunc: validateCronExpression(),
 							Description:  "Cron format string, e.g. 0 * * * * or @hourly, as schedule time of its jobs to be created and executed.",
+						},
+						"status": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Cron job status.",
 						},
 					},
 				},
@@ -187,13 +199,7 @@ func resourceScalewayContainerCreate(ctx context.Context, d *schema.ResourceData
 		region = scw.RegionFrPar
 	}
 	namespaceID := d.Get("namespace_id")
-	// verify name space state
-	_, err = api.WaitForNamespace(&container.WaitForNamespaceRequest{
-		NamespaceID:   expandID(namespaceID),
-		Region:        region,
-		Timeout:       scw.TimeDurationPtr(defaultRegistryNamespaceTimeout),
-		RetryInterval: DefaultWaitRetryInterval,
-	}, scw.WithContext(ctx))
+	_, err = waitForContainerNamespace(ctx, api, region, expandID(namespaceID), d.Timeout(schema.TimeoutCreate))
 	if err != nil {
 		return diag.Errorf("unexpected namespace error: %s", err)
 	}
@@ -208,17 +214,14 @@ func resourceScalewayContainerCreate(ctx context.Context, d *schema.ResourceData
 		return diag.Errorf("creation container error: %s", err)
 	}
 
+	_, err = waitForContainer(ctx, api, res.ID, region, d.Timeout(schema.TimeoutCreate))
+	if err != nil {
+		return diag.Errorf("unexpected waiting container error: %s", err)
+	}
+
 	// check if container should be deployed
 	shouldDeploy := d.Get("deploy")
 	if *expandBoolPtr(shouldDeploy) {
-		_, err := api.WaitForContainer(&container.WaitForContainerRequest{
-			ContainerID: res.ID,
-			Region:      region,
-		}, scw.WithContext(ctx))
-		if err != nil {
-			return diag.Errorf("unexpected waiting container error: %s", err)
-		}
-
 		reqUpdate := &container.UpdateContainerRequest{
 			Region:      res.Region,
 			ContainerID: res.ID,
@@ -228,14 +231,23 @@ func resourceScalewayContainerCreate(ctx context.Context, d *schema.ResourceData
 		if err != nil {
 			return diag.FromErr(err)
 		}
+
+		_, err = waitForContainer(ctx, api, res.ID, region, d.Timeout(schema.TimeoutCreate))
+		if err != nil {
+			return diag.Errorf("unexpected waiting container error: %s", err)
+		}
 	}
 
 	if cronJobsRaw, ok := d.GetOk("cron_job"); ok {
-		cronJobRequests := createCronJobsRequest(res.ID, region, cronJobsRaw)
-		cronErrors := createCronJobs(ctx, api, cronJobRequests, d.Timeout(schema.TimeoutCreate))
-		if len(cronErrors) > 0 {
-			for _, cronErr := range cronErrors {
-				tflog.Error(ctx, cronErr.Error())
+		cronJobs := cronJobsRaw.(*schema.Set).List()
+		if len(cronJobs) > 0 {
+			cronJobRequests := createCronJobsRequest(res.ID, region, cronJobs)
+			cronErrors := createCronJobs(ctx, api, cronJobRequests, d.Timeout(schema.TimeoutCreate))
+			if len(cronErrors) > 0 {
+				for _, cronErr := range cronErrors {
+					tflog.Error(ctx, cronErr.Error())
+				}
+				return diag.Errorf("error creating cron jobs")
 			}
 		}
 	}
@@ -248,12 +260,13 @@ func resourceScalewayContainerCreate(ctx context.Context, d *schema.ResourceData
 func createCronJobs(ctx context.Context, api *container.API, cronJobs []*container.CreateCronRequest, timeout time.Duration) []error {
 	var errors []error
 	for _, r := range cronJobs {
-		cron, err := api.CreateCron(r, scw.WithContext(ctx))
+		c, err := api.CreateCron(r, scw.WithContext(ctx))
 		if err != nil {
 			errors = append(errors, err)
+			continue
 		}
 		tflog.Info(ctx, fmt.Sprintf("[INFO] Submitted new cron job: %#v", r.Schedule))
-		_, err = waitForContainerCron(ctx, api, cron.ID, r.Region, timeout)
+		_, err = waitForContainerCron(ctx, api, c.ID, r.Region, timeout)
 		if err != nil {
 			errors = append(errors, err)
 		}
@@ -269,10 +282,7 @@ func resourceScalewayContainerRead(ctx context.Context, d *schema.ResourceData, 
 		return diag.FromErr(err)
 	}
 
-	co, err := api.WaitForContainer(&container.WaitForContainerRequest{
-		ContainerID: containerID,
-		Region:      region,
-	}, scw.WithContext(ctx))
+	co, err := waitForContainer(ctx, api, containerID, region, d.Timeout(schema.TimeoutRead))
 	if err != nil {
 		return diag.Errorf("unexpected waiting container error: %s", err)
 	}
@@ -302,13 +312,11 @@ func resourceScalewayContainerRead(ctx context.Context, d *schema.ResourceData, 
 	cronJobs, err := api.ListCrons(&container.ListCronsRequest{
 		ContainerID: co.ID,
 		Region:      co.Region,
-	})
-	_ = d.Set("cron_job", flattenContainerCronJobs(d.Get("cron_job").([]interface{}), cronJobs.Crons))
-	return nil
-}
-
-func flattenContainerCronJobs(rawJobs []interface{}, cronJobs []*container.Cron) error {
-	//TODO: check rawJobs and set data. Set cronJobs if there are new jobs
+	}, scw.WithContext(ctx))
+	if err != nil {
+		return diag.FromErr(err)
+	}
+	_ = d.Set("cron_job", schema.NewSet(cronContainerHash, flattenContainerCronJobs(cronJobs.Crons)))
 	return nil
 }
 
@@ -320,51 +328,19 @@ func resourceScalewayContainerUpdate(ctx context.Context, d *schema.ResourceData
 
 	namespaceID := d.Get("namespace_id")
 	// verify name space state
-	_, err = api.WaitForNamespace(&container.WaitForNamespaceRequest{
-		NamespaceID: expandID(namespaceID),
-		Region:      region,
-	}, scw.WithContext(ctx))
+	_, err = waitForContainerNamespace(ctx, api, region, expandID(namespaceID), d.Timeout(schema.TimeoutUpdate))
 	if err != nil {
 		return diag.Errorf("unexpected namespace error: %s", err)
 	}
 
 	// check for container state
-	_, err = api.WaitForContainer(&container.WaitForContainerRequest{
-		ContainerID: containerID,
-		Region:      region,
-	}, scw.WithContext(ctx))
+	_, err = waitForContainer(ctx, api, containerID, region, d.Timeout(schema.TimeoutUpdate))
 	if err != nil {
 		return diag.Errorf("unexpected waiting container error: %s", err)
 	}
 
 	// Warning or Errors can be collected as warnings
 	var diags diag.Diagnostics
-
-	// check triggers associated
-	triggers, err := api.ListCrons(&container.ListCronsRequest{
-		Region:      region,
-		ContainerID: containerID,
-	}, scw.WithContext(ctx))
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	// wait for triggers state
-	for _, c := range triggers.Crons {
-		_, err := api.WaitForCron(&container.WaitForCronRequest{
-			CronID:        c.ID,
-			Region:        region,
-			Timeout:       scw.TimeDurationPtr(defaultContainerNamespaceTimeout),
-			RetryInterval: DefaultWaitRetryInterval,
-		}, scw.WithContext(ctx))
-		if err != nil {
-			diags = append(diags, diag.Diagnostic{
-				Severity: diag.Warning,
-				Summary:  "Warning waiting cron job",
-				Detail:   err.Error(),
-			})
-		}
-	}
 
 	// update container
 	req := &container.UpdateContainerRequest{
@@ -426,9 +402,55 @@ func resourceScalewayContainerUpdate(ctx context.Context, d *schema.ResourceData
 		req.Redeploy = expandBoolPtr(d.Get("deploy"))
 	}
 
-	_, err = api.UpdateContainer(req, scw.WithContext(ctx))
+	currentContainer, err := api.UpdateContainer(req, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
+	}
+
+	if d.HasChanges("cron_job") {
+		first, after := d.GetChange("cron_job")
+		isEqual := first.(*schema.Set).HashEqual(after)
+		tflog.Info(ctx, fmt.Sprintf("cron job has change: %v", isEqual))
+		cronJobs := d.Get("cron_job").(*schema.Set).List()
+		if len(cronJobs) > 0 {
+			for index, c := range cronJobs {
+				cj := c.(map[string]interface{})
+				keyJob := fmt.Sprintf("cron_job.%d", index)
+				if d.HasChange(keyJob) {
+					req := &container.UpdateCronRequest{
+						Region:      region,
+						CronID:      cj["cron_job_id"].(string),
+						ContainerID: &currentContainer.ID,
+						Schedule:    expandStringPtr(cj["schedule"]),
+					}
+					_, err := api.UpdateCron(req, scw.WithContext(ctx))
+					if err != nil {
+						return diag.FromErr(err)
+					}
+				}
+			}
+		}
+
+		// check triggers associated
+		triggers, err := api.ListCrons(&container.ListCronsRequest{
+			Region:      region,
+			ContainerID: containerID,
+		}, scw.WithContext(ctx))
+		if err != nil {
+			return diag.FromErr(err)
+		}
+
+		// wait for triggers state
+		for _, c := range triggers.Crons {
+			_, err = waitForContainerCron(ctx, api, c.ID, region, d.Timeout(schema.TimeoutUpdate))
+			if err != nil {
+				diags = append(diags, diag.Diagnostic{
+					Severity: diag.Warning,
+					Summary:  fmt.Sprintf("Warning waiting cron job %s", c.ID),
+					Detail:   err.Error(),
+				})
+			}
+		}
 	}
 
 	return append(diags, resourceScalewayContainerRead(ctx, d, meta)...)
@@ -441,10 +463,7 @@ func resourceScalewayContainerDelete(ctx context.Context, d *schema.ResourceData
 	}
 
 	// check for container state
-	_, err = api.WaitForContainer(&container.WaitForContainerRequest{
-		ContainerID: containerID,
-		Region:      region,
-	}, scw.WithContext(ctx))
+	_, err = waitForContainer(ctx, api, containerID, region, d.Timeout(schema.TimeoutDelete))
 	if err != nil {
 		return diag.Errorf("unexpected waiting container error: %s", err)
 	}
@@ -476,33 +495,18 @@ func validateCronExpression() schema.SchemaValidateFunc {
 	}
 }
 
-func createCronJobsRequest(containerID string, region scw.Region, raw interface{}) []*container.CreateCronRequest {
+func createCronJobsRequest(containerID string, region scw.Region, cronJobs []interface{}) []*container.CreateCronRequest {
 	var requests []*container.CreateCronRequest
 
-	for _, cronJob := range raw.([]interface{}) {
+	for _, cronJob := range cronJobs {
 		config := cronJob.(map[string]interface{})
 		requests = append(requests, &container.CreateCronRequest{
 			ContainerID: expandID(containerID),
 			Region:      region,
 			Schedule:    config["schedule"].(string),
+			Args:        []byte(`{"scw":{"provider":"Scaleway"}}`), // ARGS will be implemented in a dedicated PR
 		})
 	}
 
 	return requests
-}
-
-func waitForContainerCron(ctx context.Context, api *container.API, cronID string, region scw.Region, timeout time.Duration) (*container.Cron, error) {
-	retryInterval := defaultWaitContainerRetryInterval
-	if DefaultWaitRetryInterval != nil {
-		retryInterval = *DefaultWaitRetryInterval
-	}
-
-	request := container.WaitForCronRequest{
-		CronID:        cronID,
-		Region:        region,
-		Timeout:       scw.TimeDurationPtr(timeout),
-		RetryInterval: &retryInterval,
-	}
-
-	return api.WaitForCron(&request, scw.WithContext(ctx))
 }
