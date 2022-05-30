@@ -144,7 +144,6 @@ func resourceScalewayRdbPrivilegeRead(ctx context.Context, d *schema.ResourceDat
 		DatabaseName: &dbName,
 		UserName:     &userName,
 	}, scw.WithContext(ctx))
-
 	if err != nil {
 		if is404Error(err) {
 			d.SetId("")
@@ -156,7 +155,7 @@ func resourceScalewayRdbPrivilegeRead(ctx context.Context, d *schema.ResourceDat
 	if len(res.Privileges) == 0 {
 		return diag.FromErr(fmt.Errorf("couldn't retrieve privileges for user[%s] on database [%s]", userName, dbName))
 	}
-	var privilege = res.Privileges[0]
+	privilege := res.Privileges[0]
 	_ = d.Set("database_name", privilege.DatabaseName)
 	_ = d.Set("user_name", privilege.UserName)
 	_ = d.Set("permission", privilege.Permission)

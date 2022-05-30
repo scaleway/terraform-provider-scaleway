@@ -18,9 +18,7 @@ import (
 	container "github.com/scaleway/scaleway-sdk-go/api/container/v1beta1"
 )
 
-var (
-	testDockerIMG = ""
-)
+var testDockerIMG = ""
 
 func init() {
 	testDockerIMGPtr := flag.String("test-image", os.Getenv("TF_TEST_DOCKER_IMG"), "Test image")
@@ -32,6 +30,7 @@ func init() {
 	}
 	l.Infof("start container registry with image: %s", testDockerIMG)
 }
+
 func TestAccScalewayContainer_Basic(t *testing.T) {
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
@@ -187,7 +186,7 @@ func testAccCheckScalewayContainerExists(tt *TestTools, n string) resource.TestC
 
 		api, region, id, err := containerAPIWithRegionAndID(tt.Meta, rs.Primary.ID)
 		if err != nil {
-			return nil
+			return err
 		}
 
 		_, err = api.GetContainer(&container.GetContainerRequest{
@@ -241,7 +240,7 @@ func testConfigContainerNamespace(tt *TestTools, n string) resource.TestCheckFun
 		}
 		api, region, id, err := containerAPIWithRegionAndID(tt.Meta, rs.Primary.ID)
 		if err != nil {
-			return nil
+			return err
 		}
 
 		ns, err := api.WaitForNamespace(&container.WaitForNamespaceRequest{
@@ -299,8 +298,8 @@ func testConfigContainerNamespace(tt *TestTools, n string) resource.TestCheckFun
 			}
 		}
 
-		var imageTag = testDockerIMG + ":latest"
-		var scwTag = ns.RegistryEndpoint + "/alpine:test"
+		imageTag := testDockerIMG + ":latest"
+		scwTag := ns.RegistryEndpoint + "/alpine:test"
 
 		err = cli.ImageTag(ctx, imageTag, scwTag)
 		if err != nil {

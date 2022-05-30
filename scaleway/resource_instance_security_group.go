@@ -340,7 +340,6 @@ func updateSecurityGroupeRules(ctx context.Context, d *schema.ResourceData, zone
 	for direction := range stateRules {
 		// Loop for all state rules in this direction
 		for index, rawStateRule := range stateRules[direction] {
-			apiRule := (*instance.SecurityGroupRule)(nil)
 			stateRule, err := securityGroupRuleExpand(rawStateRule)
 			if err != nil {
 				return err
@@ -365,7 +364,7 @@ func updateSecurityGroupeRules(ctx context.Context, d *schema.ResourceData, zone
 			}
 
 			// We compare rule stateRule[index] and apiRule[index]. If they are different we update api rule to match state.
-			apiRule = apiRules[direction][index]
+			apiRule := apiRules[direction][index]
 			if ok, _ := securityGroupRuleEquals(stateRule, apiRule); !ok {
 				destPortFrom := stateRule.DestPortFrom
 				destPortTo := stateRule.DestPortTo

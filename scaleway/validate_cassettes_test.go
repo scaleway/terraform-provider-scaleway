@@ -54,7 +54,8 @@ func exceptionsCassettesCases() map[string]struct{} {
 	return map[string]struct{}{
 		"testdata/object-bucket-destroy-force.cassette.yaml":     {},
 		"testdata/rdb-privilege-basic.cassette.yaml":             {},
-		"testdata/data-source-rdb-privilege-basic.cassette.yaml": {}}
+		"testdata/data-source-rdb-privilege-basic.cassette.yaml": {},
+	}
 }
 
 func checkErrCode(i *cassette.Interaction, c *cassette.Cassette, codes ...int) bool {
