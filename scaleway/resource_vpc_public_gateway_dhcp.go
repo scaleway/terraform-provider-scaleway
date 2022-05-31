@@ -229,7 +229,7 @@ func resourceScalewayVPCPublicGatewayDHCPRead(ctx context.Context, d *schema.Res
 	_ = d.Set("dns_local_name", dhcp.DNSLocalName)
 	_ = d.Set("enable_dynamic", dhcp.EnableDynamic)
 	_ = d.Set("organization_id", dhcp.OrganizationID)
-	_ = d.Set("pool_high", dhcp.PoolLow.String())
+	_ = d.Set("pool_high", dhcp.PoolHigh.String())
 	_ = d.Set("pool_low", dhcp.PoolLow.String())
 	_ = d.Set("project_id", dhcp.ProjectID)
 	_ = d.Set("push_default_route", dhcp.PushDefaultRoute)
