@@ -49,7 +49,6 @@ func dataSourceScalewayInstanceServers() *schema.Resource {
 							Computed: true,
 							Type:     schema.TypeString,
 						},
-						"zone": zoneSchema(),
 						"name": {
 							Computed: true,
 							Type:     schema.TypeString,
@@ -85,8 +84,6 @@ func dataSourceScalewayInstanceServers() *schema.Resource {
 							Computed: true,
 							Type:     schema.TypeBool,
 						},
-						"organization_id": organizationIDSchema(),
-						"project_id":      projectIDSchema(),
 						"image": {
 							Computed: true,
 							Type:     schema.TypeString,
@@ -111,6 +108,9 @@ func dataSourceScalewayInstanceServers() *schema.Resource {
 							Computed: true,
 							Type:     schema.TypeInt,
 						},
+						"zone":            zoneSchema(),
+						"organization_id": organizationIDSchema(),
+						"project_id":      projectIDSchema(),
 					},
 				},
 			},
