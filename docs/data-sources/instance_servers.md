@@ -25,20 +25,6 @@ data "scaleway_instance_servers" "my_key" {
 }
 ```
 
-### With single datasource
-
-```hcl
-# Find servers by tag
-data "scaleway_instance_servers" "servers_by_tag" {
-  tags  = ["tag"]
-}
-
-data "scaleway_instance_servers" "map_of_servers" {
-  for_each = {for server in data.scaleway_instance_servers.servers_by_tag.servers: server.id => server}
-  server_id = each.value.id
-}
-```
-
 ## Argument Reference
 
 - `name` - (Optional) The server name used as filter.
@@ -55,4 +41,24 @@ In addition to all above arguments, the following attributes are exported:
 
 - `servers` - List of found servers
     - `id` - The ID of the server.
+    - `tags` - The tags associated with the server.
     - `public_ip` - The public IPv4 address of the server.
+    - `private_ip` - The Scaleway internal IP address of the server.
+    - `state` - The state of the server. Possible values are: `started`, `stopped` or `standby`.
+    - `zone` - The [zone](../guides/regions_and_zones.md#zones) in which the server is.
+    - `name` - The name of the server.
+    - `boot_type` - The boot Type of the server. Possible values are: `local`, `bootscript` or `rescue`.
+    - `bootscript_id` - The ID of the bootscript.
+    - `type` - The commercial type of the server.
+    - `security_group_id` - The [security group](https://developers.scaleway.com/en/products/instance/api/#security-groups-8d7f89) the server is attached to.
+    - `enable_ipv6` - Determines if IPv6 is enabled for the server.
+    - `ipv6_address` - The default ipv6 address routed to the server. ( Only set when enable_ipv6 is set to true )
+    - `ipv6_gateway` - The ipv6 gateway address. ( Only set when enable_ipv6 is set to true )
+    - `ipv6_prefix_length` - The prefix length of the ipv6 subnet routed to the server. ( Only set when enable_ipv6 is set to true )
+    - `enable_dynamic_ip` - If true a dynamic IP will be attached to the server.
+    - `image` - The UUID or the label of the base image used by the server.
+    - `placement_group_id` - The [placement group](https://developers.scaleway.com/en/products/instance/api/#placement-groups-d8f653) the server is attached to.
+    - `organization_id` - The organization ID the server is associated with.
+    - `project_id` - The ID of the project the server is associated with.
+  
+
