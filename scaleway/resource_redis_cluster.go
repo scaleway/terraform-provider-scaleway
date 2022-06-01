@@ -359,13 +359,12 @@ func resourceScalewayRedisClusterUpdate(ctx context.Context, d *schema.ResourceD
 			NodeType:  expandStringPtr(d.Get("node_type")),
 		})
 	}
-	for _, request := range migrateClusterRequests {
+	for i := range migrateClusterRequests {
 		_, err = waitForRedisCluster(ctx, redisAPI, zone, ID, d.Timeout(schema.TimeoutUpdate))
 		if err != nil && !is404Error(err) {
 			return diag.FromErr(err)
 		}
-
-		_, err = redisAPI.MigrateCluster(&request, scw.WithContext(ctx))
+		_, err = redisAPI.MigrateCluster(&migrateClusterRequests[i], scw.WithContext(ctx))
 		if err != nil {
 			return diag.FromErr(err)
 		}

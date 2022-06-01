@@ -151,7 +151,7 @@ func resourceScalewayLbCreate(ctx context.Context, d *schema.ResourceData, meta 
 		return diag.FromErr(err)
 	}
 
-	//attach private network
+	// attach private network
 	pnConfigs, pnExist := d.GetOk("private_network")
 	if pnExist {
 		pnConfigs, err := expandPrivateNetworks(pnConfigs, lb.ID)
@@ -271,7 +271,7 @@ func resourceScalewayLbUpdate(ctx context.Context, d *schema.ResourceData, meta 
 			}
 		}
 
-		//attach private network
+		// attach private network
 		pnConfigs, pnExist := d.GetOk("private_network")
 		if pnExist {
 			pnConfigs, err := expandPrivateNetworks(pnConfigs, ID)
@@ -365,6 +365,11 @@ func resourceScalewayLbDelete(ctx context.Context, d *schema.ResourceData, meta 
 		LBID:      ID,
 		ReleaseIP: false,
 	}, scw.WithContext(ctx))
+	if err != nil && !is404Error(err) {
+		return diag.FromErr(err)
+	}
+
+	_, err = waitForLB(ctx, lbAPI, zone, ID, d.Timeout(schema.TimeoutDelete))
 	if err != nil && !is404Error(err) {
 		return diag.FromErr(err)
 	}

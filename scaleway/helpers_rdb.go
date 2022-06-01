@@ -40,18 +40,6 @@ func rdbAPIWithRegionAndID(m interface{}, id string) (*rdb.API, scw.Region, stri
 	return newRdbAPI(m), region, ID, nil
 }
 
-func flattenRdbInstanceReadReplicas(readReplicas []*rdb.Endpoint) interface{} {
-	replicasI := []map[string]interface{}(nil)
-	for _, readReplica := range readReplicas {
-		replicasI = append(replicasI, map[string]interface{}{
-			"ip":   flattenIPPtr(readReplica.IP),
-			"port": int(readReplica.Port),
-			"name": flattenStringPtr(readReplica.Name),
-		})
-	}
-	return replicasI
-}
-
 func flattenInstanceSettings(settings []*rdb.InstanceSetting) interface{} {
 	res := make(map[string]string)
 	for _, value := range settings {
@@ -116,7 +104,8 @@ func expandLoadBalancer() []*rdb.EndpointSpec {
 	var res []*rdb.EndpointSpec
 
 	res = append(res, &rdb.EndpointSpec{
-		LoadBalancer: &rdb.EndpointSpecLoadBalancer{}})
+		LoadBalancer: &rdb.EndpointSpecLoadBalancer{},
+	})
 
 	return res
 }
@@ -168,12 +157,12 @@ func newEndPointPrivateNetworkDetails(id, ip, locality string) (*rdb.EndpointPri
 	}, nil
 }
 
-func isEndPointEqual(A, B interface{}) bool {
+func isEndPointEqual(a, b interface{}) bool {
 	// Find out the diff Private Network or not
-	if _, ok := A.(*rdb.EndpointPrivateNetworkDetails); ok {
-		if _, ok := B.(*rdb.EndpointPrivateNetworkDetails); ok {
-			detailsA := A.(*rdb.EndpointPrivateNetworkDetails)
-			detailsB := B.(*rdb.EndpointPrivateNetworkDetails)
+	if _, ok := a.(*rdb.EndpointPrivateNetworkDetails); ok {
+		if _, ok := b.(*rdb.EndpointPrivateNetworkDetails); ok {
+			detailsA := a.(*rdb.EndpointPrivateNetworkDetails)
+			detailsB := b.(*rdb.EndpointPrivateNetworkDetails)
 			return reflect.DeepEqual(detailsA, detailsB)
 		}
 	}
