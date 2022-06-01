@@ -42,7 +42,7 @@ func TestAccScalewayCassettes_Validator(t *testing.T) {
 
 func checkErrorCode(c *cassette.Cassette) error {
 	for _, i := range c.Interactions {
-		if !checkErrCode(i, c, http.StatusConflict, http.StatusInternalServerError) {
+		if !checkErrCode(i, c, http.StatusConflict, http.StatusInternalServerError, http.StatusPreconditionFailed) {
 			return fmt.Errorf("status: %v founded on %s. method: %s, url %s", i.Code, c.Name, i.Request.Method, i.Request.URL)
 		}
 	}
