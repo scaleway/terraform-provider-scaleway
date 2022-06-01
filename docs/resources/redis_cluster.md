@@ -47,6 +47,30 @@ resource "scaleway_redis_cluster" "main" {
   }
 }
 ```
+### With a private network
+```hcl
+resource "scaleway_vpc_private_network" "pn" { 
+  name = "private-network"
+}
+
+resource "scaleway_redis_cluster" "main" {
+  name         = "test_redis_endpoints"
+  version      = "6.2.6"
+  node_type    = "MDB-BETA-M"
+  user_name    = "my_initial_user"
+  password     = "thiZ_is_v&ry_s3cret"
+  cluster_size = 1
+  private_network {
+    id          = "${scaleway_vpc_private_network.pn.id}"
+    service_ips = [
+      "10.12.1.1/20",
+    ]
+  }
+  depends_on = [
+    scaleway_vpc_private_network.pn
+  ]
+}
+```
 
 ## Arguments Reference
 
@@ -86,6 +110,24 @@ The `acl` block supports:
 - `description` - (Optional) A text describing this rule. Default description: `Allow IP`
 
 - `settings` - (Optional) Map of settings for redis cluster. Available settings can be found by listing redis versions with scaleway API or CLI
+
+
+- `private_network` - (Optional) Describes the private network you want to connect to your cluster. If not set, a public network will be provided.
+
+The `private_network` block supports :
+- `id` - (Required) The UUID of the private network resource.
+- `service_ips` - (Required) Endpoint IPv4 addresses in [CIDR notation](https://en.wikipedia.org/wiki/Classless_Inter-Domain_Routing#CIDR_notation). You must provide at least one IP per node.
+
+~> **Important:** The way to use private networks differs whether you are using redis in standalone or cluster mode.
+- Standalone mode (`cluster_size` = 1) : you can attach as many private networks as you want (each must be a separate block). If you detach your only private network, your cluster won't be reachable until you define a new private or public network. You can modify your private_network and its specs, you can have both a private and public network side by side.
+- Cluster mode (`cluster_size` > 1) : you can define a single private network as you create your cluster, you won't be able to edit or detach it afterwards, unless you create another cluster. Your `service_ips` must be listed as follows:
+```hcl
+  service_ips = [
+    "10.12.1.0/20", 
+    "10.13.1.0/20",
+    "10.14.1.0/20",
+  ]
+```
 
 ## Attributes Reference
 

@@ -106,9 +106,8 @@ func resourceScalewayRedisCluster() *schema.Resource {
 				},
 			},
 			"private_network": {
-				Type:     schema.TypeList,
-				Optional: true,
-				//MaxItems:    1,
+				Type:        schema.TypeList,
+				Optional:    true,
 				Description: "Private network specs details",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
