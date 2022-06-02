@@ -14,13 +14,13 @@ Gets information about a baremetal offer. For more information, see [the documen
 # Get info by offer name
 data "scaleway_baremetal_offer" "my_offer" {
   zone = "fr-par-2"
-  name = "HC-BM1-L"
+  name = "EM-A210R-SATA"
 }
 
 # Get info by offer id
 data "scaleway_baremetal_offer" "my_offer" {
   zone     = "fr-par-2"
-  offer_id = "3ab0dc29-2fd4-486e-88bf-d08fbf49214b"
+  offer_id = "25dcf38b-c90c-4b18-97a2-6956e9d1e113"
 }
 ```
 

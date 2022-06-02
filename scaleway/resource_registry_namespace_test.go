@@ -21,7 +21,8 @@ func testSweepRegistryNamespace(_ string) error {
 	return sweepRegions([]scw.Region{scw.RegionFrPar, scw.RegionNlAms}, func(scwClient *scw.Client, region scw.Region) error {
 		registryAPI := registry.NewAPI(scwClient)
 		l.Debugf("sweeper: destroying the registry namespaces in (%s)", region)
-		listNamespaces, err := registryAPI.ListNamespaces(&registry.ListNamespacesRequest{}, scw.WithAllPages())
+		listNamespaces, err := registryAPI.ListNamespaces(
+			&registry.ListNamespacesRequest{Region: region}, scw.WithAllPages())
 		if err != nil {
 			return fmt.Errorf("error listing namespaces in (%s) in sweeper: %s", region, err)
 		}
@@ -29,8 +30,11 @@ func testSweepRegistryNamespace(_ string) error {
 		for _, ns := range listNamespaces.Namespaces {
 			_, err := registryAPI.DeleteNamespace(&registry.DeleteNamespaceRequest{
 				NamespaceID: ns.ID,
+				Region:      region,
 			})
 			if err != nil {
+				l.Debugf("sweeper: error (%s)", err)
+
 				return fmt.Errorf("error deleting namespace in sweeper: %s", err)
 			}
 		}
@@ -51,26 +55,26 @@ func TestAccScalewayRegistryNamespace_Basic(t *testing.T) {
 			{
 				Config: `
 					resource scaleway_registry_namespace cr01 {
-						name = "test-cr"
+						name = "test-cr-ns-01"
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayRegistryNamespaceExists(tt, "scaleway_registry_namespace.cr01"),
-					resource.TestCheckResourceAttr("scaleway_registry_namespace.cr01", "name", "test-cr"),
+					resource.TestCheckResourceAttr("scaleway_registry_namespace.cr01", "name", "test-cr-ns-01"),
 					testCheckResourceAttrUUID("scaleway_registry_namespace.cr01", "id"),
 				),
 			},
 			{
 				Config: `
 					resource scaleway_registry_namespace cr01 {
-						name = "test-cr"
-						description = "test registry namespace"
+						name = "test-cr-ns-01"
+						description = "test registry namespace 01"
 						is_public = true
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayRegistryNamespaceExists(tt, "scaleway_registry_namespace.cr01"),
-					resource.TestCheckResourceAttr("scaleway_registry_namespace.cr01", "description", "test registry namespace"),
+					resource.TestCheckResourceAttr("scaleway_registry_namespace.cr01", "description", "test registry namespace 01"),
 					resource.TestCheckResourceAttr("scaleway_registry_namespace.cr01", "is_public", "true"),
 					testCheckResourceAttrUUID("scaleway_registry_namespace.cr01", "id"),
 				),
@@ -88,7 +92,7 @@ func testAccCheckScalewayRegistryNamespaceExists(tt *TestTools, n string) resour
 
 		api, region, id, err := registryAPIWithRegionAndID(tt.Meta, rs.Primary.ID)
 		if err != nil {
-			return nil
+			return err
 		}
 
 		_, err = api.GetNamespace(&registry.GetNamespaceRequest{

@@ -5,13 +5,14 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/plugin"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 )
 
-// Provider config can be used to provide additional config when creating provider.
+// ProviderConfig config can be used to provide additional config when creating provider.
 type ProviderConfig struct {
 	// Meta can be used to override Meta that will be used by the provider.
 	// This is useful for tests.
@@ -39,24 +40,19 @@ func Provider(config *ProviderConfig) plugin.ProviderFunc {
 					Description:  "The Scaleway secret Key.",
 					ValidateFunc: validationUUID(),
 				},
+				"profile": {
+					Type:        schema.TypeString,
+					Optional:    true, // To allow user to use `access_key`, `secret_key`, `project_id`...
+					Description: "The Scaleway profile to use.",
+				},
 				"project_id": {
 					Type:         schema.TypeString,
 					Optional:     true, // To allow user to use organization instead of project
 					Description:  "The Scaleway project ID.",
 					ValidateFunc: validationUUID(),
 				},
-				"region": {
-					Type:         schema.TypeString,
-					Optional:     true,
-					Description:  "The Scaleway default region to use for your resources.",
-					ValidateFunc: validationRegion(),
-				},
-				"zone": {
-					Type:         schema.TypeString,
-					Optional:     true,
-					Description:  "The Scaleway default zone to use for your resources.",
-					ValidateFunc: validationZone(),
-				},
+				"region": regionSchema(),
+				"zone":   zoneSchema(),
 				"api_url": {
 					Type:        schema.TypeString,
 					Optional:    true,
@@ -65,50 +61,88 @@ func Provider(config *ProviderConfig) plugin.ProviderFunc {
 			},
 
 			ResourcesMap: map[string]*schema.Resource{
-				"scaleway_account_ssh_key":               resourceScalewayAccountSSKKey(),
-				"scaleway_apple_silicon_server":          resourceScalewayAppleSiliconServer(),
-				"scaleway_baremetal_server":              resourceScalewayBaremetalServer(),
-				"scaleway_instance_ip":                   resourceScalewayInstanceIP(),
-				"scaleway_instance_ip_reverse_dns":       resourceScalewayInstanceIPReverseDNS(),
-				"scaleway_instance_volume":               resourceScalewayInstanceVolume(),
-				"scaleway_instance_security_group":       resourceScalewayInstanceSecurityGroup(),
-				"scaleway_instance_security_group_rules": resourceScalewayInstanceSecurityGroupRules(),
-				"scaleway_instance_server":               resourceScalewayInstanceServer(),
-				"scaleway_instance_placement_group":      resourceScalewayInstancePlacementGroup(),
-				"scaleway_instance_private_nic":          resourceScalewayInstancePrivateNIC(),
-				"scaleway_iot_hub":                       resourceScalewayIotHub(),
-				"scaleway_iot_device":                    resourceScalewayIotDevice(),
-				"scaleway_iot_route":                     resourceScalewayIotRoute(),
-				"scaleway_iot_network":                   resourceScalewayIotNetwork(),
-				"scaleway_k8s_cluster":                   resourceScalewayK8SCluster(),
-				"scaleway_k8s_pool":                      resourceScalewayK8SPool(),
-				"scaleway_lb":                            resourceScalewayLb(),
-				"scaleway_lb_ip":                         resourceScalewayLbIP(),
-				"scaleway_lb_backend":                    resourceScalewayLbBackend(),
-				"scaleway_lb_certificate":                resourceScalewayLbCertificate(),
-				"scaleway_lb_frontend":                   resourceScalewayLbFrontend(),
-				"scaleway_registry_namespace":            resourceScalewayRegistryNamespace(),
-				"scaleway_rdb_instance":                  resourceScalewayRdbInstance(),
-				"scaleway_rdb_user":                      resourceScalewayRdbUser(),
-				"scaleway_object_bucket":                 resourceScalewayObjectBucket(),
-				"scaleway_vpc_private_network":           resourceScalewayVPCPrivateNetwork(),
+				"scaleway_account_ssh_key":                     resourceScalewayAccountSSKKey(),
+				"scaleway_apple_silicon_server":                resourceScalewayAppleSiliconServer(),
+				"scaleway_baremetal_server":                    resourceScalewayBaremetalServer(),
+				"scaleway_container_namespace":                 resourceScalewayContainerNamespace(),
+				"scaleway_domain_record":                       resourceScalewayDomainRecord(),
+				"scaleway_domain_zone":                         resourceScalewayDomainZone(),
+				"scaleway_function_namespace":                  resourceScalewayFunctionNamespace(),
+				"scaleway_instance_ip":                         resourceScalewayInstanceIP(),
+				"scaleway_instance_ip_reverse_dns":             resourceScalewayInstanceIPReverseDNS(),
+				"scaleway_instance_volume":                     resourceScalewayInstanceVolume(),
+				"scaleway_instance_security_group":             resourceScalewayInstanceSecurityGroup(),
+				"scaleway_instance_security_group_rules":       resourceScalewayInstanceSecurityGroupRules(),
+				"scaleway_instance_server":                     resourceScalewayInstanceServer(),
+				"scaleway_instance_snapshot":                   resourceScalewayInstanceSnapshot(),
+				"scaleway_instance_placement_group":            resourceScalewayInstancePlacementGroup(),
+				"scaleway_instance_private_nic":                resourceScalewayInstancePrivateNIC(),
+				"scaleway_iot_hub":                             resourceScalewayIotHub(),
+				"scaleway_iot_device":                          resourceScalewayIotDevice(),
+				"scaleway_iot_route":                           resourceScalewayIotRoute(),
+				"scaleway_iot_network":                         resourceScalewayIotNetwork(),
+				"scaleway_k8s_cluster":                         resourceScalewayK8SCluster(),
+				"scaleway_k8s_pool":                            resourceScalewayK8SPool(),
+				"scaleway_lb":                                  resourceScalewayLb(),
+				"scaleway_lb_ip":                               resourceScalewayLbIP(),
+				"scaleway_lb_backend":                          resourceScalewayLbBackend(),
+				"scaleway_lb_certificate":                      resourceScalewayLbCertificate(),
+				"scaleway_lb_frontend":                         resourceScalewayLbFrontend(),
+				"scaleway_lb_route":                            resourceScalewayLbRoute(),
+				"scaleway_registry_namespace":                  resourceScalewayRegistryNamespace(),
+				"scaleway_container":                           resourceScalewayContainer(),
+				"scaleway_rdb_acl":                             resourceScalewayRdbACL(),
+				"scaleway_rdb_database":                        resourceScalewayRdbDatabase(),
+				"scaleway_rdb_instance":                        resourceScalewayRdbInstance(),
+				"scaleway_rdb_privilege":                       resourceScalewayRdbPrivilege(),
+				"scaleway_rdb_user":                            resourceScalewayRdbUser(),
+				"scaleway_redis_cluster":                       resourceScalewayRedisCluster(),
+				"scaleway_object_bucket":                       resourceScalewayObjectBucket(),
+				"scaleway_vpc_public_gateway":                  resourceScalewayVPCPublicGateway(),
+				"scaleway_vpc_gateway_network":                 resourceScalewayVPCGatewayNetwork(),
+				"scaleway_vpc_public_gateway_dhcp":             resourceScalewayVPCPublicGatewayDHCP(),
+				"scaleway_vpc_public_gateway_dhcp_reservation": resourceScalewayVPCPublicGatewayDHCPReservation(),
+				"scaleway_vpc_public_gateway_ip":               resourceScalewayVPCPublicGatewayIP(),
+				"scaleway_vpc_public_gateway_pat_rule":         resourceScalewayVPCPublicGatewayPATRule(),
+				"scaleway_vpc_private_network":                 resourceScalewayVPCPrivateNetwork(),
 			},
 
 			DataSourcesMap: map[string]*schema.Resource{
-				"scaleway_account_ssh_key":         dataSourceScalewayAccountSSHKey(),
-				"scaleway_instance_security_group": dataSourceScalewayInstanceSecurityGroup(),
-				"scaleway_instance_server":         dataSourceScalewayInstanceServer(),
-				"scaleway_instance_image":          dataSourceScalewayInstanceImage(),
-				"scaleway_instance_volume":         dataSourceScalewayInstanceVolume(),
-				"scaleway_baremetal_offer":         dataSourceScalewayBaremetalOffer(),
-				"scaleway_rdb_instance":            dataSourceScalewayRDBInstance(),
-				"scaleway_k8s_cluster":             dataSourceScalewayK8SCluster(),
-				"scaleway_k8s_pool":                dataSourceScalewayK8SPool(),
-				"scaleway_lb_ip":                   dataSourceScalewayLbIP(),
-				"scaleway_marketplace_image":       dataSourceScalewayMarketplaceImage(),
-				"scaleway_registry_namespace":      dataSourceScalewayRegistryNamespace(),
-				"scaleway_registry_image":          dataSourceScalewayRegistryImage(),
-				"scaleway_vpc_private_network":     dataSourceScalewayVPCPrivateNetwork(),
+				"scaleway_account_ssh_key":             dataSourceScalewayAccountSSHKey(),
+				"scaleway_baremetal_offer":             dataSourceScalewayBaremetalOffer(),
+				"scaleway_baremetal_os":                dataSourceScalewayBaremetalOs(),
+				"scaleway_baremetal_server":            dataSourceScalewayBaremetalServer(),
+				"scaleway_domain_record":               dataSourceScalewayDomainRecord(),
+				"scaleway_domain_zone":                 dataSourceScalewayDomainZone(),
+				"scaleway_container_namespace":         dataSourceScalewayContainerNamespace(),
+				"scaleway_container":                   dataSourceScalewayContainer(),
+				"scaleway_function_namespace":          dataSourceScalewayFunctionNamespace(),
+				"scaleway_instance_ip":                 dataSourceScalewayInstanceIP(),
+				"scaleway_instance_security_group":     dataSourceScalewayInstanceSecurityGroup(),
+				"scaleway_instance_server":             dataSourceScalewayInstanceServer(),
+				"scaleway_instance_image":              dataSourceScalewayInstanceImage(),
+				"scaleway_instance_volume":             dataSourceScalewayInstanceVolume(),
+				"scaleway_iot_hub":                     dataSourceScalewayIotHub(),
+				"scaleway_iot_device":                  dataSourceScalewayIotDevice(),
+				"scaleway_k8s_cluster":                 dataSourceScalewayK8SCluster(),
+				"scaleway_k8s_pool":                    dataSourceScalewayK8SPool(),
+				"scaleway_lb":                          dataSourceScalewayLb(),
+				"scaleway_lb_certificate":              dataSourceScalewayLbCertificate(),
+				"scaleway_lb_ip":                       dataSourceScalewayLbIP(),
+				"scaleway_marketplace_image":           dataSourceScalewayMarketplaceImage(),
+				"scaleway_object_bucket":               dataSourceScalewayObjectBucket(),
+				"scaleway_rdb_acl":                     dataSourceScalewayRDBACL(),
+				"scaleway_rdb_instance":                dataSourceScalewayRDBInstance(),
+				"scaleway_rdb_database":                dataSourceScalewayRDBDatabase(),
+				"scaleway_rdb_privilege":               dataSourceScalewayRDBPrivilege(),
+				"scaleway_redis_cluster":               dataSourceScalewayRedisCluster(),
+				"scaleway_registry_namespace":          dataSourceScalewayRegistryNamespace(),
+				"scaleway_registry_image":              dataSourceScalewayRegistryImage(),
+				"scaleway_vpc_public_gateway":          dataSourceScalewayVPCPublicGateway(),
+				"scaleway_vpc_public_gateway_dhcp":     dataSourceScalewayVPCPublicGatewayDHCP(),
+				"scaleway_vpc_public_gateway_ip":       dataSourceScalewayVPCPublicGatewayIP(),
+				"scaleway_vpc_private_network":         dataSourceScalewayVPCPrivateNetwork(),
+				"scaleway_vpc_public_gateway_pat_rule": dataSourceScalewayVPCPublicGatewayPATRule(),
 			},
 		}
 
@@ -120,7 +154,7 @@ func Provider(config *ProviderConfig) plugin.ProviderFunc {
 				return config.Meta, nil
 			}
 
-			meta, err := buildMeta(&MetaConfig{
+			meta, err := buildMeta(ctx, &metaConfig{
 				providerSchema:   data,
 				terraformVersion: terraformVersion,
 			})
@@ -146,7 +180,7 @@ type Meta struct {
 	httpClient *http.Client
 }
 
-type MetaConfig struct {
+type metaConfig struct {
 	providerSchema   *schema.ResourceData
 	terraformVersion string
 	forceZone        scw.Zone
@@ -154,11 +188,11 @@ type MetaConfig struct {
 }
 
 // providerConfigure creates the Meta object containing the SDK client.
-func buildMeta(config *MetaConfig) (*Meta, error) {
+func buildMeta(ctx context.Context, config *metaConfig) (*Meta, error) {
 	////
 	// Load Profile
 	////
-	profile, err := loadProfile(config.providerSchema)
+	profile, err := loadProfile(ctx, config.providerSchema)
 	if err != nil {
 		return nil, err
 	}
@@ -198,7 +232,8 @@ func buildMeta(config *MetaConfig) (*Meta, error) {
 	}, nil
 }
 
-func loadProfile(d *schema.ResourceData) (*scw.Profile, error) {
+//gocyclo:ignore
+func loadProfile(ctx context.Context, d *schema.ResourceData) (*scw.Profile, error) {
 	config, err := scw.LoadConfig()
 	// If the config file do not exist, don't return an error as we may find config in ENV or flags.
 	if _, isNotFoundError := err.(*scw.ConfigFileNotFoundError); isNotFoundError {
@@ -221,6 +256,12 @@ func loadProfile(d *schema.ResourceData) (*scw.Profile, error) {
 
 	providerProfile := &scw.Profile{}
 	if d != nil {
+		if profileName, exist := d.GetOk("profile"); exist {
+			profileFromConfig, err := config.GetProfile(profileName.(string))
+			if err == nil {
+				providerProfile = profileFromConfig
+			}
+		}
 		if accessKey, exist := d.GetOk("access_key"); exist {
 			providerProfile.AccessKey = scw.StringPtr(accessKey.(string))
 		}
@@ -236,6 +277,9 @@ func loadProfile(d *schema.ResourceData) (*scw.Profile, error) {
 		if zone, exist := d.GetOk("zone"); exist {
 			providerProfile.DefaultZone = scw.StringPtr(zone.(string))
 		}
+		if apiURL, exist := d.GetOk("api_url"); exist {
+			providerProfile.APIURL = scw.StringPtr(apiURL.(string))
+		}
 	}
 
 	profile := scw.MergeProfiles(defaultZoneProfile, activeProfile, providerProfile, envProfile)
@@ -245,12 +289,12 @@ func loadProfile(d *schema.ResourceData) (*scw.Profile, error) {
 	if profile.DefaultZone != nil && *profile.DefaultZone != "" &&
 		(profile.DefaultRegion == nil || *profile.DefaultRegion == "") {
 		zone := scw.Zone(*profile.DefaultZone)
-		l.Debugf("guess region from %s zone", zone)
+		tflog.Debug(ctx, fmt.Sprintf("guess region from %s zone", zone))
 		region, err := zone.Region()
 		if err == nil {
 			profile.DefaultRegion = scw.StringPtr(region.String())
 		} else {
-			l.Debugf("cannot guess region: %w", err)
+			tflog.Debug(ctx, fmt.Sprintf("cannot guess region: %s", err.Error()))
 		}
 	}
 	return profile, nil

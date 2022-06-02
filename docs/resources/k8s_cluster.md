@@ -35,8 +35,6 @@ resource "scaleway_k8s_cluster" "john" {
   description      = "my awesome cluster"
   version          = "1.18.0"
   cni              = "calico"
-  enable_dashboard = true
-  ingress          = "traefik"
   tags             = ["i'm an awsome tag", "yay"]
 
   autoscaler_config {
@@ -101,11 +99,95 @@ provider "kubernetes" {
 The `null_resource` is needed because when the cluster is created, it's status is `pool_required`, but the kubeconfig can already be downloaded.
 It leads the `kubernetes` provider to start creating its objects, but the DNS entry for the Kubernetes master is not yet ready, that's why it's needed to wait for at least a pool.
 
+### With the Helm provider
+
+```hcl
+resource "scaleway_k8s_cluster" "joy" {
+  name    = "joy"
+  version = "1.21.0"
+  cni     = "flannel"
+}
+
+resource "scaleway_k8s_pool" "john" {
+  cluster_id = scaleway_k8s_cluster.joy.id
+  name       = "john"
+  node_type  = "DEV1-M"
+  size       = 1
+}
+
+resource "null_resource" "kubeconfig" {
+  depends_on = [scaleway_k8s_pool.john] # at least one pool here
+  triggers = {
+    host                   = scaleway_k8s_cluster.joy.kubeconfig[0].host
+    token                  = scaleway_k8s_cluster.joy.kubeconfig[0].token
+    cluster_ca_certificate = scaleway_k8s_cluster.joy.kubeconfig[0].cluster_ca_certificate
+  }
+}
+
+provider "helm" {
+  kubernetes {
+    host = null_resource.kubeconfig.triggers.host
+    token = null_resource.kubeconfig.triggers.token
+    cluster_ca_certificate = base64decode(
+    null_resource.kubeconfig.triggers.cluster_ca_certificate
+    )
+  }
+}
+
+resource "scaleway_lb_ip" "nginx_ip" {
+  zone       = "fr-par-1"
+  project_id = scaleway_k8s_cluster.joy.project_id
+}
+
+resource "helm_release" "nginx_ingress" {
+  name      = "nginx-ingress"
+  namespace = "kube-system"
+
+  repository = "https://kubernetes.github.io/ingress-nginx"
+  chart = "ingress-nginx"
+
+  set {
+    name = "controller.service.loadBalancerIP"
+    value = scaleway_lb_ip.nginx_ip.ip_address
+  }
+
+  // enable proxy protocol to get client ip addr instead of loadbalancer one
+  set {
+    name = "controller.config.use-proxy-protocol"
+    value = "true"
+  }
+  set {
+    name = "controller.service.annotations.service\\.beta\\.kubernetes\\.io/scw-loadbalancer-proxy-protocol-v2"
+    value = "true"
+  }
+
+  // indicates in which zone to create the loadbalancer
+  set {
+    name = "controller.service.annotations.service\\.beta\\.kubernetes\\.io/scw-loadbalancer-zone"
+    value = scaleway_lb_ip.nginx_ip.zone
+  }
+
+  // enable to avoid node forwarding
+  set {
+    name = "controller.service.externalTrafficPolicy"
+    value = "Local"
+  }
+
+  // enable this annotation to use cert-manager
+  //set {
+  //  name  = "controller.service.annotations.service\\.beta\\.kubernetes\\.io/scw-loadbalancer-use-hostname"
+  //  value = "true"
+  //}
+}
+```
+
 ## Arguments Reference
 
 The following arguments are supported:
 
 - `name` - (Required) The name for the Kubernetes cluster.
+
+- `type` - (Optional) The type of Kubernetes cluster. Possible values are: `kapsule` or `multicloud`.
 
 - `description` - (Optional) A description for the Kubernetes cluster.
 
@@ -113,10 +195,6 @@ The following arguments are supported:
 
 - `cni` - (Required) The Container Network Interface (CNI) for the Kubernetes cluster.
 ~> **Important:** Updates to this field will recreate a new resource.
-
-- `enable_dashboard` - (Defaults to `false`) Enables the [Kubernetes dashboard](https://github.com/kubernetes/dashboard) for the Kubernetes cluster.
-
-- `ingress` - (Defaults to `none`) The [ingress controller](https://kubernetes.io/docs/concepts/services-networking/ingress-controllers/) to be deployed on the Kubernetes cluster.
 
 - `tags` - (Optional) The tags associated with the Kubernetes cluster.
 

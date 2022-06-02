@@ -2,17 +2,25 @@ package scaleway
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net"
 	"net/http"
+	"strconv"
 	"strings"
 	"time"
 
+	"github.com/hashicorp/go-cty/cty"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/scaleway/scaleway-sdk-go/namegenerator"
 	"github.com/scaleway/scaleway-sdk-go/scw"
-	"golang.org/x/xerrors"
 )
+
+// DefaultWaitRetryInterval is used to set the retry interval to 0 during acceptance tests
+var DefaultWaitRetryInterval *time.Duration
 
 // RegionalID represents an ID that is linked with a region, eg fr-par/11111111-1111-1111-1111-111111111111
 type RegionalID struct {
@@ -33,7 +41,7 @@ func newRegionalID(region scw.Region, id string) RegionalID {
 
 func expandRegionalID(id interface{}) RegionalID {
 	regionalID := RegionalID{}
-	tab := strings.SplitN(id.(string), "/", -1)
+	tab := strings.Split(id.(string), "/")
 	if len(tab) != 2 {
 		regionalID.ID = id.(string)
 	} else {
@@ -64,7 +72,7 @@ func newZonedID(zone scw.Zone, id string) ZonedID {
 
 func expandZonedID(id interface{}) ZonedID {
 	zonedID := ZonedID{}
-	tab := strings.SplitN(id.(string), "/", -1)
+	tab := strings.Split(id.(string), "/")
 	if len(tab) != 2 {
 		zonedID.ID = id.(string)
 	} else {
@@ -77,8 +85,8 @@ func expandZonedID(id interface{}) ZonedID {
 }
 
 // parseLocalizedID parses a localizedID and extracts the resource locality and id.
-func parseLocalizedID(localizedID string) (locality string, ID string, err error) {
-	tab := strings.SplitN(localizedID, "/", -1)
+func parseLocalizedID(localizedID string) (locality string, id string, err error) {
+	tab := strings.Split(localizedID, "/")
 	if len(tab) != 2 {
 		return "", localizedID, fmt.Errorf("cant parse localized id: %s", localizedID)
 	}
@@ -87,7 +95,7 @@ func parseLocalizedID(localizedID string) (locality string, ID string, err error
 
 // parseLocalizedNestedID parses a localizedNestedID and extracts the resource locality, the inner and outer id.
 func parseLocalizedNestedID(localizedID string) (locality string, innerID, outerID string, err error) {
-	tab := strings.SplitN(localizedID, "/", -1)
+	tab := strings.Split(localizedID, "/")
 	if len(tab) != 3 {
 		return "", "", localizedID, fmt.Errorf("cant parse localized id: %s", localizedID)
 	}
@@ -98,7 +106,7 @@ func parseLocalizedNestedID(localizedID string) (locality string, innerID, outer
 func parseZonedID(zonedID string) (zone scw.Zone, id string, err error) {
 	locality, id, err := parseLocalizedID(zonedID)
 	if err != nil {
-		return
+		return zone, id, err
 	}
 
 	zone, err = scw.ParseZone(locality)
@@ -154,7 +162,6 @@ func newRegionalIDString(region scw.Region, id string) string {
 // terraformResourceData is an interface for *schema.ResourceData. (used for mock)
 type terraformResourceData interface {
 	HasChange(string) bool
-	GetOkExists(string) (interface{}, bool)
 	GetOk(string) (interface{}, bool)
 	Get(string) interface{}
 	Set(string, interface{}) error
@@ -169,7 +176,7 @@ var ErrZoneNotFound = fmt.Errorf("could not detect zone. Scaleway uses regions a
 //  - zone field of the resource data
 //  - default zone from config
 func extractZone(d terraformResourceData, meta *Meta) (scw.Zone, error) {
-	rawZone, exist := d.GetOkExists("zone")
+	rawZone, exist := d.GetOk("zone")
 	if exist {
 		return scw.ParseZone(rawZone.(string))
 	}
@@ -189,7 +196,7 @@ var ErrRegionNotFound = fmt.Errorf("could not detect region")
 //  - region field of the resource data
 //  - default region from config
 func extractRegion(d terraformResourceData, meta *Meta) (scw.Region, error) {
-	rawRegion, exist := d.GetOkExists("region")
+	rawRegion, exist := d.GetOk("region")
 	if exist {
 		return scw.ParseRegion(rawRegion.(string))
 	}
@@ -209,7 +216,7 @@ func isHTTPCodeError(err error, statusCode int) bool {
 	}
 
 	responseError := &scw.ResponseError{}
-	if xerrors.As(err, &responseError) && responseError.StatusCode == statusCode {
+	if errors.As(err, &responseError) && responseError.StatusCode == statusCode {
 		return true
 	}
 	return false
@@ -218,13 +225,25 @@ func isHTTPCodeError(err error, statusCode int) bool {
 // is404Error returns true if err is an HTTP 404 error
 func is404Error(err error) bool {
 	notFoundError := &scw.ResourceNotFoundError{}
-	return isHTTPCodeError(err, http.StatusNotFound) || xerrors.As(err, &notFoundError)
+	return isHTTPCodeError(err, http.StatusNotFound) || errors.As(err, &notFoundError)
+}
+
+func is412Error(err error) bool {
+	preConditionFailedError := &scw.PreconditionFailedError{}
+	return isHTTPCodeError(err, http.StatusPreconditionFailed) || errors.As(err, &preConditionFailedError)
 }
 
 // is403Error returns true if err is an HTTP 403 error
 func is403Error(err error) bool {
 	permissionsDeniedError := &scw.PermissionsDeniedError{}
-	return isHTTPCodeError(err, http.StatusForbidden) || xerrors.As(err, &permissionsDeniedError)
+	return isHTTPCodeError(err, http.StatusForbidden) || errors.As(err, &permissionsDeniedError)
+}
+
+// is409Error return true is err is an HTTP 409 error
+func is409Error(err error) bool {
+	// check transient error
+	transientStateError := &scw.TransientStateError{}
+	return isHTTPCodeError(err, http.StatusConflict) || errors.As(err, &transientStateError)
 }
 
 // organizationIDSchema returns a standard schema for a organization_id
@@ -251,24 +270,62 @@ func projectIDSchema() *schema.Schema {
 // zoneSchema returns a standard schema for a zone
 func zoneSchema() *schema.Schema {
 	return &schema.Schema{
-		Type:         schema.TypeString,
-		Description:  "The zone you want to attach the resource to",
-		Optional:     true,
-		ForceNew:     true,
-		Computed:     true,
-		ValidateFunc: validationZone(),
+		Type:             schema.TypeString,
+		Description:      "The zone you want to attach the resource to",
+		Optional:         true,
+		ForceNew:         true,
+		Computed:         true,
+		ValidateDiagFunc: validateStringInSliceWithWarning(allZones(), "zone"),
 	}
+}
+
+func allZones() []string {
+	var allZones []string
+	for _, z := range scw.AllZones {
+		allZones = append(allZones, z.String())
+	}
+
+	return allZones
 }
 
 // regionSchema returns a standard schema for a zone
 func regionSchema() *schema.Schema {
+	var allRegions []string
+	for _, z := range scw.AllRegions {
+		allRegions = append(allRegions, z.String())
+	}
 	return &schema.Schema{
-		Type:         schema.TypeString,
-		Description:  "The region you want to attach the resource to",
-		Optional:     true,
-		ForceNew:     true,
-		Computed:     true,
-		ValidateFunc: validationRegion(),
+		Type:             schema.TypeString,
+		Description:      "The region you want to attach the resource to",
+		Optional:         true,
+		ForceNew:         true,
+		Computed:         true,
+		ValidateDiagFunc: validateStringInSliceWithWarning(allRegions, "region"),
+	}
+}
+
+// regionComputedSchema returns a standard schema for a zone
+func regionComputedSchema() *schema.Schema {
+	return &schema.Schema{
+		Type:        schema.TypeString,
+		Description: "The region of the resource",
+		Computed:    true,
+	}
+}
+
+// validateStringInSliceWithWarning helps to only returns warnings in case we got a non public locality passed
+func validateStringInSliceWithWarning(correctValues []string, field string) func(i interface{}, path cty.Path) diag.Diagnostics {
+	return func(i interface{}, path cty.Path) diag.Diagnostics {
+		_, rawErr := validation.StringInSlice(correctValues, true)(i, field)
+		var res diag.Diagnostics
+		for _, e := range rawErr {
+			res = append(res, diag.Diagnostic{
+				Severity:      diag.Warning,
+				Summary:       e.Error(),
+				AttributePath: path,
+			})
+		}
+		return res
 	}
 }
 
@@ -293,16 +350,15 @@ func flattenDuration(duration *time.Duration) interface{} {
 	return ""
 }
 
-func expandDuration(data interface{}) *time.Duration {
+func expandDuration(data interface{}) (*time.Duration, error) {
 	if data == nil || data == "" {
-		return nil
+		return nil, nil
 	}
 	d, err := time.ParseDuration(data.(string))
 	if err != nil {
-		// We panic as this should never happened. Data from state should be validate using a validate func
-		panic(err) // lintignore:R009
+		return nil, err
 	}
-	return &d
+	return &d, nil
 }
 
 func expandOrGenerateString(data interface{}, prefix string) string {
@@ -320,18 +376,40 @@ func expandStringWithDefault(data interface{}, defaultValue string) string {
 }
 
 func expandStrings(data interface{}) []string {
-	stringSlice := []string{}
+	var stringSlice []string
 	for _, s := range data.([]interface{}) {
 		stringSlice = append(stringSlice, s.(string))
 	}
 	return stringSlice
 }
 
-func expandStringsOrEmpty(data interface{}) []string {
-	if data == nil {
-		return []string{}
+func expandStringsPtr(data interface{}) *[]string {
+	var stringSlice []string
+	if _, ok := data.([]interface{}); !ok || data == nil {
+		return &stringSlice
 	}
-	stringSlice := []string{}
+	for _, s := range data.([]interface{}) {
+		stringSlice = append(stringSlice, s.(string))
+	}
+	return &stringSlice
+}
+
+func expandSliceIDsPtr(rawIDs interface{}) *[]string {
+	var stringSlice []string
+	if _, ok := rawIDs.([]interface{}); !ok || rawIDs == nil {
+		return &stringSlice
+	}
+	for _, s := range rawIDs.([]interface{}) {
+		stringSlice = append(stringSlice, expandID(s.(string)))
+	}
+	return &stringSlice
+}
+
+func expandStringsOrEmpty(data interface{}) []string {
+	var stringSlice []string
+	if _, ok := data.([]interface{}); !ok || data == nil {
+		return stringSlice
+	}
 	for _, s := range data.([]interface{}) {
 		stringSlice = append(stringSlice, s.(string))
 	}
@@ -371,6 +449,23 @@ func flattenSliceStringPtr(s []*string) interface{} {
 	return res
 }
 
+func flattenSliceString(s []string) interface{} {
+	res := make([]interface{}, 0, len(s))
+	for _, strPtr := range s {
+		res = append(res, strPtr)
+	}
+	return res
+}
+
+func flattenSliceIDs(certificates []string, zone scw.Zone) interface{} {
+	res := []interface{}(nil)
+	for _, certificateID := range certificates {
+		res = append(res, newZonedIDString(zone, certificateID))
+	}
+
+	return res
+}
+
 func expandStringPtr(data interface{}) *string {
 	if data == nil || data == "" {
 		return nil
@@ -399,28 +494,32 @@ func expandInt32Ptr(data interface{}) *int32 {
 	return scw.Int32Ptr(int32(data.(int)))
 }
 
-func expandIPNet(raw string) scw.IPNet {
-	if raw == "" {
-		return scw.IPNet{}
+func expandUint32Ptr(data interface{}) *uint32 {
+	if data == nil || data == "" {
+		return nil
 	}
-	var ipNet scw.IPNet
-	raw = `"` + raw + `"`
-	err := json.Unmarshal([]byte(raw), &ipNet)
-	if err != nil {
-		// We panic as this should never happen. Data from state should be validate using a validate func
-		panic(fmt.Errorf("%s could not be marshaled: %v", raw, err)) // lintignore:R009
-	}
-
-	return ipNet
+	return scw.Uint32Ptr(uint32(data.(int)))
 }
 
-func flattenIPNet(ipNet scw.IPNet) string {
+func expandIPNet(raw string) (scw.IPNet, error) {
+	if raw == "" {
+		return scw.IPNet{}, nil
+	}
+	var ipNet scw.IPNet
+	err := json.Unmarshal([]byte(strconv.Quote(raw)), &ipNet)
+	if err != nil {
+		return scw.IPNet{}, fmt.Errorf("%s could not be marshaled: %v", raw, err)
+	}
+
+	return ipNet, nil
+}
+
+func flattenIPNet(ipNet scw.IPNet) (string, error) {
 	raw, err := json.Marshal(ipNet)
 	if err != nil {
-		// We panic as this should never happen.
-		panic(err) // lintignore:R009
+		return "", err
 	}
-	return string(raw[1 : len(raw)-1]) // remove quotes
+	return string(raw[1 : len(raw)-1]), nil // remove quotes
 }
 
 func validateDuration() schema.SchemaValidateFunc {
@@ -437,41 +536,83 @@ func validateDuration() schema.SchemaValidateFunc {
 	}
 }
 
-func validateHour() schema.SchemaValidateFunc {
-	return func(i interface{}, s string) (strings []string, errors []error) {
-		integer, isInteger := i.(int)
-		if !isInteger {
-			return nil, []error{fmt.Errorf("%v is not an int", i)}
-		}
-		if integer < 0 || integer > 23 {
-			return nil, []error{fmt.Errorf("int is outside range 0-23 for value %d", integer)}
-		}
-		return nil, nil
+func flattenMap(m map[string]string) interface{} {
+	if m == nil {
+		return nil
 	}
+	flattenedMap := make(map[string]interface{})
+	for k, v := range m {
+		flattenedMap[k] = v
+	}
+	return flattenedMap
 }
 
-func diffSuppressFuncDuration(k, old, new string, d *schema.ResourceData) bool {
-	if old == new {
+func diffSuppressFuncDuration(k, oldValue, newValue string, d *schema.ResourceData) bool {
+	if oldValue == newValue {
 		return true
 	}
-	d1, err1 := time.ParseDuration(old)
-	d2, err2 := time.ParseDuration(new)
+	d1, err1 := time.ParseDuration(oldValue)
+	d2, err2 := time.ParseDuration(newValue)
 	if err1 != nil || err2 != nil {
 		return false
 	}
 	return d1 == d2
 }
 
-func diffSuppressFuncIgnoreCase(k, old, new string, d *schema.ResourceData) bool {
-	return strings.EqualFold(old, new)
+func diffSuppressFuncIgnoreCase(k, oldValue, newValue string, d *schema.ResourceData) bool {
+	return strings.EqualFold(oldValue, newValue)
 }
 
-func diffSuppressFuncIgnoreCaseAndHyphen(k, old, new string, d *schema.ResourceData) bool {
-	return strings.Replace(strings.ToLower(old), "-", "_", -1) == strings.Replace(strings.ToLower(new), "-", "_", -1)
+func diffSuppressFuncIgnoreCaseAndHyphen(k, oldValue, newValue string, d *schema.ResourceData) bool {
+	return strings.ReplaceAll(strings.ToLower(oldValue), "-", "_") == strings.ReplaceAll(strings.ToLower(newValue), "-", "_")
 }
 
 // diffSuppressFuncLocality is a SuppressDiffFunc to remove the locality from an ID when checking diff.
-// e.g. 2c1a1716-5570-4668-a50a-860c90beabf6 == fr-par/2c1a1716-5570-4668-a50a-860c90beabf6
-func diffSuppressFuncLocality(k, old, new string, d *schema.ResourceData) bool {
-	return expandID(old) == expandID(new)
+// e.g. 2c1a1716-5570-4668-a50a-860c90beabf6 == fr-par-1/2c1a1716-5570-4668-a50a-860c90beabf6
+func diffSuppressFuncLocality(k, oldValue, newValue string, d *schema.ResourceData) bool {
+	return expandID(oldValue) == expandID(newValue)
+}
+
+// TimedOut returns true if the error represents a "wait timed out" condition.
+// Specifically, TimedOut returns true if the error matches all these conditions:
+//  * err is of type resource.TimeoutError
+//  * TimeoutError.LastError is nil
+func TimedOut(err error) bool {
+	// This explicitly does *not* match wrapped TimeoutErrors
+	timeoutErr, ok := err.(*resource.TimeoutError) //nolint:errorlint // Explicitly does *not* match wrapped TimeoutErrors
+	return ok && timeoutErr.LastError == nil
+}
+
+func expandMapStringStringPtr(data interface{}) *map[string]string {
+	if data == nil {
+		return nil
+	}
+	m := make(map[string]string)
+	for k, v := range data.(map[string]interface{}) {
+		m[k] = v.(string)
+	}
+	return &m
+}
+
+func toUint32(number interface{}) *uint32 {
+	return scw.Uint32Ptr(number.(uint32))
+}
+
+func errorCheck(err error, message string) bool {
+	return strings.Contains(err.Error(), message)
+}
+
+// ErrCodeEquals returns true if the error matches all these conditions:
+//  * err is of type scw.Error
+//  * Error.Error() equals one of the passed codes
+func ErrCodeEquals(err error, codes ...string) bool {
+	var scwErr scw.SdkError
+	if errors.As(err, &scwErr) {
+		for _, code := range codes {
+			if scwErr.Error() == code {
+				return true
+			}
+		}
+	}
+	return false
 }

@@ -88,6 +88,14 @@ func resourceScalewayInstanceSecurityGroup() *schema.Resource {
 				Optional:    true,
 				Default:     true,
 			},
+			"tags": {
+				Type: schema.TypeList,
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
+				Optional:    true,
+				Description: "The tags associated with the security group",
+			},
 			"zone":            zoneSchema(),
 			"organization_id": organizationIDSchema(),
 			"project_id":      projectIDSchema(),
@@ -101,7 +109,7 @@ func resourceScalewayInstanceSecurityGroupCreate(ctx context.Context, d *schema.
 		return diag.FromErr(err)
 	}
 
-	res, err := instanceAPI.CreateSecurityGroup(&instance.CreateSecurityGroupRequest{
+	req := &instance.CreateSecurityGroupRequest{
 		Name:                  expandOrGenerateString(d.Get("name"), "sg"),
 		Zone:                  zone,
 		Project:               expandStringPtr(d.Get("project_id")),
@@ -110,7 +118,12 @@ func resourceScalewayInstanceSecurityGroupCreate(ctx context.Context, d *schema.
 		InboundDefaultPolicy:  instance.SecurityGroupPolicy(d.Get("inbound_default_policy").(string)),
 		OutboundDefaultPolicy: instance.SecurityGroupPolicy(d.Get("outbound_default_policy").(string)),
 		EnableDefaultSecurity: expandBoolPtr(d.Get("enable_default_security")),
-	}, scw.WithContext(ctx))
+	}
+	tags := expandStrings(d.Get("tags"))
+	if len(tags) > 0 {
+		req.Tags = tags
+	}
+	res, err := instanceAPI.CreateSecurityGroup(req, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -151,6 +164,7 @@ func resourceScalewayInstanceSecurityGroupRead(ctx context.Context, d *schema.Re
 	_ = d.Set("inbound_default_policy", res.SecurityGroup.InboundDefaultPolicy.String())
 	_ = d.Set("outbound_default_policy", res.SecurityGroup.OutboundDefaultPolicy.String())
 	_ = d.Set("enable_default_security", res.SecurityGroup.EnableDefaultSecurity)
+	_ = d.Set("tags", res.SecurityGroup.Tags)
 
 	if !d.Get("external_rules").(bool) {
 		inboundRules, outboundRules, err := getSecurityGroupRules(ctx, instanceAPI, zone, ID, d)
@@ -195,13 +209,28 @@ func getSecurityGroupRules(ctx context.Context, instanceAPI *instance.API, zone 
 	for direction := range apiRules {
 		for index, apiRule := range apiRules[direction] {
 			if index < len(stateRules[direction]) {
-				stateRule := securityGroupRuleExpand(stateRules[direction][index])
-				if !securityGroupRuleEquals(stateRule, apiRule) {
-					stateRules[direction][index] = securityGroupRuleFlatten(apiRule)
+				stateRule, errGroup := securityGroupRuleExpand(stateRules[direction][index])
+				if errGroup != nil {
+					return nil, nil, errGroup
+				}
+				if ok, _ := securityGroupRuleEquals(stateRule, apiRule); !ok {
+					stateRules[direction][index], err = securityGroupRuleFlatten(apiRule)
+					if err != nil {
+						return nil, nil, err
+					}
 				}
 			} else {
-				stateRules[direction] = append(stateRules[direction], securityGroupRuleFlatten(apiRule))
+				rulesGroup, err := securityGroupRuleFlatten(apiRule)
+				if err != nil {
+					return nil, nil, err
+				}
+				stateRules[direction] = append(stateRules[direction], rulesGroup)
 			}
+		}
+		// There are rule in tfstate not present in api
+		if len(apiRules[direction]) != len(stateRules[direction]) {
+			// Truncate stateRules with apiRules length
+			stateRules[direction] = stateRules[direction][0:len(apiRules[direction])]
 		}
 	}
 
@@ -238,6 +267,12 @@ func resourceScalewayInstanceSecurityGroupUpdate(ctx context.Context, d *schema.
 		Description:           expandStringPtr(description),
 		InboundDefaultPolicy:  &inboundDefaultPolicy,
 		OutboundDefaultPolicy: &outboundDefaultPolicy,
+		Tags:                  scw.StringsPtr([]string{}),
+	}
+
+	tags := expandStrings(d.Get("tags"))
+	if len(tags) > 0 {
+		updateReq.Tags = scw.StringsPtr(expandStrings(d.Get("tags")))
 	}
 
 	if d.HasChange("enable_default_security") {
@@ -305,8 +340,10 @@ func updateSecurityGroupeRules(ctx context.Context, d *schema.ResourceData, zone
 	for direction := range stateRules {
 		// Loop for all state rules in this direction
 		for index, rawStateRule := range stateRules[direction] {
-			apiRule := (*instance.SecurityGroupRule)(nil)
-			stateRule := securityGroupRuleExpand(rawStateRule)
+			stateRule, err := securityGroupRuleExpand(rawStateRule)
+			if err != nil {
+				return err
+			}
 
 			// This happen when there is more rule in state than in the api. We create more rule in API.
 			if index >= len(apiRules[direction]) {
@@ -327,8 +364,8 @@ func updateSecurityGroupeRules(ctx context.Context, d *schema.ResourceData, zone
 			}
 
 			// We compare rule stateRule[index] and apiRule[index]. If they are different we update api rule to match state.
-			apiRule = apiRules[direction][index]
-			if !securityGroupRuleEquals(stateRule, apiRule) {
+			apiRule := apiRules[direction][index]
+			if ok, _ := securityGroupRuleEquals(stateRule, apiRule); !ok {
 				destPortFrom := stateRule.DestPortFrom
 				destPortTo := stateRule.DestPortTo
 				if destPortFrom == nil {
@@ -444,7 +481,7 @@ func securityGroupRuleSchema() *schema.Resource {
 }
 
 // securityGroupRuleExpand transform a state rule to an api one.
-func securityGroupRuleExpand(i interface{}) *instance.SecurityGroupRule {
+func securityGroupRuleExpand(i interface{}) (*instance.SecurityGroupRule, error) {
 	rawRule := i.(map[string]interface{})
 
 	portFrom, portTo := uint32(0), uint32(0)
@@ -466,11 +503,15 @@ func securityGroupRuleExpand(i interface{}) *instance.SecurityGroupRule {
 		ipRange = "0.0.0.0/0"
 	}
 
+	ipnetRange, err := expandIPNet(ipRange)
+	if err != nil {
+		return nil, err
+	}
 	rule := &instance.SecurityGroupRule{
 		DestPortFrom: &portFrom,
 		DestPortTo:   &portTo,
 		Protocol:     instance.SecurityGroupRuleProtocol(rawRule["protocol"].(string)),
-		IPRange:      expandIPNet(ipRange),
+		IPRange:      ipnetRange,
 		Action:       instance.SecurityGroupRuleAction(action),
 	}
 
@@ -484,11 +525,11 @@ func securityGroupRuleExpand(i interface{}) *instance.SecurityGroupRule {
 		rule.DestPortTo = nil
 	}
 
-	return rule
+	return rule, nil
 }
 
-// securityGroupRuleFlatten transform a api rule to an state one.
-func securityGroupRuleFlatten(rule *instance.SecurityGroupRule) map[string]interface{} {
+// securityGroupRuleFlatten transform an api rule to a state one.
+func securityGroupRuleFlatten(rule *instance.SecurityGroupRule) (map[string]interface{}, error) {
 	portFrom, portTo := uint32(0), uint32(0)
 
 	if rule.DestPortFrom != nil {
@@ -499,17 +540,21 @@ func securityGroupRuleFlatten(rule *instance.SecurityGroupRule) map[string]inter
 		portTo = *rule.DestPortTo
 	}
 
+	ipnetRange, err := flattenIPNet(rule.IPRange)
+	if err != nil {
+		return nil, err
+	}
 	res := map[string]interface{}{
 		"protocol":   rule.Protocol.String(),
-		"ip_range":   flattenIPNet(rule.IPRange),
+		"ip_range":   ipnetRange,
 		"port_range": fmt.Sprintf("%d-%d", portFrom, portTo),
 		"action":     rule.Action.String(),
 	}
-	return res
+	return res, nil
 }
 
 // securityGroupRuleEquals compares two security group rule.
-func securityGroupRuleEquals(ruleA, ruleB *instance.SecurityGroupRule) bool {
+func securityGroupRuleEquals(ruleA, ruleB *instance.SecurityGroupRule) (bool, error) {
 	zeroIfNil := func(v *uint32) uint32 {
 		if v == nil {
 			return 0
@@ -518,11 +563,19 @@ func securityGroupRuleEquals(ruleA, ruleB *instance.SecurityGroupRule) bool {
 	}
 	portFromEqual := zeroIfNil(ruleA.DestPortFrom) == zeroIfNil(ruleB.DestPortFrom)
 	portToEqual := zeroIfNil(ruleA.DestPortTo) == zeroIfNil(ruleB.DestPortTo)
-	ipEqual := flattenIPNet(ruleA.IPRange) == flattenIPNet(ruleB.IPRange)
+	ipRangeA, err := flattenIPNet(ruleA.IPRange)
+	if err != nil {
+		return false, err
+	}
+	ipRangeB, err := flattenIPNet(ruleB.IPRange)
+	if err != nil {
+		return false, err
+	}
+	ipEqual := ipRangeA == ipRangeB
 
 	return ruleA.Action == ruleB.Action &&
 		portFromEqual &&
 		portToEqual &&
 		ipEqual &&
-		ruleA.Protocol == ruleB.Protocol
+		ruleA.Protocol == ruleB.Protocol, nil
 }

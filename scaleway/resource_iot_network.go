@@ -2,6 +2,7 @@ package scaleway
 
 import (
 	"context"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -76,10 +77,6 @@ func resourceScalewayIotNetworkCreate(ctx context.Context, d *schema.ResourceDat
 		return diag.FromErr(err)
 	}
 
-	////
-	// Create network
-	////
-
 	req := &iot.CreateNetworkRequest{
 		Region: region,
 		Name:   expandOrGenerateString(d.Get("name"), "network"),
@@ -98,7 +95,7 @@ func resourceScalewayIotNetworkCreate(ctx context.Context, d *schema.ResourceDat
 
 	d.SetId(newRegionalIDString(region, res.Network.ID))
 
-	// Secret key cannot be retreived later
+	// Secret key cannot be retrieved later
 	_ = d.Set("secret", res.Secret)
 
 	return resourceScalewayIotNetworkRead(ctx, d, meta)
@@ -110,9 +107,6 @@ func resourceScalewayIotNetworkRead(ctx context.Context, d *schema.ResourceData,
 		return diag.FromErr(err)
 	}
 
-	////
-	// Read Network
-	////
 	network, err := iotAPI.GetNetwork(&iot.GetNetworkRequest{
 		Region:    region,
 		NetworkID: networkID,
@@ -129,7 +123,7 @@ func resourceScalewayIotNetworkRead(ctx context.Context, d *schema.ResourceData,
 	_ = d.Set("type", network.Type.String())
 	_ = d.Set("endpoint", network.Endpoint)
 	_ = d.Set("hub_id", newRegionalID(region, network.HubID).String())
-	_ = d.Set("created_at", network.CreatedAt.String())
+	_ = d.Set("created_at", network.CreatedAt.Format(time.RFC3339))
 	_ = d.Set("topic_prefix", network.TopicPrefix)
 
 	return nil
@@ -141,9 +135,8 @@ func resourceScalewayIotNetworkDelete(ctx context.Context, d *schema.ResourceDat
 		return diag.FromErr(err)
 	}
 
-	////
-	// Delete Network
-	////
+	hubID := expandZonedID(d.Get("hub_id").(string)).ID
+
 	err = iotAPI.DeleteNetwork(&iot.DeleteNetworkRequest{
 		Region:    region,
 		NetworkID: networkID,
@@ -152,6 +145,11 @@ func resourceScalewayIotNetworkDelete(ctx context.Context, d *schema.ResourceDat
 		if !is404Error(err) {
 			return diag.FromErr(err)
 		}
+	}
+
+	_, err = waitIotHub(ctx, iotAPI, region, hubID, d.Timeout(schema.TimeoutDelete))
+	if err != nil && !is404Error(err) {
+		return diag.FromErr(err)
 	}
 
 	return nil

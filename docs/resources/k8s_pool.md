@@ -28,7 +28,7 @@ resource "scaleway_k8s_pool" "bill" {
   max_size           = 10
   autoscaling        = true
   autohealing        = true
-  container_runtime  = "docker"
+  container_runtime  = "containerd"
   placement_group_id = "1267e3fd-a51c-49ed-ad12-857092ee3a3d"
 }
 ```
@@ -53,6 +53,7 @@ The following arguments are supported:
 - `max_size` - (Defaults to `size`) The maximum size of the pool, used by the autoscaling feature.
 
 - `tags` - (Optional) The tags associated with the pool.
+  > Note: As mentionned in [this document](https://github.com/scaleway/scaleway-cloud-controller-manager/blob/master/docs/tags.md#taints), taints of a pool's nodes are applied using tags. (Example: "taint=taintName=taineValue:Effect")
 
 - `placement_group_id` - (Optional) The [placement group](https://developers.scaleway.com/en/products/instance/api/#placement-groups-d8f653) the nodes of the pool will be attached to.
 ~> **Important:** Updates to this field will recreate a new resource.
@@ -62,7 +63,7 @@ The following arguments are supported:
 
 - `autohealing` - (Defaults to `false`) Enables the autohealing feature for this pool.
 
-- `container_runtime` - (Defaults to `docker`) The container runtime of the pool.
+- `container_runtime` - (Defaults to `containerd`) The container runtime of the pool.
 ~> **Important:** Updates to this field will recreate a new resource.
 
 - `kubelet_args` - (Optional) The Kubelet arguments to be used by this pool

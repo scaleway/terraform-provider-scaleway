@@ -58,11 +58,13 @@ func TestAccScalewayInstanceVolume_Basic(t *testing.T) {
 					resource "scaleway_instance_volume" "test" {
 						type       = "l_ssd"
 						size_in_gb = 20
+						tags = ["test-terraform"]
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayInstanceVolumeExists(tt, "scaleway_instance_volume.test"),
 					resource.TestCheckResourceAttr("scaleway_instance_volume.test", "size_in_gb", "20"),
+					resource.TestCheckResourceAttr("scaleway_instance_volume.test", "tags.0", "test-terraform"),
 				),
 			},
 			{
@@ -77,6 +79,7 @@ func TestAccScalewayInstanceVolume_Basic(t *testing.T) {
 					testAccCheckScalewayInstanceVolumeExists(tt, "scaleway_instance_volume.test"),
 					resource.TestCheckResourceAttr("scaleway_instance_volume.test", "name", "terraform-test"),
 					resource.TestCheckResourceAttr("scaleway_instance_volume.test", "size_in_gb", "20"),
+					resource.TestCheckResourceAttr("scaleway_instance_volume.test", "tags.#", "0"),
 				),
 			},
 		},
@@ -168,6 +171,38 @@ func TestAccScalewayInstanceVolume_ResizeBlock(t *testing.T) {
 					testAccCheckScalewayInstanceVolumeExists(tt, "scaleway_instance_volume.main"),
 					resource.TestCheckResourceAttr("scaleway_instance_volume.main", "size_in_gb", "30"),
 				),
+			},
+		},
+	})
+}
+
+func TestAccScalewayInstanceVolume_ResizeNotBlock(t *testing.T) {
+	t.Skip("Skipping Expected error provoking acceptance test fail")
+	tt := NewTestTools(t)
+	defer tt.Cleanup()
+	resource.Test(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      testAccCheckScalewayInstanceVolumeDestroy(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource "scaleway_instance_volume" "main" {
+						type       = "l_ssd"
+						size_in_gb = 20
+					}`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayInstanceVolumeExists(tt, "scaleway_instance_volume.main"),
+					resource.TestCheckResourceAttr("scaleway_instance_volume.main", "size_in_gb", "20"),
+				),
+			},
+			{
+				Config: `
+					resource "scaleway_instance_volume" "main" {
+						type       = "l_ssd"
+						size_in_gb = 30
+					}`,
+				ExpectError: regexp.MustCompile("only block volume can be resized"),
 			},
 		},
 	})

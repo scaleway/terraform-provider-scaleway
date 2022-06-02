@@ -8,6 +8,8 @@ description: |-
 
 Creates and manages Scaleway Compute Instance servers. For more information, see [the documentation](https://developers.scaleway.com/en/products/instance/api/#servers-8bf7d7).
 
+Please check our [FAQ - Instances](https://www.scaleway.com/en/docs/faq/instances).
+
 ## Examples
 
 ### Basic
@@ -110,6 +112,23 @@ resource "scaleway_instance_server" "web" {
 }
 ```
 
+### With private network
+
+```hcl
+resource scaleway_vpc_private_network pn01 {
+    name = "private_network_instance"
+}
+
+resource "scaleway_instance_server" "base" {
+  image = "ubuntu_focal"
+  type  = "DEV1-S"
+
+  private_network {
+    pn_id = scaleway_vpc_private_network.pn01.id
+  }
+}
+```
+
 ## Arguments Reference
 
 The following arguments are supported:
@@ -118,12 +137,12 @@ The following arguments are supported:
 You find all the available types on the [pricing page](https://www.scaleway.com/en/pricing/).
 Updates to this field will recreate a new resource.
 
-[//]: # (TODO: Improve me)
-
 - `image` - (Required) The UUID or the label of the base image used by the server. You can use [this endpoint](https://api-marketplace.scaleway.com/images?page=1&per_page=100)
 to find either the right `label` or the right local image `ID` for a given `type`.
 
-[//]: # (TODO: Improve me)
+You can check the available labels with our [CLI](https://www.scaleway.com/en/docs/compute/instances/api-cli/creating-managing-instances-with-cliv2/). ```scw marketplace image list```
+
+To retrieve more information by label please use: ```scw marketplace image get label=<LABEL>```
 
 - `name` - (Optional) The name of the server.
 
@@ -164,8 +183,11 @@ attached to the server. Updates to this field will trigger a stop/start of the s
   Use the `cloud-init` key to use [cloud-init](https://cloudinit.readthedocs.io/en/latest/) on your instance.
   You can define values using:
     - string
-    - UTF-8 encoded file content using [file](https://www.terraform.io/docs/configuration/functions/file.html)
-    - Binary files using [filebase64](https://www.terraform.io/docs/configuration/functions/filebase64.html).
+    - UTF-8 encoded file content using [file](https://www.terraform.io/language/functions/file)
+    - Binary files using [filebase64](https://www.terraform.io/language/functions/filebase64).
+
+- `private_network` - (Optional) The private network associated with the server.
+   Use the `pn_id` key to attach a [private_network](https://developers.scaleway.com/en/products/instance/api/#private-nics-a42eea) on your instance.
 
 - `boot_type` - The boot Type of the server. Possible values are: `local`, `bootscript` or `rescue`.
 
@@ -175,6 +197,20 @@ attached to the server. Updates to this field will trigger a stop/start of the s
 
 - `project_id` - (Defaults to [provider](../index.md#project_id) `project_id`) The ID of the project the server is associated with.
 
+
+## Private Network
+
+~> **Important:** Updates to `private_network` will recreate a new private network interface.
+
+- `pn_id` - (Required) The private network ID where to connect.
+- `mac_address` The private NIC MAC address.
+- `status` The private NIC state.
+- `zone` - (Defaults to [provider](../index.md#zone) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which the server must be created.
+
+~> **Important:**
+
+- You can only attach an instance in the same [zone](../guides/regions_and_zones.md#zones) as a private network.
+- Instance supports maximum 8 different private networks.
 
 ## Attributes Reference
 

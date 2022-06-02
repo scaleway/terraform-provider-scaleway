@@ -12,9 +12,8 @@ import (
 
 func init() {
 	resource.AddTestSweepers("scaleway_instance_ip", &resource.Sweeper{
-		Name:         "scaleway_instance_ip",
-		F:            testSweepInstanceIP,
-		Dependencies: []string{"scaleway_instance_server"},
+		Name: "scaleway_instance_ip",
+		F:    testSweepInstanceIP,
 	})
 }
 
@@ -22,7 +21,7 @@ func testSweepInstanceIP(_ string) error {
 	return sweepZones(scw.AllZones, func(scwClient *scw.Client, zone scw.Zone) error {
 		instanceAPI := instance.NewAPI(scwClient)
 
-		listIPs, err := instanceAPI.ListIPs(&instance.ListIPsRequest{}, scw.WithAllPages())
+		listIPs, err := instanceAPI.ListIPs(&instance.ListIPsRequest{Zone: zone}, scw.WithAllPages())
 		if err != nil {
 			l.Warningf("error listing ips in (%s) in sweeper: %s", zone, err)
 			return nil
@@ -30,7 +29,8 @@ func testSweepInstanceIP(_ string) error {
 
 		for _, ip := range listIPs.IPs {
 			err := instanceAPI.DeleteIP(&instance.DeleteIPRequest{
-				IP: ip.ID,
+				IP:   ip.ID,
+				Zone: zone,
 			})
 			if err != nil {
 				return fmt.Errorf("error deleting ip in sweeper: %s", err)
@@ -87,6 +87,38 @@ func TestAccScalewayInstanceIP_WithZone(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayInstanceIPExists(tt, "scaleway_instance_ip.base"),
 					resource.TestCheckResourceAttr("scaleway_instance_ip.base", "zone", "nl-ams-1"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccScalewayInstanceIP_Tags(t *testing.T) {
+	tt := NewTestTools(t)
+	defer tt.Cleanup()
+	resource.ParallelTest(t, resource.TestCase{
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      testAccCheckScalewayInstanceIPDestroy(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+						resource "scaleway_instance_ip" "main" {}
+					`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayInstanceIPExists(tt, "scaleway_instance_ip.main"),
+					resource.TestCheckNoResourceAttr("scaleway_instance_ip.main", "tags"),
+				),
+			},
+			{
+				Config: `
+						resource "scaleway_instance_ip" "main" {
+							tags = ["foo", "bar"]
+						}
+					`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayInstanceIPExists(tt, "scaleway_instance_ip.main"),
+					resource.TestCheckResourceAttr("scaleway_instance_ip.main", "tags.0", "foo"),
+					resource.TestCheckResourceAttr("scaleway_instance_ip.main", "tags.1", "bar"),
 				),
 			},
 		},
@@ -198,20 +230,20 @@ func testAccCheckScalewayInstanceIPDestroy(tt *TestTools) resource.TestCheckFunc
 				return err
 			}
 
-			_, err = instanceAPI.GetIP(&instance.GetIPRequest{
+			_, errIP := instanceAPI.GetIP(&instance.GetIPRequest{
 				Zone: zone,
 				IP:   id,
 			})
 
 			// If no error resource still exist
-			if err == nil {
+			if errIP == nil {
 				return fmt.Errorf("resource %s(%s) still exist", rs.Type, rs.Primary.ID)
 			}
 
 			// Unexpected api error we return it
 			// We check for 403 because instance API return 403 for deleted IP
-			if !is404Error(err) && !is403Error(err) {
-				return err
+			if !is404Error(errIP) && !is403Error(errIP) {
+				return errIP
 			}
 		}
 

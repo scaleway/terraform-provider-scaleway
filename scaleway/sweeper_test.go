@@ -1,6 +1,7 @@
 package scaleway
 
 import (
+	"context"
 	"testing"
 
 	"github.com/aws/aws-sdk-go/service/s3"
@@ -39,7 +40,8 @@ func sweepRegions(regions []scw.Region, f func(scwClient *scw.Client, region scw
 // sharedClientForZone returns a Scaleway client needed for the sweeper
 // functions for a given zone
 func sharedClientForZone(zone scw.Zone) (*scw.Client, error) {
-	meta, err := buildMeta(&MetaConfig{
+	ctx := context.Background()
+	meta, err := buildMeta(ctx, &metaConfig{
 		terraformVersion: "terraform-tests",
 		forceZone:        zone,
 	})
@@ -51,7 +53,8 @@ func sharedClientForZone(zone scw.Zone) (*scw.Client, error) {
 
 // sharedS3ClientForRegion returns a common S3 client needed for the sweeper
 func sharedS3ClientForRegion(region scw.Region) (*s3.S3, error) {
-	meta, err := buildMeta(&MetaConfig{
+	ctx := context.Background()
+	meta, err := buildMeta(ctx, &metaConfig{
 		terraformVersion: "terraform-tests",
 		forceZone:        region.GetZones()[0],
 	})

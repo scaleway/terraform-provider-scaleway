@@ -1,11 +1,14 @@
-# Scaleway Terraform Provider
+# Terraform Provider for Scaleway
 
 - [Provider Documentation Website](https://www.terraform.io/docs/providers/scaleway/index.html)
 - [![Gitter chat](https://badges.gitter.im/hashicorp-terraform/Lobby.png)](https://gitter.im/hashicorp-terraform/Lobby)
 - Mailing list: [Google Groups](http://groups.google.com/group/terraform-tool)
-- Slack: [Scaleway-community Slack (#terraform)](https://app.slack.com/client/T7YEXCR7X/C015RD31DNK)
+- Slack: [Scaleway-community Slack][slack-scaleway] ([#terraform][slack-terraform])
+- [![Go Report Card](https://goreportcard.com/badge/github.com/terraform-providers/terraform-provider-scaleway)](https://goreportcard.com/report/github.com/terraform-providers/terraform-provider-scaleway)
+    
 
-<img src="https://cdn.rawgit.com/hashicorp/terraform-website/master/content/source/assets/images/logo-hashicorp.svg" width="600px">
+[slack-scaleway]: https://slack.scaleway.com/
+[slack-terraform]: https://scaleway-community.slack.com/app_redirect?channel=terraform
 
 ## Requirements
 
@@ -38,6 +41,8 @@ If you wish to work on the provider, you'll first need [Go](http://www.golang.or
 
 To compile the provider, run `make build`. This will build the provider and put the provider binary in the `$GOPATH/bin` directory.
 
+You have the option to [override](https://www.terraform.io/cli/config/config-file#development-overrides-for-provider-developers) the intended version
+
 ```sh
 $ make build
 ...
@@ -45,16 +50,4 @@ $ $GOPATH/bin/terraform-provider-scaleway
 ...
 ```
 
-In order to test the provider, you can simply run `make test`.
-
-```sh
-$ make test
-```
-
-In order to run the full suite of Acceptance tests, run `make testacc`.
-
-*Note:* Acceptance tests create real resources, and often cost money to run.
-
-```sh
-$ make testacc
-```
+Please refer to the [TESTING.md](TESTING.md) for testing.

@@ -1,72 +1,66 @@
 package scaleway
 
 import (
-	"regexp"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/stretchr/testify/assert"
 )
 
-type testCase struct {
-	val         interface{}
-	f           schema.SchemaValidateFunc
-	expectedErr *regexp.Regexp
-}
+func TestValidationUUIDWithInvalidUUIDReturnError(t *testing.T) {
+	assert := assert.New(t)
 
-func runTestCases(t *testing.T, cases []testCase) {
-	matchErr := func(errs []error, r *regexp.Regexp) bool {
-		// err must match one provided
-		for _, err := range errs {
-			if r.MatchString(err.Error()) {
-				return true
-			}
-		}
-
-		return false
-	}
-
-	for i, tc := range cases {
-		_, errs := tc.f(tc.val, "test_property")
-
-		if len(errs) == 0 && tc.expectedErr == nil {
-			continue
-		}
-
-		if len(errs) != 0 && tc.expectedErr == nil {
-			t.Fatalf("expected test case %d to produce no errors, got %v", i, errs)
-		}
-
-		if !matchErr(errs, tc.expectedErr) {
-			t.Fatalf("expected test case %d to produce error matching \"%s\", got %v", i, tc.expectedErr, errs)
-		}
+	for _, uuid := range []string{"fr-par/wrong-uuid/resource", "fr-par/wrong-uuid", "wrong-uuid"} {
+		warnings, errors := validationUUID()(uuid, "key")
+		assert.Empty(warnings)
+		assert.Len(errors, 1)
 	}
 }
 
-func TestValidationStringNotInSlice(t *testing.T) {
-	runTestCases(t, []testCase{
-		{
-			val:         "InvalidValue",
-			f:           validationStringNotInSlice([]string{"InvalidValue", "AnotherInvalidValue"}, false),
-			expectedErr: regexp.MustCompile(`expected [\w]+ not to be one of \[InvalidValue AnotherInvalidValue\], got InvalidValue`),
-		},
-		// ignore case
-		{
-			val:         "INVALIDVALUE",
-			f:           validationStringNotInSlice([]string{"InvalidValue", "AnotherInvalidValue"}, true),
-			expectedErr: regexp.MustCompile(`expected [\w]+ not to be one of \[InvalidValue AnotherInvalidValue\], got INVALIDVALUE`),
-		},
-		{
-			val: "VALIDVALUE",
-			f:   validationStringNotInSlice([]string{"ValidValue", "AnotherValidValue"}, false),
-		},
-		{
-			val: "ValidValue",
-			f:   validationStringNotInSlice([]string{"InvalidValue", "AnotherValidValue"}, false),
-		},
-		{
-			val:         1,
-			f:           validationStringNotInSlice([]string{"InvalidValue", "AnotherValidValue"}, false),
-			expectedErr: regexp.MustCompile(`expected type of [\w]+ to be string`),
-		},
-	})
+func TestValidationUUIDWithValidUUIDReturnNothing(t *testing.T) {
+	assert := assert.New(t)
+
+	warnings, errors := validationUUID()("6ba7b810-9dad-11d1-80b4-00c04fd430c8", "key")
+
+	assert.Empty(warnings)
+	assert.Empty(errors)
+}
+
+func TestValidationUUIDorUUIDWithLocalityWithValidUUIDReturnNothing(t *testing.T) {
+	assert := assert.New(t)
+
+	for _, uuid := range []string{"fr-par/6ba7b810-9dad-11d1-80b4-00c04fd430c8", "6ba7b810-9dad-11d1-80b4-00c04fd430c8"} {
+		warnings, errors := validationUUIDorUUIDWithLocality()(uuid, "key")
+		assert.Empty(warnings)
+		assert.Empty(errors)
+	}
+}
+
+func TestValidationUUIDorUUIDWithLocalityWithInvalidUUIDReturnError(t *testing.T) {
+	assert := assert.New(t)
+
+	for _, uuid := range []string{"fr-par/wrong-uuid/resource", "fr-par/wrong-uuid", "wrong-uuid"} {
+		warnings, errors := validationUUIDorUUIDWithLocality()(uuid, "key")
+		assert.Empty(warnings)
+		assert.Len(errors, 1)
+	}
+}
+
+func TestValidationUUIDWithLocalityWithValidUUIDReturnNothing(t *testing.T) {
+	assert := assert.New(t)
+
+	for _, uuid := range []string{"fr-par/6ba7b810-9dad-11d1-80b4-00c04fd430c8"} {
+		warnings, errors := validationUUIDWithLocality()(uuid, "key")
+		assert.Empty(warnings)
+		assert.Empty(errors)
+	}
+}
+
+func TestValidationUUIDWithLocalityWithInvalidUUIDReturnError(t *testing.T) {
+	assert := assert.New(t)
+
+	for _, uuid := range []string{"fr-par/wrong-uuid/resource", "fr-par/wrong-uuid", "wrong-uuid", "6ba7b810-9dad-11d1-80b4-00c04fd430c8"} {
+		warnings, errors := validationUUIDWithLocality()(uuid, "key")
+		assert.Empty(warnings)
+		assert.Len(errors, 1, uuid)
+	}
 }

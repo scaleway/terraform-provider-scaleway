@@ -15,7 +15,7 @@ To prepare the launch of all new Scaleway products, we completely changed the na
 
 -> **Note:** Before upgrading to `v2+`, it is recommended to upgrade to the most recent `1.X` version of the provider (`v1.17.2`) and ensure that your environment successfully runs [`terraform plan`](https://www.terraform.io/docs/commands/plan.html) without unexpected change or deprecation notice.
 
-It is recommended to use [version constraints when configuring Terraform providers](https://www.terraform.io/docs/configuration/providers.html#version-provider-versions).
+It is recommended to use [version constraints when configuring Terraform providers](https://www.terraform.io/language/providers/configuration#version-provider-versions).
 If you are following these recommendations, update the version constraints in your Terraform configuration and run [`terraform init`](https://www.terraform.io/docs/commands/init.html) to download the new version.
 
 Update to latest `1.X` version:
@@ -296,5 +296,39 @@ The [above example](#scaleway_server-gt-scaleway_instance_server) shows how this
 
 The `scaleway_bucket` was moved to the `object` product in the `storage` product category.
 
-It's behaviour remained the same, but we also added an [`acl` attribute](../resources/object_bucket.md#acl).
+It's behaviour remained the same, but we also added an [`acl` attribute](../resources/object_bucket.md#the-acl).
 This attribute takes canned ACLs.
+
+### LoadBalancer
+
+#### Remove: `scaleway_lb.release_ip`
+
+The attribute `scaleway_lb.release_ip` will be deprecated on the provider's next releases.
+
+It's behaviour remain the same, but the IPs will be managed by the resource `scaleway_lb_ip`.
+This prevents the destruction of the IP from releasing the LBs resources.
+
+v1.X
+
+```shell
+resource scaleway_lb_ip ip01 {
+}
+resource scaleway_lb main {
+    ip_id = scaleway_lb_ip.ip01.id
+    name = "release-ip"
+    type = "LB-S"
+    release_ip = true
+}
+```
+
+v2.X
+
+```shell
+resource scaleway_lb_ip ip01 {
+}
+resource scaleway_lb main {
+    ip_id = scaleway_lb_ip.ip01.id
+    name = "release-ip"
+    type = "LB-S"
+}
+```

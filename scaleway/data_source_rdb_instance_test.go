@@ -6,7 +6,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 )
 
-func TestAccScalewayDataSourceRDBInstance_Basic(t *testing.T) {
+func TestAccScalewayDataSourceRdbInstance_Basic(t *testing.T) {
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
 	resource.ParallelTest(t, resource.TestCase{
@@ -17,15 +17,7 @@ func TestAccScalewayDataSourceRDBInstance_Basic(t *testing.T) {
 			{
 				Config: `
 					resource "scaleway_rdb_instance" "test" {
-						name = "test-terraform"
-						engine = "PostgreSQL-11"
-						node_type = "db-dev-s"
-					}`,
-			},
-			{
-				Config: `
-					resource "scaleway_rdb_instance" "test" {
-						name = "test-terraform"
+						name = "data-rdb-test-terraform"
 						engine = "PostgreSQL-11"
 						node_type = "db-dev-s"
 					}
@@ -41,10 +33,10 @@ func TestAccScalewayDataSourceRDBInstance_Basic(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayRdbExists(tt, "scaleway_rdb_instance.test"),
 
-					resource.TestCheckResourceAttr("scaleway_rdb_instance.test", "name", "test-terraform"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.test", "name", "data-rdb-test-terraform"),
 					resource.TestCheckResourceAttrSet("data.scaleway_rdb_instance.test", "id"),
 
-					resource.TestCheckResourceAttr("data.scaleway_rdb_instance.test2", "name", "test-terraform"),
+					resource.TestCheckResourceAttr("data.scaleway_rdb_instance.test2", "name", "data-rdb-test-terraform"),
 					resource.TestCheckResourceAttrSet("data.scaleway_rdb_instance.test2", "id"),
 				),
 			},
