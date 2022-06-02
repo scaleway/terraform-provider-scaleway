@@ -129,7 +129,7 @@ The following arguments are supported:
 
 - `backup_same_region` - (Optional) Boolean to store logical backups in the same region as the database instance.
 
-- `settings` - Map of engine settings to be set.
+- `settings` - (Optional) Map of engine settings to be set. Using this option will override default config. Available settings for your engine can be found on scaleway console or fetched using [rdb engine list route](https://developers.scaleway.com/en/products/rdb/api/#get-1eafb7)
 
 - `tags` - (Optional) The tags associated with the Database Instance.
 
