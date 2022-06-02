@@ -238,10 +238,12 @@ func resourceScalewayInstanceVolumeDelete(ctx context.Context, d *schema.Resourc
 	}
 
 	err = resource.Retry(d.Timeout(schema.TimeoutDelete), func() *resource.RetryError {
-		volumeResp, err := instanceAPI.GetVolume(&instance.GetVolumeRequest{
-			Zone:     zone,
-			VolumeID: id,
-		})
+		volume, err := instanceAPI.WaitForVolume(&instance.WaitForVolumeRequest{
+			Zone:          zone,
+			VolumeID:      id,
+			RetryInterval: DefaultWaitRetryInterval,
+			Timeout:       scw.TimeDurationPtr(d.Timeout(schema.TimeoutCreate)),
+		}, scw.WithContext(ctx))
 		if err != nil {
 			if is404Error(err) {
 				return nil
@@ -249,7 +251,7 @@ func resourceScalewayInstanceVolumeDelete(ctx context.Context, d *schema.Resourc
 			return resource.NonRetryableError(err)
 		}
 
-		if volumeResp.Volume.Server != nil {
+		if volume.Server != nil {
 			return resource.RetryableError(fmt.Errorf("volume is still attached to a server"))
 		}
 
