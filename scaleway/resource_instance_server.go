@@ -677,13 +677,13 @@ func resourceScalewayInstanceServerUpdate(ctx context.Context, d *schema.Resourc
 
 	volumes := map[string]*instance.VolumeServerTemplate{}
 
-	if raw, hasVolumes := d.GetOk("additional_volume_ids"); d.HasChange("additional_volume_ids") {
+	if raw, hasAdditionalVolumes := d.GetOk("additional_volume_ids"); d.HasChange("additional_volume_ids") {
 		volumes["0"] = &instance.VolumeServerTemplate{
 			ID:   expandZonedID(d.Get("root_volume.0.volume_id")).ID,
 			Name: newRandomName("vol"), // name is ignored by the API, any name will work here
 		}
 
-		if !hasVolumes {
+		if !hasAdditionalVolumes {
 			raw = []interface{}{} // Set an empty list if not volumes exist
 		}
 
