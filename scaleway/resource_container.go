@@ -121,7 +121,8 @@ func resourceScalewayContainer() *schema.Resource {
 				Default:     container.ContainerProtocolHTTP1.String(),
 				ValidateFunc: validation.StringInSlice([]string{
 					container.ContainerProtocolH2c.String(),
-					container.ContainerProtocolHTTP1.String()}, false),
+					container.ContainerProtocolHTTP1.String(),
+				}, false),
 			},
 			"port": {
 				Type:        schema.TypeInt,
@@ -382,8 +383,9 @@ func resourceScalewayContainerDelete(ctx context.Context, d *schema.ResourceData
 	}
 
 	// check for container state
-	_, err = api.WaitForContainer(&container.WaitForContainerRequest{ContainerID: containerID,
-		Region: region,
+	_, err = api.WaitForContainer(&container.WaitForContainerRequest{
+		ContainerID: containerID,
+		Region:      region,
 	}, scw.WithContext(ctx))
 	if err != nil {
 		return diag.Errorf("unexpected waiting container error: %s", err)

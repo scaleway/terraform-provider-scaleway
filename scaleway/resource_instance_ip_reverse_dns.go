@@ -88,7 +88,6 @@ func resourceScalewayInstanceIPReverseDNSRead(ctx context.Context, d *schema.Res
 		IP:   ID,
 		Zone: zone,
 	}, scw.WithContext(ctx))
-
 	if err != nil {
 		// We check for 403 because instance API returns 403 for a deleted IP
 		if is404Error(err) || is403Error(err) {

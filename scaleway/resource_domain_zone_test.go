@@ -50,7 +50,6 @@ func testAccCheckScalewayDomainZoneExists(tt *TestTools, n string) resource.Test
 		listDNSZones, err := domainAPI.ListDNSZones(&domain.ListDNSZonesRequest{
 			DNSZone: fmt.Sprintf("%s.%s", rs.Primary.Attributes["subdomain"], rs.Primary.Attributes["domain"]),
 		})
-
 		if err != nil {
 			return err
 		}

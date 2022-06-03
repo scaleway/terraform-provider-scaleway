@@ -410,7 +410,7 @@ func resourceScalewayRdbInstanceRead(ctx context.Context, d *schema.ResourceData
 		_ = d.Set("volume_type", res.Volume.Type)
 		_ = d.Set("volume_size_in_gb", int(res.Volume.Size/scw.GB))
 	}
-	_ = d.Set("read_replicas", flattenRdbInstanceReadReplicas(res.ReadReplicas))
+	_ = d.Set("read_replicas", []string{})
 	_ = d.Set("region", string(region))
 	_ = d.Set("organization_id", res.OrganizationID)
 	_ = d.Set("project_id", res.ProjectID)
@@ -566,13 +566,13 @@ func resourceScalewayRdbInstanceUpdate(ctx context.Context, d *schema.ResourceDa
 				EnableHa:   scw.BoolPtr(d.Get("is_ha_cluster").(bool)),
 			})
 	}
-	for _, request := range upgradeInstanceRequests {
+	for i := range upgradeInstanceRequests {
 		_, err = waitForRDBInstance(ctx, rdbAPI, region, ID, d.Timeout(schema.TimeoutUpdate))
 		if err != nil && !is404Error(err) {
 			return diag.FromErr(err)
 		}
 
-		_, err = rdbAPI.UpgradeInstance(&request, scw.WithContext(ctx))
+		_, err = rdbAPI.UpgradeInstance(&upgradeInstanceRequests[i], scw.WithContext(ctx))
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -618,7 +618,8 @@ func resourceScalewayRdbInstanceUpdate(ctx context.Context, d *schema.ResourceDa
 			if remove {
 				err := rdbAPI.DeleteEndpoint(
 					&rdb.DeleteEndpointRequest{
-						EndpointID: endPointID, Region: region},
+						EndpointID: endPointID, Region: region,
+					},
 					scw.WithContext(ctx))
 				if err != nil {
 					diag.FromErr(err)
