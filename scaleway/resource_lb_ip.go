@@ -85,23 +85,10 @@ func resourceScalewayLbIPRead(ctx context.Context, d *schema.ResourceData, meta 
 		return diag.FromErr(err)
 	}
 
-	var ip *lbSDK.IP
-	err = resource.RetryContext(ctx, d.Timeout(schema.TimeoutRead), func() *resource.RetryError {
-		res, errGet := lbAPI.GetIP(&lbSDK.ZonedAPIGetIPRequest{
-			Zone: zone,
-			IPID: ID,
-		}, scw.WithContext(ctx))
-		if err != nil {
-			if is403Error(errGet) {
-				return resource.RetryableError(errGet)
-			}
-			return resource.NonRetryableError(errGet)
-		}
-
-		ip = res
-		return nil
-	})
-
+	ip, err := lbAPI.GetIP(&lbSDK.ZonedAPIGetIPRequest{
+		Zone: zone,
+		IPID: ID,
+	}, scw.WithContext(ctx))
 	if err != nil {
 		if is404Error(err) {
 			d.SetId("")
