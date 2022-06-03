@@ -327,10 +327,7 @@ func resourceScalewayRdbInstanceCreate(ctx context.Context, d *schema.ResourceDa
 			InstanceID: res.ID,
 		}
 
-		backupSameRegion, backupSameRegionExist := d.GetOk("backup_same_region")
-		if backupSameRegionExist {
-			updateReq.BackupSameRegion = expandBoolPtr(backupSameRegion)
-		}
+		updateReq.BackupSameRegion = expandBoolPtr(d.Get("backup_same_region"))
 
 		updateReq.IsBackupScheduleDisabled = scw.BoolPtr(d.Get("disable_backup").(bool))
 		if backupScheduleFrequency, okFrequency := d.GetOk("backup_schedule_frequency"); okFrequency {
