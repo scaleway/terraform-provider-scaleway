@@ -21,6 +21,8 @@ func resourceScalewayK8SPool() *schema.Resource {
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 		Timeouts: &schema.ResourceTimeout{
+			Create:  schema.DefaultTimeout(defaultK8SPoolTimeout),
+			Update:  schema.DefaultTimeout(defaultK8SPoolTimeout),
 			Default: schema.DefaultTimeout(defaultK8SPoolTimeout),
 		},
 		SchemaVersion: 0,
