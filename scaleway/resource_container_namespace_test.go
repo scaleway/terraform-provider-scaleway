@@ -204,7 +204,7 @@ func testAccCheckScalewayContainerNamespaceExists(tt *TestTools, n string) resou
 func testAccCheckScalewayContainerNamespaceDestroy(tt *TestTools) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		for _, rs := range state.RootModule().Resources {
-			if rs.Type != "scaleway_container_namespace" {
+			if rs.Type != "scaleway_container_namespace" { //nolint:goconst
 				continue
 			}
 

@@ -187,7 +187,7 @@ func resourceScalewayContainerNamespaceDelete(ctx context.Context, d *schema.Res
 	d.SetId("")
 
 	if destroy := d.Get("destroy_registry"); destroy != nil && destroy == true {
-		registryApi, region, err := registryAPIWithRegion(d, meta)
+		registryAPI, region, err := registryAPIWithRegion(d, meta)
 		if err != nil {
 			if is404Error(err) {
 				return nil
@@ -197,14 +197,14 @@ func resourceScalewayContainerNamespaceDelete(ctx context.Context, d *schema.Res
 
 		registryID := d.Get("registry_namespace_id").(string)
 
-		_, err = registryApi.DeleteNamespace(&registry.DeleteNamespaceRequest{
+		_, err = registryAPI.DeleteNamespace(&registry.DeleteNamespaceRequest{
 			Region:      region,
 			NamespaceID: registryID,
 		})
 		if err != nil {
 			return diag.FromErr(err)
 		}
-		_, err = waitForRegistryNamespace(ctx, registryApi, region, registryID, d.Timeout(schema.TimeoutDelete))
+		_, err = waitForRegistryNamespace(ctx, registryAPI, region, registryID, d.Timeout(schema.TimeoutDelete))
 		if err != nil && !is404Error(err) {
 			return diag.FromErr(err)
 		}
