@@ -20,6 +20,10 @@ func resourceScalewayFunctionNamespace() *schema.Resource {
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 		Timeouts: &schema.ResourceTimeout{
+			Create:  schema.DefaultTimeout(defaultFunctionNamespaceTimeout),
+			Read:    schema.DefaultTimeout(defaultFunctionNamespaceTimeout),
+			Update:  schema.DefaultTimeout(defaultFunctionNamespaceTimeout),
+			Delete:  schema.DefaultTimeout(defaultFunctionNamespaceTimeout),
 			Default: schema.DefaultTimeout(defaultFunctionNamespaceTimeout),
 		},
 		SchemaVersion: 0,
