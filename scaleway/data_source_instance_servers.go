@@ -18,7 +18,7 @@ func dataSourceScalewayInstanceServers() *schema.Resource {
 			"name": {
 				Type:        schema.TypeString,
 				Optional:    true,
-				Description: "Servers with a name matching it are listed.",
+				Description: "Servers with a name like it are listed.",
 			},
 			"tags": {
 				Type: schema.TypeList,
@@ -26,7 +26,7 @@ func dataSourceScalewayInstanceServers() *schema.Resource {
 					Type: schema.TypeString,
 				},
 				Optional:    true,
-				Description: "Servers with these exact tags are listed. Use commas to separate multiple tags when filtering.",
+				Description: "Servers with these exact tags are listed.",
 			},
 			"servers": {
 				Type:     schema.TypeList,

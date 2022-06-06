@@ -27,9 +27,9 @@ data "scaleway_instance_servers" "my_key" {
 
 ## Argument Reference
 
-- `name` - (Optional) The server name used as filter.
+- `name` - (Optional) The server name used as filter. Servers with a name like it are listed.
 
-- `tags` - (Optional) List of tags used as filter.
+- `tags` - (Optional) List of tags used as filter. Servers with these exact tags are listed.
 
 - `zone` - (Defaults to [provider](../index.md#zone) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which servers exist.
 
