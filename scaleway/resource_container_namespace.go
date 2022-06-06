@@ -7,6 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	container "github.com/scaleway/scaleway-sdk-go/api/container/v1beta1"
+	"github.com/scaleway/scaleway-sdk-go/api/registry/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 )
 
@@ -55,6 +56,12 @@ func resourceScalewayContainerNamespace() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The ID of the registry namespace",
+			},
+			"destroy_registry": {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Default:     false,
+				Description: "Destroy registry on deletion",
 			},
 			"region":          regionSchema(),
 			"organization_id": organizationIDSchema(),
@@ -173,12 +180,34 @@ func resourceScalewayContainerNamespaceDelete(ctx context.Context, d *schema.Res
 	}
 
 	_, err = waitForContainerNamespace(ctx, api, region, id, d.Timeout(schema.TimeoutDelete))
-	if err != nil {
-		if is404Error(err) {
-			d.SetId("")
-			return nil
-		}
+	if err != nil && !is404Error(err) {
 		return diag.FromErr(err)
+	}
+
+	d.SetId("")
+
+	if destroy := d.Get("destroy_registry"); destroy != nil && destroy == true {
+		registryApi, region, err := registryAPIWithRegion(d, meta)
+		if err != nil {
+			if is404Error(err) {
+				return nil
+			}
+			return diag.FromErr(err)
+		}
+
+		registryID := d.Get("registry_namespace_id").(string)
+
+		_, err = registryApi.DeleteNamespace(&registry.DeleteNamespaceRequest{
+			Region:      region,
+			NamespaceID: registryID,
+		})
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		_, err = waitForRegistryNamespace(ctx, registryApi, region, registryID, d.Timeout(schema.TimeoutDelete))
+		if err != nil && !is404Error(err) {
+			return diag.FromErr(err)
+		}
 	}
 
 	return nil

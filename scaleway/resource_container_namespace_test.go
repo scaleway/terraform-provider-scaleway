@@ -7,6 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	container "github.com/scaleway/scaleway-sdk-go/api/container/v1beta1"
+	"github.com/scaleway/scaleway-sdk-go/api/registry/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 )
 
@@ -147,6 +148,34 @@ func TestAccScalewayContainerNamespace_Basic(t *testing.T) {
 	})
 }
 
+func TestAccScalewayContainerNamespace_DestroyRegistry(t *testing.T) {
+	tt := NewTestTools(t)
+	defer tt.Cleanup()
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy: resource.ComposeTestCheckFunc(
+			testAccCheckScalewayContainerNamespaceDestroy(tt),
+			testAccCheckScalewayContainerRegistryDestroy(tt),
+		),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource scaleway_container_namespace main {
+						name = "test-cr-ns-01"
+						destroy_registry = true
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayContainerNamespaceExists(tt, "scaleway_container_namespace.main"),
+					testCheckResourceAttrUUID("scaleway_container_namespace.main", "id"),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckScalewayContainerNamespaceExists(tt *TestTools, n string) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		rs, ok := state.RootModule().Resources[n]
@@ -191,6 +220,36 @@ func testAccCheckScalewayContainerNamespaceDestroy(tt *TestTools) resource.TestC
 
 			if err == nil {
 				return fmt.Errorf("container namespace (%s) still exists", rs.Primary.ID)
+			}
+
+			if !is404Error(err) {
+				return err
+			}
+		}
+
+		return nil
+	}
+}
+
+func testAccCheckScalewayContainerRegistryDestroy(tt *TestTools) resource.TestCheckFunc {
+	return func(state *terraform.State) error {
+		for _, rs := range state.RootModule().Resources {
+			if rs.Type != "scaleway_container_namespace" {
+				continue
+			}
+
+			api, region, _, err := registryAPIWithRegionAndID(tt.Meta, rs.Primary.ID)
+			if err != nil {
+				return err
+			}
+
+			_, err = api.DeleteNamespace(&registry.DeleteNamespaceRequest{
+				NamespaceID: rs.Primary.Attributes["registry_namespace_id"],
+				Region:      region,
+			})
+
+			if err == nil {
+				return fmt.Errorf("registry namespace (%s) still exists", rs.Primary.Attributes["registry_namespace_id"])
 			}
 
 			if !is404Error(err) {
