@@ -189,9 +189,6 @@ func resourceScalewayContainerNamespaceDelete(ctx context.Context, d *schema.Res
 	if destroy := d.Get("destroy_registry"); destroy != nil && destroy == true {
 		registryAPI, region, err := registryAPIWithRegion(d, meta)
 		if err != nil {
-			if is404Error(err) {
-				return nil
-			}
 			return diag.FromErr(err)
 		}
 
