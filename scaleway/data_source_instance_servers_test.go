@@ -65,7 +65,7 @@ func TestAccScalewayDataSourceInstanceServers_Basic(t *testing.T) {
 					}
 					
 					data "scaleway_instance_servers" "servers_by_tag" {
-						tags = ["data_scaleway_instance_servers"]
+						tags = ["data_scaleway_instance_servers", "terraform-test"]
 					}
 
 					data "scaleway_instance_servers" "servers_by_name_other_zone" {
