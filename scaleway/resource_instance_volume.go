@@ -21,6 +21,9 @@ func resourceScalewayInstanceVolume() *schema.Resource {
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 		Timeouts: &schema.ResourceTimeout{
+			Create:  schema.DefaultTimeout(defaultInstanceVolumeDeleteTimeout),
+			Update:  schema.DefaultTimeout(defaultInstanceVolumeDeleteTimeout),
+			Delete:  schema.DefaultTimeout(defaultInstanceVolumeDeleteTimeout),
 			Default: schema.DefaultTimeout(defaultInstanceVolumeDeleteTimeout),
 		},
 		Schema: map[string]*schema.Schema{
