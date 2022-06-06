@@ -398,7 +398,7 @@ func TestAccScalewayObjectBucket_Cors_Update(t *testing.T) {
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
 
-	resourceName := "scaleway_object_bucket.bucket-destroy-force"
+	resourceName := "scaleway_object_bucket.bucket-cors-update"
 	bucketName := sdkacctest.RandomWithPrefix("test-acc-scaleway-object-bucket-cors-update")
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
@@ -407,7 +407,7 @@ func TestAccScalewayObjectBucket_Cors_Update(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
-					resource "scaleway_object_bucket" "bucket-destroy-force" {
+					resource "scaleway_object_bucket" "bucket-cors-update" {
 						name = %[1]q
 						cors_rule {
 							allowed_headers = ["*"]
@@ -462,14 +462,15 @@ func TestAccScalewayObjectBucket_Cors_Update(t *testing.T) {
 				ExpectNonEmptyPlan: true,
 			},
 			{
-				ResourceName:            resourceName,
+				ResourceName: resourceName,
+
 				ImportState:             true,
 				ImportStateVerify:       true,
 				ImportStateVerifyIgnore: []string{"force_destroy", "acl"},
 			},
 			{
 				Config: fmt.Sprintf(`
-					resource "scaleway_object_bucket" "bucket" {
+					resource "scaleway_object_bucket" "bucket-cors-update" {
 						name = %[1]q
 						cors_rule {
 							allowed_headers = ["*"]
