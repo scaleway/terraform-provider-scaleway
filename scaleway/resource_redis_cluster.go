@@ -17,6 +17,9 @@ func resourceScalewayRedisCluster() *schema.Resource {
 		UpdateContext: resourceScalewayRedisClusterUpdate,
 		DeleteContext: resourceScalewayRedisClusterDelete,
 		Timeouts: &schema.ResourceTimeout{
+			Create:  schema.DefaultTimeout(defaultRedisClusterTimeout),
+			Update:  schema.DefaultTimeout(defaultRedisClusterTimeout),
+			Delete:  schema.DefaultTimeout(defaultRedisClusterTimeout),
 			Default: schema.DefaultTimeout(defaultRedisClusterTimeout),
 		},
 		Importer: &schema.ResourceImporter{

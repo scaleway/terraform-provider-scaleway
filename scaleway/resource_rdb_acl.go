@@ -25,6 +25,10 @@ func resourceScalewayRdbACL() *schema.Resource {
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 		Timeouts: &schema.ResourceTimeout{
+			Create:  schema.DefaultTimeout(defaultRdbInstanceTimeout),
+			Read:    schema.DefaultTimeout(defaultRdbInstanceTimeout),
+			Update:  schema.DefaultTimeout(defaultRdbInstanceTimeout),
+			Delete:  schema.DefaultTimeout(defaultRdbInstanceTimeout),
 			Default: schema.DefaultTimeout(defaultRdbInstanceTimeout),
 		},
 		SchemaVersion: 0,

@@ -24,6 +24,9 @@ func resourceScalewayVPCPublicGatewayPATRule() *schema.Resource {
 		},
 		SchemaVersion: 0,
 		Timeouts: &schema.ResourceTimeout{
+			Create:  schema.DefaultTimeout(defaultVPCGatewayTimeout),
+			Update:  schema.DefaultTimeout(defaultVPCGatewayTimeout),
+			Delete:  schema.DefaultTimeout(defaultVPCGatewayTimeout),
 			Default: schema.DefaultTimeout(defaultVPCGatewayTimeout),
 		},
 		Schema: map[string]*schema.Schema{

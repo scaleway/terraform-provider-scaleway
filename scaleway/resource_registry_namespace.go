@@ -19,6 +19,10 @@ func resourceScalewayRegistryNamespace() *schema.Resource {
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 		Timeouts: &schema.ResourceTimeout{
+			Create:  schema.DefaultTimeout(defaultRedisClusterTimeout),
+			Read:    schema.DefaultTimeout(defaultRedisClusterTimeout),
+			Update:  schema.DefaultTimeout(defaultRedisClusterTimeout),
+			Delete:  schema.DefaultTimeout(defaultRedisClusterTimeout),
 			Default: schema.DefaultTimeout(defaultRegistryNamespaceTimeout),
 		},
 		SchemaVersion: 0,
