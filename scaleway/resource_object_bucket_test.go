@@ -431,42 +431,35 @@ func TestAccScalewayObjectBucket_Cors_Update(t *testing.T) {
 							},
 						},
 					),
-					func(state *terraform.State) error {
-						rs, ok := state.RootModule().Resources[resourceName]
-						if !ok {
-							return fmt.Errorf("not found: %s", resourceName)
-						}
-
-						s3Client, err := newS3ClientFromMeta(tt.Meta)
-						if err != nil {
-							return err
-						}
-						_, err = s3Client.PutBucketCors(&s3.PutBucketCorsInput{
-							Bucket: scw.StringPtr(rs.Primary.Attributes["name"]),
-							CORSConfiguration: &s3.CORSConfiguration{
-								CORSRules: []*s3.CORSRule{
-									{
-										AllowedHeaders: []*string{scw.StringPtr("*")},
-										AllowedMethods: []*string{scw.StringPtr("GET")},
-										AllowedOrigins: []*string{scw.StringPtr("https://www.example.com")},
-									},
-								},
-							},
-						})
-						if err != nil && !isS3Err(err, "NoSuchCORSConfiguration", "") {
-							return err
-						}
-						return nil
-					},
 				),
-				ExpectNonEmptyPlan: true,
 			},
 			{
-				ResourceName: resourceName,
-
-				ImportState:             true,
-				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"force_destroy", "acl"},
+				Config: fmt.Sprintf(`
+					resource "scaleway_object_bucket" "bucket-cors-update" {
+						name = %[1]q
+						cors_rule {
+							allowed_headers = ["*"]
+							allowed_methods = ["PUT", "POST", "GET"]
+							allowed_origins = ["https://www.example.com"]
+							expose_headers  = ["x-amz-server-side-encryption", "ETag"]
+							max_age_seconds = 3000
+						}
+					}`, bucketName),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayObjectBucketExists(tt, resourceName),
+					testAccCheckScalewayObjectBucketCors(tt,
+						resourceName,
+						[]*s3.CORSRule{
+							{
+								AllowedHeaders: []*string{scw.StringPtr("*")},
+								AllowedMethods: []*string{scw.StringPtr("PUT"), scw.StringPtr("POST"), scw.StringPtr("GET")},
+								AllowedOrigins: []*string{scw.StringPtr("https://www.example.com")},
+								ExposeHeaders:  []*string{scw.StringPtr("x-amz-server-side-encryption"), scw.StringPtr("ETag")},
+								MaxAgeSeconds:  scw.Int64Ptr(3000),
+							},
+						},
+					),
+				),
 			},
 			{
 				Config: fmt.Sprintf(`
