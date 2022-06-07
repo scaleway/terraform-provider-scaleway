@@ -543,6 +543,73 @@ func TestAccScalewayInstanceServer_AdditionalVolumes(t *testing.T) {
 	})
 }
 
+func TestAccScalewayInstanceServer_AdditionalVolumesDetach(t *testing.T) {
+	tt := NewTestTools(t)
+	defer tt.Cleanup()
+	resource.Test(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy: resource.ComposeTestCheckFunc(
+			testAccCheckScalewayInstanceVolumeDestroy(tt),
+			testAccCheckScalewayInstanceServerDestroy(tt),
+		),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					variable "zone" {
+						type    = string
+						default = "fr-par-1"
+					}
+
+					resource "scaleway_instance_volume" "main" {
+  						type       = "b_ssd"
+  						name       = "foobar"
+  						size_in_gb = 1
+					}
+
+					resource "scaleway_instance_server" "main" {
+						type  = "DEV1-S"
+  						image = "ubuntu_focal"
+  						name  = "foobar"
+
+						enable_dynamic_ip = true
+
+						additional_volume_ids = [scaleway_instance_volume.main.id]
+					}
+				`,
+			},
+			{
+				Config: `
+					variable "zone" {
+						type    = string
+						default = "fr-par-1"
+					}
+
+					resource "scaleway_instance_volume" "main" {
+  						type       = "b_ssd"
+  						name       = "foobar"
+  						size_in_gb = 1
+					}
+
+					resource "scaleway_instance_server" "main" {
+						type  = "DEV1-S"
+  						image = "ubuntu_focal"
+  						name  = "foobar"
+
+						enable_dynamic_ip = true
+
+						additional_volume_ids = []
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayInstanceVolumeExists(tt, "scaleway_instance_volume.main"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.main", "additional_volume_ids.#", "0"),
+				),
+			},
+		},
+	})
+}
+
 func TestAccScalewayInstanceServer_WithPlacementGroup(t *testing.T) {
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
