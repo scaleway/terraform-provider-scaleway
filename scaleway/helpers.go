@@ -616,3 +616,11 @@ func ErrCodeEquals(err error, codes ...string) bool {
 	}
 	return false
 }
+
+func getBool(d *schema.ResourceData, key string) interface{} {
+	val, ok := d.GetOkExists(key)
+	if !ok {
+		return nil
+	}
+	return val
+}
