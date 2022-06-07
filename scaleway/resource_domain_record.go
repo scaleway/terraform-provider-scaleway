@@ -20,6 +20,10 @@ func resourceScalewayDomainRecord() *schema.Resource {
 		UpdateContext: resourceScalewayDomainRecordUpdate,
 		DeleteContext: resourceScalewayDomainRecordDelete,
 		Timeouts: &schema.ResourceTimeout{
+			Create:  schema.DefaultTimeout(defaultDomainRecordTimeout),
+			Read:    schema.DefaultTimeout(defaultDomainRecordTimeout),
+			Update:  schema.DefaultTimeout(defaultDomainRecordTimeout),
+			Delete:  schema.DefaultTimeout(defaultDomainRecordTimeout),
 			Default: schema.DefaultTimeout(defaultDomainRecordTimeout),
 		},
 		Importer: &schema.ResourceImporter{

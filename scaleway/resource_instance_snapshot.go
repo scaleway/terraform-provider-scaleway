@@ -21,6 +21,8 @@ func resourceScalewayInstanceSnapshot() *schema.Resource {
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 		Timeouts: &schema.ResourceTimeout{
+			Create:  schema.DefaultTimeout(defaultInstanceSnapshotWaitTimeout),
+			Delete:  schema.DefaultTimeout(defaultInstanceSnapshotWaitTimeout),
 			Default: schema.DefaultTimeout(defaultInstanceSnapshotWaitTimeout),
 		},
 		SchemaVersion: 0,
