@@ -140,9 +140,9 @@ func resourceScalewayVPCPublicGatewayDHCPCreate(ctx context.Context, d *schema.R
 		Subnet:    subnet,
 	}
 
-	req.PushDefaultRoute = expandBoolPtr(d.Get("push_default_route"))
-	req.PushDNSServer = expandBoolPtr(d.Get("push_dns_server"))
-	req.EnableDynamic = expandBoolPtr(d.Get("enable_dynamic"))
+	req.PushDefaultRoute = expandBoolPtr(getBool(d, "push_default_route"))
+	req.PushDNSServer = expandBoolPtr(getBool(d, "push_dns_server"))
+	req.EnableDynamic = expandBoolPtr(getBool(d, "enable_dynamic"))
 
 	if dnsServerOverride, ok := d.GetOk("dns_servers_override"); ok {
 		req.DNSServersOverride = expandStringsPtr(dnsServerOverride)
