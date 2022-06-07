@@ -210,7 +210,7 @@ func TestAccScalewayDomainRecord_Basic2(t *testing.T) {
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
 
-	testDNSZone := fmt.Sprintf("test-basic.%s", testDomain)
+	testDNSZone := fmt.Sprintf("test-basic2.%s", testDomain)
 	l.Debugf("TestAccScalewayDomainRecord_Basic: test dns zone: %s", testDNSZone)
 
 	recordType := "A"
@@ -694,7 +694,7 @@ func testAccCheckScalewayDomainRecordDestroy(tt *TestTools) resource.TestCheckFu
 			}
 
 			if err != nil {
-				return err
+				return fmt.Errorf("failed to check if domain zone exists: %w", err)
 			}
 
 			if listDNSZones.TotalCount > 0 {
