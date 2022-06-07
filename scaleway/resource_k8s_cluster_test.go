@@ -241,6 +241,7 @@ func TestAccScalewayK8SCluster_Autoscaling(t *testing.T) {
 }
 
 func TestAccScalewayK8SCluster_OIDC(t *testing.T) {
+	t.Skip("Skip OIDC test, we need to set-up an OIDC server to test it")
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
 
