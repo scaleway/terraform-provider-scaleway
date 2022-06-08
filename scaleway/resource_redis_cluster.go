@@ -2,8 +2,10 @@ package scaleway
 
 import (
 	"context"
+	"fmt"
 	"time"
 
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
@@ -109,9 +111,10 @@ func resourceScalewayRedisCluster() *schema.Resource {
 				},
 			},
 			"private_network": {
-				Type:        schema.TypeList,
+				Type:        schema.TypeSet,
 				Optional:    true,
 				Description: "Private network specs details",
+				Set:         redisPnIdHash,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"endpoint_id": {
@@ -184,6 +187,7 @@ func resourceScalewayRedisCluster() *schema.Resource {
 }
 
 func resourceScalewayRedisClusterCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	tflog.Info(ctx, fmt.Sprintf("CREATING THE CLUSTER"))
 	redisAPI, zone, err := redisAPIWithZone(d, meta)
 	if err != nil {
 		return diag.FromErr(err)
@@ -226,7 +230,7 @@ func resourceScalewayRedisClusterCreate(ctx context.Context, d *schema.ResourceD
 
 	privN, privNExists := d.GetOk("private_network")
 	if privNExists {
-		pnSpecs, err := expandRedisPrivateNetwork(privN)
+		pnSpecs, err := expandRedisPrivateNetwork(privN.(*schema.Set).List())
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -249,6 +253,7 @@ func resourceScalewayRedisClusterCreate(ctx context.Context, d *schema.ResourceD
 }
 
 func resourceScalewayRedisClusterRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	tflog.Info(ctx, fmt.Sprintf("READING THE CLUSTER"))
 	redisAPI, zone, ID, err := redisAPIWithZoneAndID(meta, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -295,6 +300,7 @@ func resourceScalewayRedisClusterRead(ctx context.Context, d *schema.ResourceDat
 }
 
 func resourceScalewayRedisClusterUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	tflog.Info(ctx, fmt.Sprintf("UPDATING THE CLUSTER"))
 	redisAPI, zone, ID, err := redisAPIWithZoneAndID(meta, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -378,39 +384,11 @@ func resourceScalewayRedisClusterUpdate(ctx context.Context, d *schema.ResourceD
 		}
 	}
 
-	if d.HasChanges("private_network") {
-		//retrieve state
-		cluster, err := waitForRedisCluster(ctx, redisAPI, zone, ID, d.Timeout(schema.TimeoutUpdate))
-		if err != nil {
-			return diag.FromErr(err)
-		}
-
-		// get new desired state of endpoints
-		rawNewEndpoints := d.Get("private_network")
-		newEndpoints, epErr := expandRedisPrivateNetwork(rawNewEndpoints)
-		if epErr != nil {
-			return diag.FromErr(epErr)
-		}
-
-		if len(newEndpoints) == 0 {
-			newEndpoints = append(newEndpoints, &redis.EndpointSpec{
-				PublicNetwork: &redis.EndpointSpecPublicNetworkSpec{},
-			})
-		}
-
-		//send request
-		_, err = redisAPI.SetEndpoints(&redis.SetEndpointsRequest{
-			Zone:      cluster.Zone,
-			ClusterID: cluster.ID,
-			Endpoints: newEndpoints,
-		}, scw.WithContext(ctx))
-		if err != nil {
-			return diag.FromErr(err)
-		}
-
-		_, err = waitForRedisCluster(ctx, redisAPI, zone, ID, d.Timeout(schema.TimeoutUpdate))
-		if err != nil {
-			return diag.FromErr(err)
+	tflog.Info(ctx, fmt.Sprintf("private network has change yes or no ? %v", d.HasChanges("private_network", "private_network.id", "private_network.service_ips")))
+	if d.HasChanges("private_network", "private_network.id", "private_network.service_ips") {
+		diagnostics := resourceScalewayRedisClusterUpdateEndpoints(ctx, d, redisAPI, zone, ID)
+		if diagnostics != nil {
+			return diagnostics
 		}
 	}
 
@@ -448,6 +426,47 @@ func resourceScalewayRedisClusterUpdateSettings(ctx context.Context, d *schema.R
 		ClusterID: clusterID,
 		Settings:  settings,
 	}, scw.WithContext(ctx))
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	return nil
+}
+
+func resourceScalewayRedisClusterUpdateEndpoints(ctx context.Context, d *schema.ResourceData, redisAPI *redis.API, zone scw.Zone, clusterID string) diag.Diagnostics {
+	//retrieve state
+	cluster, err := waitForRedisCluster(ctx, redisAPI, zone, clusterID, d.Timeout(schema.TimeoutUpdate))
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	// get new desired state of endpoints
+	first, after := d.GetChange("private_network")
+	isEqual := first.(*schema.Set).HashEqual(after)
+	tflog.Info(ctx, fmt.Sprintf("private network is equal: %v", isEqual))
+	rawNewEndpoints := d.Get("private_network")
+	if isEqual == false {
+		newEndpoints, err := expandRedisPrivateNetwork(rawNewEndpoints.(*schema.Set).List())
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		if len(newEndpoints) == 0 {
+			newEndpoints = append(newEndpoints, &redis.EndpointSpec{
+				PublicNetwork: &redis.EndpointSpecPublicNetworkSpec{},
+			})
+		}
+		//send request
+		_, err = redisAPI.SetEndpoints(&redis.SetEndpointsRequest{
+			Zone:      cluster.Zone,
+			ClusterID: cluster.ID,
+			Endpoints: newEndpoints,
+		}, scw.WithContext(ctx))
+		if err != nil {
+			return diag.FromErr(err)
+		}
+	}
+
+	_, err = waitForRedisCluster(ctx, redisAPI, zone, clusterID, d.Timeout(schema.TimeoutUpdate))
 	if err != nil {
 		return diag.FromErr(err)
 	}
