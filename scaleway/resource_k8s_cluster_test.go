@@ -384,6 +384,30 @@ func TestAccScalewayK8SCluster_AutoUpgrade(t *testing.T) {
 	})
 }
 
+func TestAccScalewayK8SCluster_Multicloud(t *testing.T) {
+	tt := NewTestTools(t)
+	defer tt.Cleanup()
+
+	latestK8SVersion := testAccScalewayK8SClusterGetLatestK8SVersion(tt)
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck: func() {
+			testAccPreCheck(t)
+		},
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      testAccCheckScalewayK8SClusterDestroy(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckScalewayK8SClusterMulticloud(latestK8SVersion),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayK8SClusterExists(tt, "scaleway_k8s_cluster.multicloud"),
+					resource.TestCheckResourceAttr("scaleway_k8s_cluster.multicloud", "version", latestK8SVersion),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckScalewayK8SClusterDestroy(tt *TestTools) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		for _, rs := range state.RootModule().Resources {
@@ -562,4 +586,22 @@ resource "scaleway_k8s_cluster" "auto_upgrade" {
 	}
 	tags = [ "terraform-test", "scaleway_k8s_cluster", "auto_upgrade" ]
 }`, version, enable, hour, day)
+}
+
+func testAccCheckScalewayK8SClusterMulticloud(version string) string {
+	return fmt.Sprintf(`
+resource "scaleway_k8s_cluster" "multicloud" {
+	name = "test-multicloud"
+	version = "%s"
+	cni = "kilo"
+	type = "multicloud"
+}
+
+resource "scaleway_k8s_pool" "multicloud" {
+	cluster_id = "${scaleway_k8s_cluster.multicloud.id}"
+	name = "test-multicloud"
+	node_type = "DEV1-M"
+	size = 1
+}
+`, version)
 }
