@@ -20,6 +20,10 @@ func resourceScalewayDomainRecord() *schema.Resource {
 		UpdateContext: resourceScalewayDomainRecordUpdate,
 		DeleteContext: resourceScalewayDomainRecordDelete,
 		Timeouts: &schema.ResourceTimeout{
+			Create:  schema.DefaultTimeout(defaultDomainRecordTimeout),
+			Read:    schema.DefaultTimeout(defaultDomainRecordTimeout),
+			Update:  schema.DefaultTimeout(defaultDomainRecordTimeout),
+			Delete:  schema.DefaultTimeout(defaultDomainRecordTimeout),
 			Default: schema.DefaultTimeout(defaultDomainRecordTimeout),
 		},
 		Importer: &schema.ResourceImporter{
@@ -530,11 +534,11 @@ func resourceScalewayDomainRecordDelete(ctx context.Context, d *schema.ResourceD
 
 		if !hasRecords {
 			_, err = waitForDNSZone(ctx, domainAPI, d.Get("dns_zone").(string), d.Timeout(schema.TimeoutDelete))
-			if err != nil && !ErrCodeEquals(err, domain.ErrCodeNoSuchDNSZone) {
-				if is404Error(err) {
+			if err != nil {
+				if errorCheck(err, domain.ErrCodeNoSuchDNSZone) {
 					return nil
 				}
-				return diag.FromErr(err)
+				return diag.FromErr(fmt.Errorf("failed to wait for dns zone before deleting: %w", err))
 			}
 
 			_, err = domainAPI.DeleteDNSZone(&domain.DeleteDNSZoneRequest{

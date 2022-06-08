@@ -30,6 +30,10 @@ func resourceScalewayInstanceServer() *schema.Resource {
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 		Timeouts: &schema.ResourceTimeout{
+			Create:  schema.DefaultTimeout(defaultInstanceServerWaitTimeout),
+			Read:    schema.DefaultTimeout(defaultInstanceServerWaitTimeout),
+			Update:  schema.DefaultTimeout(defaultInstanceServerWaitTimeout),
+			Delete:  schema.DefaultTimeout(defaultInstanceServerWaitTimeout),
 			Default: schema.DefaultTimeout(defaultInstanceServerWaitTimeout),
 		},
 		SchemaVersion: 0,
@@ -677,10 +681,14 @@ func resourceScalewayInstanceServerUpdate(ctx context.Context, d *schema.Resourc
 
 	volumes := map[string]*instance.VolumeServerTemplate{}
 
-	if raw, ok := d.GetOk("additional_volume_ids"); d.HasChange("additional_volume_ids") && ok {
+	if raw, hasAdditionalVolumes := d.GetOk("additional_volume_ids"); d.HasChange("additional_volume_ids") {
 		volumes["0"] = &instance.VolumeServerTemplate{
 			ID:   expandZonedID(d.Get("root_volume.0.volume_id")).ID,
 			Name: newRandomName("vol"), // name is ignored by the API, any name will work here
+		}
+
+		if !hasAdditionalVolumes {
+			raw = []interface{}{} // Set an empty list if not volumes exist
 		}
 
 		for i, volumeID := range raw.([]interface{}) {

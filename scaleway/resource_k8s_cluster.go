@@ -23,6 +23,10 @@ func resourceScalewayK8SCluster() *schema.Resource {
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 		Timeouts: &schema.ResourceTimeout{
+			Create:  schema.DefaultTimeout(defaultK8SClusterTimeout),
+			Read:    schema.DefaultTimeout(defaultK8SClusterTimeout),
+			Update:  schema.DefaultTimeout(defaultK8SClusterTimeout),
+			Delete:  schema.DefaultTimeout(defaultK8SClusterTimeout),
 			Default: schema.DefaultTimeout(defaultK8SClusterTimeout),
 		},
 		SchemaVersion: 0,
