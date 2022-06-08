@@ -381,8 +381,13 @@ func resourceScalewayK8SClusterCreate(ctx context.Context, d *schema.ResourceDat
 	}
 
 	d.SetId(newRegionalIDString(region, res.ID))
-
-	_, err = waitK8SCluster(ctx, k8sAPI, region, res.ID, d.Timeout(schema.TimeoutCreate))
+	if clusterType.(string) == "multicloud" {
+		// In case of multi-cloud, we do not have the guarantee that a pool will be created in Scaleway.
+		_, err = waitK8SCluster(ctx, k8sAPI, region, res.ID, d.Timeout(schema.TimeoutCreate))
+	} else {
+		// If we are not in multi-cloud, we can wait for the pool to be created.
+		_, err = waitK8SClusterPool(ctx, k8sAPI, region, res.ID, d.Timeout(schema.TimeoutCreate))
+	}
 	if err != nil {
 		return diag.FromErr(err)
 	}
