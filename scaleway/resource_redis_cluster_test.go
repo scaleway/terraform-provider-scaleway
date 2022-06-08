@@ -328,7 +328,7 @@ func TestAccScalewayRedisCluster_Endpoints(t *testing.T) {
 						private_network {
 							id = "${scaleway_vpc_private_network.pn.id}"
 							service_ips = [
-								"10.12.1.1/20",
+								"10.12.1.0/20",
 							]
 						}
 						depends_on = [
@@ -347,7 +347,7 @@ func TestAccScalewayRedisCluster_Endpoints(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "password", "thiZ_is_v&ry_s3cret"),
 					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "cluster_size", "1"),
 					// Check that the private network is set according to the specs
-					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "private_network.0.service_ips.0", "10.12.1.1/20"),
+					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "private_network.0.service_ips.0", "10.12.1.0/20"),
 					resource.TestCheckResourceAttrSet("scaleway_redis_cluster.main", "private_network.0.endpoint_id"),
 					resource.TestCheckResourceAttrSet("scaleway_redis_cluster.main", "private_network.0.id"),
 					resource.TestCheckTypeSetElemAttrPair("scaleway_redis_cluster.main", "private_network.0.id", "scaleway_vpc_private_network.pn", "id"),
@@ -416,7 +416,7 @@ func TestAccScalewayRedisCluster_Endpoints(t *testing.T) {
 						private_network {
 							id = "${scaleway_vpc_private_network.pn.id}"
 							service_ips = [
-								"10.12.1.1/20",
+								"10.12.1.0/20",
 							]
 						}
 						private_network {
@@ -441,7 +441,7 @@ func TestAccScalewayRedisCluster_Endpoints(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "user_name", "my_initial_user"),
 					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "password", "thiZ_is_v&ry_s3cret"),
 					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "cluster_size", "1"),
-					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "private_network.1.service_ips.0", "10.12.1.1/20"),
+					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "private_network.1.service_ips.0", "10.12.1.0/20"),
 					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "private_network.0.service_ips.0", "192.168.1.0/20"),
 					//resource.TestCheckTypeSetElemAttr("scaleway_redis_cluster.main", "private_network.*", "10.12.1.1/20"),
 					//resource.TestCheckTypeSetElemAttr("scaleway_redis_cluster.main", "private_network.*", "192.168.1.0/20"),
@@ -472,7 +472,7 @@ func TestAccScalewayRedisCluster_Endpoints(t *testing.T) {
 						private_network {
 							id = "${scaleway_vpc_private_network.pn.id}"
 							service_ips = [
-								"10.13.1.1/20",
+								"10.13.1.0/20",
 							]
 						}
 						depends_on = [
@@ -490,7 +490,7 @@ func TestAccScalewayRedisCluster_Endpoints(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "user_name", "my_initial_user"),
 					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "password", "thiZ_is_v&ry_s3cret"),
 					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "cluster_size", "1"),
-					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "private_network.0.service_ips.0", "10.13.1.1/20"),
+					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "private_network.0.service_ips.0", "10.13.1.0/20"),
 					resource.TestCheckResourceAttrSet("scaleway_redis_cluster.main", "private_network.0.id"),
 					resource.TestCheckResourceAttrSet("scaleway_redis_cluster.main", "private_network.0.endpoint_id"),
 					resource.TestCheckTypeSetElemAttrPair("scaleway_redis_cluster.main", "private_network.0.id", "scaleway_vpc_private_network.pn", "id"),
