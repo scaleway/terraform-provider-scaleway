@@ -303,6 +303,7 @@ func resourceScalewayRedisClusterRead(ctx context.Context, d *schema.ResourceDat
 
 func resourceScalewayRedisClusterUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	tflog.Info(ctx, fmt.Sprintf("UPDATING THE CLUSTER"))
+	changes := []string(nil)
 	redisAPI, zone, ID, err := redisAPIWithZoneAndID(meta, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -315,27 +316,33 @@ func resourceScalewayRedisClusterUpdate(ctx context.Context, d *schema.ResourceD
 
 	if d.HasChange("name") {
 		req.Name = expandStringPtr(d.Get("name"))
+		changes = append(changes, "name")
 	}
 	if d.HasChange("user_name") {
 		req.UserName = expandStringPtr(d.Get("user_name"))
+		changes = append(changes, "user_name")
 	}
 	if d.HasChange("password") {
 		req.Password = expandStringPtr(d.Get("password"))
+		changes = append(changes, "password")
 	}
 	if d.HasChange("tags") {
 		req.Tags = expandStrings(d.Get("tags"))
+		changes = append(changes, "tags")
 	}
 	if d.HasChange("acl") {
 		diagnostics := resourceScalewayRedisClusterUpdateACL(ctx, d, redisAPI, zone, ID)
 		if diagnostics != nil {
 			return diagnostics
 		}
+		changes = append(changes, "acl")
 	}
 	if d.HasChange("settings") {
 		diagnostics := resourceScalewayRedisClusterUpdateSettings(ctx, d, redisAPI, zone, ID)
 		if diagnostics != nil {
 			return diagnostics
 		}
+		changes = append(changes, "settings")
 	}
 
 	_, err = waitForRedisCluster(ctx, redisAPI, zone, ID, d.Timeout(schema.TimeoutUpdate))
@@ -355,6 +362,7 @@ func resourceScalewayRedisClusterUpdate(ctx context.Context, d *schema.ResourceD
 			ClusterID:   ID,
 			ClusterSize: scw.Uint32Ptr(uint32(d.Get("cluster_size").(int))),
 		})
+		changes = append(changes, "cluster_size")
 	}
 	if d.HasChange("version") {
 		migrateClusterRequests = append(migrateClusterRequests, redis.MigrateClusterRequest{
@@ -362,6 +370,7 @@ func resourceScalewayRedisClusterUpdate(ctx context.Context, d *schema.ResourceD
 			ClusterID: ID,
 			Version:   expandStringPtr(d.Get("version")),
 		})
+		changes = append(changes, "version")
 	}
 	if d.HasChange("node_type") {
 		migrateClusterRequests = append(migrateClusterRequests, redis.MigrateClusterRequest{
@@ -369,6 +378,7 @@ func resourceScalewayRedisClusterUpdate(ctx context.Context, d *schema.ResourceD
 			ClusterID: ID,
 			NodeType:  expandStringPtr(d.Get("node_type")),
 		})
+		changes = append(changes, "node_type")
 	}
 	for i := range migrateClusterRequests {
 		_, err = waitForRedisCluster(ctx, redisAPI, zone, ID, d.Timeout(schema.TimeoutUpdate))
@@ -392,7 +402,10 @@ func resourceScalewayRedisClusterUpdate(ctx context.Context, d *schema.ResourceD
 		if diagnostics != nil {
 			return diagnostics
 		}
+		changes = append(changes, "private_network")
 	}
+
+	tflog.Info(ctx, fmt.Sprintf("CHANGES ARE : %v", changes))
 
 	_, err = waitForRedisCluster(ctx, redisAPI, zone, ID, d.Timeout(schema.TimeoutUpdate))
 	if err != nil {
