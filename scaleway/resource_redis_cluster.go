@@ -111,10 +111,11 @@ func resourceScalewayRedisCluster() *schema.Resource {
 				},
 			},
 			"private_network": {
-				Type:        schema.TypeSet,
+				Type: schema.TypeList,
+				//Type:        schema.TypeSet,
 				Optional:    true,
 				Description: "Private network specs details",
-				Set:         redisPnIdHash,
+				//Set:         redisPnIdHash,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"endpoint_id": {
@@ -230,7 +231,8 @@ func resourceScalewayRedisClusterCreate(ctx context.Context, d *schema.ResourceD
 
 	privN, privNExists := d.GetOk("private_network")
 	if privNExists {
-		pnSpecs, err := expandRedisPrivateNetwork(privN.(*schema.Set).List())
+		pnSpecs, err := expandRedisPrivateNetwork(privN)
+		//pnSpecs, err := expandRedisPrivateNetwork(privN.(*schema.Set).List())
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -441,30 +443,31 @@ func resourceScalewayRedisClusterUpdateEndpoints(ctx context.Context, d *schema.
 	}
 
 	// get new desired state of endpoints
-	first, after := d.GetChange("private_network")
-	isEqual := first.(*schema.Set).HashEqual(after)
-	tflog.Info(ctx, fmt.Sprintf("private network is equal: %v", isEqual))
+	//first, after := d.GetChange("private_network")
+	//isEqual := first.(*schema.Set).HashEqual(after)
+	//tflog.Info(ctx, fmt.Sprintf("private network is equal: %v", isEqual))
 	rawNewEndpoints := d.Get("private_network")
-	if isEqual == false {
-		newEndpoints, err := expandRedisPrivateNetwork(rawNewEndpoints.(*schema.Set).List())
-		if err != nil {
-			return diag.FromErr(err)
-		}
-		if len(newEndpoints) == 0 {
-			newEndpoints = append(newEndpoints, &redis.EndpointSpec{
-				PublicNetwork: &redis.EndpointSpecPublicNetworkSpec{},
-			})
-		}
-		//send request
-		_, err = redisAPI.SetEndpoints(&redis.SetEndpointsRequest{
-			Zone:      cluster.Zone,
-			ClusterID: cluster.ID,
-			Endpoints: newEndpoints,
-		}, scw.WithContext(ctx))
-		if err != nil {
-			return diag.FromErr(err)
-		}
+	//if isEqual == false {
+	newEndpoints, err := expandRedisPrivateNetwork(rawNewEndpoints)
+	//newEndpoints, err := expandRedisPrivateNetwork(rawNewEndpoints.(*schema.Set).List())
+	if err != nil {
+		return diag.FromErr(err)
 	}
+	if len(newEndpoints) == 0 {
+		newEndpoints = append(newEndpoints, &redis.EndpointSpec{
+			PublicNetwork: &redis.EndpointSpecPublicNetworkSpec{},
+		})
+	}
+	//send request
+	_, err = redisAPI.SetEndpoints(&redis.SetEndpointsRequest{
+		Zone:      cluster.Zone,
+		ClusterID: cluster.ID,
+		Endpoints: newEndpoints,
+	}, scw.WithContext(ctx))
+	if err != nil {
+		return diag.FromErr(err)
+	}
+	//}
 
 	_, err = waitForRedisCluster(ctx, redisAPI, zone, clusterID, d.Timeout(schema.TimeoutUpdate))
 	if err != nil {

@@ -1,7 +1,6 @@
 package scaleway
 
 import (
-	"bytes"
 	"context"
 	"fmt"
 	"time"
@@ -56,13 +55,15 @@ func waitForRedisCluster(ctx context.Context, api *redis.API, zone scw.Zone, id 
 	}, scw.WithContext(ctx))
 }
 
-func expandRedisPrivateNetwork(data []interface{}) ([]*redis.EndpointSpec, error) {
+func expandRedisPrivateNetwork(data interface{}) ([]*redis.EndpointSpec, error) {
+	//func expandRedisPrivateNetwork(data []interface{}) ([]*redis.EndpointSpec, error) {
 	if data == nil {
 		return nil, nil
 	}
 	var epSpecs []*redis.EndpointSpec
 
-	for _, rawPN := range data {
+	for _, rawPN := range data.([]interface{}) {
+		//for _, rawPN := range data {
 		pn := rawPN.(map[string]interface{})
 		pnID := expandID(pn["id"].(string))
 		rawIPs := pn["service_ips"].([]interface{})
@@ -175,14 +176,14 @@ func flattenRedisPublicNetwork(endpoints []*redis.Endpoint) interface{} {
 	return pnFlat
 }
 
-func redisPnIdHash(pnI interface{}) int {
-	var buf bytes.Buffer
-	pn, ok := pnI.(map[string]interface{})
-	if !ok {
-		return 0
-	}
-	if id, ok := pn["id"]; ok {
-		buf.WriteString(fmt.Sprintf("%v-", id.(string)))
-	}
-	return StringHashcode(buf.String())
-}
+//func redisPnIdHash(pnI interface{}) int {
+//	var buf bytes.Buffer
+//	pn, ok := pnI.(map[string]interface{})
+//	if !ok {
+//		return 0
+//	}
+//	if id, ok := pn["id"]; ok {
+//		buf.WriteString(fmt.Sprintf("%v-", id.(string)))
+//	}
+//	return StringHashcode(buf.String())
+//}
