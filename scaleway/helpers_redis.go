@@ -155,8 +155,7 @@ func flattenRedisPrivateNetwork(endpoints []*redis.Endpoint) (interface{}, bool)
 			"service_ips": serviceIps,
 		})
 	}
-	return pnFlat, len(pnFlat) != 0
-	//return orderPrivateNetworksByFirstIP(pnFlat), len(pnFlat) != 0
+	return orderPrivateNetworksInterfaceByFirstIP(pnFlat), len(pnFlat) != 0
 }
 
 func flattenRedisPublicNetwork(endpoints []*redis.Endpoint) interface{} {
@@ -179,8 +178,9 @@ func flattenRedisPublicNetwork(endpoints []*redis.Endpoint) interface{} {
 	return pnFlat
 }
 
-func orderPrivateNetworksByFirstIP(epI interface{}) interface{} {
+func orderPrivateNetworksInterfaceByFirstIP(epI interface{}) interface{} {
 	endpoints := epI.([]map[string]interface{})
+loop:
 	for index := range endpoints {
 		if index == len(endpoints)-1 {
 			return endpoints
@@ -190,14 +190,43 @@ func orderPrivateNetworksByFirstIP(epI interface{}) interface{} {
 		ip := strings.Split(ips[0].(string), ".")
 		ipNext := strings.Split(ipsNext[0].(string), ".")
 		for i, ipPart := range ip {
-			ipPartA, _ := strconv.Atoi(ipPart)
-			ipPartB, _ := strconv.Atoi(ipNext[i])
-			if ipPartA > ipPartB {
-				tmp := endpoints[index]
-				endpoints[index] = endpoints[index+1]
-				endpoints[index+1] = tmp
-				index = 0
+			ipPartA, err := strconv.Atoi(ipPart)
+			ipPartB, err2 := strconv.Atoi(ipNext[i])
+			if err != nil || err2 != nil {
+				ipPartA, _ = strconv.Atoi(strings.Split(ipPart, "/")[0])
+				ipPartB, _ = strconv.Atoi(strings.Split(ipNext[i], "/")[0])
+			}
+			if ipPartA < ipPartB {
 				break
+			} else if ipPartA > ipPartB {
+				endpoints[index], endpoints[index+1] = endpoints[index+1], endpoints[index]
+				goto loop
+			}
+		}
+	}
+	return endpoints
+}
+
+func orderPrivateNetworksSpecsByFirstIP(endpoints []*redis.EndpointSpec) []*redis.EndpointSpec {
+loop:
+	for index := range endpoints {
+		if index == len(endpoints)-1 || endpoints[index].PrivateNetwork == nil {
+			return endpoints
+		}
+		ip := strings.Split(endpoints[index].PrivateNetwork.ServiceIPs[0].String(), ".")
+		ipNext := strings.Split(endpoints[index+1].PrivateNetwork.ServiceIPs[0].String(), ".")
+		for i, ipPart := range ip {
+			ipPartA, err := strconv.Atoi(ipPart)
+			ipPartB, err2 := strconv.Atoi(ipNext[i])
+			if err != nil || err2 != nil {
+				ipPartA, _ = strconv.Atoi(strings.Split(ipPart, "/")[0])
+				ipPartB, _ = strconv.Atoi(strings.Split(ipNext[i], "/")[0])
+			}
+			if ipPartA < ipPartB {
+				break
+			} else if ipPartA > ipPartB {
+				endpoints[index], endpoints[index+1] = endpoints[index+1], endpoints[index]
+				goto loop
 			}
 		}
 	}

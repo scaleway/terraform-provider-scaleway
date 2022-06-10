@@ -138,7 +138,7 @@ func resourceScalewayRedisCluster() *schema.Resource {
 					},
 				},
 			},
-			//Computed
+			// Computed
 			"public_network": {
 				Type:        schema.TypeList,
 				Optional:    true,
@@ -227,6 +227,7 @@ func resourceScalewayRedisClusterCreate(ctx context.Context, d *schema.ResourceD
 	privN, privNExists := d.GetOk("private_network")
 	if privNExists {
 		pnSpecs, err := expandRedisPrivateNetwork(privN.(*schema.Set).List())
+		pnSpecs = orderPrivateNetworksSpecsByFirstIP(pnSpecs)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -284,7 +285,7 @@ func resourceScalewayRedisClusterRead(ctx context.Context, d *schema.ResourceDat
 		_ = d.Set("tags", cluster.Tags)
 	}
 
-	//set endpoints
+	// set endpoints
 	pnI, pnExists := flattenRedisPrivateNetwork(cluster.Endpoints)
 	if pnExists {
 		_ = d.Set("private_network", pnI)
@@ -427,7 +428,7 @@ func resourceScalewayRedisClusterUpdateSettings(ctx context.Context, d *schema.R
 }
 
 func resourceScalewayRedisClusterUpdateEndpoints(ctx context.Context, d *schema.ResourceData, redisAPI *redis.API, zone scw.Zone, clusterID string) diag.Diagnostics {
-	//retrieve state
+	// retrieve state
 	cluster, err := waitForRedisCluster(ctx, redisAPI, zone, clusterID, d.Timeout(schema.TimeoutUpdate))
 	if err != nil {
 		return diag.FromErr(err)
@@ -443,8 +444,10 @@ func resourceScalewayRedisClusterUpdateEndpoints(ctx context.Context, d *schema.
 		newEndpoints = append(newEndpoints, &redis.EndpointSpec{
 			PublicNetwork: &redis.EndpointSpecPublicNetworkSpec{},
 		})
+	} else {
+		newEndpoints = orderPrivateNetworksSpecsByFirstIP(newEndpoints)
 	}
-	//send request
+	// send request
 	_, err = redisAPI.SetEndpoints(&redis.SetEndpointsRequest{
 		Zone:      cluster.Zone,
 		ClusterID: cluster.ID,
