@@ -3,6 +3,8 @@ package scaleway
 import (
 	"context"
 	"fmt"
+	"strconv"
+	"strings"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -55,15 +57,13 @@ func waitForRedisCluster(ctx context.Context, api *redis.API, zone scw.Zone, id 
 	}, scw.WithContext(ctx))
 }
 
-func expandRedisPrivateNetwork(data interface{}) ([]*redis.EndpointSpec, error) {
-	//func expandRedisPrivateNetwork(data []interface{}) ([]*redis.EndpointSpec, error) {
+func expandRedisPrivateNetwork(data []interface{}) ([]*redis.EndpointSpec, error) {
 	if data == nil {
 		return nil, nil
 	}
 	var epSpecs []*redis.EndpointSpec
 
-	for _, rawPN := range data.([]interface{}) {
-		//for _, rawPN := range data {
+	for _, rawPN := range data {
 		pn := rawPN.(map[string]interface{})
 		pnID := expandID(pn["id"].(string))
 		rawIPs := pn["service_ips"].([]interface{})
@@ -139,51 +139,67 @@ func flattenRedisSettings(settings []*redis.ClusterSetting) interface{} {
 func flattenRedisPrivateNetwork(endpoints []*redis.Endpoint) (interface{}, bool) {
 	pnFlat := []map[string]interface{}(nil)
 	for _, endpoint := range endpoints {
-		if endpoint.PrivateNetwork != nil {
-			pn := endpoint.PrivateNetwork
-			pnZonedID := newZonedIDString(pn.Zone, pn.ID)
-			serviceIps := []interface{}(nil)
-			for _, ip := range pn.ServiceIPs {
-				serviceIps = append(serviceIps, ip.String())
-			}
-			pnFlat = append(pnFlat, map[string]interface{}{
-				"endpoint_id": endpoint.ID,
-				"zone":        pn.Zone,
-				"id":          pnZonedID,
-				"service_ips": serviceIps,
-			})
+		if endpoint.PrivateNetwork == nil {
+			continue
 		}
+		pn := endpoint.PrivateNetwork
+		pnZonedID := newZonedIDString(pn.Zone, pn.ID)
+		serviceIps := []interface{}(nil)
+		for _, ip := range pn.ServiceIPs {
+			serviceIps = append(serviceIps, ip.String())
+		}
+		pnFlat = append(pnFlat, map[string]interface{}{
+			"endpoint_id": endpoint.ID,
+			"zone":        pn.Zone,
+			"id":          pnZonedID,
+			"service_ips": serviceIps,
+		})
 	}
 	return pnFlat, len(pnFlat) != 0
+	//return orderPrivateNetworksByFirstIP(pnFlat), len(pnFlat) != 0
 }
 
 func flattenRedisPublicNetwork(endpoints []*redis.Endpoint) interface{} {
 	pnFlat := []map[string]interface{}(nil)
 	for _, endpoint := range endpoints {
-		if endpoint.PublicNetwork != nil {
-			ipsFlat := []interface{}(nil)
-			for _, ip := range endpoint.IPs {
-				ipsFlat = append(ipsFlat, ip.String())
-			}
-			pnFlat = append(pnFlat, map[string]interface{}{
-				"id":   endpoint.ID,
-				"port": int(endpoint.Port),
-				"ips":  ipsFlat,
-			})
-			return pnFlat
+		if endpoint.PublicNetwork == nil {
+			continue
 		}
+		ipsFlat := []interface{}(nil)
+		for _, ip := range endpoint.IPs {
+			ipsFlat = append(ipsFlat, ip.String())
+		}
+		pnFlat = append(pnFlat, map[string]interface{}{
+			"id":   endpoint.ID,
+			"port": int(endpoint.Port),
+			"ips":  ipsFlat,
+		})
+		return pnFlat
 	}
 	return pnFlat
 }
 
-//func redisPnIdHash(pnI interface{}) int {
-//	var buf bytes.Buffer
-//	pn, ok := pnI.(map[string]interface{})
-//	if !ok {
-//		return 0
-//	}
-//	if id, ok := pn["id"]; ok {
-//		buf.WriteString(fmt.Sprintf("%v-", id.(string)))
-//	}
-//	return StringHashcode(buf.String())
-//}
+func orderPrivateNetworksByFirstIP(epI interface{}) interface{} {
+	endpoints := epI.([]map[string]interface{})
+	for index := range endpoints {
+		if index == len(endpoints)-1 {
+			return endpoints
+		}
+		ips := endpoints[index]["service_ips"].([]interface{})
+		ipsNext := endpoints[index+1]["service_ips"].([]interface{})
+		ip := strings.Split(ips[0].(string), ".")
+		ipNext := strings.Split(ipsNext[0].(string), ".")
+		for i, ipPart := range ip {
+			ipPartA, _ := strconv.Atoi(ipPart)
+			ipPartB, _ := strconv.Atoi(ipNext[i])
+			if ipPartA > ipPartB {
+				tmp := endpoints[index]
+				endpoints[index] = endpoints[index+1]
+				endpoints[index+1] = tmp
+				index = 0
+				break
+			}
+		}
+	}
+	return endpoints
+}

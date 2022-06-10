@@ -2,10 +2,8 @@ package scaleway
 
 import (
 	"context"
-	"fmt"
 	"time"
 
-	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
@@ -111,11 +109,9 @@ func resourceScalewayRedisCluster() *schema.Resource {
 				},
 			},
 			"private_network": {
-				Type: schema.TypeList,
-				//Type:        schema.TypeSet,
+				Type:        schema.TypeSet,
 				Optional:    true,
 				Description: "Private network specs details",
-				//Set:         redisPnIdHash,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"endpoint_id": {
@@ -188,7 +184,6 @@ func resourceScalewayRedisCluster() *schema.Resource {
 }
 
 func resourceScalewayRedisClusterCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	tflog.Info(ctx, fmt.Sprintf("CREATING THE CLUSTER"))
 	redisAPI, zone, err := redisAPIWithZone(d, meta)
 	if err != nil {
 		return diag.FromErr(err)
@@ -231,8 +226,7 @@ func resourceScalewayRedisClusterCreate(ctx context.Context, d *schema.ResourceD
 
 	privN, privNExists := d.GetOk("private_network")
 	if privNExists {
-		pnSpecs, err := expandRedisPrivateNetwork(privN)
-		//pnSpecs, err := expandRedisPrivateNetwork(privN.(*schema.Set).List())
+		pnSpecs, err := expandRedisPrivateNetwork(privN.(*schema.Set).List())
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -255,7 +249,6 @@ func resourceScalewayRedisClusterCreate(ctx context.Context, d *schema.ResourceD
 }
 
 func resourceScalewayRedisClusterRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	tflog.Info(ctx, fmt.Sprintf("READING THE CLUSTER"))
 	redisAPI, zone, ID, err := redisAPIWithZoneAndID(meta, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -302,8 +295,6 @@ func resourceScalewayRedisClusterRead(ctx context.Context, d *schema.ResourceDat
 }
 
 func resourceScalewayRedisClusterUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	tflog.Info(ctx, fmt.Sprintf("UPDATING THE CLUSTER"))
-	changes := []string(nil)
 	redisAPI, zone, ID, err := redisAPIWithZoneAndID(meta, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -316,33 +307,27 @@ func resourceScalewayRedisClusterUpdate(ctx context.Context, d *schema.ResourceD
 
 	if d.HasChange("name") {
 		req.Name = expandStringPtr(d.Get("name"))
-		changes = append(changes, "name")
 	}
 	if d.HasChange("user_name") {
 		req.UserName = expandStringPtr(d.Get("user_name"))
-		changes = append(changes, "user_name")
 	}
 	if d.HasChange("password") {
 		req.Password = expandStringPtr(d.Get("password"))
-		changes = append(changes, "password")
 	}
 	if d.HasChange("tags") {
 		req.Tags = expandStrings(d.Get("tags"))
-		changes = append(changes, "tags")
 	}
 	if d.HasChange("acl") {
 		diagnostics := resourceScalewayRedisClusterUpdateACL(ctx, d, redisAPI, zone, ID)
 		if diagnostics != nil {
 			return diagnostics
 		}
-		changes = append(changes, "acl")
 	}
 	if d.HasChange("settings") {
 		diagnostics := resourceScalewayRedisClusterUpdateSettings(ctx, d, redisAPI, zone, ID)
 		if diagnostics != nil {
 			return diagnostics
 		}
-		changes = append(changes, "settings")
 	}
 
 	_, err = waitForRedisCluster(ctx, redisAPI, zone, ID, d.Timeout(schema.TimeoutUpdate))
@@ -362,7 +347,6 @@ func resourceScalewayRedisClusterUpdate(ctx context.Context, d *schema.ResourceD
 			ClusterID:   ID,
 			ClusterSize: scw.Uint32Ptr(uint32(d.Get("cluster_size").(int))),
 		})
-		changes = append(changes, "cluster_size")
 	}
 	if d.HasChange("version") {
 		migrateClusterRequests = append(migrateClusterRequests, redis.MigrateClusterRequest{
@@ -370,7 +354,6 @@ func resourceScalewayRedisClusterUpdate(ctx context.Context, d *schema.ResourceD
 			ClusterID: ID,
 			Version:   expandStringPtr(d.Get("version")),
 		})
-		changes = append(changes, "version")
 	}
 	if d.HasChange("node_type") {
 		migrateClusterRequests = append(migrateClusterRequests, redis.MigrateClusterRequest{
@@ -378,7 +361,6 @@ func resourceScalewayRedisClusterUpdate(ctx context.Context, d *schema.ResourceD
 			ClusterID: ID,
 			NodeType:  expandStringPtr(d.Get("node_type")),
 		})
-		changes = append(changes, "node_type")
 	}
 	for i := range migrateClusterRequests {
 		_, err = waitForRedisCluster(ctx, redisAPI, zone, ID, d.Timeout(schema.TimeoutUpdate))
@@ -396,16 +378,12 @@ func resourceScalewayRedisClusterUpdate(ctx context.Context, d *schema.ResourceD
 		}
 	}
 
-	tflog.Info(ctx, fmt.Sprintf("private network has change yes or no ? %v", d.HasChanges("private_network", "private_network.id", "private_network.service_ips")))
-	if d.HasChanges("private_network", "private_network.id", "private_network.service_ips") {
+	if d.HasChanges("private_network") {
 		diagnostics := resourceScalewayRedisClusterUpdateEndpoints(ctx, d, redisAPI, zone, ID)
 		if diagnostics != nil {
 			return diagnostics
 		}
-		changes = append(changes, "private_network")
 	}
-
-	tflog.Info(ctx, fmt.Sprintf("CHANGES ARE : %v", changes))
 
 	_, err = waitForRedisCluster(ctx, redisAPI, zone, ID, d.Timeout(schema.TimeoutUpdate))
 	if err != nil {
@@ -456,13 +434,8 @@ func resourceScalewayRedisClusterUpdateEndpoints(ctx context.Context, d *schema.
 	}
 
 	// get new desired state of endpoints
-	//first, after := d.GetChange("private_network")
-	//isEqual := first.(*schema.Set).HashEqual(after)
-	//tflog.Info(ctx, fmt.Sprintf("private network is equal: %v", isEqual))
 	rawNewEndpoints := d.Get("private_network")
-	//if isEqual == false {
-	newEndpoints, err := expandRedisPrivateNetwork(rawNewEndpoints)
-	//newEndpoints, err := expandRedisPrivateNetwork(rawNewEndpoints.(*schema.Set).List())
+	newEndpoints, err := expandRedisPrivateNetwork(rawNewEndpoints.(*schema.Set).List())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -480,7 +453,6 @@ func resourceScalewayRedisClusterUpdateEndpoints(ctx context.Context, d *schema.
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	//}
 
 	_, err = waitForRedisCluster(ctx, redisAPI, zone, clusterID, d.Timeout(schema.TimeoutUpdate))
 	if err != nil {

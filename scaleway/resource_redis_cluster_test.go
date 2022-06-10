@@ -302,7 +302,7 @@ func TestAccScalewayRedisCluster_Settings(t *testing.T) {
 	})
 }
 
-func TestAccScalewayRedisCluster_Endpoints(t *testing.T) {
+func TestAccScalewayRedisCluster_Endpoints_Standalone(t *testing.T) {
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
 	resource.ParallelTest(t, resource.TestCase{
@@ -311,9 +311,7 @@ func TestAccScalewayRedisCluster_Endpoints(t *testing.T) {
 		CheckDestroy:      testAccCheckScalewayRedisClusterDestroy(tt),
 		Steps: []resource.TestStep{
 			{
-				// PHASE ONE: STANDALONE CLUSTER
-
-				// First we define a single private network
+				// Step 1: First we define a single private network
 				Config: `
 					resource "scaleway_vpc_private_network" "pn" {
 						name = "private-network"
@@ -354,51 +352,7 @@ func TestAccScalewayRedisCluster_Endpoints(t *testing.T) {
 				),
 			},
 			{
-				// TMP Step 2
-				// modify private network
-				Config: `
-					resource "scaleway_vpc_private_network" "pn" {
-						name = "private-network"
-					}
-					resource "scaleway_redis_cluster" "main" {
-						name =			"test_redis_endpoints_other"
-						version = 		"6.2.6"
-						node_type = 	"MDB-BETA-M"
-						user_name = 	"my_initial_user"
-						password = 		"thiZ_is_v&ry_s3cret"
-						cluster_size = 	1
-						private_network {
-							id = "${scaleway_vpc_private_network.pn.id}"
-							service_ips = [
-								"192.168.1.0/20",
-							]
-						}
-						depends_on = [
-							scaleway_vpc_private_network.pn
-						]
-					}
-				`,
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayRedisExists(tt, "scaleway_redis_cluster.main"),
-					testAccCheckScalewayVPCPrivateNetworkExists(tt, "scaleway_vpc_private_network.pn"),
-					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "name", "test_redis_endpoints_other"),
-					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "version", "6.2.6"),
-					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "node_type", "MDB-BETA-M"),
-					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "user_name", "my_initial_user"),
-					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "password", "thiZ_is_v&ry_s3cret"),
-					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "cluster_size", "1"),
-					// Check that nothing is defined that was not defined in the specs
-					resource.TestCheckNoResourceAttr("scaleway_redis_cluster.main", "private_network.1.service_ips.#"),
-					resource.TestCheckNoResourceAttr("scaleway_redis_cluster.main", "private_network.0.service_ips.1"),
-					// Check that the private network is set according to the specs
-					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "private_network.0.service_ips.0", "192.168.1.0/20"),
-					resource.TestCheckResourceAttrSet("scaleway_redis_cluster.main", "private_network.0.endpoint_id"),
-					resource.TestCheckResourceAttrSet("scaleway_redis_cluster.main", "private_network.0.id"),
-					resource.TestCheckTypeSetElemAttrPair("scaleway_redis_cluster.main", "private_network.0.id", "scaleway_vpc_private_network.pn", "id"),
-				),
-			},
-			/*{
-				// Then we add another one
+				// Step 2: Then we add another one
 				Config: `
 					resource "scaleway_vpc_private_network" "pn" {
 						name = "private-network"
@@ -441,20 +395,20 @@ func TestAccScalewayRedisCluster_Endpoints(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "user_name", "my_initial_user"),
 					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "password", "thiZ_is_v&ry_s3cret"),
 					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "cluster_size", "1"),
-					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "private_network.1.service_ips.0", "10.12.1.0/20"),
-					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "private_network.0.service_ips.0", "192.168.1.0/20"),
-					//resource.TestCheckTypeSetElemAttr("scaleway_redis_cluster.main", "private_network.*", "10.12.1.1/20"),
-					//resource.TestCheckTypeSetElemAttr("scaleway_redis_cluster.main", "private_network.*", "192.168.1.0/20"),
+					// Check that the first private network is set according to the specs
 					resource.TestCheckResourceAttrSet("scaleway_redis_cluster.main", "private_network.0.id"),
-					resource.TestCheckResourceAttrSet("scaleway_redis_cluster.main", "private_network.1.id"),
 					resource.TestCheckResourceAttrSet("scaleway_redis_cluster.main", "private_network.0.endpoint_id"),
+					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "private_network.0.service_ips.0", "10.12.1.0/20"),
+					resource.TestCheckTypeSetElemAttrPair("scaleway_redis_cluster.main", "private_network.0.id", "scaleway_vpc_private_network.pn", "id"),
+					// Check that the second private network is set according to the specs
+					resource.TestCheckResourceAttrSet("scaleway_redis_cluster.main", "private_network.1.id"),
 					resource.TestCheckResourceAttrSet("scaleway_redis_cluster.main", "private_network.1.endpoint_id"),
-					resource.TestCheckTypeSetElemAttrPair("scaleway_redis_cluster.main", "private_network.1.id", "scaleway_vpc_private_network.pn", "id"),
-					resource.TestCheckTypeSetElemAttrPair("scaleway_redis_cluster.main", "private_network.0.id", "scaleway_vpc_private_network.pn2", "id"),
+					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "private_network.1.service_ips.0", "192.168.1.0/20"),
+					resource.TestCheckTypeSetElemAttrPair("scaleway_redis_cluster.main", "private_network.1.id", "scaleway_vpc_private_network.pn2", "id"),
 				),
 			},
-			{
-				// Then we modify the first one and remove the second one
+			/*{
+				// Step 3: Then we modify the first one and remove the second one
 				Config: `
 					resource "scaleway_vpc_private_network" "pn" {
 						name = "private-network"
@@ -498,9 +452,9 @@ func TestAccScalewayRedisCluster_Endpoints(t *testing.T) {
 					resource.TestCheckNoResourceAttr("scaleway_redis_cluster.main", "private_network.1.id"),
 					resource.TestCheckNoResourceAttr("scaleway_redis_cluster.main", "private_network.1.endpoint_id"),
 				),
-			}, */
+			},
 			{
-				// And finally we remove the private network to check that we still have a public network
+				// Step 4: And finally we remove the private network to check that we still have a public network
 				Config: `
 					resource "scaleway_vpc_private_network" "pn" {
 						name = "private-network"
@@ -540,7 +494,7 @@ func TestAccScalewayRedisCluster_Endpoints(t *testing.T) {
 				),
 			},
 			{
-				// Extra step just to be sure that the cluster is deleted before the Private Networks
+				// Step 5: Extra step just to be sure that the cluster is deleted before the Private Networks
 				Config: `
 					resource "scaleway_vpc_private_network" "pn" {
 						name = "private-network"
@@ -550,10 +504,21 @@ func TestAccScalewayRedisCluster_Endpoints(t *testing.T) {
 					}
 				`,
 			},
-			/*{
-				// PHASE TWO: CLUSTER WITH 3 NODES
+			*/
+		},
+	})
+}
 
-				// We define a single private network
+func TestAccScalewayRedisCluster_Endpoints_ClusterMode(t *testing.T) {
+	tt := NewTestTools(t)
+	defer tt.Cleanup()
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      testAccCheckScalewayRedisClusterDestroy(tt),
+		Steps: []resource.TestStep{
+			{
+				// Step 1: We define a single private network
 				Config: `
 					resource "scaleway_vpc_private_network" "pn" {
 						name = "private-network"
@@ -564,7 +529,7 @@ func TestAccScalewayRedisCluster_Endpoints(t *testing.T) {
 						node_type = 	"MDB-BETA-M"
 						user_name = 	"my_initial_user"
 						password = 		"thiZ_is_v&ry_s3cret"
-						cluster_size = 	3
+						cluster_size = 	2
 						private_network {
 							id = "${scaleway_vpc_private_network.pn.id}"
 							service_ips = [
@@ -586,7 +551,7 @@ func TestAccScalewayRedisCluster_Endpoints(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "node_type", "MDB-BETA-M"),
 					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "user_name", "my_initial_user"),
 					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "password", "thiZ_is_v&ry_s3cret"),
-					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "cluster_size", "3"),
+					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "cluster_size", "2"),
 					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "private_network.0.service_ips.0", "10.12.1.10/24"),
 					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "private_network.0.service_ips.1", "10.12.1.11/24"),
 					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "private_network.0.service_ips.2", "10.12.1.12/24"),
@@ -596,13 +561,13 @@ func TestAccScalewayRedisCluster_Endpoints(t *testing.T) {
 				),
 			},
 			{
-				// We delete the cluster, but keep the private network to be sure it's not deleted before
+				// Step 2: We delete the cluster, but keep the private network to be sure it's not deleted before
 				Config: `
 					resource "scaleway_vpc_private_network" "pn" {
 						name = "private-network"
 					}
 				`,
-			}, */
+			},
 		},
 	})
 }
