@@ -75,7 +75,6 @@ func TestAccScalewayFunction_Basic(t *testing.T) {
 }
 
 func TestAccScalewayFunction_NoName(t *testing.T) {
-	t.Skip("Generated name are too big for the API")
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
 
@@ -166,7 +165,7 @@ func testAccCheckScalewayFunctionExists(tt *TestTools, n string) resource.TestCh
 
 		api, region, id, err := functionAPIWithRegionAndID(tt.Meta, rs.Primary.ID)
 		if err != nil {
-			return nil
+			return err
 		}
 
 		_, err = api.GetFunction(&function.GetFunctionRequest{

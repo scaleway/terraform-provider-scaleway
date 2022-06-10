@@ -34,6 +34,7 @@ func resourceScalewayFunction() *schema.Resource {
 				Type:         schema.TypeString,
 				ForceNew:     true,
 				Optional:     true,
+				Computed:     true,
 				Description:  "The name of the function namespace",
 				ValidateFunc: validation.StringLenBetween(1, 20),
 			},
@@ -97,21 +98,36 @@ func resourceScalewayFunction() *schema.Resource {
 				Required:    true,
 				Description: "Handler of the function. Depends on the runtime https://developers.scaleway.com/en/products/functions/api/#create-a-function",
 			},
-			"http_option": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "HTTPOption: configure how HTTP and HTTPS requests are handled (redirected or enabled)",
-				ValidateFunc: validation.StringInSlice([]string{
-					"redirected", // Responds to HTTP request with a 302 redirect to ask the clients to use HTTPS.
-					"enabled",    // Serve both HTTP and HTTPS traffic.
-				}, false),
-			},
 			"timeout": {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "Holds the max duration (in seconds) the function is allowed for responding to a request",
 				Optional:    true,
 			},
+
+			/*
+				"status": {
+					Type:        schema.TypeString,
+					Computed:    true,
+					Description: "The state of the function, possible values in api doc https://developers.scaleway.com/en/products/functions/api/#status-1e9767",
+				},
+				"cpu_limit": {
+					Type:        schema.TypeInt,
+					Optional:    true,
+					Description: "CPU limit in mCPU for your function, defaults to 70mCPU",
+					Default:     70,
+				},
+				"secret_environment_variables": {
+					Type:     schema.TypeMap,
+					Optional: true,
+					Elem: &schema.Schema{
+						Type:         schema.TypeString,
+						Sensitive:    true,
+						ValidateFunc: validation.StringLenBetween(0, 1000),
+					},
+					ValidateDiagFunc: validation.MapKeyLenBetween(0, 100),
+				},
+			*/
 			"region":          regionSchema(),
 			"organization_id": organizationIDSchema(),
 			"project_id":      projectIDSchema(),
@@ -133,7 +149,6 @@ func resourceScalewayFunctionCreate(ctx context.Context, d *schema.ResourceData,
 	req := &function.CreateFunctionRequest{
 		Description:          expandStringPtr(d.Get("description").(string)),
 		EnvironmentVariables: expandMapStringStringPtr(d.Get("environment_variables")),
-		HTTPOption:           expandStringPtr(d.Get("http_option").(string)),
 		Handler:              expandStringPtr(d.Get("handler").(string)),
 		MaxScale:             expandUint32Ptr(d.Get("max_scale")),
 		MemoryLimit:          expandUint32Ptr(d.Get("memory_limit")),
@@ -153,6 +168,7 @@ func resourceScalewayFunctionCreate(ctx context.Context, d *schema.ResourceData,
 	if err != nil {
 		return diag.FromErr(err)
 	}
+	// TODO Warning on Error message
 
 	d.SetId(newRegionalIDString(region, f.ID))
 
@@ -169,7 +185,6 @@ func resourceScalewayFunctionRead(ctx context.Context, d *schema.ResourceData, m
 		FunctionID: id,
 		Region:     region,
 	}, scw.WithContext(ctx))
-
 	if err != nil {
 		if is404Error(err) {
 			d.SetId("")
@@ -177,11 +192,12 @@ func resourceScalewayFunctionRead(ctx context.Context, d *schema.ResourceData, m
 		}
 		return diag.FromErr(err)
 	}
+	// TODO Warning on Error message
+	// TODO Warning on runtime message
 
 	_ = d.Set("description", f.Description)
 	_ = d.Set("environment_variables", f.EnvironmentVariables)
 	_ = d.Set("handler", f.Handler)
-	_ = d.Set("http_option", f.HTTPOption)
 	_ = d.Set("max_scale", int(f.MaxScale))
 	_ = d.Set("memory_limit", int(f.MemoryLimit))
 	_ = d.Set("min_scale", int(f.MinScale))
@@ -222,10 +238,6 @@ func resourceScalewayFunctionUpdate(ctx context.Context, d *schema.ResourceData,
 
 	if d.HasChange("description") {
 		req.Description = expandStringPtr(d.Get("description"))
-	}
-
-	if d.HasChange("http_option") {
-		req.HTTPOption = expandStringPtr(d.Get("http_option"))
 	}
 
 	if d.HasChange("memory_limit") {
