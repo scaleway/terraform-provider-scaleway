@@ -395,7 +395,7 @@ func expandStringsPtr(data interface{}) *[]string {
 }
 
 // expandUpdatedStringsPtr expands a string slice but will default to an empty list.
-// should be used on schema update so emptying a list will update resource.
+// Should be used on schema update so emptying a list will update resource.
 func expandUpdatedStringsPtr(data interface{}) *[]string {
 	stringSlice := []string{}
 	if _, ok := data.([]interface{}); !ok || data == nil {
