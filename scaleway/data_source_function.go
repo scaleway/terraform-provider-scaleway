@@ -20,6 +20,9 @@ func dataSourceScalewayFunction() *schema.Resource {
 		Computed:    true,
 	}
 
+	addOptionalFieldsToSchema(dsSchema, "name", "function_id")
+	fixDatasourceSchemaFlags(dsSchema, true, "namespace_id")
+
 	return &schema.Resource{
 		ReadContext: dataSourceScalewayFunctionRead,
 		Schema:      dsSchema,
@@ -35,8 +38,9 @@ func dataSourceScalewayFunctionRead(ctx context.Context, d *schema.ResourceData,
 	functionID, ok := d.GetOk("function_id")
 	if !ok {
 		res, err := api.ListFunctions(&function.ListFunctionsRequest{
-			Region: region,
-			Name:   expandStringPtr(d.Get("name")),
+			Region:      region,
+			NamespaceID: expandID(d.Get("namespace_id").(string)),
+			Name:        expandStringPtr(d.Get("name")),
 		}, scw.WithContext(ctx))
 		if err != nil {
 			return diag.FromErr(err)
