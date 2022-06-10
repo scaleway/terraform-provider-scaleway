@@ -81,7 +81,7 @@ func expandRedisPrivateNetwork(data []interface{}) ([]*redis.EndpointSpec, error
 		}
 		epSpecs = append(epSpecs, &redis.EndpointSpec{PrivateNetwork: spec})
 	}
-	return epSpecs, nil
+	return orderPrivateNetworksSpecsByFirstIP(epSpecs), nil
 }
 
 func expandRedisACLSpecs(i interface{}) ([]*redis.ACLRuleSpec, error) {

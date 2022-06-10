@@ -227,7 +227,6 @@ func resourceScalewayRedisClusterCreate(ctx context.Context, d *schema.ResourceD
 	privN, privNExists := d.GetOk("private_network")
 	if privNExists {
 		pnSpecs, err := expandRedisPrivateNetwork(privN.(*schema.Set).List())
-		pnSpecs = orderPrivateNetworksSpecsByFirstIP(pnSpecs)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -444,8 +443,6 @@ func resourceScalewayRedisClusterUpdateEndpoints(ctx context.Context, d *schema.
 		newEndpoints = append(newEndpoints, &redis.EndpointSpec{
 			PublicNetwork: &redis.EndpointSpecPublicNetworkSpec{},
 		})
-	} else {
-		newEndpoints = orderPrivateNetworksSpecsByFirstIP(newEndpoints)
 	}
 	// send request
 	_, err = redisAPI.SetEndpoints(&redis.SetEndpointsRequest{

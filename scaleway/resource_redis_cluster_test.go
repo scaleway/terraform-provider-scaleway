@@ -329,12 +329,8 @@ func TestAccScalewayRedisCluster_Endpoints_Standalone(t *testing.T) {
 								"10.12.1.0/20",
 							]
 						}
-						depends_on = [
-							scaleway_vpc_private_network.pn
-						]
 					}
 				`,
-				// TODO: try without depends_on
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayRedisExists(tt, "scaleway_redis_cluster.main"),
 					testAccCheckScalewayVPCPrivateNetworkExists(tt, "scaleway_vpc_private_network.pn"),
@@ -378,10 +374,6 @@ func TestAccScalewayRedisCluster_Endpoints_Standalone(t *testing.T) {
 								"192.168.1.0/20",
 							]
 						}
-						depends_on = [
-							scaleway_vpc_private_network.pn,
-							scaleway_vpc_private_network.pn2,
-						]
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
@@ -426,10 +418,6 @@ func TestAccScalewayRedisCluster_Endpoints_Standalone(t *testing.T) {
 								"10.13.1.0/20",
 							]
 						}
-						depends_on = [
-							scaleway_vpc_private_network.pn,
-							scaleway_vpc_private_network.pn2,
-						]
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
@@ -466,10 +454,6 @@ func TestAccScalewayRedisCluster_Endpoints_Standalone(t *testing.T) {
 						user_name = "my_initial_user"
 						password = "thiZ_is_v&ry_s3cret"
 						cluster_size = 1
-						depends_on = [
-							scaleway_vpc_private_network.pn,
-							scaleway_vpc_private_network.pn2,
-						]
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
