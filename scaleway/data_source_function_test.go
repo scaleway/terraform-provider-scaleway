@@ -27,6 +27,25 @@ func TestAccScalewayDataSourceFunction_Basic(t *testing.T) {
 						runtime = "node14"
 						privacy = "private"
 						handler = "handler.handle"
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayFunctionExists(tt, "scaleway_function.main"),
+					resource.TestCheckResourceAttr("scaleway_function.main", "name", "tf-ds-function"),
+				),
+			},
+			{
+				Config: `
+					resource "scaleway_function_namespace" "main" {
+						name = "tf-ds-function"
+					}
+
+					resource scaleway_function main {
+						name = "tf-ds-function"
+						namespace_id = scaleway_function_namespace.main.id
+						runtime = "node14"
+						privacy = "private"
+						handler = "handler.handle"
 					}					
 					
 					data "scaleway_function" "by_name" {
