@@ -3,6 +3,7 @@ package scaleway
 import (
 	"context"
 
+	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
@@ -168,11 +169,29 @@ func resourceScalewayFunctionCreate(ctx context.Context, d *schema.ResourceData,
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	// TODO Warning on Error message
+
+	var diags diag.Diagnostics
+
+	if f.ErrorMessage != nil {
+		diags = append(diags, diag.Diagnostic{
+			Severity: diag.Error,
+			Summary:  "Function error",
+			Detail:   *f.ErrorMessage,
+		})
+	}
+
+	if f.RuntimeMessage != "" {
+		diags = append(diags, diag.Diagnostic{
+			Severity:      diag.Warning,
+			Summary:       "Runtime time message",
+			Detail:        f.RuntimeMessage,
+			AttributePath: cty.GetAttrPath("runtime"),
+		})
+	}
 
 	d.SetId(newRegionalIDString(region, f.ID))
 
-	return resourceScalewayFunctionRead(ctx, d, meta)
+	return append(diags, resourceScalewayFunctionRead(ctx, d, meta)...)
 }
 
 func resourceScalewayFunctionRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -192,8 +211,25 @@ func resourceScalewayFunctionRead(ctx context.Context, d *schema.ResourceData, m
 		}
 		return diag.FromErr(err)
 	}
-	// TODO Warning on Error message
-	// TODO Warning on runtime message
+
+	var diags diag.Diagnostics
+
+	if f.ErrorMessage != nil {
+		diags = append(diags, diag.Diagnostic{
+			Severity: diag.Error,
+			Summary:  "Function error",
+			Detail:   *f.ErrorMessage,
+		})
+	}
+
+	if f.RuntimeMessage != "" {
+		diags = append(diags, diag.Diagnostic{
+			Severity:      diag.Warning,
+			Summary:       "Function runtime warning",
+			Detail:        f.RuntimeMessage,
+			AttributePath: cty.GetAttrPath("runtime"),
+		})
+	}
 
 	_ = d.Set("description", f.Description)
 	_ = d.Set("environment_variables", f.EnvironmentVariables)
@@ -206,7 +242,7 @@ func resourceScalewayFunctionRead(ctx context.Context, d *schema.ResourceData, m
 	_ = d.Set("region", f.Region.String())
 	_ = d.Set("timeout", flattenDuration(f.Timeout.ToTimeDuration()))
 
-	return nil
+	return diags
 }
 
 func resourceScalewayFunctionUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
