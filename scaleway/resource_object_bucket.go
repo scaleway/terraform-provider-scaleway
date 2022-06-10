@@ -9,6 +9,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/hashicorp/aws-sdk-go-base/tfawserr"
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -91,6 +92,12 @@ func resourceScalewayObjectBucket() *schema.Resource {
 						},
 					},
 				},
+			},
+			"force_destroy": {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Default:     false,
+				Description: "Delete objects in bucket",
 			},
 			"lifecycle_rule": {
 				Type:        schema.TypeList,
@@ -245,7 +252,7 @@ func resourceScalewayObjectBucketUpdate(ctx context.Context, d *schema.ResourceD
 			ACL:    scw.StringPtr(acl),
 		})
 		if err != nil {
-			l.Errorf("Couldn't update bucket ACL: %s", err)
+			tflog.Error(ctx, fmt.Sprintf("Couldn't update bucket ACL: %s", err))
 			return diag.FromErr(fmt.Errorf("couldn't update bucket ACL: %s", err))
 		}
 	}
@@ -418,6 +425,7 @@ func resourceScalewayObjectBucketRead(ctx context.Context, d *schema.ResourceDat
 	}
 
 	_ = d.Set("name", bucketName)
+	_ = d.Set("region", region)
 
 	// We do not read `acl` attribute because it could be impossible to find
 	// the right canned ACL from a complex ACL object.
@@ -433,7 +441,7 @@ func resourceScalewayObjectBucketRead(ctx context.Context, d *schema.ResourceDat
 	})
 	if err != nil {
 		if s3err, ok := err.(awserr.Error); ok && s3err.Code() == s3.ErrCodeNoSuchBucket {
-			l.Errorf("Bucket %q was not found - removing from state!", bucketName)
+			tflog.Error(ctx, fmt.Sprintf("Bucket %q was not found - removing from state!", bucketName))
 			d.SetId("")
 			return nil
 		}
@@ -587,6 +595,21 @@ func resourceScalewayObjectBucketDelete(ctx context.Context, d *schema.ResourceD
 	_, err = s3Client.DeleteBucketWithContext(ctx, &s3.DeleteBucketInput{
 		Bucket: scw.StringPtr(bucketName),
 	})
+
+	if isS3Err(err, s3.ErrCodeNoSuchBucket, "") {
+		return nil
+	}
+
+	if isS3Err(err, ErrCodeBucketNotEmpty, "") {
+		if d.Get("force_destroy").(bool) {
+			err = deleteS3ObjectVersions(ctx, s3Client, bucketName, true)
+			if err != nil {
+				return diag.FromErr(fmt.Errorf("error S3 bucket force_destroy: %s", err))
+			}
+			// Try to delete bucket again after deleting objects
+			return resourceScalewayObjectBucketDelete(ctx, d, meta)
+		}
+	}
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -603,7 +626,7 @@ func resourceScalewayObjectBucketVersioningUpdate(ctx context.Context, s3conn *s
 		Bucket:                  scw.StringPtr(bucketName),
 		VersioningConfiguration: vc,
 	}
-	l.Debugf("S3 put bucket versioning: %#v", i)
+	tflog.Debug(ctx, fmt.Sprintf("S3 put bucket versioning: %#v", i))
 
 	_, err := s3conn.PutBucketVersioningWithContext(ctx, i)
 	if err != nil {
@@ -619,25 +642,24 @@ func resourceScalewayS3BucketCorsUpdate(ctx context.Context, s3conn *s3.S3, d *s
 
 	if len(rawCors) == 0 {
 		// Delete CORS
-		l.Debugf("S3 bucket: %s, delete CORS", bucketName)
+		tflog.Debug(ctx, fmt.Sprintf("S3 bucket: %s, delete CORS", bucketName))
 
 		_, err := s3conn.DeleteBucketCorsWithContext(ctx, &s3.DeleteBucketCorsInput{
 			Bucket: scw.StringPtr(bucketName),
 		})
-
 		if err != nil {
 			return fmt.Errorf("error deleting S3 CORS: %s", err)
 		}
 	} else {
 		// Put CORS
-		rules := expandBucketCORS(rawCors, bucketName)
+		rules := expandBucketCORS(ctx, rawCors, bucketName)
 		corsInput := &s3.PutBucketCorsInput{
 			Bucket: scw.StringPtr(bucketName),
 			CORSConfiguration: &s3.CORSConfiguration{
 				CORSRules: rules,
 			},
 		}
-		l.Debugf("S3 bucket: %s, put CORS: %#v", bucketName, corsInput)
+		tflog.Debug(ctx, fmt.Sprintf("S3 bucket: %s, put CORS: %#v", bucketName, corsInput))
 
 		_, err := s3conn.PutBucketCorsWithContext(ctx, corsInput)
 		if err != nil {

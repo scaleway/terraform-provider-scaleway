@@ -18,6 +18,7 @@ func resourceScalewayAppleSiliconServer() *schema.Resource {
 		UpdateContext: resourceScalewayAppleSiliconServerUpdate,
 		DeleteContext: resourceScalewayAppleSiliconServerDelete,
 		Timeouts: &schema.ResourceTimeout{
+			Create:  schema.DefaultTimeout(defaultAppleSiliconServerTimeout),
 			Default: schema.DefaultTimeout(defaultAppleSiliconServerTimeout),
 		},
 		Importer: &schema.ResourceImporter{
@@ -37,7 +38,8 @@ func resourceScalewayAppleSiliconServer() *schema.Resource {
 				Required:    true,
 				ForceNew:    true,
 				ValidateFunc: validation.StringInSlice([]string{
-					AppleSiliconM1Type}, false),
+					AppleSiliconM1Type,
+				}, false),
 			},
 			// Computed
 			"ip": {
@@ -98,11 +100,7 @@ func resourceScalewayAppleSiliconServerCreate(ctx context.Context, d *schema.Res
 
 	d.SetId(newZonedIDString(zone, res.ID))
 
-	_, err = asAPI.WaitForServer(&applesilicon.WaitForServerRequest{
-		ServerID:      res.ID,
-		Timeout:       scw.TimeDurationPtr(defaultAppleSiliconServerTimeout),
-		RetryInterval: DefaultWaitRetryInterval,
-	}, scw.WithContext(ctx))
+	_, err = waitForAppleSiliconServer(ctx, asAPI, zone, res.ID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -137,7 +135,7 @@ func resourceScalewayAppleSiliconServerRead(ctx context.Context, d *schema.Resou
 	_ = d.Set("ip", res.IP.String())
 	_ = d.Set("vnc_url", res.VncURL)
 
-	_ = d.Set("zone", zone.String())
+	_ = d.Set("zone", res.Zone.String())
 	_ = d.Set("organization_id", res.OrganizationID)
 	_ = d.Set("project_id", res.ProjectID)
 

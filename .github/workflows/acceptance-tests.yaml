@@ -12,6 +12,7 @@ jobs:
           - Account
           - AppleSilicon
           - Baremetal
+          - Container
           - Domain
           - Function
           - Instance
@@ -21,6 +22,7 @@ jobs:
           - Marketplace
           - Object
           - Rdb
+          - Redis
           - Registry
           - VPC
     runs-on: ubuntu-latest
@@ -38,6 +40,8 @@ jobs:
           TF_ACC: 1
           TF_UPDATE_CASSETTES: false
           TF_TEST_DOMAIN: scaleway-terraform.com
+          TF_TEST_DOMAIN_ZONE: tf
+          TF_TEST_DOCKER_IMG: docker.io/library/alpine
           SCW_DEBUG: 0
           SCW_ACCESS_KEY: "SCWXXXXXXXXXXXXXFAKE"
           SCW_SECRET_KEY: "11111111-1111-1111-1111-111111111111"

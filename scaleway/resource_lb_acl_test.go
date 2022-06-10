@@ -6,7 +6,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
-	"github.com/scaleway/scaleway-sdk-go/api/lb/v1"
+	lbSDK "github.com/scaleway/scaleway-sdk-go/api/lb/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 )
 
@@ -90,54 +90,76 @@ func TestAccScalewayLbAcl_Basic(t *testing.T) {
 								type = "deny"
 							}
 						}
+
+						acl {
+							match {
+								ip_subnet = ["0.0.0.0/0"]
+								http_filter = "http_header_match"
+								http_filter_value = ["example.com"]
+								http_filter_option = "host"
+							}
+
+							action {
+								type = "allow"
+							}
+						}
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayACLAreCorrect(tt, "scaleway_lb_frontend.frt01", []*lb.ACL{
+					testAccCheckScalewayACLAreCorrect(tt, "scaleway_lb_frontend.frt01", []*lbSDK.ACL{
 						{
 							Name: "test-acl",
-							Match: &lb.ACLMatch{
+							Match: &lbSDK.ACLMatch{
 								IPSubnet:        scw.StringSlicePtr([]string{"192.168.0.1", "192.168.0.2", "192.168.10.0/24"}),
-								HTTPFilter:      lb.ACLHTTPFilterACLHTTPFilterNone,
+								HTTPFilter:      lbSDK.ACLHTTPFilterACLHTTPFilterNone,
 								HTTPFilterValue: []*string{},
 								Invert:          true,
 							},
-							Action: &lb.ACLAction{Type: lb.ACLActionTypeAllow},
+							Action: &lbSDK.ACLAction{Type: lbSDK.ACLActionTypeAllow},
 						},
 						{
-							Match: &lb.ACLMatch{
+							Match: &lbSDK.ACLMatch{
 								IPSubnet:        scw.StringSlicePtr([]string{"0.0.0.0/0"}),
-								HTTPFilter:      lb.ACLHTTPFilterPathBegin,
+								HTTPFilter:      lbSDK.ACLHTTPFilterPathBegin,
 								HTTPFilterValue: scw.StringSlicePtr([]string{"criteria1", "criteria2"}),
 								Invert:          true,
 							},
-							Action: &lb.ACLAction{Type: lb.ACLActionTypeAllow},
+							Action: &lbSDK.ACLAction{Type: lbSDK.ACLActionTypeAllow},
 						},
 						{
-							Match: &lb.ACLMatch{
+							Match: &lbSDK.ACLMatch{
 								IPSubnet:        scw.StringSlicePtr([]string{"0.0.0.0/0"}),
-								HTTPFilter:      lb.ACLHTTPFilterPathBegin,
+								HTTPFilter:      lbSDK.ACLHTTPFilterPathBegin,
 								HTTPFilterValue: scw.StringSlicePtr([]string{"criteria1", "criteria2"}),
 								Invert:          false,
 							},
-							Action: &lb.ACLAction{Type: lb.ACLActionTypeAllow},
+							Action: &lbSDK.ACLAction{Type: lbSDK.ACLActionTypeAllow},
 						},
 						{
-							Match: &lb.ACLMatch{
+							Match: &lbSDK.ACLMatch{
 								IPSubnet:        scw.StringSlicePtr([]string{"0.0.0.0/0"}),
-								HTTPFilter:      lb.ACLHTTPFilterACLHTTPFilterNone,
+								HTTPFilter:      lbSDK.ACLHTTPFilterACLHTTPFilterNone,
 								HTTPFilterValue: []*string{},
 								Invert:          false,
 							},
-							Action: &lb.ACLAction{Type: lb.ACLActionTypeAllow},
+							Action: &lbSDK.ACLAction{Type: lbSDK.ACLActionTypeAllow},
 						},
 						{
-							Match: &lb.ACLMatch{
+							Match: &lbSDK.ACLMatch{
 								IPSubnet:        scw.StringSlicePtr([]string{"0.0.0.0/0"}),
-								HTTPFilter:      lb.ACLHTTPFilterACLHTTPFilterNone,
+								HTTPFilter:      lbSDK.ACLHTTPFilterACLHTTPFilterNone,
 								HTTPFilterValue: []*string{},
 							},
-							Action: &lb.ACLAction{Type: lb.ACLActionTypeDeny},
+							Action: &lbSDK.ACLAction{Type: lbSDK.ACLActionTypeDeny},
+						},
+						{
+							Match: &lbSDK.ACLMatch{
+								IPSubnet:         scw.StringSlicePtr([]string{"0.0.0.0/0"}),
+								HTTPFilter:       lbSDK.ACLHTTPFilterHTTPHeaderMatch,
+								HTTPFilterValue:  scw.StringSlicePtr([]string{"example.com"}),
+								HTTPFilterOption: scw.StringPtr("host"),
+							},
+							Action: &lbSDK.ACLAction{Type: lbSDK.ACLActionTypeAllow},
 						},
 					}),
 				),
@@ -175,15 +197,15 @@ func TestAccScalewayLbAcl_Basic(t *testing.T) {
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayACLAreCorrect(tt, "scaleway_lb_frontend.frt01", []*lb.ACL{
+					testAccCheckScalewayACLAreCorrect(tt, "scaleway_lb_frontend.frt01", []*lbSDK.ACL{
 						{
-							Match: &lb.ACLMatch{
+							Match: &lbSDK.ACLMatch{
 								IPSubnet:        scw.StringSlicePtr([]string{"10.0.0.10"}),
-								HTTPFilter:      lb.ACLHTTPFilterPathBegin,
+								HTTPFilter:      lbSDK.ACLHTTPFilterPathBegin,
 								HTTPFilterValue: scw.StringSlicePtr([]string{"foo", "bar"}),
 								Invert:          false,
 							},
-							Action: &lb.ACLAction{Type: lb.ACLActionTypeAllow},
+							Action: &lbSDK.ACLAction{Type: lbSDK.ACLActionTypeAllow},
 						},
 					}),
 				),
@@ -200,14 +222,14 @@ func TestAccScalewayLbAcl_Basic(t *testing.T) {
 	})
 }
 
-func testAccCheckScalewayACLAreCorrect(tt *TestTools, frontendName string, expectedAcls []*lb.ACL) resource.TestCheckFunc {
+func testAccCheckScalewayACLAreCorrect(tt *TestTools, frontendName string, expectedAcls []*lbSDK.ACL) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-		//define a wrapper for acl comparison
-		testCompareAcls := func(testAcl, apiAcl lb.ACL) bool {
-			//drop some values which are not part of the testing acl structure
+		// define a wrapper for acl comparison
+		testCompareAcls := func(testAcl, apiAcl lbSDK.ACL) bool {
+			// drop some values which are not part of the testing acl structure
 			apiAcl.ID = ""
 			apiAcl.Frontend = nil
-			//if we do not pass any name, then drop it from comparison
+			// if we do not pass any name, then drop it from comparison
 			if testAcl.Name == "" {
 				testAcl.Name = apiAcl.Name
 			}
@@ -228,8 +250,8 @@ func testAccCheckScalewayACLAreCorrect(tt *TestTools, frontendName string, expec
 			return err
 		}
 
-		//fetch our acls from the scaleway
-		resACL, err := lbAPI.ListACLs(&lb.ZonedAPIListACLsRequest{
+		// fetch our acls from the scaleway
+		resACL, err := lbAPI.ListACLs(&lbSDK.ZonedAPIListACLsRequest{
 			Zone:       zone,
 			FrontendID: ID,
 		}, scw.WithAllPages())
@@ -237,17 +259,17 @@ func testAccCheckScalewayACLAreCorrect(tt *TestTools, frontendName string, expec
 			return fmt.Errorf("error on getting acl list [%s]", err)
 		}
 
-		//verify that the count of api acl is the same as we are expecting it to be
+		// verify that the count of api acl is the same as we are expecting it to be
 		if len(expectedAcls) != len(resACL.ACLs) {
 			return fmt.Errorf("acl count is wrong")
 		}
-		//convert them to map indexed by the acl index
-		aclMap := make(map[int32]*lb.ACL)
+		// convert them to map indexed by the acl index
+		aclMap := make(map[int32]*lbSDK.ACL)
 		for _, acl := range resACL.ACLs {
 			aclMap[acl.Index] = acl
 		}
 
-		//check that every index is set up correctly
+		// check that every index is set up correctly
 		for i := 1; i <= len(expectedAcls); i++ {
 			if _, found := aclMap[int32(i)]; !found {
 				return fmt.Errorf("cannot find an index set [%d]", i)
@@ -256,7 +278,7 @@ func testAccCheckScalewayACLAreCorrect(tt *TestTools, frontendName string, expec
 				return fmt.Errorf("two acls are not equal on stage %d", i)
 			}
 		}
-		//check the actual data
+		// check the actual data
 
 		return nil
 	}

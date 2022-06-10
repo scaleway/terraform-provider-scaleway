@@ -15,7 +15,7 @@ func TestAccScalewayDataSourceObjectStorage_Basic(t *testing.T) {
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
 	bucketName := sdkacctest.RandomWithPrefix("test-acc-scaleway-object-bucket")
-	//resourceName := "data.scaleway_object_bucket.main"
+	// resourceName := "data.scaleway_object_bucket.main"
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,

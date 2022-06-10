@@ -127,7 +127,9 @@ The following arguments are supported:
 
 - `backup_schedule_retention` - (Optional) Backup schedule retention in days.
 
-- `settings` - Map of engine settings to be set.
+- `backup_same_region` - (Optional) Boolean to store logical backups in the same region as the database instance.
+
+- `settings` - (Optional) Map of engine settings to be set. Using this option will override default config. Available settings for your engine can be found on scaleway console or fetched using [rdb engine list route](https://developers.scaleway.com/en/products/rdb/api/#get-1eafb7)
 
 - `tags` - (Optional) The tags associated with the Database Instance.
 
@@ -147,8 +149,8 @@ The following arguments are supported:
 In addition to all arguments above, the following attributes are exported:
 
 - `id` - The ID of the Database Instance.
-- `endpoint_ip` - The IP of the Database Instance.
-- `endpoint_port` - The port of the Database Instance.
+- `endpoint_ip` - (Deprecated) The IP of the Database Instance.
+- `endpoint_port` - (Deprecated) The port of the Database Instance.
 - `read_replicas` - List of read replicas of the database instance.
     - `ip` - IP of the replica.
     - `port` - Port of the replica.

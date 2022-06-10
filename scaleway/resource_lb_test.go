@@ -8,7 +8,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
-	"github.com/scaleway/scaleway-sdk-go/api/lb/v1"
+	lbSDK "github.com/scaleway/scaleway-sdk-go/api/lb/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 )
 
@@ -21,10 +21,10 @@ func init() {
 
 func testSweepLB(_ string) error {
 	return sweepZones([]scw.Zone{scw.ZoneFrPar1, scw.ZoneNlAms1, scw.ZonePlWaw1}, func(scwClient *scw.Client, zone scw.Zone) error {
-		lbAPI := lb.NewZonedAPI(scwClient)
+		lbAPI := lbSDK.NewZonedAPI(scwClient)
 
 		l.Debugf("sweeper: destroying the lbs in (%s)", zone)
-		listLBs, err := lbAPI.ListLBs(&lb.ZonedAPIListLBsRequest{
+		listLBs, err := lbAPI.ListLBs(&lbSDK.ZonedAPIListLBsRequest{
 			Zone: zone,
 		}, scw.WithAllPages())
 		if err != nil {
@@ -32,16 +32,22 @@ func testSweepLB(_ string) error {
 		}
 
 		for _, l := range listLBs.LBs {
-			_, err = lbAPI.WaitForLbInstances(&lb.ZonedAPIWaitForLBInstancesRequest{
-				LBID:          l.ID,
+			retryInterval := defaultWaitLBRetryInterval
+
+			if DefaultWaitRetryInterval != nil {
+				retryInterval = *DefaultWaitRetryInterval
+			}
+
+			_, err := lbAPI.WaitForLbInstances(&lbSDK.ZonedAPIWaitForLBInstancesRequest{
 				Zone:          zone,
-				Timeout:       scw.TimeDurationPtr(lbWaitForTimeout),
-				RetryInterval: scw.TimeDurationPtr(defaultWaitLBRetryInterval),
-			})
+				LBID:          l.ID,
+				Timeout:       scw.TimeDurationPtr(defaultInstanceServerWaitTimeout),
+				RetryInterval: &retryInterval,
+			}, scw.WithContext(context.Background()))
 			if err != nil {
 				return fmt.Errorf("error waiting for lb in sweeper: %s", err)
 			}
-			err := lbAPI.DeleteLB(&lb.ZonedAPIDeleteLBRequest{
+			err = lbAPI.DeleteLB(&lbSDK.ZonedAPIDeleteLBRequest{
 				LBID:      l.ID,
 				ReleaseIP: true,
 				Zone:      zone,
@@ -67,37 +73,6 @@ func TestAccScalewayLbLb_WithIP(t *testing.T) {
 				Config: `
 					resource scaleway_lb_ip ip01 {
 					}
-					
-					resource scaleway_vpc_private_network pnLB01 {
-						name = "test-lb-with-pn-dhcp"
-					}
-
-					resource scaleway_lb lb01 {
-					    ip_id = scaleway_lb_ip.ip01.id
-						name = "test-lb-with-dhcp-1"
-						type = "LB-S"
-						release_ip = false
-						private_network {
-							private_network_id = scaleway_vpc_private_network.pnLB01.id
-							dhcp_config = true
-						}
-					}
-				`,
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayLbExists(tt, "scaleway_lb.lb01"),
-					testAccCheckScalewayLbIPExists(tt, "scaleway_lb_ip.ip01"),
-					resource.TestCheckResourceAttr("scaleway_lb.lb01", "name", "test-lb-with-dhcp-1"),
-					resource.TestCheckResourceAttr("scaleway_lb.lb01", "release_ip", "false"),
-					resource.TestCheckResourceAttr("scaleway_lb.lb01", "private_network.0.dhcp_config", "true"),
-					testCheckResourceAttrUUID("scaleway_lb.lb01", "ip_id"),
-					testCheckResourceAttrIPv4("scaleway_lb.lb01", "ip_address"),
-					resource.TestCheckResourceAttrPair("scaleway_lb.lb01", "ip_id", "scaleway_lb_ip.ip01", "id"),
-				),
-			},
-			{
-				Config: `
-					resource scaleway_lb_ip ip01 {
-					}
 
 					resource scaleway_vpc_private_network pnLB01 {
 						name = "pn-with-lb-static"
@@ -115,6 +90,7 @@ func TestAccScalewayLbLb_WithIP(t *testing.T) {
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayLbExists(tt, "scaleway_lb.lb01"),
 					testAccCheckScalewayLbIPExists(tt, "scaleway_lb_ip.ip01"),
 					resource.TestCheckResourceAttrSet("scaleway_vpc_private_network.pnLB01", "name"),
 					resource.TestCheckResourceAttr("scaleway_lb.lb01",
@@ -289,6 +265,106 @@ func TestAccScalewayLbLb_WithIP(t *testing.T) {
 	})
 }
 
+func TestAccScalewayLbLb_WithPrivateNetworksOnDHCPConfig(t *testing.T) {
+	tt := NewTestTools(t)
+	defer tt.Cleanup()
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy: resource.ComposeTestCheckFunc(
+			testAccCheckScalewayInstanceServerDestroy(tt),
+			testAccCheckScalewayLbDestroy(tt),
+			testAccCheckScalewayLbIPDestroy(tt),
+			testAccCheckScalewayVPCGatewayNetworkDestroy(tt),
+			testAccCheckScalewayVPCPrivateNetworkDestroy(tt),
+			testAccCheckScalewayVPCPublicGatewayDHCPDestroy(tt),
+			testAccCheckScalewayVPCPublicGatewayDestroy(tt),
+			testAccCheckScalewayVPCPublicGatewayIPDestroy(tt),
+		),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+				### IP for Public Gateway
+				resource "scaleway_vpc_public_gateway_ip" "main" {
+				}
+
+				### The Public Gateway with the Attached IP
+				resource "scaleway_vpc_public_gateway" "main" {
+					name  = "tf-test-public-gw"
+					type  = "VPC-GW-S"
+					ip_id = scaleway_vpc_public_gateway_ip.main.id
+				}
+				
+				### Scaleway Private Network
+				resource "scaleway_vpc_private_network" "main" {
+					name = "private network with a DHCP config"
+				}
+				
+				### DHCP Space of VPC
+				resource "scaleway_vpc_public_gateway_dhcp" "main" {
+					subnet = "10.0.0.0/24"
+				}
+				
+				### VPC Gateway Network
+				resource "scaleway_vpc_gateway_network" "main" {
+					gateway_id         = scaleway_vpc_public_gateway.main.id
+					private_network_id = scaleway_vpc_private_network.main.id
+					dhcp_id            = scaleway_vpc_public_gateway_dhcp.main.id
+					cleanup_dhcp       = true
+					enable_masquerade  = true
+				}
+				
+				### Scaleway Instance
+				resource "scaleway_instance_server" "main" {
+					name        = "Scaleway Terraform Provider"
+					type        = "DEV1-S"
+					image       = "debian_bullseye"
+					enable_ipv6 = false
+				
+					private_network {
+						pn_id = scaleway_vpc_private_network.main.id
+					}
+				}
+
+				### IP for LB IP
+				resource scaleway_lb_ip ip01 {
+				}
+				
+				resource scaleway_lb lb01 {
+					ip_id = scaleway_lb_ip.ip01.id
+					name = "test-lb-with-private-network-configs"
+					type = "LB-S"
+				
+					private_network {
+						private_network_id = scaleway_vpc_private_network.main.id
+						dhcp_config = true
+					}
+				
+					depends_on = [scaleway_vpc_public_gateway.main]
+				}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayLbExists(tt, "scaleway_lb.lb01"),
+					testAccCheckScalewayLbIPExists(tt, "scaleway_lb_ip.ip01"),
+					resource.TestCheckResourceAttrSet("scaleway_vpc_private_network.main", "name"),
+					resource.TestCheckResourceAttrPair(
+						"scaleway_lb.lb01", "private_network.0.private_network_id",
+						"scaleway_vpc_private_network.main", "id"),
+					resource.TestCheckResourceAttrPair(
+						"scaleway_instance_server.main", "private_network.0.pn_id",
+						"scaleway_vpc_private_network.main", "id"),
+					resource.TestCheckResourceAttr("scaleway_lb.lb01",
+						"private_network.0.status", lbSDK.PrivateNetworkStatusReady.String()),
+					resource.TestCheckResourceAttr("scaleway_lb.lb01",
+						"private_network.0.dhcp_config", "true"),
+					resource.TestCheckResourceAttr("scaleway_lb.lb01",
+						"private_network.0.status", lbSDK.PrivateNetworkStatusReady.String()),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckScalewayLbExists(tt *TestTools, n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
@@ -301,7 +377,7 @@ func testAccCheckScalewayLbExists(tt *TestTools, n string) resource.TestCheckFun
 			return err
 		}
 
-		_, err = lbAPI.GetLB(&lb.ZonedAPIGetLBRequest{
+		_, err = lbAPI.GetLB(&lbSDK.ZonedAPIGetLBRequest{
 			LBID: ID,
 			Zone: zone,
 		})
@@ -326,7 +402,7 @@ func testAccCheckScalewayLbDestroy(tt *TestTools) resource.TestCheckFunc {
 				return err
 			}
 
-			_, err = lbAPI.GetLB(&lb.ZonedAPIGetLBRequest{
+			_, err = lbAPI.GetLB(&lbSDK.ZonedAPIGetLBRequest{
 				Zone: zone,
 				LBID: ID,
 			})

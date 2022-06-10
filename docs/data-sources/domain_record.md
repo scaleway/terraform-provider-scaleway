@@ -33,7 +33,7 @@ data "scaleway_domain_record" "by_id" {
 - `name` - (Required) The name of the record (can be an empty string for a root record).
   Cannot be used with `record_id`.
 
-- `type` - (Required) The type of the record (`A`, `AAAA`, `MX`, `CNAME`, `ALIAS`, `NS`, `PTR`, `SRV`, `TXT`, `TLSA`, or `CAA`).
+- `type` - (Required) The type of the record (`A`, `AAAA`, `MX`, `CNAME`, `DNAME`, `ALIAS`, `NS`, `PTR`, `SRV`, `TXT`, `TLSA`, or `CAA`).
   Cannot be used with `record_id`.
 
 - `data` - (Required) The content of the record (an IPv4 for an `A`, a string for a `TXT`...).
@@ -48,7 +48,7 @@ data "scaleway_domain_record" "by_id" {
 
 In addition to all arguments above, the following attributes are exported:
 
-- `ttl` - Time To Tive of the record in seconds.
+- `ttl` - Time To Live of the record in seconds.
 - `priority` - The priority of the record (mostly used with an `MX` record)
 - `geo_ip` - Dynamic record base on user geolocalisation ([More information about dynamic records](../resources/domain_record.md#dynamic-records))
 - `http_service` - Dynamic record base on URL resolve ([More information about dynamic records](../resources/domain_record.md#dynamic-records))

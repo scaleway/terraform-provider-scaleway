@@ -23,6 +23,12 @@ func resourceScalewayVPCPublicGatewayPATRule() *schema.Resource {
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 		SchemaVersion: 0,
+		Timeouts: &schema.ResourceTimeout{
+			Create:  schema.DefaultTimeout(defaultVPCGatewayTimeout),
+			Update:  schema.DefaultTimeout(defaultVPCGatewayTimeout),
+			Delete:  schema.DefaultTimeout(defaultVPCGatewayTimeout),
+			Default: schema.DefaultTimeout(defaultVPCGatewayTimeout),
+		},
 		Schema: map[string]*schema.Schema{
 			"gateway_id": {
 				Type:         schema.TypeString,
@@ -86,14 +92,7 @@ func resourceScalewayVPCPublicGatewayPATRuleCreate(ctx context.Context, d *schem
 	}
 
 	gatewayID := expandZonedID(d.Get("gateway_id").(string)).ID
-	retryInterval := retryIntervalVPCPublicGatewayNetwork
-	//check gateway is in stable state.
-	_, err = vpcgwAPI.WaitForGateway(&vpcgw.WaitForGatewayRequest{
-		GatewayID:     gatewayID,
-		Zone:          zone,
-		Timeout:       scw.TimeDurationPtr(gatewayWaitForTimeout),
-		RetryInterval: &retryInterval,
-	}, scw.WithContext(ctx))
+	_, err = waitForVPCPublicGateway(ctx, vpcgwAPI, zone, gatewayID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -107,23 +106,22 @@ func resourceScalewayVPCPublicGatewayPATRuleCreate(ctx context.Context, d *schem
 		Protocol:    vpcgw.PATRuleProtocol(d.Get("protocol").(string)),
 	}
 
-	res, err := vpcgwAPI.CreatePATRule(req, scw.WithContext(ctx))
+	_, err = waitForVPCPublicGateway(ctx, vpcgwAPI, zone, gatewayID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	//check gateway is in stable state.
-	_, err = vpcgwAPI.WaitForGateway(&vpcgw.WaitForGatewayRequest{
-		GatewayID:     res.GatewayID,
-		Zone:          zone,
-		Timeout:       scw.TimeDurationPtr(gatewayWaitForTimeout),
-		RetryInterval: &retryInterval,
-	}, scw.WithContext(ctx))
+	patRule, err := vpcgwAPI.CreatePATRule(req, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	d.SetId(newZonedIDString(zone, res.ID))
+	d.SetId(newZonedIDString(zone, patRule.ID))
+
+	_, err = waitForVPCPublicGateway(ctx, vpcgwAPI, zone, patRule.GatewayID, d.Timeout(schema.TimeoutCreate))
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	return resourceScalewayVPCPublicGatewayPATRuleRead(ctx, d, meta)
 }
@@ -134,7 +132,7 @@ func resourceScalewayVPCPublicGatewayPATRuleRead(ctx context.Context, d *schema.
 		return diag.FromErr(err)
 	}
 
-	patRules, err := vpcgwAPI.GetPATRule(&vpcgw.GetPATRuleRequest{
+	patRule, err := vpcgwAPI.GetPATRule(&vpcgw.GetPATRuleRequest{
 		PatRuleID: ID,
 		Zone:      zone,
 	}, scw.WithContext(ctx))
@@ -146,14 +144,14 @@ func resourceScalewayVPCPublicGatewayPATRuleRead(ctx context.Context, d *schema.
 		return diag.FromErr(err)
 	}
 
-	gatewayID := newZonedID(zone, patRules.GatewayID).String()
-	_ = d.Set("created_at", patRules.CreatedAt.Format(time.RFC3339))
-	_ = d.Set("updated_at", patRules.UpdatedAt.Format(time.RFC3339))
+	gatewayID := newZonedID(zone, patRule.GatewayID).String()
+	_ = d.Set("created_at", patRule.CreatedAt.Format(time.RFC3339))
+	_ = d.Set("updated_at", patRule.UpdatedAt.Format(time.RFC3339))
 	_ = d.Set("gateway_id", gatewayID)
-	_ = d.Set("private_ip", patRules.PrivateIP.String())
-	_ = d.Set("private_port", int(patRules.PrivatePort))
-	_ = d.Set("public_port", int(patRules.PublicPort))
-	_ = d.Set("protocol", patRules.Protocol.String())
+	_ = d.Set("private_ip", patRule.PrivateIP.String())
+	_ = d.Set("private_port", int(patRule.PrivatePort))
+	_ = d.Set("public_port", int(patRule.PublicPort))
+	_ = d.Set("protocol", patRule.Protocol.String())
 	_ = d.Set("zone", zone)
 
 	return nil
@@ -165,7 +163,7 @@ func resourceScalewayVPCPublicGatewayPATRuleUpdate(ctx context.Context, d *schem
 		return diag.FromErr(err)
 	}
 
-	patRules, err := vpcgwAPI.GetPATRule(&vpcgw.GetPATRuleRequest{
+	patRule, err := vpcgwAPI.GetPATRule(&vpcgw.GetPATRuleRequest{
 		PatRuleID: ID,
 		Zone:      zone,
 	}, scw.WithContext(ctx))
@@ -173,31 +171,47 @@ func resourceScalewayVPCPublicGatewayPATRuleUpdate(ctx context.Context, d *schem
 		return diag.FromErr(err)
 	}
 
-	retryInterval := retryIntervalVPCPublicGatewayNetwork
-	//check gateway is in stable state.
-	_, err = vpcgwAPI.WaitForGateway(&vpcgw.WaitForGatewayRequest{
-		GatewayID:     patRules.GatewayID,
-		Zone:          zone,
-		Timeout:       scw.TimeDurationPtr(gatewayWaitForTimeout),
-		RetryInterval: &retryInterval,
-	}, scw.WithContext(ctx))
+	// check gateway is in stable state.
+	_, err = waitForVPCPublicGateway(ctx, vpcgwAPI, zone, patRule.GatewayID, d.Timeout(schema.TimeoutUpdate))
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	if d.HasChanges("private_ip", "private_port", "public_port", "protocol") {
-		port := uint32(d.Get("public_port").(int))
-		privateIP := net.ParseIP(d.Get("private_ip").(string))
-		privatePort := uint32(d.Get("private_port").(int))
-		_, err = vpcgwAPI.UpdatePATRule(&vpcgw.UpdatePATRuleRequest{
-			Zone:        zone,
-			PatRuleID:   ID,
-			PublicPort:  &port,
-			PrivateIP:   &privateIP,
-			PrivatePort: &privatePort,
-			Protocol:    vpcgw.PATRuleProtocol(d.Get("protocol").(string)),
-		}, scw.WithContext(ctx))
+	req := &vpcgw.UpdatePATRuleRequest{
+		Zone:      zone,
+		PatRuleID: ID,
+		Protocol:  vpcgw.PATRuleProtocol(d.Get("protocol").(string)),
+	}
 
+	hasChange := false
+	if d.HasChange("private_ip") {
+		req.PrivateIP = scw.IPPtr(net.ParseIP(d.Get("private_ip").(string)))
+		hasChange = true
+	}
+
+	if d.HasChange("private_port") {
+		req.PrivatePort = scw.Uint32Ptr(uint32(d.Get("private_port").(int)))
+		hasChange = true
+	}
+
+	if d.HasChange("public_port") {
+		req.PublicPort = scw.Uint32Ptr(uint32(d.Get("public_port").(int)))
+		hasChange = true
+	}
+
+	if d.HasChange("protocol") {
+		req.Protocol = vpcgw.PATRuleProtocol(d.Get("protocol").(string))
+		hasChange = true
+	}
+
+	if hasChange {
+		// check gateway is in stable state.
+		_, err = waitForVPCPublicGateway(ctx, vpcgwAPI, zone, patRule.GatewayID, d.Timeout(schema.TimeoutUpdate))
+		if err != nil {
+			return diag.FromErr(err)
+		}
+
+		patRule, err = vpcgwAPI.UpdatePATRule(req, scw.WithContext(ctx))
 		if err != nil {
 			if is404Error(err) {
 				d.SetId("")
@@ -205,6 +219,12 @@ func resourceScalewayVPCPublicGatewayPATRuleUpdate(ctx context.Context, d *schem
 			}
 			return diag.FromErr(err)
 		}
+	}
+
+	// check gateway is in stable state.
+	_, err = waitForVPCPublicGateway(ctx, vpcgwAPI, zone, patRule.GatewayID, d.Timeout(schema.TimeoutUpdate))
+	if err != nil {
+		return diag.FromErr(err)
 	}
 
 	return resourceScalewayVPCPublicGatewayPATRuleRead(ctx, d, meta)
@@ -216,7 +236,7 @@ func resourceScalewayVPCPublicGatewayPATRuleDelete(ctx context.Context, d *schem
 		return diag.FromErr(err)
 	}
 
-	patRules, err := vpcgwAPI.GetPATRule(&vpcgw.GetPATRuleRequest{
+	patRule, err := vpcgwAPI.GetPATRule(&vpcgw.GetPATRuleRequest{
 		PatRuleID: ID,
 		Zone:      zone,
 	}, scw.WithContext(ctx))
@@ -228,15 +248,8 @@ func resourceScalewayVPCPublicGatewayPATRuleDelete(ctx context.Context, d *schem
 		return diag.FromErr(err)
 	}
 
-	retryInterval := retryIntervalVPCPublicGatewayNetwork
-	//check gateway is in stable state.
-	_, err = vpcgwAPI.WaitForGateway(&vpcgw.WaitForGatewayRequest{
-		GatewayID:     patRules.GatewayID,
-		Zone:          zone,
-		Timeout:       scw.TimeDurationPtr(gatewayWaitForTimeout),
-		RetryInterval: &retryInterval,
-	}, scw.WithContext(ctx))
-
+	// check gateway is in stable state.
+	_, err = waitForVPCPublicGateway(ctx, vpcgwAPI, zone, patRule.GatewayID, d.Timeout(schema.TimeoutDelete))
 	if err != nil && !is404Error(err) {
 		return diag.FromErr(err)
 	}
@@ -250,13 +263,7 @@ func resourceScalewayVPCPublicGatewayPATRuleDelete(ctx context.Context, d *schem
 		return diag.FromErr(err)
 	}
 
-	_, err = vpcgwAPI.WaitForGateway(&vpcgw.WaitForGatewayRequest{
-		GatewayID:     patRules.GatewayID,
-		Zone:          zone,
-		Timeout:       scw.TimeDurationPtr(gatewayWaitForTimeout),
-		RetryInterval: &retryInterval,
-	}, scw.WithContext(ctx))
-
+	_, err = waitForVPCPublicGateway(ctx, vpcgwAPI, zone, patRule.GatewayID, d.Timeout(schema.TimeoutDelete))
 	if err != nil && !is404Error(err) {
 		return diag.FromErr(err)
 	}

@@ -6,7 +6,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
-	"github.com/scaleway/scaleway-sdk-go/api/lb/v1"
+	lbSDK "github.com/scaleway/scaleway-sdk-go/api/lb/v1"
 )
 
 func TestAccScalewayLbRoute_Basic(t *testing.T) {
@@ -63,7 +63,7 @@ func testAccCheckScalewayLbRouteExists(tt *TestTools, n string) resource.TestChe
 			return err
 		}
 
-		_, err = lbAPI.GetRoute(&lb.ZonedAPIGetRouteRequest{
+		_, err = lbAPI.GetRoute(&lbSDK.ZonedAPIGetRouteRequest{
 			RouteID: ID,
 			Zone:    zone,
 		})
@@ -88,7 +88,7 @@ func testAccCheckScalewayLbRouteDestroy(tt *TestTools) resource.TestCheckFunc {
 				return err
 			}
 
-			_, err = lbAPI.GetRoute(&lb.ZonedAPIGetRouteRequest{
+			_, err = lbAPI.GetRoute(&lbSDK.ZonedAPIGetRouteRequest{
 				Zone:    zone,
 				RouteID: ID,
 			})

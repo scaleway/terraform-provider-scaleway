@@ -23,6 +23,10 @@ func resourceScalewayK8SCluster() *schema.Resource {
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 		Timeouts: &schema.ResourceTimeout{
+			Create:  schema.DefaultTimeout(defaultK8SClusterTimeout),
+			Read:    schema.DefaultTimeout(defaultK8SClusterTimeout),
+			Update:  schema.DefaultTimeout(defaultK8SClusterTimeout),
+			Delete:  schema.DefaultTimeout(defaultK8SClusterTimeout),
 			Default: schema.DefaultTimeout(defaultK8SClusterTimeout),
 		},
 		SchemaVersion: 0,
@@ -380,12 +384,12 @@ func resourceScalewayK8SClusterCreate(ctx context.Context, d *schema.ResourceDat
 		return diag.FromErr(err)
 	}
 
-	res, err = waitK8SClusterPool(ctx, k8sAPI, region, res.ID)
+	d.SetId(newRegionalIDString(region, res.ID))
+
+	_, err = waitK8SClusterPool(ctx, k8sAPI, region, res.ID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
 		return diag.FromErr(err)
 	}
-
-	d.SetId(newRegionalIDString(region, res.ID))
 
 	return resourceScalewayK8SClusterRead(ctx, d, meta)
 }
@@ -399,7 +403,7 @@ func resourceScalewayK8SClusterRead(ctx context.Context, d *schema.ResourceData,
 	////
 	// Read Cluster
 	////
-	cluster, err := waitK8SCluster(ctx, k8sAPI, region, clusterID)
+	cluster, err := waitK8SCluster(ctx, k8sAPI, region, clusterID, d.Timeout(schema.TimeoutRead))
 	if err != nil {
 		if is404Error(err) {
 			d.SetId("")
@@ -652,7 +656,7 @@ func resourceScalewayK8SClusterUpdate(ctx context.Context, d *schema.ResourceDat
 		return diag.FromErr(err)
 	}
 
-	_, err = waitK8SCluster(ctx, k8sAPI, region, clusterID)
+	_, err = waitK8SCluster(ctx, k8sAPI, region, clusterID, d.Timeout(schema.TimeoutUpdate))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -672,7 +676,7 @@ func resourceScalewayK8SClusterUpdate(ctx context.Context, d *schema.ResourceDat
 			return diag.FromErr(err)
 		}
 
-		_, err = waitK8SCluster(ctx, k8sAPI, region, clusterID)
+		_, err = waitK8SCluster(ctx, k8sAPI, region, clusterID, d.Timeout(schema.TimeoutUpdate))
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -704,7 +708,7 @@ func resourceScalewayK8SClusterDelete(ctx context.Context, d *schema.ResourceDat
 		return diag.FromErr(err)
 	}
 
-	err = waitK8SClusterDeleted(ctx, k8sAPI, region, clusterID)
+	err = waitK8SClusterDeleted(ctx, k8sAPI, region, clusterID, d.Timeout(schema.TimeoutDelete))
 	if err != nil {
 		return diag.FromErr(err)
 	}

@@ -1,8 +1,13 @@
 package scaleway
 
 import (
+	"bytes"
 	"context"
+	"fmt"
+	"net"
+	"sort"
 
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
@@ -20,6 +25,10 @@ func resourceScalewayRdbACL() *schema.Resource {
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 		Timeouts: &schema.ResourceTimeout{
+			Create:  schema.DefaultTimeout(defaultRdbInstanceTimeout),
+			Read:    schema.DefaultTimeout(defaultRdbInstanceTimeout),
+			Update:  schema.DefaultTimeout(defaultRdbInstanceTimeout),
+			Delete:  schema.DefaultTimeout(defaultRdbInstanceTimeout),
 			Default: schema.DefaultTimeout(defaultRdbInstanceTimeout),
 		},
 		SchemaVersion: 0,
@@ -32,7 +41,7 @@ func resourceScalewayRdbACL() *schema.Resource {
 				Description:  "Instance on which the ACL is applied",
 			},
 			"acl_rules": {
-				Type:        schema.TypeSet,
+				Type:        schema.TypeList,
 				Required:    true,
 				Description: "List of ACL rules to apply",
 				Elem: &schema.Resource{
@@ -46,6 +55,7 @@ func resourceScalewayRdbACL() *schema.Resource {
 						"description": {
 							Type:        schema.TypeString,
 							Optional:    true,
+							Computed:    true,
 							Description: "Description of the rule",
 						},
 					},
@@ -64,12 +74,12 @@ func resourceScalewayRdbACLCreate(ctx context.Context, d *schema.ResourceData, m
 		return diag.FromErr(err)
 	}
 
-	_, err = waitInstance(ctx, rdbAPI, region, expandID(instanceID))
+	_, err = waitForRDBInstance(ctx, rdbAPI, region, expandID(instanceID), d.Timeout(schema.TimeoutCreate))
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	aclRules, err := rdbACLExpand(d.Get("acl_rules").(*schema.Set))
+	aclRules, err := rdbACLExpand(d.Get("acl_rules").([]interface{}))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -95,7 +105,7 @@ func resourceScalewayRdbACLRead(ctx context.Context, d *schema.ResourceData, met
 		return diag.FromErr(err)
 	}
 
-	_, err = waitInstance(ctx, rdbAPI, region, instanceID)
+	_, err = waitForRDBInstance(ctx, rdbAPI, region, instanceID, d.Timeout(schema.TimeoutRead))
 	if err != nil && !is404Error(err) {
 		return diag.FromErr(err)
 	}
@@ -104,7 +114,6 @@ func resourceScalewayRdbACLRead(ctx context.Context, d *schema.ResourceData, met
 		Region:     region,
 		InstanceID: instanceID,
 	}, scw.WithContext(ctx))
-
 	if err != nil {
 		if is404Error(err) {
 			d.SetId("")
@@ -116,7 +125,17 @@ func resourceScalewayRdbACLRead(ctx context.Context, d *schema.ResourceData, met
 	id := newRegionalID(region, instanceID).String()
 	d.SetId(id)
 	_ = d.Set("instance_id", id)
-	_ = d.Set("acl_rules", rdbACLRulesFlatten(res.Rules))
+	if aclRulesRaw, ok := d.GetOk("acl_rules"); ok {
+		aclRules, mergeErrors := rdbACLRulesFlattenFromSchema(res.Rules, aclRulesRaw.([]interface{}))
+		if len(mergeErrors) > 0 {
+			for _, w := range mergeErrors {
+				tflog.Warn(ctx, fmt.Sprintf("%s", w))
+			}
+		}
+		_ = d.Set("acl_rules", aclRules)
+	} else {
+		_ = d.Set("acl_rules", rdbACLRulesFlatten(res.Rules))
+	}
 
 	return nil
 }
@@ -127,18 +146,18 @@ func resourceScalewayRdbACLUpdate(ctx context.Context, d *schema.ResourceData, m
 		return diag.FromErr(err)
 	}
 
-	_, err = waitInstance(ctx, rdbAPI, region, instanceID)
+	_, err = waitForRDBInstance(ctx, rdbAPI, region, instanceID, d.Timeout(schema.TimeoutUpdate))
 	if err != nil && !is404Error(err) {
 		return diag.FromErr(err)
 	}
 
 	if d.HasChange("acl_rules") {
-		_ = rdb.WaitForInstanceRequest{
-			InstanceID: instanceID,
-			Region:     region,
+		_, err := waitForRDBInstance(ctx, rdbAPI, region, instanceID, d.Timeout(schema.TimeoutUpdate))
+		if err != nil {
+			return diag.FromErr(err)
 		}
 
-		aclRules, err := rdbACLExpand(d.Get("acl_rules").(*schema.Set))
+		aclRules, err := rdbACLExpand(d.Get("acl_rules").([]interface{}))
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -163,7 +182,7 @@ func resourceScalewayRdbACLDelete(ctx context.Context, d *schema.ResourceData, m
 		return diag.FromErr(err)
 	}
 	aclRuleIPs := make([]string, 0)
-	aclRules, err := rdbACLExpand(d.Get("acl_rules").(*schema.Set))
+	aclRules, err := rdbACLExpand(d.Get("acl_rules").([]interface{}))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -171,7 +190,7 @@ func resourceScalewayRdbACLDelete(ctx context.Context, d *schema.ResourceData, m
 		aclRuleIPs = append(aclRuleIPs, acl.IP.String())
 	}
 
-	_, err = waitInstance(ctx, rdbAPI, region, instanceID)
+	_, err = waitForRDBInstance(ctx, rdbAPI, region, instanceID, d.Timeout(schema.TimeoutDelete))
 	if err != nil && !is404Error(err) {
 		return diag.FromErr(err)
 	}
@@ -181,7 +200,11 @@ func resourceScalewayRdbACLDelete(ctx context.Context, d *schema.ResourceData, m
 		InstanceID: instanceID,
 		ACLRuleIPs: aclRuleIPs,
 	}, scw.WithContext(ctx))
+	if err != nil && !is404Error(err) {
+		return diag.FromErr(err)
+	}
 
+	_, err = waitForRDBInstance(ctx, rdbAPI, region, instanceID, d.Timeout(schema.TimeoutDelete))
 	if err != nil && !is404Error(err) {
 		return diag.FromErr(err)
 	}
@@ -189,9 +212,9 @@ func resourceScalewayRdbACLDelete(ctx context.Context, d *schema.ResourceData, m
 	return nil
 }
 
-func rdbACLExpand(data *schema.Set) ([]*rdb.ACLRuleRequest, error) {
+func rdbACLExpand(data []interface{}) ([]*rdb.ACLRuleRequest, error) {
 	var res []*rdb.ACLRuleRequest
-	for _, rule := range data.List() {
+	for _, rule := range data {
 		r := rule.(map[string]interface{})
 		ip, err := expandIPNet(r["ip"].(string))
 		if err != nil {
@@ -203,7 +226,57 @@ func rdbACLExpand(data *schema.Set) ([]*rdb.ACLRuleRequest, error) {
 		})
 	}
 
+	sort.Slice(res, func(i, j int) bool {
+		return bytes.Compare(res[i].IP.IP, res[j].IP.IP) < 0
+	})
+
 	return res, nil
+}
+
+func rdbACLRulesFlattenFromSchema(rules []*rdb.ACLRule, dataFromSchema []interface{}) ([]map[string]interface{}, []error) {
+	var res []map[string]interface{}
+	var errors []error
+	ruleMap := make(map[string]*rdb.ACLRule)
+	for _, rule := range rules {
+		ruleMap[rule.IP.String()] = rule
+	}
+
+	ruleMapFromSchema := map[string]struct{}{}
+	for _, ruleFromSchema := range dataFromSchema {
+		currentRule := ruleFromSchema.(map[string]interface{})
+		ip, err := expandIPNet(currentRule["ip"].(string))
+		if err != nil {
+			errors = append(errors, err)
+		}
+
+		aclRule := ruleMap[ip.String()]
+		ruleMapFromSchema[ip.String()] = struct{}{}
+		r := map[string]interface{}{
+			"ip":          aclRule.IP.String(),
+			"description": aclRule.Description,
+		}
+		res = append(res, r)
+	}
+
+	return append(res, mergeDiffToSchema(ruleMapFromSchema, ruleMap)...), errors
+}
+
+func mergeDiffToSchema(rulesFromSchema map[string]struct{}, ruleMap map[string]*rdb.ACLRule) []map[string]interface{} {
+	var res []map[string]interface{}
+
+	for ruleIP, info := range ruleMap {
+		_, ok := rulesFromSchema[ruleIP]
+		// check if new rule has been added on config
+		if !ok {
+			r := map[string]interface{}{
+				"ip":          info.IP.String(),
+				"description": info.Description,
+			}
+			res = append(res, r)
+		}
+	}
+
+	return res
 }
 
 func rdbACLRulesFlatten(rules []*rdb.ACLRule) []map[string]interface{} {
@@ -215,5 +288,11 @@ func rdbACLRulesFlatten(rules []*rdb.ACLRule) []map[string]interface{} {
 		}
 		res = append(res, r)
 	}
+
+	sort.Slice(res, func(i, j int) bool {
+		ipI, _, _ := net.ParseCIDR(res[i]["ip"].(string))
+		ipJ, _, _ := net.ParseCIDR(res[j]["ip"].(string))
+		return bytes.Compare(ipI, ipJ) < 0
+	})
 	return res
 }

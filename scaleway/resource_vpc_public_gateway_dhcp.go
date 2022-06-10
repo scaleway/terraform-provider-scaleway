@@ -8,7 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
-	vpcgw "github.com/scaleway/scaleway-sdk-go/api/vpcgw/v1"
+	"github.com/scaleway/scaleway-sdk-go/api/vpcgw/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 )
 
@@ -35,7 +35,7 @@ func resourceScalewayVPCPublicGatewayDHCP() *schema.Resource {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Computed:    true,
-				Description: "Address: address of the DHCP server. This will be the gateway's address in the private network. Defaults to the first address of the subnet",
+				Description: "The address of the DHCP server. This will be the gateway's address in the private network. Defaults to the first address of the subnet",
 			},
 			"pool_low": {
 				Type:         schema.TypeString,
@@ -54,7 +54,7 @@ func resourceScalewayVPCPublicGatewayDHCP() *schema.Resource {
 			"enable_dynamic": {
 				Type:        schema.TypeBool,
 				Optional:    true,
-				Default:     true,
+				Computed:    true,
 				Description: "Whether to enable dynamic pooling of IPs. By turning the dynamic pool off, only pre-existing DHCP reservations will be handed out. Defaults to true.",
 			},
 			"valid_lifetime": {
@@ -78,22 +78,22 @@ func resourceScalewayVPCPublicGatewayDHCP() *schema.Resource {
 			"push_default_route": {
 				Type:        schema.TypeBool,
 				Optional:    true,
-				Default:     true,
-				Description: "Whether the gateway should push a default route to DHCP clients or only hand out IPs. Defaults to true",
+				Computed:    true,
+				Description: "Whether the gateway should push a default route to DHCP clients or only hand out IPs. Defaults to true.",
 			},
 			"push_dns_server": {
 				Type:        schema.TypeBool,
 				Optional:    true,
-				Default:     true,
+				Computed:    true,
 				Description: "Whether the gateway should push custom DNS servers to clients. This allows for instance hostname -> IP resolution. Defaults to true.",
 			},
-			"dns_server_override": {
+			"dns_servers_override": {
 				Type:     schema.TypeList,
 				Optional: true,
 				Elem: &schema.Schema{
 					Type: schema.TypeString,
 				},
-				Description: "Override the DNS server list pushed to DHCP clients, instead of the gateway itself",
+				Description: "Override the DNS server list pushed to DHCP clients, instead of the gateway itself.",
 			},
 			"dns_search": {
 				Type:     schema.TypeList,
@@ -101,7 +101,7 @@ func resourceScalewayVPCPublicGatewayDHCP() *schema.Resource {
 				Elem: &schema.Schema{
 					Type: schema.TypeString,
 				},
-				Description: "Additional DNS search paths",
+				Description: "Additional DNS search paths.",
 			},
 			"dns_local_name": {
 				Type:        schema.TypeString,
@@ -113,12 +113,12 @@ func resourceScalewayVPCPublicGatewayDHCP() *schema.Resource {
 			"created_at": {
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "The date and time of the creation of the public gateway",
+				Description: "The date and time of the creation of the public gateway.",
 			},
 			"updated_at": {
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "The date and time of the last update of the public gateway",
+				Description: "The date and time of the last update of the public gateway.",
 			},
 		},
 	}
@@ -135,15 +135,25 @@ func resourceScalewayVPCPublicGatewayDHCPCreate(ctx context.Context, d *schema.R
 		return diag.FromErr(err)
 	}
 	req := &vpcgw.CreateDHCPRequest{
-		Zone:               zone,
-		ProjectID:          d.Get("project_id").(string),
-		Subnet:             subnet,
-		EnableDynamic:      expandBoolPtr(d.Get("enable_dynamic")),
-		PushDefaultRoute:   expandBoolPtr(d.Get("push_default_route")),
-		PushDNSServer:      expandBoolPtr(d.Get("push_dns_servers")),
-		DNSServersOverride: expandStringsPtr(d.Get("dns_servers_override")),
-		DNSSearch:          expandStringsPtr(d.Get("dns_search")),
-		DNSLocalName:       expandStringPtr(d.Get("dns_local_name")),
+		Zone:      zone,
+		ProjectID: d.Get("project_id").(string),
+		Subnet:    subnet,
+	}
+
+	req.PushDefaultRoute = expandBoolPtr(getBool(d, "push_default_route"))
+	req.PushDNSServer = expandBoolPtr(getBool(d, "push_dns_server"))
+	req.EnableDynamic = expandBoolPtr(getBool(d, "enable_dynamic"))
+
+	if dnsServerOverride, ok := d.GetOk("dns_servers_override"); ok {
+		req.DNSServersOverride = expandStringsPtr(dnsServerOverride)
+	}
+
+	if dnsSearch, ok := d.GetOk("dns_search"); ok {
+		req.DNSSearch = expandStringsPtr(dnsSearch)
+	}
+
+	if dsnLocalName, ok := d.GetOk("dns_local_name"); ok {
+		req.DNSLocalName = expandStringPtr(dsnLocalName)
 	}
 
 	if address, ok := d.GetOk("address"); ok {
@@ -151,15 +161,15 @@ func resourceScalewayVPCPublicGatewayDHCPCreate(ctx context.Context, d *schema.R
 	}
 
 	if renewTimer, ok := d.GetOk("renew_timer"); ok {
-		req.RenewTimer = &scw.Duration{Seconds: renewTimer.(int64)}
+		req.RenewTimer = &scw.Duration{Seconds: int64(renewTimer.(int))}
 	}
 
 	if validLifetime, ok := d.GetOk("valid_lifetime"); ok {
-		req.ValidLifetime = &scw.Duration{Seconds: validLifetime.(int64)}
+		req.ValidLifetime = &scw.Duration{Seconds: int64(validLifetime.(int))}
 	}
 
 	if rebindTimer, ok := d.GetOk("rebind_timer"); ok {
-		req.RebindTimer = &scw.Duration{Seconds: rebindTimer.(int64)}
+		req.RebindTimer = &scw.Duration{Seconds: int64(rebindTimer.(int))}
 	}
 
 	if poolLow, ok := d.GetOk("pool_low"); ok {
@@ -167,7 +177,7 @@ func resourceScalewayVPCPublicGatewayDHCPCreate(ctx context.Context, d *schema.R
 	}
 
 	if poolHigh, ok := d.GetOk("pool_high"); ok {
-		req.PoolLow = scw.IPPtr(net.ParseIP(poolHigh.(string)))
+		req.PoolHigh = scw.IPPtr(net.ParseIP(poolHigh.(string)))
 	}
 
 	res, err := vpcgwAPI.CreateDHCP(req, scw.WithContext(ctx))
@@ -198,14 +208,20 @@ func resourceScalewayVPCPublicGatewayDHCPRead(ctx context.Context, d *schema.Res
 		return diag.FromErr(err)
 	}
 
+	if len(dhcp.DNSSearch) > 0 {
+		_ = d.Set("dns_search", flattenSliceString(dhcp.DNSSearch))
+	}
+
+	if len(dhcp.DNSServersOverride) > 0 {
+		_ = d.Set("dns_servers_override", flattenSliceString(dhcp.DNSServersOverride))
+	}
+
 	_ = d.Set("address", dhcp.Address.String())
 	_ = d.Set("created_at", dhcp.CreatedAt.Format(time.RFC3339))
 	_ = d.Set("dns_local_name", dhcp.DNSLocalName)
-	_ = d.Set("dns_search", dhcp.DNSSearch)
-	_ = d.Set("dns_server_override", dhcp.DNSServersOverride)
 	_ = d.Set("enable_dynamic", dhcp.EnableDynamic)
 	_ = d.Set("organization_id", dhcp.OrganizationID)
-	_ = d.Set("pool_high", dhcp.PoolLow.String())
+	_ = d.Set("pool_high", dhcp.PoolHigh.String())
 	_ = d.Set("pool_low", dhcp.PoolLow.String())
 	_ = d.Set("project_id", dhcp.ProjectID)
 	_ = d.Set("push_default_route", dhcp.PushDefaultRoute)
@@ -226,26 +242,77 @@ func resourceScalewayVPCPublicGatewayDHCPUpdate(ctx context.Context, d *schema.R
 		return diag.FromErr(err)
 	}
 
-	if d.HasChangesExcept("enable_dynamic", "push_default_route", "push_dns_servers", "dns_servers_override",
-		"dns_search", "dns_local_name") {
-		req := &vpcgw.UpdateDHCPRequest{
-			DHCPID:             ID,
-			Zone:               zone,
-			EnableDynamic:      expandBoolPtr(d.Get("enable_dynamic")),
-			PushDefaultRoute:   expandBoolPtr(d.Get("push_default_route")),
-			PushDNSServer:      expandBoolPtr(d.Get("push_dns_servers")),
-			DNSServersOverride: expandStringsPtr(d.Get("dns_servers_override")),
-			DNSSearch:          expandStringsPtr(d.Get("dns_search")),
-			DNSLocalName:       expandStringPtr(d.Get("dns_local_name")),
-		}
+	req := &vpcgw.UpdateDHCPRequest{
+		DHCPID: ID,
+		Zone:   zone,
+	}
 
-		_, err = vpcgwAPI.UpdateDHCP(req, scw.WithContext(ctx))
+	if subnetRaw, ok := d.GetOk("subnet"); ok {
+		subnet, err := expandIPNet(subnetRaw.(string))
 		if err != nil {
 			return diag.FromErr(err)
 		}
+		req.Subnet = &subnet
 	}
 
-	return resourceScalewayVPCPublicGatewayRead(ctx, d, meta)
+	if ok := d.HasChange("address"); ok {
+		req.Address = scw.IPPtr(net.ParseIP(d.Get("address").(string)))
+	}
+
+	if ok := d.HasChange("push_dns_server"); ok {
+		req.PushDNSServer = expandBoolPtr(d.Get("push_dns_server"))
+	}
+
+	if ok := d.HasChange("enable_dynamic"); ok {
+		req.EnableDynamic = expandBoolPtr(d.Get("enable_dynamic"))
+	}
+
+	if ok := d.HasChange("push_default_route"); ok {
+		req.PushDefaultRoute = expandBoolPtr(d.Get("push_default_route"))
+	}
+
+	if ok := d.HasChange("dns_local_name"); ok {
+		req.DNSLocalName = expandStringPtr(d.Get("dns_local_name"))
+	}
+
+	if ok := d.HasChange("renew_timer"); ok {
+		req.RenewTimer = &scw.Duration{Seconds: int64(d.Get("renew_timer").(int))}
+	}
+
+	if ok := d.HasChange("valid_lifetime"); ok {
+		req.ValidLifetime = &scw.Duration{Seconds: int64(d.Get("valid_lifetime").(int))}
+	}
+
+	if ok := d.HasChange("rebind_timer"); ok {
+		req.RebindTimer = &scw.Duration{Seconds: int64(d.Get("rebind_timer").(int))}
+	}
+
+	if ok := d.HasChange("pool_low"); ok {
+		req.PoolLow = scw.IPPtr(net.ParseIP(d.Get("pool_low").(string)))
+	}
+
+	if ok := d.HasChange("pool_high"); ok {
+		req.PoolHigh = scw.IPPtr(net.ParseIP(d.Get("pool_high").(string)))
+	}
+
+	if d.HasChanges("dns_servers_override") {
+		if dnsServerOverride, ok := d.GetOk("dns_servers_override"); ok {
+			req.DNSServersOverride = expandStringsPtr(dnsServerOverride)
+		}
+	}
+
+	if d.HasChanges("dns_search") {
+		if dnsSearch, ok := d.GetOk("dns_search"); ok {
+			req.DNSSearch = expandStringsPtr(dnsSearch)
+		}
+	}
+
+	_, err = vpcgwAPI.UpdateDHCP(req, scw.WithContext(ctx))
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	return resourceScalewayVPCPublicGatewayDHCPRead(ctx, d, meta)
 }
 
 func resourceScalewayVPCPublicGatewayDHCPDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {

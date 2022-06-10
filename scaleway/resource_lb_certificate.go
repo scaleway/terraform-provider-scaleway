@@ -7,7 +7,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/scaleway/scaleway-sdk-go/api/lb/v1"
+	lbSDK "github.com/scaleway/scaleway-sdk-go/api/lb/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 )
 
@@ -19,6 +19,10 @@ func resourceScalewayLbCertificate() *schema.Resource {
 		DeleteContext: resourceScalewayLbCertificateDelete,
 		SchemaVersion: 1,
 		Timeouts: &schema.ResourceTimeout{
+			Create:  schema.DefaultTimeout(defaultLbLbTimeout),
+			Read:    schema.DefaultTimeout(defaultLbLbTimeout),
+			Update:  schema.DefaultTimeout(defaultLbLbTimeout),
+			Delete:  schema.DefaultTimeout(defaultLbLbTimeout),
 			Default: schema.DefaultTimeout(defaultLbLbTimeout),
 		},
 		StateUpgraders: []schema.StateUpgrader{
@@ -49,6 +53,7 @@ func resourceScalewayLbCertificate() *schema.Resource {
 						"common_name": {
 							Type:        schema.TypeString,
 							Required:    true,
+							ForceNew:    true,
 							Description: "The main domain name of the certificate",
 						},
 						"subject_alternative_name": {
@@ -57,6 +62,7 @@ func resourceScalewayLbCertificate() *schema.Resource {
 								Type: schema.TypeString,
 							},
 							Optional:    true,
+							ForceNew:    true,
 							Description: "The alternative domain names of the certificate",
 						},
 					},
@@ -130,7 +136,7 @@ func resourceScalewayLbCertificateCreate(ctx context.Context, d *schema.Resource
 		return diag.FromErr(err)
 	}
 
-	createReq := &lb.ZonedAPICreateCertificateRequest{
+	createReq := &lbSDK.ZonedAPICreateCertificateRequest{
 		Zone:              zone,
 		LBID:              lbID,
 		Name:              expandOrGenerateString(d.Get("name"), "lb-cert"),
@@ -141,13 +147,7 @@ func resourceScalewayLbCertificateCreate(ctx context.Context, d *schema.Resource
 		return diag.FromErr(errors.New("you need to define either letsencrypt or custom_certificate configuration"))
 	}
 
-	retryInterval := defaultWaitLBRetryInterval
-	_, err = lbAPI.WaitForLb(&lb.ZonedAPIWaitForLBRequest{
-		Zone:          zone,
-		LBID:          lbID,
-		Timeout:       scw.TimeDurationPtr(defaultInstanceServerWaitTimeout),
-		RetryInterval: &retryInterval,
-	}, scw.WithContext(ctx))
+	_, err = waitForLB(ctx, lbAPI, zone, lbID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
 		if is403Error(err) {
 			d.SetId("")
@@ -156,27 +156,14 @@ func resourceScalewayLbCertificateCreate(ctx context.Context, d *schema.Resource
 		return diag.FromErr(err)
 	}
 
-	res, err := lbAPI.CreateCertificate(createReq, scw.WithContext(ctx))
+	certificate, err := lbAPI.CreateCertificate(createReq, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	_, err = lbAPI.WaitForLBCertificate(&lb.ZonedAPIWaitForLBCertificateRequest{
-		CertID:        res.ID,
-		Zone:          res.LB.Zone,
-		Timeout:       scw.TimeDurationPtr(defaultLbLbTimeout),
-		RetryInterval: scw.TimeDurationPtr(defaultWaitLBRetryInterval),
-	})
-	if err != nil {
-		return diag.FromErr(err)
-	}
+	d.SetId(newZonedIDString(zone, certificate.ID))
 
-	_, err = lbAPI.WaitForLb(&lb.ZonedAPIWaitForLBRequest{
-		Zone:          zone,
-		LBID:          lbID,
-		Timeout:       scw.TimeDurationPtr(defaultInstanceServerWaitTimeout),
-		RetryInterval: &retryInterval,
-	}, scw.WithContext(ctx))
+	_, err = waitForLBCertificate(ctx, lbAPI, zone, certificate.ID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
 		if is403Error(err) {
 			d.SetId("")
@@ -184,8 +171,6 @@ func resourceScalewayLbCertificateCreate(ctx context.Context, d *schema.Resource
 		}
 		return diag.FromErr(err)
 	}
-
-	d.SetId(newZonedIDString(zone, res.ID))
 
 	return resourceScalewayLbCertificateRead(ctx, d, meta)
 }
@@ -196,40 +181,42 @@ func resourceScalewayLbCertificateRead(ctx context.Context, d *schema.ResourceDa
 		return diag.FromErr(err)
 	}
 
-	cert, err := lbAPI.WaitForLBCertificate(&lb.ZonedAPIWaitForLBCertificateRequest{
-		CertID:        ID,
+	certificate, err := lbAPI.GetCertificate(&lbSDK.ZonedAPIGetCertificateRequest{
+		CertificateID: ID,
 		Zone:          zone,
-		Timeout:       scw.TimeDurationPtr(defaultLbLbTimeout),
-		RetryInterval: scw.TimeDurationPtr(defaultWaitLBRetryInterval),
-	})
+	}, scw.WithContext(ctx))
 	if err != nil {
+		if is404Error(err) {
+			d.SetId("")
+			return nil
+		}
 		return diag.FromErr(err)
 	}
 
 	// check if cert is on error state
-	if cert.Status == lb.CertificateStatusError {
-		return diag.FromErr(fmt.Errorf("certificate with error state"))
+	if certificate.Status == lbSDK.CertificateStatusError {
+		return diag.Diagnostics{
+			diag.Diagnostic{
+				Severity: diag.Error,
+				Summary:  fmt.Sprintf("certificate %s with error state", certificate.ID),
+			},
+		}
 	}
 
-	retryInterval := defaultWaitLBRetryInterval
-	_, err = lbAPI.WaitForLb(&lb.ZonedAPIWaitForLBRequest{
-		Zone:          zone,
-		LBID:          cert.LB.ID,
-		Timeout:       scw.TimeDurationPtr(defaultInstanceServerWaitTimeout),
-		RetryInterval: &retryInterval,
-	}, scw.WithContext(ctx))
+	_, err = waitForLBCertificate(ctx, lbAPI, zone, certificate.ID, d.Timeout(schema.TimeoutRead))
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	_ = d.Set("lb_id", newZonedIDString(zone, cert.LB.ID))
-	_ = d.Set("name", cert.Name)
-	_ = d.Set("common_name", cert.CommonName)
-	_ = d.Set("subject_alternative_name", cert.SubjectAlternativeName)
-	_ = d.Set("fingerprint", cert.Fingerprint)
-	_ = d.Set("not_valid_before", flattenTime(cert.NotValidBefore))
-	_ = d.Set("not_valid_after", flattenTime(cert.NotValidAfter))
-	_ = d.Set("status", cert.Status)
+	_ = d.Set("lb_id", newZonedIDString(zone, certificate.LB.ID))
+	_ = d.Set("name", certificate.Name)
+	_ = d.Set("common_name", certificate.CommonName)
+	_ = d.Set("subject_alternative_name", certificate.SubjectAlternativeName)
+	_ = d.Set("fingerprint", certificate.Fingerprint)
+	_ = d.Set("not_valid_before", flattenTime(certificate.NotValidBefore))
+	_ = d.Set("not_valid_after", flattenTime(certificate.NotValidAfter))
+	_ = d.Set("status", certificate.Status)
+
 	return nil
 }
 
@@ -239,49 +226,22 @@ func resourceScalewayLbCertificateUpdate(ctx context.Context, d *schema.Resource
 		return diag.FromErr(err)
 	}
 
-	cert, err := lbAPI.WaitForLBCertificate(&lb.ZonedAPIWaitForLBCertificateRequest{
-		CertID:        ID,
-		Zone:          zone,
-		Timeout:       scw.TimeDurationPtr(defaultLbLbTimeout),
-		RetryInterval: scw.TimeDurationPtr(defaultWaitLBRetryInterval),
-	})
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	retryInterval := defaultWaitLBRetryInterval
-	_, err = lbAPI.WaitForLb(&lb.ZonedAPIWaitForLBRequest{
-		Zone:          zone,
-		LBID:          cert.LB.ID,
-		Timeout:       scw.TimeDurationPtr(defaultInstanceServerWaitTimeout),
-		RetryInterval: &retryInterval,
-	}, scw.WithContext(ctx))
-	if err != nil {
-		if is403Error(err) {
-			d.SetId("")
-			return nil
-		}
-		return diag.FromErr(err)
-	}
-
 	if d.HasChange("name") {
-		req := &lb.ZonedAPIUpdateCertificateRequest{
+		req := &lbSDK.ZonedAPIUpdateCertificateRequest{
 			CertificateID: ID,
 			Zone:          zone,
 			Name:          d.Get("name").(string),
 		}
 
-		cert, err = lbAPI.UpdateCertificate(req, scw.WithContext(ctx))
+		_, err = lbAPI.UpdateCertificate(req, scw.WithContext(ctx))
 		if err != nil {
 			return diag.FromErr(err)
 		}
 
-		_, err = lbAPI.WaitForLb(&lb.ZonedAPIWaitForLBRequest{
-			Zone:          zone,
-			LBID:          cert.LB.ID,
-			Timeout:       scw.TimeDurationPtr(defaultInstanceServerWaitTimeout),
-			RetryInterval: &retryInterval,
-		}, scw.WithContext(ctx))
+		_, err = waitForLBCertificate(ctx, lbAPI, zone, ID, d.Timeout(schema.TimeoutUpdate))
+		if err != nil {
+			return diag.FromErr(err)
+		}
 		if err != nil {
 			if is403Error(err) {
 				d.SetId("")
@@ -295,55 +255,26 @@ func resourceScalewayLbCertificateUpdate(ctx context.Context, d *schema.Resource
 }
 
 func resourceScalewayLbCertificateDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	lbAPI, zone, ID, err := lbAPIWithZoneAndID(meta, d.Id())
+	lbAPI, zone, id, err := lbAPIWithZoneAndID(meta, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	cert, err := lbAPI.WaitForLBCertificate(&lb.ZonedAPIWaitForLBCertificateRequest{
-		CertID:        ID,
-		Zone:          zone,
-		Timeout:       scw.TimeDurationPtr(defaultLbLbTimeout),
-		RetryInterval: scw.TimeDurationPtr(defaultWaitLBRetryInterval),
-	})
+	_, err = waitForLBCertificate(ctx, lbAPI, zone, id, d.Timeout(schema.TimeoutDelete))
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	retryInterval := defaultWaitLBRetryInterval
-	_, err = lbAPI.WaitForLb(&lb.ZonedAPIWaitForLBRequest{
+	err = lbAPI.DeleteCertificate(&lbSDK.ZonedAPIDeleteCertificateRequest{
 		Zone:          zone,
-		LBID:          cert.LB.ID,
-		Timeout:       scw.TimeDurationPtr(defaultInstanceServerWaitTimeout),
-		RetryInterval: &retryInterval,
+		CertificateID: id,
 	}, scw.WithContext(ctx))
 	if err != nil {
-		if is403Error(err) {
-			d.SetId("")
-			return nil
-		}
 		return diag.FromErr(err)
 	}
 
-	err = lbAPI.DeleteCertificate(&lb.ZonedAPIDeleteCertificateRequest{
-		Zone:          zone,
-		CertificateID: ID,
-	}, scw.WithContext(ctx))
-	if err != nil && !is404Error(err) {
-		return diag.FromErr(err)
-	}
-
-	_, err = lbAPI.WaitForLb(&lb.ZonedAPIWaitForLBRequest{
-		Zone:          zone,
-		LBID:          cert.LB.ID,
-		Timeout:       scw.TimeDurationPtr(defaultInstanceServerWaitTimeout),
-		RetryInterval: &retryInterval,
-	}, scw.WithContext(ctx))
-	if err != nil {
-		if is403Error(err) {
-			d.SetId("")
-			return nil
-		}
+	_, err = waitForLBCertificate(ctx, lbAPI, zone, id, d.Timeout(schema.TimeoutDelete))
+	if err != nil && !is403Error(err) && !is404Error(err) {
 		return diag.FromErr(err)
 	}
 

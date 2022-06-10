@@ -131,6 +131,48 @@ func TestAccScalewayInstancePlacementGroup_Rename(t *testing.T) {
 	})
 }
 
+func TestAccScalewayInstancePlacementGroup_Tags(t *testing.T) {
+	tt := NewTestTools(t)
+	defer tt.Cleanup()
+	resource.ParallelTest(t, resource.TestCase{
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      testAccCheckScalewayInstanceIPDestroy(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+						resource "scaleway_instance_placement_group" "main" {}
+					`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayInstancePlacementGroupExists(tt, "scaleway_instance_placement_group.main"),
+					resource.TestCheckResourceAttr("scaleway_instance_placement_group.main", "tags.#", "0"),
+				),
+			},
+			{
+				Config: `
+						resource "scaleway_instance_placement_group" "main" {
+							tags = ["foo", "bar"]
+						}
+					`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayInstancePlacementGroupExists(tt, "scaleway_instance_placement_group.main"),
+					resource.TestCheckResourceAttr("scaleway_instance_placement_group.main", "tags.0", "foo"),
+					resource.TestCheckResourceAttr("scaleway_instance_placement_group.main", "tags.1", "bar"),
+				),
+			},
+			{
+				Config: `
+						resource "scaleway_instance_placement_group" "main" {
+						}
+					`,
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("scaleway_instance_placement_group.main", "tags.#", "0"),
+					testAccCheckScalewayInstancePlacementGroupExists(tt, "scaleway_instance_placement_group.main"),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckScalewayInstancePlacementGroupExists(tt *TestTools, n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]

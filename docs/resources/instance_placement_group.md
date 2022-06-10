@@ -23,6 +23,7 @@ The following arguments are supported:
 - `policy_mode` - (Defaults to `optional`) The [policy mode](https://developers.scaleway.com/en/products/instance/api/#placement-groups-d8f653) of the placement group. Possible values are: `optional` or `enforced`.
 - `zone` - (Defaults to [provider](../index.md#zone) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which the placement group should be created.
 - `project_id` - (Defaults to [provider](../index.md#project_id) `project_id`) The ID of the project the placement group is associated with.
+- `tags` - (Optional) A list of tags to apply to the placement group.
 
 ## Attributes Reference
 

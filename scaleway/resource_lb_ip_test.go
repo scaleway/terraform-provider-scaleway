@@ -7,7 +7,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
-	"github.com/scaleway/scaleway-sdk-go/api/lb/v1"
+	lbSDK "github.com/scaleway/scaleway-sdk-go/api/lb/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 )
 
@@ -20,17 +20,17 @@ func init() {
 
 func testSweepLBIP(_ string) error {
 	return sweepZones([]scw.Zone{scw.ZoneFrPar1, scw.ZoneNlAms1, scw.ZonePlWaw1}, func(scwClient *scw.Client, zone scw.Zone) error {
-		lbAPI := lb.NewZonedAPI(scwClient)
+		lbAPI := lbSDK.NewZonedAPI(scwClient)
 
 		l.Debugf("sweeper: destroying the lb ips in zone (%s)", zone)
-		listIPs, err := lbAPI.ListIPs(&lb.ZonedAPIListIPsRequest{Zone: zone}, scw.WithAllPages())
+		listIPs, err := lbAPI.ListIPs(&lbSDK.ZonedAPIListIPsRequest{Zone: zone}, scw.WithAllPages())
 		if err != nil {
 			return fmt.Errorf("error listing lb ips in (%s) in sweeper: %s", zone, err)
 		}
 
 		for _, ip := range listIPs.IPs {
 			if ip.LBID == nil {
-				err := lbAPI.ReleaseIP(&lb.ZonedAPIReleaseIPRequest{
+				err := lbAPI.ReleaseIP(&lbSDK.ZonedAPIReleaseIPRequest{
 					Zone: zone,
 					IPID: ip.ID,
 				})
@@ -122,7 +122,7 @@ func testAccCheckScalewayLbIPExists(tt *TestTools, n string) resource.TestCheckF
 			return err
 		}
 
-		_, err = lbAPI.GetIP(&lb.ZonedAPIGetIPRequest{
+		_, err = lbAPI.GetIP(&lbSDK.ZonedAPIGetIPRequest{
 			IPID: ID,
 			Zone: zone,
 		})
@@ -149,12 +149,19 @@ func testAccCheckScalewayLbIPDestroy(tt *TestTools) resource.TestCheckFunc {
 
 			lbID, lbExist := rs.Primary.Attributes["lb_id"]
 			if lbExist && len(lbID) > 0 {
-				_, err = lbAPI.WaitForLbInstances(&lb.ZonedAPIWaitForLBInstancesRequest{
+				retryInterval := defaultWaitLBRetryInterval
+
+				if DefaultWaitRetryInterval != nil {
+					retryInterval = *DefaultWaitRetryInterval
+				}
+
+				_, err := lbAPI.WaitForLbInstances(&lbSDK.ZonedAPIWaitForLBInstancesRequest{
 					Zone:          zone,
 					LBID:          lbID,
 					Timeout:       scw.TimeDurationPtr(defaultInstanceServerWaitTimeout),
-					RetryInterval: scw.TimeDurationPtr(defaultWaitLBRetryInterval),
-				})
+					RetryInterval: &retryInterval,
+				}, scw.WithContext(context.Background()))
+
 				// Unexpected api error we return it
 				if !is404Error(err) {
 					return err
@@ -162,7 +169,7 @@ func testAccCheckScalewayLbIPDestroy(tt *TestTools) resource.TestCheckFunc {
 			}
 
 			err = resource.RetryContext(context.Background(), retryLbIPInterval, func() *resource.RetryError {
-				_, errGet := lbAPI.GetIP(&lb.ZonedAPIGetIPRequest{
+				_, errGet := lbAPI.GetIP(&lbSDK.ZonedAPIGetIPRequest{
 					Zone: zone,
 					IPID: ID,
 				})

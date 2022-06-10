@@ -90,7 +90,7 @@ func TestAccScalewayFunctionNamespace_Basic(t *testing.T) {
 				`,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayFunctionNamespaceExists(tt, "scaleway_function_namespace.main"),
-					resource.TestCheckResourceAttr("scaleway_function_namespace.main", "description", "test function namespace 01"),
+					resource.TestCheckResourceAttr("scaleway_function_namespace.main", "description", ""),
 					resource.TestCheckResourceAttr("scaleway_function_namespace.main", "name", "test-cr-ns-01"),
 					resource.TestCheckResourceAttr("scaleway_function_namespace.main", "environment_variables.test", "test"),
 
@@ -179,7 +179,7 @@ func testAccCheckScalewayFunctionNamespaceExists(tt *TestTools, n string) resour
 
 		api, region, id, err := functionAPIWithRegionAndID(tt.Meta, rs.Primary.ID)
 		if err != nil {
-			return nil
+			return err
 		}
 
 		_, err = api.GetNamespace(&function.GetNamespaceRequest{

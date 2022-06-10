@@ -19,19 +19,18 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-var (
-	// UpdateCassettes will update all cassettes of a given test
-	UpdateCassettes = flag.Bool("cassettes", os.Getenv("TF_UPDATE_CASSETTES") == "true", "Record Cassettes")
-)
+// UpdateCassettes will update all cassettes of a given test
+var UpdateCassettes = flag.Bool("cassettes", os.Getenv("TF_UPDATE_CASSETTES") == "true", "Record Cassettes")
 
 func testAccPreCheck(_ *testing.T) {}
 
 // getTestFilePath returns a valid filename path based on the go test name and suffix. (Take care of non fs friendly char)
 func getTestFilePath(t *testing.T, suffix string) string {
+	t.Helper()
 	specialChars := regexp.MustCompile(`[\\?%*:|"<>. ]`)
 
 	// Replace nested tests separators.
-	fileName := strings.Replace(t.Name(), "/", "-", -1)
+	fileName := strings.ReplaceAll(t.Name(), "/", "-")
 
 	fileName = strcase.ToBashArg(fileName)
 
@@ -51,6 +50,7 @@ func getTestFilePath(t *testing.T, suffix string) string {
 // It is important to add a `defer cleanup()` so the given cassette files are correctly
 // closed and saved after the requests.
 func getHTTPRecoder(t *testing.T, update bool) (client *http.Client, cleanup func(), err error) {
+	t.Helper()
 	recorderMode := recorder.ModeReplaying
 	if update {
 		recorderMode = recorder.ModeRecording
@@ -67,6 +67,7 @@ func getHTTPRecoder(t *testing.T, update bool) (client *http.Client, cleanup fun
 		i.Request.Headers = i.Request.Headers.Clone()
 		delete(i.Request.Headers, "x-auth-token")
 		delete(i.Request.Headers, "X-Auth-Token")
+		delete(i.Request.Headers, "Authorization")
 		return nil
 	})
 
@@ -80,16 +81,17 @@ type TestTools struct {
 	Meta              *Meta
 	ProviderFactories map[string]func() (*schema.Provider, error)
 	Cleanup           func()
-	ctx               context.Context
 }
 
 func NewTestTools(t *testing.T) *TestTools {
+	t.Helper()
+	ctx := context.Background()
 	// Create a http client with recording capabilities
 	httpClient, cleanup, err := getHTTPRecoder(t, *UpdateCassettes)
 	require.NoError(t, err)
 
 	// Create meta that will be passed in the provider config
-	meta, err := buildMeta(&metaConfig{
+	meta, err := buildMeta(ctx, &metaConfig{
 		providerSchema:   nil,
 		terraformVersion: "terraform-tests",
 		httpClient:       httpClient,
@@ -110,6 +112,5 @@ func NewTestTools(t *testing.T) *TestTools {
 			},
 		},
 		Cleanup: cleanup,
-		ctx:     context.Background(),
 	}
 }

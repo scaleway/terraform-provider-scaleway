@@ -16,6 +16,7 @@ jobs:
           - Baremetal
           - Domain
           - Function
+          - Container
           - Instance
           - Iot
           - K8S
@@ -23,6 +24,7 @@ jobs:
           - Marketplace
           - Object
           - Rdb
+          - Redis
           - Registry
           - VPC
     runs-on: ubuntu-latest
@@ -42,6 +44,8 @@ jobs:
           # Enable recording with the cassette system. By doing so, we ensure that real HTTPS requests are made.
           TF_UPDATE_CASSETTES: true
           TF_TEST_DOMAIN: scaleway-terraform.com
+          TF_TEST_DOMAIN_ZONE: tf
+          TF_TEST_DOCKER_IMG: docker.io/library/alpine
           SCW_DEBUG: 1
           SCW_ACCESS_KEY: ${{ secrets.SCW_ACCESS_KEY }}
           SCW_SECRET_KEY: ${{ secrets.SCW_SECRET_KEY }}
@@ -65,6 +69,7 @@ jobs:
         run: make sweep
         env:
           TF_TEST_DOMAIN: scaleway-terraform.com
+          TF_TEST_DOCKER_IMG: docker.io/library/alpine
           SCW_ACCESS_KEY: ${{ secrets.SCW_ACCESS_KEY }}
           SCW_SECRET_KEY: ${{ secrets.SCW_SECRET_KEY }}
           SCW_DEFAULT_ORGANIZATION_ID: ${{ secrets.SCW_DEFAULT_ORGANIZATION_ID }}

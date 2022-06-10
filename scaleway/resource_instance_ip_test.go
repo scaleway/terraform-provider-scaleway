@@ -93,6 +93,38 @@ func TestAccScalewayInstanceIP_WithZone(t *testing.T) {
 	})
 }
 
+func TestAccScalewayInstanceIP_Tags(t *testing.T) {
+	tt := NewTestTools(t)
+	defer tt.Cleanup()
+	resource.ParallelTest(t, resource.TestCase{
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      testAccCheckScalewayInstanceIPDestroy(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+						resource "scaleway_instance_ip" "main" {}
+					`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayInstanceIPExists(tt, "scaleway_instance_ip.main"),
+					resource.TestCheckNoResourceAttr("scaleway_instance_ip.main", "tags"),
+				),
+			},
+			{
+				Config: `
+						resource "scaleway_instance_ip" "main" {
+							tags = ["foo", "bar"]
+						}
+					`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayInstanceIPExists(tt, "scaleway_instance_ip.main"),
+					resource.TestCheckResourceAttr("scaleway_instance_ip.main", "tags.0", "foo"),
+					resource.TestCheckResourceAttr("scaleway_instance_ip.main", "tags.1", "bar"),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckScalewayInstanceIPExists(tt *TestTools, name string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[name]
@@ -198,20 +230,20 @@ func testAccCheckScalewayInstanceIPDestroy(tt *TestTools) resource.TestCheckFunc
 				return err
 			}
 
-			_, err = instanceAPI.GetIP(&instance.GetIPRequest{
+			_, errIP := instanceAPI.GetIP(&instance.GetIPRequest{
 				Zone: zone,
 				IP:   id,
 			})
 
 			// If no error resource still exist
-			if err == nil {
+			if errIP == nil {
 				return fmt.Errorf("resource %s(%s) still exist", rs.Type, rs.Primary.ID)
 			}
 
 			// Unexpected api error we return it
 			// We check for 403 because instance API return 403 for deleted IP
-			if !is404Error(err) && !is403Error(err) {
-				return err
+			if !is404Error(errIP) && !is403Error(errIP) {
+				return errIP
 			}
 		}
 
