@@ -635,7 +635,7 @@ func resourceScalewayK8SClusterUpdate(ctx context.Context, d *schema.ResourceDat
 	}
 
 	if d.HasChange("open_id_connect_config.0.groups_claim") {
-		updateClusterRequestOpenIDConnectConfig.GroupsClaim = scw.StringsPtr(expandStrings(d.Get("open_id_connect_config.0.groups_claim")))
+		updateClusterRequestOpenIDConnectConfig.GroupsClaim = expandUpdatedStringsPtr(d.Get("open_id_connect_config.0.groups_claim"))
 	}
 
 	if d.HasChange("open_id_connect_config.0.groups_prefix") {
@@ -643,7 +643,7 @@ func resourceScalewayK8SClusterUpdate(ctx context.Context, d *schema.ResourceDat
 	}
 
 	if d.HasChange("open_id_connect_config.0.required_claim") {
-		updateClusterRequestOpenIDConnectConfig.RequiredClaim = scw.StringsPtr(expandStrings(d.Get("open_id_connect_config.0.required_claim")))
+		updateClusterRequestOpenIDConnectConfig.RequiredClaim = expandUpdatedStringsPtr(d.Get("open_id_connect_config.0.required_claim"))
 	}
 
 	updateRequest.OpenIDConnectConfig = updateClusterRequestOpenIDConnectConfig
