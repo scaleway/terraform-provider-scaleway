@@ -3,8 +3,6 @@ package scaleway
 import (
 	"context"
 	"fmt"
-	"strconv"
-	"strings"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -81,7 +79,7 @@ func expandRedisPrivateNetwork(data []interface{}) ([]*redis.EndpointSpec, error
 		}
 		epSpecs = append(epSpecs, &redis.EndpointSpec{PrivateNetwork: spec})
 	}
-	return orderPrivateNetworksSpecsByFirstIP(epSpecs), nil
+	return epSpecs, nil
 }
 
 func expandRedisACLSpecs(i interface{}) ([]*redis.ACLRuleSpec, error) {
@@ -155,7 +153,7 @@ func flattenRedisPrivateNetwork(endpoints []*redis.Endpoint) (interface{}, bool)
 			"service_ips": serviceIps,
 		})
 	}
-	return orderPrivateNetworksInterfaceByFirstIP(pnFlat), len(pnFlat) != 0
+	return pnFlat, len(pnFlat) != 0
 }
 
 func flattenRedisPublicNetwork(endpoints []*redis.Endpoint) interface{} {
@@ -176,59 +174,4 @@ func flattenRedisPublicNetwork(endpoints []*redis.Endpoint) interface{} {
 		return pnFlat
 	}
 	return pnFlat
-}
-
-func orderPrivateNetworksInterfaceByFirstIP(epI interface{}) interface{} {
-	endpoints := epI.([]map[string]interface{})
-loop:
-	for index := range endpoints {
-		if index == len(endpoints)-1 {
-			return endpoints
-		}
-		ips := endpoints[index]["service_ips"].([]interface{})
-		ipsNext := endpoints[index+1]["service_ips"].([]interface{})
-		ip := strings.Split(ips[0].(string), ".")
-		ipNext := strings.Split(ipsNext[0].(string), ".")
-		for i, ipPart := range ip {
-			ipPartA, err := strconv.Atoi(ipPart)
-			ipPartB, err2 := strconv.Atoi(ipNext[i])
-			if err != nil || err2 != nil {
-				ipPartA, _ = strconv.Atoi(strings.Split(ipPart, "/")[0])
-				ipPartB, _ = strconv.Atoi(strings.Split(ipNext[i], "/")[0])
-			}
-			if ipPartA < ipPartB {
-				break
-			} else if ipPartA > ipPartB {
-				endpoints[index], endpoints[index+1] = endpoints[index+1], endpoints[index]
-				goto loop
-			}
-		}
-	}
-	return endpoints
-}
-
-func orderPrivateNetworksSpecsByFirstIP(endpoints []*redis.EndpointSpec) []*redis.EndpointSpec {
-loop:
-	for index := range endpoints {
-		if index == len(endpoints)-1 || endpoints[index].PrivateNetwork == nil {
-			return endpoints
-		}
-		ip := strings.Split(endpoints[index].PrivateNetwork.ServiceIPs[0].String(), ".")
-		ipNext := strings.Split(endpoints[index+1].PrivateNetwork.ServiceIPs[0].String(), ".")
-		for i, ipPart := range ip {
-			ipPartA, err := strconv.Atoi(ipPart)
-			ipPartB, err2 := strconv.Atoi(ipNext[i])
-			if err != nil || err2 != nil {
-				ipPartA, _ = strconv.Atoi(strings.Split(ipPart, "/")[0])
-				ipPartB, _ = strconv.Atoi(strings.Split(ipNext[i], "/")[0])
-			}
-			if ipPartA < ipPartB {
-				break
-			} else if ipPartA > ipPartB {
-				endpoints[index], endpoints[index+1] = endpoints[index+1], endpoints[index]
-				goto loop
-			}
-		}
-	}
-	return endpoints
 }

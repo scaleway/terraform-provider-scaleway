@@ -388,12 +388,10 @@ func TestAccScalewayRedisCluster_Endpoints_Standalone(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "cluster_size", "1"),
 					resource.TestCheckResourceAttrSet("scaleway_redis_cluster.main", "private_network.0.id"),
 					resource.TestCheckResourceAttrSet("scaleway_redis_cluster.main", "private_network.0.endpoint_id"),
-					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "private_network.0.service_ips.0", "10.12.1.0/20"),
-					resource.TestCheckTypeSetElemAttrPair("scaleway_redis_cluster.main", "private_network.0.id", "scaleway_vpc_private_network.pn", "id"),
 					resource.TestCheckResourceAttrSet("scaleway_redis_cluster.main", "private_network.1.id"),
 					resource.TestCheckResourceAttrSet("scaleway_redis_cluster.main", "private_network.1.endpoint_id"),
-					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "private_network.1.service_ips.0", "192.168.1.0/20"),
-					resource.TestCheckTypeSetElemAttrPair("scaleway_redis_cluster.main", "private_network.1.id", "scaleway_vpc_private_network.pn2", "id"),
+					testAccCheckScalewayRedisPrivateNetworksIpsAreEither("scaleway_redis_cluster.main", "10.12.1.0/20", "192.168.1.0/20"),
+					testAccCheckScalewayRedisPrivateNetworksIdsAreEither("scaleway_redis_cluster.main", "scaleway_vpc_private_network.pn", "scaleway_vpc_private_network.pn2"),
 				),
 			},
 			{
@@ -598,6 +596,66 @@ func testAccCheckScalewayRedisExists(tt *TestTools, n string) resource.TestCheck
 
 		if err != nil {
 			return err
+		}
+		return nil
+	}
+}
+
+func testAccCheckScalewayRedisPrivateNetworksIpsAreEither(name string, possibilities ...string) resource.TestCheckFunc {
+	return func(state *terraform.State) error {
+		rs, ok := state.RootModule().Resources[name]
+		if !ok {
+			return fmt.Errorf("resource not found: %s", name)
+		}
+		actualIPs := []string(nil)
+		for i := range possibilities {
+			actualIPs = append(actualIPs, rs.Primary.Attributes[fmt.Sprintf("private_network.%d.service_ips.0", i)])
+		}
+		for _, ip := range actualIPs {
+			for i := range possibilities {
+				if possibilities[i] == ip {
+					possibilities[i] = "ip found"
+				}
+			}
+		}
+		for _, p := range possibilities {
+			if p != "ip found" {
+				return fmt.Errorf("no attribute private_network.*.service_ips.0 was found with value %v", p)
+			}
+		}
+		return nil
+	}
+}
+
+func testAccCheckScalewayRedisPrivateNetworksIdsAreEither(name string, possibilities ...string) resource.TestCheckFunc {
+	return func(state *terraform.State) error {
+		rs, ok := state.RootModule().Resources[name]
+		if !ok {
+			return fmt.Errorf("resource not found: %s", name)
+		}
+		for i, possibility := range possibilities {
+			rs, ok := state.RootModule().Resources[possibility]
+			if ok {
+				possibilities[i] = rs.Primary.ID
+			}
+		}
+		actualIDs := []string(nil)
+		for i := range possibilities {
+			toLookFor := fmt.Sprintf("private_network.%d.id", i)
+			id := rs.Primary.Attributes[toLookFor]
+			actualIDs = append(actualIDs, id)
+		}
+		for _, id := range actualIDs {
+			for i := range possibilities {
+				if possibilities[i] == id {
+					possibilities[i] = "id found"
+				}
+			}
+		}
+		for _, p := range possibilities {
+			if p != "id found" {
+				return fmt.Errorf("no attribute private_network.*.id was found with value %v", p)
+			}
 		}
 		return nil
 	}

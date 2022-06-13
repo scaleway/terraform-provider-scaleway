@@ -96,7 +96,9 @@ The following arguments are supported:
 
 - `cluster_size` - (Optional) The number of nodes in the Redis Cluster.
 
-~> **Important:** You can set a bigger `cluster_size`, it will migrate the Redis Cluster, but keep in mind that you cannot downgrade a Redis Cluster so setting a smaller `cluster_size` will not have any effect.
+~> **Important:** You cannot set `cluster_size` to 2, you either have to choose Standalone mode (1 node) or Cluster mode which is minimum 3 (1 main node + 2 secondary nodes)
+
+~> **Important:** You can set a bigger `cluster_size` than you initially did, it will migrate the Redis Cluster, but keep in mind that you cannot downgrade a Redis Cluster so setting a smaller `cluster_size` will not have any effect.
 
 - `tls_enabled` - (Defaults to false) Whether TLS is enabled or not.
 
