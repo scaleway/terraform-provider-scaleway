@@ -68,6 +68,10 @@ func TestAccScalewayFunction_Basic(t *testing.T) {
 				`,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayFunctionExists(tt, "scaleway_function.main"),
+					resource.TestCheckResourceAttr("scaleway_function.main", "name", "foobar"),
+					resource.TestCheckResourceAttr("scaleway_function.main", "runtime", "node14"),
+					resource.TestCheckResourceAttr("scaleway_function.main", "privacy", "private"),
+					resource.TestCheckResourceAttr("scaleway_function.main", "handler", "handler.handle"),
 				),
 			},
 		},
@@ -150,6 +154,67 @@ func TestAccScalewayFunction_EnvironmentVariables(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayFunctionExists(tt, "scaleway_function.main"),
 					resource.TestCheckResourceAttr("scaleway_function.main", "environment_variables.foo", "bar"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccScalewayFunction_Upload(t *testing.T) {
+	tt := NewTestTools(t)
+	defer tt.Cleanup()
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      testAccCheckScalewayFunctionDestroy(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource scaleway_function_namespace main {}
+
+					resource scaleway_function main {
+						name = "foobar"
+						namespace_id = scaleway_function_namespace.main.id
+						runtime = "go118"
+						privacy = "private"
+						handler = "Handle"
+						zip_file = "testfixture/gofunction.zip"
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayFunctionExists(tt, "scaleway_function.main"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccScalewayFunction_Deploy(t *testing.T) {
+	tt := NewTestTools(t)
+	defer tt.Cleanup()
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      testAccCheckScalewayFunctionDestroy(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource scaleway_function_namespace main {}
+
+					resource scaleway_function main {
+						name = "foobar"
+						namespace_id = scaleway_function_namespace.main.id
+						runtime = "go118"
+						privacy = "private"
+						handler = "Handle"
+						zip_file = "testfixture/gofunction.zip"
+						deploy = true
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayFunctionExists(tt, "scaleway_function.main"),
 				),
 			},
 		},

@@ -2,6 +2,7 @@ package scaleway
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -74,6 +75,7 @@ func resourceScalewayFunction() *schema.Resource {
 					function.FunctionRuntimeNode14.String(),
 					function.FunctionRuntimePython.String(),
 					function.FunctionRuntimePython3.String(),
+					function.FunctionRuntime("go118").String(),
 				}, false),
 			},
 			"min_scale": {
@@ -104,6 +106,24 @@ func resourceScalewayFunction() *schema.Resource {
 				Computed:    true,
 				Description: "Holds the max duration (in seconds) the function is allowed for responding to a request",
 				Optional:    true,
+			},
+
+			"zip_file": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "Location of the zip file to upload containing your function sources",
+			},
+			"zip_hash": {
+				Type:         schema.TypeString,
+				Optional:     true,
+				RequiredWith: []string{"zip_file"},
+				Description:  "The hash of your source zip file, changing it will re-apply function",
+			},
+			"deploy": {
+				Type:        schema.TypeBool,
+				Default:     false,
+				Optional:    true,
+				Description: "Define if the function should be deployed on upload, terraform will wait for function to be deployed",
 			},
 
 			/*
@@ -172,9 +192,31 @@ func resourceScalewayFunctionCreate(ctx context.Context, d *schema.ResourceData,
 
 	var diags diag.Diagnostics
 
+	if zipFile, zipFileExists := d.GetOk("zip_file"); zipFileExists {
+		err = functionUpload(ctx, meta, api, region, f.ID, zipFile.(string))
+		if err != nil {
+			diags = append(diags, diag.Diagnostic{
+				Severity: diag.Error,
+				Summary:  "Failed to upload function",
+				Detail:   err.Error(),
+			})
+		}
+	}
+
+	if d.Get("deploy").(bool) {
+		err = functionDeploy(ctx, api, region, f.ID)
+		if err != nil {
+			diags = append(diags, diag.Diagnostic{
+				Severity: diag.Error,
+				Summary:  "Failed to deploy function",
+				Detail:   err.Error(),
+			})
+		}
+	}
+
 	if f.ErrorMessage != nil {
 		diags = append(diags, diag.Diagnostic{
-			Severity: diag.Error,
+			Severity: diag.Warning,
 			Summary:  "Function error",
 			Detail:   *f.ErrorMessage,
 		})
@@ -183,7 +225,7 @@ func resourceScalewayFunctionCreate(ctx context.Context, d *schema.ResourceData,
 	if f.RuntimeMessage != "" {
 		diags = append(diags, diag.Diagnostic{
 			Severity:      diag.Warning,
-			Summary:       "Runtime time message",
+			Summary:       "Function runtime warning",
 			Detail:        f.RuntimeMessage,
 			AttributePath: cty.GetAttrPath("runtime"),
 		})
@@ -216,7 +258,7 @@ func resourceScalewayFunctionRead(ctx context.Context, d *schema.ResourceData, m
 
 	if f.ErrorMessage != nil {
 		diags = append(diags, diag.Diagnostic{
-			Severity: diag.Error,
+			Severity: diag.Warning,
 			Summary:  "Function error",
 			Detail:   *f.ErrorMessage,
 		})
@@ -267,42 +309,74 @@ func resourceScalewayFunctionUpdate(ctx context.Context, d *schema.ResourceData,
 		Region:     region,
 		FunctionID: f.ID,
 	}
+	update := false
 
 	if d.HasChange("environment_variables") {
 		req.EnvironmentVariables = expandMapStringStringPtr(d.Get("environment_variables"))
+		update = true
 	}
 
 	if d.HasChange("description") {
 		req.Description = expandStringPtr(d.Get("description"))
+		update = true
 	}
 
 	if d.HasChange("memory_limit") {
 		req.MemoryLimit = expandUint32Ptr(d.Get("memory_limit"))
+		update = true
 	}
 
 	if d.HasChange("handler") {
 		req.Handler = expandStringPtr(d.Get("handler").(string))
+		update = true
 	}
 
 	if d.HasChange("min_scale") {
 		req.MinScale = expandUint32Ptr(d.Get("min_scale"))
+		update = true
 	}
 
 	if d.HasChange("max_scale") {
 		req.MinScale = expandUint32Ptr(d.Get("max_scale"))
+		update = true
 	}
 
 	if d.HasChange("memory_limit") {
 		req.MemoryLimit = expandUint32Ptr(d.Get("memory_limit"))
+		update = true
 	}
 
 	if d.HasChange("timeout") {
 		req.Timeout = &scw.Duration{Seconds: d.Get("timeout").(int64)}
+		update = true
 	}
 
-	_, err = api.UpdateFunction(req, scw.WithContext(ctx))
-	if err != nil {
-		return diag.FromErr(err)
+	if update {
+		_, err = api.UpdateFunction(req, scw.WithContext(ctx))
+		if err != nil {
+			return diag.FromErr(err)
+		}
+	}
+
+	if d.HasChange("zip_hash") || d.HasChange("zip_file") {
+		// Function is not in transit state at this point, api did not update it instantly when processing UpdateFunction
+		_, err = api.WaitForFunction(&function.WaitForFunctionRequest{
+			FunctionID: id,
+			Region:     region,
+		}, scw.WithContext(ctx))
+		if err != nil {
+			return nil
+		}
+		err = functionUpload(ctx, meta, api, region, f.ID, d.Get("zip_file").(string))
+		if err != nil {
+			return diag.FromErr(fmt.Errorf("failed to upload function: %w", err))
+		}
+		if d.Get("deploy").(bool) {
+			err = functionDeploy(ctx, api, region, f.ID)
+			if err != nil {
+				return diag.FromErr(err)
+			}
+		}
 	}
 
 	return resourceScalewayFunctionRead(ctx, d, meta)
