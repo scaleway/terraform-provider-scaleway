@@ -95,11 +95,8 @@ func functionUpload(ctx context.Context, m interface{}, functionAPI *function.AP
 		}
 	}
 
-	if secretKey, secretKeyExists := meta.scwClient.GetSecretKey(); secretKeyExists {
-		req.Header.Add("X-Auth-Token", secretKey)
-	} else {
-		return fmt.Errorf("missing secret key")
-	}
+	secretKey, _ := meta.scwClient.GetSecretKey()
+	req.Header.Add("X-Auth-Token", secretKey)
 
 	resp, err := meta.httpClient.Do(req)
 	if err != nil {
