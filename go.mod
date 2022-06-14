@@ -13,7 +13,6 @@ require (
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.17.0
 	github.com/scaleway/scaleway-sdk-go v1.0.0-beta.9.0.20220519084803-2eb97e55dee8
 	github.com/stretchr/testify v1.7.1
-
 )
 
 require (
