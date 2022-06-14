@@ -27,6 +27,7 @@ func resourceScalewayFunction() *schema.Resource {
 			Read:    schema.DefaultTimeout(defaultFunctionTimeout),
 			Update:  schema.DefaultTimeout(defaultFunctionTimeout),
 			Delete:  schema.DefaultTimeout(defaultFunctionTimeout),
+			Create:  schema.DefaultTimeout(defaultFunctionTimeout),
 		},
 		SchemaVersion: 0,
 		Schema: map[string]*schema.Schema{
@@ -208,6 +209,11 @@ func resourceScalewayFunctionCreate(ctx context.Context, d *schema.ResourceData,
 	}
 
 	d.SetId(newRegionalIDString(region, f.ID))
+
+	_, err = waitForFunction(ctx, api, region, f.ID, d.Timeout(schema.TimeoutCreate))
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	return append(diags, resourceScalewayFunctionRead(ctx, d, meta)...)
 }
