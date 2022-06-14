@@ -92,7 +92,7 @@ In addition to all arguments above, the following attributes are exported:
 
 - `id` - The ID of the function
 - `organization_id` - The organization ID the function is associated with.
-- `cpu_limit` - The CPU limit in mCPU for your function.
+- `cpu_limit` - The CPU limit in mCPU for your function. More infos on resources [here](https://developers.scaleway.com/en/products/functions/api/#functions)
 
 
 ## Import
