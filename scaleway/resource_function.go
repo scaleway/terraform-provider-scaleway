@@ -3,6 +3,7 @@ package scaleway
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -334,12 +335,7 @@ func resourceScalewayFunctionUpdate(ctx context.Context, d *schema.ResourceData,
 	}
 
 	if d.HasChange("max_scale") {
-		req.MinScale = expandUint32Ptr(d.Get("max_scale"))
-		update = true
-	}
-
-	if d.HasChange("memory_limit") {
-		req.MemoryLimit = expandUint32Ptr(d.Get("memory_limit"))
+		req.MaxScale = expandUint32Ptr(d.Get("max_scale"))
 		update = true
 	}
 
@@ -353,10 +349,12 @@ func resourceScalewayFunctionUpdate(ctx context.Context, d *schema.ResourceData,
 		if err != nil {
 			return diag.FromErr(err)
 		}
+		// Function is not in transit state at this point, api did not update it instantly when processing UpdateFunction
+		// We sleep so api has time to change resource to a transit state
+		time.Sleep(defaultFunctionAfterUpdateWait)
 	}
 
 	if d.HasChange("zip_hash") || d.HasChange("zip_file") {
-		// Function is not in transit state at this point, api did not update it instantly when processing UpdateFunction
 		_, err := waitForFunction(ctx, api, region, id, d.Timeout(schema.TimeoutUpdate))
 		if err != nil {
 			return nil
