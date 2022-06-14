@@ -324,7 +324,7 @@ func resourceScalewayFunctionUpdate(ctx context.Context, d *schema.ResourceData,
 		}
 		// Function is not in transit state at this point, api did not update it instantly when processing UpdateFunction
 		// We sleep so api has time to change resource to a transit state
-		//lintignore:R018
+		// lintignore:R018
 		time.Sleep(defaultFunctionAfterUpdateWait)
 	}
 
