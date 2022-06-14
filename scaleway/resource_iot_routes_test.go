@@ -4,36 +4,41 @@ import (
 	"fmt"
 	"testing"
 
+	sdkacctest "github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	iot "github.com/scaleway/scaleway-sdk-go/api/iot/v1"
 )
 
-func TestAccScalewayIotRoute_Minimal(t *testing.T) {
+func TestAccScalewayIotRoute_RDB(t *testing.T) {
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		// Destruction is done via the hub destruction.
-		CheckDestroy: func(state *terraform.State) error {
-			errHubDestroy := testAccCheckScalewayIotHubDestroy(tt)(state)
-			errRdbDestroy := testAccCheckScalewayRdbInstanceDestroy(tt)(state)
-			errSisDestroy := testAccCheckScalewayObjectBucketDestroy(tt)(state)
-			if errHubDestroy != nil {
-				return errHubDestroy
-			}
-			if errRdbDestroy != nil {
-				return errRdbDestroy
-			}
-			if errSisDestroy != nil {
-				return errSisDestroy
-			}
-			return nil
-		},
+		CheckDestroy: resource.ComposeTestCheckFunc(
+			testAccCheckScalewayIotHubDestroy(tt),
+			testAccCheckScalewayRdbInstanceDestroy(tt),
+		),
 		Steps: []resource.TestStep{
 			{
 				Config: `
+						resource "scaleway_iot_hub" "minimal" {
+							name         = "minimal"
+							product_plan = "plan_shared"
+						}
+
+						resource "scaleway_rdb_instance" "minimal" {
+							name           = "minimal"
+							node_type      = "db-dev-s"
+							engine         = "PostgreSQL-12"
+							is_ha_cluster  = false
+							disable_backup = true
+							user_name      = "root"
+							password       = "T3stP4ssw0rdD0N0tUs3!"
+						}
+
 						resource "scaleway_iot_route" "default" {
 							name   = "default"
 							hub_id = scaleway_iot_hub.minimal.id
@@ -46,19 +51,6 @@ func TestAccScalewayIotRoute_Minimal(t *testing.T) {
 								username = scaleway_rdb_instance.minimal.user_name
 								password = scaleway_rdb_instance.minimal.password
 							}
-						}
-						resource "scaleway_iot_hub" "minimal" {
-							name         = "minimal"
-							product_plan = "plan_shared"
-						}
-						resource "scaleway_rdb_instance" "minimal" {
-							name           = "minimal"
-							node_type      = "db-dev-s"
-							engine         = "PostgreSQL-12"
-							is_ha_cluster  = false
-							disable_backup = true
-							user_name      = "root"
-							password       = "T3stP4ssw0rdD0N0tUs3!"
 						}
 						`,
 				Check: resource.ComposeTestCheckFunc(
@@ -75,30 +67,55 @@ func TestAccScalewayIotRoute_Minimal(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_iot_route.default", "database.0.dbname", "rdb"),
 				),
 			},
+		},
+	})
+}
+
+func TestAccScalewayIotRoute_S3(t *testing.T) {
+	if !*UpdateCassettes {
+		t.Skip("Skipping ObjectStorage test as this kind of resource can't be deleted before 24h")
+	}
+	tt := NewTestTools(t)
+	defer tt.Cleanup()
+	bucketName := sdkacctest.RandomWithPrefix("test-acc-scaleway-iot-route-s3")
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		// Destruction is done via the hub destruction.
+		CheckDestroy: resource.ComposeAggregateTestCheckFunc(
+			testAccCheckScalewayIotHubDestroy(tt),
+			testAccCheckScalewayObjectBucketDestroy(tt),
+		),
+		Steps: []resource.TestStep{
 			{
-				Config: `
+				Config: fmt.Sprintf(`
+						resource "scaleway_object_bucket" "minimal" {
+							name = "%s"
+						}
+
+						resource "scaleway_iot_hub" "minimal" {
+							name         = "minimal"
+							product_plan = "plan_shared"
+						}
+
 						resource "scaleway_iot_route" "default" {
 							name   = "default"
 							hub_id = scaleway_iot_hub.minimal.id
 							topic  = "#"
+
 							s3 {
 								bucket_region = scaleway_object_bucket.minimal.region
 								bucket_name   = scaleway_object_bucket.minimal.name
 								object_prefix = "foo"
 								strategy      = "per_topic"
 							}
+							
+							depends_on = [scaleway_object_bucket.minimal]
 						}
-						resource "scaleway_iot_hub" "minimal" {
-							name         = "minimal"
-							product_plan = "plan_shared"
-						}
-
-						resource "scaleway_object_bucket" "minimal" {
-							region = "fr-par"
-							name = "test-acc-scaleway-iot-route-minimal"
-						}
-						`,
+						`, bucketName),
 				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayObjectBucketExists(tt, "scaleway_object_bucket.minimal"),
 					testAccCheckScalewayIotHubExists(tt, "scaleway_iot_hub.minimal"),
 					testAccCheckScalewayIotRouteExists(tt, "scaleway_iot_route.default"),
 					resource.TestCheckResourceAttrSet("scaleway_iot_route.default", "id"),
@@ -110,12 +127,31 @@ func TestAccScalewayIotRoute_Minimal(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_iot_route.default", "s3.0.strategy", "per_topic"),
 				),
 			},
+		},
+	})
+}
+
+func TestAccScalewayIotRoute_REST(t *testing.T) {
+	tt := NewTestTools(t)
+	defer tt.Cleanup()
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		// Destruction is done via the hub destruction.
+		CheckDestroy: testAccCheckScalewayIotHubDestroy(tt),
+		Steps: []resource.TestStep{
 			{
 				Config: `
+						resource "scaleway_iot_hub" "minimal" {
+							name         = "minimal"
+							product_plan = "plan_shared"
+						}
+
 						resource "scaleway_iot_route" "default" {
 							name   = "default"
 							hub_id = scaleway_iot_hub.minimal.id
 							topic  = "#"
+
 							rest {
 								verb = "get"
 								uri  = "http://scaleway.com"
@@ -123,10 +159,6 @@ func TestAccScalewayIotRoute_Minimal(t *testing.T) {
 									X-terraform-test = "inprogress"
 								}
 							}
-						}
-						resource "scaleway_iot_hub" "minimal" {
-							name         = "minimal"
-							product_plan = "plan_shared"
 						}
 						`,
 				Check: resource.ComposeTestCheckFunc(

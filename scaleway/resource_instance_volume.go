@@ -5,7 +5,6 @@ import (
 	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
@@ -22,6 +21,9 @@ func resourceScalewayInstanceVolume() *schema.Resource {
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 		Timeouts: &schema.ResourceTimeout{
+			Create:  schema.DefaultTimeout(defaultInstanceVolumeDeleteTimeout),
+			Update:  schema.DefaultTimeout(defaultInstanceVolumeDeleteTimeout),
+			Delete:  schema.DefaultTimeout(defaultInstanceVolumeDeleteTimeout),
 			Default: schema.DefaultTimeout(defaultInstanceVolumeDeleteTimeout),
 		},
 		Schema: map[string]*schema.Schema{
@@ -68,6 +70,14 @@ func resourceScalewayInstanceVolume() *schema.Resource {
 				Computed:    true,
 				Description: "The server associated with this volume",
 			},
+			"tags": {
+				Type: schema.TypeList,
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
+				Optional:    true,
+				Description: "The tags associated with the volume",
+			},
 			"organization_id": organizationIDSchema(),
 			"project_id":      projectIDSchema(),
 			"zone":            zoneSchema(),
@@ -86,6 +96,10 @@ func resourceScalewayInstanceVolumeCreate(ctx context.Context, d *schema.Resourc
 		Name:       expandOrGenerateString(d.Get("name"), "vol"),
 		VolumeType: instance.VolumeVolumeType(d.Get("type").(string)),
 		Project:    expandStringPtr(d.Get("project_id")),
+	}
+	tags := expandStrings(d.Get("tags"))
+	if len(tags) > 0 {
+		createVolumeRequest.Tags = tags
 	}
 
 	if size, ok := d.GetOk("size_in_gb"); ok {
@@ -107,6 +121,16 @@ func resourceScalewayInstanceVolumeCreate(ctx context.Context, d *schema.Resourc
 	}
 
 	d.SetId(newZonedIDString(zone, res.Volume.ID))
+
+	_, err = instanceAPI.WaitForVolume(&instance.WaitForVolumeRequest{
+		VolumeID:      res.Volume.ID,
+		Zone:          zone,
+		RetryInterval: DefaultWaitRetryInterval,
+		Timeout:       scw.TimeDurationPtr(d.Timeout(schema.TimeoutCreate)),
+	}, scw.WithContext(ctx))
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	return resourceScalewayInstanceVolumeRead(ctx, d, meta)
 }
@@ -134,7 +158,13 @@ func resourceScalewayInstanceVolumeRead(ctx context.Context, d *schema.ResourceD
 	_ = d.Set("project_id", res.Volume.Project)
 	_ = d.Set("zone", string(zone))
 	_ = d.Set("type", res.Volume.VolumeType.String())
-	_ = d.Set("size_in_gb", int(res.Volume.Size/scw.GB))
+	_ = d.Set("tags", res.Volume.Tags)
+
+	_, fromVolume := d.GetOk("from_volume_id")
+	_, fromSnapshot := d.GetOk("from_snapshot_id")
+	if !fromSnapshot && !fromVolume {
+		_ = d.Set("size_in_gb", int(res.Volume.Size/scw.GB))
+	}
 
 	if res.Volume.Server != nil {
 		_ = d.Set("server_id", res.Volume.Server.ID)
@@ -151,17 +181,20 @@ func resourceScalewayInstanceVolumeUpdate(ctx context.Context, d *schema.Resourc
 		return diag.FromErr(err)
 	}
 
+	req := &instance.UpdateVolumeRequest{
+		VolumeID: id,
+		Zone:     zone,
+		Tags:     scw.StringsPtr([]string{}),
+	}
+
 	if d.HasChange("name") {
 		newName := d.Get("name").(string)
+		req.Name = &newName
+	}
 
-		_, err = instanceAPI.UpdateVolume(&instance.UpdateVolumeRequest{
-			VolumeID: id,
-			Zone:     zone,
-			Name:     &newName,
-		}, scw.WithContext(ctx))
-		if err != nil {
-			return diag.FromErr(fmt.Errorf("couldn't update volume: %s", err))
-		}
+	tags := expandStrings(d.Get("tags"))
+	if d.HasChange("tags") && len(tags) > 0 {
+		req.Tags = scw.StringsPtr(expandStrings(d.Get("tags")))
 	}
 
 	if d.HasChange("size_in_gb") {
@@ -171,9 +204,8 @@ func resourceScalewayInstanceVolumeUpdate(ctx context.Context, d *schema.Resourc
 		if oldSize, newSize := d.GetChange("size_in_gb"); oldSize.(int) > newSize.(int) {
 			return diag.FromErr(fmt.Errorf("block volumes cannot be resized down"))
 		}
-		_, err := instanceAPI.WaitForVolume(&instance.WaitForVolumeRequest{
-			VolumeID: id,
-			Zone:     zone}, scw.WithContext(ctx))
+
+		_, err = waitForInstanceVolume(ctx, instanceAPI, zone, id, d.Timeout(schema.TimeoutUpdate))
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -187,6 +219,15 @@ func resourceScalewayInstanceVolumeUpdate(ctx context.Context, d *schema.Resourc
 		if err != nil {
 			return diag.FromErr(fmt.Errorf("couldn't resize volume: %s", err))
 		}
+		_, err = waitForInstanceVolume(ctx, instanceAPI, zone, id, d.Timeout(schema.TimeoutUpdate))
+		if err != nil {
+			return diag.FromErr(err)
+		}
+	}
+
+	_, err = instanceAPI.UpdateVolume(req, scw.WithContext(ctx))
+	if err != nil {
+		return diag.FromErr(fmt.Errorf("couldn't update volume: %s", err))
 	}
 
 	return resourceScalewayInstanceVolumeRead(ctx, d, meta)
@@ -198,35 +239,32 @@ func resourceScalewayInstanceVolumeDelete(ctx context.Context, d *schema.Resourc
 		return diag.FromErr(err)
 	}
 
-	err = resource.Retry(d.Timeout(schema.TimeoutDelete), func() *resource.RetryError {
-		volumeResp, err := instanceAPI.GetVolume(&instance.GetVolumeRequest{
-			Zone:     zone,
-			VolumeID: id,
-		})
-		if err != nil {
-			if is404Error(err) {
-				return nil
-			}
-			return resource.NonRetryableError(err)
+	volume, err := instanceAPI.WaitForVolume(&instance.WaitForVolumeRequest{
+		Zone:          zone,
+		VolumeID:      id,
+		RetryInterval: DefaultWaitRetryInterval,
+		Timeout:       scw.TimeDurationPtr(d.Timeout(schema.TimeoutDelete)),
+	}, scw.WithContext(ctx))
+	if err != nil {
+		if is404Error(err) {
+			return nil
 		}
+		return diag.FromErr(err)
+	}
 
-		if volumeResp.Volume.Server != nil {
-			return resource.RetryableError(fmt.Errorf("volume is still attached to a server"))
-		}
+	if volume.Server != nil {
+		return diag.FromErr(fmt.Errorf("volume is still attached to a server"))
+	}
 
-		deleteRequest := &instance.DeleteVolumeRequest{
-			Zone:     zone,
-			VolumeID: id,
-		}
+	deleteRequest := &instance.DeleteVolumeRequest{
+		Zone:     zone,
+		VolumeID: id,
+	}
 
-		err = instanceAPI.DeleteVolume(deleteRequest, scw.WithContext(ctx))
-		if err != nil {
-			return resource.NonRetryableError(err)
-		}
-		return nil
-	})
+	err = instanceAPI.DeleteVolume(deleteRequest, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
 	}
+
 	return nil
 }

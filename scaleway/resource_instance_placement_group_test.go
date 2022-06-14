@@ -21,7 +21,9 @@ func testSweepInstancePlacementGroup(_ string) error {
 	return sweepZones(scw.AllZones, func(scwClient *scw.Client, zone scw.Zone) error {
 		instanceAPI := instance.NewAPI(scwClient)
 		l.Debugf("sweeper: destroying the instance placement group in (%s)", zone)
-		listPlacementGroups, err := instanceAPI.ListPlacementGroups(&instance.ListPlacementGroupsRequest{}, scw.WithAllPages())
+		listPlacementGroups, err := instanceAPI.ListPlacementGroups(&instance.ListPlacementGroupsRequest{
+			Zone: zone,
+		}, scw.WithAllPages())
 		if err != nil {
 			l.Warningf("error listing placement groups in (%s) in sweeper: %s", zone, err)
 			return nil
@@ -29,6 +31,7 @@ func testSweepInstancePlacementGroup(_ string) error {
 
 		for _, pg := range listPlacementGroups.PlacementGroups {
 			err := instanceAPI.DeletePlacementGroup(&instance.DeletePlacementGroupRequest{
+				Zone:             zone,
 				PlacementGroupID: pg.ID,
 			})
 			if err != nil {
@@ -51,19 +54,11 @@ func TestAccScalewayInstancePlacementGroup_Basic(t *testing.T) {
 			{
 				Config: `
 					resource "scaleway_instance_placement_group" "base" {}
-
-					resource "scaleway_instance_placement_group" "scaleway" {
-						policy_mode = "enforced"
-						policy_type = "low_latency"
-					}`,
+					`,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayInstancePlacementGroupExists(tt, "scaleway_instance_placement_group.base"),
-					testAccCheckScalewayInstancePlacementGroupExists(tt, "scaleway_instance_placement_group.scaleway"),
 					resource.TestCheckResourceAttr("scaleway_instance_placement_group.base", "policy_mode", "optional"),
 					resource.TestCheckResourceAttr("scaleway_instance_placement_group.base", "policy_type", "max_availability"),
-					resource.TestCheckResourceAttr("scaleway_instance_placement_group.scaleway", "policy_mode", "enforced"),
-					resource.TestCheckResourceAttr("scaleway_instance_placement_group.scaleway", "policy_type", "low_latency"),
-					resource.TestCheckResourceAttr("scaleway_instance_placement_group.scaleway", "policy_respected", "true"),
 				),
 			},
 			{
@@ -72,16 +67,22 @@ func TestAccScalewayInstancePlacementGroup_Basic(t *testing.T) {
 						policy_mode = "enforced"
 						policy_type = "low_latency"
 					}
-			
-					resource "scaleway_instance_placement_group" "scaleway" {}`,
+					`,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayInstancePlacementGroupExists(tt, "scaleway_instance_placement_group.base"),
-					testAccCheckScalewayInstancePlacementGroupExists(tt, "scaleway_instance_placement_group.scaleway"),
 					resource.TestCheckResourceAttr("scaleway_instance_placement_group.base", "policy_mode", "enforced"),
 					resource.TestCheckResourceAttr("scaleway_instance_placement_group.base", "policy_type", "low_latency"),
 					resource.TestCheckResourceAttr("scaleway_instance_placement_group.base", "policy_respected", "true"),
-					resource.TestCheckResourceAttr("scaleway_instance_placement_group.scaleway", "policy_mode", "optional"),
-					resource.TestCheckResourceAttr("scaleway_instance_placement_group.scaleway", "policy_type", "max_availability"),
+				),
+			},
+			{
+				Config: `
+					resource "scaleway_instance_placement_group" "base" {}
+					`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayInstancePlacementGroupExists(tt, "scaleway_instance_placement_group.base"),
+					resource.TestCheckResourceAttr("scaleway_instance_placement_group.base", "policy_mode", "optional"),
+					resource.TestCheckResourceAttr("scaleway_instance_placement_group.base", "policy_type", "max_availability"),
 				),
 			},
 		},
@@ -124,6 +125,48 @@ func TestAccScalewayInstancePlacementGroup_Rename(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayInstancePlacementGroupExists(tt, "scaleway_instance_placement_group.base"),
 					resource.TestCheckResourceAttr("scaleway_instance_placement_group.base", "name", "bar"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccScalewayInstancePlacementGroup_Tags(t *testing.T) {
+	tt := NewTestTools(t)
+	defer tt.Cleanup()
+	resource.ParallelTest(t, resource.TestCase{
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      testAccCheckScalewayInstanceIPDestroy(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+						resource "scaleway_instance_placement_group" "main" {}
+					`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayInstancePlacementGroupExists(tt, "scaleway_instance_placement_group.main"),
+					resource.TestCheckResourceAttr("scaleway_instance_placement_group.main", "tags.#", "0"),
+				),
+			},
+			{
+				Config: `
+						resource "scaleway_instance_placement_group" "main" {
+							tags = ["foo", "bar"]
+						}
+					`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayInstancePlacementGroupExists(tt, "scaleway_instance_placement_group.main"),
+					resource.TestCheckResourceAttr("scaleway_instance_placement_group.main", "tags.0", "foo"),
+					resource.TestCheckResourceAttr("scaleway_instance_placement_group.main", "tags.1", "bar"),
+				),
+			},
+			{
+				Config: `
+						resource "scaleway_instance_placement_group" "main" {
+						}
+					`,
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("scaleway_instance_placement_group.main", "tags.#", "0"),
+					testAccCheckScalewayInstancePlacementGroupExists(tt, "scaleway_instance_placement_group.main"),
 				),
 			},
 		},

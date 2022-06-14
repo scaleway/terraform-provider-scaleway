@@ -23,6 +23,10 @@ func resourceScalewayK8SCluster() *schema.Resource {
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 		Timeouts: &schema.ResourceTimeout{
+			Create:  schema.DefaultTimeout(defaultK8SClusterTimeout),
+			Read:    schema.DefaultTimeout(defaultK8SClusterTimeout),
+			Update:  schema.DefaultTimeout(defaultK8SClusterTimeout),
+			Delete:  schema.DefaultTimeout(defaultK8SClusterTimeout),
 			Default: schema.DefaultTimeout(defaultK8SClusterTimeout),
 		},
 		SchemaVersion: 0,
@@ -31,6 +35,13 @@ func resourceScalewayK8SCluster() *schema.Resource {
 				Type:        schema.TypeString,
 				Required:    true,
 				Description: "The name of the cluster",
+			},
+			"type": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				ForceNew:    true,
+				Computed:    true,
+				Description: "The type of cluster",
 			},
 			"description": {
 				Type:        schema.TypeString,
@@ -53,24 +64,7 @@ func resourceScalewayK8SCluster() *schema.Resource {
 					k8s.CNICalico.String(),
 					k8s.CNIFlannel.String(),
 					k8s.CNIWeave.String(),
-				}, false),
-			},
-			"enable_dashboard": {
-				Type:        schema.TypeBool,
-				Optional:    true,
-				Default:     false,
-				Description: "Enable the dashboard on the cluster",
-			},
-			"ingress": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Default:     k8s.IngressNone.String(),
-				Description: "The ingress to be deployed on the cluster",
-				ValidateFunc: validation.StringInSlice([]string{
-					k8s.IngressNone.String(),
-					k8s.IngressTraefik.String(),
-					k8s.IngressTraefik2.String(),
-					k8s.IngressNginx.String(),
+					k8s.CNIKilo.String(),
 				}, false),
 			},
 			"tags": {
@@ -106,7 +100,7 @@ func resourceScalewayK8SCluster() *schema.Resource {
 							Type:         schema.TypeInt,
 							Required:     true,
 							Description:  "Start hour of the 2-hour maintenance window",
-							ValidateFunc: validateHour(),
+							ValidateFunc: validation.IntBetween(0, 23),
 						},
 						"maintenance_window_day": {
 							Type:        schema.TypeString,
@@ -231,6 +225,7 @@ func resourceScalewayK8SCluster() *schema.Resource {
 	}
 }
 
+//gocyclo:ignore
 func resourceScalewayK8SClusterCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	k8sAPI, region, err := k8sAPIWithRegion(d, meta)
 	if err != nil {
@@ -246,24 +241,22 @@ func resourceScalewayK8SClusterCreate(ctx context.Context, d *schema.ResourceDat
 		description = ""
 	}
 
+	clusterType, ok := d.GetOk("type")
+	if !ok {
+		clusterType = ""
+	}
+
 	req := &k8s.CreateClusterRequest{
 		Region:            region,
 		ProjectID:         expandStringPtr(d.Get("project_id")),
 		Name:              expandOrGenerateString(d.Get("name"), "cluster"),
+		Type:              clusterType.(string),
 		Description:       description.(string),
 		Cni:               k8s.CNI(d.Get("cni").(string)),
 		Tags:              expandStrings(d.Get("tags")),
 		FeatureGates:      expandStrings(d.Get("feature_gates")),
 		AdmissionPlugins:  expandStrings(d.Get("admission_plugins")),
 		ApiserverCertSans: expandStrings(d.Get("apiserver_cert_sans")),
-	}
-
-	if dashboard, ok := d.GetOk("enable_dashboard"); ok {
-		req.EnableDashboard = dashboard.(bool)
-	}
-
-	if ingress, ok := d.GetOk("ingress"); ok {
-		req.Ingress = k8s.Ingress(ingress.(string))
 	}
 
 	autoscalerReq := &k8s.CreateClusterRequestAutoscalerConfig{}
@@ -380,7 +373,7 @@ func resourceScalewayK8SClusterCreate(ctx context.Context, d *schema.ResourceDat
 	if versionIsOnlyMinor {
 		version, err = k8sGetLatestVersionFromMinor(ctx, k8sAPI, region, version)
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("minor version x.y must be used with auto upgrade enabled"))
+			return diag.FromErr(err)
 		}
 	}
 
@@ -391,12 +384,17 @@ func resourceScalewayK8SClusterCreate(ctx context.Context, d *schema.ResourceDat
 		return diag.FromErr(err)
 	}
 
-	err = waitK8SCluster(ctx, k8sAPI, region, res.ID, k8s.ClusterStatusPoolRequired)
+	d.SetId(newRegionalIDString(region, res.ID))
+	if clusterType.(string) == "multicloud" {
+		// In case of multi-cloud, we do not have the guarantee that a pool will be created in Scaleway.
+		_, err = waitK8SCluster(ctx, k8sAPI, region, res.ID, d.Timeout(schema.TimeoutCreate))
+	} else {
+		// If we are not in multi-cloud, we can wait for the pool to be created.
+		_, err = waitK8SClusterPool(ctx, k8sAPI, region, res.ID, d.Timeout(schema.TimeoutCreate))
+	}
 	if err != nil {
 		return diag.FromErr(err)
 	}
-
-	d.SetId(newRegionalIDString(region, res.ID))
 
 	return resourceScalewayK8SClusterRead(ctx, d, meta)
 }
@@ -410,10 +408,7 @@ func resourceScalewayK8SClusterRead(ctx context.Context, d *schema.ResourceData,
 	////
 	// Read Cluster
 	////
-	response, err := k8sAPI.GetCluster(&k8s.GetClusterRequest{
-		Region:    region,
-		ClusterID: clusterID,
-	}, scw.WithContext(ctx))
+	cluster, err := waitK8SCluster(ctx, k8sAPI, region, clusterID, d.Timeout(schema.TimeoutRead))
 	if err != nil {
 		if is404Error(err) {
 			d.SetId("")
@@ -423,25 +418,26 @@ func resourceScalewayK8SClusterRead(ctx context.Context, d *schema.ResourceData,
 	}
 
 	_ = d.Set("region", string(region))
-	_ = d.Set("name", response.Name)
-	_ = d.Set("organization_id", response.OrganizationID)
-	_ = d.Set("project_id", response.ProjectID)
-	_ = d.Set("description", response.Description)
-	_ = d.Set("cni", response.Cni)
-	_ = d.Set("tags", response.Tags)
-	_ = d.Set("apiserver_cert_sans", response.ApiserverCertSans)
-	_ = d.Set("created_at", response.CreatedAt.Format(time.RFC3339))
-	_ = d.Set("updated_at", response.UpdatedAt.Format(time.RFC3339))
-	_ = d.Set("apiserver_url", response.ClusterURL)
-	_ = d.Set("wildcard_dns", response.DNSWildcard)
-	_ = d.Set("status", response.Status.String())
-	_ = d.Set("upgrade_available", response.UpgradeAvailable)
-	_ = d.Set("feature_gates", response.FeatureGates)
-	_ = d.Set("admission_plugins", response.AdmissionPlugins)
+	_ = d.Set("name", cluster.Name)
+	_ = d.Set("type", cluster.Type)
+	_ = d.Set("organization_id", cluster.OrganizationID)
+	_ = d.Set("project_id", cluster.ProjectID)
+	_ = d.Set("description", cluster.Description)
+	_ = d.Set("cni", cluster.Cni)
+	_ = d.Set("tags", cluster.Tags)
+	_ = d.Set("apiserver_cert_sans", cluster.ApiserverCertSans)
+	_ = d.Set("created_at", cluster.CreatedAt.Format(time.RFC3339))
+	_ = d.Set("updated_at", cluster.UpdatedAt.Format(time.RFC3339))
+	_ = d.Set("apiserver_url", cluster.ClusterURL)
+	_ = d.Set("wildcard_dns", cluster.DNSWildcard)
+	_ = d.Set("status", cluster.Status.String())
+	_ = d.Set("upgrade_available", cluster.UpgradeAvailable)
+	_ = d.Set("feature_gates", cluster.FeatureGates)
+	_ = d.Set("admission_plugins", cluster.AdmissionPlugins)
 
 	// if autoupgrade is enabled, we only set the minor k8s version (x.y)
-	version := response.Version
-	if response.AutoUpgrade != nil && response.AutoUpgrade.Enabled {
+	version := cluster.Version
+	if cluster.AutoUpgrade != nil && cluster.AutoUpgrade.Enabled {
 		version, err = k8sGetMinorVersionFromFull(version)
 		if err != nil {
 			return diag.FromErr(err)
@@ -450,9 +446,9 @@ func resourceScalewayK8SClusterRead(ctx context.Context, d *schema.ResourceData,
 	_ = d.Set("version", version)
 
 	// autoscaler_config
-	_ = d.Set("autoscaler_config", clusterAutoscalerConfigFlatten(response))
-	_ = d.Set("open_id_connect_config", clusterOpenIDConnectConfigFlatten(response))
-	_ = d.Set("auto_upgrade", clusterAutoUpgradeFlatten(response))
+	_ = d.Set("autoscaler_config", clusterAutoscalerConfigFlatten(cluster))
+	_ = d.Set("open_id_connect_config", clusterOpenIDConnectConfigFlatten(cluster))
+	_ = d.Set("auto_upgrade", clusterAutoUpgradeFlatten(cluster))
 
 	////
 	// Read kubeconfig
@@ -491,6 +487,7 @@ func resourceScalewayK8SClusterRead(ctx context.Context, d *schema.ResourceData,
 	return nil
 }
 
+//gocyclo:ignore
 func resourceScalewayK8SClusterUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	k8sAPI, region, clusterID, err := k8sAPIWithRegionAndID(meta, d.Id())
 	if err != nil {
@@ -530,14 +527,6 @@ func resourceScalewayK8SClusterUpdate(ctx context.Context, d *schema.ResourceDat
 
 	if d.HasChange("admission_plugins") {
 		updateRequest.AdmissionPlugins = scw.StringsPtr(expandStrings(d.Get("admission_plugins")))
-	}
-
-	if d.HasChange("ingress") {
-		updateRequest.Ingress = k8s.Ingress(d.Get("ingress").(string))
-	}
-
-	if d.HasChange("enable_dashboard") {
-		updateRequest.EnableDashboard = scw.BoolPtr(d.Get("enable_dashboard").(bool))
 	}
 
 	updateRequest.AutoUpgrade = &k8s.UpdateClusterRequestAutoUpgrade{}
@@ -651,7 +640,7 @@ func resourceScalewayK8SClusterUpdate(ctx context.Context, d *schema.ResourceDat
 	}
 
 	if d.HasChange("open_id_connect_config.0.groups_claim") {
-		updateClusterRequestOpenIDConnectConfig.GroupsClaim = scw.StringsPtr(expandStrings(d.Get("open_id_connect_config.0.groups_claim")))
+		updateClusterRequestOpenIDConnectConfig.GroupsClaim = expandUpdatedStringsPtr(d.Get("open_id_connect_config.0.groups_claim"))
 	}
 
 	if d.HasChange("open_id_connect_config.0.groups_prefix") {
@@ -659,7 +648,7 @@ func resourceScalewayK8SClusterUpdate(ctx context.Context, d *schema.ResourceDat
 	}
 
 	if d.HasChange("open_id_connect_config.0.required_claim") {
-		updateClusterRequestOpenIDConnectConfig.RequiredClaim = scw.StringsPtr(expandStrings(d.Get("open_id_connect_config.0.required_claim")))
+		updateClusterRequestOpenIDConnectConfig.RequiredClaim = expandUpdatedStringsPtr(d.Get("open_id_connect_config.0.required_claim"))
 	}
 
 	updateRequest.OpenIDConnectConfig = updateClusterRequestOpenIDConnectConfig
@@ -672,7 +661,7 @@ func resourceScalewayK8SClusterUpdate(ctx context.Context, d *schema.ResourceDat
 		return diag.FromErr(err)
 	}
 
-	err = waitK8SCluster(ctx, k8sAPI, region, clusterID, k8s.ClusterStatusReady, k8s.ClusterStatusPoolRequired)
+	_, err = waitK8SCluster(ctx, k8sAPI, region, clusterID, d.Timeout(schema.TimeoutUpdate))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -692,7 +681,7 @@ func resourceScalewayK8SClusterUpdate(ctx context.Context, d *schema.ResourceDat
 			return diag.FromErr(err)
 		}
 
-		err = waitK8SCluster(ctx, k8sAPI, region, clusterID, k8s.ClusterStatusReady, k8s.ClusterStatusPoolRequired)
+		_, err = waitK8SCluster(ctx, k8sAPI, region, clusterID, d.Timeout(schema.TimeoutUpdate))
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -724,7 +713,7 @@ func resourceScalewayK8SClusterDelete(ctx context.Context, d *schema.ResourceDat
 		return diag.FromErr(err)
 	}
 
-	err = waitK8SClusterDeleted(ctx, k8sAPI, region, clusterID)
+	err = waitK8SClusterDeleted(ctx, k8sAPI, region, clusterID, d.Timeout(schema.TimeoutDelete))
 	if err != nil {
 		return diag.FromErr(err)
 	}

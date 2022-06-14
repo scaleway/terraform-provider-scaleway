@@ -21,7 +21,7 @@ func testSweepBaremetalServer(_ string) error {
 	return sweepZones([]scw.Zone{scw.ZoneFrPar2}, func(scwClient *scw.Client, zone scw.Zone) error {
 		baremetalAPI := baremetal.NewAPI(scwClient)
 		l.Debugf("sweeper: destroying the baremetal server in (%s)", zone)
-		listServers, err := baremetalAPI.ListServers(&baremetal.ListServersRequest{}, scw.WithAllPages())
+		listServers, err := baremetalAPI.ListServers(&baremetal.ListServersRequest{Zone: zone}, scw.WithAllPages())
 		if err != nil {
 			l.Warningf("error listing servers in (%s) in sweeper: %s", zone, err)
 			return nil
@@ -29,6 +29,7 @@ func testSweepBaremetalServer(_ string) error {
 
 		for _, server := range listServers.Servers {
 			_, err := baremetalAPI.DeleteServer(&baremetal.DeleteServerRequest{
+				Zone:     zone,
 				ServerID: server.ID,
 			})
 			if err != nil {
@@ -41,6 +42,7 @@ func testSweepBaremetalServer(_ string) error {
 }
 
 func TestAccScalewayBaremetalServer_Basic(t *testing.T) {
+	t.Skip("Skipping Baremetal Server test as no stock is available currently")
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
 

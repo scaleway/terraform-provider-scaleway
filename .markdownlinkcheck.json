@@ -17,5 +17,10 @@
       "pattern": "^file:///github/workspace/website/docs/guides/(.*)\\.markdown(#.*)?$",
       "replacement": "file:///github/workspace/website/docs/guides/$1.md$2"
     }
-  ]
+  ],
+  "timeout": "20s",
+  "retryOn429": true,
+  "retryCount": 5,
+  "fallbackRetryDelay": "30s",
+  "aliveStatusCodes": [200, 206]
 }

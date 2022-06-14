@@ -18,10 +18,10 @@ func init() {
 }
 
 func testSweepAppleSiliconServer(_ string) error {
-	return sweepZones(scw.AllZones, func(scwClient *scw.Client, zone scw.Zone) error {
+	return sweepZones([]scw.Zone{scw.ZoneFrPar1}, func(scwClient *scw.Client, zone scw.Zone) error {
 		asAPI := applesilicon.NewAPI(scwClient)
 		l.Debugf("sweeper: destroying the apple silicon instance in (%s)", zone)
-		listServers, err := asAPI.ListServers(&applesilicon.ListServersRequest{}, scw.WithAllPages())
+		listServers, err := asAPI.ListServers(&applesilicon.ListServersRequest{Zone: zone}, scw.WithAllPages())
 		if err != nil {
 			return fmt.Errorf("error listing apple silicon servers in (%s) in sweeper: %s", zone, err)
 		}
@@ -41,6 +41,7 @@ func testSweepAppleSiliconServer(_ string) error {
 }
 
 func TestAccScalewayAppleSiliconServer_Basic(t *testing.T) {
+	t.Skip("Skipping AppleSilicon test as this kind of server can't be deleted before 24h")
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
 	resource.ParallelTest(t, resource.TestCase{
@@ -58,7 +59,7 @@ func TestAccScalewayAppleSiliconServer_Basic(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayAppleSiliconExists(tt, "scaleway_apple_silicon_server.main"),
 					resource.TestCheckResourceAttr("scaleway_apple_silicon_server.main", "name", "test-m1"),
-					resource.TestCheckResourceAttr("scaleway_apple_silicon_server.main", "type", "M1-M"),
+					resource.TestCheckResourceAttr("scaleway_apple_silicon_server.main", "type", AppleSiliconM1Type),
 					// Computed
 					resource.TestCheckResourceAttrSet("scaleway_apple_silicon_server.main", "ip"),
 					resource.TestCheckResourceAttrSet("scaleway_apple_silicon_server.main", "vnc_url"),

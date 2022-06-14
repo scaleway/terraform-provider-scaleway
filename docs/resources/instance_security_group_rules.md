@@ -33,7 +33,7 @@ resource "scaleway_instance_security_group_rules" "sgrs01" {
 
 ### Simplify your rules using dynamic block and `for_each` loop
 
-You can use [`for_each` syntax](https://www.terraform.io/docs/configuration/meta-arguments/for_each.html) to simplify the definition of your rules.
+You can use [`for_each` syntax](https://www.terraform.io/language/expressions/dynamic-blocks) to simplify the definition of your rules.
 Let's suppose that your inbound default policy is to drop, but you want to build a list of exceptions to accept.
 Create a local containing your exceptions (`locals.trusted`) and use the `for_each` syntax in a [dynamic block](https://www.terraform.io/docs/configuration/expressions/dynamic-blocks.html):
 
@@ -118,6 +118,11 @@ The `inbound_rule` and `outbound_rule` block supports:
 - `protocol`- (Defaults to `TCP`) The protocol this rule apply to. Possible values are: `TCP`, `UDP`, `ICMP` or `ANY`.
 
 - `port`- (Optional) The port this rule apply to. If no port is specified, rule will apply to all port.
+
+- `port_range`- Need terraform >= 0.13.0 (Optional) The port range (e.g `22-23`) this rule applies to.
+  Port range MUST comply the Scaleway-notation: interval between ports must be a power of 2 `2^X-1` number (e.g 2^13-1=8191 in port_range = "10000-18191").
+  If no `port` nor `port_range` are specified, rule will apply to all port.
+  Only one of `port` and `port_range` should be specified.
 
 - `ip`- (Optional) The ip this rule apply to. If no `ip` nor `ip_range` are specified, rule will apply to all ip. Only one of `ip` and `ip_range` should be specified.
 

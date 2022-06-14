@@ -21,6 +21,8 @@ func resourceScalewayK8SPool() *schema.Resource {
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 		Timeouts: &schema.ResourceTimeout{
+			Create:  schema.DefaultTimeout(defaultK8SPoolTimeout),
+			Update:  schema.DefaultTimeout(defaultK8SPoolTimeout),
 			Default: schema.DefaultTimeout(defaultK8SPoolTimeout),
 		},
 		SchemaVersion: 0,
@@ -28,6 +30,7 @@ func resourceScalewayK8SPool() *schema.Resource {
 			"cluster_id": {
 				Type:        schema.TypeString,
 				Required:    true,
+				ForceNew:    true,
 				Description: "The ID of the cluster on which this pool will be created",
 			},
 			"name": {
@@ -83,7 +86,7 @@ func resourceScalewayK8SPool() *schema.Resource {
 			"container_runtime": {
 				Type:        schema.TypeString,
 				Optional:    true,
-				Default:     k8s.RuntimeDocker.String(),
+				Default:     k8s.RuntimeContainerd.String(),
 				ForceNew:    true,
 				Description: "Container runtime for the pool",
 				ValidateFunc: validation.StringInSlice([]string{
@@ -95,7 +98,7 @@ func resourceScalewayK8SPool() *schema.Resource {
 			"wait_for_pool_ready": {
 				Type:        schema.TypeBool,
 				Optional:    true,
-				Default:     false,
+				Default:     true,
 				Description: "Whether to wait for the pool to be ready",
 			},
 			"placement_group_id": {
@@ -196,6 +199,7 @@ func resourceScalewayK8SPool() *schema.Resource {
 	}
 }
 
+//gocyclo:ignore
 func resourceScalewayK8SPoolCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	k8sAPI, region, err := k8sAPIWithRegion(d, meta)
 	if err != nil {
@@ -263,7 +267,7 @@ func resourceScalewayK8SPoolCreate(ctx context.Context, d *schema.ResourceData, 
 	if cluster.Status == k8s.ClusterStatusPoolRequired {
 		waitForCluster = true
 	} else if cluster.Status == k8s.ClusterStatusCreating {
-		err = waitK8SCluster(ctx, k8sAPI, region, cluster.ID, k8s.ClusterStatusReady)
+		_, err = waitK8SCluster(ctx, k8sAPI, region, cluster.ID, d.Timeout(schema.TimeoutCreate))
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -276,15 +280,15 @@ func resourceScalewayK8SPoolCreate(ctx context.Context, d *schema.ResourceData, 
 
 	d.SetId(newRegionalIDString(region, res.ID))
 
-	if waitForCluster {
-		err = waitK8SCluster(ctx, k8sAPI, region, cluster.ID, k8s.ClusterStatusReady)
+	if d.Get("wait_for_pool_ready").(bool) { // wait for the pool to be ready if specified (including all its nodes)
+		_, err = waitK8SPoolReady(ctx, k8sAPI, region, res.ID, d.Timeout(schema.TimeoutCreate))
 		if err != nil {
 			return diag.FromErr(err)
 		}
 	}
 
-	if d.Get("wait_for_pool_ready").(bool) { // wait for the pool to be ready if specified (including all its nodes)
-		err = waitK8SPoolReady(ctx, k8sAPI, region, res.ID)
+	if waitForCluster {
+		_, err = waitK8SCluster(ctx, k8sAPI, region, cluster.ID, d.Timeout(schema.TimeoutCreate))
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -410,7 +414,7 @@ func resourceScalewayK8SPoolUpdate(ctx context.Context, d *schema.ResourceData, 
 	}
 
 	if d.Get("wait_for_pool_ready").(bool) { // wait for the pool to be ready if specified (including all its nodes)
-		err = waitK8SPoolReady(ctx, k8sAPI, region, res.ID)
+		_, err = waitK8SPoolReady(ctx, k8sAPI, region, res.ID, d.Timeout(schema.TimeoutUpdate))
 		if err != nil {
 			return diag.FromErr(err)
 		}

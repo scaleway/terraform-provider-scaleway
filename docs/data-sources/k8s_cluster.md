@@ -56,6 +56,8 @@ In addition to all above arguments, the following attributes are exported:
 
 - `status` - The status of the Kubernetes cluster.
 
+- `type` - The type of the Kubernetes cluster.
+
 - `upgrade_available` - True if a newer Kubernetes version is available.
 
 - `description` - A description for the Kubernetes cluster.
@@ -63,10 +65,6 @@ In addition to all above arguments, the following attributes are exported:
 - `version` - The version of the Kubernetes cluster.
 
 - `cni` - The Container Network Interface (CNI) for the Kubernetes cluster.
-
-- `enable_dashboard` - True if the [Kubernetes dashboard](https://github.com/kubernetes/dashboard) is enabled for the Kubernetes cluster.
-
-- `ingress` - The [ingress controller](https://kubernetes.io/docs/concepts/services-networking/ingress-controllers/) deployed on the Kubernetes cluster.
 
 - `tags` - The tags associated with the Kubernetes cluster.
 

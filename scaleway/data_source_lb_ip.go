@@ -6,7 +6,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/scaleway/scaleway-sdk-go/api/lb/v1"
+	lbSDK "github.com/scaleway/scaleway-sdk-go/api/lb/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 )
 
@@ -29,21 +29,25 @@ func dataSourceScalewayLbIP() *schema.Resource {
 	}
 
 	return &schema.Resource{
-		ReadContext: dataSourceScalewayLbIPRead,
-		Schema:      dsSchema,
+		ReadContext:   dataSourceScalewayLbIPRead,
+		Schema:        dsSchema,
+		SchemaVersion: 1,
+		StateUpgraders: []schema.StateUpgrader{
+			{Version: 0, Type: lbUpgradeV1SchemaType(), Upgrade: lbUpgradeV1SchemaUpgradeFunc},
+		},
 	}
 }
 
 func dataSourceScalewayLbIPRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, err := lbAPIWithRegion(d, meta)
+	api, zone, err := lbAPIWithZone(d, meta)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	ipID, ok := d.GetOk("ip_id")
 	if !ok { // Get IP by region and IP address.
-		res, err := api.ListIPs(&lb.ListIPsRequest{
-			Region:    region,
+		res, err := api.ListIPs(&lbSDK.ZonedAPIListIPsRequest{
+			Zone:      zone,
 			IPAddress: expandStringPtr(d.Get("ip_address")),
 			ProjectID: expandStringPtr(d.Get("project_id")),
 		}, scw.WithContext(ctx))
@@ -59,9 +63,9 @@ func dataSourceScalewayLbIPRead(ctx context.Context, d *schema.ResourceData, met
 		ipID = res.IPs[0].ID
 	}
 
-	regionalID := datasourceNewRegionalizedID(ipID, region)
-	d.SetId(regionalID)
-	err = d.Set("ip_id", regionalID)
+	zoneID := datasourceNewZonedID(ipID, zone)
+	d.SetId(zoneID)
+	err = d.Set("ip_id", zoneID)
 	if err != nil {
 		return diag.FromErr(err)
 	}

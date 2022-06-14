@@ -7,7 +7,7 @@ description: |-
 # scaleway_lb_certificate
 
 Creates and manages Scaleway Load-Balancer Certificates.
-For more information, see [the documentation](https://developers.scaleway.com/en/products/lb/api).
+For more information, see [the documentation](https://developers.scaleway.com/en/products/lb/zoned_api).
 
 ## Examples
 
@@ -56,9 +56,9 @@ The following arguments are supported:
 
 - `letsencrypt` - (Optional) Configuration block for Let's Encrypt configuration. Only one of `letsencrypt` and `custom_certificate` should be specified.
 
-    - `common_name` - (Required) Main domain of the certificate.
+    - `common_name` - (Required) Main domain of the certificate. A new certificate will be created if this field is changed.
 
-    - `subject_alternative_name` - (Optional) Array of alternative domain names.
+    - `subject_alternative_name` - (Optional) Array of alternative domain names.  A new certificate will be created if this field is changed.
 
 ~> **Important:** Updates to `letsencrypt` will recreate the load-balancer certificate.
 

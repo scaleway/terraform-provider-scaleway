@@ -40,7 +40,7 @@ func TestAccScalewayDataSourceInstanceImage_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("data.scaleway_instance_image.test2", "from_server_id", ""),
 					resource.TestCheckResourceAttr("data.scaleway_instance_image.test2", "state", "available"),
 					resource.TestCheckResourceAttr("data.scaleway_instance_image.test2", "root_volume_id", "6e66445c-e52e-4cfa-bf4c-f36e291e2c30"),
-					resource.TestCheckNoResourceAttr("data.scaleway_instance_image.test2", "additional_volume_ids"),
+					resource.TestCheckResourceAttr("data.scaleway_instance_image.test2", "additional_volume_ids.#", "0"),
 				),
 			},
 		},

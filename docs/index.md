@@ -40,6 +40,11 @@ You can test this config by creating a `test.tf` and run terraform commands from
 - Build the infrastructure: `terraform apply`
 
 ```hcl
+variable "project_id" {
+  type        = string
+  description = "Your project ID."
+}
+
 terraform {
   required_providers {
     scaleway = {
@@ -50,18 +55,31 @@ terraform {
 }
 
 provider "scaleway" {
-  zone            = "fr-par-1"
-  region          = "fr-par"
+  zone   = "fr-par-1"
+  region = "fr-par"
 }
 
-resource "scaleway_instance_ip" "public_ip" {}
+resource "scaleway_instance_ip" "public_ip" {
+  project_id = var.project_id
+}
+resource "scaleway_instance_ip" "public_ip_backup" {
+  project_id = var.project_id
+}
 
 resource "scaleway_instance_volume" "data" {
+  project_id = var.project_id
   size_in_gb = 30
-  type = "l_ssd"
+  type       = "l_ssd"
+}
+
+resource "scaleway_instance_volume" "data_backup" {
+  project_id = var.project_id
+  size_in_gb = 10
+  type       = "l_ssd"
 }
 
 resource "scaleway_instance_security_group" "www" {
+  project_id              = var.project_id
   inbound_default_policy  = "drop"
   outbound_default_policy = "accept"
 
@@ -83,14 +101,15 @@ resource "scaleway_instance_security_group" "www" {
 }
 
 resource "scaleway_instance_server" "web" {
-  type  = "DEV1-L"
-  image = "ubuntu_focal"
+  project_id = var.project_id
+  type       = "DEV1-L"
+  image      = "ubuntu_focal"
 
-  tags = [ "front", "web" ]
+  tags = ["front", "web"]
 
   ip_id = scaleway_instance_ip.public_ip.id
 
-  additional_volume_ids = [ scaleway_instance_volume.data.id ]
+  additional_volume_ids = [scaleway_instance_volume.data.id]
 
   root_volume {
     # The local storage of a DEV1-L instance is 80 GB, subtract 30 GB from the additional l_ssd volume, then the root volume needs to be 50 GB.
@@ -159,6 +178,38 @@ If it fails to detect credentials inline, or in the environment, Terraform will 
 You can optionally specify a different location with `SCW_CONFIG_PATH` environment variable.
 You can find more information about this configuration [in the documentation](https://github.com/scaleway/scaleway-sdk-go/blob/master/scw/README.md#scaleway-config).
 
+This method also supports a `profile` configuration:
+
+Example:
+
+If your shared configuration file contains:
+
+```yaml
+profiles:
+  myProfile:
+    access_key: xxxxxxxxxxxxxxxxxxxx
+    secret_key: xxxxxxxx-xxx-xxxx-xxxx-xxxxxxxxxxx
+    default_organization_id: xxxxxxxx-xxx-xxxx-xxxx-xxxxxxxxxxx 
+    default_project_id: xxxxxxxx-xxx-xxxx-xxxx-xxxxxxxxxxx
+    default_zone: fr-par-2
+    default_region: fr-par
+    api_url: https://api.scaleway.com
+    insecure: false
+```
+
+You can invoke and use this profile in the provider declaration:
+
+```hcl
+provider "scaleway" {
+  alias   = "p2"
+  profile = "myProfile"
+}
+
+resource "scaleway_instance_ip" "server_ip" {
+  provider = scaleway.p2
+}
+```
+
 ## Arguments Reference
 
 In addition to [generic provider arguments](https://www.terraform.io/docs/configuration/providers.html) (e.g. `alias` and `version`), the following arguments are supported in the Scaleway provider block:
@@ -201,3 +252,19 @@ If you want to configure the backend with environment var, you need to use `AWS_
 export AWS_ACCESS_KEY_ID=$SCW_ACCESS_KEY
 export AWS_SECRET_ACCESS_KEY=$SCW_SECRET_KEY
 ```
+
+## Debugging a deployment
+
+In case you want to [debug a deployment](https://www.terraform.io/internals/debugging), you can use the following command to increase the level of verbosity.
+
+`SCW_DEBUG=1 TF_LOG=WARN TF_LOG_PROVIDER=DEBUG terraform apply`
+
+- `SCW_DEBUG`: set the debug level of the scaleway SDK.
+- `TF_LOG`: set the level of the Terraform logging.
+- `TF_LOG_PROVIDER`: set the level of the Scaleway Terraform provider logging.
+
+### Submitting a bug report or a feature request
+
+In case you find something wrong with the scaleway provider, please submit a bug report on the [Terraform provider repository](https://github.com/scaleway/terraform-provider-scaleway/issues/new/choose).
+If it is a bug report, please include a **minimal** snippet of the Terraform configuration that triggered the error.
+This helps a lot to debug the issue.

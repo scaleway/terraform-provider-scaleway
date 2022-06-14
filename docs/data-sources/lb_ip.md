@@ -24,15 +24,15 @@ data "scaleway_lb_ip" "my_ip" {
 
 ## Argument Reference
 
-- `ip_address` - (Optional) The IP address.
-  Only one of `ip_address` and `lb_id` should be specified.
+The following arguments are supported:
 
-- `lb_id` - (Optional) The IP ID.
+- `ip_address` - (Optional) The IP address.
   Only one of `ip_address` and `ip_id` should be specified.
 
-- `region` - (Defaults to [provider](../index.md#region) `region`) The [region](../guides/regions_and_zones.md#zones) in which the LB IP exists.
+- `ip_id` - (Optional) The IP ID.
+  Only one of `ip_address` and `ip_id` should be specified.
 
-- `project_id` - (Defaults to [provider](../index.md#project_id) `project_id`) The ID of the project the LB IP is associated with.
+- `zone` - (Defaults to [provider](../index.md#zone) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which the IP should be reserved.
 
 ## Attributes Reference
 
@@ -40,6 +40,6 @@ In addition to all above arguments, the following attributes are exported:
 
 - `reverse` - The reverse domain associated with this IP.
 
-- `lb_id` - The associated load-balance ID if any
+- `lb_id` - The associated load-balancer ID if any
 
 - `organization_id` - (Defaults to [provider](../index.md#organization_id) `organization_id`) The ID of the organization the LB IP is associated with.

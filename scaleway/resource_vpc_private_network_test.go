@@ -93,6 +93,16 @@ func TestAccScalewayVPCPrivateNetwork_Basic(t *testing.T) {
 					),
 				),
 			},
+			{
+				Config: `resource scaleway_vpc_private_network main {}`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayVPCPrivateNetworkExists(
+						tt,
+						"scaleway_vpc_private_network.main",
+					),
+					resource.TestCheckResourceAttrSet("scaleway_vpc_private_network.main", "name"),
+				),
+			},
 		},
 	})
 }

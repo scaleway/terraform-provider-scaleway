@@ -2,12 +2,20 @@ package scaleway
 
 import (
 	"context"
+	"fmt"
 	"strings"
+	"time"
 
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/scaleway/scaleway-sdk-go/api/lb/v1"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
+	lbSDK "github.com/scaleway/scaleway-sdk-go/api/lb/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+)
+
+const (
+	defaultWaitLBRetryInterval = 30 * time.Second
 )
 
 func resourceScalewayLb() *schema.Resource {
@@ -20,9 +28,16 @@ func resourceScalewayLb() *schema.Resource {
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 		Timeouts: &schema.ResourceTimeout{
+			Create:  schema.DefaultTimeout(defaultLbLbTimeout),
+			Read:    schema.DefaultTimeout(defaultLbLbTimeout),
+			Update:  schema.DefaultTimeout(defaultLbLbTimeout),
+			Delete:  schema.DefaultTimeout(defaultLbLbTimeout),
 			Default: schema.DefaultTimeout(defaultLbLbTimeout),
 		},
-		SchemaVersion: 0,
+		SchemaVersion: 1,
+		StateUpgraders: []schema.StateUpgrader{
+			{Version: 0, Type: lbUpgradeV1SchemaType(), Upgrade: lbUpgradeV1SchemaUpgradeFunc},
+		},
 		Schema: map[string]*schema.Schema{
 			"name": {
 				Type:        schema.TypeString,
@@ -57,7 +72,51 @@ func resourceScalewayLb() *schema.Resource {
 				Computed:    true,
 				Description: "The load-balance public IP address",
 			},
-			"region":          regionSchema(),
+			"release_ip": {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Description: "Release the IPs related to this load-balancer",
+				Deprecated:  "The resource ip will be destroyed by it's own resource. Please set this to `false`",
+			},
+			"private_network": {
+				Type:        schema.TypeList,
+				Optional:    true,
+				MaxItems:    8,
+				Description: "List of private network to connect with your load balancer",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"private_network_id": {
+							Type:         schema.TypeString,
+							Required:     true,
+							ValidateFunc: validationUUIDorUUIDWithLocality(),
+							Description:  "The Private Network ID",
+						},
+						"static_config": {
+							Description: "Define two IP addresses in the subnet of your private network that will be assigned for the principal and standby node of your load balancer.",
+							Type:        schema.TypeList,
+							Optional:    true,
+							Elem: &schema.Schema{
+								Type:         schema.TypeString,
+								ValidateFunc: validation.IsIPAddress,
+							},
+						},
+						"dhcp_config": {
+							Description: "Set to true if you want to let DHCP assign IP addresses",
+							Type:        schema.TypeBool,
+							Optional:    true,
+						},
+						// Readonly attributes
+						"status": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The status of private network connection",
+						},
+						"zone": zoneSchema(),
+					},
+				},
+			},
+			"region":          regionComputedSchema(),
+			"zone":            zoneSchema(),
 			"organization_id": organizationIDSchema(),
 			"project_id":      projectIDSchema(),
 		},
@@ -65,13 +124,13 @@ func resourceScalewayLb() *schema.Resource {
 }
 
 func resourceScalewayLbCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	lbAPI, region, err := lbAPIWithRegion(d, meta)
+	lbAPI, zone, err := lbAPIWithZone(d, meta)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	createReq := &lb.CreateLBRequest{
-		Region:    region,
+	createReq := &lbSDK.ZonedAPICreateLBRequest{
+		Zone:      zone,
 		IPID:      expandStringPtr(expandID(d.Get("ip_id"))),
 		ProjectID: expandStringPtr(d.Get("project_id")),
 		Name:      expandOrGenerateString(d.Get("name"), "lb"),
@@ -83,72 +142,33 @@ func resourceScalewayLbCreate(ctx context.Context, d *schema.ResourceData, meta 
 			createReq.Tags = append(createReq.Tags, tag.(string))
 		}
 	}
-	res, err := lbAPI.CreateLB(createReq, scw.WithContext(ctx))
+	lb, err := lbAPI.CreateLB(createReq, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	d.SetId(newRegionalIDString(region, res.ID))
+	d.SetId(newZonedIDString(zone, lb.ID))
 
-	_, err = lbAPI.WaitForLb(&lb.WaitForLBRequest{
-		Region:  region,
-		LBID:    res.ID,
-		Timeout: scw.TimeDurationPtr(defaultInstanceServerWaitTimeout),
-	}, scw.WithContext(ctx))
+	// check err waiting process
+	_, err = waitForLB(ctx, lbAPI, zone, lb.ID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	return resourceScalewayLbRead(ctx, d, meta)
-}
-
-func resourceScalewayLbRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	lbAPI, region, ID, err := lbAPIWithRegionAndID(meta, d.Id())
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	res, err := lbAPI.GetLB(&lb.GetLBRequest{
-		Region: region,
-		LBID:   ID,
-	}, scw.WithContext(ctx))
-
-	if err != nil {
-		if is404Error(err) {
-			d.SetId("")
-			return nil
-		}
-		return diag.FromErr(err)
-	}
-
-	_ = d.Set("name", res.Name)
-	_ = d.Set("region", string(region))
-	_ = d.Set("organization_id", res.OrganizationID)
-	_ = d.Set("project_id", res.ProjectID)
-	_ = d.Set("tags", res.Tags)
-	// For now API return lowercase lb type. This should be fix in a near future on the API side
-	_ = d.Set("type", strings.ToUpper(res.Type))
-	_ = d.Set("ip_id", newRegionalIDString(region, res.IP[0].ID))
-	_ = d.Set("ip_address", res.IP[0].IPAddress)
-
-	return nil
-}
-
-func resourceScalewayLbUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	lbAPI, region, ID, err := lbAPIWithRegionAndID(meta, d.Id())
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	if d.HasChanges("name", "tags") {
-		req := &lb.UpdateLBRequest{
-			Region: region,
-			LBID:   ID,
-			Name:   d.Get("name").(string),
-			Tags:   expandStrings(d.Get("tags")),
+	// attach private network
+	pnConfigs, pnExist := d.GetOk("private_network")
+	if pnExist {
+		pnConfigs, err := expandPrivateNetworks(pnConfigs, lb.ID)
+		if err != nil {
+			return diag.FromErr(err)
 		}
 
-		_, err = lbAPI.UpdateLB(req, scw.WithContext(ctx))
+		_, err = attachLBPrivateNetwork(ctx, lbAPI, zone, pnConfigs, d.Timeout(schema.TimeoutCreate))
+		if err != nil {
+			return diag.FromErr(err)
+		}
+
+		_, err = waitForLB(ctx, lbAPI, zone, lb.ID, d.Timeout(schema.TimeoutCreate))
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -157,28 +177,208 @@ func resourceScalewayLbUpdate(ctx context.Context, d *schema.ResourceData, meta 
 	return resourceScalewayLbRead(ctx, d, meta)
 }
 
-func resourceScalewayLbDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	lbAPI, region, ID, err := lbAPIWithRegionAndID(meta, d.Id())
+func resourceScalewayLbRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	lbAPI, zone, ID, err := lbAPIWithZoneAndID(meta, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	err = lbAPI.DeleteLB(&lb.DeleteLBRequest{
-		Region:    region,
+	lb, err := waitForLbInstances(ctx, lbAPI, zone, ID, d.Timeout(schema.TimeoutRead))
+	if err != nil {
+		if is404Error(err) || is403Error(err) {
+			d.SetId("")
+			return nil
+		}
+		return diag.FromErr(err)
+	}
+	// set the region from zone
+	region, err := zone.Region()
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	_ = d.Set("release_ip", false)
+	_ = d.Set("name", lb.Name)
+	_ = d.Set("zone", lb.Zone.String())
+	_ = d.Set("region", region.String())
+	_ = d.Set("organization_id", lb.OrganizationID)
+	_ = d.Set("project_id", lb.ProjectID)
+	_ = d.Set("tags", lb.Tags)
+	// For now API return lowercase lb type. This should be fixed in a near future on the API side
+	_ = d.Set("type", strings.ToUpper(lb.Type))
+	_ = d.Set("ip_id", newZonedIDString(zone, lb.IP[0].ID))
+	_ = d.Set("ip_address", lb.IP[0].IPAddress)
+
+	// retrieve attached private networks
+	privateNetworks, err := waitForLBPN(ctx, lbAPI, zone, ID, d.Timeout(schema.TimeoutRead))
+	if err != nil {
+		if is404Error(err) {
+			return nil
+		}
+		return diag.FromErr(err)
+	}
+	_ = d.Set("private_network", flattenPrivateNetworkConfigs(privateNetworks))
+
+	return nil
+}
+
+//gocyclo:ignore
+func resourceScalewayLbUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	lbAPI, zone, ID, err := lbAPIWithZoneAndID(meta, d.Id())
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	if d.HasChanges("name", "tags") {
+		req := &lbSDK.ZonedAPIUpdateLBRequest{
+			Zone: zone,
+			LBID: ID,
+			Name: d.Get("name").(string),
+			Tags: expandStrings(d.Get("tags")),
+		}
+
+		_, err = waitForLB(ctx, lbAPI, zone, ID, d.Timeout(schema.TimeoutUpdate))
+		if err != nil && !is404Error(err) {
+			return diag.FromErr(err)
+		}
+
+		_, err = lbAPI.UpdateLB(req, scw.WithContext(ctx))
+		if err != nil && !is404Error(err) {
+			return diag.FromErr(err)
+		}
+	}
+	////
+	// Attach / Detach Private Networks
+	////
+	if d.HasChange("private_network") {
+		// check that pns are in a stable state
+		pns, err := waitForLBPN(ctx, lbAPI, zone, ID, d.Timeout(schema.TimeoutUpdate))
+		if err != nil && !is404Error(err) {
+			return diag.FromErr(err)
+		}
+		// select only private networks that has change
+		pnToDetach, err := privateNetworksToDetach(pns, d.Get("private_network"))
+		if err != nil {
+			diag.FromErr(err)
+		}
+		// detach private networks
+		for pnID, detach := range pnToDetach {
+			if detach {
+				err = lbAPI.DetachPrivateNetwork(&lbSDK.ZonedAPIDetachPrivateNetworkRequest{
+					Zone:             zone,
+					LBID:             ID,
+					PrivateNetworkID: pnID,
+				}, scw.WithContext(ctx))
+				if err != nil && !is404Error(err) {
+					return diag.FromErr(err)
+				}
+			}
+		}
+
+		// attach private network
+		pnConfigs, pnExist := d.GetOk("private_network")
+		if pnExist {
+			pnConfigs, err := expandPrivateNetworks(pnConfigs, ID)
+			if err != nil {
+				return diag.FromErr(err)
+			}
+
+			for _, config := range pnConfigs {
+				// check private network is already in config
+				if detach, exist := pnToDetach[config.PrivateNetworkID]; exist && !detach {
+					continue
+				}
+				// check load balancer state
+				_, err = waitForLB(ctx, lbAPI, zone, ID, d.Timeout(schema.TimeoutUpdate))
+				if err != nil && !is404Error(err) {
+					return diag.FromErr(err)
+				}
+				// attach updated private networks
+				_, err := lbAPI.AttachPrivateNetwork(config, scw.WithContext(ctx))
+				if err != nil && !is404Error(err) {
+					return diag.FromErr(err)
+				}
+			}
+
+			privateNetworks, err := waitForLBPN(ctx, lbAPI, zone, ID, d.Timeout(schema.TimeoutUpdate))
+			if err != nil && !is404Error(err) {
+				return diag.FromErr(err)
+			}
+
+			for _, pn := range privateNetworks {
+				tflog.Debug(ctx, fmt.Sprintf("PrivateNetwork ID %s state: %v", pn.PrivateNetworkID, pn.Status))
+				if pn.Status == lbSDK.PrivateNetworkStatusError {
+					err = lbAPI.DetachPrivateNetwork(&lbSDK.ZonedAPIDetachPrivateNetworkRequest{
+						Zone:             zone,
+						LBID:             ID,
+						PrivateNetworkID: pn.PrivateNetworkID,
+					}, scw.WithContext(ctx))
+					if err != nil && !is404Error(err) {
+						return diag.FromErr(err)
+					}
+					return diag.Errorf("attaching private network with id: %s on error state. please check your config", pn.PrivateNetworkID)
+				}
+			}
+		}
+	}
+
+	return resourceScalewayLbRead(ctx, d, meta)
+}
+
+func resourceScalewayLbDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	lbAPI, zone, ID, err := lbAPIWithZoneAndID(meta, d.Id())
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	// check if current lb is on stable state
+	currentLB, err := waitForLbInstances(ctx, lbAPI, zone, ID, d.Timeout(schema.TimeoutDelete))
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	if currentLB.PrivateNetworkCount != 0 {
+		lbPNs, err := lbAPI.ListLBPrivateNetworks(&lbSDK.ZonedAPIListLBPrivateNetworksRequest{
+			Zone: zone,
+			LBID: ID,
+		}, scw.WithContext(ctx))
+		if err != nil && !is404Error(err) {
+			return diag.FromErr(err)
+		}
+
+		// detach private networks
+		for _, pn := range lbPNs.PrivateNetwork {
+			err = lbAPI.DetachPrivateNetwork(&lbSDK.ZonedAPIDetachPrivateNetworkRequest{
+				Zone:             zone,
+				LBID:             ID,
+				PrivateNetworkID: pn.PrivateNetworkID,
+			}, scw.WithContext(ctx))
+			if err != nil && !is404Error(err) {
+				return diag.FromErr(err)
+			}
+		}
+
+		_, err = waitForLbInstances(ctx, lbAPI, zone, ID, d.Timeout(schema.TimeoutDelete))
+		if err != nil && !is404Error(err) {
+			return diag.FromErr(err)
+		}
+	}
+
+	err = lbAPI.DeleteLB(&lbSDK.ZonedAPIDeleteLBRequest{
+		Zone:      zone,
 		LBID:      ID,
 		ReleaseIP: false,
 	}, scw.WithContext(ctx))
-
 	if err != nil && !is404Error(err) {
 		return diag.FromErr(err)
 	}
 
-	_, err = lbAPI.WaitForLb(&lb.WaitForLBRequest{
-		LBID:    ID,
-		Region:  region,
-		Timeout: scw.TimeDurationPtr(LbWaitForTimeout),
-	}, scw.WithContext(ctx))
+	_, err = waitForLB(ctx, lbAPI, zone, ID, d.Timeout(schema.TimeoutDelete))
+	if err != nil && !is404Error(err) {
+		return diag.FromErr(err)
+	}
 
+	_, err = waitForLbInstances(ctx, lbAPI, zone, ID, d.Timeout(schema.TimeoutDelete))
 	if err != nil && !is404Error(err) {
 		return diag.FromErr(err)
 	}

@@ -21,11 +21,11 @@ func newRetryableTransport(defaultTransport http.RoundTripper) http.RoundTripper
 	c.RetryWaitMax = 2 * time.Minute
 	c.Logger = l
 	c.RetryWaitMin = time.Second * 2
-	c.CheckRetry = func(_ context.Context, resp *http.Response, err error) (bool, error) {
+	c.CheckRetry = func(ctx context.Context, resp *http.Response, err error) (bool, error) {
 		if resp == nil || resp.StatusCode == http.StatusTooManyRequests {
 			return true, err
 		}
-		return retryablehttp.DefaultRetryPolicy(context.TODO(), resp, err)
+		return retryablehttp.DefaultRetryPolicy(ctx, resp, err)
 	}
 
 	return &retryableTransport{c}

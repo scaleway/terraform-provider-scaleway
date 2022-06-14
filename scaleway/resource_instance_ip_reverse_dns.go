@@ -2,7 +2,9 @@ package scaleway
 
 import (
 	"context"
+	"fmt"
 
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
@@ -53,8 +55,27 @@ func resourceScalewayInstanceIPReverseDNSCreate(ctx context.Context, d *schema.R
 	}
 	d.SetId(newZonedIDString(zone, res.IP.ID))
 
-	// We do not create any resource. We only need to update the IP.
-	return resourceScalewayInstanceIPReverseDNSUpdate(ctx, d, meta)
+	if _, ok := d.GetOk("reverse"); ok {
+		tflog.Debug(ctx, fmt.Sprintf("updating IP %q reverse to %q\n", d.Id(), d.Get("reverse")))
+
+		updateReverseReq := &instance.UpdateIPRequest{
+			Zone: zone,
+			IP:   res.IP.ID,
+		}
+
+		reverse := d.Get("reverse").(string)
+		if reverse == "" {
+			updateReverseReq.Reverse = &instance.NullableStringValue{Null: true}
+		} else {
+			updateReverseReq.Reverse = &instance.NullableStringValue{Value: reverse}
+		}
+		_, err = instanceAPI.UpdateIP(updateReverseReq, scw.WithContext(ctx))
+		if err != nil {
+			return diag.FromErr(err)
+		}
+	}
+
+	return resourceScalewayInstanceIPReverseDNSRead(ctx, d, meta)
 }
 
 func resourceScalewayInstanceIPReverseDNSRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -67,7 +88,6 @@ func resourceScalewayInstanceIPReverseDNSRead(ctx context.Context, d *schema.Res
 		IP:   ID,
 		Zone: zone,
 	}, scw.WithContext(ctx))
-
 	if err != nil {
 		// We check for 403 because instance API returns 403 for a deleted IP
 		if is404Error(err) || is403Error(err) {
@@ -89,7 +109,7 @@ func resourceScalewayInstanceIPReverseDNSUpdate(ctx context.Context, d *schema.R
 	}
 
 	if d.HasChange("reverse") {
-		l.Debugf("updating IP %q reverse to %q\n", d.Id(), d.Get("reverse"))
+		tflog.Debug(ctx, fmt.Sprintf("updating IP %q reverse to %q\n", d.Id(), d.Get("reverse")))
 
 		updateReverseReq := &instance.UpdateIPRequest{
 			Zone: zone,
