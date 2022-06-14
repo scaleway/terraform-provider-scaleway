@@ -72,15 +72,6 @@ func resourceScalewayFunction() *schema.Resource {
 				Type:        schema.TypeString,
 				Description: "Runtime of the function namespace",
 				Required:    true,
-				ValidateFunc: validation.StringInSlice([]string{
-					function.FunctionRuntimeGolang.String(),
-					function.FunctionRuntimeNode8.String(),
-					function.FunctionRuntimeNode10.String(),
-					function.FunctionRuntimeNode14.String(),
-					function.FunctionRuntimePython.String(),
-					function.FunctionRuntimePython3.String(),
-					function.FunctionRuntime("go118").String(),
-				}, false),
 			},
 			"min_scale": {
 				Type:        schema.TypeInt,
