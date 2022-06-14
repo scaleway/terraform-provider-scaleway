@@ -43,7 +43,7 @@ resource scaleway_function main {
   handler      = "Handle"
   privacy      = "private"
   zip_file = "function.zip"
-  zip_hash = filebase64sha256("function.zip")
+  zip_hash = filesha256("function.zip")
   deploy = true
 }
 ```
@@ -65,7 +65,7 @@ The following arguments are supported:
 
 - `runtime` - Runtime of the function. Runtimes can be fetched using [specific route](https://developers.scaleway.com/en/products/functions/api/#get-f7de6a)
 
-- `min_scale` - Minimum replicas for your function, defaults to 0, Note that a function is billed when it gets executed, and using a min_scale greater than 0 will cause your function to run all the time.
+- `min_scale` - Minimum replicas for your function, defaults to 0, Note that a function is billed when it gets executed, and using a min_scale greater than 0 will cause your function container to run constantly.
 
 - `max_scale` - Maximum replicas for your function (defaults to 20), our system will scale your functions automatically based on incoming workload, but will never scale the number of replicas above the configured max_scale.
 
@@ -77,7 +77,7 @@ The following arguments are supported:
 
 - `zip_file` - Location of the zip file to upload containing your function sources
 
-- `zip_hash` - The hash of your source zip file, changing it will re-apply function
+- `zip_hash` - The hash of your source zip file, changing it will re-apply function. Can be any string, changing it will just trigger state change. You can use any terraform hash function to trigger a change on your zip change (see examples)
 
 - `deploy` - Define if the function should be deployed, terraform will wait for function to be deployed. Function will get deployed if you change source zip
 
