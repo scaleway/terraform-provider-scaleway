@@ -1,7 +1,9 @@
 package scaleway
 
 import (
+	"bytes"
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -114,4 +116,65 @@ func waitForContainerNamespace(ctx context.Context, containerAPI *container.API,
 	}, scw.WithContext(ctx))
 
 	return ns, err
+}
+
+func cronContainerHash(v interface{}) int {
+	var buf bytes.Buffer
+	m, ok := v.(map[string]interface{})
+
+	if !ok {
+		return 0
+	}
+
+	if v, ok := m["schedule"]; ok {
+		buf.WriteString(fmt.Sprintf("%v-", v.(string)))
+	}
+
+	return StringHashcode(buf.String())
+}
+
+func flattenContainerCronJobs(cronJobs []*container.Cron) []interface{} {
+	jobs := make([]interface{}, 0, len(cronJobs))
+	for _, cj := range cronJobs {
+		j := map[string]interface{}{
+			"cron_job_id": cj.ID,
+			"schedule":    cj.Schedule,
+			"status":      cj.Status,
+		}
+		jobs = append(jobs, j)
+	}
+
+	return jobs
+}
+
+func waitForContainerCron(ctx context.Context, api *container.API, cronID string, region scw.Region, timeout time.Duration) (*container.Cron, error) {
+	retryInterval := defaultContainerRetryInterval
+	if DefaultWaitRetryInterval != nil {
+		retryInterval = *DefaultWaitRetryInterval
+	}
+
+	request := container.WaitForCronRequest{
+		CronID:        cronID,
+		Region:        region,
+		Timeout:       scw.TimeDurationPtr(timeout),
+		RetryInterval: &retryInterval,
+	}
+
+	return api.WaitForCron(&request, scw.WithContext(ctx))
+}
+
+func waitForContainer(ctx context.Context, api *container.API, containerID string, region scw.Region, timeout time.Duration) (*container.Container, error) {
+	retryInterval := defaultContainerRetryInterval
+	if DefaultWaitRetryInterval != nil {
+		retryInterval = *DefaultWaitRetryInterval
+	}
+
+	request := container.WaitForContainerRequest{
+		ContainerID:   containerID,
+		Region:        region,
+		Timeout:       scw.TimeDurationPtr(timeout),
+		RetryInterval: &retryInterval,
+	}
+
+	return api.WaitForContainer(&request, scw.WithContext(ctx))
 }

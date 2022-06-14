@@ -2,6 +2,11 @@ package scaleway
 
 import (
 	"context"
+	_ "encoding/json"
+	"fmt"
+	"github.com/hashicorp/terraform-plugin-log/tflog"
+	"github.com/robfig/cron"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -136,6 +141,37 @@ func resourceScalewayContainer() *schema.Resource {
 				Description: "This allows you to control your production environment",
 				Default:     false,
 			},
+			"cron_job": {
+				Type:        schema.TypeSet,
+				Optional:    true,
+				Set:         cronContainerHash,
+				Description: "Specifies how to run a job periodically on a given schedule, written in Cron format.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"cron_job_id": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The Cron Job ID",
+						},
+						"schedule": {
+							Type:         schema.TypeString,
+							Required:     true,
+							ValidateFunc: validateCronExpression(),
+							Description:  "Cron format string, e.g. 0 * * * * or @hourly, as schedule time of its jobs to be created and executed.",
+						},
+						"args": {
+							Type:        schema.TypeString,
+							Required:    true,
+							Description: "Cron arguments as json object to pass through during execution.",
+						},
+						"status": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Cron job status.",
+						},
+					},
+				},
+			},
 			// computed
 			"status": {
 				Type:        schema.TypeString,
@@ -209,11 +245,52 @@ func resourceScalewayContainerCreate(ctx context.Context, d *schema.ResourceData
 		if err != nil {
 			return diag.FromErr(err)
 		}
+
+		_, err = waitForContainer(ctx, api, res.ID, region, d.Timeout(schema.TimeoutCreate))
+		if err != nil {
+			return diag.Errorf("unexpected waiting container error: %s", err)
+		}
+	}
+
+	if cronJobsRaw, ok := d.GetOk("cron_job"); ok {
+		cronJobs := cronJobsRaw.(*schema.Set).List()
+		if len(cronJobs) > 0 {
+			cronJobRequests, err := createCronJobsRequest(res.ID, region, cronJobs)
+			if err != nil {
+				diag.FromErr(err)
+			}
+			cronErrors := createCronJobs(ctx, api, cronJobRequests, d.Timeout(schema.TimeoutCreate))
+			if len(cronErrors) > 0 {
+				for _, cronErr := range cronErrors {
+					tflog.Error(ctx, cronErr.Error())
+				}
+				return diag.Errorf("error creating cron jobs")
+			}
+		}
 	}
 
 	d.SetId(newRegionalIDString(region, res.ID))
 
 	return resourceScalewayContainerRead(ctx, d, meta)
+}
+
+func createCronJobs(ctx context.Context, api *container.API, cronJobs []*container.CreateCronRequest, timeout time.Duration) []error {
+	var errors []error
+	for _, r := range cronJobs {
+ 		c, err := api.CreateCron(r, scw.WithContext(ctx))
+		if err != nil {
+			errors = append(errors, err)
+			continue
+		}
+		tflog.Info(ctx, fmt.Sprintf("[INFO] Submitted new cron job: %#v", r.Schedule))
+		_, err = waitForContainerCron(ctx, api, c.ID, r.Region, timeout)
+		if err != nil {
+			errors = append(errors, err)
+		}
+		tflog.Info(ctx, "[INFO] cron job ready")
+	}
+
+	return errors
 }
 
 func resourceScalewayContainerRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -401,4 +478,39 @@ func resourceScalewayContainerDelete(ctx context.Context, d *schema.ResourceData
 	}
 
 	return nil
+}
+
+func validateCronExpression() schema.SchemaValidateFunc {
+	return func(i interface{}, k string) (s []string, es []error) {
+		v, ok := i.(string)
+		if !ok {
+			es = append(es, fmt.Errorf("expected type of '%s' to be string", k))
+			return
+		}
+		_, err := cron.ParseStandard(v)
+		if err != nil {
+			es = append(es, fmt.Errorf("'%s' should be an valid Cron expression", k))
+		}
+		return
+	}
+}
+
+func createCronJobsRequest(containerID string, region scw.Region, cronJobs []interface{}) ([]*container.CreateCronRequest, error) {
+	var requests []*container.CreateCronRequest
+
+	for _, cronJob := range cronJobs {
+		config := cronJob.(map[string]interface{})
+		jsonObj, err  := scw.DecodeJSONObject(config["args"].(string), scw.NoEscape)
+		if err != nil {
+			return nil, err
+		}
+		requests = append(requests, &container.CreateCronRequest{
+			ContainerID: expandID(containerID),
+			Region:      region,
+			Schedule:    config["schedule"].(string),
+			Args:        &jsonObj,
+		})
+	}
+
+	return requests, nil
 }
