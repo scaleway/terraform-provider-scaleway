@@ -289,44 +289,44 @@ func resourceScalewayFunctionUpdate(ctx context.Context, d *schema.ResourceData,
 		Region:     region,
 		FunctionID: f.ID,
 	}
-	update := false
+	updated := false
 
 	if d.HasChange("environment_variables") {
 		req.EnvironmentVariables = expandMapStringStringPtr(d.Get("environment_variables"))
-		update = true
+		updated = true
 	}
 
 	if d.HasChange("description") {
 		req.Description = expandStringPtr(d.Get("description"))
-		update = true
+		updated = true
 	}
 
 	if d.HasChange("memory_limit") {
 		req.MemoryLimit = expandUint32Ptr(d.Get("memory_limit"))
-		update = true
+		updated = true
 	}
 
 	if d.HasChange("handler") {
 		req.Handler = expandStringPtr(d.Get("handler").(string))
-		update = true
+		updated = true
 	}
 
 	if d.HasChange("min_scale") {
 		req.MinScale = expandUint32Ptr(d.Get("min_scale"))
-		update = true
+		updated = true
 	}
 
 	if d.HasChange("max_scale") {
 		req.MaxScale = expandUint32Ptr(d.Get("max_scale"))
-		update = true
+		updated = true
 	}
 
 	if d.HasChange("timeout") {
 		req.Timeout = &scw.Duration{Seconds: d.Get("timeout").(int64)}
-		update = true
+		updated = true
 	}
 
-	if update {
+	if updated {
 		_, err = api.UpdateFunction(req, scw.WithContext(ctx))
 		if err != nil {
 			return diag.FromErr(err)
@@ -336,20 +336,24 @@ func resourceScalewayFunctionUpdate(ctx context.Context, d *schema.ResourceData,
 		time.Sleep(defaultFunctionAfterUpdateWait)
 	}
 
-	if d.HasChange("zip_hash") || d.HasChange("zip_file") {
-		_, err := waitForFunction(ctx, api, region, id, d.Timeout(schema.TimeoutUpdate))
-		if err != nil {
-			return nil
-		}
+	zipHasChanged := d.HasChange("zip_hash") || d.HasChange("zip_file")
+	shouldDeploy := d.Get("deploy").(bool)
+
+	if zipHasChanged {
 		err = functionUpload(ctx, meta, api, region, f.ID, d.Get("zip_file").(string))
 		if err != nil {
 			return diag.FromErr(fmt.Errorf("failed to upload function: %w", err))
 		}
-		if d.Get("deploy").(bool) {
-			err = functionDeploy(ctx, api, region, f.ID)
-			if err != nil {
-				return diag.FromErr(err)
-			}
+	}
+
+	if d.HasChange("deploy") && shouldDeploy || zipHasChanged && shouldDeploy {
+		_, err := waitForFunction(ctx, api, region, id, d.Timeout(schema.TimeoutUpdate))
+		if err != nil {
+			return nil
+		}
+		err = functionDeploy(ctx, api, region, f.ID)
+		if err != nil {
+			return diag.FromErr(err)
 		}
 	}
 
