@@ -9,12 +9,35 @@ description: |-
 Creates and manages Scaleway Instance Private NICs. For more information, see
 [the documentation](https://developers.scaleway.com/en/products/instance/api/#private-nics-a42eea).
 
-## Example
+## Examples
+
+### Basic
 
 ```hcl
 resource "scaleway_instance_private_nic" "pnic01" {
     server_id          = "fr-par-1/11111111-1111-1111-1111-111111111111"
     private_network_id = "fr-par-1/aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"
+}
+```
+
+### With zone
+
+```hcl
+resource scaleway_vpc_private_network pn01 {
+  name = "private_network_instance"
+  zone = "fr-par-2"
+}
+
+resource "scaleway_instance_server" "base" {
+  image = "ubuntu_focal"
+  type  = "DEV1-S"
+  zone = scaleway_vpc_private_network.pn01.zone
+}
+
+resource "scaleway_instance_private_nic" "pnic01" {
+  server_id = scaleway_instance_server.base.id
+  private_network_id = scaleway_vpc_private_network.pn01.id
+  zone = scaleway_vpc_private_network.pn01.zone
 }
 ```
 
