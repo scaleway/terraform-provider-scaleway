@@ -112,7 +112,7 @@ func resourceScalewayFunction() *schema.Resource {
 				Type:         schema.TypeString,
 				Optional:     true,
 				RequiredWith: []string{"zip_file"},
-				Description:  "The hash of your source zip file, changing it will re-apply function",
+				Description:  "The hash of your source zip file, changing it will re-apply function. Can be any string",
 			},
 			"deploy": {
 				Type:        schema.TypeBool,
