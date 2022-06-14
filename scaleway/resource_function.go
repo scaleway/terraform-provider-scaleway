@@ -23,6 +23,9 @@ func resourceScalewayFunction() *schema.Resource {
 		},
 		Timeouts: &schema.ResourceTimeout{
 			Default: schema.DefaultTimeout(defaultFunctionTimeout),
+			Read:    schema.DefaultTimeout(defaultFunctionTimeout),
+			Update:  schema.DefaultTimeout(defaultFunctionTimeout),
+			Delete:  schema.DefaultTimeout(defaultFunctionTimeout),
 		},
 		SchemaVersion: 0,
 		Schema: map[string]*schema.Schema{
@@ -242,10 +245,7 @@ func resourceScalewayFunctionRead(ctx context.Context, d *schema.ResourceData, m
 		return diag.FromErr(err)
 	}
 
-	f, err := api.WaitForFunction(&function.WaitForFunctionRequest{
-		FunctionID: id,
-		Region:     region,
-	}, scw.WithContext(ctx))
+	f, err := waitForFunction(ctx, api, region, id, d.Timeout(schema.TimeoutRead))
 	if err != nil {
 		if is404Error(err) {
 			d.SetId("")
@@ -293,10 +293,7 @@ func resourceScalewayFunctionUpdate(ctx context.Context, d *schema.ResourceData,
 		return diag.FromErr(err)
 	}
 
-	f, err := api.WaitForFunction(&function.WaitForFunctionRequest{
-		FunctionID: id,
-		Region:     region,
-	}, scw.WithContext(ctx))
+	f, err := waitForFunction(ctx, api, region, id, d.Timeout(schema.TimeoutUpdate))
 	if err != nil {
 		if is404Error(err) {
 			d.SetId("")
@@ -360,10 +357,7 @@ func resourceScalewayFunctionUpdate(ctx context.Context, d *schema.ResourceData,
 
 	if d.HasChange("zip_hash") || d.HasChange("zip_file") {
 		// Function is not in transit state at this point, api did not update it instantly when processing UpdateFunction
-		_, err = api.WaitForFunction(&function.WaitForFunctionRequest{
-			FunctionID: id,
-			Region:     region,
-		}, scw.WithContext(ctx))
+		_, err := waitForFunction(ctx, api, region, id, d.Timeout(schema.TimeoutUpdate))
 		if err != nil {
 			return nil
 		}
@@ -388,10 +382,7 @@ func resourceScalewayFunctionDelete(ctx context.Context, d *schema.ResourceData,
 		return diag.FromErr(err)
 	}
 
-	_, err = api.WaitForFunction(&function.WaitForFunctionRequest{
-		FunctionID: id,
-		Region:     region,
-	}, scw.WithContext(ctx))
+	_, err = waitForFunction(ctx, api, region, id, d.Timeout(schema.TimeoutDelete))
 	if err != nil {
 		return nil
 	}

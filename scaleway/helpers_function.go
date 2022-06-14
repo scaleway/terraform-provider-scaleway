@@ -60,6 +60,22 @@ func waitForFunctionNamespace(ctx context.Context, functionAPI *function.API, re
 	return ns, err
 }
 
+func waitForFunction(ctx context.Context, functionAPI *function.API, region scw.Region, id string, timeout time.Duration) (*function.Function, error) {
+	retryInterval := defaultFunctionRetryInterval
+	if DefaultWaitRetryInterval != nil {
+		retryInterval = *DefaultWaitRetryInterval
+	}
+
+	f, err := functionAPI.WaitForFunction(&function.WaitForFunctionRequest{
+		Region:        region,
+		FunctionID:    id,
+		RetryInterval: &retryInterval,
+		Timeout:       scw.TimeDurationPtr(timeout),
+	}, scw.WithContext(ctx))
+
+	return f, err
+}
+
 func functionUpload(ctx context.Context, m interface{}, functionAPI *function.API, region scw.Region, functionID string, zipFile string) error {
 	meta := m.(*Meta)
 	zipStat, err := os.Stat(zipFile)
