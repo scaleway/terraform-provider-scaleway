@@ -171,7 +171,7 @@ func flattenRedisPublicNetwork(endpoints []*redis.Endpoint) interface{} {
 			"port": int(endpoint.Port),
 			"ips":  ipsFlat,
 		})
-		return pnFlat
+		break
 	}
 	return pnFlat
 }
