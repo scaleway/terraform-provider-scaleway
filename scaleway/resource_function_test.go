@@ -34,7 +34,7 @@ func testSweepFunction(_ string) error {
 				FunctionID: f.ID,
 				Region:     region,
 			})
-			if err != nil {
+			if err != nil && !is404Error(err) {
 				l.Debugf("sweeper: error (%s)", err)
 
 				return fmt.Errorf("error deleting functions in sweeper: %s", err)
