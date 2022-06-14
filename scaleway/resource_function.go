@@ -111,7 +111,6 @@ func resourceScalewayFunction() *schema.Resource {
 				Description: "Holds the max duration (in seconds) the function is allowed for responding to a request",
 				Optional:    true,
 			},
-
 			"zip_file": {
 				Type:        schema.TypeString,
 				Optional:    true,
@@ -129,30 +128,12 @@ func resourceScalewayFunction() *schema.Resource {
 				Optional:    true,
 				Description: "Define if the function should be deployed on upload, terraform will wait for function to be deployed",
 			},
+			"cpu_limit": {
+				Type:        schema.TypeInt,
+				Computed:    true,
+				Description: "CPU limit in mCPU for your function",
+			},
 
-			/*
-				"status": {
-					Type:        schema.TypeString,
-					Computed:    true,
-					Description: "The state of the function, possible values in api doc https://developers.scaleway.com/en/products/functions/api/#status-1e9767",
-				},
-				"cpu_limit": {
-					Type:        schema.TypeInt,
-					Optional:    true,
-					Description: "CPU limit in mCPU for your function, defaults to 70mCPU",
-					Default:     70,
-				},
-				"secret_environment_variables": {
-					Type:     schema.TypeMap,
-					Optional: true,
-					Elem: &schema.Schema{
-						Type:         schema.TypeString,
-						Sensitive:    true,
-						ValidateFunc: validation.StringLenBetween(0, 1000),
-					},
-					ValidateDiagFunc: validation.MapKeyLenBetween(0, 100),
-				},
-			*/
 			"region":          regionSchema(),
 			"organization_id": organizationIDSchema(),
 			"project_id":      projectIDSchema(),
@@ -279,6 +260,7 @@ func resourceScalewayFunctionRead(ctx context.Context, d *schema.ResourceData, m
 	_ = d.Set("handler", f.Handler)
 	_ = d.Set("max_scale", int(f.MaxScale))
 	_ = d.Set("memory_limit", int(f.MemoryLimit))
+	_ = d.Set("cpu_limit", int(f.CPULimit))
 	_ = d.Set("min_scale", int(f.MinScale))
 	_ = d.Set("name", f.Name)
 	_ = d.Set("privacy", f.Privacy.String())
