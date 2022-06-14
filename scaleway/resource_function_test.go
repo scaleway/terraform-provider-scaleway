@@ -217,6 +217,25 @@ func TestAccScalewayFunction_Deploy(t *testing.T) {
 					testAccCheckScalewayFunctionExists(tt, "scaleway_function.main"),
 				),
 			},
+			{
+				Config: `
+					resource scaleway_function_namespace main {}
+
+					resource scaleway_function main {
+						name = "foobar"
+						namespace_id = scaleway_function_namespace.main.id
+						runtime = "go118"
+						privacy = "private"
+						handler = "Handle"
+						zip_file = "testfixture/gofunction.zip"
+						zip_hash = "value"
+						deploy = true
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayFunctionExists(tt, "scaleway_function.main"),
+				),
+			},
 		},
 	})
 }
