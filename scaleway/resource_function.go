@@ -41,18 +41,18 @@ func resourceScalewayFunction() *schema.Resource {
 				ForceNew:     true,
 				Optional:     true,
 				Computed:     true,
-				Description:  "The name of the function namespace",
+				Description:  "The name of the function",
 				ValidateFunc: validation.StringLenBetween(1, 20),
 			},
 			"description": {
 				Type:        schema.TypeString,
 				Optional:    true,
-				Description: "The description of the function namespace",
+				Description: "The description of the function",
 			},
 			"environment_variables": {
 				Type:        schema.TypeMap,
 				Optional:    true,
-				Description: "The environment variables of the function namespace",
+				Description: "The environment variables of the function",
 				Elem: &schema.Schema{
 					Type:         schema.TypeString,
 					ValidateFunc: validation.StringLenBetween(0, 1000),
@@ -61,7 +61,7 @@ func resourceScalewayFunction() *schema.Resource {
 			},
 			"privacy": {
 				Type:        schema.TypeString,
-				Description: "Privacy of the function namespace. Can be either `private` or `public`",
+				Description: "Privacy of the function. Can be either `private` or `public`",
 				Required:    true,
 				ValidateFunc: validation.StringInSlice([]string{
 					function.FunctionPrivacyPublic.String(),
@@ -70,7 +70,7 @@ func resourceScalewayFunction() *schema.Resource {
 			},
 			"runtime": {
 				Type:        schema.TypeString,
-				Description: "Runtime of the function namespace",
+				Description: "Runtime of the function",
 				Required:    true,
 			},
 			"min_scale": {
@@ -117,7 +117,7 @@ func resourceScalewayFunction() *schema.Resource {
 				Type:        schema.TypeBool,
 				Default:     false,
 				Optional:    true,
-				Description: "Define if the function should be deployed on upload, terraform will wait for function to be deployed",
+				Description: "Define if the function should be deployed, terraform will wait for function to be deployed",
 			},
 			"cpu_limit": {
 				Type:        schema.TypeInt,
