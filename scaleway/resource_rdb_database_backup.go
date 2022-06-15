@@ -196,5 +196,10 @@ func resourceScalewayRdbDatabaseBackupDelete(ctx context.Context, d *schema.Reso
 		return diag.FromErr(err)
 	}
 
+	_, err = waitForRDBDatabaseBackup(ctx, rdbAPI, region, id, d.Timeout(schema.TimeoutUpdate))
+	if err != nil && !is404Error(err) {
+		return diag.FromErr(err)
+	}
+
 	return nil
 }
