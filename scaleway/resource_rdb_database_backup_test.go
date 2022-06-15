@@ -33,7 +33,7 @@ func testSweepRDBDatabaseBackup(_ string) error {
 				Region:           region,
 				DatabaseBackupID: backup.ID,
 			})
-			if err != nil {
+			if err != nil && !is404Error(err) {
 				return fmt.Errorf("error deleting rdb database backup in sweeper: %s", err)
 			}
 		}
