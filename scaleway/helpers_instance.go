@@ -32,6 +32,8 @@ const (
 	defaultInstanceRetryInterval            = 5 * time.Second
 
 	defaultInstanceSnapshotWaitTimeout = 1 * time.Hour
+
+	defaultInstanceImageTimeout = 1 * time.Hour
 )
 
 // instanceAPIWithZone returns a new instance API and the zone for a Create request
