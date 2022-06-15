@@ -2,9 +2,8 @@ package scaleway
 
 import (
 	"context"
-	"fmt"
-	"strings"
 
+	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/api/rdb/v1"
@@ -21,6 +20,10 @@ func resourceScalewayRdbDatabaseBackup() *schema.Resource {
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 		Timeouts: &schema.ResourceTimeout{
+			Create:  schema.DefaultTimeout(defaultRdbInstanceTimeout),
+			Read:    schema.DefaultTimeout(defaultRdbInstanceTimeout),
+			Update:  schema.DefaultTimeout(defaultRdbInstanceTimeout),
+			Delete:  schema.DefaultTimeout(defaultRdbInstanceTimeout),
 			Default: schema.DefaultTimeout(defaultRdbInstanceTimeout),
 		},
 		SchemaVersion: 0,
@@ -32,11 +35,43 @@ func resourceScalewayRdbDatabaseBackup() *schema.Resource {
 				ValidateFunc: validationUUIDorUUIDWithLocality(),
 				Description:  "Instance on which the user is created",
 			},
-			"name": {
+			"database_name": {
 				Type:        schema.TypeString,
-				Description: "Database user name",
 				Required:    true,
 				ForceNew:    true,
+				Description: "Name of the database of this backup.",
+			},
+			"name": {
+				Type:        schema.TypeString,
+				Description: "Name of the backup.",
+				Optional:    true,
+				Computed:    true,
+			},
+			"size": {
+				Type:        schema.TypeInt,
+				Description: "Size of the backup (in bytes).",
+				Computed:    true,
+			},
+			"instance_name": {
+				Type:        schema.TypeString,
+				Description: "Name of the instance of the backup.",
+				Computed:    true,
+			},
+			"expires_at": {
+				Type:             schema.TypeString,
+				Description:      "Expiration date (Format ISO 8601). Cannot be removed.",
+				Optional:         true,
+				ValidateDiagFunc: validateDate(),
+			},
+			"created_at": {
+				Type:        schema.TypeString,
+				Description: "Creation date (Format ISO 8601).",
+				Computed:    true,
+			},
+			"updated_at": {
+				Type:        schema.TypeString,
+				Description: "Updated date (Format ISO 8601).",
+				Computed:    true,
 			},
 			// Common
 			"region": regionSchema(),
@@ -49,44 +84,43 @@ func resourceScalewayRdbDatabaseBackupCreate(ctx context.Context, d *schema.Reso
 	if err != nil {
 		return diag.FromErr(err)
 	}
+
 	instanceID := d.Get("instance_id").(string)
+
 	createReq := &rdb.CreateDatabaseBackupRequest{
 		Region:       region,
 		InstanceID:   expandID(instanceID),
-		DatabaseName: "",
-		Name:         d.Get("name").(string),
-		ExpiresAt:    nil,
+		DatabaseName: d.Get("database_name").(string),
+		Name:         expandOrGenerateString(d.Get("name"), "backup"),
+		ExpiresAt:    expandTimePtr(d.Get("expires_at")),
 	}
 
-	res, err := rdbAPI.CreateDatabaseBackup(createReq, scw.WithContext(ctx))
+	dbBackup, err := rdbAPI.CreateDatabaseBackup(createReq, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	d.SetId(resourceScalewayRdbDatabaseBackupID(region, expandID(instanceID), res.Name))
+	d.SetId(newRegionalIDString(region, dbBackup.ID))
+
+	_, err = waitForRDBDatabaseBackup(ctx, rdbAPI, region, dbBackup.ID, d.Timeout(schema.TimeoutCreate))
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	return resourceScalewayRdbDatabaseBackupRead(ctx, d, meta)
 }
 
 func resourceScalewayRdbDatabaseBackupRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	rdbAPI, region, err := rdbAPIWithRegion(d, meta)
+	rdbAPI, region, id, err := rdbAPIWithRegionAndID(meta, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	instanceID, userName, err := resourceScalewayRdbDatabaseBackupParseID(d.Id())
-
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	res, err := rdbAPI.ListDatabaseBackups(&rdb.ListDatabaseBackupsRequest{
-		Region:     region,
-		Name:       &userName,
-		OrderBy:    "",
-		InstanceID: scw.StringPtr(instanceID),
-	}, scw.WithContext(ctx))
-
+	dbBackup, err := waitForRDBDatabaseBackup(ctx, rdbAPI, region, id, d.Timeout(schema.TimeoutRead))
 	if err != nil {
 		if is404Error(err) {
 			d.SetId("")
@@ -95,35 +129,54 @@ func resourceScalewayRdbDatabaseBackupRead(ctx context.Context, d *schema.Resour
 		return diag.FromErr(err)
 	}
 
-	var dbBackup = res.DatabaseBackups[0]
-	_ = d.Set("instance_id", newRegionalID(region, instanceID).String())
+	_ = d.Set("instance_id", newRegionalID(region, dbBackup.InstanceID).String())
 	_ = d.Set("name", dbBackup.Name)
+	_ = d.Set("database_name", dbBackup.DatabaseName)
+	_ = d.Set("instance_name", dbBackup.InstanceName)
+	_ = d.Set("expires_at", flattenTime(dbBackup.ExpiresAt))
+	_ = d.Set("created_at", flattenTime(dbBackup.CreatedAt))
+	_ = d.Set("updated_at", flattenTime(dbBackup.UpdatedAt))
+	_ = d.Set("size", flattenSize(dbBackup.Size))
 
-	d.SetId(resourceScalewayRdbUserID(region, instanceID, dbBackup.Name))
+	d.SetId(newRegionalIDString(region, dbBackup.ID))
 
 	return nil
 }
 
 func resourceScalewayRdbDatabaseBackupUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	rdbAPI, region, err := rdbAPIWithRegion(d, meta)
+	rdbAPI, region, id, err := rdbAPIWithRegionAndID(meta, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	_, dbBackupName, err := resourceScalewayRdbDatabaseBackupParseID(d.Id())
-
 	if err != nil {
 		return diag.FromErr(err)
+	}
+
+	if d.HasChange("expires_at") && d.Get("expires_at").(string) == "" {
+		return diag.Diagnostics{
+			diag.Diagnostic{
+				Severity:      diag.Error,
+				Summary:       "Invalid expires_at",
+				Detail:        "You cannot remove expires_at after it was set.",
+				AttributePath: cty.GetAttrPath("expires_at"),
+			},
+		}
 	}
 
 	req := &rdb.UpdateDatabaseBackupRequest{
 		Region:           region,
-		DatabaseBackupID: d.Id(),
-		Name:             scw.StringPtr(dbBackupName),
-		ExpiresAt:        nil,
+		DatabaseBackupID: id,
+		Name:             expandStringPtr(d.Get("name")),
+		ExpiresAt:        expandTimePtr(d.Get("expires_at")),
 	}
 
 	_, err = rdbAPI.UpdateDatabaseBackup(req, scw.WithContext(ctx))
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	_, err = waitForRDBDatabaseBackup(ctx, rdbAPI, region, id, d.Timeout(schema.TimeoutUpdate))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -132,43 +185,23 @@ func resourceScalewayRdbDatabaseBackupUpdate(ctx context.Context, d *schema.Reso
 }
 
 func resourceScalewayRdbDatabaseBackupDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	rdbAPI, region, err := rdbAPIWithRegion(d, meta)
+	rdbAPI, region, id, err := rdbAPIWithRegionAndID(meta, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	_, err = rdbAPI.WaitForDatabaseBackup(&rdb.WaitForDatabaseBackupRequest{
-		DatabaseBackupID: d.Id(),
-		Region:           region,
-	}, scw.WithContext(ctx))
+	_, err = waitForRDBDatabaseBackup(ctx, rdbAPI, region, id, d.Timeout(schema.TimeoutDelete))
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	_, err = rdbAPI.DeleteDatabaseBackup(&rdb.DeleteDatabaseBackupRequest{
-		DatabaseBackupID: d.Id(),
+		DatabaseBackupID: id,
 		Region:           region,
 	}, scw.WithContext(ctx))
-
 	if err != nil && !is404Error(err) {
 		return diag.FromErr(err)
 	}
 
 	return nil
-}
-
-// Build the resource identifier
-// The resource identifier format is "Region/InstanceId/UserName"
-func resourceScalewayRdbDatabaseBackupID(region scw.Region, instanceID string, userName string) (resourceID string) {
-	return fmt.Sprintf("%s/%s/%s", region, instanceID, userName)
-}
-
-// Extract instance ID and backup name from the resource identifier.
-// The resource identifier format is "Region/InstanceId/UserName"
-func resourceScalewayRdbDatabaseBackupParseID(resourceID string) (instanceID string, backupName string, err error) {
-	idParts := strings.Split(resourceID, "/")
-	if len(idParts) != 3 {
-		return "", "", fmt.Errorf("can't parse user resource id: %s", resourceID)
-	}
-	return idParts[1], idParts[2], nil
 }

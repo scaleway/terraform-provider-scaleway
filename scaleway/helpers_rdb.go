@@ -11,7 +11,9 @@ import (
 )
 
 const (
-	defaultRdbInstanceTimeout = 15 * time.Minute
+	defaultRdbInstanceTimeout            = 15 * time.Minute
+	defaultWaitRDBRetryInterval          = 30 * time.Second
+	defaultWaitRDBDatabaseBackupInterval = 15 * time.Second
 )
 
 // newRdbAPI returns a new RDB API
@@ -73,6 +75,20 @@ func waitForRDBInstance(ctx context.Context, api *rdb.API, region scw.Region, id
 		Timeout:       scw.TimeDurationPtr(timeout),
 		InstanceID:    id,
 		RetryInterval: &retryInterval,
+	}, scw.WithContext(ctx))
+}
+
+func waitForRDBDatabaseBackup(ctx context.Context, api *rdb.API, region scw.Region, id string, timeout time.Duration) (*rdb.DatabaseBackup, error) {
+	retryInterval := defaultWaitRDBRetryInterval
+	if DefaultWaitRetryInterval != nil {
+		retryInterval = *DefaultWaitRetryInterval
+	}
+
+	return api.WaitForDatabaseBackup(&rdb.WaitForDatabaseBackupRequest{
+		Region:           region,
+		Timeout:          scw.TimeDurationPtr(timeout),
+		DatabaseBackupID: id,
+		RetryInterval:    &retryInterval,
 	}, scw.WithContext(ctx))
 }
 
@@ -211,4 +227,18 @@ func flattenLoadBalancer(endpoints []*rdb.Endpoint) interface{} {
 	}
 
 	return flat
+}
+
+// expandTimePtr returns a time pointer for an RFC3339 time.
+// It returns nil if time is not valid, you should use validateDate to validate field.
+func expandTimePtr(i interface{}) *time.Time {
+	rawTime := expandStringPtr(i)
+	if rawTime == nil {
+		return nil
+	}
+	parsedTime, err := time.Parse(time.RFC3339, *rawTime)
+	if err != nil {
+		return nil
+	}
+	return &parsedTime
 }
