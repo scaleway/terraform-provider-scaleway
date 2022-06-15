@@ -137,6 +137,7 @@ func resourceScalewayRdbDatabaseBackupRead(ctx context.Context, d *schema.Resour
 	_ = d.Set("created_at", flattenTime(dbBackup.CreatedAt))
 	_ = d.Set("updated_at", flattenTime(dbBackup.UpdatedAt))
 	_ = d.Set("size", flattenSize(dbBackup.Size))
+	_ = d.Set("region", dbBackup.Region)
 
 	d.SetId(newRegionalIDString(region, dbBackup.ID))
 
