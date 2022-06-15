@@ -61,7 +61,6 @@ func TestAccScalewayRdbDatabaseBackup_Basic(t *testing.T) {
 						node_type = "db-dev-s"
 						engine = "PostgreSQL-12"
 						is_ha_cluster = false
-						tags = [ "terraform-test", "scaleway_rdb_user", "minimal" ]
 					}
 
 					resource scaleway_rdb_database main {
@@ -79,7 +78,6 @@ func TestAccScalewayRdbDatabaseBackup_Basic(t *testing.T) {
 						node_type = "db-dev-s"
 						engine = "PostgreSQL-12"
 						is_ha_cluster = false
-						tags = [ "terraform-test", "scaleway_rdb_user", "minimal" ]
 					}
 
 					resource scaleway_rdb_database main {
