@@ -116,10 +116,6 @@ func resourceScalewayRdbDatabaseBackupRead(ctx context.Context, d *schema.Resour
 		return diag.FromErr(err)
 	}
 
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
 	dbBackup, err := waitForRDBDatabaseBackup(ctx, rdbAPI, region, id, d.Timeout(schema.TimeoutRead))
 	if err != nil {
 		if is404Error(err) {
@@ -146,10 +142,6 @@ func resourceScalewayRdbDatabaseBackupRead(ctx context.Context, d *schema.Resour
 
 func resourceScalewayRdbDatabaseBackupUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	rdbAPI, region, id, err := rdbAPIWithRegionAndID(meta, d.Id())
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
 	if err != nil {
 		return diag.FromErr(err)
 	}
