@@ -105,17 +105,17 @@ Kubernetes pools can be imported using the `{region}/{id}`, e.g.
 $ terraform import scaleway_k8s_pool.mypool fr-par/11111111-1111-1111-1111-111111111111
 ```
 
-## Upgrading a pool
+## Changing the node-type of a pool
 
 As your needs evolve, you can migrate your workflow from one pool to another.
-Pools have a unique name, and they also have an immutable type.
-Just changing the pool node-type will recreate a new pool which could lead to service disruption.
+Pools have a unique name, and they also have an immutable node type.
+Just changing the pool node type will recreate a new pool which could lead to service disruption.
 To migrate your application with as little downtime as possible we recommend using the following workflow:
 
 ### General workflow to upgrade a pool
 
 - Create a new pool with a different name and the type you target.
-- Use [`kubectl drain`](https://kubernetes.io/docs/reference/generated/kubectl/kubectl-commands#drain) on your old pool to drain the remaining workflows in this pool.
+- Use [`kubectl drain`](https://kubernetes.io/docs/reference/generated/kubectl/kubectl-commands#drain) on nodes composing your old pool to drain the remaining workflows of this pool.
   Normally it should transfer your workflows to the new pool. Check out the official documentation about [how to safely drain your nodes](https://kubernetes.io/docs/tasks/administer-cluster/safely-drain-node/).
 - Delete the old pool from your terraform configuration.
 
