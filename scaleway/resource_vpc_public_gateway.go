@@ -19,6 +19,13 @@ func resourceScalewayVPCPublicGateway() *schema.Resource {
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
+		Timeouts: &schema.ResourceTimeout{
+			Create:  schema.DefaultTimeout(defaultVPCGatewayTimeout),
+			Read:    schema.DefaultTimeout(defaultVPCGatewayTimeout),
+			Update:  schema.DefaultTimeout(defaultVPCGatewayTimeout),
+			Delete:  schema.DefaultTimeout(defaultVPCGatewayTimeout),
+			Default: schema.DefaultTimeout(defaultVPCGatewayTimeout),
+		},
 		SchemaVersion: 0,
 		Schema: map[string]*schema.Schema{
 			"name": {
@@ -176,7 +183,7 @@ func resourceScalewayVPCPublicGatewayUpdate(ctx context.Context, d *schema.Resou
 	}
 
 	if d.HasChange("tags") {
-		updateRequest.Tags = scw.StringsPtr(expandStrings(d.Get("tags")))
+		updateRequest.Tags = expandUpdatedStringsPtr(d.Get("tags"))
 	}
 
 	if d.HasChange("bastion_port") {
@@ -188,7 +195,7 @@ func resourceScalewayVPCPublicGatewayUpdate(ctx context.Context, d *schema.Resou
 	}
 
 	if d.HasChange("upstream_dns_servers") {
-		updateRequest.UpstreamDNSServers = scw.StringsPtr(expandStrings(d.Get("upstream_dns_servers")))
+		updateRequest.UpstreamDNSServers = expandUpdatedStringsPtr(d.Get("upstream_dns_servers"))
 	}
 
 	_, err = vpcgwAPI.UpdateGateway(updateRequest, scw.WithContext(ctx))

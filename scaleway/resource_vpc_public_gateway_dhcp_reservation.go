@@ -23,6 +23,9 @@ func resourceScalewayVPCPublicGatewayDHCPReservation() *schema.Resource {
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 		Timeouts: &schema.ResourceTimeout{
+			Create:  schema.DefaultTimeout(defaultVPCGatewayTimeout),
+			Update:  schema.DefaultTimeout(defaultVPCGatewayTimeout),
+			Delete:  schema.DefaultTimeout(defaultVPCGatewayTimeout),
 			Default: schema.DefaultTimeout(defaultVPCGatewayTimeout),
 		},
 		SchemaVersion: 0,

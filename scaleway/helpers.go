@@ -394,6 +394,19 @@ func expandStringsPtr(data interface{}) *[]string {
 	return &stringSlice
 }
 
+// expandUpdatedStringsPtr expands a string slice but will default to an empty list.
+// Should be used on schema update so emptying a list will update resource.
+func expandUpdatedStringsPtr(data interface{}) *[]string {
+	stringSlice := []string{}
+	if _, ok := data.([]interface{}); !ok || data == nil {
+		return &stringSlice
+	}
+	for _, s := range data.([]interface{}) {
+		stringSlice = append(stringSlice, s.(string))
+	}
+	return &stringSlice
+}
+
 func expandSliceIDsPtr(rawIDs interface{}) *[]string {
 	var stringSlice []string
 	if _, ok := rawIDs.([]interface{}); !ok || rawIDs == nil {
@@ -615,4 +628,35 @@ func ErrCodeEquals(err error, codes ...string) bool {
 		}
 	}
 	return false
+}
+
+func getBool(d *schema.ResourceData, key string) interface{} {
+	val, ok := d.GetOkExists(key)
+	if !ok {
+		return nil
+	}
+	return val
+}
+
+// validateDate will validate that field is a valid ISO 8601
+// It is the same as RFC3339
+func validateDate() schema.SchemaValidateDiagFunc {
+	return func(i interface{}, path cty.Path) diag.Diagnostics {
+		date, isStr := i.(string)
+		if !isStr {
+			return diag.Errorf("%v is not a string", date)
+		}
+		_, err := time.Parse(time.RFC3339, date)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		return nil
+	}
+}
+
+func flattenSize(size *scw.Size) interface{} {
+	if size == nil {
+		return 0
+	}
+	return *size
 }

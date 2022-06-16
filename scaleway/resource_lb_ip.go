@@ -20,6 +20,9 @@ func resourceScalewayLbIP() *schema.Resource {
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 		Timeouts: &schema.ResourceTimeout{
+			Read:    schema.DefaultTimeout(defaultLbLbTimeout),
+			Update:  schema.DefaultTimeout(defaultLbLbTimeout),
+			Delete:  schema.DefaultTimeout(defaultLbLbTimeout),
 			Default: schema.DefaultTimeout(defaultLbLbTimeout),
 		},
 		SchemaVersion: 1,
