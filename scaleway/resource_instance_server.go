@@ -661,7 +661,7 @@ func resourceScalewayInstanceServerUpdate(ctx context.Context, d *schema.Resourc
 	}
 
 	if d.HasChange("tags") {
-		updateRequest.Tags = scw.StringsPtr(expandStrings(d.Get("tags")))
+		updateRequest.Tags = expandUpdatedStringsPtr(d.Get("tags"))
 	}
 
 	if d.HasChange("security_group_id") {

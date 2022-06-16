@@ -262,7 +262,7 @@ func resourceScalewayRdbPrivilegeDelete(ctx context.Context, d *schema.ResourceD
 		return diag.FromErr(err)
 	}
 
-	if listUsers != nil || len(listUsers.Users) == 0 {
+	if listUsers != nil && len(listUsers.Users) == 0 {
 		d.SetId("")
 		return nil
 	}
@@ -291,7 +291,7 @@ func resourceScalewayRdbPrivilegeDelete(ctx context.Context, d *schema.ResourceD
 			return resource.NonRetryableError(errUserExist)
 		}
 
-		if listUsers != nil || len(listUsers.Users) == 0 {
+		if listUsers != nil && len(listUsers.Users) == 0 {
 			d.SetId("")
 			return nil
 		}
