@@ -513,20 +513,19 @@ func resourceScalewayK8SClusterUpdate(ctx context.Context, d *schema.ResourceDat
 	}
 
 	if d.HasChange("tags") {
-		tags := expandStrings(d.Get("tags"))
-		updateRequest.Tags = scw.StringsPtr(tags)
+		updateRequest.Tags = expandUpdatedStringsPtr(d.Get("tags"))
 	}
 
 	if d.HasChange("apiserver_cert_sans") {
-		updateRequest.ApiserverCertSans = scw.StringsPtr(expandStrings(d.Get("apiserver_cert_sans")))
+		updateRequest.ApiserverCertSans = expandUpdatedStringsPtr(d.Get("apiserver_cert_sans"))
 	}
 
 	if d.HasChange("feature_gates") {
-		updateRequest.FeatureGates = scw.StringsPtr(expandStrings(d.Get("feature_gates")))
+		updateRequest.FeatureGates = expandUpdatedStringsPtr(d.Get("feature_gates"))
 	}
 
 	if d.HasChange("admission_plugins") {
-		updateRequest.AdmissionPlugins = scw.StringsPtr(expandStrings(d.Get("admission_plugins")))
+		updateRequest.AdmissionPlugins = expandUpdatedStringsPtr(d.Get("admission_plugins"))
 	}
 
 	updateRequest.AutoUpgrade = &k8s.UpdateClusterRequestAutoUpgrade{}

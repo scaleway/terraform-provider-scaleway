@@ -183,7 +183,7 @@ func resourceScalewayVPCPublicGatewayUpdate(ctx context.Context, d *schema.Resou
 	}
 
 	if d.HasChange("tags") {
-		updateRequest.Tags = scw.StringsPtr(expandStrings(d.Get("tags")))
+		updateRequest.Tags = expandUpdatedStringsPtr(d.Get("tags"))
 	}
 
 	if d.HasChange("bastion_port") {
@@ -195,7 +195,7 @@ func resourceScalewayVPCPublicGatewayUpdate(ctx context.Context, d *schema.Resou
 	}
 
 	if d.HasChange("upstream_dns_servers") {
-		updateRequest.UpstreamDNSServers = scw.StringsPtr(expandStrings(d.Get("upstream_dns_servers")))
+		updateRequest.UpstreamDNSServers = expandUpdatedStringsPtr(d.Get("upstream_dns_servers"))
 	}
 
 	_, err = vpcgwAPI.UpdateGateway(updateRequest, scw.WithContext(ctx))
