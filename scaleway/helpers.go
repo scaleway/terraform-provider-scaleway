@@ -637,3 +637,26 @@ func getBool(d *schema.ResourceData, key string) interface{} {
 	}
 	return val
 }
+
+// validateDate will validate that field is a valid ISO 8601
+// It is the same as RFC3339
+func validateDate() schema.SchemaValidateDiagFunc {
+	return func(i interface{}, path cty.Path) diag.Diagnostics {
+		date, isStr := i.(string)
+		if !isStr {
+			return diag.Errorf("%v is not a string", date)
+		}
+		_, err := time.Parse(time.RFC3339, date)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		return nil
+	}
+}
+
+func flattenSize(size *scw.Size) interface{} {
+	if size == nil {
+		return 0
+	}
+	return *size
+}
