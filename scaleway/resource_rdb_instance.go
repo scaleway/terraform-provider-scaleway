@@ -466,7 +466,7 @@ func resourceScalewayRdbInstanceUpdate(ctx context.Context, d *schema.ResourceDa
 		req.BackupSameRegion = expandBoolPtr(d.Get("backup_same_region"))
 	}
 	if d.HasChange("tags") {
-		req.Tags = scw.StringsPtr(expandStrings(d.Get("tags")))
+		req.Tags = expandUpdatedStringsPtr(d.Get("tags"))
 	}
 
 	_, err = waitForRDBInstance(ctx, rdbAPI, region, ID, d.Timeout(schema.TimeoutUpdate))
