@@ -100,7 +100,7 @@ func resourceScalewayInstanceIPUpdate(ctx context.Context, d *schema.ResourceDat
 	}
 
 	if d.HasChange("tags") {
-		req.Tags = scw.StringsPtr(expandStrings(d.Get("tags")))
+		req.Tags = expandUpdatedStringsPtr(d.Get("tags"))
 	}
 
 	_, err = instanceAPI.UpdateIP(req, scw.WithContext(ctx))
