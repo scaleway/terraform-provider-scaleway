@@ -153,9 +153,7 @@ func resourceScalewayInstancePlacementGroupUpdate(ctx context.Context, d *schema
 	}
 
 	if d.HasChange("tags") {
-		if len(expandStrings(d.Get("tags"))) > 0 {
-			req.Tags = scw.StringsPtr(expandStrings(d.Get("tags")))
-		}
+		req.Tags = expandUpdatedStringsPtr(d.Get("tags"))
 		hasChanged = true
 	}
 
