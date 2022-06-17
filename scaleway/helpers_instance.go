@@ -479,3 +479,19 @@ func waitForPrivateNIC(ctx context.Context, instanceAPI *instance.API, zone scw.
 
 	return nic, err
 }
+
+func waitForInstanceImage(ctx context.Context, api *instance.API, zone scw.Zone, id string, timeout time.Duration) (*instance.Image, error) {
+	retryInterval := defaultInstanceRetryInterval
+	if DefaultWaitRetryInterval != nil {
+		retryInterval = *DefaultWaitRetryInterval
+	}
+
+	image, err := api.WaitForImage(&instance.WaitForImageRequest{
+		ImageID:       id,
+		Zone:          zone,
+		Timeout:       scw.TimeDurationPtr(timeout),
+		RetryInterval: &retryInterval,
+	}, scw.WithContext(ctx))
+
+	return image, err
+}

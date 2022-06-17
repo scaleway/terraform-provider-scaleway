@@ -69,6 +69,7 @@ func Provider(config *ProviderConfig) plugin.ProviderFunc {
 				"scaleway_domain_zone":                         resourceScalewayDomainZone(),
 				"scaleway_function":                            resourceScalewayFunction(),
 				"scaleway_function_namespace":                  resourceScalewayFunctionNamespace(),
+				"scaleway_instance_image":                      resourceScalewayInstanceImage(),
 				"scaleway_instance_ip":                         resourceScalewayInstanceIP(),
 				"scaleway_instance_ip_reverse_dns":             resourceScalewayInstanceIPReverseDNS(),
 				"scaleway_instance_volume":                     resourceScalewayInstanceVolume(),
