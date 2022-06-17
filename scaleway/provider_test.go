@@ -132,11 +132,13 @@ func TestAccScalewayProvider_SSHKeys(t *testing.T) {
 		ProviderFactories: func() map[string]func() (*schema.Provider, error) {
 			metaProd, err := buildMeta(ctx, &metaConfig{
 				terraformVersion: "terraform-tests",
+				httpClient:       tt.Meta.httpClient,
 			})
 			require.NoError(t, err)
 
 			metaDev, err := buildMeta(ctx, &metaConfig{
 				terraformVersion: "terraform-tests",
+				httpClient:       tt.Meta.httpClient,
 			})
 			require.NoError(t, err)
 
@@ -186,16 +188,19 @@ func TestAccScalewayProvider_InstanceIPZones(t *testing.T) {
 			metaProd, err := buildMeta(ctx, &metaConfig{
 				terraformVersion: "terraform-tests",
 				forceZone:        scw.ZoneFrPar2,
+				httpClient:       tt.Meta.httpClient,
 			})
 			require.NoError(t, err)
 
 			metaDev, err := buildMeta(ctx, &metaConfig{
 				terraformVersion: "terraform-tests",
 				forceZone:        scw.ZoneFrPar1,
+				httpClient:       tt.Meta.httpClient,
 			})
 			require.NoError(t, err)
 
 			return map[string]func() (*schema.Provider, error){
+				"scaleway": tt.ProviderFactories["scaleway"],
 				"prod": func() (*schema.Provider, error) {
 					return Provider(&ProviderConfig{Meta: metaProd})(), nil
 				},
