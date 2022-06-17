@@ -200,7 +200,6 @@ func TestAccScalewayProvider_InstanceIPZones(t *testing.T) {
 			require.NoError(t, err)
 
 			return map[string]func() (*schema.Provider, error){
-				"scaleway": tt.ProviderFactories["scaleway"],
 				"prod": func() (*schema.Provider, error) {
 					return Provider(&ProviderConfig{Meta: metaProd})(), nil
 				},
