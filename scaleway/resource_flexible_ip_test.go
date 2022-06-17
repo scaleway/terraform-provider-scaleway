@@ -2,12 +2,12 @@ package scaleway
 
 import (
 	"fmt"
+	"github.com/scaleway/scaleway-sdk-go/api/baremetal/v1"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	flexibleip "github.com/scaleway/scaleway-sdk-go/api/flexibleip/v1alpha1"
-	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 )
 
@@ -92,7 +92,7 @@ func TestAccScalewayFlexibleIP_WithZone(t *testing.T) {
 	})
 }
 
-func TestAccScalewayFlexibleIP_CreateAndAttachToServer(t *testing.T) {
+func TestAccScalewayFlexibleIP_CreateAndAttachToBaremetalServer(t *testing.T) {
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
 	resource.ParallelTest(t, resource.TestCase{
@@ -101,16 +101,110 @@ func TestAccScalewayFlexibleIP_CreateAndAttachToServer(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: `
-						resource "scaleway_instance_server" main {
+						resource "scaleway_flexible_ip" "base" {
+							zone = "fr-par-2"
+						}
+					`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayFlexibleIPExists(tt, "scaleway_flexible_ip.base"),
+					resource.TestCheckResourceAttr("scaleway_flexible_ip.base", "zone", "fr-par-2"),
+				),
+			},
+			{
+				Config: `
+						data "scaleway_baremetal_server" "by_id" {
+							server_id = "2be56763-f36b-422e-aa7d-aa733f70c232"
+							zone = "fr-par-2"
+						}
+						
+						resource "scaleway_flexible_ip" "base" {
+							server_id = data.scaleway_baremetal_server.by_id.id
+							zone = "fr-par-2"
+						}
+					`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayFlexibleIPExists(tt, "scaleway_flexible_ip.base"),
+					resource.TestCheckResourceAttr("scaleway_flexible_ip.base", "zone", "fr-par-2"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccScalewayFlexibleIP_AttachAndDetachFromBaremetalServer(t *testing.T) {
+	tt := NewTestTools(t)
+	defer tt.Cleanup()
+	resource.ParallelTest(t, resource.TestCase{
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      testAccCheckScalewayFlexibleIPDestroy(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+						resource "scaleway_flexible_ip" "base" {
+							zone = "fr-par-2"
+						}
+					`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayFlexibleIPExists(tt, "scaleway_flexible_ip.base"),
+					resource.TestCheckResourceAttr("scaleway_flexible_ip.base", "zone", "fr-par-2"),
+				),
+			},
+			{
+				Config: `
+						data "scaleway_baremetal_server" "by_id" {
+							server_id = "2be56763-f36b-422e-aa7d-aa733f70c232"
+							zone = "fr-par-2"
+						}
+						
+						resource "scaleway_flexible_ip" "base" {
+							server_id = data.scaleway_baremetal_server.by_id.id
+							zone = "fr-par-2"
+						}
+					`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayFlexibleIPExists(tt, "scaleway_flexible_ip.base"),
+					//TODO Add:testAccCheckScalewayFlexibleIPAttachedToBaremetalServer
+					//Not possible via Baremetal API, can't get a list of attched flexible ips
+					resource.TestCheckResourceAttr("scaleway_flexible_ip.base", "zone", "fr-par-2"),
+				),
+			},
+			{
+				Config: `
+						resource "scaleway_flexible_ip" "base" {
+							zone = "fr-par-2"
+						}
+					`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayFlexibleIPExists(tt, "scaleway_flexible_ip.base"),
+					resource.TestCheckResourceAttr("scaleway_flexible_ip.base", "zone", "fr-par-2"),
+				),
+			},
+		},
+	})
+}
+
+/*func TestAccScalewayFlexibleIP_CreateAndAttachToServer(t *testing.T) {
+	tt := NewTestTools(t)
+	defer tt.Cleanup()
+	resource.ParallelTest(t, resource.TestCase{
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      testAccCheckScalewayFlexibleIPDestroy(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+						resource "scaleway_instance_server" "main" {
 							type = "DEV1-S"
 							image = "ubuntu_focal"
 							state = "stopped"
 							enable_dynamic_ip = false
+							zone = "fr-par-1"
 						}
 
 						resource "scaleway_flexible_ip" "main" {
 							zone = "fr-par-1"
+							depends_on = [scaleway_instance_server.main]
 							server_id = scaleway_instance_server.main.id
+
 						}
 					`,
 				Check: resource.ComposeTestCheckFunc(
@@ -121,9 +215,9 @@ func TestAccScalewayFlexibleIP_CreateAndAttachToServer(t *testing.T) {
 			},
 		},
 	})
-}
+}*/
 
-func TestAccScalewayFlexibleIP_AttachAndDetachFromServer(t *testing.T) {
+/*func TestAccScalewayFlexibleIP_AttachAndDetachFromServer(t *testing.T) {
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
 	resource.ParallelTest(t, resource.TestCase{
@@ -132,8 +226,9 @@ func TestAccScalewayFlexibleIP_AttachAndDetachFromServer(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: `
-						resource "scaleway_instance_server" main {
+						resource "scaleway_instance_server" "main" {
 							type = "DEV1-S"
+							image = "ubuntu_focal"
 						}
 
 						resource "scaleway_flexible_ip" "base" {
@@ -147,8 +242,9 @@ func TestAccScalewayFlexibleIP_AttachAndDetachFromServer(t *testing.T) {
 			},
 			{
 				Config: `
-						resource "scaleway_instance_server" main {
+						resource "scaleway_instance_server" "main" {
 							type = "DEV1-S"
+							image = "ubuntu_focal"
 						}
 
 						resource "scaleway_flexible_ip" "main" {
@@ -164,8 +260,9 @@ func TestAccScalewayFlexibleIP_AttachAndDetachFromServer(t *testing.T) {
 			},
 			{
 				Config: `
-						resource "scaleway_instance_server" main {
+						resource "scaleway_instance_server" "main" {
 							type = "DEV1-S"
+							image = "ubuntu_focal"
 						}
 
 						resource "scaleway_flexible_ip" "main" {
@@ -179,7 +276,7 @@ func TestAccScalewayFlexibleIP_AttachAndDetachFromServer(t *testing.T) {
 			},
 		},
 	})
-}
+}*/
 
 func testAccCheckScalewayFlexibleIPExists(tt *TestTools, name string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
@@ -239,7 +336,51 @@ func testAccCheckScalewayFlexibleIPDestroy(tt *TestTools) resource.TestCheckFunc
 	}
 }
 
-func testAccCheckScalewayFlexibleIPAttachedToInstanceServer(tt *TestTools, ipResource, serverResource string) resource.TestCheckFunc {
+func testAccCheckScalewayFlexibleIPAttachedToBaremetalServer(tt *TestTools, ipResource, serverResource string) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		ipState, ok := s.RootModule().Resources[ipResource]
+		if !ok {
+			return fmt.Errorf("resource not found: %s", ipResource)
+		}
+		serverState, ok := s.RootModule().Resources[serverResource]
+		if !ok {
+			return fmt.Errorf("resource not found: %s", serverResource)
+		}
+
+		baremetalAPI, zoneID, err := baremetalAPIWithZoneAndID(tt.Meta, ipState.Primary.ID)
+		if err != nil {
+			return err
+		}
+
+		server, err := baremetalAPI.GetServer(&baremetal.GetServerRequest{
+			Zone:     zoneID.Zone,
+			ServerID: expandID(serverState.Primary.ID),
+		})
+		if err != nil {
+			return err
+		}
+
+		fipAPI, zone, ID, err := fipAPIWithZoneAndID(tt.Meta, ipState.Primary.ID)
+		if err != nil {
+			return err
+		}
+		ip, err := fipAPI.GetFlexibleIP(&flexibleip.GetFlexibleIPRequest{
+			FipID: ID,
+			Zone:  zone,
+		})
+		if err != nil {
+			return err
+		}
+
+		if server.IPs[0].Address.String() != ip.IPAddress.String() {
+			return fmt.Errorf("IPs should be the same in %s and %s: %v is different than %v", ipResource, serverResource, server.IPs[0].Address, ip.IPAddress)
+		}
+
+		return nil
+	}
+}
+
+/*func testAccCheckScalewayFlexibleIPAttachedToInstanceServer(tt *TestTools, ipResource, serverResource string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		ipState, ok := s.RootModule().Resources[ipResource]
 		if !ok {
@@ -281,4 +422,4 @@ func testAccCheckScalewayFlexibleIPAttachedToInstanceServer(tt *TestTools, ipRes
 
 		return nil
 	}
-}
+}*/

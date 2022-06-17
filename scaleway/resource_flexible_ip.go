@@ -93,6 +93,11 @@ func resourceScalewayFlexibleIPCreate(ctx context.Context, d *schema.ResourceDat
 	}
 
 	d.SetId(newZonedIDString(zone, flexibleIP.ID))
+
+	flexibleIP, err = waitFlexibleIP(ctx, fipAPI, zone, flexibleIP.ID, d.Timeout(schema.TimeoutUpdate))
+	if err != nil {
+		return diag.FromErr(err)
+	}
 	return resourceScalewayFlexibleIPRead(ctx, d, meta)
 }
 
@@ -147,7 +152,7 @@ func resourceScalewayFlexibleIPUpdate(ctx context.Context, d *schema.ResourceDat
 
 	flexibleIP, err := waitFlexibleIP(ctx, fipAPI, zone, ID, d.Timeout(schema.TimeoutUpdate))
 	if err != nil {
-		return nil
+		return diag.FromErr(err)
 	}
 	updateRequest := &flexibleip.UpdateFlexibleIPRequest{
 		Zone:  zone,
@@ -171,6 +176,32 @@ func resourceScalewayFlexibleIPUpdate(ctx context.Context, d *schema.ResourceDat
 		return diag.FromErr(err)
 	}
 
+	flexibleIP, err = waitFlexibleIP(ctx, fipAPI, zone, ID, d.Timeout(schema.TimeoutUpdate))
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	if d.HasChange("server_id") {
+		if _, serverIdExists := d.GetOk("server_id"); !serverIdExists {
+			_, err = fipAPI.DetachFlexibleIP(&flexibleip.DetachFlexibleIPRequest{
+				Zone:    zone,
+				FipsIDs: []string{ID},
+			})
+			if err != nil {
+				return diag.FromErr(err)
+			}
+		} else {
+			_, err = fipAPI.AttachFlexibleIP(&flexibleip.AttachFlexibleIPRequest{
+				Zone:     zone,
+				FipsIDs:  []string{ID},
+				ServerID: expandID(d.Get("server_id")),
+			})
+			if err != nil {
+				return diag.FromErr(err)
+			}
+		}
+	}
+
 	return resourceScalewayFlexibleIPRead(ctx, d, meta)
 }
 func resourceScalewayFlexibleIPDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -189,6 +220,11 @@ func resourceScalewayFlexibleIPDelete(ctx context.Context, d *schema.ResourceDat
 		Zone:  zone,
 	}, scw.WithContext(ctx))
 
+	if err != nil && !is404Error(err) && !is403Error(err) {
+		return diag.FromErr(err)
+	}
+
+	_, err = waitFlexibleIP(ctx, fipAPI, zone, ID, d.Timeout(schema.TimeoutDelete))
 	if err != nil && !is404Error(err) && !is403Error(err) {
 		return diag.FromErr(err)
 	}
