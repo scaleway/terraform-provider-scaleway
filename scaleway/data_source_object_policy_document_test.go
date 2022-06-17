@@ -11,19 +11,16 @@ import (
 )
 
 func TestAccIAMPolicyDocumentDataSource_basic(t *testing.T) {
-	// This really ought to be able to be a unit test rather than an
-	// acceptance test, but just instantiating the AWS provider requires
-	// some AWS API calls, and so this needs valid AWS credentials to work.
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
 
-	bucketName := "TestAccIAMPolicyDocumentDataSource_basic"
+	bucketName := "test-acc-iam-policy-document-data-source-basic"
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccPolicyDocumentConfig,
+				Config: testAccPolicyDocumentConfig(bucketName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("data.scaleway_object_policy_document.test", "json",
 						testAccPolicyDocumentExpectedJSON(bucketName),
@@ -39,9 +36,6 @@ func TestAccIAMPolicyDocumentDataSource_source(t *testing.T) {
 	defer tt.Cleanup()
 
 	resourceName := "TestAccIAMPolicyDocumentDataSource_source"
-	// This really ought to be able to be a unit test rather than an
-	// acceptance test, but just instantiating the AWS provider requires
-	// some AWS API calls, and so this needs valid AWS credentials to work.
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
@@ -294,93 +288,66 @@ func TestAccIAMPolicyDocumentDataSource_StatementPrincipalIdentifiers_multiplePr
 	})
 }
 
-var testAccPolicyDocumentConfig = `
-data "aws_partition" "current" {}
+func testAccPolicyDocumentConfig(bucketName string) string {
+	return fmt.Sprintf(`
+	data "scaleway_object_policy_document" "test" {
+		policy_id = "policy_id"
 
-data "scaleway_object_policy_document" "test" {
-  policy_id = "policy_id"
+		statement {
+			sid = "1"
+			actions = [
+			"s3:ListBucket",
+			"s3:GetBucketWebsite",
+		]
+			resources = [
+			%[1]q,
+		]
+		}
 
-  statement {
-    sid = "1"
-    actions = [
-      "s3:ListAllMyBuckets",
-      "s3:GetBucketLocation",
-    ]
-    resources = [
-      "arn:${data.aws_partition.current.partition}:s3:::*",
-    ]
-  }
+		statement {
+			actions = [
+			"s3:ListBucket",
+		]
 
-  statement {
-    actions = [
-      "s3:ListBucket",
-    ]
+			resources = [
+			%[1]q,
+		]
 
-    resources = [
-      "arn:${data.aws_partition.current.partition}:s3:::foo",
-    ]
+			condition {
+			test     = "StringLike"
+			variable = "aws:SourceIp"
+			values = [
+			"home/",
+			"",
+			"home/&{aws:username}/",
+		]
+		}
+		}
 
-    condition {
-      test     = "StringLike"
-      variable = "s3:prefix"
-      values = [
-        "home/",
-        "",
-        "home/&{aws:username}/",
-      ]
-    }
+		statement {
+			actions = [
+			"s3:*",
+		]
 
-    not_principals {
-      type        = "AWS"
-      identifiers = ["arn:blahblah:example"]
-    }
-  }
+			resources = [
+			"%[1]s",
+			"%[1]s/*",
+		]
 
-  statement {
-    actions = [
-      "s3:*",
-    ]
+			principals {
+			type        = "SCW"
+			identifiers = ["arn:blahblah:example"]
+		}
+		}
 
-    resources = [
-      "arn:${data.aws_partition.current.partition}:s3:::foo/home/&{aws:username}",
-      "arn:${data.aws_partition.current.partition}:s3:::foo/home/&{aws:username}/*",
-    ]
-
-    principals {
-      type        = "AWS"
-      identifiers = ["arn:blahblah:example"]
-    }
-  }
-
-  statement {
-    effect        = "Deny"
-    not_actions   = ["s3:*"]
-    not_resources = ["arn:${data.aws_partition.current.partition}:s3:::*"]
-  }
-
-  # Normalization of wildcard principals
-
-  statement {
-    effect  = "Allow"
-    actions = ["kinesis:*"]
-
-    principals {
-      type        = "AWS"
-      identifiers = ["*"]
-    }
-  }
-
-  statement {
-    effect  = "Allow"
-    actions = ["firehose:*"]
-
-    principals {
-      type        = "*"
-      identifiers = ["*"]
-    }
-  }
+		statement {
+			effect        = "Deny"
+			not_actions   = ["s3:*"]
+			not_resources = [%[1]q]
+		}
+	}
+	`, bucketName)
 }
-`
 
 func testAccPolicyDocumentExpectedJSON(rname string) string {
 	return fmt.Sprintf(`{
@@ -391,8 +358,8 @@ func testAccPolicyDocumentExpectedJSON(rname string) string {
       "Sid": "1",
       "Effect": "Allow",
       "Action": [
-        "s3:ListAllMyBuckets",
-        "s3:GetBucketLocation"
+        "s3:ListBucket",
+        "s3:GetBucketWebsite"
       ],
       "Resource": "%[1]s"
     },
@@ -401,44 +368,44 @@ func testAccPolicyDocumentExpectedJSON(rname string) string {
       "Effect": "Allow",
       "Action": "s3:ListBucket",
       "Resource": "%[1]s",
-      "NotPrincipal": {
-        "AWS": "arn:blahblah:example"
-      },
-      "Condition": {
-        "StringLike": {
-          "s3:prefix": [
+      "condition": [
+        {
+          "Test": "StringLike",
+          "Variable": "aws:SourceIp",
+          "Values": [
             "home/",
             "",
             "home/${aws:username}/"
           ]
         }
-      }
+      ]
     },
     {
       "Sid": "",
       "Effect": "Allow",
       "Action": "s3:*",
       "Resource": [
-        "%[1]s:s3:::foo/home/${aws:username}/*",
-        "%[1]s:s3:::foo/home/${aws:username}"
+        "%[1]s/*",
+        "%[1]s"
       ],
-      "Principal": {
-        "AWS": "arn:blahblah:example"
-      }
+      "Principal": [
+        {
+          "Type": "SCW",
+          "Identifiers": "arn:blahblah:example"
+        }
+      ]
     },
     {
       "Sid": "",
       "Effect": "Deny",
       "NotAction": "s3:*",
-      "NotResource": "arn:%[1]s:s3:::*"
+      "NotResource": "%[1]s"
     }
   ]
 }`, rname)
 }
 
 var testAccPolicyDocumentSourceConfigDeprecated = `
-data "aws_partition" "current" {}
-
 data "scaleway_object_policy_document" "test" {
   policy_id = "policy_id"
 
@@ -554,7 +521,7 @@ func testAccPolicyDocumentSourceExpectedJSON(resourceName string) string {
       "Sid": "",
       "Effect": "Allow",
       "Action": "s3:ListBucket",
-      "Resource": "arn:%[1]s:s3:::foo",
+      "Resource": "%[1]s",
       "NotPrincipal": {
         "AWS": "arn:blahblah:example"
       },
@@ -572,8 +539,8 @@ func testAccPolicyDocumentSourceExpectedJSON(resourceName string) string {
       "Effect": "Allow",
       "Action": "s3:*",
       "Resource": [
-        "arn:%[1]s:s3:::foo/home/${aws:username}/*",
-        "arn:%[1]s:s3:::foo/home/${aws:username}"
+        "%[1]s/*",
+        "%[1]s"
       ],
       "Principal": {
         "AWS": [
@@ -587,20 +554,6 @@ func testAccPolicyDocumentSourceExpectedJSON(resourceName string) string {
       "Effect": "Deny",
       "NotAction": "s3:*",
       "NotResource": "arn:%[1]s:s3:::*"
-    },
-    {
-      "Sid": "",
-      "Effect": "Allow",
-      "Action": "kinesis:*",
-      "Principal": {
-        "SCW": "*"
-      }
-    },
-    {
-      "Sid": "",
-      "Effect": "Allow",
-      "Action": "firehose:*",
-      "Principal": "*"
     },
     {
       "Sid": "SourceJSONTest1",

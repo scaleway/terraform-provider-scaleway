@@ -161,7 +161,8 @@ func dataSourceScalewayObjectPolicyDocument() *schema.Resource {
 	}
 }
 
-func dataSourcePolicyDocumentRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+//nolint:gocyclo
+func dataSourcePolicyDocumentRead(_ context.Context, d *schema.ResourceData, _ interface{}) diag.Diagnostics {
 	mergedDoc := &IAMPolicyDoc{}
 
 	if v, ok := d.GetOk("source_json"); ok {
@@ -412,9 +413,9 @@ func dataSourcePolicyPrincipalSchema() *schema.Schema {
 }
 
 type IAMPolicyDoc struct {
-	Version    string                `json:",omitempty"`
-	Id         string                `json:",omitempty"` //nolint:golint,stylecheck
-	Statements []*IAMPolicyStatement `json:"Statement"`
+	Version    string                `json:",omitempty"` //nolint:tagliatelle
+	Id         string                `json:",omitempty"` //nolint:golint,stylecheck,tagliatelle,revive
+	Statements []*IAMPolicyStatement `json:"Statement"`  //nolint:tagliatelle
 }
 
 func (s *IAMPolicyDoc) Merge(newDoc *IAMPolicyDoc) {
@@ -451,13 +452,13 @@ func (s *IAMPolicyDoc) Merge(newDoc *IAMPolicyDoc) {
 
 type IAMPolicyStatement struct {
 	Sid           string
-	Effect        string                         `json:",omitempty"`
-	Actions       interface{}                    `json:"Action,omitempty"`
-	NotActions    interface{}                    `json:"NotAction,omitempty"`
-	Resources     interface{}                    `json:"Resource,omitempty"`
-	NotResources  interface{}                    `json:"NotResource,omitempty"`
-	Principals    IAMPolicyStatementPrincipalSet `json:"Principal,omitempty"`
-	NotPrincipals IAMPolicyStatementPrincipalSet `json:"NotPrincipal,omitempty"`
+	Effect        string                         `json:",omitempty"`             //nolint:tagliatelle
+	Actions       interface{}                    `json:"Action,omitempty"`       //nolint:tagliatelle
+	NotActions    interface{}                    `json:"NotAction,omitempty"`    //nolint:tagliatelle
+	Resources     interface{}                    `json:"Resource,omitempty"`     //nolint:tagliatelle
+	NotResources  interface{}                    `json:"NotResource,omitempty"`  //nolint:tagliatelle
+	Principals    IAMPolicyStatementPrincipalSet `json:"Principal,omitempty"`    //nolint:tagliatelle
+	NotPrincipals IAMPolicyStatementPrincipalSet `json:"NotPrincipal,omitempty"` //nolint:tagliatelle
 	Conditions    IAMPolicyStatementConditionSet `json:"condition,omitempty"`
 }
 
