@@ -6,13 +6,10 @@ import (
 	"fmt"
 	"net"
 	"net/http"
-	"os"
 	"strconv"
 	"strings"
-	"testing"
 	"time"
 
-	"github.com/aws/aws-sdk-go/aws/endpoints"
 	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -669,23 +666,4 @@ func flattenSize(size *scw.Size) interface{} {
 		return 0
 	}
 	return *size
-}
-
-type ServiceErrorCheckFunc func(*testing.T) resource.ErrorCheckFunc
-
-const EnvVarDefaultRegion = "AWS_DEFAULT_REGION"
-
-func Region() string {
-	return GetEnvVarWithDefault(EnvVarDefaultRegion, endpoints.UsWest2RegionID)
-}
-
-// GetEnvVarWithDefault gets an environment variable value if non-empty or returns the default.
-func GetEnvVarWithDefault(variable string, defaultValue string) string {
-	value := os.Getenv(variable)
-
-	if value == "" {
-		return defaultValue
-	}
-
-	return value
 }
