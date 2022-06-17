@@ -26,10 +26,58 @@ func TestAccScalewayInstanceImage_BlockVolume(t *testing.T) {
 					resource "scaleway_instance_volume" "main" {
 						type       = "b_ssd"
 						size_in_gb = 20
+						zone = "nl-ams-1"
 					}
 
 					resource "scaleway_instance_snapshot" "main" {
 						volume_id = scaleway_instance_volume.main.id
+						zone = "nl-ams-1"
+					}
+
+					resource "scaleway_instance_image" "main" {
+						name = "test_image_basic"
+						root_volume_id = scaleway_instance_snapshot.main.id
+						architecture = "arm"
+						tags = ["tag1", "tag2", "tag3"]
+						zone = "nl-ams-1"
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayInstanceImageExists(tt, "scaleway_instance_image.main"),
+					resource.TestCheckResourceAttr("scaleway_instance_image.main", "name", "test_image_basic"),
+					resource.TestCheckResourceAttr("scaleway_instance_image.main", "architecture", "arm"),
+					resource.TestCheckResourceAttr("scaleway_instance_image.main", "zone", "nl-ams-1"),
+					resource.TestCheckResourceAttr("scaleway_instance_image.main", "tags.0", "tag1"),
+					resource.TestCheckResourceAttr("scaleway_instance_image.main", "tags.1", "tag2"),
+					resource.TestCheckResourceAttr("scaleway_instance_image.main", "tags.2", "tag3"),
+					resource.TestCheckResourceAttrPair("scaleway_instance_image.main", "root_volume_id", "scaleway_instance_snapshot.main", "id"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccScalewayInstanceImage_Server(t *testing.T) {
+	tt := NewTestTools(t)
+	defer tt.Cleanup()
+	resource.Test(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy: resource.ComposeTestCheckFunc(
+			testAccCheckScalewayInstanceImageDestroy(tt),
+			testAccCheckScalewayInstanceServerDestroy(tt),
+		),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource "scaleway_instance_server" "main" {
+						image = "ubuntu_focal"
+						type = "DEV1-S"
+						state = "stopped"
+					}
+
+					resource "scaleway_instance_snapshot" "main" {
+						volume_id = scaleway_instance_server.main.root_volume.0.volume_id
 					}
 
 					resource "scaleway_instance_image" "main" {
@@ -39,47 +87,74 @@ func TestAccScalewayInstanceImage_BlockVolume(t *testing.T) {
 				`,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayInstanceImageExists(tt, "scaleway_instance_image.main"),
+					resource.TestCheckResourceAttrSet("scaleway_instance_image.main", "name"),
+					resource.TestCheckResourceAttr("scaleway_instance_image.main", "architecture", "x86_64"),
+					resource.TestCheckResourceAttrPair("scaleway_instance_image.main", "root_volume_id", "scaleway_instance_snapshot.main", "id"),
 				),
 			},
 		},
 	})
 }
 
-//func TestAccScalewayInstanceImage_Server(t *testing.T) {
-//	tt := NewTestTools(t)
-//	defer tt.Cleanup()
-//	resource.Test(t, resource.TestCase{
-//		PreCheck:          func() { testAccPreCheck(t) },
-//		ProviderFactories: tt.ProviderFactories,
-//		CheckDestroy: resource.ComposeTestCheckFunc(
-//			testAccCheckScalewayInstanceImageDestroy(tt),
-//			testAccCheckScalewayInstanceServerDestroy(tt),
-//		),
-//		Steps: []resource.TestStep{
-//			{
-//				Config: `
-//					resource "scaleway_instance_server" "main" {
-//						image = "ubuntu_focal"
-//						type = "DEV1-S"
-//						state = "stopped"
-//					}
-//
-//					resource "scaleway_instance_image" "main" {
-//						name = "test_image_basic"
-//						root_volume_id = scaleway_instance_server.main.root_volume.0.volume_id
-//						architecture = "arm"
-//					}
-//				`,
-//				Check: resource.ComposeTestCheckFunc(
-//					testAccCheckScalewayInstanceImageExists(tt, "scaleway_instance_image.main"),
-//					resource.TestCheckResourceAttr("scaleway_instance_image.main", "name", "test_image_basic"),
-//					resource.TestCheckResourceAttr("scaleway_instance_image.main", "architecture", "arm"),
-//					resource.TestCheckResourceAttrPair("scaleway_instance_image.main", "root_volume_id", "scaleway_instance_server.main", "root_volume.0.volume_id"),
-//				),
-//			},
-//		},
-//	})
-//}
+func TestAccScalewayInstanceImage_SeveralVolumes(t *testing.T) {
+	tt := NewTestTools(t)
+	defer tt.Cleanup()
+	resource.Test(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy: resource.ComposeTestCheckFunc(
+			testAccCheckScalewayInstanceImageDestroy(tt),
+			testAccCheckScalewayInstanceSnapshotDestroy(tt),
+			testAccCheckScalewayInstanceVolumeDestroy(tt),
+		),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource "scaleway_instance_volume" "vol00" {
+						type       = "b_ssd"
+						size_in_gb = 20
+					}
+					resource "scaleway_instance_snapshot" "snap00" {
+						volume_id = scaleway_instance_volume.vol00.id
+					}
+
+					resource "scaleway_instance_volume" "vol01" {
+						type       = "b_ssd"
+						size_in_gb = 20
+					}
+					resource "scaleway_instance_snapshot" "snap01" {
+						volume_id = scaleway_instance_volume.vol01.id
+					}
+
+					resource "scaleway_instance_volume" "vol02" {
+						type       = "b_ssd"
+						size_in_gb = 20
+					}
+					resource "scaleway_instance_snapshot" "snap02" {
+						volume_id = scaleway_instance_volume.vol02.id
+					}
+
+					resource "scaleway_instance_image" "main" {
+						root_volume_id = 	scaleway_instance_snapshot.snap00.id
+						architecture = 		"x86_64"
+						additional_volume_ids = [
+							scaleway_instance_snapshot.snap01.id,
+							scaleway_instance_snapshot.snap02.id,
+						]
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayInstanceImageExists(tt, "scaleway_instance_image.main"),
+					resource.TestCheckResourceAttrSet("scaleway_instance_image.main", "name"),
+					resource.TestCheckResourceAttr("scaleway_instance_image.main", "architecture", "x86_64"),
+					resource.TestCheckResourceAttrPair("scaleway_instance_image.main", "root_volume_id", "scaleway_instance_snapshot.snap00", "id"),
+					resource.TestCheckResourceAttrPair("scaleway_instance_image.main", "additional_volume_ids.0", "scaleway_instance_snapshot.snap01", "id"),
+					resource.TestCheckResourceAttrPair("scaleway_instance_image.main", "additional_volume_ids.1", "scaleway_instance_snapshot.snap02", "id"),
+				),
+			},
+		},
+	})
+}
 
 func testAccCheckScalewayInstanceImageExists(tt *TestTools, n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {

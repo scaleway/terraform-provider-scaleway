@@ -36,30 +36,32 @@ func resourceScalewayInstanceImage() *schema.Resource {
 				Description: "The name of the image",
 			},
 			"root_volume_id": {
-				Type:        schema.TypeString,
-				Required:    true,
-				Description: "UUID of the snapshot from which the image is to be created",
+				Type:         schema.TypeString,
+				Required:     true,
+				Description:  "UUID of the snapshot from which the image is to be created",
+				ValidateFunc: validationUUIDorUUIDWithLocality(),
 			},
 			"architecture": {
-				Type:     schema.TypeString,
-				Required: true,
-				//Default:     instance.ArchX86_64.String(), // TODO: default + required makes provider crash, so which one is it ?
+				Type:        schema.TypeString,
+				Required:    true,
 				Description: "Architecture of the image",
 			},
 			"default_bootscript_id": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "Default bootscript of the image",
+				Type:         schema.TypeString,
+				Optional:     true,
+				Description:  "ID of the default bootscript of the image",
+				ValidateFunc: validationUUIDorUUIDWithLocality(),
 			},
 			"additional_volume_ids": {
 				Type:     schema.TypeList,
 				Optional: true,
 				Elem: &schema.Schema{
-					Type: schema.TypeString,
+					Type:         schema.TypeString,
+					ValidateFunc: validationUUIDorUUIDWithLocality(),
 				},
-				Description: "The additional volume IDs attached to the image",
+				Description: "The IDs of the additional volumes attached to the image",
 			},
-			//"extra_volumes": {
+			// "extra_volumes": {
 			//	Type:        schema.TypeMap,
 			//	Optional:    true,
 			//	Description: "Additional volumes attached to the image",
@@ -69,7 +71,7 @@ func resourceScalewayInstanceImage() *schema.Resource {
 			//			Type: schema.TypeString,
 			//		},
 			//	},
-			//},
+			// },
 			"project": {
 				Type:        schema.TypeString,
 				Optional:    true,
@@ -90,11 +92,11 @@ func resourceScalewayInstanceImage() *schema.Resource {
 				Description: "If true, the image will be public",
 			},
 			// Computed
-			"image_id": { // TODO: maybe we only need that in datasource
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "ID of the image",
-			},
+			// "image_id": { // TODO: maybe we only need that in datasource
+			//	Type:        schema.TypeString,
+			//	Optional:    true,
+			//	Description: "ID of the image",
+			// },
 			"creation_date": {
 				Type:        schema.TypeString,
 				Computed:    true,
