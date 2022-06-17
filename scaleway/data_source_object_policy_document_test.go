@@ -22,9 +22,7 @@ func TestAccIAMPolicyDocumentDataSource_basic(t *testing.T) {
 			{
 				Config: testAccPolicyDocumentConfig(bucketName),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("data.scaleway_object_policy_document.test", "json",
-						testAccPolicyDocumentExpectedJSON(bucketName),
-					),
+					CheckResourceAttrEquivalentJSON("data.scaleway_object_policy_document.test", "json", testAccPolicyDocumentExpectedJSON(bucketName)),
 				),
 			},
 		},
@@ -41,371 +39,7 @@ func TestAccIAMPolicyDocumentDataSource_source(t *testing.T) {
 		ProviderFactories: tt.ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccPolicyDocumentSourceConfigDeprecated,
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("data.scaleway_object_policy_document.test_source", "json",
-						testAccPolicyDocumentSourceExpectedJSON(resourceName),
-					),
-				),
-			},
-			{
-				Config: testAccPolicyDocumentSourceBlankConfigDeprecated,
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("data.scaleway_object_policy_document.test_source_blank", "json",
-						testAccPolicyDocumentSourceBlankExpectedJSON,
-					),
-				),
-			},
-		},
-	})
-}
-
-func TestAccIAMPolicyDocumentDataSource_sourceList(t *testing.T) {
-	tt := NewTestTools(t)
-	defer tt.Cleanup()
-	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
-		Steps: []resource.TestStep{
-			{
-				Config: testAccPolicyDocumentSourceListConfig,
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("data.scaleway_object_policy_document.test_source_list", "json",
-						testAccPolicyDocumentSourceListExpectedJSON,
-					),
-				),
-			},
-		},
-	})
-}
-
-func TestAccIAMPolicyDocumentDataSource_sourceConflicting(t *testing.T) {
-	tt := NewTestTools(t)
-	defer tt.Cleanup()
-	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
-		Steps: []resource.TestStep{
-			{
-				Config: testAccPolicyDocumentSourceConflictingConfigDeprecated,
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("data.scaleway_object_policy_document.test_source_conflicting", "json",
-						testAccPolicyDocumentSourceConflictingExpectedJSON,
-					),
-				),
-			},
-		},
-	})
-}
-
-func TestAccIAMPolicyDocumentDataSource_sourceListConflicting(t *testing.T) {
-	tt := NewTestTools(t)
-	defer tt.Cleanup()
-	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
-		Steps: []resource.TestStep{
-			{
-				Config:      testAccPolicyDocumentSourceListConflictingConfig,
-				ExpectError: regexp.MustCompile(`duplicate Sid (.*?)`),
-			},
-		},
-	})
-}
-
-func TestAccIAMPolicyDocumentDataSource_override(t *testing.T) {
-	tt := NewTestTools(t)
-	defer tt.Cleanup()
-	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
-		Steps: []resource.TestStep{
-			{
-				Config: testAccPolicyDocumentOverrideConfigDeprecated,
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("data.scaleway_object_policy_document.test_override", "json",
-						testAccPolicyDocumentOverrideExpectedJSON,
-					),
-				),
-			},
-		},
-	})
-}
-
-func TestAccIAMPolicyDocumentDataSource_overrideList(t *testing.T) {
-	tt := NewTestTools(t)
-	defer tt.Cleanup()
-	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
-		Steps: []resource.TestStep{
-			{
-				Config: testAccPolicyDocumentOverrideListConfig,
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("data.scaleway_object_policy_document.test_override_list", "json",
-						testAccPolicyDocumentOverrideListExpectedJSON,
-					),
-				),
-			},
-		},
-	})
-}
-
-func TestAccIAMPolicyDocumentDataSource_noStatementMerge(t *testing.T) {
-	tt := NewTestTools(t)
-	defer tt.Cleanup()
-	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
-		Steps: []resource.TestStep{
-			{
-				Config: testAccPolicyDocumentNoStatementMergeConfigDeprecated,
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("data.scaleway_object_policy_document.yak_politik", "json",
-						testAccPolicyDocumentNoStatementMergeExpectedJSON,
-					),
-				),
-			},
-		},
-	})
-}
-
-func TestAccIAMPolicyDocumentDataSource_noStatementOverride(t *testing.T) {
-	tt := NewTestTools(t)
-	defer tt.Cleanup()
-	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
-		Steps: []resource.TestStep{
-			{
-				Config: testAccPolicyDocumentNoStatementOverrideConfigDeprecated,
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("data.scaleway_object_policy_document.yak_politik", "json",
-						testAccPolicyDocumentNoStatementOverrideExpectedJSON,
-					),
-				),
-			},
-		},
-	})
-}
-
-func TestAccIAMPolicyDocumentDataSource_duplicateSid(t *testing.T) {
-	tt := NewTestTools(t)
-	defer tt.Cleanup()
-	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
-		Steps: []resource.TestStep{
-			{
-				Config:      testAccPolicyDocumentDuplicateSidConfig,
-				ExpectError: regexp.MustCompile(`duplicate Sid`),
-			},
-			{
-				Config: testAccPolicyDocumentDuplicateBlankSidConfig,
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("data.scaleway_object_policy_document.test", "json",
-						testAccPolicyDocumentDuplicateBlankSidExpectedJSON,
-					),
-				),
-			},
-		},
-	})
-}
-
-// Reference: https://github.com/hashicorp/terraform-provider-aws/issues/10777
-func TestAccIAMPolicyDocumentDataSource_StatementPrincipalIdentifiers_stringAndSlice(t *testing.T) {
-	dataSourceName := "data.scaleway_object_policy_document.test"
-	tt := NewTestTools(t)
-	defer tt.Cleanup()
-
-	resourceName := "foobar"
-	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
-		Steps: []resource.TestStep{
-			{
-				Config: testAccPolicyDocumentStatementPrincipalIdentifiersStringAndSliceConfig,
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(dataSourceName, "json", testAccPolicyDocumentExpectedJSONStatementPrincipalIdentifiersStringAndSlice(resourceName)),
-				),
-			},
-		},
-	})
-}
-
-var testAccPolicyDocumentStatementPrincipalIdentifiersMultiplePrincipalsConfig = `
-data "aws_partition" "current" {}
-
-data "scaleway_object_policy_document" "test" {
-  statement {
-    actions   = ["*"]
-    resources = ["*"]
-    sid       = "StatementPrincipalIdentifiersStringAndSlice"
-
-    principals {
-      identifiers = [
-        "arn:${data.aws_partition.current.partition}:iam::111111111111:root",
-        "arn:${data.aws_partition.current.partition}:iam::222222222222:root",
-      ]
-      type = "AWS"
-    }
-
-    principals {
-      identifiers = [
-        "arn:${data.aws_partition.current.partition}:iam::333333333333:root",
-      ]
-      type = "AWS"
-    }
-
-    principals {
-      identifiers = [
-        "arn:${data.aws_partition.current.partition}:iam::444444444444:root",
-      ]
-      type = "AWS"
-    }
-  }
-}
-`
-
-// Reference: https://github.com/hashicorp/terraform-provider-aws/issues/10777
-func TestAccIAMPolicyDocumentDataSource_StatementPrincipalIdentifiers_multiplePrincipals(t *testing.T) {
-	dataSourceName := "data.scaleway_object_policy_document.test"
-	tt := NewTestTools(t)
-	defer tt.Cleanup()
-
-	resourceName := "foobar"
-	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
-		Steps: []resource.TestStep{
-			{
-				Config: testAccPolicyDocumentStatementPrincipalIdentifiersMultiplePrincipalsConfig,
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(dataSourceName, "json", testAccPolicyDocumentExpectedJSONStatementPrincipalIdentifiersMultiplePrincipals(resourceName)),
-				),
-			},
-		},
-	})
-}
-
-func testAccPolicyDocumentConfig(bucketName string) string {
-	return fmt.Sprintf(`
-	data "scaleway_object_policy_document" "test" {
-		policy_id = "policy_id"
-
-		statement {
-			sid = "1"
-			actions = [
-			"s3:ListBucket",
-			"s3:GetBucketWebsite",
-		]
-			resources = [
-			%[1]q,
-		]
-		}
-
-		statement {
-			actions = [
-			"s3:ListBucket",
-		]
-
-			resources = [
-			%[1]q,
-		]
-
-			condition {
-			test     = "StringLike"
-			variable = "aws:SourceIp"
-			values = [
-			"home/",
-			"",
-			"home/&{aws:username}/",
-		]
-		}
-		}
-
-		statement {
-			actions = [
-			"s3:*",
-		]
-
-			resources = [
-			"%[1]s",
-			"%[1]s/*",
-		]
-
-			principals {
-			type        = "SCW"
-			identifiers = ["arn:blahblah:example"]
-		}
-		}
-
-		statement {
-			effect        = "Deny"
-			not_actions   = ["s3:*"]
-			not_resources = [%[1]q]
-		}
-	}
-	`, bucketName)
-}
-
-func testAccPolicyDocumentExpectedJSON(rname string) string {
-	return fmt.Sprintf(`{
-  "Version": "2012-10-17",
-  "Id": "policy_id",
-  "Statement": [
-    {
-      "Sid": "1",
-      "Effect": "Allow",
-      "Action": [
-        "s3:ListBucket",
-        "s3:GetBucketWebsite"
-      ],
-      "Resource": "%[1]s"
-    },
-    {
-      "Sid": "",
-      "Effect": "Allow",
-      "Action": "s3:ListBucket",
-      "Resource": "%[1]s",
-      "condition": [
-        {
-          "Test": "StringLike",
-          "Variable": "aws:SourceIp",
-          "Values": [
-            "home/",
-            "",
-            "home/${aws:username}/"
-          ]
-        }
-      ]
-    },
-    {
-      "Sid": "",
-      "Effect": "Allow",
-      "Action": "s3:*",
-      "Resource": [
-        "%[1]s/*",
-        "%[1]s"
-      ],
-      "Principal": [
-        {
-          "Type": "SCW",
-          "Identifiers": "arn:blahblah:example"
-        }
-      ]
-    },
-    {
-      "Sid": "",
-      "Effect": "Deny",
-      "NotAction": "s3:*",
-      "NotResource": "%[1]s"
-    }
-  ]
-}`, rname)
-}
-
-var testAccPolicyDocumentSourceConfigDeprecated = `
+				Config: `
 data "scaleway_object_policy_document" "test" {
   policy_id = "policy_id"
 
@@ -500,8 +134,751 @@ data "scaleway_object_policy_document" "test_source" {
     actions   = ["*"]
     resources = ["*"]
   }
+}`,
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("data.scaleway_object_policy_document.test_source", "json",
+						testAccPolicyDocumentSourceExpectedJSON(resourceName),
+					),
+				),
+			},
+			{
+				Config: `
+data "scaleway_object_policy_document" "test_source_blank" {
+  source_json = ""
+
+  statement {
+    sid       = "SourceJSONTest2"
+    actions   = ["*"]
+    resources = ["*"]
+  }
+}`,
+				Check: resource.ComposeTestCheckFunc(
+					CheckResourceAttrEquivalentJSON("data.scaleway_object_policy_document.test_source_blank", "json",
+						`{
+							"Version": "2012-10-17",
+							"Statement": [
+								{
+									"Sid": "SourceJSONTest2",
+									"Effect": "Allow",
+									"Action": "*",
+									"Resource": "*"
+								}
+							]
+						}`,
+					),
+				),
+			},
+		},
+	})
 }
-`
+
+func TestAccIAMPolicyDocumentDataSource_sourceList(t *testing.T) {
+	tt := NewTestTools(t)
+	defer tt.Cleanup()
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config: `
+data "scaleway_object_policy_document" "policy_a" {
+  statement {
+    sid     = ""
+    effect  = "Allow"
+    actions = ["foo:ActionOne"]
+  }
+
+  statement {
+    sid     = "validSidOne"
+    effect  = "Allow"
+    actions = ["bar:ActionOne"]
+  }
+}
+
+data "scaleway_object_policy_document" "policy_b" {
+  statement {
+    sid     = "validSidTwo"
+    effect  = "Deny"
+    actions = ["foo:ActionTwo"]
+  }
+}
+
+data "scaleway_object_policy_document" "policy_c" {
+  statement {
+    sid     = ""
+    effect  = "Allow"
+    actions = ["bar:ActionTwo"]
+  }
+}
+
+data "scaleway_object_policy_document" "test_source_list" {
+  version = "2012-10-17"
+
+  source_policy_documents = [
+    data.scaleway_object_policy_document.policy_a.json,
+    data.scaleway_object_policy_document.policy_b.json,
+    data.scaleway_object_policy_document.policy_c.json
+  ]
+}
+`,
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("data.scaleway_object_policy_document.test_source_list", "json",
+						`{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "",
+      "Effect": "Allow",
+      "Action": "foo:ActionOne"
+    },
+    {
+      "Sid": "validSidOne",
+      "Effect": "Allow",
+      "Action": "bar:ActionOne"
+    },
+    {
+      "Sid": "validSidTwo",
+      "Effect": "Deny",
+      "Action": "foo:ActionTwo"
+    },
+    {
+      "Sid": "",
+      "Effect": "Allow",
+      "Action": "bar:ActionTwo"
+    }
+  ]
+}`,
+					),
+				),
+			},
+		},
+	})
+}
+
+func TestAccIAMPolicyDocumentDataSource_sourceConflicting(t *testing.T) {
+	tt := NewTestTools(t)
+	defer tt.Cleanup()
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config: `
+data "scaleway_object_policy_document" "test_source" {
+  statement {
+    sid       = "SourceJSONTestConflicting"
+    actions   = ["s3:*"]
+    resources = ["*"]
+  }
+}
+
+data "scaleway_object_policy_document" "test_source_conflicting" {
+  source_json = data.scaleway_object_policy_document.test_source.json
+
+  statement {
+    sid       = "SourceJSONTestConflicting"
+    actions   = ["*"]
+    resources = ["*"]
+  }
+}`,
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("data.scaleway_object_policy_document.test_source_conflicting", "json",
+						`{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "SourceJSONTestConflicting",
+      "Effect": "Allow",
+      "Action": "*",
+      "Resource": "*"
+    }
+  ]
+}`,
+					),
+				),
+			},
+		},
+	})
+}
+
+func TestAccIAMPolicyDocumentDataSource_sourceListConflicting(t *testing.T) {
+	tt := NewTestTools(t)
+	defer tt.Cleanup()
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config: `
+data "scaleway_object_policy_document" "policy_a" {
+  statement {
+    sid     = ""
+    effect  = "Allow"
+    actions = ["foo:ActionOne"]
+  }
+
+  statement {
+    sid     = "conflictSid"
+    effect  = "Allow"
+    actions = ["bar:ActionOne"]
+  }
+}
+
+data "scaleway_object_policy_document" "policy_b" {
+  statement {
+    sid     = "validSid"
+    effect  = "Deny"
+    actions = ["foo:ActionTwo"]
+  }
+}
+
+data "scaleway_object_policy_document" "policy_c" {
+  statement {
+    sid     = "conflictSid"
+    effect  = "Allow"
+    actions = ["bar:ActionTwo"]
+  }
+}
+
+data "scaleway_object_policy_document" "test_source_list_conflicting" {
+  version = "2012-10-17"
+
+  source_policy_documents = [
+    data.scaleway_object_policy_document.policy_a.json,
+    data.scaleway_object_policy_document.policy_b.json,
+    data.scaleway_object_policy_document.policy_c.json
+  ]
+}
+`,
+				ExpectError: regexp.MustCompile(`duplicate Sid (.*?)`),
+			},
+		},
+	})
+}
+
+func TestAccIAMPolicyDocumentDataSource_override(t *testing.T) {
+	tt := NewTestTools(t)
+	defer tt.Cleanup()
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config: `
+data "scaleway_object_policy_document" "override" {
+  statement {
+    sid = "SidToOverwrite"
+
+    actions   = ["s3:*"]
+    resources = ["*"]
+  }
+}
+
+data "scaleway_object_policy_document" "test_override" {
+  override_json = data.scaleway_object_policy_document.override.json
+
+  statement {
+    actions   = ["ec2:*"]
+    resources = ["*"]
+  }
+
+  statement {
+    sid = "SidToOverwrite"
+
+    actions = ["s3:*"]
+
+    resources = [
+      "arn:${data.aws_partition.current.partition}:s3:::somebucket",
+      "arn:${data.aws_partition.current.partition}:s3:::somebucket/*",
+    ]
+  }
+}
+`,
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("data.scaleway_object_policy_document.test_override", "json",
+						`{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "",
+      "Effect": "Allow",
+      "Action": "ec2:*",
+      "Resource": "*"
+    },
+    {
+      "Sid": "SidToOverwrite",
+      "Effect": "Allow",
+      "Action": "s3:*",
+      "Resource": "*"
+    }
+  ]
+}`,
+					),
+				),
+			},
+		},
+	})
+}
+
+func TestAccIAMPolicyDocumentDataSource_overrideList(t *testing.T) {
+	tt := NewTestTools(t)
+	defer tt.Cleanup()
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config: `
+data "scaleway_object_policy_document" "policy_a" {
+  statement {
+    sid     = ""
+    effect  = "Allow"
+    actions = ["foo:ActionOne"]
+  }
+
+  statement {
+    sid     = "overrideSid"
+    effect  = "Allow"
+    actions = ["bar:ActionOne"]
+  }
+}
+
+data "scaleway_object_policy_document" "policy_b" {
+  statement {
+    sid     = "validSid"
+    effect  = "Deny"
+    actions = ["foo:ActionTwo"]
+  }
+}
+
+data "scaleway_object_policy_document" "policy_c" {
+  statement {
+    sid     = "overrideSid"
+    effect  = "Deny"
+    actions = ["bar:ActionOne"]
+  }
+}
+
+data "scaleway_object_policy_document" "test_override_list" {
+  version = "2012-10-17"
+
+  override_policy_documents = [
+    data.scaleway_object_policy_document.policy_a.json,
+    data.scaleway_object_policy_document.policy_b.json,
+    data.scaleway_object_policy_document.policy_c.json
+  ]
+}
+`,
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("data.scaleway_object_policy_document.test_override_list", "json",
+						`{
+							"Version": "2012-10-17",
+							"Statement": [
+								{
+									"Sid": "",
+									"Effect": "Allow",
+									"Action": "foo:ActionOne"
+								},
+								{
+								  "Sid": "overrideSid",
+								  "Effect": "Deny",
+								  "Action": "bar:ActionOne"
+								},
+								{
+								  "Sid": "validSid",
+								  "Effect": "Deny",
+								  "Action": "foo:ActionTwo"
+								}
+							  ]
+							}`,
+					),
+				),
+			},
+		},
+	})
+}
+
+func TestAccIAMPolicyDocumentDataSource_noStatementMerge(t *testing.T) {
+	tt := NewTestTools(t)
+	defer tt.Cleanup()
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config: `
+data "scaleway_object_policy_document" "source" {
+  statement {
+    sid       = ""
+    actions   = ["ec2:DescribeAccountAttributes"]
+    resources = ["*"]
+  }
+}
+
+data "scaleway_object_policy_document" "override" {
+  statement {
+    sid       = "OverridePlaceholder"
+    actions   = ["s3:GetObject"]
+    resources = ["*"]
+  }
+}
+
+data "scaleway_object_policy_document" "yak_politik" {
+  source_json   = data.scaleway_object_policy_document.source.json
+  override_json = data.scaleway_object_policy_document.override.json
+}
+`,
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("data.scaleway_object_policy_document.yak_politik", "json",
+						`{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "",
+      "Effect": "Allow",
+      "Action": "ec2:DescribeAccountAttributes",
+      "Resource": "*"
+    },
+    {
+      "Sid": "OverridePlaceholder",
+      "Effect": "Allow",
+      "Action": "s3:GetObject",
+      "Resource": "*"
+    }
+  ]
+}`,
+					),
+				),
+			},
+		},
+	})
+}
+
+func TestAccIAMPolicyDocumentDataSource_noStatementOverride(t *testing.T) {
+	tt := NewTestTools(t)
+	defer tt.Cleanup()
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config: `
+data "scaleway_object_policy_document" "source" {
+  statement {
+    sid       = "OverridePlaceholder"
+    actions   = ["ec2:DescribeAccountAttributes"]
+    resources = ["*"]
+  }
+}
+
+data "scaleway_object_policy_document" "override" {
+  statement {
+    sid       = "OverridePlaceholder"
+    actions   = ["s3:GetObject"]
+    resources = ["*"]
+  }
+}
+
+data "scaleway_object_policy_document" "yak_politik" {
+  source_json   = data.scaleway_object_policy_document.source.json
+  override_json = data.scaleway_object_policy_document.override.json
+}
+`,
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("data.scaleway_object_policy_document.yak_politik", "json",
+						`{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "OverridePlaceholder",
+      "Effect": "Allow",
+      "Action": "s3:GetObject",
+      "Resource": "*"
+    }
+  ]
+}`,
+					),
+				),
+			},
+		},
+	})
+}
+
+func TestAccIAMPolicyDocumentDataSource_duplicateSid(t *testing.T) {
+	tt := NewTestTools(t)
+	defer tt.Cleanup()
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config: `
+data "scaleway_object_policy_document" "test" {
+  statement {
+    sid       = "1"
+    effect    = "Allow"
+    actions   = ["ec2:DescribeAccountAttributes"]
+    resources = ["*"]
+  }
+
+  statement {
+    sid       = "1"
+    effect    = "Allow"
+    actions   = ["s3:GetObject"]
+    resources = ["*"]
+  }
+}
+`,
+				ExpectError: regexp.MustCompile(`duplicate Sid`),
+			},
+			{
+				Config: `
+data "scaleway_object_policy_document" "test" {
+  statement {
+    sid       = ""
+    effect    = "Allow"
+    actions   = ["ec2:DescribeAccountAttributes"]
+    resources = ["*"]
+  }
+
+  statement {
+    sid       = ""
+    effect    = "Allow"
+    actions   = ["s3:GetObject"]
+    resources = ["*"]
+  }
+}
+`,
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("data.scaleway_object_policy_document.test", "json",
+						`{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "",
+      "Effect": "Allow",
+      "Action": "ec2:DescribeAccountAttributes",
+      "Resource": "*"
+    },
+    {
+      "Sid": "",
+      "Effect": "Allow",
+      "Action": "s3:GetObject",
+      "Resource": "*"
+    }
+  ]
+}`,
+					),
+				),
+			},
+		},
+	})
+}
+
+// Reference: https://github.com/hashicorp/terraform-provider-aws/issues/10777
+func TestAccIAMPolicyDocumentDataSource_StatementPrincipalIdentifiers_stringAndSlice(t *testing.T) {
+	dataSourceName := "data.scaleway_object_policy_document.test"
+	tt := NewTestTools(t)
+	defer tt.Cleanup()
+
+	resourceName := "foobar"
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config: `
+data "scaleway_object_policy_document" "test" {
+  statement {
+    actions   = ["*"]
+    resources = ["*"]
+    sid       = "StatementPrincipalIdentifiersStringAndSlice"
+
+    principals {
+      identifiers = ["arn:${data.aws_partition.current.partition}:iam::111111111111:root"]
+      type        = "AWS"
+    }
+
+    principals {
+      identifiers = ["arn:${data.aws_partition.current.partition}:iam::222222222222:root", "arn:${data.aws_partition.current.partition}:iam::333333333333:root"]
+      type        = "AWS"
+    }
+  }
+}`,
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(dataSourceName, "json", testAccPolicyDocumentExpectedJSONStatementPrincipalIdentifiersStringAndSlice(resourceName)),
+				),
+			},
+		},
+	})
+}
+
+// Reference: https://github.com/hashicorp/terraform-provider-aws/issues/10777
+func TestAccIAMPolicyDocumentDataSource_StatementPrincipalIdentifiers_multiplePrincipals(t *testing.T) {
+	dataSourceName := "data.scaleway_object_policy_document.test"
+	tt := NewTestTools(t)
+	defer tt.Cleanup()
+
+	resourceName := "foobar"
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					data "scaleway_object_policy_document" "test" {
+						statement {
+							actions   = ["*"]
+							resources = ["*"]
+							sid       = "StatementPrincipalIdentifiersStringAndSlice"
+					
+						principals {
+							identifiers = [
+								"arn:${data.aws_partition.current.partition}:iam::111111111111:root",
+								"arn:${data.aws_partition.current.partition}:iam::222222222222:root",
+						  	]
+						  	type = "AWS"
+						}
+					
+						principals {
+							identifiers = [
+								"arn:${data.aws_partition.current.partition}:iam::333333333333:root",
+						  	]
+							type = "AWS"
+						}
+					
+						principals {
+							identifiers = [
+								"arn:${data.aws_partition.current.partition}:iam::444444444444:root",
+						  	]
+							type = "AWS"
+						}
+					  }
+					}`,
+				Check: resource.ComposeTestCheckFunc(
+					CheckResourceAttrEquivalentJSON(dataSourceName, "json", testAccPolicyDocumentExpectedJSONStatementPrincipalIdentifiersMultiplePrincipals(resourceName)),
+				),
+			},
+		},
+	})
+}
+
+func testAccPolicyDocumentConfig(bucketName string) string {
+	return fmt.Sprintf(`
+data "scaleway_object_policy_document" "test" {
+  policy_id = "policy_id"
+
+  statement {
+    sid = "1"
+    actions = [
+      "s3:ListBucket",
+      "s3:GetBucketWebsite",
+    ]
+    resources = [
+      %[1]q,
+    ]
+  }
+
+  statement {
+    actions = [
+      "s3:ListBucket",
+    ]
+
+    resources = [
+      %[1]q,
+    ]
+
+    condition {
+      test     = "StringLike"
+      variable = "aws:SourceIp"
+      values = [
+        "home/",
+        "",
+        "home/&{aws:username}/",
+      ]
+    }
+  }
+
+  statement {
+    actions = [
+      "s3:*",
+    ]
+
+    resources = [
+      "%[1]s",
+      "%[1]s/*",
+    ]
+
+    principals {
+      type        = "SCW"
+      identifiers = ["arn:blahblah:example"]
+    }
+  }
+
+  statement {
+    effect        = "Deny"
+    not_actions   = ["s3:*"]
+    not_resources = [%[1]q]
+  }
+}
+	`, bucketName)
+}
+
+func testAccPolicyDocumentExpectedJSON(rname string) string {
+	return fmt.Sprintf(`{
+  "Version": "2012-10-17",
+  "Id": "policy_id",
+  "Statement": [
+    {
+      "Sid": "1",
+      "Effect": "Allow",
+      "Action": [
+        "s3:ListBucket",
+        "s3:GetBucketWebsite"
+      ],
+      "Resource": "%[1]s"
+    },
+    {
+      "Sid": "",
+      "Effect": "Allow",
+      "Action": "s3:ListBucket",
+      "Resource": "%[1]s",
+      "condition": [
+        {
+          "Test": "StringLike",
+          "Variable": "aws:SourceIp",
+          "Values": [
+            "home/",
+            "",
+            "home/${aws:username}/"
+          ]
+        }
+      ]
+    },
+    {
+      "Sid": "",
+      "Effect": "Allow",
+      "Action": "s3:*",
+      "Resource": [
+        "%[1]s/*",
+        "%[1]s"
+      ],
+      "Principal": [
+        {
+          "Type": "SCW",
+          "Identifiers": "arn:blahblah:example"
+        }
+      ]
+    },
+    {
+      "Sid": "",
+      "Effect": "Deny",
+      "NotAction": "s3:*",
+      "NotResource": "%[1]s"
+    }
+  ]
+}`, rname)
+}
 
 func testAccPolicyDocumentSourceExpectedJSON(resourceName string) string {
 	return fmt.Sprintf(`{
@@ -564,438 +941,6 @@ func testAccPolicyDocumentSourceExpectedJSON(resourceName string) string {
   ]
 }`, resourceName)
 }
-
-var testAccPolicyDocumentSourceListConfig = `
-data "scaleway_object_policy_document" "policy_a" {
-  statement {
-    sid     = ""
-    effect  = "Allow"
-    actions = ["foo:ActionOne"]
-  }
-
-  statement {
-    sid     = "validSidOne"
-    effect  = "Allow"
-    actions = ["bar:ActionOne"]
-  }
-}
-
-data "scaleway_object_policy_document" "policy_b" {
-  statement {
-    sid     = "validSidTwo"
-    effect  = "Deny"
-    actions = ["foo:ActionTwo"]
-  }
-}
-
-data "scaleway_object_policy_document" "policy_c" {
-  statement {
-    sid     = ""
-    effect  = "Allow"
-    actions = ["bar:ActionTwo"]
-  }
-}
-
-data "scaleway_object_policy_document" "test_source_list" {
-  version = "2012-10-17"
-
-  source_policy_documents = [
-    data.scaleway_object_policy_document.policy_a.json,
-    data.scaleway_object_policy_document.policy_b.json,
-    data.scaleway_object_policy_document.policy_c.json
-  ]
-}
-`
-
-var testAccPolicyDocumentSourceListExpectedJSON = `{
-  "Version": "2012-10-17",
-  "Statement": [
-    {
-      "Sid": "",
-      "Effect": "Allow",
-      "Action": "foo:ActionOne"
-    },
-    {
-      "Sid": "validSidOne",
-      "Effect": "Allow",
-      "Action": "bar:ActionOne"
-    },
-    {
-      "Sid": "validSidTwo",
-      "Effect": "Deny",
-      "Action": "foo:ActionTwo"
-    },
-    {
-      "Sid": "",
-      "Effect": "Allow",
-      "Action": "bar:ActionTwo"
-    }
-  ]
-}`
-
-var testAccPolicyDocumentSourceBlankConfigDeprecated = `
-data "scaleway_object_policy_document" "test_source_blank" {
-  source_json = ""
-
-  statement {
-    sid       = "SourceJSONTest2"
-    actions   = ["*"]
-    resources = ["*"]
-  }
-}
-`
-
-var testAccPolicyDocumentSourceBlankExpectedJSON = `{
-  "Version": "2012-10-17",
-  "Statement": [
-    {
-      "Sid": "SourceJSONTest2",
-      "Effect": "Allow",
-      "Action": "*",
-      "Resource": "*"
-    }
-  ]
-}`
-
-var testAccPolicyDocumentSourceConflictingConfigDeprecated = `
-data "scaleway_object_policy_document" "test_source" {
-  statement {
-    sid       = "SourceJSONTestConflicting"
-    actions   = ["iam:*"]
-    resources = ["*"]
-  }
-}
-
-data "scaleway_object_policy_document" "test_source_conflicting" {
-  source_json = data.scaleway_object_policy_document.test_source.json
-
-  statement {
-    sid       = "SourceJSONTestConflicting"
-    actions   = ["*"]
-    resources = ["*"]
-  }
-}
-`
-
-var testAccPolicyDocumentSourceConflictingExpectedJSON = `{
-  "Version": "2012-10-17",
-  "Statement": [
-    {
-      "Sid": "SourceJSONTestConflicting",
-      "Effect": "Allow",
-      "Action": "*",
-      "Resource": "*"
-    }
-  ]
-}`
-
-var testAccPolicyDocumentSourceListConflictingConfig = `
-data "scaleway_object_policy_document" "policy_a" {
-  statement {
-    sid     = ""
-    effect  = "Allow"
-    actions = ["foo:ActionOne"]
-  }
-
-  statement {
-    sid     = "conflictSid"
-    effect  = "Allow"
-    actions = ["bar:ActionOne"]
-  }
-}
-
-data "scaleway_object_policy_document" "policy_b" {
-  statement {
-    sid     = "validSid"
-    effect  = "Deny"
-    actions = ["foo:ActionTwo"]
-  }
-}
-
-data "scaleway_object_policy_document" "policy_c" {
-  statement {
-    sid     = "conflictSid"
-    effect  = "Allow"
-    actions = ["bar:ActionTwo"]
-  }
-}
-
-data "scaleway_object_policy_document" "test_source_list_conflicting" {
-  version = "2012-10-17"
-
-  source_policy_documents = [
-    data.scaleway_object_policy_document.policy_a.json,
-    data.scaleway_object_policy_document.policy_b.json,
-    data.scaleway_object_policy_document.policy_c.json
-  ]
-}
-`
-
-var testAccPolicyDocumentOverrideConfigDeprecated = `
-data "aws_partition" "current" {}
-
-data "scaleway_object_policy_document" "override" {
-  statement {
-    sid = "SidToOverwrite"
-
-    actions   = ["s3:*"]
-    resources = ["*"]
-  }
-}
-
-data "scaleway_object_policy_document" "test_override" {
-  override_json = data.scaleway_object_policy_document.override.json
-
-  statement {
-    actions   = ["ec2:*"]
-    resources = ["*"]
-  }
-
-  statement {
-    sid = "SidToOverwrite"
-
-    actions = ["s3:*"]
-
-    resources = [
-      "arn:${data.aws_partition.current.partition}:s3:::somebucket",
-      "arn:${data.aws_partition.current.partition}:s3:::somebucket/*",
-    ]
-  }
-}
-`
-
-var testAccPolicyDocumentOverrideExpectedJSON = `{
-  "Version": "2012-10-17",
-  "Statement": [
-    {
-      "Sid": "",
-      "Effect": "Allow",
-      "Action": "ec2:*",
-      "Resource": "*"
-    },
-    {
-      "Sid": "SidToOverwrite",
-      "Effect": "Allow",
-      "Action": "s3:*",
-      "Resource": "*"
-    }
-  ]
-}`
-
-var testAccPolicyDocumentOverrideListConfig = `
-data "scaleway_object_policy_document" "policy_a" {
-  statement {
-    sid     = ""
-    effect  = "Allow"
-    actions = ["foo:ActionOne"]
-  }
-
-  statement {
-    sid     = "overrideSid"
-    effect  = "Allow"
-    actions = ["bar:ActionOne"]
-  }
-}
-
-data "scaleway_object_policy_document" "policy_b" {
-  statement {
-    sid     = "validSid"
-    effect  = "Deny"
-    actions = ["foo:ActionTwo"]
-  }
-}
-
-data "scaleway_object_policy_document" "policy_c" {
-  statement {
-    sid     = "overrideSid"
-    effect  = "Deny"
-    actions = ["bar:ActionOne"]
-  }
-}
-
-data "scaleway_object_policy_document" "test_override_list" {
-  version = "2012-10-17"
-
-  override_policy_documents = [
-    data.scaleway_object_policy_document.policy_a.json,
-    data.scaleway_object_policy_document.policy_b.json,
-    data.scaleway_object_policy_document.policy_c.json
-  ]
-}
-`
-
-var testAccPolicyDocumentOverrideListExpectedJSON = `{
-  "Version": "2012-10-17",
-  "Statement": [
-    {
-      "Sid": "",
-      "Effect": "Allow",
-      "Action": "foo:ActionOne"
-    },
-    {
-      "Sid": "overrideSid",
-      "Effect": "Deny",
-      "Action": "bar:ActionOne"
-    },
-    {
-      "Sid": "validSid",
-      "Effect": "Deny",
-      "Action": "foo:ActionTwo"
-    }
-  ]
-}`
-
-var testAccPolicyDocumentNoStatementMergeConfigDeprecated = `
-data "scaleway_object_policy_document" "source" {
-  statement {
-    sid       = ""
-    actions   = ["ec2:DescribeAccountAttributes"]
-    resources = ["*"]
-  }
-}
-
-data "scaleway_object_policy_document" "override" {
-  statement {
-    sid       = "OverridePlaceholder"
-    actions   = ["s3:GetObject"]
-    resources = ["*"]
-  }
-}
-
-data "scaleway_object_policy_document" "yak_politik" {
-  source_json   = data.scaleway_object_policy_document.source.json
-  override_json = data.scaleway_object_policy_document.override.json
-}
-`
-
-var testAccPolicyDocumentNoStatementMergeExpectedJSON = `{
-  "Version": "2012-10-17",
-  "Statement": [
-    {
-      "Sid": "",
-      "Effect": "Allow",
-      "Action": "ec2:DescribeAccountAttributes",
-      "Resource": "*"
-    },
-    {
-      "Sid": "OverridePlaceholder",
-      "Effect": "Allow",
-      "Action": "s3:GetObject",
-      "Resource": "*"
-    }
-  ]
-}`
-
-var testAccPolicyDocumentNoStatementOverrideConfigDeprecated = `
-data "scaleway_object_policy_document" "source" {
-  statement {
-    sid       = "OverridePlaceholder"
-    actions   = ["ec2:DescribeAccountAttributes"]
-    resources = ["*"]
-  }
-}
-
-data "scaleway_object_policy_document" "override" {
-  statement {
-    sid       = "OverridePlaceholder"
-    actions   = ["s3:GetObject"]
-    resources = ["*"]
-  }
-}
-
-data "scaleway_object_policy_document" "yak_politik" {
-  source_json   = data.scaleway_object_policy_document.source.json
-  override_json = data.scaleway_object_policy_document.override.json
-}
-`
-
-var testAccPolicyDocumentNoStatementOverrideExpectedJSON = `{
-  "Version": "2012-10-17",
-  "Statement": [
-    {
-      "Sid": "OverridePlaceholder",
-      "Effect": "Allow",
-      "Action": "s3:GetObject",
-      "Resource": "*"
-    }
-  ]
-}`
-
-var testAccPolicyDocumentDuplicateSidConfig = `
-data "scaleway_object_policy_document" "test" {
-  statement {
-    sid       = "1"
-    effect    = "Allow"
-    actions   = ["ec2:DescribeAccountAttributes"]
-    resources = ["*"]
-  }
-
-  statement {
-    sid       = "1"
-    effect    = "Allow"
-    actions   = ["s3:GetObject"]
-    resources = ["*"]
-  }
-}
-`
-
-var testAccPolicyDocumentDuplicateBlankSidConfig = `
-data "scaleway_object_policy_document" "test" {
-  statement {
-    sid       = ""
-    effect    = "Allow"
-    actions   = ["ec2:DescribeAccountAttributes"]
-    resources = ["*"]
-  }
-
-  statement {
-    sid       = ""
-    effect    = "Allow"
-    actions   = ["s3:GetObject"]
-    resources = ["*"]
-  }
-}
-`
-
-var testAccPolicyDocumentDuplicateBlankSidExpectedJSON = `{
-  "Version": "2012-10-17",
-  "Statement": [
-    {
-      "Sid": "",
-      "Effect": "Allow",
-      "Action": "ec2:DescribeAccountAttributes",
-      "Resource": "*"
-    },
-    {
-      "Sid": "",
-      "Effect": "Allow",
-      "Action": "s3:GetObject",
-      "Resource": "*"
-    }
-  ]
-}`
-
-var testAccPolicyDocumentStatementPrincipalIdentifiersStringAndSliceConfig = `
-data "aws_partition" "current" {}
-
-data "scaleway_object_policy_document" "test" {
-  statement {
-    actions   = ["*"]
-    resources = ["*"]
-    sid       = "StatementPrincipalIdentifiersStringAndSlice"
-
-    principals {
-      identifiers = ["arn:${data.aws_partition.current.partition}:iam::111111111111:root"]
-      type        = "AWS"
-    }
-
-    principals {
-      identifiers = ["arn:${data.aws_partition.current.partition}:iam::222222222222:root", "arn:${data.aws_partition.current.partition}:iam::333333333333:root"]
-      type        = "AWS"
-    }
-  }
-}
-`
 
 func testAccPolicyDocumentExpectedJSONStatementPrincipalIdentifiersStringAndSlice(resourceName string) string {
 	return fmt.Sprintf(`{
