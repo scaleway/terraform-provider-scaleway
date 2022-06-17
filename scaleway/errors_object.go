@@ -14,6 +14,4 @@ const (
 	ErrCodeAccessDenied = "AccessDenied"
 	// ErrCodeBucketNotEmpty bucket is not empty
 	ErrCodeBucketNotEmpty = "BucketNotEmpty"
-	// ErrCodeNoSuchBucketPolicy bucket policy not found
-	ErrCodeNoSuchBucketPolicy = "NoSuchBucketPolicy"
 )
