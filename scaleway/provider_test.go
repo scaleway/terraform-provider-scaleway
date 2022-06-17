@@ -141,7 +141,6 @@ func TestAccScalewayProvider_SSHKeys(t *testing.T) {
 			require.NoError(t, err)
 
 			return map[string]func() (*schema.Provider, error){
-
 				"prod": func() (*schema.Provider, error) {
 					return Provider(&ProviderConfig{Meta: metaProd})(), nil
 				},
@@ -197,7 +196,6 @@ func TestAccScalewayProvider_InstanceIPZones(t *testing.T) {
 			require.NoError(t, err)
 
 			return map[string]func() (*schema.Provider, error){
-
 				"prod": func() (*schema.Provider, error) {
 					return Provider(&ProviderConfig{Meta: metaProd})(), nil
 				},
