@@ -389,6 +389,20 @@ func TestAccScalewayRdbInstance_PrivateNetwork(t *testing.T) {
 						name = "my_private_network"
 						zone = "nl-ams-1"
 					}
+
+					resource scaleway_rdb_instance main {
+						name = "test-rdb"
+						node_type = "db-dev-s"
+						engine = "PostgreSQL-11"
+						is_ha_cluster = false
+						disable_backup = true
+						user_name = "my_initial_user"
+						password = "thiZ_is_v&ry_s3cret"
+						region= "nl-ams"
+						tags = [ "terraform-test", "scaleway_rdb_instance", "volume", "rdb_pn" ]
+						volume_type = "bssd"
+						volume_size_in_gb = 10
+					}
 				`,
 			},
 		},
@@ -475,6 +489,20 @@ func TestAccScalewayRdbInstance_PrivateNetwork_DHCP(t *testing.T) {
 						name = "my_private_network"
 						zone = "nl-ams-1"
 					}
+
+					resource scaleway_rdb_instance main {
+						name = "test-rdb"
+						node_type = "db-dev-s"
+						engine = "PostgreSQL-11"
+						is_ha_cluster = false
+						disable_backup = true
+						user_name = "my_initial_user"
+						password = "thiZ_is_v&ry_s3cret"
+						region= "nl-ams"
+						tags = [ "terraform-test", "scaleway_rdb_instance", "volume", "rdb_pn" ]
+						volume_type = "bssd"
+						volume_size_in_gb = 10
+					}
 				`,
 			},
 		},
@@ -514,7 +542,8 @@ func TestAccScalewayRdbInstance_BackupSchedule(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "backup_same_region", "true"),
 				),
 			},
-		}})
+		},
+	})
 }
 
 func TestAccScalewayRdbInstance_Volume(t *testing.T) {

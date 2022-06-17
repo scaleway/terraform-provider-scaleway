@@ -19,6 +19,10 @@ func resourceScalewayIotNetwork() *schema.Resource {
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
+		Timeouts: &schema.ResourceTimeout{
+			Delete:  schema.DefaultTimeout(defaultIoTHubTimeout),
+			Default: schema.DefaultTimeout(defaultIoTHubTimeout),
+		},
 		SchemaVersion: 0,
 		Schema: map[string]*schema.Schema{
 			"hub_id": {

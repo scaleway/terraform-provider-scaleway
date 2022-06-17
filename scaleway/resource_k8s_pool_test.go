@@ -136,6 +136,7 @@ func TestAccScalewayK8SCluster_PoolWait(t *testing.T) {
 		},
 	})
 }
+
 func TestAccScalewayK8SCluster_PoolPlacementGroup(t *testing.T) {
 	tt := NewTestTools(t)
 	defer tt.Cleanup()

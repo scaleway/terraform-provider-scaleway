@@ -43,7 +43,7 @@ func TestAccScalewayDataSourceBaremetalOffer_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("data.scaleway_baremetal_offer.test2", "include_disabled", "false"),
 					resource.TestCheckResourceAttr("data.scaleway_baremetal_offer.test2", "bandwidth", "1000000000"),
 					resource.TestCheckResourceAttr("data.scaleway_baremetal_offer.test2", "commercial_range", "aluminium"),
-					//resource.TestCheckResourceAttr("data.scaleway_baremetal_offer.test2", "stock", "available"), // skipping this as stocks vary too much
+					// resource.TestCheckResourceAttr("data.scaleway_baremetal_offer.test2", "stock", "available"), // skipping this as stocks vary too much
 					resource.TestCheckResourceAttr("data.scaleway_baremetal_offer.test2", "cpu.0.name", "AMD Ryzen PRO 3600"),
 					resource.TestCheckResourceAttr("data.scaleway_baremetal_offer.test2", "cpu.0.core_count", "6"),
 					resource.TestCheckResourceAttr("data.scaleway_baremetal_offer.test2", "cpu.0.frequency", "3600"),
@@ -81,7 +81,6 @@ func testAccCheckScalewayBaremetalOfferExists(tt *TestTools, n string) resource.
 		resp, err := baremetalAPI.ListOffers(&baremetal.ListOffersRequest{
 			Zone: zone,
 		}, scw.WithAllPages())
-
 		if err != nil {
 			return err
 		}

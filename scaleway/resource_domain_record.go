@@ -20,6 +20,10 @@ func resourceScalewayDomainRecord() *schema.Resource {
 		UpdateContext: resourceScalewayDomainRecordUpdate,
 		DeleteContext: resourceScalewayDomainRecordDelete,
 		Timeouts: &schema.ResourceTimeout{
+			Create:  schema.DefaultTimeout(defaultDomainRecordTimeout),
+			Read:    schema.DefaultTimeout(defaultDomainRecordTimeout),
+			Update:  schema.DefaultTimeout(defaultDomainRecordTimeout),
+			Delete:  schema.DefaultTimeout(defaultDomainRecordTimeout),
 			Default: schema.DefaultTimeout(defaultDomainRecordTimeout),
 		},
 		Importer: &schema.ResourceImporter{
@@ -304,7 +308,7 @@ func resourceScalewayDomainRecordRead(ctx context.Context, d *schema.ResourceDat
 	currentData := d.Get("data")
 	// check if this is an inline import. Like: "terraform import scaleway_domain_record.www subdomain.domain.tld/11111111-1111-1111-1111-111111111111"
 	if strings.Contains(d.Id(), "/") {
-		tab := strings.SplitN(d.Id(), "/", -1)
+		tab := strings.Split(d.Id(), "/")
 		if len(tab) != 2 {
 			return diag.FromErr(fmt.Errorf("cant parse record id: %s", d.Id()))
 		}
@@ -316,7 +320,6 @@ func resourceScalewayDomainRecordRead(ctx context.Context, d *schema.ResourceDat
 			DNSZone: dnsZone,
 			ID:      &recordID,
 		}, scw.WithAllPages(), scw.WithContext(ctx))
-
 		if err != nil {
 			if is404Error(err) {
 				d.SetId("")
@@ -347,7 +350,6 @@ func resourceScalewayDomainRecordRead(ctx context.Context, d *schema.ResourceDat
 			Type:    recordType,
 			ID:      &idRecord,
 		}, scw.WithAllPages(), scw.WithContext(ctx))
-
 		if err != nil {
 			if is404Error(err) {
 				d.SetId("")
@@ -514,7 +516,6 @@ func resourceScalewayDomainRecordDelete(ctx context.Context, d *schema.ResourceD
 		res, err := domainAPI.ListDNSZoneRecords(&domain.ListDNSZoneRecordsRequest{
 			DNSZone: d.Get("dns_zone").(string),
 		})
-
 		if err != nil {
 			if is404Error(err) {
 				return nil
@@ -533,11 +534,11 @@ func resourceScalewayDomainRecordDelete(ctx context.Context, d *schema.ResourceD
 
 		if !hasRecords {
 			_, err = waitForDNSZone(ctx, domainAPI, d.Get("dns_zone").(string), d.Timeout(schema.TimeoutDelete))
-			if err != nil && !ErrCodeEquals(err, domain.ErrCodeNoSuchDNSZone) {
-				if is404Error(err) {
+			if err != nil {
+				if errorCheck(err, domain.ErrCodeNoSuchDNSZone) {
 					return nil
 				}
-				return diag.FromErr(err)
+				return diag.FromErr(fmt.Errorf("failed to wait for dns zone before deleting: %w", err))
 			}
 
 			_, err = domainAPI.DeleteDNSZone(&domain.DeleteDNSZoneRequest{

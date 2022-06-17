@@ -100,7 +100,7 @@ func resourceScalewayInstanceIPUpdate(ctx context.Context, d *schema.ResourceDat
 	}
 
 	if d.HasChange("tags") {
-		req.Tags = scw.StringsPtr(expandStrings(d.Get("tags")))
+		req.Tags = expandUpdatedStringsPtr(d.Get("tags"))
 	}
 
 	_, err = instanceAPI.UpdateIP(req, scw.WithContext(ctx))
@@ -121,7 +121,6 @@ func resourceScalewayInstanceIPRead(ctx context.Context, d *schema.ResourceData,
 		IP:   ID,
 		Zone: zone,
 	}, scw.WithContext(ctx))
-
 	if err != nil {
 		// We check for 403 because instance API returns 403 for a deleted IP
 		if is404Error(err) || is403Error(err) {

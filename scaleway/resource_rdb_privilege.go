@@ -22,6 +22,10 @@ func resourceScalewayRdbPrivilege() *schema.Resource {
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 		Timeouts: &schema.ResourceTimeout{
+			Create:  schema.DefaultTimeout(defaultRdbInstanceTimeout),
+			Read:    schema.DefaultTimeout(defaultRdbInstanceTimeout),
+			Update:  schema.DefaultTimeout(defaultRdbInstanceTimeout),
+			Delete:  schema.DefaultTimeout(defaultRdbInstanceTimeout),
 			Default: schema.DefaultTimeout(defaultRdbInstanceTimeout),
 		},
 		SchemaVersion: 0,
@@ -144,7 +148,6 @@ func resourceScalewayRdbPrivilegeRead(ctx context.Context, d *schema.ResourceDat
 		DatabaseName: &dbName,
 		UserName:     &userName,
 	}, scw.WithContext(ctx))
-
 	if err != nil {
 		if is404Error(err) {
 			d.SetId("")
@@ -156,7 +159,7 @@ func resourceScalewayRdbPrivilegeRead(ctx context.Context, d *schema.ResourceDat
 	if len(res.Privileges) == 0 {
 		return diag.FromErr(fmt.Errorf("couldn't retrieve privileges for user[%s] on database [%s]", userName, dbName))
 	}
-	var privilege = res.Privileges[0]
+	privilege := res.Privileges[0]
 	_ = d.Set("database_name", privilege.DatabaseName)
 	_ = d.Set("user_name", privilege.UserName)
 	_ = d.Set("permission", privilege.Permission)
@@ -259,7 +262,7 @@ func resourceScalewayRdbPrivilegeDelete(ctx context.Context, d *schema.ResourceD
 		return diag.FromErr(err)
 	}
 
-	if listUsers != nil || len(listUsers.Users) == 0 {
+	if listUsers != nil && len(listUsers.Users) == 0 {
 		d.SetId("")
 		return nil
 	}
@@ -288,7 +291,7 @@ func resourceScalewayRdbPrivilegeDelete(ctx context.Context, d *schema.ResourceD
 			return resource.NonRetryableError(errUserExist)
 		}
 
-		if listUsers != nil || len(listUsers.Users) == 0 {
+		if listUsers != nil && len(listUsers.Users) == 0 {
 			d.SetId("")
 			return nil
 		}

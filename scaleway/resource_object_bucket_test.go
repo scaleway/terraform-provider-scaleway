@@ -398,7 +398,7 @@ func TestAccScalewayObjectBucket_Cors_Update(t *testing.T) {
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
 
-	resourceName := "scaleway_object_bucket.bucket-destroy-force"
+	resourceName := "scaleway_object_bucket.bucket-cors-update"
 	bucketName := sdkacctest.RandomWithPrefix("test-acc-scaleway-object-bucket-cors-update")
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
@@ -407,7 +407,7 @@ func TestAccScalewayObjectBucket_Cors_Update(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
-					resource "scaleway_object_bucket" "bucket-destroy-force" {
+					resource "scaleway_object_bucket" "bucket-cors-update" {
 						name = %[1]q
 						cors_rule {
 							allowed_headers = ["*"]
@@ -431,45 +431,39 @@ func TestAccScalewayObjectBucket_Cors_Update(t *testing.T) {
 							},
 						},
 					),
-					func(state *terraform.State) error {
-						rs, ok := state.RootModule().Resources[resourceName]
-						if !ok {
-							return fmt.Errorf("not found: %s", resourceName)
-						}
-
-						s3Client, err := newS3ClientFromMeta(tt.Meta)
-						if err != nil {
-							return err
-						}
-						_, err = s3Client.PutBucketCors(&s3.PutBucketCorsInput{
-							Bucket: scw.StringPtr(rs.Primary.Attributes["name"]),
-							CORSConfiguration: &s3.CORSConfiguration{
-								CORSRules: []*s3.CORSRule{
-									{
-										AllowedHeaders: []*string{scw.StringPtr("*")},
-										AllowedMethods: []*string{scw.StringPtr("GET")},
-										AllowedOrigins: []*string{scw.StringPtr("https://www.example.com")},
-									},
-								},
-							},
-						})
-						if err != nil && !isS3Err(err, "NoSuchCORSConfiguration", "") {
-							return err
-						}
-						return nil
-					},
 				),
-				ExpectNonEmptyPlan: true,
-			},
-			{
-				ResourceName:            resourceName,
-				ImportState:             true,
-				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"force_destroy", "acl"},
 			},
 			{
 				Config: fmt.Sprintf(`
-					resource "scaleway_object_bucket" "bucket" {
+					resource "scaleway_object_bucket" "bucket-cors-update" {
+						name = %[1]q
+						cors_rule {
+							allowed_headers = ["*"]
+							allowed_methods = ["PUT", "POST", "GET"]
+							allowed_origins = ["https://www.example.com"]
+							expose_headers  = ["x-amz-server-side-encryption", "ETag"]
+							max_age_seconds = 3000
+						}
+					}`, bucketName),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayObjectBucketExists(tt, resourceName),
+					testAccCheckScalewayObjectBucketCors(tt,
+						resourceName,
+						[]*s3.CORSRule{
+							{
+								AllowedHeaders: []*string{scw.StringPtr("*")},
+								AllowedMethods: []*string{scw.StringPtr("PUT"), scw.StringPtr("POST"), scw.StringPtr("GET")},
+								AllowedOrigins: []*string{scw.StringPtr("https://www.example.com")},
+								ExposeHeaders:  []*string{scw.StringPtr("x-amz-server-side-encryption"), scw.StringPtr("ETag")},
+								MaxAgeSeconds:  scw.Int64Ptr(3000),
+							},
+						},
+					),
+				),
+			},
+			{
+				Config: fmt.Sprintf(`
+					resource "scaleway_object_bucket" "bucket-cors-update" {
 						name = %[1]q
 						cors_rule {
 							allowed_headers = ["*"]
@@ -504,6 +498,7 @@ func TestAccScalewayObjectBucket_Cors_Delete(t *testing.T) {
 	}
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
+	ctx := context.Background()
 
 	resourceName := "scaleway_object_bucket.bucket"
 	bucketName := sdkacctest.RandomWithPrefix("test-acc-scaleway-object-bucket-cors-delete")
@@ -518,7 +513,7 @@ func TestAccScalewayObjectBucket_Cors_Delete(t *testing.T) {
 			if err != nil {
 				return err
 			}
-			_, err = conn.DeleteBucketCorsWithContext(tt.ctx, &s3.DeleteBucketCorsInput{
+			_, err = conn.DeleteBucketCorsWithContext(ctx, &s3.DeleteBucketCorsInput{
 				Bucket: scw.StringPtr(rs.Primary.Attributes["name"]),
 			})
 			if err != nil && !isS3Err(err, ErrCodeNoSuchCORSConfiguration, "") {
@@ -588,6 +583,8 @@ func TestAccScalewayObjectBucket_Cors_EmptyOrigin(t *testing.T) {
 
 func testAccCheckScalewayObjectBucketCors(tt *TestTools, n string, corsRules []*s3.CORSRule) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
+		ctx := context.Background()
+
 		rs := s.RootModule().Resources[n]
 		bucketName := rs.Primary.Attributes["name"]
 		s3Client, err := newS3ClientFromMeta(tt.Meta)
@@ -595,7 +592,7 @@ func testAccCheckScalewayObjectBucketCors(tt *TestTools, n string, corsRules []*
 			return err
 		}
 
-		_, err = s3Client.HeadBucketWithContext(tt.ctx, &s3.HeadBucketInput{
+		_, err = s3Client.HeadBucketWithContext(ctx, &s3.HeadBucketInput{
 			Bucket: scw.StringPtr(bucketName),
 		})
 		if err != nil {
@@ -746,7 +743,6 @@ func testAccCheckBucketLifecycleConfigurationExists(tt *TestTools, n string) res
 		output, err := retryOnAWSCode(context.Background(), ErrCodeNoSuchLifecycleConfiguration, func() (interface{}, error) {
 			return s3Client.GetBucketLifecycleConfiguration(input)
 		})
-
 		if err != nil {
 			return err
 		}

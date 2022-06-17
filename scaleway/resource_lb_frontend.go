@@ -23,6 +23,9 @@ func resourceScalewayLbFrontend() *schema.Resource {
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 		Timeouts: &schema.ResourceTimeout{
+			Create:  schema.DefaultTimeout(defaultLbLbTimeout),
+			Update:  schema.DefaultTimeout(defaultLbLbTimeout),
+			Delete:  schema.DefaultTimeout(defaultLbLbTimeout),
 			Default: schema.DefaultTimeout(defaultLbLbTimeout),
 		},
 		SchemaVersion: 1,
@@ -255,7 +258,7 @@ func resourceScalewayLbFrontendRead(ctx context.Context, d *schema.ResourceData,
 		_ = d.Set("certificate_ids", flattenSliceIDs(frontend.CertificateIDs, zone))
 	}
 
-	//read related acls.
+	// read related acls.
 	resACL, err := lbAPI.ListACLs(&lbSDK.ZonedAPIListACLsRequest{
 		Zone:       zone,
 		FrontendID: ID,
@@ -269,19 +272,19 @@ func resourceScalewayLbFrontendRead(ctx context.Context, d *schema.ResourceData,
 	return nil
 }
 
-func flattenLBACLs(ACLs []*lbSDK.ACL) interface{} {
-	sort.Slice(ACLs, func(i, j int) bool {
-		return ACLs[i].Index < ACLs[j].Index
+func flattenLBACLs(acls []*lbSDK.ACL) interface{} {
+	sort.Slice(acls, func(i, j int) bool {
+		return acls[i].Index < acls[j].Index
 	})
-	rawACLs := make([]interface{}, 0, len(ACLs))
-	for _, apiACL := range ACLs {
+	rawACLs := make([]interface{}, 0, len(acls))
+	for _, apiACL := range acls {
 		rawACLs = append(rawACLs, flattenLbACL(apiACL))
 	}
 	return rawACLs
 }
 
 func resourceScalewayLbFrontendUpdateACL(ctx context.Context, d *schema.ResourceData, lbAPI *lbSDK.ZonedAPI, zone scw.Zone, frontendID string) diag.Diagnostics {
-	//Fetch existing acl from the api. and convert it to a hashmap with index as key
+	// Fetch existing acl from the api. and convert it to a hashmap with index as key
 	resACL, err := lbAPI.ListACLs(&lbSDK.ZonedAPIListACLsRequest{
 		Zone:       zone,
 		FrontendID: frontendID,
@@ -294,21 +297,21 @@ func resourceScalewayLbFrontendUpdateACL(ctx context.Context, d *schema.Resource
 		apiACLs[acl.Index] = acl
 	}
 
-	//convert state acl and sanitize them a bit
+	// convert state acl and sanitize them a bit
 	newACL := expandsLBACLs(d.Get("acl"))
 
-	//loop
+	// loop
 	for index, stateACL := range newACL {
 		key := int32(index) + 1
 		if apiACL, found := apiACLs[key]; found {
-			//there is an old acl with the same key. Remove it from array to mark that we've dealt with it
+			// there is an old acl with the same key. Remove it from array to mark that we've dealt with it
 			delete(apiACLs, key)
 
-			//if the state acl doesn't specify a name, set it to the same as the existing rule
+			// if the state acl doesn't specify a name, set it to the same as the existing rule
 			if stateACL.Name == "" {
 				stateACL.Name = apiACL.Name
 			}
-			//Verify if their values are the same and ignore if that's the case, update otherwise
+			// Verify if their values are the same and ignore if that's the case, update otherwise
 			if aclEquals(stateACL, apiACL) {
 				continue
 			}
@@ -325,7 +328,7 @@ func resourceScalewayLbFrontendUpdateACL(ctx context.Context, d *schema.Resource
 			}
 			continue
 		}
-		//old acl doesn't exist, create a new one
+		// old acl doesn't exist, create a new one
 		_, err = lbAPI.CreateACL(&lbSDK.ZonedAPICreateACLRequest{
 			Zone:       zone,
 			FrontendID: frontendID,
@@ -338,7 +341,7 @@ func resourceScalewayLbFrontendUpdateACL(ctx context.Context, d *schema.Resource
 			return diag.FromErr(err)
 		}
 	}
-	//we've finished with all new acl, delete any remaining old one which were not dealt with yet
+	// we've finished with all new acl, delete any remaining old one which were not dealt with yet
 	for _, acl := range apiACLs {
 		err = lbAPI.DeleteACL(&lbSDK.ZonedAPIDeleteACLRequest{
 			Zone:  zone,
@@ -403,7 +406,6 @@ func resourceScalewayLbFrontendUpdate(ctx context.Context, d *schema.ResourceDat
 		return diag.FromErr(err)
 	}
 
-	//update acl
 	diagnostics := resourceScalewayLbFrontendUpdateACL(ctx, d, lbAPI, zone, ID)
 	if diagnostics != nil {
 		return diagnostics
