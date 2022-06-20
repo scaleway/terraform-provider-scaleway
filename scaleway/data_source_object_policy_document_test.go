@@ -530,54 +530,50 @@ func TestAccIAMPolicyDocumentDataSource_override(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: `
-data "scaleway_object_policy_document" "override" {
-  statement {
-    sid = "SidToOverwrite"
+					data "scaleway_object_policy_document" "override" {
+  						statement {
+    						sid = "SidToOverwrite"
+    						actions   = ["s3:*"]
+    						resources = ["*"]
+  						}
+					}
 
-    actions   = ["s3:*"]
-    resources = ["*"]
-  }
-}
+					data "scaleway_object_policy_document" "test_override" {
+  						override_json = data.scaleway_object_policy_document.override.json
 
-data "scaleway_object_policy_document" "test_override" {
-  override_json = data.scaleway_object_policy_document.override.json
+						statement {
+							actions   = ["ec2:*"]
+							resources = ["*"]
+						}
 
-  statement {
-    actions   = ["ec2:*"]
-    resources = ["*"]
-  }
-
-  statement {
-    sid = "SidToOverwrite"
-
-    actions = ["s3:*"]
-
-    resources = [
-      "arn:${data.aws_partition.current.partition}:s3:::somebucket",
-      "arn:${data.aws_partition.current.partition}:s3:::somebucket/*",
-    ]
-  }
-}
-`,
+						statement {
+							sid = "SidToOverwrite"
+    						actions = ["s3:*"]
+    						resources = [
+      							"arn:${data.aws_partition.current.partition}:s3:::somebucket",
+      							"arn:${data.aws_partition.current.partition}:s3:::somebucket/*",
+    						]
+  						}
+					}`,
 				Check: resource.ComposeTestCheckFunc(
 					CheckResourceAttrEquivalentJSON("data.scaleway_object_policy_document.test_override", "json",
 						`{
-  "Version": "2012-10-17",
-  "Statement": [
-    {
-      "Sid": "",
-      "Effect": "Allow",
-      "Action": "ec2:*",
-      "Resource": "*"
-    },
-    {
-      "Sid": "SidToOverwrite",
-      "Effect": "Allow",
-      "Action": "s3:*",
-      "Resource": "*"
-    }
-  ]
-}`,
+						  "Version": "2012-10-17",
+						  "Statement": [
+							{
+							  "Sid": "",
+							  "Effect": "Allow",
+							  "Action": "ec2:*",
+							  "Resource": "*"
+							},
+							{
+							  "Sid": "SidToOverwrite",
+							  "Effect": "Allow",
+							  "Action": "s3:*",
+							  "Resource": "*"
+							}
+						  ]
+						}`,
 					),
 				),
 			},
@@ -594,46 +590,45 @@ func TestAccIAMPolicyDocumentDataSource_overrideList(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: `
-data "scaleway_object_policy_document" "policy_a" {
-  statement {
-    sid     = ""
-    effect  = "Allow"
-    actions = ["foo:ActionOne"]
-  }
+					data "scaleway_object_policy_document" "policy_a" {
+  						statement {
+							sid     = ""
+							effect  = "Allow"
+							actions = ["foo:ActionOne"]
+  						}
 
-  statement {
-    sid     = "overrideSid"
-    effect  = "Allow"
-    actions = ["bar:ActionOne"]
-  }
-}
+						statement {
+    						sid     = "overrideSid"
+    						effect  = "Allow"
+    						actions = ["bar:ActionOne"]
+  						}
+					}
 
-data "scaleway_object_policy_document" "policy_b" {
-  statement {
-    sid     = "validSid"
-    effect  = "Deny"
-    actions = ["foo:ActionTwo"]
-  }
-}
+					data "scaleway_object_policy_document" "policy_b" {
+						statement {
+							sid     = "validSid"
+							effect  = "Deny"
+							actions = ["foo:ActionTwo"]
+					  	}
+					}
 
-data "scaleway_object_policy_document" "policy_c" {
-  statement {
-    sid     = "overrideSid"
-    effect  = "Deny"
-    actions = ["bar:ActionOne"]
-  }
-}
+					data "scaleway_object_policy_document" "policy_c" {
+  						statement {
+    						sid     = "overrideSid"
+    						effect  = "Deny"
+    						actions = ["bar:ActionOne"]
+  						}
+					}
 
-data "scaleway_object_policy_document" "test_override_list" {
-  version = "2012-10-17"
+					data "scaleway_object_policy_document" "test_override_list" {
+  						version = "2012-10-17"
 
-  override_policy_documents = [
-    data.scaleway_object_policy_document.policy_a.json,
-    data.scaleway_object_policy_document.policy_b.json,
-    data.scaleway_object_policy_document.policy_c.json
-  ]
-}
-`,
+  						override_policy_documents = [
+    						data.scaleway_object_policy_document.policy_a.json,
+    						data.scaleway_object_policy_document.policy_b.json,
+    						data.scaleway_object_policy_document.policy_c.json
+  						]
+					}`,
 				Check: resource.ComposeTestCheckFunc(
 					CheckResourceAttrEquivalentJSON("data.scaleway_object_policy_document.test_override_list", "json",
 						`{
@@ -672,46 +667,45 @@ func TestAccIAMPolicyDocumentDataSource_noStatementMerge(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: `
-data "scaleway_object_policy_document" "source" {
-  statement {
-    sid       = ""
-    actions   = ["ec2:DescribeAccountAttributes"]
-    resources = ["*"]
-  }
-}
+					data "scaleway_object_policy_document" "source" {
+  						statement {
+    						sid       = ""
+    						actions   = ["ec2:DescribeAccountAttributes"]
+    						resources = ["*"]
+  						}
+					}
 
-data "scaleway_object_policy_document" "override" {
-  statement {
-    sid       = "OverridePlaceholder"
-    actions   = ["s3:GetObject"]
-    resources = ["*"]
-  }
-}
+					data "scaleway_object_policy_document" "override" {
+  						statement {
+    						sid       = "OverridePlaceholder"
+    						actions   = ["s3:GetObject"]
+    						resources = ["*"]
+  						}
+					}
 
-data "scaleway_object_policy_document" "yak_politik" {
-  source_json   = data.scaleway_object_policy_document.source.json
-  override_json = data.scaleway_object_policy_document.override.json
-}
-`,
+					data "scaleway_object_policy_document" "yak_politik" {
+  						source_json   = data.scaleway_object_policy_document.source.json
+  						override_json = data.scaleway_object_policy_document.override.json
+					}`,
 				Check: resource.ComposeTestCheckFunc(
 					CheckResourceAttrEquivalentJSON("data.scaleway_object_policy_document.yak_politik", "json",
 						`{
-  "Version": "2012-10-17",
-  "Statement": [
-    {
-      "Sid": "",
-      "Effect": "Allow",
-      "Action": "ec2:DescribeAccountAttributes",
-      "Resource": "*"
-    },
-    {
-      "Sid": "OverridePlaceholder",
-      "Effect": "Allow",
-      "Action": "s3:GetObject",
-      "Resource": "*"
-    }
-  ]
-}`,
+						  "Version": "2012-10-17",
+						  "Statement": [
+							{
+							  "Sid": "",
+							  "Effect": "Allow",
+							  "Action": "ec2:DescribeAccountAttributes",
+							  "Resource": "*"
+							},
+							{
+							  "Sid": "OverridePlaceholder",
+							  "Effect": "Allow",
+							  "Action": "s3:GetObject",
+							  "Resource": "*"
+							}
+						  ]
+						}`,
 					),
 				),
 			},
@@ -728,40 +722,39 @@ func TestAccIAMPolicyDocumentDataSource_noStatementOverride(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: `
-data "scaleway_object_policy_document" "source" {
-  statement {
-    sid       = "OverridePlaceholder"
-    actions   = ["ec2:DescribeAccountAttributes"]
-    resources = ["*"]
-  }
-}
+					data "scaleway_object_policy_document" "source" {
+  						statement {
+    						sid       = "OverridePlaceholder"
+    						actions   = ["ec2:DescribeAccountAttributes"]
+    						resources = ["*"]
+  						}
+					}
 
-data "scaleway_object_policy_document" "override" {
-  statement {
-    sid       = "OverridePlaceholder"
-    actions   = ["s3:GetObject"]
-    resources = ["*"]
-  }
-}
+					data "scaleway_object_policy_document" "override" {
+  						statement {
+    						sid       = "OverridePlaceholder"
+    						actions   = ["s3:GetObject"]
+    						resources = ["*"]
+  						}
+					}
 
-data "scaleway_object_policy_document" "yak_politik" {
-  source_json   = data.scaleway_object_policy_document.source.json
-  override_json = data.scaleway_object_policy_document.override.json
-}
-`,
+					data "scaleway_object_policy_document" "yak_politik" {
+  						source_json   = data.scaleway_object_policy_document.source.json
+  						override_json = data.scaleway_object_policy_document.override.json
+					}`,
 				Check: resource.ComposeTestCheckFunc(
 					CheckResourceAttrEquivalentJSON("data.scaleway_object_policy_document.yak_politik", "json",
 						`{
-  "Version": "2012-10-17",
-  "Statement": [
-    {
-      "Sid": "OverridePlaceholder",
-      "Effect": "Allow",
-      "Action": "s3:GetObject",
-      "Resource": "*"
-    }
-  ]
-}`,
+						  "Version": "2012-10-17",
+						  "Statement": [
+							{
+							  "Sid": "OverridePlaceholder",
+							  "Effect": "Allow",
+							  "Action": "s3:GetObject",
+							  "Resource": "*"
+							}
+						  ]
+						}`,
 					),
 				),
 			},
