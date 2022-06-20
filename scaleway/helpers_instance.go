@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"sort"
+	"strconv"
 	"time"
 
 	"github.com/dustin/go-humanize"
@@ -494,4 +495,62 @@ func waitForInstanceImage(ctx context.Context, api *instance.API, zone scw.Zone,
 	}, scw.WithContext(ctx))
 
 	return image, err
+}
+
+func getExtraVolumesSpecsFromSnapshots(snapIDs []interface{}, instanceAPI *instance.API, ctx context.Context) ([]*instance.GetSnapshotResponse, error) {
+	snapResponses := []*instance.GetSnapshotResponse(nil)
+	for _, snapID := range snapIDs {
+		zone, id, err := parseZonedID(snapID.(string))
+		snapshot, err := instanceAPI.GetSnapshot(&instance.GetSnapshotRequest{
+			Zone:       zone,
+			SnapshotID: id,
+		}, scw.WithContext(ctx))
+		if err != nil {
+			return snapResponses, fmt.Errorf("extra volumes : could not find snapshot with id %s", snapID)
+		}
+		snapResponses = append(snapResponses, snapshot)
+	}
+	return snapResponses, nil
+}
+
+func expandInstanceImageExtraVolumes(snapshots []*instance.GetSnapshotResponse) map[string]*instance.VolumeTemplate {
+	volTemplates := map[string]*instance.VolumeTemplate{}
+	if snapshots == nil {
+		return volTemplates
+	}
+	for i, snapshot := range snapshots {
+		snap := snapshot.Snapshot
+		volTemplate := &instance.VolumeTemplate{
+			ID:         snap.BaseVolume.ID,
+			Name:       snap.BaseVolume.Name,
+			Size:       snap.Size,
+			VolumeType: snap.VolumeType,
+			//Project:    &snap.Project,
+		}
+		volTemplates[strconv.Itoa(i)] = volTemplate
+	}
+	return volTemplates
+}
+
+func flattenInstanceImageExtraVolumes(volumes map[string]*instance.Volume) interface{} {
+	volumesFlat := []map[string]interface{}(nil)
+	for _, volume := range volumes {
+		volumesFlat = append(volumesFlat, map[string]interface{}{
+			"id":                volume.ID,
+			"name":              volume.Name,
+			"export_uri":        volume.ExportURI,
+			"size":              volume.Size,
+			"volume_type":       volume.VolumeType,
+			"creation_date":     volume.CreationDate,
+			"modification_date": volume.ModificationDate,
+			"organization":      volume.Organization,
+			"project":           volume.Project,
+			"tags":              volume.Tags,
+			"state":             volume.State,
+			"zone":              volume.Zone,
+			"server.id":         volume.Server.ID,
+			"server.name":       volume.Server.Name,
+		})
+	}
+	return volumesFlat
 }

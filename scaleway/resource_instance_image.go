@@ -72,11 +72,6 @@ func resourceScalewayInstanceImage() *schema.Resource {
 			//		},
 			//	},
 			// },
-			"project": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "Project ID of the image",
-			},
 			"tags": {
 				Type:        schema.TypeList,
 				Optional:    true,
@@ -88,15 +83,11 @@ func resourceScalewayInstanceImage() *schema.Resource {
 			"public": {
 				Type:        schema.TypeBool,
 				Optional:    true,
-				Computed:    true, // TODO : maybe ? to set it to the default value
+				Default:     false,
 				Description: "If true, the image will be public",
+				//Computed:    true, // TODO : maybe ? to set it to the default value
 			},
 			// Computed
-			// "image_id": { // TODO: maybe we only need that in datasource
-			//	Type:        schema.TypeString,
-			//	Optional:    true,
-			//	Description: "ID of the image",
-			// },
 			"creation_date": {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -108,11 +99,6 @@ func resourceScalewayInstanceImage() *schema.Resource {
 				Description: "The date and time of the last modification of the Redis cluster",
 			},
 			"from_server_id": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "??", // TODO: find a proper description of this attribute
-			},
-			"organization": {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "??", // TODO: find a proper description of this attribute
@@ -129,8 +115,8 @@ func resourceScalewayInstanceImage() *schema.Resource {
 			},
 			// Common
 			"zone":            zoneSchema(),
-			"project_id":      projectIDSchema(),      // TODO: do we need that ?
-			"organization_id": organizationIDSchema(), // TODO: do we need that ?
+			"project_id":      projectIDSchema(),
+			"organization_id": organizationIDSchema(),
 		},
 	}
 }
@@ -150,14 +136,18 @@ func resourceScalewayInstanceImageCreate(ctx context.Context, d *schema.Resource
 		Public:     false,
 	}
 
-	defaultBootscript, bootscriptExists := d.GetOk("default_bootscript_id")
-	if bootscriptExists {
-		req.DefaultBootscript = expandStrings(defaultBootscript)[0]
-	}
-	//extraVolumesIds, volumesExist := d.GetOk("additional_volumes_ids")
-	//if volumesExist {
-	//	req.ExtraVolumes = expand(extraVolumesIds)
+	//defaultBootscript, bootscriptExists := d.GetOk("default_bootscript_id")
+	//if bootscriptExists {
+	//	req.DefaultBootscript = expandStrings(defaultBootscript)[0]
 	//}
+	extraVolumesIds, volumesExist := d.GetOk("additional_volume_ids")
+	if volumesExist {
+		snapResponses, err := getExtraVolumesSpecsFromSnapshots(extraVolumesIds.([]interface{}), instanceAPI, ctx)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		req.ExtraVolumes = expandInstanceImageExtraVolumes(snapResponses)
+	}
 	tags, tagsExist := d.GetOk("tags")
 	if tagsExist {
 		req.Tags = expandStrings(tags)
@@ -205,14 +195,49 @@ func resourceScalewayInstanceImageRead(ctx context.Context, d *schema.ResourceDa
 	}
 
 	_ = d.Set("name", image.Image.Name)
-	_ = d.Set("creation_date", image.Image.CreationDate.Format(time.RFC3339))
-	_ = d.Set("tags", image.Image.Tags)
+	_ = d.Set("root_volume_id", newZonedIDString(image.Image.Zone, image.Image.RootVolume.ID))
+	_ = d.Set("architecture", image.Image.Arch)
 	_ = d.Set("default_bootscript_id", image.Image.DefaultBootscript)
+	if _, extraVolumesExist := d.GetOk("additional_volume_ids"); extraVolumesExist == true {
+		//additionalVolumeIDs := []string(nil)
+		//for _, volume := range orderVolumes(image.Image.ExtraVolumes) {
+		//	additionalVolumeIDs = append(additionalVolumeIDs, volume.ID)
+		//}
+		//_ = d.Set("additional_volume_ids", additionalVolumeIDs)
+		_ = d.Set("additional_volume_ids", flattenInstanceImageExtraVolumes(image.Image.ExtraVolumes))
+	}
+	_ = d.Set("tags", image.Image.Tags)
+	_ = d.Set("public", image.Image.Public)
+	_ = d.Set("creation_date", image.Image.CreationDate.Format(time.RFC3339))
+	_ = d.Set("modification_date", image.Image.ModificationDate.Format(time.RFC3339))
+	_ = d.Set("from_server_id", image.Image.FromServer)
+	_ = d.Set("state", image.Image.State)
+	//_ = d.Set("location", image.Image.Lo)
+	_ = d.Set("zone", image.Image.Zone)
+	_ = d.Set("project_id", image.Image.Project)
+	_ = d.Set("organization_id", image.Image.Organization)
 
 	return nil
 }
 
 func resourceScalewayInstanceImageUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	//instanceAPI, zone, id, err := instanceAPIWithZoneAndID(meta, d.Id())
+	//if err != nil {
+	//	return diag.FromErr(err)
+	//}
+	////TODO: UpdateImage types are not implemented !!
+	//req := &instance.UpdateImageRequest{
+	//	ImageID: id,
+	//	Zone:    zone,
+	//	Name:    scw.StringPtr(d.Get("name").(string)),
+	//	Tags:    scw.StringsPtr([]string{}),
+	//}
+	//
+	//_, err = instanceAPI.UpdateImage(req, scw.WithContext(ctx))
+	//if err != nil {
+	//	return diag.FromErr(fmt.Errorf("couldn't update image: %s", err))
+	//}
+
 	return resourceScalewayInstanceImageRead(ctx, d, meta)
 }
 

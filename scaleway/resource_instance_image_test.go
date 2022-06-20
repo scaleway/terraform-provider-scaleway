@@ -39,6 +39,7 @@ func TestAccScalewayInstanceImage_BlockVolume(t *testing.T) {
 						root_volume_id = scaleway_instance_snapshot.main.id
 						architecture = "arm"
 						tags = ["tag1", "tag2", "tag3"]
+						public = true
 						zone = "nl-ams-1"
 					}
 				`,
@@ -50,7 +51,15 @@ func TestAccScalewayInstanceImage_BlockVolume(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_instance_image.main", "tags.0", "tag1"),
 					resource.TestCheckResourceAttr("scaleway_instance_image.main", "tags.1", "tag2"),
 					resource.TestCheckResourceAttr("scaleway_instance_image.main", "tags.2", "tag3"),
+					resource.TestCheckResourceAttr("scaleway_instance_image.main", "public", "true"),
+					resource.TestCheckResourceAttrSet("scaleway_instance_image.main", "creation_date"),
+					resource.TestCheckResourceAttrSet("scaleway_instance_image.main", "modification_date"),
+					resource.TestCheckResourceAttrPair("scaleway_instance_image.main", "modification_date", "scaleway_instance_image.main", "creation_date"),
+					resource.TestCheckResourceAttrSet("scaleway_instance_image.main", "state"),
+					resource.TestCheckResourceAttrSet("scaleway_instance_image.main", "organization_id"),
+					resource.TestCheckResourceAttrSet("scaleway_instance_image.main", "project_id"),
 					resource.TestCheckResourceAttrPair("scaleway_instance_image.main", "root_volume_id", "scaleway_instance_snapshot.main", "id"),
+					//resource.TestCheckResourceAttrSet("scaleway_instance_image.main", "location"),
 				),
 			},
 		},
@@ -65,6 +74,7 @@ func TestAccScalewayInstanceImage_Server(t *testing.T) {
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			testAccCheckScalewayInstanceImageDestroy(tt),
+			testAccCheckScalewayInstanceSnapshotDestroy(tt),
 			testAccCheckScalewayInstanceServerDestroy(tt),
 		),
 		Steps: []resource.TestStep{
@@ -89,6 +99,7 @@ func TestAccScalewayInstanceImage_Server(t *testing.T) {
 					testAccCheckScalewayInstanceImageExists(tt, "scaleway_instance_image.main"),
 					resource.TestCheckResourceAttrSet("scaleway_instance_image.main", "name"),
 					resource.TestCheckResourceAttr("scaleway_instance_image.main", "architecture", "x86_64"),
+					resource.TestCheckResourceAttr("scaleway_instance_image.main", "public", "false"),
 					resource.TestCheckResourceAttrPair("scaleway_instance_image.main", "root_volume_id", "scaleway_instance_snapshot.main", "id"),
 				),
 			},
@@ -148,8 +159,8 @@ func TestAccScalewayInstanceImage_SeveralVolumes(t *testing.T) {
 					resource.TestCheckResourceAttrSet("scaleway_instance_image.main", "name"),
 					resource.TestCheckResourceAttr("scaleway_instance_image.main", "architecture", "x86_64"),
 					resource.TestCheckResourceAttrPair("scaleway_instance_image.main", "root_volume_id", "scaleway_instance_snapshot.snap00", "id"),
-					resource.TestCheckResourceAttrPair("scaleway_instance_image.main", "additional_volume_ids.0", "scaleway_instance_snapshot.snap01", "id"),
-					resource.TestCheckResourceAttrPair("scaleway_instance_image.main", "additional_volume_ids.1", "scaleway_instance_snapshot.snap02", "id"),
+					resource.TestCheckResourceAttrPair("scaleway_instance_image.main", "additional_volume_ids.0.id", "scaleway_instance_snapshot.snap01", "volume_id"),
+					resource.TestCheckResourceAttrPair("scaleway_instance_image.main", "additional_volume_ids.1.id", "scaleway_instance_snapshot.snap02", "volume_id"),
 				),
 			},
 		},
