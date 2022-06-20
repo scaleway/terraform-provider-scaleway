@@ -148,29 +148,29 @@ func TestAccIAMPolicyDocumentDataSource_source(t *testing.T) {
 		ProviderFactories: tt.ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: `
+				Config: fmt.Sprintf(`
 					data "scaleway_object_policy_document" "test" {
 						policy_id = "policy_id"
 					
 						statement {
 							sid = "1"
 							actions = [
-						  		"s3:ListAllMyBuckets",
-						  		"s3:GetBucketLocation",
+						  		"s3:DeleteObjectVersionTagging",
+						  		"s3:DeleteObjectTagging",
 							]
 							
 							resources = [
-						  		"arn:${data.aws_partition.current.partition}:s3:::*",
+						  		"%[1]s",
 							]
 					  	}
 					
 						statement {
 							actions = [
-						  	"s3:ListBucket",
+						  		"s3:ListBucket",
 							]
 					
 							resources = [
-						  		"arn:${data.aws_partition.current.partition}:s3:::foo",
+						  		"%[1]s",
 							]
 					
 							condition {
@@ -194,8 +194,8 @@ func TestAccIAMPolicyDocumentDataSource_source(t *testing.T) {
 							]
 					
 							resources = [
-								"arn:${data.aws_partition.current.partition}:s3:::foo/home/&{aws:username}",
-								"arn:${data.aws_partition.current.partition}:s3:::foo/home/&{aws:username}/*",
+								"%[1]s",
+								"%[1]s/*",
 							]
 					
 							principals {
@@ -210,13 +210,13 @@ func TestAccIAMPolicyDocumentDataSource_source(t *testing.T) {
 					  	statement {
 							effect        = "Deny"
 							not_actions   = ["s3:*"]
-							not_resources = ["arn:${data.aws_partition.current.partition}:s3:::*"]
+							not_resources = ["%[1]s"]
 					  	}
 					
 						# Normalization of wildcard principals
 					  	statement {
 							effect  = "Allow"
-							actions = ["kinesis:*"]
+							actions = ["s3:*"]
 					
 							principals {
 						  		type        = "AWS"
@@ -226,7 +226,7 @@ func TestAccIAMPolicyDocumentDataSource_source(t *testing.T) {
 					
 						statement {
 							effect  = "Allow"
-							actions = ["firehose:*"]
+							actions = ["s3:*"]
 					
 							principals {
 								type        = "*"
@@ -243,7 +243,7 @@ func TestAccIAMPolicyDocumentDataSource_source(t *testing.T) {
 							actions   = ["*"]
 							resources = ["*"]
 					  	}
-					}`,
+					}`, resourceName),
 				Check: resource.ComposeTestCheckFunc(
 					CheckResourceAttrEquivalentJSON("data.scaleway_object_policy_document.test_source", "json",
 						fmt.Sprintf(`{
@@ -352,13 +352,13 @@ func TestAccIAMPolicyDocumentDataSource_sourceList(t *testing.T) {
 						statement {
 							sid     = ""
 							effect  = "Allow"
-							actions = ["foo:ActionOne"]
+							actions = ["s3:AbortMultipartUpload"]
 					  	}
 					
 					  	statement {
 							sid     = "validSidOne"
 							effect  = "Allow"
-							actions = ["bar:ActionOne"]
+							actions = ["s3:DeleteBucketWebsite"]
 					  	}
 					}
 					
@@ -366,7 +366,7 @@ func TestAccIAMPolicyDocumentDataSource_sourceList(t *testing.T) {
 						statement {
 							sid     = "validSidTwo"
 							effect  = "Deny"
-							actions = ["foo:ActionTwo"]
+							actions = ["s3:DeleteObject"]
 					  	}
 					}
 
@@ -374,7 +374,7 @@ func TestAccIAMPolicyDocumentDataSource_sourceList(t *testing.T) {
   						statement {
 						    sid     = ""
     						effect  = "Allow"
-    						actions = ["bar:ActionTwo"]
+    						actions = ["s3:DeleteObjectTagging"]
   						}
 					}
 
@@ -395,22 +395,22 @@ func TestAccIAMPolicyDocumentDataSource_sourceList(t *testing.T) {
 							{
 							  "Sid": "",
 							  "Effect": "Allow",
-							  "Action": "foo:ActionOne"
+							  "Action": "s3:AbortMultipartUpload"
 							},
 							{
 							  "Sid": "validSidOne",
 							  "Effect": "Allow",
-							  "Action": "bar:ActionOne"
+							  "Action": "s3:DeleteBucketWebsite"
 							},
 							{
 							  "Sid": "validSidTwo",
 							  "Effect": "Deny",
-							  "Action": "foo:ActionTwo"
+							  "Action": "s3:DeleteObject"
 							},
 							{
 							  "Sid": "",
 							  "Effect": "Allow",
-							  "Action": "bar:ActionTwo"
+							  "Action": "s3:DeleteObjectTagging"
 							}
 						  ]
 						}`,
@@ -524,12 +524,13 @@ func TestAccIAMPolicyDocumentDataSource_sourceListConflicting(t *testing.T) {
 func TestAccIAMPolicyDocumentDataSource_override(t *testing.T) {
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
+	bucketName := "test-acc-iam-policy-document-data-source-override"
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: `
+				Config: fmt.Sprintf(`
 					data "scaleway_object_policy_document" "override" {
   						statement {
     						sid = "SidToOverwrite"
@@ -542,7 +543,7 @@ func TestAccIAMPolicyDocumentDataSource_override(t *testing.T) {
   						override_json = data.scaleway_object_policy_document.override.json
 
 						statement {
-							actions   = ["ec2:*"]
+							actions   = ["s3:*"]
 							resources = ["*"]
 						}
 
@@ -550,11 +551,11 @@ func TestAccIAMPolicyDocumentDataSource_override(t *testing.T) {
 							sid = "SidToOverwrite"
     						actions = ["s3:*"]
     						resources = [
-      							"arn:${data.aws_partition.current.partition}:s3:::somebucket",
-      							"arn:${data.aws_partition.current.partition}:s3:::somebucket/*",
+      							"%[1]s",
+      							"%[1]s/*",
     						]
   						}
-					}`,
+					}`, bucketName),
 				Check: resource.ComposeTestCheckFunc(
 					CheckResourceAttrEquivalentJSON("data.scaleway_object_policy_document.test_override", "json",
 						`{
@@ -563,7 +564,7 @@ func TestAccIAMPolicyDocumentDataSource_override(t *testing.T) {
 							{
 							  "Sid": "",
 							  "Effect": "Allow",
-							  "Action": "ec2:*",
+							  "Action": "s3:*",
 							  "Resource": "*"
 							},
 							{
@@ -594,13 +595,13 @@ func TestAccIAMPolicyDocumentDataSource_overrideList(t *testing.T) {
   						statement {
 							sid     = ""
 							effect  = "Allow"
-							actions = ["foo:ActionOne"]
+							actions = ["s3:AbortMultipartUpload"]
   						}
 
 						statement {
     						sid     = "overrideSid"
     						effect  = "Allow"
-    						actions = ["bar:ActionOne"]
+    						actions = ["s3:AbortMultipartUpload"]
   						}
 					}
 
@@ -608,7 +609,7 @@ func TestAccIAMPolicyDocumentDataSource_overrideList(t *testing.T) {
 						statement {
 							sid     = "validSid"
 							effect  = "Deny"
-							actions = ["foo:ActionTwo"]
+							actions = ["s3:DeleteBucketWebsite"]
 					  	}
 					}
 
@@ -616,7 +617,7 @@ func TestAccIAMPolicyDocumentDataSource_overrideList(t *testing.T) {
   						statement {
     						sid     = "overrideSid"
     						effect  = "Deny"
-    						actions = ["bar:ActionOne"]
+    						actions = ["s3:AbortMultipartUpload"]
   						}
 					}
 
@@ -637,17 +638,17 @@ func TestAccIAMPolicyDocumentDataSource_overrideList(t *testing.T) {
 								{
 									"Sid": "",
 									"Effect": "Allow",
-									"Action": "foo:ActionOne"
+									"Action": "s3:AbortMultipartUpload"
 								},
 								{
 								  "Sid": "overrideSid",
 								  "Effect": "Deny",
-								  "Action": "bar:ActionOne"
+								  "Action": "s3:AbortMultipartUpload"
 								},
 								{
 								  "Sid": "validSid",
 								  "Effect": "Deny",
-								  "Action": "foo:ActionTwo"
+								  "Action": "s3:DeleteBucketWebsite"
 								}
 							  ]
 							}`,
@@ -775,7 +776,7 @@ func TestAccIAMPolicyDocumentDataSource_duplicateSid(t *testing.T) {
 						statement {
 							sid       = "1"
 							effect    = "Allow"
-							actions   = ["ec2:DescribeAccountAttributes"]
+							actions   = ["s3:GetObjectVersionTagging"]
 							resources = ["*"]
 					  	}
 					
@@ -794,7 +795,7 @@ func TestAccIAMPolicyDocumentDataSource_duplicateSid(t *testing.T) {
 						statement {
 							sid       = ""
 							effect    = "Allow"
-							actions   = ["ec2:DescribeAccountAttributes"]
+							actions   = ["s3:GetObjectVersionTagging"]
 							resources = ["*"]
 					  	}
 					
@@ -813,7 +814,7 @@ func TestAccIAMPolicyDocumentDataSource_duplicateSid(t *testing.T) {
 							{
 							  "Sid": "",
 							  "Effect": "Allow",
-							  "Action": "ec2:DescribeAccountAttributes",
+							  "Action": "s3:GetObjectVersionTagging",
 							  "Resource": "*"
 							},
 							{
