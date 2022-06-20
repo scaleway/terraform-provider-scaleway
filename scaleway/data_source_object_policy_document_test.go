@@ -175,10 +175,10 @@ func TestAccIAMPolicyDocumentDataSource_source(t *testing.T) {
 					
 							condition {
 						  		test     = "StringLike"
-						  		variable = "s3:prefix"
+						  		variable = "aws:SourceIp"
 						  		values = [
-									"home/",
-									"home/&{aws:username}/",
+									"1.2.3.4",
+									"2.3.4.5",
 						  		]
 							}
 					
@@ -236,7 +236,7 @@ func TestAccIAMPolicyDocumentDataSource_source(t *testing.T) {
 					}
 					
 					data "scaleway_object_policy_document" "test_source" {
-						source_json = data.scaleway_object_policy_document.test.json
+						source_policy_documents = [data.scaleway_object_policy_document.test.json]
 					
 						statement {
 							sid       = "SourceJSONTest1"
@@ -269,9 +269,9 @@ func TestAccIAMPolicyDocumentDataSource_source(t *testing.T) {
 							  },
 							  "Condition": {
 								"StringLike": {
-								  "s3:prefix": [
-									"home/",
-									"home/${aws:username}/"
+								  "aws:SourceIp": [
+									"1.2.3.4",
+									"2.3.4.5"
 								  ]
 								}
 							  }
@@ -311,7 +311,7 @@ func TestAccIAMPolicyDocumentDataSource_source(t *testing.T) {
 			{
 				Config: `
 					data "scaleway_object_policy_document" "test_source_blank" {
-						source_json = ""
+						source_policy_documents = [""]
 					
 						statement {
 							sid       = "SourceJSONTest2"
@@ -439,7 +439,7 @@ func TestAccIAMPolicyDocumentDataSource_sourceConflicting(t *testing.T) {
 					}
 
 					data "scaleway_object_policy_document" "test_source_conflicting" {
-  						source_json = data.scaleway_object_policy_document.test_source.json
+  						source_policy_documents = [data.scaleway_object_policy_document.test_source.json]
 
 						statement {
 							sid       = "SourceJSONTestConflicting"
@@ -480,13 +480,13 @@ func TestAccIAMPolicyDocumentDataSource_sourceListConflicting(t *testing.T) {
 						statement {
 							sid     = ""
     						effect  = "Allow"
-    						actions = ["foo:ActionOne"]
+    						actions = ["s3:AbortMultipartUpload"]
   						}
 
 						statement {
 							sid     = "conflictSid"
 							effect  = "Allow"
-							actions = ["bar:ActionOne"]
+							actions = ["s3:DeleteBucketWebsite"]
 						}
 					}
 
@@ -494,7 +494,7 @@ func TestAccIAMPolicyDocumentDataSource_sourceListConflicting(t *testing.T) {
 						statement {
 							sid     = "validSid"
 							effect  = "Deny"
-							actions = ["foo:ActionTwo"]
+							actions = ["s3:DeleteObject"]
 					  	}
 					}
 
@@ -502,7 +502,7 @@ func TestAccIAMPolicyDocumentDataSource_sourceListConflicting(t *testing.T) {
   						statement {
     						sid     = "conflictSid"
     						effect  = "Allow"
-    						actions = ["bar:ActionTwo"]
+    						actions = ["s3:DeleteObjectTagging"]
   						}
 					}
 
@@ -540,7 +540,7 @@ func TestAccIAMPolicyDocumentDataSource_override(t *testing.T) {
 					}
 
 					data "scaleway_object_policy_document" "test_override" {
-  						override_json = data.scaleway_object_policy_document.override.json
+  						override_policy_documents = [data.scaleway_object_policy_document.override.json]
 
 						statement {
 							actions   = ["s3:*"]
@@ -671,7 +671,7 @@ func TestAccIAMPolicyDocumentDataSource_noStatementMerge(t *testing.T) {
 					data "scaleway_object_policy_document" "source" {
   						statement {
     						sid       = ""
-    						actions   = ["ec2:DescribeAccountAttributes"]
+    						actions   = ["s3:AbortMultipartUpload"]
     						resources = ["*"]
   						}
 					}
@@ -679,14 +679,14 @@ func TestAccIAMPolicyDocumentDataSource_noStatementMerge(t *testing.T) {
 					data "scaleway_object_policy_document" "override" {
   						statement {
     						sid       = "OverridePlaceholder"
-    						actions   = ["s3:GetObject"]
+    						actions   = ["s3:DeleteBucketWebsite"]
     						resources = ["*"]
   						}
 					}
 
 					data "scaleway_object_policy_document" "yak_politik" {
-  						source_json   = data.scaleway_object_policy_document.source.json
-  						override_json = data.scaleway_object_policy_document.override.json
+  						source_policy_documents   = [data.scaleway_object_policy_document.source.json]
+  						override_policy_documents = [data.scaleway_object_policy_document.override.json]
 					}`,
 				Check: resource.ComposeTestCheckFunc(
 					CheckResourceAttrEquivalentJSON("data.scaleway_object_policy_document.yak_politik", "json",
@@ -696,13 +696,13 @@ func TestAccIAMPolicyDocumentDataSource_noStatementMerge(t *testing.T) {
 							{
 							  "Sid": "",
 							  "Effect": "Allow",
-							  "Action": "ec2:DescribeAccountAttributes",
+							  "Action": "s3:AbortMultipartUpload",
 							  "Resource": "*"
 							},
 							{
 							  "Sid": "OverridePlaceholder",
 							  "Effect": "Allow",
-							  "Action": "s3:GetObject",
+							  "Action": "s3:DeleteBucketWebsite",
 							  "Resource": "*"
 							}
 						  ]
@@ -740,8 +740,8 @@ func TestAccIAMPolicyDocumentDataSource_noStatementOverride(t *testing.T) {
 					}
 
 					data "scaleway_object_policy_document" "yak_politik" {
-  						source_json   = data.scaleway_object_policy_document.source.json
-  						override_json = data.scaleway_object_policy_document.override.json
+  						source_policy_documents   = [data.scaleway_object_policy_document.source.json]
+  						override_policy_documents = [data.scaleway_object_policy_document.override.json]
 					}`,
 				Check: resource.ComposeTestCheckFunc(
 					CheckResourceAttrEquivalentJSON("data.scaleway_object_policy_document.yak_politik", "json",

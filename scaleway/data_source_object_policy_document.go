@@ -165,12 +165,6 @@ func dataSourceScalewayObjectPolicyDocument() *schema.Resource {
 func dataSourcePolicyDocumentRead(_ context.Context, d *schema.ResourceData, _ interface{}) diag.Diagnostics {
 	mergedDoc := &IAMPolicyDoc{}
 
-	if v, ok := d.GetOk("source_json"); ok {
-		if err := json.Unmarshal([]byte(v.(string)), mergedDoc); err != nil {
-			return diag.FromErr(err)
-		}
-	}
-
 	if v, ok := d.GetOk("source_policy_documents"); ok && len(v.([]interface{})) > 0 {
 		// generate sid map to assure there are no duplicates in source jsons
 		sidMap := make(map[string]struct{})
@@ -300,16 +294,6 @@ func dataSourcePolicyDocumentRead(_ context.Context, d *schema.ResourceData, _ i
 
 			mergedDoc.Merge(overrideDoc)
 		}
-	}
-
-	// merge in override_json
-	if v, ok := d.GetOk("override_json"); ok {
-		overrideDoc := &IAMPolicyDoc{}
-		if err := json.Unmarshal([]byte(v.(string)), overrideDoc); err != nil {
-			return diag.FromErr(err)
-		}
-
-		mergedDoc.Merge(overrideDoc)
 	}
 
 	jsonDoc, err := json.MarshalIndent(mergedDoc, "", "  ")
