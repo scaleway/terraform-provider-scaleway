@@ -202,6 +202,11 @@ func resourceScalewayFlexibleIPUpdate(ctx context.Context, d *schema.ResourceDat
 		}
 	}
 
+	flexibleIP, err = waitFlexibleIP(ctx, fipAPI, zone, ID, d.Timeout(schema.TimeoutUpdate))
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	return resourceScalewayFlexibleIPRead(ctx, d, meta)
 }
 func resourceScalewayFlexibleIPDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {

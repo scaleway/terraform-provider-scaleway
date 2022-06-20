@@ -19,6 +19,26 @@ resource "scaleway_flexible_ip" "main" {
 }
 ```
 
+### With baremetal server
+
+```hcl
+data "scaleway_account_ssh_key" "main" {
+    name = "main"
+}
+
+resource "scaleway_baremetal_server" "base" {
+    zone = "fr-par-2"
+    offer = "EM-A210R-HDD"
+    os = "96e5f0f2-d216-4de2-8a15-68730d877885"
+    ssh_key_ids = [data.scaleway_account_ssh_key.main.id]
+}
+
+resource "scaleway_flexible_ip" "main" {
+	server_id = scaleway_baremetal_server.base.id
+	zone = "fr-par-2"
+}
+```
+
 ## Arguments Reference
 
 The following arguments are supported:
@@ -36,6 +56,7 @@ In addition to all arguments above, the following attributes are exported:
 - `zone` - The zone of the Flexible IP
 - `organization_id` - The organization of the Flexible IP
 - `project_id` - The project of the Flexible IP
+- `server_id` - The ID of the associated server
 
 ## Import
 
