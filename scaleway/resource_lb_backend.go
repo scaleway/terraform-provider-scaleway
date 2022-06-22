@@ -362,7 +362,6 @@ func resourceScalewayLbBackendRead(ctx context.Context, d *schema.ResourceData, 
 	_ = d.Set("sticky_sessions", flattenLbStickySessionsType(backend.StickySessions))
 	_ = d.Set("sticky_sessions_cookie_name", backend.StickySessionsCookieName)
 	_ = d.Set("server_ips", backend.Pool)
-	_ = d.Set("send_proxy_v2", *backend.SendProxyV2)
 	_ = d.Set("proxy_protocol", flattenLbProxyProtocol(backend.ProxyProtocol))
 	_ = d.Set("timeout_server", flattenDuration(backend.TimeoutServer))
 	_ = d.Set("timeout_connect", flattenDuration(backend.TimeoutConnect))
@@ -375,6 +374,9 @@ func resourceScalewayLbBackendRead(ctx context.Context, d *schema.ResourceData, 
 	_ = d.Set("health_check_tcp", flattenLbHCTCP(backend.HealthCheck.TCPConfig))
 	_ = d.Set("health_check_http", flattenLbHCHTTP(backend.HealthCheck.HTTPConfig))
 	_ = d.Set("health_check_https", flattenLbHCHTTPS(backend.HealthCheck.HTTPSConfig))
+
+	sendProxy := backend.SendProxyV2
+	_ = d.Set("send_proxy_v2", &sendProxy)
 
 	_, err = waitForLB(ctx, lbAPI, zone, backend.LB.ID, d.Timeout(schema.TimeoutRead))
 	if err != nil {
