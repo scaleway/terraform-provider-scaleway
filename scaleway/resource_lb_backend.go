@@ -315,7 +315,7 @@ func resourceScalewayLbBackendCreate(ctx context.Context, d *schema.ResourceData
 	}
 
 	// deprecated attribute
-	createReq.SendProxyV2 =  expandBoolPtr(getBool(d, "send_proxy_v2"))
+	createReq.SendProxyV2 = expandBoolPtr(getBool(d, "send_proxy_v2"))
 
 	res, err := lbAPI.CreateBackend(createReq, scw.WithContext(ctx))
 	if err != nil {
@@ -439,7 +439,7 @@ func resourceScalewayLbBackendUpdate(ctx context.Context, d *schema.ResourceData
 	}
 
 	// deprecated
-	req.SendProxyV2 =  expandBoolPtr(getBool(d, "send_proxy_v2"))
+	req.SendProxyV2 = expandBoolPtr(getBool(d, "send_proxy_v2"))
 
 	_, err = lbAPI.UpdateBackend(req, scw.WithContext(ctx))
 	if err != nil {
