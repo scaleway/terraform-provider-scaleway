@@ -26,10 +26,20 @@ data "scaleway_account_ssh_key" "main" {
     name = "main"
 }
 
+data "scaleway_baremetal_os" "by_id" {
+    zone = "fr-par-2"
+    os_id = "03b7f4ba-a6a1-4305-984e-b54fafbf1681"
+}
+
+data "scaleway_baremetal_offer" "my_offer" {
+    zone = "fr-par-2"
+    offer_id = "25dcf38b-c90c-4b18-97a2-6956e9d1e113"
+}
+
 resource "scaleway_baremetal_server" "base" {
     zone = "fr-par-2"
-    offer = "EM-A210R-HDD"
-    os = "96e5f0f2-d216-4de2-8a15-68730d877885"
+    offer = data.scaleway_baremetal_offer.my_offer.offer_id
+    os = data.scaleway_baremetal_os.by_id.os_id
     ssh_key_ids = [data.scaleway_account_ssh_key.main.id]
 }
 

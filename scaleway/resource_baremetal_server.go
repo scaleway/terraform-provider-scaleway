@@ -51,7 +51,7 @@ func resourceScalewayBaremetalServer() *schema.Resource {
 				Type:         schema.TypeString,
 				Required:     true,
 				Description:  "The base image of the server",
-				ValidateFunc: validationUUID(),
+				ValidateFunc: validationUUIDorUUIDWithLocality(),
 			},
 			"os_id": {
 				Type:        schema.TypeString,
