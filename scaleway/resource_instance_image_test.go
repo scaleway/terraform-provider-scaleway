@@ -62,6 +62,44 @@ func TestAccScalewayInstanceImage_BlockVolume(t *testing.T) {
 					//resource.TestCheckResourceAttrSet("scaleway_instance_image.main", "location"),
 				),
 			},
+			{
+				Config: `
+					resource "scaleway_instance_volume" "main" {
+						type       = "b_ssd"
+						size_in_gb = 20
+						zone = "nl-ams-1"
+					}
+
+					resource "scaleway_instance_snapshot" "main" {
+						volume_id = scaleway_instance_volume.main.id
+						zone = "nl-ams-1"
+					}
+
+					resource "scaleway_instance_image" "main" {
+						name = "test_image_renamed"
+						root_volume_id = scaleway_instance_snapshot.main.id
+						architecture = "x86_64"
+						tags = ["tag3"]
+						public = false
+						zone = "nl-ams-1"
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayInstanceImageExists(tt, "scaleway_instance_image.main"),
+					resource.TestCheckResourceAttr("scaleway_instance_image.main", "name", "test_image_renamed"),
+					resource.TestCheckResourceAttr("scaleway_instance_image.main", "architecture", "x86_64"),
+					resource.TestCheckResourceAttr("scaleway_instance_image.main", "zone", "nl-ams-1"),
+					resource.TestCheckResourceAttr("scaleway_instance_image.main", "tags.0", "tag3"),
+					resource.TestCheckResourceAttr("scaleway_instance_image.main", "public", "false"),
+					resource.TestCheckResourceAttrSet("scaleway_instance_image.main", "creation_date"),
+					resource.TestCheckResourceAttrSet("scaleway_instance_image.main", "modification_date"),
+					//resource.TestCheckResourceAttrPair("scaleway_instance_image.main", "modification_date", "scaleway_instance_image.main", "creation_date"),
+					resource.TestCheckResourceAttrSet("scaleway_instance_image.main", "state"),
+					resource.TestCheckResourceAttrSet("scaleway_instance_image.main", "organization_id"),
+					resource.TestCheckResourceAttrSet("scaleway_instance_image.main", "project_id"),
+					resource.TestCheckResourceAttrPair("scaleway_instance_image.main", "root_volume_id", "scaleway_instance_snapshot.main", "id"),
+				),
+			},
 		},
 	})
 }

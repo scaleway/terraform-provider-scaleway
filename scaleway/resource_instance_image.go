@@ -2,6 +2,7 @@ package scaleway
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -85,7 +86,6 @@ func resourceScalewayInstanceImage() *schema.Resource {
 				Optional:    true,
 				Default:     false,
 				Description: "If true, the image will be public",
-				//Computed:    true, // TODO : maybe ? to set it to the default value
 			},
 			// Computed
 			"creation_date": {
@@ -212,7 +212,6 @@ func resourceScalewayInstanceImageRead(ctx context.Context, d *schema.ResourceDa
 	_ = d.Set("modification_date", image.Image.ModificationDate.Format(time.RFC3339))
 	_ = d.Set("from_server_id", image.Image.FromServer)
 	_ = d.Set("state", image.Image.State)
-	//_ = d.Set("location", image.Image.Lo)
 	_ = d.Set("zone", image.Image.Zone)
 	_ = d.Set("project_id", image.Image.Project)
 	_ = d.Set("organization_id", image.Image.Organization)
@@ -221,22 +220,42 @@ func resourceScalewayInstanceImageRead(ctx context.Context, d *schema.ResourceDa
 }
 
 func resourceScalewayInstanceImageUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	//instanceAPI, zone, id, err := instanceAPIWithZoneAndID(meta, d.Id())
-	//if err != nil {
-	//	return diag.FromErr(err)
-	//}
-	////TODO: UpdateImage types are not implemented !!
-	//req := &instance.UpdateImageRequest{
-	//	ImageID: id,
-	//	Zone:    zone,
-	//	Name:    scw.StringPtr(d.Get("name").(string)),
-	//	Tags:    scw.StringsPtr([]string{}),
-	//}
-	//
-	//_, err = instanceAPI.UpdateImage(req, scw.WithContext(ctx))
-	//if err != nil {
-	//	return diag.FromErr(fmt.Errorf("couldn't update image: %s", err))
-	//}
+	instanceAPI, zone, id, err := instanceAPIWithZoneAndID(meta, d.Id())
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	req := &instance.UpdateImageRequest{
+		Zone:    zone,
+		ImageID: id,
+	}
+
+	if d.HasChange("name") {
+		req.Name = expandStringPtr(d.Get("name"))
+	}
+	if d.HasChange("root_volume_id") {
+		req.RootVolume = d.Get("root_volume_id").(*instance.VolumeSummary)
+	}
+	if d.HasChange("architecture") {
+		req.Arch = instance.Arch(d.Get("architecture").(string))
+	}
+	if d.HasChange("default_bootscript_id") {
+		req.DefaultBootscript = d.Get("default_bootscript_id").(*instance.Bootscript)
+	}
+	if d.HasChange("additional_volume_ids") {
+		req.ExtraVolumes = d.Get("additional_volume_ids").(map[string]*instance.Volume)
+	}
+	if d.HasChange("tags") {
+		req.Tags = expandStringsPtr(d.Get("tags"))
+	}
+	if d.HasChange("public") {
+		req.Public = d.Get("public").(bool)
+	}
+
+	_, err = instanceAPI.UpdateImage(req, scw.WithContext(ctx))
+	if err != nil {
+		return diag.FromErr(fmt.Errorf("couldn't update image: %s", err))
+	}
 
 	return resourceScalewayInstanceImageRead(ctx, d, meta)
 }
