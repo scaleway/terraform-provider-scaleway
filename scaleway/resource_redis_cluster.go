@@ -315,7 +315,7 @@ func resourceScalewayRedisClusterUpdate(ctx context.Context, d *schema.ResourceD
 		req.Password = expandStringPtr(d.Get("password"))
 	}
 	if d.HasChange("tags") {
-		req.Tags = expandStrings(d.Get("tags"))
+		req.Tags = scw.StringsPtr(expandStrings(d.Get("tags")))
 	}
 	if d.HasChange("acl") {
 		diagnostics := resourceScalewayRedisClusterUpdateACL(ctx, d, redisAPI, zone, ID)
