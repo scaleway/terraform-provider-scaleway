@@ -838,7 +838,6 @@ func TestAccIAMPolicyDocumentDataSource_StatementPrincipalIdentifiers_stringAndS
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
 
-	resourceName := "foobar"
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
@@ -852,18 +851,21 @@ func TestAccIAMPolicyDocumentDataSource_StatementPrincipalIdentifiers_stringAndS
 							sid       = "StatementPrincipalIdentifiersStringAndSlice"
 					
 							principals {
-						  		identifiers = ["arn:${data.aws_partition.current.partition}:iam::111111111111:root"]
-						  		type        = "AWS"
+						  		identifiers = ["project_id:11111111-1111-1111-1111-111111111111"]
+						  		type        = "SCW"
 							}
 					
 							principals {
-						  		identifiers = ["arn:${data.aws_partition.current.partition}:iam::222222222222:root", "arn:${data.aws_partition.current.partition}:iam::333333333333:root"]
-						  		type        = "AWS"
+						  		identifiers = [
+									"project_id:22222222-2222-2222-2222-222222222222", 
+									"project_id:33333333-3333-3333-3333-333333333333"
+								]
+						  		type        = "SCW"
 							}
 					  	}
 					}`,
 				Check: resource.ComposeTestCheckFunc(
-					CheckResourceAttrEquivalentJSON(dataSourceName, "json", fmt.Sprintf(`{
+					CheckResourceAttrEquivalentJSON(dataSourceName, "json", `{
 					  "Version": "2012-10-17",
 					  "Statement": [
 						{
@@ -872,15 +874,15 @@ func TestAccIAMPolicyDocumentDataSource_StatementPrincipalIdentifiers_stringAndS
 						  "Action": "*",
 						  "Resource": "*",
 						  "Principal": {
-							"AWS": [
-							  "arn:%[1]s:iam::111111111111:root",
-							  "arn:%[1]s:iam::333333333333:root",
-							  "arn:%[1]s:iam::222222222222:root"
+							"SCW": [
+							  "project_id:11111111-1111-1111-1111-111111111111",
+							  "project_id:33333333-3333-3333-3333-333333333333",
+							  "project_id:22222222-2222-2222-2222-222222222222"
 							]
 						  }
 						}
 					  ]
-					}`, resourceName)),
+					}`),
 				),
 			},
 		},
