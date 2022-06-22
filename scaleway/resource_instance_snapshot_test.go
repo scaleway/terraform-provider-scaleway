@@ -67,7 +67,11 @@ func TestAccScalewayInstanceSnapshot_ServerWithBlockVolume(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      testAccCheckScalewayInstanceVolumeDestroy(tt),
+		CheckDestroy: resource.ComposeTestCheckFunc(
+			testAccCheckScalewayInstanceVolumeDestroy(tt),
+			testAccCheckScalewayInstanceServerDestroy(tt),
+			testAccCheckScalewayInstanceSnapshotDestroy(tt),
+		),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -160,6 +164,38 @@ func testAccCheckScalewayInstanceSnapShotExists(tt *TestTools, n string) resourc
 
 		if err != nil {
 			return err
+		}
+
+		return nil
+	}
+}
+
+func testAccCheckScalewayInstanceSnapshotDestroy(tt *TestTools) resource.TestCheckFunc {
+	return func(state *terraform.State) error {
+		for _, rs := range state.RootModule().Resources {
+			if rs.Type != "scaleway_instance_snapshot" {
+				continue
+			}
+
+			instanceAPI, zone, ID, err := instanceAPIWithZoneAndID(tt.Meta, rs.Primary.ID)
+			if err != nil {
+				return err
+			}
+
+			_, err = instanceAPI.GetSnapshot(&instance.GetSnapshotRequest{
+				SnapshotID: ID,
+				Zone:       zone,
+			})
+
+			// If no error resource still exist
+			if err == nil {
+				return fmt.Errorf("snapshot (%s) still exists", rs.Primary.ID)
+			}
+
+			// Unexpected api error we return it
+			if !is404Error(err) {
+				return err
+			}
 		}
 
 		return nil

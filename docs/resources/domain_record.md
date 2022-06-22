@@ -194,7 +194,7 @@ The following arguments are supported:
 
 - `data` - (Required) The content of the record (an IPv4 for an `A`, a string for a `TXT`...).
 
-- `ttl` - (Optional, default: `3600`) Time To Tive of the record in seconds.
+- `ttl` - (Optional, default: `3600`) Time To Live of the record in seconds.
   
 - `priority` - (Optional, default: `0`) The priority of the record (mostly used with an `MX` record)
 

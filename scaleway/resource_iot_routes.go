@@ -19,6 +19,10 @@ func resourceScalewayIotRoute() *schema.Resource {
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
+		Timeouts: &schema.ResourceTimeout{
+			Create:  schema.DefaultTimeout(defaultIoTHubTimeout),
+			Default: schema.DefaultTimeout(defaultIoTHubTimeout),
+		},
 		SchemaVersion: 0,
 		Schema: map[string]*schema.Schema{
 			"name": {
@@ -192,6 +196,12 @@ func resourceScalewayIotRouteCreate(ctx context.Context, d *schema.ResourceData,
 		return diag.FromErr(err)
 	}
 
+	hubID := expandZonedID(d.Get("hub_id")).ID
+	_, err = waitIotHub(ctx, iotAPI, region, hubID, d.Timeout(schema.TimeoutCreate))
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	req := &iot.CreateRouteRequest{
 		Region: region,
 		Name:   expandOrGenerateString(d.Get("name"), "route"),
@@ -234,6 +244,11 @@ func resourceScalewayIotRouteCreate(ctx context.Context, d *schema.ResourceData,
 	}
 
 	d.SetId(newRegionalIDString(region, res.ID))
+
+	_, err = waitIotHub(ctx, iotAPI, region, hubID, d.Timeout(schema.TimeoutCreate))
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	return resourceScalewayIotRouteRead(ctx, d, meta)
 }
@@ -300,6 +315,12 @@ func resourceScalewayIotRouteDelete(ctx context.Context, d *schema.ResourceData,
 		return diag.FromErr(err)
 	}
 
+	hubID := expandZonedID(d.Get("hub_id")).ID
+	_, err = waitIotHub(ctx, iotAPI, region, hubID, d.Timeout(schema.TimeoutCreate))
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	err = iotAPI.DeleteRoute(&iot.DeleteRouteRequest{
 		Region:  region,
 		RouteID: routeID,
@@ -308,6 +329,11 @@ func resourceScalewayIotRouteDelete(ctx context.Context, d *schema.ResourceData,
 		if is404Error(err) {
 			return nil
 		}
+		return diag.FromErr(err)
+	}
+
+	_, err = waitIotHub(ctx, iotAPI, region, hubID, d.Timeout(schema.TimeoutCreate))
+	if err != nil && !is404Error(err) {
 		return diag.FromErr(err)
 	}
 

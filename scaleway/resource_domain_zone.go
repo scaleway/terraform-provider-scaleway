@@ -131,8 +131,11 @@ func resourceScalewayDomainZoneRead(ctx context.Context, d *schema.ResourceData,
 		ProjectID: expandStringPtr(d.Get("project_id")),
 		DNSZone:   d.Id(),
 	}, scw.WithContext(ctx))
-
 	if err != nil {
+		if is404Error(err) {
+			d.SetId("")
+			return nil
+		}
 		return diag.FromErr(err)
 	}
 
@@ -168,7 +171,6 @@ func resourceScalewayDomainZoneUpdate(ctx context.Context, d *schema.ResourceDat
 			DNSZone:    d.Id(),
 			NewDNSZone: scw.StringPtr(d.Get("subdomain").(string)),
 		}, scw.WithContext(ctx))
-
 		if err != nil {
 			return diag.FromErr(err)
 		}

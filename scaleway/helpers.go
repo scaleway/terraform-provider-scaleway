@@ -2,6 +2,7 @@ package scaleway
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net"
 	"net/http"
@@ -16,13 +17,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/scaleway/scaleway-sdk-go/namegenerator"
 	"github.com/scaleway/scaleway-sdk-go/scw"
-	"golang.org/x/xerrors"
 )
 
-var (
-	// DefaultWaitRetryInterval is used to set the retry interval to 0 during acceptance tests
-	DefaultWaitRetryInterval *time.Duration
-)
+// DefaultWaitRetryInterval is used to set the retry interval to 0 during acceptance tests
+var DefaultWaitRetryInterval *time.Duration
 
 // RegionalID represents an ID that is linked with a region, eg fr-par/11111111-1111-1111-1111-111111111111
 type RegionalID struct {
@@ -43,7 +41,7 @@ func newRegionalID(region scw.Region, id string) RegionalID {
 
 func expandRegionalID(id interface{}) RegionalID {
 	regionalID := RegionalID{}
-	tab := strings.SplitN(id.(string), "/", -1)
+	tab := strings.Split(id.(string), "/")
 	if len(tab) != 2 {
 		regionalID.ID = id.(string)
 	} else {
@@ -74,7 +72,7 @@ func newZonedID(zone scw.Zone, id string) ZonedID {
 
 func expandZonedID(id interface{}) ZonedID {
 	zonedID := ZonedID{}
-	tab := strings.SplitN(id.(string), "/", -1)
+	tab := strings.Split(id.(string), "/")
 	if len(tab) != 2 {
 		zonedID.ID = id.(string)
 	} else {
@@ -87,8 +85,8 @@ func expandZonedID(id interface{}) ZonedID {
 }
 
 // parseLocalizedID parses a localizedID and extracts the resource locality and id.
-func parseLocalizedID(localizedID string) (locality string, ID string, err error) {
-	tab := strings.SplitN(localizedID, "/", -1)
+func parseLocalizedID(localizedID string) (locality string, id string, err error) {
+	tab := strings.Split(localizedID, "/")
 	if len(tab) != 2 {
 		return "", localizedID, fmt.Errorf("cant parse localized id: %s", localizedID)
 	}
@@ -97,7 +95,7 @@ func parseLocalizedID(localizedID string) (locality string, ID string, err error
 
 // parseLocalizedNestedID parses a localizedNestedID and extracts the resource locality, the inner and outer id.
 func parseLocalizedNestedID(localizedID string) (locality string, innerID, outerID string, err error) {
-	tab := strings.SplitN(localizedID, "/", -1)
+	tab := strings.Split(localizedID, "/")
 	if len(tab) != 3 {
 		return "", "", localizedID, fmt.Errorf("cant parse localized id: %s", localizedID)
 	}
@@ -218,7 +216,7 @@ func isHTTPCodeError(err error, statusCode int) bool {
 	}
 
 	responseError := &scw.ResponseError{}
-	if xerrors.As(err, &responseError) && responseError.StatusCode == statusCode {
+	if errors.As(err, &responseError) && responseError.StatusCode == statusCode {
 		return true
 	}
 	return false
@@ -227,25 +225,25 @@ func isHTTPCodeError(err error, statusCode int) bool {
 // is404Error returns true if err is an HTTP 404 error
 func is404Error(err error) bool {
 	notFoundError := &scw.ResourceNotFoundError{}
-	return isHTTPCodeError(err, http.StatusNotFound) || xerrors.As(err, &notFoundError)
+	return isHTTPCodeError(err, http.StatusNotFound) || errors.As(err, &notFoundError)
 }
 
 func is412Error(err error) bool {
 	preConditionFailedError := &scw.PreconditionFailedError{}
-	return isHTTPCodeError(err, http.StatusPreconditionFailed) || xerrors.As(err, &preConditionFailedError)
+	return isHTTPCodeError(err, http.StatusPreconditionFailed) || errors.As(err, &preConditionFailedError)
 }
 
 // is403Error returns true if err is an HTTP 403 error
 func is403Error(err error) bool {
 	permissionsDeniedError := &scw.PermissionsDeniedError{}
-	return isHTTPCodeError(err, http.StatusForbidden) || xerrors.As(err, &permissionsDeniedError)
+	return isHTTPCodeError(err, http.StatusForbidden) || errors.As(err, &permissionsDeniedError)
 }
 
 // is409Error return true is err is an HTTP 409 error
 func is409Error(err error) bool {
-	//check transient error
+	// check transient error
 	transientStateError := &scw.TransientStateError{}
-	return isHTTPCodeError(err, http.StatusConflict) || xerrors.As(err, &transientStateError)
+	return isHTTPCodeError(err, http.StatusConflict) || errors.As(err, &transientStateError)
 }
 
 // organizationIDSchema returns a standard schema for a organization_id
@@ -396,6 +394,19 @@ func expandStringsPtr(data interface{}) *[]string {
 	return &stringSlice
 }
 
+// expandUpdatedStringsPtr expands a string slice but will default to an empty list.
+// Should be used on schema update so emptying a list will update resource.
+func expandUpdatedStringsPtr(data interface{}) *[]string {
+	stringSlice := []string{}
+	if _, ok := data.([]interface{}); !ok || data == nil {
+		return &stringSlice
+	}
+	for _, s := range data.([]interface{}) {
+		stringSlice = append(stringSlice, s.(string))
+	}
+	return &stringSlice
+}
+
 func expandSliceIDsPtr(rawIDs interface{}) *[]string {
 	var stringSlice []string
 	if _, ok := rawIDs.([]interface{}); !ok || rawIDs == nil {
@@ -496,6 +507,13 @@ func expandInt32Ptr(data interface{}) *int32 {
 	return scw.Int32Ptr(int32(data.(int)))
 }
 
+func expandUint32Ptr(data interface{}) *uint32 {
+	if data == nil || data == "" {
+		return nil
+	}
+	return scw.Uint32Ptr(uint32(data.(int)))
+}
+
 func expandIPNet(raw string) (scw.IPNet, error) {
 	if raw == "" {
 		return scw.IPNet{}, nil
@@ -542,30 +560,30 @@ func flattenMap(m map[string]string) interface{} {
 	return flattenedMap
 }
 
-func diffSuppressFuncDuration(k, old, new string, d *schema.ResourceData) bool {
-	if old == new {
+func diffSuppressFuncDuration(k, oldValue, newValue string, d *schema.ResourceData) bool {
+	if oldValue == newValue {
 		return true
 	}
-	d1, err1 := time.ParseDuration(old)
-	d2, err2 := time.ParseDuration(new)
+	d1, err1 := time.ParseDuration(oldValue)
+	d2, err2 := time.ParseDuration(newValue)
 	if err1 != nil || err2 != nil {
 		return false
 	}
 	return d1 == d2
 }
 
-func diffSuppressFuncIgnoreCase(k, old, new string, d *schema.ResourceData) bool {
-	return strings.EqualFold(old, new)
+func diffSuppressFuncIgnoreCase(k, oldValue, newValue string, d *schema.ResourceData) bool {
+	return strings.EqualFold(oldValue, newValue)
 }
 
-func diffSuppressFuncIgnoreCaseAndHyphen(k, old, new string, d *schema.ResourceData) bool {
-	return strings.Replace(strings.ToLower(old), "-", "_", -1) == strings.Replace(strings.ToLower(new), "-", "_", -1)
+func diffSuppressFuncIgnoreCaseAndHyphen(k, oldValue, newValue string, d *schema.ResourceData) bool {
+	return strings.ReplaceAll(strings.ToLower(oldValue), "-", "_") == strings.ReplaceAll(strings.ToLower(newValue), "-", "_")
 }
 
 // diffSuppressFuncLocality is a SuppressDiffFunc to remove the locality from an ID when checking diff.
 // e.g. 2c1a1716-5570-4668-a50a-860c90beabf6 == fr-par-1/2c1a1716-5570-4668-a50a-860c90beabf6
-func diffSuppressFuncLocality(k, old, new string, d *schema.ResourceData) bool {
-	return expandID(old) == expandID(new)
+func diffSuppressFuncLocality(k, oldValue, newValue string, d *schema.ResourceData) bool {
+	return expandID(oldValue) == expandID(newValue)
 }
 
 // TimedOut returns true if the error represents a "wait timed out" condition.
@@ -595,4 +613,50 @@ func toUint32(number interface{}) *uint32 {
 
 func errorCheck(err error, message string) bool {
 	return strings.Contains(err.Error(), message)
+}
+
+// ErrCodeEquals returns true if the error matches all these conditions:
+//  * err is of type scw.Error
+//  * Error.Error() equals one of the passed codes
+func ErrCodeEquals(err error, codes ...string) bool {
+	var scwErr scw.SdkError
+	if errors.As(err, &scwErr) {
+		for _, code := range codes {
+			if scwErr.Error() == code {
+				return true
+			}
+		}
+	}
+	return false
+}
+
+func getBool(d *schema.ResourceData, key string) interface{} {
+	val, ok := d.GetOkExists(key)
+	if !ok {
+		return nil
+	}
+	return val
+}
+
+// validateDate will validate that field is a valid ISO 8601
+// It is the same as RFC3339
+func validateDate() schema.SchemaValidateDiagFunc {
+	return func(i interface{}, path cty.Path) diag.Diagnostics {
+		date, isStr := i.(string)
+		if !isStr {
+			return diag.Errorf("%v is not a string", date)
+		}
+		_, err := time.Parse(time.RFC3339, date)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		return nil
+	}
+}
+
+func flattenSize(size *scw.Size) interface{} {
+	if size == nil {
+		return 0
+	}
+	return *size
 }

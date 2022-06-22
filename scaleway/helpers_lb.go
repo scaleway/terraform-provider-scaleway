@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/hashicorp/go-cty/cty"
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	lbSDK "github.com/scaleway/scaleway-sdk-go/api/lb/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
@@ -68,7 +69,7 @@ func expandLbACL(i interface{}) *lbSDK.ACL {
 		Action: expandLbACLAction(rawRule["action"]),
 	}
 
-	//remove http filter values if we do not pass any http filter
+	// remove http filter values if we do not pass any http filter
 	if acl.Match.HTTPFilter == "" || acl.Match.HTTPFilter == lbSDK.ACLHTTPFilterACLHTTPFilterNone {
 		acl.Match.HTTPFilter = lbSDK.ACLHTTPFilterACLHTTPFilterNone
 		acl.Match.HTTPFilterValue = []*string{}
@@ -76,6 +77,7 @@ func expandLbACL(i interface{}) *lbSDK.ACL {
 
 	return acl
 }
+
 func flattenLbACLAction(action *lbSDK.ACLAction) interface{} {
 	return []map[string]interface{}{
 		{
@@ -115,18 +117,18 @@ func expandPrivateNetworks(data interface{}, lbID string) ([]*lbSDK.ZonedAPIAtta
 	return res, nil
 }
 
-func isPrivateNetworkEqual(A, B interface{}) bool {
+func isPrivateNetworkEqual(a, b interface{}) bool {
 	// Find out the diff Private Network or not
-	if _, ok := A.(*lbSDK.PrivateNetwork); ok {
-		if _, ok := B.(*lbSDK.PrivateNetwork); ok {
-			if A.(*lbSDK.PrivateNetwork).PrivateNetworkID == B.(*lbSDK.PrivateNetwork).PrivateNetworkID {
+	if _, ok := a.(*lbSDK.PrivateNetwork); ok {
+		if _, ok := b.(*lbSDK.PrivateNetwork); ok {
+			if a.(*lbSDK.PrivateNetwork).PrivateNetworkID == b.(*lbSDK.PrivateNetwork).PrivateNetworkID {
 				// if both has dhcp config should not update
-				if A.(*lbSDK.PrivateNetwork).DHCPConfig != nil && B.(*lbSDK.PrivateNetwork).DHCPConfig != nil {
+				if a.(*lbSDK.PrivateNetwork).DHCPConfig != nil && b.(*lbSDK.PrivateNetwork).DHCPConfig != nil {
 					return true
 				}
 				// check static config
-				aConfig := A.(*lbSDK.PrivateNetwork).StaticConfig
-				bConfig := B.(*lbSDK.PrivateNetwork).StaticConfig
+				aConfig := a.(*lbSDK.PrivateNetwork).StaticConfig
+				bConfig := b.(*lbSDK.PrivateNetwork).StaticConfig
 				if aConfig != nil && bConfig != nil {
 					// check if static config is different
 					return reflect.DeepEqual(aConfig.IPAddress, bConfig.IPAddress)
@@ -150,6 +152,7 @@ func newPrivateNetwork(raw map[string]interface{}) *lbSDK.PrivateNetwork {
 
 	return pn
 }
+
 func privateNetworksToDetach(pns []*lbSDK.PrivateNetwork, updates interface{}) (map[string]bool, error) {
 	actions := make(map[string]bool, len(pns))
 	configs := make(map[string]*lbSDK.PrivateNetwork, len(pns))
@@ -158,7 +161,7 @@ func privateNetworksToDetach(pns []*lbSDK.PrivateNetwork, updates interface{}) (
 		actions[pn.PrivateNetworkID] = true
 		configs[pn.PrivateNetworkID] = pn
 	}
-	//check if private network still exist or is different
+	// check if private network still exist or is different
 	for _, pn := range updates.([]interface{}) {
 		r := pn.(map[string]interface{})
 		_, pnID, err := parseZonedID(r["private_network_id"].(string))
@@ -173,15 +176,14 @@ func privateNetworksToDetach(pns []*lbSDK.PrivateNetwork, updates interface{}) (
 	return actions, nil
 }
 
-func flattenPrivateNetworkConfigs(resList *lbSDK.ListLBPrivateNetworksResponse) interface{} {
-	if len(resList.PrivateNetwork) == 0 || resList == nil {
+func flattenPrivateNetworkConfigs(privateNetworks []*lbSDK.PrivateNetwork) interface{} {
+	if len(privateNetworks) == 0 || privateNetworks == nil {
 		return nil
 	}
 
-	pnConfigs := resList.PrivateNetwork
 	pnI := []map[string]interface{}(nil)
 	var dhcpConfigExist bool
-	for _, pn := range pnConfigs {
+	for _, pn := range privateNetworks {
 		if pn.DHCPConfig != nil {
 			dhcpConfigExist = true
 		}
@@ -211,10 +213,11 @@ func expandLbACLAction(raw interface{}) *lbSDK.ACLAction {
 func flattenLbACLMatch(match *lbSDK.ACLMatch) interface{} {
 	return []map[string]interface{}{
 		{
-			"ip_subnet":         flattenSliceStringPtr(match.IPSubnet),
-			"http_filter":       match.HTTPFilter.String(),
-			"http_filter_value": flattenSliceStringPtr(match.HTTPFilterValue),
-			"invert":            match.Invert,
+			"ip_subnet":          flattenSliceStringPtr(match.IPSubnet),
+			"http_filter":        match.HTTPFilter.String(),
+			"http_filter_value":  flattenSliceStringPtr(match.HTTPFilterValue),
+			"http_filter_option": match.HTTPFilterOption,
+			"invert":             match.Invert,
 		},
 	}
 }
@@ -225,17 +228,18 @@ func expandLbACLMatch(raw interface{}) *lbSDK.ACLMatch {
 	}
 	rawMap := raw.([]interface{})[0].(map[string]interface{})
 
-	//scaleway api require ip subnet, so if we did not specify one, just put 0.0.0.0/0 instead
+	// scaleway api require ip subnet, so if we did not specify one, just put 0.0.0.0/0 instead
 	ipSubnet := expandSliceStringPtr(rawMap["ip_subnet"].([]interface{}))
 	if len(ipSubnet) == 0 {
 		ipSubnet = []*string{expandStringPtr("0.0.0.0/0")}
 	}
 
 	return &lbSDK.ACLMatch{
-		IPSubnet:        ipSubnet,
-		HTTPFilter:      lbSDK.ACLHTTPFilter(rawMap["http_filter"].(string)),
-		HTTPFilterValue: expandSliceStringPtr(rawMap["http_filter_value"].([]interface{})),
-		Invert:          rawMap["invert"].(bool),
+		IPSubnet:         ipSubnet,
+		HTTPFilter:       lbSDK.ACLHTTPFilter(rawMap["http_filter"].(string)),
+		HTTPFilterValue:  expandSliceStringPtr(rawMap["http_filter_value"].([]interface{})),
+		HTTPFilterOption: expandStringPtr(rawMap["http_filter_option"].(string)),
+		Invert:           rawMap["invert"].(bool),
 	}
 }
 
@@ -433,14 +437,14 @@ func expandLbPrivateNetworkDHCPConfig(raw interface{}) *lbSDK.PrivateNetworkDHCP
 	return &lbSDK.PrivateNetworkDHCPConfig{}
 }
 
-func waitForLB(ctx context.Context, lbAPI *lbSDK.ZonedAPI, zone scw.Zone, LbID string, timeout time.Duration) (*lbSDK.LB, error) {
+func waitForLB(ctx context.Context, lbAPI *lbSDK.ZonedAPI, zone scw.Zone, lbID string, timeout time.Duration) (*lbSDK.LB, error) {
 	retryInterval := defaultWaitLBRetryInterval
 	if DefaultWaitRetryInterval != nil {
 		retryInterval = *DefaultWaitRetryInterval
 	}
 
 	loadBalancer, err := lbAPI.WaitForLb(&lbSDK.ZonedAPIWaitForLBRequest{
-		LBID:          LbID,
+		LBID:          lbID,
 		Zone:          zone,
 		Timeout:       scw.TimeDurationPtr(timeout),
 		RetryInterval: &retryInterval,
@@ -465,14 +469,14 @@ func waitForLbInstances(ctx context.Context, lbAPI *lbSDK.ZonedAPI, zone scw.Zon
 	return loadBalancer, err
 }
 
-func waitForLBPN(ctx context.Context, lbAPI *lbSDK.ZonedAPI, zone scw.Zone, LbID string, timeout time.Duration) ([]*lbSDK.PrivateNetwork, error) {
+func waitForLBPN(ctx context.Context, lbAPI *lbSDK.ZonedAPI, zone scw.Zone, lbID string, timeout time.Duration) ([]*lbSDK.PrivateNetwork, error) {
 	retryInterval := defaultWaitLBRetryInterval
 	if DefaultWaitRetryInterval != nil {
 		retryInterval = *DefaultWaitRetryInterval
 	}
 
 	privateNetworks, err := lbAPI.WaitForLBPN(&lbSDK.ZonedAPIWaitForLBPNRequest{
-		LBID:          LbID,
+		LBID:          lbID,
 		Zone:          zone,
 		Timeout:       scw.TimeDurationPtr(timeout),
 		RetryInterval: &retryInterval,
@@ -495,4 +499,38 @@ func waitForLBCertificate(ctx context.Context, lbAPI *lbSDK.ZonedAPI, zone scw.Z
 	}, scw.WithContext(ctx))
 
 	return certificate, err
+}
+
+func attachLBPrivateNetwork(ctx context.Context, lbAPI *lbSDK.ZonedAPI, zone scw.Zone, pnConfigs []*lbSDK.ZonedAPIAttachPrivateNetworkRequest, timeout time.Duration) ([]*lbSDK.PrivateNetwork, error) {
+	var privateNetworks []*lbSDK.PrivateNetwork
+
+	for _, config := range pnConfigs {
+		pn, err := lbAPI.AttachPrivateNetwork(config, scw.WithContext(ctx))
+		if err != nil && !is404Error(err) {
+			return nil, err
+		}
+
+		privateNetworks, err = waitForLBPN(ctx, lbAPI, zone, pn.LB.ID, timeout)
+		if err != nil && !is404Error(err) {
+			return nil, err
+		}
+
+		for _, pn := range privateNetworks {
+			if pn.Status == lbSDK.PrivateNetworkStatusError {
+				err = lbAPI.DetachPrivateNetwork(&lbSDK.ZonedAPIDetachPrivateNetworkRequest{
+					Zone:             zone,
+					LBID:             pn.LB.ID,
+					PrivateNetworkID: pn.PrivateNetworkID,
+				}, scw.WithContext(ctx))
+				if err != nil && !is404Error(err) {
+					return nil, err
+				}
+				tflog.Debug(ctx, fmt.Sprintf("DHCP config: %v", pn.DHCPConfig))
+				tflog.Debug(ctx, fmt.Sprintf("Static config: %v", pn.StaticConfig))
+				return nil, fmt.Errorf("attaching private network with id: %s on error state. please check your config", pn.PrivateNetworkID)
+			}
+		}
+	}
+
+	return privateNetworks, nil
 }

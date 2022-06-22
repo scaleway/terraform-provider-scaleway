@@ -22,6 +22,10 @@ func resourceScalewayRdbUser() *schema.Resource {
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 		Timeouts: &schema.ResourceTimeout{
+			Create:  schema.DefaultTimeout(defaultRdbInstanceTimeout),
+			Read:    schema.DefaultTimeout(defaultRdbInstanceTimeout),
+			Update:  schema.DefaultTimeout(defaultRdbInstanceTimeout),
+			Delete:  schema.DefaultTimeout(defaultRdbInstanceTimeout),
 			Default: schema.DefaultTimeout(defaultRdbInstanceTimeout),
 		},
 		SchemaVersion: 0,
@@ -122,7 +126,6 @@ func resourceScalewayRdbUserRead(ctx context.Context, d *schema.ResourceData, me
 		InstanceID: instanceID,
 		Name:       &userName,
 	}, scw.WithContext(ctx))
-
 	if err != nil {
 		if is404Error(err) {
 			d.SetId("")
@@ -131,7 +134,7 @@ func resourceScalewayRdbUserRead(ctx context.Context, d *schema.ResourceData, me
 		return diag.FromErr(err)
 	}
 
-	var user = res.Users[0]
+	user := res.Users[0]
 	_ = d.Set("instance_id", newRegionalID(region, instanceID).String())
 	_ = d.Set("name", user.Name)
 	_ = d.Set("is_admin", user.IsAdmin)

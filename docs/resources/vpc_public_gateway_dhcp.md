@@ -33,7 +33,7 @@ The following arguments are supported:
 - `rebind_timer` - (Optional) After how long, in seconds, a DHCP client will query for a new lease if previous renews fail. Must be 30s lower than `valid_lifetime`. Defaults to 51m (3060s).
 - `push_default_route` - (Optional) Whether the gateway should push a default route to DHCP clients or only hand out IPs. Defaults to `true`.
 - `push_dns_server` - (Optional) Whether the gateway should push custom DNS servers to clients. This allows for instance hostname -> IP resolution. Defaults to `true`.
-- `dns_server_override` - (Optional) Override the DNS server list pushed to DHCP clients, instead of the gateway itself
+- `dns_servers_override` - (Optional) Override the DNS server list pushed to DHCP clients, instead of the gateway itself
 - `dns_search` - (Optional) Additional DNS search paths
 - `dns_local_name` - (Optional) TLD given to hostnames in the Private Network. Allowed characters are `a-z0-9-.`. Defaults to the slugified Private Network name if created along a GatewayNetwork, or else to `priv`.
 

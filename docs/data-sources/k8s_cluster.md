@@ -56,6 +56,8 @@ In addition to all above arguments, the following attributes are exported:
 
 - `status` - The status of the Kubernetes cluster.
 
+- `type` - The type of the Kubernetes cluster.
+
 - `upgrade_available` - True if a newer Kubernetes version is available.
 
 - `description` - A description for the Kubernetes cluster.

@@ -20,6 +20,13 @@ func resourceScalewayVPCGatewayNetwork() *schema.Resource {
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
+		Timeouts: &schema.ResourceTimeout{
+			Create:  schema.DefaultTimeout(defaultVPCGatewayTimeout),
+			Read:    schema.DefaultTimeout(defaultVPCGatewayTimeout),
+			Update:  schema.DefaultTimeout(defaultVPCGatewayTimeout),
+			Delete:  schema.DefaultTimeout(defaultVPCGatewayTimeout),
+			Default: schema.DefaultTimeout(defaultVPCGatewayTimeout),
+		},
 		SchemaVersion: 0,
 		Schema: map[string]*schema.Schema{
 			"gateway_id": {
@@ -148,6 +155,10 @@ func resourceScalewayVPCGatewayNetworkRead(ctx context.Context, d *schema.Resour
 
 	gatewayNetwork, err := waitForVPCGatewayNetwork(ctx, vpcgwAPI, zone, ID, d.Timeout(schema.TimeoutRead))
 	if err != nil {
+		if is404Error(err) {
+			d.SetId("")
+			return nil
+		}
 		return diag.FromErr(err)
 	}
 	_, err = waitForVPCPublicGateway(ctx, vpcgwAPI, zone, gatewayNetwork.GatewayID, d.Timeout(schema.TimeoutRead))

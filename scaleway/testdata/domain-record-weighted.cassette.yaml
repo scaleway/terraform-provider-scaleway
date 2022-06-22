@@ -8,12 +8,12 @@ interactions:
       Content-Type:
       - application/json
       User-Agent:
-      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.17.6; linux; amd64) terraform-provider/develop
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.18.2; linux; amd64) terraform-provider/develop
         terraform/terraform-tests
     url: https://api.scaleway.com/domain/v2beta1/dns-zones/test-weighted.scaleway-terraform.com/records
     method: PATCH
   response:
-    body: '{"records":[{"id":"39574bd0-1cf0-4c39-af46-7fdf0fb45b04","data":"127.0.0.5","name":"tf_weighted","priority":0,"ttl":3600,"type":"A","comment":null,"weighted_config":{"weighted_ips":[{"ip":"1.2.3.4","weight":1},{"ip":"4.3.2.1","weight":2}]}}]}'
+    body: '{"records":[{"id":"12d7a19f-d9d4-458d-8d87-ab36d38d71ee","data":"127.0.0.5","name":"tf_weighted","priority":0,"ttl":3600,"type":"A","comment":null,"weighted_config":{"weighted_ips":[{"ip":"1.2.3.4","weight":1},{"ip":"4.3.2.1","weight":2}]}}]}'
     headers:
       Content-Length:
       - "242"
@@ -22,7 +22,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Tue, 19 Apr 2022 09:00:59 GMT
+      - Wed, 15 Jun 2022 14:16:44 GMT
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -32,7 +32,7 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - 665d9757-a5bd-4a07-9553-16d13f41bb45
+      - 8e9ed71d-13c1-4899-93b3-66fb316c6b1a
     status: 200 OK
     code: 200
     duration: ""
@@ -41,45 +41,12 @@ interactions:
     form: {}
     headers:
       User-Agent:
-      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.17.6; linux; amd64) terraform-provider/develop
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.18.2; linux; amd64) terraform-provider/develop
         terraform/terraform-tests
-    url: https://api.scaleway.com/domain/v2beta1/dns-zones/test-weighted.scaleway-terraform.com/records?name=tf_weighted&order_by=name_asc&page=1&type=A
+    url: https://api.scaleway.com/domain/v2beta1/dns-zones?dns_zone=test-weighted.scaleway-terraform.com&domain=&order_by=domain_asc
     method: GET
   response:
-    body: '{"total_count":1,"records":[{"id":"39574bd0-1cf0-4c39-af46-7fdf0fb45b04","data":"127.0.0.5","name":"tf_weighted","priority":0,"ttl":3600,"type":"A","comment":null,"weighted_config":{"weighted_ips":[{"ip":"1.2.3.4","weight":1},{"ip":"4.3.2.1","weight":2}]}}]}'
-    headers:
-      Content-Length:
-      - "258"
-      Content-Security-Policy:
-      - default-src 'none'; frame-ancestors 'none'
-      Content-Type:
-      - application/json
-      Date:
-      - Tue, 19 Apr 2022 09:00:59 GMT
-      Server:
-      - Scaleway API-Gateway
-      Strict-Transport-Security:
-      - max-age=63072000
-      X-Content-Type-Options:
-      - nosniff
-      X-Frame-Options:
-      - DENY
-      X-Request-Id:
-      - 0bbe6307-b6e8-451c-9565-86a77af3d350
-    status: 200 OK
-    code: 200
-    duration: ""
-- request:
-    body: ""
-    form: {}
-    headers:
-      User-Agent:
-      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.17.6; linux; amd64) terraform-provider/develop
-        terraform/terraform-tests
-    url: https://api.scaleway.com/domain/v2beta1/dns-zones?dns_zone=test-weighted.scaleway-terraform.com&domain=&order_by=domain_asc&page=1
-    method: GET
-  response:
-    body: '{"total_count":1,"dns_zones":[{"domain":"scaleway-terraform.com","subdomain":"test-weighted","ns":["ns0.dom.scw.cloud","ns1.dom.scw.cloud"],"ns_default":["ns0.dom.scw.cloud","ns1.dom.scw.cloud"],"ns_master":[],"status":"pending","message":null,"updated_at":"2022-04-19T09:00:59Z","project_id":"105bdce1-64c0-48ab-899d-868455867ecf"}]}'
+    body: '{"total_count":1,"dns_zones":[{"domain":"scaleway-terraform.com","subdomain":"test-weighted","ns":["ns0.dom.scw.cloud","ns1.dom.scw.cloud"],"ns_default":["ns0.dom.scw.cloud","ns1.dom.scw.cloud"],"ns_master":[],"status":"pending","message":null,"updated_at":"2022-06-15T14:16:44Z","project_id":"105bdce1-64c0-48ab-899d-868455867ecf"}]}'
     headers:
       Content-Length:
       - "334"
@@ -88,7 +55,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Tue, 19 Apr 2022 09:00:59 GMT
+      - Wed, 15 Jun 2022 14:16:44 GMT
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -98,7 +65,7 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - 4a7389f9-47bc-4c26-9d07-2ff7b842d2cc
+      - 0467ce97-6888-4244-aad0-8ca09bbc3a82
     status: 200 OK
     code: 200
     duration: ""
@@ -107,12 +74,144 @@ interactions:
     form: {}
     headers:
       User-Agent:
-      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.17.6; linux; amd64) terraform-provider/develop
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.18.2; linux; amd64) terraform-provider/develop
+        terraform/terraform-tests
+    url: https://api.scaleway.com/domain/v2beta1/dns-zones?dns_zone=test-weighted.scaleway-terraform.com&domain=&order_by=domain_asc
+    method: GET
+  response:
+    body: '{"total_count":1,"dns_zones":[{"domain":"scaleway-terraform.com","subdomain":"test-weighted","ns":["ns0.dom.scw.cloud","ns1.dom.scw.cloud"],"ns_default":["ns0.dom.scw.cloud","ns1.dom.scw.cloud"],"ns_master":[],"status":"active","message":null,"updated_at":"2022-06-15T14:16:47Z","project_id":"105bdce1-64c0-48ab-899d-868455867ecf"}]}'
+    headers:
+      Content-Length:
+      - "333"
+      Content-Security-Policy:
+      - default-src 'none'; frame-ancestors 'none'
+      Content-Type:
+      - application/json
+      Date:
+      - Wed, 15 Jun 2022 14:16:49 GMT
+      Server:
+      - Scaleway API-Gateway
+      Strict-Transport-Security:
+      - max-age=63072000
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+      X-Request-Id:
+      - 2ec4b341-8dbb-4fed-8fe2-7c73ce04ce4f
+    status: 200 OK
+    code: 200
+    duration: ""
+- request:
+    body: ""
+    form: {}
+    headers:
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.18.2; linux; amd64) terraform-provider/develop
+        terraform/terraform-tests
+    url: https://api.scaleway.com/domain/v2beta1/dns-zones/test-weighted.scaleway-terraform.com/records?name=tf_weighted&order_by=name_asc&page=1&type=A
+    method: GET
+  response:
+    body: '{"total_count":1,"records":[{"id":"12d7a19f-d9d4-458d-8d87-ab36d38d71ee","data":"127.0.0.5","name":"tf_weighted","priority":0,"ttl":3600,"type":"A","comment":null,"weighted_config":{"weighted_ips":[{"ip":"1.2.3.4","weight":1},{"ip":"4.3.2.1","weight":2}]}}]}'
+    headers:
+      Content-Length:
+      - "258"
+      Content-Security-Policy:
+      - default-src 'none'; frame-ancestors 'none'
+      Content-Type:
+      - application/json
+      Date:
+      - Wed, 15 Jun 2022 14:16:50 GMT
+      Server:
+      - Scaleway API-Gateway
+      Strict-Transport-Security:
+      - max-age=63072000
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+      X-Request-Id:
+      - 798f5ecd-e445-4eab-8588-0f639e0c6f9b
+    status: 200 OK
+    code: 200
+    duration: ""
+- request:
+    body: ""
+    form: {}
+    headers:
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.18.2; linux; amd64) terraform-provider/develop
+        terraform/terraform-tests
+    url: https://api.scaleway.com/domain/v2beta1/dns-zones/test-weighted.scaleway-terraform.com/records?id=12d7a19f-d9d4-458d-8d87-ab36d38d71ee&name=&order_by=name_asc&page=1&type=unknown
+    method: GET
+  response:
+    body: '{"total_count":1,"records":[{"id":"12d7a19f-d9d4-458d-8d87-ab36d38d71ee","data":"127.0.0.5","name":"tf_weighted","priority":0,"ttl":3600,"type":"A","comment":null,"weighted_config":{"weighted_ips":[{"ip":"1.2.3.4","weight":1},{"ip":"4.3.2.1","weight":2}]}}]}'
+    headers:
+      Content-Length:
+      - "258"
+      Content-Security-Policy:
+      - default-src 'none'; frame-ancestors 'none'
+      Content-Type:
+      - application/json
+      Date:
+      - Wed, 15 Jun 2022 14:16:50 GMT
+      Server:
+      - Scaleway API-Gateway
+      Strict-Transport-Security:
+      - max-age=63072000
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+      X-Request-Id:
+      - 895cffcb-90d2-4025-907a-8695ccf8952b
+    status: 200 OK
+    code: 200
+    duration: ""
+- request:
+    body: ""
+    form: {}
+    headers:
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.18.2; linux; amd64) terraform-provider/develop
+        terraform/terraform-tests
+    url: https://api.scaleway.com/domain/v2beta1/dns-zones?dns_zone=test-weighted.scaleway-terraform.com&domain=&order_by=domain_asc
+    method: GET
+  response:
+    body: '{"total_count":1,"dns_zones":[{"domain":"scaleway-terraform.com","subdomain":"test-weighted","ns":["ns0.dom.scw.cloud","ns1.dom.scw.cloud"],"ns_default":["ns0.dom.scw.cloud","ns1.dom.scw.cloud"],"ns_master":[],"status":"active","message":null,"updated_at":"2022-06-15T14:16:47Z","project_id":"105bdce1-64c0-48ab-899d-868455867ecf"}]}'
+    headers:
+      Content-Length:
+      - "333"
+      Content-Security-Policy:
+      - default-src 'none'; frame-ancestors 'none'
+      Content-Type:
+      - application/json
+      Date:
+      - Wed, 15 Jun 2022 14:16:50 GMT
+      Server:
+      - Scaleway API-Gateway
+      Strict-Transport-Security:
+      - max-age=63072000
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+      X-Request-Id:
+      - 07546db4-1b2f-4e7d-84cd-87734b574a9d
+    status: 200 OK
+    code: 200
+    duration: ""
+- request:
+    body: ""
+    form: {}
+    headers:
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.18.2; linux; amd64) terraform-provider/develop
         terraform/terraform-tests
     url: https://api.scaleway.com/domain/v2beta1/dns-zones/test-weighted.scaleway-terraform.com/records?name=&order_by=name_asc&type=unknown
     method: GET
   response:
-    body: '{"total_count":3,"records":[{"id":"b898246b-1be3-4ffb-9b2d-35680448d7f8","data":"ns0.dom.scw.cloud.","name":"","priority":0,"ttl":600,"type":"NS","comment":null},{"id":"2330ba96-0f0f-4a3e-a850-0b58e288964b","data":"ns1.dom.scw.cloud.","name":"","priority":0,"ttl":600,"type":"NS","comment":null},{"id":"39574bd0-1cf0-4c39-af46-7fdf0fb45b04","data":"127.0.0.5","name":"tf_weighted","priority":0,"ttl":3600,"type":"A","comment":null,"weighted_config":{"weighted_ips":[{"ip":"1.2.3.4","weight":1},{"ip":"4.3.2.1","weight":2}]}}]}'
+    body: '{"total_count":3,"records":[{"id":"aaf21669-847d-4d04-a979-1b60255a5017","data":"ns0.dom.scw.cloud.","name":"","priority":0,"ttl":600,"type":"NS","comment":null},{"id":"4c86a470-8647-4552-8e59-b3d66431b2dd","data":"ns1.dom.scw.cloud.","name":"","priority":0,"ttl":600,"type":"NS","comment":null},{"id":"12d7a19f-d9d4-458d-8d87-ab36d38d71ee","data":"127.0.0.5","name":"tf_weighted","priority":0,"ttl":3600,"type":"A","comment":null,"weighted_config":{"weighted_ips":[{"ip":"1.2.3.4","weight":1},{"ip":"4.3.2.1","weight":2}]}}]}'
     headers:
       Content-Length:
       - "526"
@@ -121,7 +220,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Tue, 19 Apr 2022 09:00:59 GMT
+      - Wed, 15 Jun 2022 14:16:50 GMT
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -131,7 +230,7 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - 525bbc45-0886-4c11-a1d1-b5fb044094cf
+      - 779bef89-940c-435c-9dca-b66b34484e11
     status: 200 OK
     code: 200
     duration: ""
@@ -140,12 +239,12 @@ interactions:
     form: {}
     headers:
       User-Agent:
-      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.17.6; linux; amd64) terraform-provider/develop
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.18.2; linux; amd64) terraform-provider/develop
         terraform/terraform-tests
-    url: https://api.scaleway.com/domain/v2beta1/dns-zones/test-weighted.scaleway-terraform.com/records?name=tf_weighted&order_by=name_asc&page=1&type=A
+    url: https://api.scaleway.com/domain/v2beta1/dns-zones/test-weighted.scaleway-terraform.com/records?id=12d7a19f-d9d4-458d-8d87-ab36d38d71ee&name=tf_weighted&order_by=name_asc&page=1&type=A
     method: GET
   response:
-    body: '{"total_count":1,"records":[{"id":"39574bd0-1cf0-4c39-af46-7fdf0fb45b04","data":"127.0.0.5","name":"tf_weighted","priority":0,"ttl":3600,"type":"A","comment":null,"weighted_config":{"weighted_ips":[{"ip":"1.2.3.4","weight":1},{"ip":"4.3.2.1","weight":2}]}}]}'
+    body: '{"total_count":1,"records":[{"id":"12d7a19f-d9d4-458d-8d87-ab36d38d71ee","data":"127.0.0.5","name":"tf_weighted","priority":0,"ttl":3600,"type":"A","comment":null,"weighted_config":{"weighted_ips":[{"ip":"1.2.3.4","weight":1},{"ip":"4.3.2.1","weight":2}]}}]}'
     headers:
       Content-Length:
       - "258"
@@ -154,7 +253,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Tue, 19 Apr 2022 09:01:00 GMT
+      - Wed, 15 Jun 2022 14:16:50 GMT
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -164,7 +263,7 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - 2a8c576c-8e36-4fd9-bf67-2725250ef8e1
+      - 1819b565-6469-471d-a9b4-63c027efd8d9
     status: 200 OK
     code: 200
     duration: ""
@@ -173,12 +272,12 @@ interactions:
     form: {}
     headers:
       User-Agent:
-      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.17.6; linux; amd64) terraform-provider/develop
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.18.2; linux; amd64) terraform-provider/develop
         terraform/terraform-tests
-    url: https://api.scaleway.com/domain/v2beta1/dns-zones?dns_zone=test-weighted.scaleway-terraform.com&domain=&order_by=domain_asc&page=1
+    url: https://api.scaleway.com/domain/v2beta1/dns-zones?dns_zone=test-weighted.scaleway-terraform.com&domain=&order_by=domain_asc
     method: GET
   response:
-    body: '{"total_count":1,"dns_zones":[{"domain":"scaleway-terraform.com","subdomain":"test-weighted","ns":["ns0.dom.scw.cloud","ns1.dom.scw.cloud"],"ns_default":["ns0.dom.scw.cloud","ns1.dom.scw.cloud"],"ns_master":[],"status":"active","message":null,"updated_at":"2022-04-19T09:01:00Z","project_id":"105bdce1-64c0-48ab-899d-868455867ecf"}]}'
+    body: '{"total_count":1,"dns_zones":[{"domain":"scaleway-terraform.com","subdomain":"test-weighted","ns":["ns0.dom.scw.cloud","ns1.dom.scw.cloud"],"ns_default":["ns0.dom.scw.cloud","ns1.dom.scw.cloud"],"ns_master":[],"status":"active","message":null,"updated_at":"2022-06-15T14:16:47Z","project_id":"105bdce1-64c0-48ab-899d-868455867ecf"}]}'
     headers:
       Content-Length:
       - "333"
@@ -187,7 +286,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Tue, 19 Apr 2022 09:01:00 GMT
+      - Wed, 15 Jun 2022 14:16:50 GMT
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -197,7 +296,7 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - 16d9f7d6-40cf-4a1a-8a28-6ce5d6e2c488
+      - affe6831-de02-45a4-be9e-1a63f05aad9a
     status: 200 OK
     code: 200
     duration: ""
@@ -206,12 +305,12 @@ interactions:
     form: {}
     headers:
       User-Agent:
-      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.17.6; linux; amd64) terraform-provider/develop
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.18.2; linux; amd64) terraform-provider/develop
         terraform/terraform-tests
-    url: https://api.scaleway.com/domain/v2beta1/dns-zones/test-weighted.scaleway-terraform.com/records?name=tf_weighted&order_by=name_asc&page=1&type=A
+    url: https://api.scaleway.com/domain/v2beta1/dns-zones/test-weighted.scaleway-terraform.com/records?id=12d7a19f-d9d4-458d-8d87-ab36d38d71ee&name=tf_weighted&order_by=name_asc&page=1&type=A
     method: GET
   response:
-    body: '{"total_count":1,"records":[{"id":"39574bd0-1cf0-4c39-af46-7fdf0fb45b04","data":"127.0.0.5","name":"tf_weighted","priority":0,"ttl":3600,"type":"A","comment":null,"weighted_config":{"weighted_ips":[{"ip":"1.2.3.4","weight":1},{"ip":"4.3.2.1","weight":2}]}}]}'
+    body: '{"total_count":1,"records":[{"id":"12d7a19f-d9d4-458d-8d87-ab36d38d71ee","data":"127.0.0.5","name":"tf_weighted","priority":0,"ttl":3600,"type":"A","comment":null,"weighted_config":{"weighted_ips":[{"ip":"1.2.3.4","weight":1},{"ip":"4.3.2.1","weight":2}]}}]}'
     headers:
       Content-Length:
       - "258"
@@ -220,7 +319,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Tue, 19 Apr 2022 09:01:00 GMT
+      - Wed, 15 Jun 2022 14:16:51 GMT
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -230,7 +329,7 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - 76cf0413-6ff8-4582-ae81-98c5c6acce63
+      - c0cd8e50-5866-49ad-901e-8539d697d5f7
     status: 200 OK
     code: 200
     duration: ""
@@ -239,12 +338,12 @@ interactions:
     form: {}
     headers:
       User-Agent:
-      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.17.6; linux; amd64) terraform-provider/develop
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.18.2; linux; amd64) terraform-provider/develop
         terraform/terraform-tests
-    url: https://api.scaleway.com/domain/v2beta1/dns-zones?dns_zone=test-weighted.scaleway-terraform.com&domain=&order_by=domain_asc&page=1
+    url: https://api.scaleway.com/domain/v2beta1/dns-zones?dns_zone=test-weighted.scaleway-terraform.com&domain=&order_by=domain_asc
     method: GET
   response:
-    body: '{"total_count":1,"dns_zones":[{"domain":"scaleway-terraform.com","subdomain":"test-weighted","ns":["ns0.dom.scw.cloud","ns1.dom.scw.cloud"],"ns_default":["ns0.dom.scw.cloud","ns1.dom.scw.cloud"],"ns_master":[],"status":"active","message":null,"updated_at":"2022-04-19T09:01:00Z","project_id":"105bdce1-64c0-48ab-899d-868455867ecf"}]}'
+    body: '{"total_count":1,"dns_zones":[{"domain":"scaleway-terraform.com","subdomain":"test-weighted","ns":["ns0.dom.scw.cloud","ns1.dom.scw.cloud"],"ns_default":["ns0.dom.scw.cloud","ns1.dom.scw.cloud"],"ns_master":[],"status":"active","message":null,"updated_at":"2022-06-15T14:16:47Z","project_id":"105bdce1-64c0-48ab-899d-868455867ecf"}]}'
     headers:
       Content-Length:
       - "333"
@@ -253,7 +352,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Tue, 19 Apr 2022 09:01:00 GMT
+      - Wed, 15 Jun 2022 14:16:51 GMT
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -263,23 +362,23 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - 5f040137-75d3-4204-ac8b-b4047938a939
+      - d4d3fb4d-723c-42fc-b661-8c238ee3405c
     status: 200 OK
     code: 200
     duration: ""
 - request:
-    body: '{"changes":[{"set":{"id":"39574bd0-1cf0-4c39-af46-7fdf0fb45b04","records":[{"data":"127.0.0.5","name":"tf_weighted","priority":0,"ttl":3600,"type":"A","comment":null,"weighted_config":{"weighted_ips":[{"ip":"1.2.3.4","weight":2},{"ip":"4.3.2.1","weight":1},{"ip":"5.6.7.8","weight":999}]},"id":""}]}}],"return_all_records":false,"disallow_new_zone_creation":false,"serial":null}'
+    body: '{"changes":[{"set":{"id":"12d7a19f-d9d4-458d-8d87-ab36d38d71ee","records":[{"data":"","name":"tf_weighted","priority":0,"ttl":0,"type":"unknown","comment":null,"weighted_config":{"weighted_ips":[{"ip":"1.2.3.4","weight":2},{"ip":"4.3.2.1","weight":1},{"ip":"5.6.7.8","weight":999}]},"id":""}]}}],"return_all_records":false,"disallow_new_zone_creation":false,"serial":null}'
     form: {}
     headers:
       Content-Type:
       - application/json
       User-Agent:
-      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.17.6; linux; amd64) terraform-provider/develop
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.18.2; linux; amd64) terraform-provider/develop
         terraform/terraform-tests
     url: https://api.scaleway.com/domain/v2beta1/dns-zones/test-weighted.scaleway-terraform.com/records
     method: PATCH
   response:
-    body: '{"records":[{"id":"39574bd0-1cf0-4c39-af46-7fdf0fb45b04","data":"127.0.0.5","name":"tf_weighted","priority":0,"ttl":3600,"type":"A","comment":null,"weighted_config":{"weighted_ips":[{"ip":"1.2.3.4","weight":2},{"ip":"4.3.2.1","weight":1},{"ip":"5.6.7.8","weight":999}]}}]}'
+    body: '{"records":[{"id":"12d7a19f-d9d4-458d-8d87-ab36d38d71ee","data":"127.0.0.5","name":"tf_weighted","priority":0,"ttl":3600,"type":"A","comment":null,"weighted_config":{"weighted_ips":[{"ip":"1.2.3.4","weight":2},{"ip":"4.3.2.1","weight":1},{"ip":"5.6.7.8","weight":999}]}}]}'
     headers:
       Content-Length:
       - "272"
@@ -288,7 +387,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Tue, 19 Apr 2022 09:01:01 GMT
+      - Wed, 15 Jun 2022 14:16:51 GMT
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -298,7 +397,7 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - a9e47415-3e60-4f41-b7d0-37264a6e6afc
+      - 16bf363d-27fb-48b7-9355-2e0499ed592b
     status: 200 OK
     code: 200
     duration: ""
@@ -307,45 +406,12 @@ interactions:
     form: {}
     headers:
       User-Agent:
-      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.17.6; linux; amd64) terraform-provider/develop
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.18.2; linux; amd64) terraform-provider/develop
         terraform/terraform-tests
-    url: https://api.scaleway.com/domain/v2beta1/dns-zones/test-weighted.scaleway-terraform.com/records?name=tf_weighted&order_by=name_asc&page=1&type=A
+    url: https://api.scaleway.com/domain/v2beta1/dns-zones?dns_zone=test-weighted.scaleway-terraform.com&domain=&order_by=domain_asc
     method: GET
   response:
-    body: '{"total_count":1,"records":[{"id":"39574bd0-1cf0-4c39-af46-7fdf0fb45b04","data":"127.0.0.5","name":"tf_weighted","priority":0,"ttl":3600,"type":"A","comment":null,"weighted_config":{"weighted_ips":[{"ip":"1.2.3.4","weight":2},{"ip":"4.3.2.1","weight":1},{"ip":"5.6.7.8","weight":999}]}}]}'
-    headers:
-      Content-Length:
-      - "288"
-      Content-Security-Policy:
-      - default-src 'none'; frame-ancestors 'none'
-      Content-Type:
-      - application/json
-      Date:
-      - Tue, 19 Apr 2022 09:01:01 GMT
-      Server:
-      - Scaleway API-Gateway
-      Strict-Transport-Security:
-      - max-age=63072000
-      X-Content-Type-Options:
-      - nosniff
-      X-Frame-Options:
-      - DENY
-      X-Request-Id:
-      - cc6ca035-ebaf-4872-a424-e288e57bb20f
-    status: 200 OK
-    code: 200
-    duration: ""
-- request:
-    body: ""
-    form: {}
-    headers:
-      User-Agent:
-      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.17.6; linux; amd64) terraform-provider/develop
-        terraform/terraform-tests
-    url: https://api.scaleway.com/domain/v2beta1/dns-zones?dns_zone=test-weighted.scaleway-terraform.com&domain=&order_by=domain_asc&page=1
-    method: GET
-  response:
-    body: '{"total_count":1,"dns_zones":[{"domain":"scaleway-terraform.com","subdomain":"test-weighted","ns":["ns0.dom.scw.cloud","ns1.dom.scw.cloud"],"ns_default":["ns0.dom.scw.cloud","ns1.dom.scw.cloud"],"ns_master":[],"status":"pending","message":null,"updated_at":"2022-04-19T09:01:01Z","project_id":"105bdce1-64c0-48ab-899d-868455867ecf"}]}'
+    body: '{"total_count":1,"dns_zones":[{"domain":"scaleway-terraform.com","subdomain":"test-weighted","ns":["ns0.dom.scw.cloud","ns1.dom.scw.cloud"],"ns_default":["ns0.dom.scw.cloud","ns1.dom.scw.cloud"],"ns_master":[],"status":"pending","message":null,"updated_at":"2022-06-15T14:16:51Z","project_id":"105bdce1-64c0-48ab-899d-868455867ecf"}]}'
     headers:
       Content-Length:
       - "334"
@@ -354,7 +420,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Tue, 19 Apr 2022 09:01:01 GMT
+      - Wed, 15 Jun 2022 14:16:51 GMT
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -364,7 +430,7 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - add7cd50-08ce-40c3-ae70-236095cc62fa
+      - 323f4b84-aa71-4b90-bb69-a23585d3b730
     status: 200 OK
     code: 200
     duration: ""
@@ -373,12 +439,144 @@ interactions:
     form: {}
     headers:
       User-Agent:
-      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.17.6; linux; amd64) terraform-provider/develop
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.18.2; linux; amd64) terraform-provider/develop
+        terraform/terraform-tests
+    url: https://api.scaleway.com/domain/v2beta1/dns-zones?dns_zone=test-weighted.scaleway-terraform.com&domain=&order_by=domain_asc
+    method: GET
+  response:
+    body: '{"total_count":1,"dns_zones":[{"domain":"scaleway-terraform.com","subdomain":"test-weighted","ns":["ns0.dom.scw.cloud","ns1.dom.scw.cloud"],"ns_default":["ns0.dom.scw.cloud","ns1.dom.scw.cloud"],"ns_master":[],"status":"pending","message":null,"updated_at":"2022-06-15T14:16:51Z","project_id":"105bdce1-64c0-48ab-899d-868455867ecf"}]}'
+    headers:
+      Content-Length:
+      - "334"
+      Content-Security-Policy:
+      - default-src 'none'; frame-ancestors 'none'
+      Content-Type:
+      - application/json
+      Date:
+      - Wed, 15 Jun 2022 14:16:56 GMT
+      Server:
+      - Scaleway API-Gateway
+      Strict-Transport-Security:
+      - max-age=63072000
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+      X-Request-Id:
+      - 26c3fc7a-95af-4297-88fb-683bc3793d80
+    status: 200 OK
+    code: 200
+    duration: ""
+- request:
+    body: ""
+    form: {}
+    headers:
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.18.2; linux; amd64) terraform-provider/develop
+        terraform/terraform-tests
+    url: https://api.scaleway.com/domain/v2beta1/dns-zones?dns_zone=test-weighted.scaleway-terraform.com&domain=&order_by=domain_asc
+    method: GET
+  response:
+    body: '{"total_count":1,"dns_zones":[{"domain":"scaleway-terraform.com","subdomain":"test-weighted","ns":["ns0.dom.scw.cloud","ns1.dom.scw.cloud"],"ns_default":["ns0.dom.scw.cloud","ns1.dom.scw.cloud"],"ns_master":[],"status":"active","message":null,"updated_at":"2022-06-15T14:16:58Z","project_id":"105bdce1-64c0-48ab-899d-868455867ecf"}]}'
+    headers:
+      Content-Length:
+      - "333"
+      Content-Security-Policy:
+      - default-src 'none'; frame-ancestors 'none'
+      Content-Type:
+      - application/json
+      Date:
+      - Wed, 15 Jun 2022 14:17:01 GMT
+      Server:
+      - Scaleway API-Gateway
+      Strict-Transport-Security:
+      - max-age=63072000
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+      X-Request-Id:
+      - d0da005f-e101-47b9-9df2-ca91e807b315
+    status: 200 OK
+    code: 200
+    duration: ""
+- request:
+    body: ""
+    form: {}
+    headers:
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.18.2; linux; amd64) terraform-provider/develop
+        terraform/terraform-tests
+    url: https://api.scaleway.com/domain/v2beta1/dns-zones/test-weighted.scaleway-terraform.com/records?id=12d7a19f-d9d4-458d-8d87-ab36d38d71ee&name=tf_weighted&order_by=name_asc&page=1&type=A
+    method: GET
+  response:
+    body: '{"total_count":1,"records":[{"id":"12d7a19f-d9d4-458d-8d87-ab36d38d71ee","data":"127.0.0.5","name":"tf_weighted","priority":0,"ttl":3600,"type":"A","comment":null,"weighted_config":{"weighted_ips":[{"ip":"1.2.3.4","weight":2},{"ip":"4.3.2.1","weight":1},{"ip":"5.6.7.8","weight":999}]}}]}'
+    headers:
+      Content-Length:
+      - "288"
+      Content-Security-Policy:
+      - default-src 'none'; frame-ancestors 'none'
+      Content-Type:
+      - application/json
+      Date:
+      - Wed, 15 Jun 2022 14:17:02 GMT
+      Server:
+      - Scaleway API-Gateway
+      Strict-Transport-Security:
+      - max-age=63072000
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+      X-Request-Id:
+      - 29945903-62b6-4a40-b4d6-dde1cb588a4d
+    status: 200 OK
+    code: 200
+    duration: ""
+- request:
+    body: ""
+    form: {}
+    headers:
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.18.2; linux; amd64) terraform-provider/develop
+        terraform/terraform-tests
+    url: https://api.scaleway.com/domain/v2beta1/dns-zones?dns_zone=test-weighted.scaleway-terraform.com&domain=&order_by=domain_asc
+    method: GET
+  response:
+    body: '{"total_count":1,"dns_zones":[{"domain":"scaleway-terraform.com","subdomain":"test-weighted","ns":["ns0.dom.scw.cloud","ns1.dom.scw.cloud"],"ns_default":["ns0.dom.scw.cloud","ns1.dom.scw.cloud"],"ns_master":[],"status":"active","message":null,"updated_at":"2022-06-15T14:16:58Z","project_id":"105bdce1-64c0-48ab-899d-868455867ecf"}]}'
+    headers:
+      Content-Length:
+      - "333"
+      Content-Security-Policy:
+      - default-src 'none'; frame-ancestors 'none'
+      Content-Type:
+      - application/json
+      Date:
+      - Wed, 15 Jun 2022 14:17:02 GMT
+      Server:
+      - Scaleway API-Gateway
+      Strict-Transport-Security:
+      - max-age=63072000
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+      X-Request-Id:
+      - ad4987e0-3f80-4f49-a359-dc4512d9dd43
+    status: 200 OK
+    code: 200
+    duration: ""
+- request:
+    body: ""
+    form: {}
+    headers:
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.18.2; linux; amd64) terraform-provider/develop
         terraform/terraform-tests
     url: https://api.scaleway.com/domain/v2beta1/dns-zones/test-weighted.scaleway-terraform.com/records?name=&order_by=name_asc&type=unknown
     method: GET
   response:
-    body: '{"total_count":3,"records":[{"id":"b898246b-1be3-4ffb-9b2d-35680448d7f8","data":"ns0.dom.scw.cloud.","name":"","priority":0,"ttl":600,"type":"NS","comment":null},{"id":"2330ba96-0f0f-4a3e-a850-0b58e288964b","data":"ns1.dom.scw.cloud.","name":"","priority":0,"ttl":600,"type":"NS","comment":null},{"id":"39574bd0-1cf0-4c39-af46-7fdf0fb45b04","data":"127.0.0.5","name":"tf_weighted","priority":0,"ttl":3600,"type":"A","comment":null,"weighted_config":{"weighted_ips":[{"ip":"1.2.3.4","weight":2},{"ip":"4.3.2.1","weight":1},{"ip":"5.6.7.8","weight":999}]}}]}'
+    body: '{"total_count":3,"records":[{"id":"aaf21669-847d-4d04-a979-1b60255a5017","data":"ns0.dom.scw.cloud.","name":"","priority":0,"ttl":600,"type":"NS","comment":null},{"id":"4c86a470-8647-4552-8e59-b3d66431b2dd","data":"ns1.dom.scw.cloud.","name":"","priority":0,"ttl":600,"type":"NS","comment":null},{"id":"12d7a19f-d9d4-458d-8d87-ab36d38d71ee","data":"127.0.0.5","name":"tf_weighted","priority":0,"ttl":3600,"type":"A","comment":null,"weighted_config":{"weighted_ips":[{"ip":"1.2.3.4","weight":2},{"ip":"4.3.2.1","weight":1},{"ip":"5.6.7.8","weight":999}]}}]}'
     headers:
       Content-Length:
       - "556"
@@ -387,7 +585,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Tue, 19 Apr 2022 09:01:02 GMT
+      - Wed, 15 Jun 2022 14:17:02 GMT
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -397,7 +595,7 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - deef8fad-d373-479d-934c-1fb803110a5d
+      - eb05cfc7-3c97-4ce1-aba5-b3d82d4b7488
     status: 200 OK
     code: 200
     duration: ""
@@ -406,12 +604,12 @@ interactions:
     form: {}
     headers:
       User-Agent:
-      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.17.6; linux; amd64) terraform-provider/develop
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.18.2; linux; amd64) terraform-provider/develop
         terraform/terraform-tests
-    url: https://api.scaleway.com/domain/v2beta1/dns-zones/test-weighted.scaleway-terraform.com/records?name=tf_weighted&order_by=name_asc&page=1&type=A
+    url: https://api.scaleway.com/domain/v2beta1/dns-zones/test-weighted.scaleway-terraform.com/records?id=12d7a19f-d9d4-458d-8d87-ab36d38d71ee&name=tf_weighted&order_by=name_asc&page=1&type=A
     method: GET
   response:
-    body: '{"total_count":1,"records":[{"id":"39574bd0-1cf0-4c39-af46-7fdf0fb45b04","data":"127.0.0.5","name":"tf_weighted","priority":0,"ttl":3600,"type":"A","comment":null,"weighted_config":{"weighted_ips":[{"ip":"1.2.3.4","weight":2},{"ip":"4.3.2.1","weight":1},{"ip":"5.6.7.8","weight":999}]}}]}'
+    body: '{"total_count":1,"records":[{"id":"12d7a19f-d9d4-458d-8d87-ab36d38d71ee","data":"127.0.0.5","name":"tf_weighted","priority":0,"ttl":3600,"type":"A","comment":null,"weighted_config":{"weighted_ips":[{"ip":"1.2.3.4","weight":2},{"ip":"4.3.2.1","weight":1},{"ip":"5.6.7.8","weight":999}]}}]}'
     headers:
       Content-Length:
       - "288"
@@ -420,7 +618,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Tue, 19 Apr 2022 09:01:02 GMT
+      - Wed, 15 Jun 2022 14:17:02 GMT
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -430,7 +628,7 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - 1768eb39-0c3e-4f68-9434-70f5b5df7229
+      - cb20997d-ff32-4e9d-9b85-74d7cdee79ff
     status: 200 OK
     code: 200
     duration: ""
@@ -439,21 +637,21 @@ interactions:
     form: {}
     headers:
       User-Agent:
-      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.17.6; linux; amd64) terraform-provider/develop
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.18.2; linux; amd64) terraform-provider/develop
         terraform/terraform-tests
-    url: https://api.scaleway.com/domain/v2beta1/dns-zones?dns_zone=test-weighted.scaleway-terraform.com&domain=&order_by=domain_asc&page=1
+    url: https://api.scaleway.com/domain/v2beta1/dns-zones?dns_zone=test-weighted.scaleway-terraform.com&domain=&order_by=domain_asc
     method: GET
   response:
-    body: '{"total_count":1,"dns_zones":[{"domain":"scaleway-terraform.com","subdomain":"test-weighted","ns":["ns0.dom.scw.cloud","ns1.dom.scw.cloud"],"ns_default":["ns0.dom.scw.cloud","ns1.dom.scw.cloud"],"ns_master":[],"status":"pending","message":null,"updated_at":"2022-04-19T09:01:01Z","project_id":"105bdce1-64c0-48ab-899d-868455867ecf"}]}'
+    body: '{"total_count":1,"dns_zones":[{"domain":"scaleway-terraform.com","subdomain":"test-weighted","ns":["ns0.dom.scw.cloud","ns1.dom.scw.cloud"],"ns_default":["ns0.dom.scw.cloud","ns1.dom.scw.cloud"],"ns_master":[],"status":"active","message":null,"updated_at":"2022-06-15T14:16:58Z","project_id":"105bdce1-64c0-48ab-899d-868455867ecf"}]}'
     headers:
       Content-Length:
-      - "334"
+      - "333"
       Content-Security-Policy:
       - default-src 'none'; frame-ancestors 'none'
       Content-Type:
       - application/json
       Date:
-      - Tue, 19 Apr 2022 09:01:02 GMT
+      - Wed, 15 Jun 2022 14:17:02 GMT
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -463,18 +661,18 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - d22b0d83-0673-42bb-aa17-e82797887425
+      - 1666ccd5-a6ef-428c-9adb-400f6169072a
     status: 200 OK
     code: 200
     duration: ""
 - request:
-    body: '{"changes":[{"delete":{"id":"39574bd0-1cf0-4c39-af46-7fdf0fb45b04"}}],"return_all_records":false,"disallow_new_zone_creation":false,"serial":null}'
+    body: '{"changes":[{"delete":{"id":"12d7a19f-d9d4-458d-8d87-ab36d38d71ee"}}],"return_all_records":false,"disallow_new_zone_creation":false,"serial":null}'
     form: {}
     headers:
       Content-Type:
       - application/json
       User-Agent:
-      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.17.6; linux; amd64) terraform-provider/develop
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.18.2; linux; amd64) terraform-provider/develop
         terraform/terraform-tests
     url: https://api.scaleway.com/domain/v2beta1/dns-zones/test-weighted.scaleway-terraform.com/records
     method: PATCH
@@ -488,7 +686,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Tue, 19 Apr 2022 09:01:03 GMT
+      - Wed, 15 Jun 2022 14:17:03 GMT
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -498,7 +696,7 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - 827b2af9-01f3-423a-8d4e-26042921978a
+      - e0466f74-5371-4f69-b5fd-c01f730348bd
     status: 200 OK
     code: 200
     duration: ""
@@ -507,12 +705,111 @@ interactions:
     form: {}
     headers:
       User-Agent:
-      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.17.6; linux; amd64) terraform-provider/develop
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.18.2; linux; amd64) terraform-provider/develop
+        terraform/terraform-tests
+    url: https://api.scaleway.com/domain/v2beta1/dns-zones?dns_zone=test-weighted.scaleway-terraform.com&domain=&order_by=domain_asc
+    method: GET
+  response:
+    body: '{"total_count":1,"dns_zones":[{"domain":"scaleway-terraform.com","subdomain":"test-weighted","ns":["ns0.dom.scw.cloud","ns1.dom.scw.cloud"],"ns_default":["ns0.dom.scw.cloud","ns1.dom.scw.cloud"],"ns_master":[],"status":"pending","message":null,"updated_at":"2022-06-15T14:17:03Z","project_id":"105bdce1-64c0-48ab-899d-868455867ecf"}]}'
+    headers:
+      Content-Length:
+      - "334"
+      Content-Security-Policy:
+      - default-src 'none'; frame-ancestors 'none'
+      Content-Type:
+      - application/json
+      Date:
+      - Wed, 15 Jun 2022 14:17:03 GMT
+      Server:
+      - Scaleway API-Gateway
+      Strict-Transport-Security:
+      - max-age=63072000
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+      X-Request-Id:
+      - 44ef869a-2de7-4e60-bacc-38ea88c46c91
+    status: 200 OK
+    code: 200
+    duration: ""
+- request:
+    body: ""
+    form: {}
+    headers:
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.18.2; linux; amd64) terraform-provider/develop
+        terraform/terraform-tests
+    url: https://api.scaleway.com/domain/v2beta1/dns-zones?dns_zone=test-weighted.scaleway-terraform.com&domain=&order_by=domain_asc
+    method: GET
+  response:
+    body: '{"total_count":1,"dns_zones":[{"domain":"scaleway-terraform.com","subdomain":"test-weighted","ns":["ns0.dom.scw.cloud","ns1.dom.scw.cloud"],"ns_default":["ns0.dom.scw.cloud","ns1.dom.scw.cloud"],"ns_master":[],"status":"pending","message":null,"updated_at":"2022-06-15T14:17:03Z","project_id":"105bdce1-64c0-48ab-899d-868455867ecf"}]}'
+    headers:
+      Content-Length:
+      - "334"
+      Content-Security-Policy:
+      - default-src 'none'; frame-ancestors 'none'
+      Content-Type:
+      - application/json
+      Date:
+      - Wed, 15 Jun 2022 14:17:08 GMT
+      Server:
+      - Scaleway API-Gateway
+      Strict-Transport-Security:
+      - max-age=63072000
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+      X-Request-Id:
+      - 8dcf9ef6-cd50-4841-86db-548ba0ef9a72
+    status: 200 OK
+    code: 200
+    duration: ""
+- request:
+    body: ""
+    form: {}
+    headers:
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.18.2; linux; amd64) terraform-provider/develop
+        terraform/terraform-tests
+    url: https://api.scaleway.com/domain/v2beta1/dns-zones?dns_zone=test-weighted.scaleway-terraform.com&domain=&order_by=domain_asc
+    method: GET
+  response:
+    body: '{"total_count":1,"dns_zones":[{"domain":"scaleway-terraform.com","subdomain":"test-weighted","ns":["ns0.dom.scw.cloud","ns1.dom.scw.cloud"],"ns_default":["ns0.dom.scw.cloud","ns1.dom.scw.cloud"],"ns_master":[],"status":"active","message":null,"updated_at":"2022-06-15T14:17:09Z","project_id":"105bdce1-64c0-48ab-899d-868455867ecf"}]}'
+    headers:
+      Content-Length:
+      - "333"
+      Content-Security-Policy:
+      - default-src 'none'; frame-ancestors 'none'
+      Content-Type:
+      - application/json
+      Date:
+      - Wed, 15 Jun 2022 14:17:13 GMT
+      Server:
+      - Scaleway API-Gateway
+      Strict-Transport-Security:
+      - max-age=63072000
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+      X-Request-Id:
+      - 64018879-5804-41db-aac2-9df534cf3dd7
+    status: 200 OK
+    code: 200
+    duration: ""
+- request:
+    body: ""
+    form: {}
+    headers:
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.18.2; linux; amd64) terraform-provider/develop
         terraform/terraform-tests
     url: https://api.scaleway.com/domain/v2beta1/dns-zones/test-weighted.scaleway-terraform.com/records?name=&order_by=name_asc&type=unknown
     method: GET
   response:
-    body: '{"total_count":2,"records":[{"id":"b898246b-1be3-4ffb-9b2d-35680448d7f8","data":"ns0.dom.scw.cloud.","name":"","priority":0,"ttl":600,"type":"NS","comment":null},{"id":"2330ba96-0f0f-4a3e-a850-0b58e288964b","data":"ns1.dom.scw.cloud.","name":"","priority":0,"ttl":600,"type":"NS","comment":null}]}'
+    body: '{"total_count":2,"records":[{"id":"aaf21669-847d-4d04-a979-1b60255a5017","data":"ns0.dom.scw.cloud.","name":"","priority":0,"ttl":600,"type":"NS","comment":null},{"id":"4c86a470-8647-4552-8e59-b3d66431b2dd","data":"ns1.dom.scw.cloud.","name":"","priority":0,"ttl":600,"type":"NS","comment":null}]}'
     headers:
       Content-Length:
       - "297"
@@ -521,7 +818,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Tue, 19 Apr 2022 09:01:03 GMT
+      - Wed, 15 Jun 2022 14:17:13 GMT
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -531,7 +828,7 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - 276577d1-a6a6-4ea7-a623-0f7bbadeba37
+      - cde5d65b-af04-42fa-81f0-178f6d24fb69
     status: 200 OK
     code: 200
     duration: ""
@@ -540,7 +837,40 @@ interactions:
     form: {}
     headers:
       User-Agent:
-      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.17.6; linux; amd64) terraform-provider/develop
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.18.2; linux; amd64) terraform-provider/develop
+        terraform/terraform-tests
+    url: https://api.scaleway.com/domain/v2beta1/dns-zones?dns_zone=test-weighted.scaleway-terraform.com&domain=&order_by=domain_asc
+    method: GET
+  response:
+    body: '{"total_count":1,"dns_zones":[{"domain":"scaleway-terraform.com","subdomain":"test-weighted","ns":["ns0.dom.scw.cloud","ns1.dom.scw.cloud"],"ns_default":["ns0.dom.scw.cloud","ns1.dom.scw.cloud"],"ns_master":[],"status":"active","message":null,"updated_at":"2022-06-15T14:17:09Z","project_id":"105bdce1-64c0-48ab-899d-868455867ecf"}]}'
+    headers:
+      Content-Length:
+      - "333"
+      Content-Security-Policy:
+      - default-src 'none'; frame-ancestors 'none'
+      Content-Type:
+      - application/json
+      Date:
+      - Wed, 15 Jun 2022 14:17:13 GMT
+      Server:
+      - Scaleway API-Gateway
+      Strict-Transport-Security:
+      - max-age=63072000
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+      X-Request-Id:
+      - 65af53e4-0d02-443a-ae5f-4ab96ab4b05a
+    status: 200 OK
+    code: 200
+    duration: ""
+- request:
+    body: ""
+    form: {}
+    headers:
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.18.2; linux; amd64) terraform-provider/develop
         terraform/terraform-tests
     url: https://api.scaleway.com/domain/v2beta1/dns-zones/test-weighted.scaleway-terraform.com?project_id=105bdce1-64c0-48ab-899d-868455867ecf
     method: DELETE
@@ -554,7 +884,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Tue, 19 Apr 2022 09:01:03 GMT
+      - Wed, 15 Jun 2022 14:17:14 GMT
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -564,7 +894,7 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - fceb1b2c-81cd-4ca2-bfdf-90e1edd723bd
+      - e817a052-841d-4d7e-82e8-b05e9be40f72
     status: 200 OK
     code: 200
     duration: ""
@@ -573,7 +903,7 @@ interactions:
     form: {}
     headers:
       User-Agent:
-      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.17.6; linux; amd64) terraform-provider/develop
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.18.2; linux; amd64) terraform-provider/develop
         terraform/terraform-tests
     url: https://api.scaleway.com/domain/v2beta1/dns-zones/test-weighted.scaleway-terraform.com/records?name=&order_by=name_asc&type=unknown
     method: GET
@@ -587,7 +917,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Tue, 19 Apr 2022 09:01:03 GMT
+      - Wed, 15 Jun 2022 14:17:14 GMT
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -597,7 +927,7 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - 91445e25-ffc1-4032-96da-45008aa09053
+      - 2be7cd0b-db11-4f12-8f94-f7dffe5d9a9b
     status: 403 Forbidden
     code: 403
     duration: ""

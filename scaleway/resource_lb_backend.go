@@ -20,6 +20,10 @@ func resourceScalewayLbBackend() *schema.Resource {
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 		Timeouts: &schema.ResourceTimeout{
+			Create:  schema.DefaultTimeout(defaultLbLbTimeout),
+			Read:    schema.DefaultTimeout(defaultLbLbTimeout),
+			Update:  schema.DefaultTimeout(defaultLbLbTimeout),
+			Delete:  schema.DefaultTimeout(defaultLbLbTimeout),
 			Default: schema.DefaultTimeout(defaultLbLbTimeout),
 		},
 		SchemaVersion: 1,
@@ -340,7 +344,6 @@ func resourceScalewayLbBackendRead(ctx context.Context, d *schema.ResourceData, 
 		Zone:      zone,
 		BackendID: ID,
 	}, scw.WithContext(ctx))
-
 	if err != nil {
 		if is403Error(err) {
 			d.SetId("")

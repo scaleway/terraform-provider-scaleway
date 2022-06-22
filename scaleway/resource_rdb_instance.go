@@ -4,17 +4,12 @@ import (
 	"context"
 	"fmt"
 	"io/ioutil"
-	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/scaleway/scaleway-sdk-go/api/rdb/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
-)
-
-const (
-	defaultWaitRDBRetryInterval = 30 * time.Second
 )
 
 func resourceScalewayRdbInstance() *schema.Resource {
@@ -24,6 +19,10 @@ func resourceScalewayRdbInstance() *schema.Resource {
 		UpdateContext: resourceScalewayRdbInstanceUpdate,
 		DeleteContext: resourceScalewayRdbInstanceDelete,
 		Timeouts: &schema.ResourceTimeout{
+			Create:  schema.DefaultTimeout(defaultRdbInstanceTimeout),
+			Read:    schema.DefaultTimeout(defaultRdbInstanceTimeout),
+			Update:  schema.DefaultTimeout(defaultRdbInstanceTimeout),
+			Delete:  schema.DefaultTimeout(defaultRdbInstanceTimeout),
 			Default: schema.DefaultTimeout(defaultRdbInstanceTimeout),
 		},
 		Importer: &schema.ResourceImporter{
@@ -327,10 +326,7 @@ func resourceScalewayRdbInstanceCreate(ctx context.Context, d *schema.ResourceDa
 			InstanceID: res.ID,
 		}
 
-		backupSameRegion, backupSameRegionExist := d.GetOk("backup_same_region")
-		if backupSameRegionExist {
-			updateReq.BackupSameRegion = expandBoolPtr(backupSameRegion)
-		}
+		updateReq.BackupSameRegion = expandBoolPtr(d.Get("backup_same_region"))
 
 		updateReq.IsBackupScheduleDisabled = scw.BoolPtr(d.Get("disable_backup").(bool))
 		if backupScheduleFrequency, okFrequency := d.GetOk("backup_schedule_frequency"); okFrequency {
@@ -379,6 +375,10 @@ func resourceScalewayRdbInstanceRead(ctx context.Context, d *schema.ResourceData
 	// verify resource is ready
 	res, err := waitForRDBInstance(ctx, rdbAPI, region, ID, d.Timeout(schema.TimeoutRead))
 	if err != nil {
+		if is404Error(err) {
+			d.SetId("")
+			return nil
+		}
 		return diag.FromErr(err)
 	}
 
@@ -406,7 +406,7 @@ func resourceScalewayRdbInstanceRead(ctx context.Context, d *schema.ResourceData
 		_ = d.Set("volume_type", res.Volume.Type)
 		_ = d.Set("volume_size_in_gb", int(res.Volume.Size/scw.GB))
 	}
-	_ = d.Set("read_replicas", flattenRdbInstanceReadReplicas(res.ReadReplicas))
+	_ = d.Set("read_replicas", []string{})
 	_ = d.Set("region", string(region))
 	_ = d.Set("organization_id", res.OrganizationID)
 	_ = d.Set("project_id", res.ProjectID)
@@ -466,7 +466,7 @@ func resourceScalewayRdbInstanceUpdate(ctx context.Context, d *schema.ResourceDa
 		req.BackupSameRegion = expandBoolPtr(d.Get("backup_same_region"))
 	}
 	if d.HasChange("tags") {
-		req.Tags = scw.StringsPtr(expandStrings(d.Get("tags")))
+		req.Tags = expandUpdatedStringsPtr(d.Get("tags"))
 	}
 
 	_, err = waitForRDBInstance(ctx, rdbAPI, region, ID, d.Timeout(schema.TimeoutUpdate))
@@ -562,13 +562,13 @@ func resourceScalewayRdbInstanceUpdate(ctx context.Context, d *schema.ResourceDa
 				EnableHa:   scw.BoolPtr(d.Get("is_ha_cluster").(bool)),
 			})
 	}
-	for _, request := range upgradeInstanceRequests {
+	for i := range upgradeInstanceRequests {
 		_, err = waitForRDBInstance(ctx, rdbAPI, region, ID, d.Timeout(schema.TimeoutUpdate))
 		if err != nil && !is404Error(err) {
 			return diag.FromErr(err)
 		}
 
-		_, err = rdbAPI.UpgradeInstance(&request, scw.WithContext(ctx))
+		_, err = rdbAPI.UpgradeInstance(&upgradeInstanceRequests[i], scw.WithContext(ctx))
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -614,7 +614,8 @@ func resourceScalewayRdbInstanceUpdate(ctx context.Context, d *schema.ResourceDa
 			if remove {
 				err := rdbAPI.DeleteEndpoint(
 					&rdb.DeleteEndpointRequest{
-						EndpointID: endPointID, Region: region},
+						EndpointID: endPointID, Region: region,
+					},
 					scw.WithContext(ctx))
 				if err != nil {
 					diag.FromErr(err)

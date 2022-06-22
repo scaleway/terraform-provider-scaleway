@@ -1,16 +1,20 @@
 package scaleway
 
 import (
+	"context"
+	"fmt"
 	"net"
 	"strings"
 	"time"
 
 	domain "github.com/scaleway/scaleway-sdk-go/api/domain/v2beta1"
+	"github.com/scaleway/scaleway-sdk-go/scw"
 )
 
 const (
-	defaultDomainRecordTimeout = 30 * time.Second
-	defaultDomainZoneTimeout   = 30 * time.Second
+	defaultDomainRecordTimeout     = 30 * time.Second
+	defaultDomainZoneTimeout       = 30 * time.Second
+	defaultDomainZoneRetryInterval = 5 * time.Second
 )
 
 // domainAPI returns a new domain API.
@@ -27,11 +31,29 @@ func flattenDomainData(data string, recordType domain.RecordType) interface{} {
 		if len(dataSplit) == 2 {
 			return dataSplit[1]
 		}
-	default:
-		return data
+	case domain.RecordTypeTXT:
+		return strings.Trim(data, "\"")
 	}
 
 	return data
+}
+
+func getRecordFromData(data string, records []*domain.Record) (*domain.Record, error) {
+	var currentRecord *domain.Record
+	for _, r := range records {
+		flattedData := flattenDomainData(strings.ToLower(r.Data), r.Type).(string)
+		flattenCurrentData := flattenDomainData(strings.ToLower(data), r.Type).(string)
+		if flattenCurrentData == flattedData {
+			currentRecord = r
+			break
+		}
+	}
+
+	if currentRecord == nil {
+		return nil, fmt.Errorf("record with data %s not found", data)
+	}
+
+	return currentRecord, nil
 }
 
 func flattenDomainGeoIP(config *domain.RecordGeoIPConfig) interface{} {
@@ -181,10 +203,8 @@ func expandDomainWeighted(i interface{}, ok bool) *domain.RecordWeightedConfig {
 		return nil
 	}
 
-	raw := i.([]interface{})
-
 	weightedIPs := []*domain.RecordWeightedConfigWeightedIP{}
-	if len(raw) > 0 {
+	if raw := i.([]interface{}); len(raw) > 0 {
 		for _, rawWeighted := range raw {
 			rawMap := rawWeighted.(map[string]interface{})
 			weightedIPs = append(weightedIPs, &domain.RecordWeightedConfigWeightedIP{
@@ -222,10 +242,8 @@ func expandDomainView(i interface{}, ok bool) *domain.RecordViewConfig {
 		return nil
 	}
 
-	raw := i.([]interface{})
-
 	views := []*domain.RecordViewConfigView{}
-	if len(raw) > 0 {
+	if raw := i.([]interface{}); len(raw) > 0 {
 		for _, rawWeighted := range raw {
 			rawMap := rawWeighted.(map[string]interface{})
 			views = append(views, &domain.RecordViewConfigView{
@@ -234,7 +252,21 @@ func expandDomainView(i interface{}, ok bool) *domain.RecordViewConfig {
 			})
 		}
 	}
+
 	return &domain.RecordViewConfig{
 		Views: views,
 	}
+}
+
+func waitForDNSZone(ctx context.Context, domainAPI *domain.API, dnsZone string, timeout time.Duration) (*domain.DNSZone, error) {
+	retryInterval := defaultDomainZoneRetryInterval
+	if DefaultWaitRetryInterval != nil {
+		retryInterval = *DefaultWaitRetryInterval
+	}
+
+	return domainAPI.WaitForDNSZone(&domain.WaitForDNSZoneRequest{
+		DNSZone:       dnsZone,
+		Timeout:       scw.TimeDurationPtr(timeout),
+		RetryInterval: scw.TimeDurationPtr(retryInterval),
+	}, scw.WithContext(ctx))
 }

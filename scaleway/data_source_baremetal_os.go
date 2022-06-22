@@ -79,11 +79,8 @@ func dataSourceScalewayBaremetalOsRead(ctx context.Context, d *schema.ResourceDa
 
 	zoneID := datasourceNewZonedID(osID, zone)
 	d.SetId(zoneID)
-	err = d.Set("os_id", zoneID)
-	if err != nil {
-		return diag.FromErr(err)
-	}
 
+	_ = d.Set("os_id", zoneID)
 	_ = d.Set("zone", zone)
 	_ = d.Set("name", osName)
 	_ = d.Set("version", osVersion)

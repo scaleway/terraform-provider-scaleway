@@ -425,6 +425,7 @@ func resourceScalewayObjectBucketRead(ctx context.Context, d *schema.ResourceDat
 	}
 
 	_ = d.Set("name", bucketName)
+	_ = d.Set("region", region)
 
 	// We do not read `acl` attribute because it could be impossible to find
 	// the right canned ACL from a complex ACL object.
@@ -646,7 +647,6 @@ func resourceScalewayS3BucketCorsUpdate(ctx context.Context, s3conn *s3.S3, d *s
 		_, err := s3conn.DeleteBucketCorsWithContext(ctx, &s3.DeleteBucketCorsInput{
 			Bucket: scw.StringPtr(bucketName),
 		})
-
 		if err != nil {
 			return fmt.Errorf("error deleting S3 CORS: %s", err)
 		}
