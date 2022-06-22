@@ -79,7 +79,3 @@ require (
 )
 
 go 1.17
-
-//replace github.com/scaleway/scaleway-sdk-go => github.com/monitob/scaleway-sdk-go v1.0.0-beta.7.0.20220608125437-51ee3dadbdaf
-
-replace github.com/scaleway/scaleway-sdk-go => /Users/jbernabe/workspace/src/gitlab.infra.online.net/protoc-gen/generated/scaleway-sdk-go
