@@ -23,6 +23,9 @@ func resourceScalewayBaremetalServer() *schema.Resource {
 		SchemaVersion: 0,
 		Timeouts: &schema.ResourceTimeout{
 			Default: schema.DefaultTimeout(defaultBaremetalServerTimeout),
+			Create:  schema.DefaultTimeout(defaultBaremetalServerTimeout),
+			Update:  schema.DefaultTimeout(defaultBaremetalServerTimeout),
+			Delete:  schema.DefaultTimeout(defaultBaremetalServerTimeout),
 		},
 		Schema: map[string]*schema.Schema{
 			"name": {
@@ -230,7 +233,7 @@ func resourceScalewayBaremetalServerUpdate(ctx context.Context, d *schema.Resour
 		ServerID:    zonedID.ID,
 		Name:        expandStringPtr(d.Get("name")),
 		Description: expandStringPtr(d.Get("description")),
-		Tags:        scw.StringsPtr(expandStrings(d.Get("tags"))),
+		Tags:        expandUpdatedStringsPtr(d.Get("tags")),
 	}, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)

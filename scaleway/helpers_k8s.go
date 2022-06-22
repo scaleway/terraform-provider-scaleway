@@ -117,7 +117,6 @@ func waitK8SClusterDeleted(ctx context.Context, k8sAPI *k8s.API, region scw.Regi
 		Timeout:       scw.TimeDurationPtr(timeout),
 		RetryInterval: &retryInterval,
 	}, scw.WithContext(ctx))
-
 	if err != nil {
 		if is404Error(err) {
 			return nil
@@ -140,7 +139,6 @@ func waitK8SPoolReady(ctx context.Context, k8sAPI *k8s.API, region scw.Region, p
 		Timeout:       scw.TimeDurationPtr(timeout),
 		RetryInterval: &retryInterval,
 	}, scw.WithContext(ctx))
-
 	if err != nil {
 		return nil, err
 	}
@@ -177,7 +175,6 @@ func getNodes(ctx context.Context, k8sAPI *k8s.API, pool *k8s.Pool) ([]map[strin
 	}
 
 	nodes, err := k8sAPI.ListNodes(req, scw.WithAllPages(), scw.WithContext(ctx))
-
 	if err != nil {
 		return nil, err
 	}

@@ -11,7 +11,8 @@ import (
 )
 
 const (
-	defaultRdbInstanceTimeout = 15 * time.Minute
+	defaultRdbInstanceTimeout   = 15 * time.Minute
+	defaultWaitRDBRetryInterval = 30 * time.Second
 )
 
 // newRdbAPI returns a new RDB API
@@ -38,18 +39,6 @@ func rdbAPIWithRegionAndID(m interface{}, id string) (*rdb.API, scw.Region, stri
 		return nil, "", "", err
 	}
 	return newRdbAPI(m), region, ID, nil
-}
-
-func flattenRdbInstanceReadReplicas(readReplicas []*rdb.Endpoint) interface{} {
-	replicasI := []map[string]interface{}(nil)
-	for _, readReplica := range readReplicas {
-		replicasI = append(replicasI, map[string]interface{}{
-			"ip":   flattenIPPtr(readReplica.IP),
-			"port": int(readReplica.Port),
-			"name": flattenStringPtr(readReplica.Name),
-		})
-	}
-	return replicasI
 }
 
 func flattenInstanceSettings(settings []*rdb.InstanceSetting) interface{} {
@@ -88,6 +77,20 @@ func waitForRDBInstance(ctx context.Context, api *rdb.API, region scw.Region, id
 	}, scw.WithContext(ctx))
 }
 
+func waitForRDBDatabaseBackup(ctx context.Context, api *rdb.API, region scw.Region, id string, timeout time.Duration) (*rdb.DatabaseBackup, error) {
+	retryInterval := defaultWaitRDBRetryInterval
+	if DefaultWaitRetryInterval != nil {
+		retryInterval = *DefaultWaitRetryInterval
+	}
+
+	return api.WaitForDatabaseBackup(&rdb.WaitForDatabaseBackupRequest{
+		Region:           region,
+		Timeout:          scw.TimeDurationPtr(timeout),
+		DatabaseBackupID: id,
+		RetryInterval:    &retryInterval,
+	}, scw.WithContext(ctx))
+}
+
 func expandPrivateNetwork(data interface{}, exist bool) ([]*rdb.EndpointSpec, error) {
 	if data == nil || !exist {
 		return nil, nil
@@ -116,7 +119,8 @@ func expandLoadBalancer() []*rdb.EndpointSpec {
 	var res []*rdb.EndpointSpec
 
 	res = append(res, &rdb.EndpointSpec{
-		LoadBalancer: &rdb.EndpointSpecLoadBalancer{}})
+		LoadBalancer: &rdb.EndpointSpecLoadBalancer{},
+	})
 
 	return res
 }
@@ -168,12 +172,12 @@ func newEndPointPrivateNetworkDetails(id, ip, locality string) (*rdb.EndpointPri
 	}, nil
 }
 
-func isEndPointEqual(A, B interface{}) bool {
+func isEndPointEqual(a, b interface{}) bool {
 	// Find out the diff Private Network or not
-	if _, ok := A.(*rdb.EndpointPrivateNetworkDetails); ok {
-		if _, ok := B.(*rdb.EndpointPrivateNetworkDetails); ok {
-			detailsA := A.(*rdb.EndpointPrivateNetworkDetails)
-			detailsB := B.(*rdb.EndpointPrivateNetworkDetails)
+	if _, ok := a.(*rdb.EndpointPrivateNetworkDetails); ok {
+		if _, ok := b.(*rdb.EndpointPrivateNetworkDetails); ok {
+			detailsA := a.(*rdb.EndpointPrivateNetworkDetails)
+			detailsB := b.(*rdb.EndpointPrivateNetworkDetails)
 			return reflect.DeepEqual(detailsA, detailsB)
 		}
 	}
@@ -222,4 +226,18 @@ func flattenLoadBalancer(endpoints []*rdb.Endpoint) interface{} {
 	}
 
 	return flat
+}
+
+// expandTimePtr returns a time pointer for an RFC3339 time.
+// It returns nil if time is not valid, you should use validateDate to validate field.
+func expandTimePtr(i interface{}) *time.Time {
+	rawTime := expandStringPtr(i)
+	if rawTime == nil {
+		return nil
+	}
+	parsedTime, err := time.Parse(time.RFC3339, *rawTime)
+	if err != nil {
+		return nil
+	}
+	return &parsedTime
 }

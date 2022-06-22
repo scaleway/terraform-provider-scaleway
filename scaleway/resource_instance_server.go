@@ -30,6 +30,10 @@ func resourceScalewayInstanceServer() *schema.Resource {
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 		Timeouts: &schema.ResourceTimeout{
+			Create:  schema.DefaultTimeout(defaultInstanceServerWaitTimeout),
+			Read:    schema.DefaultTimeout(defaultInstanceServerWaitTimeout),
+			Update:  schema.DefaultTimeout(defaultInstanceServerWaitTimeout),
+			Delete:  schema.DefaultTimeout(defaultInstanceServerWaitTimeout),
 			Default: schema.DefaultTimeout(defaultInstanceServerWaitTimeout),
 		},
 		SchemaVersion: 0,
@@ -599,11 +603,11 @@ func resourceScalewayInstanceServerRead(ctx context.Context, d *schema.ResourceD
 			if err != nil {
 				return diag.FromErr(err)
 			}
-			//if key != "cloud-init" {
+			// if key != "cloud-init" {
 			userData[key] = string(userDataValue)
 			//	} else {
-			//_ = d.Set("cloud_init", string(userDataValue))
-			//}
+			// _ = d.Set("cloud_init", string(userDataValue))
+			// }
 		}
 		if len(userData) > 0 {
 			_ = d.Set("user_data", userData)
@@ -657,7 +661,7 @@ func resourceScalewayInstanceServerUpdate(ctx context.Context, d *schema.Resourc
 	}
 
 	if d.HasChange("tags") {
-		updateRequest.Tags = scw.StringsPtr(expandStrings(d.Get("tags")))
+		updateRequest.Tags = expandUpdatedStringsPtr(d.Get("tags"))
 	}
 
 	if d.HasChange("security_group_id") {
@@ -677,10 +681,14 @@ func resourceScalewayInstanceServerUpdate(ctx context.Context, d *schema.Resourc
 
 	volumes := map[string]*instance.VolumeServerTemplate{}
 
-	if raw, ok := d.GetOk("additional_volume_ids"); d.HasChange("additional_volume_ids") && ok {
+	if raw, hasAdditionalVolumes := d.GetOk("additional_volume_ids"); d.HasChange("additional_volume_ids") {
 		volumes["0"] = &instance.VolumeServerTemplate{
 			ID:   expandZonedID(d.Get("root_volume.0.volume_id")).ID,
 			Name: newRandomName("vol"), // name is ignored by the API, any name will work here
+		}
+
+		if !hasAdditionalVolumes {
+			raw = []interface{}{} // Set an empty list if not volumes exist
 		}
 
 		for i, volumeID := range raw.([]interface{}) {
@@ -728,7 +736,6 @@ func resourceScalewayInstanceServerUpdate(ctx context.Context, d *schema.Resourc
 	////
 	if d.HasChange("ip_id") {
 		server, err := waitForInstanceServer(ctx, instanceAPI, zone, id, d.Timeout(schema.TimeoutUpdate))
-
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -744,7 +751,7 @@ func resourceScalewayInstanceServerUpdate(ctx context.Context, d *schema.Resourc
 			if err != nil {
 				return diag.FromErr(err)
 			}
-			//we wait to ensure to not detach the new ip.
+			// we wait to ensure to not detach the new ip.
 			_, err := waitForInstanceServer(ctx, instanceAPI, zone, id, d.Timeout(schema.TimeoutUpdate))
 			if err != nil {
 				return diag.FromErr(err)
@@ -848,11 +855,11 @@ func resourceScalewayInstanceServerUpdate(ctx context.Context, d *schema.Resourc
 							return diag.FromErr(err)
 						}
 
-						err = ph.detach(o, d.Timeout(schema.TimeoutUpdate))
+						err = ph.detach(ctx, o, d.Timeout(schema.TimeoutUpdate))
 						if err != nil {
 							diag.FromErr(err)
 						}
-						err = ph.attach(n, d.Timeout(schema.TimeoutUpdate))
+						err = ph.attach(ctx, n, d.Timeout(schema.TimeoutUpdate))
 						if err != nil {
 							diag.FromErr(err)
 						}
@@ -870,7 +877,7 @@ func resourceScalewayInstanceServerUpdate(ctx context.Context, d *schema.Resourc
 						return diag.FromErr(err)
 					}
 
-					err = ph.detach(pn["pn_id"], d.Timeout(schema.TimeoutUpdate))
+					err = ph.detach(ctx, pn["pn_id"], d.Timeout(schema.TimeoutUpdate))
 					if err != nil {
 						diag.FromErr(err)
 					}
@@ -952,7 +959,11 @@ func resourceScalewayInstanceServerDelete(ctx context.Context, d *schema.Resourc
 		Zone:     zone,
 		ServerID: id,
 	}, scw.WithContext(ctx))
+	if err != nil && !is404Error(err) {
+		return diag.FromErr(err)
+	}
 
+	_, err = waitForInstanceServer(ctx, instanceAPI, zone, id, d.Timeout(schema.TimeoutDelete))
 	if err != nil && !is404Error(err) {
 		return diag.FromErr(err)
 	}

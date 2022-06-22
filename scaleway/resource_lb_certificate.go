@@ -19,6 +19,10 @@ func resourceScalewayLbCertificate() *schema.Resource {
 		DeleteContext: resourceScalewayLbCertificateDelete,
 		SchemaVersion: 1,
 		Timeouts: &schema.ResourceTimeout{
+			Create:  schema.DefaultTimeout(defaultLbLbTimeout),
+			Read:    schema.DefaultTimeout(defaultLbLbTimeout),
+			Update:  schema.DefaultTimeout(defaultLbLbTimeout),
+			Delete:  schema.DefaultTimeout(defaultLbLbTimeout),
 			Default: schema.DefaultTimeout(defaultLbLbTimeout),
 		},
 		StateUpgraders: []schema.StateUpgrader{
@@ -49,6 +53,7 @@ func resourceScalewayLbCertificate() *schema.Resource {
 						"common_name": {
 							Type:        schema.TypeString,
 							Required:    true,
+							ForceNew:    true,
 							Description: "The main domain name of the certificate",
 						},
 						"subject_alternative_name": {
@@ -57,6 +62,7 @@ func resourceScalewayLbCertificate() *schema.Resource {
 								Type: schema.TypeString,
 							},
 							Optional:    true,
+							ForceNew:    true,
 							Description: "The alternative domain names of the certificate",
 						},
 					},

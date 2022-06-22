@@ -90,6 +90,19 @@ func TestAccScalewayLbAcl_Basic(t *testing.T) {
 								type = "deny"
 							}
 						}
+
+						acl {
+							match {
+								ip_subnet = ["0.0.0.0/0"]
+								http_filter = "http_header_match"
+								http_filter_value = ["example.com"]
+								http_filter_option = "host"
+							}
+
+							action {
+								type = "allow"
+							}
+						}
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
@@ -138,6 +151,15 @@ func TestAccScalewayLbAcl_Basic(t *testing.T) {
 								HTTPFilterValue: []*string{},
 							},
 							Action: &lbSDK.ACLAction{Type: lbSDK.ACLActionTypeDeny},
+						},
+						{
+							Match: &lbSDK.ACLMatch{
+								IPSubnet:         scw.StringSlicePtr([]string{"0.0.0.0/0"}),
+								HTTPFilter:       lbSDK.ACLHTTPFilterHTTPHeaderMatch,
+								HTTPFilterValue:  scw.StringSlicePtr([]string{"example.com"}),
+								HTTPFilterOption: scw.StringPtr("host"),
+							},
+							Action: &lbSDK.ACLAction{Type: lbSDK.ACLActionTypeAllow},
 						},
 					}),
 				),
@@ -202,12 +224,12 @@ func TestAccScalewayLbAcl_Basic(t *testing.T) {
 
 func testAccCheckScalewayACLAreCorrect(tt *TestTools, frontendName string, expectedAcls []*lbSDK.ACL) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-		//define a wrapper for acl comparison
+		// define a wrapper for acl comparison
 		testCompareAcls := func(testAcl, apiAcl lbSDK.ACL) bool {
-			//drop some values which are not part of the testing acl structure
+			// drop some values which are not part of the testing acl structure
 			apiAcl.ID = ""
 			apiAcl.Frontend = nil
-			//if we do not pass any name, then drop it from comparison
+			// if we do not pass any name, then drop it from comparison
 			if testAcl.Name == "" {
 				testAcl.Name = apiAcl.Name
 			}
@@ -228,7 +250,7 @@ func testAccCheckScalewayACLAreCorrect(tt *TestTools, frontendName string, expec
 			return err
 		}
 
-		//fetch our acls from the scaleway
+		// fetch our acls from the scaleway
 		resACL, err := lbAPI.ListACLs(&lbSDK.ZonedAPIListACLsRequest{
 			Zone:       zone,
 			FrontendID: ID,
@@ -237,17 +259,17 @@ func testAccCheckScalewayACLAreCorrect(tt *TestTools, frontendName string, expec
 			return fmt.Errorf("error on getting acl list [%s]", err)
 		}
 
-		//verify that the count of api acl is the same as we are expecting it to be
+		// verify that the count of api acl is the same as we are expecting it to be
 		if len(expectedAcls) != len(resACL.ACLs) {
 			return fmt.Errorf("acl count is wrong")
 		}
-		//convert them to map indexed by the acl index
+		// convert them to map indexed by the acl index
 		aclMap := make(map[int32]*lbSDK.ACL)
 		for _, acl := range resACL.ACLs {
 			aclMap[acl.Index] = acl
 		}
 
-		//check that every index is set up correctly
+		// check that every index is set up correctly
 		for i := 1; i <= len(expectedAcls); i++ {
 			if _, found := aclMap[int32(i)]; !found {
 				return fmt.Errorf("cannot find an index set [%d]", i)
@@ -256,7 +278,7 @@ func testAccCheckScalewayACLAreCorrect(tt *TestTools, frontendName string, expec
 				return fmt.Errorf("two acls are not equal on stage %d", i)
 			}
 		}
-		//check the actual data
+		// check the actual data
 
 		return nil
 	}

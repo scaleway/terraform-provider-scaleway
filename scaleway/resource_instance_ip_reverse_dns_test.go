@@ -10,12 +10,26 @@ import (
 func TestAccScalewayInstanceIPReverseDns_Basic(t *testing.T) {
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
-	testDNSZone := fmt.Sprintf("tf.%s", testDomain)
+	testDNSZone := fmt.Sprintf("%s.%s", testDomainZone, testDomain)
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheckScalewayInstanceIPDestroy(tt),
 		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`
+					resource "scaleway_instance_ip" "main" {}
+					
+					resource "scaleway_domain_record" "tf_A" {
+						dns_zone = %[1]q
+						name     = "tf"
+						type     = "A"
+						data     = "${scaleway_instance_ip.main.address}"
+						ttl      = 3600
+						priority = 1
+					}
+				`, testDomain, testDNSZone),
+			},
 			{
 				Config: fmt.Sprintf(`
 					resource "scaleway_instance_ip" "main" {}
@@ -37,11 +51,6 @@ func TestAccScalewayInstanceIPReverseDns_Basic(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("scaleway_instance_ip_reverse_dns.base", "reverse", testDNSZone),
 				),
-			},
-			{
-				Config: `
-					resource "scaleway_instance_ip" "ip" {}
-				`,
 			},
 			{
 				Config: `

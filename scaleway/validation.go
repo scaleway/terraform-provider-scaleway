@@ -30,6 +30,7 @@ func validationUUID() func(interface{}, string) ([]string, []error) {
 		return
 	}
 }
+
 func validationUUIDWithLocality() func(interface{}, string) ([]string, []error) {
 	return func(v interface{}, key string) (warnings []string, errors []error) {
 		uuid, isString := v.(string)

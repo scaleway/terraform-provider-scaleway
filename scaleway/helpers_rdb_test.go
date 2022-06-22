@@ -19,33 +19,41 @@ func TestIsEndPointEqual(t *testing.T) {
 		{
 			name: "isEqualPrivateNetworkDetails",
 			A: &rdb.EndpointPrivateNetworkDetails{PrivateNetworkID: "6ba7b810-9dad-11d1-80b4-00c04fd430c8", ServiceIP: scw.IPNet{IPNet: net.IPNet{
-				IP: net.IPv4(1, 1, 1, 1), Mask: net.CIDRMask(24, 32)}}, Zone: scw.ZoneFrPar1},
+				IP: net.IPv4(1, 1, 1, 1), Mask: net.CIDRMask(24, 32),
+			}}, Zone: scw.ZoneFrPar1},
 			B: &rdb.EndpointPrivateNetworkDetails{PrivateNetworkID: "6ba7b810-9dad-11d1-80b4-00c04fd430c8", ServiceIP: scw.IPNet{IPNet: net.IPNet{
-				IP: net.IPv4(1, 1, 1, 1), Mask: net.CIDRMask(24, 32)}}, Zone: scw.ZoneFrPar1},
+				IP: net.IPv4(1, 1, 1, 1), Mask: net.CIDRMask(24, 32),
+			}}, Zone: scw.ZoneFrPar1},
 			expected: true,
 		},
 		{
 			name: "notEqualIP",
 			A: &rdb.EndpointPrivateNetworkDetails{PrivateNetworkID: "6ba7b810-9dad-11d1-80b4-00c04fd430c8", ServiceIP: scw.IPNet{IPNet: net.IPNet{
-				IP: net.IPv4(1, 1, 1, 1), Mask: net.CIDRMask(24, 32)}}, Zone: scw.ZoneFrPar1},
+				IP: net.IPv4(1, 1, 1, 1), Mask: net.CIDRMask(24, 32),
+			}}, Zone: scw.ZoneFrPar1},
 			B: &rdb.EndpointPrivateNetworkDetails{PrivateNetworkID: "6ba7b810-9dad-11d1-80b4-00c04fd430c8", ServiceIP: scw.IPNet{IPNet: net.IPNet{
-				IP: net.IPv4(1, 1, 1, 2), Mask: net.CIDRMask(24, 32)}}, Zone: scw.ZoneFrPar1},
+				IP: net.IPv4(1, 1, 1, 2), Mask: net.CIDRMask(24, 32),
+			}}, Zone: scw.ZoneFrPar1},
 			expected: false,
 		},
 		{
 			name: "notEqualZone",
 			A: &rdb.EndpointPrivateNetworkDetails{PrivateNetworkID: "6ba7b810-9dad-11d1-80b4-00c04fd430c8", ServiceIP: scw.IPNet{IPNet: net.IPNet{
-				IP: net.IPv4(1, 1, 1, 1), Mask: net.CIDRMask(24, 32)}}, Zone: scw.ZoneFrPar1},
+				IP: net.IPv4(1, 1, 1, 1), Mask: net.CIDRMask(24, 32),
+			}}, Zone: scw.ZoneFrPar1},
 			B: &rdb.EndpointPrivateNetworkDetails{PrivateNetworkID: "6ba7b810-9dad-11d1-80b4-00c04fd430c8", ServiceIP: scw.IPNet{IPNet: net.IPNet{
-				IP: net.IPv4(1, 1, 1, 1), Mask: net.CIDRMask(24, 32)}}, Zone: scw.ZoneFrPar2},
+				IP: net.IPv4(1, 1, 1, 1), Mask: net.CIDRMask(24, 32),
+			}}, Zone: scw.ZoneFrPar2},
 			expected: false,
 		},
 		{
 			name: "notEqualMask",
 			A: &rdb.EndpointPrivateNetworkDetails{PrivateNetworkID: "6ba7b810-9dad-11d1-80b4-00c04fd430c8", ServiceIP: scw.IPNet{IPNet: net.IPNet{
-				IP: net.IPv4(1, 1, 1, 1), Mask: net.CIDRMask(25, 32)}}, Zone: scw.ZoneFrPar1},
+				IP: net.IPv4(1, 1, 1, 1), Mask: net.CIDRMask(25, 32),
+			}}, Zone: scw.ZoneFrPar1},
 			B: &rdb.EndpointPrivateNetworkDetails{PrivateNetworkID: "6ba7b810-9dad-11d1-80b4-00c04fd430c8", ServiceIP: scw.IPNet{IPNet: net.IPNet{
-				IP: net.IPv4(1, 1, 1, 1), Mask: net.CIDRMask(24, 32)}}, Zone: scw.ZoneFrPar1},
+				IP: net.IPv4(1, 1, 1, 1), Mask: net.CIDRMask(24, 32),
+			}}, Zone: scw.ZoneFrPar1},
 			expected: false,
 		},
 	}
@@ -67,10 +75,13 @@ func TestEndpointsToRemove(t *testing.T) {
 			name: "removeAll",
 			Endpoints: []*rdb.Endpoint{{
 				ID: "6ba7b810-9dad-11d1-80b4-00c04fd430c1",
-				PrivateNetwork: &rdb.EndpointPrivateNetworkDetails{PrivateNetworkID: "6ba7b810-9dad-11d1-80b4-00c04fd430c8",
+				PrivateNetwork: &rdb.EndpointPrivateNetworkDetails{
+					PrivateNetworkID: "6ba7b810-9dad-11d1-80b4-00c04fd430c8",
 					ServiceIP: scw.IPNet{IPNet: net.IPNet{
-						IP: net.IPv4(1, 1, 1, 1), Mask: net.CIDRMask(24, 32)}},
-					Zone: scw.ZoneFrPar1},
+						IP: net.IPv4(1, 1, 1, 1), Mask: net.CIDRMask(24, 32),
+					}},
+					Zone: scw.ZoneFrPar1,
+				},
 			}},
 			Expected: map[string]bool{
 				"6ba7b810-9dad-11d1-80b4-00c04fd430c1": true,
@@ -80,10 +91,13 @@ func TestEndpointsToRemove(t *testing.T) {
 			name: "shouldUpdatePrivateNetwork",
 			Endpoints: []*rdb.Endpoint{{
 				ID: "6ba7b810-9dad-11d1-80b4-00c04fd430c1",
-				PrivateNetwork: &rdb.EndpointPrivateNetworkDetails{PrivateNetworkID: "6ba7b810-9dad-11d1-80b4-00c04fd430c8",
+				PrivateNetwork: &rdb.EndpointPrivateNetworkDetails{
+					PrivateNetworkID: "6ba7b810-9dad-11d1-80b4-00c04fd430c8",
 					ServiceIP: scw.IPNet{IPNet: net.IPNet{
-						IP: net.IPv4(1, 1, 1, 1), Mask: net.CIDRMask(24, 32)}},
-					Zone: scw.ZoneFrPar1},
+						IP: net.IPv4(1, 1, 1, 1), Mask: net.CIDRMask(24, 32),
+					}},
+					Zone: scw.ZoneFrPar1,
+				},
 			}},
 			Updates: []interface{}{map[string]interface{}{"pn_id": "fr-par-1/6ba7b810-9dad-11d1-80b4-00c04fd430c8", "ip_net": "192.168.1.43/24"}},
 			Expected: map[string]bool{
@@ -94,10 +108,13 @@ func TestEndpointsToRemove(t *testing.T) {
 			name: "shouldNotUpdatePrivateNetwork",
 			Endpoints: []*rdb.Endpoint{{
 				ID: "6ba7b810-9dad-11d1-80b4-00c04fd430c1",
-				PrivateNetwork: &rdb.EndpointPrivateNetworkDetails{PrivateNetworkID: "6ba7b810-9dad-11d1-80b4-00c04fd430c8",
+				PrivateNetwork: &rdb.EndpointPrivateNetworkDetails{
+					PrivateNetworkID: "6ba7b810-9dad-11d1-80b4-00c04fd430c8",
 					ServiceIP: scw.IPNet{IPNet: net.IPNet{
-						IP: net.IPv4(1, 1, 1, 1), Mask: net.CIDRMask(24, 32)}},
-					Zone: scw.ZoneFrPar1},
+						IP: net.IPv4(1, 1, 1, 1), Mask: net.CIDRMask(24, 32),
+					}},
+					Zone: scw.ZoneFrPar1,
+				},
 			}},
 			Updates: []interface{}{map[string]interface{}{"pn_id": "fr-par-1/6ba7b810-9dad-11d1-80b4-00c04fd430c8", "ip_net": "1.1.1.1/24"}},
 			Expected: map[string]bool{

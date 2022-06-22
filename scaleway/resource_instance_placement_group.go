@@ -102,7 +102,6 @@ func resourceScalewayInstancePlacementGroupRead(ctx context.Context, d *schema.R
 		Zone:             zone,
 		PlacementGroupID: ID,
 	}, scw.WithContext(ctx))
-
 	if err != nil {
 		if is404Error(err) {
 			d.SetId("")
@@ -154,9 +153,7 @@ func resourceScalewayInstancePlacementGroupUpdate(ctx context.Context, d *schema
 	}
 
 	if d.HasChange("tags") {
-		if len(expandStrings(d.Get("tags"))) > 0 {
-			req.Tags = scw.StringsPtr(expandStrings(d.Get("tags")))
-		}
+		req.Tags = expandUpdatedStringsPtr(d.Get("tags"))
 		hasChanged = true
 	}
 

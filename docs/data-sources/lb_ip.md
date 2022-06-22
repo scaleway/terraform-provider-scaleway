@@ -27,7 +27,7 @@ data "scaleway_lb_ip" "my_ip" {
 The following arguments are supported:
 
 - `ip_address` - (Optional) The IP address.
-  Only one of `ip_address` and `lb_id` should be specified.
+  Only one of `ip_address` and `ip_id` should be specified.
 
 - `ip_id` - (Optional) The IP ID.
   Only one of `ip_address` and `ip_id` should be specified.
@@ -40,6 +40,6 @@ In addition to all above arguments, the following attributes are exported:
 
 - `reverse` - The reverse domain associated with this IP.
 
-- `lb_id` - The associated load-balance ID if any
+- `lb_id` - The associated load-balancer ID if any
 
 - `organization_id` - (Defaults to [provider](../index.md#organization_id) `organization_id`) The ID of the organization the LB IP is associated with.

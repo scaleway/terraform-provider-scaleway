@@ -76,6 +76,53 @@ func TestAccScalewayVPCPublicGatewayDHCP_Basic(t *testing.T) {
 					resource.TestCheckResourceAttrSet("scaleway_vpc_public_gateway_dhcp.main", "organization_id"),
 				),
 			},
+			{
+				Config: `
+					resource "scaleway_vpc_public_gateway_dhcp" main {
+					  subnet = "192.168.1.0/24"
+					  push_default_route = true
+					  push_dns_server = true
+					  enable_dynamic = true
+					  dns_servers_override = ["192.168.1.2"]
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayVPCPublicGatewayDHCPExists(tt, "scaleway_vpc_public_gateway_dhcp.main"),
+					resource.TestCheckResourceAttr("scaleway_vpc_public_gateway_dhcp.main", "subnet", "192.168.1.0/24"),
+					resource.TestCheckResourceAttr("scaleway_vpc_public_gateway_dhcp.main", "enable_dynamic", "true"),
+					resource.TestCheckResourceAttr("scaleway_vpc_public_gateway_dhcp.main", "valid_lifetime", "3000"),
+					resource.TestCheckResourceAttr("scaleway_vpc_public_gateway_dhcp.main", "renew_timer", "2000"),
+					resource.TestCheckResourceAttr("scaleway_vpc_public_gateway_dhcp.main", "rebind_timer", "2060"),
+					resource.TestCheckResourceAttr("scaleway_vpc_public_gateway_dhcp.main", "push_default_route", "true"),
+					resource.TestCheckResourceAttr("scaleway_vpc_public_gateway_dhcp.main", "push_dns_server", "true"),
+					resource.TestCheckResourceAttr("scaleway_vpc_public_gateway_dhcp.main", "dns_servers_override.#", "1"),
+					resource.TestCheckResourceAttr("scaleway_vpc_public_gateway_dhcp.main", "dns_servers_override.0", "192.168.1.2"),
+					resource.TestCheckResourceAttrSet("scaleway_vpc_public_gateway_dhcp.main", "dns_local_name"),
+					resource.TestCheckResourceAttrSet("scaleway_vpc_public_gateway_dhcp.main", "pool_low"),
+					resource.TestCheckResourceAttrSet("scaleway_vpc_public_gateway_dhcp.main", "pool_high"),
+					resource.TestCheckResourceAttrSet("scaleway_vpc_public_gateway_dhcp.main", "created_at"),
+					resource.TestCheckResourceAttrSet("scaleway_vpc_public_gateway_dhcp.main", "updated_at"),
+					resource.TestCheckResourceAttrSet("scaleway_vpc_public_gateway_dhcp.main", "zone"),
+					resource.TestCheckResourceAttrSet("scaleway_vpc_public_gateway_dhcp.main", "organization_id"),
+				),
+			},
+			{
+				Config: `
+					resource "scaleway_vpc_public_gateway_dhcp" main {
+					  subnet = "192.168.1.0/24"
+					  push_default_route = true
+					  push_dns_server = true
+					  enable_dynamic = true
+					  dns_servers_override = ["192.168.1.3"]
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayVPCPublicGatewayDHCPExists(tt, "scaleway_vpc_public_gateway_dhcp.main"),
+					resource.TestCheckResourceAttr("scaleway_vpc_public_gateway_dhcp.main", "subnet", "192.168.1.0/24"),
+					resource.TestCheckResourceAttr("scaleway_vpc_public_gateway_dhcp.main", "dns_servers_override.#", "1"),
+					resource.TestCheckResourceAttr("scaleway_vpc_public_gateway_dhcp.main", "dns_servers_override.0", "192.168.1.3"),
+				),
+			},
 		},
 	})
 }

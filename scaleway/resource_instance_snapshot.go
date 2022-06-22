@@ -21,6 +21,8 @@ func resourceScalewayInstanceSnapshot() *schema.Resource {
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 		Timeouts: &schema.ResourceTimeout{
+			Create:  schema.DefaultTimeout(defaultInstanceSnapshotWaitTimeout),
+			Delete:  schema.DefaultTimeout(defaultInstanceSnapshotWaitTimeout),
 			Default: schema.DefaultTimeout(defaultInstanceSnapshotWaitTimeout),
 		},
 		SchemaVersion: 0,
@@ -172,6 +174,13 @@ func resourceScalewayInstanceSnapshotDelete(ctx context.Context, d *schema.Resou
 		SnapshotID: id,
 		Zone:       zone,
 	}, scw.WithContext(ctx))
+	if err != nil {
+		if !is404Error(err) {
+			return diag.FromErr(err)
+		}
+	}
+
+	_, err = waitForInstanceSnapshot(ctx, instanceAPI, zone, id, d.Timeout(schema.TimeoutDelete))
 	if err != nil {
 		if !is404Error(err) {
 			return diag.FromErr(err)

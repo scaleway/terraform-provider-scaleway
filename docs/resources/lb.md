@@ -22,7 +22,79 @@ resource "scaleway_lb" "base" {
   ip_id  = scaleway_lb_ip.ip.id
   zone   = scaleway_lb_ip.ip.zone
   type   = "LB-S"
-  release_ip = false
+}
+```
+
+### Multiple configurations
+
+```hcl
+### IP for Public Gateway
+resource "scaleway_vpc_public_gateway_ip" "main" {
+}
+
+### Scaleway Private Network
+resource scaleway_vpc_private_network main {
+}
+
+### VPC Public Gateway Network
+resource "scaleway_vpc_public_gateway" "main" {
+    name  = "tf-test-public-gw"
+    type  = "VPC-GW-S"
+    ip_id = scaleway_vpc_public_gateway_ip.main.id
+}
+
+### VPC Public Gateway Network DHCP config
+resource "scaleway_vpc_public_gateway_dhcp" "main" {
+    subnet = "10.0.0.0/24"
+}
+
+### VPC Gateway Network
+resource "scaleway_vpc_gateway_network" "main" {
+    gateway_id         = scaleway_vpc_public_gateway.main.id
+    private_network_id = scaleway_vpc_private_network.main.id
+    dhcp_id            = scaleway_vpc_public_gateway_dhcp.main.id
+    cleanup_dhcp       = true
+    enable_masquerade  = true
+}
+
+### Scaleway Instance
+resource "scaleway_instance_server" "main" {
+    name        = "Scaleway Terraform Provider"
+    type        = "DEV1-S"
+    image       = "debian_bullseye"
+    enable_ipv6 = false
+
+    private_network {
+        pn_id = scaleway_vpc_private_network.main.id
+    }
+}
+
+### IP for LB IP
+resource scaleway_lb_ip ip01 {
+}
+
+### Scaleway Private Network
+resource scaleway_vpc_private_network "static" {
+    name = "private network with static config"
+}
+
+### Scaleway Load Balancer
+resource scaleway_lb lb01 {
+    ip_id = scaleway_lb_ip.ip01.id
+    name = "test-lb-with-private-network-configs"
+    type = "LB-S"
+
+    private_network {
+        private_network_id = scaleway_vpc_private_network.static.id
+        static_config = ["172.16.0.100", "172.16.0.101"]
+    }
+
+    private_network {
+        private_network_id = scaleway_vpc_private_network.main.id
+        dhcp_config = true
+    }
+
+    depends_on = [scaleway_vpc_public_gateway.main]
 }
 ```
 
@@ -87,7 +159,7 @@ resource "scaleway_lb" "base" {
 }
 ```
 
-## Private Network
+## Private Network with static config
 
 ```hcl
 resource scaleway_lb_ip ip01 {
