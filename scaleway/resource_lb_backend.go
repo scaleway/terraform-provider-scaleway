@@ -307,13 +307,15 @@ func resourceScalewayLbBackendCreate(ctx context.Context, d *schema.ResourceData
 			HTTPSConfig:     expandLbHCHTTPS(d.Get("health_check_https")),
 		},
 		ServerIP:           expandStrings(d.Get("server_ips")),
-		SendProxyV2:        d.Get("send_proxy_v2").(bool),
 		ProxyProtocol:      expandLbProxyProtocol(d.Get("proxy_protocol")),
 		TimeoutServer:      timeoutServer,
 		TimeoutConnect:     timeoutConnect,
 		TimeoutTunnel:      timeoutTunnel,
 		OnMarkedDownAction: expandLbBackendMarkdownAction(d.Get("on_marked_down_action")),
 	}
+
+	// deprecated attribute
+	createReq.SendProxyV2 =  expandBoolPtr(getBool(d, "send_proxy_v2"))
 
 	res, err := lbAPI.CreateBackend(createReq, scw.WithContext(ctx))
 	if err != nil {
@@ -360,7 +362,7 @@ func resourceScalewayLbBackendRead(ctx context.Context, d *schema.ResourceData, 
 	_ = d.Set("sticky_sessions", flattenLbStickySessionsType(backend.StickySessions))
 	_ = d.Set("sticky_sessions_cookie_name", backend.StickySessionsCookieName)
 	_ = d.Set("server_ips", backend.Pool)
-	_ = d.Set("send_proxy_v2", backend.SendProxyV2)
+	_ = d.Set("send_proxy_v2", *backend.SendProxyV2)
 	_ = d.Set("proxy_protocol", flattenLbProxyProtocol(backend.ProxyProtocol))
 	_ = d.Set("timeout_server", flattenDuration(backend.TimeoutServer))
 	_ = d.Set("timeout_connect", flattenDuration(backend.TimeoutConnect))
@@ -429,13 +431,15 @@ func resourceScalewayLbBackendUpdate(ctx context.Context, d *schema.ResourceData
 		ForwardPortAlgorithm:     expandLbForwardPortAlgorithm(d.Get("forward_port_algorithm")),
 		StickySessions:           expandLbStickySessionsType(d.Get("sticky_sessions")),
 		StickySessionsCookieName: d.Get("sticky_sessions_cookie_name").(string),
-		SendProxyV2:              d.Get("send_proxy_v2").(bool),
 		ProxyProtocol:            expandLbProxyProtocol(d.Get("proxy_protocol")),
 		TimeoutServer:            timeoutServer,
 		TimeoutConnect:           timeoutConnect,
 		TimeoutTunnel:            timeoutTunnel,
 		OnMarkedDownAction:       expandLbBackendMarkdownAction(d.Get("on_marked_down_action")),
 	}
+
+	// deprecated
+	req.SendProxyV2 =  expandBoolPtr(getBool(d, "send_proxy_v2"))
 
 	_, err = lbAPI.UpdateBackend(req, scw.WithContext(ctx))
 	if err != nil {
