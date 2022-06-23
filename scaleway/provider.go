@@ -13,7 +13,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 )
 
-var terraformBetaEnv = os.Getenv("PROVIDERSCALEWAY_ENABLE_BETA")
+var terraformBeta = os.Getenv("PROVIDERSCALEWAY_ENABLE_BETA") != ""
 
 // ProviderConfig config can be used to provide additional config when creating provider.
 type ProviderConfig struct {
@@ -28,7 +28,7 @@ func DefaultProviderConfig() *ProviderConfig {
 }
 
 func addBetaResources(provider *schema.Provider) {
-	if terraformBetaEnv == "" {
+	if !terraformBeta {
 		return
 	}
 	betaResources := map[string]*schema.Resource{

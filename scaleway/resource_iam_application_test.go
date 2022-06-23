@@ -38,6 +38,7 @@ func testSweepIamApplication(_ string) error {
 }
 
 func TestAccScalewayIamApplication_Basic(t *testing.T) {
+	SkipBetaTest(t)
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
 	resource.ParallelTest(t, resource.TestCase{

@@ -118,6 +118,12 @@ func NewTestTools(t *testing.T) *TestTools {
 	}
 }
 
+func SkipBetaTest(t *testing.T) {
+	if terraformBeta {
+		t.Skip("Skip test as beta is not enabled")
+	}
+}
+
 func TestAccScalewayProvider_SSHKeys(t *testing.T) {
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
