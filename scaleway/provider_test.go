@@ -119,7 +119,7 @@ func NewTestTools(t *testing.T) *TestTools {
 }
 
 func SkipBetaTest(t *testing.T) {
-	if terraformBeta {
+	if terraformBetaEnabled {
 		t.Skip("Skip test as beta is not enabled")
 	}
 }
