@@ -118,7 +118,7 @@ func resourceScalewayIamApplicationDelete(ctx context.Context, d *schema.Resourc
 	err := api.DeleteApplication(&iam.DeleteApplicationRequest{
 		ApplicationID: d.Id(),
 	})
-	if err != nil {
+	if err != nil && !is404Error(err) {
 		return diag.FromErr(err)
 	}
 
