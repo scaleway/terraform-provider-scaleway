@@ -83,7 +83,7 @@ func resourceScalewayIamApplicationRead(ctx context.Context, d *schema.ResourceD
 	_ = d.Set("updated_at", flattenTime(app.UpdatedAt))
 	_ = d.Set("organization_id", app.OrganizationID)
 	_ = d.Set("editable", app.Editable)
-	_ = d.Set("nb_api_keys", app.NbAPIKeys)
+	_ = d.Set("nb_api_keys", int(app.NbAPIKeys))
 
 	return nil
 }
