@@ -479,6 +479,13 @@ func flattenSliceIDs(certificates []string, zone scw.Zone) interface{} {
 	return res
 }
 
+func flattenBoolPtr(b *bool) interface{} {
+	if b == nil {
+		return nil
+	}
+	return *b
+}
+
 func expandStringPtr(data interface{}) *string {
 	if data == nil || data == "" {
 		return nil
