@@ -60,12 +60,14 @@ func resourceScalewayIamApplicationCreate(ctx context.Context, d *schema.Resourc
 	api := iamAPI(meta)
 	app, err := api.CreateApplication(&iam.CreateApplicationRequest{
 		Name:        expandOrGenerateString(d.Get("name"), "policy-"),
-		Description: "",
+		Description: d.Get("description").(string),
 	}, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
 	}
+
 	d.SetId(app.ID)
+
 	return resourceScalewayIamApplicationRead(ctx, d, meta)
 }
 
