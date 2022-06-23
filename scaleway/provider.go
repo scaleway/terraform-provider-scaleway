@@ -4,12 +4,17 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"os"
 
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/plugin"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+)
+
+var (
+	terraformBetaEnv = os.Getenv("PROVIDERSCALEWAY_ENABLE_BETA")
 )
 
 // ProviderConfig config can be used to provide additional config when creating provider.
@@ -22,6 +27,22 @@ type ProviderConfig struct {
 // DefaultProviderConfig return default ProviderConfig struct
 func DefaultProviderConfig() *ProviderConfig {
 	return &ProviderConfig{}
+}
+
+func addBetaResources(provider *schema.Provider) {
+	if terraformBetaEnv == "" {
+		return
+	}
+	betaResources := map[string]*schema.Resource{
+		"scaleway_iam_application": resourceScalewayIamApplication(),
+	}
+	betaDataSources := map[string]*schema.Resource{}
+	for resourceName, resource := range betaResources {
+		provider.ResourcesMap[resourceName] = resource
+	}
+	for resourceName, resource := range betaDataSources {
+		provider.DataSourcesMap[resourceName] = resource
+	}
 }
 
 // Provider returns a terraform.ResourceProvider.
@@ -150,6 +171,8 @@ func Provider(config *ProviderConfig) plugin.ProviderFunc {
 				"scaleway_vpc_public_gateway_pat_rule": dataSourceScalewayVPCPublicGatewayPATRule(),
 			},
 		}
+
+		addBetaResources(p)
 
 		p.ConfigureContextFunc = func(ctx context.Context, data *schema.ResourceData) (interface{}, diag.Diagnostics) {
 			terraformVersion := p.TerraformVersion
