@@ -374,9 +374,7 @@ func resourceScalewayLbBackendRead(ctx context.Context, d *schema.ResourceData, 
 	_ = d.Set("health_check_tcp", flattenLbHCTCP(backend.HealthCheck.TCPConfig))
 	_ = d.Set("health_check_http", flattenLbHCHTTP(backend.HealthCheck.HTTPConfig))
 	_ = d.Set("health_check_https", flattenLbHCHTTPS(backend.HealthCheck.HTTPSConfig))
-
-	sendProxy := backend.SendProxyV2
-	_ = d.Set("send_proxy_v2", &sendProxy)
+	_ = d.Set("send_proxy_v2", flattenBoolPtr(backend.SendProxyV2))
 
 	_, err = waitForLB(ctx, lbAPI, zone, backend.LB.ID, d.Timeout(schema.TimeoutRead))
 	if err != nil {
