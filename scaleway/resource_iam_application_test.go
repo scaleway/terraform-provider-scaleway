@@ -82,7 +82,6 @@ func testAccCheckScalewayIamApplicationExists(tt *TestTools, name string) resour
 		_, err := iamAPI.GetApplication(&iam.GetApplicationRequest{
 			ApplicationID: rs.Primary.ID,
 		})
-
 		if err != nil {
 			return fmt.Errorf("could not find application: %w", err)
 		}
