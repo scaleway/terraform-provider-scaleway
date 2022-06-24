@@ -46,11 +46,6 @@ func resourceScalewayIamApplication() *schema.Resource {
 				Computed:    true,
 				Description: "Whether or not the application is editable.",
 			},
-			"nb_api_keys": {
-				Type:        schema.TypeInt,
-				Computed:    true,
-				Description: "Number of API keys owned by the application.",
-			},
 			"organization_id": organizationIDSchema(),
 		},
 	}
@@ -89,7 +84,6 @@ func resourceScalewayIamApplicationRead(ctx context.Context, d *schema.ResourceD
 	_ = d.Set("updated_at", flattenTime(app.UpdatedAt))
 	_ = d.Set("organization_id", app.OrganizationID)
 	_ = d.Set("editable", app.Editable)
-	_ = d.Set("nb_api_keys", int(app.NbAPIKeys))
 
 	return nil
 }
