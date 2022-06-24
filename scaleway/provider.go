@@ -13,7 +13,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 )
 
-var terraformBetaEnabled = os.Getenv("SCW_ENABLE_BETA") != ""
+var terraformBetaEnabled = os.Getenv(scw.ScwEnableBeta) != ""
 
 // ProviderConfig config can be used to provide additional config when creating provider.
 type ProviderConfig struct {
