@@ -554,3 +554,20 @@ func flattenInstanceImageExtraVolumes(volumes map[string]*instance.Volume) inter
 	}
 	return volumesFlat
 }
+
+func flattenInstanceImageBootscript(bs *instance.Bootscript) interface{} {
+	return map[string]interface{}{
+		"bootcmdargs":  bs.Bootcmdargs,
+		"default":      bs.Default,
+		"dtb":          bs.Dtb,
+		"id":           bs.ID,
+		"initrd":       bs.Initrd,
+		"kernel":       bs.Kernel,
+		"organization": bs.Organization,
+		"project":      bs.Project,
+		"public":       bs.Public,
+		"title":        bs.Title,
+		"arch":         bs.Arch,
+		"zone":         bs.Zone,
+	}
+}

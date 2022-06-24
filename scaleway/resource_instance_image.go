@@ -62,17 +62,6 @@ func resourceScalewayInstanceImage() *schema.Resource {
 				},
 				Description: "The IDs of the additional volumes attached to the image",
 			},
-			// "extra_volumes": {
-			//	Type:        schema.TypeMap,
-			//	Optional:    true,
-			//	Description: "Additional volumes attached to the image",
-			//	Elem: &schema.Schema{
-			//		Type: schema.TypeMap, // TODO: not sure about that, maybe i must list all nested attributes here, or maybe i can call the instance volume schema
-			//		Elem: &schema.Schema{
-			//			Type: schema.TypeString,
-			//		},
-			//	},
-			// },
 			"tags": {
 				Type:        schema.TypeList,
 				Optional:    true,
@@ -111,7 +100,7 @@ func resourceScalewayInstanceImage() *schema.Resource {
 			"location": {
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "??", // TODO: find a proper description of this attribute
+				Description: "??", // TODO: should we get rid of this attribute ?
 			},
 			// Common
 			"zone":            zoneSchema(),
@@ -136,10 +125,10 @@ func resourceScalewayInstanceImageCreate(ctx context.Context, d *schema.Resource
 		Public:     false,
 	}
 
-	//defaultBootscript, bootscriptExists := d.GetOk("default_bootscript_id")
-	//if bootscriptExists {
-	//	req.DefaultBootscript = expandStrings(defaultBootscript)[0]
-	//}
+	defaultBootscript, bootscriptExists := d.GetOk("default_bootscript_id")
+	if bootscriptExists {
+		req.DefaultBootscript = defaultBootscript.(string)
+	}
 	extraVolumesIds, volumesExist := d.GetOk("additional_volume_ids")
 	if volumesExist {
 		snapResponses, err := getExtraVolumesSpecsFromSnapshots(extraVolumesIds.([]interface{}), instanceAPI, ctx)
@@ -197,7 +186,9 @@ func resourceScalewayInstanceImageRead(ctx context.Context, d *schema.ResourceDa
 	_ = d.Set("name", image.Image.Name)
 	_ = d.Set("root_volume_id", newZonedIDString(image.Image.Zone, image.Image.RootVolume.ID))
 	_ = d.Set("architecture", image.Image.Arch)
-	_ = d.Set("default_bootscript_id", image.Image.DefaultBootscript)
+	if _, defaultBootscriptExists := d.GetOk("default_bootscript_id"); defaultBootscriptExists == true {
+		_ = d.Set("default_bootscript_id", flattenInstanceImageBootscript(image.Image.DefaultBootscript))
+	}
 	if _, extraVolumesExist := d.GetOk("additional_volume_ids"); extraVolumesExist == true {
 		//additionalVolumeIDs := []string(nil)
 		//for _, volume := range orderVolumes(image.Image.ExtraVolumes) {
@@ -246,7 +237,7 @@ func resourceScalewayInstanceImageUpdate(ctx context.Context, d *schema.Resource
 		req.ExtraVolumes = d.Get("additional_volume_ids").(map[string]*instance.Volume)
 	}
 	if d.HasChange("tags") {
-		req.Tags = expandStringsPtr(d.Get("tags"))
+		req.Tags = expandUpdatedStringsPtr(d.Get("tags"))
 	}
 	if d.HasChange("public") {
 		req.Public = d.Get("public").(bool)
