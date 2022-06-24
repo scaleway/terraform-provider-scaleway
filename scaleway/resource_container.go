@@ -4,13 +4,13 @@ import (
 	"context"
 	_ "encoding/json"
 	"fmt"
-	"github.com/hashicorp/terraform-plugin-log/tflog"
-	"github.com/robfig/cron"
 	"time"
 
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
+	"github.com/robfig/cron/v3"
 	container "github.com/scaleway/scaleway-sdk-go/api/container/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 )
@@ -277,7 +277,7 @@ func resourceScalewayContainerCreate(ctx context.Context, d *schema.ResourceData
 func createCronJobs(ctx context.Context, api *container.API, cronJobs []*container.CreateCronRequest, timeout time.Duration) []error {
 	var errors []error
 	for _, r := range cronJobs {
- 		c, err := api.CreateCron(r, scw.WithContext(ctx))
+		c, err := api.CreateCron(r, scw.WithContext(ctx))
 		if err != nil {
 			errors = append(errors, err)
 			continue
@@ -500,7 +500,7 @@ func createCronJobsRequest(containerID string, region scw.Region, cronJobs []int
 
 	for _, cronJob := range cronJobs {
 		config := cronJob.(map[string]interface{})
-		jsonObj, err  := scw.DecodeJSONObject(config["args"].(string), scw.NoEscape)
+		jsonObj, err := scw.DecodeJSONObject(config["args"].(string), scw.NoEscape)
 		if err != nil {
 			return nil, err
 		}
