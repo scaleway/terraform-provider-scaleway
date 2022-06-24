@@ -77,6 +77,10 @@ func resourceScalewayIamApplicationRead(ctx context.Context, d *schema.ResourceD
 		ApplicationID: d.Id(),
 	}, scw.WithContext(ctx))
 	if err != nil {
+		if is404Error(err) {
+			d.SetId("")
+			return nil
+		}
 		return diag.FromErr(err)
 	}
 	_ = d.Set("name", app.Name)
