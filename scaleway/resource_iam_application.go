@@ -97,16 +97,22 @@ func resourceScalewayIamApplicationUpdate(ctx context.Context, d *schema.Resourc
 		ApplicationID: d.Id(),
 	}
 
+	hasChanged := false
+
 	if d.HasChange("name") {
 		req.Name = expandStringPtr(d.Get("name"))
+		hasChanged = true
 	}
 	if d.HasChange("description") {
 		req.Description = expandStringPtr(d.Get("description"))
+		hasChanged = true
 	}
 
-	_, err := api.UpdateApplication(req, scw.WithContext(ctx))
-	if err != nil {
-		return diag.FromErr(err)
+	if hasChanged {
+		_, err := api.UpdateApplication(req, scw.WithContext(ctx))
+		if err != nil {
+			return diag.FromErr(err)
+		}
 	}
 
 	return resourceScalewayIamApplicationRead(ctx, d, meta)
@@ -117,7 +123,7 @@ func resourceScalewayIamApplicationDelete(ctx context.Context, d *schema.Resourc
 
 	err := api.DeleteApplication(&iam.DeleteApplicationRequest{
 		ApplicationID: d.Id(),
-	})
+	}, scw.WithContext(ctx))
 	if err != nil && !is404Error(err) {
 		return diag.FromErr(err)
 	}
