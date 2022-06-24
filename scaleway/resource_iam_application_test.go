@@ -49,22 +49,59 @@ func TestAccScalewayIamApplication_Basic(t *testing.T) {
 				Config: `
 						resource "scaleway_iam_application" "main" {
 							name = "tf_tests_app_basic"
+							description = "a description"
 						}
 					`,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayIamApplicationExists(tt, "scaleway_iam_application.main"),
 					resource.TestCheckResourceAttr("scaleway_iam_application.main", "name", "tf_tests_app_basic"),
+					resource.TestCheckResourceAttr("scaleway_iam_application.main", "description", "a description"),
 				),
 			},
 			{
 				Config: `
 						resource "scaleway_iam_application" "main" {
 							name = "tf_tests_app_basic_rename"
+							description = "another description"
 						}
 					`,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayIamApplicationExists(tt, "scaleway_iam_application.main"),
 					resource.TestCheckResourceAttr("scaleway_iam_application.main", "name", "tf_tests_app_basic_rename"),
+					resource.TestCheckResourceAttr("scaleway_iam_application.main", "description", "another description"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccScalewayIamApplication_NoUpdate(t *testing.T) {
+	SkipBetaTest(t)
+	tt := NewTestTools(t)
+	defer tt.Cleanup()
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      testAccCheckScalewayIamApplicationDestroy(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+						resource "scaleway_iam_application" "main" {
+							name = "tf_tests_app_noupdate"
+						}
+					`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayIamApplicationExists(tt, "scaleway_iam_application.main"),
+				),
+			},
+			{
+				Config: `
+						resource "scaleway_iam_application" "main" {
+							name = "tf_tests_app_noupdate"
+						}
+					`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayIamApplicationExists(tt, "scaleway_iam_application.main"),
 				),
 			},
 		},
