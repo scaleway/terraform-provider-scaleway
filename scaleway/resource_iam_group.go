@@ -126,7 +126,7 @@ func resourceScalewayIamGroupDelete(ctx context.Context, d *schema.ResourceData,
 
 	err := api.DeleteGroup(&iam.DeleteGroupRequest{
 		GroupID: d.Id(),
-	})
+	}, scw.WithContext(ctx))
 	if err != nil && !is404Error(err) {
 		return diag.FromErr(err)
 	}
