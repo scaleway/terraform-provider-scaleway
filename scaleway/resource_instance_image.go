@@ -21,7 +21,6 @@ func resourceScalewayInstanceImage() *schema.Resource {
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 		Timeouts: &schema.ResourceTimeout{
-			// TODO: use all of these values at least once
 			Create:  schema.DefaultTimeout(defaultInstanceImageTimeout),
 			Read:    schema.DefaultTimeout(defaultInstanceImageTimeout),
 			Update:  schema.DefaultTimeout(defaultInstanceImageTimeout),
@@ -90,17 +89,137 @@ func resourceScalewayInstanceImage() *schema.Resource {
 			"from_server_id": {
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "??", // TODO: find a proper description of this attribute
+				Description: "The ID of the backed-up server from which the snapshot was taken",
 			},
 			"state": {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The state of the image [ available | creating | error ]",
 			},
-			"location": {
-				Type:        schema.TypeString,
+			"default_bootscript": {
+				Type:        schema.TypeMap,
 				Computed:    true,
-				Description: "??", // TODO: should we get rid of this attribute ?
+				Description: "Specs of the default bootscript of the image",
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
+				//Elem: &schema.Resource{
+				//	Schema: map[string]*schema.Schema{
+				//		"bootcmdargs": {
+				//			Type: schema.TypeString,
+				//		},
+				//		"default": {
+				//			Type: schema.TypeString,
+				//		},
+				//		"dtb": {
+				//			Type: schema.TypeString,
+				//		},
+				//		"id": {
+				//			Type: schema.TypeString,
+				//		},
+				//		"initrd": {
+				//			Type: schema.TypeString,
+				//		},
+				//		"kernel": {
+				//			Type: schema.TypeString,
+				//		},
+				//		"organization": {
+				//			Type: schema.TypeString,
+				//		},
+				//		"project": {
+				//			Type: schema.TypeString,
+				//		},
+				//		"public": {
+				//			Type: schema.TypeString,
+				//		},
+				//		"title": {
+				//			Type: schema.TypeString,
+				//		},
+				//		"arch": {
+				//			Type: schema.TypeString,
+				//		},
+				//		"zone": {
+				//			Type: schema.TypeString,
+				//		},
+				//	},
+				//},
+			},
+			"additional_volumes": {
+				Type:        schema.TypeSet,
+				Computed:    true,
+				Description: "Specs of the additional volumes attached to the image",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"id": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"name": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"export_uri": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"size": {
+							Type:     schema.TypeInt,
+							Computed: true,
+						},
+						"volume_type": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"creation_date": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"modification_date": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"organization": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"project": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"tags": {
+							Type:     schema.TypeList,
+							Computed: true,
+							Elem: &schema.Schema{
+								Type: schema.TypeString,
+							},
+						},
+						"state": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"zone": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"server": {
+							Type:     schema.TypeMap,
+							Computed: true,
+							Elem: &schema.Schema{
+								Type: schema.TypeString,
+							},
+							//Elem: &schema.Resource{
+							//	Schema: map[string]*schema.Schema{
+							//		"id": {
+							//			Type: schema.TypeString,
+							//		},
+							//		"name": {
+							//			Type: schema.TypeString,
+							//		},
+							//	},
+							//},
+						},
+					},
+				},
 			},
 			// Common
 			"zone":            zoneSchema(),
@@ -135,7 +254,7 @@ func resourceScalewayInstanceImageCreate(ctx context.Context, d *schema.Resource
 		if err != nil {
 			return diag.FromErr(err)
 		}
-		req.ExtraVolumes = expandInstanceImageExtraVolumes(snapResponses)
+		req.ExtraVolumes = expandInstanceImageExtraVolumesTemplates(snapResponses)
 	}
 	tags, tagsExist := d.GetOk("tags")
 	if tagsExist {
@@ -187,7 +306,7 @@ func resourceScalewayInstanceImageRead(ctx context.Context, d *schema.ResourceDa
 	_ = d.Set("root_volume_id", newZonedIDString(image.Image.Zone, image.Image.RootVolume.ID))
 	_ = d.Set("architecture", image.Image.Arch)
 	if _, defaultBootscriptExists := d.GetOk("default_bootscript_id"); defaultBootscriptExists == true {
-		_ = d.Set("default_bootscript_id", flattenInstanceImageBootscript(image.Image.DefaultBootscript))
+		_ = d.Set("default_bootscript", flattenInstanceImageBootscript(image.Image.DefaultBootscript))
 	}
 	if _, extraVolumesExist := d.GetOk("additional_volume_ids"); extraVolumesExist == true {
 		//additionalVolumeIDs := []string(nil)
@@ -195,7 +314,8 @@ func resourceScalewayInstanceImageRead(ctx context.Context, d *schema.ResourceDa
 		//	additionalVolumeIDs = append(additionalVolumeIDs, volume.ID)
 		//}
 		//_ = d.Set("additional_volume_ids", additionalVolumeIDs)
-		_ = d.Set("additional_volume_ids", flattenInstanceImageExtraVolumes(image.Image.ExtraVolumes))
+		//TODO: do i need to list all volume specs ? if not then the commented code above will suffice
+		_ = d.Set("additional_volumes", flattenInstanceImageExtraVolumes(image.Image.ExtraVolumes))
 	}
 	_ = d.Set("tags", image.Image.Tags)
 	_ = d.Set("public", image.Image.Public)
@@ -225,16 +345,26 @@ func resourceScalewayInstanceImageUpdate(ctx context.Context, d *schema.Resource
 		req.Name = expandStringPtr(d.Get("name"))
 	}
 	if d.HasChange("root_volume_id") {
+		//TODO: I probably need to use an expandVolume type function here
 		req.RootVolume = d.Get("root_volume_id").(*instance.VolumeSummary)
 	}
 	if d.HasChange("architecture") {
 		req.Arch = instance.Arch(d.Get("architecture").(string))
 	}
 	if d.HasChange("default_bootscript_id") {
-		req.DefaultBootscript = d.Get("default_bootscript_id").(*instance.Bootscript)
+		bootscriptSpecs, err := getBootscriptSpecs(d.Get("default_bootscript_id").(string), instanceAPI, zone, ctx)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		req.DefaultBootscript = bootscriptSpecs
 	}
 	if d.HasChange("additional_volume_ids") {
-		req.ExtraVolumes = d.Get("additional_volume_ids").(map[string]*instance.Volume)
+		//TODO: verify that this works
+		snapResponses, err := getExtraVolumesSpecsFromSnapshots(d.Get("additional_volume_ids").([]interface{}), instanceAPI, ctx)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		req.ExtraVolumes = expandInstanceImageExtraVolumes(snapResponses)
 	}
 	if d.HasChange("tags") {
 		req.Tags = expandUpdatedStringsPtr(d.Get("tags"))
@@ -243,9 +373,19 @@ func resourceScalewayInstanceImageUpdate(ctx context.Context, d *schema.Resource
 		req.Public = d.Get("public").(bool)
 	}
 
+	_, err = waitForInstanceImage(ctx, instanceAPI, zone, id, d.Timeout(schema.TimeoutUpdate))
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	_, err = instanceAPI.UpdateImage(req, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(fmt.Errorf("couldn't update image: %s", err))
+	}
+
+	_, err = waitForInstanceImage(ctx, instanceAPI, zone, id, d.Timeout(schema.TimeoutUpdate))
+	if err != nil {
+		return diag.FromErr(err)
 	}
 
 	return resourceScalewayInstanceImageRead(ctx, d, meta)

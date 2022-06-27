@@ -513,7 +513,47 @@ func getExtraVolumesSpecsFromSnapshots(snapIDs []interface{}, instanceAPI *insta
 	return snapResponses, nil
 }
 
-func expandInstanceImageExtraVolumes(snapshots []*instance.GetSnapshotResponse) map[string]*instance.VolumeTemplate {
+func getBootscriptSpecs(bootscriptID string, instanceAPI *instance.API, zone scw.Zone, ctx context.Context) (*instance.Bootscript, error) {
+	if bootscriptID == "" {
+		return nil, nil
+	}
+	bsResp, err := instanceAPI.GetBootscript(&instance.GetBootscriptRequest{
+		Zone:         zone,
+		BootscriptID: bootscriptID,
+	}, scw.WithContext(ctx))
+	if err != nil {
+		return nil, err
+	}
+	return bsResp.Bootscript, nil
+}
+
+//func expandInstanceImageBootscript(bootscriptID interface{}) *instance.Bootscript {
+//
+//	bsMap := bsI.(map[string]interface{})
+//	bs := &instance.Bootscript{
+//		Bootcmdargs:  bsMap["bootcmdargs"].(string),
+//		Default:      false,
+//		Dtb:          bsMap["dtb"].(string),
+//		ID:           bsMap["id"].(string),
+//		Initrd:       bsMap["initrd"].(string),
+//		Kernel:       bsMap["kernel"].(string),
+//		Organization: bsMap["organization"].(string),
+//		Project:      bsMap["project"].(string),
+//		Public:       false,
+//		Title:        bsMap["title"].(string),
+//		Arch:         instance.Arch(bsMap["arch"].(string)),
+//		Zone:         scw.Zone(bsMap["zone"].(string)),
+//	}
+//	if bsMap["default"].(string) == "true" {
+//		bs.Default = true
+//	}
+//	if bsMap["public"].(string) == "true" {
+//		bs.Public = true
+//	}
+//	return bs
+//}
+
+func expandInstanceImageExtraVolumesTemplates(snapshots []*instance.GetSnapshotResponse) map[string]*instance.VolumeTemplate {
 	volTemplates := map[string]*instance.VolumeTemplate{}
 	if snapshots == nil {
 		return volTemplates
@@ -532,9 +572,40 @@ func expandInstanceImageExtraVolumes(snapshots []*instance.GetSnapshotResponse) 
 	return volTemplates
 }
 
+func expandInstanceImageExtraVolumes(snapshots []*instance.GetSnapshotResponse) map[string]*instance.Volume {
+	volumes := map[string]*instance.Volume{}
+	if snapshots == nil {
+		return volumes
+	}
+	for i, snapshot := range snapshots {
+		snap := snapshot.Snapshot
+		volume := &instance.Volume{
+			ID:               snap.BaseVolume.ID,
+			Name:             snap.BaseVolume.Name,
+			ExportURI:        "",
+			Size:             snap.Size,
+			VolumeType:       snap.VolumeType,
+			CreationDate:     nil,
+			ModificationDate: nil,
+			Organization:     "",
+			Project:          "",
+			Tags:             nil,
+			Server:           nil,
+			State:            "",
+			Zone:             "",
+		}
+		volumes[strconv.Itoa(i)] = volume
+	}
+	return volumes
+}
+
 func flattenInstanceImageExtraVolumes(volumes map[string]*instance.Volume) interface{} {
 	volumesFlat := []map[string]interface{}(nil)
 	for _, volume := range volumes {
+		server := map[string]interface{}{
+			"id":   volume.Server.ID,
+			"name": volume.Server.Name,
+		}
 		volumesFlat = append(volumesFlat, map[string]interface{}{
 			"id":                volume.ID,
 			"name":              volume.Name,
@@ -548,26 +619,32 @@ func flattenInstanceImageExtraVolumes(volumes map[string]*instance.Volume) inter
 			"tags":              volume.Tags,
 			"state":             volume.State,
 			"zone":              volume.Zone,
-			"server.id":         volume.Server.ID,
-			"server.name":       volume.Server.Name,
+			"server":            server,
 		})
 	}
 	return volumesFlat
 }
 
 func flattenInstanceImageBootscript(bs *instance.Bootscript) interface{} {
-	return map[string]interface{}{
+	bsFlat := map[string]interface{}{
 		"bootcmdargs":  bs.Bootcmdargs,
-		"default":      bs.Default,
+		"default":      "false",
 		"dtb":          bs.Dtb,
 		"id":           bs.ID,
 		"initrd":       bs.Initrd,
 		"kernel":       bs.Kernel,
 		"organization": bs.Organization,
 		"project":      bs.Project,
-		"public":       bs.Public,
+		"public":       "false",
 		"title":        bs.Title,
 		"arch":         bs.Arch,
 		"zone":         bs.Zone,
 	}
+	if bs.Public == true {
+		bsFlat["public"] = "true"
+	}
+	if bs.Default == true {
+		bsFlat["default"] = "true"
+	}
+	return bsFlat
 }

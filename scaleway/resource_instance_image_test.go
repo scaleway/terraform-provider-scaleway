@@ -130,6 +130,7 @@ func TestAccScalewayInstanceImage_Server(t *testing.T) {
 						root_volume_id = scaleway_instance_snapshot.main.id
 						architecture = "x86_64"
 						tags = ["tag"]
+						default_bootscript_id = "eb760e3c-30d8-49a3-b3ad-ad10c3aa440b"
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
@@ -138,6 +139,10 @@ func TestAccScalewayInstanceImage_Server(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_instance_image.main", "architecture", "x86_64"),
 					resource.TestCheckResourceAttr("scaleway_instance_image.main", "public", "false"),
 					resource.TestCheckResourceAttr("scaleway_instance_image.main", "tags.0", "tag"),
+					resource.TestCheckResourceAttr("scaleway_instance_image.main", "default_bootscript.id", "eb760e3c-30d8-49a3-b3ad-ad10c3aa440b"),
+					resource.TestCheckResourceAttr("scaleway_instance_image.main", "default_bootscript.kernel", "http://10.194.3.9/kernel/x86_64-mainline-lts-4.14-latest/vmlinuz"),
+					resource.TestCheckResourceAttr("scaleway_instance_image.main", "default_bootscript.initrd", "http://10.194.3.9/initrd/initrd-Linux-x86_64-v3.14.6.gz"),
+					resource.TestCheckResourceAttr("scaleway_instance_image.main", "default_bootscript.bootcmdargs", "LINUX_COMMON scaleway boot=local nbd.max_part=16"),
 					resource.TestCheckResourceAttrPair("scaleway_instance_image.main", "root_volume_id", "scaleway_instance_snapshot.main", "id"),
 				),
 			},
