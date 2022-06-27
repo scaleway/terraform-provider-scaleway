@@ -1,9 +1,7 @@
 package scaleway
 
 import (
-	"bytes"
 	"context"
-	"fmt"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -13,6 +11,8 @@ import (
 
 const (
 	defaultContainerNamespaceTimeout = 5 * time.Minute
+	defaultContainerCronTimeout      = 5 * time.Minute
+	defaultContainerTimeout          = 5 * time.Minute
 	defaultContainerRetryInterval    = 5 * time.Second
 )
 
@@ -102,7 +102,7 @@ func setCreateContainerRequest(d *schema.ResourceData, region scw.Region) (*cont
 	return req, nil
 }
 
-func waitForContainerNamespace(ctx context.Context, containerAPI *container.API, region scw.Region, id string, timeout time.Duration) (*container.Namespace, error) {
+func waitForContainerNamespace(ctx context.Context, containerAPI *container.API, region scw.Region, namespaceID string, timeout time.Duration) (*container.Namespace, error) {
 	retryInterval := defaultContainerRetryInterval
 	if DefaultWaitRetryInterval != nil {
 		retryInterval = *DefaultWaitRetryInterval
@@ -110,41 +110,12 @@ func waitForContainerNamespace(ctx context.Context, containerAPI *container.API,
 
 	ns, err := containerAPI.WaitForNamespace(&container.WaitForNamespaceRequest{
 		Region:        region,
-		NamespaceID:   id,
+		NamespaceID:   namespaceID,
 		RetryInterval: &retryInterval,
 		Timeout:       scw.TimeDurationPtr(timeout),
 	}, scw.WithContext(ctx))
 
 	return ns, err
-}
-
-func cronContainerHash(v interface{}) int {
-	var buf bytes.Buffer
-	m, ok := v.(map[string]interface{})
-
-	if !ok {
-		return 0
-	}
-
-	if v, ok := m["schedule"]; ok {
-		buf.WriteString(fmt.Sprintf("%v-", v.(string)))
-	}
-
-	return StringHashcode(buf.String())
-}
-
-func flattenContainerCronJobs(cronJobs []*container.Cron) []interface{} {
-	jobs := make([]interface{}, 0, len(cronJobs))
-	for _, cj := range cronJobs {
-		j := map[string]interface{}{
-			"cron_job_id": cj.ID,
-			"schedule":    cj.Schedule,
-			"status":      cj.Status,
-		}
-		jobs = append(jobs, j)
-	}
-
-	return jobs
 }
 
 func waitForContainerCron(ctx context.Context, api *container.API, cronID string, region scw.Region, timeout time.Duration) (*container.Cron, error) {
