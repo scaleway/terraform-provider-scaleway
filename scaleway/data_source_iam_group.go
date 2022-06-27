@@ -21,9 +21,9 @@ func dataSourceScalewayIamGroup() *schema.Resource {
 		Optional:      true,
 		Description:   "The ID of the IAM group",
 		ConflictsWith: []string{"name"},
-		ValidateFunc:  validationUUIDorUUIDWithLocality(),
+		ValidateFunc:  validationUUID(),
 	}
-	// Requiring organization_id is temporary until we are able to get it from the sdk
+	// Default organization_id will be available on a major release. Please check #1337
 	dsSchema["organization_id"] = &schema.Schema{
 		Type:        schema.TypeString,
 		Description: "The organization_id you want to attach the resource to",
