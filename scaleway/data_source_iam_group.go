@@ -23,6 +23,12 @@ func dataSourceScalewayIamGroup() *schema.Resource {
 		ConflictsWith: []string{"name"},
 		ValidateFunc:  validationUUIDorUUIDWithLocality(),
 	}
+	// Requiring organization_id is temporary until we are able to get it from the sdk
+	dsSchema["organization_id"] = &schema.Schema{
+		Type:        schema.TypeString,
+		Description: "The organization_id you want to attach the resource to",
+		Required:    true,
+	}
 
 	return &schema.Resource{
 		ReadContext: dataSourceScalewayIamGroupRead,
@@ -48,7 +54,6 @@ func dataSourceScalewayIamGroupRead(ctx context.Context, d *schema.ResourceData,
 		if groupIDs := d.Get("group_ids"); groupIDs != nil {
 			req.ApplicationIDs = expandStrings(groupIDs)
 		}
-		// spew.Dump(req)
 
 		res, err := api.ListGroups(req, scw.WithContext(ctx))
 		if err != nil {
