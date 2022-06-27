@@ -7,7 +7,7 @@ Manages Scaleway Redis Clusters.
 # scaleway_redis_cluster
 
 Creates and manages Scaleway Redis Clusters.
-For more information, see [the documentation](https://developers.scaleway.com/en/products/redis/api).
+For more information, see [the documentation](https://developers.scaleway.com/en/products/redis/api/v1alpha1/).
 
 ## Examples
 
