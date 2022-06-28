@@ -60,8 +60,8 @@ func resourceScalewayIamApiKey() *schema.Resource {
 				Type:          schema.TypeString,
 				Optional:      true,
 				Description:   "ID of the user attached to the api key",
-				ValidateFunc:  validationUUID(),
 				ConflictsWith: []string{"application_id"},
+				ValidateFunc:  validationUUID(),
 			},
 			"editable": {
 				Type:        schema.TypeBool,
@@ -114,8 +114,14 @@ func resourceScalewayIamApiKeyRead(ctx context.Context, d *schema.ResourceData, 
 	_ = d.Set("expired_at", flattenTime(res.ExpiredAt))
 	_ = d.Set("access_key", res.AccessKey)
 	_ = d.Set("secret_key", res.SecretKey)
-	_ = d.Set("application_id", res.ApplicationID)
-	_ = d.Set("user_id", res.UserID)
+
+	if res.ApplicationID != nil {
+		_ = d.Set("application_id", res.ApplicationID)
+	}
+	if res.UserID != nil {
+		_ = d.Set("user_id", res.UserID)
+	}
+
 	_ = d.Set("editable", res.Editable)
 	_ = d.Set("creation_ip", res.CreationIP)
 	_ = d.Set("default_project_id", res.DefaultProjectID)

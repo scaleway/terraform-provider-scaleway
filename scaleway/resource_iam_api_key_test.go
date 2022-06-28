@@ -86,6 +86,53 @@ func TestAccScalewayIamApiKey_Basic(t *testing.T) {
 	})
 }
 
+func TestAccScalewayIamApiKey_NoUpdate(t *testing.T) {
+	SkipBetaTest(t)
+	tt := NewTestTools(t)
+	defer tt.Cleanup()
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      testAccCheckScalewayIamApiKeyDestroy(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+						resource "scaleway_iam_application" "main" {
+							name = "tf_tests_app_basic"
+						}
+
+						resource "scaleway_iam_api_key" "main" {
+							application_id = scaleway_iam_application.main.id
+							description = "no update"
+						}
+					`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayIamApiKeyExists(tt, "scaleway_iam_api_key.main"),
+					resource.TestCheckResourceAttrPair("scaleway_iam_api_key.main", "application_id", "scaleway_iam_application.main", "id"),
+					resource.TestCheckResourceAttr("scaleway_iam_api_key.main", "description", "no update"),
+				),
+			},
+			{
+				Config: `
+						resource "scaleway_iam_application" "main" {
+							name = "tf_tests_app_basic"
+						}
+
+						resource "scaleway_iam_api_key" "main" {
+							application_id = scaleway_iam_application.main.id
+							description = "no update"
+						}
+					`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayIamApiKeyExists(tt, "scaleway_iam_api_key.main"),
+					resource.TestCheckResourceAttrPair("scaleway_iam_api_key.main", "application_id", "scaleway_iam_application.main", "id"),
+					resource.TestCheckResourceAttr("scaleway_iam_api_key.main", "description", "no update"),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckScalewayIamApiKeyExists(tt *TestTools, name string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[name]
