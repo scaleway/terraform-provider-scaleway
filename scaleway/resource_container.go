@@ -171,14 +171,9 @@ func resourceScalewayContainerCreate(ctx context.Context, d *schema.ResourceData
 	if region.String() == "" {
 		region = scw.RegionFrPar
 	}
-	namespaceID := d.Get("namespace_id")
+	namespaceID := expandID(d.Get("namespace_id").(string))
 	// verify name space state
-	_, err = api.WaitForNamespace(&container.WaitForNamespaceRequest{
-		NamespaceID:   expandID(namespaceID),
-		Region:        region,
-		Timeout:       scw.TimeDurationPtr(defaultRegistryNamespaceTimeout),
-		RetryInterval: DefaultWaitRetryInterval,
-	}, scw.WithContext(ctx))
+	_, err = waitForContainerNamespace(ctx, api, region, namespaceID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
 		return diag.Errorf("unexpected namespace error: %s", err)
 	}
@@ -196,10 +191,7 @@ func resourceScalewayContainerCreate(ctx context.Context, d *schema.ResourceData
 	// check if container should be deployed
 	shouldDeploy := d.Get("deploy")
 	if *expandBoolPtr(shouldDeploy) {
-		_, err := api.WaitForContainer(&container.WaitForContainerRequest{
-			ContainerID: res.ID,
-			Region:      region,
-		}, scw.WithContext(ctx))
+		_, err = waitForContainer(ctx, api, res.ID, region, d.Timeout(schema.TimeoutCreate))
 		if err != nil {
 			return diag.Errorf("unexpected waiting container error: %s", err)
 		}
@@ -231,11 +223,12 @@ func resourceScalewayContainerRead(ctx context.Context, d *schema.ResourceData, 
 		return diag.FromErr(err)
 	}
 
-	co, err := api.WaitForContainer(&container.WaitForContainerRequest{
-		ContainerID: containerID,
-		Region:      region,
-	}, scw.WithContext(ctx))
+	co, err := waitForContainer(ctx, api, containerID, region, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
+		if is404Error(err) {
+			d.SetId("")
+			return nil
+		}
 		return diag.Errorf("unexpected waiting container error: %s", err)
 	}
 
@@ -362,12 +355,9 @@ func resourceScalewayContainerDelete(ctx context.Context, d *schema.ResourceData
 	}
 
 	// check for container state
-	_, err = api.WaitForContainer(&container.WaitForContainerRequest{
-		ContainerID: containerID,
-		Region:      region,
-	}, scw.WithContext(ctx))
+	_, err = waitForContainer(ctx, api, containerID, region, d.Timeout(schema.TimeoutUpdate))
 	if err != nil {
-		return diag.Errorf("unexpected waiting container error: %s", err)
+		return diag.FromErr(err)
 	}
 
 	// delete container

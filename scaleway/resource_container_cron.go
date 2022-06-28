@@ -71,10 +71,10 @@ func resourceScalewayContainerCronCreate(ctx context.Context, d *schema.Resource
 		return diag.FromErr(err)
 	}
 
-	containerID := d.Get("container_id").(string)
+	containerID := expandID(d.Get("container_id").(string))
 	schedule := d.Get("schedule").(string)
 	req := &container.CreateCronRequest{
-		ContainerID: expandID(containerID),
+		ContainerID: containerID,
 		Region:      region,
 		Schedule:    schedule,
 		Args:        &jsonObj,
@@ -105,6 +105,10 @@ func resourceScalewayContainerCronRead(ctx context.Context, d *schema.ResourceDa
 
 	cron, err := waitForContainerCron(ctx, api, containerCronID, region, d.Timeout(schema.TimeoutRead))
 	if err != nil {
+		if is404Error(err) {
+			d.SetId("")
+			return nil
+		}
 		return diag.FromErr(err)
 	}
 
@@ -167,6 +171,11 @@ func resourceScalewayContainerCronUpdate(ctx context.Context, d *schema.Resource
 
 func resourceScalewayContainerCronDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	api, region, containerCronID, err := containerAPIWithRegionAndID(meta, d.Id())
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	_, err = waitForContainerCron(ctx, api, containerCronID, region, d.Timeout(schema.TimeoutDelete))
 	if err != nil {
 		return diag.FromErr(err)
 	}
