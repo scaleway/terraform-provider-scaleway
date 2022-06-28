@@ -33,7 +33,7 @@ func resourceScalewayContainerCron() *schema.Resource {
 			"container_id": {
 				Type:        schema.TypeString,
 				Required:    true,
-				Description: "The Container Job ID",
+				Description: "The Container ID to link with your trigger.",
 			},
 			"schedule": {
 				Type:         schema.TypeString,
@@ -171,7 +171,6 @@ func resourceScalewayContainerCronDelete(ctx context.Context, d *schema.Resource
 		return diag.FromErr(err)
 	}
 
-	// delete container
 	_, err = api.DeleteCron(&container.DeleteCronRequest{
 		Region: region,
 		CronID: containerCronID,
@@ -179,7 +178,7 @@ func resourceScalewayContainerCronDelete(ctx context.Context, d *schema.Resource
 	if err != nil {
 		return diag.FromErr(err)
 	}
-
+	tflog.Info(ctx, "[INFO] cron job deleted")
 	return nil
 }
 

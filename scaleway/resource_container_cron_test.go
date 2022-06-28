@@ -63,7 +63,6 @@ func TestAccScalewayContainerCron_WithMultiArgs(t *testing.T) {
 						namespace_id = scaleway_container_namespace.main.id
 					}
 
-
 					resource scaleway_container_cron main {
 						container_id = scaleway_container.main.id
 						schedule = "5 4 1 * *" #cron at 04:05 on day-of-month 1
