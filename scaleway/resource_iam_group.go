@@ -157,7 +157,7 @@ func resourceScalewayIamGroupUpdate(ctx context.Context, d *schema.ResourceData,
 		}
 	}
 
-	if d.HasChange("application_ids") || d.HasChange("user_ids") {
+	if d.HasChanges("application_ids", "user_ids") {
 		appIdsStr := []string(nil)
 		appIds := d.Get("application_ids").([]interface{})
 		for _, id := range appIds {
