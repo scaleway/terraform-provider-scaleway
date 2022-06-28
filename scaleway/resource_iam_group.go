@@ -87,10 +87,10 @@ func resourceScalewayIamGroupCreate(ctx context.Context, d *schema.ResourceData,
 		for _, id := range userIds {
 			userIdsStr = append(userIdsStr, id.(string))
 		}
-		_, err := api.SetGroupPrincipals(&iam.SetGroupPrincipalsRequest{
+		_, err := api.SetGroupMembers(&iam.SetGroupMembersRequest{
+			GroupID:        group.ID,
 			ApplicationIDs: appIdsStr,
 			UserIDs:        userIdsStr,
-			GroupID:        group.ID,
 		}, scw.WithContext(ctx))
 		if err != nil {
 			return diag.FromErr(err)
@@ -169,7 +169,7 @@ func resourceScalewayIamGroupUpdate(ctx context.Context, d *schema.ResourceData,
 			userIdsStr = append(userIdsStr, id.(string))
 		}
 		if len(appIds) > 0 || len(userIds) > 0 {
-			_, err = api.SetGroupPrincipals(&iam.SetGroupPrincipalsRequest{
+			_, err = api.SetGroupMembers(&iam.SetGroupMembersRequest{
 				ApplicationIDs: appIdsStr,
 				UserIDs:        userIdsStr,
 				GroupID:        group.ID,
@@ -178,12 +178,19 @@ func resourceScalewayIamGroupUpdate(ctx context.Context, d *schema.ResourceData,
 				return diag.FromErr(err)
 			}
 		} else {
-			idsToRemove := group.ApplicationIDs
-			idsToRemove = append(idsToRemove, group.UserIDs...)
-			for _, toRemove := range idsToRemove {
-				_, err = api.DeletePrincipalFromGroup(&iam.DeletePrincipalFromGroupRequest{
-					GroupID:     group.ID,
-					PrincipalID: toRemove,
+			for _, toRemove := range group.ApplicationIDs {
+				_, err = api.RemoveGroupMember(&iam.RemoveGroupMemberRequest{
+					GroupID:       group.ID,
+					ApplicationID: &toRemove,
+				}, scw.WithContext(ctx))
+				if err != nil {
+					return diag.FromErr(err)
+				}
+			}
+			for _, toRemove := range group.UserIDs {
+				_, err = api.RemoveGroupMember(&iam.RemoveGroupMemberRequest{
+					GroupID: group.ID,
+					UserID:  &toRemove,
 				}, scw.WithContext(ctx))
 				if err != nil {
 					return diag.FromErr(err)

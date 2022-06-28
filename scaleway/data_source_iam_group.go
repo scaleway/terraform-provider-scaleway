@@ -49,10 +49,7 @@ func dataSourceScalewayIamGroupRead(ctx context.Context, d *schema.ResourceData,
 			req.ApplicationIDs = expandStrings(appIDs)
 		}
 		if userIDs := d.Get("user_ids"); userIDs != nil {
-			req.ApplicationIDs = expandStrings(userIDs)
-		}
-		if groupIDs := d.Get("group_ids"); groupIDs != nil {
-			req.ApplicationIDs = expandStrings(groupIDs)
+			req.UserIDs = expandStrings(userIDs)
 		}
 
 		res, err := api.ListGroups(req, scw.WithContext(ctx))
