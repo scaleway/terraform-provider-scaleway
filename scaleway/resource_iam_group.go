@@ -148,11 +148,13 @@ func resourceScalewayIamGroupUpdate(ctx context.Context, d *schema.ResourceData,
 
 	if d.HasChange("description") {
 		req.Description = expandStringPtr(d.Get("description").(string))
-	}
-	if group.Description != "" {
-		req.Description = &group.Description
 	} else {
-		req.Description = nil
+		// I know it's not pretty but the linter won't let me use 'else if' even though I'm not evaluating the same statement
+		if group.Description != "" {
+			req.Description = &group.Description
+		} else {
+			req.Description = nil
+		}
 	}
 
 	if d.HasChange("application_ids") || d.HasChange("user_ids") {
