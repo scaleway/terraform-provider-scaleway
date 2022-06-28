@@ -7,7 +7,8 @@ Manages Scaleway Instance Snapshots.
 # scaleway_instance_snapshot
 
 Creates and manages Scaleway Compute Snapshots.
-For more information, see [the documentation](https://developers.scaleway.com/en/products/instance/api/#snapshots-756fae).
+For more information,
+see [the documentation](https://developers.scaleway.com/en/products/instance/api/#snapshots-756fae).
 
 ## Example
 
@@ -18,15 +19,47 @@ resource "scaleway_instance_snapshot" "main" {
 }
 ```
 
+## Example with Unified type
+
+```hcl
+resource "scaleway_instance_volume" "main" {
+    type       = "l_ssd"
+    size_in_gb = 10
+}
+
+resource "scaleway_instance_server" "main" {
+    image    = "ubuntu_jammy"
+    type     = "DEV1-S"
+    root_volume {
+        size_in_gb = 10
+        volume_type = "l_ssd"
+    }
+    additional_volume_ids = [
+        scaleway_instance_volume.main.id
+    ]
+}
+
+resource "scaleway_instance_snapshot" "main" {
+    volume_id = scaleway_instance_volume.main.id
+    type = "unified"
+    depends_on = [scaleway_instance_server.main]
+}
+```
+
 ## Arguments Reference
 
 The following arguments are supported:
 
 - `volume_id` - (Required) The ID of the volume to take a snapshot from.
+- `type` - (Optional) The snapshot's volume type.  The possible values are: `b_ssd` (Block SSD), `l_ssd` (Local SSD) and `unified`.
 - `name` - (Optional) The name of the snapshot. If not provided it will be randomly generated.
-- `zone` - (Defaults to [provider](../index.md#zone) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which the snapshot should be created.
-- `project_id` - (Defaults to [provider](../index.md#project_id) `project_id`) The ID of the project the snapshot is associated with.
+- `zone` - (Defaults to [provider](../index.md#zone) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which
+  the snapshot should be created.
+- `project_id` - (Defaults to [provider](../index.md#project_id) `project_id`) The ID of the project the snapshot is
+  associated with.
 - `tags` - (Optional) A list of tags to apply to the snapshot.
+
+-> **Note:** The type `unified` could be instantiated on both `l_ssd` and `b_ssd` volumes.
 
 ## Attributes Reference
 
@@ -36,7 +69,6 @@ In addition to all above arguments, the following attributes are exported:
 - `size_in_gb` - (Optional) The size of the snapshot.
 - `organization_id` - The organization ID the snapshot is associated with.
 - `project_id` - The project ID the snapshot is associated with.
-- `type` - The type of the snapshot. The possible values are: `b_ssd` (Block SSD), `l_ssd` (Local SSD).
 - `created_at` - The snapshot creation time.
 
 ## Import
