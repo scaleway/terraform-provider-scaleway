@@ -8,6 +8,7 @@ import (
 )
 
 func TestAccScalewayDataSourceIamSSHKey_Basic(t *testing.T) {
+	SkipBetaTest(t)
 	dataSourceIamSSHKey := "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILHy/M5FVm5ydLGcal3e5LNcfTalbeN7QL/ZGCvDEdqJ foobar@example.com"
 	sshKeyName := "TestAccScalewayDataSourceIamSSHKey_Basic"
 	tt := NewTestTools(t)

@@ -2,12 +2,12 @@ package scaleway
 
 import (
 	"context"
-	"github.com/scaleway/scaleway-sdk-go/scw"
 	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	iam "github.com/scaleway/scaleway-sdk-go/api/iam/v1alpha1"
+	"github.com/scaleway/scaleway-sdk-go/scw"
 )
 
 func resourceScalewayIamSSKKey() *schema.Resource {
@@ -18,9 +18,6 @@ func resourceScalewayIamSSKKey() *schema.Resource {
 		DeleteContext: resourceScalewayIamSSKKeyDelete,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
-		},
-		Timeouts: &schema.ResourceTimeout{
-			Default: schema.DefaultTimeout(defaultAccountSSHKeyTimeout),
 		},
 		SchemaVersion: 0,
 		Schema: map[string]*schema.Schema{
@@ -54,8 +51,8 @@ func resourceScalewayIamSSKKey() *schema.Resource {
 			"disabled": {
 				Type:        schema.TypeBool,
 				Optional:    true,
-				Default:     false,
-				Description: "Enable or disable the SSH key",
+				Computed:    true,
+				Description: "The SSH key status",
 			},
 		},
 	}
@@ -73,10 +70,21 @@ func resourceScalewayIamSSKKeyCreate(ctx context.Context, d *schema.ResourceData
 		return diag.FromErr(err)
 	}
 
+	if _, disabledExists := d.GetOk("disabled"); disabledExists {
+		_, err = iamAPI.UpdateSSHKey(&iam.UpdateSSHKeyRequest{
+			SSHKeyID: d.Id(),
+			Disabled: expandBoolPtr(d.Get("disabled")),
+		}, scw.WithContext(ctx))
+		if err != nil {
+			return diag.FromErr(err)
+		}
+	}
+
 	d.SetId(res.ID)
 
 	return resourceScalewayIamSSHKeyRead(ctx, d, meta)
 }
+
 func resourceScalewayIamSSHKeyRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	iamAPI := iamAPI(meta)
 
@@ -94,6 +102,7 @@ func resourceScalewayIamSSHKeyRead(ctx context.Context, d *schema.ResourceData, 
 	_ = d.Set("name", res.Name)
 	_ = d.Set("public_key", res.PublicKey)
 	_ = d.Set("project_id", res.ProjectID)
+	_ = d.Set("disabled", res.Disabled)
 
 	return nil
 }
@@ -101,11 +110,24 @@ func resourceScalewayIamSSHKeyRead(ctx context.Context, d *schema.ResourceData, 
 func resourceScalewayIamSSKKeyUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	iamAPI := iamAPI(meta)
 
+	req := &iam.UpdateSSHKeyRequest{
+		SSHKeyID: d.Id(),
+	}
+
+	hasUpdated := false
+
 	if d.HasChange("name") {
-		_, err := iamAPI.UpdateSSHKey(&iam.UpdateSSHKeyRequest{
-			SSHKeyID: d.Id(),
-			Name:     expandStringPtr(d.Get("name")),
-		}, scw.WithContext(ctx))
+		hasUpdated = true
+		req.Name = expandStringPtr(d.Get("name"))
+	}
+
+	if d.HasChange("disabled") {
+		hasUpdated = true
+		req.Disabled = expandBoolPtr(d.Get("disabled"))
+	}
+
+	if hasUpdated {
+		_, err := iamAPI.UpdateSSHKey(req, scw.WithContext(ctx))
 		if err != nil {
 			return diag.FromErr(err)
 		}

@@ -2,12 +2,15 @@ package scaleway
 
 import (
 	"fmt"
+	"testing"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	iam "github.com/scaleway/scaleway-sdk-go/api/iam/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
-	"testing"
 )
+
+const SSHKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAICJEoOOgQBLJPs4g/XcPTKT82NywNPpxeuA20FlOPlpO opensource@scaleway.com"
 
 func init() {
 	resource.AddTestSweepers("scaleway_iam_ssh_key", &resource.Sweeper{
@@ -41,8 +44,8 @@ func testSweepIamSSHKey(_ string) error {
 }
 
 func TestAccScalewayIamSSHKey_basic(t *testing.T) {
+	SkipBetaTest(t)
 	name := "tf-test-iam-ssh-key-basic"
-	SSHKey := "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIEEYrzDOZmhItdKaDAEqJQ4ORS2GyBMtBozYsK5kiXXX opensource@scaleway.com"
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
 
@@ -82,8 +85,8 @@ func TestAccScalewayIamSSHKey_basic(t *testing.T) {
 }
 
 func TestAccScalewayIamSSHKey_WithNewLine(t *testing.T) {
+	SkipBetaTest(t)
 	name := "tf-test-iam-ssh-key-newline"
-	SSHKey := "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIDjfkdWCwkYlVQMDUfiZlVrmjaGOfBYnmkucssae8Iup opensource@scaleway.com"
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
 
@@ -103,6 +106,47 @@ func TestAccScalewayIamSSHKey_WithNewLine(t *testing.T) {
 					testAccCheckScalewayIamSSHKeyExists(tt, "scaleway_iam_ssh_key.main"),
 					resource.TestCheckResourceAttr("scaleway_iam_ssh_key.main", "name", name),
 					resource.TestCheckResourceAttr("scaleway_iam_ssh_key.main", "public_key", SSHKey),
+				),
+			},
+		},
+	})
+}
+
+func TestAccScalewayIamSSHKey_ChangeResourceName(t *testing.T) {
+	SkipBetaTest(t)
+	name := "TestAccScalewayIamSSHKey_ChangeResourceName"
+	tt := NewTestTools(t)
+	defer tt.Cleanup()
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      testAccCheckScalewayIamSSHKeyDestroy(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource "scaleway_iam_ssh_key" "first" {
+						name 	   = "` + name + `"
+						public_key = "\n\n` + SSHKey + `\n\n"
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayIamSSHKeyExists(tt, "scaleway_iam_ssh_key.first"),
+					resource.TestCheckResourceAttr("scaleway_iam_ssh_key.first", "name", name),
+					resource.TestCheckResourceAttr("scaleway_iam_ssh_key.first", "public_key", SSHKey),
+				),
+			},
+			{
+				Config: `
+					resource "scaleway_iam_ssh_key" "second" {
+						name 	   = "` + name + `"
+						public_key = "\n\n` + SSHKey + `\n\n"
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayIamSSHKeyExists(tt, "scaleway_iam_ssh_key.second"),
+					resource.TestCheckResourceAttr("scaleway_iam_ssh_key.second", "name", name),
+					resource.TestCheckResourceAttr("scaleway_iam_ssh_key.second", "public_key", SSHKey),
 				),
 			},
 		},
@@ -155,45 +199,4 @@ func testAccCheckScalewayIamSSHKeyExists(tt *TestTools, n string) resource.TestC
 
 		return nil
 	}
-}
-
-func TestAccScalewayIamSSHKey_ChangeResourceName(t *testing.T) {
-	name := "TestAccScalewayIamSSHKey_ChangeResourceName"
-	SSHKey := "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAICJEoOOgQBLJPs4g/XcPTKT82NywNPpxeuA20FlOPlpO opensource@scaleway.com"
-	tt := NewTestTools(t)
-	defer tt.Cleanup()
-
-	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      testAccCheckScalewayIamSSHKeyDestroy(tt),
-		Steps: []resource.TestStep{
-			{
-				Config: `
-					resource "scaleway_iam_ssh_key" "first" {
-						name 	   = "` + name + `"
-						public_key = "\n\n` + SSHKey + `\n\n"
-					}
-				`,
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayIamSSHKeyExists(tt, "scaleway_iam_ssh_key.first"),
-					resource.TestCheckResourceAttr("scaleway_iam_ssh_key.first", "name", name),
-					resource.TestCheckResourceAttr("scaleway_iam_ssh_key.first", "public_key", SSHKey),
-				),
-			},
-			{
-				Config: `
-					resource "scaleway_iam_ssh_key" "second" {
-						name 	   = "` + name + `"
-						public_key = "\n\n` + SSHKey + `\n\n"
-					}
-				`,
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayIamSSHKeyExists(tt, "scaleway_iam_ssh_key.second"),
-					resource.TestCheckResourceAttr("scaleway_iam_ssh_key.second", "name", name),
-					resource.TestCheckResourceAttr("scaleway_iam_ssh_key.second", "public_key", SSHKey),
-				),
-			},
-		},
-	})
 }
