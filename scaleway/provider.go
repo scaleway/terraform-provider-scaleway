@@ -37,6 +37,7 @@ func addBetaResources(provider *schema.Provider) {
 	}
 	betaDataSources := map[string]*schema.Resource{
 		"scaleway_iam_ssh_key": dataSourceScalewayIamSSHKey(),
+    "scaleway_iam_application": dataSourceScalewayIamApplication(),
 	}
 	for resourceName, resource := range betaResources {
 		provider.ResourcesMap[resourceName] = resource
@@ -87,6 +88,7 @@ func Provider(config *ProviderConfig) plugin.ProviderFunc {
 				"scaleway_apple_silicon_server":                resourceScalewayAppleSiliconServer(),
 				"scaleway_baremetal_server":                    resourceScalewayBaremetalServer(),
 				"scaleway_container_namespace":                 resourceScalewayContainerNamespace(),
+				"scaleway_container_cron":                      resourceScalewayContainerCron(),
 				"scaleway_domain_record":                       resourceScalewayDomainRecord(),
 				"scaleway_domain_zone":                         resourceScalewayDomainZone(),
 				"scaleway_function":                            resourceScalewayFunction(),
