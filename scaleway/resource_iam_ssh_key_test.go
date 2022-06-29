@@ -13,6 +13,9 @@ import (
 const SSHKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAICJEoOOgQBLJPs4g/XcPTKT82NywNPpxeuA20FlOPlpO opensource@scaleway.com"
 
 func init() {
+	if !terraformBetaEnabled {
+		return
+	}
 	resource.AddTestSweepers("scaleway_iam_ssh_key", &resource.Sweeper{
 		Name: "scaleway_iam_ssh_key",
 		F:    testSweepIamSSHKey,
