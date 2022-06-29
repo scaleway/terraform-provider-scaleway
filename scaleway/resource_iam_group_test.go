@@ -108,7 +108,9 @@ func TestAccScalewayIamGroup_Basic(t *testing.T) {
 			//		testAccCheckScalewayIamGroupExists(tt, "scaleway_iam_group.main"),
 			//		resource.TestCheckResourceAttr("scaleway_iam_group.main", "name", "iam_group_renamed"),
 			//		//resource.TestCheckResourceAttr("scaleway_iam_group.main", "description", ""),
-			//		// This test fails for now because
+
+			//		// TODO: This test fails for now because description can't be unset
+			// A ticket has been opened about this issue
 			//	),
 			// },
 		},
@@ -379,6 +381,34 @@ func TestAccScalewayIamGroup_UsersAndApplications(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_iam_group.main_mix", "user_ids.#", "2"),
 					resource.TestCheckResourceAttr("scaleway_iam_group.main_mix", "user_ids.0", "29c31dd4-8ea1-4927-82d9-a0620e04773f"),
 					resource.TestCheckResourceAttr("scaleway_iam_group.main_mix", "user_ids.1", "0afd8f94-eaf1-4949-9dcb-9ae5f4bc1017"),
+				),
+			},
+			{
+				Config: `
+						resource "scaleway_iam_application" "app03" {
+							name = "third app"
+						}
+						resource "scaleway_iam_application" "app04" {
+							name = "fourth app"
+						}
+						resource "scaleway_iam_group" "main_mix" {
+							name = "iam_group_app"
+							user_ids = [
+								"43b0529c-0b85-45a1-bbf6-5a1336b21787",
+								"0afd8f94-eaf1-4949-9dcb-9ae5f4bc1017",
+								"ce18cffd-e7c8-47f8-8de8-00e97e50a0d3",
+							]
+						}
+					`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayIamGroupExists(tt, "scaleway_iam_group.main_mix"),
+					resource.TestCheckResourceAttr("scaleway_iam_group.main_mix", "name", "iam_group_app"),
+					resource.TestCheckResourceAttr("scaleway_iam_group.main_mix", "application_ids.#", "0"),
+					resource.TestCheckNoResourceAttr("scaleway_iam_group.main_mix", "application_ids.0"),
+					resource.TestCheckResourceAttr("scaleway_iam_group.main_mix", "user_ids.#", "3"),
+					resource.TestCheckResourceAttr("scaleway_iam_group.main_mix", "user_ids.0", "43b0529c-0b85-45a1-bbf6-5a1336b21787"),
+					resource.TestCheckResourceAttr("scaleway_iam_group.main_mix", "user_ids.1", "0afd8f94-eaf1-4949-9dcb-9ae5f4bc1017"),
+					resource.TestCheckResourceAttr("scaleway_iam_group.main_mix", "user_ids.2", "ce18cffd-e7c8-47f8-8de8-00e97e50a0d3"),
 				),
 			},
 			{

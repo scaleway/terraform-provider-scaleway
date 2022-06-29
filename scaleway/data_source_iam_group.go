@@ -13,7 +13,7 @@ func dataSourceScalewayIamGroup() *schema.Resource {
 	// Generate datasource schema from resource
 	dsSchema := datasourceSchemaFromResourceSchema(resourceScalewayIamGroup().Schema)
 
-	addOptionalFieldsToSchema(dsSchema, "name", "description", "user_ids", "application_ids")
+	addOptionalFieldsToSchema(dsSchema, "name")
 
 	dsSchema["name"].ConflictsWith = []string{"group_id"}
 	dsSchema["group_id"] = &schema.Schema{
@@ -44,12 +44,6 @@ func dataSourceScalewayIamGroupRead(ctx context.Context, d *schema.ResourceData,
 		req := &iam.ListGroupsRequest{
 			OrganizationID: expandStringPtr(d.Get("organization_id")),
 			Name:           expandStringPtr(d.Get("name")),
-		}
-		if appIDs := d.Get("application_ids"); appIDs != nil {
-			req.ApplicationIDs = expandStrings(appIDs)
-		}
-		if userIDs := d.Get("user_ids"); userIDs != nil {
-			req.UserIDs = expandStrings(userIDs)
 		}
 
 		res, err := api.ListGroups(req, scw.WithContext(ctx))
