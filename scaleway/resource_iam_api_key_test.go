@@ -11,6 +11,9 @@ import (
 )
 
 func init() {
+	if !terraformBetaEnabled {
+		return
+	}
 	resource.AddTestSweepers("scaleway_iam_api_key", &resource.Sweeper{
 		Name: "scaleway_iam_api_key",
 		F:    testSweepIamAPIKey,
