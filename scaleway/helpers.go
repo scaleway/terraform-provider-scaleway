@@ -246,7 +246,7 @@ func is409Error(err error) bool {
 	return isHTTPCodeError(err, http.StatusConflict) || errors.As(err, &transientStateError)
 }
 
-// organizationIDSchema returns a standard schema for a organization_id
+// organizationIDSchema returns a standard schema for an organization_id
 func organizationIDSchema() *schema.Schema {
 	return &schema.Schema{
 		Type:        schema.TypeString,

@@ -44,7 +44,7 @@ func resourceScalewayIamGroup() *schema.Resource {
 			"user_ids": {
 				Type:        schema.TypeList,
 				Description: "List of IDs of the users attached to the group",
-				Optional:    true,
+				Required:    true,
 				Elem: &schema.Schema{
 					Type:         schema.TypeString,
 					ValidateFunc: validationUUID(),
@@ -53,13 +53,18 @@ func resourceScalewayIamGroup() *schema.Resource {
 			"application_ids": {
 				Type:        schema.TypeList,
 				Description: "List of IDs of the applications attached to the group",
-				Optional:    true,
+				Required:    true,
 				Elem: &schema.Schema{
 					Type:         schema.TypeString,
 					ValidateFunc: validationUUID(),
 				},
 			},
-			"organization_id": organizationIDSchema(),
+			"organization_id": {
+				Type:         schema.TypeString,
+				Description:  "The organization_id you want to attach the resource to",
+				Required:     true,
+				ValidateFunc: validationUUID(),
+			},
 		},
 	}
 }
@@ -76,25 +81,15 @@ func resourceScalewayIamGroupCreate(ctx context.Context, d *schema.ResourceData,
 		return diag.FromErr(err)
 	}
 
-	appIds := d.Get("application_ids").([]interface{})
-	userIds := d.Get("user_ids").([]interface{})
-	if len(appIds) > 0 || len(userIds) > 0 {
-		appIdsStr := []string(nil)
-		for _, id := range appIds {
-			appIdsStr = append(appIdsStr, id.(string))
-		}
-		userIdsStr := []string(nil)
-		for _, id := range userIds {
-			userIdsStr = append(userIdsStr, id.(string))
-		}
-		_, err := api.SetGroupPrincipals(&iam.SetGroupPrincipalsRequest{
-			ApplicationIDs: appIdsStr,
-			UserIDs:        userIdsStr,
-			GroupID:        group.ID,
-		}, scw.WithContext(ctx))
-		if err != nil {
-			return diag.FromErr(err)
-		}
+	appIDs := expandStrings(d.Get("application_ids"))
+	userIDs := expandStrings(d.Get("user_ids"))
+	_, err = api.SetGroupMembers(&iam.SetGroupMembersRequest{
+		ApplicationIDs: appIDs,
+		UserIDs:        userIDs,
+		GroupID:        group.ID,
+	}, scw.WithContext(ctx))
+	if err != nil {
+		return diag.FromErr(err)
 	}
 
 	d.SetId(group.ID)
@@ -157,44 +152,22 @@ func resourceScalewayIamGroupUpdate(ctx context.Context, d *schema.ResourceData,
 		}
 	}
 
-	if d.HasChanges("application_ids", "user_ids") {
-		appIdsStr := []string(nil)
-		appIds := d.Get("application_ids").([]interface{})
-		for _, id := range appIds {
-			appIdsStr = append(appIdsStr, id.(string))
-		}
-		userIdsStr := []string(nil)
-		userIds := d.Get("user_ids").([]interface{})
-		for _, id := range userIds {
-			userIdsStr = append(userIdsStr, id.(string))
-		}
-		if len(appIds) > 0 || len(userIds) > 0 {
-			_, err = api.SetGroupPrincipals(&iam.SetGroupPrincipalsRequest{
-				ApplicationIDs: appIdsStr,
-				UserIDs:        userIdsStr,
-				GroupID:        group.ID,
-			}, scw.WithContext(ctx))
-			if err != nil {
-				return diag.FromErr(err)
-			}
-		} else {
-			idsToRemove := group.ApplicationIDs
-			idsToRemove = append(idsToRemove, group.UserIDs...)
-			for _, toRemove := range idsToRemove {
-				_, err = api.DeletePrincipalFromGroup(&iam.DeletePrincipalFromGroupRequest{
-					GroupID:     group.ID,
-					PrincipalID: toRemove,
-				}, scw.WithContext(ctx))
-				if err != nil {
-					return diag.FromErr(err)
-				}
-			}
-		}
-	}
-
 	_, err = api.UpdateGroup(req, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
+	}
+	
+	if d.HasChanges("application_ids", "user_ids") {
+		appIDs := expandStrings(d.Get("application_ids"))
+		userIDs := expandStrings(d.Get("user_ids"))
+		_, err = api.SetGroupMembers(&iam.SetGroupMembersRequest{
+			ApplicationIDs: appIDs,
+			UserIDs:        userIDs,
+			GroupID:        group.ID,
+		}, scw.WithContext(ctx))
+		if err != nil {
+			return diag.FromErr(err)
+		}
 	}
 
 	return resourceScalewayIamGroupRead(ctx, d, meta)
