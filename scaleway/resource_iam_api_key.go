@@ -1,19 +1,20 @@
 package scaleway
 
 import (
+	"context"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	iam "github.com/scaleway/scaleway-sdk-go/api/iam/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
-	"golang.org/x/net/context"
 )
 
-func resourceScalewayIamApiKey() *schema.Resource {
+func resourceScalewayIamAPIKey() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: resourceScalewayIamApiKeyCreate,
-		ReadContext:   resourceScalewayIamApiKeyRead,
-		UpdateContext: resourceScalewayIamApiKeyUpdate,
-		DeleteContext: resourceScalewayIamApiKeyDelete,
+		CreateContext: resourceScalewayIamAPIKeyCreate,
+		ReadContext:   resourceScalewayIamAPIKeyRead,
+		UpdateContext: resourceScalewayIamAPIKeyUpdate,
+		DeleteContext: resourceScalewayIamAPIKeyDelete,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
@@ -78,7 +79,7 @@ func resourceScalewayIamApiKey() *schema.Resource {
 	}
 }
 
-func resourceScalewayIamApiKeyCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceScalewayIamAPIKeyCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	iamAPI := iamAPI(meta)
 	res, err := iamAPI.CreateAPIKey(&iam.CreateAPIKeyRequest{
 		ApplicationID:    expandStringPtr(d.Get("application_id")),
@@ -93,10 +94,10 @@ func resourceScalewayIamApiKeyCreate(ctx context.Context, d *schema.ResourceData
 
 	d.SetId(res.AccessKey)
 
-	return resourceScalewayIamApiKeyRead(ctx, d, meta)
+	return resourceScalewayIamAPIKeyRead(ctx, d, meta)
 }
 
-func resourceScalewayIamApiKeyRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceScalewayIamAPIKeyRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	api := iamAPI(meta)
 	res, err := api.GetAPIKey(&iam.GetAPIKeyRequest{
 		AccessKey: d.Id(),
@@ -129,7 +130,7 @@ func resourceScalewayIamApiKeyRead(ctx context.Context, d *schema.ResourceData, 
 	return nil
 }
 
-func resourceScalewayIamApiKeyUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceScalewayIamAPIKeyUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	api := iamAPI(meta)
 
 	req := &iam.UpdateAPIKeyRequest{
@@ -155,10 +156,10 @@ func resourceScalewayIamApiKeyUpdate(ctx context.Context, d *schema.ResourceData
 		}
 	}
 
-	return resourceScalewayIamApiKeyRead(ctx, d, meta)
+	return resourceScalewayIamAPIKeyRead(ctx, d, meta)
 }
 
-func resourceScalewayIamApiKeyDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceScalewayIamAPIKeyDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	api := iamAPI(meta)
 
 	err := api.DeleteAPIKey(&iam.DeleteAPIKeyRequest{

@@ -13,21 +13,21 @@ import (
 func init() {
 	resource.AddTestSweepers("scaleway_iam_api_key", &resource.Sweeper{
 		Name: "scaleway_iam_api_key",
-		F:    testSweepIamApiKey,
+		F:    testSweepIamAPIKey,
 	})
 }
 
-func testSweepIamApiKey(_ string) error {
+func testSweepIamAPIKey(_ string) error {
 	return sweep(func(scwClient *scw.Client) error {
 		api := iam.NewAPI(scwClient)
 
 		l.Debugf("sweeper: destroying the api keys")
 
-		listApiKeys, err := api.ListAPIKeys(&iam.ListAPIKeysRequest{})
+		listAPIKeys, err := api.ListAPIKeys(&iam.ListAPIKeysRequest{})
 		if err != nil {
 			return fmt.Errorf("failed to list api keys: %w", err)
 		}
-		for _, app := range listApiKeys.APIKeys {
+		for _, app := range listAPIKeys.APIKeys {
 			err = api.DeleteAPIKey(&iam.DeleteAPIKeyRequest{
 				AccessKey: app.AccessKey,
 			})
@@ -41,12 +41,11 @@ func testSweepIamApiKey(_ string) error {
 
 func TestAccScalewayIamApiKey_Basic(t *testing.T) {
 	SkipBetaTest(t)
-
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
 	resource.ParallelTest(t, resource.TestCase{
 		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      testAccCheckScalewayIamApiKeyDestroy(tt),
+		CheckDestroy:      testAccCheckScalewayIamAPIKeyDestroy(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -60,7 +59,7 @@ func TestAccScalewayIamApiKey_Basic(t *testing.T) {
 						}
 					`,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayIamApiKeyExists(tt, "scaleway_iam_api_key.main"),
+					testAccCheckScalewayIamAPIKeyExists(tt, "scaleway_iam_api_key.main"),
 					resource.TestCheckResourceAttrPair("scaleway_iam_api_key.main", "application_id", "scaleway_iam_application.main", "id"),
 					resource.TestCheckResourceAttr("scaleway_iam_api_key.main", "description", "a description"),
 				),
@@ -93,12 +92,12 @@ func TestAccScalewayIamApiKey_NoUpdate(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      testAccCheckScalewayIamApiKeyDestroy(tt),
+		CheckDestroy:      testAccCheckScalewayIamAPIKeyDestroy(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
 						resource "scaleway_iam_application" "main" {
-							name = "tf_tests_app_basic"
+							name = "tf_tests_app_noupdate"
 						}
 
 						resource "scaleway_iam_api_key" "main" {
@@ -107,7 +106,7 @@ func TestAccScalewayIamApiKey_NoUpdate(t *testing.T) {
 						}
 					`,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayIamApiKeyExists(tt, "scaleway_iam_api_key.main"),
+					testAccCheckScalewayIamAPIKeyExists(tt, "scaleway_iam_api_key.main"),
 					resource.TestCheckResourceAttrPair("scaleway_iam_api_key.main", "application_id", "scaleway_iam_application.main", "id"),
 					resource.TestCheckResourceAttr("scaleway_iam_api_key.main", "description", "no update"),
 				),
@@ -115,7 +114,7 @@ func TestAccScalewayIamApiKey_NoUpdate(t *testing.T) {
 			{
 				Config: `
 						resource "scaleway_iam_application" "main" {
-							name = "tf_tests_app_basic"
+							name = "tf_tests_app_noupdate"
 						}
 
 						resource "scaleway_iam_api_key" "main" {
@@ -124,7 +123,7 @@ func TestAccScalewayIamApiKey_NoUpdate(t *testing.T) {
 						}
 					`,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayIamApiKeyExists(tt, "scaleway_iam_api_key.main"),
+					testAccCheckScalewayIamAPIKeyExists(tt, "scaleway_iam_api_key.main"),
 					resource.TestCheckResourceAttrPair("scaleway_iam_api_key.main", "application_id", "scaleway_iam_application.main", "id"),
 					resource.TestCheckResourceAttr("scaleway_iam_api_key.main", "description", "no update"),
 				),
@@ -133,7 +132,7 @@ func TestAccScalewayIamApiKey_NoUpdate(t *testing.T) {
 	})
 }
 
-func testAccCheckScalewayIamApiKeyExists(tt *TestTools, name string) resource.TestCheckFunc {
+func testAccCheckScalewayIamAPIKeyExists(tt *TestTools, name string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[name]
 		if !ok {
@@ -153,7 +152,7 @@ func testAccCheckScalewayIamApiKeyExists(tt *TestTools, name string) resource.Te
 	}
 }
 
-func testAccCheckScalewayIamApiKeyDestroy(tt *TestTools) resource.TestCheckFunc {
+func testAccCheckScalewayIamAPIKeyDestroy(tt *TestTools) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		for _, rs := range s.RootModule().Resources {
 			if rs.Type != "scaleway_iam_api_key" {
