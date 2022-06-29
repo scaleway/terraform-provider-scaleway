@@ -13,7 +13,7 @@ func dataSourceScalewayIamApplication() *schema.Resource {
 	// Generate datasource schema from resource
 	dsSchema := datasourceSchemaFromResourceSchema(resourceScalewayIamApplication().Schema)
 
-	addOptionalFieldsToSchema(dsSchema, "name", "description")
+	addOptionalFieldsToSchema(dsSchema, "name")
 
 	dsSchema["name"].ConflictsWith = []string{"application_id"}
 	dsSchema["application_id"] = &schema.Schema{
