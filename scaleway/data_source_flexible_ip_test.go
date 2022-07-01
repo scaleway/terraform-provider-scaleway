@@ -24,7 +24,7 @@ func TestAccScalewayDataSourceFlexibleIP_Basic(t *testing.T) {
 					}
 					
 					data "scaleway_flexible_ip" "by_id" {
-						ip_id = "${scaleway_flexible_ip.main.id}"
+						id = "${scaleway_flexible_ip.main.id}"
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
@@ -34,8 +34,8 @@ func TestAccScalewayDataSourceFlexibleIP_Basic(t *testing.T) {
 						"scaleway_flexible_ip.main", "ip_address",
 					),
 					resource.TestCheckResourceAttrPair(
-						"data.scaleway_flexible_ip.by_id", "ip_id",
-						"scaleway_flexible_ip.main", "ip_id",
+						"data.scaleway_flexible_ip.by_id", "id",
+						"scaleway_flexible_ip.main", "id",
 					),
 				),
 			},

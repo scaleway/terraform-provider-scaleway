@@ -18,9 +18,9 @@ func dataSourceScalewayFlexibleIP() *schema.Resource {
 		Type:          schema.TypeString,
 		Optional:      true,
 		Description:   "The IP address",
-		ConflictsWith: []string{"ip_id"},
+		ConflictsWith: []string{"id"},
 	}
-	dsSchema["ip_id"] = &schema.Schema{
+	dsSchema["id"] = &schema.Schema{
 		Type:          schema.TypeString,
 		Optional:      true,
 		Description:   "The ID of the IP address",
@@ -40,7 +40,7 @@ func dataSourceScalewayFlexibleIPRead(ctx context.Context, d *schema.ResourceDat
 		return diag.FromErr(err)
 	}
 
-	ipID, ok := d.GetOk("ip_id")
+	ipID, ok := d.GetOk("id")
 	if !ok { // Get IP by region and IP address.
 		res, err := fipAPI.ListFlexibleIPs(&flexibleip.ListFlexibleIPsRequest{
 			Zone:      zone,
@@ -60,7 +60,7 @@ func dataSourceScalewayFlexibleIPRead(ctx context.Context, d *schema.ResourceDat
 
 	zoneID := datasourceNewZonedID(ipID, zone)
 	d.SetId(zoneID)
-	err = d.Set("ip_id", zoneID)
+	err = d.Set("id", zoneID)
 	if err != nil {
 		return diag.FromErr(err)
 	}
