@@ -2,14 +2,16 @@ package scaleway
 
 import (
 	"fmt"
-	"github.com/scaleway/scaleway-sdk-go/api/baremetal/v1"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/scaleway/scaleway-sdk-go/api/baremetal/v1"
 	flexibleip "github.com/scaleway/scaleway-sdk-go/api/flexibleip/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 )
+
+const SSHKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIM7HUxRyQtB2rnlhQUcbDGCZcTJg7OvoznOiyC9W6IxH opensource@scaleway.com"
 
 func init() {
 	resource.AddTestSweepers("scaleway_flexible_ip", &resource.Sweeper{
@@ -96,9 +98,8 @@ func TestAccScalewayFlexibleIP_CreateAndAttachToBaremetalServer(t *testing.T) {
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
 
-	SSHKeyName := "TestAccScalewayBaremetalServer_Basic"
-	SSHKey := "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIM7HUxRyQtB2rnlhQUcbDGCZcTJg7OvoznOiyC9W6IxH opensource@scaleway.com"
-	name := "TestAccScalewayBaremetalServer_Basic"
+	SSHKeyName := "TestAccScalewayFlexibleIP_CreateAndAttachToBaremetalServer"
+	name := "TestAccScalewayFlexibleIP_CreateAndAttachToBaremetalServer"
 
 	resource.ParallelTest(t, resource.TestCase{
 		ProviderFactories: tt.ProviderFactories,
@@ -156,17 +157,12 @@ func TestAccScalewayFlexibleIP_CreateAndAttachToBaremetalServer(t *testing.T) {
 	})
 }
 
-// working with an already running baremetal called through data_source,
-// but not working with the config below where a new baremetal is lanched from scratch
-// having a POST error, status 500, giving up after 4 attempt(s)
-// POST: https://api.scaleway.com/flexible-ip/v1alpha1/zones/fr-par-2/fips/detach
 func TestAccScalewayFlexibleIP_AttachAndDetachFromBaremetalServer(t *testing.T) {
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
 
-	SSHKeyName := "TestAccScalewayBaremetalServer_Basic"
-	SSHKey := "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIM7HUxRyQtB2rnlhQUcbDGCZcTJg7OvoznOiyC9W6IxH opensource@scaleway.com"
-	name := "TestAccScalewayBaremetalServer_Basic2"
+	SSHKeyName := "TestAccScalewayFlexibleIP_AttachAndDetachFromBaremetalServer"
+	name := "TestAccScalewayFlexibleIP_AttachAndDetachFromBaremetalServer"
 	resource.ParallelTest(t, resource.TestCase{
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheckScalewayFlexibleIPDestroy(tt),

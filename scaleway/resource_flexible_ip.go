@@ -94,7 +94,7 @@ func resourceScalewayFlexibleIPCreate(ctx context.Context, d *schema.ResourceDat
 
 	d.SetId(newZonedIDString(zone, flexibleIP.ID))
 
-	flexibleIP, err = waitFlexibleIP(ctx, fipAPI, zone, flexibleIP.ID, d.Timeout(schema.TimeoutUpdate))
+	_, err = waitFlexibleIP(ctx, fipAPI, zone, flexibleIP.ID, d.Timeout(schema.TimeoutUpdate))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -108,16 +108,15 @@ func resourceScalewayFlexibleIPRead(ctx context.Context, d *schema.ResourceData,
 	}
 
 	// verify resource is ready
-	flexibleIP, err := waitFlexibleIP(ctx, fipAPI, zone, ID, d.Timeout(schema.TimeoutRead))
+	_, err = waitFlexibleIP(ctx, fipAPI, zone, ID, d.Timeout(schema.TimeoutRead))
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	flexibleIP, err = fipAPI.GetFlexibleIP(&flexibleip.GetFlexibleIPRequest{
+	flexibleIP, err := fipAPI.GetFlexibleIP(&flexibleip.GetFlexibleIPRequest{
 		Zone:  zone,
 		FipID: ID,
 	}, scw.WithContext(ctx))
-
 	if err != nil {
 		// We check for 403 because flexible API returns 403 for a deleted IP
 		if is404Error(err) || is403Error(err) {
@@ -176,13 +175,13 @@ func resourceScalewayFlexibleIPUpdate(ctx context.Context, d *schema.ResourceDat
 		return diag.FromErr(err)
 	}
 
-	flexibleIP, err = waitFlexibleIP(ctx, fipAPI, zone, ID, d.Timeout(schema.TimeoutUpdate))
+	_, err = waitFlexibleIP(ctx, fipAPI, zone, ID, d.Timeout(schema.TimeoutUpdate))
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	if d.HasChange("server_id") {
-		if _, serverIdExists := d.GetOk("server_id"); !serverIdExists {
+		if _, serverIDExists := d.GetOk("server_id"); !serverIDExists {
 			_, err = fipAPI.DetachFlexibleIP(&flexibleip.DetachFlexibleIPRequest{
 				Zone:    zone,
 				FipsIDs: []string{ID},
@@ -202,13 +201,14 @@ func resourceScalewayFlexibleIPUpdate(ctx context.Context, d *schema.ResourceDat
 		}
 	}
 
-	flexibleIP, err = waitFlexibleIP(ctx, fipAPI, zone, ID, d.Timeout(schema.TimeoutUpdate))
+	_, err = waitFlexibleIP(ctx, fipAPI, zone, ID, d.Timeout(schema.TimeoutUpdate))
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	return resourceScalewayFlexibleIPRead(ctx, d, meta)
 }
+
 func resourceScalewayFlexibleIPDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	fipAPI, zone, ID, err := fipAPIWithZoneAndID(meta, d.Id())
 	if err != nil {
