@@ -42,7 +42,7 @@ func dataSourceScalewayIamUser() *schema.Resource {
 func dataSourceScalewayIamUserRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	iamAPI := iamAPI(meta)
 
-	var email, organization_id string
+	var email, organizationID string
 	userID, ok := d.GetOk("user_id")
 	if ok {
 		userID = d.Get("user_id")
@@ -53,7 +53,7 @@ func dataSourceScalewayIamUserRead(ctx context.Context, d *schema.ResourceData, 
 			return diag.FromErr(err)
 		}
 		email = res.Email
-		organization_id = res.OrganizationID
+		organizationID = res.OrganizationID
 	} else {
 		res, err := iamAPI.ListUsers(&iam.ListUsersRequest{
 			OrganizationID: expandStringPtr(d.Get("organization_id")),
@@ -85,7 +85,7 @@ func dataSourceScalewayIamUserRead(ctx context.Context, d *schema.ResourceData, 
 
 	_ = d.Set("user_id", userID)
 	_ = d.Set("email", email)
-	_ = d.Set("organization_id", organization_id)
+	_ = d.Set("organization_id", organizationID)
 
 	return nil
 }
