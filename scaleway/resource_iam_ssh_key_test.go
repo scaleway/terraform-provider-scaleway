@@ -156,6 +156,65 @@ func TestAccScalewayIamSSHKey_ChangeResourceName(t *testing.T) {
 	})
 }
 
+func TestAccScalewayIamSSHKey_Disabled(t *testing.T) {
+	SkipBetaTest(t)
+	name := "tf-test-iam-ssh-key-disabled"
+	tt := NewTestTools(t)
+	defer tt.Cleanup()
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      testAccCheckScalewayIamSSHKeyDestroy(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource "scaleway_iam_ssh_key" "main" {
+						name 	   = "` + name + `"
+						public_key = "\n\n` + SSHKey + `\n\n"
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayIamSSHKeyExists(tt, "scaleway_iam_ssh_key.main"),
+					resource.TestCheckResourceAttr("scaleway_iam_ssh_key.main", "name", name),
+					resource.TestCheckResourceAttr("scaleway_iam_ssh_key.main", "public_key", SSHKey),
+					resource.TestCheckResourceAttr("scaleway_iam_ssh_key.main", "disabled", "false"),
+				),
+			},
+			{
+				Config: `
+					resource "scaleway_iam_ssh_key" "main" {
+						name 	   = "` + name + `"
+						public_key = "\n\n` + SSHKey + `\n\n"
+						disabled = "true"
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayIamSSHKeyExists(tt, "scaleway_iam_ssh_key.main"),
+					resource.TestCheckResourceAttr("scaleway_iam_ssh_key.main", "name", name),
+					resource.TestCheckResourceAttr("scaleway_iam_ssh_key.main", "public_key", SSHKey),
+					resource.TestCheckResourceAttr("scaleway_iam_ssh_key.main", "disabled", "true"),
+				),
+			},
+			{
+				Config: `
+					resource "scaleway_iam_ssh_key" "main" {
+						name 	   = "` + name + `"
+						public_key = "\n\n` + SSHKey + `\n\n"
+						disabled = "false"
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayIamSSHKeyExists(tt, "scaleway_iam_ssh_key.main"),
+					resource.TestCheckResourceAttr("scaleway_iam_ssh_key.main", "name", name),
+					resource.TestCheckResourceAttr("scaleway_iam_ssh_key.main", "public_key", SSHKey),
+					resource.TestCheckResourceAttr("scaleway_iam_ssh_key.main", "disabled", "false"),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckScalewayIamSSHKeyDestroy(tt *TestTools) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		for _, rs := range state.RootModule().Resources {

@@ -23,6 +23,7 @@ func resourceScalewayIamSSKKey() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 			"name": {
 				Type:        schema.TypeString,
+				Computed:    true,
 				Optional:    true,
 				Description: "The name of the iam SSH key",
 			},
@@ -35,6 +36,11 @@ func resourceScalewayIamSSKKey() *schema.Resource {
 				DiffSuppressFunc: func(k, oldValue, newValue string, d *schema.ResourceData) bool {
 					return strings.Trim(oldValue, "\n") == strings.Trim(newValue, "\n")
 				},
+			},
+			"fingerprint": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The fingerprint of the iam SSH key",
 			},
 			"created_at": {
 				Type:        schema.TypeString,
@@ -51,7 +57,7 @@ func resourceScalewayIamSSKKey() *schema.Resource {
 			"disabled": {
 				Type:        schema.TypeBool,
 				Optional:    true,
-				Computed:    true,
+				Default:     false,
 				Description: "The SSH key status",
 			},
 		},
@@ -73,7 +79,7 @@ func resourceScalewayIamSSKKeyCreate(ctx context.Context, d *schema.ResourceData
 	if _, disabledExists := d.GetOk("disabled"); disabledExists {
 		_, err = iamAPI.UpdateSSHKey(&iam.UpdateSSHKeyRequest{
 			SSHKeyID: d.Id(),
-			Disabled: expandBoolPtr(d.Get("disabled")),
+			Disabled: expandBoolPtr(getBool(d, "disabled")),
 		}, scw.WithContext(ctx))
 		if err != nil {
 			return diag.FromErr(err)
@@ -101,6 +107,10 @@ func resourceScalewayIamSSHKeyRead(ctx context.Context, d *schema.ResourceData, 
 
 	_ = d.Set("name", res.Name)
 	_ = d.Set("public_key", res.PublicKey)
+	_ = d.Set("fingerprint", res.Fingerprint)
+	_ = d.Set("created_at", flattenTime(res.CreatedAt))
+	_ = d.Set("updated_at", flattenTime(res.UpdatedAt))
+	_ = d.Set("organization_id", res.OrganizationID)
 	_ = d.Set("project_id", res.ProjectID)
 	_ = d.Set("disabled", res.Disabled)
 
@@ -117,13 +127,28 @@ func resourceScalewayIamSSKKeyUpdate(ctx context.Context, d *schema.ResourceData
 	hasUpdated := false
 
 	if d.HasChange("name") {
-		hasUpdated = true
 		req.Name = expandStringPtr(d.Get("name"))
+		hasUpdated = true
 	}
 
 	if d.HasChange("disabled") {
-		hasUpdated = true
-		req.Disabled = expandBoolPtr(d.Get("disabled"))
+		if _, disabledExists := d.GetOk("disabled"); !disabledExists {
+			_, err := iamAPI.UpdateSSHKey(&iam.UpdateSSHKeyRequest{
+				SSHKeyID: d.Id(),
+				Disabled: expandBoolPtr(false),
+			})
+			if err != nil {
+				return diag.FromErr(err)
+			}
+		} else {
+			_, err := iamAPI.UpdateSSHKey(&iam.UpdateSSHKeyRequest{
+				SSHKeyID: d.Id(),
+				Disabled: expandBoolPtr(getBool(d, "disabled")),
+			})
+			if err != nil {
+				return diag.FromErr(err)
+			}
+		}
 	}
 
 	if hasUpdated {
