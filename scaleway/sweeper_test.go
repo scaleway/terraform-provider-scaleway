@@ -37,6 +37,17 @@ func sweepRegions(regions []scw.Region, f func(scwClient *scw.Client, region scw
 	return nil
 }
 
+func sweep(f func(scwClient *scw.Client) error) error {
+	ctx := context.Background()
+	meta, err := buildMeta(ctx, &metaConfig{
+		terraformVersion: "terraform-tests",
+	})
+	if err != nil {
+		return err
+	}
+	return f(meta.scwClient)
+}
+
 // sharedClientForZone returns a Scaleway client needed for the sweeper
 // functions for a given zone
 func sharedClientForZone(zone scw.Zone) (*scw.Client, error) {

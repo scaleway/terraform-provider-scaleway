@@ -97,7 +97,7 @@ In addition to all above arguments, the following attributes are exported:
 
 ## Import
 
-Container can be imported using the container_name, e.g.,
+Container can be imported using the `{region}/{id}`, e.g.
 
 ```bash
 $ terraform import scaleway_container.main fr-par/11111111-1111-1111-1111-111111111111
