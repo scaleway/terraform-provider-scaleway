@@ -74,6 +74,11 @@ func resourceScalewayVPCPublicGateway() *schema.Resource {
 				Optional:    true,
 				Computed:    true,
 			},
+			"enable_smtp": {
+				Type:        schema.TypeBool,
+				Description: "Enable SMTP on the gateway",
+				Optional:    true,
+			},
 			"project_id": projectIDSchema(),
 			"zone":       zoneSchema(),
 			// Computed elements
@@ -106,6 +111,7 @@ func resourceScalewayVPCPublicGatewayCreate(ctx context.Context, d *schema.Resou
 		ProjectID:          d.Get("project_id").(string),
 		EnableBastion:      d.Get("bastion_enabled").(bool),
 		Zone:               zone,
+		EnableSMTP:         d.Get("enable_smtp").(bool),
 	}
 
 	if bastionPort, ok := d.GetOk("bastion_port"); ok {
@@ -158,6 +164,7 @@ func resourceScalewayVPCPublicGatewayRead(ctx context.Context, d *schema.Resourc
 	_ = d.Set("ip_id", newZonedID(gateway.Zone, gateway.IP.ID).String())
 	_ = d.Set("bastion_enabled", gateway.BastionEnabled)
 	_ = d.Set("bastion_port", int(gateway.BastionPort))
+	_ = d.Set("enable_smtp", gateway.SMTPEnabled)
 
 	return nil
 }
@@ -192,6 +199,10 @@ func resourceScalewayVPCPublicGatewayUpdate(ctx context.Context, d *schema.Resou
 
 	if d.HasChange("enable_bastion") {
 		updateRequest.EnableBastion = scw.BoolPtr(d.Get("enable_bastion").(bool))
+	}
+
+	if d.HasChange("enable_smtp") {
+		updateRequest.EnableSMTP = scw.BoolPtr(d.Get("enable_smtp").(bool))
 	}
 
 	if d.HasChange("upstream_dns_servers") {
