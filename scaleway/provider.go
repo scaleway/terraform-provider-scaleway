@@ -34,7 +34,10 @@ func addBetaResources(provider *schema.Provider) {
 	betaResources := map[string]*schema.Resource{
 		"scaleway_iam_application": resourceScalewayIamApplication(),
 	}
-	betaDataSources := map[string]*schema.Resource{}
+	betaDataSources := map[string]*schema.Resource{
+		"scaleway_iam_application": dataSourceScalewayIamApplication(),
+		"scaleway_iam_user":        dataSourceScalewayIamUser(),
+	}
 	for resourceName, resource := range betaResources {
 		provider.ResourcesMap[resourceName] = resource
 	}
@@ -84,6 +87,7 @@ func Provider(config *ProviderConfig) plugin.ProviderFunc {
 				"scaleway_apple_silicon_server":                resourceScalewayAppleSiliconServer(),
 				"scaleway_baremetal_server":                    resourceScalewayBaremetalServer(),
 				"scaleway_container_namespace":                 resourceScalewayContainerNamespace(),
+				"scaleway_container_cron":                      resourceScalewayContainerCron(),
 				"scaleway_domain_record":                       resourceScalewayDomainRecord(),
 				"scaleway_domain_zone":                         resourceScalewayDomainZone(),
 				"scaleway_function":                            resourceScalewayFunction(),

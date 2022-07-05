@@ -13,8 +13,9 @@ import (
 
 func init() {
 	resource.AddTestSweepers("scaleway_container_namespace", &resource.Sweeper{
-		Name: "scaleway_container_namespace",
-		F:    testSweepContainerNamespace,
+		Name:         "scaleway_container_namespace",
+		F:            testSweepContainerNamespace,
+		Dependencies: []string{"scaleway_container"},
 	})
 }
 
