@@ -38,6 +38,7 @@ func addBetaResources(provider *schema.Provider) {
 	betaDataSources := map[string]*schema.Resource{
 		"scaleway_iam_application": dataSourceScalewayIamApplication(),
 		"scaleway_iam_group":       dataSourceScalewayIamGroup(),
+		"scaleway_iam_user":        dataSourceScalewayIamUser(),
 	}
 	for resourceName, resource := range betaResources {
 		provider.ResourcesMap[resourceName] = resource
