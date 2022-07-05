@@ -98,21 +98,18 @@ func TestAccScalewayIamGroup_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_iam_group.main_basic", "description", "this is another description"),
 				),
 			},
-			// {
-			//	Config: `
-			//			resource "scaleway_iam_group" "main" {
-			//				name = "iam_group_renamed"
-			//			}
-			//		`,
-			//	Check: resource.ComposeTestCheckFunc(
-			//		testAccCheckScalewayIamGroupExists(tt, "scaleway_iam_group.main"),
-			//		resource.TestCheckResourceAttr("scaleway_iam_group.main", "name", "iam_group_renamed"),
-			//		//resource.TestCheckResourceAttr("scaleway_iam_group.main", "description", ""),
-
-			//		// TODO: This test fails for now because description can't be unset
-			// A ticket has been opened about this issue
-			//	),
-			// },
+			{
+				Config: `
+						resource "scaleway_iam_group" "main" {
+							name = "iam_group_renamed"
+						}
+					`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayIamGroupExists(tt, "scaleway_iam_group.main"),
+					resource.TestCheckResourceAttr("scaleway_iam_group.main", "name", "iam_group_renamed"),
+					resource.TestCheckResourceAttr("scaleway_iam_group.main", "description", ""),
+				),
+			},
 		},
 	})
 }
@@ -130,16 +127,16 @@ func TestAccScalewayIamGroup_Applications(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: `
-						resource "scaleway_iam_application" "app01" {
-							name = "first app"
-						}
-						resource "scaleway_iam_group" "main_app" {
-							name = "iam_group_app"
-							application_ids = [
-								scaleway_iam_application.app01.id
-							]
-						}
-					`,
+					resource "scaleway_iam_application" "app01" {
+						name = "first app"
+					}
+					resource "scaleway_iam_group" "main_app" {
+						name = "iam_group_app"
+						application_ids = [
+							scaleway_iam_application.app01.id
+						]
+					}
+				`,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayIamGroupExists(tt, "scaleway_iam_group.main_app"),
 					resource.TestCheckResourceAttr("scaleway_iam_group.main_app", "name", "iam_group_app"),
@@ -149,43 +146,43 @@ func TestAccScalewayIamGroup_Applications(t *testing.T) {
 			},
 			{
 				Config: `
-						resource "scaleway_iam_application" "app01" {
-							name = "first app"
-						}
-						resource "scaleway_iam_application" "app02" {
-							name = "second app"
-						}
-						resource "scaleway_iam_group" "main_app" {
-							name = "iam_group_app"
-							application_ids = [
-								scaleway_iam_application.app01.id,
-								scaleway_iam_application.app02.id,
-							]
-						}
-					`,
+					resource "scaleway_iam_application" "app01" {
+						name = "first app"
+					}
+					resource "scaleway_iam_application" "app02" {
+						name = "second app"
+					}
+					resource "scaleway_iam_group" "main_app" {
+						name = "iam_group_app"
+						application_ids = [
+							scaleway_iam_application.app01.id,
+							scaleway_iam_application.app02.id,
+						]
+					}
+				`,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayIamGroupExists(tt, "scaleway_iam_group.main_app"),
 					resource.TestCheckResourceAttr("scaleway_iam_group.main_app", "name", "iam_group_app"),
 					resource.TestCheckResourceAttr("scaleway_iam_group.main_app", "application_ids.#", "2"),
-					resource.TestCheckResourceAttrPair("scaleway_iam_group.main_app", "application_ids.0", "scaleway_iam_application.app01", "id"),
-					resource.TestCheckResourceAttrPair("scaleway_iam_group.main_app", "application_ids.1", "scaleway_iam_application.app02", "id"),
+					resource.TestCheckTypeSetElemAttrPair("scaleway_iam_group.main_app", "application_ids.*", "scaleway_iam_application.app01", "id"),
+					resource.TestCheckTypeSetElemAttrPair("scaleway_iam_group.main_app", "application_ids.*", "scaleway_iam_application.app02", "id"),
 				),
 			},
 			{
 				Config: `
-						resource "scaleway_iam_application" "app01" {
-							name = "first app"
-						}
-						resource "scaleway_iam_application" "app02" {
-							name = "second app"
-						}
-						resource "scaleway_iam_group" "main_app" {
-							name = "iam_group_app"
-							application_ids = [
-								scaleway_iam_application.app02.id,
-							]
-						}
-					`,
+					resource "scaleway_iam_application" "app01" {
+						name = "first app"
+					}
+					resource "scaleway_iam_application" "app02" {
+						name = "second app"
+					}
+					resource "scaleway_iam_group" "main_app" {
+						name = "iam_group_app"
+						application_ids = [
+							scaleway_iam_application.app02.id,
+						]
+					}
+				`,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayIamGroupExists(tt, "scaleway_iam_group.main_app"),
 					resource.TestCheckResourceAttr("scaleway_iam_group.main_app", "name", "iam_group_app"),
@@ -195,16 +192,16 @@ func TestAccScalewayIamGroup_Applications(t *testing.T) {
 			},
 			{
 				Config: `
-						resource "scaleway_iam_application" "app01" {
-							name = "first app"
-						}
-						resource "scaleway_iam_application" "app02" {
-							name = "second app"
-						}
-						resource "scaleway_iam_group" "main_app" {
-							name = "iam_group_app"
-						}
-					`,
+					resource "scaleway_iam_application" "app01" {
+						name = "first app"
+					}
+					resource "scaleway_iam_application" "app02" {
+						name = "second app"
+					}
+					resource "scaleway_iam_group" "main_app" {
+						name = "iam_group_app"
+					}
+				`,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayIamGroupExists(tt, "scaleway_iam_group.main_app"),
 					resource.TestCheckResourceAttr("scaleway_iam_group.main_app", "name", "iam_group_app"),
@@ -228,60 +225,79 @@ func TestAccScalewayIamGroup_Users(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: `
-						resource "scaleway_iam_group" "main_user" {
-							name = "iam_group_user"
-							user_ids = [
-								"29c31dd4-8ea1-4927-82d9-a0620e04773f"
-							]
-						}
-					`,
+					data "scaleway_iam_user" "user00" {
+						user_id = "29c31dd4-8ea1-4927-82d9-a0620e04773f"
+						organization_id = "08555df8-bb26-43bc-b749-1b98c5d02343"
+					}
+
+					resource "scaleway_iam_group" "main_user" {
+						name = "iam_group_user"
+						user_ids = [
+							data.scaleway_iam_user.user00.user_id
+						]
+					}
+				`,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayIamGroupExists(tt, "scaleway_iam_group.main_user"),
 					resource.TestCheckResourceAttr("scaleway_iam_group.main_user", "name", "iam_group_user"),
 					resource.TestCheckResourceAttr("scaleway_iam_group.main_user", "user_ids.#", "1"),
-					resource.TestCheckResourceAttr("scaleway_iam_group.main_user", "user_ids.0", "29c31dd4-8ea1-4927-82d9-a0620e04773f"),
+					resource.TestCheckResourceAttrPair("scaleway_iam_group.main_user", "user_ids.0", "data.scaleway_iam_user.user00", "user_id"),
 				),
 			},
 			{
 				Config: `
-						resource "scaleway_iam_group" "main_user" {
-							name = "iam_group_user"
-							user_ids = [
-								"29c31dd4-8ea1-4927-82d9-a0620e04773f",
-								"0afd8f94-eaf1-4949-9dcb-9ae5f4bc1017",
-							]
-						}
-					`,
+					data "scaleway_iam_user" "user00" {
+						user_id = "29c31dd4-8ea1-4927-82d9-a0620e04773f"
+						organization_id = "08555df8-bb26-43bc-b749-1b98c5d02343"
+					}
+					data "scaleway_iam_user" "user01" {
+						user_id = "0afd8f94-eaf1-4949-9dcb-9ae5f4bc1017"
+						organization_id = "08555df8-bb26-43bc-b749-1b98c5d02343"
+					}
+
+					resource "scaleway_iam_group" "main_user" {
+						name = "iam_group_user"
+						user_ids = [
+							data.scaleway_iam_user.user00.user_id,
+							data.scaleway_iam_user.user01.user_id,
+						]
+					}
+				`,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayIamGroupExists(tt, "scaleway_iam_group.main_user"),
 					resource.TestCheckResourceAttr("scaleway_iam_group.main_user", "name", "iam_group_user"),
 					resource.TestCheckResourceAttr("scaleway_iam_group.main_user", "user_ids.#", "2"),
-					resource.TestCheckResourceAttr("scaleway_iam_group.main_user", "user_ids.0", "29c31dd4-8ea1-4927-82d9-a0620e04773f"),
-					resource.TestCheckResourceAttr("scaleway_iam_group.main_user", "user_ids.1", "0afd8f94-eaf1-4949-9dcb-9ae5f4bc1017"),
+					resource.TestCheckTypeSetElemAttrPair("scaleway_iam_group.main_user", "user_ids.*", "data.scaleway_iam_user.user00", "user_id"),
+					resource.TestCheckTypeSetElemAttrPair("scaleway_iam_group.main_user", "user_ids.*", "data.scaleway_iam_user.user01", "user_id"),
 				),
 			},
 			{
 				Config: `
-						resource "scaleway_iam_group" "main_user" {
-							name = "iam_group_user"
-							user_ids = [
-								"453c1a85-4a10-4c6f-94dc-d3193d4589a5",
-							]
-						}
-					`,
+					data "scaleway_iam_user" "user02" {
+						user_id = "453c1a85-4a10-4c6f-94dc-d3193d4589a5"
+						organization_id = "08555df8-bb26-43bc-b749-1b98c5d02343"
+					}
+
+					resource "scaleway_iam_group" "main_user" {
+						name = "iam_group_user"
+						user_ids = [
+							data.scaleway_iam_user.user02.user_id
+						]
+					}
+				`,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayIamGroupExists(tt, "scaleway_iam_group.main_user"),
 					resource.TestCheckResourceAttr("scaleway_iam_group.main_user", "name", "iam_group_user"),
 					resource.TestCheckResourceAttr("scaleway_iam_group.main_user", "user_ids.#", "1"),
-					resource.TestCheckResourceAttr("scaleway_iam_group.main_user", "user_ids.0", "453c1a85-4a10-4c6f-94dc-d3193d4589a5"),
+					resource.TestCheckResourceAttrPair("scaleway_iam_group.main_user", "user_ids.0", "data.scaleway_iam_user.user02", "user_id"),
 				),
 			},
 			{
 				Config: `
-						resource "scaleway_iam_group" "main_user" {
-							name = "iam_group_user"
-						}
-					`,
+					resource "scaleway_iam_group" "main_user" {
+						name = "iam_group_user"
+					}
+				`,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayIamGroupExists(tt, "scaleway_iam_group.main_user"),
 					resource.TestCheckResourceAttr("scaleway_iam_group.main_user", "name", "iam_group_user"),
@@ -306,123 +322,155 @@ func TestAccScalewayIamGroup_UsersAndApplications(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: `
-						resource "scaleway_iam_application" "app03" {
-							name = "third app"
-						}
-						resource "scaleway_iam_group" "main_mix" {
-							name = "iam_group_app"
-							application_ids = [
-								scaleway_iam_application.app03.id
-							]
-							user_ids = [
-								"29c31dd4-8ea1-4927-82d9-a0620e04773f"
-							]
-						}
-					`,
+					resource "scaleway_iam_application" "app03" {
+						name = "third app"
+					}
+
+					data "scaleway_iam_user" "user00" {
+						user_id = "29c31dd4-8ea1-4927-82d9-a0620e04773f"
+						organization_id = "08555df8-bb26-43bc-b749-1b98c5d02343"
+					}
+
+					resource "scaleway_iam_group" "main_mix" {
+						name = "iam_group_app"
+						application_ids = [
+							scaleway_iam_application.app03.id
+						]
+						user_ids = [
+							data.scaleway_iam_user.user00.user_id
+						]
+					}
+				`,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayIamGroupExists(tt, "scaleway_iam_group.main_mix"),
 					resource.TestCheckResourceAttr("scaleway_iam_group.main_mix", "name", "iam_group_app"),
 					resource.TestCheckResourceAttr("scaleway_iam_group.main_mix", "user_ids.#", "1"),
-					resource.TestCheckResourceAttr("scaleway_iam_group.main_mix", "user_ids.0", "29c31dd4-8ea1-4927-82d9-a0620e04773f"),
+					resource.TestCheckResourceAttrPair("scaleway_iam_group.main_mix", "user_ids.0", "data.scaleway_iam_user.user00", "user_id"),
 					resource.TestCheckResourceAttr("scaleway_iam_group.main_mix", "application_ids.#", "1"),
 					resource.TestCheckResourceAttrPair("scaleway_iam_group.main_mix", "application_ids.0", "scaleway_iam_application.app03", "id"),
 				),
 			},
 			{
 				Config: `
-						resource "scaleway_iam_application" "app03" {
-							name = "third app"
-						}
-						resource "scaleway_iam_application" "app04" {
-							name = "fourth app"
-						}
-						resource "scaleway_iam_group" "main_mix" {
-							name = "iam_group_app"
-							application_ids = [
-								scaleway_iam_application.app03.id,
-								scaleway_iam_application.app04.id,
-							]
-						}
-					`,
+					resource "scaleway_iam_application" "app03" {
+						name = "third app"
+					}
+					resource "scaleway_iam_application" "app04" {
+						name = "fourth app"
+					}
+
+					resource "scaleway_iam_group" "main_mix" {
+						name = "iam_group_app"
+						application_ids = [
+							scaleway_iam_application.app03.id,
+							scaleway_iam_application.app04.id,
+						]
+					}
+				`,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayIamGroupExists(tt, "scaleway_iam_group.main_mix"),
 					resource.TestCheckResourceAttr("scaleway_iam_group.main_mix", "name", "iam_group_app"),
 					resource.TestCheckResourceAttr("scaleway_iam_group.main_mix", "application_ids.#", "2"),
-					resource.TestCheckResourceAttrPair("scaleway_iam_group.main_mix", "application_ids.0", "scaleway_iam_application.app03", "id"),
-					resource.TestCheckResourceAttrPair("scaleway_iam_group.main_mix", "application_ids.1", "scaleway_iam_application.app04", "id"),
+					resource.TestCheckTypeSetElemAttrPair("scaleway_iam_group.main_mix", "application_ids.*", "scaleway_iam_application.app03", "id"),
+					resource.TestCheckTypeSetElemAttrPair("scaleway_iam_group.main_mix", "application_ids.*", "scaleway_iam_application.app04", "id"),
 					resource.TestCheckResourceAttr("scaleway_iam_group.main_mix", "user_ids.#", "0"),
 					resource.TestCheckNoResourceAttr("scaleway_iam_group.main_mix", "user_ids.0"),
 				),
 			},
 			{
 				Config: `
-						resource "scaleway_iam_application" "app03" {
-							name = "third app"
-						}
-						resource "scaleway_iam_application" "app04" {
-							name = "fourth app"
-						}
-						resource "scaleway_iam_group" "main_mix" {
-							name = "iam_group_app"
-							application_ids = [
-								scaleway_iam_application.app04.id,
-							]
-							user_ids = [
-								"29c31dd4-8ea1-4927-82d9-a0620e04773f",
-								"0afd8f94-eaf1-4949-9dcb-9ae5f4bc1017",
-							]
-						}
-					`,
+					resource "scaleway_iam_application" "app03" {
+						name = "third app"
+					}
+					resource "scaleway_iam_application" "app04" {
+						name = "fourth app"
+					}
+
+					data "scaleway_iam_user" "user00" {
+						user_id = "29c31dd4-8ea1-4927-82d9-a0620e04773f"
+						organization_id = "08555df8-bb26-43bc-b749-1b98c5d02343"
+					}
+					data "scaleway_iam_user" "user01" {
+						user_id = "0afd8f94-eaf1-4949-9dcb-9ae5f4bc1017"
+						organization_id = "08555df8-bb26-43bc-b749-1b98c5d02343"
+					}
+
+					resource "scaleway_iam_group" "main_mix" {
+						name = "iam_group_app"
+						application_ids = [
+							scaleway_iam_application.app04.id,
+						]
+						user_ids = [
+							data.scaleway_iam_user.user00.user_id,
+							data.scaleway_iam_user.user01.user_id,
+						]
+					}
+				`,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayIamGroupExists(tt, "scaleway_iam_group.main_mix"),
 					resource.TestCheckResourceAttr("scaleway_iam_group.main_mix", "name", "iam_group_app"),
 					resource.TestCheckResourceAttr("scaleway_iam_group.main_mix", "application_ids.#", "1"),
 					resource.TestCheckResourceAttrPair("scaleway_iam_group.main_mix", "application_ids.0", "scaleway_iam_application.app04", "id"),
 					resource.TestCheckResourceAttr("scaleway_iam_group.main_mix", "user_ids.#", "2"),
-					resource.TestCheckResourceAttr("scaleway_iam_group.main_mix", "user_ids.0", "29c31dd4-8ea1-4927-82d9-a0620e04773f"),
-					resource.TestCheckResourceAttr("scaleway_iam_group.main_mix", "user_ids.1", "0afd8f94-eaf1-4949-9dcb-9ae5f4bc1017"),
+					resource.TestCheckTypeSetElemAttrPair("scaleway_iam_group.main_mix", "user_ids.*", "data.scaleway_iam_user.user00", "user_id"),
+					resource.TestCheckTypeSetElemAttrPair("scaleway_iam_group.main_mix", "user_ids.*", "data.scaleway_iam_user.user01", "user_id"),
 				),
 			},
 			{
 				Config: `
-						resource "scaleway_iam_application" "app03" {
-							name = "third app"
-						}
-						resource "scaleway_iam_application" "app04" {
-							name = "fourth app"
-						}
-						resource "scaleway_iam_group" "main_mix" {
-							name = "iam_group_app"
-							user_ids = [
-								"43b0529c-0b85-45a1-bbf6-5a1336b21787",
-								"0afd8f94-eaf1-4949-9dcb-9ae5f4bc1017",
-								"ce18cffd-e7c8-47f8-8de8-00e97e50a0d3",
-							]
-						}
-					`,
+					resource "scaleway_iam_application" "app03" {
+						name = "third app"
+					}
+					resource "scaleway_iam_application" "app04" {
+						name = "fourth app"
+					}
+
+					data "scaleway_iam_user" "user01" {
+						user_id = "0afd8f94-eaf1-4949-9dcb-9ae5f4bc1017"
+						organization_id = "08555df8-bb26-43bc-b749-1b98c5d02343"
+					}
+					data "scaleway_iam_user" "user03" {
+						user_id = "43b0529c-0b85-45a1-bbf6-5a1336b21787"
+						organization_id = "08555df8-bb26-43bc-b749-1b98c5d02343"
+					}
+					data "scaleway_iam_user" "user04" {
+						user_id = "ce18cffd-e7c8-47f8-8de8-00e97e50a0d3"
+						organization_id = "08555df8-bb26-43bc-b749-1b98c5d02343"
+					}
+
+					resource "scaleway_iam_group" "main_mix" {
+						name = "iam_group_app"
+						user_ids = [
+							data.scaleway_iam_user.user03.user_id,
+							data.scaleway_iam_user.user01.user_id,
+							data.scaleway_iam_user.user04.user_id,
+						]
+					}
+				`,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayIamGroupExists(tt, "scaleway_iam_group.main_mix"),
 					resource.TestCheckResourceAttr("scaleway_iam_group.main_mix", "name", "iam_group_app"),
 					resource.TestCheckResourceAttr("scaleway_iam_group.main_mix", "application_ids.#", "0"),
 					resource.TestCheckNoResourceAttr("scaleway_iam_group.main_mix", "application_ids.0"),
 					resource.TestCheckResourceAttr("scaleway_iam_group.main_mix", "user_ids.#", "3"),
-					resource.TestCheckResourceAttr("scaleway_iam_group.main_mix", "user_ids.0", "43b0529c-0b85-45a1-bbf6-5a1336b21787"),
-					resource.TestCheckResourceAttr("scaleway_iam_group.main_mix", "user_ids.1", "0afd8f94-eaf1-4949-9dcb-9ae5f4bc1017"),
-					resource.TestCheckResourceAttr("scaleway_iam_group.main_mix", "user_ids.2", "ce18cffd-e7c8-47f8-8de8-00e97e50a0d3"),
+					resource.TestCheckTypeSetElemAttrPair("scaleway_iam_group.main_mix", "user_ids.*", "data.scaleway_iam_user.user01", "user_id"),
+					resource.TestCheckTypeSetElemAttrPair("scaleway_iam_group.main_mix", "user_ids.*", "data.scaleway_iam_user.user03", "user_id"),
+					resource.TestCheckTypeSetElemAttrPair("scaleway_iam_group.main_mix", "user_ids.*", "data.scaleway_iam_user.user04", "user_id"),
 				),
 			},
 			{
 				Config: `
-						resource "scaleway_iam_application" "app03" {
-							name = "third app"
-						}
-						resource "scaleway_iam_application" "app04" {
-							name = "fourth app"
-						}
-						resource "scaleway_iam_group" "main_mix" {
-							name = "iam_group_app"
-						}
-					`,
+					resource "scaleway_iam_application" "app03" {
+						name = "third app"
+					}
+					resource "scaleway_iam_application" "app04" {
+						name = "fourth app"
+					}
+
+					resource "scaleway_iam_group" "main_mix" {
+						name = "iam_group_app"
+					}
+				`,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayIamGroupExists(tt, "scaleway_iam_group.main_mix"),
 					resource.TestCheckResourceAttr("scaleway_iam_group.main_mix", "name", "iam_group_app"),

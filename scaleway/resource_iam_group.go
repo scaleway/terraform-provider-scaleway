@@ -42,7 +42,7 @@ func resourceScalewayIamGroup() *schema.Resource {
 				Description: "The date and time of the last update of the group",
 			},
 			"user_ids": {
-				Type:        schema.TypeList,
+				Type:        schema.TypeSet,
 				Description: "List of IDs of the users attached to the group",
 				Optional:    true,
 				Elem: &schema.Schema{
@@ -51,7 +51,7 @@ func resourceScalewayIamGroup() *schema.Resource {
 				},
 			},
 			"application_ids": {
-				Type:        schema.TypeList,
+				Type:        schema.TypeSet,
 				Description: "List of IDs of the applications attached to the group",
 				Optional:    true,
 				Elem: &schema.Schema{
@@ -76,21 +76,13 @@ func resourceScalewayIamGroupCreate(ctx context.Context, d *schema.ResourceData,
 		return diag.FromErr(err)
 	}
 
-	appIds := d.Get("application_ids").([]interface{})
-	userIds := d.Get("user_ids").([]interface{})
+	appIds := expandStrings(d.Get("application_ids").(*schema.Set).List())
+	userIds := expandStrings(d.Get("user_ids").(*schema.Set).List())
 	if len(appIds) > 0 || len(userIds) > 0 {
-		appIdsStr := []string(nil)
-		for _, id := range appIds {
-			appIdsStr = append(appIdsStr, id.(string))
-		}
-		userIdsStr := []string(nil)
-		for _, id := range userIds {
-			userIdsStr = append(userIdsStr, id.(string))
-		}
 		_, err := api.SetGroupMembers(&iam.SetGroupMembersRequest{
 			GroupID:        group.ID,
-			ApplicationIDs: appIdsStr,
-			UserIDs:        userIdsStr,
+			ApplicationIDs: appIds,
+			UserIDs:        userIds,
 		}, scw.WithContext(ctx))
 		if err != nil {
 			return diag.FromErr(err)
@@ -136,42 +128,24 @@ func resourceScalewayIamGroupUpdate(ctx context.Context, d *schema.ResourceData,
 		return diag.FromErr(err)
 	}
 
-	req := &iam.UpdateGroupRequest{
-		GroupID: group.ID,
-	}
-
-	if d.HasChange("name") {
-		req.Name = expandStringPtr(d.Get("name").(string))
-	} else {
-		req.Name = &group.Name
-	}
-
-	if d.HasChange("description") {
-		req.Description = expandStringPtr(d.Get("description").(string))
-	} else {
-		// I know it's not pretty but the linter won't let me use 'else if' even though I'm not evaluating the same statement
-		if group.Description != "" {
-			req.Description = &group.Description
-		} else {
-			req.Description = nil
+	if d.HasChanges("name", "description") {
+		_, err = api.UpdateGroup(&iam.UpdateGroupRequest{
+			GroupID:     group.ID,
+			Name:        expandStringPtr(d.Get("name").(string)),
+			Description: expandStringPtr(d.Get("description").(string)),
+		}, scw.WithContext(ctx))
+		if err != nil {
+			return diag.FromErr(err)
 		}
 	}
 
 	if d.HasChanges("application_ids", "user_ids") {
-		appIdsStr := []string(nil)
-		appIds := d.Get("application_ids").([]interface{})
-		for _, id := range appIds {
-			appIdsStr = append(appIdsStr, id.(string))
-		}
-		userIdsStr := []string(nil)
-		userIds := d.Get("user_ids").([]interface{})
-		for _, id := range userIds {
-			userIdsStr = append(userIdsStr, id.(string))
-		}
+		appIds := expandStrings(d.Get("application_ids").(*schema.Set).List())
+		userIds := expandStrings(d.Get("user_ids").(*schema.Set).List())
 		if len(appIds) > 0 || len(userIds) > 0 {
 			_, err = api.SetGroupMembers(&iam.SetGroupMembersRequest{
-				ApplicationIDs: appIdsStr,
-				UserIDs:        userIdsStr,
+				ApplicationIDs: appIds,
+				UserIDs:        userIds,
 				GroupID:        group.ID,
 			}, scw.WithContext(ctx))
 			if err != nil {
@@ -197,11 +171,6 @@ func resourceScalewayIamGroupUpdate(ctx context.Context, d *schema.ResourceData,
 				}
 			}
 		}
-	}
-
-	_, err = api.UpdateGroup(req, scw.WithContext(ctx))
-	if err != nil {
-		return diag.FromErr(err)
 	}
 
 	return resourceScalewayIamGroupRead(ctx, d, meta)
