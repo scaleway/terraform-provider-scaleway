@@ -178,19 +178,19 @@ func resourceScalewayIamGroupUpdate(ctx context.Context, d *schema.ResourceData,
 				return diag.FromErr(err)
 			}
 		} else {
-			for _, toRemove := range group.ApplicationIDs {
+			for i := range group.ApplicationIDs {
 				_, err = api.RemoveGroupMember(&iam.RemoveGroupMemberRequest{
 					GroupID:       group.ID,
-					ApplicationID: &toRemove,
+					ApplicationID: &group.ApplicationIDs[i],
 				}, scw.WithContext(ctx))
 				if err != nil {
 					return diag.FromErr(err)
 				}
 			}
-			for _, toRemove := range group.UserIDs {
+			for i := range group.UserIDs {
 				_, err = api.RemoveGroupMember(&iam.RemoveGroupMemberRequest{
 					GroupID: group.ID,
-					UserID:  &toRemove,
+					UserID:  &group.UserIDs[i],
 				}, scw.WithContext(ctx))
 				if err != nil {
 					return diag.FromErr(err)
