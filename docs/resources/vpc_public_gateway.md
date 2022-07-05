@@ -32,6 +32,7 @@ The following arguments are supported:
 - `ip_id` - (Optional) attach an existing flexible IP to the gateway
 - `bastion_enabled` - (Optional) Enable SSH bastion on the gateway
 - `bastion_port` - (Optional) The port on which the SSH bastion will listen.
+- `enable_smtp` - (Optional) Enable SMTP on the gateway
 
 ## Attributes Reference
 
