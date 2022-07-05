@@ -78,6 +78,7 @@ func resourceScalewayVPCPublicGateway() *schema.Resource {
 				Type:        schema.TypeBool,
 				Description: "Enable SMTP on the gateway",
 				Optional:    true,
+				Computed:    true,
 			},
 			"project_id": projectIDSchema(),
 			"zone":       zoneSchema(),
