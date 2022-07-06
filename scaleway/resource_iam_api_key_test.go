@@ -42,13 +42,16 @@ func testSweepIamAPIKey(_ string) error {
 	})
 }
 
-func TestAccScalewayIamApiKey_Basic(t *testing.T) {
+func TestAccScalewayIamApiKey_WithApplication(t *testing.T) {
 	SkipBetaTest(t)
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
 	resource.ParallelTest(t, resource.TestCase{
 		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      testAccCheckScalewayIamAPIKeyDestroy(tt),
+		CheckDestroy: resource.ComposeTestCheckFunc(
+			testAccCheckScalewayIamAPIKeyDestroy(tt),
+			testAccCheckScalewayIamApplicationDestroy(tt),
+		),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -79,8 +82,57 @@ func TestAccScalewayIamApiKey_Basic(t *testing.T) {
 						}
 					`,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayIamApplicationExists(tt, "scaleway_iam_application.main"),
+					testAccCheckScalewayIamAPIKeyExists(tt, "scaleway_iam_api_key.main"),
 					resource.TestCheckResourceAttrPair("scaleway_iam_api_key.main", "application_id", "scaleway_iam_application.main", "id"),
+					resource.TestCheckResourceAttr("scaleway_iam_api_key.main", "description", "another description"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccScalewayIamApiKey_WithUser(t *testing.T) {
+	SkipBetaTest(t)
+	tt := NewTestTools(t)
+	defer tt.Cleanup()
+	resource.ParallelTest(t, resource.TestCase{
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      testAccCheckScalewayIamAPIKeyDestroy(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+						data "scaleway_iam_user" "main" {
+							email = "developer-tools-team@scaleway.com"
+							organization_id = "dd5b8103-52ef-40b6-b157-35a426650401"
+						}
+
+						resource "scaleway_iam_api_key" "main" {
+							user_id = data.scaleway_iam_user.main.id
+							description = "a description"
+						}
+					`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayIamAPIKeyExists(tt, "scaleway_iam_api_key.main"),
+					testAccCheckScalewayIamUserExists(tt, "data.scaleway_iam_user.main"),
+					resource.TestCheckResourceAttrPair("scaleway_iam_api_key.main", "user_id", "data.scaleway_iam_user.main", "id"),
+					resource.TestCheckResourceAttr("scaleway_iam_api_key.main", "description", "a description"),
+				),
+			},
+			{
+				Config: `
+						data "scaleway_iam_user" "main" {
+							email = "developer-tools-team@scaleway.com"
+							organization_id = "dd5b8103-52ef-40b6-b157-35a426650401"
+						}
+
+						resource "scaleway_iam_api_key" "main" {
+							user_id = data.scaleway_iam_user.main.id
+							description = "another description"
+						}
+					`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayIamAPIKeyExists(tt, "scaleway_iam_api_key.main"),
+					resource.TestCheckResourceAttrPair("scaleway_iam_api_key.main", "user_id", "data.scaleway_iam_user.main", "id"),
 					resource.TestCheckResourceAttr("scaleway_iam_api_key.main", "description", "another description"),
 				),
 			},
