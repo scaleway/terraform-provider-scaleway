@@ -419,7 +419,7 @@ func expandSliceIDsPtr(rawIDs interface{}) *[]string {
 }
 
 func expandStringsOrEmpty(data interface{}) []string {
-	var stringSlice []string
+	stringSlice := []string{}
 	if _, ok := data.([]interface{}); !ok || data == nil {
 		return stringSlice
 	}

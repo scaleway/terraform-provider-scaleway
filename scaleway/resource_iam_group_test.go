@@ -12,6 +12,9 @@ import (
 )
 
 func init() {
+	if !terraformBetaEnabled {
+		return
+	}
 	resource.AddTestSweepers("scaleway_iam_group", &resource.Sweeper{
 		Name: "scaleway_iam_group",
 		F:    testSweepIamGroup,
@@ -52,7 +55,10 @@ func TestAccScalewayIamGroup_Basic(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: `
-						resource "scaleway_iam_group" "main_basic" {}
+						resource "scaleway_iam_group" "main_basic" {
+							user_ids = []
+							application_ids = []
+						}
 					`,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayIamGroupExists(tt, "scaleway_iam_group.main_basic"),
@@ -64,6 +70,8 @@ func TestAccScalewayIamGroup_Basic(t *testing.T) {
 				Config: `
 						resource "scaleway_iam_group" "main_basic" {
 							description = "basic description"
+							user_ids = []
+							application_ids = []
 						}
 					`,
 				Check: resource.ComposeTestCheckFunc(
@@ -77,6 +85,8 @@ func TestAccScalewayIamGroup_Basic(t *testing.T) {
 						resource "scaleway_iam_group" "main_basic" {
 							name = "iam_group_basic"
 							description = "basic description"
+							user_ids = []
+							application_ids = []
 						}
 					`,
 				Check: resource.ComposeTestCheckFunc(
@@ -90,6 +100,8 @@ func TestAccScalewayIamGroup_Basic(t *testing.T) {
 						resource "scaleway_iam_group" "main_basic" {
 							name = "iam_group_renamed"
 							description = "this is another description"
+							user_ids = []
+							application_ids = []
 						}
 					`,
 				Check: resource.ComposeTestCheckFunc(
@@ -136,6 +148,7 @@ func TestAccScalewayIamGroup_Applications(t *testing.T) {
 							application_ids = [
 								scaleway_iam_application.app01.id
 							]
+							user_ids = []
 						}
 					`,
 				Check: resource.ComposeTestCheckFunc(
@@ -159,6 +172,7 @@ func TestAccScalewayIamGroup_Applications(t *testing.T) {
 								scaleway_iam_application.app01.id,
 								scaleway_iam_application.app02.id,
 							]
+							user_ids = []
 						}
 					`,
 				Check: resource.ComposeTestCheckFunc(
@@ -182,6 +196,7 @@ func TestAccScalewayIamGroup_Applications(t *testing.T) {
 							application_ids = [
 								scaleway_iam_application.app02.id,
 							]
+							user_ids = []
 						}
 					`,
 				Check: resource.ComposeTestCheckFunc(
@@ -201,6 +216,8 @@ func TestAccScalewayIamGroup_Applications(t *testing.T) {
 						}
 						resource "scaleway_iam_group" "main_app" {
 							name = "iam_group_app"
+							user_ids = []
+							application_ids = []
 						}
 					`,
 				Check: resource.ComposeTestCheckFunc(
@@ -231,6 +248,7 @@ func TestAccScalewayIamGroup_Users(t *testing.T) {
 							user_ids = [
 								"29c31dd4-8ea1-4927-82d9-a0620e04773f"
 							]
+							application_ids = []
 						}
 					`,
 				Check: resource.ComposeTestCheckFunc(
@@ -248,6 +266,7 @@ func TestAccScalewayIamGroup_Users(t *testing.T) {
 								"29c31dd4-8ea1-4927-82d9-a0620e04773f",
 								"0afd8f94-eaf1-4949-9dcb-9ae5f4bc1017",
 							]
+							application_ids = []
 						}
 					`,
 				Check: resource.ComposeTestCheckFunc(
@@ -265,6 +284,7 @@ func TestAccScalewayIamGroup_Users(t *testing.T) {
 							user_ids = [
 								"453c1a85-4a10-4c6f-94dc-d3193d4589a5",
 							]
+							application_ids = []
 						}
 					`,
 				Check: resource.ComposeTestCheckFunc(
@@ -278,6 +298,8 @@ func TestAccScalewayIamGroup_Users(t *testing.T) {
 				Config: `
 						resource "scaleway_iam_group" "main_user" {
 							name = "iam_group_user"
+							user_ids = []
+							application_ids = []
 						}
 					`,
 				Check: resource.ComposeTestCheckFunc(
@@ -336,6 +358,7 @@ func TestAccScalewayIamGroup_UsersAndApplications(t *testing.T) {
 						}
 						resource "scaleway_iam_group" "main_mix" {
 							name = "iam_group_app"
+							user_ids = []
 							application_ids = [
 								scaleway_iam_application.app03.id,
 								scaleway_iam_application.app04.id,
@@ -391,6 +414,8 @@ func TestAccScalewayIamGroup_UsersAndApplications(t *testing.T) {
 						}
 						resource "scaleway_iam_group" "main_mix" {
 							name = "iam_group_app"
+							user_ids = []
+							application_ids = []
 						}
 					`,
 				Check: resource.ComposeTestCheckFunc(

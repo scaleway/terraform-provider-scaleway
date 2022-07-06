@@ -21,6 +21,8 @@ func TestAccScalewayDataSourceIamGroup_Basic(t *testing.T) {
 				Config: `
 					resource "scaleway_iam_group" "main_ds_basic" {
 						name        = "test_data_source_basic"
+						user_ids = []
+						application_ids = []
 					}
 			
 					data "scaleway_iam_group" "find_by_id_basic" {

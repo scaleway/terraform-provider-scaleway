@@ -26,8 +26,8 @@ func dataSourceScalewayIamGroup() *schema.Resource {
 	// Default organization_id will be available on a major release. Please check #1337
 	dsSchema["organization_id"] = &schema.Schema{
 		Type:        schema.TypeString,
-		Description: "The organization_id you want to attach the resource to",
-		Required:    true,
+		Description: "The organization_id you want to attach the resource to, must be set if no default organization_id is set",
+		Optional:    true,
 	}
 
 	return &schema.Resource{

@@ -62,7 +62,8 @@ func resourceScalewayIamGroup() *schema.Resource {
 			"organization_id": {
 				Type:         schema.TypeString,
 				Description:  "The organization_id you want to attach the resource to",
-				Required:     true,
+				Optional:     true,
+				Computed:     true,
 				ValidateFunc: validationUUID(),
 			},
 		},
@@ -81,8 +82,8 @@ func resourceScalewayIamGroupCreate(ctx context.Context, d *schema.ResourceData,
 		return diag.FromErr(err)
 	}
 
-	appIDs := expandStrings(d.Get("application_ids"))
-	userIDs := expandStrings(d.Get("user_ids"))
+	appIDs := expandStringsOrEmpty(d.Get("application_ids"))
+	userIDs := expandStringsOrEmpty(d.Get("user_ids"))
 	_, err = api.SetGroupMembers(&iam.SetGroupMembersRequest{
 		ApplicationIDs: appIDs,
 		UserIDs:        userIDs,
@@ -156,7 +157,7 @@ func resourceScalewayIamGroupUpdate(ctx context.Context, d *schema.ResourceData,
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	
+
 	if d.HasChanges("application_ids", "user_ids") {
 		appIDs := expandStrings(d.Get("application_ids"))
 		userIDs := expandStrings(d.Get("user_ids"))
