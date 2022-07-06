@@ -88,6 +88,38 @@ func TestAccScalewayIamApiKey_Basic(t *testing.T) {
 	})
 }
 
+func TestAccScalewayIamApiKey_Expires(t *testing.T) {
+	SkipBetaTest(t)
+	tt := NewTestTools(t)
+	defer tt.Cleanup()
+	resource.ParallelTest(t, resource.TestCase{
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy: resource.ComposeTestCheckFunc(
+			testAccCheckScalewayIamAPIKeyDestroy(tt),
+			testAccCheckScalewayIamApplicationDestroy(tt),
+		),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+						resource "scaleway_iam_application" "main" {
+							name = "tf_tests_app_expires_at"
+						}
+
+						resource "scaleway_iam_api_key" "main" {
+							application_id = scaleway_iam_application.main.id
+							description = "an api key with an expiration date"
+							expires_at = "2025-07-06T09:00:00Z"
+						}
+					`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayIamAPIKeyExists(tt, "scaleway_iam_api_key.main"),
+					resource.TestCheckResourceAttr("scaleway_iam_api_key.main", "expires_at", "2025-07-06T09:00:00Z"),
+				),
+			},
+		},
+	})
+}
+
 func TestAccScalewayIamApiKey_NoUpdate(t *testing.T) {
 	SkipBetaTest(t)
 	tt := NewTestTools(t)

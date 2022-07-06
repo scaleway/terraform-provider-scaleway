@@ -36,9 +36,11 @@ func resourceScalewayIamAPIKey() *schema.Resource {
 				Description: "The date and time of the last update of the iam api key",
 			},
 			"expires_at": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The date and time of the expiration of the iam api key",
+				Type:             schema.TypeString,
+				Optional:         true,
+				Default:          nil,
+				Description:      "The date and time of the expiration of the iam api key. Cannot be changed afterwards",
+				ValidateDiagFunc: validateDate(),
 			},
 			"access_key": {
 				Type:        schema.TypeString,
@@ -72,7 +74,7 @@ func resourceScalewayIamAPIKey() *schema.Resource {
 			"creation_ip": {
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "The IP Address of the device which created the API key",
+				Description: "The IPv4 Address of the device which created the API key",
 			},
 			"default_project_id": projectIDSchema(),
 		},
