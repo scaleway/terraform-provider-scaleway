@@ -54,9 +54,15 @@ func resourceScalewayFunctionDomainCreate(ctx context.Context, d *schema.Resourc
 		return diag.FromErr(err)
 	}
 
+	functionID := expandRegionalID(d.Get("function_id").(string)).ID
+	_, err = waitForFunction(ctx, api, region, functionID, d.Timeout(schema.TimeoutCreate))
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	req := &function.CreateDomainRequest{
 		Region:     region,
-		FunctionID: expandRegionalID(d.Get("function_id").(string)).ID,
+		FunctionID: functionID,
 		Hostname:   d.Get("hostname").(string),
 	}
 

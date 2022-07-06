@@ -60,16 +60,15 @@ func TestAccScalewayFunctionDomain_Basic(t *testing.T) {
 
 					resource scaleway_function main {
 						namespace_id = scaleway_function_namespace.main.id
-						runtime = "node18"
+						runtime = "go118"
 						privacy = "private"
-						handler = "handler.handle"
+						handler = "Handle"
+						zip_file = "testfixture/gofunction.zip"
 					}
 
 					resource scaleway_function_domain main {
 						function_id = scaleway_function.main.id
 						hostname = "foobar.%[1]s"
-
-						depends_on = [scaleway_domain_record.main]
 					}
 
 					resource "scaleway_domain_record" "main" {
