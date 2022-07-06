@@ -15,6 +15,9 @@ const (
 )
 
 func init() {
+	if !terraformBetaEnabled {
+		return
+	}
 	resource.AddTestSweepers("scaleway_iam_policy", &resource.Sweeper{
 		Name: "scaleway_iam_policy",
 		F:    testSweepIamPolicy,
