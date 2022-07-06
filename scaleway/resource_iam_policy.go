@@ -80,12 +80,23 @@ func resourceScalewayIamPolicy() *schema.Resource {
 					Schema: map[string]*schema.Schema{
 						"organization_id": {
 							Type:        schema.TypeString,
-							Required:    true,
-							Description: "ID of organization scoped to the rule.",
+							Optional:    true,
+							Description: "ID of organization scoped to the rule. Only one of project_ids and organization_id may be set.",
+						},
+						"project_ids": {
+							Type:        schema.TypeList,
+							Optional:    true,
+							Description: "List of project IDs scoped to the rule. Only one of project_ids and organization_id may be set.",
+							Elem: &schema.Schema{
+								Type: schema.TypeString,
+							},
 						},
 						"permission_set_names": {
-							Type:     schema.TypeList,
+							Type:     schema.TypeSet,
 							Required: true,
+							Elem: &schema.Schema{
+								Type: schema.TypeString,
+							},
 						},
 					},
 				},
