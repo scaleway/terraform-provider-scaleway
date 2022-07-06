@@ -10,6 +10,10 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 )
 
+const (
+	testIamPolicyOrganizationIDMock = "105bdce1-64c0-48ab-899d-868455867ecf"
+)
+
 func init() {
 	resource.AddTestSweepers("scaleway_iam_policy", &resource.Sweeper{
 		Name: "scaleway_iam_policy",
@@ -43,7 +47,7 @@ func TestAccScalewayIamPolicy_Basic(t *testing.T) {
 	defer tt.Cleanup()
 	orgID, hasOrgID := tt.Meta.scwClient.GetDefaultOrganizationID()
 	if !hasOrgID {
-		t.Fatal("no organization id found")
+		orgID = testIamPolicyOrganizationIDMock
 	}
 	resource.ParallelTest(t, resource.TestCase{
 		ProviderFactories: tt.ProviderFactories,
@@ -107,7 +111,7 @@ func TestAccScalewayIamPolicy_NoUpdate(t *testing.T) {
 	defer tt.Cleanup()
 	orgID, hasOrgID := tt.Meta.scwClient.GetDefaultOrganizationID()
 	if !hasOrgID {
-		t.Fatal("no organization id found")
+		orgID = testIamPolicyOrganizationIDMock
 	}
 	resource.ParallelTest(t, resource.TestCase{
 		ProviderFactories: tt.ProviderFactories,
@@ -163,7 +167,7 @@ func TestAccScalewayIamPolicy_ChangePermissions(t *testing.T) {
 	defer tt.Cleanup()
 	orgID, hasOrgID := tt.Meta.scwClient.GetDefaultOrganizationID()
 	if !hasOrgID {
-		t.Fatal("no organization id found")
+		orgID = testIamPolicyOrganizationIDMock
 	}
 	resource.ParallelTest(t, resource.TestCase{
 		ProviderFactories: tt.ProviderFactories,
@@ -246,7 +250,7 @@ func TestAccScalewayIamPolicy_ProjectID(t *testing.T) {
 	defer tt.Cleanup()
 	orgID, hasOrgID := tt.Meta.scwClient.GetDefaultOrganizationID()
 	if !hasOrgID {
-		t.Fatal("no organization id found")
+		orgID = testIamPolicyOrganizationIDMock
 	}
 	resource.ParallelTest(t, resource.TestCase{
 		ProviderFactories: tt.ProviderFactories,
@@ -306,7 +310,7 @@ func TestAccScalewayIamPolicy_ChangeRulePrincipal(t *testing.T) {
 	defer tt.Cleanup()
 	orgID, hasOrgID := tt.Meta.scwClient.GetDefaultOrganizationID()
 	if !hasOrgID {
-		t.Fatal("no organization id found")
+		orgID = testIamPolicyOrganizationIDMock
 	}
 	resource.ParallelTest(t, resource.TestCase{
 		ProviderFactories: tt.ProviderFactories,
