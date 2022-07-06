@@ -113,6 +113,8 @@ func TestAccScalewayIamApiKey_Expires(t *testing.T) {
 					`,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayIamAPIKeyExists(tt, "scaleway_iam_api_key.main"),
+					resource.TestCheckResourceAttrPair("scaleway_iam_api_key.main", "application_id", "scaleway_iam_application.main", "id"),
+					resource.TestCheckResourceAttr("scaleway_iam_api_key.main", "description", "an api key with an expiration date"),
 					resource.TestCheckResourceAttr("scaleway_iam_api_key.main", "expires_at", "2025-07-06T09:00:00Z"),
 				),
 			},
