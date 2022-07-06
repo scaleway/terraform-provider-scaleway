@@ -131,6 +131,10 @@ func resourceScalewayIamPolicyRead(ctx context.Context, d *schema.ResourceData, 
 		PolicyID: d.Id(),
 	}, scw.WithContext(ctx))
 	if err != nil {
+		if is404Error(err) {
+			d.SetId("")
+			return nil
+		}
 		return diag.FromErr(err)
 	}
 	_ = d.Set("name", pol.Name)
@@ -219,6 +223,10 @@ func resourceScalewayIamPolicyDelete(ctx context.Context, d *schema.ResourceData
 		PolicyID: d.Id(),
 	}, scw.WithContext(ctx))
 	if err != nil {
+		if is404Error(err) {
+			d.SetId("")
+			return nil
+		}
 		return diag.FromErr(err)
 	}
 
