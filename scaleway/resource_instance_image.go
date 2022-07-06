@@ -7,6 +7,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 )
@@ -43,8 +44,13 @@ func resourceScalewayInstanceImage() *schema.Resource {
 			},
 			"architecture": {
 				Type:        schema.TypeString,
-				Required:    true,
-				Description: "Architecture of the image",
+				Optional:    true,
+				Default:     instance.ArchX86_64.String(),
+				Description: "Architecture of the image (default = x86_64)",
+				ValidateFunc: validation.StringInSlice([]string{
+					instance.ArchArm.String(),
+					instance.ArchX86_64.String(),
+				}, false),
 			},
 			"default_bootscript_id": {
 				Type:         schema.TypeString,
@@ -103,46 +109,6 @@ func resourceScalewayInstanceImage() *schema.Resource {
 				Elem: &schema.Schema{
 					Type: schema.TypeString,
 				},
-				//Elem: &schema.Resource{
-				//	Schema: map[string]*schema.Schema{
-				//		"bootcmdargs": {
-				//			Type: schema.TypeString,
-				//		},
-				//		"default": {
-				//			Type: schema.TypeString,
-				//		},
-				//		"dtb": {
-				//			Type: schema.TypeString,
-				//		},
-				//		"id": {
-				//			Type: schema.TypeString,
-				//		},
-				//		"initrd": {
-				//			Type: schema.TypeString,
-				//		},
-				//		"kernel": {
-				//			Type: schema.TypeString,
-				//		},
-				//		"organization": {
-				//			Type: schema.TypeString,
-				//		},
-				//		"project": {
-				//			Type: schema.TypeString,
-				//		},
-				//		"public": {
-				//			Type: schema.TypeString,
-				//		},
-				//		"title": {
-				//			Type: schema.TypeString,
-				//		},
-				//		"arch": {
-				//			Type: schema.TypeString,
-				//		},
-				//		"zone": {
-				//			Type: schema.TypeString,
-				//		},
-				//	},
-				//},
 			},
 			"additional_volumes": {
 				Type:        schema.TypeSet,
@@ -207,16 +173,6 @@ func resourceScalewayInstanceImage() *schema.Resource {
 							Elem: &schema.Schema{
 								Type: schema.TypeString,
 							},
-							//Elem: &schema.Resource{
-							//	Schema: map[string]*schema.Schema{
-							//		"id": {
-							//			Type: schema.TypeString,
-							//		},
-							//		"name": {
-							//			Type: schema.TypeString,
-							//		},
-							//	},
-							//},
 						},
 					},
 				},
@@ -305,18 +261,8 @@ func resourceScalewayInstanceImageRead(ctx context.Context, d *schema.ResourceDa
 	_ = d.Set("name", image.Image.Name)
 	_ = d.Set("root_volume_id", newZonedIDString(image.Image.Zone, image.Image.RootVolume.ID))
 	_ = d.Set("architecture", image.Image.Arch)
-	if _, defaultBootscriptExists := d.GetOk("default_bootscript_id"); defaultBootscriptExists == true {
-		_ = d.Set("default_bootscript", flattenInstanceImageBootscript(image.Image.DefaultBootscript))
-	}
-	if _, extraVolumesExist := d.GetOk("additional_volume_ids"); extraVolumesExist == true {
-		//additionalVolumeIDs := []string(nil)
-		//for _, volume := range orderVolumes(image.Image.ExtraVolumes) {
-		//	additionalVolumeIDs = append(additionalVolumeIDs, volume.ID)
-		//}
-		//_ = d.Set("additional_volume_ids", additionalVolumeIDs)
-		//TODO: do i need to list all volume specs ? if not then the commented code above will suffice
-		_ = d.Set("additional_volumes", flattenInstanceImageExtraVolumes(image.Image.ExtraVolumes))
-	}
+	_ = d.Set("default_bootscript", flattenInstanceImageBootscript(image.Image.DefaultBootscript))
+	_ = d.Set("additional_volumes", flattenInstanceImageExtraVolumes(image.Image.ExtraVolumes, zone))
 	_ = d.Set("tags", image.Image.Tags)
 	_ = d.Set("public", image.Image.Public)
 	_ = d.Set("creation_date", image.Image.CreationDate.Format(time.RFC3339))
@@ -331,6 +277,8 @@ func resourceScalewayInstanceImageRead(ctx context.Context, d *schema.ResourceDa
 }
 
 func resourceScalewayInstanceImageUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	// Modifiable attributes are : 'name', 'arch', 'public', 'tags', 'from_server'
+
 	instanceAPI, zone, id, err := instanceAPIWithZoneAndID(meta, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -344,27 +292,8 @@ func resourceScalewayInstanceImageUpdate(ctx context.Context, d *schema.Resource
 	if d.HasChange("name") {
 		req.Name = expandStringPtr(d.Get("name"))
 	}
-	if d.HasChange("root_volume_id") {
-		//TODO: I probably need to use an expandVolume type function here
-		req.RootVolume = d.Get("root_volume_id").(*instance.VolumeSummary)
-	}
 	if d.HasChange("architecture") {
 		req.Arch = instance.Arch(d.Get("architecture").(string))
-	}
-	if d.HasChange("default_bootscript_id") {
-		bootscriptSpecs, err := getBootscriptSpecs(d.Get("default_bootscript_id").(string), instanceAPI, zone, ctx)
-		if err != nil {
-			return diag.FromErr(err)
-		}
-		req.DefaultBootscript = bootscriptSpecs
-	}
-	if d.HasChange("additional_volume_ids") {
-		//TODO: verify that this works
-		snapResponses, err := getExtraVolumesSpecsFromSnapshots(d.Get("additional_volume_ids").([]interface{}), instanceAPI, ctx)
-		if err != nil {
-			return diag.FromErr(err)
-		}
-		req.ExtraVolumes = expandInstanceImageExtraVolumes(snapResponses)
 	}
 	if d.HasChange("tags") {
 		req.Tags = expandUpdatedStringsPtr(d.Get("tags"))
@@ -372,6 +301,24 @@ func resourceScalewayInstanceImageUpdate(ctx context.Context, d *schema.Resource
 	if d.HasChange("public") {
 		req.Public = d.Get("public").(bool)
 	}
+
+	// TODO: remove this part and associated functions if we don't want to be able to update the bootscript (deprecated)
+	//if _, exists := d.GetOk("default_bootscript_id"); exists && d.HasChange("default_bootscript_id") {
+	//	bootscriptSpecs, err := getBootscriptSpecs(d.Get("default_bootscript_id").(string), instanceAPI, zone, ctx)
+	//	if err != nil {
+	//		return diag.FromErr(err)
+	//	}
+	//	req.DefaultBootscript = bootscriptSpecs
+	//}
+
+	// TODO: modify this part so that it only allows adding new volumes
+	//if d.HasChange("additional_volume_ids") {
+	//	snapResponses, err := getExtraVolumesSpecsFromSnapshots(d.Get("additional_volume_ids").([]interface{}), instanceAPI, ctx)
+	//	if err != nil {
+	//		return diag.FromErr(err)
+	//	}
+	//	req.ExtraVolumes = expandInstanceImageExtraVolumes(snapResponses)
+	//}
 
 	_, err = waitForInstanceImage(ctx, instanceAPI, zone, id, d.Timeout(schema.TimeoutUpdate))
 	if err != nil {

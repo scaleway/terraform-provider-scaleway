@@ -513,19 +513,92 @@ func getExtraVolumesSpecsFromSnapshots(snapIDs []interface{}, instanceAPI *insta
 	return snapResponses, nil
 }
 
-func getBootscriptSpecs(bootscriptID string, instanceAPI *instance.API, zone scw.Zone, ctx context.Context) (*instance.Bootscript, error) {
-	if bootscriptID == "" {
-		return nil, nil
+func expandInstanceImageExtraVolumesTemplates(snapshots []*instance.GetSnapshotResponse) map[string]*instance.VolumeTemplate {
+	volTemplates := map[string]*instance.VolumeTemplate{}
+	if snapshots == nil {
+		return volTemplates
 	}
-	bsResp, err := instanceAPI.GetBootscript(&instance.GetBootscriptRequest{
-		Zone:         zone,
-		BootscriptID: bootscriptID,
-	}, scw.WithContext(ctx))
-	if err != nil {
-		return nil, err
+	for i, snapshot := range snapshots {
+		snap := snapshot.Snapshot
+		volTemplate := &instance.VolumeTemplate{
+			ID:         snap.ID,
+			Name:       snap.BaseVolume.Name,
+			Size:       snap.Size,
+			VolumeType: snap.VolumeType,
+			//Project:    &snap.Project,
+		}
+		volTemplates[strconv.Itoa(i+1)] = volTemplate
 	}
-	return bsResp.Bootscript, nil
+	return volTemplates
 }
+
+func flattenInstanceImageExtraVolumes(volumes map[string]*instance.Volume, zone scw.Zone) interface{} {
+	volumesFlat := []map[string]interface{}(nil)
+	for _, volume := range volumes {
+		server := map[string]interface{}{}
+		if volume.Server != nil {
+			server["id"] = volume.Server.ID
+			server["name"] = volume.Server.Name
+		}
+		volumesFlat = append(volumesFlat, map[string]interface{}{
+			"id":                newZonedIDString(zone, volume.ID),
+			"name":              volume.Name,
+			"export_uri":        volume.ExportURI,
+			"size":              volume.Size,
+			"volume_type":       volume.VolumeType,
+			"creation_date":     volume.CreationDate,
+			"modification_date": volume.ModificationDate,
+			"organization":      volume.Organization,
+			"project":           volume.Project,
+			"tags":              volume.Tags,
+			"state":             volume.State,
+			"zone":              volume.Zone,
+			"server":            server,
+		})
+	}
+	return volumesFlat
+}
+
+func flattenInstanceImageBootscript(bs *instance.Bootscript) interface{} {
+	if bs == nil {
+		return nil
+	}
+	bsFlat := map[string]interface{}{
+		"bootcmdargs":  bs.Bootcmdargs,
+		"default":      "false",
+		"dtb":          bs.Dtb,
+		"id":           bs.ID,
+		"initrd":       bs.Initrd,
+		"kernel":       bs.Kernel,
+		"organization": bs.Organization,
+		"project":      bs.Project,
+		"public":       "false",
+		"title":        bs.Title,
+		"arch":         bs.Arch,
+		"zone":         bs.Zone,
+	}
+	if bs.Public == true {
+		bsFlat["public"] = "true"
+	}
+	if bs.Default == true {
+		bsFlat["default"] = "true"
+	}
+	return bsFlat
+}
+
+//func getBootscriptSpecs(bootscriptID string, instanceAPI *instance.API, zone scw.Zone, ctx context.Context) (*instance.Bootscript, error) {
+//	if bootscriptID == "" {
+//		return nil, nil
+//	}
+//	bsResp, err := instanceAPI.GetBootscript(&instance.GetBootscriptRequest{
+//		Zone:         zone,
+//		BootscriptID: bootscriptID,
+//	}, scw.WithContext(ctx))
+//	if err != nil {
+//		return nil, err
+//	}
+//	return bsResp.Bootscript, nil
+//}
 
 //func expandInstanceImageBootscript(bootscriptID interface{}) *instance.Bootscript {
 //
@@ -553,98 +626,29 @@ func getBootscriptSpecs(bootscriptID string, instanceAPI *instance.API, zone scw
 //	return bs
 //}
 
-func expandInstanceImageExtraVolumesTemplates(snapshots []*instance.GetSnapshotResponse) map[string]*instance.VolumeTemplate {
-	volTemplates := map[string]*instance.VolumeTemplate{}
-	if snapshots == nil {
-		return volTemplates
-	}
-	for i, snapshot := range snapshots {
-		snap := snapshot.Snapshot
-		volTemplate := &instance.VolumeTemplate{
-			ID:         snap.BaseVolume.ID,
-			Name:       snap.BaseVolume.Name,
-			Size:       snap.Size,
-			VolumeType: snap.VolumeType,
-			//Project:    &snap.Project,
-		}
-		volTemplates[strconv.Itoa(i)] = volTemplate
-	}
-	return volTemplates
-}
-
-func expandInstanceImageExtraVolumes(snapshots []*instance.GetSnapshotResponse) map[string]*instance.Volume {
-	volumes := map[string]*instance.Volume{}
-	if snapshots == nil {
-		return volumes
-	}
-	for i, snapshot := range snapshots {
-		snap := snapshot.Snapshot
-		volume := &instance.Volume{
-			ID:               snap.BaseVolume.ID,
-			Name:             snap.BaseVolume.Name,
-			ExportURI:        "",
-			Size:             snap.Size,
-			VolumeType:       snap.VolumeType,
-			CreationDate:     nil,
-			ModificationDate: nil,
-			Organization:     "",
-			Project:          "",
-			Tags:             nil,
-			Server:           nil,
-			State:            "",
-			Zone:             "",
-		}
-		volumes[strconv.Itoa(i)] = volume
-	}
-	return volumes
-}
-
-func flattenInstanceImageExtraVolumes(volumes map[string]*instance.Volume) interface{} {
-	volumesFlat := []map[string]interface{}(nil)
-	for _, volume := range volumes {
-		server := map[string]interface{}{
-			"id":   volume.Server.ID,
-			"name": volume.Server.Name,
-		}
-		volumesFlat = append(volumesFlat, map[string]interface{}{
-			"id":                volume.ID,
-			"name":              volume.Name,
-			"export_uri":        volume.ExportURI,
-			"size":              volume.Size,
-			"volume_type":       volume.VolumeType,
-			"creation_date":     volume.CreationDate,
-			"modification_date": volume.ModificationDate,
-			"organization":      volume.Organization,
-			"project":           volume.Project,
-			"tags":              volume.Tags,
-			"state":             volume.State,
-			"zone":              volume.Zone,
-			"server":            server,
-		})
-	}
-	return volumesFlat
-}
-
-func flattenInstanceImageBootscript(bs *instance.Bootscript) interface{} {
-	bsFlat := map[string]interface{}{
-		"bootcmdargs":  bs.Bootcmdargs,
-		"default":      "false",
-		"dtb":          bs.Dtb,
-		"id":           bs.ID,
-		"initrd":       bs.Initrd,
-		"kernel":       bs.Kernel,
-		"organization": bs.Organization,
-		"project":      bs.Project,
-		"public":       "false",
-		"title":        bs.Title,
-		"arch":         bs.Arch,
-		"zone":         bs.Zone,
-	}
-	if bs.Public == true {
-		bsFlat["public"] = "true"
-	}
-	if bs.Default == true {
-		bsFlat["default"] = "true"
-	}
-	return bsFlat
-}
+//func expandInstanceImageExtraVolumes(snapshots []*instance.GetSnapshotResponse) map[string]*instance.Volume {
+//	volumes := map[string]*instance.Volume{}
+//	if snapshots == nil {
+//		return volumes
+//	}
+//	for i, snapshot := range snapshots {
+//		snap := snapshot.Snapshot
+//		volume := &instance.Volume{
+//			ID:               snap.BaseVolume.ID,
+//			Name:             snap.BaseVolume.Name,
+//			ExportURI:        "",
+//			Size:             snap.Size,
+//			VolumeType:       snap.VolumeType,
+//			CreationDate:     nil,
+//			ModificationDate: nil,
+//			Organization:     "",
+//			Project:          "",
+//			Tags:             nil,
+//			Server:           nil,
+//			State:            "",
+//			Zone:             "",
+//		}
+//		volumes[strconv.Itoa(i)] = volume
+//	}
+//	return volumes
+//}

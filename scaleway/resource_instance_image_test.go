@@ -77,7 +77,6 @@ func TestAccScalewayInstanceImage_BlockVolume(t *testing.T) {
 					resource "scaleway_instance_image" "main" {
 						name = "test_image_renamed"
 						root_volume_id = scaleway_instance_snapshot.main.id
-						architecture = "x86_64"
 						tags = ["tag3"]
 						public = false
 						zone = "nl-ams-1"
@@ -227,7 +226,7 @@ func TestAccScalewayInstanceImage_ServerWithBlockVolume(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_instance_image.main", "architecture", "x86_64"),
 					resource.TestCheckResourceAttr("scaleway_instance_image.main", "public", "false"),
 					resource.TestCheckResourceAttrPair("scaleway_instance_image.main", "root_volume_id", "scaleway_instance_snapshot.main", "id"),
-					resource.TestCheckResourceAttrPair("scaleway_instance_image.main", "additional_volume_ids.0.id", "scaleway_instance_snapshot.block", "id"),
+					resource.TestCheckResourceAttrPair("scaleway_instance_image.main", "additional_volumes.0.id", "scaleway_instance_snapshot.block", "id"),
 				),
 			},
 		},
@@ -334,8 +333,8 @@ func TestAccScalewayInstanceImage_SeveralVolumes(t *testing.T) {
 					resource.TestCheckResourceAttrSet("scaleway_instance_image.main", "name"),
 					resource.TestCheckResourceAttr("scaleway_instance_image.main", "architecture", "x86_64"),
 					resource.TestCheckResourceAttrPair("scaleway_instance_image.main", "root_volume_id", "scaleway_instance_snapshot.snap00", "id"),
-					resource.TestCheckResourceAttrPair("scaleway_instance_image.main", "additional_volume_ids.0.id", "scaleway_instance_snapshot.snap01", "volume_id"),
-					resource.TestCheckResourceAttrPair("scaleway_instance_image.main", "additional_volume_ids.1.id", "scaleway_instance_snapshot.snap02", "volume_id"),
+					resource.TestCheckResourceAttrPair("scaleway_instance_image.main", "additional_volumes.0.id", "scaleway_instance_snapshot.snap01", "id"),
+					resource.TestCheckResourceAttrPair("scaleway_instance_image.main", "additional_volumes.1.id", "scaleway_instance_snapshot.snap02", "id"),
 				),
 			},
 		},
