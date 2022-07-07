@@ -3,7 +3,6 @@ package scaleway
 import (
 	"context"
 	"fmt"
-	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -247,8 +246,8 @@ func resourceScalewayInstanceImageRead(ctx context.Context, d *schema.ResourceDa
 	_ = d.Set("additional_volumes", flattenInstanceImageExtraVolumes(image.Image.ExtraVolumes, zone))
 	_ = d.Set("tags", image.Image.Tags)
 	_ = d.Set("public", image.Image.Public)
-	_ = d.Set("creation_date", image.Image.CreationDate.Format(time.RFC3339))
-	_ = d.Set("modification_date", image.Image.ModificationDate.Format(time.RFC3339))
+	_ = d.Set("creation_date", flattenTime(image.Image.CreationDate))
+	_ = d.Set("modification_date", flattenTime(image.Image.ModificationDate))
 	_ = d.Set("from_server_id", image.Image.FromServer)
 	_ = d.Set("state", image.Image.State)
 	_ = d.Set("zone", image.Image.Zone)
