@@ -114,9 +114,8 @@ func resourceScalewayContainer() *schema.Resource {
 			},
 			"domain_name": {
 				Type:        schema.TypeString,
-				Optional:    true,
 				Computed:    true,
-				Description: "The container domain name.",
+				Description: "The native container domain name.",
 			},
 			"protocol": {
 				Type:        schema.TypeString,
@@ -313,10 +312,6 @@ func resourceScalewayContainerUpdate(ctx context.Context, d *schema.ResourceData
 
 	if d.HasChanges("registry_image") {
 		req.RegistryImage = expandStringPtr(d.Get("registry_image"))
-	}
-
-	if d.HasChanges("domain_name") {
-		req.DomainName = expandStringPtr(d.Get("domain_name"))
 	}
 
 	if d.HasChanges("max_concurrency") {
