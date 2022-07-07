@@ -84,8 +84,6 @@ The following arguments are optional:
 
 - `deploy` - (Optional) Boolean controlling whether the container is on a production environment.
 
-- `domain_name` - The native domain name of the container
-
 Note that if you want to use your own configuration, you must consult our configuration [restrictions](https://www.scaleway.com/en/docs/compute/containers/reference-content/containers-limitations/#configuration-restrictions) section.
 
 ## Attributes Reference

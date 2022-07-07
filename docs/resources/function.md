@@ -77,8 +77,6 @@ The following arguments are supported:
 
 - `zip_file` - Location of the zip file to upload containing your function sources
 
-- `domain_name` - The native domain name of the function
-
 - `zip_hash` - The hash of your source zip file, changing it will re-apply function. Can be any string, changing it will just trigger state change. You can use any terraform hash function to trigger a change on your zip change (see examples)
 
 - `deploy` - Define if the function should be deployed, terraform will wait for function to be deployed. Function will get deployed if you change source zip
