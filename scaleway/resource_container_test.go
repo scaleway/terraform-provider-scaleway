@@ -16,6 +16,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	container "github.com/scaleway/scaleway-sdk-go/api/container/v1beta1"
+	"github.com/scaleway/scaleway-sdk-go/scw"
 )
 
 var testDockerIMG = ""
@@ -29,6 +30,41 @@ func init() {
 		return
 	}
 	l.Infof("start container registry with image: %s", testDockerIMG)
+}
+
+func init() {
+	resource.AddTestSweepers("scaleway_container", &resource.Sweeper{
+		Name: "scaleway_container",
+		F:    testSweepContainer,
+	})
+}
+
+func testSweepContainer(_ string) error {
+	return sweepRegions(scw.AllRegions, func(scwClient *scw.Client, region scw.Region) error {
+		containerAPI := container.NewAPI(scwClient)
+		l.Debugf("sweeper: destroying the container in (%s)", region)
+		listNamespaces, err := containerAPI.ListContainers(
+			&container.ListContainersRequest{
+				Region: region,
+			}, scw.WithAllPages())
+		if err != nil {
+			return fmt.Errorf("error listing containers in (%s) in sweeper: %s", region, err)
+		}
+
+		for _, cont := range listNamespaces.Containers {
+			_, err := containerAPI.DeleteContainer(&container.DeleteContainerRequest{
+				ContainerID: cont.ID,
+				Region:      region,
+			})
+			if err != nil {
+				l.Debugf("sweeper: error (%s)", err)
+
+				return fmt.Errorf("error deleting container in sweeper: %s", err)
+			}
+		}
+
+		return nil
+	})
 }
 
 func TestAccScalewayContainer_Basic(t *testing.T) {
