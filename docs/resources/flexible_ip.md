@@ -19,7 +19,7 @@ resource "scaleway_flexible_ip" "main" {
 }
 ```
 
-### With zone 
+### With zone
 
 ```hcl
 resource "scaleway_flexible_ip" "main" {
@@ -38,7 +38,7 @@ resource "scaleway_account_ssh_key" "main" {
 data "scaleway_baremetal_os" "by_id" {
     zone = "fr-par-2"
     name = "Ubuntu"
-    version = "20.04 LTS (Focal Fossa)"						}
+    version = "20.04 LTS (Focal Fossa)"						
 }
 
 data "scaleway_baremetal_offer" "my_offer" {
