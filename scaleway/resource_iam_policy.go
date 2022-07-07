@@ -25,27 +25,27 @@ func resourceScalewayIamPolicy() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Optional:    true,
-				Description: "The name of the iam application",
+				Description: "The name of the iam policy",
 			},
 			"description": {
 				Type:        schema.TypeString,
 				Optional:    true,
-				Description: "The description of the iam application",
+				Description: "The description of the iam policy",
 			},
 			"created_at": {
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "The date and time of the creation of the application",
+				Description: "The date and time of the creation of the policy",
 			},
 			"updated_at": {
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "The date and time of the last update of the application",
+				Description: "The date and time of the last update of the policy",
 			},
 			"editable": {
 				Type:        schema.TypeBool,
 				Computed:    true,
-				Description: "Whether or not the application is editable.",
+				Description: "Whether or not the policy is editable.",
 			},
 			"organization_id": organizationIDSchema(),
 			"user_id": {
@@ -92,8 +92,9 @@ func resourceScalewayIamPolicy() *schema.Resource {
 							},
 						},
 						"permission_set_names": {
-							Type:     schema.TypeSet,
-							Required: true,
+							Type:        schema.TypeSet,
+							Required:    true,
+							Description: "Names of permission sets bound to the rule.",
 							Elem: &schema.Schema{
 								Type: schema.TypeString,
 							},
