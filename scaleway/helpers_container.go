@@ -95,10 +95,6 @@ func setCreateContainerRequest(d *schema.ResourceData, region scw.Region) (*cont
 		req.MaxConcurrency = scw.Uint32Ptr(uint32(maxConcurrency.(int)))
 	}
 
-	if domainName, ok := d.GetOk("domain_name"); ok {
-		req.DomainName = expandStringPtr(domainName)
-	}
-
 	return req, nil
 }
 
