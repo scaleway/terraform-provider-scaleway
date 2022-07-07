@@ -104,20 +104,20 @@ In addition to all above arguments, the following attributes are exported:
 - `organization_id` - The organization ID the image is associated with.
 - `additional_volumes` - The description of the extra volumes attached to the image.
 
-  -> The `additional_volumes` block contains :
-  - `id` - The ID of the volume.
-  - `name` - The name of the volume.
-  - `export_uri` - The export URI of the volume.
-  - `size` - The size of the volume.
-  - `volume_type` - The type of volume, possible values are `l_ssd` and `b_ssd`.
-  - `creation_date` - Date of the volume creation.
-  - `modification_date` - Date of volume latest update.
-  - `organization` - The organization ID the volume is associated with.
-  - `project` - ID of the project the volume is associated with
-  - `tags` - List of tags associated with the volume.
-  - `state` - State of the volume.
-  - `zone` - The [zone](../guides/regions_and_zones.md#zones) in which the volume is.
-  - `server` - Description of the server containing the volume (in case the image is a backup from a server). 
+    -> The `additional_volumes` block contains :
+    - `id` - The ID of the volume.
+    - `name` - The name of the volume.
+    - `export_uri` - The export URI of the volume.
+    - `size` - The size of the volume.
+    - `volume_type` - The type of volume, possible values are `l_ssd` and `b_ssd`.
+    - `creation_date` - Date of the volume creation.
+    - `modification_date` - Date of volume latest update.
+    - `organization` - The organization ID the volume is associated with.
+    - `project` - ID of the project the volume is associated with
+    - `tags` - List of tags associated with the volume.
+    - `state` - State of the volume.
+    - `zone` - The [zone](../guides/regions_and_zones.md#zones) in which the volume is.
+    - `server` - Description of the server containing the volume (in case the image is a backup from a server).
   
     -> The `server` block contains :
       - `id` - ID of the server containing the volume.
