@@ -64,11 +64,17 @@ func TestAccScalewayFunctionDomain_Basic(t *testing.T) {
 						privacy = "private"
 						handler = "Handle"
 						zip_file = "testfixture/gofunction.zip"
+						deploy = true
 					}
 
 					resource scaleway_function_domain main {
 						function_id = scaleway_function.main.id
 						hostname = "foobar.%[1]s"
+
+						depends_on = [
+							scaleway_function.main,
+							scaleway_domain_record.main
+						]
 					}
 
 					resource "scaleway_domain_record" "main" {

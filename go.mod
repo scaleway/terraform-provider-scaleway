@@ -79,4 +79,7 @@ require (
 	gotest.tools/v3 v3.0.3 // indirect
 )
 
+replace (
+	github.com/scaleway/scaleway-sdk-go v1.0.0-beta.9.0.20220706124610-072bee915715 => ../scaleway-sdk-go/
+)
 go 1.17
