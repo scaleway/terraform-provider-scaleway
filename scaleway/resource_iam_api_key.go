@@ -38,7 +38,7 @@ func resourceScalewayIamAPIKey() *schema.Resource {
 			"expires_at": {
 				Type:             schema.TypeString,
 				Optional:         true,
-				Default:          nil,
+				ForceNew:         true,
 				Description:      "The date and time of the expiration of the iam api key. Cannot be changed afterwards",
 				ValidateDiagFunc: validateDate(),
 			},
