@@ -29,14 +29,14 @@ func TestAccScalewayDataSourceFlexibleIP_Basic(t *testing.T) {
 				`,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayFlexibleIPExists(tt, "scaleway_flexible_ip.main"),
-					resource.TestCheckResourceAttrPair(
-						"data.scaleway_flexible_ip.by_address", "ip_address",
-						"scaleway_flexible_ip.main", "ip_address",
-					),
-					resource.TestCheckResourceAttrPair(
-						"data.scaleway_flexible_ip.by_id", "id",
-						"scaleway_flexible_ip.main", "id",
-					),
+
+					resource.TestCheckResourceAttrSet("scaleway_flexible_ip.main", "ip_address"),
+					resource.TestCheckResourceAttrSet("data.scaleway_flexible_ip.by_address", "ip_address"),
+					resource.TestCheckResourceAttrSet("data.scaleway_flexible_ip.by_id", "ip_address"),
+
+					resource.TestCheckResourceAttrSet("scaleway_flexible_ip.main", "id"),
+					resource.TestCheckResourceAttrSet("data.scaleway_flexible_ip.by_address", "id"),
+					resource.TestCheckResourceAttrSet("data.scaleway_flexible_ip.by_id", "id"),
 				),
 			},
 		},

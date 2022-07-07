@@ -2,7 +2,6 @@ package scaleway
 
 import (
 	"context"
-	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -42,7 +41,7 @@ func resourceScalewayFlexibleIP() *schema.Resource {
 			"server_id": {
 				Type:        schema.TypeString,
 				Optional:    true,
-				Description: "The server associated with this flexible IP",
+				Description: "The baremetal server associated with this flexible IP",
 			},
 			"mac_address": {
 				Type:        schema.TypeString,
@@ -63,12 +62,12 @@ func resourceScalewayFlexibleIP() *schema.Resource {
 			"created_at": {
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "The date and time of the creation of the Flexible IP",
+				Description: "The date and time of the creation of the Flexible IP (Format ISO 8601)",
 			},
 			"updated_at": {
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "The date and time of the last update of the Flexible IP",
+				Description: "The date and time of the last update of the Flexible IP (Format ISO 8601)",
 			},
 		},
 	}
@@ -127,12 +126,12 @@ func resourceScalewayFlexibleIPRead(ctx context.Context, d *schema.ResourceData,
 	}
 
 	_ = d.Set("ip_address", flexibleIP.IPAddress.String())
-	_ = d.Set("zone", zone) // TODO use zone field from flexibleIP when available
+	_ = d.Set("zone", zone)
 	_ = d.Set("organization_id", flexibleIP.OrganizationID)
 	_ = d.Set("project_id", flexibleIP.ProjectID)
 	_ = d.Set("reverse", flexibleIP.Reverse)
-	_ = d.Set("created_at", flexibleIP.CreatedAt.Format(time.RFC3339))
-	_ = d.Set("updated_at", flexibleIP.UpdatedAt.Format(time.RFC3339))
+	_ = d.Set("created_at", flattenTime(flexibleIP.CreatedAt))
+	_ = d.Set("updated_at", flattenTime(flexibleIP.UpdatedAt))
 
 	if flexibleIP.ServerID != nil {
 		_ = d.Set("server_id", newZonedIDString(zone, *flexibleIP.ServerID))

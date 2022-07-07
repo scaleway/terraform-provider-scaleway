@@ -103,7 +103,10 @@ func TestAccScalewayFlexibleIP_CreateAndAttachToBaremetalServer(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      testAccCheckScalewayFlexibleIPDestroy(tt),
+		CheckDestroy: resource.ComposeTestCheckFunc(
+			testAccCheckScalewayFlexibleIPDestroy(tt),
+			testAccCheckScalewayBaremetalServerDestroy(tt),
+		),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -120,12 +123,13 @@ func TestAccScalewayFlexibleIP_CreateAndAttachToBaremetalServer(t *testing.T) {
 				Config: fmt.Sprintf(`
 						data "scaleway_baremetal_os" "by_id" {
 							zone = "fr-par-2"
-							os_id = "03b7f4ba-a6a1-4305-984e-b54fafbf1681"
+							name = "Ubuntu"
+							version = "20.04 LTS (Focal Fossa)"						
 						}
-					
+
 						data "scaleway_baremetal_offer" "my_offer" {
 							zone = "fr-par-2"
-							offer_id = "25dcf38b-c90c-4b18-97a2-6956e9d1e113"
+							name = "EM-A210R-HDD"
 						}				
 
 						resource "scaleway_account_ssh_key" "main" {
@@ -165,7 +169,10 @@ func TestAccScalewayFlexibleIP_AttachAndDetachFromBaremetalServer(t *testing.T) 
 	name := "TestAccScalewayFlexibleIP_AttachAndDetachFromBaremetalServer"
 	resource.ParallelTest(t, resource.TestCase{
 		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      testAccCheckScalewayFlexibleIPDestroy(tt),
+		CheckDestroy: resource.ComposeTestCheckFunc(
+			testAccCheckScalewayFlexibleIPDestroy(tt),
+			testAccCheckScalewayBaremetalServerDestroy(tt),
+		),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -182,13 +189,14 @@ func TestAccScalewayFlexibleIP_AttachAndDetachFromBaremetalServer(t *testing.T) 
 				Config: fmt.Sprintf(`
 						data "scaleway_baremetal_os" "by_id" {
 							zone = "fr-par-2"
-							os_id = "03b7f4ba-a6a1-4305-984e-b54fafbf1681"
+							name = "Ubuntu"
+							version = "20.04 LTS (Focal Fossa)"						
 						}
-					
+
 						data "scaleway_baremetal_offer" "my_offer" {
 							zone = "fr-par-2"
-							offer_id = "25dcf38b-c90c-4b18-97a2-6956e9d1e113"
-						}			
+							name = "EM-A210R-HDD"
+						}		
 
 						resource "scaleway_account_ssh_key" "main" {
 							name 	   = "%s"
