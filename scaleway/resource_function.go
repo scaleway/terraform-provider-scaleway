@@ -125,7 +125,11 @@ func resourceScalewayFunction() *schema.Resource {
 				Computed:    true,
 				Description: "CPU limit in mCPU for your function",
 			},
-
+			"domain_name": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The native function domain name.",
+			},
 			"region":          regionSchema(),
 			"organization_id": organizationIDSchema(),
 			"project_id":      projectIDSchema(),
@@ -263,6 +267,7 @@ func resourceScalewayFunctionRead(ctx context.Context, d *schema.ResourceData, m
 	_ = d.Set("privacy", f.Privacy.String())
 	_ = d.Set("region", f.Region.String())
 	_ = d.Set("timeout", flattenDuration(f.Timeout.ToTimeDuration()))
+	_ = d.Set("domain_name", f.DomainName)
 
 	return diags
 }
