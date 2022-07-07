@@ -84,8 +84,6 @@ The following arguments are optional:
 
 - `deploy` - (Optional) Boolean controlling whether the container is on a production environment.
 
-- `domain_name` - The native domain name of the container
-
 Note that if you want to use your own configuration, you must consult our configuration [restrictions](https://www.scaleway.com/en/docs/compute/containers/reference-content/containers-limitations/#configuration-restrictions) section.
 
 ## Attributes Reference
@@ -96,6 +94,7 @@ In addition to all above arguments, the following attributes are exported:
 - `status` - The container status.
 - `cron_status` - The cron status of the container.
 - `error_message` - The error message of the container.
+- `domain_name` - The native domain name of the container
 
 ## Import
 
