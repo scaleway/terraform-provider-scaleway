@@ -11,7 +11,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 )
 
-const SSHKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIM7HUxRyQtB2rnlhQUcbDGCZcTJg7OvoznOiyC9W6IxH opensource@scaleway.com"
+const SSHKeyFlexibleIP = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIM7HUxRyQtB2rnlhQUcbDGCZcTJg7OvoznOiyC9W6IxH opensource@scaleway.com"
 
 func init() {
 	resource.AddTestSweepers("scaleway_flexible_ip", &resource.Sweeper{
@@ -150,7 +150,7 @@ func TestAccScalewayFlexibleIP_CreateAndAttachToBaremetalServer(t *testing.T) {
 							server_id = scaleway_baremetal_server.base.id
 							zone = "fr-par-2"
 						}
-					`, SSHKeyName, SSHKey, name),
+					`, SSHKeyName, SSHKeyFlexibleIP, name),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayFlexibleIPExists(tt, "scaleway_flexible_ip.base"),
 					testAccCheckScalewayFlexibleIPAttachedToBaremetalServer(tt, "scaleway_flexible_ip.base", "scaleway_baremetal_server.base"),
@@ -216,7 +216,7 @@ func TestAccScalewayFlexibleIP_AttachAndDetachFromBaremetalServer(t *testing.T) 
 							server_id = scaleway_baremetal_server.base.id
 							zone = "fr-par-2"
 						}
-					`, SSHKeyName, SSHKey, name),
+					`, SSHKeyName, SSHKeyFlexibleIP, name),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayFlexibleIPExists(tt, "scaleway_flexible_ip.base"),
 					testAccCheckScalewayFlexibleIPAttachedToBaremetalServer(tt, "scaleway_flexible_ip.base", "scaleway_baremetal_server.base"),
