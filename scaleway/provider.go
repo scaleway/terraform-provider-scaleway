@@ -32,10 +32,12 @@ func addBetaResources(provider *schema.Provider) {
 		return
 	}
 	betaResources := map[string]*schema.Resource{
-		"scaleway_iam_application": resourceScalewayIamApplication(),
 		"scaleway_iam_api_key":     resourceScalewayIamAPIKey(),
+		"scaleway_iam_application": resourceScalewayIamApplication(),
+		"scaleway_iam_ssh_key":     resourceScalewayIamSSKKey(),
 	}
 	betaDataSources := map[string]*schema.Resource{
+		"scaleway_iam_ssh_key":     dataSourceScalewayIamSSHKey(),
 		"scaleway_iam_application": dataSourceScalewayIamApplication(),
 		"scaleway_iam_user":        dataSourceScalewayIamUser(),
 	}
