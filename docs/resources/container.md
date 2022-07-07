@@ -96,6 +96,7 @@ In addition to all above arguments, the following attributes are exported:
 - `status` - The container status.
 - `cron_status` - The cron status of the container.
 - `error_message` - The error message of the container.
+- `domain_name` - The native domain name of the container
 
 ## Import
 
