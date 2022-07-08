@@ -72,7 +72,7 @@ The following arguments are supported:
 In addition to all arguments above, the following attributes are exported:
 
 - `id` - The ID of the Flexible IP
-- `ip_address` -  The IP address of the Flexible IP
+- `ip_address` -  The IPv4 address of the Flexible IP
 - `zone` - The zone of the Flexible IP
 - `organization_id` - The organization of the Flexible IP
 - `project_id` - The project of the Flexible IP
