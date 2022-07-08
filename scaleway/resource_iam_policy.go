@@ -73,9 +73,10 @@ func resourceScalewayIamPolicy() *schema.Resource {
 				ExactlyOneOf: []string{"user_id", "group_id", "application_id"},
 			},
 			"rule": {
-				Type:        schema.TypeList,
+				Type:        schema.TypeSet,
 				Required:    true,
 				Description: "Rules of the policy to create",
+				Set:         iamPolicyRuleHash,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"organization_id": {
