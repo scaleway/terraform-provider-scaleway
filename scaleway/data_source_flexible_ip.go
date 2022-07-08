@@ -2,7 +2,6 @@ package scaleway
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -17,15 +16,23 @@ func dataSourceScalewayFlexibleIP() *schema.Resource {
 	dsSchema["ip_address"] = &schema.Schema{
 		Type:          schema.TypeString,
 		Optional:      true,
-		Description:   "The IP address",
+		Description:   "The IPv4 address",
 		ConflictsWith: []string{"id"},
 	}
 	dsSchema["id"] = &schema.Schema{
 		Type:          schema.TypeString,
 		Optional:      true,
-		Description:   "The ID of the IP address",
+		Description:   "The ID of the IPv4 address",
 		ConflictsWith: []string{"ip_address"},
 		ValidateFunc:  validationUUIDorUUIDWithLocality(),
+	}
+	dsSchema["project_id"] = &schema.Schema{
+		Type:         schema.TypeString,
+		Description:  "The project_id you want to attach the resource to",
+		Optional:     true,
+		ForceNew:     true,
+		Computed:     true,
+		ValidateFunc: validationUUID(),
 	}
 
 	return &schema.Resource{
@@ -40,8 +47,9 @@ func dataSourceScalewayFlexibleIPRead(ctx context.Context, d *schema.ResourceDat
 		return diag.FromErr(err)
 	}
 
-	ipID, ok := d.GetOk("id")
-	if !ok { // Get IP by region and IP address.
+	ipID, ipIDExists := d.GetOk("id")
+
+	if !ipIDExists {
 		res, err := fipAPI.ListFlexibleIPs(&flexibleip.ListFlexibleIPsRequest{
 			Zone:      zone,
 			ProjectID: expandStringPtr(d.Get("project_id")),
@@ -49,13 +57,18 @@ func dataSourceScalewayFlexibleIPRead(ctx context.Context, d *schema.ResourceDat
 		if err != nil {
 			return diag.FromErr(err)
 		}
-		if len(res.FlexibleIPs) == 0 {
-			return diag.FromErr(fmt.Errorf("no ips found with the address %s", d.Get("ip_address")))
+
+		for _, ip := range res.FlexibleIPs {
+			if ip.IPAddress.String() == d.Get("ip_address").(string) {
+				if ipID != "" {
+					return diag.Errorf("more than 1 flexible ip found with the same IPv4 address %s", d.Get("ip_address"))
+				}
+				ipID = ip.ID
+			}
 		}
-		if len(res.FlexibleIPs) > 1 {
-			return diag.FromErr(fmt.Errorf("%d ips found with the same address %s", len(res.FlexibleIPs), d.Get("ip_address")))
+		if ipID == "" {
+			return diag.Errorf("no flexible ip found with the same IPv4 address %s", d.Get("ip_address"))
 		}
-		ipID = res.FlexibleIPs[0].ID
 	}
 
 	zoneID := datasourceNewZonedID(ipID, zone)
@@ -64,5 +77,15 @@ func dataSourceScalewayFlexibleIPRead(ctx context.Context, d *schema.ResourceDat
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	return resourceScalewayFlexibleIPRead(ctx, d, meta)
+
+	diags := resourceScalewayFlexibleIPRead(ctx, d, meta)
+	if diags != nil {
+		return append(diags, diag.Errorf("failed to read flexible ip state")...)
+	}
+
+	if d.Id() == "" {
+		return diag.Errorf("flexible ip (%s) not found", ipID)
+	}
+
+	return nil
 }
