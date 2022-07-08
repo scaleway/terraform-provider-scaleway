@@ -1,12 +1,9 @@
 package scaleway
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
-	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
 )
 
 func TestAccScalewayDataSourceInstanceImage_Basic(t *testing.T) {
@@ -45,31 +42,4 @@ func TestAccScalewayDataSourceInstanceImage_Basic(t *testing.T) {
 			},
 		},
 	})
-}
-
-func testAccCheckScalewayInstanceImageExists(tt *TestTools, n string) resource.TestCheckFunc {
-	return func(s *terraform.State) error {
-		rs, ok := s.RootModule().Resources[n]
-
-		if !ok {
-			return fmt.Errorf("not found: %s", n)
-		}
-
-		zone, ID, err := parseZonedID(rs.Primary.ID)
-		if err != nil {
-			return err
-		}
-
-		instanceAPI := instance.NewAPI(tt.Meta.scwClient)
-		_, err = instanceAPI.GetImage(&instance.GetImageRequest{
-			ImageID: ID,
-			Zone:    zone,
-		})
-
-		if err != nil {
-			return err
-		}
-
-		return nil
-	}
 }
