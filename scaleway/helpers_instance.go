@@ -22,6 +22,11 @@ const (
 	// InstanceServerStateStandby transient state of the instance event waiting third action or rescue mode
 	InstanceServerStateStandby = "standby"
 
+	CloudInitUpdateBehaviourIgnore   = "ignore"
+	CloudInitUpdateBehaviourReboot   = "reboot"
+	CloudInitUpdateBehaviourRecreate = "recreate"
+	CloudInitUpdateBehaviourThrow    = "throw"
+
 	defaultInstanceServerWaitTimeout        = 10 * time.Minute
 	defaultInstancePrivateNICWaitTimeout    = 10 * time.Minute
 	defaultInstanceVolumeDeleteTimeout      = 10 * time.Minute

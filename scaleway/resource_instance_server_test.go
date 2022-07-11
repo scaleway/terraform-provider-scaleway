@@ -467,6 +467,58 @@ EOF
 	})
 }
 
+func TestAccScalewayInstanceServer_UserData_WithCloudInitUpdateBehaviour_Recreate(t *testing.T) {
+	tt := NewTestTools(t)
+	defer tt.Cleanup()
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      testAccCheckScalewayInstanceServerDestroy(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+				resource "scaleway_instance_server" "base" {
+					image = "ubuntu_focal"
+					type  = "DEV1-S"
+
+					user_data = {
+						cloud-init =  <<EOF
+#cloud-config
+runcmd:
+  - echo 'An instance created with a cloud-init config' > /var/tmp/cloud.txt
+EOF 
+				 	}
+				}`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayInstanceServerExists(tt, "scaleway_instance_server.base"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.base", "user_data.cloud-init", "#cloud-config\nruncmd:\n  - echo 'An instance created with a cloud-init config' > /var/tmp/cloud.txt\n"),
+				),
+			},
+			{
+				Config: `
+				resource "scaleway_instance_server" "base" {
+					image = "ubuntu_focal"
+					type  = "DEV1-S"
+
+					cloud_init_update_behaviour = "recreate"
+
+					user_data = {
+						cloud-init =  <<EOF
+#cloud-config
+runcmd:
+  - echo 'An instance recreated due to cloud-init file changes + cloud_init_update_behaviour set to "recreate" > /var/tmp/recreated.txt
+EOF 
+				 	}
+				}`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayInstanceServerExists(tt, "scaleway_instance_server.base"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.base", "user_data.cloud-init", "#cloud-config\nruncmd:\n  - echo 'An instance recreated due to cloud-init file changes + cloud_init_update_behaviour set to \"recreate\" > /var/tmp/recreated.txt\n"),
+				),
+			},
+		},
+	})
+}
+
 func TestAccScalewayInstanceServer_AdditionalVolumes(t *testing.T) {
 	tt := NewTestTools(t)
 	defer tt.Cleanup()

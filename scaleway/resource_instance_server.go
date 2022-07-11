@@ -12,6 +12,7 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
@@ -218,6 +219,18 @@ func resourceScalewayInstanceServer() *schema.Resource {
 				Description:  "The cloud init script associated with this server",
 				ValidateFunc: validation.StringLenBetween(0, 127998),
 			},
+			"cloud_init_update_behaviour": {
+				Type:        schema.TypeString,
+				Description: "The update behaviour of the server when cloud-init script is changed",
+				Optional:    true,
+				Default:     "ignore",
+				ValidateFunc: validation.StringInSlice([]string{
+					CloudInitUpdateBehaviourIgnore,
+					CloudInitUpdateBehaviourReboot,
+					CloudInitUpdateBehaviourRecreate,
+					CloudInitUpdateBehaviourThrow,
+				}, false),
+			},
 			"user_data": {
 				Type:        schema.TypeMap,
 				Optional:    true,
@@ -261,6 +274,11 @@ func resourceScalewayInstanceServer() *schema.Resource {
 			"organization_id": organizationIDSchema(),
 			"project_id":      projectIDSchema(),
 		},
+		CustomizeDiff: customdiff.All(
+			customdiff.ForceNewIfChange("cloud_init_update_behaviour", func(ctx context.Context, oldBehaviour, newBehaviour, meta interface{}) bool {
+				return newBehaviour.(string) == "recreate"
+			}),
+		),
 	}
 }
 
@@ -605,8 +623,8 @@ func resourceScalewayInstanceServerRead(ctx context.Context, d *schema.ResourceD
 			}
 			// if key != "cloud-init" {
 			userData[key] = string(userDataValue)
-			//	} else {
-			// _ = d.Set("cloud_init", string(userDataValue))
+			// } else {
+			//	_ = d.Set("script", string(userDataValue))
 			// }
 		}
 		if len(userData) > 0 {
@@ -816,11 +834,31 @@ func resourceScalewayInstanceServerUpdate(ctx context.Context, d *schema.Resourc
 			for key, value := range userDataMap {
 				userDataRequests.UserData[key] = bytes.NewBufferString(value.(string))
 			}
+			updateBehaviour := d.Get("cloud_init_update_behaviour")
+
 			if !isStopped && d.HasChange("user_data.cloud-init") {
-				warnings = append(warnings, diag.Diagnostic{
-					Severity: diag.Warning,
-					Summary:  "instance may need to be rebooted to use the new cloud init config",
-				})
+				switch updateBehaviour {
+				case "ignore":
+					warnings = append(warnings, diag.Diagnostic{
+						Severity: diag.Warning,
+						Summary:  "instance may need to be rebooted to use the new cloud init config",
+					})
+				case "reboot":
+					err = reachState(ctx, instanceAPI, zone, id, InstanceServerStateStopped)
+					if err != nil {
+						return diag.FromErr(err)
+					}
+					_, err := instanceAPI.ServerAction(&instance.ServerActionRequest{
+						Zone:     zone,
+						ServerID: id,
+						Action:   "poweron",
+					})
+					if err != nil {
+						return diag.FromErr(err)
+					}
+				case "throw":
+					return diag.FromErr(fmt.Errorf("error: cloud-init file has been modified"))
+				}
 			}
 		}
 
@@ -967,7 +1005,6 @@ func resourceScalewayInstanceServerDelete(ctx context.Context, d *schema.Resourc
 	if err != nil && !is404Error(err) {
 		return diag.FromErr(err)
 	}
-
 	// Related to https://github.com/hashicorp/terraform-plugin-sdk/issues/142
 	_, rootVolumeAttributeSet := d.GetOk("root_volume")
 	if d.Get("root_volume.0.delete_on_termination").(bool) || !rootVolumeAttributeSet {
@@ -983,6 +1020,5 @@ func resourceScalewayInstanceServerDelete(ctx context.Context, d *schema.Resourc
 			return diag.FromErr(err)
 		}
 	}
-
 	return nil
 }
