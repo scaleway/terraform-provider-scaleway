@@ -12,7 +12,7 @@ require (
 	github.com/hashicorp/terraform-plugin-log v0.4.1
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.17.0
 	github.com/robfig/cron/v3 v3.0.1
-	github.com/scaleway/scaleway-sdk-go v1.0.0-beta.9.0.20220707130308-7ec0786bddf2
+	github.com/scaleway/scaleway-sdk-go v1.0.0-beta.9.0.20220711145858-c68262cb7aec
 	github.com/stretchr/testify v1.8.0
 )
 

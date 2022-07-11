@@ -145,3 +145,19 @@ func waitForContainer(ctx context.Context, api *container.API, containerID strin
 
 	return api.WaitForContainer(&request, scw.WithContext(ctx))
 }
+
+func waitForContainerDomain(ctx context.Context, containerAPI *container.API, region scw.Region, id string, timeout time.Duration) (*container.Domain, error) {
+	retryInterval := defaultContainerRetryInterval
+	if DefaultWaitRetryInterval != nil {
+		retryInterval = *DefaultWaitRetryInterval
+	}
+
+	domain, err := containerAPI.WaitForDomain(&container.WaitForDomainRequest{
+		Region:        region,
+		DomainID:      id,
+		RetryInterval: &retryInterval,
+		Timeout:       scw.TimeDurationPtr(timeout),
+	}, scw.WithContext(ctx))
+
+	return domain, err
+}
