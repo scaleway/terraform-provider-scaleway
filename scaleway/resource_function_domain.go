@@ -99,6 +99,7 @@ func resourceScalewayFunctionDomainRead(ctx context.Context, d *schema.ResourceD
 	_ = d.Set("hostname", domain.Hostname)
 	_ = d.Set("function_id", newRegionalIDString(region, domain.FunctionID))
 	_ = d.Set("url", domain.URL)
+	_ = d.Set("region", region)
 
 	return nil
 }
