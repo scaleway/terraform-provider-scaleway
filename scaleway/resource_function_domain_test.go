@@ -72,7 +72,6 @@ func TestAccScalewayFunctionDomain_Basic(t *testing.T) {
 						deploy = true
 					}
 
-					provider "dns" {}
 					data "dns_a_record_set" "main" {
 					  host = scaleway_function.main.domain_name
 					}
