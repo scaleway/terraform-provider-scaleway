@@ -52,10 +52,15 @@ func TestAccScalewayFunctionDomain_Basic(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      testAccCheckScalewayFunctionDomainDestroy(tt),
+		ExternalProviders: map[string]resource.ExternalProvider{
+			"dns": {
+				Source: "hashicorp/dns",
+			},
+		},
+		CheckDestroy: testAccCheckScalewayFunctionDomainDestroy(tt),
 		Steps: []resource.TestStep{
 			{
-				Config: fmt.Sprintf(`
+				Config: `
 					resource scaleway_function_namespace main {}
 
 					resource scaleway_function main {
@@ -67,27 +72,37 @@ func TestAccScalewayFunctionDomain_Basic(t *testing.T) {
 						deploy = true
 					}
 
-					resource scaleway_function_domain main {
-						function_id = scaleway_function.main.id
-						hostname = "foobar.%[1]s"
-
-						depends_on = [
-							scaleway_function.main,
-							scaleway_domain_record.main
-						]
+					provider "dns" {}
+					data "dns_a_record_set" "main" {
+					  host = scaleway_function.main.domain_name
 					}
 
-					resource "scaleway_domain_record" "main" {
-						dns_zone = "%[1]s"
-						type     = "CNAME"
-						name     = "foobar"
-						data     = "${scaleway_function.main.domain_name}." # We need the final dot to have a FQDN
+					resource "scaleway_function_domain" "main" {
+					  function_id = scaleway_function.main.id
+					  hostname    = "${data.dns_a_record_set.main.addrs[0]}.nip.io"
+					
+					  depends_on = [
+						scaleway_function.main,
+					  ]
 					}
-				`, testDomain),
+				`,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayFunctionDomainExists(tt, "scaleway_function_namespace.main"),
-					testCheckResourceAttrUUID("scaleway_function_namespace.main", "id"),
+					testAccCheckScalewayFunctionDomainExists(tt, "scaleway_function_domain.main"),
 				),
+			},
+			{
+				Config: `
+					resource scaleway_function_namespace main {}
+
+					resource scaleway_function main {
+						namespace_id = scaleway_function_namespace.main.id
+						runtime = "go118"
+						privacy = "private"
+						handler = "Handle"
+						zip_file = "testfixture/gofunction.zip"
+						deploy = true
+					}
+				`,
 			},
 		},
 	})

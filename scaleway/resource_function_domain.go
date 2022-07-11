@@ -97,7 +97,7 @@ func resourceScalewayFunctionDomainRead(ctx context.Context, d *schema.ResourceD
 	}
 
 	_ = d.Set("hostname", domain.Hostname)
-	_ = d.Set("function_id", domain.FunctionID)
+	_ = d.Set("function_id", newRegionalIDString(region, domain.FunctionID))
 	_ = d.Set("url", domain.URL)
 
 	return nil
@@ -118,7 +118,11 @@ func resourceScalewayFunctionDomainDelete(ctx context.Context, d *schema.Resourc
 		DomainID: id,
 		Region:   region,
 	}, scw.WithContext(ctx))
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
+	_, err = waitForFunctionDomain(ctx, api, region, id, d.Timeout(schema.TimeoutDelete))
 	if err != nil && !is404Error(err) {
 		return diag.FromErr(err)
 	}
