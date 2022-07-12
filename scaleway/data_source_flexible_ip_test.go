@@ -24,7 +24,7 @@ func TestAccScalewayDataSourceFlexibleIP_Basic(t *testing.T) {
 					}
 					
 					data "scaleway_flexible_ip" "by_id" {
-						id = "${scaleway_flexible_ip.main.id}"
+						flexible_ip_id = "${scaleway_flexible_ip.main.id}"
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
@@ -36,7 +36,7 @@ func TestAccScalewayDataSourceFlexibleIP_Basic(t *testing.T) {
 
 					resource.TestCheckResourceAttrSet("scaleway_flexible_ip.main", "id"),
 					resource.TestCheckResourceAttrSet("data.scaleway_flexible_ip.by_address", "id"),
-					resource.TestCheckResourceAttrSet("data.scaleway_flexible_ip.by_id", "id"),
+					resource.TestCheckResourceAttrSet("data.scaleway_flexible_ip.by_id", "flexible_ip_id"),
 				),
 			},
 		},
@@ -61,7 +61,7 @@ func TestAccScalewayDataSourceFlexibleIP_Multiple(t *testing.T) {
 					}
 					
 					data "scaleway_flexible_ip" "by_id_first" {
-						id = "${scaleway_flexible_ip.first.id}"
+						flexible_ip_id = "${scaleway_flexible_ip.first.id}"
 					}
 
 					resource "scaleway_flexible_ip" "second" {
@@ -72,7 +72,7 @@ func TestAccScalewayDataSourceFlexibleIP_Multiple(t *testing.T) {
 					}
 					
 					data "scaleway_flexible_ip" "by_id_second" {
-						id = "${scaleway_flexible_ip.second.id}"
+						flexible_ip_id = "${scaleway_flexible_ip.second.id}"
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
@@ -84,7 +84,7 @@ func TestAccScalewayDataSourceFlexibleIP_Multiple(t *testing.T) {
 
 					resource.TestCheckResourceAttrSet("scaleway_flexible_ip.first", "id"),
 					resource.TestCheckResourceAttrSet("data.scaleway_flexible_ip.by_address_first", "id"),
-					resource.TestCheckResourceAttrSet("data.scaleway_flexible_ip.by_id_first", "id"),
+					resource.TestCheckResourceAttrSet("data.scaleway_flexible_ip.by_id_first", "flexible_ip_id"),
 
 					testAccCheckScalewayFlexibleIPExists(tt, "scaleway_flexible_ip.second"),
 
@@ -94,7 +94,7 @@ func TestAccScalewayDataSourceFlexibleIP_Multiple(t *testing.T) {
 
 					resource.TestCheckResourceAttrSet("scaleway_flexible_ip.second", "id"),
 					resource.TestCheckResourceAttrSet("data.scaleway_flexible_ip.by_address_second", "id"),
-					resource.TestCheckResourceAttrSet("data.scaleway_flexible_ip.by_id_second", "id"),
+					resource.TestCheckResourceAttrSet("data.scaleway_flexible_ip.by_id_second", "flexible_ip_id"),
 				),
 			},
 		},
