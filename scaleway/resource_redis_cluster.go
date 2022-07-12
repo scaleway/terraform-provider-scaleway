@@ -76,7 +76,7 @@ func resourceScalewayRedisCluster() *schema.Resource {
 				ForceNew:    true,
 			},
 			"acl": {
-				Type:        schema.TypeList,
+				Type:        schema.TypeSet,
 				Description: "List of acl rules.",
 				Optional:    true,
 				Elem: &schema.Resource{
