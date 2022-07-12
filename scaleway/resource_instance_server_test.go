@@ -546,7 +546,7 @@ func TestAccScalewayInstanceServer_AdditionalVolumes(t *testing.T) {
 func TestAccScalewayInstanceServer_AdditionalVolumesDetach(t *testing.T) {
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
