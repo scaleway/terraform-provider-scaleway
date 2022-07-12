@@ -85,7 +85,7 @@ func expandRedisPrivateNetwork(data []interface{}) ([]*redis.EndpointSpec, error
 func expandRedisACLSpecs(i interface{}) ([]*redis.ACLRuleSpec, error) {
 	rules := []*redis.ACLRuleSpec(nil)
 
-	for _, aclRule := range i.([]interface{}) {
+	for _, aclRule := range i.(*schema.Set).List() {
 		rawRule := aclRule.(map[string]interface{})
 		rule := &redis.ACLRuleSpec{}
 		if ruleDescription, hasDescription := rawRule["description"]; hasDescription {
