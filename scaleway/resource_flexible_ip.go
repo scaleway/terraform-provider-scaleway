@@ -126,7 +126,7 @@ func resourceScalewayFlexibleIPRead(ctx context.Context, d *schema.ResourceData,
 	}
 
 	_ = d.Set("ip_address", flexibleIP.IPAddress.String())
-	_ = d.Set("zone", zone)
+	_ = d.Set("zone", flexibleIP.Zone)
 	_ = d.Set("organization_id", flexibleIP.OrganizationID)
 	_ = d.Set("project_id", flexibleIP.ProjectID)
 	_ = d.Set("reverse", flexibleIP.Reverse)
