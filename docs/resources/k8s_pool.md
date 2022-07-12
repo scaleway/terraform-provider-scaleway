@@ -74,6 +74,10 @@ The following arguments are supported:
 
     - `max_unavailable` - (Defaults to `1`) The maximum number of nodes that can be not ready at the same time
 
+- `root_volume_type` - (Optional) System volume type of the nodes composing the pool
+
+- `root_volume_size_in_gb` - (Optional) The size of the system volume of the nodes in gigabyte
+
 - `zone` - (Defaults to [provider](../index.md#zone) `zone`) The [zone](../guides/regions_and_zones.md#regions) in which the pool should be created.
 ~> **Important:** Updates to this field will recreate a new resource.
 
