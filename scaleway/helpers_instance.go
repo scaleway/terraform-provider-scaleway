@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"sort"
+	"strconv"
 	"time"
 
 	"github.com/dustin/go-humanize"
@@ -37,6 +38,8 @@ const (
 	defaultInstanceRetryInterval            = 5 * time.Second
 
 	defaultInstanceSnapshotWaitTimeout = 1 * time.Hour
+
+	defaultInstanceImageTimeout = 1 * time.Hour
 )
 
 // instanceAPIWithZone returns a new instance API and the zone for a Create request
@@ -481,4 +484,85 @@ func waitForPrivateNIC(ctx context.Context, instanceAPI *instance.API, zone scw.
 	}, scw.WithContext(ctx))
 
 	return nic, err
+}
+
+func waitForInstanceImage(ctx context.Context, api *instance.API, zone scw.Zone, id string, timeout time.Duration) (*instance.Image, error) {
+	retryInterval := defaultInstanceRetryInterval
+	if DefaultWaitRetryInterval != nil {
+		retryInterval = *DefaultWaitRetryInterval
+	}
+
+	image, err := api.WaitForImage(&instance.WaitForImageRequest{
+		ImageID:       id,
+		Zone:          zone,
+		Timeout:       scw.TimeDurationPtr(timeout),
+		RetryInterval: &retryInterval,
+	}, scw.WithContext(ctx))
+
+	return image, err
+}
+
+func getSnapshotsFromIds(ctx context.Context, snapIDs []interface{}, instanceAPI *instance.API) ([]*instance.GetSnapshotResponse, error) {
+	snapResponses := []*instance.GetSnapshotResponse(nil)
+	for _, snapID := range snapIDs {
+		zone, id, err := parseZonedID(snapID.(string))
+		if err != nil {
+			return nil, err
+		}
+		snapshot, err := instanceAPI.GetSnapshot(&instance.GetSnapshotRequest{
+			Zone:       zone,
+			SnapshotID: id,
+		}, scw.WithContext(ctx))
+		if err != nil {
+			return snapResponses, fmt.Errorf("extra volumes : could not find snapshot with id %s", snapID)
+		}
+		snapResponses = append(snapResponses, snapshot)
+	}
+	return snapResponses, nil
+}
+
+func expandInstanceImageExtraVolumesTemplates(snapshots []*instance.GetSnapshotResponse) map[string]*instance.VolumeTemplate {
+	volTemplates := map[string]*instance.VolumeTemplate{}
+	if snapshots == nil {
+		return volTemplates
+	}
+	for i, snapshot := range snapshots {
+		snap := snapshot.Snapshot
+		volTemplate := &instance.VolumeTemplate{
+			ID:         snap.ID,
+			Name:       snap.BaseVolume.Name,
+			Size:       snap.Size,
+			VolumeType: snap.VolumeType,
+		}
+		volTemplates[strconv.Itoa(i+1)] = volTemplate
+	}
+	return volTemplates
+}
+
+func flattenInstanceImageExtraVolumes(volumes map[string]*instance.Volume, zone scw.Zone) interface{} {
+	volumesFlat := []map[string]interface{}(nil)
+	for _, volume := range volumes {
+		server := map[string]interface{}{}
+		if volume.Server != nil {
+			server["id"] = volume.Server.ID
+			server["name"] = volume.Server.Name
+		}
+		volumeFlat := map[string]interface{}{
+			"id":                newZonedIDString(zone, volume.ID),
+			"name":              volume.Name,
+			"export_uri":        volume.ExportURI,
+			"size":              volume.Size,
+			"volume_type":       volume.VolumeType,
+			"creation_date":     volume.CreationDate,
+			"modification_date": volume.ModificationDate,
+			"organization":      volume.Organization,
+			"project":           volume.Project,
+			"tags":              volume.Tags,
+			"state":             volume.State,
+			"zone":              volume.Zone,
+			"server":            server,
+		}
+		volumesFlat = append(volumesFlat, volumeFlat)
+	}
+	return volumesFlat
 }
