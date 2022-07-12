@@ -19,6 +19,10 @@ func resourceScalewayFlexibleIP() *schema.Resource {
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 		Timeouts: &schema.ResourceTimeout{
+			Create:  schema.DefaultTimeout(defaultFlexibleIPTimeout),
+			Read:    schema.DefaultTimeout(defaultFlexibleIPTimeout),
+			Update:  schema.DefaultTimeout(defaultFlexibleIPTimeout),
+			Delete:  schema.DefaultTimeout(defaultFlexibleIPTimeout),
 			Default: schema.DefaultTimeout(defaultFlexibleIPTimeout),
 		},
 		SchemaVersion: 0,
@@ -93,7 +97,7 @@ func resourceScalewayFlexibleIPCreate(ctx context.Context, d *schema.ResourceDat
 
 	d.SetId(newZonedIDString(zone, flexibleIP.ID))
 
-	_, err = waitFlexibleIP(ctx, fipAPI, zone, flexibleIP.ID, d.Timeout(schema.TimeoutUpdate))
+	_, err = waitFlexibleIP(ctx, fipAPI, zone, flexibleIP.ID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
 		return diag.FromErr(err)
 	}
