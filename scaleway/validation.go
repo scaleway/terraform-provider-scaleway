@@ -46,3 +46,18 @@ func validationUUIDWithLocality() func(interface{}, string) ([]string, []error) 
 		return validationUUID()(subUUID, key)
 	}
 }
+
+func validationEmail() func(interface{}, string) ([]string, []error) {
+	return func(v interface{}, key string) (warnings []string, errors []error) {
+		email, isString := v.(string)
+		if !isString {
+			return nil, []error{fmt.Errorf("invalid email for key '%s': not a string", key)}
+		}
+
+		if !validation.IsEmail(email) {
+			return nil, []error{fmt.Errorf("invalid email for key '%s': '%s': should contain valid '@' character", key, email)}
+		}
+
+		return
+	}
+}

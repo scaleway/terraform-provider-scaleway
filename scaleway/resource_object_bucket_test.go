@@ -36,7 +36,7 @@ func TestAccScalewayObjectBucket_Basic(t *testing.T) {
 	bucketPar := sdkacctest.RandomWithPrefix("test-acc-scaleway-object-bucket-par-")
 	bucketLifecycle := sdkacctest.RandomWithPrefix("test-acc-scaleway-object-bucket-lifecycle")
 	resourceNameLifecycle := "scaleway_object_bucket.par-bucket-lifecycle"
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheckScalewayObjectBucketDestroy(tt),

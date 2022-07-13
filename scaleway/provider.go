@@ -32,10 +32,17 @@ func addBetaResources(provider *schema.Provider) {
 		return
 	}
 	betaResources := map[string]*schema.Resource{
+		"scaleway_iam_api_key":     resourceScalewayIamAPIKey(),
 		"scaleway_iam_application": resourceScalewayIamApplication(),
+		"scaleway_iam_group":       resourceScalewayIamGroup(),
+		"scaleway_iam_policy":      resourceScalewayIamPolicy(),
+		"scaleway_iam_ssh_key":     resourceScalewayIamSSKKey(),
 	}
 	betaDataSources := map[string]*schema.Resource{
+		"scaleway_iam_ssh_key":     dataSourceScalewayIamSSHKey(),
 		"scaleway_iam_application": dataSourceScalewayIamApplication(),
+		"scaleway_iam_group":       dataSourceScalewayIamGroup(),
+		"scaleway_iam_user":        dataSourceScalewayIamUser(),
 	}
 	for resourceName, resource := range betaResources {
 		provider.ResourcesMap[resourceName] = resource
@@ -89,8 +96,10 @@ func Provider(config *ProviderConfig) plugin.ProviderFunc {
 				"scaleway_container_cron":                      resourceScalewayContainerCron(),
 				"scaleway_domain_record":                       resourceScalewayDomainRecord(),
 				"scaleway_domain_zone":                         resourceScalewayDomainZone(),
+				"scaleway_flexible_ip":                         resourceScalewayFlexibleIP(),
 				"scaleway_function":                            resourceScalewayFunction(),
 				"scaleway_function_namespace":                  resourceScalewayFunctionNamespace(),
+				"scaleway_instance_image":                      resourceScalewayInstanceImage(),
 				"scaleway_instance_ip":                         resourceScalewayInstanceIP(),
 				"scaleway_instance_ip_reverse_dns":             resourceScalewayInstanceIPReverseDNS(),
 				"scaleway_instance_volume":                     resourceScalewayInstanceVolume(),
@@ -142,6 +151,7 @@ func Provider(config *ProviderConfig) plugin.ProviderFunc {
 				"scaleway_container":                   dataSourceScalewayContainer(),
 				"scaleway_function":                    dataSourceScalewayFunction(),
 				"scaleway_function_namespace":          dataSourceScalewayFunctionNamespace(),
+				"scaleway_flexible_ip":                 dataSourceScalewayFlexibleIP(),
 				"scaleway_instance_ip":                 dataSourceScalewayInstanceIP(),
 				"scaleway_instance_security_group":     dataSourceScalewayInstanceSecurityGroup(),
 				"scaleway_instance_server":             dataSourceScalewayInstanceServer(),
