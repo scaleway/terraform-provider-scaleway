@@ -160,6 +160,7 @@ To retrieve more information by label please use: ```scw marketplace image get l
     To find the right size use [this endpoint](https://api.scaleway.com/instance/v1/zones/fr-par-1/products/servers) and
     check the `volumes_constraint.{min|max}_size` (in bytes) for your `commercial_type`.
     Updates to this field will recreate a new resource.
+    - `volume_type` - (Optional) Volume type of root volume, can be `b_ssd` or `l_ssd`, default value depends on server type
     - `delete_on_termination` - (Defaults to `true`) Forces deletion of the root volume on instance termination.
 
 ~> **Important:** Updates to `root_volume.size_in_gb` will be ignored after the creation of the server.
