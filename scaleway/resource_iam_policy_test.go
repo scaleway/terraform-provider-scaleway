@@ -68,7 +68,7 @@ func TestAccScalewayIamPolicy_Basic(t *testing.T) {
 							}
 							rule {
 								organization_id = "%[1]s"
-								permission_set_names = ["AllProductsFullAccess"]
+								permission_set_names = ["ContainerRegistryReadOnly"]
 							}
 						}
 					`, orgID),
@@ -80,7 +80,7 @@ func TestAccScalewayIamPolicy_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_iam_policy.main", "rule.0.organization_id", orgID),
 					resource.TestCheckResourceAttr("scaleway_iam_policy.main", "rule.0.permission_set_names.0", "AllProductsFullAccess"),
 					resource.TestCheckResourceAttr("scaleway_iam_policy.main", "rule.1.organization_id", orgID),
-					resource.TestCheckResourceAttr("scaleway_iam_policy.main", "rule.1.permission_set_names.0", "AllProductsFullAccess"),
+					resource.TestCheckResourceAttr("scaleway_iam_policy.main", "rule.1.permission_set_names.0", "ContainerRegistryReadOnly"),
 				),
 			},
 			{
@@ -100,7 +100,7 @@ func TestAccScalewayIamPolicy_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_iam_policy.main", "name", "tf_tests_policy_basic"),
 					resource.TestCheckResourceAttr("scaleway_iam_policy.main", "description", "a description"),
 					resource.TestCheckResourceAttr("scaleway_iam_policy.main", "no_principal", "true"),
-					resource.TestCheckResourceAttr("scaleway_iam_policy.main", "rule.0.organization_id", orgID),
+					resource.TestCheckTypeSetElemNestedAttrs("scaleway_iam_policy.main", "rule.*", map[string]string{"organization_id": orgID}),
 					resource.TestCheckResourceAttr("scaleway_iam_policy.main", "rule.0.permission_set_names.0", "AllProductsFullAccess"),
 				),
 			},

@@ -12,6 +12,9 @@ import (
 )
 
 func init() {
+	if !terraformBetaEnabled {
+		return
+	}
 	resource.AddTestSweepers("scaleway_iam_group", &resource.Sweeper{
 		Name: "scaleway_iam_group",
 		F:    testSweepIamGroup,
