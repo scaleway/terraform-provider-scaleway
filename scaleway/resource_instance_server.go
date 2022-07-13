@@ -578,6 +578,7 @@ func resourceScalewayInstanceServerRead(ctx context.Context, d *schema.ResourceD
 				_, rootVolumeAttributeSet := d.GetOk("root_volume") // Related to https://github.com/hashicorp/terraform-plugin-sdk/issues/142
 				rootVolume["delete_on_termination"] = d.Get("root_volume.0.delete_on_termination").(bool) || !rootVolumeAttributeSet
 				rootVolume["volume_type"] = volume.VolumeType
+				rootVolume["boot"] = volume.Boot
 
 				_ = d.Set("root_volume", []map[string]interface{}{rootVolume})
 			} else {
@@ -681,10 +682,11 @@ func resourceScalewayInstanceServerUpdate(ctx context.Context, d *schema.Resourc
 
 	volumes := map[string]*instance.VolumeServerTemplate{}
 
-	if raw, hasAdditionalVolumes := d.GetOk("additional_volume_ids"); d.HasChange("additional_volume_ids") {
+	if raw, hasAdditionalVolumes := d.GetOk("additional_volume_ids"); d.HasChanges("additional_volume_ids", "root_volume") {
 		volumes["0"] = &instance.VolumeServerTemplate{
 			ID:   expandZonedID(d.Get("root_volume.0.volume_id")).ID,
 			Name: newRandomName("vol"), // name is ignored by the API, any name will work here
+			Boot: d.Get("root_volume.0.boot").(bool),
 		}
 
 		if !hasAdditionalVolumes {
