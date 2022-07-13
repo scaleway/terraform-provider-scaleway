@@ -45,6 +45,7 @@ func resourceScalewayInstanceSnapshot() *schema.Resource {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Computed:    true,
+				ForceNew:    true,
 				Description: "The snapshot's volume type",
 				ValidateFunc: validation.StringInSlice([]string{
 					instance.SnapshotVolumeTypeUnknownVolumeType.String(),
