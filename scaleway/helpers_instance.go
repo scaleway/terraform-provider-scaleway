@@ -25,7 +25,6 @@ const (
 	CloudInitUpdateBehaviourIgnore   = "ignore"
 	CloudInitUpdateBehaviourReboot   = "reboot"
 	CloudInitUpdateBehaviourRecreate = "recreate"
-	CloudInitUpdateBehaviourThrow    = "throw"
 
 	defaultInstanceServerWaitTimeout        = 10 * time.Minute
 	defaultInstancePrivateNICWaitTimeout    = 10 * time.Minute

@@ -467,13 +467,88 @@ EOF
 	})
 }
 
-func TestAccScalewayInstanceServer_UserData_WithCloudInitUpdateBehaviour_Recreate(t *testing.T) {
+func TestAccScalewayInstanceServer_UserData_WithCloudInitUpdateBehaviour_Reboot(t *testing.T) {
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
+	instanceID := ""
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      testAccCheckScalewayInstanceServerDestroy(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+				resource "scaleway_instance_server" "base" {
+					image = "ubuntu_focal"
+					type  = "DEV1-S"
+
+					user_data = {
+						cloud-init =  <<EOF
+#cloud-config
+runcmd:
+  - echo 'An instance created with a cloud-init config' > /var/tmp/cloud.txt
+EOF
+				 	}
+				}`,
+
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayInstanceServerExists(tt, "scaleway_instance_server.base"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.base", "user_data.cloud-init", "#cloud-config\nruncmd:\n  - echo 'An instance created with a cloud-init config' > /var/tmp/cloud.txt\n"),
+
+					func(s *terraform.State) error {
+						id, err := testAccCheckScalewayInstanceServerFetchFirstID(s, "scaleway_instance_server.base")
+						if err != nil {
+							return err
+						}
+						instanceID = id
+						return nil
+					},
+				),
+			},
+			{
+				Config: `
+										resource "scaleway_instance_server" "base" {
+											image = "ubuntu_focal"
+											type  = "DEV1-S"
+
+											cloud_init_update_behaviour = "reboot"
+
+											user_data = {
+												cloud-init =  <<EOF
+#cloud-config
+runcmd:
+  - echo 'An instance rebooted due to cloud-init file changes + cloud_init_update_behaviour set to "reboot" > /var/tmp/rebooted.txt
+EOF
+											}
+										}`,
+
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayInstanceServerExists(tt, "scaleway_instance_server.base"),
+					func(s *terraform.State) error {
+						rs, ok := s.RootModule().Resources["scaleway_instance_server.base"]
+						if !ok {
+							return fmt.Errorf("resource not found: %s", "scaleway_instance_server.base")
+						}
+
+						if rs.Primary.ID != instanceID {
+							return fmt.Errorf("IDs should be the same, %v is not equal to %v", rs.Primary.ID, instanceID)
+						}
+
+						return nil
+					},
+					resource.TestCheckResourceAttr("scaleway_instance_server.base", "user_data.cloud-init", "#cloud-config\nruncmd:\n  - echo 'An instance rebooted due to cloud-init file changes + cloud_init_update_behaviour set to \"reboot\" > /var/tmp/rebooted.txt\n"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccScalewayInstanceServer_UserData_WithCloudInitUpdateBehaviour_Recreate(t *testing.T) {
+	tt := NewTestTools(t)
+	defer tt.Cleanup()
+	instanceID := ""
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -492,26 +567,47 @@ EOF
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayInstanceServerExists(tt, "scaleway_instance_server.base"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "user_data.cloud-init", "#cloud-config\nruncmd:\n  - echo 'An instance created with a cloud-init config' > /var/tmp/cloud.txt\n"),
+
+					func(s *terraform.State) error {
+						id, err := testAccCheckScalewayInstanceServerFetchFirstID(s, "scaleway_instance_server.base")
+						if err != nil {
+							return err
+						}
+						instanceID = id
+						return nil
+					},
 				),
 			},
 			{
 				Config: `
-				resource "scaleway_instance_server" "base" {
-					image = "ubuntu_focal"
-					type  = "DEV1-S"
-
-					cloud_init_update_behaviour = "recreate"
-
-					user_data = {
-						cloud-init =  <<EOF
+										resource "scaleway_instance_server" "base" {
+											image = "ubuntu_focal"
+											type  = "DEV1-S"
+						
+											cloud_init_update_behaviour = "recreate"
+						
+											user_data = {
+												cloud-init =  <<EOF
 #cloud-config
 runcmd:
   - echo 'An instance recreated due to cloud-init file changes + cloud_init_update_behaviour set to "recreate" > /var/tmp/recreated.txt
 EOF 
-				 	}
-				}`,
+											}
+										}`,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayInstanceServerExists(tt, "scaleway_instance_server.base"),
+					func(s *terraform.State) error {
+						rs, ok := s.RootModule().Resources["scaleway_instance_server.base"]
+						if !ok {
+							return fmt.Errorf("resource not found: %s", "scaleway_instance_server.base")
+						}
+
+						if rs.Primary.ID == instanceID {
+							return fmt.Errorf("IDs should be the same, %v is not equal to %v", rs.Primary.ID, instanceID)
+						}
+
+						return nil
+					},
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "user_data.cloud-init", "#cloud-config\nruncmd:\n  - echo 'An instance recreated due to cloud-init file changes + cloud_init_update_behaviour set to \"recreate\" > /var/tmp/recreated.txt\n"),
 				),
 			},
@@ -852,101 +948,6 @@ func TestAccScalewayInstanceServer_WithReservedIP(t *testing.T) {
 	})
 }
 
-func testAccCheckScalewayInstanceServerExists(tt *TestTools, n string) resource.TestCheckFunc {
-	return func(s *terraform.State) error {
-		rs, ok := s.RootModule().Resources[n]
-		if !ok {
-			return fmt.Errorf("resource not found: %s", n)
-		}
-
-		instanceAPI, zone, ID, err := instanceAPIWithZoneAndID(tt.Meta, rs.Primary.ID)
-		if err != nil {
-			return err
-		}
-
-		_, err = instanceAPI.GetServer(&instance.GetServerRequest{ServerID: ID, Zone: zone})
-		if err != nil {
-			return err
-		}
-
-		return nil
-	}
-}
-
-func testAccCheckScalewayInstancePrivateNICsExists(tt *TestTools, n string) resource.TestCheckFunc {
-	return func(s *terraform.State) error {
-		rs, ok := s.RootModule().Resources[n]
-		if !ok {
-			return fmt.Errorf("resource not found: %s", n)
-		}
-
-		instanceAPI, zone, ID, err := instanceAPIWithZoneAndID(tt.Meta, rs.Primary.ID)
-		if err != nil {
-			return err
-		}
-
-		res, err := instanceAPI.ListPrivateNICs(&instance.ListPrivateNICsRequest{ServerID: ID, Zone: zone})
-		if err != nil {
-			return err
-		}
-
-		privateNetworksOnServer := make(map[string]struct{})
-		// build current private networks on server
-		for _, key := range res.PrivateNics {
-			privateNetworksOnServer[key.PrivateNetworkID] = struct{}{}
-		}
-
-		privateNetworksToCheckOnSchema := make(map[string]struct{})
-		// build terraform private networks
-		for key, value := range rs.Primary.Attributes {
-			if strings.Contains(key, "pn_id") {
-				privateNetworksToCheckOnSchema[expandID(value)] = struct{}{}
-			}
-		}
-
-		// check if private networks are present on server
-		for pnKey := range privateNetworksToCheckOnSchema {
-			if _, exist := privateNetworksOnServer[pnKey]; !exist {
-				return fmt.Errorf("private network does not exist")
-			}
-		}
-
-		return nil
-	}
-}
-
-func testAccCheckScalewayInstanceServerDestroy(tt *TestTools) resource.TestCheckFunc {
-	return func(state *terraform.State) error {
-		for _, rs := range state.RootModule().Resources {
-			if rs.Type != "scaleway_instance_server" {
-				continue
-			}
-
-			instanceAPI, zone, ID, err := instanceAPIWithZoneAndID(tt.Meta, rs.Primary.ID)
-			if err != nil {
-				return err
-			}
-
-			_, err = instanceAPI.GetServer(&instance.GetServerRequest{
-				ServerID: ID,
-				Zone:     zone,
-			})
-
-			// If no error resource still exist
-			if err == nil {
-				return fmt.Errorf("server (%s) still exists", rs.Primary.ID)
-			}
-
-			// Unexpected api error we return it
-			if !is404Error(err) {
-				return err
-			}
-		}
-
-		return nil
-	}
-}
-
 func TestAccScalewayInstanceServer_Bootscript(t *testing.T) {
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
@@ -1260,4 +1261,108 @@ func TestAccScalewayInstanceServer_PrivateNetwork(t *testing.T) {
 			},
 		},
 	})
+}
+
+func testAccCheckScalewayInstanceServerExists(tt *TestTools, n string) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		rs, ok := s.RootModule().Resources[n]
+		if !ok {
+			return fmt.Errorf("resource not found: %s", n)
+		}
+
+		instanceAPI, zone, ID, err := instanceAPIWithZoneAndID(tt.Meta, rs.Primary.ID)
+		if err != nil {
+			return err
+		}
+
+		_, err = instanceAPI.GetServer(&instance.GetServerRequest{ServerID: ID, Zone: zone})
+		if err != nil {
+			return err
+		}
+
+		return nil
+	}
+}
+
+func testAccCheckScalewayInstancePrivateNICsExists(tt *TestTools, n string) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		rs, ok := s.RootModule().Resources[n]
+		if !ok {
+			return fmt.Errorf("resource not found: %s", n)
+		}
+
+		instanceAPI, zone, ID, err := instanceAPIWithZoneAndID(tt.Meta, rs.Primary.ID)
+		if err != nil {
+			return err
+		}
+
+		res, err := instanceAPI.ListPrivateNICs(&instance.ListPrivateNICsRequest{ServerID: ID, Zone: zone})
+		if err != nil {
+			return err
+		}
+
+		privateNetworksOnServer := make(map[string]struct{})
+		// build current private networks on server
+		for _, key := range res.PrivateNics {
+			privateNetworksOnServer[key.PrivateNetworkID] = struct{}{}
+		}
+
+		privateNetworksToCheckOnSchema := make(map[string]struct{})
+		// build terraform private networks
+		for key, value := range rs.Primary.Attributes {
+			if strings.Contains(key, "pn_id") {
+				privateNetworksToCheckOnSchema[expandID(value)] = struct{}{}
+			}
+		}
+
+		// check if private networks are present on server
+		for pnKey := range privateNetworksToCheckOnSchema {
+			if _, exist := privateNetworksOnServer[pnKey]; !exist {
+				return fmt.Errorf("private network does not exist")
+			}
+		}
+
+		return nil
+	}
+}
+
+func testAccCheckScalewayInstanceServerDestroy(tt *TestTools) resource.TestCheckFunc {
+	return func(state *terraform.State) error {
+		for _, rs := range state.RootModule().Resources {
+			if rs.Type != "scaleway_instance_server" {
+				continue
+			}
+
+			instanceAPI, zone, ID, err := instanceAPIWithZoneAndID(tt.Meta, rs.Primary.ID)
+			if err != nil {
+				return err
+			}
+
+			_, err = instanceAPI.GetServer(&instance.GetServerRequest{
+				ServerID: ID,
+				Zone:     zone,
+			})
+
+			// If no error resource still exist
+			if err == nil {
+				return fmt.Errorf("server (%s) still exists", rs.Primary.ID)
+			}
+
+			// Unexpected api error we return it
+			if !is404Error(err) {
+				return err
+			}
+		}
+
+		return nil
+	}
+}
+
+func testAccCheckScalewayInstanceServerFetchFirstID(s *terraform.State, n string) (string, error) {
+	rs, ok := s.RootModule().Resources[n]
+	if !ok {
+		return "", fmt.Errorf("resource not found: %s", n)
+	}
+
+	return rs.Primary.ID, nil
 }
