@@ -52,6 +52,7 @@ The following arguments are supported:
 
 - `volume_id` - (Required) The ID of the volume to take a snapshot from.
 - `type` - (Optional) The snapshot's volume type.  The possible values are: `b_ssd` (Block SSD), `l_ssd` (Local SSD) and `unified`.
+Updates to this field will recreate a new resource.
 - `name` - (Optional) The name of the snapshot. If not provided it will be randomly generated.
 - `zone` - (Defaults to [provider](../index.md#zone) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which
   the snapshot should be created.
