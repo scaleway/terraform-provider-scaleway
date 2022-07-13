@@ -204,6 +204,52 @@ func TestAccScalewayInstanceServer_RootVolume1(t *testing.T) {
 	})
 }
 
+func TestAccScalewayInstanceServer_RootVolume_Boot(t *testing.T) {
+	tt := NewTestTools(t)
+	defer tt.Cleanup()
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      testAccCheckScalewayInstanceServerDestroy(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource "scaleway_instance_server" "base" {
+						image = "ubuntu_focal"
+						type  = "DEV1-S"
+						state = "stopped"
+						root_volume {
+							boot = true
+							delete_on_termination = true
+						}
+						tags = [ "terraform-test", "scaleway_instance_server", "root_volume" ]
+					}`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayInstanceServerExists(tt, "scaleway_instance_server.base"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.base", "root_volume.0.boot", "true"),
+				),
+			},
+			{
+				Config: `
+					resource "scaleway_instance_server" "base" {
+						image = "ubuntu_focal"
+						type  = "DEV1-S"
+						state = "stopped"
+						root_volume {
+							boot = false
+							delete_on_termination = true
+						}
+						tags = [ "terraform-test", "scaleway_instance_server", "root_volume" ]
+					}`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayInstanceServerExists(tt, "scaleway_instance_server.base"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.base", "root_volume.0.boot", "false"),
+				),
+			},
+		},
+	})
+}
+
 func TestAccScalewayInstanceServer_Basic(t *testing.T) {
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
