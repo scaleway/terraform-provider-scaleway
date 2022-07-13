@@ -254,6 +254,7 @@ func sanitizeVolumeMap(serverName string, volumes map[string]*instance.VolumeSer
 			v = &instance.VolumeServerTemplate{
 				ID:   v.ID,
 				Name: v.Name,
+				Boot: v.Boot,
 			}
 		// For the root volume (index 0) if the size is 0, it is considered as a volume created from an image.
 		// The size is not passed to the API, so it's computed by the API

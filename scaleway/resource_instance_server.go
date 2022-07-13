@@ -125,6 +125,7 @@ func resourceScalewayInstanceServer() *schema.Resource {
 						"volume_id": {
 							Type:        schema.TypeString,
 							Computed:    true,
+							Optional:    true,
 							Description: "Volume ID of the root volume",
 						},
 					},
@@ -333,6 +334,7 @@ func resourceScalewayInstanceServerCreate(ctx context.Context, d *schema.Resourc
 	isBoot := expandBoolPtr(d.Get("root_volume.0.boot"))
 	volumeType := d.Get("root_volume.0.volume_type").(string)
 	sizeInput := d.Get("root_volume.0.size_in_gb").(int)
+	rootVolumeID := expandZonedID(d.Get("root_volume.0.volume_id").(string)).ID
 
 	// If the volumeType is not defined, define it depending of the offer
 	if volumeType == "" {
@@ -355,6 +357,8 @@ func resourceScalewayInstanceServerCreate(ctx context.Context, d *schema.Resourc
 	}
 
 	req.Volumes["0"] = &instance.VolumeServerTemplate{
+		Name:       newRandomName("vol"), // name is ignored by the API, any name will work here
+		ID:         rootVolumeID,
 		VolumeType: instance.VolumeVolumeType(volumeType),
 		Size:       size,
 		Boot:       *isBoot,
