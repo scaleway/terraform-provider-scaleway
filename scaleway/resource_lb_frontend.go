@@ -63,7 +63,7 @@ func resourceScalewayLbFrontend() *schema.Resource {
 				Type:             schema.TypeString,
 				Optional:         true,
 				DiffSuppressFunc: diffSuppressFuncDuration,
-				ValidateFunc:     validateDuration(),
+				ValidateDiagFunc: validateDuration(),
 				Description:      "Set the maximum inactivity time on the client side",
 			},
 			"certificate_id": {

@@ -530,10 +530,6 @@ func resourceScalewayObjectBucketRead(ctx context.Context, d *schema.ResourceDat
 						rule["tags"] = flattenObjectBucketTags([]*s3.Tag{filter.Tag})
 					}
 				}
-			} else {
-				if lifecycleRule.Prefix != nil {
-					rule["prefix"] = aws.StringValue(lifecycleRule.Prefix)
-				}
 			}
 
 			// Enabled

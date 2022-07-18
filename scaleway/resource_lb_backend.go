@@ -118,21 +118,21 @@ func resourceScalewayLbBackend() *schema.Resource {
 				Type:             schema.TypeString,
 				Optional:         true,
 				DiffSuppressFunc: diffSuppressFuncDuration,
-				ValidateFunc:     validateDuration(),
+				ValidateDiagFunc: validateDuration(),
 				Description:      "Maximum server connection inactivity time",
 			},
 			"timeout_connect": {
 				Type:             schema.TypeString,
 				Optional:         true,
 				DiffSuppressFunc: diffSuppressFuncDuration,
-				ValidateFunc:     validateDuration(),
+				ValidateDiagFunc: validateDuration(),
 				Description:      "Maximum initial server connection establishment time",
 			},
 			"timeout_tunnel": {
 				Type:             schema.TypeString,
 				Optional:         true,
 				DiffSuppressFunc: diffSuppressFuncDuration,
-				ValidateFunc:     validateDuration(),
+				ValidateDiagFunc: validateDuration(),
 				Description:      "Maximum tunnel inactivity time",
 			},
 
@@ -141,7 +141,7 @@ func resourceScalewayLbBackend() *schema.Resource {
 				Type:             schema.TypeString,
 				Optional:         true,
 				DiffSuppressFunc: diffSuppressFuncDuration,
-				ValidateFunc:     validateDuration(),
+				ValidateDiagFunc: validateDuration(),
 				Default:          "30s",
 				Description:      "Timeout before we consider a HC request failed",
 			},
@@ -149,7 +149,7 @@ func resourceScalewayLbBackend() *schema.Resource {
 				Type:             schema.TypeString,
 				Optional:         true,
 				DiffSuppressFunc: diffSuppressFuncDuration,
-				ValidateFunc:     validateDuration(),
+				ValidateDiagFunc: validateDuration(),
 				Default:          "60s",
 				Description:      "Interval between two HC requests",
 			},
@@ -313,9 +313,6 @@ func resourceScalewayLbBackendCreate(ctx context.Context, d *schema.ResourceData
 		TimeoutTunnel:      timeoutTunnel,
 		OnMarkedDownAction: expandLbBackendMarkdownAction(d.Get("on_marked_down_action")),
 	}
-
-	// deprecated attribute
-	createReq.SendProxyV2 = expandBoolPtr(getBool(d, "send_proxy_v2"))
 
 	res, err := lbAPI.CreateBackend(createReq, scw.WithContext(ctx))
 	if err != nil {

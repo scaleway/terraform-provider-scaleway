@@ -239,7 +239,6 @@ func resourceScalewayInstanceVolumeDelete(ctx context.Context, d *schema.Resourc
 		return diag.FromErr(err)
 	}
 
-
 	volume, err := instanceAPI.WaitForVolume(&instance.WaitForVolumeRequest{
 		Zone:          zone,
 		VolumeID:      id,

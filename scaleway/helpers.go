@@ -542,17 +542,27 @@ func flattenIPNet(ipNet scw.IPNet) (string, error) {
 	return string(raw[1 : len(raw)-1]), nil // remove quotes
 }
 
-func validateDuration() schema.SchemaValidateFunc {
-	return func(i interface{}, s string) (strings []string, errors []error) {
-		str, isStr := i.(string)
+func validateDuration() schema.SchemaValidateDiagFunc {
+	return func(input interface{}, path cty.Path) diag.Diagnostics {
+		str, isStr := input.(string)
 		if !isStr {
-			return nil, []error{fmt.Errorf("%v is not a string", i)}
+			return diag.Diagnostics{
+				diag.Diagnostic{
+					Summary:       fmt.Sprintf("%v is not a string", input),
+					AttributePath: path,
+				},
+			}
 		}
 		_, err := time.ParseDuration(str)
 		if err != nil {
-			return nil, []error{fmt.Errorf("cannot parse duration for value %s", str)}
+			return diag.Diagnostics{
+				diag.Diagnostic{
+					Summary:       fmt.Sprintf("cannot parse duration for value %s", str),
+					AttributePath: path,
+				},
+			}
 		}
-		return nil, nil
+		return nil
 	}
 }
 
@@ -638,7 +648,7 @@ func ErrCodeEquals(err error, codes ...string) bool {
 }
 
 func getBool(d *schema.ResourceData, key string) interface{} {
-	val, ok := d.GetOkExists(key)
+	val, ok := d.GetOk(key)
 	if !ok {
 		return nil
 	}

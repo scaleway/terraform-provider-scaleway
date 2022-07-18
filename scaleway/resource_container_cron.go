@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -36,10 +37,10 @@ func resourceScalewayContainerCron() *schema.Resource {
 				Description: "The Container ID to link with your trigger.",
 			},
 			"schedule": {
-				Type:         schema.TypeString,
-				Required:     true,
-				ValidateFunc: validateCronExpression(),
-				Description:  "Cron format string, e.g. 0 * * * * or @hourly, as schedule time of its jobs to be created and executed.",
+				Type:             schema.TypeString,
+				Required:         true,
+				ValidateDiagFunc: validateCronExpression(),
+				Description:      "Cron format string, e.g. 0 * * * * or @hourly, as schedule time of its jobs to be created and executed.",
 			},
 			"args": {
 				Type:        schema.TypeString,
@@ -191,17 +192,27 @@ func resourceScalewayContainerCronDelete(ctx context.Context, d *schema.Resource
 	return nil
 }
 
-func validateCronExpression() schema.SchemaValidateFunc {
-	return func(i interface{}, k string) (s []string, es []error) {
+func validateCronExpression() schema.SchemaValidateDiagFunc {
+	return func(i interface{}, path cty.Path) diag.Diagnostics {
 		v, ok := i.(string)
 		if !ok {
-			es = append(es, fmt.Errorf("expected type of '%s' to be string", k))
-			return
+			return diag.Diagnostics{
+				diag.Diagnostic{
+					Summary:       fmt.Sprintf("expected type of '%s' to be string", v),
+					AttributePath: path,
+				},
+			}
 		}
 		_, err := cron.ParseStandard(v)
 		if err != nil {
-			es = append(es, fmt.Errorf("'%s' should be an valid Cron expression", k))
+			return diag.Diagnostics{
+				diag.Diagnostic{
+					Summary:       fmt.Sprintf("'%s' should be an valid Cron expression", v),
+					AttributePath: path,
+				},
+			}
 		}
-		return
+
+		return nil
 	}
 }
