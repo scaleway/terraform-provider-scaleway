@@ -26,7 +26,7 @@ resource scaleway_container main {
     name = "my-container-02"
     description = "environment variables test"
     namespace_id = scaleway_container_namespace.main.id
-    registry_image = "${scaleway_container_namespace.main.endpoint}/alpine:test"
+    registry_image = "${scaleway_container_namespace.main.registry_endpoint}/alpine:test"
     port = 9997
     cpu_limit = 140
     memory_limit = 256
@@ -94,10 +94,11 @@ In addition to all above arguments, the following attributes are exported:
 - `status` - The container status.
 - `cron_status` - The cron status of the container.
 - `error_message` - The error message of the container.
+- `domain_name` - The native domain name of the container
 
 ## Import
 
-Container can be imported using the container_name, e.g.,
+Container can be imported using the `{region}/{id}`, e.g.
 
 ```bash
 $ terraform import scaleway_container.main fr-par/11111111-1111-1111-1111-111111111111

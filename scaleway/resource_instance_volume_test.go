@@ -48,7 +48,7 @@ func testSweepComputeInstanceVolume(_ string) error {
 func TestAccScalewayInstanceVolume_Basic(t *testing.T) {
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheckScalewayInstanceVolumeDestroy(tt),
@@ -89,7 +89,7 @@ func TestAccScalewayInstanceVolume_Basic(t *testing.T) {
 func TestAccScalewayInstanceVolume_FromVolume(t *testing.T) {
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheckScalewayInstanceVolumeDestroy(tt),
@@ -117,7 +117,7 @@ func TestAccScalewayInstanceVolume_FromVolume(t *testing.T) {
 func TestAccScalewayInstanceVolume_DifferentNameGenerated(t *testing.T) {
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheckScalewayInstanceVolumeDestroy(tt),
@@ -145,7 +145,7 @@ func TestAccScalewayInstanceVolume_DifferentNameGenerated(t *testing.T) {
 func TestAccScalewayInstanceVolume_ResizeBlock(t *testing.T) {
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheckScalewayInstanceVolumeDestroy(tt),
@@ -180,7 +180,7 @@ func TestAccScalewayInstanceVolume_ResizeNotBlock(t *testing.T) {
 	t.Skip("Skipping Expected error provoking acceptance test fail")
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheckScalewayInstanceVolumeDestroy(tt),
@@ -211,7 +211,7 @@ func TestAccScalewayInstanceVolume_ResizeNotBlock(t *testing.T) {
 func TestAccScalewayInstanceVolume_CannotResizeBlockDown(t *testing.T) {
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheckScalewayInstanceVolumeDestroy(tt),

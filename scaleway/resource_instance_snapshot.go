@@ -7,6 +7,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 )
@@ -21,6 +22,8 @@ func resourceScalewayInstanceSnapshot() *schema.Resource {
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 		Timeouts: &schema.ResourceTimeout{
+			Create:  schema.DefaultTimeout(defaultInstanceSnapshotWaitTimeout),
+			Delete:  schema.DefaultTimeout(defaultInstanceSnapshotWaitTimeout),
 			Default: schema.DefaultTimeout(defaultInstanceSnapshotWaitTimeout),
 		},
 		SchemaVersion: 0,
@@ -40,8 +43,16 @@ func resourceScalewayInstanceSnapshot() *schema.Resource {
 			},
 			"type": {
 				Type:        schema.TypeString,
+				Optional:    true,
 				Computed:    true,
-				Description: "The volume type of the snapshot",
+				ForceNew:    true,
+				Description: "The snapshot's volume type",
+				ValidateFunc: validation.StringInSlice([]string{
+					instance.SnapshotVolumeTypeUnknownVolumeType.String(),
+					instance.SnapshotVolumeTypeBSSD.String(),
+					instance.SnapshotVolumeTypeLSSD.String(),
+					instance.SnapshotVolumeTypeUnified.String(),
+				}, false),
 			},
 			"size_in_gb": {
 				Type:        schema.TypeInt,
@@ -79,6 +90,11 @@ func resourceScalewayInstanceSnapshotCreate(ctx context.Context, d *schema.Resou
 		Project:  expandStringPtr(d.Get("project_id")),
 		Name:     expandOrGenerateString(d.Get("name"), "snap"),
 		VolumeID: expandZonedID(d.Get("volume_id").(string)).ID,
+	}
+
+	if volumeType, ok := d.GetOk("type"); ok {
+		volumeType := instance.SnapshotVolumeType(volumeType.(string))
+		req.VolumeType = volumeType
 	}
 	tags := expandStrings(d.Get("tags"))
 	if len(tags) > 0 {

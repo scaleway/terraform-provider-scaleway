@@ -3,6 +3,7 @@ package scaleway
 import (
 	"context"
 	"flag"
+	"fmt"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -13,7 +14,9 @@ import (
 
 	"github.com/dnaeon/go-vcr/cassette"
 	"github.com/dnaeon/go-vcr/recorder"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/scaleway-sdk-go/strcase"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -113,4 +116,124 @@ func NewTestTools(t *testing.T) *TestTools {
 		},
 		Cleanup: cleanup,
 	}
+}
+
+func SkipBetaTest(t *testing.T) {
+	t.Helper()
+	if !terraformBetaEnabled {
+		t.Skip("Skip test as beta is not enabled")
+	}
+}
+
+func TestAccScalewayProvider_SSHKeys(t *testing.T) {
+	tt := NewTestTools(t)
+	defer tt.Cleanup()
+
+	SSHKeyName := "TestAccScalewayProvider_SSHKeys"
+	SSHKey := "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIEEYrzDOZmhItdKaDAEqJQ4ORS2GyBMtBozYsK5kiXXX opensource@scaleway.com"
+
+	ctx := context.Background()
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck: func() { testAccPreCheck(t) },
+		ProviderFactories: func() map[string]func() (*schema.Provider, error) {
+			metaProd, err := buildMeta(ctx, &metaConfig{
+				terraformVersion: "terraform-tests",
+				httpClient:       tt.Meta.httpClient,
+			})
+			require.NoError(t, err)
+
+			metaDev, err := buildMeta(ctx, &metaConfig{
+				terraformVersion: "terraform-tests",
+				httpClient:       tt.Meta.httpClient,
+			})
+			require.NoError(t, err)
+
+			return map[string]func() (*schema.Provider, error){
+				"prod": func() (*schema.Provider, error) {
+					return Provider(&ProviderConfig{Meta: metaProd})(), nil
+				},
+				"dev": func() (*schema.Provider, error) {
+					return Provider(&ProviderConfig{Meta: metaDev})(), nil
+				},
+			}
+		}(),
+		CheckDestroy: testAccCheckScalewayAccountSSHKeyDestroy(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`
+					resource "scaleway_account_ssh_key" "prod" {
+						provider   = "prod" 
+						name 	   = "%[1]s"
+						public_key = "%[2]s"
+					}
+
+					resource "scaleway_account_ssh_key" "dev" {
+						provider   = "dev" 
+						name 	   = "%[1]s"
+						public_key = "%[2]s"
+					}
+				`, SSHKeyName, SSHKey),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayAccountSSHKeyExists(tt, "scaleway_account_ssh_key.prod"),
+					testAccCheckScalewayAccountSSHKeyExists(tt, "scaleway_account_ssh_key.dev"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccScalewayProvider_InstanceIPZones(t *testing.T) {
+	tt := NewTestTools(t)
+	defer tt.Cleanup()
+
+	ctx := context.Background()
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck: func() { testAccPreCheck(t) },
+		ProviderFactories: func() map[string]func() (*schema.Provider, error) {
+			metaProd, err := buildMeta(ctx, &metaConfig{
+				terraformVersion: "terraform-tests",
+				forceZone:        scw.ZoneFrPar2,
+				httpClient:       tt.Meta.httpClient,
+			})
+			require.NoError(t, err)
+
+			metaDev, err := buildMeta(ctx, &metaConfig{
+				terraformVersion: "terraform-tests",
+				forceZone:        scw.ZoneFrPar1,
+				httpClient:       tt.Meta.httpClient,
+			})
+			require.NoError(t, err)
+
+			return map[string]func() (*schema.Provider, error){
+				"prod": func() (*schema.Provider, error) {
+					return Provider(&ProviderConfig{Meta: metaProd})(), nil
+				},
+				"dev": func() (*schema.Provider, error) {
+					return Provider(&ProviderConfig{Meta: metaDev})(), nil
+				},
+			}
+		}(),
+		CheckDestroy: testAccCheckScalewayAccountSSHKeyDestroy(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource scaleway_instance_ip dev {
+					  provider = "dev"
+					}
+					
+					resource scaleway_instance_ip prod {
+					  provider = "prod"
+					}
+`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayInstanceIPExists(tt, "scaleway_instance_ip.prod"),
+					testAccCheckScalewayInstanceIPExists(tt, "scaleway_instance_ip.dev"),
+					resource.TestCheckResourceAttr("scaleway_instance_ip.prod", "zone", "fr-par-2"),
+					resource.TestCheckResourceAttr("scaleway_instance_ip.dev", "zone", "fr-par-1"),
+				),
+			},
+		},
+	})
 }

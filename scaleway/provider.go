@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"os"
 
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -11,6 +12,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/plugin"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 )
+
+var terraformBetaEnabled = os.Getenv(scw.ScwEnableBeta) != ""
 
 // ProviderConfig config can be used to provide additional config when creating provider.
 type ProviderConfig struct {
@@ -22,6 +25,31 @@ type ProviderConfig struct {
 // DefaultProviderConfig return default ProviderConfig struct
 func DefaultProviderConfig() *ProviderConfig {
 	return &ProviderConfig{}
+}
+
+func addBetaResources(provider *schema.Provider) {
+	if !terraformBetaEnabled {
+		return
+	}
+	betaResources := map[string]*schema.Resource{
+		"scaleway_iam_api_key":     resourceScalewayIamAPIKey(),
+		"scaleway_iam_application": resourceScalewayIamApplication(),
+		"scaleway_iam_group":       resourceScalewayIamGroup(),
+		"scaleway_iam_policy":      resourceScalewayIamPolicy(),
+		"scaleway_iam_ssh_key":     resourceScalewayIamSSKKey(),
+	}
+	betaDataSources := map[string]*schema.Resource{
+		"scaleway_iam_ssh_key":     dataSourceScalewayIamSSHKey(),
+		"scaleway_iam_application": dataSourceScalewayIamApplication(),
+		"scaleway_iam_group":       dataSourceScalewayIamGroup(),
+		"scaleway_iam_user":        dataSourceScalewayIamUser(),
+	}
+	for resourceName, resource := range betaResources {
+		provider.ResourcesMap[resourceName] = resource
+	}
+	for resourceName, resource := range betaDataSources {
+		provider.DataSourcesMap[resourceName] = resource
+	}
 }
 
 // Provider returns a terraform.ResourceProvider.
@@ -65,9 +93,13 @@ func Provider(config *ProviderConfig) plugin.ProviderFunc {
 				"scaleway_apple_silicon_server":                resourceScalewayAppleSiliconServer(),
 				"scaleway_baremetal_server":                    resourceScalewayBaremetalServer(),
 				"scaleway_container_namespace":                 resourceScalewayContainerNamespace(),
+				"scaleway_container_cron":                      resourceScalewayContainerCron(),
 				"scaleway_domain_record":                       resourceScalewayDomainRecord(),
 				"scaleway_domain_zone":                         resourceScalewayDomainZone(),
+				"scaleway_flexible_ip":                         resourceScalewayFlexibleIP(),
+				"scaleway_function":                            resourceScalewayFunction(),
 				"scaleway_function_namespace":                  resourceScalewayFunctionNamespace(),
+				"scaleway_instance_image":                      resourceScalewayInstanceImage(),
 				"scaleway_instance_ip":                         resourceScalewayInstanceIP(),
 				"scaleway_instance_ip_reverse_dns":             resourceScalewayInstanceIPReverseDNS(),
 				"scaleway_instance_volume":                     resourceScalewayInstanceVolume(),
@@ -93,6 +125,7 @@ func Provider(config *ProviderConfig) plugin.ProviderFunc {
 				"scaleway_container":                           resourceScalewayContainer(),
 				"scaleway_rdb_acl":                             resourceScalewayRdbACL(),
 				"scaleway_rdb_database":                        resourceScalewayRdbDatabase(),
+				"scaleway_rdb_database_backup":                 resourceScalewayRdbDatabaseBackup(),
 				"scaleway_rdb_instance":                        resourceScalewayRdbInstance(),
 				"scaleway_rdb_privilege":                       resourceScalewayRdbPrivilege(),
 				"scaleway_rdb_user":                            resourceScalewayRdbUser(),
@@ -116,10 +149,13 @@ func Provider(config *ProviderConfig) plugin.ProviderFunc {
 				"scaleway_domain_zone":                 dataSourceScalewayDomainZone(),
 				"scaleway_container_namespace":         dataSourceScalewayContainerNamespace(),
 				"scaleway_container":                   dataSourceScalewayContainer(),
+				"scaleway_function":                    dataSourceScalewayFunction(),
 				"scaleway_function_namespace":          dataSourceScalewayFunctionNamespace(),
+				"scaleway_flexible_ip":                 dataSourceScalewayFlexibleIP(),
 				"scaleway_instance_ip":                 dataSourceScalewayInstanceIP(),
 				"scaleway_instance_security_group":     dataSourceScalewayInstanceSecurityGroup(),
 				"scaleway_instance_server":             dataSourceScalewayInstanceServer(),
+				"scaleway_instance_servers":            dataSourceScalewayInstanceServers(),
 				"scaleway_instance_image":              dataSourceScalewayInstanceImage(),
 				"scaleway_instance_volume":             dataSourceScalewayInstanceVolume(),
 				"scaleway_iot_hub":                     dataSourceScalewayIotHub(),
@@ -134,6 +170,7 @@ func Provider(config *ProviderConfig) plugin.ProviderFunc {
 				"scaleway_rdb_acl":                     dataSourceScalewayRDBACL(),
 				"scaleway_rdb_instance":                dataSourceScalewayRDBInstance(),
 				"scaleway_rdb_database":                dataSourceScalewayRDBDatabase(),
+				"scaleway_rdb_database_backup":         dataSourceScalewayRDBDatabaseBackup(),
 				"scaleway_rdb_privilege":               dataSourceScalewayRDBPrivilege(),
 				"scaleway_redis_cluster":               dataSourceScalewayRedisCluster(),
 				"scaleway_registry_namespace":          dataSourceScalewayRegistryNamespace(),
@@ -145,6 +182,8 @@ func Provider(config *ProviderConfig) plugin.ProviderFunc {
 				"scaleway_vpc_public_gateway_pat_rule": dataSourceScalewayVPCPublicGatewayPATRule(),
 			},
 		}
+
+		addBetaResources(p)
 
 		p.ConfigureContextFunc = func(ctx context.Context, data *schema.ResourceData) (interface{}, diag.Diagnostics) {
 			terraformVersion := p.TerraformVersion

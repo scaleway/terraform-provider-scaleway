@@ -19,6 +19,10 @@ func resourceScalewayInstancePrivateNIC() *schema.Resource {
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 		Timeouts: &schema.ResourceTimeout{
+			Create:  schema.DefaultTimeout(defaultInstancePrivateNICWaitTimeout),
+			Read:    schema.DefaultTimeout(defaultInstancePrivateNICWaitTimeout),
+			Update:  schema.DefaultTimeout(defaultInstancePrivateNICWaitTimeout),
+			Delete:  schema.DefaultTimeout(defaultInstancePrivateNICWaitTimeout),
 			Default: schema.DefaultTimeout(defaultInstancePrivateNICWaitTimeout),
 		},
 		Schema: map[string]*schema.Schema{

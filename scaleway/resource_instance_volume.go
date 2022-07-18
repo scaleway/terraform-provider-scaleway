@@ -5,7 +5,6 @@ import (
 	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
@@ -22,6 +21,9 @@ func resourceScalewayInstanceVolume() *schema.Resource {
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 		Timeouts: &schema.ResourceTimeout{
+			Create:  schema.DefaultTimeout(defaultInstanceVolumeDeleteTimeout),
+			Update:  schema.DefaultTimeout(defaultInstanceVolumeDeleteTimeout),
+			Delete:  schema.DefaultTimeout(defaultInstanceVolumeDeleteTimeout),
 			Default: schema.DefaultTimeout(defaultInstanceVolumeDeleteTimeout),
 		},
 		Schema: map[string]*schema.Schema{
@@ -237,35 +239,33 @@ func resourceScalewayInstanceVolumeDelete(ctx context.Context, d *schema.Resourc
 		return diag.FromErr(err)
 	}
 
-	err = resource.RetryContext(ctx, d.Timeout(schema.TimeoutDelete), func() *resource.RetryError {
-		volumeResp, err := instanceAPI.GetVolume(&instance.GetVolumeRequest{
-			Zone:     zone,
-			VolumeID: id,
-		})
-		if err != nil {
-			if is404Error(err) {
-				return nil
-			}
-			return resource.NonRetryableError(err)
-		}
 
-		if volumeResp.Volume.Server != nil {
-			return resource.RetryableError(fmt.Errorf("volume is still attached to a server"))
+	volume, err := instanceAPI.WaitForVolume(&instance.WaitForVolumeRequest{
+		Zone:          zone,
+		VolumeID:      id,
+		RetryInterval: DefaultWaitRetryInterval,
+		Timeout:       scw.TimeDurationPtr(d.Timeout(schema.TimeoutDelete)),
+	}, scw.WithContext(ctx))
+	if err != nil {
+		if is404Error(err) {
+			return nil
 		}
+		return diag.FromErr(err)
+	}
 
-		deleteRequest := &instance.DeleteVolumeRequest{
-			Zone:     zone,
-			VolumeID: id,
-		}
+	if volume.Server != nil {
+		return diag.FromErr(fmt.Errorf("volume is still attached to a server"))
+	}
 
-		err = instanceAPI.DeleteVolume(deleteRequest, scw.WithContext(ctx))
-		if err != nil {
-			return resource.NonRetryableError(err)
-		}
-		return nil
-	})
+	deleteRequest := &instance.DeleteVolumeRequest{
+		Zone:     zone,
+		VolumeID: id,
+	}
+
+	err = instanceAPI.DeleteVolume(deleteRequest, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
 	}
+
 	return nil
 }

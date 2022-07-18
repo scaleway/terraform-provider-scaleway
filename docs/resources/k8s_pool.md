@@ -74,6 +74,10 @@ The following arguments are supported:
 
     - `max_unavailable` - (Defaults to `1`) The maximum number of nodes that can be not ready at the same time
 
+- `root_volume_type` - (Optional) System volume type of the nodes composing the pool
+
+- `root_volume_size_in_gb` - (Optional) The size of the system volume of the nodes in gigabyte
+
 - `zone` - (Defaults to [provider](../index.md#zone) `zone`) The [zone](../guides/regions_and_zones.md#regions) in which the pool should be created.
 ~> **Important:** Updates to this field will recreate a new resource.
 
@@ -104,3 +108,39 @@ Kubernetes pools can be imported using the `{region}/{id}`, e.g.
 ```bash
 $ terraform import scaleway_k8s_pool.mypool fr-par/11111111-1111-1111-1111-111111111111
 ```
+
+## Changing the node-type of a pool
+
+As your needs evolve, you can migrate your workflow from one pool to another.
+Pools have a unique name, and they also have an immutable node type.
+Just changing the pool node type will recreate a new pool which could lead to service disruption.
+To migrate your application with as little downtime as possible we recommend using the following workflow:
+
+### General workflow to upgrade a pool
+
+- Create a new pool with a different name and the type you target.
+- Use [`kubectl drain`](https://kubernetes.io/docs/reference/generated/kubectl/kubectl-commands#drain) on nodes composing your old pool to drain the remaining workflows of this pool.
+  Normally it should transfer your workflows to the new pool. Check out the official documentation about [how to safely drain your nodes](https://kubernetes.io/docs/tasks/administer-cluster/safely-drain-node/).
+- Delete the old pool from your terraform configuration.
+
+### Using a composite name to force creation of a new pool when a variable updates
+
+If you want to have a new pool created when a variable changes, you can use a name derived from node type such as:
+
+```hcl
+resource "scaleway_k8s_pool" "kubernetes_cluster_workers_1" {
+  cluster_id    = scaleway_k8s_cluster.kubernetes_cluster.id
+  name          = "${var.kubernetes_cluster_id}_${var.node_type}_1"
+  node_type     = "${var.node_type}"
+
+  # use Scaleway built-in cluster autoscaler
+  autoscaling         = true
+  autohealing         = true
+  size                = "5"
+  min_size            = "5"
+  max_size            = "10"
+  wait_for_pool_ready = true
+}
+```
+
+Thanks to [@deimosfr](https://github.com/deimosfr) for the contribution.

@@ -23,6 +23,10 @@ func resourceScalewayK8SCluster() *schema.Resource {
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 		Timeouts: &schema.ResourceTimeout{
+			Create:  schema.DefaultTimeout(defaultK8SClusterTimeout),
+			Read:    schema.DefaultTimeout(defaultK8SClusterTimeout),
+			Update:  schema.DefaultTimeout(defaultK8SClusterTimeout),
+			Delete:  schema.DefaultTimeout(defaultK8SClusterTimeout),
 			Default: schema.DefaultTimeout(defaultK8SClusterTimeout),
 		},
 		SchemaVersion: 0,
@@ -381,8 +385,13 @@ func resourceScalewayK8SClusterCreate(ctx context.Context, d *schema.ResourceDat
 	}
 
 	d.SetId(newRegionalIDString(region, res.ID))
-
-	_, err = waitK8SClusterPool(ctx, k8sAPI, region, res.ID, d.Timeout(schema.TimeoutCreate))
+	if clusterType.(string) == "multicloud" {
+		// In case of multi-cloud, we do not have the guarantee that a pool will be created in Scaleway.
+		_, err = waitK8SCluster(ctx, k8sAPI, region, res.ID, d.Timeout(schema.TimeoutCreate))
+	} else {
+		// If we are not in multi-cloud, we can wait for the pool to be created.
+		_, err = waitK8SClusterPool(ctx, k8sAPI, region, res.ID, d.Timeout(schema.TimeoutCreate))
+	}
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -504,20 +513,19 @@ func resourceScalewayK8SClusterUpdate(ctx context.Context, d *schema.ResourceDat
 	}
 
 	if d.HasChange("tags") {
-		tags := expandStrings(d.Get("tags"))
-		updateRequest.Tags = scw.StringsPtr(tags)
+		updateRequest.Tags = expandUpdatedStringsPtr(d.Get("tags"))
 	}
 
 	if d.HasChange("apiserver_cert_sans") {
-		updateRequest.ApiserverCertSans = scw.StringsPtr(expandStrings(d.Get("apiserver_cert_sans")))
+		updateRequest.ApiserverCertSans = expandUpdatedStringsPtr(d.Get("apiserver_cert_sans"))
 	}
 
 	if d.HasChange("feature_gates") {
-		updateRequest.FeatureGates = scw.StringsPtr(expandStrings(d.Get("feature_gates")))
+		updateRequest.FeatureGates = expandUpdatedStringsPtr(d.Get("feature_gates"))
 	}
 
 	if d.HasChange("admission_plugins") {
-		updateRequest.AdmissionPlugins = scw.StringsPtr(expandStrings(d.Get("admission_plugins")))
+		updateRequest.AdmissionPlugins = expandUpdatedStringsPtr(d.Get("admission_plugins"))
 	}
 
 	updateRequest.AutoUpgrade = &k8s.UpdateClusterRequestAutoUpgrade{}
@@ -631,7 +639,7 @@ func resourceScalewayK8SClusterUpdate(ctx context.Context, d *schema.ResourceDat
 	}
 
 	if d.HasChange("open_id_connect_config.0.groups_claim") {
-		updateClusterRequestOpenIDConnectConfig.GroupsClaim = scw.StringsPtr(expandStrings(d.Get("open_id_connect_config.0.groups_claim")))
+		updateClusterRequestOpenIDConnectConfig.GroupsClaim = expandUpdatedStringsPtr(d.Get("open_id_connect_config.0.groups_claim"))
 	}
 
 	if d.HasChange("open_id_connect_config.0.groups_prefix") {
@@ -639,7 +647,7 @@ func resourceScalewayK8SClusterUpdate(ctx context.Context, d *schema.ResourceDat
 	}
 
 	if d.HasChange("open_id_connect_config.0.required_claim") {
-		updateClusterRequestOpenIDConnectConfig.RequiredClaim = scw.StringsPtr(expandStrings(d.Get("open_id_connect_config.0.required_claim")))
+		updateClusterRequestOpenIDConnectConfig.RequiredClaim = expandUpdatedStringsPtr(d.Get("open_id_connect_config.0.required_claim"))
 	}
 
 	updateRequest.OpenIDConnectConfig = updateClusterRequestOpenIDConnectConfig

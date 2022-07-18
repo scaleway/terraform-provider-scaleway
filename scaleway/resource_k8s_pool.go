@@ -21,6 +21,8 @@ func resourceScalewayK8SPool() *schema.Resource {
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 		Timeouts: &schema.ResourceTimeout{
+			Create:  schema.DefaultTimeout(defaultK8SPoolTimeout),
+			Update:  schema.DefaultTimeout(defaultK8SPoolTimeout),
 			Default: schema.DefaultTimeout(defaultK8SPoolTimeout),
 		},
 		SchemaVersion: 0,
@@ -137,6 +139,22 @@ func resourceScalewayK8SPool() *schema.Resource {
 					},
 				},
 			},
+			"root_volume_type": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				ForceNew:    true,
+				Description: "System volume type of the nodes composing the pool",
+				ValidateFunc: validation.StringInSlice([]string{
+					k8s.PoolVolumeTypeBSSD.String(),
+					k8s.PoolVolumeTypeLSSD.String(),
+				}, false),
+			},
+			"root_volume_size_in_gb": {
+				Type:        schema.TypeInt,
+				Optional:    true,
+				ForceNew:    true,
+				Description: "The size of the system volume of the nodes in gigabyte",
+			},
 			"zone":   zoneSchema(),
 			"region": regionSchema(),
 			// Computed elements
@@ -249,6 +267,15 @@ func resourceScalewayK8SPoolCreate(ctx context.Context, d *schema.ResourceData, 
 	if maxUnavailable, ok := d.GetOk("upgrade_policy.0.max_unavailable"); ok {
 		req.UpgradePolicy = upgradePolicyReq
 		upgradePolicyReq.MaxUnavailable = scw.Uint32Ptr(uint32(maxUnavailable.(int)))
+	}
+
+	if volumeType, ok := d.GetOk("root_volume_type"); ok {
+		req.RootVolumeType = k8s.PoolVolumeType(volumeType.(string))
+	}
+
+	if volumeSize, ok := d.GetOk("root_volume_size_in_gb"); ok {
+		volumeSizeInBytes := scw.Size(uint64(volumeSize.(int)) * gb)
+		req.RootVolumeSize = &volumeSizeInBytes
 	}
 
 	// check if the cluster is waiting for a pool
@@ -386,7 +413,7 @@ func resourceScalewayK8SPoolUpdate(ctx context.Context, d *schema.ResourceData, 
 	}
 
 	if d.HasChange("tags") {
-		updateRequest.Tags = scw.StringsPtr(expandStrings(d.Get("tags")))
+		updateRequest.Tags = expandUpdatedStringsPtr(d.Get("tags"))
 	}
 
 	if d.HasChange("kubelet_args") {

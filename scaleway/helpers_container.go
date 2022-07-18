@@ -11,6 +11,8 @@ import (
 
 const (
 	defaultContainerNamespaceTimeout = 5 * time.Minute
+	defaultContainerCronTimeout      = 5 * time.Minute
+	defaultContainerTimeout          = 5 * time.Minute
 	defaultContainerRetryInterval    = 5 * time.Second
 )
 
@@ -93,14 +95,10 @@ func setCreateContainerRequest(d *schema.ResourceData, region scw.Region) (*cont
 		req.MaxConcurrency = scw.Uint32Ptr(uint32(maxConcurrency.(int)))
 	}
 
-	if domainName, ok := d.GetOk("domain_name"); ok {
-		req.DomainName = expandStringPtr(domainName)
-	}
-
 	return req, nil
 }
 
-func waitForContainerNamespace(ctx context.Context, containerAPI *container.API, region scw.Region, id string, timeout time.Duration) (*container.Namespace, error) {
+func waitForContainerNamespace(ctx context.Context, containerAPI *container.API, region scw.Region, namespaceID string, timeout time.Duration) (*container.Namespace, error) {
 	retryInterval := defaultContainerRetryInterval
 	if DefaultWaitRetryInterval != nil {
 		retryInterval = *DefaultWaitRetryInterval
@@ -108,10 +106,42 @@ func waitForContainerNamespace(ctx context.Context, containerAPI *container.API,
 
 	ns, err := containerAPI.WaitForNamespace(&container.WaitForNamespaceRequest{
 		Region:        region,
-		NamespaceID:   id,
+		NamespaceID:   namespaceID,
 		RetryInterval: &retryInterval,
 		Timeout:       scw.TimeDurationPtr(timeout),
 	}, scw.WithContext(ctx))
 
 	return ns, err
+}
+
+func waitForContainerCron(ctx context.Context, api *container.API, cronID string, region scw.Region, timeout time.Duration) (*container.Cron, error) {
+	retryInterval := defaultContainerRetryInterval
+	if DefaultWaitRetryInterval != nil {
+		retryInterval = *DefaultWaitRetryInterval
+	}
+
+	request := container.WaitForCronRequest{
+		CronID:        cronID,
+		Region:        region,
+		Timeout:       scw.TimeDurationPtr(timeout),
+		RetryInterval: &retryInterval,
+	}
+
+	return api.WaitForCron(&request, scw.WithContext(ctx))
+}
+
+func waitForContainer(ctx context.Context, api *container.API, containerID string, region scw.Region, timeout time.Duration) (*container.Container, error) {
+	retryInterval := defaultContainerRetryInterval
+	if DefaultWaitRetryInterval != nil {
+		retryInterval = *DefaultWaitRetryInterval
+	}
+
+	request := container.WaitForContainerRequest{
+		ContainerID:   containerID,
+		Region:        region,
+		Timeout:       scw.TimeDurationPtr(timeout),
+		RetryInterval: &retryInterval,
+	}
+
+	return api.WaitForContainer(&request, scw.WithContext(ctx))
 }

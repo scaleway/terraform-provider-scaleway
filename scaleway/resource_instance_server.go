@@ -30,6 +30,10 @@ func resourceScalewayInstanceServer() *schema.Resource {
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 		Timeouts: &schema.ResourceTimeout{
+			Create:  schema.DefaultTimeout(defaultInstanceServerWaitTimeout),
+			Read:    schema.DefaultTimeout(defaultInstanceServerWaitTimeout),
+			Update:  schema.DefaultTimeout(defaultInstanceServerWaitTimeout),
+			Delete:  schema.DefaultTimeout(defaultInstanceServerWaitTimeout),
 			Default: schema.DefaultTimeout(defaultInstanceServerWaitTimeout),
 		},
 		SchemaVersion: 0,
@@ -121,6 +125,7 @@ func resourceScalewayInstanceServer() *schema.Resource {
 						"volume_id": {
 							Type:        schema.TypeString,
 							Computed:    true,
+							Optional:    true,
 							Description: "Volume ID of the root volume",
 						},
 					},
@@ -329,6 +334,7 @@ func resourceScalewayInstanceServerCreate(ctx context.Context, d *schema.Resourc
 	isBoot := expandBoolPtr(d.Get("root_volume.0.boot"))
 	volumeType := d.Get("root_volume.0.volume_type").(string)
 	sizeInput := d.Get("root_volume.0.size_in_gb").(int)
+	rootVolumeID := expandZonedID(d.Get("root_volume.0.volume_id").(string)).ID
 
 	// If the volumeType is not defined, define it depending of the offer
 	if volumeType == "" {
@@ -351,6 +357,8 @@ func resourceScalewayInstanceServerCreate(ctx context.Context, d *schema.Resourc
 	}
 
 	req.Volumes["0"] = &instance.VolumeServerTemplate{
+		Name:       newRandomName("vol"), // name is ignored by the API, any name will work here
+		ID:         rootVolumeID,
 		VolumeType: instance.VolumeVolumeType(volumeType),
 		Size:       size,
 		Boot:       *isBoot,
@@ -574,6 +582,7 @@ func resourceScalewayInstanceServerRead(ctx context.Context, d *schema.ResourceD
 				_, rootVolumeAttributeSet := d.GetOk("root_volume") // Related to https://github.com/hashicorp/terraform-plugin-sdk/issues/142
 				rootVolume["delete_on_termination"] = d.Get("root_volume.0.delete_on_termination").(bool) || !rootVolumeAttributeSet
 				rootVolume["volume_type"] = volume.VolumeType
+				rootVolume["boot"] = volume.Boot
 
 				_ = d.Set("root_volume", []map[string]interface{}{rootVolume})
 			} else {
@@ -657,7 +666,7 @@ func resourceScalewayInstanceServerUpdate(ctx context.Context, d *schema.Resourc
 	}
 
 	if d.HasChange("tags") {
-		updateRequest.Tags = scw.StringsPtr(expandStrings(d.Get("tags")))
+		updateRequest.Tags = expandUpdatedStringsPtr(d.Get("tags"))
 	}
 
 	if d.HasChange("security_group_id") {
@@ -677,10 +686,15 @@ func resourceScalewayInstanceServerUpdate(ctx context.Context, d *schema.Resourc
 
 	volumes := map[string]*instance.VolumeServerTemplate{}
 
-	if raw, ok := d.GetOk("additional_volume_ids"); d.HasChange("additional_volume_ids") && ok {
+	if raw, hasAdditionalVolumes := d.GetOk("additional_volume_ids"); d.HasChanges("additional_volume_ids", "root_volume") {
 		volumes["0"] = &instance.VolumeServerTemplate{
 			ID:   expandZonedID(d.Get("root_volume.0.volume_id")).ID,
 			Name: newRandomName("vol"), // name is ignored by the API, any name will work here
+			Boot: d.Get("root_volume.0.boot").(bool),
+		}
+
+		if !hasAdditionalVolumes {
+			raw = []interface{}{} // Set an empty list if not volumes exist
 		}
 
 		for i, volumeID := range raw.([]interface{}) {

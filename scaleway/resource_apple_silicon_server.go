@@ -18,6 +18,7 @@ func resourceScalewayAppleSiliconServer() *schema.Resource {
 		UpdateContext: resourceScalewayAppleSiliconServerUpdate,
 		DeleteContext: resourceScalewayAppleSiliconServerDelete,
 		Timeouts: &schema.ResourceTimeout{
+			Create:  schema.DefaultTimeout(defaultAppleSiliconServerTimeout),
 			Default: schema.DefaultTimeout(defaultAppleSiliconServerTimeout),
 		},
 		Importer: &schema.ResourceImporter{
