@@ -31,6 +31,9 @@ func testSweepAccountproject(_ string) error {
 			return fmt.Errorf("failed to list projects: %w", err)
 		}
 		for _, project := range listProjects.Projects {
+			if project.Name == "default" {
+				continue
+			}
 			err = accountAPI.DeleteProject(&accountV2.DeleteProjectRequest{
 				ProjectID: project.ID,
 			})

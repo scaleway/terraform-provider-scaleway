@@ -22,6 +22,7 @@ func resourceScalewayAccountProject() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 			"name": {
 				Type:        schema.TypeString,
+				Computed:    true,
 				Optional:    true,
 				Description: "The name of the project",
 			},
@@ -33,12 +34,12 @@ func resourceScalewayAccountProject() *schema.Resource {
 			"created_at": {
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "The date and time of the creation of the Project",
+				Description: "The date and time of the creation of the Project (Format ISO 8601)",
 			},
 			"updated_at": {
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "The date and time of the last update of the Project",
+				Description: "The date and time of the last update of the Project (Format ISO 8601)",
 			},
 			"organization_id": organizationIDSchema(),
 		},
