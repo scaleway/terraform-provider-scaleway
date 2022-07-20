@@ -33,6 +33,7 @@ jobs:
         name: Import GPG key
         id: import_gpg
         run: |
+          gpg-connect-agent --quiet /bye
           gpg-agent --daemon --allow-preset-passphrase
           gpg --batch --import --yes <(echo '${{ secrets.GPG_PRIVATE_KEY }}')
           export KEY_FINGERPRINT=$(gpg --list-secret-keys --with-colons | grep sec | cut -d ':' -f 5)
