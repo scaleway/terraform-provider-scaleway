@@ -207,6 +207,29 @@ func TestAccScalewayInstanceImage_ServerWithBlockVolume(t *testing.T) {
 						image	= "ubuntu_focal"
 						type 	= "DEV1-S"
 					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayInstanceVolumeExists(tt, "scaleway_instance_volume.block01"),
+					testAccCheckScalewayInstanceServerExists(tt, "scaleway_instance_server.server"),
+					testAccCheckScalewayInstanceSnapShotExists(tt, "scaleway_instance_snapshot.block01"),
+				),
+			},
+
+			{
+				Config: `
+					resource "scaleway_instance_volume" "block01" {
+						type       = "b_ssd"
+						size_in_gb = 21
+					}
+					resource "scaleway_instance_snapshot" "block01" {
+						volume_id	= scaleway_instance_volume.block01.id
+						depends_on 	= [ scaleway_instance_volume.block01 ]
+					}
+
+					resource "scaleway_instance_server" "server" {
+						image	= "ubuntu_focal"
+						type 	= "DEV1-S"
+					}
 					resource "scaleway_instance_snapshot" "server" {
 						volume_id 	= scaleway_instance_server.server.root_volume.0.volume_id
 						depends_on 	= [ scaleway_instance_server.server ]
