@@ -97,7 +97,7 @@ func TestAccIAMPolicyDocumentDataSource_basic(t *testing.T) {
 						  "Effect": "Allow",
 						  "Action": "s3:ListBucket",
 						  "Resource": "%[1]s",
-						  "condition": [
+						  "Condition": [
 							{
 							  "Test": "StringLike",
 							  "Variable": "aws:SourceIp",
@@ -183,7 +183,7 @@ func TestAccIAMPolicyDocumentDataSource_source(t *testing.T) {
 							}
 					
 							not_principals {
-						  		type        = "AWS"
+						  		type        = "SCW"
 						  		identifiers = ["arn:blahblah:example"]
 							}
 					  	}
@@ -199,10 +199,10 @@ func TestAccIAMPolicyDocumentDataSource_source(t *testing.T) {
 							]
 					
 							principals {
-						  		type = "AWS"
+						  		type = "SCW"
 						  		identifiers = [
-									"arn:blahblah:example",
-									"arn:blahblahblah:example",
+									"project_id:11111111-1111-1111-1111-111111111111",
+									"project_id:11111111-1111-1111-1111-111111111111",
 						  		]
 							}
 						}
@@ -219,7 +219,7 @@ func TestAccIAMPolicyDocumentDataSource_source(t *testing.T) {
 							actions = ["s3:*"]
 					
 							principals {
-						  		type        = "AWS"
+						  		type        = "SCW"
 						  		identifiers = ["*"]
 							}
 					  	}
@@ -265,7 +265,7 @@ func TestAccIAMPolicyDocumentDataSource_source(t *testing.T) {
 							  "Action": "s3:ListBucket",
 							  "Resource": "%[1]s",
 							  "NotPrincipal": {
-								"AWS": "arn:blahblah:example"
+								"SCW": "project_id:"
 							  },
 							  "Condition": {
 								"StringLike": {
@@ -285,9 +285,9 @@ func TestAccIAMPolicyDocumentDataSource_source(t *testing.T) {
 								"%[1]s"
 							  ],
 							  "Principal": {
-								"AWS": [
-								  "arn:blahblahblah:example",
-								  "arn:blahblah:example"
+								"SCW": [
+									"project_id:11111111-1111-1111-1111-111111111111",
+									"project_id:11111111-1111-1111-1111-111111111111"
 								]
 							  }
 							},
@@ -714,55 +714,6 @@ func TestAccIAMPolicyDocumentDataSource_noStatementMerge(t *testing.T) {
 	})
 }
 
-func TestAccIAMPolicyDocumentDataSource_noStatementOverride(t *testing.T) {
-	tt := NewTestTools(t)
-	defer tt.Cleanup()
-	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
-		Steps: []resource.TestStep{
-			{
-				Config: `
-					data "scaleway_object_policy_document" "source" {
-  						statement {
-    						sid       = "OverridePlaceholder"
-    						actions   = ["ec2:DescribeAccountAttributes"]
-    						resources = ["*"]
-  						}
-					}
-
-					data "scaleway_object_policy_document" "override" {
-  						statement {
-    						sid       = "OverridePlaceholder"
-    						actions   = ["s3:GetObject"]
-    						resources = ["*"]
-  						}
-					}
-
-					data "scaleway_object_policy_document" "yak_politik" {
-  						source_policy_documents   = [data.scaleway_object_policy_document.source.json]
-  						override_policy_documents = [data.scaleway_object_policy_document.override.json]
-					}`,
-				Check: resource.ComposeTestCheckFunc(
-					CheckResourceAttrEquivalentJSON("data.scaleway_object_policy_document.yak_politik", "json",
-						`{
-						  "Version": "2012-10-17",
-						  "Statement": [
-							{
-							  "Sid": "OverridePlaceholder",
-							  "Effect": "Allow",
-							  "Action": "s3:GetObject",
-							  "Resource": "*"
-							}
-						  ]
-						}`,
-					),
-				),
-			},
-		},
-	})
-}
-
 func TestAccIAMPolicyDocumentDataSource_duplicateSid(t *testing.T) {
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
@@ -873,13 +824,19 @@ func TestAccIAMPolicyDocumentDataSource_StatementPrincipalIdentifiers_stringAndS
 						  "Effect": "Allow",
 						  "Action": "*",
 						  "Resource": "*",
-						  "Principal": {
-							"SCW": [
-							  "project_id:11111111-1111-1111-1111-111111111111",
-							  "project_id:33333333-3333-3333-3333-333333333333",
-							  "project_id:22222222-2222-2222-2222-222222222222"
-							]
-						  }
+						  "Principal": [
+							{
+							  "Type": "SCW",
+							  "Identifiers": "project_id:11111111-1111-1111-1111-111111111111"
+							},
+							{
+							  "Type": "SCW",
+							  "Identifiers": [
+								"project_id:33333333-3333-3333-3333-333333333333",
+								"project_id:22222222-2222-2222-2222-222222222222"
+							  ]
+							}
+						  ]
 						}
 					  ]
 					}`),
@@ -895,7 +852,6 @@ func TestAccIAMPolicyDocumentDataSource_StatementPrincipalIdentifiers_multiplePr
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
 
-	resourceName := "foobar"
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
@@ -910,29 +866,29 @@ func TestAccIAMPolicyDocumentDataSource_StatementPrincipalIdentifiers_multiplePr
 					
 						principals {
 							identifiers = [
-								"arn:${data.aws_partition.current.partition}:iam::111111111111:root",
-								"arn:${data.aws_partition.current.partition}:iam::222222222222:root",
+								"project_id:44444444-4444-4444-4444-444444444444",
+								"project_id:33333333-3333-3333-3333-333333333333",
 						  	]
-						  	type = "AWS"
+						  	type = "SCW"
 						}
 					
 						principals {
 							identifiers = [
-								"arn:${data.aws_partition.current.partition}:iam::333333333333:root",
+								"project_id:22222222-2222-2222-2222-222222222222",
 						  	]
-							type = "AWS"
+							type = "SCW"
 						}
 					
 						principals {
 							identifiers = [
-								"arn:${data.aws_partition.current.partition}:iam::444444444444:root",
+								"project_id:11111111-1111-1111-1111-111111111111",
 						  	]
-							type = "AWS"
+							type = "SCW"
 						}
 					  }
 					}`,
 				Check: resource.ComposeTestCheckFunc(
-					CheckResourceAttrEquivalentJSON(dataSourceName, "json", fmt.Sprintf(`{
+					CheckResourceAttrEquivalentJSON(dataSourceName, "json", `{
 					  "Version": "2012-10-17",
 					  "Statement": [
 						{
@@ -940,17 +896,26 @@ func TestAccIAMPolicyDocumentDataSource_StatementPrincipalIdentifiers_multiplePr
 						  "Effect": "Allow",
 						  "Action": "*",
 						  "Resource": "*",
-						  "Principal": {
-							"AWS": [
-							  "arn:%[1]s:iam::333333333333:root",
-							  "arn:%[1]s:iam::444444444444:root",
-							  "arn:%[1]s:iam::222222222222:root",
-							  "arn:%[1]s:iam::111111111111:root"
-							]
-						  }
+						  "Principal": [
+							{
+							  "Type": "SCW",
+							  "Identifiers": "project_id:22222222-2222-2222-2222-222222222222"
+							},
+							{
+							  "Type": "SCW",
+							  "Identifiers": "project_id:11111111-1111-1111-1111-111111111111"
+							},
+							{
+							  "Type": "SCW",
+							  "Identifiers": [
+								"project_id:44444444-4444-4444-4444-444444444444",
+								"project_id:33333333-3333-3333-3333-333333333333"
+							  ]
+							}
+						]
 						}
 					  ]
-					}`, resourceName)),
+					}`),
 				),
 			},
 		},

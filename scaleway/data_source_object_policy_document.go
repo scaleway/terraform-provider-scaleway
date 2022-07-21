@@ -443,7 +443,7 @@ type IAMPolicyStatement struct {
 	NotResources  interface{}                    `json:"NotResource,omitempty"`  //nolint:tagliatelle
 	Principals    IAMPolicyStatementPrincipalSet `json:"Principal,omitempty"`    //nolint:tagliatelle
 	NotPrincipals IAMPolicyStatementPrincipalSet `json:"NotPrincipal,omitempty"` //nolint:tagliatelle
-	Conditions    IAMPolicyStatementConditionSet `json:"condition,omitempty"`
+	Conditions    IAMPolicyStatementConditionSet `json:"Condition,omitempty"`    //nolint:tagliatelle
 }
 
 type (
