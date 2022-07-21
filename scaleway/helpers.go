@@ -6,9 +6,13 @@ import (
 	"fmt"
 	"net"
 	"net/http"
+	"os"
 	"strconv"
 	"strings"
+	"testing"
 	"time"
+
+	"github.com/aws/aws-sdk-go/aws/endpoints"
 
 	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -666,4 +670,99 @@ func flattenSize(size *scw.Size) interface{} {
 		return 0
 	}
 	return *size
+}
+
+// ConfigCompose can be called to concatenate multiple strings to build test configurations
+func ConfigCompose(config ...string) string {
+	var str strings.Builder
+
+	for _, conf := range config {
+		str.WriteString(conf)
+	}
+
+	return str.String()
+}
+
+type ServiceErrorCheckFunc func(*testing.T) resource.ErrorCheckFunc
+
+var serviceErrorCheckFuncs map[string]ServiceErrorCheckFunc
+
+func ErrorCheck(t *testing.T, endpointIDs ...string) resource.ErrorCheckFunc {
+	return func(err error) error {
+		if err == nil {
+			return nil
+		}
+
+		for _, endpointID := range endpointIDs {
+			if f, ok := serviceErrorCheckFuncs[endpointID]; ok {
+				ef := f(t)
+				err = ef(err)
+			}
+
+			if err == nil {
+				break
+			}
+		}
+
+		if errorCheckCommon(err) {
+			t.Skipf("skipping test for %s/%s: %s", Partition(), Region(), err.Error())
+		}
+
+		return err
+	}
+}
+
+func Partition() string {
+	if partition, ok := endpoints.PartitionForRegion(endpoints.DefaultPartitions(), Region()); ok {
+		return partition.ID()
+	}
+	return "aws"
+}
+
+const EnvVarDefaultRegion = "AWS_DEFAULT_REGION"
+
+func Region() string {
+	return GetEnvVarWithDefault(EnvVarDefaultRegion, endpoints.UsWest2RegionID)
+}
+
+// GetEnvVarWithDefault gets an environment variable value if non-empty or returns the default.
+func GetEnvVarWithDefault(variable string, defaultValue string) string {
+	value := os.Getenv(variable)
+
+	if value == "" {
+		return defaultValue
+	}
+
+	return value
+}
+
+// NOTE: This function cannot use the standard tfawserr helpers
+// as it is receiving error strings from the SDK testing framework,
+// not actual error types from the resource logic.
+func errorCheckCommon(err error) bool {
+	if strings.Contains(err.Error(), "is not supported in this") {
+		return true
+	}
+
+	if strings.Contains(err.Error(), "is currently not supported") {
+		return true
+	}
+
+	if strings.Contains(err.Error(), "InvalidAction") {
+		return true
+	}
+
+	if strings.Contains(err.Error(), "Unknown operation") {
+		return true
+	}
+
+	if strings.Contains(err.Error(), "UnknownOperationException") {
+		return true
+	}
+
+	if strings.Contains(err.Error(), "UnsupportedOperation") {
+		return true
+	}
+
+	return false
 }
