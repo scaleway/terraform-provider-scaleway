@@ -70,11 +70,19 @@ func TestAccScalewayDataSourceVPCGatewayNetwork_Basic(t *testing.T) {
 						gateway_network_id = scaleway_vpc_gateway_network.main.id
 					}
 
+					data scaleway_vpc_gateway_network by_gateway_and_pn {
+						gateway_id = scaleway_vpc_public_gateway.pg01.id
+						private_network_id = scaleway_vpc_private_network.pn01.id
+					}
 					`,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayVPCGatewayNetworkExists(tt, "scaleway_vpc_gateway_network.main"),
 					resource.TestCheckResourceAttrPair(
 						"data.scaleway_vpc_gateway_network.by_id", "id",
+						"scaleway_vpc_gateway_network.main", "id",
+					),
+					resource.TestCheckResourceAttrPair(
+						"data.scaleway_vpc_gateway_network.by_gateway_and_pn", "id",
 						"scaleway_vpc_gateway_network.main", "id",
 					),
 				),

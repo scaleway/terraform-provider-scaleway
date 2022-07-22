@@ -45,14 +45,13 @@ func dataSourceScalewayVPCGatewayNetworkRead(ctx context.Context, d *schema.Reso
 
 	gatewayNetworkID, ok := d.GetOk("gateway_network_id")
 	if !ok {
-		res, err := vpcAPI.ListGatewayNetworks(
-			&vpcgw.ListGatewayNetworksRequest{
-				GatewayID:        expandStringPtr(d.Get("gateway_id")),
-				PrivateNetworkID: expandStringPtr(d.Get("private_network_id")),
-				EnableMasquerade: expandBoolPtr(d.Get("enable_masquerade")),
-				DHCPID:           expandStringPtr(d.Get("dhcp_id").(string)),
-				Zone:             zone,
-			}, scw.WithContext(ctx))
+		res, err := vpcAPI.ListGatewayNetworks(&vpcgw.ListGatewayNetworksRequest{
+			GatewayID:        expandStringPtr(expandID(d.Get("gateway_id"))),
+			PrivateNetworkID: expandStringPtr(expandID(d.Get("private_network_id"))),
+			EnableMasquerade: expandBoolPtr(getBool(d, "enable_masquerade")),
+			DHCPID:           expandStringPtr(expandID(d.Get("dhcp_id").(string))),
+			Zone:             zone,
+		}, scw.WithContext(ctx))
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -67,6 +66,17 @@ func dataSourceScalewayVPCGatewayNetworkRead(ctx context.Context, d *schema.Reso
 
 	zonedID := datasourceNewZonedID(gatewayNetworkID, zone)
 	d.SetId(zonedID)
+
 	_ = d.Set("gateway_network_id", zonedID)
-	return resourceScalewayVPCGatewayNetworkRead(ctx, d, meta)
+
+	diags := resourceScalewayVPCGatewayNetworkRead(ctx, d, meta)
+	if len(diags) > 0 {
+		return append(diags, diag.Errorf("failed to read gateway network state")...)
+	}
+
+	if d.Id() == "" {
+		return diag.Errorf("gateway network (%s) not found", zonedID)
+	}
+
+	return nil
 }
