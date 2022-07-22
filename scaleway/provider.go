@@ -183,6 +183,7 @@ func Provider(config *ProviderConfig) plugin.ProviderFunc {
 				"scaleway_registry_namespace":          dataSourceScalewayRegistryNamespace(),
 				"scaleway_registry_image":              dataSourceScalewayRegistryImage(),
 				"scaleway_vpc_public_gateway":          dataSourceScalewayVPCPublicGateway(),
+				"scaleway_vpc_gateway_network":         dataSourceScalewayVPCGatewayNetwork(),
 				"scaleway_vpc_public_gateway_dhcp":     dataSourceScalewayVPCPublicGatewayDHCP(),
 				"scaleway_vpc_public_gateway_ip":       dataSourceScalewayVPCPublicGatewayIP(),
 				"scaleway_vpc_private_network":         dataSourceScalewayVPCPrivateNetwork(),
