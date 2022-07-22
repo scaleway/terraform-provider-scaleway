@@ -80,6 +80,12 @@ func Provider(config *ProviderConfig) plugin.ProviderFunc {
 					Description:  "The Scaleway project ID.",
 					ValidateFunc: validationUUID(),
 				},
+				"organization_id": {
+					Type:         schema.TypeString,
+					Optional:     true,
+					Description:  "The Scaleway organization ID.",
+					ValidateFunc: validationUUID(),
+				},
 				"region": regionSchema(),
 				"zone":   zoneSchema(),
 				"api_url": {
@@ -311,6 +317,9 @@ func loadProfile(ctx context.Context, d *schema.ResourceData) (*scw.Profile, err
 		}
 		if projectID, exist := d.GetOk("project_id"); exist {
 			providerProfile.DefaultProjectID = scw.StringPtr(projectID.(string))
+		}
+		if orgID, exist := d.GetOk("organization_id"); exist {
+			providerProfile.DefaultOrganizationID = scw.StringPtr(orgID.(string))
 		}
 		if region, exist := d.GetOk("region"); exist {
 			providerProfile.DefaultRegion = scw.StringPtr(region.(string))
