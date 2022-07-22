@@ -391,6 +391,9 @@ func expandStringsPtr(data interface{}) *[]string {
 	for _, s := range data.([]interface{}) {
 		stringSlice = append(stringSlice, s.(string))
 	}
+	if stringSlice == nil {
+		return nil
+	}
 	return &stringSlice
 }
 
