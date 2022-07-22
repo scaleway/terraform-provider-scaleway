@@ -15,6 +15,23 @@ func iamAPI(m interface{}) *iam.API {
 	return iam.NewAPI(meta.scwClient)
 }
 
+func getOrganizationID(m interface{}, d *schema.ResourceData) *string {
+	meta := m.(*Meta)
+
+	orgID, orgIDExist := d.GetOk("organization_id")
+
+	if orgIDExist {
+		return expandStringPtr(orgID)
+	}
+
+	defaultOrgID, defaultOrgIDExists := meta.scwClient.GetDefaultOrganizationID()
+	if defaultOrgIDExists {
+		return expandStringPtr(defaultOrgID)
+	}
+
+	return nil
+}
+
 func expandPermissionSetNames(rawPermissions interface{}) *[]string {
 	permissions := []string{}
 	permissionSet := rawPermissions.(*schema.Set)
