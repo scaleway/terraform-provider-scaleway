@@ -147,7 +147,7 @@ func TestAccScalewayRedisCluster_Migrate(t *testing.T) {
 					resource "scaleway_redis_cluster" "main" {
     					name = "test_redis_basic"
     					version = "6.2.6"
-    					node_type = "MDB-BETA-L"
+    					node_type = "RED1-S"
     					user_name = "my_initial_user"
     					password = "thiZ_is_v&ry_s3cret"
 						tags = [ "test1" ]
@@ -159,7 +159,7 @@ func TestAccScalewayRedisCluster_Migrate(t *testing.T) {
 					testAccCheckScalewayRedisExists(tt, "scaleway_redis_cluster.main"),
 					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "name", "test_redis_basic"),
 					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "version", "6.2.6"),
-					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "node_type", "MDB-BETA-L"),
+					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "node_type", "RED1-S"),
 					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "user_name", "my_initial_user"),
 					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "password", "thiZ_is_v&ry_s3cret"),
 					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "tags.0", "test1"),
