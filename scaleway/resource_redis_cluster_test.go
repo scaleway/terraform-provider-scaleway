@@ -55,7 +55,7 @@ func TestAccScalewayRedisCluster_Basic(t *testing.T) {
 					resource "scaleway_redis_cluster" "main" {
     					name = "test_redis_basic"
     					version = "6.2.6"
-    					node_type = "MDB-BETA-M"
+    					node_type = "RED1-XS"
     					user_name = "my_initial_user"
     					password = "thiZ_is_v&ry_s3cret"
 						tags = [ "test1" ]
@@ -68,7 +68,7 @@ func TestAccScalewayRedisCluster_Basic(t *testing.T) {
 					testAccCheckScalewayRedisExists(tt, "scaleway_redis_cluster.main"),
 					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "name", "test_redis_basic"),
 					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "version", "6.2.6"),
-					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "node_type", "MDB-BETA-M"),
+					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "node_type", "RED1-XS"),
 					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "user_name", "my_initial_user"),
 					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "password", "thiZ_is_v&ry_s3cret"),
 					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "tags.0", "test1"),
@@ -82,7 +82,7 @@ func TestAccScalewayRedisCluster_Basic(t *testing.T) {
 					resource "scaleway_redis_cluster" "main" {
     					name = "test_redis_basic_edit"
     					version = "6.2.6"
-    					node_type = "MDB-BETA-M"
+    					node_type = "RED1-XS"
     					user_name = "new_user"
     					password = "thiZ_is_A_n3w_passw0rd"
 						tags = [ "test1", "other_tag" ]
@@ -95,7 +95,7 @@ func TestAccScalewayRedisCluster_Basic(t *testing.T) {
 					testAccCheckScalewayRedisExists(tt, "scaleway_redis_cluster.main"),
 					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "name", "test_redis_basic_edit"),
 					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "version", "6.2.6"),
-					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "node_type", "MDB-BETA-M"),
+					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "node_type", "RED1-XS"),
 					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "user_name", "new_user"),
 					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "password", "thiZ_is_A_n3w_passw0rd"),
 					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "tags.0", "test1"),
@@ -122,7 +122,7 @@ func TestAccScalewayRedisCluster_Migrate(t *testing.T) {
 					resource "scaleway_redis_cluster" "main" {
     					name = "test_redis_basic"
     					version = "6.2.6"
-    					node_type = "MDB-BETA-M"
+    					node_type = "RED1-XS"
     					user_name = "my_initial_user"
     					password = "thiZ_is_v&ry_s3cret"
 						tags = [ "test1" ]
@@ -134,7 +134,7 @@ func TestAccScalewayRedisCluster_Migrate(t *testing.T) {
 					testAccCheckScalewayRedisExists(tt, "scaleway_redis_cluster.main"),
 					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "name", "test_redis_basic"),
 					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "version", "6.2.6"),
-					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "node_type", "MDB-BETA-M"),
+					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "node_type", "RED1-XS"),
 					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "user_name", "my_initial_user"),
 					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "password", "thiZ_is_v&ry_s3cret"),
 					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "tags.0", "test1"),
@@ -147,7 +147,7 @@ func TestAccScalewayRedisCluster_Migrate(t *testing.T) {
 					resource "scaleway_redis_cluster" "main" {
     					name = "test_redis_basic"
     					version = "6.2.6"
-    					node_type = "MDB-BETA-L"
+    					node_type = "RED1-S"
     					user_name = "my_initial_user"
     					password = "thiZ_is_v&ry_s3cret"
 						tags = [ "test1" ]
@@ -159,7 +159,7 @@ func TestAccScalewayRedisCluster_Migrate(t *testing.T) {
 					testAccCheckScalewayRedisExists(tt, "scaleway_redis_cluster.main"),
 					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "name", "test_redis_basic"),
 					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "version", "6.2.6"),
-					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "node_type", "MDB-BETA-L"),
+					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "node_type", "RED1-S"),
 					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "user_name", "my_initial_user"),
 					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "password", "thiZ_is_v&ry_s3cret"),
 					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "tags.0", "test1"),
@@ -184,7 +184,7 @@ func TestAccScalewayRedisCluster_ACL(t *testing.T) {
 					resource "scaleway_redis_cluster" "main" {
     					name = "test_redis_acl"
     					version = "6.2.6"
-    					node_type = "MDB-BETA-M"
+    					node_type = "RED1-XS"
     					user_name = "my_initial_user"
     					password = "thiZ_is_v&ry_s3cret"
 						acl {
@@ -201,7 +201,7 @@ func TestAccScalewayRedisCluster_ACL(t *testing.T) {
 					testAccCheckScalewayRedisExists(tt, "scaleway_redis_cluster.main"),
 					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "name", "test_redis_acl"),
 					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "version", "6.2.6"),
-					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "node_type", "MDB-BETA-M"),
+					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "node_type", "RED1-XS"),
 					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "user_name", "my_initial_user"),
 					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "password", "thiZ_is_v&ry_s3cret"),
 					resource.TestCheckTypeSetElemNestedAttrs("scaleway_redis_cluster.main", "acl.*", map[string]string{
@@ -221,7 +221,7 @@ func TestAccScalewayRedisCluster_ACL(t *testing.T) {
 					resource "scaleway_redis_cluster" "main" {
     					name = "test_redis_acl"
     					version = "6.2.6"
-    					node_type = "MDB-BETA-M"
+    					node_type = "RED1-XS"
     					user_name = "my_initial_user"
     					password = "thiZ_is_v&ry_s3cret"
 						acl {
@@ -234,7 +234,7 @@ func TestAccScalewayRedisCluster_ACL(t *testing.T) {
 					testAccCheckScalewayRedisExists(tt, "scaleway_redis_cluster.main"),
 					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "name", "test_redis_acl"),
 					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "version", "6.2.6"),
-					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "node_type", "MDB-BETA-M"),
+					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "node_type", "RED1-XS"),
 					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "user_name", "my_initial_user"),
 					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "password", "thiZ_is_v&ry_s3cret"),
 					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "acl.0.ip", "192.168.11.0/24"),
@@ -259,7 +259,7 @@ func TestAccScalewayRedisCluster_Settings(t *testing.T) {
 					resource "scaleway_redis_cluster" "main" {
     					name = "test_redis_settings"
     					version = "6.2.6"
-    					node_type = "MDB-BETA-M"
+    					node_type = "RED1-XS"
     					user_name = "my_initial_user"
     					password = "thiZ_is_v&ry_s3cret"
 						settings = {
@@ -272,7 +272,7 @@ func TestAccScalewayRedisCluster_Settings(t *testing.T) {
 					testAccCheckScalewayRedisExists(tt, "scaleway_redis_cluster.main"),
 					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "name", "test_redis_settings"),
 					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "version", "6.2.6"),
-					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "node_type", "MDB-BETA-M"),
+					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "node_type", "RED1-XS"),
 					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "user_name", "my_initial_user"),
 					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "password", "thiZ_is_v&ry_s3cret"),
 					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "settings.tcp-keepalive", "150"),
@@ -284,7 +284,7 @@ func TestAccScalewayRedisCluster_Settings(t *testing.T) {
 					resource "scaleway_redis_cluster" "main" {
     					name = "test_redis_settings"
     					version = "6.2.6"
-    					node_type = "MDB-BETA-M"
+    					node_type = "RED1-XS"
     					user_name = "my_initial_user"
     					password = "thiZ_is_v&ry_s3cret"
 						settings = {
@@ -296,7 +296,7 @@ func TestAccScalewayRedisCluster_Settings(t *testing.T) {
 					testAccCheckScalewayRedisExists(tt, "scaleway_redis_cluster.main"),
 					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "name", "test_redis_settings"),
 					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "version", "6.2.6"),
-					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "node_type", "MDB-BETA-M"),
+					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "node_type", "RED1-XS"),
 					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "user_name", "my_initial_user"),
 					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "password", "thiZ_is_v&ry_s3cret"),
 					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "settings.maxclients", "2000"),
@@ -323,7 +323,7 @@ func TestAccScalewayRedisCluster_Endpoints_Standalone(t *testing.T) {
 					resource "scaleway_redis_cluster" "main" {
 						name =			"test_redis_endpoints"
 						version = 		"6.2.6"
-						node_type = 	"MDB-BETA-M"
+						node_type = 	"RED1-XS"
 						user_name = 	"my_initial_user"
 						password = 		"thiZ_is_v&ry_s3cret"
 						cluster_size = 	1
@@ -340,7 +340,7 @@ func TestAccScalewayRedisCluster_Endpoints_Standalone(t *testing.T) {
 					testAccCheckScalewayVPCPrivateNetworkExists(tt, "scaleway_vpc_private_network.pn"),
 					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "name", "test_redis_endpoints"),
 					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "version", "6.2.6"),
-					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "node_type", "MDB-BETA-M"),
+					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "node_type", "RED1-XS"),
 					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "user_name", "my_initial_user"),
 					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "password", "thiZ_is_v&ry_s3cret"),
 					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "cluster_size", "1"),
@@ -362,7 +362,7 @@ func TestAccScalewayRedisCluster_Endpoints_Standalone(t *testing.T) {
 					resource "scaleway_redis_cluster" "main" {
 						name =			"test_redis_endpoints"
 						version = 		"6.2.6"
-						node_type = 	"MDB-BETA-M"
+						node_type = 	"RED1-XS"
 						user_name = 	"my_initial_user"
 						password = 		"thiZ_is_v&ry_s3cret"
 						cluster_size = 	1
@@ -386,7 +386,7 @@ func TestAccScalewayRedisCluster_Endpoints_Standalone(t *testing.T) {
 					testAccCheckScalewayVPCPrivateNetworkExists(tt, "scaleway_vpc_private_network.pn2"),
 					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "name", "test_redis_endpoints"),
 					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "version", "6.2.6"),
-					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "node_type", "MDB-BETA-M"),
+					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "node_type", "RED1-XS"),
 					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "user_name", "my_initial_user"),
 					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "password", "thiZ_is_v&ry_s3cret"),
 					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "cluster_size", "1"),
@@ -410,7 +410,7 @@ func TestAccScalewayRedisCluster_Endpoints_Standalone(t *testing.T) {
 					resource "scaleway_redis_cluster" "main" {
 						name =			"test_redis_endpoints"
 						version = 		"6.2.6"
-						node_type = 	"MDB-BETA-M"
+						node_type = 	"RED1-XS"
 						user_name = 	"my_initial_user"
 						password = 		"thiZ_is_v&ry_s3cret"
 						cluster_size = 	1
@@ -427,7 +427,7 @@ func TestAccScalewayRedisCluster_Endpoints_Standalone(t *testing.T) {
 					testAccCheckScalewayVPCPrivateNetworkExists(tt, "scaleway_vpc_private_network.pn"),
 					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "name", "test_redis_endpoints"),
 					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "version", "6.2.6"),
-					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "node_type", "MDB-BETA-M"),
+					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "node_type", "RED1-XS"),
 					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "user_name", "my_initial_user"),
 					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "password", "thiZ_is_v&ry_s3cret"),
 					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "cluster_size", "1"),
@@ -452,7 +452,7 @@ func TestAccScalewayRedisCluster_Endpoints_Standalone(t *testing.T) {
 					resource "scaleway_redis_cluster" "main" {
 						name = "test_redis_endpoints"
 						version = "6.2.6"
-						node_type = "MDB-BETA-M"
+						node_type = "RED1-XS"
 						user_name = "my_initial_user"
 						password = "thiZ_is_v&ry_s3cret"
 						cluster_size = 1
@@ -462,7 +462,7 @@ func TestAccScalewayRedisCluster_Endpoints_Standalone(t *testing.T) {
 					testAccCheckScalewayRedisExists(tt, "scaleway_redis_cluster.main"),
 					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "name", "test_redis_endpoints"),
 					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "version", "6.2.6"),
-					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "node_type", "MDB-BETA-M"),
+					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "node_type", "RED1-XS"),
 					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "user_name", "my_initial_user"),
 					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "password", "thiZ_is_v&ry_s3cret"),
 					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "cluster_size", "1"),
@@ -506,7 +506,7 @@ func TestAccScalewayRedisCluster_Endpoints_ClusterMode(t *testing.T) {
 					resource "scaleway_redis_cluster" "main" {
 						name =			"test_redis_endpoints_cluster_mode"
 						version = 		"6.2.6"
-						node_type = 	"MDB-BETA-M"
+						node_type = 	"RED1-XS"
 						user_name = 	"my_initial_user"
 						password = 		"thiZ_is_v&ry_s3cret"
 						cluster_size = 	3
@@ -528,7 +528,7 @@ func TestAccScalewayRedisCluster_Endpoints_ClusterMode(t *testing.T) {
 					testAccCheckScalewayVPCPrivateNetworkExists(tt, "scaleway_vpc_private_network.pn"),
 					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "name", "test_redis_endpoints_cluster_mode"),
 					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "version", "6.2.6"),
-					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "node_type", "MDB-BETA-M"),
+					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "node_type", "RED1-XS"),
 					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "user_name", "my_initial_user"),
 					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "password", "thiZ_is_v&ry_s3cret"),
 					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "cluster_size", "3"),
