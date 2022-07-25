@@ -37,6 +37,7 @@ func addBetaResources(provider *schema.Provider) {
 		"scaleway_iam_group":       resourceScalewayIamGroup(),
 		"scaleway_iam_policy":      resourceScalewayIamPolicy(),
 		"scaleway_iam_ssh_key":     resourceScalewayIamSSKKey(),
+		"scaleway_account_project": resourceScalewayAccountProject(),
 	}
 	betaDataSources := map[string]*schema.Resource{
 		"scaleway_iam_ssh_key":     dataSourceScalewayIamSSHKey(),
@@ -77,6 +78,12 @@ func Provider(config *ProviderConfig) plugin.ProviderFunc {
 					Type:         schema.TypeString,
 					Optional:     true, // To allow user to use organization instead of project
 					Description:  "The Scaleway project ID.",
+					ValidateFunc: validationUUID(),
+				},
+				"organization_id": {
+					Type:         schema.TypeString,
+					Optional:     true,
+					Description:  "The Scaleway organization ID.",
 					ValidateFunc: validationUUID(),
 				},
 				"region": regionSchema(),
@@ -177,6 +184,7 @@ func Provider(config *ProviderConfig) plugin.ProviderFunc {
 				"scaleway_registry_namespace":          dataSourceScalewayRegistryNamespace(),
 				"scaleway_registry_image":              dataSourceScalewayRegistryImage(),
 				"scaleway_vpc_public_gateway":          dataSourceScalewayVPCPublicGateway(),
+				"scaleway_vpc_gateway_network":         dataSourceScalewayVPCGatewayNetwork(),
 				"scaleway_vpc_public_gateway_dhcp":     dataSourceScalewayVPCPublicGatewayDHCP(),
 				"scaleway_vpc_public_gateway_ip":       dataSourceScalewayVPCPublicGatewayIP(),
 				"scaleway_vpc_private_network":         dataSourceScalewayVPCPrivateNetwork(),
@@ -310,6 +318,9 @@ func loadProfile(ctx context.Context, d *schema.ResourceData) (*scw.Profile, err
 		}
 		if projectID, exist := d.GetOk("project_id"); exist {
 			providerProfile.DefaultProjectID = scw.StringPtr(projectID.(string))
+		}
+		if orgID, exist := d.GetOk("organization_id"); exist {
+			providerProfile.DefaultOrganizationID = scw.StringPtr(orgID.(string))
 		}
 		if region, exist := d.GetOk("region"); exist {
 			providerProfile.DefaultRegion = scw.StringPtr(region.(string))

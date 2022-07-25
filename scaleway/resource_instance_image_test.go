@@ -12,7 +12,7 @@ import (
 func TestAccScalewayInstanceImage_BlockVolume(t *testing.T) {
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
@@ -108,7 +108,7 @@ func TestAccScalewayInstanceImage_BlockVolume(t *testing.T) {
 func TestAccScalewayInstanceImage_Server(t *testing.T) {
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
@@ -122,7 +122,6 @@ func TestAccScalewayInstanceImage_Server(t *testing.T) {
 					resource "scaleway_instance_server" "main" {
 						image 	= "ubuntu_focal"
 						type 	= "DEV1-S"
-						state	= "stopped"
 					}
 
 					resource "scaleway_instance_snapshot" "main" {
@@ -152,7 +151,6 @@ func TestAccScalewayInstanceImage_Server(t *testing.T) {
 					resource "scaleway_instance_server" "main" {
 						image 	= "ubuntu_focal"
 						type 	= "DEV1-S"
-						state 	= "stopped"
 					}
 
 					resource "scaleway_instance_snapshot" "main" {
@@ -184,7 +182,7 @@ func TestAccScalewayInstanceImage_Server(t *testing.T) {
 func TestAccScalewayInstanceImage_ServerWithBlockVolume(t *testing.T) {
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
@@ -208,7 +206,29 @@ func TestAccScalewayInstanceImage_ServerWithBlockVolume(t *testing.T) {
 					resource "scaleway_instance_server" "server" {
 						image	= "ubuntu_focal"
 						type 	= "DEV1-S"
-						state 	= "stopped"
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayInstanceVolumeExists(tt, "scaleway_instance_volume.block01"),
+					testAccCheckScalewayInstanceServerExists(tt, "scaleway_instance_server.server"),
+					testAccCheckScalewayInstanceSnapShotExists(tt, "scaleway_instance_snapshot.block01"),
+				),
+			},
+
+			{
+				Config: `
+					resource "scaleway_instance_volume" "block01" {
+						type       = "b_ssd"
+						size_in_gb = 21
+					}
+					resource "scaleway_instance_snapshot" "block01" {
+						volume_id	= scaleway_instance_volume.block01.id
+						depends_on 	= [ scaleway_instance_volume.block01 ]
+					}
+
+					resource "scaleway_instance_server" "server" {
+						image	= "ubuntu_focal"
+						type 	= "DEV1-S"
 					}
 					resource "scaleway_instance_snapshot" "server" {
 						volume_id 	= scaleway_instance_server.server.root_volume.0.volume_id
@@ -264,7 +284,6 @@ func TestAccScalewayInstanceImage_ServerWithBlockVolume(t *testing.T) {
 					resource "scaleway_instance_server" "server" {
 						image	= "ubuntu_focal"
 						type 	= "DEV1-S"
-						state 	= "stopped"
 					}
 					resource "scaleway_instance_snapshot" "server" {
 						volume_id 	= scaleway_instance_server.server.root_volume.0.volume_id
@@ -297,6 +316,127 @@ func TestAccScalewayInstanceImage_ServerWithBlockVolume(t *testing.T) {
 					resource.TestCheckResourceAttrSet("scaleway_instance_image.main", "name"),
 					resource.TestCheckResourceAttr("scaleway_instance_image.main", "architecture", "x86_64"),
 					resource.TestCheckResourceAttr("scaleway_instance_image.main", "public", "false"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccScalewayInstanceImage_ServerWithLocalVolume(t *testing.T) {
+	tt := NewTestTools(t)
+	defer tt.Cleanup()
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy: resource.ComposeTestCheckFunc(
+			testAccCheckScalewayInstanceImageDestroy(tt),
+			testAccCheckScalewayInstanceSnapshotDestroy(tt),
+			testAccCheckScalewayInstanceVolumeDestroy(tt),
+			testAccCheckScalewayInstanceServerDestroy(tt),
+		),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource "scaleway_instance_server" "server01" {
+						image	= "ubuntu_focal"
+						type 	= "DEV1-S"
+						root_volume {
+							size_in_gb = 15
+							volume_type = "l_ssd"
+						}
+					}
+					resource "scaleway_instance_snapshot" "local01" {
+						volume_id = scaleway_instance_server.server01.root_volume.0.volume_id
+						depends_on = [ scaleway_instance_server.server01 ]
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayInstanceServerExists(tt, "scaleway_instance_server.server01"),
+					testAccCheckScalewayInstanceSnapShotExists(tt, "scaleway_instance_snapshot.local01"),
+				),
+			},
+			{
+				Config: `
+					resource "scaleway_instance_server" "server01" {
+						image	= "ubuntu_focal"
+						type 	= "DEV1-S"
+						root_volume {
+							size_in_gb = 15
+							volume_type = "l_ssd"
+						}
+					}
+					resource "scaleway_instance_server" "server02" {
+						image	= "ubuntu_focal"
+						type 	= "DEV1-S"
+						root_volume {
+							size_in_gb = 10
+							volume_type = "l_ssd"
+						}
+					}
+
+					resource "scaleway_instance_snapshot" "local01" {
+						volume_id = scaleway_instance_server.server01.root_volume.0.volume_id
+						depends_on = [ scaleway_instance_server.server01 ]
+					}
+					resource "scaleway_instance_snapshot" "local02" {
+						volume_id = scaleway_instance_server.server02.root_volume.0.volume_id
+						depends_on = [ scaleway_instance_server.server02 ]
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayInstanceServerExists(tt, "scaleway_instance_server.server01"),
+					testAccCheckScalewayInstanceServerExists(tt, "scaleway_instance_server.server02"),
+					testAccCheckScalewayInstanceSnapShotExists(tt, "scaleway_instance_snapshot.local01"),
+					testAccCheckScalewayInstanceSnapShotExists(tt, "scaleway_instance_snapshot.local02"),
+				),
+			},
+			{
+				Config: `
+					resource "scaleway_instance_server" "server01" {
+						image	= "ubuntu_focal"
+						type 	= "DEV1-S"
+						root_volume {
+							size_in_gb = 15
+							volume_type = "l_ssd"
+						}
+					}
+					resource "scaleway_instance_server" "server02" {
+						image	= "ubuntu_focal"
+						type 	= "DEV1-S"
+						root_volume {
+							size_in_gb = 10
+							volume_type = "l_ssd"
+						}
+					}
+
+					resource "scaleway_instance_snapshot" "local01" {
+						volume_id = scaleway_instance_server.server01.root_volume.0.volume_id
+						depends_on = [ scaleway_instance_server.server01 ]
+					}
+					resource "scaleway_instance_snapshot" "local02" {
+						volume_id = scaleway_instance_server.server02.root_volume.0.volume_id
+						depends_on = [ scaleway_instance_server.server02 ]
+					}
+
+					resource "scaleway_instance_image" "main" {
+						root_volume_id 	= scaleway_instance_snapshot.local01.id
+						additional_volume_ids = [ scaleway_instance_snapshot.local02.id ]
+						depends_on = [
+							scaleway_instance_snapshot.local01,
+							scaleway_instance_snapshot.local02,
+						]
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayInstanceServerExists(tt, "scaleway_instance_server.server01"),
+					testAccCheckScalewayInstanceServerExists(tt, "scaleway_instance_server.server02"),
+					testAccCheckScalewayInstanceSnapShotExists(tt, "scaleway_instance_snapshot.local01"),
+					testAccCheckScalewayInstanceSnapShotExists(tt, "scaleway_instance_snapshot.local02"),
+					testAccCheckScalewayInstanceImageExists(tt, "scaleway_instance_image.main"),
+					resource.TestCheckResourceAttrPair("scaleway_instance_image.main", "root_volume_id", "scaleway_instance_snapshot.local01", "id"),
+					resource.TestCheckResourceAttrPair("scaleway_instance_image.main", "additional_volumes.0.id", "scaleway_instance_snapshot.local02", "id"),
+					resource.TestCheckResourceAttr("scaleway_instance_image.main", "additional_volumes.0.volume_type", "l_ssd"),
+					resource.TestCheckResourceAttr("scaleway_instance_image.main", "additional_volumes.0.size", "10000000000"),
 				),
 			},
 		},

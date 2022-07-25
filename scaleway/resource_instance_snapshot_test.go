@@ -12,7 +12,7 @@ import (
 func TestAccScalewayInstanceSnapshot_BlockVolume(t *testing.T) {
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheckScalewayInstanceVolumeDestroy(tt),
@@ -35,10 +35,52 @@ func TestAccScalewayInstanceSnapshot_BlockVolume(t *testing.T) {
 	})
 }
 
-func TestAccScalewayInstanceSnapshot_Server(t *testing.T) {
+func TestAccScalewayInstanceSnapshot_Unified(t *testing.T) {
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
 	resource.Test(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      testAccCheckScalewayInstanceVolumeDestroy(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource "scaleway_instance_volume" "main" {
+						type       = "l_ssd"
+						size_in_gb = 10
+					}
+
+					resource "scaleway_instance_server" "main" {
+						image    = "ubuntu_jammy"
+						type     = "DEV1-S"
+						root_volume {
+							size_in_gb = 10
+							volume_type = "l_ssd"
+						}
+						additional_volume_ids = [
+							scaleway_instance_volume.main.id
+						]
+					}
+
+					resource "scaleway_instance_snapshot" "main" {
+						volume_id = scaleway_instance_volume.main.id
+						type = "unified"
+						depends_on = [scaleway_instance_server.main]
+					}
+					`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayInstanceSnapShotExists(tt, "scaleway_instance_snapshot.main"),
+					resource.TestCheckResourceAttr("scaleway_instance_snapshot.main", "type", "unified"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccScalewayInstanceSnapshot_Server(t *testing.T) {
+	tt := NewTestTools(t)
+	defer tt.Cleanup()
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheckScalewayInstanceVolumeDestroy(tt),
@@ -64,7 +106,7 @@ func TestAccScalewayInstanceSnapshot_Server(t *testing.T) {
 func TestAccScalewayInstanceSnapshot_ServerWithBlockVolume(t *testing.T) {
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
@@ -75,22 +117,25 @@ func TestAccScalewayInstanceSnapshot_ServerWithBlockVolume(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: `
-					resource "scaleway_instance_volume" "block" {
+					resource "scaleway_instance_volume" main {
 						type       = "b_ssd"
 						size_in_gb = 10
 					}
 
-					resource "scaleway_instance_server" "main" {
+					resource "scaleway_instance_server" main {
 						image = "ubuntu_focal"
 						type = "DEV1-S"
-
+						root_volume {
+							size_in_gb = 10
+							volume_type = "l_ssd"
+						}
 						additional_volume_ids = [
-							scaleway_instance_volume.block.id
+							scaleway_instance_volume.main.id
 						]
 					}
 
-					resource "scaleway_instance_snapshot" "main" {
-						volume_id = scaleway_instance_volume.block.id
+					resource "scaleway_instance_snapshot" main {
+						volume_id = scaleway_instance_volume.main.id
 					}`,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayInstanceSnapShotExists(tt, "scaleway_instance_snapshot.main"),
@@ -103,7 +148,7 @@ func TestAccScalewayInstanceSnapshot_ServerWithBlockVolume(t *testing.T) {
 func TestAccScalewayInstanceSnapshot_RenameSnapshot(t *testing.T) {
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheckScalewayInstanceVolumeDestroy(tt),

@@ -386,10 +386,13 @@ func expandStrings(data interface{}) []string {
 func expandStringsPtr(data interface{}) *[]string {
 	var stringSlice []string
 	if _, ok := data.([]interface{}); !ok || data == nil {
-		return &stringSlice
+		return nil
 	}
 	for _, s := range data.([]interface{}) {
 		stringSlice = append(stringSlice, s.(string))
+	}
+	if stringSlice == nil {
+		return nil
 	}
 	return &stringSlice
 }

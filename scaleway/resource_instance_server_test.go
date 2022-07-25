@@ -76,6 +76,7 @@ func TestAccScalewayInstanceServer_Minimal1(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "root_volume.0.delete_on_termination", "true"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "root_volume.0.size_in_gb", "20"),
 					resource.TestCheckResourceAttrSet("scaleway_instance_server.base", "root_volume.0.volume_id"),
+					testAccCheckScalewayInstanceServerHasNewVolume(tt, "scaleway_instance_server.base"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "enable_dynamic_ip", "false"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "tags.0", "terraform-test"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "tags.1", "scaleway_instance_server"),
@@ -98,6 +99,7 @@ func TestAccScalewayInstanceServer_Minimal1(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "root_volume.0.delete_on_termination", "true"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "root_volume.0.size_in_gb", "20"),
 					resource.TestCheckResourceAttrSet("scaleway_instance_server.base", "root_volume.0.volume_id"),
+					testAccCheckScalewayInstanceServerHasNewVolume(tt, "scaleway_instance_server.base"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "tags.0", "terraform-test"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "tags.1", "scaleway_instance_server"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "tags.2", "minimal"),
@@ -198,6 +200,91 @@ func TestAccScalewayInstanceServer_RootVolume1(t *testing.T) {
 					}`,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayInstanceServerExists(tt, "scaleway_instance_server.base"),
+					testAccCheckScalewayInstanceServerHasNewVolume(tt, "scaleway_instance_server.base"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccScalewayInstanceServer_RootVolume_Boot(t *testing.T) {
+	tt := NewTestTools(t)
+	defer tt.Cleanup()
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      testAccCheckScalewayInstanceServerDestroy(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource "scaleway_instance_server" "base" {
+						image = "ubuntu_focal"
+						type  = "DEV1-S"
+						state = "stopped"
+						root_volume {
+							boot = true
+							delete_on_termination = true
+						}
+						tags = [ "terraform-test", "scaleway_instance_server", "root_volume" ]
+					}`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayInstanceServerExists(tt, "scaleway_instance_server.base"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.base", "root_volume.0.boot", "true"),
+					testAccCheckScalewayInstanceServerHasNewVolume(tt, "scaleway_instance_server.base"),
+				),
+			},
+			{
+				Config: `
+					resource "scaleway_instance_server" "base" {
+						image = "ubuntu_focal"
+						type  = "DEV1-S"
+						state = "stopped"
+						root_volume {
+							boot = false
+							delete_on_termination = true
+						}
+						tags = [ "terraform-test", "scaleway_instance_server", "root_volume" ]
+					}`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayInstanceServerExists(tt, "scaleway_instance_server.base"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.base", "root_volume.0.boot", "false"),
+					testAccCheckScalewayInstanceServerHasNewVolume(tt, "scaleway_instance_server.base"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccScalewayInstanceServer_RootVolume_ID(t *testing.T) {
+	tt := NewTestTools(t)
+	defer tt.Cleanup()
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      testAccCheckScalewayInstanceServerDestroy(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource "scaleway_instance_volume" "server_volume" {
+					  type       = "b_ssd"
+					  name       = "tf_tests_rootvolume"
+					  size_in_gb = 10
+					}
+
+					resource "scaleway_instance_server" "base" {
+						type  = "DEV1-S"
+						state = "stopped"
+						root_volume {
+							volume_id = scaleway_instance_volume.server_volume.id
+							boot = true
+							delete_on_termination = false
+						}
+						tags = [ "terraform-test", "scaleway_instance_server", "root_volume" ]
+					}`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayInstanceServerExists(tt, "scaleway_instance_server.base"),
+					resource.TestCheckResourceAttrPair("scaleway_instance_server.base", "root_volume.0.volume_id", "scaleway_instance_volume.server_volume", "id"),
+					resource.TestCheckResourceAttrPair("scaleway_instance_server.base", "root_volume.0.size_in_gb", "scaleway_instance_volume.server_volume", "size_in_gb"),
 				),
 			},
 		},
@@ -546,7 +633,7 @@ func TestAccScalewayInstanceServer_AdditionalVolumes(t *testing.T) {
 func TestAccScalewayInstanceServer_AdditionalVolumesDetach(t *testing.T) {
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
@@ -889,6 +976,28 @@ func testAccCheckScalewayInstanceServerDestroy(tt *TestTools) resource.TestCheck
 			if !is404Error(err) {
 				return err
 			}
+		}
+
+		return nil
+	}
+}
+
+// testAccCheckScalewayInstanceServerHasNewVolume tests if volume name is generated by terraform
+// It is useful as volume should not be set in request when creating an instance from an image
+func testAccCheckScalewayInstanceServerHasNewVolume(tt *TestTools, n string) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		rs, ok := s.RootModule().Resources[n]
+		if !ok {
+			return fmt.Errorf("resource not found: %s", n)
+		}
+
+		rootVolumeName, ok := rs.Primary.Attributes["root_volume.0.name"]
+		if !ok {
+			return fmt.Errorf("instance root_volume has no name")
+		}
+
+		if strings.HasPrefix(rootVolumeName, "tf") {
+			return fmt.Errorf("root volume name is generated by provider, should be generated by api (%s)", rootVolumeName)
 		}
 
 		return nil

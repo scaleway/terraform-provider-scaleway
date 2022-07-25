@@ -47,7 +47,12 @@ func resourceScalewayIamPolicy() *schema.Resource {
 				Computed:    true,
 				Description: "Whether or not the policy is editable.",
 			},
-			"organization_id": organizationIDSchema(),
+			"organization_id": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Computed:    true,
+				Description: "ID of organization the policy is linked to.",
+			},
 			"user_id": {
 				Type:         schema.TypeString,
 				Optional:     true,
@@ -109,14 +114,16 @@ func resourceScalewayIamPolicy() *schema.Resource {
 
 func resourceScalewayIamPolicyCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	api := iamAPI(meta)
+
 	pol, err := api.CreatePolicy(&iam.CreatePolicyRequest{
-		Name:          expandOrGenerateString(d.Get("name"), "policy-"),
-		Description:   d.Get("description").(string),
-		Rules:         expandPolicyRuleSpecs(d.Get("rule")),
-		UserID:        expandStringPtr(d.Get("user_id")),
-		GroupID:       expandStringPtr(d.Get("group_id")),
-		ApplicationID: expandStringPtr(d.Get("application_id")),
-		NoPrincipal:   expandBoolPtr(d.Get("no_principal")),
+		Name:           expandOrGenerateString(d.Get("name"), "policy-"),
+		Description:    d.Get("description").(string),
+		Rules:          expandPolicyRuleSpecs(d.Get("rule")),
+		UserID:         expandStringPtr(d.Get("user_id")),
+		GroupID:        expandStringPtr(d.Get("group_id")),
+		ApplicationID:  expandStringPtr(d.Get("application_id")),
+		NoPrincipal:    expandBoolPtr(d.Get("no_principal")),
+		OrganizationID: d.Get("organization_id").(string),
 	}, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
