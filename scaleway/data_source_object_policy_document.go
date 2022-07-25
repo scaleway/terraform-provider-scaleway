@@ -158,7 +158,6 @@ func dataSourceScalewayObjectPolicyDocument() *schema.Resource {
 	}
 }
 
-//nolint:gocyclo
 func dataSourcePolicyDocumentRead(_ context.Context, d *schema.ResourceData, _ interface{}) diag.Diagnostics {
 	mergedDoc := &IAMPolicyDoc{}
 
