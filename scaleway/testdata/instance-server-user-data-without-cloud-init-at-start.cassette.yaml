@@ -929,7 +929,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Mon, 25 Jul 2022 09:09:38 GMT
+      - Mon, 25 Jul 2022 09:43:35 GMT
       Link:
       - </images?page=1&per_page=50&>; rel="last"
       Server:
@@ -941,7 +941,7 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - dfcbc1a8-b827-494a-98fb-4ef9e91d8828
+      - 52ffeb93-cd96-474c-bdd3-f42871764cad
       X-Total-Count:
       - "23"
     status: 200 OK
@@ -1285,7 +1285,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Mon, 25 Jul 2022 09:09:38 GMT
+      - Mon, 25 Jul 2022 09:43:35 GMT
       Link:
       - </products/servers?page=1&per_page=50&>; rel="last"
       Server:
@@ -1297,14 +1297,14 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - aef9c792-4c4e-4388-98ed-29c845fb94cb
+      - 75dfbae8-4b2b-4f25-8298-4a392e14d171
       X-Total-Count:
       - "36"
     status: 200 OK
     code: 200
     duration: ""
 - request:
-    body: '{"name":"tf-srv-sad-bartik","dynamic_ip_required":false,"commercial_type":"DEV1-S","image":"881d7a33-4cfa-4046-b5cf-c33cb9c62fb6","volumes":{"0":{"size":20000000000,"volume_type":"l_ssd"}},"boot_type":"local","project":"ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b","tags":["terraform-test","scaleway_instance_server","user_data"]}'
+    body: '{"name":"tf-srv-exciting-dubinsky","dynamic_ip_required":false,"commercial_type":"DEV1-S","image":"881d7a33-4cfa-4046-b5cf-c33cb9c62fb6","volumes":{"0":{"size":20000000000,"volume_type":"l_ssd"}},"boot_type":"local","project":"ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b","tags":["terraform-test","scaleway_instance_server","user_data"]}'
     form: {}
     headers:
       Content-Type:
@@ -1315,27 +1315,62 @@ interactions:
     url: https://api.scaleway.com/instance/v1/zones/fr-par-1/servers
     method: POST
   response:
-    body: '{"server": {"id": "1d91b7a7-1ca2-4a6e-a99a-509a3ebc16dd", "name": "tf-srv-sad-bartik",
+    body: '{"type": "server_error", "message": "Internal error"}'
+    headers:
+      Content-Length:
+      - "53"
+      Content-Security-Policy:
+      - default-src 'none'; frame-ancestors 'none'
+      Content-Type:
+      - application/json
+      Date:
+      - Mon, 25 Jul 2022 09:43:37 GMT
+      Server:
+      - Scaleway API-Gateway
+      Strict-Transport-Security:
+      - max-age=63072000
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+      X-Request-Id:
+      - 0c8bf34e-dd20-412e-8d88-0b21ffb15a58
+    status: 500 Internal Server Error
+    code: 500
+    duration: ""
+- request:
+    body: '{"name":"tf-srv-exciting-dubinsky","dynamic_ip_required":false,"commercial_type":"DEV1-S","image":"881d7a33-4cfa-4046-b5cf-c33cb9c62fb6","volumes":{"0":{"size":20000000000,"volume_type":"l_ssd"}},"boot_type":"local","project":"ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b","tags":["terraform-test","scaleway_instance_server","user_data"]}'
+    form: {}
+    headers:
+      Content-Type:
+      - application/json
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.18.2; linux; amd64) terraform-provider/develop
+        terraform/terraform-tests
+    url: https://api.scaleway.com/instance/v1/zones/fr-par-1/servers
+    method: POST
+  response:
+    body: '{"server": {"id": "addbcc8c-72f7-49bc-9983-b14930e9fd22", "name": "tf-srv-exciting-dubinsky",
       "arch": "x86_64", "commercial_type": "DEV1-S", "boot_type": "local", "organization":
       "ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b", "project": "ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b",
-      "hostname": "tf-srv-sad-bartik", "image": {"id": "881d7a33-4cfa-4046-b5cf-c33cb9c62fb6",
+      "hostname": "tf-srv-exciting-dubinsky", "image": {"id": "881d7a33-4cfa-4046-b5cf-c33cb9c62fb6",
       "name": "Ubuntu 20.04 Focal Fossa", "organization": "51b656e3-4865-41e8-adbc-0c45bdd780db",
       "project": "51b656e3-4865-41e8-adbc-0c45bdd780db", "root_volume": {"id": "deb50fd4-209d-4fe2-9e39-1d2c85912133",
       "name": "ubuntu_20.04_focal_fossa:volume-0", "volume_type": "unified", "size":
       10000000000}, "extra_volumes": {}, "public": true, "arch": "x86_64", "creation_date":
       "2022-01-21T08:38:33.552838+00:00", "modification_date": "2022-01-21T08:38:33.552838+00:00",
       "default_bootscript": null, "from_server": null, "state": "available", "tags":
-      [], "zone": "fr-par-1"}, "volumes": {"0": {"boot": false, "id": "f013d5ce-5d2f-4342-bb91-e761d9a0afa8",
+      [], "zone": "fr-par-1"}, "volumes": {"0": {"boot": false, "id": "051807ab-5e80-437e-8ca0-58afedfb03d9",
       "name": "ubuntu_20.04_focal_fossa:volume-0", "volume_type": "l_ssd", "export_uri":
       null, "organization": "ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b", "project": "ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b",
-      "server": {"id": "1d91b7a7-1ca2-4a6e-a99a-509a3ebc16dd", "name": "tf-srv-sad-bartik"},
-      "size": 20000000000, "state": "available", "creation_date": "2022-07-25T09:09:39.378696+00:00",
-      "modification_date": "2022-07-25T09:09:39.378696+00:00", "tags": [], "zone":
+      "server": {"id": "addbcc8c-72f7-49bc-9983-b14930e9fd22", "name": "tf-srv-exciting-dubinsky"},
+      "size": 20000000000, "state": "available", "creation_date": "2022-07-25T09:43:40.014813+00:00",
+      "modification_date": "2022-07-25T09:43:40.014813+00:00", "tags": [], "zone":
       "fr-par-1"}}, "tags": ["terraform-test", "scaleway_instance_server", "user_data"],
       "state": "stopped", "protected": false, "state_detail": "", "public_ip": null,
       "ipv6": null, "extra_networks": [], "dynamic_ip_required": false, "enable_ipv6":
-      false, "private_ip": null, "creation_date": "2022-07-25T09:09:39.378696+00:00",
-      "modification_date": "2022-07-25T09:09:39.378696+00:00", "bootscript": {"id":
+      false, "private_ip": null, "creation_date": "2022-07-25T09:43:40.014813+00:00",
+      "modification_date": "2022-07-25T09:43:40.014813+00:00", "bootscript": {"id":
       "fdfe150f-a870-4ce4-b432-9f56b5b995c1", "public": true, "title": "x86_64 mainline
       4.4.230 rev1", "architecture": "x86_64", "organization": "11111111-1111-4111-8111-111111111111",
       "project": "11111111-1111-4111-8111-111111111111", "kernel": "http://10.194.3.9/kernel/x86_64-mainline-lts-4.4-4.4.230-rev1/vmlinuz-4.4.230",
@@ -1347,15 +1382,15 @@ interactions:
       "fr-par-1"}}'
     headers:
       Content-Length:
-      - "2606"
+      - "2627"
       Content-Security-Policy:
       - default-src 'none'; frame-ancestors 'none'
       Content-Type:
       - application/json
       Date:
-      - Mon, 25 Jul 2022 09:09:39 GMT
+      - Mon, 25 Jul 2022 09:43:40 GMT
       Location:
-      - https://api.scaleway.com/instance/v1/zones/fr-par-1/servers/1d91b7a7-1ca2-4a6e-a99a-509a3ebc16dd
+      - https://api.scaleway.com/instance/v1/zones/fr-par-1/servers/addbcc8c-72f7-49bc-9983-b14930e9fd22
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -1365,7 +1400,7 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - 9885af69-b922-477b-a279-4d2c509dbbc8
+      - 772ce183-3454-4953-bba4-f34769526b3c
     status: 201 Created
     code: 201
     duration: ""
@@ -1376,30 +1411,30 @@ interactions:
       User-Agent:
       - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.18.2; linux; amd64) terraform-provider/develop
         terraform/terraform-tests
-    url: https://api.scaleway.com/instance/v1/zones/fr-par-1/servers/1d91b7a7-1ca2-4a6e-a99a-509a3ebc16dd
+    url: https://api.scaleway.com/instance/v1/zones/fr-par-1/servers/addbcc8c-72f7-49bc-9983-b14930e9fd22
     method: GET
   response:
-    body: '{"server": {"id": "1d91b7a7-1ca2-4a6e-a99a-509a3ebc16dd", "name": "tf-srv-sad-bartik",
+    body: '{"server": {"id": "addbcc8c-72f7-49bc-9983-b14930e9fd22", "name": "tf-srv-exciting-dubinsky",
       "arch": "x86_64", "commercial_type": "DEV1-S", "boot_type": "local", "organization":
       "ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b", "project": "ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b",
-      "hostname": "tf-srv-sad-bartik", "image": {"id": "881d7a33-4cfa-4046-b5cf-c33cb9c62fb6",
+      "hostname": "tf-srv-exciting-dubinsky", "image": {"id": "881d7a33-4cfa-4046-b5cf-c33cb9c62fb6",
       "name": "Ubuntu 20.04 Focal Fossa", "organization": "51b656e3-4865-41e8-adbc-0c45bdd780db",
       "project": "51b656e3-4865-41e8-adbc-0c45bdd780db", "root_volume": {"id": "deb50fd4-209d-4fe2-9e39-1d2c85912133",
       "name": "ubuntu_20.04_focal_fossa:volume-0", "volume_type": "unified", "size":
       10000000000}, "extra_volumes": {}, "public": true, "arch": "x86_64", "creation_date":
       "2022-01-21T08:38:33.552838+00:00", "modification_date": "2022-01-21T08:38:33.552838+00:00",
       "default_bootscript": null, "from_server": null, "state": "available", "tags":
-      [], "zone": "fr-par-1"}, "volumes": {"0": {"boot": false, "id": "f013d5ce-5d2f-4342-bb91-e761d9a0afa8",
+      [], "zone": "fr-par-1"}, "volumes": {"0": {"boot": false, "id": "051807ab-5e80-437e-8ca0-58afedfb03d9",
       "name": "ubuntu_20.04_focal_fossa:volume-0", "volume_type": "l_ssd", "export_uri":
       null, "organization": "ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b", "project": "ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b",
-      "server": {"id": "1d91b7a7-1ca2-4a6e-a99a-509a3ebc16dd", "name": "tf-srv-sad-bartik"},
-      "size": 20000000000, "state": "available", "creation_date": "2022-07-25T09:09:39.378696+00:00",
-      "modification_date": "2022-07-25T09:09:39.378696+00:00", "tags": [], "zone":
+      "server": {"id": "addbcc8c-72f7-49bc-9983-b14930e9fd22", "name": "tf-srv-exciting-dubinsky"},
+      "size": 20000000000, "state": "available", "creation_date": "2022-07-25T09:43:40.014813+00:00",
+      "modification_date": "2022-07-25T09:43:40.014813+00:00", "tags": [], "zone":
       "fr-par-1"}}, "tags": ["terraform-test", "scaleway_instance_server", "user_data"],
       "state": "stopped", "protected": false, "state_detail": "", "public_ip": null,
       "ipv6": null, "extra_networks": [], "dynamic_ip_required": false, "enable_ipv6":
-      false, "private_ip": null, "creation_date": "2022-07-25T09:09:39.378696+00:00",
-      "modification_date": "2022-07-25T09:09:39.378696+00:00", "bootscript": {"id":
+      false, "private_ip": null, "creation_date": "2022-07-25T09:43:40.014813+00:00",
+      "modification_date": "2022-07-25T09:43:40.014813+00:00", "bootscript": {"id":
       "fdfe150f-a870-4ce4-b432-9f56b5b995c1", "public": true, "title": "x86_64 mainline
       4.4.230 rev1", "architecture": "x86_64", "organization": "11111111-1111-4111-8111-111111111111",
       "project": "11111111-1111-4111-8111-111111111111", "kernel": "http://10.194.3.9/kernel/x86_64-mainline-lts-4.4-4.4.230-rev1/vmlinuz-4.4.230",
@@ -1411,13 +1446,13 @@ interactions:
       "fr-par-1"}}'
     headers:
       Content-Length:
-      - "2606"
+      - "2627"
       Content-Security-Policy:
       - default-src 'none'; frame-ancestors 'none'
       Content-Type:
       - application/json
       Date:
-      - Mon, 25 Jul 2022 09:09:39 GMT
+      - Mon, 25 Jul 2022 09:43:40 GMT
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -1427,7 +1462,7 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - 4efb4829-1f2d-42f0-a559-2b26d8e7e9b2
+      - bb9c95d1-ad6e-411c-9d44-c2891e80156f
     status: 200 OK
     code: 200
     duration: ""
@@ -1438,30 +1473,30 @@ interactions:
       User-Agent:
       - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.18.2; linux; amd64) terraform-provider/develop
         terraform/terraform-tests
-    url: https://api.scaleway.com/instance/v1/zones/fr-par-1/servers/1d91b7a7-1ca2-4a6e-a99a-509a3ebc16dd
+    url: https://api.scaleway.com/instance/v1/zones/fr-par-1/servers/addbcc8c-72f7-49bc-9983-b14930e9fd22
     method: GET
   response:
-    body: '{"server": {"id": "1d91b7a7-1ca2-4a6e-a99a-509a3ebc16dd", "name": "tf-srv-sad-bartik",
+    body: '{"server": {"id": "addbcc8c-72f7-49bc-9983-b14930e9fd22", "name": "tf-srv-exciting-dubinsky",
       "arch": "x86_64", "commercial_type": "DEV1-S", "boot_type": "local", "organization":
       "ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b", "project": "ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b",
-      "hostname": "tf-srv-sad-bartik", "image": {"id": "881d7a33-4cfa-4046-b5cf-c33cb9c62fb6",
+      "hostname": "tf-srv-exciting-dubinsky", "image": {"id": "881d7a33-4cfa-4046-b5cf-c33cb9c62fb6",
       "name": "Ubuntu 20.04 Focal Fossa", "organization": "51b656e3-4865-41e8-adbc-0c45bdd780db",
       "project": "51b656e3-4865-41e8-adbc-0c45bdd780db", "root_volume": {"id": "deb50fd4-209d-4fe2-9e39-1d2c85912133",
       "name": "ubuntu_20.04_focal_fossa:volume-0", "volume_type": "unified", "size":
       10000000000}, "extra_volumes": {}, "public": true, "arch": "x86_64", "creation_date":
       "2022-01-21T08:38:33.552838+00:00", "modification_date": "2022-01-21T08:38:33.552838+00:00",
       "default_bootscript": null, "from_server": null, "state": "available", "tags":
-      [], "zone": "fr-par-1"}, "volumes": {"0": {"boot": false, "id": "f013d5ce-5d2f-4342-bb91-e761d9a0afa8",
+      [], "zone": "fr-par-1"}, "volumes": {"0": {"boot": false, "id": "051807ab-5e80-437e-8ca0-58afedfb03d9",
       "name": "ubuntu_20.04_focal_fossa:volume-0", "volume_type": "l_ssd", "export_uri":
       null, "organization": "ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b", "project": "ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b",
-      "server": {"id": "1d91b7a7-1ca2-4a6e-a99a-509a3ebc16dd", "name": "tf-srv-sad-bartik"},
-      "size": 20000000000, "state": "available", "creation_date": "2022-07-25T09:09:39.378696+00:00",
-      "modification_date": "2022-07-25T09:09:39.378696+00:00", "tags": [], "zone":
+      "server": {"id": "addbcc8c-72f7-49bc-9983-b14930e9fd22", "name": "tf-srv-exciting-dubinsky"},
+      "size": 20000000000, "state": "available", "creation_date": "2022-07-25T09:43:40.014813+00:00",
+      "modification_date": "2022-07-25T09:43:40.014813+00:00", "tags": [], "zone":
       "fr-par-1"}}, "tags": ["terraform-test", "scaleway_instance_server", "user_data"],
       "state": "stopped", "protected": false, "state_detail": "", "public_ip": null,
       "ipv6": null, "extra_networks": [], "dynamic_ip_required": false, "enable_ipv6":
-      false, "private_ip": null, "creation_date": "2022-07-25T09:09:39.378696+00:00",
-      "modification_date": "2022-07-25T09:09:39.378696+00:00", "bootscript": {"id":
+      false, "private_ip": null, "creation_date": "2022-07-25T09:43:40.014813+00:00",
+      "modification_date": "2022-07-25T09:43:40.014813+00:00", "bootscript": {"id":
       "fdfe150f-a870-4ce4-b432-9f56b5b995c1", "public": true, "title": "x86_64 mainline
       4.4.230 rev1", "architecture": "x86_64", "organization": "11111111-1111-4111-8111-111111111111",
       "project": "11111111-1111-4111-8111-111111111111", "kernel": "http://10.194.3.9/kernel/x86_64-mainline-lts-4.4-4.4.230-rev1/vmlinuz-4.4.230",
@@ -1473,13 +1508,13 @@ interactions:
       "fr-par-1"}}'
     headers:
       Content-Length:
-      - "2606"
+      - "2627"
       Content-Security-Policy:
       - default-src 'none'; frame-ancestors 'none'
       Content-Type:
       - application/json
       Date:
-      - Mon, 25 Jul 2022 09:09:40 GMT
+      - Mon, 25 Jul 2022 09:43:40 GMT
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -1489,7 +1524,7 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - 9a468b30-e592-4f8b-9f94-fb6d55a96753
+      - b13d281e-ef6d-4cc8-93ad-b93e258e9ecb
     status: 200 OK
     code: 200
     duration: ""
@@ -1502,13 +1537,13 @@ interactions:
       User-Agent:
       - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.18.2; linux; amd64) terraform-provider/develop
         terraform/terraform-tests
-    url: https://api.scaleway.com/instance/v1/zones/fr-par-1/servers/1d91b7a7-1ca2-4a6e-a99a-509a3ebc16dd/action
+    url: https://api.scaleway.com/instance/v1/zones/fr-par-1/servers/addbcc8c-72f7-49bc-9983-b14930e9fd22/action
     method: POST
   response:
-    body: '{"task": {"id": "2db024db-593b-4957-bd55-bbc5438c55f8", "description":
-      "server_batch_poweron", "status": "pending", "href_from": "/servers/1d91b7a7-1ca2-4a6e-a99a-509a3ebc16dd/action",
-      "href_result": "/servers/1d91b7a7-1ca2-4a6e-a99a-509a3ebc16dd", "started_at":
-      "2022-07-25T09:09:40.415354+00:00", "terminated_at": null}}'
+    body: '{"task": {"id": "94cce002-9d2a-467f-90fc-815f3f80abd9", "description":
+      "server_batch_poweron", "status": "pending", "href_from": "/servers/addbcc8c-72f7-49bc-9983-b14930e9fd22/action",
+      "href_result": "/servers/addbcc8c-72f7-49bc-9983-b14930e9fd22", "started_at":
+      "2022-07-25T09:43:40.913553+00:00", "terminated_at": null}}'
     headers:
       Content-Length:
       - "322"
@@ -1517,9 +1552,9 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Mon, 25 Jul 2022 09:09:40 GMT
+      - Mon, 25 Jul 2022 09:43:40 GMT
       Location:
-      - https://api.scaleway.com/instance/v1/zones/fr-par-1/tasks/2db024db-593b-4957-bd55-bbc5438c55f8
+      - https://api.scaleway.com/instance/v1/zones/fr-par-1/tasks/94cce002-9d2a-467f-90fc-815f3f80abd9
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -1529,7 +1564,7 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - ad89e233-df93-472c-a386-332b3c61d4c9
+      - 2b9380c5-9902-4b3e-8afe-ac4f3a258f57
     status: 202 Accepted
     code: 202
     duration: ""
@@ -1540,30 +1575,30 @@ interactions:
       User-Agent:
       - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.18.2; linux; amd64) terraform-provider/develop
         terraform/terraform-tests
-    url: https://api.scaleway.com/instance/v1/zones/fr-par-1/servers/1d91b7a7-1ca2-4a6e-a99a-509a3ebc16dd
+    url: https://api.scaleway.com/instance/v1/zones/fr-par-1/servers/addbcc8c-72f7-49bc-9983-b14930e9fd22
     method: GET
   response:
-    body: '{"server": {"id": "1d91b7a7-1ca2-4a6e-a99a-509a3ebc16dd", "name": "tf-srv-sad-bartik",
+    body: '{"server": {"id": "addbcc8c-72f7-49bc-9983-b14930e9fd22", "name": "tf-srv-exciting-dubinsky",
       "arch": "x86_64", "commercial_type": "DEV1-S", "boot_type": "local", "organization":
       "ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b", "project": "ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b",
-      "hostname": "tf-srv-sad-bartik", "image": {"id": "881d7a33-4cfa-4046-b5cf-c33cb9c62fb6",
+      "hostname": "tf-srv-exciting-dubinsky", "image": {"id": "881d7a33-4cfa-4046-b5cf-c33cb9c62fb6",
       "name": "Ubuntu 20.04 Focal Fossa", "organization": "51b656e3-4865-41e8-adbc-0c45bdd780db",
       "project": "51b656e3-4865-41e8-adbc-0c45bdd780db", "root_volume": {"id": "deb50fd4-209d-4fe2-9e39-1d2c85912133",
       "name": "ubuntu_20.04_focal_fossa:volume-0", "volume_type": "unified", "size":
       10000000000}, "extra_volumes": {}, "public": true, "arch": "x86_64", "creation_date":
       "2022-01-21T08:38:33.552838+00:00", "modification_date": "2022-01-21T08:38:33.552838+00:00",
       "default_bootscript": null, "from_server": null, "state": "available", "tags":
-      [], "zone": "fr-par-1"}, "volumes": {"0": {"boot": false, "id": "f013d5ce-5d2f-4342-bb91-e761d9a0afa8",
+      [], "zone": "fr-par-1"}, "volumes": {"0": {"boot": false, "id": "051807ab-5e80-437e-8ca0-58afedfb03d9",
       "name": "ubuntu_20.04_focal_fossa:volume-0", "volume_type": "l_ssd", "export_uri":
       null, "organization": "ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b", "project": "ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b",
-      "server": {"id": "1d91b7a7-1ca2-4a6e-a99a-509a3ebc16dd", "name": "tf-srv-sad-bartik"},
-      "size": 20000000000, "state": "available", "creation_date": "2022-07-25T09:09:39.378696+00:00",
-      "modification_date": "2022-07-25T09:09:39.378696+00:00", "tags": [], "zone":
+      "server": {"id": "addbcc8c-72f7-49bc-9983-b14930e9fd22", "name": "tf-srv-exciting-dubinsky"},
+      "size": 20000000000, "state": "available", "creation_date": "2022-07-25T09:43:40.014813+00:00",
+      "modification_date": "2022-07-25T09:43:40.014813+00:00", "tags": [], "zone":
       "fr-par-1"}}, "tags": ["terraform-test", "scaleway_instance_server", "user_data"],
       "state": "starting", "protected": false, "state_detail": "allocating node",
       "public_ip": null, "ipv6": null, "extra_networks": [], "dynamic_ip_required":
-      false, "enable_ipv6": false, "private_ip": null, "creation_date": "2022-07-25T09:09:39.378696+00:00",
-      "modification_date": "2022-07-25T09:09:40.160136+00:00", "bootscript": {"id":
+      false, "enable_ipv6": false, "private_ip": null, "creation_date": "2022-07-25T09:43:40.014813+00:00",
+      "modification_date": "2022-07-25T09:43:40.634787+00:00", "bootscript": {"id":
       "fdfe150f-a870-4ce4-b432-9f56b5b995c1", "public": true, "title": "x86_64 mainline
       4.4.230 rev1", "architecture": "x86_64", "organization": "11111111-1111-4111-8111-111111111111",
       "project": "11111111-1111-4111-8111-111111111111", "kernel": "http://10.194.3.9/kernel/x86_64-mainline-lts-4.4-4.4.230-rev1/vmlinuz-4.4.230",
@@ -1575,13 +1610,13 @@ interactions:
       "fr-par-1"}}'
     headers:
       Content-Length:
-      - "2628"
+      - "2649"
       Content-Security-Policy:
       - default-src 'none'; frame-ancestors 'none'
       Content-Type:
       - application/json
       Date:
-      - Mon, 25 Jul 2022 09:09:40 GMT
+      - Mon, 25 Jul 2022 09:43:41 GMT
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -1591,7 +1626,7 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - 0ee75326-9857-4342-b552-ce09cd6c98fb
+      - 92dab0aa-f3f8-472d-ac9f-665922830b03
     status: 200 OK
     code: 200
     duration: ""
@@ -1602,30 +1637,30 @@ interactions:
       User-Agent:
       - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.18.2; linux; amd64) terraform-provider/develop
         terraform/terraform-tests
-    url: https://api.scaleway.com/instance/v1/zones/fr-par-1/servers/1d91b7a7-1ca2-4a6e-a99a-509a3ebc16dd
+    url: https://api.scaleway.com/instance/v1/zones/fr-par-1/servers/addbcc8c-72f7-49bc-9983-b14930e9fd22
     method: GET
   response:
-    body: '{"server": {"id": "1d91b7a7-1ca2-4a6e-a99a-509a3ebc16dd", "name": "tf-srv-sad-bartik",
+    body: '{"server": {"id": "addbcc8c-72f7-49bc-9983-b14930e9fd22", "name": "tf-srv-exciting-dubinsky",
       "arch": "x86_64", "commercial_type": "DEV1-S", "boot_type": "local", "organization":
       "ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b", "project": "ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b",
-      "hostname": "tf-srv-sad-bartik", "image": {"id": "881d7a33-4cfa-4046-b5cf-c33cb9c62fb6",
+      "hostname": "tf-srv-exciting-dubinsky", "image": {"id": "881d7a33-4cfa-4046-b5cf-c33cb9c62fb6",
       "name": "Ubuntu 20.04 Focal Fossa", "organization": "51b656e3-4865-41e8-adbc-0c45bdd780db",
       "project": "51b656e3-4865-41e8-adbc-0c45bdd780db", "root_volume": {"id": "deb50fd4-209d-4fe2-9e39-1d2c85912133",
       "name": "ubuntu_20.04_focal_fossa:volume-0", "volume_type": "unified", "size":
       10000000000}, "extra_volumes": {}, "public": true, "arch": "x86_64", "creation_date":
       "2022-01-21T08:38:33.552838+00:00", "modification_date": "2022-01-21T08:38:33.552838+00:00",
       "default_bootscript": null, "from_server": null, "state": "available", "tags":
-      [], "zone": "fr-par-1"}, "volumes": {"0": {"boot": false, "id": "f013d5ce-5d2f-4342-bb91-e761d9a0afa8",
+      [], "zone": "fr-par-1"}, "volumes": {"0": {"boot": false, "id": "051807ab-5e80-437e-8ca0-58afedfb03d9",
       "name": "ubuntu_20.04_focal_fossa:volume-0", "volume_type": "l_ssd", "export_uri":
       null, "organization": "ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b", "project": "ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b",
-      "server": {"id": "1d91b7a7-1ca2-4a6e-a99a-509a3ebc16dd", "name": "tf-srv-sad-bartik"},
-      "size": 20000000000, "state": "available", "creation_date": "2022-07-25T09:09:39.378696+00:00",
-      "modification_date": "2022-07-25T09:09:39.378696+00:00", "tags": [], "zone":
+      "server": {"id": "addbcc8c-72f7-49bc-9983-b14930e9fd22", "name": "tf-srv-exciting-dubinsky"},
+      "size": 20000000000, "state": "available", "creation_date": "2022-07-25T09:43:40.014813+00:00",
+      "modification_date": "2022-07-25T09:43:40.014813+00:00", "tags": [], "zone":
       "fr-par-1"}}, "tags": ["terraform-test", "scaleway_instance_server", "user_data"],
       "state": "starting", "protected": false, "state_detail": "allocating node",
       "public_ip": null, "ipv6": null, "extra_networks": [], "dynamic_ip_required":
-      false, "enable_ipv6": false, "private_ip": null, "creation_date": "2022-07-25T09:09:39.378696+00:00",
-      "modification_date": "2022-07-25T09:09:40.160136+00:00", "bootscript": {"id":
+      false, "enable_ipv6": false, "private_ip": null, "creation_date": "2022-07-25T09:43:40.014813+00:00",
+      "modification_date": "2022-07-25T09:43:40.634787+00:00", "bootscript": {"id":
       "fdfe150f-a870-4ce4-b432-9f56b5b995c1", "public": true, "title": "x86_64 mainline
       4.4.230 rev1", "architecture": "x86_64", "organization": "11111111-1111-4111-8111-111111111111",
       "project": "11111111-1111-4111-8111-111111111111", "kernel": "http://10.194.3.9/kernel/x86_64-mainline-lts-4.4-4.4.230-rev1/vmlinuz-4.4.230",
@@ -1637,13 +1672,13 @@ interactions:
       "fr-par-1"}}'
     headers:
       Content-Length:
-      - "2628"
+      - "2649"
       Content-Security-Policy:
       - default-src 'none'; frame-ancestors 'none'
       Content-Type:
       - application/json
       Date:
-      - Mon, 25 Jul 2022 09:09:45 GMT
+      - Mon, 25 Jul 2022 09:43:46 GMT
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -1653,7 +1688,7 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - edfbd53d-a921-4c4a-a35b-7daa843f4314
+      - 039eb54a-82f7-469f-b734-f92a1087d637
     status: 200 OK
     code: 200
     duration: ""
@@ -1664,30 +1699,30 @@ interactions:
       User-Agent:
       - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.18.2; linux; amd64) terraform-provider/develop
         terraform/terraform-tests
-    url: https://api.scaleway.com/instance/v1/zones/fr-par-1/servers/1d91b7a7-1ca2-4a6e-a99a-509a3ebc16dd
+    url: https://api.scaleway.com/instance/v1/zones/fr-par-1/servers/addbcc8c-72f7-49bc-9983-b14930e9fd22
     method: GET
   response:
-    body: '{"server": {"id": "1d91b7a7-1ca2-4a6e-a99a-509a3ebc16dd", "name": "tf-srv-sad-bartik",
+    body: '{"server": {"id": "addbcc8c-72f7-49bc-9983-b14930e9fd22", "name": "tf-srv-exciting-dubinsky",
       "arch": "x86_64", "commercial_type": "DEV1-S", "boot_type": "local", "organization":
       "ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b", "project": "ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b",
-      "hostname": "tf-srv-sad-bartik", "image": {"id": "881d7a33-4cfa-4046-b5cf-c33cb9c62fb6",
+      "hostname": "tf-srv-exciting-dubinsky", "image": {"id": "881d7a33-4cfa-4046-b5cf-c33cb9c62fb6",
       "name": "Ubuntu 20.04 Focal Fossa", "organization": "51b656e3-4865-41e8-adbc-0c45bdd780db",
       "project": "51b656e3-4865-41e8-adbc-0c45bdd780db", "root_volume": {"id": "deb50fd4-209d-4fe2-9e39-1d2c85912133",
       "name": "ubuntu_20.04_focal_fossa:volume-0", "volume_type": "unified", "size":
       10000000000}, "extra_volumes": {}, "public": true, "arch": "x86_64", "creation_date":
       "2022-01-21T08:38:33.552838+00:00", "modification_date": "2022-01-21T08:38:33.552838+00:00",
       "default_bootscript": null, "from_server": null, "state": "available", "tags":
-      [], "zone": "fr-par-1"}, "volumes": {"0": {"boot": false, "id": "f013d5ce-5d2f-4342-bb91-e761d9a0afa8",
+      [], "zone": "fr-par-1"}, "volumes": {"0": {"boot": false, "id": "051807ab-5e80-437e-8ca0-58afedfb03d9",
       "name": "ubuntu_20.04_focal_fossa:volume-0", "volume_type": "l_ssd", "export_uri":
       null, "organization": "ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b", "project": "ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b",
-      "server": {"id": "1d91b7a7-1ca2-4a6e-a99a-509a3ebc16dd", "name": "tf-srv-sad-bartik"},
-      "size": 20000000000, "state": "available", "creation_date": "2022-07-25T09:09:39.378696+00:00",
-      "modification_date": "2022-07-25T09:09:39.378696+00:00", "tags": [], "zone":
+      "server": {"id": "addbcc8c-72f7-49bc-9983-b14930e9fd22", "name": "tf-srv-exciting-dubinsky"},
+      "size": 20000000000, "state": "available", "creation_date": "2022-07-25T09:43:40.014813+00:00",
+      "modification_date": "2022-07-25T09:43:40.014813+00:00", "tags": [], "zone":
       "fr-par-1"}}, "tags": ["terraform-test", "scaleway_instance_server", "user_data"],
       "state": "starting", "protected": false, "state_detail": "provisioning node",
       "public_ip": null, "ipv6": null, "extra_networks": [], "dynamic_ip_required":
-      false, "enable_ipv6": false, "private_ip": "10.194.116.13", "creation_date":
-      "2022-07-25T09:09:39.378696+00:00", "modification_date": "2022-07-25T09:09:40.160136+00:00",
+      false, "enable_ipv6": false, "private_ip": "10.74.102.25", "creation_date":
+      "2022-07-25T09:43:40.014813+00:00", "modification_date": "2022-07-25T09:43:40.634787+00:00",
       "bootscript": {"id": "fdfe150f-a870-4ce4-b432-9f56b5b995c1", "public": true,
       "title": "x86_64 mainline 4.4.230 rev1", "architecture": "x86_64", "organization":
       "11111111-1111-4111-8111-111111111111", "project": "11111111-1111-4111-8111-111111111111",
@@ -1696,18 +1731,18 @@ interactions:
       "bootcmdargs": "LINUX_COMMON scaleway boot=local nbd.max_part=16", "default":
       true, "zone": "fr-par-1"}, "security_group": {"id": "a8f5f9bb-20a7-4244-9521-4cde6f510e0e",
       "name": "Default security group"}, "location": {"zone_id": "par1", "platform_id":
-      "14", "cluster_id": "54", "hypervisor_id": "103", "node_id": "7"}, "maintenances":
+      "14", "cluster_id": "48", "hypervisor_id": "504", "node_id": "13"}, "maintenances":
       [], "allowed_actions": ["stop_in_place", "backup"], "placement_group": null,
       "private_nics": [], "zone": "fr-par-1"}}'
     headers:
       Content-Length:
-      - "2737"
+      - "2758"
       Content-Security-Policy:
       - default-src 'none'; frame-ancestors 'none'
       Content-Type:
       - application/json
       Date:
-      - Mon, 25 Jul 2022 09:09:51 GMT
+      - Mon, 25 Jul 2022 09:43:51 GMT
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -1717,7 +1752,7 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - ef700e1f-d103-4ef2-9e78-12de0c899fd5
+      - 2160b234-491f-460d-95ef-dc40ae730be4
     status: 200 OK
     code: 200
     duration: ""
@@ -1728,30 +1763,30 @@ interactions:
       User-Agent:
       - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.18.2; linux; amd64) terraform-provider/develop
         terraform/terraform-tests
-    url: https://api.scaleway.com/instance/v1/zones/fr-par-1/servers/1d91b7a7-1ca2-4a6e-a99a-509a3ebc16dd
+    url: https://api.scaleway.com/instance/v1/zones/fr-par-1/servers/addbcc8c-72f7-49bc-9983-b14930e9fd22
     method: GET
   response:
-    body: '{"server": {"id": "1d91b7a7-1ca2-4a6e-a99a-509a3ebc16dd", "name": "tf-srv-sad-bartik",
+    body: '{"server": {"id": "addbcc8c-72f7-49bc-9983-b14930e9fd22", "name": "tf-srv-exciting-dubinsky",
       "arch": "x86_64", "commercial_type": "DEV1-S", "boot_type": "local", "organization":
       "ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b", "project": "ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b",
-      "hostname": "tf-srv-sad-bartik", "image": {"id": "881d7a33-4cfa-4046-b5cf-c33cb9c62fb6",
+      "hostname": "tf-srv-exciting-dubinsky", "image": {"id": "881d7a33-4cfa-4046-b5cf-c33cb9c62fb6",
       "name": "Ubuntu 20.04 Focal Fossa", "organization": "51b656e3-4865-41e8-adbc-0c45bdd780db",
       "project": "51b656e3-4865-41e8-adbc-0c45bdd780db", "root_volume": {"id": "deb50fd4-209d-4fe2-9e39-1d2c85912133",
       "name": "ubuntu_20.04_focal_fossa:volume-0", "volume_type": "unified", "size":
       10000000000}, "extra_volumes": {}, "public": true, "arch": "x86_64", "creation_date":
       "2022-01-21T08:38:33.552838+00:00", "modification_date": "2022-01-21T08:38:33.552838+00:00",
       "default_bootscript": null, "from_server": null, "state": "available", "tags":
-      [], "zone": "fr-par-1"}, "volumes": {"0": {"boot": false, "id": "f013d5ce-5d2f-4342-bb91-e761d9a0afa8",
+      [], "zone": "fr-par-1"}, "volumes": {"0": {"boot": false, "id": "051807ab-5e80-437e-8ca0-58afedfb03d9",
       "name": "ubuntu_20.04_focal_fossa:volume-0", "volume_type": "l_ssd", "export_uri":
       null, "organization": "ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b", "project": "ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b",
-      "server": {"id": "1d91b7a7-1ca2-4a6e-a99a-509a3ebc16dd", "name": "tf-srv-sad-bartik"},
-      "size": 20000000000, "state": "available", "creation_date": "2022-07-25T09:09:39.378696+00:00",
-      "modification_date": "2022-07-25T09:09:39.378696+00:00", "tags": [], "zone":
+      "server": {"id": "addbcc8c-72f7-49bc-9983-b14930e9fd22", "name": "tf-srv-exciting-dubinsky"},
+      "size": 20000000000, "state": "available", "creation_date": "2022-07-25T09:43:40.014813+00:00",
+      "modification_date": "2022-07-25T09:43:40.014813+00:00", "tags": [], "zone":
       "fr-par-1"}}, "tags": ["terraform-test", "scaleway_instance_server", "user_data"],
       "state": "starting", "protected": false, "state_detail": "provisioning node",
       "public_ip": null, "ipv6": null, "extra_networks": [], "dynamic_ip_required":
-      false, "enable_ipv6": false, "private_ip": "10.194.116.13", "creation_date":
-      "2022-07-25T09:09:39.378696+00:00", "modification_date": "2022-07-25T09:09:40.160136+00:00",
+      false, "enable_ipv6": false, "private_ip": "10.74.102.25", "creation_date":
+      "2022-07-25T09:43:40.014813+00:00", "modification_date": "2022-07-25T09:43:40.634787+00:00",
       "bootscript": {"id": "fdfe150f-a870-4ce4-b432-9f56b5b995c1", "public": true,
       "title": "x86_64 mainline 4.4.230 rev1", "architecture": "x86_64", "organization":
       "11111111-1111-4111-8111-111111111111", "project": "11111111-1111-4111-8111-111111111111",
@@ -1760,18 +1795,18 @@ interactions:
       "bootcmdargs": "LINUX_COMMON scaleway boot=local nbd.max_part=16", "default":
       true, "zone": "fr-par-1"}, "security_group": {"id": "a8f5f9bb-20a7-4244-9521-4cde6f510e0e",
       "name": "Default security group"}, "location": {"zone_id": "par1", "platform_id":
-      "14", "cluster_id": "54", "hypervisor_id": "103", "node_id": "7"}, "maintenances":
+      "14", "cluster_id": "48", "hypervisor_id": "504", "node_id": "13"}, "maintenances":
       [], "allowed_actions": ["stop_in_place", "backup"], "placement_group": null,
       "private_nics": [], "zone": "fr-par-1"}}'
     headers:
       Content-Length:
-      - "2737"
+      - "2758"
       Content-Security-Policy:
       - default-src 'none'; frame-ancestors 'none'
       Content-Type:
       - application/json
       Date:
-      - Mon, 25 Jul 2022 09:09:56 GMT
+      - Mon, 25 Jul 2022 09:43:56 GMT
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -1781,7 +1816,7 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - 481374cd-f40a-4628-a9d0-e3374541f222
+      - b482d141-6a07-4a70-846e-8eef9836d559
     status: 200 OK
     code: 200
     duration: ""
@@ -1792,30 +1827,30 @@ interactions:
       User-Agent:
       - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.18.2; linux; amd64) terraform-provider/develop
         terraform/terraform-tests
-    url: https://api.scaleway.com/instance/v1/zones/fr-par-1/servers/1d91b7a7-1ca2-4a6e-a99a-509a3ebc16dd
+    url: https://api.scaleway.com/instance/v1/zones/fr-par-1/servers/addbcc8c-72f7-49bc-9983-b14930e9fd22
     method: GET
   response:
-    body: '{"server": {"id": "1d91b7a7-1ca2-4a6e-a99a-509a3ebc16dd", "name": "tf-srv-sad-bartik",
+    body: '{"server": {"id": "addbcc8c-72f7-49bc-9983-b14930e9fd22", "name": "tf-srv-exciting-dubinsky",
       "arch": "x86_64", "commercial_type": "DEV1-S", "boot_type": "local", "organization":
       "ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b", "project": "ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b",
-      "hostname": "tf-srv-sad-bartik", "image": {"id": "881d7a33-4cfa-4046-b5cf-c33cb9c62fb6",
+      "hostname": "tf-srv-exciting-dubinsky", "image": {"id": "881d7a33-4cfa-4046-b5cf-c33cb9c62fb6",
       "name": "Ubuntu 20.04 Focal Fossa", "organization": "51b656e3-4865-41e8-adbc-0c45bdd780db",
       "project": "51b656e3-4865-41e8-adbc-0c45bdd780db", "root_volume": {"id": "deb50fd4-209d-4fe2-9e39-1d2c85912133",
       "name": "ubuntu_20.04_focal_fossa:volume-0", "volume_type": "unified", "size":
       10000000000}, "extra_volumes": {}, "public": true, "arch": "x86_64", "creation_date":
       "2022-01-21T08:38:33.552838+00:00", "modification_date": "2022-01-21T08:38:33.552838+00:00",
       "default_bootscript": null, "from_server": null, "state": "available", "tags":
-      [], "zone": "fr-par-1"}, "volumes": {"0": {"boot": false, "id": "f013d5ce-5d2f-4342-bb91-e761d9a0afa8",
+      [], "zone": "fr-par-1"}, "volumes": {"0": {"boot": false, "id": "051807ab-5e80-437e-8ca0-58afedfb03d9",
       "name": "ubuntu_20.04_focal_fossa:volume-0", "volume_type": "l_ssd", "export_uri":
       null, "organization": "ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b", "project": "ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b",
-      "server": {"id": "1d91b7a7-1ca2-4a6e-a99a-509a3ebc16dd", "name": "tf-srv-sad-bartik"},
-      "size": 20000000000, "state": "available", "creation_date": "2022-07-25T09:09:39.378696+00:00",
-      "modification_date": "2022-07-25T09:09:39.378696+00:00", "tags": [], "zone":
+      "server": {"id": "addbcc8c-72f7-49bc-9983-b14930e9fd22", "name": "tf-srv-exciting-dubinsky"},
+      "size": 20000000000, "state": "available", "creation_date": "2022-07-25T09:43:40.014813+00:00",
+      "modification_date": "2022-07-25T09:43:40.014813+00:00", "tags": [], "zone":
       "fr-par-1"}}, "tags": ["terraform-test", "scaleway_instance_server", "user_data"],
       "state": "starting", "protected": false, "state_detail": "provisioning node",
       "public_ip": null, "ipv6": null, "extra_networks": [], "dynamic_ip_required":
-      false, "enable_ipv6": false, "private_ip": "10.194.116.13", "creation_date":
-      "2022-07-25T09:09:39.378696+00:00", "modification_date": "2022-07-25T09:09:40.160136+00:00",
+      false, "enable_ipv6": false, "private_ip": "10.74.102.25", "creation_date":
+      "2022-07-25T09:43:40.014813+00:00", "modification_date": "2022-07-25T09:43:40.634787+00:00",
       "bootscript": {"id": "fdfe150f-a870-4ce4-b432-9f56b5b995c1", "public": true,
       "title": "x86_64 mainline 4.4.230 rev1", "architecture": "x86_64", "organization":
       "11111111-1111-4111-8111-111111111111", "project": "11111111-1111-4111-8111-111111111111",
@@ -1824,18 +1859,18 @@ interactions:
       "bootcmdargs": "LINUX_COMMON scaleway boot=local nbd.max_part=16", "default":
       true, "zone": "fr-par-1"}, "security_group": {"id": "a8f5f9bb-20a7-4244-9521-4cde6f510e0e",
       "name": "Default security group"}, "location": {"zone_id": "par1", "platform_id":
-      "14", "cluster_id": "54", "hypervisor_id": "103", "node_id": "7"}, "maintenances":
+      "14", "cluster_id": "48", "hypervisor_id": "504", "node_id": "13"}, "maintenances":
       [], "allowed_actions": ["stop_in_place", "backup"], "placement_group": null,
       "private_nics": [], "zone": "fr-par-1"}}'
     headers:
       Content-Length:
-      - "2737"
+      - "2758"
       Content-Security-Policy:
       - default-src 'none'; frame-ancestors 'none'
       Content-Type:
       - application/json
       Date:
-      - Mon, 25 Jul 2022 09:10:01 GMT
+      - Mon, 25 Jul 2022 09:44:01 GMT
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -1845,7 +1880,7 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - 753867d8-3a56-4edd-9c10-9e87baf2229b
+      - 4c592ceb-0d17-462c-b18b-f9909f5565bd
     status: 200 OK
     code: 200
     duration: ""
@@ -1856,30 +1891,30 @@ interactions:
       User-Agent:
       - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.18.2; linux; amd64) terraform-provider/develop
         terraform/terraform-tests
-    url: https://api.scaleway.com/instance/v1/zones/fr-par-1/servers/1d91b7a7-1ca2-4a6e-a99a-509a3ebc16dd
+    url: https://api.scaleway.com/instance/v1/zones/fr-par-1/servers/addbcc8c-72f7-49bc-9983-b14930e9fd22
     method: GET
   response:
-    body: '{"server": {"id": "1d91b7a7-1ca2-4a6e-a99a-509a3ebc16dd", "name": "tf-srv-sad-bartik",
+    body: '{"server": {"id": "addbcc8c-72f7-49bc-9983-b14930e9fd22", "name": "tf-srv-exciting-dubinsky",
       "arch": "x86_64", "commercial_type": "DEV1-S", "boot_type": "local", "organization":
       "ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b", "project": "ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b",
-      "hostname": "tf-srv-sad-bartik", "image": {"id": "881d7a33-4cfa-4046-b5cf-c33cb9c62fb6",
+      "hostname": "tf-srv-exciting-dubinsky", "image": {"id": "881d7a33-4cfa-4046-b5cf-c33cb9c62fb6",
       "name": "Ubuntu 20.04 Focal Fossa", "organization": "51b656e3-4865-41e8-adbc-0c45bdd780db",
       "project": "51b656e3-4865-41e8-adbc-0c45bdd780db", "root_volume": {"id": "deb50fd4-209d-4fe2-9e39-1d2c85912133",
       "name": "ubuntu_20.04_focal_fossa:volume-0", "volume_type": "unified", "size":
       10000000000}, "extra_volumes": {}, "public": true, "arch": "x86_64", "creation_date":
       "2022-01-21T08:38:33.552838+00:00", "modification_date": "2022-01-21T08:38:33.552838+00:00",
       "default_bootscript": null, "from_server": null, "state": "available", "tags":
-      [], "zone": "fr-par-1"}, "volumes": {"0": {"boot": false, "id": "f013d5ce-5d2f-4342-bb91-e761d9a0afa8",
+      [], "zone": "fr-par-1"}, "volumes": {"0": {"boot": false, "id": "051807ab-5e80-437e-8ca0-58afedfb03d9",
       "name": "ubuntu_20.04_focal_fossa:volume-0", "volume_type": "l_ssd", "export_uri":
       null, "organization": "ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b", "project": "ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b",
-      "server": {"id": "1d91b7a7-1ca2-4a6e-a99a-509a3ebc16dd", "name": "tf-srv-sad-bartik"},
-      "size": 20000000000, "state": "available", "creation_date": "2022-07-25T09:09:39.378696+00:00",
-      "modification_date": "2022-07-25T09:09:39.378696+00:00", "tags": [], "zone":
+      "server": {"id": "addbcc8c-72f7-49bc-9983-b14930e9fd22", "name": "tf-srv-exciting-dubinsky"},
+      "size": 20000000000, "state": "available", "creation_date": "2022-07-25T09:43:40.014813+00:00",
+      "modification_date": "2022-07-25T09:43:40.014813+00:00", "tags": [], "zone":
       "fr-par-1"}}, "tags": ["terraform-test", "scaleway_instance_server", "user_data"],
       "state": "running", "protected": false, "state_detail": "booting kernel", "public_ip":
       null, "ipv6": null, "extra_networks": [], "dynamic_ip_required": false, "enable_ipv6":
-      false, "private_ip": "10.194.116.13", "creation_date": "2022-07-25T09:09:39.378696+00:00",
-      "modification_date": "2022-07-25T09:10:03.504843+00:00", "bootscript": {"id":
+      false, "private_ip": "10.74.102.25", "creation_date": "2022-07-25T09:43:40.014813+00:00",
+      "modification_date": "2022-07-25T09:44:05.400000+00:00", "bootscript": {"id":
       "fdfe150f-a870-4ce4-b432-9f56b5b995c1", "public": true, "title": "x86_64 mainline
       4.4.230 rev1", "architecture": "x86_64", "organization": "11111111-1111-4111-8111-111111111111",
       "project": "11111111-1111-4111-8111-111111111111", "kernel": "http://10.194.3.9/kernel/x86_64-mainline-lts-4.4-4.4.230-rev1/vmlinuz-4.4.230",
@@ -1887,18 +1922,18 @@ interactions:
       "bootcmdargs": "LINUX_COMMON scaleway boot=local nbd.max_part=16", "default":
       true, "zone": "fr-par-1"}, "security_group": {"id": "a8f5f9bb-20a7-4244-9521-4cde6f510e0e",
       "name": "Default security group"}, "location": {"zone_id": "par1", "platform_id":
-      "14", "cluster_id": "54", "hypervisor_id": "103", "node_id": "7"}, "maintenances":
+      "14", "cluster_id": "48", "hypervisor_id": "504", "node_id": "13"}, "maintenances":
       [], "allowed_actions": ["poweroff", "terminate", "reboot", "stop_in_place",
       "backup"], "placement_group": null, "private_nics": [], "zone": "fr-par-1"}}'
     headers:
       Content-Length:
-      - "2768"
+      - "2789"
       Content-Security-Policy:
       - default-src 'none'; frame-ancestors 'none'
       Content-Type:
       - application/json
       Date:
-      - Mon, 25 Jul 2022 09:10:06 GMT
+      - Mon, 25 Jul 2022 09:44:07 GMT
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -1908,7 +1943,7 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - 59176d8a-bc3c-4b5a-8c45-de989a640158
+      - 0537b664-7b33-44ef-9204-355c64a32200
     status: 200 OK
     code: 200
     duration: ""
@@ -1919,30 +1954,30 @@ interactions:
       User-Agent:
       - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.18.2; linux; amd64) terraform-provider/develop
         terraform/terraform-tests
-    url: https://api.scaleway.com/instance/v1/zones/fr-par-1/servers/1d91b7a7-1ca2-4a6e-a99a-509a3ebc16dd
+    url: https://api.scaleway.com/instance/v1/zones/fr-par-1/servers/addbcc8c-72f7-49bc-9983-b14930e9fd22
     method: GET
   response:
-    body: '{"server": {"id": "1d91b7a7-1ca2-4a6e-a99a-509a3ebc16dd", "name": "tf-srv-sad-bartik",
+    body: '{"server": {"id": "addbcc8c-72f7-49bc-9983-b14930e9fd22", "name": "tf-srv-exciting-dubinsky",
       "arch": "x86_64", "commercial_type": "DEV1-S", "boot_type": "local", "organization":
       "ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b", "project": "ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b",
-      "hostname": "tf-srv-sad-bartik", "image": {"id": "881d7a33-4cfa-4046-b5cf-c33cb9c62fb6",
+      "hostname": "tf-srv-exciting-dubinsky", "image": {"id": "881d7a33-4cfa-4046-b5cf-c33cb9c62fb6",
       "name": "Ubuntu 20.04 Focal Fossa", "organization": "51b656e3-4865-41e8-adbc-0c45bdd780db",
       "project": "51b656e3-4865-41e8-adbc-0c45bdd780db", "root_volume": {"id": "deb50fd4-209d-4fe2-9e39-1d2c85912133",
       "name": "ubuntu_20.04_focal_fossa:volume-0", "volume_type": "unified", "size":
       10000000000}, "extra_volumes": {}, "public": true, "arch": "x86_64", "creation_date":
       "2022-01-21T08:38:33.552838+00:00", "modification_date": "2022-01-21T08:38:33.552838+00:00",
       "default_bootscript": null, "from_server": null, "state": "available", "tags":
-      [], "zone": "fr-par-1"}, "volumes": {"0": {"boot": false, "id": "f013d5ce-5d2f-4342-bb91-e761d9a0afa8",
+      [], "zone": "fr-par-1"}, "volumes": {"0": {"boot": false, "id": "051807ab-5e80-437e-8ca0-58afedfb03d9",
       "name": "ubuntu_20.04_focal_fossa:volume-0", "volume_type": "l_ssd", "export_uri":
       null, "organization": "ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b", "project": "ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b",
-      "server": {"id": "1d91b7a7-1ca2-4a6e-a99a-509a3ebc16dd", "name": "tf-srv-sad-bartik"},
-      "size": 20000000000, "state": "available", "creation_date": "2022-07-25T09:09:39.378696+00:00",
-      "modification_date": "2022-07-25T09:09:39.378696+00:00", "tags": [], "zone":
+      "server": {"id": "addbcc8c-72f7-49bc-9983-b14930e9fd22", "name": "tf-srv-exciting-dubinsky"},
+      "size": 20000000000, "state": "available", "creation_date": "2022-07-25T09:43:40.014813+00:00",
+      "modification_date": "2022-07-25T09:43:40.014813+00:00", "tags": [], "zone":
       "fr-par-1"}}, "tags": ["terraform-test", "scaleway_instance_server", "user_data"],
       "state": "running", "protected": false, "state_detail": "booting kernel", "public_ip":
       null, "ipv6": null, "extra_networks": [], "dynamic_ip_required": false, "enable_ipv6":
-      false, "private_ip": "10.194.116.13", "creation_date": "2022-07-25T09:09:39.378696+00:00",
-      "modification_date": "2022-07-25T09:10:03.504843+00:00", "bootscript": {"id":
+      false, "private_ip": "10.74.102.25", "creation_date": "2022-07-25T09:43:40.014813+00:00",
+      "modification_date": "2022-07-25T09:44:05.400000+00:00", "bootscript": {"id":
       "fdfe150f-a870-4ce4-b432-9f56b5b995c1", "public": true, "title": "x86_64 mainline
       4.4.230 rev1", "architecture": "x86_64", "organization": "11111111-1111-4111-8111-111111111111",
       "project": "11111111-1111-4111-8111-111111111111", "kernel": "http://10.194.3.9/kernel/x86_64-mainline-lts-4.4-4.4.230-rev1/vmlinuz-4.4.230",
@@ -1950,18 +1985,18 @@ interactions:
       "bootcmdargs": "LINUX_COMMON scaleway boot=local nbd.max_part=16", "default":
       true, "zone": "fr-par-1"}, "security_group": {"id": "a8f5f9bb-20a7-4244-9521-4cde6f510e0e",
       "name": "Default security group"}, "location": {"zone_id": "par1", "platform_id":
-      "14", "cluster_id": "54", "hypervisor_id": "103", "node_id": "7"}, "maintenances":
+      "14", "cluster_id": "48", "hypervisor_id": "504", "node_id": "13"}, "maintenances":
       [], "allowed_actions": ["poweroff", "terminate", "reboot", "stop_in_place",
       "backup"], "placement_group": null, "private_nics": [], "zone": "fr-par-1"}}'
     headers:
       Content-Length:
-      - "2768"
+      - "2789"
       Content-Security-Policy:
       - default-src 'none'; frame-ancestors 'none'
       Content-Type:
       - application/json
       Date:
-      - Mon, 25 Jul 2022 09:10:07 GMT
+      - Mon, 25 Jul 2022 09:44:07 GMT
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -1971,7 +2006,7 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - 66b3d844-b6b9-4fc6-8291-e2cc116026ce
+      - e9071ccb-3f4f-4ef6-b8be-892c0aaefab3
     status: 200 OK
     code: 200
     duration: ""
@@ -1982,7 +2017,7 @@ interactions:
       User-Agent:
       - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.18.2; linux; amd64) terraform-provider/develop
         terraform/terraform-tests
-    url: https://api.scaleway.com/instance/v1/zones/fr-par-1/servers/1d91b7a7-1ca2-4a6e-a99a-509a3ebc16dd/user_data
+    url: https://api.scaleway.com/instance/v1/zones/fr-par-1/servers/addbcc8c-72f7-49bc-9983-b14930e9fd22/user_data
     method: GET
   response:
     body: '{"user_data": []}'
@@ -1994,7 +2029,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Mon, 25 Jul 2022 09:10:07 GMT
+      - Mon, 25 Jul 2022 09:44:07 GMT
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -2004,7 +2039,7 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - ba5ee8cd-363b-4305-ae42-a191b51ce610
+      - b159e05e-35b6-4288-9989-1ea781d2065f
     status: 200 OK
     code: 200
     duration: ""
@@ -2015,7 +2050,7 @@ interactions:
       User-Agent:
       - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.18.2; linux; amd64) terraform-provider/develop
         terraform/terraform-tests
-    url: https://api.scaleway.com/instance/v1/zones/fr-par-1/servers/1d91b7a7-1ca2-4a6e-a99a-509a3ebc16dd/private_nics
+    url: https://api.scaleway.com/instance/v1/zones/fr-par-1/servers/addbcc8c-72f7-49bc-9983-b14930e9fd22/private_nics
     method: GET
   response:
     body: '{"private_nics": []}'
@@ -2027,7 +2062,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Mon, 25 Jul 2022 09:10:07 GMT
+      - Mon, 25 Jul 2022 09:44:07 GMT
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -2037,7 +2072,7 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - dfea7881-3174-46d1-944c-f0da9f1d0f4b
+      - d4f799e3-5aff-4b0c-9364-06de747ffb02
     status: 200 OK
     code: 200
     duration: ""
@@ -2048,30 +2083,30 @@ interactions:
       User-Agent:
       - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.18.2; linux; amd64) terraform-provider/develop
         terraform/terraform-tests
-    url: https://api.scaleway.com/instance/v1/zones/fr-par-1/servers/1d91b7a7-1ca2-4a6e-a99a-509a3ebc16dd
+    url: https://api.scaleway.com/instance/v1/zones/fr-par-1/servers/addbcc8c-72f7-49bc-9983-b14930e9fd22
     method: GET
   response:
-    body: '{"server": {"id": "1d91b7a7-1ca2-4a6e-a99a-509a3ebc16dd", "name": "tf-srv-sad-bartik",
+    body: '{"server": {"id": "addbcc8c-72f7-49bc-9983-b14930e9fd22", "name": "tf-srv-exciting-dubinsky",
       "arch": "x86_64", "commercial_type": "DEV1-S", "boot_type": "local", "organization":
       "ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b", "project": "ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b",
-      "hostname": "tf-srv-sad-bartik", "image": {"id": "881d7a33-4cfa-4046-b5cf-c33cb9c62fb6",
+      "hostname": "tf-srv-exciting-dubinsky", "image": {"id": "881d7a33-4cfa-4046-b5cf-c33cb9c62fb6",
       "name": "Ubuntu 20.04 Focal Fossa", "organization": "51b656e3-4865-41e8-adbc-0c45bdd780db",
       "project": "51b656e3-4865-41e8-adbc-0c45bdd780db", "root_volume": {"id": "deb50fd4-209d-4fe2-9e39-1d2c85912133",
       "name": "ubuntu_20.04_focal_fossa:volume-0", "volume_type": "unified", "size":
       10000000000}, "extra_volumes": {}, "public": true, "arch": "x86_64", "creation_date":
       "2022-01-21T08:38:33.552838+00:00", "modification_date": "2022-01-21T08:38:33.552838+00:00",
       "default_bootscript": null, "from_server": null, "state": "available", "tags":
-      [], "zone": "fr-par-1"}, "volumes": {"0": {"boot": false, "id": "f013d5ce-5d2f-4342-bb91-e761d9a0afa8",
+      [], "zone": "fr-par-1"}, "volumes": {"0": {"boot": false, "id": "051807ab-5e80-437e-8ca0-58afedfb03d9",
       "name": "ubuntu_20.04_focal_fossa:volume-0", "volume_type": "l_ssd", "export_uri":
       null, "organization": "ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b", "project": "ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b",
-      "server": {"id": "1d91b7a7-1ca2-4a6e-a99a-509a3ebc16dd", "name": "tf-srv-sad-bartik"},
-      "size": 20000000000, "state": "available", "creation_date": "2022-07-25T09:09:39.378696+00:00",
-      "modification_date": "2022-07-25T09:09:39.378696+00:00", "tags": [], "zone":
+      "server": {"id": "addbcc8c-72f7-49bc-9983-b14930e9fd22", "name": "tf-srv-exciting-dubinsky"},
+      "size": 20000000000, "state": "available", "creation_date": "2022-07-25T09:43:40.014813+00:00",
+      "modification_date": "2022-07-25T09:43:40.014813+00:00", "tags": [], "zone":
       "fr-par-1"}}, "tags": ["terraform-test", "scaleway_instance_server", "user_data"],
       "state": "running", "protected": false, "state_detail": "booting kernel", "public_ip":
       null, "ipv6": null, "extra_networks": [], "dynamic_ip_required": false, "enable_ipv6":
-      false, "private_ip": "10.194.116.13", "creation_date": "2022-07-25T09:09:39.378696+00:00",
-      "modification_date": "2022-07-25T09:10:03.504843+00:00", "bootscript": {"id":
+      false, "private_ip": "10.74.102.25", "creation_date": "2022-07-25T09:43:40.014813+00:00",
+      "modification_date": "2022-07-25T09:44:05.400000+00:00", "bootscript": {"id":
       "fdfe150f-a870-4ce4-b432-9f56b5b995c1", "public": true, "title": "x86_64 mainline
       4.4.230 rev1", "architecture": "x86_64", "organization": "11111111-1111-4111-8111-111111111111",
       "project": "11111111-1111-4111-8111-111111111111", "kernel": "http://10.194.3.9/kernel/x86_64-mainline-lts-4.4-4.4.230-rev1/vmlinuz-4.4.230",
@@ -2079,18 +2114,18 @@ interactions:
       "bootcmdargs": "LINUX_COMMON scaleway boot=local nbd.max_part=16", "default":
       true, "zone": "fr-par-1"}, "security_group": {"id": "a8f5f9bb-20a7-4244-9521-4cde6f510e0e",
       "name": "Default security group"}, "location": {"zone_id": "par1", "platform_id":
-      "14", "cluster_id": "54", "hypervisor_id": "103", "node_id": "7"}, "maintenances":
+      "14", "cluster_id": "48", "hypervisor_id": "504", "node_id": "13"}, "maintenances":
       [], "allowed_actions": ["poweroff", "terminate", "reboot", "stop_in_place",
       "backup"], "placement_group": null, "private_nics": [], "zone": "fr-par-1"}}'
     headers:
       Content-Length:
-      - "2768"
+      - "2789"
       Content-Security-Policy:
       - default-src 'none'; frame-ancestors 'none'
       Content-Type:
       - application/json
       Date:
-      - Mon, 25 Jul 2022 09:10:07 GMT
+      - Mon, 25 Jul 2022 09:44:07 GMT
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -2100,7 +2135,7 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - 2240cb3e-21ca-4993-8d77-a8a91c70a21d
+      - 5206ecf3-dda9-4913-a81d-cb54be1ee8f9
     status: 200 OK
     code: 200
     duration: ""
@@ -2111,30 +2146,30 @@ interactions:
       User-Agent:
       - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.18.2; linux; amd64) terraform-provider/develop
         terraform/terraform-tests
-    url: https://api.scaleway.com/instance/v1/zones/fr-par-1/servers/1d91b7a7-1ca2-4a6e-a99a-509a3ebc16dd
+    url: https://api.scaleway.com/instance/v1/zones/fr-par-1/servers/addbcc8c-72f7-49bc-9983-b14930e9fd22
     method: GET
   response:
-    body: '{"server": {"id": "1d91b7a7-1ca2-4a6e-a99a-509a3ebc16dd", "name": "tf-srv-sad-bartik",
+    body: '{"server": {"id": "addbcc8c-72f7-49bc-9983-b14930e9fd22", "name": "tf-srv-exciting-dubinsky",
       "arch": "x86_64", "commercial_type": "DEV1-S", "boot_type": "local", "organization":
       "ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b", "project": "ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b",
-      "hostname": "tf-srv-sad-bartik", "image": {"id": "881d7a33-4cfa-4046-b5cf-c33cb9c62fb6",
+      "hostname": "tf-srv-exciting-dubinsky", "image": {"id": "881d7a33-4cfa-4046-b5cf-c33cb9c62fb6",
       "name": "Ubuntu 20.04 Focal Fossa", "organization": "51b656e3-4865-41e8-adbc-0c45bdd780db",
       "project": "51b656e3-4865-41e8-adbc-0c45bdd780db", "root_volume": {"id": "deb50fd4-209d-4fe2-9e39-1d2c85912133",
       "name": "ubuntu_20.04_focal_fossa:volume-0", "volume_type": "unified", "size":
       10000000000}, "extra_volumes": {}, "public": true, "arch": "x86_64", "creation_date":
       "2022-01-21T08:38:33.552838+00:00", "modification_date": "2022-01-21T08:38:33.552838+00:00",
       "default_bootscript": null, "from_server": null, "state": "available", "tags":
-      [], "zone": "fr-par-1"}, "volumes": {"0": {"boot": false, "id": "f013d5ce-5d2f-4342-bb91-e761d9a0afa8",
+      [], "zone": "fr-par-1"}, "volumes": {"0": {"boot": false, "id": "051807ab-5e80-437e-8ca0-58afedfb03d9",
       "name": "ubuntu_20.04_focal_fossa:volume-0", "volume_type": "l_ssd", "export_uri":
       null, "organization": "ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b", "project": "ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b",
-      "server": {"id": "1d91b7a7-1ca2-4a6e-a99a-509a3ebc16dd", "name": "tf-srv-sad-bartik"},
-      "size": 20000000000, "state": "available", "creation_date": "2022-07-25T09:09:39.378696+00:00",
-      "modification_date": "2022-07-25T09:09:39.378696+00:00", "tags": [], "zone":
+      "server": {"id": "addbcc8c-72f7-49bc-9983-b14930e9fd22", "name": "tf-srv-exciting-dubinsky"},
+      "size": 20000000000, "state": "available", "creation_date": "2022-07-25T09:43:40.014813+00:00",
+      "modification_date": "2022-07-25T09:43:40.014813+00:00", "tags": [], "zone":
       "fr-par-1"}}, "tags": ["terraform-test", "scaleway_instance_server", "user_data"],
       "state": "running", "protected": false, "state_detail": "booting kernel", "public_ip":
       null, "ipv6": null, "extra_networks": [], "dynamic_ip_required": false, "enable_ipv6":
-      false, "private_ip": "10.194.116.13", "creation_date": "2022-07-25T09:09:39.378696+00:00",
-      "modification_date": "2022-07-25T09:10:03.504843+00:00", "bootscript": {"id":
+      false, "private_ip": "10.74.102.25", "creation_date": "2022-07-25T09:43:40.014813+00:00",
+      "modification_date": "2022-07-25T09:44:05.400000+00:00", "bootscript": {"id":
       "fdfe150f-a870-4ce4-b432-9f56b5b995c1", "public": true, "title": "x86_64 mainline
       4.4.230 rev1", "architecture": "x86_64", "organization": "11111111-1111-4111-8111-111111111111",
       "project": "11111111-1111-4111-8111-111111111111", "kernel": "http://10.194.3.9/kernel/x86_64-mainline-lts-4.4-4.4.230-rev1/vmlinuz-4.4.230",
@@ -2142,18 +2177,18 @@ interactions:
       "bootcmdargs": "LINUX_COMMON scaleway boot=local nbd.max_part=16", "default":
       true, "zone": "fr-par-1"}, "security_group": {"id": "a8f5f9bb-20a7-4244-9521-4cde6f510e0e",
       "name": "Default security group"}, "location": {"zone_id": "par1", "platform_id":
-      "14", "cluster_id": "54", "hypervisor_id": "103", "node_id": "7"}, "maintenances":
+      "14", "cluster_id": "48", "hypervisor_id": "504", "node_id": "13"}, "maintenances":
       [], "allowed_actions": ["poweroff", "terminate", "reboot", "stop_in_place",
       "backup"], "placement_group": null, "private_nics": [], "zone": "fr-par-1"}}'
     headers:
       Content-Length:
-      - "2768"
+      - "2789"
       Content-Security-Policy:
       - default-src 'none'; frame-ancestors 'none'
       Content-Type:
       - application/json
       Date:
-      - Mon, 25 Jul 2022 09:10:08 GMT
+      - Mon, 25 Jul 2022 09:44:08 GMT
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -2163,7 +2198,7 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - 0cd9e4d1-a364-45e5-ad3f-a712afe82117
+      - 29f4c460-0a50-4e8e-bbec-74938b8b7be4
     status: 200 OK
     code: 200
     duration: ""
@@ -2174,7 +2209,7 @@ interactions:
       User-Agent:
       - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.18.2; linux; amd64) terraform-provider/develop
         terraform/terraform-tests
-    url: https://api.scaleway.com/instance/v1/zones/fr-par-1/servers/1d91b7a7-1ca2-4a6e-a99a-509a3ebc16dd/user_data
+    url: https://api.scaleway.com/instance/v1/zones/fr-par-1/servers/addbcc8c-72f7-49bc-9983-b14930e9fd22/user_data
     method: GET
   response:
     body: '{"user_data": []}'
@@ -2186,7 +2221,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Mon, 25 Jul 2022 09:10:08 GMT
+      - Mon, 25 Jul 2022 09:44:08 GMT
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -2196,7 +2231,7 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - 8549eef3-c103-4b7f-8355-7e533ab399dc
+      - 08c33bd2-0fa4-4169-a978-9a5a8b268ce6
     status: 200 OK
     code: 200
     duration: ""
@@ -2207,7 +2242,7 @@ interactions:
       User-Agent:
       - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.18.2; linux; amd64) terraform-provider/develop
         terraform/terraform-tests
-    url: https://api.scaleway.com/instance/v1/zones/fr-par-1/servers/1d91b7a7-1ca2-4a6e-a99a-509a3ebc16dd/private_nics
+    url: https://api.scaleway.com/instance/v1/zones/fr-par-1/servers/addbcc8c-72f7-49bc-9983-b14930e9fd22/private_nics
     method: GET
   response:
     body: '{"private_nics": []}'
@@ -2219,7 +2254,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Mon, 25 Jul 2022 09:10:08 GMT
+      - Mon, 25 Jul 2022 09:44:08 GMT
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -2229,7 +2264,7 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - 9aad5b5a-aec3-40d2-b673-e79199a817c3
+      - 6149497c-894b-4e6a-ab49-42ef70890b4c
     status: 200 OK
     code: 200
     duration: ""
@@ -2240,30 +2275,30 @@ interactions:
       User-Agent:
       - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.18.2; linux; amd64) terraform-provider/develop
         terraform/terraform-tests
-    url: https://api.scaleway.com/instance/v1/zones/fr-par-1/servers/1d91b7a7-1ca2-4a6e-a99a-509a3ebc16dd
+    url: https://api.scaleway.com/instance/v1/zones/fr-par-1/servers/addbcc8c-72f7-49bc-9983-b14930e9fd22
     method: GET
   response:
-    body: '{"server": {"id": "1d91b7a7-1ca2-4a6e-a99a-509a3ebc16dd", "name": "tf-srv-sad-bartik",
+    body: '{"server": {"id": "addbcc8c-72f7-49bc-9983-b14930e9fd22", "name": "tf-srv-exciting-dubinsky",
       "arch": "x86_64", "commercial_type": "DEV1-S", "boot_type": "local", "organization":
       "ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b", "project": "ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b",
-      "hostname": "tf-srv-sad-bartik", "image": {"id": "881d7a33-4cfa-4046-b5cf-c33cb9c62fb6",
+      "hostname": "tf-srv-exciting-dubinsky", "image": {"id": "881d7a33-4cfa-4046-b5cf-c33cb9c62fb6",
       "name": "Ubuntu 20.04 Focal Fossa", "organization": "51b656e3-4865-41e8-adbc-0c45bdd780db",
       "project": "51b656e3-4865-41e8-adbc-0c45bdd780db", "root_volume": {"id": "deb50fd4-209d-4fe2-9e39-1d2c85912133",
       "name": "ubuntu_20.04_focal_fossa:volume-0", "volume_type": "unified", "size":
       10000000000}, "extra_volumes": {}, "public": true, "arch": "x86_64", "creation_date":
       "2022-01-21T08:38:33.552838+00:00", "modification_date": "2022-01-21T08:38:33.552838+00:00",
       "default_bootscript": null, "from_server": null, "state": "available", "tags":
-      [], "zone": "fr-par-1"}, "volumes": {"0": {"boot": false, "id": "f013d5ce-5d2f-4342-bb91-e761d9a0afa8",
+      [], "zone": "fr-par-1"}, "volumes": {"0": {"boot": false, "id": "051807ab-5e80-437e-8ca0-58afedfb03d9",
       "name": "ubuntu_20.04_focal_fossa:volume-0", "volume_type": "l_ssd", "export_uri":
       null, "organization": "ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b", "project": "ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b",
-      "server": {"id": "1d91b7a7-1ca2-4a6e-a99a-509a3ebc16dd", "name": "tf-srv-sad-bartik"},
-      "size": 20000000000, "state": "available", "creation_date": "2022-07-25T09:09:39.378696+00:00",
-      "modification_date": "2022-07-25T09:09:39.378696+00:00", "tags": [], "zone":
+      "server": {"id": "addbcc8c-72f7-49bc-9983-b14930e9fd22", "name": "tf-srv-exciting-dubinsky"},
+      "size": 20000000000, "state": "available", "creation_date": "2022-07-25T09:43:40.014813+00:00",
+      "modification_date": "2022-07-25T09:43:40.014813+00:00", "tags": [], "zone":
       "fr-par-1"}}, "tags": ["terraform-test", "scaleway_instance_server", "user_data"],
       "state": "running", "protected": false, "state_detail": "booting kernel", "public_ip":
       null, "ipv6": null, "extra_networks": [], "dynamic_ip_required": false, "enable_ipv6":
-      false, "private_ip": "10.194.116.13", "creation_date": "2022-07-25T09:09:39.378696+00:00",
-      "modification_date": "2022-07-25T09:10:03.504843+00:00", "bootscript": {"id":
+      false, "private_ip": "10.74.102.25", "creation_date": "2022-07-25T09:43:40.014813+00:00",
+      "modification_date": "2022-07-25T09:44:05.400000+00:00", "bootscript": {"id":
       "fdfe150f-a870-4ce4-b432-9f56b5b995c1", "public": true, "title": "x86_64 mainline
       4.4.230 rev1", "architecture": "x86_64", "organization": "11111111-1111-4111-8111-111111111111",
       "project": "11111111-1111-4111-8111-111111111111", "kernel": "http://10.194.3.9/kernel/x86_64-mainline-lts-4.4-4.4.230-rev1/vmlinuz-4.4.230",
@@ -2271,18 +2306,18 @@ interactions:
       "bootcmdargs": "LINUX_COMMON scaleway boot=local nbd.max_part=16", "default":
       true, "zone": "fr-par-1"}, "security_group": {"id": "a8f5f9bb-20a7-4244-9521-4cde6f510e0e",
       "name": "Default security group"}, "location": {"zone_id": "par1", "platform_id":
-      "14", "cluster_id": "54", "hypervisor_id": "103", "node_id": "7"}, "maintenances":
+      "14", "cluster_id": "48", "hypervisor_id": "504", "node_id": "13"}, "maintenances":
       [], "allowed_actions": ["poweroff", "terminate", "reboot", "stop_in_place",
       "backup"], "placement_group": null, "private_nics": [], "zone": "fr-par-1"}}'
     headers:
       Content-Length:
-      - "2768"
+      - "2789"
       Content-Security-Policy:
       - default-src 'none'; frame-ancestors 'none'
       Content-Type:
       - application/json
       Date:
-      - Mon, 25 Jul 2022 09:10:09 GMT
+      - Mon, 25 Jul 2022 09:44:08 GMT
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -2292,7 +2327,7 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - 0caf629d-c1e6-4c32-9760-0a7b583dd936
+      - 032c5e1f-5bbd-40bd-8841-396fb5ca96f8
     status: 200 OK
     code: 200
     duration: ""
@@ -2303,7 +2338,7 @@ interactions:
       User-Agent:
       - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.18.2; linux; amd64) terraform-provider/develop
         terraform/terraform-tests
-    url: https://api.scaleway.com/instance/v1/zones/fr-par-1/servers/1d91b7a7-1ca2-4a6e-a99a-509a3ebc16dd/user_data
+    url: https://api.scaleway.com/instance/v1/zones/fr-par-1/servers/addbcc8c-72f7-49bc-9983-b14930e9fd22/user_data
     method: GET
   response:
     body: '{"user_data": []}'
@@ -2315,7 +2350,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Mon, 25 Jul 2022 09:10:10 GMT
+      - Mon, 25 Jul 2022 09:44:08 GMT
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -2325,7 +2360,7 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - 25cad6ad-756d-4c68-8ca9-179b43eb3af1
+      - 33e4edbb-04f2-416b-813b-d06c05a37db9
     status: 200 OK
     code: 200
     duration: ""
@@ -2336,7 +2371,7 @@ interactions:
       User-Agent:
       - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.18.2; linux; amd64) terraform-provider/develop
         terraform/terraform-tests
-    url: https://api.scaleway.com/instance/v1/zones/fr-par-1/servers/1d91b7a7-1ca2-4a6e-a99a-509a3ebc16dd/private_nics
+    url: https://api.scaleway.com/instance/v1/zones/fr-par-1/servers/addbcc8c-72f7-49bc-9983-b14930e9fd22/private_nics
     method: GET
   response:
     body: '{"private_nics": []}'
@@ -2348,7 +2383,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Mon, 25 Jul 2022 09:10:10 GMT
+      - Mon, 25 Jul 2022 09:44:08 GMT
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -2358,7 +2393,7 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - cdc5a014-d00e-4937-8a58-610ad63ab43d
+      - a7dfe61e-b413-4866-9f12-3f6de1b71d3f
     status: 200 OK
     code: 200
     duration: ""
@@ -2369,30 +2404,30 @@ interactions:
       User-Agent:
       - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.18.2; linux; amd64) terraform-provider/develop
         terraform/terraform-tests
-    url: https://api.scaleway.com/instance/v1/zones/fr-par-1/servers/1d91b7a7-1ca2-4a6e-a99a-509a3ebc16dd
+    url: https://api.scaleway.com/instance/v1/zones/fr-par-1/servers/addbcc8c-72f7-49bc-9983-b14930e9fd22
     method: GET
   response:
-    body: '{"server": {"id": "1d91b7a7-1ca2-4a6e-a99a-509a3ebc16dd", "name": "tf-srv-sad-bartik",
+    body: '{"server": {"id": "addbcc8c-72f7-49bc-9983-b14930e9fd22", "name": "tf-srv-exciting-dubinsky",
       "arch": "x86_64", "commercial_type": "DEV1-S", "boot_type": "local", "organization":
       "ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b", "project": "ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b",
-      "hostname": "tf-srv-sad-bartik", "image": {"id": "881d7a33-4cfa-4046-b5cf-c33cb9c62fb6",
+      "hostname": "tf-srv-exciting-dubinsky", "image": {"id": "881d7a33-4cfa-4046-b5cf-c33cb9c62fb6",
       "name": "Ubuntu 20.04 Focal Fossa", "organization": "51b656e3-4865-41e8-adbc-0c45bdd780db",
       "project": "51b656e3-4865-41e8-adbc-0c45bdd780db", "root_volume": {"id": "deb50fd4-209d-4fe2-9e39-1d2c85912133",
       "name": "ubuntu_20.04_focal_fossa:volume-0", "volume_type": "unified", "size":
       10000000000}, "extra_volumes": {}, "public": true, "arch": "x86_64", "creation_date":
       "2022-01-21T08:38:33.552838+00:00", "modification_date": "2022-01-21T08:38:33.552838+00:00",
       "default_bootscript": null, "from_server": null, "state": "available", "tags":
-      [], "zone": "fr-par-1"}, "volumes": {"0": {"boot": false, "id": "f013d5ce-5d2f-4342-bb91-e761d9a0afa8",
+      [], "zone": "fr-par-1"}, "volumes": {"0": {"boot": false, "id": "051807ab-5e80-437e-8ca0-58afedfb03d9",
       "name": "ubuntu_20.04_focal_fossa:volume-0", "volume_type": "l_ssd", "export_uri":
       null, "organization": "ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b", "project": "ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b",
-      "server": {"id": "1d91b7a7-1ca2-4a6e-a99a-509a3ebc16dd", "name": "tf-srv-sad-bartik"},
-      "size": 20000000000, "state": "available", "creation_date": "2022-07-25T09:09:39.378696+00:00",
-      "modification_date": "2022-07-25T09:09:39.378696+00:00", "tags": [], "zone":
+      "server": {"id": "addbcc8c-72f7-49bc-9983-b14930e9fd22", "name": "tf-srv-exciting-dubinsky"},
+      "size": 20000000000, "state": "available", "creation_date": "2022-07-25T09:43:40.014813+00:00",
+      "modification_date": "2022-07-25T09:43:40.014813+00:00", "tags": [], "zone":
       "fr-par-1"}}, "tags": ["terraform-test", "scaleway_instance_server", "user_data"],
       "state": "running", "protected": false, "state_detail": "booting kernel", "public_ip":
       null, "ipv6": null, "extra_networks": [], "dynamic_ip_required": false, "enable_ipv6":
-      false, "private_ip": "10.194.116.13", "creation_date": "2022-07-25T09:09:39.378696+00:00",
-      "modification_date": "2022-07-25T09:10:03.504843+00:00", "bootscript": {"id":
+      false, "private_ip": "10.74.102.25", "creation_date": "2022-07-25T09:43:40.014813+00:00",
+      "modification_date": "2022-07-25T09:44:05.400000+00:00", "bootscript": {"id":
       "fdfe150f-a870-4ce4-b432-9f56b5b995c1", "public": true, "title": "x86_64 mainline
       4.4.230 rev1", "architecture": "x86_64", "organization": "11111111-1111-4111-8111-111111111111",
       "project": "11111111-1111-4111-8111-111111111111", "kernel": "http://10.194.3.9/kernel/x86_64-mainline-lts-4.4-4.4.230-rev1/vmlinuz-4.4.230",
@@ -2400,18 +2435,18 @@ interactions:
       "bootcmdargs": "LINUX_COMMON scaleway boot=local nbd.max_part=16", "default":
       true, "zone": "fr-par-1"}, "security_group": {"id": "a8f5f9bb-20a7-4244-9521-4cde6f510e0e",
       "name": "Default security group"}, "location": {"zone_id": "par1", "platform_id":
-      "14", "cluster_id": "54", "hypervisor_id": "103", "node_id": "7"}, "maintenances":
+      "14", "cluster_id": "48", "hypervisor_id": "504", "node_id": "13"}, "maintenances":
       [], "allowed_actions": ["poweroff", "terminate", "reboot", "stop_in_place",
       "backup"], "placement_group": null, "private_nics": [], "zone": "fr-par-1"}}'
     headers:
       Content-Length:
-      - "2768"
+      - "2789"
       Content-Security-Policy:
       - default-src 'none'; frame-ancestors 'none'
       Content-Type:
       - application/json
       Date:
-      - Mon, 25 Jul 2022 09:10:11 GMT
+      - Mon, 25 Jul 2022 09:44:09 GMT
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -2421,7 +2456,7 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - f49c2533-bb95-4a74-93c5-4f9f757b63f6
+      - d1d253e8-3191-4a49-8a36-3b6659fa6283
     status: 200 OK
     code: 200
     duration: ""
@@ -2432,30 +2467,30 @@ interactions:
       User-Agent:
       - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.18.2; linux; amd64) terraform-provider/develop
         terraform/terraform-tests
-    url: https://api.scaleway.com/instance/v1/zones/fr-par-1/servers/1d91b7a7-1ca2-4a6e-a99a-509a3ebc16dd
+    url: https://api.scaleway.com/instance/v1/zones/fr-par-1/servers/addbcc8c-72f7-49bc-9983-b14930e9fd22
     method: GET
   response:
-    body: '{"server": {"id": "1d91b7a7-1ca2-4a6e-a99a-509a3ebc16dd", "name": "tf-srv-sad-bartik",
+    body: '{"server": {"id": "addbcc8c-72f7-49bc-9983-b14930e9fd22", "name": "tf-srv-exciting-dubinsky",
       "arch": "x86_64", "commercial_type": "DEV1-S", "boot_type": "local", "organization":
       "ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b", "project": "ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b",
-      "hostname": "tf-srv-sad-bartik", "image": {"id": "881d7a33-4cfa-4046-b5cf-c33cb9c62fb6",
+      "hostname": "tf-srv-exciting-dubinsky", "image": {"id": "881d7a33-4cfa-4046-b5cf-c33cb9c62fb6",
       "name": "Ubuntu 20.04 Focal Fossa", "organization": "51b656e3-4865-41e8-adbc-0c45bdd780db",
       "project": "51b656e3-4865-41e8-adbc-0c45bdd780db", "root_volume": {"id": "deb50fd4-209d-4fe2-9e39-1d2c85912133",
       "name": "ubuntu_20.04_focal_fossa:volume-0", "volume_type": "unified", "size":
       10000000000}, "extra_volumes": {}, "public": true, "arch": "x86_64", "creation_date":
       "2022-01-21T08:38:33.552838+00:00", "modification_date": "2022-01-21T08:38:33.552838+00:00",
       "default_bootscript": null, "from_server": null, "state": "available", "tags":
-      [], "zone": "fr-par-1"}, "volumes": {"0": {"boot": false, "id": "f013d5ce-5d2f-4342-bb91-e761d9a0afa8",
+      [], "zone": "fr-par-1"}, "volumes": {"0": {"boot": false, "id": "051807ab-5e80-437e-8ca0-58afedfb03d9",
       "name": "ubuntu_20.04_focal_fossa:volume-0", "volume_type": "l_ssd", "export_uri":
       null, "organization": "ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b", "project": "ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b",
-      "server": {"id": "1d91b7a7-1ca2-4a6e-a99a-509a3ebc16dd", "name": "tf-srv-sad-bartik"},
-      "size": 20000000000, "state": "available", "creation_date": "2022-07-25T09:09:39.378696+00:00",
-      "modification_date": "2022-07-25T09:09:39.378696+00:00", "tags": [], "zone":
+      "server": {"id": "addbcc8c-72f7-49bc-9983-b14930e9fd22", "name": "tf-srv-exciting-dubinsky"},
+      "size": 20000000000, "state": "available", "creation_date": "2022-07-25T09:43:40.014813+00:00",
+      "modification_date": "2022-07-25T09:43:40.014813+00:00", "tags": [], "zone":
       "fr-par-1"}}, "tags": ["terraform-test", "scaleway_instance_server", "user_data"],
       "state": "running", "protected": false, "state_detail": "booting kernel", "public_ip":
       null, "ipv6": null, "extra_networks": [], "dynamic_ip_required": false, "enable_ipv6":
-      false, "private_ip": "10.194.116.13", "creation_date": "2022-07-25T09:09:39.378696+00:00",
-      "modification_date": "2022-07-25T09:10:03.504843+00:00", "bootscript": {"id":
+      false, "private_ip": "10.74.102.25", "creation_date": "2022-07-25T09:43:40.014813+00:00",
+      "modification_date": "2022-07-25T09:44:05.400000+00:00", "bootscript": {"id":
       "fdfe150f-a870-4ce4-b432-9f56b5b995c1", "public": true, "title": "x86_64 mainline
       4.4.230 rev1", "architecture": "x86_64", "organization": "11111111-1111-4111-8111-111111111111",
       "project": "11111111-1111-4111-8111-111111111111", "kernel": "http://10.194.3.9/kernel/x86_64-mainline-lts-4.4-4.4.230-rev1/vmlinuz-4.4.230",
@@ -2463,18 +2498,18 @@ interactions:
       "bootcmdargs": "LINUX_COMMON scaleway boot=local nbd.max_part=16", "default":
       true, "zone": "fr-par-1"}, "security_group": {"id": "a8f5f9bb-20a7-4244-9521-4cde6f510e0e",
       "name": "Default security group"}, "location": {"zone_id": "par1", "platform_id":
-      "14", "cluster_id": "54", "hypervisor_id": "103", "node_id": "7"}, "maintenances":
+      "14", "cluster_id": "48", "hypervisor_id": "504", "node_id": "13"}, "maintenances":
       [], "allowed_actions": ["poweroff", "terminate", "reboot", "stop_in_place",
       "backup"], "placement_group": null, "private_nics": [], "zone": "fr-par-1"}}'
     headers:
       Content-Length:
-      - "2768"
+      - "2789"
       Content-Security-Policy:
       - default-src 'none'; frame-ancestors 'none'
       Content-Type:
       - application/json
       Date:
-      - Mon, 25 Jul 2022 09:10:11 GMT
+      - Mon, 25 Jul 2022 09:44:09 GMT
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -2484,7 +2519,7 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - 0eeb515b-91e1-4e28-b367-59da17274da9
+      - ae0a4274-70e7-4894-aaa1-5ba0d7965680
     status: 200 OK
     code: 200
     duration: ""
@@ -2495,7 +2530,7 @@ interactions:
       User-Agent:
       - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.18.2; linux; amd64) terraform-provider/develop
         terraform/terraform-tests
-    url: https://api.scaleway.com/instance/v1/zones/fr-par-1/servers/1d91b7a7-1ca2-4a6e-a99a-509a3ebc16dd/user_data
+    url: https://api.scaleway.com/instance/v1/zones/fr-par-1/servers/addbcc8c-72f7-49bc-9983-b14930e9fd22/user_data
     method: GET
   response:
     body: '{"user_data": []}'
@@ -2507,7 +2542,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Mon, 25 Jul 2022 09:10:11 GMT
+      - Mon, 25 Jul 2022 09:44:09 GMT
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -2517,7 +2552,7 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - 125d3cf8-0225-41d1-b818-6103ea6ac9d1
+      - 5d4ead03-91a1-4598-b778-cbf39da315f8
     status: 200 OK
     code: 200
     duration: ""
@@ -2533,7 +2568,7 @@ interactions:
       User-Agent:
       - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.18.2; linux; amd64) terraform-provider/develop
         terraform/terraform-tests
-    url: https://api.scaleway.com/instance/v1/zones/fr-par-1/servers/1d91b7a7-1ca2-4a6e-a99a-509a3ebc16dd/user_data/cloud-init
+    url: https://api.scaleway.com/instance/v1/zones/fr-par-1/servers/addbcc8c-72f7-49bc-9983-b14930e9fd22/user_data/cloud-init
     method: PATCH
   response:
     body: ""
@@ -2541,7 +2576,7 @@ interactions:
       Content-Security-Policy:
       - default-src 'none'; frame-ancestors 'none'
       Date:
-      - Mon, 25 Jul 2022 09:10:11 GMT
+      - Mon, 25 Jul 2022 09:44:09 GMT
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -2551,7 +2586,7 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - 7d4bd8e7-c2da-46b3-a3aa-cce83d8619e0
+      - 5e9abae1-7eaf-42b3-8c42-cecd98ed67b8
     status: 204 No Content
     code: 204
     duration: ""
@@ -2564,30 +2599,30 @@ interactions:
       User-Agent:
       - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.18.2; linux; amd64) terraform-provider/develop
         terraform/terraform-tests
-    url: https://api.scaleway.com/instance/v1/zones/fr-par-1/servers/1d91b7a7-1ca2-4a6e-a99a-509a3ebc16dd
+    url: https://api.scaleway.com/instance/v1/zones/fr-par-1/servers/addbcc8c-72f7-49bc-9983-b14930e9fd22
     method: PATCH
   response:
-    body: '{"server": {"id": "1d91b7a7-1ca2-4a6e-a99a-509a3ebc16dd", "name": "tf-srv-sad-bartik",
+    body: '{"server": {"id": "addbcc8c-72f7-49bc-9983-b14930e9fd22", "name": "tf-srv-exciting-dubinsky",
       "arch": "x86_64", "commercial_type": "DEV1-S", "boot_type": "local", "organization":
       "ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b", "project": "ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b",
-      "hostname": "tf-srv-sad-bartik", "image": {"id": "881d7a33-4cfa-4046-b5cf-c33cb9c62fb6",
+      "hostname": "tf-srv-exciting-dubinsky", "image": {"id": "881d7a33-4cfa-4046-b5cf-c33cb9c62fb6",
       "name": "Ubuntu 20.04 Focal Fossa", "organization": "51b656e3-4865-41e8-adbc-0c45bdd780db",
       "project": "51b656e3-4865-41e8-adbc-0c45bdd780db", "root_volume": {"id": "deb50fd4-209d-4fe2-9e39-1d2c85912133",
       "name": "ubuntu_20.04_focal_fossa:volume-0", "volume_type": "unified", "size":
       10000000000}, "extra_volumes": {}, "public": true, "arch": "x86_64", "creation_date":
       "2022-01-21T08:38:33.552838+00:00", "modification_date": "2022-01-21T08:38:33.552838+00:00",
       "default_bootscript": null, "from_server": null, "state": "available", "tags":
-      [], "zone": "fr-par-1"}, "volumes": {"0": {"boot": false, "id": "f013d5ce-5d2f-4342-bb91-e761d9a0afa8",
+      [], "zone": "fr-par-1"}, "volumes": {"0": {"boot": false, "id": "051807ab-5e80-437e-8ca0-58afedfb03d9",
       "name": "ubuntu_20.04_focal_fossa:volume-0", "volume_type": "l_ssd", "export_uri":
       null, "organization": "ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b", "project": "ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b",
-      "server": {"id": "1d91b7a7-1ca2-4a6e-a99a-509a3ebc16dd", "name": "tf-srv-sad-bartik"},
-      "size": 20000000000, "state": "available", "creation_date": "2022-07-25T09:09:39.378696+00:00",
-      "modification_date": "2022-07-25T09:09:39.378696+00:00", "tags": [], "zone":
+      "server": {"id": "addbcc8c-72f7-49bc-9983-b14930e9fd22", "name": "tf-srv-exciting-dubinsky"},
+      "size": 20000000000, "state": "available", "creation_date": "2022-07-25T09:43:40.014813+00:00",
+      "modification_date": "2022-07-25T09:43:40.014813+00:00", "tags": [], "zone":
       "fr-par-1"}}, "tags": ["terraform-test", "scaleway_instance_server", "user_data"],
       "state": "running", "protected": false, "state_detail": "booting kernel", "public_ip":
       null, "ipv6": null, "extra_networks": [], "dynamic_ip_required": false, "enable_ipv6":
-      false, "private_ip": "10.194.116.13", "creation_date": "2022-07-25T09:09:39.378696+00:00",
-      "modification_date": "2022-07-25T09:10:03.504843+00:00", "bootscript": {"id":
+      false, "private_ip": "10.74.102.25", "creation_date": "2022-07-25T09:43:40.014813+00:00",
+      "modification_date": "2022-07-25T09:44:05.400000+00:00", "bootscript": {"id":
       "fdfe150f-a870-4ce4-b432-9f56b5b995c1", "public": true, "title": "x86_64 mainline
       4.4.230 rev1", "architecture": "x86_64", "organization": "11111111-1111-4111-8111-111111111111",
       "project": "11111111-1111-4111-8111-111111111111", "kernel": "http://10.194.3.9/kernel/x86_64-mainline-lts-4.4-4.4.230-rev1/vmlinuz-4.4.230",
@@ -2595,18 +2630,18 @@ interactions:
       "bootcmdargs": "LINUX_COMMON scaleway boot=local nbd.max_part=16", "default":
       true, "zone": "fr-par-1"}, "security_group": {"id": "a8f5f9bb-20a7-4244-9521-4cde6f510e0e",
       "name": "Default security group"}, "location": {"zone_id": "par1", "platform_id":
-      "14", "cluster_id": "54", "hypervisor_id": "103", "node_id": "7"}, "maintenances":
+      "14", "cluster_id": "48", "hypervisor_id": "504", "node_id": "13"}, "maintenances":
       [], "allowed_actions": ["poweroff", "terminate", "reboot", "stop_in_place",
       "backup"], "placement_group": null, "private_nics": [], "zone": "fr-par-1"}}'
     headers:
       Content-Length:
-      - "2768"
+      - "2789"
       Content-Security-Policy:
       - default-src 'none'; frame-ancestors 'none'
       Content-Type:
       - application/json
       Date:
-      - Mon, 25 Jul 2022 09:10:11 GMT
+      - Mon, 25 Jul 2022 09:44:09 GMT
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -2616,7 +2651,7 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - 062622be-5394-4705-a822-5dddd487b042
+      - 4d3f6330-18fc-433e-886e-e55d297755ba
     status: 200 OK
     code: 200
     duration: ""
@@ -2627,30 +2662,30 @@ interactions:
       User-Agent:
       - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.18.2; linux; amd64) terraform-provider/develop
         terraform/terraform-tests
-    url: https://api.scaleway.com/instance/v1/zones/fr-par-1/servers/1d91b7a7-1ca2-4a6e-a99a-509a3ebc16dd
+    url: https://api.scaleway.com/instance/v1/zones/fr-par-1/servers/addbcc8c-72f7-49bc-9983-b14930e9fd22
     method: GET
   response:
-    body: '{"server": {"id": "1d91b7a7-1ca2-4a6e-a99a-509a3ebc16dd", "name": "tf-srv-sad-bartik",
+    body: '{"server": {"id": "addbcc8c-72f7-49bc-9983-b14930e9fd22", "name": "tf-srv-exciting-dubinsky",
       "arch": "x86_64", "commercial_type": "DEV1-S", "boot_type": "local", "organization":
       "ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b", "project": "ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b",
-      "hostname": "tf-srv-sad-bartik", "image": {"id": "881d7a33-4cfa-4046-b5cf-c33cb9c62fb6",
+      "hostname": "tf-srv-exciting-dubinsky", "image": {"id": "881d7a33-4cfa-4046-b5cf-c33cb9c62fb6",
       "name": "Ubuntu 20.04 Focal Fossa", "organization": "51b656e3-4865-41e8-adbc-0c45bdd780db",
       "project": "51b656e3-4865-41e8-adbc-0c45bdd780db", "root_volume": {"id": "deb50fd4-209d-4fe2-9e39-1d2c85912133",
       "name": "ubuntu_20.04_focal_fossa:volume-0", "volume_type": "unified", "size":
       10000000000}, "extra_volumes": {}, "public": true, "arch": "x86_64", "creation_date":
       "2022-01-21T08:38:33.552838+00:00", "modification_date": "2022-01-21T08:38:33.552838+00:00",
       "default_bootscript": null, "from_server": null, "state": "available", "tags":
-      [], "zone": "fr-par-1"}, "volumes": {"0": {"boot": false, "id": "f013d5ce-5d2f-4342-bb91-e761d9a0afa8",
+      [], "zone": "fr-par-1"}, "volumes": {"0": {"boot": false, "id": "051807ab-5e80-437e-8ca0-58afedfb03d9",
       "name": "ubuntu_20.04_focal_fossa:volume-0", "volume_type": "l_ssd", "export_uri":
       null, "organization": "ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b", "project": "ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b",
-      "server": {"id": "1d91b7a7-1ca2-4a6e-a99a-509a3ebc16dd", "name": "tf-srv-sad-bartik"},
-      "size": 20000000000, "state": "available", "creation_date": "2022-07-25T09:09:39.378696+00:00",
-      "modification_date": "2022-07-25T09:09:39.378696+00:00", "tags": [], "zone":
+      "server": {"id": "addbcc8c-72f7-49bc-9983-b14930e9fd22", "name": "tf-srv-exciting-dubinsky"},
+      "size": 20000000000, "state": "available", "creation_date": "2022-07-25T09:43:40.014813+00:00",
+      "modification_date": "2022-07-25T09:43:40.014813+00:00", "tags": [], "zone":
       "fr-par-1"}}, "tags": ["terraform-test", "scaleway_instance_server", "user_data"],
       "state": "running", "protected": false, "state_detail": "booting kernel", "public_ip":
       null, "ipv6": null, "extra_networks": [], "dynamic_ip_required": false, "enable_ipv6":
-      false, "private_ip": "10.194.116.13", "creation_date": "2022-07-25T09:09:39.378696+00:00",
-      "modification_date": "2022-07-25T09:10:03.504843+00:00", "bootscript": {"id":
+      false, "private_ip": "10.74.102.25", "creation_date": "2022-07-25T09:43:40.014813+00:00",
+      "modification_date": "2022-07-25T09:44:05.400000+00:00", "bootscript": {"id":
       "fdfe150f-a870-4ce4-b432-9f56b5b995c1", "public": true, "title": "x86_64 mainline
       4.4.230 rev1", "architecture": "x86_64", "organization": "11111111-1111-4111-8111-111111111111",
       "project": "11111111-1111-4111-8111-111111111111", "kernel": "http://10.194.3.9/kernel/x86_64-mainline-lts-4.4-4.4.230-rev1/vmlinuz-4.4.230",
@@ -2658,18 +2693,18 @@ interactions:
       "bootcmdargs": "LINUX_COMMON scaleway boot=local nbd.max_part=16", "default":
       true, "zone": "fr-par-1"}, "security_group": {"id": "a8f5f9bb-20a7-4244-9521-4cde6f510e0e",
       "name": "Default security group"}, "location": {"zone_id": "par1", "platform_id":
-      "14", "cluster_id": "54", "hypervisor_id": "103", "node_id": "7"}, "maintenances":
+      "14", "cluster_id": "48", "hypervisor_id": "504", "node_id": "13"}, "maintenances":
       [], "allowed_actions": ["poweroff", "terminate", "reboot", "stop_in_place",
       "backup"], "placement_group": null, "private_nics": [], "zone": "fr-par-1"}}'
     headers:
       Content-Length:
-      - "2768"
+      - "2789"
       Content-Security-Policy:
       - default-src 'none'; frame-ancestors 'none'
       Content-Type:
       - application/json
       Date:
-      - Mon, 25 Jul 2022 09:10:12 GMT
+      - Mon, 25 Jul 2022 09:44:09 GMT
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -2679,7 +2714,7 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - b8c85b3b-bfa0-4b03-9141-7d2f106aef30
+      - d8da834d-dc29-426f-a8a5-905b2cf26e43
     status: 200 OK
     code: 200
     duration: ""
@@ -2690,30 +2725,30 @@ interactions:
       User-Agent:
       - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.18.2; linux; amd64) terraform-provider/develop
         terraform/terraform-tests
-    url: https://api.scaleway.com/instance/v1/zones/fr-par-1/servers/1d91b7a7-1ca2-4a6e-a99a-509a3ebc16dd
+    url: https://api.scaleway.com/instance/v1/zones/fr-par-1/servers/addbcc8c-72f7-49bc-9983-b14930e9fd22
     method: GET
   response:
-    body: '{"server": {"id": "1d91b7a7-1ca2-4a6e-a99a-509a3ebc16dd", "name": "tf-srv-sad-bartik",
+    body: '{"server": {"id": "addbcc8c-72f7-49bc-9983-b14930e9fd22", "name": "tf-srv-exciting-dubinsky",
       "arch": "x86_64", "commercial_type": "DEV1-S", "boot_type": "local", "organization":
       "ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b", "project": "ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b",
-      "hostname": "tf-srv-sad-bartik", "image": {"id": "881d7a33-4cfa-4046-b5cf-c33cb9c62fb6",
+      "hostname": "tf-srv-exciting-dubinsky", "image": {"id": "881d7a33-4cfa-4046-b5cf-c33cb9c62fb6",
       "name": "Ubuntu 20.04 Focal Fossa", "organization": "51b656e3-4865-41e8-adbc-0c45bdd780db",
       "project": "51b656e3-4865-41e8-adbc-0c45bdd780db", "root_volume": {"id": "deb50fd4-209d-4fe2-9e39-1d2c85912133",
       "name": "ubuntu_20.04_focal_fossa:volume-0", "volume_type": "unified", "size":
       10000000000}, "extra_volumes": {}, "public": true, "arch": "x86_64", "creation_date":
       "2022-01-21T08:38:33.552838+00:00", "modification_date": "2022-01-21T08:38:33.552838+00:00",
       "default_bootscript": null, "from_server": null, "state": "available", "tags":
-      [], "zone": "fr-par-1"}, "volumes": {"0": {"boot": false, "id": "f013d5ce-5d2f-4342-bb91-e761d9a0afa8",
+      [], "zone": "fr-par-1"}, "volumes": {"0": {"boot": false, "id": "051807ab-5e80-437e-8ca0-58afedfb03d9",
       "name": "ubuntu_20.04_focal_fossa:volume-0", "volume_type": "l_ssd", "export_uri":
       null, "organization": "ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b", "project": "ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b",
-      "server": {"id": "1d91b7a7-1ca2-4a6e-a99a-509a3ebc16dd", "name": "tf-srv-sad-bartik"},
-      "size": 20000000000, "state": "available", "creation_date": "2022-07-25T09:09:39.378696+00:00",
-      "modification_date": "2022-07-25T09:09:39.378696+00:00", "tags": [], "zone":
+      "server": {"id": "addbcc8c-72f7-49bc-9983-b14930e9fd22", "name": "tf-srv-exciting-dubinsky"},
+      "size": 20000000000, "state": "available", "creation_date": "2022-07-25T09:43:40.014813+00:00",
+      "modification_date": "2022-07-25T09:43:40.014813+00:00", "tags": [], "zone":
       "fr-par-1"}}, "tags": ["terraform-test", "scaleway_instance_server", "user_data"],
       "state": "running", "protected": false, "state_detail": "booting kernel", "public_ip":
       null, "ipv6": null, "extra_networks": [], "dynamic_ip_required": false, "enable_ipv6":
-      false, "private_ip": "10.194.116.13", "creation_date": "2022-07-25T09:09:39.378696+00:00",
-      "modification_date": "2022-07-25T09:10:03.504843+00:00", "bootscript": {"id":
+      false, "private_ip": "10.74.102.25", "creation_date": "2022-07-25T09:43:40.014813+00:00",
+      "modification_date": "2022-07-25T09:44:05.400000+00:00", "bootscript": {"id":
       "fdfe150f-a870-4ce4-b432-9f56b5b995c1", "public": true, "title": "x86_64 mainline
       4.4.230 rev1", "architecture": "x86_64", "organization": "11111111-1111-4111-8111-111111111111",
       "project": "11111111-1111-4111-8111-111111111111", "kernel": "http://10.194.3.9/kernel/x86_64-mainline-lts-4.4-4.4.230-rev1/vmlinuz-4.4.230",
@@ -2721,18 +2756,18 @@ interactions:
       "bootcmdargs": "LINUX_COMMON scaleway boot=local nbd.max_part=16", "default":
       true, "zone": "fr-par-1"}, "security_group": {"id": "a8f5f9bb-20a7-4244-9521-4cde6f510e0e",
       "name": "Default security group"}, "location": {"zone_id": "par1", "platform_id":
-      "14", "cluster_id": "54", "hypervisor_id": "103", "node_id": "7"}, "maintenances":
+      "14", "cluster_id": "48", "hypervisor_id": "504", "node_id": "13"}, "maintenances":
       [], "allowed_actions": ["poweroff", "terminate", "reboot", "stop_in_place",
       "backup"], "placement_group": null, "private_nics": [], "zone": "fr-par-1"}}'
     headers:
       Content-Length:
-      - "2768"
+      - "2789"
       Content-Security-Policy:
       - default-src 'none'; frame-ancestors 'none'
       Content-Type:
       - application/json
       Date:
-      - Mon, 25 Jul 2022 09:10:12 GMT
+      - Mon, 25 Jul 2022 09:44:10 GMT
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -2742,7 +2777,7 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - b365a711-2d86-4b17-be69-b707592e4861
+      - 36bdd7fa-5e06-4641-bd0b-c27e1285387d
     status: 200 OK
     code: 200
     duration: ""
@@ -2753,7 +2788,7 @@ interactions:
       User-Agent:
       - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.18.2; linux; amd64) terraform-provider/develop
         terraform/terraform-tests
-    url: https://api.scaleway.com/instance/v1/zones/fr-par-1/servers/1d91b7a7-1ca2-4a6e-a99a-509a3ebc16dd/user_data
+    url: https://api.scaleway.com/instance/v1/zones/fr-par-1/servers/addbcc8c-72f7-49bc-9983-b14930e9fd22/user_data
     method: GET
   response:
     body: '{"user_data": ["cloud-init"]}'
@@ -2765,7 +2800,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Mon, 25 Jul 2022 09:10:12 GMT
+      - Mon, 25 Jul 2022 09:44:10 GMT
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -2775,7 +2810,7 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - 1871e0d0-19b9-4d3f-98ce-f9c527620e1a
+      - 05903b3b-d1bd-4d1d-b2aa-ce3182835cac
     status: 200 OK
     code: 200
     duration: ""
@@ -2786,7 +2821,7 @@ interactions:
       User-Agent:
       - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.18.2; linux; amd64) terraform-provider/develop
         terraform/terraform-tests
-    url: https://api.scaleway.com/instance/v1/zones/fr-par-1/servers/1d91b7a7-1ca2-4a6e-a99a-509a3ebc16dd/user_data/cloud-init
+    url: https://api.scaleway.com/instance/v1/zones/fr-par-1/servers/addbcc8c-72f7-49bc-9983-b14930e9fd22/user_data/cloud-init
     method: GET
   response:
     body: |
@@ -2801,7 +2836,7 @@ interactions:
       Content-Type:
       - text/plain
       Date:
-      - Mon, 25 Jul 2022 09:10:12 GMT
+      - Mon, 25 Jul 2022 09:44:10 GMT
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -2811,7 +2846,7 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - 5e1d4019-8a54-4b37-ba64-dc2238e36f7c
+      - 30c648c8-f4d1-4bb6-913a-f8ee2200fa32
     status: 200 OK
     code: 200
     duration: ""
@@ -2822,7 +2857,7 @@ interactions:
       User-Agent:
       - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.18.2; linux; amd64) terraform-provider/develop
         terraform/terraform-tests
-    url: https://api.scaleway.com/instance/v1/zones/fr-par-1/servers/1d91b7a7-1ca2-4a6e-a99a-509a3ebc16dd/private_nics
+    url: https://api.scaleway.com/instance/v1/zones/fr-par-1/servers/addbcc8c-72f7-49bc-9983-b14930e9fd22/private_nics
     method: GET
   response:
     body: '{"private_nics": []}'
@@ -2834,7 +2869,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Mon, 25 Jul 2022 09:10:12 GMT
+      - Mon, 25 Jul 2022 09:44:10 GMT
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -2844,7 +2879,7 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - 9e4a379a-e336-4b54-bcce-f79f9d0a8966
+      - 32409ca8-967c-435b-9730-cdb49edf7b94
     status: 200 OK
     code: 200
     duration: ""
@@ -2855,30 +2890,30 @@ interactions:
       User-Agent:
       - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.18.2; linux; amd64) terraform-provider/develop
         terraform/terraform-tests
-    url: https://api.scaleway.com/instance/v1/zones/fr-par-1/servers/1d91b7a7-1ca2-4a6e-a99a-509a3ebc16dd
+    url: https://api.scaleway.com/instance/v1/zones/fr-par-1/servers/addbcc8c-72f7-49bc-9983-b14930e9fd22
     method: GET
   response:
-    body: '{"server": {"id": "1d91b7a7-1ca2-4a6e-a99a-509a3ebc16dd", "name": "tf-srv-sad-bartik",
+    body: '{"server": {"id": "addbcc8c-72f7-49bc-9983-b14930e9fd22", "name": "tf-srv-exciting-dubinsky",
       "arch": "x86_64", "commercial_type": "DEV1-S", "boot_type": "local", "organization":
       "ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b", "project": "ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b",
-      "hostname": "tf-srv-sad-bartik", "image": {"id": "881d7a33-4cfa-4046-b5cf-c33cb9c62fb6",
+      "hostname": "tf-srv-exciting-dubinsky", "image": {"id": "881d7a33-4cfa-4046-b5cf-c33cb9c62fb6",
       "name": "Ubuntu 20.04 Focal Fossa", "organization": "51b656e3-4865-41e8-adbc-0c45bdd780db",
       "project": "51b656e3-4865-41e8-adbc-0c45bdd780db", "root_volume": {"id": "deb50fd4-209d-4fe2-9e39-1d2c85912133",
       "name": "ubuntu_20.04_focal_fossa:volume-0", "volume_type": "unified", "size":
       10000000000}, "extra_volumes": {}, "public": true, "arch": "x86_64", "creation_date":
       "2022-01-21T08:38:33.552838+00:00", "modification_date": "2022-01-21T08:38:33.552838+00:00",
       "default_bootscript": null, "from_server": null, "state": "available", "tags":
-      [], "zone": "fr-par-1"}, "volumes": {"0": {"boot": false, "id": "f013d5ce-5d2f-4342-bb91-e761d9a0afa8",
+      [], "zone": "fr-par-1"}, "volumes": {"0": {"boot": false, "id": "051807ab-5e80-437e-8ca0-58afedfb03d9",
       "name": "ubuntu_20.04_focal_fossa:volume-0", "volume_type": "l_ssd", "export_uri":
       null, "organization": "ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b", "project": "ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b",
-      "server": {"id": "1d91b7a7-1ca2-4a6e-a99a-509a3ebc16dd", "name": "tf-srv-sad-bartik"},
-      "size": 20000000000, "state": "available", "creation_date": "2022-07-25T09:09:39.378696+00:00",
-      "modification_date": "2022-07-25T09:09:39.378696+00:00", "tags": [], "zone":
+      "server": {"id": "addbcc8c-72f7-49bc-9983-b14930e9fd22", "name": "tf-srv-exciting-dubinsky"},
+      "size": 20000000000, "state": "available", "creation_date": "2022-07-25T09:43:40.014813+00:00",
+      "modification_date": "2022-07-25T09:43:40.014813+00:00", "tags": [], "zone":
       "fr-par-1"}}, "tags": ["terraform-test", "scaleway_instance_server", "user_data"],
       "state": "running", "protected": false, "state_detail": "booting kernel", "public_ip":
       null, "ipv6": null, "extra_networks": [], "dynamic_ip_required": false, "enable_ipv6":
-      false, "private_ip": "10.194.116.13", "creation_date": "2022-07-25T09:09:39.378696+00:00",
-      "modification_date": "2022-07-25T09:10:03.504843+00:00", "bootscript": {"id":
+      false, "private_ip": "10.74.102.25", "creation_date": "2022-07-25T09:43:40.014813+00:00",
+      "modification_date": "2022-07-25T09:44:05.400000+00:00", "bootscript": {"id":
       "fdfe150f-a870-4ce4-b432-9f56b5b995c1", "public": true, "title": "x86_64 mainline
       4.4.230 rev1", "architecture": "x86_64", "organization": "11111111-1111-4111-8111-111111111111",
       "project": "11111111-1111-4111-8111-111111111111", "kernel": "http://10.194.3.9/kernel/x86_64-mainline-lts-4.4-4.4.230-rev1/vmlinuz-4.4.230",
@@ -2886,18 +2921,18 @@ interactions:
       "bootcmdargs": "LINUX_COMMON scaleway boot=local nbd.max_part=16", "default":
       true, "zone": "fr-par-1"}, "security_group": {"id": "a8f5f9bb-20a7-4244-9521-4cde6f510e0e",
       "name": "Default security group"}, "location": {"zone_id": "par1", "platform_id":
-      "14", "cluster_id": "54", "hypervisor_id": "103", "node_id": "7"}, "maintenances":
+      "14", "cluster_id": "48", "hypervisor_id": "504", "node_id": "13"}, "maintenances":
       [], "allowed_actions": ["poweroff", "terminate", "reboot", "stop_in_place",
       "backup"], "placement_group": null, "private_nics": [], "zone": "fr-par-1"}}'
     headers:
       Content-Length:
-      - "2768"
+      - "2789"
       Content-Security-Policy:
       - default-src 'none'; frame-ancestors 'none'
       Content-Type:
       - application/json
       Date:
-      - Mon, 25 Jul 2022 09:10:13 GMT
+      - Mon, 25 Jul 2022 09:44:10 GMT
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -2907,7 +2942,7 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - 45ce25c2-8333-49bd-bec3-20578e2576e0
+      - bd63a3fe-ebaa-48f5-9f25-583b5590be7c
     status: 200 OK
     code: 200
     duration: ""
@@ -2918,30 +2953,30 @@ interactions:
       User-Agent:
       - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.18.2; linux; amd64) terraform-provider/develop
         terraform/terraform-tests
-    url: https://api.scaleway.com/instance/v1/zones/fr-par-1/servers/1d91b7a7-1ca2-4a6e-a99a-509a3ebc16dd
+    url: https://api.scaleway.com/instance/v1/zones/fr-par-1/servers/addbcc8c-72f7-49bc-9983-b14930e9fd22
     method: GET
   response:
-    body: '{"server": {"id": "1d91b7a7-1ca2-4a6e-a99a-509a3ebc16dd", "name": "tf-srv-sad-bartik",
+    body: '{"server": {"id": "addbcc8c-72f7-49bc-9983-b14930e9fd22", "name": "tf-srv-exciting-dubinsky",
       "arch": "x86_64", "commercial_type": "DEV1-S", "boot_type": "local", "organization":
       "ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b", "project": "ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b",
-      "hostname": "tf-srv-sad-bartik", "image": {"id": "881d7a33-4cfa-4046-b5cf-c33cb9c62fb6",
+      "hostname": "tf-srv-exciting-dubinsky", "image": {"id": "881d7a33-4cfa-4046-b5cf-c33cb9c62fb6",
       "name": "Ubuntu 20.04 Focal Fossa", "organization": "51b656e3-4865-41e8-adbc-0c45bdd780db",
       "project": "51b656e3-4865-41e8-adbc-0c45bdd780db", "root_volume": {"id": "deb50fd4-209d-4fe2-9e39-1d2c85912133",
       "name": "ubuntu_20.04_focal_fossa:volume-0", "volume_type": "unified", "size":
       10000000000}, "extra_volumes": {}, "public": true, "arch": "x86_64", "creation_date":
       "2022-01-21T08:38:33.552838+00:00", "modification_date": "2022-01-21T08:38:33.552838+00:00",
       "default_bootscript": null, "from_server": null, "state": "available", "tags":
-      [], "zone": "fr-par-1"}, "volumes": {"0": {"boot": false, "id": "f013d5ce-5d2f-4342-bb91-e761d9a0afa8",
+      [], "zone": "fr-par-1"}, "volumes": {"0": {"boot": false, "id": "051807ab-5e80-437e-8ca0-58afedfb03d9",
       "name": "ubuntu_20.04_focal_fossa:volume-0", "volume_type": "l_ssd", "export_uri":
       null, "organization": "ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b", "project": "ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b",
-      "server": {"id": "1d91b7a7-1ca2-4a6e-a99a-509a3ebc16dd", "name": "tf-srv-sad-bartik"},
-      "size": 20000000000, "state": "available", "creation_date": "2022-07-25T09:09:39.378696+00:00",
-      "modification_date": "2022-07-25T09:09:39.378696+00:00", "tags": [], "zone":
+      "server": {"id": "addbcc8c-72f7-49bc-9983-b14930e9fd22", "name": "tf-srv-exciting-dubinsky"},
+      "size": 20000000000, "state": "available", "creation_date": "2022-07-25T09:43:40.014813+00:00",
+      "modification_date": "2022-07-25T09:43:40.014813+00:00", "tags": [], "zone":
       "fr-par-1"}}, "tags": ["terraform-test", "scaleway_instance_server", "user_data"],
       "state": "running", "protected": false, "state_detail": "booting kernel", "public_ip":
       null, "ipv6": null, "extra_networks": [], "dynamic_ip_required": false, "enable_ipv6":
-      false, "private_ip": "10.194.116.13", "creation_date": "2022-07-25T09:09:39.378696+00:00",
-      "modification_date": "2022-07-25T09:10:03.504843+00:00", "bootscript": {"id":
+      false, "private_ip": "10.74.102.25", "creation_date": "2022-07-25T09:43:40.014813+00:00",
+      "modification_date": "2022-07-25T09:44:05.400000+00:00", "bootscript": {"id":
       "fdfe150f-a870-4ce4-b432-9f56b5b995c1", "public": true, "title": "x86_64 mainline
       4.4.230 rev1", "architecture": "x86_64", "organization": "11111111-1111-4111-8111-111111111111",
       "project": "11111111-1111-4111-8111-111111111111", "kernel": "http://10.194.3.9/kernel/x86_64-mainline-lts-4.4-4.4.230-rev1/vmlinuz-4.4.230",
@@ -2949,18 +2984,18 @@ interactions:
       "bootcmdargs": "LINUX_COMMON scaleway boot=local nbd.max_part=16", "default":
       true, "zone": "fr-par-1"}, "security_group": {"id": "a8f5f9bb-20a7-4244-9521-4cde6f510e0e",
       "name": "Default security group"}, "location": {"zone_id": "par1", "platform_id":
-      "14", "cluster_id": "54", "hypervisor_id": "103", "node_id": "7"}, "maintenances":
+      "14", "cluster_id": "48", "hypervisor_id": "504", "node_id": "13"}, "maintenances":
       [], "allowed_actions": ["poweroff", "terminate", "reboot", "stop_in_place",
       "backup"], "placement_group": null, "private_nics": [], "zone": "fr-par-1"}}'
     headers:
       Content-Length:
-      - "2768"
+      - "2789"
       Content-Security-Policy:
       - default-src 'none'; frame-ancestors 'none'
       Content-Type:
       - application/json
       Date:
-      - Mon, 25 Jul 2022 09:10:13 GMT
+      - Mon, 25 Jul 2022 09:44:10 GMT
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -2970,7 +3005,7 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - bbcab1c9-a527-4aab-b9a8-25013b308880
+      - c2ea078f-8fb3-4fa3-99de-f559ede68390
     status: 200 OK
     code: 200
     duration: ""
@@ -2981,7 +3016,7 @@ interactions:
       User-Agent:
       - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.18.2; linux; amd64) terraform-provider/develop
         terraform/terraform-tests
-    url: https://api.scaleway.com/instance/v1/zones/fr-par-1/servers/1d91b7a7-1ca2-4a6e-a99a-509a3ebc16dd/user_data
+    url: https://api.scaleway.com/instance/v1/zones/fr-par-1/servers/addbcc8c-72f7-49bc-9983-b14930e9fd22/user_data
     method: GET
   response:
     body: '{"user_data": ["cloud-init"]}'
@@ -2993,7 +3028,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Mon, 25 Jul 2022 09:10:14 GMT
+      - Mon, 25 Jul 2022 09:44:10 GMT
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -3003,7 +3038,7 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - a29a720d-88e8-44ef-accb-61fcb4a3168d
+      - 31f74979-7e7d-4f60-9cfe-bebe5da087e6
     status: 200 OK
     code: 200
     duration: ""
@@ -3014,7 +3049,7 @@ interactions:
       User-Agent:
       - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.18.2; linux; amd64) terraform-provider/develop
         terraform/terraform-tests
-    url: https://api.scaleway.com/instance/v1/zones/fr-par-1/servers/1d91b7a7-1ca2-4a6e-a99a-509a3ebc16dd/user_data/cloud-init
+    url: https://api.scaleway.com/instance/v1/zones/fr-par-1/servers/addbcc8c-72f7-49bc-9983-b14930e9fd22/user_data/cloud-init
     method: GET
   response:
     body: |
@@ -3029,7 +3064,7 @@ interactions:
       Content-Type:
       - text/plain
       Date:
-      - Mon, 25 Jul 2022 09:10:14 GMT
+      - Mon, 25 Jul 2022 09:44:11 GMT
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -3039,7 +3074,7 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - b1f21d6b-2083-45a3-a532-e7f41629525a
+      - 2e33c2f4-c8c5-46f7-ad85-342cfe392559
     status: 200 OK
     code: 200
     duration: ""
@@ -3050,7 +3085,7 @@ interactions:
       User-Agent:
       - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.18.2; linux; amd64) terraform-provider/develop
         terraform/terraform-tests
-    url: https://api.scaleway.com/instance/v1/zones/fr-par-1/servers/1d91b7a7-1ca2-4a6e-a99a-509a3ebc16dd/private_nics
+    url: https://api.scaleway.com/instance/v1/zones/fr-par-1/servers/addbcc8c-72f7-49bc-9983-b14930e9fd22/private_nics
     method: GET
   response:
     body: '{"private_nics": []}'
@@ -3062,7 +3097,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Mon, 25 Jul 2022 09:10:14 GMT
+      - Mon, 25 Jul 2022 09:44:11 GMT
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -3072,7 +3107,7 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - adf383d5-1e29-4c29-b1c8-3231659e844c
+      - 11703ec6-75bb-4d23-815e-d6c30d71c2e8
     status: 200 OK
     code: 200
     duration: ""
@@ -3083,30 +3118,30 @@ interactions:
       User-Agent:
       - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.18.2; linux; amd64) terraform-provider/develop
         terraform/terraform-tests
-    url: https://api.scaleway.com/instance/v1/zones/fr-par-1/servers/1d91b7a7-1ca2-4a6e-a99a-509a3ebc16dd
+    url: https://api.scaleway.com/instance/v1/zones/fr-par-1/servers/addbcc8c-72f7-49bc-9983-b14930e9fd22
     method: GET
   response:
-    body: '{"server": {"id": "1d91b7a7-1ca2-4a6e-a99a-509a3ebc16dd", "name": "tf-srv-sad-bartik",
+    body: '{"server": {"id": "addbcc8c-72f7-49bc-9983-b14930e9fd22", "name": "tf-srv-exciting-dubinsky",
       "arch": "x86_64", "commercial_type": "DEV1-S", "boot_type": "local", "organization":
       "ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b", "project": "ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b",
-      "hostname": "tf-srv-sad-bartik", "image": {"id": "881d7a33-4cfa-4046-b5cf-c33cb9c62fb6",
+      "hostname": "tf-srv-exciting-dubinsky", "image": {"id": "881d7a33-4cfa-4046-b5cf-c33cb9c62fb6",
       "name": "Ubuntu 20.04 Focal Fossa", "organization": "51b656e3-4865-41e8-adbc-0c45bdd780db",
       "project": "51b656e3-4865-41e8-adbc-0c45bdd780db", "root_volume": {"id": "deb50fd4-209d-4fe2-9e39-1d2c85912133",
       "name": "ubuntu_20.04_focal_fossa:volume-0", "volume_type": "unified", "size":
       10000000000}, "extra_volumes": {}, "public": true, "arch": "x86_64", "creation_date":
       "2022-01-21T08:38:33.552838+00:00", "modification_date": "2022-01-21T08:38:33.552838+00:00",
       "default_bootscript": null, "from_server": null, "state": "available", "tags":
-      [], "zone": "fr-par-1"}, "volumes": {"0": {"boot": false, "id": "f013d5ce-5d2f-4342-bb91-e761d9a0afa8",
+      [], "zone": "fr-par-1"}, "volumes": {"0": {"boot": false, "id": "051807ab-5e80-437e-8ca0-58afedfb03d9",
       "name": "ubuntu_20.04_focal_fossa:volume-0", "volume_type": "l_ssd", "export_uri":
       null, "organization": "ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b", "project": "ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b",
-      "server": {"id": "1d91b7a7-1ca2-4a6e-a99a-509a3ebc16dd", "name": "tf-srv-sad-bartik"},
-      "size": 20000000000, "state": "available", "creation_date": "2022-07-25T09:09:39.378696+00:00",
-      "modification_date": "2022-07-25T09:09:39.378696+00:00", "tags": [], "zone":
+      "server": {"id": "addbcc8c-72f7-49bc-9983-b14930e9fd22", "name": "tf-srv-exciting-dubinsky"},
+      "size": 20000000000, "state": "available", "creation_date": "2022-07-25T09:43:40.014813+00:00",
+      "modification_date": "2022-07-25T09:43:40.014813+00:00", "tags": [], "zone":
       "fr-par-1"}}, "tags": ["terraform-test", "scaleway_instance_server", "user_data"],
       "state": "running", "protected": false, "state_detail": "booting kernel", "public_ip":
       null, "ipv6": null, "extra_networks": [], "dynamic_ip_required": false, "enable_ipv6":
-      false, "private_ip": "10.194.116.13", "creation_date": "2022-07-25T09:09:39.378696+00:00",
-      "modification_date": "2022-07-25T09:10:03.504843+00:00", "bootscript": {"id":
+      false, "private_ip": "10.74.102.25", "creation_date": "2022-07-25T09:43:40.014813+00:00",
+      "modification_date": "2022-07-25T09:44:05.400000+00:00", "bootscript": {"id":
       "fdfe150f-a870-4ce4-b432-9f56b5b995c1", "public": true, "title": "x86_64 mainline
       4.4.230 rev1", "architecture": "x86_64", "organization": "11111111-1111-4111-8111-111111111111",
       "project": "11111111-1111-4111-8111-111111111111", "kernel": "http://10.194.3.9/kernel/x86_64-mainline-lts-4.4-4.4.230-rev1/vmlinuz-4.4.230",
@@ -3114,18 +3149,18 @@ interactions:
       "bootcmdargs": "LINUX_COMMON scaleway boot=local nbd.max_part=16", "default":
       true, "zone": "fr-par-1"}, "security_group": {"id": "a8f5f9bb-20a7-4244-9521-4cde6f510e0e",
       "name": "Default security group"}, "location": {"zone_id": "par1", "platform_id":
-      "14", "cluster_id": "54", "hypervisor_id": "103", "node_id": "7"}, "maintenances":
+      "14", "cluster_id": "48", "hypervisor_id": "504", "node_id": "13"}, "maintenances":
       [], "allowed_actions": ["poweroff", "terminate", "reboot", "stop_in_place",
       "backup"], "placement_group": null, "private_nics": [], "zone": "fr-par-1"}}'
     headers:
       Content-Length:
-      - "2768"
+      - "2789"
       Content-Security-Policy:
       - default-src 'none'; frame-ancestors 'none'
       Content-Type:
       - application/json
       Date:
-      - Mon, 25 Jul 2022 09:10:15 GMT
+      - Mon, 25 Jul 2022 09:44:11 GMT
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -3135,7 +3170,7 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - 36a2eecd-f8eb-47d2-999b-0f98e299acd0
+      - db1d4ce1-a9c5-4a16-8aa2-d9f2f8a45d1a
     status: 200 OK
     code: 200
     duration: ""
@@ -3148,13 +3183,13 @@ interactions:
       User-Agent:
       - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.18.2; linux; amd64) terraform-provider/develop
         terraform/terraform-tests
-    url: https://api.scaleway.com/instance/v1/zones/fr-par-1/servers/1d91b7a7-1ca2-4a6e-a99a-509a3ebc16dd/action
+    url: https://api.scaleway.com/instance/v1/zones/fr-par-1/servers/addbcc8c-72f7-49bc-9983-b14930e9fd22/action
     method: POST
   response:
-    body: '{"task": {"id": "0be922b1-3d84-4be4-b388-a55e121ccbf0", "description":
-      "server_poweroff", "status": "pending", "href_from": "/servers/1d91b7a7-1ca2-4a6e-a99a-509a3ebc16dd/action",
-      "href_result": "/servers/1d91b7a7-1ca2-4a6e-a99a-509a3ebc16dd", "started_at":
-      "2022-07-25T09:10:15.447553+00:00", "terminated_at": null}}'
+    body: '{"task": {"id": "2b2c175c-e812-41dd-9114-9aa7c1929b8a", "description":
+      "server_poweroff", "status": "pending", "href_from": "/servers/addbcc8c-72f7-49bc-9983-b14930e9fd22/action",
+      "href_result": "/servers/addbcc8c-72f7-49bc-9983-b14930e9fd22", "started_at":
+      "2022-07-25T09:44:11.958379+00:00", "terminated_at": null}}'
     headers:
       Content-Length:
       - "317"
@@ -3163,9 +3198,9 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Mon, 25 Jul 2022 09:10:15 GMT
+      - Mon, 25 Jul 2022 09:44:12 GMT
       Location:
-      - https://api.scaleway.com/instance/v1/zones/fr-par-1/tasks/0be922b1-3d84-4be4-b388-a55e121ccbf0
+      - https://api.scaleway.com/instance/v1/zones/fr-par-1/tasks/2b2c175c-e812-41dd-9114-9aa7c1929b8a
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -3175,7 +3210,7 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - 9248e4e6-ea81-4990-bfcd-90239e8c7889
+      - 84730722-6bce-4bef-8d47-bff8e82ac28d
     status: 202 Accepted
     code: 202
     duration: ""
@@ -3186,30 +3221,30 @@ interactions:
       User-Agent:
       - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.18.2; linux; amd64) terraform-provider/develop
         terraform/terraform-tests
-    url: https://api.scaleway.com/instance/v1/zones/fr-par-1/servers/1d91b7a7-1ca2-4a6e-a99a-509a3ebc16dd
+    url: https://api.scaleway.com/instance/v1/zones/fr-par-1/servers/addbcc8c-72f7-49bc-9983-b14930e9fd22
     method: GET
   response:
-    body: '{"server": {"id": "1d91b7a7-1ca2-4a6e-a99a-509a3ebc16dd", "name": "tf-srv-sad-bartik",
+    body: '{"server": {"id": "addbcc8c-72f7-49bc-9983-b14930e9fd22", "name": "tf-srv-exciting-dubinsky",
       "arch": "x86_64", "commercial_type": "DEV1-S", "boot_type": "local", "organization":
       "ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b", "project": "ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b",
-      "hostname": "tf-srv-sad-bartik", "image": {"id": "881d7a33-4cfa-4046-b5cf-c33cb9c62fb6",
+      "hostname": "tf-srv-exciting-dubinsky", "image": {"id": "881d7a33-4cfa-4046-b5cf-c33cb9c62fb6",
       "name": "Ubuntu 20.04 Focal Fossa", "organization": "51b656e3-4865-41e8-adbc-0c45bdd780db",
       "project": "51b656e3-4865-41e8-adbc-0c45bdd780db", "root_volume": {"id": "deb50fd4-209d-4fe2-9e39-1d2c85912133",
       "name": "ubuntu_20.04_focal_fossa:volume-0", "volume_type": "unified", "size":
       10000000000}, "extra_volumes": {}, "public": true, "arch": "x86_64", "creation_date":
       "2022-01-21T08:38:33.552838+00:00", "modification_date": "2022-01-21T08:38:33.552838+00:00",
       "default_bootscript": null, "from_server": null, "state": "available", "tags":
-      [], "zone": "fr-par-1"}, "volumes": {"0": {"boot": false, "id": "f013d5ce-5d2f-4342-bb91-e761d9a0afa8",
+      [], "zone": "fr-par-1"}, "volumes": {"0": {"boot": false, "id": "051807ab-5e80-437e-8ca0-58afedfb03d9",
       "name": "ubuntu_20.04_focal_fossa:volume-0", "volume_type": "l_ssd", "export_uri":
       null, "organization": "ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b", "project": "ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b",
-      "server": {"id": "1d91b7a7-1ca2-4a6e-a99a-509a3ebc16dd", "name": "tf-srv-sad-bartik"},
-      "size": 20000000000, "state": "available", "creation_date": "2022-07-25T09:09:39.378696+00:00",
-      "modification_date": "2022-07-25T09:09:39.378696+00:00", "tags": [], "zone":
+      "server": {"id": "addbcc8c-72f7-49bc-9983-b14930e9fd22", "name": "tf-srv-exciting-dubinsky"},
+      "size": 20000000000, "state": "available", "creation_date": "2022-07-25T09:43:40.014813+00:00",
+      "modification_date": "2022-07-25T09:43:40.014813+00:00", "tags": [], "zone":
       "fr-par-1"}}, "tags": ["terraform-test", "scaleway_instance_server", "user_data"],
       "state": "stopping", "protected": false, "state_detail": "stopping", "public_ip":
       null, "ipv6": null, "extra_networks": [], "dynamic_ip_required": false, "enable_ipv6":
-      false, "private_ip": "10.194.116.13", "creation_date": "2022-07-25T09:09:39.378696+00:00",
-      "modification_date": "2022-07-25T09:10:15.242667+00:00", "bootscript": {"id":
+      false, "private_ip": "10.74.102.25", "creation_date": "2022-07-25T09:43:40.014813+00:00",
+      "modification_date": "2022-07-25T09:44:11.604507+00:00", "bootscript": {"id":
       "fdfe150f-a870-4ce4-b432-9f56b5b995c1", "public": true, "title": "x86_64 mainline
       4.4.230 rev1", "architecture": "x86_64", "organization": "11111111-1111-4111-8111-111111111111",
       "project": "11111111-1111-4111-8111-111111111111", "kernel": "http://10.194.3.9/kernel/x86_64-mainline-lts-4.4-4.4.230-rev1/vmlinuz-4.4.230",
@@ -3217,18 +3252,18 @@ interactions:
       "bootcmdargs": "LINUX_COMMON scaleway boot=local nbd.max_part=16", "default":
       true, "zone": "fr-par-1"}, "security_group": {"id": "a8f5f9bb-20a7-4244-9521-4cde6f510e0e",
       "name": "Default security group"}, "location": {"zone_id": "par1", "platform_id":
-      "14", "cluster_id": "54", "hypervisor_id": "103", "node_id": "7"}, "maintenances":
+      "14", "cluster_id": "48", "hypervisor_id": "504", "node_id": "13"}, "maintenances":
       [], "allowed_actions": ["stop_in_place", "backup"], "placement_group": null,
       "private_nics": [], "zone": "fr-par-1"}}'
     headers:
       Content-Length:
-      - "2728"
+      - "2749"
       Content-Security-Policy:
       - default-src 'none'; frame-ancestors 'none'
       Content-Type:
       - application/json
       Date:
-      - Mon, 25 Jul 2022 09:10:15 GMT
+      - Mon, 25 Jul 2022 09:44:12 GMT
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -3238,7 +3273,7 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - ff6196bb-cefc-4c7b-87f4-7e72abe16a6d
+      - 53ad28ec-f817-4966-ba4d-fba0a8fd175f
     status: 200 OK
     code: 200
     duration: ""
@@ -3249,30 +3284,30 @@ interactions:
       User-Agent:
       - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.18.2; linux; amd64) terraform-provider/develop
         terraform/terraform-tests
-    url: https://api.scaleway.com/instance/v1/zones/fr-par-1/servers/1d91b7a7-1ca2-4a6e-a99a-509a3ebc16dd
+    url: https://api.scaleway.com/instance/v1/zones/fr-par-1/servers/addbcc8c-72f7-49bc-9983-b14930e9fd22
     method: GET
   response:
-    body: '{"server": {"id": "1d91b7a7-1ca2-4a6e-a99a-509a3ebc16dd", "name": "tf-srv-sad-bartik",
+    body: '{"server": {"id": "addbcc8c-72f7-49bc-9983-b14930e9fd22", "name": "tf-srv-exciting-dubinsky",
       "arch": "x86_64", "commercial_type": "DEV1-S", "boot_type": "local", "organization":
       "ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b", "project": "ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b",
-      "hostname": "tf-srv-sad-bartik", "image": {"id": "881d7a33-4cfa-4046-b5cf-c33cb9c62fb6",
+      "hostname": "tf-srv-exciting-dubinsky", "image": {"id": "881d7a33-4cfa-4046-b5cf-c33cb9c62fb6",
       "name": "Ubuntu 20.04 Focal Fossa", "organization": "51b656e3-4865-41e8-adbc-0c45bdd780db",
       "project": "51b656e3-4865-41e8-adbc-0c45bdd780db", "root_volume": {"id": "deb50fd4-209d-4fe2-9e39-1d2c85912133",
       "name": "ubuntu_20.04_focal_fossa:volume-0", "volume_type": "unified", "size":
       10000000000}, "extra_volumes": {}, "public": true, "arch": "x86_64", "creation_date":
       "2022-01-21T08:38:33.552838+00:00", "modification_date": "2022-01-21T08:38:33.552838+00:00",
       "default_bootscript": null, "from_server": null, "state": "available", "tags":
-      [], "zone": "fr-par-1"}, "volumes": {"0": {"boot": false, "id": "f013d5ce-5d2f-4342-bb91-e761d9a0afa8",
+      [], "zone": "fr-par-1"}, "volumes": {"0": {"boot": false, "id": "051807ab-5e80-437e-8ca0-58afedfb03d9",
       "name": "ubuntu_20.04_focal_fossa:volume-0", "volume_type": "l_ssd", "export_uri":
       null, "organization": "ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b", "project": "ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b",
-      "server": {"id": "1d91b7a7-1ca2-4a6e-a99a-509a3ebc16dd", "name": "tf-srv-sad-bartik"},
-      "size": 20000000000, "state": "available", "creation_date": "2022-07-25T09:09:39.378696+00:00",
-      "modification_date": "2022-07-25T09:09:39.378696+00:00", "tags": [], "zone":
+      "server": {"id": "addbcc8c-72f7-49bc-9983-b14930e9fd22", "name": "tf-srv-exciting-dubinsky"},
+      "size": 20000000000, "state": "available", "creation_date": "2022-07-25T09:43:40.014813+00:00",
+      "modification_date": "2022-07-25T09:43:40.014813+00:00", "tags": [], "zone":
       "fr-par-1"}}, "tags": ["terraform-test", "scaleway_instance_server", "user_data"],
       "state": "stopping", "protected": false, "state_detail": "stopping", "public_ip":
       null, "ipv6": null, "extra_networks": [], "dynamic_ip_required": false, "enable_ipv6":
-      false, "private_ip": "10.194.116.13", "creation_date": "2022-07-25T09:09:39.378696+00:00",
-      "modification_date": "2022-07-25T09:10:15.242667+00:00", "bootscript": {"id":
+      false, "private_ip": "10.74.102.25", "creation_date": "2022-07-25T09:43:40.014813+00:00",
+      "modification_date": "2022-07-25T09:44:11.604507+00:00", "bootscript": {"id":
       "fdfe150f-a870-4ce4-b432-9f56b5b995c1", "public": true, "title": "x86_64 mainline
       4.4.230 rev1", "architecture": "x86_64", "organization": "11111111-1111-4111-8111-111111111111",
       "project": "11111111-1111-4111-8111-111111111111", "kernel": "http://10.194.3.9/kernel/x86_64-mainline-lts-4.4-4.4.230-rev1/vmlinuz-4.4.230",
@@ -3280,18 +3315,18 @@ interactions:
       "bootcmdargs": "LINUX_COMMON scaleway boot=local nbd.max_part=16", "default":
       true, "zone": "fr-par-1"}, "security_group": {"id": "a8f5f9bb-20a7-4244-9521-4cde6f510e0e",
       "name": "Default security group"}, "location": {"zone_id": "par1", "platform_id":
-      "14", "cluster_id": "54", "hypervisor_id": "103", "node_id": "7"}, "maintenances":
+      "14", "cluster_id": "48", "hypervisor_id": "504", "node_id": "13"}, "maintenances":
       [], "allowed_actions": ["stop_in_place", "backup"], "placement_group": null,
       "private_nics": [], "zone": "fr-par-1"}}'
     headers:
       Content-Length:
-      - "2728"
+      - "2749"
       Content-Security-Policy:
       - default-src 'none'; frame-ancestors 'none'
       Content-Type:
       - application/json
       Date:
-      - Mon, 25 Jul 2022 09:10:21 GMT
+      - Mon, 25 Jul 2022 09:44:17 GMT
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -3301,7 +3336,7 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - 4e6f71d7-89dd-4e90-a062-4cc9ed83320f
+      - 2f75f5ef-df5d-47bf-8e4e-44ca25196c82
     status: 200 OK
     code: 200
     duration: ""
@@ -3312,30 +3347,93 @@ interactions:
       User-Agent:
       - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.18.2; linux; amd64) terraform-provider/develop
         terraform/terraform-tests
-    url: https://api.scaleway.com/instance/v1/zones/fr-par-1/servers/1d91b7a7-1ca2-4a6e-a99a-509a3ebc16dd
+    url: https://api.scaleway.com/instance/v1/zones/fr-par-1/servers/addbcc8c-72f7-49bc-9983-b14930e9fd22
     method: GET
   response:
-    body: '{"server": {"id": "1d91b7a7-1ca2-4a6e-a99a-509a3ebc16dd", "name": "tf-srv-sad-bartik",
+    body: '{"server": {"id": "addbcc8c-72f7-49bc-9983-b14930e9fd22", "name": "tf-srv-exciting-dubinsky",
       "arch": "x86_64", "commercial_type": "DEV1-S", "boot_type": "local", "organization":
       "ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b", "project": "ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b",
-      "hostname": "tf-srv-sad-bartik", "image": {"id": "881d7a33-4cfa-4046-b5cf-c33cb9c62fb6",
+      "hostname": "tf-srv-exciting-dubinsky", "image": {"id": "881d7a33-4cfa-4046-b5cf-c33cb9c62fb6",
       "name": "Ubuntu 20.04 Focal Fossa", "organization": "51b656e3-4865-41e8-adbc-0c45bdd780db",
       "project": "51b656e3-4865-41e8-adbc-0c45bdd780db", "root_volume": {"id": "deb50fd4-209d-4fe2-9e39-1d2c85912133",
       "name": "ubuntu_20.04_focal_fossa:volume-0", "volume_type": "unified", "size":
       10000000000}, "extra_volumes": {}, "public": true, "arch": "x86_64", "creation_date":
       "2022-01-21T08:38:33.552838+00:00", "modification_date": "2022-01-21T08:38:33.552838+00:00",
       "default_bootscript": null, "from_server": null, "state": "available", "tags":
-      [], "zone": "fr-par-1"}, "volumes": {"0": {"boot": false, "id": "f013d5ce-5d2f-4342-bb91-e761d9a0afa8",
+      [], "zone": "fr-par-1"}, "volumes": {"0": {"boot": false, "id": "051807ab-5e80-437e-8ca0-58afedfb03d9",
       "name": "ubuntu_20.04_focal_fossa:volume-0", "volume_type": "l_ssd", "export_uri":
       null, "organization": "ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b", "project": "ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b",
-      "server": {"id": "1d91b7a7-1ca2-4a6e-a99a-509a3ebc16dd", "name": "tf-srv-sad-bartik"},
-      "size": 20000000000, "state": "available", "creation_date": "2022-07-25T09:09:39.378696+00:00",
-      "modification_date": "2022-07-25T09:09:39.378696+00:00", "tags": [], "zone":
+      "server": {"id": "addbcc8c-72f7-49bc-9983-b14930e9fd22", "name": "tf-srv-exciting-dubinsky"},
+      "size": 20000000000, "state": "available", "creation_date": "2022-07-25T09:43:40.014813+00:00",
+      "modification_date": "2022-07-25T09:43:40.014813+00:00", "tags": [], "zone":
+      "fr-par-1"}}, "tags": ["terraform-test", "scaleway_instance_server", "user_data"],
+      "state": "stopping", "protected": false, "state_detail": "stopping", "public_ip":
+      null, "ipv6": null, "extra_networks": [], "dynamic_ip_required": false, "enable_ipv6":
+      false, "private_ip": "10.74.102.25", "creation_date": "2022-07-25T09:43:40.014813+00:00",
+      "modification_date": "2022-07-25T09:44:11.604507+00:00", "bootscript": {"id":
+      "fdfe150f-a870-4ce4-b432-9f56b5b995c1", "public": true, "title": "x86_64 mainline
+      4.4.230 rev1", "architecture": "x86_64", "organization": "11111111-1111-4111-8111-111111111111",
+      "project": "11111111-1111-4111-8111-111111111111", "kernel": "http://10.194.3.9/kernel/x86_64-mainline-lts-4.4-4.4.230-rev1/vmlinuz-4.4.230",
+      "dtb": "", "initrd": "http://10.194.3.9/initrd/initrd-Linux-x86_64-v3.14.6.gz",
+      "bootcmdargs": "LINUX_COMMON scaleway boot=local nbd.max_part=16", "default":
+      true, "zone": "fr-par-1"}, "security_group": {"id": "a8f5f9bb-20a7-4244-9521-4cde6f510e0e",
+      "name": "Default security group"}, "location": {"zone_id": "par1", "platform_id":
+      "14", "cluster_id": "48", "hypervisor_id": "504", "node_id": "13"}, "maintenances":
+      [], "allowed_actions": ["stop_in_place", "backup"], "placement_group": null,
+      "private_nics": [], "zone": "fr-par-1"}}'
+    headers:
+      Content-Length:
+      - "2749"
+      Content-Security-Policy:
+      - default-src 'none'; frame-ancestors 'none'
+      Content-Type:
+      - application/json
+      Date:
+      - Mon, 25 Jul 2022 09:44:22 GMT
+      Server:
+      - Scaleway API-Gateway
+      Strict-Transport-Security:
+      - max-age=63072000
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+      X-Request-Id:
+      - 0208f4b9-2701-4b68-9b08-4eb83d73a1d5
+    status: 200 OK
+    code: 200
+    duration: ""
+- request:
+    body: ""
+    form: {}
+    headers:
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.18.2; linux; amd64) terraform-provider/develop
+        terraform/terraform-tests
+    url: https://api.scaleway.com/instance/v1/zones/fr-par-1/servers/addbcc8c-72f7-49bc-9983-b14930e9fd22
+    method: GET
+  response:
+    body: '{"server": {"id": "addbcc8c-72f7-49bc-9983-b14930e9fd22", "name": "tf-srv-exciting-dubinsky",
+      "arch": "x86_64", "commercial_type": "DEV1-S", "boot_type": "local", "organization":
+      "ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b", "project": "ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b",
+      "hostname": "tf-srv-exciting-dubinsky", "image": {"id": "881d7a33-4cfa-4046-b5cf-c33cb9c62fb6",
+      "name": "Ubuntu 20.04 Focal Fossa", "organization": "51b656e3-4865-41e8-adbc-0c45bdd780db",
+      "project": "51b656e3-4865-41e8-adbc-0c45bdd780db", "root_volume": {"id": "deb50fd4-209d-4fe2-9e39-1d2c85912133",
+      "name": "ubuntu_20.04_focal_fossa:volume-0", "volume_type": "unified", "size":
+      10000000000}, "extra_volumes": {}, "public": true, "arch": "x86_64", "creation_date":
+      "2022-01-21T08:38:33.552838+00:00", "modification_date": "2022-01-21T08:38:33.552838+00:00",
+      "default_bootscript": null, "from_server": null, "state": "available", "tags":
+      [], "zone": "fr-par-1"}, "volumes": {"0": {"boot": false, "id": "051807ab-5e80-437e-8ca0-58afedfb03d9",
+      "name": "ubuntu_20.04_focal_fossa:volume-0", "volume_type": "l_ssd", "export_uri":
+      null, "organization": "ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b", "project": "ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b",
+      "server": {"id": "addbcc8c-72f7-49bc-9983-b14930e9fd22", "name": "tf-srv-exciting-dubinsky"},
+      "size": 20000000000, "state": "available", "creation_date": "2022-07-25T09:43:40.014813+00:00",
+      "modification_date": "2022-07-25T09:43:40.014813+00:00", "tags": [], "zone":
       "fr-par-1"}}, "tags": ["terraform-test", "scaleway_instance_server", "user_data"],
       "state": "stopping", "protected": false, "state_detail": "booted", "public_ip":
       null, "ipv6": null, "extra_networks": [], "dynamic_ip_required": false, "enable_ipv6":
-      false, "private_ip": "10.194.116.13", "creation_date": "2022-07-25T09:09:39.378696+00:00",
-      "modification_date": "2022-07-25T09:10:15.242667+00:00", "bootscript": {"id":
+      false, "private_ip": "10.74.102.25", "creation_date": "2022-07-25T09:43:40.014813+00:00",
+      "modification_date": "2022-07-25T09:44:11.604507+00:00", "bootscript": {"id":
       "fdfe150f-a870-4ce4-b432-9f56b5b995c1", "public": true, "title": "x86_64 mainline
       4.4.230 rev1", "architecture": "x86_64", "organization": "11111111-1111-4111-8111-111111111111",
       "project": "11111111-1111-4111-8111-111111111111", "kernel": "http://10.194.3.9/kernel/x86_64-mainline-lts-4.4-4.4.230-rev1/vmlinuz-4.4.230",
@@ -3343,18 +3441,18 @@ interactions:
       "bootcmdargs": "LINUX_COMMON scaleway boot=local nbd.max_part=16", "default":
       true, "zone": "fr-par-1"}, "security_group": {"id": "a8f5f9bb-20a7-4244-9521-4cde6f510e0e",
       "name": "Default security group"}, "location": {"zone_id": "par1", "platform_id":
-      "14", "cluster_id": "54", "hypervisor_id": "103", "node_id": "7"}, "maintenances":
+      "14", "cluster_id": "48", "hypervisor_id": "504", "node_id": "13"}, "maintenances":
       [], "allowed_actions": ["stop_in_place", "backup"], "placement_group": null,
       "private_nics": [], "zone": "fr-par-1"}}'
     headers:
       Content-Length:
-      - "2726"
+      - "2747"
       Content-Security-Policy:
       - default-src 'none'; frame-ancestors 'none'
       Content-Type:
       - application/json
       Date:
-      - Mon, 25 Jul 2022 09:10:26 GMT
+      - Mon, 25 Jul 2022 09:44:28 GMT
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -3364,7 +3462,7 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - 1952d451-0511-4aef-b5b4-fba711b1dc8d
+      - f1db4ce7-ffcd-4dd5-8f7d-0895d113fcf2
     status: 200 OK
     code: 200
     duration: ""
@@ -3375,30 +3473,30 @@ interactions:
       User-Agent:
       - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.18.2; linux; amd64) terraform-provider/develop
         terraform/terraform-tests
-    url: https://api.scaleway.com/instance/v1/zones/fr-par-1/servers/1d91b7a7-1ca2-4a6e-a99a-509a3ebc16dd
+    url: https://api.scaleway.com/instance/v1/zones/fr-par-1/servers/addbcc8c-72f7-49bc-9983-b14930e9fd22
     method: GET
   response:
-    body: '{"server": {"id": "1d91b7a7-1ca2-4a6e-a99a-509a3ebc16dd", "name": "tf-srv-sad-bartik",
+    body: '{"server": {"id": "addbcc8c-72f7-49bc-9983-b14930e9fd22", "name": "tf-srv-exciting-dubinsky",
       "arch": "x86_64", "commercial_type": "DEV1-S", "boot_type": "local", "organization":
       "ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b", "project": "ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b",
-      "hostname": "tf-srv-sad-bartik", "image": {"id": "881d7a33-4cfa-4046-b5cf-c33cb9c62fb6",
+      "hostname": "tf-srv-exciting-dubinsky", "image": {"id": "881d7a33-4cfa-4046-b5cf-c33cb9c62fb6",
       "name": "Ubuntu 20.04 Focal Fossa", "organization": "51b656e3-4865-41e8-adbc-0c45bdd780db",
       "project": "51b656e3-4865-41e8-adbc-0c45bdd780db", "root_volume": {"id": "deb50fd4-209d-4fe2-9e39-1d2c85912133",
       "name": "ubuntu_20.04_focal_fossa:volume-0", "volume_type": "unified", "size":
       10000000000}, "extra_volumes": {}, "public": true, "arch": "x86_64", "creation_date":
       "2022-01-21T08:38:33.552838+00:00", "modification_date": "2022-01-21T08:38:33.552838+00:00",
       "default_bootscript": null, "from_server": null, "state": "available", "tags":
-      [], "zone": "fr-par-1"}, "volumes": {"0": {"boot": false, "id": "f013d5ce-5d2f-4342-bb91-e761d9a0afa8",
+      [], "zone": "fr-par-1"}, "volumes": {"0": {"boot": false, "id": "051807ab-5e80-437e-8ca0-58afedfb03d9",
       "name": "ubuntu_20.04_focal_fossa:volume-0", "volume_type": "l_ssd", "export_uri":
       null, "organization": "ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b", "project": "ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b",
-      "server": {"id": "1d91b7a7-1ca2-4a6e-a99a-509a3ebc16dd", "name": "tf-srv-sad-bartik"},
-      "size": 20000000000, "state": "available", "creation_date": "2022-07-25T09:09:39.378696+00:00",
-      "modification_date": "2022-07-25T09:09:39.378696+00:00", "tags": [], "zone":
+      "server": {"id": "addbcc8c-72f7-49bc-9983-b14930e9fd22", "name": "tf-srv-exciting-dubinsky"},
+      "size": 20000000000, "state": "available", "creation_date": "2022-07-25T09:43:40.014813+00:00",
+      "modification_date": "2022-07-25T09:43:40.014813+00:00", "tags": [], "zone":
       "fr-par-1"}}, "tags": ["terraform-test", "scaleway_instance_server", "user_data"],
       "state": "stopping", "protected": false, "state_detail": "booted", "public_ip":
       null, "ipv6": null, "extra_networks": [], "dynamic_ip_required": false, "enable_ipv6":
-      false, "private_ip": "10.194.116.13", "creation_date": "2022-07-25T09:09:39.378696+00:00",
-      "modification_date": "2022-07-25T09:10:15.242667+00:00", "bootscript": {"id":
+      false, "private_ip": "10.74.102.25", "creation_date": "2022-07-25T09:43:40.014813+00:00",
+      "modification_date": "2022-07-25T09:44:11.604507+00:00", "bootscript": {"id":
       "fdfe150f-a870-4ce4-b432-9f56b5b995c1", "public": true, "title": "x86_64 mainline
       4.4.230 rev1", "architecture": "x86_64", "organization": "11111111-1111-4111-8111-111111111111",
       "project": "11111111-1111-4111-8111-111111111111", "kernel": "http://10.194.3.9/kernel/x86_64-mainline-lts-4.4-4.4.230-rev1/vmlinuz-4.4.230",
@@ -3406,18 +3504,18 @@ interactions:
       "bootcmdargs": "LINUX_COMMON scaleway boot=local nbd.max_part=16", "default":
       true, "zone": "fr-par-1"}, "security_group": {"id": "a8f5f9bb-20a7-4244-9521-4cde6f510e0e",
       "name": "Default security group"}, "location": {"zone_id": "par1", "platform_id":
-      "14", "cluster_id": "54", "hypervisor_id": "103", "node_id": "7"}, "maintenances":
+      "14", "cluster_id": "48", "hypervisor_id": "504", "node_id": "13"}, "maintenances":
       [], "allowed_actions": ["stop_in_place", "backup"], "placement_group": null,
       "private_nics": [], "zone": "fr-par-1"}}'
     headers:
       Content-Length:
-      - "2726"
+      - "2747"
       Content-Security-Policy:
       - default-src 'none'; frame-ancestors 'none'
       Content-Type:
       - application/json
       Date:
-      - Mon, 25 Jul 2022 09:10:31 GMT
+      - Mon, 25 Jul 2022 09:44:33 GMT
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -3427,7 +3525,7 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - 367a76bf-1bd6-4710-9141-53b14070c991
+      - 5e66ff23-da6d-4045-bbe0-04390b98d4e5
     status: 200 OK
     code: 200
     duration: ""
@@ -3438,30 +3536,30 @@ interactions:
       User-Agent:
       - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.18.2; linux; amd64) terraform-provider/develop
         terraform/terraform-tests
-    url: https://api.scaleway.com/instance/v1/zones/fr-par-1/servers/1d91b7a7-1ca2-4a6e-a99a-509a3ebc16dd
+    url: https://api.scaleway.com/instance/v1/zones/fr-par-1/servers/addbcc8c-72f7-49bc-9983-b14930e9fd22
     method: GET
   response:
-    body: '{"server": {"id": "1d91b7a7-1ca2-4a6e-a99a-509a3ebc16dd", "name": "tf-srv-sad-bartik",
+    body: '{"server": {"id": "addbcc8c-72f7-49bc-9983-b14930e9fd22", "name": "tf-srv-exciting-dubinsky",
       "arch": "x86_64", "commercial_type": "DEV1-S", "boot_type": "local", "organization":
       "ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b", "project": "ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b",
-      "hostname": "tf-srv-sad-bartik", "image": {"id": "881d7a33-4cfa-4046-b5cf-c33cb9c62fb6",
+      "hostname": "tf-srv-exciting-dubinsky", "image": {"id": "881d7a33-4cfa-4046-b5cf-c33cb9c62fb6",
       "name": "Ubuntu 20.04 Focal Fossa", "organization": "51b656e3-4865-41e8-adbc-0c45bdd780db",
       "project": "51b656e3-4865-41e8-adbc-0c45bdd780db", "root_volume": {"id": "deb50fd4-209d-4fe2-9e39-1d2c85912133",
       "name": "ubuntu_20.04_focal_fossa:volume-0", "volume_type": "unified", "size":
       10000000000}, "extra_volumes": {}, "public": true, "arch": "x86_64", "creation_date":
       "2022-01-21T08:38:33.552838+00:00", "modification_date": "2022-01-21T08:38:33.552838+00:00",
       "default_bootscript": null, "from_server": null, "state": "available", "tags":
-      [], "zone": "fr-par-1"}, "volumes": {"0": {"boot": false, "id": "f013d5ce-5d2f-4342-bb91-e761d9a0afa8",
+      [], "zone": "fr-par-1"}, "volumes": {"0": {"boot": false, "id": "051807ab-5e80-437e-8ca0-58afedfb03d9",
       "name": "ubuntu_20.04_focal_fossa:volume-0", "volume_type": "l_ssd", "export_uri":
       null, "organization": "ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b", "project": "ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b",
-      "server": {"id": "1d91b7a7-1ca2-4a6e-a99a-509a3ebc16dd", "name": "tf-srv-sad-bartik"},
-      "size": 20000000000, "state": "available", "creation_date": "2022-07-25T09:09:39.378696+00:00",
-      "modification_date": "2022-07-25T09:09:39.378696+00:00", "tags": [], "zone":
+      "server": {"id": "addbcc8c-72f7-49bc-9983-b14930e9fd22", "name": "tf-srv-exciting-dubinsky"},
+      "size": 20000000000, "state": "available", "creation_date": "2022-07-25T09:43:40.014813+00:00",
+      "modification_date": "2022-07-25T09:43:40.014813+00:00", "tags": [], "zone":
       "fr-par-1"}}, "tags": ["terraform-test", "scaleway_instance_server", "user_data"],
       "state": "stopping", "protected": false, "state_detail": "booted", "public_ip":
       null, "ipv6": null, "extra_networks": [], "dynamic_ip_required": false, "enable_ipv6":
-      false, "private_ip": "10.194.116.13", "creation_date": "2022-07-25T09:09:39.378696+00:00",
-      "modification_date": "2022-07-25T09:10:15.242667+00:00", "bootscript": {"id":
+      false, "private_ip": "10.74.102.25", "creation_date": "2022-07-25T09:43:40.014813+00:00",
+      "modification_date": "2022-07-25T09:44:11.604507+00:00", "bootscript": {"id":
       "fdfe150f-a870-4ce4-b432-9f56b5b995c1", "public": true, "title": "x86_64 mainline
       4.4.230 rev1", "architecture": "x86_64", "organization": "11111111-1111-4111-8111-111111111111",
       "project": "11111111-1111-4111-8111-111111111111", "kernel": "http://10.194.3.9/kernel/x86_64-mainline-lts-4.4-4.4.230-rev1/vmlinuz-4.4.230",
@@ -3469,18 +3567,18 @@ interactions:
       "bootcmdargs": "LINUX_COMMON scaleway boot=local nbd.max_part=16", "default":
       true, "zone": "fr-par-1"}, "security_group": {"id": "a8f5f9bb-20a7-4244-9521-4cde6f510e0e",
       "name": "Default security group"}, "location": {"zone_id": "par1", "platform_id":
-      "14", "cluster_id": "54", "hypervisor_id": "103", "node_id": "7"}, "maintenances":
+      "14", "cluster_id": "48", "hypervisor_id": "504", "node_id": "13"}, "maintenances":
       [], "allowed_actions": ["stop_in_place", "backup"], "placement_group": null,
       "private_nics": [], "zone": "fr-par-1"}}'
     headers:
       Content-Length:
-      - "2726"
+      - "2747"
       Content-Security-Policy:
       - default-src 'none'; frame-ancestors 'none'
       Content-Type:
       - application/json
       Date:
-      - Mon, 25 Jul 2022 09:10:37 GMT
+      - Mon, 25 Jul 2022 09:44:38 GMT
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -3490,7 +3588,7 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - 95de8951-2cb4-4ec8-98f7-fd6ee1eb6e8c
+      - a75461fc-2a7d-4ac3-8c9c-7ab80f259c59
     status: 200 OK
     code: 200
     duration: ""
@@ -3501,30 +3599,30 @@ interactions:
       User-Agent:
       - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.18.2; linux; amd64) terraform-provider/develop
         terraform/terraform-tests
-    url: https://api.scaleway.com/instance/v1/zones/fr-par-1/servers/1d91b7a7-1ca2-4a6e-a99a-509a3ebc16dd
+    url: https://api.scaleway.com/instance/v1/zones/fr-par-1/servers/addbcc8c-72f7-49bc-9983-b14930e9fd22
     method: GET
   response:
-    body: '{"server": {"id": "1d91b7a7-1ca2-4a6e-a99a-509a3ebc16dd", "name": "tf-srv-sad-bartik",
+    body: '{"server": {"id": "addbcc8c-72f7-49bc-9983-b14930e9fd22", "name": "tf-srv-exciting-dubinsky",
       "arch": "x86_64", "commercial_type": "DEV1-S", "boot_type": "local", "organization":
       "ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b", "project": "ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b",
-      "hostname": "tf-srv-sad-bartik", "image": {"id": "881d7a33-4cfa-4046-b5cf-c33cb9c62fb6",
+      "hostname": "tf-srv-exciting-dubinsky", "image": {"id": "881d7a33-4cfa-4046-b5cf-c33cb9c62fb6",
       "name": "Ubuntu 20.04 Focal Fossa", "organization": "51b656e3-4865-41e8-adbc-0c45bdd780db",
       "project": "51b656e3-4865-41e8-adbc-0c45bdd780db", "root_volume": {"id": "deb50fd4-209d-4fe2-9e39-1d2c85912133",
       "name": "ubuntu_20.04_focal_fossa:volume-0", "volume_type": "unified", "size":
       10000000000}, "extra_volumes": {}, "public": true, "arch": "x86_64", "creation_date":
       "2022-01-21T08:38:33.552838+00:00", "modification_date": "2022-01-21T08:38:33.552838+00:00",
       "default_bootscript": null, "from_server": null, "state": "available", "tags":
-      [], "zone": "fr-par-1"}, "volumes": {"0": {"boot": false, "id": "f013d5ce-5d2f-4342-bb91-e761d9a0afa8",
+      [], "zone": "fr-par-1"}, "volumes": {"0": {"boot": false, "id": "051807ab-5e80-437e-8ca0-58afedfb03d9",
       "name": "ubuntu_20.04_focal_fossa:volume-0", "volume_type": "l_ssd", "export_uri":
       null, "organization": "ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b", "project": "ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b",
-      "server": {"id": "1d91b7a7-1ca2-4a6e-a99a-509a3ebc16dd", "name": "tf-srv-sad-bartik"},
-      "size": 20000000000, "state": "available", "creation_date": "2022-07-25T09:09:39.378696+00:00",
-      "modification_date": "2022-07-25T09:09:39.378696+00:00", "tags": [], "zone":
+      "server": {"id": "addbcc8c-72f7-49bc-9983-b14930e9fd22", "name": "tf-srv-exciting-dubinsky"},
+      "size": 20000000000, "state": "available", "creation_date": "2022-07-25T09:43:40.014813+00:00",
+      "modification_date": "2022-07-25T09:43:40.014813+00:00", "tags": [], "zone":
       "fr-par-1"}}, "tags": ["terraform-test", "scaleway_instance_server", "user_data"],
       "state": "stopping", "protected": false, "state_detail": "booted", "public_ip":
       null, "ipv6": null, "extra_networks": [], "dynamic_ip_required": false, "enable_ipv6":
-      false, "private_ip": "10.194.116.13", "creation_date": "2022-07-25T09:09:39.378696+00:00",
-      "modification_date": "2022-07-25T09:10:15.242667+00:00", "bootscript": {"id":
+      false, "private_ip": "10.74.102.25", "creation_date": "2022-07-25T09:43:40.014813+00:00",
+      "modification_date": "2022-07-25T09:44:11.604507+00:00", "bootscript": {"id":
       "fdfe150f-a870-4ce4-b432-9f56b5b995c1", "public": true, "title": "x86_64 mainline
       4.4.230 rev1", "architecture": "x86_64", "organization": "11111111-1111-4111-8111-111111111111",
       "project": "11111111-1111-4111-8111-111111111111", "kernel": "http://10.194.3.9/kernel/x86_64-mainline-lts-4.4-4.4.230-rev1/vmlinuz-4.4.230",
@@ -3532,18 +3630,18 @@ interactions:
       "bootcmdargs": "LINUX_COMMON scaleway boot=local nbd.max_part=16", "default":
       true, "zone": "fr-par-1"}, "security_group": {"id": "a8f5f9bb-20a7-4244-9521-4cde6f510e0e",
       "name": "Default security group"}, "location": {"zone_id": "par1", "platform_id":
-      "14", "cluster_id": "54", "hypervisor_id": "103", "node_id": "7"}, "maintenances":
+      "14", "cluster_id": "48", "hypervisor_id": "504", "node_id": "13"}, "maintenances":
       [], "allowed_actions": ["stop_in_place", "backup"], "placement_group": null,
       "private_nics": [], "zone": "fr-par-1"}}'
     headers:
       Content-Length:
-      - "2726"
+      - "2747"
       Content-Security-Policy:
       - default-src 'none'; frame-ancestors 'none'
       Content-Type:
       - application/json
       Date:
-      - Mon, 25 Jul 2022 09:10:42 GMT
+      - Mon, 25 Jul 2022 09:44:44 GMT
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -3553,7 +3651,7 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - fde90101-887b-4b8b-997e-407f699e19ad
+      - 3d28f354-5537-4832-ade1-58d202b16721
     status: 200 OK
     code: 200
     duration: ""
@@ -3564,30 +3662,30 @@ interactions:
       User-Agent:
       - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.18.2; linux; amd64) terraform-provider/develop
         terraform/terraform-tests
-    url: https://api.scaleway.com/instance/v1/zones/fr-par-1/servers/1d91b7a7-1ca2-4a6e-a99a-509a3ebc16dd
+    url: https://api.scaleway.com/instance/v1/zones/fr-par-1/servers/addbcc8c-72f7-49bc-9983-b14930e9fd22
     method: GET
   response:
-    body: '{"server": {"id": "1d91b7a7-1ca2-4a6e-a99a-509a3ebc16dd", "name": "tf-srv-sad-bartik",
+    body: '{"server": {"id": "addbcc8c-72f7-49bc-9983-b14930e9fd22", "name": "tf-srv-exciting-dubinsky",
       "arch": "x86_64", "commercial_type": "DEV1-S", "boot_type": "local", "organization":
       "ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b", "project": "ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b",
-      "hostname": "tf-srv-sad-bartik", "image": {"id": "881d7a33-4cfa-4046-b5cf-c33cb9c62fb6",
+      "hostname": "tf-srv-exciting-dubinsky", "image": {"id": "881d7a33-4cfa-4046-b5cf-c33cb9c62fb6",
       "name": "Ubuntu 20.04 Focal Fossa", "organization": "51b656e3-4865-41e8-adbc-0c45bdd780db",
       "project": "51b656e3-4865-41e8-adbc-0c45bdd780db", "root_volume": {"id": "deb50fd4-209d-4fe2-9e39-1d2c85912133",
       "name": "ubuntu_20.04_focal_fossa:volume-0", "volume_type": "unified", "size":
       10000000000}, "extra_volumes": {}, "public": true, "arch": "x86_64", "creation_date":
       "2022-01-21T08:38:33.552838+00:00", "modification_date": "2022-01-21T08:38:33.552838+00:00",
       "default_bootscript": null, "from_server": null, "state": "available", "tags":
-      [], "zone": "fr-par-1"}, "volumes": {"0": {"boot": false, "id": "f013d5ce-5d2f-4342-bb91-e761d9a0afa8",
+      [], "zone": "fr-par-1"}, "volumes": {"0": {"boot": false, "id": "051807ab-5e80-437e-8ca0-58afedfb03d9",
       "name": "ubuntu_20.04_focal_fossa:volume-0", "volume_type": "l_ssd", "export_uri":
       null, "organization": "ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b", "project": "ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b",
-      "server": {"id": "1d91b7a7-1ca2-4a6e-a99a-509a3ebc16dd", "name": "tf-srv-sad-bartik"},
-      "size": 20000000000, "state": "available", "creation_date": "2022-07-25T09:09:39.378696+00:00",
-      "modification_date": "2022-07-25T09:09:39.378696+00:00", "tags": [], "zone":
+      "server": {"id": "addbcc8c-72f7-49bc-9983-b14930e9fd22", "name": "tf-srv-exciting-dubinsky"},
+      "size": 20000000000, "state": "available", "creation_date": "2022-07-25T09:43:40.014813+00:00",
+      "modification_date": "2022-07-25T09:43:40.014813+00:00", "tags": [], "zone":
       "fr-par-1"}}, "tags": ["terraform-test", "scaleway_instance_server", "user_data"],
       "state": "stopping", "protected": false, "state_detail": "booted", "public_ip":
       null, "ipv6": null, "extra_networks": [], "dynamic_ip_required": false, "enable_ipv6":
-      false, "private_ip": "10.194.116.13", "creation_date": "2022-07-25T09:09:39.378696+00:00",
-      "modification_date": "2022-07-25T09:10:15.242667+00:00", "bootscript": {"id":
+      false, "private_ip": "10.74.102.25", "creation_date": "2022-07-25T09:43:40.014813+00:00",
+      "modification_date": "2022-07-25T09:44:11.604507+00:00", "bootscript": {"id":
       "fdfe150f-a870-4ce4-b432-9f56b5b995c1", "public": true, "title": "x86_64 mainline
       4.4.230 rev1", "architecture": "x86_64", "organization": "11111111-1111-4111-8111-111111111111",
       "project": "11111111-1111-4111-8111-111111111111", "kernel": "http://10.194.3.9/kernel/x86_64-mainline-lts-4.4-4.4.230-rev1/vmlinuz-4.4.230",
@@ -3595,18 +3693,18 @@ interactions:
       "bootcmdargs": "LINUX_COMMON scaleway boot=local nbd.max_part=16", "default":
       true, "zone": "fr-par-1"}, "security_group": {"id": "a8f5f9bb-20a7-4244-9521-4cde6f510e0e",
       "name": "Default security group"}, "location": {"zone_id": "par1", "platform_id":
-      "14", "cluster_id": "54", "hypervisor_id": "103", "node_id": "7"}, "maintenances":
+      "14", "cluster_id": "48", "hypervisor_id": "504", "node_id": "13"}, "maintenances":
       [], "allowed_actions": ["stop_in_place", "backup"], "placement_group": null,
       "private_nics": [], "zone": "fr-par-1"}}'
     headers:
       Content-Length:
-      - "2726"
+      - "2747"
       Content-Security-Policy:
       - default-src 'none'; frame-ancestors 'none'
       Content-Type:
       - application/json
       Date:
-      - Mon, 25 Jul 2022 09:10:48 GMT
+      - Mon, 25 Jul 2022 09:44:49 GMT
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -3616,7 +3714,7 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - 9c87085f-e1fc-4165-b603-677535a5e101
+      - 5e7ea9a7-a6ec-4495-8446-5ee23d3185c3
     status: 200 OK
     code: 200
     duration: ""
@@ -3627,30 +3725,30 @@ interactions:
       User-Agent:
       - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.18.2; linux; amd64) terraform-provider/develop
         terraform/terraform-tests
-    url: https://api.scaleway.com/instance/v1/zones/fr-par-1/servers/1d91b7a7-1ca2-4a6e-a99a-509a3ebc16dd
+    url: https://api.scaleway.com/instance/v1/zones/fr-par-1/servers/addbcc8c-72f7-49bc-9983-b14930e9fd22
     method: GET
   response:
-    body: '{"server": {"id": "1d91b7a7-1ca2-4a6e-a99a-509a3ebc16dd", "name": "tf-srv-sad-bartik",
+    body: '{"server": {"id": "addbcc8c-72f7-49bc-9983-b14930e9fd22", "name": "tf-srv-exciting-dubinsky",
       "arch": "x86_64", "commercial_type": "DEV1-S", "boot_type": "local", "organization":
       "ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b", "project": "ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b",
-      "hostname": "tf-srv-sad-bartik", "image": {"id": "881d7a33-4cfa-4046-b5cf-c33cb9c62fb6",
+      "hostname": "tf-srv-exciting-dubinsky", "image": {"id": "881d7a33-4cfa-4046-b5cf-c33cb9c62fb6",
       "name": "Ubuntu 20.04 Focal Fossa", "organization": "51b656e3-4865-41e8-adbc-0c45bdd780db",
       "project": "51b656e3-4865-41e8-adbc-0c45bdd780db", "root_volume": {"id": "deb50fd4-209d-4fe2-9e39-1d2c85912133",
       "name": "ubuntu_20.04_focal_fossa:volume-0", "volume_type": "unified", "size":
       10000000000}, "extra_volumes": {}, "public": true, "arch": "x86_64", "creation_date":
       "2022-01-21T08:38:33.552838+00:00", "modification_date": "2022-01-21T08:38:33.552838+00:00",
       "default_bootscript": null, "from_server": null, "state": "available", "tags":
-      [], "zone": "fr-par-1"}, "volumes": {"0": {"boot": false, "id": "f013d5ce-5d2f-4342-bb91-e761d9a0afa8",
+      [], "zone": "fr-par-1"}, "volumes": {"0": {"boot": false, "id": "051807ab-5e80-437e-8ca0-58afedfb03d9",
       "name": "ubuntu_20.04_focal_fossa:volume-0", "volume_type": "l_ssd", "export_uri":
       null, "organization": "ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b", "project": "ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b",
-      "server": {"id": "1d91b7a7-1ca2-4a6e-a99a-509a3ebc16dd", "name": "tf-srv-sad-bartik"},
-      "size": 20000000000, "state": "available", "creation_date": "2022-07-25T09:09:39.378696+00:00",
-      "modification_date": "2022-07-25T09:09:39.378696+00:00", "tags": [], "zone":
+      "server": {"id": "addbcc8c-72f7-49bc-9983-b14930e9fd22", "name": "tf-srv-exciting-dubinsky"},
+      "size": 20000000000, "state": "available", "creation_date": "2022-07-25T09:43:40.014813+00:00",
+      "modification_date": "2022-07-25T09:43:40.014813+00:00", "tags": [], "zone":
       "fr-par-1"}}, "tags": ["terraform-test", "scaleway_instance_server", "user_data"],
       "state": "stopping", "protected": false, "state_detail": "booted", "public_ip":
       null, "ipv6": null, "extra_networks": [], "dynamic_ip_required": false, "enable_ipv6":
-      false, "private_ip": "10.194.116.13", "creation_date": "2022-07-25T09:09:39.378696+00:00",
-      "modification_date": "2022-07-25T09:10:15.242667+00:00", "bootscript": {"id":
+      false, "private_ip": "10.74.102.25", "creation_date": "2022-07-25T09:43:40.014813+00:00",
+      "modification_date": "2022-07-25T09:44:11.604507+00:00", "bootscript": {"id":
       "fdfe150f-a870-4ce4-b432-9f56b5b995c1", "public": true, "title": "x86_64 mainline
       4.4.230 rev1", "architecture": "x86_64", "organization": "11111111-1111-4111-8111-111111111111",
       "project": "11111111-1111-4111-8111-111111111111", "kernel": "http://10.194.3.9/kernel/x86_64-mainline-lts-4.4-4.4.230-rev1/vmlinuz-4.4.230",
@@ -3658,18 +3756,18 @@ interactions:
       "bootcmdargs": "LINUX_COMMON scaleway boot=local nbd.max_part=16", "default":
       true, "zone": "fr-par-1"}, "security_group": {"id": "a8f5f9bb-20a7-4244-9521-4cde6f510e0e",
       "name": "Default security group"}, "location": {"zone_id": "par1", "platform_id":
-      "14", "cluster_id": "54", "hypervisor_id": "103", "node_id": "7"}, "maintenances":
+      "14", "cluster_id": "48", "hypervisor_id": "504", "node_id": "13"}, "maintenances":
       [], "allowed_actions": ["stop_in_place", "backup"], "placement_group": null,
       "private_nics": [], "zone": "fr-par-1"}}'
     headers:
       Content-Length:
-      - "2726"
+      - "2747"
       Content-Security-Policy:
       - default-src 'none'; frame-ancestors 'none'
       Content-Type:
       - application/json
       Date:
-      - Mon, 25 Jul 2022 09:10:53 GMT
+      - Mon, 25 Jul 2022 09:44:54 GMT
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -3679,7 +3777,7 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - 7658aefc-d0da-461e-93e3-e30f656d3199
+      - 632b18b5-849d-41df-b260-09f30a0ce1a1
     status: 200 OK
     code: 200
     duration: ""
@@ -3690,30 +3788,30 @@ interactions:
       User-Agent:
       - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.18.2; linux; amd64) terraform-provider/develop
         terraform/terraform-tests
-    url: https://api.scaleway.com/instance/v1/zones/fr-par-1/servers/1d91b7a7-1ca2-4a6e-a99a-509a3ebc16dd
+    url: https://api.scaleway.com/instance/v1/zones/fr-par-1/servers/addbcc8c-72f7-49bc-9983-b14930e9fd22
     method: GET
   response:
-    body: '{"server": {"id": "1d91b7a7-1ca2-4a6e-a99a-509a3ebc16dd", "name": "tf-srv-sad-bartik",
+    body: '{"server": {"id": "addbcc8c-72f7-49bc-9983-b14930e9fd22", "name": "tf-srv-exciting-dubinsky",
       "arch": "x86_64", "commercial_type": "DEV1-S", "boot_type": "local", "organization":
       "ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b", "project": "ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b",
-      "hostname": "tf-srv-sad-bartik", "image": {"id": "881d7a33-4cfa-4046-b5cf-c33cb9c62fb6",
+      "hostname": "tf-srv-exciting-dubinsky", "image": {"id": "881d7a33-4cfa-4046-b5cf-c33cb9c62fb6",
       "name": "Ubuntu 20.04 Focal Fossa", "organization": "51b656e3-4865-41e8-adbc-0c45bdd780db",
       "project": "51b656e3-4865-41e8-adbc-0c45bdd780db", "root_volume": {"id": "deb50fd4-209d-4fe2-9e39-1d2c85912133",
       "name": "ubuntu_20.04_focal_fossa:volume-0", "volume_type": "unified", "size":
       10000000000}, "extra_volumes": {}, "public": true, "arch": "x86_64", "creation_date":
       "2022-01-21T08:38:33.552838+00:00", "modification_date": "2022-01-21T08:38:33.552838+00:00",
       "default_bootscript": null, "from_server": null, "state": "available", "tags":
-      [], "zone": "fr-par-1"}, "volumes": {"0": {"boot": false, "id": "f013d5ce-5d2f-4342-bb91-e761d9a0afa8",
+      [], "zone": "fr-par-1"}, "volumes": {"0": {"boot": false, "id": "051807ab-5e80-437e-8ca0-58afedfb03d9",
       "name": "ubuntu_20.04_focal_fossa:volume-0", "volume_type": "l_ssd", "export_uri":
       null, "organization": "ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b", "project": "ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b",
-      "server": {"id": "1d91b7a7-1ca2-4a6e-a99a-509a3ebc16dd", "name": "tf-srv-sad-bartik"},
-      "size": 20000000000, "state": "available", "creation_date": "2022-07-25T09:09:39.378696+00:00",
-      "modification_date": "2022-07-25T09:09:39.378696+00:00", "tags": [], "zone":
+      "server": {"id": "addbcc8c-72f7-49bc-9983-b14930e9fd22", "name": "tf-srv-exciting-dubinsky"},
+      "size": 20000000000, "state": "available", "creation_date": "2022-07-25T09:43:40.014813+00:00",
+      "modification_date": "2022-07-25T09:43:40.014813+00:00", "tags": [], "zone":
       "fr-par-1"}}, "tags": ["terraform-test", "scaleway_instance_server", "user_data"],
       "state": "stopping", "protected": false, "state_detail": "booted", "public_ip":
       null, "ipv6": null, "extra_networks": [], "dynamic_ip_required": false, "enable_ipv6":
-      false, "private_ip": "10.194.116.13", "creation_date": "2022-07-25T09:09:39.378696+00:00",
-      "modification_date": "2022-07-25T09:10:15.242667+00:00", "bootscript": {"id":
+      false, "private_ip": "10.74.102.25", "creation_date": "2022-07-25T09:43:40.014813+00:00",
+      "modification_date": "2022-07-25T09:44:11.604507+00:00", "bootscript": {"id":
       "fdfe150f-a870-4ce4-b432-9f56b5b995c1", "public": true, "title": "x86_64 mainline
       4.4.230 rev1", "architecture": "x86_64", "organization": "11111111-1111-4111-8111-111111111111",
       "project": "11111111-1111-4111-8111-111111111111", "kernel": "http://10.194.3.9/kernel/x86_64-mainline-lts-4.4-4.4.230-rev1/vmlinuz-4.4.230",
@@ -3721,18 +3819,18 @@ interactions:
       "bootcmdargs": "LINUX_COMMON scaleway boot=local nbd.max_part=16", "default":
       true, "zone": "fr-par-1"}, "security_group": {"id": "a8f5f9bb-20a7-4244-9521-4cde6f510e0e",
       "name": "Default security group"}, "location": {"zone_id": "par1", "platform_id":
-      "14", "cluster_id": "54", "hypervisor_id": "103", "node_id": "7"}, "maintenances":
+      "14", "cluster_id": "48", "hypervisor_id": "504", "node_id": "13"}, "maintenances":
       [], "allowed_actions": ["stop_in_place", "backup"], "placement_group": null,
       "private_nics": [], "zone": "fr-par-1"}}'
     headers:
       Content-Length:
-      - "2726"
+      - "2747"
       Content-Security-Policy:
       - default-src 'none'; frame-ancestors 'none'
       Content-Type:
       - application/json
       Date:
-      - Mon, 25 Jul 2022 09:10:58 GMT
+      - Mon, 25 Jul 2022 09:45:00 GMT
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -3742,7 +3840,7 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - 28b58111-1e17-41f7-8562-7409e593d913
+      - af3a89b7-8590-413c-9b1f-fbbc472954c9
     status: 200 OK
     code: 200
     duration: ""
@@ -3753,30 +3851,30 @@ interactions:
       User-Agent:
       - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.18.2; linux; amd64) terraform-provider/develop
         terraform/terraform-tests
-    url: https://api.scaleway.com/instance/v1/zones/fr-par-1/servers/1d91b7a7-1ca2-4a6e-a99a-509a3ebc16dd
+    url: https://api.scaleway.com/instance/v1/zones/fr-par-1/servers/addbcc8c-72f7-49bc-9983-b14930e9fd22
     method: GET
   response:
-    body: '{"server": {"id": "1d91b7a7-1ca2-4a6e-a99a-509a3ebc16dd", "name": "tf-srv-sad-bartik",
+    body: '{"server": {"id": "addbcc8c-72f7-49bc-9983-b14930e9fd22", "name": "tf-srv-exciting-dubinsky",
       "arch": "x86_64", "commercial_type": "DEV1-S", "boot_type": "local", "organization":
       "ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b", "project": "ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b",
-      "hostname": "tf-srv-sad-bartik", "image": {"id": "881d7a33-4cfa-4046-b5cf-c33cb9c62fb6",
+      "hostname": "tf-srv-exciting-dubinsky", "image": {"id": "881d7a33-4cfa-4046-b5cf-c33cb9c62fb6",
       "name": "Ubuntu 20.04 Focal Fossa", "organization": "51b656e3-4865-41e8-adbc-0c45bdd780db",
       "project": "51b656e3-4865-41e8-adbc-0c45bdd780db", "root_volume": {"id": "deb50fd4-209d-4fe2-9e39-1d2c85912133",
       "name": "ubuntu_20.04_focal_fossa:volume-0", "volume_type": "unified", "size":
       10000000000}, "extra_volumes": {}, "public": true, "arch": "x86_64", "creation_date":
       "2022-01-21T08:38:33.552838+00:00", "modification_date": "2022-01-21T08:38:33.552838+00:00",
       "default_bootscript": null, "from_server": null, "state": "available", "tags":
-      [], "zone": "fr-par-1"}, "volumes": {"0": {"boot": false, "id": "f013d5ce-5d2f-4342-bb91-e761d9a0afa8",
+      [], "zone": "fr-par-1"}, "volumes": {"0": {"boot": false, "id": "051807ab-5e80-437e-8ca0-58afedfb03d9",
       "name": "ubuntu_20.04_focal_fossa:volume-0", "volume_type": "l_ssd", "export_uri":
       null, "organization": "ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b", "project": "ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b",
-      "server": {"id": "1d91b7a7-1ca2-4a6e-a99a-509a3ebc16dd", "name": "tf-srv-sad-bartik"},
-      "size": 20000000000, "state": "available", "creation_date": "2022-07-25T09:09:39.378696+00:00",
-      "modification_date": "2022-07-25T09:09:39.378696+00:00", "tags": [], "zone":
+      "server": {"id": "addbcc8c-72f7-49bc-9983-b14930e9fd22", "name": "tf-srv-exciting-dubinsky"},
+      "size": 20000000000, "state": "available", "creation_date": "2022-07-25T09:43:40.014813+00:00",
+      "modification_date": "2022-07-25T09:43:40.014813+00:00", "tags": [], "zone":
       "fr-par-1"}}, "tags": ["terraform-test", "scaleway_instance_server", "user_data"],
       "state": "stopping", "protected": false, "state_detail": "booted", "public_ip":
       null, "ipv6": null, "extra_networks": [], "dynamic_ip_required": false, "enable_ipv6":
-      false, "private_ip": "10.194.116.13", "creation_date": "2022-07-25T09:09:39.378696+00:00",
-      "modification_date": "2022-07-25T09:10:15.242667+00:00", "bootscript": {"id":
+      false, "private_ip": "10.74.102.25", "creation_date": "2022-07-25T09:43:40.014813+00:00",
+      "modification_date": "2022-07-25T09:44:11.604507+00:00", "bootscript": {"id":
       "fdfe150f-a870-4ce4-b432-9f56b5b995c1", "public": true, "title": "x86_64 mainline
       4.4.230 rev1", "architecture": "x86_64", "organization": "11111111-1111-4111-8111-111111111111",
       "project": "11111111-1111-4111-8111-111111111111", "kernel": "http://10.194.3.9/kernel/x86_64-mainline-lts-4.4-4.4.230-rev1/vmlinuz-4.4.230",
@@ -3784,18 +3882,18 @@ interactions:
       "bootcmdargs": "LINUX_COMMON scaleway boot=local nbd.max_part=16", "default":
       true, "zone": "fr-par-1"}, "security_group": {"id": "a8f5f9bb-20a7-4244-9521-4cde6f510e0e",
       "name": "Default security group"}, "location": {"zone_id": "par1", "platform_id":
-      "14", "cluster_id": "54", "hypervisor_id": "103", "node_id": "7"}, "maintenances":
+      "14", "cluster_id": "48", "hypervisor_id": "504", "node_id": "13"}, "maintenances":
       [], "allowed_actions": ["stop_in_place", "backup"], "placement_group": null,
       "private_nics": [], "zone": "fr-par-1"}}'
     headers:
       Content-Length:
-      - "2726"
+      - "2747"
       Content-Security-Policy:
       - default-src 'none'; frame-ancestors 'none'
       Content-Type:
       - application/json
       Date:
-      - Mon, 25 Jul 2022 09:11:04 GMT
+      - Mon, 25 Jul 2022 09:45:05 GMT
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -3805,7 +3903,7 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - 025c8fac-caa0-4dab-9351-788ec04e0741
+      - ff727687-eda3-42d8-9fd1-9defe484823d
     status: 200 OK
     code: 200
     duration: ""
@@ -3816,30 +3914,30 @@ interactions:
       User-Agent:
       - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.18.2; linux; amd64) terraform-provider/develop
         terraform/terraform-tests
-    url: https://api.scaleway.com/instance/v1/zones/fr-par-1/servers/1d91b7a7-1ca2-4a6e-a99a-509a3ebc16dd
+    url: https://api.scaleway.com/instance/v1/zones/fr-par-1/servers/addbcc8c-72f7-49bc-9983-b14930e9fd22
     method: GET
   response:
-    body: '{"server": {"id": "1d91b7a7-1ca2-4a6e-a99a-509a3ebc16dd", "name": "tf-srv-sad-bartik",
+    body: '{"server": {"id": "addbcc8c-72f7-49bc-9983-b14930e9fd22", "name": "tf-srv-exciting-dubinsky",
       "arch": "x86_64", "commercial_type": "DEV1-S", "boot_type": "local", "organization":
       "ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b", "project": "ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b",
-      "hostname": "tf-srv-sad-bartik", "image": {"id": "881d7a33-4cfa-4046-b5cf-c33cb9c62fb6",
+      "hostname": "tf-srv-exciting-dubinsky", "image": {"id": "881d7a33-4cfa-4046-b5cf-c33cb9c62fb6",
       "name": "Ubuntu 20.04 Focal Fossa", "organization": "51b656e3-4865-41e8-adbc-0c45bdd780db",
       "project": "51b656e3-4865-41e8-adbc-0c45bdd780db", "root_volume": {"id": "deb50fd4-209d-4fe2-9e39-1d2c85912133",
       "name": "ubuntu_20.04_focal_fossa:volume-0", "volume_type": "unified", "size":
       10000000000}, "extra_volumes": {}, "public": true, "arch": "x86_64", "creation_date":
       "2022-01-21T08:38:33.552838+00:00", "modification_date": "2022-01-21T08:38:33.552838+00:00",
       "default_bootscript": null, "from_server": null, "state": "available", "tags":
-      [], "zone": "fr-par-1"}, "volumes": {"0": {"boot": false, "id": "f013d5ce-5d2f-4342-bb91-e761d9a0afa8",
+      [], "zone": "fr-par-1"}, "volumes": {"0": {"boot": false, "id": "051807ab-5e80-437e-8ca0-58afedfb03d9",
       "name": "ubuntu_20.04_focal_fossa:volume-0", "volume_type": "l_ssd", "export_uri":
       null, "organization": "ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b", "project": "ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b",
-      "server": {"id": "1d91b7a7-1ca2-4a6e-a99a-509a3ebc16dd", "name": "tf-srv-sad-bartik"},
-      "size": 20000000000, "state": "available", "creation_date": "2022-07-25T09:09:39.378696+00:00",
-      "modification_date": "2022-07-25T09:09:39.378696+00:00", "tags": [], "zone":
+      "server": {"id": "addbcc8c-72f7-49bc-9983-b14930e9fd22", "name": "tf-srv-exciting-dubinsky"},
+      "size": 20000000000, "state": "available", "creation_date": "2022-07-25T09:43:40.014813+00:00",
+      "modification_date": "2022-07-25T09:43:40.014813+00:00", "tags": [], "zone":
       "fr-par-1"}}, "tags": ["terraform-test", "scaleway_instance_server", "user_data"],
       "state": "stopping", "protected": false, "state_detail": "booted", "public_ip":
       null, "ipv6": null, "extra_networks": [], "dynamic_ip_required": false, "enable_ipv6":
-      false, "private_ip": "10.194.116.13", "creation_date": "2022-07-25T09:09:39.378696+00:00",
-      "modification_date": "2022-07-25T09:10:15.242667+00:00", "bootscript": {"id":
+      false, "private_ip": "10.74.102.25", "creation_date": "2022-07-25T09:43:40.014813+00:00",
+      "modification_date": "2022-07-25T09:44:11.604507+00:00", "bootscript": {"id":
       "fdfe150f-a870-4ce4-b432-9f56b5b995c1", "public": true, "title": "x86_64 mainline
       4.4.230 rev1", "architecture": "x86_64", "organization": "11111111-1111-4111-8111-111111111111",
       "project": "11111111-1111-4111-8111-111111111111", "kernel": "http://10.194.3.9/kernel/x86_64-mainline-lts-4.4-4.4.230-rev1/vmlinuz-4.4.230",
@@ -3847,18 +3945,18 @@ interactions:
       "bootcmdargs": "LINUX_COMMON scaleway boot=local nbd.max_part=16", "default":
       true, "zone": "fr-par-1"}, "security_group": {"id": "a8f5f9bb-20a7-4244-9521-4cde6f510e0e",
       "name": "Default security group"}, "location": {"zone_id": "par1", "platform_id":
-      "14", "cluster_id": "54", "hypervisor_id": "103", "node_id": "7"}, "maintenances":
+      "14", "cluster_id": "48", "hypervisor_id": "504", "node_id": "13"}, "maintenances":
       [], "allowed_actions": ["stop_in_place", "backup"], "placement_group": null,
       "private_nics": [], "zone": "fr-par-1"}}'
     headers:
       Content-Length:
-      - "2726"
+      - "2747"
       Content-Security-Policy:
       - default-src 'none'; frame-ancestors 'none'
       Content-Type:
       - application/json
       Date:
-      - Mon, 25 Jul 2022 09:11:09 GMT
+      - Mon, 25 Jul 2022 09:45:10 GMT
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -3868,7 +3966,7 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - 457a4c47-f193-4884-97ff-21bccbb0a292
+      - 00360674-e16b-4f84-a8bf-64d36f944d0c
     status: 200 OK
     code: 200
     duration: ""
@@ -3879,30 +3977,93 @@ interactions:
       User-Agent:
       - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.18.2; linux; amd64) terraform-provider/develop
         terraform/terraform-tests
-    url: https://api.scaleway.com/instance/v1/zones/fr-par-1/servers/1d91b7a7-1ca2-4a6e-a99a-509a3ebc16dd
+    url: https://api.scaleway.com/instance/v1/zones/fr-par-1/servers/addbcc8c-72f7-49bc-9983-b14930e9fd22
     method: GET
   response:
-    body: '{"server": {"id": "1d91b7a7-1ca2-4a6e-a99a-509a3ebc16dd", "name": "tf-srv-sad-bartik",
+    body: '{"server": {"id": "addbcc8c-72f7-49bc-9983-b14930e9fd22", "name": "tf-srv-exciting-dubinsky",
       "arch": "x86_64", "commercial_type": "DEV1-S", "boot_type": "local", "organization":
       "ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b", "project": "ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b",
-      "hostname": "tf-srv-sad-bartik", "image": {"id": "881d7a33-4cfa-4046-b5cf-c33cb9c62fb6",
+      "hostname": "tf-srv-exciting-dubinsky", "image": {"id": "881d7a33-4cfa-4046-b5cf-c33cb9c62fb6",
       "name": "Ubuntu 20.04 Focal Fossa", "organization": "51b656e3-4865-41e8-adbc-0c45bdd780db",
       "project": "51b656e3-4865-41e8-adbc-0c45bdd780db", "root_volume": {"id": "deb50fd4-209d-4fe2-9e39-1d2c85912133",
       "name": "ubuntu_20.04_focal_fossa:volume-0", "volume_type": "unified", "size":
       10000000000}, "extra_volumes": {}, "public": true, "arch": "x86_64", "creation_date":
       "2022-01-21T08:38:33.552838+00:00", "modification_date": "2022-01-21T08:38:33.552838+00:00",
       "default_bootscript": null, "from_server": null, "state": "available", "tags":
-      [], "zone": "fr-par-1"}, "volumes": {"0": {"boot": false, "id": "f013d5ce-5d2f-4342-bb91-e761d9a0afa8",
+      [], "zone": "fr-par-1"}, "volumes": {"0": {"boot": false, "id": "051807ab-5e80-437e-8ca0-58afedfb03d9",
       "name": "ubuntu_20.04_focal_fossa:volume-0", "volume_type": "l_ssd", "export_uri":
       null, "organization": "ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b", "project": "ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b",
-      "server": {"id": "1d91b7a7-1ca2-4a6e-a99a-509a3ebc16dd", "name": "tf-srv-sad-bartik"},
-      "size": 20000000000, "state": "available", "creation_date": "2022-07-25T09:09:39.378696+00:00",
-      "modification_date": "2022-07-25T09:09:39.378696+00:00", "tags": [], "zone":
+      "server": {"id": "addbcc8c-72f7-49bc-9983-b14930e9fd22", "name": "tf-srv-exciting-dubinsky"},
+      "size": 20000000000, "state": "available", "creation_date": "2022-07-25T09:43:40.014813+00:00",
+      "modification_date": "2022-07-25T09:43:40.014813+00:00", "tags": [], "zone":
+      "fr-par-1"}}, "tags": ["terraform-test", "scaleway_instance_server", "user_data"],
+      "state": "stopping", "protected": false, "state_detail": "booted", "public_ip":
+      null, "ipv6": null, "extra_networks": [], "dynamic_ip_required": false, "enable_ipv6":
+      false, "private_ip": "10.74.102.25", "creation_date": "2022-07-25T09:43:40.014813+00:00",
+      "modification_date": "2022-07-25T09:44:11.604507+00:00", "bootscript": {"id":
+      "fdfe150f-a870-4ce4-b432-9f56b5b995c1", "public": true, "title": "x86_64 mainline
+      4.4.230 rev1", "architecture": "x86_64", "organization": "11111111-1111-4111-8111-111111111111",
+      "project": "11111111-1111-4111-8111-111111111111", "kernel": "http://10.194.3.9/kernel/x86_64-mainline-lts-4.4-4.4.230-rev1/vmlinuz-4.4.230",
+      "dtb": "", "initrd": "http://10.194.3.9/initrd/initrd-Linux-x86_64-v3.14.6.gz",
+      "bootcmdargs": "LINUX_COMMON scaleway boot=local nbd.max_part=16", "default":
+      true, "zone": "fr-par-1"}, "security_group": {"id": "a8f5f9bb-20a7-4244-9521-4cde6f510e0e",
+      "name": "Default security group"}, "location": {"zone_id": "par1", "platform_id":
+      "14", "cluster_id": "48", "hypervisor_id": "504", "node_id": "13"}, "maintenances":
+      [], "allowed_actions": ["stop_in_place", "backup"], "placement_group": null,
+      "private_nics": [], "zone": "fr-par-1"}}'
+    headers:
+      Content-Length:
+      - "2747"
+      Content-Security-Policy:
+      - default-src 'none'; frame-ancestors 'none'
+      Content-Type:
+      - application/json
+      Date:
+      - Mon, 25 Jul 2022 09:45:16 GMT
+      Server:
+      - Scaleway API-Gateway
+      Strict-Transport-Security:
+      - max-age=63072000
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+      X-Request-Id:
+      - 8d7b549f-5853-41bc-9658-53c0afa6350f
+    status: 200 OK
+    code: 200
+    duration: ""
+- request:
+    body: ""
+    form: {}
+    headers:
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.18.2; linux; amd64) terraform-provider/develop
+        terraform/terraform-tests
+    url: https://api.scaleway.com/instance/v1/zones/fr-par-1/servers/addbcc8c-72f7-49bc-9983-b14930e9fd22
+    method: GET
+  response:
+    body: '{"server": {"id": "addbcc8c-72f7-49bc-9983-b14930e9fd22", "name": "tf-srv-exciting-dubinsky",
+      "arch": "x86_64", "commercial_type": "DEV1-S", "boot_type": "local", "organization":
+      "ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b", "project": "ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b",
+      "hostname": "tf-srv-exciting-dubinsky", "image": {"id": "881d7a33-4cfa-4046-b5cf-c33cb9c62fb6",
+      "name": "Ubuntu 20.04 Focal Fossa", "organization": "51b656e3-4865-41e8-adbc-0c45bdd780db",
+      "project": "51b656e3-4865-41e8-adbc-0c45bdd780db", "root_volume": {"id": "deb50fd4-209d-4fe2-9e39-1d2c85912133",
+      "name": "ubuntu_20.04_focal_fossa:volume-0", "volume_type": "unified", "size":
+      10000000000}, "extra_volumes": {}, "public": true, "arch": "x86_64", "creation_date":
+      "2022-01-21T08:38:33.552838+00:00", "modification_date": "2022-01-21T08:38:33.552838+00:00",
+      "default_bootscript": null, "from_server": null, "state": "available", "tags":
+      [], "zone": "fr-par-1"}, "volumes": {"0": {"boot": false, "id": "051807ab-5e80-437e-8ca0-58afedfb03d9",
+      "name": "ubuntu_20.04_focal_fossa:volume-0", "volume_type": "l_ssd", "export_uri":
+      null, "organization": "ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b", "project": "ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b",
+      "server": {"id": "addbcc8c-72f7-49bc-9983-b14930e9fd22", "name": "tf-srv-exciting-dubinsky"},
+      "size": 20000000000, "state": "available", "creation_date": "2022-07-25T09:43:40.014813+00:00",
+      "modification_date": "2022-07-25T09:43:40.014813+00:00", "tags": [], "zone":
       "fr-par-1"}}, "tags": ["terraform-test", "scaleway_instance_server", "user_data"],
       "state": "stopped", "protected": false, "state_detail": "", "public_ip": null,
       "ipv6": null, "extra_networks": [], "dynamic_ip_required": false, "enable_ipv6":
-      false, "private_ip": null, "creation_date": "2022-07-25T09:09:39.378696+00:00",
-      "modification_date": "2022-07-25T09:11:11.325437+00:00", "bootscript": {"id":
+      false, "private_ip": null, "creation_date": "2022-07-25T09:43:40.014813+00:00",
+      "modification_date": "2022-07-25T09:45:20.716970+00:00", "bootscript": {"id":
       "fdfe150f-a870-4ce4-b432-9f56b5b995c1", "public": true, "title": "x86_64 mainline
       4.4.230 rev1", "architecture": "x86_64", "organization": "11111111-1111-4111-8111-111111111111",
       "project": "11111111-1111-4111-8111-111111111111", "kernel": "http://10.194.3.9/kernel/x86_64-mainline-lts-4.4-4.4.230-rev1/vmlinuz-4.4.230",
@@ -3914,13 +4075,13 @@ interactions:
       "fr-par-1"}}'
     headers:
       Content-Length:
-      - "2606"
+      - "2627"
       Content-Security-Policy:
       - default-src 'none'; frame-ancestors 'none'
       Content-Type:
       - application/json
       Date:
-      - Mon, 25 Jul 2022 09:11:15 GMT
+      - Mon, 25 Jul 2022 09:45:21 GMT
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -3930,7 +4091,7 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - 0731a449-1815-426d-9bda-499f1218b93d
+      - 82070e86-8006-4ccf-8793-daf85c8f48e0
     status: 200 OK
     code: 200
     duration: ""
@@ -3941,30 +4102,30 @@ interactions:
       User-Agent:
       - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.18.2; linux; amd64) terraform-provider/develop
         terraform/terraform-tests
-    url: https://api.scaleway.com/instance/v1/zones/fr-par-1/servers/1d91b7a7-1ca2-4a6e-a99a-509a3ebc16dd
+    url: https://api.scaleway.com/instance/v1/zones/fr-par-1/servers/addbcc8c-72f7-49bc-9983-b14930e9fd22
     method: GET
   response:
-    body: '{"server": {"id": "1d91b7a7-1ca2-4a6e-a99a-509a3ebc16dd", "name": "tf-srv-sad-bartik",
+    body: '{"server": {"id": "addbcc8c-72f7-49bc-9983-b14930e9fd22", "name": "tf-srv-exciting-dubinsky",
       "arch": "x86_64", "commercial_type": "DEV1-S", "boot_type": "local", "organization":
       "ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b", "project": "ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b",
-      "hostname": "tf-srv-sad-bartik", "image": {"id": "881d7a33-4cfa-4046-b5cf-c33cb9c62fb6",
+      "hostname": "tf-srv-exciting-dubinsky", "image": {"id": "881d7a33-4cfa-4046-b5cf-c33cb9c62fb6",
       "name": "Ubuntu 20.04 Focal Fossa", "organization": "51b656e3-4865-41e8-adbc-0c45bdd780db",
       "project": "51b656e3-4865-41e8-adbc-0c45bdd780db", "root_volume": {"id": "deb50fd4-209d-4fe2-9e39-1d2c85912133",
       "name": "ubuntu_20.04_focal_fossa:volume-0", "volume_type": "unified", "size":
       10000000000}, "extra_volumes": {}, "public": true, "arch": "x86_64", "creation_date":
       "2022-01-21T08:38:33.552838+00:00", "modification_date": "2022-01-21T08:38:33.552838+00:00",
       "default_bootscript": null, "from_server": null, "state": "available", "tags":
-      [], "zone": "fr-par-1"}, "volumes": {"0": {"boot": false, "id": "f013d5ce-5d2f-4342-bb91-e761d9a0afa8",
+      [], "zone": "fr-par-1"}, "volumes": {"0": {"boot": false, "id": "051807ab-5e80-437e-8ca0-58afedfb03d9",
       "name": "ubuntu_20.04_focal_fossa:volume-0", "volume_type": "l_ssd", "export_uri":
       null, "organization": "ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b", "project": "ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b",
-      "server": {"id": "1d91b7a7-1ca2-4a6e-a99a-509a3ebc16dd", "name": "tf-srv-sad-bartik"},
-      "size": 20000000000, "state": "available", "creation_date": "2022-07-25T09:09:39.378696+00:00",
-      "modification_date": "2022-07-25T09:09:39.378696+00:00", "tags": [], "zone":
+      "server": {"id": "addbcc8c-72f7-49bc-9983-b14930e9fd22", "name": "tf-srv-exciting-dubinsky"},
+      "size": 20000000000, "state": "available", "creation_date": "2022-07-25T09:43:40.014813+00:00",
+      "modification_date": "2022-07-25T09:43:40.014813+00:00", "tags": [], "zone":
       "fr-par-1"}}, "tags": ["terraform-test", "scaleway_instance_server", "user_data"],
       "state": "stopped", "protected": false, "state_detail": "", "public_ip": null,
       "ipv6": null, "extra_networks": [], "dynamic_ip_required": false, "enable_ipv6":
-      false, "private_ip": null, "creation_date": "2022-07-25T09:09:39.378696+00:00",
-      "modification_date": "2022-07-25T09:11:11.325437+00:00", "bootscript": {"id":
+      false, "private_ip": null, "creation_date": "2022-07-25T09:43:40.014813+00:00",
+      "modification_date": "2022-07-25T09:45:20.716970+00:00", "bootscript": {"id":
       "fdfe150f-a870-4ce4-b432-9f56b5b995c1", "public": true, "title": "x86_64 mainline
       4.4.230 rev1", "architecture": "x86_64", "organization": "11111111-1111-4111-8111-111111111111",
       "project": "11111111-1111-4111-8111-111111111111", "kernel": "http://10.194.3.9/kernel/x86_64-mainline-lts-4.4-4.4.230-rev1/vmlinuz-4.4.230",
@@ -3976,13 +4137,13 @@ interactions:
       "fr-par-1"}}'
     headers:
       Content-Length:
-      - "2606"
+      - "2627"
       Content-Security-Policy:
       - default-src 'none'; frame-ancestors 'none'
       Content-Type:
       - application/json
       Date:
-      - Mon, 25 Jul 2022 09:11:15 GMT
+      - Mon, 25 Jul 2022 09:45:21 GMT
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -3992,7 +4153,7 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - 897d867c-ecd6-49c3-973a-2adcb98c3c17
+      - 9a3efc92-35a5-4156-8343-6e38d090611a
     status: 200 OK
     code: 200
     duration: ""
@@ -4003,7 +4164,7 @@ interactions:
       User-Agent:
       - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.18.2; linux; amd64) terraform-provider/develop
         terraform/terraform-tests
-    url: https://api.scaleway.com/instance/v1/zones/fr-par-1/servers/1d91b7a7-1ca2-4a6e-a99a-509a3ebc16dd
+    url: https://api.scaleway.com/instance/v1/zones/fr-par-1/servers/addbcc8c-72f7-49bc-9983-b14930e9fd22
     method: DELETE
   response:
     body: ""
@@ -4011,7 +4172,7 @@ interactions:
       Content-Security-Policy:
       - default-src 'none'; frame-ancestors 'none'
       Date:
-      - Mon, 25 Jul 2022 09:11:15 GMT
+      - Mon, 25 Jul 2022 09:45:22 GMT
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -4021,7 +4182,7 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - 0ccb990e-a16c-49ab-954f-1de05ecb9acf
+      - cbe46baf-4423-4cc7-97fc-28ad8b42ee3f
     status: 204 No Content
     code: 204
     duration: ""
@@ -4032,10 +4193,10 @@ interactions:
       User-Agent:
       - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.18.2; linux; amd64) terraform-provider/develop
         terraform/terraform-tests
-    url: https://api.scaleway.com/instance/v1/zones/fr-par-1/servers/1d91b7a7-1ca2-4a6e-a99a-509a3ebc16dd
+    url: https://api.scaleway.com/instance/v1/zones/fr-par-1/servers/addbcc8c-72f7-49bc-9983-b14930e9fd22
     method: GET
   response:
-    body: '{"type": "unknown_resource", "message": "\"1d91b7a7-1ca2-4a6e-a99a-509a3ebc16dd\"
+    body: '{"type": "unknown_resource", "message": "\"addbcc8c-72f7-49bc-9983-b14930e9fd22\"
       not found"}'
     headers:
       Content-Length:
@@ -4045,7 +4206,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Mon, 25 Jul 2022 09:11:15 GMT
+      - Mon, 25 Jul 2022 09:45:22 GMT
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -4055,7 +4216,7 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - e75751c9-101a-4e4f-900d-a361bf1cce79
+      - 9edda080-cca8-4045-953b-a9547bf71dd5
     status: 404 Not Found
     code: 404
     duration: ""
@@ -4066,7 +4227,7 @@ interactions:
       User-Agent:
       - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.18.2; linux; amd64) terraform-provider/develop
         terraform/terraform-tests
-    url: https://api.scaleway.com/instance/v1/zones/fr-par-1/volumes/f013d5ce-5d2f-4342-bb91-e761d9a0afa8
+    url: https://api.scaleway.com/instance/v1/zones/fr-par-1/volumes/051807ab-5e80-437e-8ca0-58afedfb03d9
     method: DELETE
   response:
     body: ""
@@ -4074,7 +4235,7 @@ interactions:
       Content-Security-Policy:
       - default-src 'none'; frame-ancestors 'none'
       Date:
-      - Mon, 25 Jul 2022 09:11:15 GMT
+      - Mon, 25 Jul 2022 09:45:22 GMT
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -4084,7 +4245,7 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - d3a46b70-f58c-4bc4-ba42-4d294e007567
+      - fe6a7934-3706-4d0f-82cd-abf0bdc1d6e4
     status: 204 No Content
     code: 204
     duration: ""
@@ -4095,10 +4256,10 @@ interactions:
       User-Agent:
       - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.18.2; linux; amd64) terraform-provider/develop
         terraform/terraform-tests
-    url: https://api.scaleway.com/instance/v1/zones/fr-par-1/servers/1d91b7a7-1ca2-4a6e-a99a-509a3ebc16dd
+    url: https://api.scaleway.com/instance/v1/zones/fr-par-1/servers/addbcc8c-72f7-49bc-9983-b14930e9fd22
     method: GET
   response:
-    body: '{"type": "unknown_resource", "message": "\"1d91b7a7-1ca2-4a6e-a99a-509a3ebc16dd\"
+    body: '{"type": "unknown_resource", "message": "\"addbcc8c-72f7-49bc-9983-b14930e9fd22\"
       not found"}'
     headers:
       Content-Length:
@@ -4108,7 +4269,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Mon, 25 Jul 2022 09:11:15 GMT
+      - Mon, 25 Jul 2022 09:45:23 GMT
       Server:
       - Scaleway API-Gateway
       Strict-Transport-Security:
@@ -4118,7 +4279,7 @@ interactions:
       X-Frame-Options:
       - DENY
       X-Request-Id:
-      - 25dcf33e-d1ca-462c-b293-eefd1db45db8
+      - e52a88cc-6fd9-424c-ab72-ee70a83a10d1
     status: 404 Not Found
     code: 404
     duration: ""
