@@ -137,11 +137,8 @@ func dataSourceScalewayObjectPolicyDocument() *schema.Resource {
 							Default:      "Allow",
 							ValidateFunc: validation.StringInSlice([]string{"Allow", "Deny"}, false),
 						},
-						"not_actions":    setOfString,
-						"not_principals": dataSourcePolicyPrincipalSchema(),
-						"not_resources":  setOfString,
-						"principals":     dataSourcePolicyPrincipalSchema(),
-						"resources":      setOfString,
+						"principals": dataSourcePolicyPrincipalSchema(),
+						"resources":  setOfString,
 						"sid": {
 							Type:     schema.TypeString,
 							Optional: true,
@@ -228,9 +225,6 @@ func dataSourcePolicyDocumentRead(_ context.Context, d *schema.ResourceData, _ i
 			if actions := cfgStmt["actions"].(*schema.Set).List(); len(actions) > 0 {
 				stmt.Actions = policyDecodeConfigStringList(actions)
 			}
-			if actions := cfgStmt["not_actions"].(*schema.Set).List(); len(actions) > 0 {
-				stmt.NotActions = policyDecodeConfigStringList(actions)
-			}
 
 			if resources := cfgStmt["resources"].(*schema.Set).List(); len(resources) > 0 {
 				var err error
@@ -241,29 +235,12 @@ func dataSourcePolicyDocumentRead(_ context.Context, d *schema.ResourceData, _ i
 					return diag.FromErr(fmt.Errorf("error reading resources: %w", err))
 				}
 			}
-			if notResources := cfgStmt["not_resources"].(*schema.Set).List(); len(notResources) > 0 {
-				var err error
-				stmt.NotResources, err = dataSourcePolicyDocumentReplaceVarsInList(
-					policyDecodeConfigStringList(notResources), doc.Version,
-				)
-				if err != nil {
-					return diag.FromErr(fmt.Errorf("error reading not_resources: %w", err))
-				}
-			}
 
 			if principals := cfgStmt["principals"].(*schema.Set).List(); len(principals) > 0 {
 				var err error
 				stmt.Principals, err = dataSourcePolicyDocumentMakePrincipals(principals, doc.Version)
 				if err != nil {
 					return diag.FromErr(fmt.Errorf("error reading principals: %w", err))
-				}
-			}
-
-			if notPrincipals := cfgStmt["not_principals"].(*schema.Set).List(); len(notPrincipals) > 0 {
-				var err error
-				stmt.NotPrincipals, err = dataSourcePolicyDocumentMakePrincipals(notPrincipals, doc.Version)
-				if err != nil {
-					return diag.FromErr(fmt.Errorf("error reading not_principals: %w", err))
 				}
 			}
 
@@ -435,15 +412,13 @@ func (s *IAMPolicyDoc) Merge(newDoc *IAMPolicyDoc) {
 }
 
 type IAMPolicyStatement struct {
-	Sid           string
-	Effect        string                         `json:",omitempty"`             //nolint:tagliatelle
-	Actions       interface{}                    `json:"Action,omitempty"`       //nolint:tagliatelle
-	NotActions    interface{}                    `json:"NotAction,omitempty"`    //nolint:tagliatelle
-	Resources     interface{}                    `json:"Resource,omitempty"`     //nolint:tagliatelle
-	NotResources  interface{}                    `json:"NotResource,omitempty"`  //nolint:tagliatelle
-	Principals    IAMPolicyStatementPrincipalSet `json:"Principal,omitempty"`    //nolint:tagliatelle
-	NotPrincipals IAMPolicyStatementPrincipalSet `json:"NotPrincipal,omitempty"` //nolint:tagliatelle
-	Conditions    IAMPolicyStatementConditionSet `json:"Condition,omitempty"`    //nolint:tagliatelle
+	Sid        string
+	Effect     string                         `json:",omitempty"`          //nolint:tagliatelle
+	Actions    interface{}                    `json:"Action,omitempty"`    //nolint:tagliatelle
+	NotActions interface{}                    `json:"NotAction,omitempty"` //nolint:tagliatelle
+	Resources  interface{}                    `json:"Resource,omitempty"`  //nolint:tagliatelle
+	Principals IAMPolicyStatementPrincipalSet `json:"Principal,omitempty"` //nolint:tagliatelle
+	Conditions IAMPolicyStatementConditionSet `json:"Condition,omitempty"` //nolint:tagliatelle
 }
 
 type (

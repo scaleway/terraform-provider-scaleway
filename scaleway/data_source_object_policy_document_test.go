@@ -70,12 +70,6 @@ func TestAccIAMPolicyDocumentDataSource_basic(t *testing.T) {
 						  		identifiers = ["arn:blahblah:example"]
 							}
 					  	}
-					
-					  	statement {
-							effect        = "Deny"
-							not_actions   = ["s3:*"]
-							not_resources = [%[1]q]
-					  	}
 					}
 				`, bucketName),
 				Check: resource.ComposeTestCheckFunc(
@@ -123,12 +117,6 @@ func TestAccIAMPolicyDocumentDataSource_basic(t *testing.T) {
 							  "Identifiers": "arn:blahblah:example"
 							}
 						  ]
-						},
-						{
-						  "Sid": "",
-						  "Effect": "Deny",
-						  "NotAction": "s3:*",
-						  "NotResource": "%[1]s"
 						}
 					  ]
 					}`, bucketName)),
@@ -181,11 +169,6 @@ func TestAccIAMPolicyDocumentDataSource_source(t *testing.T) {
 									"2.3.4.5",
 						  		]
 							}
-					
-							not_principals {
-						  		type        = "SCW"
-						  		identifiers = ["arn:blahblah:example"]
-							}
 					  	}
 					
 						statement {
@@ -206,12 +189,6 @@ func TestAccIAMPolicyDocumentDataSource_source(t *testing.T) {
 						  		]
 							}
 						}
-					
-					  	statement {
-							effect        = "Deny"
-							not_actions   = ["s3:*"]
-							not_resources = ["%[1]s"]
-					  	}
 					
 						# Normalization of wildcard principals
 					  	statement {
@@ -264,9 +241,6 @@ func TestAccIAMPolicyDocumentDataSource_source(t *testing.T) {
 							  "Effect": "Allow",
 							  "Action": "s3:ListBucket",
 							  "Resource": "%[1]s",
-							  "NotPrincipal": {
-								"SCW": "project_id:"
-							  },
 							  "Condition": {
 								"StringLike": {
 								  "aws:SourceIp": [
@@ -290,12 +264,6 @@ func TestAccIAMPolicyDocumentDataSource_source(t *testing.T) {
 									"project_id:11111111-1111-1111-1111-111111111111"
 								]
 							  }
-							},
-							{
-							  "Sid": "",
-							  "Effect": "Deny",
-							  "NotAction": "s3:*",
-							  "NotResource": "arn:%[1]s:s3:::*"
 							},
 							{
 							  "Sid": "SourceJSONTest1",
