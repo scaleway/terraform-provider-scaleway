@@ -19,7 +19,7 @@ func TestAccScalewayDataSourceRedisCluster_Basic(t *testing.T) {
 					resource "scaleway_redis_cluster" "test" {
     					name = "test_redis_datasource_terraform"
     					version = "6.2.6"
-    					node_type = "MDB-BETA-M"
+    					node_type = "RED1-micro"
     					user_name = "my_initial_user"
     					password = "thiZ_is_v&ry_s3cret"
 					}
