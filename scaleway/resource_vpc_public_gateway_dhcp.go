@@ -90,6 +90,7 @@ func resourceScalewayVPCPublicGatewayDHCP() *schema.Resource {
 			"dns_servers_override": {
 				Type:     schema.TypeList,
 				Optional: true,
+				Computed: true,
 				Elem: &schema.Schema{
 					Type: schema.TypeString,
 				},
@@ -98,6 +99,7 @@ func resourceScalewayVPCPublicGatewayDHCP() *schema.Resource {
 			"dns_search": {
 				Type:     schema.TypeList,
 				Optional: true,
+				Computed: true,
 				Elem: &schema.Schema{
 					Type: schema.TypeString,
 				},
