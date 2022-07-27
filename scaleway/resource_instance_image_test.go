@@ -7,7 +7,43 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
+	"github.com/scaleway/scaleway-sdk-go/scw"
 )
+
+func init() {
+	resource.AddTestSweepers("scaleway_instance_image", &resource.Sweeper{
+		Name:         "scaleway_instance_image",
+		Dependencies: []string{"scaleway_instance_server"},
+		F:            testSweepInstanceImage,
+	})
+}
+
+func testSweepInstanceImage(_ string) error {
+	return sweepZones(scw.AllZones, func(scwClient *scw.Client, zone scw.Zone) error {
+		api := instance.NewAPI(scwClient)
+		l.Debugf("sweeper: destroying instance images in (%+v)", zone)
+
+		listImagesResponse, err := api.ListImages(&instance.ListImagesRequest{
+			Zone:   zone,
+			Public: scw.BoolPtr(false),
+		}, scw.WithAllPages())
+		if err != nil {
+			return fmt.Errorf("error listing instance images in sweeper: %w", err)
+		}
+
+		for _, image := range listImagesResponse.Images {
+			err := api.DeleteImage(&instance.DeleteImageRequest{
+				Zone:    zone,
+				ImageID: image.ID,
+			})
+			if err != nil {
+				return fmt.Errorf("error deleting instance image in sweeper: %w", err)
+			}
+		}
+
+		return nil
+	})
+}
 
 func TestAccScalewayInstanceImage_BlockVolume(t *testing.T) {
 	tt := NewTestTools(t)
