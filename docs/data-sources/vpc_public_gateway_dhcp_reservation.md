@@ -52,6 +52,7 @@ data "scaleway_vpc_public_gateway_dhcp_reservation" "by_mac_address" {
 ```
 
 ## Example Static and PAT rule
+
 ```hcl
 resource scaleway_vpc_private_network main {}
 
@@ -117,6 +118,7 @@ data "scaleway_vpc_public_gateway_dhcp_reservation" "by_id" {
     reservation_id = "${scaleway_vpc_public_gateway_dhcp_reservation.main.id}"
 }
 ```
+
 ## Argument Reference
 
 - `reservation_id`  (Required) The ID of the Reservation to retrieve
