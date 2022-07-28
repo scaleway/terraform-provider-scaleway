@@ -73,14 +73,14 @@ func dataSourceScalewayVPCPublicGatewayDHCPReservationRead(ctx context.Context, 
 	d.SetId(zonedID)
 	_ = d.Set("reservation_id", zonedID)
 
-	// check if pat rule exist
-	_, err = vpcgwAPI.GetDHCPEntry(&vpcgw.GetDHCPEntryRequest{
-		DHCPEntryID: expandID(reservationIDRaw),
-		Zone:        zone,
-	}, scw.WithContext(ctx))
-	if err != nil {
-		return diag.FromErr(err)
+	diags := resourceScalewayVPCPublicGatewayDHCPReservationRead(ctx, d, meta)
+	if diags != nil {
+		return append(diags, diag.Errorf("failed to read DHCP Entries")...)
 	}
 
-	return resourceScalewayVPCPublicGatewayDHCPReservationRead(ctx, d, meta)
+	if d.Id() == "" {
+		return diag.Errorf("DHCP ENTRY(%s) not found", zonedID)
+	}
+
+	return nil
 }

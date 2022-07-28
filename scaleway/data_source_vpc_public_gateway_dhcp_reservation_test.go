@@ -57,6 +57,7 @@ func TestAccScalewayDataSourceVPCPublicGatewayDHCPReservation_Basic(t *testing.T
 	
 					data "scaleway_vpc_public_gateway_dhcp_reservation" "by_mac_address" {
 						mac_address = "${scaleway_instance_server.main.private_network.0.mac_address}"
+						depends_on = [scaleway_vpc_gateway_network.main, scaleway_vpc_public_gateway_dhcp.main, scaleway_vpc_private_network.main]
 					}
 				`, pnName),
 				Check: resource.ComposeTestCheckFunc(
