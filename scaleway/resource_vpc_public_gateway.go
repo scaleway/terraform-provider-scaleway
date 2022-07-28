@@ -6,7 +6,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	vpcgw "github.com/scaleway/scaleway-sdk-go/api/vpcgw/v1"
+	"github.com/scaleway/scaleway-sdk-go/api/vpcgw/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 )
 
@@ -198,8 +198,8 @@ func resourceScalewayVPCPublicGatewayUpdate(ctx context.Context, d *schema.Resou
 		updateRequest.BastionPort = scw.Uint32Ptr(uint32(d.Get("bastion_port").(int)))
 	}
 
-	if d.HasChange("enable_bastion") {
-		updateRequest.EnableBastion = scw.BoolPtr(d.Get("enable_bastion").(bool))
+	if d.HasChange("bastion_enabled") {
+		updateRequest.EnableBastion = scw.BoolPtr(d.Get("bastion_enabled").(bool))
 	}
 
 	if d.HasChange("enable_smtp") {
