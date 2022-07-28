@@ -95,7 +95,7 @@ func TestAccScalewayVPCPublicGateway_Basic(t *testing.T) {
 func TestAccScalewayVPCPublicGateway_Bastion(t *testing.T) {
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
-	publicGatewayName := "public-gateway-test"
+	publicGatewayName := "public-gateway-bastion-test"
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
