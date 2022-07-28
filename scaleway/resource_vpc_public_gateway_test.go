@@ -139,6 +139,7 @@ func TestAccScalewayVPCPublicGateway_Bastion(t *testing.T) {
 		},
 	})
 }
+
 func TestAccScalewayVPCPublicGateway_AttachToIP(t *testing.T) {
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
