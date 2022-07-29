@@ -497,7 +497,7 @@ func expandStringPtr(data interface{}) *string {
 }
 
 func expandBoolPtr(data interface{}) *bool {
-	if data == nil {
+	if data == nil || data == false {
 		return nil
 	}
 	return scw.BoolPtr(data.(bool))
