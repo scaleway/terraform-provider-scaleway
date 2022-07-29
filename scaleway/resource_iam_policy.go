@@ -122,7 +122,7 @@ func resourceScalewayIamPolicyCreate(ctx context.Context, d *schema.ResourceData
 		UserID:         expandStringPtr(d.Get("user_id")),
 		GroupID:        expandStringPtr(d.Get("group_id")),
 		ApplicationID:  expandStringPtr(d.Get("application_id")),
-		NoPrincipal:    expandBoolPtr(d.Get("no_principal")),
+		NoPrincipal:    expandBoolPtr(getBool(d, "no_principal")),
 		OrganizationID: d.Get("organization_id").(string),
 	}, scw.WithContext(ctx))
 	if err != nil {
@@ -199,11 +199,15 @@ func resourceScalewayIamPolicyUpdate(ctx context.Context, d *schema.ResourceData
 	}
 	if d.HasChange("group_id") {
 		hasUpdated = true
-		req.UserID = expandStringPtr(d.Get("group_id"))
+		req.GroupID = expandStringPtr(d.Get("group_id"))
 	}
 	if d.HasChange("application_id") {
 		hasUpdated = true
-		req.UserID = expandStringPtr(d.Get("application_id"))
+		req.ApplicationID = expandStringPtr(d.Get("application_id"))
+	}
+	if d.HasChange("no_principal") {
+		hasUpdated = true
+		req.NoPrincipal = expandBoolPtr(getBool(d, "no_principal"))
 	}
 	if hasUpdated {
 		_, err := api.UpdatePolicy(req, scw.WithContext(ctx))
