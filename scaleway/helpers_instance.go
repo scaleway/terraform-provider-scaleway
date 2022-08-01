@@ -381,7 +381,7 @@ func (ph *privateNICsHandler) attach(ctx context.Context, n interface{}, timeout
 				return err
 			}
 
-			_, err = waitForPrivateNIC(ctx, ph.instanceAPI, ph.zone, ph.serverID, pn.PrivateNic.ID, timeout)
+			_, err = waitForMACAddress(ctx, ph.instanceAPI, ph.zone, ph.serverID, pn.PrivateNic.ID, timeout)
 			if err != nil {
 				return err
 			}
