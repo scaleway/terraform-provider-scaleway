@@ -143,6 +143,7 @@ In addition to all arguments above, the following attributes are exported:
 - `id` - The ID of the Database Instance.
 - `created_at` - The date and time of creation of the Redis Cluster.
 - `updated_at` - The date and time of the last update of the Redis Cluster.
+- `certificate` - The PEM of the certificate used by redis, only when `tls_enabled` is true
 
 
 ## Import

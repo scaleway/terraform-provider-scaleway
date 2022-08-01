@@ -1,6 +1,8 @@
 package scaleway
 
 import (
+	"crypto/x509"
+	"encoding/pem"
 	"fmt"
 	"testing"
 
@@ -552,6 +554,86 @@ func TestAccScalewayRedisCluster_Endpoints_ClusterMode(t *testing.T) {
 	})
 }
 
+func TestAccScalewayRedisCluster_Certificate(t *testing.T) {
+	tt := NewTestTools(t)
+	defer tt.Cleanup()
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      testAccCheckScalewayRedisClusterDestroy(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource "scaleway_redis_cluster" "main" {
+    					name = "test_redis_certificate"
+    					version = "6.2.6"
+    					node_type = "RED1-XS"
+    					user_name = "my_initial_user"
+    					password = "thiZ_is_v&ry_s3cret"
+						tags = [ "test1" ]
+						cluster_size = 1
+						tls_enabled = "true"
+						zone = "fr-par-2"
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayRedisExists(tt, "scaleway_redis_cluster.main"),
+					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "name", "test_redis_certificate"),
+					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "version", "6.2.6"),
+					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "node_type", "RED1-XS"),
+					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "user_name", "my_initial_user"),
+					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "password", "thiZ_is_v&ry_s3cret"),
+					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "tags.0", "test1"),
+					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "cluster_size", "1"),
+					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "tls_enabled", "true"),
+					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "zone", "fr-par-2"),
+					testAccCheckScalewayRedisCertificateIsValid("scaleway_redis_cluster.main"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccScalewayRedisCluster_NoCertificate(t *testing.T) {
+	tt := NewTestTools(t)
+	defer tt.Cleanup()
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      testAccCheckScalewayRedisClusterDestroy(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource "scaleway_redis_cluster" "main" {
+    					name = "test_redis_no_certificate"
+    					version = "6.2.6"
+    					node_type = "RED1-XS"
+    					user_name = "my_initial_user"
+    					password = "thiZ_is_v&ry_s3cret"
+						tags = [ "test1" ]
+						cluster_size = 1
+						tls_enabled = "false"
+						zone = "fr-par-2"
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayRedisExists(tt, "scaleway_redis_cluster.main"),
+					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "name", "test_redis_no_certificate"),
+					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "version", "6.2.6"),
+					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "node_type", "RED1-XS"),
+					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "user_name", "my_initial_user"),
+					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "password", "thiZ_is_v&ry_s3cret"),
+					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "tags.0", "test1"),
+					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "cluster_size", "1"),
+					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "tls_enabled", "false"),
+					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "zone", "fr-par-2"),
+					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "certificate", ""),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckScalewayRedisClusterDestroy(tt *TestTools) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		for _, rs := range state.RootModule().Resources {
@@ -660,6 +742,25 @@ func testAccCheckScalewayRedisPrivateNetworksIdsAreEither(name string, possibili
 			if p != "id found" {
 				return fmt.Errorf("no attribute private_network.*.id was found with value %v", p)
 			}
+		}
+		return nil
+	}
+}
+
+func testAccCheckScalewayRedisCertificateIsValid(name string) resource.TestCheckFunc {
+	return func(state *terraform.State) error {
+		rs, ok := state.RootModule().Resources[name]
+		if !ok {
+			return fmt.Errorf("resource not found: %s", name)
+		}
+		pemCert, hasCert := rs.Primary.Attributes["certificate"]
+		if !hasCert {
+			return fmt.Errorf("could not find certificate in schema")
+		}
+		cert, _ := pem.Decode([]byte(pemCert))
+		_, err := x509.ParseCertificate(cert.Bytes)
+		if err != nil {
+			return fmt.Errorf("failed to parse certificate: %w", err)
 		}
 		return nil
 	}
