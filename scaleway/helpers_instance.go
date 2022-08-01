@@ -380,6 +380,11 @@ func (ph *privateNICsHandler) attach(ctx context.Context, n interface{}, timeout
 			if err != nil {
 				return err
 			}
+
+			_, err = waitForMACAddress(ctx, ph.instanceAPI, ph.zone, ph.serverID, pn.PrivateNic.ID, timeout)
+			if err != nil {
+				return err
+			}
 		}
 	}
 
@@ -472,6 +477,23 @@ func waitForPrivateNIC(ctx context.Context, instanceAPI *instance.API, zone scw.
 	}
 
 	nic, err := instanceAPI.WaitForPrivateNIC(&instance.WaitForPrivateNICRequest{
+		ServerID:      serverID,
+		PrivateNicID:  privateNICID,
+		Zone:          zone,
+		Timeout:       scw.TimeDurationPtr(timeout),
+		RetryInterval: scw.TimeDurationPtr(retryInterval),
+	}, scw.WithContext(ctx))
+
+	return nic, err
+}
+
+func waitForMACAddress(ctx context.Context, instanceAPI *instance.API, zone scw.Zone, serverID string, privateNICID string, timeout time.Duration) (*instance.PrivateNIC, error) {
+	retryInterval := defaultInstanceRetryInterval
+	if DefaultWaitRetryInterval != nil {
+		retryInterval = *DefaultWaitRetryInterval
+	}
+
+	nic, err := instanceAPI.WaitForMACAddress(&instance.WaitForMACAddressRequest{
 		ServerID:      serverID,
 		PrivateNicID:  privateNICID,
 		Zone:          zone,
