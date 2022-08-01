@@ -484,7 +484,7 @@ func resourceScalewayInstanceServerCreate(ctx context.Context, d *schema.Resourc
 				return diag.FromErr(err)
 			}
 
-			_, err = waitForPrivateNIC(ctx, instanceAPI, zone, res.Server.ID, pn.PrivateNic.ID, d.Timeout(schema.TimeoutCreate))
+			_, err = waitForMACAddress(ctx, instanceAPI, zone, res.Server.ID, pn.PrivateNic.ID, d.Timeout(schema.TimeoutCreate))
 			if err != nil {
 				return diag.FromErr(err)
 			}
