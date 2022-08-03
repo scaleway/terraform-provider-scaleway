@@ -73,18 +73,10 @@ func TestAccScalewayFunctionCron_Basic(t *testing.T) {
 						schedule = "0 0 * * *"
 						args = jsonencode({})
 					}
-
-					resource scaleway_function_cron func {
-						function_id = scaleway_function.main.id
-						schedule = "0 1 * * *"
-						args = jsonencode({})
-					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayFunctionCronExists(tt, "scaleway_function_cron.main"),
-					testAccCheckScalewayFunctionCronExists(tt, "scaleway_function_cron.func"),
 					resource.TestCheckResourceAttr("scaleway_function_cron.main", "schedule", "0 0 * * *"),
-					resource.TestCheckResourceAttr("scaleway_function_cron.func", "schedule", "0 1 * * *"),
 				),
 			},
 		},
@@ -119,20 +111,11 @@ func TestAccScalewayFunctionCron_WithArgs(t *testing.T) {
 						schedule = "0 0 * * *"
 						args = jsonencode({test = "scw"})
 					}
-
-					resource scaleway_function_cron func {
-						function_id = scaleway_function.main.id
-						schedule = "0 1 * * *"
-						args = jsonencode({my_var = "terraform"})
-					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayFunctionCronExists(tt, "scaleway_function_cron.main"),
-					testAccCheckScalewayFunctionCronExists(tt, "scaleway_function_cron.func"),
 					resource.TestCheckResourceAttr("scaleway_function_cron.main", "schedule", "0 0 * * *"),
 					resource.TestCheckResourceAttr("scaleway_function_cron.main", "args", "{\"test\":\"scw\"}"),
-					resource.TestCheckResourceAttr("scaleway_function_cron.func", "schedule", "0 1 * * *"),
-					resource.TestCheckResourceAttr("scaleway_function_cron.func", "args", "{\"my_var\":\"terraform\"}"),
 				),
 			},
 		},
