@@ -19,6 +19,7 @@ const (
 	defaultFunctionTimeout          = 15 * time.Minute
 	defaultFunctionRetryInterval    = 5 * time.Second
 	defaultFunctionAfterUpdateWait  = 1 * time.Second
+	defaultFunctionCronTimeout      = 5 * time.Minute
 )
 
 // functionAPIWithRegion returns a new container registry API and the region.
@@ -75,6 +76,20 @@ func waitForFunction(ctx context.Context, functionAPI *function.API, region scw.
 	}, scw.WithContext(ctx))
 
 	return f, err
+}
+
+func waitForFunctionCron(ctx context.Context, functionAPI *function.API, region scw.Region, cronID string, timeout time.Duration) (*function.Cron, error) {
+	retryInterval := defaultFunctionRetryInterval
+	if DefaultWaitRetryInterval != nil {
+		retryInterval = *DefaultWaitRetryInterval
+	}
+
+	return functionAPI.WaitForCron(&function.WaitForCronRequest{
+		Region:        region,
+		CronID:        cronID,
+		RetryInterval: &retryInterval,
+		Timeout:       scw.TimeDurationPtr(timeout),
+	}, scw.WithContext(ctx))
 }
 
 func functionUpload(ctx context.Context, m interface{}, functionAPI *function.API, region scw.Region, functionID string, zipFile string) error {
