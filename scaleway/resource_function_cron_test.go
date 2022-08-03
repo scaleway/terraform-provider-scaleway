@@ -218,7 +218,7 @@ func testAccCheckScalewayFunctionCronExists(tt *TestTools, n string) resource.Te
 
 		api, region, id, err := functionAPIWithRegionAndID(tt.Meta, rs.Primary.ID)
 		if err != nil {
-			return nil
+			return err
 		}
 
 		_, err = api.GetCron(&function.GetCronRequest{

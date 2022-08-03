@@ -2,6 +2,7 @@ package scaleway
 
 import (
 	"context"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	function "github.com/scaleway/scaleway-sdk-go/api/function/v1beta1"
