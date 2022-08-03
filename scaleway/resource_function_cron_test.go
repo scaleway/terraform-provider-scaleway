@@ -168,43 +168,6 @@ func TestAccScalewayFunctionCron_WithArgs(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_function_cron.func", "args", "{\"my_var\":\"terraform\"}"),
 				),
 			},
-			{
-				Config: `
-					resource scaleway_function_namespace main {
-						name = "test-cron"
-					}
-
-					resource scaleway_function main {
-						name = "test-cron"
-						namespace_id = scaleway_function_namespace.main.id
-						runtime = "node14"
-						privacy = "private"
-						handler = "handler.handle"
-					}
-
-					resource scaleway_function_cron main {
-						function_id = scaleway_function.main.id
-						schedule = "1 1 * * *"
-						args = jsonencode(
-						{
-							address   = {
-								city    = "Paris"
-								country = "FR"
-							}
-							age       = 23
-							firstName = "John"
-							isAlive   = true
-							lastName  = "Smith"
-						}
-                		)
-					}
-				`,
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayFunctionCronExists(tt, "scaleway_function_cron.main"),
-					resource.TestCheckResourceAttr("scaleway_function_cron.main", "schedule", "1 1 * * *"),
-					resource.TestCheckResourceAttr("scaleway_function_cron.main", "args", "{\"address\":{\"city\":\"Paris\",\"country\":\"FR\"},\"age\":23,\"firstName\":\"John\",\"isAlive\":true,\"lastName\":\"Smith\"}"),
-				),
-			},
 		},
 	})
 }
