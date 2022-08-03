@@ -87,39 +87,6 @@ func TestAccScalewayFunctionCron_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_function_cron.func", "schedule", "0 1 * * *"),
 				),
 			},
-			{
-				Config: `
-					resource scaleway_function_namespace main {
-						name = "test-cron"
-					}
-
-					resource scaleway_function main {
-						name = "test-cron"
-						namespace_id = scaleway_function_namespace.main.id
-						runtime = "node14"
-						privacy = "private"
-						handler = "handler.handle"
-					}
-
-					resource scaleway_function_cron main {
-						function_id = scaleway_function.main.id
-						schedule = "1 1 * * *"
-						args = jsonencode({})
-					}
-
-					resource scaleway_function_cron func {
-						function_id = scaleway_function.main.id
-						schedule = "1 2 * * *"
-						args = jsonencode({})
-					}
-				`,
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayFunctionCronExists(tt, "scaleway_function_cron.main"),
-					testAccCheckScalewayFunctionCronExists(tt, "scaleway_function_cron.func"),
-					resource.TestCheckResourceAttr("scaleway_function_cron.main", "schedule", "1 1 * * *"),
-					resource.TestCheckResourceAttr("scaleway_function_cron.func", "schedule", "1 2 * * *"),
-				),
-			},
 		},
 	})
 }
