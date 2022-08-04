@@ -17,6 +17,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/hashicorp/aws-sdk-go-base/tfawserr"
+	awspolicy "github.com/hashicorp/awspolicyequivalence"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -378,4 +379,57 @@ func TransitionSCWStorageClassValues() []string {
 		TransitionStorageClassGlacier,
 		TransitionStorageClassOnezoneIa,
 	}
+}
+
+func SuppressEquivalentPolicyDiffs(k, old, new string, d *schema.ResourceData) bool {
+	if strings.TrimSpace(old) == "" && strings.TrimSpace(new) == "" {
+		return true
+	}
+
+	if strings.TrimSpace(old) == "{}" && strings.TrimSpace(new) == "" {
+		return true
+	}
+
+	if strings.TrimSpace(old) == "" && strings.TrimSpace(new) == "{}" {
+		return true
+	}
+
+	if strings.TrimSpace(old) == "{}" && strings.TrimSpace(new) == "{}" {
+		return true
+	}
+
+	equivalent, err := awspolicy.PoliciesAreEquivalent(old, new)
+	if err != nil {
+		return false
+	}
+
+	return equivalent
+}
+
+func SecondJSONUnlessEquivalent(old, new string) (string, error) {
+	// valid empty JSON is "{}" not "" so handle special case to avoid
+	// Error unmarshaling policy: unexpected end of JSON input
+	if strings.TrimSpace(new) == "" {
+		return "", nil
+	}
+
+	if strings.TrimSpace(new) == "{}" {
+		return "{}", nil
+	}
+
+	if strings.TrimSpace(old) == "" || strings.TrimSpace(old) == "{}" {
+		return new, nil
+	}
+
+	equivalent, err := awspolicy.PoliciesAreEquivalent(old, new)
+
+	if err != nil {
+		return "", err
+	}
+
+	if equivalent {
+		return old, nil
+	}
+
+	return new, nil
 }
