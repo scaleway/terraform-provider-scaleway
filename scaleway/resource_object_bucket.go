@@ -199,7 +199,7 @@ func resourceScalewayObjectBucket() *schema.Resource {
 }
 
 func resourceScalewayObjectBucketCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	bucketName := d.Get("name").(string)
+	bucketName := d.Get("bucket_id").(string)
 	acl := d.Get("acl").(string)
 
 	s3Client, region, err := s3ClientWithRegion(d, meta)
@@ -207,7 +207,7 @@ func resourceScalewayObjectBucketCreate(ctx context.Context, d *schema.ResourceD
 		return diag.FromErr(err)
 	}
 
-	req := &s3.CreateBucketInput{
+	req := &s3.PutBucketPolicyInput{
 		Bucket: scw.StringPtr(bucketName),
 		ACL:    scw.StringPtr(acl),
 	}
@@ -590,81 +590,6 @@ func resourceScalewayObjectBucketDelete(ctx context.Context, d *schema.ResourceD
 	s3Client, _, bucketName, err := s3ClientWithRegionAndName(meta, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
-	}
-
-	_, err = s3Client.DeleteBucketWithContext(ctx, &s3.DeleteBucketInput{
-		Bucket: scw.StringPtr(bucketName),
-	})
-
-	if isS3Err(err, s3.ErrCodeNoSuchBucket, "") {
-		return nil
-	}
-
-	if isS3Err(err, ErrCodeBucketNotEmpty, "") {
-		if d.Get("force_destroy").(bool) {
-			err = deleteS3ObjectVersions(ctx, s3Client, bucketName, true)
-			if err != nil {
-				return diag.FromErr(fmt.Errorf("error S3 bucket force_destroy: %s", err))
-			}
-			// Try to delete bucket again after deleting objects
-			return resourceScalewayObjectBucketDelete(ctx, d, meta)
-		}
-	}
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	return nil
-}
-
-func resourceScalewayObjectBucketVersioningUpdate(ctx context.Context, s3conn *s3.S3, d *schema.ResourceData) error {
-	v := d.Get("versioning").([]interface{})
-	bucketName := d.Get("name").(string)
-	vc := expandObjectBucketVersioning(v)
-
-	i := &s3.PutBucketVersioningInput{
-		Bucket:                  scw.StringPtr(bucketName),
-		VersioningConfiguration: vc,
-	}
-	tflog.Debug(ctx, fmt.Sprintf("S3 put bucket versioning: %#v", i))
-
-	_, err := s3conn.PutBucketVersioningWithContext(ctx, i)
-	if err != nil {
-		return fmt.Errorf("error putting S3 versioning: %s", err)
-	}
-
-	return nil
-}
-
-func resourceScalewayS3BucketCorsUpdate(ctx context.Context, s3conn *s3.S3, d *schema.ResourceData) error {
-	bucketName := d.Get("name").(string)
-	rawCors := d.Get("cors_rule").([]interface{})
-
-	if len(rawCors) == 0 {
-		// Delete CORS
-		tflog.Debug(ctx, fmt.Sprintf("S3 bucket: %s, delete CORS", bucketName))
-
-		_, err := s3conn.DeleteBucketCorsWithContext(ctx, &s3.DeleteBucketCorsInput{
-			Bucket: scw.StringPtr(bucketName),
-		})
-		if err != nil {
-			return fmt.Errorf("error deleting S3 CORS: %s", err)
-		}
-	} else {
-		// Put CORS
-		rules := expandBucketCORS(ctx, rawCors, bucketName)
-		corsInput := &s3.PutBucketCorsInput{
-			Bucket: scw.StringPtr(bucketName),
-			CORSConfiguration: &s3.CORSConfiguration{
-				CORSRules: rules,
-			},
-		}
-		tflog.Debug(ctx, fmt.Sprintf("S3 bucket: %s, put CORS: %#v", bucketName, corsInput))
-
-		_, err := s3conn.PutBucketCorsWithContext(ctx, corsInput)
-		if err != nil {
-			return fmt.Errorf("error putting S3 CORS: %s", err)
-		}
 	}
 
 	return nil
