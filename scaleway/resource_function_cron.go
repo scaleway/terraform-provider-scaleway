@@ -20,6 +20,10 @@ func resourceScalewayFunctionCron() *schema.Resource {
 		},
 		Timeouts: &schema.ResourceTimeout{
 			Default: schema.DefaultTimeout(defaultFunctionCronTimeout),
+			Read:    schema.DefaultTimeout(defaultFunctionCronTimeout),
+			Update:  schema.DefaultTimeout(defaultFunctionCronTimeout),
+			Delete:  schema.DefaultTimeout(defaultFunctionCronTimeout),
+			Create:  schema.DefaultTimeout(defaultFunctionCronTimeout),
 		},
 		SchemaVersion: 0,
 		Schema: map[string]*schema.Schema{

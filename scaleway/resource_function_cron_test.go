@@ -150,7 +150,7 @@ func testAccCheckScalewayFunctionCronExists(tt *TestTools, n string) resource.Te
 func testAccCheckScalewayFunctionCronDestroy(tt *TestTools) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		for _, rs := range state.RootModule().Resources {
-			if rs.Type != "scaleway_function_namespace" {
+			if rs.Type != "scaleway_function_cron" {
 				continue
 			}
 
@@ -159,13 +159,13 @@ func testAccCheckScalewayFunctionCronDestroy(tt *TestTools) resource.TestCheckFu
 				return err
 			}
 
-			_, err = api.DeleteNamespace(&function.DeleteNamespaceRequest{
-				NamespaceID: id,
-				Region:      region,
+			_, err = api.DeleteCron(&function.DeleteCronRequest{
+				CronID: id,
+				Region: region,
 			})
 
 			if err == nil {
-				return fmt.Errorf("function namespace (%s) still exists", rs.Primary.ID)
+				return fmt.Errorf("function cron (%s) still exists", rs.Primary.ID)
 			}
 
 			if !is404Error(err) {
