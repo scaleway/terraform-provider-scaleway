@@ -91,6 +91,20 @@ func waitForRDBDatabaseBackup(ctx context.Context, api *rdb.API, region scw.Regi
 	}, scw.WithContext(ctx))
 }
 
+func waitForRDBReadReplica(ctx context.Context, api *rdb.API, region scw.Region, id string, timeout time.Duration) (*rdb.ReadReplica, error) {
+	retryInterval := defaultWaitRDBRetryInterval
+	if DefaultWaitRetryInterval != nil {
+		retryInterval = *DefaultWaitRetryInterval
+	}
+
+	return api.WaitForReadReplica(&rdb.WaitForReadReplicaRequest{
+		Region:        region,
+		Timeout:       scw.TimeDurationPtr(timeout),
+		ReadReplicaID: id,
+		RetryInterval: &retryInterval,
+	}, scw.WithContext(ctx))
+}
+
 func expandPrivateNetwork(data interface{}, exist bool) ([]*rdb.EndpointSpec, error) {
 	if data == nil || !exist {
 		return nil, nil
