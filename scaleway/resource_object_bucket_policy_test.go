@@ -12,6 +12,9 @@ import (
 )
 
 func TestAccSCWBucketPolicy_basic(t *testing.T) {
+	if !*UpdateCassettes {
+		t.Skip("Skipping ObjectStorage test as this kind of resource can't be deleted before 24h")
+	}
 	name := fmt.Sprintf("tf-test-bucket-%d", sdkacctest.RandInt())
 
 	expectedPolicyText := fmt.Sprintf(`{
@@ -73,11 +76,11 @@ func TestAccSCWBucketPolicy_basic(t *testing.T) {
                                   "%[1]s/*",
                                 ]
                                Sid = "GrantToEveryone"
-                            },
-                        ]
-                       Version = "2012-10-17"
-                    }
-                )
+                            	},
+							]
+                       		Version = "2012-10-17"
+                    	}
+						)
 					}
 					`, name),
 				Check: resource.ComposeTestCheckFunc(
