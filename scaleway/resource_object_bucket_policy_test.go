@@ -1,45 +1,135 @@
 package scaleway
 
-/*func TestAccSCWBucketPolicy_basic(t *testing.T) {
+import (
+	"fmt"
+	"testing"
+
+	"github.com/aws/aws-sdk-go/service/s3"
+	awspolicy "github.com/hashicorp/awspolicyequivalence"
+	sdkacctest "github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+)
+
+func TestAccSCWBucketPolicy_basic(t *testing.T) {
 	name := fmt.Sprintf("tf-test-bucket-%d", sdkacctest.RandInt())
 
 	expectedPolicyText := fmt.Sprintf(`{
-    "Version": "2012-10-17",
-    "Statement": [
+   "Version":"2012-10-17",
+   "Id":"MyPolicy",
+   "Statement":[
       {
-        "Sid": "",
-        "Effect": "Allow",
-        "Principal": {
-          "AWS": "*"
-        },
-        "Action": "s3:*",
-        "Resource": [
-
-        ]
+         "Sid":"GrantToEveryone",
+         "Effect":"Allow",
+         "Principal":{
+            "SCW":"*"
+         },
+         "Action":[
+            "s3:ListBucket",
+            "s3:GetObject"
+         ],
+         "Resource":[
+            "%[1]s",
+            "%[1]s/*"
+         ]
       }
-    ]
-  }`, "fr-par", name, "fr-par", name)
+   ]
+}`, name)
 
+	tt := NewTestTools(t)
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { testAccPreCheck(t) },
-		ErrorCheck:               acctest.ErrorCheck(t, s3.EndpointsID),
-		ProviderFactories:        tt.ProviderFactories,
-		ProtoV5ProviderFactories: acctest.ProtoV5ProviderFactories,
-		CheckDestroy:             testAccCheckBucketDestroy,
+		PreCheck:          func() { testAccPreCheck(t) },
+		ErrorCheck:        ErrorCheck(t, EndpointsID),
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      testAccCheckScalewayObjectBucketDestroy(tt),
 		Steps: []resource.TestStep{
 			{
-				Config: testAccBucketPolicyConfig_basic(name),
+				Config: fmt.Sprintf(`
+					resource "scaleway_object_bucket" "bucket" {
+						name = %[1]q
+					
+						tags = {
+						  TestName = "TestAccSCWBucketPolicy_basic"
+						}
+					}
+
+					resource "scaleway_object_bucket_policy" "bucket" {
+						bucket = scaleway_object_bucket.bucket.name
+						policy = jsonencode(
+                    	{
+                      		Id = "MyPolicy"
+                      		Statement = [
+							{
+								Action = [
+                                	"s3:ListBucket",
+                                   "s3:GetObject",
+                                ]
+                               Effect = "Allow"
+                               Principal = {
+                                   SCW = "*"
+                                }
+                               Resource  = [
+                                  "%[1]s",
+                                  "%[1]s/*",
+                                ]
+                               Sid = "GrantToEveryone"
+                            },
+                        ]
+                       Version = "2012-10-17"
+                    }
+                )
+					}
+					`, name),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckBucketExists("aws_s3_bucket.bucket"),
-					testAccCheckBucketHasPolicy("aws_s3_bucket.bucket", expectedPolicyText),
+					testAccCheckScalewayObjectBucketExists(tt, "scaleway_object_bucket.bucket"),
+					testAccCheckBucketHasPolicy(tt, "scaleway_object_bucket_policy.bucket", expectedPolicyText),
 				),
 			},
 			{
-				ResourceName:      "aws_s3_bucket_policy.bucket",
+				ResourceName:      "scaleway_object_bucket_policy.bucket",
 				ImportState:       true,
 				ImportStateVerify: true,
 			},
 		},
 	})
 }
-*/
+
+func testAccCheckBucketHasPolicy(tt *TestTools, n string, expectedPolicyText string) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		rs, ok := s.RootModule().Resources[n]
+		if !ok {
+			return fmt.Errorf("not found: %s", n)
+		}
+
+		if rs.Primary.ID == "" {
+			return fmt.Errorf("no scw bucket id is set")
+		}
+
+		s3Client, err := newS3ClientFromMeta(tt.Meta)
+		if err != nil {
+			return err
+		}
+
+		bucketRegionalID := expandRegionalID(rs.Primary.ID)
+
+		policy, err := s3Client.GetBucketPolicy(&s3.GetBucketPolicyInput{
+			Bucket: expandStringPtr(bucketRegionalID.ID),
+		})
+		if err != nil {
+			return fmt.Errorf("getBucketPolicy error: %v", err)
+		}
+
+		actualPolicyText := *policy.Policy
+
+		equivalent, err := awspolicy.PoliciesAreEquivalent(actualPolicyText, expectedPolicyText)
+		if err != nil {
+			return fmt.Errorf("error testing policy equivalence: %s", err)
+		}
+		if !equivalent {
+			return fmt.Errorf("non equivalent policy error:\n\nexpected: %s\n\n     got: %s",
+				expectedPolicyText, actualPolicyText)
+		}
+
+		return nil
+	}
+}

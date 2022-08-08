@@ -3,16 +3,16 @@ package scaleway
 import (
 	"context"
 	"fmt"
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/structure"
 	"time"
 
+	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/hashicorp/aws-sdk-go-base/tfawserr"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/structure"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 )
 
@@ -51,7 +51,8 @@ func resourceScalewayObjectBucketPolicyCreate(ctx context.Context, d *schema.Res
 		return diag.FromErr(err)
 	}
 
-	bucket := d.Get("bucket").(string)
+	bucket := expandID(d.Get("bucket"))
+	tflog.Debug(ctx, fmt.Sprintf("bucket name: %s", bucket))
 
 	policy, err := structure.NormalizeJsonString(d.Get("policy").(string))
 	if err != nil {
@@ -85,22 +86,21 @@ func resourceScalewayObjectBucketPolicyCreate(ctx context.Context, d *schema.Res
 
 	d.SetId(newRegionalIDString(region, bucket))
 
-	return resourceScalewayObjectBucketRead(ctx, d, meta)
+	return resourceScalewayObjectBucketPolicyRead(ctx, d, meta)
 }
 
 //gocyclo:ignore
 func resourceScalewayObjectBucketPolicyRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	s3Client, region, bucketName, err := s3ClientWithRegionAndName(meta, d.Id())
+	s3Client, region, _, err := s3ClientWithRegionAndName(meta, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	_ = d.Set("bucket", bucketName)
 	_ = d.Set("region", region)
 
 	tflog.Debug(ctx, fmt.Sprintf("[DEBUG] SCW bucket policy, read for bucket: %s", d.Id()))
 	pol, err := s3Client.GetBucketPolicyWithContext(ctx, &s3.GetBucketPolicyInput{
-		Bucket: aws.String(d.Id()),
+		Bucket: aws.String(expandID(d.Id())),
 	})
 
 	if !d.IsNewResource() && tfawserr.ErrCodeEquals(err, ErrCodeNoSuchBucketPolicy, s3.ErrCodeNoSuchBucket) {
@@ -115,7 +115,6 @@ func resourceScalewayObjectBucketPolicyRead(ctx context.Context, d *schema.Resou
 	}
 
 	policyToSet, err := SecondJSONUnlessEquivalent(d.Get("policy").(string), v)
-
 	if err != nil {
 		return diag.FromErr(fmt.Errorf("while setting policy (%s), encountered: %w", policyToSet, err))
 	}
@@ -130,7 +129,7 @@ func resourceScalewayObjectBucketPolicyRead(ctx context.Context, d *schema.Resou
 		return diag.FromErr(err)
 	}
 
-	if err := d.Set("bucket", newRegionalIDString(region, d.Id())); err != nil {
+	if err := d.Set("bucket", expandID(d.Id())); err != nil {
 		return diag.FromErr(err)
 	}
 
@@ -143,7 +142,7 @@ func resourceScalewayObjectBucketPolicyDelete(ctx context.Context, d *schema.Res
 		return diag.FromErr(err)
 	}
 
-	tflog.Debug(ctx, fmt.Sprintf("[DEBUG] SCW Object bucket: %s, delete policy", bucketName))
+	tflog.Debug(ctx, fmt.Sprintf("scw object bucket: %s, delete policy", bucketName))
 	_, err = s3Client.DeleteBucketPolicy(&s3.DeleteBucketPolicyInput{
 		Bucket: aws.String(bucketName),
 	})

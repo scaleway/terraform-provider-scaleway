@@ -121,9 +121,9 @@ func objectBucketEndpointURL(bucketName string, region scw.Region) string {
 }
 
 // Returns true if the error matches all these conditions:
-//  * err is of type awserr.Error
-//  * Error.Code() matches code
-//  * Error.Message() contains message
+//   - err is of type aws err.Error
+//   - Error.Code() matches code
+//   - Error.Message() contains message
 func isS3Err(err error, code string, message string) bool {
 	var awsErr awserr.Error
 	if errors.As(err, &awsErr) {
@@ -381,24 +381,26 @@ func TransitionSCWStorageClassValues() []string {
 	}
 }
 
-func SuppressEquivalentPolicyDiffs(k, old, new string, d *schema.ResourceData) bool {
-	if strings.TrimSpace(old) == "" && strings.TrimSpace(new) == "" {
+func SuppressEquivalentPolicyDiffs(k, old, newP string, d *schema.ResourceData) bool {
+	tflog.Debug(context.Background(),
+		fmt.Sprintf("[DEBUG] suppress policy on key: %s, old: %s new: %s", k, old, newP))
+	if strings.TrimSpace(old) == "" && strings.TrimSpace(newP) == "" {
 		return true
 	}
 
-	if strings.TrimSpace(old) == "{}" && strings.TrimSpace(new) == "" {
+	if strings.TrimSpace(old) == "{}" && strings.TrimSpace(newP) == "" {
 		return true
 	}
 
-	if strings.TrimSpace(old) == "" && strings.TrimSpace(new) == "{}" {
+	if strings.TrimSpace(old) == "" && strings.TrimSpace(newP) == "{}" {
 		return true
 	}
 
-	if strings.TrimSpace(old) == "{}" && strings.TrimSpace(new) == "{}" {
+	if strings.TrimSpace(old) == "{}" && strings.TrimSpace(newP) == "{}" {
 		return true
 	}
 
-	equivalent, err := awspolicy.PoliciesAreEquivalent(old, new)
+	equivalent, err := awspolicy.PoliciesAreEquivalent(old, newP)
 	if err != nil {
 		return false
 	}
@@ -406,23 +408,22 @@ func SuppressEquivalentPolicyDiffs(k, old, new string, d *schema.ResourceData) b
 	return equivalent
 }
 
-func SecondJSONUnlessEquivalent(old, new string) (string, error) {
+func SecondJSONUnlessEquivalent(old, newP string) (string, error) {
 	// valid empty JSON is "{}" not "" so handle special case to avoid
-	// Error unmarshaling policy: unexpected end of JSON input
-	if strings.TrimSpace(new) == "" {
+	// Error unmarshalling policy: unexpected end of JSON input
+	if strings.TrimSpace(newP) == "" {
 		return "", nil
 	}
 
-	if strings.TrimSpace(new) == "{}" {
+	if strings.TrimSpace(newP) == "{}" {
 		return "{}", nil
 	}
 
 	if strings.TrimSpace(old) == "" || strings.TrimSpace(old) == "{}" {
-		return new, nil
+		return newP, nil
 	}
 
-	equivalent, err := awspolicy.PoliciesAreEquivalent(old, new)
-
+	equivalent, err := awspolicy.PoliciesAreEquivalent(old, newP)
 	if err != nil {
 		return "", err
 	}
@@ -431,5 +432,5 @@ func SecondJSONUnlessEquivalent(old, new string) (string, error) {
 		return old, nil
 	}
 
-	return new, nil
+	return newP, nil
 }
