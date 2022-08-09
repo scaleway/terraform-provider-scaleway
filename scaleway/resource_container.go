@@ -105,6 +105,12 @@ func resourceScalewayContainer() *schema.Resource {
 				Computed:    true,
 				Description: "The scaleway registry image address",
 			},
+			"registry_sha256": {
+				Type:         schema.TypeString,
+				Optional:     true,
+				RequiredWith: []string{"registry_image"},
+				Description:  "The sha256 of your source registry image, changing it will re-apply the deployment. Can be any string",
+			},
 			"max_concurrency": {
 				Type:         schema.TypeInt,
 				Optional:     true,
@@ -328,6 +334,11 @@ func resourceScalewayContainerUpdate(ctx context.Context, d *schema.ResourceData
 
 	if d.HasChanges("deploy") {
 		req.Redeploy = expandBoolPtr(d.Get("deploy"))
+	}
+
+	imageHasChanged := d.HasChanges("registry_sha256")
+	if imageHasChanged {
+		req.Redeploy = &imageHasChanged
 	}
 
 	con, err := api.UpdateContainer(req, scw.WithContext(ctx))
