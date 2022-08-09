@@ -173,7 +173,7 @@ In addition to all arguments above, the following attributes are exported:
 ## Limitations
 
 The Managed Database product is only compliant with the private network in the default availability zone (AZ).
-i.e `fr-par-1`, `nl-ams-1`, `pl-waw-1`. To know more about check our section [How to connect a PostgreSQL and MySQL Database Instance to a Private Network](https://www.scaleway.com/en/docs/managed-databases/postgresql-and-mysql/how-to/connect-database-private-network/)
+i.e. `fr-par-1`, `nl-ams-1`, `pl-waw-1`. To learn more, read our section [How to connect a PostgreSQL and MySQL Database Instance to a Private Network](https://www.scaleway.com/en/docs/managed-databases/postgresql-and-mysql/how-to/connect-database-private-network/)
 
 ## Import
 
