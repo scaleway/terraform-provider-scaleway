@@ -16,7 +16,7 @@ resource "scaleway_object_bucket_policy" "bucket" {
   name = "some-unique-name"
 }
 
-resource "scaleway_object_bucket_policy" "bucket" {
+resource "scaleway_object_bucket_policy" "policy" {
     bucket = scaleway_object_bucket.bucket.name
     policy = jsonencode(
     {
