@@ -302,11 +302,11 @@ func resourceScalewayInstanceSecurityGroupUpdate(ctx context.Context, d *schema.
 // updateSecurityGroupeRules handles updating SecurityGroupRules
 //
 // It works as followed:
-//   1) Creates 2 map[direction][]rule: one for rules in state and one for rules in API
-//   2) For each direction we:
+//  1. Creates 2 map[direction][]rule: one for rules in state and one for rules in API nolint:gofmt
+//  2. For each direction we:
 //     A) Loop for each rule in state for this direction
-//       a) Compare with api rule in this direction at the same index
-//          if different update / if equals do nothing / if no more api rules to compare create new api rule
+//     a) Compare with api rule in this direction at the same index
+//     if different update / if equals do nothing / if no more api rules to compare create new api rule
 //     B) If there is more rule in the API we remove them
 func updateSecurityGroupeRules(ctx context.Context, d *schema.ResourceData, zone scw.Zone, securityGroupID string, instanceAPI *instance.API) error {
 	apiRules := map[instance.SecurityGroupRuleDirection][]*instance.SecurityGroupRule{

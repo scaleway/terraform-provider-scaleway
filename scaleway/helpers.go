@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+	"testing"
 	"time"
 
 	"github.com/hashicorp/go-cty/cty"
@@ -17,6 +18,12 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/scaleway/scaleway-sdk-go/namegenerator"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+)
+
+// Service information constants
+const (
+	ServiceName = "scw"       // Name of service.
+	EndpointsID = ServiceName // ID to look up a service endpoint with.
 )
 
 // DefaultWaitRetryInterval is used to set the retry interval to 0 during acceptance tests
@@ -173,8 +180,8 @@ type terraformResourceData interface {
 var ErrZoneNotFound = fmt.Errorf("could not detect zone. Scaleway uses regions and zones. For more information, refer to https://www.terraform.io/docs/providers/scaleway/guides/regions_and_zones.html")
 
 // extractZone will try to guess the zone from the following:
-//  - zone field of the resource data
-//  - default zone from config
+//   - zone field of the resource data
+//   - default zone from config
 func extractZone(d terraformResourceData, meta *Meta) (scw.Zone, error) {
 	rawZone, exist := d.GetOk("zone")
 	if exist {
@@ -193,8 +200,8 @@ func extractZone(d terraformResourceData, meta *Meta) (scw.Zone, error) {
 var ErrRegionNotFound = fmt.Errorf("could not detect region")
 
 // extractRegion will try to guess the region from the following:
-//  - region field of the resource data
-//  - default region from config
+//   - region field of the resource data
+//   - default region from config
 func extractRegion(d terraformResourceData, meta *Meta) (scw.Region, error) {
 	rawRegion, exist := d.GetOk("region")
 	if exist {
@@ -598,8 +605,8 @@ func diffSuppressFuncLocality(k, oldValue, newValue string, d *schema.ResourceDa
 
 // TimedOut returns true if the error represents a "wait timed out" condition.
 // Specifically, TimedOut returns true if the error matches all these conditions:
-//  * err is of type resource.TimeoutError
-//  * TimeoutError.LastError is nil
+//   - err is of type resource.TimeoutError
+//   - TimeoutError.LastError is nil
 func TimedOut(err error) bool {
 	// This explicitly does *not* match wrapped TimeoutErrors
 	timeoutErr, ok := err.(*resource.TimeoutError) //nolint:errorlint // Explicitly does *not* match wrapped TimeoutErrors
@@ -626,8 +633,8 @@ func errorCheck(err error, message string) bool {
 }
 
 // ErrCodeEquals returns true if the error matches all these conditions:
-//  * err is of type scw.Error
-//  * Error.Error() equals one of the passed codes
+//   - err is of type scw.Error
+//   - Error.Error() equals one of the passed codes
 func ErrCodeEquals(err error, codes ...string) bool {
 	var scwErr scw.SdkError
 	if errors.As(err, &scwErr) {
@@ -669,4 +676,30 @@ func flattenSize(size *scw.Size) interface{} {
 		return 0
 	}
 	return *size
+}
+
+type ServiceErrorCheckFunc func(*testing.T) resource.ErrorCheckFunc
+
+var serviceErrorCheckFunc map[string]ServiceErrorCheckFunc
+
+func ErrorCheck(t *testing.T, endpointIDs ...string) resource.ErrorCheckFunc {
+	t.Helper()
+	return func(err error) error {
+		if err == nil {
+			return nil
+		}
+
+		for _, endpointID := range endpointIDs {
+			if f, ok := serviceErrorCheckFunc[endpointID]; ok {
+				ef := f(t)
+				err = ef(err)
+			}
+
+			if err == nil {
+				break
+			}
+		}
+
+		return err
+	}
 }
