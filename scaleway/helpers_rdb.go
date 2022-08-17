@@ -2,6 +2,7 @@ package scaleway
 
 import (
 	"context"
+	"fmt"
 	"reflect"
 	"time"
 
@@ -254,4 +255,90 @@ func expandTimePtr(i interface{}) *time.Time {
 		return nil
 	}
 	return &parsedTime
+}
+
+func expandReadReplicaEndpointsSpecDirectAccess(data interface{}) *rdb.ReadReplicaEndpointSpec {
+	if data == nil {
+		return nil
+	}
+
+	return &rdb.ReadReplicaEndpointSpec{
+		DirectAccess: new(rdb.ReadReplicaEndpointSpecDirectAccess),
+	}
+}
+
+// expandReadReplicaEndpointsSpecPrivateNetwork expand read-replica private network endpoints from schema to specs
+func expandReadReplicaEndpointsSpecPrivateNetwork(data interface{}) (*rdb.ReadReplicaEndpointSpec, error) {
+	if data == nil {
+		return nil, nil
+	}
+
+	rawEndpoint := data.(map[string]interface{})
+
+	endpoint := new(rdb.ReadReplicaEndpointSpec)
+
+	ip, err := expandIPNet(rawEndpoint["service_ip"].(string))
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse private_network service_ip (%s): %w", rawEndpoint["service_ip"], err)
+	}
+
+	endpoint.PrivateNetwork = &rdb.ReadReplicaEndpointSpecPrivateNetwork{
+		PrivateNetworkID: expandID(rawEndpoint["private_network_id"]),
+		ServiceIP:        ip,
+	}
+	return endpoint, nil
+}
+
+// expandReadReplicaEndpointsSpec expand read-replica endpoints from schema to a list of specs
+func expandReadReplicaEndpointsSpec(data interface{}) ([]*rdb.ReadReplicaEndpointSpec, error) {
+	rawEndpoint := data.(map[string]interface{})
+	endpoints := []*rdb.ReadReplicaEndpointSpec(nil)
+
+	if rawDA, hasDirectAccess := rawEndpoint["direct_access"]; hasDirectAccess && len(rawDA.([]interface{})) > 0 {
+		endpoints = append(endpoints, expandReadReplicaEndpointsSpecDirectAccess(rawDA.([]interface{})[0]))
+	}
+
+	if rawPN, hasPrivateNetwork := rawEndpoint["private_network"]; hasPrivateNetwork && len(rawPN.([]interface{})) > 0 {
+		pnEndpoint, err := expandReadReplicaEndpointsSpecPrivateNetwork(rawPN.([]interface{})[0])
+		if err != nil {
+			return nil, fmt.Errorf("failed to parse private_network: %w", err)
+		}
+		endpoints = append(endpoints, pnEndpoint)
+	}
+
+	return endpoints, nil
+}
+
+// flattenReadReplicaEndpoints flatten read-replica endpoints from sdk struct to schema
+func flattenReadReplicaEndpoints(endpoints []*rdb.Endpoint) interface{} {
+	endpointsMap := map[string][]map[string]interface{}{
+		"direct_access":   {},
+		"private_network": {},
+	}
+
+	for _, endpoint := range endpoints {
+		rawEndpoint := map[string]interface{}{
+			"endpoint_id": endpoint.ID,
+			"ip":          flattenIPPtr(endpoint.IP),
+			"port":        int(endpoint.Port),
+			"name":        endpoint.Name,
+			"hostname":    flattenStringPtr(endpoint.Hostname),
+		}
+		if endpoint.DirectAccess != nil {
+			endpointsMap["direct_access"] = append(endpointsMap["direct_access"], rawEndpoint)
+		}
+		if endpoint.PrivateNetwork != nil {
+			rawEndpoint["private_network_id"] = newZonedID(endpoint.PrivateNetwork.Zone, endpoint.PrivateNetwork.PrivateNetworkID).String()
+			rawEndpoint["service_ip"] = endpoint.PrivateNetwork.ServiceIP.String()
+			rawEndpoint["zone"] = endpoint.PrivateNetwork.Zone
+			endpointsMap["private_network"] = append(endpointsMap["private_network"], rawEndpoint)
+		}
+	}
+
+	return []map[string]interface{}{
+		{
+			"direct_access":   endpointsMap["direct_access"],
+			"private_network": endpointsMap["private_network"],
+		},
+	}
 }
