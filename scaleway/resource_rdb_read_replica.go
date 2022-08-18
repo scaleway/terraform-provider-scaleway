@@ -35,101 +35,92 @@ func resourceScalewayRdbReadReplica() *schema.Resource {
 				Required:    true,
 				Description: "Id of the rdb instance to replicate",
 			},
-			"endpoints": {
-				Type:     schema.TypeList,
-				MaxItems: 1,
-				Required: true,
+			"direct_access": {
+				Type:        schema.TypeList,
+				Optional:    true,
+				Description: "Direct access endpoint, it gives you an IP and a port to access your read-replica",
+				MaxItems:    1,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"direct_access": {
-							Type:        schema.TypeList,
-							Optional:    true,
-							Description: "Direct access endpoint, it gives you an IP and a port to access your read-replica",
-							MaxItems:    1,
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									// Endpoints common
-									"endpoint_id": {
-										Type:        schema.TypeString,
-										Description: "UUID of the endpoint (UUID format).",
-										Computed:    true,
-									},
-									"ip": {
-										Type:        schema.TypeString,
-										Description: "IPv4 address of the endpoint (IP address). Only one of ip and hostname may be set.",
-										Computed:    true,
-									},
-									"port": {
-										Type:        schema.TypeInt,
-										Description: "TCP port of the endpoint.",
-										Computed:    true,
-									},
-									"name": {
-										Type:        schema.TypeString,
-										Description: "Name of the endpoint.",
-										Computed:    true,
-									},
-									"hostname": {
-										Type:        schema.TypeString,
-										Description: "Hostname of the endpoint. Only one of ip and hostname may be set.",
-										Computed:    true,
-									},
-								},
-							},
+						// Endpoints common
+						"endpoint_id": {
+							Type:        schema.TypeString,
+							Description: "UUID of the endpoint (UUID format).",
+							Computed:    true,
 						},
-						"private_network": {
-							Type:        schema.TypeList,
-							Optional:    true,
-							Description: "Private network endpoints",
-							MaxItems:    1,
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									// Private network specific
-									"private_network_id": {
-										Type:         schema.TypeString,
-										Description:  "UUID of the private network to be connected to the read replica (UUID format).",
-										ValidateFunc: validationUUIDorUUIDWithLocality(),
-										Required:     true,
-									},
-									"service_ip": {
-										Type:         schema.TypeString,
-										Description:  "Endpoint IPv4 address with a CIDR notation. Check documentation about IP and subnet limitations. (IP network).",
-										Required:     true,
-										ValidateFunc: validation.IsCIDR,
-									},
-									"zone": {
-										Type:        schema.TypeString,
-										Description: "Private network zone.",
-										Computed:    true,
-									},
-									// Endpoints common
-									"endpoint_id": {
-										Type:        schema.TypeString,
-										Description: "UUID of the endpoint (UUID format).",
-										Computed:    true,
-									},
-									"ip": {
-										Type:        schema.TypeString,
-										Description: "IPv4 address of the endpoint (IP address). Only one of ip and hostname may be set.",
-										Computed:    true,
-									},
-									"port": {
-										Type:        schema.TypeInt,
-										Description: "TCP port of the endpoint.",
-										Computed:    true,
-									},
-									"name": {
-										Type:        schema.TypeString,
-										Description: "Name of the endpoint.",
-										Computed:    true,
-									},
-									"hostname": {
-										Type:        schema.TypeString,
-										Description: "Hostname of the endpoint. Only one of ip and hostname may be set.",
-										Computed:    true,
-									},
-								},
-							},
+						"ip": {
+							Type:        schema.TypeString,
+							Description: "IPv4 address of the endpoint (IP address). Only one of ip and hostname may be set.",
+							Computed:    true,
+						},
+						"port": {
+							Type:        schema.TypeInt,
+							Description: "TCP port of the endpoint.",
+							Computed:    true,
+						},
+						"name": {
+							Type:        schema.TypeString,
+							Description: "Name of the endpoint.",
+							Computed:    true,
+						},
+						"hostname": {
+							Type:        schema.TypeString,
+							Description: "Hostname of the endpoint. Only one of ip and hostname may be set.",
+							Computed:    true,
+						},
+					},
+				},
+			},
+			"private_network": {
+				Type:        schema.TypeList,
+				Optional:    true,
+				Description: "Private network endpoints",
+				MaxItems:    1,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						// Private network specific
+						"private_network_id": {
+							Type:         schema.TypeString,
+							Description:  "UUID of the private network to be connected to the read replica (UUID format).",
+							ValidateFunc: validationUUIDorUUIDWithLocality(),
+							Required:     true,
+						},
+						"service_ip": {
+							Type:         schema.TypeString,
+							Description:  "Endpoint IPv4 address with a CIDR notation. Check documentation about IP and subnet limitations. (IP network).",
+							Required:     true,
+							ValidateFunc: validation.IsCIDR,
+						},
+						"zone": {
+							Type:        schema.TypeString,
+							Description: "Private network zone.",
+							Computed:    true,
+						},
+						// Endpoints common
+						"endpoint_id": {
+							Type:        schema.TypeString,
+							Description: "UUID of the endpoint (UUID format).",
+							Computed:    true,
+						},
+						"ip": {
+							Type:        schema.TypeString,
+							Description: "IPv4 address of the endpoint (IP address). Only one of ip and hostname may be set.",
+							Computed:    true,
+						},
+						"port": {
+							Type:        schema.TypeInt,
+							Description: "TCP port of the endpoint.",
+							Computed:    true,
+						},
+						"name": {
+							Type:        schema.TypeString,
+							Description: "Name of the endpoint.",
+							Computed:    true,
+						},
+						"hostname": {
+							Type:        schema.TypeString,
+							Description: "Hostname of the endpoint. Only one of ip and hostname may be set.",
+							Computed:    true,
 						},
 					},
 				},
@@ -146,9 +137,15 @@ func resourceScalewayRdbReadReplicaCreate(ctx context.Context, d *schema.Resourc
 		return diag.FromErr(err)
 	}
 
-	endpointSpecs, err := expandReadReplicaEndpointsSpec(d.Get("endpoints.0"))
-	if err != nil {
-		return diag.FromErr(fmt.Errorf("failed to expand endpoints: %w", err))
+	endpointSpecs := []*rdb.ReadReplicaEndpointSpec(nil)
+	if directAccess := expandReadReplicaEndpointsSpecDirectAccess(d.Get("direct_access")); directAccess != nil {
+		endpointSpecs = append(endpointSpecs, directAccess)
+	}
+	if pn, err := expandReadReplicaEndpointsSpecPrivateNetwork(d.Get("private_network")); err != nil || pn != nil {
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		endpointSpecs = append(endpointSpecs, pn)
 	}
 
 	rr, err := rdbAPI.CreateReadReplica(&rdb.CreateReadReplicaRequest{
@@ -185,7 +182,9 @@ func resourceScalewayRdbReadReplicaRead(ctx context.Context, d *schema.ResourceD
 		return diag.FromErr(err)
 	}
 
-	_ = d.Set("endpoints", flattenReadReplicaEndpoints(rr.Endpoints))
+	directAccess, privateNetwork := flattenReadReplicaEndpoints(rr.Endpoints)
+	_ = d.Set("direct_access", directAccess)
+	_ = d.Set("private_network", privateNetwork)
 
 	_ = d.Set("region", string(region))
 
@@ -211,36 +210,36 @@ func resourceScalewayRdbReadReplicaUpdate(ctx context.Context, d *schema.Resourc
 
 	newEndpoints := []*rdb.ReadReplicaEndpointSpec(nil)
 
-	if d.HasChange("endpoints.0.direct_access") {
-		_, directAccessExists := d.GetOk("endpoints.0.direct_access")
+	if d.HasChange("direct_access") {
+		_, directAccessExists := d.GetOk("direct_access")
 		tflog.Debug(ctx, "direct_access", map[string]interface{}{
 			"exists": directAccessExists,
 		})
 		if !directAccessExists {
 			err := rdbAPI.DeleteEndpoint(&rdb.DeleteEndpointRequest{
 				Region:     region,
-				EndpointID: expandID(d.Get("endpoints.0.direct_access.0.endpoint_id")),
+				EndpointID: expandID(d.Get("direct_access.0.endpoint_id")),
 			}, scw.WithContext(ctx))
 			if err != nil {
 				return diag.FromErr(err)
 			}
 		} else {
-			newEndpoints = append(newEndpoints, expandReadReplicaEndpointsSpecDirectAccess(d.Get("endpoints.0.direct_access.0")))
+			newEndpoints = append(newEndpoints, expandReadReplicaEndpointsSpecDirectAccess(d.Get("direct_access")))
 		}
 	}
 
-	if d.HasChange("endpoints.0.private_network") {
-		_, privateNetworkExists := d.GetOk("endpoints.0.private_network")
+	if d.HasChange("private_network") {
+		_, privateNetworkExists := d.GetOk("private_network")
 		if !privateNetworkExists {
 			err := rdbAPI.DeleteEndpoint(&rdb.DeleteEndpointRequest{
 				Region:     region,
-				EndpointID: expandID(d.Get("endpoints.0.private_network.0.endpoint_id")),
+				EndpointID: expandID(d.Get("private_network.0.endpoint_id")),
 			}, scw.WithContext(ctx))
 			if err != nil {
 				return diag.FromErr(err)
 			}
 		} else {
-			pnEndpoint, err := expandReadReplicaEndpointsSpecPrivateNetwork(d.Get("endpoints.0.private_network.0"))
+			pnEndpoint, err := expandReadReplicaEndpointsSpecPrivateNetwork(d.Get("private_network"))
 			if err != nil {
 				return diag.FromErr(err)
 			}

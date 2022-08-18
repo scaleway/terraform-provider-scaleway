@@ -258,9 +258,11 @@ func expandTimePtr(i interface{}) *time.Time {
 }
 
 func expandReadReplicaEndpointsSpecDirectAccess(data interface{}) *rdb.ReadReplicaEndpointSpec {
-	if data == nil {
+	if data == nil || len(data.([]interface{})) == 0 {
 		return nil
 	}
+	// direct_access is a list of size 1
+	data = data.([]interface{})[0]
 
 	return &rdb.ReadReplicaEndpointSpec{
 		DirectAccess: new(rdb.ReadReplicaEndpointSpecDirectAccess),
@@ -269,9 +271,11 @@ func expandReadReplicaEndpointsSpecDirectAccess(data interface{}) *rdb.ReadRepli
 
 // expandReadReplicaEndpointsSpecPrivateNetwork expand read-replica private network endpoints from schema to specs
 func expandReadReplicaEndpointsSpecPrivateNetwork(data interface{}) (*rdb.ReadReplicaEndpointSpec, error) {
-	if data == nil {
+	if data == nil || len(data.([]interface{})) == 0 {
 		return nil, nil
 	}
+	// private_network is a list of size 1
+	data = data.([]interface{})[0]
 
 	rawEndpoint := data.(map[string]interface{})
 
@@ -309,13 +313,8 @@ func expandReadReplicaEndpointsSpec(data interface{}) ([]*rdb.ReadReplicaEndpoin
 	return endpoints, nil
 }
 
-// flattenReadReplicaEndpoints flatten read-replica endpoints from sdk struct to schema
-func flattenReadReplicaEndpoints(endpoints []*rdb.Endpoint) interface{} {
-	endpointsMap := map[string][]map[string]interface{}{
-		"direct_access":   {},
-		"private_network": {},
-	}
-
+// flattenReadReplicaEndpoints flatten read-replica endpoints to directAccess and privateNetwork
+func flattenReadReplicaEndpoints(endpoints []*rdb.Endpoint) (directAccess, privateNetwork interface{}) {
 	for _, endpoint := range endpoints {
 		rawEndpoint := map[string]interface{}{
 			"endpoint_id": endpoint.ID,
@@ -325,20 +324,24 @@ func flattenReadReplicaEndpoints(endpoints []*rdb.Endpoint) interface{} {
 			"hostname":    flattenStringPtr(endpoint.Hostname),
 		}
 		if endpoint.DirectAccess != nil {
-			endpointsMap["direct_access"] = append(endpointsMap["direct_access"], rawEndpoint)
+			directAccess = rawEndpoint
 		}
 		if endpoint.PrivateNetwork != nil {
 			rawEndpoint["private_network_id"] = newZonedID(endpoint.PrivateNetwork.Zone, endpoint.PrivateNetwork.PrivateNetworkID).String()
 			rawEndpoint["service_ip"] = endpoint.PrivateNetwork.ServiceIP.String()
 			rawEndpoint["zone"] = endpoint.PrivateNetwork.Zone
-			endpointsMap["private_network"] = append(endpointsMap["private_network"], rawEndpoint)
+			privateNetwork = rawEndpoint
 		}
 	}
 
-	return []map[string]interface{}{
-		{
-			"direct_access":   endpointsMap["direct_access"],
-			"private_network": endpointsMap["private_network"],
-		},
+	// direct_access and private_network are lists
+
+	if directAccess != nil {
+		directAccess = []interface{}{directAccess}
 	}
+	if privateNetwork != nil {
+		privateNetwork = []interface{}{privateNetwork}
+	}
+
+	return directAccess, privateNetwork
 }
