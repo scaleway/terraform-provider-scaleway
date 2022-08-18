@@ -60,28 +60,6 @@ func ResourceBucketWebsiteConfiguration() *schema.Resource {
 					},
 				},
 			},
-			"redirect_all_requests_to": {
-				Type:     schema.TypeList,
-				Optional: true,
-				MaxItems: 1,
-				ConflictsWith: []string{
-					"error_document",
-					"index_document",
-				},
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"host_name": {
-							Type:     schema.TypeString,
-							Required: true,
-						},
-						"protocol": {
-							Type:         schema.TypeString,
-							Optional:     true,
-							ValidateFunc: validation.StringInSlice(s3.Protocol_Values(), false),
-						},
-					},
-				},
-			},
 			"website_endpoint": {
 				Type:     schema.TypeString,
 				Computed: true,
@@ -110,10 +88,6 @@ func resourceBucketWebsiteConfigurationCreate(ctx context.Context, d *schema.Res
 
 	if v, ok := d.GetOk("index_document"); ok && len(v.([]interface{})) > 0 && v.([]interface{})[0] != nil {
 		websiteConfig.IndexDocument = expandBucketWebsiteConfigurationIndexDocument(v.([]interface{}))
-	}
-
-	if v, ok := d.GetOk("redirect_all_requests_to"); ok && len(v.([]interface{})) > 0 && v.([]interface{})[0] != nil {
-		websiteConfig.RedirectAllRequestsTo = expandBucketWebsiteConfigurationRedirectAllRequestsTo(v.([]interface{}))
 	}
 
 	input := &s3.PutBucketWebsiteInput{
@@ -172,10 +146,6 @@ func resourceBucketWebsiteConfigurationRead(ctx context.Context, d *schema.Resou
 		return diag.FromErr(fmt.Errorf("error setting index_document: %w", err))
 	}
 
-	if err := d.Set("redirect_all_requests_to", flattenBucketWebsiteConfigurationRedirectAllRequestsTo(output.RedirectAllRequestsTo)); err != nil {
-		return diag.FromErr(fmt.Errorf("error setting redirect_all_requests_to: %w", err))
-	}
-
 	// Add website_endpoint and website_domain as attributes
 	websiteEndpoint, err := resourceBucketWebsiteConfigurationWebsiteEndpoint(ctx, conn, bucket, region)
 	if err != nil {
@@ -204,10 +174,6 @@ func resourceBucketWebsiteConfigurationUpdate(ctx context.Context, d *schema.Res
 
 	if v, ok := d.GetOk("index_document"); ok && len(v.([]interface{})) > 0 && v.([]interface{})[0] != nil {
 		websiteConfig.IndexDocument = expandBucketWebsiteConfigurationIndexDocument(v.([]interface{}))
-	}
-
-	if v, ok := d.GetOk("redirect_all_requests_to"); ok && len(v.([]interface{})) > 0 && v.([]interface{})[0] != nil {
-		websiteConfig.RedirectAllRequestsTo = expandBucketWebsiteConfigurationRedirectAllRequestsTo(v.([]interface{}))
 	}
 
 	input := &s3.PutBucketWebsiteInput{
@@ -285,29 +251,6 @@ func expandBucketWebsiteConfigurationIndexDocument(l []interface{}) *s3.IndexDoc
 	return result
 }
 
-func expandBucketWebsiteConfigurationRedirectAllRequestsTo(l []interface{}) *s3.RedirectAllRequestsTo {
-	if len(l) == 0 || l[0] == nil {
-		return nil
-	}
-
-	tfMap, ok := l[0].(map[string]interface{})
-	if !ok {
-		return nil
-	}
-
-	result := &s3.RedirectAllRequestsTo{}
-
-	if v, ok := tfMap["host_name"].(string); ok && v != "" {
-		result.HostName = aws.String(v)
-	}
-
-	if v, ok := tfMap["protocol"].(string); ok && v != "" {
-		result.Protocol = aws.String(v)
-	}
-
-	return result
-}
-
 func flattenBucketWebsiteConfigurationIndexDocument(i *s3.IndexDocument) []interface{} {
 	if i == nil {
 		return []interface{}{}
@@ -331,24 +274,6 @@ func flattenBucketWebsiteConfigurationErrorDocument(e *s3.ErrorDocument) []inter
 
 	if e.Key != nil {
 		m["key"] = aws.StringValue(e.Key)
-	}
-
-	return []interface{}{m}
-}
-
-func flattenBucketWebsiteConfigurationRedirectAllRequestsTo(r *s3.RedirectAllRequestsTo) []interface{} {
-	if r == nil {
-		return []interface{}{}
-	}
-
-	m := make(map[string]interface{})
-
-	if r.HostName != nil {
-		m["host_name"] = aws.StringValue(r.HostName)
-	}
-
-	if r.Protocol != nil {
-		m["protocol"] = aws.StringValue(r.Protocol)
 	}
 
 	return []interface{}{m}

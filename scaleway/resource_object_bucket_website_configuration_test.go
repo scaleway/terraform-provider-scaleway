@@ -16,7 +16,7 @@ const (
 	ResourcePrefix = "tf-acc-test"
 )
 
-func TestAccS3BucketWebsiteConfiguration_basic(t *testing.T) {
+func TestAccOjectBucketWebsiteConfiguration_basic(t *testing.T) {
 	if !*UpdateCassettes {
 		t.Skip("Skipping ObjectStorage test as this kind of resource can't be deleted before 24h")
 	}
@@ -54,6 +54,80 @@ func TestAccS3BucketWebsiteConfiguration_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "index_document.0.suffix", "index.html"),
 					resource.TestCheckResourceAttrSet(resourceName, "website_domain"),
 					resource.TestCheckResourceAttrSet(resourceName, "website_endpoint"),
+				),
+			},
+			{
+				ResourceName:      resourceName,
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
+func TestAccS3BucketWebsiteConfiguration_update(t *testing.T) {
+	if !*UpdateCassettes {
+		t.Skip("Skipping ObjectStorage test as this kind of resource can't be deleted before 24h")
+	}
+	rName := sdkacctest.RandomWithPrefix(ResourcePrefix)
+	resourceName := "scaleway_object_bucket_website_configuration.test"
+
+	tt := NewTestTools(t)
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
+		ErrorCheck:        ErrorCheck(t, EndpointsID),
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      testAccCheckBucketWebsiteConfigurationDestroy(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`
+			  		resource "scaleway_object_bucket" "test" {
+						name = %[1]q
+						acl  = "public-read"
+						tags = {
+							TestName = "TestAccSCW_WebsiteConfig_basic"
+						}
+					}
+
+				  	resource "scaleway_object_bucket_website_configuration" "test" {
+						bucket = scaleway_object_bucket.test.name
+						index_document {
+						  suffix = "index.html"
+						}
+				  	}
+				`, rName),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckBucketWebsiteConfigurationExists(tt, resourceName),
+				),
+			},
+			{
+				Config: fmt.Sprintf(`
+			  		resource "scaleway_object_bucket" "test" {
+						name = %[1]q
+						acl  = "public-read"
+						tags = {
+							TestName = "TestAccSCW_WebsiteConfig_basic"
+						}
+					}
+
+				  	resource "scaleway_object_bucket_website_configuration" "test" {
+						bucket = scaleway_object_bucket.test.name
+						index_document {
+						  suffix = "index.html"
+						}
+
+						error_document {
+							key = "error.html"
+						}
+				  	}
+				`, rName),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckBucketWebsiteConfigurationExists(tt, resourceName),
+					resource.TestCheckResourceAttrPair(resourceName, "bucket", "scaleway_object_bucket.test", "name"),
+					resource.TestCheckResourceAttr(resourceName, "index_document.#", "1"),
+					resource.TestCheckResourceAttr(resourceName, "index_document.0.suffix", "index.html"),
+					resource.TestCheckResourceAttr(resourceName, "error_document.#", "1"),
+					resource.TestCheckResourceAttr(resourceName, "error_document.0.key", "error.html"),
 				),
 			},
 			{
