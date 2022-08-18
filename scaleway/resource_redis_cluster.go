@@ -42,9 +42,10 @@ func resourceScalewayRedisCluster() *schema.Resource {
 				Description: "Redis version of the cluster",
 			},
 			"node_type": {
-				Type:        schema.TypeString,
-				Required:    true,
-				Description: "Type of node to use for the cluster",
+				Type:             schema.TypeString,
+				Required:         true,
+				Description:      "Type of node to use for the cluster",
+				DiffSuppressFunc: diffSuppressFuncIgnoreCase,
 			},
 			"user_name": {
 				Type:        schema.TypeString,
