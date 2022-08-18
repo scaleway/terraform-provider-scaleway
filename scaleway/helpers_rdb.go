@@ -261,8 +261,6 @@ func expandReadReplicaEndpointsSpecDirectAccess(data interface{}) *rdb.ReadRepli
 	if data == nil || len(data.([]interface{})) == 0 {
 		return nil
 	}
-	// direct_access is a list of size 1
-	data = data.([]interface{})[0]
 
 	return &rdb.ReadReplicaEndpointSpec{
 		DirectAccess: new(rdb.ReadReplicaEndpointSpecDirectAccess),
@@ -291,26 +289,6 @@ func expandReadReplicaEndpointsSpecPrivateNetwork(data interface{}) (*rdb.ReadRe
 		ServiceIP:        ip,
 	}
 	return endpoint, nil
-}
-
-// expandReadReplicaEndpointsSpec expand read-replica endpoints from schema to a list of specs
-func expandReadReplicaEndpointsSpec(data interface{}) ([]*rdb.ReadReplicaEndpointSpec, error) {
-	rawEndpoint := data.(map[string]interface{})
-	endpoints := []*rdb.ReadReplicaEndpointSpec(nil)
-
-	if rawDA, hasDirectAccess := rawEndpoint["direct_access"]; hasDirectAccess && len(rawDA.([]interface{})) > 0 {
-		endpoints = append(endpoints, expandReadReplicaEndpointsSpecDirectAccess(rawDA.([]interface{})[0]))
-	}
-
-	if rawPN, hasPrivateNetwork := rawEndpoint["private_network"]; hasPrivateNetwork && len(rawPN.([]interface{})) > 0 {
-		pnEndpoint, err := expandReadReplicaEndpointsSpecPrivateNetwork(rawPN.([]interface{})[0])
-		if err != nil {
-			return nil, fmt.Errorf("failed to parse private_network: %w", err)
-		}
-		endpoints = append(endpoints, pnEndpoint)
-	}
-
-	return endpoints, nil
 }
 
 // flattenReadReplicaEndpoints flatten read-replica endpoints to directAccess and privateNetwork
