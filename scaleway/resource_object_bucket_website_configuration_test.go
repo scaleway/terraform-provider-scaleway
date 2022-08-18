@@ -164,7 +164,7 @@ func testAccCheckBucketWebsiteConfigurationDestroy(tt *TestTools) resource.TestC
 			}
 
 			if err != nil {
-				return fmt.Errorf("error getting Object bucket website configuration (%s): %w", rs.Primary.ID, err)
+				return fmt.Errorf("error getting object bucket website configuration (%s): %w", rs.Primary.ID, err)
 			}
 
 			if output != nil {
@@ -204,9 +204,8 @@ func testAccCheckBucketWebsiteConfigurationExists(tt *TestTools, resourceName st
 		}
 
 		output, err := conn.GetBucketWebsite(input)
-
 		if err != nil {
-			return fmt.Errorf("error getting S3 bucket website configuration (%s): %w", rs.Primary.ID, err)
+			return fmt.Errorf("error getting object bucket website configuration (%s): %w", rs.Primary.ID, err)
 		}
 
 		if output == nil {

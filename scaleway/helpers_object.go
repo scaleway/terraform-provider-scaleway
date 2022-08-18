@@ -3,7 +3,6 @@ package scaleway
 import (
 	"bytes"
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"hash/crc32"
@@ -434,49 +433,6 @@ func SecondJSONUnlessEquivalent(old, newP string) (string, error) {
 	}
 
 	return newP, nil
-}
-
-func normalizeRoutingRules(w []*s3.RoutingRule) (string, error) {
-	withNulls, err := json.Marshal(w)
-	if err != nil {
-		return "", err
-	}
-
-	var rules []map[string]interface{}
-	if err := json.Unmarshal(withNulls, &rules); err != nil {
-		return "", err
-	}
-
-	var cleanRules []map[string]interface{}
-	for _, rule := range rules {
-		cleanRules = append(cleanRules, removeNil(rule))
-	}
-
-	withoutNulls, err := json.Marshal(cleanRules)
-	if err != nil {
-		return "", err
-	}
-
-	return string(withoutNulls), nil
-}
-
-func removeNil(data map[string]interface{}) map[string]interface{} {
-	withoutNil := make(map[string]interface{})
-
-	for k, v := range data {
-		if v == nil {
-			continue
-		}
-
-		switch v := v.(type) {
-		case map[string]interface{}:
-			withoutNil[k] = removeNil(v)
-		default:
-			withoutNil[k] = v
-		}
-	}
-
-	return withoutNil
 }
 
 func resourceBucketWebsiteConfigurationWebsiteEndpoint(ctx context.Context, conn *s3.S3, bucket string, region scw.Region) (*S3Website, error) {
