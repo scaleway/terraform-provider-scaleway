@@ -7,6 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/scaleway/scaleway-sdk-go/api/rdb/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 )
@@ -91,9 +92,10 @@ func resourceScalewayRdbReadReplica() *schema.Resource {
 										Required:     true,
 									},
 									"service_ip": {
-										Type:        schema.TypeString,
-										Description: "Endpoint IPv4 address with a CIDR notation. Check documentation about IP and subnet limitations. (IP network).",
-										Required:    true,
+										Type:         schema.TypeString,
+										Description:  "Endpoint IPv4 address with a CIDR notation. Check documentation about IP and subnet limitations. (IP network).",
+										Required:     true,
+										ValidateFunc: validation.IsCIDR,
 									},
 									"zone": {
 										Type:        schema.TypeString,
