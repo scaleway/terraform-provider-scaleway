@@ -43,7 +43,7 @@ func resourceScalewayRdbReadReplica() *schema.Resource {
 						"direct_access": {
 							Type:        schema.TypeList,
 							Optional:    true,
-							Description: "Direct access endpoint",
+							Description: "Direct access endpoint, it gives you an IP and a port to access your read-replica",
 							MaxItems:    1,
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
