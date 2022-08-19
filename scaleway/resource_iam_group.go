@@ -76,6 +76,8 @@ func resourceScalewayIamGroupCreate(ctx context.Context, d *schema.ResourceData,
 		return diag.FromErr(err)
 	}
 
+	d.SetId(group.ID)
+
 	appIds := expandStrings(d.Get("application_ids").(*schema.Set).List())
 	userIds := expandStrings(d.Get("user_ids").(*schema.Set).List())
 	if len(appIds) > 0 || len(userIds) > 0 {
@@ -88,8 +90,6 @@ func resourceScalewayIamGroupCreate(ctx context.Context, d *schema.ResourceData,
 			return diag.FromErr(err)
 		}
 	}
-
-	d.SetId(group.ID)
 
 	return resourceScalewayIamGroupRead(ctx, d, meta)
 }
