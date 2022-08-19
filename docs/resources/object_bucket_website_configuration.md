@@ -15,9 +15,6 @@ For more information, see [Hosting Websites on Object bucket](https://www.scalew
 resource "scaleway_object_bucket" "main" {
     name = "MyBucket"
     acl  = "public-read"
-    tags = {
-        TestName = "TestAccSCW_WebsiteConfig_basic"
-    }
 }
 
 resource "scaleway_object_bucket_website_configuration" "main" {
@@ -51,7 +48,7 @@ resource "scaleway_object_bucket_policy" "main" {
               "s3:GetObject"
            ],
            "Resource":[
-              "%[1]s/*"
+              "<bucket-name>/*"
            ]
         }
         ]
@@ -71,8 +68,8 @@ resource "scaleway_object_bucket_website_configuration" "main" {
 The following arguments are supported:
 
 * `bucket` - (Required, Forces new resource) The name of the bucket.
-* `error_document` - (Optional, Conflicts with redirect_all_requests_to) The name of the error document for the website [detailed below](#error_document).
-* `index_document` - (Optional, Required if redirect_all_requests_to is not specified) The name of the index document for the website [detailed below](#index_document).
+* `error_document` - (Optional) The name of the error document for the website [detailed below](#error_document).
+* `index_document` - (Optional) The name of the index document for the website [detailed below](#index_document).
 
 ## error_document
 

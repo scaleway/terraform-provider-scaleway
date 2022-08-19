@@ -13,15 +13,16 @@ import (
 )
 
 const (
-	ResourcePrefix = "tf-acc-test"
+	ResourcePrefix   = "tf-acc-test"
+	resourceTestName = "scaleway_object_bucket_website_configuration.test"
 )
 
-func TestAccOjectBucketWebsiteConfiguration_basic(t *testing.T) {
+func TestAccObjectBucketWebsiteConfiguration_basic(t *testing.T) {
 	if !*UpdateCassettes {
 		t.Skip("Skipping ObjectStorage test as this kind of resource can't be deleted before 24h")
 	}
 	rName := sdkacctest.RandomWithPrefix(ResourcePrefix)
-	resourceName := "scaleway_object_bucket_website_configuration.test"
+	resourceName := resourceTestName
 
 	tt := NewTestTools(t)
 	resource.ParallelTest(t, resource.TestCase{
@@ -65,12 +66,83 @@ func TestAccOjectBucketWebsiteConfiguration_basic(t *testing.T) {
 	})
 }
 
-func TestAccS3BucketWebsiteConfiguration_update(t *testing.T) {
+func TestAccObjectBucketWebsiteConfiguration_WithPolicy(t *testing.T) {
 	if !*UpdateCassettes {
 		t.Skip("Skipping ObjectStorage test as this kind of resource can't be deleted before 24h")
 	}
 	rName := sdkacctest.RandomWithPrefix(ResourcePrefix)
-	resourceName := "scaleway_object_bucket_website_configuration.test"
+	resourceName := resourceTestName
+
+	tt := NewTestTools(t)
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
+		ErrorCheck:        ErrorCheck(t, EndpointsID),
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      testAccCheckBucketWebsiteConfigurationDestroy(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`
+			  		resource "scaleway_object_bucket" "test" {
+						name = %[1]q
+						acl  = "public-read"
+						tags = {
+							TestName = "TestAccSCW_WebsiteConfig_basic"
+						}
+					}
+
+					resource "scaleway_object_bucket_policy" "main" {
+						bucket = scaleway_object_bucket.test.name
+						policy = jsonencode(
+						{
+							"Version" = "2012-10-17",
+							"Id" = "MyPolicy",
+							"Statement" = [
+							{
+							   "Sid" = "GrantToEveryone",
+							   "Effect" = "Allow",
+							   "Principal" = "*",
+							   "Action" = [
+								  "s3:GetObject"
+							   ],
+							   "Resource":[
+								  "%[1]s/*"
+							   ]
+							}
+							]
+						})
+					}
+				
+				  	resource "scaleway_object_bucket_website_configuration" "test" {
+						bucket = scaleway_object_bucket.test.name
+						index_document {
+						  suffix = "index.html"
+						}
+				  	}
+				`, rName),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckBucketWebsiteConfigurationExists(tt, resourceName),
+					resource.TestCheckResourceAttrPair(resourceName, "bucket", "scaleway_object_bucket.test", "name"),
+					resource.TestCheckResourceAttr(resourceName, "index_document.#", "1"),
+					resource.TestCheckResourceAttr(resourceName, "index_document.0.suffix", "index.html"),
+					resource.TestCheckResourceAttrSet(resourceName, "website_domain"),
+					resource.TestCheckResourceAttrSet(resourceName, "website_endpoint"),
+				),
+			},
+			{
+				ResourceName:      resourceName,
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
+func TestAccObjectBucketWebsiteConfiguration_update(t *testing.T) {
+	if !*UpdateCassettes {
+		t.Skip("Skipping ObjectStorage test as this kind of resource can't be deleted before 24h")
+	}
+	rName := sdkacctest.RandomWithPrefix(ResourcePrefix)
+	resourceName := resourceTestName
 
 	tt := NewTestTools(t)
 	resource.ParallelTest(t, resource.TestCase{

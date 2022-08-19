@@ -100,7 +100,7 @@ func resourceBucketWebsiteConfigurationCreate(ctx context.Context, d *schema.Res
 	}, s3.ErrCodeNoSuchBucket)
 
 	if err != nil {
-		return diag.FromErr(fmt.Errorf("error creating ojbect bucket (%s) website configuration: %w", bucket, err))
+		return diag.FromErr(fmt.Errorf("error creating object bucket (%s) website configuration: %w", bucket, err))
 	}
 
 	d.SetId(newRegionalIDString(region, bucket))
