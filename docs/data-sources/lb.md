@@ -40,4 +40,6 @@ In addition to all arguments above, the following attributes are exported:
 
 - `tags` - The tags associated with the load-balancers.
 
+- `project_id` - (Defaults to [provider](../index.md#project_id) `project_id`) The ID of the project the LB is associated with.
+
 - `zone` -  (Defaults to [provider](../index.md#zone) `region`) The [region](../guides/regions_and_zones.md#zones) in which the LB exists.
