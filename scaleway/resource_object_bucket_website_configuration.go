@@ -3,6 +3,8 @@ package scaleway
 import (
 	"context"
 	"fmt"
+	"github.com/aws/aws-sdk-go/aws/awserr"
+	"github.com/scaleway/scaleway-sdk-go/scw"
 	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -33,6 +35,7 @@ func ResourceBucketWebsiteConfiguration() *schema.Resource {
 				Required:     true,
 				ForceNew:     true,
 				ValidateFunc: validation.StringLenBetween(1, 63),
+				Description:  "The bucket name.",
 			},
 			"error_document": {
 				Type:     schema.TypeList,
@@ -46,6 +49,7 @@ func ResourceBucketWebsiteConfiguration() *schema.Resource {
 						},
 					},
 				},
+				Description: "The name of the error document for the website.",
 			},
 			"index_document": {
 				Type:     schema.TypeList,
@@ -59,14 +63,17 @@ func ResourceBucketWebsiteConfiguration() *schema.Resource {
 						},
 					},
 				},
+				Description: "The name of the index document for the website.",
 			},
 			"website_endpoint": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The domain of the website endpoint.",
 			},
 			"website_domain": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The website endpoint.",
 			},
 		},
 	}
@@ -88,6 +95,18 @@ func resourceBucketWebsiteConfigurationCreate(ctx context.Context, d *schema.Res
 
 	if v, ok := d.GetOk("index_document"); ok && len(v.([]interface{})) > 0 && v.([]interface{})[0] != nil {
 		websiteConfig.IndexDocument = expandBucketWebsiteConfigurationIndexDocument(v.([]interface{}))
+	}
+
+	_, err = conn.ListObjectsWithContext(ctx, &s3.ListObjectsInput{
+		Bucket: scw.StringPtr(bucket),
+	})
+	if err != nil {
+		if s3err, ok := err.(awserr.Error); ok && s3err.Code() == s3.ErrCodeNoSuchBucket {
+			tflog.Error(ctx, fmt.Sprintf("Bucket %q was not found - removing from state!", bucket))
+			d.SetId("")
+			return nil
+		}
+		return diag.FromErr(fmt.Errorf("couldn't read bucket: %s", err))
 	}
 
 	input := &s3.PutBucketWebsiteInput{
@@ -119,6 +138,18 @@ func resourceBucketWebsiteConfigurationRead(ctx context.Context, d *schema.Resou
 	}
 
 	// expectedBucketOwner and routing not supported
+
+	_, err = conn.ListObjectsWithContext(ctx, &s3.ListObjectsInput{
+		Bucket: scw.StringPtr(bucket),
+	})
+	if err != nil {
+		if s3err, ok := err.(awserr.Error); ok && s3err.Code() == s3.ErrCodeNoSuchBucket {
+			tflog.Error(ctx, fmt.Sprintf("Bucket %q was not found - removing from state!", bucket))
+			d.SetId("")
+			return nil
+		}
+		return diag.FromErr(fmt.Errorf("couldn't read bucket: %s", err))
+	}
 
 	output, err := conn.GetBucketWebsiteWithContext(ctx, input)
 	if !d.IsNewResource() && ErrCodeEquals(err, s3.ErrCodeNoSuchBucket, ErrCodeNoSuchWebsiteConfiguration) {
