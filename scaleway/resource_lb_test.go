@@ -64,6 +64,9 @@ func testSweepLB(_ string) error {
 func TestAccScalewayLbLb_Migrate(t *testing.T) {
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
+
+	lbID := ""
+
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
@@ -84,6 +87,14 @@ func TestAccScalewayLbLb_Migrate(t *testing.T) {
 				`,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayLbExists(tt, "scaleway_lb.main"),
+					func(s *terraform.State) error {
+						rs, ok := s.RootModule().Resources["scaleway_lb.main"]
+						if !ok {
+							return fmt.Errorf("resource not found: %s", "scaleway_lb.main")
+						}
+						lbID = rs.Primary.ID
+						return nil
+					},
 					resource.TestCheckResourceAttr("scaleway_lb.main", "type", "LB-S"),
 					resource.TestCheckResourceAttr("scaleway_lb.main", "name", "test-lb-migration"),
 					resource.TestCheckResourceAttr("scaleway_lb.main", "tags.#", "2"),
@@ -104,6 +115,16 @@ func TestAccScalewayLbLb_Migrate(t *testing.T) {
 				`,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayLbExists(tt, "scaleway_lb.main"),
+					func(s *terraform.State) error {
+						rs, ok := s.RootModule().Resources["scaleway_lb.main"]
+						if !ok {
+							return fmt.Errorf("resource not found: %s", "scaleway_lb.main")
+						}
+						if rs.Primary.ID != lbID {
+							return fmt.Errorf("LB id has changed")
+						}
+						return nil
+					},
 					resource.TestCheckResourceAttr("scaleway_lb.main", "type", "LB-GP-M"),
 					resource.TestCheckResourceAttr("scaleway_lb.main", "name", "test-lb-migrate-lb-gp-m"),
 					resource.TestCheckResourceAttr("scaleway_lb.main", "tags.#", "1"),
