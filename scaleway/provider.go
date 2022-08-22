@@ -141,6 +141,7 @@ func Provider(config *ProviderConfig) plugin.ProviderFunc {
 				"scaleway_redis_cluster":                       resourceScalewayRedisCluster(),
 				"scaleway_object_bucket":                       resourceScalewayObjectBucket(),
 				"scaleway_object_bucket_policy":                resourceScalewayObjectBucketPolicy(),
+				"scaleway_object_bucket_website_configuration": ResourceBucketWebsiteConfiguration(),
 				"scaleway_vpc_public_gateway":                  resourceScalewayVPCPublicGateway(),
 				"scaleway_vpc_gateway_network":                 resourceScalewayVPCGatewayNetwork(),
 				"scaleway_vpc_public_gateway_dhcp":             resourceScalewayVPCPublicGatewayDHCP(),

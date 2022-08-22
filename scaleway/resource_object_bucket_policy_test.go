@@ -64,8 +64,8 @@ func TestAccSCWBucketPolicy_basic(t *testing.T) {
                       		Statement = [
 							{
 								Action = [
-                                	"s3:ListBucket",
-                                   "s3:GetObject",
+									"s3:ListBucket",
+									"s3:GetObject",
                                 ]
                                Effect = "Allow"
                                Principal = {

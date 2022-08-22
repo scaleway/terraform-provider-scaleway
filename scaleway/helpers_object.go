@@ -434,3 +434,36 @@ func SecondJSONUnlessEquivalent(old, newP string) (string, error) {
 
 	return newP, nil
 }
+
+func resourceBucketWebsiteConfigurationWebsiteEndpoint(ctx context.Context, conn *s3.S3, bucket string, region scw.Region) (*S3Website, error) {
+	input := &s3.GetBucketLocationInput{
+		Bucket: aws.String(bucket),
+	}
+
+	output, err := conn.GetBucketLocationWithContext(ctx, input)
+	if err != nil {
+		return nil, fmt.Errorf("error getting Object Bucket (%s) Location: %w", bucket, err)
+	}
+
+	if output.LocationConstraint != nil {
+		region = scw.Region(aws.StringValue(output.LocationConstraint))
+	}
+
+	return WebsiteEndpoint(bucket, region), nil
+}
+
+type S3Website struct {
+	Endpoint, Domain string
+}
+
+func WebsiteEndpoint(bucket string, region scw.Region) *S3Website {
+	domain := WebsiteDomainURL(region.String())
+	return &S3Website{Endpoint: fmt.Sprintf("%s.%s", bucket, domain), Domain: domain}
+}
+
+func WebsiteDomainURL(region string) string {
+	// Different regions have different syntax for website endpoints
+	// https://docs.aws.amazon.com/AmazonS3/latest/dev/WebsiteEndpoints.html
+	// https://docs.aws.amazon.com/general/latest/gr/rande.html#s3_website_region_endpoints
+	return fmt.Sprintf("s3-website.%s.scw.cloud", region)
+}
