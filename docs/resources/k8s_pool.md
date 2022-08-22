@@ -42,7 +42,7 @@ The following arguments are supported:
 - `name` - (Required) The name for the pool.
 ~> **Important:** Updates to this field will recreate a new resource.
 
-- `node_type` - (Required) The commercial type of the pool instances. Instances with insufficient memory are not eligible (DEV1-S, PLAY2-PICO, STARDUST). `external` is a special node type used to provision from other CSP.
+- `node_type` - (Required) The commercial type of the pool instances. Instances with insufficient memory are not eligible (DEV1-S, PLAY2-PICO, STARDUST). `external` is a special node type used to provision from other Cloud providers.
 
 ~> **Important:** Updates to this field will recreate a new resource.
 
