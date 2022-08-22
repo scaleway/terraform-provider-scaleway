@@ -15,7 +15,7 @@ Creates and manages Scaleway Kubernetes cluster pools. For more information, see
 ```hcl
 resource "scaleway_k8s_cluster" "jack" {
   name    = "jack"
-  version = "1.19.4"
+  version = "1.24.3"
   cni     = "cilium"
 }
 
@@ -42,7 +42,8 @@ The following arguments are supported:
 - `name` - (Required) The name for the pool.
 ~> **Important:** Updates to this field will recreate a new resource.
 
-- `node_type` - (Required)  The commercial type of the pool instances.
+- `node_type` - (Required) The commercial type of the pool instances. Instances with insufficient memory are not eligible (DEV1-S, PLAY2-PICO, STARDUST). `external` is a special node type used to provision from other CSP.
+
 ~> **Important:** Updates to this field will recreate a new resource.
 
 - `size` - (Required) The size of the pool.
