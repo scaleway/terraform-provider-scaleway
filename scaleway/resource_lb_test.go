@@ -61,6 +61,96 @@ func testSweepLB(_ string) error {
 	})
 }
 
+func TestAccScalewayLbLb_Migrate(t *testing.T) {
+	tt := NewTestTools(t)
+	defer tt.Cleanup()
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      testAccCheckScalewayLbDestroy(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					### IP for LB IP
+					resource scaleway_lb_ip main {
+					}
+
+					resource scaleway_lb main {
+						ip_id = scaleway_lb_ip.main.id
+						name = "test-lb-migration"
+						type = "LB-S"
+						tags = ["basic", "tag2"]
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayLbExists(tt, "scaleway_lb.main"),
+					resource.TestCheckResourceAttr("scaleway_lb.main", "type", "LB-S"),
+					resource.TestCheckResourceAttr("scaleway_lb.main", "name", "test-lb-migration"),
+					resource.TestCheckResourceAttr("scaleway_lb.main", "tags.#", "2"),
+				),
+			},
+			{
+				Config: `
+					### IP for LB IP
+					resource scaleway_lb_ip main {
+					}
+
+					resource scaleway_lb main {
+						ip_id = scaleway_lb_ip.main.id
+						name = "test-lb-migrate-lb-gp-m"
+						type = "LB-GP-M"
+						tags = ["migration"]
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayLbExists(tt, "scaleway_lb.main"),
+					resource.TestCheckResourceAttr("scaleway_lb.main", "type", "LB-GP-M"),
+					resource.TestCheckResourceAttr("scaleway_lb.main", "name", "test-lb-migrate-lb-gp-m"),
+					resource.TestCheckResourceAttr("scaleway_lb.main", "tags.#", "1"),
+				),
+			},
+			{
+				Config: `
+					### IP for LB IP
+					resource scaleway_lb_ip main {
+					}
+
+					resource scaleway_lb main {
+						ip_id = scaleway_lb_ip.main.id
+						name = "test-lb-migrate-lb-gp-m"
+						type = "LB-GP-M"
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayLbExists(tt, "scaleway_lb.main"),
+					resource.TestCheckResourceAttr("scaleway_lb.main", "type", "LB-GP-M"),
+					resource.TestCheckResourceAttr("scaleway_lb.main", "name", "test-lb-migrate-lb-gp-m"),
+					resource.TestCheckResourceAttr("scaleway_lb.main", "tags.#", "0"),
+				),
+			},
+			{
+				Config: `
+					### IP for LB IP
+					resource scaleway_lb_ip main {
+					}
+
+					resource scaleway_lb main {
+						ip_id = scaleway_lb_ip.main.id
+						name = "test-lb-migrate-down"
+						type = "LB-S"
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayLbExists(tt, "scaleway_lb.main"),
+					resource.TestCheckResourceAttr("scaleway_lb.main", "type", "LB-S"),
+					resource.TestCheckResourceAttr("scaleway_lb.main", "name", "test-lb-migrate-down"),
+					resource.TestCheckResourceAttr("scaleway_lb.main", "tags.#", "0"),
+				),
+			},
+		},
+	})
+}
+
 func TestAccScalewayLbLb_WithIP(t *testing.T) {
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
