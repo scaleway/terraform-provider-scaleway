@@ -141,7 +141,7 @@ func TestAccScalewayContainer_Basic(t *testing.T) {
 						max_scale    	= 2
 						max_concurrency = 80
 						memory_limit 	= 256
-						cpu_limit 		= 140
+						cpu_limit		= 140
 						deploy       	= false
 					}
 				`,
