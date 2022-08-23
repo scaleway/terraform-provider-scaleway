@@ -128,6 +128,38 @@ func TestAccScalewayContainer_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_container.main", "protocol", container.ContainerProtocolHTTP1.String()),
 				),
 			},
+			{
+				Config: `
+					resource scaleway_container_namespace main {
+					}
+
+					resource "scaleway_container" main {
+						name 			= "my-container-tf"
+						namespace_id	= scaleway_container_namespace.main.id
+						port         	= 5000
+						min_scale    	= 1
+						max_scale    	= 2
+						max_concurrency = 80
+						memory_limit 	= 256
+						cpu_limit		= 140
+						deploy       	= false
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayContainerExists(tt, "scaleway_container.main"),
+					testCheckResourceAttrUUID("scaleway_container.main", "id"),
+					resource.TestCheckResourceAttr("scaleway_container.main", "name", "my-container-tf"),
+					resource.TestCheckResourceAttr("scaleway_container.main", "port", "5000"),
+					resource.TestCheckResourceAttr("scaleway_container.main", "cpu_limit", "140"),
+					resource.TestCheckResourceAttr("scaleway_container.main", "memory_limit", "256"),
+					resource.TestCheckResourceAttr("scaleway_container.main", "min_scale", "1"),
+					resource.TestCheckResourceAttr("scaleway_container.main", "max_scale", "2"),
+					resource.TestCheckResourceAttr("scaleway_container.main", "timeout", "300"),
+					resource.TestCheckResourceAttr("scaleway_container.main", "max_concurrency", "80"),
+					resource.TestCheckResourceAttr("scaleway_container.main", "deploy", "false"),
+					resource.TestCheckResourceAttr("scaleway_container.main", "protocol", container.ContainerProtocolHTTP1.String()),
+				),
+			},
 		},
 	})
 }
