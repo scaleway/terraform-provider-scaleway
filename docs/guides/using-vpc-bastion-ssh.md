@@ -92,7 +92,7 @@ The DHCP(DYNAMIC HOST CONFIGURATION PROTOCOL) server sets the IP address dynamic
 The `dns_local_name` is the TLD (top-level domain), the value by default is `priv`.
 This is used to resolve your Instance on a Private Network.
 
-In order to resolve the instances using your Bastion you should set the `dns_local_name` with `scaleway_vpc_private_network.pn.name`.
+In order to resolve the Instances using your Bastion you should set the `dns_local_name` with `scaleway_vpc_private_network.pn.name`.
 
 Please check our API [documentation](https://developers.scaleway.com/en/products/vpc-gw/api/v1/#dns-local-name-5b691b) for more details.
 
