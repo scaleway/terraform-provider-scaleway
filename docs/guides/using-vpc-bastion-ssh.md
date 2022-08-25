@@ -4,7 +4,7 @@ description: |-
   Using Scaleway Bastion SSH config.
 ---
 
-# Using Scaleway VPC Bastion SSH config
+# How to use Scaleway VPC Bastion SSH config
 
 In this guide you'll learn how to deploy Scaleway Bastion with to your virtual network using the Scaleway Terraform provider.
 After Bastion is deployed, you can connect (SSH) to virtual machines in the virtual network via Bastion using the private IP address of the VM.
