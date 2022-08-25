@@ -105,7 +105,7 @@ resource scaleway_vpc_public_gateway_dhcp "dhcp" {
 
 ## Attach your VPC Gateway Network to a Private Network
 
-Whether to enable DHCP on this Private Network you must set `enable_dhcp` and `dhcp_id`.
+To enable DHCP on this Private Network you must set `enable_dhcp` and `dhcp_id`.
 Do not set the `address` attribute.
 
 ```hcl
