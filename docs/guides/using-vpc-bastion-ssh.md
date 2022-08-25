@@ -126,7 +126,7 @@ Host *.myprivatenetwork
 ProxyJump bastion@<your-public-ip>:<your-port>
 ```
 
-Then try to connect to. e.g:
+Then try to connect to it:
 
 ```shell
 ssh root@<vm-name>.myprivatenetwork
