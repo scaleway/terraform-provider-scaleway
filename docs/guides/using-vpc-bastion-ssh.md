@@ -1,7 +1,7 @@
 ---
 page_title: "Using Scaleway SSH Bastion"
 description: |-
-  Using Scaleway Bastion SSH config.
+  Using Scaleway SSH Bastion config.
 ---
 
 # How to use Scaleway VPC SSH Bastion config
@@ -24,7 +24,12 @@ When you connect to a VM, it doesn't need a public IP address, client software, 
   **Note**: You should keep your VMs and Private Network on the same zone. e.g. `fr-par-1`
 
 ```hcl
-# NUMBER OF VIRTUAL MACHINES
+provider "scaleway" {
+	zone = "fr-par-1"
+}
+```
+
+```hcl
 variable "machine_count" {
   description = "Number of virtual machines in private network"
   default = 3
@@ -33,6 +38,7 @@ variable "machine_count" {
 # SCALEWAY VPC PRIVATE NETWORK
 resource scaleway_vpc_private_network "pn" {
   name = "myprivatenetwork"
+  zone = "fr-par-1"
 }
 
 # SCALEWAY VPC VIRTUAL MACHINES
@@ -86,8 +92,8 @@ resource scaleway_vpc_public_gateway "pgw" {
 
 ## Configure your DHCP on your subnet
 
-To communicate over the network we require the IP address.
-The DHCP(DYNAMIC HOST CONFIGURATION PROTOCOL) server sets the IP address dynamically.
+The DHCP(DYNAMIC HOST CONFIGURATION PROTOCOL) server sets the IPv4 address dynamically,
+which is required to communicate over the private network.
 
 The `dns_local_name` is the TLD (top-level domain), the value by default is `priv`.
 This is used to resolve your Instance on a Private Network.
@@ -121,7 +127,7 @@ resource scaleway_vpc_gateway_network "gn" {
 
 You should add your config on your local config file e.g: `~/.ssh/config`
 
-```shell
+```
 Host *.myprivatenetwork
 ProxyJump bastion@<your-public-ip>:<your-port>
 ```
