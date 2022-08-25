@@ -1,5 +1,5 @@
 ---
-page_title: "Using Scaleway Bastion SSH"
+page_title: "Using Scaleway SSH Bastion"
 description: |-
   Using Scaleway Bastion SSH config.
 ---
