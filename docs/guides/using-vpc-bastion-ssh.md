@@ -132,4 +132,4 @@ Then try to connect to it:
 ssh root@<vm-name>.myprivatenetwork
 ```
 
-For further information using our console please check this [section](https://www.scaleway.com/en/docs/network/vpc/how-to/use-ssh-bastion/).
+For further information using our console please check [our dedicated documentation](https://www.scaleway.com/en/docs/network/vpc/how-to/use-ssh-bastion/).
