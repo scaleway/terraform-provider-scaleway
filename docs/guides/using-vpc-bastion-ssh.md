@@ -17,7 +17,7 @@ When you connect to a VM, it doesn't need a public IP address, client software, 
 1. When you deploy Bastion, the values are pulled from the Network in which your VM resides.
    1. This VM doesn't become a part of the Bastion deployment itself, but you do connect to it later in the exercise.
 
-2. If you can don't have any VM connected on the private network please use the `scaleway_instance_private_nic` or the attribute `private_network` on `scaleway_instance_server` to connected to.
+2. If you don't have any VM connected on the private network, please use the `scaleway_instance_private_nic` or the attribute `private_network` on `scaleway_instance_server` to connect to.
 
 3. If your VMs are attached to any `scaleway_instance_ip`. You should detach them.
 
