@@ -216,14 +216,22 @@ func rdbACLExpand(data []interface{}) ([]*rdb.ACLRuleRequest, error) {
 	var res []*rdb.ACLRuleRequest
 	for _, rule := range data {
 		r := rule.(map[string]interface{})
-		ip, err := expandIPNet(r["ip"].(string))
-		if err != nil {
-			return res, err
+
+		aclRule := &rdb.ACLRuleRequest{}
+		ipRaw, ok := r["ip"]
+		if ok {
+			ip, err := expandIPNet(ipRaw.(string))
+			if err != nil {
+				return res, err
+			}
+			aclRule.IP = ip
 		}
-		res = append(res, &rdb.ACLRuleRequest{
-			IP:          ip,
-			Description: r["description"].(string),
-		})
+		descriptionRaw, ok := r["description"]
+		if ok {
+			aclRule.Description = descriptionRaw.(string)
+		}
+
+		res = append(res, aclRule)
 	}
 
 	sort.Slice(res, func(i, j int) bool {
