@@ -48,7 +48,6 @@ func resourceScalewayLb() *schema.Resource {
 			"type": {
 				Type:             schema.TypeString,
 				Required:         true,
-				ForceNew:         true,
 				DiffSuppressFunc: diffSuppressFuncIgnoreCase,
 				Description:      "The type of load-balancer you want to create",
 			},
@@ -66,6 +65,7 @@ func resourceScalewayLb() *schema.Resource {
 				ForceNew:         true,
 				Description:      "The load-balance public IP ID",
 				DiffSuppressFunc: diffSuppressFuncLocality,
+				ValidateFunc:     validationUUIDorUUIDWithLocality(),
 			},
 			"ip_address": {
 				Type:        schema.TypeString,
@@ -227,6 +227,25 @@ func resourceScalewayLbUpdate(ctx context.Context, d *schema.ResourceData, meta 
 	lbAPI, zone, ID, err := lbAPIWithZoneAndID(meta, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
+	}
+
+	if d.HasChange("type") {
+		lbType := d.Get("type").(string)
+		migrateReq := &lbSDK.ZonedAPIMigrateLBRequest{
+			Zone: zone,
+			LBID: ID,
+			Type: lbType,
+		}
+
+		lb, err := lbAPI.MigrateLB(migrateReq, scw.WithContext(ctx))
+		if err != nil {
+			diag.FromErr(fmt.Errorf("couldn't migrate load balancer on type: %s. error: %w", lb.Type, err))
+		}
+
+		_, err = waitForLB(ctx, lbAPI, zone, lb.ID, d.Timeout(schema.TimeoutUpdate))
+		if err != nil {
+			return diag.FromErr(err)
+		}
 	}
 
 	if d.HasChanges("name", "tags") {

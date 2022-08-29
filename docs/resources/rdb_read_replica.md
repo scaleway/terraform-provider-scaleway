@@ -4,7 +4,7 @@ description: |-
 Manages Scaleway Database read replicas.
 ---
 
-# scaleway_rdb_instance
+# scaleway_rdb_read_replica
 
 Creates and manages Scaleway Database read replicas.
 For more information, see [the documentation](https://developers.scaleway.com/en/products/rdb/api).
@@ -14,7 +14,7 @@ For more information, see [the documentation](https://developers.scaleway.com/en
 ### Basic
 
 ```hcl
-resource scaleway_rdb_instance instance {
+resource scaleway_rdb_instance "instance" {
   name = "test-rdb-rr-update"
   node_type = "db-dev-s"
   engine = "PostgreSQL-14"
@@ -25,7 +25,7 @@ resource scaleway_rdb_instance instance {
   tags = [ "terraform-test", "scaleway_rdb_read_replica", "minimal" ]
 }
 
-resource "scaleway_rdb_read_replica" "replica" {
+resource scaleway_rdb_read_replica "replica" {
   instance_id = scaleway_rdb_instance.instance.id
   direct_access {}
 }
@@ -34,7 +34,7 @@ resource "scaleway_rdb_read_replica" "replica" {
 ### Private network
 
 ```hcl
-resource scaleway_rdb_instance instance {
+resource scaleway_rdb_instance "instance" {
   name = "rdb_instance"
   node_type = "db-dev-s"
   engine = "PostgreSQL-14"
@@ -44,9 +44,9 @@ resource scaleway_rdb_instance instance {
   password = "thiZ_is_v&ry_s3cret"
 }
 
-resource "scaleway_vpc_private_network" "pn" {}
+resource scaleway_vpc_private_network "pn" {}
 
-resource "scaleway_rdb_read_replica" "replica" {
+resource scaleway_rdb_read_replica "replica" {
   instance_id = scaleway_rdb_instance.instance.id
   private_network {
     private_network_id = scaleway_vpc_private_network.pn.id
@@ -76,17 +76,13 @@ The following arguments are supported:
 In addition to all arguments above, the following attributes are exported:
 
 - `id` - The ID of the Database read replica.
-- `read_replicas` - List of read replicas of the database instance.
-    - `ip` - IP of the replica.
-    - `port` - Port of the replica.
-    - `name` - Name of the replica.
-- `direct_access` - List of load balancer endpoints of the database instance.
+- `direct_access` - List of load balancer endpoints of the database read replica.
     - `endpoint_id` - The ID of the endpoint of the read replica.
     - `ip` - IPv4 address of the endpoint (IP address). Only one of ip and hostname may be set.
     - `port` - TCP port of the endpoint.
     - `name` - Name of the endpoint.
     - `hostname` - Hostname of the endpoint. Only one of ip and hostname may be set.
-- `private_network` - List of private networks endpoints of the database instance.
+- `private_network` - List of private networks endpoints of the database read replica.
     - `endpoint_id` - The ID of the endpoint of the read replica.
     - `ip` - IPv4 address of the endpoint (IP address). Only one of ip and hostname may be set.
     - `port` - TCP port of the endpoint.
@@ -96,7 +92,7 @@ In addition to all arguments above, the following attributes are exported:
 
 ## Import
 
-Database Instance can be imported using the `{region}/{id}`, e.g.
+Database Read replica can be imported using the `{region}/{id}`, e.g.
 
 ```bash
 $ terraform import scaleway_rdb_read_replica.rr fr-par/11111111-1111-1111-1111-111111111111
