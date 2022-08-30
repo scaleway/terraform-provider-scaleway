@@ -308,6 +308,7 @@ func resourceScalewayLbUpdate(ctx context.Context, d *schema.ResourceData, meta 
 	// Attach / Detach Private Networks
 	////
 	if d.HasChange("private_network") {
+		// check current lb stability state
 		_, err = waitForLB(ctx, lbAPI, zone, ID, d.Timeout(schema.TimeoutUpdate))
 		if err != nil {
 			return diag.FromErr(err)
