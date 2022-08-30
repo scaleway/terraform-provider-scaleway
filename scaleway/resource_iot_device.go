@@ -405,7 +405,7 @@ func resourceScalewayIotDeviceUpdate(ctx context.Context, d *schema.ResourceData
 	}
 
 	if d.HasChange("description") {
-		updateRequest.Description = scw.StringPtr(d.Get("description").(string))
+		updateRequest.Description = expandUpdatedStringPtr(d.Get("description"))
 	}
 
 	_, err = iotAPI.UpdateDevice(updateRequest, scw.WithContext(ctx))
