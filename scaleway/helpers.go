@@ -504,7 +504,11 @@ func expandStringPtr(data interface{}) *string {
 }
 
 func expandUpdatedStringPtr(data interface{}) *string {
-	return scw.StringPtr(data.(string))
+	str := ""
+	if data != nil {
+		str = data.(string)
+	}
+	return str
 }
 
 func expandBoolPtr(data interface{}) *bool {
