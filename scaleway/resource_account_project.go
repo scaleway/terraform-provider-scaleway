@@ -94,11 +94,11 @@ func resourceScalewayAccountProjectUpdate(ctx context.Context, d *schema.Resourc
 	hasChanged := false
 
 	if d.HasChange("name") {
-		req.Name = expandStringPtr(d.Get("name"))
+		req.Name = expandUpdatedStringPtr(d.Get("name"))
 		hasChanged = true
 	}
 	if d.HasChange("description") {
-		req.Description = expandStringPtr(d.Get("description"))
+		req.Description = expandUpdatedStringPtr(d.Get("description"))
 		hasChanged = true
 	}
 

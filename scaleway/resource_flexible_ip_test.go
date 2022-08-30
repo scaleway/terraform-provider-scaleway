@@ -124,7 +124,7 @@ func TestAccScalewayFlexibleIP_CreateAndAttachToBaremetalServer(t *testing.T) {
 						data "scaleway_baremetal_os" "by_id" {
 							zone = "fr-par-2"
 							name = "Ubuntu"
-							version = "20.04 LTS (Focal Fossa)"						
+							version = "22.04 LTS (Jammy Jellyfish)"						
 						}
 
 						data "scaleway_baremetal_offer" "my_offer" {
@@ -190,7 +190,7 @@ func TestAccScalewayFlexibleIP_AttachAndDetachFromBaremetalServer(t *testing.T) 
 						data "scaleway_baremetal_os" "by_id" {
 							zone = "fr-par-2"
 							name = "Ubuntu"
-							version = "20.04 LTS (Focal Fossa)"						
+							version = "22.04 LTS (Jammy Jellyfish)"						
 						}
 
 						data "scaleway_baremetal_offer" "my_offer" {

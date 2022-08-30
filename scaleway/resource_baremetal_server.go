@@ -228,15 +228,33 @@ func resourceScalewayBaremetalServerUpdate(ctx context.Context, d *schema.Resour
 		return diag.FromErr(err)
 	}
 
-	_, err = baremetalAPI.UpdateServer(&baremetal.UpdateServerRequest{
-		Zone:        zonedID.Zone,
-		ServerID:    zonedID.ID,
-		Name:        expandStringPtr(d.Get("name")),
-		Description: expandStringPtr(d.Get("description")),
-		Tags:        expandUpdatedStringsPtr(d.Get("tags")),
-	}, scw.WithContext(ctx))
-	if err != nil {
-		return diag.FromErr(err)
+	req := &baremetal.UpdateServerRequest{
+		Zone:     zonedID.Zone,
+		ServerID: zonedID.ID,
+	}
+
+	hasChanged := false
+
+	if d.HasChange("name") {
+		req.Name = expandUpdatedStringPtr("name")
+		hasChanged = true
+	}
+
+	if d.HasChange("description") {
+		req.Description = expandUpdatedStringPtr("description")
+		hasChanged = true
+	}
+
+	if d.HasChange("tags") {
+		req.Tags = expandUpdatedStringsPtr(d.Get("tags"))
+		hasChanged = true
+	}
+
+	if hasChanged {
+		_, err = baremetalAPI.UpdateServer(req, scw.WithContext(ctx))
+		if err != nil {
+			return diag.FromErr(err)
+		}
 	}
 
 	if d.HasChanges("os", "ssh_key_ids") {
