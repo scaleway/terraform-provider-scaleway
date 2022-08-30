@@ -114,7 +114,7 @@ func resourceScalewayVPCPrivateNetworkUpdate(ctx context.Context, d *schema.Reso
 			PrivateNetworkID: ID,
 			Zone:             zone,
 			Name:             scw.StringPtr(d.Get("name").(string)),
-			Tags:             scw.StringsPtr(expandStrings(d.Get("tags"))),
+			Tags:             expandUpdatedStringsPtr(d.Get("tags")),
 		}
 
 		_, err = vpcAPI.UpdatePrivateNetwork(updateRequest, scw.WithContext(ctx))

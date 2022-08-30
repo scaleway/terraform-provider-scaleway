@@ -142,7 +142,7 @@ func resourceScalewayIamAPIKeyUpdate(ctx context.Context, d *schema.ResourceData
 	hasChanged := false
 
 	if d.HasChange("description") {
-		req.Description = expandStringPtr(d.Get("description"))
+		req.Description = expandUpdatedStringPtr(d.Get("description"))
 		hasChanged = true
 	}
 
