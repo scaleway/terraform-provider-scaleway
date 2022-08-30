@@ -508,7 +508,7 @@ func expandUpdatedStringPtr(data interface{}) *string {
 	if data != nil {
 		str = data.(string)
 	}
-	return str
+	return &str
 }
 
 func expandBoolPtr(data interface{}) *bool {
