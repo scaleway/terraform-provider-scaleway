@@ -142,7 +142,7 @@ func resourceScalewayFunctionNamespaceUpdate(ctx context.Context, d *schema.Reso
 	}
 
 	if d.HasChange("description") {
-		req.Description = scw.StringPtr(d.Get("description").(string))
+		req.Description = expandUpdatedStringPtr(d.Get("description"))
 	}
 
 	if d.HasChanges("environment_variables") {

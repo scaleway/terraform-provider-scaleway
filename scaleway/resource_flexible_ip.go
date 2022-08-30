@@ -161,26 +161,33 @@ func resourceScalewayFlexibleIPUpdate(ctx context.Context, d *schema.ResourceDat
 		FipID: flexibleIP.ID,
 	}
 
+	hasChanged := false
+
 	if d.HasChanges("reverse") {
-		updateRequest.Reverse = expandStringPtr(d.Get("reverse"))
+		updateRequest.Reverse = expandUpdatedStringPtr(d.Get("reverse"))
+		hasChanged = true
 	}
 
 	if d.HasChange("tags") {
-		updateRequest.Tags = scw.StringsPtr(expandStrings(d.Get("tags")))
+		updateRequest.Tags = expandUpdatedStringsPtr(d.Get("tags"))
+		hasChanged = true
 	}
 
 	if d.HasChange("description") {
-		updateRequest.Description = expandStringPtr(d.Get("description"))
+		updateRequest.Description = expandUpdatedStringPtr(d.Get("description"))
+		hasChanged = true
 	}
 
-	_, err = fipAPI.UpdateFlexibleIP(updateRequest, scw.WithContext(ctx))
-	if err != nil {
-		return diag.FromErr(err)
-	}
+	if hasChanged {
+		_, err = fipAPI.UpdateFlexibleIP(updateRequest, scw.WithContext(ctx))
+		if err != nil {
+			return diag.FromErr(err)
+		}
 
-	_, err = waitFlexibleIP(ctx, fipAPI, zone, ID, d.Timeout(schema.TimeoutUpdate))
-	if err != nil {
-		return diag.FromErr(err)
+		_, err = waitFlexibleIP(ctx, fipAPI, zone, ID, d.Timeout(schema.TimeoutUpdate))
+		if err != nil {
+			return diag.FromErr(err)
+		}
 	}
 
 	if d.HasChange("server_id") {

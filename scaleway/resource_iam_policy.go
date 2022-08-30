@@ -190,7 +190,7 @@ func resourceScalewayIamPolicyUpdate(ctx context.Context, d *schema.ResourceData
 	}
 	if d.HasChange("description") {
 		hasUpdated = true
-		req.Description = expandStringPtr(d.Get("description"))
+		req.Description = expandUpdatedStringPtr(d.Get("description"))
 	}
 	if d.HasChange("user_id") {
 		hasUpdated = true

@@ -131,8 +131,8 @@ func resourceScalewayIamGroupUpdate(ctx context.Context, d *schema.ResourceData,
 	if d.HasChanges("name", "description") {
 		_, err = api.UpdateGroup(&iam.UpdateGroupRequest{
 			GroupID:     group.ID,
-			Name:        expandStringPtr(d.Get("name").(string)),
-			Description: expandStringPtr(d.Get("description").(string)),
+			Name:        expandUpdatedStringPtr(d.Get("name")),
+			Description: expandUpdatedStringPtr(d.Get("description")),
 		}, scw.WithContext(ctx))
 		if err != nil {
 			return diag.FromErr(err)
