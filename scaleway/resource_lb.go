@@ -249,6 +249,41 @@ func resourceScalewayLbUpdate(ctx context.Context, d *schema.ResourceData, meta 
 		return diag.FromErr(err)
 	}
 
+	req := &lbSDK.ZonedAPIUpdateLBRequest{
+		Zone: zone,
+		LBID: ID,
+	}
+
+	hasChanged := false
+
+	if d.HasChanges("name", "tags") {
+		req.Name = d.Get("name").(string)
+		req.Tags = expandStrings(d.Get("tags"))
+		hasChanged = true
+	}
+
+	if d.HasChange("description") {
+		req.Description = d.Get("description").(string)
+		hasChanged = true
+	}
+
+	if d.HasChange("ssl_compatibility_level") {
+		req.SslCompatibilityLevel = lbSDK.SSLCompatibilityLevel(*expandStringPtr(d.Get("ssl_compatibility_level")))
+		hasChanged = true
+	}
+
+	if hasChanged {
+		_, err = lbAPI.UpdateLB(req, scw.WithContext(ctx))
+		if err != nil && !is404Error(err) {
+			return diag.FromErr(err)
+		}
+
+		_, err = waitForLB(ctx, lbAPI, zone, ID, d.Timeout(schema.TimeoutUpdate))
+		if err != nil && !is404Error(err) {
+			return diag.FromErr(err)
+		}
+	}
+
 	if d.HasChange("type") {
 		lbType := d.Get("type").(string)
 		migrateReq := &lbSDK.ZonedAPIMigrateLBRequest{
@@ -268,41 +303,15 @@ func resourceScalewayLbUpdate(ctx context.Context, d *schema.ResourceData, meta 
 		}
 	}
 
-	req := &lbSDK.ZonedAPIUpdateLBRequest{
-		Zone: zone,
-		LBID: ID,
-	}
-
-	if d.HasChange("name") {
-		req.Name = d.Get("name").(string)
-	}
-
-	if d.HasChange("description") {
-		req.Description = d.Get("description").(string)
-	}
-
-	if d.HasChange("tags") {
-		req.Tags = expandStrings(d.Get("tags"))
-	}
-
-	if d.HasChange("ssl_compatibility_level") {
-		req.SslCompatibilityLevel = lbSDK.SSLCompatibilityLevel(*expandStringPtr(d.Get("ssl_compatibility_level")))
-	}
-
-	_, err = waitForLB(ctx, lbAPI, zone, ID, d.Timeout(schema.TimeoutUpdate))
-	if err != nil && !is404Error(err) {
-		return diag.FromErr(err)
-	}
-
-	_, err = lbAPI.UpdateLB(req, scw.WithContext(ctx))
-	if err != nil && !is404Error(err) {
-		return diag.FromErr(err)
-	}
-
 	////
 	// Attach / Detach Private Networks
 	////
 	if d.HasChange("private_network") {
+		_, err = waitForLB(ctx, lbAPI, zone, ID, d.Timeout(schema.TimeoutUpdate))
+		if err != nil {
+			return diag.FromErr(err)
+		}
+
 		// check that pns are in a stable state
 		pns, err := waitForLBPN(ctx, lbAPI, zone, ID, d.Timeout(schema.TimeoutUpdate))
 		if err != nil && !is404Error(err) {

@@ -61,7 +61,7 @@ func testSweepLB(_ string) error {
 	})
 }
 
-func TestAccScalewayLbLb__Basic(t *testing.T) {
+func TestAccScalewayLbLb_Basic(t *testing.T) {
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
 	resource.ParallelTest(t, resource.TestCase{
