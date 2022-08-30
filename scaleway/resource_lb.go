@@ -127,6 +127,7 @@ func resourceScalewayLb() *schema.Resource {
 				Default:     lbSDK.SSLCompatibilityLevelSslCompatibilityLevelIntermediate.String(),
 				ValidateFunc: validation.StringInSlice([]string{
 					lbSDK.SSLCompatibilityLevelSslCompatibilityLevelUnknown.String(),
+					lbSDK.SSLCompatibilityLevelSslCompatibilityLevelIntermediate.String(),
 					lbSDK.SSLCompatibilityLevelSslCompatibilityLevelModern.String(),
 					lbSDK.SSLCompatibilityLevelSslCompatibilityLevelOld.String(),
 				}, false),
