@@ -50,6 +50,7 @@ func resourceScalewayInstanceServer() *schema.Resource {
 				ForceNew:         true,
 				Description:      "The UUID or the label of the base image used by the server",
 				DiffSuppressFunc: diffSuppressFuncLocality,
+				AtLeastOneOf:     []string{"image", "root_volume.0.volume_id"},
 			},
 			"type": {
 				Type:             schema.TypeString,
