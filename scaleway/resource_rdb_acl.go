@@ -265,7 +265,7 @@ func rdbACLRulesFlattenFromSchema(rules []*rdb.ACLRule, dataFromSchema []interfa
 
 		aclRule, aclRuleExists := ruleMap[ip.String()]
 		if !aclRuleExists {
-			errors = append(errors, fmt.Errorf("schema acl does exist on server (%s)", ip.String()))
+			errors = append(errors, fmt.Errorf("acl from state does not exist on server (%s)", ip.String()))
 			continue
 		}
 		ruleMapFromSchema[ip.String()] = struct{}{}
