@@ -341,10 +341,6 @@ func resourceScalewayInstanceServerCreate(ctx context.Context, d *schema.Resourc
 	sizeInput := d.Get("root_volume.0.size_in_gb").(int)
 	rootVolumeID := expandZonedID(d.Get("root_volume.0.volume_id").(string)).ID
 
-	if rootVolumeID == "" && imageUUID == "" {
-		return diag.Errorf("server must have an image or a root_volume id")
-	}
-
 	// If the volumeType is not defined, define it depending of the offer
 	if volumeType == "" {
 		if isBootOnBlock {
