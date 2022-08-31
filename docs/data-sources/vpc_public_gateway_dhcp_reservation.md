@@ -15,7 +15,7 @@ resource scaleway_vpc_private_network main {
 }
 
 resource "scaleway_instance_server" "main" {
-  image = "ubuntu_focal"
+  image = "ubuntu_jammy"
   type  = "DEV1-S"
   zone = "fr-par-1"
 
@@ -67,7 +67,7 @@ resource "scaleway_instance_security_group" main {
 }
 
 resource "scaleway_instance_server" "main" {
-    image = "ubuntu_focal"
+    image = "ubuntu_jammy"
     type  = "DEV1-S"
     zone = "fr-par-1"
 

@@ -188,7 +188,7 @@ v1.X:
 ```hcl
 resource "scaleway_instance_server" "web" {
   type = "DEV1-S"
-  image = "ubuntu_focal"
+  image = "ubuntu_jammy"
 
   user_data {
     key = "foo"
@@ -204,7 +204,7 @@ v2.X:
 ```hcl
 resource "scaleway_instance_server" "web" {
   type = "DEV1-S"
-  image = "ubuntu_focal"
+  image = "ubuntu_jammy"
 
   user_data = {
     foo = "bar"
@@ -234,7 +234,7 @@ resource "scaleway_instance_volume" "data" {
 
 resource "scaleway_instance_server" "web" {
   type = "DEV1-L"
-  image = "ubuntu_focal"
+  image = "ubuntu_jammy"
 
   tags = [ "hello", "public" ]
 

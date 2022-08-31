@@ -12,7 +12,7 @@ Gets local image ID of an image from its label name.
 
 ```hcl
 data "scaleway_marketplace_image" "my_image" {
-  label  = "ubuntu_focal"
+  label  = "ubuntu_jammy"
 }
 ```
 

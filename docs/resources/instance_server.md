@@ -19,7 +19,7 @@ resource "scaleway_instance_ip" "public_ip" {}
 
 resource "scaleway_instance_server" "web" {
   type = "DEV1-S"
-  image = "ubuntu_focal"
+  image = "ubuntu_jammy"
   ip_id = scaleway_instance_ip.public_ip.id
 }
 ```
@@ -34,7 +34,7 @@ resource "scaleway_instance_volume" "data" {
 
 resource "scaleway_instance_server" "web" {
   type = "DEV1-S"
-  image = "ubuntu_focal"
+  image = "ubuntu_jammy"
 
   tags = [ "hello", "public" ]
 
@@ -92,7 +92,7 @@ resource "scaleway_instance_security_group" "www" {
 
 resource "scaleway_instance_server" "web" {
   type = "DEV1-S"
-  image = "ubuntu_focal"
+  image = "ubuntu_jammy"
 
   security_group_id= scaleway_instance_security_group.www.id
 }
@@ -103,7 +103,7 @@ resource "scaleway_instance_server" "web" {
 ```hcl
 resource "scaleway_instance_server" "web" {
   type  = "DEV1-S"
-  image = "ubuntu_focal"
+  image = "ubuntu_jammy"
 
   user_data = {
     foo        = "bar"
@@ -120,7 +120,7 @@ resource scaleway_vpc_private_network pn01 {
 }
 
 resource "scaleway_instance_server" "base" {
-  image = "ubuntu_focal"
+  image = "ubuntu_jammy"
   type  = "DEV1-S"
 
   private_network {
