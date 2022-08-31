@@ -45,6 +45,11 @@ func resourceScalewayLb() *schema.Resource {
 				Computed:    true,
 				Description: "Name of the lb",
 			},
+			"description": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The description of the lb",
+			},
 			"type": {
 				Type:             schema.TypeString,
 				Required:         true,
@@ -115,6 +120,18 @@ func resourceScalewayLb() *schema.Resource {
 					},
 				},
 			},
+			"ssl_compatibility_level": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "Enforces minimal SSL version (in SSL/TLS offloading context)",
+				Default:     lbSDK.SSLCompatibilityLevelSslCompatibilityLevelIntermediate.String(),
+				ValidateFunc: validation.StringInSlice([]string{
+					lbSDK.SSLCompatibilityLevelSslCompatibilityLevelUnknown.String(),
+					lbSDK.SSLCompatibilityLevelSslCompatibilityLevelIntermediate.String(),
+					lbSDK.SSLCompatibilityLevelSslCompatibilityLevelModern.String(),
+					lbSDK.SSLCompatibilityLevelSslCompatibilityLevelOld.String(),
+				}, false),
+			},
 			"region":          regionComputedSchema(),
 			"zone":            zoneSchema(),
 			"organization_id": organizationIDSchema(),
@@ -130,11 +147,13 @@ func resourceScalewayLbCreate(ctx context.Context, d *schema.ResourceData, meta 
 	}
 
 	createReq := &lbSDK.ZonedAPICreateLBRequest{
-		Zone:      zone,
-		IPID:      expandStringPtr(expandID(d.Get("ip_id"))),
-		ProjectID: expandStringPtr(d.Get("project_id")),
-		Name:      expandOrGenerateString(d.Get("name"), "lb"),
-		Type:      d.Get("type").(string),
+		Zone:                  zone,
+		IPID:                  expandStringPtr(expandID(d.Get("ip_id"))),
+		ProjectID:             expandStringPtr(d.Get("project_id")),
+		Name:                  expandOrGenerateString(d.Get("name"), "lb"),
+		Description:           d.Get("description").(string),
+		Type:                  d.Get("type").(string),
+		SslCompatibilityLevel: lbSDK.SSLCompatibilityLevel(*expandStringPtr(d.Get("ssl_compatibility_level"))),
 	}
 
 	if raw, ok := d.GetOk("tags"); ok {
@@ -199,6 +218,7 @@ func resourceScalewayLbRead(ctx context.Context, d *schema.ResourceData, meta in
 
 	_ = d.Set("release_ip", false)
 	_ = d.Set("name", lb.Name)
+	_ = d.Set("description", lb.Description)
 	_ = d.Set("zone", lb.Zone.String())
 	_ = d.Set("region", region.String())
 	_ = d.Set("organization_id", lb.OrganizationID)
@@ -208,6 +228,7 @@ func resourceScalewayLbRead(ctx context.Context, d *schema.ResourceData, meta in
 	_ = d.Set("type", strings.ToUpper(lb.Type))
 	_ = d.Set("ip_id", newZonedIDString(zone, lb.IP[0].ID))
 	_ = d.Set("ip_address", lb.IP[0].IPAddress)
+	_ = d.Set("ssl_compatibility_level", lb.SslCompatibilityLevel.String())
 
 	// retrieve attached private networks
 	privateNetworks, err := waitForLBPN(ctx, lbAPI, zone, ID, d.Timeout(schema.TimeoutRead))
@@ -229,6 +250,41 @@ func resourceScalewayLbUpdate(ctx context.Context, d *schema.ResourceData, meta 
 		return diag.FromErr(err)
 	}
 
+	req := &lbSDK.ZonedAPIUpdateLBRequest{
+		Zone: zone,
+		LBID: ID,
+	}
+
+	hasChanged := false
+
+	if d.HasChanges("name", "tags") {
+		req.Name = d.Get("name").(string)
+		req.Tags = expandStrings(d.Get("tags"))
+		hasChanged = true
+	}
+
+	if d.HasChange("description") {
+		req.Description = d.Get("description").(string)
+		hasChanged = true
+	}
+
+	if d.HasChange("ssl_compatibility_level") {
+		req.SslCompatibilityLevel = lbSDK.SSLCompatibilityLevel(*expandStringPtr(d.Get("ssl_compatibility_level")))
+		hasChanged = true
+	}
+
+	if hasChanged {
+		_, err = lbAPI.UpdateLB(req, scw.WithContext(ctx))
+		if err != nil && !is404Error(err) {
+			return diag.FromErr(err)
+		}
+
+		_, err = waitForLB(ctx, lbAPI, zone, ID, d.Timeout(schema.TimeoutUpdate))
+		if err != nil && !is404Error(err) {
+			return diag.FromErr(err)
+		}
+	}
+
 	if d.HasChange("type") {
 		lbType := d.Get("type").(string)
 		migrateReq := &lbSDK.ZonedAPIMigrateLBRequest{
@@ -248,28 +304,16 @@ func resourceScalewayLbUpdate(ctx context.Context, d *schema.ResourceData, meta 
 		}
 	}
 
-	if d.HasChanges("name", "tags") {
-		req := &lbSDK.ZonedAPIUpdateLBRequest{
-			Zone: zone,
-			LBID: ID,
-			Name: d.Get("name").(string),
-			Tags: expandStrings(d.Get("tags")),
-		}
-
-		_, err = waitForLB(ctx, lbAPI, zone, ID, d.Timeout(schema.TimeoutUpdate))
-		if err != nil && !is404Error(err) {
-			return diag.FromErr(err)
-		}
-
-		_, err = lbAPI.UpdateLB(req, scw.WithContext(ctx))
-		if err != nil && !is404Error(err) {
-			return diag.FromErr(err)
-		}
-	}
 	////
 	// Attach / Detach Private Networks
 	////
 	if d.HasChange("private_network") {
+		// check current lb stability state
+		_, err = waitForLB(ctx, lbAPI, zone, ID, d.Timeout(schema.TimeoutUpdate))
+		if err != nil {
+			return diag.FromErr(err)
+		}
+
 		// check that pns are in a stable state
 		pns, err := waitForLBPN(ctx, lbAPI, zone, ID, d.Timeout(schema.TimeoutUpdate))
 		if err != nil && !is404Error(err) {

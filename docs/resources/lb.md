@@ -110,9 +110,13 @@ The following arguments are supported:
 
 - `name` - (Optional) The name of the load-balancer.
 
+- `description` - (Optional) The description of the load-balancer.
+
 - `tags` - (Optional) The tags associated with the load-balancers.
 
 - `release_ip` - (Defaults to false) The release_ip allow release the ip address associated with the load-balancers.
+
+- `ssl_compatibility_level` - (Optional) Enforces minimal SSL version (in SSL/TLS offloading context). Please check [possible values](https://developers.scaleway.com/en/products/lb/zoned_api/#ssl-compatibility-level-442f99).
 
 - `zone` - (Defaults to [provider](../index.md#zone) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which the IP should be reserved.
 
