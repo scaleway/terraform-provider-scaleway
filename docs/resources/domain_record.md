@@ -146,7 +146,7 @@ resource "scaleway_instance_ip" "public_ip" {
 resource "scaleway_instance_server" "web" {
   project_id = var.project_id
   type       = "DEV1-S"
-  image      = "ubuntu_focal"
+  image      = "ubuntu_jammy"
   tags       = ["front", "web"]
   ip_id      = scaleway_instance_ip.public_ip.id
 
