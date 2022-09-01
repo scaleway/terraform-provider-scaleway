@@ -18,7 +18,6 @@ This resource can be used to externalize rules from a `scaleway_instance_securit
 
 ```hcl
 resource "scaleway_instance_security_group" "sg01" {
-  external_rules = true
 }
 
 resource "scaleway_instance_security_group_rules" "sgrs01" {

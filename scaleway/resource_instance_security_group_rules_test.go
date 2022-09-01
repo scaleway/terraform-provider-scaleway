@@ -1,6 +1,11 @@
 package scaleway
 
 import (
+	"fmt"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
+	"github.com/scaleway/scaleway-sdk-go/scw"
+	"sort"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -18,7 +23,6 @@ func TestAccScalewayInstanceSecurityGroupRules_Basic(t *testing.T) {
 				// Simple empty configuration
 				Config: `
 						resource scaleway_instance_security_group sg01 {
-							external_rules = true
 						}
 
 						resource scaleway_instance_security_group_rules sgrs01 {
@@ -32,10 +36,9 @@ func TestAccScalewayInstanceSecurityGroupRules_Basic(t *testing.T) {
 				),
 			},
 			{
-				// We test that we can add some rules and they stay in correct orders
+				// We test that we can add some rules, and they stay in correct orders
 				Config: `
 							resource scaleway_instance_security_group sg01 {
-								external_rules = true
 							}
 
 							resource scaleway_instance_security_group_rules sgrs01 {
@@ -84,7 +87,6 @@ func TestAccScalewayInstanceSecurityGroupRules_Basic(t *testing.T) {
 				// We test that we can remove some rules
 				Config: `
 						resource scaleway_instance_security_group sg01 {
-							external_rules = true
 						}
 				
 						resource scaleway_instance_security_group_rules sgrs01 {
@@ -117,7 +119,6 @@ func TestAccScalewayInstanceSecurityGroupRules_Basic(t *testing.T) {
 				// We test that we can remove all rules
 				Config: `
 						resource scaleway_instance_security_group sg01 {
-							external_rules = true
 						}
 				
 						resource scaleway_instance_security_group_rules sgrs01 {
@@ -139,7 +140,6 @@ func TestAccScalewayInstanceSecurityGroupRules_IPRanges(t *testing.T) {
 	defer tt.Cleanup()
 	config := `
 			resource scaleway_instance_security_group sg01 {
-				external_rules = true
 			}
 
 			resource scaleway_instance_security_group_rules sgrs01 {
@@ -210,7 +210,6 @@ func TestAccScalewayInstanceSecurityGroupRules_Basic2(t *testing.T) {
 	defer tt.Cleanup()
 	config := `
 			resource scaleway_instance_security_group sg01 {
-				external_rules = true
 			}
 			resource scaleway_instance_security_group_rules sgrs01 {
 				security_group_id = scaleway_instance_security_group.sg01.id
@@ -269,4 +268,51 @@ func TestAccScalewayInstanceSecurityGroupRules_Basic2(t *testing.T) {
 			},
 		},
 	})
+}
+
+func testAccCheckScalewayInstanceSecurityGroupRuleMatch(tt *TestTools, name string, index int, expected *instance.SecurityGroupRule) resource.TestCheckFunc {
+	return testAccCheckScalewayInstanceSecurityGroupRuleIs(tt, name, expected.Direction, index, func(actual *instance.SecurityGroupRule) error {
+		if ok, _ := securityGroupRuleEquals(expected, actual); !ok {
+			return fmt.Errorf("security group does not match %v, %v", actual, expected)
+		}
+		return nil
+	})
+}
+
+func testAccCheckScalewayInstanceSecurityGroupRuleIs(tt *TestTools, name string, direction instance.SecurityGroupRuleDirection, index int, test func(rule *instance.SecurityGroupRule) error) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		rs, ok := s.RootModule().Resources[name]
+		if !ok {
+			return fmt.Errorf("not found: %s", name)
+		}
+
+		instanceAPI, zone, ID, err := instanceAPIWithZoneAndID(tt.Meta, rs.Primary.ID)
+		if err != nil {
+			return err
+		}
+
+		resRules, err := instanceAPI.ListSecurityGroupRules(&instance.ListSecurityGroupRulesRequest{
+			SecurityGroupID: ID,
+			Zone:            zone,
+		}, scw.WithAllPages())
+		if err != nil {
+			return err
+		}
+		sort.Slice(resRules.Rules, func(i, j int) bool {
+			return resRules.Rules[i].Position < resRules.Rules[j].Position
+		})
+		apiRules := map[instance.SecurityGroupRuleDirection][]*instance.SecurityGroupRule{
+			instance.SecurityGroupRuleDirectionInbound:  {},
+			instance.SecurityGroupRuleDirectionOutbound: {},
+		}
+
+		for _, apiRule := range resRules.Rules {
+			if apiRule.Editable == false {
+				continue
+			}
+			apiRules[apiRule.Direction] = append(apiRules[apiRule.Direction], apiRule)
+		}
+
+		return test(apiRules[direction][index])
+	}
 }

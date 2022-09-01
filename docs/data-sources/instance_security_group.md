@@ -43,19 +43,3 @@ In addition to all above arguments, the following attributes are exported:
 - `inbound_default_policy` - The default policy on incoming traffic. Possible values are: `accept` or `drop`.
 
 - `outbound_default_policy` - The default policy on outgoing traffic. Possible values are: `accept` or `drop`.
-
-- `inbound_rule` - A list of inbound rule to add to the security group. (Structure is documented below.)
-
-- `outbound_rule` - A list of outbound rule to add to the security group. (Structure is documented below.)
-
-The `inbound_rule` and `outbound_rule` block supports:
-
-- `action` - The action to take when rule match. Possible values are: `accept` or `drop`.
-
-- `protocol`- The protocol this rule apply to. Possible values are: `TCP`, `UDP`, `ICMP` or `ANY`.
-
-- `port`- The port this rule apply to. If no port is specified, rule will apply to all port.
-
-- `ip`- The ip this rule apply to.
-
-- `ip_range`- The ip range (e.g `192.168.1.0/24`) this rule apply to.
