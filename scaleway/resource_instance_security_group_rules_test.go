@@ -2,18 +2,22 @@ package scaleway
 
 import (
 	"fmt"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
-	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
-	"github.com/scaleway/scaleway-sdk-go/scw"
 	"sort"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
+	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestAccScalewayInstanceSecurityGroupRules_Basic(t *testing.T) {
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
+
+	ipNetZero, err := expandIPNet("0.0.0.0/0")
+	assert.NoError(t, err)
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
@@ -81,6 +85,14 @@ func TestAccScalewayInstanceSecurityGroupRules_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_instance_security_group_rules.sgrs01", "outbound_rule.1.action", "drop"),
 					resource.TestCheckResourceAttr("scaleway_instance_security_group_rules.sgrs01", "outbound_rule.1.port", "443"),
 					resource.TestCheckResourceAttr("scaleway_instance_security_group_rules.sgrs01", "outbound_rule.1.ip_range", "0.0.0.0/0"),
+					testAccCheckScalewayInstanceSecurityGroupRuleMatch(tt, "scaleway_instance_security_group_rules.sgrs01", 0, &instance.SecurityGroupRule{
+						Direction:    instance.SecurityGroupRuleDirectionInbound,
+						IPRange:      ipNetZero,
+						DestPortFrom: scw.Uint32Ptr(80),
+						DestPortTo:   nil,
+						Protocol:     instance.SecurityGroupRuleProtocolTCP,
+						Action:       instance.SecurityGroupRuleActionAccept,
+					}),
 				),
 			},
 			{
