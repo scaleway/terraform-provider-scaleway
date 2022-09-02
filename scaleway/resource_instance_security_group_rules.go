@@ -79,7 +79,7 @@ func resourceScalewayInstanceSecurityGroupRulesUpdate(ctx context.Context, d *sc
 		return diag.FromErr(err)
 	}
 
-	err = updateSecurityGroupeRules(ctx, d, zone, securityGroupID, instanceAPI)
+	err = updateSecurityGroupRules(ctx, d, zone, securityGroupID, instanceAPI)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -97,7 +97,7 @@ func resourceScalewayInstanceSecurityGroupRulesDelete(ctx context.Context, d *sc
 	_ = d.Set("inbound_rule", nil)
 	_ = d.Set("outbound_rule", nil)
 
-	err = updateSecurityGroupeRules(ctx, d, zone, securityGroupID, instanceAPI)
+	err = updateSecurityGroupRules(ctx, d, zone, securityGroupID, instanceAPI)
 	if err != nil {
 		return diag.FromErr(err)
 	}

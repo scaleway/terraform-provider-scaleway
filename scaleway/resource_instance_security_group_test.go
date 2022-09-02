@@ -38,7 +38,7 @@ func TestAccScalewayInstanceSecurityGroup_Basic(t *testing.T) {
 					resource "scaleway_instance_security_group" "base" {
 						name = "sg-name"
 						inbound_default_policy = "drop"
-						
+			
 						inbound_rule {
 							action = "accept"
 							port = 80
@@ -154,18 +154,18 @@ func TestAccScalewayInstanceSecurityGroup_Basic(t *testing.T) {
 					}),
 				),
 			},
-			{
-				Config: `
-					resource "scaleway_instance_security_group" "base" {
-						name = "sg-name"
-						inbound_default_policy = "accept"
-					}
-				`,
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("scaleway_instance_security_group.base", "tags.#", "0"),
-					resource.TestCheckResourceAttr("scaleway_instance_security_group.base", "inbound_rule.#", "0"),
-				),
-			},
+			//{
+			//	Config: `
+			//		resource "scaleway_instance_security_group" "base" {
+			//			name = "sg-name"
+			//			inbound_default_policy = "accept"
+			//		}
+			//	`,
+			//	Check: resource.ComposeTestCheckFunc(
+			//		resource.TestCheckResourceAttr("scaleway_instance_security_group.base", "tags.#", "0"),
+			//		resource.TestCheckResourceAttr("scaleway_instance_security_group.base", "inbound_rule.#", "0"),
+			//	),
+			//},
 		},
 	})
 }

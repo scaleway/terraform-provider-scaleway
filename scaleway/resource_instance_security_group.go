@@ -68,6 +68,7 @@ func resourceScalewayInstanceSecurityGroup() *schema.Resource {
 				Description:   "Inbound rules for this security group",
 				Elem:          securityGroupRuleSchema(),
 				ConflictsWith: []string{"external_rules"},
+				Deprecated:    "Inbound Rule is deprecated.Please use resource_instance_security_group_rules",
 			},
 			"outbound_rule": {
 				Type:          schema.TypeList,
@@ -75,12 +76,14 @@ func resourceScalewayInstanceSecurityGroup() *schema.Resource {
 				Description:   "Outbound rules for this security group",
 				Elem:          securityGroupRuleSchema(),
 				ConflictsWith: []string{"external_rules"},
+				Deprecated:    "Outbound Rule is deprecated. Please use resource_instance_security_group_rules",
 			},
 			"external_rules": {
 				Type:          schema.TypeBool,
 				Optional:      true,
 				Default:       false,
 				ConflictsWith: []string{"inbound_rule", "outbound_rule"},
+				Deprecated:    "External rules is deprecated. Please use resource_instance_security_group_rules",
 			},
 			"enable_default_security": {
 				Type:        schema.TypeBool,
@@ -290,7 +293,7 @@ func resourceScalewayInstanceSecurityGroupUpdate(ctx context.Context, d *schema.
 	}
 
 	if !d.Get("external_rules").(bool) {
-		err = updateSecurityGroupeRules(ctx, d, zone, ID, instanceAPI)
+		err = updateSecurityGroupRules(ctx, d, zone, ID, instanceAPI)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -299,7 +302,7 @@ func resourceScalewayInstanceSecurityGroupUpdate(ctx context.Context, d *schema.
 	return resourceScalewayInstanceSecurityGroupRead(ctx, d, meta)
 }
 
-// updateSecurityGroupeRules handles updating SecurityGroupRules
+// updateSecurityGroupRules handles updating SecurityGroupRules
 //
 // It works as followed:
 //  1. Creates 2 map[direction][]rule: one for rules in state and one for rules in API nolint:gofmt
@@ -308,102 +311,75 @@ func resourceScalewayInstanceSecurityGroupUpdate(ctx context.Context, d *schema.
 //     a) Compare with api rule in this direction at the same index
 //     if different update / if equals do nothing / if no more api rules to compare create new api rule
 //     B) If there is more rule in the API we remove them
-func updateSecurityGroupeRules(ctx context.Context, d *schema.ResourceData, zone scw.Zone, securityGroupID string, instanceAPI *instance.API) error {
-	apiRules := map[instance.SecurityGroupRuleDirection][]*instance.SecurityGroupRule{
-		instance.SecurityGroupRuleDirectionInbound:  {},
-		instance.SecurityGroupRuleDirectionOutbound: {},
-	}
+func updateSecurityGroupRules(ctx context.Context, d *schema.ResourceData, zone scw.Zone, securityGroupID string, instanceAPI *instance.API) error {
+	var err error
 	stateRules := map[instance.SecurityGroupRuleDirection][]interface{}{
 		instance.SecurityGroupRuleDirectionInbound:  d.Get("inbound_rule").([]interface{}),
 		instance.SecurityGroupRuleDirectionOutbound: d.Get("outbound_rule").([]interface{}),
 	}
 
-	// Fill apiRules with data from API
-	resRules, err := instanceAPI.ListSecurityGroupRules(&instance.ListSecurityGroupRulesRequest{
-		Zone:            zone,
-		SecurityGroupID: expandID(securityGroupID),
-	}, scw.WithAllPages(), scw.WithContext(ctx))
-	if err != nil {
-		return err
-	}
-	sort.Slice(resRules.Rules, func(i, j int) bool {
-		return resRules.Rules[i].Position < resRules.Rules[j].Position
-	})
-	for _, apiRule := range resRules.Rules {
-		if !apiRule.Editable {
-			continue
-		}
-		apiRules[apiRule.Direction] = append(apiRules[apiRule.Direction], apiRule)
+	finalRules := map[instance.SecurityGroupRuleDirection][]interface{}{
+		instance.SecurityGroupRuleDirectionInbound:  {},
+		instance.SecurityGroupRuleDirectionOutbound: {},
 	}
 
-	// Loop through all directions
+	var setSecurityRulesRequest []*instance.SetSecurityGroupRulesRequestRule
+
+	// Loop through all directions from state
 	for direction := range stateRules {
 		// Loop for all state rules in this direction
-		for index, rawStateRule := range stateRules[direction] {
+		for _, rawStateRule := range stateRules[direction] {
 			stateRule, err := securityGroupRuleExpand(rawStateRule)
 			if err != nil {
 				return err
 			}
-
-			// This happen when there is more rule in state than in the api. We create more rule in API.
-			if index >= len(apiRules[direction]) {
-				_, err = instanceAPI.CreateSecurityGroupRule(&instance.CreateSecurityGroupRuleRequest{
-					Zone:            zone,
-					SecurityGroupID: securityGroupID,
-					Protocol:        stateRule.Protocol,
-					IPRange:         stateRule.IPRange,
-					Action:          stateRule.Action,
-					DestPortTo:      stateRule.DestPortTo,
-					DestPortFrom:    stateRule.DestPortFrom,
-					Direction:       direction,
-				}, scw.WithContext(ctx))
-				if err != nil {
-					return err
-				}
-				continue
-			}
-
-			// We compare rule stateRule[index] and apiRule[index]. If they are different we update api rule to match state.
-			apiRule := apiRules[direction][index]
-			if ok, _ := securityGroupRuleEquals(stateRule, apiRule); !ok {
-				destPortFrom := stateRule.DestPortFrom
-				destPortTo := stateRule.DestPortTo
-				if destPortFrom == nil {
-					destPortFrom = scw.Uint32Ptr(0)
-				}
-				if destPortTo == nil {
-					destPortTo = scw.Uint32Ptr(0)
-				}
-
-				_, err = instanceAPI.UpdateSecurityGroupRule(&instance.UpdateSecurityGroupRuleRequest{
-					Zone:                zone,
-					SecurityGroupID:     securityGroupID,
-					SecurityGroupRuleID: apiRule.ID,
-					Protocol:            &stateRule.Protocol,
-					IPRange:             &stateRule.IPRange,
-					Action:              &stateRule.Action,
-					DestPortTo:          destPortTo,
-					DestPortFrom:        destPortFrom,
-					Direction:           &direction,
-				}, scw.WithContext(ctx))
-				if err != nil {
-					return err
-				}
-			}
+			stateRule.Zone = zone
+			rule, _ := securityGroupRuleFlatten(stateRule)
+			finalRules[direction] = append(finalRules[direction], rule)
 		}
+	}
 
-		// We loop through remaining API rules and delete them as they are no longer in the state.
-		for index := len(stateRules[direction]); index < len(apiRules[direction]); index++ {
-			err = instanceAPI.DeleteSecurityGroupRule(&instance.DeleteSecurityGroupRuleRequest{
-				Zone:                zone,
-				SecurityGroupID:     securityGroupID,
-				SecurityGroupRuleID: apiRules[direction][index].ID,
-			}, scw.WithContext(ctx))
+	// Loop through all directions from state
+	for direction := range finalRules {
+		// Loop for all state rules in this direction
+		for _, rawStateRule := range finalRules[direction] {
+			rule, err := securityGroupRuleExpand(rawStateRule)
 			if err != nil {
 				return err
 			}
+			setSecurityRulesRequest = append(setSecurityRulesRequest, &instance.SetSecurityGroupRulesRequestRule{
+				Action:       rule.Action,
+				Protocol:     rule.Protocol,
+				Direction:    rule.Direction,
+				IPRange:      rule.IPRange,
+				DestPortFrom: rule.DestPortFrom,
+				DestPortTo:   rule.DestPortTo,
+				Position:     rule.Position,
+				Zone:         zone,
+			})
 		}
 	}
+
+	if len(setSecurityRulesRequest) > 0 {
+		_, err = instanceAPI.SetSecurityGroupRules(&instance.SetSecurityGroupRulesRequest{
+			Zone:            zone,
+			SecurityGroupID: securityGroupID,
+			Rules:           setSecurityRulesRequest,
+		}, scw.WithContext(ctx))
+		if err != nil {
+			return err
+		}
+	} else {
+		_, err = instanceAPI.SetSecurityGroupRules(&instance.SetSecurityGroupRulesRequest{
+			Zone:            zone,
+			SecurityGroupID: securityGroupID,
+			Rules:           []*instance.SetSecurityGroupRulesRequestRule{},
+		}, scw.WithContext(ctx))
+		if err != nil {
+			return err
+		}
+	}
+
 	return nil
 }
 
@@ -462,17 +438,21 @@ func securityGroupRuleSchema() *schema.Resource {
 			"port_range": {
 				Type:        schema.TypeString,
 				Optional:    true,
+				Computed:    true,
 				Description: "Computed port range for this rule (e.g: 1-1024, 22-22)",
 			},
 			"ip": {
 				Type:         schema.TypeString,
 				Optional:     true,
+				Computed:     true,
 				ValidateFunc: validation.IsIPAddress,
-				Description:  "Ip address for this rule (e.g: 1.1.1.1). Only one of ip or ip_range should be provided",
+				Description:  "Ip address for this rule (e.g: 1.1.1.1). Only one of ip or ip_range should be provided", // this attribute must be in conflict with ip_range
+				Deprecated:   "Ip address is deprecated, please use `ip_range`.",
 			},
 			"ip_range": {
 				Type:         schema.TypeString,
 				Optional:     true,
+				Computed:     true,
 				ValidateFunc: validation.IsCIDRNetwork(0, 128),
 				Description:  "Ip range for this rule (e.g: 192.168.1.0/24). Only one of ip or ip_range should be provided",
 			},
@@ -484,7 +464,7 @@ func securityGroupRuleSchema() *schema.Resource {
 func securityGroupRuleExpand(i interface{}) (*instance.SecurityGroupRule, error) {
 	rawRule := i.(map[string]interface{})
 
-	portFrom, portTo := uint32(0), uint32(0)
+	portFrom, portTo := uint32(1), uint32(1)
 
 	portRange := rawRule["port_range"].(string)
 	if portRange != "" {
@@ -494,16 +474,28 @@ func securityGroupRuleExpand(i interface{}) (*instance.SecurityGroupRule, error)
 		portTo = portFrom
 	}
 
+	if portTo == 1 {
+		portTo = portFrom
+	}
+
 	action, _ := rawRule["action"].(string)
 	ipRange := rawRule["ip_range"].(string)
+
+	if len(rawRule["ip"].(string)) > 0 {
+		ipNetRule, _ := expandIPNet(ipRange)
+		if rawRule["ip"].(string) != ipNetRule.IP.String() {
+			ipRange = rawRule["ip"].(string) + "/32"
+		}
+	}
 	if ipRange == "" {
 		ipRange = rawRule["ip"].(string) + "/32"
 	}
+	// allow all the ips
 	if ipRange == "/32" {
 		ipRange = "0.0.0.0/0"
 	}
 
-	ipnetRange, err := expandIPNet(ipRange)
+	ipNetRange, err := expandIPNet(ipRange)
 	if err != nil {
 		return nil, err
 	}
@@ -511,18 +503,12 @@ func securityGroupRuleExpand(i interface{}) (*instance.SecurityGroupRule, error)
 		DestPortFrom: &portFrom,
 		DestPortTo:   &portTo,
 		Protocol:     instance.SecurityGroupRuleProtocol(rawRule["protocol"].(string)),
-		IPRange:      ipnetRange,
+		IPRange:      ipNetRange,
 		Action:       instance.SecurityGroupRuleAction(action),
 	}
 
 	if *rule.DestPortFrom == *rule.DestPortTo {
-		rule.DestPortTo = nil
-	}
-
-	// Handle when no port is specified.
-	if portFrom == 0 && portTo == 0 {
-		rule.DestPortFrom = nil
-		rule.DestPortTo = nil
+		rule.DestPortTo = rule.DestPortFrom
 	}
 
 	return rule, nil
@@ -530,7 +516,7 @@ func securityGroupRuleExpand(i interface{}) (*instance.SecurityGroupRule, error)
 
 // securityGroupRuleFlatten transform an api rule to a state one.
 func securityGroupRuleFlatten(rule *instance.SecurityGroupRule) (map[string]interface{}, error) {
-	portFrom, portTo := uint32(0), uint32(0)
+	portFrom, portTo := uint32(1), uint32(1)
 
 	if rule.DestPortFrom != nil {
 		portFrom = *rule.DestPortFrom
@@ -540,13 +526,19 @@ func securityGroupRuleFlatten(rule *instance.SecurityGroupRule) (map[string]inte
 		portTo = *rule.DestPortTo
 	}
 
-	ipnetRange, err := flattenIPNet(rule.IPRange)
+	if portTo == 1 {
+		portTo = portFrom
+	}
+
+	ipNetRange, err := flattenIPNet(rule.IPRange)
 	if err != nil {
 		return nil, err
 	}
 	res := map[string]interface{}{
 		"protocol":   rule.Protocol.String(),
-		"ip_range":   ipnetRange,
+		"ip_range":   ipNetRange,
+		"ip":         rule.IPRange.IP.String(),
+		"port":       portFrom, // It should be deprecated this attribute
 		"port_range": fmt.Sprintf("%d-%d", portFrom, portTo),
 		"action":     rule.Action.String(),
 	}
