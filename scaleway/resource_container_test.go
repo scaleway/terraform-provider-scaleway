@@ -110,6 +110,13 @@ func TestAccScalewayContainer_Basic(t *testing.T) {
 					resource scaleway_container main {
 						name = "my-container-tf"
 						namespace_id = scaleway_container_namespace.main.id
+						port = 8080
+						cpu_limit = 70
+						memory_limit = 128
+						min_scale = 0
+						max_scale = 20
+						timeout = 300
+						deploy = false
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
