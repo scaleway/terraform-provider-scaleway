@@ -29,11 +29,11 @@ const (
 	retryOnAWSAPI              = 2 * time.Minute
 )
 
-type ScalewayS3EndpointResolver struct {
+type scalewayS3EndpointResolver struct {
 	Region string
 }
 
-func (r *ScalewayS3EndpointResolver) ResolveEndpoint(service, region string, options ...interface{}) (aws.Endpoint, error) {
+func (r *scalewayS3EndpointResolver) ResolveEndpoint(service, region string, options ...interface{}) (aws.Endpoint, error) {
 	return aws.Endpoint{
 		URL:               "https://s3." + region + ".scw.cloud",
 		HostnameImmutable: true,
@@ -49,7 +49,7 @@ func newS3Client(ctx context.Context, httpClient *http.Client, region, accessKey
 	config, err := awsconfig.LoadDefaultConfig(ctx,
 		awsconfig.WithRegion(region),
 		awsconfig.WithCredentialsProvider(credentials.NewStaticCredentialsProvider(accessKey, secretKey, "")),
-		awsconfig.WithEndpointResolverWithOptions(&ScalewayS3EndpointResolver{Region: region}),
+		awsconfig.WithEndpointResolverWithOptions(&scalewayS3EndpointResolver{Region: region}),
 		awsconfig.WithHTTPClient(httpClient),
 	)
 	if err != nil {
@@ -149,10 +149,7 @@ func isS3ErrCode(err error, code string, message string) bool {
 }
 
 func isS3Err[E error](err error, awsErr E) bool {
-	if errors.As(err, &awsErr) {
-		return true
-	}
-	return false
+	return errors.As(err, &awsErr)
 }
 
 func flattenObjectBucketVersioning(versioningResponse *s3.GetBucketVersioningOutput) []map[string]interface{} {

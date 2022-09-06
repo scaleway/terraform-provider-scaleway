@@ -495,7 +495,6 @@ func resourceScalewayObjectBucketRead(ctx context.Context, d *schema.ResourceDat
 	})
 	if err != nil && isS3ErrCode(err, ErrCodeNoSuchLifecycleConfiguration, "") {
 		return diag.FromErr(err)
-
 	}
 
 	lifecycleRules := make([]map[string]interface{}, 0)
@@ -526,12 +525,9 @@ func resourceScalewayObjectBucketRead(ctx context.Context, d *schema.ResourceDat
 					rule["prefix"] = filter.Value
 				case *s3types.LifecycleRuleFilterMemberTag:
 					rule["tags"] = flattenObjectBucketTags([]s3types.Tag{filter.Value})
-
 				}
-			} else {
-				if lifecycleRule.Prefix != nil {
-					rule["prefix"] = *lifecycleRule.Prefix
-				}
+			} else if lifecycleRule.Prefix != nil {
+				rule["prefix"] = *lifecycleRule.Prefix
 			}
 
 			// Enabled
