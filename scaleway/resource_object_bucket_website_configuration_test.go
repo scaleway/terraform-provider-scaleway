@@ -1,12 +1,13 @@
 package scaleway
 
 import (
+	"context"
 	"fmt"
 	"testing"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/service/s3"
-	"github.com/hashicorp/aws-sdk-go-base/tfawserr"
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/service/s3"
+	s3types "github.com/aws/aws-sdk-go-v2/service/s3/types"
 	sdkacctest "github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
@@ -229,9 +230,9 @@ func testAccCheckBucketWebsiteConfigurationDestroy(tt *TestTools) resource.TestC
 				Bucket: aws.String(bucket),
 			}
 
-			output, err := conn.GetBucketWebsite(input)
+			output, err := conn.GetBucketWebsite(context.Background(), input)
 
-			if tfawserr.ErrCodeEquals(err, s3.ErrCodeNoSuchBucket, ErrCodeNoSuchWebsiteConfiguration) {
+			if isS3Err(err, &s3types.NoSuchBucket{}) || isS3ErrCode(err, ErrCodeNoSuchWebsiteConfiguration, "") {
 				continue
 			}
 
@@ -275,7 +276,7 @@ func testAccCheckBucketWebsiteConfigurationExists(tt *TestTools, resourceName st
 			Bucket: aws.String(bucket),
 		}
 
-		output, err := conn.GetBucketWebsite(input)
+		output, err := conn.GetBucketWebsite(context.Background(), input)
 		if err != nil {
 			return fmt.Errorf("error getting object bucket website configuration (%s): %w", rs.Primary.ID, err)
 		}

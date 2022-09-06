@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/service/s3"
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
@@ -25,7 +25,7 @@ func dataSourceScalewayObjectBucket() *schema.Resource {
 }
 
 func dataSourceScalewayObjectStorageRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	s3Client, region, err := s3ClientWithRegion(d, meta)
+	s3Client, region, err := s3ClientWithRegion(ctx, d, meta)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -36,8 +36,8 @@ func dataSourceScalewayObjectStorageRead(ctx context.Context, d *schema.Resource
 		Bucket: aws.String(bucket),
 	}
 
-	log.Printf("[DEBUG] Reading Object Storage bucket: %s", input)
-	_, err = s3Client.HeadBucket(input)
+	log.Printf("[DEBUG] Reading Object Storage bucket: %s", *input.Bucket)
+	_, err = s3Client.HeadBucket(ctx, input)
 
 	if err != nil {
 		return diag.FromErr(fmt.Errorf("failed getting Object Storage bucket (%s): %w", bucket, err))

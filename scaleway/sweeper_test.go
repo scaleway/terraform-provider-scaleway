@@ -4,7 +4,7 @@ import (
 	"context"
 	"testing"
 
-	"github.com/aws/aws-sdk-go/service/s3"
+	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 )
@@ -63,7 +63,7 @@ func sharedClientForZone(zone scw.Zone) (*scw.Client, error) {
 }
 
 // sharedS3ClientForRegion returns a common S3 client needed for the sweeper
-func sharedS3ClientForRegion(region scw.Region) (*s3.S3, error) {
+func sharedS3ClientForRegion(region scw.Region) (*s3.Client, error) {
 	ctx := context.Background()
 	meta, err := buildMeta(ctx, &metaConfig{
 		terraformVersion: "terraform-tests",

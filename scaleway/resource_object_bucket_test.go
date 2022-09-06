@@ -2,14 +2,15 @@ package scaleway
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"reflect"
 	"regexp"
 	"strings"
 	"testing"
 
-	"github.com/aws/aws-sdk-go/aws/awserr"
-	"github.com/aws/aws-sdk-go/service/s3"
+	"github.com/aws/aws-sdk-go-v2/service/s3"
+	s3types "github.com/aws/aws-sdk-go-v2/service/s3/types"
 	sdkacctest "github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
@@ -346,11 +347,12 @@ func testAccCheckScalewayObjectBucketDestroy(tt *TestTools) resource.TestCheckFu
 
 			bucketName := rs.Primary.ID
 
-			_, err := s3Client.ListObjects(&s3.ListObjectsInput{
+			_, err := s3Client.ListObjects(context.Background(), &s3.ListObjectsInput{
 				Bucket: &bucketName,
 			})
 			if err != nil {
-				if s3err, ok := err.(awserr.Error); ok && s3err.Code() == s3.ErrCodeNoSuchBucket {
+				var nsb *s3types.NoSuchBucket
+				if errors.As(err, &nsb) {
 					// bucket doesn't exist
 					continue
 				}
@@ -370,7 +372,7 @@ func testSweepStorageObjectBucket(_ string) error {
 			return fmt.Errorf("error getting client: %s", err)
 		}
 
-		listBucketResponse, err := s3client.ListBuckets(&s3.ListBucketsInput{})
+		listBucketResponse, err := s3client.ListBuckets(context.Background(), &s3.ListBucketsInput{})
 		if err != nil {
 			return fmt.Errorf("couldn't list buckets: %s", err)
 		}
@@ -378,7 +380,7 @@ func testSweepStorageObjectBucket(_ string) error {
 		for _, bucket := range listBucketResponse.Buckets {
 			l.Debugf("Deleting %q bucket", *bucket.Name)
 			if strings.HasPrefix(*bucket.Name, "terraform-test") {
-				_, err := s3client.DeleteBucket(&s3.DeleteBucketInput{
+				_, err := s3client.DeleteBucket(context.Background(), &s3.DeleteBucketInput{
 					Bucket: bucket.Name,
 				})
 				if err != nil {
@@ -421,13 +423,13 @@ func TestAccScalewayObjectBucket_Cors_Update(t *testing.T) {
 					testAccCheckScalewayObjectBucketExists(tt, resourceName),
 					testAccCheckScalewayObjectBucketCors(tt,
 						resourceName,
-						[]*s3.CORSRule{
+						[]*s3types.CORSRule{
 							{
-								AllowedHeaders: []*string{scw.StringPtr("*")},
-								AllowedMethods: []*string{scw.StringPtr("PUT"), scw.StringPtr("POST")},
-								AllowedOrigins: []*string{scw.StringPtr("https://www.example.com")},
-								ExposeHeaders:  []*string{scw.StringPtr("x-amz-server-side-encryption"), scw.StringPtr("ETag")},
-								MaxAgeSeconds:  scw.Int64Ptr(3000),
+								AllowedHeaders: []string{"*"},
+								AllowedMethods: []string{"PUT", "POST"},
+								AllowedOrigins: []string{"https://www.example.com"},
+								ExposeHeaders:  []string{"x-amz-server-side-encryption", "ETag"},
+								MaxAgeSeconds:  int32(3000),
 							},
 						},
 					),
@@ -449,13 +451,13 @@ func TestAccScalewayObjectBucket_Cors_Update(t *testing.T) {
 					testAccCheckScalewayObjectBucketExists(tt, resourceName),
 					testAccCheckScalewayObjectBucketCors(tt,
 						resourceName,
-						[]*s3.CORSRule{
+						[]*s3types.CORSRule{
 							{
-								AllowedHeaders: []*string{scw.StringPtr("*")},
-								AllowedMethods: []*string{scw.StringPtr("PUT"), scw.StringPtr("POST"), scw.StringPtr("GET")},
-								AllowedOrigins: []*string{scw.StringPtr("https://www.example.com")},
-								ExposeHeaders:  []*string{scw.StringPtr("x-amz-server-side-encryption"), scw.StringPtr("ETag")},
-								MaxAgeSeconds:  scw.Int64Ptr(3000),
+								AllowedHeaders: []string{"*"},
+								AllowedMethods: []string{"PUT", "POST", "GET"},
+								AllowedOrigins: []string{"https://www.example.com"},
+								ExposeHeaders:  []string{"x-amz-server-side-encryption", "ETag"},
+								MaxAgeSeconds:  int32(3000),
 							},
 						},
 					),
@@ -476,13 +478,13 @@ func TestAccScalewayObjectBucket_Cors_Update(t *testing.T) {
 					testAccCheckScalewayObjectBucketExists(tt, resourceName),
 					testAccCheckScalewayObjectBucketCors(tt,
 						resourceName,
-						[]*s3.CORSRule{
+						[]*s3types.CORSRule{
 							{
-								AllowedHeaders: []*string{scw.StringPtr("*")},
-								AllowedMethods: []*string{scw.StringPtr("PUT"), scw.StringPtr("POST")},
-								AllowedOrigins: []*string{scw.StringPtr("https://www.example.com")},
-								ExposeHeaders:  []*string{scw.StringPtr("x-amz-server-side-encryption"), scw.StringPtr("ETag")},
-								MaxAgeSeconds:  scw.Int64Ptr(3000),
+								AllowedHeaders: []string{"*"},
+								AllowedMethods: []string{"PUT", "POST"},
+								AllowedOrigins: []string{"https://www.example.com"},
+								ExposeHeaders:  []string{"x-amz-server-side-encryption", "ETag"},
+								MaxAgeSeconds:  int32(3000),
 							},
 						},
 					),
@@ -513,10 +515,10 @@ func TestAccScalewayObjectBucket_Cors_Delete(t *testing.T) {
 			if err != nil {
 				return err
 			}
-			_, err = conn.DeleteBucketCorsWithContext(ctx, &s3.DeleteBucketCorsInput{
+			_, err = conn.DeleteBucketCors(ctx, &s3.DeleteBucketCorsInput{
 				Bucket: scw.StringPtr(rs.Primary.Attributes["name"]),
 			})
-			if err != nil && !isS3Err(err, ErrCodeNoSuchCORSConfiguration, "") {
+			if err != nil && !isS3ErrCode(err, ErrCodeNoSuchCORSConfiguration, "") {
 				return err
 			}
 			return nil
@@ -581,7 +583,7 @@ func TestAccScalewayObjectBucket_Cors_EmptyOrigin(t *testing.T) {
 	})
 }
 
-func testAccCheckScalewayObjectBucketCors(tt *TestTools, n string, corsRules []*s3.CORSRule) resource.TestCheckFunc {
+func testAccCheckScalewayObjectBucketCors(tt *TestTools, n string, corsRules []*s3types.CORSRule) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		ctx := context.Background()
 
@@ -592,18 +594,18 @@ func testAccCheckScalewayObjectBucketCors(tt *TestTools, n string, corsRules []*
 			return err
 		}
 
-		_, err = s3Client.HeadBucketWithContext(ctx, &s3.HeadBucketInput{
+		_, err = s3Client.HeadBucket(ctx, &s3.HeadBucketInput{
 			Bucket: scw.StringPtr(bucketName),
 		})
 		if err != nil {
 			return err
 		}
 
-		out, err := s3Client.GetBucketCors(&s3.GetBucketCorsInput{
+		out, err := s3Client.GetBucketCors(ctx, &s3.GetBucketCorsInput{
 			Bucket: scw.StringPtr(bucketName),
 		})
 		if err != nil {
-			if awsErr, ok := err.(awserr.Error); ok && awsErr.Code() != ErrCodeNoSuchCORSConfiguration {
+			if !isS3ErrCode(err, ErrCodeNoSuchCORSConfiguration, "") {
 				return fmt.Errorf("GetBucketCors error: %v", err)
 			}
 		}
@@ -642,12 +644,12 @@ func testAccCheckScalewayObjectBucketExists(tt *TestTools, n string) resource.Te
 			return fmt.Errorf("no ID is set")
 		}
 
-		_, err = s3Client.HeadBucket(&s3.HeadBucketInput{
+		_, err = s3Client.HeadBucket(context.Background(), &s3.HeadBucketInput{
 			Bucket: scw.StringPtr(bucketName),
 		})
 
 		if err != nil {
-			if isS3Err(err, s3.ErrCodeNoSuchBucket, "") {
+			if isS3Err(err, &s3types.NoSuchBucket{}) {
 				return fmt.Errorf("s3 bucket not found")
 			}
 			return err
@@ -668,6 +670,7 @@ func TestAccScalewayObjectBucket_DestroyForce(t *testing.T) {
 
 	addObjectToBucket := func(tt *TestTools, n string) resource.TestCheckFunc {
 		return func(s *terraform.State) error {
+			ctx := context.Background()
 			rs, ok := s.RootModule().Resources[n]
 			if !ok {
 				return fmt.Errorf("not found: %s", n)
@@ -677,14 +680,14 @@ func TestAccScalewayObjectBucket_DestroyForce(t *testing.T) {
 			if err != nil {
 				return err
 			}
-			_, err = conn.PutObject(&s3.PutObjectInput{
+			_, err = conn.PutObject(ctx, &s3.PutObjectInput{
 				Bucket: scw.StringPtr(rs.Primary.Attributes["name"]),
 				Key:    scw.StringPtr("test-file"),
 			})
 			if err != nil {
 				return fmt.Errorf("failed to put object in test bucket: %s", err)
 			}
-			_, err = conn.PutObject(&s3.PutObjectInput{
+			_, err = conn.PutObject(ctx, &s3.PutObjectInput{
 				Bucket: scw.StringPtr(rs.Primary.Attributes["name"]),
 				Key:    scw.StringPtr("folder/test-file-in-folder"),
 			})
@@ -740,14 +743,14 @@ func testAccCheckBucketLifecycleConfigurationExists(tt *TestTools, n string) res
 			Bucket: expandStringPtr(bucketRegionalID.ID),
 		}
 
-		output, err := retryOnAWSCode(context.Background(), ErrCodeNoSuchLifecycleConfiguration, func() (interface{}, error) {
-			return s3Client.GetBucketLifecycleConfiguration(input)
+		output, err := retryOnAWSCode(context.Background(), ErrCodeNoSuchLifecycleConfiguration, func() (*s3.GetBucketLifecycleConfigurationOutput, error) {
+			return s3Client.GetBucketLifecycleConfiguration(context.Background(), input)
 		})
 		if err != nil {
 			return err
 		}
 
-		if config, ok := output.(*s3.GetBucketLifecycleConfigurationOutput); !ok || config == nil {
+		if output == nil {
 			return fmt.Errorf("object Storage Bucket Replication Configuration for bucket (%s) not found", rs.Primary.ID)
 		}
 

@@ -11,12 +11,12 @@ import (
 	"strings"
 	"time"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/awserr"
-	"github.com/aws/aws-sdk-go/aws/credentials"
-	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/aws/aws-sdk-go/service/s3"
-	"github.com/hashicorp/aws-sdk-go-base/tfawserr"
+	"github.com/aws/aws-sdk-go-v2/aws"
+	awsconfig "github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/credentials"
+	"github.com/aws/aws-sdk-go-v2/service/s3"
+	s3types "github.com/aws/aws-sdk-go-v2/service/s3/types"
+	"github.com/aws/smithy-go"
 	awspolicy "github.com/hashicorp/awspolicyequivalence"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -29,31 +29,47 @@ const (
 	retryOnAWSAPI              = 2 * time.Minute
 )
 
-func newS3Client(httpClient *http.Client, region, accessKey, secretKey string) (*s3.S3, error) {
-	config := &aws.Config{}
-	config.WithRegion(region)
-	config.WithCredentials(credentials.NewStaticCredentials(accessKey, secretKey, ""))
-	config.WithEndpoint("https://s3." + region + ".scw.cloud")
-	config.WithHTTPClient(httpClient)
-	if strings.ToLower(os.Getenv("TF_LOG")) == "debug" {
-		config.WithLogLevel(aws.LogDebugWithHTTPBody)
-	}
-
-	s, err := session.NewSession(config)
-	if err != nil {
-		return nil, err
-	}
-	return s3.New(s), nil
+type ScalewayS3EndpointResolver struct {
+	Region string
 }
 
-func newS3ClientFromMeta(meta *Meta) (*s3.S3, error) {
+func (r *ScalewayS3EndpointResolver) ResolveEndpoint(service, region string, options ...interface{}) (aws.Endpoint, error) {
+	return aws.Endpoint{
+		URL:               "https://s3." + region + ".scw.cloud",
+		HostnameImmutable: true,
+		PartitionID:       "",
+		SigningName:       "",
+		SigningRegion:     "",
+		SigningMethod:     "",
+		Source:            aws.EndpointSourceCustom,
+	}, nil
+}
+
+func newS3Client(ctx context.Context, httpClient *http.Client, region, accessKey, secretKey string) (*s3.Client, error) {
+	config, err := awsconfig.LoadDefaultConfig(ctx,
+		awsconfig.WithRegion(region),
+		awsconfig.WithCredentialsProvider(credentials.NewStaticCredentialsProvider(accessKey, secretKey, "")),
+		awsconfig.WithEndpointResolverWithOptions(&ScalewayS3EndpointResolver{Region: region}),
+		awsconfig.WithHTTPClient(httpClient),
+	)
+	if err != nil {
+		return nil, fmt.Errorf("failed to load default aws config: %w", err)
+	}
+	if strings.ToLower(os.Getenv("TF_LOG")) == "debug" {
+		config.ClientLogMode = aws.LogRequestWithBody | aws.LogRetries
+	}
+
+	return s3.NewFromConfig(config), nil
+}
+
+func newS3ClientFromMeta(meta *Meta) (*s3.Client, error) {
 	region, _ := meta.scwClient.GetDefaultRegion()
 	accessKey, _ := meta.scwClient.GetAccessKey()
 	secretKey, _ := meta.scwClient.GetSecretKey()
-	return newS3Client(meta.httpClient, region.String(), accessKey, secretKey)
+	return newS3Client(context.Background(), meta.httpClient, region.String(), accessKey, secretKey)
 }
 
-func s3ClientWithRegion(d *schema.ResourceData, m interface{}) (*s3.S3, scw.Region, error) {
+func s3ClientWithRegion(ctx context.Context, d *schema.ResourceData, m interface{}) (*s3.Client, scw.Region, error) {
 	meta := m.(*Meta)
 	region, err := extractRegion(d, meta)
 	if err != nil {
@@ -63,7 +79,7 @@ func s3ClientWithRegion(d *schema.ResourceData, m interface{}) (*s3.S3, scw.Regi
 	accessKey, _ := meta.scwClient.GetAccessKey()
 	secretKey, _ := meta.scwClient.GetSecretKey()
 
-	s3Client, err := newS3Client(meta.httpClient, region.String(), accessKey, secretKey)
+	s3Client, err := newS3Client(ctx, meta.httpClient, region.String(), accessKey, secretKey)
 	if err != nil {
 		return nil, "", err
 	}
@@ -71,7 +87,7 @@ func s3ClientWithRegion(d *schema.ResourceData, m interface{}) (*s3.S3, scw.Regi
 	return s3Client, region, err
 }
 
-func s3ClientWithRegionAndName(m interface{}, name string) (*s3.S3, scw.Region, string, error) {
+func s3ClientWithRegionAndName(ctx context.Context, m interface{}, name string) (*s3.Client, scw.Region, string, error) {
 	meta := m.(*Meta)
 	region, name, err := parseRegionalID(name)
 	if err != nil {
@@ -79,14 +95,14 @@ func s3ClientWithRegionAndName(m interface{}, name string) (*s3.S3, scw.Region, 
 	}
 	accessKey, _ := meta.scwClient.GetAccessKey()
 	secretKey, _ := meta.scwClient.GetSecretKey()
-	s3Client, err := newS3Client(meta.httpClient, region.String(), accessKey, secretKey)
+	s3Client, err := newS3Client(ctx, meta.httpClient, region.String(), accessKey, secretKey)
 	if err != nil {
 		return nil, "", "", err
 	}
 	return s3Client, region, name, err
 }
 
-func flattenObjectBucketTags(tagsSet []*s3.Tag) map[string]interface{} {
+func flattenObjectBucketTags(tagsSet []s3types.Tag) map[string]interface{} {
 	tags := map[string]interface{}{}
 
 	for _, tagSet := range tagsSet {
@@ -104,10 +120,10 @@ func flattenObjectBucketTags(tagsSet []*s3.Tag) map[string]interface{} {
 	return tags
 }
 
-func expandObjectBucketTags(tags interface{}) []*s3.Tag {
-	tagsSet := []*s3.Tag(nil)
+func expandObjectBucketTags(tags interface{}) []s3types.Tag {
+	tagsSet := []s3types.Tag(nil)
 	for key, value := range tags.(map[string]interface{}) {
-		tagsSet = append(tagsSet, &s3.Tag{
+		tagsSet = append(tagsSet, s3types.Tag{
 			Key:   scw.StringPtr(key),
 			Value: expandStringPtr(value),
 		})
@@ -122,28 +138,35 @@ func objectBucketEndpointURL(bucketName string, region scw.Region) string {
 
 // Returns true if the error matches all these conditions:
 //   - err is of type aws err.Error
-//   - Error.Code() matches code
-//   - Error.Message() contains message
-func isS3Err(err error, code string, message string) bool {
-	var awsErr awserr.Error
+//   - Error.ErrorCode() matches code
+//   - Error.ErrorMessage() contains message
+func isS3ErrCode(err error, code string, message string) bool {
+	var awsErr smithy.APIError
 	if errors.As(err, &awsErr) {
-		return awsErr.Code() == code && strings.Contains(awsErr.Message(), message)
+		return awsErr.ErrorCode() == code && strings.Contains(awsErr.ErrorMessage(), message)
+	}
+	return false
+}
+
+func isS3Err[E error](err error, awsErr E) bool {
+	if errors.As(err, &awsErr) {
+		return true
 	}
 	return false
 }
 
 func flattenObjectBucketVersioning(versioningResponse *s3.GetBucketVersioningOutput) []map[string]interface{} {
 	vcl := []map[string]interface{}{{}}
-	vcl[0]["enabled"] = versioningResponse.Status != nil && *versioningResponse.Status == s3.BucketVersioningStatusEnabled
+	vcl[0]["enabled"] = versioningResponse.Status == s3types.BucketVersioningStatusEnabled
 	return vcl
 }
 
-func expandObjectBucketVersioning(v []interface{}) *s3.VersioningConfiguration {
-	vc := &s3.VersioningConfiguration{}
-	vc.Status = scw.StringPtr(s3.BucketVersioningStatusSuspended)
+func expandObjectBucketVersioning(v []interface{}) *s3types.VersioningConfiguration {
+	vc := &s3types.VersioningConfiguration{}
+	vc.Status = s3types.BucketVersioningStatusSuspended
 	if len(v) > 0 {
 		if c := v[0].(map[string]interface{}); c["enabled"].(bool) {
-			vc.Status = scw.StringPtr(s3.BucketVersioningStatusEnabled)
+			vc.Status = s3types.BucketVersioningStatusEnabled
 		}
 	}
 	return vc
@@ -155,36 +178,34 @@ func flattenBucketCORS(corsResponse interface{}) []map[string]interface{} {
 		corsRules = make([]map[string]interface{}, 0, len(cors.CORSRules))
 		for _, ruleObject := range cors.CORSRules {
 			rule := make(map[string]interface{})
-			rule["allowed_headers"] = flattenSliceStringPtr(ruleObject.AllowedHeaders)
-			rule["allowed_methods"] = flattenSliceStringPtr(ruleObject.AllowedMethods)
-			rule["allowed_origins"] = flattenSliceStringPtr(ruleObject.AllowedOrigins)
+			rule["allowed_headers"] = flattenSliceString(ruleObject.AllowedHeaders)
+			rule["allowed_methods"] = flattenSliceString(ruleObject.AllowedMethods)
+			rule["allowed_origins"] = flattenSliceString(ruleObject.AllowedOrigins)
 			// Both the "ExposeHeaders" and "MaxAgeSeconds" might not be set.
 			if ruleObject.AllowedOrigins != nil {
-				rule["expose_headers"] = flattenSliceStringPtr(ruleObject.ExposeHeaders)
+				rule["expose_headers"] = flattenSliceString(ruleObject.ExposeHeaders)
 			}
-			if ruleObject.MaxAgeSeconds != nil {
-				rule["max_age_seconds"] = int(*ruleObject.MaxAgeSeconds)
-			}
+			rule["max_age_seconds"] = int(ruleObject.MaxAgeSeconds)
 			corsRules = append(corsRules, rule)
 		}
 	}
 	return corsRules
 }
 
-func expandBucketCORS(ctx context.Context, rawCors []interface{}, bucket string) []*s3.CORSRule {
-	rules := make([]*s3.CORSRule, 0, len(rawCors))
+func expandBucketCORS(ctx context.Context, rawCors []interface{}, bucket string) []s3types.CORSRule {
+	rules := make([]s3types.CORSRule, 0, len(rawCors))
 	for _, cors := range rawCors {
 		corsMap := cors.(map[string]interface{})
-		r := &s3.CORSRule{}
+		r := s3types.CORSRule{}
 		for k, v := range corsMap {
 			tflog.Debug(ctx, fmt.Sprintf("S3 bucket: %s, put CORS: %#v, %#v", bucket, k, v))
 			if k == "max_age_seconds" {
-				r.MaxAgeSeconds = scw.Int64Ptr(int64(v.(int)))
+				r.MaxAgeSeconds = int32(v.(int))
 			} else {
-				vMap := make([]*string, len(v.([]interface{})))
+				vMap := make([]string, len(v.([]interface{})))
 				for i, vv := range v.([]interface{}) {
 					if str, ok := vv.(string); ok {
-						vMap[i] = scw.StringPtr(str)
+						vMap[i] = str
 					}
 				}
 				switch k {
@@ -204,7 +225,7 @@ func expandBucketCORS(ctx context.Context, rawCors []interface{}, bucket string)
 	return rules
 }
 
-func deleteS3ObjectVersion(conn *s3.S3, bucketName string, key string, versionID string, force bool) error {
+func deleteS3ObjectVersion(ctx context.Context, conn *s3.Client, bucketName string, key string, versionID string, force bool) error {
 	input := &s3.DeleteObjectInput{
 		Bucket: scw.StringPtr(bucketName),
 		Key:    scw.StringPtr(key),
@@ -213,17 +234,17 @@ func deleteS3ObjectVersion(conn *s3.S3, bucketName string, key string, versionID
 		input.VersionId = scw.StringPtr(versionID)
 	}
 	if force {
-		input.BypassGovernanceRetention = scw.BoolPtr(force)
+		input.BypassGovernanceRetention = force
 	}
 
-	_, err := conn.DeleteObject(input)
+	_, err := conn.DeleteObject(ctx, input)
 	return err
 }
 
 // removeS3ObjectVersionLegalHold remove legal hold from an ObjectVersion if it is on
 // returns true if legal hold was removed
-func removeS3ObjectVersionLegalHold(conn *s3.S3, bucketName string, objectVersion *s3.ObjectVersion) (bool, error) {
-	objectHead, err := conn.HeadObject(&s3.HeadObjectInput{
+func removeS3ObjectVersionLegalHold(ctx context.Context, conn *s3.Client, bucketName string, objectVersion s3types.ObjectVersion) (bool, error) {
+	objectHead, err := conn.HeadObject(ctx, &s3.HeadObjectInput{
 		Bucket:    scw.StringPtr(bucketName),
 		Key:       objectVersion.Key,
 		VersionId: objectVersion.VersionId,
@@ -232,15 +253,15 @@ func removeS3ObjectVersionLegalHold(conn *s3.S3, bucketName string, objectVersio
 		err = fmt.Errorf("failed to get S3 object meta data: %s", err)
 		return false, err
 	}
-	if aws.StringValue(objectHead.ObjectLockLegalHoldStatus) != s3.ObjectLockLegalHoldStatusOn {
+	if objectHead.ObjectLockLegalHoldStatus != s3types.ObjectLockLegalHoldStatusOn {
 		return false, nil
 	}
-	_, err = conn.PutObjectLegalHold(&s3.PutObjectLegalHoldInput{
+	_, err = conn.PutObjectLegalHold(ctx, &s3.PutObjectLegalHoldInput{
 		Bucket:    scw.StringPtr(bucketName),
 		Key:       objectVersion.Key,
 		VersionId: objectVersion.VersionId,
-		LegalHold: &s3.ObjectLockLegalHold{
-			Status: scw.StringPtr(s3.ObjectLockLegalHoldStatusOff),
+		LegalHold: &s3types.ObjectLockLegalHold{
+			Status: s3types.ObjectLockLegalHoldStatusOff,
 		},
 	})
 	if err != nil {
@@ -250,58 +271,50 @@ func removeS3ObjectVersionLegalHold(conn *s3.S3, bucketName string, objectVersio
 	return true, nil
 }
 
-func deleteS3ObjectVersions(ctx context.Context, conn *s3.S3, bucketName string, force bool) error {
-	var err error
+func deleteS3ObjectVersions(ctx context.Context, conn *s3.Client, bucketName string, force bool) error {
 	listInput := &s3.ListObjectVersionsInput{
 		Bucket: scw.StringPtr(bucketName),
 	}
-	listErr := conn.ListObjectVersionsPagesWithContext(ctx, listInput, func(page *s3.ListObjectVersionsOutput, lastPage bool) bool {
+	objectVersionsPaginator := NewListObjectVersionsPaginator(listInput)
+	for objectVersionsPaginator.HasMorePages() {
+		page, err := objectVersionsPaginator.NextPage(ctx)
+		if err != nil {
+			return fmt.Errorf("failed to get object version page: %w", err)
+		}
 		for _, objectVersion := range page.Versions {
-			objectKey := aws.StringValue(objectVersion.Key)
-			objectVersionID := aws.StringValue(objectVersion.VersionId)
-			err = deleteS3ObjectVersion(conn, bucketName, objectKey, objectVersionID, force)
+			objectKey := objectVersion.Key
+			objectVersionID := objectVersion.VersionId
+			err = deleteS3ObjectVersion(ctx, conn, bucketName, *objectKey, *objectVersionID, force)
 
-			if isS3Err(err, ErrCodeAccessDenied, "") && force {
-				legalHoldRemoved, errLegal := removeS3ObjectVersionLegalHold(conn, bucketName, objectVersion)
+			if isS3ErrCode(err, ErrCodeAccessDenied, "") && force {
+				legalHoldRemoved, errLegal := removeS3ObjectVersionLegalHold(ctx, conn, bucketName, objectVersion)
 				if errLegal != nil {
-					err = fmt.Errorf("failed to remove legal hold: %s", errLegal)
-					return false
+					return fmt.Errorf("failed to remove legal hold: %s", errLegal)
 				}
 				if legalHoldRemoved {
-					err = deleteS3ObjectVersion(conn, bucketName, objectKey, objectVersionID, force)
+					err = deleteS3ObjectVersion(ctx, conn, bucketName, *objectKey, *objectVersionID, force)
 				}
 			}
 			if err != nil {
-				err = fmt.Errorf("failed to delete S3 object: %s", err)
-				return false
+				return fmt.Errorf("failed to delete S3 object: %s", err)
 			}
 		}
-		return true
-	})
-	if listErr != nil {
-		return fmt.Errorf("error listing S3 objects: %s", err)
 	}
-	if err != nil {
-		return err
-	}
-	listErr = conn.ListObjectVersionsPagesWithContext(ctx, listInput, func(page *s3.ListObjectVersionsOutput, lastPage bool) bool {
+	objectVersionsPaginator = NewListObjectVersionsPaginator(listInput)
+	for objectVersionsPaginator.HasMorePages() {
+		page, err := objectVersionsPaginator.NextPage(ctx)
+		if err != nil {
+			return fmt.Errorf("failed to get object version page: %w", err)
+		}
 		for _, deleteMarkerEntry := range page.DeleteMarkers {
-			deleteMarkerKey := aws.StringValue(deleteMarkerEntry.Key)
-			deleteMarkerVersionsID := aws.StringValue(deleteMarkerEntry.VersionId)
-			err = deleteS3ObjectVersion(conn, bucketName, deleteMarkerKey, deleteMarkerVersionsID, force)
+			deleteMarkerKey := deleteMarkerEntry.Key
+			deleteMarkerVersionsID := deleteMarkerEntry.VersionId
+			err = deleteS3ObjectVersion(ctx, conn, bucketName, *deleteMarkerKey, *deleteMarkerVersionsID, force)
 
 			if err != nil {
-				err = fmt.Errorf("failed to delete S3 object delete marker: %s", err)
-				return false
+				return fmt.Errorf("failed to delete S3 object delete marker: %s", err)
 			}
 		}
-		return true
-	})
-	if listErr != nil {
-		return fmt.Errorf("error listing S3 objects for delete markers: %s", err)
-	}
-	if err != nil {
-		return err
 	}
 	return nil
 }
@@ -340,13 +353,36 @@ func StringHashcode(s string) int {
 	return 0
 }
 
-func retryOnAWSCode(ctx context.Context, code string, f func() (interface{}, error)) (interface{}, error) {
-	var resp interface{}
+func retryOnAWSError[E error, O any](ctx context.Context, awsErr E, f func() (O, error)) (O, error) {
+	var resp O
 	err := resource.RetryContext(ctx, retryOnAWSAPI, func() *resource.RetryError {
 		var err error
 		resp, err = f()
 		if err != nil {
-			if tfawserr.ErrCodeEquals(err, code) {
+			if errors.As(err, &awsErr) {
+				return resource.RetryableError(err)
+			}
+			return resource.NonRetryableError(err)
+		}
+		return nil
+	})
+
+	if TimedOut(err) {
+		resp, err = f()
+	}
+
+	return resp, err
+}
+
+func retryOnAWSCode[O any](ctx context.Context, code string, f func() (O, error)) (O, error) {
+	var resp O
+	err := resource.RetryContext(ctx, retryOnAWSAPI, func() *resource.RetryError {
+		var err error
+		resp, err = f()
+
+		var ae smithy.APIError
+		if err != nil {
+			if errors.As(err, &ae) && ae.ErrorCode() == code {
 				return resource.RetryableError(err)
 			}
 			return resource.NonRetryableError(err)
@@ -435,18 +471,18 @@ func SecondJSONUnlessEquivalent(old, newP string) (string, error) {
 	return newP, nil
 }
 
-func resourceBucketWebsiteConfigurationWebsiteEndpoint(ctx context.Context, conn *s3.S3, bucket string, region scw.Region) (*S3Website, error) {
+func resourceBucketWebsiteConfigurationWebsiteEndpoint(ctx context.Context, conn *s3.Client, bucket string, region scw.Region) (*S3Website, error) {
 	input := &s3.GetBucketLocationInput{
 		Bucket: aws.String(bucket),
 	}
 
-	output, err := conn.GetBucketLocationWithContext(ctx, input)
+	output, err := conn.GetBucketLocation(ctx, input)
 	if err != nil {
 		return nil, fmt.Errorf("error getting Object Bucket (%s) Location: %w", bucket, err)
 	}
 
-	if output.LocationConstraint != nil {
-		region = scw.Region(aws.StringValue(output.LocationConstraint))
+	if output.LocationConstraint != "" {
+		region = scw.Region(output.LocationConstraint)
 	}
 
 	return WebsiteEndpoint(bucket, region), nil

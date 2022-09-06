@@ -1,10 +1,11 @@
 package scaleway
 
 import (
+	"context"
 	"fmt"
 	"testing"
 
-	"github.com/aws/aws-sdk-go/service/s3"
+	"github.com/aws/aws-sdk-go-v2/service/s3"
 	awspolicy "github.com/hashicorp/awspolicyequivalence"
 	sdkacctest "github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -115,7 +116,7 @@ func testAccCheckBucketHasPolicy(tt *TestTools, n string, expectedPolicyText str
 
 		bucketRegionalID := expandRegionalID(rs.Primary.ID)
 
-		policy, err := s3Client.GetBucketPolicy(&s3.GetBucketPolicyInput{
+		policy, err := s3Client.GetBucketPolicy(context.Background(), &s3.GetBucketPolicyInput{
 			Bucket: expandStringPtr(bucketRegionalID.ID),
 		})
 		if err != nil {

@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/awserr"
-	"github.com/aws/aws-sdk-go/service/s3"
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/service/s3"
+	s3types "github.com/aws/aws-sdk-go-v2/service/s3/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -80,14 +80,14 @@ func ResourceBucketWebsiteConfiguration() *schema.Resource {
 }
 
 func resourceBucketWebsiteConfigurationCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	conn, region, err := s3ClientWithRegion(d, meta)
+	conn, region, err := s3ClientWithRegion(ctx, d, meta)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	bucket := expandID(d.Get("bucket").(string))
 
-	websiteConfig := &s3.WebsiteConfiguration{}
+	websiteConfig := &s3types.WebsiteConfiguration{}
 
 	if v, ok := d.GetOk("error_document"); ok && len(v.([]interface{})) > 0 && v.([]interface{})[0] != nil {
 		websiteConfig.ErrorDocument = expandBucketWebsiteConfigurationErrorDocument(v.([]interface{}))
@@ -97,11 +97,11 @@ func resourceBucketWebsiteConfigurationCreate(ctx context.Context, d *schema.Res
 		websiteConfig.IndexDocument = expandBucketWebsiteConfigurationIndexDocument(v.([]interface{}))
 	}
 
-	_, err = conn.ListObjectsWithContext(ctx, &s3.ListObjectsInput{
+	_, err = conn.ListObjects(ctx, &s3.ListObjectsInput{
 		Bucket: scw.StringPtr(bucket),
 	})
 	if err != nil {
-		if s3err, ok := err.(awserr.Error); ok && s3err.Code() == s3.ErrCodeNoSuchBucket {
+		if isS3Err(err, &s3types.NoSuchBucket{}) {
 			tflog.Error(ctx, fmt.Sprintf("Bucket %q was not found - removing from state!", bucket))
 			d.SetId("")
 			return nil
@@ -114,9 +114,9 @@ func resourceBucketWebsiteConfigurationCreate(ctx context.Context, d *schema.Res
 		WebsiteConfiguration: websiteConfig,
 	}
 
-	_, err = RetryWhenAWSErrCodeEqualsContext(ctx, objectBucketWebsiteConfigurationRetry, func() (interface{}, error) {
-		return conn.PutBucketWebsiteWithContext(ctx, input)
-	}, s3.ErrCodeNoSuchBucket)
+	_, err = RetryWhenAWSErrEqualsContext(ctx, objectBucketWebsiteConfigurationRetry, func() (interface{}, error) {
+		return conn.PutBucketWebsite(ctx, input)
+	}, &s3types.NoSuchBucket{})
 
 	if err != nil {
 		return diag.FromErr(fmt.Errorf("error creating object bucket (%s) website configuration: %w", bucket, err))
@@ -128,7 +128,7 @@ func resourceBucketWebsiteConfigurationCreate(ctx context.Context, d *schema.Res
 }
 
 func resourceBucketWebsiteConfigurationRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	conn, region, bucket, err := s3ClientWithRegionAndName(meta, d.Id())
+	conn, region, bucket, err := s3ClientWithRegionAndName(ctx, meta, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -139,11 +139,11 @@ func resourceBucketWebsiteConfigurationRead(ctx context.Context, d *schema.Resou
 
 	// expectedBucketOwner and routing not supported
 
-	_, err = conn.ListObjectsWithContext(ctx, &s3.ListObjectsInput{
+	_, err = conn.ListObjects(ctx, &s3.ListObjectsInput{
 		Bucket: scw.StringPtr(bucket),
 	})
 	if err != nil {
-		if s3err, ok := err.(awserr.Error); ok && s3err.Code() == s3.ErrCodeNoSuchBucket {
+		if isS3Err(err, &s3types.NoSuchBucket{}) {
 			tflog.Error(ctx, fmt.Sprintf("Bucket %q was not found - removing from state!", bucket))
 			d.SetId("")
 			return nil
@@ -151,8 +151,8 @@ func resourceBucketWebsiteConfigurationRead(ctx context.Context, d *schema.Resou
 		return diag.FromErr(fmt.Errorf("couldn't read bucket: %s", err))
 	}
 
-	output, err := conn.GetBucketWebsiteWithContext(ctx, input)
-	if !d.IsNewResource() && ErrCodeEquals(err, s3.ErrCodeNoSuchBucket, ErrCodeNoSuchWebsiteConfiguration) {
+	output, err := conn.GetBucketWebsite(ctx, input)
+	if !d.IsNewResource() && isS3Err(err, &s3types.NoSuchBucket{}) || isS3ErrCode(err, ErrCodeNoSuchWebsiteConfiguration, "") {
 		tflog.Debug(ctx, fmt.Sprintf("[WARN] Object Bucket Website Configuration (%s) not found, removing from state", d.Id()))
 		d.SetId("")
 		return nil
@@ -192,12 +192,12 @@ func resourceBucketWebsiteConfigurationRead(ctx context.Context, d *schema.Resou
 }
 
 func resourceBucketWebsiteConfigurationUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	conn, _, bucket, err := s3ClientWithRegionAndName(meta, d.Id())
+	conn, _, bucket, err := s3ClientWithRegionAndName(ctx, meta, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	websiteConfig := &s3.WebsiteConfiguration{}
+	websiteConfig := &s3types.WebsiteConfiguration{}
 
 	if v, ok := d.GetOk("error_document"); ok && len(v.([]interface{})) > 0 && v.([]interface{})[0] != nil {
 		websiteConfig.ErrorDocument = expandBucketWebsiteConfigurationErrorDocument(v.([]interface{}))
@@ -212,7 +212,7 @@ func resourceBucketWebsiteConfigurationUpdate(ctx context.Context, d *schema.Res
 		WebsiteConfiguration: websiteConfig,
 	}
 
-	_, err = conn.PutBucketWebsiteWithContext(ctx, input)
+	_, err = conn.PutBucketWebsite(ctx, input)
 
 	if err != nil {
 		return diag.FromErr(fmt.Errorf("error updating Object bucket website configuration (%s): %w", d.Id(), err))
@@ -222,7 +222,7 @@ func resourceBucketWebsiteConfigurationUpdate(ctx context.Context, d *schema.Res
 }
 
 func resourceBucketWebsiteConfigurationDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	conn, _, bucket, err := s3ClientWithRegionAndName(meta, d.Id())
+	conn, _, bucket, err := s3ClientWithRegionAndName(ctx, meta, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -231,9 +231,9 @@ func resourceBucketWebsiteConfigurationDelete(ctx context.Context, d *schema.Res
 		Bucket: aws.String(bucket),
 	}
 
-	_, err = conn.DeleteBucketWebsiteWithContext(ctx, input)
+	_, err = conn.DeleteBucketWebsite(ctx, input)
 
-	if ErrCodeEquals(err, s3.ErrCodeNoSuchBucket, ErrCodeNoSuchWebsiteConfiguration) {
+	if isS3Err(err, &s3types.NoSuchBucket{}) || isS3ErrCode(err, ErrCodeNoSuchWebsiteConfiguration, "") {
 		return nil
 	}
 
@@ -244,7 +244,7 @@ func resourceBucketWebsiteConfigurationDelete(ctx context.Context, d *schema.Res
 	return nil
 }
 
-func expandBucketWebsiteConfigurationErrorDocument(l []interface{}) *s3.ErrorDocument {
+func expandBucketWebsiteConfigurationErrorDocument(l []interface{}) *s3types.ErrorDocument {
 	if len(l) == 0 || l[0] == nil {
 		return nil
 	}
@@ -254,7 +254,7 @@ func expandBucketWebsiteConfigurationErrorDocument(l []interface{}) *s3.ErrorDoc
 		return nil
 	}
 
-	result := &s3.ErrorDocument{}
+	result := &s3types.ErrorDocument{}
 
 	if v, ok := tfMap["key"].(string); ok && v != "" {
 		result.Key = aws.String(v)
@@ -263,7 +263,7 @@ func expandBucketWebsiteConfigurationErrorDocument(l []interface{}) *s3.ErrorDoc
 	return result
 }
 
-func expandBucketWebsiteConfigurationIndexDocument(l []interface{}) *s3.IndexDocument {
+func expandBucketWebsiteConfigurationIndexDocument(l []interface{}) *s3types.IndexDocument {
 	if len(l) == 0 || l[0] == nil {
 		return nil
 	}
@@ -273,7 +273,7 @@ func expandBucketWebsiteConfigurationIndexDocument(l []interface{}) *s3.IndexDoc
 		return nil
 	}
 
-	result := &s3.IndexDocument{}
+	result := &s3types.IndexDocument{}
 
 	if v, ok := tfMap["suffix"].(string); ok && v != "" {
 		result.Suffix = aws.String(v)
@@ -282,7 +282,7 @@ func expandBucketWebsiteConfigurationIndexDocument(l []interface{}) *s3.IndexDoc
 	return result
 }
 
-func flattenBucketWebsiteConfigurationIndexDocument(i *s3.IndexDocument) []interface{} {
+func flattenBucketWebsiteConfigurationIndexDocument(i *s3types.IndexDocument) []interface{} {
 	if i == nil {
 		return []interface{}{}
 	}
@@ -290,13 +290,13 @@ func flattenBucketWebsiteConfigurationIndexDocument(i *s3.IndexDocument) []inter
 	m := make(map[string]interface{})
 
 	if i.Suffix != nil {
-		m["suffix"] = aws.StringValue(i.Suffix)
+		m["suffix"] = *i.Suffix
 	}
 
 	return []interface{}{m}
 }
 
-func flattenBucketWebsiteConfigurationErrorDocument(e *s3.ErrorDocument) []interface{} {
+func flattenBucketWebsiteConfigurationErrorDocument(e *s3types.ErrorDocument) []interface{} {
 	if e == nil {
 		return []interface{}{}
 	}
@@ -304,7 +304,7 @@ func flattenBucketWebsiteConfigurationErrorDocument(e *s3.ErrorDocument) []inter
 	m := make(map[string]interface{})
 
 	if e.Key != nil {
-		m["key"] = aws.StringValue(e.Key)
+		m["key"] = *e.Key
 	}
 
 	return []interface{}{m}

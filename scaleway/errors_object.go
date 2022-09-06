@@ -4,7 +4,6 @@ import (
 	"context"
 	"time"
 
-	"github.com/hashicorp/aws-sdk-go-base/tfawserr"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 )
 
@@ -28,13 +27,14 @@ const (
 	ErrCodeNoSuchWebsiteConfiguration = "NoSuchWebsiteConfiguration"
 )
 
-// RetryWhenAWSErrCodeEqualsContext retries the specified function when it returns one of the specified AWS error code.
-func RetryWhenAWSErrCodeEqualsContext(ctx context.Context, timeout time.Duration, f func() (interface{}, error), codes ...string) (interface{}, error) { // nosemgrep:ci.aws-in-func-name
+// RetryWhenAWSErrEqualsContext retries the specified function when it returns one of the specified AWS error.
+func RetryWhenAWSErrEqualsContext(ctx context.Context, timeout time.Duration, f func() (interface{}, error), awsErrors ...error) (interface{}, error) { // nosemgrep:ci.aws-in-func-name
 	return RetryWhenContext(ctx, timeout, f, func(err error) (bool, error) {
-		if tfawserr.ErrCodeEquals(err, codes...) {
-			return true, err
+		for _, awsError := range awsErrors {
+			if isS3Err(err, awsError) {
+				return true, err
+			}
 		}
-
 		return false, err
 	})
 }
