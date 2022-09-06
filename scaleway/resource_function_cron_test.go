@@ -57,11 +57,11 @@ func TestAccScalewayFunctionCron_Basic(t *testing.T) {
 			{
 				Config: `
 					resource scaleway_function_namespace main {
-						name = "test-cron"
+						name = "tf-tests-function-cron-basic"
 					}
 
 					resource scaleway_function main {
-						name = "test-cron"
+						name = "tf-tests-cron-basic"
 						namespace_id = scaleway_function_namespace.main.id
 						runtime = "node14"
 						privacy = "private"
@@ -95,11 +95,11 @@ func TestAccScalewayFunctionCron_WithArgs(t *testing.T) {
 			{
 				Config: `
 					resource scaleway_function_namespace main {
-						name = "test-cron"
+						name = "tf-tests-function-cron-with-args"
 					}
 
 					resource scaleway_function main {
-						name = "test-cron"
+						name = "tf-tests-cron-with-args"
 						namespace_id = scaleway_function_namespace.main.id
 						runtime = "node14"
 						privacy = "private"

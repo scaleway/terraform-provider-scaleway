@@ -43,7 +43,7 @@ func resourceScalewayFunction() *schema.Resource {
 				Optional:     true,
 				Computed:     true,
 				Description:  "The name of the function",
-				ValidateFunc: validation.StringLenBetween(1, 20),
+				ValidateFunc: validation.StringLenBetween(1, 34),
 			},
 			"description": {
 				Type:        schema.TypeString,
