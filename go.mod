@@ -80,4 +80,6 @@ require (
 	gotest.tools/v3 v3.0.3 // indirect
 )
 
+replace github.com/scaleway/scaleway-sdk-go v1.0.0-beta.9.0.20220805144307-2228017fa4e8 => github.com/Codelax/scaleway-sdk-go v1.0.0-beta.9.0.20220906140910-f840c27ced79
+
 go 1.19
