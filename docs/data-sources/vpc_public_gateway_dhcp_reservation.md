@@ -123,6 +123,7 @@ data "scaleway_vpc_public_gateway_dhcp_reservation" "by_id" {
 
 - `reservation_id`  (Required) The ID of the Reservation to retrieve
 - `mac_address`  (Optional) The MAC address of the reservation to retrieve
+- `wait_for_dhcp` (Optional) Boolean to wait for mac_address to exist in dhcp
 - `zone` - (Defaults to [provider](../index.md#zone) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which
   the image exists.
 

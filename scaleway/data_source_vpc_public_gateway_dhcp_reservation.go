@@ -15,7 +15,7 @@ func dataSourceScalewayVPCPublicGatewayDHCPReservation() *schema.Resource {
 	dsSchema := datasourceSchemaFromResourceSchema(resourceScalewayVPCPublicGatewayDHCPReservation().Schema)
 
 	// Set 'Optional' schema elements
-	addOptionalFieldsToSchema(dsSchema, "mac_address")
+	addOptionalFieldsToSchema(dsSchema, "mac_address", "gateway_network_id")
 
 	dsSchema["mac_address"].ConflictsWith = []string{"reservation_id"}
 	dsSchema["reservation_id"] = &schema.Schema{
@@ -23,6 +23,12 @@ func dataSourceScalewayVPCPublicGatewayDHCPReservation() *schema.Resource {
 		Optional:     true,
 		Description:  "The ID of dhcp entry reservation",
 		ValidateFunc: validationUUIDorUUIDWithLocality(),
+	}
+	dsSchema["wait_for_dhcp"] = &schema.Schema{
+		Type:        schema.TypeBool,
+		Optional:    true,
+		Default:     false,
+		Description: "Wait the the mac address in dhcp entries",
 	}
 
 	// Set 'Optional' schema elements
@@ -42,13 +48,23 @@ func dataSourceScalewayVPCPublicGatewayDHCPReservationRead(ctx context.Context, 
 
 	reservationIDRaw, ok := d.GetOk("reservation_id")
 	if !ok {
-		res, err := vpcgwAPI.ListDHCPEntries(
-			&vpcgw.ListDHCPEntriesRequest{
-				MacAddress: expandStringPtr(d.Get("mac_address").(string)),
-			}, scw.WithContext(ctx))
+		var res *vpcgw.ListDHCPEntriesResponse
+		gatewayNetworkID := d.Get("gateway_network_id").(string)
+		macAddress := d.Get("mac_address").(string)
+
+		if d.Get("wait_for_dhcp").(bool) {
+			res, err = waitForDHCPEntries(ctx, vpcgwAPI, zone, gatewayNetworkID, macAddress, d.Timeout(schema.TimeoutRead))
+		} else {
+			res, err = vpcgwAPI.ListDHCPEntries(
+				&vpcgw.ListDHCPEntriesRequest{
+					GatewayNetworkID: expandStringPtr(gatewayNetworkID),
+					MacAddress:       expandStringPtr(macAddress),
+				}, scw.WithContext(ctx))
+		}
 		if err != nil {
 			return diag.FromErr(err)
 		}
+
 		if res.TotalCount == 0 {
 			return diag.FromErr(
 				fmt.Errorf(
