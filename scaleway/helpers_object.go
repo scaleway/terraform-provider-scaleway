@@ -37,10 +37,7 @@ func (r *scalewayS3EndpointResolver) ResolveEndpoint(service, region string, opt
 	return aws.Endpoint{
 		URL:               "https://s3." + region + ".scw.cloud",
 		HostnameImmutable: true,
-		PartitionID:       "",
-		SigningName:       "",
-		SigningRegion:     "",
-		SigningMethod:     "",
+		SigningRegion:     region,
 		Source:            aws.EndpointSourceCustom,
 	}, nil
 }
