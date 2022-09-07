@@ -9,7 +9,6 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	s3types "github.com/aws/aws-sdk-go-v2/service/s3/types"
-	awssmithy "github.com/aws/smithy-go"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -454,7 +453,7 @@ func resourceScalewayObjectBucketRead(ctx context.Context, d *schema.ResourceDat
 		Bucket: scw.StringPtr(bucketName),
 	})
 	if err != nil {
-		if s3err, ok := err.(awssmithy.APIError); !ok || s3err.ErrorCode() != ErrCodeNoSuchTagSet {
+		if !isS3ErrCode(err, ErrCodeNoSuchTagSet, "") {
 			return diag.FromErr(fmt.Errorf("couldn't read tags from bucket: %s", err))
 		}
 	} else {
@@ -493,12 +492,12 @@ func resourceScalewayObjectBucketRead(ctx context.Context, d *schema.ResourceDat
 			Bucket: scw.StringPtr(bucketName),
 		})
 	})
-	if err != nil && isS3ErrCode(err, ErrCodeNoSuchLifecycleConfiguration, "") {
+	if err != nil && !isS3ErrCode(err, ErrCodeNoSuchLifecycleConfiguration, "") {
 		return diag.FromErr(err)
 	}
 
 	lifecycleRules := make([]map[string]interface{}, 0)
-	if len(lifecycle.Rules) > 0 {
+	if lifecycle != nil && len(lifecycle.Rules) > 0 {
 		lifecycleRules = make([]map[string]interface{}, 0, len(lifecycle.Rules))
 
 		for _, lifecycleRule := range lifecycle.Rules {

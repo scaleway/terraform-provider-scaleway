@@ -166,9 +166,9 @@ func expandObjectBucketVersioning(v []interface{}) *s3types.VersioningConfigurat
 	return vc
 }
 
-func flattenBucketCORS(corsResponse interface{}) []map[string]interface{} {
+func flattenBucketCORS(cors *s3.GetBucketCorsOutput) []map[string]interface{} {
 	corsRules := make([]map[string]interface{}, 0)
-	if cors, ok := corsResponse.(*s3.GetBucketCorsOutput); ok && len(cors.CORSRules) > 0 {
+	if cors != nil && len(cors.CORSRules) > 0 {
 		corsRules = make([]map[string]interface{}, 0, len(cors.CORSRules))
 		for _, ruleObject := range cors.CORSRules {
 			rule := make(map[string]interface{})
