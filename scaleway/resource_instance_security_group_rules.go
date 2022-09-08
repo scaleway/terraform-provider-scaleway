@@ -3,13 +3,12 @@ package scaleway
 import (
 	"context"
 	"fmt"
-	"sort"
-
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"sort"
 )
 
 func resourceScalewayInstanceSecurityGroupRules() *schema.Resource {
@@ -74,37 +73,80 @@ func securityGroupRuleSchema() *schema.Resource {
 				}, false),
 				Description: "Protocol for this rule (TCP, UDP, ICMP or ANY)",
 			},
-			"port": {
-				Type:        schema.TypeInt,
-				Optional:    true,
-				Description: "Network port for this rule",
-			},
 			"port_range": {
 				Type:        schema.TypeString,
 				Optional:    true,
+				Default:     "80-80",
 				Description: "Computed port range for this rule (e.g: 1-1024, 22-22)",
-			},
-			"ip": {
-				Type:         schema.TypeString,
-				Optional:     true,
-				ValidateFunc: validation.IsIPAddress,
-				Description:  "Ip address for this rule (e.g: 1.1.1.1). Only one of ip or ip_range should be provided",
 			},
 			"ip_range": {
 				Type:         schema.TypeString,
-				Optional:     true,
-				ValidateFunc: validation.IsCIDRNetwork(0, 128),
-				Description:  "Ip range for this rule (e.g: 192.168.1.0/24). Only one of ip or ip_range should be provided",
+				Required:     true,
+				Default:      "0.0.0.0/32",
+				ValidateFunc: validation.IsCIDRNetwork(0, 128), // create a helper to accept ip and ip_range
+				Description:  "Ip range for this rule (e.g: 192.168.1.0/24). The mask by default provided is/32.",
 			},
+			"ip": {
+				Type:         schema.TypeString,
+				Computed:     true,
+				ValidateFunc: validation.IsIPAddress,
+				Description:  "Ip address for this rule (e.g: 1.1.1.1). Only one of ip or ip_range should be provided",
+			},
+			"mask": {
+				Type:        schema.TypeInt,
+				Computed:    true,
+				Description: "Network mask for this rule",
+			},
+			"zone": zoneSchema(),
 		},
 	}
 }
 
 func resourceScalewayInstanceSecurityGroupRulesCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	d.SetId(d.Get("security_group_id").(string))
+	securityGroupZonedID := d.Get("security_group_id").(string)
+	d.SetId(securityGroupZonedID)
 
+	instanceAPI, zone, securityGroupID, err := instanceAPIWithZoneAndID(meta, securityGroupZonedID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	stateRules := map[instance.SecurityGroupRuleDirection][]interface{}{
+		instance.SecurityGroupRuleDirectionInbound:  d.Get("inbound_rule").([]interface{}),
+		instance.SecurityGroupRuleDirectionOutbound: d.Get("outbound_rule").([]interface{}),
+	}
+
+	var setGroupRules []*instance.SetSecurityGroupRulesRequestRule
+	for direction := range stateRules {
+		// Loop for all state rules in this direction
+		for _, rawStateRule := range stateRules[direction] {
+			stateRule, err := securityGroupRuleExpand(rawStateRule)
+			if err != nil {
+				return diag.FromErr(err)
+			}
+			setGroupRules = append(setGroupRules, &instance.SetSecurityGroupRulesRequestRule{
+				Action:       stateRule.Action,
+				Protocol:     stateRule.Protocol,
+				Direction:    stateRule.Direction,
+				IPRange:      stateRule.IPRange,
+				DestPortTo:   stateRule.DestPortTo,
+				DestPortFrom: stateRule.DestPortFrom,
+				Editable:     &stateRule.Editable,
+				Zone:         zone,
+			})
+		}
+	}
+
+	_, err = instanceAPI.SetSecurityGroupRules(&instance.SetSecurityGroupRulesRequest{
+		Zone:            zone,
+		SecurityGroupID: securityGroupID,
+		Rules:           setGroupRules,
+	}, scw.WithContext(ctx))
+	if err != nil {
+		return diag.FromErr(err)
+	}
 	// We call update instead of read as it will take care of creating rules.
-	return resourceScalewayInstanceSecurityGroupRulesUpdate(ctx, d, meta)
+	return resourceScalewayInstanceSecurityGroupRulesRead(ctx, d, meta)
 }
 
 func resourceScalewayInstanceSecurityGroupRulesRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -144,19 +186,19 @@ func resourceScalewayInstanceSecurityGroupRulesUpdate(ctx context.Context, d *sc
 }
 
 func resourceScalewayInstanceSecurityGroupRulesDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	securityGroupZonedID := d.Id()
-	instanceAPI, zone, securityGroupID, err := instanceAPIWithZoneAndID(meta, securityGroupZonedID)
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	_ = d.Set("inbound_rule", nil)
-	_ = d.Set("outbound_rule", nil)
-
-	err = updateSecurityGroupeRules(ctx, d, zone, securityGroupID, instanceAPI)
-	if err != nil {
-		return diag.FromErr(err)
-	}
+	//securityGroupZonedID := d.Id()
+	//instanceAPI, zone, securityGroupID, err := instanceAPIWithZoneAndID(meta, securityGroupZonedID)
+	//if err != nil {
+	//	return diag.FromErr(err)
+	//}
+	//
+	//_ = d.Set("inbound_rule", nil)
+	//_ = d.Set("outbound_rule", nil)
+	//
+	//err = updateSecurityGroupeRules(ctx, d, zone, securityGroupID, instanceAPI)
+	//if err != nil {
+	//	return diag.FromErr(err)
+	//}
 
 	return nil
 }
@@ -207,7 +249,7 @@ func updateSecurityGroupeRules(ctx context.Context, d *schema.ResourceData, zone
 				return err
 			}
 
-			// This happen when there is more rule in state than in the api. We create more rule in API.
+			// This happens when there is more rule in state than in the api. We create more rule in API.
 			if index >= len(apiRules[direction]) {
 				_, err = instanceAPI.CreateSecurityGroupRule(&instance.CreateSecurityGroupRuleRequest{
 					Zone:            zone,
@@ -327,54 +369,6 @@ func getSecurityGroupRules(ctx context.Context, instanceAPI *instance.API, zone 
 	}
 
 	return stateRules[instance.SecurityGroupRuleDirectionInbound], stateRules[instance.SecurityGroupRuleDirectionOutbound], nil
-}
-
-// securityGroupRuleExpand transform a state rule to an api one.
-func securityGroupRuleExpand(i interface{}) (*instance.SecurityGroupRule, error) {
-	rawRule := i.(map[string]interface{})
-
-	portFrom, portTo := uint32(0), uint32(0)
-
-	portRange := rawRule["port_range"].(string)
-	if portRange != "" {
-		_, _ = fmt.Sscanf(portRange, "%d-%d", &portFrom, &portTo)
-	} else {
-		portFrom = uint32(rawRule["port"].(int))
-		portTo = portFrom
-	}
-
-	action, _ := rawRule["action"].(string)
-	ipRange := rawRule["ip_range"].(string)
-	if ipRange == "" {
-		ipRange = rawRule["ip"].(string) + "/32"
-	}
-	if ipRange == "/32" {
-		ipRange = "0.0.0.0/0"
-	}
-
-	ipnetRange, err := expandIPNet(ipRange)
-	if err != nil {
-		return nil, err
-	}
-	rule := &instance.SecurityGroupRule{
-		DestPortFrom: &portFrom,
-		DestPortTo:   &portTo,
-		Protocol:     instance.SecurityGroupRuleProtocol(rawRule["protocol"].(string)),
-		IPRange:      ipnetRange,
-		Action:       instance.SecurityGroupRuleAction(action),
-	}
-
-	if *rule.DestPortFrom == *rule.DestPortTo {
-		rule.DestPortTo = nil
-	}
-
-	// Handle when no port is specified.
-	if portFrom == 0 && portTo == 0 {
-		rule.DestPortFrom = nil
-		rule.DestPortTo = nil
-	}
-
-	return rule, nil
 }
 
 // securityGroupRuleFlatten transform an api rule to a state one.
