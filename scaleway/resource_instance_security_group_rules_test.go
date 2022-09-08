@@ -32,7 +32,7 @@ func TestAccScalewayInstanceSecurityGroupRules_Basic(t *testing.T) {
 				),
 			},
 			{
-				// We test that we can add some rules and they stay in correct orders
+				// We test that we can add some rules, and they stay in correct orders
 				Config: `
 							resource scaleway_instance_security_group sg01 {
 								external_rules = true
