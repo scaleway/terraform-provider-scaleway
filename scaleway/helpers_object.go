@@ -48,6 +48,7 @@ func newS3Client(ctx context.Context, httpClient *http.Client, region, accessKey
 		awsconfig.WithCredentialsProvider(credentials.NewStaticCredentialsProvider(accessKey, secretKey, "")),
 		awsconfig.WithEndpointResolverWithOptions(&scalewayS3EndpointResolver{Region: region}),
 		awsconfig.WithHTTPClient(httpClient),
+		//awsconfig.WithAPIOptions()
 	)
 	if err != nil {
 		return nil, fmt.Errorf("failed to load default aws config: %w", err)
@@ -325,7 +326,7 @@ func transitionHash(v interface{}) int {
 		buf.WriteString(fmt.Sprintf("%d-", v.(int)))
 	}
 	if v, ok := m["storage_class"]; ok {
-		buf.WriteString(fmt.Sprintf("%s-", v.(string)))
+		buf.WriteString(fmt.Sprintf("%s-", v))
 	}
 	return StringHashcode(buf.String())
 }
