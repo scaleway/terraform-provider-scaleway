@@ -74,7 +74,7 @@ resource scaleway_vpc_public_gateway_ip "pgw_ip" {
 Public Gateways sit at the border of Private Networks and allow you to enable the bastion.
 You can also choose your port of preference on `bastion_port` option.
 
-You can check the available types of gateways supported with our CLI.
+You can check the types of gateways currently supported via our CLI.
 
 ```shell
 scw vpc-gw gateway-type list
