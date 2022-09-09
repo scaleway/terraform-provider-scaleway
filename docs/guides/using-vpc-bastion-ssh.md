@@ -129,7 +129,7 @@ You should add your config on your local config file e.g: `~/.ssh/config`
 
 ```
 Host *.myprivatenetwork
-ProxyJump bastion@<your-public-ip>:<your-port>
+ProxyJump bastion@<your-public-ip>:<bastion_port>
 ```
 
 Then try to connect to it:
