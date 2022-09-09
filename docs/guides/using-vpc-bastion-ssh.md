@@ -21,7 +21,7 @@ When you connect to a VM, it doesn't need a public IP address, client software, 
 
 3. If your VMs are attached to any `scaleway_instance_ip`. You should detach them.
 
-  **Note**: You should keep your VMs and Private Network on the same zone. e.g. `fr-par-1`
+  **Note**: Your VMs and Private Network should be in the same Availability Zone. e.g. `fr-par-1`
 
 ```hcl
 provider "scaleway" {
