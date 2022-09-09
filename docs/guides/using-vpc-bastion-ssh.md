@@ -59,7 +59,7 @@ resource scaleway_instance_private_nic "nic" {
 
 ## Reserve a public gateway IP
 
-You should reserve your public IP, allowing it to reach the public internet, as well as forward (masquerade) traffic from member instances of attached Private Networks.
+Reserve your public IP, allowing it to reach the public Internet, as well as to forward (masquerade) traffic from member Instances of attached Private Networks.
 
 This IP is a static IPv4 address designed for dynamic cloud computing.
 
@@ -72,7 +72,7 @@ resource scaleway_vpc_public_gateway_ip "pgw_ip" {
 ## Set up your Public Gateway
 
 Public Gateways sit at the border of Private Networks and allow you to enable the bastion.
-You can also choose your port of preference on `bastion_port` option.
+You can also choose your port of preference on `bastion_port` option. The default port is `61000`
 
 You can check the types of gateways currently supported via our CLI.
 
@@ -92,10 +92,10 @@ resource scaleway_vpc_public_gateway "pgw" {
 
 ## Configure your DHCP on your subnet
 
-The DHCP(DYNAMIC HOST CONFIGURATION PROTOCOL) server sets the IPv4 address dynamically,
+The [DHCP](https://fr.wikipedia.org/wiki/Dynamic_Host_Configuration_Protocol) server sets the IPv4 address dynamically,
 which is required to communicate over the private network.
 
-The `dns_local_name` is the TLD (top-level domain), the value by default is `priv`.
+The `dns_local_name` is the [TLD](https://en.wikipedia.org/wiki/Top-level_domain), the value by default is `priv`.
 This is used to resolve your Instance on a Private Network.
 
 In order to resolve the Instances using your Bastion you should set the `dns_local_name` with `scaleway_vpc_private_network.pn.name`.
