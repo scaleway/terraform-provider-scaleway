@@ -14,7 +14,7 @@ When you connect to a VM, it doesn't need a public IP address, client software, 
 
 *	You have created a virtual machine (Instance) in a VPC Private Network. Check our example below.
 
-1. When you deploy Bastion, the values are pulled from the Network in which your VM resides.
+1. When you deploy Bastion, the values are pulled from the Private Network in which your VM resides.
    1. This VM doesn't become a part of the Bastion deployment itself, but you do connect to it later in the exercise.
 
 2. If you don't have any VMs connected to the Private Network, use the `scaleway_instance_private_nic` or the attribute `private_network` on `scaleway_instance_server` to connect.
