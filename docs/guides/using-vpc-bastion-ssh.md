@@ -19,7 +19,7 @@ When you connect to a VM, it doesn't need a public IP address, client software, 
 
 2. If you don't have any VMs connected to the Private Network, use the `scaleway_instance_private_nic` or the attribute `private_network` on `scaleway_instance_server` to connect.
 
-3. If your VMs are attached to any `scaleway_instance_ip`. You should detach them.
+3. Detach any VMs that are attached to a `scaleway_instance_ip`.
 
   **Note**: Your VMs and Private Network should be in the same Availability Zone. e.g. `fr-par-1`
 
