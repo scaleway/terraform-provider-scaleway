@@ -12,7 +12,7 @@ When you connect to a VM, it doesn't need a public IP address, client software, 
 
 ## Prerequisites
 
-*	A Virtual Machine in a VPC PrivateNetwork. Check our example below.
+*	You have created a virtual machine (Instance) in a VPC Private Network. Check our example below.
 
 1. When you deploy Bastion, the values are pulled from the Network in which your VM resides.
    1. This VM doesn't become a part of the Bastion deployment itself, but you do connect to it later in the exercise.
