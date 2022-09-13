@@ -47,6 +47,7 @@ func resourceScalewayObjectBucket() *schema.Resource {
 					s3.ObjectCannedACLPublicReadWrite,
 					s3.ObjectCannedACLAuthenticatedRead,
 				}, false),
+				Deprecated: "ACL is deprecated. Please use resource_bucket_acl instead.",
 			},
 			"tags": {
 				Type: schema.TypeMap,

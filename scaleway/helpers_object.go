@@ -86,19 +86,19 @@ func s3ClientWithRegionAndName(m interface{}, name string) (*s3.S3, scw.Region, 
 	return s3Client, region, name, err
 }
 
-func s3ClientWithRegionAndNestedName(m interface{}, name string) (*s3.S3, scw.Region, string, string, error) {
+func s3ClientWithRegionWithNameACL(m interface{}, name string) (*s3.S3, scw.Region, string, string, error) {
 	meta := m.(*Meta)
-	region, outerID, innerID, err := parseRegionalNestedID(name)
+	region, name, acl, err := parseLocalizedNestedID(name)
 	if err != nil {
-		return nil, "", outerID, innerID, err
+		return nil, "", name, "", err
 	}
 	accessKey, _ := meta.scwClient.GetAccessKey()
 	secretKey, _ := meta.scwClient.GetSecretKey()
-	s3Client, err := newS3Client(meta.httpClient, region.String(), accessKey, secretKey)
+	s3Client, err := newS3Client(meta.httpClient, region, accessKey, secretKey)
 	if err != nil {
 		return nil, "", "", "", err
 	}
-	return s3Client, region, outerID, innerID, err
+	return s3Client, scw.Region(region), name, acl, err
 }
 
 func flattenObjectBucketTags(tagsSet []*s3.Tag) map[string]interface{} {
