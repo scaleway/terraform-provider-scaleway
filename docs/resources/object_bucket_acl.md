@@ -26,18 +26,80 @@ resource "scaleway_object_bucket_acl" "main" {
 }
 ```
 
-## Arguments Reference
+## Example with Grants
 
+```hcl
+resource "scaleway_object_bucket" "main" {
+    name = "your-bucket"
+}
+
+resource "scaleway_object_bucket_acl" "main" {
+    bucket = scaleway_object_bucket.main.name
+    access_control_policy {
+      grant {
+        grantee {
+            id   = "<project-id>:<project-id>"
+            type = "CanonicalUser"
+        }
+        permission = "FULL_CONTROL"
+      }
+    
+      grant {
+        grantee {
+          id   = "<project-id>:<project-id>"
+          type = "CanonicalUser"
+        }
+        permission = "WRITE"
+      }
+    
+      owner {
+        id = "<project-id>:<project-id>"
+      }
+    }
+}
+```
+
+## Arguments Reference
 
 The following arguments are supported:
 
 * `bucket` - (Required) The name of the bucket.
 * `acl` - (Optional) The canned ACL you want to apply to the bucket.
+* `access_control_policy` - (Optional, Conflicts with acl) A configuration block that sets the ACL permissions for an object per grantee documented below.
+* `expected_bucket_owner` - (Optional, Forces new resource) The project ID of the expected bucket owner.
 * `region` - (Optional) The [region](https://developers.scaleway.com/en/quickstart/#region-definition) in which the bucket should be created.
 
 ## The ACL
 
 Please check the [canned ACL](https://docs.aws.amazon.com/AmazonS3/latest/userguide/acl_overview.html#canned-acl)
+
+## The Access Control policy
+
+The `access_control_policy` configuration block supports the following arguments:
+
+* `grant` - (Required) Set of grant configuration blocks documented below.
+* `owner` - (Required) Configuration block of the bucket owner's display name and ID documented below.
+
+## The Grant
+
+The `grant` configuration block supports the following arguments:
+
+* `grantee` - (Required) Configuration block for the person being granted permissions documented below.
+* `permission` - (Required) Logging permissions assigned to the grantee for the bucket.
+
+## The owner
+
+The `owner` configuration block supports the following arguments:
+
+* `id` - (Required) The ID of the project owner. Format <project_id>:<project_id>.
+* `display_name` - (Optional) The display name of the owner. Format <project_id>:<project_id>.
+
+## the grantee
+
+The `grantee` configuration block supports the following arguments:
+
+* `id` - (Required) The canonical user ID of the grantee.
+* `type` - (Required) Type of grantee. Valid values: CanonicalUser.
 
 ## Attributes Reference
 
