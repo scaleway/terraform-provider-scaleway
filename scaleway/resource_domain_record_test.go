@@ -651,6 +651,49 @@ func TestAccScalewayDomainRecord_Weighted(t *testing.T) {
 	})
 }
 
+func TestAccScalewayDomainRecord_SRVZone(t *testing.T) {
+	tt := NewTestTools(t)
+	defer tt.Cleanup()
+
+	testDNSZone := fmt.Sprintf("test-srv.%s", testDomain)
+	l.Debugf("TestAccScalewayDomainRecord_SRVZone: test dns zone: %s", testDNSZone)
+
+	name := "_proxy-preproduction._tcp"
+	recordType := "SRV"
+	data := "100 1 3128 bigbox.example.com."
+	ttl := 3600     // default value
+	priority := 100 // default value
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      testAccCheckScalewayDomainRecordDestroy(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`
+					resource "scaleway_domain_record" "proxy_srv" {
+						dns_zone        = "%[1]s"
+						name            = "%[2]s"
+						type            = "%[3]s"
+						data            = "%[4]s"
+						keep_empty_zone = false
+					}
+				`, testDNSZone, name, recordType, data),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayDomainRecordExists(tt, "scaleway_domain_record.proxy_srv"),
+					resource.TestCheckResourceAttr("scaleway_domain_record.proxy_srv", "dns_zone", testDNSZone),
+					resource.TestCheckResourceAttr("scaleway_domain_record.proxy_srv", "name", name),
+					resource.TestCheckResourceAttr("scaleway_domain_record.proxy_srv", "type", recordType),
+					resource.TestCheckResourceAttr("scaleway_domain_record.proxy_srv", "data", data),
+					resource.TestCheckResourceAttr("scaleway_domain_record.proxy_srv", "ttl", fmt.Sprint(ttl)),
+					resource.TestCheckResourceAttr("scaleway_domain_record.proxy_srv", "priority", fmt.Sprint(priority)),
+					testCheckResourceAttrUUID("scaleway_domain_record.proxy_srv", "id"),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckScalewayDomainRecordExists(tt *TestTools, n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
