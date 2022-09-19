@@ -151,6 +151,17 @@ func parseRegionalID(regionalID string) (region scw.Region, id string, err error
 	return
 }
 
+// parseRegionalNestedID parses a regionalNestedID and extracts the resource region, inner and outer ID.
+func parseRegionalNestedID(regionalNestedID string) (region scw.Region, outerID, innerID string, err error) {
+	locality, innerID, outerID, err := parseLocalizedNestedID(regionalNestedID)
+	if err != nil {
+		return
+	}
+
+	region, err = scw.ParseRegion(locality)
+	return
+}
+
 // newZonedIDString constructs a unique identifier based on resource zone and id
 func newZonedIDString(zone scw.Zone, id string) string {
 	return fmt.Sprintf("%s/%s", zone, id)
@@ -585,6 +596,21 @@ func flattenMap(m map[string]string) interface{} {
 	return flattenedMap
 }
 
+func flattenMapStringStringPtr(m map[string]*string) interface{} {
+	if m == nil {
+		return nil
+	}
+	flattenedMap := make(map[string]interface{})
+	for k, v := range m {
+		if v != nil {
+			flattenedMap[k] = *v
+		} else {
+			flattenedMap[k] = ""
+		}
+	}
+	return flattenedMap
+}
+
 func diffSuppressFuncDuration(k, oldValue, newValue string, d *schema.ResourceData) bool {
 	if oldValue == newValue {
 		return true
@@ -630,6 +656,17 @@ func expandMapPtrStringString(data interface{}) *map[string]string {
 		m[k] = v.(string)
 	}
 	return &m
+}
+
+func expandMapStringStringPtr(data interface{}) map[string]*string {
+	if data == nil {
+		return nil
+	}
+	m := make(map[string]*string)
+	for k, v := range data.(map[string]interface{}) {
+		m[k] = expandStringPtr(v)
+	}
+	return m
 }
 
 func errorCheck(err error, message string) bool {
@@ -705,5 +742,22 @@ func ErrorCheck(t *testing.T, endpointIDs ...string) resource.ErrorCheckFunc {
 		}
 
 		return err
+	}
+}
+
+func validateMapKeyLowerCase() schema.SchemaValidateDiagFunc {
+	return func(i interface{}, path cty.Path) diag.Diagnostics {
+		m := expandMapStringStringPtr(i)
+		for k := range m {
+			if strings.ToLower(k) != k {
+				return diag.Diagnostics{diag.Diagnostic{
+					Severity:      diag.Error,
+					AttributePath: cty.IndexStringPath(k),
+					Summary:       "Invalid map content",
+					Detail:        fmt.Sprintf("key (%s) should be lowercase", k),
+				}}
+			}
+		}
+		return nil
 	}
 }
