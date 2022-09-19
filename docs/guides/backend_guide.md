@@ -67,7 +67,7 @@ terraform plan -out "planfile" ; terraform apply -input=false -auto-approve "pla
 We choose to set our environment variable for the connection string for this guide. Please check the [secret section](#secrets) for more details.
 
 ```shell
- export PG_CONN_STR=postgres://<user>:<pass>@localhost:<port>/terraform_backend?sslmode=disable
+export PG_CONN_STR=postgres://<user>:<pass>@localhost:<port>/terraform_backend?sslmode=disable
 ```
 
 ## Secrets
