@@ -172,7 +172,7 @@ The Lock method, prevents opening the state file while already in use.
 ## Share configuration
 
 You can also share the configuration using the different [data sources](https://www.terraform.io/language/state/remote-state-data).
-this is useful when you are working on the same infrastructure we the same team.
+This is useful when working on the same infrastructure or the same team.
 
 ```hcl
 data "scaleway_rdb_instance" "mybackend" {
