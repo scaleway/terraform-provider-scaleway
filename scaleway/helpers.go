@@ -621,7 +621,7 @@ func TimedOut(err error) bool {
 	return ok && timeoutErr.LastError == nil
 }
 
-func expandMapStringStringPtr(data interface{}) *map[string]string {
+func expandMapPtrStringString(data interface{}) *map[string]string {
 	if data == nil {
 		return nil
 	}

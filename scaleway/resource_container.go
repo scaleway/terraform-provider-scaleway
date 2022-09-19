@@ -288,7 +288,7 @@ func resourceScalewayContainerUpdate(ctx context.Context, d *schema.ResourceData
 
 	if d.HasChanges("environment_variables") {
 		envVariablesRaw := d.Get("environment_variables")
-		req.EnvironmentVariables = expandMapStringStringPtr(envVariablesRaw)
+		req.EnvironmentVariables = expandMapPtrStringString(envVariablesRaw)
 	}
 
 	if d.HasChanges("min_scale") {

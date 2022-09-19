@@ -150,7 +150,7 @@ func resourceScalewayFunctionCreate(ctx context.Context, d *schema.ResourceData,
 
 	req := &function.CreateFunctionRequest{
 		Description:          expandStringPtr(d.Get("description").(string)),
-		EnvironmentVariables: expandMapStringStringPtr(d.Get("environment_variables")),
+		EnvironmentVariables: expandMapPtrStringString(d.Get("environment_variables")),
 		Handler:              expandStringPtr(d.Get("handler").(string)),
 		MaxScale:             expandUint32Ptr(d.Get("max_scale")),
 		MemoryLimit:          expandUint32Ptr(d.Get("memory_limit")),
@@ -294,7 +294,7 @@ func resourceScalewayFunctionUpdate(ctx context.Context, d *schema.ResourceData,
 	updated := false
 
 	if d.HasChange("environment_variables") {
-		req.EnvironmentVariables = expandMapStringStringPtr(d.Get("environment_variables"))
+		req.EnvironmentVariables = expandMapPtrStringString(d.Get("environment_variables"))
 		updated = true
 	}
 
