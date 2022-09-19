@@ -72,7 +72,7 @@ export PG_CONN_STR=postgres://<user>:<pass>@localhost:<port>/terraform_backend?s
 
 ## Secrets
 
-Hashicorp proposes several methods to keep your secrets. Please check the Terraform  [partial configuration](https://www.terraform.io/language/settings/backends/configuration#partial-configuration) for this topic.
+Hashicorp offers several methods to keep your secrets. Please check the Terraform [partial configuration](https://www.terraform.io/language/settings/backends/configuration#partial-configuration) for this topic.
 
 ## Create your infrastructure with the Scaleway provider
 
