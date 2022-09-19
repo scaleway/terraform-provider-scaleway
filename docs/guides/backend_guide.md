@@ -72,7 +72,7 @@ We choose to set our environment variable for the connection string for this gui
 
 ## Secrets
 
-Hashicorp propose several methods to keep your secrets. Please check the Terraform  [partial configuration](https://www.terraform.io/language/settings/backends/configuration#partial-configuration) for this topic.
+Hashicorp proposes several methods to keep your secrets. Please check the Terraform  [partial configuration](https://www.terraform.io/language/settings/backends/configuration#partial-configuration) for this topic.
 
 ## Create your infrastructure with the Scaleway provider
 
