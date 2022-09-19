@@ -52,6 +52,7 @@ func resourceScalewayContainer() *schema.Resource {
 			"environment_variables": {
 				Type:        schema.TypeMap,
 				Optional:    true,
+				Computed:    true,
 				Description: "The environment variables to be injected into your container at runtime.",
 				Elem: &schema.Schema{
 					Type:         schema.TypeString,
