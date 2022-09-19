@@ -167,7 +167,7 @@ Most of the remote [backends](https://www.terraform.io/language/settings/backend
 if someone else is already running apply, they will already have the lock, and you will have to wait.
 You can run apply with the `-lock-timeout=<TIME>` parameter to tell Terraform to wait up to TIME for a lock to be released (e.g., `-lock-timeout=10m` will wait for 10 minutes).
 
-The Lock method, prevents opening the state file while already in use.
+The Lock method prevents opening the state file while already in use.
 
 ## Share configuration
 
