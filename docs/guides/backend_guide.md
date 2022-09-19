@@ -10,7 +10,7 @@ This page describes how to configure a backend by adding the backend block to yo
 
 Terraform provides the option to set up a [“backend”](https://www.terraform.io/language/settings/backends/configuration) of the `state` data files.
 
-This option allows you handling the state and the way certain operations are executed.
+This option allows you to handle the state and the way certain operations are executed.
 
 Backends can store the state remotely and protect it with locks to prevent corruption;
 it makes it possible for a team to work with ease, or, for instance, to run Terraform within a pipeline.
