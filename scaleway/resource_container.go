@@ -305,8 +305,8 @@ func resourceScalewayContainerUpdate(ctx context.Context, d *schema.ResourceData
 	}
 
 	if d.HasChanges("timeout") {
-		timeout := d.Get("timeout")
-		req.Timeout = &scw.Duration{Seconds: timeout.(int64)}
+		timeout := d.Get("timeout").(int)
+		req.Timeout = &scw.Duration{Seconds: int64(timeout)}
 	}
 
 	if d.HasChanges("privacy") {
