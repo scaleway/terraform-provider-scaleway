@@ -98,7 +98,7 @@ func resourceScalewayFunction() *schema.Resource {
 				Description: "Handler of the function. Depends on the runtime https://developers.scaleway.com/en/products/functions/api/#create-a-function",
 			},
 			"timeout": {
-				Type:        schema.TypeString,
+				Type:        schema.TypeInt,
 				Computed:    true,
 				Description: "Holds the max duration (in seconds) the function is allowed for responding to a request",
 				Optional:    true,
@@ -266,7 +266,7 @@ func resourceScalewayFunctionRead(ctx context.Context, d *schema.ResourceData, m
 	_ = d.Set("name", f.Name)
 	_ = d.Set("privacy", f.Privacy.String())
 	_ = d.Set("region", f.Region.String())
-	_ = d.Set("timeout", flattenDuration(f.Timeout.ToTimeDuration()))
+	_ = d.Set("timeout", f.Timeout.Seconds)
 	_ = d.Set("domain_name", f.DomainName)
 
 	return diags
