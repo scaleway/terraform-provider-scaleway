@@ -46,14 +46,14 @@ resource "scaleway_object_bucket_acl" "main" {
     
       grant {
         grantee {
-          id   = "<project-id>:<project-id>"
+          id   = "<project-id>"
           type = "CanonicalUser"
         }
         permission = "WRITE"
       }
     
       owner {
-        id = "<project-id>:<project-id>"
+        id = "<project-id>"
       }
     }
 }
@@ -68,6 +68,7 @@ The following arguments are supported:
 * `access_control_policy` - (Optional, Conflicts with acl) A configuration block that sets the ACL permissions for an object per grantee documented below.
 * `expected_bucket_owner` - (Optional, Forces new resource) The project ID of the expected bucket owner.
 * `region` - (Optional) The [region](https://developers.scaleway.com/en/quickstart/#region-definition) in which the bucket should be created.
+
 
 ## The ACL
 
@@ -84,15 +85,23 @@ The `access_control_policy` configuration block supports the following arguments
 
 The `grant` configuration block supports the following arguments:
 
-* `grantee` - (Required) Configuration block for the person being granted permissions documented below.
+* `grantee` - (Required) Configuration block for the project being granted permissions documented below.
 * `permission` - (Required) Logging permissions assigned to the grantee for the bucket.
+
+## The permission
+
+The following list shows each access policy permissions supported.
+
+`READ`, `WRITE`, `READ_ACP`, `WRITE_ACP`, `FULL_CONTROL`
+
+For more information about ACL permissions in the S3 bucket, see [ACL permissions](https://docs.aws.amazon.com/AmazonS3/latest/userguide/acl-overview.html).
 
 ## The owner
 
 The `owner` configuration block supports the following arguments:
 
-* `id` - (Required) The ID of the project owner. Format <project_id>:<project_id>.
-* `display_name` - (Optional) The display name of the owner. Format <project_id>:<project_id>.
+* `id` - (Required) The ID of the project owner.
+* `display_name` - (Optional) The display name of the owner.
 
 ## the grantee
 

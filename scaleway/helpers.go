@@ -110,7 +110,7 @@ func parseLocalizedNestedID(localizedID string) (locality string, innerID, outer
 }
 
 // parseLocalizedNestedID parses a localizedNestedOwnerID and extracts the resource locality, the inner and outer id and owner.
-func parseLocalizedNestedOwnerID(localizedID string) (locality string, innerID, outerID, owner string, err error) {
+func parseLocalizedNestedOwnerID(localizedID string) (locality string, innerID, outerID string, err error) {
 	tab := strings.Split(localizedID, "/")
 	n := len(tab)
 	switch n {
@@ -119,20 +119,15 @@ func parseLocalizedNestedOwnerID(localizedID string) (locality string, innerID, 
 		innerID = tab[1]
 	case 3:
 		locality, innerID, outerID, err = parseLocalizedNestedID(localizedID)
-	case 4:
-		locality = tab[0]
-		innerID = tab[1]
-		outerID = tab[2]
-		owner = tab[3]
 	default:
 		err = fmt.Errorf("cant parse localized id: %s", localizedID)
 	}
 
 	if err != nil {
-		return "", "", "", localizedID, err
+		return "", "", localizedID, err
 	}
 
-	return locality, innerID, outerID, owner, nil
+	return locality, innerID, outerID, nil
 }
 
 // parseZonedID parses a zonedID and extracts the resource zone and id.

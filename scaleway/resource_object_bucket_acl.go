@@ -55,14 +55,16 @@ func resourceScalewayObjectBucketACL() *schema.Resource {
 													Computed: true,
 												},
 												"id": {
-													Type:        schema.TypeString,
-													Required:    true,
-													Description: "The project owner of the grantee. format: <projectID>:<projectID>.",
+													Type:         schema.TypeString,
+													Required:     true,
+													Description:  "The project ID owner of the grantee.",
+													ValidateFunc: validationUUID(),
 												},
 												"type": {
 													Type:         schema.TypeString,
 													Required:     true,
-													ValidateFunc: validation.StringInSlice(s3.Type_Values(), false),
+													Description:  "Type of grantee. Valid values: `CanonicalUser`",
+													ValidateFunc: validation.StringInSlice([]string{s3.TypeCanonicalUser}, false),
 												},
 											},
 										},
@@ -84,15 +86,17 @@ func resourceScalewayObjectBucketACL() *schema.Resource {
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"display_name": {
-										Type:        schema.TypeString,
-										Optional:    true,
-										Computed:    true,
-										Description: "The project ID of the grantee. format: <projectID>:<projectID>.",
+										Type:         schema.TypeString,
+										Computed:     true,
+										Optional:     true,
+										Description:  "The project ID of the grantee.",
+										ValidateFunc: validationUUID(),
 									},
 									"id": {
-										Type:        schema.TypeString,
-										Required:    true,
-										Description: "The display ID of the project. format: <projectID>:<projectID>.",
+										Type:         schema.TypeString,
+										Required:     true,
+										Description:  "The display ID of the project.",
+										ValidateFunc: validationUUID(),
 									},
 								},
 							},
@@ -119,10 +123,11 @@ func resourceScalewayObjectBucketACL() *schema.Resource {
 				Description:  "The bucket name.",
 			},
 			"expected_bucket_owner": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				ForceNew:    true,
-				Description: "The project ID as owner.",
+				Type:         schema.TypeString,
+				Optional:     true,
+				ForceNew:     true,
+				Description:  "The project ID as owner.",
+				ValidateFunc: validationUUID(),
 			},
 			"region": regionSchema(),
 		},
@@ -163,7 +168,7 @@ func resourceBucketACLCreate(ctx context.Context, d *schema.ResourceData, meta i
 	}
 	tflog.Debug(ctx, fmt.Sprintf("output: %v", out))
 
-	d.SetId(BucketACLCreateResourceID(region, bucket, expectedBucketOwner, acl))
+	d.SetId(BucketACLCreateResourceID(region, bucket, acl))
 
 	return resourceBucketACLRead(ctx, d, meta)
 }
@@ -229,15 +234,11 @@ func expandBucketACLAccessControlPolicyGrantsGrantee(l []interface{}) *s3.Grante
 	result := &s3.Grantee{}
 
 	if v, ok := tfMap["id"].(string); ok && v != "" {
-		result.ID = aws.String(v)
+		result.ID = buildBucketOwnerID(aws.String(v))
 	}
 
 	if v, ok := tfMap["type"].(string); ok && v != "" {
 		result.Type = aws.String(v)
-	}
-
-	if v, ok := tfMap["uri"].(string); ok && v != "" {
-		result.URI = aws.String(v)
 	}
 
 	return result
@@ -256,11 +257,11 @@ func expandBucketACLAccessControlPolicyOwner(l []interface{}) *s3.Owner {
 	owner := &s3.Owner{}
 
 	if v, ok := tfMap["display_name"].(string); ok && v != "" {
-		owner.DisplayName = aws.String(v)
+		owner.DisplayName = buildBucketOwnerID(aws.String(v))
 	}
 
 	if v, ok := tfMap["id"].(string); ok && v != "" {
-		owner.ID = aws.String(v)
+		owner.ID = buildBucketOwnerID(aws.String(v))
 	}
 
 	return owner
@@ -316,19 +317,15 @@ func flattenBucketACLAccessControlPolicyGrantsGrantee(grantee *s3.Grantee) []int
 	m := make(map[string]interface{})
 
 	if grantee.DisplayName != nil {
-		m["display_name"] = aws.StringValue(grantee.DisplayName)
+		m["display_name"] = aws.StringValue(normalizeOwnerID(grantee.DisplayName))
 	}
 
 	if grantee.ID != nil {
-		m["id"] = aws.StringValue(grantee.ID)
+		m["id"] = aws.StringValue(normalizeOwnerID(grantee.ID))
 	}
 
 	if grantee.Type != nil {
 		m["type"] = aws.StringValue(grantee.Type)
-	}
-
-	if grantee.URI != nil {
-		m["uri"] = aws.StringValue(grantee.URI)
 	}
 
 	return []interface{}{m}
@@ -342,18 +339,19 @@ func flattenBucketACLAccessControlPolicyOwner(owner *s3.Owner) []interface{} {
 	m := make(map[string]interface{})
 
 	if owner.DisplayName != nil {
-		m["display_name"] = aws.StringValue(owner.DisplayName)
+		m["display_name"] = aws.StringValue(normalizeOwnerID(owner.DisplayName))
 	}
 
 	if owner.ID != nil {
-		m["id"] = aws.StringValue(owner.ID)
+		m["id"] = aws.StringValue(normalizeOwnerID(owner.ID))
 	}
 
 	return []interface{}{m}
 }
 
 func resourceBucketACLRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	conn, region, bucket, acl, expectedBucketOwner, err := s3ClientWithRegionWithNameACL(meta, d.Id())
+	expectedBucketOwner := d.Get("expected_bucket_owner")
+	conn, region, bucket, acl, err := s3ClientWithRegionWithNameACL(meta, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -362,8 +360,8 @@ func resourceBucketACLRead(ctx context.Context, d *schema.ResourceData, meta int
 		Bucket: aws.String(bucket),
 	}
 
-	if expectedBucketOwner != "" {
-		input.ExpectedBucketOwner = aws.String(expectedBucketOwner)
+	if v, ok := d.GetOk("expected_bucket_owner"); ok {
+		input.ExpectedBucketOwner = aws.String(v.(string))
 	}
 
 	output, err := conn.GetBucketAclWithContext(ctx, input)
@@ -395,23 +393,15 @@ func resourceBucketACLRead(ctx context.Context, d *schema.ResourceData, meta int
 
 // BucketACLCreateResourceID is a method for creating an ID string
 // with the bucket name and optional organizationID and/or ACL.
-func BucketACLCreateResourceID(region scw.Region, bucket, expectedBucketOwner, acl string) string {
-	if expectedBucketOwner == "" {
-		if acl == "" {
-			return newRegionalIDString(region, bucket)
-		}
-		return newRegionalIDString(region, strings.Join([]string{bucket, acl}, BucketACLSeparator))
-	}
-
+func BucketACLCreateResourceID(region scw.Region, bucket, acl string) string {
 	if acl == "" {
-		return newRegionalIDString(region, strings.Join([]string{bucket, expectedBucketOwner}, BucketACLSeparator))
+		return newRegionalIDString(region, bucket)
 	}
-
-	return newRegionalIDString(region, strings.Join([]string{bucket, expectedBucketOwner, acl}, BucketACLSeparator))
+	return newRegionalIDString(region, strings.Join([]string{bucket, acl}, BucketACLSeparator))
 }
 
 func resourceBucketACLUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	conn, region, bucket, acl, expectedBucketOwner, err := s3ClientWithRegionWithNameACL(meta, d.Id())
+	conn, region, bucket, acl, err := s3ClientWithRegionWithNameACL(meta, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -425,8 +415,8 @@ func resourceBucketACLUpdate(ctx context.Context, d *schema.ResourceData, meta i
 		input.ACL = aws.String(acl)
 	}
 
-	if expectedBucketOwner != "" {
-		input.ExpectedBucketOwner = aws.String(expectedBucketOwner)
+	if ok := d.HasChange("expected_bucket_owner"); ok {
+		input.ExpectedBucketOwner = aws.String(d.Get("expected_bucket_owner").(string))
 	}
 
 	if d.HasChange("access_control_policy") {
@@ -441,7 +431,7 @@ func resourceBucketACLUpdate(ctx context.Context, d *schema.ResourceData, meta i
 
 	if d.HasChange("acl") {
 		// Set new ACL value back in resource ID
-		d.SetId(BucketACLCreateResourceID(region, bucket, expectedBucketOwner, acl))
+		d.SetId(BucketACLCreateResourceID(region, bucket, acl))
 	}
 
 	return resourceBucketACLRead(ctx, d, meta)
