@@ -163,7 +163,7 @@ func resourceScalewayFunctionCreate(ctx context.Context, d *schema.ResourceData,
 	}
 
 	if timeout, ok := d.GetOk("timeout"); ok {
-		req.Timeout = &scw.Duration{Seconds: timeout.(int64)}
+		req.Timeout = &scw.Duration{Seconds: int64(timeout.(int))}
 	}
 
 	f, err := api.CreateFunction(req, scw.WithContext(ctx))
@@ -324,7 +324,7 @@ func resourceScalewayFunctionUpdate(ctx context.Context, d *schema.ResourceData,
 	}
 
 	if d.HasChange("timeout") {
-		req.Timeout = &scw.Duration{Seconds: d.Get("timeout").(int64)}
+		req.Timeout = &scw.Duration{Seconds: int64(d.Get("timeout").(int))}
 		updated = true
 	}
 
