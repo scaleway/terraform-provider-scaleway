@@ -720,6 +720,97 @@ func testAccCheckScalewayDomainRecordExists(tt *TestTools, n string) resource.Te
 	}
 }
 
+func TestAccScalewayDomainRecord_CNAME(t *testing.T) {
+	tt := NewTestTools(t)
+	defer tt.Cleanup()
+
+	testDNSZone := fmt.Sprintf("test-basic.%s", testDomain)
+	l.Debugf("TestAccScalewayDomainRecord_Basic: test dns zone: %s", testDNSZone)
+
+	name := "tf"
+	recordType := "CNAME"
+	data := "xxx.scw.cloud"
+	dataUpdated := "yyy.scw.cloud"
+	ttl := 3600
+	ttlUpdated := 43200
+	priority := 0
+	priorityUpdated := 10
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      testAccCheckScalewayDomainRecordDestroy(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`
+					resource "scaleway_domain_record" "tf_CNAME" {
+						dns_zone = "%s"
+						name     = "%s"
+						type     = "%s"
+						data     = "%s"
+						ttl      = %d
+						priority = %d
+					}
+				`, testDNSZone, name, recordType, data, ttl, priority),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayDomainRecordExists(tt, "scaleway_domain_record.tf_CNAME"),
+					resource.TestCheckResourceAttr("scaleway_domain_record.tf_CNAME", "dns_zone", testDNSZone),
+					resource.TestCheckResourceAttr("scaleway_domain_record.tf_CNAME", "name", name),
+					resource.TestCheckResourceAttr("scaleway_domain_record.tf_CNAME", "type", recordType),
+					resource.TestCheckResourceAttr("scaleway_domain_record.tf_CNAME", "data", data),
+					resource.TestCheckResourceAttr("scaleway_domain_record.tf_CNAME", "ttl", fmt.Sprint(ttl)),
+					resource.TestCheckResourceAttr("scaleway_domain_record.tf_CNAME", "priority", fmt.Sprint(priority)),
+					testCheckResourceAttrUUID("scaleway_domain_record.tf_CNAME", "id"),
+				),
+			},
+			{
+				Config: fmt.Sprintf(`
+					resource "scaleway_domain_record" "tf_CNAME" {
+						dns_zone = "%s"
+						name     = "%s"
+						type     = "%s"
+						data     = "%s"
+						ttl      = %d
+						priority = %d
+					}
+				`, testDNSZone, name, recordType, dataUpdated, ttl, priority),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayDomainRecordExists(tt, "scaleway_domain_record.tf_CNAME"),
+					resource.TestCheckResourceAttr("scaleway_domain_record.tf_CNAME", "dns_zone", testDNSZone),
+					resource.TestCheckResourceAttr("scaleway_domain_record.tf_CNAME", "name", name),
+					resource.TestCheckResourceAttr("scaleway_domain_record.tf_CNAME", "type", recordType),
+					resource.TestCheckResourceAttr("scaleway_domain_record.tf_CNAME", "data", dataUpdated),
+					resource.TestCheckResourceAttr("scaleway_domain_record.tf_CNAME", "ttl", fmt.Sprint(ttl)),
+					resource.TestCheckResourceAttr("scaleway_domain_record.tf_CNAME", "priority", fmt.Sprint(priority)),
+					testCheckResourceAttrUUID("scaleway_domain_record.tf_CNAME", "id"),
+				),
+			},
+			{
+				Config: fmt.Sprintf(`
+					resource "scaleway_domain_record" "tf_CNAME" {
+						dns_zone = "%s"
+						name     = "%s"
+						type     = "%s"
+						data     = "%s"
+						ttl      = %d
+						priority = %d
+					}
+				`, testDNSZone, name, recordType, dataUpdated, ttlUpdated, priorityUpdated),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayDomainRecordExists(tt, "scaleway_domain_record.tf_CNAME"),
+					resource.TestCheckResourceAttr("scaleway_domain_record.tf_CNAME", "dns_zone", testDNSZone),
+					resource.TestCheckResourceAttr("scaleway_domain_record.tf_CNAME", "name", name),
+					resource.TestCheckResourceAttr("scaleway_domain_record.tf_CNAME", "type", recordType),
+					resource.TestCheckResourceAttr("scaleway_domain_record.tf_CNAME", "data", dataUpdated),
+					resource.TestCheckResourceAttr("scaleway_domain_record.tf_CNAME", "ttl", fmt.Sprint(ttlUpdated)),
+					resource.TestCheckResourceAttr("scaleway_domain_record.tf_CNAME", "priority", fmt.Sprint(priorityUpdated)),
+					testCheckResourceAttrUUID("scaleway_domain_record.tf_CNAME", "id"),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckScalewayDomainRecordDestroy(tt *TestTools) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		for _, rs := range state.RootModule().Resources {
