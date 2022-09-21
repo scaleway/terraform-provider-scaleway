@@ -42,12 +42,12 @@ resource scaleway_function main {
   runtime      = "go118"
   handler      = "Handle"
   privacy      = "private"
-  zip_file = "function.zip"
-  zip_hash = filesha256("function.zip")
-  deploy = true
+  timeout      = 10
+  zip_file     = "function.zip"
+  zip_hash     = filesha256("function.zip")
+  deploy       = true
 }
 ```
-
 
 ## Arguments Reference
 
