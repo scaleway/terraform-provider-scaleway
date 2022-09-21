@@ -78,6 +78,41 @@ func TestAccScalewayFunction_Basic(t *testing.T) {
 	})
 }
 
+func TestAccScalewayFunction_Timeout(t *testing.T) {
+	tt := NewTestTools(t)
+	defer tt.Cleanup()
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      testAccCheckScalewayFunctionDestroy(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource scaleway_function_namespace main {}
+
+					resource scaleway_function main {
+						name = "foobar"
+						namespace_id = scaleway_function_namespace.main.id
+						runtime = "node14"
+						privacy = "private"
+						handler = "handler.handle"
+						timeout = 10
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayFunctionExists(tt, "scaleway_function.main"),
+					resource.TestCheckResourceAttr("scaleway_function.main", "name", "foobar"),
+					resource.TestCheckResourceAttr("scaleway_function.main", "runtime", "node14"),
+					resource.TestCheckResourceAttr("scaleway_function.main", "privacy", "private"),
+					resource.TestCheckResourceAttr("scaleway_function.main", "handler", "handler.handle"),
+					resource.TestCheckResourceAttr("scaleway_function.main", "timeout", "10"),
+				),
+			},
+		},
+	})
+}
+
 func TestAccScalewayFunction_NoName(t *testing.T) {
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
