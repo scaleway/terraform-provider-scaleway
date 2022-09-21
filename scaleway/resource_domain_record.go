@@ -286,7 +286,7 @@ func resourceScalewayDomainRecordCreate(ctx context.Context, d *schema.ResourceD
 		return diag.FromErr(err)
 	}
 
-	currentRecord, err := getRecordFromData(recordData, dnsZoneData.Records)
+	currentRecord, err := getRecordFromTypeAndData(recordType, recordData, dnsZoneData.Records)
 	if err != nil {
 		return diag.FromErr(err)
 	}
