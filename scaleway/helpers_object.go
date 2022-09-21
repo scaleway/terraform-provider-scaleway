@@ -101,6 +101,22 @@ func s3ClientWithRegionAndNestedName(m interface{}, name string) (*s3.S3, scw.Re
 	return s3Client, region, outerID, innerID, err
 }
 
+func s3ClientWithRegionWithNameACL(m interface{}, name string) (*s3.S3, scw.Region, string, string, error) {
+	meta := m.(*Meta)
+	region, name, outerID, err := parseLocalizedNestedOwnerID(name)
+	if err != nil {
+		return nil, "", name, "", err
+	}
+
+	accessKey, _ := meta.scwClient.GetAccessKey()
+	secretKey, _ := meta.scwClient.GetSecretKey()
+	s3Client, err := newS3Client(meta.httpClient, region, accessKey, secretKey)
+	if err != nil {
+		return nil, "", "", "", err
+	}
+	return s3Client, scw.Region(region), name, outerID, err
+}
+
 func flattenObjectBucketTags(tagsSet []*s3.Tag) map[string]interface{} {
 	tags := map[string]interface{}{}
 
@@ -481,4 +497,18 @@ func WebsiteDomainURL(region string) string {
 	// https://docs.aws.amazon.com/AmazonS3/latest/dev/WebsiteEndpoints.html
 	// https://docs.aws.amazon.com/general/latest/gr/rande.html#s3_website_region_endpoints
 	return fmt.Sprintf("s3-website.%s.scw.cloud", region)
+}
+
+func buildBucketOwnerID(id *string) *string {
+	s := fmt.Sprintf("%[1]s:%[1]s", *id)
+	return &s
+}
+
+func normalizeOwnerID(id *string) *string {
+	tab := strings.Split(*id, ":")
+	if len(tab) != 2 {
+		return id
+	}
+
+	return &tab[0]
 }
