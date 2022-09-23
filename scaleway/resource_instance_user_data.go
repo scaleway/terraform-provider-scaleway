@@ -8,7 +8,6 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"io"
-	"strings"
 )
 
 func resourceScalewayInstanceUserData() *schema.Resource {
@@ -81,7 +80,7 @@ func resourceScalewayInstanceUserDataCreate(ctx context.Context, d *schema.Resou
 		return diag.FromErr(err)
 	}
 
-	d.SetId(strings.Join([]string{newZonedID(zone, server.ID).String()}, key))
+	d.SetId(newZonedNestedIDString(zone, key, server.ID))
 
 	return resourceScalewayInstanceUserDataRead(ctx, d, meta)
 }
@@ -109,7 +108,7 @@ func resourceScalewayInstanceUserDataRead(ctx context.Context, d *schema.Resourc
 
 	if v, ok := d.GetOk("zone"); ok {
 		requestGetUserData.Zone = scw.Zone(v.(string))
-		_ = d.Set("zone", zone)
+		zone = requestGetUserData.Zone
 	}
 
 	serverUserDataRawValue, err := instanceAPI.GetServerUserData(requestGetUserData, scw.WithContext(ctx))
@@ -125,9 +124,10 @@ func resourceScalewayInstanceUserDataRead(ctx context.Context, d *schema.Resourc
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	_ = d.Set("server_id", newZonedID(zone, server.ID))
+	_ = d.Set("server_id", newZonedID(zone, server.ID).String())
 	_ = d.Set("key", key)
 	_ = d.Set("value", string(userDataValue))
+	_ = d.Set("zone", zone.String())
 
 	return nil
 }
@@ -172,14 +172,14 @@ func resourceScalewayInstanceUserDataUpdate(ctx context.Context, d *schema.Resou
 }
 
 func resourceScalewayInstanceUserDataDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	instanceAPI, zone, id, err := instanceAPIWithZoneAndID(meta, d.Id())
+	instanceAPI, zone, id, key, err := instanceAPIWithZoneAndNestedID(meta, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	deleteUserData := &instance.DeleteServerUserDataRequest{
 		ServerID: expandID(id),
-		Key:      id,
+		Key:      key,
 		Zone:     zone,
 	}
 
