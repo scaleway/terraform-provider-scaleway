@@ -4,7 +4,7 @@ description: |-
 Manages Scaleway Compute Instance User Data.
 ---
 
-# scaleway_instance_server
+# scaleway_instance_user_data
 
 Creates and manages Scaleway Compute Instance User Data values.
 
