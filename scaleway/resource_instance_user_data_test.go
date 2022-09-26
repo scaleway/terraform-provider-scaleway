@@ -34,9 +34,6 @@ EOF
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("scaleway_instance_user_data.main", "key", "cloud-init"),
 				),
-				ResourceName:            "scaleway_instance_server.main",
-				ImportStateVerify:       false,
-				ImportStateVerifyIgnore: []string{"user_data", "cloud-init"},
 			},
 		},
 	})

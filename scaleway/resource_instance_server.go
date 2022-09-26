@@ -632,9 +632,7 @@ func resourceScalewayInstanceServerRead(ctx context.Context, d *schema.ResourceD
 			// _ = d.Set("cloud_init", string(userDataValue))
 			// }
 		}
-		if len(userData) > 0 {
-			_ = d.Set("user_data", userData)
-		}
+		_ = d.Set("user_data", userData)
 
 		////
 		// Read server private networks
