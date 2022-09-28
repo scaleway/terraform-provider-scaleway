@@ -155,22 +155,8 @@ func resourceScalewayK8SPool() *schema.Resource {
 				ForceNew:    true,
 				Description: "The size of the system volume of the nodes in gigabyte",
 			},
-			"zone": {
-				Type:             schema.TypeString,
-				Description:      "The zone you want to attach the resource to",
-				Optional:         true,
-				ForceNew:         true,
-				Computed:         true,
-				ValidateDiagFunc: validateStringInSliceWithWarning(allZones(), "zone"),
-			},
-			"region": {
-				Type:             schema.TypeString,
-				Description:      "The region you want to attach the resource to",
-				Optional:         true,
-				ForceNew:         true,
-				Computed:         true,
-				ValidateDiagFunc: validateStringInSliceWithWarning(allRegions(), "region"),
-			},
+			"zone":   zoneSchema(),
+			"region": regionSchema(),
 			// Computed elements
 			"created_at": {
 				Type:        schema.TypeString,
