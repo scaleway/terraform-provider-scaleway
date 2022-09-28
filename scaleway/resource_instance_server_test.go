@@ -798,9 +798,8 @@ func TestAccScalewayInstanceServer_Basic2(t *testing.T) {
 				`,
 			},
 			{
-				ResourceName:      "scaleway_instance_server.server01",
-				ImportState:       true,
-				ImportStateVerify: true,
+				ResourceName: "scaleway_instance_server.server01",
+				ImportState:  true,
 			},
 		},
 	})
