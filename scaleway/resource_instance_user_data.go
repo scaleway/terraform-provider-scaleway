@@ -94,11 +94,7 @@ func resourceScalewayInstanceUserDataRead(ctx context.Context, d *schema.Resourc
 
 	server, err := waitForInstanceServer(ctx, instanceAPI, zone, id, d.Timeout(schema.TimeoutRead))
 	if err != nil {
-		if is404Error(err) {
-			d.SetId("")
-			return nil
-		}
-		return nil
+		return diag.FromErr(err)
 	}
 
 	requestGetUserData := &instance.GetServerUserDataRequest{
@@ -189,7 +185,8 @@ func resourceScalewayInstanceUserDataDelete(ctx context.Context, d *schema.Resou
 	}
 
 	err = instanceAPI.DeleteServerUserData(deleteUserData, scw.WithContext(ctx))
-	if err != nil {
+
+	if err != nil && !is404Error(err) {
 		return diag.FromErr(err)
 	}
 
