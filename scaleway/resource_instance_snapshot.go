@@ -36,7 +36,7 @@ func resourceScalewayInstanceSnapshot() *schema.Resource {
 			},
 			"volume_id": {
 				Type:         schema.TypeString,
-				Required:     true,
+				Optional:     true,
 				ForceNew:     true,
 				Description:  "ID of the volume to take a snapshot from",
 				ValidateFunc: validationUUIDorUUIDWithLocality(),
@@ -67,6 +67,27 @@ func resourceScalewayInstanceSnapshot() *schema.Resource {
 				Optional:    true,
 				Description: "The tags associated with the snapshot",
 			},
+			"import": {
+				Type:     schema.TypeList,
+				ForceNew: true,
+				MaxItems: 1,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"bucket": {
+							Type:        schema.TypeString,
+							Required:    true,
+							Description: "Bucket containing qcow",
+						},
+						"key": {
+							Type:        schema.TypeString,
+							Required:    true,
+							Description: "Key of the qcow file in the specified bucket",
+						},
+					},
+				},
+				Optional:    true,
+				Description: "Import snapshot from a qcow",
+			},
 			"created_at": {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -86,10 +107,9 @@ func resourceScalewayInstanceSnapshotCreate(ctx context.Context, d *schema.Resou
 	}
 
 	req := &instance.CreateSnapshotRequest{
-		Zone:     zone,
-		Project:  expandStringPtr(d.Get("project_id")),
-		Name:     expandOrGenerateString(d.Get("name"), "snap"),
-		VolumeID: expandZonedID(d.Get("volume_id").(string)).ID,
+		Zone:    zone,
+		Project: expandStringPtr(d.Get("project_id")),
+		Name:    expandOrGenerateString(d.Get("name"), "snap"),
 	}
 
 	if volumeType, ok := d.GetOk("type"); ok {
@@ -99,6 +119,15 @@ func resourceScalewayInstanceSnapshotCreate(ctx context.Context, d *schema.Resou
 	tags := expandStrings(d.Get("tags"))
 	if len(tags) > 0 {
 		req.Tags = tags
+	}
+
+	if volumeID, volumeIDExist := d.GetOk("volume_id"); volumeIDExist {
+		req.VolumeID = expandZonedID(volumeID).ID
+	}
+
+	if _, isImported := d.GetOk("import"); isImported {
+		req.Bucket = expandStringPtr(d.Get("import.0.bucket"))
+		req.Key = expandStringPtr(d.Get("import.0.key"))
 	}
 
 	res, err := instanceAPI.CreateSnapshot(req, scw.WithContext(ctx))
