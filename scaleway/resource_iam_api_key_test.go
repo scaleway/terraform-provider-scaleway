@@ -89,6 +89,12 @@ func TestAccScalewayIamApiKey_WithApplication(t *testing.T) {
 					resource.TestCheckResourceAttrSet("scaleway_iam_api_key.main", "secret_key"),
 				),
 			},
+			{
+				ResourceName:            "scaleway_iam_api_key.main",
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"secret_key"},
+			},
 		},
 	})
 }
