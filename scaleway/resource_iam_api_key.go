@@ -51,6 +51,7 @@ func resourceScalewayIamAPIKey() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The secret Key of the iam api key",
+				Sensitive:   true,
 			},
 			"application_id": {
 				Type:          schema.TypeString,
@@ -94,6 +95,8 @@ func resourceScalewayIamAPIKeyCreate(ctx context.Context, d *schema.ResourceData
 		return diag.FromErr(err)
 	}
 
+	_ = d.Set("secret_key", res.SecretKey)
+
 	d.SetId(res.AccessKey)
 
 	return resourceScalewayIamAPIKeyRead(ctx, d, meta)
@@ -116,7 +119,6 @@ func resourceScalewayIamAPIKeyRead(ctx context.Context, d *schema.ResourceData, 
 	_ = d.Set("updated_at", flattenTime(res.UpdatedAt))
 	_ = d.Set("expires_at", flattenTime(res.ExpiresAt))
 	_ = d.Set("access_key", res.AccessKey)
-	_ = d.Set("secret_key", res.SecretKey)
 
 	if res.ApplicationID != nil {
 		_ = d.Set("application_id", res.ApplicationID)

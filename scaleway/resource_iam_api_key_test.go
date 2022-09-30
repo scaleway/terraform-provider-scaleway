@@ -68,6 +68,7 @@ func TestAccScalewayIamApiKey_WithApplication(t *testing.T) {
 					testAccCheckScalewayIamAPIKeyExists(tt, "scaleway_iam_api_key.main"),
 					resource.TestCheckResourceAttrPair("scaleway_iam_api_key.main", "application_id", "scaleway_iam_application.main", "id"),
 					resource.TestCheckResourceAttr("scaleway_iam_api_key.main", "description", "a description"),
+					resource.TestCheckResourceAttrSet("scaleway_iam_api_key.main", "secret_key"),
 				),
 			},
 			{
@@ -85,6 +86,7 @@ func TestAccScalewayIamApiKey_WithApplication(t *testing.T) {
 					testAccCheckScalewayIamAPIKeyExists(tt, "scaleway_iam_api_key.main"),
 					resource.TestCheckResourceAttrPair("scaleway_iam_api_key.main", "application_id", "scaleway_iam_application.main", "id"),
 					resource.TestCheckResourceAttr("scaleway_iam_api_key.main", "description", "another description"),
+					resource.TestCheckResourceAttrSet("scaleway_iam_api_key.main", "secret_key"),
 				),
 			},
 		},
