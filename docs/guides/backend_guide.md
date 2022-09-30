@@ -179,8 +179,3 @@ data "scaleway_rdb_instance" "mybackend" {
     name = "your-database-name"
 }
 ```
-
-## Limitation
-
-The Scaleway Object Storage does not support the `Lock State`.
-For further information about the Lock State please check this [section](https://www.terraform.io/language/state/locking).
