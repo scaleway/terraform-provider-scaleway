@@ -90,9 +90,10 @@ func resourceScalewayRedisCluster() *schema.Resource {
 							Computed:    true,
 						},
 						"ip": {
-							Type:        schema.TypeString,
-							Description: "IPv4 network address of the rule (IP network in a CIDR format).",
-							Required:    true,
+							Type:         schema.TypeString,
+							Description:  "IPv4 network address of the rule (IP network in a CIDR format).",
+							Required:     true,
+							ValidateFunc: validation.IsCIDR,
 						},
 						"description": {
 							Type:        schema.TypeString,

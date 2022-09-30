@@ -47,6 +47,7 @@ func resourceScalewayObjectBucket() *schema.Resource {
 					s3.ObjectCannedACLPublicReadWrite,
 					s3.ObjectCannedACLAuthenticatedRead,
 				}, false),
+				Deprecated: "ACL is deprecated. Please use resource_bucket_acl instead.",
 			},
 			"tags": {
 				Type: schema.TypeMap,
@@ -433,7 +434,7 @@ func resourceScalewayObjectBucketRead(ctx context.Context, d *schema.ResourceDat
 	// Known issue:
 	// Import a bucket (eg. terraform import scaleway_object_bucket.x fr-par/x)
 	// will always trigger a diff (eg. terraform plan) on acl attribute because
-	// we do not read it and it has a "private" default value.
+	// we do not read it, and it has a "private" default value.
 	// AWS has the same issue: https://github.com/terraform-providers/terraform-provider-aws/issues/6193
 
 	_, err = s3Client.ListObjectsWithContext(ctx, &s3.ListObjectsInput{

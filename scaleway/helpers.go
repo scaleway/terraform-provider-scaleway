@@ -92,7 +92,7 @@ func expandZonedID(id interface{}) ZonedID {
 }
 
 // parseLocalizedID parses a localizedID and extracts the resource locality and id.
-func parseLocalizedID(localizedID string) (locality string, id string, err error) {
+func parseLocalizedID(localizedID string) (locality, id string, err error) {
 	tab := strings.Split(localizedID, "/")
 	if len(tab) != 2 {
 		return "", localizedID, fmt.Errorf("cant parse localized id: %s", localizedID)
@@ -107,6 +107,27 @@ func parseLocalizedNestedID(localizedID string) (locality string, innerID, outer
 		return "", "", localizedID, fmt.Errorf("cant parse localized id: %s", localizedID)
 	}
 	return tab[0], tab[1], tab[2], nil
+}
+
+// parseLocalizedNestedID parses a localizedNestedOwnerID and extracts the resource locality, the inner and outer id and owner.
+func parseLocalizedNestedOwnerID(localizedID string) (locality string, innerID, outerID string, err error) {
+	tab := strings.Split(localizedID, "/")
+	n := len(tab)
+	switch n {
+	case 2:
+		locality = tab[0]
+		innerID = tab[1]
+	case 3:
+		locality, innerID, outerID, err = parseLocalizedNestedID(localizedID)
+	default:
+		err = fmt.Errorf("cant parse localized id: %s", localizedID)
+	}
+
+	if err != nil {
+		return "", "", localizedID, err
+	}
+
+	return locality, innerID, outerID, nil
 }
 
 // parseZonedID parses a zonedID and extracts the resource zone and id.
@@ -143,6 +164,17 @@ func expandID(id interface{}) string {
 // parseRegionalID parses a regionalID and extracts the resource region and id.
 func parseRegionalID(regionalID string) (region scw.Region, id string, err error) {
 	locality, id, err := parseLocalizedID(regionalID)
+	if err != nil {
+		return
+	}
+
+	region, err = scw.ParseRegion(locality)
+	return
+}
+
+// parseRegionalNestedID parses a regionalNestedID and extracts the resource region, inner and outer ID.
+func parseRegionalNestedID(regionalNestedID string) (region scw.Region, outerID, innerID string, err error) {
+	locality, innerID, outerID, err := parseLocalizedNestedID(regionalNestedID)
 	if err != nil {
 		return
 	}
@@ -585,6 +617,21 @@ func flattenMap(m map[string]string) interface{} {
 	return flattenedMap
 }
 
+func flattenMapStringStringPtr(m map[string]*string) interface{} {
+	if m == nil {
+		return nil
+	}
+	flattenedMap := make(map[string]interface{})
+	for k, v := range m {
+		if v != nil {
+			flattenedMap[k] = *v
+		} else {
+			flattenedMap[k] = ""
+		}
+	}
+	return flattenedMap
+}
+
 func diffSuppressFuncDuration(k, oldValue, newValue string, d *schema.ResourceData) bool {
 	if oldValue == newValue {
 		return true
@@ -621,7 +668,7 @@ func TimedOut(err error) bool {
 	return ok && timeoutErr.LastError == nil
 }
 
-func expandMapStringStringPtr(data interface{}) *map[string]string {
+func expandMapPtrStringString(data interface{}) *map[string]string {
 	if data == nil {
 		return nil
 	}
@@ -630,6 +677,17 @@ func expandMapStringStringPtr(data interface{}) *map[string]string {
 		m[k] = v.(string)
 	}
 	return &m
+}
+
+func expandMapStringStringPtr(data interface{}) map[string]*string {
+	if data == nil {
+		return nil
+	}
+	m := make(map[string]*string)
+	for k, v := range data.(map[string]interface{}) {
+		m[k] = expandStringPtr(v)
+	}
+	return m
 }
 
 func errorCheck(err error, message string) bool {
@@ -705,5 +763,22 @@ func ErrorCheck(t *testing.T, endpointIDs ...string) resource.ErrorCheckFunc {
 		}
 
 		return err
+	}
+}
+
+func validateMapKeyLowerCase() schema.SchemaValidateDiagFunc {
+	return func(i interface{}, path cty.Path) diag.Diagnostics {
+		m := expandMapStringStringPtr(i)
+		for k := range m {
+			if strings.ToLower(k) != k {
+				return diag.Diagnostics{diag.Diagnostic{
+					Severity:      diag.Error,
+					AttributePath: cty.IndexStringPath(k),
+					Summary:       "Invalid map content",
+					Detail:        fmt.Sprintf("key (%s) should be lowercase", k),
+				}}
+			}
+		}
+		return nil
 	}
 }

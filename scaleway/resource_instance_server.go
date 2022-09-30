@@ -5,7 +5,6 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"log"
 	"strconv"
 
@@ -222,12 +221,14 @@ func resourceScalewayInstanceServer() *schema.Resource {
 			"cloud_init": {
 				Type:         schema.TypeString,
 				Optional:     true,
+				Computed:     true,
 				Description:  "The cloud init script associated with this server",
 				ValidateFunc: validation.StringLenBetween(0, 127998),
 			},
 			"user_data": {
 				Type:        schema.TypeMap,
 				Optional:    true,
+				Computed:    true,
 				Description: "The user data associated with the server", // TODO: document reserved keys (`cloud-init`)
 				Elem: &schema.Schema{
 					Type: schema.TypeString,
@@ -621,7 +622,7 @@ func resourceScalewayInstanceServerRead(ctx context.Context, d *schema.ResourceD
 
 		userData := make(map[string]interface{})
 		for key, value := range allUserData.UserData {
-			userDataValue, err := ioutil.ReadAll(value)
+			userDataValue, err := io.ReadAll(value)
 			if err != nil {
 				return diag.FromErr(err)
 			}
@@ -631,9 +632,7 @@ func resourceScalewayInstanceServerRead(ctx context.Context, d *schema.ResourceD
 			// _ = d.Set("cloud_init", string(userDataValue))
 			// }
 		}
-		if len(userData) > 0 {
-			_ = d.Set("user_data", userData)
-		}
+		_ = d.Set("user_data", userData)
 
 		////
 		// Read server private networks

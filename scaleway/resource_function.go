@@ -98,7 +98,7 @@ func resourceScalewayFunction() *schema.Resource {
 				Description: "Handler of the function. Depends on the runtime https://developers.scaleway.com/en/products/functions/api/#create-a-function",
 			},
 			"timeout": {
-				Type:        schema.TypeString,
+				Type:        schema.TypeInt,
 				Computed:    true,
 				Description: "Holds the max duration (in seconds) the function is allowed for responding to a request",
 				Optional:    true,
@@ -150,7 +150,7 @@ func resourceScalewayFunctionCreate(ctx context.Context, d *schema.ResourceData,
 
 	req := &function.CreateFunctionRequest{
 		Description:          expandStringPtr(d.Get("description").(string)),
-		EnvironmentVariables: expandMapStringStringPtr(d.Get("environment_variables")),
+		EnvironmentVariables: expandMapPtrStringString(d.Get("environment_variables")),
 		Handler:              expandStringPtr(d.Get("handler").(string)),
 		MaxScale:             expandUint32Ptr(d.Get("max_scale")),
 		MemoryLimit:          expandUint32Ptr(d.Get("memory_limit")),
@@ -163,7 +163,7 @@ func resourceScalewayFunctionCreate(ctx context.Context, d *schema.ResourceData,
 	}
 
 	if timeout, ok := d.GetOk("timeout"); ok {
-		req.Timeout = &scw.Duration{Seconds: timeout.(int64)}
+		req.Timeout = &scw.Duration{Seconds: int64(timeout.(int))}
 	}
 
 	f, err := api.CreateFunction(req, scw.WithContext(ctx))
@@ -266,7 +266,7 @@ func resourceScalewayFunctionRead(ctx context.Context, d *schema.ResourceData, m
 	_ = d.Set("name", f.Name)
 	_ = d.Set("privacy", f.Privacy.String())
 	_ = d.Set("region", f.Region.String())
-	_ = d.Set("timeout", flattenDuration(f.Timeout.ToTimeDuration()))
+	_ = d.Set("timeout", f.Timeout.Seconds)
 	_ = d.Set("domain_name", f.DomainName)
 
 	return diags
@@ -294,7 +294,7 @@ func resourceScalewayFunctionUpdate(ctx context.Context, d *schema.ResourceData,
 	updated := false
 
 	if d.HasChange("environment_variables") {
-		req.EnvironmentVariables = expandMapStringStringPtr(d.Get("environment_variables"))
+		req.EnvironmentVariables = expandMapPtrStringString(d.Get("environment_variables"))
 		updated = true
 	}
 
@@ -324,7 +324,7 @@ func resourceScalewayFunctionUpdate(ctx context.Context, d *schema.ResourceData,
 	}
 
 	if d.HasChange("timeout") {
-		req.Timeout = &scw.Duration{Seconds: d.Get("timeout").(int64)}
+		req.Timeout = &scw.Duration{Seconds: int64(d.Get("timeout").(int))}
 		updated = true
 	}
 

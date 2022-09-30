@@ -52,6 +52,7 @@ func resourceScalewayContainer() *schema.Resource {
 			"environment_variables": {
 				Type:        schema.TypeMap,
 				Optional:    true,
+				Computed:    true,
 				Description: "The environment variables to be injected into your container at runtime.",
 				Elem: &schema.Schema{
 					Type:         schema.TypeString,
@@ -288,7 +289,7 @@ func resourceScalewayContainerUpdate(ctx context.Context, d *schema.ResourceData
 
 	if d.HasChanges("environment_variables") {
 		envVariablesRaw := d.Get("environment_variables")
-		req.EnvironmentVariables = expandMapStringStringPtr(envVariablesRaw)
+		req.EnvironmentVariables = expandMapPtrStringString(envVariablesRaw)
 	}
 
 	if d.HasChanges("min_scale") {
@@ -304,8 +305,7 @@ func resourceScalewayContainerUpdate(ctx context.Context, d *schema.ResourceData
 	}
 
 	if d.HasChanges("timeout") {
-		timeout := d.Get("timeout")
-		req.Timeout = &scw.Duration{Seconds: timeout.(int64)}
+		req.Timeout = &scw.Duration{Seconds: int64(d.Get("timeout").(int))}
 	}
 
 	if d.HasChanges("privacy") {
