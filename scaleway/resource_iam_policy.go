@@ -74,8 +74,9 @@ func resourceScalewayIamPolicy() *schema.Resource {
 			"no_principal": {
 				Type:         schema.TypeBool,
 				Optional:     true,
-				Description:  "Application id",
+				Description:  "Deactivate policy to a principal",
 				ExactlyOneOf: []string{"user_id", "group_id", "application_id"},
+				ForceNew:     true,
 			},
 			"rule": {
 				Type:        schema.TypeList,
