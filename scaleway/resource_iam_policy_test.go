@@ -184,7 +184,8 @@ func TestAccScalewayIamPolicy_NoUpdate(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_iam_policy.main", "description", "a description"),
 					resource.TestCheckResourceAttr("scaleway_iam_policy.main", "rule.0.organization_id", orgID),
 				),
-			}, {
+			},
+			{
 				Config: fmt.Sprintf(`
 					resource "scaleway_iam_application" "app01" {
 						name = "first app"
