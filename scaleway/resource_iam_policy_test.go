@@ -176,19 +176,18 @@ func TestAccScalewayIamPolicy_ChangeLinkedEntity(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      testAccCheckScalewayIamPolicyDestroy(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
-						resource "scaleway_iam_policy" "main" {
-							name = "tf_tests_policy_changepermissions"
-							description = "a description"
-							no_principal = false
-							rule {
-								organization_id = "%s"
-								permission_set_names = ["AllProductsFullAccess"]
-							}
+					resource "scaleway_iam_policy" "main" {
+						name = "tf_tests_policy_changepermissions"
+						description = "a description"
+						no_principal = false
+						rule {
+							organization_id = "%s"
+							permission_set_names = ["AllProductsFullAccess"]
 						}
+					}
 					`, orgID),
 				ExpectError: regexp.MustCompile(`(?s)` + "no_principal does not respect constraint," + `(.*?)`),
 			},
