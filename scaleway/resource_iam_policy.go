@@ -205,7 +205,7 @@ func resourceScalewayIamPolicyUpdate(ctx context.Context, d *schema.ResourceData
 		hasUpdated = true
 		req.ApplicationID = expandStringPtr(d.Get("application_id"))
 	}
-	if noPrincipal, ok := d.GetOk("no_principal"); ok && d.HasChange("no_principal") && *expandBoolPtr(noPrincipal) {
+	if noPrincipal := d.Get("no_principal"); d.HasChange("no_principal") && noPrincipal.(bool) {
 		hasUpdated = true
 		req.NoPrincipal = expandBoolPtr(noPrincipal)
 	}
