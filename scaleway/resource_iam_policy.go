@@ -76,7 +76,6 @@ func resourceScalewayIamPolicy() *schema.Resource {
 				Optional:     true,
 				Description:  "Deactivate policy to a principal",
 				ExactlyOneOf: []string{"user_id", "group_id", "application_id"},
-				ForceNew:     true,
 			},
 			"rule": {
 				Type:        schema.TypeList,
@@ -162,7 +161,10 @@ func resourceScalewayIamPolicyRead(ctx context.Context, d *schema.ResourceData, 
 	if pol.ApplicationID != nil {
 		_ = d.Set("application_id", flattenStringPtr(pol.ApplicationID))
 	}
-	_ = d.Set("no_principal", flattenBoolPtr(pol.NoPrincipal))
+
+	if _, ok := d.GetOk("no_principal"); ok {
+		_ = d.Set("no_principal", flattenBoolPtr(pol.NoPrincipal))
+	}
 
 	listRules, err := api.ListRules(&iam.ListRulesRequest{
 		PolicyID: &pol.ID,
@@ -205,7 +207,7 @@ func resourceScalewayIamPolicyUpdate(ctx context.Context, d *schema.ResourceData
 		hasUpdated = true
 		req.ApplicationID = expandStringPtr(d.Get("application_id"))
 	}
-	if d.HasChange("no_principal") {
+	if _, ok := d.GetOk("no_principal"); ok && d.HasChange("no_principal") {
 		hasUpdated = true
 		req.NoPrincipal = expandBoolPtr(getBool(d, "no_principal"))
 	}
