@@ -162,9 +162,7 @@ func resourceScalewayIamPolicyRead(ctx context.Context, d *schema.ResourceData, 
 		_ = d.Set("application_id", flattenStringPtr(pol.ApplicationID))
 	}
 
-	if _, ok := d.GetOk("no_principal"); ok {
-		_ = d.Set("no_principal", flattenBoolPtr(pol.NoPrincipal))
-	}
+	_ = d.Set("no_principal", flattenBoolPtr(pol.NoPrincipal))
 
 	listRules, err := api.ListRules(&iam.ListRulesRequest{
 		PolicyID: &pol.ID,
