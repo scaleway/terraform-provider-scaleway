@@ -16,14 +16,13 @@ Gets information about an existing IAM application.
 
 ```hcl
 # Get info by name
-data "scaleway_iam_application" "find_by_id" {
-  name            = "foobar"
-  organization_id = "11111111-1111-1111-1111-111111111111"
+data "scaleway_iam_application" "find_by_id" { 
+    name            = "foobar"
+    organization_id = "11111111-1111-1111-1111-111111111111"
 }
 # Get info by application ID
 data "scaleway_iam_application" "find_by_name" {
-  application_id    = "11111111-1111-1111-1111-111111111111"
-  organization_id = "11111111-1111-1111-1111-111111111111"
+    application_id    = "11111111-1111-1111-1111-111111111111"
 }
 ```
 
@@ -35,5 +34,4 @@ data "scaleway_iam_application" "find_by_name" {
 - `application_id` - (Optional) The ID of the IAM application.
   Only one of the `name` and `application_id` should be specified.
 
-- `organization_id` - (Required) The organization ID the IAM group is associated with.
-  For now, it is necessary to explicitly provide the `organization_id` in the datasource.
+- `organization_id` - (Optional) The organization ID the IAM group is associated with.
