@@ -82,8 +82,8 @@ Updates to this field will recreate a new resource.
   associated with.
 - `tags` - (Optional) A list of tags to apply to the snapshot.
 - `import` - (Optional) Import a snapshot from a qcow2 file located in a bucket
-  - `bucket` - Bucket name containing [qcow2](https://en.wikipedia.org/wiki/Qcow) to import
-  - `key` - Key of the object to import
+    - `bucket` - Bucket name containing [qcow2](https://en.wikipedia.org/wiki/Qcow) to import
+    - `key` - Key of the object to import
 
 -> **Note:** The type `unified` could be instantiated on both `l_ssd` and `b_ssd` volumes.
 
