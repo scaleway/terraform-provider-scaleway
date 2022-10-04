@@ -124,7 +124,7 @@ func resourceScalewayInstanceSnapshotCreate(ctx context.Context, d *schema.Resou
 	}
 
 	if volumeID, volumeIDExist := d.GetOk("volume_id"); volumeIDExist {
-		req.VolumeID = expandZonedID(volumeID).ID
+		req.VolumeID = scw.StringPtr(expandZonedID(volumeID).ID)
 	}
 
 	if _, isImported := d.GetOk("import"); isImported {
