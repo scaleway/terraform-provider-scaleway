@@ -43,7 +43,7 @@ The following arguments are supported:
     - `organization_id` - ID of organization scoped to the rule.
     - `project_ids` - List of project IDs scoped to the rule.
 
-  ~> **Important** Only one of `organization_id` and `project_ids`  may be set.
+  ~> **Important** One of `organization_id` or `project_ids`  must be set per rule.
 
     - `permission_set_names` - Names of permission sets bound to the rule.
 
