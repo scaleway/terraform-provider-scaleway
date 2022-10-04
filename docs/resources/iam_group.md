@@ -10,6 +10,7 @@ Manages Scaleway IAM Groups.
 |-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 
 Creates and manages Scaleway IAM Groups.
+For more information, see [the documentation](https://developers.scaleway.com/en/products/iam/api/v1alpha1/#groups-f592eb).
 
 ## Examples
 

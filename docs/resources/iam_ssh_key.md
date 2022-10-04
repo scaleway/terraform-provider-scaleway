@@ -1,7 +1,7 @@
 ---
 page_title: "Scaleway: scaleway_iam_ssh_key"
 description: |-
-Get information on a Scaleway IAM SSH Key.
+Manages Scaleway IAM SSH Keys.
 ---
 
 # scaleway_iam_ssh_key
@@ -9,26 +9,24 @@ Get information on a Scaleway IAM SSH Key.
 | WARNING: This resource is in beta version. If your are in the beta group, please set the variable `SCW_ENABLE_BETA=true` in your `env` in order to use this resource. |
 |-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 
-Use this data source to get SSH key information based on its ID or name.
+Creates and manages Scaleway IAM SSH Keys.
+For more information, see [the documentation](https://developers.scaleway.com/en/products/iam/api/v1alpha1/#ssh-keys-d8ccd4).
 
 ## Example Usage
 
 ```hcl
-# Get info by SSH key name
-data "scaleway_iam_ssh_key" "my_key" {
-  name  = "my-key-name"
-}
-
-# Get info by SSH key id
-data "scaleway_iam_ssh_key" "my_key" {
-  ssh_key_id = "11111111-1111-1111-1111-111111111111"
+resource "scaleway_iam_ssh_key" "main" {
+    name       = "main"
+    public_key = "<YOUR-PUBLIC-SSH-KEY>"
 }
 ```
 
 ## Argument Reference
 
-- `name` - The SSH key name. Only one of `name` and `ssh_key_id` should be specified.
-- `ssh_key_id` - The SSH key id. Only one of `name` and `ssh_key_id` should be specified.
+The following arguments are supported:
+
+- `name` - (Required) The name of the SSH key.
+- `public_key` - (Required) The public SSH key to be added.
 - `project_id` - (Defaults to [provider](../index.md#project_id) `project_id`) The ID of the project the SSH key is associated with.
 
 ## Attributes Reference
@@ -41,3 +39,11 @@ In addition to all above arguments, the following attributes are exported:
 - `created_at` - The date and time of the creation of the SSH key.
 - `updated_at` - The date and time of the last update of the SSH key.
 - `disabled` - The SSH key status.
+
+## Import
+
+SSH keys can be imported using the `id`, e.g.
+
+```bash
+$ terraform import scaleway_iam_ssh_key.main 11111111-1111-1111-1111-111111111111
+```
