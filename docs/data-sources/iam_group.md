@@ -16,14 +16,13 @@ Gets information about an existing IAM group. For more information, please check
 
 ```hcl
 # Get info by name
-data "scaleway_iam_group" "find_by_id" {
+data "scaleway_iam_group" "find_by_id" { 
   name            = "foobar"
   organization_id = "11111111-1111-1111-1111-111111111111"
 }
 # Get info by group ID
 data "scaleway_iam_group" "find_by_name" {
   group_id  = "11111111-1111-1111-1111-111111111111"
-  organization_id = "11111111-1111-1111-1111-111111111111"
 }
 ```
 
@@ -35,5 +34,8 @@ data "scaleway_iam_group" "find_by_name" {
 - `group_id` - (Optional) The ID of the IAM group.
   Only one of the `name` and `group_id` should be specified.
 
-- `organization_id` - (Required) The organization ID the IAM group is associated with.
-  For now, it is necessary to explicitly provide the `organization_id` in the datasource.
+- `organization_id` - (Optional) The organization ID the IAM group is associated with.
+
+## Attribute Reference
+
+Exported attributes are the ones from `iam_group` [resource](../resources/iam_group)
