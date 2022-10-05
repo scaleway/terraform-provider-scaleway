@@ -44,4 +44,4 @@ In addition to all above arguments, the following attributes are exported:
 - `last_login_at` - The last login date of the IAM user
 - `type` - The type of the IAM user. Possible values are unknown_type, guest and owner. The default value is unknown_type.
 - `two_factor_enabled` - The 2FA status of the IAM user
-- `status` - The invitation status of the IAM user. Possible values are unknown_status, invitation_pending and activated. The default value is unknown_status.
+- `status` - The invitation status of the IAM user. Possible values are unknown_status, invitation_pending and activated.
