@@ -58,9 +58,9 @@ resource "scaleway_iam_group" "with_users" {
 
 - `description` - (Optional) The description of the IAM group.
 
-- `application_ids` - (Required) The list of IDs of the applications attached to the group.
+- `application_ids` - (Optional) The list of IDs of the applications attached to the group.
 
-- `user_ids` - (Required) The list of IDs of the users attached to the group.
+- `user_ids` - (Optional) The list of IDs of the users attached to the group.
 
 -> **Note:** Keep in mind that updating one of the fields `application_ids` or `user_ids` will have consequences on the
 other so be sure to always specify the desired state of these IDs at every change, otherwise some could get overwritten.
