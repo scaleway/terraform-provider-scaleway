@@ -71,9 +71,6 @@ resource "scaleway_iam_group" "with_users" {
 
 - `user_ids` - (Optional) The list of IDs of the users attached to the group.
 
--> **Note:** Keep in mind that updating one of the fields `application_ids` or `user_ids` will have consequences on the
-other so be sure to always specify the desired state of these IDs at every change, otherwise some could get overwritten.
-
 ## Import
 
 IAM groups can be imported using the `{zone}/{id}`, e.g.
