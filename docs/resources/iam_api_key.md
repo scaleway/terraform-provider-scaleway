@@ -33,7 +33,7 @@ The following arguments are supported:
 - `user_id` - (Optional) ID of the user attached to the api key.
   Only one of the `application_id` and `user_id` should be specified.
 - `expires_at` - (Optional) The date and time of the expiration of the iam api key. Please note that in case of change, the resource will be recreated.
-- `default_project_id` - (Optional)The project ID that is used as a default value for all resources
+- `default_project_id` - (Optional) The default project ID to use with object storage.
 
 ## Attributes Reference
 
