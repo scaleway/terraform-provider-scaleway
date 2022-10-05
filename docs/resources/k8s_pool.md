@@ -102,6 +102,44 @@ In addition to all above arguments, the following attributes are exported:
 - `version` - The version of the pool.
 - `current_size` - The size of the pool at the time the terraform state was updated.
 
+## Zone
+
+The option `zone` indicate where you the resource of your pool should be created, and it could be different from `region`
+
+Please note that a pool belongs to only one cluster, in the same region.`region`.
+
+## Placement Group
+
+If you are working with cluster type `multicloud` please set the `zone` where your placement group is e.g:
+
+```hcl
+resource "scaleway_instance_placement_group" "placement_group" {
+  name        = "pool-placement-group"
+  policy_type = "max_availability"
+  policy_mode = "optional"
+  zone = "nl-ams-1"
+}
+
+resource "scaleway_k8s_pool" "pool" {
+    name = "placement_group"
+	cluster_id = scaleway_k8s_cluster.cluster.id
+	node_type = "gp1_xs"
+	placement_group_id = scaleway_instance_placement_group.placement_group.id
+	size = 1
+	region = "fr-par"
+	zone = "nl-ams-1"
+}
+
+resource "scaleway_k8s_cluster" "cluster" {
+    name = "placement_group"
+	cni = "kilo"
+	version = "%s"
+	tags = [ "terraform-test", "scaleway_k8s_cluster", "placement_group" ]
+	region = "fr-par"
+	type = "multicloud"
+}
+```
+
 ## Import
 
 Kubernetes pools can be imported using the `{region}/{id}`, e.g.

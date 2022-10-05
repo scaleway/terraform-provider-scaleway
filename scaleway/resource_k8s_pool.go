@@ -244,8 +244,6 @@ func resourceScalewayK8SPoolCreate(ctx context.Context, d *schema.ResourceData, 
 
 	if v, ok := d.GetOk("zone"); ok {
 		req.Zone = scw.Zone(v.(string))
-		req.Region, _ = req.Zone.Region()
-		region = req.Region
 	}
 
 	if placementGroupID, ok := d.GetOk("placement_group_id"); ok {
@@ -342,13 +340,6 @@ func resourceScalewayK8SPoolRead(ctx context.Context, d *schema.ResourceData, me
 		PoolID: poolID,
 	}
 
-	var zone scw.Zone
-
-	if v, ok := d.GetOk("zone"); ok {
-		zone = scw.Zone(v.(string))
-		req.Region, _ = zone.Region()
-		region = req.Region
-	}
 	////
 	// Read Pool
 	////
@@ -407,12 +398,6 @@ func resourceScalewayK8SPoolUpdate(ctx context.Context, d *schema.ResourceData, 
 	updateRequest := &k8s.UpdatePoolRequest{
 		Region: region,
 		PoolID: poolID,
-	}
-
-	if v, ok := d.GetOk("zone"); ok {
-		zone := scw.Zone(v.(string))
-		updateRequest.Region, _ = zone.Region()
-		region = updateRequest.Region
 	}
 
 	if d.HasChange("autoscaling") {
@@ -485,10 +470,6 @@ func resourceScalewayK8SPoolDelete(ctx context.Context, d *schema.ResourceData, 
 		PoolID: poolID,
 	}
 
-	if v, ok := d.GetOk("zone"); ok {
-		zone := scw.Zone(v.(string))
-		req.Region, _ = zone.Region()
-	}
 	_, err = k8sAPI.DeletePool(req, scw.WithContext(ctx))
 	if err != nil {
 		if !is404Error(err) {
