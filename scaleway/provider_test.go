@@ -5,6 +5,7 @@ import (
 	"flag"
 	"fmt"
 	"net/http"
+	"net/url"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -24,6 +25,11 @@ import (
 
 // UpdateCassettes will update all cassettes of a given test
 var UpdateCassettes = flag.Bool("cassettes", os.Getenv("TF_UPDATE_CASSETTES") == "true", "Record Cassettes")
+
+// QueryMatcherIgnore contains the list of query value that should be ignored when matching requests with cassettes
+var QueryMatcherIgnore = []string{
+	"organization_id",
+}
 
 func testAccPreCheck(_ *testing.T) {}
 
@@ -46,6 +52,25 @@ func getTestFilePath(t *testing.T, suffix string) string {
 	return filepath.Join(".", "testdata", fileName)
 }
 
+// cassetteMatcher is a custom matcher that check equivalence of a played request against a recorded one
+// It compares method, path and query but will remove unwanted values from query
+func cassetteMatcher(actual *http.Request, expected cassette.Request) bool {
+	expectedURL, _ := url.Parse(expected.URL)
+	actualURL := actual.URL
+	actualURLValues := actualURL.Query()
+	expectedURLValues := expectedURL.Query()
+	for _, query := range QueryMatcherIgnore {
+		actualURLValues.Del(query)
+		expectedURLValues.Del(query)
+	}
+	actualURL.RawQuery = actualURLValues.Encode()
+	expectedURL.RawQuery = expectedURLValues.Encode()
+
+	return actual.Method == expected.Method &&
+		actual.URL.Path == expectedURL.Path &&
+		actualURL.RawQuery == expectedURL.RawQuery
+}
+
 // getHTTPRecoder creates a new httpClient that records all HTTP requests in a cassette.
 // This cassette is then replayed whenever tests are executed again. This means that once the
 // requests are recorded in the cassette, no more real HTTP requests must be made to run the tests.
@@ -64,6 +89,9 @@ func getHTTPRecoder(t *testing.T, update bool) (client *http.Client, cleanup fun
 	if err != nil {
 		return nil, nil, err
 	}
+
+	// Add custom matcher for requests and cassettes
+	r.SetMatcher(cassetteMatcher)
 
 	// Add a filter which removes Authorization headers from all requests:
 	r.AddFilter(func(i *cassette.Interaction) error {

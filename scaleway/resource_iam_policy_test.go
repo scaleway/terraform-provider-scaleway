@@ -48,8 +48,8 @@ func TestAccScalewayIamPolicy_Basic(t *testing.T) {
 	SkipBetaTest(t)
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
-	orgID, hasOrgID := tt.Meta.scwClient.GetDefaultOrganizationID()
-	if !hasOrgID {
+	orgID, _ := tt.Meta.scwClient.GetDefaultOrganizationID()
+	if !*UpdateCassettes {
 		orgID = testIamPolicyOrganizationIDMock
 	}
 	resource.ParallelTest(t, resource.TestCase{
@@ -112,8 +112,8 @@ func TestAccScalewayIamPolicy_NoUpdate(t *testing.T) {
 	SkipBetaTest(t)
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
-	orgID, hasOrgID := tt.Meta.scwClient.GetDefaultOrganizationID()
-	if !hasOrgID {
+	orgID, _ := tt.Meta.scwClient.GetDefaultOrganizationID()
+	if !*UpdateCassettes {
 		orgID = testIamPolicyOrganizationIDMock
 	}
 	resource.ParallelTest(t, resource.TestCase{
@@ -168,8 +168,8 @@ func TestAccScalewayIamPolicy_ChangePermissions(t *testing.T) {
 	SkipBetaTest(t)
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
-	orgID, hasOrgID := tt.Meta.scwClient.GetDefaultOrganizationID()
-	if !hasOrgID {
+	orgID, _ := tt.Meta.scwClient.GetDefaultOrganizationID()
+	if !*UpdateCassettes {
 		orgID = testIamPolicyOrganizationIDMock
 	}
 	resource.ParallelTest(t, resource.TestCase{
@@ -251,8 +251,8 @@ func TestAccScalewayIamPolicy_ProjectID(t *testing.T) {
 	SkipBetaTest(t)
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
-	orgID, hasOrgID := tt.Meta.scwClient.GetDefaultOrganizationID()
-	if !hasOrgID {
+	orgID, _ := tt.Meta.scwClient.GetDefaultOrganizationID()
+	if !*UpdateCassettes {
 		orgID = testIamPolicyOrganizationIDMock
 	}
 	resource.ParallelTest(t, resource.TestCase{
@@ -311,8 +311,8 @@ func TestAccScalewayIamPolicy_ChangeRulePrincipal(t *testing.T) {
 	SkipBetaTest(t)
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
-	orgID, hasOrgID := tt.Meta.scwClient.GetDefaultOrganizationID()
-	if !hasOrgID {
+	orgID, _ := tt.Meta.scwClient.GetDefaultOrganizationID()
+	if !*UpdateCassettes {
 		orgID = testIamPolicyOrganizationIDMock
 	}
 	resource.ParallelTest(t, resource.TestCase{
