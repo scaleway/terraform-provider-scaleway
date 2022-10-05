@@ -38,10 +38,3 @@ data "scaleway_iam_user" "by_email" {
 In addition to all above arguments, the following attributes are exported:
 
 - `id` - The ID of the IAM user.
-- `created_at` - The date and time of the creation of the IAM user.
-- `updated_at` - The date and time of the last update of the IAM user.
-- `deletable` - The deletion status of the IAM user. Owner user cannot be deleted
-- `last_login_at` - The last login date of the IAM user
-- `type` - The type of the IAM user. Possible values are unknown_type, guest and owner. The default value is unknown_type.
-- `two_factor_enabled` - The 2FA status of the IAM user
-- `status` - The invitation status of the IAM user. Possible values are unknown_status, invitation_pending and activated.
