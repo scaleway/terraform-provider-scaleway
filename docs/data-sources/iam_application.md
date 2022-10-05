@@ -35,3 +35,7 @@ data "scaleway_iam_application" "find_by_name" {
   Only one of the `name` and `application_id` should be specified.
 
 - `organization_id` - (Optional) The organization ID the IAM group is associated with.
+
+## Attribute Reference
+
+Exported attributes are the ones from `iam_application` [resource](../resources/iam_application)
