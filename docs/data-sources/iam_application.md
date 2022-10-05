@@ -38,4 +38,4 @@ data "scaleway_iam_application" "find_by_name" {
 
 ## Attribute Reference
 
-Exported attributes are the ones from `iam_application` [resource](../resources/iam_application)
+Exported attributes are the ones from `iam_application` [resource](../resources/iam_application.md)

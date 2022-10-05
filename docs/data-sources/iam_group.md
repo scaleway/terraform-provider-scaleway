@@ -38,4 +38,4 @@ data "scaleway_iam_group" "find_by_name" {
 
 ## Attribute Reference
 
-Exported attributes are the ones from `iam_group` [resource](../resources/iam_group)
+Exported attributes are the ones from `iam_group` [resource](../resources/iam_group.md)
