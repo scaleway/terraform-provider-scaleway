@@ -16,12 +16,11 @@ Gets information about an existing IAM group. For more information, please check
 
 ```hcl
 # Get info by name
-data "scaleway_iam_group" "find_by_id" { 
+data "scaleway_iam_group" "find_by_name" { 
   name            = "foobar"
-  organization_id = "11111111-1111-1111-1111-111111111111"
 }
 # Get info by group ID
-data "scaleway_iam_group" "find_by_name" {
+data "scaleway_iam_group" "find_by_id" {
   group_id  = "11111111-1111-1111-1111-111111111111"
 }
 ```
