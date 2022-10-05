@@ -16,14 +16,12 @@ For more information, see [the documentation](https://developers.scaleway.com/en
 
 ```hcl
 # Get info by user id
-data "scaleway_iam_user" "by_id" {
+data "scaleway_iam_user" "find_by_id" {
   user_id = "11111111-1111-1111-1111-111111111111"
-  organization_id = "11111111-1111-1111-1111-111111111111"
 }
 # Get info by email address
-data "scaleway_iam_user" "by_email" {
+data "scaleway_iam_user" "find_by_email" {
   email = "foo@bar.com"
-  organization_id = "11111111-1111-1111-1111-111111111111"
 }
 ```
 
