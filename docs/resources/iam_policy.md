@@ -14,13 +14,17 @@ Creates and manages Scaleway IAM Policies. For more information, see [the docume
 ## Example Usage
 
 ```hcl
-resource "scaleway_iam_policy" "main" {
+resource scaleway_iam_application "app" {
+  name = "iam_tf_app"
+}
+
+resource scaleway_iam_policy "object_read_only" {
   name = "my policy"
-  description = "a description"
-  no_principal = true
+  description = "gives app readonly access to object storage in project"
+  application_id = scaleway_iam_application.app.id
   rule {
     project_ids = ["xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"]
-    permission_set_names = ["AllProductsFullAccess"]
+    permission_set_names = ["ObjectStorageReadOnly"]
   }
 }
 ```
