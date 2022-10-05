@@ -31,16 +31,6 @@ func resourceScalewayIamGroup() *schema.Resource {
 				Optional:    true,
 				Description: "The description of the iam group",
 			},
-			"created_at": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The date and time of the creation of the group",
-			},
-			"updated_at": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The date and time of the last update of the group",
-			},
 			"user_ids": {
 				Type:        schema.TypeSet,
 				Description: "List of IDs of the users attached to the group",
@@ -109,8 +99,6 @@ func resourceScalewayIamGroupRead(ctx context.Context, d *schema.ResourceData, m
 
 	_ = d.Set("name", group.Name)
 	_ = d.Set("description", group.Description)
-	_ = d.Set("created_at", flattenTime(group.CreatedAt))
-	_ = d.Set("updated_at", flattenTime(group.UpdatedAt))
 	_ = d.Set("organization_id", group.OrganizationID)
 	_ = d.Set("user_ids", group.UserIDs)
 	_ = d.Set("application_ids", group.ApplicationIDs)

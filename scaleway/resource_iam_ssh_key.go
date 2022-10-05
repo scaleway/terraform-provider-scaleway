@@ -42,16 +42,6 @@ func resourceScalewayIamSSKKey() *schema.Resource {
 				Computed:    true,
 				Description: "The fingerprint of the iam SSH key",
 			},
-			"created_at": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The date and time of the creation of the iam SSH Key",
-			},
-			"updated_at": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The date and time of the last update of the iam SSH Key",
-			},
 			"organization_id": organizationIDSchema(),
 			"project_id":      projectIDSchema(),
 			"disabled": {
@@ -108,8 +98,6 @@ func resourceScalewayIamSSHKeyRead(ctx context.Context, d *schema.ResourceData, 
 	_ = d.Set("name", res.Name)
 	_ = d.Set("public_key", res.PublicKey)
 	_ = d.Set("fingerprint", res.Fingerprint)
-	_ = d.Set("created_at", flattenTime(res.CreatedAt))
-	_ = d.Set("updated_at", flattenTime(res.UpdatedAt))
 	_ = d.Set("organization_id", res.OrganizationID)
 	_ = d.Set("project_id", res.ProjectID)
 	_ = d.Set("disabled", res.Disabled)

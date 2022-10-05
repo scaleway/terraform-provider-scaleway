@@ -32,16 +32,6 @@ func resourceScalewayIamPolicy() *schema.Resource {
 				Optional:    true,
 				Description: "The description of the iam policy",
 			},
-			"created_at": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The date and time of the creation of the policy",
-			},
-			"updated_at": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The date and time of the last update of the policy",
-			},
 			"editable": {
 				Type:        schema.TypeBool,
 				Computed:    true,
@@ -147,8 +137,6 @@ func resourceScalewayIamPolicyRead(ctx context.Context, d *schema.ResourceData, 
 	}
 	_ = d.Set("name", pol.Name)
 	_ = d.Set("description", pol.Description)
-	_ = d.Set("created_at", flattenTime(pol.CreatedAt))
-	_ = d.Set("updated_at", flattenTime(pol.UpdatedAt))
 	_ = d.Set("organization_id", pol.OrganizationID)
 	_ = d.Set("editable", pol.Editable)
 

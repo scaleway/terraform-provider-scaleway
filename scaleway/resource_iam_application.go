@@ -31,16 +31,6 @@ func resourceScalewayIamApplication() *schema.Resource {
 				Optional:    true,
 				Description: "The description of the iam application",
 			},
-			"created_at": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The date and time of the creation of the application",
-			},
-			"updated_at": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The date and time of the last update of the application",
-			},
 			"editable": {
 				Type:        schema.TypeBool,
 				Computed:    true,
@@ -80,8 +70,6 @@ func resourceScalewayIamApplicationRead(ctx context.Context, d *schema.ResourceD
 	}
 	_ = d.Set("name", app.Name)
 	_ = d.Set("description", app.Description)
-	_ = d.Set("created_at", flattenTime(app.CreatedAt))
-	_ = d.Set("updated_at", flattenTime(app.UpdatedAt))
 	_ = d.Set("organization_id", app.OrganizationID)
 	_ = d.Set("editable", app.Editable)
 

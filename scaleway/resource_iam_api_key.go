@@ -25,16 +25,6 @@ func resourceScalewayIamAPIKey() *schema.Resource {
 				Optional:    true,
 				Description: "The description of the iam api key",
 			},
-			"created_at": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The date and time of the creation of the iam api key",
-			},
-			"updated_at": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The date and time of the last update of the iam api key",
-			},
 			"expires_at": {
 				Type:             schema.TypeString,
 				Optional:         true,
@@ -115,8 +105,6 @@ func resourceScalewayIamAPIKeyRead(ctx context.Context, d *schema.ResourceData, 
 		return diag.FromErr(err)
 	}
 	_ = d.Set("description", res.Description)
-	_ = d.Set("created_at", flattenTime(res.CreatedAt))
-	_ = d.Set("updated_at", flattenTime(res.UpdatedAt))
 	_ = d.Set("expires_at", flattenTime(res.ExpiresAt))
 	_ = d.Set("access_key", res.AccessKey)
 
