@@ -42,13 +42,22 @@ resource "scaleway_iam_group" "with_app" {
 ### With users
 
 ```hcl
+locals {
+  users = toset([
+    "user1@mail.com",
+    "user2@mail.com"
+  ])
+}
+
+data "scaleway_iam_user" "users" {
+  for_each = local.users
+  email = each.value
+}
+
 resource "scaleway_iam_group" "with_users" {
   name = "iam_group_with_app"
   application_ids = []
-  user_ids = [
-    "11111111-1111-1111-1111-111111111111",
-    "22222222-2222-2222-2222-222222222222",
-  ]
+  user_ids = [for user in data.scaleway_iam_user.users : user.id]
 }
 ```
 
