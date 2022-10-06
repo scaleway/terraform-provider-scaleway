@@ -430,11 +430,11 @@ resource "scaleway_instance_placement_group" "placement_group" {
 }
 
 resource "scaleway_k8s_pool" "placement_group" {
-  name				 = "placement_group"
-  cluster_id		 = scaleway_k8s_cluster.placement_group.id
-  node_type			 = "gp1_xs"
-  placement_group_id = scaleway_instance_placement_group.placement_group.id
-  size				 = 1
+    name               = "placement_group"
+    cluster_id         = scaleway_k8s_cluster.placement_group.id
+    node_type          = "gp1_xs"
+    placement_group_id = scaleway_instance_placement_group.placement_group.id
+    size               = 1
 }
 
 resource "scaleway_k8s_cluster" "placement_group" {
@@ -451,17 +451,17 @@ resource "scaleway_instance_placement_group" "placement_group" {
   name        = "pool-placement-group"
   policy_type = "max_availability"
   policy_mode = "optional"
-  zone		  = "nl-ams-2"
+  zone        = "nl-ams-2"
 }
 
 resource "scaleway_k8s_pool" "pool" {
-  name				 = "placement_group"
-  cluster_id		 = scaleway_k8s_cluster.cluster.id
-  node_type			 = "gp1_xs"
+  name               = "placement_group"
+  cluster_id         = scaleway_k8s_cluster.cluster.id
+  node_type          = "gp1_xs"
   placement_group_id = scaleway_instance_placement_group.placement_group.id
-  size				 = 1
-  region			 = scaleway_k8s_cluster.cluster.region
-  zone				 = scaleway_instance_placement_group.placement_group.zone
+  size               = 1
+  region             = scaleway_k8s_cluster.cluster.region
+  zone               = scaleway_instance_placement_group.placement_group.zone
 }
 
 resource "scaleway_k8s_cluster" "cluster" {
@@ -479,17 +479,17 @@ resource "scaleway_instance_placement_group" "placement_group" {
   name        = "pool-placement-group"
   policy_type = "max_availability"
   policy_mode = "optional"
-  zone		  = "nl-ams-1"
+  zone        = "nl-ams-1"
 }
 
 resource "scaleway_k8s_pool" "pool" {
-  name 				 = "placement_group"
-  cluster_id 		 = scaleway_k8s_cluster.cluster.id
-  node_type 		 = "gp1_xs"
+  name               = "placement_group"
+  cluster_id         = scaleway_k8s_cluster.cluster.id
+  node_type          = "gp1_xs"
   placement_group_id = scaleway_instance_placement_group.placement_group.id
-  size				 = 1
-  region			 = scaleway_k8s_cluster.cluster.region
-  zone				 = scaleway_instance_placement_group.placement_group.zone
+  size               = 1
+  region             = scaleway_k8s_cluster.cluster.region
+  zone               = scaleway_instance_placement_group.placement_group.zone
 }
 
 resource "scaleway_k8s_cluster" "cluster" {
