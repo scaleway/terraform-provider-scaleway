@@ -327,19 +327,24 @@ func allZones() []string {
 	return allZones
 }
 
-// regionSchema returns a standard schema for a zone
-func regionSchema() *schema.Schema {
+func allRegions() []string {
 	var allRegions []string
 	for _, z := range scw.AllRegions {
 		allRegions = append(allRegions, z.String())
 	}
+
+	return allRegions
+}
+
+// regionSchema returns a standard schema for a zone
+func regionSchema() *schema.Schema {
 	return &schema.Schema{
 		Type:             schema.TypeString,
 		Description:      "The region you want to attach the resource to",
 		Optional:         true,
 		ForceNew:         true,
 		Computed:         true,
-		ValidateDiagFunc: validateStringInSliceWithWarning(allRegions, "region"),
+		ValidateDiagFunc: validateStringInSliceWithWarning(allRegions(), "region"),
 	}
 }
 
