@@ -126,7 +126,7 @@ resource "scaleway_k8s_pool" "pool" {
 	node_type = "gp1_xs"
 	placement_group_id = scaleway_instance_placement_group.placement_group.id
 	size = 1
-	region = "fr-par"
+	region = scaleway_k8s_cluster.cluster.region
 	zone = "nl-ams-1"
 }
 
