@@ -44,6 +44,7 @@ func addBetaResources(provider *schema.Provider) {
 		"scaleway_iam_application": dataSourceScalewayIamApplication(),
 		"scaleway_iam_group":       dataSourceScalewayIamGroup(),
 		"scaleway_iam_user":        dataSourceScalewayIamUser(),
+		"scaleway_account_project": dataSourceScalewayAccountProject(),
 	}
 	for resourceName, resource := range betaResources {
 		provider.ResourcesMap[resourceName] = resource
