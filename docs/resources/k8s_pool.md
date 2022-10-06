@@ -113,30 +113,30 @@ Please note that a pool belongs to only one cluster, in the same region.`region`
 If you are working with cluster type `multicloud` please set the `zone` where your placement group is e.g:
 
 ```hcl
-resource "scaleway_instance_placement_group" "placement_group" {
+resource "scaleway_instance_placement_group" "placement_group" { 
   name        = "pool-placement-group"
   policy_type = "max_availability"
   policy_mode = "optional"
-  zone = "nl-ams-1"
+  zone        = "nl-ams-1"
 }
 
 resource "scaleway_k8s_pool" "pool" {
-    name = "placement_group"
-	cluster_id = scaleway_k8s_cluster.cluster.id
-	node_type = "gp1_xs"
-	placement_group_id = scaleway_instance_placement_group.placement_group.id
-	size = 1
-	region = scaleway_k8s_cluster.cluster.region
-	zone = "nl-ams-1"
+  name               = "placement_group"
+  cluster_id         = scaleway_k8s_cluster.cluster.id
+  node_type          = "gp1_xs"
+  placement_group_id = scaleway_instance_placement_group.placement_group.id
+  size               = 1
+  region             = scaleway_k8s_cluster.cluster.region
+  zone               = scaleway_instance_placement_group.placement_group.zone
 }
 
 resource "scaleway_k8s_cluster" "cluster" {
-    name = "placement_group"
-	cni = "kilo"
-	version = "%s"
-	tags = [ "terraform-test", "scaleway_k8s_cluster", "placement_group" ]
-	region = "fr-par"
-	type = "multicloud"
+  name     = "placement_group"
+  cni      = "kilo"
+  version  = "%s"
+  tags     = [ "terraform-test", "scaleway_k8s_cluster", "placement_group" ]
+  region   = "fr-par"
+  type     = "multicloud"
 }
 ```
 
