@@ -724,7 +724,7 @@ func TestAccScalewayDomainRecord_CNAME(t *testing.T) {
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
 
-	testDNSZone := fmt.Sprintf("test-basic.%s", testDomain)
+	testDNSZone := fmt.Sprintf("test-basic-cname.%s", testDomain)
 	l.Debugf("TestAccScalewayDomainRecord_Basic: test dns zone: %s", testDNSZone)
 
 	name := "tf"
