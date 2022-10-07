@@ -13,9 +13,19 @@ Creates and manages Scaleway IAM Policies. For more information, see [the docume
 
 ## Example Usage
 
+### Create a policy for an organization's project
+
 ```hcl
+provider scaleway {
+  organization_id = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+}
+
+data scaleway_account_project "default" {
+  name = "default"
+}
+
 resource scaleway_iam_application "app" {
-  name = "iam_tf_app"
+  name = "my app"
 }
 
 resource scaleway_iam_policy "object_read_only" {
@@ -23,10 +33,45 @@ resource scaleway_iam_policy "object_read_only" {
   description = "gives app readonly access to object storage in project"
   application_id = scaleway_iam_application.app.id
   rule {
-    project_ids = ["xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"]
+    project_ids = [data.scaleway_account_project.default.id]
     permission_set_names = ["ObjectStorageReadOnly"]
   }
 }
+```
+
+### Create a permission for multiple users using a group
+```hcl
+locals {
+  users = [
+  "user1@mail.com",
+  "user2@mail.com",
+  ]
+  project_name = "default"
+}
+
+data scaleway_account_project project {
+  name = local.project_name
+}
+
+data "scaleway_iam_user" "users" {
+  for_each = toset(local.users)
+  email = each.value
+}
+
+resource "scaleway_iam_group" "with_users" {
+  name = "developers"
+  user_ids = [for user in data.scaleway_iam_user.users : user.id]
+}
+
+resource scaleway_iam_policy "iam_tf_storage_policy" {
+  name = "developers permissions"
+  group_id = scaleway_iam_group.with_users.id
+  rule {
+    project_ids = [data.scaleway_account_project.project.id]
+    permission_set_names = ["InstancesReadOnly"]
+  }
+}
+
 ```
 
 ## Arguments Reference
