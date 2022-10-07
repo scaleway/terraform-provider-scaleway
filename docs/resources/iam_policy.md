@@ -40,6 +40,7 @@ resource scaleway_iam_policy "object_read_only" {
 ```
 
 ### Create a permission for multiple users using a group
+
 ```hcl
 locals {
   users = [
