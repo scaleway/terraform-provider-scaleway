@@ -641,7 +641,7 @@ func resourceScalewayRdbInstanceUpdate(ctx context.Context, d *schema.ResourceDa
 					&rdb.CreateEndpointRequest{Region: region, InstanceID: ID, EndpointSpec: e},
 					scw.WithContext(ctx))
 				if err != nil {
-					diag.FromErr(err)
+					return diag.FromErr(err)
 				}
 			}
 		}
