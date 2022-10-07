@@ -1,0 +1,46 @@
+---
+layout: "scaleway"
+page_title: "Scaleway: scaleway_account_project"
+description: |-
+Gets information about an existing IAM application.
+---
+
+# scaleway_account_project
+
+| WARNING: This resource is in beta version. If your are in the beta group, please set the variable `SCW_ENABLE_BETA=true` in your `env` in order to use this resource. |
+|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+
+Gets information about an existing Project.
+
+## Example Usage
+
+```hcl
+# Get info by name
+data scaleway_account_project "by_name" {
+  name = "myproject"
+  organization_id = "%s"
+}
+# Get default project
+data scaleway_account_project "by_name" {
+  name = "default"
+}
+# Get info by ID
+data scaleway_account_project "by_id" {
+  project_id = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+}
+```
+
+## Argument Reference
+
+- `name` - (Optional) The name of the Project.
+  Only one of the `name` and `project_id` should be specified.
+
+- `project_id` - (Optional) The ID of the Project.
+  Only one of the `name` and `project_id` should be specified.
+
+- `organization_id` - (Optional) The organization ID the Project is associated with.
+If no default organization_id is set, one must be set explicitly in this datasource
+
+## Attribute Reference
+
+Exported attributes are the ones from `account_project` [resource](../resources/account_project.md)
