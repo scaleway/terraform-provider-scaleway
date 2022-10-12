@@ -27,6 +27,10 @@ func newRetryableTransport(defaultTransport http.RoundTripper) http.RoundTripper
 		}
 		return retryablehttp.DefaultRetryPolicy(ctx, resp, err)
 	}
+	c.ErrorHandler = func(resp *http.Response, err error, numTries int) (*http.Response, error) {
+		// Do not return error as response will be handled by scaleway sdk-go
+		return resp, nil
+	}
 
 	return &retryableTransport{c}
 }
