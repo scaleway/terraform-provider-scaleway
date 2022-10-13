@@ -209,7 +209,7 @@ func TestAccScalewayRdbInstance_InitSettings(t *testing.T) {
 			{
 				Config: `
 					resource scaleway_rdb_instance main {
-						name = "test-rdb"
+						name = "test-rdb-init-settings"
 						node_type = "db-dev-s"
 						disable_backup = true
 						engine = "MySQL-8"
