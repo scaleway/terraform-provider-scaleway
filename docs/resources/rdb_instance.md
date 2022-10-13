@@ -158,7 +158,7 @@ The following arguments are supported:
 
 ~> **Important:** Updates to `init_settings` will recreate the Database Instance.
 
-- `settings` - (Optional) Map of engine settings to be set. Using this option will override default config. Available settings for your engine can be found on scaleway console or fetched using [rdb engine list route](https://developers.scaleway.com/en/products/rdb/api/#get-1eafb7)
+- `settings` - (Optional) Map of engine settings to be set. Using this option will override default config.
 
 - `tags` - (Optional) The tags associated with the Database Instance.
 
