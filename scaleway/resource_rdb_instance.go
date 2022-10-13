@@ -95,8 +95,17 @@ func resourceScalewayRdbInstance() *schema.Resource {
 				Elem: &schema.Schema{
 					Type: schema.TypeString,
 				},
-				Description: "Map of engine settings to be set.",
+				Description: "Map of engine settings to be set on a running instance.",
 				Computed:    true,
+				Optional:    true,
+			},
+			"init_settings": {
+				Type: schema.TypeMap,
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
+				Description: "Map of engine settings to be set at database initialisation.",
+				ForceNew:    true,
 				Optional:    true,
 			},
 			"tags": {
@@ -289,6 +298,10 @@ func resourceScalewayRdbInstanceCreate(ctx context.Context, d *schema.ResourceDa
 		VolumeType:    rdb.VolumeType(d.Get("volume_type").(string)),
 	}
 
+	if initSettings, ok := d.GetOk("init_settings"); ok {
+		createReq.InitSettings = expandInstanceSettings(initSettings)
+	}
+
 	rawTag, tagExist := d.GetOk("tags")
 	if tagExist {
 		createReq.Tags = expandStrings(rawTag)
@@ -427,6 +440,7 @@ func resourceScalewayRdbInstanceRead(ctx context.Context, d *schema.ResourceData
 
 	// set settings
 	_ = d.Set("settings", flattenInstanceSettings(res.Settings))
+	_ = d.Set("init_settings", flattenInstanceSettings(res.InitSettings))
 
 	// set endpoints
 	pnI, pnExist := flattenPrivateNetwork(res.Endpoints)

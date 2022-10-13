@@ -198,6 +198,41 @@ func TestAccScalewayRdbInstance_Settings(t *testing.T) {
 	})
 }
 
+func TestAccScalewayRdbInstance_InitSettings(t *testing.T) {
+	tt := NewTestTools(t)
+	defer tt.Cleanup()
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      testAccCheckScalewayRdbInstanceDestroy(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource scaleway_rdb_instance main {
+						name = "test-rdb"
+						node_type = "db-dev-s"
+						disable_backup = true
+						engine = "MySQL-8"
+						user_name = "my_initial_user"
+						password = "thiZ_is_v&ry_s3cret"
+						init_settings = {
+							"lower_case_table_names" = 1
+						}
+						settings = {
+							"max_connections" = "350"
+						}
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayRdbExists(tt, "scaleway_rdb_instance.main"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "init_settings.lower_case_table_names", "1"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "settings.max_connections", "350"),
+				),
+			},
+		},
+	})
+}
+
 func TestAccScalewayRdbInstance_Capitalize(t *testing.T) {
 	tt := NewTestTools(t)
 	defer tt.Cleanup()

@@ -9,9 +9,7 @@ description: |-
 Creates and manages Scaleway Database Instances.
 For more information, see [the documentation](https://developers.scaleway.com/en/products/rdb/api).
 
-## Examples
-
-### Basic
+### Example Basic
 
 ```hcl
 resource "scaleway_rdb_instance" "main" {
@@ -23,8 +21,30 @@ resource "scaleway_rdb_instance" "main" {
   user_name      = "my_initial_user"
   password       = "thiZ_is_v&ry_s3cret"
 }
+```
 
-# with backup schedule
+### Example with Settings
+
+```hcl
+resource scaleway_rdb_instance main {
+    name = "test-rdb"
+    node_type = "db-dev-s"
+    disable_backup = true
+    engine = "MySQL-8"
+    user_name = "my_initial_user"
+    password = "thiZ_is_v&ry_s3cret"
+    init_settings = {
+        "lower_case_table_names" = 1
+    }
+    settings = {
+        "max_connections" = "350"
+    }
+}
+```
+
+### Example with backup schedule
+
+```hcl
 resource "scaleway_rdb_instance" "main" {
   name          = "test-rdb"
   node_type     = "DB-DEV-S"
@@ -37,8 +57,11 @@ resource "scaleway_rdb_instance" "main" {
   backup_schedule_frequency = 24 # every day
   backup_schedule_retention = 7  # keep it one week
 }
+```
 
-# with private network and dhcp configuration
+### Example with private network and dhcp configuration
+
+```hcl
 resource scaleway_vpc_private_network pn02 {
     name = "my_private_network"
 }
@@ -129,6 +152,10 @@ The following arguments are supported:
 
 - `backup_same_region` - (Optional) Boolean to store logical backups in the same region as the database instance.
 
+- `init_settings` - (Optional) Map of engine settings to be set at database initialisation.
+
+~> **Important:** Updates to `init_settings` will recreate the Database Instance.
+
 - `settings` - (Optional) Map of engine settings to be set. Using this option will override default config. Available settings for your engine can be found on scaleway console or fetched using [rdb engine list route](https://developers.scaleway.com/en/products/rdb/api/#get-1eafb7)
 
 - `tags` - (Optional) The tags associated with the Database Instance.
@@ -136,6 +163,11 @@ The following arguments are supported:
 - `region` - (Defaults to [provider](../index.md#region) `region`) The [region](../guides/regions_and_zones.md#regions) in which the Database Instance should be created.
 
 - `project_id` - (Defaults to [provider](../index.md#project_id) `project_id`) The ID of the project the Database Instance is associated with.
+
+
+## Settings
+
+Please consult the [GoDoc](https://pkg.go.dev/github.com/scaleway/scaleway-sdk-go@v1.0.0-beta.9/api/rdb/v1#EngineVersion) to list all available `settings` and `init_settings` on your `node_type` of your convenient.
 
 ## Private Network
 
