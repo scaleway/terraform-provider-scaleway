@@ -649,6 +649,18 @@ func diffSuppressFuncDuration(k, oldValue, newValue string, d *schema.ResourceDa
 	return d1 == d2
 }
 
+func diffSuppressFuncTimeRFC3339(k, oldValue, newValue string, d *schema.ResourceData) bool {
+	if oldValue == newValue {
+		return true
+	}
+	t1, err1 := time.Parse(time.RFC3339, oldValue)
+	t2, err2 := time.Parse(time.RFC3339, newValue)
+	if err1 != nil || err2 != nil {
+		return false
+	}
+	return t1.Equal(t2)
+}
+
 func diffSuppressFuncIgnoreCase(k, oldValue, newValue string, d *schema.ResourceData) bool {
 	return strings.EqualFold(oldValue, newValue)
 }
