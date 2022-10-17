@@ -13,6 +13,10 @@ import (
 func TestAccScalewayContainerToken_Basic(t *testing.T) {
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
+	expiresAt := time.Now().Add(time.Hour * 24).Format(time.RFC3339)
+	if !*UpdateCassettes {
+		expiresAt = "2022-10-18T11:35:15+02:00"
+	}
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
@@ -37,7 +41,7 @@ func TestAccScalewayContainerToken_Basic(t *testing.T) {
 					resource scaleway_container_token container {
 						container_id = scaleway_container.main.id
 					}
-				`, time.Now().Add(time.Hour*24).Format(time.RFC3339)),
+				`, expiresAt),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayContainerTokenExists(tt, "scaleway_container_token.namespace"),
 					testAccCheckScalewayContainerTokenExists(tt, "scaleway_container_token.container"),
