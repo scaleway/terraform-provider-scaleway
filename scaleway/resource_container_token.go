@@ -45,8 +45,9 @@ func resourceScalewayContainerToken() *schema.Resource {
 				DiffSuppressFunc: diffSuppressFuncTimeRFC3339,
 			},
 			"token": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:      schema.TypeString,
+				Computed:  true,
+				Sensitive: true,
 			},
 
 			"region": regionSchema(),
