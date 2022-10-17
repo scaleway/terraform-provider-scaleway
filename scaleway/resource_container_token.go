@@ -6,6 +6,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	container "github.com/scaleway/scaleway-sdk-go/api/container/v1beta1"
+	"github.com/scaleway/scaleway-sdk-go/scw"
 )
 
 func resourceScalewayContainerToken() *schema.Resource {
@@ -67,7 +68,7 @@ func resourceScalewayContainerTokenCreate(ctx context.Context, d *schema.Resourc
 		NamespaceID: expandStringPtr(expandID(d.Get("namespace_id"))),
 		Description: expandStringPtr(d.Get("description")),
 		ExpiresAt:   expandTimePtr(d.Get("expires_at")),
-	})
+	}, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -85,7 +86,7 @@ func resourceScalewayContainerTokenRead(ctx context.Context, d *schema.ResourceD
 	token, err := api.GetToken(&container.GetTokenRequest{
 		Region:  region,
 		TokenID: ID,
-	})
+	}, scw.WithContext(ctx))
 	if err != nil {
 		if is404Error(err) {
 			d.SetId("")
@@ -112,7 +113,7 @@ func resourceScalewayContainerTokenDelete(ctx context.Context, d *schema.Resourc
 	_, err = api.DeleteToken(&container.DeleteTokenRequest{
 		Region:  region,
 		TokenID: ID,
-	})
+	}, scw.WithContext(ctx))
 	if err != nil && !is404Error(err) {
 		return diag.FromErr(err)
 	}
