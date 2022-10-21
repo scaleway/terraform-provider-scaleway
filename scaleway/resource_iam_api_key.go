@@ -88,7 +88,7 @@ func resourceScalewayIamAPIKeyCreate(ctx context.Context, d *schema.ResourceData
 		ApplicationID:    expandStringPtr(d.Get("application_id")),
 		UserID:           expandStringPtr(d.Get("user_id")),
 		ExpiresAt:        expandTimePtr(d.Get("expires_at")),
-		DefaultProjectID: expandStringPtr(d.Get("project_id")),
+		DefaultProjectID: expandStringPtr(d.Get("default_project_id")),
 		Description:      d.Get("description").(string),
 	}, scw.WithContext(ctx))
 	if err != nil {
