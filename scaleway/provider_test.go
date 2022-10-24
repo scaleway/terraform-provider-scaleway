@@ -2,8 +2,10 @@ package scaleway
 
 import (
 	"context"
+	"encoding/json"
 	"flag"
 	"fmt"
+	"io"
 	"net/http"
 	"net/url"
 	"os"
@@ -31,6 +33,11 @@ var QueryMatcherIgnore = []string{
 	"organization_id",
 }
 
+// BodyMatcherIgnore contains the list of json body keys that should be ignored when matching requests with cassettes
+var BodyMatcherIgnore = []string{
+	"organization_id",
+}
+
 func testAccPreCheck(_ *testing.T) {}
 
 // getTestFilePath returns a valid filename path based on the go test name and suffix. (Take care of non fs friendly char)
@@ -52,6 +59,76 @@ func getTestFilePath(t *testing.T, suffix string) string {
 	return filepath.Join(".", "testdata", fileName)
 }
 
+func mapKeys[K comparable, V any](m map[K]V) []K {
+	keys := make([]K, 0, len(m))
+	for k, _ := range m {
+		keys = append(keys, k)
+	}
+	return keys
+}
+
+func sliceContains[K comparable](slice []K, elem K) bool {
+	for i := range slice {
+		if slice[i] == elem {
+			return true
+		}
+	}
+	return false
+}
+
+// cassetteMatcher is a custom matcher that will juste check equivalence of request bodies
+func cassetteBodyMatcher(actual *http.Request, expected cassette.Request) bool {
+	if actual.Body == nil || actual.ContentLength == 0 {
+		if expected.Body == "" {
+			return true // Body match if both are empty
+		}
+		return false
+	}
+	actualBody, err := actual.GetBody()
+	if err != nil {
+		panic(fmt.Errorf("cassette body matcher: failed to copy actual body: %w", err))
+	}
+	actualRawBody, err := io.ReadAll(actualBody)
+	if err != nil {
+		panic(fmt.Errorf("cassette body matcher: failed to read actual body: %w", err))
+	}
+
+	if string(actualRawBody) == expected.Body {
+		// Try to match raw bodies if they are not JSON (ex: cloud-init config)
+		return true
+	}
+	actualJson := make(map[string]interface{})
+	expectedJson := make(map[string]interface{})
+
+	err = json.Unmarshal(actualRawBody, &actualJson)
+	if err != nil {
+		panic(fmt.Errorf("cassette body matcher: failed to parse json body: %w", err))
+	}
+
+	err = json.Unmarshal([]byte(expected.Body), &expectedJson)
+	if err != nil {
+		panic(fmt.Errorf("cassette body matcher: failed to parse cassette json body: %w", err))
+	}
+
+	for _, key := range BodyMatcherIgnore {
+		delete(actualJson, key)
+		delete(expectedJson, key)
+	}
+	actualKeys := mapKeys(actualJson)
+	expectedKeys := mapKeys(expectedJson)
+
+	if len(actualKeys) != len(expectedKeys) {
+		return false
+	}
+	for _, key := range expectedKeys {
+		if !sliceContains(actualKeys, key) {
+			return false
+		}
+	}
+
+	return true
+}
+
 // cassetteMatcher is a custom matcher that check equivalence of a played request against a recorded one
 // It compares method, path and query but will remove unwanted values from query
 func cassetteMatcher(actual *http.Request, expected cassette.Request) bool {
@@ -68,7 +145,8 @@ func cassetteMatcher(actual *http.Request, expected cassette.Request) bool {
 
 	return actual.Method == expected.Method &&
 		actual.URL.Path == expectedURL.Path &&
-		actualURL.RawQuery == expectedURL.RawQuery
+		actualURL.RawQuery == expectedURL.RawQuery &&
+		cassetteBodyMatcher(actual, expected)
 }
 
 // getHTTPRecoder creates a new httpClient that records all HTTP requests in a cassette.
@@ -102,7 +180,7 @@ func getHTTPRecoder(t *testing.T, update bool) (client *http.Client, cleanup fun
 		return nil
 	})
 
-	return &http.Client{Transport: newRetryableTransport(r)}, func() {
+	return &http.Client{Transport: r}, func() {
 		assert.NoError(t, r.Stop()) // Make sure recorder is stopped once done with it
 	}, nil
 }
