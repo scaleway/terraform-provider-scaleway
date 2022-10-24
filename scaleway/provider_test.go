@@ -36,6 +36,7 @@ var QueryMatcherIgnore = []string{
 // BodyMatcherIgnore contains the list of json body keys that should be ignored when matching requests with cassettes
 var BodyMatcherIgnore = []string{
 	"organization_id",
+	"project_id",
 }
 
 func testAccPreCheck(_ *testing.T) {}
@@ -57,23 +58,6 @@ func getTestFilePath(t *testing.T, suffix string) string {
 	fileName = strings.TrimPrefix(fileName, "test-acc-scaleway-")
 
 	return filepath.Join(".", "testdata", fileName)
-}
-
-func mapKeys[K comparable, V any](m map[K]V) []K {
-	keys := make([]K, 0, len(m))
-	for k, _ := range m {
-		keys = append(keys, k)
-	}
-	return keys
-}
-
-func sliceContains[K comparable](slice []K, elem K) bool {
-	for i := range slice {
-		if slice[i] == elem {
-			return true
-		}
-	}
-	return false
 }
 
 // cassetteMatcher is a custom matcher that will juste check equivalence of request bodies
@@ -114,14 +98,29 @@ func cassetteBodyMatcher(actual *http.Request, expected cassette.Request) bool {
 		delete(actualJson, key)
 		delete(expectedJson, key)
 	}
-	actualKeys := mapKeys(actualJson)
-	expectedKeys := mapKeys(expectedJson)
 
-	if len(actualKeys) != len(expectedKeys) {
-		return false
+	// Check for each key in actual requests
+	// Compare its value to cassette content if marshal-able to string
+	for key := range actualJson {
+		expectedValue, exists := expectedJson[key]
+		if !exists {
+			// Actual request may contain a field that does not exist in cassette
+			// New fields can appear in requests with new api features
+			// We do not want to generate new cassettes for each new features
+			continue
+		}
+		switch actualValue := actualJson[key].(type) {
+		case fmt.Stringer:
+			if actualValue.String() != expectedValue.(fmt.Stringer).String() {
+				return false
+			}
+		}
 	}
-	for _, key := range expectedKeys {
-		if !sliceContains(actualKeys, key) {
+	for key := range expectedJson {
+		_, exists := actualJson[key]
+		if !exists {
+			// Fails match if cassettes contains a field not in actual requests
+			// Fields should not disappear from requests unless a sdk breaking change
 			return false
 		}
 	}
