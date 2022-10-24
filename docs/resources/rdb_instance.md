@@ -55,7 +55,7 @@ resource "scaleway_rdb_instance" "main" {
   user_name     = "my_initial_user"
   password      = "thiZ_is_v&ry_s3cret"
 
-  disable_backup            = true
+  disable_backup            = false
   backup_schedule_frequency = 24 # every day
   backup_schedule_retention = 7  # keep it one week
 }
