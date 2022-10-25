@@ -118,9 +118,10 @@ func cassetteBodyMatcher(actual *http.Request, expected cassette.Request) bool {
 	}
 	for key := range expectedJson {
 		_, exists := actualJson[key]
-		if !exists {
+		if !exists && expectedJson[key] != nil {
 			// Fails match if cassettes contains a field not in actual requests
 			// Fields should not disappear from requests unless a sdk breaking change
+			// We ignore if field is nil in cassette as it could be an old deprecated and unused field
 			return false
 		}
 	}
