@@ -65,6 +65,8 @@ func cassetteBodyMatcher(actual *http.Request, expected cassette.Request) bool {
 	if actual.Body == nil || actual.ContentLength == 0 {
 		if expected.Body == "" {
 			return true // Body match if both are empty
+		} else if _, isFile := actual.Body.(*os.File); isFile {
+			return true // Body match if request is sending a file, maybe do more check here
 		}
 		return false
 	}
