@@ -84,44 +84,43 @@ func cassetteBodyMatcher(actual *http.Request, expected cassette.Request) bool {
 		// Try to match raw bodies if they are not JSON (ex: cloud-init config)
 		return true
 	}
-	actualJson := make(map[string]interface{})
-	expectedJson := make(map[string]interface{})
+	actualJSON := make(map[string]interface{})
+	expectedJSON := make(map[string]interface{})
 
-	err = json.Unmarshal(actualRawBody, &actualJson)
+	err = json.Unmarshal(actualRawBody, &actualJSON)
 	if err != nil {
 		panic(fmt.Errorf("cassette body matcher: failed to parse json body: %w", err))
 	}
 
-	err = json.Unmarshal([]byte(expected.Body), &expectedJson)
+	err = json.Unmarshal([]byte(expected.Body), &expectedJSON)
 	if err != nil {
 		panic(fmt.Errorf("cassette body matcher: failed to parse cassette json body: %w", err))
 	}
 
 	for _, key := range BodyMatcherIgnore {
-		delete(actualJson, key)
-		delete(expectedJson, key)
+		delete(actualJSON, key)
+		delete(expectedJSON, key)
 	}
 
 	// Check for each key in actual requests
 	// Compare its value to cassette content if marshal-able to string
-	for key := range actualJson {
-		expectedValue, exists := expectedJson[key]
+	for key := range actualJSON {
+		expectedValue, exists := expectedJSON[key]
 		if !exists {
 			// Actual request may contain a field that does not exist in cassette
 			// New fields can appear in requests with new api features
 			// We do not want to generate new cassettes for each new features
 			continue
 		}
-		switch actualValue := actualJson[key].(type) {
-		case fmt.Stringer:
+		if actualValue, isStringer := actualJSON[key].(fmt.Stringer); isStringer {
 			if actualValue.String() != expectedValue.(fmt.Stringer).String() {
 				return false
 			}
 		}
 	}
-	for key := range expectedJson {
-		_, exists := actualJson[key]
-		if !exists && expectedJson[key] != nil {
+	for key := range expectedJSON {
+		_, exists := actualJSON[key]
+		if !exists && expectedJSON[key] != nil {
 			// Fails match if cassettes contains a field not in actual requests
 			// Fields should not disappear from requests unless a sdk breaking change
 			// We ignore if field is nil in cassette as it could be an old deprecated and unused field
