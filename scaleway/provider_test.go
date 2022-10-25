@@ -37,6 +37,7 @@ var QueryMatcherIgnore = []string{
 var BodyMatcherIgnore = []string{
 	"organization_id",
 	"project_id",
+	"project", // like project_id but should be deprecated
 }
 
 func testAccPreCheck(_ *testing.T) {}
