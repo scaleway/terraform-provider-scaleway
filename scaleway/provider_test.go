@@ -191,7 +191,7 @@ func getHTTPRecoder(t *testing.T, update bool) (client *http.Client, cleanup fun
 		return nil
 	})
 
-	return &http.Client{Transport: r}, func() {
+	return &http.Client{Transport: newRetryableTransport(r)}, func() {
 		assert.NoError(t, r.Stop()) // Make sure recorder is stopped once done with it
 	}, nil
 }
