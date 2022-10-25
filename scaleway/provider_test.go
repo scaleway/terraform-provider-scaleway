@@ -61,7 +61,7 @@ func getTestFilePath(t *testing.T, suffix string) string {
 	return filepath.Join(".", "testdata", fileName)
 }
 
-// compareJSONBodies compare two given map that represent json bodies
+// compareJSONBodies compare two given maps that represent json bodies
 // returns true if both json are equivalent
 func compareJSONBodies(expected, actual map[string]interface{}) bool {
 	// Check for each key in actual requests
