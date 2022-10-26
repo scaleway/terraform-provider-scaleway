@@ -60,6 +60,17 @@ func resourceScalewayContainer() *schema.Resource {
 				},
 				ValidateDiagFunc: validation.MapKeyLenBetween(0, 100),
 			},
+			"secret_environment_variables": {
+				Type:        schema.TypeMap,
+				Optional:    true,
+				Sensitive:   true,
+				Description: "The secret environment variables to be injected into your container at runtime.",
+				Elem: &schema.Schema{
+					Type:         schema.TypeString,
+					ValidateFunc: validation.StringLenBetween(0, 1000),
+				},
+				ValidateDiagFunc: validation.MapKeyLenBetween(0, 100),
+			},
 			"min_scale": {
 				Type:        schema.TypeInt,
 				Computed:    true,
@@ -290,6 +301,10 @@ func resourceScalewayContainerUpdate(ctx context.Context, d *schema.ResourceData
 	if d.HasChanges("environment_variables") {
 		envVariablesRaw := d.Get("environment_variables")
 		req.EnvironmentVariables = expandMapPtrStringString(envVariablesRaw)
+	}
+
+	if d.HasChanges("secret_environment_variables") {
+		req.SecretEnvironmentVariables = expandContainerSecrets(d.Get("secret_environment_variables"))
 	}
 
 	if d.HasChanges("min_scale") {
