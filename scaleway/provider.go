@@ -108,6 +108,7 @@ func Provider(config *ProviderConfig) plugin.ProviderFunc {
 				"scaleway_function":                            resourceScalewayFunction(),
 				"scaleway_function_cron":                       resourceScalewayFunctionCron(),
 				"scaleway_function_namespace":                  resourceScalewayFunctionNamespace(),
+				"scaleway_function_token":                      resourceScalewayFunctionToken(),
 				"scaleway_instance_user_data":                  resourceScalewayInstanceUserData(),
 				"scaleway_instance_image":                      resourceScalewayInstanceImage(),
 				"scaleway_instance_ip":                         resourceScalewayInstanceIP(),
