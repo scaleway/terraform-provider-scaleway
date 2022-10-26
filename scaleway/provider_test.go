@@ -2,8 +2,10 @@ package scaleway
 
 import (
 	"context"
+	"encoding/json"
 	"flag"
 	"fmt"
+	"io"
 	"net/http"
 	"net/url"
 	"os"
@@ -31,6 +33,13 @@ var QueryMatcherIgnore = []string{
 	"organization_id",
 }
 
+// BodyMatcherIgnore contains the list of json body keys that should be ignored when matching requests with cassettes
+var BodyMatcherIgnore = []string{
+	"organization_id",
+	"project_id",
+	"project", // like project_id but should be deprecated
+}
+
 func testAccPreCheck(_ *testing.T) {}
 
 // getTestFilePath returns a valid filename path based on the go test name and suffix. (Take care of non fs friendly char)
@@ -52,6 +61,85 @@ func getTestFilePath(t *testing.T, suffix string) string {
 	return filepath.Join(".", "testdata", fileName)
 }
 
+// compareJSONBodies compare two given maps that represent json bodies
+// returns true if both json are equivalent
+func compareJSONBodies(expected, actual map[string]interface{}) bool {
+	// Check for each key in actual requests
+	// Compare its value to cassette content if marshal-able to string
+	for key := range actual {
+		expectedValue, exists := expected[key]
+		if !exists {
+			// Actual request may contain a field that does not exist in cassette
+			// New fields can appear in requests with new api features
+			// We do not want to generate new cassettes for each new features
+			continue
+		}
+		if actualValue, isStringer := actual[key].(fmt.Stringer); isStringer {
+			if actualValue.String() != expectedValue.(fmt.Stringer).String() {
+				return false
+			}
+		}
+	}
+
+	for key := range expected {
+		_, exists := actual[key]
+		if !exists && expected[key] != nil {
+			// Fails match if cassettes contains a field not in actual requests
+			// Fields should not disappear from requests unless a sdk breaking change
+			// We ignore if field is nil in cassette as it could be an old deprecated and unused field
+			return false
+		}
+	}
+	return true
+}
+
+// cassetteMatcher is a custom matcher that will juste check equivalence of request bodies
+func cassetteBodyMatcher(actual *http.Request, expected cassette.Request) bool {
+	if actual.Body == nil || actual.ContentLength == 0 {
+		if expected.Body == "" {
+			return true // Body match if both are empty
+		} else if _, isFile := actual.Body.(*os.File); isFile {
+			return true // Body match if request is sending a file, maybe do more check here
+		}
+		return false
+	}
+
+	actualBody, err := actual.GetBody()
+	if err != nil {
+		panic(fmt.Errorf("cassette body matcher: failed to copy actual body: %w", err))
+	}
+	actualRawBody, err := io.ReadAll(actualBody)
+	if err != nil {
+		panic(fmt.Errorf("cassette body matcher: failed to read actual body: %w", err))
+	}
+
+	// Try to match raw bodies if they are not JSON (ex: cloud-init config)
+	if string(actualRawBody) == expected.Body {
+		return true
+	}
+
+	actualJSON := make(map[string]interface{})
+	expectedJSON := make(map[string]interface{})
+
+	err = json.Unmarshal(actualRawBody, &actualJSON)
+	if err != nil {
+		panic(fmt.Errorf("cassette body matcher: failed to parse json body: %w", err))
+	}
+
+	err = json.Unmarshal([]byte(expected.Body), &expectedJSON)
+	if err != nil {
+		panic(fmt.Errorf("cassette body matcher: failed to parse cassette json body: %w", err))
+	}
+
+	// Remove keys that should be ignored during compare
+	for _, key := range BodyMatcherIgnore {
+		delete(actualJSON, key)
+		delete(expectedJSON, key)
+	}
+
+	return compareJSONBodies(expectedJSON, actualJSON)
+}
+
 // cassetteMatcher is a custom matcher that check equivalence of a played request against a recorded one
 // It compares method, path and query but will remove unwanted values from query
 func cassetteMatcher(actual *http.Request, expected cassette.Request) bool {
@@ -68,7 +156,8 @@ func cassetteMatcher(actual *http.Request, expected cassette.Request) bool {
 
 	return actual.Method == expected.Method &&
 		actual.URL.Path == expectedURL.Path &&
-		actualURL.RawQuery == expectedURL.RawQuery
+		actualURL.RawQuery == expectedURL.RawQuery &&
+		cassetteBodyMatcher(actual, expected)
 }
 
 // getHTTPRecoder creates a new httpClient that records all HTTP requests in a cassette.
