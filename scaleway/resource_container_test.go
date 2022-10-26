@@ -171,6 +171,85 @@ func TestAccScalewayContainer_Basic(t *testing.T) {
 	})
 }
 
+func TestAccScalewayContainer_Env(t *testing.T) {
+	tt := NewTestTools(t)
+	defer tt.Cleanup()
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      testAccCheckScalewayContainerDestroy(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource scaleway_container_namespace main {
+					}
+
+					resource scaleway_container main {
+						namespace_id = scaleway_container_namespace.main.id
+						environment_variables = {
+							"test" = "test"
+						}
+						secret_environment_variables = {
+							"test_secret" = "test_secret"
+						}
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayContainerExists(tt, "scaleway_container.main"),
+					testCheckResourceAttrUUID("scaleway_container_namespace.main", "id"),
+					testCheckResourceAttrUUID("scaleway_container.main", "id"),
+					resource.TestCheckResourceAttr("scaleway_container.main", "environment_variables.test", "test"),
+					resource.TestCheckResourceAttr("scaleway_container.main", "secret_environment_variables.test_secret", "test_secret"),
+				),
+			},
+			{
+				Config: `
+					resource scaleway_container_namespace main {
+					}
+
+					resource scaleway_container main {
+						namespace_id = scaleway_container_namespace.main.id
+						environment_variables = {
+							"foo" = "bar"
+						}
+						secret_environment_variables = {
+							"foo_secret" = "bar_secret"
+						}
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayContainerExists(tt, "scaleway_container.main"),
+					testCheckResourceAttrUUID("scaleway_container_namespace.main", "id"),
+					testCheckResourceAttrUUID("scaleway_container.main", "id"),
+					resource.TestCheckResourceAttr("scaleway_container.main", "environment_variables.foo", "bar"),
+					resource.TestCheckResourceAttr("scaleway_container.main", "secret_environment_variables.foo_secret", "bar_secret"),
+				),
+			},
+			{
+				Config: `
+					resource scaleway_container_namespace main {
+					}
+
+					resource scaleway_container main {
+						namespace_id = scaleway_container_namespace.main.id
+						environment_variables = {}
+						secret_environment_variables = {}
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayContainerExists(tt, "scaleway_container.main"),
+					testCheckResourceAttrUUID("scaleway_container_namespace.main", "id"),
+					testCheckResourceAttrUUID("scaleway_container.main", "id"),
+					resource.TestCheckNoResourceAttr("scaleway_container.main", "environment_variables.%"),
+					resource.TestCheckNoResourceAttr("scaleway_container.main", "secret_environment_variables.%"),
+					resource.TestCheckNoResourceAttr("scaleway_container.main", "environment_variables.foo"),
+					resource.TestCheckNoResourceAttr("scaleway_container.main", "secret_environment_variables.foo_secret"),
+				),
+			},
+		},
+	})
+}
+
 func TestAccScalewayContainer_WithIMG(t *testing.T) {
 	if !*UpdateCassettes {
 		t.Skip("Skipping Container test with image as this kind of test  can't dump docker pushing process on cassettes")
