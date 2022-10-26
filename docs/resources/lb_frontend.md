@@ -45,6 +45,10 @@ resource scaleway_lb_certificate cert01 {
     letsencrypt {
         common_name = "${replace(scaleway_lb_ip.ip01.ip_address,".", "-")}.lb.${scaleway_lb.lb01.region}.scw.cloud"
     }
+    # Make sure the new certificate is created before the old one can be replaced
+    lifecycle {
+        create_before_destroy = true
+    }
 }
 
 resource scaleway_lb_frontend frt01 {
