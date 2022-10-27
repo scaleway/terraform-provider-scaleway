@@ -145,3 +145,17 @@ func waitForContainer(ctx context.Context, api *container.API, containerID strin
 
 	return api.WaitForContainer(&request, scw.WithContext(ctx))
 }
+
+func expandContainerSecrets(secretsRawMap interface{}) []*container.Secret {
+	secretsMap := secretsRawMap.(map[string]interface{})
+	secrets := make([]*container.Secret, 0, len(secretsMap))
+
+	for k, v := range secretsMap {
+		secrets = append(secrets, &container.Secret{
+			Key:   k,
+			Value: expandStringPtr(v),
+		})
+	}
+
+	return secrets
+}

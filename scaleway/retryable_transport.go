@@ -57,5 +57,12 @@ func (c *retryableTransport) RoundTrip(r *http.Request) (*http.Response, error) 
 	for key, val := range r.Header {
 		req.Header.Set(key, val[0])
 	}
+	req.GetBody = func() (io.ReadCloser, error) {
+		b, err := req.BodyBytes()
+		if err != nil {
+			return nil, err
+		}
+		return io.NopCloser(bytes.NewReader(b)), err
+	}
 	return c.Client.Do(req)
 }
