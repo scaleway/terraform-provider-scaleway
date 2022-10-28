@@ -167,17 +167,22 @@ func cassetteMatcher(actual *http.Request, expected cassette.Request) bool {
 		if !strings.HasSuffix(expectedURL.Host, "scw.cloud") {
 			return false
 		}
-		actualS3Url := strings.Split(actualURL.Host, ".")
-		expectedS3Url := strings.Split(expectedURL.Host, ".")
-		actualBucket := actualS3Url[0]
-		expectedBucket := expectedS3Url[0]
+		actualS3Host := strings.Split(actualURL.Host, ".")
+		expectedS3Host := strings.Split(expectedURL.Host, ".")
 
-		// Remove random number at the end of the bucket name
-		actualBucket = actualBucket[:strings.LastIndex(actualBucket, "-")]
-		expectedBucket = expectedBucket[:strings.LastIndex(expectedBucket, "-")]
+		if len(actualS3Host) >= 5 {
+			// Host is bucket.s3.region.scw.cloud
+			// it could be a host without bucket name (ex: function upload)
+			actualBucket := actualS3Host[0]
+			expectedBucket := expectedS3Host[0]
 
-		if actualBucket != expectedBucket {
-			return false
+			// Remove random number at the end of the bucket name
+			actualBucket = actualBucket[:strings.LastIndex(actualBucket, "-")]
+			expectedBucket = expectedBucket[:strings.LastIndex(expectedBucket, "-")]
+
+			if actualBucket != expectedBucket {
+				return false
+			}
 		}
 	}
 
