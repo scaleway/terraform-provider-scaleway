@@ -29,7 +29,7 @@ func TestAccScalewayDataSourceTemDomain_Basic(t *testing.T) {
 					}
 					
 					data "scaleway_tem_domain" "stg" {
-						id = "${scaleway_tem_domain.main.id}"
+						domain_id = "${scaleway_tem_domain.main.id}"
 					}
 				`, domainName),
 				Check: resource.ComposeTestCheckFunc(

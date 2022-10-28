@@ -17,8 +17,8 @@ func dataSourceScalewayTemDomain() *schema.Resource {
 	// Set 'Optional' schema elements
 	addOptionalFieldsToSchema(dsSchema, "name", "region")
 
-	dsSchema["name"].ConflictsWith = []string{"id"}
-	dsSchema["id"] = &schema.Schema{
+	dsSchema["name"].ConflictsWith = []string{"domain_id"}
+	dsSchema["domain_id"] = &schema.Schema{
 		Type:          schema.TypeString,
 		Optional:      true,
 		Description:   "The ID of the tem domain",
@@ -39,7 +39,7 @@ func dataSourceScalewayTemDomainRead(ctx context.Context, d *schema.ResourceData
 		return diag.FromErr(err)
 	}
 
-	domainID, ok := d.GetOk("id")
+	domainID, ok := d.GetOk("domain_id")
 	if !ok {
 		res, err := api.ListDomains(&tem.ListDomainsRequest{
 			Region:    region,
@@ -71,7 +71,7 @@ func dataSourceScalewayTemDomainRead(ctx context.Context, d *schema.ResourceData
 
 	regionalID := datasourceNewRegionalizedID(domainID, region)
 	d.SetId(regionalID)
-	err = d.Set("id", regionalID)
+	err = d.Set("domain_id", regionalID)
 	if err != nil {
 		return diag.FromErr(err)
 	}
