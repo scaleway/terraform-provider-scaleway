@@ -14,10 +14,6 @@ const (
 	defaultTemDomainRetryInterval = 15 * time.Second
 )
 
-type ErrorTemMessage struct {
-	Error string
-}
-
 // temAPIWithRegion returns a new Tem API and the region for a Create request
 func temAPIWithRegion(d *schema.ResourceData, m interface{}) (*tem.API, scw.Region, error) {
 	meta := m.(*Meta)
