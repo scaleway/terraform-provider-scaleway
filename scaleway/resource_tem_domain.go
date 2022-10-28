@@ -18,8 +18,6 @@ func resourceScalewayTemDomain() *schema.Resource {
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 		Timeouts: &schema.ResourceTimeout{
-			Create:  schema.DefaultTimeout(defaultTemDomainTimeout),
-			Read:    schema.DefaultTimeout(defaultTemDomainTimeout),
 			Delete:  schema.DefaultTimeout(defaultTemDomainTimeout),
 			Default: schema.DefaultTimeout(defaultTemDomainTimeout),
 		},
