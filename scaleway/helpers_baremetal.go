@@ -4,6 +4,7 @@ import (
 	"context"
 	"time"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/api/baremetal/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
@@ -132,4 +133,16 @@ func waitForBaremetalServerInstall(ctx context.Context, api *baremetal.API, zone
 	}, scw.WithContext(ctx))
 
 	return server, err
+}
+
+func baremetalInstallServer(ctx context.Context, d *schema.ResourceData, baremetalAPI *baremetal.API, installServerRequest *baremetal.InstallServerRequest) diag.Diagnostics {
+	installServerRequest.OsID = expandZonedID(d.Get("os")).ID
+	installServerRequest.SSHKeyIDs = expandStrings(d.Get("ssh_key_ids"))
+
+	_, err := baremetalAPI.InstallServer(installServerRequest, scw.WithContext(ctx))
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	return nil
 }
