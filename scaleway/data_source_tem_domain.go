@@ -71,7 +71,19 @@ func dataSourceScalewayTemDomainRead(ctx context.Context, d *schema.ResourceData
 
 	regionalID := datasourceNewRegionalizedID(domainID, region)
 	d.SetId(regionalID)
-	_ = d.Set("id", regionalID)
+	err = d.Set("id", regionalID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
-	return resourceScalewayTemDomainRead(ctx, d, meta)
+	diags := resourceScalewayTemDomainRead(ctx, d, meta)
+	if diags != nil {
+		return append(diags, diag.Errorf("failed to read tem domain state")...)
+	}
+
+	if d.Id() == "" {
+		return diag.Errorf("tem domain (%s) not found", regionalID)
+	}
+
+	return nil
 }
