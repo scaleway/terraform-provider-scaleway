@@ -55,17 +55,3 @@ In addition to all above arguments, the following attributes are exported:
 - `spf_config` - The snippet of the SPF record that should be registered in the DNS zone.
 
 - `dkim_config` - The DKIM public key, as should be recorded in the DNS zone.
-
-- `statistics` - The domain's statistics.
-
-    - `total_count` - The total number of emails matching the request criteria.
-
-    - `new_count` - The number of emails still in the `new` transient state (received from the API, not yet processed).
-
-    - `sending_count` - The number of emails still in the `sending` transient state (received from the API, not yet in their final status).
-
-    - `sent_count` - The number of emails in the final `sent` state (have been delivered to the target mail system).
-
-    - `failed_count` - The number of emails in the final `failed` state (refused by the target mail system with a final error status).
-
-    - `canceled_count` - The number of emails in the final `canceled` state (canceled by customer's request).

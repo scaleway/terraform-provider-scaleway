@@ -74,47 +74,6 @@ func resourceScalewayTemDomain() *schema.Resource {
 				Computed:    true,
 				Description: "DKIM public key, as should be recorded in the DNS zone",
 			},
-			"statistics": {
-				Type:        schema.TypeList,
-				MaxItems:    1,
-				Optional:    true,
-				Computed:    true,
-				Description: "Domain's statistics",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"total_count": {
-							Type:        schema.TypeInt,
-							Computed:    true,
-							Description: "Total number of emails matching the request criteria",
-						},
-						"new_count": {
-							Type:        schema.TypeInt,
-							Computed:    true,
-							Description: "Number of emails still in the `new` transient state (received from the API, not yet processed)",
-						},
-						"sending_count": {
-							Type:        schema.TypeInt,
-							Computed:    true,
-							Description: "Number of emails still in the `sending` transient state (received from the API, not yet in their final status)",
-						},
-						"sent_count": {
-							Type:        schema.TypeInt,
-							Computed:    true,
-							Description: "Number of emails in the final `sent` state (have been delivered to the target mail system)",
-						},
-						"failed_count": {
-							Type:        schema.TypeInt,
-							Computed:    true,
-							Description: "Number of emails in the final `failed` state (refused by the target mail system with a final error status)",
-						},
-						"canceled_count": {
-							Type:        schema.TypeInt,
-							Computed:    true,
-							Description: "Number of emails in the final `canceled` state (canceled by customer's request)",
-						},
-					},
-				},
-			},
 			"region":     regionSchema(),
 			"project_id": projectIDSchema(),
 		},
@@ -168,16 +127,6 @@ func resourceScalewayTemDomainRead(ctx context.Context, d *schema.ResourceData, 
 	_ = d.Set("last_error", domain.LastError)
 	_ = d.Set("spf_config", domain.SpfConfig)
 	_ = d.Set("dkim_config", domain.DkimConfig)
-
-	statistics := map[string]interface{}{}
-	statistics["total_count"] = domain.Statistics.TotalCount
-	statistics["new_count"] = domain.Statistics.NewCount
-	statistics["sending_count"] = domain.Statistics.SendingCount
-	statistics["sent_count"] = domain.Statistics.SentCount
-	statistics["failed_count"] = domain.Statistics.FailedCount
-	statistics["canceled_count"] = domain.Statistics.CanceledCount
-	_ = d.Set("statistics", []map[string]interface{}{statistics})
-
 	_ = d.Set("region", string(region))
 	_ = d.Set("project_id", domain.ProjectID)
 
