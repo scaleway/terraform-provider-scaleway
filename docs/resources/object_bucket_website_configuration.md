@@ -68,14 +68,8 @@ resource "scaleway_object_bucket_website_configuration" "main" {
 The following arguments are supported:
 
 * `bucket` - (Required, Forces new resource) The name of the bucket.
+* `index_document` - (Required) The name of the index document for the website [detailed below](#index_document).
 * `error_document` - (Optional) The name of the error document for the website [detailed below](#error_document).
-* `index_document` - (Optional) The name of the index document for the website [detailed below](#index_document).
-
-## error_document
-
-The error_document configuration block supports the following arguments:
-
-* `key` - (Required) The object key name to use when a 4XX class error occurs.
 
 ## index_document
 
@@ -92,6 +86,12 @@ In addition to all above arguments, the following attribute is exported:
 * `website_endpoint` - The website endpoint.
 
 ~> **Important:** Please check our concepts section to know more about the [endpoint](https://www.scaleway.com/en/docs/storage/object/concepts/#endpoint).
+
+## error_document
+
+The error_document configuration block supports the following arguments:
+
+* `key` - (Required) The object key name to use when a 4XX class error occurs.
 
 ## Import
 
