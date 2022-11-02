@@ -39,7 +39,7 @@ func temAPIWithRegionAndID(m interface{}, id string) (*tem.API, scw.Region, stri
 }
 
 func waitForTemDomain(ctx context.Context, api *tem.API, region scw.Region, id string, timeout time.Duration) (*tem.Domain, error) {
-	retryInterval := defaultRegistryNamespaceRetryInterval
+	retryInterval := defaultTemDomainRetryInterval
 	if DefaultWaitRetryInterval != nil {
 		retryInterval = *DefaultWaitRetryInterval
 	}
