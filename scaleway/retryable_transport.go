@@ -27,8 +27,15 @@ func newRetryableTransport(defaultTransport http.RoundTripper) http.RoundTripper
 		}
 		return retryablehttp.DefaultRetryPolicy(ctx, resp, err)
 	}
+
+	// If ErrorHandler is not set, retryablehttp will wrap http errors
 	c.ErrorHandler = func(resp *http.Response, err error, numTries int) (*http.Response, error) {
-		// Do not return error as response will be handled by scaleway sdk-go
+		// err is not nil if there was an error while performing request
+		// it should be passed, but do not create an error when request contains an error code
+		// http errors are handled by sdk coming after this transport
+		if err != nil {
+			return resp, err
+		}
 		return resp, nil
 	}
 
