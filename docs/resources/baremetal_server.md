@@ -38,8 +38,8 @@ The following arguments are supported:
   Use [this endpoint](https://developers.scaleway.com/en/products/baremetal/api/#get-87598a) to find the right OS ID.
   ~> **Important:** Updates to `os` will reinstall the server.
 - `ssh_key_ids` - (Required) List of SSH keys allowed to connect to the server.
-  ~> **Important:** Updates to `ssh_key_ids` will not take effect on the server, it requires to reinstall it. To do so please set 'reinstall_on_ssh_key' argument to true.
-- `reinstall_on_ssh_key` - (Optional) If True, this boolean allows to reinstall the server on SSH key IDs changes.
+  ~> **Important:** Updates to `ssh_key_ids` will not take effect on the server, it requires to reinstall it. To do so please set 'reinstall_on_ssh_key_changes' argument to true.
+- `reinstall_on_ssh_key_changes` - (Optional) If True, this boolean allows to reinstall the server on SSH key IDs changes.
 - `name` - (Optional) The name of the server.
 - `hostname` - (Optional) The hostname of the server.
 - `description` - (Optional) A description for the server.
