@@ -174,7 +174,7 @@ func resourceObjectLockConfigurationUpdate(ctx context.Context, d *schema.Resour
 	}
 
 	lockConfig := &s3.ObjectLockConfiguration{
-		ObjectLockEnabled: aws.String("Enabled"),
+		ObjectLockEnabled: aws.String(s3.ObjectLockEnabledEnabled),
 		Rule:              expandBucketLockConfigurationRule(d.Get("rule").([]interface{})),
 	}
 
@@ -201,7 +201,7 @@ func resourceObjectLockConfigurationDelete(ctx context.Context, d *schema.Resour
 	input := &s3.PutObjectLockConfigurationInput{
 		Bucket: aws.String(bucket),
 		ObjectLockConfiguration: &s3.ObjectLockConfiguration{
-			ObjectLockEnabled: aws.String("Disabled"),
+			ObjectLockEnabled: aws.String(s3.ObjectLockEnabledEnabled),
 		},
 	}
 

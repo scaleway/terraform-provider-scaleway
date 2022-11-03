@@ -33,15 +33,21 @@ func TestAccObjectBucketLockConfiguration_basic(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
-			  		resource "scaleway_object_bucket" "test" {
+					resource "scaleway_object_bucket" "test" {
 						name = %[1]q
-						acl  = "public-read"
 						tags = {
 							TestName = "TestAccSCW_LockConfig_basic"
 						}
+
+						object_lock_enabled = true
 					}
-				
-				  	resource "scaleway_object_bucket_lock_configuration" "test" {
+
+					resource "scaleway_object_bucket_acl" "test" {
+						bucket = scaleway_object_bucket.test.name
+						acl = "public-read"
+					}
+
+					resource "scaleway_object_bucket_lock_configuration" "test" {
 						bucket = scaleway_object_bucket.test.name
 						rule {
 							default_retention {
@@ -49,15 +55,15 @@ func TestAccObjectBucketLockConfiguration_basic(t *testing.T) {
 								days = 1
 							}
 						}
-				  	}
+					}
 				`, rName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckBucketLockConfigurationExists(tt, resourceName),
 					resource.TestCheckResourceAttrPair(resourceName, "bucket", "scaleway_object_bucket.test", "name"),
 					resource.TestCheckResourceAttr(resourceName, "rule.#", "1"),
-					resource.TestCheckResourceAttr(resourceName, "rule.default_retention.#", "1"),
-					resource.TestCheckResourceAttr(resourceName, "rule.default_retention.0.mode", "GOVERNANCE"),
-					resource.TestCheckResourceAttr(resourceName, "rule.default_retention.0.days", "1"),
+					resource.TestCheckResourceAttr(resourceName, "rule.0.default_retention.#", "1"),
+					resource.TestCheckResourceAttr(resourceName, "rule.0.default_retention.0.mode", "GOVERNANCE"),
+					resource.TestCheckResourceAttr(resourceName, "rule.0.default_retention.0.days", "1"),
 				),
 			},
 			{
@@ -85,12 +91,18 @@ func TestAccObjectBucketLockConfiguration_update(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
-			  		resource "scaleway_object_bucket" "test" {
+					resource "scaleway_object_bucket" "test" {
 						name = %[1]q
-						acl  = "public-read"
 						tags = {
 							TestName = "TestAccSCW_LockConfig_basic"
 						}
+
+						object_lock_enabled = true
+					}
+
+					resource "scaleway_object_bucket_acl" "test" {
+						bucket = scaleway_object_bucket.test.name
+						acl = "public-read"
 					}
 
 				  	resource "scaleway_object_bucket_lock_configuration" "test" {
@@ -109,12 +121,18 @@ func TestAccObjectBucketLockConfiguration_update(t *testing.T) {
 			},
 			{
 				Config: fmt.Sprintf(`
-			  		resource "scaleway_object_bucket" "test" {
+					resource "scaleway_object_bucket" "test" {
 						name = %[1]q
-						acl  = "public-read"
 						tags = {
 							TestName = "TestAccSCW_LockConfig_basic"
 						}
+
+						object_lock_enabled = true
+					}
+
+					resource "scaleway_object_bucket_acl" "test" {
+						bucket = scaleway_object_bucket.test.name
+						acl = "public-read"
 					}
 
 				  	resource "scaleway_object_bucket_lock_configuration" "test" {
@@ -131,9 +149,9 @@ func TestAccObjectBucketLockConfiguration_update(t *testing.T) {
 					testAccCheckBucketLockConfigurationExists(tt, resourceName),
 					resource.TestCheckResourceAttrPair(resourceName, "bucket", "scaleway_object_bucket.test", "name"),
 					resource.TestCheckResourceAttr(resourceName, "rule.#", "1"),
-					resource.TestCheckResourceAttr(resourceName, "rule.default_retention.#", "1"),
-					resource.TestCheckResourceAttr(resourceName, "rule.default_retention.0.mode", "COMPLIANCE"),
-					resource.TestCheckResourceAttr(resourceName, "rule.default_retention.0.days", "2"),
+					resource.TestCheckResourceAttr(resourceName, "rule.0.default_retention.#", "1"),
+					resource.TestCheckResourceAttr(resourceName, "rule.0.default_retention.0.mode", "COMPLIANCE"),
+					resource.TestCheckResourceAttr(resourceName, "rule.0.default_retention.0.days", "2"),
 				),
 			},
 			{

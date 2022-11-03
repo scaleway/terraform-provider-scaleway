@@ -36,6 +36,13 @@ func resourceScalewayObjectBucket() *schema.Resource {
 				ForceNew:    true,
 				Description: "The name of the bucket",
 			},
+			"object_lock_enabled": {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				ForceNew:    true,
+				Default:     false,
+				Description: "Enable object lock",
+			},
 			"acl": {
 				Type:        schema.TypeString,
 				Optional:    true,
@@ -201,6 +208,7 @@ func resourceScalewayObjectBucket() *schema.Resource {
 
 func resourceScalewayObjectBucketCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	bucketName := d.Get("name").(string)
+	objectLockEnabled := d.Get("object_lock_enabled").(bool)
 	acl := d.Get("acl").(string)
 
 	s3Client, region, err := s3ClientWithRegion(d, meta)
@@ -209,8 +217,9 @@ func resourceScalewayObjectBucketCreate(ctx context.Context, d *schema.ResourceD
 	}
 
 	req := &s3.CreateBucketInput{
-		Bucket: scw.StringPtr(bucketName),
-		ACL:    scw.StringPtr(acl),
+		Bucket:                     scw.StringPtr(bucketName),
+		ObjectLockEnabledForBucket: scw.BoolPtr(objectLockEnabled),
+		ACL:                        scw.StringPtr(acl),
 	}
 	_, err = s3Client.CreateBucketWithContext(ctx, req)
 	if TimedOut(err) {
@@ -430,6 +439,30 @@ func resourceScalewayObjectBucketRead(ctx context.Context, d *schema.ResourceDat
 
 	_ = d.Set("name", bucketName)
 	_ = d.Set("region", region)
+
+	// Get object_lock_enabled
+	objectLockConfiguration, err := s3Client.GetObjectLockConfigurationWithContext(ctx, &s3.GetObjectLockConfigurationInput{
+		Bucket: aws.String(bucketName),
+	})
+	if err != nil {
+		s3err, isS3Err := err.(awserr.Error)
+
+		if isS3Err {
+			if s3err.Code() == s3.ErrCodeNoSuchBucket {
+				tflog.Error(ctx, fmt.Sprintf("Bucket %q was not found - removing from state!", bucketName))
+				d.SetId("")
+				return nil
+			} else if s3err.Code() == "ObjectLockConfigurationNotFoundError" {
+				_ = d.Set("object_lock_enabled", false)
+			} else {
+				return diag.FromErr(fmt.Errorf("couldn't read bucket: %s", err))
+			}
+		} else {
+			return diag.FromErr(fmt.Errorf("couldn't read bucket: %s", err))
+		}
+	} else if objectLockConfiguration.ObjectLockConfiguration != nil {
+		_ = d.Set("object_lock_enabled", true)
+	}
 
 	// We do not read `acl` attribute because it could be impossible to find
 	// the right canned ACL from a complex ACL object.
