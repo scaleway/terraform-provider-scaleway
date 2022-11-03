@@ -3,6 +3,7 @@ package scaleway
 import (
 	"context"
 	"encoding/json"
+	"encoding/xml"
 	"flag"
 	"fmt"
 	"io"
@@ -121,6 +122,12 @@ func cassetteBodyMatcher(actual *http.Request, expected cassette.Request) bool {
 	actualJSON := make(map[string]interface{})
 	expectedJSON := make(map[string]interface{})
 
+	err = xml.Unmarshal(actualRawBody, new(interface{}))
+	if err == nil {
+		// match if content is xml
+		return true
+	}
+
 	err = json.Unmarshal(actualRawBody, &actualJSON)
 	if err != nil {
 		panic(fmt.Errorf("cassette body matcher: failed to parse json body: %w", err))
@@ -153,6 +160,31 @@ func cassetteMatcher(actual *http.Request, expected cassette.Request) bool {
 	}
 	actualURL.RawQuery = actualURLValues.Encode()
 	expectedURL.RawQuery = expectedURLValues.Encode()
+
+	// Specific handling of s3 URLs
+	// Url format is https://test-acc-scaleway-object-bucket-lifecycle-8445817190507446251.s3.fr-par.scw.cloud/?lifecycle=
+	if strings.HasSuffix(actualURL.Host, "scw.cloud") {
+		if !strings.HasSuffix(expectedURL.Host, "scw.cloud") {
+			return false
+		}
+		actualS3Host := strings.Split(actualURL.Host, ".")
+		expectedS3Host := strings.Split(expectedURL.Host, ".")
+
+		if len(actualS3Host) >= 5 {
+			// Host is bucket.s3.region.scw.cloud
+			// it could be a host without bucket name (ex: function upload)
+			actualBucket := actualS3Host[0]
+			expectedBucket := expectedS3Host[0]
+
+			// Remove random number at the end of the bucket name
+			actualBucket = actualBucket[:strings.LastIndex(actualBucket, "-")]
+			expectedBucket = expectedBucket[:strings.LastIndex(expectedBucket, "-")]
+
+			if actualBucket != expectedBucket {
+				return false
+			}
+		}
+	}
 
 	return actual.Method == expected.Method &&
 		actual.URL.Path == expectedURL.Path &&
