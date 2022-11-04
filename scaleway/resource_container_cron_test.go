@@ -127,9 +127,8 @@ func testAccCheckScalewayContainerCronExists(tt *TestTools, n string) resource.T
 			CronID: id,
 			Region: region,
 		})
-
 		if err != nil {
-			return err
+			return fmt.Errorf("error while getting container cron: %w", err)
 		}
 
 		return nil

@@ -55,5 +55,5 @@ func waitFlexibleIP(ctx context.Context, api *flexibleip.API, zone scw.Zone, id 
 		return nil, fmt.Errorf("error while waiting for flexible ip: %w", err)
 	}
 
-	return fip, err
+	return fip, nil
 }

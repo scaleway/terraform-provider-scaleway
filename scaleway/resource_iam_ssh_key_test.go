@@ -256,7 +256,7 @@ func testAccCheckScalewayIamSSHKeyExists(tt *TestTools, n string) resource.TestC
 			SSHKeyID: rs.Primary.ID,
 		})
 		if err != nil {
-			return err
+			return fmt.Errorf("error while getting ssh key: %w", err)
 		}
 
 		return nil

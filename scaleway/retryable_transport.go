@@ -61,9 +61,15 @@ func (c *retryableTransport) RoundTrip(r *http.Request) (*http.Response, error) 
 	req.GetBody = func() (io.ReadCloser, error) {
 		b, err := req.BodyBytes()
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("failed to get HTTP body bytes: %w", err)
 		}
 		return io.NopCloser(bytes.NewReader(b)), err
 	}
-	return c.Client.Do(req)
+
+	response, err := c.Client.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf("error while doing HTTP request: %w", err)
+	}
+
+	return response, nil
 }

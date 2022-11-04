@@ -161,7 +161,11 @@ func resourceBucketACLCreate(ctx context.Context, d *schema.ResourceData, meta i
 	}
 
 	out, err := retryOnAWSCode(ctx, s3.ErrCodeNoSuchBucket, func() (interface{}, error) {
-		return conn.PutBucketAclWithContext(ctx, input)
+		out, err := conn.PutBucketAclWithContext(ctx, input)
+		if err != nil {
+			return nil, fmt.Errorf("error occurred while doing PutBucketAclWithContext: %w", err)
+		}
+		return out, nil
 	})
 	if err != nil {
 		return diag.FromErr(fmt.Errorf("error putting Object Storage ACL: %s", err))

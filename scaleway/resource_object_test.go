@@ -477,7 +477,7 @@ func testAccCheckScalewayObjectExists(tt *TestTools, n string) resource.TestChec
 			if isS3Err(err, s3.ErrCodeNoSuchBucket, "") {
 				return fmt.Errorf("s3 object not found")
 			}
-			return err
+			return fmt.Errorf("unexpected s3 error: %w", err)
 		}
 		return nil
 	}

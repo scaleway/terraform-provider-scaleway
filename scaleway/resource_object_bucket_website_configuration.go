@@ -114,7 +114,11 @@ func resourceBucketWebsiteConfigurationCreate(ctx context.Context, d *schema.Res
 	}
 
 	_, err = RetryWhenAWSErrCodeEqualsContext(ctx, objectBucketWebsiteConfigurationRetry, func() (interface{}, error) {
-		return conn.PutBucketWebsiteWithContext(ctx, input)
+		_, err := conn.PutBucketWebsiteWithContext(ctx, input)
+		if err != nil {
+			return nil, fmt.Errorf("error occurred while doing PutBucketWebsiteWithContext: %w", err)
+		}
+		return nil, nil
 	}, s3.ErrCodeNoSuchBucket)
 
 	if err != nil {

@@ -89,12 +89,17 @@ func waitForRDBDatabaseBackup(ctx context.Context, api *rdb.API, region scw.Regi
 		retryInterval = *DefaultWaitRetryInterval
 	}
 
-	return api.WaitForDatabaseBackup(&rdb.WaitForDatabaseBackupRequest{
+	backup, err := api.WaitForDatabaseBackup(&rdb.WaitForDatabaseBackupRequest{
 		Region:           region,
 		Timeout:          scw.TimeDurationPtr(timeout),
 		DatabaseBackupID: id,
 		RetryInterval:    &retryInterval,
 	}, scw.WithContext(ctx))
+	if err != nil {
+		return nil, fmt.Errorf("error occurred while waiting for database backup: %w", err)
+	}
+
+	return backup, nil
 }
 
 func waitForRDBReadReplica(ctx context.Context, api *rdb.API, region scw.Region, id string, timeout time.Duration) (*rdb.ReadReplica, error) {

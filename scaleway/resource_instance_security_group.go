@@ -334,7 +334,7 @@ func updateSecurityGroupeRules(ctx context.Context, d *schema.ResourceData, zone
 		Rules:           setGroupRules,
 	}, scw.WithContext(ctx))
 	if err != nil {
-		return err
+		return fmt.Errorf("error while setting security group rules: %w", err)
 	}
 
 	return nil

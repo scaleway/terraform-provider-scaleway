@@ -254,9 +254,8 @@ func testAccCheckScalewayFlexibleIPExists(tt *TestTools, name string) resource.T
 			FipID: ID,
 			Zone:  zone,
 		})
-
 		if err != nil {
-			return err
+			return fmt.Errorf("error getting flexible ip: %w", err)
 		}
 
 		return nil
@@ -317,19 +316,20 @@ func testAccCheckScalewayFlexibleIPAttachedToBaremetalServer(tt *TestTools, ipRe
 			ServerID: expandID(serverState.Primary.ID),
 		})
 		if err != nil {
-			return err
+			return fmt.Errorf("error while getting server: %w", err)
 		}
 
 		fipAPI, zone, ID, err := fipAPIWithZoneAndID(tt.Meta, ipState.Primary.ID)
 		if err != nil {
 			return err
 		}
+
 		ip, err := fipAPI.GetFlexibleIP(&flexibleip.GetFlexibleIPRequest{
 			FipID: ID,
 			Zone:  zone,
 		})
 		if err != nil {
-			return err
+			return fmt.Errorf("error while getting flexible ip: %w", err)
 		}
 
 		if ip.ServerID == nil || server.ID != *ip.ServerID {

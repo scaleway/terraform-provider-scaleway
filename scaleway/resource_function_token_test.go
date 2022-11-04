@@ -74,9 +74,8 @@ func testAccCheckScalewayFunctionTokenExists(tt *TestTools, n string) resource.T
 			TokenID: id,
 			Region:  region,
 		})
-
 		if err != nil {
-			return err
+			return fmt.Errorf("error while getting token: %w", err)
 		}
 
 		return nil
