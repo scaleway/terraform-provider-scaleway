@@ -67,8 +67,17 @@ func resourceScalewayBaremetalServer() *schema.Resource {
 					Type:         schema.TypeString,
 					ValidateFunc: validationUUID(),
 				},
-				Required:    true,
-				Description: "Array of SSH key IDs allowed to SSH to the server",
+				Required: true,
+				Description: `Array of SSH key IDs allowed to SSH to the server
+
+**NOTE** : If you are attempting to update your SSH key IDs, it will induce the reinstall of your server. 
+If this behaviour is wanted, please set 'reinstall_on_ssh_key_changes' argument to true.`,
+			},
+			"reinstall_on_ssh_key_changes": {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Default:     false,
+				Description: "If True, this boolean allows to reinstall the server on SSH key IDs changes",
 			},
 			"description": {
 				Type:         schema.TypeString,
@@ -257,16 +266,14 @@ func resourceScalewayBaremetalServerUpdate(ctx context.Context, d *schema.Resour
 		}
 	}
 
-	if d.HasChanges("os", "ssh_key_ids") {
-		installReq := &baremetal.InstallServerRequest{
-			Zone:      zonedID.Zone,
-			ServerID:  zonedID.ID,
-			OsID:      expandZonedID(d.Get("os")).ID,
-			Hostname:  expandStringWithDefault(d.Get("hostname"), d.Get("name").(string)),
-			SSHKeyIDs: expandStrings(d.Get("ssh_key_ids")),
-		}
+	installReq := &baremetal.InstallServerRequest{
+		Zone:     zonedID.Zone,
+		ServerID: zonedID.ID,
+		Hostname: expandStringWithDefault(d.Get("hostname"), d.Get("name").(string)),
+	}
 
-		_, err := baremetalAPI.InstallServer(installReq, scw.WithContext(ctx))
+	if d.HasChange("os") {
+		err = baremetalInstallServer(ctx, d, baremetalAPI, installReq)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -277,7 +284,30 @@ func resourceScalewayBaremetalServerUpdate(ctx context.Context, d *schema.Resour
 		}
 	}
 
-	return resourceScalewayBaremetalServerRead(ctx, d, meta)
+	var diags diag.Diagnostics
+
+	if d.HasChanges("ssh_key_ids", "reinstall_on_ssh_key_changes") {
+		if !d.Get("reinstall_on_ssh_key_changes").(bool) && !d.HasChange("os") {
+			diags = append(diags, diag.Diagnostic{
+				Severity: diag.Warning,
+				Summary:  "Changes have been made on your SSH key ID(s)",
+				Detail: "[WARN] This change induce the reinstall of your server. " +
+					"If this behaviour is wanted, please set 'reinstall_on_ssh_key_changes' argument to true",
+			})
+		} else {
+			err = baremetalInstallServer(ctx, d, baremetalAPI, installReq)
+			if err != nil {
+				return diag.FromErr(err)
+			}
+
+			_, err = waitForBaremetalServerInstall(ctx, baremetalAPI, zonedID.Zone, zonedID.ID, d.Timeout(schema.TimeoutUpdate))
+			if err != nil {
+				return diag.FromErr(err)
+			}
+		}
+	}
+
+	return append(diags, resourceScalewayBaremetalServerRead(ctx, d, meta)...)
 }
 
 func resourceScalewayBaremetalServerDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
