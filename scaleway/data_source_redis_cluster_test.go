@@ -1,6 +1,7 @@
 package scaleway
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -9,16 +10,17 @@ import (
 func TestAccScalewayDataSourceRedisCluster_Basic(t *testing.T) {
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
+	latestRedisVersion := testAccScalewayRedisClusterGetLatestVersion(tt)
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheckScalewayRedisClusterDestroy(tt),
 		Steps: []resource.TestStep{
 			{
-				Config: `
+				Config: fmt.Sprintf(`
 					resource "scaleway_redis_cluster" "test" {
     					name = "test_redis_datasource_terraform"
-    					version = "6.2.6"
+    					version = "%s"
     					node_type = "RED1-micro"
     					user_name = "my_initial_user"
     					password = "thiZ_is_v&ry_s3cret"
@@ -31,7 +33,7 @@ func TestAccScalewayDataSourceRedisCluster_Basic(t *testing.T) {
 					data "scaleway_redis_cluster" "test2" {
 						cluster_id = scaleway_redis_cluster.test.id
 					}
-				`,
+				`, latestRedisVersion),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayRedisExists(tt, "scaleway_redis_cluster.test"),
 
