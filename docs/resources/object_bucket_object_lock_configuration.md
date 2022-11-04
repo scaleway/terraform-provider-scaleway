@@ -49,7 +49,7 @@ The following arguments are supported:
 
     - `default_retention` - (Required) The default retention for the lock.
 
-        - `mode` - (Required) The default Object Lock retention mode you want to apply to new objects placed in the specified bucket.
+        - `mode` - (Required) The default Object Lock retention mode you want to apply to new objects placed in the specified bucket. Valid values are `GOVERNANCE` or `COMPLIANCE`.
 
         - `days` - (Optional) The number of days that you want to specify for the default retention period.
 

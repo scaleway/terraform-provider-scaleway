@@ -6,13 +6,11 @@ import (
 	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
-	"github.com/scaleway/scaleway-sdk-go/scw"
 )
 
 const (
@@ -58,14 +56,16 @@ func resourceObjectLockConfiguration() *schema.Resource {
 										Description:  "The default Object Lock retention mode you want to apply to new objects placed in the specified bucket.",
 									},
 									"days": {
-										Type:        schema.TypeInt,
-										Optional:    true,
-										Description: "The number of days that you want to specify for the default retention period.",
+										Type:          schema.TypeInt,
+										Optional:      true,
+										Description:   "The number of days that you want to specify for the default retention period.",
+										ConflictsWith: []string{"years"},
 									},
 									"years": {
-										Type:        schema.TypeInt,
-										Optional:    true,
-										Description: "The number of years that you want to specify for the default retention period.",
+										Type:          schema.TypeInt,
+										Optional:      true,
+										Description:   "The number of years that you want to specify for the default retention period.",
+										ConflictsWith: []string{"days"},
 									},
 								},
 							},
@@ -86,26 +86,12 @@ func resourceObjectLockConfigurationCreate(ctx context.Context, d *schema.Resour
 
 	bucket := expandID(d.Get("bucket").(string))
 
-	lockConfig := &s3.ObjectLockConfiguration{
-		ObjectLockEnabled: aws.String("Enabled"),
-		Rule:              expandBucketLockConfigurationRule(d.Get("rule").([]interface{})),
-	}
-
-	_, err = conn.ListObjectsWithContext(ctx, &s3.ListObjectsInput{
-		Bucket: scw.StringPtr(bucket),
-	})
-	if err != nil {
-		if s3err, ok := err.(awserr.Error); ok && s3err.Code() == s3.ErrCodeNoSuchBucket {
-			tflog.Error(ctx, fmt.Sprintf("Bucket %q was not found - removing from state!", bucket))
-			d.SetId("")
-			return nil
-		}
-		return diag.FromErr(fmt.Errorf("couldn't read bucket: %s", err))
-	}
-
 	input := &s3.PutObjectLockConfigurationInput{
-		Bucket:                  aws.String(bucket),
-		ObjectLockConfiguration: lockConfig,
+		Bucket: aws.String(bucket),
+		ObjectLockConfiguration: &s3.ObjectLockConfiguration{
+			ObjectLockEnabled: aws.String("Enabled"),
+			Rule:              expandBucketLockConfigurationRule(d.Get("rule").([]interface{})),
+		},
 	}
 
 	_, err = RetryWhenAWSErrCodeEqualsContext(ctx, objectBucketLockConfigurationRetry, func() (interface{}, error) {
@@ -131,23 +117,9 @@ func resourceObjectLockConfigurationRead(ctx context.Context, d *schema.Resource
 		Bucket: aws.String(bucket),
 	}
 
-	// expectedBucketOwner and routing not supported
-
-	_, err = conn.ListObjectsWithContext(ctx, &s3.ListObjectsInput{
-		Bucket: scw.StringPtr(bucket),
-	})
-	if err != nil {
-		if s3err, ok := err.(awserr.Error); ok && s3err.Code() == s3.ErrCodeNoSuchBucket {
-			tflog.Error(ctx, fmt.Sprintf("Bucket %q was not found - removing from state!", bucket))
-			d.SetId("")
-			return nil
-		}
-		return diag.FromErr(fmt.Errorf("couldn't read bucket: %s", err))
-	}
-
 	output, err := conn.GetObjectLockConfigurationWithContext(ctx, input)
 	if !d.IsNewResource() && ErrCodeEquals(err, s3.ErrCodeNoSuchBucket) {
-		tflog.Debug(ctx, fmt.Sprintf("[WARN] Object Bucket Lock Configuration (%s) not found, removing from state", d.Id()))
+		tflog.Warn(ctx, fmt.Sprintf("Object Bucket Lock Configuration (%s) not found, removing from state", d.Id()))
 		d.SetId("")
 		return nil
 	}
@@ -156,7 +128,8 @@ func resourceObjectLockConfigurationRead(ctx context.Context, d *schema.Resource
 		if d.IsNewResource() {
 			return diag.FromErr(fmt.Errorf("error reading object bucket lock configuration (%s): empty output", d.Id()))
 		}
-		tflog.Info(ctx, fmt.Sprintf("[WARN] object Bucket Lock Configuration (%s) not found, removing from state", d.Id()))
+
+		tflog.Warn(ctx, fmt.Sprintf("Object Bucket Lock Configuration (%s) not found, removing from state", d.Id()))
 		d.SetId("")
 		return nil
 	}
