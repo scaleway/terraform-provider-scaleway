@@ -8,14 +8,16 @@ interactions:
       Content-Length:
       - "150"
       User-Agent:
-      - aws-sdk-go/1.44.110 (go1.19.1; linux; amd64)
+      - aws-sdk-go/1.44.128 (go1.19.2; darwin; amd64)
       X-Amz-Acl:
       - private
+      X-Amz-Bucket-Object-Lock-Enabled:
+      - "false"
       X-Amz-Content-Sha256:
       - b86017d61d4ad22a838e75e918325b623687c3e84d631bc2b6435970bf12473d
       X-Amz-Date:
-      - 20221027T133751Z
-    url: https://test-acc-scaleway-object-acl-basic-8164605300671153292.s3.nl-ams.scw.cloud/
+      - 20221104T145926Z
+    url: https://test-acc-scaleway-object-acl-basic-1489519863518941180.s3.nl-ams.scw.cloud/
     method: PUT
   response:
     body: ""
@@ -25,13 +27,13 @@ interactions:
       Content-Type:
       - text/html; charset=UTF-8
       Date:
-      - Thu, 27 Oct 2022 13:37:54 GMT
+      - Fri, 04 Nov 2022 14:59:28 GMT
       Location:
-      - /test-acc-scaleway-object-acl-basic-8164605300671153292
+      - /test-acc-scaleway-object-acl-basic-1489519863518941180
       X-Amz-Id-2:
-      - tx2d754bd318e5417098052-00635a89b0
+      - tx9fd9a70d6bb94f7fbc825-00636528ce
       X-Amz-Request-Id:
-      - tx2d754bd318e5417098052-00635a89b0
+      - tx9fd9a70d6bb94f7fbc825-00636528ce
     status: 200 OK
     code: 200
     duration: ""
@@ -42,14 +44,14 @@ interactions:
       Content-Md5:
       - 1B2M2Y8AsgTpgAmY7PhCfg==
       User-Agent:
-      - aws-sdk-go/1.44.110 (go1.19.1; linux; amd64)
+      - aws-sdk-go/1.44.128 (go1.19.2; darwin; amd64)
       X-Amz-Acl:
       - private
       X-Amz-Content-Sha256:
       - e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
       X-Amz-Date:
-      - 20221027T133754Z
-    url: https://test-acc-scaleway-object-acl-basic-8164605300671153292.s3.nl-ams.scw.cloud/?acl=
+      - 20221104T145928Z
+    url: https://test-acc-scaleway-object-acl-basic-1489519863518941180.s3.nl-ams.scw.cloud/?acl=
     method: PUT
   response:
     body: ""
@@ -59,11 +61,11 @@ interactions:
       Content-Type:
       - text/html; charset=UTF-8
       Date:
-      - Thu, 27 Oct 2022 13:37:55 GMT
+      - Fri, 04 Nov 2022 14:59:29 GMT
       X-Amz-Id-2:
-      - tx4f54d7df0f7c440a92b40-00635a89b2
+      - tx446c0d999bbc46f88c535-00636528d0
       X-Amz-Request-Id:
-      - tx4f54d7df0f7c440a92b40-00635a89b2
+      - tx446c0d999bbc46f88c535-00636528d0
     status: 200 OK
     code: 200
     duration: ""
@@ -72,28 +74,56 @@ interactions:
     form: {}
     headers:
       User-Agent:
-      - aws-sdk-go/1.44.110 (go1.19.1; linux; amd64)
+      - aws-sdk-go/1.44.128 (go1.19.2; darwin; amd64)
       X-Amz-Content-Sha256:
       - e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
       X-Amz-Date:
-      - 20221027T133755Z
-    url: https://test-acc-scaleway-object-acl-basic-8164605300671153292.s3.nl-ams.scw.cloud/
+      - 20221104T145928Z
+    url: https://test-acc-scaleway-object-acl-basic-1489519863518941180.s3.nl-ams.scw.cloud/?object-lock=
     method: GET
   response:
     body: |-
       <?xml version='1.0' encoding='UTF-8'?>
-      <ListBucketResult xmlns="http://s3.amazonaws.com/doc/2006-03-01/"><Name>test-acc-scaleway-object-acl-basic-8164605300671153292</Name><Prefix/><Delimiter/><MaxKeys>1000</MaxKeys><IsTruncated>false</IsTruncated><Marker/></ListBucketResult>
+      <Error><Code>ObjectLockConfigurationNotFoundError</Code><Message>Object Lock configuration does not exist for this bucket</Message><RequestId>tx5d8e66f6ceb645d696f3d-00636528d1</RequestId></Error>
+    headers:
+      Content-Type:
+      - application/xml
+      Date:
+      - Fri, 04 Nov 2022 14:59:29 GMT
+      X-Amz-Id-2:
+      - tx5d8e66f6ceb645d696f3d-00636528d1
+      X-Amz-Request-Id:
+      - tx5d8e66f6ceb645d696f3d-00636528d1
+    status: 404 Not Found
+    code: 404
+    duration: ""
+- request:
+    body: ""
+    form: {}
+    headers:
+      User-Agent:
+      - aws-sdk-go/1.44.128 (go1.19.2; darwin; amd64)
+      X-Amz-Content-Sha256:
+      - e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+      X-Amz-Date:
+      - 20221104T145929Z
+    url: https://test-acc-scaleway-object-acl-basic-1489519863518941180.s3.nl-ams.scw.cloud/
+    method: GET
+  response:
+    body: |-
+      <?xml version='1.0' encoding='UTF-8'?>
+      <ListBucketResult xmlns="http://s3.amazonaws.com/doc/2006-03-01/"><Name>test-acc-scaleway-object-acl-basic-1489519863518941180</Name><Prefix/><Delimiter/><MaxKeys>1000</MaxKeys><IsTruncated>false</IsTruncated><Marker/></ListBucketResult>
     headers:
       Content-Length:
       - "276"
       Content-Type:
       - application/xml
       Date:
-      - Thu, 27 Oct 2022 13:37:55 GMT
+      - Fri, 04 Nov 2022 14:59:29 GMT
       X-Amz-Id-2:
-      - txbaa29aa989e048aa83fdc-00635a89b3
+      - tx46efa3c4e1de45c1ba2fc-00636528d1
       X-Amz-Request-Id:
-      - txbaa29aa989e048aa83fdc-00635a89b3
+      - tx46efa3c4e1de45c1ba2fc-00636528d1
     status: 200 OK
     code: 200
     duration: ""
@@ -102,26 +132,26 @@ interactions:
     form: {}
     headers:
       User-Agent:
-      - aws-sdk-go/1.44.110 (go1.19.1; linux; amd64)
+      - aws-sdk-go/1.44.128 (go1.19.2; darwin; amd64)
       X-Amz-Content-Sha256:
       - e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
       X-Amz-Date:
-      - 20221027T133755Z
-    url: https://test-acc-scaleway-object-acl-basic-8164605300671153292.s3.nl-ams.scw.cloud/?tagging=
+      - 20221104T145929Z
+    url: https://test-acc-scaleway-object-acl-basic-1489519863518941180.s3.nl-ams.scw.cloud/?tagging=
     method: GET
   response:
     body: |-
       <?xml version='1.0' encoding='UTF-8'?>
-      <Error><Code>NoSuchTagSet</Code><Message>There is no tag set associated with the bucket or object.</Message><RequestId>tx59b3f30326fd4808b1749-00635a89b3</RequestId><Headers/></Error>
+      <Error><Code>NoSuchTagSet</Code><Message>There is no tag set associated with the bucket or object.</Message><RequestId>tx25bb9c75be134c1aad3e1-00636528d1</RequestId><Headers/></Error>
     headers:
       Content-Type:
       - application/xml
       Date:
-      - Thu, 27 Oct 2022 13:37:55 GMT
+      - Fri, 04 Nov 2022 14:59:29 GMT
       X-Amz-Id-2:
-      - tx59b3f30326fd4808b1749-00635a89b3
+      - tx25bb9c75be134c1aad3e1-00636528d1
       X-Amz-Request-Id:
-      - tx59b3f30326fd4808b1749-00635a89b3
+      - tx25bb9c75be134c1aad3e1-00636528d1
     status: 404 Not Found
     code: 404
     duration: ""
@@ -130,26 +160,26 @@ interactions:
     form: {}
     headers:
       User-Agent:
-      - aws-sdk-go/1.44.110 (go1.19.1; linux; amd64)
+      - aws-sdk-go/1.44.128 (go1.19.2; darwin; amd64)
       X-Amz-Content-Sha256:
       - e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
       X-Amz-Date:
-      - 20221027T133755Z
-    url: https://test-acc-scaleway-object-acl-basic-8164605300671153292.s3.nl-ams.scw.cloud/?cors=
+      - 20221104T145929Z
+    url: https://test-acc-scaleway-object-acl-basic-1489519863518941180.s3.nl-ams.scw.cloud/?cors=
     method: GET
   response:
     body: |-
       <?xml version='1.0' encoding='UTF-8'?>
-      <Error><Code>NoSuchCORSConfiguration</Code><Message>The CORS configuration does not exist</Message><RequestId>tx31bda49b53c74b6185562-00635a89b3</RequestId></Error>
+      <Error><Code>NoSuchCORSConfiguration</Code><Message>The CORS configuration does not exist</Message><RequestId>tx291a7f39599e4891b70f7-00636528d1</RequestId></Error>
     headers:
       Content-Type:
       - application/xml
       Date:
-      - Thu, 27 Oct 2022 13:37:55 GMT
+      - Fri, 04 Nov 2022 14:59:30 GMT
       X-Amz-Id-2:
-      - tx31bda49b53c74b6185562-00635a89b3
+      - tx291a7f39599e4891b70f7-00636528d1
       X-Amz-Request-Id:
-      - tx31bda49b53c74b6185562-00635a89b3
+      - tx291a7f39599e4891b70f7-00636528d1
     status: 404 Not Found
     code: 404
     duration: ""
@@ -158,12 +188,12 @@ interactions:
     form: {}
     headers:
       User-Agent:
-      - aws-sdk-go/1.44.110 (go1.19.1; linux; amd64)
+      - aws-sdk-go/1.44.128 (go1.19.2; darwin; amd64)
       X-Amz-Content-Sha256:
       - e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
       X-Amz-Date:
-      - 20221027T133755Z
-    url: https://test-acc-scaleway-object-acl-basic-8164605300671153292.s3.nl-ams.scw.cloud/?versioning=
+      - 20221104T145930Z
+    url: https://test-acc-scaleway-object-acl-basic-1489519863518941180.s3.nl-ams.scw.cloud/?versioning=
     method: GET
   response:
     body: |-
@@ -175,11 +205,11 @@ interactions:
       Content-Type:
       - text/plain
       Date:
-      - Thu, 27 Oct 2022 13:37:56 GMT
+      - Fri, 04 Nov 2022 14:59:30 GMT
       X-Amz-Id-2:
-      - tx05eac598b08d436f92895-00635a89b3
+      - tx86358819681d4f1a83827-00636528d2
       X-Amz-Request-Id:
-      - tx05eac598b08d436f92895-00635a89b3
+      - tx86358819681d4f1a83827-00636528d2
     status: 200 OK
     code: 200
     duration: ""
@@ -188,26 +218,26 @@ interactions:
     form: {}
     headers:
       User-Agent:
-      - aws-sdk-go/1.44.110 (go1.19.1; linux; amd64)
+      - aws-sdk-go/1.44.128 (go1.19.2; darwin; amd64)
       X-Amz-Content-Sha256:
       - e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
       X-Amz-Date:
-      - 20221027T133756Z
-    url: https://test-acc-scaleway-object-acl-basic-8164605300671153292.s3.nl-ams.scw.cloud/?lifecycle=
+      - 20221104T145930Z
+    url: https://test-acc-scaleway-object-acl-basic-1489519863518941180.s3.nl-ams.scw.cloud/?lifecycle=
     method: GET
   response:
     body: |-
       <?xml version='1.0' encoding='UTF-8'?>
-      <Error><Code>NoSuchLifecycleConfiguration</Code><Message>The lifecycle configuration does not exist.</Message><RequestId>txb6b142421ce64061b8890-00635a89b4</RequestId></Error>
+      <Error><Code>NoSuchLifecycleConfiguration</Code><Message>The lifecycle configuration does not exist.</Message><RequestId>tx7367a6ac7ca1481899a55-00636528d2</RequestId></Error>
     headers:
       Content-Type:
       - application/xml
       Date:
-      - Thu, 27 Oct 2022 13:37:56 GMT
+      - Fri, 04 Nov 2022 14:59:30 GMT
       X-Amz-Id-2:
-      - txb6b142421ce64061b8890-00635a89b4
+      - tx7367a6ac7ca1481899a55-00636528d2
       X-Amz-Request-Id:
-      - txb6b142421ce64061b8890-00635a89b4
+      - tx7367a6ac7ca1481899a55-00636528d2
     status: 404 Not Found
     code: 404
     duration: ""
@@ -218,14 +248,14 @@ interactions:
       Content-Md5:
       - 1B2M2Y8AsgTpgAmY7PhCfg==
       User-Agent:
-      - aws-sdk-go/1.44.110 (go1.19.1; linux; amd64)
+      - aws-sdk-go/1.44.128 (go1.19.2; darwin; amd64)
       X-Amz-Acl:
       - private
       X-Amz-Content-Sha256:
       - e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
       X-Amz-Date:
-      - 20221027T133756Z
-    url: https://test-acc-scaleway-object-acl-basic-8164605300671153292.s3.nl-ams.scw.cloud/?acl=
+      - 20221104T145930Z
+    url: https://test-acc-scaleway-object-acl-basic-1489519863518941180.s3.nl-ams.scw.cloud/?acl=
     method: PUT
   response:
     body: ""
@@ -235,11 +265,11 @@ interactions:
       Content-Type:
       - text/html; charset=UTF-8
       Date:
-      - Thu, 27 Oct 2022 13:37:56 GMT
+      - Fri, 04 Nov 2022 14:59:30 GMT
       X-Amz-Id-2:
-      - tx323d3e519da14d8fb9e33-00635a89b4
+      - tx13db4ca592cf4784bad98-00636528d2
       X-Amz-Request-Id:
-      - tx323d3e519da14d8fb9e33-00635a89b4
+      - tx13db4ca592cf4784bad98-00636528d2
     status: 200 OK
     code: 200
     duration: ""
@@ -248,28 +278,28 @@ interactions:
     form: {}
     headers:
       User-Agent:
-      - aws-sdk-go/1.44.110 (go1.19.1; linux; amd64)
+      - aws-sdk-go/1.44.128 (go1.19.2; darwin; amd64)
       X-Amz-Content-Sha256:
       - e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
       X-Amz-Date:
-      - 20221027T133756Z
-    url: https://test-acc-scaleway-object-acl-basic-8164605300671153292.s3.nl-ams.scw.cloud/?acl=
+      - 20221104T145930Z
+    url: https://test-acc-scaleway-object-acl-basic-1489519863518941180.s3.nl-ams.scw.cloud/?acl=
     method: GET
   response:
     body: |-
       <?xml version='1.0' encoding='UTF-8'?>
-      <AccessControlPolicy xmlns="http://s3.amazonaws.com/doc/2006-03-01/"><Owner><ID>ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b:ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b</ID><DisplayName>ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b:ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b</DisplayName></Owner><AccessControlList><Grant><Grantee xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="CanonicalUser"><ID>ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b:ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b</ID><DisplayName>ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b:ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b</DisplayName></Grantee><Permission>FULL_CONTROL</Permission></Grant></AccessControlList></AccessControlPolicy>
+      <AccessControlPolicy xmlns="http://s3.amazonaws.com/doc/2006-03-01/"><Owner><ID>5b331f64-6f51-45b6-aa60-d46d011e8b1a:5b331f64-6f51-45b6-aa60-d46d011e8b1a</ID><DisplayName>5b331f64-6f51-45b6-aa60-d46d011e8b1a:5b331f64-6f51-45b6-aa60-d46d011e8b1a</DisplayName></Owner><AccessControlList><Grant><Grantee xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="CanonicalUser"><ID>5b331f64-6f51-45b6-aa60-d46d011e8b1a:5b331f64-6f51-45b6-aa60-d46d011e8b1a</ID><DisplayName>5b331f64-6f51-45b6-aa60-d46d011e8b1a:5b331f64-6f51-45b6-aa60-d46d011e8b1a</DisplayName></Grantee><Permission>FULL_CONTROL</Permission></Grant></AccessControlList></AccessControlPolicy>
     headers:
       Content-Length:
       - "698"
       Content-Type:
       - text/html; charset=UTF-8
       Date:
-      - Thu, 27 Oct 2022 13:37:56 GMT
+      - Fri, 04 Nov 2022 14:59:31 GMT
       X-Amz-Id-2:
-      - txc0732300b4434e2a85c96-00635a89b4
+      - tx0dfa2c50099f4682bb1a9-00636528d2
       X-Amz-Request-Id:
-      - txc0732300b4434e2a85c96-00635a89b4
+      - tx0dfa2c50099f4682bb1a9-00636528d2
     status: 200 OK
     code: 200
     duration: ""
@@ -278,28 +308,56 @@ interactions:
     form: {}
     headers:
       User-Agent:
-      - aws-sdk-go/1.44.110 (go1.19.1; linux; amd64)
+      - aws-sdk-go/1.44.128 (go1.19.2; darwin; amd64)
       X-Amz-Content-Sha256:
       - e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
       X-Amz-Date:
-      - 20221027T133757Z
-    url: https://test-acc-scaleway-object-acl-basic-8164605300671153292.s3.nl-ams.scw.cloud/
+      - 20221104T145931Z
+    url: https://test-acc-scaleway-object-acl-basic-1489519863518941180.s3.nl-ams.scw.cloud/?object-lock=
     method: GET
   response:
     body: |-
       <?xml version='1.0' encoding='UTF-8'?>
-      <ListBucketResult xmlns="http://s3.amazonaws.com/doc/2006-03-01/"><Name>test-acc-scaleway-object-acl-basic-8164605300671153292</Name><Prefix/><Delimiter/><MaxKeys>1000</MaxKeys><IsTruncated>false</IsTruncated><Marker/></ListBucketResult>
+      <Error><Code>ObjectLockConfigurationNotFoundError</Code><Message>Object Lock configuration does not exist for this bucket</Message><RequestId>tx223ba27c9a444709856eb-00636528d3</RequestId></Error>
+    headers:
+      Content-Type:
+      - application/xml
+      Date:
+      - Fri, 04 Nov 2022 14:59:31 GMT
+      X-Amz-Id-2:
+      - tx223ba27c9a444709856eb-00636528d3
+      X-Amz-Request-Id:
+      - tx223ba27c9a444709856eb-00636528d3
+    status: 404 Not Found
+    code: 404
+    duration: ""
+- request:
+    body: ""
+    form: {}
+    headers:
+      User-Agent:
+      - aws-sdk-go/1.44.128 (go1.19.2; darwin; amd64)
+      X-Amz-Content-Sha256:
+      - e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+      X-Amz-Date:
+      - 20221104T145931Z
+    url: https://test-acc-scaleway-object-acl-basic-1489519863518941180.s3.nl-ams.scw.cloud/
+    method: GET
+  response:
+    body: |-
+      <?xml version='1.0' encoding='UTF-8'?>
+      <ListBucketResult xmlns="http://s3.amazonaws.com/doc/2006-03-01/"><Name>test-acc-scaleway-object-acl-basic-1489519863518941180</Name><Prefix/><Delimiter/><MaxKeys>1000</MaxKeys><IsTruncated>false</IsTruncated><Marker/></ListBucketResult>
     headers:
       Content-Length:
       - "276"
       Content-Type:
       - application/xml
       Date:
-      - Thu, 27 Oct 2022 13:37:57 GMT
+      - Fri, 04 Nov 2022 14:59:32 GMT
       X-Amz-Id-2:
-      - txa51b74f48d0a47759d875-00635a89b5
+      - tx37a542ad71d74a92b8c84-00636528d3
       X-Amz-Request-Id:
-      - txa51b74f48d0a47759d875-00635a89b5
+      - tx37a542ad71d74a92b8c84-00636528d3
     status: 200 OK
     code: 200
     duration: ""
@@ -308,26 +366,26 @@ interactions:
     form: {}
     headers:
       User-Agent:
-      - aws-sdk-go/1.44.110 (go1.19.1; linux; amd64)
+      - aws-sdk-go/1.44.128 (go1.19.2; darwin; amd64)
       X-Amz-Content-Sha256:
       - e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
       X-Amz-Date:
-      - 20221027T133757Z
-    url: https://test-acc-scaleway-object-acl-basic-8164605300671153292.s3.nl-ams.scw.cloud/?tagging=
+      - 20221104T145932Z
+    url: https://test-acc-scaleway-object-acl-basic-1489519863518941180.s3.nl-ams.scw.cloud/?tagging=
     method: GET
   response:
     body: |-
       <?xml version='1.0' encoding='UTF-8'?>
-      <Error><Code>NoSuchTagSet</Code><Message>There is no tag set associated with the bucket or object.</Message><RequestId>txc33ead36d10e4d0aab1f1-00635a89b5</RequestId><Headers/></Error>
+      <Error><Code>NoSuchTagSet</Code><Message>There is no tag set associated with the bucket or object.</Message><RequestId>txe7fb77ec3ad54f4fa6381-00636528d4</RequestId><Headers/></Error>
     headers:
       Content-Type:
       - application/xml
       Date:
-      - Thu, 27 Oct 2022 13:37:57 GMT
+      - Fri, 04 Nov 2022 14:59:32 GMT
       X-Amz-Id-2:
-      - txc33ead36d10e4d0aab1f1-00635a89b5
+      - txe7fb77ec3ad54f4fa6381-00636528d4
       X-Amz-Request-Id:
-      - txc33ead36d10e4d0aab1f1-00635a89b5
+      - txe7fb77ec3ad54f4fa6381-00636528d4
     status: 404 Not Found
     code: 404
     duration: ""
@@ -336,26 +394,26 @@ interactions:
     form: {}
     headers:
       User-Agent:
-      - aws-sdk-go/1.44.110 (go1.19.1; linux; amd64)
+      - aws-sdk-go/1.44.128 (go1.19.2; darwin; amd64)
       X-Amz-Content-Sha256:
       - e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
       X-Amz-Date:
-      - 20221027T133757Z
-    url: https://test-acc-scaleway-object-acl-basic-8164605300671153292.s3.nl-ams.scw.cloud/?cors=
+      - 20221104T145932Z
+    url: https://test-acc-scaleway-object-acl-basic-1489519863518941180.s3.nl-ams.scw.cloud/?cors=
     method: GET
   response:
     body: |-
       <?xml version='1.0' encoding='UTF-8'?>
-      <Error><Code>NoSuchCORSConfiguration</Code><Message>The CORS configuration does not exist</Message><RequestId>txa0e0c2a2fdfd4de081d1e-00635a89b5</RequestId></Error>
+      <Error><Code>NoSuchCORSConfiguration</Code><Message>The CORS configuration does not exist</Message><RequestId>tx701ebe68354149bcb6e97-00636528d4</RequestId></Error>
     headers:
       Content-Type:
       - application/xml
       Date:
-      - Thu, 27 Oct 2022 13:37:57 GMT
+      - Fri, 04 Nov 2022 14:59:32 GMT
       X-Amz-Id-2:
-      - txa0e0c2a2fdfd4de081d1e-00635a89b5
+      - tx701ebe68354149bcb6e97-00636528d4
       X-Amz-Request-Id:
-      - txa0e0c2a2fdfd4de081d1e-00635a89b5
+      - tx701ebe68354149bcb6e97-00636528d4
     status: 404 Not Found
     code: 404
     duration: ""
@@ -364,12 +422,12 @@ interactions:
     form: {}
     headers:
       User-Agent:
-      - aws-sdk-go/1.44.110 (go1.19.1; linux; amd64)
+      - aws-sdk-go/1.44.128 (go1.19.2; darwin; amd64)
       X-Amz-Content-Sha256:
       - e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
       X-Amz-Date:
-      - 20221027T133758Z
-    url: https://test-acc-scaleway-object-acl-basic-8164605300671153292.s3.nl-ams.scw.cloud/?versioning=
+      - 20221104T145932Z
+    url: https://test-acc-scaleway-object-acl-basic-1489519863518941180.s3.nl-ams.scw.cloud/?versioning=
     method: GET
   response:
     body: |-
@@ -381,11 +439,11 @@ interactions:
       Content-Type:
       - text/plain
       Date:
-      - Thu, 27 Oct 2022 13:37:58 GMT
+      - Fri, 04 Nov 2022 14:59:32 GMT
       X-Amz-Id-2:
-      - txca333605a4b04154855e0-00635a89b6
+      - tx4e47fa578af1491e86fca-00636528d4
       X-Amz-Request-Id:
-      - txca333605a4b04154855e0-00635a89b6
+      - tx4e47fa578af1491e86fca-00636528d4
     status: 200 OK
     code: 200
     duration: ""
@@ -394,26 +452,26 @@ interactions:
     form: {}
     headers:
       User-Agent:
-      - aws-sdk-go/1.44.110 (go1.19.1; linux; amd64)
+      - aws-sdk-go/1.44.128 (go1.19.2; darwin; amd64)
       X-Amz-Content-Sha256:
       - e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
       X-Amz-Date:
-      - 20221027T133758Z
-    url: https://test-acc-scaleway-object-acl-basic-8164605300671153292.s3.nl-ams.scw.cloud/?lifecycle=
+      - 20221104T145932Z
+    url: https://test-acc-scaleway-object-acl-basic-1489519863518941180.s3.nl-ams.scw.cloud/?lifecycle=
     method: GET
   response:
     body: |-
       <?xml version='1.0' encoding='UTF-8'?>
-      <Error><Code>NoSuchLifecycleConfiguration</Code><Message>The lifecycle configuration does not exist.</Message><RequestId>tx7a8ca69d111f43adb8eb3-00635a89b6</RequestId></Error>
+      <Error><Code>NoSuchLifecycleConfiguration</Code><Message>The lifecycle configuration does not exist.</Message><RequestId>txb13928b670c0482ca5f4f-00636528d4</RequestId></Error>
     headers:
       Content-Type:
       - application/xml
       Date:
-      - Thu, 27 Oct 2022 13:37:58 GMT
+      - Fri, 04 Nov 2022 14:59:32 GMT
       X-Amz-Id-2:
-      - tx7a8ca69d111f43adb8eb3-00635a89b6
+      - txb13928b670c0482ca5f4f-00636528d4
       X-Amz-Request-Id:
-      - tx7a8ca69d111f43adb8eb3-00635a89b6
+      - txb13928b670c0482ca5f4f-00636528d4
     status: 404 Not Found
     code: 404
     duration: ""
@@ -422,28 +480,28 @@ interactions:
     form: {}
     headers:
       User-Agent:
-      - aws-sdk-go/1.44.110 (go1.19.1; linux; amd64)
+      - aws-sdk-go/1.44.128 (go1.19.2; darwin; amd64)
       X-Amz-Content-Sha256:
       - e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
       X-Amz-Date:
-      - 20221027T133758Z
-    url: https://test-acc-scaleway-object-acl-basic-8164605300671153292.s3.nl-ams.scw.cloud/?acl=
+      - 20221104T145932Z
+    url: https://test-acc-scaleway-object-acl-basic-1489519863518941180.s3.nl-ams.scw.cloud/?acl=
     method: GET
   response:
     body: |-
       <?xml version='1.0' encoding='UTF-8'?>
-      <AccessControlPolicy xmlns="http://s3.amazonaws.com/doc/2006-03-01/"><Owner><ID>ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b:ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b</ID><DisplayName>ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b:ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b</DisplayName></Owner><AccessControlList><Grant><Grantee xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="CanonicalUser"><ID>ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b:ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b</ID><DisplayName>ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b:ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b</DisplayName></Grantee><Permission>FULL_CONTROL</Permission></Grant></AccessControlList></AccessControlPolicy>
+      <AccessControlPolicy xmlns="http://s3.amazonaws.com/doc/2006-03-01/"><Owner><ID>5b331f64-6f51-45b6-aa60-d46d011e8b1a:5b331f64-6f51-45b6-aa60-d46d011e8b1a</ID><DisplayName>5b331f64-6f51-45b6-aa60-d46d011e8b1a:5b331f64-6f51-45b6-aa60-d46d011e8b1a</DisplayName></Owner><AccessControlList><Grant><Grantee xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="CanonicalUser"><ID>5b331f64-6f51-45b6-aa60-d46d011e8b1a:5b331f64-6f51-45b6-aa60-d46d011e8b1a</ID><DisplayName>5b331f64-6f51-45b6-aa60-d46d011e8b1a:5b331f64-6f51-45b6-aa60-d46d011e8b1a</DisplayName></Grantee><Permission>FULL_CONTROL</Permission></Grant></AccessControlList></AccessControlPolicy>
     headers:
       Content-Length:
       - "698"
       Content-Type:
       - text/html; charset=UTF-8
       Date:
-      - Thu, 27 Oct 2022 13:37:58 GMT
+      - Fri, 04 Nov 2022 14:59:33 GMT
       X-Amz-Id-2:
-      - txe0d9f8d55bb140148bc96-00635a89b6
+      - txcb6f51376ae940d98825c-00636528d4
       X-Amz-Request-Id:
-      - txe0d9f8d55bb140148bc96-00635a89b6
+      - txcb6f51376ae940d98825c-00636528d4
     status: 200 OK
     code: 200
     duration: ""
@@ -452,28 +510,56 @@ interactions:
     form: {}
     headers:
       User-Agent:
-      - aws-sdk-go/1.44.110 (go1.19.1; linux; amd64)
+      - aws-sdk-go/1.44.128 (go1.19.2; darwin; amd64)
       X-Amz-Content-Sha256:
       - e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
       X-Amz-Date:
-      - 20221027T133759Z
-    url: https://test-acc-scaleway-object-acl-basic-8164605300671153292.s3.nl-ams.scw.cloud/
+      - 20221104T145933Z
+    url: https://test-acc-scaleway-object-acl-basic-1489519863518941180.s3.nl-ams.scw.cloud/?object-lock=
     method: GET
   response:
     body: |-
       <?xml version='1.0' encoding='UTF-8'?>
-      <ListBucketResult xmlns="http://s3.amazonaws.com/doc/2006-03-01/"><Name>test-acc-scaleway-object-acl-basic-8164605300671153292</Name><Prefix/><Delimiter/><MaxKeys>1000</MaxKeys><IsTruncated>false</IsTruncated><Marker/></ListBucketResult>
+      <Error><Code>ObjectLockConfigurationNotFoundError</Code><Message>Object Lock configuration does not exist for this bucket</Message><RequestId>txb0283bf9a7224e7c95b4e-00636528d5</RequestId></Error>
+    headers:
+      Content-Type:
+      - application/xml
+      Date:
+      - Fri, 04 Nov 2022 14:59:33 GMT
+      X-Amz-Id-2:
+      - txb0283bf9a7224e7c95b4e-00636528d5
+      X-Amz-Request-Id:
+      - txb0283bf9a7224e7c95b4e-00636528d5
+    status: 404 Not Found
+    code: 404
+    duration: ""
+- request:
+    body: ""
+    form: {}
+    headers:
+      User-Agent:
+      - aws-sdk-go/1.44.128 (go1.19.2; darwin; amd64)
+      X-Amz-Content-Sha256:
+      - e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+      X-Amz-Date:
+      - 20221104T145933Z
+    url: https://test-acc-scaleway-object-acl-basic-1489519863518941180.s3.nl-ams.scw.cloud/
+    method: GET
+  response:
+    body: |-
+      <?xml version='1.0' encoding='UTF-8'?>
+      <ListBucketResult xmlns="http://s3.amazonaws.com/doc/2006-03-01/"><Name>test-acc-scaleway-object-acl-basic-1489519863518941180</Name><Prefix/><Delimiter/><MaxKeys>1000</MaxKeys><IsTruncated>false</IsTruncated><Marker/></ListBucketResult>
     headers:
       Content-Length:
       - "276"
       Content-Type:
       - application/xml
       Date:
-      - Thu, 27 Oct 2022 13:38:00 GMT
+      - Fri, 04 Nov 2022 14:59:34 GMT
       X-Amz-Id-2:
-      - tx7db3fbedcd5747fd89f02-00635a89b7
+      - tx2c3c0053a9eb49e2b347a-00636528d5
       X-Amz-Request-Id:
-      - tx7db3fbedcd5747fd89f02-00635a89b7
+      - tx2c3c0053a9eb49e2b347a-00636528d5
     status: 200 OK
     code: 200
     duration: ""
@@ -482,26 +568,26 @@ interactions:
     form: {}
     headers:
       User-Agent:
-      - aws-sdk-go/1.44.110 (go1.19.1; linux; amd64)
+      - aws-sdk-go/1.44.128 (go1.19.2; darwin; amd64)
       X-Amz-Content-Sha256:
       - e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
       X-Amz-Date:
-      - 20221027T133800Z
-    url: https://test-acc-scaleway-object-acl-basic-8164605300671153292.s3.nl-ams.scw.cloud/?tagging=
+      - 20221104T145933Z
+    url: https://test-acc-scaleway-object-acl-basic-1489519863518941180.s3.nl-ams.scw.cloud/?tagging=
     method: GET
   response:
     body: |-
       <?xml version='1.0' encoding='UTF-8'?>
-      <Error><Code>NoSuchTagSet</Code><Message>There is no tag set associated with the bucket or object.</Message><RequestId>tx585ab46b17274bc2bb7a1-00635a89b8</RequestId><Headers/></Error>
+      <Error><Code>NoSuchTagSet</Code><Message>There is no tag set associated with the bucket or object.</Message><RequestId>txe95f570c5e8e411bb5a67-00636528d6</RequestId><Headers/></Error>
     headers:
       Content-Type:
       - application/xml
       Date:
-      - Thu, 27 Oct 2022 13:38:00 GMT
+      - Fri, 04 Nov 2022 14:59:34 GMT
       X-Amz-Id-2:
-      - tx585ab46b17274bc2bb7a1-00635a89b8
+      - txe95f570c5e8e411bb5a67-00636528d6
       X-Amz-Request-Id:
-      - tx585ab46b17274bc2bb7a1-00635a89b8
+      - txe95f570c5e8e411bb5a67-00636528d6
     status: 404 Not Found
     code: 404
     duration: ""
@@ -510,26 +596,26 @@ interactions:
     form: {}
     headers:
       User-Agent:
-      - aws-sdk-go/1.44.110 (go1.19.1; linux; amd64)
+      - aws-sdk-go/1.44.128 (go1.19.2; darwin; amd64)
       X-Amz-Content-Sha256:
       - e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
       X-Amz-Date:
-      - 20221027T133800Z
-    url: https://test-acc-scaleway-object-acl-basic-8164605300671153292.s3.nl-ams.scw.cloud/?cors=
+      - 20221104T145934Z
+    url: https://test-acc-scaleway-object-acl-basic-1489519863518941180.s3.nl-ams.scw.cloud/?cors=
     method: GET
   response:
     body: |-
       <?xml version='1.0' encoding='UTF-8'?>
-      <Error><Code>NoSuchCORSConfiguration</Code><Message>The CORS configuration does not exist</Message><RequestId>txf351938116dd4ca3a99bd-00635a89b8</RequestId></Error>
+      <Error><Code>NoSuchCORSConfiguration</Code><Message>The CORS configuration does not exist</Message><RequestId>tx96e7957ffbce450a8a18a-00636528d6</RequestId></Error>
     headers:
       Content-Type:
       - application/xml
       Date:
-      - Thu, 27 Oct 2022 13:38:00 GMT
+      - Fri, 04 Nov 2022 14:59:34 GMT
       X-Amz-Id-2:
-      - txf351938116dd4ca3a99bd-00635a89b8
+      - tx96e7957ffbce450a8a18a-00636528d6
       X-Amz-Request-Id:
-      - txf351938116dd4ca3a99bd-00635a89b8
+      - tx96e7957ffbce450a8a18a-00636528d6
     status: 404 Not Found
     code: 404
     duration: ""
@@ -538,12 +624,12 @@ interactions:
     form: {}
     headers:
       User-Agent:
-      - aws-sdk-go/1.44.110 (go1.19.1; linux; amd64)
+      - aws-sdk-go/1.44.128 (go1.19.2; darwin; amd64)
       X-Amz-Content-Sha256:
       - e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
       X-Amz-Date:
-      - 20221027T133800Z
-    url: https://test-acc-scaleway-object-acl-basic-8164605300671153292.s3.nl-ams.scw.cloud/?versioning=
+      - 20221104T145934Z
+    url: https://test-acc-scaleway-object-acl-basic-1489519863518941180.s3.nl-ams.scw.cloud/?versioning=
     method: GET
   response:
     body: |-
@@ -555,11 +641,11 @@ interactions:
       Content-Type:
       - text/plain
       Date:
-      - Thu, 27 Oct 2022 13:38:01 GMT
+      - Fri, 04 Nov 2022 14:59:34 GMT
       X-Amz-Id-2:
-      - tx5505981df00f4ec388077-00635a89b8
+      - txb74516319c564916a5487-00636528d6
       X-Amz-Request-Id:
-      - tx5505981df00f4ec388077-00635a89b8
+      - txb74516319c564916a5487-00636528d6
     status: 200 OK
     code: 200
     duration: ""
@@ -568,26 +654,26 @@ interactions:
     form: {}
     headers:
       User-Agent:
-      - aws-sdk-go/1.44.110 (go1.19.1; linux; amd64)
+      - aws-sdk-go/1.44.128 (go1.19.2; darwin; amd64)
       X-Amz-Content-Sha256:
       - e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
       X-Amz-Date:
-      - 20221027T133801Z
-    url: https://test-acc-scaleway-object-acl-basic-8164605300671153292.s3.nl-ams.scw.cloud/?lifecycle=
+      - 20221104T145934Z
+    url: https://test-acc-scaleway-object-acl-basic-1489519863518941180.s3.nl-ams.scw.cloud/?lifecycle=
     method: GET
   response:
     body: |-
       <?xml version='1.0' encoding='UTF-8'?>
-      <Error><Code>NoSuchLifecycleConfiguration</Code><Message>The lifecycle configuration does not exist.</Message><RequestId>tx79de3fa1810249679fc19-00635a89b9</RequestId></Error>
+      <Error><Code>NoSuchLifecycleConfiguration</Code><Message>The lifecycle configuration does not exist.</Message><RequestId>txaade0bca7f3b44d994a81-00636528d6</RequestId></Error>
     headers:
       Content-Type:
       - application/xml
       Date:
-      - Thu, 27 Oct 2022 13:38:01 GMT
+      - Fri, 04 Nov 2022 14:59:34 GMT
       X-Amz-Id-2:
-      - tx79de3fa1810249679fc19-00635a89b9
+      - txaade0bca7f3b44d994a81-00636528d6
       X-Amz-Request-Id:
-      - tx79de3fa1810249679fc19-00635a89b9
+      - txaade0bca7f3b44d994a81-00636528d6
     status: 404 Not Found
     code: 404
     duration: ""
@@ -596,28 +682,28 @@ interactions:
     form: {}
     headers:
       User-Agent:
-      - aws-sdk-go/1.44.110 (go1.19.1; linux; amd64)
+      - aws-sdk-go/1.44.128 (go1.19.2; darwin; amd64)
       X-Amz-Content-Sha256:
       - e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
       X-Amz-Date:
-      - 20221027T133801Z
-    url: https://test-acc-scaleway-object-acl-basic-8164605300671153292.s3.nl-ams.scw.cloud/?acl=
+      - 20221104T145934Z
+    url: https://test-acc-scaleway-object-acl-basic-1489519863518941180.s3.nl-ams.scw.cloud/?acl=
     method: GET
   response:
     body: |-
       <?xml version='1.0' encoding='UTF-8'?>
-      <AccessControlPolicy xmlns="http://s3.amazonaws.com/doc/2006-03-01/"><Owner><ID>ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b:ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b</ID><DisplayName>ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b:ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b</DisplayName></Owner><AccessControlList><Grant><Grantee xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="CanonicalUser"><ID>ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b:ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b</ID><DisplayName>ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b:ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b</DisplayName></Grantee><Permission>FULL_CONTROL</Permission></Grant></AccessControlList></AccessControlPolicy>
+      <AccessControlPolicy xmlns="http://s3.amazonaws.com/doc/2006-03-01/"><Owner><ID>5b331f64-6f51-45b6-aa60-d46d011e8b1a:5b331f64-6f51-45b6-aa60-d46d011e8b1a</ID><DisplayName>5b331f64-6f51-45b6-aa60-d46d011e8b1a:5b331f64-6f51-45b6-aa60-d46d011e8b1a</DisplayName></Owner><AccessControlList><Grant><Grantee xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="CanonicalUser"><ID>5b331f64-6f51-45b6-aa60-d46d011e8b1a:5b331f64-6f51-45b6-aa60-d46d011e8b1a</ID><DisplayName>5b331f64-6f51-45b6-aa60-d46d011e8b1a:5b331f64-6f51-45b6-aa60-d46d011e8b1a</DisplayName></Grantee><Permission>FULL_CONTROL</Permission></Grant></AccessControlList></AccessControlPolicy>
     headers:
       Content-Length:
       - "698"
       Content-Type:
       - text/html; charset=UTF-8
       Date:
-      - Thu, 27 Oct 2022 13:38:01 GMT
+      - Fri, 04 Nov 2022 14:59:35 GMT
       X-Amz-Id-2:
-      - tx743bccd1c37f4afd9fd07-00635a89b9
+      - tx509117ffbd784e0eb5ede-00636528d6
       X-Amz-Request-Id:
-      - tx743bccd1c37f4afd9fd07-00635a89b9
+      - tx509117ffbd784e0eb5ede-00636528d6
     status: 200 OK
     code: 200
     duration: ""
@@ -628,14 +714,14 @@ interactions:
       Content-Md5:
       - 1B2M2Y8AsgTpgAmY7PhCfg==
       User-Agent:
-      - aws-sdk-go/1.44.110 (go1.19.1; linux; amd64)
+      - aws-sdk-go/1.44.128 (go1.19.2; darwin; amd64)
       X-Amz-Acl:
       - public-read
       X-Amz-Content-Sha256:
       - e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
       X-Amz-Date:
-      - 20221027T133802Z
-    url: https://test-acc-scaleway-object-acl-basic-8164605300671153292.s3.nl-ams.scw.cloud/?acl=
+      - 20221104T145935Z
+    url: https://test-acc-scaleway-object-acl-basic-1489519863518941180.s3.nl-ams.scw.cloud/?acl=
     method: PUT
   response:
     body: ""
@@ -645,11 +731,11 @@ interactions:
       Content-Type:
       - text/html; charset=UTF-8
       Date:
-      - Thu, 27 Oct 2022 13:38:02 GMT
+      - Fri, 04 Nov 2022 14:59:35 GMT
       X-Amz-Id-2:
-      - txe9b9bd3f327447af83686-00635a89ba
+      - tx5fcf0296a3bf4ba7b4a01-00636528d7
       X-Amz-Request-Id:
-      - txe9b9bd3f327447af83686-00635a89ba
+      - tx5fcf0296a3bf4ba7b4a01-00636528d7
     status: 200 OK
     code: 200
     duration: ""
@@ -658,28 +744,28 @@ interactions:
     form: {}
     headers:
       User-Agent:
-      - aws-sdk-go/1.44.110 (go1.19.1; linux; amd64)
+      - aws-sdk-go/1.44.128 (go1.19.2; darwin; amd64)
       X-Amz-Content-Sha256:
       - e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
       X-Amz-Date:
-      - 20221027T133802Z
-    url: https://test-acc-scaleway-object-acl-basic-8164605300671153292.s3.nl-ams.scw.cloud/?acl=
+      - 20221104T145935Z
+    url: https://test-acc-scaleway-object-acl-basic-1489519863518941180.s3.nl-ams.scw.cloud/?acl=
     method: GET
   response:
     body: |-
       <?xml version='1.0' encoding='UTF-8'?>
-      <AccessControlPolicy xmlns="http://s3.amazonaws.com/doc/2006-03-01/"><Owner><ID>ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b:ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b</ID><DisplayName>ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b:ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b</DisplayName></Owner><AccessControlList><Grant><Grantee xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="Group"><URI>http://acs.amazonaws.com/groups/global/AllUsers</URI></Grantee><Permission>READ</Permission></Grant><Grant><Grantee xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="CanonicalUser"><ID>ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b:ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b</ID><DisplayName>ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b:ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b</DisplayName></Grantee><Permission>FULL_CONTROL</Permission></Grant></AccessControlList></AccessControlPolicy>
+      <AccessControlPolicy xmlns="http://s3.amazonaws.com/doc/2006-03-01/"><Owner><ID>5b331f64-6f51-45b6-aa60-d46d011e8b1a:5b331f64-6f51-45b6-aa60-d46d011e8b1a</ID><DisplayName>5b331f64-6f51-45b6-aa60-d46d011e8b1a:5b331f64-6f51-45b6-aa60-d46d011e8b1a</DisplayName></Owner><AccessControlList><Grant><Grantee xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="Group"><URI>http://acs.amazonaws.com/groups/global/AllUsers</URI></Grantee><Permission>READ</Permission></Grant><Grant><Grantee xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="CanonicalUser"><ID>5b331f64-6f51-45b6-aa60-d46d011e8b1a:5b331f64-6f51-45b6-aa60-d46d011e8b1a</ID><DisplayName>5b331f64-6f51-45b6-aa60-d46d011e8b1a:5b331f64-6f51-45b6-aa60-d46d011e8b1a</DisplayName></Grantee><Permission>FULL_CONTROL</Permission></Grant></AccessControlList></AccessControlPolicy>
     headers:
       Content-Length:
       - "890"
       Content-Type:
       - text/html; charset=UTF-8
       Date:
-      - Thu, 27 Oct 2022 13:38:02 GMT
+      - Fri, 04 Nov 2022 14:59:35 GMT
       X-Amz-Id-2:
-      - tx5337c7f65ba4400aae63e-00635a89ba
+      - tx0a265d70ecf54837a95fd-00636528d7
       X-Amz-Request-Id:
-      - tx5337c7f65ba4400aae63e-00635a89ba
+      - tx0a265d70ecf54837a95fd-00636528d7
     status: 200 OK
     code: 200
     duration: ""
@@ -688,28 +774,56 @@ interactions:
     form: {}
     headers:
       User-Agent:
-      - aws-sdk-go/1.44.110 (go1.19.1; linux; amd64)
+      - aws-sdk-go/1.44.128 (go1.19.2; darwin; amd64)
       X-Amz-Content-Sha256:
       - e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
       X-Amz-Date:
-      - 20221027T133803Z
-    url: https://test-acc-scaleway-object-acl-basic-8164605300671153292.s3.nl-ams.scw.cloud/
+      - 20221104T145936Z
+    url: https://test-acc-scaleway-object-acl-basic-1489519863518941180.s3.nl-ams.scw.cloud/?object-lock=
     method: GET
   response:
     body: |-
       <?xml version='1.0' encoding='UTF-8'?>
-      <ListBucketResult xmlns="http://s3.amazonaws.com/doc/2006-03-01/"><Name>test-acc-scaleway-object-acl-basic-8164605300671153292</Name><Prefix/><Delimiter/><MaxKeys>1000</MaxKeys><IsTruncated>false</IsTruncated><Marker/></ListBucketResult>
+      <Error><Code>ObjectLockConfigurationNotFoundError</Code><Message>Object Lock configuration does not exist for this bucket</Message><RequestId>tx0011c2c79fe141ad837e9-00636528d8</RequestId></Error>
+    headers:
+      Content-Type:
+      - application/xml
+      Date:
+      - Fri, 04 Nov 2022 14:59:36 GMT
+      X-Amz-Id-2:
+      - tx0011c2c79fe141ad837e9-00636528d8
+      X-Amz-Request-Id:
+      - tx0011c2c79fe141ad837e9-00636528d8
+    status: 404 Not Found
+    code: 404
+    duration: ""
+- request:
+    body: ""
+    form: {}
+    headers:
+      User-Agent:
+      - aws-sdk-go/1.44.128 (go1.19.2; darwin; amd64)
+      X-Amz-Content-Sha256:
+      - e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+      X-Amz-Date:
+      - 20221104T145936Z
+    url: https://test-acc-scaleway-object-acl-basic-1489519863518941180.s3.nl-ams.scw.cloud/
+    method: GET
+  response:
+    body: |-
+      <?xml version='1.0' encoding='UTF-8'?>
+      <ListBucketResult xmlns="http://s3.amazonaws.com/doc/2006-03-01/"><Name>test-acc-scaleway-object-acl-basic-1489519863518941180</Name><Prefix/><Delimiter/><MaxKeys>1000</MaxKeys><IsTruncated>false</IsTruncated><Marker/></ListBucketResult>
     headers:
       Content-Length:
       - "276"
       Content-Type:
       - application/xml
       Date:
-      - Thu, 27 Oct 2022 13:38:03 GMT
+      - Fri, 04 Nov 2022 14:59:36 GMT
       X-Amz-Id-2:
-      - tx504aacd1b68e41728f95e-00635a89bb
+      - tx8e1a096823e345369c56e-00636528d8
       X-Amz-Request-Id:
-      - tx504aacd1b68e41728f95e-00635a89bb
+      - tx8e1a096823e345369c56e-00636528d8
     status: 200 OK
     code: 200
     duration: ""
@@ -718,26 +832,26 @@ interactions:
     form: {}
     headers:
       User-Agent:
-      - aws-sdk-go/1.44.110 (go1.19.1; linux; amd64)
+      - aws-sdk-go/1.44.128 (go1.19.2; darwin; amd64)
       X-Amz-Content-Sha256:
       - e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
       X-Amz-Date:
-      - 20221027T133803Z
-    url: https://test-acc-scaleway-object-acl-basic-8164605300671153292.s3.nl-ams.scw.cloud/?tagging=
+      - 20221104T145936Z
+    url: https://test-acc-scaleway-object-acl-basic-1489519863518941180.s3.nl-ams.scw.cloud/?tagging=
     method: GET
   response:
     body: |-
       <?xml version='1.0' encoding='UTF-8'?>
-      <Error><Code>NoSuchTagSet</Code><Message>There is no tag set associated with the bucket or object.</Message><RequestId>tx037158910c6d46f5a9220-00635a89bb</RequestId><Headers/></Error>
+      <Error><Code>NoSuchTagSet</Code><Message>There is no tag set associated with the bucket or object.</Message><RequestId>tx85a9f5c9ed974834927a6-00636528d8</RequestId><Headers/></Error>
     headers:
       Content-Type:
       - application/xml
       Date:
-      - Thu, 27 Oct 2022 13:38:03 GMT
+      - Fri, 04 Nov 2022 14:59:36 GMT
       X-Amz-Id-2:
-      - tx037158910c6d46f5a9220-00635a89bb
+      - tx85a9f5c9ed974834927a6-00636528d8
       X-Amz-Request-Id:
-      - tx037158910c6d46f5a9220-00635a89bb
+      - tx85a9f5c9ed974834927a6-00636528d8
     status: 404 Not Found
     code: 404
     duration: ""
@@ -746,26 +860,26 @@ interactions:
     form: {}
     headers:
       User-Agent:
-      - aws-sdk-go/1.44.110 (go1.19.1; linux; amd64)
+      - aws-sdk-go/1.44.128 (go1.19.2; darwin; amd64)
       X-Amz-Content-Sha256:
       - e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
       X-Amz-Date:
-      - 20221027T133804Z
-    url: https://test-acc-scaleway-object-acl-basic-8164605300671153292.s3.nl-ams.scw.cloud/?cors=
+      - 20221104T145936Z
+    url: https://test-acc-scaleway-object-acl-basic-1489519863518941180.s3.nl-ams.scw.cloud/?cors=
     method: GET
   response:
     body: |-
       <?xml version='1.0' encoding='UTF-8'?>
-      <Error><Code>NoSuchCORSConfiguration</Code><Message>The CORS configuration does not exist</Message><RequestId>txcf974e237cb545e39254c-00635a89bc</RequestId></Error>
+      <Error><Code>NoSuchCORSConfiguration</Code><Message>The CORS configuration does not exist</Message><RequestId>tx25b07c51a3854ab6ae9d1-00636528d8</RequestId></Error>
     headers:
       Content-Type:
       - application/xml
       Date:
-      - Thu, 27 Oct 2022 13:38:04 GMT
+      - Fri, 04 Nov 2022 14:59:36 GMT
       X-Amz-Id-2:
-      - txcf974e237cb545e39254c-00635a89bc
+      - tx25b07c51a3854ab6ae9d1-00636528d8
       X-Amz-Request-Id:
-      - txcf974e237cb545e39254c-00635a89bc
+      - tx25b07c51a3854ab6ae9d1-00636528d8
     status: 404 Not Found
     code: 404
     duration: ""
@@ -774,12 +888,12 @@ interactions:
     form: {}
     headers:
       User-Agent:
-      - aws-sdk-go/1.44.110 (go1.19.1; linux; amd64)
+      - aws-sdk-go/1.44.128 (go1.19.2; darwin; amd64)
       X-Amz-Content-Sha256:
       - e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
       X-Amz-Date:
-      - 20221027T133804Z
-    url: https://test-acc-scaleway-object-acl-basic-8164605300671153292.s3.nl-ams.scw.cloud/?versioning=
+      - 20221104T145936Z
+    url: https://test-acc-scaleway-object-acl-basic-1489519863518941180.s3.nl-ams.scw.cloud/?versioning=
     method: GET
   response:
     body: |-
@@ -791,11 +905,11 @@ interactions:
       Content-Type:
       - text/plain
       Date:
-      - Thu, 27 Oct 2022 13:38:04 GMT
+      - Fri, 04 Nov 2022 14:59:37 GMT
       X-Amz-Id-2:
-      - tx41ffe8142f474f3cb083f-00635a89bc
+      - txaf243e2c124843e5aa8bd-00636528d8
       X-Amz-Request-Id:
-      - tx41ffe8142f474f3cb083f-00635a89bc
+      - txaf243e2c124843e5aa8bd-00636528d8
     status: 200 OK
     code: 200
     duration: ""
@@ -804,26 +918,26 @@ interactions:
     form: {}
     headers:
       User-Agent:
-      - aws-sdk-go/1.44.110 (go1.19.1; linux; amd64)
+      - aws-sdk-go/1.44.128 (go1.19.2; darwin; amd64)
       X-Amz-Content-Sha256:
       - e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
       X-Amz-Date:
-      - 20221027T133804Z
-    url: https://test-acc-scaleway-object-acl-basic-8164605300671153292.s3.nl-ams.scw.cloud/?lifecycle=
+      - 20221104T145937Z
+    url: https://test-acc-scaleway-object-acl-basic-1489519863518941180.s3.nl-ams.scw.cloud/?lifecycle=
     method: GET
   response:
     body: |-
       <?xml version='1.0' encoding='UTF-8'?>
-      <Error><Code>NoSuchLifecycleConfiguration</Code><Message>The lifecycle configuration does not exist.</Message><RequestId>tx54d7444fead140f8a2691-00635a89bc</RequestId></Error>
+      <Error><Code>NoSuchLifecycleConfiguration</Code><Message>The lifecycle configuration does not exist.</Message><RequestId>tx97e792b9956349fd830e8-00636528d9</RequestId></Error>
     headers:
       Content-Type:
       - application/xml
       Date:
-      - Thu, 27 Oct 2022 13:38:04 GMT
+      - Fri, 04 Nov 2022 14:59:37 GMT
       X-Amz-Id-2:
-      - tx54d7444fead140f8a2691-00635a89bc
+      - tx97e792b9956349fd830e8-00636528d9
       X-Amz-Request-Id:
-      - tx54d7444fead140f8a2691-00635a89bc
+      - tx97e792b9956349fd830e8-00636528d9
     status: 404 Not Found
     code: 404
     duration: ""
@@ -832,28 +946,28 @@ interactions:
     form: {}
     headers:
       User-Agent:
-      - aws-sdk-go/1.44.110 (go1.19.1; linux; amd64)
+      - aws-sdk-go/1.44.128 (go1.19.2; darwin; amd64)
       X-Amz-Content-Sha256:
       - e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
       X-Amz-Date:
-      - 20221027T133804Z
-    url: https://test-acc-scaleway-object-acl-basic-8164605300671153292.s3.nl-ams.scw.cloud/?acl=
+      - 20221104T145937Z
+    url: https://test-acc-scaleway-object-acl-basic-1489519863518941180.s3.nl-ams.scw.cloud/?acl=
     method: GET
   response:
     body: |-
       <?xml version='1.0' encoding='UTF-8'?>
-      <AccessControlPolicy xmlns="http://s3.amazonaws.com/doc/2006-03-01/"><Owner><ID>ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b:ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b</ID><DisplayName>ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b:ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b</DisplayName></Owner><AccessControlList><Grant><Grantee xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="Group"><URI>http://acs.amazonaws.com/groups/global/AllUsers</URI></Grantee><Permission>READ</Permission></Grant><Grant><Grantee xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="CanonicalUser"><ID>ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b:ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b</ID><DisplayName>ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b:ee7bd9e1-9cbd-4724-b2f4-19e50f3cf38b</DisplayName></Grantee><Permission>FULL_CONTROL</Permission></Grant></AccessControlList></AccessControlPolicy>
+      <AccessControlPolicy xmlns="http://s3.amazonaws.com/doc/2006-03-01/"><Owner><ID>5b331f64-6f51-45b6-aa60-d46d011e8b1a:5b331f64-6f51-45b6-aa60-d46d011e8b1a</ID><DisplayName>5b331f64-6f51-45b6-aa60-d46d011e8b1a:5b331f64-6f51-45b6-aa60-d46d011e8b1a</DisplayName></Owner><AccessControlList><Grant><Grantee xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="Group"><URI>http://acs.amazonaws.com/groups/global/AllUsers</URI></Grantee><Permission>READ</Permission></Grant><Grant><Grantee xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="CanonicalUser"><ID>5b331f64-6f51-45b6-aa60-d46d011e8b1a:5b331f64-6f51-45b6-aa60-d46d011e8b1a</ID><DisplayName>5b331f64-6f51-45b6-aa60-d46d011e8b1a:5b331f64-6f51-45b6-aa60-d46d011e8b1a</DisplayName></Grantee><Permission>FULL_CONTROL</Permission></Grant></AccessControlList></AccessControlPolicy>
     headers:
       Content-Length:
       - "890"
       Content-Type:
       - text/html; charset=UTF-8
       Date:
-      - Thu, 27 Oct 2022 13:38:04 GMT
+      - Fri, 04 Nov 2022 14:59:37 GMT
       X-Amz-Id-2:
-      - tx96eb6ebf63854ce681044-00635a89bc
+      - tx851943cc309f40f59fef6-00636528d9
       X-Amz-Request-Id:
-      - tx96eb6ebf63854ce681044-00635a89bc
+      - tx851943cc309f40f59fef6-00636528d9
     status: 200 OK
     code: 200
     duration: ""
@@ -862,12 +976,12 @@ interactions:
     form: {}
     headers:
       User-Agent:
-      - aws-sdk-go/1.44.110 (go1.19.1; linux; amd64)
+      - aws-sdk-go/1.44.128 (go1.19.2; darwin; amd64)
       X-Amz-Content-Sha256:
       - e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
       X-Amz-Date:
-      - 20221027T133805Z
-    url: https://test-acc-scaleway-object-acl-basic-8164605300671153292.s3.nl-ams.scw.cloud/
+      - 20221104T145937Z
+    url: https://test-acc-scaleway-object-acl-basic-1489519863518941180.s3.nl-ams.scw.cloud/
     method: DELETE
   response:
     body: ""
@@ -877,11 +991,11 @@ interactions:
       Content-Type:
       - text/html; charset=UTF-8
       Date:
-      - Thu, 27 Oct 2022 13:38:06 GMT
+      - Fri, 04 Nov 2022 14:59:39 GMT
       X-Amz-Id-2:
-      - tx2ebd48997b3548db8d4f1-00635a89bd
+      - tx92a6cbed720e4cd29819d-00636528d9
       X-Amz-Request-Id:
-      - tx2ebd48997b3548db8d4f1-00635a89bd
+      - tx92a6cbed720e4cd29819d-00636528d9
     status: 204 No Content
     code: 204
     duration: ""
