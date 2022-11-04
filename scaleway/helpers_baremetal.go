@@ -147,7 +147,7 @@ func baremetalInstallServer(ctx context.Context, d *schema.ResourceData, baremet
 	return nil
 }
 
-func baremetalFindOfferById(ctx context.Context, baremetalAPI *baremetal.API, zone scw.Zone, offerID string) (*baremetal.Offer, error) {
+func baremetalFindOfferByID(ctx context.Context, baremetalAPI *baremetal.API, zone scw.Zone, offerID string) (*baremetal.Offer, error) {
 	subscriptionPeriods := []baremetal.OfferSubscriptionPeriod{
 		baremetal.OfferSubscriptionPeriodHourly,
 		baremetal.OfferSubscriptionPeriodMonthly,
