@@ -25,19 +25,14 @@ func TestAccScalewayDataSourceBaremetalOffer_Basic(t *testing.T) {
 					}
 					
 					data "scaleway_baremetal_offer" "test2" {
-						zone     = "fr-par-2"
-						offer_id = "25dcf38b-c90c-4b18-97a2-6956e9d1e113"
-					}
-					
-					data "scaleway_baremetal_offer" "test3" {
-						offer_id = "fr-par-2/25dcf38b-c90c-4b18-97a2-6956e9d1e113"
+						offer_id = data.scaleway_baremetal_offer.test1.offer_id
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayBaremetalOfferExists(tt, "data.scaleway_baremetal_offer.test1"),
 					resource.TestCheckResourceAttr("data.scaleway_baremetal_offer.test1", "name", "EM-A210R-HDD"),
 					testAccCheckScalewayBaremetalOfferExists(tt, "data.scaleway_baremetal_offer.test2"),
-					resource.TestCheckResourceAttr("data.scaleway_baremetal_offer.test2", "offer_id", "fr-par-2/25dcf38b-c90c-4b18-97a2-6956e9d1e113"),
+					resource.TestCheckResourceAttrPair("data.scaleway_baremetal_offer.test2", "offer_id", "data.scaleway_baremetal_offer.test1", "offer_id"),
 					resource.TestCheckResourceAttr("data.scaleway_baremetal_offer.test2", "name", "EM-A210R-HDD"),
 					resource.TestCheckResourceAttr("data.scaleway_baremetal_offer.test2", "commercial_range", "aluminium"),
 					resource.TestCheckResourceAttr("data.scaleway_baremetal_offer.test2", "include_disabled", "false"),
@@ -56,8 +51,6 @@ func TestAccScalewayDataSourceBaremetalOffer_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("data.scaleway_baremetal_offer.test2", "memory.0.capacity", "16000000000"),
 					resource.TestCheckResourceAttr("data.scaleway_baremetal_offer.test2", "memory.0.frequency", "3200"),
 					resource.TestCheckResourceAttr("data.scaleway_baremetal_offer.test2", "memory.0.is_ecc", "true"),
-					testAccCheckScalewayBaremetalOfferExists(tt, "data.scaleway_baremetal_offer.test3"),
-					resource.TestCheckResourceAttr("data.scaleway_baremetal_offer.test3", "name", "EM-A210R-HDD"),
 				),
 			},
 		},
@@ -81,12 +74,7 @@ func TestAccScalewayDataSourceBaremetalOffer_SubscriptionPeriodHourly(t *testing
 					}
 					
 					data "scaleway_baremetal_offer" "test2" {
-						zone     = "fr-par-2"
-						offer_id = "25dcf38b-c90c-4b18-97a2-6956e9d1e113"
-					}
-					
-					data "scaleway_baremetal_offer" "test3" {
-						offer_id = "fr-par-2/25dcf38b-c90c-4b18-97a2-6956e9d1e113"
+						offer_id = data.scaleway_baremetal_offer.test1.offer_id
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
@@ -94,7 +82,7 @@ func TestAccScalewayDataSourceBaremetalOffer_SubscriptionPeriodHourly(t *testing
 					resource.TestCheckResourceAttr("data.scaleway_baremetal_offer.test1", "name", "EM-A210R-HDD"),
 					resource.TestCheckResourceAttr("data.scaleway_baremetal_offer.test1", "subscription_period", "hourly"),
 					testAccCheckScalewayBaremetalOfferExists(tt, "data.scaleway_baremetal_offer.test2"),
-					resource.TestCheckResourceAttr("data.scaleway_baremetal_offer.test2", "offer_id", "fr-par-2/25dcf38b-c90c-4b18-97a2-6956e9d1e113"),
+					resource.TestCheckResourceAttrPair("data.scaleway_baremetal_offer.test2", "offer_id", "data.scaleway_baremetal_offer.test1", "offer_id"),
 					resource.TestCheckResourceAttr("data.scaleway_baremetal_offer.test2", "name", "EM-A210R-HDD"),
 					resource.TestCheckResourceAttr("data.scaleway_baremetal_offer.test2", "subscription_period", "hourly"),
 					resource.TestCheckResourceAttr("data.scaleway_baremetal_offer.test2", "commercial_range", "aluminium"),
@@ -114,9 +102,6 @@ func TestAccScalewayDataSourceBaremetalOffer_SubscriptionPeriodHourly(t *testing
 					resource.TestCheckResourceAttr("data.scaleway_baremetal_offer.test2", "memory.0.capacity", "16000000000"),
 					resource.TestCheckResourceAttr("data.scaleway_baremetal_offer.test2", "memory.0.frequency", "3200"),
 					resource.TestCheckResourceAttr("data.scaleway_baremetal_offer.test2", "memory.0.is_ecc", "true"),
-					testAccCheckScalewayBaremetalOfferExists(tt, "data.scaleway_baremetal_offer.test3"),
-					resource.TestCheckResourceAttr("data.scaleway_baremetal_offer.test3", "name", "EM-A210R-HDD"),
-					resource.TestCheckResourceAttr("data.scaleway_baremetal_offer.test3", "subscription_period", "hourly"),
 				),
 			},
 		},
@@ -140,12 +125,7 @@ func TestAccScalewayDataSourceBaremetalOffer_SubscriptionPeriodMonthly(t *testin
 					}
 					
 					data "scaleway_baremetal_offer" "test2" {
-						zone     = "fr-par-2"
-						offer_id = "10b2832f-eecd-46c5-9812-014125a215c8"
-					}
-					
-					data "scaleway_baremetal_offer" "test3" {
-						offer_id = "fr-par-2/10b2832f-eecd-46c5-9812-014125a215c8"
+						offer_id = data.scaleway_baremetal_offer.test1.offer_id
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
@@ -153,7 +133,7 @@ func TestAccScalewayDataSourceBaremetalOffer_SubscriptionPeriodMonthly(t *testin
 					resource.TestCheckResourceAttr("data.scaleway_baremetal_offer.test1", "name", "EM-A210R-HDD"),
 					resource.TestCheckResourceAttr("data.scaleway_baremetal_offer.test1", "subscription_period", "monthly"),
 					testAccCheckScalewayBaremetalOfferExists(tt, "data.scaleway_baremetal_offer.test2"),
-					resource.TestCheckResourceAttr("data.scaleway_baremetal_offer.test2", "offer_id", "fr-par-2/10b2832f-eecd-46c5-9812-014125a215c8"),
+					resource.TestCheckResourceAttrPair("data.scaleway_baremetal_offer.test2", "offer_id", "data.scaleway_baremetal_offer.test1", "offer_id"),
 					resource.TestCheckResourceAttr("data.scaleway_baremetal_offer.test2", "name", "EM-A210R-HDD"),
 					resource.TestCheckResourceAttr("data.scaleway_baremetal_offer.test2", "subscription_period", "monthly"),
 					resource.TestCheckResourceAttr("data.scaleway_baremetal_offer.test2", "commercial_range", "aluminium"),
@@ -173,9 +153,6 @@ func TestAccScalewayDataSourceBaremetalOffer_SubscriptionPeriodMonthly(t *testin
 					resource.TestCheckResourceAttr("data.scaleway_baremetal_offer.test2", "memory.0.capacity", "16000000000"),
 					resource.TestCheckResourceAttr("data.scaleway_baremetal_offer.test2", "memory.0.frequency", "3200"),
 					resource.TestCheckResourceAttr("data.scaleway_baremetal_offer.test2", "memory.0.is_ecc", "true"),
-					testAccCheckScalewayBaremetalOfferExists(tt, "data.scaleway_baremetal_offer.test3"),
-					resource.TestCheckResourceAttr("data.scaleway_baremetal_offer.test3", "name", "EM-A210R-HDD"),
-					resource.TestCheckResourceAttr("data.scaleway_baremetal_offer.test3", "subscription_period", "monthly"),
 				),
 			},
 		},
