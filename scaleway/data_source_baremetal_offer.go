@@ -6,6 +6,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/scaleway/scaleway-sdk-go/api/baremetal/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 )
@@ -19,6 +20,17 @@ func dataSourceScalewayBaremetalOffer() *schema.Resource {
 				Type:          schema.TypeString,
 				Optional:      true,
 				Description:   "Exact name of the desired offer",
+				ConflictsWith: []string{"offer_id"},
+			},
+			"subscription_period": {
+				Type:     schema.TypeString,
+				Optional: true,
+				ValidateFunc: validation.StringInSlice([]string{
+					baremetal.OfferSubscriptionPeriodUnknownSubscriptionPeriod.String(),
+					baremetal.OfferSubscriptionPeriodHourly.String(),
+					baremetal.OfferSubscriptionPeriodMonthly.String(),
+				}, false),
+				Description:   "Period of subscription the desired offer",
 				ConflictsWith: []string{"offer_id"},
 			},
 			"offer_id": {
@@ -138,35 +150,76 @@ func dataSourceScalewayBaremetalOfferRead(ctx context.Context, d *schema.Resourc
 	}
 
 	zone, offerID, _ := parseZonedID(datasourceNewZonedID(d.Get("offer_id"), fallBackZone))
-	res, err := baremetalAPI.ListOffers(&baremetal.ListOffersRequest{
-		Zone: zone,
-	}, scw.WithAllPages(), scw.WithContext(ctx))
-	if err != nil {
-		return diag.FromErr(err)
-	}
 
-	matches := []*baremetal.Offer(nil)
-	for _, offer := range res.Offers {
-		if offer.Name == d.Get("name") || offer.ID == offerID {
-			if !offer.Enable && !d.Get("include_disabled").(bool) {
-				return diag.FromErr(fmt.Errorf("offer %s (%s) found in zone %s but is disabled. Add allow_disabled=true in your terraform config to use it", offer.Name, offer.ID, zone))
-			}
-			matches = append(matches, offer)
+	var offer *baremetal.Offer
+
+	if offerID != "" {
+		// offer, err = baremetalAPI.GetOffer(&baremetal.GetOfferRequest{
+		// 	OfferID: offerID,
+		// 	Zone:    zone,
+		// })
+		// if err != nil {
+		// 	if is404Error(err) {
+		// 		return diag.Errorf("offer %s not found", offerID)
+		// 	}
+
+		// 	return diag.FromErr(err)
+		// }
+		//
+		// Temporary fix because GetOffer doesn't fetch monthly subscription offers
+		offer, err = baremetalFindOfferById(baremetalAPI, zone, offerID, ctx)
+		if err != nil {
+			return diag.FromErr(err)
 		}
-	}
-	if len(matches) == 0 {
-		return diag.FromErr(fmt.Errorf("no offer found with the name %s in zone %s", d.Get("name"), zone))
-	}
-	if len(matches) > 1 {
-		return diag.FromErr(fmt.Errorf("%d offers found with the same name %s in zone %s", len(matches), d.Get("name"), zone))
+	} else {
+		listOffersRequest := &baremetal.ListOffersRequest{
+			Zone: zone,
+		}
+		if subscriptionPeriod, ok := d.GetOk("subscription_period"); ok {
+			listOffersRequest.SubscriptionPeriod = baremetal.OfferSubscriptionPeriod(subscriptionPeriod.(string))
+		}
+
+		res, err := baremetalAPI.ListOffers(listOffersRequest, scw.WithAllPages(), scw.WithContext(ctx))
+		if err != nil {
+			return diag.FromErr(err)
+		}
+
+		matches := []*baremetal.Offer{}
+		for _, offer := range res.Offers {
+			if offer.Name == d.Get("name") {
+				if !offer.Enable && !d.Get("include_disabled").(bool) {
+					return diag.FromErr(fmt.Errorf("%s offer %s (%s) found in zone %s but is disabled. Add allow_disabled=true in your terraform config to use it", offer.SubscriptionPeriod, offer.Name, offer.ID, zone))
+				}
+
+				matches = append(matches, offer)
+			}
+		}
+
+		if len(matches) == 0 {
+			if subscriptionPeriod, ok := d.GetOk("subscription_period"); ok {
+				return diag.FromErr(fmt.Errorf("no offer found with the name %s and %s subscription period in zone %s", d.Get("name"), subscriptionPeriod, zone))
+			}
+
+			return diag.FromErr(fmt.Errorf("no offer found with the name %s in zone %s", d.Get("name"), zone))
+		}
+
+		if len(matches) > 1 {
+			if subscriptionPeriod, ok := d.GetOk("subscription_period"); ok {
+				return diag.FromErr(fmt.Errorf("%d offers found with the same name %s and %s subscription period in zone %s", len(matches), d.Get("name"), subscriptionPeriod, zone))
+			}
+
+			return diag.FromErr(fmt.Errorf("%d offers found with the same name %s in zone %s", len(matches), d.Get("name"), zone))
+		}
+
+		offer = matches[0]
 	}
 
-	offer := matches[0]
 	zonedID := datasourceNewZonedID(offer.ID, zone)
 	d.SetId(zonedID)
 	_ = d.Set("offer_id", zonedID)
 	_ = d.Set("zone", zone)
 	_ = d.Set("name", offer.Name)
+	_ = d.Set("subscription_period", offer.SubscriptionPeriod)
 	_ = d.Set("include_disabled", !offer.Enable)
 	_ = d.Set("bandwidth", int(offer.Bandwidth))
 	_ = d.Set("commercial_range", offer.CommercialRange)

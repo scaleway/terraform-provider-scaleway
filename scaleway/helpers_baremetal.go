@@ -2,6 +2,7 @@ package scaleway
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -144,4 +145,29 @@ func baremetalInstallServer(ctx context.Context, d *schema.ResourceData, baremet
 	}
 
 	return nil
+}
+
+func baremetalFindOfferById(baremetalAPI *baremetal.API, zone scw.Zone, offerID string, ctx context.Context) (*baremetal.Offer, error) {
+	subscriptionPeriods := []baremetal.OfferSubscriptionPeriod{
+		baremetal.OfferSubscriptionPeriodHourly,
+		baremetal.OfferSubscriptionPeriodMonthly,
+	}
+
+	for _, subscriptionPeriod := range subscriptionPeriods {
+		res, err := baremetalAPI.ListOffers(&baremetal.ListOffersRequest{
+			Zone:               zone,
+			SubscriptionPeriod: subscriptionPeriod,
+		}, scw.WithAllPages(), scw.WithContext(ctx))
+		if err != nil {
+			return nil, err
+		}
+
+		for _, offer := range res.Offers {
+			if offer.ID == offerID {
+				return offer, nil
+			}
+		}
+	}
+
+	return nil, fmt.Errorf("offer %s not found in zone %s", offerID, zone)
 }
