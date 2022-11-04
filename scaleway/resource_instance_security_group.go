@@ -300,110 +300,44 @@ func resourceScalewayInstanceSecurityGroupUpdate(ctx context.Context, d *schema.
 }
 
 // updateSecurityGroupeRules handles updating SecurityGroupRules
-//
-// It works as followed:
-//   1) Creates 2 map[direction][]rule: one for rules in state and one for rules in API
-//   2) For each direction we:
-//     A) Loop for each rule in state for this direction
-//       a) Compare with api rule in this direction at the same index
-//          if different update / if equals do nothing / if no more api rules to compare create new api rule
-//     B) If there is more rule in the API we remove them
 func updateSecurityGroupeRules(ctx context.Context, d *schema.ResourceData, zone scw.Zone, securityGroupID string, instanceAPI *instance.API) error {
-	apiRules := map[instance.SecurityGroupRuleDirection][]*instance.SecurityGroupRule{
-		instance.SecurityGroupRuleDirectionInbound:  {},
-		instance.SecurityGroupRuleDirectionOutbound: {},
-	}
 	stateRules := map[instance.SecurityGroupRuleDirection][]interface{}{
 		instance.SecurityGroupRuleDirectionInbound:  d.Get("inbound_rule").([]interface{}),
 		instance.SecurityGroupRuleDirectionOutbound: d.Get("outbound_rule").([]interface{}),
 	}
 
-	// Fill apiRules with data from API
-	resRules, err := instanceAPI.ListSecurityGroupRules(&instance.ListSecurityGroupRulesRequest{
-		Zone:            zone,
-		SecurityGroupID: expandID(securityGroupID),
-	}, scw.WithAllPages(), scw.WithContext(ctx))
-	if err != nil {
-		return fmt.Errorf("error listing security group rules: %s", err)
-	}
-	sort.Slice(resRules.Rules, func(i, j int) bool {
-		return resRules.Rules[i].Position < resRules.Rules[j].Position
-	})
-	for _, apiRule := range resRules.Rules {
-		if !apiRule.Editable {
-			continue
-		}
-		apiRules[apiRule.Direction] = append(apiRules[apiRule.Direction], apiRule)
-	}
-
-	// Loop through all directions
+	setGroupRules := []*instance.SetSecurityGroupRulesRequestRule{}
 	for direction := range stateRules {
 		// Loop for all state rules in this direction
-		for index, rawStateRule := range stateRules[direction] {
+		for _, rawStateRule := range stateRules[direction] {
 			stateRule, err := securityGroupRuleExpand(rawStateRule)
 			if err != nil {
 				return err
 			}
 
-			// This happen when there is more rule in state than in the api. We create more rule in API.
-			if index >= len(apiRules[direction]) {
-				_, err = instanceAPI.CreateSecurityGroupRule(&instance.CreateSecurityGroupRuleRequest{
-					Zone:            zone,
-					SecurityGroupID: securityGroupID,
-					Protocol:        stateRule.Protocol,
-					IPRange:         stateRule.IPRange,
-					Action:          stateRule.Action,
-					DestPortTo:      stateRule.DestPortTo,
-					DestPortFrom:    stateRule.DestPortFrom,
-					Direction:       direction,
-				}, scw.WithContext(ctx))
-				if err != nil {
-					return fmt.Errorf("error creating security group rule: %s", err)
-				}
-				continue
-			}
-
-			// We compare rule stateRule[index] and apiRule[index]. If they are different we update api rule to match state.
-			apiRule := apiRules[direction][index]
-			if ok, _ := securityGroupRuleEquals(stateRule, apiRule); !ok {
-				destPortFrom := stateRule.DestPortFrom
-				destPortTo := stateRule.DestPortTo
-				if destPortFrom == nil {
-					destPortFrom = scw.Uint32Ptr(0)
-				}
-				if destPortTo == nil {
-					destPortTo = scw.Uint32Ptr(0)
-				}
-
-				_, err = instanceAPI.UpdateSecurityGroupRule(&instance.UpdateSecurityGroupRuleRequest{
-					Zone:                zone,
-					SecurityGroupID:     securityGroupID,
-					SecurityGroupRuleID: apiRule.ID,
-					Protocol:            &stateRule.Protocol,
-					IPRange:             &stateRule.IPRange,
-					Action:              &stateRule.Action,
-					DestPortTo:          destPortTo,
-					DestPortFrom:        destPortFrom,
-					Direction:           &direction,
-				}, scw.WithContext(ctx))
-				if err != nil {
-					return fmt.Errorf("error updating security group rule: %s", err)
-				}
-			}
-		}
-
-		// We loop through remaining API rules and delete them as they are no longer in the state.
-		for index := len(stateRules[direction]); index < len(apiRules[direction]); index++ {
-			err = instanceAPI.DeleteSecurityGroupRule(&instance.DeleteSecurityGroupRuleRequest{
-				Zone:                zone,
-				SecurityGroupID:     securityGroupID,
-				SecurityGroupRuleID: apiRules[direction][index].ID,
-			}, scw.WithContext(ctx))
-			if err != nil {
-				return fmt.Errorf("error deleting security group rule: %s", err)
-			}
+			// This happens when there is more rule in state than in the api. We create more rule in API.
+			setGroupRules = append(setGroupRules, &instance.SetSecurityGroupRulesRequestRule{
+				Zone:         zone,
+				Protocol:     stateRule.Protocol,
+				IPRange:      stateRule.IPRange,
+				Action:       stateRule.Action,
+				DestPortTo:   stateRule.DestPortTo,
+				DestPortFrom: stateRule.DestPortFrom,
+				Direction:    direction,
+			})
 		}
 	}
+
+
+	_, err := instanceAPI.SetSecurityGroupRules(&instance.SetSecurityGroupRulesRequest{
+		SecurityGroupID: securityGroupID,
+		Zone:            zone,
+		Rules:           setGroupRules,
+	}, scw.WithContext(ctx))
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -469,6 +403,7 @@ func securityGroupRuleSchema() *schema.Resource {
 				Optional:     true,
 				ValidateFunc: validation.IsIPAddress,
 				Description:  "Ip address for this rule (e.g: 1.1.1.1). Only one of ip or ip_range should be provided",
+				Deprecated:   "Ip address is deprecated. Please use ip_range instead",
 			},
 			"ip_range": {
 				Type:         schema.TypeString,

@@ -6,7 +6,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
-	vpcgw "github.com/scaleway/scaleway-sdk-go/api/vpcgw/v1"
+	"github.com/scaleway/scaleway-sdk-go/api/vpcgw/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 )
 
@@ -86,6 +86,54 @@ func TestAccScalewayVPCPublicGateway_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_vpc_public_gateway.main", "tags.1", "tag1"),
 					resource.TestCheckResourceAttr("scaleway_vpc_public_gateway.main", "upstream_dns_servers.0", "1.2.3.4"),
 					resource.TestCheckResourceAttr("scaleway_vpc_public_gateway.main", "upstream_dns_servers.1", "4.3.2.1"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccScalewayVPCPublicGateway_Bastion(t *testing.T) {
+	tt := NewTestTools(t)
+	defer tt.Cleanup()
+	publicGatewayName := "public-gateway-bastion-test"
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      testAccCheckScalewayVPCPublicGatewayDestroy(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`
+					resource scaleway_vpc_public_gateway main {
+						name = "%s"
+						type = "VPC-GW-S"
+						bastion_enabled = true
+					}
+				`, publicGatewayName),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayVPCPublicGatewayExists(
+						tt,
+						"scaleway_vpc_public_gateway.main",
+					),
+					resource.TestCheckResourceAttr(
+						"scaleway_vpc_public_gateway.main",
+						"name",
+						publicGatewayName,
+					),
+					resource.TestCheckResourceAttr("scaleway_vpc_public_gateway.main", "bastion_enabled", "true"),
+				),
+			},
+			{
+				Config: fmt.Sprintf(`
+					resource scaleway_vpc_public_gateway main {
+						name = "%s"
+						type = "VPC-GW-S"
+						bastion_enabled = false
+					}
+				`, publicGatewayName),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayVPCPublicGatewayExists(tt, "scaleway_vpc_public_gateway.main"),
+					resource.TestCheckResourceAttr("scaleway_vpc_public_gateway.main", "name", publicGatewayName),
+					resource.TestCheckResourceAttr("scaleway_vpc_public_gateway.main", "bastion_enabled", "false"),
 				),
 			},
 		},

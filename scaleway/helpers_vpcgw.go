@@ -76,3 +76,24 @@ func waitForVPCGatewayNetwork(ctx context.Context, api *vpcgw.API, zone scw.Zone
 
 	return gatewayNetwork, nil
 }
+
+func waitForDHCPEntries(ctx context.Context, api *vpcgw.API, zone scw.Zone, gatewayID string, macAddress string, timeout time.Duration) (*vpcgw.ListDHCPEntriesResponse, error) {
+	retryIntervalDHCPEntries := defaultVPCGatewayRetry
+	if DefaultWaitRetryInterval != nil {
+		retryIntervalDHCPEntries = *DefaultWaitRetryInterval
+	}
+
+	req := &vpcgw.WaitForDHCPEntriesRequest{
+		MacAddress:    macAddress,
+		Zone:          zone,
+		Timeout:       scw.TimeDurationPtr(timeout),
+		RetryInterval: &retryIntervalDHCPEntries,
+	}
+
+	if gatewayID != "" {
+		req.GatewayNetworkID = &gatewayID
+	}
+
+	dhcpEntries, err := api.WaitForDHCPEntries(req, scw.WithContext(ctx))
+	return dhcpEntries, err
+}

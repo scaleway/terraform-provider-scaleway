@@ -42,8 +42,8 @@ func TestAccScalewayCassettes_Validator(t *testing.T) {
 
 func checkErrorCode(c *cassette.Cassette) error {
 	for _, i := range c.Interactions {
-		if !checkErrCode(i, c, http.StatusConflict, http.StatusInternalServerError) {
-			return fmt.Errorf("status: %v founded on %s. method: %s, url %s", i.Code, c.Name, i.Request.Method, i.Request.URL)
+		if !checkErrCode(i, c, http.StatusConflict, http.StatusInternalServerError, http.StatusPreconditionFailed) {
+			return fmt.Errorf("status: %v found on %s. method: %s, url %s\nrequest body = %v\nresponse body = %v", i.Code, c.Name, i.Request.Method, i.Request.URL, i.Request.Body, i.Response.Body)
 		}
 	}
 
@@ -53,6 +53,7 @@ func checkErrorCode(c *cassette.Cassette) error {
 func exceptionsCassettesCases() map[string]struct{} {
 	return map[string]struct{}{
 		"testdata/object-bucket-destroy-force.cassette.yaml":     {},
+		"testdata/object-bucket-cors-empty-origin.cassette.yaml": {},
 		"testdata/rdb-privilege-basic.cassette.yaml":             {},
 		"testdata/data-source-rdb-privilege-basic.cassette.yaml": {},
 	}
@@ -67,7 +68,7 @@ func checkErrCode(i *cassette.Interaction, c *cassette.Cassette, codes ...int) b
 
 	for _, httpCode := range codes {
 		if i.Code == httpCode {
-			return true
+			return false
 		}
 	}
 

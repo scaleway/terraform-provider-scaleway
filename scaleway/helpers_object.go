@@ -17,6 +17,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/hashicorp/aws-sdk-go-base/tfawserr"
+	awspolicy "github.com/hashicorp/awspolicyequivalence"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -85,6 +86,37 @@ func s3ClientWithRegionAndName(m interface{}, name string) (*s3.S3, scw.Region, 
 	return s3Client, region, name, err
 }
 
+func s3ClientWithRegionAndNestedName(m interface{}, name string) (*s3.S3, scw.Region, string, string, error) {
+	meta := m.(*Meta)
+	region, outerID, innerID, err := parseRegionalNestedID(name)
+	if err != nil {
+		return nil, "", outerID, innerID, err
+	}
+	accessKey, _ := meta.scwClient.GetAccessKey()
+	secretKey, _ := meta.scwClient.GetSecretKey()
+	s3Client, err := newS3Client(meta.httpClient, region.String(), accessKey, secretKey)
+	if err != nil {
+		return nil, "", "", "", err
+	}
+	return s3Client, region, outerID, innerID, err
+}
+
+func s3ClientWithRegionWithNameACL(m interface{}, name string) (*s3.S3, scw.Region, string, string, error) {
+	meta := m.(*Meta)
+	region, name, outerID, err := parseLocalizedNestedOwnerID(name)
+	if err != nil {
+		return nil, "", name, "", err
+	}
+
+	accessKey, _ := meta.scwClient.GetAccessKey()
+	secretKey, _ := meta.scwClient.GetSecretKey()
+	s3Client, err := newS3Client(meta.httpClient, region, accessKey, secretKey)
+	if err != nil {
+		return nil, "", "", "", err
+	}
+	return s3Client, scw.Region(region), name, outerID, err
+}
+
 func flattenObjectBucketTags(tagsSet []*s3.Tag) map[string]interface{} {
 	tags := map[string]interface{}{}
 
@@ -120,9 +152,9 @@ func objectBucketEndpointURL(bucketName string, region scw.Region) string {
 }
 
 // Returns true if the error matches all these conditions:
-//  * err is of type awserr.Error
-//  * Error.Code() matches code
-//  * Error.Message() contains message
+//   - err is of type aws err.Error
+//   - Error.Code() matches code
+//   - Error.Message() contains message
 func isS3Err(err error, code string, message string) bool {
 	var awsErr awserr.Error
 	if errors.As(err, &awsErr) {
@@ -382,4 +414,105 @@ func TransitionSCWStorageClassValues() []string {
 		TransitionStorageClassGlacier,
 		TransitionStorageClassOnezoneIa,
 	}
+}
+
+func SuppressEquivalentPolicyDiffs(k, old, newP string, d *schema.ResourceData) bool {
+	tflog.Debug(context.Background(),
+		fmt.Sprintf("[DEBUG] suppress policy on key: %s, old: %s new: %s", k, old, newP))
+	if strings.TrimSpace(old) == "" && strings.TrimSpace(newP) == "" {
+		return true
+	}
+
+	if strings.TrimSpace(old) == "{}" && strings.TrimSpace(newP) == "" {
+		return true
+	}
+
+	if strings.TrimSpace(old) == "" && strings.TrimSpace(newP) == "{}" {
+		return true
+	}
+
+	if strings.TrimSpace(old) == "{}" && strings.TrimSpace(newP) == "{}" {
+		return true
+	}
+
+	equivalent, err := awspolicy.PoliciesAreEquivalent(old, newP)
+	if err != nil {
+		return false
+	}
+
+	return equivalent
+}
+
+func SecondJSONUnlessEquivalent(old, newP string) (string, error) {
+	// valid empty JSON is "{}" not "" so handle special case to avoid
+	// Error unmarshalling policy: unexpected end of JSON input
+	if strings.TrimSpace(newP) == "" {
+		return "", nil
+	}
+
+	if strings.TrimSpace(newP) == "{}" {
+		return "{}", nil
+	}
+
+	if strings.TrimSpace(old) == "" || strings.TrimSpace(old) == "{}" {
+		return newP, nil
+	}
+
+	equivalent, err := awspolicy.PoliciesAreEquivalent(old, newP)
+	if err != nil {
+		return "", err
+	}
+
+	if equivalent {
+		return old, nil
+	}
+
+	return newP, nil
+}
+
+func resourceBucketWebsiteConfigurationWebsiteEndpoint(ctx context.Context, conn *s3.S3, bucket string, region scw.Region) (*S3Website, error) {
+	input := &s3.GetBucketLocationInput{
+		Bucket: aws.String(bucket),
+	}
+
+	output, err := conn.GetBucketLocationWithContext(ctx, input)
+	if err != nil {
+		return nil, fmt.Errorf("error getting Object Bucket (%s) Location: %w", bucket, err)
+	}
+
+	if output.LocationConstraint != nil {
+		region = scw.Region(aws.StringValue(output.LocationConstraint))
+	}
+
+	return WebsiteEndpoint(bucket, region), nil
+}
+
+type S3Website struct {
+	Endpoint, Domain string
+}
+
+func WebsiteEndpoint(bucket string, region scw.Region) *S3Website {
+	domain := WebsiteDomainURL(region.String())
+	return &S3Website{Endpoint: fmt.Sprintf("%s.%s", bucket, domain), Domain: domain}
+}
+
+func WebsiteDomainURL(region string) string {
+	// Different regions have different syntax for website endpoints
+	// https://docs.aws.amazon.com/AmazonS3/latest/dev/WebsiteEndpoints.html
+	// https://docs.aws.amazon.com/general/latest/gr/rande.html#s3_website_region_endpoints
+	return fmt.Sprintf("s3-website.%s.scw.cloud", region)
+}
+
+func buildBucketOwnerID(id *string) *string {
+	s := fmt.Sprintf("%[1]s:%[1]s", *id)
+	return &s
+}
+
+func normalizeOwnerID(id *string) *string {
+	tab := strings.Split(*id, ":")
+	if len(tab) != 2 {
+		return id
+	}
+
+	return &tab[0]
 }

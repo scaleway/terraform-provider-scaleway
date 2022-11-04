@@ -1,7 +1,7 @@
 ---
 page_title: "Scaleway: scaleway_lb"
 description: |-
-  Gets information about a Load Balancer.
+Gets information about a Load Balancer.
 ---
 
 # scaleway_lb
@@ -25,21 +25,21 @@ data "scaleway_lb" "by_id" {
 ## Argument Reference
 
 - `name` - (Optional) The IP address.
-  Only one of `name` and `lb_id` should be specified.
 
-- `lb_id` - (Optional) The ID.
-  Only one of `ip_address` and `lb_id` should be specified.
-
-- `zone` - (Optional) (Defaults to [provider](../index.md#zone) `region`) The [region](../guides/regions_and_zones.md#zones) in which the LB exists.
-
-- `project_id` - (Defaults to [provider](../index.md#project_id) `project_id`) The ID of the project the LB is associated with.
+- `ip_id` - (Optional) The load balancer IP ID.
 
 ## Attributes Reference
 
 In addition to all arguments above, the following attributes are exported:
 
 - `id` - The ID of the load-balancer.
-- `ip_address` -  The load-balancer public IP Address
-- `organization_id` - The organization ID the load-balancer is associated with.
-- `tags` - (Optional) The tags associated with the load-balancers.
-- `type` - (Required) The type of the load-balancer.
+
+- `ip_address` - The load-balancer public IP Address.
+
+- `type` - The type of the load-balancer.
+
+- `tags` - The tags associated with the load-balancers.
+
+- `project_id` - (Defaults to [provider](../index.md#project_id) `project_id`) The ID of the project the LB is associated with.
+
+- `zone` -  (Defaults to [provider](../index.md#zone) `region`) The [region](../guides/regions_and_zones.md#zones) in which the LB exists.

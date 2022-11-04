@@ -61,6 +61,175 @@ func testSweepLB(_ string) error {
 	})
 }
 
+func TestAccScalewayLbLb_Basic(t *testing.T) {
+	tt := NewTestTools(t)
+	defer tt.Cleanup()
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      testAccCheckScalewayLbDestroy(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource scaleway_lb_ip main {
+					}
+
+					resource scaleway_lb main {
+						ip_id = scaleway_lb_ip.main.id
+						name = "test-lb-basic"
+						description = "a description"
+						type = "LB-S"
+						tags = ["basic"]
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayLbExists(tt, "scaleway_lb.main"),
+					testCheckResourceAttrUUID("scaleway_lb.main", "id"),
+					resource.TestCheckResourceAttr("scaleway_lb.main", "name", "test-lb-basic"),
+					resource.TestCheckResourceAttr("scaleway_lb.main", "type", "LB-S"),
+					resource.TestCheckResourceAttr("scaleway_lb.main", "tags.#", "1"),
+					resource.TestCheckResourceAttr("scaleway_lb.main", "description", "a description"),
+					resource.TestCheckResourceAttr("scaleway_lb.main", "ssl_compatibility_level", lbSDK.SSLCompatibilityLevelSslCompatibilityLevelIntermediate.String()),
+				),
+			},
+			{
+				Config: `
+					resource scaleway_lb_ip main {
+					}
+
+					resource scaleway_lb main {
+						ip_id = scaleway_lb_ip.main.id
+						name = "test-lb-rename"
+						description = "another description"
+						type = "LB-S"
+						tags = ["basic", "tag2"]
+						ssl_compatibility_level = "ssl_compatibility_level_modern"
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayLbExists(tt, "scaleway_lb.main"),
+					testCheckResourceAttrUUID("scaleway_lb.main", "id"),
+					resource.TestCheckResourceAttr("scaleway_lb.main", "name", "test-lb-rename"),
+					resource.TestCheckResourceAttr("scaleway_lb.main", "tags.#", "2"),
+					resource.TestCheckResourceAttr("scaleway_lb.main", "description", "another description"),
+					resource.TestCheckResourceAttr("scaleway_lb.main", "ssl_compatibility_level", lbSDK.SSLCompatibilityLevelSslCompatibilityLevelModern.String()),
+				),
+			},
+		},
+	})
+}
+
+func TestAccScalewayLbLb_Migrate(t *testing.T) {
+	tt := NewTestTools(t)
+	defer tt.Cleanup()
+
+	lbID := ""
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      testAccCheckScalewayLbDestroy(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					### IP for LB IP
+					resource scaleway_lb_ip main {
+					}
+
+					resource scaleway_lb main {
+						ip_id = scaleway_lb_ip.main.id
+						name = "test-lb-migration"
+						type = "LB-S"
+						tags = ["basic", "tag2"]
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayLbExists(tt, "scaleway_lb.main"),
+					func(s *terraform.State) error {
+						rs, ok := s.RootModule().Resources["scaleway_lb.main"]
+						if !ok {
+							return fmt.Errorf("resource not found: %s", "scaleway_lb.main")
+						}
+						lbID = rs.Primary.ID
+						return nil
+					},
+					resource.TestCheckResourceAttr("scaleway_lb.main", "type", "LB-S"),
+					resource.TestCheckResourceAttr("scaleway_lb.main", "name", "test-lb-migration"),
+					resource.TestCheckResourceAttr("scaleway_lb.main", "tags.#", "2"),
+				),
+			},
+			{
+				Config: `
+					### IP for LB IP
+					resource scaleway_lb_ip main {
+					}
+
+					resource scaleway_lb main {
+						ip_id = scaleway_lb_ip.main.id
+						name = "test-lb-migrate-lb-gp-m"
+						type = "LB-GP-M"
+						tags = ["migration"]
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayLbExists(tt, "scaleway_lb.main"),
+					func(s *terraform.State) error {
+						rs, ok := s.RootModule().Resources["scaleway_lb.main"]
+						if !ok {
+							return fmt.Errorf("resource not found: %s", "scaleway_lb.main")
+						}
+						if rs.Primary.ID != lbID {
+							return fmt.Errorf("LB id has changed")
+						}
+						return nil
+					},
+					resource.TestCheckResourceAttr("scaleway_lb.main", "type", "LB-GP-M"),
+					resource.TestCheckResourceAttr("scaleway_lb.main", "name", "test-lb-migrate-lb-gp-m"),
+					resource.TestCheckResourceAttr("scaleway_lb.main", "tags.#", "1"),
+				),
+			},
+			{
+				Config: `
+					### IP for LB IP
+					resource scaleway_lb_ip main {
+					}
+
+					resource scaleway_lb main {
+						ip_id = scaleway_lb_ip.main.id
+						name = "test-lb-migrate-lb-gp-m"
+						type = "LB-GP-M"
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayLbExists(tt, "scaleway_lb.main"),
+					resource.TestCheckResourceAttr("scaleway_lb.main", "type", "LB-GP-M"),
+					resource.TestCheckResourceAttr("scaleway_lb.main", "name", "test-lb-migrate-lb-gp-m"),
+					resource.TestCheckResourceAttr("scaleway_lb.main", "tags.#", "0"),
+				),
+			},
+			{
+				Config: `
+					### IP for LB IP
+					resource scaleway_lb_ip main {
+					}
+
+					resource scaleway_lb main {
+						ip_id = scaleway_lb_ip.main.id
+						name = "test-lb-migrate-down"
+						type = "LB-S"
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayLbExists(tt, "scaleway_lb.main"),
+					resource.TestCheckResourceAttr("scaleway_lb.main", "type", "LB-S"),
+					resource.TestCheckResourceAttr("scaleway_lb.main", "name", "test-lb-migrate-down"),
+					resource.TestCheckResourceAttr("scaleway_lb.main", "tags.#", "0"),
+				),
+			},
+		},
+	})
+}
+
 func TestAccScalewayLbLb_WithIP(t *testing.T) {
 	tt := NewTestTools(t)
 	defer tt.Cleanup()

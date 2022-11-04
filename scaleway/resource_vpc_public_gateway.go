@@ -6,7 +6,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	vpcgw "github.com/scaleway/scaleway-sdk-go/api/vpcgw/v1"
+	"github.com/scaleway/scaleway-sdk-go/api/vpcgw/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 )
 
@@ -18,6 +18,13 @@ func resourceScalewayVPCPublicGateway() *schema.Resource {
 		DeleteContext: resourceScalewayVPCPublicGatewayDelete,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
+		},
+		Timeouts: &schema.ResourceTimeout{
+			Create:  schema.DefaultTimeout(defaultVPCGatewayTimeout),
+			Read:    schema.DefaultTimeout(defaultVPCGatewayTimeout),
+			Update:  schema.DefaultTimeout(defaultVPCGatewayTimeout),
+			Delete:  schema.DefaultTimeout(defaultVPCGatewayTimeout),
+			Default: schema.DefaultTimeout(defaultVPCGatewayTimeout),
 		},
 		SchemaVersion: 0,
 		Schema: map[string]*schema.Schema{
@@ -56,6 +63,23 @@ func resourceScalewayVPCPublicGateway() *schema.Resource {
 					Type: schema.TypeString,
 				},
 			},
+			"bastion_enabled": {
+				Type:        schema.TypeBool,
+				Description: "Enable SSH bastion on the gateway",
+				Optional:    true,
+			},
+			"bastion_port": {
+				Type:        schema.TypeInt,
+				Description: "Port of the SSH bastion",
+				Optional:    true,
+				Computed:    true,
+			},
+			"enable_smtp": {
+				Type:        schema.TypeBool,
+				Description: "Enable SMTP on the gateway",
+				Optional:    true,
+				Computed:    true,
+			},
 			"project_id": projectIDSchema(),
 			"zone":       zoneSchema(),
 			// Computed elements
@@ -86,7 +110,13 @@ func resourceScalewayVPCPublicGatewayCreate(ctx context.Context, d *schema.Resou
 		Tags:               expandStrings(d.Get("tags")),
 		UpstreamDNSServers: expandStrings(d.Get("upstream_dns_servers")),
 		ProjectID:          d.Get("project_id").(string),
+		EnableBastion:      d.Get("bastion_enabled").(bool),
 		Zone:               zone,
+		EnableSMTP:         d.Get("enable_smtp").(bool),
+	}
+
+	if bastionPort, ok := d.GetOk("bastion_port"); ok {
+		req.BastionPort = expandUint32Ptr(bastionPort.(int))
 	}
 
 	if ipID, ok := d.GetOk("ip_id"); ok {
@@ -133,6 +163,9 @@ func resourceScalewayVPCPublicGatewayRead(ctx context.Context, d *schema.Resourc
 	_ = d.Set("tags", gateway.Tags)
 	_ = d.Set("upstream_dns_servers", gateway.UpstreamDNSServers)
 	_ = d.Set("ip_id", newZonedID(gateway.Zone, gateway.IP.ID).String())
+	_ = d.Set("bastion_enabled", gateway.BastionEnabled)
+	_ = d.Set("bastion_port", int(gateway.BastionPort))
+	_ = d.Set("enable_smtp", gateway.SMTPEnabled)
 
 	return nil
 }
@@ -148,19 +181,38 @@ func resourceScalewayVPCPublicGatewayUpdate(ctx context.Context, d *schema.Resou
 		return diag.FromErr(err)
 	}
 
-	if d.HasChanges("name", "tags", "upstream_dns_servers") {
-		updateRequest := &vpcgw.UpdateGatewayRequest{
-			GatewayID:          gateway.ID,
-			Zone:               gateway.Zone,
-			Name:               scw.StringPtr(d.Get("name").(string)),
-			Tags:               scw.StringsPtr(expandStrings(d.Get("tags"))),
-			UpstreamDNSServers: scw.StringsPtr(expandStrings(d.Get("upstream_dns_servers"))),
-		}
+	updateRequest := &vpcgw.UpdateGatewayRequest{
+		GatewayID: gateway.ID,
+		Zone:      gateway.Zone,
+	}
 
-		_, err = vpcgwAPI.UpdateGateway(updateRequest, scw.WithContext(ctx))
-		if err != nil {
-			return diag.FromErr(err)
-		}
+	if d.HasChanges("name") {
+		updateRequest.Name = scw.StringPtr(d.Get("name").(string))
+	}
+
+	if d.HasChange("tags") {
+		updateRequest.Tags = expandUpdatedStringsPtr(d.Get("tags"))
+	}
+
+	if d.HasChange("bastion_port") {
+		updateRequest.BastionPort = scw.Uint32Ptr(uint32(d.Get("bastion_port").(int)))
+	}
+
+	if d.HasChange("bastion_enabled") {
+		updateRequest.EnableBastion = scw.BoolPtr(d.Get("bastion_enabled").(bool))
+	}
+
+	if d.HasChange("enable_smtp") {
+		updateRequest.EnableSMTP = scw.BoolPtr(d.Get("enable_smtp").(bool))
+	}
+
+	if d.HasChange("upstream_dns_servers") {
+		updateRequest.UpstreamDNSServers = expandUpdatedStringsPtr(d.Get("upstream_dns_servers"))
+	}
+
+	_, err = vpcgwAPI.UpdateGateway(updateRequest, scw.WithContext(ctx))
+	if err != nil {
+		return diag.FromErr(err)
 	}
 
 	_, err = waitForVPCPublicGateway(ctx, vpcgwAPI, zone, id, d.Timeout(schema.TimeoutUpdate))

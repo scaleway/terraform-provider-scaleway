@@ -140,3 +140,15 @@ func waitForBaremetalServerInstall(ctx context.Context, api *baremetal.API, zone
 
 	return server, nil
 }
+
+func baremetalInstallServer(ctx context.Context, d *schema.ResourceData, baremetalAPI *baremetal.API, installServerRequest *baremetal.InstallServerRequest) error {
+	installServerRequest.OsID = expandID(d.Get("os"))
+	installServerRequest.SSHKeyIDs = expandStrings(d.Get("ssh_key_ids"))
+
+	_, err := baremetalAPI.InstallServer(installServerRequest, scw.WithContext(ctx))
+	if err != nil {
+		return err
+	}
+
+	return nil
+}

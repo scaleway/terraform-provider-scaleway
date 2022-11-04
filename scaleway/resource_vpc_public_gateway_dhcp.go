@@ -90,6 +90,7 @@ func resourceScalewayVPCPublicGatewayDHCP() *schema.Resource {
 			"dns_servers_override": {
 				Type:     schema.TypeList,
 				Optional: true,
+				Computed: true,
 				Elem: &schema.Schema{
 					Type: schema.TypeString,
 				},
@@ -98,6 +99,7 @@ func resourceScalewayVPCPublicGatewayDHCP() *schema.Resource {
 			"dns_search": {
 				Type:     schema.TypeList,
 				Optional: true,
+				Computed: true,
 				Elem: &schema.Schema{
 					Type: schema.TypeString,
 				},
@@ -140,17 +142,9 @@ func resourceScalewayVPCPublicGatewayDHCPCreate(ctx context.Context, d *schema.R
 		Subnet:    subnet,
 	}
 
-	if pushDefaultRoute, ok := d.GetOk("push_default_route"); ok {
-		req.PushDefaultRoute = expandBoolPtr(pushDefaultRoute)
-	}
-
-	if pushDNServer, ok := d.GetOk("push_dns_server"); ok {
-		req.PushDNSServer = expandBoolPtr(pushDNServer)
-	}
-
-	if enableDynamic, ok := d.GetOk("enable_dynamic"); ok {
-		req.EnableDynamic = expandBoolPtr(enableDynamic)
-	}
+	req.PushDefaultRoute = expandBoolPtr(getBool(d, "push_default_route"))
+	req.PushDNSServer = expandBoolPtr(getBool(d, "push_dns_server"))
+	req.EnableDynamic = expandBoolPtr(getBool(d, "enable_dynamic"))
 
 	if dnsServerOverride, ok := d.GetOk("dns_servers_override"); ok {
 		req.DNSServersOverride = expandStringsPtr(dnsServerOverride)
@@ -216,24 +210,18 @@ func resourceScalewayVPCPublicGatewayDHCPRead(ctx context.Context, d *schema.Res
 		return diag.FromErr(err)
 	}
 
-	if len(dhcp.DNSSearch) > 0 {
-		_ = d.Set("dns_search", flattenSliceString(dhcp.DNSSearch))
-	}
-
-	if len(dhcp.DNSServersOverride) > 0 {
-		_ = d.Set("dns_servers_override", flattenSliceString(dhcp.DNSServersOverride))
-	}
-
 	_ = d.Set("address", dhcp.Address.String())
 	_ = d.Set("created_at", dhcp.CreatedAt.Format(time.RFC3339))
 	_ = d.Set("dns_local_name", dhcp.DNSLocalName)
 	_ = d.Set("enable_dynamic", dhcp.EnableDynamic)
 	_ = d.Set("organization_id", dhcp.OrganizationID)
-	_ = d.Set("pool_high", dhcp.PoolLow.String())
+	_ = d.Set("pool_high", dhcp.PoolHigh.String())
 	_ = d.Set("pool_low", dhcp.PoolLow.String())
 	_ = d.Set("project_id", dhcp.ProjectID)
 	_ = d.Set("push_default_route", dhcp.PushDefaultRoute)
 	_ = d.Set("push_dns_server", dhcp.PushDNSServer)
+	_ = d.Set("dns_search", flattenSliceString(dhcp.DNSSearch))
+	_ = d.Set("dns_servers_override", flattenSliceString(dhcp.DNSServersOverride))
 	_ = d.Set("rebind_timer", dhcp.RebindTimer.Seconds)
 	_ = d.Set("renew_timer", dhcp.RenewTimer.Seconds)
 	_ = d.Set("subnet", dhcp.Subnet.String())

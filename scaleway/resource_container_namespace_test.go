@@ -7,13 +7,15 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	container "github.com/scaleway/scaleway-sdk-go/api/container/v1beta1"
+	"github.com/scaleway/scaleway-sdk-go/api/registry/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 )
 
 func init() {
 	resource.AddTestSweepers("scaleway_container_namespace", &resource.Sweeper{
-		Name: "scaleway_container_namespace",
-		F:    testSweepContainerNamespace,
+		Name:         "scaleway_container_namespace",
+		F:            testSweepContainerNamespace,
+		Dependencies: []string{"scaleway_container"},
 	})
 }
 
@@ -86,6 +88,9 @@ func TestAccScalewayContainerNamespace_Basic(t *testing.T) {
 						environment_variables = {
 							"test" = "test"
 						}
+						secret_environment_variables = {
+							"test_secret" = "test_secret"
+						}
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
@@ -93,6 +98,7 @@ func TestAccScalewayContainerNamespace_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_container_namespace.main", "description", ""),
 					resource.TestCheckResourceAttr("scaleway_container_namespace.main", "name", "test-cr-ns-01"),
 					resource.TestCheckResourceAttr("scaleway_container_namespace.main", "environment_variables.test", "test"),
+					resource.TestCheckResourceAttr("scaleway_container_namespace.main", "secret_environment_variables.test_secret", "test_secret"),
 
 					testCheckResourceAttrUUID("scaleway_container_namespace.main", "id"),
 				),
@@ -116,12 +122,16 @@ func TestAccScalewayContainerNamespace_Basic(t *testing.T) {
 						environment_variables = {
 							"test" = "test"
 						}
+						secret_environment_variables = {
+							"test_secret" = "test_secret"
+						}
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayContainerNamespaceExists(tt, "scaleway_container_namespace.main"),
 					resource.TestCheckResourceAttr("scaleway_container_namespace.main", "name", "tf-env-test"),
 					resource.TestCheckResourceAttr("scaleway_container_namespace.main", "environment_variables.test", "test"),
+					resource.TestCheckResourceAttr("scaleway_container_namespace.main", "secret_environment_variables.test_secret", "test_secret"),
 
 					testCheckResourceAttrUUID("scaleway_container_namespace.main", "id"),
 				),
@@ -133,13 +143,45 @@ func TestAccScalewayContainerNamespace_Basic(t *testing.T) {
 						environment_variables = {
 							"foo" = "bar"
 						}
+						secret_environment_variables = {
+							"foo_secret" = "bar_secret"
+						}
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayContainerNamespaceExists(tt, "scaleway_container_namespace.main"),
 					resource.TestCheckResourceAttr("scaleway_container_namespace.main", "name", "tf-env-test"),
 					resource.TestCheckResourceAttr("scaleway_container_namespace.main", "environment_variables.foo", "bar"),
+					resource.TestCheckResourceAttr("scaleway_container_namespace.main", "secret_environment_variables.foo_secret", "bar_secret"),
 
+					testCheckResourceAttrUUID("scaleway_container_namespace.main", "id"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccScalewayContainerNamespace_DestroyRegistry(t *testing.T) {
+	tt := NewTestTools(t)
+	defer tt.Cleanup()
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy: resource.ComposeTestCheckFunc(
+			testAccCheckScalewayContainerNamespaceDestroy(tt),
+			testAccCheckScalewayContainerRegistryDestroy(tt),
+		),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource scaleway_container_namespace main {
+						name = "test-cr-ns-01"
+						destroy_registry = true
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayContainerNamespaceExists(tt, "scaleway_container_namespace.main"),
 					testCheckResourceAttrUUID("scaleway_container_namespace.main", "id"),
 				),
 			},
@@ -175,7 +217,7 @@ func testAccCheckScalewayContainerNamespaceExists(tt *TestTools, n string) resou
 func testAccCheckScalewayContainerNamespaceDestroy(tt *TestTools) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		for _, rs := range state.RootModule().Resources {
-			if rs.Type != "scaleway_container_namespace" {
+			if rs.Type != "scaleway_container_namespace" { //nolint:goconst
 				continue
 			}
 
@@ -195,6 +237,36 @@ func testAccCheckScalewayContainerNamespaceDestroy(tt *TestTools) resource.TestC
 
 			if !is404Error(err) {
 				return fmt.Errorf("error getting container namespace (%s): %s", rs.Primary.ID, err)
+			}
+		}
+
+		return nil
+	}
+}
+
+func testAccCheckScalewayContainerRegistryDestroy(tt *TestTools) resource.TestCheckFunc {
+	return func(state *terraform.State) error {
+		for _, rs := range state.RootModule().Resources {
+			if rs.Type != "scaleway_container_namespace" {
+				continue
+			}
+
+			api, region, _, err := registryAPIWithRegionAndID(tt.Meta, rs.Primary.ID)
+			if err != nil {
+				return err
+			}
+
+			_, err = api.DeleteNamespace(&registry.DeleteNamespaceRequest{
+				NamespaceID: rs.Primary.Attributes["registry_namespace_id"],
+				Region:      region,
+			})
+
+			if err == nil {
+				return fmt.Errorf("registry namespace (%s) still exists", rs.Primary.Attributes["registry_namespace_id"])
+			}
+
+			if !is404Error(err) {
+				return err
 			}
 		}
 

@@ -4,17 +4,12 @@ import (
 	"context"
 	"fmt"
 	"io/ioutil"
-	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/scaleway/scaleway-sdk-go/api/rdb/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
-)
-
-const (
-	defaultWaitRDBRetryInterval = 30 * time.Second
 )
 
 func resourceScalewayRdbInstance() *schema.Resource {
@@ -24,6 +19,10 @@ func resourceScalewayRdbInstance() *schema.Resource {
 		UpdateContext: resourceScalewayRdbInstanceUpdate,
 		DeleteContext: resourceScalewayRdbInstanceDelete,
 		Timeouts: &schema.ResourceTimeout{
+			Create:  schema.DefaultTimeout(defaultRdbInstanceTimeout),
+			Read:    schema.DefaultTimeout(defaultRdbInstanceTimeout),
+			Update:  schema.DefaultTimeout(defaultRdbInstanceTimeout),
+			Delete:  schema.DefaultTimeout(defaultRdbInstanceTimeout),
 			Default: schema.DefaultTimeout(defaultRdbInstanceTimeout),
 		},
 		Importer: &schema.ResourceImporter{
@@ -96,8 +95,17 @@ func resourceScalewayRdbInstance() *schema.Resource {
 				Elem: &schema.Schema{
 					Type: schema.TypeString,
 				},
-				Description: "Map of engine settings to be set.",
+				Description: "Map of engine settings to be set on a running instance.",
 				Computed:    true,
+				Optional:    true,
+			},
+			"init_settings": {
+				Type: schema.TypeMap,
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
+				Description: "Map of engine settings to be set at database initialisation.",
+				ForceNew:    true,
 				Optional:    true,
 			},
 			"tags": {
@@ -290,6 +298,10 @@ func resourceScalewayRdbInstanceCreate(ctx context.Context, d *schema.ResourceDa
 		VolumeType:    rdb.VolumeType(d.Get("volume_type").(string)),
 	}
 
+	if initSettings, ok := d.GetOk("init_settings"); ok {
+		createReq.InitSettings = expandInstanceSettings(initSettings)
+	}
+
 	rawTag, tagExist := d.GetOk("tags")
 	if tagExist {
 		createReq.Tags = expandStrings(rawTag)
@@ -327,10 +339,7 @@ func resourceScalewayRdbInstanceCreate(ctx context.Context, d *schema.ResourceDa
 			InstanceID: res.ID,
 		}
 
-		backupSameRegion, backupSameRegionExist := d.GetOk("backup_same_region")
-		if backupSameRegionExist {
-			updateReq.BackupSameRegion = expandBoolPtr(backupSameRegion)
-		}
+		updateReq.BackupSameRegion = expandBoolPtr(d.Get("backup_same_region"))
 
 		updateReq.IsBackupScheduleDisabled = scw.BoolPtr(d.Get("disable_backup").(bool))
 		if backupScheduleFrequency, okFrequency := d.GetOk("backup_schedule_frequency"); okFrequency {
@@ -410,7 +419,7 @@ func resourceScalewayRdbInstanceRead(ctx context.Context, d *schema.ResourceData
 		_ = d.Set("volume_type", res.Volume.Type)
 		_ = d.Set("volume_size_in_gb", int(res.Volume.Size/scw.GB))
 	}
-	_ = d.Set("read_replicas", flattenRdbInstanceReadReplicas(res.ReadReplicas))
+	_ = d.Set("read_replicas", []string{})
 	_ = d.Set("region", string(region))
 	_ = d.Set("organization_id", res.OrganizationID)
 	_ = d.Set("project_id", res.ProjectID)
@@ -431,6 +440,7 @@ func resourceScalewayRdbInstanceRead(ctx context.Context, d *schema.ResourceData
 
 	// set settings
 	_ = d.Set("settings", flattenInstanceSettings(res.Settings))
+	_ = d.Set("init_settings", flattenInstanceSettings(res.InitSettings))
 
 	// set endpoints
 	pnI, pnExist := flattenPrivateNetwork(res.Endpoints)
@@ -470,7 +480,7 @@ func resourceScalewayRdbInstanceUpdate(ctx context.Context, d *schema.ResourceDa
 		req.BackupSameRegion = expandBoolPtr(d.Get("backup_same_region"))
 	}
 	if d.HasChange("tags") {
-		req.Tags = scw.StringsPtr(expandStrings(d.Get("tags")))
+		req.Tags = expandUpdatedStringsPtr(d.Get("tags"))
 	}
 
 	_, err = waitForRDBInstance(ctx, rdbAPI, region, ID, d.Timeout(schema.TimeoutUpdate))
@@ -645,7 +655,7 @@ func resourceScalewayRdbInstanceUpdate(ctx context.Context, d *schema.ResourceDa
 					&rdb.CreateEndpointRequest{Region: region, InstanceID: ID, EndpointSpec: e},
 					scw.WithContext(ctx))
 				if err != nil {
-					diag.FromErr(err)
+					return diag.FromErr(err)
 				}
 			}
 		}

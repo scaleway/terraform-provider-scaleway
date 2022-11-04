@@ -24,7 +24,11 @@ func resourceScalewayContainer() *schema.Resource {
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 		Timeouts: &schema.ResourceTimeout{
-			Default: schema.DefaultTimeout(defaultContainerNamespaceTimeout),
+			Create:  schema.DefaultTimeout(defaultContainerTimeout),
+			Read:    schema.DefaultTimeout(defaultContainerTimeout),
+			Update:  schema.DefaultTimeout(defaultContainerTimeout),
+			Delete:  schema.DefaultTimeout(defaultContainerTimeout),
+			Default: schema.DefaultTimeout(defaultContainerTimeout),
 		},
 		SchemaVersion: 0,
 		Schema: map[string]*schema.Schema{
@@ -48,7 +52,19 @@ func resourceScalewayContainer() *schema.Resource {
 			"environment_variables": {
 				Type:        schema.TypeMap,
 				Optional:    true,
+				Computed:    true,
 				Description: "The environment variables to be injected into your container at runtime.",
+				Elem: &schema.Schema{
+					Type:         schema.TypeString,
+					ValidateFunc: validation.StringLenBetween(0, 1000),
+				},
+				ValidateDiagFunc: validation.MapKeyLenBetween(0, 100),
+			},
+			"secret_environment_variables": {
+				Type:        schema.TypeMap,
+				Optional:    true,
+				Sensitive:   true,
+				Description: "The secret environment variables to be injected into your container at runtime.",
 				Elem: &schema.Schema{
 					Type:         schema.TypeString,
 					ValidateFunc: validation.StringLenBetween(0, 1000),
@@ -101,6 +117,12 @@ func resourceScalewayContainer() *schema.Resource {
 				Computed:    true,
 				Description: "The scaleway registry image address",
 			},
+			"registry_sha256": {
+				Type:         schema.TypeString,
+				Optional:     true,
+				RequiredWith: []string{"registry_image"},
+				Description:  "The sha256 of your source registry image, changing it will re-apply the deployment. Can be any string",
+			},
 			"max_concurrency": {
 				Type:         schema.TypeInt,
 				Optional:     true,
@@ -110,9 +132,8 @@ func resourceScalewayContainer() *schema.Resource {
 			},
 			"domain_name": {
 				Type:        schema.TypeString,
-				Optional:    true,
 				Computed:    true,
-				Description: "The container domain name.",
+				Description: "The native container domain name.",
 			},
 			"protocol": {
 				Type:        schema.TypeString,
@@ -167,14 +188,9 @@ func resourceScalewayContainerCreate(ctx context.Context, d *schema.ResourceData
 	if region.String() == "" {
 		region = scw.RegionFrPar
 	}
-	namespaceID := d.Get("namespace_id")
+	namespaceID := expandID(d.Get("namespace_id").(string))
 	// verify name space state
-	_, err = api.WaitForNamespace(&container.WaitForNamespaceRequest{
-		NamespaceID:   expandID(namespaceID),
-		Region:        region,
-		Timeout:       scw.TimeDurationPtr(defaultRegistryNamespaceTimeout),
-		RetryInterval: DefaultWaitRetryInterval,
-	}, scw.WithContext(ctx))
+	_, err = waitForContainerNamespace(ctx, api, region, namespaceID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
 		return diag.Errorf("unexpected namespace error: %s", err)
 	}
@@ -192,10 +208,7 @@ func resourceScalewayContainerCreate(ctx context.Context, d *schema.ResourceData
 	// check if container should be deployed
 	shouldDeploy := d.Get("deploy")
 	if *expandBoolPtr(shouldDeploy) {
-		_, err := api.WaitForContainer(&container.WaitForContainerRequest{
-			ContainerID: res.ID,
-			Region:      region,
-		}, scw.WithContext(ctx))
+		_, err = waitForContainer(ctx, api, res.ID, region, d.Timeout(schema.TimeoutCreate))
 		if err != nil {
 			return diag.Errorf("unexpected waiting container error: %s", err)
 		}
@@ -208,6 +221,11 @@ func resourceScalewayContainerCreate(ctx context.Context, d *schema.ResourceData
 		_, err = api.UpdateContainer(reqUpdate, scw.WithContext(ctx))
 		if err != nil {
 			return diag.FromErr(err)
+		}
+
+		_, err = waitForContainer(ctx, api, res.ID, region, d.Timeout(schema.TimeoutCreate))
+		if err != nil {
+			return diag.Errorf("unexpected waiting container error: %s", err)
 		}
 	}
 
@@ -222,11 +240,12 @@ func resourceScalewayContainerRead(ctx context.Context, d *schema.ResourceData, 
 		return diag.FromErr(err)
 	}
 
-	co, err := api.WaitForContainer(&container.WaitForContainerRequest{
-		ContainerID: containerID,
-		Region:      region,
-	}, scw.WithContext(ctx))
+	co, err := waitForContainer(ctx, api, containerID, region, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
+		if is404Error(err) {
+			d.SetId("")
+			return nil
+		}
 		return diag.Errorf("unexpected waiting container error: %s", err)
 	}
 
@@ -262,50 +281,15 @@ func resourceScalewayContainerUpdate(ctx context.Context, d *schema.ResourceData
 
 	namespaceID := d.Get("namespace_id")
 	// verify name space state
-	_, err = api.WaitForNamespace(&container.WaitForNamespaceRequest{
-		NamespaceID: expandID(namespaceID),
-		Region:      region,
-	}, scw.WithContext(ctx))
+	_, err = waitForContainerNamespace(ctx, api, region, expandID(namespaceID), d.Timeout(schema.TimeoutUpdate))
 	if err != nil {
 		return diag.Errorf("unexpected namespace error: %s", err)
 	}
 
 	// check for container state
-	_, err = api.WaitForContainer(&container.WaitForContainerRequest{
-		ContainerID: containerID,
-		Region:      region,
-	}, scw.WithContext(ctx))
+	_, err = waitForContainer(ctx, api, containerID, region, d.Timeout(schema.TimeoutUpdate))
 	if err != nil {
 		return diag.Errorf("unexpected waiting container error: %s", err)
-	}
-
-	// Warning or Errors can be collected as warnings
-	var diags diag.Diagnostics
-
-	// check triggers associated
-	triggers, err := api.ListCrons(&container.ListCronsRequest{
-		Region:      region,
-		ContainerID: containerID,
-	}, scw.WithContext(ctx))
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	// wait for triggers state
-	for _, c := range triggers.Crons {
-		_, err := api.WaitForCron(&container.WaitForCronRequest{
-			CronID:        c.ID,
-			Region:        region,
-			Timeout:       scw.TimeDurationPtr(defaultContainerNamespaceTimeout),
-			RetryInterval: DefaultWaitRetryInterval,
-		}, scw.WithContext(ctx))
-		if err != nil {
-			diags = append(diags, diag.Diagnostic{
-				Severity: diag.Warning,
-				Summary:  "Warning waiting cron job",
-				Detail:   err.Error(),
-			})
-		}
 	}
 
 	// update container
@@ -316,24 +300,27 @@ func resourceScalewayContainerUpdate(ctx context.Context, d *schema.ResourceData
 
 	if d.HasChanges("environment_variables") {
 		envVariablesRaw := d.Get("environment_variables")
-		req.EnvironmentVariables = expandMapStringStringPtr(envVariablesRaw)
+		req.EnvironmentVariables = expandMapPtrStringString(envVariablesRaw)
+	}
+
+	if d.HasChanges("secret_environment_variables") {
+		req.SecretEnvironmentVariables = expandContainerSecrets(d.Get("secret_environment_variables"))
 	}
 
 	if d.HasChanges("min_scale") {
-		req.MinScale = toUint32(d.Get("min_scale"))
+		req.MinScale = scw.Uint32Ptr(uint32(d.Get("min_scale").(int)))
 	}
 
 	if d.HasChanges("max_scale") {
-		req.MaxScale = toUint32(d.Get("max_scale"))
+		req.MaxScale = scw.Uint32Ptr(uint32(d.Get("max_scale").(int)))
 	}
 
 	if d.HasChanges("memory_limit") {
-		req.MemoryLimit = toUint32(d.Get("memory_limit"))
+		req.MemoryLimit = scw.Uint32Ptr(uint32(d.Get("memory_limit").(int)))
 	}
 
 	if d.HasChanges("timeout") {
-		timeout := d.Get("timeout")
-		req.Timeout = &scw.Duration{Seconds: timeout.(int64)}
+		req.Timeout = &scw.Duration{Seconds: int64(d.Get("timeout").(int))}
 	}
 
 	if d.HasChanges("privacy") {
@@ -341,19 +328,15 @@ func resourceScalewayContainerUpdate(ctx context.Context, d *schema.ResourceData
 	}
 
 	if d.HasChanges("description") {
-		req.Description = expandStringPtr(d.Get("description"))
+		req.Description = expandUpdatedStringPtr(d.Get("description"))
 	}
 
 	if d.HasChanges("registry_image") {
 		req.RegistryImage = expandStringPtr(d.Get("registry_image"))
 	}
 
-	if d.HasChanges("domain_name") {
-		req.DomainName = expandStringPtr(d.Get("domain_name"))
-	}
-
 	if d.HasChanges("max_concurrency") {
-		req.MaxConcurrency = toUint32(d.Get("max_concurrency"))
+		req.MaxConcurrency = scw.Uint32Ptr(uint32(d.Get("max_concurrency").(int)))
 	}
 
 	if d.HasChanges("protocol") {
@@ -361,19 +344,29 @@ func resourceScalewayContainerUpdate(ctx context.Context, d *schema.ResourceData
 	}
 
 	if d.HasChanges("port") {
-		req.Port = toUint32(d.Get("port"))
+		req.Port = scw.Uint32Ptr(uint32(d.Get("port").(int)))
 	}
 
 	if d.HasChanges("deploy") {
 		req.Redeploy = expandBoolPtr(d.Get("deploy"))
 	}
 
-	_, err = api.UpdateContainer(req, scw.WithContext(ctx))
+	imageHasChanged := d.HasChanges("registry_sha256")
+	if imageHasChanged {
+		req.Redeploy = &imageHasChanged
+	}
+
+	con, err := api.UpdateContainer(req, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	return append(diags, resourceScalewayContainerRead(ctx, d, meta)...)
+	_, err = waitForContainer(ctx, api, con.ID, region, d.Timeout(schema.TimeoutUpdate))
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	return resourceScalewayContainerRead(ctx, d, meta)
 }
 
 func resourceScalewayContainerDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -383,12 +376,9 @@ func resourceScalewayContainerDelete(ctx context.Context, d *schema.ResourceData
 	}
 
 	// check for container state
-	_, err = api.WaitForContainer(&container.WaitForContainerRequest{
-		ContainerID: containerID,
-		Region:      region,
-	}, scw.WithContext(ctx))
+	_, err = waitForContainer(ctx, api, containerID, region, d.Timeout(schema.TimeoutUpdate))
 	if err != nil {
-		return diag.Errorf("unexpected waiting container error: %s", err)
+		return diag.FromErr(err)
 	}
 
 	// delete container

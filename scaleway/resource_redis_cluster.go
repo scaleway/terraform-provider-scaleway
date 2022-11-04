@@ -2,11 +2,14 @@ package scaleway
 
 import (
 	"context"
+	"fmt"
+	"io/ioutil"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	redis "github.com/scaleway/scaleway-sdk-go/api/redis/v1alpha1"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
+	"github.com/scaleway/scaleway-sdk-go/api/redis/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 )
 
@@ -17,6 +20,9 @@ func resourceScalewayRedisCluster() *schema.Resource {
 		UpdateContext: resourceScalewayRedisClusterUpdate,
 		DeleteContext: resourceScalewayRedisClusterDelete,
 		Timeouts: &schema.ResourceTimeout{
+			Create:  schema.DefaultTimeout(defaultRedisClusterTimeout),
+			Update:  schema.DefaultTimeout(defaultRedisClusterTimeout),
+			Delete:  schema.DefaultTimeout(defaultRedisClusterTimeout),
 			Default: schema.DefaultTimeout(defaultRedisClusterTimeout),
 		},
 		Importer: &schema.ResourceImporter{
@@ -36,9 +42,10 @@ func resourceScalewayRedisCluster() *schema.Resource {
 				Description: "Redis version of the cluster",
 			},
 			"node_type": {
-				Type:        schema.TypeString,
-				Required:    true,
-				Description: "Type of node to use for the cluster",
+				Type:             schema.TypeString,
+				Required:         true,
+				Description:      "Type of node to use for the cluster",
+				DiffSuppressFunc: diffSuppressFuncIgnoreCase,
 			},
 			"user_name": {
 				Type:        schema.TypeString,
@@ -71,18 +78,8 @@ func resourceScalewayRedisCluster() *schema.Resource {
 				Description: "Whether or not TLS is enabled.",
 				ForceNew:    true,
 			},
-			"created_at": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The date and time of the creation of the Redis cluster",
-			},
-			"updated_at": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The date and time of the last update of the Redis cluster",
-			},
 			"acl": {
-				Type:        schema.TypeList,
+				Type:        schema.TypeSet,
 				Description: "List of acl rules.",
 				Optional:    true,
 				Elem: &schema.Resource{
@@ -93,9 +90,10 @@ func resourceScalewayRedisCluster() *schema.Resource {
 							Computed:    true,
 						},
 						"ip": {
-							Type:        schema.TypeString,
-							Description: "IPv4 network address of the rule (IP network in a CIDR format).",
-							Required:    true,
+							Type:         schema.TypeString,
+							Description:  "IPv4 network address of the rule (IP network in a CIDR format).",
+							Required:     true,
+							ValidateFunc: validation.IsCIDR,
 						},
 						"description": {
 							Type:        schema.TypeString,
@@ -113,6 +111,79 @@ func resourceScalewayRedisCluster() *schema.Resource {
 				Elem: &schema.Schema{
 					Type: schema.TypeString,
 				},
+			},
+			"private_network": {
+				Type:        schema.TypeSet,
+				Optional:    true,
+				Description: "Private network specs details",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"endpoint_id": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "UUID of the endpoint to be connected to the cluster",
+						},
+						"id": {
+							Type:         schema.TypeString,
+							Required:     true,
+							ValidateFunc: validationUUIDorUUIDWithLocality(),
+							Description:  "UUID of the private network to be connected to the cluster",
+						},
+						"service_ips": {
+							Type:     schema.TypeList,
+							Required: true,
+							Elem: &schema.Schema{
+								Type:         schema.TypeString,
+								ValidateFunc: validation.IsCIDR,
+							},
+							Description: "List of IPv4 addresses of the private network with a CIDR notation",
+						},
+						"zone": zoneSchema(),
+					},
+				},
+			},
+			// Computed
+			"public_network": {
+				Type:        schema.TypeList,
+				Optional:    true,
+				Computed:    true,
+				MaxItems:    1,
+				Description: "Public network specs details",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"id": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"port": {
+							Type:        schema.TypeInt,
+							Computed:    true,
+							Description: "TCP port of the endpoint",
+						},
+						"ips": {
+							Type: schema.TypeList,
+							Elem: &schema.Schema{
+								Type: schema.TypeString,
+							},
+							Computed: true,
+						},
+					},
+				},
+			},
+			"certificate": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "public TLS certificate used by redis cluster, empty if tls is disabled",
+			},
+			"created_at": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The date and time of the creation of the Redis cluster",
+			},
+			"updated_at": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The date and time of the last update of the Redis cluster",
 			},
 			// Common
 			"zone":       zoneSchema(),
@@ -162,6 +233,15 @@ func resourceScalewayRedisClusterCreate(ctx context.Context, d *schema.ResourceD
 		createReq.ClusterSettings = expandRedisSettings(settings)
 	}
 
+	privN, privNExists := d.GetOk("private_network")
+	if privNExists {
+		pnSpecs, err := expandRedisPrivateNetwork(privN.(*schema.Set).List())
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		createReq.Endpoints = pnSpecs
+	}
+
 	res, err := redisAPI.CreateCluster(createReq, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
@@ -203,7 +283,7 @@ func resourceScalewayRedisClusterRead(ctx context.Context, d *schema.ResourceDat
 	_ = d.Set("zone", cluster.Zone.String())
 	_ = d.Set("project_id", cluster.ProjectID)
 	_ = d.Set("version", cluster.Version)
-	_ = d.Set("cluster_size", cluster.ClusterSize)
+	_ = d.Set("cluster_size", int(cluster.ClusterSize))
 	_ = d.Set("created_at", cluster.CreatedAt.Format(time.RFC3339))
 	_ = d.Set("updated_at", cluster.UpdatedAt.Format(time.RFC3339))
 	_ = d.Set("acl", flattenRedisACLs(cluster.ACLRules))
@@ -211,6 +291,32 @@ func resourceScalewayRedisClusterRead(ctx context.Context, d *schema.ResourceDat
 
 	if len(cluster.Tags) > 0 {
 		_ = d.Set("tags", cluster.Tags)
+	}
+
+	// set endpoints
+	pnI, pnExists := flattenRedisPrivateNetwork(cluster.Endpoints)
+	if pnExists {
+		_ = d.Set("private_network", pnI)
+	}
+	_ = d.Set("public_network", flattenRedisPublicNetwork(cluster.Endpoints))
+
+	if cluster.TLSEnabled {
+		certificate, err := redisAPI.GetClusterCertificate(&redis.GetClusterCertificateRequest{
+			Zone:      zone,
+			ClusterID: cluster.ID,
+		})
+		if err != nil {
+			return diag.FromErr(fmt.Errorf("failed to fetch cluster certificate: %w", err))
+		}
+
+		certificateContent, err := ioutil.ReadAll(certificate.Content)
+		if err != nil {
+			return diag.FromErr(fmt.Errorf("failed to read cluster certificate: %w", err))
+		}
+
+		_ = d.Set("certificate", string(certificateContent))
+	} else {
+		_ = d.Set("certificate", "")
 	}
 
 	return nil
@@ -237,7 +343,7 @@ func resourceScalewayRedisClusterUpdate(ctx context.Context, d *schema.ResourceD
 		req.Password = expandStringPtr(d.Get("password"))
 	}
 	if d.HasChange("tags") {
-		req.Tags = expandStrings(d.Get("tags"))
+		req.Tags = expandUpdatedStringsPtr(d.Get("tags"))
 	}
 	if d.HasChange("acl") {
 		diagnostics := resourceScalewayRedisClusterUpdateACL(ctx, d, redisAPI, zone, ID)
@@ -300,6 +406,13 @@ func resourceScalewayRedisClusterUpdate(ctx context.Context, d *schema.ResourceD
 		}
 	}
 
+	if d.HasChanges("private_network") {
+		diagnostics := resourceScalewayRedisClusterUpdateEndpoints(ctx, d, redisAPI, zone, ID)
+		if diagnostics != nil {
+			return diagnostics
+		}
+	}
+
 	_, err = waitForRedisCluster(ctx, redisAPI, zone, ID, d.Timeout(schema.TimeoutUpdate))
 	if err != nil {
 		return diag.FromErr(err)
@@ -334,6 +447,42 @@ func resourceScalewayRedisClusterUpdateSettings(ctx context.Context, d *schema.R
 		ClusterID: clusterID,
 		Settings:  settings,
 	}, scw.WithContext(ctx))
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	return nil
+}
+
+func resourceScalewayRedisClusterUpdateEndpoints(ctx context.Context, d *schema.ResourceData, redisAPI *redis.API, zone scw.Zone, clusterID string) diag.Diagnostics {
+	// retrieve state
+	cluster, err := waitForRedisCluster(ctx, redisAPI, zone, clusterID, d.Timeout(schema.TimeoutUpdate))
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	// get new desired state of endpoints
+	rawNewEndpoints := d.Get("private_network")
+	newEndpoints, err := expandRedisPrivateNetwork(rawNewEndpoints.(*schema.Set).List())
+	if err != nil {
+		return diag.FromErr(err)
+	}
+	if len(newEndpoints) == 0 {
+		newEndpoints = append(newEndpoints, &redis.EndpointSpec{
+			PublicNetwork: &redis.EndpointSpecPublicNetworkSpec{},
+		})
+	}
+	// send request
+	_, err = redisAPI.SetEndpoints(&redis.SetEndpointsRequest{
+		Zone:      cluster.Zone,
+		ClusterID: cluster.ID,
+		Endpoints: newEndpoints,
+	}, scw.WithContext(ctx))
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	_, err = waitForRedisCluster(ctx, redisAPI, zone, clusterID, d.Timeout(schema.TimeoutUpdate))
 	if err != nil {
 		return diag.FromErr(err)
 	}

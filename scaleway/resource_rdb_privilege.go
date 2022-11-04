@@ -22,6 +22,10 @@ func resourceScalewayRdbPrivilege() *schema.Resource {
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 		Timeouts: &schema.ResourceTimeout{
+			Create:  schema.DefaultTimeout(defaultRdbInstanceTimeout),
+			Read:    schema.DefaultTimeout(defaultRdbInstanceTimeout),
+			Update:  schema.DefaultTimeout(defaultRdbInstanceTimeout),
+			Delete:  schema.DefaultTimeout(defaultRdbInstanceTimeout),
 			Default: schema.DefaultTimeout(defaultRdbInstanceTimeout),
 		},
 		SchemaVersion: 0,
@@ -258,7 +262,7 @@ func resourceScalewayRdbPrivilegeDelete(ctx context.Context, d *schema.ResourceD
 		return diag.FromErr(err)
 	}
 
-	if listUsers != nil || len(listUsers.Users) == 0 {
+	if listUsers != nil && len(listUsers.Users) == 0 {
 		d.SetId("")
 		return nil
 	}
@@ -287,7 +291,7 @@ func resourceScalewayRdbPrivilegeDelete(ctx context.Context, d *schema.ResourceD
 			return resource.NonRetryableError(errUserExist)
 		}
 
-		if listUsers != nil || len(listUsers.Users) == 0 {
+		if listUsers != nil && len(listUsers.Users) == 0 {
 			d.SetId("")
 			return nil
 		}

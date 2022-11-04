@@ -1,12 +1,9 @@
 package scaleway
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
-	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
 )
 
 func TestAccScalewayDataSourceInstanceImage_Basic(t *testing.T) {
@@ -73,3 +70,4 @@ func testAccCheckScalewayInstanceImageExists(tt *TestTools, n string) resource.T
 		return nil
 	}
 }
+

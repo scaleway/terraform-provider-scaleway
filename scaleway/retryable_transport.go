@@ -28,6 +28,10 @@ func newRetryableTransport(defaultTransport http.RoundTripper) http.RoundTripper
 		}
 		return retryablehttp.DefaultRetryPolicy(ctx, resp, err) //nolint:wrapcheck
 	}
+	c.ErrorHandler = func(resp *http.Response, err error, numTries int) (*http.Response, error) {
+		// Do not return error as response will be handled by scaleway sdk-go
+		return resp, nil
+	}
 
 	return &retryableTransport{c}
 }
@@ -54,5 +58,12 @@ func (c *retryableTransport) RoundTrip(r *http.Request) (*http.Response, error) 
 	for key, val := range r.Header {
 		req.Header.Set(key, val[0])
 	}
-	return c.Client.Do(req) //nolint:wrapcheck
+	req.GetBody = func() (io.ReadCloser, error) {
+		b, err := req.BodyBytes()
+		if err != nil {
+			return nil, err
+		}
+		return io.NopCloser(bytes.NewReader(b)), err
+	}
+	return c.Client.Do(req)
 }

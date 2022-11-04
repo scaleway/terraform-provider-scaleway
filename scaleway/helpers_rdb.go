@@ -12,7 +12,8 @@ import (
 )
 
 const (
-	defaultRdbInstanceTimeout = 15 * time.Minute
+	defaultRdbInstanceTimeout   = 15 * time.Minute
+	defaultWaitRDBRetryInterval = 30 * time.Second
 )
 
 // newRdbAPI returns a new RDB API
@@ -39,18 +40,6 @@ func rdbAPIWithRegionAndID(m interface{}, id string) (*rdb.API, scw.Region, stri
 		return nil, "", "", err
 	}
 	return newRdbAPI(m), region, ID, nil
-}
-
-func flattenRdbInstanceReadReplicas(readReplicas []*rdb.Endpoint) interface{} {
-	replicasI := []map[string]interface{}(nil)
-	for _, readReplica := range readReplicas {
-		replicasI = append(replicasI, map[string]interface{}{
-			"ip":   flattenIPPtr(readReplica.IP),
-			"port": int(readReplica.Port),
-			"name": flattenStringPtr(readReplica.Name),
-		})
-	}
-	return replicasI
 }
 
 func flattenInstanceSettings(settings []*rdb.InstanceSetting) interface{} {
@@ -92,6 +81,34 @@ func waitForRDBInstance(ctx context.Context, api *rdb.API, region scw.Region, id
 	}
 
 	return instance, nil
+}
+
+func waitForRDBDatabaseBackup(ctx context.Context, api *rdb.API, region scw.Region, id string, timeout time.Duration) (*rdb.DatabaseBackup, error) {
+	retryInterval := defaultWaitRDBRetryInterval
+	if DefaultWaitRetryInterval != nil {
+		retryInterval = *DefaultWaitRetryInterval
+	}
+
+	return api.WaitForDatabaseBackup(&rdb.WaitForDatabaseBackupRequest{
+		Region:           region,
+		Timeout:          scw.TimeDurationPtr(timeout),
+		DatabaseBackupID: id,
+		RetryInterval:    &retryInterval,
+	}, scw.WithContext(ctx))
+}
+
+func waitForRDBReadReplica(ctx context.Context, api *rdb.API, region scw.Region, id string, timeout time.Duration) (*rdb.ReadReplica, error) {
+	retryInterval := defaultWaitRDBRetryInterval
+	if DefaultWaitRetryInterval != nil {
+		retryInterval = *DefaultWaitRetryInterval
+	}
+
+	return api.WaitForReadReplica(&rdb.WaitForReadReplicaRequest{
+		Region:        region,
+		Timeout:       scw.TimeDurationPtr(timeout),
+		ReadReplicaID: id,
+		RetryInterval: &retryInterval,
+	}, scw.WithContext(ctx))
 }
 
 func expandPrivateNetwork(data interface{}, exist bool) ([]*rdb.EndpointSpec, error) {
@@ -229,4 +246,85 @@ func flattenLoadBalancer(endpoints []*rdb.Endpoint) interface{} {
 	}
 
 	return flat
+}
+
+// expandTimePtr returns a time pointer for an RFC3339 time.
+// It returns nil if time is not valid, you should use validateDate to validate field.
+func expandTimePtr(i interface{}) *time.Time {
+	rawTime := expandStringPtr(i)
+	if rawTime == nil {
+		return nil
+	}
+	parsedTime, err := time.Parse(time.RFC3339, *rawTime)
+	if err != nil {
+		return nil
+	}
+	return &parsedTime
+}
+
+func expandReadReplicaEndpointsSpecDirectAccess(data interface{}) *rdb.ReadReplicaEndpointSpec {
+	if data == nil || len(data.([]interface{})) == 0 {
+		return nil
+	}
+
+	return &rdb.ReadReplicaEndpointSpec{
+		DirectAccess: new(rdb.ReadReplicaEndpointSpecDirectAccess),
+	}
+}
+
+// expandReadReplicaEndpointsSpecPrivateNetwork expand read-replica private network endpoints from schema to specs
+func expandReadReplicaEndpointsSpecPrivateNetwork(data interface{}) (*rdb.ReadReplicaEndpointSpec, error) {
+	if data == nil || len(data.([]interface{})) == 0 {
+		return nil, nil
+	}
+	// private_network is a list of size 1
+	data = data.([]interface{})[0]
+
+	rawEndpoint := data.(map[string]interface{})
+
+	endpoint := new(rdb.ReadReplicaEndpointSpec)
+
+	ip, err := expandIPNet(rawEndpoint["service_ip"].(string))
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse private_network service_ip (%s): %w", rawEndpoint["service_ip"], err)
+	}
+
+	endpoint.PrivateNetwork = &rdb.ReadReplicaEndpointSpecPrivateNetwork{
+		PrivateNetworkID: expandID(rawEndpoint["private_network_id"]),
+		ServiceIP:        ip,
+	}
+	return endpoint, nil
+}
+
+// flattenReadReplicaEndpoints flatten read-replica endpoints to directAccess and privateNetwork
+func flattenReadReplicaEndpoints(endpoints []*rdb.Endpoint) (directAccess, privateNetwork interface{}) {
+	for _, endpoint := range endpoints {
+		rawEndpoint := map[string]interface{}{
+			"endpoint_id": endpoint.ID,
+			"ip":          flattenIPPtr(endpoint.IP),
+			"port":        int(endpoint.Port),
+			"name":        endpoint.Name,
+			"hostname":    flattenStringPtr(endpoint.Hostname),
+		}
+		if endpoint.DirectAccess != nil {
+			directAccess = rawEndpoint
+		}
+		if endpoint.PrivateNetwork != nil {
+			rawEndpoint["private_network_id"] = newZonedID(endpoint.PrivateNetwork.Zone, endpoint.PrivateNetwork.PrivateNetworkID).String()
+			rawEndpoint["service_ip"] = endpoint.PrivateNetwork.ServiceIP.String()
+			rawEndpoint["zone"] = endpoint.PrivateNetwork.Zone
+			privateNetwork = rawEndpoint
+		}
+	}
+
+	// direct_access and private_network are lists
+
+	if directAccess != nil {
+		directAccess = []interface{}{directAccess}
+	}
+	if privateNetwork != nil {
+		privateNetwork = []interface{}{privateNetwork}
+	}
+
+	return directAccess, privateNetwork
 }

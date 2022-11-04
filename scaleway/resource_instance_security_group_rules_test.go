@@ -9,7 +9,7 @@ import (
 func TestAccScalewayInstanceSecurityGroupRules_Basic(t *testing.T) {
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheckScalewayInstanceSecurityGroupDestroy(tt),
@@ -32,7 +32,7 @@ func TestAccScalewayInstanceSecurityGroupRules_Basic(t *testing.T) {
 				),
 			},
 			{
-				// We test that we can add some rules and they stay in correct orders
+				// We test that we can add some rules, and they stay in correct orders
 				Config: `
 							resource scaleway_instance_security_group sg01 {
 								external_rules = true
@@ -178,7 +178,7 @@ func TestAccScalewayInstanceSecurityGroupRules_IPRanges(t *testing.T) {
 			}
 		`
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheckScalewayInstanceSecurityGroupDestroy(tt),
@@ -237,7 +237,7 @@ func TestAccScalewayInstanceSecurityGroupRules_Basic2(t *testing.T) {
 			}
 		`
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheckScalewayInstanceSecurityGroupDestroy(tt),

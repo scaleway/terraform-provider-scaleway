@@ -16,6 +16,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	container "github.com/scaleway/scaleway-sdk-go/api/container/v1beta1"
+	"github.com/scaleway/scaleway-sdk-go/scw"
 )
 
 var testDockerIMG = ""
@@ -29,6 +30,41 @@ func init() {
 		return
 	}
 	l.Infof("start container registry with image: %s", testDockerIMG)
+}
+
+func init() {
+	resource.AddTestSweepers("scaleway_container", &resource.Sweeper{
+		Name: "scaleway_container",
+		F:    testSweepContainer,
+	})
+}
+
+func testSweepContainer(_ string) error {
+	return sweepRegions(scw.AllRegions, func(scwClient *scw.Client, region scw.Region) error {
+		containerAPI := container.NewAPI(scwClient)
+		l.Debugf("sweeper: destroying the container in (%s)", region)
+		listNamespaces, err := containerAPI.ListContainers(
+			&container.ListContainersRequest{
+				Region: region,
+			}, scw.WithAllPages())
+		if err != nil {
+			return fmt.Errorf("error listing containers in (%s) in sweeper: %s", region, err)
+		}
+
+		for _, cont := range listNamespaces.Containers {
+			_, err := containerAPI.DeleteContainer(&container.DeleteContainerRequest{
+				ContainerID: cont.ID,
+				Region:      region,
+			})
+			if err != nil {
+				l.Debugf("sweeper: error (%s)", err)
+
+				return fmt.Errorf("error deleting container in sweeper: %s", err)
+			}
+		}
+
+		return nil
+	})
 }
 
 func TestAccScalewayContainer_Basic(t *testing.T) {
@@ -74,6 +110,13 @@ func TestAccScalewayContainer_Basic(t *testing.T) {
 					resource scaleway_container main {
 						name = "my-container-tf"
 						namespace_id = scaleway_container_namespace.main.id
+						port = 8080
+						cpu_limit = 70
+						memory_limit = 128
+						min_scale = 0
+						max_scale = 20
+						timeout = 300
+						deploy = false
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
@@ -90,6 +133,117 @@ func TestAccScalewayContainer_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_container.main", "deploy", "false"),
 					resource.TestCheckResourceAttr("scaleway_container.main", "privacy", container.ContainerPrivacyPublic.String()),
 					resource.TestCheckResourceAttr("scaleway_container.main", "protocol", container.ContainerProtocolHTTP1.String()),
+				),
+			},
+			{
+				Config: `
+					resource scaleway_container_namespace main {
+					}
+
+					resource "scaleway_container" main {
+						name 			= "my-container-tf"
+						namespace_id	= scaleway_container_namespace.main.id
+						port         	= 5000
+						min_scale    	= 1
+						max_scale    	= 2
+						max_concurrency = 80
+						memory_limit 	= 256
+						cpu_limit		= 140
+						deploy       	= false
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayContainerExists(tt, "scaleway_container.main"),
+					testCheckResourceAttrUUID("scaleway_container.main", "id"),
+					resource.TestCheckResourceAttr("scaleway_container.main", "name", "my-container-tf"),
+					resource.TestCheckResourceAttr("scaleway_container.main", "port", "5000"),
+					resource.TestCheckResourceAttr("scaleway_container.main", "cpu_limit", "140"),
+					resource.TestCheckResourceAttr("scaleway_container.main", "memory_limit", "256"),
+					resource.TestCheckResourceAttr("scaleway_container.main", "min_scale", "1"),
+					resource.TestCheckResourceAttr("scaleway_container.main", "max_scale", "2"),
+					resource.TestCheckResourceAttr("scaleway_container.main", "timeout", "300"),
+					resource.TestCheckResourceAttr("scaleway_container.main", "max_concurrency", "80"),
+					resource.TestCheckResourceAttr("scaleway_container.main", "deploy", "false"),
+					resource.TestCheckResourceAttr("scaleway_container.main", "protocol", container.ContainerProtocolHTTP1.String()),
+				),
+			},
+		},
+	})
+}
+
+func TestAccScalewayContainer_Env(t *testing.T) {
+	tt := NewTestTools(t)
+	defer tt.Cleanup()
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      testAccCheckScalewayContainerDestroy(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource scaleway_container_namespace main {
+					}
+
+					resource scaleway_container main {
+						namespace_id = scaleway_container_namespace.main.id
+						environment_variables = {
+							"test" = "test"
+						}
+						secret_environment_variables = {
+							"test_secret" = "test_secret"
+						}
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayContainerExists(tt, "scaleway_container.main"),
+					testCheckResourceAttrUUID("scaleway_container_namespace.main", "id"),
+					testCheckResourceAttrUUID("scaleway_container.main", "id"),
+					resource.TestCheckResourceAttr("scaleway_container.main", "environment_variables.test", "test"),
+					resource.TestCheckResourceAttr("scaleway_container.main", "secret_environment_variables.test_secret", "test_secret"),
+				),
+			},
+			{
+				Config: `
+					resource scaleway_container_namespace main {
+					}
+
+					resource scaleway_container main {
+						namespace_id = scaleway_container_namespace.main.id
+						environment_variables = {
+							"foo" = "bar"
+						}
+						secret_environment_variables = {
+							"foo_secret" = "bar_secret"
+						}
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayContainerExists(tt, "scaleway_container.main"),
+					testCheckResourceAttrUUID("scaleway_container_namespace.main", "id"),
+					testCheckResourceAttrUUID("scaleway_container.main", "id"),
+					resource.TestCheckResourceAttr("scaleway_container.main", "environment_variables.foo", "bar"),
+					resource.TestCheckResourceAttr("scaleway_container.main", "secret_environment_variables.foo_secret", "bar_secret"),
+				),
+			},
+			{
+				Config: `
+					resource scaleway_container_namespace main {
+					}
+
+					resource scaleway_container main {
+						namespace_id = scaleway_container_namespace.main.id
+						environment_variables = {}
+						secret_environment_variables = {}
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayContainerExists(tt, "scaleway_container.main"),
+					testCheckResourceAttrUUID("scaleway_container_namespace.main", "id"),
+					testCheckResourceAttrUUID("scaleway_container.main", "id"),
+					resource.TestCheckNoResourceAttr("scaleway_container.main", "environment_variables.%"),
+					resource.TestCheckNoResourceAttr("scaleway_container.main", "secret_environment_variables.%"),
+					resource.TestCheckNoResourceAttr("scaleway_container.main", "environment_variables.foo"),
+					resource.TestCheckNoResourceAttr("scaleway_container.main", "secret_environment_variables.foo_secret"),
 				),
 			},
 		},

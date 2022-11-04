@@ -21,6 +21,8 @@ func resourceScalewayK8SPool() *schema.Resource {
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 		Timeouts: &schema.ResourceTimeout{
+			Create:  schema.DefaultTimeout(defaultK8SPoolTimeout),
+			Update:  schema.DefaultTimeout(defaultK8SPoolTimeout),
 			Default: schema.DefaultTimeout(defaultK8SPoolTimeout),
 		},
 		SchemaVersion: 0,
@@ -65,7 +67,7 @@ func resourceScalewayK8SPool() *schema.Resource {
 				Type:        schema.TypeInt,
 				Optional:    true,
 				Default:     1,
-				Description: "Minimun size of the pool",
+				Description: "Minimum size of the pool",
 			},
 			"max_size": {
 				Type:        schema.TypeInt,
@@ -137,6 +139,22 @@ func resourceScalewayK8SPool() *schema.Resource {
 					},
 				},
 			},
+			"root_volume_type": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				ForceNew:    true,
+				Description: "System volume type of the nodes composing the pool",
+				ValidateFunc: validation.StringInSlice([]string{
+					k8s.PoolVolumeTypeBSSD.String(),
+					k8s.PoolVolumeTypeLSSD.String(),
+				}, false),
+			},
+			"root_volume_size_in_gb": {
+				Type:        schema.TypeInt,
+				Optional:    true,
+				ForceNew:    true,
+				Description: "The size of the system volume of the nodes in gigabyte",
+			},
 			"zone":   zoneSchema(),
 			"region": regionSchema(),
 			// Computed elements
@@ -207,7 +225,6 @@ func resourceScalewayK8SPoolCreate(ctx context.Context, d *schema.ResourceData, 
 	////
 	// Create pool
 	////
-
 	req := &k8s.CreatePoolRequest{
 		Region:      region,
 		ClusterID:   expandID(d.Get("cluster_id")),
@@ -219,6 +236,14 @@ func resourceScalewayK8SPoolCreate(ctx context.Context, d *schema.ResourceData, 
 		Tags:        expandStrings(d.Get("tags")),
 		Zone:        scw.Zone(d.Get("zone").(string)),
 		KubeletArgs: expandKubeletArgs(d.Get("kubelet_args")),
+	}
+
+	if v, ok := d.GetOk("region"); ok {
+		req.Region = scw.Region(v.(string))
+	}
+
+	if v, ok := d.GetOk("zone"); ok {
+		req.Zone = scw.Zone(v.(string))
 	}
 
 	if placementGroupID, ok := d.GetOk("placement_group_id"); ok {
@@ -249,6 +274,15 @@ func resourceScalewayK8SPoolCreate(ctx context.Context, d *schema.ResourceData, 
 	if maxUnavailable, ok := d.GetOk("upgrade_policy.0.max_unavailable"); ok {
 		req.UpgradePolicy = upgradePolicyReq
 		upgradePolicyReq.MaxUnavailable = scw.Uint32Ptr(uint32(maxUnavailable.(int)))
+	}
+
+	if volumeType, ok := d.GetOk("root_volume_type"); ok {
+		req.RootVolumeType = k8s.PoolVolumeType(volumeType.(string))
+	}
+
+	if volumeSize, ok := d.GetOk("root_volume_size_in_gb"); ok {
+		volumeSizeInBytes := scw.Size(uint64(volumeSize.(int)) * gb)
+		req.RootVolumeSize = &volumeSizeInBytes
 	}
 
 	// check if the cluster is waiting for a pool
@@ -301,13 +335,15 @@ func resourceScalewayK8SPoolRead(ctx context.Context, d *schema.ResourceData, me
 		return diag.FromErr(err)
 	}
 
+	req := &k8s.GetPoolRequest{
+		Region: region,
+		PoolID: poolID,
+	}
+
 	////
 	// Read Pool
 	////
-	pool, err := k8sAPI.GetPool(&k8s.GetPoolRequest{
-		Region: region,
-		PoolID: poolID,
-	}, scw.WithContext(ctx))
+	pool, err := k8sAPI.GetPool(req, scw.WithContext(ctx))
 	if err != nil {
 		if is404Error(err) {
 			d.SetId("")
@@ -344,8 +380,7 @@ func resourceScalewayK8SPoolRead(ctx context.Context, d *schema.ResourceData, me
 	_ = d.Set("upgrade_policy", poolUpgradePolicyFlatten(pool))
 
 	if pool.PlacementGroupID != nil {
-		zone := scw.Zone(region + "-1") // Placement groups are zoned resources.
-		_ = d.Set("placement_group_id", newZonedID(zone, *pool.PlacementGroupID).String())
+		_ = d.Set("placement_group_id", newZonedID(pool.Zone, *pool.PlacementGroupID).String())
 	}
 
 	return nil
@@ -386,7 +421,7 @@ func resourceScalewayK8SPoolUpdate(ctx context.Context, d *schema.ResourceData, 
 	}
 
 	if d.HasChange("tags") {
-		updateRequest.Tags = scw.StringsPtr(expandStrings(d.Get("tags")))
+		updateRequest.Tags = expandUpdatedStringsPtr(d.Get("tags"))
 	}
 
 	if d.HasChange("kubelet_args") {
@@ -430,10 +465,12 @@ func resourceScalewayK8SPoolDelete(ctx context.Context, d *schema.ResourceData, 
 	////
 	// Delete Pool
 	////
-	_, err = k8sAPI.DeletePool(&k8s.DeletePoolRequest{
+	req := &k8s.DeletePoolRequest{
 		Region: region,
 		PoolID: poolID,
-	}, scw.WithContext(ctx))
+	}
+
+	_, err = k8sAPI.DeletePool(req, scw.WithContext(ctx))
 	if err != nil {
 		if !is404Error(err) {
 			return diag.FromErr(err)

@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+	"testing"
 	"time"
 
 	"github.com/hashicorp/go-cty/cty"
@@ -17,6 +18,12 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/scaleway/scaleway-sdk-go/namegenerator"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+)
+
+// Service information constants
+const (
+	ServiceName = "scw"       // Name of service.
+	EndpointsID = ServiceName // ID to look up a service endpoint with.
 )
 
 // DefaultWaitRetryInterval is used to set the retry interval to 0 during acceptance tests
@@ -85,7 +92,7 @@ func expandZonedID(id interface{}) ZonedID {
 }
 
 // parseLocalizedID parses a localizedID and extracts the resource locality and id.
-func parseLocalizedID(localizedID string) (locality string, id string, err error) {
+func parseLocalizedID(localizedID string) (locality, id string, err error) {
 	tab := strings.Split(localizedID, "/")
 	if len(tab) != 2 {
 		return "", localizedID, fmt.Errorf("cant parse localized id: %s", localizedID)
@@ -100,6 +107,27 @@ func parseLocalizedNestedID(localizedID string) (locality string, innerID, outer
 		return "", "", localizedID, fmt.Errorf("cant parse localized id: %s", localizedID)
 	}
 	return tab[0], tab[1], tab[2], nil
+}
+
+// parseLocalizedNestedID parses a localizedNestedOwnerID and extracts the resource locality, the inner and outer id and owner.
+func parseLocalizedNestedOwnerID(localizedID string) (locality string, innerID, outerID string, err error) {
+	tab := strings.Split(localizedID, "/")
+	n := len(tab)
+	switch n {
+	case 2:
+		locality = tab[0]
+		innerID = tab[1]
+	case 3:
+		locality, innerID, outerID, err = parseLocalizedNestedID(localizedID)
+	default:
+		err = fmt.Errorf("cant parse localized id: %s", localizedID)
+	}
+
+	if err != nil {
+		return "", "", localizedID, err
+	}
+
+	return locality, innerID, outerID, nil
 }
 
 // parseZonedID parses a zonedID and extracts the resource zone and id.
@@ -144,6 +172,17 @@ func parseRegionalID(regionalID string) (region scw.Region, id string, err error
 	return
 }
 
+// parseRegionalNestedID parses a regionalNestedID and extracts the resource region, inner and outer ID.
+func parseRegionalNestedID(regionalNestedID string) (region scw.Region, outerID, innerID string, err error) {
+	locality, innerID, outerID, err := parseLocalizedNestedID(regionalNestedID)
+	if err != nil {
+		return
+	}
+
+	region, err = scw.ParseRegion(locality)
+	return
+}
+
 // newZonedIDString constructs a unique identifier based on resource zone and id
 func newZonedIDString(zone scw.Zone, id string) string {
 	return fmt.Sprintf("%s/%s", zone, id)
@@ -173,8 +212,8 @@ type terraformResourceData interface {
 var ErrZoneNotFound = fmt.Errorf("could not detect zone. Scaleway uses regions and zones. For more information, refer to https://www.terraform.io/docs/providers/scaleway/guides/regions_and_zones.html")
 
 // extractZone will try to guess the zone from the following:
-//  - zone field of the resource data
-//  - default zone from config
+//   - zone field of the resource data
+//   - default zone from config
 func extractZone(d terraformResourceData, meta *Meta) (scw.Zone, error) {
 	rawZone, exist := d.GetOk("zone")
 	if exist {
@@ -197,8 +236,8 @@ func extractZone(d terraformResourceData, meta *Meta) (scw.Zone, error) {
 var ErrRegionNotFound = fmt.Errorf("could not detect region")
 
 // extractRegion will try to guess the region from the following:
-//  - region field of the resource data
-//  - default region from config
+//   - region field of the resource data
+//   - default region from config
 func extractRegion(d terraformResourceData, meta *Meta) (scw.Region, error) {
 	rawRegion, exist := d.GetOk("region")
 	if exist {
@@ -296,19 +335,24 @@ func allZones() []string {
 	return allZones
 }
 
-// regionSchema returns a standard schema for a zone
-func regionSchema() *schema.Schema {
+func allRegions() []string {
 	var allRegions []string
 	for _, z := range scw.AllRegions {
 		allRegions = append(allRegions, z.String())
 	}
+
+	return allRegions
+}
+
+// regionSchema returns a standard schema for a zone
+func regionSchema() *schema.Schema {
 	return &schema.Schema{
 		Type:             schema.TypeString,
 		Description:      "The region you want to attach the resource to",
 		Optional:         true,
 		ForceNew:         true,
 		Computed:         true,
-		ValidateDiagFunc: validateStringInSliceWithWarning(allRegions, "region"),
+		ValidateDiagFunc: validateStringInSliceWithWarning(allRegions(), "region"),
 	}
 }
 
@@ -394,6 +438,22 @@ func expandStrings(data interface{}) []string {
 func expandStringsPtr(data interface{}) *[]string {
 	var stringSlice []string
 	if _, ok := data.([]interface{}); !ok || data == nil {
+		return nil
+	}
+	for _, s := range data.([]interface{}) {
+		stringSlice = append(stringSlice, s.(string))
+	}
+	if stringSlice == nil {
+		return nil
+	}
+	return &stringSlice
+}
+
+// expandUpdatedStringsPtr expands a string slice but will default to an empty list.
+// Should be used on schema update so emptying a list will update resource.
+func expandUpdatedStringsPtr(data interface{}) *[]string {
+	stringSlice := []string{}
+	if _, ok := data.([]interface{}); !ok || data == nil {
 		return &stringSlice
 	}
 	for _, s := range data.([]interface{}) {
@@ -474,11 +534,26 @@ func flattenSliceIDs(certificates []string, zone scw.Zone) interface{} {
 	return res
 }
 
+func flattenBoolPtr(b *bool) interface{} {
+	if b == nil {
+		return nil
+	}
+	return *b
+}
+
 func expandStringPtr(data interface{}) *string {
 	if data == nil || data == "" {
 		return nil
 	}
 	return scw.StringPtr(data.(string))
+}
+
+func expandUpdatedStringPtr(data interface{}) *string {
+	str := ""
+	if data != nil {
+		str = data.(string)
+	}
+	return &str
 }
 
 func expandBoolPtr(data interface{}) *bool {
@@ -500,6 +575,13 @@ func expandInt32Ptr(data interface{}) *int32 {
 		return nil
 	}
 	return scw.Int32Ptr(int32(data.(int)))
+}
+
+func expandUint32Ptr(data interface{}) *uint32 {
+	if data == nil || data == "" {
+		return nil
+	}
+	return scw.Uint32Ptr(uint32(data.(int)))
 }
 
 func expandIPNet(raw string) (scw.IPNet, error) {
@@ -548,6 +630,21 @@ func flattenMap(m map[string]string) interface{} {
 	return flattenedMap
 }
 
+func flattenMapStringStringPtr(m map[string]*string) interface{} {
+	if m == nil {
+		return nil
+	}
+	flattenedMap := make(map[string]interface{})
+	for k, v := range m {
+		if v != nil {
+			flattenedMap[k] = *v
+		} else {
+			flattenedMap[k] = ""
+		}
+	}
+	return flattenedMap
+}
+
 func diffSuppressFuncDuration(k, oldValue, newValue string, d *schema.ResourceData) bool {
 	if oldValue == newValue {
 		return true
@@ -558,6 +655,18 @@ func diffSuppressFuncDuration(k, oldValue, newValue string, d *schema.ResourceDa
 		return false
 	}
 	return d1 == d2
+}
+
+func diffSuppressFuncTimeRFC3339(k, oldValue, newValue string, d *schema.ResourceData) bool {
+	if oldValue == newValue {
+		return true
+	}
+	t1, err1 := time.Parse(time.RFC3339, oldValue)
+	t2, err2 := time.Parse(time.RFC3339, newValue)
+	if err1 != nil || err2 != nil {
+		return false
+	}
+	return t1.Equal(t2)
 }
 
 func diffSuppressFuncIgnoreCase(k, oldValue, newValue string, d *schema.ResourceData) bool {
@@ -576,15 +685,15 @@ func diffSuppressFuncLocality(k, oldValue, newValue string, d *schema.ResourceDa
 
 // TimedOut returns true if the error represents a "wait timed out" condition.
 // Specifically, TimedOut returns true if the error matches all these conditions:
-//  * err is of type resource.TimeoutError
-//  * TimeoutError.LastError is nil
+//   - err is of type resource.TimeoutError
+//   - TimeoutError.LastError is nil
 func TimedOut(err error) bool {
 	// This explicitly does *not* match wrapped TimeoutErrors
 	timeoutErr, ok := err.(*resource.TimeoutError) //nolint:errorlint // Explicitly does *not* match wrapped TimeoutErrors
 	return ok && timeoutErr.LastError == nil
 }
 
-func expandMapStringStringPtr(data interface{}) *map[string]string {
+func expandMapPtrStringString(data interface{}) *map[string]string {
 	if data == nil {
 		return nil
 	}
@@ -595,8 +704,15 @@ func expandMapStringStringPtr(data interface{}) *map[string]string {
 	return &m
 }
 
-func toUint32(number interface{}) *uint32 {
-	return scw.Uint32Ptr(number.(uint32))
+func expandMapStringStringPtr(data interface{}) map[string]*string {
+	if data == nil {
+		return nil
+	}
+	m := make(map[string]*string)
+	for k, v := range data.(map[string]interface{}) {
+		m[k] = expandStringPtr(v)
+	}
+	return m
 }
 
 func errorCheck(err error, message string) bool {
@@ -604,8 +720,8 @@ func errorCheck(err error, message string) bool {
 }
 
 // ErrCodeEquals returns true if the error matches all these conditions:
-//  * err is of type scw.Error
-//  * Error.Error() equals one of the passed codes
+//   - err is of type scw.Error
+//   - Error.Error() equals one of the passed codes
 func ErrCodeEquals(err error, codes ...string) bool {
 	var scwErr scw.SdkError
 	if errors.As(err, &scwErr) {
@@ -616,4 +732,78 @@ func ErrCodeEquals(err error, codes ...string) bool {
 		}
 	}
 	return false
+}
+
+func getBool(d *schema.ResourceData, key string) interface{} {
+	val, ok := d.GetOkExists(key)
+	if !ok {
+		return nil
+	}
+	return val
+}
+
+// validateDate will validate that field is a valid ISO 8601
+// It is the same as RFC3339
+func validateDate() schema.SchemaValidateDiagFunc {
+	return func(i interface{}, path cty.Path) diag.Diagnostics {
+		date, isStr := i.(string)
+		if !isStr {
+			return diag.Errorf("%v is not a string", date)
+		}
+		_, err := time.Parse(time.RFC3339, date)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		return nil
+	}
+}
+
+func flattenSize(size *scw.Size) interface{} {
+	if size == nil {
+		return 0
+	}
+	return *size
+}
+
+type ServiceErrorCheckFunc func(*testing.T) resource.ErrorCheckFunc
+
+var serviceErrorCheckFunc map[string]ServiceErrorCheckFunc
+
+func ErrorCheck(t *testing.T, endpointIDs ...string) resource.ErrorCheckFunc {
+	t.Helper()
+	return func(err error) error {
+		if err == nil {
+			return nil
+		}
+
+		for _, endpointID := range endpointIDs {
+			if f, ok := serviceErrorCheckFunc[endpointID]; ok {
+				ef := f(t)
+				err = ef(err)
+			}
+
+			if err == nil {
+				break
+			}
+		}
+
+		return err
+	}
+}
+
+func validateMapKeyLowerCase() schema.SchemaValidateDiagFunc {
+	return func(i interface{}, path cty.Path) diag.Diagnostics {
+		m := expandMapStringStringPtr(i)
+		for k := range m {
+			if strings.ToLower(k) != k {
+				return diag.Diagnostics{diag.Diagnostic{
+					Severity:      diag.Error,
+					AttributePath: cty.IndexStringPath(k),
+					Summary:       "Invalid map content",
+					Detail:        fmt.Sprintf("key (%s) should be lowercase", k),
+				}}
+			}
+		}
+		return nil
+	}
 }

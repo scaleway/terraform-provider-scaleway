@@ -2,7 +2,9 @@ package scaleway
 
 import (
 	"context"
+	"fmt"
 
+	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
@@ -23,6 +25,9 @@ func resourceScalewayBaremetalServer() *schema.Resource {
 		SchemaVersion: 0,
 		Timeouts: &schema.ResourceTimeout{
 			Default: schema.DefaultTimeout(defaultBaremetalServerTimeout),
+			Create:  schema.DefaultTimeout(defaultBaremetalServerTimeout),
+			Update:  schema.DefaultTimeout(defaultBaremetalServerTimeout),
+			Delete:  schema.DefaultTimeout(defaultBaremetalServerTimeout),
 		},
 		Schema: map[string]*schema.Schema{
 			"name": {
@@ -51,7 +56,7 @@ func resourceScalewayBaremetalServer() *schema.Resource {
 				Type:         schema.TypeString,
 				Required:     true,
 				Description:  "The base image of the server",
-				ValidateFunc: validationUUID(),
+				ValidateFunc: validationUUIDorUUIDWithLocality(),
 			},
 			"os_id": {
 				Type:        schema.TypeString,
@@ -64,8 +69,41 @@ func resourceScalewayBaremetalServer() *schema.Resource {
 					Type:         schema.TypeString,
 					ValidateFunc: validationUUID(),
 				},
-				Required:    true,
-				Description: "Array of SSH key IDs allowed to SSH to the server",
+				Required: true,
+				Description: `Array of SSH key IDs allowed to SSH to the server
+
+**NOTE** : If you are attempting to update your SSH key IDs, it will induce the reinstall of your server. 
+If this behaviour is wanted, please set 'reinstall_on_ssh_key_changes' argument to true.`,
+			},
+			"user": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Computed:    true,
+				Description: "User used for the installation.",
+			},
+			"password": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Sensitive:   true,
+				Description: "Password used for the installation.",
+			},
+			"service_user": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Computed:    true,
+				Description: "User used for the service to install.",
+			},
+			"service_password": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Sensitive:   true,
+				Description: "Password used for the service to install.",
+			},
+			"reinstall_on_config_changes": {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Default:     false,
+				Description: "If True, this boolean allows to reinstall the server on SSH key IDs, user or password changes",
 			},
 			"description": {
 				Type:         schema.TypeString,
@@ -137,6 +175,9 @@ func resourceScalewayBaremetalServerCreate(ctx context.Context, d *schema.Resour
 		}
 		offerID = newZonedID(zone, o.ID)
 	}
+	if diags := validateInstallConfig(ctx, d, meta); len(diags) > 0 {
+		return diags
+	}
 
 	server, err := baremetalAPI.CreateServer(&baremetal.CreateServerRequest{
 		Zone:        zone,
@@ -158,11 +199,15 @@ func resourceScalewayBaremetalServerCreate(ctx context.Context, d *schema.Resour
 	}
 
 	_, err = baremetalAPI.InstallServer(&baremetal.InstallServerRequest{
-		Zone:      server.Zone,
-		ServerID:  server.ID,
-		OsID:      expandZonedID(d.Get("os")).ID,
-		Hostname:  expandStringWithDefault(d.Get("hostname"), server.Name),
-		SSHKeyIDs: expandStrings(d.Get("ssh_key_ids")),
+		Zone:            server.Zone,
+		ServerID:        server.ID,
+		OsID:            expandZonedID(d.Get("os")).ID,
+		Hostname:        expandStringWithDefault(d.Get("hostname"), server.Name),
+		SSHKeyIDs:       expandStrings(d.Get("ssh_key_ids")),
+		User:            expandStringPtr(d.Get("user")),
+		Password:        expandStringPtr(d.Get("password")),
+		ServiceUser:     expandStringPtr(d.Get("service_user")),
+		ServicePassword: expandStringPtr(d.Get("service_password")),
 	}, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
@@ -213,6 +258,7 @@ func resourceScalewayBaremetalServerRead(ctx context.Context, d *schema.Resource
 	if server.Install != nil {
 		_ = d.Set("os_id", newZonedID(server.Zone, server.Install.OsID).String())
 		_ = d.Set("ssh_key_ids", server.Install.SSHKeyIDs)
+		_ = d.Set("user", server.Install.User)
 	}
 	_ = d.Set("description", server.Description)
 
@@ -225,27 +271,51 @@ func resourceScalewayBaremetalServerUpdate(ctx context.Context, d *schema.Resour
 		return diag.FromErr(err)
 	}
 
-	_, err = baremetalAPI.UpdateServer(&baremetal.UpdateServerRequest{
-		Zone:        zonedID.Zone,
-		ServerID:    zonedID.ID,
-		Name:        expandStringPtr(d.Get("name")),
-		Description: expandStringPtr(d.Get("description")),
-		Tags:        scw.StringsPtr(expandStrings(d.Get("tags"))),
-	}, scw.WithContext(ctx))
-	if err != nil {
-		return diag.FromErr(err)
+	req := &baremetal.UpdateServerRequest{
+		Zone:     zonedID.Zone,
+		ServerID: zonedID.ID,
 	}
 
-	if d.HasChanges("os", "ssh_key_ids") {
-		installReq := &baremetal.InstallServerRequest{
-			Zone:      zonedID.Zone,
-			ServerID:  zonedID.ID,
-			OsID:      expandZonedID(d.Get("os")).ID,
-			Hostname:  expandStringWithDefault(d.Get("hostname"), d.Get("name").(string)),
-			SSHKeyIDs: expandStrings(d.Get("ssh_key_ids")),
-		}
+	hasChanged := false
 
-		_, err := baremetalAPI.InstallServer(installReq, scw.WithContext(ctx))
+	if d.HasChange("name") {
+		req.Name = expandUpdatedStringPtr("name")
+		hasChanged = true
+	}
+
+	if d.HasChange("description") {
+		req.Description = expandUpdatedStringPtr("description")
+		hasChanged = true
+	}
+
+	if d.HasChange("tags") {
+		req.Tags = expandUpdatedStringsPtr(d.Get("tags"))
+		hasChanged = true
+	}
+
+	if hasChanged {
+		_, err = baremetalAPI.UpdateServer(req, scw.WithContext(ctx))
+		if err != nil {
+			return diag.FromErr(err)
+		}
+	}
+
+	installReq := &baremetal.InstallServerRequest{
+		Zone:            zonedID.Zone,
+		ServerID:        zonedID.ID,
+		Hostname:        expandStringWithDefault(d.Get("hostname"), d.Get("name").(string)),
+		SSHKeyIDs:       expandStrings(d.Get("ssh_key_ids")),
+		User:            expandStringPtr(d.Get("user")),
+		Password:        expandStringPtr(d.Get("password")),
+		ServiceUser:     expandStringPtr(d.Get("service_user")),
+		ServicePassword: expandStringPtr(d.Get("service_password")),
+	}
+
+	if d.HasChange("os") {
+		if diags := validateInstallConfig(ctx, d, meta); len(diags) > 0 {
+			return diags
+		}
+		err = baremetalInstallServer(ctx, d, baremetalAPI, installReq)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -256,7 +326,33 @@ func resourceScalewayBaremetalServerUpdate(ctx context.Context, d *schema.Resour
 		}
 	}
 
-	return resourceScalewayBaremetalServerRead(ctx, d, meta)
+	var diags diag.Diagnostics
+
+	if d.HasChanges("ssh_key_ids", "user", "password", "reinstall_on_config_changes") {
+		if !d.Get("reinstall_on_config_changes").(bool) && !d.HasChange("os") {
+			diags = append(diags, diag.Diagnostic{
+				Severity: diag.Warning,
+				Summary:  "Changes have been made on your config",
+				Detail: "[WARN] This change induce the reinstall of your server. " +
+					"If this behaviour is wanted, please set 'reinstall_on_config_changes' argument to true",
+			})
+		} else {
+			if diags := validateInstallConfig(ctx, d, meta); len(diags) > 0 {
+				return diags
+			}
+			err = baremetalInstallServer(ctx, d, baremetalAPI, installReq)
+			if err != nil {
+				return diag.FromErr(err)
+			}
+
+			_, err = waitForBaremetalServerInstall(ctx, baremetalAPI, zonedID.Zone, zonedID.ID, d.Timeout(schema.TimeoutUpdate))
+			if err != nil {
+				return diag.FromErr(err)
+			}
+		}
+	}
+
+	return append(diags, resourceScalewayBaremetalServerRead(ctx, d, meta)...)
 }
 
 func resourceScalewayBaremetalServerDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -282,4 +378,63 @@ func resourceScalewayBaremetalServerDelete(ctx context.Context, d *schema.Resour
 	}
 
 	return nil
+}
+
+func baremetalInstallAttributeMissing(field *baremetal.OSOSField, d *schema.ResourceData, attribute string) bool {
+	if field != nil && field.Required && field.DefaultValue == nil {
+		if _, attributeExists := d.GetOk(attribute); !attributeExists {
+			return true
+		}
+	}
+	return false
+}
+
+// validateInstallConfig validates that schema contains attribute required for OS install
+func validateInstallConfig(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	baremetalAPI, zone, err := baremetalAPIWithZone(d, meta)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	os, err := baremetalAPI.GetOS(&baremetal.GetOSRequest{
+		Zone: zone,
+		OsID: expandID(d.Get("os")),
+	}, scw.WithContext(ctx))
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	diags := diag.Diagnostics(nil)
+	installAttributes := []struct {
+		Attribute string
+		Field     *baremetal.OSOSField
+	}{
+		{
+			"user",
+			os.User,
+		},
+		{
+			"password",
+			os.Password,
+		},
+		{
+			"service_user",
+			os.ServiceUser,
+		},
+		{
+			"service_password",
+			os.ServicePassword,
+		},
+	}
+	for _, installAttr := range installAttributes {
+		if baremetalInstallAttributeMissing(installAttr.Field, d, installAttr.Attribute) {
+			diags = append(diags, diag.Diagnostic{
+				Severity:      diag.Error,
+				Summary:       fmt.Sprintf("%s attribute is required", installAttr.Attribute),
+				Detail:        fmt.Sprintf("%s is required for this os", installAttr.Attribute),
+				AttributePath: cty.GetAttrPath(installAttr.Attribute),
+			})
+		}
+	}
+	return diags
 }

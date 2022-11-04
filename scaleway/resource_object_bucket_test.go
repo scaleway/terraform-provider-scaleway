@@ -24,19 +24,16 @@ func init() {
 }
 
 func TestAccScalewayObjectBucket_Basic(t *testing.T) {
-	if !*UpdateCassettes {
-		t.Skip("Skipping ObjectStorage test as this kind of resource can't be deleted before 24h")
-	}
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
 	testBucketACL := "private"
 	testBucketUpdatedACL := "public-read"
-	bucketBasic := sdkacctest.RandomWithPrefix("test-acc-scaleway-object-bucket-basic-")
-	bucketAms := sdkacctest.RandomWithPrefix("test-acc-scaleway-object-bucket-ams-")
-	bucketPar := sdkacctest.RandomWithPrefix("test-acc-scaleway-object-bucket-par-")
+	bucketBasic := sdkacctest.RandomWithPrefix("test-acc-scaleway-object-bucket-basic")
+	bucketAms := sdkacctest.RandomWithPrefix("test-acc-scaleway-object-bucket-ams")
+	bucketPar := sdkacctest.RandomWithPrefix("test-acc-scaleway-object-bucket-par")
 	bucketLifecycle := sdkacctest.RandomWithPrefix("test-acc-scaleway-object-bucket-lifecycle")
 	resourceNameLifecycle := "scaleway_object_bucket.par-bucket-lifecycle"
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheckScalewayObjectBucketDestroy(tt),
@@ -392,13 +389,10 @@ func testSweepStorageObjectBucket(_ string) error {
 }
 
 func TestAccScalewayObjectBucket_Cors_Update(t *testing.T) {
-	if !*UpdateCassettes {
-		t.Skip("Skipping ObjectStorage test as this kind of resource can't be deleted before 24h")
-	}
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
 
-	resourceName := "scaleway_object_bucket.bucket-destroy-force"
+	resourceName := "scaleway_object_bucket.bucket-cors-update"
 	bucketName := sdkacctest.RandomWithPrefix("test-acc-scaleway-object-bucket-cors-update")
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
@@ -407,7 +401,7 @@ func TestAccScalewayObjectBucket_Cors_Update(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
-					resource "scaleway_object_bucket" "bucket-destroy-force" {
+					resource "scaleway_object_bucket" "bucket-cors-update" {
 						name = %[1]q
 						cors_rule {
 							allowed_headers = ["*"]
@@ -459,17 +453,38 @@ func TestAccScalewayObjectBucket_Cors_Update(t *testing.T) {
 						return nil
 					},
 				),
-				ExpectNonEmptyPlan: true,
-			},
-			{
-				ResourceName:            resourceName,
-				ImportState:             true,
-				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"force_destroy", "acl"},
 			},
 			{
 				Config: fmt.Sprintf(`
-					resource "scaleway_object_bucket" "bucket" {
+					resource "scaleway_object_bucket" "bucket-cors-update" {
+						name = %[1]q
+						cors_rule {
+							allowed_headers = ["*"]
+							allowed_methods = ["PUT", "POST", "GET"]
+							allowed_origins = ["https://www.example.com"]
+							expose_headers  = ["x-amz-server-side-encryption", "ETag"]
+							max_age_seconds = 3000
+						}
+					}`, bucketName),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayObjectBucketExists(tt, resourceName),
+					testAccCheckScalewayObjectBucketCors(tt,
+						resourceName,
+						[]*s3.CORSRule{
+							{
+								AllowedHeaders: []*string{scw.StringPtr("*")},
+								AllowedMethods: []*string{scw.StringPtr("PUT"), scw.StringPtr("POST"), scw.StringPtr("GET")},
+								AllowedOrigins: []*string{scw.StringPtr("https://www.example.com")},
+								ExposeHeaders:  []*string{scw.StringPtr("x-amz-server-side-encryption"), scw.StringPtr("ETag")},
+								MaxAgeSeconds:  scw.Int64Ptr(3000),
+							},
+						},
+					),
+				),
+			},
+			{
+				Config: fmt.Sprintf(`
+					resource "scaleway_object_bucket" "bucket-cors-update" {
 						name = %[1]q
 						cors_rule {
 							allowed_headers = ["*"]
@@ -499,9 +514,6 @@ func TestAccScalewayObjectBucket_Cors_Update(t *testing.T) {
 }
 
 func TestAccScalewayObjectBucket_Cors_Delete(t *testing.T) {
-	if !*UpdateCassettes {
-		t.Skip("Skipping ObjectStorage test as this kind of resource can't be deleted before 24h")
-	}
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
 	ctx := context.Background()
@@ -557,9 +569,6 @@ func TestAccScalewayObjectBucket_Cors_Delete(t *testing.T) {
 }
 
 func TestAccScalewayObjectBucket_Cors_EmptyOrigin(t *testing.T) {
-	if !*UpdateCassettes {
-		t.Skip("Skipping ObjectStorage test as this kind of resource can't be deleted before 24h")
-	}
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
 
@@ -663,9 +672,6 @@ func testAccCheckScalewayObjectBucketExists(tt *TestTools, n string) resource.Te
 }
 
 func TestAccScalewayObjectBucket_DestroyForce(t *testing.T) {
-	if !*UpdateCassettes {
-		t.Skip("Skipping ObjectStorage test as this kind of resource can't be deleted before 24h")
-	}
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
 
