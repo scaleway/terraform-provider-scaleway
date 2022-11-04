@@ -154,18 +154,6 @@ func dataSourceScalewayBaremetalOfferRead(ctx context.Context, d *schema.Resourc
 	var offer *baremetal.Offer
 
 	if offerID != "" {
-		// offer, err = baremetalAPI.GetOffer(&baremetal.GetOfferRequest{
-		// 	OfferID: offerID,
-		// 	Zone:    zone,
-		// })
-		// if err != nil {
-		// 	if is404Error(err) {
-		// 		return diag.Errorf("offer %s not found", offerID)
-		// 	}
-
-		// 	return diag.FromErr(err)
-		// }
-		//
 		// Temporary fix because GetOffer doesn't fetch monthly subscription offers
 		offer, err = baremetalFindOfferByID(ctx, baremetalAPI, zone, offerID)
 		if err != nil {
