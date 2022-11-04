@@ -288,7 +288,7 @@ func testAccCheckScalewayFlexibleIPDestroy(tt *TestTools) resource.TestCheckFunc
 			// Unexpected api error we return it
 			// We check for 403 because instance API return 403 for deleted IP
 			if !is404Error(err) && !is403Error(err) {
-				return err
+				return fmt.Errorf("error which is not an expected 404 or 403: %w", err)
 			}
 		}
 

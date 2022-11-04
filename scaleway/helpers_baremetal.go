@@ -147,7 +147,7 @@ func baremetalInstallServer(ctx context.Context, d *schema.ResourceData, baremet
 
 	_, err := baremetalAPI.InstallServer(installServerRequest, scw.WithContext(ctx))
 	if err != nil {
-		return err
+		return fmt.Errorf("error while installing server: %w", err)
 	}
 
 	return nil

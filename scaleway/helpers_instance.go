@@ -519,8 +519,11 @@ func waitForMACAddress(ctx context.Context, instanceAPI *instance.API, zone scw.
 		Timeout:       scw.TimeDurationPtr(timeout),
 		RetryInterval: scw.TimeDurationPtr(retryInterval),
 	}, scw.WithContext(ctx))
+	if err != nil {
+		return nil, fmt.Errorf("error while waiting for MAC address: %w", err)
+	}
 
-	return nic, err
+	return nic, nil
 }
 
 func waitForInstanceImage(ctx context.Context, api *instance.API, zone scw.Zone, id string, timeout time.Duration) (*instance.Image, error) {
@@ -535,8 +538,11 @@ func waitForInstanceImage(ctx context.Context, api *instance.API, zone scw.Zone,
 		Timeout:       scw.TimeDurationPtr(timeout),
 		RetryInterval: &retryInterval,
 	}, scw.WithContext(ctx))
+	if err != nil {
+		return nil, fmt.Errorf("error while waiting for image: %w", err)
+	}
 
-	return image, err
+	return image, nil
 }
 
 func getSnapshotsFromIds(ctx context.Context, snapIDs []interface{}, instanceAPI *instance.API) ([]*instance.GetSnapshotResponse, error) {

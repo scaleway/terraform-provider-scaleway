@@ -158,7 +158,7 @@ func testAccCheckScalewayContainerCronDestroy(tt *TestTools) resource.TestCheckF
 			}
 
 			if !is404Error(err) {
-				return err
+				return fmt.Errorf("error which is not an expected 404: %w", err)
 			}
 		}
 

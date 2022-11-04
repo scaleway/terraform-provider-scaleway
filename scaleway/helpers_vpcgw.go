@@ -95,5 +95,9 @@ func waitForDHCPEntries(ctx context.Context, api *vpcgw.API, zone scw.Zone, gate
 	}
 
 	dhcpEntries, err := api.WaitForDHCPEntries(req, scw.WithContext(ctx))
-	return dhcpEntries, err
+	if err != nil {
+		return nil, fmt.Errorf("error while waiting for DHCP entries: %w", err)
+	}
+
+	return dhcpEntries, nil
 }

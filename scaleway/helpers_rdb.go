@@ -103,12 +103,17 @@ func waitForRDBReadReplica(ctx context.Context, api *rdb.API, region scw.Region,
 		retryInterval = *DefaultWaitRetryInterval
 	}
 
-	return api.WaitForReadReplica(&rdb.WaitForReadReplicaRequest{
+	readReplica, err := api.WaitForReadReplica(&rdb.WaitForReadReplicaRequest{
 		Region:        region,
 		Timeout:       scw.TimeDurationPtr(timeout),
 		ReadReplicaID: id,
 		RetryInterval: &retryInterval,
 	}, scw.WithContext(ctx))
+	if err != nil {
+		return nil, fmt.Errorf("error while waiting for read replica: %w", err)
+	}
+
+	return readReplica, nil
 }
 
 func expandPrivateNetwork(data interface{}, exist bool) ([]*rdb.EndpointSpec, error) {

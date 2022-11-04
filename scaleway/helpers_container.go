@@ -112,7 +112,7 @@ func waitForContainerNamespace(ctx context.Context, containerAPI *container.API,
 		Timeout:       scw.TimeDurationPtr(timeout),
 	}, scw.WithContext(ctx))
 	if err != nil {
-		return nil, fmt.Errorf("error waiting for container namespace (%s): %s", id, err)
+		return nil, fmt.Errorf("error waiting for container namespace (%s): %s", namespaceID, err)
 	}
 
 	return ns, nil
@@ -131,7 +131,11 @@ func waitForContainerCron(ctx context.Context, api *container.API, cronID string
 		RetryInterval: &retryInterval,
 	}
 
-	return api.WaitForCron(&request, scw.WithContext(ctx))
+	cron, err := api.WaitForCron(&request, scw.WithContext(ctx))
+	if err != nil {
+		return nil, fmt.Errorf("error while waiting for cron: %w", err)
+	}
+	return cron, nil
 }
 
 func waitForContainer(ctx context.Context, api *container.API, containerID string, region scw.Region, timeout time.Duration) (*container.Container, error) {
@@ -147,7 +151,12 @@ func waitForContainer(ctx context.Context, api *container.API, containerID strin
 		RetryInterval: &retryInterval,
 	}
 
-	return api.WaitForContainer(&request, scw.WithContext(ctx))
+	c, err := api.WaitForContainer(&request, scw.WithContext(ctx))
+	if err != nil {
+		return nil, fmt.Errorf("error while waiting for container: %w", err)
+	}
+
+	return c, nil
 }
 
 func expandContainerSecrets(secretsRawMap interface{}) []*container.Secret {

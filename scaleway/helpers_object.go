@@ -460,7 +460,7 @@ func SecondJSONUnlessEquivalent(old, newP string) (string, error) {
 
 	equivalent, err := awspolicy.PoliciesAreEquivalent(old, newP)
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("error while comparing if policies are equivalent: %w", err)
 	}
 
 	if equivalent {

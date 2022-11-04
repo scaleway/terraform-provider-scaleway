@@ -328,7 +328,6 @@ func updateSecurityGroupeRules(ctx context.Context, d *schema.ResourceData, zone
 		}
 	}
 
-
 	_, err := instanceAPI.SetSecurityGroupRules(&instance.SetSecurityGroupRulesRequest{
 		SecurityGroupID: securityGroupID,
 		Zone:            zone,

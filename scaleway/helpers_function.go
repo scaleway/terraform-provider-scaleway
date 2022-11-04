@@ -77,8 +77,11 @@ func waitForFunction(ctx context.Context, functionAPI *function.API, region scw.
 		RetryInterval: &retryInterval,
 		Timeout:       scw.TimeDurationPtr(timeout),
 	}, scw.WithContext(ctx))
+	if err != nil {
+		return nil, fmt.Errorf("error while waiting for function: %w", err)
+	}
 
-	return f, err
+	return f, nil
 }
 
 func waitForFunctionCron(ctx context.Context, functionAPI *function.API, region scw.Region, cronID string, timeout time.Duration) (*function.Cron, error) {
@@ -87,12 +90,17 @@ func waitForFunctionCron(ctx context.Context, functionAPI *function.API, region 
 		retryInterval = *DefaultWaitRetryInterval
 	}
 
-	return functionAPI.WaitForCron(&function.WaitForCronRequest{
+	cron, err := functionAPI.WaitForCron(&function.WaitForCronRequest{
 		Region:        region,
 		CronID:        cronID,
 		RetryInterval: &retryInterval,
 		Timeout:       scw.TimeDurationPtr(timeout),
 	}, scw.WithContext(ctx))
+	if err != nil {
+		return nil, fmt.Errorf("error while waiting for cron: %w", err)
+	}
+
+	return cron, nil
 }
 
 func functionUpload(ctx context.Context, m interface{}, functionAPI *function.API, region scw.Region, functionID string, zipFile string) error {
