@@ -14,7 +14,7 @@ import (
 )
 
 const (
-	objectBucketLockConfigurationRetry = 2 * time.Minute
+	objectBucketLockConfigurationRetry = 5 * time.Second
 )
 
 func resourceObjectLockConfiguration() *schema.Resource {
