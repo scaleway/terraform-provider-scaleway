@@ -706,7 +706,7 @@ func testAccCheckScalewayDomainRecordExists(tt *TestTools, n string) resource.Te
 			DNSZone: rs.Primary.Attributes["dns_zone"],
 		})
 		if err != nil {
-			return fmt.Errorf("failed to list DNS zone records: %v", err)
+			return fmt.Errorf("failed to list DNS zone records: %w", err)
 		}
 
 		for _, record := range listDNSZones.Records {

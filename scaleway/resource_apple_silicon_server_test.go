@@ -120,7 +120,7 @@ func testAccCheckScalewayAppleSiliconServerDestroy(tt *TestTools) resource.TestC
 
 			// Unexpected api error we return it
 			if !is404Error(err) {
-				return fmt.Errorf("unexpected error when getting server (%s): %s", rs.Primary.ID, err)
+				return fmt.Errorf("unexpected error when getting server (%s): %w", rs.Primary.ID, err)
 			}
 		}
 

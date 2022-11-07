@@ -59,7 +59,7 @@ func waitForFunctionNamespace(ctx context.Context, functionAPI *function.API, re
 		Timeout:       scw.TimeDurationPtr(timeout),
 	}, scw.WithContext(ctx))
 	if err != nil {
-		return nil, fmt.Errorf("error waiting for namespace %q: %s", id, err)
+		return nil, fmt.Errorf("error waiting for namespace %q: %w", id, err)
 	}
 
 	return ns, nil

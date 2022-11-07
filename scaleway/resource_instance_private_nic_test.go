@@ -69,7 +69,7 @@ func testAccCheckScalewayInstancePrivateNICExists(tt *TestTools, n string) resou
 			Zone:         zone,
 		})
 		if err != nil {
-			return fmt.Errorf("error getting private nic: %s", err)
+			return fmt.Errorf("error getting private nic: %w", err)
 		}
 
 		return nil

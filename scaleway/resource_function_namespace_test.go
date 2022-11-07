@@ -188,7 +188,7 @@ func testAccCheckScalewayFunctionNamespaceExists(tt *TestTools, n string) resour
 		})
 
 		if err != nil {
-			return fmt.Errorf("error getting function namespace: %s", err)
+			return fmt.Errorf("error getting function namespace: %w", err)
 		}
 
 		return nil
@@ -217,7 +217,7 @@ func testAccCheckScalewayFunctionNamespaceDestroy(tt *TestTools) resource.TestCh
 			}
 
 			if !is404Error(err) {
-				return fmt.Errorf("error getting function namespace (%s): %s", rs.Primary.ID, err)
+				return fmt.Errorf("error getting function namespace (%s): %w", rs.Primary.ID, err)
 			}
 		}
 

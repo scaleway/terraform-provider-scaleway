@@ -51,7 +51,7 @@ func testAccCheckScalewayDomainZoneExists(tt *TestTools, n string) resource.Test
 			DNSZone: fmt.Sprintf("%s.%s", rs.Primary.Attributes["subdomain"], rs.Primary.Attributes["domain"]),
 		})
 		if err != nil {
-			return fmt.Errorf("error getting domain zone: %s", err)
+			return fmt.Errorf("error getting domain zone: %w", err)
 		}
 
 		if len(listDNSZones.DNSZones) == 0 {
@@ -83,7 +83,7 @@ func testAccCheckScalewayDomainZoneDestroy(tt *TestTools) resource.TestCheckFunc
 			}
 
 			if err != nil {
-				return fmt.Errorf("error getting domain zone: %s", err)
+				return fmt.Errorf("error getting domain zone: %w", err)
 			}
 
 			if listDNSZones.TotalCount > 0 {

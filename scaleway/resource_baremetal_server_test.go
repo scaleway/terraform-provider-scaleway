@@ -165,7 +165,7 @@ func testAccCheckScalewayBaremetalServerExists(tt *TestTools, n string) resource
 			Zone:     zonedID.Zone,
 		})
 		if err != nil {
-			return fmt.Errorf("failed to get baremetal server: %v", err)
+			return fmt.Errorf("failed to get baremetal server: %w", err)
 		}
 
 		return nil

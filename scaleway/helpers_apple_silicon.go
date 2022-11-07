@@ -56,7 +56,7 @@ func waitForAppleSiliconServer(ctx context.Context, api *applesilicon.API, zone 
 		RetryInterval: &retryInterval,
 	}, scw.WithContext(ctx))
 	if err != nil {
-		return nil, fmt.Errorf("error waiting for server %q: %s", serverID, err)
+		return nil, fmt.Errorf("error waiting for server %q: %w", serverID, err)
 	}
 
 	return server, nil

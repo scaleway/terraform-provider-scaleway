@@ -143,7 +143,7 @@ func testAccCheckScalewayInstanceIPExists(tt *TestTools, name string) resource.T
 		})
 
 		if err != nil {
-			return fmt.Errorf("error getting instance ip: %s", err)
+			return fmt.Errorf("error getting instance ip: %w", err)
 		}
 
 		return nil
@@ -171,7 +171,7 @@ func testAccCheckScalewayInstanceIPPairWithServer(tt *TestTools, ipResource, ser
 			ServerID: expandID(serverState.Primary.ID),
 		})
 		if err != nil {
-			return fmt.Errorf("error getting server: %s", err)
+			return fmt.Errorf("error getting server: %w", err)
 		}
 
 		ip, err := instanceAPI.GetIP(&instance.GetIPRequest{
@@ -179,7 +179,7 @@ func testAccCheckScalewayInstanceIPPairWithServer(tt *TestTools, ipResource, ser
 			Zone: zone,
 		})
 		if err != nil {
-			return fmt.Errorf("error getting ip %s: %s", ID, err)
+			return fmt.Errorf("error getting ip %s: %w", ID, err)
 		}
 
 		if server.Server.PublicIP.Address.String() != ip.IP.Address.String() {
@@ -207,7 +207,7 @@ func testAccCheckScalewayInstanceServerNoIPAssigned(tt *TestTools, serverResourc
 			ServerID: ID,
 		})
 		if err != nil {
-			return fmt.Errorf("error getting server %s: %s", ID, err)
+			return fmt.Errorf("error getting server %s: %w", ID, err)
 		}
 
 		if server.Server.PublicIP != nil && !server.Server.PublicIP.Dynamic {
@@ -243,7 +243,7 @@ func testAccCheckScalewayInstanceIPDestroy(tt *TestTools) resource.TestCheckFunc
 			// Unexpected api error we return it
 			// We check for 403 because instance API return 403 for deleted IP
 			if !is404Error(errIP) && !is403Error(errIP) {
-				return fmt.Errorf("error on destroying resource %s(%s): %s", rs.Type, rs.Primary.ID, errIP)
+				return fmt.Errorf("error on destroying resource %s(%s): %w", rs.Type, rs.Primary.ID, errIP)
 			}
 		}
 

@@ -243,7 +243,7 @@ func extractRegion(d terraformResourceData, meta *Meta) (scw.Region, error) {
 	if exist {
 		region, err := scw.ParseRegion(rawRegion.(string))
 		if err != nil {
-			return "", fmt.Errorf("invalid region: %s", err)
+			return "", fmt.Errorf("invalid region: %w", err)
 		}
 		return region, nil
 	}
