@@ -78,22 +78,6 @@ func checkErrCodeExcept(i *cassette.Interaction, c *cassette.Cassette, codes ...
 	return true
 }
 
-func checkErrCode(i *cassette.Interaction, c *cassette.Cassette, codes ...int) bool {
-	exceptions := exceptionsCassettesCases()
-	_, isException := exceptions[c.File]
-	if isException {
-		return isException
-	}
-
-	for _, httpCode := range codes {
-		if i.Code == httpCode {
-			return false
-		}
-	}
-
-	return true
-}
-
 func fileNameWithoutExtSuffix(fileName string) string {
 	return strings.TrimSuffix(fileName, filepath.Ext(fileName))
 }
