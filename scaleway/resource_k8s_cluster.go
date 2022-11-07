@@ -224,26 +224,12 @@ func resourceScalewayK8SCluster() *schema.Resource {
 		},
 		CustomizeDiff: func(ctx context.Context, diff *schema.ResourceDiff, i interface{}) error {
 			autoUpgradeEnable, okAutoUpgradeEnable := diff.GetOkExists("auto_upgrade.0.enable")
-			_, okAutoUpgradeStartHour := diff.GetOkExists("auto_upgrade.0.maintenance_window_start_hour")
-			_, okAutoUpgradeDay := diff.GetOk("auto_upgrade.0.maintenance_window_day")
-
-			if okAutoUpgradeEnable {
-				// check if either all or none of the auto upgrade attribute are set.
-				// if one auto upgrade attribute is set, they all must be set.
-				// if none is set, auto upgrade attributes will be computed.
-				if !(okAutoUpgradeDay && okAutoUpgradeStartHour) {
-					return fmt.Errorf("all field or zero field of auto_upgrade must be set")
-				}
-			}
 
 			version := diff.Get("version").(string)
 			versionIsOnlyMinor := len(strings.Split(version, ".")) == 2
 
-			clusterAutoUpgradeEnabled := false
-
-			if okAutoUpgradeDay && okAutoUpgradeEnable && okAutoUpgradeStartHour {
-				clusterAutoUpgradeEnabled = autoUpgradeEnable.(bool)
-				if versionIsOnlyMinor != clusterAutoUpgradeEnabled {
+			if okAutoUpgradeEnable {
+				if versionIsOnlyMinor != autoUpgradeEnable.(bool) {
 					return fmt.Errorf("minor version x.y must be used with auto upgrade enabled")
 				}
 			}
