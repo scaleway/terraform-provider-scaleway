@@ -259,6 +259,7 @@ func resourceScalewayBaremetalServerRead(ctx context.Context, d *schema.Resource
 		_ = d.Set("os_id", newZonedID(server.Zone, server.Install.OsID).String())
 		_ = d.Set("ssh_key_ids", server.Install.SSHKeyIDs)
 		_ = d.Set("user", server.Install.User)
+		_ = d.Set("service_user", server.Install.ServiceUser)
 	}
 	_ = d.Set("description", server.Description)
 
