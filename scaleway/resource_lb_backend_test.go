@@ -82,7 +82,6 @@ func TestAccScalewayLbBackend_Basic(t *testing.T) {
 						health_check_port = 81
 						health_check_max_retries = 3
 						on_marked_down_action = "shutdown_sessions"
-						failover_host = "failover-website.s3-website.fr-par.scw.cloud"
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
@@ -94,7 +93,6 @@ func TestAccScalewayLbBackend_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_lb_backend.bkd01", "health_check_port", "81"),
 					resource.TestCheckResourceAttr("scaleway_lb_backend.bkd01", "health_check_max_retries", "3"),
 					resource.TestCheckResourceAttr("scaleway_lb_backend.bkd01", "on_marked_down_action", "shutdown_sessions"),
-					resource.TestCheckResourceAttr("scaleway_lb_backend.bkd01", "failover_host", "failover-website.s3-website.fr-par.scw.cloud"),
 				),
 			},
 		},
