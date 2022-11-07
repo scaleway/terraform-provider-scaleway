@@ -249,7 +249,7 @@ func testAccCheckScalewayLbCertificateDestroy(tt *TestTools) resource.TestCheckF
 
 			// Unexpected api error we return it
 			if !is404Error(err) {
-				return err
+				return fmt.Errorf("error while destroying certificate: %w", err)
 			}
 		}
 

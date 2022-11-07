@@ -255,7 +255,7 @@ func testAccCheckScalewayInstanceVolumeExists(tt *TestTools, n string) resource.
 		})
 
 		if err != nil {
-			return err
+			return fmt.Errorf("error getting volume: %s", err)
 		}
 
 		return nil
@@ -287,7 +287,7 @@ func testAccCheckScalewayInstanceVolumeDestroy(tt *TestTools) resource.TestCheck
 
 			// Unexpected api error we return it
 			if !is404Error(err) {
-				return err
+				return fmt.Errorf("unexpected error when fetching volume (%s) : %s", rs.Primary.ID, err)
 			}
 		}
 		return nil

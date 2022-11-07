@@ -137,7 +137,7 @@ func reachState(ctx context.Context, instanceAPI *instance.API, zone scw.Zone, s
 		ServerID: serverID,
 	}, scw.WithContext(ctx))
 	if err != nil {
-		return err
+		return fmt.Errorf("error getting server %s: %s", serverID, err)
 	}
 	fromState := response.Server.State
 
@@ -168,7 +168,7 @@ func reachState(ctx context.Context, instanceAPI *instance.API, zone scw.Zone, s
 				RetryInterval: DefaultWaitRetryInterval,
 			})
 			if err != nil {
-				return err
+				return fmt.Errorf("volume %s is not ready: %s", volume.ID, err)
 			}
 		}
 	}
@@ -182,7 +182,7 @@ func reachState(ctx context.Context, instanceAPI *instance.API, zone scw.Zone, s
 			RetryInterval: DefaultWaitRetryInterval,
 		})
 		if err != nil {
-			return err
+			return fmt.Errorf("failed to reach state %s from state %s for server %s: %s", toState, fromState, serverID, err)
 		}
 	}
 	return nil
@@ -292,7 +292,7 @@ func preparePrivateNIC(
 				Zone:             server.Zone,
 			}, scw.WithContext(ctx))
 			if err != nil {
-				return nil, err
+				return nil, fmt.Errorf("unable to get private network %s: %s", privateNetworkID, err)
 			}
 			query := &instance.CreatePrivateNICRequest{
 				Zone:             currentPN.Zone,
@@ -326,7 +326,7 @@ func (ph *privateNICsHandler) flatPrivateNICs() error {
 	privateNICsMap := make(map[string]*instance.PrivateNIC)
 	res, err := ph.instanceAPI.ListPrivateNICs(&instance.ListPrivateNICsRequest{Zone: ph.zone, ServerID: ph.serverID})
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to list private NICs: %w", err)
 	}
 	for _, p := range res.PrivateNics {
 		privateNICsMap[p.PrivateNetworkID] = p
@@ -354,7 +354,7 @@ func (ph *privateNICsHandler) detach(ctx context.Context, o interface{}, timeout
 			},
 				scw.WithContext(ctx))
 			if err != nil {
-				return err
+				return fmt.Errorf("failed to detach private NIC: %w", err)
 			}
 		}
 	}
@@ -373,7 +373,7 @@ func (ph *privateNICsHandler) attach(ctx context.Context, n interface{}, timeout
 				PrivateNetworkID: privateNetworkID,
 			})
 			if err != nil {
-				return err
+				return fmt.Errorf("failed to create private NIC: %w", err)
 			}
 
 			_, err = waitForPrivateNIC(ctx, ph.instanceAPI, ph.zone, ph.serverID, pn.PrivateNic.ID, timeout)
@@ -403,7 +403,13 @@ func (ph *privateNICsHandler) set(d *schema.ResourceData) error {
 		}
 		privateNetworks = append(privateNetworks, keyRaw.(map[string]interface{}))
 	}
-	return d.Set("private_network", privateNetworks)
+
+	err := d.Set("private_network", privateNetworks)
+	if err != nil {
+		return fmt.Errorf("failed to set private_network: %w", err)
+	}
+
+	return nil
 }
 
 func (ph *privateNICsHandler) get(key string) (interface{}, error) {
@@ -435,8 +441,11 @@ func waitForInstanceSnapshot(ctx context.Context, api *instance.API, zone scw.Zo
 		Timeout:       scw.TimeDurationPtr(timeout),
 		RetryInterval: &retryInterval,
 	}, scw.WithContext(ctx))
+	if err != nil {
+		return nil, fmt.Errorf("error waiting for snapshot: %w", err)
+	}
 
-	return snapshot, err
+	return snapshot, nil
 }
 
 func waitForInstanceVolume(ctx context.Context, api *instance.API, zone scw.Zone, id string, timeout time.Duration) (*instance.Volume, error) {
@@ -451,7 +460,11 @@ func waitForInstanceVolume(ctx context.Context, api *instance.API, zone scw.Zone
 		Timeout:       scw.TimeDurationPtr(timeout),
 		RetryInterval: &retryInterval,
 	}, scw.WithContext(ctx))
-	return volume, err
+	if err != nil {
+		return nil, fmt.Errorf("error waiting for volume: %w", err)
+	}
+
+	return volume, nil
 }
 
 func waitForInstanceServer(ctx context.Context, api *instance.API, zone scw.Zone, id string, timeout time.Duration) (*instance.Server, error) {
@@ -466,8 +479,11 @@ func waitForInstanceServer(ctx context.Context, api *instance.API, zone scw.Zone
 		Timeout:       scw.TimeDurationPtr(timeout),
 		RetryInterval: &retryInterval,
 	}, scw.WithContext(ctx))
+	if err != nil {
+		return nil, fmt.Errorf("error waiting for server: %w", err)
+	}
 
-	return server, err
+	return server, nil
 }
 
 func waitForPrivateNIC(ctx context.Context, instanceAPI *instance.API, zone scw.Zone, serverID string, privateNICID string, timeout time.Duration) (*instance.PrivateNIC, error) {
@@ -483,8 +499,11 @@ func waitForPrivateNIC(ctx context.Context, instanceAPI *instance.API, zone scw.
 		Timeout:       scw.TimeDurationPtr(timeout),
 		RetryInterval: scw.TimeDurationPtr(retryInterval),
 	}, scw.WithContext(ctx))
+	if err != nil {
+		return nil, fmt.Errorf("error waiting for private NIC: %w", err)
+	}
 
-	return nic, err
+	return nic, nil
 }
 
 func waitForMACAddress(ctx context.Context, instanceAPI *instance.API, zone scw.Zone, serverID string, privateNICID string, timeout time.Duration) (*instance.PrivateNIC, error) {
@@ -500,8 +519,11 @@ func waitForMACAddress(ctx context.Context, instanceAPI *instance.API, zone scw.
 		Timeout:       scw.TimeDurationPtr(timeout),
 		RetryInterval: scw.TimeDurationPtr(retryInterval),
 	}, scw.WithContext(ctx))
+	if err != nil {
+		return nil, fmt.Errorf("error while waiting for MAC address: %w", err)
+	}
 
-	return nic, err
+	return nic, nil
 }
 
 func waitForInstanceImage(ctx context.Context, api *instance.API, zone scw.Zone, id string, timeout time.Duration) (*instance.Image, error) {
@@ -516,8 +538,11 @@ func waitForInstanceImage(ctx context.Context, api *instance.API, zone scw.Zone,
 		Timeout:       scw.TimeDurationPtr(timeout),
 		RetryInterval: &retryInterval,
 	}, scw.WithContext(ctx))
+	if err != nil {
+		return nil, fmt.Errorf("error while waiting for image: %w", err)
+	}
 
-	return image, err
+	return image, nil
 }
 
 func getSnapshotsFromIds(ctx context.Context, snapIDs []interface{}, instanceAPI *instance.API) ([]*instance.GetSnapshotResponse, error) {

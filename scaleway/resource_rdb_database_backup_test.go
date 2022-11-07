@@ -125,7 +125,7 @@ func testAccCheckScalewayRdbDatabaseBackupDestroy(tt *TestTools) resource.TestCh
 
 			// Unexpected api error we return it
 			if !is404Error(err) {
-				return err
+				return fmt.Errorf("error which is not an expected 404: %w", err)
 			}
 		}
 

@@ -74,7 +74,7 @@ func testAccCheckScalewayRegistryImageExists(tt *TestTools, n string) resource.T
 		})
 
 		if err != nil {
-			return err
+			return fmt.Errorf("error getting registry image: %s", err)
 		}
 
 		return nil

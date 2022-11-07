@@ -126,7 +126,7 @@ func testAccCheckRdbDatabaseExists(tt *TestTools, instance string, database stri
 			OrderBy:    "",
 		})
 		if err != nil {
-			return err
+			return fmt.Errorf("error listing databases: %s", err)
 		}
 
 		if len(databases.Databases) != 1 {

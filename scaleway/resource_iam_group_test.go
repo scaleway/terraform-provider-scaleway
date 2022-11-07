@@ -527,7 +527,7 @@ func testAccCheckScalewayIamGroupDestroy(tt *TestTools) resource.TestCheckFunc {
 
 			// Unexpected api error we return it
 			if !is404Error(err) {
-				return err
+				return fmt.Errorf("error which is not an expected 404: %w", err)
 			}
 		}
 

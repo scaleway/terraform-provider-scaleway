@@ -89,7 +89,7 @@ func testAccCheckScalewayTemDomainExists(tt *TestTools, n string) resource.TestC
 		})
 
 		if err != nil {
-			return err
+			return fmt.Errorf("can't get domain: %w", err)
 		}
 
 		return nil
@@ -113,7 +113,7 @@ func testAccCheckScalewayTemDomainDestroy(tt *TestTools) resource.TestCheckFunc 
 				Region:   region,
 			})
 			if err != nil {
-				return err
+				return fmt.Errorf("can't revoke domain: %w", err)
 			}
 
 			_, err = api.RevokeDomain(&tem.RevokeDomainRequest{
@@ -121,7 +121,7 @@ func testAccCheckScalewayTemDomainDestroy(tt *TestTools) resource.TestCheckFunc 
 				DomainID: id,
 			}, scw.WithContext(context.Background()))
 			if err != nil {
-				return err
+				return fmt.Errorf("can't revoke domain: %w", err)
 			}
 
 			_, err = waitForTemDomain(context.Background(), api, region, id, defaultTemDomainTimeout)

@@ -138,9 +138,8 @@ func testAccCheckScalewayFunctionCronExists(tt *TestTools, n string) resource.Te
 			CronID: id,
 			Region: region,
 		})
-
 		if err != nil {
-			return err
+			return fmt.Errorf("can't get cron: %w", err)
 		}
 
 		return nil
@@ -169,7 +168,7 @@ func testAccCheckScalewayFunctionCronDestroy(tt *TestTools) resource.TestCheckFu
 			}
 
 			if !is404Error(err) {
-				return err
+				return fmt.Errorf("error which is not an expected 404: %w", err)
 			}
 		}
 

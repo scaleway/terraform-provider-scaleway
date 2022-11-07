@@ -2,6 +2,7 @@ package scaleway
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -50,6 +51,9 @@ func waitForTemDomain(ctx context.Context, api *tem.API, region scw.Region, id s
 		RetryInterval: &retryInterval,
 		Timeout:       scw.TimeDurationPtr(timeout),
 	}, scw.WithContext(ctx))
+	if err != nil {
+		return nil, fmt.Errorf("error while waiting for domain: %w", err)
+	}
 
-	return domain, err
+	return domain, nil
 }

@@ -128,7 +128,7 @@ func testAccCheckScalewayLbIPExists(tt *TestTools, n string) resource.TestCheckF
 		})
 
 		if err != nil {
-			return err
+			return fmt.Errorf("error getting lb ip: %s", err)
 		}
 
 		return nil
@@ -164,7 +164,7 @@ func testAccCheckScalewayLbIPDestroy(tt *TestTools) resource.TestCheckFunc {
 
 				// Unexpected api error we return it
 				if !is404Error(err) {
-					return err
+					return fmt.Errorf("error waiting for lb instance: %s", err)
 				}
 			}
 
@@ -187,7 +187,7 @@ func testAccCheckScalewayLbIPDestroy(tt *TestTools) resource.TestCheckFunc {
 
 			// Unexpected api error we return it
 			if !is404Error(err) {
-				return err
+				return fmt.Errorf("error on checking if IP (%s) is destroyed: %s", rs.Primary.ID, err)
 			}
 		}
 

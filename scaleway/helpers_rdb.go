@@ -70,12 +70,17 @@ func waitForRDBInstance(ctx context.Context, api *rdb.API, region scw.Region, id
 		retryInterval = *DefaultWaitRetryInterval
 	}
 
-	return api.WaitForInstance(&rdb.WaitForInstanceRequest{
+	instance, err := api.WaitForInstance(&rdb.WaitForInstanceRequest{
 		Region:        region,
 		Timeout:       scw.TimeDurationPtr(timeout),
 		InstanceID:    id,
 		RetryInterval: &retryInterval,
 	}, scw.WithContext(ctx))
+	if err != nil {
+		return nil, fmt.Errorf("error waiting for instance %q: %s", id, err)
+	}
+
+	return instance, nil
 }
 
 func waitForRDBDatabaseBackup(ctx context.Context, api *rdb.API, region scw.Region, id string, timeout time.Duration) (*rdb.DatabaseBackup, error) {
@@ -84,12 +89,17 @@ func waitForRDBDatabaseBackup(ctx context.Context, api *rdb.API, region scw.Regi
 		retryInterval = *DefaultWaitRetryInterval
 	}
 
-	return api.WaitForDatabaseBackup(&rdb.WaitForDatabaseBackupRequest{
+	backup, err := api.WaitForDatabaseBackup(&rdb.WaitForDatabaseBackupRequest{
 		Region:           region,
 		Timeout:          scw.TimeDurationPtr(timeout),
 		DatabaseBackupID: id,
 		RetryInterval:    &retryInterval,
 	}, scw.WithContext(ctx))
+	if err != nil {
+		return nil, fmt.Errorf("error occurred while waiting for database backup: %w", err)
+	}
+
+	return backup, nil
 }
 
 func waitForRDBReadReplica(ctx context.Context, api *rdb.API, region scw.Region, id string, timeout time.Duration) (*rdb.ReadReplica, error) {
@@ -98,12 +108,17 @@ func waitForRDBReadReplica(ctx context.Context, api *rdb.API, region scw.Region,
 		retryInterval = *DefaultWaitRetryInterval
 	}
 
-	return api.WaitForReadReplica(&rdb.WaitForReadReplicaRequest{
+	readReplica, err := api.WaitForReadReplica(&rdb.WaitForReadReplicaRequest{
 		Region:        region,
 		Timeout:       scw.TimeDurationPtr(timeout),
 		ReadReplicaID: id,
 		RetryInterval: &retryInterval,
 	}, scw.WithContext(ctx))
+	if err != nil {
+		return nil, fmt.Errorf("error while waiting for read replica: %w", err)
+	}
+
+	return readReplica, nil
 }
 
 func expandPrivateNetwork(data interface{}, exist bool) ([]*rdb.EndpointSpec, error) {

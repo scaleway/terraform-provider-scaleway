@@ -235,7 +235,7 @@ func testAccCheckScalewayIamSSHKeyDestroy(tt *TestTools) resource.TestCheckFunc 
 
 			// Unexpected api error we return it
 			if !is404Error(err) {
-				return err
+				return fmt.Errorf("error which is not an expected 404: %w", err)
 			}
 		}
 
@@ -256,7 +256,7 @@ func testAccCheckScalewayIamSSHKeyExists(tt *TestTools, n string) resource.TestC
 			SSHKeyID: rs.Primary.ID,
 		})
 		if err != nil {
-			return err
+			return fmt.Errorf("error while getting ssh key: %w", err)
 		}
 
 		return nil

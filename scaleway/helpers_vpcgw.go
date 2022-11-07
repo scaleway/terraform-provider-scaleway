@@ -2,6 +2,7 @@ package scaleway
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -50,8 +51,11 @@ func waitForVPCPublicGateway(ctx context.Context, api *vpcgw.API, zone scw.Zone,
 		RetryInterval: &retryInterval,
 		Zone:          zone,
 	}, scw.WithContext(ctx))
+	if err != nil {
+		return nil, fmt.Errorf("error waiting for VPC Gateway (%s): %s", id, err)
+	}
 
-	return gateway, err
+	return gateway, nil
 }
 
 func waitForVPCGatewayNetwork(ctx context.Context, api *vpcgw.API, zone scw.Zone, id string, timeout time.Duration) (*vpcgw.GatewayNetwork, error) {
@@ -66,8 +70,11 @@ func waitForVPCGatewayNetwork(ctx context.Context, api *vpcgw.API, zone scw.Zone
 		RetryInterval:    &retryIntervalGWNetwork,
 		Zone:             zone,
 	}, scw.WithContext(ctx))
+	if err != nil {
+		return nil, fmt.Errorf("error waiting for gateway network %s: %s", id, err)
+	}
 
-	return gatewayNetwork, err
+	return gatewayNetwork, nil
 }
 
 func waitForDHCPEntries(ctx context.Context, api *vpcgw.API, zone scw.Zone, gatewayID string, macAddress string, timeout time.Duration) (*vpcgw.ListDHCPEntriesResponse, error) {
@@ -88,5 +95,9 @@ func waitForDHCPEntries(ctx context.Context, api *vpcgw.API, zone scw.Zone, gate
 	}
 
 	dhcpEntries, err := api.WaitForDHCPEntries(req, scw.WithContext(ctx))
-	return dhcpEntries, err
+	if err != nil {
+		return nil, fmt.Errorf("error while waiting for DHCP entries: %w", err)
+	}
+
+	return dhcpEntries, nil
 }

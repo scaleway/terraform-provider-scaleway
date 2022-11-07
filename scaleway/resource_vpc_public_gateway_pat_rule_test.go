@@ -198,7 +198,7 @@ func testAccCheckScalewayVPCPublicGatewayPATRuleExists(tt *TestTools, n string) 
 		})
 
 		if err != nil {
-			return err
+			return fmt.Errorf("PAT Rule not found: %s", err)
 		}
 
 		return nil
@@ -231,7 +231,11 @@ func testAccCheckScalewayVPCPublicGatewayPATRuleDestroy(tt *TestTools) resource.
 
 			// Unexpected api error we return it
 			if !is404Error(err) {
-				return err
+				return fmt.Errorf(
+					"error on reading VPC public gateway pat rule %s : %s",
+					rs.Primary.ID,
+					err,
+				)
 			}
 		}
 

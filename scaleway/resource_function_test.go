@@ -291,9 +291,8 @@ func testAccCheckScalewayFunctionExists(tt *TestTools, n string) resource.TestCh
 			FunctionID: id,
 			Region:     region,
 		})
-
 		if err != nil {
-			return err
+			return fmt.Errorf("can't get function: %w", err)
 		}
 
 		return nil
@@ -322,7 +321,7 @@ func testAccCheckScalewayFunctionDestroy(tt *TestTools) resource.TestCheckFunc {
 			}
 
 			if !is404Error(err) {
-				return err
+				return fmt.Errorf("error which is not an expected 404: %w", err)
 			}
 		}
 

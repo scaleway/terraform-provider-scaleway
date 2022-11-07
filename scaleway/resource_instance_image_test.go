@@ -495,7 +495,7 @@ func testAccCheckScalewayInstanceImageExists(tt *TestTools, n string) resource.T
 			Zone:    zone,
 		})
 		if err != nil {
-			return err
+			return fmt.Errorf("can't get image: %w", err)
 		}
 		return nil
 	}
@@ -521,7 +521,7 @@ func testAccCheckScalewayInstanceImageDestroy(tt *TestTools) resource.TestCheckF
 			}
 			// Unexpected api error we return it
 			if !is404Error(err) {
-				return err
+				return fmt.Errorf("error which is not an expected 404: %w", err)
 			}
 		}
 

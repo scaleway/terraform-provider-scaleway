@@ -94,7 +94,7 @@ func testAccCheckRdbUserExists(tt *TestTools, instance string, user string) reso
 			Name:       &userName,
 		})
 		if err != nil {
-			return err
+			return fmt.Errorf("error getting user: %s", err)
 		}
 
 		if len(users.Users) != 1 {

@@ -202,7 +202,7 @@ func testAccCheckRdbPrivilegeExists(tt *TestTools, instance string, database str
 			UserName:     &userName,
 		})
 		if err != nil {
-			return err
+			return fmt.Errorf("error listing RDB privileges: %s", err)
 		}
 
 		if len(databases.Privileges) != 1 {

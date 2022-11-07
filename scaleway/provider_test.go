@@ -208,7 +208,7 @@ func getHTTPRecoder(t *testing.T, update bool) (client *http.Client, cleanup fun
 	// Setup recorder and scw client
 	r, err := recorder.NewAsMode(getTestFilePath(t, ".cassette"), recorderMode, nil)
 	if err != nil {
-		return nil, nil, err
+		return nil, nil, fmt.Errorf("failed to create recorder: %s", err)
 	}
 
 	// Add custom matcher for requests and cassettes

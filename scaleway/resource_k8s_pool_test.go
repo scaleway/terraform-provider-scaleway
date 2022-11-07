@@ -320,7 +320,7 @@ func testAccCheckScalewayK8SPoolDestroy(tt *TestTools, n string) resource.TestCh
 		}
 		// Unexpected api error we return it
 		if !is404Error(err) {
-			return err
+			return fmt.Errorf("unexpected error when getting pool (%s) : %s", rs.Primary.ID, err)
 		}
 
 		return nil
@@ -344,7 +344,7 @@ func testAccCheckScalewayK8SPoolExists(tt *TestTools, n string) resource.TestChe
 			PoolID: poolID,
 		})
 		if err != nil {
-			return err
+			return fmt.Errorf("error getting pool (%s) : %s", rs.Primary.ID, err)
 		}
 
 		return nil

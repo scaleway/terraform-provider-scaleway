@@ -125,7 +125,7 @@ func testAccCheckScalewayVPCPrivateNetworkExists(tt *TestTools, n string) resour
 		})
 
 		if err != nil {
-			return err
+			return fmt.Errorf("error getting private network: %s", err)
 		}
 
 		return nil
@@ -158,7 +158,11 @@ func testAccCheckScalewayVPCPrivateNetworkDestroy(tt *TestTools) resource.TestCh
 
 			// Unexpected api error we return it
 			if !is404Error(err) {
-				return err
+				return fmt.Errorf(
+					"error waiting for VPC private network (%s) to be destroyed: %s",
+					rs.Primary.ID,
+					err,
+				)
 			}
 		}
 

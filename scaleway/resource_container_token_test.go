@@ -71,9 +71,8 @@ func testAccCheckScalewayContainerTokenExists(tt *TestTools, n string) resource.
 			TokenID: id,
 			Region:  region,
 		})
-
 		if err != nil {
-			return err
+			return fmt.Errorf("error while getting token: %w", err)
 		}
 
 		return nil
@@ -102,7 +101,7 @@ func testAccCheckScalewayContainerTokenDestroy(tt *TestTools) resource.TestCheck
 			}
 
 			if !is404Error(err) {
-				return err
+				return fmt.Errorf("error which is not an expected 404: %w", err)
 			}
 		}
 

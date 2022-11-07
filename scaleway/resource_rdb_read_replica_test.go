@@ -231,7 +231,7 @@ func testAccCheckRdbReadReplicaExists(tt *TestTools, readReplica string) resourc
 			ReadReplicaID: ID,
 		})
 		if err != nil {
-			return err
+			return fmt.Errorf("can't get read replica: %w", err)
 		}
 
 		return nil
@@ -262,7 +262,7 @@ func testAccCheckScalewayRdbReadReplicaDestroy(tt *TestTools) resource.TestCheck
 
 			// Unexpected api error we return it
 			if !is404Error(err) {
-				return err
+				return fmt.Errorf("error which is not an expected 404: %w", err)
 			}
 		}
 

@@ -425,6 +425,33 @@ func TestAccScalewayObjectBucket_Cors_Update(t *testing.T) {
 							},
 						},
 					),
+					func(state *terraform.State) error {
+						rs, ok := state.RootModule().Resources[resourceName]
+						if !ok {
+							return fmt.Errorf("not found: %s", resourceName)
+						}
+
+						s3Client, err := newS3ClientFromMeta(tt.Meta)
+						if err != nil {
+							return err
+						}
+						_, err = s3Client.PutBucketCors(&s3.PutBucketCorsInput{
+							Bucket: scw.StringPtr(rs.Primary.Attributes["name"]),
+							CORSConfiguration: &s3.CORSConfiguration{
+								CORSRules: []*s3.CORSRule{
+									{
+										AllowedHeaders: []*string{scw.StringPtr("*")},
+										AllowedMethods: []*string{scw.StringPtr("GET")},
+										AllowedOrigins: []*string{scw.StringPtr("https://www.example.com")},
+									},
+								},
+							},
+						})
+						if err != nil && !isS3Err(err, "NoSuchCORSConfiguration", "") {
+							return fmt.Errorf("error putting bucket cors: %w", err)
+						}
+						return nil
+					},
 				),
 			},
 			{
@@ -508,7 +535,7 @@ func TestAccScalewayObjectBucket_Cors_Delete(t *testing.T) {
 				Bucket: scw.StringPtr(rs.Primary.Attributes["name"]),
 			})
 			if err != nil && !isS3Err(err, ErrCodeNoSuchCORSConfiguration, "") {
-				return err
+				return fmt.Errorf("error deleting bucket cors: %w", err)
 			}
 			return nil
 		}
@@ -584,7 +611,7 @@ func testAccCheckScalewayObjectBucketCors(tt *TestTools, n string, corsRules []*
 			Bucket: scw.StringPtr(bucketName),
 		})
 		if err != nil {
-			return err
+			return fmt.Errorf("error getting bucket %q: %w", bucketName, err)
 		}
 
 		out, err := s3Client.GetBucketCors(&s3.GetBucketCorsInput{
@@ -638,7 +665,7 @@ func testAccCheckScalewayObjectBucketExists(tt *TestTools, n string) resource.Te
 			if isS3Err(err, s3.ErrCodeNoSuchBucket, "") {
 				return fmt.Errorf("s3 bucket not found")
 			}
-			return err
+			return fmt.Errorf("error getting s3 bucket: %w", err)
 		}
 		return nil
 	}
@@ -726,7 +753,7 @@ func testAccCheckBucketLifecycleConfigurationExists(tt *TestTools, n string) res
 		}
 
 		output, err := retryOnAWSCode(context.Background(), ErrCodeNoSuchLifecycleConfiguration, func() (interface{}, error) {
-			return s3Client.GetBucketLifecycleConfiguration(input)
+			return s3Client.GetBucketLifecycleConfiguration(input) //nolint:wrapcheck
 		})
 		if err != nil {
 			return err

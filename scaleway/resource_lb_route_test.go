@@ -69,7 +69,7 @@ func testAccCheckScalewayLbRouteExists(tt *TestTools, n string) resource.TestChe
 		})
 
 		if err != nil {
-			return err
+			return fmt.Errorf("error getting LB route: %s", err)
 		}
 
 		return nil
@@ -100,7 +100,7 @@ func testAccCheckScalewayLbRouteDestroy(tt *TestTools) resource.TestCheckFunc {
 
 			// Unexpected api error we return it
 			if !is404Error(err) {
-				return err
+				return fmt.Errorf("unexpected error when getting LB Route (%s): %s", rs.Primary.ID, err)
 			}
 		}
 

@@ -207,7 +207,7 @@ func testAccCheckScalewayContainerNamespaceExists(tt *TestTools, n string) resou
 		})
 
 		if err != nil {
-			return err
+			return fmt.Errorf("error getting container namespace: %s", err)
 		}
 
 		return nil
@@ -236,7 +236,7 @@ func testAccCheckScalewayContainerNamespaceDestroy(tt *TestTools) resource.TestC
 			}
 
 			if !is404Error(err) {
-				return err
+				return fmt.Errorf("error getting container namespace (%s): %s", rs.Primary.ID, err)
 			}
 		}
 
@@ -266,7 +266,7 @@ func testAccCheckScalewayContainerRegistryDestroy(tt *TestTools) resource.TestCh
 			}
 
 			if !is404Error(err) {
-				return err
+				return fmt.Errorf("error which is not an expected 404: %w", err)
 			}
 		}
 

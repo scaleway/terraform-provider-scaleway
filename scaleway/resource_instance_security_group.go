@@ -183,7 +183,7 @@ func getSecurityGroupRules(ctx context.Context, instanceAPI *instance.API, zone 
 		SecurityGroupID: expandID(securityGroupID),
 	}, scw.WithAllPages(), scw.WithContext(ctx))
 	if err != nil {
-		return nil, nil, err
+		return nil, nil, fmt.Errorf("error listing security group rules: %w", err)
 	}
 	sort.Slice(resRules.Rules, func(i, j int) bool {
 		return resRules.Rules[i].Position < resRules.Rules[j].Position
@@ -334,7 +334,7 @@ func updateSecurityGroupeRules(ctx context.Context, d *schema.ResourceData, zone
 		Rules:           setGroupRules,
 	}, scw.WithContext(ctx))
 	if err != nil {
-		return err
+		return fmt.Errorf("error while setting security group rules: %w", err)
 	}
 
 	return nil

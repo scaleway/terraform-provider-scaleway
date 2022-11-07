@@ -19,7 +19,7 @@ func getTestFiles() (map[string]struct{}, error) {
 	filesMap := make(map[string]struct{})
 	files, err := ioutil.ReadDir(testDirectory)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to read dir: %v", err)
 	}
 
 	for _, file := range files {

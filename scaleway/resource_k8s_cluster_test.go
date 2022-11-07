@@ -432,7 +432,7 @@ func testAccCheckScalewayK8SClusterDestroy(tt *TestTools) resource.TestCheckFunc
 
 			// Unexpected api error we return it
 			if !is404Error(err) {
-				return err
+				return fmt.Errorf("error which is not an expected 404: %w", err)
 			}
 		}
 		return nil
@@ -456,7 +456,7 @@ func testAccCheckScalewayK8SClusterExists(tt *TestTools, n string) resource.Test
 			ClusterID: clusterID,
 		})
 		if err != nil {
-			return err
+			return fmt.Errorf("can't get cluster: %w", err)
 		}
 
 		return nil

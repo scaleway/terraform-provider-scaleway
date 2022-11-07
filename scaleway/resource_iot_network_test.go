@@ -142,7 +142,7 @@ func testAccCheckScalewayIotNetworkExists(tt *TestTools, n string) resource.Test
 			NetworkID: networkID,
 		})
 		if err != nil {
-			return err
+			return fmt.Errorf("error getting IoT network: %s", err)
 		}
 
 		return nil

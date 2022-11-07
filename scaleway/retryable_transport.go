@@ -3,6 +3,7 @@ package scaleway
 import (
 	"bytes"
 	"context"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -25,7 +26,7 @@ func newRetryableTransport(defaultTransport http.RoundTripper) http.RoundTripper
 		if resp == nil || resp.StatusCode == http.StatusTooManyRequests {
 			return true, err
 		}
-		return retryablehttp.DefaultRetryPolicy(ctx, resp, err)
+		return retryablehttp.DefaultRetryPolicy(ctx, resp, err) //nolint:wrapcheck
 	}
 	c.ErrorHandler = func(resp *http.Response, err error, numTries int) (*http.Response, error) {
 		// Do not return error as response will be handled by scaleway sdk-go
@@ -46,13 +47,13 @@ func (c *retryableTransport) RoundTrip(r *http.Request) (*http.Response, error) 
 	if r.Body != nil {
 		bs, err := ioutil.ReadAll(r.Body)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("failed to read HTTP body: %v", err)
 		}
 		body = bytes.NewReader(bs)
 	}
 	req, err := retryablehttp.NewRequest(r.Method, r.URL.String(), body)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to create HTTP request: %v", err)
 	}
 	for key, val := range r.Header {
 		req.Header.Set(key, val[0])
@@ -60,9 +61,15 @@ func (c *retryableTransport) RoundTrip(r *http.Request) (*http.Response, error) 
 	req.GetBody = func() (io.ReadCloser, error) {
 		b, err := req.BodyBytes()
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("failed to get HTTP body bytes: %w", err)
 		}
 		return io.NopCloser(bytes.NewReader(b)), err
 	}
-	return c.Client.Do(req)
+
+	response, err := c.Client.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf("error while doing HTTP request: %w", err)
+	}
+
+	return response, nil
 }

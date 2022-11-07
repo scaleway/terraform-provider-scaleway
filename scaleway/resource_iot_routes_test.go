@@ -193,7 +193,7 @@ func testAccCheckScalewayIotRouteExists(tt *TestTools, n string) resource.TestCh
 			RouteID: routeID,
 		})
 		if err != nil {
-			return err
+			return fmt.Errorf("error getting IoT route: %s", err)
 		}
 
 		return nil

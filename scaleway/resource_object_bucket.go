@@ -412,7 +412,7 @@ func resourceBucketLifecycleUpdate(ctx context.Context, conn *s3.S3, d *schema.R
 	}
 
 	_, err := retryOnAWSCode(ctx, s3.ErrCodeNoSuchBucket, func() (interface{}, error) {
-		return conn.PutBucketLifecycleConfigurationWithContext(ctx, i)
+		return conn.PutBucketLifecycleConfigurationWithContext(ctx, i) //nolint:wrapcheck
 	})
 	if err != nil {
 		return fmt.Errorf("error putting Object Storage lifecycle: %s", err)
@@ -493,7 +493,7 @@ func resourceScalewayObjectBucketRead(ctx context.Context, d *schema.ResourceDat
 
 	// Read the lifecycle configuration
 	lifecycleResponse, err := retryOnAWSCode(ctx, s3.ErrCodeNoSuchBucket, func() (interface{}, error) {
-		return s3Client.GetBucketLifecycleConfigurationWithContext(ctx, &s3.GetBucketLifecycleConfigurationInput{
+		return s3Client.GetBucketLifecycleConfigurationWithContext(ctx, &s3.GetBucketLifecycleConfigurationInput{ //nolint:wrapcheck
 			Bucket: scw.StringPtr(bucketName),
 		})
 	})

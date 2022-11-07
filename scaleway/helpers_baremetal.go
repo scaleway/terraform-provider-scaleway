@@ -115,8 +115,11 @@ func waitForBaremetalServer(ctx context.Context, api *baremetal.API, zone scw.Zo
 		Timeout:       scw.TimeDurationPtr(timeout),
 		RetryInterval: &retryInterval,
 	}, scw.WithContext(ctx))
+	if err != nil {
+		return nil, fmt.Errorf("error waiting for baremetal server %s: %s", serverID, err)
+	}
 
-	return server, err
+	return server, nil
 }
 
 func waitForBaremetalServerInstall(ctx context.Context, api *baremetal.API, zone scw.Zone, serverID string, timeout time.Duration) (*baremetal.Server, error) {
@@ -131,8 +134,11 @@ func waitForBaremetalServerInstall(ctx context.Context, api *baremetal.API, zone
 		Timeout:       scw.TimeDurationPtr(timeout),
 		RetryInterval: &retryInterval,
 	}, scw.WithContext(ctx))
+	if err != nil {
+		return nil, fmt.Errorf("error waiting for server install: %s", err)
+	}
 
-	return server, err
+	return server, nil
 }
 
 func baremetalInstallServer(ctx context.Context, d *schema.ResourceData, baremetalAPI *baremetal.API, installServerRequest *baremetal.InstallServerRequest) error {
@@ -141,7 +147,7 @@ func baremetalInstallServer(ctx context.Context, d *schema.ResourceData, baremet
 
 	_, err := baremetalAPI.InstallServer(installServerRequest, scw.WithContext(ctx))
 	if err != nil {
-		return err
+		return fmt.Errorf("error while installing server: %w", err)
 	}
 
 	return nil

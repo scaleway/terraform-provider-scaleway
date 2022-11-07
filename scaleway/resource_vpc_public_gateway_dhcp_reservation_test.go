@@ -151,7 +151,7 @@ func testAccCheckScalewayVPCPublicGatewayDHCPReservationExists(tt *TestTools, n 
 			Zone:        zone,
 		})
 		if err != nil {
-			return err
+			return fmt.Errorf("error getting DHCP entry: %s", err)
 		}
 
 		l.Debugf("reservation: ID: (%s) exist", entry.ID)
@@ -185,7 +185,10 @@ func testAccCheckScalewayVPCPublicGatewayDHCPEntryDestroy(tt *TestTools) resourc
 
 			// Unexpected api error we return it
 			if !is404Error(err) {
-				return err
+				return fmt.Errorf(
+					"VPC public gateway DHCP Entry config %s still exists",
+					rs.Primary.ID,
+				)
 			}
 		}
 

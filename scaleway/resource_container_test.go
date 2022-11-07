@@ -349,7 +349,7 @@ func testAccCheckScalewayContainerExists(tt *TestTools, n string) resource.TestC
 		})
 
 		if err != nil {
-			return err
+			return fmt.Errorf("error getting container: %s", err)
 		}
 
 		return nil
@@ -378,7 +378,7 @@ func testAccCheckScalewayContainerDestroy(tt *TestTools) resource.TestCheckFunc 
 			}
 
 			if !is404Error(err) {
-				return err
+				return fmt.Errorf("error getting container: %s", err)
 			}
 		}
 
