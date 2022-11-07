@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"testing"
 
+	sdkacctest "github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	lbSDK "github.com/scaleway/scaleway-sdk-go/api/lb/v1"
@@ -81,6 +82,7 @@ func TestAccScalewayLbBackend_Basic(t *testing.T) {
 						health_check_port = 81
 						health_check_max_retries = 3
 						on_marked_down_action = "shutdown_sessions"
+						failover_host = "failover-website.s3-website.fr-par.scw.cloud"
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
@@ -92,6 +94,7 @@ func TestAccScalewayLbBackend_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_lb_backend.bkd01", "health_check_port", "81"),
 					resource.TestCheckResourceAttr("scaleway_lb_backend.bkd01", "health_check_max_retries", "3"),
 					resource.TestCheckResourceAttr("scaleway_lb_backend.bkd01", "on_marked_down_action", "shutdown_sessions"),
+					resource.TestCheckResourceAttr("scaleway_lb_backend.bkd01", "failover_host", "failover-website.s3-website.fr-par.scw.cloud"),
 				),
 			},
 		},
@@ -183,6 +186,106 @@ func TestAccScalewayLbBackend_HealthCheck(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_lb_backend.bkd01", "health_check_http.#", "0"),
 					resource.TestCheckResourceAttr("scaleway_lb_backend.bkd01", "health_check_https.#", "1"),
 				),
+			},
+		},
+	})
+}
+
+func TestAccScalewayLbBackend_WithFailoverHost(t *testing.T) {
+	rName := sdkacctest.RandomWithPrefix("tf-acc-test")
+	resourceName := "scaleway_object_bucket_website_configuration.test"
+
+	tt := NewTestTools(t)
+	defer tt.Cleanup()
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy: resource.ComposeTestCheckFunc(
+			testAccCheckScalewayLbBackendDestroy(tt),
+			testAccCheckScalewayObjectDestroy(tt),
+			testAccCheckScalewayObjectBucketDestroy(tt),
+			testAccCheckBucketWebsiteConfigurationDestroy(tt),
+		),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource scaleway_lb_ip ip01 {}
+					resource scaleway_lb lb01 {
+						ip_id = scaleway_lb_ip.ip01.id
+						name = "test-lb"
+						type = "lb-s"
+					}
+
+					resource scaleway_instance_ip ip01 {}
+
+					resource scaleway_lb_backend bkd01 {
+						lb_id = scaleway_lb.lb01.id
+						name = "bkd01"
+						forward_protocol = "http"
+						forward_port = 80
+						proxy_protocol = "none"
+						server_ips = [ scaleway_instance_ip.ip01.address ]
+					}
+				`,
+				Check: testAccCheckScalewayLbBackendExists(tt, "scaleway_lb_backend.bkd01"),
+			},
+			{
+				Config: fmt.Sprintf(`
+			  		resource "scaleway_object_bucket" "test" {
+						name = %[1]q
+						acl  = "public-read"
+						tags = {
+							TestName = "TestAccSCW_WebsiteConfig_basic"
+						}
+					}
+
+					resource scaleway_object "some_file" {
+						bucket = scaleway_object_bucket.test.name
+						key = "index.html"
+						file = "testfixture/index.html"
+						visibility = "public-read"
+					}
+				
+				  	resource "scaleway_object_bucket_website_configuration" "test" {
+						bucket = scaleway_object_bucket.test.name
+						index_document {
+							suffix = "index.html"
+						}
+						error_document {
+							key = "error.html"
+						}
+				  	}
+
+					resource scaleway_lb_ip ip01 {}
+					resource scaleway_lb lb01 {
+						ip_id = scaleway_lb_ip.ip01.id
+						name = "test-lb"
+						type = "lb-s"
+					}
+
+					resource scaleway_instance_ip ip01 {}
+
+					resource scaleway_lb_backend bkd01 {
+						lb_id = scaleway_lb.lb01.id
+						name = "bkd01"
+						forward_protocol = "http"
+						forward_port = 80
+						proxy_protocol = "none"
+						server_ips = [ scaleway_instance_ip.ip01.address ]
+						failover_host = scaleway_object_bucket_website_configuration.test.website_endpoint
+					}
+				`, rName),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckBucketWebsiteConfigurationExists(tt, resourceName),
+					testAccCheckScalewayLbBackendExists(tt, "scaleway_lb_backend.bkd01"),
+					resource.TestCheckResourceAttr(resourceName, "website_endpoint", rName+".s3-website.fr-par.scw.cloud"),
+					resource.TestCheckResourceAttr("scaleway_lb_backend.bkd01", "failover_host", rName+".s3-website.fr-par.scw.cloud"),
+				),
+			},
+			{
+				ResourceName:      resourceName,
+				ImportState:       true,
+				ImportStateVerify: true,
 			},
 		},
 	})

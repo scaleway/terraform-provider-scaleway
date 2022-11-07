@@ -239,6 +239,14 @@ func resourceScalewayLbBackend() *schema.Resource {
 				Optional:    true,
 				Description: "Modify what occurs when a backend server is marked down",
 			},
+			"failover_host": {
+				Type:     schema.TypeString,
+				Optional: true,
+				Description: `Scaleway S3 bucket website to be served in case all backend servers are down
+
+**NOTE** : Only the host part of the Scaleway S3 bucket website is expected.
+E.g. 'failover-website.s3-website.fr-par.scw.cloud' if your bucket website URL is 'https://failover-website.s3-website.fr-par.scw.cloud/'.`,
+			},
 		},
 	}
 }
@@ -312,6 +320,7 @@ func resourceScalewayLbBackendCreate(ctx context.Context, d *schema.ResourceData
 		TimeoutConnect:     timeoutConnect,
 		TimeoutTunnel:      timeoutTunnel,
 		OnMarkedDownAction: expandLbBackendMarkdownAction(d.Get("on_marked_down_action")),
+		FailoverHost:       expandStringPtr(d.Get("failover_host")),
 	}
 
 	// deprecated attribute
@@ -375,6 +384,7 @@ func resourceScalewayLbBackendRead(ctx context.Context, d *schema.ResourceData, 
 	_ = d.Set("health_check_http", flattenLbHCHTTP(backend.HealthCheck.HTTPConfig))
 	_ = d.Set("health_check_https", flattenLbHCHTTPS(backend.HealthCheck.HTTPSConfig))
 	_ = d.Set("send_proxy_v2", flattenBoolPtr(backend.SendProxyV2))
+	_ = d.Set("failover_host", backend.FailoverHost)
 
 	_, err = waitForLB(ctx, lbAPI, zone, backend.LB.ID, d.Timeout(schema.TimeoutRead))
 	if err != nil {
@@ -436,6 +446,7 @@ func resourceScalewayLbBackendUpdate(ctx context.Context, d *schema.ResourceData
 		TimeoutConnect:           timeoutConnect,
 		TimeoutTunnel:            timeoutTunnel,
 		OnMarkedDownAction:       expandLbBackendMarkdownAction(d.Get("on_marked_down_action")),
+		FailoverHost:             expandStringPtr(d.Get("failover_host")),
 	}
 
 	// deprecated
