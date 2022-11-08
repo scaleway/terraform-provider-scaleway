@@ -170,7 +170,7 @@ func cassetteMatcher(actual *http.Request, expected cassette.Request) bool {
 		actualS3Host := strings.Split(actualURL.Host, ".")
 		expectedS3Host := strings.Split(expectedURL.Host, ".")
 
-		if len(actualS3Host) >= 5 {
+		if len(actualS3Host) >= 5 && len(expectedS3Host) >= 5 {
 			// Host is bucket.s3.region.scw.cloud
 			// it could be a host without bucket name (ex: function upload)
 			actualBucket := actualS3Host[0]
