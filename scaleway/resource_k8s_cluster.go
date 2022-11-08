@@ -228,10 +228,8 @@ func resourceScalewayK8SCluster() *schema.Resource {
 			version := diff.Get("version").(string)
 			versionIsOnlyMinor := len(strings.Split(version, ".")) == 2
 
-			if okAutoUpgradeEnable {
-				if versionIsOnlyMinor != autoUpgradeEnable.(bool) {
-					return fmt.Errorf("minor version x.y must be used with auto upgrade enabled")
-				}
+			if okAutoUpgradeEnable && versionIsOnlyMinor != autoUpgradeEnable.(bool) {
+				return fmt.Errorf("minor version x.y must be used with auto upgrade enabled")
 			}
 
 			return nil
