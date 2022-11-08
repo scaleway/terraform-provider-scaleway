@@ -52,12 +52,6 @@ For testing a domain zone you can force the following environment var:
 export TF_TEST_DOMAIN_ZONE=your-zone
 ```
 
-For testing the container API with your own image you can force the environment var:
-
-```shell
-export  TF_TEST_DOCKER_IMG=your_image
-```
-
 To ease debugging you can also set:
 ```sh
 export TF_LOG=DEBUG
