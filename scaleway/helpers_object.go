@@ -14,8 +14,10 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/aws/credentials"
+	"github.com/aws/aws-sdk-go/aws/request"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
+	"github.com/aws/aws-sdk-go/service/s3/s3manager"
 	"github.com/hashicorp/aws-sdk-go-base/tfawserr"
 	awspolicy "github.com/hashicorp/awspolicyequivalence"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
@@ -467,18 +469,17 @@ func SecondJSONUnlessEquivalent(old, newP string) (string, error) {
 }
 
 func resourceBucketWebsiteConfigurationWebsiteEndpoint(ctx context.Context, conn *s3.S3, bucket string, region scw.Region) (*S3Website, error) {
-	input := &s3.GetBucketLocationInput{
-		Bucket: aws.String(bucket),
-	}
-
-	output, err := conn.GetBucketLocationWithContext(ctx, input)
+	// Using s3manager.GetBucketRegionWithClient to avoid path style calls
+	// Lookup https://github.com/aws/aws-sdk-go/issues/3115
+	// https://github.com/hashicorp/terraform-provider-aws/pull/14221/files
+	bucketRegion, err := s3manager.GetBucketRegionWithClient(ctx, conn, bucket, func(r *request.Request) {
+		r.Config.S3ForcePathStyle = aws.Bool(false)
+	})
 	if err != nil {
 		return nil, fmt.Errorf("error getting Object Bucket (%s) Location: %w", bucket, err)
 	}
 
-	if output.LocationConstraint != nil {
-		region = scw.Region(aws.StringValue(output.LocationConstraint))
-	}
+	region = scw.Region(bucketRegion)
 
 	return WebsiteEndpoint(bucket, region), nil
 }
