@@ -3,7 +3,6 @@ package scaleway
 import (
 	"context"
 	"fmt"
-	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
@@ -13,10 +12,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/scaleway/scaleway-sdk-go/scw"
-)
-
-const (
-	objectBucketWebsiteConfigurationRetry = 2 * time.Minute
 )
 
 func ResourceBucketWebsiteConfiguration() *schema.Resource {
