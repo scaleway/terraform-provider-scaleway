@@ -65,6 +65,41 @@ func TestAccScalewayObjectBucketLockConfiguration_Basic(t *testing.T) {
 				),
 			},
 			{
+				Config: fmt.Sprintf(`
+					resource "scaleway_object_bucket" "test" {
+						name = %[1]q
+						tags = {
+							TestName = "TestAccSCW_LockConfig_basic"
+						}
+
+						object_lock_enabled = true
+					}
+
+					resource "scaleway_object_bucket_acl" "test" {
+						bucket = scaleway_object_bucket.test.name
+						acl = "public-read"
+					}
+
+					resource "scaleway_object_bucket_lock_configuration" "test" {
+						bucket = scaleway_object_bucket.test.name
+						rule {
+							default_retention {
+								mode = "GOVERNANCE"
+								years = 1
+							}
+						}
+					}
+				`, rName),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckBucketLockConfigurationExists(tt, resourceName),
+					resource.TestCheckResourceAttrPair(resourceName, "bucket", "scaleway_object_bucket.test", "name"),
+					resource.TestCheckResourceAttr(resourceName, "rule.#", "1"),
+					resource.TestCheckResourceAttr(resourceName, "rule.0.default_retention.#", "1"),
+					resource.TestCheckResourceAttr(resourceName, "rule.0.default_retention.0.mode", "GOVERNANCE"),
+					resource.TestCheckResourceAttr(resourceName, "rule.0.default_retention.0.years", "1"),
+				),
+			},
+			{
 				ResourceName:      resourceName,
 				ImportState:       true,
 				ImportStateVerify: true,
