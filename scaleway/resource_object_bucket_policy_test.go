@@ -11,35 +11,34 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 )
 
-func TestAccSCWBucketPolicy_basic(t *testing.T) {
-	if !*UpdateCassettes {
-		t.Skip("Skipping ObjectStorage test as this kind of resource can't be deleted before 24h")
-	}
+func TestAccScalewayBucketPolicy_Basic(t *testing.T) {
 	name := fmt.Sprintf("tf-test-bucket-%d", sdkacctest.RandInt())
 
 	expectedPolicyText := fmt.Sprintf(`{
-   "Version":"2012-10-17",
-   "Id":"MyPolicy",
-   "Statement":[
-      {
-         "Sid":"GrantToEveryone",
-         "Effect":"Allow",
-         "Principal":{
-            "SCW":"*"
-         },
-         "Action":[
-            "s3:ListBucket",
-            "s3:GetObject"
-         ],
-         "Resource":[
-            "%[1]s",
-            "%[1]s/*"
-         ]
-      }
+	"Version":"2012-10-17",
+	"Id":"MyPolicy",
+	"Statement": [
+		{
+			"Sid":"GrantToEveryone",
+			"Effect":"Allow",
+			"Principal":{
+				"SCW":"*"
+			},
+			"Action":[
+				"s3:ListBucket",
+				"s3:GetObject"
+			],
+			"Resource":[
+				"%[1]s",
+				"%[1]s/*"
+			]
+		}
    ]
 }`, name)
 
 	tt := NewTestTools(t)
+	defer tt.Cleanup()
+
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
 		ErrorCheck:        ErrorCheck(t, EndpointsID),
@@ -50,36 +49,36 @@ func TestAccSCWBucketPolicy_basic(t *testing.T) {
 				Config: fmt.Sprintf(`
 					resource "scaleway_object_bucket" "bucket" {
 						name = %[1]q
-					
+
 						tags = {
-						  TestName = "TestAccSCWBucketPolicy_basic"
+							TestName = "TestAccSCWBucketPolicy_basic"
 						}
 					}
 
 					resource "scaleway_object_bucket_policy" "bucket" {
 						bucket = scaleway_object_bucket.bucket.name
 						policy = jsonencode(
-                    	{
-                      		Id = "MyPolicy"
-                      		Statement = [
 							{
-								Action = [
-									"s3:ListBucket",
-									"s3:GetObject",
-                                ]
-                               Effect = "Allow"
-                               Principal = {
-                                   SCW = "*"
-                                }
-                               Resource  = [
-                                  "%[1]s",
-                                  "%[1]s/*",
-                                ]
-                               Sid = "GrantToEveryone"
-                            	},
-							]
-                       		Version = "2012-10-17"
-                    	}
+								Id = "MyPolicy"
+								Statement = [
+									{
+										Action = [
+											"s3:ListBucket",
+											"s3:GetObject",
+										]
+										Effect = "Allow"
+										Principal = {
+											SCW = "*"
+										}
+										Resource  = [
+											"%[1]s",
+											"%[1]s/*",
+										]
+										Sid = "GrantToEveryone"
+									},
+								]
+								Version = "2012-10-17"
+							}
 						)
 					}
 					`, name),
