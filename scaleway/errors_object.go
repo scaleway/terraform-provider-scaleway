@@ -18,4 +18,6 @@ const (
 	ErrCodeNoSuchBucketPolicy = "NoSuchBucketPolicy"
 	// ErrCodeNoSuchWebsiteConfiguration website configuration not found
 	ErrCodeNoSuchWebsiteConfiguration = "NoSuchWebsiteConfiguration"
+	// ErrCodeObjectLockConfigurationNotFoundError
+	ErrCodeObjectLockConfigurationNotFoundError = "ObjectLockConfigurationNotFoundError"
 )

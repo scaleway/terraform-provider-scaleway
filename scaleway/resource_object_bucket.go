@@ -445,19 +445,12 @@ func resourceScalewayObjectBucketRead(ctx context.Context, d *schema.ResourceDat
 		Bucket: aws.String(bucketName),
 	})
 	if err != nil {
-		s3err, isS3Err := err.(awserr.Error)
-
-		if isS3Err {
-			switch s3err.Code() {
-			case s3.ErrCodeNoSuchBucket:
-				tflog.Error(ctx, fmt.Sprintf("Bucket %q was not found - removing from state!", bucketName))
-				d.SetId("")
-				return nil
-			case "ObjectLockConfigurationNotFoundError":
-				_ = d.Set("object_lock_enabled", false)
-			default:
-				return diag.FromErr(fmt.Errorf("couldn't read bucket: %s", err))
-			}
+		if isS3Err(err, s3.ErrCodeNoSuchBucket, "") {
+			_ = d.Set("object_lock_enabled", false)
+		} else if isS3Err(err, ErrCodeObjectLockConfigurationNotFoundError, "") {
+			tflog.Error(ctx, fmt.Sprintf("Bucket %q was not found - removing from state!", bucketName))
+			d.SetId("")
+			return nil
 		} else {
 			return diag.FromErr(fmt.Errorf("couldn't read bucket: %s", err))
 		}
