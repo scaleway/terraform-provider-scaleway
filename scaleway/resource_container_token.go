@@ -75,6 +75,8 @@ func resourceScalewayContainerTokenCreate(ctx context.Context, d *schema.Resourc
 
 	d.SetId(newRegionalIDString(region, token.ID))
 
+	_ = d.Set("token", token.Token)
+
 	return resourceScalewayContainerTokenRead(ctx, d, meta)
 }
 
@@ -99,7 +101,6 @@ func resourceScalewayContainerTokenRead(ctx context.Context, d *schema.ResourceD
 	_ = d.Set("namespace_id", flattenStringPtr(token.NamespaceID))
 	_ = d.Set("description", flattenStringPtr(token.Description))
 	_ = d.Set("expires_at", flattenTime(token.ExpiresAt))
-	_ = d.Set("token", token.Token)
 
 	return nil
 }

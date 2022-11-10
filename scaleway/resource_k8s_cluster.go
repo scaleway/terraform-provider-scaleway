@@ -222,6 +222,18 @@ func resourceScalewayK8SCluster() *schema.Resource {
 				Description: "The status of the cluster",
 			},
 		},
+		CustomizeDiff: func(ctx context.Context, diff *schema.ResourceDiff, i interface{}) error {
+			autoUpgradeEnable, okAutoUpgradeEnable := diff.GetOkExists("auto_upgrade.0.enable")
+
+			version := diff.Get("version").(string)
+			versionIsOnlyMinor := len(strings.Split(version, ".")) == 2
+
+			if okAutoUpgradeEnable && versionIsOnlyMinor != autoUpgradeEnable.(bool) {
+				return fmt.Errorf("minor version x.y must be used with auto upgrade enabled")
+			}
+
+			return nil
+		},
 	}
 }
 

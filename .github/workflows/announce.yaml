@@ -5,9 +5,6 @@ on:
 jobs:
   slack:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        webhook: ${{ fromJSON(secrets.SLACK_WEBHOOKS) }}
     steps:
       - name: Get tag
         id: get_tag
@@ -27,7 +24,9 @@ jobs:
       - name: Announce on slack
         id: announce_slack
         run: |
-          curl -X POST -H 'Content-type: application/json' \
+          readarray -td' ' URL_LIST <<<$SLACK_WEBHOOKS; 
+          for WEBHOOK_URL in ${URL_LIST[@]};
+          do curl -X POST -H 'Content-type: application/json' \
           --data '{
           	"blocks": [
               {
@@ -39,7 +38,8 @@ jobs:
               }
             ]
           }' \
-          ${WEBHOOK_URL}
+          ${WEBHOOK_URL};
+          done
         env:
-          WEBHOOK_URL: ${{ matrix.webhook }}
+          SLACK_WEBHOOKS: ${{ secrets.SLACK_WEBHOOKS }}
           MESSAGE: ${{ steps.get_message.outputs.MSG }}

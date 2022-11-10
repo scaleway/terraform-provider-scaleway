@@ -3,7 +3,6 @@ package scaleway
 import (
 	"context"
 	"fmt"
-	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
@@ -13,10 +12,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/scaleway/scaleway-sdk-go/scw"
-)
-
-const (
-	objectBucketWebsiteConfigurationRetry = 2 * time.Minute
 )
 
 func ResourceBucketWebsiteConfiguration() *schema.Resource {
@@ -113,9 +108,9 @@ func resourceBucketWebsiteConfigurationCreate(ctx context.Context, d *schema.Res
 		WebsiteConfiguration: websiteConfig,
 	}
 
-	_, err = RetryWhenAWSErrCodeEqualsContext(ctx, objectBucketWebsiteConfigurationRetry, func() (interface{}, error) {
+	_, err = retryOnAWSCode(ctx, s3.ErrCodeNoSuchBucket, func() (interface{}, error) {
 		return conn.PutBucketWebsiteWithContext(ctx, input)
-	}, s3.ErrCodeNoSuchBucket)
+	})
 
 	if err != nil {
 		return diag.FromErr(fmt.Errorf("error creating object bucket (%s) website configuration: %w", bucket, err))
