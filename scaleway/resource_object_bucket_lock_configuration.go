@@ -3,7 +3,6 @@ package scaleway
 import (
 	"context"
 	"fmt"
-	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/s3"
@@ -11,10 +10,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
-)
-
-const (
-	objectBucketLockConfigurationRetry = 5 * time.Second
 )
 
 func resourceObjectLockConfiguration() *schema.Resource {
@@ -94,9 +89,9 @@ func resourceObjectLockConfigurationCreate(ctx context.Context, d *schema.Resour
 		},
 	}
 
-	_, err = RetryWhenAWSErrCodeEqualsContext(ctx, objectBucketLockConfigurationRetry, func() (interface{}, error) {
+	_, err = retryOnAWSCode(ctx, s3.ErrCodeNoSuchBucket, func() (interface{}, error) {
 		return conn.PutObjectLockConfigurationWithContext(ctx, input)
-	}, s3.ErrCodeNoSuchBucket)
+	})
 
 	if err != nil {
 		return diag.FromErr(fmt.Errorf("error creating object bucket (%s) lock configuration: %w", bucket, err))
