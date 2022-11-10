@@ -26,15 +26,16 @@ jobs:
           - Rdb
           - Redis
           - Registry
+          - Tem
           - VPC
     runs-on: ubuntu-latest
     steps:
       - name: Install Go
-        uses: actions/setup-go@v2
+        uses: actions/setup-go@v3
         with:
           go-version: 1.19
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       - name: Run Acceptance Tests
         run: go test -v ./... -timeout=2h -run "TestAccScaleway(DataSource)?${{ matrix.products }}.*"
         env:
@@ -45,7 +46,6 @@ jobs:
           TF_UPDATE_CASSETTES: true
           TF_TEST_DOMAIN: scaleway-terraform.com
           TF_TEST_DOMAIN_ZONE: tf
-          TF_TEST_DOCKER_IMG: docker.io/library/alpine
           SCW_DEBUG: 1
           SCW_ACCESS_KEY: ${{ secrets.SCW_ACCESS_KEY }}
           SCW_SECRET_KEY: ${{ secrets.SCW_SECRET_KEY }}
@@ -60,16 +60,15 @@ jobs:
     if: always()
     steps:
       - name: Install Go
-        uses: actions/setup-go@v2
+        uses: actions/setup-go@v3
         with:
           go-version: 1.19
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       - name: Run sweepers
         run: make sweep
         env:
           TF_TEST_DOMAIN: scaleway-terraform.com
-          TF_TEST_DOCKER_IMG: docker.io/library/alpine
           SCW_ACCESS_KEY: ${{ secrets.SCW_ACCESS_KEY }}
           SCW_SECRET_KEY: ${{ secrets.SCW_SECRET_KEY }}
           SCW_DEFAULT_ORGANIZATION_ID: ${{ secrets.SCW_DEFAULT_ORGANIZATION_ID }}

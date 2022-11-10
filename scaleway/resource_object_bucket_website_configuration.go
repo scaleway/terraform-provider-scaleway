@@ -3,7 +3,6 @@ package scaleway
 import (
 	"context"
 	"fmt"
-	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
@@ -13,10 +12,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/scaleway/scaleway-sdk-go/scw"
-)
-
-const (
-	objectBucketWebsiteConfigurationRetry = 2 * time.Minute
 )
 
 func ResourceBucketWebsiteConfiguration() *schema.Resource {
@@ -37,6 +32,21 @@ func ResourceBucketWebsiteConfiguration() *schema.Resource {
 				ValidateFunc: validation.StringLenBetween(1, 63),
 				Description:  "The bucket name.",
 			},
+			"index_document": {
+				Type:     schema.TypeList,
+				Required: true,
+				MinItems: 1,
+				MaxItems: 1,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"suffix": {
+							Type:     schema.TypeString,
+							Required: true,
+						},
+					},
+				},
+				Description: "The name of the index document for the website.",
+			},
 			"error_document": {
 				Type:     schema.TypeList,
 				Optional: true,
@@ -50,20 +60,6 @@ func ResourceBucketWebsiteConfiguration() *schema.Resource {
 					},
 				},
 				Description: "The name of the error document for the website.",
-			},
-			"index_document": {
-				Type:     schema.TypeList,
-				Optional: true,
-				MaxItems: 1,
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"suffix": {
-							Type:     schema.TypeString,
-							Required: true,
-						},
-					},
-				},
-				Description: "The name of the index document for the website.",
 			},
 			"website_endpoint": {
 				Type:        schema.TypeString,
@@ -87,14 +83,12 @@ func resourceBucketWebsiteConfigurationCreate(ctx context.Context, d *schema.Res
 
 	bucket := expandID(d.Get("bucket").(string))
 
-	websiteConfig := &s3.WebsiteConfiguration{}
+	websiteConfig := &s3.WebsiteConfiguration{
+		IndexDocument: expandBucketWebsiteConfigurationIndexDocument(d.Get("index_document").([]interface{})),
+	}
 
 	if v, ok := d.GetOk("error_document"); ok && len(v.([]interface{})) > 0 && v.([]interface{})[0] != nil {
 		websiteConfig.ErrorDocument = expandBucketWebsiteConfigurationErrorDocument(v.([]interface{}))
-	}
-
-	if v, ok := d.GetOk("index_document"); ok && len(v.([]interface{})) > 0 && v.([]interface{})[0] != nil {
-		websiteConfig.IndexDocument = expandBucketWebsiteConfigurationIndexDocument(v.([]interface{}))
 	}
 
 	_, err = conn.ListObjectsWithContext(ctx, &s3.ListObjectsInput{
@@ -114,9 +108,9 @@ func resourceBucketWebsiteConfigurationCreate(ctx context.Context, d *schema.Res
 		WebsiteConfiguration: websiteConfig,
 	}
 
-	_, err = RetryWhenAWSErrCodeEqualsContext(ctx, objectBucketWebsiteConfigurationRetry, func() (interface{}, error) {
+	_, err = retryOnAWSCode(ctx, s3.ErrCodeNoSuchBucket, func() (interface{}, error) {
 		return conn.PutBucketWebsiteWithContext(ctx, input)
-	}, s3.ErrCodeNoSuchBucket)
+	})
 
 	if err != nil {
 		return diag.FromErr(fmt.Errorf("error creating object bucket (%s) website configuration: %w", bucket, err))
@@ -168,13 +162,10 @@ func resourceBucketWebsiteConfigurationRead(ctx context.Context, d *schema.Resou
 	}
 
 	_ = d.Set("bucket", bucket)
+	_ = d.Set("index_document", flattenBucketWebsiteConfigurationIndexDocument(output.IndexDocument))
 
 	if err := d.Set("error_document", flattenBucketWebsiteConfigurationErrorDocument(output.ErrorDocument)); err != nil {
 		return diag.FromErr(fmt.Errorf("error setting error_document: %w", err))
-	}
-
-	if err := d.Set("index_document", flattenBucketWebsiteConfigurationIndexDocument(output.IndexDocument)); err != nil {
-		return diag.FromErr(fmt.Errorf("error setting index_document: %w", err))
 	}
 
 	// Add website_endpoint and website_domain as attributes
@@ -197,14 +188,12 @@ func resourceBucketWebsiteConfigurationUpdate(ctx context.Context, d *schema.Res
 		return diag.FromErr(err)
 	}
 
-	websiteConfig := &s3.WebsiteConfiguration{}
+	websiteConfig := &s3.WebsiteConfiguration{
+		IndexDocument: expandBucketWebsiteConfigurationIndexDocument(d.Get("index_document").([]interface{})),
+	}
 
 	if v, ok := d.GetOk("error_document"); ok && len(v.([]interface{})) > 0 && v.([]interface{})[0] != nil {
 		websiteConfig.ErrorDocument = expandBucketWebsiteConfigurationErrorDocument(v.([]interface{}))
-	}
-
-	if v, ok := d.GetOk("index_document"); ok && len(v.([]interface{})) > 0 && v.([]interface{})[0] != nil {
-		websiteConfig.IndexDocument = expandBucketWebsiteConfigurationIndexDocument(v.([]interface{}))
 	}
 
 	input := &s3.PutBucketWebsiteInput{

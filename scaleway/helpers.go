@@ -327,19 +327,24 @@ func allZones() []string {
 	return allZones
 }
 
-// regionSchema returns a standard schema for a zone
-func regionSchema() *schema.Schema {
+func allRegions() []string {
 	var allRegions []string
 	for _, z := range scw.AllRegions {
 		allRegions = append(allRegions, z.String())
 	}
+
+	return allRegions
+}
+
+// regionSchema returns a standard schema for a zone
+func regionSchema() *schema.Schema {
 	return &schema.Schema{
 		Type:             schema.TypeString,
 		Description:      "The region you want to attach the resource to",
 		Optional:         true,
 		ForceNew:         true,
 		Computed:         true,
-		ValidateDiagFunc: validateStringInSliceWithWarning(allRegions, "region"),
+		ValidateDiagFunc: validateStringInSliceWithWarning(allRegions(), "region"),
 	}
 }
 
@@ -642,6 +647,18 @@ func diffSuppressFuncDuration(k, oldValue, newValue string, d *schema.ResourceDa
 		return false
 	}
 	return d1 == d2
+}
+
+func diffSuppressFuncTimeRFC3339(k, oldValue, newValue string, d *schema.ResourceData) bool {
+	if oldValue == newValue {
+		return true
+	}
+	t1, err1 := time.Parse(time.RFC3339, oldValue)
+	t2, err2 := time.Parse(time.RFC3339, newValue)
+	if err1 != nil || err2 != nil {
+		return false
+	}
+	return t1.Equal(t2)
 }
 
 func diffSuppressFuncIgnoreCase(k, oldValue, newValue string, d *schema.ResourceData) bool {

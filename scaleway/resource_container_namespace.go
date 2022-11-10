@@ -51,6 +51,17 @@ func resourceScalewayContainerNamespace() *schema.Resource {
 				},
 				ValidateDiagFunc: validation.MapKeyLenBetween(0, 100),
 			},
+			"secret_environment_variables": {
+				Type:        schema.TypeMap,
+				Optional:    true,
+				Sensitive:   true,
+				Description: "The secret environment variables of the container namespace",
+				Elem: &schema.Schema{
+					Type:         schema.TypeString,
+					ValidateFunc: validation.StringLenBetween(0, 1000),
+				},
+				ValidateDiagFunc: validation.MapKeyLenBetween(0, 100),
+			},
 			"registry_endpoint": {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -81,11 +92,12 @@ func resourceScalewayContainerNamespaceCreate(ctx context.Context, d *schema.Res
 	}
 
 	ns, err := api.CreateNamespace(&container.CreateNamespaceRequest{
-		Description:          expandStringPtr(d.Get("description").(string)),
-		EnvironmentVariables: expandMapPtrStringString(d.Get("environment_variables")),
-		Name:                 expandOrGenerateString(d.Get("name").(string), "ns"),
-		ProjectID:            d.Get("project_id").(string),
-		Region:               region,
+		Description:                expandStringPtr(d.Get("description").(string)),
+		EnvironmentVariables:       expandMapPtrStringString(d.Get("environment_variables")),
+		SecretEnvironmentVariables: expandContainerSecrets(d.Get("secret_environment_variables")),
+		Name:                       expandOrGenerateString(d.Get("name").(string), "ns"),
+		ProjectID:                  d.Get("project_id").(string),
+		Region:                     region,
 	}, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
@@ -150,6 +162,10 @@ func resourceScalewayContainerNamespaceUpdate(ctx context.Context, d *schema.Res
 
 	if d.HasChanges("environment_variables") {
 		req.EnvironmentVariables = expandMapPtrStringString(d.Get("environment_variables"))
+	}
+
+	if d.HasChange("secret_environment_variables") {
+		req.SecretEnvironmentVariables = expandContainerSecrets(d.Get("secret_environment_variables"))
 	}
 
 	if _, err := api.UpdateNamespace(req, scw.WithContext(ctx)); err != nil {

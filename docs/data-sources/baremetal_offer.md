@@ -28,6 +28,8 @@ data "scaleway_baremetal_offer" "my_offer" {
 
 - `name` - (Optional) The offer name. Only one of `name` and `offer_id` should be specified.
 
+- `subscription_period` - (Optional) Period of subscription the desired offer. Should be `hourly` or `monthly`.
+
 - `offer_id` - (Optional) The offer id. Only one of `name` and `offer_id` should be specified.
 
 - `allow_disabled` - (Optional, default `false`) Include disabled offers.

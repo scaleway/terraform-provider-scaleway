@@ -46,11 +46,33 @@ resource "scaleway_instance_snapshot" "main" {
 }
 ```
 
+## Import a local qcow2 file
+
+```hcl
+resource "scaleway_object_bucket" "bucket" {
+  name = "snapshot-qcow-import"
+}
+
+resource "scaleway_object" "qcow" {
+  bucket = scaleway_object_bucket.bucket.name
+  key = "server.qcow2"
+  file = "myqcow.qcow2"
+}
+
+resource "scaleway_instance_snapshot" "snapshot" {
+  type = "unified"
+  import {
+    bucket = scaleway_object.qcow.bucket
+    key = scaleway_object.qcow.key
+  }
+}
+```
+
 ## Arguments Reference
 
 The following arguments are supported:
 
-- `volume_id` - (Required) The ID of the volume to take a snapshot from.
+- `volume_id` - (Optional) The ID of the volume to take a snapshot from.
 - `type` - (Optional) The snapshot's volume type.  The possible values are: `b_ssd` (Block SSD), `l_ssd` (Local SSD) and `unified`.
 Updates to this field will recreate a new resource.
 - `name` - (Optional) The name of the snapshot. If not provided it will be randomly generated.
@@ -59,6 +81,9 @@ Updates to this field will recreate a new resource.
 - `project_id` - (Defaults to [provider](../index.md#project_id) `project_id`) The ID of the project the snapshot is
   associated with.
 - `tags` - (Optional) A list of tags to apply to the snapshot.
+- `import` - (Optional) Import a snapshot from a qcow2 file located in a bucket
+    - `bucket` - Bucket name containing [qcow2](https://en.wikipedia.org/wiki/Qcow) to import
+    - `key` - Key of the object to import
 
 -> **Note:** The type `unified` could be instantiated on both `l_ssd` and `b_ssd` volumes.
 

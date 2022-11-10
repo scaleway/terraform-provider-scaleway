@@ -3,18 +3,15 @@ package scaleway
 import (
 	"fmt"
 	"testing"
-	"time"
 
+	sdkacctest "github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 )
 
 func TestAccScalewayObjectBucketACL_Basic(t *testing.T) {
-	if !*UpdateCassettes {
-		t.Skip("Skipping ObjectStorage test as this kind of resource can't be deleted before 24h")
-	}
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
-	testBucketName := fmt.Sprintf("terraform-test-%d", time.Now().Unix())
+	testBucketName := sdkacctest.RandomWithPrefix("test-acc-scaleway-object-acl-basic")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
@@ -62,12 +59,10 @@ func TestAccScalewayObjectBucketACL_Basic(t *testing.T) {
 }
 
 func TestAccScalewayObjectBucketACL_Grantee(t *testing.T) {
-	if !*UpdateCassettes {
-		t.Skip("Skipping ObjectStorage test as this kind of resource can't be deleted before 24h")
-	}
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
-	testBucketName := fmt.Sprintf("terraform-test-%d", time.Now().Unix())
+	testBucketName := sdkacctest.RandomWithPrefix("test-acc-scaleway-object-acl-grantee")
+
 	ownerID := "105bdce1-64c0-48ab-899d-868455867ecf"
 	ownerIDChild := "50ab77d5-56bd-4981-a118-4e0fa5309b59"
 	resource.Test(t, resource.TestCase{
@@ -147,12 +142,9 @@ func TestAccScalewayObjectBucketACL_Grantee(t *testing.T) {
 }
 
 func TestAccScalewayObjectBucketACL_GranteeWithOwner(t *testing.T) {
-	if !*UpdateCassettes {
-		t.Skip("Skipping ObjectStorage test as this kind of resource can't be deleted before 24h")
-	}
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
-	testBucketName := fmt.Sprintf("terraform-test-%d", time.Now().Unix())
+	testBucketName := sdkacctest.RandomWithPrefix("test-acc-scaleway-object-acl-grantee-owner")
 	ownerID := "105bdce1-64c0-48ab-899d-868455867ecf"
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },

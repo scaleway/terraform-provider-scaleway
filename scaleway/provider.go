@@ -44,6 +44,7 @@ func addBetaResources(provider *schema.Provider) {
 		"scaleway_iam_application": dataSourceScalewayIamApplication(),
 		"scaleway_iam_group":       dataSourceScalewayIamGroup(),
 		"scaleway_iam_user":        dataSourceScalewayIamUser(),
+		"scaleway_account_project": dataSourceScalewayAccountProject(),
 	}
 	for resourceName, resource := range betaResources {
 		provider.ResourcesMap[resourceName] = resource
@@ -107,6 +108,7 @@ func Provider(config *ProviderConfig) plugin.ProviderFunc {
 				"scaleway_function":                            resourceScalewayFunction(),
 				"scaleway_function_cron":                       resourceScalewayFunctionCron(),
 				"scaleway_function_namespace":                  resourceScalewayFunctionNamespace(),
+				"scaleway_function_token":                      resourceScalewayFunctionToken(),
 				"scaleway_instance_user_data":                  resourceScalewayInstanceUserData(),
 				"scaleway_instance_image":                      resourceScalewayInstanceImage(),
 				"scaleway_instance_ip":                         resourceScalewayInstanceIP(),
@@ -131,7 +133,9 @@ func Provider(config *ProviderConfig) plugin.ProviderFunc {
 				"scaleway_lb_frontend":                         resourceScalewayLbFrontend(),
 				"scaleway_lb_route":                            resourceScalewayLbRoute(),
 				"scaleway_registry_namespace":                  resourceScalewayRegistryNamespace(),
+				"scaleway_tem_domain":                          resourceScalewayTemDomain(),
 				"scaleway_container":                           resourceScalewayContainer(),
+				"scaleway_container_token":                     resourceScalewayContainerToken(),
 				"scaleway_rdb_acl":                             resourceScalewayRdbACL(),
 				"scaleway_rdb_database":                        resourceScalewayRdbDatabase(),
 				"scaleway_rdb_database_backup":                 resourceScalewayRdbDatabaseBackup(),
@@ -188,6 +192,7 @@ func Provider(config *ProviderConfig) plugin.ProviderFunc {
 				"scaleway_rdb_privilege":                       dataSourceScalewayRDBPrivilege(),
 				"scaleway_redis_cluster":                       dataSourceScalewayRedisCluster(),
 				"scaleway_registry_namespace":                  dataSourceScalewayRegistryNamespace(),
+				"scaleway_tem_domain":                          dataSourceScalewayTemDomain(),
 				"scaleway_registry_image":                      dataSourceScalewayRegistryImage(),
 				"scaleway_vpc_public_gateway":                  dataSourceScalewayVPCPublicGateway(),
 				"scaleway_vpc_gateway_network":                 dataSourceScalewayVPCGatewayNetwork(),
