@@ -16,7 +16,7 @@ const (
 	lockResourceTestName = "scaleway_object_bucket_lock_configuration.test"
 )
 
-func TestAccObjectBucketLockConfiguration_basic(t *testing.T) {
+func TestAccScalewayObjectBucketLockConfiguration_Basic(t *testing.T) {
 	rName := sdkacctest.RandomWithPrefix(LockResourcePrefix)
 	resourceName := lockResourceTestName
 
@@ -27,7 +27,7 @@ func TestAccObjectBucketLockConfiguration_basic(t *testing.T) {
 		PreCheck:          func() { testAccPreCheck(t) },
 		ErrorCheck:        ErrorCheck(t, EndpointsID),
 		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      testAccCheckBucketLockConfigurationDestroy(tt),
+		CheckDestroy:      testAccCheckScalewayBucketLockConfigurationDestroy(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
@@ -73,7 +73,7 @@ func TestAccObjectBucketLockConfiguration_basic(t *testing.T) {
 	})
 }
 
-func TestAccObjectBucketLockConfiguration_update(t *testing.T) {
+func TestAccScalewayObjectBucketLockConfiguration_Update(t *testing.T) {
 	rName := sdkacctest.RandomWithPrefix(LockResourcePrefix)
 	resourceName := lockResourceTestName
 
@@ -84,7 +84,7 @@ func TestAccObjectBucketLockConfiguration_update(t *testing.T) {
 		PreCheck:          func() { testAccPreCheck(t) },
 		ErrorCheck:        ErrorCheck(t, EndpointsID),
 		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      testAccCheckBucketLockConfigurationDestroy(tt),
+		CheckDestroy:      testAccCheckScalewayBucketLockConfigurationDestroy(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
@@ -160,7 +160,7 @@ func TestAccObjectBucketLockConfiguration_update(t *testing.T) {
 	})
 }
 
-func testAccCheckBucketLockConfigurationDestroy(tt *TestTools) resource.TestCheckFunc {
+func testAccCheckScalewayBucketLockConfigurationDestroy(tt *TestTools) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		conn, err := newS3ClientFromMeta(tt.Meta)
 		if err != nil {
