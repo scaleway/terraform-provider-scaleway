@@ -6,7 +6,6 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/s3"
-	"github.com/hashicorp/aws-sdk-go-base/tfawserr"
 	sdkacctest "github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
@@ -18,13 +17,12 @@ const (
 )
 
 func TestAccObjectBucketLockConfiguration_basic(t *testing.T) {
-	if !*UpdateCassettes {
-		t.Skip("Skipping ObjectStorage test as this kind of resource can't be deleted before 24h")
-	}
 	rName := sdkacctest.RandomWithPrefix(LockResourcePrefix)
 	resourceName := lockResourceTestName
 
 	tt := NewTestTools(t)
+	defer tt.Cleanup()
+
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
 		ErrorCheck:        ErrorCheck(t, EndpointsID),
@@ -76,13 +74,12 @@ func TestAccObjectBucketLockConfiguration_basic(t *testing.T) {
 }
 
 func TestAccObjectBucketLockConfiguration_update(t *testing.T) {
-	if !*UpdateCassettes {
-		t.Skip("Skipping ObjectStorage test as this kind of resource can't be deleted before 24h")
-	}
 	rName := sdkacctest.RandomWithPrefix(LockResourcePrefix)
 	resourceName := lockResourceTestName
 
 	tt := NewTestTools(t)
+	defer tt.Cleanup()
+
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
 		ErrorCheck:        ErrorCheck(t, EndpointsID),
@@ -183,7 +180,7 @@ func testAccCheckBucketLockConfigurationDestroy(tt *TestTools) resource.TestChec
 
 			output, err := conn.GetObjectLockConfiguration(input)
 
-			if tfawserr.ErrCodeEquals(err, s3.ErrCodeNoSuchBucket) {
+			if isS3Err(err, s3.ErrCodeNoSuchBucket, "") {
 				continue
 			}
 
