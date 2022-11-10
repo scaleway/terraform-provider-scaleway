@@ -27,6 +27,7 @@ data "scaleway_object_bucket" "selected" {
 ## Argument Reference
 
 - `name` - (Required) The bucket name.
+- `object_lock_enabled` - (Optional) Enable object lock on the bucket. Defaults to `false`.
 - `region` - (Defaults to [provider](../index.md#region) `region`) The [region](../guides/regions_and_zones.md#zones) in which the Object Storage exists.
 
 
