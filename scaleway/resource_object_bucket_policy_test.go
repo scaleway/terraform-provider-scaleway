@@ -84,7 +84,7 @@ func TestAccScalewayBucketPolicy_Basic(t *testing.T) {
 					`, buckedName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayObjectBucketExists(tt, "scaleway_object_bucket.bucket"),
-					testAccCheckBucketHasPolicy(tt, "scaleway_object_bucket_policy.bucket", expectedPolicyText),
+					testAccCheckBucketHasPolicy(tt, "scaleway_object_bucket.bucket", expectedPolicyText),
 				),
 			},
 			{
@@ -103,19 +103,18 @@ func testAccCheckBucketHasPolicy(tt *TestTools, n string, expectedPolicyText str
 			return fmt.Errorf("not found: %s", n)
 		}
 
-		if rs.Primary.ID == "" {
-			return fmt.Errorf("no scw bucket id is set")
-		}
-
 		s3Client, err := newS3ClientFromMeta(tt.Meta)
 		if err != nil {
 			return err
 		}
 
-		bucketRegionalID := expandRegionalID(rs.Primary.ID)
+		if rs.Primary.ID == "" {
+			return fmt.Errorf("no ID is set")
+		}
 
+		bucketName := rs.Primary.Attributes["name"]
 		policy, err := s3Client.GetBucketPolicy(&s3.GetBucketPolicyInput{
-			Bucket: expandStringPtr(bucketRegionalID.ID),
+			Bucket: expandStringPtr(bucketName),
 		})
 		if err != nil {
 			return fmt.Errorf("getBucketPolicy error: %v", err)
