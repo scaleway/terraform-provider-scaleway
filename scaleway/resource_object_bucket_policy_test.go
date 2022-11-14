@@ -12,7 +12,7 @@ import (
 )
 
 func TestAccScalewayBucketPolicy_Basic(t *testing.T) {
-	name := fmt.Sprintf("tf-test-bucket-%d", sdkacctest.RandInt())
+	buckedName := sdkacctest.RandomWithPrefix("tf-test-bucket")
 
 	expectedPolicyText := fmt.Sprintf(`{
 	"Version":"2012-10-17",
@@ -34,7 +34,7 @@ func TestAccScalewayBucketPolicy_Basic(t *testing.T) {
 			]
 		}
    ]
-}`, name)
+}`, buckedName)
 
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
@@ -81,7 +81,7 @@ func TestAccScalewayBucketPolicy_Basic(t *testing.T) {
 							}
 						)
 					}
-					`, name),
+					`, buckedName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayObjectBucketExists(tt, "scaleway_object_bucket.bucket"),
 					testAccCheckBucketHasPolicy(tt, "scaleway_object_bucket_policy.bucket", expectedPolicyText),
