@@ -113,11 +113,12 @@ func testAccCheckBucketHasPolicy(tt *TestTools, n string, expectedPolicyText str
 		}
 
 		bucketName := rs.Primary.Attributes["name"]
+		tt.T.Log("bucketName", bucketName)
 		policy, err := s3Client.GetBucketPolicy(&s3.GetBucketPolicyInput{
 			Bucket: expandStringPtr(bucketName),
 		})
 		if err != nil {
-			return fmt.Errorf("getBucketPolicy error: %v", err)
+			return fmt.Errorf("GetBucketPolicy error: %v", err)
 		}
 
 		actualPolicyText := *policy.Policy
