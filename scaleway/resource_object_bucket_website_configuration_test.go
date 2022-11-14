@@ -125,6 +125,7 @@ func TestAccObjectBucketWebsiteConfiguration_WithPolicy(t *testing.T) {
 					resource.TestCheckResourceAttrSet(resourceName, "website_domain"),
 					resource.TestCheckResourceAttrSet(resourceName, "website_endpoint"),
 				),
+				ExpectNonEmptyPlan: !*UpdateCassettes,
 			},
 			{
 				ResourceName:      resourceName,
