@@ -337,43 +337,42 @@ func resourceScalewayInstanceServerCreate(ctx context.Context, d *schema.Resourc
 	}
 
 	req.Volumes = make(map[string]*instance.VolumeServerTemplate)
-	isBootOnBlock := serverType.VolumesConstraint.MaxSize == 0
-	isBoot := expandBoolPtr(d.Get("root_volume.0.boot"))
-	volumeType := d.Get("root_volume.0.volume_type").(string)
+	serverTypeCanBootOnBlock := serverType.VolumesConstraint.MaxSize == 0
+	rootVolumeIsBootVolume := expandBoolPtr(d.Get("root_volume.0.boot"))
+	rootVolumeType := d.Get("root_volume.0.volume_type").(string)
 	sizeInput := d.Get("root_volume.0.size_in_gb").(int)
 	rootVolumeID := expandZonedID(d.Get("root_volume.0.volume_id").(string)).ID
 
-	// If the volumeType is not defined, define it depending of the offer
-	if volumeType == "" {
-		if isBootOnBlock {
-			volumeType = instance.VolumeVolumeTypeBSSD.String()
+	// If the rootVolumeType is not defined, define it depending on the offer
+	if rootVolumeType == "" {
+		if serverTypeCanBootOnBlock {
+			rootVolumeType = instance.VolumeVolumeTypeBSSD.String()
 		} else {
-			volumeType = instance.VolumeVolumeTypeLSSD.String()
+			rootVolumeType = instance.VolumeVolumeTypeLSSD.String()
 		}
 	}
 
-	var size scw.Size
-	if sizeInput == 0 && volumeType == instance.VolumeVolumeTypeLSSD.String() {
-		// Compute the size so it will be valid against the local volume constraints
-		// Compute the size so it will be valid against the local volume constraints
-		// It wouldn't be valid if another local volume is added, but in this case
-		// the user would be informed that it does not fulfill the local volume constraints
-		size = serverType.VolumesConstraint.MaxSize
-	} else {
-		size = scw.Size(uint64(sizeInput) * gb)
+	rootVolumeName := ""
+	if req.Image == "" { // When creating an instance from an image, volume should not have a name
+		rootVolumeName = newRandomName("vol")
 	}
 
-	rootVolumeName := newRandomName("vol")
-	if req.Image != "" {
-		rootVolumeName = ""
+	var rootVolumeSize scw.Size
+	if sizeInput == 0 && rootVolumeType == instance.VolumeVolumeTypeLSSD.String() {
+		// Compute the rootVolumeSize so it will be valid against the local volume constraints
+		// It wouldn't be valid if another local volume is added, but in this case
+		// the user would be informed that it does not fulfill the local volume constraints
+		rootVolumeSize = serverType.VolumesConstraint.MaxSize
+	} else {
+		rootVolumeSize = scw.Size(uint64(sizeInput) * gb)
 	}
 
 	req.Volumes["0"] = &instance.VolumeServerTemplate{
 		Name:       rootVolumeName,
 		ID:         rootVolumeID,
-		VolumeType: instance.VolumeVolumeType(volumeType),
-		Size:       size,
-		Boot:       *isBoot,
+		VolumeType: instance.VolumeVolumeType(rootVolumeType),
+		Size:       rootVolumeSize,
+		Boot:       *rootVolumeIsBootVolume,
 	}
 
 	if raw, ok := d.GetOk("additional_volume_ids"); ok {
