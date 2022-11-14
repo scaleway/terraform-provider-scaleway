@@ -18,13 +18,12 @@ const (
 )
 
 func TestAccObjectBucketWebsiteConfiguration_basic(t *testing.T) {
-	if !*UpdateCassettes {
-		t.Skip("Skipping ObjectStorage test as this kind of resource can't be deleted before 24h")
-	}
 	rName := sdkacctest.RandomWithPrefix(ResourcePrefix)
 	resourceName := resourceTestName
 
 	tt := NewTestTools(t)
+	defer tt.Cleanup()
+
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
 		ErrorCheck:        ErrorCheck(t, EndpointsID),
@@ -67,13 +66,12 @@ func TestAccObjectBucketWebsiteConfiguration_basic(t *testing.T) {
 }
 
 func TestAccObjectBucketWebsiteConfiguration_WithPolicy(t *testing.T) {
-	if !*UpdateCassettes {
-		t.Skip("Skipping ObjectStorage test as this kind of resource can't be deleted before 24h")
-	}
 	rName := sdkacctest.RandomWithPrefix(ResourcePrefix)
 	resourceName := resourceTestName
 
 	tt := NewTestTools(t)
+	defer tt.Cleanup()
+
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
 		ErrorCheck:        ErrorCheck(t, EndpointsID),
@@ -138,13 +136,12 @@ func TestAccObjectBucketWebsiteConfiguration_WithPolicy(t *testing.T) {
 }
 
 func TestAccObjectBucketWebsiteConfiguration_update(t *testing.T) {
-	if !*UpdateCassettes {
-		t.Skip("Skipping ObjectStorage test as this kind of resource can't be deleted before 24h")
-	}
 	rName := sdkacctest.RandomWithPrefix(ResourcePrefix)
 	resourceName := resourceTestName
 
 	tt := NewTestTools(t)
+	defer tt.Cleanup()
+
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
 		ErrorCheck:        ErrorCheck(t, EndpointsID),
