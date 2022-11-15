@@ -62,6 +62,10 @@ func setCreateContainerRequest(d *schema.ResourceData, region scw.Region) (*cont
 		req.EnvironmentVariables = expandMapPtrStringString(envVariablesRaw)
 	}
 
+	if secretEnvVariablesRaw, ok := d.GetOk("secret_environment_variables"); ok {
+		req.SecretEnvironmentVariables = expandContainerSecrets(secretEnvVariablesRaw)
+	}
+
 	if minScale, ok := d.GetOk("min_scale"); ok {
 		req.MinScale = scw.Uint32Ptr(uint32(minScale.(int)))
 	}
