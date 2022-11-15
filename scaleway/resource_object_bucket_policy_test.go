@@ -13,7 +13,7 @@ import (
 )
 
 func TestAccScalewayBucketPolicy_Basic(t *testing.T) {
-	buckedName := sdkacctest.RandomWithPrefix("tf-test-bucket")
+	bucketName := sdkacctest.RandomWithPrefix("tf-test-bucket")
 
 	expectedPolicyText := `{
 	"Version":"2012-10-17",
@@ -78,7 +78,7 @@ func TestAccScalewayBucketPolicy_Basic(t *testing.T) {
 							}
 						)
 					}
-					`, buckedName),
+					`, bucketName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayObjectBucketExists(tt, "scaleway_object_bucket.bucket"),
 					testAccCheckBucketHasPolicy(tt, "scaleway_object_bucket.bucket", expectedPolicyText),
