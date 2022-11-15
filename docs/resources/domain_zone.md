@@ -6,8 +6,8 @@ description: |-
 
 # scaleway_domain_zone
 
-Creates and manages Scaleway Domain zone.  
-For more information, see [the documentation](https://www.scaleway.com/en/docs/scaleway-dns/).
+Creates and manages Scaleway Domain zone.
+For more information, see [the documentation](https://developers.scaleway.com/en/products/domain/dns/api/#domain-and-zone).
 
 ## Examples
 
