@@ -1,6 +1,7 @@
 package scaleway
 
 import (
+	"encoding/json"
 	"fmt"
 	"testing"
 
@@ -11,35 +12,30 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 )
 
-func TestAccSCWBucketPolicy_basic(t *testing.T) {
-	if !*UpdateCassettes {
-		t.Skip("Skipping ObjectStorage test as this kind of resource can't be deleted before 24h")
-	}
-	name := fmt.Sprintf("tf-test-bucket-%d", sdkacctest.RandInt())
+func TestAccScalewayBucketPolicy_Basic(t *testing.T) {
+	bucketName := sdkacctest.RandomWithPrefix("tf-test-bucket")
 
-	expectedPolicyText := fmt.Sprintf(`{
-   "Version":"2012-10-17",
-   "Id":"MyPolicy",
-   "Statement":[
-      {
-         "Sid":"GrantToEveryone",
-         "Effect":"Allow",
-         "Principal":{
-            "SCW":"*"
-         },
-         "Action":[
-            "s3:ListBucket",
-            "s3:GetObject"
-         ],
-         "Resource":[
-            "%[1]s",
-            "%[1]s/*"
-         ]
-      }
+	expectedPolicyText := `{
+	"Version":"2012-10-17",
+	"Id":"MyPolicy",
+	"Statement": [
+		{
+			"Sid":"GrantToEveryone",
+			"Effect":"Allow",
+			"Principal":{
+				"SCW":"*"
+			},
+			"Action":[
+				"s3:ListBucket",
+				"s3:GetObject"
+			]
+		}
    ]
-}`, name)
+}`
 
 	tt := NewTestTools(t)
+	defer tt.Cleanup()
+
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
 		ErrorCheck:        ErrorCheck(t, EndpointsID),
@@ -50,43 +46,44 @@ func TestAccSCWBucketPolicy_basic(t *testing.T) {
 				Config: fmt.Sprintf(`
 					resource "scaleway_object_bucket" "bucket" {
 						name = %[1]q
-					
+
 						tags = {
-						  TestName = "TestAccSCWBucketPolicy_basic"
+							TestName = "TestAccSCWBucketPolicy_basic"
 						}
 					}
 
 					resource "scaleway_object_bucket_policy" "bucket" {
 						bucket = scaleway_object_bucket.bucket.name
 						policy = jsonencode(
-                    	{
-                      		Id = "MyPolicy"
-                      		Statement = [
 							{
-								Action = [
-									"s3:ListBucket",
-									"s3:GetObject",
-                                ]
-                               Effect = "Allow"
-                               Principal = {
-                                   SCW = "*"
-                                }
-                               Resource  = [
-                                  "%[1]s",
-                                  "%[1]s/*",
-                                ]
-                               Sid = "GrantToEveryone"
-                            	},
-							]
-                       		Version = "2012-10-17"
-                    	}
+								Id = "MyPolicy"
+								Statement = [
+									{
+										Action = [
+											"s3:ListBucket",
+											"s3:GetObject",
+										]
+										Effect = "Allow"
+										Principal = {
+											SCW = "*"
+										}
+										Resource  = [
+											"%[1]s",
+											"%[1]s/*",
+										]
+										Sid = "GrantToEveryone"
+									},
+								]
+								Version = "2012-10-17"
+							}
 						)
 					}
-					`, name),
+					`, bucketName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayObjectBucketExists(tt, "scaleway_object_bucket.bucket"),
-					testAccCheckBucketHasPolicy(tt, "scaleway_object_bucket_policy.bucket", expectedPolicyText),
+					testAccCheckBucketHasPolicy(tt, "scaleway_object_bucket.bucket", expectedPolicyText),
 				),
+				ExpectNonEmptyPlan: !*UpdateCassettes,
 			},
 			{
 				ResourceName:      "scaleway_object_bucket_policy.bucket",
@@ -104,25 +101,28 @@ func testAccCheckBucketHasPolicy(tt *TestTools, n string, expectedPolicyText str
 			return fmt.Errorf("not found: %s", n)
 		}
 
-		if rs.Primary.ID == "" {
-			return fmt.Errorf("no scw bucket id is set")
-		}
-
 		s3Client, err := newS3ClientFromMeta(tt.Meta)
 		if err != nil {
 			return err
 		}
 
-		bucketRegionalID := expandRegionalID(rs.Primary.ID)
+		if rs.Primary.ID == "" {
+			return fmt.Errorf("no ID is set")
+		}
 
+		bucketName := rs.Primary.Attributes["name"]
 		policy, err := s3Client.GetBucketPolicy(&s3.GetBucketPolicyInput{
-			Bucket: expandStringPtr(bucketRegionalID.ID),
+			Bucket: expandStringPtr(bucketName),
 		})
 		if err != nil {
-			return fmt.Errorf("getBucketPolicy error: %v", err)
+			return fmt.Errorf("GetBucketPolicy error: %v", err)
 		}
 
 		actualPolicyText := *policy.Policy
+		actualPolicyText, err = removePolicyStatementResources(actualPolicyText)
+		if err != nil {
+			return err
+		}
 
 		equivalent, err := awspolicy.PoliciesAreEquivalent(actualPolicyText, expectedPolicyText)
 		if err != nil {
@@ -135,4 +135,30 @@ func testAccCheckBucketHasPolicy(tt *TestTools, n string, expectedPolicyText str
 
 		return nil
 	}
+}
+
+// remove the following:
+//
+//	policy["Statement"][i]["Resource"]
+func removePolicyStatementResources(policy string) (string, error) {
+	actualPolicyJSON := make(map[string]interface{})
+	err := json.Unmarshal([]byte(policy), &actualPolicyJSON)
+	if err != nil {
+		return "", fmt.Errorf("json.Unmarshal error: %v", err)
+	}
+
+	if statement, ok := actualPolicyJSON["Statement"].([]interface{}); ok && len(statement) > 0 {
+		for _, rule := range statement {
+			if rule, ok := rule.(map[string]interface{}); ok {
+				delete(rule, "Resource")
+			}
+		}
+	}
+
+	actualPolicyTextBytes, err := json.Marshal(actualPolicyJSON)
+	if err != nil {
+		return "", fmt.Errorf("json.Marshal error: %v", err)
+	}
+
+	return string(actualPolicyTextBytes), nil
 }
