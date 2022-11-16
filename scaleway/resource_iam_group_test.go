@@ -46,7 +46,6 @@ func testSweepIamGroup(_ string) error {
 }
 
 func TestAccScalewayIamGroup_Basic(t *testing.T) {
-	SkipBetaTest(t)
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
 	resource.ParallelTest(t, resource.TestCase{
@@ -118,7 +117,6 @@ func TestAccScalewayIamGroup_Basic(t *testing.T) {
 }
 
 func TestAccScalewayIamGroup_Applications(t *testing.T) {
-	SkipBetaTest(t)
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
 	resource.ParallelTest(t, resource.TestCase{
@@ -217,7 +215,6 @@ func TestAccScalewayIamGroup_Applications(t *testing.T) {
 }
 
 func TestAccScalewayIamGroup_Users(t *testing.T) {
-	SkipBetaTest(t)
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
 	resource.ParallelTest(t, resource.TestCase{
@@ -313,7 +310,6 @@ func TestAccScalewayIamGroup_Users(t *testing.T) {
 }
 
 func TestAccScalewayIamGroup_UsersAndApplications(t *testing.T) {
-	SkipBetaTest(t)
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
 	resource.ParallelTest(t, resource.TestCase{
