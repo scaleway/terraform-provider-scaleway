@@ -168,3 +168,17 @@ func functionDeploy(ctx context.Context, functionAPI *function.API, region scw.R
 	}
 	return nil
 }
+
+func expandFunctionsSecrets(secretsRawMap interface{}) []*function.Secret {
+	secretsMap := secretsRawMap.(map[string]interface{})
+	secrets := make([]*function.Secret, 0, len(secretsMap))
+
+	for k, v := range secretsMap {
+		secrets = append(secrets, &function.Secret{
+			Key:   k,
+			Value: expandStringPtr(v),
+		})
+	}
+
+	return secrets
+}

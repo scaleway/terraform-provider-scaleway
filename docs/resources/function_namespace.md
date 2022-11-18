@@ -34,7 +34,10 @@ The following arguments are supported:
 
 - `project_id` - (Defaults to [provider](../index.md#project_id) `project_id`) The ID of the project the namespace is associated with.
 
-- `environment_variables` - The environment variables of the namespace.
+- `environment_variables` - (Optional) The environment variables of the namespace.
+
+- `secret_environment_variables` - (Optional) The [secret environment](https://www.scaleway.com/en/docs/compute/containers/concepts/#secrets) variables of the namespace.
+
 
 ## Attributes Reference
 
