@@ -61,6 +61,8 @@ The following arguments are supported:
 
 - `environment_variables` - The environment variables of the function.
 
+- `secret_environment_variables` - (Optional) The [secret environment](https://www.scaleway.com/en/docs/compute/functions/concepts/#secrets) variables of the function.
+
 - `privacy` - Privacy of the function. Can be either `private` or `public`. Read more on [authentication](https://developers.scaleway.com/en/products/functions/api/#authentication)
 
 - `runtime` - Runtime of the function. Runtimes can be fetched using [specific route](https://developers.scaleway.com/en/products/functions/api/#get-f7de6a)
