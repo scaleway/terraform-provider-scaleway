@@ -78,8 +78,6 @@ The following arguments are optional:
 
 - `max_concurrency` - (Optional) The maximum number of simultaneous requests your container can handle at the same time. Defaults to 50.
 
-- `domain_name` - (Optional) The container domain name.
-
 - `protocol` - (Optional) The communication [protocol](https://developers.scaleway.com/en/products/containers/api/#protocol-9dd4c8) http1 or h2c. Defaults to http1.
 
 - `port` - (Optional) The port to expose the container. Defaults to 8080.

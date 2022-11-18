@@ -164,11 +164,16 @@ func TestAccScalewayFunction_EnvironmentVariables(t *testing.T) {
 						environment_variables = {
 							"test" = "test"
 						}
+
+						secret_environment_variables = {
+							"test_secret" = "test_secret"
+						}
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayFunctionExists(tt, "scaleway_function.main"),
 					resource.TestCheckResourceAttr("scaleway_function.main", "environment_variables.test", "test"),
+					resource.TestCheckResourceAttr("scaleway_function.main", "secret_environment_variables.test_secret", "test_secret"),
 				),
 			},
 			{
@@ -184,11 +189,16 @@ func TestAccScalewayFunction_EnvironmentVariables(t *testing.T) {
 						environment_variables = {
 							"foo" = "bar"
 						}
+						
+						secret_environment_variables = {
+							"foo_secret" = "bar_secret"
+						}
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayFunctionExists(tt, "scaleway_function.main"),
 					resource.TestCheckResourceAttr("scaleway_function.main", "environment_variables.foo", "bar"),
+					resource.TestCheckResourceAttr("scaleway_function.main", "secret_environment_variables.foo_secret", "bar_secret"),
 				),
 			},
 		},
