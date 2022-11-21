@@ -12,7 +12,7 @@ import (
 const (
 	defaultContainerNamespaceTimeout = 5 * time.Minute
 	defaultContainerCronTimeout      = 5 * time.Minute
-	defaultContainerTimeout          = 5 * time.Minute
+	defaultContainerTimeout          = 12*time.Minute + 30*time.Second
 	defaultContainerRetryInterval    = 5 * time.Second
 )
 

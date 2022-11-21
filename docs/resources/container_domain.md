@@ -4,11 +4,10 @@ description: |-
     Manages Scaleway Containers Domains Bindings.
 ---
 
-You can check our [containers guide](https://www.scaleway.com/en/docs/compute/containers/how-to/add-a-custom-domain-to-a-container/).
-
 # scaleway_container_domain
 
 Creates and manages Scaleway Container domain name bindings.
+You can check our [containers guide](https://www.scaleway.com/en/docs/compute/containers/how-to/add-a-custom-domain-to-a-container/) for further information.
 
 ## Example Usage
 
