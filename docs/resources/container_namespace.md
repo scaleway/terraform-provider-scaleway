@@ -14,9 +14,17 @@ For more information see [the documentation](https://developers.scaleway.com/en/
 ### Basic
 
 ```hcl
+## Container namespace with default project_id
 resource "scaleway_container_namespace" "main" {
   name        = "main-container-namespace"
   description = "Main container namespace"
+}
+
+## Container namespace with other project_id.
+resource "scaleway_container_namespace" "main" {
+  name        = "other-container-namespace"
+  description = "Other container namespace"
+  project_id  = "<other_project_id>"
 }
 ```
 
