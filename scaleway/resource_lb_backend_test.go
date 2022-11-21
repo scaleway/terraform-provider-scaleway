@@ -279,11 +279,7 @@ func TestAccScalewayLbBackend_WithFailoverHost(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "website_endpoint", rName+".s3-website.fr-par.scw.cloud"),
 					resource.TestCheckResourceAttrSet("scaleway_lb_backend.bkd01", "failover_host"),
 				),
-			},
-			{
-				ResourceName:      resourceName,
-				ImportState:       true,
-				ImportStateVerify: true,
+				ExpectNonEmptyPlan: !*UpdateCassettes,
 			},
 		},
 	})
