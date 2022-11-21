@@ -9,9 +9,6 @@ import (
 )
 
 func TestAccScalewayDataSourceObjectStorage_Basic(t *testing.T) {
-	if !*UpdateCassettes {
-		t.Skip("Skipping ObjectStorage test as this kind of resource can't be deleted before 24h")
-	}
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
 	bucketName := sdkacctest.RandomWithPrefix("test-acc-scaleway-object-bucket")

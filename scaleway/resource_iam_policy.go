@@ -47,7 +47,12 @@ func resourceScalewayIamPolicy() *schema.Resource {
 				Computed:    true,
 				Description: "Whether or not the policy is editable.",
 			},
-			"organization_id": organizationIDSchema(),
+			"organization_id": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Computed:    true,
+				Description: "ID of organization the policy is linked to.",
+			},
 			"user_id": {
 				Type:         schema.TypeString,
 				Optional:     true,
@@ -69,14 +74,13 @@ func resourceScalewayIamPolicy() *schema.Resource {
 			"no_principal": {
 				Type:         schema.TypeBool,
 				Optional:     true,
-				Description:  "Application id",
+				Description:  "Deactivate policy to a principal",
 				ExactlyOneOf: []string{"user_id", "group_id", "application_id"},
 			},
 			"rule": {
-				Type:        schema.TypeSet,
+				Type:        schema.TypeList,
 				Required:    true,
 				Description: "Rules of the policy to create",
-				Set:         iamPolicyRuleHash,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"organization_id": {
@@ -109,14 +113,16 @@ func resourceScalewayIamPolicy() *schema.Resource {
 
 func resourceScalewayIamPolicyCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	api := iamAPI(meta)
+
 	pol, err := api.CreatePolicy(&iam.CreatePolicyRequest{
-		Name:          expandOrGenerateString(d.Get("name"), "policy-"),
-		Description:   d.Get("description").(string),
-		Rules:         expandPolicyRuleSpecs(d.Get("rule")),
-		UserID:        expandStringPtr(d.Get("user_id")),
-		GroupID:       expandStringPtr(d.Get("group_id")),
-		ApplicationID: expandStringPtr(d.Get("application_id")),
-		NoPrincipal:   expandBoolPtr(d.Get("no_principal")),
+		Name:           expandOrGenerateString(d.Get("name"), "policy-"),
+		Description:    d.Get("description").(string),
+		Rules:          expandPolicyRuleSpecs(d.Get("rule")),
+		UserID:         expandStringPtr(d.Get("user_id")),
+		GroupID:        expandStringPtr(d.Get("group_id")),
+		ApplicationID:  expandStringPtr(d.Get("application_id")),
+		NoPrincipal:    expandBoolPtr(getBool(d, "no_principal")),
+		OrganizationID: d.Get("organization_id").(string),
 	}, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
@@ -155,6 +161,7 @@ func resourceScalewayIamPolicyRead(ctx context.Context, d *schema.ResourceData, 
 	if pol.ApplicationID != nil {
 		_ = d.Set("application_id", flattenStringPtr(pol.ApplicationID))
 	}
+
 	_ = d.Set("no_principal", flattenBoolPtr(pol.NoPrincipal))
 
 	listRules, err := api.ListRules(&iam.ListRulesRequest{
@@ -184,7 +191,7 @@ func resourceScalewayIamPolicyUpdate(ctx context.Context, d *schema.ResourceData
 	}
 	if d.HasChange("description") {
 		hasUpdated = true
-		req.Description = expandStringPtr(d.Get("description"))
+		req.Description = expandUpdatedStringPtr(d.Get("description"))
 	}
 	if d.HasChange("user_id") {
 		hasUpdated = true
@@ -192,11 +199,15 @@ func resourceScalewayIamPolicyUpdate(ctx context.Context, d *schema.ResourceData
 	}
 	if d.HasChange("group_id") {
 		hasUpdated = true
-		req.UserID = expandStringPtr(d.Get("group_id"))
+		req.GroupID = expandStringPtr(d.Get("group_id"))
 	}
 	if d.HasChange("application_id") {
 		hasUpdated = true
-		req.UserID = expandStringPtr(d.Get("application_id"))
+		req.ApplicationID = expandStringPtr(d.Get("application_id"))
+	}
+	if noPrincipal := d.Get("no_principal"); d.HasChange("no_principal") && noPrincipal.(bool) {
+		hasUpdated = true
+		req.NoPrincipal = expandBoolPtr(noPrincipal)
 	}
 	if hasUpdated {
 		_, err := api.UpdatePolicy(req, scw.WithContext(ctx))

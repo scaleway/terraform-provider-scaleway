@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	redis "github.com/scaleway/scaleway-sdk-go/api/redis/v1alpha1"
+	"github.com/scaleway/scaleway-sdk-go/api/redis/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 )
 
@@ -85,7 +85,7 @@ func expandRedisPrivateNetwork(data []interface{}) ([]*redis.EndpointSpec, error
 func expandRedisACLSpecs(i interface{}) ([]*redis.ACLRuleSpec, error) {
 	rules := []*redis.ACLRuleSpec(nil)
 
-	for _, aclRule := range i.([]interface{}) {
+	for _, aclRule := range i.(*schema.Set).List() {
 		rawRule := aclRule.(map[string]interface{})
 		rule := &redis.ACLRuleSpec{}
 		if ruleDescription, hasDescription := rawRule["description"]; hasDescription {
@@ -95,7 +95,7 @@ func expandRedisACLSpecs(i interface{}) ([]*redis.ACLRuleSpec, error) {
 		if err != nil {
 			return nil, fmt.Errorf("failed to validate acl ip (%s): %w", rawRule["ip"].(string), err)
 		}
-		rule.IP = ip
+		rule.IPCidr = ip
 		rules = append(rules, rule)
 	}
 
@@ -107,7 +107,7 @@ func flattenRedisACLs(aclRules []*redis.ACLRule) interface{} {
 	for _, acl := range aclRules {
 		flat = append(flat, map[string]interface{}{
 			"id":          acl.ID,
-			"ip":          acl.IP.String(),
+			"ip":          acl.IPCidr.String(),
 			"description": flattenStringPtr(acl.Description),
 		})
 	}

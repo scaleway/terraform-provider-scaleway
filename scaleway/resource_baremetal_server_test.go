@@ -2,6 +2,7 @@ package scaleway
 
 import (
 	"fmt"
+	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -117,6 +118,31 @@ func TestAccScalewayBaremetalServer_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_baremetal_server.base", "tags.3", "edited"),
 					testCheckResourceAttrUUID("scaleway_baremetal_server.base", "ssh_key_ids.0"),
 				),
+			},
+		},
+	})
+}
+
+func TestAccScalewayBaremetalServer_RequiredInstallConfig(t *testing.T) {
+	tt := NewTestTools(t)
+	defer tt.Cleanup()
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      testAccCheckScalewayBaremetalServerDestroy(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource "scaleway_baremetal_server" "base" {
+						name        = "TestAccScalewayBaremetalServer_RequiredInstallConfig"
+						zone        = "fr-par-2"
+						offer       = "EM-B112X-SSD"
+						os          = "7e865c16-1a63-4dc7-8181-dabc020fc21b" // Proxmox
+
+						ssh_key_ids = []
+					}`,
+				ExpectError: regexp.MustCompile("attribute is required"),
 			},
 		},
 	})

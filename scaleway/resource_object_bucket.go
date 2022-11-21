@@ -36,6 +36,13 @@ func resourceScalewayObjectBucket() *schema.Resource {
 				ForceNew:    true,
 				Description: "The name of the bucket",
 			},
+			"object_lock_enabled": {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				ForceNew:    true,
+				Default:     false,
+				Description: "Enable object lock",
+			},
 			"acl": {
 				Type:        schema.TypeString,
 				Optional:    true,
@@ -47,6 +54,7 @@ func resourceScalewayObjectBucket() *schema.Resource {
 					s3.ObjectCannedACLPublicReadWrite,
 					s3.ObjectCannedACLAuthenticatedRead,
 				}, false),
+				Deprecated: "ACL is deprecated. Please use resource_bucket_acl instead.",
 			},
 			"tags": {
 				Type: schema.TypeMap,
@@ -200,6 +208,7 @@ func resourceScalewayObjectBucket() *schema.Resource {
 
 func resourceScalewayObjectBucketCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	bucketName := d.Get("name").(string)
+	objectLockEnabled := d.Get("object_lock_enabled").(bool)
 	acl := d.Get("acl").(string)
 
 	s3Client, region, err := s3ClientWithRegion(d, meta)
@@ -208,8 +217,9 @@ func resourceScalewayObjectBucketCreate(ctx context.Context, d *schema.ResourceD
 	}
 
 	req := &s3.CreateBucketInput{
-		Bucket: scw.StringPtr(bucketName),
-		ACL:    scw.StringPtr(acl),
+		Bucket:                     scw.StringPtr(bucketName),
+		ObjectLockEnabledForBucket: scw.BoolPtr(objectLockEnabled),
+		ACL:                        scw.StringPtr(acl),
 	}
 	_, err = s3Client.CreateBucketWithContext(ctx, req)
 	if TimedOut(err) {
@@ -326,7 +336,10 @@ func resourceBucketLifecycleUpdate(ctx context.Context, conn *s3.S3, d *schema.R
 		// Filter
 		tags := expandObjectBucketTags(r["tags"])
 		filter := &s3.LifecycleRuleFilter{}
-		if len(tags) > 0 {
+		if len(tags) == 1 {
+			filter.SetTag(tags[0])
+		}
+		if len(tags) > 1 {
 			lifecycleRuleAndOp := &s3.LifecycleRuleAndOperator{}
 			if len(r["prefix"].(string)) > 0 {
 				lifecycleRuleAndOp.SetPrefix(r["prefix"].(string))
@@ -427,13 +440,32 @@ func resourceScalewayObjectBucketRead(ctx context.Context, d *schema.ResourceDat
 	_ = d.Set("name", bucketName)
 	_ = d.Set("region", region)
 
+	// Get object_lock_enabled
+	objectLockConfiguration, err := s3Client.GetObjectLockConfigurationWithContext(ctx, &s3.GetObjectLockConfigurationInput{
+		Bucket: aws.String(bucketName),
+	})
+	if err != nil {
+		switch {
+		case isS3Err(err, ErrCodeObjectLockConfigurationNotFoundError, ""):
+			_ = d.Set("object_lock_enabled", false)
+		case isS3Err(err, s3.ErrCodeNoSuchBucket, ""):
+			tflog.Error(ctx, fmt.Sprintf("Bucket %q was not found - removing from state!", bucketName))
+			d.SetId("")
+			return nil
+		default:
+			return diag.FromErr(fmt.Errorf("couldn't read bucket: %s", err))
+		}
+	} else if objectLockConfiguration.ObjectLockConfiguration != nil {
+		_ = d.Set("object_lock_enabled", true)
+	}
+
 	// We do not read `acl` attribute because it could be impossible to find
 	// the right canned ACL from a complex ACL object.
 	//
 	// Known issue:
 	// Import a bucket (eg. terraform import scaleway_object_bucket.x fr-par/x)
 	// will always trigger a diff (eg. terraform plan) on acl attribute because
-	// we do not read it and it has a "private" default value.
+	// we do not read it, and it has a "private" default value.
 	// AWS has the same issue: https://github.com/terraform-providers/terraform-provider-aws/issues/6193
 
 	_, err = s3Client.ListObjectsWithContext(ctx, &s3.ListObjectsInput{

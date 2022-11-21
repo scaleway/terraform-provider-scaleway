@@ -15,7 +15,7 @@ Creates and manages Scaleway Kubernetes clusters. For more information, see [the
 ```hcl
 resource "scaleway_k8s_cluster" "jack" {
   name    = "jack"
-  version = "1.19.4"
+  version = "1.24.3"
   cni     = "cilium"
 }
 
@@ -27,13 +27,32 @@ resource "scaleway_k8s_pool" "john" {
 }
 ```
 
+### Multicloud
+
+```hcl
+resource "scaleway_k8s_cluster" "henry" {
+  name = "henry"
+  type = "multicloud"
+  version = "1.24.3"
+  cni     = "kilo"
+}
+
+resource "scaleway_k8s_pool" "friend_from_outer_space" {
+  cluster_id = scaleway_k8s_cluster.henry.id
+  name = "henry_friend"
+  node_type = "external"
+  size = 0
+  min_size = 0
+}
+```
+
 ### With additional configuration
 
 ```hcl
 resource "scaleway_k8s_cluster" "john" {
   name             = "john"
   description      = "my awesome cluster"
-  version          = "1.18.0"
+  version          = "1.24.3"
   cni              = "calico"
   tags             = ["i'm an awsome tag", "yay"]
 
@@ -65,7 +84,7 @@ resource "scaleway_k8s_pool" "john" {
 ```hcl
 resource "scaleway_k8s_cluster" "joy" {
   name    = "joy"
-  version = "1.18.0"
+  version = "1.24.3"
   cni     = "flannel"
 }
 
@@ -104,7 +123,7 @@ It leads the `kubernetes` provider to start creating its objects, but the DNS en
 ```hcl
 resource "scaleway_k8s_cluster" "joy" {
   name    = "joy"
-  version = "1.21.0"
+  version = "1.24.3"
   cni     = "flannel"
 }
 

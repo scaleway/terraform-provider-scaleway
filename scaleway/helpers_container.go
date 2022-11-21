@@ -12,7 +12,7 @@ import (
 const (
 	defaultContainerNamespaceTimeout = 5 * time.Minute
 	defaultContainerCronTimeout      = 5 * time.Minute
-	defaultContainerTimeout          = 5 * time.Minute
+	defaultContainerTimeout          = 12*time.Minute + 30*time.Second
 	defaultContainerRetryInterval    = 5 * time.Second
 )
 
@@ -59,7 +59,7 @@ func setCreateContainerRequest(d *schema.ResourceData, region scw.Region) (*cont
 
 	// optional
 	if envVariablesRaw, ok := d.GetOk("environment_variables"); ok {
-		req.EnvironmentVariables = expandMapStringStringPtr(envVariablesRaw)
+		req.EnvironmentVariables = expandMapPtrStringString(envVariablesRaw)
 	}
 
 	if minScale, ok := d.GetOk("min_scale"); ok {
@@ -144,4 +144,34 @@ func waitForContainer(ctx context.Context, api *container.API, containerID strin
 	}
 
 	return api.WaitForContainer(&request, scw.WithContext(ctx))
+}
+
+func waitForContainerDomain(ctx context.Context, api *container.API, domainID string, region scw.Region, timeout time.Duration) (*container.Domain, error) {
+	retryInterval := defaultContainerRetryInterval
+	if DefaultWaitRetryInterval != nil {
+		retryInterval = *DefaultWaitRetryInterval
+	}
+
+	request := container.WaitForDomainRequest{
+		DomainID:      domainID,
+		Region:        region,
+		Timeout:       scw.TimeDurationPtr(timeout),
+		RetryInterval: &retryInterval,
+	}
+
+	return api.WaitForDomain(&request, scw.WithContext(ctx))
+}
+
+func expandContainerSecrets(secretsRawMap interface{}) []*container.Secret {
+	secretsMap := secretsRawMap.(map[string]interface{})
+	secrets := make([]*container.Secret, 0, len(secretsMap))
+
+	for k, v := range secretsMap {
+		secrets = append(secrets, &container.Secret{
+			Key:   k,
+			Value: expandStringPtr(v),
+		})
+	}
+
+	return secrets
 }

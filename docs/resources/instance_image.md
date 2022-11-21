@@ -33,7 +33,7 @@ resource "scaleway_instance_image" "volume_image" {
 
 ```hcl
 resource "scaleway_instance_server" "server" {
-  image = "ubuntu_focal"
+  image = "ubuntu_jammy"
   type 	= "DEV1-S"
 }
 
@@ -51,7 +51,7 @@ resource "scaleway_instance_image" "server_image" {
 
 ```hcl
 resource "scaleway_instance_server" "server" {
-  image = "ubuntu_focal"
+  image = "ubuntu_jammy"
   type 	= "DEV1-S"
 }
 

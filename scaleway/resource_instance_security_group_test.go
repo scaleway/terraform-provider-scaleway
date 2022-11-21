@@ -28,7 +28,7 @@ func TestAccScalewayInstanceSecurityGroup_Basic(t *testing.T) {
 	assert.NoError(t, err)
 	ipnetTest, err := expandIPNet("8.8.8.8")
 	assert.NoError(t, err)
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheckScalewayInstanceSecurityGroupDestroy(tt),
@@ -178,7 +178,7 @@ func TestAccScalewayInstanceSecurityGroup_ICMP(t *testing.T) {
 	assert.NoError(t, err)
 	ipnetTest, err := expandIPNet("8.8.8.8")
 	assert.NoError(t, err)
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheckScalewayInstanceSecurityGroupDestroy(tt),
@@ -242,7 +242,7 @@ func TestAccScalewayInstanceSecurityGroup_ICMP(t *testing.T) {
 func TestAccScalewayInstanceSecurityGroup_ANY(t *testing.T) {
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheckScalewayInstanceSecurityGroupDestroy(tt),
@@ -289,7 +289,7 @@ func TestAccScalewayInstanceSecurityGroup_WithNoPort(t *testing.T) {
 	defer tt.Cleanup()
 	ipnetZero, err := expandIPNet("0.0.0.0/0")
 	assert.NoError(t, err)
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheckScalewayInstanceSecurityGroupDestroy(tt),
@@ -324,7 +324,7 @@ func TestAccScalewayInstanceSecurityGroup_RemovePort(t *testing.T) {
 	defer tt.Cleanup()
 	ipnetZero, err := expandIPNet("0.0.0.0/0")
 	assert.NoError(t, err)
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheckScalewayInstanceSecurityGroupDestroy(tt),
@@ -381,7 +381,7 @@ func TestAccScalewayInstanceSecurityGroup_RemovePort(t *testing.T) {
 func TestAccScalewayInstanceSecurityGroup_WithPortRange(t *testing.T) {
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheckScalewayInstanceSecurityGroupDestroy(tt),
@@ -438,7 +438,7 @@ func TestAccScalewayInstanceSecurityGroup_WithPortRange(t *testing.T) {
 func TestAccScalewayInstanceSecurityGroup_Tags(t *testing.T) {
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheckScalewayInstanceSecurityGroupDestroy(tt),
@@ -619,7 +619,7 @@ func testSweepComputeInstanceSecurityGroup(_ string) error {
 func TestAccScalewayInstanceSecurityGroup_EnableDefaultSecurity(t *testing.T) {
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheckScalewayInstanceSecurityGroupDestroy(tt),

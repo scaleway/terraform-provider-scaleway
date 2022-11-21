@@ -20,26 +20,23 @@ jobs:
     steps:
       -
         name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       -
         name: Unshallow
         run: git fetch --prune --unshallow
       -
         name: Set up Go
-        uses: actions/setup-go@v2
+        uses: actions/setup-go@v3
         with:
-          go-version: 1.17
+          go-version: 1.19
       -
         name: Import GPG key
         id: import_gpg
-        run: |
-          gpg-agent --daemon --allow-preset-passphrase
-          gpg --batch --import --yes <(echo '${{ secrets.GPG_PRIVATE_KEY }}')
-          export KEY_FINGERPRINT=$(gpg --list-secret-keys --with-colons | grep sec | cut -d ':' -f 5)
-          export KEY_GRIP=$(gpg-connect-agent 'KEYINFO --list' /bye | grep KEYINFO | cut -d ' ' -f 3)
-          export PASSPHRASE_HEX=$(echo -n '${{ secrets.GPG_PASSPHRASE }}' | xxd -p -u -c 265)
-          gpg-connect-agent "PRESET_PASSPHRASE $KEY_GRIP -1 $PASSPHRASE_HEX" /bye
-          echo "::set-output name=fingerprint::$KEY_FINGERPRINT"
+        uses: crazy-max/ghaction-import-gpg@v5
+        with:
+          gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
+          passphrase: ${{ secrets.GPG_PASSPHRASE }}
+          fingerprint: ${{ secrets.GPG_FINGERPRINT }}
       -
         name: Run GoReleaser
         uses: goreleaser/goreleaser-action@v2

@@ -42,12 +42,12 @@ resource scaleway_function main {
   runtime      = "go118"
   handler      = "Handle"
   privacy      = "private"
-  zip_file = "function.zip"
-  zip_hash = filesha256("function.zip")
-  deploy = true
+  timeout      = 10
+  zip_file     = "function.zip"
+  zip_hash     = filesha256("function.zip")
+  deploy       = true
 }
 ```
-
 
 ## Arguments Reference
 
@@ -60,6 +60,8 @@ The following arguments are supported:
 - `description` (Optional) The description of the function.
 
 - `environment_variables` - The environment variables of the function.
+
+- `secret_environment_variables` - (Optional) The [secret environment](https://www.scaleway.com/en/docs/compute/functions/concepts/#secrets) variables of the function.
 
 - `privacy` - Privacy of the function. Can be either `private` or `public`. Read more on [authentication](https://developers.scaleway.com/en/products/functions/api/#authentication)
 

@@ -53,6 +53,7 @@ func checkErrorCode(c *cassette.Cassette) error {
 func exceptionsCassettesCases() map[string]struct{} {
 	return map[string]struct{}{
 		"testdata/object-bucket-destroy-force.cassette.yaml":     {},
+		"testdata/object-bucket-cors-empty-origin.cassette.yaml": {},
 		"testdata/rdb-privilege-basic.cassette.yaml":             {},
 		"testdata/data-source-rdb-privilege-basic.cassette.yaml": {},
 	}

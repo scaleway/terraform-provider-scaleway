@@ -29,7 +29,7 @@ resource scaleway_vpc_private_network pn01 {
 }
 
 resource "scaleway_instance_server" "base" {
-  image = "ubuntu_focal"
+  image = "ubuntu_jammy"
   type  = "DEV1-S"
   zone = scaleway_vpc_private_network.pn01.zone
 }

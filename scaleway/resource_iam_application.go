@@ -102,7 +102,7 @@ func resourceScalewayIamApplicationUpdate(ctx context.Context, d *schema.Resourc
 		hasChanged = true
 	}
 	if d.HasChange("description") {
-		req.Description = expandStringPtr(d.Get("description"))
+		req.Description = expandUpdatedStringPtr(d.Get("description"))
 		hasChanged = true
 	}
 

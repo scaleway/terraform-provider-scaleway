@@ -25,6 +25,10 @@ resource "scaleway_lb_certificate" "cert01" {
       "sub2.example.com"
     ]
   }
+  # Make sure the new certificate is created before the old one can be replaced
+  lifecycle {
+      create_before_destroy = true
+  }
 }
 ```
 
@@ -87,3 +91,4 @@ In addition to all arguments above, the following attributes are exported:
 * In case there are any issues with the certificate, you will receive a `400` error from the `apply` operation.
   Use `export TF_LOG=DEBUG` to view exact problem returned by the api.
 * Wildcards are not supported with Let's Encrypt yet.
+* Use `lifecycle` instruction with `create_before_destroy = true` to permit correct certificate replacement and prevent a `400` error from the `apply` operation.

@@ -17,7 +17,7 @@ For more information, see [the documentation](https://developers.scaleway.com/en
 resource "scaleway_redis_cluster" "main" {
   name = "test_redis_basic"
   version = "6.2.6"
-  node_type = "MDB-BETA-M"
+  node_type = "RED1-MICRO"
   user_name = "my_initial_user"
   password = "thiZ_is_v&ry_s3cret"
   tags = [ "test", "redis" ]
@@ -37,7 +37,7 @@ resource "scaleway_redis_cluster" "main" {
 resource "scaleway_redis_cluster" "main" {
   name = "test_redis_basic"
   version = "6.2.6"
-  node_type = "MDB-BETA-M"
+  node_type = "RED1-MICRO"
   user_name = "my_initial_user"
   password = "thiZ_is_v&ry_s3cret"
 
@@ -58,7 +58,7 @@ resource "scaleway_vpc_private_network" "pn" {
 resource "scaleway_redis_cluster" "main" {
   name         = "test_redis_endpoints"
   version      = "6.2.6"
-  node_type    = "MDB-BETA-M"
+  node_type    = "RED1-MICRO"
   user_name    = "my_initial_user"
   password     = "thiZ_is_v&ry_s3cret"
   cluster_size = 1
@@ -82,7 +82,7 @@ The following arguments are supported:
 
 ~> **Important:** Updates to `version` will migrate the Redis Cluster to the desired `version`. Keep in mind that you cannot downgrade a Redis Cluster.
 
-- `node_type` - (Required) The type of Redis Cluster you want to create (e.g. `MDB-BETA-M`).
+- `node_type` - (Required) The type of Redis Cluster you want to create (e.g. `RED1-M`).
 
 ~> **Important:** Updates to `node_type` will migrate the Redis Cluster to the desired `node_type`. Keep in mind that you cannot downgrade a Redis Cluster.
 
@@ -143,6 +143,7 @@ In addition to all arguments above, the following attributes are exported:
 - `id` - The ID of the Database Instance.
 - `created_at` - The date and time of creation of the Redis Cluster.
 - `updated_at` - The date and time of the last update of the Redis Cluster.
+- `certificate` - The PEM of the certificate used by redis, only when `tls_enabled` is true
 
 
 ## Import

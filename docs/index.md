@@ -103,7 +103,7 @@ resource "scaleway_instance_security_group" "www" {
 resource "scaleway_instance_server" "web" {
   project_id = var.project_id
   type       = "DEV1-L"
-  image      = "ubuntu_focal"
+  image      = "ubuntu_jammy"
 
   tags = ["front", "web"]
 

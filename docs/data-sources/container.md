@@ -71,6 +71,8 @@ In addition to all arguments above, the following attributes are exported:
 
 - `registry_image` - The registry image address. e.g: **"rg.fr-par.scw.cloud/$NAMESPACE/$IMAGE"**.
 
+- `registry_sha256` - The sha256 of your source registry image, changing it will re-apply the deployment. Can be any string.
+
 - `max_concurrency` - The maximum number of simultaneous requests your container can handle at the same time. Defaults to 50.
 
 - `domain_name` - The container domain name.

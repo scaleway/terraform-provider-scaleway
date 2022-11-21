@@ -157,6 +157,32 @@ func TestAccScalewayK8SCluster_PoolPlacementGroup(t *testing.T) {
 					resource.TestCheckResourceAttrSet("scaleway_k8s_pool.placement_group", "placement_group_id"),
 				),
 			},
+			{
+				Config: testAccCheckScalewayK8SPoolConfigPlacementGroupWithCustomZone(latestK8SVersion),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayK8SClusterExists(tt, "scaleway_k8s_cluster.cluster"),
+					testAccCheckScalewayK8SPoolExists(tt, "scaleway_k8s_pool.pool"),
+					resource.TestCheckResourceAttrPair("scaleway_k8s_pool.pool", "placement_group_id", "scaleway_instance_placement_group.placement_group", "id"),
+					resource.TestCheckResourceAttr("scaleway_k8s_pool.pool", "zone", "nl-ams-2"),
+					resource.TestCheckResourceAttr("scaleway_k8s_pool.pool", "node_type", "gp1_xs"),
+					resource.TestCheckResourceAttr("scaleway_k8s_pool.pool", "size", "1"),
+					resource.TestCheckResourceAttrSet("scaleway_k8s_pool.pool", "id"),
+					resource.TestCheckResourceAttrSet("scaleway_k8s_pool.pool", "placement_group_id"),
+				),
+			},
+			{
+				Config: testAccCheckScalewayK8SPoolConfigPlacementGroupWithMultiZone(latestK8SVersion),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayK8SClusterExists(tt, "scaleway_k8s_cluster.cluster"),
+					testAccCheckScalewayK8SPoolExists(tt, "scaleway_k8s_pool.pool"),
+					resource.TestCheckResourceAttrPair("scaleway_k8s_pool.pool", "placement_group_id", "scaleway_instance_placement_group.placement_group", "id"),
+					resource.TestCheckResourceAttr("scaleway_k8s_pool.pool", "zone", "nl-ams-1"),
+					resource.TestCheckResourceAttr("scaleway_k8s_pool.pool", "node_type", "gp1_xs"),
+					resource.TestCheckResourceAttr("scaleway_k8s_pool.pool", "size", "1"),
+					resource.TestCheckResourceAttrSet("scaleway_k8s_pool.pool", "id"),
+					resource.TestCheckResourceAttrSet("scaleway_k8s_pool.pool", "placement_group_id"),
+				),
+			},
 		},
 	})
 }
@@ -404,18 +430,75 @@ resource "scaleway_instance_placement_group" "placement_group" {
 }
 
 resource "scaleway_k8s_pool" "placement_group" {
-    name = "placement_group"
-	cluster_id = scaleway_k8s_cluster.placement_group.id
-	node_type = "gp1_xs"
-	placement_group_id = scaleway_instance_placement_group.placement_group.id
-	size = 1
+    name               = "placement_group"
+    cluster_id         = scaleway_k8s_cluster.placement_group.id
+    node_type          = "gp1_xs"
+    placement_group_id = scaleway_instance_placement_group.placement_group.id
+    size               = 1
 }
 
 resource "scaleway_k8s_cluster" "placement_group" {
-    name = "placement_group"
-	cni = "calico"
-	version = "%s"
-	tags = [ "terraform-test", "scaleway_k8s_cluster", "placement_group" ]
+  name	  = "placement_group"
+  cni	  = "calico"
+  version = "%s"
+  tags	  = [ "terraform-test", "scaleway_k8s_cluster", "placement_group" ]
+}`, version)
+}
+
+func testAccCheckScalewayK8SPoolConfigPlacementGroupWithCustomZone(version string) string {
+	return fmt.Sprintf(`
+resource "scaleway_instance_placement_group" "placement_group" {
+  name        = "pool-placement-group"
+  policy_type = "max_availability"
+  policy_mode = "optional"
+  zone        = "nl-ams-2"
+}
+
+resource "scaleway_k8s_pool" "pool" {
+  name               = "placement_group"
+  cluster_id         = scaleway_k8s_cluster.cluster.id
+  node_type          = "gp1_xs"
+  placement_group_id = scaleway_instance_placement_group.placement_group.id
+  size               = 1
+  region             = scaleway_k8s_cluster.cluster.region
+  zone               = scaleway_instance_placement_group.placement_group.zone
+}
+
+resource "scaleway_k8s_cluster" "cluster" {
+  name	  = "placement_group"
+  cni	  = "calico"
+  version = "%s"
+  tags	  = [ "terraform-test", "scaleway_k8s_cluster", "placement_group" ]
+  region  = "nl-ams"
+}`, version)
+}
+
+func testAccCheckScalewayK8SPoolConfigPlacementGroupWithMultiZone(version string) string {
+	return fmt.Sprintf(`
+resource "scaleway_instance_placement_group" "placement_group" {
+  name        = "pool-placement-group"
+  policy_type = "max_availability"
+  policy_mode = "optional"
+  zone        = "nl-ams-1"
+}
+
+resource "scaleway_k8s_pool" "pool" {
+  name               = "placement_group"
+  cluster_id         = scaleway_k8s_cluster.cluster.id
+  node_type          = "gp1_xs"
+  placement_group_id = scaleway_instance_placement_group.placement_group.id
+  size               = 1
+  region             = scaleway_k8s_cluster.cluster.region
+  zone               = scaleway_instance_placement_group.placement_group.zone
+}
+
+resource "scaleway_k8s_cluster" "cluster" {
+  name		= "placement_group"
+  cni		= "kilo"
+  version	= "%s"
+  tags		= [ "terraform-test", "scaleway_k8s_cluster", "placement_group" ]
+  region	= "fr-par"
+  type		= "multicloud"
 }`, version)
 }
 

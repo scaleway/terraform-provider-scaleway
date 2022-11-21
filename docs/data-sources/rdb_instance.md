@@ -7,7 +7,7 @@ description: |-
 
 # scaleway_rdb_instance
 
-Gets information about a RDB instance.
+Gets information about an RDB instance.
 
 ## Example Usage
 

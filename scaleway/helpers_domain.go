@@ -38,19 +38,22 @@ func flattenDomainData(data string, recordType domain.RecordType) interface{} {
 	return data
 }
 
-func getRecordFromData(data string, records []*domain.Record) (*domain.Record, error) {
+func getRecordFromTypeAndData(dnsType domain.RecordType, data string, records []*domain.Record) (*domain.Record, error) {
 	var currentRecord *domain.Record
 	for _, r := range records {
 		flattedData := flattenDomainData(strings.ToLower(r.Data), r.Type).(string)
 		flattenCurrentData := flattenDomainData(strings.ToLower(data), r.Type).(string)
-		if flattenCurrentData == flattedData {
+		if strings.HasPrefix(flattedData, flattenCurrentData) && r.Type == dnsType {
+			if currentRecord != nil {
+				return nil, fmt.Errorf("multiple records found with same type and data")
+			}
 			currentRecord = r
 			break
 		}
 	}
 
 	if currentRecord == nil {
-		return nil, fmt.Errorf("record with data %s not found", data)
+		return nil, fmt.Errorf("record with type %s and data %s not found", dnsType.String(), data)
 	}
 
 	return currentRecord, nil

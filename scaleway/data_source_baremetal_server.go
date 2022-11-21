@@ -62,5 +62,12 @@ func dataSourceScalewayBaremetalServerRead(ctx context.Context, d *schema.Resour
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	return resourceScalewayBaremetalServerRead(ctx, d, meta)
+	diags := resourceScalewayBaremetalServerRead(ctx, d, meta)
+	if diags != nil {
+		return diags
+	}
+	if d.Id() == "" {
+		return diag.Errorf("baremetal server (%s) not found", zoneID)
+	}
+	return nil
 }

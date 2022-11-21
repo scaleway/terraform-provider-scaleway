@@ -2,6 +2,7 @@ package scaleway
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -132,4 +133,41 @@ func waitForBaremetalServerInstall(ctx context.Context, api *baremetal.API, zone
 	}, scw.WithContext(ctx))
 
 	return server, err
+}
+
+func baremetalInstallServer(ctx context.Context, d *schema.ResourceData, baremetalAPI *baremetal.API, installServerRequest *baremetal.InstallServerRequest) error {
+	installServerRequest.OsID = expandID(d.Get("os"))
+	installServerRequest.SSHKeyIDs = expandStrings(d.Get("ssh_key_ids"))
+
+	_, err := baremetalAPI.InstallServer(installServerRequest, scw.WithContext(ctx))
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func baremetalFindOfferByID(ctx context.Context, baremetalAPI *baremetal.API, zone scw.Zone, offerID string) (*baremetal.Offer, error) {
+	subscriptionPeriods := []baremetal.OfferSubscriptionPeriod{
+		baremetal.OfferSubscriptionPeriodHourly,
+		baremetal.OfferSubscriptionPeriodMonthly,
+	}
+
+	for _, subscriptionPeriod := range subscriptionPeriods {
+		res, err := baremetalAPI.ListOffers(&baremetal.ListOffersRequest{
+			Zone:               zone,
+			SubscriptionPeriod: subscriptionPeriod,
+		}, scw.WithAllPages(), scw.WithContext(ctx))
+		if err != nil {
+			return nil, err
+		}
+
+		for _, offer := range res.Offers {
+			if offer.ID == offerID {
+				return offer, nil
+			}
+		}
+	}
+
+	return nil, fmt.Errorf("offer %s not found in zone %s", offerID, zone)
 }

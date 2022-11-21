@@ -6,12 +6,12 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           fetch-depth: 2
-      - uses: actions/setup-go@v2
+      - uses: actions/setup-go@v3
         with:
-          go-version: '1.18'
+          go-version: '1.19'
       - name: Run coverage
         run: go test -v -timeout=2h -coverprofile=coverage.out -covermode=count ./...
         env:
@@ -19,5 +19,7 @@ jobs:
           TF_TEST_DOMAIN: scaleway-terraform.com
           TF_UPDATE_CASSETTES: false
           TF_TEST_DOMAIN_ZONE: tf
+          SCW_ACCESS_KEY: "SCWXXXXXXXXXXXXXFAKE"
+          SCW_SECRET_KEY: "11111111-1111-1111-1111-111111111111"
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v2

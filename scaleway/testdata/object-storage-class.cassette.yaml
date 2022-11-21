@@ -1,0 +1,71 @@
+---
+version: 1
+interactions:
+- request:
+    body: <CreateBucketConfiguration xmlns="http://s3.amazonaws.com/doc/2006-03-01/"><LocationConstraint>fr-par</LocationConstraint></CreateBucketConfiguration>
+    form: {}
+    headers:
+      Content-Length:
+      - "150"
+      User-Agent:
+      - aws-sdk-go/1.44.128 (go1.19.2; darwin; amd64)
+      X-Amz-Acl:
+      - private
+      X-Amz-Bucket-Object-Lock-Enabled:
+      - "false"
+      X-Amz-Content-Sha256:
+      - 2cb57fad7b7168921a4c94426cfcb9ee2953f126430595df844e22d50f029060
+      X-Amz-Date:
+      - 20221110T135303Z
+    url: https://test-acc-scaleway-object-storage-class-1210338413726102616.s3.fr-par.scw.cloud/
+    method: PUT
+  response:
+    body: ""
+    headers:
+      Content-Length:
+      - "0"
+      Content-Type:
+      - text/html; charset=UTF-8
+      Date:
+      - Thu, 10 Nov 2022 13:53:07 GMT
+      Location:
+      - /test-acc-scaleway-object-storage-class-1210338413726102616
+      X-Amz-Id-2:
+      - tx33c08032b828497481ba4-00636d023f
+      X-Amz-Request-Id:
+      - tx33c08032b828497481ba4-00636d023f
+    status: 200 OK
+    code: 200
+    duration: ""
+- request:
+    body: <Tagging xmlns="http://s3.amazonaws.com/doc/2006-03-01/"><TagSet><Tag><Key>foo</Key><Value>bar</Value></Tag></TagSet></Tagging>
+    form: {}
+    headers:
+      Content-Length:
+      - "127"
+      Content-Md5:
+      - GLaI7og/rAKomUfPePCCFQ==
+      User-Agent:
+      - aws-sdk-go/1.44.128 (go1.19.2; darwin; amd64)
+      X-Amz-Content-Sha256:
+      - d68cba1a39d89eb72e49b2e5b04058846b60e88e6e32eae42901c4f57a4727a8
+      X-Amz-Date:
+      - 20221110T135307Z
+    url: https://test-acc-scaleway-object-storage-class-1210338413726102616.s3.fr-par.scw.cloud/?tagging=
+    method: PUT
+  response:
+    body: |-
+      <?xml version='1.0' encoding='UTF-8'?>
+      <Error><Code>NoSuchBucket</Code><Message>The specified bucket does not exist.</Message><RequestId>txf8eb4da28dd64dc2856c2-00636d0243</RequestId><BucketName>test-acc-scaleway-object-storage-class-1210338413726102616</BucketName></Error>
+    headers:
+      Content-Type:
+      - application/xml
+      Date:
+      - Thu, 10 Nov 2022 13:53:10 GMT
+      X-Amz-Id-2:
+      - txf8eb4da28dd64dc2856c2-00636d0243
+      X-Amz-Request-Id:
+      - txf8eb4da28dd64dc2856c2-00636d0243
+    status: 404 Not Found
+    code: 404
+    duration: ""

@@ -7,7 +7,7 @@ import (
 	"net"
 	"sort"
 
-	"github.com/hashicorp/terraform-plugin-log/tflog"
+	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
@@ -125,11 +125,19 @@ func resourceScalewayRdbACLRead(ctx context.Context, d *schema.ResourceData, met
 	id := newRegionalID(region, instanceID).String()
 	d.SetId(id)
 	_ = d.Set("instance_id", id)
+
+	diags := diag.Diagnostics{}
+
 	if aclRulesRaw, ok := d.GetOk("acl_rules"); ok {
 		aclRules, mergeErrors := rdbACLRulesFlattenFromSchema(res.Rules, aclRulesRaw.([]interface{}))
 		if len(mergeErrors) > 0 {
 			for _, w := range mergeErrors {
-				tflog.Warn(ctx, fmt.Sprintf("%s", w))
+				diags = append(diags, diag.Diagnostic{
+					Severity:      diag.Warning,
+					Summary:       "acl_rules does not match server's, updating state",
+					Detail:        w.Error(),
+					AttributePath: cty.GetAttrPath("acl_rules"),
+				})
 			}
 		}
 		_ = d.Set("acl_rules", aclRules)
@@ -137,7 +145,7 @@ func resourceScalewayRdbACLRead(ctx context.Context, d *schema.ResourceData, met
 		_ = d.Set("acl_rules", rdbACLRulesFlatten(res.Rules))
 	}
 
-	return nil
+	return diags
 }
 
 func resourceScalewayRdbACLUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -216,16 +224,21 @@ func rdbACLExpand(data []interface{}) ([]*rdb.ACLRuleRequest, error) {
 	var res []*rdb.ACLRuleRequest
 	for _, rule := range data {
 		r := rule.(map[string]interface{})
-		ip, err := expandIPNet(r["ip"].(string))
-		if err != nil {
-			return res, err
-		}
-		res = append(res, &rdb.ACLRuleRequest{
-			IP:          ip,
-			Description: r["description"].(string),
-		})
-	}
 
+		ipRaw, ok := r["ip"]
+		if ok {
+			aclRule := &rdb.ACLRuleRequest{}
+			ip, err := expandIPNet(ipRaw.(string))
+			if err != nil {
+				return res, err
+			}
+			aclRule.IP = ip
+			if descriptionRaw, descriptionExist := r["description"]; descriptionExist {
+				aclRule.Description = descriptionRaw.(string)
+			}
+			res = append(res, aclRule)
+		}
+	}
 	sort.Slice(res, func(i, j int) bool {
 		return bytes.Compare(res[i].IP.IP, res[j].IP.IP) < 0
 	})
@@ -247,9 +260,14 @@ func rdbACLRulesFlattenFromSchema(rules []*rdb.ACLRule, dataFromSchema []interfa
 		ip, err := expandIPNet(currentRule["ip"].(string))
 		if err != nil {
 			errors = append(errors, err)
+			continue
 		}
 
-		aclRule := ruleMap[ip.String()]
+		aclRule, aclRuleExists := ruleMap[ip.String()]
+		if !aclRuleExists {
+			errors = append(errors, fmt.Errorf("acl from state does not exist on server (%s)", ip.String()))
+			continue
+		}
 		ruleMapFromSchema[ip.String()] = struct{}{}
 		r := map[string]interface{}{
 			"ip":          aclRule.IP.String(),

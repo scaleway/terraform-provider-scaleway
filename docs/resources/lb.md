@@ -14,13 +14,13 @@ For more information, see [the documentation](https://developers.scaleway.com/en
 ### Basic
 
 ```hcl
-resource "scaleway_lb_ip" "ip" {
+resource "scaleway_lb_ip" "main" {
   zone = "fr-par-1"
 }
 
 resource "scaleway_lb" "base" {
-  ip_id  = scaleway_lb_ip.ip.id
-  zone   = scaleway_lb_ip.ip.zone
+  ip_id  = scaleway_lb_ip.main.id
+  zone   = scaleway_lb_ip.main.zone
   type   = "LB-S"
 }
 ```
@@ -70,22 +70,22 @@ resource "scaleway_instance_server" "main" {
 }
 
 ### IP for LB IP
-resource scaleway_lb_ip ip01 {
+resource scaleway_lb_ip main {
 }
 
 ### Scaleway Private Network
-resource scaleway_vpc_private_network "static" {
+resource scaleway_vpc_private_network "main" {
     name = "private network with static config"
 }
 
 ### Scaleway Load Balancer
-resource scaleway_lb lb01 {
-    ip_id = scaleway_lb_ip.ip01.id
-    name = "test-lb-with-private-network-configs"
+resource scaleway_lb main {
+    ip_id = scaleway_lb_ip.main.id
+    name = "MyTest"
     type = "LB-S"
 
     private_network {
-        private_network_id = scaleway_vpc_private_network.static.id
+        private_network_id = scaleway_vpc_private_network.main.id
         static_config = ["172.16.0.100", "172.16.0.101"]
     }
 
@@ -102,19 +102,21 @@ resource scaleway_lb lb01 {
 
 The following arguments are supported:
 
-- `ip_id` - (Required) The ID of the associated IP. See below.
+- `ip_id` - (Required) The ID of the associated LB IP. See below.
 
-~> **Important:** Updates to `ip_id` will recreate the load-balancer.
+~> **Important:** Updates to `ip_id` will not recreate the load-balancer.
 
-- `type` - (Required) The type of the load-balancer.
-
-~> **Important:** Updates to `type` will recreate the load-balancer.
+- `type` - (Required) The type of the load-balancer. Please check the [migration section](#migration) to upgrade the type
 
 - `name` - (Optional) The name of the load-balancer.
+
+- `description` - (Optional) The description of the load-balancer.
 
 - `tags` - (Optional) The tags associated with the load-balancers.
 
 - `release_ip` - (Defaults to false) The release_ip allow release the ip address associated with the load-balancers.
+
+- `ssl_compatibility_level` - (Optional) Enforces minimal SSL version (in SSL/TLS offloading context). Please check [possible values](https://developers.scaleway.com/en/products/lb/zoned_api/#ssl-compatibility-level-442f99).
 
 - `zone` - (Defaults to [provider](../index.md#zone) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which the IP should be reserved.
 
@@ -130,6 +132,14 @@ In addition to all arguments above, the following attributes are exported:
 
 ~> **Important:** `release_ip` will not be supported. This prevents the destruction of the IP from releasing a LBs.
 The `resource_lb_ip` will be the only resource that handles those IPs.
+
+## Migration
+
+In order to migrate to other types you can check the migration up or down via our CLI `scw lb lb-types list`.
+this change will not recreate your Load Balancer.
+
+Please check our [documentation](https://developers.scaleway.com/en/products/lb/zoned_api/#post-355592) for further details
+
 ## IP ID
 
 Since v1.15.0, `ip_id` is a required field. This means that now a separate `scaleway_lb_ip` is required.
@@ -139,7 +149,7 @@ When upgrading to v1.15.0, you will need to create a new `scaleway_lb_ip` resour
 For instance, if you had the following:
 
 ```hcl
-resource "scaleway_lb" "base" {
+resource "scaleway_lb" "main" {
   zone = "fr-par-1"
   type   = "LB-S"
 }
@@ -148,11 +158,11 @@ resource "scaleway_lb" "base" {
 You will need to update it to:
 
 ```hcl
-resource "scaleway_lb_ip" "ip" {
+resource "scaleway_lb_ip" "main" {
 }
 
-resource "scaleway_lb" "base" {
-  ip_id  = scaleway_lb_ip.ip.id
+resource "scaleway_lb" "main" {
+  ip_id  = scaleway_lb_ip.main.id
   zone = "fr-par-1"
   type   = "LB-S"
   release_ip = false
@@ -162,28 +172,30 @@ resource "scaleway_lb" "base" {
 ## Private Network with static config
 
 ```hcl
-resource scaleway_lb_ip ip01 {
+resource scaleway_lb_ip main {
 }
 
-resource scaleway_vpc_private_network pnLB01 {
-    name = "pn-with-lb-static"
+resource scaleway_vpc_private_network main {
+    name = "MyTest"
 }
 
-resource scaleway_lb lb01 {
-    ip_id = scaleway_lb_ip.ip01.id
-    name = "test-lb-with-pn-static-2"
+resource scaleway_lb main {
+    ip_id = scaleway_lb_ip.main.id
+    name = "MyTest"
     type = "LB-S"
     release_ip = false
     private_network {
-        private_network_id = scaleway_vpc_private_network.pnLB01.id
+        private_network_id = scaleway_vpc_private_network.main.id
         static_config = ["172.16.0.100", "172.16.0.101"]
     }
 }
 ```
 
-~> **Important:** Updates to `private_network` will recreate the attachment.
+## Attributes Reference
 
 - `private_network_id` - (Required) The ID of the Private Network to associate.
+
+- ~> **Important:** Updates to `private_network` will recreate the attachment.
 
 - `static_config` - (Optional) Define two local ip address of your choice for each load balancer instance. See below.
 
@@ -193,32 +205,13 @@ resource scaleway_lb lb01 {
 
 - `zone` - (Defaults to [provider](../index.md#zone) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which the private network was created.
 
-## Attributes Reference
-
-In addition to all arguments above, the following attributes are exported:
-
-- `status` -  The Private Network attachment status
-
-And before running `terraform apply` you will need to import the IP with:
-
-```bash
-$ terraform import scaleway_lb_ip.ip fr-par/11111111-1111-1111-1111-111111111111
-```
-
-The IP ID can either be found in the console, or you can run:
-
-```bash
-$ terraform state show scaleway_lb.base
-```
-
-and look for `ip_id`.
 
 ## Import
 
 Load-Balancer can be imported using the `{zone}/{id}`, e.g.
 
 ```bash
-$ terraform import scaleway_lb.lb01 fr-par-1/11111111-1111-1111-1111-111111111111
+$ terraform import scaleway_lb.main fr-par-1/11111111-1111-1111-1111-111111111111
 ```
 
 Be aware that you will also need to import the `scaleway_lb_ip` resource.
