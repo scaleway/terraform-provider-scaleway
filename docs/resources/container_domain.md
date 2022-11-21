@@ -71,6 +71,12 @@ The following arguments are required:
 
 - `region` - (Defaults to [provider](../index.md#region) `region`) The [region](../guides/regions_and_zones.md#regions) in which the container exists
 
+## Attributes Reference
+
+In addition to all arguments above, the following attributes are exported:
+
+- `url` - The URL used to query the container
+
 
 ## Import
 

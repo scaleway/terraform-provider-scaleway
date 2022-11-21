@@ -40,6 +40,11 @@ func resourceScalewayContainerDomain() *schema.Resource {
 				ValidateFunc:     validationUUIDorUUIDWithLocality(),
 				DiffSuppressFunc: diffSuppressFuncLocality,
 			},
+			"url": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "URL used to query the container",
+			},
 			"region": regionSchema(),
 		},
 	}
@@ -83,6 +88,8 @@ func resourceScalewayContainerDomainRead(ctx context.Context, d *schema.Resource
 
 	_ = d.Set("hostname", domain.Hostname)
 	_ = d.Set("container_id", domain.ContainerID)
+	_ = d.Set("url", domain.URL)
+	_ = d.Set("region", region)
 
 	return nil
 }
