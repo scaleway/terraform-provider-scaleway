@@ -27,10 +27,12 @@ func resourceScalewayFunctionDomain() *schema.Resource {
 		SchemaVersion: 0,
 		Schema: map[string]*schema.Schema{
 			"function_id": {
-				Type:        schema.TypeString,
-				Description: "The ID of the function",
-				Required:    true,
-				ForceNew:    true,
+				Type:             schema.TypeString,
+				Description:      "The ID of the function",
+				Required:         true,
+				ForceNew:         true,
+				ValidateFunc:     validationUUIDorUUIDWithLocality(),
+				DiffSuppressFunc: diffSuppressFuncLocality,
 			},
 			"hostname": {
 				Type:        schema.TypeString,
@@ -112,6 +114,10 @@ func resourceScalewayFunctionDomainDelete(ctx context.Context, d *schema.Resourc
 
 	_, err = waitForFunctionDomain(ctx, api, region, id, d.Timeout(schema.TimeoutDelete))
 	if err != nil {
+		if is404Error(err) {
+			d.SetId("")
+			return nil
+		}
 		return nil
 	}
 

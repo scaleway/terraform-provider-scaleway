@@ -7,60 +7,37 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	function "github.com/scaleway/scaleway-sdk-go/api/function/v1beta1"
-	"github.com/scaleway/scaleway-sdk-go/scw"
 )
-
-func init() {
-	resource.AddTestSweepers("scaleway_function_domain", &resource.Sweeper{
-		Name: "scaleway_function_domain",
-		F:    testSweepFunctionDomain,
-	})
-}
-
-func testSweepFunctionDomain(_ string) error {
-	return sweepRegions([]scw.Region{scw.RegionFrPar}, func(scwClient *scw.Client, region scw.Region) error {
-		functionAPI := function.NewAPI(scwClient)
-		l.Debugf("sweeper: destroying the function domains in (%s)", region)
-		domains, err := functionAPI.ListDomains(
-			&function.ListDomainsRequest{
-				Region: region,
-			}, scw.WithAllPages())
-		if err != nil {
-			return fmt.Errorf("error listing function domains in (%s) in sweeper: %s", region, err)
-		}
-
-		for _, domain := range domains.Domains {
-			_, err := functionAPI.DeleteDomain(&function.DeleteDomainRequest{
-				DomainID: domain.ID,
-				Region:   region,
-			})
-			if err != nil {
-				l.Debugf("sweeper: error (%s)", err)
-
-				return fmt.Errorf("error deleting domain in sweeper: %s", err)
-			}
-		}
-
-		return nil
-	})
-}
 
 func TestAccScalewayFunctionDomain_Basic(t *testing.T) {
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
 
+	testDNSZone := fmt.Sprintf("function-basic.%s", testDomain)
+	l.Debugf("TestAccScalewayContainerDomain_Basic: test dns zone: %s", testDNSZone)
+
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
-		ExternalProviders: map[string]resource.ExternalProvider{
-			"dns": {
-				Source: "hashicorp/dns",
-			},
-		},
-		CheckDestroy: testAccCheckScalewayFunctionDomainDestroy(tt),
+		CheckDestroy:      testAccCheckScalewayFunctionDomainDestroy(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
+				resource scaleway_function_namespace main {}
+
+				resource scaleway_function main {
+						namespace_id = scaleway_function_namespace.main.id
+						runtime = "go118"
+						privacy = "private"
+						handler = "Handle"
+						zip_file = "testfixture/gofunction.zip"
+						deploy = true
+				}
+				`,
+				Check: testConfigContainerNamespace(tt, "scaleway_function_namespace.main"),
+			},
+			{
+				Config: fmt.Sprintf(`
 					resource scaleway_function_namespace main {}
 
 					resource scaleway_function main {
@@ -72,36 +49,22 @@ func TestAccScalewayFunctionDomain_Basic(t *testing.T) {
 						deploy = true
 					}
 
-					data "dns_a_record_set" "main" {
-					  host = scaleway_function.main.domain_name
+					resource scaleway_domain_record "function" {
+				  		dns_zone = "%s"
+				  		name     = "container"
+				  		type     = "CNAME"
+				  		data     = "${scaleway_function.main.domain_name}."
+				  		ttl      = 60
 					}
 
 					resource "scaleway_function_domain" "main" {
 					  function_id = scaleway_function.main.id
-					  hostname    = "${data.dns_a_record_set.main.addrs[0]}.nip.io"
-					
-					  depends_on = [
-						scaleway_function.main,
-					  ]
+					  hostname    = "${scaleway_domain_record.function.name}.${scaleway_domain_record.function.dns_zone}"
 					}
-				`,
+				`, testDNSZone),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayFunctionDomainExists(tt, "scaleway_function_domain.main"),
 				),
-			},
-			{
-				Config: `
-					resource scaleway_function_namespace main {}
-
-					resource scaleway_function main {
-						namespace_id = scaleway_function_namespace.main.id
-						runtime = "go118"
-						privacy = "private"
-						handler = "Handle"
-						zip_file = "testfixture/gofunction.zip"
-						deploy = true
-					}
-				`,
 			},
 		},
 	})
