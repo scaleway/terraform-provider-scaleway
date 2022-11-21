@@ -4,11 +4,10 @@ description: |-
     Manages Scaleway Containers Domains Bindings.
 ---
 
-You can check our [containers guide](https://www.scaleway.com/en/docs/compute/containers/how-to/add-a-custom-domain-to-a-container/).
-
 # scaleway_container_domain
 
 Creates and manages Scaleway Container domain name bindings.
+You can check our [containers guide](https://www.scaleway.com/en/docs/compute/containers/how-to/add-a-custom-domain-to-a-container/) for further information.
 
 ## Example Usage
 
@@ -70,6 +69,12 @@ The following arguments are required:
 - `container_id` - (Required) The ID of the container.
 
 - `region` - (Defaults to [provider](../index.md#region) `region`) The [region](../guides/regions_and_zones.md#regions) in which the container exists
+
+## Attributes Reference
+
+In addition to all arguments above, the following attributes are exported:
+
+- `url` - The URL used to query the container
 
 
 ## Import

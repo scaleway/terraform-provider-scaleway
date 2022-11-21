@@ -12,7 +12,7 @@ import (
 const (
 	defaultContainerNamespaceTimeout = 5 * time.Minute
 	defaultContainerCronTimeout      = 5 * time.Minute
-	defaultContainerTimeout          = 5 * time.Minute
+	defaultContainerTimeout          = 12*time.Minute + 30*time.Second
 	defaultContainerRetryInterval    = 5 * time.Second
 )
 
@@ -60,6 +60,10 @@ func setCreateContainerRequest(d *schema.ResourceData, region scw.Region) (*cont
 	// optional
 	if envVariablesRaw, ok := d.GetOk("environment_variables"); ok {
 		req.EnvironmentVariables = expandMapPtrStringString(envVariablesRaw)
+	}
+
+	if secretEnvVariablesRaw, ok := d.GetOk("secret_environment_variables"); ok {
+		req.SecretEnvironmentVariables = expandContainerSecrets(secretEnvVariablesRaw)
 	}
 
 	if minScale, ok := d.GetOk("min_scale"); ok {
