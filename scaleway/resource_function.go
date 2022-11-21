@@ -60,6 +60,17 @@ func resourceScalewayFunction() *schema.Resource {
 				},
 				ValidateDiagFunc: validation.MapKeyLenBetween(0, 100),
 			},
+			"secret_environment_variables": {
+				Type:        schema.TypeMap,
+				Optional:    true,
+				Sensitive:   true,
+				Description: "The secret environment variables to be injected into your function at runtime.",
+				Elem: &schema.Schema{
+					Type:         schema.TypeString,
+					ValidateFunc: validation.StringLenBetween(0, 1000),
+				},
+				ValidateDiagFunc: validation.MapKeyLenBetween(0, 100),
+			},
 			"privacy": {
 				Type:        schema.TypeString,
 				Description: "Privacy of the function. Can be either `private` or `public`",
@@ -149,17 +160,18 @@ func resourceScalewayFunctionCreate(ctx context.Context, d *schema.ResourceData,
 	}
 
 	req := &function.CreateFunctionRequest{
-		Description:          expandStringPtr(d.Get("description").(string)),
-		EnvironmentVariables: expandMapPtrStringString(d.Get("environment_variables")),
-		Handler:              expandStringPtr(d.Get("handler").(string)),
-		MaxScale:             expandUint32Ptr(d.Get("max_scale")),
-		MemoryLimit:          expandUint32Ptr(d.Get("memory_limit")),
-		MinScale:             expandUint32Ptr(d.Get("min_scale")),
-		Name:                 expandOrGenerateString(d.Get("name").(string), "func"),
-		NamespaceID:          namespace,
-		Privacy:              function.FunctionPrivacy(d.Get("privacy").(string)),
-		Region:               region,
-		Runtime:              function.FunctionRuntime(d.Get("runtime").(string)),
+		Description:                expandStringPtr(d.Get("description").(string)),
+		EnvironmentVariables:       expandMapPtrStringString(d.Get("environment_variables")),
+		SecretEnvironmentVariables: expandFunctionsSecrets(d.Get("secret_environment_variables")),
+		Handler:                    expandStringPtr(d.Get("handler").(string)),
+		MaxScale:                   expandUint32Ptr(d.Get("max_scale")),
+		MemoryLimit:                expandUint32Ptr(d.Get("memory_limit")),
+		MinScale:                   expandUint32Ptr(d.Get("min_scale")),
+		Name:                       expandOrGenerateString(d.Get("name").(string), "func"),
+		NamespaceID:                namespace,
+		Privacy:                    function.FunctionPrivacy(d.Get("privacy").(string)),
+		Region:                     region,
+		Runtime:                    function.FunctionRuntime(d.Get("runtime").(string)),
 	}
 
 	if timeout, ok := d.GetOk("timeout"); ok {
@@ -296,6 +308,10 @@ func resourceScalewayFunctionUpdate(ctx context.Context, d *schema.ResourceData,
 	if d.HasChange("environment_variables") {
 		req.EnvironmentVariables = expandMapPtrStringString(d.Get("environment_variables"))
 		updated = true
+	}
+
+	if d.HasChanges("secret_environment_variables") {
+		req.SecretEnvironmentVariables = expandFunctionsSecrets(d.Get("secret_environment_variables"))
 	}
 
 	if d.HasChange("description") {

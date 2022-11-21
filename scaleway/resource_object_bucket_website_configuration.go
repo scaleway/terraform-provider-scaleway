@@ -168,11 +168,7 @@ func resourceBucketWebsiteConfigurationRead(ctx context.Context, d *schema.Resou
 		return diag.FromErr(fmt.Errorf("error setting error_document: %w", err))
 	}
 
-	// Add website_endpoint and website_domain as attributes
-	websiteEndpoint, err := resourceBucketWebsiteConfigurationWebsiteEndpoint(ctx, conn, bucket, region)
-	if err != nil {
-		return diag.FromErr(err)
-	}
+	websiteEndpoint := WebsiteEndpoint(bucket, region)
 
 	if websiteEndpoint != nil {
 		_ = d.Set("website_endpoint", websiteEndpoint.Endpoint)

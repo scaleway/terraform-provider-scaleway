@@ -86,6 +86,9 @@ func TestAccScalewayFunctionNamespace_Basic(t *testing.T) {
 						environment_variables = {
 							"test" = "test"
 						}
+						secret_environment_variables = {
+							"test_secret" = "test_secret"
+						}
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
@@ -93,6 +96,7 @@ func TestAccScalewayFunctionNamespace_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_function_namespace.main", "description", ""),
 					resource.TestCheckResourceAttr("scaleway_function_namespace.main", "name", "test-cr-ns-01"),
 					resource.TestCheckResourceAttr("scaleway_function_namespace.main", "environment_variables.test", "test"),
+					resource.TestCheckResourceAttr("scaleway_function_namespace.main", "secret_environment_variables.test_secret", "test_secret"),
 
 					testCheckResourceAttrUUID("scaleway_function_namespace.main", "id"),
 				),
