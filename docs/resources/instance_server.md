@@ -129,6 +129,41 @@ resource "scaleway_instance_server" "base" {
 }
 ```
 
+### Root volume configuration
+
+#### Resized block volume with installed image
+
+```hcl
+resource "scaleway_instance_server" "image" {
+  type = "PRO2-XXS"
+  image = "ubuntu_jammy"
+  root_volume {
+    volume_type = "b_ssd"
+    size_in_gb = 100
+  }
+}
+```
+
+#### From snapshot
+
+```hcl
+data "scaleway_instance_snapshot" "snapshot" {
+  name = "my_snapshot"
+}
+
+resource "scaleway_instance_volume" "from_snapshot" {
+  from_snapshot_id = data.scaleway_instance_snapshot.snapshot.id
+  type = "b_ssd"
+}
+
+resource "scaleway_instance_server" "from_snapshot" {
+  type = "PRO2-XXS"
+  root_volume {
+    volume_id = scaleway_instance_volume.from_snapshot.id
+  }
+}
+```
+
 ## Arguments Reference
 
 The following arguments are supported:
