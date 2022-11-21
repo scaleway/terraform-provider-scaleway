@@ -277,7 +277,7 @@ func TestAccScalewayLbBackend_WithFailoverHost(t *testing.T) {
 					testAccCheckBucketWebsiteConfigurationExists(tt, resourceName),
 					testAccCheckScalewayLbBackendExists(tt, "scaleway_lb_backend.bkd01"),
 					resource.TestCheckResourceAttr(resourceName, "website_endpoint", rName+".s3-website.fr-par.scw.cloud"),
-					resource.TestCheckResourceAttr("scaleway_lb_backend.bkd01", "failover_host", rName+".s3-website.fr-par.scw.cloud"),
+					resource.TestCheckResourceAttrPair("scaleway_lb_backend.bkd01", "failover_host", "scaleway_object_bucket_website_configuration.test", "website_endpoint"),
 				),
 			},
 			{
