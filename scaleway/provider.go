@@ -13,7 +13,10 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 )
 
+const terraformACCTestEnabled = "TF_ACC"
+
 var terraformBetaEnabled = os.Getenv(scw.ScwEnableBeta) != ""
+var terraformTestCassettesEnabled = os.Getenv(terraformACCTestEnabled) != ""
 
 // ProviderConfig config can be used to provide additional config when creating provider.
 type ProviderConfig struct {
@@ -373,7 +376,7 @@ func loadProfile(ctx context.Context, d *schema.ResourceData) (*scw.Profile, err
 	}
 
 	// If any projectID is found on environment or on profiles we return error
-	if profile.DefaultProjectID == nil || len(*profile.DefaultProjectID) == 0 {
+	if !terraformTestCassettesEnabled && (profile.DefaultProjectID == nil || len(*profile.DefaultProjectID) == 0) {
 		return nil, fmt.Errorf("the project_id is not found in the environment or the profile configurations")
 	}
 	return profile, nil
