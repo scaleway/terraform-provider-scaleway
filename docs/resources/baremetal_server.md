@@ -32,7 +32,7 @@ data "scaleway_account_ssh_key" "main" {
   name = "main"
 }
 
-data "scaleway_baremetal_option" "by_name" {
+data "scaleway_baremetal_option" "private_network" {
   zone = "fr-par-2"
   name = "Private Network"
 }
