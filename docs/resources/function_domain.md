@@ -4,9 +4,9 @@ description: |-
 Manages Scaleway Function Domain.
 ---
 
-# scaleway_function_namespace
+# scaleway_function_domain
 
-Creates and manages Scaleway Function Namespace.
+Creates and manages Scaleway Function Domain bindings.
 For more information see [the documentation](https://developers.scaleway.com/en/products/functions/api/).
 
 ## Examples
