@@ -1,7 +1,7 @@
 ---
 page_title: "Scaleway: scaleway_baremetal_server"
 description: |-
-  Manages Scaleway Compute Baremetal servers.
+Manages Scaleway Compute Baremetal servers.
 ---
 
 # scaleway_baremetal_server
@@ -22,6 +22,28 @@ resource "scaleway_baremetal_server" "base" {
   offer       = "GP-BM1-S"
   os          = "d17d6872-0412-45d9-a198-af82c34d3c5c"
   ssh_key_ids = [data.scaleway_account_ssh_key.main.id]
+}
+```
+
+### With option
+
+```hcl
+data "scaleway_account_ssh_key" "main" {
+  name = "main"
+}
+
+data "scaleway_baremetal_option" "by_name" {
+  zone = "fr-par-2"
+  name = "Private Network"
+}
+
+resource "scaleway_baremetal_server" "base" {
+  zone		  = "fr-par-2"
+  offer       = "GP-BM1-S"
+  os          = "d17d6872-0412-45d9-a198-af82c34d3c5c"
+  ssh_key_ids = [data.scaleway_account_ssh_key.main.id]
+
+  option_ids = [data.scaleway_baremetal_option.by_name.option_id]
 }
 ```
 
@@ -48,6 +70,7 @@ The following arguments are supported:
 - `hostname` - (Optional) The hostname of the server.
 - `description` - (Optional) A description for the server.
 - `tags` - (Optional) The tags associated with the server.
+- `option_ids` - (Optional) The IDs of options to enable on the server.
 - `zone` - (Defaults to [provider](../index.md#zone) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which the server should be created.
 - `project_id` - (Defaults to [provider](../index.md#project_id) `project_id`) The ID of the project the server is associated with.
 
@@ -60,10 +83,10 @@ In addition to all above arguments, the following attributes are exported:
 - `offer_id` - The ID of the offer.
 - `os_id` - The ID of the os.
 - `ips` - (List of) The IPs of the server.
-    - `id` - The ID of the IP.
-    - `address` - The address of the IP.
-    - `reverse` - The reverse of the IP.
-    - `type` - The type of the IP.
+  - `id` - The ID of the IP.
+  - `address` - The address of the IP.
+  - `reverse` - The reverse of the IP.
+  - `type` - The type of the IP.
 - `domain` - The domain of the server.
 - `organization_id` - The organization ID the server is associated with.
 

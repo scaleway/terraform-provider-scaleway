@@ -171,3 +171,43 @@ func baremetalFindOfferByID(ctx context.Context, baremetalAPI *baremetal.API, zo
 
 	return nil, fmt.Errorf("offer %s not found in zone %s", offerID, zone)
 }
+
+func baremetalCompareOptionIDsToAdd(modifiedOptionIDs, currentOptionIDs []string, zone scw.Zone) []string {
+	var toAdd []string
+
+	m := make(map[string]struct{}, len(currentOptionIDs))
+	for _, optionID := range currentOptionIDs {
+		m[optionID] = struct{}{}
+	}
+	// find the differences
+	for _, optionID := range modifiedOptionIDs {
+		_, ID, err := parseLocalizedID(optionID)
+		if err != nil {
+			optionID = newZonedIDString(zone, ID)
+		}
+		if _, found := m[ID]; !found {
+			toAdd = append(toAdd, ID)
+		}
+	}
+	return toAdd
+}
+
+func baremetalCompareOptionIDsToDelete(modifiedOptionIDs, currentOptionIDs []string, zone scw.Zone) []string {
+	var toDelete []string
+
+	m := make(map[string]struct{}, len(modifiedOptionIDs))
+	for _, optionID := range modifiedOptionIDs {
+		_, ID, err := parseLocalizedID(optionID)
+		if err != nil {
+			optionID = newZonedIDString(zone, ID)
+		}
+		m[ID] = struct{}{}
+	}
+	// find the differences
+	for _, optionID := range currentOptionIDs {
+		if _, found := m[optionID]; !found {
+			toDelete = append(toDelete, optionID)
+		}
+	}
+	return toDelete
+}
