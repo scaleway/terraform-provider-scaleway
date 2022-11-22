@@ -1,7 +1,7 @@
 ---
 page_title: "Scaleway: scaleway_baremetal_server"
 description: |-
-Manages Scaleway Compute Baremetal servers.
+  Manages Scaleway Compute Baremetal servers.
 ---
 
 # scaleway_baremetal_server
@@ -83,10 +83,10 @@ In addition to all above arguments, the following attributes are exported:
 - `offer_id` - The ID of the offer.
 - `os_id` - The ID of the os.
 - `ips` - (List of) The IPs of the server.
-  - `id` - The ID of the IP.
-  - `address` - The address of the IP.
-  - `reverse` - The reverse of the IP.
-  - `type` - The type of the IP.
+    - `id` - The ID of the IP.
+    - `address` - The address of the IP.
+    - `reverse` - The reverse of the IP.
+    - `type` - The type of the IP.
 - `domain` - The domain of the server.
 - `organization_id` - The organization ID the server is associated with.
 

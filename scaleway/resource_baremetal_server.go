@@ -117,7 +117,6 @@ If this behaviour is wanted, please set 'reinstall_on_ssh_key_changes' argument 
 					Type: schema.TypeString,
 				},
 				Optional:    true,
-				Computed:    true,
 				Description: "Array of tags to associate with the server",
 			},
 			"zone":            zoneSchema(),
