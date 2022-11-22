@@ -15,8 +15,10 @@ import (
 
 const terraformACCTestEnabled = "TF_ACC"
 
-var terraformBetaEnabled = os.Getenv(scw.ScwEnableBeta) != ""
-var terraformTestCassettesEnabled = os.Getenv(terraformACCTestEnabled) != ""
+var (
+	terraformBetaEnabled          = os.Getenv(scw.ScwEnableBeta) != ""
+	terraformTestCassettesEnabled = os.Getenv(terraformACCTestEnabled) != ""
+)
 
 // ProviderConfig config can be used to provide additional config when creating provider.
 type ProviderConfig struct {
