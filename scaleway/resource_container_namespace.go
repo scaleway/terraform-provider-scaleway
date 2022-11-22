@@ -84,7 +84,6 @@ func resourceScalewayContainerNamespace() *schema.Resource {
 			"organization_id": organizationIDSchema(),
 			"project_id":      projectIDSchema(),
 		},
-		CustomizeDiff: projectIDCustomDiff,
 	}
 }
 

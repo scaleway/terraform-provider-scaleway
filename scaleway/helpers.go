@@ -1,7 +1,6 @@
 package scaleway
 
 import (
-	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -808,14 +807,4 @@ func validateMapKeyLowerCase() schema.SchemaValidateDiagFunc {
 		}
 		return nil
 	}
-}
-
-func projectIDCustomDiff(ctx context.Context, diff *schema.ResourceDiff, i interface{}) error {
-	projectIDRaw, okProjectID := diff.GetOk("project_id")
-
-	if !okProjectID || projectIDRaw == nil || projectIDRaw.(string) == "" {
-		return fmt.Errorf("project_id not found on environment or on the schema")
-	}
-
-	return nil
 }
