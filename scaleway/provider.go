@@ -16,8 +16,8 @@ import (
 const terraformACCTestEnabled = "TF_ACC"
 
 var (
-	terraformBetaEnabled          = os.Getenv(scw.ScwEnableBeta) != ""
-	terraformTestCassettesEnabled = os.Getenv(terraformACCTestEnabled) != ""
+	terraformBetaEnabled = os.Getenv(scw.ScwEnableBeta) != ""
+	terraformTestEnabled = os.Getenv(terraformACCTestEnabled) != ""
 )
 
 // ProviderConfig config can be used to provide additional config when creating provider.
@@ -322,12 +322,6 @@ func loadProfile(ctx context.Context, d *schema.ResourceData) (*scw.Profile, err
 	}
 	envProfile := scw.LoadEnvProfile()
 
-	if envProfile.DefaultProjectID == nil || *envProfile.DefaultProjectID == "" {
-		tflog.Warn(ctx, "default project_id is not set on environment")
-	}
-	if activeProfile.DefaultProjectID == nil || *activeProfile.DefaultProjectID == "" {
-		tflog.Warn(ctx, "default project_id is not set on active profile")
-	}
 	providerProfile := &scw.Profile{}
 	if d != nil {
 		if profileName, exist := d.GetOk("profile"); exist {
@@ -344,8 +338,6 @@ func loadProfile(ctx context.Context, d *schema.ResourceData) (*scw.Profile, err
 		}
 		if projectID, exist := d.GetOk("project_id"); exist {
 			providerProfile.DefaultProjectID = scw.StringPtr(projectID.(string))
-		} else {
-			tflog.Warn(ctx, "default project_id is not set on custom profile")
 		}
 		if orgID, exist := d.GetOk("organization_id"); exist {
 			providerProfile.DefaultOrganizationID = scw.StringPtr(orgID.(string))
@@ -378,7 +370,7 @@ func loadProfile(ctx context.Context, d *schema.ResourceData) (*scw.Profile, err
 	}
 
 	// If any projectID is found on environment or on profiles we return error
-	if !terraformTestCassettesEnabled && (profile.DefaultProjectID == nil || len(*profile.DefaultProjectID) == 0) {
+	if !terraformTestEnabled && (profile.DefaultProjectID == nil || len(*profile.DefaultProjectID) == 0) {
 		return nil, fmt.Errorf("the project_id is not found in the environment or the profile configurations")
 	}
 	return profile, nil
