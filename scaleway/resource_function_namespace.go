@@ -162,7 +162,7 @@ func resourceScalewayFunctionNamespaceUpdate(ctx context.Context, d *schema.Reso
 	}
 
 	if d.HasChanges("secret_environment_variables") {
-		req.EnvironmentVariables = expandMapPtrStringString(d.Get("secret_environment_variables"))
+		req.SecretEnvironmentVariables = expandFunctionsSecrets(d.Get("secret_environment_variables"))
 	}
 
 	if _, err := api.UpdateNamespace(req, scw.WithContext(ctx)); err != nil {
