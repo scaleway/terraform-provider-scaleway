@@ -11,6 +11,8 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 )
 
+const SSHKeyBaremetal = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIM7HUxRyQtB2rnlhQUcbDGCZcTJg7OvoznOiyC9W6IxH opensource@scaleway.com"
+
 func init() {
 	resource.AddTestSweepers("scaleway_baremetal_server", &resource.Sweeper{
 		Name: "scaleway_baremetal_server",
@@ -48,7 +50,6 @@ func TestAccScalewayBaremetalServer_Basic(t *testing.T) {
 	defer tt.Cleanup()
 
 	SSHKeyName := "TestAccScalewayBaremetalServer_Basic"
-	SSHKey := "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIM7HUxRyQtB2rnlhQUcbDGCZcTJg7OvoznOiyC9W6IxH opensource@scaleway.com"
 	name := "TestAccScalewayBaremetalServer_Basic"
 
 	resource.ParallelTest(t, resource.TestCase{
@@ -73,7 +74,7 @@ func TestAccScalewayBaremetalServer_Basic(t *testing.T) {
 						tags = [ "terraform-test", "scaleway_baremetal_server", "minimal" ]
 						ssh_key_ids = [ scaleway_account_ssh_key.main.id ]
 					}
-				`, SSHKeyName, SSHKey, name),
+				`, SSHKeyName, SSHKeyBaremetal, name),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayBaremetalServerExists(tt, "scaleway_baremetal_server.base"),
 					resource.TestCheckResourceAttr("scaleway_baremetal_server.base", "name", name),
@@ -104,7 +105,7 @@ func TestAccScalewayBaremetalServer_Basic(t *testing.T) {
 						tags = [ "terraform-test", "scaleway_baremetal_server", "minimal", "edited" ]
 						ssh_key_ids = [ scaleway_account_ssh_key.main.id ]
 					}
-				`, SSHKeyName, SSHKey, name),
+				`, SSHKeyName, SSHKeyBaremetal, name),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayBaremetalServerExists(tt, "scaleway_baremetal_server.base"),
 					resource.TestCheckResourceAttr("scaleway_baremetal_server.base", "name", name),
@@ -153,7 +154,6 @@ func TestAccScalewayBaremetalServer_AddOption(t *testing.T) {
 	defer tt.Cleanup()
 
 	SSHKeyName := "TestAccScalewayBaremetalServer_AddOption"
-	SSHKey := "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIM7HUxRyQtB2rnlhQUcbDGCZcTJg7OvoznOiyC9W6IxH opensource@scaleway.com"
 	name := "TestAccScalewayBaremetalServer_WithOption"
 
 	resource.ParallelTest(t, resource.TestCase{
@@ -187,7 +187,7 @@ func TestAccScalewayBaremetalServer_AddOption(t *testing.T) {
 					
 						ssh_key_ids = [ scaleway_account_ssh_key.base.id ]
 					}
-				`, SSHKeyName, SSHKey, name),
+				`, SSHKeyName, SSHKeyBaremetal, name),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayBaremetalServerExists(tt, "scaleway_baremetal_server.base"),
 				),
@@ -225,7 +225,7 @@ func TestAccScalewayBaremetalServer_AddOption(t *testing.T) {
 
 						option_ids = [ data.scaleway_baremetal_option.private_network.option_id ]
 					}
-				`, SSHKeyName, SSHKey, name),
+				`, SSHKeyName, SSHKeyBaremetal, name),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayBaremetalServerExists(tt, "scaleway_baremetal_server.base"),
 					resource.TestCheckResourceAttr("scaleway_baremetal_server.base", "option_ids.0", "fr-par-2/cd4158d7-2d65-49be-8803-c4b8ab6f760c"),
@@ -241,7 +241,6 @@ func TestAccScalewayBaremetalServer_AddTwoOptionsThenDeleteOne(t *testing.T) {
 	defer tt.Cleanup()
 
 	SSHKeyName := "TestAccScalewayBaremetalServer_AddTwoOptionsThenDeleteOne"
-	SSHKey := "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIM7HUxRyQtB2rnlhQUcbDGCZcTJg7OvoznOiyC9W6IxH opensource@scaleway.com"
 	name := "TestAccScalewayBaremetalServer_WithOption"
 
 	resource.ParallelTest(t, resource.TestCase{
@@ -275,7 +274,7 @@ func TestAccScalewayBaremetalServer_AddTwoOptionsThenDeleteOne(t *testing.T) {
 					
 						ssh_key_ids = [ scaleway_account_ssh_key.base.id ]
 					}
-				`, SSHKeyName, SSHKey, name),
+				`, SSHKeyName, SSHKeyBaremetal, name),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayBaremetalServerExists(tt, "scaleway_baremetal_server.base"),
 				),
@@ -318,7 +317,7 @@ func TestAccScalewayBaremetalServer_AddTwoOptionsThenDeleteOne(t *testing.T) {
 
 						option_ids = [ data.scaleway_baremetal_option.private_network.option_id, data.scaleway_baremetal_option.remote_access.option_id ]
 					}
-				`, SSHKeyName, SSHKey, name),
+				`, SSHKeyName, SSHKeyBaremetal, name),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayBaremetalServerExists(tt, "scaleway_baremetal_server.base"),
 					resource.TestCheckResourceAttr("scaleway_baremetal_server.base", "option_ids.0", "fr-par-2/931df052-d713-4674-8b58-96a63244c8e2"),
@@ -359,7 +358,7 @@ func TestAccScalewayBaremetalServer_AddTwoOptionsThenDeleteOne(t *testing.T) {
 
 						option_ids = [ data.scaleway_baremetal_option.remote_access.option_id ]
 					}
-				`, SSHKeyName, SSHKey, name),
+				`, SSHKeyName, SSHKeyBaremetal, name),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayBaremetalServerExists(tt, "scaleway_baremetal_server.base"),
 					resource.TestCheckResourceAttr("scaleway_baremetal_server.base", "option_ids.0", "fr-par-2/931df052-d713-4674-8b58-96a63244c8e2"),
