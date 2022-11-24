@@ -181,10 +181,7 @@ func baremetalCompareOptionIDsToAdd(modifiedOptionIDs, currentOptionIDs []string
 	}
 	// find the differences
 	for _, optionID := range modifiedOptionIDs {
-		_, ID, err := parseLocalizedID(optionID)
-		if err != nil {
-			optionID = newZonedIDString(zone, ID)
-		}
+		_, ID, _ := parseLocalizedID(optionID)
 		if _, found := m[ID]; !found {
 			toAdd = append(toAdd, ID)
 		}
@@ -197,10 +194,7 @@ func baremetalCompareOptionIDsToDelete(modifiedOptionIDs, currentOptionIDs []str
 
 	m := make(map[string]struct{}, len(modifiedOptionIDs))
 	for _, optionID := range modifiedOptionIDs {
-		_, ID, err := parseLocalizedID(optionID)
-		if err != nil {
-			optionID = newZonedIDString(zone, ID)
-		}
+		_, ID, _ := parseLocalizedID(optionID)
 		m[ID] = struct{}{}
 	}
 	// find the differences

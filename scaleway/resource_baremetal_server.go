@@ -155,10 +155,9 @@ If this behaviour is wanted, please set 'reinstall_on_ssh_key_changes' argument 
 				Computed: true,
 			},
 			"option_ids": {
-				Type: schema.TypeList,
+				Type: schema.TypeSet,
 				Elem: &schema.Schema{
 					Type:             schema.TypeString,
-					ValidateFunc:     validationUUIDorUUIDWithLocality(),
 					DiffSuppressFunc: diffSuppressFuncLocality,
 				},
 				Optional:    true,
@@ -223,7 +222,7 @@ func resourceScalewayBaremetalServerCreate(ctx context.Context, d *schema.Resour
 		return diag.FromErr(err)
 	}
 
-	optionIDs := expandStrings(d.Get("option_ids"))
+	optionIDs := expandStrings(d.Get("option_ids").(*schema.Set).List())
 	if len(optionIDs) > 0 {
 		for i := range optionIDs {
 			_, err = baremetalAPI.AddOptionServer(&baremetal.AddOptionServerRequest{
@@ -289,7 +288,14 @@ func resourceScalewayBaremetalServerRead(ctx context.Context, d *schema.Resource
 
 	var optionIDs []string
 	for i := range server.Options {
-		optionIDs = append(optionIDs, server.Options[i].ID)
+		optionID, err := baremetalAPI.GetOption(&baremetal.GetOptionRequest{
+			Zone:     server.Zone,
+			OptionID: server.Options[i].ID,
+		}, scw.WithContext(ctx))
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		optionIDs = append(optionIDs, newZonedID(server.Zone, optionID.ID).String())
 	}
 
 	_ = d.Set("option_ids", optionIDs)
@@ -303,39 +309,13 @@ func resourceScalewayBaremetalServerUpdate(ctx context.Context, d *schema.Resour
 		return diag.FromErr(err)
 	}
 
-	req := &baremetal.UpdateServerRequest{
-		Zone:     zonedID.Zone,
-		ServerID: zonedID.ID,
-	}
-
-	hasChanged := false
-
-	if d.HasChange("name") {
-		req.Name = expandUpdatedStringPtr("name")
-		hasChanged = true
-	}
-
-	if d.HasChange("description") {
-		req.Description = expandUpdatedStringPtr("description")
-		hasChanged = true
-	}
-
-	if d.HasChange("tags") {
-		req.Tags = expandUpdatedStringsPtr(d.Get("tags"))
-		hasChanged = true
-	}
-
-	if hasChanged {
-		_, err = baremetalAPI.UpdateServer(req, scw.WithContext(ctx))
-		if err != nil {
-			return diag.FromErr(err)
-		}
-	}
-
 	server, err := baremetalAPI.GetServer(&baremetal.GetServerRequest{
 		Zone:     zonedID.Zone,
 		ServerID: zonedID.ID,
 	})
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	var serverGetOptionIDs []string
 	for i := range server.Options {
@@ -343,7 +323,7 @@ func resourceScalewayBaremetalServerUpdate(ctx context.Context, d *schema.Resour
 	}
 
 	if d.HasChange("option_ids") {
-		optionIDs := expandStrings(d.Get("option_ids"))
+		optionIDs := expandStrings(d.Get("option_ids").(*schema.Set).List())
 		if len(optionIDs) > 0 {
 			optionsToAdd := baremetalCompareOptionIDsToAdd(optionIDs, serverGetOptionIDs, zonedID.Zone)
 			for i := range optionsToAdd {
@@ -378,6 +358,35 @@ func resourceScalewayBaremetalServerUpdate(ctx context.Context, d *schema.Resour
 					return diag.FromErr(err)
 				}
 			}
+		}
+	}
+
+	req := &baremetal.UpdateServerRequest{
+		Zone:     zonedID.Zone,
+		ServerID: zonedID.ID,
+	}
+
+	hasChanged := false
+
+	if d.HasChange("name") {
+		req.Name = expandUpdatedStringPtr("name")
+		hasChanged = true
+	}
+
+	if d.HasChange("description") {
+		req.Description = expandUpdatedStringPtr("description")
+		hasChanged = true
+	}
+
+	if d.HasChange("tags") {
+		req.Tags = expandUpdatedStringsPtr(d.Get("tags"))
+		hasChanged = true
+	}
+
+	if hasChanged {
+		_, err = baremetalAPI.UpdateServer(req, scw.WithContext(ctx))
+		if err != nil {
+			return diag.FromErr(err)
 		}
 	}
 

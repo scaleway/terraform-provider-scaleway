@@ -32,7 +32,7 @@ data "scaleway_account_ssh_key" "main" {
   name = "main"
 }
 
-data "scaleway_baremetal_option" "by_name" {
+data "scaleway_baremetal_option" "private_network" {
   zone = "fr-par-2"
   name = "Private Network"
 }
@@ -43,7 +43,7 @@ resource "scaleway_baremetal_server" "base" {
   os          = "d17d6872-0412-45d9-a198-af82c34d3c5c"
   ssh_key_ids = [data.scaleway_account_ssh_key.main.id]
 
-  option_ids = [data.scaleway_baremetal_option.by_name.option_id]
+  option_ids = [data.scaleway_baremetal_option.private_network.option_id]
 }
 ```
 
