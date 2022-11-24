@@ -83,6 +83,10 @@ func resourceScalewayContainerDomainRead(ctx context.Context, d *schema.Resource
 
 	domain, err := waitForContainerDomain(ctx, api, domainID, region, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
+		if is404Error(err) {
+			d.SetId("")
+			return nil
+		}
 		return diag.FromErr(err)
 	}
 
@@ -102,6 +106,10 @@ func resourceScalewayContainerDomainDelete(ctx context.Context, d *schema.Resour
 
 	_, err = waitForContainerDomain(ctx, api, domainID, region, d.Timeout(schema.TimeoutUpdate))
 	if err != nil {
+		if is404Error(err) {
+			d.SetId("")
+			return nil
+		}
 		return diag.FromErr(err)
 	}
 
@@ -109,7 +117,7 @@ func resourceScalewayContainerDomainDelete(ctx context.Context, d *schema.Resour
 		Region:   region,
 		DomainID: domainID,
 	}, scw.WithContext(ctx))
-	if err != nil {
+	if err != nil && !is404Error(err) {
 		return diag.FromErr(err)
 	}
 
