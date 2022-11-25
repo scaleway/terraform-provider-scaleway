@@ -6,9 +6,6 @@ Manages Scaleway Account project.
 
 # scaleway_account_project
 
-| WARNING: This resource is in beta version. If your are in the beta group, please set the variable `SCW_ENABLE_BETA=true` in your `env` in order to use this resource. |
-|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-
 Manages organization's projects on Scaleway.
 
 ## Example Usage

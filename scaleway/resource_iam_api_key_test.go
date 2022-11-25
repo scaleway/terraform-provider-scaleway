@@ -43,7 +43,6 @@ func testSweepIamAPIKey(_ string) error {
 }
 
 func TestAccScalewayIamApiKey_WithApplication(t *testing.T) {
-	SkipBetaTest(t)
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
 	resource.ParallelTest(t, resource.TestCase{
@@ -100,7 +99,6 @@ func TestAccScalewayIamApiKey_WithApplication(t *testing.T) {
 }
 
 func TestAccScalewayIamApiKey_WithUser(t *testing.T) {
-	SkipBetaTest(t)
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
 	resource.ParallelTest(t, resource.TestCase{
@@ -149,7 +147,6 @@ func TestAccScalewayIamApiKey_WithUser(t *testing.T) {
 }
 
 func TestAccScalewayIamApiKey_Expires(t *testing.T) {
-	SkipBetaTest(t)
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
 	resource.ParallelTest(t, resource.TestCase{
@@ -183,7 +180,6 @@ func TestAccScalewayIamApiKey_Expires(t *testing.T) {
 }
 
 func TestAccScalewayIamApiKey_NoUpdate(t *testing.T) {
-	SkipBetaTest(t)
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
 

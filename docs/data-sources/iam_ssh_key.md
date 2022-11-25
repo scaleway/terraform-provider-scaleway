@@ -6,9 +6,6 @@ Get information on a Scaleway IAM SSH Key.
 
 # scaleway_iam_ssh_key
 
-| WARNING: This resource is in beta version. If your are in the beta group, please set the variable `SCW_ENABLE_BETA=true` in your `env` in order to use this resource. |
-|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-
 Use this data source to get SSH key information based on its ID or name.
 
 ## Example Usage
@@ -29,7 +26,8 @@ data "scaleway_iam_ssh_key" "my_key" {
 
 - `name` - The SSH key name. Only one of `name` and `ssh_key_id` should be specified.
 - `ssh_key_id` - The SSH key id. Only one of `name` and `ssh_key_id` should be specified.
-- `project_id` (Optional) - (Defaults to [provider](../index.md#project_id) `project_id`) The ID of the project the SSH key is associated with.
+- `project_id` (Optional) - (Defaults to [provider](../index.md#project_id) `project_id`) The ID of the project the SSH
+  key is associated with.
 
 ## Attributes Reference
 

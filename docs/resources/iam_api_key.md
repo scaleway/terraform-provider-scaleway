@@ -6,9 +6,6 @@ Manages Scaleway IAM API Keys.
 
 # scaleway_iam_api_key
 
-| WARNING: This resource is in beta version. If your are in the beta group, please set the variable `SCW_ENABLE_BETA=true` in your `env` in order to use this resource. |
-|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-
 Creates and manages Scaleway IAM API Keys. For more information, please check [the documentation](https://developers.scaleway.com/en/products/iam/api/v1alpha1/#api-keys-3665ae)
 
 ## Example Usage
