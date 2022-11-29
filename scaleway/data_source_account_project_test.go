@@ -8,7 +8,6 @@ import (
 )
 
 func TestAccScalewayDataSourceAccountProject_Basic(t *testing.T) {
-	SkipBetaTest(t)
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
 	orgID, orgIDExists := tt.Meta.scwClient.GetDefaultOrganizationID()
@@ -48,7 +47,6 @@ func TestAccScalewayDataSourceAccountProject_Basic(t *testing.T) {
 }
 
 func TestAccScalewayDataSourceAccountProject_Default(t *testing.T) {
-	SkipBetaTest(t)
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
 	orgID, orgIDExists := tt.Meta.scwClient.GetDefaultOrganizationID()

@@ -6,10 +6,6 @@ Manages Scaleway IAM Applications.
 
 # scaleway_iam_application
 
-| WARNING: This resource is in beta version. If your are in the beta group, please set the variable `SCW_ENABLE_BETA=true` in your `env` in order to use this resource. |
-|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-
-
 Creates and manages Scaleway IAM Applications. For more information, see [the documentation](https://developers.scaleway.com/en/products/iam/api/v1alpha1/#applications-83ce5e).
 
 ## Example Usage

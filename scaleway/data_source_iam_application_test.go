@@ -7,7 +7,6 @@ import (
 )
 
 func TestAccScalewayDataSourceIamApplication_Basic(t *testing.T) {
-	SkipBetaTest(t)
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
 	resource.ParallelTest(t, resource.TestCase{

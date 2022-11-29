@@ -46,7 +46,6 @@ func testSweepAccountproject(_ string) error {
 }
 
 func TestAccScalewayAccountProject_Basic(t *testing.T) {
-	SkipBetaTest(t)
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
 	resource.ParallelTest(t, resource.TestCase{
@@ -84,7 +83,6 @@ func TestAccScalewayAccountProject_Basic(t *testing.T) {
 }
 
 func TestAccScalewayAccountProject_NoUpdate(t *testing.T) {
-	SkipBetaTest(t)
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
 	resource.ParallelTest(t, resource.TestCase{

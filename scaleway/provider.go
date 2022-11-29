@@ -31,21 +31,8 @@ func addBetaResources(provider *schema.Provider) {
 	if !terraformBetaEnabled {
 		return
 	}
-	betaResources := map[string]*schema.Resource{
-		"scaleway_iam_api_key":     resourceScalewayIamAPIKey(),
-		"scaleway_iam_application": resourceScalewayIamApplication(),
-		"scaleway_iam_group":       resourceScalewayIamGroup(),
-		"scaleway_iam_policy":      resourceScalewayIamPolicy(),
-		"scaleway_iam_ssh_key":     resourceScalewayIamSSKKey(),
-		"scaleway_account_project": resourceScalewayAccountProject(),
-	}
-	betaDataSources := map[string]*schema.Resource{
-		"scaleway_iam_ssh_key":     dataSourceScalewayIamSSHKey(),
-		"scaleway_iam_application": dataSourceScalewayIamApplication(),
-		"scaleway_iam_group":       dataSourceScalewayIamGroup(),
-		"scaleway_iam_user":        dataSourceScalewayIamUser(),
-		"scaleway_account_project": dataSourceScalewayAccountProject(),
-	}
+	betaResources := map[string]*schema.Resource{}
+	betaDataSources := map[string]*schema.Resource{}
 	for resourceName, resource := range betaResources {
 		provider.ResourcesMap[resourceName] = resource
 	}
@@ -97,6 +84,7 @@ func Provider(config *ProviderConfig) plugin.ProviderFunc {
 			},
 
 			ResourcesMap: map[string]*schema.Resource{
+				"scaleway_account_project":                     resourceScalewayAccountProject(),
 				"scaleway_account_ssh_key":                     resourceScalewayAccountSSKKey(),
 				"scaleway_apple_silicon_server":                resourceScalewayAppleSiliconServer(),
 				"scaleway_baremetal_server":                    resourceScalewayBaremetalServer(),
@@ -111,6 +99,10 @@ func Provider(config *ProviderConfig) plugin.ProviderFunc {
 				"scaleway_function_domain":                     resourceScalewayFunctionDomain(),
 				"scaleway_function_namespace":                  resourceScalewayFunctionNamespace(),
 				"scaleway_function_token":                      resourceScalewayFunctionToken(),
+				"scaleway_iam_api_key":                         resourceScalewayIamAPIKey(),
+				"scaleway_iam_application":                     resourceScalewayIamApplication(),
+				"scaleway_iam_group":                           resourceScalewayIamGroup(),
+				"scaleway_iam_policy":                          resourceScalewayIamPolicy(),
 				"scaleway_instance_user_data":                  resourceScalewayInstanceUserData(),
 				"scaleway_instance_image":                      resourceScalewayInstanceImage(),
 				"scaleway_instance_ip":                         resourceScalewayInstanceIP(),
@@ -120,6 +112,7 @@ func Provider(config *ProviderConfig) plugin.ProviderFunc {
 				"scaleway_instance_security_group_rules":       resourceScalewayInstanceSecurityGroupRules(),
 				"scaleway_instance_server":                     resourceScalewayInstanceServer(),
 				"scaleway_instance_snapshot":                   resourceScalewayInstanceSnapshot(),
+				"scaleway_iam_ssh_key":                         resourceScalewayIamSSKKey(),
 				"scaleway_instance_placement_group":            resourceScalewayInstancePlacementGroup(),
 				"scaleway_instance_private_nic":                resourceScalewayInstancePrivateNIC(),
 				"scaleway_iot_hub":                             resourceScalewayIotHub(),
@@ -162,6 +155,7 @@ func Provider(config *ProviderConfig) plugin.ProviderFunc {
 			},
 
 			DataSourcesMap: map[string]*schema.Resource{
+				"scaleway_account_project":                     dataSourceScalewayAccountProject(),
 				"scaleway_account_ssh_key":                     dataSourceScalewayAccountSSHKey(),
 				"scaleway_baremetal_offer":                     dataSourceScalewayBaremetalOffer(),
 				"scaleway_baremetal_option":                    dataSourceScalewayBaremetalOption(),
@@ -173,7 +167,11 @@ func Provider(config *ProviderConfig) plugin.ProviderFunc {
 				"scaleway_container":                           dataSourceScalewayContainer(),
 				"scaleway_function":                            dataSourceScalewayFunction(),
 				"scaleway_function_namespace":                  dataSourceScalewayFunctionNamespace(),
+				"scaleway_iam_application":                     dataSourceScalewayIamApplication(),
 				"scaleway_flexible_ip":                         dataSourceScalewayFlexibleIP(),
+				"scaleway_iam_group":                           dataSourceScalewayIamGroup(),
+				"scaleway_iam_ssh_key":                         dataSourceScalewayIamSSHKey(),
+				"scaleway_iam_user":                            dataSourceScalewayIamUser(),
 				"scaleway_instance_ip":                         dataSourceScalewayInstanceIP(),
 				"scaleway_instance_security_group":             dataSourceScalewayInstanceSecurityGroup(),
 				"scaleway_instance_server":                     dataSourceScalewayInstanceServer(),

@@ -45,7 +45,6 @@ func testSweepIamPolicy(_ string) error {
 }
 
 func TestAccScalewayIamPolicy_Basic(t *testing.T) {
-	SkipBetaTest(t)
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
 	orgID, _ := tt.Meta.scwClient.GetDefaultOrganizationID()
@@ -109,7 +108,6 @@ func TestAccScalewayIamPolicy_Basic(t *testing.T) {
 }
 
 func TestAccScalewayIamPolicy_NoUpdate(t *testing.T) {
-	SkipBetaTest(t)
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
 	orgID, _ := tt.Meta.scwClient.GetDefaultOrganizationID()
@@ -165,7 +163,6 @@ func TestAccScalewayIamPolicy_NoUpdate(t *testing.T) {
 }
 
 func TestAccScalewayIamPolicy_ChangeLinkedEntity(t *testing.T) {
-	SkipBetaTest(t)
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
 	orgID, hasOrgID := tt.Meta.scwClient.GetDefaultOrganizationID()
@@ -257,7 +254,6 @@ func TestAccScalewayIamPolicy_ChangeLinkedEntity(t *testing.T) {
 }
 
 func TestAccScalewayIamPolicy_ChangePermissions(t *testing.T) {
-	SkipBetaTest(t)
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
 	orgID, _ := tt.Meta.scwClient.GetDefaultOrganizationID()
@@ -340,7 +336,6 @@ func TestAccScalewayIamPolicy_ChangePermissions(t *testing.T) {
 }
 
 func TestAccScalewayIamPolicy_ProjectID(t *testing.T) {
-	SkipBetaTest(t)
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
 	orgID, _ := tt.Meta.scwClient.GetDefaultOrganizationID()
@@ -400,7 +395,6 @@ func TestAccScalewayIamPolicy_ProjectID(t *testing.T) {
 }
 
 func TestAccScalewayIamPolicy_ChangeRulePrincipal(t *testing.T) {
-	SkipBetaTest(t)
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
 	orgID, _ := tt.Meta.scwClient.GetDefaultOrganizationID()

@@ -7,9 +7,6 @@ Gets information about an existing IAM application.
 
 # scaleway_account_project
 
-| WARNING: This resource is in beta version. If your are in the beta group, please set the variable `SCW_ENABLE_BETA=true` in your `env` in order to use this resource. |
-|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-
 Gets information about an existing Project.
 
 ## Example Usage
@@ -17,7 +14,7 @@ Gets information about an existing Project.
 ```hcl
 # Get info by name
 data scaleway_account_project "by_name" {
-  name = "myproject"
+  name            = "myproject"
   organization_id = "%s"
 }
 # Get default project
@@ -39,7 +36,7 @@ data scaleway_account_project "by_id" {
   Only one of the `name` and `project_id` should be specified.
 
 - `organization_id` - (Optional) The organization ID the Project is associated with.
-If no default organization_id is set, one must be set explicitly in this datasource
+  If no default organization_id is set, one must be set explicitly in this datasource
 
 ## Attribute Reference
 
