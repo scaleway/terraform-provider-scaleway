@@ -22,7 +22,7 @@ The following arguments are supported:
 
 - `name` - (Optional) The name of the Project.
 - `description` - (Optional) The description of the Project.
-- `organization_id` - (Optional. Defaults to [provider](../index.md#organization_id) `organization_id`)The organization ID the Project is associated with. Please note that any change in `project_id` will recreate the resource.
+- `organization_id` - (Optional. Defaults to [provider](../index.md#organization_id) `organization_id`)The organization ID the Project is associated with. Please note that any change in `organization_id` will recreate the resource.
 
 ## Attributes Reference
 
