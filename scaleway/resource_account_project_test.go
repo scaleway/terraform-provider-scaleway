@@ -16,11 +16,11 @@ func init() {
 	}
 	resource.AddTestSweepers("scaleway_account_project", &resource.Sweeper{
 		Name: "scaleway_account_project",
-		F:    testSweepAccountproject,
+		F:    testSweepAccountProject,
 	})
 }
 
-func testSweepAccountproject(_ string) error {
+func testSweepAccountProject(_ string) error {
 	return sweep(func(scwClient *scw.Client) error {
 		accountAPI := accountV2.NewAPI(scwClient)
 
