@@ -41,6 +41,35 @@ func baremetalAPIWithZoneAndID(m interface{}, id string) (*baremetal.API, ZonedI
 	return baremetalAPI, newZonedID(zone, ID), nil
 }
 
+// returns a new baremetal private network API and the zone for a Create request
+func baremetalPrivateNetworkAPIWithZone(d *schema.ResourceData, m interface{}) (*baremetal.PrivateNetworkAPI, scw.Zone, error) {
+	meta := m.(*Meta)
+	baremetalPrivateNetworkAPI := baremetal.NewPrivateNetworkAPI(meta.scwClient)
+
+	zone, err := extractZone(d, meta)
+	if err != nil {
+		return nil, "", err
+	}
+	return baremetalPrivateNetworkAPI, zone, nil
+}
+
+func expandBaremetalOptions(i interface{}) ([]*baremetal.ServerOption, error) {
+	options := []*baremetal.ServerOption(nil)
+
+	for _, op := range i.(*schema.Set).List() {
+		rawOption := op.(map[string]interface{})
+		option := &baremetal.ServerOption{}
+		if optionExpiresAt, hasExpiresAt := rawOption["expires_at"]; hasExpiresAt {
+			option.ExpiresAt = expandTimePtr(optionExpiresAt)
+		}
+		id := expandID(rawOption["id"].(string))
+		option.ID = id
+		options = append(options, option)
+	}
+
+	return options, nil
+}
+
 func flattenBaremetalCPUs(cpus []*baremetal.CPU) interface{} {
 	if cpus == nil {
 		return nil
@@ -103,6 +132,20 @@ func flattenBaremetalIPs(ips []*baremetal.IP) interface{} {
 	return flattendIPs
 }
 
+func flattenBaremetalOptions(zone scw.Zone, options []*baremetal.ServerOption) interface{} {
+	if options == nil {
+		return nil
+	}
+	flattenedOptions := []map[string]interface{}(nil)
+	for _, option := range options {
+		flattenedOptions = append(flattenedOptions, map[string]interface{}{
+			"id":         newZonedID(zone, option.ID).String(),
+			"expires_at": flattenTime(option.ExpiresAt),
+		})
+	}
+	return flattenedOptions
+}
+
 func waitForBaremetalServer(ctx context.Context, api *baremetal.API, zone scw.Zone, serverID string, timeout time.Duration) (*baremetal.Server, error) {
 	retryInterval := baremetalRetryInterval
 	if DefaultWaitRetryInterval != nil {
@@ -126,6 +169,22 @@ func waitForBaremetalServerInstall(ctx context.Context, api *baremetal.API, zone
 	}
 
 	server, err := api.WaitForServerInstall(&baremetal.WaitForServerInstallRequest{
+		Zone:          zone,
+		ServerID:      serverID,
+		Timeout:       scw.TimeDurationPtr(timeout),
+		RetryInterval: &retryInterval,
+	}, scw.WithContext(ctx))
+
+	return server, err
+}
+
+func waitForBaremetalServerOptions(ctx context.Context, api *baremetal.API, zone scw.Zone, serverID string, timeout time.Duration) (*baremetal.Server, error) {
+	retryInterval := baremetalRetryInterval
+	if DefaultWaitRetryInterval != nil {
+		retryInterval = *DefaultWaitRetryInterval
+	}
+
+	server, err := api.WaitForServerOptions(&baremetal.WaitForServerOptionsRequest{
 		Zone:          zone,
 		ServerID:      serverID,
 		Timeout:       scw.TimeDurationPtr(timeout),
@@ -172,35 +231,41 @@ func baremetalFindOfferByID(ctx context.Context, baremetalAPI *baremetal.API, zo
 	return nil, fmt.Errorf("offer %s not found in zone %s", offerID, zone)
 }
 
-func baremetalCompareOptionIDsToAdd(modifiedOptionIDs, currentOptionIDs []string, zone scw.Zone) []string {
-	var toAdd []string
+func baremetalCompareOptionIDsToAdd(modifiedOptions, currentOptions []*baremetal.ServerOption, zone scw.Zone) []*baremetal.ServerOption {
+	var toAdd []*baremetal.ServerOption
 
-	m := make(map[string]struct{}, len(currentOptionIDs))
-	for _, optionID := range currentOptionIDs {
-		m[optionID] = struct{}{}
+	m := make(map[string]struct{}, len(currentOptions))
+	for _, option := range currentOptions {
+		m[option.ID] = struct{}{}
 	}
 	// find the differences
-	for _, optionID := range modifiedOptionIDs {
-		_, ID, _ := parseLocalizedID(optionID)
-		if _, found := m[ID]; !found {
-			toAdd = append(toAdd, ID)
+	for _, option := range modifiedOptions {
+		if _, foundID := m[option.ID]; !foundID {
+			toAdd = append(toAdd, option)
+		} else if foundID {
+			if _, foundExp := m[flattenTime(option.ExpiresAt).(string)]; !foundExp {
+				toAdd = append(toAdd, option)
+			}
 		}
 	}
 	return toAdd
 }
 
-func baremetalCompareOptionIDsToDelete(modifiedOptionIDs, currentOptionIDs []string, zone scw.Zone) []string {
-	var toDelete []string
+func baremetalCompareOptionIDsToDelete(modifiedOptions, currentOptions []*baremetal.ServerOption, zone scw.Zone) []*baremetal.ServerOption {
+	var toDelete []*baremetal.ServerOption
 
-	m := make(map[string]struct{}, len(modifiedOptionIDs))
-	for _, optionID := range modifiedOptionIDs {
-		_, ID, _ := parseLocalizedID(optionID)
-		m[ID] = struct{}{}
+	m := make(map[string]struct{}, len(modifiedOptions))
+	for _, option := range modifiedOptions {
+		m[option.ID] = struct{}{}
 	}
 	// find the differences
-	for _, optionID := range currentOptionIDs {
-		if _, found := m[optionID]; !found {
-			toDelete = append(toDelete, optionID)
+	for _, option := range currentOptions {
+		if _, foundID := m[option.ID]; !foundID {
+			toDelete = append(toDelete, option)
+		} else if foundID {
+			if _, foundExp := m[flattenTime(option.ExpiresAt).(string)]; !foundExp {
+				toDelete = append(toDelete, option)
+			}
 		}
 	}
 	return toDelete

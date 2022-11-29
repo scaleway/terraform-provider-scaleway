@@ -154,14 +154,27 @@ If this behaviour is wanted, please set 'reinstall_on_ssh_key_changes' argument 
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"option_ids": {
-				Type: schema.TypeSet,
-				Elem: &schema.Schema{
-					Type:             schema.TypeString,
-					DiffSuppressFunc: diffSuppressFuncLocality,
-				},
+			"options": {
+				Type:        schema.TypeSet,
 				Optional:    true,
-				Description: "IDs of options to enable on server",
+				Description: "The options to enable on server",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"id": {
+							Type:        schema.TypeString,
+							Description: "IDs of the options",
+							Required:    true,
+						},
+						"expires_at": {
+							Type:             schema.TypeString,
+							Description:      "Auto expire the option after this date",
+							Optional:         true,
+							Computed:         true,
+							ValidateDiagFunc: validateDate(),
+							DiffSuppressFunc: diffSuppressFuncTimeRFC3339,
+						},
+					},
+				},
 			},
 		},
 	}
@@ -222,13 +235,18 @@ func resourceScalewayBaremetalServerCreate(ctx context.Context, d *schema.Resour
 		return diag.FromErr(err)
 	}
 
-	optionIDs := expandStrings(d.Get("option_ids").(*schema.Set).List())
-	if len(optionIDs) > 0 {
-		for i := range optionIDs {
+	options, optionsExist := d.GetOk("options")
+	if optionsExist {
+		opSpecs, err := expandBaremetalOptions(options)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		for i := range opSpecs {
 			_, err = baremetalAPI.AddOptionServer(&baremetal.AddOptionServerRequest{
-				Zone:     server.Zone,
-				ServerID: server.ID,
-				OptionID: expandID(optionIDs[i]),
+				Zone:      server.Zone,
+				ServerID:  server.ID,
+				OptionID:  opSpecs[i].ID,
+				ExpiresAt: opSpecs[i].ExpiresAt,
 			})
 			if err != nil {
 				return diag.FromErr(err)
@@ -285,20 +303,7 @@ func resourceScalewayBaremetalServerRead(ctx context.Context, d *schema.Resource
 		_ = d.Set("service_user", server.Install.ServiceUser)
 	}
 	_ = d.Set("description", server.Description)
-
-	var optionIDs []string
-	for i := range server.Options {
-		optionID, err := baremetalAPI.GetOption(&baremetal.GetOptionRequest{
-			Zone:     server.Zone,
-			OptionID: server.Options[i].ID,
-		}, scw.WithContext(ctx))
-		if err != nil {
-			return diag.FromErr(err)
-		}
-		optionIDs = append(optionIDs, newZonedID(server.Zone, optionID.ID).String())
-	}
-
-	_ = d.Set("option_ids", optionIDs)
+	_ = d.Set("options", flattenBaremetalOptions(server.Zone, server.Options))
 
 	return nil
 }
@@ -317,31 +322,41 @@ func resourceScalewayBaremetalServerUpdate(ctx context.Context, d *schema.Resour
 		return diag.FromErr(err)
 	}
 
-	var serverGetOptionIDs []string
+	var serverGetOptionIDs []*baremetal.ServerOption
 	for i := range server.Options {
-		serverGetOptionIDs = append(serverGetOptionIDs, server.Options[i].ID)
+		serverGetOptionIDs = append(serverGetOptionIDs, server.Options[i])
 	}
 
-	if d.HasChange("option_ids") {
-		optionIDs := expandStrings(d.Get("option_ids").(*schema.Set).List())
-		if len(optionIDs) > 0 {
-			optionsToAdd := baremetalCompareOptionIDsToAdd(optionIDs, serverGetOptionIDs, zonedID.Zone)
-			for i := range optionsToAdd {
-				_, err = baremetalAPI.AddOptionServer(&baremetal.AddOptionServerRequest{
+	if d.HasChange("options") {
+		options, err := expandBaremetalOptions(d.Get("options"))
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		if len(options) > 0 {
+			optionsToDelete := baremetalCompareOptionIDsToDelete(options, serverGetOptionIDs, zonedID.Zone)
+			for i := range optionsToDelete {
+				_, err = baremetalAPI.DeleteOptionServer(&baremetal.DeleteOptionServerRequest{
 					Zone:     server.Zone,
 					ServerID: server.ID,
-					OptionID: optionsToAdd[i],
+					OptionID: optionsToDelete[i].ID,
 				})
 				if err != nil {
 					return diag.FromErr(err)
 				}
 			}
-			optionsToDelete := baremetalCompareOptionIDsToDelete(optionIDs, serverGetOptionIDs, zonedID.Zone)
-			for i := range optionsToDelete {
-				_, err = baremetalAPI.DeleteOptionServer(&baremetal.DeleteOptionServerRequest{
-					Zone:     server.Zone,
-					ServerID: server.ID,
-					OptionID: optionsToDelete[i],
+
+			_, err = waitForBaremetalServerOptions(ctx, baremetalAPI, zonedID.Zone, zonedID.ID, d.Timeout(schema.TimeoutDelete))
+			if err != nil && !is404Error(err) {
+				return diag.FromErr(err)
+			}
+
+			optionsToAdd := baremetalCompareOptionIDsToAdd(options, serverGetOptionIDs, zonedID.Zone)
+			for i := range optionsToAdd {
+				_, err = baremetalAPI.AddOptionServer(&baremetal.AddOptionServerRequest{
+					Zone:      server.Zone,
+					ServerID:  server.ID,
+					OptionID:  optionsToAdd[i].ID,
+					ExpiresAt: optionsToAdd[i].ExpiresAt,
 				})
 				if err != nil {
 					return diag.FromErr(err)
@@ -352,7 +367,7 @@ func resourceScalewayBaremetalServerUpdate(ctx context.Context, d *schema.Resour
 				_, err = baremetalAPI.DeleteOptionServer(&baremetal.DeleteOptionServerRequest{
 					Zone:     server.Zone,
 					ServerID: server.ID,
-					OptionID: serverGetOptionIDs[i],
+					OptionID: serverGetOptionIDs[i].ID,
 				})
 				if err != nil {
 					return diag.FromErr(err)

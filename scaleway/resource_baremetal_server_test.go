@@ -153,7 +153,7 @@ func TestAccScalewayBaremetalServer_AddOption(t *testing.T) {
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
 
-	SSHKeyName := "TestAccScalewayBaremetalServer_AddOption"
+	SSHKeyName := "TestAccScalewayBaremetalServer_WithOption"
 	name := "TestAccScalewayBaremetalServer_WithOption"
 
 	resource.ParallelTest(t, resource.TestCase{
@@ -175,15 +175,15 @@ func TestAccScalewayBaremetalServer_AddOption(t *testing.T) {
 					}	
 
 					resource "scaleway_account_ssh_key" "base" {
-						name 	   = "%s"
+						name = "%s"
 						public_key = "%s"
 					}
 					
 					resource "scaleway_baremetal_server" "base" {
-						name        = "%s"
-						zone        = "fr-par-2"
-						offer       = data.scaleway_baremetal_offer.my_offer.offer_id
-						os          = data.scaleway_baremetal_os.by_id.os_id
+						name = "%s"
+						zone = "fr-par-2"
+						offer = data.scaleway_baremetal_offer.my_offer.offer_id
+						os = data.scaleway_baremetal_os.by_id.os_id
 					
 						ssh_key_ids = [ scaleway_account_ssh_key.base.id ]
 					}
@@ -211,24 +211,25 @@ func TestAccScalewayBaremetalServer_AddOption(t *testing.T) {
 					}
 
 					resource "scaleway_account_ssh_key" "base" {
-						name 	   = "%s"
+						name = "%s"
 						public_key = "%s"
 					}
 					
 					resource "scaleway_baremetal_server" "base" {
-						name        = "%s"
-						zone        = "fr-par-2"
-						offer       = data.scaleway_baremetal_offer.my_offer.offer_id
-						os          = data.scaleway_baremetal_os.my_os.os_id
+						name = "%s"
+						zone = "fr-par-2"
+						offer = data.scaleway_baremetal_offer.my_offer.offer_id
+						os = data.scaleway_baremetal_os.my_os.os_id
 					
 						ssh_key_ids = [ scaleway_account_ssh_key.base.id ]
-
-						option_ids = [ data.scaleway_baremetal_option.private_network.option_id ]
+						options {
+  							id = data.scaleway_baremetal_option.private_network.option_id
+						}  
 					}
 				`, SSHKeyName, SSHKeyBaremetal, name),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayBaremetalServerExists(tt, "scaleway_baremetal_server.base"),
-					resource.TestCheckResourceAttr("scaleway_baremetal_server.base", "option_ids.0", "fr-par-2/cd4158d7-2d65-49be-8803-c4b8ab6f760c"),
+					resource.TestCheckResourceAttrPair("scaleway_baremetal_server.base", "options.0.id", "data.scaleway_baremetal_option.private_network", "option_id"),
 				),
 				ExpectNonEmptyPlan: true,
 			},
@@ -241,7 +242,7 @@ func TestAccScalewayBaremetalServer_AddTwoOptionsThenDeleteOne(t *testing.T) {
 	defer tt.Cleanup()
 
 	SSHKeyName := "TestAccScalewayBaremetalServer_AddTwoOptionsThenDeleteOne"
-	name := "TestAccScalewayBaremetalServer_WithOption"
+	name := "TestAccScalewayBaremetalServer_AddTwoOptionsThenDeleteOne"
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
@@ -262,15 +263,15 @@ func TestAccScalewayBaremetalServer_AddTwoOptionsThenDeleteOne(t *testing.T) {
 					}	
 
 					resource "scaleway_account_ssh_key" "base" {
-						name 	   = "%s"
+						name = "%s"
 						public_key = "%s"
 					}
 					
 					resource "scaleway_baremetal_server" "base" {
-						name        = "%s"
-						zone        = "fr-par-2"
-						offer       = data.scaleway_baremetal_offer.my_offer.offer_id
-						os          = data.scaleway_baremetal_os.by_id.os_id
+						name = "%s"
+						zone = "fr-par-2"
+						offer = data.scaleway_baremetal_offer.my_offer.offer_id
+						os = data.scaleway_baremetal_os.by_id.os_id
 					
 						ssh_key_ids = [ scaleway_account_ssh_key.base.id ]
 					}
@@ -312,16 +313,28 @@ func TestAccScalewayBaremetalServer_AddTwoOptionsThenDeleteOne(t *testing.T) {
 						zone        = "fr-par-2"
 						offer       = data.scaleway_baremetal_offer.my_offer.offer_id
 						os          = data.scaleway_baremetal_os.my_os.os_id
-					
 						ssh_key_ids = [ scaleway_account_ssh_key.base.id ]
 
-						option_ids = [ data.scaleway_baremetal_option.private_network.option_id, data.scaleway_baremetal_option.remote_access.option_id ]
+						options {
+  							id = data.scaleway_baremetal_option.private_network.option_id
+						}
+						options {
+  							id = data.scaleway_baremetal_option.remote_access.option_id
+							expires_at = "2025-07-06T09:00:00Z"
+						} 	
 					}
 				`, SSHKeyName, SSHKeyBaremetal, name),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayBaremetalServerExists(tt, "scaleway_baremetal_server.base"),
-					resource.TestCheckResourceAttr("scaleway_baremetal_server.base", "option_ids.0", "fr-par-2/931df052-d713-4674-8b58-96a63244c8e2"),
-					resource.TestCheckResourceAttr("scaleway_baremetal_server.base", "option_ids.1", "fr-par-2/cd4158d7-2d65-49be-8803-c4b8ab6f760c"),
+					resource.TestCheckTypeSetElemAttrPair("scaleway_baremetal_server.base", "options.*.id", "data.scaleway_baremetal_option.remote_access", "option_id"),
+					resource.TestCheckTypeSetElemAttrPair("scaleway_baremetal_server.base", "options.*.id", "data.scaleway_baremetal_option.private_network", "option_id"),
+					resource.TestCheckTypeSetElemNestedAttrs("scaleway_baremetal_server.base", "options.*", map[string]string{
+						"id":         "fr-par-2/931df052-d713-4674-8b58-96a63244c8e2",
+						"expires_at": "2025-07-06T09:00:00Z",
+					}),
+					resource.TestCheckTypeSetElemNestedAttrs("scaleway_baremetal_server.base", "options.*", map[string]string{
+						"id": "fr-par-2/cd4158d7-2d65-49be-8803-c4b8ab6f760c",
+					}),
 				),
 				ExpectNonEmptyPlan: true,
 			},
@@ -344,25 +357,32 @@ func TestAccScalewayBaremetalServer_AddTwoOptionsThenDeleteOne(t *testing.T) {
 					}
 
 					resource "scaleway_account_ssh_key" "base" {
-						name 	   = "%s"
+						name = "%s"
 						public_key = "%s"
 					}
 					
 					resource "scaleway_baremetal_server" "base" {
-						name        = "%s"
-						zone        = "fr-par-2"
-						offer       = data.scaleway_baremetal_offer.my_offer.offer_id
-						os          = data.scaleway_baremetal_os.my_os.os_id
-					
+						name = "%s"
+						zone = "fr-par-2"
+						offer = data.scaleway_baremetal_offer.my_offer.offer_id
+						os  = data.scaleway_baremetal_os.my_os.os_id
 						ssh_key_ids = [ scaleway_account_ssh_key.base.id ]
 
-						option_ids = [ data.scaleway_baremetal_option.remote_access.option_id ]
+						options {
+  							id = data.scaleway_baremetal_option.remote_access.option_id
+							expires_at = "2025-07-06T09:00:00Z"
+						} 
 					}
 				`, SSHKeyName, SSHKeyBaremetal, name),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayBaremetalServerExists(tt, "scaleway_baremetal_server.base"),
-					resource.TestCheckResourceAttr("scaleway_baremetal_server.base", "option_ids.0", "fr-par-2/931df052-d713-4674-8b58-96a63244c8e2"),
+					resource.TestCheckResourceAttrPair("scaleway_baremetal_server.base", "options.0.id", "data.scaleway_baremetal_option.remote_access", "option_id"),
+					resource.TestCheckTypeSetElemNestedAttrs("scaleway_baremetal_server.base", "options.*", map[string]string{
+						"id":         "fr-par-2/931df052-d713-4674-8b58-96a63244c8e2",
+						"expires_at": "2025-07-06T09:00:00Z",
+					}),
 				),
+				ExpectNonEmptyPlan: true,
 			},
 		},
 	})
