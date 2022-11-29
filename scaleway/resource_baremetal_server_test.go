@@ -164,28 +164,28 @@ func TestAccScalewayBaremetalServer_AddOption(t *testing.T) {
 			{
 				Config: fmt.Sprintf(`
 					data "scaleway_baremetal_os" "by_id" {
-						zone = "fr-par-2"
-						name = "Ubuntu"
-						version = "22.04 LTS (Jammy Jellyfish)"						
+					  zone    = "fr-par-2"
+					  name    = "Ubuntu"
+					  version = "22.04 LTS (Jammy Jellyfish)"
 					}
-
+					
 					data "scaleway_baremetal_offer" "my_offer" {
-						zone = "fr-par-2"
-						name = "EM-B112X-SSD"
-					}	
-
+					  zone = "fr-par-2"
+					  name = "EM-B112X-SSD"
+					}
+					
 					resource "scaleway_account_ssh_key" "base" {
-						name = "%s"
-						public_key = "%s"
+					  name       = "%s"
+					  public_key = "%s"
 					}
 					
 					resource "scaleway_baremetal_server" "base" {
-						name = "%s"
-						zone = "fr-par-2"
-						offer = data.scaleway_baremetal_offer.my_offer.offer_id
-						os = data.scaleway_baremetal_os.by_id.os_id
+					  name  = "%s"
+					  zone  = "fr-par-2"
+					  offer = data.scaleway_baremetal_offer.my_offer.offer_id
+					  os    = data.scaleway_baremetal_os.by_id.os_id
 					
-						ssh_key_ids = [ scaleway_account_ssh_key.base.id ]
+					  ssh_key_ids = [scaleway_account_ssh_key.base.id]
 					}
 				`, SSHKeyName, SSHKeyBaremetal, name),
 				Check: resource.ComposeTestCheckFunc(
@@ -194,38 +194,38 @@ func TestAccScalewayBaremetalServer_AddOption(t *testing.T) {
 			},
 			{
 				Config: fmt.Sprintf(`
-					data "scaleway_baremetal_os" "my_os" {
-						zone = "fr-par-2"
-						name = "Ubuntu"
-						version = "22.04 LTS (Jammy Jellyfish)"						
-					}
-
-					data "scaleway_baremetal_offer" "my_offer" {
-						zone = "fr-par-2"
-						name = "EM-B112X-SSD"
-					}	
-
-					data "scaleway_baremetal_option" "private_network" {
-						zone = "fr-par-2"
-						name = "Private Network"
-					}
-
-					resource "scaleway_account_ssh_key" "base" {
-						name = "%s"
-						public_key = "%s"
-					}
-					
-					resource "scaleway_baremetal_server" "base" {
-						name = "%s"
-						zone = "fr-par-2"
-						offer = data.scaleway_baremetal_offer.my_offer.offer_id
-						os = data.scaleway_baremetal_os.my_os.os_id
-					
-						ssh_key_ids = [ scaleway_account_ssh_key.base.id ]
-						options {
-  							id = data.scaleway_baremetal_option.private_network.option_id
-						}  
-					}
+				data "scaleway_baremetal_os" "my_os" {
+				  zone    = "fr-par-2"
+				  name    = "Ubuntu"
+				  version = "22.04 LTS (Jammy Jellyfish)"
+				}
+				
+				data "scaleway_baremetal_offer" "my_offer" {
+				  zone = "fr-par-2"
+				  name = "EM-B112X-SSD"
+				}
+				
+				data "scaleway_baremetal_option" "private_network" {
+				  zone = "fr-par-2"
+				  name = "Private Network"
+				}
+				
+				resource "scaleway_account_ssh_key" "base" {
+				  name       = "%s"
+				  public_key = "%s"
+				}
+				
+				resource "scaleway_baremetal_server" "base" {
+				  name  = "%s"
+				  zone  = "fr-par-2"
+				  offer = data.scaleway_baremetal_offer.my_offer.offer_id
+				  os    = data.scaleway_baremetal_os.my_os.os_id
+				
+				  ssh_key_ids = [scaleway_account_ssh_key.base.id]
+				  options {
+					id = data.scaleway_baremetal_option.private_network.option_id
+				  }
+				}
 				`, SSHKeyName, SSHKeyBaremetal, name),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayBaremetalServerExists(tt, "scaleway_baremetal_server.base"),
@@ -252,28 +252,28 @@ func TestAccScalewayBaremetalServer_AddTwoOptionsThenDeleteOne(t *testing.T) {
 			{
 				Config: fmt.Sprintf(`
 					data "scaleway_baremetal_os" "by_id" {
-						zone = "fr-par-2"
-						name = "Ubuntu"
-						version = "22.04 LTS (Jammy Jellyfish)"						
+					  zone    = "fr-par-2"
+					  name    = "Ubuntu"
+					  version = "22.04 LTS (Jammy Jellyfish)"
 					}
-
+					
 					data "scaleway_baremetal_offer" "my_offer" {
-						zone = "fr-par-2"
-						name = "EM-B112X-SSD"
-					}	
-
+					  zone = "fr-par-2"
+					  name = "EM-B112X-SSD"
+					}
+					
 					resource "scaleway_account_ssh_key" "base" {
-						name = "%s"
-						public_key = "%s"
+					  name       = "%s"
+					  public_key = "%s"
 					}
 					
 					resource "scaleway_baremetal_server" "base" {
-						name = "%s"
-						zone = "fr-par-2"
-						offer = data.scaleway_baremetal_offer.my_offer.offer_id
-						os = data.scaleway_baremetal_os.by_id.os_id
+					  name  = "%s"
+					  zone  = "fr-par-2"
+					  offer = data.scaleway_baremetal_offer.my_offer.offer_id
+					  os    = data.scaleway_baremetal_os.by_id.os_id
 					
-						ssh_key_ids = [ scaleway_account_ssh_key.base.id ]
+					  ssh_key_ids = [scaleway_account_ssh_key.base.id]
 					}
 				`, SSHKeyName, SSHKeyBaremetal, name),
 				Check: resource.ComposeTestCheckFunc(
@@ -283,45 +283,45 @@ func TestAccScalewayBaremetalServer_AddTwoOptionsThenDeleteOne(t *testing.T) {
 			{
 				Config: fmt.Sprintf(`
 					data "scaleway_baremetal_os" "my_os" {
-						zone = "fr-par-2"
-						name = "Ubuntu"
-						version = "22.04 LTS (Jammy Jellyfish)"						
+					  zone    = "fr-par-2"
+					  name    = "Ubuntu"
+					  version = "22.04 LTS (Jammy Jellyfish)"
 					}
-
+					
 					data "scaleway_baremetal_offer" "my_offer" {
-						zone = "fr-par-2"
-						name = "EM-B112X-SSD"
-					}	
-
+					  zone = "fr-par-2"
+					  name = "EM-B112X-SSD"
+					}
+					
 					data "scaleway_baremetal_option" "remote_access" {
-						zone = "fr-par-2"
-						name = "Remote Access"
+					  zone = "fr-par-2"
+					  name = "Remote Access"
 					}
-
+					
 					data "scaleway_baremetal_option" "private_network" {
-						zone = "fr-par-2"
-						name = "Private Network"
+					  zone = "fr-par-2"
+					  name = "Private Network"
 					}
-
+					
 					resource "scaleway_account_ssh_key" "base" {
-						name 	   = "%s"
-						public_key = "%s"
+					  name       = "%s"
+					  public_key = "%s"
 					}
 					
 					resource "scaleway_baremetal_server" "base" {
-						name        = "%s"
-						zone        = "fr-par-2"
-						offer       = data.scaleway_baremetal_offer.my_offer.offer_id
-						os          = data.scaleway_baremetal_os.my_os.os_id
-						ssh_key_ids = [ scaleway_account_ssh_key.base.id ]
-
-						options {
-  							id = data.scaleway_baremetal_option.private_network.option_id
-						}
-						options {
-  							id = data.scaleway_baremetal_option.remote_access.option_id
-							expires_at = "2025-07-06T09:00:00Z"
-						} 	
+					  name        = "%s"
+					  zone        = "fr-par-2"
+					  offer       = data.scaleway_baremetal_offer.my_offer.offer_id
+					  os          = data.scaleway_baremetal_os.my_os.os_id
+					  ssh_key_ids = [scaleway_account_ssh_key.base.id]
+					
+					  options {
+						id = data.scaleway_baremetal_option.private_network.option_id
+					  }
+					  options {
+						id         = data.scaleway_baremetal_option.remote_access.option_id
+						expires_at = "2025-07-06T09:00:00Z"
+					  }
 					}
 				`, SSHKeyName, SSHKeyBaremetal, name),
 				Check: resource.ComposeTestCheckFunc(
@@ -341,37 +341,37 @@ func TestAccScalewayBaremetalServer_AddTwoOptionsThenDeleteOne(t *testing.T) {
 			{
 				Config: fmt.Sprintf(`
 					data "scaleway_baremetal_os" "my_os" {
-						zone = "fr-par-2"
-						name = "Ubuntu"
-						version = "22.04 LTS (Jammy Jellyfish)"						
+					  zone    = "fr-par-2"
+					  name    = "Ubuntu"
+					  version = "22.04 LTS (Jammy Jellyfish)"
 					}
-
+					
 					data "scaleway_baremetal_offer" "my_offer" {
-						zone = "fr-par-2"
-						name = "EM-B112X-SSD"
-					}	
-
-					data "scaleway_baremetal_option" "remote_access" {
-						zone = "fr-par-2"
-						name = "Remote Access"
+					  zone = "fr-par-2"
+					  name = "EM-B112X-SSD"
 					}
-
+					
+					data "scaleway_baremetal_option" "remote_access" {
+					  zone = "fr-par-2"
+					  name = "Remote Access"
+					}
+					
 					resource "scaleway_account_ssh_key" "base" {
-						name = "%s"
-						public_key = "%s"
+					  name       = "%s"
+					  public_key = "%s"
 					}
 					
 					resource "scaleway_baremetal_server" "base" {
-						name = "%s"
-						zone = "fr-par-2"
-						offer = data.scaleway_baremetal_offer.my_offer.offer_id
-						os  = data.scaleway_baremetal_os.my_os.os_id
-						ssh_key_ids = [ scaleway_account_ssh_key.base.id ]
-
-						options {
-  							id = data.scaleway_baremetal_option.remote_access.option_id
-							expires_at = "2025-07-06T09:00:00Z"
-						} 
+					  name        = "%s"
+					  zone        = "fr-par-2"
+					  offer       = data.scaleway_baremetal_offer.my_offer.offer_id
+					  os          = data.scaleway_baremetal_os.my_os.os_id
+					  ssh_key_ids = [scaleway_account_ssh_key.base.id]
+					
+					  options {
+						id         = data.scaleway_baremetal_option.remote_access.option_id
+						expires_at = "2025-07-06T09:00:00Z"
+					  }
 					}
 				`, SSHKeyName, SSHKeyBaremetal, name),
 				Check: resource.ComposeTestCheckFunc(
