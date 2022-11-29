@@ -6,9 +6,6 @@ Manages Scaleway IAM Groups.
 
 # scaleway_iam_group
 
-| WARNING: This resource is in beta version. If your are in the beta group, please set the variable `SCW_ENABLE_BETA=true` in your `env` in order to use this resource. |
-|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-
 Creates and manages Scaleway IAM Groups.
 For more information, see [the documentation](https://developers.scaleway.com/en/products/iam/api/v1alpha1/#groups-f592eb).
 

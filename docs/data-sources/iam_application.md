@@ -7,21 +7,18 @@ Gets information about an existing IAM application.
 
 # scaleway_iam_application
 
-| WARNING: This resource is in beta version. If your are in the beta group, please set the variable `SCW_ENABLE_BETA=true` in your `env` in order to use this resource. |
-|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-
 Gets information about an existing IAM application.
 
 ## Example Usage
 
 ```hcl
 # Get info by name
-data "scaleway_iam_application" "find_by_name" { 
-    name            = "foobar"
+data "scaleway_iam_application" "find_by_name" {
+  name = "foobar"
 }
 # Get info by application ID
 data "scaleway_iam_application" "find_by_id" {
-    application_id    = "11111111-1111-1111-1111-111111111111"
+  application_id = "11111111-1111-1111-1111-111111111111"
 }
 ```
 

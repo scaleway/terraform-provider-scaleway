@@ -16,11 +16,11 @@ func init() {
 	}
 	resource.AddTestSweepers("scaleway_account_project", &resource.Sweeper{
 		Name: "scaleway_account_project",
-		F:    testSweepAccountproject,
+		F:    testSweepAccountProject,
 	})
 }
 
-func testSweepAccountproject(_ string) error {
+func testSweepAccountProject(_ string) error {
 	return sweep(func(scwClient *scw.Client) error {
 		accountAPI := accountV2.NewAPI(scwClient)
 
@@ -46,7 +46,6 @@ func testSweepAccountproject(_ string) error {
 }
 
 func TestAccScalewayAccountProject_Basic(t *testing.T) {
-	SkipBetaTest(t)
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
 	resource.ParallelTest(t, resource.TestCase{
@@ -84,7 +83,6 @@ func TestAccScalewayAccountProject_Basic(t *testing.T) {
 }
 
 func TestAccScalewayAccountProject_NoUpdate(t *testing.T) {
-	SkipBetaTest(t)
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
 	resource.ParallelTest(t, resource.TestCase{
