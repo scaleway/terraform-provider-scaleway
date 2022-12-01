@@ -31,6 +31,8 @@ The following arguments are supported:
 - `protocol` - (Required) The protocol to apply on your namespace. Please check our
   supported [protocols](https://pkg.go.dev/github.com/scaleway/scaleway-sdk-go@master/api/mnq/v1alpha1#pkg-constants).
 
+- `endpoint` - (Computed). The endpoint of the service matching the Namespace protocol.
+
 - `region` - (Defaults to [provider](../index.md#region) `region`). The [region](../guides/regions_and_zones.md#regions)
   in which the namespace should be created.
 
