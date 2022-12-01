@@ -2,12 +2,12 @@ package scaleway
 
 import (
 	"context"
-	"fmt"
+	"time"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	mnq "github.com/scaleway/scaleway-sdk-go/api/mnq/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
-	"time"
 )
 
 const (
@@ -41,20 +41,8 @@ func resourceScalewayMNQNamespace() *schema.Resource {
 			"protocol": {
 				Type:        schema.TypeString,
 				Required:    true,
-				Optional:    true,
 				Description: "The Namespace protocol",
 				ForceNew:    true,
-				ValidateFunc: func(i interface{}, s string) (strings []string, errors []error) {
-					str, isStr := i.(string)
-					if !isStr {
-						return nil, []error{fmt.Errorf("%v is not a string", i)}
-					}
-					_, err := mnq.NamespaceProtocol(str).MarshalJSON()
-					if err != nil {
-						return nil, []error{fmt.Errorf("is not a supported namespace protocol %s", str)}
-					}
-					return nil, nil
-				},
 			},
 			// computed
 			"region":     regionSchema(),
@@ -126,6 +114,7 @@ func resourceScalewayMNQNamespaceRead(ctx context.Context, d *schema.ResourceDat
 	_ = d.Set("project_id", namespace.ProjectID)
 	_ = d.Set("endpoint", namespace.Endpoint)
 	_ = d.Set("protocol", namespace.Protocol.String())
+	_ = d.Set("region", namespace.Region.String())
 	_ = d.Set("created_at", flattenTime(namespace.CreatedAt))
 	_ = d.Set("updated_at", flattenTime(namespace.UpdatedAt))
 

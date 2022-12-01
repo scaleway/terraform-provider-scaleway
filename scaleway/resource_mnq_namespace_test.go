@@ -62,7 +62,6 @@ func TestAccScalewayMNQNamespace_Basic(t *testing.T) {
 				`,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayMNQNamespaceExists(tt, "scaleway_mnq_namespace.main"),
-					testCheckResourceAttrUUID("scaleway_mnq_namespace.main", "id"),
 					resource.TestCheckResourceAttr("scaleway_mnq_namespace.main", "protocol", "nats"),
 					resource.TestCheckResourceAttrSet("scaleway_mnq_namespace.main", "created_at"),
 					resource.TestCheckResourceAttrSet("scaleway_mnq_namespace.main", "updated_at"),
@@ -79,7 +78,7 @@ func TestAccScalewayMNQNamespace_Basic(t *testing.T) {
 				`,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayMNQNamespaceExists(tt, "scaleway_mnq_namespace.main"),
-					resource.TestCheckResourceAttr("scaleway_mnq_namespace.main", "name", "test-mnq-ns-update"),
+					resource.TestCheckResourceAttr("scaleway_mnq_namespace.main", "name", "test-mnq-ns-updated"),
 				),
 			},
 			{
@@ -87,13 +86,13 @@ func TestAccScalewayMNQNamespace_Basic(t *testing.T) {
 					resource "scaleway_mnq_namespace" "main" {
 					  name     = "test-mnq-ns"
 					  protocol = "nats"
-					  region   = "fr-par-2"
+					  region   = "fr-par"
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayMNQNamespaceExists(tt, "scaleway_mnq_namespace.main"),
 					resource.TestCheckResourceAttr("scaleway_mnq_namespace.main", "name", "test-mnq-ns"),
-					resource.TestCheckResourceAttr("scaleway_mnq_namespace.main", "region", "fr-par-2"),
+					resource.TestCheckResourceAttr("scaleway_mnq_namespace.main", "region", "fr-par"),
 				),
 			},
 			{
