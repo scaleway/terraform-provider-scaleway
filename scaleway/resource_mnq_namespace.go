@@ -65,6 +65,7 @@ func resourceScalewayMNQNamespace() *schema.Resource {
 		},
 	}
 }
+
 func resourceScalewayMNQNamespaceCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	api, region, err := newMNQAPI(d, meta)
 	if err != nil {
