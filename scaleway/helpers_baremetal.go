@@ -41,6 +41,23 @@ func baremetalAPIWithZoneAndID(m interface{}, id string) (*baremetal.API, ZonedI
 	return baremetalAPI, newZonedID(zone, ID), nil
 }
 
+func expandBaremetalOptions(i interface{}) ([]*baremetal.ServerOption, error) {
+	options := []*baremetal.ServerOption(nil)
+
+	for _, op := range i.(*schema.Set).List() {
+		rawOption := op.(map[string]interface{})
+		option := &baremetal.ServerOption{}
+		if optionExpiresAt, hasExpiresAt := rawOption["expires_at"]; hasExpiresAt {
+			option.ExpiresAt = expandTimePtr(optionExpiresAt)
+		}
+		id := expandID(rawOption["id"].(string))
+		option.ID = id
+		options = append(options, option)
+	}
+
+	return options, nil
+}
+
 func flattenBaremetalCPUs(cpus []*baremetal.CPU) interface{} {
 	if cpus == nil {
 		return nil
@@ -103,6 +120,20 @@ func flattenBaremetalIPs(ips []*baremetal.IP) interface{} {
 	return flattendIPs
 }
 
+func flattenBaremetalOptions(zone scw.Zone, options []*baremetal.ServerOption) interface{} {
+	if options == nil {
+		return nil
+	}
+	flattenedOptions := []map[string]interface{}(nil)
+	for _, option := range options {
+		flattenedOptions = append(flattenedOptions, map[string]interface{}{
+			"id":         newZonedID(zone, option.ID).String(),
+			"expires_at": flattenTime(option.ExpiresAt),
+		})
+	}
+	return flattenedOptions
+}
+
 func waitForBaremetalServer(ctx context.Context, api *baremetal.API, zone scw.Zone, serverID string, timeout time.Duration) (*baremetal.Server, error) {
 	retryInterval := baremetalRetryInterval
 	if DefaultWaitRetryInterval != nil {
@@ -126,6 +157,22 @@ func waitForBaremetalServerInstall(ctx context.Context, api *baremetal.API, zone
 	}
 
 	server, err := api.WaitForServerInstall(&baremetal.WaitForServerInstallRequest{
+		Zone:          zone,
+		ServerID:      serverID,
+		Timeout:       scw.TimeDurationPtr(timeout),
+		RetryInterval: &retryInterval,
+	}, scw.WithContext(ctx))
+
+	return server, err
+}
+
+func waitForBaremetalServerOptions(ctx context.Context, api *baremetal.API, zone scw.Zone, serverID string, timeout time.Duration) (*baremetal.Server, error) {
+	retryInterval := baremetalRetryInterval
+	if DefaultWaitRetryInterval != nil {
+		retryInterval = *DefaultWaitRetryInterval
+	}
+
+	server, err := api.WaitForServerOptions(&baremetal.WaitForServerOptionsRequest{
 		Zone:          zone,
 		ServerID:      serverID,
 		Timeout:       scw.TimeDurationPtr(timeout),
@@ -170,4 +217,24 @@ func baremetalFindOfferByID(ctx context.Context, baremetalAPI *baremetal.API, zo
 	}
 
 	return nil, fmt.Errorf("offer %s not found in zone %s", offerID, zone)
+}
+
+func baremetalCompareOptions(slice1, slice2 []*baremetal.ServerOption) []*baremetal.ServerOption {
+	var diff []*baremetal.ServerOption
+
+	m := make(map[string]struct{}, len(slice1))
+	for _, option := range slice1 {
+		m[option.ID] = struct{}{}
+	}
+	// find the differences
+	for _, option := range slice2 {
+		if _, foundID := m[option.ID]; !foundID {
+			diff = append(diff, option)
+		} else if foundID {
+			if _, foundExp := m[flattenTime(option.ExpiresAt).(string)]; !foundExp {
+				diff = append(diff, option)
+			}
+		}
+	}
+	return diff
 }

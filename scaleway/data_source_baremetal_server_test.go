@@ -12,7 +12,6 @@ func TestAccScalewayDataSourceBaremetalServer_Basic(t *testing.T) {
 	defer tt.Cleanup()
 
 	SSHKeyName := "TestAccScalewayDataSourceBaremetalServer_Basic"
-	SSHKey := "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIM7HUxRyQtB2rnlhQUcbDGCZcTJg7OvoznOiyC9W6IxH opensource@scaleway.com"
 	name := "TestAccScalewayDataSourceBaremetalServer_Basic"
 
 	resource.ParallelTest(t, resource.TestCase{
@@ -46,7 +45,7 @@ func TestAccScalewayDataSourceBaremetalServer_Basic(t *testing.T) {
 						server_id = "${scaleway_baremetal_server.main.id}"
 						zone = "fr-par-2"
 					}
-				`, SSHKeyName, SSHKey, name),
+				`, SSHKeyName, SSHKeyBaremetal, name),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayBaremetalServerExists(tt, "data.scaleway_baremetal_server.by_id"),
 					testAccCheckScalewayBaremetalServerExists(tt, "data.scaleway_baremetal_server.by_name"),

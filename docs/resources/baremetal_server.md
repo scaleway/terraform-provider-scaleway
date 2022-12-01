@@ -25,6 +25,50 @@ resource "scaleway_baremetal_server" "base" {
 }
 ```
 
+### With option
+
+```hcl
+data "scaleway_account_ssh_key" "main" {
+  name = "main"
+}
+
+data "scaleway_baremetal_os" "my_os" {
+  zone    = "fr-par-2"
+  name    = "Ubuntu"
+  version = "22.04 LTS (Jammy Jellyfish)"
+}
+
+data "scaleway_baremetal_offer" "my_offer" {
+  zone = "fr-par-2"
+  name = "EM-B112X-SSD"
+}
+
+data "scaleway_baremetal_option" "private_network" {
+  zone = "fr-par-2"
+  name = "Private Network"
+}
+
+data "scaleway_baremetal_option" "remote_access" {
+  zone = "fr-par-2"
+  name = "Remote Access"
+}
+
+resource "scaleway_baremetal_server" "base" {
+  zone        = "fr-par-2"
+  offer       = data.scaleway_baremetal_offer.my_offer.offer_id
+  os          = data.scaleway_baremetal_os.my_os.os_id
+  ssh_key_ids = [data.scaleway_account_ssh_key.main.id]
+
+  options {
+    id = data.scaleway_baremetal_option.private_network.option_id
+  }
+
+  options {
+    id = data.scaleway_baremetal_option.remote_access.option_id
+  }
+}
+```
+
 ## Arguments Reference
 
 The following arguments are supported:
@@ -48,6 +92,10 @@ The following arguments are supported:
 - `hostname` - (Optional) The hostname of the server.
 - `description` - (Optional) A description for the server.
 - `tags` - (Optional) The tags associated with the server.
+- `options` - (Optional) The options to enable on the server.
+  ~> The `options` block supports:
+    - `id` - (Required) The id of the option to enable. Use [this endpoint](https://developers.scaleway.com/en/products/baremetal/api/#get-012dcc) to find the available options IDs.
+    - `expires_at` - (Optional) The auto expiration date for compatible options
 - `zone` - (Defaults to [provider](../index.md#zone) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which the server should be created.
 - `project_id` - (Defaults to [provider](../index.md#project_id) `project_id`) The ID of the project the server is associated with.
 
