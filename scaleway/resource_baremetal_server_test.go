@@ -149,12 +149,70 @@ func TestAccScalewayBaremetalServer_RequiredInstallConfig(t *testing.T) {
 	})
 }
 
+func TestAccScalewayBaremetalServer_CreateServerWithOption(t *testing.T) {
+	tt := NewTestTools(t)
+	defer tt.Cleanup()
+
+	SSHKeyName := "TestAccScalewayBaremetalServer_CreateServerWithOption"
+	name := "TestAccScalewayBaremetalServer_CreateServerWithOption"
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      testAccCheckScalewayBaremetalServerDestroy(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`
+				data "scaleway_baremetal_os" "my_os" {
+				  zone    = "fr-par-2"
+				  name    = "Ubuntu"
+				  version = "22.04 LTS (Jammy Jellyfish)"
+				}
+				
+				data "scaleway_baremetal_offer" "my_offer" {
+				  zone = "fr-par-2"
+				  name = "EM-B112X-SSD"
+				}
+				
+				data "scaleway_baremetal_option" "private_network" {
+				  zone = "fr-par-2"
+				  name = "Private Network"
+				}
+				
+				resource "scaleway_account_ssh_key" "base" {
+				  name       = "%s"
+				  public_key = "%s"
+				}
+				
+				resource "scaleway_baremetal_server" "base" {
+				  name  = "%s"
+				  zone  = "fr-par-2"
+				  offer = data.scaleway_baremetal_offer.my_offer.offer_id
+				  os    = data.scaleway_baremetal_os.my_os.os_id
+				
+				  ssh_key_ids = [scaleway_account_ssh_key.base.id]
+				  options {
+					id = data.scaleway_baremetal_option.private_network.option_id
+				  }
+				}
+				`, SSHKeyName, SSHKeyBaremetal, name),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayBaremetalServerExists(tt, "scaleway_baremetal_server.base"),
+					testAccCheckScalewayBaremetalServerHasOptions(tt, "scaleway_baremetal_server.base"),
+					resource.TestCheckResourceAttrPair("scaleway_baremetal_server.base", "options.0.id", "data.scaleway_baremetal_option.private_network", "option_id"),
+				),
+				ExpectNonEmptyPlan: true,
+			},
+		},
+	})
+}
+
 func TestAccScalewayBaremetalServer_AddOption(t *testing.T) {
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
 
-	SSHKeyName := "TestAccScalewayBaremetalServer_WithOption"
-	name := "TestAccScalewayBaremetalServer_WithOption"
+	SSHKeyName := "TestAccScalewayBaremetalServer_AddOption"
+	name := "TestAccScalewayBaremetalServer_AddOption"
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
@@ -229,6 +287,7 @@ func TestAccScalewayBaremetalServer_AddOption(t *testing.T) {
 				`, SSHKeyName, SSHKeyBaremetal, name),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayBaremetalServerExists(tt, "scaleway_baremetal_server.base"),
+					testAccCheckScalewayBaremetalServerHasOptions(tt, "scaleway_baremetal_server.base"),
 					resource.TestCheckResourceAttrPair("scaleway_baremetal_server.base", "options.0.id", "data.scaleway_baremetal_option.private_network", "option_id"),
 				),
 				ExpectNonEmptyPlan: true,
@@ -326,6 +385,7 @@ func TestAccScalewayBaremetalServer_AddTwoOptionsThenDeleteOne(t *testing.T) {
 				`, SSHKeyName, SSHKeyBaremetal, name),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayBaremetalServerExists(tt, "scaleway_baremetal_server.base"),
+					testAccCheckScalewayBaremetalServerHasOptions(tt, "scaleway_baremetal_server.base"),
 					resource.TestCheckTypeSetElemAttrPair("scaleway_baremetal_server.base", "options.*.id", "data.scaleway_baremetal_option.remote_access", "option_id"),
 					resource.TestCheckTypeSetElemAttrPair("scaleway_baremetal_server.base", "options.*.id", "data.scaleway_baremetal_option.private_network", "option_id"),
 					resource.TestCheckTypeSetElemNestedAttrs("scaleway_baremetal_server.base", "options.*", map[string]string{
@@ -376,6 +436,7 @@ func TestAccScalewayBaremetalServer_AddTwoOptionsThenDeleteOne(t *testing.T) {
 				`, SSHKeyName, SSHKeyBaremetal, name),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayBaremetalServerExists(tt, "scaleway_baremetal_server.base"),
+					testAccCheckScalewayBaremetalServerHasOptions(tt, "scaleway_baremetal_server.base"),
 					resource.TestCheckResourceAttrPair("scaleway_baremetal_server.base", "options.0.id", "data.scaleway_baremetal_option.remote_access", "option_id"),
 					resource.TestCheckTypeSetElemNestedAttrs("scaleway_baremetal_server.base", "options.*", map[string]string{
 						"id":         "fr-par-2/931df052-d713-4674-8b58-96a63244c8e2",
@@ -439,6 +500,34 @@ func testAccCheckScalewayBaremetalServerDestroy(tt *TestTools) resource.TestChec
 				return err
 			}
 		}
+		return nil
+	}
+}
+
+func testAccCheckScalewayBaremetalServerHasOptions(tt *TestTools, n string) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		rs, ok := s.RootModule().Resources[n]
+		if !ok {
+			return fmt.Errorf("resource not found: %s", n)
+		}
+
+		baremetalAPI, zonedID, err := baremetalAPIWithZoneAndID(tt.Meta, rs.Primary.ID)
+		if err != nil {
+			return err
+		}
+
+		server, err := baremetalAPI.GetServer(&baremetal.GetServerRequest{
+			ServerID: zonedID.ID,
+			Zone:     zonedID.Zone,
+		})
+		if err != nil {
+			return err
+		}
+
+		if len(server.Options) == 0 {
+			return fmt.Errorf("server (%s) has no options enabled", rs.Primary.ID)
+		}
+
 		return nil
 	}
 }

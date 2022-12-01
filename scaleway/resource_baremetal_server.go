@@ -332,46 +332,33 @@ func resourceScalewayBaremetalServerUpdate(ctx context.Context, d *schema.Resour
 		if err != nil {
 			return diag.FromErr(err)
 		}
-		if len(options) > 0 {
-			optionsToDelete := baremetalCompareOptionIDsToDelete(options, serverGetOptionIDs, zonedID.Zone)
-			for i := range optionsToDelete {
-				_, err = baremetalAPI.DeleteOptionServer(&baremetal.DeleteOptionServerRequest{
-					Zone:     server.Zone,
-					ServerID: server.ID,
-					OptionID: optionsToDelete[i].ID,
-				})
-				if err != nil {
-					return diag.FromErr(err)
-				}
-			}
-
-			_, err = waitForBaremetalServerOptions(ctx, baremetalAPI, zonedID.Zone, zonedID.ID, d.Timeout(schema.TimeoutDelete))
-			if err != nil && !is404Error(err) {
+		optionsToDelete := baremetalCompareOptions(options, serverGetOptionIDs)
+		for i := range optionsToDelete {
+			_, err = baremetalAPI.DeleteOptionServer(&baremetal.DeleteOptionServerRequest{
+				Zone:     server.Zone,
+				ServerID: server.ID,
+				OptionID: optionsToDelete[i].ID,
+			})
+			if err != nil {
 				return diag.FromErr(err)
 			}
+		}
 
-			optionsToAdd := baremetalCompareOptionIDsToAdd(options, serverGetOptionIDs, zonedID.Zone)
-			for i := range optionsToAdd {
-				_, err = baremetalAPI.AddOptionServer(&baremetal.AddOptionServerRequest{
-					Zone:      server.Zone,
-					ServerID:  server.ID,
-					OptionID:  optionsToAdd[i].ID,
-					ExpiresAt: optionsToAdd[i].ExpiresAt,
-				})
-				if err != nil {
-					return diag.FromErr(err)
-				}
-			}
-		} else {
-			for i := range serverGetOptionIDs {
-				_, err = baremetalAPI.DeleteOptionServer(&baremetal.DeleteOptionServerRequest{
-					Zone:     server.Zone,
-					ServerID: server.ID,
-					OptionID: serverGetOptionIDs[i].ID,
-				})
-				if err != nil {
-					return diag.FromErr(err)
-				}
+		_, err = waitForBaremetalServerOptions(ctx, baremetalAPI, zonedID.Zone, zonedID.ID, d.Timeout(schema.TimeoutDelete))
+		if err != nil && !is404Error(err) {
+			return diag.FromErr(err)
+		}
+
+		optionsToAdd := baremetalCompareOptions(serverGetOptionIDs, options)
+		for i := range optionsToAdd {
+			_, err = baremetalAPI.AddOptionServer(&baremetal.AddOptionServerRequest{
+				Zone:      server.Zone,
+				ServerID:  server.ID,
+				OptionID:  optionsToAdd[i].ID,
+				ExpiresAt: optionsToAdd[i].ExpiresAt,
+			})
+			if err != nil {
+				return diag.FromErr(err)
 			}
 		}
 	}

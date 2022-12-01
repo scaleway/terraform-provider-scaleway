@@ -219,42 +219,22 @@ func baremetalFindOfferByID(ctx context.Context, baremetalAPI *baremetal.API, zo
 	return nil, fmt.Errorf("offer %s not found in zone %s", offerID, zone)
 }
 
-func baremetalCompareOptionIDsToAdd(modifiedOptions, currentOptions []*baremetal.ServerOption, zone scw.Zone) []*baremetal.ServerOption {
-	var toAdd []*baremetal.ServerOption
+func baremetalCompareOptions(slice1, slice2 []*baremetal.ServerOption) []*baremetal.ServerOption {
+	var diff []*baremetal.ServerOption
 
-	m := make(map[string]struct{}, len(currentOptions))
-	for _, option := range currentOptions {
+	m := make(map[string]struct{}, len(slice1))
+	for _, option := range slice1 {
 		m[option.ID] = struct{}{}
 	}
 	// find the differences
-	for _, option := range modifiedOptions {
+	for _, option := range slice2 {
 		if _, foundID := m[option.ID]; !foundID {
-			toAdd = append(toAdd, option)
+			diff = append(diff, option)
 		} else if foundID {
 			if _, foundExp := m[flattenTime(option.ExpiresAt).(string)]; !foundExp {
-				toAdd = append(toAdd, option)
+				diff = append(diff, option)
 			}
 		}
 	}
-	return toAdd
-}
-
-func baremetalCompareOptionIDsToDelete(modifiedOptions, currentOptions []*baremetal.ServerOption, zone scw.Zone) []*baremetal.ServerOption {
-	var toDelete []*baremetal.ServerOption
-
-	m := make(map[string]struct{}, len(modifiedOptions))
-	for _, option := range modifiedOptions {
-		m[option.ID] = struct{}{}
-	}
-	// find the differences
-	for _, option := range currentOptions {
-		if _, foundID := m[option.ID]; !foundID {
-			toDelete = append(toDelete, option)
-		} else if foundID {
-			if _, foundExp := m[flattenTime(option.ExpiresAt).(string)]; !foundExp {
-				toDelete = append(toDelete, option)
-			}
-		}
-	}
-	return toDelete
+	return diff
 }
