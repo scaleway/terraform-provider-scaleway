@@ -77,9 +77,6 @@ func resourceScalewayMNQNamespaceCreate(ctx context.Context, d *schema.ResourceD
 		Region:    region,
 		Protocol:  mnq.NamespaceProtocol(d.Get("protocol").(string)),
 	}
-	if regionRaw, ok := d.GetOk("region"); ok {
-		request.Region = scw.Region(regionRaw.(string))
-	}
 	namespace, err := api.CreateNamespace(request, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
