@@ -4,7 +4,7 @@ description: |-
 Manages Scaleway Messaging and queuing Namespaces.
 ---
 
-# scaleway_container_namespace
+# scaleway_mnq_namespace
 
 Creates and manages Scaleway Messaging and queuing Namespace.
 For further information please check
