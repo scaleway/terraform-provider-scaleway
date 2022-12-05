@@ -46,12 +46,7 @@ func resourceScalewayIamApplication() *schema.Resource {
 				Computed:    true,
 				Description: "Whether or not the application is editable.",
 			},
-			"organization_id": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Computed:    true,
-				Description: "ID of organization the application is linked to.",
-			},
+			"organization_id": organizationIDOptionalSchema(),
 		},
 	}
 }
