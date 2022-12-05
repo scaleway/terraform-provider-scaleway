@@ -7,14 +7,15 @@ Manages Scaleway IAM SSH Keys.
 # scaleway_iam_ssh_key
 
 Creates and manages Scaleway IAM SSH Keys.
-For more information, see [the documentation](https://developers.scaleway.com/en/products/iam/api/v1alpha1/#ssh-keys-d8ccd4).
+For more information,
+see [the documentation](https://developers.scaleway.com/en/products/iam/api/v1alpha1/#ssh-keys-d8ccd4).
 
 ## Example Usage
 
 ```hcl
 resource "scaleway_iam_ssh_key" "main" {
-    name       = "main"
-    public_key = "<YOUR-PUBLIC-SSH-KEY>"
+  name       = "main"
+  public_key = "<YOUR-PUBLIC-SSH-KEY>"
 }
 ```
 
@@ -24,7 +25,8 @@ The following arguments are supported:
 
 - `name` - (Required) The name of the SSH key.
 - `public_key` - (Required) The public SSH key to be added.
-- `project_id` - (Defaults to [provider](../index.md#project_id) `project_id`) The ID of the project the SSH key is associated with.
+- `project_id` - (Defaults to [provider](../index.md#project_id) `project_id`) The ID of the project the SSH key is
+  associated with.
 - `disabled` - (Optional) The SSH key status.
 
 ## Attributes Reference
@@ -32,7 +34,7 @@ The following arguments are supported:
 In addition to all above arguments, the following attributes are exported:
 
 - `id` - The ID of the SSH public key.
-- `public_key` - The SSH public key string
+- `fingerprint` - The fingerprint of the iam SSH key.
 - `organization_id` - The ID of the organization the SSH key is associated with.
 - `created_at` - The date and time of the creation of the SSH key.
 - `updated_at` - The date and time of the last update of the SSH key.
