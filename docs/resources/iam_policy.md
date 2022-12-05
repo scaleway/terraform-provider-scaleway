@@ -97,7 +97,7 @@ The following arguments are supported:
   **_TIP:_**  You can use the Scaleway CLI to list the permissions details. e.g:
 
 ```shell
-  $ SCW_ENABLE_BETA=1 scw iam permission-set list
+  $ scw iam permission-set list
 ```
 
 ## Attributes Reference
