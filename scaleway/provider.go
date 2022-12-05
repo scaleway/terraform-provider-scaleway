@@ -88,6 +88,7 @@ func Provider(config *ProviderConfig) plugin.ProviderFunc {
 				"scaleway_account_ssh_key":                     resourceScalewayAccountSSKKey(),
 				"scaleway_apple_silicon_server":                resourceScalewayAppleSiliconServer(),
 				"scaleway_baremetal_server":                    resourceScalewayBaremetalServer(),
+				"scaleway_baremetal_private_network":           resourceScalewayBaremetalPrivateNetwork(),
 				"scaleway_container_namespace":                 resourceScalewayContainerNamespace(),
 				"scaleway_container_cron":                      resourceScalewayContainerCron(),
 				"scaleway_container_domain":                    resourceScalewayContainerDomain(),
