@@ -25,7 +25,7 @@ func dataSourceScalewayIamApplication() *schema.Resource {
 	}
 	dsSchema["organization_id"] = &schema.Schema{
 		Type:        schema.TypeString,
-		Description: "The organization_id you want to attach the resource to",
+		Description: "The organization_id the application is associated to",
 		Optional:    true,
 	}
 
