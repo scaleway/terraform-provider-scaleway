@@ -59,7 +59,7 @@ func resourceScalewayIamApplication() *schema.Resource {
 func resourceScalewayIamApplicationCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	api := iamAPI(meta)
 	app, err := api.CreateApplication(&iam.CreateApplicationRequest{
-		Name:           expandOrGenerateString(d.Get("name"), "application-"),
+		Name:           expandOrGenerateString(d.Get("name"), "application"),
 		Description:    d.Get("description").(string),
 		OrganizationID: d.Get("organization_id").(string),
 	}, scw.WithContext(ctx))
