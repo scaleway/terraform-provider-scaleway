@@ -23,7 +23,7 @@ The following arguments are supported:
 
 - `name` - .The name of the iam application.
 - `description` - The description of the iam application.
-- `organization_id` - (Defaults to [provider](../index.md#organization_d) `organization_id`) The ID of the organization the application is associated with.
+- `organization_id` - (Optional. Defaults to [provider](../index.md#organization_d) `organization_id`) The ID of the organization the application is associated with.
 
 ## Attributes Reference
 
