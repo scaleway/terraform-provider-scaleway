@@ -41,35 +41,34 @@ resource scaleway_iam_policy "object_read_only" {
 ```hcl
 locals {
   users = [
-  "user1@mail.com",
-  "user2@mail.com",
+    "user1@mail.com",
+    "user2@mail.com",
   ]
   project_name = "default"
 }
 
-data scaleway_account_project project {
+data "scaleway_account_project" "project" {
   name = local.project_name
 }
 
 data "scaleway_iam_user" "users" {
   for_each = toset(local.users)
-  email = each.value
+  email    = each.value
 }
 
 resource "scaleway_iam_group" "with_users" {
-  name = "developers"
+  name     = "developers"
   user_ids = [for user in data.scaleway_iam_user.users : user.id]
 }
 
-resource scaleway_iam_policy "iam_tf_storage_policy" {
-  name = "developers permissions"
+resource "scaleway_iam_policy" "iam_tf_storage_policy" {
+  name     = "developers permissions"
   group_id = scaleway_iam_group.with_users.id
   rule {
-    project_ids = [data.scaleway_account_project.project.id]
+    project_ids          = [data.scaleway_account_project.project.id]
     permission_set_names = ["InstancesReadOnly"]
   }
 }
-
 ```
 
 ## Arguments Reference
