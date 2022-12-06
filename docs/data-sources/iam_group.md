@@ -33,7 +33,7 @@ data "scaleway_iam_group" "find_by_id" {
   Only one of the `name` and `group_id` should be specified.
 
 - `organization_id` - (Optional. Defaults to [provider](../index.md#organization_d) `organization_id`) The ID of the
-  organization the user is associated with.
+  organization the group is associated with.
 
 ## Attribute Reference
 
