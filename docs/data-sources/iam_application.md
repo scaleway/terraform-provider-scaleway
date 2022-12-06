@@ -30,7 +30,8 @@ data "scaleway_iam_application" "find_by_id" {
 - `application_id` - (Optional) The ID of the IAM application.
   Only one of the `name` and `application_id` should be specified.
 
-- `organization_id` - (Optional) The organization ID the IAM group is associated with.
+- `organization_id` - (Optional. Defaults to [provider](../index.md#organization_d) `organization_id`) The ID of the
+  organization the user is associated with.
 
 ## Attribute Reference
 
