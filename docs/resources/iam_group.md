@@ -15,10 +15,10 @@ For more information, see [the documentation](https://developers.scaleway.com/en
 
 ```hcl
 resource "scaleway_iam_group" "basic" {
-  name = "iam_group_basic"
-  description = "basic description"
+  name            = "iam_group_basic"
+  description     = "basic description"
   application_ids = []
-  user_ids = []
+  user_ids        = []
 }
 ```
 
@@ -48,13 +48,13 @@ locals {
 
 data "scaleway_iam_user" "users" {
   for_each = local.users
-  email = each.value
+  email    = each.value
 }
 
 resource "scaleway_iam_group" "with_users" {
-  name = "iam_group_with_app"
+  name            = "iam_group_with_app"
   application_ids = []
-  user_ids = [for user in data.scaleway_iam_user.users : user.id]
+  user_ids        = [for user in data.scaleway_iam_user.users : user.id]
 }
 ```
 
