@@ -47,12 +47,7 @@ func resourceScalewayIamPolicy() *schema.Resource {
 				Computed:    true,
 				Description: "Whether or not the policy is editable.",
 			},
-			"organization_id": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Computed:    true,
-				Description: "ID of organization the policy is linked to.",
-			},
+			"organization_id": organizationIDOptionalSchema(),
 			"user_id": {
 				Type:         schema.TypeString,
 				Optional:     true,

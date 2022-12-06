@@ -12,7 +12,7 @@ Creates and manages Scaleway IAM Applications. For more information, see [the do
 
 ```hcl
 resource "scaleway_iam_application" "main" {
-  name = "My application"
+  name        = "My application"
   description = "a description"
 }
 ```
