@@ -59,7 +59,7 @@ func resourceScalewayIamGroup() *schema.Resource {
 					ValidateFunc: validationUUID(),
 				},
 			},
-			"organization_id": organizationIDSchema(),
+			"organization_id": organizationIDOptionalSchema(),
 		},
 	}
 }
