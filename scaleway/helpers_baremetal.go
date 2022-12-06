@@ -53,6 +53,18 @@ func baremetalPrivateNetworkAPIWithZone(d *schema.ResourceData, m interface{}) (
 	return baremetalPrivateNetworkAPI, zone, nil
 }
 
+// baremetalPrivateNetworkAPIWithZoneAndID returns a baremetal private network API with zone and ID extracted from the state
+func baremetalPrivateNetworkAPIWithZoneAndID(m interface{}, id string) (*baremetal.PrivateNetworkAPI, ZonedID, error) {
+	meta := m.(*Meta)
+	baremetalPrivateNetworkAPI := baremetal.NewPrivateNetworkAPI(meta.scwClient)
+
+	zone, ID, err := parseZonedID(id)
+	if err != nil {
+		return nil, ZonedID{}, err
+	}
+	return baremetalPrivateNetworkAPI, newZonedID(zone, ID), nil
+}
+
 func expandBaremetalOptions(i interface{}) ([]*baremetal.ServerOption, error) {
 	options := []*baremetal.ServerOption(nil)
 
