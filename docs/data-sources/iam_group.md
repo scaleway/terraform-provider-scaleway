@@ -32,7 +32,8 @@ data "scaleway_iam_group" "find_by_id" {
 - `group_id` - (Optional) The ID of the IAM group.
   Only one of the `name` and `group_id` should be specified.
 
-- `organization_id` - (Optional) The organization ID the IAM group is associated with.
+- `organization_id` - (Optional. Defaults to [provider](../index.md#organization_d) `organization_id`) The ID of the
+  organization the group is associated with.
 
 ## Attribute Reference
 
