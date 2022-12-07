@@ -46,7 +46,7 @@ func resourceScalewayIamApplication() *schema.Resource {
 				Computed:    true,
 				Description: "Whether or not the application is editable.",
 			},
-			"organization_id": organizationIDSchema(),
+			"organization_id": organizationIDOptionalSchema(),
 		},
 	}
 }
@@ -54,8 +54,9 @@ func resourceScalewayIamApplication() *schema.Resource {
 func resourceScalewayIamApplicationCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	api := iamAPI(meta)
 	app, err := api.CreateApplication(&iam.CreateApplicationRequest{
-		Name:        expandOrGenerateString(d.Get("name"), "application-"),
-		Description: d.Get("description").(string),
+		Name:           expandOrGenerateString(d.Get("name"), "application"),
+		Description:    d.Get("description").(string),
+		OrganizationID: d.Get("organization_id").(string),
 	}, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
