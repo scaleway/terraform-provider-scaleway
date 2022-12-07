@@ -226,7 +226,7 @@ func resourceScalewayBaremetalServerCreate(ctx context.Context, d *schema.Resour
 		return diag.FromErr(err)
 	}
 
-	baremetalPrivateNetworkAPI, zone, err := baremetalPrivateNetworkAPIWithZone(d, meta)
+	baremetalPrivateNetworkAPI, _, err := baremetalPrivateNetworkAPIWithZone(d, meta)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -394,6 +394,7 @@ func resourceScalewayBaremetalServerRead(ctx context.Context, d *schema.Resource
 	return nil
 }
 
+//gocyclo:ignore
 func resourceScalewayBaremetalServerUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	baremetalAPI, zonedID, err := baremetalAPIWithZoneAndID(meta, d.Id())
 	if err != nil {
