@@ -88,7 +88,7 @@ func resourceScalewayFunctionNamespaceCreate(ctx context.Context, d *schema.Reso
 		Description:                expandStringPtr(d.Get("description").(string)),
 		EnvironmentVariables:       expandMapPtrStringString(d.Get("environment_variables")),
 		SecretEnvironmentVariables: expandFunctionsSecrets(d.Get("secret_environment_variables")),
-		Name:                       expandOrGenerateString(d.Get("name").(string), "func-"),
+		Name:                       expandOrGenerateString(d.Get("name").(string), "func"),
 		ProjectID:                  d.Get("project_id").(string),
 		Region:                     region,
 	}, scw.WithContext(ctx))
