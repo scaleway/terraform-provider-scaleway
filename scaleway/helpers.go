@@ -294,6 +294,15 @@ func organizationIDSchema() *schema.Schema {
 	}
 }
 
+func organizationIDOptionalSchema() *schema.Schema {
+	return &schema.Schema{
+		Type:        schema.TypeString,
+		Optional:    true,
+		Computed:    true,
+		Description: "ID of organization the resource is associated to.",
+	}
+}
+
 // projectIDSchema returns a standard schema for a project_id
 func projectIDSchema() *schema.Schema {
 	return &schema.Schema{
