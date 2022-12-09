@@ -110,7 +110,7 @@ func resourceScalewayIamPolicyCreate(ctx context.Context, d *schema.ResourceData
 	api := iamAPI(meta)
 
 	pol, err := api.CreatePolicy(&iam.CreatePolicyRequest{
-		Name:           expandOrGenerateString(d.Get("name"), "policy-"),
+		Name:           expandOrGenerateString(d.Get("name"), "policy"),
 		Description:    d.Get("description").(string),
 		Rules:          expandPolicyRuleSpecs(d.Get("rule")),
 		UserID:         expandStringPtr(d.Get("user_id")),
