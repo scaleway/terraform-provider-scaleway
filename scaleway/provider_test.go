@@ -283,12 +283,14 @@ func TestAccScalewayProvider_SSHKeys(t *testing.T) {
 			metaProd, err := buildMeta(ctx, &metaConfig{
 				terraformVersion: "terraform-tests",
 				httpClient:       tt.Meta.httpClient,
+				forceProjectID:   "11111111-1111-1111-1111-111111111111",
 			})
 			require.NoError(t, err)
 
 			metaDev, err := buildMeta(ctx, &metaConfig{
 				terraformVersion: "terraform-tests",
 				httpClient:       tt.Meta.httpClient,
+				forceProjectID:   "11111111-1111-1111-1111-111111111111",
 			})
 			require.NoError(t, err)
 
@@ -339,6 +341,7 @@ func TestAccScalewayProvider_InstanceIPZones(t *testing.T) {
 				terraformVersion: "terraform-tests",
 				forceZone:        scw.ZoneFrPar2,
 				httpClient:       tt.Meta.httpClient,
+				forceProjectID:   "11111111-1111-1111-1111-111111111111",
 			})
 			require.NoError(t, err)
 
@@ -346,6 +349,7 @@ func TestAccScalewayProvider_InstanceIPZones(t *testing.T) {
 				terraformVersion: "terraform-tests",
 				forceZone:        scw.ZoneFrPar1,
 				httpClient:       tt.Meta.httpClient,
+				forceProjectID:   "11111111-1111-1111-1111-111111111111",
 			})
 			require.NoError(t, err)
 
