@@ -246,6 +246,7 @@ func NewTestTools(t *testing.T) *TestTools {
 	meta, err := buildMeta(ctx, &metaConfig{
 		providerSchema:   nil,
 		terraformVersion: "terraform-tests",
+		forceProjectID:   "11111111-1111-1111-1111-111111111111",
 		httpClient:       httpClient,
 	})
 	require.NoError(t, err)

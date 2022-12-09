@@ -252,6 +252,7 @@ type metaConfig struct {
 	providerSchema   *schema.ResourceData
 	terraformVersion string
 	forceZone        scw.Zone
+	forceProjectID   string
 	httpClient       *http.Client
 }
 
@@ -271,6 +272,10 @@ func buildMeta(ctx context.Context, config *metaConfig) (*Meta, error) {
 		}
 		profile.DefaultRegion = scw.StringPtr(region.String())
 		profile.DefaultZone = scw.StringPtr(config.forceZone.String())
+	}
+
+	if config.forceProjectID != "" {
+		profile.DefaultProjectID = scw.StringPtr(config.forceProjectID)
 	}
 
 	// TODO validated profile
