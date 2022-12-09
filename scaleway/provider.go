@@ -278,6 +278,11 @@ func buildMeta(ctx context.Context, config *metaConfig) (*Meta, error) {
 		profile.DefaultProjectID = scw.StringPtr(config.forceProjectID)
 	}
 
+	// If any projectID is found on environment or on profiles we return error
+	if !terraformTestEnabled && (profile.DefaultProjectID == nil || len(*profile.DefaultProjectID) == 0) {
+		return nil, fmt.Errorf("the project_id is not found in the environment or the profile configurations")
+	}
+
 	// TODO validated profile
 
 	////
@@ -374,9 +379,5 @@ func loadProfile(ctx context.Context, d *schema.ResourceData) (*scw.Profile, err
 		}
 	}
 
-	// If any projectID is found on environment or on profiles we return error
-	if !terraformTestEnabled && (profile.DefaultProjectID == nil || len(*profile.DefaultProjectID) == 0) {
-		return nil, fmt.Errorf("the project_id is not found in the environment or the profile configurations")
-	}
 	return profile, nil
 }
