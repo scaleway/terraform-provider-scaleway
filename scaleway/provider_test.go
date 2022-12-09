@@ -41,6 +41,12 @@ var BodyMatcherIgnore = []string{
 	"project", // like project_id but should be deprecated
 }
 
+// SensitiveFields is a map with keys listing fields that should be anonymized
+// value will be set in place of its old value
+var SensitiveFields = map[string]interface{}{
+	"secret_key": "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
+}
+
 func testAccPreCheck(_ *testing.T) {}
 
 // getTestFilePath returns a valid filename path based on the go test name and suffix. (Take care of non fs friendly char)
@@ -192,6 +198,25 @@ func cassetteMatcher(actual *http.Request, expected cassette.Request) bool {
 		cassetteBodyMatcher(actual, expected)
 }
 
+func cassetteSensitiveFieldsAnonymizer(i *cassette.Interaction) error {
+	var jsonBody map[string]interface{}
+	err := json.Unmarshal([]byte(i.Response.Body), &jsonBody)
+	if err != nil {
+		return nil
+	}
+	for key, value := range SensitiveFields {
+		if _, ok := jsonBody[key]; ok {
+			jsonBody[key] = value
+		}
+	}
+	anonymizedBody, err := json.Marshal(jsonBody)
+	if err != nil {
+		return fmt.Errorf("failed to marshal anonymized body: %w", err)
+	}
+	i.Response.Body = string(anonymizedBody)
+	return nil
+}
+
 // getHTTPRecoder creates a new httpClient that records all HTTP requests in a cassette.
 // This cassette is then replayed whenever tests are executed again. This means that once the
 // requests are recorded in the cassette, no more real HTTP requests must be made to run the tests.
@@ -222,6 +247,9 @@ func getHTTPRecoder(t *testing.T, update bool) (client *http.Client, cleanup fun
 		delete(i.Request.Headers, "Authorization")
 		return nil
 	})
+
+	// Add a filter that will replace sensitive values with fixed values
+	r.AddFilter(cassetteSensitiveFieldsAnonymizer)
 
 	return &http.Client{Transport: newRetryableTransport(r)}, func() {
 		assert.NoError(t, r.Stop()) // Make sure recorder is stopped once done with it
