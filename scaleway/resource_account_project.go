@@ -57,7 +57,7 @@ func resourceScalewayAccountProjectCreate(ctx context.Context, d *schema.Resourc
 	accountAPI := accountV2API(meta)
 
 	request := &accountV2.CreateProjectRequest{
-		Name:        expandOrGenerateString(d.Get("name"), "project-"),
+		Name:        expandOrGenerateString(d.Get("name"), "project"),
 		Description: expandStringPtr(d.Get("description").(string)),
 	}
 

@@ -68,7 +68,7 @@ func resourceScalewayIamGroupCreate(ctx context.Context, d *schema.ResourceData,
 	api := iamAPI(meta)
 	req := &iam.CreateGroupRequest{
 		OrganizationID: d.Get("organization_id").(string),
-		Name:           expandOrGenerateString(d.Get("name"), "group-"),
+		Name:           expandOrGenerateString(d.Get("name"), "group"),
 		Description:    d.Get("description").(string),
 	}
 	group, err := api.CreateGroup(req, scw.WithContext(ctx))
