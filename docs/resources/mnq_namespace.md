@@ -1,7 +1,7 @@
 ---
 page_title: "Scaleway: scaleway_mnq_namespace"
 description: |-
-Manages Scaleway Messaging and queuing Namespaces.
+Manages Scaleway Messaging and Queuing Namespaces.
 ---
 
 # scaleway_mnq_namespace
@@ -16,7 +16,7 @@ our [documentation](https://pkg.go.dev/github.com/scaleway/scaleway-sdk-go@maste
 
 ```hcl
 resource "scaleway_mnq_namespace" "main" {
-  name     = "test-mnq-ns"
+  name     = "mnq-ns"
   protocol = "nats"
   region   = "fr-par"
 }
@@ -26,17 +26,15 @@ resource "scaleway_mnq_namespace" "main" {
 
 The following arguments are supported:
 
-- `name` - (Optional) The unique name of the container namespace.
+- `name` - (Optional) The unique name of the namespace.
 
 - `protocol` - (Required) The protocol to apply on your namespace. Please check our
   supported [protocols](https://pkg.go.dev/github.com/scaleway/scaleway-sdk-go@master/api/mnq/v1alpha1#pkg-constants).
 
-- `endpoint` - (Computed) The endpoint of the service matching the Namespace protocol.
-
 - `region` - (Defaults to [provider](../index.md#region) `region`). The [region](../guides/regions_and_zones.md#regions)
   in which the namespace should be created.
 
-- `project_id` - (Optional. Defaults to [provider](../index.md#project_id) `project_id`) The ID of the project the
+- `project_id` - (Defaults to [provider](../index.md#project_id) `project_id`) The ID of the project the
   namespace is associated with.
 
 ## Attributes Reference
@@ -44,6 +42,7 @@ The following arguments are supported:
 In addition to all arguments above, the following attributes are exported:
 
 - `id` - The ID of the namespace
+- `endpoint` - The endpoint of the service matching the Namespace protocol.
 - `created_at` - The date and time the Namespace was created.
 - `updated_at` - The date and time the Namespace was updated.
 
