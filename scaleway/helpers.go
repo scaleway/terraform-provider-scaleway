@@ -808,3 +808,16 @@ func validateMapKeyLowerCase() schema.SchemaValidateDiagFunc {
 		return nil
 	}
 }
+
+func retryOnTransientStateError[T any, U any](action func() (T, error), waiter func() (U, error)) (T, error) {
+	t, err := action()
+	var transientStateError *scw.TransientStateError
+	if errors.As(err, &transientStateError) {
+		_, err := waiter()
+		if err != nil {
+			return t, err
+		}
+		return retryOnTransientStateError(action, waiter)
+	}
+	return t, err
+}
