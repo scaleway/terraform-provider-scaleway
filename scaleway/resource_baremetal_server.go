@@ -299,11 +299,6 @@ func resourceScalewayBaremetalServerCreate(ctx context.Context, d *schema.Resour
 		}
 	}
 
-	_, err = waitForBaremetalServerOptions(ctx, baremetalAPI, server.Zone, server.ID, d.Timeout(schema.TimeoutCreate))
-	if err != nil && !is404Error(err) {
-		return diag.FromErr(err)
-	}
-
 	privateNetworkIDs, pnExist := d.GetOk("private_network")
 	if pnExist {
 		createBaremetalPrivateNetworkRequest := &baremetal.PrivateNetworkAPISetServerPrivateNetworksRequest{

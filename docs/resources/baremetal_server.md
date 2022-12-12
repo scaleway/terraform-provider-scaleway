@@ -154,7 +154,6 @@ In addition to all above arguments, the following attributes are exported:
 - `offer_id` - The ID of the offer.
 - `os_id` - The ID of the os.
 - `private_network` - The private networks attached to the server.
-  -> The `private_network` block contains :
     - `id` - The ID of the private network.
     - `project_id` - The private network project ID.
     - `vlan` - The VLAN ID associated to the private network.
