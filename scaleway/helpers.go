@@ -809,7 +809,7 @@ func validateMapKeyLowerCase() schema.SchemaValidateDiagFunc {
 	}
 }
 
-func retryOnTransientStateError[T any, U any](action func() (T, error), waiter func() (U, error)) (T, error) {
+func retryOnTransientStateError[T any, U any](action func() (T, error), waiter func() (U, error)) (T, error) { //nolint:ireturn
 	t, err := action()
 	var transientStateError *scw.TransientStateError
 	if errors.As(err, &transientStateError) {
