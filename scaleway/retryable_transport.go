@@ -11,12 +11,17 @@ import (
 	"github.com/hashicorp/go-retryablehttp"
 )
 
-// TODO Retry logic should be moved in the SDK
-// newRetryableTransport creates a http transport with retry capability.
-func newRetryableTransport(defaultTransport http.RoundTripper) http.RoundTripper {
+type retryableTransportOptions struct {
+	RetryMax     *int
+	RetryWaitMax *time.Duration
+	RetryWaitMin *time.Duration
+}
+
+func newRetryableTransportWithOptions(defaultTransport http.RoundTripper, options retryableTransportOptions) http.RoundTripper {
 	c := retryablehttp.NewClient()
 	c.HTTPClient = &http.Client{Transport: defaultTransport}
 
+	// Defaults
 	c.RetryMax = 3
 	c.RetryWaitMax = 2 * time.Minute
 	c.Logger = l
@@ -39,7 +44,23 @@ func newRetryableTransport(defaultTransport http.RoundTripper) http.RoundTripper
 		return resp, nil
 	}
 
+	if options.RetryMax != nil {
+		c.RetryMax = *options.RetryMax
+	}
+	if options.RetryWaitMax != nil {
+		c.RetryWaitMax = *options.RetryWaitMax
+	}
+	if options.RetryWaitMin != nil {
+		c.RetryWaitMin = *options.RetryWaitMin
+	}
+
 	return &retryableTransport{c}
+}
+
+// TODO Retry logic should be moved in the SDK
+// newRetryableTransport creates a http transport with retry capability.
+func newRetryableTransport(defaultTransport http.RoundTripper) http.RoundTripper {
+	return newRetryableTransportWithOptions(defaultTransport, retryableTransportOptions{})
 }
 
 // client is a bridge between scw.httpClient interface and retryablehttp.Client
