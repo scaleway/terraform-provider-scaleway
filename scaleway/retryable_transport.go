@@ -11,12 +11,17 @@ import (
 	"github.com/hashicorp/go-retryablehttp"
 )
 
-// TODO Retry logic should be moved in the SDK
-// newRetryableTransport creates a http transport with retry capability.
-func newRetryableTransport(defaultTransport http.RoundTripper) http.RoundTripper {
+type retryableTransportOptions struct {
+	RetryMax     *int
+	RetryWaitMax *time.Duration
+	RetryWaitMin *time.Duration
+}
+
+func newRetryableTransportWithOptions(defaultTransport http.RoundTripper, options retryableTransportOptions) http.RoundTripper {
 	c := retryablehttp.NewClient()
 	c.HTTPClient = &http.Client{Transport: defaultTransport}
 
+	// Defaults
 	c.RetryMax = 3
 	c.RetryWaitMax = 2 * time.Minute
 	c.Logger = l
@@ -27,12 +32,35 @@ func newRetryableTransport(defaultTransport http.RoundTripper) http.RoundTripper
 		}
 		return retryablehttp.DefaultRetryPolicy(ctx, resp, err)
 	}
+
+	// If ErrorHandler is not set, retryablehttp will wrap http errors
 	c.ErrorHandler = func(resp *http.Response, err error, numTries int) (*http.Response, error) {
-		// Do not return error as response will be handled by scaleway sdk-go
+		// err is not nil if there was an error while performing request
+		// it should be passed, but do not create an error when request contains an error code
+		// http errors are handled by sdk coming after this transport
+		if err != nil {
+			return resp, err
+		}
 		return resp, nil
 	}
 
+	if options.RetryMax != nil {
+		c.RetryMax = *options.RetryMax
+	}
+	if options.RetryWaitMax != nil {
+		c.RetryWaitMax = *options.RetryWaitMax
+	}
+	if options.RetryWaitMin != nil {
+		c.RetryWaitMin = *options.RetryWaitMin
+	}
+
 	return &retryableTransport{c}
+}
+
+// TODO Retry logic should be moved in the SDK
+// newRetryableTransport creates a http transport with retry capability.
+func newRetryableTransport(defaultTransport http.RoundTripper) http.RoundTripper {
+	return newRetryableTransportWithOptions(defaultTransport, retryableTransportOptions{})
 }
 
 // client is a bridge between scw.httpClient interface and retryablehttp.Client
