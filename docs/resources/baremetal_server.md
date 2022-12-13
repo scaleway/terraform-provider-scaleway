@@ -139,8 +139,7 @@ The following arguments are supported:
   ~> The `options` block supports:
     - `id` - (Required) The id of the option to enable. Use [this endpoint](https://developers.scaleway.com/en/products/baremetal/api/#get-012dcc) to find the available options IDs.
     - `expires_at` - (Optional) The auto expiration date for compatible options
-- `private_network` - (Required) The private networks to attach to the server.
-  ~> The `private_network` block supports:
+- `private_network` - (Required) The private networks to attach to the server. For more information, see [the documentation](https://www.scaleway.com/en/docs/compute/elastic-metal/how-to/use-private-networks/)
     - `id` - (Required) The id of the private network to attach.
 - `zone` - (Defaults to [provider](../index.md#zone) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which the server should be created.
 - `project_id` - (Defaults to [provider](../index.md#project_id) `project_id`) The ID of the project the server is associated with.

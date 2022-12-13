@@ -183,16 +183,12 @@ If this behaviour is wanted, please set 'reinstall_on_ssh_key_changes' argument 
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"id": {
-							Type:        schema.TypeString,
-							Description: "The private network ID",
-							Required:    true,
+							Type:         schema.TypeString,
+							Description:  "The private network ID",
+							Required:     true,
+							ValidateFunc: validationUUIDorUUIDWithLocality(),
 						},
 						// computed
-						"project_id": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The private network project ID",
-						},
 						"vlan": {
 							Type:        schema.TypeInt,
 							Computed:    true,
@@ -213,9 +209,35 @@ If this behaviour is wanted, please set 'reinstall_on_ssh_key_changes' argument 
 							Computed:    true,
 							Description: "The date and time of the last update of the private network",
 						},
+						"project_id": projectIDSchema(),
 					},
 				},
 			},
+		},
+		CustomizeDiff: func(ctx context.Context, diff *schema.ResourceDiff, i interface{}) error {
+			var isPrivateNetworkOption bool
+
+			_, okPrivateNetwork := diff.GetOkExists("private_network")
+
+			_, optionsExist := diff.GetOkExists("options")
+			if optionsExist {
+				options, err := expandBaremetalOptions(diff.Get("options"))
+				if err != nil {
+					return err
+				}
+
+				for i := range options {
+					if options[i].Name == "Private Network" {
+						isPrivateNetworkOption = true
+					}
+				}
+			}
+
+			if okPrivateNetwork && !isPrivateNetworkOption {
+				return fmt.Errorf("private network option needs to be enabled in order to attach a private network")
+			}
+
+			return nil
 		},
 	}
 }
