@@ -173,6 +173,12 @@ If this behaviour is wanted, please set 'reinstall_on_ssh_key_changes' argument 
 							ValidateDiagFunc: validateDate(),
 							DiffSuppressFunc: diffSuppressFuncTimeRFC3339,
 						},
+						// computed
+						"name": {
+							Type:        schema.TypeString,
+							Description: "name of the option",
+							Computed:    true,
+						},
 					},
 				},
 			},
@@ -209,25 +215,25 @@ If this behaviour is wanted, please set 'reinstall_on_ssh_key_changes' argument 
 							Computed:    true,
 							Description: "The date and time of the last update of the private network",
 						},
-						"project_id": projectIDSchema(),
 					},
 				},
 			},
 		},
-		CustomizeDiff: func(ctx context.Context, diff *schema.ResourceDiff, i interface{}) error {
+		CustomizeDiff: func(_ context.Context, diff *schema.ResourceDiff, i interface{}) error {
 			var isPrivateNetworkOption bool
 
-			_, okPrivateNetwork := diff.GetOkExists("private_network")
+			_, okPrivateNetwork := diff.GetOk("private_network")
 
-			_, optionsExist := diff.GetOkExists("options")
+			options, optionsExist := diff.GetOk("options")
 			if optionsExist {
-				options, err := expandBaremetalOptions(diff.Get("options"))
+				opSpecs, err := expandBaremetalOptions(options)
 				if err != nil {
 					return err
 				}
 
-				for i := range options {
-					if options[i].Name == "Private Network" {
+				for j := range opSpecs {
+					// private network option ID
+					if opSpecs[j].ID == "cd4158d7-2d65-49be-8803-c4b8ab6f760c" {
 						isPrivateNetworkOption = true
 					}
 				}

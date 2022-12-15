@@ -75,7 +75,11 @@ func expandBaremetalOptions(i interface{}) ([]*baremetal.ServerOption, error) {
 			option.ExpiresAt = expandTimePtr(optionExpiresAt)
 		}
 		id := expandID(rawOption["id"].(string))
+		name := rawOption["name"].(string)
+
 		option.ID = id
+		option.Name = name
+
 		options = append(options, option)
 	}
 
@@ -165,6 +169,7 @@ func flattenBaremetalOptions(zone scw.Zone, options []*baremetal.ServerOption) i
 		flattenedOptions = append(flattenedOptions, map[string]interface{}{
 			"id":         newZonedID(zone, option.ID).String(),
 			"expires_at": flattenTime(option.ExpiresAt),
+			"name":       option.Name,
 		})
 	}
 	return flattenedOptions
@@ -179,7 +184,6 @@ func flattenBaremetalPrivateNetworks(zone scw.Zone, privateNetworks []*baremetal
 			"status":     privateNetwork.Status,
 			"created_at": flattenTime(privateNetwork.CreatedAt),
 			"updated_at": flattenTime(privateNetwork.UpdatedAt),
-			"project_id": privateNetwork.ProjectID,
 		})
 	}
 	return flattenedPrivateNetworks
