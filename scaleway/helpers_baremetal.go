@@ -41,6 +41,30 @@ func baremetalAPIWithZoneAndID(m interface{}, id string) (*baremetal.API, ZonedI
 	return baremetalAPI, newZonedID(zone, ID), nil
 }
 
+// returns a new baremetal private network API and the zone for a Create request
+func baremetalPrivateNetworkAPIWithZone(d *schema.ResourceData, m interface{}) (*baremetal.PrivateNetworkAPI, scw.Zone, error) {
+	meta := m.(*Meta)
+	baremetalPrivateNetworkAPI := baremetal.NewPrivateNetworkAPI(meta.scwClient)
+
+	zone, err := extractZone(d, meta)
+	if err != nil {
+		return nil, "", err
+	}
+	return baremetalPrivateNetworkAPI, zone, nil
+}
+
+// baremetalPrivateNetworkAPIWithZoneAndID returns a baremetal private network API with zone and ID extracted from the state
+func baremetalPrivateNetworkAPIWithZoneAndID(m interface{}, id string) (*baremetal.PrivateNetworkAPI, ZonedID, error) {
+	meta := m.(*Meta)
+	baremetalPrivateNetworkAPI := baremetal.NewPrivateNetworkAPI(meta.scwClient)
+
+	zone, ID, err := parseZonedID(id)
+	if err != nil {
+		return nil, ZonedID{}, err
+	}
+	return baremetalPrivateNetworkAPI, newZonedID(zone, ID), nil
+}
+
 func expandBaremetalOptions(i interface{}) ([]*baremetal.ServerOption, error) {
 	options := []*baremetal.ServerOption(nil)
 
@@ -51,11 +75,27 @@ func expandBaremetalOptions(i interface{}) ([]*baremetal.ServerOption, error) {
 			option.ExpiresAt = expandTimePtr(optionExpiresAt)
 		}
 		id := expandID(rawOption["id"].(string))
+		name := rawOption["name"].(string)
+
 		option.ID = id
+		option.Name = name
+
 		options = append(options, option)
 	}
 
 	return options, nil
+}
+
+func expandBaremetalPrivateNetworks(pn interface{}) []string {
+	var privateNetworkIDs []string
+
+	for _, op := range pn.(*schema.Set).List() {
+		rawPN := op.(map[string]interface{})
+		id := expandID(rawPN["id"].(string))
+		privateNetworkIDs = append(privateNetworkIDs, id)
+	}
+
+	return privateNetworkIDs
 }
 
 func flattenBaremetalCPUs(cpus []*baremetal.CPU) interface{} {
@@ -129,9 +169,24 @@ func flattenBaremetalOptions(zone scw.Zone, options []*baremetal.ServerOption) i
 		flattenedOptions = append(flattenedOptions, map[string]interface{}{
 			"id":         newZonedID(zone, option.ID).String(),
 			"expires_at": flattenTime(option.ExpiresAt),
+			"name":       option.Name,
 		})
 	}
 	return flattenedOptions
+}
+
+func flattenBaremetalPrivateNetworks(zone scw.Zone, privateNetworks []*baremetal.ServerPrivateNetwork) interface{} {
+	flattenedPrivateNetworks := []map[string]interface{}(nil)
+	for _, privateNetwork := range privateNetworks {
+		flattenedPrivateNetworks = append(flattenedPrivateNetworks, map[string]interface{}{
+			"id":         newZonedID(zone, privateNetwork.PrivateNetworkID).String(),
+			"vlan":       flattenUint32Ptr(privateNetwork.Vlan),
+			"status":     privateNetwork.Status,
+			"created_at": flattenTime(privateNetwork.CreatedAt),
+			"updated_at": flattenTime(privateNetwork.UpdatedAt),
+		})
+	}
+	return flattenedPrivateNetworks
 }
 
 func waitForBaremetalServer(ctx context.Context, api *baremetal.API, zone scw.Zone, serverID string, timeout time.Duration) (*baremetal.Server, error) {
@@ -180,6 +235,22 @@ func waitForBaremetalServerOptions(ctx context.Context, api *baremetal.API, zone
 	}, scw.WithContext(ctx))
 
 	return server, err
+}
+
+func waitForBaremetalServerPrivateNetwork(ctx context.Context, api *baremetal.PrivateNetworkAPI, zone scw.Zone, serverID string, timeout time.Duration) ([]*baremetal.ServerPrivateNetwork, error) {
+	retryInterval := baremetalRetryInterval
+	if DefaultWaitRetryInterval != nil {
+		retryInterval = *DefaultWaitRetryInterval
+	}
+
+	serverPrivateNetwork, err := api.WaitForServerPrivateNetworks(&baremetal.WaitForServerPrivateNetworksRequest{
+		Zone:          zone,
+		ServerID:      serverID,
+		Timeout:       scw.TimeDurationPtr(timeout),
+		RetryInterval: &retryInterval,
+	}, scw.WithContext(ctx))
+
+	return serverPrivateNetwork, err
 }
 
 func baremetalInstallServer(ctx context.Context, d *schema.ResourceData, baremetalAPI *baremetal.API, installServerRequest *baremetal.InstallServerRequest) error {
