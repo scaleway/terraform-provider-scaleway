@@ -571,6 +571,13 @@ func flattenInt32Ptr(i *int32) interface{} {
 	return *i
 }
 
+func flattenUint32Ptr(i *uint32) interface{} {
+	if i == nil {
+		return 0
+	}
+	return *i
+}
+
 func expandInt32Ptr(data interface{}) *int32 {
 	if data == nil || data == "" {
 		return nil

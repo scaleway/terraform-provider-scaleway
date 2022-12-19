@@ -180,7 +180,7 @@ func flattenBaremetalPrivateNetworks(zone scw.Zone, privateNetworks []*baremetal
 	for _, privateNetwork := range privateNetworks {
 		flattenedPrivateNetworks = append(flattenedPrivateNetworks, map[string]interface{}{
 			"id":         newZonedID(zone, privateNetwork.PrivateNetworkID).String(),
-			"vlan":       privateNetwork.Vlan,
+			"vlan":       flattenUint32Ptr(privateNetwork.Vlan),
 			"status":     privateNetwork.Status,
 			"created_at": flattenTime(privateNetwork.CreatedAt),
 			"updated_at": flattenTime(privateNetwork.UpdatedAt),
