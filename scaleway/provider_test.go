@@ -251,7 +251,12 @@ func getHTTPRecoder(t *testing.T, update bool) (client *http.Client, cleanup fun
 	// Add a filter that will replace sensitive values with fixed values
 	r.AddFilter(cassetteSensitiveFieldsAnonymizer)
 
-	return &http.Client{Transport: newRetryableTransport(r)}, func() {
+	retryOptions := retryableTransportOptions{}
+	if !*UpdateCassettes {
+		retryOptions.RetryWaitMax = scw.TimeDurationPtr(0)
+	}
+
+	return &http.Client{Transport: newRetryableTransportWithOptions(r, retryOptions)}, func() {
 		assert.NoError(t, r.Stop()) // Make sure recorder is stopped once done with it
 	}, nil
 }
