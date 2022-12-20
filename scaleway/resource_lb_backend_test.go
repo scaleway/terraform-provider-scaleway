@@ -50,6 +50,8 @@ func TestAccScalewayLbBackend_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_lb_backend.bkd01", "health_check_delay", "1m0s"),
 					resource.TestCheckResourceAttr("scaleway_lb_backend.bkd01", "health_check_max_retries", "2"),
 					resource.TestCheckResourceAttrPair("scaleway_lb_backend.bkd01", "server_ips.0", "scaleway_instance_ip.ip01", "address"),
+					resource.TestCheckResourceAttr("scaleway_lb_backend.bkd01", "ssl_bridging", "false"),
+					resource.TestCheckResourceAttr("scaleway_lb_backend.bkd01", "ignore_ssl_server_verify", "false"),
 				),
 			},
 			{
@@ -82,6 +84,8 @@ func TestAccScalewayLbBackend_Basic(t *testing.T) {
 						health_check_port = 81
 						health_check_max_retries = 3
 						on_marked_down_action = "shutdown_sessions"
+						ssl_bridging = "true"
+						ignore_ssl_server_verify = "true"
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
@@ -93,6 +97,8 @@ func TestAccScalewayLbBackend_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_lb_backend.bkd01", "health_check_port", "81"),
 					resource.TestCheckResourceAttr("scaleway_lb_backend.bkd01", "health_check_max_retries", "3"),
 					resource.TestCheckResourceAttr("scaleway_lb_backend.bkd01", "on_marked_down_action", "shutdown_sessions"),
+					resource.TestCheckResourceAttr("scaleway_lb_backend.bkd01", "ssl_bridging", "true"),
+					resource.TestCheckResourceAttr("scaleway_lb_backend.bkd01", "ignore_ssl_server_verify", "true"),
 				),
 			},
 		},
