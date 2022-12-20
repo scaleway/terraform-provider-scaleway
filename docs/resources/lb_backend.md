@@ -60,6 +60,8 @@ The following arguments are supported:
 - `failover_host`               - (Optional) Scaleway S3 bucket website to be served in case all backend servers are down.
 ~> **Note:** Only the host part of the Scaleway S3 bucket website is expected:
 e.g. 'failover-website.s3-website.fr-par.scw.cloud' if your bucket website URL is 'https://failover-website.s3-website.fr-par.scw.cloud/'.
+- `ssl_bridging`                - (Default: `false`) Enables SSL between load balancer and backend servers.
+- `ignore_ssl_server_verify`    - (Default: `false`) Specifies whether the Load Balancer should check the backend server’s certificate before initiating a connection.
 
 ### Health Check arguments
 
