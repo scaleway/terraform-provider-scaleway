@@ -166,6 +166,12 @@ func resourceScalewayLbFrontend() *schema.Resource {
 					},
 				},
 			},
+			"enable_http3": {
+				Type:        schema.TypeBool,
+				Description: "Activates HTTP/3 protocol",
+				Optional:    true,
+				Default:     false,
+			},
 		},
 	}
 }
@@ -202,6 +208,7 @@ func resourceScalewayLbFrontendCreate(ctx context.Context, d *schema.ResourceDat
 		InboundPort:   int32(d.Get("inbound_port").(int)),
 		BackendID:     expandID(d.Get("backend_id")),
 		TimeoutClient: timeoutClient,
+		EnableHTTP3:   d.Get("enable_http3").(bool),
 	}
 
 	certificatesRaw, certificatesExist := d.GetOk("certificate_ids")
@@ -247,6 +254,7 @@ func resourceScalewayLbFrontendRead(ctx context.Context, d *schema.ResourceData,
 	_ = d.Set("name", frontend.Name)
 	_ = d.Set("inbound_port", int(frontend.InboundPort))
 	_ = d.Set("timeout_client", flattenDuration(frontend.TimeoutClient))
+	_ = d.Set("enable_http3", frontend.EnableHTTP3)
 
 	if frontend.Certificate != nil {
 		_ = d.Set("certificate_id", newZonedIDString(zone, frontend.Certificate.ID))
@@ -399,6 +407,10 @@ func resourceScalewayLbFrontendUpdate(ctx context.Context, d *schema.ResourceDat
 
 	if d.HasChanges("certificate_ids") {
 		req.CertificateIDs = expandSliceIDsPtr(d.Get("certificate_ids"))
+	}
+
+	if d.HasChange("enable_http3") {
+		req.EnableHTTP3 = d.Get("enable_http3").(bool)
 	}
 
 	_, err = lbAPI.UpdateFrontend(req, scw.WithContext(ctx))
