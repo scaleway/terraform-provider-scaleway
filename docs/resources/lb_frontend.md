@@ -149,6 +149,8 @@ The following arguments are supported:
 
 ~> **Important:** Certificates are not allowed on port 80.
 
+- `enable_http3` - (Default: `false`) Activates HTTP/3 protocol.
+
 - `acl` - (Optional) A list of ACL rules to apply to the load-balancer frontend.  Defined below.
 
 ## acl
