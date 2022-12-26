@@ -28,20 +28,6 @@ func TestAccScalewayDataSourceVPCPublicGateway_Basic(t *testing.T) {
 						type = "VPC-GW-S"
 						zone = "nl-ams-1"
 					}
-					`, pgName),
-			},
-			{
-				Config: fmt.Sprintf(`
-					resource "scaleway_vpc_public_gateway" "main" {
-						name = "%s"
-						type = "VPC-GW-S"
-					}
-
-					resource "scaleway_vpc_public_gateway" "with-zone" {
-						name = "public-gateway-with-not-default-zone"
-						type = "VPC-GW-S"
-						zone = "nl-ams-1"
-					}
 
 					data "scaleway_vpc_public_gateway" "pg_test_by_name" {
 						name = "${scaleway_vpc_public_gateway.main.name}"
