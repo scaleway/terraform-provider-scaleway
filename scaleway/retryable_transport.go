@@ -53,7 +53,7 @@ func (c *retryableTransport) RoundTrip(r *http.Request) (*http.Response, error) 
 	}
 	req, err := retryablehttp.NewRequest(r.Method, r.URL.String(), body)
 	if err != nil {
-		return nil, fmt.Errorf("failed to create HTTP request: %v", err)
+		return nil, fmt.Errorf("failed to create HTTP request: %w", err)
 	}
 	for key, val := range r.Header {
 		req.Header.Set(key, val[0])
