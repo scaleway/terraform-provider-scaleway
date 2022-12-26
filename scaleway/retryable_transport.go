@@ -47,7 +47,7 @@ func (c *retryableTransport) RoundTrip(r *http.Request) (*http.Response, error) 
 	if r.Body != nil {
 		bs, err := ioutil.ReadAll(r.Body)
 		if err != nil {
-			return nil, fmt.Errorf("failed to read HTTP body: %v", err)
+			return nil, fmt.Errorf("failed to read HTTP body: %w", err)
 		}
 		body = bytes.NewReader(bs)
 	}
