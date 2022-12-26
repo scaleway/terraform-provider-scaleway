@@ -193,7 +193,7 @@ func testAccCheckScalewayVPCPublicGatewayExists(tt *TestTools, n string) resourc
 		})
 
 		if err != nil {
-			return fmt.Errorf("error getting VPC Public Gateway: %s", err)
+			return fmt.Errorf("error getting VPC Public Gateway: %w", err)
 		}
 
 		return nil
