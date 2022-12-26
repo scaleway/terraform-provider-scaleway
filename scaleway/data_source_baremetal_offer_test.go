@@ -82,7 +82,7 @@ func testAccCheckScalewayBaremetalOfferExists(tt *TestTools, n string) resource.
 			Zone: zone,
 		}, scw.WithAllPages())
 		if err != nil {
-			return fmt.Errorf("error getting baremetal offers: %s", err)
+			return fmt.Errorf("error getting baremetal offers: %w", err)
 		}
 		for _, offer := range resp.Offers {
 			if offer.ID == id {
