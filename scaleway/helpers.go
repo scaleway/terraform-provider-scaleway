@@ -219,7 +219,7 @@ func extractZone(d terraformResourceData, meta *Meta) (scw.Zone, error) {
 	if exist {
 		zone, err := scw.ParseZone(rawZone.(string))
 		if err != nil {
-			return "", fmt.Errorf("invalid zone: %s", err)
+			return "", fmt.Errorf("invalid zone: %w", err)
 		}
 		return zone, nil
 	}
