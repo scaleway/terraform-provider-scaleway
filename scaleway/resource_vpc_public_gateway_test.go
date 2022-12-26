@@ -227,7 +227,7 @@ func testAccCheckScalewayVPCPublicGatewayDestroy(tt *TestTools) resource.TestChe
 			// Unexpected api error we return it
 			if !is404Error(err) {
 				return fmt.Errorf(
-					"error on destroying VPC public gateway %s : %s",
+					"error on destroying VPC public gateway %s : %w",
 					rs.Primary.ID,
 					err,
 				)
