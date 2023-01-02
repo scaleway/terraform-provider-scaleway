@@ -846,7 +846,7 @@ func customizeDiffLocalityCheck(keys ...string) schema.CustomizeDiffFunc {
 		if locality == "" {
 			return fmt.Errorf("missing locality zone or region to check IDs")
 		}
-		
+
 		for _, key := range keys {
 			IDLocality, _, err := parseLocalizedID(diff.Get(key).(string))
 			if err == nil && IDLocality != locality {
