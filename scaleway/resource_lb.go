@@ -146,6 +146,15 @@ func resourceScalewayLbCreate(ctx context.Context, d *schema.ResourceData, meta 
 		return diag.FromErr(err)
 	}
 
+	ipZone, _, err := parseZonedID(d.Get("ip_id").(string))
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	if ipZone != zone {
+		return diag.Errorf("ip and lb must be in the same zone (got %s and %s)", ipZone, zone)
+	}
+
 	createReq := &lbSDK.ZonedAPICreateLBRequest{
 		Zone:                  zone,
 		IPID:                  expandStringPtr(expandID(d.Get("ip_id"))),
