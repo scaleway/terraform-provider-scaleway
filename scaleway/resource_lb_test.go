@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"reflect"
+	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -529,6 +530,65 @@ func TestAccScalewayLbLb_WithPrivateNetworksOnDHCPConfig(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_lb.lb01",
 						"private_network.0.status", lbSDK.PrivateNetworkStatusReady.String()),
 				),
+			},
+		},
+	})
+}
+
+func TestAccScalewayLbLb_DifferentLocalityIPID(t *testing.T) {
+	tt := NewTestTools(t)
+	defer tt.Cleanup()
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      testAccCheckScalewayLbDestroy(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource scaleway_lb_ip main {
+						zone = "fr-par-2"
+					}
+
+					resource scaleway_lb main {
+						ip_id = scaleway_lb_ip.main.id
+						name = "test-lb-basic"
+						type = "LB-S"
+						zone = "fr-par-1"
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayLbExists(tt, "scaleway_lb.main"),
+					testCheckResourceAttrUUID("scaleway_lb.main", "id"),
+					resource.TestCheckResourceAttr("scaleway_lb.main", "name", "test-lb-basic"),
+					resource.TestCheckResourceAttr("scaleway_lb.main", "type", "LB-S"),
+				),
+				ExpectError: regexp.MustCompile("has different locality than the resource"),
+			},
+			{
+				Config: `
+					resource scaleway_lb_ip main {
+						zone = "fr-par-2"
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayLbIPExists(tt, "scaleway_lb_ip.main"),
+				),
+			},
+			{
+				Config: `
+					resource scaleway_lb_ip main {
+						zone = "fr-par-2"
+					}
+
+					resource scaleway_lb main {
+						ip_id = scaleway_lb_ip.main.id
+						name = "test-lb-basic"
+						type = "LB-S"
+						zone = "fr-par-1"
+					}
+				`,
+				PlanOnly:    true,
+				ExpectError: regexp.MustCompile("has different locality than the resource"),
 			},
 		},
 	})
