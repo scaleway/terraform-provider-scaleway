@@ -38,6 +38,7 @@ func resourceScalewayLb() *schema.Resource {
 		StateUpgraders: []schema.StateUpgrader{
 			{Version: 0, Type: lbUpgradeV1SchemaType(), Upgrade: lbUpgradeV1SchemaUpgradeFunc},
 		},
+		CustomizeDiff: customizeDiffLocalityCheck("ip_id"),
 		Schema: map[string]*schema.Schema{
 			"name": {
 				Type:        schema.TypeString,
@@ -144,15 +145,6 @@ func resourceScalewayLbCreate(ctx context.Context, d *schema.ResourceData, meta 
 	lbAPI, zone, err := lbAPIWithZone(d, meta)
 	if err != nil {
 		return diag.FromErr(err)
-	}
-
-	ipZone, _, err := parseZonedID(d.Get("ip_id").(string))
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	if ipZone != zone {
-		return diag.Errorf("ip and lb must be in the same zone (got %s and %s)", ipZone, zone)
 	}
 
 	createReq := &lbSDK.ZonedAPICreateLBRequest{
