@@ -21,9 +21,9 @@ func mnqAPIWithRegionAndID(m interface{}, regionalID string) (*mnq.API, scw.Regi
 	meta := m.(*Meta)
 	mnqAPI := mnq.NewAPI(meta.scwClient)
 
-	zone, ID, err := parseRegionalID(regionalID)
+	region, ID, err := parseRegionalID(regionalID)
 	if err != nil {
 		return nil, "", "", err
 	}
-	return mnqAPI, zone, ID, nil
+	return mnqAPI, region, ID, nil
 }
