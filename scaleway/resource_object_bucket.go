@@ -197,11 +197,20 @@ func resourceScalewayObjectBucket() *schema.Resource {
 							Description: "Enable versioning. Once you version-enable a bucket, it can never return to an unversioned state",
 							Type:        schema.TypeBool,
 							Optional:    true,
-							Default:     false,
+							Computed:    true,
 						},
 					},
 				},
 			},
+		},
+		CustomizeDiff: func(ctx context.Context, diff *schema.ResourceDiff, meta interface{}) error {
+			if diff.Get("object_lock_enabled").(bool) {
+				if diff.HasChange("versioning") && !diff.Get("versioning.0.enabled").(bool) {
+					return fmt.Errorf("versioning must be enabled when object lock is enabled")
+				}
+			}
+
+			return nil
 		},
 	}
 }
@@ -267,7 +276,9 @@ func resourceScalewayObjectBucketUpdate(ctx context.Context, d *schema.ResourceD
 		}
 	}
 
-	if d.HasChange("versioning") {
+	// Object Lock enables versioning so we don't want to update versioning it is enabled
+	objectLockEnabled := d.Get("object_lock_enabled").(bool)
+	if !objectLockEnabled && d.HasChange("versioning") {
 		if err := resourceScalewayObjectBucketVersioningUpdate(ctx, s3Client, d); err != nil {
 			return diag.FromErr(err)
 		}
