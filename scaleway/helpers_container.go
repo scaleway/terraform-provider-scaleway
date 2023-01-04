@@ -48,6 +48,7 @@ func setCreateContainerRequest(d *schema.ResourceData, region scw.Region) (*cont
 	name := expandOrGenerateString(nameRaw.(string), "co")
 	privacyType := d.Get("privacy")
 	protocol := d.Get("protocol")
+	httpOption := d.Get("http_option")
 
 	req := &container.CreateContainerRequest{
 		Region:      region,
@@ -55,6 +56,7 @@ func setCreateContainerRequest(d *schema.ResourceData, region scw.Region) (*cont
 		Name:        name,
 		Privacy:     container.ContainerPrivacy(privacyType.(string)),
 		Protocol:    container.ContainerProtocol(*expandStringPtr(protocol)),
+		HTTPOption:  container.ContainerHTTPOption(httpOption.(string)),
 	}
 
 	// optional
