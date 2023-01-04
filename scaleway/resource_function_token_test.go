@@ -15,7 +15,7 @@ func TestAccScalewayFunctionToken_Basic(t *testing.T) {
 	defer tt.Cleanup()
 	expiresAt := time.Now().Add(time.Hour * 24).Format(time.RFC3339)
 	if !*UpdateCassettes {
-		expiresAt = "2023-01-05T13:12:46Z"
+		expiresAt = "2023-01-05T12:53:11Z"
 	}
 
 	resource.ParallelTest(t, resource.TestCase{
