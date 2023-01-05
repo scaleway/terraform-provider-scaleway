@@ -18,25 +18,25 @@ func TestAccScalewayMNQCreeds_Basic(t *testing.T) {
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheckScalewayMNQnNamespaceCreedDestroy(tt),
 		Steps: []resource.TestStep{
-			//{
-			//	Config: `
-			//		resource "scaleway_mnq_namespace" "main" {
-			//		  name     = "test-mnq-ns"
-			//		  protocol = "nats"
-			//		}
-			//
-			//		resource "scaleway_mnq_credential" "main" {
-			//			name = "test-creed-ns"
-			//			namespace_id = scaleway_mnq_namespace.main.id
-			//		}
-			//	`,
-			//	Check: resource.ComposeTestCheckFunc(
-			//		testAccCheckScalewayMNQCreedExists(tt, "scaleway_mnq_credential.main"),
-			//		resource.TestCheckResourceAttr("scaleway_mnq_credential.main", "protocol", "nats"),
-			//		resource.TestCheckResourceAttrSet("scaleway_mnq_credential.main", "nats_credentials.0.content"),
-			//		resource.TestCheckResourceAttrSet("scaleway_mnq_namespace.main", "region"),
-			//	),
-			//},
+			{
+				Config: `
+					resource "scaleway_mnq_namespace" "main" {
+					  name     = "test-mnq-ns"
+					  protocol = "nats"
+					}
+			
+					resource "scaleway_mnq_credential" "main" {
+						name = "test-creed-ns"
+						namespace_id = scaleway_mnq_namespace.main.id
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayMNQCreedExists(tt, "scaleway_mnq_credential.main"),
+					resource.TestCheckResourceAttr("scaleway_mnq_credential.main", "protocol", "nats"),
+					resource.TestCheckResourceAttrSet("scaleway_mnq_credential.main", "nats_credentials.0.content"),
+					resource.TestCheckResourceAttrSet("scaleway_mnq_namespace.main", "region"),
+				),
+			},
 			{
 				Config: `
 					resource "scaleway_mnq_namespace" "main" {
