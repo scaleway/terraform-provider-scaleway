@@ -194,10 +194,7 @@ func setCreedsNATS(credentials *mnq.CredentialNATSCredsFile) interface{} {
 	if credentials == nil {
 		return flattened
 	}
-	return []map[string]interface{}{{
-		"content": credentials.Content,
-	},
-	}
+	return []map[string]interface{}{{"content": credentials.Content}}
 }
 
 func setPermissionsSQS(credentials *mnq.CredentialSQSSNSCreds) interface{} {
