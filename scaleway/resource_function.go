@@ -131,6 +131,16 @@ func resourceScalewayFunction() *schema.Resource {
 				Optional:    true,
 				Description: "Define if the function should be deployed, terraform will wait for function to be deployed",
 			},
+			"http_option": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "HTTP traffic configuration",
+				Default:     function.FunctionHTTPOptionEnabled.String(),
+				ValidateFunc: validation.StringInSlice([]string{
+					function.FunctionHTTPOptionEnabled.String(),
+					function.FunctionHTTPOptionRedirected.String(),
+				}, false),
+			},
 			"cpu_limit": {
 				Type:        schema.TypeInt,
 				Computed:    true,
@@ -172,6 +182,7 @@ func resourceScalewayFunctionCreate(ctx context.Context, d *schema.ResourceData,
 		Privacy:                    function.FunctionPrivacy(d.Get("privacy").(string)),
 		Region:                     region,
 		Runtime:                    function.FunctionRuntime(d.Get("runtime").(string)),
+		HTTPOption:                 function.FunctionHTTPOption(d.Get("http_option").(string)),
 	}
 
 	if timeout, ok := d.GetOk("timeout"); ok {
@@ -280,6 +291,7 @@ func resourceScalewayFunctionRead(ctx context.Context, d *schema.ResourceData, m
 	_ = d.Set("region", f.Region.String())
 	_ = d.Set("timeout", f.Timeout.Seconds)
 	_ = d.Set("domain_name", f.DomainName)
+	_ = d.Set("http_option", f.HTTPOption)
 
 	return diags
 }
@@ -341,6 +353,11 @@ func resourceScalewayFunctionUpdate(ctx context.Context, d *schema.ResourceData,
 
 	if d.HasChange("timeout") {
 		req.Timeout = &scw.Duration{Seconds: int64(d.Get("timeout").(int))}
+		updated = true
+	}
+
+	if d.HasChange("http_option") {
+		req.HTTPOption = function.FunctionHTTPOption(d.Get("http_option").(string))
 		updated = true
 	}
 
