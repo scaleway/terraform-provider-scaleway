@@ -1,6 +1,7 @@
 package scaleway
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -203,8 +204,6 @@ type terraformResourceData interface {
 	HasChange(string) bool
 	GetOk(string) (interface{}, bool)
 	Get(string) interface{}
-	Set(string, interface{}) error
-	SetId(string)
 	Id() string
 }
 
@@ -827,4 +826,33 @@ func retryOnTransientStateError[T any, U any](action func() (T, error), waiter f
 		return retryOnTransientStateError(action, waiter)
 	}
 	return t, err
+}
+
+// customizeDiffLocalityCheck create a function that will validate locality IDs stored in given keys
+// This locality IDs should have the same locality as the resource
+// It will search for zone or region in resource
+func customizeDiffLocalityCheck(keys ...string) schema.CustomizeDiffFunc {
+	return func(ctx context.Context, diff *schema.ResourceDiff, i interface{}) error {
+		var locality string
+
+		zone, err := extractZone(diff, i.(*Meta))
+		if err == ErrZoneNotFound {
+			region, _ := extractRegion(diff, i.(*Meta))
+			locality = region.String()
+		} else {
+			locality = zone.String()
+		}
+
+		if locality == "" {
+			return fmt.Errorf("missing locality zone or region to check IDs")
+		}
+
+		for _, key := range keys {
+			IDLocality, _, err := parseLocalizedID(diff.Get(key).(string))
+			if err == nil && IDLocality != locality {
+				return fmt.Errorf("given %s %s has different locality than the resource %q", key, diff.Get(key), locality)
+			}
+		}
+		return nil
+	}
 }

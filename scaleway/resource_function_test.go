@@ -285,6 +285,72 @@ func TestAccScalewayFunction_Deploy(t *testing.T) {
 	})
 }
 
+func TestAccScalewayFunction_HTTPOption(t *testing.T) {
+	tt := NewTestTools(t)
+	defer tt.Cleanup()
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      testAccCheckScalewayFunctionDestroy(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource scaleway_function_namespace main {}
+
+					resource scaleway_function main {
+						name = "foobar"
+						namespace_id = scaleway_function_namespace.main.id
+						runtime = "node14"
+						privacy = "private"
+						handler = "handler.handle"
+						http_option = "enabled"
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayFunctionExists(tt, "scaleway_function.main"),
+					resource.TestCheckResourceAttr("scaleway_function.main", "http_option", function.FunctionHTTPOptionEnabled.String()),
+				),
+			},
+			{
+				Config: `
+					resource scaleway_function_namespace main {}
+
+					resource scaleway_function main {
+						name = "foobar"
+						namespace_id = scaleway_function_namespace.main.id
+						runtime = "node14"
+						privacy = "private"
+						handler = "handler.handle"
+						http_option = "redirected"
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayFunctionExists(tt, "scaleway_function.main"),
+					resource.TestCheckResourceAttr("scaleway_function.main", "http_option", function.FunctionHTTPOptionRedirected.String()),
+				),
+			},
+			{
+				Config: `
+					resource scaleway_function_namespace main {}
+
+					resource scaleway_function main {
+						name = "foobar"
+						namespace_id = scaleway_function_namespace.main.id
+						runtime = "node14"
+						privacy = "private"
+						handler = "handler.handle"
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayFunctionExists(tt, "scaleway_function.main"),
+					resource.TestCheckResourceAttr("scaleway_function.main", "http_option", function.FunctionHTTPOptionEnabled.String()),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckScalewayFunctionExists(tt *TestTools, n string) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		rs, ok := state.RootModule().Resources[n]

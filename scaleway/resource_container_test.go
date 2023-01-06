@@ -315,6 +315,62 @@ func TestAccScalewayContainer_WithIMG(t *testing.T) {
 	})
 }
 
+func TestAccScalewayContainer_HTTPOption(t *testing.T) {
+	tt := NewTestTools(t)
+	defer tt.Cleanup()
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      testAccCheckScalewayContainerDestroy(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource scaleway_container_namespace main {}
+
+					resource scaleway_container main {
+						namespace_id = scaleway_container_namespace.main.id
+						deploy = false
+						http_option = "enabled"
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayContainerExists(tt, "scaleway_container.main"),
+					resource.TestCheckResourceAttr("scaleway_container.main", "http_option", container.ContainerHTTPOptionEnabled.String()),
+				),
+			},
+			{
+				Config: `
+					resource scaleway_container_namespace main {}
+
+					resource scaleway_container main {
+						namespace_id = scaleway_container_namespace.main.id
+						deploy = false
+						http_option = "redirected"
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayContainerExists(tt, "scaleway_container.main"),
+					resource.TestCheckResourceAttr("scaleway_container.main", "http_option", container.ContainerHTTPOptionRedirected.String()),
+				),
+			},
+			{
+				Config: `
+					resource scaleway_container_namespace main {}
+
+					resource scaleway_container main {
+						namespace_id = scaleway_container_namespace.main.id
+						deploy = false
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayContainerExists(tt, "scaleway_container.main"),
+					resource.TestCheckResourceAttr("scaleway_container.main", "http_option", container.ContainerHTTPOptionEnabled.String()),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckScalewayContainerExists(tt *TestTools, n string) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		rs, ok := state.RootModule().Resources[n]

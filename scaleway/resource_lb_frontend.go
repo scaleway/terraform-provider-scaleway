@@ -177,7 +177,7 @@ func resourceScalewayLbFrontend() *schema.Resource {
 }
 
 func resourceScalewayLbFrontendCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	lbAPI, zone, err := lbAPIWithZone(d, meta)
+	lbAPI, _, err := lbAPIWithZone(d, meta)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -185,6 +185,21 @@ func resourceScalewayLbFrontendCreate(ctx context.Context, d *schema.ResourceDat
 	lbID := expandID(d.Get("lb_id"))
 	if lbID == "" {
 		return diag.Errorf("load balancer id wrong format: %v", d.Get("lb_id").(string))
+	}
+
+	// parse lb_id. It will be forced to a zoned lb
+	zone, _, err := parseZonedID(d.Get("lb_id").(string))
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	backZone, _, err := parseZonedID(d.Get("backend_id").(string))
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	if zone != backZone {
+		return diag.Errorf("Frontend and Backend must be in the same zone (got %s and %s)", zone, backZone)
 	}
 
 	_, err = waitForLB(ctx, lbAPI, zone, lbID, d.Timeout(schema.TimeoutCreate))
