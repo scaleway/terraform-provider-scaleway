@@ -35,7 +35,7 @@ func testSweepInstanceServer(_ string) error {
 					ServerID: srv.ID,
 				})
 				if err != nil {
-					return fmt.Errorf("error deleting server in sweeper: %s", err)
+					return fmt.Errorf("error deleting server in sweeper: %w", err)
 				}
 			} else if srv.State == instance.ServerStateRunning {
 				_, err := instanceAPI.ServerAction(&instance.ServerActionRequest{
@@ -44,7 +44,7 @@ func testSweepInstanceServer(_ string) error {
 					Action:   instance.ServerActionTerminate,
 				})
 				if err != nil {
-					return fmt.Errorf("error terminating server in sweeper: %s", err)
+					return fmt.Errorf("error terminating server in sweeper: %w", err)
 				}
 			}
 		}

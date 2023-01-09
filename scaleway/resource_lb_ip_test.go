@@ -25,7 +25,7 @@ func testSweepLBIP(_ string) error {
 		l.Debugf("sweeper: destroying the lb ips in zone (%s)", zone)
 		listIPs, err := lbAPI.ListIPs(&lbSDK.ZonedAPIListIPsRequest{Zone: zone}, scw.WithAllPages())
 		if err != nil {
-			return fmt.Errorf("error listing lb ips in (%s) in sweeper: %s", zone, err)
+			return fmt.Errorf("error listing lb ips in (%s) in sweeper: %w", zone, err)
 		}
 
 		for _, ip := range listIPs.IPs {
@@ -35,7 +35,7 @@ func testSweepLBIP(_ string) error {
 					IPID: ip.ID,
 				})
 				if err != nil {
-					return fmt.Errorf("error deleting lb ip in sweeper: %s", err)
+					return fmt.Errorf("error deleting lb ip in sweeper: %w", err)
 				}
 			}
 		}

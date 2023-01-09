@@ -447,7 +447,7 @@ func testConfigContainerNamespace(tt *TestTools, n string) resource.TestCheckFun
 			Region:      region,
 		})
 		if err != nil {
-			return fmt.Errorf("error waiting namespace: %v", err)
+			return fmt.Errorf("error waiting namespace: %w", err)
 		}
 
 		meta := tt.Meta
@@ -463,12 +463,12 @@ func testConfigContainerNamespace(tt *TestTools, n string) resource.TestCheckFun
 
 		cli, err := docker.NewClientWithOpts(docker.FromEnv, docker.WithAPIVersionNegotiation())
 		if err != nil {
-			return fmt.Errorf("could not connect to Docker: %v", err)
+			return fmt.Errorf("could not connect to Docker: %w", err)
 		}
 
 		encodedJSON, err := json.Marshal(authConfig)
 		if err != nil {
-			return fmt.Errorf("could not marshal auth config: %v", err)
+			return fmt.Errorf("could not marshal auth config: %w", err)
 		}
 
 		ctx := context.Background()
@@ -476,7 +476,7 @@ func testConfigContainerNamespace(tt *TestTools, n string) resource.TestCheckFun
 
 		out, err := cli.ImagePull(ctx, testDockerIMG, types.ImagePullOptions{})
 		if err != nil {
-			return fmt.Errorf("could not pull image: %v", err)
+			return fmt.Errorf("could not pull image: %w", err)
 		}
 
 		defer out.Close()
@@ -489,7 +489,7 @@ func testConfigContainerNamespace(tt *TestTools, n string) resource.TestCheckFun
 			}
 			err = json.Unmarshal(streamBytes, &errorMessage)
 			if err != nil {
-				return fmt.Errorf("could not unmarshal: %v", err)
+				return fmt.Errorf("could not unmarshal: %w", err)
 			}
 
 			if errorMessage.Error != "" {
@@ -502,12 +502,12 @@ func testConfigContainerNamespace(tt *TestTools, n string) resource.TestCheckFun
 
 		err = cli.ImageTag(ctx, imageTag, scwTag)
 		if err != nil {
-			return fmt.Errorf("could not tag image: %v", err)
+			return fmt.Errorf("could not tag image: %w", err)
 		}
 
 		pusher, err := cli.ImagePush(ctx, scwTag, types.ImagePushOptions{RegistryAuth: authStr})
 		if err != nil {
-			return fmt.Errorf("could not push image: %v", err)
+			return fmt.Errorf("could not push image: %w", err)
 		}
 
 		defer pusher.Close()
@@ -520,7 +520,7 @@ func testConfigContainerNamespace(tt *TestTools, n string) resource.TestCheckFun
 			}
 			err = json.Unmarshal(streamBytes, &errorMessage)
 			if err != nil {
-				return fmt.Errorf("could not unmarshal: %v", err)
+				return fmt.Errorf("could not unmarshal: %w", err)
 			}
 
 			if errorMessage.Error != "" {
@@ -533,7 +533,7 @@ func testConfigContainerNamespace(tt *TestTools, n string) resource.TestCheckFun
 			Region:      region,
 		})
 		if err != nil {
-			return fmt.Errorf("error waiting namespace: %v", err)
+			return fmt.Errorf("error waiting namespace: %w", err)
 		}
 
 		return nil

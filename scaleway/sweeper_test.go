@@ -21,7 +21,7 @@ func sweepZones(zones []scw.Zone, f func(scwClient *scw.Client, zone scw.Zone) e
 		}
 		err = f(client, zone)
 		if err != nil {
-			l.Warningf("error running sweepZones, ignoring: %s", err)
+			l.Warningf("error running sweepZones, ignoring: %w", err)
 		}
 	}
 	return nil

@@ -27,7 +27,7 @@ func testSweepComputeInstanceVolume(_ string) error {
 			Zone: zone,
 		}, scw.WithAllPages())
 		if err != nil {
-			return fmt.Errorf("error listing volumes in sweeper: %s", err)
+			return fmt.Errorf("error listing volumes in sweeper: %w", err)
 		}
 
 		for _, volume := range listVolumesResponse.Volumes {
@@ -37,7 +37,7 @@ func testSweepComputeInstanceVolume(_ string) error {
 					VolumeID: volume.ID,
 				})
 				if err != nil {
-					return fmt.Errorf("error deleting volume in sweeper: %s", err)
+					return fmt.Errorf("error deleting volume in sweeper: %w", err)
 				}
 			}
 		}

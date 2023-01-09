@@ -594,7 +594,7 @@ func testSweepComputeInstanceSecurityGroup(_ string) error {
 			Zone: zone,
 		}, scw.WithAllPages())
 		if err != nil {
-			l.Warningf("error listing security groups in sweeper: %s", err)
+			l.Warningf("error listing security groups in sweeper: %w", err)
 			return nil
 		}
 
@@ -608,7 +608,7 @@ func testSweepComputeInstanceSecurityGroup(_ string) error {
 				SecurityGroupID: securityGroup.ID,
 			})
 			if err != nil {
-				return fmt.Errorf("error deleting security groups in sweeper: %s", err)
+				return fmt.Errorf("error deleting security groups in sweeper: %w", err)
 			}
 		}
 
