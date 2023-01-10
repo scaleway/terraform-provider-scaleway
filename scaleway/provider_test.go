@@ -202,6 +202,7 @@ func cassetteSensitiveFieldsAnonymizer(i *cassette.Interaction) error {
 	var jsonBody map[string]interface{}
 	err := json.Unmarshal([]byte(i.Response.Body), &jsonBody)
 	if err != nil {
+		//nolint:nilerr
 		return nil
 	}
 	for key, value := range SensitiveFields {
@@ -338,13 +339,13 @@ func TestAccScalewayProvider_SSHKeys(t *testing.T) {
 			{
 				Config: fmt.Sprintf(`
 					resource "scaleway_account_ssh_key" "prod" {
-						provider   = "prod" 
+						provider   = "prod"
 						name 	   = "%[1]s"
 						public_key = "%[2]s"
 					}
 
 					resource "scaleway_account_ssh_key" "dev" {
-						provider   = "dev" 
+						provider   = "dev"
 						name 	   = "%[1]s"
 						public_key = "%[2]s"
 					}
@@ -397,7 +398,7 @@ func TestAccScalewayProvider_InstanceIPZones(t *testing.T) {
 					resource scaleway_instance_ip dev {
 					  provider = "dev"
 					}
-					
+
 					resource scaleway_instance_ip prod {
 					  provider = "prod"
 					}
