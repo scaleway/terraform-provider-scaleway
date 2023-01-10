@@ -133,9 +133,6 @@ func getDatabase(ctx context.Context, api *rdb.API, r scw.Region, instanceID, db
 		Name:       &dbName,
 	}, scw.WithContext(ctx))
 	if err != nil {
-		if is404Error(err) {
-			return nil, nil
-		}
 		return nil, err
 	}
 
