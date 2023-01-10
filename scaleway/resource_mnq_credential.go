@@ -101,7 +101,7 @@ func resourceScalewayMNQCredential() *schema.Resource {
 						"access_key": {
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "The ID of the key",
+							Description: "The key of the credential",
 						},
 					},
 				},
