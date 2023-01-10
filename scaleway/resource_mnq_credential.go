@@ -2,16 +2,10 @@ package scaleway
 
 import (
 	"context"
-	"time"
-
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	mnq "github.com/scaleway/scaleway-sdk-go/api/mnq/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
-)
-
-const (
-	defaultMNQCredentialTimeout = 5 * time.Minute
 )
 
 func resourceScalewayMNQCredential() *schema.Resource {
@@ -23,13 +17,6 @@ func resourceScalewayMNQCredential() *schema.Resource {
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
-		Timeouts: &schema.ResourceTimeout{
-			Create:  schema.DefaultTimeout(defaultMNQCredentialTimeout),
-			Read:    schema.DefaultTimeout(defaultMNQCredentialTimeout),
-			Update:  schema.DefaultTimeout(defaultMNQCredentialTimeout),
-			Delete:  schema.DefaultTimeout(defaultMNQCredentialTimeout),
-			Default: schema.DefaultTimeout(defaultMNQCredentialTimeout),
-		},
 		SchemaVersion: 0,
 		Schema: map[string]*schema.Schema{
 			"name": {
@@ -40,7 +27,7 @@ func resourceScalewayMNQCredential() *schema.Resource {
 			},
 			"namespace_id": {
 				Type:        schema.TypeString,
-				Optional:    true,
+				Required:    true,
 				ForceNew:    true,
 				Description: "The ID of the Namespace associated to",
 			},
@@ -86,19 +73,19 @@ func resourceScalewayMNQCredential() *schema.Resource {
 								Schema: map[string]*schema.Schema{
 									"can_publish": {
 										Type:        schema.TypeBool,
-										Default:     true,
+										Default:     false,
 										Optional:    true,
 										Description: "Allow publish messages to the service",
 									},
 									"can_receive": {
 										Type:        schema.TypeBool,
-										Default:     true,
+										Default:     false,
 										Optional:    true,
 										Description: "Allow receive messages from the service",
 									},
 									"can_manage": {
 										Type:        schema.TypeBool,
-										Default:     true,
+										Default:     false,
 										Optional:    true,
 										Description: "Allow manage the associated resource",
 									},
@@ -190,7 +177,6 @@ func resourceScalewayMNQCredentialRead(ctx context.Context, d *schema.ResourceDa
 func setCreedsNATS(credentials *mnq.CredentialNATSCredsFile) interface{} {
 	var flattened []map[string]interface{}
 
-	// only
 	if credentials == nil {
 		return flattened
 	}
@@ -200,7 +186,6 @@ func setCreedsNATS(credentials *mnq.CredentialNATSCredsFile) interface{} {
 func setPermissionsSQS(credentials *mnq.CredentialSQSSNSCreds) interface{} {
 	var flattened []map[string]interface{}
 
-	// only
 	if credentials == nil {
 		return flattened
 	}
@@ -236,6 +221,14 @@ func resourceScalewayMNQCredentialUpdate(ctx context.Context, d *schema.Resource
 
 	if d.HasChange("name") {
 		request.Name = scw.StringPtr(d.Get("name").(string))
+	}
+
+	if _, exist := d.GetOk("sqs_sns_credentials"); exist && d.HasChange("sqs_sns_credentials") {
+		perm := mnq.Permissions{}
+		perm.CanPublish = expandBoolPtr(d.Get("sqs_sns_credentials.0.permissions.0.can_publish"))
+		perm.CanManage = expandBoolPtr(d.Get("sqs_sns_credentials.0.permissions.0.can_manage"))
+		perm.CanReceive = expandBoolPtr(d.Get("sqs_sns_credentials.0.permissions.0.can_receive"))
+		request.Permissions = &perm
 	}
 
 	_, err = api.UpdateCredential(request, scw.WithContext(ctx))
