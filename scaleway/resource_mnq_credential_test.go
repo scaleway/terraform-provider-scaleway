@@ -99,6 +99,37 @@ func TestAccScalewayMNQCreeds_Basic(t *testing.T) {
 					resource.TestCheckResourceAttrSet("scaleway_mnq_namespace.main", "region"),
 				),
 			},
+			{
+				Config: `
+					resource "scaleway_mnq_namespace" "main" {
+					  name     = "test-mnq-sqs-update"
+					  protocol = "sqs_sns"
+					}
+					
+					resource "scaleway_mnq_credential" "main" {
+					  name         = "test-mnq-sqs-update"
+					  namespace_id = scaleway_mnq_namespace.main.id
+					  sqs_sns_credentials {
+						permissions {
+						  can_publish = true
+						  can_receive = true
+						  can_manage  = false
+						}
+					  }
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayMNQCreedExists(tt, "scaleway_mnq_credential.main"),
+					resource.TestCheckResourceAttr("scaleway_mnq_credential.main", "name", "test-mnq-sqs-update"),
+					resource.TestCheckResourceAttr("scaleway_mnq_credential.main", "protocol", "sqs_sns"),
+					resource.TestCheckResourceAttr("scaleway_mnq_credential.main", "sqs_sns_credentials.0.permissions.0.can_publish", "true"),
+					resource.TestCheckResourceAttr("scaleway_mnq_credential.main", "sqs_sns_credentials.0.permissions.0.can_receive", "true"),
+					resource.TestCheckResourceAttr("scaleway_mnq_credential.main", "sqs_sns_credentials.0.permissions.0.can_manage", "false"),
+					resource.TestCheckResourceAttrSet("scaleway_mnq_credential.main", "sqs_sns_credentials.0.secret_key"),
+					resource.TestCheckResourceAttrSet("scaleway_mnq_credential.main", "sqs_sns_credentials.0.access_key"),
+					resource.TestCheckResourceAttrSet("scaleway_mnq_namespace.main", "region"),
+				),
+			},
 		},
 	})
 }
