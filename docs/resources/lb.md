@@ -86,7 +86,7 @@ resource scaleway_lb main {
 
     private_network {
         private_network_id = scaleway_vpc_private_network.main.id
-        static_config = ["172.16.0.100", "172.16.0.101"]
+        static_config = ["172.16.0.100"]
     }
 
     private_network {
@@ -186,7 +186,7 @@ resource scaleway_lb main {
     release_ip = false
     private_network {
         private_network_id = scaleway_vpc_private_network.main.id
-        static_config = ["172.16.0.100", "172.16.0.101"]
+        static_config = ["172.16.0.100"]
     }
 }
 ```
@@ -197,7 +197,7 @@ resource scaleway_lb main {
 
 - ~> **Important:** Updates to `private_network` will recreate the attachment.
 
-- `static_config` - (Optional) Define two local ip address of your choice for each load balancer instance. See below.
+- `static_config` - (Optional) Define a local ip address of your choice for the load balancer instance. See below.
 
 - `dhcp_config` - (Optional) Set to true if you want to let DHCP assign IP addresses. See below.
 
