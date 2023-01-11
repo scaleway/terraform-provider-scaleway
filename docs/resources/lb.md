@@ -63,10 +63,11 @@ resource "scaleway_instance_server" "main" {
     type        = "DEV1-S"
     image       = "debian_bullseye"
     enable_ipv6 = false
+}
 
-    private_network {
-        pn_id = scaleway_vpc_private_network.main.id
-    }
+resource "scaleway_instance_private_nic" "pnic01" {
+  server_id = scaleway_instance_server.main.id
+  private_network_id = scaleway_vpc_private_network.main.id
 }
 
 ### IP for LB IP

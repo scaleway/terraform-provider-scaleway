@@ -135,16 +135,17 @@ func TestAccScalewayVPCPublicGatewayPATRule_WithInstance(t *testing.T) {
 					  type        = "DEV1-S"
 					  image       = "debian_bullseye"
 					  enable_ipv6 = false
-					
-					  private_network {
-						pn_id = scaleway_vpc_private_network.main.id
-					  }
+					}
+
+					resource "scaleway_instance_private_nic" "pnic01" {
+					  server_id          = scaleway_instance_server.main.id
+                      private_network_id = scaleway_vpc_private_network.main.id
 					}
 					
 					### DHCP Reservation for Instance
 					resource "scaleway_vpc_public_gateway_dhcp_reservation" "main" {
 					  gateway_network_id = scaleway_vpc_gateway_network.main.id
-					  mac_address        = scaleway_instance_server.main.private_network.0.mac_address
+					  mac_address        = scaleway_instance_private_nic.pnic01.mac_address
 					  ip_address         = "10.0.0.3"
 					}
 					

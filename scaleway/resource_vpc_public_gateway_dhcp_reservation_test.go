@@ -28,10 +28,11 @@ func TestAccScalewayVPCPublicGatewayDHCPEntry_Basic(t *testing.T) {
 						image = "ubuntu_focal"
 						type  = "DEV1-S"
 						zone = "fr-par-1"
+					}
 
-						private_network {
-							pn_id = scaleway_vpc_private_network.main.id
-						}
+					resource "scaleway_instance_private_nic" "pnic01" {
+					    server_id = scaleway_instance_server.main.id
+					    private_network_id = scaleway_vpc_private_network.main.id
 					}
 
 					resource scaleway_vpc_public_gateway_ip main {
@@ -58,14 +59,14 @@ func TestAccScalewayVPCPublicGatewayDHCPEntry_Basic(t *testing.T) {
 
 					resource scaleway_vpc_public_gateway_dhcp_reservation main {
 						gateway_network_id = scaleway_vpc_gateway_network.main.id
-						mac_address = scaleway_instance_server.main.private_network.0.mac_address
+						mac_address = scaleway_instance_private_nic.pnic01.mac_address
 						ip_address = "192.168.1.1"
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayVPCPublicGatewayDHCPReservationExists(tt, "scaleway_vpc_public_gateway_dhcp_reservation.main"),
 					resource.TestCheckResourceAttrPair("scaleway_vpc_public_gateway_dhcp_reservation.main",
-						"mac_address", "scaleway_instance_server.main", "private_network.0.mac_address"),
+						"mac_address", "scaleway_instance_private_nic.pnic01", "mac_address"),
 					resource.TestCheckResourceAttrPair("scaleway_vpc_public_gateway_dhcp_reservation.main", "gateway_network_id",
 						"scaleway_vpc_gateway_network.main", "id"),
 					resource.TestCheckResourceAttr("scaleway_vpc_public_gateway_dhcp_reservation.main", "ip_address", "192.168.1.1"),
@@ -84,10 +85,11 @@ func TestAccScalewayVPCPublicGatewayDHCPEntry_Basic(t *testing.T) {
 						image = "ubuntu_focal"
 						type  = "DEV1-S"
 						zone = "fr-par-1"
+					}
 
-						private_network {
-							pn_id = scaleway_vpc_private_network.main.id
-						}
+					resource "scaleway_instance_private_nic" "pnic01" {
+					    server_id = scaleway_instance_server.main.id
+                        private_network_id = scaleway_vpc_private_network.main.id
 					}
 
 					resource scaleway_vpc_public_gateway_ip main {
@@ -114,14 +116,14 @@ func TestAccScalewayVPCPublicGatewayDHCPEntry_Basic(t *testing.T) {
 
 					resource scaleway_vpc_public_gateway_dhcp_reservation main {
 						gateway_network_id = scaleway_vpc_gateway_network.main.id
-						mac_address = scaleway_instance_server.main.private_network.0.mac_address
+						mac_address = scaleway_instance_private_nic.pnic01.mac_address
 						ip_address = "192.168.1.2"
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayVPCPublicGatewayDHCPReservationExists(tt, "scaleway_vpc_public_gateway_dhcp_reservation.main"),
 					resource.TestCheckResourceAttrPair("scaleway_vpc_public_gateway_dhcp_reservation.main",
-						"mac_address", "scaleway_instance_server.main", "private_network.0.mac_address"),
+						"mac_address", "scaleway_instance_private_nic.pnic01", "mac_address"),
 					resource.TestCheckResourceAttrPair("scaleway_vpc_public_gateway_dhcp_reservation.main", "gateway_network_id",
 						"scaleway_vpc_gateway_network.main", "id"),
 					resource.TestCheckResourceAttr("scaleway_vpc_public_gateway_dhcp_reservation.main", "ip_address", "192.168.1.2"),
