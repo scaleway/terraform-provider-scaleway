@@ -61,6 +61,61 @@ func TestParseLocalizedID(t *testing.T) {
 	}
 }
 
+func TestParseLocalizedNestedID(t *testing.T) {
+	testCases := []struct {
+		name       string
+		localityID string
+		innerID    string
+		outerID    string
+		locality   string
+		err        string
+	}{
+		{
+			name:       "id with a sub directory",
+			localityID: "fr-par/my-id/subdir",
+			innerID:    "my-id",
+			outerID:    "subdir",
+			locality:   "fr-par",
+		},
+		{
+			name:       "id with multiple sub directories",
+			localityID: "fr-par/my-id/subdir/foo/bar",
+			innerID:    "my-id",
+			outerID:    "subdir/foo/bar",
+			locality:   "fr-par",
+		},
+		{
+			name:       "simple",
+			localityID: "fr-par-1/my-id",
+			err:        "cant parse localized id: fr-par-1/my-id",
+		},
+		{
+			name:       "empty",
+			localityID: "",
+			err:        "cant parse localized id: ",
+		},
+		{
+			name:       "without locality",
+			localityID: "my-id",
+			err:        "cant parse localized id: my-id",
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			locality, innerID, outerID, err := parseLocalizedNestedID(tc.localityID)
+			if tc.err != "" {
+				require.EqualError(t, err, tc.err)
+			} else {
+				require.NoError(t, err)
+				assert.Equal(t, tc.locality, locality)
+				assert.Equal(t, tc.innerID, innerID)
+				assert.Equal(t, tc.outerID, outerID)
+			}
+		})
+	}
+}
+
 func TestParseZonedID(t *testing.T) {
 	testCases := []struct {
 		name       string
