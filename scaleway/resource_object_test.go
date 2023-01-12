@@ -42,6 +42,42 @@ func TestAccScalewayObject_Basic(t *testing.T) {
 					testAccCheckScalewayObjectExists(tt, "scaleway_object.file"),
 				),
 			},
+			{
+				Config: fmt.Sprintf(`
+					resource "scaleway_object_bucket" "base-01" {
+						name = "%s"
+						tags = {
+							foo = "bar"
+						}
+					}
+					
+					resource scaleway_object "file" {
+						bucket = scaleway_object_bucket.base-01.name
+						key = "myfile/foo"
+					}
+				`, bucketName),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayObjectExists(tt, "scaleway_object.file"),
+				),
+			},
+			{
+				Config: fmt.Sprintf(`
+					resource "scaleway_object_bucket" "base-01" {
+						name = "%s"
+						tags = {
+							foo = "bar"
+						}
+					}
+					
+					resource scaleway_object "file" {
+						bucket = scaleway_object_bucket.base-01.name
+						key = "myfile/foo/bar"
+					}
+				`, bucketName),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayObjectExists(tt, "scaleway_object.file"),
+				),
+			},
 		},
 	})
 }
