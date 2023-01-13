@@ -183,7 +183,7 @@ func resourceScalewayInstanceImageCreate(ctx context.Context, d *schema.Resource
 		RootVolume: expandZonedID(d.Get("root_volume_id").(string)).ID,
 		Arch:       instance.Arch(d.Get("architecture").(string)),
 		Project:    expandStringPtr(d.Get("project_id")),
-		Public:     false,
+		Public:     expandBoolPtr(d.Get("public")),
 	}
 
 	extraVolumesIds, volumesExist := d.GetOk("additional_volume_ids")
@@ -198,8 +198,8 @@ func resourceScalewayInstanceImageCreate(ctx context.Context, d *schema.Resource
 	if tagsExist {
 		req.Tags = expandStrings(tags)
 	}
-	if isPublic := d.Get("public"); isPublic == true {
-		req.Public = true
+	if _, exist := d.GetOk("public"); exist {
+		req.Public = expandBoolPtr(getBool(d, "public"))
 	}
 
 	res, err := instanceAPI.CreateImage(req, scw.WithContext(ctx))
@@ -275,7 +275,7 @@ func resourceScalewayInstanceImageUpdate(ctx context.Context, d *schema.Resource
 		req.Arch = instance.Arch(d.Get("architecture").(string))
 	}
 	if d.HasChange("public") {
-		req.Public = d.Get("public").(bool)
+		req.Public = *expandBoolPtr(getBool(d, "public"))
 	}
 	req.Tags = expandUpdatedStringsPtr(d.Get("tags"))
 
