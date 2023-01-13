@@ -77,10 +77,13 @@ You may use one of the following health check types: `TCP`, `HTTP` or `HTTPS`. (
     - `uri`                       - (Required) The HTTP endpoint URL to call for HC requests.
     - `method`                    - (Default: `GET`) The HTTP method to use for HC requests.
     - `code`                      - (Default: `200`) The expected HTTP status code.
+    - `host_header`               - (Optional) The HTTP host header to use for HC requests.
 - `health_check_https`          - (Optional) This block enable HTTPS health check. Only one of `health_check_tcp`, `health_check_http` and `health_check_https` should be specified.
     - `uri`                       - (Required) The HTTPS endpoint URL to call for HC requests.
     - `method`                    - (Default: `GET`) The HTTP method to use for HC requests.
     - `code`                      - (Default: `200`) The expected HTTP status code.
+    - `host_header`               - (Optional) The HTTP host header to use for HC requests.
+    - `sni`                       - (Optional) The SNI to use for HC requests over SSL.
 - `on_marked_down_action`       - (Default: `none`) Modify what occurs when a backend server is marked down. Possible values are: `none` and `shutdown_sessions`.
 
 
