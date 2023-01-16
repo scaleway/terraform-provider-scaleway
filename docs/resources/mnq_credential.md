@@ -7,8 +7,8 @@ Manages Scaleway Messaging and Queuing Credential.
 # scaleway_mnq_namespace
 
 This Terraform configuration creates and manage a Scaleway MNQ credential associated with a namespace.
-For additional details, kindly refer to our [website](https://www.scaleway.com/en/docs/serverless/messaging/)
-and the [godoc](https://pkg.go.dev/github.com/scaleway/scaleway-sdk-go@master/api/mnq/v1alpha1#pkg-index).
+For additional details, kindly refer to our [website](https://www.scaleway.com/en/docs/serverless/messaging/) and
+the [API documentation](https://developers.scaleway.com/en/products/messaging_and_queuing/api/v1alpha1/#post-67608e)
 
 ## Examples
 
@@ -18,7 +18,6 @@ and the [godoc](https://pkg.go.dev/github.com/scaleway/scaleway-sdk-go@master/ap
 resource "scaleway_mnq_namespace" "main" {
   name     = "mnq-ns"
   protocol = "nats"
-  region   = "fr-par"
 }
 
 resource "scaleway_mnq_credential" "main" {
@@ -52,30 +51,26 @@ resource "scaleway_mnq_credential" "main" {
 
 The following arguments are supported:
 
-- `name` - (Optional) The name of the namespace.
-- `namespace_id` - (Required) it is used to set the ID of the Namespace associated to the credential.
-- `sqs_sns_credentials` - The credential used to connect to the SQS/SNS service.
-    - `permissions` This field contain permissions which consist of `can_publish`, `can_receive`
-      , `can_manage` where the default values are `false`, which are used to determine the permissions associated with
-      this Credential.
+- `name` - (Optional) The credential name..
+- `namespace_id` - (Required) The namespace containing the Credential.
+- `nats_credentials` - Credentials file used to connect to the NATS service. Only one of `nats_credentials` and `sqs_sns_credentials` may be set.
+    - `content` - Raw content of the NATS credentials file.
+- `sqs_sns_credentials` - Credential used to connect to the SQS/SNS service. Only one of `nats_credentials`
+  and `sqs_sns_credentials` may be set.
+    - `permissions` List of permissions associated to this Credential. Only one of permissions may be set.
         - `can_publish` - (Optional). Defines if user can publish messages to the service.
         - `can_receive` - (Optional). Defines if user can receive messages from the service.
         - `can_manage` - (Optional). Defines if user can manage the associated resource(s).
-
-~> **Important:** The `sqs_sns_credentials` and `nats_credentials` field are mutually exclusive, and it can only have
-one of the fields, which means only one of the protocol will be used by the namespace.
 
 ## Attributes Reference
 
 In addition to all arguments above, the following attributes are exported:
 
-- `id` - The ID of the namespace
-- `protocol` - The protocol of your namespace.
-- `nats_credentials` - The credential for NATS protocol.
-    - `content` - The content of the NATS credential.
+- `id` - The credential ID (UUID format).
+- `protocol` - The protocol associated to the Credential. Possible values are `nats` and `sqs_sns`.
 - `sqs_sns_credentials` - The credential used to connect to the SQS/SNS service.
-    - `access_key` - The key of the credential.
-    - `secret_key` - The secret value of the key.
+    - `access_key` - The ID of the key.
+    - `secret_key` - The Secret value of the key.
 - `region` - (Defaults to [provider](../index.md#region) `region`). The [region](../guides/regions_and_zones.md#regions)
   in which the namespace should be created.
 
