@@ -105,6 +105,7 @@ func resourceScalewayLb() *schema.Resource {
 								Type:         schema.TypeString,
 								ValidateFunc: validation.IsIPAddress,
 							},
+							MaxItems: 1,
 						},
 						"dhcp_config": {
 							Description: "Set to true if you want to let DHCP assign IP addresses",
