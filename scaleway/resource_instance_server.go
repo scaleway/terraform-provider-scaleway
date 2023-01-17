@@ -14,7 +14,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
-	"github.com/scaleway/scaleway-sdk-go/api/marketplace/v1"
+	"github.com/scaleway/scaleway-sdk-go/api/marketplace/v2"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	scwvalidation "github.com/scaleway/scaleway-sdk-go/validation"
 )
@@ -289,7 +289,7 @@ func resourceScalewayInstanceServerCreate(ctx context.Context, d *schema.Resourc
 	imageUUID := expandID(d.Get("image"))
 	if imageUUID != "" && !scwvalidation.IsUUID(imageUUID) {
 		marketPlaceAPI := marketplace.NewAPI(meta.(*Meta).scwClient)
-		imageUUID, err = marketPlaceAPI.GetLocalImageIDByLabel(&marketplace.GetLocalImageIDByLabelRequest{
+		image, err := marketPlaceAPI.GetLocalImageByLabel(&marketplace.GetLocalImageByLabelRequest{
 			CommercialType: commercialType,
 			Zone:           zone,
 			ImageLabel:     imageUUID,
@@ -297,6 +297,7 @@ func resourceScalewayInstanceServerCreate(ctx context.Context, d *schema.Resourc
 		if err != nil {
 			return diag.FromErr(fmt.Errorf("could not get image '%s': %s", newZonedID(zone, imageUUID), err))
 		}
+		imageUUID = image.ID
 	}
 
 	req := &instance.CreateServerRequest{
