@@ -13,7 +13,7 @@ which is a plugin for Terraform that allows you to provision and manage NATS Jet
 
 * First, you will need to set up a new Terraform configuration file
   with [Scaleway](https://registry.terraform.io/providers/scaleway/scaleway/latest/docs/resources/mnq_namespace)
-  and [Jetstream providor](https://registry.terraform.io/providers/nats-io/jetstream/latest/docs/guides/setup).
+  and [Jetstream provider](https://registry.terraform.io/providers/nats-io/jetstream/latest/docs/guides/setup).
 
 ```hcl
 terraform {
