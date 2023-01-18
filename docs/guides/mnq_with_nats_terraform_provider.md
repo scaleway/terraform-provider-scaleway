@@ -63,7 +63,7 @@ NATS Configuration Context "example"
              Path: /Your/path/context/example.json
 ```
 
-* Before to create your credentials, be aware that despite being an
+* Before creating your credentials, be aware that due to an
   ongoing [issue](https://github.com/hashicorp/terraform/issues/516) since 2014, secrets stored in `terraform.tfstate`
   remain in plain text. While there are methods to remove secrets from state files, they are unreliable and may not
   function properly with updates to Terraform. It is not recommended to use these workarounds.
