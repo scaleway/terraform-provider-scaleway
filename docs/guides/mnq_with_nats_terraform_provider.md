@@ -79,7 +79,7 @@ NATS Configuration Context "example"
 
 ```hcl
 resource "scaleway_mnq_credential" "main" {
-  name         = "creed-ns"
+  name         = "creds-ns"
   namespace_id = scaleway_mnq_namespace.main.id
 }
 ```
