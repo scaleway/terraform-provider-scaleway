@@ -116,7 +116,7 @@ The following arguments are supported:
 * `cors_rule` - (Optional) A rule of [Cross-Origin Resource Sharing](https://docs.aws.amazon.com/AmazonS3/latest/dev/cors.html) (documented below).
 * `force_destroy` - (Optional) Enable deletion of objects in bucket before destroying, locked objects or under legal hold are also deleted and **not** recoverable
 
-The `acl` attribute is deprecated. See [scaleway_object_bucket_acl](object_bucket_acl) resource documentation.
+The `acl` attribute is deprecated. See [scaleway_object_bucket_acl](object_bucket_acl.md) resource documentation.
 Please check the [canned ACL](https://docs.aws.amazon.com/AmazonS3/latest/userguide/acl_overview.html#canned-acl) documentation for supported values.
 
 The `CORS` object supports the following:
