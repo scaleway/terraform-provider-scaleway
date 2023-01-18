@@ -7,6 +7,7 @@ import (
 	"io"
 	"log"
 	"strconv"
+	"strings"
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
@@ -288,14 +289,17 @@ func resourceScalewayInstanceServerCreate(ctx context.Context, d *schema.Resourc
 
 	imageUUID := expandID(d.Get("image"))
 	if imageUUID != "" && !scwvalidation.IsUUID(imageUUID) {
+		// Replace dashes with underscores ubuntu-focal -> ubuntu_focal
+		imageLabel := strings.Replace(imageUUID, "-", "_", -1)
+
 		marketPlaceAPI := marketplace.NewAPI(meta.(*Meta).scwClient)
 		image, err := marketPlaceAPI.GetLocalImageByLabel(&marketplace.GetLocalImageByLabelRequest{
 			CommercialType: commercialType,
 			Zone:           zone,
-			ImageLabel:     imageUUID,
+			ImageLabel:     imageLabel,
 		})
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("could not get image '%s': %s", newZonedID(zone, imageUUID), err))
+			return diag.FromErr(fmt.Errorf("could not get image '%s': %s", newZonedID(zone, imageLabel), err))
 		}
 		imageUUID = image.ID
 	}
