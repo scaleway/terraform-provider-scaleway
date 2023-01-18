@@ -100,7 +100,7 @@ NATS Configuration Context "example"
              Path: /Your/path/context/example.json
 ```
 
-* Finally configuring the provider with the server and credentials for the NATS Jetstream service.
+* Finally configure the provider with the server and credentials for the NATS Jetstream service.
 
 ```hcl
 provider "jetstream" {
