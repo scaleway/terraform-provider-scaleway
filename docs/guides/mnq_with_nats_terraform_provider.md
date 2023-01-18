@@ -73,7 +73,7 @@ NATS Configuration Context "example"
   Terraform 0.14 has added the ability to mark variables as sensitive, which helps keep them out of your logs, so you should add `sensitive = true` to variables!
 ---
 
-* You can create a Credential easily using the Scaleway provider.
+* You can create Credentials easily using the Scaleway provider.
   Check our example below and more about authenticating with a Credentials
   File [here](https://docs.nats.io/using-nats/developer/connecting/creds)
 
