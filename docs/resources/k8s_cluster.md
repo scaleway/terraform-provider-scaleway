@@ -17,6 +17,7 @@ resource "scaleway_k8s_cluster" "jack" {
   name    = "jack"
   version = "1.24.3"
   cni     = "cilium"
+  delete_additional_resources = false
 }
 
 resource "scaleway_k8s_pool" "john" {
@@ -35,6 +36,7 @@ resource "scaleway_k8s_cluster" "henry" {
   type = "multicloud"
   version = "1.24.3"
   cni     = "kilo"
+  delete_additional_resources = false
 }
 
 resource "scaleway_k8s_pool" "friend_from_outer_space" {
@@ -54,7 +56,8 @@ resource "scaleway_k8s_cluster" "john" {
   description      = "my awesome cluster"
   version          = "1.24.3"
   cni              = "calico"
-  tags             = ["i'm an awsome tag", "yay"]
+  tags             = ["i'm an awesome tag", "yay"]
+  delete_additional_resources = false
 
   autoscaler_config {
     disable_scale_down              = false
@@ -86,6 +89,7 @@ resource "scaleway_k8s_cluster" "joy" {
   name    = "joy"
   version = "1.24.3"
   cni     = "flannel"
+  delete_additional_resources = false
 }
 
 resource "scaleway_k8s_pool" "john" {
@@ -125,6 +129,7 @@ resource "scaleway_k8s_cluster" "joy" {
   name    = "joy"
   version = "1.24.3"
   cni     = "flannel"
+  delete_additional_resources = false
 }
 
 resource "scaleway_k8s_pool" "john" {
@@ -215,6 +220,10 @@ The following arguments are supported:
 - `cni` - (Required) The Container Network Interface (CNI) for the Kubernetes cluster.
 ~> **Important:** Updates to this field will recreate a new resource.
 
+- `delete_additional_resources` - (Required) Delete additional resources like block volumes, IPs and loadbalancers that were created in Kubernetes on cluster deletion.
+~> **Important:** Setting this field to `true` means that you will lose all your cluster data and network configuration when you delete your cluster.
+If you prefer keeping it, you should instead set it as `false`.
+
 - `tags` - (Optional) The tags associated with the Kubernetes cluster.
 
 - `autoscaler_config` - (Optional) The configuration options for the [Kubernetes cluster autoscaler](https://github.com/kubernetes/autoscaler/tree/master/cluster-autoscaler).
@@ -269,8 +278,6 @@ The following arguments are supported:
     - `groups_prefix` - (Optional) Prefix prepended to group claims
 
     - `required_claim` - (Optional) Multiple key=value pairs that describes a required claim in the ID Token
-
-- `delete_additional_resources` - (Defaults to `false`) Delete additional resources like block volumes and loadbalancers that were created in Kubernetes on cluster deletion.
 
 - `default_pool` - (Deprecated) See below.
 
