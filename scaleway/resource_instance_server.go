@@ -290,7 +290,7 @@ func resourceScalewayInstanceServerCreate(ctx context.Context, d *schema.Resourc
 	imageUUID := expandID(d.Get("image"))
 	if imageUUID != "" && !scwvalidation.IsUUID(imageUUID) {
 		// Replace dashes with underscores ubuntu-focal -> ubuntu_focal
-		imageLabel := strings.Replace(imageUUID, "-", "_", -1)
+		imageLabel := strings.ReplaceAll(imageUUID, "-", "_")
 
 		marketPlaceAPI := marketplace.NewAPI(meta.(*Meta).scwClient)
 		image, err := marketPlaceAPI.GetLocalImageByLabel(&marketplace.GetLocalImageByLabelRequest{
