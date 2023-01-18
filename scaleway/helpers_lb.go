@@ -377,6 +377,30 @@ func flattenLbProxyProtocol(pp lbSDK.ProxyProtocol) interface{} {
 	return strings.TrimPrefix(pp.String(), "proxy_protocol_")
 }
 
+func flattenLbRouteMatch(match *lbSDK.RouteMatch) interface{} {
+	if match == nil {
+		return nil
+	}
+	return []map[string]interface{}{
+		{
+			"sni":         match.Sni,
+			"host_header": match.HostHeader,
+		},
+	}
+}
+
+func expandLbRouteMatch(raw interface{}) *lbSDK.RouteMatch {
+	if raw == nil || len(raw.([]interface{})) != 1 {
+		return nil
+	}
+
+	rawMap := raw.([]interface{})[0].(map[string]interface{})
+	return &lbSDK.RouteMatch{
+		Sni:        expandStringPtr(rawMap["sni"].(string)),
+		HostHeader: expandStringPtr(rawMap["host_header"].(string)),
+	}
+}
+
 func lbUpgradeV1SchemaType() cty.Type {
 	return cty.Object(map[string]cty.Type{
 		"id": cty.String,

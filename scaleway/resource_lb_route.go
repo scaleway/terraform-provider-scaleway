@@ -39,10 +39,28 @@ func resourceScalewayLbRoute() *schema.Resource {
 				ValidateFunc: validationUUIDorUUIDWithLocality(),
 				Description:  "The backend ID destination of redirection",
 			},
-			"match_sni": {
-				Type:        schema.TypeString,
+			"match": {
+				Type:        schema.TypeList,
 				Optional:    true,
-				Description: "The domain to match against",
+				Description: "The value to match a redirection",
+				MaxItems:    1,
+				MinItems:    1,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"sni": {
+							Type:          schema.TypeString,
+							Optional:      true,
+							Description:   "Server Name Indication TLS extension field from an incoming connection made via an SSL/TLS transport layer",
+							ConflictsWith: []string{"host_header"},
+						},
+						"host_header": {
+							Type:          schema.TypeString,
+							Optional:      true,
+							Description:   "Specifies the host of the server to which the request is being sent",
+							ConflictsWith: []string{"sni"},
+						},
+					},
+				},
 			},
 		},
 	}
@@ -73,7 +91,8 @@ func resourceScalewayLbRouteCreate(ctx context.Context, d *schema.ResourceData, 
 		FrontendID: frontID,
 		BackendID:  backID,
 		Match: &lbSDK.RouteMatch{
-			Sni: expandStringPtr(d.Get("match_sni")),
+			Sni:        expandLbRouteMatch(d.Get("match")).Sni,
+			HostHeader: expandLbRouteMatch(d.Get("match")).HostHeader,
 		},
 	}
 
@@ -107,8 +126,8 @@ func resourceScalewayLbRouteRead(ctx context.Context, d *schema.ResourceData, me
 
 	_ = d.Set("frontend_id", newZonedIDString(zone, route.FrontendID))
 	_ = d.Set("backend_id", newZonedIDString(zone, route.BackendID))
-	if route.Match != nil && route.Match.Sni != nil {
-		_ = d.Set("match_sni", route.Match.Sni)
+	if route.Match != nil {
+		_ = d.Set("match", flattenLbRouteMatch(route.Match))
 	}
 
 	return nil
@@ -134,7 +153,8 @@ func resourceScalewayLbRouteUpdate(ctx context.Context, d *schema.ResourceData, 
 		RouteID:   ID,
 		BackendID: backID,
 		Match: &lbSDK.RouteMatch{
-			Sni: expandStringPtr(d.Get("match_sni")),
+			Sni:        expandLbRouteMatch(d.Get("match")).Sni,
+			HostHeader: expandLbRouteMatch(d.Get("match")).HostHeader,
 		},
 	}
 
