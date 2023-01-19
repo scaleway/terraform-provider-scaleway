@@ -250,7 +250,7 @@ func getHTTPRecoder(t *testing.T, update bool) (client *http.Client, cleanup fun
 	})
 
 	// Add a filter that will replace sensitive values with fixed values
-	r.AddFilter(cassetteSensitiveFieldsAnonymizer)
+	r.AddSaveFilter(cassetteSensitiveFieldsAnonymizer)
 
 	retryOptions := retryableTransportOptions{}
 	if !*UpdateCassettes {

@@ -16,7 +16,7 @@ func dataSourceScalewayObjectBucket() *schema.Resource {
 	dsSchema := datasourceSchemaFromResourceSchema(resourceScalewayObjectBucket().Schema)
 
 	// Set 'Optional' schema elements
-	addOptionalFieldsToSchema(dsSchema, "name", "region")
+	addOptionalFieldsToSchema(dsSchema, "name", "region", "project_id")
 
 	return &schema.Resource{
 		ReadContext: dataSourceScalewayObjectStorageRead,

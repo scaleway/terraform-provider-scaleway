@@ -184,7 +184,8 @@ func resourceScalewayObjectBucket() *schema.Resource {
 					},
 				},
 			},
-			"region": regionSchema(),
+			"region":     regionSchema(),
+			"project_id": projectIDSchema(),
 			"versioning": {
 				Type:        schema.TypeList,
 				Optional:    true,
@@ -258,7 +259,7 @@ func resourceScalewayObjectBucketCreate(ctx context.Context, d *schema.ResourceD
 }
 
 func resourceScalewayObjectBucketUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	s3Client, _, bucketName, err := s3ClientWithRegionAndName(meta, d.Id())
+	s3Client, _, bucketName, err := s3ClientWithRegionAndName(d, meta, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -443,13 +444,18 @@ func resourceBucketLifecycleUpdate(ctx context.Context, conn *s3.S3, d *schema.R
 
 //gocyclo:ignore
 func resourceScalewayObjectBucketRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	s3Client, region, bucketName, err := s3ClientWithRegionAndName(meta, d.Id())
+	s3Client, region, bucketName, err := s3ClientWithRegionAndName(d, meta, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	_ = d.Set("name", bucketName)
 	_ = d.Set("region", region)
+	projectId, _, err := extractProjectId(d, meta.(*Meta))
+	if err != nil {
+		return diag.FromErr(err)
+	}
+	_ = d.Set("project_id", projectId)
 
 	// Get object_lock_enabled
 	objectLockConfiguration, err := s3Client.GetObjectLockConfigurationWithContext(ctx, &s3.GetObjectLockConfigurationInput{
@@ -630,7 +636,7 @@ func resourceScalewayObjectBucketRead(ctx context.Context, d *schema.ResourceDat
 }
 
 func resourceScalewayObjectBucketDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	s3Client, _, bucketName, err := s3ClientWithRegionAndName(meta, d.Id())
+	s3Client, _, bucketName, err := s3ClientWithRegionAndName(d, meta, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}

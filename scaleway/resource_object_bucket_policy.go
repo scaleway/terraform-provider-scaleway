@@ -40,7 +40,8 @@ func resourceScalewayObjectBucketPolicy() *schema.Resource {
 				Description:      "The text of the policy.",
 				DiffSuppressFunc: SuppressEquivalentPolicyDiffs,
 			},
-			"region": regionSchema(),
+			"region":     regionSchema(),
+			"project_id": projectIDSchema(),
 		},
 	}
 }
@@ -91,7 +92,7 @@ func resourceScalewayObjectBucketPolicyCreate(ctx context.Context, d *schema.Res
 
 //gocyclo:ignore
 func resourceScalewayObjectBucketPolicyRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	s3Client, region, _, err := s3ClientWithRegionAndName(meta, d.Id())
+	s3Client, region, _, err := s3ClientWithRegionAndName(d, meta, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -137,7 +138,7 @@ func resourceScalewayObjectBucketPolicyRead(ctx context.Context, d *schema.Resou
 }
 
 func resourceScalewayObjectBucketPolicyDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	s3Client, _, bucketName, err := s3ClientWithRegionAndName(meta, d.Id())
+	s3Client, _, bucketName, err := s3ClientWithRegionAndName(d, meta, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}

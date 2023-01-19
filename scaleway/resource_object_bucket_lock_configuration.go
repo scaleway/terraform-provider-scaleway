@@ -69,6 +69,8 @@ func resourceObjectLockConfiguration() *schema.Resource {
 				},
 				Description: "Specifies the Object Lock rule for the specified object.",
 			},
+			"region":     regionSchema(),
+			"project_id": projectIDSchema(),
 		},
 	}
 }
@@ -103,7 +105,7 @@ func resourceObjectLockConfigurationCreate(ctx context.Context, d *schema.Resour
 }
 
 func resourceObjectLockConfigurationRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	conn, _, bucket, err := s3ClientWithRegionAndName(meta, d.Id())
+	conn, _, bucket, err := s3ClientWithRegionAndName(d, meta, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -136,7 +138,7 @@ func resourceObjectLockConfigurationRead(ctx context.Context, d *schema.Resource
 }
 
 func resourceObjectLockConfigurationUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	conn, _, bucket, err := s3ClientWithRegionAndName(meta, d.Id())
+	conn, _, bucket, err := s3ClientWithRegionAndName(d, meta, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -161,7 +163,7 @@ func resourceObjectLockConfigurationUpdate(ctx context.Context, d *schema.Resour
 }
 
 func resourceObjectLockConfigurationDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	conn, _, bucket, err := s3ClientWithRegionAndName(meta, d.Id())
+	conn, _, bucket, err := s3ClientWithRegionAndName(d, meta, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
