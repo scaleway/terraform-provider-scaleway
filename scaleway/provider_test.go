@@ -44,7 +44,7 @@ var BodyMatcherIgnore = []string{
 // SensitiveFields is a map with keys listing fields that should be anonymized
 // value will be set in place of its old value
 var SensitiveFields = map[string]interface{}{
-	"secret_key": "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
+	"secret_key": "00000000-0000-0000-0000-000000000000",
 }
 
 func testAccPreCheck(_ *testing.T) {}
