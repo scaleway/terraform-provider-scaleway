@@ -247,7 +247,7 @@ func extractRegion(d terraformResourceData, meta *Meta) (scw.Region, error) {
 	return "", ErrRegionNotFound
 }
 
-// ErrRegionNotFound is returned when no region can be detected
+// ErrProjectIdNotFound is returned when no region can be detected
 var ErrProjectIdNotFound = fmt.Errorf("could not detect project id")
 
 // extractProjectId will try to guess the project id from the following:
