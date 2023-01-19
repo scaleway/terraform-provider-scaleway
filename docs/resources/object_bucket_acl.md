@@ -4,7 +4,7 @@ description: |-
 Manages Scaleway object storage bucket ACL resource.
 ---
 
-# scaleway_object_bucket
+# scaleway_object_bucket_acl
 
 Creates and manages Scaleway object storage bucket ACL.
 For more information, see [the documentation](https://www.scaleway.com/en/docs/storage/object/concepts/#access-control-list-(acl)).
