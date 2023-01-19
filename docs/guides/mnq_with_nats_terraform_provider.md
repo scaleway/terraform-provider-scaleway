@@ -9,6 +9,8 @@ Using Scaleway Messaging and Queuing service with NATS Terraform provider
 In this guide you'll learn how to deploy Scaleway Messaging and Queuing config and use the NATS Jetstream provider with,
 which is a plugin for Terraform that allows you to provision and manage NATS Jetstream resources.
 
+At the end of this guide you will have a running NATS server and a configured NATS CLI to interact with.
+
 ## Prerequisites
 
 * First, you will need to set up a new Terraform configuration file
@@ -45,32 +47,17 @@ resource "scaleway_mnq_namespace" "main" {
 }
 ```
 
-* At this point you can configure the [NATS CLI](https://docs.nats.io/using-nats/nats-tools/nats_cli) with your
-  endpoint.
-
-```shell
-nats context save example --server nats://nats.mnq.fr-par.scw.cloud:4222 --description 'Prod.Net Server'
-```
-
-* NATS let you use `contexts` that you can store and easily select. Check more
-  details [here](https://docs.nats.io/using-nats/nats-tools/nats_cli#configuration-contexts).
-
-```shell
-NATS Configuration Context "example"
-
-      Description: Prod.Net Server
-      Server URLs: nats://nats.mnq.fr-par.scw.cloud:4222
-             Path: /Your/path/context/example.json
-```
-
 * Before creating your credentials, be aware that due to an
   ongoing [issue](https://github.com/hashicorp/terraform/issues/516) since 2014, secrets stored in `terraform.tfstate`
   remain in plain text. While there are methods to remove secrets from state files, they are unreliable and may not
   function properly with updates to Terraform. It is not recommended to use these workarounds.
 
 ---
-  Otherwise, the official update on December3, 2020:
-  Terraform 0.14 has added the ability to mark variables as sensitive, which helps keep them out of your logs, so you should add `sensitive = true` to variables!
+
+* Otherwise, the official update on December3, 2020:
+  Terraform 0.14 has added the ability to mark variables as sensitive, which helps keep them out of your logs, so you
+  should add `sensitive = true` to variables!
+
 ---
 
 * You can create Credentials easily using the Scaleway provider.
@@ -84,12 +71,35 @@ resource "scaleway_mnq_credential" "main" {
 }
 ```
 
+* At this point you have your Namespace and your Credential that means you have a running NATS Server ready to be used.
+
+* Grab a copy of the  [NATS CLI](https://github.com/nats-io/jetstream/releases) and configure it with your
+  endpoint. To be practical lets use `contexts` that you can store and easily select. Check more
+  details [here](https://docs.nats.io/using-nats/nats-tools/nats_cli#configuration-contexts).
+
+```shell
+nats context save example --server nats://nats.mnq.fr-par.scw.cloud:4222 --description 'Prod.Net Server'
+```
+
+* The output should look like this:
+
+```shell
+NATS Configuration Context "example"
+
+      Description: Prod.Net Server
+      Server URLs: nats://nats.mnq.fr-par.scw.cloud:4222
+             Path: /Your/path/context/example.json
+```
+
 * Try to select your configuration using the NATS CLI:
+
 ```shell
 nats context select
 ? Select a Context  [Use arrows to move, type to filter]
 > example
 ```
+
+* Finally, configure the CLI with the namespace credentials.
 
 ```shell
 NATS Configuration Context "example"
@@ -100,11 +110,13 @@ NATS Configuration Context "example"
              Path: /Your/path/context/example.json
 ```
 
-* Finally configure the provider with the server and credentials for the NATS Jetstream service.
+* You are ready to use the
+  NATS [JetStream Provider](https://registry.terraform.io/providers/nats-io/jetstream/latest/docs):
 
 ```hcl
 provider "jetstream" {
   servers     = scaleway_mnq_namespace.manin.endpoint
   credentials = "path/ngs_stream_admin.creds"
+  # credential_data = "<SCW_CREDENTIAL_AS_STRING>"
 }
 ```
