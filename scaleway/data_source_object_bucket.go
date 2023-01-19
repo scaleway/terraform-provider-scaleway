@@ -32,12 +32,6 @@ func dataSourceScalewayObjectStorageRead(ctx context.Context, d *schema.Resource
 
 	bucket := d.Get("name").(string)
 
-	projectID, _, err := extractProjectID(d, meta.(*Meta))
-	if err != nil {
-		return diag.FromErr(err)
-	}
-	_ = d.Set("project_id", projectID)
-
 	input := &s3.HeadBucketInput{
 		Bucket: aws.String(bucket),
 	}
@@ -48,6 +42,14 @@ func dataSourceScalewayObjectStorageRead(ctx context.Context, d *schema.Resource
 	if err != nil {
 		return diag.FromErr(fmt.Errorf("failed getting Object Storage bucket (%s): %w", bucket, err))
 	}
+
+	acl, err := s3Client.GetBucketAclWithContext(ctx, &s3.GetBucketAclInput{
+		Bucket: aws.String(bucket),
+	})
+	if err != nil {
+		return diag.FromErr(fmt.Errorf("couldn't read bucket acl: %s", err))
+	}
+	_ = d.Set("project_id", *normalizeOwnerID(acl.Owner.ID))
 
 	bucketRegionalID := newRegionalIDString(region, bucket)
 	d.SetId(bucketRegionalID)

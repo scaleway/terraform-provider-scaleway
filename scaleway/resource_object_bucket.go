@@ -451,11 +451,14 @@ func resourceScalewayObjectBucketRead(ctx context.Context, d *schema.ResourceDat
 
 	_ = d.Set("name", bucketName)
 	_ = d.Set("region", region)
-	projectID, _, err := extractProjectID(d, meta.(*Meta))
+
+	acl, err := s3Client.GetBucketAclWithContext(ctx, &s3.GetBucketAclInput{
+		Bucket: aws.String(bucketName),
+	})
 	if err != nil {
-		return diag.FromErr(err)
+		return diag.FromErr(fmt.Errorf("couldn't read bucket acl: %s", err))
 	}
-	_ = d.Set("project_id", projectID)
+	_ = d.Set("project_id", *normalizeOwnerID(acl.Owner.ID))
 
 	// Get object_lock_enabled
 	objectLockConfiguration, err := s3Client.GetObjectLockConfigurationWithContext(ctx, &s3.GetObjectLockConfigurationInput{
