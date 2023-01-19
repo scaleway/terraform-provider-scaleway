@@ -6,8 +6,8 @@ Using Scaleway Messaging and Queuing service with NATS Terraform provider
 
 # How to use Scaleway Messaging and Queuing config
 
-In this guide you'll learn how to deploy Scaleway Messaging and Queuing config and use the NATS Jetstream provider with,
-which is a plugin for Terraform that allows you to provision and manage NATS Jetstream resources.
+This guide shows the combination of Scaleway Messaging and Queuing configuration with to terraform NATS Jetstream
+provider. Il will allow you to provision and manage NATS Jetstream resources.
 
 At the end of this guide, you will have a running NATS server and a configured NATS CLI to interact with it.
 
