@@ -73,7 +73,7 @@ resource "scaleway_mnq_credential" "main" {
 
 * At this point you have your Namespace and your Credential that means you have a running NATS Server ready to be used.
 
-* Grab a copy of the  [NATS CLI](https://github.com/nats-io/jetstream/releases) and configure it with your
+* Grab a copy of the [NATS CLI](https://github.com/nats-io/jetstream/releases) and configure it with your
   endpoint. To be practical let's use `contexts` that you can store and easily select the relevant context. Check more
   details [here](https://docs.nats.io/using-nats/nats-tools/nats_cli#configuration-contexts).
 
