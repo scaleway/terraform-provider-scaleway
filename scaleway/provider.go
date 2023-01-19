@@ -249,8 +249,8 @@ type metaConfig struct {
 	providerSchema      *schema.ResourceData
 	terraformVersion    string
 	forceZone           scw.Zone
-	forceProjectId      string
-	forceOrganizationId string
+	forceProjectID      string
+	forceOrganizationID string
 	forceAccessKey      string
 	forceSecretKey      string
 	httpClient          *http.Client
@@ -273,11 +273,11 @@ func buildMeta(ctx context.Context, config *metaConfig) (*Meta, error) {
 		profile.DefaultRegion = scw.StringPtr(region.String())
 		profile.DefaultZone = scw.StringPtr(config.forceZone.String())
 	}
-	if config.forceProjectId != "" {
-		profile.DefaultProjectID = scw.StringPtr(config.forceProjectId)
+	if config.forceProjectID != "" {
+		profile.DefaultProjectID = scw.StringPtr(config.forceProjectID)
 	}
-	if config.forceOrganizationId != "" {
-		profile.DefaultOrganizationID = scw.StringPtr(config.forceOrganizationId)
+	if config.forceOrganizationID != "" {
+		profile.DefaultOrganizationID = scw.StringPtr(config.forceOrganizationID)
 	}
 	if config.forceAccessKey != "" {
 		profile.AccessKey = scw.StringPtr(config.forceAccessKey)

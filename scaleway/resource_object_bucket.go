@@ -451,11 +451,11 @@ func resourceScalewayObjectBucketRead(ctx context.Context, d *schema.ResourceDat
 
 	_ = d.Set("name", bucketName)
 	_ = d.Set("region", region)
-	projectId, _, err := extractProjectId(d, meta.(*Meta))
+	projectID, _, err := extractProjectID(d, meta.(*Meta))
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	_ = d.Set("project_id", projectId)
+	_ = d.Set("project_id", projectID)
 
 	// Get object_lock_enabled
 	objectLockConfiguration, err := s3Client.GetObjectLockConfigurationWithContext(ctx, &s3.GetObjectLockConfigurationInput{

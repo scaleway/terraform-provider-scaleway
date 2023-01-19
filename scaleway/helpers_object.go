@@ -60,14 +60,14 @@ func s3ClientWithRegion(d *schema.ResourceData, m interface{}) (*s3.S3, scw.Regi
 		return nil, "", err
 	}
 
-	projectId, isDefaultProjectId, err := extractProjectId(d, meta)
+	projectID, isDefaultProjectID, err := extractProjectID(d, meta)
 	if err != nil {
 		return nil, "", err
 	}
 
 	accessKey, _ := meta.scwClient.GetAccessKey()
-	if !isDefaultProjectId {
-		accessKey = accessKeyWithProjectId(accessKey, projectId)
+	if !isDefaultProjectID {
+		accessKey = accessKeyWithProjectID(accessKey, projectID)
 	}
 	secretKey, _ := meta.scwClient.GetSecretKey()
 
@@ -86,14 +86,14 @@ func s3ClientWithRegionAndName(d *schema.ResourceData, m interface{}, name strin
 		return nil, "", "", err
 	}
 
-	projectId, isDefaultProjectId, err := extractProjectId(d, meta)
+	projectID, isDefaultProjectID, err := extractProjectID(d, meta)
 	if err != nil {
 		return nil, "", "", err
 	}
 
 	accessKey, _ := meta.scwClient.GetAccessKey()
-	if !isDefaultProjectId {
-		accessKey = accessKeyWithProjectId(accessKey, projectId)
+	if !isDefaultProjectID {
+		accessKey = accessKeyWithProjectID(accessKey, projectID)
 	}
 	secretKey, _ := meta.scwClient.GetSecretKey()
 
@@ -112,14 +112,14 @@ func s3ClientWithRegionAndNestedName(d *schema.ResourceData, m interface{}, name
 		return nil, "", "", "", err
 	}
 
-	projectId, isDefaultProjectId, err := extractProjectId(d, meta)
+	projectID, isDefaultProjectID, err := extractProjectID(d, meta)
 	if err != nil {
 		return nil, "", "", "", err
 	}
 
 	accessKey, _ := meta.scwClient.GetAccessKey()
-	if !isDefaultProjectId {
-		accessKey = accessKeyWithProjectId(accessKey, projectId)
+	if !isDefaultProjectID {
+		accessKey = accessKeyWithProjectID(accessKey, projectID)
 	}
 	secretKey, _ := meta.scwClient.GetSecretKey()
 
@@ -138,14 +138,14 @@ func s3ClientWithRegionWithNameACL(d *schema.ResourceData, m interface{}, name s
 		return nil, "", name, "", err
 	}
 
-	projectId, isDefaultProjectId, err := extractProjectId(d, meta)
+	projectID, isDefaultProjectID, err := extractProjectID(d, meta)
 	if err != nil {
 		return nil, "", "", "", err
 	}
 
 	accessKey, _ := meta.scwClient.GetAccessKey()
-	if !isDefaultProjectId {
-		accessKey = accessKeyWithProjectId(accessKey, projectId)
+	if !isDefaultProjectID {
+		accessKey = accessKeyWithProjectID(accessKey, projectID)
 	}
 	secretKey, _ := meta.scwClient.GetSecretKey()
 

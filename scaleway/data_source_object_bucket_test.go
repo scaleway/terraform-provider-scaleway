@@ -45,7 +45,7 @@ func TestAccScalewayDataSourceObjectStorage_Basic(t *testing.T) {
 	})
 }
 
-func TestAccScalewayDataSourceObjectStorage_ProjectIdAllowed(t *testing.T) {
+func TestAccScalewayDataSourceObjectStorage_ProjectIDAllowed(t *testing.T) {
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
 	bucketName := sdkacctest.RandomWithPrefix("test-acc-scaleway-object-bucket")
@@ -86,7 +86,7 @@ func TestAccScalewayDataSourceObjectStorage_ProjectIdAllowed(t *testing.T) {
 	})
 }
 
-func TestAccScalewayDataSourceObjectStorage_ProjectIdForbidden(t *testing.T) {
+func TestAccScalewayDataSourceObjectStorage_ProjectIDForbidden(t *testing.T) {
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
 	bucketName := sdkacctest.RandomWithPrefix("test-acc-scaleway-object-bucket")
@@ -198,8 +198,8 @@ func fakeSideProjectProviders(ctx context.Context, tt *TestTools, project *accou
 	metaSide, err := buildMeta(ctx, &metaConfig{
 		terraformVersion:    "terraform-tests",
 		httpClient:          tt.Meta.httpClient,
-		forceProjectId:      project.ID,
-		forceOrganizationId: project.OrganizationID,
+		forceProjectID:      project.ID,
+		forceOrganizationID: project.OrganizationID,
 		forceAccessKey:      iamAPIKey.AccessKey,
 		forceSecretKey:      *iamAPIKey.SecretKey,
 	})
