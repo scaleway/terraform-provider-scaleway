@@ -32,6 +32,12 @@ func dataSourceScalewayObjectStorageRead(ctx context.Context, d *schema.Resource
 
 	bucket := d.Get("name").(string)
 
+	projectId, _, err := extractProjectId(d, meta.(*Meta))
+	if err != nil {
+		return diag.FromErr(err)
+	}
+	_ = d.Set("project_id", projectId)
+
 	input := &s3.HeadBucketInput{
 		Bucket: aws.String(bucket),
 	}
