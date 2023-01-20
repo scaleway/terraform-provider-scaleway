@@ -60,13 +60,8 @@ func s3ClientWithRegion(d *schema.ResourceData, m interface{}) (*s3.S3, scw.Regi
 		return nil, "", err
 	}
 
-	projectID, isDefaultProjectID, err := extractProjectID(d, meta)
-	if err != nil {
-		return nil, "", err
-	}
-
 	accessKey, _ := meta.scwClient.GetAccessKey()
-	if !isDefaultProjectID {
+	if projectID, isDefaultProjectID, err := extractProjectID(d, meta); err == nil && !isDefaultProjectID {
 		accessKey = accessKeyWithProjectID(accessKey, projectID)
 	}
 	secretKey, _ := meta.scwClient.GetSecretKey()
