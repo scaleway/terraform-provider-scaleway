@@ -3,6 +3,7 @@ package scaleway
 import (
 	"context"
 	"fmt"
+	"net"
 	"sort"
 	"strconv"
 	"time"
@@ -30,6 +31,7 @@ const (
 	defaultInstanceSecurityGroupRuleTimeout = 1 * time.Minute
 	defaultInstancePlacementGroupTimeout    = 1 * time.Minute
 	defaultInstanceIPTimeout                = 1 * time.Minute
+	defaultInstanceIPReverseDNSTimeout      = 5 * time.Minute
 	defaultInstanceRetryInterval            = 5 * time.Second
 
 	defaultInstanceSnapshotWaitTimeout = 1 * time.Hour
@@ -583,4 +585,26 @@ func flattenInstanceImageExtraVolumes(volumes map[string]*instance.Volume, zone 
 		volumesFlat = append(volumesFlat, volumeFlat)
 	}
 	return volumesFlat
+}
+
+func isInstanceIPReverseResolved(ctx context.Context, reverse string, timeout time.Duration) bool {
+	ticker := time.Tick(time.Millisecond * 500)
+	ctx, cancel := context.WithTimeout(ctx, timeout)
+	defer cancel()
+
+	r := &net.Resolver{
+		PreferGo: true,
+	}
+	for range ticker {
+		_, err := r.LookupHost(ctx, reverse)
+		if err != nil {
+			if ctx.Err() == context.DeadlineExceeded {
+				return false
+			}
+			continue
+		}
+		return true
+	}
+
+	return false
 }

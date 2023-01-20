@@ -2,6 +2,8 @@ package scaleway
 
 import (
 	"context"
+	"net"
+	"strings"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -10,8 +12,9 @@ import (
 )
 
 const (
-	defaultVPCGatewayTimeout = 10 * time.Minute
-	defaultVPCGatewayRetry   = 5 * time.Second
+	defaultVPCGatewayTimeout                   = 10 * time.Minute
+	defaultVPCGatewayRetry                     = 5 * time.Second
+	defaultVPCPublicGatewayIPReverseDNSTimeout = 5 * time.Minute
 )
 
 // vpcgwAPIWithZone returns a new VPC API and the zone for a Create request
@@ -89,4 +92,34 @@ func waitForDHCPEntries(ctx context.Context, api *vpcgw.API, zone scw.Zone, gate
 
 	dhcpEntries, err := api.WaitForDHCPEntries(req, scw.WithContext(ctx))
 	return dhcpEntries, err
+}
+
+func isGatewayIPReverseResolved(ctx context.Context, reverse string, timeout time.Duration) bool {
+	ticker := time.Tick(time.Millisecond * 500)
+	ctx, cancel := context.WithTimeout(ctx, timeout)
+	defer cancel()
+
+	r := &net.Resolver{
+		PreferGo: true,
+	}
+	for range ticker {
+		_, err := r.LookupHost(ctx, reverse)
+		if err != nil {
+			if ctx.Err() == context.DeadlineExceeded {
+				return false
+			}
+			continue
+		}
+		return true
+	}
+
+	return false
+}
+
+func findDefaultReverse(address string) string {
+	parts := strings.Split(address, ".")
+	for i, j := 0, len(parts)-1; i < j; i, j = i+1, j-1 {
+		parts[i], parts[j] = parts[j], parts[i]
+	}
+	return strings.Join(parts, "-") + ".instances.scw.cloud"
 }
