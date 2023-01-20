@@ -98,9 +98,5 @@ func isTransientStateError(i *cassette.Interaction) bool {
 		return false
 	}
 
-	if scwError.Type == "transient_state" {
-		return true
-	}
-
-	return false
+	return scwError.Type == "transient_state"
 }
