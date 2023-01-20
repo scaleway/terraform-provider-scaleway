@@ -136,6 +136,10 @@ func s3ClientWithRegionWithNameACL(d *schema.ResourceData, m interface{}, name s
 	return s3Client, scw.Region(region), name, outerID, err
 }
 
+func accessKeyWithProjectID(accessKey string, projectID string) string {
+	return accessKey + "@" + projectID
+}
+
 func flattenObjectBucketTags(tagsSet []*s3.Tag) map[string]interface{} {
 	tags := map[string]interface{}{}
 

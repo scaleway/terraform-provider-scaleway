@@ -267,10 +267,6 @@ func extractProjectID(d terraformResourceData, meta *Meta) (projectID string, is
 	return "", false, ErrProjectIDNotFound
 }
 
-func accessKeyWithProjectID(accessKey string, projectID string) string {
-	return accessKey + "@" + projectID
-}
-
 // isHTTPCodeError returns true if err is an http error with code statusCode
 func isHTTPCodeError(err error, statusCode int) bool {
 	if err == nil {
