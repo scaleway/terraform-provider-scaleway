@@ -81,13 +81,8 @@ func s3ClientWithRegionAndName(d *schema.ResourceData, m interface{}, name strin
 		return nil, "", "", err
 	}
 
-	projectID, isDefaultProjectID, err := extractProjectID(d, meta)
-	if err != nil {
-		return nil, "", "", err
-	}
-
 	accessKey, _ := meta.scwClient.GetAccessKey()
-	if !isDefaultProjectID {
+	if projectID, isDefaultProjectID, err := extractProjectID(d, meta); err == nil && !isDefaultProjectID {
 		accessKey = accessKeyWithProjectID(accessKey, projectID)
 	}
 	secretKey, _ := meta.scwClient.GetSecretKey()
@@ -107,13 +102,8 @@ func s3ClientWithRegionAndNestedName(d *schema.ResourceData, m interface{}, name
 		return nil, "", "", "", err
 	}
 
-	projectID, isDefaultProjectID, err := extractProjectID(d, meta)
-	if err != nil {
-		return nil, "", "", "", err
-	}
-
 	accessKey, _ := meta.scwClient.GetAccessKey()
-	if !isDefaultProjectID {
+	if projectID, isDefaultProjectID, err := extractProjectID(d, meta); err == nil && !isDefaultProjectID {
 		accessKey = accessKeyWithProjectID(accessKey, projectID)
 	}
 	secretKey, _ := meta.scwClient.GetSecretKey()
@@ -133,13 +123,8 @@ func s3ClientWithRegionWithNameACL(d *schema.ResourceData, m interface{}, name s
 		return nil, "", name, "", err
 	}
 
-	projectID, isDefaultProjectID, err := extractProjectID(d, meta)
-	if err != nil {
-		return nil, "", "", "", err
-	}
-
 	accessKey, _ := meta.scwClient.GetAccessKey()
-	if !isDefaultProjectID {
+	if projectID, isDefaultProjectID, err := extractProjectID(d, meta); err == nil && !isDefaultProjectID {
 		accessKey = accessKeyWithProjectID(accessKey, projectID)
 	}
 	secretKey, _ := meta.scwClient.GetSecretKey()
