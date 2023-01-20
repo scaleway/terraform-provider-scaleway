@@ -157,7 +157,6 @@ func createFakeSideProject(tt *TestTools) (*accountV2.Project, *iam.APIKey, func
 	iamApplication, err := iamAPI.CreateApplication(&iam.CreateApplicationRequest{
 		Name: iamApplicationName,
 	})
-
 	if err != nil {
 		terminate()
 		return nil, nil, nil, err
