@@ -50,7 +50,8 @@ func TestAccScalewayDataSourceObjectStorage_ProjectIDAllowed(t *testing.T) {
 	defer tt.Cleanup()
 	bucketName := sdkacctest.RandomWithPrefix("test-acc-scaleway-object-bucket")
 
-	project, iamAPIKey, terminateFakeSideProject := createFakeSideProject(tt)
+	project, iamAPIKey, terminateFakeSideProject, err := createFakeSideProject(tt)
+	require.NoError(t, err)
 	defer terminateFakeSideProject()
 
 	ctx := context.Background()
@@ -91,7 +92,8 @@ func TestAccScalewayDataSourceObjectStorage_ProjectIDForbidden(t *testing.T) {
 	defer tt.Cleanup()
 	bucketName := sdkacctest.RandomWithPrefix("test-acc-scaleway-object-bucket")
 
-	project, iamAPIKey, terminateFakeSideProject := createFakeSideProject(tt)
+	project, iamAPIKey, terminateFakeSideProject, err := createFakeSideProject(tt)
+	require.NoError(t, err)
 	defer terminateFakeSideProject()
 
 	ctx := context.Background()
@@ -122,10 +124,15 @@ func TestAccScalewayDataSourceObjectStorage_ProjectIDForbidden(t *testing.T) {
 	})
 }
 
-func createFakeSideProject(tt *TestTools) (*accountV2.Project, *iam.APIKey, func()) {
+func createFakeSideProject(tt *TestTools) (*accountV2.Project, *iam.APIKey, func(), error) {
 	t := tt.T
 
 	terminateFunctions := []func(){}
+	terminate := func() {
+		for i := len(terminateFunctions) - 1; i >= 0; i-- {
+			terminateFunctions[i]()
+		}
+	}
 
 	projectName := sdkacctest.RandomWithPrefix("test-acc-scaleway-project")
 	iamApplicationName := sdkacctest.RandomWithPrefix("test-acc-scaleway-iam-app")
@@ -135,7 +142,10 @@ func createFakeSideProject(tt *TestTools) (*accountV2.Project, *iam.APIKey, func
 	project, err := projectAPI.CreateProject(&accountV2.CreateProjectRequest{
 		Name: projectName,
 	})
-	require.NoError(t, err)
+	if err != nil {
+		terminate()
+		return nil, nil, nil, err
+	}
 	terminateFunctions = append(terminateFunctions, func() {
 		err := projectAPI.DeleteProject(&accountV2.DeleteProjectRequest{
 			ProjectID: project.ID,
@@ -147,7 +157,11 @@ func createFakeSideProject(tt *TestTools) (*accountV2.Project, *iam.APIKey, func
 	iamApplication, err := iamAPI.CreateApplication(&iam.CreateApplicationRequest{
 		Name: iamApplicationName,
 	})
-	require.NoError(t, err)
+
+	if err != nil {
+		terminate()
+		return nil, nil, nil, err
+	}
 	terminateFunctions = append(terminateFunctions, func() {
 		err := iamAPI.DeleteApplication(&iam.DeleteApplicationRequest{
 			ApplicationID: iamApplication.ID,
@@ -165,7 +179,10 @@ func createFakeSideProject(tt *TestTools) (*accountV2.Project, *iam.APIKey, func
 			},
 		},
 	})
-	require.NoError(t, err)
+	if err != nil {
+		terminate()
+		return nil, nil, nil, err
+	}
 	terminateFunctions = append(terminateFunctions, func() {
 		err := iamAPI.DeletePolicy(&iam.DeletePolicyRequest{
 			PolicyID: iamPolicy.ID,
@@ -177,7 +194,10 @@ func createFakeSideProject(tt *TestTools) (*accountV2.Project, *iam.APIKey, func
 		ApplicationID:    expandStringPtr(iamApplication.ID),
 		DefaultProjectID: &project.ID,
 	})
-	require.NoError(t, err)
+	if err != nil {
+		terminate()
+		return nil, nil, nil, err
+	}
 	terminateFunctions = append(terminateFunctions, func() {
 		err := iamAPI.DeleteAPIKey(&iam.DeleteAPIKeyRequest{
 			AccessKey: iamAPIKey.AccessKey,
@@ -185,11 +205,7 @@ func createFakeSideProject(tt *TestTools) (*accountV2.Project, *iam.APIKey, func
 		require.NoError(t, err)
 	})
 
-	return project, iamAPIKey, func() {
-		for i := len(terminateFunctions) - 1; i >= 0; i-- {
-			terminateFunctions[i]()
-		}
-	}
+	return project, iamAPIKey, terminate, nil
 }
 
 func fakeSideProjectProviders(ctx context.Context, tt *TestTools, project *accountV2.Project, iamAPIKey *iam.APIKey) map[string]func() (*schema.Provider, error) {
