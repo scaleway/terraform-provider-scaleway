@@ -84,6 +84,12 @@ func fileNameWithoutExtSuffix(fileName string) string {
 	return strings.TrimSuffix(fileName, filepath.Ext(fileName))
 }
 
+// isTransientStateError checks if the interaction response is a transient state error
+// Transient state error are expected when creating resource linked to each other
+// example:
+// creating a gateway_network will set its public gateway to a transient state
+// when creating 2 gateway_network, one will fail with a transient state error
+// but the transient state error will be caught, it will wait again for the resource to be ready
 func isTransientStateError(i *cassette.Interaction) bool {
 	if i.Code != 409 {
 		return false
