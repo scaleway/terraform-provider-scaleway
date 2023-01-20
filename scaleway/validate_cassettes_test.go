@@ -1,6 +1,7 @@
 package scaleway
 
 import (
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -42,7 +43,8 @@ func TestAccScalewayCassettes_Validator(t *testing.T) {
 
 func checkErrorCode(c *cassette.Cassette) error {
 	for _, i := range c.Interactions {
-		if !checkErrCodeExcept(i, c, http.StatusNotFound, http.StatusTooManyRequests, http.StatusForbidden) {
+		if !checkErrCodeExcept(i, c, http.StatusNotFound, http.StatusTooManyRequests, http.StatusForbidden) &&
+			!isTransientStateError(i) {
 			return fmt.Errorf("status: %v found on %s. method: %s, url %s\nrequest body = %v\nresponse body = %v", i.Code, c.Name, i.Request.Method, i.Request.URL, i.Request.Body, i.Response.Body)
 		}
 	}
@@ -80,4 +82,27 @@ func checkErrCodeExcept(i *cassette.Interaction, c *cassette.Cassette, codes ...
 
 func fileNameWithoutExtSuffix(fileName string) string {
 	return strings.TrimSuffix(fileName, filepath.Ext(fileName))
+}
+
+// isTransientStateError checks if the interaction response is a transient state error
+// Transient state error are expected when creating resource linked to each other
+// example:
+// creating a gateway_network will set its public gateway to a transient state
+// when creating 2 gateway_network, one will fail with a transient state error
+// but the transient state error will be caught, it will wait again for the resource to be ready
+func isTransientStateError(i *cassette.Interaction) bool {
+	if i.Code != 409 {
+		return false
+	}
+
+	scwError := struct {
+		Type string `json:"type"`
+	}{}
+
+	err := json.Unmarshal([]byte(i.Response.Body), &scwError)
+	if err != nil {
+		return false
+	}
+
+	return scwError.Type == "transient_state"
 }
