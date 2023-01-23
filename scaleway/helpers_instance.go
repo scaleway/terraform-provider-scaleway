@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"sort"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/dustin/go-humanize"
@@ -584,6 +585,10 @@ func flattenInstanceImageExtraVolumes(volumes map[string]*instance.Volume, zone 
 		volumesFlat = append(volumesFlat, volumeFlat)
 	}
 	return volumesFlat
+}
+
+func formatImageLabel(imageUUID string) string {
+	return strings.ReplaceAll(imageUUID, "-", "_")
 }
 
 func isInstanceIPReverseResolved(ctx context.Context, instanceAPI *instance.API, reverse string, timeout time.Duration, id string, zone scw.Zone) bool {
