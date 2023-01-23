@@ -18,14 +18,17 @@ func TestAccScalewayDataSourceRegistryNamespace_Basic(t *testing.T) {
 			{
 				Config: `
 					resource "scaleway_registry_namespace" "reg00" {
+						region = "pl-waw"
 						name = "test-cr-data"
 					}
 					
 					data "scaleway_registry_namespace" "regData01" {
+						region = "pl-waw"
 						name = scaleway_registry_namespace.reg00.name
 					}
 					
 					data "scaleway_registry_namespace" "regData02" {
+						region = "pl-waw"
 						namespace_id = scaleway_registry_namespace.reg00.id
 					}
 				`,
@@ -47,15 +50,18 @@ func TestAccScalewayDataSourceRegistryNamespace_Basic(t *testing.T) {
 			{
 				Config: `
 					resource "scaleway_registry_namespace" "reg00" {
+						region = "pl-waw"
 						name = "test-cr-data"
 						is_public = "true"
 					}
 					
 					data "scaleway_registry_namespace" "regData01" {
+						region = "pl-waw"
 						name = scaleway_registry_namespace.reg00.name
 					}
 					
 					data "scaleway_registry_namespace" "regData02" {
+						region = "pl-waw"
 						namespace_id = scaleway_registry_namespace.reg00.id
 					}
 				`,
