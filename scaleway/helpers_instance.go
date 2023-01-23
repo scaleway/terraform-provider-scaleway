@@ -587,18 +587,27 @@ func flattenInstanceImageExtraVolumes(volumes map[string]*instance.Volume, zone 
 	return volumesFlat
 }
 
-func isInstanceIPReverseResolved(ctx context.Context, reverse string, timeout time.Duration) bool {
+func isInstanceIPReverseResolved(ctx context.Context, instanceAPI *instance.API, reverse string, timeout time.Duration, id string, zone scw.Zone) bool {
 	ticker := time.Tick(time.Millisecond * 500)
 	ctx, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
+
+	getIPReq := &instance.GetIPRequest{
+		Zone: zone,
+		IP:   id,
+	}
+	res, err := instanceAPI.GetIP(getIPReq, scw.WithContext(ctx))
+	if err != nil {
+		return false
+	}
 
 	r := &net.Resolver{
 		PreferGo: true,
 	}
 	for range ticker {
-		_, err := r.LookupHost(ctx, reverse)
+		address, err := r.LookupHost(ctx, reverse)
 		if err != nil {
-			if ctx.Err() == context.DeadlineExceeded {
+			if ctx.Err() == context.DeadlineExceeded && res.IP.Address.String() == address[0] {
 				return false
 			}
 			continue

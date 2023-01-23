@@ -66,7 +66,6 @@ func testAccCheckScalewayVPCPublicGatewayIPDefaultReverse(tt *TestTools, n strin
 			IPID: ID,
 			Zone: zone,
 		})
-
 		if err != nil {
 			return err
 		}

@@ -65,7 +65,7 @@ func resourceScalewayVPCPublicGatewayIPReverseDNSCreate(ctx context.Context, d *
 
 		reverse := d.Get("reverse").(string)
 		if len(reverse) > 0 {
-			if isGatewayIPReverseResolved(ctx, reverse, defaultVPCPublicGatewayIPReverseDNSTimeout) {
+			if isGatewayIPReverseResolved(ctx, vpcgwAPI, reverse, defaultVPCPublicGatewayIPReverseDNSTimeout, res.ID, zone) {
 				updateReverseReq.Reverse = expandStringPtr(reverse)
 			} else {
 				return diag.FromErr(fmt.Errorf("your reverse must resolve. Ensure the command 'dig +short %s' matches your IP address ", reverse))
@@ -120,7 +120,7 @@ func resourceScalewayVPCPublicGatewayIPReverseDNSUpdate(ctx context.Context, d *
 
 		reverse := d.Get("reverse").(string)
 		if len(reverse) > 0 {
-			if isGatewayIPReverseResolved(ctx, reverse, defaultVPCPublicGatewayIPReverseDNSTimeout) {
+			if isGatewayIPReverseResolved(ctx, vpcgwAPI, reverse, defaultVPCPublicGatewayIPReverseDNSTimeout, ID, zone) {
 				updateReverseReq.Reverse = expandStringPtr(reverse)
 			} else {
 				return diag.FromErr(fmt.Errorf("your reverse must resolve. Ensure the command 'dig +short %s' matches your IP address ", reverse))

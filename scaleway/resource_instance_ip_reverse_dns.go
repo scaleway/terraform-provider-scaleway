@@ -64,7 +64,7 @@ func resourceScalewayInstanceIPReverseDNSCreate(ctx context.Context, d *schema.R
 		}
 
 		if reverse, ok := d.GetOk("reverse"); ok {
-			if isInstanceIPReverseResolved(ctx, reverse.(string), defaultInstanceIPReverseDNSTimeout) {
+			if isInstanceIPReverseResolved(ctx, instanceAPI, reverse.(string), defaultInstanceIPReverseDNSTimeout, res.IP.ID, zone) {
 				updateReverseReq.Reverse = &instance.NullableStringValue{Value: reverse.(string)}
 			} else {
 				return diag.FromErr(fmt.Errorf("your reverse must resolve. Ensure the command 'dig +short %s' matches your IP address ", reverse.(string)))
@@ -120,7 +120,7 @@ func resourceScalewayInstanceIPReverseDNSUpdate(ctx context.Context, d *schema.R
 		}
 
 		if reverse, ok := d.GetOk("reverse"); ok {
-			if isInstanceIPReverseResolved(ctx, reverse.(string), defaultInstanceIPReverseDNSTimeout) {
+			if isInstanceIPReverseResolved(ctx, instanceAPI, reverse.(string), defaultInstanceIPReverseDNSTimeout, ID, zone) {
 				updateReverseReq.Reverse = &instance.NullableStringValue{Value: reverse.(string)}
 			} else {
 				return diag.FromErr(fmt.Errorf("your reverse must resolve. Ensure the command 'dig +short %s' matches your IP address ", reverse.(string)))
