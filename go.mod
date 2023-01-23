@@ -15,6 +15,7 @@ require (
 	github.com/robfig/cron/v3 v3.0.1
 	github.com/scaleway/scaleway-sdk-go v1.0.0-beta.11
 	github.com/stretchr/testify v1.8.1
+	golang.org/x/exp v0.0.0-20230118134722-a68e582fa157
 )
 
 require (

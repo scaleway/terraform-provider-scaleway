@@ -14,6 +14,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
 	"github.com/scaleway/scaleway-sdk-go/api/vpc/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"golang.org/x/exp/slices"
 )
 
 const (
@@ -603,17 +604,31 @@ func isInstanceIPReverseResolved(ctx context.Context, instanceAPI *instance.API,
 
 	r := &net.Resolver{
 		PreferGo: true,
-	}
-	for range ticker {
-		address, err := r.LookupHost(ctx, reverse)
-		if err != nil {
-			if ctx.Err() == context.DeadlineExceeded && res.IP.Address.String() == address[0] {
-				return false
+		Dial: func(ctx context.Context, network, address string) (net.Conn, error) {
+			d := net.Dialer{
+				Timeout: time.Millisecond * time.Duration(10000),
 			}
-			continue
-		}
-		return true
+			conn, err := d.DialContext(ctx, network, "ns0.dom.scw.cloud:53")
+			if err != nil {
+				conn, err = d.DialContext(ctx, network, "ns1.dom.scw.cloud:53")
+			}
+			return conn, err
+		},
 	}
 
-	return false
+	for {
+		select {
+		case <-ticker:
+			address, err := r.LookupHost(ctx, reverse)
+			if err != nil {
+				if ctx.Err() == context.DeadlineExceeded {
+					return false
+				}
+			} else if slices.Contains(address, res.IP.Address.String()) {
+				return true
+			}
+		case <-ctx.Done():
+			return false
+		}
+	}
 }
