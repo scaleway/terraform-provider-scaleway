@@ -2,14 +2,11 @@ package scaleway
 
 import (
 	"context"
-	"net"
-	"strings"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	vpcgw "github.com/scaleway/scaleway-sdk-go/api/vpcgw/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
-	"golang.org/x/exp/slices"
 )
 
 const (
@@ -96,10 +93,6 @@ func waitForDHCPEntries(ctx context.Context, api *vpcgw.API, zone scw.Zone, gate
 }
 
 func isGatewayIPReverseResolved(ctx context.Context, api *vpcgw.API, reverse string, timeout time.Duration, id string, zone scw.Zone) bool {
-	ticker := time.Tick(time.Millisecond * 500)
-	ctx, cancel := context.WithTimeout(ctx, timeout)
-	defer cancel()
-
 	getIPReq := &vpcgw.GetIPRequest{
 		Zone: zone,
 		IPID: id,
@@ -109,41 +102,5 @@ func isGatewayIPReverseResolved(ctx context.Context, api *vpcgw.API, reverse str
 		return false
 	}
 
-	r := &net.Resolver{
-		PreferGo: true,
-		Dial: func(ctx context.Context, network, address string) (net.Conn, error) {
-			d := net.Dialer{
-				Timeout: time.Millisecond * time.Duration(10000),
-			}
-			conn, err := d.DialContext(ctx, network, "ns0.dom.scw.cloud:53")
-			if err != nil {
-				conn, err = d.DialContext(ctx, network, "ns1.dom.scw.cloud:53")
-			}
-			return conn, err
-		},
-	}
-
-	for {
-		select {
-		case <-ticker:
-			address, err := r.LookupHost(ctx, reverse)
-			if err != nil {
-				if ctx.Err() == context.DeadlineExceeded {
-					return false
-				}
-			} else if slices.Contains(address, IP.Address.String()) {
-				return true
-			}
-		case <-ctx.Done():
-			return false
-		}
-	}
-}
-
-func findDefaultReverse(address string) string {
-	parts := strings.Split(address, ".")
-	for i, j := 0, len(parts)-1; i < j; i, j = i+1, j-1 {
-		parts[i], parts[j] = parts[j], parts[i]
-	}
-	return strings.Join(parts, "-") + ".instances.scw.cloud"
+	return hostResolver(ctx, timeout, reverse, IP.Address.String())
 }

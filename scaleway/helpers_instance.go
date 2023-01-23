@@ -3,7 +3,6 @@ package scaleway
 import (
 	"context"
 	"fmt"
-	"net"
 	"sort"
 	"strconv"
 	"time"
@@ -14,7 +13,6 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
 	"github.com/scaleway/scaleway-sdk-go/api/vpc/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
-	"golang.org/x/exp/slices"
 )
 
 const (
@@ -589,10 +587,6 @@ func flattenInstanceImageExtraVolumes(volumes map[string]*instance.Volume, zone 
 }
 
 func isInstanceIPReverseResolved(ctx context.Context, instanceAPI *instance.API, reverse string, timeout time.Duration, id string, zone scw.Zone) bool {
-	ticker := time.Tick(time.Millisecond * 500)
-	ctx, cancel := context.WithTimeout(ctx, timeout)
-	defer cancel()
-
 	getIPReq := &instance.GetIPRequest{
 		Zone: zone,
 		IP:   id,
@@ -602,33 +596,5 @@ func isInstanceIPReverseResolved(ctx context.Context, instanceAPI *instance.API,
 		return false
 	}
 
-	r := &net.Resolver{
-		PreferGo: true,
-		Dial: func(ctx context.Context, network, address string) (net.Conn, error) {
-			d := net.Dialer{
-				Timeout: time.Millisecond * time.Duration(10000),
-			}
-			conn, err := d.DialContext(ctx, network, "ns0.dom.scw.cloud:53")
-			if err != nil {
-				conn, err = d.DialContext(ctx, network, "ns1.dom.scw.cloud:53")
-			}
-			return conn, err
-		},
-	}
-
-	for {
-		select {
-		case <-ticker:
-			address, err := r.LookupHost(ctx, reverse)
-			if err != nil {
-				if ctx.Err() == context.DeadlineExceeded {
-					return false
-				}
-			} else if slices.Contains(address, res.IP.Address.String()) {
-				return true
-			}
-		case <-ctx.Done():
-			return false
-		}
-	}
+	return hostResolver(ctx, timeout, reverse, res.IP.Address.String())
 }
