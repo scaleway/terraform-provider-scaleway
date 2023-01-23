@@ -108,8 +108,8 @@ func TestAccScalewayIamApiKey_WithUser(t *testing.T) {
 			{
 				Config: `
 						data "scaleway_iam_user" "main" {
-							email = "developer-tools-team@scaleway.com"
-							organization_id = "dd5b8103-52ef-40b6-b157-35a426650401"
+							email = "hashicorp@scaleway.com"
+							organization_id = "105bdce1-64c0-48ab-899d-868455867ecf"
 						}
 
 						resource "scaleway_iam_api_key" "main" {
@@ -127,8 +127,8 @@ func TestAccScalewayIamApiKey_WithUser(t *testing.T) {
 			{
 				Config: `
 						data "scaleway_iam_user" "main" {
-							email = "developer-tools-team@scaleway.com"
-							organization_id = "dd5b8103-52ef-40b6-b157-35a426650401"
+							email = "hashicorp@scaleway.com"
+							organization_id = "105bdce1-64c0-48ab-899d-868455867ecf"
 						}
 
 						resource "scaleway_iam_api_key" "main" {

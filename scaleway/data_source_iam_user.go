@@ -29,9 +29,10 @@ func dataSourceScalewayIamUser() *schema.Resource {
 				ConflictsWith: []string{"user_id"},
 			},
 			"organization_id": {
-				Type:        schema.TypeString,
-				Description: "The organization_id you want to attach the resource to",
-				Optional:    true,
+				Type:          schema.TypeString,
+				Description:   "The organization_id you want to attach the resource to",
+				Optional:      true,
+				ConflictsWith: []string{"user_id"},
 			},
 		},
 	}

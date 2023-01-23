@@ -226,8 +226,7 @@ func TestAccScalewayIamGroup_Users(t *testing.T) {
 			{
 				Config: `
 					data "scaleway_iam_user" "user00" {
-						user_id = "29c31dd4-8ea1-4927-82d9-a0620e04773f"
-						organization_id = "08555df8-bb26-43bc-b749-1b98c5d02343"
+						user_id = "d55bae64-4e2b-490f-9b2e-688715f60f6c"
 					}
 
 					resource "scaleway_iam_group" "main_user" {
@@ -247,12 +246,10 @@ func TestAccScalewayIamGroup_Users(t *testing.T) {
 			{
 				Config: `
 					data "scaleway_iam_user" "user00" {
-						user_id = "29c31dd4-8ea1-4927-82d9-a0620e04773f"
-						organization_id = "08555df8-bb26-43bc-b749-1b98c5d02343"
+						user_id = "d55bae64-4e2b-490f-9b2e-688715f60f6c"
 					}
 					data "scaleway_iam_user" "user01" {
-						user_id = "0afd8f94-eaf1-4949-9dcb-9ae5f4bc1017"
-						organization_id = "08555df8-bb26-43bc-b749-1b98c5d02343"
+						user_id = "b6360d4f-831c-45a8-889e-0b65ed079e63"
 					}
 
 					resource "scaleway_iam_group" "main_user" {
@@ -274,8 +271,7 @@ func TestAccScalewayIamGroup_Users(t *testing.T) {
 			{
 				Config: `
 					data "scaleway_iam_user" "user02" {
-						user_id = "453c1a85-4a10-4c6f-94dc-d3193d4589a5"
-						organization_id = "08555df8-bb26-43bc-b749-1b98c5d02343"
+						user_id = "dc512a33-e14c-4e72-9481-52e020ced70a"
 					}
 
 					resource "scaleway_iam_group" "main_user" {
@@ -326,8 +322,7 @@ func TestAccScalewayIamGroup_UsersAndApplications(t *testing.T) {
 					}
 
 					data "scaleway_iam_user" "user00" {
-						user_id = "29c31dd4-8ea1-4927-82d9-a0620e04773f"
-						organization_id = "08555df8-bb26-43bc-b749-1b98c5d02343"
+						user_id = "d55bae64-4e2b-490f-9b2e-688715f60f6c"
 					}
 
 					resource "scaleway_iam_group" "main_mix" {
@@ -386,12 +381,10 @@ func TestAccScalewayIamGroup_UsersAndApplications(t *testing.T) {
 					}
 
 					data "scaleway_iam_user" "user00" {
-						user_id = "29c31dd4-8ea1-4927-82d9-a0620e04773f"
-						organization_id = "08555df8-bb26-43bc-b749-1b98c5d02343"
+						user_id = "d55bae64-4e2b-490f-9b2e-688715f60f6c"
 					}
 					data "scaleway_iam_user" "user01" {
-						user_id = "0afd8f94-eaf1-4949-9dcb-9ae5f4bc1017"
-						organization_id = "08555df8-bb26-43bc-b749-1b98c5d02343"
+						user_id = "b6360d4f-831c-45a8-889e-0b65ed079e63"
 					}
 
 					resource "scaleway_iam_group" "main_mix" {
@@ -425,16 +418,13 @@ func TestAccScalewayIamGroup_UsersAndApplications(t *testing.T) {
 					}
 
 					data "scaleway_iam_user" "user01" {
-						user_id = "0afd8f94-eaf1-4949-9dcb-9ae5f4bc1017"
-						organization_id = "08555df8-bb26-43bc-b749-1b98c5d02343"
+						user_id = "d55bae64-4e2b-490f-9b2e-688715f60f6c"
 					}
 					data "scaleway_iam_user" "user03" {
-						user_id = "43b0529c-0b85-45a1-bbf6-5a1336b21787"
-						organization_id = "08555df8-bb26-43bc-b749-1b98c5d02343"
+						user_id = "b6360d4f-831c-45a8-889e-0b65ed079e63"
 					}
 					data "scaleway_iam_user" "user04" {
-						user_id = "ce18cffd-e7c8-47f8-8de8-00e97e50a0d3"
-						organization_id = "08555df8-bb26-43bc-b749-1b98c5d02343"
+						user_id = "dc512a33-e14c-4e72-9481-52e020ced70a"
 					}
 
 					resource "scaleway_iam_group" "main_mix" {
