@@ -351,7 +351,6 @@ func deleteS3ObjectVersions(ctx context.Context, conn *s3.S3, bucketName string,
 				deleteMarkerKey := aws.StringValue(deleteMarkerEntry.Key)
 				deleteMarkerVersionsID := aws.StringValue(deleteMarkerEntry.VersionId)
 				err := deleteS3ObjectVersion(conn, bucketName, deleteMarkerKey, deleteMarkerVersionsID, force)
-
 				if err != nil {
 					results[i] <- fmt.Errorf("failed to delete S3 object delete marker: %s", err)
 				}
