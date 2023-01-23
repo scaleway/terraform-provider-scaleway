@@ -115,7 +115,7 @@ The following arguments are supported:
 * `versioning` - (Optional) A state of [versioning](https://docs.aws.amazon.com/AmazonS3/latest/dev/Versioning.html) (documented below)
 * `cors_rule` - (Optional) A rule of [Cross-Origin Resource Sharing](https://docs.aws.amazon.com/AmazonS3/latest/dev/cors.html) (documented below).
 * `force_destroy` - (Optional) Enable deletion of objects in bucket before destroying, locked objects or under legal hold are also deleted and **not** recoverable
-* `project_id` - (Defaults to [provider](../index.md#project_id) `project_id`) The ID of the project the SSH key is associated with.
+* `project_id` - (Defaults to [provider](../index.md#project_id) `project_id`) The ID of the project the bucket is associated with.
 
 The `acl` attribute is deprecated. See [scaleway_object_bucket_acl](object_bucket_acl.md) resource documentation.
 Please check the [canned ACL](https://docs.aws.amazon.com/AmazonS3/latest/userguide/acl_overview.html#canned-acl) documentation for supported values.
