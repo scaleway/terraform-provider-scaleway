@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"os"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -18,6 +19,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/hashicorp/aws-sdk-go-base/tfawserr"
 	awspolicy "github.com/hashicorp/awspolicyequivalence"
+	"github.com/hashicorp/go-multierror"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -282,58 +284,100 @@ func removeS3ObjectVersionLegalHold(conn *s3.S3, bucketName string, objectVersio
 }
 
 func deleteS3ObjectVersions(ctx context.Context, conn *s3.S3, bucketName string, force bool) error {
-	var err error
+	var globalErr error
 	listInput := &s3.ListObjectVersionsInput{
 		Bucket: scw.StringPtr(bucketName),
 	}
+
 	listErr := conn.ListObjectVersionsPagesWithContext(ctx, listInput, func(page *s3.ListObjectVersionsOutput, lastPage bool) bool {
-		for _, objectVersion := range page.Versions {
-			objectKey := aws.StringValue(objectVersion.Key)
-			objectVersionID := aws.StringValue(objectVersion.VersionId)
-			err = deleteS3ObjectVersion(conn, bucketName, objectKey, objectVersionID, force)
+		wg := sync.WaitGroup{}
+		results := make([]chan error, len(page.Versions))
 
-			if isS3Err(err, ErrCodeAccessDenied, "") && force {
-				legalHoldRemoved, errLegal := removeS3ObjectVersionLegalHold(conn, bucketName, objectVersion)
-				if errLegal != nil {
-					err = fmt.Errorf("failed to remove legal hold: %s", errLegal)
-					return false
+		for i, objectVersion := range page.Versions {
+			wg.Add(1)
+
+			go func(i int, objectVersion *s3.ObjectVersion) {
+				defer wg.Done()
+
+				objectKey := aws.StringValue(objectVersion.Key)
+				objectVersionID := aws.StringValue(objectVersion.VersionId)
+				err := deleteS3ObjectVersion(conn, bucketName, objectKey, objectVersionID, force)
+
+				if isS3Err(err, ErrCodeAccessDenied, "") && force {
+					legalHoldRemoved, errLegal := removeS3ObjectVersionLegalHold(conn, bucketName, objectVersion)
+					if errLegal != nil {
+						results[i] <- fmt.Errorf("failed to remove legal hold: %s", errLegal)
+						return
+					}
+					if legalHoldRemoved {
+						err = deleteS3ObjectVersion(conn, bucketName, objectKey, objectVersionID, force)
+					}
 				}
-				if legalHoldRemoved {
-					err = deleteS3ObjectVersion(conn, bucketName, objectKey, objectVersionID, force)
+
+				if err != nil {
+					results[i] <- fmt.Errorf("failed to delete S3 object: %s", err)
 				}
-			}
-			if err != nil {
-				err = fmt.Errorf("failed to delete S3 object: %s", err)
+
+				results[i] <- nil
+			}(i, objectVersion)
+		}
+
+		wg.Wait()
+
+		for _, result := range results {
+			if err := <-result; err != nil {
+				globalErr = multierror.Append(globalErr, err)
 				return false
 			}
 		}
+
 		return true
 	})
 	if listErr != nil {
-		return fmt.Errorf("error listing S3 objects: %s", err)
+		return fmt.Errorf("error listing S3 objects: %s", globalErr)
 	}
-	if err != nil {
-		return err
+	if globalErr != nil {
+		return globalErr
 	}
+
 	listErr = conn.ListObjectVersionsPagesWithContext(ctx, listInput, func(page *s3.ListObjectVersionsOutput, lastPage bool) bool {
-		for _, deleteMarkerEntry := range page.DeleteMarkers {
-			deleteMarkerKey := aws.StringValue(deleteMarkerEntry.Key)
-			deleteMarkerVersionsID := aws.StringValue(deleteMarkerEntry.VersionId)
-			err = deleteS3ObjectVersion(conn, bucketName, deleteMarkerKey, deleteMarkerVersionsID, force)
+		wg := sync.WaitGroup{}
+		results := make([]chan error, len(page.Versions))
 
-			if err != nil {
-				err = fmt.Errorf("failed to delete S3 object delete marker: %s", err)
+		for i, deleteMarkerEntry := range page.DeleteMarkers {
+			wg.Add(1)
+
+			go func(i int, deleteMarkerEntry *s3.DeleteMarkerEntry) {
+				deleteMarkerKey := aws.StringValue(deleteMarkerEntry.Key)
+				deleteMarkerVersionsID := aws.StringValue(deleteMarkerEntry.VersionId)
+				err := deleteS3ObjectVersion(conn, bucketName, deleteMarkerKey, deleteMarkerVersionsID, force)
+
+				if err != nil {
+					results[i] <- fmt.Errorf("failed to delete S3 object delete marker: %s", err)
+				}
+
+				results[i] <- nil
+			}(i, deleteMarkerEntry)
+		}
+
+		wg.Wait()
+
+		for _, result := range results {
+			if err := <-result; err != nil {
+				globalErr = multierror.Append(globalErr, err)
 				return false
 			}
 		}
+
 		return true
 	})
 	if listErr != nil {
-		return fmt.Errorf("error listing S3 objects for delete markers: %s", err)
+		return fmt.Errorf("error listing S3 objects for delete markers: %s", globalErr)
 	}
-	if err != nil {
-		return err
+	if globalErr != nil {
+		return globalErr
 	}
+
 	return nil
 }
 
