@@ -322,7 +322,7 @@ func TestAccScalewayIamGroup_UsersAndApplications(t *testing.T) {
 					}
 
 					data "scaleway_iam_user" "user00" {
-						user_id = "d55bae64-4e2b-490f-9b2e-688715f60f6c"
+						user_id = "84d20ae1-9650-419a-ab74-7ab09b6262e0"
 					}
 
 					resource "scaleway_iam_group" "main_mix" {
