@@ -8,7 +8,6 @@ import (
 
 	sdkacctest "github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	accountV2 "github.com/scaleway/scaleway-sdk-go/api/account/v2"
 	iam "github.com/scaleway/scaleway-sdk-go/api/iam/v1alpha1"
@@ -214,30 +213,4 @@ func createFakeSideProject(tt *TestTools) (*accountV2.Project, *iam.APIKey, func
 	})
 
 	return project, iamAPIKey, terminate, nil
-}
-
-func fakeSideProjectProviders(ctx context.Context, tt *TestTools, project *accountV2.Project, iamAPIKey *iam.APIKey) map[string]func() (*schema.Provider, error) {
-	t := tt.T
-
-	metaSide, err := buildMeta(ctx, &metaConfig{
-		terraformVersion:    "terraform-tests",
-		httpClient:          tt.Meta.httpClient,
-		forceProjectID:      project.ID,
-		forceOrganizationID: project.OrganizationID,
-		forceAccessKey:      iamAPIKey.AccessKey,
-		forceSecretKey:      *iamAPIKey.SecretKey,
-	})
-	require.NoError(t, err)
-
-	providers := map[string]func() (*schema.Provider, error){
-		"side": func() (*schema.Provider, error) {
-			return Provider(&ProviderConfig{Meta: metaSide})(), nil
-		},
-	}
-
-	for k, v := range tt.ProviderFactories {
-		providers[k] = v
-	}
-
-	return providers
 }

@@ -20,6 +20,8 @@ import (
 	"github.com/dnaeon/go-vcr/recorder"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	accountV2 "github.com/scaleway/scaleway-sdk-go/api/account/v2"
+	iam "github.com/scaleway/scaleway-sdk-go/api/iam/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/scaleway-sdk-go/strcase"
 	"github.com/stretchr/testify/assert"
@@ -260,6 +262,36 @@ func getHTTPRecoder(t *testing.T, update bool) (client *http.Client, cleanup fun
 	return &http.Client{Transport: newRetryableTransportWithOptions(r, retryOptions)}, func() {
 		assert.NoError(t, r.Stop()) // Make sure recorder is stopped once done with it
 	}, nil
+}
+
+// fakeSideProjectProviders creates a new provider alias "side" with a new metaConfig that will use the
+// given project and API key as default profile configuration.
+//
+// This is useful to test resources that need to create resources in another project.
+func fakeSideProjectProviders(ctx context.Context, tt *TestTools, project *accountV2.Project, iamAPIKey *iam.APIKey) map[string]func() (*schema.Provider, error) {
+	t := tt.T
+
+	metaSide, err := buildMeta(ctx, &metaConfig{
+		terraformVersion:    "terraform-tests",
+		httpClient:          tt.Meta.httpClient,
+		forceProjectID:      project.ID,
+		forceOrganizationID: project.OrganizationID,
+		forceAccessKey:      iamAPIKey.AccessKey,
+		forceSecretKey:      *iamAPIKey.SecretKey,
+	})
+	require.NoError(t, err)
+
+	providers := map[string]func() (*schema.Provider, error){
+		"side": func() (*schema.Provider, error) {
+			return Provider(&ProviderConfig{Meta: metaSide})(), nil
+		},
+	}
+
+	for k, v := range tt.ProviderFactories {
+		providers[k] = v
+	}
+
+	return providers
 }
 
 type TestTools struct {
