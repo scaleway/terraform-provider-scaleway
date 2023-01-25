@@ -9,6 +9,7 @@ import (
 	sdkacctest "github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	accountV2 "github.com/scaleway/scaleway-sdk-go/api/account/v2"
 	iam "github.com/scaleway/scaleway-sdk-go/api/iam/v1alpha1"
 	"github.com/stretchr/testify/require"
@@ -52,14 +53,18 @@ func TestAccScalewayDataSourceObjectStorage_ProjectIDAllowed(t *testing.T) {
 
 	project, iamAPIKey, terminateFakeSideProject, err := createFakeSideProject(tt)
 	require.NoError(t, err)
-	defer terminateFakeSideProject()
 
 	ctx := context.Background()
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: fakeSideProjectProviders(ctx, tt, project, iamAPIKey),
-		CheckDestroy:      testAccCheckScalewayObjectDestroy(tt),
+		CheckDestroy: resource.ComposeAggregateTestCheckFunc(
+			func(s *terraform.State) error {
+				return terminateFakeSideProject()
+			},
+			testAccCheckScalewayObjectDestroy(tt),
+		),
 		Steps: []resource.TestStep{
 			// Create a bucket from the main provider into the side project and read it from the side provider
 			// The side provider should only be able to read the bucket from the side project
@@ -101,7 +106,12 @@ func TestAccScalewayDataSourceObjectStorage_ProjectIDForbidden(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: fakeSideProjectProviders(ctx, tt, project, iamAPIKey),
-		CheckDestroy:      testAccCheckScalewayObjectDestroy(tt),
+		CheckDestroy: resource.ComposeAggregateTestCheckFunc(
+			func(s *terraform.State) error {
+				return terminateFakeSideProject()
+			},
+			testAccCheckScalewayObjectDestroy(tt),
+		),
 		Steps: []resource.TestStep{
 			// The side provider should not be able to read the bucket from the main project
 			{
@@ -124,14 +134,17 @@ func TestAccScalewayDataSourceObjectStorage_ProjectIDForbidden(t *testing.T) {
 	})
 }
 
-func createFakeSideProject(tt *TestTools) (*accountV2.Project, *iam.APIKey, func(), error) {
-	t := tt.T
-
-	terminateFunctions := []func(){}
-	terminate := func() {
+func createFakeSideProject(tt *TestTools) (*accountV2.Project, *iam.APIKey, func() error, error) {
+	terminateFunctions := []func() error{}
+	terminate := func() error {
 		for i := len(terminateFunctions) - 1; i >= 0; i-- {
-			terminateFunctions[i]()
+			err := terminateFunctions[i]()
+			if err != nil {
+				return err
+			}
 		}
+
+		return nil
 	}
 
 	projectName := sdkacctest.RandomWithPrefix("test-acc-scaleway-project")
@@ -146,11 +159,10 @@ func createFakeSideProject(tt *TestTools) (*accountV2.Project, *iam.APIKey, func
 		terminate()
 		return nil, nil, nil, err
 	}
-	terminateFunctions = append(terminateFunctions, func() {
-		err := projectAPI.DeleteProject(&accountV2.DeleteProjectRequest{
+	terminateFunctions = append(terminateFunctions, func() error {
+		return projectAPI.DeleteProject(&accountV2.DeleteProjectRequest{
 			ProjectID: project.ID,
 		})
-		require.NoError(t, err)
 	})
 
 	iamAPI := iam.NewAPI(tt.Meta.scwClient)
@@ -161,11 +173,10 @@ func createFakeSideProject(tt *TestTools) (*accountV2.Project, *iam.APIKey, func
 		terminate()
 		return nil, nil, nil, err
 	}
-	terminateFunctions = append(terminateFunctions, func() {
-		err := iamAPI.DeleteApplication(&iam.DeleteApplicationRequest{
+	terminateFunctions = append(terminateFunctions, func() error {
+		return iamAPI.DeleteApplication(&iam.DeleteApplicationRequest{
 			ApplicationID: iamApplication.ID,
 		})
-		require.NoError(t, err)
 	})
 
 	iamPolicy, err := iamAPI.CreatePolicy(&iam.CreatePolicyRequest{
@@ -182,11 +193,10 @@ func createFakeSideProject(tt *TestTools) (*accountV2.Project, *iam.APIKey, func
 		terminate()
 		return nil, nil, nil, err
 	}
-	terminateFunctions = append(terminateFunctions, func() {
-		err := iamAPI.DeletePolicy(&iam.DeletePolicyRequest{
+	terminateFunctions = append(terminateFunctions, func() error {
+		return iamAPI.DeletePolicy(&iam.DeletePolicyRequest{
 			PolicyID: iamPolicy.ID,
 		})
-		require.NoError(t, err)
 	})
 
 	iamAPIKey, err := iamAPI.CreateAPIKey(&iam.CreateAPIKeyRequest{
@@ -197,11 +207,10 @@ func createFakeSideProject(tt *TestTools) (*accountV2.Project, *iam.APIKey, func
 		terminate()
 		return nil, nil, nil, err
 	}
-	terminateFunctions = append(terminateFunctions, func() {
-		err := iamAPI.DeleteAPIKey(&iam.DeleteAPIKeyRequest{
+	terminateFunctions = append(terminateFunctions, func() error {
+		return iamAPI.DeleteAPIKey(&iam.DeleteAPIKeyRequest{
 			AccessKey: iamAPIKey.AccessKey,
 		})
-		require.NoError(t, err)
 	})
 
 	return project, iamAPIKey, terminate, nil
