@@ -177,6 +177,14 @@ func resourceBucketWebsiteConfigurationRead(ctx context.Context, d *schema.Resou
 		_ = d.Set("website_domain", websiteEndpoint.Domain)
 	}
 
+	acl, err := conn.GetBucketAclWithContext(ctx, &s3.GetBucketAclInput{
+		Bucket: aws.String(bucket),
+	})
+	if err != nil {
+		return diag.FromErr(fmt.Errorf("couldn't read bucket acl: %s", err))
+	}
+	_ = d.Set("project_id", *normalizeOwnerID(acl.Owner.ID))
+
 	return nil
 }
 

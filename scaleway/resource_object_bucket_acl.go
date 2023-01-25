@@ -387,6 +387,7 @@ func resourceBucketACLRead(ctx context.Context, d *schema.ResourceData, meta int
 		return diag.FromErr(fmt.Errorf("error setting access_control_policy: %w", err))
 	}
 	_ = d.Set("region", region)
+	_ = d.Set("project_id", *normalizeOwnerID(output.Owner.ID))
 	_ = d.Set("bucket", expandID(bucket))
 
 	return nil

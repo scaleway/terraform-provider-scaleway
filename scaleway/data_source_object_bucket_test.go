@@ -96,7 +96,6 @@ func TestAccScalewayDataSourceObjectStorage_ProjectIDForbidden(t *testing.T) {
 
 	project, iamAPIKey, terminateFakeSideProject, err := createFakeSideProject(tt)
 	require.NoError(t, err)
-	defer terminateFakeSideProject()
 
 	ctx := context.Background()
 

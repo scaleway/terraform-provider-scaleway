@@ -97,11 +97,13 @@ func resourceScalewayObjectBucketPolicyRead(ctx context.Context, d *schema.Resou
 		return diag.FromErr(err)
 	}
 
+	bucket := expandID(d.Id())
+
 	_ = d.Set("region", region)
 
 	tflog.Debug(ctx, fmt.Sprintf("[DEBUG] SCW bucket policy, read for bucket: %s", d.Id()))
 	pol, err := s3Client.GetBucketPolicyWithContext(ctx, &s3.GetBucketPolicyInput{
-		Bucket: aws.String(expandID(d.Id())),
+		Bucket: aws.String(bucket),
 	})
 
 	if !d.IsNewResource() && tfawserr.ErrCodeEquals(err, ErrCodeNoSuchBucketPolicy, s3.ErrCodeNoSuchBucket) {
@@ -130,9 +132,17 @@ func resourceScalewayObjectBucketPolicyRead(ctx context.Context, d *schema.Resou
 		return diag.FromErr(err)
 	}
 
-	if err := d.Set("bucket", expandID(d.Id())); err != nil {
+	if err := d.Set("bucket", bucket); err != nil {
 		return diag.FromErr(err)
 	}
+
+	acl, err := s3Client.GetBucketAclWithContext(ctx, &s3.GetBucketAclInput{
+		Bucket: aws.String(bucket),
+	})
+	if err != nil {
+		return diag.FromErr(fmt.Errorf("couldn't read bucket acl: %s", err))
+	}
+	_ = d.Set("project_id", *normalizeOwnerID(acl.Owner.ID))
 
 	return nil
 }
