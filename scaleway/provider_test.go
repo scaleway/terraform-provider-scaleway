@@ -18,8 +18,11 @@ import (
 
 	"github.com/dnaeon/go-vcr/cassette"
 	"github.com/dnaeon/go-vcr/recorder"
+	sdkacctest "github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	accountV2 "github.com/scaleway/scaleway-sdk-go/api/account/v2"
+	iam "github.com/scaleway/scaleway-sdk-go/api/iam/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/scaleway-sdk-go/strcase"
 	"github.com/stretchr/testify/assert"
@@ -44,7 +47,7 @@ var BodyMatcherIgnore = []string{
 // SensitiveFields is a map with keys listing fields that should be anonymized
 // value will be set in place of its old value
 var SensitiveFields = map[string]interface{}{
-	"secret_key": "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
+	"secret_key": "00000000-0000-0000-0000-000000000000",
 }
 
 func testAccPreCheck(_ *testing.T) {}
@@ -250,7 +253,7 @@ func getHTTPRecoder(t *testing.T, update bool) (client *http.Client, cleanup fun
 	})
 
 	// Add a filter that will replace sensitive values with fixed values
-	r.AddFilter(cassetteSensitiveFieldsAnonymizer)
+	r.AddSaveFilter(cassetteSensitiveFieldsAnonymizer)
 
 	retryOptions := retryableTransportOptions{}
 	if !*UpdateCassettes {
@@ -260,6 +263,119 @@ func getHTTPRecoder(t *testing.T, update bool) (client *http.Client, cleanup fun
 	return &http.Client{Transport: newRetryableTransportWithOptions(r, retryOptions)}, func() {
 		assert.NoError(t, r.Stop()) // Make sure recorder is stopped once done with it
 	}, nil
+}
+
+type FakeSideProjectTerminateFunc func() error
+
+// createFakeSideProject creates a temporary project with a temporary IAM application and policy.
+//
+// The returned function is a cleanup function that should be called when to delete the project.
+func createFakeSideProject(tt *TestTools) (*accountV2.Project, *iam.APIKey, FakeSideProjectTerminateFunc, error) {
+	terminateFunctions := []FakeSideProjectTerminateFunc{}
+	terminate := func() error {
+		for i := len(terminateFunctions) - 1; i >= 0; i-- {
+			err := terminateFunctions[i]()
+			if err != nil {
+				return err
+			}
+		}
+
+		return nil
+	}
+
+	projectName := sdkacctest.RandomWithPrefix("test-acc-scaleway-project")
+	iamApplicationName := sdkacctest.RandomWithPrefix("test-acc-scaleway-iam-app")
+	iamPolicyName := sdkacctest.RandomWithPrefix("test-acc-scaleway-iam-policy")
+
+	projectAPI := accountV2.NewAPI(tt.Meta.scwClient)
+	project, err := projectAPI.CreateProject(&accountV2.CreateProjectRequest{
+		Name: projectName,
+	})
+	if err != nil {
+		return nil, nil, nil, terminate()
+	}
+	terminateFunctions = append(terminateFunctions, func() error {
+		return projectAPI.DeleteProject(&accountV2.DeleteProjectRequest{
+			ProjectID: project.ID,
+		})
+	})
+
+	iamAPI := iam.NewAPI(tt.Meta.scwClient)
+	iamApplication, err := iamAPI.CreateApplication(&iam.CreateApplicationRequest{
+		Name: iamApplicationName,
+	})
+	if err != nil {
+		return nil, nil, nil, terminate()
+	}
+	terminateFunctions = append(terminateFunctions, func() error {
+		return iamAPI.DeleteApplication(&iam.DeleteApplicationRequest{
+			ApplicationID: iamApplication.ID,
+		})
+	})
+
+	iamPolicy, err := iamAPI.CreatePolicy(&iam.CreatePolicyRequest{
+		Name:          iamPolicyName,
+		ApplicationID: expandStringPtr(iamApplication.ID),
+		Rules: []*iam.RuleSpecs{
+			{
+				ProjectIDs:         &[]string{project.ID},
+				PermissionSetNames: &[]string{"ObjectStorageReadOnly", "ObjectStorageObjectsRead", "ObjectStorageBucketsRead"},
+			},
+		},
+	})
+	if err != nil {
+		return nil, nil, nil, terminate()
+	}
+	terminateFunctions = append(terminateFunctions, func() error {
+		return iamAPI.DeletePolicy(&iam.DeletePolicyRequest{
+			PolicyID: iamPolicy.ID,
+		})
+	})
+
+	iamAPIKey, err := iamAPI.CreateAPIKey(&iam.CreateAPIKeyRequest{
+		ApplicationID:    expandStringPtr(iamApplication.ID),
+		DefaultProjectID: &project.ID,
+	})
+	if err != nil {
+		return nil, nil, nil, terminate()
+	}
+	terminateFunctions = append(terminateFunctions, func() error {
+		return iamAPI.DeleteAPIKey(&iam.DeleteAPIKeyRequest{
+			AccessKey: iamAPIKey.AccessKey,
+		})
+	})
+
+	return project, iamAPIKey, terminate, nil
+}
+
+// fakeSideProjectProviders creates a new provider alias "side" with a new metaConfig that will use the
+// given project and API key as default profile configuration.
+//
+// This is useful to test resources that need to create resources in another project.
+func fakeSideProjectProviders(ctx context.Context, tt *TestTools, project *accountV2.Project, iamAPIKey *iam.APIKey) map[string]func() (*schema.Provider, error) {
+	t := tt.T
+
+	metaSide, err := buildMeta(ctx, &metaConfig{
+		terraformVersion:    "terraform-tests",
+		httpClient:          tt.Meta.httpClient,
+		forceProjectID:      project.ID,
+		forceOrganizationID: project.OrganizationID,
+		forceAccessKey:      iamAPIKey.AccessKey,
+		forceSecretKey:      *iamAPIKey.SecretKey,
+	})
+	require.NoError(t, err)
+
+	providers := map[string]func() (*schema.Provider, error){
+		"side": func() (*schema.Provider, error) {
+			return Provider(&ProviderConfig{Meta: metaSide})(), nil
+		},
+	}
+
+	for k, v := range tt.ProviderFactories {
+		providers[k] = v
+	}
+
+	return providers
 }
 
 type TestTools struct {
