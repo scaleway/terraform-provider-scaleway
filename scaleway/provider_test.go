@@ -18,6 +18,7 @@ import (
 
 	"github.com/dnaeon/go-vcr/cassette"
 	"github.com/dnaeon/go-vcr/recorder"
+	sdkacctest "github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	accountV2 "github.com/scaleway/scaleway-sdk-go/api/account/v2"
@@ -262,6 +263,91 @@ func getHTTPRecoder(t *testing.T, update bool) (client *http.Client, cleanup fun
 	return &http.Client{Transport: newRetryableTransportWithOptions(r, retryOptions)}, func() {
 		assert.NoError(t, r.Stop()) // Make sure recorder is stopped once done with it
 	}, nil
+}
+
+// createFakeSideProject creates a temporary project with a temporary IAM application and policy.
+//
+// The returned function is a cleanup function that should be called when to delete the project.
+func createFakeSideProject(tt *TestTools) (*accountV2.Project, *iam.APIKey, func() error, error) {
+	terminateFunctions := []func() error{}
+	terminate := func() error {
+		for i := len(terminateFunctions) - 1; i >= 0; i-- {
+			err := terminateFunctions[i]()
+			if err != nil {
+				return err
+			}
+		}
+
+		return nil
+	}
+
+	projectName := sdkacctest.RandomWithPrefix("test-acc-scaleway-project")
+	iamApplicationName := sdkacctest.RandomWithPrefix("test-acc-scaleway-iam-app")
+	iamPolicyName := sdkacctest.RandomWithPrefix("test-acc-scaleway-iam-policy")
+
+	projectAPI := accountV2.NewAPI(tt.Meta.scwClient)
+	project, err := projectAPI.CreateProject(&accountV2.CreateProjectRequest{
+		Name: projectName,
+	})
+	if err != nil {
+		terminate()
+		return nil, nil, nil, err
+	}
+	terminateFunctions = append(terminateFunctions, func() error {
+		return projectAPI.DeleteProject(&accountV2.DeleteProjectRequest{
+			ProjectID: project.ID,
+		})
+	})
+
+	iamAPI := iam.NewAPI(tt.Meta.scwClient)
+	iamApplication, err := iamAPI.CreateApplication(&iam.CreateApplicationRequest{
+		Name: iamApplicationName,
+	})
+	if err != nil {
+		terminate()
+		return nil, nil, nil, err
+	}
+	terminateFunctions = append(terminateFunctions, func() error {
+		return iamAPI.DeleteApplication(&iam.DeleteApplicationRequest{
+			ApplicationID: iamApplication.ID,
+		})
+	})
+
+	iamPolicy, err := iamAPI.CreatePolicy(&iam.CreatePolicyRequest{
+		Name:          iamPolicyName,
+		ApplicationID: expandStringPtr(iamApplication.ID),
+		Rules: []*iam.RuleSpecs{
+			{
+				ProjectIDs:         &[]string{project.ID},
+				PermissionSetNames: &[]string{"ObjectStorageReadOnly", "ObjectStorageObjectsRead", "ObjectStorageBucketsRead"},
+			},
+		},
+	})
+	if err != nil {
+		terminate()
+		return nil, nil, nil, err
+	}
+	terminateFunctions = append(terminateFunctions, func() error {
+		return iamAPI.DeletePolicy(&iam.DeletePolicyRequest{
+			PolicyID: iamPolicy.ID,
+		})
+	})
+
+	iamAPIKey, err := iamAPI.CreateAPIKey(&iam.CreateAPIKeyRequest{
+		ApplicationID:    expandStringPtr(iamApplication.ID),
+		DefaultProjectID: &project.ID,
+	})
+	if err != nil {
+		terminate()
+		return nil, nil, nil, err
+	}
+	terminateFunctions = append(terminateFunctions, func() error {
+		return iamAPI.DeleteAPIKey(&iam.DeleteAPIKeyRequest{
+			AccessKey: iamAPIKey.AccessKey,
+		})
+	})
+
+	return project, iamAPIKey, terminate, nil
 }
 
 // fakeSideProjectProviders creates a new provider alias "side" with a new metaConfig that will use the
