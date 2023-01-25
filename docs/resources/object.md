@@ -38,6 +38,7 @@ The following arguments are supported:
 * `visibility` - (Optional) Visibility of the object, `public-read` or `private`
 * `metadata` - (Optional) Map of metadata used for the object, keys must be lowercase
 * `tags` - (Optional) Map of tags
+* `project_id` - (Defaults to [provider](../index.md#project_id) `project_id`) The ID of the project the bucket is associated with.
 
 ## Attributes Reference
 
