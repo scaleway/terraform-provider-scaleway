@@ -290,8 +290,7 @@ func createFakeSideProject(tt *TestTools) (*accountV2.Project, *iam.APIKey, func
 		Name: projectName,
 	})
 	if err != nil {
-		terminate()
-		return nil, nil, nil, err
+		return nil, nil, nil, terminate()
 	}
 	terminateFunctions = append(terminateFunctions, func() error {
 		return projectAPI.DeleteProject(&accountV2.DeleteProjectRequest{
@@ -304,8 +303,7 @@ func createFakeSideProject(tt *TestTools) (*accountV2.Project, *iam.APIKey, func
 		Name: iamApplicationName,
 	})
 	if err != nil {
-		terminate()
-		return nil, nil, nil, err
+		return nil, nil, nil, terminate()
 	}
 	terminateFunctions = append(terminateFunctions, func() error {
 		return iamAPI.DeleteApplication(&iam.DeleteApplicationRequest{
@@ -324,8 +322,7 @@ func createFakeSideProject(tt *TestTools) (*accountV2.Project, *iam.APIKey, func
 		},
 	})
 	if err != nil {
-		terminate()
-		return nil, nil, nil, err
+		return nil, nil, nil, terminate()
 	}
 	terminateFunctions = append(terminateFunctions, func() error {
 		return iamAPI.DeletePolicy(&iam.DeletePolicyRequest{
@@ -338,8 +335,7 @@ func createFakeSideProject(tt *TestTools) (*accountV2.Project, *iam.APIKey, func
 		DefaultProjectID: &project.ID,
 	})
 	if err != nil {
-		terminate()
-		return nil, nil, nil, err
+		return nil, nil, nil, terminate()
 	}
 	terminateFunctions = append(terminateFunctions, func() error {
 		return iamAPI.DeleteAPIKey(&iam.DeleteAPIKeyRequest{
