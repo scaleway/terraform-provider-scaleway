@@ -318,9 +318,11 @@ func deleteS3ObjectVersions(ctx context.Context, conn *s3.S3, bucketName string,
 
 		for i, objectVersion := range page.Versions {
 			wg.Add(1)
+			errors[i] = make(chan error)
 
 			go func(i int, objectVersion *s3.ObjectVersion) {
 				defer wg.Done()
+				defer close(errors[i])
 
 				objectKey := aws.StringValue(objectVersion.Key)
 				objectVersionID := aws.StringValue(objectVersion.VersionId)
@@ -340,9 +342,6 @@ func deleteS3ObjectVersions(ctx context.Context, conn *s3.S3, bucketName string,
 				if err != nil {
 					errors[i] <- fmt.Errorf("failed to delete S3 object: %s", err)
 				}
-
-				errors[i] <- nil
-				close(errors[i])
 			}(i, objectVersion)
 		}
 
@@ -373,6 +372,7 @@ func deleteS3ObjectVersions(ctx context.Context, conn *s3.S3, bucketName string,
 
 			go func(i int, deleteMarkerEntry *s3.DeleteMarkerEntry) {
 				defer wg.Done()
+				defer close(errors[i])
 
 				deleteMarkerKey := aws.StringValue(deleteMarkerEntry.Key)
 				deleteMarkerVersionsID := aws.StringValue(deleteMarkerEntry.VersionId)
@@ -380,9 +380,6 @@ func deleteS3ObjectVersions(ctx context.Context, conn *s3.S3, bucketName string,
 				if err != nil {
 					errors[i] <- fmt.Errorf("failed to delete S3 object delete marker: %s", err)
 				}
-
-				errors[i] <- nil
-				close(errors[i])
 			}(i, deleteMarkerEntry)
 		}
 
