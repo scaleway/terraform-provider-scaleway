@@ -265,11 +265,13 @@ func getHTTPRecoder(t *testing.T, update bool) (client *http.Client, cleanup fun
 	}, nil
 }
 
+type FakeSideProjectTerminateFunc func() error
+
 // createFakeSideProject creates a temporary project with a temporary IAM application and policy.
 //
 // The returned function is a cleanup function that should be called when to delete the project.
-func createFakeSideProject(tt *TestTools) (*accountV2.Project, *iam.APIKey, func() error, error) {
-	terminateFunctions := []func() error{}
+func createFakeSideProject(tt *TestTools) (*accountV2.Project, *iam.APIKey, FakeSideProjectTerminateFunc, error) {
+	terminateFunctions := []FakeSideProjectTerminateFunc{}
 	terminate := func() error {
 		for i := len(terminateFunctions) - 1; i >= 0; i-- {
 			err := terminateFunctions[i]()
