@@ -7,9 +7,10 @@ import (
 	"strings"
 	"time"
 
+	"golang.org/x/exp/slices"
+
 	domain "github.com/scaleway/scaleway-sdk-go/api/domain/v2beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
-	"golang.org/x/exp/slices"
 )
 
 const (
@@ -276,7 +277,7 @@ func waitForDNSZone(ctx context.Context, domainAPI *domain.API, dnsZone string, 
 }
 
 func hostResolver(ctx context.Context, timeout time.Duration, reverse, ip string) bool {
-	ticker := time.Tick(time.Millisecond * 500)
+	ticker := time.NewTicker(time.Millisecond * 500)
 	ctx, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
 
@@ -294,7 +295,7 @@ func hostResolver(ctx context.Context, timeout time.Duration, reverse, ip string
 		},
 	}
 
-	for range ticker {
+	for range ticker.C {
 		address, err := r.LookupHost(ctx, reverse)
 		if err != nil {
 			if ctx.Err() == context.DeadlineExceeded {
