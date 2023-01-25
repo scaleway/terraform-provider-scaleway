@@ -222,6 +222,84 @@ func TestAccScalewayLbAcl_Basic(t *testing.T) {
 	})
 }
 
+func TestAccScalewayLbAcl_RedirectAction(t *testing.T) {
+	tt := NewTestTools(t)
+	defer tt.Cleanup()
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      testAccCheckScalewayLbFrontendDestroy(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource scaleway_lb_ip ip01 {}
+					resource scaleway_lb lb01 {
+						ip_id = scaleway_lb_ip.ip01.id
+						name = "test-lb-acl"
+						type = "lb-s"
+					}
+					resource scaleway_lb_backend bkd01 {
+						lb_id = scaleway_lb.lb01.id
+						forward_protocol = "http"
+						forward_port = 80
+						proxy_protocol = "none"
+					}
+					resource scaleway_lb_frontend frt01 {
+						lb_id = scaleway_lb.lb01.id
+						backend_id = scaleway_lb_backend.bkd01.id
+						name = "tf-test"
+						inbound_port = 80
+						timeout_client = "30s"
+						acl {
+							action {
+								type = "redirect"
+								redirect {
+									type = "location"
+									target = "https://example.com"
+									code = 302
+								}	
+							}
+							match {
+								ip_subnet = ["10.0.0.10"]
+								http_filter = "path_begin"
+								http_filter_value = ["foo","bar"]
+							}
+						}
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayACLAreCorrect(tt, "scaleway_lb_frontend.frt01", []*lbSDK.ACL{
+						{
+							Match: &lbSDK.ACLMatch{
+								IPSubnet:        scw.StringSlicePtr([]string{"10.0.0.10"}),
+								HTTPFilter:      lbSDK.ACLHTTPFilterPathBegin,
+								HTTPFilterValue: scw.StringSlicePtr([]string{"foo", "bar"}),
+								Invert:          false,
+							},
+							Action: &lbSDK.ACLAction{
+								Type: lbSDK.ACLActionTypeRedirect,
+								Redirect: &lbSDK.ACLActionRedirect{
+									Type:   lbSDK.ACLActionRedirectRedirectTypeLocation,
+									Target: "https://example.com",
+									Code:   expandInt32Ptr(302),
+								},
+							},
+						},
+					}),
+				),
+			},
+			{
+				Config: `
+					resource scaleway_lb_ip ip01 {}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet("scaleway_lb_ip.ip01", "id"),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckScalewayACLAreCorrect(tt *TestTools, frontendName string, expectedAcls []*lbSDK.ACL) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		// define a wrapper for acl comparison

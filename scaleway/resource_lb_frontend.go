@@ -107,8 +107,37 @@ func resourceScalewayLbFrontend() *schema.Resource {
 										ValidateFunc: validation.StringInSlice([]string{
 											lbSDK.ACLActionTypeAllow.String(),
 											lbSDK.ACLActionTypeDeny.String(),
+											lbSDK.ACLActionTypeRedirect.String(),
 										}, false),
 										Description: "The action type",
+									},
+									"redirect": {
+										Type:        schema.TypeList,
+										Optional:    true,
+										Description: "Redirect parameters when using an ACL with `redirect` action",
+										Elem: &schema.Resource{
+											Schema: map[string]*schema.Schema{
+												"type": {
+													Type:     schema.TypeString,
+													Optional: true,
+													ValidateFunc: validation.StringInSlice([]string{
+														lbSDK.ACLActionRedirectRedirectTypeLocation.String(),
+														lbSDK.ACLActionRedirectRedirectTypeScheme.String(),
+													}, false),
+													Description: "The redirect type",
+												},
+												"target": {
+													Type:        schema.TypeString,
+													Optional:    true,
+													Description: "An URL can be used in case of a location redirect ",
+												},
+												"code": {
+													Type:        schema.TypeInt,
+													Optional:    true,
+													Description: "The HTTP redirect code to use",
+												},
+											},
+										},
 									},
 								},
 							},
