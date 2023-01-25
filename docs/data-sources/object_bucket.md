@@ -24,6 +24,16 @@ data "scaleway_object_bucket" "selected" {
 }
 ```
 
+
+### Fetching the bucket from a specific project
+
+```hcl
+data "scaleway_object_bucket" "selected" {
+  name = "bucket.test.com"
+  project_id = "11111111-1111-1111-1111-111111111111"
+}
+```
+
 ## Argument Reference
 
 - `name` - (Required) The bucket name.

@@ -20,6 +20,15 @@ resource "scaleway_object_bucket" "some_bucket" {
 }
 ```
 
+### Creating the bucket in a specific project
+
+```hcl
+resource "scaleway_object_bucket" "some_bucket" {
+  name = "some-unique-name"
+  project_id = "11111111-1111-1111-1111-111111111111"
+}
+```
+
 ### Using object lifecycle
 
 ```hcl
