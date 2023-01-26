@@ -7,7 +7,7 @@ description: |-
 # scaleway_rdb_privilege
 
 Create and manage Scaleway RDB database privilege.
-For more information, see [the documentation](https://developers.scaleway.com/en/products/rdb/api).
+For more information, see [the documentation](https://developers.scaleway.com/en/products/rdb/api/#user-and-permissions).
 
 ## Example usage
 
@@ -49,10 +49,14 @@ The following arguments are supported:
 
 ## Attributes Reference
 
-- `instance_id` - See Argument Reference above.
+In addition to all above arguments, the following attribute is exported:
 
-- `user_name` - See Argument Reference above.
+- `region` - The Scaleway region this bucket resides in.
 
-- `database_name` - See Argument Reference above.
+## Import
 
-- `permission` - See Argument Reference above.
+The user privileges can be imported using the `{region}/{instance_id}/{database_name}/{user_name}`, e.g.
+
+```bash
+$ terraform import scaleway_rdb_privilege.o fr-par/11111111-1111-1111-1111-111111111111/database_name/foo
+```

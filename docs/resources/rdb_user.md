@@ -43,6 +43,8 @@ The following arguments are supported:
 
 - `is_admin` - (Optional) Grant admin permissions to the Database User.
 
+- `region` - The Scaleway region this bucket resides in.
+
 ## Import
 
 Database User can be imported using `{region}/{instance_id}/{name}`, e.g.

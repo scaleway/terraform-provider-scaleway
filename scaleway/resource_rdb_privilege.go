@@ -3,6 +3,7 @@ package scaleway
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -59,6 +60,8 @@ func resourceScalewayRdbPrivilege() *schema.Resource {
 				}, false),
 				Required: true,
 			},
+			// Common
+			"region": regionSchema(),
 		},
 	}
 }
@@ -77,10 +80,11 @@ func resourceScalewayRdbPrivilegeCreate(ctx context.Context, d *schema.ResourceD
 	}
 
 	userName, _ := d.Get("user_name").(string)
+	databaseName, _ := d.Get("database_name").(string)
 	createReq := &rdb.SetPrivilegeRequest{
 		Region:       region,
 		InstanceID:   instanceID,
-		DatabaseName: d.Get("database_name").(string),
+		DatabaseName: databaseName,
 		UserName:     userName,
 		Permission:   rdb.Permission(d.Get("permission").(string)),
 	}
@@ -109,19 +113,18 @@ func resourceScalewayRdbPrivilegeCreate(ctx context.Context, d *schema.ResourceD
 		return diag.FromErr(err)
 	}
 
-	d.SetId(newRegionalIDString(region, instanceID))
+	d.SetId(resourceScalewayRdbUserPrivilegeID(region, expandID(instanceID), databaseName, userName))
+
 	return resourceScalewayRdbPrivilegeRead(ctx, d, meta)
 }
 
 func resourceScalewayRdbPrivilegeRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	rdbAPI := newRdbAPI(meta)
-	region, instanceID, err := parseRegionalID(d.Get("instance_id").(string))
+
+	region, instanceID, databaseName, userName, err := resourceScalewayRdbUserPrivilegeParseID(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
-
-	dbName, _ := d.Get("database_name").(string)
-	userName, _ := d.Get("user_name").(string)
 
 	_, err = waitForRDBInstance(ctx, rdbAPI, region, instanceID, d.Timeout(schema.TimeoutRead))
 	if err != nil {
@@ -153,7 +156,7 @@ func resourceScalewayRdbPrivilegeRead(ctx context.Context, d *schema.ResourceDat
 	res, err := rdbAPI.ListPrivileges(&rdb.ListPrivilegesRequest{
 		Region:       region,
 		InstanceID:   instanceID,
-		DatabaseName: &dbName,
+		DatabaseName: &databaseName,
 		UserName:     &userName,
 	}, scw.WithContext(ctx))
 	if err != nil {
@@ -165,30 +168,29 @@ func resourceScalewayRdbPrivilegeRead(ctx context.Context, d *schema.ResourceDat
 	}
 
 	if len(res.Privileges) == 0 {
-		return diag.FromErr(fmt.Errorf("couldn't retrieve privileges for user[%s] on database [%s]", userName, dbName))
+		return diag.FromErr(fmt.Errorf("couldn't retrieve privileges for user[%s] on database [%s]", userName, databaseName))
 	}
 	privilege := res.Privileges[0]
 	_ = d.Set("database_name", privilege.DatabaseName)
 	_ = d.Set("user_name", privilege.UserName)
 	_ = d.Set("permission", privilege.Permission)
 	_ = d.Set("instance_id", newRegionalIDString(region, instanceID))
+	_ = d.Set("region", region)
 
 	return nil
 }
 
 func resourceScalewayRdbPrivilegeUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	rdbAPI := newRdbAPI(meta)
-	region, instanceID, err := parseRegionalID(d.Get("instance_id").(string))
+	region, instanceID, databaseName, userName, err := resourceScalewayRdbUserPrivilegeParseID(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
-
 	_, err = waitForRDBInstance(ctx, rdbAPI, region, instanceID, d.Timeout(schema.TimeoutUpdate))
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	userName, _ := d.Get("user_name").(string)
 	listUsers, err := rdbAPI.ListUsers(&rdb.ListUsersRequest{
 		Region:     region,
 		InstanceID: instanceID,
@@ -210,7 +212,7 @@ func resourceScalewayRdbPrivilegeUpdate(ctx context.Context, d *schema.ResourceD
 	updateReq := &rdb.SetPrivilegeRequest{
 		Region:       region,
 		InstanceID:   instanceID,
-		DatabaseName: d.Get("database_name").(string),
+		DatabaseName: databaseName,
 		UserName:     userName,
 		Permission:   rdb.Permission(d.Get("permission").(string)),
 	}
@@ -245,7 +247,7 @@ func resourceScalewayRdbPrivilegeUpdate(ctx context.Context, d *schema.ResourceD
 //gocyclo:ignore
 func resourceScalewayRdbPrivilegeDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	rdbAPI := newRdbAPI(meta)
-	region, instanceID, err := parseRegionalID(d.Get("instance_id").(string))
+	region, instanceID, databaseName, userName, err := resourceScalewayRdbUserPrivilegeParseID(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -256,7 +258,6 @@ func resourceScalewayRdbPrivilegeDelete(ctx context.Context, d *schema.ResourceD
 	}
 
 	_ = d.Set("permission", rdb.PermissionNone)
-	userName, _ := d.Get("user_name").(string)
 	listUsers, err := rdbAPI.ListUsers(&rdb.ListUsersRequest{
 		Region:     region,
 		InstanceID: instanceID,
@@ -278,7 +279,7 @@ func resourceScalewayRdbPrivilegeDelete(ctx context.Context, d *schema.ResourceD
 	updateReq := &rdb.SetPrivilegeRequest{
 		Region:       region,
 		InstanceID:   instanceID,
-		DatabaseName: d.Get("database_name").(string),
+		DatabaseName: databaseName,
 		UserName:     userName,
 		Permission:   rdb.PermissionNone,
 	}
@@ -326,4 +327,19 @@ func resourceScalewayRdbPrivilegeDelete(ctx context.Context, d *schema.ResourceD
 	}
 
 	return nil
+}
+
+// Build the resource identifier
+// The resource identifier format is "Region/InstanceId/database/UserName"
+func resourceScalewayRdbUserPrivilegeID(region scw.Region, instanceID, database, userName string) (resourceID string) {
+	return fmt.Sprintf("%s/%s/%s/%s", region, instanceID, database, userName)
+}
+
+// resourceScalewayRdbUserPrivilegeParseID: The resource identifier format is "Region/InstanceId/DatabaseName/UserName"
+func resourceScalewayRdbUserPrivilegeParseID(resourceID string) (region scw.Region, instanceID, databaseName, userName string, err error) {
+	idParts := strings.Split(resourceID, "/")
+	if len(idParts) != 4 {
+		return "", "", "", "", fmt.Errorf("can't parse user privilege resource id: %s", resourceID)
+	}
+	return scw.Region(idParts[0]), idParts[1], idParts[2], idParts[3], nil
 }
