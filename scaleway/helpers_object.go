@@ -9,7 +9,6 @@ import (
 	"net/http"
 	"os"
 	"strings"
-	"sync"
 	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -313,17 +312,10 @@ func deleteS3ObjectVersions(ctx context.Context, conn *s3.S3, bucketName string,
 	}
 
 	listErr := conn.ListObjectVersionsPagesWithContext(ctx, listInput, func(page *s3.ListObjectVersionsOutput, lastPage bool) bool {
-		wg := sync.WaitGroup{}
-		errors := make([]chan error, len(page.Versions))
+		pool := NewWorkerPool(8)
 
-		for i, objectVersion := range page.Versions {
-			wg.Add(1)
-			errors[i] = make(chan error)
-
-			go func(i int, objectVersion *s3.ObjectVersion) {
-				defer wg.Done()
-				defer close(errors[i])
-
+		for _, objectVersion := range page.Versions {
+			pool.AddTask(func() error {
 				objectKey := aws.StringValue(objectVersion.Key)
 				objectVersionID := aws.StringValue(objectVersion.VersionId)
 				err := deleteS3ObjectVersion(conn, bucketName, objectKey, objectVersionID, force)
@@ -331,26 +323,26 @@ func deleteS3ObjectVersions(ctx context.Context, conn *s3.S3, bucketName string,
 				if isS3Err(err, ErrCodeAccessDenied, "") && force {
 					legalHoldRemoved, errLegal := removeS3ObjectVersionLegalHold(conn, bucketName, objectVersion)
 					if errLegal != nil {
-						errors[i] <- fmt.Errorf("failed to remove legal hold: %s", errLegal)
-						return
+						return fmt.Errorf("failed to remove legal hold: %s", errLegal)
 					}
+
 					if legalHoldRemoved {
 						err = deleteS3ObjectVersion(conn, bucketName, objectKey, objectVersionID, force)
 					}
 				}
 
 				if err != nil {
-					errors[i] <- fmt.Errorf("failed to delete S3 object: %s", err)
+					return fmt.Errorf("failed to delete S3 object: %s", err)
 				}
-			}(i, objectVersion)
+
+				return nil
+			})
 		}
 
-		wg.Wait()
-		for _, result := range errors {
-			if err := <-result; err != nil {
-				globalErr = multierror.Append(globalErr, err)
-				return false
-			}
+		errors := pool.CloseAndWait()
+		if len(errors) > 0 {
+			globalErr = multierror.Append(nil, errors...)
+			return false
 		}
 
 		return true
@@ -363,33 +355,25 @@ func deleteS3ObjectVersions(ctx context.Context, conn *s3.S3, bucketName string,
 	}
 
 	listErr = conn.ListObjectVersionsPagesWithContext(ctx, listInput, func(page *s3.ListObjectVersionsOutput, lastPage bool) bool {
-		wg := sync.WaitGroup{}
-		errors := make([]chan error, len(page.DeleteMarkers))
+		pool := NewWorkerPool(8)
 
-		for i, deleteMarkerEntry := range page.DeleteMarkers {
-			wg.Add(1)
-			errors[i] = make(chan error)
-
-			go func(i int, deleteMarkerEntry *s3.DeleteMarkerEntry) {
-				defer wg.Done()
-				defer close(errors[i])
-
+		for _, deleteMarkerEntry := range page.DeleteMarkers {
+			pool.AddTask(func() error {
 				deleteMarkerKey := aws.StringValue(deleteMarkerEntry.Key)
 				deleteMarkerVersionsID := aws.StringValue(deleteMarkerEntry.VersionId)
 				err := deleteS3ObjectVersion(conn, bucketName, deleteMarkerKey, deleteMarkerVersionsID, force)
 				if err != nil {
-					errors[i] <- fmt.Errorf("failed to delete S3 object delete marker: %s", err)
+					return fmt.Errorf("failed to delete S3 object delete marker: %s", err)
 				}
-			}(i, deleteMarkerEntry)
+
+				return nil
+			})
 		}
 
-		wg.Wait()
-
-		for _, result := range errors {
-			if err := <-result; err != nil {
-				globalErr = multierror.Append(globalErr, err)
-				return false
-			}
+		errors := pool.CloseAndWait()
+		if len(errors) > 0 {
+			globalErr = multierror.Append(nil, errors...)
+			return false
 		}
 
 		return true
