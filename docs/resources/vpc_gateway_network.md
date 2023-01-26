@@ -52,7 +52,6 @@ The following arguments are supported:
 - `cleanup_dhcp` - (Defaults to false) Remove DHCP config on this network on destroy. It requires DHCP id.
 - `static_address` - Enable DHCP config on this network
 - `zone` - (Defaults to [provider](../index.md#zone) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which the gateway network should be created.
-- `project_id` - (Defaults to [provider](../index.md#project_id) `project_id`) The ID of the project the gateway network is associated with.
 
 ## Attributes Reference
 
