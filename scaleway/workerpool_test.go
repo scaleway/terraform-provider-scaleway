@@ -63,11 +63,12 @@ func TestWorkerPoolWaitTimeMultiple(t *testing.T) {
 
 		pool.AddTask(func() error {
 			time.Sleep(100 * time.Millisecond)
+
 			if copyOfI%2 == 0 {
-				return nil
-			} else {
 				return fmt.Errorf("error %d", copyOfI)
 			}
+
+			return nil
 		})
 	}
 
@@ -77,18 +78,15 @@ func TestWorkerPoolWaitTimeMultiple(t *testing.T) {
 
 	for i := 0; i < iterations; i++ {
 		if i%2 == 0 {
-			continue
-		}
-
-		found := false
-		for _, err := range errs {
-			if err.Error() == fmt.Sprintf("error %d", i) {
-				found = true
-				break
+			found := false
+			for _, err := range errs {
+				if err.Error() == fmt.Sprintf("error %d", i) {
+					found = true
+					break
+				}
 			}
+
+			assert.True(t, found)
 		}
-
-		assert.True(t, found)
 	}
-
 }
