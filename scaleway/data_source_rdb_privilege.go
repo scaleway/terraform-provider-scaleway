@@ -20,8 +20,13 @@ func dataSourceScalewayRDBPrivilege() *schema.Resource {
 }
 
 func dataSourceScalewayRDBPrivilegeRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	instanceID, _ := d.Get("instance_id").(string)
+	region, instanceID, err := parseRegionalID(d.Get("instance_id").(string))
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
-	d.SetId(instanceID)
+	userName, _ := d.Get("user_name").(string)
+	databaseName, _ := d.Get("database_name").(string)
+	d.SetId(resourceScalewayRdbUserPrivilegeID(region, expandID(instanceID), databaseName, userName))
 	return resourceScalewayRdbPrivilegeRead(ctx, d, meta)
 }
