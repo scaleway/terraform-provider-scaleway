@@ -43,7 +43,7 @@ The following arguments are supported:
 
 - `is_admin` - (Optional) Grant admin permissions to the Database User.
 
-- `region` - The Scaleway region this bucket resides in.
+- `region` - The Scaleway region this database's user resides in.
 
 ## Import
 
