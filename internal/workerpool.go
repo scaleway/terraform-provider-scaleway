@@ -1,4 +1,4 @@
-package scaleway
+package internal
 
 import (
 	"sync"
