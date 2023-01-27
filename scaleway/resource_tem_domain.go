@@ -29,7 +29,7 @@ func resourceScalewayTemDomain() *schema.Resource {
 				ForceNew:    true,
 				Description: "The domain name used when sending emails",
 			},
-			"id": {
+			"domain_id": {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "ID of the domain",
@@ -118,6 +118,7 @@ func resourceScalewayTemDomainRead(ctx context.Context, d *schema.ResourceData, 
 		return diag.FromErr(err)
 	}
 
+	_ = d.Set("domain_id", domain.ID)
 	_ = d.Set("name", domain.Name)
 	_ = d.Set("status", domain.Status)
 	_ = d.Set("created_at", flattenTime(domain.CreatedAt))

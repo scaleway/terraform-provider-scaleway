@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	tem "github.com/scaleway/scaleway-sdk-go/api/tem/v1alpha1"
@@ -48,7 +49,7 @@ func TestAccScalewayTemDomain_Basic(t *testing.T) {
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
 
-	domainName := "terraform-rs.test.local"
+	domainName := "terraform-rs-" + acctest.RandString(8) + ".test.local"
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
@@ -64,7 +65,7 @@ func TestAccScalewayTemDomain_Basic(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayTemDomainExists(tt, "scaleway_tem_domain.cr01"),
 					resource.TestCheckResourceAttr("scaleway_tem_domain.cr01", "name", domainName),
-					testCheckResourceAttrUUID("scaleway_tem_domain.cr01", "id"),
+					testCheckResourceAttrUUID("scaleway_tem_domain.cr01", "domain_id"),
 				),
 			},
 		},
