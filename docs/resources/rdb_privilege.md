@@ -51,7 +51,7 @@ The following arguments are supported:
 
 In addition to all above arguments, the following attribute is exported:
 
-- `region` - The Scaleway region this bucket resides in.
+- `region` - The Scaleway region this resource resides in.
 
 ## Import
 
