@@ -24,11 +24,22 @@ data "scaleway_object_bucket" "selected" {
 }
 ```
 
+
+### Fetching the bucket from a specific project
+
+```hcl
+data "scaleway_object_bucket" "selected" {
+  name = "bucket.test.com"
+  project_id = "11111111-1111-1111-1111-111111111111"
+}
+```
+
 ## Argument Reference
 
 - `name` - (Required) The bucket name.
 - `object_lock_enabled` - (Optional) Enable object lock on the bucket. Defaults to `false`. Updating this field will force creating a new bucket.
 - `region` - (Defaults to [provider](../index.md#region) `region`) The [region](../guides/regions_and_zones.md#zones) in which the Object Storage exists.
+- `project_id` - (Defaults to [provider](../index.md#project_id) `project_id`) The ID of the project the bucket is associated with.
 
 
 ## Attributes Reference
