@@ -31,7 +31,7 @@ data "scaleway_rdb_privilege" "main" {
 
 ## Attributes Reference
 
-In addition to all above arguments, the following attribute is exported:
+In addition to all above arguments, the following attributes are exported:
 
 - `id` - The resource ID
 - `region` - The Scaleway region this bucket resides in.
