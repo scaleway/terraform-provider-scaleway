@@ -316,6 +316,8 @@ func deleteS3ObjectVersions(ctx context.Context, conn *s3.S3, bucketName string,
 		pool := internal.NewWorkerPool(8)
 
 		for _, objectVersion := range page.Versions {
+			objectVersion := objectVersion
+
 			pool.AddTask(func() error {
 				objectKey := aws.StringValue(objectVersion.Key)
 				objectVersionID := aws.StringValue(objectVersion.VersionId)
@@ -359,6 +361,8 @@ func deleteS3ObjectVersions(ctx context.Context, conn *s3.S3, bucketName string,
 		pool := internal.NewWorkerPool(8)
 
 		for _, deleteMarkerEntry := range page.DeleteMarkers {
+			deleteMarkerEntry := deleteMarkerEntry
+
 			pool.AddTask(func() error {
 				deleteMarkerKey := aws.StringValue(deleteMarkerEntry.Key)
 				deleteMarkerVersionsID := aws.StringValue(deleteMarkerEntry.VersionId)
