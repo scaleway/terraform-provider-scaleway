@@ -34,7 +34,7 @@ The following arguments are supported:
 
 In addition to all above arguments, the following attributes are exported:
 
-- `id` - The ID of the Transaction Email Domain.
+- `domain_id` - The ID of the Transaction Email Domain.
 
 - `status` - The status of the Transaction Email Domain.
 

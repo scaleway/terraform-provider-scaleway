@@ -25,10 +25,10 @@ data "scaleway_tem_domain" "my_domain" {
 ## Argument Reference
 
 - `name` - (Optional) The domain name.
-  Only one of `name` and `id` should be specified.
+  Only one of `name` and `domain_id` should be specified.
 
-- `id` - (Optional) The domain id.
-  Only one of `name` and `id` should be specified.
+- `domain_id` - (Optional) The domain id.
+  Only one of `name` and `domain_id` should be specified.
 
 - `region` - (Defaults to [provider](../index.md#region) `region`) The [region](../guides/regions_and_zones.md#regions) in which the domain exists.
 
@@ -38,7 +38,7 @@ data "scaleway_tem_domain" "my_domain" {
 
 In addition to all above arguments, the following attributes are exported:
 
-- `id` - The ID of the Transaction Email Domain.
+- `domain_id` - The ID of the Transaction Email Domain.
 
 - `status` - The status of the Transaction Email Domain.
 
