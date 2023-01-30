@@ -29,11 +29,6 @@ func resourceScalewayTemDomain() *schema.Resource {
 				ForceNew:    true,
 				Description: "The domain name used when sending emails",
 			},
-			"id": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "ID of the domain",
-			},
 			"status": {
 				Type:        schema.TypeString,
 				Computed:    true,
