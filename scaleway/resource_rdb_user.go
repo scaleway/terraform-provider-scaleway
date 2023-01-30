@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -136,6 +137,11 @@ func resourceScalewayRdbUserRead(ctx context.Context, d *schema.ResourceData, me
 			return nil
 		}
 		return diag.FromErr(err)
+	}
+	if len(res.Users) == 0 {
+		tflog.Warn(ctx, fmt.Sprintf("couldn'd find user with name: [%s]", userName))
+		d.SetId("")
+		return nil
 	}
 
 	user := res.Users[0]

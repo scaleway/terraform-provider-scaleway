@@ -43,10 +43,11 @@ func resourceScalewayVPCGatewayNetwork() *schema.Resource {
 				Description:  "The ID of the private network where connect to",
 			},
 			"dhcp_id": {
-				Type:         schema.TypeString,
-				Optional:     true,
-				ValidateFunc: validationUUIDorUUIDWithLocality(),
-				Description:  "The ID of the public gateway DHCP config",
+				Type:          schema.TypeString,
+				Optional:      true,
+				ValidateFunc:  validationUUIDorUUIDWithLocality(),
+				Description:   "The ID of the public gateway DHCP config",
+				ConflictsWith: []string{"static_address"},
 			},
 			"enable_masquerade": {
 				Type:        schema.TypeBool,
@@ -67,10 +68,11 @@ func resourceScalewayVPCGatewayNetwork() *schema.Resource {
 				Description: "Remove DHCP config on this network on destroy",
 			},
 			"static_address": {
-				Type:         schema.TypeString,
-				Description:  "The static IP address in CIDR on this network",
-				Optional:     true,
-				ValidateFunc: validation.IsCIDR,
+				Type:          schema.TypeString,
+				Description:   "The static IP address in CIDR on this network",
+				Optional:      true,
+				ValidateFunc:  validation.IsCIDR,
+				ConflictsWith: []string{"dhcp_id"},
 			},
 			// Computed elements
 			"mac_address": {
