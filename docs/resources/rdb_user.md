@@ -21,7 +21,7 @@ resource "random_password" "db_password" {
 
 resource "scaleway_rdb_user" "db_admin" {
   instance_id = scaleway_rdb_instance.main.id
-  name        = "titi"
+  name        = "devtools"
   password    = random_password.db_password.result
   is_admin    = true
 }
