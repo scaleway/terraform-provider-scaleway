@@ -81,7 +81,8 @@ func resourceScalewayObject() *schema.Resource {
 					s3.ObjectCannedACLPublicRead,
 				}, false),
 			},
-			"region": regionSchema(),
+			"region":     regionSchema(),
+			"project_id": projectIDSchema(),
 		},
 	}
 }
@@ -140,7 +141,7 @@ func resourceScalewayObjectCreate(ctx context.Context, d *schema.ResourceData, m
 }
 
 func resourceScalewayObjectUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	s3Client, region, key, bucket, err := s3ClientWithRegionAndNestedName(meta, d.Id())
+	s3Client, region, key, bucket, err := s3ClientWithRegionAndNestedName(d, meta, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -210,7 +211,7 @@ func resourceScalewayObjectUpdate(ctx context.Context, d *schema.ResourceData, m
 }
 
 func resourceScalewayObjectRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	s3Client, region, key, bucket, err := s3ClientWithRegionAndNestedName(meta, d.Id())
+	s3Client, region, key, bucket, err := s3ClientWithRegionAndNestedName(d, meta, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -266,7 +267,7 @@ func resourceScalewayObjectRead(ctx context.Context, d *schema.ResourceData, met
 }
 
 func resourceScalewayObjectDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	s3Client, _, key, bucket, err := s3ClientWithRegionAndNestedName(meta, d.Id())
+	s3Client, _, key, bucket, err := s3ClientWithRegionAndNestedName(d, meta, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}

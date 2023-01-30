@@ -71,6 +71,8 @@ func ResourceBucketWebsiteConfiguration() *schema.Resource {
 				Computed:    true,
 				Description: "The website endpoint.",
 			},
+			"region":     regionSchema(),
+			"project_id": projectIDSchema(),
 		},
 	}
 }
@@ -122,7 +124,7 @@ func resourceBucketWebsiteConfigurationCreate(ctx context.Context, d *schema.Res
 }
 
 func resourceBucketWebsiteConfigurationRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	conn, region, bucket, err := s3ClientWithRegionAndName(meta, d.Id())
+	conn, region, bucket, err := s3ClientWithRegionAndName(d, meta, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -175,11 +177,19 @@ func resourceBucketWebsiteConfigurationRead(ctx context.Context, d *schema.Resou
 		_ = d.Set("website_domain", websiteEndpoint.Domain)
 	}
 
+	acl, err := conn.GetBucketAclWithContext(ctx, &s3.GetBucketAclInput{
+		Bucket: aws.String(bucket),
+	})
+	if err != nil {
+		return diag.FromErr(fmt.Errorf("couldn't read bucket acl: %s", err))
+	}
+	_ = d.Set("project_id", *normalizeOwnerID(acl.Owner.ID))
+
 	return nil
 }
 
 func resourceBucketWebsiteConfigurationUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	conn, _, bucket, err := s3ClientWithRegionAndName(meta, d.Id())
+	conn, _, bucket, err := s3ClientWithRegionAndName(d, meta, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -207,7 +217,7 @@ func resourceBucketWebsiteConfigurationUpdate(ctx context.Context, d *schema.Res
 }
 
 func resourceBucketWebsiteConfigurationDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	conn, _, bucket, err := s3ClientWithRegionAndName(meta, d.Id())
+	conn, _, bucket, err := s3ClientWithRegionAndName(d, meta, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}

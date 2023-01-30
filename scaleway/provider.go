@@ -247,10 +247,14 @@ type Meta struct {
 }
 
 type metaConfig struct {
-	providerSchema   *schema.ResourceData
-	terraformVersion string
-	forceZone        scw.Zone
-	httpClient       *http.Client
+	providerSchema      *schema.ResourceData
+	terraformVersion    string
+	forceZone           scw.Zone
+	forceProjectID      string
+	forceOrganizationID string
+	forceAccessKey      string
+	forceSecretKey      string
+	httpClient          *http.Client
 }
 
 // providerConfigure creates the Meta object containing the SDK client.
@@ -269,6 +273,18 @@ func buildMeta(ctx context.Context, config *metaConfig) (*Meta, error) {
 		}
 		profile.DefaultRegion = scw.StringPtr(region.String())
 		profile.DefaultZone = scw.StringPtr(config.forceZone.String())
+	}
+	if config.forceProjectID != "" {
+		profile.DefaultProjectID = scw.StringPtr(config.forceProjectID)
+	}
+	if config.forceOrganizationID != "" {
+		profile.DefaultOrganizationID = scw.StringPtr(config.forceOrganizationID)
+	}
+	if config.forceAccessKey != "" {
+		profile.AccessKey = scw.StringPtr(config.forceAccessKey)
+	}
+	if config.forceSecretKey != "" {
+		profile.SecretKey = scw.StringPtr(config.forceSecretKey)
 	}
 
 	// TODO validated profile
