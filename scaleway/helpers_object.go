@@ -29,6 +29,8 @@ import (
 const (
 	defaultObjectBucketTimeout = 10 * time.Minute
 	retryOnAWSAPI              = 2 * time.Minute
+
+	defaultObjectVersionDeletionWorkers = 8
 )
 
 func newS3Client(httpClient *http.Client, region, accessKey, secretKey string) (*s3.S3, error) {
@@ -313,7 +315,7 @@ func deleteS3ObjectVersions(ctx context.Context, conn *s3.S3, bucketName string,
 	}
 
 	listErr := conn.ListObjectVersionsPagesWithContext(ctx, listInput, func(page *s3.ListObjectVersionsOutput, lastPage bool) bool {
-		pool := internal.NewWorkerPool(8)
+		pool := internal.NewWorkerPool(defaultObjectVersionDeletionWorkers)
 
 		for _, objectVersion := range page.Versions {
 			objectVersion := objectVersion
@@ -358,7 +360,7 @@ func deleteS3ObjectVersions(ctx context.Context, conn *s3.S3, bucketName string,
 	}
 
 	listErr = conn.ListObjectVersionsPagesWithContext(ctx, listInput, func(page *s3.ListObjectVersionsOutput, lastPage bool) bool {
-		pool := internal.NewWorkerPool(8)
+		pool := internal.NewWorkerPool(defaultObjectVersionDeletionWorkers)
 
 		for _, deleteMarkerEntry := range page.DeleteMarkers {
 			deleteMarkerEntry := deleteMarkerEntry
