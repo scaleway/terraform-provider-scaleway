@@ -95,7 +95,6 @@ func resourceScalewayVPCPublicGateway() *schema.Resource {
 				Description: "The date and time of the last update of the public gateway",
 			},
 		},
-		CustomizeDiff: customizeDiffLocalityCheck("ip_id"),
 	}
 }
 
