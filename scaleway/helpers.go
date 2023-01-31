@@ -848,6 +848,18 @@ func retryOnTransientStateError[T any, U any](action func() (T, error), waiter f
 	return t, err
 }
 
+// compareLocalities compare two localities
+// They are equal if they are the same or if one is a zone contained in the other
+func compareLocalities(loc1, loc2 string) bool {
+	if loc1 == loc2 {
+		return true
+	}
+	if strings.HasPrefix(loc1, loc2) || strings.HasPrefix(loc2, loc1) {
+		return true
+	}
+	return false
+}
+
 // expandListKeys return the list of keys for an attribute in a list
 // example for private-networks.#.id in a list of size 2
 // will return private-networks.0.id and private-networks.1.id
@@ -880,7 +892,9 @@ func expandListKeys(key string, diff *schema.ResourceDiff) []string {
 
 // customizeDiffLocalityCheck create a function that will validate locality IDs stored in given keys
 // This locality IDs should have the same locality as the resource
-// It will search for zone or region in resource
+// It will search for zone or region in resource.
+// Should not be used on computed keys, if a computed key is going to change on zone/region change
+// this function will still block the terraform plan
 func customizeDiffLocalityCheck(keys ...string) schema.CustomizeDiffFunc {
 	return func(ctx context.Context, diff *schema.ResourceDiff, i interface{}) error {
 		var locality string
@@ -890,9 +904,7 @@ func customizeDiffLocalityCheck(keys ...string) schema.CustomizeDiffFunc {
 		if rawStateType.HasAttribute("zone") {
 			zone, _ := extractZone(diff, i.(*Meta))
 			locality = zone.String()
-		}
-
-		if rawStateType.HasAttribute("region") {
+		} else if rawStateType.HasAttribute("region") {
 			region, _ := extractRegion(diff, i.(*Meta))
 			locality = region.String()
 		}
@@ -908,13 +920,13 @@ func customizeDiffLocalityCheck(keys ...string) schema.CustomizeDiffFunc {
 
 				for _, listKey := range listKeys {
 					IDLocality, _, err := parseLocalizedID(diff.Get(listKey).(string))
-					if err == nil && IDLocality != locality {
-						return fmt.Errorf("given %s %s has different locality than the resource %q", key, diff.Get(key), locality)
+					if err == nil && !compareLocalities(IDLocality, locality) {
+						return fmt.Errorf("given %s %s has different locality than the resource %q", listKey, diff.Get(listKey), locality)
 					}
 				}
 			} else {
 				IDLocality, _, err := parseLocalizedID(diff.Get(key).(string))
-				if err == nil && IDLocality != locality {
+				if err == nil && !compareLocalities(IDLocality, locality) {
 					return fmt.Errorf("given %s %s has different locality than the resource %q", key, diff.Get(key), locality)
 				}
 			}
