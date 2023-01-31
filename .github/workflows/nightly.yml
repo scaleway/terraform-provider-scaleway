@@ -63,7 +63,7 @@ jobs:
                 "type": "section",
                 "text": {
                     "type": "mrkdwn",
-                    "text": "'"Nightly workflow failed: https://github.com/scaleway/terraform-provider-scaleway/actions/runs/${GITHUB_WORKFLOW_ID}"'"
+                    "text": "'"Nightly workflow failed: <https://github.com/scaleway/terraform-provider-scaleway/actions/runs/${GITHUB_WORKFLOW_ID}|${FAILED_PRODUCT}>"'"
                   }
               }
             ]
@@ -72,7 +72,8 @@ jobs:
           done
         env:
           SLACK_WEBHOOK_NIGHTLY: ${{ secrets.SLACK_WEBHOOK_NIGHTLY }}
-          GITHUB_WORKFLOW_ID: ${{ github.workflow }}
+          GITHUB_WORKFLOW_ID: ${{ github.run.id }}
+          FAILED_PRODUCT: ${{ matrix.products }}
 
   # sweeper needs to run after nightly completed
   # no matter what are the results of the jobs
