@@ -76,7 +76,6 @@ func resourceScalewayRdbDatabase() *schema.Resource {
 				Computed:    true,
 			},
 		},
-		CustomizeDiff: customizeDiffLocalityCheck("instance_id"),
 	}
 }
 
