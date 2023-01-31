@@ -11,10 +11,24 @@ For more information, see [the documentation](https://developers.scaleway.com/en
 
 ## Example usage
 
-
 ```hcl
-resource "scaleway_rdb_privilege" "priv" {
-  instance_id   = scaleway_rdb_instance.rdb.id
+resource "scaleway_rdb_instance" "main" {
+  name           = "rdb"
+  node_type      = "DB-DEV-S"
+  engine         = "PostgreSQL-11"
+  is_ha_cluster  = true
+  disable_backup = true
+  user_name      = "my_initial_user"
+  password       = "thiZ_is_v&ry_s3cret"
+}
+
+resource "scaleway_rdb_database" "main" {
+  instance_id    = scaleway_rdb_instance.main.id
+  name           = "database"
+}
+
+resource "scaleway_rdb_privilege" "main" {
+  instance_id   = scaleway_rdb_instance.main.id
   user_name     = "my-db-user"
   database_name = "my-db-name"
   permission    = "all"
@@ -23,15 +37,10 @@ resource "scaleway_rdb_privilege" "priv" {
 }
 
 resource "scaleway_rdb_user" "main" {
-  instance_id = scaleway_rdb_instance.pgsql.id
+  instance_id = scaleway_rdb_instance.main.id
   name        = "foobar"
   password    = "thiZ_is_v&ry_s3cret"
   is_admin    = false
-}
-
-resource "scaleway_rdb_database" "main" {
-  instance_id = scaleway_rdb_instance.pgsql.id
-  name        = "foobar"
 }
 ```
 
@@ -47,11 +56,7 @@ The following arguments are supported:
 
 - `permission` - (Required) Permission to set. Valid values are `readonly`, `readwrite`, `all`, `custom` and `none`.
 
-## Attributes Reference
-
-In addition to all above arguments, the following attribute is exported:
-
-- `region` - The Scaleway region this resource resides in.
+- `region` - (Defaults to [provider](../index.md#region) `region`) The [region](../guides/regions_and_zones.md#regions) in which the resource exists.
 
 ## Import
 
