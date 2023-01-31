@@ -82,6 +82,7 @@ func resourceScalewayVPCPublicGatewayPATRule() *schema.Resource {
 				Description: "The date and time of the last update of the PAT rule",
 			},
 		},
+		CustomizeDiff: customizeDiffLocalityCheck("gateway_id"),
 	}
 }
 

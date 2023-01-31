@@ -47,6 +47,7 @@ func resourceScalewayInstanceUserData() *schema.Resource {
 			},
 			"zone": zoneSchema(),
 		},
+		CustomizeDiff: customizeDiffLocalityCheck("server_id"),
 	}
 }
 

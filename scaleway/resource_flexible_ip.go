@@ -74,6 +74,7 @@ func resourceScalewayFlexibleIP() *schema.Resource {
 				Description: "The date and time of the last update of the Flexible IP (Format ISO 8601)",
 			},
 		},
+		CustomizeDiff: customizeDiffLocalityCheck("server_id"),
 	}
 }
 

@@ -848,6 +848,36 @@ func retryOnTransientStateError[T any, U any](action func() (T, error), waiter f
 	return t, err
 }
 
+// expandListKeys return the list of keys for an attribute in a list
+// example for private-networks.#.id in a list of size 2
+// will return private-networks.0.id and private-networks.1.id
+// additional_volume_ids.#
+// will return additional_volume_ids.0 and additional_volume_ids.1
+func expandListKeys(key string, diff *schema.ResourceDiff) []string {
+	addr := strings.Split(key, ".")
+	// index of # in the addr
+	index := 0
+
+	for i := range addr {
+		if addr[i] == "#" {
+			index = i
+		}
+	}
+
+	// get attribute.#
+	listKey := key[:strings.Index(key, "#")+1]
+	listLength := diff.Get(listKey).(int)
+
+	keys := make([]string, 0, listLength)
+
+	for i := 0; i < listLength; i++ {
+		addr[index] = strconv.FormatInt(int64(i), 10)
+		keys = append(keys, strings.Join(addr, "."))
+	}
+
+	return keys
+}
+
 // customizeDiffLocalityCheck create a function that will validate locality IDs stored in given keys
 // This locality IDs should have the same locality as the resource
 // It will search for zone or region in resource
@@ -855,12 +885,16 @@ func customizeDiffLocalityCheck(keys ...string) schema.CustomizeDiffFunc {
 	return func(ctx context.Context, diff *schema.ResourceDiff, i interface{}) error {
 		var locality string
 
-		zone, err := extractZone(diff, i.(*Meta))
-		if err == ErrZoneNotFound {
+		rawStateType := diff.GetRawState().Type()
+
+		if rawStateType.HasAttribute("zone") {
+			zone, _ := extractZone(diff, i.(*Meta))
+			locality = zone.String()
+		}
+
+		if rawStateType.HasAttribute("region") {
 			region, _ := extractRegion(diff, i.(*Meta))
 			locality = region.String()
-		} else {
-			locality = zone.String()
 		}
 
 		if locality == "" {
@@ -868,9 +902,21 @@ func customizeDiffLocalityCheck(keys ...string) schema.CustomizeDiffFunc {
 		}
 
 		for _, key := range keys {
-			IDLocality, _, err := parseLocalizedID(diff.Get(key).(string))
-			if err == nil && IDLocality != locality {
-				return fmt.Errorf("given %s %s has different locality than the resource %q", key, diff.Get(key), locality)
+			// Handle values in lists
+			if strings.Contains(key, "#") {
+				listKeys := expandListKeys(key, diff)
+
+				for _, listKey := range listKeys {
+					IDLocality, _, err := parseLocalizedID(diff.Get(listKey).(string))
+					if err == nil && IDLocality != locality {
+						return fmt.Errorf("given %s %s has different locality than the resource %q", key, diff.Get(key), locality)
+					}
+				}
+			} else {
+				IDLocality, _, err := parseLocalizedID(diff.Get(key).(string))
+				if err == nil && IDLocality != locality {
+					return fmt.Errorf("given %s %s has different locality than the resource %q", key, diff.Get(key), locality)
+				}
 			}
 		}
 		return nil

@@ -82,6 +82,7 @@ func resourceScalewayInstanceVolume() *schema.Resource {
 			"project_id":      projectIDSchema(),
 			"zone":            zoneSchema(),
 		},
+		CustomizeDiff: customizeDiffLocalityCheck("from_volume_id", "from_snapshot_id"),
 	}
 }
 

@@ -212,6 +212,7 @@ func resourceScalewayK8SPool() *schema.Resource {
 				Description: "The status of the pool",
 			},
 		},
+		CustomizeDiff: customizeDiffLocalityCheck("cluster_id"),
 	}
 }
 

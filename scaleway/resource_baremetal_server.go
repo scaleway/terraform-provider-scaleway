@@ -29,6 +29,7 @@ func resourceScalewayBaremetalServer() *schema.Resource {
 			Update:  schema.DefaultTimeout(defaultBaremetalServerTimeout),
 			Delete:  schema.DefaultTimeout(defaultBaremetalServerTimeout),
 		},
+
 		Schema: map[string]*schema.Schema{
 			"name": {
 				Type:        schema.TypeString,
@@ -219,7 +220,7 @@ If this behaviour is wanted, please set 'reinstall_on_ssh_key_changes' argument 
 				},
 			},
 		},
-		CustomizeDiff: func(_ context.Context, diff *schema.ResourceDiff, i interface{}) error {
+		CustomizeDiff: func(ctx context.Context, diff *schema.ResourceDiff, i interface{}) error {
 			var isPrivateNetworkOption bool
 
 			_, okPrivateNetwork := diff.GetOk("private_network")
@@ -243,7 +244,7 @@ If this behaviour is wanted, please set 'reinstall_on_ssh_key_changes' argument 
 				return fmt.Errorf("private network option needs to be enabled in order to attach a private network")
 			}
 
-			return nil
+			return customizeDiffLocalityCheck("private_network.#.id")(ctx, diff, i)
 		},
 	}
 }

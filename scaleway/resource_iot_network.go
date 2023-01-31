@@ -72,6 +72,7 @@ func resourceScalewayIotNetwork() *schema.Resource {
 				Sensitive:   true,
 			},
 		},
+		CustomizeDiff: customizeDiffLocalityCheck("hub_id"),
 	}
 }
 
