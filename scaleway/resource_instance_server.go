@@ -271,9 +271,7 @@ func resourceScalewayInstanceServer() *schema.Resource {
 			"project_id":      projectIDSchema(),
 		},
 		CustomizeDiff: customizeDiffLocalityCheck(
-			"security_group_id",
 			"placement_group_id",
-			"root_volume.#.volume_id",
 			"additional_volume_ids.#",
 			"ip_id",
 		),
