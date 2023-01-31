@@ -34,6 +34,6 @@ data "scaleway_rdb_privilege" "main" {
 In addition to all above arguments, the following attributes are exported:
 
 - `id` - The resource ID
-- `region` - The Scaleway region this bucket resides in.
+- `region` - The Scaleway region this resource resides in.
 - `permission` - The permission for this user on the database. Possible values are `readonly`, `readwrite`, `all`
   , `custom` and `none`.
