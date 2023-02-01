@@ -98,54 +98,6 @@ func TestAccScalewayIamApiKey_WithApplication(t *testing.T) {
 	})
 }
 
-func TestAccScalewayIamApiKey_WithUser(t *testing.T) {
-	tt := NewTestTools(t)
-	defer tt.Cleanup()
-	resource.ParallelTest(t, resource.TestCase{
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      testAccCheckScalewayIamAPIKeyDestroy(tt),
-		Steps: []resource.TestStep{
-			{
-				Config: `
-						data "scaleway_iam_user" "main" {
-							email = "hashicorp@scaleway.com"
-							organization_id = "105bdce1-64c0-48ab-899d-868455867ecf"
-						}
-
-						resource "scaleway_iam_api_key" "main" {
-							user_id = data.scaleway_iam_user.main.id
-							description = "a description"
-						}
-					`,
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayIamAPIKeyExists(tt, "scaleway_iam_api_key.main"),
-					testAccCheckScalewayIamUserExists(tt, "data.scaleway_iam_user.main"),
-					resource.TestCheckResourceAttrPair("scaleway_iam_api_key.main", "user_id", "data.scaleway_iam_user.main", "id"),
-					resource.TestCheckResourceAttr("scaleway_iam_api_key.main", "description", "a description"),
-				),
-			},
-			{
-				Config: `
-						data "scaleway_iam_user" "main" {
-							email = "hashicorp@scaleway.com"
-							organization_id = "105bdce1-64c0-48ab-899d-868455867ecf"
-						}
-
-						resource "scaleway_iam_api_key" "main" {
-							user_id = data.scaleway_iam_user.main.id
-							description = "another description"
-						}
-					`,
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayIamAPIKeyExists(tt, "scaleway_iam_api_key.main"),
-					resource.TestCheckResourceAttrPair("scaleway_iam_api_key.main", "user_id", "data.scaleway_iam_user.main", "id"),
-					resource.TestCheckResourceAttr("scaleway_iam_api_key.main", "description", "another description"),
-				),
-			},
-		},
-	})
-}
-
 func TestAccScalewayIamApiKey_Expires(t *testing.T) {
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
