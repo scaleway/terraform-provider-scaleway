@@ -818,12 +818,6 @@ func ErrorCheck(t *testing.T, endpointIDs ...string) resource.ErrorCheckFunc {
 	}
 }
 
-func idSchemaType() cty.Type {
-	return cty.Object(map[string]cty.Type{
-		"id": cty.String,
-	})
-}
-
 func validateMapKeyLowerCase() schema.SchemaValidateDiagFunc {
 	return func(i interface{}, path cty.Path) diag.Diagnostics {
 		m := expandMapStringStringPtr(i)

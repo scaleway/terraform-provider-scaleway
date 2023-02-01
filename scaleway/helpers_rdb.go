@@ -7,6 +7,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/api/rdb/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
@@ -353,4 +354,10 @@ func rdbPrivilegeV1SchemaUpgradeFunc(ctx context.Context, rawState map[string]in
 	rawState["region"] = region.String()
 
 	return rawState, nil
+}
+
+func rdbPrivilegeUpgradeV1SchemaType() cty.Type {
+	return cty.Object(map[string]cty.Type{
+		"id": cty.String,
+	})
 }

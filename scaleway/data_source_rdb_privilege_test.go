@@ -21,7 +21,6 @@ func TestAccScalewayDataSourceRdbPrivilege_Basic(t *testing.T) {
 						node_type = "db-dev-s"
 						engine = "PostgreSQL-12"
 						is_ha_cluster = false
-						region =  "nl-ams"
 						tags = [ "terraform-test", "scaleway_rdb_user", "minimal" ]
 					}`,
 			},
@@ -32,7 +31,6 @@ func TestAccScalewayDataSourceRdbPrivilege_Basic(t *testing.T) {
 						node_type = "db-dev-s"
 						engine = "PostgreSQL-12"
 						is_ha_cluster = false
-						region =  "nl-ams"
 						tags = [ "terraform-test", "scaleway_rdb_user", "minimal" ]
 					}
 
@@ -48,7 +46,6 @@ func TestAccScalewayDataSourceRdbPrivilege_Basic(t *testing.T) {
 						node_type = "db-dev-s"
 						engine = "PostgreSQL-12"
 						is_ha_cluster = false
-						region =  "nl-ams"
 						tags = [ "terraform-test", "scaleway_rdb_user", "minimal" ]
 					}
 
@@ -70,7 +67,6 @@ func TestAccScalewayDataSourceRdbPrivilege_Basic(t *testing.T) {
 						node_type = "db-dev-s"
 						engine = "PostgreSQL-12"
 						is_ha_cluster = false
-						region =  "nl-ams"
 						tags = [ "terraform-test", "scaleway_rdb_user", "minimal" ]
 					}
 
@@ -99,7 +95,6 @@ func TestAccScalewayDataSourceRdbPrivilege_Basic(t *testing.T) {
 						node_type = "db-dev-s"
 						engine = "PostgreSQL-12"
 						is_ha_cluster = false
-						region =  "nl-ams"
 						tags = [ "terraform-test", "scaleway_rdb_user", "minimal" ]
 					}
 
@@ -130,6 +125,7 @@ func TestAccScalewayDataSourceRdbPrivilege_Basic(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckRdbDatabaseExists(tt, "scaleway_rdb_instance.instance", "scaleway_rdb_database.db"),
 					resource.TestCheckResourceAttr("data.scaleway_rdb_privilege.find_priv", "permission", "all"),
+					resource.TestCheckResourceAttr("data.scaleway_rdb_privilege.find_priv", "region", "fr-par"),
 				),
 			},
 		},
