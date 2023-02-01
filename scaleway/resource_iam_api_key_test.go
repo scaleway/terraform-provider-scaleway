@@ -55,7 +55,7 @@ func TestAccScalewayIamApiKey_WithApplication(t *testing.T) {
 			{
 				Config: `
 						resource "scaleway_iam_application" "main" {
-							name = "tf_tests_app_basic"
+							name = "tf_tests_app_key_basic"
 						}
 
 						resource "scaleway_iam_api_key" "main" {
@@ -73,7 +73,7 @@ func TestAccScalewayIamApiKey_WithApplication(t *testing.T) {
 			{
 				Config: `
 						resource "scaleway_iam_application" "main" {
-							name = "tf_tests_app_basic"
+							name = "tf_tests_app_key_basic"
 						}
 
 						resource "scaleway_iam_api_key" "main" {
@@ -190,7 +190,7 @@ func TestAccScalewayIamApiKey_NoUpdate(t *testing.T) {
 			{
 				Config: `
 						resource "scaleway_iam_application" "main" {
-							name = "tf_tests_app_noupdate"
+							name = "tf_tests_app_key_noupdate"
 						}
 
 						resource "scaleway_iam_api_key" "main" {
@@ -207,7 +207,7 @@ func TestAccScalewayIamApiKey_NoUpdate(t *testing.T) {
 			{
 				Config: `
 						resource "scaleway_iam_application" "main" {
-							name = "tf_tests_app_noupdate"
+							name = "tf_tests_app_key_noupdate"
 						}
 
 						resource "scaleway_iam_api_key" "main" {
