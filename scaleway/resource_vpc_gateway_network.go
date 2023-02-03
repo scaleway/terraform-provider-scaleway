@@ -92,6 +92,7 @@ func resourceScalewayVPCGatewayNetwork() *schema.Resource {
 			},
 			"zone": zoneSchema(),
 		},
+		CustomizeDiff: customizeDiffLocalityCheck("gateway_id", "private_network_id", "dhcp_id"),
 	}
 }
 

@@ -38,7 +38,7 @@ func resourceScalewayLb() *schema.Resource {
 		StateUpgraders: []schema.StateUpgrader{
 			{Version: 0, Type: lbUpgradeV1SchemaType(), Upgrade: lbUpgradeV1SchemaUpgradeFunc},
 		},
-		CustomizeDiff: customizeDiffLocalityCheck("ip_id"),
+		CustomizeDiff: customizeDiffLocalityCheck("ip_id", "private_network.#.private_network_id"),
 		Schema: map[string]*schema.Schema{
 			"name": {
 				Type:        schema.TypeString,

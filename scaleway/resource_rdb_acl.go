@@ -64,6 +64,7 @@ func resourceScalewayRdbACL() *schema.Resource {
 			// Common
 			"region": regionSchema(),
 		},
+		CustomizeDiff: customizeDiffLocalityCheck("instance_id"),
 	}
 }
 
