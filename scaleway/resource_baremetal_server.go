@@ -6,6 +6,7 @@ import (
 
 	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/scaleway/scaleway-sdk-go/api/baremetal/v1"
@@ -220,32 +221,10 @@ If this behaviour is wanted, please set 'reinstall_on_ssh_key_changes' argument 
 				},
 			},
 		},
-		CustomizeDiff: func(ctx context.Context, diff *schema.ResourceDiff, i interface{}) error {
-			var isPrivateNetworkOption bool
-
-			_, okPrivateNetwork := diff.GetOk("private_network")
-
-			options, optionsExist := diff.GetOk("options")
-			if optionsExist {
-				opSpecs, err := expandBaremetalOptions(options)
-				if err != nil {
-					return err
-				}
-
-				for j := range opSpecs {
-					// private network option ID
-					if opSpecs[j].ID == "cd4158d7-2d65-49be-8803-c4b8ab6f760c" {
-						isPrivateNetworkOption = true
-					}
-				}
-			}
-
-			if okPrivateNetwork && !isPrivateNetworkOption {
-				return fmt.Errorf("private network option needs to be enabled in order to attach a private network")
-			}
-
-			return customizeDiffLocalityCheck("private_network.#.id")(ctx, diff, i)
-		},
+		CustomizeDiff: customdiff.Sequence(
+			customizeDiffLocalityCheck("private_network.#.id"),
+			customDiffBaremetalPrivateNetworkOption(),
+		),
 	}
 }
 
