@@ -849,7 +849,7 @@ func retryOnTransientStateError[T any, U any](action func() (T, error), waiter f
 }
 
 // compareLocalities compare two localities
-// They are equal if they are the same or if one is a zone contained in the other
+// They are equal if they are the same or if one is a zone contained in a region
 func compareLocalities(loc1, loc2 string) bool {
 	if loc1 == loc2 {
 		return true
