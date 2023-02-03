@@ -52,18 +52,21 @@ func resourceScalewayIamPolicy() *schema.Resource {
 				Type:         schema.TypeString,
 				Optional:     true,
 				Description:  "User id",
+				ValidateFunc: validationUUID(),
 				ExactlyOneOf: []string{"group_id", "application_id", "no_principal"},
 			},
 			"group_id": {
 				Type:         schema.TypeString,
 				Optional:     true,
 				Description:  "Group id",
+				ValidateFunc: validationUUID(),
 				ExactlyOneOf: []string{"user_id", "application_id", "no_principal"},
 			},
 			"application_id": {
 				Type:         schema.TypeString,
 				Optional:     true,
 				Description:  "Application id",
+				ValidateFunc: validationUUID(),
 				ExactlyOneOf: []string{"user_id", "group_id", "no_principal"},
 			},
 			"no_principal": {
@@ -79,16 +82,18 @@ func resourceScalewayIamPolicy() *schema.Resource {
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"organization_id": {
-							Type:        schema.TypeString,
-							Optional:    true,
-							Description: "ID of organization scoped to the rule. Only one of project_ids and organization_id may be set.",
+							Type:         schema.TypeString,
+							Optional:     true,
+							Description:  "ID of organization scoped to the rule. Only one of project_ids and organization_id may be set.",
+							ValidateFunc: validationUUID(),
 						},
 						"project_ids": {
 							Type:        schema.TypeList,
 							Optional:    true,
 							Description: "List of project IDs scoped to the rule. Only one of project_ids and organization_id may be set.",
 							Elem: &schema.Schema{
-								Type: schema.TypeString,
+								Type:         schema.TypeString,
+								ValidateFunc: validationUUID(),
 							},
 						},
 						"permission_set_names": {
