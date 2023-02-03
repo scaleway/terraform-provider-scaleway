@@ -438,9 +438,7 @@ func resourceScalewayBaremetalServerUpdate(ctx context.Context, d *schema.Resour
 	}
 
 	var serverGetOptionIDs []*baremetal.ServerOption
-	for i := range server.Options {
-		serverGetOptionIDs = append(serverGetOptionIDs, server.Options[i])
-	}
+	serverGetOptionIDs = append(serverGetOptionIDs, server.Options...)
 
 	if d.HasChange("options") {
 		options, err := expandBaremetalOptions(d.Get("options"))
