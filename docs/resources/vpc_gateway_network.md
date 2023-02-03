@@ -12,6 +12,8 @@ For more information, see [the documentation](https://developers.scaleway.com/en
 
 ## Example
 
+### Create a gateway network with DHCP
+
 ```hcl
 resource "scaleway_vpc_private_network" "pn01" {
   name = "pn_test_network"
@@ -40,17 +42,38 @@ resource "scaleway_vpc_gateway_network" "main" {
 }
 ```
 
+### Create a gateway network with a static IP address
+
+```hcl
+resource scaleway_vpc_private_network pn01 {
+  name = "pn_test_network"
+}
+
+resource scaleway_vpc_public_gateway pg01 {
+  name = "foobar"
+  type = "VPC-GW-S"
+}
+
+resource scaleway_vpc_gateway_network main {
+  gateway_id = scaleway_vpc_public_gateway.pg01.id
+  private_network_id = scaleway_vpc_private_network.pn01.id
+  enable_dhcp = false
+  enable_masquerade = true
+  static_address = "192.168.1.42/24"
+}
+```
+
 ## Arguments Reference
 
 The following arguments are supported:
 
 - `gateway_id` - (Required) The ID of the public gateway.
 - `private_network_id` - (Required) The ID of the private network.
-- `dhcp_id` - (Required) The ID of the public gateway DHCP config.
+- `dhcp_id` - (Required) The ID of the public gateway DHCP config. Only one of `dhcp_id` and `static_address` should be specified.
 - `enable_masquerade` - (Defaults to true) Enable masquerade on this network
 - `enable_dhcp` - (Defaults to true) Enable DHCP config on this network. It requires DHCP id.
 - `cleanup_dhcp` - (Defaults to false) Remove DHCP config on this network on destroy. It requires DHCP id.
-- `static_address` - Enable DHCP config on this network
+- `static_address` - Enable DHCP config on this network. Only one of `dhcp_id` and `static_address` should be specified.
 - `zone` - (Defaults to [provider](../index.md#zone) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which the gateway network should be created.
 
 ## Attributes Reference
