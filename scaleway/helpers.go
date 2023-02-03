@@ -890,6 +890,24 @@ func expandListKeys(key string, diff *schema.ResourceDiff) []string {
 	return keys
 }
 
+// getLocality find the locality of a resource
+// Will try to get the zone if available then use region
+// Will also use default zone or region if available
+func getLocality(diff *schema.ResourceDiff, meta *Meta) string {
+	var locality string
+
+	rawStateType := diff.GetRawState().Type()
+
+	if rawStateType.HasAttribute("zone") {
+		zone, _ := extractZone(diff, meta)
+		locality = zone.String()
+	} else if rawStateType.HasAttribute("region") {
+		region, _ := extractRegion(diff, meta)
+		locality = region.String()
+	}
+	return locality
+}
+
 // customizeDiffLocalityCheck create a function that will validate locality IDs stored in given keys
 // This locality IDs should have the same locality as the resource
 // It will search for zone or region in resource.
@@ -897,17 +915,7 @@ func expandListKeys(key string, diff *schema.ResourceDiff) []string {
 // this function will still block the terraform plan
 func customizeDiffLocalityCheck(keys ...string) schema.CustomizeDiffFunc {
 	return func(ctx context.Context, diff *schema.ResourceDiff, i interface{}) error {
-		var locality string
-
-		rawStateType := diff.GetRawState().Type()
-
-		if rawStateType.HasAttribute("zone") {
-			zone, _ := extractZone(diff, i.(*Meta))
-			locality = zone.String()
-		} else if rawStateType.HasAttribute("region") {
-			region, _ := extractRegion(diff, i.(*Meta))
-			locality = region.String()
-		}
+		locality := getLocality(diff, i.(*Meta))
 
 		if locality == "" {
 			return fmt.Errorf("missing locality zone or region to check IDs")
