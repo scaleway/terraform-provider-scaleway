@@ -128,6 +128,7 @@ func resourceScalewayRdbReadReplica() *schema.Resource {
 			// Common
 			"region": regionSchema(),
 		},
+		CustomizeDiff: customizeDiffLocalityCheck("instance_id", "private_network.#.private_network_id"),
 	}
 }
 

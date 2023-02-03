@@ -76,6 +76,7 @@ func resourceScalewayRdbDatabaseBackup() *schema.Resource {
 			// Common
 			"region": regionSchema(),
 		},
+		CustomizeDiff: customizeDiffLocalityCheck("instance_id"),
 	}
 }
 
