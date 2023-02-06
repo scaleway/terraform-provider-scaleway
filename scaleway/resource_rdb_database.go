@@ -75,7 +75,9 @@ func resourceScalewayRdbDatabase() *schema.Resource {
 				Description: "Size of the database",
 				Computed:    true,
 			},
+			"region": regionSchema(),
 		},
+		CustomizeDiff: customizeDiffLocalityCheck("instance_id"),
 	}
 }
 
@@ -122,6 +124,7 @@ func resourceScalewayRdbDatabaseCreate(ctx context.Context, d *schema.ResourceDa
 	}
 
 	d.SetId(resourceScalewayRdbDatabaseID(region, instanceID, db.Name))
+	_ = d.Set("region", region)
 
 	return resourceScalewayRdbDatabaseRead(ctx, d, meta)
 }
