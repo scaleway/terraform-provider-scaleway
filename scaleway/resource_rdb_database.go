@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"regexp"
 	"strings"
-	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -14,8 +13,6 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/api/rdb/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 )
-
-const createDatabaseTimeout = 2 * time.Minute
 
 func resourceScalewayRdbDatabase() *schema.Resource {
 	return &schema.Resource{
@@ -101,7 +98,7 @@ func resourceScalewayRdbDatabaseCreate(ctx context.Context, d *schema.ResourceDa
 
 	var db *rdb.Database
 	//  wrapper around StateChangeConf that will just retry the database creation
-	err = resource.RetryContext(ctx, createDatabaseTimeout, func() *resource.RetryError {
+	err = resource.RetryContext(ctx, d.Timeout(schema.TimeoutCreate), func() *resource.RetryError {
 		currentDB, errCreateDB := rdbAPI.CreateDatabase(createReq, scw.WithContext(ctx))
 		if errCreateDB != nil {
 			// WIP: Issue on creation/write database. Need a database stable status
