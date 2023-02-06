@@ -298,6 +298,69 @@ func TestAccScalewayK8SCluster_PoolZone(t *testing.T) {
 	})
 }
 
+func TestAccScalewayK8SCluster_PoolSize(t *testing.T) {
+	tt := NewTestTools(t)
+	defer tt.Cleanup()
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      testAccCheckScalewayK8SClusterDestroy(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+				resource "scaleway_k8s_cluster" "cluster" {
+				  name    = "cluster"
+				  version = "1.23"
+				  cni     = "cilium"
+				  delete_additional_resources = true
+				  auto_upgrade {
+				    enable = true
+				    maintenance_window_start_hour = 12
+				    maintenance_window_day = "monday"
+				  }
+				}
+				
+				resource "scaleway_k8s_pool" "pool" {
+				  cluster_id          = scaleway_k8s_cluster.cluster.id
+				  name                = "pool"
+				  node_type           = "gp1_xs"
+				  size                = 1
+				  autoscaling         = false
+				  autohealing         = true
+				  wait_for_pool_ready = true
+				}`,
+			},
+			{
+				Config: `
+				resource "scaleway_k8s_cluster" "cluster" {
+				  name    = "cluster"
+				  version = "1.23"
+				  cni     = "cilium"
+				  auto_upgrade {
+				  enable = true
+				  maintenance_window_start_hour = 12
+				  maintenance_window_day = "monday"
+				  }
+				  delete_additional_resources = true
+				}
+				
+				resource "scaleway_k8s_pool" "pool" {
+				  cluster_id          = scaleway_k8s_cluster.cluster.id
+				  name                = "pool"
+				  node_type           = "gp1_xs"
+				  size                = 2
+				  autoscaling         = false
+				  autohealing         = true
+				  wait_for_pool_ready = true
+				}`,
+				PlanOnly:           true,
+				ExpectNonEmptyPlan: true,
+			},
+		},
+	})
+}
+
 func testAccCheckScalewayK8SPoolDestroy(tt *TestTools, n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
