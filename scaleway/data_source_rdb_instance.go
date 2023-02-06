@@ -14,7 +14,7 @@ func dataSourceScalewayRDBInstance() *schema.Resource {
 	// Generate datasource schema from resource
 	dsSchema := datasourceSchemaFromResourceSchema(resourceScalewayRdbInstance().Schema)
 	// Set 'Optional' schema elements
-	addOptionalFieldsToSchema(dsSchema, "name")
+	addOptionalFieldsToSchema(dsSchema, "name", "region")
 
 	dsSchema["name"].ConflictsWith = []string{"instance_id"}
 	dsSchema["instance_id"] = &schema.Schema{
