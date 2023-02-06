@@ -31,7 +31,7 @@ resource "scaleway_rdb_user" "db_admin" {
 
 The following arguments are supported:
 
-- `instance_id` - (Required) The instance on which to create the user.
+- `instance_id` - (Required) UUID of the rdb instance.
 
 ~> **Important:** Updates to `instance_id` will recreate the Database User.
 

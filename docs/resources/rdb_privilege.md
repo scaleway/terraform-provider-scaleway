@@ -48,7 +48,7 @@ resource "scaleway_rdb_user" "main" {
 
 The following arguments are supported:
 
-- `instance_id` - (Required) UUID of the instance where to create the database.
+- `instance_id` - (Required) UUID of the rdb instance.
 
 - `user_name` - (Required) Name of the user (e.g. `my-db-user`).
 
