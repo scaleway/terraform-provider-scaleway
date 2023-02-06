@@ -173,6 +173,7 @@ func resourceScalewayIotDevice() *schema.Resource {
 				Description: "The MQTT connection status of the device",
 			},
 		},
+		CustomizeDiff: customizeDiffLocalityCheck("hub_id"),
 	}
 }
 

@@ -155,6 +155,7 @@ func resourceScalewayFunction() *schema.Resource {
 			"organization_id": organizationIDSchema(),
 			"project_id":      projectIDSchema(),
 		},
+		CustomizeDiff: customizeDiffLocalityCheck("namespace_id"),
 	}
 }
 

@@ -54,6 +54,7 @@ func resourceScalewayFunctionToken() *schema.Resource {
 
 			"region": regionSchema(),
 		},
+		CustomizeDiff: customizeDiffLocalityCheck("function_id", "namespace_id"),
 	}
 }
 
