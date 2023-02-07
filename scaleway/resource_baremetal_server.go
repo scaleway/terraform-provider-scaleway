@@ -368,15 +368,25 @@ func resourceScalewayBaremetalServerRead(ctx context.Context, d *schema.Resource
 		return diag.FromErr(err)
 	}
 
+	os, err := baremetalAPI.GetOS(&baremetal.GetOSRequest{
+		Zone: server.Zone,
+		OsID: server.Install.OsID,
+	})
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	_ = d.Set("name", server.Name)
 	_ = d.Set("zone", server.Zone.String())
 	_ = d.Set("organization_id", server.OrganizationID)
 	_ = d.Set("project_id", server.ProjectID)
+	_ = d.Set("offer", offer.Name)
 	_ = d.Set("offer_id", newZonedID(server.Zone, offer.ID).String())
 	_ = d.Set("tags", server.Tags)
 	_ = d.Set("domain", server.Domain)
 	_ = d.Set("ips", flattenBaremetalIPs(server.IPs))
 	if server.Install != nil {
+		_ = d.Set("os", os.Name)
 		_ = d.Set("os_id", newZonedID(server.Zone, server.Install.OsID).String())
 		_ = d.Set("ssh_key_ids", server.Install.SSHKeyIDs)
 		_ = d.Set("user", server.Install.User)
