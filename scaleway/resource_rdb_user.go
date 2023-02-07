@@ -58,6 +58,7 @@ func resourceScalewayRdbUser() *schema.Resource {
 			// Common
 			"region": regionSchema(),
 		},
+		CustomizeDiff: customizeDiffLocalityCheck("instance_id"),
 	}
 }
 
@@ -148,6 +149,7 @@ func resourceScalewayRdbUserRead(ctx context.Context, d *schema.ResourceData, me
 	_ = d.Set("instance_id", newRegionalID(region, instanceID).String())
 	_ = d.Set("name", user.Name)
 	_ = d.Set("is_admin", user.IsAdmin)
+	_ = d.Set("region", string(region))
 
 	d.SetId(resourceScalewayRdbUserID(region, instanceID, user.Name))
 
