@@ -9,7 +9,7 @@ Manages Scaleway Containers Triggers.
 Creates and manages Scaleway Container Triggers. For the moment, the feature is limited to CRON Schedule (time-based).
 
 For more information consult
-the [documentation](https://www.scaleway.com/en/docs/compute/containers/api-cli/cont-uploading-with-serverless-framework/#configuring-events)
+the [documentation](https://www.scaleway.com/en/docs/serverless/containers/)
 .
 
 For more details about the limitation
