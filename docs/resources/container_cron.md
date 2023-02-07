@@ -8,7 +8,7 @@ Manages Scaleway Containers Triggers.
 
 Creates and manages Scaleway Container Triggers. For the moment, the feature is limited to CRON Schedule (time-based).
 
-For more information containers
+For more information consult
 the [documentation](https://www.scaleway.com/en/docs/serverless/containers/)
 .
 
