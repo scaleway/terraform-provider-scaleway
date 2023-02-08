@@ -292,7 +292,11 @@ func createFakeSideProject(tt *TestTools) (*accountV2.Project, *iam.APIKey, Fake
 		Name: projectName,
 	})
 	if err != nil {
-		return nil, nil, nil, terminate()
+		if err := terminate(); err != nil {
+			return nil, nil, nil, err
+		}
+
+		return nil, nil, nil, err
 	}
 	terminateFunctions = append(terminateFunctions, func() error {
 		return projectAPI.DeleteProject(&accountV2.DeleteProjectRequest{
