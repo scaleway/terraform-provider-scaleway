@@ -43,6 +43,7 @@ func resourceScalewayInstancePrivateNIC() *schema.Resource {
 			},
 			"zone": zoneSchema(),
 		},
+		CustomizeDiff: customizeDiffLocalityCheck("server_id", "private_network_id"),
 	}
 }
 

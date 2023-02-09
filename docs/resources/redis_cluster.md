@@ -15,17 +15,17 @@ For more information, see [the documentation](https://developers.scaleway.com/en
 
 ```hcl
 resource "scaleway_redis_cluster" "main" {
-  name = "test_redis_basic"
-  version = "6.2.6"
-  node_type = "RED1-MICRO"
-  user_name = "my_initial_user"
-  password = "thiZ_is_v&ry_s3cret"
-  tags = [ "test", "redis" ]
+  name         = "test_redis_basic"
+  version      = "6.2.6"
+  node_type    = "RED1-MICRO"
+  user_name    = "my_initial_user"
+  password     = "thiZ_is_v&ry_s3cret"
+  tags         = ["test", "redis"]
   cluster_size = 1
-  tls_enabled = "true"
+  tls_enabled  = "true"
 
   acl {
-    ip = "0.0.0.0/0"
+    ip          = "0.0.0.0/0"
     description = "Allow all"
   }
 }
@@ -35,14 +35,14 @@ resource "scaleway_redis_cluster" "main" {
 
 ```hcl
 resource "scaleway_redis_cluster" "main" {
-  name = "test_redis_basic"
-  version = "6.2.6"
+  name      = "test_redis_basic"
+  version   = "6.2.6"
   node_type = "RED1-MICRO"
   user_name = "my_initial_user"
-  password = "thiZ_is_v&ry_s3cret"
+  password  = "thiZ_is_v&ry_s3cret"
 
   settings = {
-    "maxclients" = "1000"
+    "maxclients"    = "1000"
     "tcp-keepalive" = "120"
   }
 }
@@ -141,6 +141,12 @@ The following arguments are supported:
 In addition to all arguments above, the following attributes are exported:
 
 - `id` - The ID of the Database Instance.
+- `public_network` - (Optional) Public network details. Only one of `private_network` and `public_network` may be set.
+  ~> The `public_network` block exports:
+    - `id` - (Required) The UUID of the endpoint.
+    - `ips` - Lis of IPv4 address of the endpoint (IP address).
+    - `port` - TCP port of the endpoint.
+
 - `created_at` - The date and time of creation of the Redis Cluster.
 - `updated_at` - The date and time of the last update of the Redis Cluster.
 - `certificate` - The PEM of the certificate used by redis, only when `tls_enabled` is true

@@ -27,11 +27,13 @@ resource "scaleway_rdb_acl" "main" {
 
 The following arguments are supported:
 
-- `instance_id` - (Required) The instance on which to create the ACL.
+- `instance_id` - (Required) UUID of the rdb instance.
 
 ~> **Important:** Updates to `instance_id` will recreate the Database ACL.
 
 - `acl_rules` - A list of ACLs (structure is described below)
+
+- `region` - (Defaults to [provider](../index.md#region) `region`) The [region](../guides/regions_and_zones.md#regions) in which the Database Instance should be created.
 
 The `acl_rules` block supports:
 

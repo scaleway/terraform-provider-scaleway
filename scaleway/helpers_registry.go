@@ -57,3 +57,38 @@ func waitForRegistryNamespace(ctx context.Context, api *registry.API, region scw
 
 	return ns, err
 }
+
+func waitForRegistryNamespaceDelete(ctx context.Context, api *registry.API, region scw.Region, id string, timeout time.Duration) (*registry.Namespace, error) {
+	retryInterval := defaultRegistryNamespaceRetryInterval
+	if DefaultWaitRetryInterval != nil {
+		retryInterval = *DefaultWaitRetryInterval
+	}
+
+	terminalStatus := map[registry.NamespaceStatus]struct{}{
+		registry.NamespaceStatusReady:    {},
+		registry.NamespaceStatusLocked:   {},
+		registry.NamespaceStatusError:    {},
+		registry.NamespaceStatusUnknown:  {},
+		registry.NamespaceStatusDeleting: {},
+	}
+
+	for {
+		ns, err := api.GetNamespace(&registry.GetNamespaceRequest{
+			Region:      region,
+			NamespaceID: id,
+		}, scw.WithContext(ctx))
+		if err != nil {
+			return nil, err
+		}
+
+		if _, ok := terminalStatus[ns.Status]; ok {
+			return ns, nil
+		}
+
+		select {
+		case <-ctx.Done():
+			return nil, ctx.Err()
+		case <-time.After(retryInterval):
+		}
+	}
+}

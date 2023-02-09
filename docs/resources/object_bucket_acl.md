@@ -4,7 +4,7 @@ description: |-
 Manages Scaleway object storage bucket ACL resource.
 ---
 
-# scaleway_object_bucket
+# scaleway_object_bucket_acl
 
 Creates and manages Scaleway object storage bucket ACL.
 For more information, see [the documentation](https://www.scaleway.com/en/docs/storage/object/concepts/#access-control-list-(acl)).
@@ -68,6 +68,7 @@ The following arguments are supported:
 * `access_control_policy` - (Optional, Conflicts with acl) A configuration block that sets the ACL permissions for an object per grantee documented below.
 * `expected_bucket_owner` - (Optional, Forces new resource) The project ID of the expected bucket owner.
 * `region` - (Optional) The [region](https://developers.scaleway.com/en/quickstart/#region-definition) in which the bucket should be created.
+* `project_id` - (Defaults to [provider](../index.md#project_id) `project_id`) The ID of the project the bucket is associated with.
 
 
 ## The ACL

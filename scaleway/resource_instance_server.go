@@ -14,7 +14,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
-	"github.com/scaleway/scaleway-sdk-go/api/marketplace/v1"
+	"github.com/scaleway/scaleway-sdk-go/api/marketplace/v2"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	scwvalidation "github.com/scaleway/scaleway-sdk-go/validation"
 )
@@ -270,6 +270,11 @@ func resourceScalewayInstanceServer() *schema.Resource {
 			"organization_id": organizationIDSchema(),
 			"project_id":      projectIDSchema(),
 		},
+		CustomizeDiff: customizeDiffLocalityCheck(
+			"placement_group_id",
+			"additional_volume_ids.#",
+			"ip_id",
+		),
 	}
 }
 
@@ -288,15 +293,19 @@ func resourceScalewayInstanceServerCreate(ctx context.Context, d *schema.Resourc
 
 	imageUUID := expandID(d.Get("image"))
 	if imageUUID != "" && !scwvalidation.IsUUID(imageUUID) {
+		// Replace dashes with underscores ubuntu-focal -> ubuntu_focal
+		imageLabel := formatImageLabel(imageUUID)
+
 		marketPlaceAPI := marketplace.NewAPI(meta.(*Meta).scwClient)
-		imageUUID, err = marketPlaceAPI.GetLocalImageIDByLabel(&marketplace.GetLocalImageIDByLabelRequest{
+		image, err := marketPlaceAPI.GetLocalImageByLabel(&marketplace.GetLocalImageByLabelRequest{
 			CommercialType: commercialType,
 			Zone:           zone,
-			ImageLabel:     imageUUID,
+			ImageLabel:     imageLabel,
 		})
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("could not get image '%s': %s", newZonedID(zone, imageUUID), err))
+			return diag.FromErr(fmt.Errorf("could not get image '%s': %s", newZonedID(zone, imageLabel), err))
 		}
+		imageUUID = image.ID
 	}
 
 	req := &instance.CreateServerRequest{

@@ -47,6 +47,7 @@ func resourceScalewayFunctionDomain() *schema.Resource {
 			},
 			"region": regionSchema(),
 		},
+		CustomizeDiff: customizeDiffLocalityCheck("function_id"),
 	}
 }
 
