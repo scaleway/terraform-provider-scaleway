@@ -281,6 +281,11 @@ If you prefer keeping it, you should instead set it as `false`.
 
     - `required_claim` - (Optional) Multiple key=value pairs that describes a required claim in the ID Token
 
+- `private_network_id` - (Optional) The ID of the private network of the cluster.
+
+~> **Important:** This field can only be set at cluster creation and cannot be updated later.
+Changes to this field will cause the cluster to be destroyed then recreated.
+
 - `default_pool` - (Deprecated) See below.
 
 - `region` - (Defaults to [provider](../index.md#arguments-reference) `region`) The [region](../guides/regions_and_zones.md#regions) in which the cluster should be created.
