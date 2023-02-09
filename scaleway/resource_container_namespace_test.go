@@ -176,6 +176,7 @@ func TestAccScalewayContainerNamespace_DestroyRegistry(t *testing.T) {
 			{
 				Config: `
 					resource scaleway_container_namespace main {
+						region = "pl-waw"
 						name = "test-cr-ns-01"
 						destroy_registry = true
 					}

@@ -189,6 +189,7 @@ func resourceScalewayRedisCluster() *schema.Resource {
 			"zone":       zoneSchema(),
 			"project_id": projectIDSchema(),
 		},
+		CustomizeDiff: customizeDiffLocalityCheck("private_network.#.id"),
 	}
 }
 

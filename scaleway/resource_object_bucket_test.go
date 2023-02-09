@@ -592,6 +592,7 @@ func TestAccScalewayObjectBucket_Cors_Delete(t *testing.T) {
 }
 
 func TestAccScalewayObjectBucket_Cors_EmptyOrigin(t *testing.T) {
+	t.Skip("Skipping as AllowedOrigins can be empty at the moment")
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
 

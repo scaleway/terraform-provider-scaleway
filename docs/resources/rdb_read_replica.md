@@ -59,9 +59,9 @@ resource scaleway_rdb_read_replica "replica" {
 
 The following arguments are supported:
 
-- `instance_id` - (Required) Id of the rdb instance to replicate.
+- `instance_id` - (Required) UUID of the rdb instance.
 
-~> **Important:** When creating a replica, it musts contains at least one of direct_access or private_network. It can contain both.
+~> **Important:** The replica musts contains at least one of `direct_access` or `private_network`. It can contain both.
 
 - `direct_access` - (Optional) Creates a direct access endpoint to rdb replica.
 

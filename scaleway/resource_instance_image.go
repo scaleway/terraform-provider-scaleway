@@ -168,6 +168,7 @@ func resourceScalewayInstanceImage() *schema.Resource {
 			"project_id":      projectIDSchema(),
 			"organization_id": organizationIDSchema(),
 		},
+		CustomizeDiff: customizeDiffLocalityCheck("root_volume_id", "additional_volume_ids.#"),
 	}
 }
 

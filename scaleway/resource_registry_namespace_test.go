@@ -55,6 +55,7 @@ func TestAccScalewayRegistryNamespace_Basic(t *testing.T) {
 			{
 				Config: `
 					resource scaleway_registry_namespace cr01 {
+						region = "pl-waw"
 						name = "test-cr-ns-01"
 					}
 				`,
@@ -67,6 +68,7 @@ func TestAccScalewayRegistryNamespace_Basic(t *testing.T) {
 			{
 				Config: `
 					resource scaleway_registry_namespace cr01 {
+						region = "pl-waw"
 						name = "test-cr-ns-01"
 						description = "test registry namespace 01"
 						is_public = true
