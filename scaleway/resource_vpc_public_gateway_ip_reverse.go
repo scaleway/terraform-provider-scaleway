@@ -22,6 +22,8 @@ func resourceScalewayVPCPublicGatewayIPReverseDNS() *schema.Resource {
 		},
 		Timeouts: &schema.ResourceTimeout{
 			Default: schema.DefaultTimeout(defaultVPCPublicGatewayIPReverseDNSTimeout),
+			Create:  schema.DefaultTimeout(defaultVPCPublicGatewayIPReverseDNSTimeout),
+			Update:  schema.DefaultTimeout(defaultVPCPublicGatewayIPReverseDNSTimeout),
 		},
 		SchemaVersion: 0,
 		Schema: map[string]*schema.Schema{
@@ -65,7 +67,7 @@ func resourceScalewayVPCPublicGatewayIPReverseDNSCreate(ctx context.Context, d *
 
 		reverse := d.Get("reverse").(string)
 		if len(reverse) > 0 {
-			if isGatewayIPReverseResolved(ctx, vpcgwAPI, reverse, defaultVPCPublicGatewayIPReverseDNSTimeout, res.ID, zone) {
+			if isGatewayIPReverseResolved(ctx, vpcgwAPI, reverse, d.Timeout(schema.TimeoutCreate), res.ID, zone) {
 				updateReverseReq.Reverse = expandStringPtr(reverse)
 			} else {
 				return diag.FromErr(fmt.Errorf("your reverse must resolve. Ensure the command 'dig +short %s' matches your IP address ", reverse))
@@ -120,7 +122,7 @@ func resourceScalewayVPCPublicGatewayIPReverseDNSUpdate(ctx context.Context, d *
 
 		reverse := d.Get("reverse").(string)
 		if len(reverse) > 0 {
-			if isGatewayIPReverseResolved(ctx, vpcgwAPI, reverse, defaultVPCPublicGatewayIPReverseDNSTimeout, ID, zone) {
+			if isGatewayIPReverseResolved(ctx, vpcgwAPI, reverse, d.Timeout(schema.TimeoutUpdate), ID, zone) {
 				updateReverseReq.Reverse = expandStringPtr(reverse)
 			} else {
 				return diag.FromErr(fmt.Errorf("your reverse must resolve. Ensure the command 'dig +short %s' matches your IP address ", reverse))
