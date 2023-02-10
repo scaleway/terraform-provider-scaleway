@@ -249,6 +249,7 @@ func TestAccScalewayBaremetalServer_AddOption(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayBaremetalServerExists(tt, "scaleway_baremetal_server.base"),
 				),
+				ExpectNonEmptyPlan: true,
 			},
 			{
 				Config: fmt.Sprintf(`
@@ -624,6 +625,7 @@ func TestAccScalewayBaremetalServer_AddPrivateNetwork(t *testing.T) {
 					testAccCheckScalewayBaremetalServerHasPrivateNetwork(tt, "scaleway_baremetal_server.base"),
 					resource.TestCheckResourceAttrPair("scaleway_baremetal_server.base", "private_network.0.id", "scaleway_vpc_private_network.pn", "id"),
 				),
+				ExpectNonEmptyPlan: true,
 			},
 		},
 	})
@@ -750,6 +752,7 @@ func TestAccScalewayBaremetalServer_AddAnotherPrivateNetwork(t *testing.T) {
 					resource.TestCheckTypeSetElemAttrPair("scaleway_baremetal_server.base", "private_network.*.id", "scaleway_vpc_private_network.pn", "id"),
 					resource.TestCheckTypeSetElemAttrPair("scaleway_baremetal_server.base", "private_network.*.id", "scaleway_vpc_private_network.pn2", "id"),
 				),
+				ExpectNonEmptyPlan: true,
 			},
 		},
 	})

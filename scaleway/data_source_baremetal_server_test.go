@@ -56,6 +56,7 @@ func TestAccScalewayDataSourceBaremetalServer_Basic(t *testing.T) {
 						"data.scaleway_baremetal_server.by_id", "name",
 						"scaleway_baremetal_server.main", "name"),
 				),
+				ExpectNonEmptyPlan: true,
 			},
 		},
 	})

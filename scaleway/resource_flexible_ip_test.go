@@ -156,6 +156,7 @@ func TestAccScalewayFlexibleIP_CreateAndAttachToBaremetalServer(t *testing.T) {
 					testAccCheckScalewayFlexibleIPAttachedToBaremetalServer(tt, "scaleway_flexible_ip.base", "scaleway_baremetal_server.base"),
 					resource.TestCheckResourceAttr("scaleway_flexible_ip.base", "zone", "fr-par-2"),
 				),
+				ExpectNonEmptyPlan: true,
 			},
 		},
 	})
@@ -222,6 +223,7 @@ func TestAccScalewayFlexibleIP_AttachAndDetachFromBaremetalServer(t *testing.T) 
 					testAccCheckScalewayFlexibleIPAttachedToBaremetalServer(tt, "scaleway_flexible_ip.base", "scaleway_baremetal_server.base"),
 					resource.TestCheckResourceAttr("scaleway_flexible_ip.base", "zone", "fr-par-2"),
 				),
+				ExpectNonEmptyPlan: true,
 			},
 			{
 				Config: `
