@@ -45,27 +45,36 @@ func testSweepIamPolicy(_ string) error {
 func TestAccScalewayIamPolicy_Basic(t *testing.T) {
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
-	organizationID, _ := tt.Meta.scwClient.GetDefaultOrganizationID()
+	ctx := context.Background()
+	project, iamAPIKey, terminateFakeSideProject, err := createFakeIAMManager(tt)
+	require.NoError(t, err)
+
 	resource.ParallelTest(t, resource.TestCase{
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      testAccCheckScalewayIamPolicyDestroy(tt),
+		ProviderFactories: fakeSideProjectProviders(ctx, tt, project, iamAPIKey),
+		CheckDestroy: resource.ComposeAggregateTestCheckFunc(
+			func(s *terraform.State) error {
+				return terminateFakeSideProject()
+			},
+			testAccCheckScalewayIamPolicyDestroy(tt),
+		),
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
-						resource "scaleway_iam_policy" "main" {
-							name = "tf_tests_policy_basic"
-							description = "a description"
-							no_principal = true
-							rule {
-								organization_id = "%s"
-								permission_set_names = ["AllProductsFullAccess"]
-							}
-							rule {
-								organization_id = "%[1]s"
-								permission_set_names = ["ContainerRegistryReadOnly"]
-							}
-						}
-					`, organizationID),
+					resource "scaleway_iam_policy" "main" {
+					  name         = "tf_tests_policy_basic"
+					  description  = "a description"
+					  no_principal = true
+					  rule {
+						organization_id      = "%s"
+						permission_set_names = ["AllProductsFullAccess"]
+					  }
+					  rule {
+						organization_id      = "%[1]s"
+						permission_set_names = ["ContainerRegistryReadOnly"]
+					  }
+					  provider = side
+					}
+					`, project.OrganizationID),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayIamPolicyExists(tt, "scaleway_iam_policy.main"),
 					resource.TestCheckResourceAttr("scaleway_iam_policy.main", "name", "tf_tests_policy_basic"),
@@ -77,22 +86,23 @@ func TestAccScalewayIamPolicy_Basic(t *testing.T) {
 			},
 			{
 				Config: fmt.Sprintf(`
-						resource "scaleway_iam_policy" "main" {
-							name = "tf_tests_policy_basic"
-							description = "a description"
-							no_principal = true
-							rule {
-								organization_id = "%s"
-								permission_set_names = ["AllProductsFullAccess"]
-							}
-						}
-					`, organizationID),
+					resource "scaleway_iam_policy" "main" {
+					  name         = "tf_tests_policy_basic"
+					  description  = "a description"
+					  no_principal = true
+					  rule {
+						organization_id      = "%s"
+						permission_set_names = ["AllProductsFullAccess"]
+					  }
+					  provider = side
+					}
+					`, project.OrganizationID),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayIamPolicyExists(tt, "scaleway_iam_policy.main"),
 					resource.TestCheckResourceAttr("scaleway_iam_policy.main", "name", "tf_tests_policy_basic"),
 					resource.TestCheckResourceAttr("scaleway_iam_policy.main", "description", "a description"),
 					resource.TestCheckResourceAttr("scaleway_iam_policy.main", "no_principal", "true"),
-					resource.TestCheckTypeSetElemNestedAttrs("scaleway_iam_policy.main", "rule.*", map[string]string{"organization_id": organizationID}),
+					resource.TestCheckTypeSetElemNestedAttrs("scaleway_iam_policy.main", "rule.*", map[string]string{"organization_id": project.OrganizationID}),
 					resource.TestCheckResourceAttr("scaleway_iam_policy.main", "rule.0.permission_set_names.0", "AllProductsFullAccess"),
 				),
 			},
@@ -103,23 +113,32 @@ func TestAccScalewayIamPolicy_Basic(t *testing.T) {
 func TestAccScalewayIamPolicy_NoUpdate(t *testing.T) {
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
-	organizationID, _ := tt.Meta.scwClient.GetDefaultOrganizationID()
+	ctx := context.Background()
+	project, iamAPIKey, terminateFakeSideProject, err := createFakeIAMManager(tt)
+	require.NoError(t, err)
+
 	resource.ParallelTest(t, resource.TestCase{
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      testAccCheckScalewayIamPolicyDestroy(tt),
+		ProviderFactories: fakeSideProjectProviders(ctx, tt, project, iamAPIKey),
+		CheckDestroy: resource.ComposeAggregateTestCheckFunc(
+			func(s *terraform.State) error {
+				return terminateFakeSideProject()
+			},
+			testAccCheckScalewayIamPolicyDestroy(tt),
+		),
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
 					resource "scaleway_iam_policy" "main" {
-						name = "tf_tests_policy_noupdate"
-						description = "a description"
-						no_principal = true
-						rule {
-							organization_id = "%s"
-							permission_set_names = ["AllProductsFullAccess"]
-						}
+					  name         = "tf_tests_policy_noupdate"
+					  description  = "a description"
+					  no_principal = true
+					  rule {
+						organization_id      = "%s"
+						permission_set_names = ["AllProductsFullAccess"]
+					  }
+					  provider = side
 					}
-					`, organizationID),
+					`, project.OrganizationID),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayIamPolicyExists(tt, "scaleway_iam_policy.main"),
 					resource.TestCheckResourceAttr("scaleway_iam_policy.main", "name", "tf_tests_policy_noupdate"),
@@ -131,15 +150,16 @@ func TestAccScalewayIamPolicy_NoUpdate(t *testing.T) {
 			{
 				Config: fmt.Sprintf(`
 					resource "scaleway_iam_policy" "main" {
-						name = "tf_tests_policy_noupdate"
-						description = "a description"
-						no_principal = true
-						rule {
-							organization_id = "%s"
-							permission_set_names = ["AllProductsFullAccess"]
-						}
+					  name         = "tf_tests_policy_noupdate"
+					  description  = "a description"
+					  no_principal = true
+					  rule {
+						organization_id      = "%s"
+						permission_set_names = ["AllProductsFullAccess"]
+					  }
+					  provider = side
 					}
-					`, organizationID),
+					`, project.OrganizationID),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayIamPolicyExists(tt, "scaleway_iam_policy.main"),
 					resource.TestCheckResourceAttr("scaleway_iam_policy.main", "name", "tf_tests_policy_noupdate"),
@@ -168,7 +188,7 @@ func TestAccScalewayIamPolicy_ChangeLinkedEntity(t *testing.T) {
 			func(s *terraform.State) error {
 				return terminateFakeSideProject()
 			},
-			testAccCheckScalewayObjectDestroy(tt),
+			testAccCheckScalewayIamPolicyDestroy(tt),
 		),
 		Steps: []resource.TestStep{
 			{
@@ -260,51 +280,61 @@ func TestAccScalewayIamPolicy_ChangeLinkedEntity(t *testing.T) {
 func TestAccScalewayIamPolicy_ChangePermissions(t *testing.T) {
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
-	organizationID, _ := tt.Meta.scwClient.GetDefaultOrganizationID()
+	ctx := context.Background()
+	project, iamAPIKey, terminateFakeSideProject, err := createFakeIAMManager(tt)
+	require.NoError(t, err)
+
 	resource.ParallelTest(t, resource.TestCase{
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      testAccCheckScalewayIamPolicyDestroy(tt),
+		ProviderFactories: fakeSideProjectProviders(ctx, tt, project, iamAPIKey),
+		CheckDestroy: resource.ComposeAggregateTestCheckFunc(
+			func(s *terraform.State) error {
+				return terminateFakeSideProject()
+			},
+			testAccCheckScalewayIamPolicyDestroy(tt),
+		),
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
-						resource "scaleway_iam_policy" "main" {
-							name = "tf_tests_policy_changepermissions"
-							description = "a description"
-							no_principal = true
-							rule {
-								organization_id = "%s"
-								permission_set_names = ["AllProductsFullAccess"]
-							}
-						}
-					`, organizationID),
+					resource "scaleway_iam_policy" "main" {
+					  name         = "tf_tests_policy_changepermissions"
+					  description  = "a description"
+					  no_principal = true
+					  rule {
+						organization_id      = "%s"
+						permission_set_names = ["AllProductsFullAccess"]
+					  }
+					  provider = side
+					}
+					`, project.OrganizationID),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayIamPolicyExists(tt, "scaleway_iam_policy.main"),
 					resource.TestCheckResourceAttr("scaleway_iam_policy.main", "name", "tf_tests_policy_changepermissions"),
 					resource.TestCheckResourceAttr("scaleway_iam_policy.main", "description", "a description"),
 					resource.TestCheckResourceAttr("scaleway_iam_policy.main", "no_principal", "true"),
-					resource.TestCheckResourceAttr("scaleway_iam_policy.main", "rule.0.organization_id", organizationID),
+					resource.TestCheckResourceAttr("scaleway_iam_policy.main", "rule.0.organization_id", project.OrganizationID),
 					resource.TestCheckResourceAttr("scaleway_iam_policy.main", "rule.0.permission_set_names.#", "1"),
 					resource.TestCheckResourceAttr("scaleway_iam_policy.main", "rule.0.permission_set_names.0", "AllProductsFullAccess"),
 				),
 			},
 			{
 				Config: fmt.Sprintf(`
-						resource "scaleway_iam_policy" "main" {
-							name = "tf_tests_policy_changepermissions"
-							description = "a description"
-							no_principal = true
-							rule {
-								organization_id = "%s"
-								permission_set_names = ["AllProductsFullAccess", "ContainerRegistryReadOnly"]
-							}
-						}
-					`, organizationID),
+					resource "scaleway_iam_policy" "main" {
+					  name         = "tf_tests_policy_changepermissions"
+					  description  = "a description"
+					  no_principal = true
+					  rule {
+						organization_id      = "%s"
+						permission_set_names = ["AllProductsFullAccess", "ContainerRegistryReadOnly"]
+					  }
+					  provider = side
+					}
+					`, project.OrganizationID),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayIamPolicyExists(tt, "scaleway_iam_policy.main"),
 					resource.TestCheckResourceAttr("scaleway_iam_policy.main", "name", "tf_tests_policy_changepermissions"),
 					resource.TestCheckResourceAttr("scaleway_iam_policy.main", "description", "a description"),
 					resource.TestCheckResourceAttr("scaleway_iam_policy.main", "no_principal", "true"),
-					resource.TestCheckResourceAttr("scaleway_iam_policy.main", "rule.0.organization_id", organizationID),
+					resource.TestCheckResourceAttr("scaleway_iam_policy.main", "rule.0.organization_id", project.OrganizationID),
 					resource.TestCheckResourceAttr("scaleway_iam_policy.main", "rule.0.permission_set_names.#", "2"),
 					resource.TestCheckResourceAttr("scaleway_iam_policy.main", "rule.0.permission_set_names.0", "AllProductsFullAccess"),
 					resource.TestCheckResourceAttr("scaleway_iam_policy.main", "rule.0.permission_set_names.1", "ContainerRegistryReadOnly"),
@@ -312,22 +342,23 @@ func TestAccScalewayIamPolicy_ChangePermissions(t *testing.T) {
 			},
 			{
 				Config: fmt.Sprintf(`
-						resource "scaleway_iam_policy" "main" {
-							name = "tf_tests_policy_changepermissions"
-							description = "a description"
-							no_principal = true
-							rule {
-								organization_id = "%s"
-								permission_set_names = ["ContainerRegistryReadOnly"]
-							}
-						}
-					`, organizationID),
+					resource "scaleway_iam_policy" "main" {
+					  name         = "tf_tests_policy_changepermissions"
+					  description  = "a description"
+					  no_principal = true
+					  rule {
+						organization_id      = "%s"
+						permission_set_names = ["ContainerRegistryReadOnly"]
+					  }
+					  provider = side
+					}
+					`, project.OrganizationID),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayIamPolicyExists(tt, "scaleway_iam_policy.main"),
 					resource.TestCheckResourceAttr("scaleway_iam_policy.main", "name", "tf_tests_policy_changepermissions"),
 					resource.TestCheckResourceAttr("scaleway_iam_policy.main", "description", "a description"),
 					resource.TestCheckResourceAttr("scaleway_iam_policy.main", "no_principal", "true"),
-					resource.TestCheckResourceAttr("scaleway_iam_policy.main", "rule.0.organization_id", organizationID),
+					resource.TestCheckResourceAttr("scaleway_iam_policy.main", "rule.0.organization_id", project.OrganizationID),
 					resource.TestCheckResourceAttr("scaleway_iam_policy.main", "rule.0.permission_set_names.#", "1"),
 					resource.TestCheckResourceAttr("scaleway_iam_policy.main", "rule.0.permission_set_names.0", "ContainerRegistryReadOnly"),
 				),
@@ -339,23 +370,32 @@ func TestAccScalewayIamPolicy_ChangePermissions(t *testing.T) {
 func TestAccScalewayIamPolicy_ProjectID(t *testing.T) {
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
-	organizationID, _ := tt.Meta.scwClient.GetDefaultOrganizationID()
+	ctx := context.Background()
+	project, iamAPIKey, terminateFakeSideProject, err := createFakeIAMManager(tt)
+	require.NoError(t, err)
+
 	resource.ParallelTest(t, resource.TestCase{
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      testAccCheckScalewayIamPolicyDestroy(tt),
+		ProviderFactories: fakeSideProjectProviders(ctx, tt, project, iamAPIKey),
+		CheckDestroy: resource.ComposeAggregateTestCheckFunc(
+			func(s *terraform.State) error {
+				return terminateFakeSideProject()
+			},
+			testAccCheckScalewayIamPolicyDestroy(tt),
+		),
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
-						resource "scaleway_iam_policy" "main" {
-							name = "tf_tests_policy_projectid"
-							description = "a description"
-							no_principal = true
-							rule {
-								project_ids = ["%s"]
-								permission_set_names = ["AllProductsFullAccess"]
-							}
-						}
-					`, organizationID),
+					resource "scaleway_iam_policy" "main" {
+					  name         = "tf_tests_policy_projectid"
+					  description  = "a description"
+					  no_principal = true
+					  rule {
+						project_ids          = ["%s"]
+						permission_set_names = ["AllProductsFullAccess"]
+					  }
+					  provider = side
+					}
+					`, project.OrganizationID),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayIamPolicyExists(tt, "scaleway_iam_policy.main"),
 					resource.TestCheckResourceAttr("scaleway_iam_policy.main", "name", "tf_tests_policy_projectid"),
@@ -368,16 +408,17 @@ func TestAccScalewayIamPolicy_ProjectID(t *testing.T) {
 			},
 			{
 				Config: fmt.Sprintf(`
-						resource "scaleway_iam_policy" "main" {
-							name = "tf_tests_policy_projectid"
-							description = "a description"
-							no_principal = true
-							rule {
-								project_ids = ["%s"]
-								permission_set_names = ["AllProductsFullAccess"]
-							}
-						}
-					`, organizationID),
+					resource "scaleway_iam_policy" "main" {
+					  name         = "tf_tests_policy_projectid"
+					  description  = "a description"
+					  no_principal = true
+					  rule {
+						project_ids          = ["%s"]
+						permission_set_names = ["AllProductsFullAccess"]
+					  }
+					  provider = side
+					}
+					`, project.OrganizationID),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayIamPolicyExists(tt, "scaleway_iam_policy.main"),
 					resource.TestCheckResourceAttr("scaleway_iam_policy.main", "name", "tf_tests_policy_projectid"),
@@ -394,45 +435,55 @@ func TestAccScalewayIamPolicy_ProjectID(t *testing.T) {
 func TestAccScalewayIamPolicy_ChangeRulePrincipal(t *testing.T) {
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
-	organizationID, _ := tt.Meta.scwClient.GetDefaultOrganizationID()
+	ctx := context.Background()
+	project, iamAPIKey, terminateFakeSideProject, err := createFakeIAMManager(tt)
+	require.NoError(t, err)
+
 	resource.ParallelTest(t, resource.TestCase{
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      testAccCheckScalewayIamPolicyDestroy(tt),
+		ProviderFactories: fakeSideProjectProviders(ctx, tt, project, iamAPIKey),
+		CheckDestroy: resource.ComposeAggregateTestCheckFunc(
+			func(s *terraform.State) error {
+				return terminateFakeSideProject()
+			},
+			testAccCheckScalewayIamPolicyDestroy(tt),
+		),
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
-						resource "scaleway_iam_policy" "main" {
-							name = "tf_tests_policy_changeruleprincipal"
-							description = "a description"
-							no_principal = true
-							rule {
-								organization_id = "%s"
-								permission_set_names = ["AllProductsFullAccess"]
-							}
-						}
-					`, organizationID),
+					resource "scaleway_iam_policy" "main" {
+					  name         = "tf_tests_policy_changeruleprincipal"
+					  description  = "a description"
+					  no_principal = true
+					  rule {
+						organization_id      = "%s"
+						permission_set_names = ["AllProductsFullAccess"]
+					  }
+					  provider = side
+					}
+					`, project.OrganizationID),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayIamPolicyExists(tt, "scaleway_iam_policy.main"),
 					resource.TestCheckResourceAttr("scaleway_iam_policy.main", "name", "tf_tests_policy_changeruleprincipal"),
 					resource.TestCheckResourceAttr("scaleway_iam_policy.main", "description", "a description"),
 					resource.TestCheckResourceAttr("scaleway_iam_policy.main", "no_principal", "true"),
-					resource.TestCheckResourceAttr("scaleway_iam_policy.main", "rule.0.organization_id", organizationID),
+					resource.TestCheckResourceAttr("scaleway_iam_policy.main", "rule.0.organization_id", project.OrganizationID),
 					resource.TestCheckResourceAttr("scaleway_iam_policy.main", "rule.0.permission_set_names.#", "1"),
 					resource.TestCheckResourceAttr("scaleway_iam_policy.main", "rule.0.permission_set_names.0", "AllProductsFullAccess"),
 				),
 			},
 			{
 				Config: fmt.Sprintf(`
-						resource "scaleway_iam_policy" "main" {
-							name = "tf_tests_policy_changeruleprincipal"
-							description = "a description"
-							no_principal = true
-							rule {
-								project_ids = ["%s"]
-								permission_set_names = ["AllProductsFullAccess"]
-							}
-						}
-					`, organizationID),
+					resource "scaleway_iam_policy" "main" {
+					  name         = "tf_tests_policy_changeruleprincipal"
+					  description  = "a description"
+					  no_principal = true
+					  rule {
+						project_ids          = ["%s"]
+						permission_set_names = ["AllProductsFullAccess"]
+					  }
+					  provider = side
+					}
+					`, project.OrganizationID),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayIamPolicyExists(tt, "scaleway_iam_policy.main"),
 					resource.TestCheckResourceAttr("scaleway_iam_policy.main", "name", "tf_tests_policy_changeruleprincipal"),
