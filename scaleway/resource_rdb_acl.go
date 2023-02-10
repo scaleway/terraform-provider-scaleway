@@ -69,13 +69,13 @@ func resourceScalewayRdbACL() *schema.Resource {
 }
 
 func resourceScalewayRdbACLCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	instanceID := d.Get("instance_id").(string)
-	rdbAPI, region, ID, err := rdbAPIWithRegionAndID(meta, instanceID)
+	api, region, err := rdbAPIWithRegion(d, meta)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	_, err = waitForRDBInstance(ctx, rdbAPI, region, expandID(instanceID), d.Timeout(schema.TimeoutCreate))
+	instanceID := d.Get("instance_id").(string)
+	_, err = waitForRDBInstance(ctx, api, region, expandID(instanceID), d.Timeout(schema.TimeoutCreate))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -86,11 +86,11 @@ func resourceScalewayRdbACLCreate(ctx context.Context, d *schema.ResourceData, m
 	}
 	createReq := &rdb.SetInstanceACLRulesRequest{
 		Region:     region,
-		InstanceID: ID,
+		InstanceID: expandID(instanceID),
 		Rules:      aclRules,
 	}
 
-	_, err = rdbAPI.SetInstanceACLRules(createReq, scw.WithContext(ctx))
+	_, err = api.SetInstanceACLRules(createReq, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -101,17 +101,18 @@ func resourceScalewayRdbACLCreate(ctx context.Context, d *schema.ResourceData, m
 }
 
 func resourceScalewayRdbACLRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	rdbAPI, region, instanceID, err := rdbAPIWithRegionAndID(meta, d.Get("instance_id").(string))
+	api, region, err := rdbAPIWithRegion(d, meta)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	_, err = waitForRDBInstance(ctx, rdbAPI, region, instanceID, d.Timeout(schema.TimeoutRead))
+	instanceID := expandID(d.Get("instance_id").(string))
+	_, err = waitForRDBInstance(ctx, api, region, instanceID, d.Timeout(schema.TimeoutRead))
 	if err != nil && !is404Error(err) {
 		return diag.FromErr(err)
 	}
 
-	res, err := rdbAPI.ListInstanceACLRules(&rdb.ListInstanceACLRulesRequest{
+	res, err := api.ListInstanceACLRules(&rdb.ListInstanceACLRulesRequest{
 		Region:     region,
 		InstanceID: instanceID,
 	}, scw.WithContext(ctx))
@@ -145,6 +146,7 @@ func resourceScalewayRdbACLRead(ctx context.Context, d *schema.ResourceData, met
 	} else {
 		_ = d.Set("acl_rules", rdbACLRulesFlatten(res.Rules))
 	}
+	_ = d.Set("region", region)
 
 	return diags
 }
