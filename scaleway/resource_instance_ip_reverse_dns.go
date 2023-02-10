@@ -39,6 +39,7 @@ func resourceScalewayInstanceIPReverseDNS() *schema.Resource {
 			},
 			"zone": zoneSchema(),
 		},
+		CustomizeDiff: customizeDiffLocalityCheck("ip_id"),
 	}
 }
 

@@ -108,6 +108,7 @@ func resourceScalewayMNQCredential() *schema.Resource {
 				},
 			},
 		},
+		CustomizeDiff: customizeDiffLocalityCheck("namespace_id"),
 	}
 }
 

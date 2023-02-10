@@ -270,6 +270,11 @@ func resourceScalewayInstanceServer() *schema.Resource {
 			"organization_id": organizationIDSchema(),
 			"project_id":      projectIDSchema(),
 		},
+		CustomizeDiff: customizeDiffLocalityCheck(
+			"placement_group_id",
+			"additional_volume_ids.#",
+			"ip_id",
+		),
 	}
 }
 
