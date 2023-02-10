@@ -339,6 +339,7 @@ func TestAccScalewayBaremetalServer_AddTwoOptionsThenDeleteOne(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayBaremetalServerExists(tt, "scaleway_baremetal_server.base"),
 				),
+				ExpectNonEmptyPlan: true,
 			},
 			{
 				Config: fmt.Sprintf(`
