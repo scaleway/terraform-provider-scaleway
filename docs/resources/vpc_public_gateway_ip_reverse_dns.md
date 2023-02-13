@@ -1,0 +1,52 @@
+---
+page_title: "Scaleway: scaleway_vpc_public_gateway_ip_reverse_dns"
+description: |-
+Manages Scaleway VPC Public Gateways IPs reverse DNS.
+---
+
+# scaleway_vpc_public_gateway_ip_reverse_dns
+
+Manages Scaleway VPC Public Gateways IPs reverse DNS.
+For more information, see [the documentation](https://developers.scaleway.com/en/products/vpc-gw/api/v1/#ips-268151).
+
+## Example
+
+```hcl
+resource "scaleway_vpc_public_gateway_ip" "main" {}
+
+resource "scaleway_domain_record" "tf_A" {
+    dns_zone = "example.com"
+    name     = "tf"
+    type     = "A"
+    data     = "${scaleway_vpc_public_gateway_ip.main.address}"
+    ttl      = 3600
+    priority = 1
+}
+
+resource "scaleway_vpc_public_gateway_ip_reverse_dns" "main" {
+    gateway_ip_id   = scaleway_vpc_public_gateway_ip.main.id
+    reverse         = "tf.example.com"
+}
+```
+
+## Arguments Reference
+
+The following arguments are supported:
+
+- `gateway_ip_id` - (Required) The public gateway IP ID
+- `reverse` - (Optional) The reverse domain name for this IP address
+- `zone` - (Defaults to [provider](../index.md#zone) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which the IP should be reserved.
+
+## Attributes Reference
+
+In addition to all above arguments, the following attributes are exported:
+
+- `id` - The ID of the public gateway ip.
+
+## Import
+
+Public gateway IPs reverse DNS can be imported using the `{zone}/{id}`, e.g.
+
+```bash
+$ terraform import scaleway_vpc_public_gateway_ip_reverse_dns.reverse.main fr-par-1/11111111-1111-1111-1111-111111111111
+```

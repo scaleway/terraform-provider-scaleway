@@ -10,8 +10,9 @@ import (
 )
 
 const (
-	defaultVPCGatewayTimeout = 10 * time.Minute
-	defaultVPCGatewayRetry   = 5 * time.Second
+	defaultVPCGatewayTimeout                   = 10 * time.Minute
+	defaultVPCGatewayRetry                     = 5 * time.Second
+	defaultVPCPublicGatewayIPReverseDNSTimeout = 5 * time.Minute
 )
 
 // vpcgwAPIWithZone returns a new VPC API and the zone for a Create request
@@ -89,4 +90,17 @@ func waitForDHCPEntries(ctx context.Context, api *vpcgw.API, zone scw.Zone, gate
 
 	dhcpEntries, err := api.WaitForDHCPEntries(req, scw.WithContext(ctx))
 	return dhcpEntries, err
+}
+
+func isGatewayIPReverseResolved(ctx context.Context, api *vpcgw.API, reverse string, timeout time.Duration, id string, zone scw.Zone) bool {
+	getIPReq := &vpcgw.GetIPRequest{
+		Zone: zone,
+		IPID: id,
+	}
+	IP, err := api.GetIP(getIPReq, scw.WithContext(ctx))
+	if err != nil {
+		return false
+	}
+
+	return hostResolver(ctx, timeout, reverse, IP.Address.String())
 }
