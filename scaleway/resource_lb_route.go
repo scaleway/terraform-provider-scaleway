@@ -51,6 +51,16 @@ func resourceScalewayLbRoute() *schema.Resource {
 				Description:   "Specifies the host of the server to which the request is being sent",
 				ConflictsWith: []string{"match_sni"},
 			},
+			"created_at": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The date at which the route was created (RFC 3339 format)",
+			},
+			"updated_at": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The date at which the route was last updated (RFC 3339 format)",
+			},
 		},
 	}
 }
@@ -117,6 +127,8 @@ func resourceScalewayLbRouteRead(ctx context.Context, d *schema.ResourceData, me
 	_ = d.Set("backend_id", newZonedIDString(zone, route.BackendID))
 	_ = d.Set("match_sni", flattenStringPtr(route.Match.Sni))
 	_ = d.Set("match_host_header", flattenStringPtr(route.Match.HostHeader))
+	_ = d.Set("created_at", flattenTime(route.CreatedAt))
+	_ = d.Set("updated_at", flattenTime(route.UpdatedAt))
 
 	return nil
 }

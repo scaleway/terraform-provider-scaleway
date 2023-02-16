@@ -45,6 +45,8 @@ func TestAccScalewayLbRoute_WithSNI(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayLbRouteExists(tt, "scaleway_lb_route.rt01"),
 					resource.TestCheckResourceAttr("scaleway_lb_route.rt01", "match_sni", "sni.scaleway.com"),
+					resource.TestCheckResourceAttrSet("scaleway_lb_route.rt01", "created_at"),
+					resource.TestCheckResourceAttrSet("scaleway_lb_route.rt01", "updated_at"),
 				),
 			},
 		},
@@ -87,6 +89,8 @@ func TestAccScalewayLbRoute_WithHostHeader(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayLbRouteExists(tt, "scaleway_lb_route.rt01"),
 					resource.TestCheckResourceAttr("scaleway_lb_route.rt01", "match_host_header", "host.scaleway.com"),
+					resource.TestCheckResourceAttrSet("scaleway_lb_route.rt01", "created_at"),
+					resource.TestCheckResourceAttrSet("scaleway_lb_route.rt01", "updated_at"),
 				),
 			},
 		},
