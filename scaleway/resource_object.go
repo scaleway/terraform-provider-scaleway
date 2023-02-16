@@ -70,6 +70,9 @@ func resourceScalewayObject() *schema.Resource {
 				Optional:    true,
 				Type:        schema.TypeMap,
 				Description: "Map of object's tags",
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
 			},
 			"visibility": {
 				Optional:    true,

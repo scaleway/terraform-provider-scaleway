@@ -418,7 +418,7 @@ func TestAccScalewayObject_Visibility(t *testing.T) {
 	})
 }
 
-func TestAccScalewayObject_Import(t *testing.T) {
+func TestAccScalewayObject_State(t *testing.T) {
 	if !*UpdateCassettes {
 		t.Skip("Skipping ObjectStorage test as this kind of resource can't be deleted before 24h")
 	}
