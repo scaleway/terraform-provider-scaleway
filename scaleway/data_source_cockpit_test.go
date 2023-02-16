@@ -18,7 +18,7 @@ func TestAccScalewayDataSourceCockpit_Basic(t *testing.T) {
 			{
 				Config: `
 					resource "scaleway_account_project" "project" {
-						name = "tf_tests_cockpit_project_basic"
+						name = "tf_tests_datasource_cockpit_project_basic"
 					}
 
 					resource scaleway_cockpit main {
