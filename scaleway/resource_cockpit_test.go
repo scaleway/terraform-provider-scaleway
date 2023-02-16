@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"testing"
 
-	sdkacctest "github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	cockpit "github.com/scaleway/scaleway-sdk-go/api/cockpit/v1beta1"
@@ -14,23 +13,21 @@ func TestAccScalewayCockpit_Basic(t *testing.T) {
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
 
-	projectName := sdkacctest.RandomWithPrefix("test-acc-scaleway-cockpit")
-
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheckScalewayCockpitDestroy(tt),
 		Steps: []resource.TestStep{
 			{
-				Config: fmt.Sprintf(`
+				Config: `
 					resource "scaleway_account_project" "project" {
-						name = "%[1]s"
+						name = "tf_tests_cockpit_project_basic"
 				  	}
 
 					resource scaleway_cockpit main {
 						project_id = scaleway_account_project.project.id
 					}
-				`, projectName),
+				`,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayCockpitExists(tt, "scaleway_cockpit.main"),
 					resource.TestCheckResourceAttrSet("scaleway_cockpit.main", "endpoints.0.metrics_url"),
