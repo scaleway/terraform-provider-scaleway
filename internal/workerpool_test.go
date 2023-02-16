@@ -34,17 +34,17 @@ func TestWorkerPoolWaitTime(t *testing.T) {
 	pool := NewWorkerPool(2)
 
 	pool.AddTask(func() error {
-		time.Sleep(50 * time.Millisecond)
+		time.Sleep(50 * time.Millisecond) // lintignore: R018
 		return nil
 	})
 
 	pool.AddTask(func() error {
-		time.Sleep(50 * time.Millisecond)
+		time.Sleep(50 * time.Millisecond) // lintignore: R018
 		return errors.New("error")
 	})
 
 	pool.AddTask(func() error {
-		time.Sleep(50 * time.Millisecond)
+		time.Sleep(50 * time.Millisecond) // lintignore: R018
 		return nil
 	})
 
@@ -62,7 +62,7 @@ func TestWorkerPoolWaitTimeMultiple(t *testing.T) {
 		copyOfI := i
 
 		pool.AddTask(func() error {
-			time.Sleep(100 * time.Millisecond)
+			time.Sleep(100 * time.Millisecond) // lintignore: R018
 
 			if copyOfI%2 == 0 {
 				return fmt.Errorf("error %d", copyOfI)

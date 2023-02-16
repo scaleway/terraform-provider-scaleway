@@ -14,8 +14,9 @@ require (
 	github.com/hashicorp/terraform-plugin-log v0.7.0
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.24.1
 	github.com/robfig/cron/v3 v3.0.1
-	github.com/scaleway/scaleway-sdk-go v1.0.0-beta.12.0.20230118085627-1e7fa7e533c3
+	github.com/scaleway/scaleway-sdk-go v1.0.0-beta.13.0.20230214124406-206d0c86a6ac
 	github.com/stretchr/testify v1.8.1
+	golang.org/x/exp v0.0.0-20230118134722-a68e582fa157
 )
 
 require (
