@@ -60,10 +60,10 @@ func resourceScalewayCockpitCreate(ctx context.Context, d *schema.ResourceData, 
 		return diag.FromErr(err)
 	}
 
-	projectId := d.Get("project_id").(string)
+	projectID := d.Get("project_id").(string)
 
 	res, err := api.ActivateCockpit(&cockpit.ActivateCockpitRequest{
-		ProjectID: projectId,
+		ProjectID: projectID,
 	})
 	if err != nil {
 		return diag.FromErr(err)

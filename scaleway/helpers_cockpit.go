@@ -20,29 +20,6 @@ func cockpitAPI(m interface{}) (*cockpit.API, error) {
 	return api, nil
 }
 
-func getCockpitActivated(api *cockpit.API, projectId string) (*cockpit.Cockpit, error) {
-	res, err := api.GetCockpit(&cockpit.GetCockpitRequest{
-		ProjectID: projectId,
-	})
-	if err != nil {
-		_, err := api.ActivateCockpit(&cockpit.ActivateCockpitRequest{
-			ProjectID: projectId,
-		})
-		if err != nil {
-			return nil, err
-		}
-
-		res, err = api.GetCockpit(&cockpit.GetCockpitRequest{
-			ProjectID: projectId,
-		})
-		if err != nil {
-			return nil, err
-		}
-	}
-
-	return res, nil
-}
-
 func flattenCockpitEndpoints(endpoints *cockpit.CockpitEndpoints) []map[string]interface{} {
 	return []map[string]interface{}{
 		{
