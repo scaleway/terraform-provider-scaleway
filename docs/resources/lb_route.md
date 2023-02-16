@@ -38,9 +38,7 @@ resource scaleway_lb_frontend frt01 {
 resource scaleway_lb_route rt01 {
   frontend_id = scaleway_lb_frontend.frt01.id
   backend_id = scaleway_lb_backend.bkd01.id
-  match {
-      sni = "scaleway.com"
-  } 
+  match_sni = "scaleway.com"
 }
 ```
 
@@ -48,13 +46,12 @@ resource scaleway_lb_route rt01 {
 
 The following arguments are supported:
 
-- `backend_id` (Required) - The ID of the backend to which the route is associated.
-- `frontend_id`: (Required) The ID of the frontend to which the route is associated.
-- `match` - (Required) The value to match a redirection.
-    - `sni` - The Server Name Indication TLS extension field from an incoming connection made via an SSL/TLS transport layer.
-      Only one of `sni` and `host_header` should be specified.
-    - `host_header` - The Host request header specifies the host of the server to which the request is being sent.
-      Only one of `sni` and `host_header` should be specified.
+- `backend_id` - (Required) The ID of the backend to which the route is associated.
+- `frontend_id` - (Required) The ID of the frontend to which the route is associated.
+- `match_sni` - The Server Name Indication TLS extension field from an incoming connection made via an SSL/TLS transport layer.
+  Only one of `match_sni` and `match_host_header` should be specified.
+- `match_host_header` - The Host request header specifies the host of the server to which the request is being sent.
+  Only one of `match_sni` and `match_host_header` should be specified.  
 
 ## Import
 

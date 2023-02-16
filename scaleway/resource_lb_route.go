@@ -39,28 +39,17 @@ func resourceScalewayLbRoute() *schema.Resource {
 				ValidateFunc: validationUUIDorUUIDWithLocality(),
 				Description:  "The backend ID destination of redirection",
 			},
-			"match": {
-				Type:        schema.TypeList,
-				Optional:    true,
-				Description: "The value to match a redirection",
-				MaxItems:    1,
-				MinItems:    1,
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"sni": {
-							Type:          schema.TypeString,
-							Optional:      true,
-							Description:   "Server Name Indication TLS extension field from an incoming connection made via an SSL/TLS transport layer",
-							ConflictsWith: []string{"match.0.host_header"},
-						},
-						"host_header": {
-							Type:          schema.TypeString,
-							Optional:      true,
-							Description:   "Specifies the host of the server to which the request is being sent",
-							ConflictsWith: []string{"match.0.sni"},
-						},
-					},
-				},
+			"match_sni": {
+				Type:          schema.TypeString,
+				Optional:      true,
+				Description:   "Server Name Indication TLS extension field from an incoming connection made via an SSL/TLS transport layer",
+				ConflictsWith: []string{"match_host_header"},
+			},
+			"match_host_header": {
+				Type:          schema.TypeString,
+				Optional:      true,
+				Description:   "Specifies the host of the server to which the request is being sent",
+				ConflictsWith: []string{"match_sni"},
 			},
 		},
 	}
@@ -91,8 +80,8 @@ func resourceScalewayLbRouteCreate(ctx context.Context, d *schema.ResourceData, 
 		FrontendID: frontID,
 		BackendID:  backID,
 		Match: &lbSDK.RouteMatch{
-			Sni:        expandLbRouteMatch(d.Get("match")).Sni,
-			HostHeader: expandLbRouteMatch(d.Get("match")).HostHeader,
+			Sni:        expandStringPtr(d.Get("match_sni")),
+			HostHeader: expandStringPtr(d.Get("match_host_header")),
 		},
 	}
 
@@ -126,9 +115,8 @@ func resourceScalewayLbRouteRead(ctx context.Context, d *schema.ResourceData, me
 
 	_ = d.Set("frontend_id", newZonedIDString(zone, route.FrontendID))
 	_ = d.Set("backend_id", newZonedIDString(zone, route.BackendID))
-	if route.Match != nil {
-		_ = d.Set("match", flattenLbRouteMatch(route.Match))
-	}
+	_ = d.Set("match_sni", flattenStringPtr(route.Match.Sni))
+	_ = d.Set("match_host_header", flattenStringPtr(route.Match.HostHeader))
 
 	return nil
 }
@@ -153,8 +141,8 @@ func resourceScalewayLbRouteUpdate(ctx context.Context, d *schema.ResourceData, 
 		RouteID:   ID,
 		BackendID: backID,
 		Match: &lbSDK.RouteMatch{
-			Sni:        expandLbRouteMatch(d.Get("match")).Sni,
-			HostHeader: expandLbRouteMatch(d.Get("match")).HostHeader,
+			Sni:        expandStringPtr(d.Get("match_sni")),
+			HostHeader: expandStringPtr(d.Get("match_host_header")),
 		},
 	}
 

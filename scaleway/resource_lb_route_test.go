@@ -39,14 +39,12 @@ func TestAccScalewayLbRoute_WithSNI(t *testing.T) {
 					resource scaleway_lb_route rt01 {
 						frontend_id = scaleway_lb_frontend.frt01.id
 						backend_id = scaleway_lb_backend.bkd01.id
-						match {
-							sni = "sni.scaleway.com"
-						}  
+						match_sni = "sni.scaleway.com"
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayLbRouteExists(tt, "scaleway_lb_route.rt01"),
-					resource.TestCheckResourceAttr("scaleway_lb_route.rt01", "match.0.sni", "sni.scaleway.com"),
+					resource.TestCheckResourceAttr("scaleway_lb_route.rt01", "match_sni", "sni.scaleway.com"),
 				),
 			},
 		},
@@ -83,14 +81,12 @@ func TestAccScalewayLbRoute_WithHostHeader(t *testing.T) {
 					resource scaleway_lb_route rt01 {
 						frontend_id = scaleway_lb_frontend.frt01.id
 						backend_id = scaleway_lb_backend.bkd01.id
-						match {
-							host_header = "host.scaleway.com"
-						}  
+						match_host_header = "host.scaleway.com" 
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayLbRouteExists(tt, "scaleway_lb_route.rt01"),
-					resource.TestCheckResourceAttr("scaleway_lb_route.rt01", "match.0.host_header", "host.scaleway.com"),
+					resource.TestCheckResourceAttr("scaleway_lb_route.rt01", "match_host_header", "host.scaleway.com"),
 				),
 			},
 		},
