@@ -25,7 +25,7 @@ data "scaleway_cockpit" "main" {
 
 ## Arguments Reference
 
-- `project_id` - (Defaults to [provider](../index.md#project_id) `project_id`) The ID of the project the domain is associated with.
+- `project_id` - (Defaults to [provider](../index.md#project_id) `project_id`) The ID of the project the cockpit is associated with.
 
 
 ## Attributes Reference
