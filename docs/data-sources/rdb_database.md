@@ -30,5 +30,5 @@ data "scaleway_rdb_database" "my_db" {
 In addition to all arguments above, the following attributes are exported:
 
 - `owner` - The name of the owner of the database.
-- `managed` - Whether or not the database is managed or not.
+- `managed` - Whether the database is managed or not.
 - `size` - Size of the database (in bytes).

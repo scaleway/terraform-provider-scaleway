@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"sort"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/dustin/go-humanize"
@@ -583,4 +584,8 @@ func flattenInstanceImageExtraVolumes(volumes map[string]*instance.Volume, zone 
 		volumesFlat = append(volumesFlat, volumeFlat)
 	}
 	return volumesFlat
+}
+
+func formatImageLabel(imageUUID string) string {
+	return strings.ReplaceAll(imageUUID, "-", "_")
 }

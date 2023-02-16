@@ -28,8 +28,7 @@ data "scaleway_iam_user" "find_by_email" {
 - `email` - (Optional) The email address of the IAM user. Only one of the `email` and `user_id` should be specified.
 - `user_id` - (Optional) The ID of the IAM user. Only one of the `email` and `user_id` should be specified.
 - `organization_id` - (Optional. Defaults to [provider](../index.md#organization_d) `organization_id`) The ID of the
-  organization the user is associated with. For now, it is necessary to
-  explicitly provide the `organization_id` in the datasource.
+  organization the user is associated with.
 
 ## Attributes Reference
 

@@ -7,7 +7,7 @@ Gets information about a Redis cluster.
 
 # scaleway_redis_cluster
 
-Gets information about a Redis cluster.
+Gets information about a Redis cluster. For further information check our [api documentation](https://developers.scaleway.com/en/products/redis/api/v1alpha1/#clusters-a85816)
 
 ## Example Usage
 

@@ -13,15 +13,25 @@ func dataSourceScalewayRDBPrivilege() *schema.Resource {
 
 	fixDatasourceSchemaFlags(dsSchema, true, "instance_id", "user_name", "database_name")
 
+	// Set 'Optional' schema elements
+	addOptionalFieldsToSchema(dsSchema, "region")
 	return &schema.Resource{
 		ReadContext: dataSourceScalewayRDBPrivilegeRead,
 		Schema:      dsSchema,
 	}
 }
 
+// dataSourceScalewayRDBPrivilegeRead
 func dataSourceScalewayRDBPrivilegeRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	instanceID, _ := d.Get("instance_id").(string)
+	_, region, err := rdbAPIWithRegion(d, meta)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
-	d.SetId(instanceID)
+	instanceID := expandID(d.Get("instance_id").(string))
+	userName, _ := d.Get("user_name").(string)
+	databaseName, _ := d.Get("database_name").(string)
+
+	d.SetId(resourceScalewayRdbUserPrivilegeID(region, instanceID, databaseName, userName))
 	return resourceScalewayRdbPrivilegeRead(ctx, d, meta)
 }

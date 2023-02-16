@@ -276,6 +276,7 @@ func resourceScalewayRdbInstance() *schema.Resource {
 			"organization_id": organizationIDSchema(),
 			"project_id":      projectIDSchema(),
 		},
+		CustomizeDiff: customizeDiffLocalityCheck("private_network.#.pn_id"),
 	}
 }
 
