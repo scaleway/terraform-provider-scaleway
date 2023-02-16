@@ -33,6 +33,12 @@ func TestAccScalewayCockpit_Basic(t *testing.T) {
 				`, projectName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayCockpitExists(tt, "scaleway_cockpit.main"),
+					resource.TestCheckResourceAttrSet("scaleway_cockpit.main", "endpoints.0.metrics_url"),
+					resource.TestCheckResourceAttrSet("scaleway_cockpit.main", "endpoints.0.metrics_url"),
+					resource.TestCheckResourceAttrSet("scaleway_cockpit.main", "endpoints.0.logs_url"),
+					resource.TestCheckResourceAttrSet("scaleway_cockpit.main", "endpoints.0.alertmanager_url"),
+					resource.TestCheckResourceAttrSet("scaleway_cockpit.main", "endpoints.0.grafana_url"),
+					resource.TestCheckResourceAttrPair("scaleway_cockpit.main", "project_id", "scaleway_account_project.project", "id"),
 				),
 			},
 		},
