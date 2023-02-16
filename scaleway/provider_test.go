@@ -116,11 +116,11 @@ func cassetteBodyMatcher(actual *http.Request, expected cassette.Request) bool {
 
 	actualBody, err := actual.GetBody()
 	if err != nil {
-		panic(fmt.Errorf("cassette body matcher: failed to copy actual body: %w", err))
+		panic(fmt.Errorf("cassette body matcher: failed to copy actual body: %w", err)) // lintignore: R009
 	}
 	actualRawBody, err := io.ReadAll(actualBody)
 	if err != nil {
-		panic(fmt.Errorf("cassette body matcher: failed to read actual body: %w", err))
+		panic(fmt.Errorf("cassette body matcher: failed to read actual body: %w", err)) // lintignore: R009
 	}
 
 	// Try to match raw bodies if they are not JSON (ex: cloud-init config)
@@ -139,12 +139,12 @@ func cassetteBodyMatcher(actual *http.Request, expected cassette.Request) bool {
 
 	err = json.Unmarshal(actualRawBody, &actualJSON)
 	if err != nil {
-		panic(fmt.Errorf("cassette body matcher: failed to parse json body: %w", err))
+		panic(fmt.Errorf("cassette body matcher: failed to parse json body: %w", err)) // lintignore: R009
 	}
 
 	err = json.Unmarshal([]byte(expected.Body), &expectedJSON)
 	if err != nil {
-		panic(fmt.Errorf("cassette body matcher: failed to parse cassette json body: %w", err))
+		panic(fmt.Errorf("cassette body matcher: failed to parse cassette json body: %w", err)) // lintignore: R009
 	}
 
 	// Remove keys that should be ignored during compare
@@ -364,6 +364,103 @@ func createFakeSideProject(tt *TestTools) (*accountV2.Project, *iam.APIKey, Fake
 	return project, iamAPIKey, terminate, nil
 }
 
+// createFakeIAMManager creates a temporary project with a temporary IAM application and policy manager.
+//
+// The returned function is a cleanup function that should be called when to delete the project.
+func createFakeIAMManager(tt *TestTools) (*accountV2.Project, *iam.APIKey, FakeSideProjectTerminateFunc, error) {
+	terminateFunctions := []FakeSideProjectTerminateFunc{}
+	terminate := func() error {
+		for i := len(terminateFunctions) - 1; i >= 0; i-- {
+			err := terminateFunctions[i]()
+			if err != nil {
+				return err
+			}
+		}
+
+		return nil
+	}
+
+	projectName := sdkacctest.RandomWithPrefix("test-acc-scaleway-project")
+	iamApplicationName := sdkacctest.RandomWithPrefix("test-acc-scaleway-iam-app")
+	iamPolicyName := sdkacctest.RandomWithPrefix("test-acc-scaleway-iam-policy")
+
+	projectAPI := accountV2.NewAPI(tt.Meta.scwClient)
+	project, err := projectAPI.CreateProject(&accountV2.CreateProjectRequest{
+		Name: projectName,
+	})
+	if err != nil {
+		if err := terminate(); err != nil {
+			return nil, nil, nil, err
+		}
+
+		return nil, nil, nil, err
+	}
+	terminateFunctions = append(terminateFunctions, func() error {
+		return projectAPI.DeleteProject(&accountV2.DeleteProjectRequest{
+			ProjectID: project.ID,
+		})
+	})
+
+	iamAPI := iam.NewAPI(tt.Meta.scwClient)
+	iamApplication, err := iamAPI.CreateApplication(&iam.CreateApplicationRequest{
+		Name: iamApplicationName,
+	})
+	if err != nil {
+		if err := terminate(); err != nil {
+			return nil, nil, nil, err
+		}
+
+		return nil, nil, nil, err
+	}
+	terminateFunctions = append(terminateFunctions, func() error {
+		return iamAPI.DeleteApplication(&iam.DeleteApplicationRequest{
+			ApplicationID: iamApplication.ID,
+		})
+	})
+
+	iamPolicy, err := iamAPI.CreatePolicy(&iam.CreatePolicyRequest{
+		Name:          iamPolicyName,
+		ApplicationID: expandStringPtr(iamApplication.ID),
+		Rules: []*iam.RuleSpecs{
+			{
+				OrganizationID:     &project.OrganizationID,
+				PermissionSetNames: &[]string{"IAMManager"},
+			},
+		},
+	})
+	if err != nil {
+		if err := terminate(); err != nil {
+			return nil, nil, nil, err
+		}
+
+		return nil, nil, nil, err
+	}
+	terminateFunctions = append(terminateFunctions, func() error {
+		return iamAPI.DeletePolicy(&iam.DeletePolicyRequest{
+			PolicyID: iamPolicy.ID,
+		})
+	})
+
+	iamAPIKey, err := iamAPI.CreateAPIKey(&iam.CreateAPIKeyRequest{
+		ApplicationID:    expandStringPtr(iamApplication.ID),
+		DefaultProjectID: &project.ID,
+	})
+	if err != nil {
+		if err := terminate(); err != nil {
+			return nil, nil, nil, err
+		}
+
+		return nil, nil, nil, err
+	}
+	terminateFunctions = append(terminateFunctions, func() error {
+		return iamAPI.DeleteAPIKey(&iam.DeleteAPIKeyRequest{
+			AccessKey: iamAPIKey.AccessKey,
+		})
+	})
+
+	return project, iamAPIKey, terminate, nil
+}
+
 // fakeSideProjectProviders creates a new provider alias "side" with a new metaConfig that will use the
 // given project and API key as default profile configuration.
 //
@@ -417,6 +514,7 @@ func NewTestTools(t *testing.T) *TestTools {
 	require.NoError(t, err)
 
 	if !*UpdateCassettes {
+		disableHostResolver = true
 		tmp := 0 * time.Second
 		DefaultWaitRetryInterval = &tmp
 	}
