@@ -24,7 +24,7 @@ func resourceScalewayCockpit() *schema.Resource {
 			"endpoints": {
 				Type:        schema.TypeList,
 				Computed:    true,
-				Description: "The list of cockpit endpoints",
+				Description: "Endpoints",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"metrics_url": {
