@@ -26,7 +26,7 @@ resource "scaleway_cockpit" "main" {
 
 ## Arguments Reference
 
-- `project_id` - (Defaults to [provider](../index.md#project_id) `project_id`) The ID of the project the domain is associated with.
+- `project_id` - (Defaults to [provider](../index.md#project_id) `project_id`) The ID of the project the cockpit is associated with.
 
 
 ## Attributes Reference
@@ -38,3 +38,12 @@ In addition to all arguments above, the following attributes are exported:
     - `logs_url` - The logs URL
     - `alertmanager_url` - The alertmanager URL
     - `grafana_url` - The grafana URL
+
+
+## Import
+
+Cockpits can be imported using the `{project_id}`, e.g.
+
+```bash
+$ terraform import scaleway_cockpit.main 11111111-1111-1111-1111-111111111111
+```
