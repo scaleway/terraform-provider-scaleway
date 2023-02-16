@@ -116,11 +116,11 @@ func cassetteBodyMatcher(actual *http.Request, expected cassette.Request) bool {
 
 	actualBody, err := actual.GetBody()
 	if err != nil {
-		panic(fmt.Errorf("cassette body matcher: failed to copy actual body: %w", err))
+		panic(fmt.Errorf("cassette body matcher: failed to copy actual body: %w", err)) // lintignore: R009
 	}
 	actualRawBody, err := io.ReadAll(actualBody)
 	if err != nil {
-		panic(fmt.Errorf("cassette body matcher: failed to read actual body: %w", err))
+		panic(fmt.Errorf("cassette body matcher: failed to read actual body: %w", err)) // lintignore: R009
 	}
 
 	// Try to match raw bodies if they are not JSON (ex: cloud-init config)
@@ -139,12 +139,12 @@ func cassetteBodyMatcher(actual *http.Request, expected cassette.Request) bool {
 
 	err = json.Unmarshal(actualRawBody, &actualJSON)
 	if err != nil {
-		panic(fmt.Errorf("cassette body matcher: failed to parse json body: %w", err))
+		panic(fmt.Errorf("cassette body matcher: failed to parse json body: %w", err)) // lintignore: R009
 	}
 
 	err = json.Unmarshal([]byte(expected.Body), &expectedJSON)
 	if err != nil {
-		panic(fmt.Errorf("cassette body matcher: failed to parse cassette json body: %w", err))
+		panic(fmt.Errorf("cassette body matcher: failed to parse cassette json body: %w", err)) // lintignore: R009
 	}
 
 	// Remove keys that should be ignored during compare
