@@ -296,9 +296,10 @@ func flattenLbHCHTTP(config *lbSDK.HealthCheckHTTPConfig) interface{} {
 	}
 	return []map[string]interface{}{
 		{
-			"uri":    config.URI,
-			"method": config.Method,
-			"code":   flattenInt32Ptr(config.Code),
+			"uri":         config.URI,
+			"method":      config.Method,
+			"code":        flattenInt32Ptr(config.Code),
+			"host_header": config.HostHeader,
 		},
 	}
 }
@@ -309,9 +310,10 @@ func expandLbHCHTTP(raw interface{}) *lbSDK.HealthCheckHTTPConfig {
 	}
 	rawMap := raw.([]interface{})[0].(map[string]interface{})
 	return &lbSDK.HealthCheckHTTPConfig{
-		URI:    rawMap["uri"].(string),
-		Method: rawMap["method"].(string),
-		Code:   expandInt32Ptr(rawMap["code"]),
+		URI:        rawMap["uri"].(string),
+		Method:     rawMap["method"].(string),
+		Code:       expandInt32Ptr(rawMap["code"]),
+		HostHeader: rawMap["host_header"].(string),
 	}
 }
 
@@ -321,9 +323,11 @@ func flattenLbHCHTTPS(config *lbSDK.HealthCheckHTTPSConfig) interface{} {
 	}
 	return []map[string]interface{}{
 		{
-			"uri":    config.URI,
-			"method": config.Method,
-			"code":   flattenInt32Ptr(config.Code),
+			"uri":         config.URI,
+			"method":      config.Method,
+			"code":        flattenInt32Ptr(config.Code),
+			"host_header": config.HostHeader,
+			"sni":         config.Sni,
 		},
 	}
 }
@@ -335,9 +339,11 @@ func expandLbHCHTTPS(raw interface{}) *lbSDK.HealthCheckHTTPSConfig {
 
 	rawMap := raw.([]interface{})[0].(map[string]interface{})
 	return &lbSDK.HealthCheckHTTPSConfig{
-		URI:    rawMap["uri"].(string),
-		Method: rawMap["method"].(string),
-		Code:   expandInt32Ptr(rawMap["code"]),
+		URI:        rawMap["uri"].(string),
+		Method:     rawMap["method"].(string),
+		Code:       expandInt32Ptr(rawMap["code"]),
+		HostHeader: rawMap["host_header"].(string),
+		Sni:        rawMap["sni"].(string),
 	}
 }
 
