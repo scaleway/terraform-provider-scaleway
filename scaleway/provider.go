@@ -89,6 +89,7 @@ func Provider(config *ProviderConfig) plugin.ProviderFunc {
 				"scaleway_apple_silicon_server":                resourceScalewayAppleSiliconServer(),
 				"scaleway_baremetal_server":                    resourceScalewayBaremetalServer(),
 				"scaleway_cockpit":                             resourceScalewayCockpit(),
+				"scaleway_cockpit_token":                       resourceScalewayCockpitToken(),
 				"scaleway_container_namespace":                 resourceScalewayContainerNamespace(),
 				"scaleway_container_cron":                      resourceScalewayContainerCron(),
 				"scaleway_container_domain":                    resourceScalewayContainerDomain(),
