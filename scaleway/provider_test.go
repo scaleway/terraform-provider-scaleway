@@ -11,6 +11,7 @@ import (
 	"net/url"
 	"os"
 	"path/filepath"
+	"reflect"
 	"regexp"
 	"strings"
 	"testing"
@@ -84,10 +85,8 @@ func compareJSONBodies(expected, actual map[string]interface{}) bool {
 			// We do not want to generate new cassettes for each new features
 			continue
 		}
-		if actualValue, isStringer := actual[key].(fmt.Stringer); isStringer {
-			if actualValue.String() != expectedValue.(fmt.Stringer).String() {
-				return false
-			}
+		if !reflect.DeepEqual(actual[key], expectedValue) {
+			return false
 		}
 	}
 
@@ -104,32 +103,32 @@ func compareJSONBodies(expected, actual map[string]interface{}) bool {
 }
 
 // cassetteMatcher is a custom matcher that will juste check equivalence of request bodies
-func cassetteBodyMatcher(actual *http.Request, expected cassette.Request) bool {
-	if actual.Body == nil || actual.ContentLength == 0 {
-		if expected.Body == "" {
+func cassetteBodyMatcher(actualRequest *http.Request, cassetteRequest cassette.Request) bool {
+	if actualRequest.Body == nil || actualRequest.ContentLength == 0 {
+		if cassetteRequest.Body == "" {
 			return true // Body match if both are empty
-		} else if _, isFile := actual.Body.(*os.File); isFile {
+		} else if _, isFile := actualRequest.Body.(*os.File); isFile {
 			return true // Body match if request is sending a file, maybe do more check here
 		}
 		return false
 	}
 
-	actualBody, err := actual.GetBody()
+	actualBody, err := actualRequest.GetBody()
 	if err != nil {
-		panic(fmt.Errorf("cassette body matcher: failed to copy actual body: %w", err)) // lintignore: R009
+		panic(fmt.Errorf("cassette body matcher: failed to copy actualRequest body: %w", err)) // lintignore: R009
 	}
 	actualRawBody, err := io.ReadAll(actualBody)
 	if err != nil {
-		panic(fmt.Errorf("cassette body matcher: failed to read actual body: %w", err)) // lintignore: R009
+		panic(fmt.Errorf("cassette body matcher: failed to read actualRequest body: %w", err)) // lintignore: R009
 	}
 
 	// Try to match raw bodies if they are not JSON (ex: cloud-init config)
-	if string(actualRawBody) == expected.Body {
+	if string(actualRawBody) == cassetteRequest.Body {
 		return true
 	}
 
 	actualJSON := make(map[string]interface{})
-	expectedJSON := make(map[string]interface{})
+	cassetteJSON := make(map[string]interface{})
 
 	err = xml.Unmarshal(actualRawBody, new(interface{}))
 	if err == nil {
@@ -142,7 +141,7 @@ func cassetteBodyMatcher(actual *http.Request, expected cassette.Request) bool {
 		panic(fmt.Errorf("cassette body matcher: failed to parse json body: %w", err)) // lintignore: R009
 	}
 
-	err = json.Unmarshal([]byte(expected.Body), &expectedJSON)
+	err = json.Unmarshal([]byte(cassetteRequest.Body), &cassetteJSON)
 	if err != nil {
 		panic(fmt.Errorf("cassette body matcher: failed to parse cassette json body: %w", err)) // lintignore: R009
 	}
@@ -150,10 +149,10 @@ func cassetteBodyMatcher(actual *http.Request, expected cassette.Request) bool {
 	// Remove keys that should be ignored during compare
 	for _, key := range BodyMatcherIgnore {
 		delete(actualJSON, key)
-		delete(expectedJSON, key)
+		delete(cassetteJSON, key)
 	}
 
-	return compareJSONBodies(expectedJSON, actualJSON)
+	return compareJSONBodies(cassetteJSON, actualJSON)
 }
 
 // cassetteMatcher is a custom matcher that check equivalence of a played request against a recorded one
