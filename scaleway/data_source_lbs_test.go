@@ -35,29 +35,6 @@ func TestAccScalewayDataSourceLbs_Basic(t *testing.T) {
 						description = "a description"
 						type = "LB-S"
 					}
-					`,
-			},
-			{
-				Config: `
-					resource scaleway_lb_ip ip1 {
-					}
-
-					resource scaleway_lb_ip ip2 {
-					}
-
-					resource scaleway_lb lb1 {
-						ip_id = scaleway_lb_ip.ip1.id
-						name  = "tf-lb-datasource0"
-						description = "a description"
-						type = "LB-S"
-					}
-
-					resource scaleway_lb lb2 {
-						ip_id = scaleway_lb_ip.ip2.id
-						name  = "tf-lb-datasource1"
-						description = "a description"
-						type = "LB-S"
-					}
 
 					data "scaleway_lbs" "lbs_by_name" {
 						name  = "tf-lb-datasource"
