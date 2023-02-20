@@ -194,6 +194,7 @@ func Provider(config *ProviderConfig) plugin.ProviderFunc {
 				"scaleway_lb":                                  dataSourceScalewayLb(),
 				"scaleway_lb_backend":                          dataSourceScalewayLbBackend(),
 				"scaleway_lb_certificate":                      dataSourceScalewayLbCertificate(),
+				"scaleway_lb_frontend":                         dataSourceScalewayLbFrontend(),
 				"scaleway_lb_ip":                               dataSourceScalewayLbIP(),
 				"scaleway_marketplace_image":                   dataSourceScalewayMarketplaceImage(),
 				"scaleway_object_bucket":                       dataSourceScalewayObjectBucket(),
