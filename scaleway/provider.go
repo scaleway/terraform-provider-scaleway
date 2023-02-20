@@ -192,6 +192,7 @@ func Provider(config *ProviderConfig) plugin.ProviderFunc {
 				"scaleway_k8s_pool":                            dataSourceScalewayK8SPool(),
 				"scaleway_k8s_version":                         dataSourceScalewayK8SVersion(),
 				"scaleway_lb":                                  dataSourceScalewayLb(),
+				"scaleway_lb_backend":                          dataSourceScalewayLbBackend(),
 				"scaleway_lb_certificate":                      dataSourceScalewayLbCertificate(),
 				"scaleway_lb_ip":                               dataSourceScalewayLbIP(),
 				"scaleway_marketplace_image":                   dataSourceScalewayMarketplaceImage(),
