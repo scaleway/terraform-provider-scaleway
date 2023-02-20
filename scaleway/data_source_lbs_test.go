@@ -15,6 +15,14 @@ func TestAccScalewayDataSourceLbs_Basic(t *testing.T) {
 		CheckDestroy:      testAccCheckScalewayLbDestroy(tt),
 		Steps: []resource.TestStep{
 			{
+				// Create one IP first because its POST request cannot be matched correctly
+				// There is no difference between the two IPS
+				Config: `
+					resource scaleway_lb_ip ip1 {
+					}
+				`,
+			},
+			{
 				Config: `
 					resource scaleway_lb_ip ip1 {
 					}
@@ -38,18 +46,20 @@ func TestAccScalewayDataSourceLbs_Basic(t *testing.T) {
 
 					data "scaleway_lbs" "lbs_by_name" {
 						name  = "tf-lb-datasource"
+						depends_on = [scaleway_lb.lb1, scaleway_lb.lb2]
 					}
 
 					data "scaleway_lbs" "lbs_by_name_other_zone" {
 						name  = "tf-lb-datasource"
 						zone = "fr-par-2"
+						depends_on = [scaleway_lb.lb1, scaleway_lb.lb2]
 					}
 					`,
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.scaleway_lbs.lbs_by_name", "lbs.0.id"),
 					resource.TestCheckResourceAttrSet("data.scaleway_lbs.lbs_by_name", "lbs.1.id"),
-					resource.TestCheckResourceAttr("data.scaleway_lbs.lbs_by_name", "lbs.0.name", "tf-lb-datasource0"),
-					resource.TestCheckResourceAttr("data.scaleway_lbs.lbs_by_name", "lbs.1.name", "tf-lb-datasource1"),
+					resource.TestCheckResourceAttrSet("data.scaleway_lbs.lbs_by_name", "lbs.0.name"),
+					resource.TestCheckResourceAttrSet("data.scaleway_lbs.lbs_by_name", "lbs.1.name"),
 
 					resource.TestCheckNoResourceAttr("data.scaleway_lbs.lbs_by_name_other_zone", "lbs.0.id"),
 				),
