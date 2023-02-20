@@ -38,7 +38,7 @@ func dataSourceScalewayLbFrontendRead(ctx context.Context, d *schema.ResourceDat
 		return diag.FromErr(err)
 	}
 
-	crtID, ok := d.GetOk("frontend_id")
+	frontID, ok := d.GetOk("frontend_id")
 	if !ok { // Get LB by name.
 		res, err := api.ListFrontends(&lbSDK.ZonedAPIListFrontendsRequest{
 			Zone: zone,
@@ -54,9 +54,9 @@ func dataSourceScalewayLbFrontendRead(ctx context.Context, d *schema.ResourceDat
 		if len(res.Frontends) > 1 {
 			return diag.FromErr(fmt.Errorf("%d frontend found with the same name %s", len(res.Frontends), d.Get("name")))
 		}
-		crtID = res.Frontends[0].ID
+		frontID = res.Frontends[0].ID
 	}
-	zonedID := datasourceNewZonedID(crtID, zone)
+	zonedID := datasourceNewZonedID(frontID, zone)
 	d.SetId(zonedID)
 	err = d.Set("frontend_id", zonedID)
 	if err != nil {
