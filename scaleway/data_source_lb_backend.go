@@ -38,7 +38,7 @@ func dataSourceScalewayLbBackendRead(ctx context.Context, d *schema.ResourceData
 		return diag.FromErr(err)
 	}
 
-	crtID, ok := d.GetOk("backend_id")
+	backID, ok := d.GetOk("backend_id")
 	if !ok { // Get LB by name.
 		res, err := api.ListBackends(&lbSDK.ZonedAPIListBackendsRequest{
 			Zone: zone,
@@ -54,9 +54,9 @@ func dataSourceScalewayLbBackendRead(ctx context.Context, d *schema.ResourceData
 		if len(res.Backends) > 1 {
 			return diag.FromErr(fmt.Errorf("%d backend found with the same name %s", len(res.Backends), d.Get("name")))
 		}
-		crtID = res.Backends[0].ID
+		backID = res.Backends[0].ID
 	}
-	zonedID := datasourceNewZonedID(crtID, zone)
+	zonedID := datasourceNewZonedID(backID, zone)
 	d.SetId(zonedID)
 	err = d.Set("backend_id", zonedID)
 	if err != nil {
