@@ -11,7 +11,6 @@ import (
 	"net/url"
 	"os"
 	"path/filepath"
-	"reflect"
 	"regexp"
 	"strings"
 	"testing"
@@ -72,6 +71,19 @@ func getTestFilePath(t *testing.T, suffix string) string {
 	return filepath.Join(".", "testdata", fileName)
 }
 
+func compareJSONFields(expected, actual interface{}) bool {
+	switch actual.(type) {
+	case string:
+		if _, isString := expected.(string); !isString {
+			return false
+		}
+		return compareJSONFieldsStrings(expected.(string), actual.(string))
+	default:
+		// Consider equality when not handled
+		return true
+	}
+}
+
 // compareJSONBodies compare two given maps that represent json bodies
 // returns true if both json are equivalent
 func compareJSONBodies(expected, actual map[string]interface{}) bool {
@@ -85,7 +97,7 @@ func compareJSONBodies(expected, actual map[string]interface{}) bool {
 			// We do not want to generate new cassettes for each new features
 			continue
 		}
-		if !reflect.DeepEqual(actual[key], expectedValue) {
+		if !compareJSONFields(expectedValue, actual[key]) {
 			return false
 		}
 	}
