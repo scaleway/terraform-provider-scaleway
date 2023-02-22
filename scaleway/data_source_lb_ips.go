@@ -13,11 +13,6 @@ func dataSourceScalewayLbIPs() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: dataSourceScalewayLbsRead,
 		Schema: map[string]*schema.Schema{
-			"ip_id": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "IPs with an ID like it are listed.",
-			},
 			"ip_address": {
 				Type:        schema.TypeString,
 				Optional:    true,
