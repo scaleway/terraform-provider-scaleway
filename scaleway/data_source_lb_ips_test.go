@@ -40,6 +40,8 @@ func TestAccScalewayDataSourceLbIPs_Basic(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.scaleway_lb_ips.lbs_by_ip_address", "ips.0.id"),
 					resource.TestCheckResourceAttrSet("data.scaleway_lb_ips.lbs_by_ip_address", "ips.0.ip_address"),
+					resource.TestCheckNoResourceAttr("data.scaleway_lb_ips.lbs_by_ip_address", "ips.1.id"),
+					resource.TestCheckNoResourceAttr("data.scaleway_lb_ips.lbs_by_ip_address", "ips.1.ip_address"),
 
 					resource.TestCheckNoResourceAttr("data.scaleway_lb_ips.lbs_by_ip_address_other_zone", "ips.0.id"),
 				),
