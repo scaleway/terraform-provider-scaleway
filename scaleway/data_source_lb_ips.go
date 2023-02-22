@@ -11,7 +11,7 @@ import (
 
 func dataSourceScalewayLbIPs() *schema.Resource {
 	return &schema.Resource{
-		ReadContext: dataSourceScalewayLbsRead,
+		ReadContext: dataSourceScalewayLbIPsRead,
 		Schema: map[string]*schema.Schema{
 			"ip_address": {
 				Type:        schema.TypeString,
@@ -52,7 +52,7 @@ func dataSourceScalewayLbIPs() *schema.Resource {
 	}
 }
 
-func dataSourceScalewayLbsRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataSourceScalewayLbIPsRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	lbAPI, zone, err := lbAPIWithZone(d, meta)
 	if err != nil {
 		return diag.FromErr(err)

@@ -541,6 +541,43 @@ func attachLBPrivateNetwork(ctx context.Context, lbAPI *lbSDK.ZonedAPI, zone scw
 	return privateNetworks, nil
 }
 
+func flattenLbInstances(instances []*lbSDK.Instance) interface{} {
+	if instances == nil {
+		return nil
+	}
+	flattenedInstances := []map[string]interface{}(nil)
+	for _, instance := range instances {
+		flattenedInstances = append(flattenedInstances, map[string]interface{}{
+			"id":         instance.ID,
+			"status":     instance.Status.String(),
+			"ip_address": instance.IPAddress,
+			"created_at": flattenTime(instance.CreatedAt),
+			"updated_at": flattenTime(instance.UpdatedAt),
+			"zone":       instance.Zone,
+		})
+	}
+	return flattenedInstances
+}
+
+func flattenLbIPs(ips []*lbSDK.IP) interface{} {
+	if ips == nil {
+		return nil
+	}
+	flattenedIPs := []map[string]interface{}(nil)
+	for _, ip := range ips {
+		flattenedIPs = append(flattenedIPs, map[string]interface{}{
+			"id":              ip.ID,
+			"ip_address":      ip.IPAddress,
+			"reverse":         ip.Reverse,
+			"organization_id": ip.OrganizationID,
+			"project_id":      ip.ProjectID,
+			"zone":            ip.Zone,
+			"lb_id":           flattenStringPtr(ip.LBID),
+		})
+	}
+	return flattenedIPs
+}
+
 func ipMatch(ipPattern, ip string) bool {
 	patternOctets := strings.Split(ipPattern, ".")
 	ipOctets := strings.Split(ip, ".")
