@@ -59,15 +59,21 @@ func dataSourceScalewayLbsRead(ctx context.Context, d *schema.ResourceData, meta
 	}
 	res, err := lbAPI.ListIPs(&lb.ZonedAPIListIPsRequest{
 		Zone:      zone,
-		IPAddress: expandStringPtr(d.Get("ip_address")),
 		ProjectID: expandStringPtr(d.Get("project_id")),
 	}, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
+	var filteredList []*lb.IP
+	for i := range res.IPs {
+		if ipMatch(d.Get("ip_address").(string), res.IPs[i].IPAddress) {
+			filteredList = append(filteredList, res.IPs[i])
+		}
+	}
+
 	ips := []interface{}(nil)
-	for _, ip := range res.IPs {
+	for _, ip := range filteredList {
 		rawIP := make(map[string]interface{})
 		rawIP["id"] = newZonedID(ip.Zone, ip.ID).String()
 		rawIP["ip_address"] = ip.IPAddress

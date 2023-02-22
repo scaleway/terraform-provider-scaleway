@@ -540,3 +540,18 @@ func attachLBPrivateNetwork(ctx context.Context, lbAPI *lbSDK.ZonedAPI, zone scw
 
 	return privateNetworks, nil
 }
+
+func ipMatch(ipPattern, ip string) bool {
+	patternOctets := strings.Split(ipPattern, ".")
+	ipOctets := strings.Split(ip, ".")
+
+	// Compare each octet of the pattern with the IP
+	for i, patternOctet := range patternOctets {
+		// If the pattern octet is not a wildcard and doesn't match the IP octet
+		if patternOctet != "*" && patternOctet != ipOctets[i] {
+			return false
+		}
+	}
+
+	return true
+}
