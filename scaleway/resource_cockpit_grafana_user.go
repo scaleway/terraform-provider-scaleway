@@ -86,7 +86,7 @@ func resourceScalewayCockpitGrafanaUserCreate(ctx context.Context, d *schema.Res
 }
 
 func resourceScalewayCockpitGrafanaUserRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, projectID, grafanaUserID, err := cockpitAPIResourceIDWithProjectID(meta, d.Id())
+	api, projectID, grafanaUserID, err := cockpitAPIGrafanaUserID(meta, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -134,7 +134,7 @@ func resourceScalewayCockpitGrafanaUserRead(ctx context.Context, d *schema.Resou
 }
 
 func resourceScalewayCockpitGrafanaUserDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, projectID, grafanaUserID, err := cockpitAPIResourceIDWithProjectID(meta, d.Id())
+	api, projectID, grafanaUserID, err := cockpitAPIGrafanaUserID(meta, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
