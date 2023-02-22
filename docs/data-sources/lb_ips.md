@@ -20,7 +20,7 @@ data "scaleway_lb_ips" "my_key" {
   ip_address = "0.0.0.0"
   zone       = "fr-par-2"
 }
-# Find multiple IPs that shares the same prefix
+# Find multiple IPs that share the same prefix
 data "scaleway_lb_ips" "my_key" {
   ip_address = "51.159.*.*"
   zone       = "fr-par-2"
