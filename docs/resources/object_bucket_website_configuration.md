@@ -82,7 +82,7 @@ The `index_document` configuration block supports the following arguments:
 
 In addition to all above arguments, the following attribute is exported:
 
-* `id` - The bucket and region separated by a slash (/)
+* `id` - The region and bucket separated by a slash (/)
 * `website_domain` - The domain of the website endpoint. This is used to create DNS alias [records](https://www.scaleway.com/en/docs/network/domains-and-dns/how-to/manage-dns-records/).
 * `website_endpoint` - The website endpoint.
 

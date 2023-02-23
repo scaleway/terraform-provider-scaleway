@@ -46,6 +46,9 @@ The following arguments are supported:
 In addition to all arguments above, the following attributes are exported:
 
 - `id` - The ID of the Hub.
+
+~> **Important:** IoT Hub instances' IDs are [regional](../guides/regions_and_zones.md#resource-ids), which means they are of the form `{region}/{id}`, e.g. `fr-par/11111111-1111-1111-1111-111111111111`
+
 - `created_at` - The date and time the Hub was created.
 - `updated_at` - The date and time the Hub resource was updated.
 - `status` - The current status of the Hub.

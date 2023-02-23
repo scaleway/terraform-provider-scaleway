@@ -58,6 +58,12 @@ The following arguments are supported:
 
 - `region` - (Defaults to [provider](../index.md#region) `region`) The [region](../guides/regions_and_zones.md#regions) in which the resource exists.
 
+## Attributes Reference
+
+In addition to all arguments above, the following attributes are exported:
+
+- `id` - The ID of the user privileges, which is of the form `{region}/{instance_id}/{database_name}/{user_name}`, e.g. `fr-par/11111111-1111-1111-1111-111111111111/database_name/foo`
+
 ## Import
 
 The user privileges can be imported using the `{region}/{instance_id}/{database_name}/{user_name}`, e.g.

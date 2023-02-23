@@ -83,12 +83,16 @@ The following arguments are supported:
   Only one of `match_sni` and `match_host_header` should be specified.
 - `match_host_header` - The Host request header specifies the host of the server to which the request is being sent.
   Only one of `match_sni` and `match_host_header` should be specified.  
+- `zone` - (Defaults to [provider](../index.md#zone) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which the load-balancer was created.
 
 ## Attributes Reference
 
 In addition to all arguments above, the following attributes are exported:
 
 - `id` - The ID of the route
+
+~> **Important:** Load-balancers routes' IDs are [zoned](../guides/regions_and_zones.md#resource-ids), which means they are of the form `{zone}/{id}`, e.g. `fr-par-1/11111111-1111-1111-1111-111111111111`
+
 - `created_at` - The date at which the route was created.
 - `updated_at` - The date at which the route was last updated.
 

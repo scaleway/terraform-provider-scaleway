@@ -140,7 +140,10 @@ The following arguments are supported:
 
 In addition to all arguments above, the following attributes are exported:
 
-- `id` - The ID of the Database Instance.
+- `id` - The ID of the Redis cluster.
+
+~> **Important:** Redis clusters' IDs are [zoned](../guides/regions_and_zones.md#resource-ids), which means they are of the form `{zone}/{id}`, e.g. `fr-par-1/11111111-1111-1111-1111-111111111111`
+
 - `public_network` - (Optional) Public network details. Only one of `private_network` and `public_network` may be set.
   ~> The `public_network` block exports:
     - `id` - (Required) The UUID of the endpoint.
@@ -157,5 +160,5 @@ In addition to all arguments above, the following attributes are exported:
 Redis Cluster can be imported using the `{zone}/{id}`, e.g.
 
 ```bash
-$ terraform import scaleway_redis_cluster.redis01 fr-par/11111111-1111-1111-1111-111111111111
+$ terraform import scaleway_redis_cluster.main fr-par-1/11111111-1111-1111-1111-111111111111
 ```
