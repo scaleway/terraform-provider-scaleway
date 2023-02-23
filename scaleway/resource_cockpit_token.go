@@ -20,6 +20,9 @@ func resourceScalewayCockpitToken() *schema.Resource {
 			Delete:  schema.DefaultTimeout(defaultCockpitTimeout),
 			Default: schema.DefaultTimeout(defaultCockpitTimeout),
 		},
+		Importer: &schema.ResourceImporter{
+			StateContext: schema.ImportStatePassthroughContext,
+		},
 		Schema: map[string]*schema.Schema{
 			"name": {
 				Type:        schema.TypeString,
