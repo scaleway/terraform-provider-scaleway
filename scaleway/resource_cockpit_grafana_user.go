@@ -38,6 +38,7 @@ func resourceScalewayCockpitGrafanaUser() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The password of the Grafana user",
+				Sensitive:   true,
 			},
 			"role": {
 				Type:        schema.TypeString,
