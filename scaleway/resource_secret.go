@@ -126,7 +126,7 @@ func resourceScalewaySecretRead(ctx context.Context, d *schema.ResourceData, met
 	_ = d.Set("created_at", flattenTime(secretResponse.CreatedAt))
 	_ = d.Set("updated_at", flattenTime(secretResponse.UpdatedAt))
 	_ = d.Set("status", secretResponse.Status.String())
-	_ = d.Set("version_count", secretResponse.VersionCount)
+	_ = d.Set("version_count", int(secretResponse.VersionCount))
 	_ = d.Set("region", string(region))
 	_ = d.Set("project_id", secretResponse.ProjectID)
 
