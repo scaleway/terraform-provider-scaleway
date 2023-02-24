@@ -2,6 +2,9 @@ package scaleway
 
 import (
 	"context"
+	"fmt"
+	"strconv"
+	"strings"
 	"time"
 
 	cockpit "github.com/scaleway/scaleway-sdk-go/api/cockpit/v1beta1"
@@ -12,12 +15,46 @@ const (
 	defaultCockpitTimeout = 5 * time.Minute
 )
 
-// cockpitAPI returns a new container cockpit API.
+// cockpitAPI returns a new cockpit API.
 func cockpitAPI(m interface{}) (*cockpit.API, error) {
 	meta := m.(*Meta)
 	api := cockpit.NewAPI(meta.scwClient)
 
 	return api, nil
+}
+
+// cockpitAPIGrafanaUserID returns a new cockpit API with the Grafana user ID and the project ID.
+func cockpitAPIGrafanaUserID(m interface{}, id string) (*cockpit.API, string, uint32, error) {
+	projectID, resourceIDString, err := parseCockpitID(id)
+	if err != nil {
+		return nil, "", 0, err
+	}
+
+	grafanaUserID, err := strconv.ParseUint(resourceIDString, 10, 32)
+	if err != nil {
+		return nil, "", 0, err
+	}
+
+	api, err := cockpitAPI(m)
+	if err != nil {
+		return nil, "", 0, err
+	}
+
+	return api, projectID, uint32(grafanaUserID), nil
+}
+
+// cockpitIDWithProjectID returns a cockpit ID with a project ID.
+func cockpitIDWithProjectID(projectID string, id string) string {
+	return projectID + "/" + id
+}
+
+// parseCockpitID returns the project ID and the cockpit ID from a combined ID.
+func parseCockpitID(id string) (projectID string, cockpitID string, err error) {
+	parts := strings.Split(id, "/")
+	if len(parts) != 2 {
+		return "", "", fmt.Errorf("invalid cockpit ID: %s", id)
+	}
+	return parts[0], parts[1], nil
 }
 
 func flattenCockpitEndpoints(endpoints *cockpit.CockpitEndpoints) []map[string]interface{} {
