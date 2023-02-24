@@ -578,7 +578,7 @@ func flattenLbIPs(ips []*lbSDK.IP) interface{} {
 	return flattenedIPs
 }
 
-func ipMatch(ipPattern, ip string) bool {
+func ipv4Match(ipPattern, ip string) bool {
 	patternOctets := strings.Split(ipPattern, ".")
 	ipOctets := strings.Split(ip, ".")
 
