@@ -81,6 +81,9 @@ The following arguments are supported:
 In addition to all above arguments, the following attributes are exported:
 
 - `id` - The ID of the gateway network.
+
+~> **Important:** Gateway networks' IDs are [zoned](../guides/regions_and_zones.md#resource-ids), which means they are of the form `{zone}/{id}`, e.g. `fr-par-1/11111111-1111-1111-1111-111111111111`
+
 - `mac_address` - The mac address of the creation of the gateway network.
 - `created_at` - The date and time of the creation of the gateway network.
 - `updated_at` - The date and time of the last update of the gateway network.

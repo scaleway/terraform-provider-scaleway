@@ -224,6 +224,14 @@ The following arguments are supported:
     - `ip` - (Required) The weighted IP
     - `weight` - (Required) The weight of the IP as an integer UInt32.
 
+## Attributes Reference
+
+In addition to all above arguments, the following attributes are exported:
+
+- `id` - The ID of the record.
+
+~> **Important:** Domain records' IDs are of the form `{dns_zone}/{id}`, e.g. `subdomain.domain.tld/11111111-1111-1111-1111-111111111111`
+
 ## Multiple records
 
 Some record types can have multiple `data` with the same `name` (eg: `A`, `AAAA`, `MX`, `NS`...).  

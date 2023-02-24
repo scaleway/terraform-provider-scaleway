@@ -35,3 +35,11 @@ data "scaleway_iot_hub" "my_hub" {
 - `region` - (Default to [provider](../index.md) `region`) The [region](../guides/regions_and_zones.md#zones) in which the hub exists.
 
 - `project_id` - (Default to [provider](../index.md) `project_id`)
+
+## Attributes Reference
+
+In addition to all arguments above, the following attributes are exported:
+
+- `id` - The ID of the Hub.
+
+~> **Important:** IoT Hub instances' IDs are [regional](../guides/regions_and_zones.md#resource-ids), which means they are of the form `{region}/{id}`, e.g. `fr-par/11111111-1111-1111-1111-111111111111`

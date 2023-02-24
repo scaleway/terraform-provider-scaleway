@@ -150,6 +150,9 @@ The following arguments are supported:
 In addition to all above arguments, the following attributes are exported:
 
 - `id` - The ID of the server.
+
+~> **Important:** Baremetal servers' IDs are [zoned](../guides/regions_and_zones.md#resource-ids), which means they are of the form `{zone}/{id}`, e.g. `fr-par-1/11111111-1111-1111-1111-111111111111`
+
 - `offer_id` - The ID of the offer.
 - `os_id` - The ID of the os.
 - `private_network` - The private networks attached to the server.
@@ -162,7 +165,7 @@ In addition to all above arguments, the following attributes are exported:
     - `id` - The ID of the IP.
     - `address` - The address of the IP.
     - `reverse` - The reverse of the IP.
-    - `type` - The type of the IP.
+    - `version` - The type of the IP.
 - `domain` - The domain of the server.
 - `organization_id` - The organization ID the server is associated with.
 

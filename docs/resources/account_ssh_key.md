@@ -29,7 +29,7 @@ The following arguments are supported:
 
 In addition to all above arguments, the following attributes are exported:
 
-- `id` - The ID of the SSH key.
+- `id` - The ID of the SSH key (UUID format).
 - `organization_id` - The organization ID the SSH key is associated with.
 
 ## Import

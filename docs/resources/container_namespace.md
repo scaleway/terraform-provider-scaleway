@@ -45,6 +45,9 @@ The following arguments are supported:
 In addition to all arguments above, the following attributes are exported:
 
 - `id` - The ID of the namespace
+
+~> **Important:** Container namespaces' IDs are [regional](../guides/regions_and_zones.md#resource-ids), which means they are of the form `{region}/{id}`, e.g. `fr-par/11111111-1111-1111-1111-111111111111`
+
 - `organization_id` - The organization ID the namespace is associated with.
 - `registry_endpoint` - The registry endpoint of the namespace.
 - `registry_namespace_id` - The registry namespace ID of the namespace.

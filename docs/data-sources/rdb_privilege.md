@@ -34,6 +34,9 @@ data "scaleway_rdb_privilege" "main" {
 
 In addition to all above arguments, the following attributes are exported:
 
-- `id` - The resource ID
+- `id` - The ID of the user privileges.
+
+~> **Important:** RDB databases user privileges' IDs are [regional](../guides/regions_and_zones.md#resource-ids), which means they are of the form `{region}/{instance-id}/{database}/{user-name}`, e.g. `fr-par/11111111-1111-1111-1111-111111111111/database/user`
+
 - `permission` - The permission for this user on the database. Possible values are `readonly`, `readwrite`, `all`
   , `custom` and `none`.

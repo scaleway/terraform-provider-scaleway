@@ -18,5 +18,9 @@ N/A, the usage will be meaningful in the next releases of VPC.
 
 ## Attributes Reference
 
-`id` is set to the ID of the found private network. Addition attributes are
-exported.
+In addition to all above arguments, the following attributes are exported:
+
+- `id` - The ID of the private network.
+
+~> **Important:** Private networks' IDs are [zoned](../guides/regions_and_zones.md#resource-ids), which means they are of the form `{zone}/{id}`, e.g. `fr-par-1/11111111-1111-1111-1111-111111111111`
+

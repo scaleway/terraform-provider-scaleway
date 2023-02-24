@@ -45,6 +45,9 @@ The following arguments are supported:
 In addition to all above arguments, the following attribute is exported:
 
 * `id` - The path of the object, including bucket name.
+
+~> **Important:** Objects' IDs are [regional](../guides/regions_and_zones.md#resource-ids), which means they are of the form `{region}/{bucket-name}/{key}`, e.g. `fr-par/bucket-name/object-key`
+
 * `region` - The Scaleway region this bucket resides in.
 
 ## Import
