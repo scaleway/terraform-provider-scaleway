@@ -109,14 +109,6 @@ func testAccCheckScalewayTemDomainDestroy(tt *TestTools) resource.TestCheckFunc 
 			}
 
 			_, err = api.RevokeDomain(&tem.RevokeDomainRequest{
-				DomainID: id,
-				Region:   region,
-			})
-			if err != nil {
-				return err
-			}
-
-			_, err = api.RevokeDomain(&tem.RevokeDomainRequest{
 				Region:   region,
 				DomainID: id,
 			}, scw.WithContext(context.Background()))
