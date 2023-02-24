@@ -67,7 +67,7 @@ func dataSourceScalewayLbIPsRead(ctx context.Context, d *schema.ResourceData, me
 
 	var filteredList []*lb.IP
 	for i := range res.IPs {
-		if ipMatch(d.Get("ip_address").(string), res.IPs[i].IPAddress) {
+		if ipv4Match(d.Get("ip_address").(string), res.IPs[i].IPAddress) {
 			filteredList = append(filteredList, res.IPs[i])
 		}
 	}
