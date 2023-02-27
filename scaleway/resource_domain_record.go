@@ -504,7 +504,7 @@ func resourceScalewayDomainRecordDelete(ctx context.Context, d *schema.ResourceD
 	d.SetId("")
 
 	_, err = waitForDNSZone(ctx, domainAPI, d.Get("dns_zone").(string), d.Timeout(schema.TimeoutDelete))
-	if err != nil && !ErrCodeEquals(err, domain.ErrCodeNoSuchDNSZone) {
+	if err != nil && !errorCheck(err, domain.ErrCodeNoSuchDNSZone) {
 		if is404Error(err) || is403Error(err) {
 			return nil
 		}
