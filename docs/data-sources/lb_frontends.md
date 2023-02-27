@@ -37,7 +37,7 @@ In addition to all arguments above, the following attributes are exported:
 - `frontends` - List of found frontends
     - `id` - The associated frontend ID.
         ~> **Important:** LB frontends' IDs are [zoned](../guides/regions_and_zones.md#resource-ids), which means they are of the form `{zone}/{id}`, e.g. `fr-par-1/11111111-1111-1111-1111-111111111111`
-    - `inbound_port` - TCP port to listen on the front side.
+    - `inbound_port` - TCP port the frontend listen to.
     - `created_at` - The date at which the frontend was created (RFC 3339 format).
     - `update_at` - The date at which the frontend was last updated (RFC 3339 format).
     - `backend_id` - The load-balancer backend ID this frontend is attached to.
