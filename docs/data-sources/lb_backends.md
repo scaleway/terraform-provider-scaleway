@@ -18,9 +18,17 @@ resource "scaleway_lb" "lb01" {
   name  = "test-lb"
   type  = "lb-s"
 }
-resource "scaleway_lb_backend" "bkd01" {
+resource scaleway_lb_backend bkd01 {
   lb_id            = scaleway_lb.lb01.id
+  name             = "tf-backend-datasource0"
   forward_protocol = "tcp"
+  forward_port     = 80
+  proxy_protocol   = "none"
+}
+resource scaleway_lb_backend bkd02 {
+  lb_id            = scaleway_lb.lb01.id
+  name             = "tf-backend-datasource1"
+  forward_protocol = "http"
   forward_port     = 80
   proxy_protocol   = "none"
 }

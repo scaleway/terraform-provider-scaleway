@@ -1,0 +1,72 @@
+---
+page_title: "Scaleway: scaleway_lb_frontends"
+description: |-
+Gets information about multiple Load Balancer Frontends.
+---
+
+# scaleway_lb_frontends
+
+Gets information about multiple Load Balancer Frontends.
+
+## Example Usage
+
+```hcl
+# Find multiple frontends that share the same LB ID
+resource "scaleway_lb_ip" "ip01" {}
+resource "scaleway_lb" "lb01" {
+  ip_id = scaleway_lb_ip.ip01.id
+  name  = "test-lb"
+  type  = "lb-s"
+}
+resource "scaleway_lb_backend" "bkd01" {
+  lb_id            = scaleway_lb.lb01.id
+  forward_protocol = "http"
+  forward_port     = 80
+  proxy_protocol   = "none"
+}
+resource scaleway_lb_frontend frt01 {
+  lb_id        = scaleway_lb.lb01.id
+  backend_id   = scaleway_lb_backend.bkd01.id
+  name         = "tf-frontend-datasource0"
+  inbound_port = 50000
+}
+resource scaleway_lb_frontend frt02 {
+  lb_id        = scaleway_lb.lb01.id
+  backend_id   = scaleway_lb_backend.bkd01.id
+  name         = "tf-frontend-datasource1"
+  inbound_port = 50001
+}
+data "scaleway_lb_frontends" "byLBID" {
+  lb_id      = "${scaleway_lb.lb01.id}"
+  depends_on = [scaleway_lb_frontend.frt01, scaleway_lb_frontend.frt02]
+}
+# Find frontends by LB ID and name
+data "scaleway_lb_frontends" "byLBID_and_name" {
+  lb_id      = "${scaleway_lb.lb01.id}"
+  name       = "tf-backend-datasource"
+  depends_on = [scaleway_lb_frontend.frt01, scaleway_lb_frontend.frt02]
+}
+```
+
+## Argument Reference
+
+- `lb_id` - (Required) The load-balancer ID this frontend is attached to. frontends with a LB ID like it are listed.
+
+- `name` - (Optional) The frontend name used as filter. Frontends with a name like it are listed.
+
+- `zone` - (Defaults to [provider](../index.md#zone) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which frontends exist.
+
+## Attributes Reference
+
+In addition to all arguments above, the following attributes are exported:
+
+- `frontends` - List of found frontends
+    - `id` - The associated frontend ID.
+    - `inbound_port` - TCP port to listen on the front side.
+    - `created_at` - The date at which the frontend was created (RFC 3339 format).
+    - `update_at` - The date at which the frontend was last updated (RFC 3339 format).
+    - `backend_id` - The load-balancer backend ID this frontend is attached to.
+    - `timeout_client` - Maximum inactivity time on the client side.
+    - `certificate_ids` - List of Certificate IDs that should be used by the frontend.
+    - `enable_http3` - Activates HTTP/3 protocol.
+    
