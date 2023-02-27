@@ -69,4 +69,3 @@ In addition to all arguments above, the following attributes are exported:
     - `timeout_client` - Maximum inactivity time on the client side.
     - `certificate_ids` - List of Certificate IDs that should be used by the frontend.
     - `enable_http3` - Activates HTTP/3 protocol.
-    
