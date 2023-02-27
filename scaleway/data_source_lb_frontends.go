@@ -104,7 +104,7 @@ func dataSourceScalewayLbFrontendsRead(ctx context.Context, d *schema.ResourceDa
 	frontends := []interface{}(nil)
 	for _, frontend := range res.Frontends {
 		rawFrontend := make(map[string]interface{})
-		rawFrontend["id"] = newZonedID(zone, frontend.ID).String()
+		rawFrontend["id"] = newZonedIDString(zone, frontend.ID)
 		rawFrontend["name"] = frontend.Name
 		rawFrontend["lb_id"] = newZonedIDString(zone, frontend.LB.ID)
 		rawFrontend["created_at"] = flattenTime(frontend.CreatedAt)
