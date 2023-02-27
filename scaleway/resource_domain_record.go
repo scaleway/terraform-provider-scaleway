@@ -498,7 +498,6 @@ func resourceScalewayDomainRecordDelete(ctx context.Context, d *schema.ResourceD
 		ReturnAllRecords: scw.BoolPtr(false),
 	})
 	if err != nil {
-		d.SetId("")
 		return diag.FromErr(err)
 	}
 	d.SetId("")
