@@ -11,36 +11,14 @@ Gets information about multiple Load Balancer Backends.
 ## Example Usage
 
 ```hcl
-# Find multiple backends that share the same LB ID
-resource "scaleway_lb_ip" "ip01" {}
-resource "scaleway_lb" "lb01" {
-  ip_id = scaleway_lb_ip.ip01.id
-  name  = "test-lb"
-  type  = "lb-s"
-}
-resource scaleway_lb_backend bkd01 {
-  lb_id            = scaleway_lb.lb01.id
-  name             = "tf-backend-datasource0"
-  forward_protocol = "tcp"
-  forward_port     = 80
-  proxy_protocol   = "none"
-}
-resource scaleway_lb_backend bkd02 {
-  lb_id            = scaleway_lb.lb01.id
-  name             = "tf-backend-datasource1"
-  forward_protocol = "http"
-  forward_port     = 80
-  proxy_protocol   = "none"
-}
+# Find backends that share the same LB ID
 data "scaleway_lb_backends" "byLBID" {
-  lb_id      = "${scaleway_lb.lb01.id}"
-  depends_on = [scaleway_lb_backend.bkd01, scaleway_lb_backend.bkd02]
+  lb_id = "${scaleway_lb.lb01.id}"
 }
 # Find backends by LB ID and name
 data "scaleway_lb_backends" "byLBID_and_name" {
-  lb_id      = "${scaleway_lb.lb01.id}"
-  name       = "tf-backend-datasource"
-  depends_on = [scaleway_lb_backend.bkd01, scaleway_lb_backend.bkd02]
+  lb_id = "${scaleway_lb.lb01.id}"
+  name  = "tf-backend-datasource"
 }
 ```
 
