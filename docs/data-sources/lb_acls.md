@@ -25,6 +25,7 @@ data "scaleway_lb_acls" "byFrontID_and_name" {
 ## Argument Reference
 
 - `frontend_id` - (Required) The frontend ID this ACL is attached to. ACLs with a frontend ID like it are listed.
+  ~> **Important:** LB Frontends' IDs are [zoned](../guides/regions_and_zones.md#resource-ids), which means they are of the form `{zone}/{id}`, e.g. `fr-par-1/11111111-1111-1111-1111-111111111111`
 
 - `name` - (Optional) The ACL name used as filter. ACLs with a name like it are listed.
 
@@ -42,10 +43,10 @@ In addition to all arguments above, the following attributes are exported:
     - `index` - The order between the ACLs.
     - `description` - The description of the ACL resource.
     - `action` - The action that has been undertaken when an ACL filter had matched.
-      - `type` - The action type.
+        - `type` - The action type.
     - `match` - The ACL match rule.
-      - `ip_subnet` - A list of matched IPs or CIDR v4/v6 addresses of the client of the session.
-      - `http_filter` - The matched HTTP filter.
-      - `http_filter_value` - The possible values matched for a given HTTP filter.
-      - `http_value_option` - A list of possible values for the HTTP filter based on the HTTP header.
-      - `invert` -  The condition will be of type "unless" if invert is set to `true`
+        - `ip_subnet` - A list of matched IPs or CIDR v4/v6 addresses of the client of the session.
+        - `http_filter` - The matched HTTP filter.
+        - `http_filter_value` - The possible values matched for a given HTTP filter.
+        - `http_value_option` - A list of possible values for the HTTP filter based on the HTTP header.
+        - `invert` -  The condition will be of type "unless" if invert is set to `true`
