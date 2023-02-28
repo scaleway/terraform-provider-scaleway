@@ -2,6 +2,7 @@ package scaleway
 
 import (
 	"context"
+	"encoding/base64"
 	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -31,11 +32,15 @@ func resourceScalewaySecretVersion() *schema.Resource {
 				DiffSuppressFunc: diffSuppressFuncLocality,
 			},
 			"data": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "The data payload of your secret version",
-				Sensitive:   true,
-				ForceNew:    true,
+				Type:             schema.TypeString,
+				Optional:         true,
+				Description:      "The data payload of your secret version",
+				Sensitive:        true,
+				ForceNew:         true,
+				DiffSuppressFunc: diffSuppressFuncBase64,
+				StateFunc: func(i interface{}) string {
+					return base64Encoded([]byte(i.(string)))
+				},
 			},
 			"description": {
 				Type:        schema.TypeString,
@@ -51,6 +56,12 @@ func resourceScalewaySecretVersion() *schema.Resource {
 				Type:        schema.TypeInt,
 				Computed:    true,
 				Description: "The revision of secret version",
+			},
+			"with_access": {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Description: "Enable access to the payload secret",
+				Default:     false,
 			},
 			"created_at": {
 				Type:        schema.TypeString,
@@ -74,10 +85,14 @@ func resourceScalewaySecretVersionCreate(ctx context.Context, d *schema.Resource
 	}
 
 	secretID := expandID(d.Get("secret_id").(string))
+	payloadSecret := []byte(d.Get("data").(string))
+	if isBase64Encoded(payloadSecret) {
+		payloadSecret, _ = base64.StdEncoding.DecodeString(d.Get("data").(string))
+	}
 	secretCreateVersionRequest := &secret.CreateSecretVersionRequest{
 		Region:      region,
 		SecretID:    secretID,
-		Data:        []byte(d.Get("data").(string)),
+		Data:        payloadSecret,
 		Description: expandStringPtr(d.Get("description")),
 	}
 
@@ -91,7 +106,7 @@ func resourceScalewaySecretVersionCreate(ctx context.Context, d *schema.Resource
 		return diag.FromErr(err)
 	}
 
-	_ = d.Set("data", d.Get("data").(string))
+	_ = d.Set("data", base64Encoded(payloadSecret))
 
 	d.SetId(newRegionalIDString(region, fmt.Sprintf("%s/%d", secretResponse.SecretID, secretResponse.Revision)))
 
@@ -115,6 +130,20 @@ func resourceScalewaySecretVersionRead(ctx context.Context, d *schema.ResourceDa
 			return nil
 		}
 		return diag.FromErr(err)
+	}
+
+	withAccess, ok := d.GetOk("with_access")
+
+	if ok && withAccess.(bool) {
+		secretWithAccess, err := api.AccessSecretVersion(&secret.AccessSecretVersionRequest{
+			Region:   region,
+			SecretID: id,
+			Revision: revision,
+		})
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		_ = d.Set("data", base64Encoded(secretWithAccess.Data))
 	}
 	_ = d.Set("secret_id", newRegionalIDString(region, id))
 	_ = d.Set("description", flattenStringPtr(secretResponse.Description))
