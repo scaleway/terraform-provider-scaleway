@@ -1,6 +1,7 @@
 package scaleway
 
 import (
+	"encoding/base64"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -46,4 +47,16 @@ func secretVersionAPIWithRegionAndID(m interface{}, id string) (*secret.API, scw
 		return nil, "", "", "", err
 	}
 	return api, scw.Region(region), id, revision, nil
+}
+
+func isBase64Encoded(data []byte) bool {
+	_, err := base64.StdEncoding.DecodeString(string(data))
+	return err == nil
+}
+
+func base64Encoded(data []byte) string {
+	if isBase64Encoded(data) {
+		return string(data)
+	}
+	return base64.StdEncoding.EncodeToString(data)
 }
