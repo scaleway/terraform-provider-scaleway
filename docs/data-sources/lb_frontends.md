@@ -18,7 +18,7 @@ data "scaleway_lb_frontends" "byLBID" {
 # Find frontends by LB ID and name
 data "scaleway_lb_frontends" "byLBID_and_name" {
   lb_id      = "${scaleway_lb.lb01.id}"
-  name       = "tf-backend-datasource"
+  name       = "tf-frontend-datasource"
 }
 ```
 
