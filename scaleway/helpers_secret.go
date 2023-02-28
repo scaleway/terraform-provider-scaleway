@@ -35,3 +35,15 @@ func secretAPIWithRegionAndID(m interface{}, id string) (*secret.API, scw.Region
 	}
 	return api, region, id, nil
 }
+
+// secretVersionAPIWithRegionAndID returns a Secret API with locality and Nested ID extracted from the state
+func secretVersionAPIWithRegionAndID(m interface{}, id string) (*secret.API, scw.Region, string, string, error) {
+	meta := m.(*Meta)
+	api := secret.NewAPI(meta.scwClient)
+
+	region, id, revision, err := parseLocalizedNestedID(id)
+	if err != nil {
+		return nil, "", "", "", err
+	}
+	return api, scw.Region(region), id, revision, nil
+}
