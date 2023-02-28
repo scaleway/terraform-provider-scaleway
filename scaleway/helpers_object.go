@@ -92,6 +92,8 @@ func s3ClientWithRegionAndName(d *schema.ResourceData, m interface{}, id string)
 	}
 	name = parts[0]
 
+	d.SetId(fmt.Sprintf("%s/%s", region, name))
+
 	accessKey, _ := meta.scwClient.GetAccessKey()
 	secretKey, _ := meta.scwClient.GetSecretKey()
 
