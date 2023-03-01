@@ -3,7 +3,7 @@ module github.com/scaleway/terraform-provider-scaleway/v2
 require (
 	github.com/aws/aws-sdk-go v1.44.193
 	github.com/dnaeon/go-vcr v1.2.0
-	github.com/docker/docker v20.10.23+incompatible
+	github.com/docker/docker v23.0.1+incompatible
 	github.com/dustin/go-humanize v1.0.1
 	github.com/google/go-cmp v0.5.9
 	github.com/hashicorp/aws-sdk-go-base v1.1.0
@@ -62,7 +62,6 @@ require (
 	github.com/opencontainers/image-spec v1.0.2 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
-	github.com/sirupsen/logrus v1.8.1 // indirect
 	github.com/vmihailenco/msgpack v4.0.4+incompatible // indirect
 	github.com/vmihailenco/msgpack/v4 v4.3.12 // indirect
 	github.com/vmihailenco/tagparser v0.1.2 // indirect
