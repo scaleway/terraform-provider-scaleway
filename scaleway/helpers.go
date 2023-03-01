@@ -1,6 +1,7 @@
 package scaleway
 
 import (
+	"bytes"
 	"context"
 	"encoding/base64"
 	"encoding/json"
@@ -707,7 +708,7 @@ func diffSuppressFuncBase64(oldValue string, newValue string) bool {
 	if err1 != nil || err2 != nil {
 		return false
 	}
-	return string(oldStr) == string(newStr)
+	return bytes.Equal(oldStr, newStr)
 }
 
 func diffSuppressFuncIgnoreCase(k, oldValue, newValue string, d *schema.ResourceData) bool {

@@ -33,8 +33,8 @@ func resourceScalewaySecretVersion() *schema.Resource {
 			},
 			"data": {
 				Type:             schema.TypeString,
-				Optional:         true,
-				Description:      "The data payload of your secret version",
+				Required:         true,
+				Description:      "The data payload of your secret version on 64 mode",
 				Sensitive:        true,
 				ForceNew:         true,
 				DiffSuppressFunc: diffSuppressFuncBase64,
@@ -56,12 +56,6 @@ func resourceScalewaySecretVersion() *schema.Resource {
 				Type:        schema.TypeInt,
 				Computed:    true,
 				Description: "The revision of secret version",
-			},
-			"with_access": {
-				Type:        schema.TypeBool,
-				Optional:    true,
-				Description: "Enable access to the payload secret",
-				Default:     false,
 			},
 			"created_at": {
 				Type:        schema.TypeString,
@@ -85,9 +79,13 @@ func resourceScalewaySecretVersionCreate(ctx context.Context, d *schema.Resource
 	}
 
 	secretID := expandID(d.Get("secret_id").(string))
-	payloadSecret := []byte(d.Get("data").(string))
-	if isBase64Encoded(payloadSecret) {
-		payloadSecret, _ = base64.StdEncoding.DecodeString(d.Get("data").(string))
+	payloadSecretRaw := []byte(d.Get("data").(string))
+	if !isBase64Encoded(payloadSecretRaw) {
+		return diag.FromErr(fmt.Errorf("data payload mush be base64 encoded"))
+	}
+	payloadSecret, err := base64.StdEncoding.DecodeString(d.Get("data").(string))
+	if err != nil {
+		return diag.FromErr(err)
 	}
 	secretCreateVersionRequest := &secret.CreateSecretVersionRequest{
 		Region:      region,
@@ -132,19 +130,6 @@ func resourceScalewaySecretVersionRead(ctx context.Context, d *schema.ResourceDa
 		return diag.FromErr(err)
 	}
 
-	withAccess, ok := d.GetOk("with_access")
-
-	if ok && withAccess.(bool) {
-		secretWithAccess, err := api.AccessSecretVersion(&secret.AccessSecretVersionRequest{
-			Region:   region,
-			SecretID: id,
-			Revision: revision,
-		})
-		if err != nil {
-			return diag.FromErr(err)
-		}
-		_ = d.Set("data", base64Encoded(secretWithAccess.Data))
-	}
 	_ = d.Set("secret_id", newRegionalIDString(region, id))
 	_ = d.Set("description", flattenStringPtr(secretResponse.Description))
 	_ = d.Set("created_at", flattenTime(secretResponse.CreatedAt))

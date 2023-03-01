@@ -33,7 +33,7 @@ func TestAccScalewaySecretVersion_Basic(t *testing.T) {
 				resource "scaleway_secret_version" "v1" {
 				  description = "version1"
 				  secret_id   = scaleway_secret.main.id
-				  data        = "%s"
+				  data        = base64encode("%s")
 				}
 				`, secretName, secretDescription, secretVersionData),
 				Check: resource.ComposeTestCheckFunc(
@@ -57,7 +57,7 @@ func TestAccScalewaySecretVersion_Basic(t *testing.T) {
 				resource "scaleway_secret_version" "v1" {
 				  description = "%s"
 				  secret_id   = scaleway_secret.main.id
-				  data        = "%s"
+				  data        = base64encode("%s")
 				}
 				`, secretName, secretDescription, secretVersionDescription, secretVersionData),
 				Check: resource.ComposeTestCheckFunc(
@@ -81,13 +81,13 @@ func TestAccScalewaySecretVersion_Basic(t *testing.T) {
 				resource "scaleway_secret_version" "v1" {
 				  description = "%s"
 				  secret_id   = scaleway_secret.main.id
-				  data        = "%s"
+				  data        = base64encode("%s")
 				}
 
 				resource "scaleway_secret_version" "v2" {
 				  description = "version2"
 				  secret_id   = scaleway_secret.main.id
-				  data        = "another_secret"
+				  data        = base64encode("another_secret")
 				}
 				`, secretName, secretDescription, secretVersionDescription, secretVersionData),
 				Check: resource.ComposeTestCheckFunc(
@@ -106,73 +106,6 @@ func TestAccScalewaySecretVersion_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_secret_version.v2", "status", secret.SecretVersionStatusEnabled.String()),
 					resource.TestCheckResourceAttrSet("scaleway_secret_version.v2", "updated_at"),
 					resource.TestCheckResourceAttrSet("scaleway_secret_version.v2", "created_at"),
-				),
-			},
-			{
-				Config: fmt.Sprintf(`
-				resource "scaleway_secret" "main" {
-				  name        = "%s"
-				  description = "%s"
-				  tags        = ["devtools", "provider", "terraform"]
-				}
-
-				resource "scaleway_secret_version" "v1" {
-				  description = "version1"
-				  secret_id   = scaleway_secret.main.id
-				  data        = "%s"
-				  with_access = true
-				}
-				`, secretName, secretDescription, secretVersionData),
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewaySecretVersionExists(tt, "scaleway_secret_version.v1"),
-					resource.TestCheckResourceAttrPair("scaleway_secret_version.v1", "secret_id", "scaleway_secret.main", "id"),
-					resource.TestCheckResourceAttr("scaleway_secret_version.v1", "description", "version1"),
-					resource.TestCheckResourceAttr("scaleway_secret_version.v1", "data", base64Encoded([]byte(secretVersionData))),
-					resource.TestCheckResourceAttr("scaleway_secret_version.v1", "status", secret.SecretVersionStatusEnabled.String()),
-					resource.TestCheckResourceAttr("scaleway_secret_version.v1", "with_access", "true"),
-					resource.TestCheckResourceAttrSet("scaleway_secret_version.v1", "updated_at"),
-					resource.TestCheckResourceAttrSet("scaleway_secret_version.v1", "created_at"),
-				),
-			},
-		},
-	})
-}
-
-func TestAccScalewaySecretVersion_WithBase64(t *testing.T) {
-	tt := NewTestTools(t)
-	defer tt.Cleanup()
-
-	secretName := "secretVersionNameBasic"
-	secretDescription := "secret description"
-	secretVersionBase64Data := "ZGV2dG9vbHNfc2VjcmV0"
-	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      testAccCheckScalewaySecretVersionDestroy(tt),
-		Steps: []resource.TestStep{
-			{
-				Config: fmt.Sprintf(`
-				resource "scaleway_secret" "main" {
-				  name        = "%s"
-				  description = "%s"
-				  tags        = ["devtools", "provider", "terraform"]
-				}
-
-				resource "scaleway_secret_version" "v1" {
-				  description = "version1"
-				  secret_id   = scaleway_secret.main.id
-				  data        = "%s"
-				  with_access = true
-				}
-				`, secretName, secretDescription, secretVersionBase64Data),
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewaySecretVersionExists(tt, "scaleway_secret_version.v1"),
-					resource.TestCheckResourceAttrPair("scaleway_secret_version.v1", "secret_id", "scaleway_secret.main", "id"),
-					resource.TestCheckResourceAttr("scaleway_secret_version.v1", "description", "version1"),
-					resource.TestCheckResourceAttr("scaleway_secret_version.v1", "data", secretVersionBase64Data),
-					resource.TestCheckResourceAttr("scaleway_secret_version.v1", "status", secret.SecretVersionStatusEnabled.String()),
-					resource.TestCheckResourceAttrSet("scaleway_secret_version.v1", "updated_at"),
-					resource.TestCheckResourceAttrSet("scaleway_secret_version.v1", "created_at"),
 				),
 			},
 		},
