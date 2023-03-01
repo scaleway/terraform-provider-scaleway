@@ -188,3 +188,9 @@ Buckets can be imported using the `{region}/{bucketName}` identifier, e.g.
 ```bash
 $ terraform import scaleway_object_bucket.some_bucket fr-par/some-bucket
 ```
+
+If you are importing a bucket from a specific project (that is not your default project), you can use the following syntax:
+
+```bash
+$ terraform import scaleway_object_bucket.some_bucket fr-par/some-bucket@11111111-1111-1111-1111-111111111111
+```
