@@ -1,9 +1,7 @@
 package scaleway
 
 import (
-	"bytes"
 	"context"
-	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -698,17 +696,8 @@ func diffSuppressFuncTimeRFC3339(k, oldValue, newValue string, d *schema.Resourc
 	return t1.Equal(t2)
 }
 
-func diffSuppressFuncBase64(oldValue string, newValue string) bool {
-	if oldValue == newValue {
-		return true
-	}
-
-	oldStr, err1 := base64.StdEncoding.DecodeString(oldValue)
-	newStr, err2 := base64.StdEncoding.DecodeString(newValue)
-	if err1 != nil || err2 != nil {
-		return false
-	}
-	return bytes.Equal(oldStr, newStr)
+func diffSuppressFuncBase64(oldValue string, newValue string, value string, d *schema.ResourceData) bool {
+	return oldValue == newValue
 }
 
 func diffSuppressFuncIgnoreCase(k, oldValue, newValue string, d *schema.ResourceData) bool {
