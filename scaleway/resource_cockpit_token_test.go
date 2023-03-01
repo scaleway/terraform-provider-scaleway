@@ -2,12 +2,64 @@ package scaleway
 
 import (
 	"fmt"
+	"strings"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	accountV2 "github.com/scaleway/scaleway-sdk-go/api/account/v2"
 	cockpit "github.com/scaleway/scaleway-sdk-go/api/cockpit/v1beta1"
+	"github.com/scaleway/scaleway-sdk-go/scw"
 )
+
+func init() {
+	resource.AddTestSweepers("scaleway_cockpit_token", &resource.Sweeper{
+		Name: "scaleway_cockpit_token",
+		F:    testSweepCockpitToken,
+	})
+}
+
+func testSweepCockpitToken(_ string) error {
+	return sweep(func(scwClient *scw.Client) error {
+		accountAPI := accountV2.NewAPI(scwClient)
+		cockpitAPI := cockpit.NewAPI(scwClient)
+
+		listProjects, err := accountAPI.ListProjects(&accountV2.ListProjectsRequest{}, scw.WithAllPages())
+		if err != nil {
+			return fmt.Errorf("failed to list projects: %w", err)
+		}
+
+		for _, project := range listProjects.Projects {
+			if !strings.HasPrefix(project.Name, "tf_tests") {
+				continue
+			}
+
+			listTokens, err := cockpitAPI.ListTokens(&cockpit.ListTokensRequest{
+				ProjectID: project.ID,
+			}, scw.WithAllPages())
+			if err != nil {
+				if is404Error(err) {
+					return nil
+				}
+
+				return fmt.Errorf("failed to list tokens: %w", err)
+			}
+
+			for _, token := range listTokens.Tokens {
+				err = cockpitAPI.DeleteToken(&cockpit.DeleteTokenRequest{
+					TokenID: token.ID,
+				})
+				if err != nil {
+					if !is404Error(err) {
+						return fmt.Errorf("failed to delete token: %w", err)
+					}
+				}
+			}
+		}
+
+		return nil
+	})
+}
 
 func TestAccScalewayCockpitToken_Basic(t *testing.T) {
 	tt := NewTestTools(t)
