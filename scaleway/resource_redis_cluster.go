@@ -79,9 +79,10 @@ func resourceScalewayRedisCluster() *schema.Resource {
 				ForceNew:    true,
 			},
 			"acl": {
-				Type:        schema.TypeSet,
-				Description: "List of acl rules.",
-				Optional:    true,
+				Type:          schema.TypeSet,
+				Description:   "List of acl rules.",
+				Optional:      true,
+				ConflictsWith: []string{"private_network"},
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"id": {
@@ -113,9 +114,10 @@ func resourceScalewayRedisCluster() *schema.Resource {
 				},
 			},
 			"private_network": {
-				Type:        schema.TypeSet,
-				Optional:    true,
-				Description: "Private network specs details",
+				Type:          schema.TypeSet,
+				Optional:      true,
+				Description:   "Private network specs details",
+				ConflictsWith: []string{"acl"},
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"endpoint_id": {
