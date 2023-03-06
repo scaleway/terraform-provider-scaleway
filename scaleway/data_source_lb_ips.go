@@ -5,6 +5,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/scaleway/scaleway-sdk-go/api/lb/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 )
@@ -13,10 +14,11 @@ func dataSourceScalewayLbIPs() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: dataSourceScalewayLbIPsRead,
 		Schema: map[string]*schema.Schema{
-			"ip_address": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "IPs with an address like it are listed.",
+			"ip_cidr_range": {
+				Type:         schema.TypeString,
+				Optional:     true,
+				ValidateFunc: validation.IsCIDR,
+				Description:  "IPs within a CIDR block like it are listed.",
 			},
 			"ips": {
 				Type:     schema.TypeList,
@@ -67,7 +69,7 @@ func dataSourceScalewayLbIPsRead(ctx context.Context, d *schema.ResourceData, me
 
 	var filteredList []*lb.IP
 	for i := range res.IPs {
-		if ipv4Match(d.Get("ip_address").(string), res.IPs[i].IPAddress) {
+		if ipv4Match(d.Get("ip_cidr_range").(string), res.IPs[i].IPAddress) {
 			filteredList = append(filteredList, res.IPs[i])
 		}
 	}

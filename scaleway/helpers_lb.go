@@ -3,6 +3,7 @@ package scaleway
 import (
 	"context"
 	"fmt"
+	"net"
 	"reflect"
 	"strings"
 	"time"
@@ -578,17 +579,13 @@ func flattenLbIPs(ips []*lbSDK.IP) interface{} {
 	return flattenedIPs
 }
 
-func ipv4Match(ipPattern, ip string) bool {
-	patternOctets := strings.Split(ipPattern, ".")
-	ipOctets := strings.Split(ip, ".")
-
-	// Compare each octet of the pattern with the IP
-	for i, patternOctet := range patternOctets {
-		// If the pattern octet is not a wildcard and doesn't match the IP octet
-		if patternOctet != "*" && patternOctet != ipOctets[i] {
-			return false
-		}
+func ipv4Match(cidr, ipStr string) bool {
+	_, cidrNet, err := net.ParseCIDR(cidr)
+	if err != nil {
+		return false
 	}
 
-	return true
+	ip := net.ParseIP(ipStr)
+
+	return cidrNet.Contains(ip)
 }

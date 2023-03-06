@@ -11,25 +11,20 @@ Gets information about multiple Load Balancer IPs.
 ## Example Usage
 
 ```hcl
-# Find IPs by IP address
+# Find multiple IPs that share the same CIDR block
 data "scaleway_lb_ips" "my_key" {
-  ip_address = "0.0.0.0"
+  ip_cidr_range = "0.0.0.0/0"
 }
-# Find IPs by IP address and zone
+# Find IPs by CIDR block and zone
 data "scaleway_lb_ips" "my_key" {
-  ip_address = "0.0.0.0"
-  zone       = "fr-par-2"
-}
-# Find multiple IPs that share the same prefix
-data "scaleway_lb_ips" "my_key" {
-  ip_address = "51.159.*.*"
+  ip_cidr_range = "0.0.0.0/0"
   zone       = "fr-par-2"
 }
 ```
 
 ## Argument Reference
 
-- `ip_address` - (Optional) The IP address used as a filter. IPs with an address like it are listed.
+- `ip_cidr_range` - (Optional) The IP CIDR range used as a filter. IPs within a CIDR block like it are listed.
 
 - `zone` - (Defaults to [provider](../index.md#zone) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which IPs exist.
 
@@ -40,6 +35,7 @@ In addition to all arguments above, the following attributes are exported:
 - `ips` - List of found IPs
     - `id` - The associated IP ID.
     - `lb_id` - The associated load-balancer ID if any
+    - `ip_address` - The IP Address
     - `zone` - The [zone](../guides/regions_and_zones.md#zones) in which the load-balancer is.
     - `reverse` - The reverse domain associated with this IP.
     - `organization_id` - The organization ID the load-balancer is associated with.
