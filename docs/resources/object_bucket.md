@@ -175,6 +175,9 @@ The `versioning` object supports the following:
 In addition to all above arguments, the following attribute is exported:
 
 * `id` - The unique name of the bucket.
+
+~> **Important:** Object buckets' IDs are [regional](../guides/regions_and_zones.md#resource-ids), which means they are of the form `{region}/{name}`, e.g. `fr-par/bucket-name`
+
 * `endpoint` - The endpoint URL of the bucket
 * `region` - The Scaleway region this bucket resides in.
 
@@ -184,4 +187,10 @@ Buckets can be imported using the `{region}/{bucketName}` identifier, e.g.
 
 ```bash
 $ terraform import scaleway_object_bucket.some_bucket fr-par/some-bucket
+```
+
+If you are importing a bucket from a specific project (that is not your default project), you can use the following syntax:
+
+```bash
+$ terraform import scaleway_object_bucket.some_bucket fr-par/some-bucket@11111111-1111-1111-1111-111111111111
 ```

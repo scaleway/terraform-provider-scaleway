@@ -3,13 +3,65 @@ package scaleway
 import (
 	"fmt"
 	"regexp"
+	"strings"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	accountV2 "github.com/scaleway/scaleway-sdk-go/api/account/v2"
 	cockpit "github.com/scaleway/scaleway-sdk-go/api/cockpit/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 )
+
+func init() {
+	resource.AddTestSweepers("scaleway_cockpit_grafana_user", &resource.Sweeper{
+		Name: "scaleway_cockpit_grafana_user",
+		F:    testSweepCockpitGrafanaUser,
+	})
+}
+
+func testSweepCockpitGrafanaUser(_ string) error {
+	return sweep(func(scwClient *scw.Client) error {
+		accountAPI := accountV2.NewAPI(scwClient)
+		cockpitAPI := cockpit.NewAPI(scwClient)
+
+		listProjects, err := accountAPI.ListProjects(&accountV2.ListProjectsRequest{}, scw.WithAllPages())
+		if err != nil {
+			return fmt.Errorf("failed to list projects: %w", err)
+		}
+
+		for _, project := range listProjects.Projects {
+			if !strings.HasPrefix(project.Name, "tf_tests") {
+				continue
+			}
+
+			listGrafanaUsers, err := cockpitAPI.ListGrafanaUsers(&cockpit.ListGrafanaUsersRequest{
+				ProjectID: project.ID,
+			}, scw.WithAllPages())
+			if err != nil {
+				if is404Error(err) {
+					return nil
+				}
+
+				return fmt.Errorf("failed to list grafana users: %w", err)
+			}
+
+			for _, grafanaUser := range listGrafanaUsers.GrafanaUsers {
+				err = cockpitAPI.DeleteGrafanaUser(&cockpit.DeleteGrafanaUserRequest{
+					ProjectID:     project.ID,
+					GrafanaUserID: grafanaUser.ID,
+				})
+				if err != nil {
+					if !is404Error(err) {
+						return fmt.Errorf("failed to delete grafana user: %w", err)
+					}
+				}
+			}
+		}
+
+		return nil
+	})
+}
 
 const (
 	grafanaTestUsername = "testuser"

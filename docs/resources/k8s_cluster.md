@@ -48,6 +48,8 @@ resource "scaleway_k8s_pool" "friend_from_outer_space" {
 }
 ```
 
+For a detailed example of how to add or run Elastic Metal servers instead of instances on your cluster, please refer to [this guide](../guides/multicloud_cluster_with_baremetal_servers.md).
+
 ### With additional configuration
 
 ```hcl
@@ -281,9 +283,9 @@ If you prefer keeping it, you should instead set it as `false`.
 
 - `default_pool` - (Deprecated) See below.
 
-- `region` - (Defaults to [provider](../index.md#region) `region`) The [region](../guides/regions_and_zones.md#regions) in which the cluster should be created.
+- `region` - (Defaults to [provider](../index.md#arguments-reference) `region`) The [region](../guides/regions_and_zones.md#regions) in which the cluster should be created.
 
-- `project_id` - (Defaults to [provider](../index.md#project_id) `project_id`) The ID of the project the cluster is associated with.
+- `project_id` - (Defaults to [provider](../index.md#arguments-reference) `project_id`) The ID of the project the cluster is associated with.
 
 
 ## Attributes Reference
@@ -291,6 +293,9 @@ If you prefer keeping it, you should instead set it as `false`.
 In addition to all above arguments, the following attributes are exported:
 
 - `id` - The ID of the cluster.
+
+~> **Important:** Kubernetes clusters' IDs are [regional](../guides/regions_and_zones.md#resource-ids), which means they are of the form `{region}/{id}`, e.g. `fr-par/11111111-1111-1111-1111-111111111111`
+
 - `created_at` - The creation date of the cluster.
 - `updated_at` - The last update date of the cluster.
 - `apiserver_url` - The URL of the Kubernetes API server.

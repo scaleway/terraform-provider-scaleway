@@ -40,6 +40,8 @@ In addition to all above arguments, the following attributes are exported:
 
 - `id` - The ID of the image.
 
+~> **Important:** Instance images' IDs are [zoned](../guides/regions_and_zones.md#resource-ids), which means they are of the form `{zone}/{id}`, e.g. `fr-par-1/11111111-1111-1111-1111-111111111111`
+
 - `organization_id` - The ID of the organization the image is associated with.
 
 - `project_id` - The ID of the project the image is associated with.

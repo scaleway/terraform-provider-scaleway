@@ -72,8 +72,8 @@ resource "scaleway_iam_group" "with_users" {
 
 ## Import
 
-IAM groups can be imported using the `{zone}/{id}`, e.g.
+IAM groups can be imported using the `{id}`, e.g.
 
 ```bash
-$ terraform import scaleway_iam_group.basic fr-par/11111111-1111-1111-1111-111111111111
+$ terraform import scaleway_iam_group.basic 11111111-1111-1111-1111-111111111111
 ```

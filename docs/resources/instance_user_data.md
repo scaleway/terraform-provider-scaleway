@@ -68,6 +68,14 @@ The following arguments are required:
     - string
     - UTF-8 encoded file content using [file](https://www.terraform.io/language/functions/file)
 
+## Attributes Reference
+
+In addition to all above arguments, the following attributes are exported:
+
+- `id` - The ID of the instance's user data.
+
+~> **Important:** Instances user data's IDs are [zoned](../guides/regions_and_zones.md#resource-ids), which means they are of the form `{zone}/{key}/{server_id}`, e.g. `fr-par-1/cloud-init/11111111-1111-1111-1111-111111111111`
+
 ## Import
 
 User data can be imported using the `{zone}/{key}/{server_id}`, e.g.
