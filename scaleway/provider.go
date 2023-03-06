@@ -202,6 +202,7 @@ func Provider(config *ProviderConfig) plugin.ProviderFunc {
 				"scaleway_lb_frontend":                         dataSourceScalewayLbFrontend(),
 				"scaleway_lb_frontends":                        dataSourceScalewayLbFrontends(),
 				"scaleway_lb_ip":                               dataSourceScalewayLbIP(),
+				"scaleway_lb_ips":                              dataSourceScalewayLbIPs(),
 				"scaleway_lb_route":                            dataSourceScalewayLbRoute(),
 				"scaleway_lb_routes":                           dataSourceScalewayLbRoutes(),
 				"scaleway_marketplace_image":                   dataSourceScalewayMarketplaceImage(),
