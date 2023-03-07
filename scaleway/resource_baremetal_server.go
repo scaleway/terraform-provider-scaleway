@@ -52,7 +52,7 @@ func resourceScalewayBaremetalServer() *schema.Resource {
 			"offer_id": {
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "name of the server offer",
+				Description: "ID of the server offer",
 			},
 			"offer_name": {
 				Type:        schema.TypeString,
