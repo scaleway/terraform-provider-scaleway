@@ -49,16 +49,22 @@ func resourceScalewayBaremetalServer() *schema.Resource {
 				ForceNew:    true,
 				Description: "ID or name of the server offer",
 			},
+			"offer_id": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "name of the server offer",
+			},
 			"offer_name": {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "name of the server offer",
 			},
 			"os": {
-				Type:         schema.TypeString,
-				Required:     true,
-				Description:  "The base image of the server",
-				ValidateFunc: validationUUIDorUUIDWithLocality(),
+				Type:             schema.TypeString,
+				Required:         true,
+				Description:      "The base image of the server",
+				DiffSuppressFunc: diffSuppressFuncLocality,
+				ValidateFunc:     validationUUIDorUUIDWithLocality(),
 			},
 			"os_name": {
 				Type:        schema.TypeString,
@@ -381,13 +387,13 @@ func resourceScalewayBaremetalServerRead(ctx context.Context, d *schema.Resource
 	_ = d.Set("zone", server.Zone.String())
 	_ = d.Set("organization_id", server.OrganizationID)
 	_ = d.Set("project_id", server.ProjectID)
-	_ = d.Set("offer", newZonedID(server.Zone, offer.ID).String())
+	_ = d.Set("offer_id", newZonedIDString(server.Zone, offer.ID))
 	_ = d.Set("offer_name", offer.Name)
 	_ = d.Set("tags", server.Tags)
 	_ = d.Set("domain", server.Domain)
 	_ = d.Set("ips", flattenBaremetalIPs(server.IPs))
 	if server.Install != nil {
-		_ = d.Set("os", newZonedID(server.Zone, os.ID).String())
+		_ = d.Set("os", newZonedIDString(server.Zone, os.ID))
 		_ = d.Set("os_name", os.Name)
 		_ = d.Set("ssh_key_ids", server.Install.SSHKeyIDs)
 		_ = d.Set("user", server.Install.User)
