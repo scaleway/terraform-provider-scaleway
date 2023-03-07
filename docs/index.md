@@ -34,7 +34,8 @@ Here is an example that will set up a web server with an additional volume, a pu
 
 You can test this config by creating a `test.tf` and run terraform commands from this directory:
 
-- Get your [Scaleway credentials](https://console.scaleway.com/account/credentials)
+- Get your [Scaleway credentials](https://console.scaleway.com/iam/api-keys)
+- Get your [project ID](https://console.scaleway.com/project/settings)
 - Initialize a Terraform working directory: `terraform init`
 - Generate and show the execution plan: `terraform plan`
 - Build the infrastructure: `terraform apply`
