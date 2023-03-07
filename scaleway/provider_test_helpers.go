@@ -50,8 +50,14 @@ func compareJSONFieldsStrings(expected, actual string) bool {
 	expectedHandled := expected
 	actualHandled := actual
 
+	// Remove s3 url suffix to allow comparison
+	if strings.HasSuffix(actual, ".s3-website.fr-par.scw.cloud") {
+		actual = strings.TrimSuffix(actual, ".s3-website.fr-par.scw.cloud")
+		expected = strings.TrimSuffix(expected, ".s3-website.fr-par.scw.cloud")
+	}
+
 	// Try to parse test generated name
-	if strings.Contains(expected, "-") {
+	if strings.Contains(actual, "-") {
 		expectedHandled = extractTestGeneratedNamePrefix(expected)
 		actualHandled = extractTestGeneratedNamePrefix(actual)
 	}
