@@ -150,8 +150,8 @@ The following arguments are supported:
 In addition to all above arguments, the following attributes are exported:
 
 - `id` - The ID of the server.
-- `offer_id` - The ID of the offer.
-- `os_id` - The ID of the os.
+- `offer_name` - The name of the offer.
+- `os_name` - The name of the os.
 - `private_network` - The private networks attached to the server.
     - `id` - The ID of the private network.
     - `vlan` - The VLAN ID associated to the private network.
