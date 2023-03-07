@@ -245,6 +245,9 @@ func TestAccScalewayBaremetalServer_AddOption(t *testing.T) {
 					  ssh_key_ids = [scaleway_account_ssh_key.base.id]
 					}
 				`, SSHKeyName, SSHKeyBaremetal, name),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayBaremetalServerExists(tt, "scaleway_baremetal_server.base"),
+				),
 			},
 			{
 				Config: fmt.Sprintf(`
@@ -330,6 +333,9 @@ func TestAccScalewayBaremetalServer_AddTwoOptionsThenDeleteOne(t *testing.T) {
 					  ssh_key_ids = [scaleway_account_ssh_key.base.id]
 					}
 				`, SSHKeyName, SSHKeyBaremetal, name),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayBaremetalServerExists(tt, "scaleway_baremetal_server.base"),
+				),
 			},
 			{
 				Config: fmt.Sprintf(`
@@ -560,6 +566,9 @@ func TestAccScalewayBaremetalServer_AddPrivateNetwork(t *testing.T) {
 						}
 					}
 				`, SSHKeyName, SSHKeyBaremetal, name),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayBaremetalServerExists(tt, "scaleway_baremetal_server.base"),
+				),
 			},
 			{
 				Config: fmt.Sprintf(`
