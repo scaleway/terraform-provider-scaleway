@@ -39,6 +39,7 @@ var QueryMatcherIgnore = []string{
 
 // BodyMatcherIgnore contains the list of json body keys that should be ignored when matching requests with cassettes
 var BodyMatcherIgnore = []string{
+	"organization", // like organization_id but deprecated
 	"organization_id",
 	"project_id",
 	"project", // like project_id but should be deprecated
