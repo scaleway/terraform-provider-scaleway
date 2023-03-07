@@ -129,7 +129,35 @@ func TestAccScalewayFlexibleIP_CreateAndAttachToBaremetalServer(t *testing.T) {
 
 						data "scaleway_baremetal_offer" "my_offer" {
 							zone = "fr-par-2"
-							name = "EM-A210R-HDD"
+							name = "EM-B112X-SSD"
+						}				
+
+						resource "scaleway_account_ssh_key" "main" {
+							name 	   = "%s"
+							public_key = "%s"
+						}
+
+						resource "scaleway_baremetal_server" "base" {
+							name        = "%s"
+							zone        = "fr-par-2"
+							offer       = data.scaleway_baremetal_offer.my_offer.offer_id
+							os          = data.scaleway_baremetal_os.by_id.os_id
+
+							ssh_key_ids = [ scaleway_account_ssh_key.main.id ]
+						}
+					`, SSHKeyName, SSHKeyFlexibleIP, name),
+			},
+			{
+				Config: fmt.Sprintf(`
+						data "scaleway_baremetal_os" "by_id" {
+							zone = "fr-par-2"
+							name = "Ubuntu"
+							version = "22.04 LTS (Jammy Jellyfish)"						
+						}
+
+						data "scaleway_baremetal_offer" "my_offer" {
+							zone = "fr-par-2"
+							name = "EM-B112X-SSD"
 						}				
 
 						resource "scaleway_account_ssh_key" "main" {
@@ -156,7 +184,6 @@ func TestAccScalewayFlexibleIP_CreateAndAttachToBaremetalServer(t *testing.T) {
 					testAccCheckScalewayFlexibleIPAttachedToBaremetalServer(tt, "scaleway_flexible_ip.base", "scaleway_baremetal_server.base"),
 					resource.TestCheckResourceAttr("scaleway_flexible_ip.base", "zone", "fr-par-2"),
 				),
-				ExpectNonEmptyPlan: true,
 			},
 		},
 	})
@@ -196,7 +223,35 @@ func TestAccScalewayFlexibleIP_AttachAndDetachFromBaremetalServer(t *testing.T) 
 
 						data "scaleway_baremetal_offer" "my_offer" {
 							zone = "fr-par-2"
-							name = "EM-A210R-HDD"
+							name = "EM-B112X-SSD"
+						}		
+
+						resource "scaleway_account_ssh_key" "main" {
+							name 	   = "%s"
+							public_key = "%s"
+						}
+
+						resource "scaleway_baremetal_server" "base" {
+							name        = "%s"
+							zone        = "fr-par-2"
+							offer       = data.scaleway_baremetal_offer.my_offer.offer_id
+							os          = data.scaleway_baremetal_os.by_id.os_id
+
+							ssh_key_ids = [ scaleway_account_ssh_key.main.id ]
+						}
+					`, SSHKeyName, SSHKeyFlexibleIP, name),
+			},
+			{
+				Config: fmt.Sprintf(`
+						data "scaleway_baremetal_os" "by_id" {
+							zone = "fr-par-2"
+							name = "Ubuntu"
+							version = "22.04 LTS (Jammy Jellyfish)"						
+						}
+
+						data "scaleway_baremetal_offer" "my_offer" {
+							zone = "fr-par-2"
+							name = "EM-B112X-SSD"
 						}		
 
 						resource "scaleway_account_ssh_key" "main" {
@@ -223,7 +278,6 @@ func TestAccScalewayFlexibleIP_AttachAndDetachFromBaremetalServer(t *testing.T) 
 					testAccCheckScalewayFlexibleIPAttachedToBaremetalServer(tt, "scaleway_flexible_ip.base", "scaleway_baremetal_server.base"),
 					resource.TestCheckResourceAttr("scaleway_flexible_ip.base", "zone", "fr-par-2"),
 				),
-				ExpectNonEmptyPlan: true,
 			},
 			{
 				Config: `

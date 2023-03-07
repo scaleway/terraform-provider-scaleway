@@ -30,7 +30,25 @@ func TestAccScalewayDataSourceBaremetalServer_Basic(t *testing.T) {
 						name        = "%s"
 						zone        = "fr-par-2"
 						description = "test a description"
-						offer       = "EM-A210R-HDD"
+						offer       = "EM-B112X-SSD"
+						os          = "d17d6872-0412-45d9-a198-af82c34d3c5c"
+					
+						ssh_key_ids = [ scaleway_account_ssh_key.main.id ]
+					}
+				`, SSHKeyName, SSHKeyBaremetal, name),
+			},
+			{
+				Config: fmt.Sprintf(`
+					resource "scaleway_account_ssh_key" "main" {
+						name       = "%s"
+						public_key = "%s"
+					}
+					
+					resource "scaleway_baremetal_server" "main" {
+						name        = "%s"
+						zone        = "fr-par-2"
+						description = "test a description"
+						offer       = "EM-B112X-SSD"
 						os          = "d17d6872-0412-45d9-a198-af82c34d3c5c"
 					
 						ssh_key_ids = [ scaleway_account_ssh_key.main.id ]
@@ -56,7 +74,6 @@ func TestAccScalewayDataSourceBaremetalServer_Basic(t *testing.T) {
 						"data.scaleway_baremetal_server.by_id", "name",
 						"scaleway_baremetal_server.main", "name"),
 				),
-				ExpectNonEmptyPlan: true,
 			},
 		},
 	})

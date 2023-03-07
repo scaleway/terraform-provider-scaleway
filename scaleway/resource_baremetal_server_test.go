@@ -201,7 +201,6 @@ func TestAccScalewayBaremetalServer_CreateServerWithOption(t *testing.T) {
 					testAccCheckScalewayBaremetalServerHasOptions(tt, "scaleway_baremetal_server.base"),
 					resource.TestCheckResourceAttrPair("scaleway_baremetal_server.base", "options.0.id", "data.scaleway_baremetal_option.private_network", "option_id"),
 				),
-				ExpectNonEmptyPlan: true,
 			},
 		},
 	})
@@ -246,10 +245,6 @@ func TestAccScalewayBaremetalServer_AddOption(t *testing.T) {
 					  ssh_key_ids = [scaleway_account_ssh_key.base.id]
 					}
 				`, SSHKeyName, SSHKeyBaremetal, name),
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayBaremetalServerExists(tt, "scaleway_baremetal_server.base"),
-				),
-				ExpectNonEmptyPlan: true,
 			},
 			{
 				Config: fmt.Sprintf(`
@@ -291,7 +286,6 @@ func TestAccScalewayBaremetalServer_AddOption(t *testing.T) {
 					testAccCheckScalewayBaremetalServerHasOptions(tt, "scaleway_baremetal_server.base"),
 					resource.TestCheckResourceAttrPair("scaleway_baremetal_server.base", "options.0.id", "data.scaleway_baremetal_option.private_network", "option_id"),
 				),
-				ExpectNonEmptyPlan: true,
 			},
 		},
 	})
@@ -336,10 +330,6 @@ func TestAccScalewayBaremetalServer_AddTwoOptionsThenDeleteOne(t *testing.T) {
 					  ssh_key_ids = [scaleway_account_ssh_key.base.id]
 					}
 				`, SSHKeyName, SSHKeyBaremetal, name),
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayBaremetalServerExists(tt, "scaleway_baremetal_server.base"),
-				),
-				ExpectNonEmptyPlan: true,
 			},
 			{
 				Config: fmt.Sprintf(`
@@ -398,7 +388,6 @@ func TestAccScalewayBaremetalServer_AddTwoOptionsThenDeleteOne(t *testing.T) {
 						"id": "fr-par-2/cd4158d7-2d65-49be-8803-c4b8ab6f760c",
 					}),
 				),
-				ExpectNonEmptyPlan: true,
 			},
 			{
 				Config: fmt.Sprintf(`
@@ -445,7 +434,6 @@ func TestAccScalewayBaremetalServer_AddTwoOptionsThenDeleteOne(t *testing.T) {
 						"expires_at": "2025-07-06T09:00:00Z",
 					}),
 				),
-				ExpectNonEmptyPlan: true,
 			},
 		},
 	})
@@ -513,7 +501,6 @@ func TestAccScalewayBaremetalServer_CreateServerWithPrivateNetwork(t *testing.T)
 					testAccCheckScalewayBaremetalServerHasPrivateNetwork(tt, "scaleway_baremetal_server.base"),
 					resource.TestCheckResourceAttrPair("scaleway_baremetal_server.base", "private_network.0.id", "scaleway_vpc_private_network.pn", "id"),
 				),
-				ExpectNonEmptyPlan: true,
 			},
 		},
 	})
@@ -573,10 +560,6 @@ func TestAccScalewayBaremetalServer_AddPrivateNetwork(t *testing.T) {
 						}
 					}
 				`, SSHKeyName, SSHKeyBaremetal, name),
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayBaremetalServerExists(tt, "scaleway_baremetal_server.base"),
-				),
-				ExpectNonEmptyPlan: true,
 			},
 			{
 				Config: fmt.Sprintf(`
@@ -626,7 +609,6 @@ func TestAccScalewayBaremetalServer_AddPrivateNetwork(t *testing.T) {
 					testAccCheckScalewayBaremetalServerHasPrivateNetwork(tt, "scaleway_baremetal_server.base"),
 					resource.TestCheckResourceAttrPair("scaleway_baremetal_server.base", "private_network.0.id", "scaleway_vpc_private_network.pn", "id"),
 				),
-				ExpectNonEmptyPlan: true,
 			},
 		},
 	})
@@ -694,7 +676,6 @@ func TestAccScalewayBaremetalServer_AddAnotherPrivateNetwork(t *testing.T) {
 					testAccCheckScalewayBaremetalServerHasPrivateNetwork(tt, "scaleway_baremetal_server.base"),
 					resource.TestCheckResourceAttrPair("scaleway_baremetal_server.base", "private_network.0.id", "scaleway_vpc_private_network.pn", "id"),
 				),
-				ExpectNonEmptyPlan: true,
 			},
 			{
 				Config: fmt.Sprintf(`
@@ -753,7 +734,6 @@ func TestAccScalewayBaremetalServer_AddAnotherPrivateNetwork(t *testing.T) {
 					resource.TestCheckTypeSetElemAttrPair("scaleway_baremetal_server.base", "private_network.*.id", "scaleway_vpc_private_network.pn", "id"),
 					resource.TestCheckTypeSetElemAttrPair("scaleway_baremetal_server.base", "private_network.*.id", "scaleway_vpc_private_network.pn2", "id"),
 				),
-				ExpectNonEmptyPlan: true,
 			},
 		},
 	})
