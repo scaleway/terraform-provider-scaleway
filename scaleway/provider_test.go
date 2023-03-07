@@ -72,13 +72,13 @@ func getTestFilePath(t *testing.T, suffix string) string {
 	return filepath.Join(".", "testdata", fileName)
 }
 
-func compareJSONFields(expected, actual interface{}) bool {
-	switch actual.(type) {
+func compareJSONFields(expected, actualI interface{}) bool {
+	switch actual := actualI.(type) {
 	case string:
 		if _, isString := expected.(string); !isString {
 			return false
 		}
-		return compareJSONFieldsStrings(expected.(string), actual.(string))
+		return compareJSONFieldsStrings(expected.(string), actual)
 	default:
 		// Consider equality when not handled
 		return true
