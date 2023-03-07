@@ -498,12 +498,12 @@ func resourceScalewayBaremetalServerUpdate(ctx context.Context, d *schema.Resour
 	hasChanged := false
 
 	if d.HasChange("name") {
-		req.Name = expandUpdatedStringPtr("name")
+		req.Name = expandUpdatedStringPtr(d.Get("name"))
 		hasChanged = true
 	}
 
 	if d.HasChange("description") {
-		req.Description = expandUpdatedStringPtr("description")
+		req.Description = expandUpdatedStringPtr(d.Get("description"))
 		hasChanged = true
 	}
 
