@@ -76,6 +76,9 @@ The following arguments are supported:
 In addition to all arguments above, the following attributes are exported:
 
 - `id` - The ID of the Database read replica.
+
+~> **Important:** Database read replicas' IDs are [regional](../guides/regions_and_zones.md#resource-ids), which means they are of the form `{region}/{id}`, e.g. `fr-par/11111111-1111-1111-1111-111111111111`
+
 - `direct_access` - List of load balancer endpoints of the database read replica.
     - `endpoint_id` - The ID of the endpoint of the read replica.
     - `ip` - IPv4 address of the endpoint (IP address). Only one of ip and hostname may be set.

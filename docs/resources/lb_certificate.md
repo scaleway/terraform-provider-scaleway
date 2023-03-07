@@ -72,11 +72,16 @@ The following arguments are supported:
 
 ~> **Important:** Updates to `custom_certificate` will recreate the load-balancer certificate.
 
+- `zone` - (Defaults to [provider](../index.md#zone) `zone`) The [zone](../guides/regions_and_zones.md#zones) of the certificate.
+
 ## Attributes Reference
 
 In addition to all arguments above, the following attributes are exported:
 
 - `id` - The ID of the load-balancer certificate.
+
+~> **Important:** Load-Balancers certificates' IDs are [zoned](../guides/regions_and_zones.md#resource-ids), which means they are of the form `{zone}/{id}`, e.g. `fr-par-1/11111111-1111-1111-1111-111111111111`
+
 - `common_name` - Main domain of the certificate
 - `subject_alternative_name` - The alternative domain names of the certificate
 - `fingerprint` - The identifier (SHA-1) of the certificate

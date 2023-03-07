@@ -3,6 +3,7 @@ package scaleway
 import (
 	"context"
 	"fmt"
+	"net"
 	"reflect"
 	"strings"
 	"time"
@@ -296,9 +297,10 @@ func flattenLbHCHTTP(config *lbSDK.HealthCheckHTTPConfig) interface{} {
 	}
 	return []map[string]interface{}{
 		{
-			"uri":    config.URI,
-			"method": config.Method,
-			"code":   flattenInt32Ptr(config.Code),
+			"uri":         config.URI,
+			"method":      config.Method,
+			"code":        flattenInt32Ptr(config.Code),
+			"host_header": config.HostHeader,
 		},
 	}
 }
@@ -309,9 +311,10 @@ func expandLbHCHTTP(raw interface{}) *lbSDK.HealthCheckHTTPConfig {
 	}
 	rawMap := raw.([]interface{})[0].(map[string]interface{})
 	return &lbSDK.HealthCheckHTTPConfig{
-		URI:    rawMap["uri"].(string),
-		Method: rawMap["method"].(string),
-		Code:   expandInt32Ptr(rawMap["code"]),
+		URI:        rawMap["uri"].(string),
+		Method:     rawMap["method"].(string),
+		Code:       expandInt32Ptr(rawMap["code"]),
+		HostHeader: rawMap["host_header"].(string),
 	}
 }
 
@@ -321,9 +324,11 @@ func flattenLbHCHTTPS(config *lbSDK.HealthCheckHTTPSConfig) interface{} {
 	}
 	return []map[string]interface{}{
 		{
-			"uri":    config.URI,
-			"method": config.Method,
-			"code":   flattenInt32Ptr(config.Code),
+			"uri":         config.URI,
+			"method":      config.Method,
+			"code":        flattenInt32Ptr(config.Code),
+			"host_header": config.HostHeader,
+			"sni":         config.Sni,
 		},
 	}
 }
@@ -335,9 +340,11 @@ func expandLbHCHTTPS(raw interface{}) *lbSDK.HealthCheckHTTPSConfig {
 
 	rawMap := raw.([]interface{})[0].(map[string]interface{})
 	return &lbSDK.HealthCheckHTTPSConfig{
-		URI:    rawMap["uri"].(string),
-		Method: rawMap["method"].(string),
-		Code:   expandInt32Ptr(rawMap["code"]),
+		URI:        rawMap["uri"].(string),
+		Method:     rawMap["method"].(string),
+		Code:       expandInt32Ptr(rawMap["code"]),
+		HostHeader: rawMap["host_header"].(string),
+		Sni:        rawMap["sni"].(string),
 	}
 }
 
@@ -533,4 +540,52 @@ func attachLBPrivateNetwork(ctx context.Context, lbAPI *lbSDK.ZonedAPI, zone scw
 	}
 
 	return privateNetworks, nil
+}
+
+func flattenLbInstances(instances []*lbSDK.Instance) interface{} {
+	if instances == nil {
+		return nil
+	}
+	flattenedInstances := []map[string]interface{}(nil)
+	for _, instance := range instances {
+		flattenedInstances = append(flattenedInstances, map[string]interface{}{
+			"id":         instance.ID,
+			"status":     instance.Status.String(),
+			"ip_address": instance.IPAddress,
+			"created_at": flattenTime(instance.CreatedAt),
+			"updated_at": flattenTime(instance.UpdatedAt),
+			"zone":       instance.Zone,
+		})
+	}
+	return flattenedInstances
+}
+
+func flattenLbIPs(ips []*lbSDK.IP) interface{} {
+	if ips == nil {
+		return nil
+	}
+	flattenedIPs := []map[string]interface{}(nil)
+	for _, ip := range ips {
+		flattenedIPs = append(flattenedIPs, map[string]interface{}{
+			"id":              ip.ID,
+			"ip_address":      ip.IPAddress,
+			"reverse":         ip.Reverse,
+			"organization_id": ip.OrganizationID,
+			"project_id":      ip.ProjectID,
+			"zone":            ip.Zone,
+			"lb_id":           flattenStringPtr(ip.LBID),
+		})
+	}
+	return flattenedIPs
+}
+
+func ipv4Match(cidr, ipStr string) bool {
+	_, cidrNet, err := net.ParseCIDR(cidr)
+	if err != nil {
+		return false
+	}
+
+	ip := net.ParseIP(ipStr)
+
+	return cidrNet.Contains(ip)
 }

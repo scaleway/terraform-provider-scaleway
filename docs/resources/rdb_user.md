@@ -45,9 +45,15 @@ The following arguments are supported:
 
 - `region` - The Scaleway region this resource resides in.
 
+## Attributes Reference
+
+In addition to all arguments above, the following attributes are exported:
+
+- `id` - The ID of the user, which is of the form `{region}/{instance_id}/{user_name}`, e.g. `fr-par/11111111-1111-1111-1111-111111111111/admin`
+
 ## Import
 
-Database User can be imported using `{region}/{instance_id}/{name}`, e.g.
+Database User can be imported using `{region}/{instance_id}/{user_name}`, e.g.
 
 ```bash
 $ terraform import scaleway_rdb_user.admin fr-par/11111111-1111-1111-1111-111111111111/admin

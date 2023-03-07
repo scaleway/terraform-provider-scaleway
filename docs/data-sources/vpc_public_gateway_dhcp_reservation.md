@@ -129,7 +129,11 @@ data "scaleway_vpc_public_gateway_dhcp_reservation" "by_id" {
 
 ## Attributes Reference
 
-The following arguments are exported:
+In addition to all above arguments, the following attributes are exported:
+
+- `id` - The ID of the public gateway DHCP Reservation config.
+
+~> **Important:** Public gateway DHCP reservations configurations' IDs are [zoned](../guides/regions_and_zones.md#resource-ids), which means they are of the form `{zone}/{id}`, e.g. `fr-par-1/11111111-1111-1111-1111-111111111111`
 
 - `gateway_network_id` - The ID of the owning GatewayNetwork.
 - `ip_address` - The IP address to give to the machine (IP address).

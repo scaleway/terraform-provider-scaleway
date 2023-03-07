@@ -184,6 +184,7 @@ func resourceScalewayK8SCluster() *schema.Resource {
 			"kubeconfig": {
 				Type:        schema.TypeList,
 				Computed:    true,
+				Sensitive:   true,
 				Description: "The kubeconfig configuration file of the Kubernetes cluster",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{

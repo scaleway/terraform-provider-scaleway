@@ -40,6 +40,8 @@ In addition to all above arguments, the following attributes are exported:
 
 - `id` - The ID of the Transaction Email Domain.
 
+~> **Important:** Transaction Email Domains' IDs are [regional](../guides/regions_and_zones.md#resource-ids), which means they are of the form `{region}/{id}`, e.g. `fr-par/11111111-1111-1111-1111-111111111111`
+
 - `status` - The status of the Transaction Email Domain.
 
 - `created_at` - The date and time of the Transaction Email Domain's creation (RFC 3339 format).

@@ -183,6 +183,9 @@ Please consult the [GoDoc](https://pkg.go.dev/github.com/scaleway/scaleway-sdk-g
 In addition to all arguments above, the following attributes are exported:
 
 - `id` - The ID of the Database Instance.
+
+~> **Important:** Database instances' IDs are [regional](../guides/regions_and_zones.md#resource-ids), which means they are of the form `{region}/{id}`, e.g. `fr-par/11111111-1111-1111-1111-111111111111`
+
 - `endpoint_ip` - (Deprecated) The IP of the Database Instance.
 - `endpoint_port` - (Deprecated) The port of the Database Instance.
 - `read_replicas` - List of read replicas of the database instance.

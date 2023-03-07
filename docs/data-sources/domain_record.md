@@ -48,6 +48,10 @@ data "scaleway_domain_record" "by_id" {
 
 In addition to all arguments above, the following attributes are exported:
 
+- `id` - The ID of the record.
+
+~> **Important:** Domain records' IDs are of the form `{dns_zone}/{id}`, e.g. `subdomain.domain.tld/11111111-1111-1111-1111-111111111111`
+
 - `ttl` - Time To Live of the record in seconds.
 - `priority` - The priority of the record (mostly used with an `MX` record)
 - `geo_ip` - Dynamic record base on user geolocalisation ([More information about dynamic records](../resources/domain_record.md#dynamic-records))

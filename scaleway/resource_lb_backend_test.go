@@ -154,6 +154,7 @@ func TestAccScalewayLbBackend_HealthCheck(t *testing.T) {
 							uri = "http://test.com/health"
 							method = "POST"
 							code = 404
+							host_header = "test.com"
 						}
 					}
 				`,
@@ -161,6 +162,10 @@ func TestAccScalewayLbBackend_HealthCheck(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_lb_backend.bkd01", "health_check_tcp.#", "0"),
 					resource.TestCheckResourceAttr("scaleway_lb_backend.bkd01", "health_check_http.#", "1"),
 					resource.TestCheckResourceAttr("scaleway_lb_backend.bkd01", "health_check_https.#", "0"),
+					resource.TestCheckResourceAttr("scaleway_lb_backend.bkd01", "health_check_http.0.uri", "http://test.com/health"),
+					resource.TestCheckResourceAttr("scaleway_lb_backend.bkd01", "health_check_http.0.method", "POST"),
+					resource.TestCheckResourceAttr("scaleway_lb_backend.bkd01", "health_check_http.0.code", "404"),
+					resource.TestCheckResourceAttr("scaleway_lb_backend.bkd01", "health_check_http.0.host_header", "test.com"),
 				),
 			},
 			{
@@ -182,6 +187,8 @@ func TestAccScalewayLbBackend_HealthCheck(t *testing.T) {
 							uri = "http://test.com/health"
 							method = "POST"
 							code = 404
+							host_header = "test.com"
+							sni = "sni.test.com"
 						}
 					}
 				`,
@@ -189,6 +196,11 @@ func TestAccScalewayLbBackend_HealthCheck(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_lb_backend.bkd01", "health_check_tcp.#", "0"),
 					resource.TestCheckResourceAttr("scaleway_lb_backend.bkd01", "health_check_http.#", "0"),
 					resource.TestCheckResourceAttr("scaleway_lb_backend.bkd01", "health_check_https.#", "1"),
+					resource.TestCheckResourceAttr("scaleway_lb_backend.bkd01", "health_check_https.0.uri", "http://test.com/health"),
+					resource.TestCheckResourceAttr("scaleway_lb_backend.bkd01", "health_check_https.0.method", "POST"),
+					resource.TestCheckResourceAttr("scaleway_lb_backend.bkd01", "health_check_https.0.code", "404"),
+					resource.TestCheckResourceAttr("scaleway_lb_backend.bkd01", "health_check_https.0.host_header", "test.com"),
+					resource.TestCheckResourceAttr("scaleway_lb_backend.bkd01", "health_check_https.0.sni", "sni.test.com"),
 				),
 			},
 		},

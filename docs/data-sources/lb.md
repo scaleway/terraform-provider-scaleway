@@ -34,6 +34,8 @@ In addition to all arguments above, the following attributes are exported:
 
 - `id` - The ID of the load-balancer.
 
+~> **Important:** Load-Balancers' IDs are [zoned](../guides/regions_and_zones.md#resource-ids), which means they are of the form `{zone}/{id}`, e.g. `fr-par-1/11111111-1111-1111-1111-111111111111`
+
 - `ip_address` - The load-balancer public IP Address.
 
 - `type` - The type of the load-balancer.

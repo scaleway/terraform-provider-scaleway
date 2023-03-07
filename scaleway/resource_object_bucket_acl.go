@@ -387,7 +387,7 @@ func resourceBucketACLRead(ctx context.Context, d *schema.ResourceData, meta int
 		return diag.FromErr(fmt.Errorf("error setting access_control_policy: %w", err))
 	}
 	_ = d.Set("region", region)
-	_ = d.Set("project_id", *normalizeOwnerID(output.Owner.ID))
+	_ = d.Set("project_id", normalizeOwnerID(output.Owner.ID))
 	_ = d.Set("bucket", expandID(bucket))
 
 	return nil
@@ -439,7 +439,7 @@ func resourceBucketACLUpdate(ctx context.Context, d *schema.ResourceData, meta i
 	return resourceBucketACLRead(ctx, d, meta)
 }
 
-func resourceBucketACLDelete(ctx context.Context, data *schema.ResourceData, i interface{}) diag.Diagnostics {
+func resourceBucketACLDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	tflog.Warn(ctx, "[WARN] Cannot destroy Object Bucket ACL. Terraform will remove this resource from the state file, however resources may remain.")
 	return nil
 }

@@ -142,7 +142,7 @@ func resourceScalewayObjectBucketPolicyRead(ctx context.Context, d *schema.Resou
 	if err != nil {
 		return diag.FromErr(fmt.Errorf("couldn't read bucket acl: %s", err))
 	}
-	_ = d.Set("project_id", *normalizeOwnerID(acl.Owner.ID))
+	_ = d.Set("project_id", normalizeOwnerID(acl.Owner.ID))
 
 	return nil
 }

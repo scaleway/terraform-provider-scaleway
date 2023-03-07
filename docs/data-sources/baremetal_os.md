@@ -32,3 +32,11 @@ data "scaleway_baremetal_os" "by_id" {
 - `version` - (Optional) The os version.
 - `os_id` - (Optional) The operating system id. Only one of `name` and `os_id` should be specified.
 - `zone` - (Defaults to [provider](../index.md#zone) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which the os exists.
+
+## Attributes Reference
+
+In addition to all above arguments, the following attributes are exported:
+
+- `id` - The resource's ID
+
+~> **Important:** Baremetal operating systems' IDs are [zoned](../guides/regions_and_zones.md#resource-ids), which means they are of the form `{zone}/{id}`, e.g. `fr-par-1/11111111-1111-1111-1111-111111111111`
