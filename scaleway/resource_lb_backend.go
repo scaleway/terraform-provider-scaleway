@@ -199,6 +199,11 @@ func resourceScalewayLbBackend() *schema.Resource {
 							Optional:    true,
 							Description: "The expected HTTP status code",
 						},
+						"host_header": {
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "The HTTP host header to use for HC requests",
+						},
 					},
 				},
 			},
@@ -225,6 +230,16 @@ func resourceScalewayLbBackend() *schema.Resource {
 							Default:     200,
 							Optional:    true,
 							Description: "The expected HTTP status code",
+						},
+						"host_header": {
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "The HTTP host header to use for HC requests",
+						},
+						"sni": {
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "The SNI to use for HC requests over SSL",
 						},
 					},
 				},

@@ -47,4 +47,7 @@ data "scaleway_object_bucket" "selected" {
 In addition to all above arguments, the following attribute is exported:
 
 * `id` - The unique name of the bucket.
+
+~> **Important:** Object buckets' IDs are [regional](../guides/regions_and_zones.md#resource-ids), which means they are of the form `{region}/{name}`, e.g. `fr-par/bucket-name`
+
 * `endpoint` - The endpoint URL of the bucket

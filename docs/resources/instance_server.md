@@ -254,6 +254,9 @@ attached to the server. Updates to this field will trigger a stop/start of the s
 In addition to all above arguments, the following attributes are exported:
 
 - `id` - The ID of the server.
+
+~> **Important:** Instance servers' IDs are [zoned](../guides/regions_and_zones.md#resource-ids), which means they are of the form `{zone}/{id}`, e.g. `fr-par-1/11111111-1111-1111-1111-111111111111`
+
 - `placement_group_policy_respected` - True when the placement group policy is respected.
 - `root_volume`
     - `volume_id` - The volume ID of the root volume of the server.

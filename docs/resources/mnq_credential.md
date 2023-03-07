@@ -66,7 +66,10 @@ The following arguments are supported:
 
 In addition to all arguments above, the following attributes are exported:
 
-- `id` - The credential ID (UUID format).
+- `id` - The credential ID.
+
+~> **Important:** Messaging and Queuing credentials' IDs are [regional](../guides/regions_and_zones.md#resource-ids), which means they are of the form `{region}/{id}`, e.g. `fr-par/11111111-1111-1111-1111-111111111111`
+
 - `protocol` - The protocol associated to the Credential. Possible values are `nats` and `sqs_sns`.
 - `sqs_sns_credentials` - The credential used to connect to the SQS/SNS service.
     - `access_key` - The ID of the key.

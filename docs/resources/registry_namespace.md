@@ -42,6 +42,9 @@ The following arguments are supported:
 In addition to all arguments above, the following attributes are exported:
 
 - `id` - The ID of the namespace
+
+~> **Important:** Registry namespaces' IDs are [regional](../guides/regions_and_zones.md#resource-ids), which means they are of the form `{region}/{id}`, e.g. `fr-par/11111111-1111-1111-1111-111111111111`
+
 - `endpoint` - Endpoint reachable by Docker.
 - `organization_id` - The organization ID the namespace is associated with.
 

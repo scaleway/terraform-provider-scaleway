@@ -50,11 +50,11 @@ The following arguments are supported:
 
 In addition to all arguments above, the following attributes are exported:
 
+- `id` - The ID of the backup, which is of the form `{region}/{id}`, e.g. `fr-par/11111111-1111-1111-1111-111111111111`
 - `size` - Size of the backup (in bytes).
 - `instance_name` - Name of the instance of the backup.
 - `created_at` - Creation date (Format ISO 8601).
 - `updated_at` - Updated date (Format ISO 8601).
-
 
 ## Import
 
