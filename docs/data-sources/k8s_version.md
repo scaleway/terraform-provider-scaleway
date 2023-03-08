@@ -13,8 +13,17 @@ You can also use the [scaleway-cli](https://github.com/scaleway/scaleway-cli) wi
 
 ## Example Usage
 
+### Use the latest version
+
 ```hcl
-# Get info by os name 
+data "scaleway_k8s_version" "latest" {
+  name = "latest"
+}
+```
+
+### Use a specific version
+
+```hcl
 data "scaleway_k8s_version" "by_name" {
   name = "1.26.0"
 }
@@ -28,6 +37,10 @@ data "scaleway_k8s_version" "by_name" {
 ## Attributes Reference
 
 In addition to all above arguments, the following attributes are exported:
+
+- `id` - The ID of the version.
+
+~> **Important:** Kubernetes versions' IDs are [regional](../guides/regions_and_zones.md#resource-ids), which means they are of the form `{region}/{name}`, e.g. `fr-par/1.1.1`
 
 - `available_cnis` - The list of supported Container Network Interface (CNI) plugins for this version.
 - `available_container_runtimes` - The list of supported container runtimes for this version.
