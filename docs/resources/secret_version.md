@@ -39,7 +39,7 @@ The following arguments are supported:
 
 ## Data
 
-Note: The `data` is already handle on the SDK, avoid double encoded.
+Note: The `data` should be a base64 encoded string when sent from the API. **It is already handled by the provider so you don't need to encode it yourself.**
 
 Updates to `data` will force new the secret version.
 
