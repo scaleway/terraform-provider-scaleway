@@ -61,7 +61,7 @@ In addition to all arguments above, the following attributes are exported:
 
 The Secret Version can be imported using the `{region}/{id}/{revision}`, e.g.
 
-~> **Important:** Be aware if you import with revision `latest` you will overwrite your version if you used before.
+~> **Important:** Be aware if you import with revision `latest` you will overwrite the version you used before.
 
 ```bash
 $ terraform import scaleway_secret.main fr-par/11111111-1111-1111-1111-111111111111/2
