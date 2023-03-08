@@ -696,10 +696,6 @@ func diffSuppressFuncTimeRFC3339(k, oldValue, newValue string, d *schema.Resourc
 	return t1.Equal(t2)
 }
 
-func diffSuppressFuncBase64(oldValue string, newValue string, value string, d *schema.ResourceData) bool {
-	return oldValue == newValue
-}
-
 func diffSuppressFuncIgnoreCase(k, oldValue, newValue string, d *schema.ResourceData) bool {
 	return strings.EqualFold(oldValue, newValue)
 }

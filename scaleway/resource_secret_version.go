@@ -2,7 +2,6 @@ package scaleway
 
 import (
 	"context"
-	"encoding/base64"
 	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -32,12 +31,11 @@ func resourceScalewaySecretVersion() *schema.Resource {
 				DiffSuppressFunc: diffSuppressFuncLocality,
 			},
 			"data": {
-				Type:             schema.TypeString,
-				Required:         true,
-				Description:      "The data payload of your secret version on 64 mode",
-				Sensitive:        true,
-				ForceNew:         true,
-				DiffSuppressFunc: diffSuppressFuncBase64,
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: "The data payload of your secret version.",
+				Sensitive:   true,
+				ForceNew:    true,
 				StateFunc: func(i interface{}) string {
 					return base64Encoded([]byte(i.(string)))
 				},
@@ -80,17 +78,13 @@ func resourceScalewaySecretVersionCreate(ctx context.Context, d *schema.Resource
 
 	secretID := expandID(d.Get("secret_id").(string))
 	payloadSecretRaw := []byte(d.Get("data").(string))
-	if !isBase64Encoded(payloadSecretRaw) {
-		return diag.FromErr(fmt.Errorf("data payload mush be base64 encoded"))
-	}
-	payloadSecret, err := base64.StdEncoding.DecodeString(d.Get("data").(string))
 	if err != nil {
 		return diag.FromErr(err)
 	}
 	secretCreateVersionRequest := &secret.CreateSecretVersionRequest{
 		Region:      region,
 		SecretID:    secretID,
-		Data:        payloadSecret,
+		Data:        payloadSecretRaw,
 		Description: expandStringPtr(d.Get("description")),
 	}
 
@@ -104,7 +98,7 @@ func resourceScalewaySecretVersionCreate(ctx context.Context, d *schema.Resource
 		return diag.FromErr(err)
 	}
 
-	_ = d.Set("data", base64Encoded(payloadSecret))
+	_ = d.Set("data", base64Encoded(payloadSecretRaw))
 
 	d.SetId(newRegionalIDString(region, fmt.Sprintf("%s/%d", secretResponse.SecretID, secretResponse.Revision)))
 

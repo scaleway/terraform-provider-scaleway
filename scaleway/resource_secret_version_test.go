@@ -33,7 +33,7 @@ func TestAccScalewaySecretVersion_Basic(t *testing.T) {
 				resource "scaleway_secret_version" "v1" {
 				  description = "version1"
 				  secret_id   = scaleway_secret.main.id
-				  data        = base64encode("%s")
+				  data        = "%s"
 				}
 				`, secretName, secretDescription, secretVersionData),
 				Check: resource.ComposeTestCheckFunc(
@@ -57,7 +57,7 @@ func TestAccScalewaySecretVersion_Basic(t *testing.T) {
 				resource "scaleway_secret_version" "v1" {
 				  description = "%s"
 				  secret_id   = scaleway_secret.main.id
-				  data        = base64encode("%s")
+				  data        = "%s"
 				}
 				`, secretName, secretDescription, secretVersionDescription, secretVersionData),
 				Check: resource.ComposeTestCheckFunc(
@@ -87,7 +87,7 @@ func TestAccScalewaySecretVersion_Basic(t *testing.T) {
 				resource "scaleway_secret_version" "v2" {
 				  description = "version2"
 				  secret_id   = scaleway_secret.main.id
-				  data        = base64encode("another_secret")
+				  data        = "another_secret"
 				}
 				`, secretName, secretDescription, secretVersionDescription, secretVersionData),
 				Check: resource.ComposeTestCheckFunc(
