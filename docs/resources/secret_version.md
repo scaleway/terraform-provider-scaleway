@@ -41,7 +41,7 @@ The following arguments are supported:
 
 Note: The `data` should be a base64 encoded string when sent from the API. **It is already handled by the provider so you don't need to encode it yourself.**
 
-Updates to `data` will force new the secret version.
+Updating `data` will force creating a new the secret version.
 
 Be aware that this is a sensitive attribute. For more information, see [Sensitive Data in State](https://developer.hashicorp.com/terraform/language/state/sensitive-data).
 
