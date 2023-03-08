@@ -68,9 +68,11 @@ func dataSourceScalewayK8SVersionRead(ctx context.Context, d *schema.ResourceDat
 		if err != nil {
 			return diag.FromErr(err)
 		}
-		if len(res.Versions) > 1 {
-			version = res.Versions[0]
+		if len(res.Versions) == 0 {
+			return diag.FromErr(fmt.Errorf("could not find the latest version"))
 		}
+
+		version = res.Versions[0]
 	} else {
 		res, err := k8sAPI.GetVersion(&k8s.GetVersionRequest{
 			Region:      region,
