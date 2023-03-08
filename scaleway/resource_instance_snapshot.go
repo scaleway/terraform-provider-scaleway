@@ -99,6 +99,7 @@ func resourceScalewayInstanceSnapshot() *schema.Resource {
 			"organization_id": organizationIDSchema(),
 			"project_id":      projectIDSchema(),
 		},
+		CustomizeDiff: customizeDiffLocalityCheck("volume_id"),
 	}
 }
 

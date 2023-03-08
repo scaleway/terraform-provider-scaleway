@@ -92,6 +92,22 @@ func waitForFunctionCron(ctx context.Context, functionAPI *function.API, region 
 	}, scw.WithContext(ctx))
 }
 
+func waitForFunctionDomain(ctx context.Context, functionAPI *function.API, region scw.Region, id string, timeout time.Duration) (*function.Domain, error) {
+	retryInterval := defaultFunctionRetryInterval
+	if DefaultWaitRetryInterval != nil {
+		retryInterval = *DefaultWaitRetryInterval
+	}
+
+	domain, err := functionAPI.WaitForDomain(&function.WaitForDomainRequest{
+		Region:        region,
+		DomainID:      id,
+		RetryInterval: &retryInterval,
+		Timeout:       scw.TimeDurationPtr(timeout),
+	}, scw.WithContext(ctx))
+
+	return domain, err
+}
+
 func functionUpload(ctx context.Context, m interface{}, functionAPI *function.API, region scw.Region, functionID string, zipFile string) error {
 	meta := m.(*Meta)
 	zipStat, err := os.Stat(zipFile)
@@ -167,4 +183,18 @@ func functionDeploy(ctx context.Context, functionAPI *function.API, region scw.R
 		return fmt.Errorf("failed to deploy function")
 	}
 	return nil
+}
+
+func expandFunctionsSecrets(secretsRawMap interface{}) []*function.Secret {
+	secretsMap := secretsRawMap.(map[string]interface{})
+	secrets := make([]*function.Secret, 0, len(secretsMap))
+
+	for k, v := range secretsMap {
+		secrets = append(secrets, &function.Secret{
+			Key:   k,
+			Value: expandStringPtr(v),
+		})
+	}
+
+	return secrets
 }

@@ -6,9 +6,6 @@ Manages Scaleway IAM Groups.
 
 # scaleway_iam_group
 
-| WARNING: This resource is in beta version. If your are in the beta group, please set the variable `SCW_ENABLE_BETA=true` in your `env` in order to use this resource. |
-|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-
 Creates and manages Scaleway IAM Groups.
 For more information, see [the documentation](https://developers.scaleway.com/en/products/iam/api/v1alpha1/#groups-f592eb).
 
@@ -18,10 +15,10 @@ For more information, see [the documentation](https://developers.scaleway.com/en
 
 ```hcl
 resource "scaleway_iam_group" "basic" {
-  name = "iam_group_basic"
-  description = "basic description"
+  name            = "iam_group_basic"
+  description     = "basic description"
   application_ids = []
-  user_ids = []
+  user_ids        = []
 }
 ```
 
@@ -51,13 +48,13 @@ locals {
 
 data "scaleway_iam_user" "users" {
   for_each = local.users
-  email = each.value
+  email    = each.value
 }
 
 resource "scaleway_iam_group" "with_users" {
-  name = "iam_group_with_app"
+  name            = "iam_group_with_app"
   application_ids = []
-  user_ids = [for user in data.scaleway_iam_user.users : user.id]
+  user_ids        = [for user in data.scaleway_iam_user.users : user.id]
 }
 ```
 
@@ -71,10 +68,12 @@ resource "scaleway_iam_group" "with_users" {
 
 - `user_ids` - (Optional) The list of IDs of the users attached to the group.
 
+- `organization_id` - (Defaults to [provider](../index.md#organization_d) `organization_id`) The ID of the organization the group is associated with.
+
 ## Import
 
-IAM groups can be imported using the `{zone}/{id}`, e.g.
+IAM groups can be imported using the `{id}`, e.g.
 
 ```bash
-$ terraform import scaleway_iam_group.basic fr-par/11111111-1111-1111-1111-111111111111
+$ terraform import scaleway_iam_group.basic 11111111-1111-1111-1111-111111111111
 ```

@@ -41,7 +41,14 @@ func resourceScalewayAccountProject() *schema.Resource {
 				Computed:    true,
 				Description: "The date and time of the last update of the Project (Format ISO 8601)",
 			},
-			"organization_id": organizationIDSchema(),
+			"organization_id": {
+				Type:         schema.TypeString,
+				Description:  "The organization_id you want to attach the resource to",
+				Optional:     true,
+				ForceNew:     true,
+				Computed:     true,
+				ValidateFunc: validationUUID(),
+			},
 		},
 	}
 }
@@ -49,10 +56,16 @@ func resourceScalewayAccountProject() *schema.Resource {
 func resourceScalewayAccountProjectCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	accountAPI := accountV2API(meta)
 
-	res, err := accountAPI.CreateProject(&accountV2.CreateProjectRequest{
-		Name:        expandOrGenerateString(d.Get("name"), "project-"),
+	request := &accountV2.CreateProjectRequest{
+		Name:        expandOrGenerateString(d.Get("name"), "project"),
 		Description: expandStringPtr(d.Get("description").(string)),
-	}, scw.WithContext(ctx))
+	}
+
+	if organisationIDRaw, exist := d.GetOk("organization_id"); exist {
+		request.OrganizationID = organisationIDRaw.(string)
+	}
+
+	res, err := accountAPI.CreateProject(request, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
 	}

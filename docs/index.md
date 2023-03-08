@@ -34,7 +34,8 @@ Here is an example that will set up a web server with an additional volume, a pu
 
 You can test this config by creating a `test.tf` and run terraform commands from this directory:
 
-- Get your [Scaleway credentials](https://console.scaleway.com/account/credentials)
+- Get your [Scaleway credentials](https://console.scaleway.com/iam/api-keys)
+- Get your [project ID](https://console.scaleway.com/project/settings)
 - Initialize a Terraform working directory: `terraform init`
 - Generate and show the execution plan: `terraform plan`
 - Build the infrastructure: `terraform apply`
@@ -214,13 +215,14 @@ resource "scaleway_instance_ip" "server_ip" {
 
 In addition to [generic provider arguments](https://www.terraform.io/docs/configuration/providers.html) (e.g. `alias` and `version`), the following arguments are supported in the Scaleway provider block:
 
-| Provider Argument | [Environment Variables](#environment-variables) | Description                                                                                                                             | Mandatory |
-|-------------------|-------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------|-----------|
-| `access_key`      | `SCW_ACCESS_KEY`                                | [Scaleway access key](https://console.scaleway.com/project/credentials)                                                                 | ✅        |
-| `secret_key`      | `SCW_SECRET_KEY`                                | [Scaleway secret key](https://console.scaleway.com/project/credentials)                                                                 | ✅        |
-| `project_id`      | `SCW_DEFAULT_PROJECT_ID`                        | The [project ID](https://console.scaleway.com/project/settings) that will be used as default value for all resources.                   | ✅        |
-| `region`          | `SCW_DEFAULT_REGION`                            | The [region](./guides/regions_and_zones.md#regions)  that will be used as default value for all resources. (`fr-par` if none specified) |           |
-| `zone`            | `SCW_DEFAULT_ZONE`                              | The [zone](./guides/regions_and_zones.md#zones) that will be used as default value for all resources. (`fr-par-1` if none specified)    |           |
+| Provider Argument | [Environment Variables](#environment-variables) | Description                                                                                                                                      | Mandatory |
+| ----------------- | ----------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ | --------- |
+| `access_key`      | `SCW_ACCESS_KEY`                                | [Scaleway access key](https://console.scaleway.com/project/credentials)                                                                          | ✅         |
+| `secret_key`      | `SCW_SECRET_KEY`                                | [Scaleway secret key](https://console.scaleway.com/project/credentials)                                                                          | ✅         |
+| `project_id`      | `SCW_DEFAULT_PROJECT_ID`                        | The [project ID](https://console.scaleway.com/project/settings) that will be used as default value for project-scoped resources.                | ✅         |
+| `organization_id` | `SCW_DEFAULT_ORGANIZATION_ID`                   | The [organization ID](https://console.scaleway.com/organization/settings) that will be used as default value for organization-scoped resources. |           |
+| `region`          | `SCW_DEFAULT_REGION`                            | The [region](./guides/regions_and_zones.md#regions)  that will be used as default value for all resources. (`fr-par` if none specified)          |           |
+| `zone`            | `SCW_DEFAULT_ZONE`                              | The [zone](./guides/regions_and_zones.md#zones) that will be used as default value for all resources. (`fr-par-1` if none specified)             |           |
 
 ## Store terraform state on Scaleway S3-compatible object storage
 

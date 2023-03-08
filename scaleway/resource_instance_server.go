@@ -14,7 +14,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
-	"github.com/scaleway/scaleway-sdk-go/api/marketplace/v1"
+	"github.com/scaleway/scaleway-sdk-go/api/marketplace/v2"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	scwvalidation "github.com/scaleway/scaleway-sdk-go/validation"
 )
@@ -49,7 +49,7 @@ func resourceScalewayInstanceServer() *schema.Resource {
 				ForceNew:         true,
 				Description:      "The UUID or the label of the base image used by the server",
 				DiffSuppressFunc: diffSuppressFuncLocality,
-				AtLeastOneOf:     []string{"image", "root_volume.0.volume_id"},
+				ExactlyOneOf:     []string{"image", "root_volume.0.volume_id"},
 			},
 			"type": {
 				Type:             schema.TypeString,
@@ -128,10 +128,11 @@ func resourceScalewayInstanceServer() *schema.Resource {
 							Description: "Set the volume where the boot the server",
 						},
 						"volume_id": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Optional:    true,
-							Description: "Volume ID of the root volume",
+							Type:         schema.TypeString,
+							Computed:     true,
+							Optional:     true,
+							Description:  "Volume ID of the root volume",
+							ExactlyOneOf: []string{"image", "root_volume.0.volume_id"},
 						},
 					},
 				},
@@ -269,6 +270,11 @@ func resourceScalewayInstanceServer() *schema.Resource {
 			"organization_id": organizationIDSchema(),
 			"project_id":      projectIDSchema(),
 		},
+		CustomizeDiff: customizeDiffLocalityCheck(
+			"placement_group_id",
+			"additional_volume_ids.#",
+			"ip_id",
+		),
 	}
 }
 
@@ -287,15 +293,19 @@ func resourceScalewayInstanceServerCreate(ctx context.Context, d *schema.Resourc
 
 	imageUUID := expandID(d.Get("image"))
 	if imageUUID != "" && !scwvalidation.IsUUID(imageUUID) {
+		// Replace dashes with underscores ubuntu-focal -> ubuntu_focal
+		imageLabel := formatImageLabel(imageUUID)
+
 		marketPlaceAPI := marketplace.NewAPI(meta.(*Meta).scwClient)
-		imageUUID, err = marketPlaceAPI.GetLocalImageIDByLabel(&marketplace.GetLocalImageIDByLabelRequest{
+		image, err := marketPlaceAPI.GetLocalImageByLabel(&marketplace.GetLocalImageByLabelRequest{
 			CommercialType: commercialType,
 			Zone:           zone,
-			ImageLabel:     imageUUID,
+			ImageLabel:     imageLabel,
 		})
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("could not get image '%s': %s", newZonedID(zone, imageUUID), err))
+			return diag.FromErr(fmt.Errorf("could not get image '%s': %s", newZonedID(zone, imageLabel), err))
 		}
+		imageUUID = image.ID
 	}
 
 	req := &instance.CreateServerRequest{
@@ -337,43 +347,42 @@ func resourceScalewayInstanceServerCreate(ctx context.Context, d *schema.Resourc
 	}
 
 	req.Volumes = make(map[string]*instance.VolumeServerTemplate)
-	isBootOnBlock := serverType.VolumesConstraint.MaxSize == 0
-	isBoot := expandBoolPtr(d.Get("root_volume.0.boot"))
-	volumeType := d.Get("root_volume.0.volume_type").(string)
+	serverTypeCanBootOnBlock := serverType.VolumesConstraint.MaxSize == 0
+	rootVolumeIsBootVolume := expandBoolPtr(d.Get("root_volume.0.boot"))
+	rootVolumeType := d.Get("root_volume.0.volume_type").(string)
 	sizeInput := d.Get("root_volume.0.size_in_gb").(int)
 	rootVolumeID := expandZonedID(d.Get("root_volume.0.volume_id").(string)).ID
 
-	// If the volumeType is not defined, define it depending of the offer
-	if volumeType == "" {
-		if isBootOnBlock {
-			volumeType = instance.VolumeVolumeTypeBSSD.String()
+	// If the rootVolumeType is not defined, define it depending on the offer
+	if rootVolumeType == "" {
+		if serverTypeCanBootOnBlock {
+			rootVolumeType = instance.VolumeVolumeTypeBSSD.String()
 		} else {
-			volumeType = instance.VolumeVolumeTypeLSSD.String()
+			rootVolumeType = instance.VolumeVolumeTypeLSSD.String()
 		}
 	}
 
-	var size scw.Size
-	if sizeInput == 0 && volumeType == instance.VolumeVolumeTypeLSSD.String() {
-		// Compute the size so it will be valid against the local volume constraints
-		// Compute the size so it will be valid against the local volume constraints
-		// It wouldn't be valid if another local volume is added, but in this case
-		// the user would be informed that it does not fulfill the local volume constraints
-		size = serverType.VolumesConstraint.MaxSize
-	} else {
-		size = scw.Size(uint64(sizeInput) * gb)
+	rootVolumeName := ""
+	if req.Image == "" { // When creating an instance from an image, volume should not have a name
+		rootVolumeName = newRandomName("vol")
 	}
 
-	rootVolumeName := newRandomName("vol")
-	if req.Image != "" {
-		rootVolumeName = ""
+	var rootVolumeSize scw.Size
+	if sizeInput == 0 && rootVolumeType == instance.VolumeVolumeTypeLSSD.String() {
+		// Compute the rootVolumeSize so it will be valid against the local volume constraints
+		// It wouldn't be valid if another local volume is added, but in this case
+		// the user would be informed that it does not fulfill the local volume constraints
+		rootVolumeSize = serverType.VolumesConstraint.MaxSize
+	} else {
+		rootVolumeSize = scw.Size(uint64(sizeInput) * gb)
 	}
 
 	req.Volumes["0"] = &instance.VolumeServerTemplate{
 		Name:       rootVolumeName,
 		ID:         rootVolumeID,
-		VolumeType: instance.VolumeVolumeType(volumeType),
-		Size:       size,
-		Boot:       *isBoot,
+		VolumeType: instance.VolumeVolumeType(rootVolumeType),
+		Size:       rootVolumeSize,
+		Boot:       *rootVolumeIsBootVolume,
 	}
 
 	if raw, ok := d.GetOk("additional_volume_ids"); ok {

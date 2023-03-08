@@ -54,7 +54,7 @@ func resourceScalewayObjectBucket() *schema.Resource {
 					s3.ObjectCannedACLPublicReadWrite,
 					s3.ObjectCannedACLAuthenticatedRead,
 				}, false),
-				Deprecated: "ACL is deprecated. Please use resource_bucket_acl instead.",
+				Deprecated: "ACL attribute is deprecated. Please use the resource scaleway_object_bucket_acl instead.",
 			},
 			"tags": {
 				Type: schema.TypeMap,
@@ -184,7 +184,8 @@ func resourceScalewayObjectBucket() *schema.Resource {
 					},
 				},
 			},
-			"region": regionSchema(),
+			"region":     regionSchema(),
+			"project_id": projectIDSchema(),
 			"versioning": {
 				Type:        schema.TypeList,
 				Optional:    true,
@@ -197,11 +198,20 @@ func resourceScalewayObjectBucket() *schema.Resource {
 							Description: "Enable versioning. Once you version-enable a bucket, it can never return to an unversioned state",
 							Type:        schema.TypeBool,
 							Optional:    true,
-							Default:     false,
+							Computed:    true,
 						},
 					},
 				},
 			},
+		},
+		CustomizeDiff: func(ctx context.Context, diff *schema.ResourceDiff, meta interface{}) error {
+			if diff.Get("object_lock_enabled").(bool) {
+				if diff.HasChange("versioning") && !diff.Get("versioning.0.enabled").(bool) {
+					return fmt.Errorf("versioning must be enabled when object lock is enabled")
+				}
+			}
+
+			return nil
 		},
 	}
 }
@@ -249,7 +259,7 @@ func resourceScalewayObjectBucketCreate(ctx context.Context, d *schema.ResourceD
 }
 
 func resourceScalewayObjectBucketUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	s3Client, _, bucketName, err := s3ClientWithRegionAndName(meta, d.Id())
+	s3Client, _, bucketName, err := s3ClientWithRegionAndName(d, meta, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -267,7 +277,9 @@ func resourceScalewayObjectBucketUpdate(ctx context.Context, d *schema.ResourceD
 		}
 	}
 
-	if d.HasChange("versioning") {
+	// Object Lock enables versioning so we don't want to update versioning it is enabled
+	objectLockEnabled := d.Get("object_lock_enabled").(bool)
+	if !objectLockEnabled && d.HasChange("versioning") {
 		if err := resourceScalewayObjectBucketVersioningUpdate(ctx, s3Client, d); err != nil {
 			return diag.FromErr(err)
 		}
@@ -432,13 +444,21 @@ func resourceBucketLifecycleUpdate(ctx context.Context, conn *s3.S3, d *schema.R
 
 //gocyclo:ignore
 func resourceScalewayObjectBucketRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	s3Client, region, bucketName, err := s3ClientWithRegionAndName(meta, d.Id())
+	s3Client, region, bucketName, err := s3ClientWithRegionAndName(d, meta, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	_ = d.Set("name", bucketName)
 	_ = d.Set("region", region)
+
+	acl, err := s3Client.GetBucketAclWithContext(ctx, &s3.GetBucketAclInput{
+		Bucket: aws.String(bucketName),
+	})
+	if err != nil {
+		return diag.FromErr(fmt.Errorf("couldn't read bucket acl: %s", err))
+	}
+	_ = d.Set("project_id", normalizeOwnerID(acl.Owner.ID))
 
 	// Get object_lock_enabled
 	objectLockConfiguration, err := s3Client.GetObjectLockConfigurationWithContext(ctx, &s3.GetObjectLockConfigurationInput{
@@ -619,7 +639,7 @@ func resourceScalewayObjectBucketRead(ctx context.Context, d *schema.ResourceDat
 }
 
 func resourceScalewayObjectBucketDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	s3Client, _, bucketName, err := s3ClientWithRegionAndName(meta, d.Id())
+	s3Client, _, bucketName, err := s3ClientWithRegionAndName(d, meta, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}

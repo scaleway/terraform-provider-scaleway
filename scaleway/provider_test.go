@@ -18,8 +18,11 @@ import (
 
 	"github.com/dnaeon/go-vcr/cassette"
 	"github.com/dnaeon/go-vcr/recorder"
+	sdkacctest "github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	accountV2 "github.com/scaleway/scaleway-sdk-go/api/account/v2"
+	iam "github.com/scaleway/scaleway-sdk-go/api/iam/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/scaleway-sdk-go/strcase"
 	"github.com/stretchr/testify/assert"
@@ -36,9 +39,16 @@ var QueryMatcherIgnore = []string{
 
 // BodyMatcherIgnore contains the list of json body keys that should be ignored when matching requests with cassettes
 var BodyMatcherIgnore = []string{
+	"organization", // like organization_id but deprecated
 	"organization_id",
 	"project_id",
 	"project", // like project_id but should be deprecated
+}
+
+// SensitiveFields is a map with keys listing fields that should be anonymized
+// value will be set in place of its old value
+var SensitiveFields = map[string]interface{}{
+	"secret_key": "00000000-0000-0000-0000-000000000000",
 }
 
 func testAccPreCheck(_ *testing.T) {}
@@ -62,6 +72,19 @@ func getTestFilePath(t *testing.T, suffix string) string {
 	return filepath.Join(".", "testdata", fileName)
 }
 
+func compareJSONFields(expected, actualI interface{}) bool {
+	switch actual := actualI.(type) {
+	case string:
+		if _, isString := expected.(string); !isString {
+			return false
+		}
+		return compareJSONFieldsStrings(expected.(string), actual)
+	default:
+		// Consider equality when not handled
+		return true
+	}
+}
+
 // compareJSONBodies compare two given maps that represent json bodies
 // returns true if both json are equivalent
 func compareJSONBodies(expected, actual map[string]interface{}) bool {
@@ -75,10 +98,8 @@ func compareJSONBodies(expected, actual map[string]interface{}) bool {
 			// We do not want to generate new cassettes for each new features
 			continue
 		}
-		if actualValue, isStringer := actual[key].(fmt.Stringer); isStringer {
-			if actualValue.String() != expectedValue.(fmt.Stringer).String() {
-				return false
-			}
+		if !compareJSONFields(expectedValue, actual[key]) {
+			return false
 		}
 	}
 
@@ -95,32 +116,32 @@ func compareJSONBodies(expected, actual map[string]interface{}) bool {
 }
 
 // cassetteMatcher is a custom matcher that will juste check equivalence of request bodies
-func cassetteBodyMatcher(actual *http.Request, expected cassette.Request) bool {
-	if actual.Body == nil || actual.ContentLength == 0 {
-		if expected.Body == "" {
+func cassetteBodyMatcher(actualRequest *http.Request, cassetteRequest cassette.Request) bool {
+	if actualRequest.Body == nil || actualRequest.ContentLength == 0 {
+		if cassetteRequest.Body == "" {
 			return true // Body match if both are empty
-		} else if _, isFile := actual.Body.(*os.File); isFile {
+		} else if _, isFile := actualRequest.Body.(*os.File); isFile {
 			return true // Body match if request is sending a file, maybe do more check here
 		}
 		return false
 	}
 
-	actualBody, err := actual.GetBody()
+	actualBody, err := actualRequest.GetBody()
 	if err != nil {
-		panic(fmt.Errorf("cassette body matcher: failed to copy actual body: %w", err))
+		panic(fmt.Errorf("cassette body matcher: failed to copy actualRequest body: %w", err)) // lintignore: R009
 	}
 	actualRawBody, err := io.ReadAll(actualBody)
 	if err != nil {
-		panic(fmt.Errorf("cassette body matcher: failed to read actual body: %w", err))
+		panic(fmt.Errorf("cassette body matcher: failed to read actualRequest body: %w", err)) // lintignore: R009
 	}
 
 	// Try to match raw bodies if they are not JSON (ex: cloud-init config)
-	if string(actualRawBody) == expected.Body {
+	if string(actualRawBody) == cassetteRequest.Body {
 		return true
 	}
 
 	actualJSON := make(map[string]interface{})
-	expectedJSON := make(map[string]interface{})
+	cassetteJSON := make(map[string]interface{})
 
 	err = xml.Unmarshal(actualRawBody, new(interface{}))
 	if err == nil {
@@ -130,21 +151,21 @@ func cassetteBodyMatcher(actual *http.Request, expected cassette.Request) bool {
 
 	err = json.Unmarshal(actualRawBody, &actualJSON)
 	if err != nil {
-		panic(fmt.Errorf("cassette body matcher: failed to parse json body: %w", err))
+		panic(fmt.Errorf("cassette body matcher: failed to parse json body: %w", err)) // lintignore: R009
 	}
 
-	err = json.Unmarshal([]byte(expected.Body), &expectedJSON)
+	err = json.Unmarshal([]byte(cassetteRequest.Body), &cassetteJSON)
 	if err != nil {
-		panic(fmt.Errorf("cassette body matcher: failed to parse cassette json body: %w", err))
+		panic(fmt.Errorf("cassette body matcher: failed to parse cassette json body: %w", err)) // lintignore: R009
 	}
 
 	// Remove keys that should be ignored during compare
 	for _, key := range BodyMatcherIgnore {
 		delete(actualJSON, key)
-		delete(expectedJSON, key)
+		delete(cassetteJSON, key)
 	}
 
-	return compareJSONBodies(expectedJSON, actualJSON)
+	return compareJSONBodies(cassetteJSON, actualJSON)
 }
 
 // cassetteMatcher is a custom matcher that check equivalence of a played request against a recorded one
@@ -192,6 +213,26 @@ func cassetteMatcher(actual *http.Request, expected cassette.Request) bool {
 		cassetteBodyMatcher(actual, expected)
 }
 
+func cassetteSensitiveFieldsAnonymizer(i *cassette.Interaction) error {
+	var jsonBody map[string]interface{}
+	err := json.Unmarshal([]byte(i.Response.Body), &jsonBody)
+	if err != nil {
+		//nolint:nilerr
+		return nil
+	}
+	for key, value := range SensitiveFields {
+		if _, ok := jsonBody[key]; ok {
+			jsonBody[key] = value
+		}
+	}
+	anonymizedBody, err := json.Marshal(jsonBody)
+	if err != nil {
+		return fmt.Errorf("failed to marshal anonymized body: %w", err)
+	}
+	i.Response.Body = string(anonymizedBody)
+	return nil
+}
+
 // getHTTPRecoder creates a new httpClient that records all HTTP requests in a cassette.
 // This cassette is then replayed whenever tests are executed again. This means that once the
 // requests are recorded in the cassette, no more real HTTP requests must be made to run the tests.
@@ -223,9 +264,243 @@ func getHTTPRecoder(t *testing.T, update bool) (client *http.Client, cleanup fun
 		return nil
 	})
 
-	return &http.Client{Transport: newRetryableTransport(r)}, func() {
+	// Add a filter that will replace sensitive values with fixed values
+	r.AddSaveFilter(cassetteSensitiveFieldsAnonymizer)
+
+	retryOptions := retryableTransportOptions{}
+	if !*UpdateCassettes {
+		retryOptions.RetryWaitMax = scw.TimeDurationPtr(0)
+	}
+
+	return &http.Client{Transport: newRetryableTransportWithOptions(r, retryOptions)}, func() {
 		assert.NoError(t, r.Stop()) // Make sure recorder is stopped once done with it
 	}, nil
+}
+
+type FakeSideProjectTerminateFunc func() error
+
+// createFakeSideProject creates a temporary project with a temporary IAM application and policy.
+//
+// The returned function is a cleanup function that should be called when to delete the project.
+func createFakeSideProject(tt *TestTools) (*accountV2.Project, *iam.APIKey, FakeSideProjectTerminateFunc, error) {
+	terminateFunctions := []FakeSideProjectTerminateFunc{}
+	terminate := func() error {
+		for i := len(terminateFunctions) - 1; i >= 0; i-- {
+			err := terminateFunctions[i]()
+			if err != nil {
+				return err
+			}
+		}
+
+		return nil
+	}
+
+	projectName := sdkacctest.RandomWithPrefix("test-acc-scaleway-project")
+	iamApplicationName := sdkacctest.RandomWithPrefix("test-acc-scaleway-iam-app")
+	iamPolicyName := sdkacctest.RandomWithPrefix("test-acc-scaleway-iam-policy")
+
+	projectAPI := accountV2.NewAPI(tt.Meta.scwClient)
+	project, err := projectAPI.CreateProject(&accountV2.CreateProjectRequest{
+		Name: projectName,
+	})
+	if err != nil {
+		if err := terminate(); err != nil {
+			return nil, nil, nil, err
+		}
+
+		return nil, nil, nil, err
+	}
+	terminateFunctions = append(terminateFunctions, func() error {
+		return projectAPI.DeleteProject(&accountV2.DeleteProjectRequest{
+			ProjectID: project.ID,
+		})
+	})
+
+	iamAPI := iam.NewAPI(tt.Meta.scwClient)
+	iamApplication, err := iamAPI.CreateApplication(&iam.CreateApplicationRequest{
+		Name: iamApplicationName,
+	})
+	if err != nil {
+		if err := terminate(); err != nil {
+			return nil, nil, nil, err
+		}
+
+		return nil, nil, nil, err
+	}
+	terminateFunctions = append(terminateFunctions, func() error {
+		return iamAPI.DeleteApplication(&iam.DeleteApplicationRequest{
+			ApplicationID: iamApplication.ID,
+		})
+	})
+
+	iamPolicy, err := iamAPI.CreatePolicy(&iam.CreatePolicyRequest{
+		Name:          iamPolicyName,
+		ApplicationID: expandStringPtr(iamApplication.ID),
+		Rules: []*iam.RuleSpecs{
+			{
+				ProjectIDs:         &[]string{project.ID},
+				PermissionSetNames: &[]string{"ObjectStorageReadOnly", "ObjectStorageObjectsRead", "ObjectStorageBucketsRead"},
+			},
+		},
+	})
+	if err != nil {
+		if err := terminate(); err != nil {
+			return nil, nil, nil, err
+		}
+
+		return nil, nil, nil, err
+	}
+	terminateFunctions = append(terminateFunctions, func() error {
+		return iamAPI.DeletePolicy(&iam.DeletePolicyRequest{
+			PolicyID: iamPolicy.ID,
+		})
+	})
+
+	iamAPIKey, err := iamAPI.CreateAPIKey(&iam.CreateAPIKeyRequest{
+		ApplicationID:    expandStringPtr(iamApplication.ID),
+		DefaultProjectID: &project.ID,
+	})
+	if err != nil {
+		if err := terminate(); err != nil {
+			return nil, nil, nil, err
+		}
+
+		return nil, nil, nil, err
+	}
+	terminateFunctions = append(terminateFunctions, func() error {
+		return iamAPI.DeleteAPIKey(&iam.DeleteAPIKeyRequest{
+			AccessKey: iamAPIKey.AccessKey,
+		})
+	})
+
+	return project, iamAPIKey, terminate, nil
+}
+
+// createFakeIAMManager creates a temporary project with a temporary IAM application and policy manager.
+//
+// The returned function is a cleanup function that should be called when to delete the project.
+func createFakeIAMManager(tt *TestTools) (*accountV2.Project, *iam.APIKey, FakeSideProjectTerminateFunc, error) {
+	terminateFunctions := []FakeSideProjectTerminateFunc{}
+	terminate := func() error {
+		for i := len(terminateFunctions) - 1; i >= 0; i-- {
+			err := terminateFunctions[i]()
+			if err != nil {
+				return err
+			}
+		}
+
+		return nil
+	}
+
+	projectName := sdkacctest.RandomWithPrefix("test-acc-scaleway-project")
+	iamApplicationName := sdkacctest.RandomWithPrefix("test-acc-scaleway-iam-app")
+	iamPolicyName := sdkacctest.RandomWithPrefix("test-acc-scaleway-iam-policy")
+
+	projectAPI := accountV2.NewAPI(tt.Meta.scwClient)
+	project, err := projectAPI.CreateProject(&accountV2.CreateProjectRequest{
+		Name: projectName,
+	})
+	if err != nil {
+		if err := terminate(); err != nil {
+			return nil, nil, nil, err
+		}
+
+		return nil, nil, nil, err
+	}
+	terminateFunctions = append(terminateFunctions, func() error {
+		return projectAPI.DeleteProject(&accountV2.DeleteProjectRequest{
+			ProjectID: project.ID,
+		})
+	})
+
+	iamAPI := iam.NewAPI(tt.Meta.scwClient)
+	iamApplication, err := iamAPI.CreateApplication(&iam.CreateApplicationRequest{
+		Name: iamApplicationName,
+	})
+	if err != nil {
+		if err := terminate(); err != nil {
+			return nil, nil, nil, err
+		}
+
+		return nil, nil, nil, err
+	}
+	terminateFunctions = append(terminateFunctions, func() error {
+		return iamAPI.DeleteApplication(&iam.DeleteApplicationRequest{
+			ApplicationID: iamApplication.ID,
+		})
+	})
+
+	iamPolicy, err := iamAPI.CreatePolicy(&iam.CreatePolicyRequest{
+		Name:          iamPolicyName,
+		ApplicationID: expandStringPtr(iamApplication.ID),
+		Rules: []*iam.RuleSpecs{
+			{
+				OrganizationID:     &project.OrganizationID,
+				PermissionSetNames: &[]string{"IAMManager"},
+			},
+		},
+	})
+	if err != nil {
+		if err := terminate(); err != nil {
+			return nil, nil, nil, err
+		}
+
+		return nil, nil, nil, err
+	}
+	terminateFunctions = append(terminateFunctions, func() error {
+		return iamAPI.DeletePolicy(&iam.DeletePolicyRequest{
+			PolicyID: iamPolicy.ID,
+		})
+	})
+
+	iamAPIKey, err := iamAPI.CreateAPIKey(&iam.CreateAPIKeyRequest{
+		ApplicationID:    expandStringPtr(iamApplication.ID),
+		DefaultProjectID: &project.ID,
+	})
+	if err != nil {
+		if err := terminate(); err != nil {
+			return nil, nil, nil, err
+		}
+
+		return nil, nil, nil, err
+	}
+	terminateFunctions = append(terminateFunctions, func() error {
+		return iamAPI.DeleteAPIKey(&iam.DeleteAPIKeyRequest{
+			AccessKey: iamAPIKey.AccessKey,
+		})
+	})
+
+	return project, iamAPIKey, terminate, nil
+}
+
+// fakeSideProjectProviders creates a new provider alias "side" with a new metaConfig that will use the
+// given project and API key as default profile configuration.
+//
+// This is useful to test resources that need to create resources in another project.
+func fakeSideProjectProviders(ctx context.Context, tt *TestTools, project *accountV2.Project, iamAPIKey *iam.APIKey) map[string]func() (*schema.Provider, error) {
+	t := tt.T
+
+	metaSide, err := buildMeta(ctx, &metaConfig{
+		terraformVersion:    "terraform-tests",
+		httpClient:          tt.Meta.httpClient,
+		forceProjectID:      project.ID,
+		forceOrganizationID: project.OrganizationID,
+		forceAccessKey:      iamAPIKey.AccessKey,
+		forceSecretKey:      *iamAPIKey.SecretKey,
+	})
+	require.NoError(t, err)
+
+	providers := map[string]func() (*schema.Provider, error){
+		"side": func() (*schema.Provider, error) {
+			return Provider(&ProviderConfig{Meta: metaSide})(), nil
+		},
+	}
+
+	for k, v := range tt.ProviderFactories {
+		providers[k] = v
+	}
+
+	return providers
 }
 
 type TestTools struct {
@@ -251,6 +526,7 @@ func NewTestTools(t *testing.T) *TestTools {
 	require.NoError(t, err)
 
 	if !*UpdateCassettes {
+		disableHostResolver = true
 		tmp := 0 * time.Second
 		DefaultWaitRetryInterval = &tmp
 	}
@@ -264,13 +540,6 @@ func NewTestTools(t *testing.T) *TestTools {
 			},
 		},
 		Cleanup: cleanup,
-	}
-}
-
-func SkipBetaTest(t *testing.T) {
-	t.Helper()
-	if !terraformBetaEnabled {
-		t.Skip("Skip test as beta is not enabled")
 	}
 }
 
@@ -312,13 +581,13 @@ func TestAccScalewayProvider_SSHKeys(t *testing.T) {
 			{
 				Config: fmt.Sprintf(`
 					resource "scaleway_account_ssh_key" "prod" {
-						provider   = "prod" 
+						provider   = "prod"
 						name 	   = "%[1]s"
 						public_key = "%[2]s"
 					}
 
 					resource "scaleway_account_ssh_key" "dev" {
-						provider   = "dev" 
+						provider   = "dev"
 						name 	   = "%[1]s"
 						public_key = "%[2]s"
 					}
@@ -371,7 +640,7 @@ func TestAccScalewayProvider_InstanceIPZones(t *testing.T) {
 					resource scaleway_instance_ip dev {
 					  provider = "dev"
 					}
-					
+
 					resource scaleway_instance_ip prod {
 					  provider = "prod"
 					}

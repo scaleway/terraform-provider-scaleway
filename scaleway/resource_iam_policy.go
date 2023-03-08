@@ -47,28 +47,26 @@ func resourceScalewayIamPolicy() *schema.Resource {
 				Computed:    true,
 				Description: "Whether or not the policy is editable.",
 			},
-			"organization_id": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Computed:    true,
-				Description: "ID of organization the policy is linked to.",
-			},
+			"organization_id": organizationIDOptionalSchema(),
 			"user_id": {
 				Type:         schema.TypeString,
 				Optional:     true,
 				Description:  "User id",
+				ValidateFunc: validationUUID(),
 				ExactlyOneOf: []string{"group_id", "application_id", "no_principal"},
 			},
 			"group_id": {
 				Type:         schema.TypeString,
 				Optional:     true,
 				Description:  "Group id",
+				ValidateFunc: validationUUID(),
 				ExactlyOneOf: []string{"user_id", "application_id", "no_principal"},
 			},
 			"application_id": {
 				Type:         schema.TypeString,
 				Optional:     true,
 				Description:  "Application id",
+				ValidateFunc: validationUUID(),
 				ExactlyOneOf: []string{"user_id", "group_id", "no_principal"},
 			},
 			"no_principal": {
@@ -84,16 +82,18 @@ func resourceScalewayIamPolicy() *schema.Resource {
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"organization_id": {
-							Type:        schema.TypeString,
-							Optional:    true,
-							Description: "ID of organization scoped to the rule. Only one of project_ids and organization_id may be set.",
+							Type:         schema.TypeString,
+							Optional:     true,
+							Description:  "ID of organization scoped to the rule. Only one of project_ids and organization_id may be set.",
+							ValidateFunc: validationUUID(),
 						},
 						"project_ids": {
 							Type:        schema.TypeList,
 							Optional:    true,
 							Description: "List of project IDs scoped to the rule. Only one of project_ids and organization_id may be set.",
 							Elem: &schema.Schema{
-								Type: schema.TypeString,
+								Type:         schema.TypeString,
+								ValidateFunc: validationUUID(),
 							},
 						},
 						"permission_set_names": {
@@ -115,7 +115,7 @@ func resourceScalewayIamPolicyCreate(ctx context.Context, d *schema.ResourceData
 	api := iamAPI(meta)
 
 	pol, err := api.CreatePolicy(&iam.CreatePolicyRequest{
-		Name:           expandOrGenerateString(d.Get("name"), "policy-"),
+		Name:           expandOrGenerateString(d.Get("name"), "policy"),
 		Description:    d.Get("description").(string),
 		Rules:          expandPolicyRuleSpecs(d.Get("rule")),
 		UserID:         expandStringPtr(d.Get("user_id")),

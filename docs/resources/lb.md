@@ -86,7 +86,7 @@ resource scaleway_lb main {
 
     private_network {
         private_network_id = scaleway_vpc_private_network.main.id
-        static_config = ["172.16.0.100", "172.16.0.101"]
+        static_config = ["172.16.0.100"]
     }
 
     private_network {
@@ -118,7 +118,7 @@ The following arguments are supported:
 
 - `ssl_compatibility_level` - (Optional) Enforces minimal SSL version (in SSL/TLS offloading context). Please check [possible values](https://developers.scaleway.com/en/products/lb/zoned_api/#ssl-compatibility-level-442f99).
 
-- `zone` - (Defaults to [provider](../index.md#zone) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which the IP should be reserved.
+- `zone` - (Defaults to [provider](../index.md#zone) `zone`) The [zone](../guides/regions_and_zones.md#zones) of the load-balancer.
 
 - `project_id` - (Defaults to [provider](../index.md#project_id) `project_id`) The ID of the project the load-balancer is associated with.
 
@@ -127,6 +127,9 @@ The following arguments are supported:
 In addition to all arguments above, the following attributes are exported:
 
 - `id` - The ID of the load-balancer.
+
+~> **Important:** Load-Balancers' IDs are [zoned](../guides/regions_and_zones.md#resource-ids), which means they are of the form `{zone}/{id}`, e.g. `fr-par-1/11111111-1111-1111-1111-111111111111`
+
 - `ip_address` -  The load-balance public IP Address
 - `organization_id` - The organization ID the load-balancer is associated with.
 
@@ -186,7 +189,7 @@ resource scaleway_lb main {
     release_ip = false
     private_network {
         private_network_id = scaleway_vpc_private_network.main.id
-        static_config = ["172.16.0.100", "172.16.0.101"]
+        static_config = ["172.16.0.100"]
     }
 }
 ```
@@ -197,7 +200,7 @@ resource scaleway_lb main {
 
 - ~> **Important:** Updates to `private_network` will recreate the attachment.
 
-- `static_config` - (Optional) Define two local ip address of your choice for each load balancer instance. See below.
+- `static_config` - (Optional) Define a local ip address of your choice for the load balancer instance. See below.
 
 - `dhcp_config` - (Optional) Set to true if you want to let DHCP assign IP addresses. See below.
 

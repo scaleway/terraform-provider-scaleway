@@ -470,6 +470,7 @@ resource "scaleway_k8s_cluster" "minimal" {
 	version = "%s"
 	name = "ClusterConfigMinimal"
 	tags = [ "terraform-test", "scaleway_k8s_cluster", "minimal" ]
+	delete_additional_resources = true
 }`, version)
 }
 
@@ -493,6 +494,7 @@ resource "scaleway_k8s_cluster" "autoscaler" {
 		max_graceful_termination_sec = 1337
 	}
 	tags = [ "terraform-test", "scaleway_k8s_cluster", "autoscaler-config" ]
+	delete_additional_resources = true
 }`, version)
 }
 
@@ -514,6 +516,7 @@ resource "scaleway_k8s_cluster" "autoscaler" {
 		max_graceful_termination_sec = 2664
 	}
 	tags = [ "terraform-test", "scaleway_k8s_cluster", "autoscaler-config" ]
+	delete_additional_resources = true
 }`, version)
 }
 
@@ -531,6 +534,7 @@ resource "scaleway_k8s_cluster" "oidc" {
 		groups_prefix = "pouf"
 	}
 	tags = [ "terraform-test", "scaleway_k8s_cluster", "oidc-config" ]
+	delete_additional_resources = true
 }
 `, version)
 }
@@ -549,6 +553,7 @@ resource "scaleway_k8s_cluster" "oidc" {
 		username_prefix = "boo"
 	}
 	tags = [ "terraform-test", "scaleway_k8s_cluster", "oidc-config" ]
+	delete_additional_resources = true
 }
 `, version)
 }
@@ -565,6 +570,7 @@ resource "scaleway_k8s_cluster" "auto_upgrade" {
 		maintenance_window_day = "%s"
 	}
 	tags = [ "terraform-test", "scaleway_k8s_cluster", "auto_upgrade" ]
+	delete_additional_resources = true
 }`, version, enable, hour, day)
 }
 
@@ -575,6 +581,7 @@ resource "scaleway_k8s_cluster" "multicloud" {
 	version = "%s"
 	cni = "kilo"
 	type = "multicloud"
+	delete_additional_resources = true
 }
 
 resource "scaleway_k8s_pool" "multicloud" {

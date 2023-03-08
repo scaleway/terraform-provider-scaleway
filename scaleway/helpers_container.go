@@ -12,7 +12,7 @@ import (
 const (
 	defaultContainerNamespaceTimeout = 5 * time.Minute
 	defaultContainerCronTimeout      = 5 * time.Minute
-	defaultContainerTimeout          = 5 * time.Minute
+	defaultContainerTimeout          = 12*time.Minute + 30*time.Second
 	defaultContainerRetryInterval    = 5 * time.Second
 )
 
@@ -48,6 +48,7 @@ func setCreateContainerRequest(d *schema.ResourceData, region scw.Region) (*cont
 	name := expandOrGenerateString(nameRaw.(string), "co")
 	privacyType := d.Get("privacy")
 	protocol := d.Get("protocol")
+	httpOption := d.Get("http_option")
 
 	req := &container.CreateContainerRequest{
 		Region:      region,
@@ -55,11 +56,16 @@ func setCreateContainerRequest(d *schema.ResourceData, region scw.Region) (*cont
 		Name:        name,
 		Privacy:     container.ContainerPrivacy(privacyType.(string)),
 		Protocol:    container.ContainerProtocol(*expandStringPtr(protocol)),
+		HTTPOption:  container.ContainerHTTPOption(httpOption.(string)),
 	}
 
 	// optional
 	if envVariablesRaw, ok := d.GetOk("environment_variables"); ok {
 		req.EnvironmentVariables = expandMapPtrStringString(envVariablesRaw)
+	}
+
+	if secretEnvVariablesRaw, ok := d.GetOk("secret_environment_variables"); ok {
+		req.SecretEnvironmentVariables = expandContainerSecrets(secretEnvVariablesRaw)
 	}
 
 	if minScale, ok := d.GetOk("min_scale"); ok {
@@ -144,6 +150,22 @@ func waitForContainer(ctx context.Context, api *container.API, containerID strin
 	}
 
 	return api.WaitForContainer(&request, scw.WithContext(ctx))
+}
+
+func waitForContainerDomain(ctx context.Context, api *container.API, domainID string, region scw.Region, timeout time.Duration) (*container.Domain, error) {
+	retryInterval := defaultContainerRetryInterval
+	if DefaultWaitRetryInterval != nil {
+		retryInterval = *DefaultWaitRetryInterval
+	}
+
+	request := container.WaitForDomainRequest{
+		DomainID:      domainID,
+		Region:        region,
+		Timeout:       scw.TimeDurationPtr(timeout),
+		RetryInterval: &retryInterval,
+	}
+
+	return api.WaitForDomain(&request, scw.WithContext(ctx))
 }
 
 func expandContainerSecrets(secretsRawMap interface{}) []*container.Secret {

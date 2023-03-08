@@ -40,9 +40,26 @@ func resourceScalewayLbRoute() *schema.Resource {
 				Description:  "The backend ID destination of redirection",
 			},
 			"match_sni": {
+				Type:          schema.TypeString,
+				Optional:      true,
+				Description:   "Server Name Indication TLS extension field from an incoming connection made via an SSL/TLS transport layer",
+				ConflictsWith: []string{"match_host_header"},
+			},
+			"match_host_header": {
+				Type:          schema.TypeString,
+				Optional:      true,
+				Description:   "Specifies the host of the server to which the request is being sent",
+				ConflictsWith: []string{"match_sni"},
+			},
+			"created_at": {
 				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "The domain to match against",
+				Computed:    true,
+				Description: "The date at which the route was created (RFC 3339 format)",
+			},
+			"updated_at": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The date at which the route was last updated (RFC 3339 format)",
 			},
 		},
 	}
@@ -73,7 +90,8 @@ func resourceScalewayLbRouteCreate(ctx context.Context, d *schema.ResourceData, 
 		FrontendID: frontID,
 		BackendID:  backID,
 		Match: &lbSDK.RouteMatch{
-			Sni: expandStringPtr(d.Get("match_sni")),
+			Sni:        expandStringPtr(d.Get("match_sni")),
+			HostHeader: expandStringPtr(d.Get("match_host_header")),
 		},
 	}
 
@@ -107,9 +125,10 @@ func resourceScalewayLbRouteRead(ctx context.Context, d *schema.ResourceData, me
 
 	_ = d.Set("frontend_id", newZonedIDString(zone, route.FrontendID))
 	_ = d.Set("backend_id", newZonedIDString(zone, route.BackendID))
-	if route.Match != nil && route.Match.Sni != nil {
-		_ = d.Set("match_sni", route.Match.Sni)
-	}
+	_ = d.Set("match_sni", flattenStringPtr(route.Match.Sni))
+	_ = d.Set("match_host_header", flattenStringPtr(route.Match.HostHeader))
+	_ = d.Set("created_at", flattenTime(route.CreatedAt))
+	_ = d.Set("updated_at", flattenTime(route.UpdatedAt))
 
 	return nil
 }
@@ -134,7 +153,8 @@ func resourceScalewayLbRouteUpdate(ctx context.Context, d *schema.ResourceData, 
 		RouteID:   ID,
 		BackendID: backID,
 		Match: &lbSDK.RouteMatch{
-			Sni: expandStringPtr(d.Get("match_sni")),
+			Sni:        expandStringPtr(d.Get("match_sni")),
+			HostHeader: expandStringPtr(d.Get("match_host_header")),
 		},
 	}
 

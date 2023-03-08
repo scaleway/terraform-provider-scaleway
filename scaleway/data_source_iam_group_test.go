@@ -7,7 +7,6 @@ import (
 )
 
 func TestAccScalewayDataSourceIamGroup_Basic(t *testing.T) {
-	SkipBetaTest(t)
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
 	resource.ParallelTest(t, resource.TestCase{
@@ -20,17 +19,17 @@ func TestAccScalewayDataSourceIamGroup_Basic(t *testing.T) {
 			{
 				Config: `
 					resource "scaleway_iam_group" "main_ds_basic" {
-						name        = "test_data_source_basic"
+					  name = "test_data_source_basic"
 					}
-			
+					
 					data "scaleway_iam_group" "find_by_id_basic" {
-						group_id 	= scaleway_iam_group.main_ds_basic.id
-						organization_id = "08555df8-bb26-43bc-b749-1b98c5d02343"
+					  group_id        = scaleway_iam_group.main_ds_basic.id
+					  organization_id = "105bdce1-64c0-48ab-899d-868455867ecf"
 					}
-
+					
 					data "scaleway_iam_group" "find_by_name_basic" {
-						name        = scaleway_iam_group.main_ds_basic.name
-						organization_id = "08555df8-bb26-43bc-b749-1b98c5d02343"
+					  name            = scaleway_iam_group.main_ds_basic.name
+					  organization_id = "105bdce1-64c0-48ab-899d-868455867ecf"
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
@@ -46,7 +45,6 @@ func TestAccScalewayDataSourceIamGroup_Basic(t *testing.T) {
 }
 
 func TestAccScalewayDataSourceIamGroup_UsersAndApplications(t *testing.T) {
-	SkipBetaTest(t)
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
 	resource.ParallelTest(t, resource.TestCase{
@@ -59,37 +57,35 @@ func TestAccScalewayDataSourceIamGroup_UsersAndApplications(t *testing.T) {
 			{
 				Config: `
 					resource "scaleway_iam_application" "app00" {
-						name = "app"
+					  name = "app"
 					}
-
+					
 					data "scaleway_iam_user" "user00" {
-						user_id = "ce18cffd-e7c8-47f8-8de8-00e97e50a0d3"
-						organization_id = "08555df8-bb26-43bc-b749-1b98c5d02343"
+					  user_id         = "ef29ce05-3f2b-4fa0-a259-d76110850d57"
 					}
 					data "scaleway_iam_user" "user01" {
-						user_id = "255b63c2-b4de-4af6-9ed4-967f69d9dd85"
-						organization_id = "08555df8-bb26-43bc-b749-1b98c5d02343"
+					  user_id         = "d55bae64-4e2b-490f-9b2e-688715f60f6c"
 					}
-
+					
 					resource "scaleway_iam_group" "main_ds_mix" {
-						name = "test_data_source_mix"
-						application_ids = [
-							scaleway_iam_application.app00.id,
-						]
-						user_ids = [
-							data.scaleway_iam_user.user00.user_id,
-							data.scaleway_iam_user.user01.user_id,
-						]
+					  name = "test_data_source_mix"
+					  application_ids = [
+						scaleway_iam_application.app00.id,
+					  ]
+					  user_ids = [
+						data.scaleway_iam_user.user00.user_id,
+						data.scaleway_iam_user.user01.user_id,
+					  ]
 					}
-			
+					
 					data "scaleway_iam_group" "find_by_id_mix" {
-						group_id 	= scaleway_iam_group.main_ds_mix.id
-						organization_id = "08555df8-bb26-43bc-b749-1b98c5d02343"
+					  group_id        = scaleway_iam_group.main_ds_mix.id
+					  organization_id = "105bdce1-64c0-48ab-899d-868455867ecf"
 					}
-
+					
 					data "scaleway_iam_group" "find_by_name_mix" {
-						name        = scaleway_iam_group.main_ds_mix.name
-						organization_id = "08555df8-bb26-43bc-b749-1b98c5d02343"
+					  name            = scaleway_iam_group.main_ds_mix.name
+					  organization_id = "105bdce1-64c0-48ab-899d-868455867ecf"
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(

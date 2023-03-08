@@ -42,6 +42,42 @@ func TestAccScalewayObject_Basic(t *testing.T) {
 					testAccCheckScalewayObjectExists(tt, "scaleway_object.file"),
 				),
 			},
+			{
+				Config: fmt.Sprintf(`
+					resource "scaleway_object_bucket" "base-01" {
+						name = "%s"
+						tags = {
+							foo = "bar"
+						}
+					}
+					
+					resource scaleway_object "file" {
+						bucket = scaleway_object_bucket.base-01.name
+						key = "myfile/foo"
+					}
+				`, bucketName),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayObjectExists(tt, "scaleway_object.file"),
+				),
+			},
+			{
+				Config: fmt.Sprintf(`
+					resource "scaleway_object_bucket" "base-01" {
+						name = "%s"
+						tags = {
+							foo = "bar"
+						}
+					}
+					
+					resource scaleway_object "file" {
+						bucket = scaleway_object_bucket.base-01.name
+						key = "myfile/foo/bar"
+					}
+				`, bucketName),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayObjectExists(tt, "scaleway_object.file"),
+				),
+			},
 		},
 	})
 }
@@ -382,7 +418,7 @@ func TestAccScalewayObject_Visibility(t *testing.T) {
 	})
 }
 
-func TestAccScalewayObject_Import(t *testing.T) {
+func TestAccScalewayObject_State(t *testing.T) {
 	if !*UpdateCassettes {
 		t.Skip("Skipping ObjectStorage test as this kind of resource can't be deleted before 24h")
 	}

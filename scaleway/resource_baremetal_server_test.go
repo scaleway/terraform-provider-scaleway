@@ -11,6 +11,8 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 )
 
+const SSHKeyBaremetal = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIM7HUxRyQtB2rnlhQUcbDGCZcTJg7OvoznOiyC9W6IxH opensource@scaleway.com"
+
 func init() {
 	resource.AddTestSweepers("scaleway_baremetal_server", &resource.Sweeper{
 		Name: "scaleway_baremetal_server",
@@ -48,7 +50,6 @@ func TestAccScalewayBaremetalServer_Basic(t *testing.T) {
 	defer tt.Cleanup()
 
 	SSHKeyName := "TestAccScalewayBaremetalServer_Basic"
-	SSHKey := "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIM7HUxRyQtB2rnlhQUcbDGCZcTJg7OvoznOiyC9W6IxH opensource@scaleway.com"
 	name := "TestAccScalewayBaremetalServer_Basic"
 
 	resource.ParallelTest(t, resource.TestCase{
@@ -73,7 +74,7 @@ func TestAccScalewayBaremetalServer_Basic(t *testing.T) {
 						tags = [ "terraform-test", "scaleway_baremetal_server", "minimal" ]
 						ssh_key_ids = [ scaleway_account_ssh_key.main.id ]
 					}
-				`, SSHKeyName, SSHKey, name),
+				`, SSHKeyName, SSHKeyBaremetal, name),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayBaremetalServerExists(tt, "scaleway_baremetal_server.base"),
 					resource.TestCheckResourceAttr("scaleway_baremetal_server.base", "name", name),
@@ -104,7 +105,7 @@ func TestAccScalewayBaremetalServer_Basic(t *testing.T) {
 						tags = [ "terraform-test", "scaleway_baremetal_server", "minimal", "edited" ]
 						ssh_key_ids = [ scaleway_account_ssh_key.main.id ]
 					}
-				`, SSHKeyName, SSHKey, name),
+				`, SSHKeyName, SSHKeyBaremetal, name),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayBaremetalServerExists(tt, "scaleway_baremetal_server.base"),
 					resource.TestCheckResourceAttr("scaleway_baremetal_server.base", "name", name),
@@ -143,6 +144,605 @@ func TestAccScalewayBaremetalServer_RequiredInstallConfig(t *testing.T) {
 						ssh_key_ids = []
 					}`,
 				ExpectError: regexp.MustCompile("attribute is required"),
+			},
+		},
+	})
+}
+
+func TestAccScalewayBaremetalServer_CreateServerWithOption(t *testing.T) {
+	tt := NewTestTools(t)
+	defer tt.Cleanup()
+
+	SSHKeyName := "TestAccScalewayBaremetalServer_CreateServerWithOption"
+	name := "TestAccScalewayBaremetalServer_CreateServerWithOption"
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      testAccCheckScalewayBaremetalServerDestroy(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`
+				data "scaleway_baremetal_os" "my_os" {
+				  zone    = "fr-par-2"
+				  name    = "Ubuntu"
+				  version = "22.04 LTS (Jammy Jellyfish)"
+				}
+				
+				data "scaleway_baremetal_offer" "my_offer" {
+				  zone = "fr-par-2"
+				  name = "EM-B112X-SSD"
+				}
+				
+				data "scaleway_baremetal_option" "private_network" {
+				  zone = "fr-par-2"
+				  name = "Private Network"
+				}
+				
+				resource "scaleway_account_ssh_key" "base" {
+				  name       = "%s"
+				  public_key = "%s"
+				}
+				
+				resource "scaleway_baremetal_server" "base" {
+				  name  = "%s"
+				  zone  = "fr-par-2"
+				  offer = data.scaleway_baremetal_offer.my_offer.offer_id
+				  os    = data.scaleway_baremetal_os.my_os.os_id
+				
+				  ssh_key_ids = [scaleway_account_ssh_key.base.id]
+				  options {
+					id = data.scaleway_baremetal_option.private_network.option_id
+				  }
+				}
+				`, SSHKeyName, SSHKeyBaremetal, name),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayBaremetalServerExists(tt, "scaleway_baremetal_server.base"),
+					testAccCheckScalewayBaremetalServerHasOptions(tt, "scaleway_baremetal_server.base"),
+					resource.TestCheckResourceAttrPair("scaleway_baremetal_server.base", "options.0.id", "data.scaleway_baremetal_option.private_network", "option_id"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccScalewayBaremetalServer_AddOption(t *testing.T) {
+	tt := NewTestTools(t)
+	defer tt.Cleanup()
+
+	SSHKeyName := "TestAccScalewayBaremetalServer_AddOption"
+	name := "TestAccScalewayBaremetalServer_AddOption"
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      testAccCheckScalewayBaremetalServerDestroy(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`
+					data "scaleway_baremetal_os" "by_id" {
+					  zone    = "fr-par-2"
+					  name    = "Ubuntu"
+					  version = "22.04 LTS (Jammy Jellyfish)"
+					}
+					
+					data "scaleway_baremetal_offer" "my_offer" {
+					  zone = "fr-par-2"
+					  name = "EM-B112X-SSD"
+					}
+					
+					resource "scaleway_account_ssh_key" "base" {
+					  name       = "%s"
+					  public_key = "%s"
+					}
+					
+					resource "scaleway_baremetal_server" "base" {
+					  name  = "%s"
+					  zone  = "fr-par-2"
+					  offer = data.scaleway_baremetal_offer.my_offer.offer_id
+					  os    = data.scaleway_baremetal_os.by_id.os_id
+					
+					  ssh_key_ids = [scaleway_account_ssh_key.base.id]
+					}
+				`, SSHKeyName, SSHKeyBaremetal, name),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayBaremetalServerExists(tt, "scaleway_baremetal_server.base"),
+				),
+			},
+			{
+				Config: fmt.Sprintf(`
+				data "scaleway_baremetal_os" "my_os" {
+				  zone    = "fr-par-2"
+				  name    = "Ubuntu"
+				  version = "22.04 LTS (Jammy Jellyfish)"
+				}
+				
+				data "scaleway_baremetal_offer" "my_offer" {
+				  zone = "fr-par-2"
+				  name = "EM-B112X-SSD"
+				}
+				
+				data "scaleway_baremetal_option" "private_network" {
+				  zone = "fr-par-2"
+				  name = "Private Network"
+				}
+				
+				resource "scaleway_account_ssh_key" "base" {
+				  name       = "%s"
+				  public_key = "%s"
+				}
+				
+				resource "scaleway_baremetal_server" "base" {
+				  name  = "%s"
+				  zone  = "fr-par-2"
+				  offer = data.scaleway_baremetal_offer.my_offer.offer_id
+				  os    = data.scaleway_baremetal_os.my_os.os_id
+				
+				  ssh_key_ids = [scaleway_account_ssh_key.base.id]
+				  options {
+					id = data.scaleway_baremetal_option.private_network.option_id
+				  }
+				}
+				`, SSHKeyName, SSHKeyBaremetal, name),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayBaremetalServerExists(tt, "scaleway_baremetal_server.base"),
+					testAccCheckScalewayBaremetalServerHasOptions(tt, "scaleway_baremetal_server.base"),
+					resource.TestCheckResourceAttrPair("scaleway_baremetal_server.base", "options.0.id", "data.scaleway_baremetal_option.private_network", "option_id"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccScalewayBaremetalServer_AddTwoOptionsThenDeleteOne(t *testing.T) {
+	tt := NewTestTools(t)
+	defer tt.Cleanup()
+
+	SSHKeyName := "TestAccScalewayBaremetalServer_AddTwoOptionsThenDeleteOne"
+	name := "TestAccScalewayBaremetalServer_AddTwoOptionsThenDeleteOne"
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      testAccCheckScalewayBaremetalServerDestroy(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`
+					data "scaleway_baremetal_os" "by_id" {
+					  zone    = "fr-par-2"
+					  name    = "Ubuntu"
+					  version = "22.04 LTS (Jammy Jellyfish)"
+					}
+					
+					data "scaleway_baremetal_offer" "my_offer" {
+					  zone = "fr-par-2"
+					  name = "EM-B112X-SSD"
+					}
+					
+					resource "scaleway_account_ssh_key" "base" {
+					  name       = "%s"
+					  public_key = "%s"
+					}
+					
+					resource "scaleway_baremetal_server" "base" {
+					  name  = "%s"
+					  zone  = "fr-par-2"
+					  offer = data.scaleway_baremetal_offer.my_offer.offer_id
+					  os    = data.scaleway_baremetal_os.by_id.os_id
+					
+					  ssh_key_ids = [scaleway_account_ssh_key.base.id]
+					}
+				`, SSHKeyName, SSHKeyBaremetal, name),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayBaremetalServerExists(tt, "scaleway_baremetal_server.base"),
+				),
+			},
+			{
+				Config: fmt.Sprintf(`
+					data "scaleway_baremetal_os" "my_os" {
+					  zone    = "fr-par-2"
+					  name    = "Ubuntu"
+					  version = "22.04 LTS (Jammy Jellyfish)"
+					}
+					
+					data "scaleway_baremetal_offer" "my_offer" {
+					  zone = "fr-par-2"
+					  name = "EM-B112X-SSD"
+					}
+					
+					data "scaleway_baremetal_option" "remote_access" {
+					  zone = "fr-par-2"
+					  name = "Remote Access"
+					}
+					
+					data "scaleway_baremetal_option" "private_network" {
+					  zone = "fr-par-2"
+					  name = "Private Network"
+					}
+					
+					resource "scaleway_account_ssh_key" "base" {
+					  name       = "%s"
+					  public_key = "%s"
+					}
+					
+					resource "scaleway_baremetal_server" "base" {
+					  name        = "%s"
+					  zone        = "fr-par-2"
+					  offer       = data.scaleway_baremetal_offer.my_offer.offer_id
+					  os          = data.scaleway_baremetal_os.my_os.os_id
+					  ssh_key_ids = [scaleway_account_ssh_key.base.id]
+					
+					  options {
+						id = data.scaleway_baremetal_option.private_network.option_id
+					  }
+					  options {
+						id         = data.scaleway_baremetal_option.remote_access.option_id
+						expires_at = "2025-07-06T09:00:00Z"
+					  }
+					}
+				`, SSHKeyName, SSHKeyBaremetal, name),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayBaremetalServerExists(tt, "scaleway_baremetal_server.base"),
+					testAccCheckScalewayBaremetalServerHasOptions(tt, "scaleway_baremetal_server.base"),
+					resource.TestCheckTypeSetElemAttrPair("scaleway_baremetal_server.base", "options.*.id", "data.scaleway_baremetal_option.remote_access", "option_id"),
+					resource.TestCheckTypeSetElemAttrPair("scaleway_baremetal_server.base", "options.*.id", "data.scaleway_baremetal_option.private_network", "option_id"),
+					resource.TestCheckTypeSetElemNestedAttrs("scaleway_baremetal_server.base", "options.*", map[string]string{
+						"id":         "fr-par-2/931df052-d713-4674-8b58-96a63244c8e2",
+						"expires_at": "2025-07-06T09:00:00Z",
+					}),
+					resource.TestCheckTypeSetElemNestedAttrs("scaleway_baremetal_server.base", "options.*", map[string]string{
+						"id": "fr-par-2/cd4158d7-2d65-49be-8803-c4b8ab6f760c",
+					}),
+				),
+			},
+			{
+				Config: fmt.Sprintf(`
+					data "scaleway_baremetal_os" "my_os" {
+					  zone    = "fr-par-2"
+					  name    = "Ubuntu"
+					  version = "22.04 LTS (Jammy Jellyfish)"
+					}
+					
+					data "scaleway_baremetal_offer" "my_offer" {
+					  zone = "fr-par-2"
+					  name = "EM-B112X-SSD"
+					}
+					
+					data "scaleway_baremetal_option" "remote_access" {
+					  zone = "fr-par-2"
+					  name = "Remote Access"
+					}
+					
+					resource "scaleway_account_ssh_key" "base" {
+					  name       = "%s"
+					  public_key = "%s"
+					}
+					
+					resource "scaleway_baremetal_server" "base" {
+					  name        = "%s"
+					  zone        = "fr-par-2"
+					  offer       = data.scaleway_baremetal_offer.my_offer.offer_id
+					  os          = data.scaleway_baremetal_os.my_os.os_id
+					  ssh_key_ids = [scaleway_account_ssh_key.base.id]
+					
+					  options {
+						id         = data.scaleway_baremetal_option.remote_access.option_id
+						expires_at = "2025-07-06T09:00:00Z"
+					  }
+					}
+				`, SSHKeyName, SSHKeyBaremetal, name),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayBaremetalServerExists(tt, "scaleway_baremetal_server.base"),
+					testAccCheckScalewayBaremetalServerHasOptions(tt, "scaleway_baremetal_server.base"),
+					resource.TestCheckResourceAttrPair("scaleway_baremetal_server.base", "options.0.id", "data.scaleway_baremetal_option.remote_access", "option_id"),
+					resource.TestCheckTypeSetElemNestedAttrs("scaleway_baremetal_server.base", "options.*", map[string]string{
+						"id":         "fr-par-2/931df052-d713-4674-8b58-96a63244c8e2",
+						"expires_at": "2025-07-06T09:00:00Z",
+					}),
+				),
+			},
+		},
+	})
+}
+
+func TestAccScalewayBaremetalServer_CreateServerWithPrivateNetwork(t *testing.T) {
+	tt := NewTestTools(t)
+	defer tt.Cleanup()
+
+	SSHKeyName := "TestAccScalewayBaremetalServer_CreateServerWithPrivateNetwork"
+	name := "TestAccScalewayBaremetalServer_CreateServerWithPrivateNetwork"
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy: resource.ComposeTestCheckFunc(
+			testAccCheckScalewayBaremetalServerDestroy(tt),
+		),
+		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`
+					data "scaleway_baremetal_os" "my_os" {
+						zone = "fr-par-2"
+						name = "Ubuntu"
+						version = "22.04 LTS (Jammy Jellyfish)"						
+					}
+
+					data "scaleway_baremetal_offer" "my_offer" {
+						zone = "fr-par-2"
+						name = "EM-B112X-SSD"
+					}
+
+					data "scaleway_baremetal_option" "private_network" {
+						zone = "fr-par-2"
+						name = "Private Network"
+					}
+
+					resource "scaleway_vpc_private_network" "pn" {
+						zone = "fr-par-2"
+						name = "baremetal_private_network"
+					} 
+
+					resource "scaleway_account_ssh_key" "base" {
+						name 	   = "%s"
+						public_key = "%s"
+					}
+					
+					resource "scaleway_baremetal_server" "base" {
+						name        = "%s"
+						zone        = "fr-par-2"
+						offer       = data.scaleway_baremetal_offer.my_offer.offer_id
+						os          = data.scaleway_baremetal_os.my_os.os_id
+					
+						ssh_key_ids = [ scaleway_account_ssh_key.base.id ]
+						options {
+						  id = data.scaleway_baremetal_option.private_network.option_id
+						}
+						private_network {
+						  id = scaleway_vpc_private_network.pn.id
+						}
+					}
+				`, SSHKeyName, SSHKeyBaremetal, name),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayBaremetalServerExists(tt, "scaleway_baremetal_server.base"),
+					testAccCheckScalewayBaremetalServerHasPrivateNetwork(tt, "scaleway_baremetal_server.base"),
+					resource.TestCheckResourceAttrPair("scaleway_baremetal_server.base", "private_network.0.id", "scaleway_vpc_private_network.pn", "id"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccScalewayBaremetalServer_AddPrivateNetwork(t *testing.T) {
+	tt := NewTestTools(t)
+	defer tt.Cleanup()
+
+	SSHKeyName := "TestAccScalewayBaremetalServer_AddPrivateNetwork"
+	name := "TestAccScalewayBaremetalServer_AddPrivateNetwork"
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy: resource.ComposeTestCheckFunc(
+			testAccCheckScalewayBaremetalServerDestroy(tt),
+		),
+		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`
+					data "scaleway_baremetal_os" "my_os" {
+						zone = "fr-par-2"
+						name = "Ubuntu"
+						version = "22.04 LTS (Jammy Jellyfish)"						
+					}
+
+					data "scaleway_baremetal_offer" "my_offer" {
+						zone = "fr-par-2"
+						name = "EM-B112X-SSD"
+					}
+
+					data "scaleway_baremetal_option" "private_network" {
+						zone = "fr-par-2"
+						name = "Private Network"
+					}
+
+					resource "scaleway_vpc_private_network" "pn" {
+						zone = "fr-par-2"
+						name = "baremetal_private_network"
+					} 
+
+					resource "scaleway_account_ssh_key" "base" {
+						name 	   = "%s"
+						public_key = "%s"
+					}
+					
+					resource "scaleway_baremetal_server" "base" {
+						name        = "%s"
+						zone        = "fr-par-2"
+						offer       = data.scaleway_baremetal_offer.my_offer.offer_id
+						os          = data.scaleway_baremetal_os.my_os.os_id
+					
+						ssh_key_ids = [ scaleway_account_ssh_key.base.id ]
+						options {
+						  id = data.scaleway_baremetal_option.private_network.option_id
+						}
+					}
+				`, SSHKeyName, SSHKeyBaremetal, name),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayBaremetalServerExists(tt, "scaleway_baremetal_server.base"),
+				),
+			},
+			{
+				Config: fmt.Sprintf(`
+					data "scaleway_baremetal_os" "my_os" {
+						zone = "fr-par-2"
+						name = "Ubuntu"
+						version = "22.04 LTS (Jammy Jellyfish)"						
+					}
+
+					data "scaleway_baremetal_offer" "my_offer" {
+						zone = "fr-par-2"
+						name = "EM-B112X-SSD"
+					}
+
+					data "scaleway_baremetal_option" "private_network" {
+						zone = "fr-par-2"
+						name = "Private Network"
+					}
+
+					resource "scaleway_vpc_private_network" "pn" {
+						zone = "fr-par-2"
+						name = "baremetal_private_network"
+					} 
+
+					resource "scaleway_account_ssh_key" "base" {
+						name 	   = "%s"
+						public_key = "%s"
+					}
+					
+					resource "scaleway_baremetal_server" "base" {
+						name        = "%s"
+						zone        = "fr-par-2"
+						offer       = data.scaleway_baremetal_offer.my_offer.offer_id
+						os          = data.scaleway_baremetal_os.my_os.os_id
+					
+						ssh_key_ids = [ scaleway_account_ssh_key.base.id ]
+						options {
+						  id = data.scaleway_baremetal_option.private_network.option_id
+						}
+						private_network {
+						  id = scaleway_vpc_private_network.pn.id
+						}
+					}
+				`, SSHKeyName, SSHKeyBaremetal, name),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayBaremetalServerExists(tt, "scaleway_baremetal_server.base"),
+					testAccCheckScalewayBaremetalServerHasPrivateNetwork(tt, "scaleway_baremetal_server.base"),
+					resource.TestCheckResourceAttrPair("scaleway_baremetal_server.base", "private_network.0.id", "scaleway_vpc_private_network.pn", "id"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccScalewayBaremetalServer_AddAnotherPrivateNetwork(t *testing.T) {
+	tt := NewTestTools(t)
+	defer tt.Cleanup()
+
+	SSHKeyName := "TestAccScalewayBaremetalServer_AddAnotherPrivateNetwork"
+	name := "TestAccScalewayBaremetalServer_AddAnotherPrivateNetwork"
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy: resource.ComposeTestCheckFunc(
+			testAccCheckScalewayBaremetalServerDestroy(tt),
+		),
+		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`
+					data "scaleway_baremetal_os" "my_os" {
+						zone = "fr-par-2"
+						name = "Ubuntu"
+						version = "22.04 LTS (Jammy Jellyfish)"						
+					}
+
+					data "scaleway_baremetal_offer" "my_offer" {
+						zone = "fr-par-2"
+						name = "EM-B112X-SSD"
+					}
+
+					data "scaleway_baremetal_option" "private_network" {
+						zone = "fr-par-2"
+						name = "Private Network"
+					}
+
+					resource "scaleway_vpc_private_network" "pn" {
+						zone = "fr-par-2"
+						name = "baremetal_private_network"
+					}
+
+					resource "scaleway_account_ssh_key" "base" {
+						name 	   = "%s"
+						public_key = "%s"
+					}
+					
+					resource "scaleway_baremetal_server" "base" {
+						name        = "%s"
+						zone        = "fr-par-2"
+						offer       = data.scaleway_baremetal_offer.my_offer.offer_id
+						os          = data.scaleway_baremetal_os.my_os.os_id
+					
+						ssh_key_ids = [ scaleway_account_ssh_key.base.id ]
+						options {
+						  id = data.scaleway_baremetal_option.private_network.option_id
+						}
+						private_network {
+						  id = scaleway_vpc_private_network.pn.id
+						}
+					}
+				`, SSHKeyName, SSHKeyBaremetal, name),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayBaremetalServerExists(tt, "scaleway_baremetal_server.base"),
+					testAccCheckScalewayBaremetalServerHasPrivateNetwork(tt, "scaleway_baremetal_server.base"),
+					resource.TestCheckResourceAttrPair("scaleway_baremetal_server.base", "private_network.0.id", "scaleway_vpc_private_network.pn", "id"),
+				),
+			},
+			{
+				Config: fmt.Sprintf(`
+					data "scaleway_baremetal_os" "my_os" {
+						zone = "fr-par-2"
+						name = "Ubuntu"
+						version = "22.04 LTS (Jammy Jellyfish)"						
+					}
+
+					data "scaleway_baremetal_offer" "my_offer" {
+						zone = "fr-par-2"
+						name = "EM-B112X-SSD"
+					}
+
+					data "scaleway_baremetal_option" "private_network" {
+						zone = "fr-par-2"
+						name = "Private Network"
+					}
+
+					resource "scaleway_vpc_private_network" "pn" {
+						zone = "fr-par-2"
+						name = "baremetal_private_network"
+					} 
+
+					resource "scaleway_vpc_private_network" "pn2" {
+						zone = "fr-par-2"
+						name = "baremetal_private_network2"
+					} 
+
+					resource "scaleway_account_ssh_key" "base" {
+						name 	   = "%s"
+						public_key = "%s"
+					}
+					
+					resource "scaleway_baremetal_server" "base" {
+						name        = "%s"
+						zone        = "fr-par-2"
+						offer       = data.scaleway_baremetal_offer.my_offer.offer_id
+						os          = data.scaleway_baremetal_os.my_os.os_id
+					
+						ssh_key_ids = [ scaleway_account_ssh_key.base.id ]
+						options {
+						  id = data.scaleway_baremetal_option.private_network.option_id
+						}
+						private_network {
+						  id = scaleway_vpc_private_network.pn.id
+						}
+						private_network {
+						  id = scaleway_vpc_private_network.pn2.id
+						}
+					}
+				`, SSHKeyName, SSHKeyBaremetal, name),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayBaremetalServerExists(tt, "scaleway_baremetal_server.base"),
+					testAccCheckScalewayBaremetalServerHasPrivateNetwork(tt, "scaleway_baremetal_server.base"),
+					resource.TestCheckTypeSetElemAttrPair("scaleway_baremetal_server.base", "private_network.*.id", "scaleway_vpc_private_network.pn", "id"),
+					resource.TestCheckTypeSetElemAttrPair("scaleway_baremetal_server.base", "private_network.*.id", "scaleway_vpc_private_network.pn2", "id"),
+				),
 			},
 		},
 	})
@@ -199,6 +799,67 @@ func testAccCheckScalewayBaremetalServerDestroy(tt *TestTools) resource.TestChec
 				return err
 			}
 		}
+		return nil
+	}
+}
+
+func testAccCheckScalewayBaremetalServerHasOptions(tt *TestTools, n string) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		rs, ok := s.RootModule().Resources[n]
+		if !ok {
+			return fmt.Errorf("resource not found: %s", n)
+		}
+
+		baremetalAPI, zonedID, err := baremetalAPIWithZoneAndID(tt.Meta, rs.Primary.ID)
+		if err != nil {
+			return err
+		}
+
+		server, err := baremetalAPI.GetServer(&baremetal.GetServerRequest{
+			ServerID: zonedID.ID,
+			Zone:     zonedID.Zone,
+		})
+		if err != nil {
+			return err
+		}
+
+		if len(server.Options) == 0 {
+			return fmt.Errorf("server (%s) has no options enabled", rs.Primary.ID)
+		}
+
+		return nil
+	}
+}
+
+func testAccCheckScalewayBaremetalServerHasPrivateNetwork(tt *TestTools, n string) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		rs, ok := s.RootModule().Resources[n]
+		if !ok {
+			return fmt.Errorf("resource not found: %s", n)
+		}
+
+		_, zonedID, err := baremetalAPIWithZoneAndID(tt.Meta, rs.Primary.ID)
+		if err != nil {
+			return err
+		}
+
+		baremetalPrivateNetworkAPI, _, err := baremetalPrivateNetworkAPIWithZoneAndID(tt.Meta, rs.Primary.ID)
+		if err != nil {
+			return err
+		}
+
+		listPrivateNetworks, err := baremetalPrivateNetworkAPI.ListServerPrivateNetworks(&baremetal.PrivateNetworkAPIListServerPrivateNetworksRequest{
+			Zone:     zonedID.Zone,
+			ServerID: &zonedID.ID,
+		})
+		if err != nil {
+			return err
+		}
+
+		if len(listPrivateNetworks.ServerPrivateNetworks) == 0 {
+			return fmt.Errorf("server (%s) has no private networks attached to it", rs.Primary.ID)
+		}
+
 		return nil
 	}
 }

@@ -157,6 +157,16 @@ func resourceScalewayContainer() *schema.Resource {
 				Description: "This allows you to control your production environment",
 				Default:     false,
 			},
+			"http_option": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "HTTP traffic configuration",
+				Default:     container.ContainerHTTPOptionEnabled.String(),
+				ValidateFunc: validation.StringInSlice([]string{
+					container.ContainerHTTPOptionEnabled.String(),
+					container.ContainerHTTPOptionRedirected.String(),
+				}, false),
+			},
 			// computed
 			"status": {
 				Type:        schema.TypeString,
@@ -268,6 +278,7 @@ func resourceScalewayContainerRead(ctx context.Context, d *schema.ResourceData, 
 	_ = d.Set("cron_status", co.Status.String())
 	_ = d.Set("port", int(co.Port))
 	_ = d.Set("deploy", scw.BoolPtr(*expandBoolPtr(d.Get("deploy"))))
+	_ = d.Set("http_option", co.HTTPOption)
 	_ = d.Set("region", co.Region.String())
 
 	return nil
@@ -345,6 +356,10 @@ func resourceScalewayContainerUpdate(ctx context.Context, d *schema.ResourceData
 
 	if d.HasChanges("port") {
 		req.Port = scw.Uint32Ptr(uint32(d.Get("port").(int)))
+	}
+
+	if d.HasChanges("http_option") {
+		req.HTTPOption = container.ContainerHTTPOption(d.Get("http_option").(string))
 	}
 
 	if d.HasChanges("deploy") {

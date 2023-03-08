@@ -9,6 +9,7 @@ import (
 
 	domain "github.com/scaleway/scaleway-sdk-go/api/domain/v2beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"golang.org/x/exp/slices"
 )
 
 const (
@@ -272,4 +273,52 @@ func waitForDNSZone(ctx context.Context, domainAPI *domain.API, dnsZone string, 
 		Timeout:       scw.TimeDurationPtr(timeout),
 		RetryInterval: scw.TimeDurationPtr(retryInterval),
 	}, scw.WithContext(ctx))
+}
+
+var disableHostResolver bool
+
+func hostResolver(ctx context.Context, timeout time.Duration, reverse, ip string) bool {
+	if disableHostResolver {
+		return true
+	}
+	ticker := time.Tick(time.Millisecond * 500)
+	ctx, cancel := context.WithTimeout(ctx, timeout)
+	defer cancel()
+
+	r := &net.Resolver{
+		PreferGo: true,
+		Dial: func(ctx context.Context, network, address string) (net.Conn, error) {
+			d := net.Dialer{
+				Timeout: time.Millisecond * time.Duration(500),
+			}
+			conn, err := d.DialContext(ctx, network, "ns0.dom.scw.cloud:53")
+			if err != nil {
+				conn, err = d.DialContext(ctx, network, "ns1.dom.scw.cloud:53")
+			}
+			return conn, err
+		},
+	}
+
+	for range ticker {
+		address, err := r.LookupHost(ctx, reverse)
+		if err != nil {
+			if ctx.Err() == context.DeadlineExceeded {
+				return false
+			}
+			continue
+		}
+		if slices.Contains(address, ip) {
+			return true
+		}
+	}
+
+	return false
+}
+
+func findDefaultReverse(address string) string {
+	parts := strings.Split(address, ".")
+	for i, j := 0, len(parts)-1; i < j; i, j = i+1, j-1 {
+		parts[i], parts[j] = parts[j], parts[i]
+	}
+	return strings.Join(parts, "-") + ".instances.scw.cloud"
 }

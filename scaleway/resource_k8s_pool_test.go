@@ -121,8 +121,8 @@ func TestAccScalewayK8SCluster_PoolWait(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_k8s_pool.minimal", "min_size", "1"),
 					resource.TestCheckResourceAttr("scaleway_k8s_pool.minimal", "max_size", "1"),
 					resource.TestCheckResourceAttr("scaleway_k8s_pool.minimal", "status", k8s.PoolStatusReady.String()),
-					resource.TestCheckResourceAttr("scaleway_k8s_pool.minimal", "nodes.0.status", k8s.NodeStatusReady.String()),
-					resource.TestCheckNoResourceAttr("scaleway_k8s_pool.minimal", "nodes.1"), // check that the second node does not exist anymore
+					testAccCheckScalewayK8SPoolNodesOneOfIsDeleting("scaleway_k8s_pool.minimal"), // check that one of the nodes is deleting (nodes are not ordered)
+					resource.TestCheckResourceAttr("scaleway_k8s_pool.minimal", "nodes.#", "2"),  // the node that is deleting should still exist
 					resource.TestCheckResourceAttr("scaleway_k8s_pool.minimal", "wait_for_pool_ready", "true"),
 				),
 			},
@@ -298,6 +298,69 @@ func TestAccScalewayK8SCluster_PoolZone(t *testing.T) {
 	})
 }
 
+func TestAccScalewayK8SCluster_PoolSize(t *testing.T) {
+	tt := NewTestTools(t)
+	defer tt.Cleanup()
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      testAccCheckScalewayK8SClusterDestroy(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+				resource "scaleway_k8s_cluster" "cluster" {
+				  name    = "cluster"
+				  version = "1.23"
+				  cni     = "cilium"
+				  delete_additional_resources = true
+				  auto_upgrade {
+				    enable = true
+				    maintenance_window_start_hour = 12
+				    maintenance_window_day = "monday"
+				  }
+				}
+				
+				resource "scaleway_k8s_pool" "pool" {
+				  cluster_id          = scaleway_k8s_cluster.cluster.id
+				  name                = "pool"
+				  node_type           = "gp1_xs"
+				  size                = 1
+				  autoscaling         = false
+				  autohealing         = true
+				  wait_for_pool_ready = true
+				}`,
+			},
+			{
+				Config: `
+				resource "scaleway_k8s_cluster" "cluster" {
+				  name    = "cluster"
+				  version = "1.23"
+				  cni     = "cilium"
+				  auto_upgrade {
+				  enable = true
+				  maintenance_window_start_hour = 12
+				  maintenance_window_day = "monday"
+				  }
+				  delete_additional_resources = true
+				}
+				
+				resource "scaleway_k8s_pool" "pool" {
+				  cluster_id          = scaleway_k8s_cluster.cluster.id
+				  name                = "pool"
+				  node_type           = "gp1_xs"
+				  size                = 2
+				  autoscaling         = false
+				  autohealing         = true
+				  wait_for_pool_ready = true
+				}`,
+				PlanOnly:           true,
+				ExpectNonEmptyPlan: true,
+			},
+		},
+	})
+}
+
 func testAccCheckScalewayK8SPoolDestroy(tt *TestTools, n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
@@ -381,6 +444,7 @@ resource "scaleway_k8s_cluster" "minimal" {
 	cni = "calico"
 	version = "%s"
 	tags = [ "terraform-test", "scaleway_k8s_cluster", "minimal" ]
+	delete_additional_resources = true
 }
 %s`, version, pool)
 }
@@ -417,6 +481,7 @@ resource "scaleway_k8s_cluster" "minimal" {
 	cni = "calico"
 	version = "%s"
 	tags = [ "terraform-test", "scaleway_k8s_cluster", "minimal" ]
+	delete_additional_resources = true
 }
 %s`, version, pool)
 }
@@ -442,6 +507,7 @@ resource "scaleway_k8s_cluster" "placement_group" {
   cni	  = "calico"
   version = "%s"
   tags	  = [ "terraform-test", "scaleway_k8s_cluster", "placement_group" ]
+  delete_additional_resources = true
 }`, version)
 }
 
@@ -470,6 +536,7 @@ resource "scaleway_k8s_cluster" "cluster" {
   version = "%s"
   tags	  = [ "terraform-test", "scaleway_k8s_cluster", "placement_group" ]
   region  = "nl-ams"
+  delete_additional_resources = true
 }`, version)
 }
 
@@ -499,6 +566,7 @@ resource "scaleway_k8s_cluster" "cluster" {
   tags		= [ "terraform-test", "scaleway_k8s_cluster", "placement_group" ]
   region	= "fr-par"
   type		= "multicloud"
+  delete_additional_resources = true
 }`, version)
 }
 
@@ -522,6 +590,7 @@ resource "scaleway_k8s_cluster" "upgrade_policy" {
 	cni = "cilium"
 	version = "%s"
 	tags = [ "terraform-test", "scaleway_k8s_cluster", "upgrade_policy" ]
+	delete_additional_resources = true
 }`, maxSurge, maxUnavailable, version)
 }
 
@@ -544,6 +613,7 @@ resource "scaleway_k8s_cluster" "kubelet_args" {
 	cni = "cilium"
 	version = "%s"
 	tags = [ "terraform-test", "scaleway_k8s_cluster", "kubelet_args" ]
+	delete_additional_resources = true
 }`, maxPods, version)
 }
 
@@ -564,5 +634,28 @@ resource "scaleway_k8s_cluster" "zone" {
 	cni = "cilium"
 	version = "%s"
 	tags = [ "terraform-test", "scaleway_k8s_cluster", "zone" ]
+	delete_additional_resources = true
 }`, zone, version)
+}
+
+func testAccCheckScalewayK8SPoolNodesOneOfIsDeleting(name string) resource.TestCheckFunc {
+	return func(state *terraform.State) error {
+		rs, ok := state.RootModule().Resources[name]
+		if !ok {
+			return fmt.Errorf("resource not found: %s", name)
+		}
+		nodesZeroStatus, ok := rs.Primary.Attributes["nodes.0.status"]
+		if !ok {
+			return fmt.Errorf("attribute \"nodes.0.status\" was not set")
+		}
+		nodesOneStatus, ok := rs.Primary.Attributes["nodes.1.status"]
+		if !ok {
+			return fmt.Errorf("attribute \"nodes.1.status\" was not set")
+		}
+		if nodesZeroStatus == "ready" && nodesOneStatus == "deleting" ||
+			nodesZeroStatus == "deleting" && nodesOneStatus == "ready" {
+			return nil
+		}
+		return fmt.Errorf("nodes status were not as expected: got %q for nodes.0 and %q for nodes.1", nodesZeroStatus, nodesOneStatus)
+	}
 }

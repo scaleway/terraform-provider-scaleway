@@ -6,6 +6,7 @@ import (
 
 	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/scaleway/scaleway-sdk-go/api/baremetal/v1"
@@ -29,6 +30,7 @@ func resourceScalewayBaremetalServer() *schema.Resource {
 			Update:  schema.DefaultTimeout(defaultBaremetalServerTimeout),
 			Delete:  schema.DefaultTimeout(defaultBaremetalServerTimeout),
 		},
+
 		Schema: map[string]*schema.Schema{
 			"name": {
 				Type:        schema.TypeString,
@@ -52,16 +54,22 @@ func resourceScalewayBaremetalServer() *schema.Resource {
 				Computed:    true,
 				Description: "ID of the server offer",
 			},
-			"os": {
-				Type:         schema.TypeString,
-				Required:     true,
-				Description:  "The base image of the server",
-				ValidateFunc: validationUUIDorUUIDWithLocality(),
-			},
-			"os_id": {
+			"offer_name": {
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "The base image ID of the server",
+				Description: "Name of the server offer",
+			},
+			"os": {
+				Type:             schema.TypeString,
+				Required:         true,
+				Description:      "The base image of the server",
+				DiffSuppressFunc: diffSuppressFuncLocality,
+				ValidateFunc:     validationUUIDorUUIDWithLocality(),
+			},
+			"os_name": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The base image name of the server",
 			},
 			"ssh_key_ids": {
 				Type: schema.TypeList,
@@ -117,6 +125,7 @@ If this behaviour is wanted, please set 'reinstall_on_ssh_key_changes' argument 
 					Type: schema.TypeString,
 				},
 				Optional:    true,
+				Computed:    true,
 				Description: "Array of tags to associate with the server",
 			},
 			"zone":            zoneSchema(),
@@ -154,12 +163,85 @@ If this behaviour is wanted, please set 'reinstall_on_ssh_key_changes' argument 
 				Type:     schema.TypeString,
 				Computed: true,
 			},
+			"options": {
+				Type:        schema.TypeSet,
+				Optional:    true,
+				Description: "The options to enable on server",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"id": {
+							Type:        schema.TypeString,
+							Description: "IDs of the options",
+							Required:    true,
+						},
+						"expires_at": {
+							Type:             schema.TypeString,
+							Description:      "Auto expire the option after this date",
+							Optional:         true,
+							Computed:         true,
+							ValidateDiagFunc: validateDate(),
+							DiffSuppressFunc: diffSuppressFuncTimeRFC3339,
+						},
+						// computed
+						"name": {
+							Type:        schema.TypeString,
+							Description: "name of the option",
+							Computed:    true,
+						},
+					},
+				},
+			},
+			"private_network": {
+				Type:        schema.TypeSet,
+				Optional:    true,
+				Description: "The private networks to attach to the server",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"id": {
+							Type:         schema.TypeString,
+							Description:  "The private network ID",
+							Required:     true,
+							ValidateFunc: validationUUIDorUUIDWithLocality(),
+						},
+						// computed
+						"vlan": {
+							Type:        schema.TypeInt,
+							Computed:    true,
+							Description: "The VLAN ID associated to the private network",
+						},
+						"status": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The private network status",
+						},
+						"created_at": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The date and time of the creation of the private network",
+						},
+						"updated_at": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The date and time of the last update of the private network",
+						},
+					},
+				},
+			},
 		},
+		CustomizeDiff: customdiff.Sequence(
+			customizeDiffLocalityCheck("private_network.#.id"),
+			customDiffBaremetalPrivateNetworkOption(),
+		),
 	}
 }
 
 func resourceScalewayBaremetalServerCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	baremetalAPI, zone, err := baremetalAPIWithZone(d, meta)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	baremetalPrivateNetworkAPI, _, err := baremetalPrivateNetworkAPIWithZone(d, meta)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -213,6 +295,47 @@ func resourceScalewayBaremetalServerCreate(ctx context.Context, d *schema.Resour
 		return diag.FromErr(err)
 	}
 
+	options, optionsExist := d.GetOk("options")
+	if optionsExist {
+		opSpecs, err := expandBaremetalOptions(options)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		for i := range opSpecs {
+			_, err = baremetalAPI.AddOptionServer(&baremetal.AddOptionServerRequest{
+				Zone:      server.Zone,
+				ServerID:  server.ID,
+				OptionID:  opSpecs[i].ID,
+				ExpiresAt: opSpecs[i].ExpiresAt,
+			})
+			if err != nil {
+				return diag.FromErr(err)
+			}
+		}
+	}
+
+	privateNetworkIDs, pnExist := d.GetOk("private_network")
+	if pnExist {
+		createBaremetalPrivateNetworkRequest := &baremetal.PrivateNetworkAPISetServerPrivateNetworksRequest{
+			Zone:              zone,
+			ServerID:          server.ID,
+			PrivateNetworkIDs: expandBaremetalPrivateNetworks(privateNetworkIDs),
+		}
+
+		baremetalPrivateNetwork, err := baremetalPrivateNetworkAPI.SetServerPrivateNetworks(
+			createBaremetalPrivateNetworkRequest,
+			scw.WithContext(ctx),
+		)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+
+		_, err = waitForBaremetalServerPrivateNetwork(ctx, baremetalPrivateNetworkAPI, zone, baremetalPrivateNetwork.ServerPrivateNetworks[0].ServerID, d.Timeout(schema.TimeoutCreate))
+		if err != nil && !is404Error(err) {
+			return diag.FromErr(err)
+		}
+	}
+
 	_, err = waitForBaremetalServerInstall(ctx, baremetalAPI, zone, server.ID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
 		return diag.FromErr(err)
@@ -223,6 +346,11 @@ func resourceScalewayBaremetalServerCreate(ctx context.Context, d *schema.Resour
 
 func resourceScalewayBaremetalServerRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	baremetalAPI, zonedID, err := baremetalAPIWithZoneAndID(meta, d.Id())
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	baremetalPrivateNetworkAPI, _, err := baremetalPrivateNetworkAPIWithZone(d, meta)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -247,29 +375,125 @@ func resourceScalewayBaremetalServerRead(ctx context.Context, d *schema.Resource
 		return diag.FromErr(err)
 	}
 
+	os, err := baremetalAPI.GetOS(&baremetal.GetOSRequest{
+		Zone: server.Zone,
+		OsID: server.Install.OsID,
+	})
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	_ = d.Set("name", server.Name)
 	_ = d.Set("zone", server.Zone.String())
 	_ = d.Set("organization_id", server.OrganizationID)
 	_ = d.Set("project_id", server.ProjectID)
-	_ = d.Set("offer_id", newZonedID(server.Zone, offer.ID).String())
+	_ = d.Set("offer_id", newZonedIDString(server.Zone, offer.ID))
+	_ = d.Set("offer_name", offer.Name)
 	_ = d.Set("tags", server.Tags)
 	_ = d.Set("domain", server.Domain)
 	_ = d.Set("ips", flattenBaremetalIPs(server.IPs))
 	if server.Install != nil {
-		_ = d.Set("os_id", newZonedID(server.Zone, server.Install.OsID).String())
+		_ = d.Set("os", newZonedIDString(server.Zone, os.ID))
+		_ = d.Set("os_name", os.Name)
 		_ = d.Set("ssh_key_ids", server.Install.SSHKeyIDs)
 		_ = d.Set("user", server.Install.User)
 		_ = d.Set("service_user", server.Install.ServiceUser)
 	}
 	_ = d.Set("description", server.Description)
+	_ = d.Set("options", flattenBaremetalOptions(server.Zone, server.Options))
+
+	listPrivateNetworks, err := baremetalPrivateNetworkAPI.ListServerPrivateNetworks(&baremetal.PrivateNetworkAPIListServerPrivateNetworksRequest{
+		Zone:     server.Zone,
+		ServerID: &server.ID,
+	})
+	if err != nil {
+		return diag.FromErr(fmt.Errorf("failed to list server's private networks: %w", err))
+	}
+	_ = d.Set("private_network", flattenBaremetalPrivateNetworks(server.Zone, listPrivateNetworks.ServerPrivateNetworks))
 
 	return nil
 }
 
+//gocyclo:ignore
 func resourceScalewayBaremetalServerUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	baremetalAPI, zonedID, err := baremetalAPIWithZoneAndID(meta, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
+	}
+
+	baremetalPrivateNetworkAPI, zone, err := baremetalPrivateNetworkAPIWithZone(d, meta)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	server, err := baremetalAPI.GetServer(&baremetal.GetServerRequest{
+		Zone:     zonedID.Zone,
+		ServerID: zonedID.ID,
+	})
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	var serverGetOptionIDs []*baremetal.ServerOption
+	serverGetOptionIDs = append(serverGetOptionIDs, server.Options...)
+
+	if d.HasChange("options") {
+		options, err := expandBaremetalOptions(d.Get("options"))
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		optionsToDelete := baremetalCompareOptions(options, serverGetOptionIDs)
+		for i := range optionsToDelete {
+			_, err = baremetalAPI.DeleteOptionServer(&baremetal.DeleteOptionServerRequest{
+				Zone:     server.Zone,
+				ServerID: server.ID,
+				OptionID: optionsToDelete[i].ID,
+			})
+			if err != nil {
+				return diag.FromErr(err)
+			}
+		}
+
+		_, err = waitForBaremetalServerOptions(ctx, baremetalAPI, zonedID.Zone, zonedID.ID, d.Timeout(schema.TimeoutDelete))
+		if err != nil && !is404Error(err) {
+			return diag.FromErr(err)
+		}
+
+		optionsToAdd := baremetalCompareOptions(serverGetOptionIDs, options)
+		for i := range optionsToAdd {
+			_, err = baremetalAPI.AddOptionServer(&baremetal.AddOptionServerRequest{
+				Zone:      server.Zone,
+				ServerID:  server.ID,
+				OptionID:  optionsToAdd[i].ID,
+				ExpiresAt: optionsToAdd[i].ExpiresAt,
+			})
+			if err != nil {
+				return diag.FromErr(err)
+			}
+		}
+	}
+
+	if d.HasChange("private_network") {
+		privateNetworkIDs := d.Get("private_network")
+
+		updateBaremetalPrivateNetworkRequest := &baremetal.PrivateNetworkAPISetServerPrivateNetworksRequest{
+			Zone:              zone,
+			ServerID:          server.ID,
+			PrivateNetworkIDs: expandBaremetalPrivateNetworks(privateNetworkIDs),
+		}
+
+		baremetalPrivateNetwork, err := baremetalPrivateNetworkAPI.SetServerPrivateNetworks(
+			updateBaremetalPrivateNetworkRequest,
+			scw.WithContext(ctx),
+		)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+
+		_, err = waitForBaremetalServerPrivateNetwork(ctx, baremetalPrivateNetworkAPI, zone, baremetalPrivateNetwork.ServerPrivateNetworks[0].ServerID, d.Timeout(schema.TimeoutUpdate))
+		if err != nil && !is404Error(err) {
+			return diag.FromErr(err)
+		}
 	}
 
 	req := &baremetal.UpdateServerRequest{
@@ -280,12 +504,12 @@ func resourceScalewayBaremetalServerUpdate(ctx context.Context, d *schema.Resour
 	hasChanged := false
 
 	if d.HasChange("name") {
-		req.Name = expandUpdatedStringPtr("name")
+		req.Name = expandUpdatedStringPtr(d.Get("name"))
 		hasChanged = true
 	}
 
 	if d.HasChange("description") {
-		req.Description = expandUpdatedStringPtr("description")
+		req.Description = expandUpdatedStringPtr(d.Get("description"))
 		hasChanged = true
 	}
 

@@ -6,7 +6,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	vpcgw "github.com/scaleway/scaleway-sdk-go/api/vpcgw/v1"
+	"github.com/scaleway/scaleway-sdk-go/api/vpcgw/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 )
 
@@ -15,7 +15,7 @@ func dataSourceScalewayVPCPublicGateway() *schema.Resource {
 	dsSchema := datasourceSchemaFromResourceSchema(resourceScalewayVPCPublicGateway().Schema)
 
 	// Set 'Optional' schema elements
-	addOptionalFieldsToSchema(dsSchema, "name")
+	addOptionalFieldsToSchema(dsSchema, "name", "zone")
 
 	dsSchema["name"].ConflictsWith = []string{"public_gateway_id"}
 	dsSchema["public_gateway_id"] = &schema.Schema{
@@ -36,6 +36,10 @@ func dataSourceScalewayVPCPublicGatewayRead(ctx context.Context, d *schema.Resou
 	vpcgwAPI, zone, err := vpcgwAPIWithZone(d, meta)
 	if err != nil {
 		return diag.FromErr(err)
+	}
+
+	if v, ok := d.GetOk("zone"); ok {
+		zone = scw.Zone(v.(string))
 	}
 
 	publicGatewayID, ok := d.GetOk("public_gateway_id")

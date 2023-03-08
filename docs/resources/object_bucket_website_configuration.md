@@ -70,6 +70,7 @@ The following arguments are supported:
 * `bucket` - (Required, Forces new resource) The name of the bucket.
 * `index_document` - (Required) The name of the index document for the website [detailed below](#index_document).
 * `error_document` - (Optional) The name of the error document for the website [detailed below](#error_document).
+* `project_id` - (Defaults to [provider](../index.md#project_id) `project_id`) The ID of the project the bucket is associated with.
 
 ## index_document
 
@@ -81,7 +82,7 @@ The `index_document` configuration block supports the following arguments:
 
 In addition to all above arguments, the following attribute is exported:
 
-* `id` - The bucket and region separated by a slash (/)
+* `id` - The region and bucket separated by a slash (/)
 * `website_domain` - The domain of the website endpoint. This is used to create DNS alias [records](https://www.scaleway.com/en/docs/network/domains-and-dns/how-to/manage-dns-records/).
 * `website_endpoint` - The website endpoint.
 

@@ -60,6 +60,17 @@ func resourceScalewayFunction() *schema.Resource {
 				},
 				ValidateDiagFunc: validation.MapKeyLenBetween(0, 100),
 			},
+			"secret_environment_variables": {
+				Type:        schema.TypeMap,
+				Optional:    true,
+				Sensitive:   true,
+				Description: "The secret environment variables to be injected into your function at runtime.",
+				Elem: &schema.Schema{
+					Type:         schema.TypeString,
+					ValidateFunc: validation.StringLenBetween(0, 1000),
+				},
+				ValidateDiagFunc: validation.MapKeyLenBetween(0, 100),
+			},
 			"privacy": {
 				Type:        schema.TypeString,
 				Description: "Privacy of the function. Can be either `private` or `public`",
@@ -120,6 +131,16 @@ func resourceScalewayFunction() *schema.Resource {
 				Optional:    true,
 				Description: "Define if the function should be deployed, terraform will wait for function to be deployed",
 			},
+			"http_option": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "HTTP traffic configuration",
+				Default:     function.FunctionHTTPOptionEnabled.String(),
+				ValidateFunc: validation.StringInSlice([]string{
+					function.FunctionHTTPOptionEnabled.String(),
+					function.FunctionHTTPOptionRedirected.String(),
+				}, false),
+			},
 			"cpu_limit": {
 				Type:        schema.TypeInt,
 				Computed:    true,
@@ -134,6 +155,7 @@ func resourceScalewayFunction() *schema.Resource {
 			"organization_id": organizationIDSchema(),
 			"project_id":      projectIDSchema(),
 		},
+		CustomizeDiff: customizeDiffLocalityCheck("namespace_id"),
 	}
 }
 
@@ -149,17 +171,19 @@ func resourceScalewayFunctionCreate(ctx context.Context, d *schema.ResourceData,
 	}
 
 	req := &function.CreateFunctionRequest{
-		Description:          expandStringPtr(d.Get("description").(string)),
-		EnvironmentVariables: expandMapPtrStringString(d.Get("environment_variables")),
-		Handler:              expandStringPtr(d.Get("handler").(string)),
-		MaxScale:             expandUint32Ptr(d.Get("max_scale")),
-		MemoryLimit:          expandUint32Ptr(d.Get("memory_limit")),
-		MinScale:             expandUint32Ptr(d.Get("min_scale")),
-		Name:                 expandOrGenerateString(d.Get("name").(string), "func"),
-		NamespaceID:          namespace,
-		Privacy:              function.FunctionPrivacy(d.Get("privacy").(string)),
-		Region:               region,
-		Runtime:              function.FunctionRuntime(d.Get("runtime").(string)),
+		Description:                expandStringPtr(d.Get("description").(string)),
+		EnvironmentVariables:       expandMapPtrStringString(d.Get("environment_variables")),
+		SecretEnvironmentVariables: expandFunctionsSecrets(d.Get("secret_environment_variables")),
+		Handler:                    expandStringPtr(d.Get("handler").(string)),
+		MaxScale:                   expandUint32Ptr(d.Get("max_scale")),
+		MemoryLimit:                expandUint32Ptr(d.Get("memory_limit")),
+		MinScale:                   expandUint32Ptr(d.Get("min_scale")),
+		Name:                       expandOrGenerateString(d.Get("name").(string), "func"),
+		NamespaceID:                namespace,
+		Privacy:                    function.FunctionPrivacy(d.Get("privacy").(string)),
+		Region:                     region,
+		Runtime:                    function.FunctionRuntime(d.Get("runtime").(string)),
+		HTTPOption:                 function.FunctionHTTPOption(d.Get("http_option").(string)),
 	}
 
 	if timeout, ok := d.GetOk("timeout"); ok {
@@ -268,6 +292,7 @@ func resourceScalewayFunctionRead(ctx context.Context, d *schema.ResourceData, m
 	_ = d.Set("region", f.Region.String())
 	_ = d.Set("timeout", f.Timeout.Seconds)
 	_ = d.Set("domain_name", f.DomainName)
+	_ = d.Set("http_option", f.HTTPOption)
 
 	return diags
 }
@@ -298,6 +323,10 @@ func resourceScalewayFunctionUpdate(ctx context.Context, d *schema.ResourceData,
 		updated = true
 	}
 
+	if d.HasChanges("secret_environment_variables") {
+		req.SecretEnvironmentVariables = expandFunctionsSecrets(d.Get("secret_environment_variables"))
+	}
+
 	if d.HasChange("description") {
 		req.Description = expandUpdatedStringPtr(d.Get("description"))
 		updated = true
@@ -325,6 +354,11 @@ func resourceScalewayFunctionUpdate(ctx context.Context, d *schema.ResourceData,
 
 	if d.HasChange("timeout") {
 		req.Timeout = &scw.Duration{Seconds: int64(d.Get("timeout").(int))}
+		updated = true
+	}
+
+	if d.HasChange("http_option") {
+		req.HTTPOption = function.FunctionHTTPOption(d.Get("http_option").(string))
 		updated = true
 	}
 

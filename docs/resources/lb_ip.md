@@ -32,6 +32,9 @@ The following arguments are supported:
 In addition to all arguments above, the following attributes are exported:
 
 - `id` - The ID of the IP
+
+~> **Important:** Load-Balancers IPs' IDs are [zoned](../guides/regions_and_zones.md#resource-ids), which means they are of the form `{zone}/{id}`, e.g. `fr-par-1/11111111-1111-1111-1111-111111111111`
+
 - `lb_id` - The associated load-balance ID if any
 - `ip_address` -  The IP Address
 

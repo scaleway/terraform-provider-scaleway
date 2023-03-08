@@ -12,7 +12,6 @@ func TestAccScalewayDataSourceBaremetalServer_Basic(t *testing.T) {
 	defer tt.Cleanup()
 
 	SSHKeyName := "TestAccScalewayDataSourceBaremetalServer_Basic"
-	SSHKey := "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIM7HUxRyQtB2rnlhQUcbDGCZcTJg7OvoznOiyC9W6IxH opensource@scaleway.com"
 	name := "TestAccScalewayDataSourceBaremetalServer_Basic"
 
 	resource.ParallelTest(t, resource.TestCase{
@@ -22,6 +21,17 @@ func TestAccScalewayDataSourceBaremetalServer_Basic(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
+					data "scaleway_baremetal_os" "my_os" {
+						zone = "fr-par-2"
+						name = "Ubuntu"
+						version = "22.04 LTS (Jammy Jellyfish)"						
+					}
+
+					data "scaleway_baremetal_offer" "my_offer" {
+						zone = "fr-par-2"
+						name = "EM-B112X-SSD"
+					}
+
 					resource "scaleway_account_ssh_key" "main" {
 						name       = "%s"
 						public_key = "%s"
@@ -31,8 +41,37 @@ func TestAccScalewayDataSourceBaremetalServer_Basic(t *testing.T) {
 						name        = "%s"
 						zone        = "fr-par-2"
 						description = "test a description"
-						offer       = "EM-A210R-HDD"
-						os          = "d17d6872-0412-45d9-a198-af82c34d3c5c"
+						offer       = data.scaleway_baremetal_offer.my_offer.offer_id
+						os          = data.scaleway_baremetal_os.my_os.os_id
+					
+						ssh_key_ids = [ scaleway_account_ssh_key.main.id ]
+					}
+				`, SSHKeyName, SSHKeyBaremetal, name),
+			},
+			{
+				Config: fmt.Sprintf(`
+					data "scaleway_baremetal_os" "my_os" {
+						zone = "fr-par-2"
+						name = "Ubuntu"
+						version = "22.04 LTS (Jammy Jellyfish)"						
+					}
+
+					data "scaleway_baremetal_offer" "my_offer" {
+						zone = "fr-par-2"
+						name = "EM-B112X-SSD"
+					}
+
+					resource "scaleway_account_ssh_key" "main" {
+						name       = "%s"
+						public_key = "%s"
+					}
+					
+					resource "scaleway_baremetal_server" "main" {
+						name        = "%s"
+						zone        = "fr-par-2"
+						description = "test a description"
+						offer       = data.scaleway_baremetal_offer.my_offer.offer_id
+						os          = data.scaleway_baremetal_os.my_os.os_id
 					
 						ssh_key_ids = [ scaleway_account_ssh_key.main.id ]
 					}
@@ -46,7 +85,7 @@ func TestAccScalewayDataSourceBaremetalServer_Basic(t *testing.T) {
 						server_id = "${scaleway_baremetal_server.main.id}"
 						zone = "fr-par-2"
 					}
-				`, SSHKeyName, SSHKey, name),
+				`, SSHKeyName, SSHKeyBaremetal, name),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayBaremetalServerExists(tt, "data.scaleway_baremetal_server.by_id"),
 					testAccCheckScalewayBaremetalServerExists(tt, "data.scaleway_baremetal_server.by_name"),

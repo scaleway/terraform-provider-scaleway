@@ -14,6 +14,8 @@ func dataSourceScalewayRDBACL() *schema.Resource {
 	dsSchema["instance_id"].Computed = false
 	dsSchema["instance_id"].Required = true
 
+	// Set 'Optional' schema elements
+	addOptionalFieldsToSchema(dsSchema, "region")
 	return &schema.Resource{
 		ReadContext: dataSourceScalewayRDBACLRead,
 		Schema:      dsSchema,

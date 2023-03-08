@@ -154,8 +154,7 @@ func resourceScalewayK8SCluster() *schema.Resource {
 			},
 			"delete_additional_resources": {
 				Type:        schema.TypeBool,
-				Optional:    true,
-				Default:     false,
+				Required:    true,
 				Description: "Delete additional resources like block volumes and loadbalancers on cluster deletion",
 			},
 			"region":          regionSchema(),
@@ -185,6 +184,7 @@ func resourceScalewayK8SCluster() *schema.Resource {
 			"kubeconfig": {
 				Type:        schema.TypeList,
 				Computed:    true,
+				Sensitive:   true,
 				Description: "The kubeconfig configuration file of the Kubernetes cluster",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{

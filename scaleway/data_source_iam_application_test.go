@@ -7,7 +7,6 @@ import (
 )
 
 func TestAccScalewayDataSourceIamApplication_Basic(t *testing.T) {
-	SkipBetaTest(t)
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
 	resource.ParallelTest(t, resource.TestCase{
@@ -20,21 +19,21 @@ func TestAccScalewayDataSourceIamApplication_Basic(t *testing.T) {
 			{
 				Config: `
 					resource "scaleway_iam_application" "app_ds_basic" {
-						name        = "test_data_source_basic"
+					  name = "test_data_source_basic"
 					}
 				`,
 			},
 			{
 				Config: `
 					resource "scaleway_iam_application" "app_ds_basic" {
-						name        = "test_data_source_basic"
+					  name = "test_data_source_basic"
 					}
-			
+					
 					data "scaleway_iam_application" "find_by_id_basic" {
-						application_id 	= scaleway_iam_application.app_ds_basic.id
+					  application_id = scaleway_iam_application.app_ds_basic.id
 					}
 					data "scaleway_iam_application" "find_by_name_basic" {
-						name        = "test_data_source_basic"
+					  name = "test_data_source_basic"
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(

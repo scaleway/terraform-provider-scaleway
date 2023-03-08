@@ -21,7 +21,14 @@ func TestAccScalewayDataSourceVPCPublicGateway_Basic(t *testing.T) {
 					resource "scaleway_vpc_public_gateway" "main" {
 						name = "%s"
 						type = "VPC-GW-S"
-					}`, pgName),
+					}
+
+					resource "scaleway_vpc_public_gateway" "with-zone" {
+						name = "public-gateway-with-not-default-zone"
+						type = "VPC-GW-S"
+						zone = "nl-ams-1"
+					}
+					`, pgName),
 			},
 			{
 				Config: fmt.Sprintf(`
@@ -30,12 +37,27 @@ func TestAccScalewayDataSourceVPCPublicGateway_Basic(t *testing.T) {
 						type = "VPC-GW-S"
 					}
 
+					resource "scaleway_vpc_public_gateway" "with-zone" {
+						name = "public-gateway-with-not-default-zone"
+						type = "VPC-GW-S"
+						zone = "nl-ams-1"
+					}
+
 					data "scaleway_vpc_public_gateway" "pg_test_by_name" {
 						name = "${scaleway_vpc_public_gateway.main.name}"
 					}
 
 					data "scaleway_vpc_public_gateway" "pg_test_by_id" {
 						public_gateway_id = "${scaleway_vpc_public_gateway.main.id}"
+					}
+
+					data "scaleway_vpc_public_gateway" "pg_test_by_id_with_zone" {
+						public_gateway_id = "${scaleway_vpc_public_gateway.with-zone.id}"
+					}
+
+					data "scaleway_vpc_public_gateway" "pg_test_by_name_with_zone" {
+						name = "${scaleway_vpc_public_gateway.with-zone.name}"
+						zone = "nl-ams-1"
 					}
 				`, pgName),
 				Check: resource.ComposeTestCheckFunc(
@@ -46,6 +68,12 @@ func TestAccScalewayDataSourceVPCPublicGateway_Basic(t *testing.T) {
 					resource.TestCheckResourceAttrPair(
 						"data.scaleway_vpc_public_gateway.pg_test_by_id", "public_gateway_id",
 						"scaleway_vpc_public_gateway.main", "id"),
+					resource.TestCheckResourceAttrPair(
+						"data.scaleway_vpc_public_gateway.pg_test_by_id_with_zone", "public_gateway_id",
+						"scaleway_vpc_public_gateway.with-zone", "id"),
+					resource.TestCheckResourceAttrPair(
+						"data.scaleway_vpc_public_gateway.pg_test_by_name_with_zone", "public_gateway_id",
+						"scaleway_vpc_public_gateway.with-zone", "id"),
 				),
 			},
 		},

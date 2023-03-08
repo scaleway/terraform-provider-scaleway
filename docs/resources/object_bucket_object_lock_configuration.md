@@ -39,7 +39,7 @@ resource "scaleway_object_bucket_lock_configuration" "main" {
 
 You should [contact Scaleway support](https://console.scaleway.com/support/tickets/create) to enable object lock on an existing bucket.
 
-## Attributes Reference
+## Arguments Reference
 
 The following arguments are supported:
 
@@ -54,6 +54,16 @@ The following arguments are supported:
         - `days` - (Optional) The number of days that you want to specify for the default retention period.
 
         - `years` - (Optional) The number of years that you want to specify for the default retention period.
+
+- `project_id` - (Defaults to [provider](../index.md#project_id) `project_id`) The ID of the project the bucket is associated with.
+
+## Attributes Reference
+
+In addition to all above arguments, the following attributes are exported:
+
+- `id` - The ID of the Object bucket lock configuration.
+
+~> **Important:** Object buckets lock configurations' IDs are [regional](../guides/regions_and_zones.md#resource-ids), which means they are of the form `{region}/{id}`, e.g. `fr-par/11111111-1111-1111-1111-111111111111`
 
 ## Import
 

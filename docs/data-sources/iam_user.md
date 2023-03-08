@@ -6,11 +6,9 @@ Get information on an existing IAM user.
 
 # scaleway_iam_user
 
-| WARNING: This resource is in beta version. If your are in the beta group, please set the variable `SCW_ENABLE_BETA=true` in your `env` in order to use this resource. |
-|------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-
 Use this data source to get information on an existing IAM user based on its ID or email address.
-For more information, see [the documentation](https://developers.scaleway.com/en/products/iam/api/v1alpha1/#users-06bdcf).
+For more information,
+see [the documentation](https://developers.scaleway.com/en/products/iam/api/v1alpha1/#users-06bdcf).
 
 ## Example Usage
 
@@ -27,9 +25,10 @@ data "scaleway_iam_user" "find_by_email" {
 
 ## Argument Reference
 
-- `email` - (Optional) The eamil address of the IAM user. Only one of the `email` and `user_id` should be specified.
+- `email` - (Optional) The email address of the IAM user. Only one of the `email` and `user_id` should be specified.
 - `user_id` - (Optional) The ID of the IAM user. Only one of the `email` and `user_id` should be specified.
-- `organization_id` - (Required) The organization ID the IAM group is associated with. For now, it is necessary to explicitly provide the `organization_id` in the datasource.
+- `organization_id` - (Optional. Defaults to [provider](../index.md#organization_d) `organization_id`) The ID of the
+  organization the user is associated with.
 
 ## Attributes Reference
 

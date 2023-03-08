@@ -6,16 +6,13 @@ Manages Scaleway Account project.
 
 # scaleway_account_project
 
-| WARNING: This resource is in beta version. If your are in the beta group, please set the variable `SCW_ENABLE_BETA=true` in your `env` in order to use this resource. |
-|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-
 Manages organization's projects on Scaleway.
 
 ## Example Usage
 
 ```hcl
 resource "scaleway_account_project" "project" {
-  name = "myproject"
+  name = "project"
 }
 ```
 
@@ -25,12 +22,13 @@ The following arguments are supported:
 
 - `name` - (Optional) The name of the Project.
 - `description` - (Optional) The description of the Project.
-- `organization_id` - The organization ID the Project is associated with.
+- `organization_id` - (Optional. Defaults to [provider](../index.md#organization_id) `organization_id`)The organization ID the Project is associated with. Please note that any change in `organization_id` will recreate the resource.
 
 ## Attributes Reference
 
 In addition to all above arguments, the following attributes are exported:
 
+- `id` - The ID of the project (UUID format).
 - `created_at` - The Project creation time.
 - `updated_at` - The Project last update time.
 

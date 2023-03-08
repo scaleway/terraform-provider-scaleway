@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"sort"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/dustin/go-humanize"
@@ -30,6 +31,7 @@ const (
 	defaultInstanceSecurityGroupRuleTimeout = 1 * time.Minute
 	defaultInstancePlacementGroupTimeout    = 1 * time.Minute
 	defaultInstanceIPTimeout                = 1 * time.Minute
+	defaultInstanceIPReverseDNSTimeout      = 5 * time.Minute
 	defaultInstanceRetryInterval            = 5 * time.Second
 
 	defaultInstanceSnapshotWaitTimeout = 1 * time.Hour
@@ -583,4 +585,21 @@ func flattenInstanceImageExtraVolumes(volumes map[string]*instance.Volume, zone 
 		volumesFlat = append(volumesFlat, volumeFlat)
 	}
 	return volumesFlat
+}
+
+func formatImageLabel(imageUUID string) string {
+	return strings.ReplaceAll(imageUUID, "-", "_")
+}
+
+func isInstanceIPReverseResolved(ctx context.Context, instanceAPI *instance.API, reverse string, timeout time.Duration, id string, zone scw.Zone) bool {
+	getIPReq := &instance.GetIPRequest{
+		Zone: zone,
+		IP:   id,
+	}
+	res, err := instanceAPI.GetIP(getIPReq, scw.WithContext(ctx))
+	if err != nil {
+		return false
+	}
+
+	return hostResolver(ctx, timeout, reverse, res.IP.Address.String())
 }
