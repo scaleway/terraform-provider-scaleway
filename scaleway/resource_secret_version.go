@@ -88,11 +88,6 @@ func resourceScalewaySecretVersionCreate(ctx context.Context, d *schema.Resource
 		Description: expandStringPtr(d.Get("description")),
 	}
 
-	rawDescription, descriptionExist := d.GetOk("description")
-	if descriptionExist {
-		secretCreateVersionRequest.Description = expandStringPtr(rawDescription)
-	}
-
 	secretResponse, err := api.CreateSecretVersion(secretCreateVersionRequest, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
