@@ -90,11 +90,12 @@ func privateNICWithFilters(privateNICs []*instance.PrivateNIC, d *schema.Resourc
 	privateNetworkID := expandID(d.Get("private_network_id"))
 
 	if privateNetworkID == "" {
-		if len(privateNICs) == 1 {
+		switch {
+		case len(privateNICs) == 1:
 			return privateNICs[0], nil
-		} else if len(privateNICs) == 0 {
+		case len(privateNICs) == 0:
 			return nil, fmt.Errorf("found no private nic with given filters")
-		} else {
+		default:
 			return nil, fmt.Errorf("found more than one private nic with given filters")
 		}
 	}
