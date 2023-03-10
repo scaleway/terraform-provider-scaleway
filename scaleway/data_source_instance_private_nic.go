@@ -14,18 +14,16 @@ func dataSourceScalewayInstancePrivateNIC() *schema.Resource {
 	// Generate datasource schema from resource
 	dsSchema := datasourceSchemaFromResourceSchema(resourceScalewayInstancePrivateNIC().Schema)
 
-	addOptionalFieldsToSchema(dsSchema, "private_network_id", "zone")
+	addOptionalFieldsToSchema(dsSchema, "private_network_id", "zone", "tags")
 	fixDatasourceSchemaFlags(dsSchema, true, "server_id")
 
 	dsSchema["private_network_id"].ConflictsWith = []string{"private_nic_id"}
-	dsSchema["private_network_id"].AtLeastOneOf = []string{"private_nic_id"}
 
 	dsSchema["private_nic_id"] = &schema.Schema{
 		Type:          schema.TypeString,
 		Optional:      true,
 		Description:   "The ID of the Private NIC",
 		ValidateFunc:  validationUUIDorUUIDWithLocality(),
-		AtLeastOneOf:  []string{"private_network_id"},
 		ConflictsWith: []string{"private_network_id"},
 	}
 
@@ -46,11 +44,20 @@ func dataSourceScalewayInstancePrivateNICRead(ctx context.Context, d *schema.Res
 	id, ok := d.GetOk("private_nic_id")
 	var privateNICID string
 	if !ok {
-		privateNetworkID := expandID(d.Get("private_network_id"))
-		privateNic, err := privateNICWithPrivateNetworkID(ctx, instanceAPI, zone, serverID, privateNetworkID)
+		resp, err := instanceAPI.ListPrivateNICs(&instance.ListPrivateNICsRequest{
+			Zone:     zone,
+			ServerID: serverID,
+			Tags:     expandStrings(d.Get("tags")),
+		}, scw.WithContext(ctx))
+		if err != nil {
+			return diag.FromErr(fmt.Errorf("failed to list instance private_nic: %w", err))
+		}
+
+		privateNic, err := privateNICWithFilters(resp.PrivateNics, d)
 		if err != nil {
 			return diag.FromErr(err)
 		}
+
 		privateNICID = privateNic.ID
 	} else {
 		_, privateNICID, _ = parseLocalizedID(id.(string))
@@ -79,18 +86,33 @@ func dataSourceScalewayInstancePrivateNICRead(ctx context.Context, d *schema.Res
 	return nil
 }
 
-func privateNICWithPrivateNetworkID(ctx context.Context, api *instance.API, zone scw.Zone, serverID, privateNetworkID string) (*instance.PrivateNIC, error) {
-	resp, err := api.ListPrivateNICs(&instance.ListPrivateNICsRequest{
-		Zone:     zone,
-		ServerID: serverID,
-	}, scw.WithContext(ctx))
-	if err != nil {
-		return nil, fmt.Errorf("failed to list instance private_nic: %w", err)
-	}
-	for _, pnic := range resp.PrivateNics {
-		if pnic.PrivateNetworkID == privateNetworkID {
-			return pnic, nil
+func privateNICWithFilters(privateNICs []*instance.PrivateNIC, d *schema.ResourceData) (*instance.PrivateNIC, error) {
+	privateNetworkID := expandID(d.Get("private_network_id"))
+
+	if privateNetworkID == "" {
+		if len(privateNICs) == 1 {
+			return privateNICs[0], nil
+		} else if len(privateNICs) == 0 {
+			return nil, fmt.Errorf("found no private nic with given filters")
+		} else {
+			return nil, fmt.Errorf("found more than one private nic with given filters")
 		}
 	}
-	return nil, fmt.Errorf("could not find a private_nic for server (%s) and private network (%s) in zone (%s)", serverID, privateNetworkID, zone)
+
+	var privateNIC *instance.PrivateNIC
+
+	for _, pnic := range privateNICs {
+		if pnic.PrivateNetworkID == privateNetworkID {
+			if privateNIC != nil {
+				return nil, fmt.Errorf("found more than one private nic for request private network (%s)", privateNetworkID)
+			}
+			privateNIC = pnic
+		}
+	}
+
+	if privateNIC != nil {
+		return privateNIC, nil
+	}
+
+	return nil, fmt.Errorf("could not find a private_nic for private network (%s)", privateNetworkID)
 }
