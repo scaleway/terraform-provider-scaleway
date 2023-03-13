@@ -47,6 +47,7 @@ The following arguments are required:
 
 - `server_id` - (Required) The ID of the server associated with.
 - `private_network_id` - (Required) The ID of the private network attached to.
+- `tags` - (Optional) The tags associated with the private NIC.
 - `zone` - (Defaults to [provider](../index.md#zone) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which the server must be created.
 
 ## Attributes Reference
