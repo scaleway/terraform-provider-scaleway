@@ -526,7 +526,7 @@ func NewTestTools(t *testing.T) *TestTools {
 	require.NoError(t, err)
 
 	if !*UpdateCassettes {
-		disableHostResolver = true
+		disableDNSResolver = true
 		tmp := 0 * time.Second
 		DefaultWaitRetryInterval = &tmp
 	}

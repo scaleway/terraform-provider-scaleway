@@ -2,6 +2,7 @@ package scaleway
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -18,11 +19,11 @@ func resourceScalewayContainerDomain() *schema.Resource {
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 		Timeouts: &schema.ResourceTimeout{
-			Create:  schema.DefaultTimeout(defaultContainerTimeout),
-			Read:    schema.DefaultTimeout(defaultContainerTimeout),
-			Update:  schema.DefaultTimeout(defaultContainerTimeout),
-			Delete:  schema.DefaultTimeout(defaultContainerTimeout),
-			Default: schema.DefaultTimeout(defaultContainerTimeout),
+			Create:  schema.DefaultTimeout(defaultContainerDomainTimeout),
+			Read:    schema.DefaultTimeout(defaultContainerDomainTimeout),
+			Update:  schema.DefaultTimeout(defaultContainerDomainTimeout),
+			Delete:  schema.DefaultTimeout(defaultContainerDomainTimeout),
+			Default: schema.DefaultTimeout(defaultContainerDomainTimeout),
 		},
 		SchemaVersion: 0,
 		Schema: map[string]*schema.Schema{
@@ -57,10 +58,17 @@ func resourceScalewayContainerDomainCreate(ctx context.Context, d *schema.Resour
 		return diag.FromErr(err)
 	}
 
+	hostname := d.Get("hostname").(string)
+	containerID := expandID(d.Get("container_id"))
+
+	if !isContainerDomainResolved(ctx, api, hostname, d.Timeout(schema.TimeoutCreate), containerID, region) {
+		return diag.FromErr(fmt.Errorf("your reverse must resolve. Ensure the command 'dig +short %s' matches your container domain", hostname))
+	}
+
 	domain, err := api.CreateDomain(&container.CreateDomainRequest{
 		Region:      region,
-		Hostname:    d.Get("hostname").(string),
-		ContainerID: expandID(d.Get("container_id")),
+		Hostname:    hostname,
+		ContainerID: containerID,
 	})
 	if err != nil {
 		return diag.FromErr(err)
