@@ -18,6 +18,13 @@ func dataSourceScalewaySecret() *schema.Resource {
 	addOptionalFieldsToSchema(dsSchema, "name", "region")
 
 	dsSchema["name"].ConflictsWith = []string{"secret_id"}
+	dsSchema["secret_id"] = &schema.Schema{
+		Type:          schema.TypeString,
+		Optional:      true,
+		Description:   "The ID of the secret",
+		ValidateFunc:  validationUUIDorUUIDWithLocality(),
+		ConflictsWith: []string{"name"},
+	}
 
 	return &schema.Resource{
 		ReadContext: dataSourceScalewaySecretRead,
@@ -34,27 +41,16 @@ func dataSourceScalewaySecretRead(ctx context.Context, d *schema.ResourceData, m
 
 	secretID, ok := d.GetOk("secret_id")
 	if !ok {
-		res, err := api.ListSecrets(&secret.ListSecretsRequest{
-			Region:    region,
-			Name:      expandStringPtr(d.Get("name")),
-			ProjectID: expandStringPtr(d.Get("project_id")),
+		res, err := api.GetSecretByName(&secret.GetSecretByNameRequest{
+			Region:     region,
+			SecretName: d.Get("name").(string),
 		}, scw.WithContext(ctx))
 		if err != nil {
 			return diag.FromErr(err)
 		}
 
-		for _, secret := range res.Secrets {
-
-			if secret.Name == d.Get("name").(string) {
-				if secretID != "" {
-					return diag.FromErr(fmt.Errorf("more than 1 secret found with the same name %s", d.Get("name")))
-				}
-
-				secretID = secret.ID
-			}
-		}
-
-		if secretID == "" {
+		secretID = newRegionalIDString(region, res.ID)
+		if res.ID == "" {
 			return diag.FromErr(fmt.Errorf("no secret found with the name %s", d.Get("name")))
 		}
 	}

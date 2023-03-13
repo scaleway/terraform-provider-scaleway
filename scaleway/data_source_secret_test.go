@@ -37,7 +37,7 @@ func TestAccScalewayDataSourceSecret_Basic(t *testing.T) {
 					testAccCheckScalewaySecretExists(tt, "data.scaleway_secret.by_name"),
 					resource.TestCheckResourceAttr("data.scaleway_secret.by_name", "name", secretName),
 
-					testAccCheckScalewayTemDomainExists(tt, "data.scaleway_secret.by_id"),
+					testAccCheckScalewaySecretExists(tt, "data.scaleway_secret.by_id"),
 					resource.TestCheckResourceAttr("data.scaleway_secret.by_id", "name", secretName),
 				),
 			},
