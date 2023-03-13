@@ -25,6 +25,7 @@ func TestAccScalewayDataSourceK8SPool_Basic(t *testing.T) {
 						version = "%s"
 						cni     = "cilium"
 					  	tags    = [ "terraform-test", "data_scaleway_k8s_pool", "basic" ]
+						delete_additional_resources = true
 					}
 					
 					resource "scaleway_k8s_pool" "default" {
@@ -42,6 +43,7 @@ func TestAccScalewayDataSourceK8SPool_Basic(t *testing.T) {
 						version = "%s"
 						cni     = "cilium"
 					  	tags    = [ "terraform-test", "data_scaleway_k8s_cluster", "basic" ]
+						delete_additional_resources = true
 					}
 
 					resource "scaleway_k8s_pool" "default" {

@@ -8,6 +8,7 @@ import (
 	"hash/crc32"
 	"net/http"
 	"os"
+	"runtime"
 	"strings"
 	"time"
 
@@ -17,15 +18,20 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/hashicorp/aws-sdk-go-base/tfawserr"
+	awspolicy "github.com/hashicorp/awspolicyequivalence"
+	"github.com/hashicorp/go-multierror"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal"
 )
 
 const (
 	defaultObjectBucketTimeout = 10 * time.Minute
 	retryOnAWSAPI              = 2 * time.Minute
+
+	maxObjectVersionDeletionWorkers = 8
 )
 
 func newS3Client(httpClient *http.Client, region, accessKey, secretKey string) (*s3.S3, error) {
@@ -49,6 +55,12 @@ func newS3ClientFromMeta(meta *Meta) (*s3.S3, error) {
 	region, _ := meta.scwClient.GetDefaultRegion()
 	accessKey, _ := meta.scwClient.GetAccessKey()
 	secretKey, _ := meta.scwClient.GetSecretKey()
+
+	projectID, _ := meta.scwClient.GetDefaultProjectID()
+	if projectID != "" {
+		accessKey = accessKeyWithProjectID(accessKey, projectID)
+	}
+
 	return newS3Client(meta.httpClient, region.String(), accessKey, secretKey)
 }
 
@@ -60,6 +72,9 @@ func s3ClientWithRegion(d *schema.ResourceData, m interface{}) (*s3.S3, scw.Regi
 	}
 
 	accessKey, _ := meta.scwClient.GetAccessKey()
+	if projectID, isDefaultProjectID, err := extractProjectID(d, meta); err == nil && !isDefaultProjectID {
+		accessKey = accessKeyWithProjectID(accessKey, projectID)
+	}
 	secretKey, _ := meta.scwClient.GetSecretKey()
 
 	s3Client, err := newS3Client(meta.httpClient, region.String(), accessKey, secretKey)
@@ -70,19 +85,84 @@ func s3ClientWithRegion(d *schema.ResourceData, m interface{}) (*s3.S3, scw.Regi
 	return s3Client, region, err
 }
 
-func s3ClientWithRegionAndName(m interface{}, name string) (*s3.S3, scw.Region, string, error) {
+func s3ClientWithRegionAndName(d *schema.ResourceData, m interface{}, id string) (*s3.S3, scw.Region, string, error) {
 	meta := m.(*Meta)
-	region, name, err := parseRegionalID(name)
+	region, name, err := parseRegionalID(id)
 	if err != nil {
-		return nil, "", name, err
+		return nil, "", "", err
 	}
+
+	parts := strings.Split(name, "@")
+	if len(parts) > 2 {
+		return nil, "", "", fmt.Errorf("invalid ID %q: expected ID in format <region>/<name>[@<project_id>]", id)
+	}
+	name = parts[0]
+
+	d.SetId(fmt.Sprintf("%s/%s", region, name))
+
 	accessKey, _ := meta.scwClient.GetAccessKey()
 	secretKey, _ := meta.scwClient.GetSecretKey()
+
+	if len(parts) == 2 {
+		accessKey = accessKeyWithProjectID(accessKey, parts[1])
+	} else {
+		extractedProjectID, isDefaultProjectID, err := extractProjectID(d, meta)
+		if err == nil && !isDefaultProjectID {
+			accessKey = accessKeyWithProjectID(accessKey, extractedProjectID)
+		}
+	}
+
 	s3Client, err := newS3Client(meta.httpClient, region.String(), accessKey, secretKey)
 	if err != nil {
 		return nil, "", "", err
 	}
-	return s3Client, region, name, err
+
+	return s3Client, region, name, nil
+}
+
+func s3ClientWithRegionAndNestedName(d *schema.ResourceData, m interface{}, name string) (*s3.S3, scw.Region, string, string, error) {
+	meta := m.(*Meta)
+	region, outerID, innerID, err := parseRegionalNestedID(name)
+	if err != nil {
+		return nil, "", "", "", err
+	}
+
+	accessKey, _ := meta.scwClient.GetAccessKey()
+	if projectID, isDefaultProjectID, err := extractProjectID(d, meta); err == nil && !isDefaultProjectID {
+		accessKey = accessKeyWithProjectID(accessKey, projectID)
+	}
+	secretKey, _ := meta.scwClient.GetSecretKey()
+
+	s3Client, err := newS3Client(meta.httpClient, region.String(), accessKey, secretKey)
+	if err != nil {
+		return nil, "", "", "", err
+	}
+
+	return s3Client, region, outerID, innerID, err
+}
+
+func s3ClientWithRegionWithNameACL(d *schema.ResourceData, m interface{}, name string) (*s3.S3, scw.Region, string, string, error) {
+	meta := m.(*Meta)
+	region, name, outerID, err := parseLocalizedNestedOwnerID(name)
+	if err != nil {
+		return nil, "", name, "", err
+	}
+
+	accessKey, _ := meta.scwClient.GetAccessKey()
+	if projectID, isDefaultProjectID, err := extractProjectID(d, meta); err == nil && !isDefaultProjectID {
+		accessKey = accessKeyWithProjectID(accessKey, projectID)
+	}
+	secretKey, _ := meta.scwClient.GetSecretKey()
+
+	s3Client, err := newS3Client(meta.httpClient, region, accessKey, secretKey)
+	if err != nil {
+		return nil, "", "", "", err
+	}
+	return s3Client, scw.Region(region), name, outerID, err
+}
+
+func accessKeyWithProjectID(accessKey string, projectID string) string {
+	return accessKey + "@" + projectID
 }
 
 func flattenObjectBucketTags(tagsSet []*s3.Tag) map[string]interface{} {
@@ -120,9 +200,9 @@ func objectBucketEndpointURL(bucketName string, region scw.Region) string {
 }
 
 // Returns true if the error matches all these conditions:
-//  * err is of type awserr.Error
-//  * Error.Code() matches code
-//  * Error.Message() contains message
+//   - err is of type aws err.Error
+//   - Error.Code() matches code
+//   - Error.Message() contains message
 func isS3Err(err error, code string, message string) bool {
 	var awsErr awserr.Error
 	if errors.As(err, &awsErr) {
@@ -250,58 +330,94 @@ func removeS3ObjectVersionLegalHold(conn *s3.S3, bucketName string, objectVersio
 }
 
 func deleteS3ObjectVersions(ctx context.Context, conn *s3.S3, bucketName string, force bool) error {
-	var err error
+	var globalErr error
 	listInput := &s3.ListObjectVersionsInput{
 		Bucket: scw.StringPtr(bucketName),
 	}
+
+	deletionWorkers := runtime.NumCPU()
+	if deletionWorkers > maxObjectVersionDeletionWorkers {
+		deletionWorkers = maxObjectVersionDeletionWorkers
+	}
+
 	listErr := conn.ListObjectVersionsPagesWithContext(ctx, listInput, func(page *s3.ListObjectVersionsOutput, lastPage bool) bool {
+		pool := internal.NewWorkerPool(deletionWorkers)
+
 		for _, objectVersion := range page.Versions {
-			objectKey := aws.StringValue(objectVersion.Key)
-			objectVersionID := aws.StringValue(objectVersion.VersionId)
-			err = deleteS3ObjectVersion(conn, bucketName, objectKey, objectVersionID, force)
+			objectVersion := objectVersion
 
-			if isS3Err(err, ErrCodeAccessDenied, "") && force {
-				legalHoldRemoved, errLegal := removeS3ObjectVersionLegalHold(conn, bucketName, objectVersion)
-				if errLegal != nil {
-					err = fmt.Errorf("failed to remove legal hold: %s", errLegal)
-					return false
+			pool.AddTask(func() error {
+				objectKey := aws.StringValue(objectVersion.Key)
+				objectVersionID := aws.StringValue(objectVersion.VersionId)
+				err := deleteS3ObjectVersion(conn, bucketName, objectKey, objectVersionID, force)
+
+				if isS3Err(err, ErrCodeAccessDenied, "") && force {
+					legalHoldRemoved, errLegal := removeS3ObjectVersionLegalHold(conn, bucketName, objectVersion)
+					if errLegal != nil {
+						return fmt.Errorf("failed to remove legal hold: %s", errLegal)
+					}
+
+					if legalHoldRemoved {
+						err = deleteS3ObjectVersion(conn, bucketName, objectKey, objectVersionID, force)
+					}
 				}
-				if legalHoldRemoved {
-					err = deleteS3ObjectVersion(conn, bucketName, objectKey, objectVersionID, force)
+
+				if err != nil {
+					return fmt.Errorf("failed to delete S3 object: %s", err)
 				}
-			}
-			if err != nil {
-				err = fmt.Errorf("failed to delete S3 object: %s", err)
-				return false
-			}
+
+				return nil
+			})
 		}
+
+		errors := pool.CloseAndWait()
+		if len(errors) > 0 {
+			globalErr = multierror.Append(nil, errors...)
+			return false
+		}
+
 		return true
 	})
 	if listErr != nil {
-		return fmt.Errorf("error listing S3 objects: %s", err)
+		return fmt.Errorf("error listing S3 objects: %s", globalErr)
 	}
-	if err != nil {
-		return err
+	if globalErr != nil {
+		return globalErr
 	}
+
 	listErr = conn.ListObjectVersionsPagesWithContext(ctx, listInput, func(page *s3.ListObjectVersionsOutput, lastPage bool) bool {
-		for _, deleteMarkerEntry := range page.DeleteMarkers {
-			deleteMarkerKey := aws.StringValue(deleteMarkerEntry.Key)
-			deleteMarkerVersionsID := aws.StringValue(deleteMarkerEntry.VersionId)
-			err = deleteS3ObjectVersion(conn, bucketName, deleteMarkerKey, deleteMarkerVersionsID, force)
+		pool := internal.NewWorkerPool(deletionWorkers)
 
-			if err != nil {
-				err = fmt.Errorf("failed to delete S3 object delete marker: %s", err)
-				return false
-			}
+		for _, deleteMarkerEntry := range page.DeleteMarkers {
+			deleteMarkerEntry := deleteMarkerEntry
+
+			pool.AddTask(func() error {
+				deleteMarkerKey := aws.StringValue(deleteMarkerEntry.Key)
+				deleteMarkerVersionsID := aws.StringValue(deleteMarkerEntry.VersionId)
+				err := deleteS3ObjectVersion(conn, bucketName, deleteMarkerKey, deleteMarkerVersionsID, force)
+				if err != nil {
+					return fmt.Errorf("failed to delete S3 object delete marker: %s", err)
+				}
+
+				return nil
+			})
 		}
+
+		errors := pool.CloseAndWait()
+		if len(errors) > 0 {
+			globalErr = multierror.Append(nil, errors...)
+			return false
+		}
+
 		return true
 	})
 	if listErr != nil {
-		return fmt.Errorf("error listing S3 objects for delete markers: %s", err)
+		return fmt.Errorf("error listing S3 objects for delete markers: %s", globalErr)
 	}
-	if err != nil {
-		return err
+	if globalErr != nil {
+		return globalErr
 	}
+
 	return nil
 }
 
@@ -378,4 +494,88 @@ func TransitionSCWStorageClassValues() []string {
 		TransitionStorageClassGlacier,
 		TransitionStorageClassOnezoneIa,
 	}
+}
+
+func SuppressEquivalentPolicyDiffs(k, old, newP string, d *schema.ResourceData) bool {
+	tflog.Debug(context.Background(),
+		fmt.Sprintf("[DEBUG] suppress policy on key: %s, old: %s new: %s", k, old, newP))
+	if strings.TrimSpace(old) == "" && strings.TrimSpace(newP) == "" {
+		return true
+	}
+
+	if strings.TrimSpace(old) == "{}" && strings.TrimSpace(newP) == "" {
+		return true
+	}
+
+	if strings.TrimSpace(old) == "" && strings.TrimSpace(newP) == "{}" {
+		return true
+	}
+
+	if strings.TrimSpace(old) == "{}" && strings.TrimSpace(newP) == "{}" {
+		return true
+	}
+
+	equivalent, err := awspolicy.PoliciesAreEquivalent(old, newP)
+	if err != nil {
+		return false
+	}
+
+	return equivalent
+}
+
+func SecondJSONUnlessEquivalent(old, newP string) (string, error) {
+	// valid empty JSON is "{}" not "" so handle special case to avoid
+	// Error unmarshalling policy: unexpected end of JSON input
+	if strings.TrimSpace(newP) == "" {
+		return "", nil
+	}
+
+	if strings.TrimSpace(newP) == "{}" {
+		return "{}", nil
+	}
+
+	if strings.TrimSpace(old) == "" || strings.TrimSpace(old) == "{}" {
+		return newP, nil
+	}
+
+	equivalent, err := awspolicy.PoliciesAreEquivalent(old, newP)
+	if err != nil {
+		return "", err
+	}
+
+	if equivalent {
+		return old, nil
+	}
+
+	return newP, nil
+}
+
+type S3Website struct {
+	Endpoint, Domain string
+}
+
+func WebsiteEndpoint(bucket string, region scw.Region) *S3Website {
+	domain := WebsiteDomainURL(region.String())
+	return &S3Website{Endpoint: fmt.Sprintf("%s.%s", bucket, domain), Domain: domain}
+}
+
+func WebsiteDomainURL(region string) string {
+	// Different regions have different syntax for website endpoints
+	// https://docs.aws.amazon.com/AmazonS3/latest/dev/WebsiteEndpoints.html
+	// https://docs.aws.amazon.com/general/latest/gr/rande.html#s3_website_region_endpoints
+	return fmt.Sprintf("s3-website.%s.scw.cloud", region)
+}
+
+func buildBucketOwnerID(id *string) *string {
+	s := fmt.Sprintf("%[1]s:%[1]s", *id)
+	return &s
+}
+
+func normalizeOwnerID(id *string) *string {
+	tab := strings.Split(*id, ":")
+	if len(tab) != 2 {
+		return id
+	}
+
+	return &tab[0]
 }

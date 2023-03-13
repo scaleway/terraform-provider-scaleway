@@ -34,13 +34,19 @@ The following arguments are supported:
 
 - `project_id` - (Defaults to [provider](../index.md#project_id) `project_id`) The ID of the project the namespace is associated with.
 
-- `environment_variables` - The environment variables of the namespace.
+- `environment_variables` - (Optional) The environment variables of the namespace.
+
+- `secret_environment_variables` - (Optional) The [secret environment](https://www.scaleway.com/en/docs/compute/containers/concepts/#secrets) variables of the namespace.
+
 
 ## Attributes Reference
 
 In addition to all arguments above, the following attributes are exported:
 
 - `id` - The ID of the namespace
+
+~> **Important:** Function namespaces' IDs are [regional](../guides/regions_and_zones.md#resource-ids), which means they are of the form `{region}/{id}`, e.g. `fr-par/11111111-1111-1111-1111-111111111111`
+
 - `organization_id` - The organization ID the namespace is associated with.
 - `registry_endpoint` - The registry endpoint of the namespace.
 - `registry_namespace_id` - The registry namespace ID of the namespace.

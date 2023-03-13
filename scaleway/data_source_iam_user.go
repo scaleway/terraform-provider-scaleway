@@ -28,12 +28,11 @@ func dataSourceScalewayIamUser() *schema.Resource {
 				ValidateFunc:  validationEmail(),
 				ConflictsWith: []string{"user_id"},
 			},
-
-			// Default organization_id will be available on a major release. Please check #1337
 			"organization_id": {
-				Type:        schema.TypeString,
-				Description: "The organization_id you want to attach the resource to",
-				Required:    true,
+				Type:          schema.TypeString,
+				Description:   "The organization_id you want to attach the resource to",
+				Optional:      true,
+				ConflictsWith: []string{"user_id"},
 			},
 		},
 	}
@@ -56,7 +55,7 @@ func dataSourceScalewayIamUserRead(ctx context.Context, d *schema.ResourceData, 
 		organizationID = res.OrganizationID
 	} else {
 		res, err := iamAPI.ListUsers(&iam.ListUsersRequest{
-			OrganizationID: expandStringPtr(d.Get("organization_id")),
+			OrganizationID: getOrganizationID(meta, d),
 		}, scw.WithAllPages(), scw.WithContext(ctx))
 		if err != nil {
 			return diag.FromErr(err)

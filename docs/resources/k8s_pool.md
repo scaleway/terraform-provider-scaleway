@@ -15,7 +15,7 @@ Creates and manages Scaleway Kubernetes cluster pools. For more information, see
 ```hcl
 resource "scaleway_k8s_cluster" "jack" {
   name    = "jack"
-  version = "1.19.4"
+  version = "1.24.3"
   cni     = "cilium"
 }
 
@@ -42,7 +42,8 @@ The following arguments are supported:
 - `name` - (Required) The name for the pool.
 ~> **Important:** Updates to this field will recreate a new resource.
 
-- `node_type` - (Required)  The commercial type of the pool instances.
+- `node_type` - (Required) The commercial type of the pool instances. Instances with insufficient memory are not eligible (DEV1-S, PLAY2-PICO, STARDUST). `external` is a special node type used to provision from other Cloud providers.
+
 ~> **Important:** Updates to this field will recreate a new resource.
 
 - `size` - (Required) The size of the pool.
@@ -90,6 +91,9 @@ The following arguments are supported:
 In addition to all above arguments, the following attributes are exported:
 
 - `id` - The ID of the pool.
+
+~> **Important:** Kubernetes clusters pools' IDs are [regional](../guides/regions_and_zones.md#resource-ids), which means they are of the form `{region}/{id}`, e.g. `fr-par/11111111-1111-1111-1111-111111111111`
+
 - `status` - The status of the pool.
 - `nodes` - (List of) The nodes in the default pool.
     - `name` - The name of the node.
@@ -100,6 +104,44 @@ In addition to all above arguments, the following attributes are exported:
 - `updated_at` - The last update date of the pool.
 - `version` - The version of the pool.
 - `current_size` - The size of the pool at the time the terraform state was updated.
+
+## Zone
+
+The option `zone` indicate where you the resource of your pool should be created, and it could be different from `region`
+
+Please note that a pool belongs to only one cluster, in the same region.`region`.
+
+## Placement Group
+
+If you are working with cluster type `multicloud` please set the `zone` where your placement group is e.g:
+
+```hcl
+resource "scaleway_instance_placement_group" "placement_group" { 
+  name        = "pool-placement-group"
+  policy_type = "max_availability"
+  policy_mode = "optional"
+  zone        = "nl-ams-1"
+}
+
+resource "scaleway_k8s_pool" "pool" {
+  name               = "placement_group"
+  cluster_id         = scaleway_k8s_cluster.cluster.id
+  node_type          = "gp1_xs"
+  placement_group_id = scaleway_instance_placement_group.placement_group.id
+  size               = 1
+  region             = scaleway_k8s_cluster.cluster.region
+  zone               = scaleway_instance_placement_group.placement_group.zone
+}
+
+resource "scaleway_k8s_cluster" "cluster" {
+  name     = "placement_group"
+  cni      = "kilo"
+  version  = "%s"
+  tags     = [ "terraform-test", "scaleway_k8s_cluster", "placement_group" ]
+  region   = "fr-par"
+  type     = "multicloud"
+}
+```
 
 ## Import
 

@@ -12,7 +12,7 @@ Gets local image ID of an image from its label name.
 
 ```hcl
 data "scaleway_marketplace_image" "my_image" {
-  label  = "ubuntu_focal"
+  label  = "ubuntu_jammy"
 }
 ```
 
@@ -30,4 +30,6 @@ You find all the available types on the [pricing page](https://www.scaleway.com/
 
 In addition to all above arguments, the following attributes are exported:
 
-- `id` - The ID of the image.
+- `id` - The ID of the local image.
+
+- ~> **Important:** Instance local images' IDs are [zoned](../guides/regions_and_zones.md#resource-ids), which means they are of the form `{zone}/{id}`, e.g. `fr-par-1/11111111-1111-1111-1111-111111111111`

@@ -56,7 +56,10 @@ The following arguments are supported:
 
 In addition to all above arguments, the following attributes are exported:
 
-- `id` - The ID of the public gateway DHCP config.
+- `id` - The ID of the public gateway PAT rule.
+
+~> **Important:** Public gateway PAT rules' IDs are [zoned](../guides/regions_and_zones.md#resource-ids), which means they are of the form `{zone}/{id}`, e.g. `fr-par-1/11111111-1111-1111-1111-111111111111`
+
 - `organization_id` - The organization ID the pat rule config is associated with.
 - `created_at` - The date and time of the creation of the pat rule config.
 - `updated_at` - The date and time of the last update of the pat rule config.

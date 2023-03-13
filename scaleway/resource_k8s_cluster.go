@@ -154,8 +154,7 @@ func resourceScalewayK8SCluster() *schema.Resource {
 			},
 			"delete_additional_resources": {
 				Type:        schema.TypeBool,
-				Optional:    true,
-				Default:     false,
+				Required:    true,
 				Description: "Delete additional resources like block volumes and loadbalancers on cluster deletion",
 			},
 			"region":          regionSchema(),
@@ -185,6 +184,7 @@ func resourceScalewayK8SCluster() *schema.Resource {
 			"kubeconfig": {
 				Type:        schema.TypeList,
 				Computed:    true,
+				Sensitive:   true,
 				Description: "The kubeconfig configuration file of the Kubernetes cluster",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -221,6 +221,18 @@ func resourceScalewayK8SCluster() *schema.Resource {
 				Computed:    true,
 				Description: "The status of the cluster",
 			},
+		},
+		CustomizeDiff: func(ctx context.Context, diff *schema.ResourceDiff, i interface{}) error {
+			autoUpgradeEnable, okAutoUpgradeEnable := diff.GetOkExists("auto_upgrade.0.enable")
+
+			version := diff.Get("version").(string)
+			versionIsOnlyMinor := len(strings.Split(version, ".")) == 2
+
+			if okAutoUpgradeEnable && versionIsOnlyMinor != autoUpgradeEnable.(bool) {
+				return fmt.Errorf("minor version x.y must be used with auto upgrade enabled")
+			}
+
+			return nil
 		},
 	}
 }

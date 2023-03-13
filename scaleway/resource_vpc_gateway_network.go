@@ -4,6 +4,7 @@ import (
 	"context"
 	"time"
 
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
@@ -42,10 +43,11 @@ func resourceScalewayVPCGatewayNetwork() *schema.Resource {
 				Description:  "The ID of the private network where connect to",
 			},
 			"dhcp_id": {
-				Type:         schema.TypeString,
-				Optional:     true,
-				ValidateFunc: validationUUIDorUUIDWithLocality(),
-				Description:  "The ID of the public gateway DHCP config",
+				Type:          schema.TypeString,
+				Optional:      true,
+				ValidateFunc:  validationUUIDorUUIDWithLocality(),
+				Description:   "The ID of the public gateway DHCP config",
+				ConflictsWith: []string{"static_address"},
 			},
 			"enable_masquerade": {
 				Type:        schema.TypeBool,
@@ -66,10 +68,11 @@ func resourceScalewayVPCGatewayNetwork() *schema.Resource {
 				Description: "Remove DHCP config on this network on destroy",
 			},
 			"static_address": {
-				Type:         schema.TypeString,
-				Description:  "The static IP address in CIDR on this network",
-				Optional:     true,
-				ValidateFunc: validation.IsCIDR,
+				Type:          schema.TypeString,
+				Description:   "The static IP address in CIDR on this network",
+				Optional:      true,
+				ValidateFunc:  validation.IsCIDR,
+				ConflictsWith: []string{"dhcp_id"},
 			},
 			// Computed elements
 			"mac_address": {
@@ -89,6 +92,7 @@ func resourceScalewayVPCGatewayNetwork() *schema.Resource {
 			},
 			"zone": zoneSchema(),
 		},
+		CustomizeDiff: customizeDiffLocalityCheck("gateway_id", "private_network_id", "dhcp_id"),
 	}
 }
 
@@ -127,7 +131,12 @@ func resourceScalewayVPCGatewayNetworkCreate(ctx context.Context, d *schema.Reso
 		req.DHCPID = &dhcpZoned.ID
 	}
 
-	gatewayNetwork, err := vpcgwAPI.CreateGatewayNetwork(req, scw.WithContext(ctx))
+	gatewayNetwork, err := retryOnTransientStateError(func() (*vpcgw.GatewayNetwork, error) {
+		return vpcgwAPI.CreateGatewayNetwork(req, scw.WithContext(ctx))
+	}, func() (*vpcgw.Gateway, error) {
+		tflog.Warn(ctx, "Public gateway is in transient state after waiting, retrying...")
+		return waitForVPCPublicGateway(ctx, vpcgwAPI, zone, gatewayID, d.Timeout(schema.TimeoutCreate))
+	})
 	if err != nil {
 		return diag.FromErr(err)
 	}

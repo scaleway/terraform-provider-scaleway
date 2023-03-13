@@ -1,10 +1,8 @@
 # Terraform Provider for Scaleway
 
 - [Provider Documentation Website](https://www.terraform.io/docs/providers/scaleway/index.html)
-- [![Gitter chat](https://badges.gitter.im/hashicorp-terraform/Lobby.png)](https://gitter.im/hashicorp-terraform/Lobby)
-- Mailing list: [Google Groups](http://groups.google.com/group/terraform-tool)
 - Slack: [Scaleway-community Slack][slack-scaleway] ([#terraform][slack-terraform])
-- [![Go Report Card](https://goreportcard.com/badge/github.com/terraform-providers/terraform-provider-scaleway)](https://goreportcard.com/report/github.com/terraform-providers/terraform-provider-scaleway)
+- [![Go Report Card](https://goreportcard.com/badge/github.com/scaleway/terraform-provider-scaleway/v2)](https://goreportcard.com/report/github.com/scaleway/terraform-provider-scaleway/v2)
     
 
 [slack-scaleway]: https://slack.scaleway.com/

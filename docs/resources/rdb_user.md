@@ -21,7 +21,7 @@ resource "random_password" "db_password" {
 
 resource "scaleway_rdb_user" "db_admin" {
   instance_id = scaleway_rdb_instance.main.id
-  name        = "titi"
+  name        = "devtools"
   password    = random_password.db_password.result
   is_admin    = true
 }
@@ -31,7 +31,7 @@ resource "scaleway_rdb_user" "db_admin" {
 
 The following arguments are supported:
 
-- `instance_id` - (Required) The instance on which to create the user.
+- `instance_id` - (Required) UUID of the rdb instance.
 
 ~> **Important:** Updates to `instance_id` will recreate the Database User.
 
@@ -43,9 +43,17 @@ The following arguments are supported:
 
 - `is_admin` - (Optional) Grant admin permissions to the Database User.
 
+- `region` - The Scaleway region this resource resides in.
+
+## Attributes Reference
+
+In addition to all arguments above, the following attributes are exported:
+
+- `id` - The ID of the user, which is of the form `{region}/{instance_id}/{user_name}`, e.g. `fr-par/11111111-1111-1111-1111-111111111111/admin`
+
 ## Import
 
-Database User can be imported using `{region}/{instance_id}/{name}`, e.g.
+Database User can be imported using `{region}/{instance_id}/{user_name}`, e.g.
 
 ```bash
 $ terraform import scaleway_rdb_user.admin fr-par/11111111-1111-1111-1111-111111111111/admin

@@ -2,12 +2,14 @@ package scaleway
 
 import (
 	"context"
+	"fmt"
+	"io/ioutil"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
-	redis "github.com/scaleway/scaleway-sdk-go/api/redis/v1alpha1"
+	"github.com/scaleway/scaleway-sdk-go/api/redis/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 )
 
@@ -40,9 +42,10 @@ func resourceScalewayRedisCluster() *schema.Resource {
 				Description: "Redis version of the cluster",
 			},
 			"node_type": {
-				Type:        schema.TypeString,
-				Required:    true,
-				Description: "Type of node to use for the cluster",
+				Type:             schema.TypeString,
+				Required:         true,
+				Description:      "Type of node to use for the cluster",
+				DiffSuppressFunc: diffSuppressFuncIgnoreCase,
 			},
 			"user_name": {
 				Type:        schema.TypeString,
@@ -76,9 +79,10 @@ func resourceScalewayRedisCluster() *schema.Resource {
 				ForceNew:    true,
 			},
 			"acl": {
-				Type:        schema.TypeSet,
-				Description: "List of acl rules.",
-				Optional:    true,
+				Type:          schema.TypeSet,
+				Description:   "List of acl rules.",
+				Optional:      true,
+				ConflictsWith: []string{"private_network"},
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"id": {
@@ -87,9 +91,10 @@ func resourceScalewayRedisCluster() *schema.Resource {
 							Computed:    true,
 						},
 						"ip": {
-							Type:        schema.TypeString,
-							Description: "IPv4 network address of the rule (IP network in a CIDR format).",
-							Required:    true,
+							Type:         schema.TypeString,
+							Description:  "IPv4 network address of the rule (IP network in a CIDR format).",
+							Required:     true,
+							ValidateFunc: validation.IsCIDR,
 						},
 						"description": {
 							Type:        schema.TypeString,
@@ -109,9 +114,10 @@ func resourceScalewayRedisCluster() *schema.Resource {
 				},
 			},
 			"private_network": {
-				Type:        schema.TypeSet,
-				Optional:    true,
-				Description: "Private network specs details",
+				Type:          schema.TypeSet,
+				Optional:      true,
+				Description:   "Private network specs details",
+				ConflictsWith: []string{"acl"},
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"endpoint_id": {
@@ -166,6 +172,11 @@ func resourceScalewayRedisCluster() *schema.Resource {
 					},
 				},
 			},
+			"certificate": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "public TLS certificate used by redis cluster, empty if tls is disabled",
+			},
 			"created_at": {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -180,6 +191,7 @@ func resourceScalewayRedisCluster() *schema.Resource {
 			"zone":       zoneSchema(),
 			"project_id": projectIDSchema(),
 		},
+		CustomizeDiff: customizeDiffLocalityCheck("private_network.#.id"),
 	}
 }
 
@@ -290,6 +302,25 @@ func resourceScalewayRedisClusterRead(ctx context.Context, d *schema.ResourceDat
 		_ = d.Set("private_network", pnI)
 	}
 	_ = d.Set("public_network", flattenRedisPublicNetwork(cluster.Endpoints))
+
+	if cluster.TLSEnabled {
+		certificate, err := redisAPI.GetClusterCertificate(&redis.GetClusterCertificateRequest{
+			Zone:      zone,
+			ClusterID: cluster.ID,
+		})
+		if err != nil {
+			return diag.FromErr(fmt.Errorf("failed to fetch cluster certificate: %w", err))
+		}
+
+		certificateContent, err := ioutil.ReadAll(certificate.Content)
+		if err != nil {
+			return diag.FromErr(fmt.Errorf("failed to read cluster certificate: %w", err))
+		}
+
+		_ = d.Set("certificate", string(certificateContent))
+	} else {
+		_ = d.Set("certificate", "")
+	}
 
 	return nil
 }

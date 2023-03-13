@@ -53,6 +53,8 @@ In addition to all arguments above, the following attributes are exported:
 
 - `id` - The ID of the container
 
+~> **Important:** Containers' IDs are [regional](../guides/regions_and_zones.md#resource-ids), which means they are of the form `{region}/{id}`, e.g. `fr-par/11111111-1111-1111-1111-111111111111`
+
 - `description` The description of the container.
 
 - `environment_variables` - The [environment](https://www.scaleway.com/en/docs/compute/containers/concepts/#environment-variables) variables of the container.
@@ -70,6 +72,8 @@ In addition to all arguments above, the following attributes are exported:
 - `privacy` - The privacy type define the way to authenticate to your container. Please check our dedicated [section](https://developers.scaleway.com/en/products/containers/api/#protocol-9dd4c8).
 
 - `registry_image` - The registry image address. e.g: **"rg.fr-par.scw.cloud/$NAMESPACE/$IMAGE"**.
+
+- `registry_sha256` - The sha256 of your source registry image, changing it will re-apply the deployment. Can be any string.
 
 - `max_concurrency` - The maximum number of simultaneous requests your container can handle at the same time. Defaults to 50.
 

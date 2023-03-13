@@ -24,17 +24,15 @@ func init() {
 }
 
 func TestAccScalewayObjectBucket_Basic(t *testing.T) {
-	if !*UpdateCassettes {
-		t.Skip("Skipping ObjectStorage test as this kind of resource can't be deleted before 24h")
-	}
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
 	testBucketACL := "private"
 	testBucketUpdatedACL := "public-read"
-	bucketBasic := sdkacctest.RandomWithPrefix("test-acc-scaleway-object-bucket-basic-")
-	bucketAms := sdkacctest.RandomWithPrefix("test-acc-scaleway-object-bucket-ams-")
-	bucketPar := sdkacctest.RandomWithPrefix("test-acc-scaleway-object-bucket-par-")
+	bucketBasic := sdkacctest.RandomWithPrefix("test-acc-scaleway-object-bucket-basic")
+	bucketAms := sdkacctest.RandomWithPrefix("test-acc-scaleway-object-bucket-ams")
+	bucketPar := sdkacctest.RandomWithPrefix("test-acc-scaleway-object-bucket-par")
 	bucketLifecycle := sdkacctest.RandomWithPrefix("test-acc-scaleway-object-bucket-lifecycle")
+	bucketObjectLock := sdkacctest.RandomWithPrefix("test-acc-scaleway-object-bucket-lock")
 	resourceNameLifecycle := "scaleway_object_bucket.par-bucket-lifecycle"
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
@@ -328,6 +326,55 @@ func TestAccScalewayObjectBucket_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.0.abort_incomplete_multipart_upload_days", "30"),
 				),
 			},
+			{
+				Config: fmt.Sprintf(`
+					resource "scaleway_object_bucket" "object-locked-bucket"{
+						name = "%s"
+						region = "fr-par"
+
+						object_lock_enabled = true
+					}
+				`, bucketObjectLock),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("scaleway_object_bucket.object-locked-bucket", "name", bucketObjectLock),
+					resource.TestCheckResourceAttr("scaleway_object_bucket.object-locked-bucket", "object_lock_enabled", "true"),
+					resource.TestCheckResourceAttr("scaleway_object_bucket.object-locked-bucket", "versioning.0.enabled", "true"),
+				),
+			},
+			{
+				Config: fmt.Sprintf(`
+					resource "scaleway_object_bucket" "object-locked-bucket"{
+						name = "%s"
+						region = "fr-par"
+
+						object_lock_enabled = true
+
+						versioning {
+							enabled = true
+						}
+					}
+				`, bucketObjectLock),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("scaleway_object_bucket.object-locked-bucket", "name", bucketObjectLock),
+					resource.TestCheckResourceAttr("scaleway_object_bucket.object-locked-bucket", "object_lock_enabled", "true"),
+					resource.TestCheckResourceAttr("scaleway_object_bucket.object-locked-bucket", "versioning.0.enabled", "true"),
+				),
+			},
+			{
+				Config: fmt.Sprintf(`
+					resource "scaleway_object_bucket" "object-locked-bucket"{
+						name = "%s"
+						region = "fr-par"
+
+						object_lock_enabled = true
+
+						versioning {
+							enabled = false
+						}
+					}
+				`, bucketObjectLock),
+				ExpectError: regexp.MustCompile("versioning must be enabled when object lock is enabled"),
+			},
 		},
 	})
 }
@@ -392,9 +439,6 @@ func testSweepStorageObjectBucket(_ string) error {
 }
 
 func TestAccScalewayObjectBucket_Cors_Update(t *testing.T) {
-	if !*UpdateCassettes {
-		t.Skip("Skipping ObjectStorage test as this kind of resource can't be deleted before 24h")
-	}
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
 
@@ -493,9 +537,6 @@ func TestAccScalewayObjectBucket_Cors_Update(t *testing.T) {
 }
 
 func TestAccScalewayObjectBucket_Cors_Delete(t *testing.T) {
-	if !*UpdateCassettes {
-		t.Skip("Skipping ObjectStorage test as this kind of resource can't be deleted before 24h")
-	}
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
 	ctx := context.Background()
@@ -551,9 +592,7 @@ func TestAccScalewayObjectBucket_Cors_Delete(t *testing.T) {
 }
 
 func TestAccScalewayObjectBucket_Cors_EmptyOrigin(t *testing.T) {
-	if !*UpdateCassettes {
-		t.Skip("Skipping ObjectStorage test as this kind of resource can't be deleted before 24h")
-	}
+	t.Skip("Skipping as AllowedOrigins can be empty at the moment")
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
 
@@ -657,9 +696,6 @@ func testAccCheckScalewayObjectBucketExists(tt *TestTools, n string) resource.Te
 }
 
 func TestAccScalewayObjectBucket_DestroyForce(t *testing.T) {
-	if !*UpdateCassettes {
-		t.Skip("Skipping ObjectStorage test as this kind of resource can't be deleted before 24h")
-	}
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
 

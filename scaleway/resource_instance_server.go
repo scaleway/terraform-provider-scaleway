@@ -5,7 +5,6 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"log"
 	"strconv"
 
@@ -15,7 +14,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
-	"github.com/scaleway/scaleway-sdk-go/api/marketplace/v1"
+	"github.com/scaleway/scaleway-sdk-go/api/marketplace/v2"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	scwvalidation "github.com/scaleway/scaleway-sdk-go/validation"
 )
@@ -46,10 +45,11 @@ func resourceScalewayInstanceServer() *schema.Resource {
 			},
 			"image": {
 				Type:             schema.TypeString,
-				Required:         true,
+				Optional:         true,
 				ForceNew:         true,
 				Description:      "The UUID or the label of the base image used by the server",
 				DiffSuppressFunc: diffSuppressFuncLocality,
+				ExactlyOneOf:     []string{"image", "root_volume.0.volume_id"},
 			},
 			"type": {
 				Type:             schema.TypeString,
@@ -92,6 +92,11 @@ func resourceScalewayInstanceServer() *schema.Resource {
 				Description: "Root volume attached to the server on creation",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
+						"name": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Name of the root volume",
+						},
 						"size_in_gb": {
 							Type:        schema.TypeInt,
 							Optional:    true,
@@ -123,10 +128,11 @@ func resourceScalewayInstanceServer() *schema.Resource {
 							Description: "Set the volume where the boot the server",
 						},
 						"volume_id": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Optional:    true,
-							Description: "Volume ID of the root volume",
+							Type:         schema.TypeString,
+							Computed:     true,
+							Optional:     true,
+							Description:  "Volume ID of the root volume",
+							ExactlyOneOf: []string{"image", "root_volume.0.volume_id"},
 						},
 					},
 				},
@@ -216,12 +222,14 @@ func resourceScalewayInstanceServer() *schema.Resource {
 			"cloud_init": {
 				Type:         schema.TypeString,
 				Optional:     true,
+				Computed:     true,
 				Description:  "The cloud init script associated with this server",
 				ValidateFunc: validation.StringLenBetween(0, 127998),
 			},
 			"user_data": {
 				Type:        schema.TypeMap,
 				Optional:    true,
+				Computed:    true,
 				Description: "The user data associated with the server", // TODO: document reserved keys (`cloud-init`)
 				Elem: &schema.Schema{
 					Type: schema.TypeString,
@@ -262,6 +270,11 @@ func resourceScalewayInstanceServer() *schema.Resource {
 			"organization_id": organizationIDSchema(),
 			"project_id":      projectIDSchema(),
 		},
+		CustomizeDiff: customizeDiffLocalityCheck(
+			"placement_group_id",
+			"additional_volume_ids.#",
+			"ip_id",
+		),
 	}
 }
 
@@ -278,17 +291,21 @@ func resourceScalewayInstanceServerCreate(ctx context.Context, d *schema.Resourc
 
 	commercialType := d.Get("type").(string)
 
-	imageUUID := expandZonedID(d.Get("image")).ID
-	if !scwvalidation.IsUUID(imageUUID) {
+	imageUUID := expandID(d.Get("image"))
+	if imageUUID != "" && !scwvalidation.IsUUID(imageUUID) {
+		// Replace dashes with underscores ubuntu-focal -> ubuntu_focal
+		imageLabel := formatImageLabel(imageUUID)
+
 		marketPlaceAPI := marketplace.NewAPI(meta.(*Meta).scwClient)
-		imageUUID, err = marketPlaceAPI.GetLocalImageIDByLabel(&marketplace.GetLocalImageIDByLabelRequest{
+		image, err := marketPlaceAPI.GetLocalImageByLabel(&marketplace.GetLocalImageByLabelRequest{
 			CommercialType: commercialType,
 			Zone:           zone,
-			ImageLabel:     imageUUID,
+			ImageLabel:     imageLabel,
 		})
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("could not get image '%s': %s", newZonedID(zone, imageUUID), err))
+			return diag.FromErr(fmt.Errorf("could not get image '%s': %s", newZonedID(zone, imageLabel), err))
 		}
+		imageUUID = image.ID
 	}
 
 	req := &instance.CreateServerRequest{
@@ -330,38 +347,42 @@ func resourceScalewayInstanceServerCreate(ctx context.Context, d *schema.Resourc
 	}
 
 	req.Volumes = make(map[string]*instance.VolumeServerTemplate)
-	isBootOnBlock := serverType.VolumesConstraint.MaxSize == 0
-	isBoot := expandBoolPtr(d.Get("root_volume.0.boot"))
-	volumeType := d.Get("root_volume.0.volume_type").(string)
+	serverTypeCanBootOnBlock := serverType.VolumesConstraint.MaxSize == 0
+	rootVolumeIsBootVolume := expandBoolPtr(d.Get("root_volume.0.boot"))
+	rootVolumeType := d.Get("root_volume.0.volume_type").(string)
 	sizeInput := d.Get("root_volume.0.size_in_gb").(int)
 	rootVolumeID := expandZonedID(d.Get("root_volume.0.volume_id").(string)).ID
 
-	// If the volumeType is not defined, define it depending of the offer
-	if volumeType == "" {
-		if isBootOnBlock {
-			volumeType = instance.VolumeVolumeTypeBSSD.String()
+	// If the rootVolumeType is not defined, define it depending on the offer
+	if rootVolumeType == "" {
+		if serverTypeCanBootOnBlock {
+			rootVolumeType = instance.VolumeVolumeTypeBSSD.String()
 		} else {
-			volumeType = instance.VolumeVolumeTypeLSSD.String()
+			rootVolumeType = instance.VolumeVolumeTypeLSSD.String()
 		}
 	}
 
-	var size scw.Size
-	if sizeInput == 0 && volumeType == instance.VolumeVolumeTypeLSSD.String() {
-		// Compute the size so it will be valid against the local volume constraints
-		// Compute the size so it will be valid against the local volume constraints
+	rootVolumeName := ""
+	if req.Image == "" { // When creating an instance from an image, volume should not have a name
+		rootVolumeName = newRandomName("vol")
+	}
+
+	var rootVolumeSize scw.Size
+	if sizeInput == 0 && rootVolumeType == instance.VolumeVolumeTypeLSSD.String() {
+		// Compute the rootVolumeSize so it will be valid against the local volume constraints
 		// It wouldn't be valid if another local volume is added, but in this case
 		// the user would be informed that it does not fulfill the local volume constraints
-		size = serverType.VolumesConstraint.MaxSize
+		rootVolumeSize = serverType.VolumesConstraint.MaxSize
 	} else {
-		size = scw.Size(uint64(sizeInput) * gb)
+		rootVolumeSize = scw.Size(uint64(sizeInput) * gb)
 	}
 
 	req.Volumes["0"] = &instance.VolumeServerTemplate{
-		Name:       newRandomName("vol"), // name is ignored by the API, any name will work here
+		Name:       rootVolumeName,
 		ID:         rootVolumeID,
-		VolumeType: instance.VolumeVolumeType(volumeType),
-		Size:       size,
-		Boot:       *isBoot,
+		VolumeType: instance.VolumeVolumeType(rootVolumeType),
+		Size:       rootVolumeSize,
+		Boot:       *rootVolumeIsBootVolume,
 	}
 
 	if raw, ok := d.GetOk("additional_volume_ids"); ok {
@@ -470,6 +491,11 @@ func resourceScalewayInstanceServerCreate(ctx context.Context, d *schema.Resourc
 			tflog.Debug(ctx, fmt.Sprintf("private network created (ID: %s, status: %s)", pn.PrivateNic.ID, pn.PrivateNic.State))
 
 			_, err = waitForPrivateNIC(ctx, instanceAPI, zone, res.Server.ID, pn.PrivateNic.ID, d.Timeout(schema.TimeoutCreate))
+			if err != nil {
+				return diag.FromErr(err)
+			}
+
+			_, err = waitForMACAddress(ctx, instanceAPI, zone, res.Server.ID, pn.PrivateNic.ID, d.Timeout(schema.TimeoutCreate))
 			if err != nil {
 				return diag.FromErr(err)
 			}
@@ -583,6 +609,7 @@ func resourceScalewayInstanceServerRead(ctx context.Context, d *schema.ResourceD
 				rootVolume["delete_on_termination"] = d.Get("root_volume.0.delete_on_termination").(bool) || !rootVolumeAttributeSet
 				rootVolume["volume_type"] = volume.VolumeType
 				rootVolume["boot"] = volume.Boot
+				rootVolume["name"] = volume.Name
 
 				_ = d.Set("root_volume", []map[string]interface{}{rootVolume})
 			} else {
@@ -604,7 +631,7 @@ func resourceScalewayInstanceServerRead(ctx context.Context, d *schema.ResourceD
 
 		userData := make(map[string]interface{})
 		for key, value := range allUserData.UserData {
-			userDataValue, err := ioutil.ReadAll(value)
+			userDataValue, err := io.ReadAll(value)
 			if err != nil {
 				return diag.FromErr(err)
 			}
@@ -614,9 +641,7 @@ func resourceScalewayInstanceServerRead(ctx context.Context, d *schema.ResourceD
 			// _ = d.Set("cloud_init", string(userDataValue))
 			// }
 		}
-		if len(userData) > 0 {
-			_ = d.Set("user_data", userData)
-		}
+		_ = d.Set("user_data", userData)
 
 		////
 		// Read server private networks

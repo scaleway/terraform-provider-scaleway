@@ -7,7 +7,7 @@ description: |-
 # scaleway_domain_zone
 
 Creates and manages Scaleway Domain zone.  
-For more information, see [the documentation](https://www.scaleway.com/en/docs/scaleway-dns/).
+For more information, see [the documentation](https://www.scaleway.com/en/docs/network/domains-and-dns/how-to/configure-dns-zones/).
 
 ## Examples
 
@@ -33,6 +33,8 @@ The following arguments are supported:
 ## Attributes Reference
 
 In addition to all arguments above, the following attributes are exported:
+
+- `id` - The ID of the zone, which is of the form `{subdomain}.{domain}`
 
 - `ns` - NameServer list for zone.
 

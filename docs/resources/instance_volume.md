@@ -24,7 +24,7 @@ resource "scaleway_instance_volume" "server_volume" {
 The following arguments are supported:
 
 - `type` - (Required) The type of the volume. The possible values are: `b_ssd` (Block SSD), `l_ssd` (Local SSD).
-- `size_in_gb` - (Optional) The size of the volume. Only one of `size_in_gb`, `from_volume_id` and `from_volume_id` should be specified.
+- `size_in_gb` - (Optional) The size of the volume. Only one of `size_in_gb`, `from_volume_id` and `from_snapshot_id` should be specified.
 - `from_volume_id` - (Optional) If set, the new volume will be copied from this volume. Only one of `size_in_gb`, `from_volume_id` and `from_snapshot_id` should be specified.
 - ``from_snapshot_id`` - (Optional) If set, the new volume will be created from this snapshot. Only one of `size_in_gb`, `from_volume_id` and `from_snapshot_id` should be specified.
 - `name` - (Optional) The name of the volume. If not provided it will be randomly generated.
@@ -37,6 +37,9 @@ The following arguments are supported:
 In addition to all above arguments, the following attributes are exported:
 
 - `id` - The ID of the volume.
+
+~> **Important:** Instance volumes' IDs are [zoned](../guides/regions_and_zones.md#resource-ids), which means they are of the form `{zone}/{id}`, e.g. `fr-par-1/11111111-1111-1111-1111-111111111111`
+
 - `server_id` - The id of the associated server.
 - `organization_id` - The organization ID the volume is associated with.
 

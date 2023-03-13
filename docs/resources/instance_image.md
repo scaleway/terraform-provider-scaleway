@@ -33,7 +33,7 @@ resource "scaleway_instance_image" "volume_image" {
 
 ```hcl
 resource "scaleway_instance_server" "server" {
-  image = "ubuntu_focal"
+  image = "ubuntu_jammy"
   type 	= "DEV1-S"
 }
 
@@ -51,7 +51,7 @@ resource "scaleway_instance_image" "server_image" {
 
 ```hcl
 resource "scaleway_instance_server" "server" {
-  image = "ubuntu_focal"
+  image = "ubuntu_jammy"
   type 	= "DEV1-S"
 }
 
@@ -97,6 +97,9 @@ The following arguments are supported:
 In addition to all above arguments, the following attributes are exported:
 
 - `id` - The ID of the image.
+
+~> **Important:** Instance images' IDs are [zoned](../guides/regions_and_zones.md#resource-ids), which means they are of the form `{zone}/{id}`, e.g. `fr-par-1/11111111-1111-1111-1111-111111111111`
+
 - `creation_date` - Date of the image creation.
 - `modification_date` - Date of image latest update.
 - `from_server_id` - ID of the server the image is based on (in case it is a backup).

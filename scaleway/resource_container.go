@@ -52,7 +52,19 @@ func resourceScalewayContainer() *schema.Resource {
 			"environment_variables": {
 				Type:        schema.TypeMap,
 				Optional:    true,
+				Computed:    true,
 				Description: "The environment variables to be injected into your container at runtime.",
+				Elem: &schema.Schema{
+					Type:         schema.TypeString,
+					ValidateFunc: validation.StringLenBetween(0, 1000),
+				},
+				ValidateDiagFunc: validation.MapKeyLenBetween(0, 100),
+			},
+			"secret_environment_variables": {
+				Type:        schema.TypeMap,
+				Optional:    true,
+				Sensitive:   true,
+				Description: "The secret environment variables to be injected into your container at runtime.",
 				Elem: &schema.Schema{
 					Type:         schema.TypeString,
 					ValidateFunc: validation.StringLenBetween(0, 1000),
@@ -105,6 +117,12 @@ func resourceScalewayContainer() *schema.Resource {
 				Computed:    true,
 				Description: "The scaleway registry image address",
 			},
+			"registry_sha256": {
+				Type:         schema.TypeString,
+				Optional:     true,
+				RequiredWith: []string{"registry_image"},
+				Description:  "The sha256 of your source registry image, changing it will re-apply the deployment. Can be any string",
+			},
 			"max_concurrency": {
 				Type:         schema.TypeInt,
 				Optional:     true,
@@ -138,6 +156,16 @@ func resourceScalewayContainer() *schema.Resource {
 				Optional:    true,
 				Description: "This allows you to control your production environment",
 				Default:     false,
+			},
+			"http_option": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "HTTP traffic configuration",
+				Default:     container.ContainerHTTPOptionEnabled.String(),
+				ValidateFunc: validation.StringInSlice([]string{
+					container.ContainerHTTPOptionEnabled.String(),
+					container.ContainerHTTPOptionRedirected.String(),
+				}, false),
 			},
 			// computed
 			"status": {
@@ -250,6 +278,7 @@ func resourceScalewayContainerRead(ctx context.Context, d *schema.ResourceData, 
 	_ = d.Set("cron_status", co.Status.String())
 	_ = d.Set("port", int(co.Port))
 	_ = d.Set("deploy", scw.BoolPtr(*expandBoolPtr(d.Get("deploy"))))
+	_ = d.Set("http_option", co.HTTPOption)
 	_ = d.Set("region", co.Region.String())
 
 	return nil
@@ -282,24 +311,27 @@ func resourceScalewayContainerUpdate(ctx context.Context, d *schema.ResourceData
 
 	if d.HasChanges("environment_variables") {
 		envVariablesRaw := d.Get("environment_variables")
-		req.EnvironmentVariables = expandMapStringStringPtr(envVariablesRaw)
+		req.EnvironmentVariables = expandMapPtrStringString(envVariablesRaw)
+	}
+
+	if d.HasChanges("secret_environment_variables") {
+		req.SecretEnvironmentVariables = expandContainerSecrets(d.Get("secret_environment_variables"))
 	}
 
 	if d.HasChanges("min_scale") {
-		req.MinScale = toUint32(d.Get("min_scale"))
+		req.MinScale = scw.Uint32Ptr(uint32(d.Get("min_scale").(int)))
 	}
 
 	if d.HasChanges("max_scale") {
-		req.MaxScale = toUint32(d.Get("max_scale"))
+		req.MaxScale = scw.Uint32Ptr(uint32(d.Get("max_scale").(int)))
 	}
 
 	if d.HasChanges("memory_limit") {
-		req.MemoryLimit = toUint32(d.Get("memory_limit"))
+		req.MemoryLimit = scw.Uint32Ptr(uint32(d.Get("memory_limit").(int)))
 	}
 
 	if d.HasChanges("timeout") {
-		timeout := d.Get("timeout")
-		req.Timeout = &scw.Duration{Seconds: timeout.(int64)}
+		req.Timeout = &scw.Duration{Seconds: int64(d.Get("timeout").(int))}
 	}
 
 	if d.HasChanges("privacy") {
@@ -307,7 +339,7 @@ func resourceScalewayContainerUpdate(ctx context.Context, d *schema.ResourceData
 	}
 
 	if d.HasChanges("description") {
-		req.Description = expandStringPtr(d.Get("description"))
+		req.Description = expandUpdatedStringPtr(d.Get("description"))
 	}
 
 	if d.HasChanges("registry_image") {
@@ -315,7 +347,7 @@ func resourceScalewayContainerUpdate(ctx context.Context, d *schema.ResourceData
 	}
 
 	if d.HasChanges("max_concurrency") {
-		req.MaxConcurrency = toUint32(d.Get("max_concurrency"))
+		req.MaxConcurrency = scw.Uint32Ptr(uint32(d.Get("max_concurrency").(int)))
 	}
 
 	if d.HasChanges("protocol") {
@@ -323,11 +355,20 @@ func resourceScalewayContainerUpdate(ctx context.Context, d *schema.ResourceData
 	}
 
 	if d.HasChanges("port") {
-		req.Port = toUint32(d.Get("port"))
+		req.Port = scw.Uint32Ptr(uint32(d.Get("port").(int)))
+	}
+
+	if d.HasChanges("http_option") {
+		req.HTTPOption = container.ContainerHTTPOption(d.Get("http_option").(string))
 	}
 
 	if d.HasChanges("deploy") {
 		req.Redeploy = expandBoolPtr(d.Get("deploy"))
+	}
+
+	imageHasChanged := d.HasChanges("registry_sha256")
+	if imageHasChanged {
+		req.Redeploy = &imageHasChanged
 	}
 
 	con, err := api.UpdateContainer(req, scw.WithContext(ctx))

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"sort"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/dustin/go-humanize"
@@ -30,6 +31,7 @@ const (
 	defaultInstanceSecurityGroupRuleTimeout = 1 * time.Minute
 	defaultInstancePlacementGroupTimeout    = 1 * time.Minute
 	defaultInstanceIPTimeout                = 1 * time.Minute
+	defaultInstanceIPReverseDNSTimeout      = 5 * time.Minute
 	defaultInstanceRetryInterval            = 5 * time.Second
 
 	defaultInstanceSnapshotWaitTimeout = 1 * time.Hour
@@ -380,6 +382,11 @@ func (ph *privateNICsHandler) attach(ctx context.Context, n interface{}, timeout
 			if err != nil {
 				return err
 			}
+
+			_, err = waitForMACAddress(ctx, ph.instanceAPI, ph.zone, ph.serverID, pn.PrivateNic.ID, timeout)
+			if err != nil {
+				return err
+			}
 		}
 	}
 
@@ -482,6 +489,23 @@ func waitForPrivateNIC(ctx context.Context, instanceAPI *instance.API, zone scw.
 	return nic, err
 }
 
+func waitForMACAddress(ctx context.Context, instanceAPI *instance.API, zone scw.Zone, serverID string, privateNICID string, timeout time.Duration) (*instance.PrivateNIC, error) {
+	retryInterval := defaultInstanceRetryInterval
+	if DefaultWaitRetryInterval != nil {
+		retryInterval = *DefaultWaitRetryInterval
+	}
+
+	nic, err := instanceAPI.WaitForMACAddress(&instance.WaitForMACAddressRequest{
+		ServerID:      serverID,
+		PrivateNicID:  privateNICID,
+		Zone:          zone,
+		Timeout:       scw.TimeDurationPtr(timeout),
+		RetryInterval: scw.TimeDurationPtr(retryInterval),
+	}, scw.WithContext(ctx))
+
+	return nic, err
+}
+
 func waitForInstanceImage(ctx context.Context, api *instance.API, zone scw.Zone, id string, timeout time.Duration) (*instance.Image, error) {
 	retryInterval := defaultInstanceRetryInterval
 	if DefaultWaitRetryInterval != nil {
@@ -561,4 +585,21 @@ func flattenInstanceImageExtraVolumes(volumes map[string]*instance.Volume, zone 
 		volumesFlat = append(volumesFlat, volumeFlat)
 	}
 	return volumesFlat
+}
+
+func formatImageLabel(imageUUID string) string {
+	return strings.ReplaceAll(imageUUID, "-", "_")
+}
+
+func isInstanceIPReverseResolved(ctx context.Context, instanceAPI *instance.API, reverse string, timeout time.Duration, id string, zone scw.Zone) bool {
+	getIPReq := &instance.GetIPRequest{
+		Zone: zone,
+		IP:   id,
+	}
+	res, err := instanceAPI.GetIP(getIPReq, scw.WithContext(ctx))
+	if err != nil {
+		return false
+	}
+
+	return hostResolver(ctx, timeout, reverse, res.IP.Address.String())
 }

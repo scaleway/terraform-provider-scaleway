@@ -127,7 +127,7 @@ func resourceScalewayRegistryNamespaceUpdate(ctx context.Context, d *schema.Reso
 		if _, err := api.UpdateNamespace(&registry.UpdateNamespaceRequest{
 			Region:      region,
 			NamespaceID: id,
-			Description: expandStringPtr(d.Get("description")),
+			Description: expandUpdatedStringPtr(d.Get("description")),
 			IsPublic:    scw.BoolPtr(d.Get("is_public").(bool)),
 		}, scw.WithContext(ctx)); err != nil {
 			return diag.FromErr(err)
@@ -160,7 +160,7 @@ func resourceScalewayRegistryNamespaceDelete(ctx context.Context, d *schema.Reso
 		return diag.FromErr(err)
 	}
 
-	_, err = waitForRegistryNamespace(ctx, api, region, id, d.Timeout(schema.TimeoutDelete))
+	_, err = waitForRegistryNamespaceDelete(ctx, api, region, id, d.Timeout(schema.TimeoutDelete))
 	if err != nil && !is404Error(err) {
 		return diag.FromErr(err)
 	}

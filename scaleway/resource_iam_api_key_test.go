@@ -43,7 +43,6 @@ func testSweepIamAPIKey(_ string) error {
 }
 
 func TestAccScalewayIamApiKey_WithApplication(t *testing.T) {
-	SkipBetaTest(t)
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
 	resource.ParallelTest(t, resource.TestCase{
@@ -56,7 +55,7 @@ func TestAccScalewayIamApiKey_WithApplication(t *testing.T) {
 			{
 				Config: `
 						resource "scaleway_iam_application" "main" {
-							name = "tf_tests_app_basic"
+							name = "tf_tests_app_key_basic"
 						}
 
 						resource "scaleway_iam_api_key" "main" {
@@ -68,12 +67,13 @@ func TestAccScalewayIamApiKey_WithApplication(t *testing.T) {
 					testAccCheckScalewayIamAPIKeyExists(tt, "scaleway_iam_api_key.main"),
 					resource.TestCheckResourceAttrPair("scaleway_iam_api_key.main", "application_id", "scaleway_iam_application.main", "id"),
 					resource.TestCheckResourceAttr("scaleway_iam_api_key.main", "description", "a description"),
+					resource.TestCheckResourceAttrSet("scaleway_iam_api_key.main", "secret_key"),
 				),
 			},
 			{
 				Config: `
 						resource "scaleway_iam_application" "main" {
-							name = "tf_tests_app_basic"
+							name = "tf_tests_app_key_basic"
 						}
 
 						resource "scaleway_iam_api_key" "main" {
@@ -85,63 +85,20 @@ func TestAccScalewayIamApiKey_WithApplication(t *testing.T) {
 					testAccCheckScalewayIamAPIKeyExists(tt, "scaleway_iam_api_key.main"),
 					resource.TestCheckResourceAttrPair("scaleway_iam_api_key.main", "application_id", "scaleway_iam_application.main", "id"),
 					resource.TestCheckResourceAttr("scaleway_iam_api_key.main", "description", "another description"),
-				),
-			},
-		},
-	})
-}
-
-func TestAccScalewayIamApiKey_WithUser(t *testing.T) {
-	SkipBetaTest(t)
-	tt := NewTestTools(t)
-	defer tt.Cleanup()
-	resource.ParallelTest(t, resource.TestCase{
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      testAccCheckScalewayIamAPIKeyDestroy(tt),
-		Steps: []resource.TestStep{
-			{
-				Config: `
-						data "scaleway_iam_user" "main" {
-							email = "developer-tools-team@scaleway.com"
-							organization_id = "dd5b8103-52ef-40b6-b157-35a426650401"
-						}
-
-						resource "scaleway_iam_api_key" "main" {
-							user_id = data.scaleway_iam_user.main.id
-							description = "a description"
-						}
-					`,
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayIamAPIKeyExists(tt, "scaleway_iam_api_key.main"),
-					testAccCheckScalewayIamUserExists(tt, "data.scaleway_iam_user.main"),
-					resource.TestCheckResourceAttrPair("scaleway_iam_api_key.main", "user_id", "data.scaleway_iam_user.main", "id"),
-					resource.TestCheckResourceAttr("scaleway_iam_api_key.main", "description", "a description"),
+					resource.TestCheckResourceAttrSet("scaleway_iam_api_key.main", "secret_key"),
 				),
 			},
 			{
-				Config: `
-						data "scaleway_iam_user" "main" {
-							email = "developer-tools-team@scaleway.com"
-							organization_id = "dd5b8103-52ef-40b6-b157-35a426650401"
-						}
-
-						resource "scaleway_iam_api_key" "main" {
-							user_id = data.scaleway_iam_user.main.id
-							description = "another description"
-						}
-					`,
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayIamAPIKeyExists(tt, "scaleway_iam_api_key.main"),
-					resource.TestCheckResourceAttrPair("scaleway_iam_api_key.main", "user_id", "data.scaleway_iam_user.main", "id"),
-					resource.TestCheckResourceAttr("scaleway_iam_api_key.main", "description", "another description"),
-				),
+				ResourceName:            "scaleway_iam_api_key.main",
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"secret_key"},
 			},
 		},
 	})
 }
 
 func TestAccScalewayIamApiKey_Expires(t *testing.T) {
-	SkipBetaTest(t)
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
 	resource.ParallelTest(t, resource.TestCase{
@@ -175,7 +132,6 @@ func TestAccScalewayIamApiKey_Expires(t *testing.T) {
 }
 
 func TestAccScalewayIamApiKey_NoUpdate(t *testing.T) {
-	SkipBetaTest(t)
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
 
@@ -186,7 +142,7 @@ func TestAccScalewayIamApiKey_NoUpdate(t *testing.T) {
 			{
 				Config: `
 						resource "scaleway_iam_application" "main" {
-							name = "tf_tests_app_noupdate"
+							name = "tf_tests_app_key_noupdate"
 						}
 
 						resource "scaleway_iam_api_key" "main" {
@@ -203,7 +159,7 @@ func TestAccScalewayIamApiKey_NoUpdate(t *testing.T) {
 			{
 				Config: `
 						resource "scaleway_iam_application" "main" {
-							name = "tf_tests_app_noupdate"
+							name = "tf_tests_app_key_noupdate"
 						}
 
 						resource "scaleway_iam_api_key" "main" {

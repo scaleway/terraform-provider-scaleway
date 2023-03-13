@@ -45,6 +45,7 @@ The following arguments are supported:
 
 - `lb_id`                       - (Required) The load-balancer ID this backend is attached to.
 ~> **Important:** Updates to `lb_id` will recreate the backend.
+- `zone` - (Defaults to [provider](../index.md#zone) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which the load-balancer was created.
 - `forward_protocol`            - (Required) Backend protocol. Possible values are: `tcp` or `http`.
 - `name`                        - (Optional) The name of the load-balancer backend.
 - `forward_port`                - (Required) User sessions will be forwarded to this port of backend servers.
@@ -57,6 +58,11 @@ The following arguments are supported:
 - `timeout_server`              - (Optional) Maximum server connection inactivity time. (e.g.: `1s`)
 - `timeout_connect`             - (Optional) Maximum initial server connection establishment time. (e.g.: `1s`)
 - `timeout_tunnel`              - (Optional) Maximum tunnel inactivity time. (e.g.: `1s`)
+- `failover_host`               - (Optional) Scaleway S3 bucket website to be served in case all backend servers are down.
+~> **Note:** Only the host part of the Scaleway S3 bucket website is expected:
+e.g. 'failover-website.s3-website.fr-par.scw.cloud' if your bucket website URL is 'https://failover-website.s3-website.fr-par.scw.cloud/'.
+- `ssl_bridging`                - (Default: `false`) Enables SSL between load balancer and backend servers.
+- `ignore_ssl_server_verify`    - (Default: `false`) Specifies whether the Load Balancer should check the backend server’s certificate before initiating a connection.
 
 ### Health Check arguments
 
@@ -72,10 +78,13 @@ You may use one of the following health check types: `TCP`, `HTTP` or `HTTPS`. (
     - `uri`                       - (Required) The HTTP endpoint URL to call for HC requests.
     - `method`                    - (Default: `GET`) The HTTP method to use for HC requests.
     - `code`                      - (Default: `200`) The expected HTTP status code.
+    - `host_header`               - (Optional) The HTTP host header to use for HC requests.
 - `health_check_https`          - (Optional) This block enable HTTPS health check. Only one of `health_check_tcp`, `health_check_http` and `health_check_https` should be specified.
     - `uri`                       - (Required) The HTTPS endpoint URL to call for HC requests.
     - `method`                    - (Default: `GET`) The HTTP method to use for HC requests.
     - `code`                      - (Default: `200`) The expected HTTP status code.
+    - `host_header`               - (Optional) The HTTP host header to use for HC requests.
+    - `sni`                       - (Optional) The SNI to use for HC requests over SSL.
 - `on_marked_down_action`       - (Default: `none`) Modify what occurs when a backend server is marked down. Possible values are: `none` and `shutdown_sessions`.
 
 
@@ -84,6 +93,8 @@ You may use one of the following health check types: `TCP`, `HTTP` or `HTTPS`. (
 In addition to all arguments above, the following attributes are exported:
 
 - `id` - The ID of the loadbalancer backend.
+
+~> **Important:** Load-Balancers backends' IDs are [zoned](../guides/regions_and_zones.md#resource-ids), which means they are of the form `{zone}/{id}`, e.g. `fr-par-1/11111111-1111-1111-1111-111111111111`
 
 
 ## Import

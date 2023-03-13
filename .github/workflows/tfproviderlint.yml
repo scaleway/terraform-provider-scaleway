@@ -1,13 +1,19 @@
 name: Run tfproviderlint
 
-on: [pull_request, push]
+on:
+  pull_request:
+  push:
+  merge_group:
 
 jobs:
   tfproviderlint:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2.0.0
-      - uses: bflad/tfproviderlint-github-action@master
+      - uses: actions/checkout@v3
+      - uses: actions/setup-go@v2
         with:
-          version: v0.28.0
-          args: ./...
+          go-version: 1.19
+      - name: Install tfproviderlint
+        run: go install github.com/Codelax/tfproviderlint/cmd/tfproviderlint@9a212663f6cab5b28933496a85d7f7168d82360f
+      - name: Run tfproviderlint
+        run: tfproviderlint ./...

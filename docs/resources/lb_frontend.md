@@ -45,6 +45,10 @@ resource scaleway_lb_certificate cert01 {
     letsencrypt {
         common_name = "${replace(scaleway_lb_ip.ip01.ip_address,".", "-")}.lb.${scaleway_lb.lb01.region}.scw.cloud"
     }
+    # Make sure the new certificate is created before the old one can be replaced
+    lifecycle {
+        create_before_destroy = true
+    }
 }
 
 resource scaleway_lb_frontend frt01 {
@@ -137,6 +141,8 @@ The following arguments are supported:
 
 - `inbound_port` - (Required) TCP port to listen on the front side.
 
+- `zone` - (Defaults to [provider](../index.md#zone) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which the load-balancer was created.
+
 - `name` - (Optional) The name of the load-balancer frontend.
 
 - `timeout_client` - (Optional) Maximum inactivity time on the client side. (e.g.: `1s`)
@@ -144,6 +150,8 @@ The following arguments are supported:
 - `certificate_ids` - (Optional) List of Certificate IDs that should be used by the frontend.
 
 ~> **Important:** Certificates are not allowed on port 80.
+
+- `enable_http3` - (Default: `false`) Activates HTTP/3 protocol.
 
 - `acl` - (Optional) A list of ACL rules to apply to the load-balancer frontend.  Defined below.
 
@@ -175,6 +183,9 @@ The following arguments are supported:
 In addition to all arguments above, the following attributes are exported:
 
 - `id` - The ID of the load-balancer frontend.
+
+~> **Important:** Load-Balancers frontends' IDs are [zoned](../guides/regions_and_zones.md#resource-ids), which means they are of the form `{zone}/{id}`, e.g. `fr-par-1/11111111-1111-1111-1111-111111111111`
+
 - `certificate_id` - (Deprecated) first certificate ID used by the frontend.
 
 

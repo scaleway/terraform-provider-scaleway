@@ -19,7 +19,7 @@ resource "scaleway_instance_ip" "public_ip" {}
 
 resource "scaleway_instance_server" "web" {
   type = "DEV1-S"
-  image = "ubuntu_focal"
+  image = "ubuntu_jammy"
   ip_id = scaleway_instance_ip.public_ip.id
 }
 ```
@@ -34,7 +34,7 @@ resource "scaleway_instance_volume" "data" {
 
 resource "scaleway_instance_server" "web" {
   type = "DEV1-S"
-  image = "ubuntu_focal"
+  image = "ubuntu_jammy"
 
   tags = [ "hello", "public" ]
 
@@ -92,7 +92,7 @@ resource "scaleway_instance_security_group" "www" {
 
 resource "scaleway_instance_server" "web" {
   type = "DEV1-S"
-  image = "ubuntu_focal"
+  image = "ubuntu_jammy"
 
   security_group_id= scaleway_instance_security_group.www.id
 }
@@ -103,7 +103,7 @@ resource "scaleway_instance_server" "web" {
 ```hcl
 resource "scaleway_instance_server" "web" {
   type  = "DEV1-S"
-  image = "ubuntu_focal"
+  image = "ubuntu_jammy"
 
   user_data = {
     foo        = "bar"
@@ -120,11 +120,46 @@ resource scaleway_vpc_private_network pn01 {
 }
 
 resource "scaleway_instance_server" "base" {
-  image = "ubuntu_focal"
+  image = "ubuntu_jammy"
   type  = "DEV1-S"
 
   private_network {
     pn_id = scaleway_vpc_private_network.pn01.id
+  }
+}
+```
+
+### Root volume configuration
+
+#### Resized block volume with installed image
+
+```hcl
+resource "scaleway_instance_server" "image" {
+  type = "PRO2-XXS"
+  image = "ubuntu_jammy"
+  root_volume {
+    volume_type = "b_ssd"
+    size_in_gb = 100
+  }
+}
+```
+
+#### From snapshot
+
+```hcl
+data "scaleway_instance_snapshot" "snapshot" {
+  name = "my_snapshot"
+}
+
+resource "scaleway_instance_volume" "from_snapshot" {
+  from_snapshot_id = data.scaleway_instance_snapshot.snapshot.id
+  type = "b_ssd"
+}
+
+resource "scaleway_instance_server" "from_snapshot" {
+  type = "PRO2-XXS"
+  root_volume {
+    volume_id = scaleway_instance_volume.from_snapshot.id
   }
 }
 ```
@@ -137,8 +172,8 @@ The following arguments are supported:
 You find all the available types on the [pricing page](https://www.scaleway.com/en/pricing/).
 Updates to this field will recreate a new resource.
 
-- `image` - (Required) The UUID or the label of the base image used by the server. You can use [this endpoint](https://api-marketplace.scaleway.com/images?page=1&per_page=100)
-to find either the right `label` or the right local image `ID` for a given `type`.
+- `image` - (Optional) The UUID or the label of the base image used by the server. You can use [this endpoint](https://api-marketplace.scaleway.com/images?page=1&per_page=100)
+to find either the right `label` or the right local image `ID` for a given `type`. Optional when creating an instance with an existing root volume.
 
 You can check the available labels with our [CLI](https://www.scaleway.com/en/docs/compute/instances/api-cli/creating-managing-instances-with-cliv2/). ```scw marketplace image list```
 
@@ -156,7 +191,7 @@ To retrieve more information by label please use: ```scw marketplace image get l
 ~> **Important:** When updating `placement_group_id` the `state` must be set to `stopped`, otherwise it will fail.
 
 - `root_volume` - (Optional) Root [volume](https://developers.scaleway.com/en/products/instance/api/#volumes-7e8a39) attached to the server on creation.
-    - `volume_id` - (Optional) The volume ID of the root volume of the server, allows you to create server with an existing volume. If empty, will be computed to a created volume ID
+    - `volume_id` - (Optional) The volume ID of the root volume of the server, allows you to create server with an existing volume. If empty, will be computed to a created volume ID.
     - `size_in_gb` - (Required) Size of the root volume in gigabytes.
       To find the right size use [this endpoint](https://api.scaleway.com/instance/v1/zones/fr-par-1/products/servers) and
       check the `volumes_constraint.{min|max}_size` (in bytes) for your `commercial_type`.
@@ -219,6 +254,9 @@ attached to the server. Updates to this field will trigger a stop/start of the s
 In addition to all above arguments, the following attributes are exported:
 
 - `id` - The ID of the server.
+
+~> **Important:** Instance servers' IDs are [zoned](../guides/regions_and_zones.md#resource-ids), which means they are of the form `{zone}/{id}`, e.g. `fr-par-1/11111111-1111-1111-1111-111111111111`
+
 - `placement_group_policy_respected` - True when the placement group policy is respected.
 - `root_volume`
     - `volume_id` - The volume ID of the root volume of the server.

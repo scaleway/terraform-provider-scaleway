@@ -15,8 +15,9 @@ Creates and manages Scaleway Kubernetes clusters. For more information, see [the
 ```hcl
 resource "scaleway_k8s_cluster" "jack" {
   name    = "jack"
-  version = "1.19.4"
+  version = "1.24.3"
   cni     = "cilium"
+  delete_additional_resources = false
 }
 
 resource "scaleway_k8s_pool" "john" {
@@ -27,15 +28,38 @@ resource "scaleway_k8s_pool" "john" {
 }
 ```
 
+### Multicloud
+
+```hcl
+resource "scaleway_k8s_cluster" "henry" {
+  name = "henry"
+  type = "multicloud"
+  version = "1.24.3"
+  cni     = "kilo"
+  delete_additional_resources = false
+}
+
+resource "scaleway_k8s_pool" "friend_from_outer_space" {
+  cluster_id = scaleway_k8s_cluster.henry.id
+  name = "henry_friend"
+  node_type = "external"
+  size = 0
+  min_size = 0
+}
+```
+
+For a detailed example of how to add or run Elastic Metal servers instead of instances on your cluster, please refer to [this guide](../guides/multicloud_cluster_with_baremetal_servers.md).
+
 ### With additional configuration
 
 ```hcl
 resource "scaleway_k8s_cluster" "john" {
   name             = "john"
   description      = "my awesome cluster"
-  version          = "1.18.0"
+  version          = "1.24.3"
   cni              = "calico"
-  tags             = ["i'm an awsome tag", "yay"]
+  tags             = ["i'm an awesome tag", "yay"]
+  delete_additional_resources = false
 
   autoscaler_config {
     disable_scale_down              = false
@@ -65,8 +89,9 @@ resource "scaleway_k8s_pool" "john" {
 ```hcl
 resource "scaleway_k8s_cluster" "joy" {
   name    = "joy"
-  version = "1.18.0"
+  version = "1.24.3"
   cni     = "flannel"
+  delete_additional_resources = false
 }
 
 resource "scaleway_k8s_pool" "john" {
@@ -104,8 +129,9 @@ It leads the `kubernetes` provider to start creating its objects, but the DNS en
 ```hcl
 resource "scaleway_k8s_cluster" "joy" {
   name    = "joy"
-  version = "1.21.0"
+  version = "1.24.3"
   cni     = "flannel"
+  delete_additional_resources = false
 }
 
 resource "scaleway_k8s_pool" "john" {
@@ -196,6 +222,10 @@ The following arguments are supported:
 - `cni` - (Required) The Container Network Interface (CNI) for the Kubernetes cluster.
 ~> **Important:** Updates to this field will recreate a new resource.
 
+- `delete_additional_resources` - (Required) Delete additional resources like block volumes, IPs and loadbalancers that were created in Kubernetes on cluster deletion.
+~> **Important:** Setting this field to `true` means that you will lose all your cluster data and network configuration when you delete your cluster.
+If you prefer keeping it, you should instead set it as `false`.
+
 - `tags` - (Optional) The tags associated with the Kubernetes cluster.
 
 - `autoscaler_config` - (Optional) The configuration options for the [Kubernetes cluster autoscaler](https://github.com/kubernetes/autoscaler/tree/master/cluster-autoscaler).
@@ -251,13 +281,11 @@ The following arguments are supported:
 
     - `required_claim` - (Optional) Multiple key=value pairs that describes a required claim in the ID Token
 
-- `delete_additional_resources` - (Defaults to `false`) Delete additional resources like block volumes and loadbalancers that were created in Kubernetes on cluster deletion.
-
 - `default_pool` - (Deprecated) See below.
 
-- `region` - (Defaults to [provider](../index.md#region) `region`) The [region](../guides/regions_and_zones.md#regions) in which the cluster should be created.
+- `region` - (Defaults to [provider](../index.md#arguments-reference) `region`) The [region](../guides/regions_and_zones.md#regions) in which the cluster should be created.
 
-- `project_id` - (Defaults to [provider](../index.md#project_id) `project_id`) The ID of the project the cluster is associated with.
+- `project_id` - (Defaults to [provider](../index.md#arguments-reference) `project_id`) The ID of the project the cluster is associated with.
 
 
 ## Attributes Reference
@@ -265,6 +293,9 @@ The following arguments are supported:
 In addition to all above arguments, the following attributes are exported:
 
 - `id` - The ID of the cluster.
+
+~> **Important:** Kubernetes clusters' IDs are [regional](../guides/regions_and_zones.md#resource-ids), which means they are of the form `{region}/{id}`, e.g. `fr-par/11111111-1111-1111-1111-111111111111`
+
 - `created_at` - The creation date of the cluster.
 - `updated_at` - The last update date of the cluster.
 - `apiserver_url` - The URL of the Kubernetes API server.

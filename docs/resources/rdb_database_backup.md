@@ -34,7 +34,7 @@ resource scaleway_rdb_database_backup "main" {
 
 The following arguments are supported:
 
-- `instance_id` - (Required) UUID of the instance where the database to backup is.
+- `instance_id` - (Required) UUID of the rdb instance.
 
 ~> **Important:** Updates to `instance_id` will recreate the Backup.
 
@@ -44,16 +44,17 @@ The following arguments are supported:
 
 ~> **Important:** `expires_at` cannot be removed after being set.
 
+- `region` - (Defaults to [provider](../index.md#region) `region`) The [region](../guides/regions_and_zones.md#regions) in which the resource exists.
 
 ## Attributes Reference
 
 In addition to all arguments above, the following attributes are exported:
 
+- `id` - The ID of the backup, which is of the form `{region}/{id}`, e.g. `fr-par/11111111-1111-1111-1111-111111111111`
 - `size` - Size of the backup (in bytes).
 - `instance_name` - Name of the instance of the backup.
 - `created_at` - Creation date (Format ISO 8601).
 - `updated_at` - Updated date (Format ISO 8601).
-
 
 ## Import
 

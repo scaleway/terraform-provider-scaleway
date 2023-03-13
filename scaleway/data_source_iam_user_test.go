@@ -10,7 +10,6 @@ import (
 )
 
 func TestAccScalewayDataSourceIamUser_Basic(t *testing.T) {
-	SkipBetaTest(t)
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
 	resource.ParallelTest(t, resource.TestCase{
@@ -20,13 +19,12 @@ func TestAccScalewayDataSourceIamUser_Basic(t *testing.T) {
 			{
 				Config: `
 					data "scaleway_iam_user" "by_id" {
-					  user_id = "af194b1f-55a7-43f2-b61c-22a0268559e3"
-					  organization_id = "dd5b8103-52ef-40b6-b157-35a426650401"
+					  user_id = "b6360d4f-831c-45a8-889e-0b65ed079e63"
 					}
 
 					data "scaleway_iam_user" "by_email" {
-					  email = "developer-tools-team@scaleway.com"
-					  organization_id = "dd5b8103-52ef-40b6-b157-35a426650401"
+					  email = "hashicorp@scaleway.com"
+					  organization_id = "105bdce1-64c0-48ab-899d-868455867ecf"
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(

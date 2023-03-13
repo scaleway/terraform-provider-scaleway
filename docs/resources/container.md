@@ -41,6 +41,9 @@ resource scaleway_container main {
     environment_variables = {
         "foo" = "var"
     }
+    secret_environment_variables = {
+      "key" = "secret"
+    }
 }
 ```
 
@@ -60,6 +63,8 @@ The following arguments are optional:
 
 - `environment_variables` - (Optional) The [environment](https://www.scaleway.com/en/docs/compute/containers/concepts/#environment-variables) variables of the container.
 
+- `secret_environment_variables` - (Optional) The [secret environment](https://www.scaleway.com/en/docs/compute/containers/concepts/#secrets) variables of the container.
+
 - `min_scale` - (Optional) The minimum of running container instances continuously. Defaults to 0.
 
 - `max_scale` - (Optional) The maximum of number of instances this container can scale to. Default to 20.
@@ -76,8 +81,6 @@ The following arguments are optional:
 
 - `max_concurrency` - (Optional) The maximum number of simultaneous requests your container can handle at the same time. Defaults to 50.
 
-- `domain_name` - (Optional) The container domain name.
-
 - `protocol` - (Optional) The communication [protocol](https://developers.scaleway.com/en/products/containers/api/#protocol-9dd4c8) http1 or h2c. Defaults to http1.
 
 - `port` - (Optional) The port to expose the container. Defaults to 8080.
@@ -89,6 +92,10 @@ Note that if you want to use your own configuration, you must consult our config
 ## Attributes Reference
 
 In addition to all above arguments, the following attributes are exported:
+
+- `id` - The container's ID.
+
+~> **Important:** Containers' IDs are [regional](../guides/regions_and_zones.md#resource-ids), which means they are of the form `{region}/{id}`, e.g. `fr-par/11111111-1111-1111-1111-111111111111`
 
 - `region` - (Defaults to [provider](../index.md#region) `region`) The [region](../guides/regions_and_zones.md#regions) in which the container was created.
 - `status` - The container status.

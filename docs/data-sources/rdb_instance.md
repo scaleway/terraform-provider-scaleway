@@ -7,7 +7,7 @@ description: |-
 
 # scaleway_rdb_instance
 
-Gets information about a RDB instance.
+Gets information about an RDB instance.
 
 ## Example Usage
 
@@ -34,3 +34,11 @@ data "scaleway_rdb_instance" "my_instance" {
 - `region` - (Defaults to [provider](../index.md#region) `region`) The [region](../guides/regions_and_zones.md#zones) in which the RDB instance exists.
 
 - `organization_id` - (Defaults to [provider](../index.md#organization_id) `organization_id`) The ID of the organization the RDB instance is in.
+
+## Attributes Reference
+
+In addition to all above arguments, the following attributes are exported:
+
+- `id` - The ID of the RDB instance.
+
+~> **Important:** RDB instances' IDs are [regional](../guides/regions_and_zones.md#resource-ids), which means they are of the form `{region}/{id}`, e.g. `fr-par/11111111-1111-1111-1111-111111111111`

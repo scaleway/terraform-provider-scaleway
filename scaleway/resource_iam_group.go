@@ -59,7 +59,7 @@ func resourceScalewayIamGroup() *schema.Resource {
 					ValidateFunc: validationUUID(),
 				},
 			},
-			"organization_id": organizationIDSchema(),
+			"organization_id": organizationIDOptionalSchema(),
 		},
 	}
 }
@@ -68,13 +68,15 @@ func resourceScalewayIamGroupCreate(ctx context.Context, d *schema.ResourceData,
 	api := iamAPI(meta)
 	req := &iam.CreateGroupRequest{
 		OrganizationID: d.Get("organization_id").(string),
-		Name:           expandOrGenerateString(d.Get("name"), "group-"),
+		Name:           expandOrGenerateString(d.Get("name"), "group"),
 		Description:    d.Get("description").(string),
 	}
 	group, err := api.CreateGroup(req, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
 	}
+
+	d.SetId(group.ID)
 
 	appIds := expandStrings(d.Get("application_ids").(*schema.Set).List())
 	userIds := expandStrings(d.Get("user_ids").(*schema.Set).List())
@@ -88,8 +90,6 @@ func resourceScalewayIamGroupCreate(ctx context.Context, d *schema.ResourceData,
 			return diag.FromErr(err)
 		}
 	}
-
-	d.SetId(group.ID)
 
 	return resourceScalewayIamGroupRead(ctx, d, meta)
 }
@@ -131,8 +131,8 @@ func resourceScalewayIamGroupUpdate(ctx context.Context, d *schema.ResourceData,
 	if d.HasChanges("name", "description") {
 		_, err = api.UpdateGroup(&iam.UpdateGroupRequest{
 			GroupID:     group.ID,
-			Name:        expandStringPtr(d.Get("name").(string)),
-			Description: expandStringPtr(d.Get("description").(string)),
+			Name:        expandUpdatedStringPtr(d.Get("name")),
+			Description: expandUpdatedStringPtr(d.Get("description")),
 		}, scw.WithContext(ctx))
 		if err != nil {
 			return diag.FromErr(err)

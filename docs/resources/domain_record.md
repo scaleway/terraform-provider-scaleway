@@ -7,7 +7,7 @@ description: |-
 # scaleway_domain_record
 
 Creates and manages Scaleway Domain record.  
-For more information, see [the documentation](https://www.scaleway.com/en/docs/scaleway-dns/).
+For more information, see [the documentation](https://www.scaleway.com/en/docs/network/domains-and-dns/how-to/manage-dns-records/).
 
 ## Examples
 
@@ -146,7 +146,7 @@ resource "scaleway_instance_ip" "public_ip" {
 resource "scaleway_instance_server" "web" {
   project_id = var.project_id
   type       = "DEV1-S"
-  image      = "ubuntu_focal"
+  image      = "ubuntu_jammy"
   tags       = ["front", "web"]
   ip_id      = scaleway_instance_ip.public_ip.id
 
@@ -200,14 +200,14 @@ The following arguments are supported:
 
 ### Dynamic records
 
-- `geo_ip` - (Optional) The Geo IP feature provides DNS resolution, based on the user’s geographical location. You can define a default IP that resolves if no Geo IP rule matches, and specify IPs for each geographical zone. [Documentation and usage example](https://www.scaleway.com/en/docs/scaleway-dns/#-Geo-IP-Records)
+- `geo_ip` - (Optional) The Geo IP feature provides DNS resolution, based on the user’s geographical location. You can define a default IP that resolves if no Geo IP rule matches, and specify IPs for each geographical zone. [Documentation and usage example](https://www.scaleway.com/en/docs/network/domains-and-dns/how-to/manage-dns-records/#geo-ip-records)
     - `matches` - (Required) The list of matches. *(Can be more than 1)*
         - `countries` - (Optional) List of countries (eg: `FR` for France, `US` for the United States, `GB` for Great Britain...). [List of all countries code](https://api.scaleway.com/domain-private/v2beta1/countries)
         - `continents` - (Optional) List of continents (eg: `EU` for Europe, `NA` for North America, `AS` for Asia...). [List of all continents code](https://api.scaleway.com/domain-private/v2beta1/continents)
         - `data` (Required) The data of the match result
 
 
-- `http_service` - (Optional) The DNS service checks the provided URL on the configured IPs and resolves the request to one of the IPs by excluding the ones not responding to the given string to check. [Documentation and usage example](https://www.scaleway.com/en/docs/scaleway-dns/#-Healthcheck-records)
+- `http_service` - (Optional) The DNS service checks the provided URL on the configured IPs and resolves the request to one of the IPs by excluding the ones not responding to the given string to check. [Documentation and usage example](https://www.scaleway.com/en/docs/network/domains-and-dns/how-to/manage-dns-records/#healthcheck-records)
     - `ips` - (Required) List of IPs to check
     - `must_contain` - (Required) Text to search
     - `url` - (Required) URL to match the `must_contain` text to validate an IP
@@ -215,14 +215,22 @@ The following arguments are supported:
     - `strategy` - (Required) Strategy to return an IP from the IPs list. Can be `random` or `hashed`
 
 
-- `view` - (Optional) The answer to a DNS request is based on the client’s (resolver) subnet. *(Can be more than 1)* [Documentation and usage example](https://www.scaleway.com/en/docs/scaleway-dns/#-Views-records)
+- `view` - (Optional) The answer to a DNS request is based on the client’s (resolver) subnet. *(Can be more than 1)* [Documentation and usage example](https://www.scaleway.com/en/docs/network/domains-and-dns/how-to/manage-dns-records/#views-records)
     - `subnet` - (Required) The subnet of the view
     - `data` - (Required) The data of the view record
 
 
-- `weighted` - (Optional) You provide a list of IPs with their corresponding weights. These weights are used to proportionally direct requests to each IP. Depending on the weight of a record more or fewer requests are answered with its related IP compared to the others in the list. *(Can be more than 1)* [Documentation and usage example](https://www.scaleway.com/en/docs/scaleway-dns/#-Weight-Records)
+- `weighted` - (Optional) You provide a list of IPs with their corresponding weights. These weights are used to proportionally direct requests to each IP. Depending on the weight of a record more or fewer requests are answered with its related IP compared to the others in the list. *(Can be more than 1)* [Documentation and usage example](https://www.scaleway.com/en/docs/network/domains-and-dns/how-to/manage-dns-records/#weight-records)
     - `ip` - (Required) The weighted IP
     - `weight` - (Required) The weight of the IP as an integer UInt32.
+
+## Attributes Reference
+
+In addition to all above arguments, the following attributes are exported:
+
+- `id` - The ID of the record.
+
+~> **Important:** Domain records' IDs are of the form `{dns_zone}/{id}`, e.g. `subdomain.domain.tld/11111111-1111-1111-1111-111111111111`
 
 ## Multiple records
 

@@ -95,8 +95,17 @@ func resourceScalewayRdbInstance() *schema.Resource {
 				Elem: &schema.Schema{
 					Type: schema.TypeString,
 				},
-				Description: "Map of engine settings to be set.",
+				Description: "Map of engine settings to be set on a running instance.",
 				Computed:    true,
+				Optional:    true,
+			},
+			"init_settings": {
+				Type: schema.TypeMap,
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
+				Description: "Map of engine settings to be set at database initialisation.",
+				ForceNew:    true,
 				Optional:    true,
 			},
 			"tags": {
@@ -267,6 +276,7 @@ func resourceScalewayRdbInstance() *schema.Resource {
 			"organization_id": organizationIDSchema(),
 			"project_id":      projectIDSchema(),
 		},
+		CustomizeDiff: customizeDiffLocalityCheck("private_network.#.pn_id"),
 	}
 }
 
@@ -287,6 +297,10 @@ func resourceScalewayRdbInstanceCreate(ctx context.Context, d *schema.ResourceDa
 		UserName:      d.Get("user_name").(string),
 		Password:      d.Get("password").(string),
 		VolumeType:    rdb.VolumeType(d.Get("volume_type").(string)),
+	}
+
+	if initSettings, ok := d.GetOk("init_settings"); ok {
+		createReq.InitSettings = expandInstanceSettings(initSettings)
 	}
 
 	rawTag, tagExist := d.GetOk("tags")
@@ -427,6 +441,7 @@ func resourceScalewayRdbInstanceRead(ctx context.Context, d *schema.ResourceData
 
 	// set settings
 	_ = d.Set("settings", flattenInstanceSettings(res.Settings))
+	_ = d.Set("init_settings", flattenInstanceSettings(res.InitSettings))
 
 	// set endpoints
 	pnI, pnExist := flattenPrivateNetwork(res.Endpoints)
@@ -641,7 +656,7 @@ func resourceScalewayRdbInstanceUpdate(ctx context.Context, d *schema.ResourceDa
 					&rdb.CreateEndpointRequest{Region: region, InstanceID: ID, EndpointSpec: e},
 					scw.WithContext(ctx))
 				if err != nil {
-					diag.FromErr(err)
+					return diag.FromErr(err)
 				}
 			}
 		}

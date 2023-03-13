@@ -7,14 +7,28 @@ description: |-
 # scaleway_rdb_privilege
 
 Create and manage Scaleway RDB database privilege.
-For more information, see [the documentation](https://developers.scaleway.com/en/products/rdb/api).
+For more information, see [the documentation](https://developers.scaleway.com/en/products/rdb/api/#user-and-permissions).
 
 ## Example usage
 
-
 ```hcl
-resource "scaleway_rdb_privilege" "priv" {
-  instance_id   = scaleway_rdb_instance.rdb.id
+resource "scaleway_rdb_instance" "main" {
+  name           = "rdb"
+  node_type      = "DB-DEV-S"
+  engine         = "PostgreSQL-11"
+  is_ha_cluster  = true
+  disable_backup = true
+  user_name      = "my_initial_user"
+  password       = "thiZ_is_v&ry_s3cret"
+}
+
+resource "scaleway_rdb_database" "main" {
+  instance_id    = scaleway_rdb_instance.main.id
+  name           = "database"
+}
+
+resource "scaleway_rdb_privilege" "main" {
+  instance_id   = scaleway_rdb_instance.main.id
   user_name     = "my-db-user"
   database_name = "my-db-name"
   permission    = "all"
@@ -23,15 +37,10 @@ resource "scaleway_rdb_privilege" "priv" {
 }
 
 resource "scaleway_rdb_user" "main" {
-  instance_id = scaleway_rdb_instance.pgsql.id
+  instance_id = scaleway_rdb_instance.main.id
   name        = "foobar"
   password    = "thiZ_is_v&ry_s3cret"
   is_admin    = false
-}
-
-resource "scaleway_rdb_database" "main" {
-  instance_id = scaleway_rdb_instance.pgsql.id
-  name        = "foobar"
 }
 ```
 
@@ -39,7 +48,7 @@ resource "scaleway_rdb_database" "main" {
 
 The following arguments are supported:
 
-- `instance_id` - (Required) UUID of the instance where to create the database.
+- `instance_id` - (Required) UUID of the rdb instance.
 
 - `user_name` - (Required) Name of the user (e.g. `my-db-user`).
 
@@ -47,12 +56,18 @@ The following arguments are supported:
 
 - `permission` - (Required) Permission to set. Valid values are `readonly`, `readwrite`, `all`, `custom` and `none`.
 
+- `region` - (Defaults to [provider](../index.md#region) `region`) The [region](../guides/regions_and_zones.md#regions) in which the resource exists.
+
 ## Attributes Reference
 
-- `instance_id` - See Argument Reference above.
+In addition to all arguments above, the following attributes are exported:
 
-- `user_name` - See Argument Reference above.
+- `id` - The ID of the user privileges, which is of the form `{region}/{instance_id}/{database_name}/{user_name}`, e.g. `fr-par/11111111-1111-1111-1111-111111111111/database_name/foo`
 
-- `database_name` - See Argument Reference above.
+## Import
 
-- `permission` - See Argument Reference above.
+The user privileges can be imported using the `{region}/{instance_id}/{database_name}/{user_name}`, e.g.
+
+```bash
+$ terraform import scaleway_rdb_privilege.o fr-par/11111111-1111-1111-1111-111111111111/database_name/foo
+```

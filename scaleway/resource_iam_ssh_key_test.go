@@ -47,7 +47,6 @@ func testSweepIamSSHKey(_ string) error {
 }
 
 func TestAccScalewayIamSSHKey_basic(t *testing.T) {
-	SkipBetaTest(t)
 	name := "tf-test-iam-ssh-key-basic"
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
@@ -88,7 +87,6 @@ func TestAccScalewayIamSSHKey_basic(t *testing.T) {
 }
 
 func TestAccScalewayIamSSHKey_WithNewLine(t *testing.T) {
-	SkipBetaTest(t)
 	name := "tf-test-iam-ssh-key-newline"
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
@@ -116,7 +114,6 @@ func TestAccScalewayIamSSHKey_WithNewLine(t *testing.T) {
 }
 
 func TestAccScalewayIamSSHKey_ChangeResourceName(t *testing.T) {
-	SkipBetaTest(t)
 	name := "TestAccScalewayIamSSHKey_ChangeResourceName"
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
@@ -157,7 +154,6 @@ func TestAccScalewayIamSSHKey_ChangeResourceName(t *testing.T) {
 }
 
 func TestAccScalewayIamSSHKey_Disabled(t *testing.T) {
-	SkipBetaTest(t)
 	name := "tf-test-iam-ssh-key-disabled"
 	tt := NewTestTools(t)
 	defer tt.Cleanup()

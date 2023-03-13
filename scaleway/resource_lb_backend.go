@@ -199,6 +199,11 @@ func resourceScalewayLbBackend() *schema.Resource {
 							Optional:    true,
 							Description: "The expected HTTP status code",
 						},
+						"host_header": {
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "The HTTP host header to use for HC requests",
+						},
 					},
 				},
 			},
@@ -226,6 +231,16 @@ func resourceScalewayLbBackend() *schema.Resource {
 							Optional:    true,
 							Description: "The expected HTTP status code",
 						},
+						"host_header": {
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "The HTTP host header to use for HC requests",
+						},
+						"sni": {
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "The SNI to use for HC requests over SSL",
+						},
 					},
 				},
 			},
@@ -238,6 +253,26 @@ func resourceScalewayLbBackend() *schema.Resource {
 				Default:     "none",
 				Optional:    true,
 				Description: "Modify what occurs when a backend server is marked down",
+			},
+			"failover_host": {
+				Type:     schema.TypeString,
+				Optional: true,
+				Description: `Scaleway S3 bucket website to be served in case all backend servers are down
+
+**NOTE** : Only the host part of the Scaleway S3 bucket website is expected.
+E.g. 'failover-website.s3-website.fr-par.scw.cloud' if your bucket website URL is 'https://failover-website.s3-website.fr-par.scw.cloud/'.`,
+			},
+			"ssl_bridging": {
+				Type:        schema.TypeBool,
+				Description: "Enables SSL between load balancer and backend servers",
+				Optional:    true,
+				Default:     false,
+			},
+			"ignore_ssl_server_verify": {
+				Type:        schema.TypeBool,
+				Description: "Specifies whether the Load Balancer should check the backend server’s certificate before initiating a connection",
+				Optional:    true,
+				Default:     false,
 			},
 		},
 	}
@@ -306,12 +341,15 @@ func resourceScalewayLbBackendCreate(ctx context.Context, d *schema.ResourceData
 			HTTPConfig:      expandLbHCHTTP(d.Get("health_check_http")),
 			HTTPSConfig:     expandLbHCHTTPS(d.Get("health_check_https")),
 		},
-		ServerIP:           expandStrings(d.Get("server_ips")),
-		ProxyProtocol:      expandLbProxyProtocol(d.Get("proxy_protocol")),
-		TimeoutServer:      timeoutServer,
-		TimeoutConnect:     timeoutConnect,
-		TimeoutTunnel:      timeoutTunnel,
-		OnMarkedDownAction: expandLbBackendMarkdownAction(d.Get("on_marked_down_action")),
+		ServerIP:              expandStrings(d.Get("server_ips")),
+		ProxyProtocol:         expandLbProxyProtocol(d.Get("proxy_protocol")),
+		TimeoutServer:         timeoutServer,
+		TimeoutConnect:        timeoutConnect,
+		TimeoutTunnel:         timeoutTunnel,
+		OnMarkedDownAction:    expandLbBackendMarkdownAction(d.Get("on_marked_down_action")),
+		FailoverHost:          expandStringPtr(d.Get("failover_host")),
+		SslBridging:           expandBoolPtr(getBool(d, "ssl_bridging")),
+		IgnoreSslServerVerify: expandBoolPtr(getBool(d, "ignore_ssl_server_verify")),
 	}
 
 	res, err := lbAPI.CreateBackend(createReq, scw.WithContext(ctx))
@@ -372,6 +410,9 @@ func resourceScalewayLbBackendRead(ctx context.Context, d *schema.ResourceData, 
 	_ = d.Set("health_check_http", flattenLbHCHTTP(backend.HealthCheck.HTTPConfig))
 	_ = d.Set("health_check_https", flattenLbHCHTTPS(backend.HealthCheck.HTTPSConfig))
 	_ = d.Set("send_proxy_v2", flattenBoolPtr(backend.SendProxyV2))
+	_ = d.Set("failover_host", backend.FailoverHost)
+	_ = d.Set("ssl_bridging", flattenBoolPtr(backend.SslBridging))
+	_ = d.Set("ignore_ssl_server_verify", flattenBoolPtr(backend.IgnoreSslServerVerify))
 
 	_, err = waitForLB(ctx, lbAPI, zone, backend.LB.ID, d.Timeout(schema.TimeoutRead))
 	if err != nil {
@@ -433,6 +474,9 @@ func resourceScalewayLbBackendUpdate(ctx context.Context, d *schema.ResourceData
 		TimeoutConnect:           timeoutConnect,
 		TimeoutTunnel:            timeoutTunnel,
 		OnMarkedDownAction:       expandLbBackendMarkdownAction(d.Get("on_marked_down_action")),
+		FailoverHost:             expandStringPtr(d.Get("failover_host")),
+		SslBridging:              expandBoolPtr(getBool(d, "ssl_bridging")),
+		IgnoreSslServerVerify:    expandBoolPtr(getBool(d, "ignore_ssl_server_verify")),
 	}
 
 	// deprecated
