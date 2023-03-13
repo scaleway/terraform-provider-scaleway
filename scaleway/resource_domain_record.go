@@ -512,47 +512,46 @@ func resourceScalewayDomainRecordDelete(ctx context.Context, d *schema.ResourceD
 	}
 
 	// for non-root zone, if the zone have only NS records, then delete the zone
-	if !d.Get("keep_empty_zone").(bool) && d.Get("root_zone") != nil && !d.Get("root_zone").(bool) {
-		res, err := domainAPI.ListDNSZoneRecords(&domain.ListDNSZoneRecordsRequest{
-			DNSZone: d.Get("dns_zone").(string),
-		})
-		if err != nil {
-			if is404Error(err) || is403Error(err) {
-				return nil
-			}
-			return diag.FromErr(err)
+	if d.Get("keep_empty_zone").(bool) || d.Get("root_zone").(bool) {
+		return nil
+	}
+
+	res, err := domainAPI.ListDNSZoneRecords(&domain.ListDNSZoneRecordsRequest{
+		DNSZone: d.Get("dns_zone").(string),
+	})
+	if err != nil {
+		if is404Error(err) || is403Error(err) {
+			return nil
 		}
+		return diag.FromErr(err)
+	}
 
-		hasRecords := false
-		for _, r := range res.Records {
-			if r.Type != domain.RecordTypeNS {
-				hasRecords = true
-				break
-			}
-			tflog.Debug(ctx, fmt.Sprintf("record [%s], type [%s]", r.Name, r.Type))
+	for _, r := range res.Records {
+		if r.Type != domain.RecordTypeNS {
+			// The zone isn't empty, keep it
+			return nil
 		}
+		tflog.Debug(ctx, fmt.Sprintf("record [%s], type [%s]", r.Name, r.Type))
+	}
 
-		if !hasRecords {
-			_, err = waitForDNSZone(ctx, domainAPI, d.Get("dns_zone").(string), d.Timeout(schema.TimeoutDelete))
-			if err != nil {
-				if errorCheck(err, domain.ErrCodeNoSuchDNSZone) {
-					return nil
-				}
-				return diag.FromErr(fmt.Errorf("failed to wait for dns zone before deleting: %w", err))
-			}
-
-			_, err = domainAPI.DeleteDNSZone(&domain.DeleteDNSZoneRequest{
-				DNSZone:   d.Get("dns_zone").(string),
-				ProjectID: d.Get("project_id").(string),
-			})
-
-			if err != nil {
-				if is404Error(err) || is403Error(err) {
-					return nil
-				}
-				return diag.FromErr(err)
-			}
+	_, err = waitForDNSZone(ctx, domainAPI, d.Get("dns_zone").(string), d.Timeout(schema.TimeoutDelete))
+	if err != nil {
+		if errorCheck(err, domain.ErrCodeNoSuchDNSZone) {
+			return nil
 		}
+		return diag.FromErr(fmt.Errorf("failed to wait for dns zone before deleting: %w", err))
+	}
+
+	_, err = domainAPI.DeleteDNSZone(&domain.DeleteDNSZoneRequest{
+		DNSZone:   d.Get("dns_zone").(string),
+		ProjectID: d.Get("project_id").(string),
+	})
+
+	if err != nil {
+		if is404Error(err) || is403Error(err) {
+			return nil
+		}
+		return diag.FromErr(err)
 	}
 
 	return nil
