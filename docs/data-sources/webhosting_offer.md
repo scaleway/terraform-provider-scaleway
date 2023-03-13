@@ -36,13 +36,13 @@ In addition to all arguments above, the following attributes are exported:
 
 - `billing_operation_path` - The unique identifier used for billing.
 - `product` - The offer product.
-   - `option` - The product option.
-   - `email_accounts_quota` - The quota of email accounts.
-   - `email_storage_quota` - The quota of email storage.
-   - `databases_quota` - The quota of databases.
-   - `hosting_storage_quota` - The quota of hosting storage.
-   - `support_included` - If support is included.
-   - `v_cpu` - The number of cores.
-   - `ram` - The capacity of the memory in GB.
+    - `option` - The product option.
+    - `email_accounts_quota` - The quota of email accounts.
+    - `email_storage_quota` - The quota of email storage.
+    - `databases_quota` - The quota of databases.
+    - `hosting_storage_quota` - The quota of hosting storage.
+    - `support_included` - If support is included.
+    - `v_cpu` - The number of cores.
+    - `ram` - The capacity of the memory in GB.
 - `price` - The offer price.
 
