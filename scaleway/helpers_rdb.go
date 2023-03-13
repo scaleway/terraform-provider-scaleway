@@ -123,7 +123,7 @@ func expandPrivateNetwork(data interface{}, exist bool) ([]*rdb.EndpointSpec, er
 		spec := &rdb.EndpointSpec{
 			PrivateNetwork: &rdb.EndpointSpecPrivateNetwork{
 				PrivateNetworkID: expandID(r["pn_id"].(string)),
-				ServiceIP:        ip,
+				ServiceIP:        &ip,
 			},
 		}
 		res = append(res, spec)
@@ -288,7 +288,7 @@ func expandReadReplicaEndpointsSpecPrivateNetwork(data interface{}) (*rdb.ReadRe
 
 	endpoint.PrivateNetwork = &rdb.ReadReplicaEndpointSpecPrivateNetwork{
 		PrivateNetworkID: expandID(rawEndpoint["private_network_id"]),
-		ServiceIP:        ip,
+		ServiceIP:        &ip,
 	}
 	return endpoint, nil
 }
