@@ -7,9 +7,10 @@ import (
 	"strings"
 	"time"
 
+	"golang.org/x/exp/slices"
+
 	domain "github.com/scaleway/scaleway-sdk-go/api/domain/v2beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
-	"golang.org/x/exp/slices"
 )
 
 const (
@@ -275,17 +276,8 @@ func waitForDNSZone(ctx context.Context, domainAPI *domain.API, dnsZone string, 
 	}, scw.WithContext(ctx))
 }
 
-var disableHostResolver bool
-
-func hostResolver(ctx context.Context, timeout time.Duration, reverse, ip string) bool {
-	if disableHostResolver {
-		return true
-	}
-	ticker := time.Tick(time.Millisecond * 500)
-	ctx, cancel := context.WithTimeout(ctx, timeout)
-	defer cancel()
-
-	r := &net.Resolver{
+func newDNSResolver() *net.Resolver {
+	return &net.Resolver{
 		PreferGo: true,
 		Dial: func(ctx context.Context, network, address string) (net.Conn, error) {
 			d := net.Dialer{
@@ -298,16 +290,62 @@ func hostResolver(ctx context.Context, timeout time.Duration, reverse, ip string
 			return conn, err
 		},
 	}
+}
+
+var (
+	dnsResolverTickDelay = time.Millisecond * 500
+	disableDNSResolver   bool
+)
+
+func hostResolver(ctx context.Context, timeout time.Duration, reverse, ip string) bool {
+	if disableDNSResolver {
+		return true
+	}
+	ticker := time.Tick(dnsResolverTickDelay)
+	ctx, cancel := context.WithTimeout(ctx, timeout)
+	defer cancel()
+
+	r := newDNSResolver()
 
 	for range ticker {
 		address, err := r.LookupHost(ctx, reverse)
 		if err != nil {
-			if ctx.Err() == context.DeadlineExceeded {
+			select {
+			case <-ctx.Done():
 				return false
+			default:
+				continue
 			}
-			continue
 		}
 		if slices.Contains(address, ip) {
+			return true
+		}
+	}
+
+	return false
+}
+
+func cnameResolver(ctx context.Context, timeout time.Duration, hostname, expectedCNAME string) bool {
+	if disableDNSResolver {
+		return true
+	}
+	ticker := time.Tick(dnsResolverTickDelay)
+	ctx, cancel := context.WithTimeout(ctx, timeout)
+	defer cancel()
+
+	r := newDNSResolver()
+
+	for range ticker {
+		cname, err := r.LookupCNAME(ctx, hostname)
+		if err != nil {
+			select {
+			case <-ctx.Done():
+				return false
+			default:
+				continue
+			}
+		}
+		if cname == expectedCNAME {
 			return true
 		}
 	}
