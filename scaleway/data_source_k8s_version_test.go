@@ -42,6 +42,31 @@ func TestAccScalewayDataSourceK8SVersion_Basic(t *testing.T) {
 	})
 }
 
+func TestAccScalewayDataSourceK8SVersion_Latest(t *testing.T) {
+	tt := NewTestTools(t)
+	defer tt.Cleanup()
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      testAccCheckScalewayK8SClusterDestroy(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					data "scaleway_k8s_version" "latest" {
+						name = "latest"
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayK8SVersionExists(tt, "data.scaleway_k8s_version.latest"),
+					resource.TestCheckResourceAttrSet("data.scaleway_k8s_version.latest", "name"),
+					resource.TestCheckResourceAttr("data.scaleway_k8s_version.latest", "name", testAccScalewayK8SClusterGetLatestK8SVersion(tt)),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckScalewayK8SVersionExists(tt *TestTools, n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]

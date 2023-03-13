@@ -58,19 +58,37 @@ func dataSourceScalewayK8SVersionRead(ctx context.Context, d *schema.ResourceDat
 	if !ok {
 		return diag.FromErr(fmt.Errorf("could not find version %q", name))
 	}
-	res, err := k8sAPI.GetVersion(&k8s.GetVersionRequest{
-		Region:      region,
-		VersionName: name.(string),
-	}, scw.WithContext(ctx))
-	if err != nil {
-		return diag.FromErr(err)
+
+	var version *k8s.Version
+
+	if name == "latest" {
+		res, err := k8sAPI.ListVersions(&k8s.ListVersionsRequest{
+			Region: region,
+		}, scw.WithContext(ctx))
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		if len(res.Versions) == 0 {
+			return diag.FromErr(fmt.Errorf("could not find the latest version"))
+		}
+
+		version = res.Versions[0]
+	} else {
+		res, err := k8sAPI.GetVersion(&k8s.GetVersionRequest{
+			Region:      region,
+			VersionName: name.(string),
+		}, scw.WithContext(ctx))
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		version = res
 	}
 
-	d.SetId(fmt.Sprintf("%s/%s", region, res.Name))
-	_ = d.Set("name", res.Name)
-	_ = d.Set("available_cnis", res.AvailableCnis)
-	_ = d.Set("available_container_runtimes", res.AvailableContainerRuntimes)
-	_ = d.Set("available_feature_gates", res.AvailableFeatureGates)
+	d.SetId(fmt.Sprintf("%s/%s", region, version.Name))
+	_ = d.Set("name", version.Name)
+	_ = d.Set("available_cnis", version.AvailableCnis)
+	_ = d.Set("available_container_runtimes", version.AvailableContainerRuntimes)
+	_ = d.Set("available_feature_gates", version.AvailableFeatureGates)
 	_ = d.Set("region", region)
 
 	return nil
