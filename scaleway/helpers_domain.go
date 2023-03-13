@@ -7,10 +7,9 @@ import (
 	"strings"
 	"time"
 
-	"golang.org/x/exp/slices"
-
 	domain "github.com/scaleway/scaleway-sdk-go/api/domain/v2beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"golang.org/x/exp/slices"
 )
 
 const (
