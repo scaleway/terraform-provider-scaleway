@@ -317,7 +317,7 @@ func updateSecurityGroupeRules(ctx context.Context, d *schema.ResourceData, zone
 
 			// This happens when there is more rule in state than in the api. We create more rule in API.
 			setGroupRules = append(setGroupRules, &instance.SetSecurityGroupRulesRequestRule{
-				Zone:         zone,
+				Zone:         &zone,
 				Protocol:     stateRule.Protocol,
 				IPRange:      stateRule.IPRange,
 				Action:       stateRule.Action,

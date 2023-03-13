@@ -35,11 +35,5 @@ func flattenOfferProduct(product *webhosting.OfferProduct) interface{} {
 }
 
 func flattenOfferPrice(price *scw.Money) interface{} {
-	return []map[string]interface{}{
-		{
-			"currency_code": price.CurrencyCode,
-			"units":         price.Units,
-			"nanos":         price.Nanos,
-		},
-	}
+	return price.String()
 }
