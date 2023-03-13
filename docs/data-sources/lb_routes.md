@@ -11,43 +11,14 @@ Gets information about multiple Load Balancer Routes.
 ## Example Usage
 
 ```hcl
-# Find multiple routes that share the same frontend ID
-resource "scaleway_lb_ip" "ip01" {}
-resource "scaleway_lb" "lb01" {
-  ip_id = scaleway_lb_ip.ip01.id
-  name  = "test-lb"
-  type  = "lb-s"
-}
-resource "scaleway_lb_backend" "bkd01" {
-  lb_id            = scaleway_lb.lb01.id
-  forward_protocol = "tcp"
-  forward_port     = 80
-  proxy_protocol   = "none"
-}
-resource "scaleway_lb_frontend" "frt01" {
-  lb_id        = scaleway_lb.lb01.id
-  backend_id   = scaleway_lb_backend.bkd01.id
-  inbound_port = 80
-}
-resource "scaleway_lb_route" "rt01" {
-  frontend_id = scaleway_lb_frontend.frt01.id
-  backend_id  = scaleway_lb_backend.bkd01.id
-  match_sni   = "sni.scaleway.com"
-}
-resource "scaleway_lb_route" "rt02" {
-  frontend_id       = scaleway_lb_frontend.frt01.id
-  backend_id        = scaleway_lb_backend.bkd01.id
-  match_host_header = "host.scaleway.com"
-}
+# Find routes that share the same frontend ID
 data "scaleway_lb_routes" "by_frontendID" {
   frontend_id = scaleway_lb_frontend.frt01.id
-  depends_on  = [scaleway_lb_route.rt01, scaleway_lb_route.rt02]
 }
-
 # Find routes by frontend ID and zone
 data "scaleway_lb_routes" "my_key" {
   frontend_id = "11111111-1111-1111-1111-111111111111"
-  zone       = "fr-par-2"
+  zone        = "fr-par-2"
 }
 ```
 

@@ -54,16 +54,22 @@ func resourceScalewayBaremetalServer() *schema.Resource {
 				Computed:    true,
 				Description: "ID of the server offer",
 			},
-			"os": {
-				Type:         schema.TypeString,
-				Required:     true,
-				Description:  "The base image of the server",
-				ValidateFunc: validationUUIDorUUIDWithLocality(),
-			},
-			"os_id": {
+			"offer_name": {
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "The base image ID of the server",
+				Description: "Name of the server offer",
+			},
+			"os": {
+				Type:             schema.TypeString,
+				Required:         true,
+				Description:      "The base image of the server",
+				DiffSuppressFunc: diffSuppressFuncLocality,
+				ValidateFunc:     validationUUIDorUUIDWithLocality(),
+			},
+			"os_name": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The base image name of the server",
 			},
 			"ssh_key_ids": {
 				Type: schema.TypeList,
@@ -119,6 +125,7 @@ If this behaviour is wanted, please set 'reinstall_on_ssh_key_changes' argument 
 					Type: schema.TypeString,
 				},
 				Optional:    true,
+				Computed:    true,
 				Description: "Array of tags to associate with the server",
 			},
 			"zone":            zoneSchema(),
@@ -368,16 +375,29 @@ func resourceScalewayBaremetalServerRead(ctx context.Context, d *schema.Resource
 		return diag.FromErr(err)
 	}
 
+	var os *baremetal.OS
+	if server.Install != nil {
+		os, err = baremetalAPI.GetOS(&baremetal.GetOSRequest{
+			Zone: server.Zone,
+			OsID: server.Install.OsID,
+		})
+		if err != nil {
+			return diag.FromErr(err)
+		}
+	}
+
 	_ = d.Set("name", server.Name)
 	_ = d.Set("zone", server.Zone.String())
 	_ = d.Set("organization_id", server.OrganizationID)
 	_ = d.Set("project_id", server.ProjectID)
-	_ = d.Set("offer_id", newZonedID(server.Zone, offer.ID).String())
+	_ = d.Set("offer_id", newZonedIDString(server.Zone, offer.ID))
+	_ = d.Set("offer_name", offer.Name)
 	_ = d.Set("tags", server.Tags)
 	_ = d.Set("domain", server.Domain)
 	_ = d.Set("ips", flattenBaremetalIPs(server.IPs))
 	if server.Install != nil {
-		_ = d.Set("os_id", newZonedID(server.Zone, server.Install.OsID).String())
+		_ = d.Set("os", newZonedIDString(server.Zone, os.ID))
+		_ = d.Set("os_name", os.Name)
 		_ = d.Set("ssh_key_ids", server.Install.SSHKeyIDs)
 		_ = d.Set("user", server.Install.User)
 		_ = d.Set("service_user", server.Install.ServiceUser)
@@ -487,12 +507,12 @@ func resourceScalewayBaremetalServerUpdate(ctx context.Context, d *schema.Resour
 	hasChanged := false
 
 	if d.HasChange("name") {
-		req.Name = expandUpdatedStringPtr("name")
+		req.Name = expandUpdatedStringPtr(d.Get("name"))
 		hasChanged = true
 	}
 
 	if d.HasChange("description") {
-		req.Description = expandUpdatedStringPtr("description")
+		req.Description = expandUpdatedStringPtr(d.Get("description"))
 		hasChanged = true
 	}
 

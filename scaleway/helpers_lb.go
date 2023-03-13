@@ -3,6 +3,7 @@ package scaleway
 import (
 	"context"
 	"fmt"
+	"net"
 	"reflect"
 	"strings"
 	"time"
@@ -576,4 +577,15 @@ func flattenLbIPs(ips []*lbSDK.IP) interface{} {
 		})
 	}
 	return flattenedIPs
+}
+
+func ipv4Match(cidr, ipStr string) bool {
+	_, cidrNet, err := net.ParseCIDR(cidr)
+	if err != nil {
+		return false
+	}
+
+	ip := net.ParseIP(ipStr)
+
+	return cidrNet.Contains(ip)
 }

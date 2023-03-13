@@ -55,6 +55,12 @@ func newS3ClientFromMeta(meta *Meta) (*s3.S3, error) {
 	region, _ := meta.scwClient.GetDefaultRegion()
 	accessKey, _ := meta.scwClient.GetAccessKey()
 	secretKey, _ := meta.scwClient.GetSecretKey()
+
+	projectID, _ := meta.scwClient.GetDefaultProjectID()
+	if projectID != "" {
+		accessKey = accessKeyWithProjectID(accessKey, projectID)
+	}
+
 	return newS3Client(meta.httpClient, region.String(), accessKey, secretKey)
 }
 
@@ -79,18 +85,32 @@ func s3ClientWithRegion(d *schema.ResourceData, m interface{}) (*s3.S3, scw.Regi
 	return s3Client, region, err
 }
 
-func s3ClientWithRegionAndName(d *schema.ResourceData, m interface{}, name string) (*s3.S3, scw.Region, string, error) {
+func s3ClientWithRegionAndName(d *schema.ResourceData, m interface{}, id string) (*s3.S3, scw.Region, string, error) {
 	meta := m.(*Meta)
-	region, name, err := parseRegionalID(name)
+	region, name, err := parseRegionalID(id)
 	if err != nil {
 		return nil, "", "", err
 	}
 
-	accessKey, _ := meta.scwClient.GetAccessKey()
-	if projectID, isDefaultProjectID, err := extractProjectID(d, meta); err == nil && !isDefaultProjectID {
-		accessKey = accessKeyWithProjectID(accessKey, projectID)
+	parts := strings.Split(name, "@")
+	if len(parts) > 2 {
+		return nil, "", "", fmt.Errorf("invalid ID %q: expected ID in format <region>/<name>[@<project_id>]", id)
 	}
+	name = parts[0]
+
+	d.SetId(fmt.Sprintf("%s/%s", region, name))
+
+	accessKey, _ := meta.scwClient.GetAccessKey()
 	secretKey, _ := meta.scwClient.GetSecretKey()
+
+	if len(parts) == 2 {
+		accessKey = accessKeyWithProjectID(accessKey, parts[1])
+	} else {
+		extractedProjectID, isDefaultProjectID, err := extractProjectID(d, meta)
+		if err == nil && !isDefaultProjectID {
+			accessKey = accessKeyWithProjectID(accessKey, extractedProjectID)
+		}
+	}
 
 	s3Client, err := newS3Client(meta.httpClient, region.String(), accessKey, secretKey)
 	if err != nil {
