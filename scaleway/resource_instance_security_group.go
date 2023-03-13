@@ -290,7 +290,7 @@ func resourceScalewayInstanceSecurityGroupUpdate(ctx context.Context, d *schema.
 	}
 
 	if !d.Get("external_rules").(bool) {
-		err = updateSecurityGroupRules(ctx, d, zone, ID, instanceAPI)
+		err = updateSecurityGroupeRules(ctx, d, zone, ID, instanceAPI)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -299,8 +299,8 @@ func resourceScalewayInstanceSecurityGroupUpdate(ctx context.Context, d *schema.
 	return resourceScalewayInstanceSecurityGroupRead(ctx, d, meta)
 }
 
-// updateSecurityGroupRules handles updating SecurityGroupRules
-func updateSecurityGroupRules(ctx context.Context, d *schema.ResourceData, zone scw.Zone, securityGroupID string, instanceAPI *instance.API) error {
+// updateSecurityGroupeRules handles updating SecurityGroupRules
+func updateSecurityGroupeRules(ctx context.Context, d *schema.ResourceData, zone scw.Zone, securityGroupID string, instanceAPI *instance.API) error {
 	stateRules := map[instance.SecurityGroupRuleDirection][]interface{}{
 		instance.SecurityGroupRuleDirectionInbound:  d.Get("inbound_rule").([]interface{}),
 		instance.SecurityGroupRuleDirectionOutbound: d.Get("outbound_rule").([]interface{}),
