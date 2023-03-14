@@ -36,10 +36,11 @@ func resourceScalewayRdbReadReplica() *schema.Resource {
 				Description: "Id of the rdb instance to replicate",
 			},
 			"direct_access": {
-				Type:        schema.TypeList,
-				Optional:    true,
-				Description: "Direct access endpoint, it gives you an IP and a port to access your read-replica",
-				MaxItems:    1,
+				Type:          schema.TypeList,
+				Optional:      true,
+				Description:   "Direct access endpoint, it gives you an IP and a port to access your read-replica",
+				MaxItems:      1,
+				ConflictsWith: []string{"private_network"},
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						// Endpoints common
@@ -72,10 +73,11 @@ func resourceScalewayRdbReadReplica() *schema.Resource {
 				},
 			},
 			"private_network": {
-				Type:        schema.TypeList,
-				Optional:    true,
-				Description: "Private network endpoints",
-				MaxItems:    1,
+				Type:          schema.TypeList,
+				Optional:      true,
+				Description:   "Private network endpoints",
+				MaxItems:      1,
+				ConflictsWith: []string{"direct_access"},
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						// Private network specific
@@ -184,8 +186,11 @@ func resourceScalewayRdbReadReplicaRead(ctx context.Context, d *schema.ResourceD
 	}
 
 	directAccess, privateNetwork := flattenReadReplicaEndpoints(rr.Endpoints)
-	_ = d.Set("direct_access", directAccess)
-	_ = d.Set("private_network", privateNetwork)
+	if privateNetwork != nil {
+		_ = d.Set("private_network", privateNetwork)
+	} else {
+		_ = d.Set("direct_access", directAccess)
+	}
 
 	_ = d.Set("region", string(region))
 
