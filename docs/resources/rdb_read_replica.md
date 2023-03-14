@@ -7,7 +7,7 @@ Manages Scaleway Database read replicas.
 # scaleway_rdb_read_replica
 
 Creates and manages Scaleway Database read replicas.
-For more information, see [the documentation](https://developers.scaleway.com/en/products/rdb/api).
+For more information, see [the documentation](https://developers.scaleway.com/en/products/rdb/api/#read-replicas-8e2cf2).
 
 ## Examples
 
@@ -61,15 +61,13 @@ The following arguments are supported:
 
 - `instance_id` - (Required) UUID of the rdb instance.
 
-~> **Important:** The replica musts contains at least one of `direct_access` or `private_network`. It can contain both.
+~> **Important:** The replica musts contains at least one of `direct_access` or `private_network`. It can't contain both.
 
 - `direct_access` - (Optional) Creates a direct access endpoint to rdb replica.
 
 - `private_network` - (Optional) Create an endpoint in a private network.
     - `private_network_id` - (Required) UUID of the private network to be connected to the read replica.
     - `service_ip` - (Required) Endpoint IPv4 address with a CIDR notation. Check documentation about IP and subnet limitations. (IP network).
-
-  ~> Only one of `direct_access` and `private_network` may be set.
 
 - `region` - (Defaults to [provider](../index.md#region) `region`) The [region](../guides/regions_and_zones.md#regions) in which the Database read replica should be created.
 
@@ -93,7 +91,6 @@ In addition to all arguments above, the following attributes are exported:
     - `port` - TCP port of the endpoint.
     - `name` - Name of the endpoint.
     - `hostname` - Hostname of the endpoint. Only one of ip and hostname may be set.
-
 
 ## Import
 
