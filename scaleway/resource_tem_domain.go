@@ -131,6 +131,7 @@ func resourceScalewayTemDomainRead(ctx context.Context, d *schema.ResourceData, 
 	}
 
 	_ = d.Set("name", domain.Name)
+	_ = d.Set("accept_tos", true)
 	_ = d.Set("status", domain.Status)
 	_ = d.Set("created_at", flattenTime(domain.CreatedAt))
 	_ = d.Set("next_check_at", flattenTime(domain.NextCheckAt))

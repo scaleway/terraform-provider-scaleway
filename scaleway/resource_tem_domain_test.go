@@ -59,7 +59,7 @@ func TestAccScalewayTemDomain_Basic(t *testing.T) {
 			{
 				Config: fmt.Sprintf(`
 					resource scaleway_tem_domain cr01 {
-						name = "%s"
+						name       = "%s"
 						accept_tos = true
 					}
 				`, domainName),
@@ -87,7 +87,7 @@ func TestAccScalewayTemDomain_Tos(t *testing.T) {
 			{
 				Config: fmt.Sprintf(`
 					resource scaleway_tem_domain cr01 {
-						name = "%s"
+						name       = "%s"
 						accept_tos = false
 					}
 				`, domainName),
