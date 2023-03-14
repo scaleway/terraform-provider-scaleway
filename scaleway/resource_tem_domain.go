@@ -2,6 +2,7 @@ package scaleway
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -28,6 +29,21 @@ func resourceScalewayTemDomain() *schema.Resource {
 				Required:    true,
 				ForceNew:    true,
 				Description: "The domain name used when sending emails",
+			},
+			"accept_tos": {
+				Type:        schema.TypeBool,
+				Required:    true,
+				ForceNew:    true,
+				Description: "Accept the Scaleway Terms of Service",
+				ValidateFunc: func(i interface{}, k string) (warnings []string, errors []error) {
+					v := i.(bool)
+					if !v {
+						errors = append(errors, fmt.Errorf("you must accept the Scaleway Terms of Service to use this service"))
+						return warnings, errors
+					}
+
+					return warnings, errors
+				},
 			},
 			"status": {
 				Type:        schema.TypeString,
@@ -85,6 +101,7 @@ func resourceScalewayTemDomainCreate(ctx context.Context, d *schema.ResourceData
 		Region:     region,
 		ProjectID:  d.Get("project_id").(string),
 		DomainName: d.Get("name").(string),
+		AcceptTos:  d.Get("accept_tos").(bool),
 	}, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
