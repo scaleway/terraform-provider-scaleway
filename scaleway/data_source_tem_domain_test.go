@@ -21,7 +21,8 @@ func TestAccScalewayDataSourceTemDomain_Basic(t *testing.T) {
 			{
 				Config: fmt.Sprintf(`
 					resource "scaleway_tem_domain" "main" {
-						name 	= "%s"
+						name 	   = "%s"
+						accept_tos = true
 					}
 					
 					data "scaleway_tem_domain" "prod" {
