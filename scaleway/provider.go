@@ -216,6 +216,7 @@ func Provider(config *ProviderConfig) plugin.ProviderFunc {
 				"scaleway_redis_cluster":                       dataSourceScalewayRedisCluster(),
 				"scaleway_registry_namespace":                  dataSourceScalewayRegistryNamespace(),
 				"scaleway_tem_domain":                          dataSourceScalewayTemDomain(),
+				"scaleway_secret":                              dataSourceScalewaySecret(),
 				"scaleway_registry_image":                      dataSourceScalewayRegistryImage(),
 				"scaleway_vpc_public_gateway":                  dataSourceScalewayVPCPublicGateway(),
 				"scaleway_vpc_gateway_network":                 dataSourceScalewayVPCGatewayNetwork(),
