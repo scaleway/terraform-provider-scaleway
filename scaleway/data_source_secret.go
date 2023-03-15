@@ -25,32 +25,57 @@ func dataSourceScalewaySecret() *schema.Resource {
 		ValidateFunc:  validationUUIDorUUIDWithLocality(),
 		ConflictsWith: []string{"name"},
 	}
+	dsSchema["organization_id"] = organizationIDOptionalSchema()
+	dsSchema["project_id"] = &schema.Schema{
+		Type:         schema.TypeString,
+		Optional:     true,
+		Description:  "The project ID the resource is associated to",
+		ValidateFunc: validationUUID(),
+	}
 
 	return &schema.Resource{
 		ReadContext: dataSourceScalewaySecretRead,
-
-		Schema: dsSchema,
+		Schema:      dsSchema,
 	}
 }
 
 func dataSourceScalewaySecretRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, region, err := secretAPIWithRegion(d, meta)
+	api, region, projectID, err := secretAPIWithRegionAndProjectID(d, meta)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	secretID, ok := d.GetOk("secret_id")
 	if !ok {
-		res, err := api.GetSecretByName(&secret.GetSecretByNameRequest{
-			Region:     region,
-			SecretName: d.Get("name").(string),
-		}, scw.WithContext(ctx))
+		request := &secret.ListSecretsRequest{
+			Region: region,
+			Name:   scw.StringPtr(d.Get("name").(string)),
+		}
+
+		request.ProjectID = scw.StringPtr(projectID)
+
+		if organizationIDRaw, ok := d.GetOk("organization_id"); ok {
+			request.OrganizationID = scw.StringPtr(organizationIDRaw.(string))
+		}
+		res, err := api.ListSecrets(request, scw.WithContext(ctx))
 		if err != nil {
 			return diag.FromErr(err)
 		}
 
-		secretID = newRegionalIDString(region, res.ID)
-		if res.ID == "" {
+		for _, s := range res.Secrets {
+			if s.Status == secret.SecretStatusLocked {
+				continue
+			}
+
+			if s.Name == d.Get("name").(string) {
+				if secretID != "" {
+					return diag.FromErr(fmt.Errorf("more than 1 secret found with the same name %s", d.Get("name")))
+				}
+
+				secretID = newRegionalIDString(region, s.ID)
+			}
+		}
+		if res.TotalCount == 0 {
 			return diag.FromErr(fmt.Errorf("no secret found with the name %s", d.Get("name")))
 		}
 	}
