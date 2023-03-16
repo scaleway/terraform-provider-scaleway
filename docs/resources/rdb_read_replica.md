@@ -14,15 +14,15 @@ For more information, see [the documentation](https://developers.scaleway.com/en
 ### Basic
 
 ```hcl
-resource scaleway_rdb_instance "instance" {
-  name = "test-rdb-rr-update"
-  node_type = "db-dev-s"
-  engine = "PostgreSQL-14"
-  is_ha_cluster = false
+resource "scaleway_rdb_instance" "instance" {
+  name           = "test-rdb-rr-update"
+  node_type      = "db-dev-s"
+  engine         = "PostgreSQL-14"
+  is_ha_cluster  = false
   disable_backup = true
-  user_name = "my_initial_user"
-  password = "thiZ_is_v&ry_s3cret"
-  tags = [ "terraform-test", "scaleway_rdb_read_replica", "minimal" ]
+  user_name      = "my_initial_user"
+  password       = "thiZ_is_v&ry_s3cret"
+  tags           = ["terraform-test", "scaleway_rdb_read_replica", "minimal"]
 }
 
 resource scaleway_rdb_read_replica "replica" {
@@ -34,19 +34,19 @@ resource scaleway_rdb_read_replica "replica" {
 ### Private network
 
 ```hcl
-resource scaleway_rdb_instance "instance" {
-  name = "rdb_instance"
-  node_type = "db-dev-s"
-  engine = "PostgreSQL-14"
-  is_ha_cluster = false
+resource "scaleway_rdb_instance" "instance" {
+  name           = "rdb_instance"
+  node_type      = "db-dev-s"
+  engine         = "PostgreSQL-14"
+  is_ha_cluster  = false
   disable_backup = true
-  user_name = "my_initial_user"
-  password = "thiZ_is_v&ry_s3cret"
+  user_name      = "my_initial_user"
+  password       = "thiZ_is_v&ry_s3cret"
 }
 
-resource scaleway_vpc_private_network "pn" {}
+resource "scaleway_vpc_private_network" "pn" {}
 
-resource scaleway_rdb_read_replica "replica" {
+resource "scaleway_rdb_read_replica" "replica" {
   instance_id = scaleway_rdb_instance.instance.id
   private_network {
     private_network_id = scaleway_vpc_private_network.pn.id
@@ -67,9 +67,11 @@ The following arguments are supported:
 
 - `private_network` - (Optional) Create an endpoint in a private network.
     - `private_network_id` - (Required) UUID of the private network to be connected to the read replica.
-    - `service_ip` - (Required) Endpoint IPv4 address with a CIDR notation. Check documentation about IP and subnet limitations. (IP network).
+    - `service_ip` - (Required) Endpoint IPv4 address with a CIDR notation. Check documentation about IP and subnet
+      limitations. (IP network).
 
-- `region` - (Defaults to [provider](../index.md#region) `region`) The [region](../guides/regions_and_zones.md#regions) in which the Database read replica should be created.
+- `region` - (Defaults to [provider](../index.md#region) `region`) The [region](../guides/regions_and_zones.md#regions)
+  in which the Database read replica should be created.
 
 ## Attributes Reference
 
@@ -77,7 +79,8 @@ In addition to all arguments above, the following attributes are exported:
 
 - `id` - The ID of the Database read replica.
 
-~> **Important:** Database read replicas' IDs are [regional](../guides/regions_and_zones.md#resource-ids), which means they are of the form `{region}/{id}`, e.g. `fr-par/11111111-1111-1111-1111-111111111111`
+~> **Important:** Database read replicas' IDs are [regional](../guides/regions_and_zones.md#resource-ids), which means
+they are of the form `{region}/{id}`, e.g. `fr-par/11111111-1111-1111-1111-111111111111`
 
 - `direct_access` - List of load balancer endpoints of the database read replica.
     - `endpoint_id` - The ID of the endpoint of the read replica.
@@ -91,7 +94,6 @@ In addition to all arguments above, the following attributes are exported:
     - `port` - TCP port of the endpoint.
     - `name` - Name of the endpoint.
     - `hostname` - Hostname of the endpoint. Only one of ip and hostname may be set.
-
 
 ## Import
 

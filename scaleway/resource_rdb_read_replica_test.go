@@ -158,7 +158,7 @@ func TestAccScalewayRdbReadReplica_Update(t *testing.T) {
 					resource.TestCheckResourceAttrSet("scaleway_rdb_read_replica.replica", "private_network.0.ip"),
 					resource.TestCheckResourceAttrSet("scaleway_rdb_read_replica.replica", "private_network.0.port"),
 					resource.TestCheckResourceAttrSet("scaleway_rdb_read_replica.replica", "private_network.0.endpoint_id"),
-					resource.TestCheckNoResourceAttr("scaleway_rdb_read_replica.replica", "direct_access.0"),
+					resource.TestCheckResourceAttr("scaleway_rdb_read_replica.replica", "direct_access.#", "0"),
 				),
 			},
 		},
