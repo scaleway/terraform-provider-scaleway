@@ -184,8 +184,8 @@ func resourceScalewayRdbReadReplicaRead(ctx context.Context, d *schema.ResourceD
 	}
 
 	directAccess, privateNetwork := flattenReadReplicaEndpoints(rr.Endpoints)
-	_ = d.Set("private_network", privateNetwork)
 	_ = d.Set("direct_access", directAccess)
+	_ = d.Set("private_network", privateNetwork)
 
 	_ = d.Set("region", string(region))
 
