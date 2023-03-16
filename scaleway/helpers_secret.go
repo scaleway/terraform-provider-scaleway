@@ -25,6 +25,24 @@ func secretAPIWithRegion(d *schema.ResourceData, m interface{}) (*secret.API, sc
 	return api, region, nil
 }
 
+// secretAPIWithRegionAndProjectID returns a new Secret API, with region and projectID
+func secretAPIWithRegionAndProjectID(d *schema.ResourceData, m interface{}) (*secret.API, scw.Region, string, error) {
+	meta := m.(*Meta)
+	api := secret.NewAPI(meta.scwClient)
+
+	region, err := extractRegion(d, meta)
+	if err != nil {
+		return nil, "", "", err
+	}
+
+	projectID, _, err := extractProjectID(d, meta)
+	if err != nil {
+		return nil, "", "", err
+	}
+
+	return api, region, projectID, nil
+}
+
 // secretAPIWithRegionAndID returns a Secret API with locality and ID extracted from the state
 func secretAPIWithRegionAndID(m interface{}, id string) (*secret.API, scw.Region, string, error) {
 	meta := m.(*Meta)
