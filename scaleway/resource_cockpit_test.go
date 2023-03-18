@@ -34,6 +34,16 @@ func testSweepCockpit(_ string) error {
 				continue
 			}
 
+			_, err = cockpitAPI.WaitForCockpit(&cockpit.WaitForCockpitRequest{
+				ProjectID: project.ID,
+				Timeout:   scw.TimeDurationPtr(defaultCockpitTimeout),
+			})
+			if err != nil {
+				if !is404Error(err) {
+					return fmt.Errorf("failed to deactivate cockpit: %w", err)
+				}
+			}
+
 			_, err = cockpitAPI.DeactivateCockpit(&cockpit.DeactivateCockpitRequest{
 				ProjectID: project.ID,
 			})
