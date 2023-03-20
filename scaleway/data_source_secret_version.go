@@ -16,13 +16,6 @@ func dataSourceScalewaySecretVersion() *schema.Resource {
 
 	// Set 'Optional' schema elements
 	addOptionalFieldsToSchema(dsSchema, "region", "revision")
-
-	dsSchema["secret_version_id"] = &schema.Schema{
-		Type:          schema.TypeString,
-		Optional:      true,
-		Description:   "The ID of the secret version",
-		ConflictsWith: []string{"revision"},
-	}
 	dsSchema["secret_id"] = &schema.Schema{
 		Type:          schema.TypeString,
 		Optional:      true,
@@ -54,10 +47,11 @@ func datasourceSchemaFromResourceVersionSchema(ctx context.Context, d *schema.Re
 		return diag.FromErr(err)
 	}
 
-	var secretVersionID string
-	secretID, ok := d.GetOk("secret_id")
+	var secretVersionIDStr string
 	var payloadSecretRaw []byte
-	if !ok {
+
+	secretID, existSecretID := d.GetOk("secret_id")
+	if !existSecretID {
 		request := &secret.AccessSecretVersionByNameRequest{
 			Region:     region,
 			SecretName: d.Get("secret_name").(string),
@@ -69,7 +63,7 @@ func datasourceSchemaFromResourceVersionSchema(ctx context.Context, d *schema.Re
 			return diag.FromErr(err)
 		}
 
-		secretVersionID = newRegionalIDString(region, fmt.Sprintf("%s/%d", res.SecretID, res.Revision))
+		secretVersionIDStr = newRegionalIDString(region, fmt.Sprintf("%s/%d", res.SecretID, res.Revision))
 		_ = d.Set("secret_id", newRegionalIDString(region, res.SecretID))
 		payloadSecretRaw = res.Data
 	} else {
@@ -84,11 +78,11 @@ func datasourceSchemaFromResourceVersionSchema(ctx context.Context, d *schema.Re
 			return diag.FromErr(err)
 		}
 
-		secretVersionID = newRegionalIDString(region, fmt.Sprintf("%s/%d", res.SecretID, res.Revision))
+		secretVersionIDStr = newRegionalIDString(region, fmt.Sprintf("%s/%d", res.SecretID, res.Revision))
 		payloadSecretRaw = res.Data
 	}
 
-	d.SetId(secretVersionID)
+	d.SetId(secretVersionIDStr)
 	err = d.Set("data", base64Encoded(payloadSecretRaw))
 	if err != nil {
 		return diag.FromErr(err)
@@ -100,7 +94,7 @@ func datasourceSchemaFromResourceVersionSchema(ctx context.Context, d *schema.Re
 	}
 
 	if d.Id() == "" {
-		return diag.Errorf("secret version (%s) not found", secretVersionID)
+		return diag.Errorf("secret version (%s) not found", secretVersionIDStr)
 	}
 
 	return nil
