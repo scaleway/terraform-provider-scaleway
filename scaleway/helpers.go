@@ -450,6 +450,10 @@ func expandStringWithDefault(data interface{}, defaultValue string) string {
 func expandStrings(data interface{}) []string {
 	var stringSlice []string
 	for _, s := range data.([]interface{}) {
+		// zero-value is nil, ["foo", ""]
+		if s == nil {
+			s = ""
+		}
 		stringSlice = append(stringSlice, s.(string))
 	}
 	return stringSlice
@@ -461,6 +465,10 @@ func expandStringsPtr(data interface{}) *[]string {
 		return nil
 	}
 	for _, s := range data.([]interface{}) {
+		// zero-value is nil, ["foo", ""]
+		if s == nil {
+			s = ""
+		}
 		stringSlice = append(stringSlice, s.(string))
 	}
 	if stringSlice == nil {
@@ -477,6 +485,10 @@ func expandUpdatedStringsPtr(data interface{}) *[]string {
 		return &stringSlice
 	}
 	for _, s := range data.([]interface{}) {
+		// zero-value is nil, ["foo", ""]
+		if s == nil {
+			s = ""
+		}
 		stringSlice = append(stringSlice, s.(string))
 	}
 	return &stringSlice
