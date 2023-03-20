@@ -14,46 +14,72 @@ For more information, see [the documentation](https://developers.scaleway.com/en
 ### Basic
 
 ```hcl
-resource "scaleway_secret_version" "main" {
-  name        = "foo"
+resource "scaleway_secret" "main" {
+  name        = "fooii"
   description = "barr"
 }
 
-resource "scaleway_secret_version" "v1" {
-  name        = "version1"
+resource "scaleway_secret_version" "main" {
   description = "your description"
   secret_id   = scaleway_secret.main.id
   data        = "your_secret"
 }
 
-// Get info by secret ID
-data "scaleway_secret_version" "my_secret_version_by_id" {
-  secret_id = "11111111-1111-1111-1111-111111111111"
+data "scaleway_secret_version" "data_by_secret_id" {
+  secret_id  = scaleway_secret.main.id
+  revision   = "1"
+  depends_on = [scaleway_secret_version.main]
 }
 
-// Get info by secret Name
-data "scaleway_secret" "my_secret_version_by_name" {
-  name = "latest"
+data "scaleway_secret_version" "data_by_secret_name" {
+  secret_name = scaleway_secret.main.name
+  revision    = "1"
+  depends_on  = [scaleway_secret_version.main]
+}
+
+#Output Sensitive data
+output "scaleway_secret_access_payload" {
+  value = data.scaleway_secret_version.data_by_secret_name.data
+}
+
+#Output Sensitive data
+output "scaleway_secret_access_payload_by_id" {
+  value = data.scaleway_secret_version.data_by_secret_id.data
 }
 ```
 
-## Argument Reference
+## Arguments Reference
 
-- `name` - (Optional) The secret name.
-  Only one of `name` and `secret_id` should be specified.
+The following arguments are supported:
 
-- `secret_version_id` - (Optional) The secret id.
-  Only one of `name` and `secret_id` should be specified.
+- `secret_id` - (Optional) The Secret ID associated wit the secret version.
+  Only one of `secret_id` and `secret_name` should be specified.
 
-- `organization_id` - (Optional) The organization ID the Project is associated with.
-  If no default organization_id is set, one must be set explicitly in this datasource
+- `secret_name` - (Optional) The Name of Secret associated wit the secret version.
+  Only one of `secret_id` and `secret_name` should be specified.
 
-- `region` - (Defaults to [provider](../index.md#region) `region`) The [region](../guides/regions_and_zones.md#regions) in which the secret exists.
+- `revision` - The revision for this Secret Version.
 
-- `project_id` - (Optional. Defaults to [provider](../index.md#project_id) `project_id`) The ID of the
-  project the secret is associated with.
+- `region` - (Defaults to [provider](../index.md#region) `region`) The [region](../guides/regions_and_zones.md#regions)
+  in which the resource exists.
 
+## Data
+
+Note: This Data Source give you **access** to the secret payload encoded en base64.
+
+Be aware that this is a sensitive attribute. For more information,
+see [Sensitive Data in State](https://developer.hashicorp.com/terraform/language/state/sensitive-data).
+
+~> **Important:**  This property is sensitive and will not be displayed in the plan.
 
 ## Attributes Reference
 
-Exported attributes are the ones from `scaleway_secret` [resource](../resources/secret.md)
+In addition to all arguments above, the following attributes are exported:
+
+- `description` - (Optional) Description of the secret version (e.g. `my-new-description`).
+- `data` - The data payload of the secret version. more on the [data section](#data)
+- `status` - The status of the Secret Version.
+- `created_at` - Date and time of secret version's creation (RFC 3339 format).
+- `updated_at` - Date and time of secret version's last update (RFC 3339 format).
+
+Exported attributes are the ones from `scaleway_secret_version` [resource](../resources/secret_version.md)

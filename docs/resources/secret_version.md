@@ -32,7 +32,7 @@ resource "scaleway_secret_version" "v1" {
 The following arguments are supported:
 
 - `secret_id` - (Required) The Secret ID associated wit the secret version.
-- `data` - (Optional) The data payload of the secret version. Must be no larger than 64KiB. (e.g. `my-secret-version-payload`). more on the [data section](#data)
+- `data` - (Required) The data payload of the secret version. Must be no larger than 64KiB. (e.g. `my-secret-version-payload`). more on the [data section](#data)
 - `description` - (Optional) Description of the secret version (e.g. `my-new-description`).
 - `region` - (Defaults to [provider](../index.md#region) `region`) The [region](../guides/regions_and_zones.md#regions)
   in which the resource exists.
@@ -46,7 +46,6 @@ Updating `data` will force creating a new the secret version.
 Be aware that this is a sensitive attribute. For more information, see [Sensitive Data in State](https://developer.hashicorp.com/terraform/language/state/sensitive-data).
 
 ~> **Important:**  This property is sensitive and will not be displayed in the plan.
-
 
 ## Attributes Reference
 
