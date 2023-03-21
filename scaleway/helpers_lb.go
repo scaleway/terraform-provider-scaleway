@@ -391,7 +391,7 @@ func lbUpgradeV1SchemaType() cty.Type {
 }
 
 // lbUpgradeV1UpgradeFunc allow upgrade the from regional to a zoned resource.
-func lbUpgradeV1SchemaUpgradeFunc(ctx context.Context, rawState map[string]interface{}, meta interface{}) (map[string]interface{}, error) {
+func lbUpgradeV1SchemaUpgradeFunc(_ context.Context, rawState map[string]interface{}, _ interface{}) (map[string]interface{}, error) {
 	var err error
 	// element id: upgrade
 	ID, exist := rawState["id"]

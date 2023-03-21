@@ -684,7 +684,7 @@ func flattenMapStringStringPtr(m map[string]*string) interface{} {
 	return flattenedMap
 }
 
-func diffSuppressFuncDuration(k, oldValue, newValue string, d *schema.ResourceData) bool {
+func diffSuppressFuncDuration(_, oldValue, newValue string, _ *schema.ResourceData) bool {
 	if oldValue == newValue {
 		return true
 	}
@@ -696,7 +696,7 @@ func diffSuppressFuncDuration(k, oldValue, newValue string, d *schema.ResourceDa
 	return d1 == d2
 }
 
-func diffSuppressFuncTimeRFC3339(k, oldValue, newValue string, d *schema.ResourceData) bool {
+func diffSuppressFuncTimeRFC3339(_, oldValue, newValue string, _ *schema.ResourceData) bool {
 	if oldValue == newValue {
 		return true
 	}
@@ -708,17 +708,17 @@ func diffSuppressFuncTimeRFC3339(k, oldValue, newValue string, d *schema.Resourc
 	return t1.Equal(t2)
 }
 
-func diffSuppressFuncIgnoreCase(k, oldValue, newValue string, d *schema.ResourceData) bool {
+func diffSuppressFuncIgnoreCase(_, oldValue, newValue string, _ *schema.ResourceData) bool {
 	return strings.EqualFold(oldValue, newValue)
 }
 
-func diffSuppressFuncIgnoreCaseAndHyphen(k, oldValue, newValue string, d *schema.ResourceData) bool {
+func diffSuppressFuncIgnoreCaseAndHyphen(_, oldValue, newValue string, _ *schema.ResourceData) bool {
 	return strings.ReplaceAll(strings.ToLower(oldValue), "-", "_") == strings.ReplaceAll(strings.ToLower(newValue), "-", "_")
 }
 
 // diffSuppressFuncLocality is a SuppressDiffFunc to remove the locality from an ID when checking diff.
 // e.g. 2c1a1716-5570-4668-a50a-860c90beabf6 == fr-par-1/2c1a1716-5570-4668-a50a-860c90beabf6
-func diffSuppressFuncLocality(k, oldValue, newValue string, d *schema.ResourceData) bool {
+func diffSuppressFuncLocality(_, oldValue, newValue string, _ *schema.ResourceData) bool {
 	return expandID(oldValue) == expandID(newValue)
 }
 

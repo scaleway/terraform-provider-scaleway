@@ -496,7 +496,7 @@ func TransitionSCWStorageClassValues() []string {
 	}
 }
 
-func SuppressEquivalentPolicyDiffs(k, old, newP string, d *schema.ResourceData) bool {
+func SuppressEquivalentPolicyDiffs(k, old, newP string, _ *schema.ResourceData) bool {
 	tflog.Debug(context.Background(),
 		fmt.Sprintf("[DEBUG] suppress policy on key: %s, old: %s new: %s", k, old, newP))
 	if strings.TrimSpace(old) == "" && strings.TrimSpace(newP) == "" {
