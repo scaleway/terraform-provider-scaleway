@@ -25,7 +25,8 @@ resource "scaleway_tem_domain" "main" {
 The following arguments are supported:
 
 - `name` - (Required) The domain name, must not be used in another Transactional Email Domain.
-~> **Important** Updates to `name` will recreate the domain.
+
+~> **Important:** Updates to `name` will recreate the domain.
 
 - `accept_tos` - (Required) Acceptation of the [Term of Service](https://tem.s3.fr-par.scw.cloud/antispam_policy.pdf).
 
