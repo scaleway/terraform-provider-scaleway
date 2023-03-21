@@ -3,6 +3,7 @@ package scaleway
 import (
 	"context"
 	"fmt"
+	"strconv"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -51,7 +52,7 @@ func resourceScalewaySecretVersion() *schema.Resource {
 				Description: "Status of the secret version",
 			},
 			"revision": {
-				Type:        schema.TypeInt,
+				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The revision of secret version",
 			},
@@ -119,12 +120,13 @@ func resourceScalewaySecretVersionRead(ctx context.Context, d *schema.ResourceDa
 		return diag.FromErr(err)
 	}
 
+	revisionStr := strconv.Itoa(int(secretResponse.Revision))
+	_ = d.Set("revision", revisionStr)
 	_ = d.Set("secret_id", newRegionalIDString(region, id))
 	_ = d.Set("description", flattenStringPtr(secretResponse.Description))
 	_ = d.Set("created_at", flattenTime(secretResponse.CreatedAt))
 	_ = d.Set("updated_at", flattenTime(secretResponse.UpdatedAt))
 	_ = d.Set("status", secretResponse.Status.String())
-	_ = d.Set("revision", int(secretResponse.Revision))
 	_ = d.Set("region", string(region))
 
 	return nil
