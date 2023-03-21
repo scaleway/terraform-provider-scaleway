@@ -439,7 +439,7 @@ func resourceBucketACLUpdate(ctx context.Context, d *schema.ResourceData, meta i
 	return resourceBucketACLRead(ctx, d, meta)
 }
 
-func resourceBucketACLDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceBucketACLDelete(ctx context.Context, _ *schema.ResourceData, _ interface{}) diag.Diagnostics {
 	tflog.Warn(ctx, "[WARN] Cannot destroy Object Bucket ACL. Terraform will remove this resource from the state file, however resources may remain.")
 	return nil
 }

@@ -244,7 +244,7 @@ func validateLocalVolumeSizes(volumes map[string]*instance.VolumeServerTemplate,
 // On the api side, there are two possibles validation schemas for volumes and the validator will be chosen dynamically depending on the passed JSON request
 // - With an image (in that case the root volume can be skipped because it is taken from the image)
 // - Without an image (in that case, the root volume must be defined)
-func sanitizeVolumeMap(serverName string, volumes map[string]*instance.VolumeServerTemplate) map[string]*instance.VolumeServerTemplate {
+func sanitizeVolumeMap(volumes map[string]*instance.VolumeServerTemplate) map[string]*instance.VolumeServerTemplate {
 	m := make(map[string]*instance.VolumeServerTemplate)
 
 	for index, v := range volumes {
@@ -315,7 +315,7 @@ type privateNICsHandler struct {
 	zone           scw.Zone
 }
 
-func newPrivateNICHandler(ctx context.Context, api *instance.API, server string, zone scw.Zone) (*privateNICsHandler, error) {
+func newPrivateNICHandler(api *instance.API, server string, zone scw.Zone) (*privateNICsHandler, error) {
 	handler := &privateNICsHandler{
 		instanceAPI: api,
 		serverID:    server,

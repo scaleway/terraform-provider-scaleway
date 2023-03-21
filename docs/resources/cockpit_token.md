@@ -33,7 +33,7 @@ resource "scaleway_cockpit_token" "main" {
   project_id = data.scaleway_cockpit.main.project_id
   
   name = "my-awesome-token"
-  scopes = {
+  scopes {
     query_metrics = true
     write_metrics = false
 

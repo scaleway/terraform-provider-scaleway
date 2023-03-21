@@ -410,7 +410,7 @@ func resourceScalewayInstanceServerCreate(ctx context.Context, d *schema.Resourc
 	}
 
 	// Sanitize the volume map to respect API schemas
-	req.Volumes = sanitizeVolumeMap(req.Name, req.Volumes)
+	req.Volumes = sanitizeVolumeMap(req.Volumes)
 
 	res, err := instanceAPI.CreateServer(req, scw.WithContext(ctx))
 	if err != nil {
@@ -646,7 +646,7 @@ func resourceScalewayInstanceServerRead(ctx context.Context, d *schema.ResourceD
 		////
 		// Read server private networks
 		////
-		ph, err := newPrivateNICHandler(ctx, instanceAPI, id, zone)
+		ph, err := newPrivateNICHandler(instanceAPI, id, zone)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -870,7 +870,7 @@ func resourceScalewayInstanceServerUpdate(ctx context.Context, d *schema.Resourc
 	// Update server private network
 	////
 	if d.HasChanges("private_network") {
-		ph, err := newPrivateNICHandler(ctx, instanceAPI, id, zone)
+		ph, err := newPrivateNICHandler(instanceAPI, id, zone)
 		if err != nil {
 			diag.FromErr(err)
 		}
