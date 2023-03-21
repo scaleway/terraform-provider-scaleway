@@ -327,7 +327,7 @@ func flattenReadReplicaEndpoints(endpoints []*rdb.Endpoint) (directAccess, priva
 }
 
 // rdbPrivilegeV1SchemaUpgradeFunc allow upgrade the privilege ID on schema V1
-func rdbPrivilegeV1SchemaUpgradeFunc(ctx context.Context, rawState map[string]interface{}, m interface{}) (map[string]interface{}, error) {
+func rdbPrivilegeV1SchemaUpgradeFunc(_ context.Context, rawState map[string]interface{}, m interface{}) (map[string]interface{}, error) {
 	idRaw, exist := rawState["id"]
 	if !exist {
 		return nil, fmt.Errorf("upgrade: id not exist")

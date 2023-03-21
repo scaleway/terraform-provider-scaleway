@@ -481,7 +481,7 @@ func resourceScalewayK8SPoolDelete(ctx context.Context, d *schema.ResourceData, 
 	return nil
 }
 
-func resourceScalewayK8SPoolCustomDiff(ctx context.Context, diff *schema.ResourceDiff, i interface{}) error {
+func resourceScalewayK8SPoolCustomDiff(_ context.Context, diff *schema.ResourceDiff, _ interface{}) error {
 	if diff.HasChange("size") {
 		err := diff.SetNewComputed("nodes")
 		if err != nil {

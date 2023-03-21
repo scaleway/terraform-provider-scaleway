@@ -181,9 +181,9 @@ func dataSourceScalewayInstanceServersRead(ctx context.Context, d *schema.Resour
 			if err != nil {
 				diags = append(diags, diag.FromErr(fmt.Errorf("failed to read ipv6 netmask: %w", err))...)
 				continue
-			} else {
-				rawServer["ipv6_prefix_length"] = prefixLength
 			}
+
+			rawServer["ipv6_prefix_length"] = prefixLength
 		}
 
 		servers = append(servers, rawServer)

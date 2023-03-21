@@ -2,6 +2,7 @@ package scaleway
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -72,6 +73,7 @@ func waitForRegistryNamespaceDelete(ctx context.Context, api *registry.API, regi
 		registry.NamespaceStatusDeleting: {},
 	}
 
+	start := time.Now()
 	for {
 		ns, err := api.GetNamespace(&registry.GetNamespaceRequest{
 			Region:      region,
@@ -83,6 +85,10 @@ func waitForRegistryNamespaceDelete(ctx context.Context, api *registry.API, regi
 
 		if _, ok := terminalStatus[ns.Status]; ok {
 			return ns, nil
+		}
+
+		if time.Since(start) > timeout {
+			return nil, fmt.Errorf("timeout while waiting for namespace %s to be deleted", id)
 		}
 
 		select {
