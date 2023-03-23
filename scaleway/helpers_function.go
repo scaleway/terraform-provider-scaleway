@@ -199,15 +199,7 @@ func expandFunctionsSecrets(secretsRawMap interface{}) []*function.Secret {
 	return secrets
 }
 
-func isFunctionDomainResolved(ctx context.Context, functionAPI *function.API, hostname string, timeout time.Duration, functionID string, region scw.Region) bool {
-	fc, err := functionAPI.GetFunction(&function.GetFunctionRequest{
-		Region:     region,
-		FunctionID: functionID,
-	})
-	if err != nil {
-		return false
-	}
-
+func isFunctionDomainResolved(ctx context.Context, fc *function.Function, hostname string, timeout time.Duration) bool {
 	// Add a trailing dot to domain_name to follow cname format
 	return cnameResolver(ctx, timeout, hostname, fc.DomainName+".")
 }

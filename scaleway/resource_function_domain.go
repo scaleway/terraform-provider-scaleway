@@ -59,14 +59,14 @@ func resourceScalewayFunctionDomainCreate(ctx context.Context, d *schema.Resourc
 	}
 
 	functionID := expandRegionalID(d.Get("function_id").(string)).ID
-	_, err = waitForFunction(ctx, api, region, functionID, d.Timeout(schema.TimeoutCreate))
+	fc, err := waitForFunction(ctx, api, region, functionID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	hostname := d.Get("hostname").(string)
 
-	if !isFunctionDomainResolved(ctx, api, hostname, d.Timeout(schema.TimeoutCreate), functionID, region) {
+	if !isFunctionDomainResolved(ctx, fc, hostname, d.Timeout(schema.TimeoutCreate)) {
 		return diag.FromErr(fmt.Errorf("your reverse must resolve. Ensure the command 'dig +short %s' matches your function domain", hostname))
 	}
 

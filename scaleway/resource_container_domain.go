@@ -61,7 +61,12 @@ func resourceScalewayContainerDomainCreate(ctx context.Context, d *schema.Resour
 	hostname := d.Get("hostname").(string)
 	containerID := expandID(d.Get("container_id"))
 
-	if !isContainerDomainResolved(ctx, api, hostname, d.Timeout(schema.TimeoutCreate), containerID, region) {
+	ctnr, err := waitForContainer(ctx, api, containerID, region, d.Timeout(schema.TimeoutCreate))
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	if !isContainerDomainResolved(ctx, ctnr, hostname, d.Timeout(schema.TimeoutCreate)) {
 		return diag.FromErr(fmt.Errorf("your reverse must resolve. Ensure the command 'dig +short %s' matches your container domain", hostname))
 	}
 
