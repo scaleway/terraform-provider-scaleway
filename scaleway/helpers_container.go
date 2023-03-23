@@ -13,7 +13,7 @@ const (
 	defaultContainerNamespaceTimeout = 5 * time.Minute
 	defaultContainerCronTimeout      = 5 * time.Minute
 	defaultContainerTimeout          = 12*time.Minute + 30*time.Second
-	defaultContainerDomainTimeout    = 5 * time.Minute
+	defaultContainerDomainTimeout    = 10 * time.Minute
 	defaultContainerRetryInterval    = 5 * time.Second
 )
 
