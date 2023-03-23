@@ -183,15 +183,7 @@ func expandContainerSecrets(secretsRawMap interface{}) []*container.Secret {
 	return secrets
 }
 
-func isContainerDomainResolved(ctx context.Context, containerAPI *container.API, hostname string, timeout time.Duration, containerID string, region scw.Region) bool {
-	ctnr, err := containerAPI.GetContainer(&container.GetContainerRequest{
-		Region:      region,
-		ContainerID: containerID,
-	})
-	if err != nil {
-		return false
-	}
-
+func isContainerDomainResolved(ctx context.Context, ctnr *container.Container, hostname string, timeout time.Duration) bool {
 	// Add a trailing dot to domain_name to follow cname format
 	return cnameResolver(ctx, timeout, hostname, ctnr.DomainName+".")
 }
