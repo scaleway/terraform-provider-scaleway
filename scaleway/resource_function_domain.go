@@ -2,6 +2,7 @@ package scaleway
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -63,10 +64,16 @@ func resourceScalewayFunctionDomainCreate(ctx context.Context, d *schema.Resourc
 		return diag.FromErr(err)
 	}
 
+	hostname := d.Get("hostname").(string)
+
+	if !isFunctionDomainResolved(ctx, api, hostname, d.Timeout(schema.TimeoutCreate), functionID, region) {
+		return diag.FromErr(fmt.Errorf("your reverse must resolve. Ensure the command 'dig +short %s' matches your function domain", hostname))
+	}
+
 	req := &function.CreateDomainRequest{
 		Region:     region,
 		FunctionID: functionID,
-		Hostname:   d.Get("hostname").(string),
+		Hostname:   hostname,
 	}
 
 	domain, err := api.CreateDomain(req, scw.WithContext(ctx))
