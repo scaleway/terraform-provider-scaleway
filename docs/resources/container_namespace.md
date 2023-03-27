@@ -38,8 +38,6 @@ The following arguments are supported:
 
 - `secret_environment_variables` - The secret environment variables of the namespace.
 
-- `destroy_registry` - (Defaults to false). Destroy linked container registry on deletion.
-
 ## Attributes Reference
 
 In addition to all arguments above, the following attributes are exported:
