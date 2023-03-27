@@ -12,15 +12,38 @@ For more information consult the [documentation](https://www.scaleway.com/en/doc
 
 ## Example Usage
 
+### Activate Cockpit in the default project
+
 ```hcl
-// Create the cockpit in the default project
 resource "scaleway_cockpit" "main" {}
 ```
 
+### Activate Cockpit in a specific project
+
 ```hcl
-// Create the cockpit in a specific project
 resource "scaleway_cockpit" "main" {
   project_id = "11111111-1111-1111-1111-111111111111"
+}
+```
+
+### Use the Grafana Terraform provider
+
+```hcl
+resource "scaleway_cockpit" "main" {}
+
+resource "scaleway_cockpit_grafana_user" "main" {
+  project_id = scaleway_cockpit.main.project_id
+  login      = "example"
+  role       = "editor"
+}
+
+provider "grafana" {
+  url  = scaleway_cockpit.main.endpoints.0.grafana_url
+  auth = "${scaleway_cockpit_grafana_user.main.login}:${scaleway_cockpit_grafana_user.main.password}"
+}
+
+resource "grafana_folder" "test_folder" {
+  title = "Test Folder"
 }
 ```
 
