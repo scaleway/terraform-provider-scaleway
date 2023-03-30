@@ -8,6 +8,8 @@ description: |-
 
 Manages user SSH keys to access servers provisioned on Scaleway.
 
+~> **Important:**  The resource `scaleway_account_ssh_key` has been deprecated and will no longer be supported. Instead, use `scaleway_iam_ssh_key`.
+
 ## Example Usage
 
 ```hcl
