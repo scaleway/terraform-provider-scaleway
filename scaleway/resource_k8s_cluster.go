@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/scaleway/scaleway-sdk-go/api/k8s/v1"
@@ -157,6 +158,15 @@ func resourceScalewayK8SCluster() *schema.Resource {
 				Required:    true,
 				Description: "Delete additional resources like block volumes and loadbalancers on cluster deletion",
 			},
+			"private_network_id": {
+				Type:             schema.TypeString,
+				Optional:         true,
+				Computed:         true,
+				ForceNew:         true,
+				Description:      "The ID of the cluster's private network",
+				ValidateFunc:     validationUUIDorUUIDWithLocality(),
+				DiffSuppressFunc: diffSuppressFuncLocality,
+			},
 			"region":          regionSchema(),
 			"organization_id": organizationIDSchema(),
 			"project_id":      projectIDSchema(),
@@ -222,18 +232,21 @@ func resourceScalewayK8SCluster() *schema.Resource {
 				Description: "The status of the cluster",
 			},
 		},
-		CustomizeDiff: func(ctx context.Context, diff *schema.ResourceDiff, i interface{}) error {
-			autoUpgradeEnable, okAutoUpgradeEnable := diff.GetOkExists("auto_upgrade.0.enable")
+		CustomizeDiff: customdiff.All(
+			func(ctx context.Context, diff *schema.ResourceDiff, i interface{}) error {
+				autoUpgradeEnable, okAutoUpgradeEnable := diff.GetOkExists("auto_upgrade.0.enable")
 
-			version := diff.Get("version").(string)
-			versionIsOnlyMinor := len(strings.Split(version, ".")) == 2
+				version := diff.Get("version").(string)
+				versionIsOnlyMinor := len(strings.Split(version, ".")) == 2
 
-			if okAutoUpgradeEnable && versionIsOnlyMinor != autoUpgradeEnable.(bool) {
-				return fmt.Errorf("minor version x.y must be used with auto upgrade enabled")
-			}
+				if okAutoUpgradeEnable && versionIsOnlyMinor != autoUpgradeEnable.(bool) {
+					return fmt.Errorf("minor version x.y must be used with auto upgrade enabled")
+				}
 
-			return nil
-		},
+				return nil
+			},
+			customizeDiffLocalityCheck("private_network_id"),
+		),
 	}
 }
 
@@ -270,6 +283,8 @@ func resourceScalewayK8SClusterCreate(ctx context.Context, d *schema.ResourceDat
 		AdmissionPlugins:  expandStrings(d.Get("admission_plugins")),
 		ApiserverCertSans: expandStrings(d.Get("apiserver_cert_sans")),
 	}
+
+	// Autoscaler configuration
 
 	autoscalerReq := &k8s.CreateClusterRequestAutoscalerConfig{}
 
@@ -315,6 +330,8 @@ func resourceScalewayK8SClusterCreate(ctx context.Context, d *schema.ResourceDat
 
 	req.AutoscalerConfig = autoscalerReq
 
+	// OpenIDConnect configuration
+
 	createClusterRequestOpenIDConnectConfig := &k8s.CreateClusterRequestOpenIDConnectConfig{}
 
 	if issuerURL, ok := d.GetOk("open_id_connect_config.0.issuer_url"); ok {
@@ -349,6 +366,8 @@ func resourceScalewayK8SClusterCreate(ctx context.Context, d *schema.ResourceDat
 		createClusterRequestOpenIDConnectConfig.RequiredClaim = scw.StringsPtr(expandStrings(requiredClaim))
 	}
 
+	// Auto-upgrade configuration
+
 	autoUpgradeEnable, okAutoUpgradeEnable := d.GetOkExists("auto_upgrade.0.enable")
 	autoUpgradeStartHour, okAutoUpgradeStartHour := d.GetOkExists("auto_upgrade.0.maintenance_window_start_hour")
 	autoUpgradeDay, okAutoUpgradeDay := d.GetOk("auto_upgrade.0.maintenance_window_day")
@@ -375,6 +394,8 @@ func resourceScalewayK8SClusterCreate(ctx context.Context, d *schema.ResourceDat
 		}
 	}
 
+	// K8S Version
+
 	version := d.Get("version").(string)
 	versionIsOnlyMinor := len(strings.Split(version, ".")) == 2
 
@@ -390,6 +411,14 @@ func resourceScalewayK8SClusterCreate(ctx context.Context, d *schema.ResourceDat
 	}
 
 	req.Version = version
+
+	// Private network configuration
+
+	if pnID, ok := d.GetOk("private_network_id"); ok {
+		req.PrivateNetworkID = scw.StringPtr(expandZonedID(pnID.(string)).ID)
+	}
+
+	// Cluster creation
 
 	res, err := k8sAPI.CreateCluster(req, scw.WithContext(ctx))
 	if err != nil {
@@ -461,6 +490,11 @@ func resourceScalewayK8SClusterRead(ctx context.Context, d *schema.ResourceData,
 	_ = d.Set("autoscaler_config", clusterAutoscalerConfigFlatten(cluster))
 	_ = d.Set("open_id_connect_config", clusterOpenIDConnectConfigFlatten(cluster))
 	_ = d.Set("auto_upgrade", clusterAutoUpgradeFlatten(cluster))
+
+	// private_network
+	if cluster.PrivateNetworkID != nil {
+		_ = d.Set("private_network_id", cluster.PrivateNetworkID)
+	}
 
 	////
 	// Read kubeconfig

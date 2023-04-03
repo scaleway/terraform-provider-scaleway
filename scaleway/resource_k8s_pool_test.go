@@ -302,16 +302,18 @@ func TestAccScalewayK8SCluster_PoolSize(t *testing.T) {
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
 
+	latestK8SVersionMinor := testAccScalewayK8SClusterGetLatestK8SVersionMinor(tt)
+
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheckScalewayK8SClusterDestroy(tt),
 		Steps: []resource.TestStep{
 			{
-				Config: `
+				Config: fmt.Sprintf(`
 				resource "scaleway_k8s_cluster" "cluster" {
 				  name    = "cluster"
-				  version = "1.23"
+				  version = "%s"
 				  cni     = "cilium"
 				  delete_additional_resources = true
 				  auto_upgrade {
@@ -329,13 +331,13 @@ func TestAccScalewayK8SCluster_PoolSize(t *testing.T) {
 				  autoscaling         = false
 				  autohealing         = true
 				  wait_for_pool_ready = true
-				}`,
+				}`, latestK8SVersionMinor),
 			},
 			{
-				Config: `
+				Config: fmt.Sprintf(`
 				resource "scaleway_k8s_cluster" "cluster" {
 				  name    = "cluster"
-				  version = "1.23"
+				  version = "%s"
 				  cni     = "cilium"
 				  auto_upgrade {
 				  enable = true
@@ -353,7 +355,7 @@ func TestAccScalewayK8SCluster_PoolSize(t *testing.T) {
 				  autoscaling         = false
 				  autohealing         = true
 				  wait_for_pool_ready = true
-				}`,
+				}`, latestK8SVersionMinor),
 				PlanOnly:           true,
 				ExpectNonEmptyPlan: true,
 			},

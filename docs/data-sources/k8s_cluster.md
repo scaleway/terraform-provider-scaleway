@@ -100,6 +100,8 @@ In addition to all above arguments, the following attributes are exported:
 
 - `admission_plugins` - The list of [admission plugins](https://kubernetes.io/docs/reference/access-authn-authz/admission-controllers/) enabled on the cluster.
 
+- `private_network_id` - The ID of the private network of the cluster.
+
 - `region` - The [region](../guides/regions_and_zones.md#regions) in which the cluster is.
 
 - `organization_id` - The ID of the organization the cluster is associated with.
