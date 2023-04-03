@@ -59,6 +59,11 @@ func TestAccScalewayFlexibleIP_Basic(t *testing.T) {
 					testAccCheckScalewayFlexibleIPExists(tt, "scaleway_flexible_ip.main"),
 				),
 			},
+			{
+				ResourceName:      "scaleway_flexible_ip.main",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
 		},
 	})
 }
