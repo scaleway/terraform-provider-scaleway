@@ -1,4 +1,5 @@
 ---
+subcategory: "Databases"
 layout: "scaleway"
 page_title: "Scaleway: scaleway_rdb_privilege"
 description: |-

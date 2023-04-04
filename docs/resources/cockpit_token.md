@@ -1,4 +1,5 @@
 ---
+subcategory: "Cockpit"
 page_title: "Scaleway: scaleway_cockpit_token"
 description: |-
     Manages Scaleway Cockpit Tokens.

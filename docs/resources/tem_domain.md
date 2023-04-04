@@ -1,4 +1,5 @@
 ---
+subcategory: "Transactional Email"
 page_title: "Scaleway: scaleway_tem_domain"
 description: |-
   Manages Scaleway Transactional Email Domains.

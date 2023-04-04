@@ -1,4 +1,5 @@
 ---
+subcategory: "Databases"
 page_title: "Scaleway: scaleway_rdb_read_replica"
 description: |-
 Manages Scaleway Database read replicas.

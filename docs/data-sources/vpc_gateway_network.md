@@ -1,4 +1,5 @@
 ---
+subcategory: "VPC"
 page_title: "Scaleway: scaleway_vpc_gateway_network"
 description: |-
 Get information about Scaleway VPC Gateway Networks.

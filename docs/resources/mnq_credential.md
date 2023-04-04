@@ -1,4 +1,5 @@
 ---
+subcategory: "Messaging and Queuing"
 page_title: "Scaleway: scaleway_mnq_credential"
 description: |-
 Manages Scaleway Messaging and Queuing Credential.

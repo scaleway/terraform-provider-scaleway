@@ -1,4 +1,5 @@
 ---
+subcategory: "Databases"
 page_title: "Scaleway: scaleway_rdb_acl"
 description: |-
   Manages Scaleway Database ACL rules.

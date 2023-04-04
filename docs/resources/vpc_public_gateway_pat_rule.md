@@ -1,4 +1,5 @@
 ---
+subcategory: "VPC"
 page_title: "Scaleway: scaleway_vpc_public_gateway_pat_rule"
 description: |-
 Manages Scaleway VPC Public Gateways PAT rules.

@@ -1,4 +1,5 @@
 ---
+subcategory: "IAM"
 page_title: "Scaleway: scaleway_iam_user"
 description: |-
 Get information on an existing IAM user.

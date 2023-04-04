@@ -1,4 +1,5 @@
 ---
+subcategory: "VPC"
 page_title: "Scaleway: scaleway_vpc_public_gateway_ip_reverse_dns"
 description: |-
 Manages Scaleway VPC Public Gateways IPs reverse DNS.

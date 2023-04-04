@@ -1,4 +1,5 @@
 ---
+subcategory: "IAM"
 page_title: "Scaleway: scaleway_iam_application"
 description: |-
 Manages Scaleway IAM Applications.

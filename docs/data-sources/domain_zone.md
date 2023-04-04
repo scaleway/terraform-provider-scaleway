@@ -1,4 +1,5 @@
 ---
+subcategory: "Domains and DNS"
 page_title: "Scaleway: scaleway_domain_zone"
 description: |-
   Gets information about a domain zone.

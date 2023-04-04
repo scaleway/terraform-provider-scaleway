@@ -1,4 +1,5 @@
 ---
+subcategory: "Instances"
 page_title: "Scaleway: scaleway_instance_servers"
 description: |-
 Gets information about multiple Instance Servers.

@@ -1,4 +1,5 @@
 ---
+subcategory: "Instances"
 page_title: "Scaleway: scaleway_instance_ip"
 description: |-
   Manages Scaleway Compute Instance IPs.

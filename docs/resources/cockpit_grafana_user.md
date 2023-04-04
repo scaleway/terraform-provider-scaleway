@@ -1,4 +1,5 @@
 ---
+subcategory: "Cockpit"
 page_title: "Scaleway: scaleway_cockpit_grafana_user"
 description: |-
     Manages Scaleway Cockpit Grafana Users.
