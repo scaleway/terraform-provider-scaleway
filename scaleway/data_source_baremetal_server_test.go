@@ -32,7 +32,7 @@ func TestAccScalewayDataSourceBaremetalServer_Basic(t *testing.T) {
 						name = "EM-B112X-SSD"
 					}
 
-					resource "scaleway_account_ssh_key" "main" {
+					resource "scaleway_iam_ssh_key" "main" {
 						name       = "%s"
 						public_key = "%s"
 					}
@@ -44,7 +44,7 @@ func TestAccScalewayDataSourceBaremetalServer_Basic(t *testing.T) {
 						offer       = data.scaleway_baremetal_offer.my_offer.offer_id
 						os          = data.scaleway_baremetal_os.my_os.os_id
 					
-						ssh_key_ids = [ scaleway_account_ssh_key.main.id ]
+						ssh_key_ids = [ scaleway_iam_ssh_key.main.id ]
 					}
 				`, SSHKeyName, SSHKeyBaremetal, name),
 			},
@@ -61,7 +61,7 @@ func TestAccScalewayDataSourceBaremetalServer_Basic(t *testing.T) {
 						name = "EM-B112X-SSD"
 					}
 
-					resource "scaleway_account_ssh_key" "main" {
+					resource "scaleway_iam_ssh_key" "main" {
 						name       = "%s"
 						public_key = "%s"
 					}
@@ -73,7 +73,7 @@ func TestAccScalewayDataSourceBaremetalServer_Basic(t *testing.T) {
 						offer       = data.scaleway_baremetal_offer.my_offer.offer_id
 						os          = data.scaleway_baremetal_os.my_os.os_id
 					
-						ssh_key_ids = [ scaleway_account_ssh_key.main.id ]
+						ssh_key_ids = [ scaleway_iam_ssh_key.main.id ]
 					}
 
 					data "scaleway_baremetal_server" "by_name" {

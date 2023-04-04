@@ -137,7 +137,7 @@ func TestAccScalewayFlexibleIP_CreateAndAttachToBaremetalServer(t *testing.T) {
 							name = "EM-B112X-SSD"
 						}				
 
-						resource "scaleway_account_ssh_key" "main" {
+						resource "scaleway_iam_ssh_key" "main" {
 							name 	   = "%s"
 							public_key = "%s"
 						}
@@ -148,7 +148,7 @@ func TestAccScalewayFlexibleIP_CreateAndAttachToBaremetalServer(t *testing.T) {
 							offer       = data.scaleway_baremetal_offer.my_offer.offer_id
 							os          = data.scaleway_baremetal_os.by_id.os_id
 
-							ssh_key_ids = [ scaleway_account_ssh_key.main.id ]
+							ssh_key_ids = [ scaleway_iam_ssh_key.main.id ]
 						}
 					`, SSHKeyName, SSHKeyFlexibleIP, name),
 			},
@@ -165,7 +165,7 @@ func TestAccScalewayFlexibleIP_CreateAndAttachToBaremetalServer(t *testing.T) {
 							name = "EM-B112X-SSD"
 						}				
 
-						resource "scaleway_account_ssh_key" "main" {
+						resource "scaleway_iam_ssh_key" "main" {
 							name 	   = "%s"
 							public_key = "%s"
 						}
@@ -176,7 +176,7 @@ func TestAccScalewayFlexibleIP_CreateAndAttachToBaremetalServer(t *testing.T) {
 							offer       = data.scaleway_baremetal_offer.my_offer.offer_id
 							os          = data.scaleway_baremetal_os.by_id.os_id
 
-							ssh_key_ids = [ scaleway_account_ssh_key.main.id ]
+							ssh_key_ids = [ scaleway_iam_ssh_key.main.id ]
 						}
 
 						resource "scaleway_flexible_ip" "base" {
@@ -231,7 +231,7 @@ func TestAccScalewayFlexibleIP_AttachAndDetachFromBaremetalServer(t *testing.T) 
 							name = "EM-B112X-SSD"
 						}		
 
-						resource "scaleway_account_ssh_key" "main" {
+						resource "scaleway_iam_ssh_key" "main" {
 							name 	   = "%s"
 							public_key = "%s"
 						}
@@ -242,7 +242,7 @@ func TestAccScalewayFlexibleIP_AttachAndDetachFromBaremetalServer(t *testing.T) 
 							offer       = data.scaleway_baremetal_offer.my_offer.offer_id
 							os          = data.scaleway_baremetal_os.by_id.os_id
 
-							ssh_key_ids = [ scaleway_account_ssh_key.main.id ]
+							ssh_key_ids = [ scaleway_iam_ssh_key.main.id ]
 						}
 					`, SSHKeyName, SSHKeyFlexibleIP, name),
 			},
@@ -259,7 +259,7 @@ func TestAccScalewayFlexibleIP_AttachAndDetachFromBaremetalServer(t *testing.T) 
 							name = "EM-B112X-SSD"
 						}		
 
-						resource "scaleway_account_ssh_key" "main" {
+						resource "scaleway_iam_ssh_key" "main" {
 							name 	   = "%s"
 							public_key = "%s"
 						}
@@ -270,7 +270,7 @@ func TestAccScalewayFlexibleIP_AttachAndDetachFromBaremetalServer(t *testing.T) 
 							offer       = data.scaleway_baremetal_offer.my_offer.offer_id
 							os          = data.scaleway_baremetal_os.by_id.os_id
 
-							ssh_key_ids = [ scaleway_account_ssh_key.main.id ]
+							ssh_key_ids = [ scaleway_iam_ssh_key.main.id ]
 						}
 
 						resource "scaleway_flexible_ip" "base" {

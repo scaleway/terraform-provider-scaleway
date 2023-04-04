@@ -576,7 +576,7 @@ func TestAccScalewayProvider_SSHKeys(t *testing.T) {
 				},
 			}
 		}(),
-		CheckDestroy: testAccCheckScalewayAccountSSHKeyDestroy(tt),
+		CheckDestroy: testAccCheckScalewayIamSSHKeyDestroy(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
@@ -593,8 +593,8 @@ func TestAccScalewayProvider_SSHKeys(t *testing.T) {
 					}
 				`, SSHKeyName, SSHKey),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayAccountSSHKeyExists(tt, "scaleway_account_ssh_key.prod"),
-					testAccCheckScalewayAccountSSHKeyExists(tt, "scaleway_account_ssh_key.dev"),
+					testAccCheckScalewayIamSSHKeyExists(tt, "scaleway_account_ssh_key.prod"),
+					testAccCheckScalewayIamSSHKeyExists(tt, "scaleway_account_ssh_key.dev"),
 				),
 			},
 		},
@@ -633,7 +633,7 @@ func TestAccScalewayProvider_InstanceIPZones(t *testing.T) {
 				},
 			}
 		}(),
-		CheckDestroy: testAccCheckScalewayAccountSSHKeyDestroy(tt),
+		CheckDestroy: testAccCheckScalewayIamSSHKeyDestroy(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
