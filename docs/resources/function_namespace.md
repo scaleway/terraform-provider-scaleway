@@ -1,4 +1,5 @@
 ---
+subcategory: "Functions"
 page_title: "Scaleway: scaleway_function_namespace"
 description: |-
   Manages Scaleway Function Namespaces.

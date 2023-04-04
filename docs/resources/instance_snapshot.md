@@ -1,4 +1,5 @@
 ---
+subcategory: "Instances"
 page_title: "Scaleway: scaleway_instance_snapshot"
 description: |-
 Manages Scaleway Instance Snapshots.

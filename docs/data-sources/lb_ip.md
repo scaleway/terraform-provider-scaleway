@@ -1,4 +1,5 @@
 ---
+subcategory: "Load Balancers"
 page_title: "Scaleway: scaleway_lb_ip"
 description: |-
   Gets information about a Load Balancer IP.

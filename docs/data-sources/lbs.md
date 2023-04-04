@@ -1,4 +1,5 @@
 ---
+subcategory: "Load Balancers"
 page_title: "Scaleway: scaleway_lbs"
 description: |-
 Gets information about multiple Load Balancers.

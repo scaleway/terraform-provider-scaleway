@@ -1,4 +1,5 @@
 ---
+subcategory: "Object Storage"
 page_title: "Scaleway: scaleway_object_bucket"
 description: |-
   Manages Scaleway object storage buckets.

@@ -1,4 +1,5 @@
 ---
+subcategory: "Databases"
 page_title: "Scaleway: scaleway_rdb_instance"
 description: |-
   Manages Scaleway Database Instances.

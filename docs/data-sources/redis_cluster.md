@@ -1,4 +1,5 @@
 ---
+subcategory: "Redis"
 layout: "scaleway"
 page_title: "Scaleway: scaleway_redis_instance"
 description: |-

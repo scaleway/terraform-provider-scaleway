@@ -1,4 +1,5 @@
 ---
+subcategory: "Load Balancers"
 page_title: "Scaleway: scaleway_lb_backends"
 description: |-
 Gets information about multiple Load Balancer Backends.

@@ -1,4 +1,5 @@
 ---
+subcategory: "Containers"
 page_title: "Scaleway: scaleway_container_domain"
 description: |-
     Manages Scaleway Containers Domains Bindings.

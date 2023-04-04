@@ -1,4 +1,5 @@
 ---
+subcategory: "Databases"
 page_title: "Scaleway: scaleway_rdb_database_backup"
 description: |-
 Manages Scaleway RDB Database Backup.

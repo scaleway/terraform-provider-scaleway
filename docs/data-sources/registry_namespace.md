@@ -1,4 +1,5 @@
 ---
+subcategory: "Container Registry"
 page_title: "Scaleway: scaleway_registry_namespace"
 description: |-
   Gets information about a registry namespace.

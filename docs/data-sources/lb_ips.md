@@ -1,4 +1,5 @@
 ---
+subcategory: "Load Balancers"
 page_title: "Scaleway: scaleway_lb_ips"
 description: |-
 Gets information about multiple Load Balancer IPs.

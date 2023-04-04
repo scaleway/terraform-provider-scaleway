@@ -1,4 +1,5 @@
 ---
+subcategory: "Load Balancers"
 page_title: "Scaleway: scaleway_lb_frontend"
 description: |-
 Manages Scaleway Load-Balancer Frontends.

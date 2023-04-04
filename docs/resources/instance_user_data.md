@@ -1,4 +1,5 @@
 ---
+subcategory: "Instances"
 page_title: "Scaleway: scaleway_instance_user_data"
 description: |-
 Manages Scaleway Compute Instance User Data.

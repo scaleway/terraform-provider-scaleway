@@ -1,4 +1,5 @@
 ---
+subcategory: "Account"
 page_title: "Scaleway: scaleway_account_ssh_key"
 description: |-
   Get information on a Scaleway SSH key.

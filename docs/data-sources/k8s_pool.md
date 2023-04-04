@@ -1,4 +1,5 @@
 ---
+subcategory: "Kubernetes"
 page_title: "Scaleway: scaleway_k8s_pool"
 description: |-
   Gets information about a Kubernetes Cluster's Pool.

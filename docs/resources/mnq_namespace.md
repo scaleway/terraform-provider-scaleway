@@ -1,4 +1,5 @@
 ---
+subcategory: "Messaging and Queuing"
 page_title: "Scaleway: scaleway_mnq_namespace"
 description: |-
 Manages Scaleway Messaging and Queuing Namespaces.

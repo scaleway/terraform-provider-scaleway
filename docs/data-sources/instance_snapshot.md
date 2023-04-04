@@ -1,4 +1,5 @@
 ---
+subcategory: "Instances"
 page_title: "Scaleway: scaleway_instance_snapshot"
 description: |-
   Gets information about an instance snapshot.

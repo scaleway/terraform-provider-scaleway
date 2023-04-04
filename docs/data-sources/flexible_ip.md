@@ -1,4 +1,5 @@
 ---
+subcategory: "Instances"
 page_title: "Scaleway: scaleway_flexible_ip"
 description: |-
   Gets information about a Flexible IP.
