@@ -114,9 +114,14 @@ NATS Configuration Context "example"
   NATS [JetStream Provider](https://registry.terraform.io/providers/nats-io/jetstream/latest/docs):
 
 ```hcl
+resource "scaleway_mnq_credential" "main" {
+ # Your config
+}
+
 provider "jetstream" {
-  servers     = scaleway_mnq_namespace.manin.endpoint
+  servers     = scaleway_mnq_namespace.main.endpoint
   credentials = "path/ngs_stream_admin.creds"
-  # credential_data = "<SCW_CREDENTIAL_AS_STRING>"
+  # credential_data  = "<SCW_CREDENTIAL_AS_STRING>"
+  # credential_data  = scaleway_mnq_credential.main.nats_credentials[0].content
 }
 ```
