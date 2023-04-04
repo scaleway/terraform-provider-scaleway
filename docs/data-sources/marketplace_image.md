@@ -1,5 +1,5 @@
 ---
-subcategory: "Instance"
+subcategory: "Instances"
 page_title: "Scaleway: scaleway_marketplace_image"
 description: |-
   Gets local image ID of an image from its label name.
