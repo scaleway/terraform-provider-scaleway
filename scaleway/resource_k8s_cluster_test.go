@@ -2,6 +2,7 @@ package scaleway
 
 import (
 	"fmt"
+	"strings"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -402,7 +403,7 @@ func TestAccScalewayK8SCluster_PrivateNetwork(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayK8SClusterExists(tt, "scaleway_k8s_cluster.private_network"),
 					testAccCheckScalewayVPCPrivateNetworkExists(tt, "scaleway_vpc_private_network.private_network"),
-					resource.TestCheckResourceAttrPair("scaleway_k8s_cluster.private_network", "private_network_id", "scaleway_vpc_private_network.private_network", "id"),
+					testAccCheckScalewayK8sClusterPrivateNetworkID(tt, "scaleway_k8s_cluster.private_network", "scaleway_vpc_private_network.private_network"),
 				),
 			},
 		},
@@ -482,6 +483,49 @@ func testAccCheckScalewayK8SClusterExists(tt *TestTools, n string) resource.Test
 		})
 		if err != nil {
 			return err
+		}
+
+		return nil
+	}
+}
+
+func testAccCheckScalewayK8sClusterPrivateNetworkID(tt *TestTools, clusterName, pnName string) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		rs, ok := s.RootModule().Resources[clusterName]
+		if !ok {
+			return fmt.Errorf("resource not found: %s", clusterName)
+		}
+
+		k8sAPI, region, clusterID, err := k8sAPIWithRegionAndID(tt.Meta, rs.Primary.ID)
+		if err != nil {
+			return err
+		}
+
+		cluster, err := k8sAPI.GetCluster(&k8s.GetClusterRequest{
+			Region:    region,
+			ClusterID: clusterID,
+		})
+		if err != nil {
+			return err
+		}
+
+		clusterPNID := cluster.PrivateNetworkID
+
+		rs, ok = s.RootModule().Resources[pnName]
+		if !ok {
+			return fmt.Errorf("resource not found: %s", pnName)
+		}
+
+		_, zone, pnID, err := vpcAPIWithZoneAndID(tt.Meta, rs.Primary.ID)
+		if err != nil {
+			return err
+		}
+
+		if clusterPNID == nil {
+			return fmt.Errorf("expected %s private_network_id to be %s, got nil", clusterName, strings.TrimLeft(pnID, zone.String()+"/"))
+		}
+		if *clusterPNID != strings.TrimLeft(pnID, zone.String()+"/") {
+			return fmt.Errorf("expected %s private_network_id to be %s, got %s", clusterName, strings.TrimLeft(pnID, zone.String()+"/"), *clusterPNID)
 		}
 
 		return nil
