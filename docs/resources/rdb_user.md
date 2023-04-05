@@ -1,8 +1,6 @@
 ---
 subcategory: "Databases"
 page_title: "Scaleway: scaleway_rdb_user"
-description: |-
-  Manages Scaleway Database Users.
 ---
 
 # scaleway_rdb_user

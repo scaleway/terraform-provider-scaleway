@@ -1,8 +1,6 @@
 ---
 subcategory: "Databases"
 page_title: "Scaleway: scaleway_rdb_privilege"
-description: |-
-  Manages Scaleway RDB Database Privilege.
 ---
 
 # scaleway_rdb_privilege

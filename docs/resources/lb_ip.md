@@ -1,8 +1,6 @@
 ---
 subcategory: "Load Balancers"
 page_title: "Scaleway: scaleway_lb_ip"
-description: |-
-  Manages Scaleway Load-Balancers IPs.
 ---
 
 # scaleway_lb_ip

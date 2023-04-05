@@ -1,8 +1,6 @@
 ---
 subcategory: "Transactional Email"
 page_title: "Scaleway: scaleway_tem_domain"
-description: |-
-  Gets information about a transactional email domain.
 ---
 
 # scaleway_tem_domain

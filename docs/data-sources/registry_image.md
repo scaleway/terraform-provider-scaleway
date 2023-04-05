@@ -1,8 +1,6 @@
 ---
 subcategory: "Container Registry"
 page_title: "Scaleway: scaleway_registry_image"
-description: |-
-  Gets information about a registry image.
 ---
 
 # scaleway_registry_image

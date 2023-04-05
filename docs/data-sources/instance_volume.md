@@ -1,8 +1,6 @@
 ---
 subcategory: "Instances"
 page_title: "Scaleway: scaleway_instance_volume"
-description: |-
-  Gets information about an instance volume.
 ---
 
 # scaleway_instance_volume

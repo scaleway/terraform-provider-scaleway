@@ -1,8 +1,6 @@
 ---
 subcategory: "Instances"
 page_title: "Scaleway: scaleway_instance_ip"
-description: |-
-  Gets information about an instance IP.
 ---
 
 # scaleway_instance_ip

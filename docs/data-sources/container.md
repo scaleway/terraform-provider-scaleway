@@ -1,8 +1,6 @@
 ---
 subcategory: "Containers"
 page_title: "Scaleway: scaleway_container"
-description: |-
-    Gets information about a container.
 ---
 # scaleway_container
 

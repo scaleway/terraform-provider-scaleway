@@ -1,8 +1,6 @@
 ---
 subcategory: "Containers"
 page_title: "Scaleway: scaleway_container_token"
-description: |-
-  Manages Scaleway Container Tokens.
 ---
 
 # scaleway_container_token

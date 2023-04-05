@@ -1,8 +1,6 @@
 ---
 subcategory: "Kubernetes"
 page_title: "Scaleway: scaleway_k8s_cluster"
-description: |-
-  Gets information about a Kubernetes Cluster.
 ---
 
 # scaleway_k8s_cluster

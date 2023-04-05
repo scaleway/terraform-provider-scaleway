@@ -1,8 +1,6 @@
 ---
 subcategory: "Domains and DNS"
 page_title: "Scaleway: scaleway_domain_record"
-description: |-
-  Gets information about a domain record.
 ---
 
 # scaleway_domain_record

@@ -1,8 +1,6 @@
 ---
 subcategory: "Kubernetes"
 page_title: "Scaleway: scaleway_k8s_version"
-description: |-
-  Gets information about a Kubernetes version.
 ---
 
 # scaleway_k8s_version

@@ -1,8 +1,6 @@
 ---
 subcategory: "Load Balancers"
 page_title: "Scaleway: scaleway_lb_routes"
-description: |-
-  Gets information about multiple Load Balancer Routes.
 ---
 
 # scaleway_lb_routes

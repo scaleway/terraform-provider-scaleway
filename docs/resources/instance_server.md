@@ -1,8 +1,6 @@
 ---
 subcategory: "Instances"
 page_title: "Scaleway: scaleway_instance_server"
-description: |-
-  Manages Scaleway Compute Instance servers.
 ---
 
 # scaleway_instance_server

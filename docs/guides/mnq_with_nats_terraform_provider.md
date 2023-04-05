@@ -1,7 +1,5 @@
 ---
 page_title: "Using Scaleway Messaging and Queuing service with NATS Terraform provider"
-description: |-
-  Using Scaleway Messaging and Queuing service with NATS Terraform provider
 ---
 
 # How to use Scaleway Messaging and Queuing config

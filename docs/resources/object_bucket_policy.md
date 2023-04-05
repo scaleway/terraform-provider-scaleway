@@ -1,8 +1,6 @@
 ---
 subcategory: "Object Storage"
 page_title: "Scaleway: scaleway_object_bucket_policy"
-description: |-
-  Manages Scaleway object storage bucket policy.
 ---
 
 # scaleway_object_bucket

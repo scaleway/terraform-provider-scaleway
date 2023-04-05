@@ -2,8 +2,6 @@
 subcategory: "Databases"
 layout: "scaleway"
 page_title: "Scaleway: scaleway_rdb_privilege"
-description: |-
-  Gets information about the privilege on RDB database.
 ---
 
 # scaleway_rdb_privilege

@@ -1,8 +1,6 @@
 ---
 subcategory: "Domains and DNS"
 page_title: "Scaleway: scaleway_domain_zone"
-description: |-
-  Manages Scaleway Domain zones.
 ---
 
 # scaleway_domain_zone

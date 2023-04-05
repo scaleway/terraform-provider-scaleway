@@ -1,8 +1,6 @@
 ---
 subcategory: "Container Registry"
 page_title: "Scaleway: scaleway_registry_namespace"
-description: |-
-  Manages Scaleway Container Registries.
 ---
 
 # scaleway_registry_namespace

@@ -1,8 +1,6 @@
 ---
 subcategory: "VPC"
 page_title: "Scaleway: scaleway_vpc_public_gateway_ip"
-description: |-
-  Manages Scaleway VPC Public Gateways IP.
 ---
 
 # scaleway_vpc_public_gateway_ip

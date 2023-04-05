@@ -1,8 +1,6 @@
 ---
 subcategory: "Object Storage"
 page_title: "Scaleway: scaleway_object_bucket_lock_configuration"
-description: |-
-  Manages Scaleway lock on object storage buckets.
 ---
 
 # scaleway_object_bucket_lock_configuration

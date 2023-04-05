@@ -2,8 +2,6 @@
 subcategory: "Databases"
 layout: "scaleway"
 page_title: "Scaleway: scaleway_rdb_instance"
-description: |-
-  Gets information about an RDB instance.
 ---
 
 # scaleway_rdb_instance

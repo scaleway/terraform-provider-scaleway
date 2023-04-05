@@ -1,8 +1,6 @@
 ---
 subcategory: "Databases"
 page_title: "Scaleway: scaleway_rdb_database"
-description: |-
-  Manages Scaleway RDB Database.
 ---
 
 # scaleway_rdb_database

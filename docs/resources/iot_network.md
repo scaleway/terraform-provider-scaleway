@@ -2,8 +2,6 @@
 subcategory: "IoT Hub"
 layout: "scaleway"
 page_title: "Scaleway: scaleway_iot_network"
-description: |-
-  Manages Scaleway IoT Networks.
 ---
 
 # scaleway_iot_network

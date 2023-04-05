@@ -1,8 +1,6 @@
 ---
 subcategory: "Functions"
 page_title: "Scaleway: scaleway_function_token"
-description: |-
-  Manages Scaleway Function Tokens.
 ---
 
 # scaleway_function_token

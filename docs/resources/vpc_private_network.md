@@ -1,8 +1,6 @@
 ---
 subcategory: "VPC"
 page_title: "Scaleway: scaleway_vpc_private_network"
-description: |-
-  Manages Scaleway VPC Private Networks.
 ---
 
 # scaleway_vpc_private_network

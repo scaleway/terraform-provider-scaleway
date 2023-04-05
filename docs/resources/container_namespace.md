@@ -1,8 +1,6 @@
 ---
 subcategory: "Containers"
 page_title: "Scaleway: scaleway_container_namespace"
-description: |-
-  Manages Scaleway Container Namespaces.
 ---
 
 # scaleway_container_namespace

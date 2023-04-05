@@ -1,8 +1,6 @@
 ---
 subcategory: "Load Balancers"
 page_title: "Scaleway: scaleway_lb_backend"
-description: |-
-  Manages Scaleway Load-Balancer Backends.
 ---
 
 # scaleway_lb_backend
