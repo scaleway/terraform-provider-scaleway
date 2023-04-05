@@ -2,7 +2,7 @@
 subcategory: "IAM"
 page_title: "Scaleway: scaleway_iam_ssh_key"
 description: |-
-Get information on a Scaleway IAM SSH Key.
+  Get information on a Scaleway IAM SSH Key.
 ---
 
 # scaleway_iam_ssh_key

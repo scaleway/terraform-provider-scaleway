@@ -2,7 +2,7 @@
 subcategory: "Containers"
 page_title: "Scaleway: scaleway_container_namespace"
 description: |-
-Gets information about a container namespace.
+  Gets information about a container namespace.
 ---
 
 # scaleway_container_namespace

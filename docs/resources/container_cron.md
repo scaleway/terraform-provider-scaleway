@@ -2,7 +2,7 @@
 subcategory: "Containers"
 page_title: "Scaleway: scaleway_container_cron"
 description: |-
-Manages Scaleway Containers Triggers.
+  Manages Scaleway Containers Triggers.
 ---
 
 # scaleway_container_cron

@@ -3,7 +3,7 @@ subcategory: "IAM"
 layout: "scaleway"
 page_title: "Scaleway: scaleway_iam_application"
 description: |-
-Gets information about an existing IAM application.
+  Gets information about an existing IAM application.
 ---
 
 # scaleway_iam_application

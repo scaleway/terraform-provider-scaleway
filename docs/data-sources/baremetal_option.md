@@ -2,7 +2,7 @@
 subcategory: "Elastic Metal"
 page_title: "Scaleway: scaleway_baremetal_option"
 description: |-
-Gets information about a baremetal option.
+  Gets information about a baremetal option.
 ---
 
 # scaleway_baremetal_option

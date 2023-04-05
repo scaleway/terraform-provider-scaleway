@@ -2,7 +2,7 @@
 subcategory: "Load Balancers"
 page_title: "Scaleway: scaleway_lb_route"
 description: |-
-Manages Scaleway Load-Balancer Routes.
+  Manages Scaleway Load-Balancer Routes.
 ---
 
 # scaleway_lb_route

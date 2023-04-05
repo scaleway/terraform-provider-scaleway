@@ -2,7 +2,7 @@
 subcategory: "Load Balancers"
 page_title: "Scaleway: scaleway_lb"
 description: |-
-Gets information about a Load Balancer.
+  Gets information about a Load Balancer.
 ---
 
 # scaleway_lb

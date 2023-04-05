@@ -2,7 +2,7 @@
 subcategory: "Functions"
 page_title: "Scaleway: scaleway_function"
 description: |-
-Manages Scaleway Functions.
+  Manages Scaleway Functions.
 ---
 
 # scaleway_function

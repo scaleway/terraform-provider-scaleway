@@ -2,7 +2,7 @@
 subcategory: "Instances"
 page_title: "Scaleway: scaleway_instance_snapshot"
 description: |-
-Manages Scaleway Instance Snapshots.
+  Manages Scaleway Instance Snapshots.
 ---
 
 # scaleway_instance_snapshot

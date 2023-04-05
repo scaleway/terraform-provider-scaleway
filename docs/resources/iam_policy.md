@@ -2,7 +2,7 @@
 subcategory: "IAM"
 page_title: "Scaleway: scaleway_iam_policy"
 description: |-
-Manages Scaleway IAM Policies.
+  Manages Scaleway IAM Policies.
 ---
 
 # scaleway_iam_policy

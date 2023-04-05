@@ -2,7 +2,7 @@
 subcategory: "Functions"
 page_title: "Scaleway: scaleway_function_cron"
 description: |-
-Manages Scaleway Functions Triggers.
+  Manages Scaleway Functions Triggers.
 ---
 
 # scaleway_function_cron

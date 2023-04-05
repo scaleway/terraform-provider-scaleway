@@ -3,7 +3,7 @@ subcategory: "Databases"
 layout: "scaleway"
 page_title: "Scaleway: scaleway_rdb_database_backup"
 description: |-
-Gets information about an RDB backup.
+  Gets information about an RDB backup.
 ---
 
 # scaleway_rdb_database_backup

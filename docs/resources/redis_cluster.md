@@ -2,7 +2,7 @@
 subcategory: "Redis"
 page_title: "Scaleway: scaleway_redis_cluster"
 description: |-
-Manages Scaleway Redis Clusters.
+  Manages Scaleway Redis Clusters.
 ---
 
 # scaleway_redis_cluster

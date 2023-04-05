@@ -2,7 +2,7 @@
 subcategory: "Load Balancers"
 page_title: "Scaleway: scaleway_lb_frontends"
 description: |-
-Gets information about multiple Load Balancer Frontends.
+  Gets information about multiple Load Balancer Frontends.
 ---
 
 # scaleway_lb_frontends

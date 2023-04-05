@@ -2,7 +2,7 @@
 subcategory: "Web Hosting"
 page_title: "Scaleway: scaleway_webhosting_offer"
 description: |-
-Gets information about a webhosting offer.
+  Gets information about a webhosting offer.
 ---
 
 # scaleway_webhosting_offer

@@ -3,7 +3,7 @@ subcategory: "Redis"
 layout: "scaleway"
 page_title: "Scaleway: scaleway_redis_instance"
 description: |-
-Gets information about a Redis cluster.
+  Gets information about a Redis cluster.
 ---
 
 # scaleway_redis_cluster

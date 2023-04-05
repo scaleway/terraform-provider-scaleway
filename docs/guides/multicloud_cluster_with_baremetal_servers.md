@@ -1,7 +1,7 @@
 ---
 page_title: "Using Elastic Metal servers in a Kubernetes cluster"
 description: |-
-How to add and/or run Scaleway bare metal servers as nodes on a multicloud Kubernetes cluster
+  How to add and/or run Scaleway bare metal servers as nodes on a multicloud Kubernetes cluster
 ---
 
 # How to use Elastic Metal servers with a Kosmos multicloud cluster

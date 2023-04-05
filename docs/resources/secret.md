@@ -2,7 +2,7 @@
 subcategory: "Secrets"
 page_title: "Scaleway: scaleway_secret"
 description: |-
-Manages Scaleway Secrets.
+  Manages Scaleway Secrets.
 ---
 
 # scaleway_secret

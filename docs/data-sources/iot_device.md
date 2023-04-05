@@ -3,7 +3,7 @@ subcategory: "IoT Hub"
 layout: "scaleway"
 page_title: "Scaleway: scaleway_iot_device"
 description: |-
-Gets information about an IOT Device.
+  Gets information about an IOT Device.
 ---
 
 # scaleway_iot_device
