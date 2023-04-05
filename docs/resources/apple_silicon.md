@@ -1,7 +1,6 @@
 ---
 subcategory: "Apple Silicon"
 page_title: "Scaleway: scaleway_apple_silicon"
-description: |- Manages Scaleway Apple silicon M1 as-a-Service.
 ---
 
 # scaleway_apple_silicon
