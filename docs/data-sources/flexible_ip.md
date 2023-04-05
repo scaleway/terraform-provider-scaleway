@@ -1,5 +1,5 @@
 ---
-subcategory: "Instances"
+subcategory: "Elastic Metal"
 page_title: "Scaleway: scaleway_flexible_ip"
 ---
 
