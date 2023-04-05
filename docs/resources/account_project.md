@@ -1,8 +1,6 @@
 ---
 subcategory: "Account"
 page_title: "Scaleway: scaleway_account_project"
-description: |-
-Manages Scaleway Account project.
 ---
 
 # scaleway_account_project

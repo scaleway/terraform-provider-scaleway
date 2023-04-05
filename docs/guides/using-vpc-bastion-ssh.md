@@ -1,7 +1,5 @@
 ---
 page_title: "Using Scaleway SSH Bastion"
-description: |-
-  Using Scaleway SSH Bastion config.
 ---
 
 # How to use Scaleway VPC SSH Bastion config

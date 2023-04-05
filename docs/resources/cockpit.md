@@ -1,8 +1,6 @@
 ---
 subcategory: "Cockpit"
 page_title: "Scaleway: scaleway_cockpit"
-description: |-
-    Manages Scaleway Cockpits.
 ---
 
 # scaleway_cockpit

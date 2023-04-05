@@ -1,8 +1,6 @@
 ---
 subcategory: "Containers"
 page_title: "Scaleway: scaleway_container"
-description: |-
-    Manages Scaleway Containers.
 ---
 
 # scaleway_container

@@ -1,8 +1,6 @@
 ---
 subcategory: "Object Storage"
 page_title: "Scaleway: scaleway_object_bucket_website_configuration"
-description: |-
-Manages Scaleway website on object storage buckets.
 ---
 
 # scaleway_object_bucket_website_configuration

@@ -1,8 +1,6 @@
 ---
 subcategory: "Elastic Metal"
 page_title: "Scaleway: scaleway_baremetal_server"
-description: |-
-  Manages Scaleway Compute Baremetal servers.
 ---
 
 # scaleway_baremetal_server

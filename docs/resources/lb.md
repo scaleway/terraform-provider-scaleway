@@ -1,8 +1,6 @@
 ---
 subcategory: "Load Balancers"
 page_title: "Scaleway: scaleway_lb"
-description: |-
-  Manages Scaleway Load-Balancers.
 ---
 
 # scaleway_lb

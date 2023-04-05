@@ -1,8 +1,6 @@
 ---
 subcategory: "Kubernetes"
 page_title: "Scaleway: scaleway_k8s_pool"
-description: |-
-  Manages Scaleway Kubernetes cluster pools.
 ---
 
 # scaleway_k8s_pool

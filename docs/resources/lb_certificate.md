@@ -1,8 +1,6 @@
 ---
 subcategory: "Load Balancers"
 page_title: "Scaleway: scaleway_lb_certificate"
-description: |-
-  Manages Scaleway Load-Balancer Certificates.
 ---
 
 # scaleway_lb_certificate

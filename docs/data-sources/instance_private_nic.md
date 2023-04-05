@@ -1,8 +1,6 @@
 ---
 subcategory: "Instances"
 page_title: "Scaleway: scaleway_instance_private_nic"
-description: |-
-Gets information about an instance private NIC.
 ---
 
 # scaleway_instance_private_nic

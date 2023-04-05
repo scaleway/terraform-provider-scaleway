@@ -1,8 +1,6 @@
 ---
 subcategory: "IAM"
 page_title: "Scaleway: scaleway_iam_api_key"
-description: |-
-Manages Scaleway IAM API Keys.
 ---
 
 # scaleway_iam_api_key

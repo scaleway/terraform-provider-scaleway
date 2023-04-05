@@ -1,8 +1,6 @@
 ---
 subcategory: "Object Storage"
 page_title: "Scaleway: scaleway_object_bucket_acl"
-description: |-
-Manages Scaleway object storage bucket ACL resource.
 ---
 
 # scaleway_object_bucket_acl

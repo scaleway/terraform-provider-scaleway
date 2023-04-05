@@ -1,8 +1,6 @@
 ---
 subcategory: "Domains and DNS"
 page_title: "Scaleway: scaleway_domain_record"
-description: |-
-  Manages Scaleway Domain records.
 ---
 
 # scaleway_domain_record

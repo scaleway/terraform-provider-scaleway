@@ -1,8 +1,6 @@
 ---
 subcategory: "Instances"
 page_title: "Scaleway: scaleway_instance_image"
-description: |-
-  Gets information about an Instance Image.
 ---
 
 # scaleway_instance_image

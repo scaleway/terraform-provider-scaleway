@@ -1,8 +1,6 @@
 ---
 subcategory: "Object Storage"
 page_title: "Scaleway: scaleway_object"
-description: |-
-Manages Scaleway object storage objects.
 ---
 
 # scaleway_object

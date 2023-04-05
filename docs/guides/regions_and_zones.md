@@ -1,7 +1,5 @@
 ---
 page_title: "Scaleway Zones and Regions"
-description: |-
-  Scaleway resources can be created in availability zones and regions.
 ---
 
 # Scaleway Zones and Regions

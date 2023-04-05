@@ -1,8 +1,6 @@
 ---
 subcategory: "Instances"
 page_title: "Scaleway: scaleway_instance_placement_group"
-description: |-
-  Manages Scaleway Compute Instance Placement Groups.
 ---
 
 # scaleway_instance_placement_group

@@ -1,8 +1,6 @@
 ---
 subcategory: "Instances"
 page_title: "Scaleway: scaleway_instance_private_nic"
-description: |-
-  Manages Scaleway Compute Instance Private NICs.
 ---
 
 # scaleway_instance_private_nic

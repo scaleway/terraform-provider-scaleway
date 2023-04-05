@@ -1,8 +1,6 @@
 ---
 subcategory: "Elastic Metal"
 page_title: "Scaleway: scaleway_baremetal_offer"
-description: |-
-  Gets information about a baremetal offer.
 ---
 
 # scaleway_baremetal_offer

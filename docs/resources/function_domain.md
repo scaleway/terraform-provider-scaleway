@@ -1,8 +1,6 @@
 ---
 subcategory: "Functions"
 page_title: "Scaleway: scaleway_function_domain"
-description: |-
-Manages Scaleway Function Domain.
 ---
 
 # scaleway_function_domain

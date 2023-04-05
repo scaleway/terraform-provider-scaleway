@@ -1,8 +1,6 @@
 ---
 subcategory: "Secrets"
 page_title: "Scaleway: scaleway_secret"
-description: |-
-Gets information about an existing Secret.
 ---
 
 # scaleway_secret

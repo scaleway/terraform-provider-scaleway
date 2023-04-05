@@ -1,8 +1,6 @@
 ---
 subcategory: "Load Balancers"
 page_title: "Scaleway: scaleway_lb_acls"
-description: |-
-Gets information about multiple Load Balancer ACLs.
 ---
 
 # scaleway_lb_acls

@@ -1,8 +1,6 @@
 ---
 subcategory: "Instances"
 page_title: "Scaleway: scaleway_instance_image"
-description: |-
-Manages Scaleway Instance Images.
 ---
 
 # scaleway_instance_image

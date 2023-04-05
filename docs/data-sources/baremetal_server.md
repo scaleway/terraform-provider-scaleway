@@ -1,8 +1,6 @@
 ---
 subcategory: "Elastic Metal"
 page_title: "Scaleway: scaleway_baremetal_server"
-description: |-
-  Gets information about a baremetal server.
 ---
 
 # scaleway_baremetal_server

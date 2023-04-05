@@ -2,8 +2,6 @@
 subcategory: "Databases"
 layout: "scaleway"
 page_title: "Scaleway: scaleway_rdb_acl"
-description: |-
-  Gets information about the RDB instance network Access Control List.
 ---
 
 # scaleway_rdb_acl
