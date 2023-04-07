@@ -53,6 +53,14 @@ func resourceScalewayDomainRecord() *schema.Resource {
 				Description: "The name of the record",
 				ForceNew:    true,
 				Optional:    true,
+				StateFunc: func(val interface{}) string {
+					value := val.(string)
+					if value == "@" {
+						return ""
+					}
+
+					return value
+				},
 			},
 			"type": {
 				Type:        schema.TypeString,

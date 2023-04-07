@@ -284,6 +284,47 @@ func TestAccScalewayDomainRecord_Basic2(t *testing.T) {
 	})
 }
 
+func TestAccScalewayDomainRecord_Arobase(t *testing.T) {
+	tt := NewTestTools(t)
+	defer tt.Cleanup()
+
+	testDNSZone := fmt.Sprintf("test-arobase.%s", testDomain)
+	l.Debugf("TestAccScalewayDomainRecord_Arobase: test dns zone: %s", testDNSZone)
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      testAccCheckScalewayDomainRecordDestroy(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`
+					resource "scaleway_domain_record" "main" {
+						dns_zone = %[1]q
+						name     = "@"
+						type     = "TXT"
+						data     = "this-is-a-test"
+					}
+				`, testDNSZone),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayDomainRecordExists(tt, "scaleway_domain_record.main"),
+					resource.TestCheckResourceAttr("scaleway_domain_record.main", "name", ""),
+				),
+			},
+			{
+				Config: fmt.Sprintf(`
+					resource "scaleway_domain_record" "main" {
+						dns_zone = %[1]q
+						name     = ""
+						type     = "TXT"
+						data     = "this-is-a-test"
+					}
+				`, testDNSZone),
+				PlanOnly: true,
+			},
+		},
+	})
+}
+
 func TestAccScalewayDomainRecord_GeoIP(t *testing.T) {
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
