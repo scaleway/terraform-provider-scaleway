@@ -2,7 +2,6 @@ package scaleway
 
 import (
 	"fmt"
-	"strings"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -516,16 +515,16 @@ func testAccCheckScalewayK8sClusterPrivateNetworkID(tt *TestTools, clusterName, 
 			return fmt.Errorf("resource not found: %s", pnName)
 		}
 
-		_, zone, pnID, err := vpcAPIWithZoneAndID(tt.Meta, rs.Primary.ID)
+		_, _, pnID, err := vpcAPIWithZoneAndID(tt.Meta, rs.Primary.ID)
 		if err != nil {
 			return err
 		}
 
 		if clusterPNID == nil {
-			return fmt.Errorf("expected %s private_network_id to be %s, got nil", clusterName, strings.TrimLeft(pnID, zone.String()+"/"))
+			return fmt.Errorf("expected %s private_network_id to be %s, got nil", clusterName, pnID)
 		}
-		if *clusterPNID != strings.TrimLeft(pnID, zone.String()+"/") {
-			return fmt.Errorf("expected %s private_network_id to be %s, got %s", clusterName, strings.TrimLeft(pnID, zone.String()+"/"), *clusterPNID)
+		if *clusterPNID != pnID {
+			return fmt.Errorf("expected %s private_network_id to be %s, got %s", clusterName, pnID, *clusterPNID)
 		}
 
 		return nil
