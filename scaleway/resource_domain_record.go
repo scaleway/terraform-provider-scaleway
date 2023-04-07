@@ -277,9 +277,14 @@ func resourceScalewayDomainRecordCreate(ctx context.Context, d *schema.ResourceD
 		dnsZoneRes.Subdomain,
 		dnsZoneRes.Status))
 
+	name := d.Get("name").(string)
+	if name == "@" {
+		name = ""
+	}
+
 	dnsZoneData, err := domainAPI.ListDNSZoneRecords(&domain.ListDNSZoneRecordsRequest{
 		DNSZone: dnsZone,
-		Name:    d.Get("name").(string),
+		Name:    name,
 		Type:    recordType,
 	}, scw.WithAllPages(), scw.WithContext(ctx))
 	if err != nil {
@@ -343,10 +348,15 @@ func resourceScalewayDomainRecordRead(ctx context.Context, d *schema.ResourceDat
 			return diag.FromErr(fmt.Errorf("record type unknow"))
 		}
 
+		name := d.Get("name").(string)
+		if name == "@" {
+			name = ""
+		}
+
 		idRecord := expandID(d.Id())
 		res, err := domainAPI.ListDNSZoneRecords(&domain.ListDNSZoneRecordsRequest{
 			DNSZone: dnsZone,
-			Name:    d.Get("name").(string),
+			Name:    name,
 			Type:    recordType,
 			ID:      &idRecord,
 		}, scw.WithAllPages(), scw.WithContext(ctx))
@@ -387,7 +397,11 @@ func resourceScalewayDomainRecordRead(ctx context.Context, d *schema.ResourceDat
 
 	d.SetId(record.ID)
 	_ = d.Set("dns_zone", dnsZone)
-	_ = d.Set("name", record.Name)
+	if record.Name == "" && d.Get("name").(string) == "@" {
+		_ = d.Set("name", "@")
+	} else {
+		_ = d.Set("name", record.Name)
+	}
 	_ = d.Set("type", record.Type.String())
 	_ = d.Set("data", currentData.(string))
 	_ = d.Set("ttl", int(record.TTL))
