@@ -256,7 +256,7 @@ func TestAccScalewayLbAcl_RedirectAction(t *testing.T) {
 								redirect {
 									type = "location"
 									target = "https://example.com"
-									code = 302
+									code = 307
 								}	
 							}
 							match {
@@ -281,7 +281,7 @@ func TestAccScalewayLbAcl_RedirectAction(t *testing.T) {
 								Redirect: &lbSDK.ACLActionRedirect{
 									Type:   lbSDK.ACLActionRedirectRedirectTypeLocation,
 									Target: "https://example.com",
-									Code:   expandInt32Ptr(302),
+									Code:   expandInt32Ptr(307),
 								},
 							},
 						},

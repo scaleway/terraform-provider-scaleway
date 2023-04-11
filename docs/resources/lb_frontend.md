@@ -126,6 +126,23 @@ resource "scaleway_lb_frontend" "frontend01" {
       http_value_option = "bar"
     }
   }
+
+  # Redirect requests from IP 10.0.0.10 and path beginning with "foo" or "bar" to "https://example.com" using a 307 redirect
+  acl {
+    action {
+      type = "redirect"
+      redirect {
+        type = "location"
+        target = "https://example.com"
+        code = 307
+      }
+    }
+    match {
+      ip_subnet = ["10.0.0.10"]
+      http_filter = "path_begin"
+      http_filter_value = ["foo","bar"]
+    }
+  }
 }
 ```
 
