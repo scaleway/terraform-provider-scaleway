@@ -100,6 +100,9 @@ func expandLbACLAction(raw interface{}) *lbSDK.ACLAction {
 }
 
 func flattenLbACLActionRedirect(redirect *lbSDK.ACLActionRedirect) interface{} {
+	if redirect == nil {
+		return nil
+	}
 	return []map[string]interface{}{
 		{
 			"type":   redirect.Type,

@@ -91,6 +91,26 @@ func dataSourceScalewayLbACLs() *schema.Resource {
 										Type:     schema.TypeString,
 										Computed: true,
 									},
+									"redirect": {
+										Type:     schema.TypeList,
+										Computed: true,
+										Elem: &schema.Resource{
+											Schema: map[string]*schema.Schema{
+												"type": {
+													Type:     schema.TypeString,
+													Computed: true,
+												},
+												"target": {
+													Type:     schema.TypeString,
+													Computed: true,
+												},
+												"code": {
+													Type:     schema.TypeInt,
+													Computed: true,
+												},
+											},
+										},
+									},
 								},
 							},
 						},

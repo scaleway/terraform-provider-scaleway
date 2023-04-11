@@ -181,7 +181,7 @@ The following arguments are supported:
 
     - `redirect` - (Optional) Redirect parameters when using an ACL with `redirect` action.
   
-        - `type`  - (Optional) The redirect type. Possible values are: `location` or `scheme`,
+        - `type`  - (Optional) The redirect type. Possible values are: `location` or `scheme`.
 
         - `target`  - (Optional) An URL can be used in case of a location redirect (e.g. `https://scaleway.com` will redirect to this same URL). A scheme name (e.g. `https`, `http`, `ftp`, `git`) will replace the request's original scheme.
 
