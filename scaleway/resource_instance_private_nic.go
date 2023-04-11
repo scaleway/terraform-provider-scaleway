@@ -30,11 +30,13 @@ func resourceScalewayInstancePrivateNIC() *schema.Resource {
 				Type:        schema.TypeString,
 				Description: "The server ID",
 				Required:    true,
+				ForceNew:    true,
 			},
 			"private_network_id": {
 				Type:        schema.TypeString,
 				Description: "The private network ID",
 				Required:    true,
+				ForceNew:    true,
 			},
 			"mac_address": {
 				Type:        schema.TypeString,
@@ -139,57 +141,7 @@ func resourceScalewayInstancePrivateNICUpdate(ctx context.Context, d *schema.Res
 		return diag.FromErr(err)
 	}
 
-	if d.HasChanges("private_network_id", "server_id") {
-		_, err = waitForPrivateNIC(ctx, instanceAPI, zone, serverID, privateNICID, d.Timeout(schema.TimeoutUpdate))
-		if err != nil {
-			return diag.FromErr(err)
-		}
-
-		// delete previous private NIC
-		err = instanceAPI.DeletePrivateNIC(&instance.DeletePrivateNICRequest{
-			ServerID:     serverID,
-			PrivateNicID: privateNICID,
-			Zone:         zone,
-		}, scw.WithContext(ctx))
-
-		if err != nil && !is404Error(err) {
-			return diag.FromErr(err)
-		}
-
-		_, err = waitForPrivateNIC(ctx, instanceAPI, zone, serverID, privateNICID, d.Timeout(schema.TimeoutUpdate))
-		if err != nil && !is404Error(err) {
-			return diag.FromErr(err)
-		}
-
-		// create the new one
-		createPrivateNICRequest := &instance.CreatePrivateNICRequest{
-			Zone:             zone,
-			ServerID:         expandZonedID(d.Get("server_id").(string)).ID,
-			PrivateNetworkID: expandZonedID(d.Get("private_network_id").(string)).ID,
-			Tags:             expandStrings(d.Get("tags")),
-		}
-
-		privateNIC, err := instanceAPI.CreatePrivateNIC(
-			createPrivateNICRequest,
-			scw.WithContext(ctx),
-		)
-		if err != nil {
-			return diag.FromErr(err)
-		}
-
-		_, err = waitForPrivateNIC(ctx, instanceAPI, zone, serverID, privateNICID, d.Timeout(schema.TimeoutUpdate))
-		if err != nil {
-			return diag.FromErr(err)
-		}
-
-		d.SetId(
-			newZonedNestedIDString(
-				zone,
-				privateNIC.PrivateNic.ServerID,
-				privateNIC.PrivateNic.ID,
-			),
-		)
-	} else if d.HasChange("tags") {
+	if d.HasChange("tags") {
 		_, err := instanceAPI.UpdatePrivateNIC(
 			&instance.UpdatePrivateNICRequest{
 				Zone:         zone,
@@ -218,7 +170,7 @@ func resourceScalewayInstancePrivateNICDelete(ctx context.Context, d *schema.Res
 	}
 
 	_, err = waitForPrivateNIC(ctx, instanceAPI, zone, serverID, privateNICID, d.Timeout(schema.TimeoutDelete))
-	if err != nil {
+	if err != nil && !is404Error(err) {
 		return diag.FromErr(err)
 	}
 
