@@ -31,6 +31,7 @@ const (
 	defaultInstanceSecurityGroupRuleTimeout = 1 * time.Minute
 	defaultInstancePlacementGroupTimeout    = 1 * time.Minute
 	defaultInstanceIPTimeout                = 1 * time.Minute
+	defaultInstanceIPReverseDNSTimeout      = 5 * time.Minute
 	defaultInstanceRetryInterval            = 5 * time.Second
 
 	defaultInstanceSnapshotWaitTimeout = 1 * time.Hour
@@ -243,7 +244,7 @@ func validateLocalVolumeSizes(volumes map[string]*instance.VolumeServerTemplate,
 // On the api side, there are two possibles validation schemas for volumes and the validator will be chosen dynamically depending on the passed JSON request
 // - With an image (in that case the root volume can be skipped because it is taken from the image)
 // - Without an image (in that case, the root volume must be defined)
-func sanitizeVolumeMap(serverName string, volumes map[string]*instance.VolumeServerTemplate) map[string]*instance.VolumeServerTemplate {
+func sanitizeVolumeMap(volumes map[string]*instance.VolumeServerTemplate) map[string]*instance.VolumeServerTemplate {
 	m := make(map[string]*instance.VolumeServerTemplate)
 
 	for index, v := range volumes {
@@ -314,7 +315,7 @@ type privateNICsHandler struct {
 	zone           scw.Zone
 }
 
-func newPrivateNICHandler(ctx context.Context, api *instance.API, server string, zone scw.Zone) (*privateNICsHandler, error) {
+func newPrivateNICHandler(api *instance.API, server string, zone scw.Zone) (*privateNICsHandler, error) {
 	handler := &privateNICsHandler{
 		instanceAPI: api,
 		serverID:    server,
@@ -588,4 +589,17 @@ func flattenInstanceImageExtraVolumes(volumes map[string]*instance.Volume, zone 
 
 func formatImageLabel(imageUUID string) string {
 	return strings.ReplaceAll(imageUUID, "-", "_")
+}
+
+func isInstanceIPReverseResolved(ctx context.Context, instanceAPI *instance.API, reverse string, timeout time.Duration, id string, zone scw.Zone) bool {
+	getIPReq := &instance.GetIPRequest{
+		Zone: zone,
+		IP:   id,
+	}
+	res, err := instanceAPI.GetIP(getIPReq, scw.WithContext(ctx))
+	if err != nil {
+		return false
+	}
+
+	return hostResolver(ctx, timeout, reverse, res.IP.Address.String())
 }

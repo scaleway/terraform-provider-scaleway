@@ -1,7 +1,6 @@
 ---
+subcategory: "Object Storage"
 page_title: "Scaleway: scaleway_object_bucket_policy"
-description: |-
-Manages Scaleway object storage bucket policy.
 ---
 
 # scaleway_object_bucket
@@ -84,6 +83,7 @@ The following arguments are supported:
 
 * `bucket` - (Required) The name of the bucket.
 * `policy` - (Required) The policy document. This is a JSON formatted string. For more information about building AWS IAM policy documents with Terraform, see the [AWS IAM Policy Document Guide](https://learn.hashicorp.com/tutorials/terraform/aws-iam-policy?_ga=2.164714495.1557487853.1659960650-563504983.1635944492).
+* `project_id` - (Defaults to [provider](../index.md#project_id) `project_id`) The ID of the project the bucket is associated with.
 
 ~> **Important:** The [aws_iam_policy_document](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document) data source may be used, so long as it specifies a principal.
 
@@ -91,7 +91,10 @@ The following arguments are supported:
 
 In addition to all above arguments, the following attribute is exported:
 
-* `id` - The unique name of the bucket.
+* `id` - The ID of the policy, which is the ID of the bucket.
+
+~> **Important:** Object buckets' IDs are [regional](../guides/regions_and_zones.md#resource-ids), which means they are of the form `{region}/{name}`, e.g. `fr-par/bucket-name`
+
 * `region` - The Scaleway region this bucket resides in.
 
 ## Import

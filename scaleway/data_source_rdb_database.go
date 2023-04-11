@@ -14,6 +14,8 @@ func dataSourceScalewayRDBDatabase() *schema.Resource {
 
 	fixDatasourceSchemaFlags(dsSchema, true, "instance_id", "name")
 
+	// Set 'Optional' schema elements
+	addOptionalFieldsToSchema(dsSchema, "region")
 	return &schema.Resource{
 		ReadContext: dataSourceScalewayRDBDatabaseRead,
 		Schema:      dsSchema,
@@ -29,13 +31,12 @@ func dataSourceScalewayRDBDatabaseRead(ctx context.Context, d *schema.ResourceDa
 	dbName, _ := d.GetOk("name")
 
 	_, _, err = parseLocalizedID(instanceID.(string))
-	regionalID := instanceID
 	if err != nil {
-		regionalID = datasourceNewRegionalizedID(instanceID, region)
+		instanceID = datasourceNewRegionalizedID(instanceID, region)
 	}
 
-	d.SetId(fmt.Sprintf("%s/%s", regionalID, dbName.(string)))
-	err = d.Set("instance_id", regionalID)
+	d.SetId(fmt.Sprintf("%s/%s", instanceID, dbName.(string)))
+	err = d.Set("instance_id", instanceID)
 	if err != nil {
 		return diag.FromErr(err)
 	}

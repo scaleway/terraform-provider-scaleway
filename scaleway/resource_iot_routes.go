@@ -187,6 +187,7 @@ func resourceScalewayIotRoute() *schema.Resource {
 				Description: "The date and time of the creation of the IoT Route",
 			},
 		},
+		CustomizeDiff: customizeDiffLocalityCheck("hub_id"),
 	}
 }
 

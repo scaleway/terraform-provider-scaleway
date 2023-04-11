@@ -1,7 +1,6 @@
 ---
+subcategory: "Containers"
 page_title: "Scaleway: scaleway_container_namespace"
-description: |-
-Gets information about a container namespace.
 ---
 
 # scaleway_container_namespace
@@ -36,7 +35,10 @@ data "scaleway_container_namespace" "by_id" {
 
 In addition to all above arguments, the following attributes are exported:
 
-- `id` - The ID of the Registry Namespace.
+- `id` - The ID of the container namespace.
+
+~> **Important:** Container namespaces' IDs are [regional](../guides/regions_and_zones.md#resource-ids), which means they are of the form `{region}/{id}`, e.g. `fr-par/11111111-1111-1111-1111-111111111111`
+
 - `organization_id` - The organization ID the namespace is associated with.
 - `description` - The description of the namespace.
 - `environment_variables` - The environment variables of the namespace.

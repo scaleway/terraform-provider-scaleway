@@ -1,8 +1,7 @@
 ---
+subcategory: "IAM"
 layout: "scaleway"
 page_title: "Scaleway: scaleway_iam_group"
-description: |-
-Gets information about an existing IAM group.
 ---
 
 # scaleway_iam_group

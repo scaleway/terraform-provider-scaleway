@@ -59,7 +59,13 @@ func TestAccScalewayBaremetalServer_Basic(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
-					resource "scaleway_account_ssh_key" "main" {
+					data "scaleway_baremetal_os" "my_os" {
+					  zone    = "fr-par-2"
+					  name    = "Ubuntu"
+					  version = "22.04 LTS (Jammy Jellyfish)"
+					}
+
+					resource "scaleway_iam_ssh_key" "main" {
 						name 	   = "%s"
 						public_key = "%s"
 					}
@@ -68,18 +74,18 @@ func TestAccScalewayBaremetalServer_Basic(t *testing.T) {
 						name        = "%s"
 						zone        = "fr-par-2"
 						description = "test a description"
-						offer       = "GP-BM1-M"
-						os          = "d17d6872-0412-45d9-a198-af82c34d3c5c"
+						offer       = "EM-B112X-SSD"
+						os    = data.scaleway_baremetal_os.my_os.os_id
 					
 						tags = [ "terraform-test", "scaleway_baremetal_server", "minimal" ]
-						ssh_key_ids = [ scaleway_account_ssh_key.main.id ]
+						ssh_key_ids = [ scaleway_iam_ssh_key.main.id ]
 					}
 				`, SSHKeyName, SSHKeyBaremetal, name),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayBaremetalServerExists(tt, "scaleway_baremetal_server.base"),
 					resource.TestCheckResourceAttr("scaleway_baremetal_server.base", "name", name),
-					resource.TestCheckResourceAttr("scaleway_baremetal_server.base", "offer_id", "fr-par-2/964f9b38-577e-470f-a220-7d762f9e8672"),
-					resource.TestCheckResourceAttr("scaleway_baremetal_server.base", "os_id", "fr-par-2/d17d6872-0412-45d9-a198-af82c34d3c5c"),
+					resource.TestCheckResourceAttr("scaleway_baremetal_server.base", "offer_id", "fr-par-2/a5065ba4-dde2-45f3-adec-1ebbb27b766b"),
+					resource.TestCheckResourceAttr("scaleway_baremetal_server.base", "os", "fr-par-2/96e5f0f2-d216-4de2-8a15-68730d877885"),
 					resource.TestCheckResourceAttr("scaleway_baremetal_server.base", "description", "test a description"),
 					resource.TestCheckResourceAttr("scaleway_baremetal_server.base", "tags.0", "terraform-test"),
 					resource.TestCheckResourceAttr("scaleway_baremetal_server.base", "tags.1", "scaleway_baremetal_server"),
@@ -90,7 +96,13 @@ func TestAccScalewayBaremetalServer_Basic(t *testing.T) {
 			{
 				// Trigger a reinstall and update tags
 				Config: fmt.Sprintf(`
-					resource "scaleway_account_ssh_key" "main" {
+					data "scaleway_baremetal_os" "my_os" {
+					  zone    = "fr-par-2"
+					  name    = "Ubuntu"
+					  version = "22.04 LTS (Jammy Jellyfish)"
+					}
+
+					resource "scaleway_iam_ssh_key" "main" {
 						name 	   = "%s"
 						public_key = "%s"
 					}
@@ -99,18 +111,18 @@ func TestAccScalewayBaremetalServer_Basic(t *testing.T) {
 						name        = "%s"
 						zone        = "fr-par-2"
 						description = "test a description"
-						offer       = "GP-BM1-M"
-						os          = "d859aa89-8b4a-4551-af42-ff7c0c27260a"
+						offer       = "EM-B112X-SSD"
+						os          = data.scaleway_baremetal_os.my_os.os_id
 					
 						tags = [ "terraform-test", "scaleway_baremetal_server", "minimal", "edited" ]
-						ssh_key_ids = [ scaleway_account_ssh_key.main.id ]
+						ssh_key_ids = [ scaleway_iam_ssh_key.main.id ]
 					}
 				`, SSHKeyName, SSHKeyBaremetal, name),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayBaremetalServerExists(tt, "scaleway_baremetal_server.base"),
 					resource.TestCheckResourceAttr("scaleway_baremetal_server.base", "name", name),
-					resource.TestCheckResourceAttr("scaleway_baremetal_server.base", "offer_id", "fr-par-2/964f9b38-577e-470f-a220-7d762f9e8672"),
-					resource.TestCheckResourceAttr("scaleway_baremetal_server.base", "os_id", "fr-par-2/d859aa89-8b4a-4551-af42-ff7c0c27260a"),
+					resource.TestCheckResourceAttr("scaleway_baremetal_server.base", "offer_id", "fr-par-2/a5065ba4-dde2-45f3-adec-1ebbb27b766b"),
+					resource.TestCheckResourceAttr("scaleway_baremetal_server.base", "os", "fr-par-2/96e5f0f2-d216-4de2-8a15-68730d877885"),
 					resource.TestCheckResourceAttr("scaleway_baremetal_server.base", "description", "test a description"),
 					resource.TestCheckResourceAttr("scaleway_baremetal_server.base", "tags.#", "4"),
 					resource.TestCheckResourceAttr("scaleway_baremetal_server.base", "tags.0", "terraform-test"),
@@ -179,7 +191,7 @@ func TestAccScalewayBaremetalServer_CreateServerWithOption(t *testing.T) {
 				  name = "Private Network"
 				}
 				
-				resource "scaleway_account_ssh_key" "base" {
+				resource "scaleway_iam_ssh_key" "base" {
 				  name       = "%s"
 				  public_key = "%s"
 				}
@@ -190,7 +202,7 @@ func TestAccScalewayBaremetalServer_CreateServerWithOption(t *testing.T) {
 				  offer = data.scaleway_baremetal_offer.my_offer.offer_id
 				  os    = data.scaleway_baremetal_os.my_os.os_id
 				
-				  ssh_key_ids = [scaleway_account_ssh_key.base.id]
+				  ssh_key_ids = [scaleway_iam_ssh_key.base.id]
 				  options {
 					id = data.scaleway_baremetal_option.private_network.option_id
 				  }
@@ -201,7 +213,6 @@ func TestAccScalewayBaremetalServer_CreateServerWithOption(t *testing.T) {
 					testAccCheckScalewayBaremetalServerHasOptions(tt, "scaleway_baremetal_server.base"),
 					resource.TestCheckResourceAttrPair("scaleway_baremetal_server.base", "options.0.id", "data.scaleway_baremetal_option.private_network", "option_id"),
 				),
-				ExpectNonEmptyPlan: true,
 			},
 		},
 	})
@@ -232,7 +243,7 @@ func TestAccScalewayBaremetalServer_AddOption(t *testing.T) {
 					  name = "EM-B112X-SSD"
 					}
 					
-					resource "scaleway_account_ssh_key" "base" {
+					resource "scaleway_iam_ssh_key" "base" {
 					  name       = "%s"
 					  public_key = "%s"
 					}
@@ -243,7 +254,7 @@ func TestAccScalewayBaremetalServer_AddOption(t *testing.T) {
 					  offer = data.scaleway_baremetal_offer.my_offer.offer_id
 					  os    = data.scaleway_baremetal_os.by_id.os_id
 					
-					  ssh_key_ids = [scaleway_account_ssh_key.base.id]
+					  ssh_key_ids = [scaleway_iam_ssh_key.base.id]
 					}
 				`, SSHKeyName, SSHKeyBaremetal, name),
 				Check: resource.ComposeTestCheckFunc(
@@ -268,7 +279,7 @@ func TestAccScalewayBaremetalServer_AddOption(t *testing.T) {
 				  name = "Private Network"
 				}
 				
-				resource "scaleway_account_ssh_key" "base" {
+				resource "scaleway_iam_ssh_key" "base" {
 				  name       = "%s"
 				  public_key = "%s"
 				}
@@ -279,7 +290,7 @@ func TestAccScalewayBaremetalServer_AddOption(t *testing.T) {
 				  offer = data.scaleway_baremetal_offer.my_offer.offer_id
 				  os    = data.scaleway_baremetal_os.my_os.os_id
 				
-				  ssh_key_ids = [scaleway_account_ssh_key.base.id]
+				  ssh_key_ids = [scaleway_iam_ssh_key.base.id]
 				  options {
 					id = data.scaleway_baremetal_option.private_network.option_id
 				  }
@@ -290,7 +301,6 @@ func TestAccScalewayBaremetalServer_AddOption(t *testing.T) {
 					testAccCheckScalewayBaremetalServerHasOptions(tt, "scaleway_baremetal_server.base"),
 					resource.TestCheckResourceAttrPair("scaleway_baremetal_server.base", "options.0.id", "data.scaleway_baremetal_option.private_network", "option_id"),
 				),
-				ExpectNonEmptyPlan: true,
 			},
 		},
 	})
@@ -321,7 +331,7 @@ func TestAccScalewayBaremetalServer_AddTwoOptionsThenDeleteOne(t *testing.T) {
 					  name = "EM-B112X-SSD"
 					}
 					
-					resource "scaleway_account_ssh_key" "base" {
+					resource "scaleway_iam_ssh_key" "base" {
 					  name       = "%s"
 					  public_key = "%s"
 					}
@@ -332,7 +342,7 @@ func TestAccScalewayBaremetalServer_AddTwoOptionsThenDeleteOne(t *testing.T) {
 					  offer = data.scaleway_baremetal_offer.my_offer.offer_id
 					  os    = data.scaleway_baremetal_os.by_id.os_id
 					
-					  ssh_key_ids = [scaleway_account_ssh_key.base.id]
+					  ssh_key_ids = [scaleway_iam_ssh_key.base.id]
 					}
 				`, SSHKeyName, SSHKeyBaremetal, name),
 				Check: resource.ComposeTestCheckFunc(
@@ -362,7 +372,7 @@ func TestAccScalewayBaremetalServer_AddTwoOptionsThenDeleteOne(t *testing.T) {
 					  name = "Private Network"
 					}
 					
-					resource "scaleway_account_ssh_key" "base" {
+					resource "scaleway_iam_ssh_key" "base" {
 					  name       = "%s"
 					  public_key = "%s"
 					}
@@ -372,7 +382,7 @@ func TestAccScalewayBaremetalServer_AddTwoOptionsThenDeleteOne(t *testing.T) {
 					  zone        = "fr-par-2"
 					  offer       = data.scaleway_baremetal_offer.my_offer.offer_id
 					  os          = data.scaleway_baremetal_os.my_os.os_id
-					  ssh_key_ids = [scaleway_account_ssh_key.base.id]
+					  ssh_key_ids = [scaleway_iam_ssh_key.base.id]
 					
 					  options {
 						id = data.scaleway_baremetal_option.private_network.option_id
@@ -396,7 +406,6 @@ func TestAccScalewayBaremetalServer_AddTwoOptionsThenDeleteOne(t *testing.T) {
 						"id": "fr-par-2/cd4158d7-2d65-49be-8803-c4b8ab6f760c",
 					}),
 				),
-				ExpectNonEmptyPlan: true,
 			},
 			{
 				Config: fmt.Sprintf(`
@@ -416,7 +425,7 @@ func TestAccScalewayBaremetalServer_AddTwoOptionsThenDeleteOne(t *testing.T) {
 					  name = "Remote Access"
 					}
 					
-					resource "scaleway_account_ssh_key" "base" {
+					resource "scaleway_iam_ssh_key" "base" {
 					  name       = "%s"
 					  public_key = "%s"
 					}
@@ -426,7 +435,7 @@ func TestAccScalewayBaremetalServer_AddTwoOptionsThenDeleteOne(t *testing.T) {
 					  zone        = "fr-par-2"
 					  offer       = data.scaleway_baremetal_offer.my_offer.offer_id
 					  os          = data.scaleway_baremetal_os.my_os.os_id
-					  ssh_key_ids = [scaleway_account_ssh_key.base.id]
+					  ssh_key_ids = [scaleway_iam_ssh_key.base.id]
 					
 					  options {
 						id         = data.scaleway_baremetal_option.remote_access.option_id
@@ -443,7 +452,6 @@ func TestAccScalewayBaremetalServer_AddTwoOptionsThenDeleteOne(t *testing.T) {
 						"expires_at": "2025-07-06T09:00:00Z",
 					}),
 				),
-				ExpectNonEmptyPlan: true,
 			},
 		},
 	})
@@ -486,7 +494,7 @@ func TestAccScalewayBaremetalServer_CreateServerWithPrivateNetwork(t *testing.T)
 						name = "baremetal_private_network"
 					} 
 
-					resource "scaleway_account_ssh_key" "base" {
+					resource "scaleway_iam_ssh_key" "base" {
 						name 	   = "%s"
 						public_key = "%s"
 					}
@@ -497,7 +505,7 @@ func TestAccScalewayBaremetalServer_CreateServerWithPrivateNetwork(t *testing.T)
 						offer       = data.scaleway_baremetal_offer.my_offer.offer_id
 						os          = data.scaleway_baremetal_os.my_os.os_id
 					
-						ssh_key_ids = [ scaleway_account_ssh_key.base.id ]
+						ssh_key_ids = [ scaleway_iam_ssh_key.base.id ]
 						options {
 						  id = data.scaleway_baremetal_option.private_network.option_id
 						}
@@ -511,7 +519,6 @@ func TestAccScalewayBaremetalServer_CreateServerWithPrivateNetwork(t *testing.T)
 					testAccCheckScalewayBaremetalServerHasPrivateNetwork(tt, "scaleway_baremetal_server.base"),
 					resource.TestCheckResourceAttrPair("scaleway_baremetal_server.base", "private_network.0.id", "scaleway_vpc_private_network.pn", "id"),
 				),
-				ExpectNonEmptyPlan: true,
 			},
 		},
 	})
@@ -554,7 +561,7 @@ func TestAccScalewayBaremetalServer_AddPrivateNetwork(t *testing.T) {
 						name = "baremetal_private_network"
 					} 
 
-					resource "scaleway_account_ssh_key" "base" {
+					resource "scaleway_iam_ssh_key" "base" {
 						name 	   = "%s"
 						public_key = "%s"
 					}
@@ -565,7 +572,7 @@ func TestAccScalewayBaremetalServer_AddPrivateNetwork(t *testing.T) {
 						offer       = data.scaleway_baremetal_offer.my_offer.offer_id
 						os          = data.scaleway_baremetal_os.my_os.os_id
 					
-						ssh_key_ids = [ scaleway_account_ssh_key.base.id ]
+						ssh_key_ids = [ scaleway_iam_ssh_key.base.id ]
 						options {
 						  id = data.scaleway_baremetal_option.private_network.option_id
 						}
@@ -574,7 +581,6 @@ func TestAccScalewayBaremetalServer_AddPrivateNetwork(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayBaremetalServerExists(tt, "scaleway_baremetal_server.base"),
 				),
-				ExpectNonEmptyPlan: true,
 			},
 			{
 				Config: fmt.Sprintf(`
@@ -599,7 +605,7 @@ func TestAccScalewayBaremetalServer_AddPrivateNetwork(t *testing.T) {
 						name = "baremetal_private_network"
 					} 
 
-					resource "scaleway_account_ssh_key" "base" {
+					resource "scaleway_iam_ssh_key" "base" {
 						name 	   = "%s"
 						public_key = "%s"
 					}
@@ -610,7 +616,7 @@ func TestAccScalewayBaremetalServer_AddPrivateNetwork(t *testing.T) {
 						offer       = data.scaleway_baremetal_offer.my_offer.offer_id
 						os          = data.scaleway_baremetal_os.my_os.os_id
 					
-						ssh_key_ids = [ scaleway_account_ssh_key.base.id ]
+						ssh_key_ids = [ scaleway_iam_ssh_key.base.id ]
 						options {
 						  id = data.scaleway_baremetal_option.private_network.option_id
 						}
@@ -666,7 +672,7 @@ func TestAccScalewayBaremetalServer_AddAnotherPrivateNetwork(t *testing.T) {
 						name = "baremetal_private_network"
 					}
 
-					resource "scaleway_account_ssh_key" "base" {
+					resource "scaleway_iam_ssh_key" "base" {
 						name 	   = "%s"
 						public_key = "%s"
 					}
@@ -677,7 +683,7 @@ func TestAccScalewayBaremetalServer_AddAnotherPrivateNetwork(t *testing.T) {
 						offer       = data.scaleway_baremetal_offer.my_offer.offer_id
 						os          = data.scaleway_baremetal_os.my_os.os_id
 					
-						ssh_key_ids = [ scaleway_account_ssh_key.base.id ]
+						ssh_key_ids = [ scaleway_iam_ssh_key.base.id ]
 						options {
 						  id = data.scaleway_baremetal_option.private_network.option_id
 						}
@@ -691,7 +697,6 @@ func TestAccScalewayBaremetalServer_AddAnotherPrivateNetwork(t *testing.T) {
 					testAccCheckScalewayBaremetalServerHasPrivateNetwork(tt, "scaleway_baremetal_server.base"),
 					resource.TestCheckResourceAttrPair("scaleway_baremetal_server.base", "private_network.0.id", "scaleway_vpc_private_network.pn", "id"),
 				),
-				ExpectNonEmptyPlan: true,
 			},
 			{
 				Config: fmt.Sprintf(`
@@ -721,7 +726,7 @@ func TestAccScalewayBaremetalServer_AddAnotherPrivateNetwork(t *testing.T) {
 						name = "baremetal_private_network2"
 					} 
 
-					resource "scaleway_account_ssh_key" "base" {
+					resource "scaleway_iam_ssh_key" "base" {
 						name 	   = "%s"
 						public_key = "%s"
 					}
@@ -732,7 +737,7 @@ func TestAccScalewayBaremetalServer_AddAnotherPrivateNetwork(t *testing.T) {
 						offer       = data.scaleway_baremetal_offer.my_offer.offer_id
 						os          = data.scaleway_baremetal_os.my_os.os_id
 					
-						ssh_key_ids = [ scaleway_account_ssh_key.base.id ]
+						ssh_key_ids = [ scaleway_iam_ssh_key.base.id ]
 						options {
 						  id = data.scaleway_baremetal_option.private_network.option_id
 						}

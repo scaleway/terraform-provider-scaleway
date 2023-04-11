@@ -1,6 +1,6 @@
 ---
+subcategory: "VPC"
 page_title: "Scaleway: scaleway_vpc_public_gateway_pat_rule"
-description: |- Get information about Scaleway VPC Public Gateway PAT rule.
 ---
 
 # scaleway_vpc_public_gateway_pat_rule
@@ -54,7 +54,9 @@ data "scaleway_vpc_public_gateway_pat_rule" "main" {
 
 ## Attributes Reference
 
-`id` is set to the ID of the found public gateway PAT RULE.
+`id` is set to the ID of the found public gateway PAT rule.
+
+~> **Important:** Public gateway PAT rules' IDs are [zoned](../guides/regions_and_zones.md#resource-ids), which means they are of the form `{zone}/{id}`, e.g. `fr-par-1/11111111-1111-1111-1111-111111111111`
 
 The following arguments are exported:
 

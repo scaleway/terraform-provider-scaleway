@@ -1,7 +1,6 @@
 ---
+subcategory: "IAM"
 page_title: "Scaleway: scaleway_iam_policy"
-description: |-
-Manages Scaleway IAM Policies.
 ---
 
 # scaleway_iam_policy
@@ -103,6 +102,7 @@ The following arguments are supported:
 
 In addition to all above arguments, the following attributes are exported:
 
+- `id` - The ID of the policy.
 - `created_at` - The date and time of the creation of the policy.
 - `updated_at` - The date and time of the last update of the policy.
 - `editable` - Whether the policy is editable.

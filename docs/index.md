@@ -1,7 +1,5 @@
 ---
 page_title: "Provider: Scaleway"
-description: |-
-  The Scaleway provider is used to manage Scaleway resources. The provider needs to be configured with the proper credentials before it can be used.
 ---
 
 # Scaleway Provider
@@ -34,7 +32,8 @@ Here is an example that will set up a web server with an additional volume, a pu
 
 You can test this config by creating a `test.tf` and run terraform commands from this directory:
 
-- Get your [Scaleway credentials](https://console.scaleway.com/account/credentials)
+- Get your [Scaleway credentials](https://console.scaleway.com/iam/api-keys)
+- Get your [project ID](https://console.scaleway.com/project/settings)
 - Initialize a Terraform working directory: `terraform init`
 - Generate and show the execution plan: `terraform plan`
 - Build the infrastructure: `terraform apply`
@@ -84,9 +83,9 @@ resource "scaleway_instance_security_group" "www" {
   outbound_default_policy = "accept"
 
   inbound_rule {
-    action = "accept"
-    port   = "22"
-    ip     = "212.47.225.64"
+    action   = "accept"
+    port     = "22"
+    ip_range = "0.0.0.0/0"
   }
 
   inbound_rule {

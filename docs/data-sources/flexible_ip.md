@@ -1,7 +1,6 @@
 ---
+subcategory: "Elastic Metal"
 page_title: "Scaleway: scaleway_flexible_ip"
-description: |-
-  Gets information about a Flexible IP.
 ---
 
 # scaleway_flexible_ip
@@ -33,6 +32,10 @@ data "scaleway_flexible_ip" "my_ip" {
 ## Attributes Reference
 
 In addition to all above arguments, the following attributes are exported:
+
+- `id` - The ID of the flexible IP.
+
+~> **Important:** Flexible IPs' IDs are [zoned](../guides/regions_and_zones.md#resource-ids), which means they are of the form `{zone}/{id}`, e.g. `fr-par-1/11111111-1111-1111-1111-111111111111`
 
 - `reverse` - The reverse domain associated with this IP.
 - `server_id` - The associated server ID if any

@@ -2,10 +2,12 @@ package scaleway
 
 import (
 	"fmt"
+	"strings"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
 	"github.com/scaleway/scaleway-sdk-go/api/k8s/v1"
 )
 
@@ -296,6 +298,188 @@ func TestAccScalewayK8SCluster_PoolZone(t *testing.T) {
 			},
 		},
 	})
+}
+
+func TestAccScalewayK8SCluster_PoolSize(t *testing.T) {
+	tt := NewTestTools(t)
+	defer tt.Cleanup()
+
+	latestK8SVersionMinor := testAccScalewayK8SClusterGetLatestK8SVersionMinor(tt)
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      testAccCheckScalewayK8SClusterDestroy(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`
+				resource "scaleway_k8s_cluster" "cluster" {
+				  name    = "cluster"
+				  version = "%s"
+				  cni     = "cilium"
+				  delete_additional_resources = true
+				  auto_upgrade {
+				    enable = true
+				    maintenance_window_start_hour = 12
+				    maintenance_window_day = "monday"
+				  }
+				}
+				
+				resource "scaleway_k8s_pool" "pool" {
+				  cluster_id          = scaleway_k8s_cluster.cluster.id
+				  name                = "pool"
+				  node_type           = "gp1_xs"
+				  size                = 1
+				  autoscaling         = false
+				  autohealing         = true
+				  wait_for_pool_ready = true
+				}`, latestK8SVersionMinor),
+			},
+			{
+				Config: fmt.Sprintf(`
+				resource "scaleway_k8s_cluster" "cluster" {
+				  name    = "cluster"
+				  version = "%s"
+				  cni     = "cilium"
+				  auto_upgrade {
+				  enable = true
+				  maintenance_window_start_hour = 12
+				  maintenance_window_day = "monday"
+				  }
+				  delete_additional_resources = true
+				}
+				
+				resource "scaleway_k8s_pool" "pool" {
+				  cluster_id          = scaleway_k8s_cluster.cluster.id
+				  name                = "pool"
+				  node_type           = "gp1_xs"
+				  size                = 2
+				  autoscaling         = false
+				  autohealing         = true
+				  wait_for_pool_ready = true
+				}`, latestK8SVersionMinor),
+				PlanOnly:           true,
+				ExpectNonEmptyPlan: true,
+			},
+		},
+	})
+}
+
+func TestAccScalewayK8SCluster_PoolPrivateNetwork(t *testing.T) {
+	tt := NewTestTools(t)
+	defer tt.Cleanup()
+
+	latestK8SVersion := testAccScalewayK8SClusterGetLatestK8SVersion(tt)
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      testAccCheckScalewayK8SClusterDestroy(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`
+				resource "scaleway_vpc_private_network" "private_network" {
+				  name       = "k8s-private-network"
+				}
+
+				resource "scaleway_k8s_cluster" "private_network" {
+				  name = "k8s-private-network-cluster"
+				  version = "%s"
+				  cni     = "cilium"
+				  private_network_id = scaleway_vpc_private_network.private_network.id
+				  tags = [ "terraform-test", "scaleway_k8s_cluster", "private_network" ]
+				  delete_additional_resources = true
+				  depends_on = [scaleway_vpc_private_network.private_network]
+				}
+
+				resource "scaleway_k8s_pool" "private_network" {
+				  cluster_id          = scaleway_k8s_cluster.private_network.id
+				  name                = "pool"
+				  node_type           = "gp1_xs"
+				  size                = 2
+				  autoscaling         = false
+				  autohealing         = true
+				  wait_for_pool_ready = true
+				}`, latestK8SVersion),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayK8SClusterExists(tt, "scaleway_k8s_cluster.private_network"),
+					testAccCheckScalewayVPCPrivateNetworkExists(tt, "scaleway_vpc_private_network.private_network"),
+					testAccCheckScalewayK8SPoolExists(tt, "scaleway_k8s_pool.private_network"),
+					testAccCheckScalewayK8sClusterPrivateNetworkID(tt, "scaleway_k8s_cluster.private_network", "scaleway_vpc_private_network.private_network"),
+					testAccCheckScalewayK8SPoolServersAreInPrivateNetwork(tt, "scaleway_k8s_cluster.private_network", "scaleway_k8s_pool.private_network", "scaleway_vpc_private_network.private_network"),
+				),
+			},
+		},
+	})
+}
+
+func testAccCheckScalewayK8SPoolServersAreInPrivateNetwork(tt *TestTools, clusterTFName, poolTFName, pnTFName string) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		rs, ok := s.RootModule().Resources[clusterTFName]
+		if !ok {
+			return fmt.Errorf("resource not found: %s", clusterTFName)
+		}
+		k8sAPI, region, clusterID, err := k8sAPIWithRegionAndID(tt.Meta, rs.Primary.ID)
+		if err != nil {
+			return err
+		}
+
+		rs, ok = s.RootModule().Resources[poolTFName]
+		if !ok {
+			return fmt.Errorf("resource not found: %s", poolTFName)
+		}
+		_, _, poolID, err := k8sAPIWithRegionAndID(tt.Meta, rs.Primary.ID)
+		if err != nil {
+			return err
+		}
+
+		rs, ok = s.RootModule().Resources[pnTFName]
+		if !ok {
+			return fmt.Errorf("resource not found: %s", pnTFName)
+		}
+		_, zone, pnID, err := vpcAPIWithZoneAndID(tt.Meta, rs.Primary.ID)
+		if err != nil {
+			return err
+		}
+
+		nodes, err := k8sAPI.ListNodes(&k8s.ListNodesRequest{
+			Region:    region,
+			PoolID:    &poolID,
+			ClusterID: clusterID,
+		})
+		if err != nil {
+			return err
+		}
+
+		instanceAPI := instance.NewAPI(tt.Meta.scwClient)
+
+		for _, node := range nodes.Nodes {
+			providerIDSplit := strings.SplitN(node.ProviderID, "/", 5)
+			if len(providerIDSplit) < 5 {
+				return fmt.Errorf("unexpected format for ProviderID in node %s", node.ID)
+			}
+
+			server, err := instanceAPI.GetServer(&instance.GetServerRequest{
+				Zone:     zone,
+				ServerID: providerIDSplit[4],
+			})
+			if err != nil {
+				return err
+			}
+
+			pnfound := false
+			for _, privateNic := range server.Server.PrivateNics {
+				if privateNic.PrivateNetworkID == pnID {
+					pnfound = true
+				}
+			}
+			if pnfound == false {
+				return fmt.Errorf("node %s is not in linked to private network %s", node.ID, pnID)
+			}
+		}
+
+		return nil
+	}
 }
 
 func testAccCheckScalewayK8SPoolDestroy(tt *TestTools, n string) resource.TestCheckFunc {

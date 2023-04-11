@@ -53,6 +53,14 @@ func resourceScalewayDomainRecord() *schema.Resource {
 				Description: "The name of the record",
 				ForceNew:    true,
 				Optional:    true,
+				StateFunc: func(val interface{}) string {
+					value := val.(string)
+					if value == "@" {
+						return ""
+					}
+
+					return value
+				},
 			},
 			"type": {
 				Type:        schema.TypeString,
@@ -321,7 +329,7 @@ func resourceScalewayDomainRecordRead(ctx context.Context, d *schema.ResourceDat
 			ID:      &recordID,
 		}, scw.WithAllPages(), scw.WithContext(ctx))
 		if err != nil {
-			if is404Error(err) {
+			if is404Error(err) || is403Error(err) {
 				d.SetId("")
 				return nil
 			}
@@ -351,7 +359,7 @@ func resourceScalewayDomainRecordRead(ctx context.Context, d *schema.ResourceDat
 			ID:      &idRecord,
 		}, scw.WithAllPages(), scw.WithContext(ctx))
 		if err != nil {
-			if is404Error(err) {
+			if is404Error(err) || is403Error(err) {
 				d.SetId("")
 				return nil
 			}
@@ -370,7 +378,7 @@ func resourceScalewayDomainRecordRead(ctx context.Context, d *schema.ResourceDat
 
 	res, err := waitForDNSZone(ctx, domainAPI, dnsZone, d.Timeout(schema.TimeoutRead))
 	if err != nil {
-		if is404Error(err) {
+		if is404Error(err) || is403Error(err) {
 			d.SetId("")
 			return nil
 		}
@@ -498,61 +506,59 @@ func resourceScalewayDomainRecordDelete(ctx context.Context, d *schema.ResourceD
 		ReturnAllRecords: scw.BoolPtr(false),
 	})
 	if err != nil {
-		d.SetId("")
 		return diag.FromErr(err)
 	}
 	d.SetId("")
 
 	_, err = waitForDNSZone(ctx, domainAPI, d.Get("dns_zone").(string), d.Timeout(schema.TimeoutDelete))
-	if err != nil && !ErrCodeEquals(err, domain.ErrCodeNoSuchDNSZone) {
-		if is404Error(err) {
+	if err != nil && !errorCheck(err, domain.ErrCodeNoSuchDNSZone) {
+		if is404Error(err) || is403Error(err) {
 			return nil
 		}
 		return diag.FromErr(err)
 	}
 
 	// for non-root zone, if the zone have only NS records, then delete the zone
-	if !d.Get("keep_empty_zone").(bool) && d.Get("root_zone") != nil && !d.Get("root_zone").(bool) {
-		res, err := domainAPI.ListDNSZoneRecords(&domain.ListDNSZoneRecordsRequest{
-			DNSZone: d.Get("dns_zone").(string),
-		})
-		if err != nil {
-			if is404Error(err) {
-				return nil
-			}
-			return diag.FromErr(err)
+	if d.Get("keep_empty_zone").(bool) || d.Get("root_zone").(bool) {
+		return nil
+	}
+
+	res, err := domainAPI.ListDNSZoneRecords(&domain.ListDNSZoneRecordsRequest{
+		DNSZone: d.Get("dns_zone").(string),
+	})
+	if err != nil {
+		if is404Error(err) || is403Error(err) {
+			return nil
 		}
+		return diag.FromErr(err)
+	}
 
-		hasRecords := false
-		for _, r := range res.Records {
-			if r.Type != domain.RecordTypeNS {
-				hasRecords = true
-				break
-			}
-			tflog.Debug(ctx, fmt.Sprintf("record [%s], type [%s]", r.Name, r.Type))
+	for _, r := range res.Records {
+		if r.Type != domain.RecordTypeNS {
+			// The zone isn't empty, keep it
+			return nil
 		}
+		tflog.Debug(ctx, fmt.Sprintf("record [%s], type [%s]", r.Name, r.Type))
+	}
 
-		if !hasRecords {
-			_, err = waitForDNSZone(ctx, domainAPI, d.Get("dns_zone").(string), d.Timeout(schema.TimeoutDelete))
-			if err != nil {
-				if errorCheck(err, domain.ErrCodeNoSuchDNSZone) {
-					return nil
-				}
-				return diag.FromErr(fmt.Errorf("failed to wait for dns zone before deleting: %w", err))
-			}
-
-			_, err = domainAPI.DeleteDNSZone(&domain.DeleteDNSZoneRequest{
-				DNSZone:   d.Get("dns_zone").(string),
-				ProjectID: d.Get("project_id").(string),
-			})
-
-			if err != nil {
-				if is404Error(err) || is403Error(err) {
-					return nil
-				}
-				return diag.FromErr(err)
-			}
+	_, err = waitForDNSZone(ctx, domainAPI, d.Get("dns_zone").(string), d.Timeout(schema.TimeoutDelete))
+	if err != nil {
+		if errorCheck(err, domain.ErrCodeNoSuchDNSZone) {
+			return nil
 		}
+		return diag.FromErr(fmt.Errorf("failed to wait for dns zone before deleting: %w", err))
+	}
+
+	_, err = domainAPI.DeleteDNSZone(&domain.DeleteDNSZoneRequest{
+		DNSZone:   d.Get("dns_zone").(string),
+		ProjectID: d.Get("project_id").(string),
+	})
+
+	if err != nil {
+		if is404Error(err) || is403Error(err) {
+			return nil
+		}
+		return diag.FromErr(err)
 	}
 
 	return nil

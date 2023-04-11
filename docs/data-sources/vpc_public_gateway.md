@@ -1,7 +1,6 @@
 ---
+subcategory: "VPC"
 page_title: "Scaleway: scaleway_vpc_public_gateway"
-description: |-
-Get information about Scaleway VPC Public Gateways.
 ---
 
 # scaleway_vpc_public_gateway
@@ -35,5 +34,8 @@ data "scaleway_vpc_public_gateway" "pg_test_by_id" {
 
 ## Attributes Reference
 
-`id` is set to the ID of the found public gateway. Addition attributes are
-exported.
+In addition to all above arguments, the following attributes are exported:
+
+- `id` - The ID of the public gateway.
+
+~> **Important:** Public gateways' IDs are [zoned](../guides/regions_and_zones.md#resource-ids), which means they are of the form `{zone}/{id}`, e.g. `fr-par-1/11111111-1111-1111-1111-111111111111`

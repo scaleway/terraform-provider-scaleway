@@ -1,7 +1,6 @@
 ---
+subcategory: "Kubernetes"
 page_title: "Scaleway: scaleway_k8s_pool"
-description: |-
-  Gets information about a Kubernetes Cluster's Pool.
 ---
 
 # scaleway_k8s_pool
@@ -38,6 +37,8 @@ data "scaleway_k8s_pool" "my_key" {
 In addition to all above arguments, the following attributes are exported:
 
 - `id` - The ID of the pool.
+
+~> **Important:** Kubernetes clusters pools' IDs are [regional](../guides/regions_and_zones.md#resource-ids), which means they are of the form `{region}/{id}`, e.g. `fr-par/11111111-1111-1111-1111-111111111111`
 
 - `status` - The status of the pool.
 

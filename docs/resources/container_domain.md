@@ -1,7 +1,6 @@
 ---
+subcategory: "Containers"
 page_title: "Scaleway: scaleway_container_domain"
-description: |-
-    Manages Scaleway Containers Domains Bindings.
 ---
 
 # scaleway_container_domain
@@ -42,7 +41,7 @@ resource scaleway_container app {
     timeout = 600
     max_concurrency = 80
     privacy = "public"
-    protocol = "h2c"
+    protocol = "http1"
     deploy = true
 }
 
@@ -73,6 +72,10 @@ The following arguments are required:
 ## Attributes Reference
 
 In addition to all arguments above, the following attributes are exported:
+
+- `id` - The container domain's ID.
+
+~> **Important:** Container domains' IDs are [regional](../guides/regions_and_zones.md#resource-ids), which means they are of the form `{region}/{id}`, e.g. `fr-par/11111111-1111-1111-1111-111111111111`
 
 - `url` - The URL used to query the container
 

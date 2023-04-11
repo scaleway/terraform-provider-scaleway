@@ -4,8 +4,10 @@ import (
 	"context"
 	"fmt"
 	"reflect"
+	"strings"
 	"time"
 
+	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/api/rdb/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
@@ -121,7 +123,7 @@ func expandPrivateNetwork(data interface{}, exist bool) ([]*rdb.EndpointSpec, er
 		spec := &rdb.EndpointSpec{
 			PrivateNetwork: &rdb.EndpointSpecPrivateNetwork{
 				PrivateNetworkID: expandID(r["pn_id"].(string)),
-				ServiceIP:        ip,
+				ServiceIP:        &ip,
 			},
 		}
 		res = append(res, spec)
@@ -286,7 +288,7 @@ func expandReadReplicaEndpointsSpecPrivateNetwork(data interface{}) (*rdb.ReadRe
 
 	endpoint.PrivateNetwork = &rdb.ReadReplicaEndpointSpecPrivateNetwork{
 		PrivateNetworkID: expandID(rawEndpoint["private_network_id"]),
-		ServiceIP:        ip,
+		ServiceIP:        &ip,
 	}
 	return endpoint, nil
 }
@@ -322,4 +324,40 @@ func flattenReadReplicaEndpoints(endpoints []*rdb.Endpoint) (directAccess, priva
 	}
 
 	return directAccess, privateNetwork
+}
+
+// rdbPrivilegeV1SchemaUpgradeFunc allow upgrade the privilege ID on schema V1
+func rdbPrivilegeV1SchemaUpgradeFunc(_ context.Context, rawState map[string]interface{}, m interface{}) (map[string]interface{}, error) {
+	idRaw, exist := rawState["id"]
+	if !exist {
+		return nil, fmt.Errorf("upgrade: id not exist")
+	}
+
+	idParts := strings.Split(idRaw.(string), "/")
+	if len(idParts) == 4 {
+		return rawState, nil
+	}
+
+	region, idStr, err := parseRegionalID(idRaw.(string))
+	if err != nil {
+		// force the default region
+		meta := m.(*Meta)
+		defaultRegion, exist := meta.scwClient.GetDefaultRegion()
+		if exist {
+			region = defaultRegion
+		}
+	}
+
+	databaseName := rawState["database_name"].(string)
+	userName := rawState["user_name"].(string)
+	rawState["id"] = resourceScalewayRdbUserPrivilegeID(region, idStr, databaseName, userName)
+	rawState["region"] = region.String()
+
+	return rawState, nil
+}
+
+func rdbPrivilegeUpgradeV1SchemaType() cty.Type {
+	return cty.Object(map[string]cty.Type{
+		"id": cty.String,
+	})
 }

@@ -87,3 +87,27 @@ func TestAccScalewayDataSourceAccountProject_Default(t *testing.T) {
 		},
 	})
 }
+
+func TestAccScalewayDataSourceAccountProject_Extract(t *testing.T) {
+	tt := NewTestTools(t)
+	defer tt.Cleanup()
+
+	projectID, projectIDExists := tt.Meta.scwClient.GetDefaultProjectID()
+	if !projectIDExists {
+		t.Skip("no default project ID")
+	}
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config: `data scaleway_account_project "project" {}`,
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("data.scaleway_account_project.project", "id", projectID),
+					resource.TestCheckResourceAttrSet("data.scaleway_account_project.project", "name"),
+				),
+			},
+		},
+	})
+}

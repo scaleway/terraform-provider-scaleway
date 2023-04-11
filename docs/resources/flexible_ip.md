@@ -1,7 +1,6 @@
 ---
+subcategory: "Elastic Metal"
 page_title: "Scaleway: scaleway_flexible_ip"
-description: |-
-  Manages Scaleway Flexible IPs.
 ---
 
 # scaleway_flexible_ip
@@ -72,6 +71,9 @@ The following arguments are supported:
 In addition to all arguments above, the following attributes are exported:
 
 - `id` - The ID of the Flexible IP
+
+~> **Important:** Flexible IPs' IDs are [zoned](../guides/regions_and_zones.md#resource-ids), which means they are of the form `{zone}/{id}`, e.g. `fr-par-1/11111111-1111-1111-1111-111111111111`
+
 - `ip_address` -  The IPv4 address of the Flexible IP
 - `zone` - The zone of the Flexible IP
 - `organization_id` - The organization of the Flexible IP

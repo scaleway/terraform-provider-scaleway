@@ -1,7 +1,6 @@
 ---
+subcategory: "Load Balancers"
 page_title: "Scaleway: scaleway_lb_frontend"
-description: |-
-  Manages Scaleway Load-Balancer Frontends.
 ---
 
 # scaleway_lb_frontend
@@ -158,6 +157,8 @@ The following arguments are supported:
 
 - `inbound_port` - (Required) TCP port to listen on the front side.
 
+- `zone` - (Defaults to [provider](../index.md#zone) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which the load-balancer was created.
+
 - `name` - (Optional) The name of the load-balancer frontend.
 
 - `timeout_client` - (Optional) Maximum inactivity time on the client side. (e.g.: `1s`)
@@ -206,6 +207,9 @@ The following arguments are supported:
 In addition to all arguments above, the following attributes are exported:
 
 - `id` - The ID of the load-balancer frontend.
+
+~> **Important:** Load-Balancers frontends' IDs are [zoned](../guides/regions_and_zones.md#resource-ids), which means they are of the form `{zone}/{id}`, e.g. `fr-par-1/11111111-1111-1111-1111-111111111111`
+
 - `certificate_id` - (Deprecated) first certificate ID used by the frontend.
 
 

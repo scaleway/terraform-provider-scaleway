@@ -1,7 +1,6 @@
 ---
+subcategory: "Instances"
 page_title: "Scaleway: scaleway_instance_volume"
-description: |-
-  Gets information about an instance volume.
 ---
 
 # scaleway_instance_volume
@@ -38,6 +37,10 @@ data "scaleway_instance_volume" "my_volume" {
 ## Attributes Reference
 
 In addition to all above arguments, the following attributes are exported:
+
+- `id` - The ID of the volume.
+
+~> **Important:** Instance volumes' IDs are [zoned](../guides/regions_and_zones.md#resource-ids), which means they are of the form `{zone}/{id}`, e.g. `fr-par-1/11111111-1111-1111-1111-111111111111`
 
 - `volume_type` - The type of the volume.
   `l_ssd` for local SSD, `b_ssd` for block storage SSD.

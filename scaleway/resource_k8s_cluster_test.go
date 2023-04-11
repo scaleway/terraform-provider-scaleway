@@ -384,6 +384,31 @@ func TestAccScalewayK8SCluster_AutoUpgrade(t *testing.T) {
 	})
 }
 
+func TestAccScalewayK8SCluster_PrivateNetwork(t *testing.T) {
+	tt := NewTestTools(t)
+	defer tt.Cleanup()
+
+	latestK8SVersion := testAccScalewayK8SClusterGetLatestK8SVersion(tt)
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck: func() {
+			testAccPreCheck(t)
+		},
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      testAccCheckScalewayK8SClusterDestroy(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckScalewayK8SClusterConfigPrivateNetwork(latestK8SVersion),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayK8SClusterExists(tt, "scaleway_k8s_cluster.private_network"),
+					testAccCheckScalewayVPCPrivateNetworkExists(tt, "scaleway_vpc_private_network.private_network"),
+					testAccCheckScalewayK8sClusterPrivateNetworkID(tt, "scaleway_k8s_cluster.private_network", "scaleway_vpc_private_network.private_network"),
+				),
+			},
+		},
+	})
+}
+
 func TestAccScalewayK8SCluster_Multicloud(t *testing.T) {
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
@@ -457,6 +482,49 @@ func testAccCheckScalewayK8SClusterExists(tt *TestTools, n string) resource.Test
 		})
 		if err != nil {
 			return err
+		}
+
+		return nil
+	}
+}
+
+func testAccCheckScalewayK8sClusterPrivateNetworkID(tt *TestTools, clusterName, pnName string) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		rs, ok := s.RootModule().Resources[clusterName]
+		if !ok {
+			return fmt.Errorf("resource not found: %s", clusterName)
+		}
+
+		k8sAPI, region, clusterID, err := k8sAPIWithRegionAndID(tt.Meta, rs.Primary.ID)
+		if err != nil {
+			return err
+		}
+
+		cluster, err := k8sAPI.GetCluster(&k8s.GetClusterRequest{
+			Region:    region,
+			ClusterID: clusterID,
+		})
+		if err != nil {
+			return err
+		}
+
+		clusterPNID := cluster.PrivateNetworkID
+
+		rs, ok = s.RootModule().Resources[pnName]
+		if !ok {
+			return fmt.Errorf("resource not found: %s", pnName)
+		}
+
+		_, _, pnID, err := vpcAPIWithZoneAndID(tt.Meta, rs.Primary.ID)
+		if err != nil {
+			return err
+		}
+
+		if clusterPNID == nil {
+			return fmt.Errorf("expected %s private_network_id to be %s, got nil", clusterName, pnID)
+		}
+		if *clusterPNID != pnID {
+			return fmt.Errorf("expected %s private_network_id to be %s, got %s", clusterName, pnID, *clusterPNID)
 		}
 
 		return nil
@@ -572,6 +640,22 @@ resource "scaleway_k8s_cluster" "auto_upgrade" {
 	tags = [ "terraform-test", "scaleway_k8s_cluster", "auto_upgrade" ]
 	delete_additional_resources = true
 }`, version, enable, hour, day)
+}
+
+func testAccCheckScalewayK8SClusterConfigPrivateNetwork(version string) string {
+	return fmt.Sprintf(`
+resource "scaleway_vpc_private_network" "private_network" {
+  name       = "k8s-private-network"
+}
+resource "scaleway_k8s_cluster" "private_network" {
+	cni = "calico"
+	version = "%s"
+	name = "k8s-private-network-cluster"
+    private_network_id = scaleway_vpc_private_network.private_network.id
+	tags = [ "terraform-test", "scaleway_k8s_cluster", "private_network" ]
+	delete_additional_resources = true
+	depends_on = [scaleway_vpc_private_network.private_network]
+}`, version)
 }
 
 func testAccCheckScalewayK8SClusterMulticloud(version string) string {

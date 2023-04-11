@@ -1,7 +1,6 @@
 ---
+subcategory: "Kubernetes"
 page_title: "Scaleway: scaleway_k8s_cluster"
-description: |-
-  Gets information about a Kubernetes Cluster.
 ---
 
 # scaleway_k8s_cluster
@@ -35,6 +34,8 @@ data "scaleway_k8s_cluster" "my_key" {
 In addition to all above arguments, the following attributes are exported:
 
 - `id` - The ID of the cluster.
+
+~> **Important:** Kubernetes clusters' IDs are [regional](../guides/regions_and_zones.md#resource-ids), which means they are of the form `{region}/{id}`, e.g. `fr-par/11111111-1111-1111-1111-111111111111`
 
 - `created_at` - The creation date of the cluster.
 
@@ -97,6 +98,8 @@ In addition to all above arguments, the following attributes are exported:
 - `feature_gates` - The list of [feature gates](https://kubernetes.io/docs/reference/command-line-tools-reference/feature-gates/) enabled on the cluster.
 
 - `admission_plugins` - The list of [admission plugins](https://kubernetes.io/docs/reference/access-authn-authz/admission-controllers/) enabled on the cluster.
+
+- `private_network_id` - The ID of the private network of the cluster.
 
 - `region` - The [region](../guides/regions_and_zones.md#regions) in which the cluster is.
 

@@ -1,13 +1,12 @@
 ---
+subcategory: "Redis"
 layout: "scaleway"
 page_title: "Scaleway: scaleway_redis_instance"
-description: |-
-Gets information about a Redis cluster.
 ---
 
 # scaleway_redis_cluster
 
-Gets information about a Redis cluster.
+Gets information about a Redis cluster. For further information check our [api documentation](https://developers.scaleway.com/en/products/redis/api/v1alpha1/#clusters-a85816)
 
 ## Example Usage
 
@@ -34,3 +33,11 @@ data "scaleway_redis_cluster" "my_cluster" {
 - `zone` - (Default to [provider](../index.md) `region`) The [zone](../guides/regions_and_zones.md#zones) in which the server exists.
 
 - `project_id` - (Default to [provider](../index.md) `project_id`)
+
+## Attributes Reference
+
+In addition to all above arguments, the following attributes are exported:
+
+- `id` - The ID of the Redis cluster.
+
+~> **Important:** Redis clusters' IDs are [zoned](../guides/regions_and_zones.md#resource-ids), which means they are of the form `{zone}/{id}`, e.g. `fr-par-1/11111111-1111-1111-1111-111111111111`

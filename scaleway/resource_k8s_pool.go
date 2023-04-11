@@ -17,6 +17,7 @@ func resourceScalewayK8SPool() *schema.Resource {
 		ReadContext:   resourceScalewayK8SPoolRead,
 		UpdateContext: resourceScalewayK8SPoolUpdate,
 		DeleteContext: resourceScalewayK8SPoolDelete,
+		CustomizeDiff: resourceScalewayK8SPoolCustomDiff,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
@@ -477,5 +478,15 @@ func resourceScalewayK8SPoolDelete(ctx context.Context, d *schema.ResourceData, 
 		}
 	}
 
+	return nil
+}
+
+func resourceScalewayK8SPoolCustomDiff(_ context.Context, diff *schema.ResourceDiff, _ interface{}) error {
+	if diff.HasChange("size") {
+		err := diff.SetNewComputed("nodes")
+		if err != nil {
+			return err
+		}
+	}
 	return nil
 }

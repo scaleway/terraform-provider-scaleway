@@ -1,7 +1,6 @@
 ---
+subcategory: "Instances"
 page_title: "Scaleway: scaleway_instance_security_group"
-description: |-
-  Gets information about a Security Group.
 ---
 
 # scaleway_instance_security_group
@@ -35,6 +34,8 @@ data "scaleway_instance_security_group" "my_key" {
 In addition to all above arguments, the following attributes are exported:
 
 - `id` - The ID of the security group.
+
+~> **Important:** Instance security groups' IDs are [zoned](../guides/regions_and_zones.md#resource-ids), which means they are of the form `{zone}/{id}`, e.g. `fr-par-1/11111111-1111-1111-1111-111111111111`
 
 - `organization_id` - The ID of the organization the security group is associated with.
 

@@ -1,10 +1,9 @@
 ---
+subcategory: "Messaging and Queuing"
 page_title: "Scaleway: scaleway_mnq_credential"
-description: |-
-Manages Scaleway Messaging and Queuing Credential.
 ---
 
-# scaleway_mnq_namespace
+# scaleway_mnq_credential
 
 This Terraform configuration creates and manage a Scaleway MNQ credential associated with a namespace.
 For additional details, kindly refer to our [website](https://www.scaleway.com/en/docs/serverless/messaging/) and
@@ -53,10 +52,7 @@ The following arguments are supported:
 
 - `name` - (Optional) The credential name..
 - `namespace_id` - (Required) The namespace containing the Credential.
-- `nats_credentials` - Credentials file used to connect to the NATS service. Only one of `nats_credentials` and `sqs_sns_credentials` may be set.
-    - `content` - Raw content of the NATS credentials file.
-- `sqs_sns_credentials` - Credential used to connect to the SQS/SNS service. Only one of `nats_credentials`
-  and `sqs_sns_credentials` may be set.
+- `sqs_sns_credentials` - Credential used to connect to the SQS/SNS service.
     - `permissions` List of permissions associated to this Credential. Only one of permissions may be set.
         - `can_publish` - (Optional). Defines if user can publish messages to the service.
         - `can_receive` - (Optional). Defines if user can receive messages from the service.
@@ -66,13 +62,18 @@ The following arguments are supported:
 
 In addition to all arguments above, the following attributes are exported:
 
-- `id` - The credential ID (UUID format).
+- `id` - The credential ID.
 - `protocol` - The protocol associated to the Credential. Possible values are `nats` and `sqs_sns`.
 - `sqs_sns_credentials` - The credential used to connect to the SQS/SNS service.
     - `access_key` - The ID of the key.
     - `secret_key` - The Secret value of the key.
+- `nats_credentials` - Credentials file used to connect to the NATS service.
+    - `content` - Raw content of the NATS credentials file.
 - `region` - (Defaults to [provider](../index.md#region) `region`). The [region](../guides/regions_and_zones.md#regions)
   in which the namespace should be created.
+
+~> **Important:** Messaging and Queuing credentials' IDs are [regional](../guides/regions_and_zones.md#resource-ids),
+which means they are of the form `{region}/{id}`, e.g. `fr-par/11111111-1111-1111-1111-111111111111`
 
 ## Import
 

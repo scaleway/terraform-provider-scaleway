@@ -53,6 +53,7 @@ func resourceScalewayContainerToken() *schema.Resource {
 
 			"region": regionSchema(),
 		},
+		CustomizeDiff: customizeDiffLocalityCheck("container_id", "namespace_id"),
 	}
 }
 

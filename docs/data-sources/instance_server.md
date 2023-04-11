@@ -1,7 +1,6 @@
 ---
+subcategory: "Instances"
 page_title: "Scaleway: scaleway_instance_server"
-description: |-
-  Gets information about an Instance Server.
 ---
 
 # scaleway_instance_server
@@ -35,6 +34,8 @@ data "scaleway_instance_server" "my_key" {
 In addition to all above arguments, the following attributes are exported:
 
 - `id` - The ID of the server.
+
+~> **Important:** Instance servers' IDs are [zoned](../guides/regions_and_zones.md#resource-ids), which means they are of the form `{zone}/{id}`, e.g. `fr-par-1/11111111-1111-1111-1111-111111111111`
 
 - `type` - The commercial type of the server.
 You find all the available types on the [pricing page](https://www.scaleway.com/en/pricing/).

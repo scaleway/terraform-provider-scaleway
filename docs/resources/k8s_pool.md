@@ -1,7 +1,6 @@
 ---
+subcategory: "Kubernetes"
 page_title: "Scaleway: scaleway_k8s_pool"
-description: |-
-  Manages Scaleway Kubernetes cluster pools.
 ---
 
 # scaleway_k8s_pool
@@ -91,6 +90,9 @@ The following arguments are supported:
 In addition to all above arguments, the following attributes are exported:
 
 - `id` - The ID of the pool.
+
+~> **Important:** Kubernetes clusters pools' IDs are [regional](../guides/regions_and_zones.md#resource-ids), which means they are of the form `{region}/{id}`, e.g. `fr-par/11111111-1111-1111-1111-111111111111`
+
 - `status` - The status of the pool.
 - `nodes` - (List of) The nodes in the default pool.
     - `name` - The name of the node.

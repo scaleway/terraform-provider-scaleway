@@ -13,6 +13,7 @@ const (
 	defaultContainerNamespaceTimeout = 5 * time.Minute
 	defaultContainerCronTimeout      = 5 * time.Minute
 	defaultContainerTimeout          = 12*time.Minute + 30*time.Second
+	defaultContainerDomainTimeout    = 10 * time.Minute
 	defaultContainerRetryInterval    = 5 * time.Second
 )
 
@@ -180,4 +181,9 @@ func expandContainerSecrets(secretsRawMap interface{}) []*container.Secret {
 	}
 
 	return secrets
+}
+
+func isContainerDomainResolved(ctx context.Context, ctnr *container.Container, hostname string, timeout time.Duration) bool {
+	// Add a trailing dot to domain_name to follow cname format
+	return cnameResolver(ctx, timeout, hostname, ctnr.DomainName+".")
 }

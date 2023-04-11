@@ -1,7 +1,6 @@
 ---
+subcategory: "IAM"
 page_title: "Scaleway: scaleway_iam_application"
-description: |-
-Manages Scaleway IAM Applications.
 ---
 
 # scaleway_iam_application
@@ -29,6 +28,7 @@ The following arguments are supported:
 
 In addition to all above arguments, the following attributes are exported:
 
+- `id` - The ID of the application.
 - `created_at` - The date and time of the creation of the application.
 - `updated_at` - The date and time of the last update of the application.
 - `editable` - Whether the application is editable.

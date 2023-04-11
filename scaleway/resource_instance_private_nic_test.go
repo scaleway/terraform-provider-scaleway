@@ -51,6 +51,94 @@ func TestAccScalewayInstancePrivateNIC_Basic(t *testing.T) {
 	})
 }
 
+func TestAccScalewayInstancePrivateNIC_Tags(t *testing.T) {
+	tt := NewTestTools(t)
+	defer tt.Cleanup()
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      testAccCheckScalewayInstancePrivateNICDestroy(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource scaleway_vpc_private_network pn01 {
+						name = "TestAccScalewayInstancePrivateNIC_Tags"
+					}
+
+					resource "scaleway_instance_server" "server01" {
+						image = "ubuntu_jammy"
+						type  = "PLAY2-PICO"
+						state = "stopped"
+					}
+
+					resource scaleway_instance_private_nic nic01 {
+						server_id          = scaleway_instance_server.server01.id
+						private_network_id = scaleway_vpc_private_network.pn01.id
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayInstancePrivateNICExists(tt, "scaleway_instance_private_nic.nic01"),
+					resource.TestCheckResourceAttrSet("scaleway_instance_private_nic.nic01", "mac_address"),
+					resource.TestCheckResourceAttrSet("scaleway_instance_private_nic.nic01", "private_network_id"),
+					resource.TestCheckResourceAttrSet("scaleway_instance_private_nic.nic01", "server_id"),
+				),
+			},
+			{
+				Config: `
+					resource scaleway_vpc_private_network pn01 {
+						name = "TestAccScalewayInstancePrivateNIC_Tags"
+					}
+
+					resource "scaleway_instance_server" "server01" {
+						image = "ubuntu_jammy"
+						type  = "PLAY2-PICO"
+						state = "stopped"
+					}
+
+					resource scaleway_instance_private_nic nic01 {
+						server_id          = scaleway_instance_server.server01.id
+						private_network_id = scaleway_vpc_private_network.pn01.id
+						tags = ["tag1", "tag2"]
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayInstancePrivateNICExists(tt, "scaleway_instance_private_nic.nic01"),
+					resource.TestCheckResourceAttrSet("scaleway_instance_private_nic.nic01", "mac_address"),
+					resource.TestCheckResourceAttrSet("scaleway_instance_private_nic.nic01", "private_network_id"),
+					resource.TestCheckResourceAttrSet("scaleway_instance_private_nic.nic01", "server_id"),
+					resource.TestCheckResourceAttr("scaleway_instance_private_nic.nic01", "tags.0", "tag1"),
+					resource.TestCheckResourceAttr("scaleway_instance_private_nic.nic01", "tags.1", "tag2"),
+				),
+			},
+			{
+				Config: `
+					resource scaleway_vpc_private_network pn01 {
+						name = "TestAccScalewayInstancePrivateNIC_Tags"
+					}
+
+					resource "scaleway_instance_server" "server01" {
+						image = "ubuntu_jammy"
+						type  = "PLAY2-PICO"
+						state = "stopped"
+					}
+
+					resource scaleway_instance_private_nic nic01 {
+						server_id          = scaleway_instance_server.server01.id
+						private_network_id = scaleway_vpc_private_network.pn01.id
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayInstancePrivateNICExists(tt, "scaleway_instance_private_nic.nic01"),
+					resource.TestCheckResourceAttrSet("scaleway_instance_private_nic.nic01", "mac_address"),
+					resource.TestCheckResourceAttrSet("scaleway_instance_private_nic.nic01", "private_network_id"),
+					resource.TestCheckResourceAttrSet("scaleway_instance_private_nic.nic01", "server_id"),
+					resource.TestCheckResourceAttr("scaleway_instance_private_nic.nic01", "tags.#", "0"),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckScalewayInstancePrivateNICExists(tt *TestTools, n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]

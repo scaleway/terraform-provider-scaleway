@@ -54,6 +54,7 @@ func resourceScalewayFunctionToken() *schema.Resource {
 
 			"region": regionSchema(),
 		},
+		CustomizeDiff: customizeDiffLocalityCheck("function_id", "namespace_id"),
 	}
 }
 
@@ -75,6 +76,8 @@ func resourceScalewayFunctionTokenCreate(ctx context.Context, d *schema.Resource
 	}
 
 	d.SetId(newRegionalIDString(region, token.ID))
+
+	_ = d.Set("token", token.Token)
 
 	return resourceScalewayFunctionTokenRead(ctx, d, meta)
 }
@@ -100,7 +103,6 @@ func resourceScalewayFunctionTokenRead(ctx context.Context, d *schema.ResourceDa
 	_ = d.Set("namespace_id", flattenStringPtr(token.NamespaceID))
 	_ = d.Set("description", flattenStringPtr(token.Description))
 	_ = d.Set("expires_at", flattenTime(token.ExpiresAt))
-	_ = d.Set("token", token.Token)
 
 	return nil
 }

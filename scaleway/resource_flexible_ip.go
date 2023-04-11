@@ -41,6 +41,7 @@ func resourceScalewayFlexibleIP() *schema.Resource {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Description: "The reverse DNS for this flexible IP",
+				Computed:    true,
 			},
 			"server_id": {
 				Type:        schema.TypeString,
@@ -74,6 +75,7 @@ func resourceScalewayFlexibleIP() *schema.Resource {
 				Description: "The date and time of the last update of the Flexible IP (Format ISO 8601)",
 			},
 		},
+		CustomizeDiff: customizeDiffLocalityCheck("server_id"),
 	}
 }
 

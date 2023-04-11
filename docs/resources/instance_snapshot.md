@@ -1,7 +1,6 @@
 ---
+subcategory: "Instances"
 page_title: "Scaleway: scaleway_instance_snapshot"
-description: |-
-Manages Scaleway Instance Snapshots.
 ---
 
 # scaleway_instance_snapshot
@@ -92,6 +91,9 @@ Updates to this field will recreate a new resource.
 In addition to all above arguments, the following attributes are exported:
 
 - `id` - The ID of the snapshot.
+
+~> **Important:** Instance snapshots' IDs are [zoned](../guides/regions_and_zones.md#resource-ids), which means they are of the form `{zone}/{id}`, e.g. `fr-par-1/11111111-1111-1111-1111-111111111111`
+
 - `size_in_gb` - (Optional) The size of the snapshot.
 - `organization_id` - The organization ID the snapshot is associated with.
 - `project_id` - The project ID the snapshot is associated with.

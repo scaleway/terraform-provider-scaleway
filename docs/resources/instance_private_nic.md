@@ -1,7 +1,6 @@
 ---
+subcategory: "Instances"
 page_title: "Scaleway: scaleway_instance_private_nic"
-description: |-
-  Manages Scaleway Compute Instance Private NICs.
 ---
 
 # scaleway_instance_private_nic
@@ -47,6 +46,7 @@ The following arguments are required:
 
 - `server_id` - (Required) The ID of the server associated with.
 - `private_network_id` - (Required) The ID of the private network attached to.
+- `tags` - (Optional) The tags associated with the private NIC.
 - `zone` - (Defaults to [provider](../index.md#zone) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which the server must be created.
 
 ## Attributes Reference
@@ -54,6 +54,9 @@ The following arguments are required:
 In addition to all above arguments, the following attributes are exported:
 
 - `id` - The ID of the private NIC.
+
+~> **Important:** Instance private NICs' IDs are [zoned](../guides/regions_and_zones.md#resource-ids), which means they are of the form `{zone}/{id}`, e.g. `fr-par-1/11111111-1111-1111-1111-111111111111`
+
 - `mac_address` - The MAC address of the private NIC.
 
 ## Import

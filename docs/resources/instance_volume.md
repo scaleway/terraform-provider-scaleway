@@ -1,7 +1,6 @@
 ---
+subcategory: "Instances"
 page_title: "Scaleway: scaleway_instance_volume"
-description: |-
-  Manages Scaleway Compute Instance Volumes.
 ---
 
 # scaleway_instance_volume
@@ -37,6 +36,9 @@ The following arguments are supported:
 In addition to all above arguments, the following attributes are exported:
 
 - `id` - The ID of the volume.
+
+~> **Important:** Instance volumes' IDs are [zoned](../guides/regions_and_zones.md#resource-ids), which means they are of the form `{zone}/{id}`, e.g. `fr-par-1/11111111-1111-1111-1111-111111111111`
+
 - `server_id` - The id of the associated server.
 - `organization_id` - The organization ID the volume is associated with.
 

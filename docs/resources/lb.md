@@ -1,7 +1,6 @@
 ---
+subcategory: "Load Balancers"
 page_title: "Scaleway: scaleway_lb"
-description: |-
-  Manages Scaleway Load-Balancers.
 ---
 
 # scaleway_lb
@@ -118,7 +117,7 @@ The following arguments are supported:
 
 - `ssl_compatibility_level` - (Optional) Enforces minimal SSL version (in SSL/TLS offloading context). Please check [possible values](https://developers.scaleway.com/en/products/lb/zoned_api/#ssl-compatibility-level-442f99).
 
-- `zone` - (Defaults to [provider](../index.md#zone) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which the IP should be reserved.
+- `zone` - (Defaults to [provider](../index.md#zone) `zone`) The [zone](../guides/regions_and_zones.md#zones) of the load-balancer.
 
 - `project_id` - (Defaults to [provider](../index.md#project_id) `project_id`) The ID of the project the load-balancer is associated with.
 
@@ -127,6 +126,9 @@ The following arguments are supported:
 In addition to all arguments above, the following attributes are exported:
 
 - `id` - The ID of the load-balancer.
+
+~> **Important:** Load-Balancers' IDs are [zoned](../guides/regions_and_zones.md#resource-ids), which means they are of the form `{zone}/{id}`, e.g. `fr-par-1/11111111-1111-1111-1111-111111111111`
+
 - `ip_address` -  The load-balance public IP Address
 - `organization_id` - The organization ID the load-balancer is associated with.
 

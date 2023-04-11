@@ -1,12 +1,13 @@
 ---
+subcategory: "Account"
 page_title: "Scaleway: scaleway_account_ssh_key"
-description: |-
-  Manages Scaleway user SSH keys.
 ---
 
 # scaleway_account_ssh_key
 
 Manages user SSH keys to access servers provisioned on Scaleway.
+
+~> **Important:**  The resource `scaleway_account_ssh_key` has been deprecated and will no longer be supported. Instead, use `scaleway_iam_ssh_key`.
 
 ## Example Usage
 
@@ -29,7 +30,7 @@ The following arguments are supported:
 
 In addition to all above arguments, the following attributes are exported:
 
-- `id` - The ID of the SSH key.
+- `id` - The ID of the SSH key (UUID format).
 - `organization_id` - The organization ID the SSH key is associated with.
 
 ## Import

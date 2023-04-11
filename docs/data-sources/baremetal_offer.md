@@ -1,7 +1,6 @@
 ---
+subcategory: "Elastic Metal"
 page_title: "Scaleway: scaleway_baremetal_offer"
-description: |-
-  Gets information about a baremetal offer.
 ---
 
 # scaleway_baremetal_offer
@@ -41,6 +40,8 @@ data "scaleway_baremetal_offer" "my_offer" {
 In addition to all above arguments, the following attributes are exported:
 
 - `id` - The ID of the offer.
+
+~> **Important:** Baremetal offers' IDs are [zoned](../guides/regions_and_zones.md#resource-ids), which means they are of the form `{zone}/{id}`, e.g. `fr-par-1/11111111-1111-1111-1111-111111111111`
 
 - `bandwidth` - Available Bandwidth with the offer.
 

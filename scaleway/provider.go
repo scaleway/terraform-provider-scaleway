@@ -88,6 +88,9 @@ func Provider(config *ProviderConfig) plugin.ProviderFunc {
 				"scaleway_account_ssh_key":                     resourceScalewayAccountSSKKey(),
 				"scaleway_apple_silicon_server":                resourceScalewayAppleSiliconServer(),
 				"scaleway_baremetal_server":                    resourceScalewayBaremetalServer(),
+				"scaleway_cockpit":                             resourceScalewayCockpit(),
+				"scaleway_cockpit_token":                       resourceScalewayCockpitToken(),
+				"scaleway_cockpit_grafana_user":                resourceScalewayCockpitGrafanaUser(),
 				"scaleway_container_namespace":                 resourceScalewayContainerNamespace(),
 				"scaleway_container_cron":                      resourceScalewayContainerCron(),
 				"scaleway_container_domain":                    resourceScalewayContainerDomain(),
@@ -147,11 +150,14 @@ func Provider(config *ProviderConfig) plugin.ProviderFunc {
 				"scaleway_object_bucket_website_configuration": ResourceBucketWebsiteConfiguration(),
 				"scaleway_mnq_namespace":                       resourceScalewayMNQNamespace(),
 				"scaleway_mnq_credential":                      resourceScalewayMNQCredential(),
+				"scaleway_secret":                              resourceScalewaySecret(),
+				"scaleway_secret_version":                      resourceScalewaySecretVersion(),
 				"scaleway_vpc_public_gateway":                  resourceScalewayVPCPublicGateway(),
 				"scaleway_vpc_gateway_network":                 resourceScalewayVPCGatewayNetwork(),
 				"scaleway_vpc_public_gateway_dhcp":             resourceScalewayVPCPublicGatewayDHCP(),
 				"scaleway_vpc_public_gateway_dhcp_reservation": resourceScalewayVPCPublicGatewayDHCPReservation(),
 				"scaleway_vpc_public_gateway_ip":               resourceScalewayVPCPublicGatewayIP(),
+				"scaleway_vpc_public_gateway_ip_reverse_dns":   resourceScalewayVPCPublicGatewayIPReverseDNS(),
 				"scaleway_vpc_public_gateway_pat_rule":         resourceScalewayVPCPublicGatewayPATRule(),
 				"scaleway_vpc_private_network":                 resourceScalewayVPCPrivateNetwork(),
 			},
@@ -163,6 +169,7 @@ func Provider(config *ProviderConfig) plugin.ProviderFunc {
 				"scaleway_baremetal_option":                    dataSourceScalewayBaremetalOption(),
 				"scaleway_baremetal_os":                        dataSourceScalewayBaremetalOs(),
 				"scaleway_baremetal_server":                    dataSourceScalewayBaremetalServer(),
+				"scaleway_cockpit":                             dataSourceScalewayCockpit(),
 				"scaleway_domain_record":                       dataSourceScalewayDomainRecord(),
 				"scaleway_domain_zone":                         dataSourceScalewayDomainZone(),
 				"scaleway_container_namespace":                 dataSourceScalewayContainerNamespace(),
@@ -175,6 +182,7 @@ func Provider(config *ProviderConfig) plugin.ProviderFunc {
 				"scaleway_iam_ssh_key":                         dataSourceScalewayIamSSHKey(),
 				"scaleway_iam_user":                            dataSourceScalewayIamUser(),
 				"scaleway_instance_ip":                         dataSourceScalewayInstanceIP(),
+				"scaleway_instance_private_nic":                dataSourceScalewayInstancePrivateNIC(),
 				"scaleway_instance_security_group":             dataSourceScalewayInstanceSecurityGroup(),
 				"scaleway_instance_server":                     dataSourceScalewayInstanceServer(),
 				"scaleway_instance_servers":                    dataSourceScalewayInstanceServers(),
@@ -185,9 +193,19 @@ func Provider(config *ProviderConfig) plugin.ProviderFunc {
 				"scaleway_iot_device":                          dataSourceScalewayIotDevice(),
 				"scaleway_k8s_cluster":                         dataSourceScalewayK8SCluster(),
 				"scaleway_k8s_pool":                            dataSourceScalewayK8SPool(),
+				"scaleway_k8s_version":                         dataSourceScalewayK8SVersion(),
 				"scaleway_lb":                                  dataSourceScalewayLb(),
+				"scaleway_lbs":                                 dataSourceScalewayLbs(),
+				"scaleway_lb_acls":                             dataSourceScalewayLbACLs(),
+				"scaleway_lb_backend":                          dataSourceScalewayLbBackend(),
+				"scaleway_lb_backends":                         dataSourceScalewayLbBackends(),
 				"scaleway_lb_certificate":                      dataSourceScalewayLbCertificate(),
+				"scaleway_lb_frontend":                         dataSourceScalewayLbFrontend(),
+				"scaleway_lb_frontends":                        dataSourceScalewayLbFrontends(),
 				"scaleway_lb_ip":                               dataSourceScalewayLbIP(),
+				"scaleway_lb_ips":                              dataSourceScalewayLbIPs(),
+				"scaleway_lb_route":                            dataSourceScalewayLbRoute(),
+				"scaleway_lb_routes":                           dataSourceScalewayLbRoutes(),
 				"scaleway_marketplace_image":                   dataSourceScalewayMarketplaceImage(),
 				"scaleway_object_bucket":                       dataSourceScalewayObjectBucket(),
 				"scaleway_rdb_acl":                             dataSourceScalewayRDBACL(),
@@ -198,6 +216,8 @@ func Provider(config *ProviderConfig) plugin.ProviderFunc {
 				"scaleway_redis_cluster":                       dataSourceScalewayRedisCluster(),
 				"scaleway_registry_namespace":                  dataSourceScalewayRegistryNamespace(),
 				"scaleway_tem_domain":                          dataSourceScalewayTemDomain(),
+				"scaleway_secret":                              dataSourceScalewaySecret(),
+				"scaleway_secret_version":                      dataSourceScalewaySecretVersion(),
 				"scaleway_registry_image":                      dataSourceScalewayRegistryImage(),
 				"scaleway_vpc_public_gateway":                  dataSourceScalewayVPCPublicGateway(),
 				"scaleway_vpc_gateway_network":                 dataSourceScalewayVPCGatewayNetwork(),
@@ -206,6 +226,7 @@ func Provider(config *ProviderConfig) plugin.ProviderFunc {
 				"scaleway_vpc_public_gateway_ip":               dataSourceScalewayVPCPublicGatewayIP(),
 				"scaleway_vpc_private_network":                 dataSourceScalewayVPCPrivateNetwork(),
 				"scaleway_vpc_public_gateway_pat_rule":         dataSourceScalewayVPCPublicGatewayPATRule(),
+				"scaleway_webhosting_offer":                    dataSourceScalewayWebhostingOffer(),
 			},
 		}
 
@@ -246,10 +267,14 @@ type Meta struct {
 }
 
 type metaConfig struct {
-	providerSchema   *schema.ResourceData
-	terraformVersion string
-	forceZone        scw.Zone
-	httpClient       *http.Client
+	providerSchema      *schema.ResourceData
+	terraformVersion    string
+	forceZone           scw.Zone
+	forceProjectID      string
+	forceOrganizationID string
+	forceAccessKey      string
+	forceSecretKey      string
+	httpClient          *http.Client
 }
 
 // providerConfigure creates the Meta object containing the SDK client.
@@ -268,6 +293,18 @@ func buildMeta(ctx context.Context, config *metaConfig) (*Meta, error) {
 		}
 		profile.DefaultRegion = scw.StringPtr(region.String())
 		profile.DefaultZone = scw.StringPtr(config.forceZone.String())
+	}
+	if config.forceProjectID != "" {
+		profile.DefaultProjectID = scw.StringPtr(config.forceProjectID)
+	}
+	if config.forceOrganizationID != "" {
+		profile.DefaultOrganizationID = scw.StringPtr(config.forceOrganizationID)
+	}
+	if config.forceAccessKey != "" {
+		profile.AccessKey = scw.StringPtr(config.forceAccessKey)
+	}
+	if config.forceSecretKey != "" {
+		profile.SecretKey = scw.StringPtr(config.forceSecretKey)
 	}
 
 	// TODO validated profile

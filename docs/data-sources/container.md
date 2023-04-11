@@ -1,7 +1,6 @@
 ---
+subcategory: "Containers"
 page_title: "Scaleway: scaleway_container"
-description: |-
-    Gets information about a container.
 ---
 # scaleway_container
 
@@ -52,6 +51,8 @@ The following arguments are required:
 In addition to all arguments above, the following attributes are exported:
 
 - `id` - The ID of the container
+
+~> **Important:** Containers' IDs are [regional](../guides/regions_and_zones.md#resource-ids), which means they are of the form `{region}/{id}`, e.g. `fr-par/11111111-1111-1111-1111-111111111111`
 
 - `description` The description of the container.
 

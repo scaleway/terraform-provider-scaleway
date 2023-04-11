@@ -15,7 +15,7 @@ func TestAccScalewayDataSourceAccountSSHKey_Basic(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      testAccCheckScalewayAccountSSHKeyDestroy(tt),
+		CheckDestroy:      testAccCheckScalewayIamSSHKeyDestroy(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
@@ -40,10 +40,10 @@ func TestAccScalewayDataSourceAccountSSHKey_Basic(t *testing.T) {
 						ssh_key_id = "${scaleway_account_ssh_key.main.id}"
 					}`, sshKeyName, dataSourceAccountSSHKey),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayAccountSSHKeyExists(tt, "data.scaleway_account_ssh_key.prod"),
+					testAccCheckScalewayIamSSHKeyExists(tt, "data.scaleway_account_ssh_key.prod"),
 					resource.TestCheckResourceAttr("data.scaleway_account_ssh_key.prod", "name", sshKeyName),
 					resource.TestCheckResourceAttr("data.scaleway_account_ssh_key.prod", "public_key", dataSourceAccountSSHKey),
-					testAccCheckScalewayAccountSSHKeyExists(tt, "data.scaleway_account_ssh_key.stg"),
+					testAccCheckScalewayIamSSHKeyExists(tt, "data.scaleway_account_ssh_key.stg"),
 					resource.TestCheckResourceAttr("data.scaleway_account_ssh_key.stg", "name", sshKeyName),
 					resource.TestCheckResourceAttr("data.scaleway_account_ssh_key.stg", "public_key", dataSourceAccountSSHKey),
 				),

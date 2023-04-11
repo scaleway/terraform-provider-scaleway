@@ -1,6 +1,6 @@
 ---
+subcategory: "Apple Silicon"
 page_title: "Scaleway: scaleway_apple_silicon"
-description: |- Manages Scaleway Apple silicon M1 as-a-Service.
 ---
 
 # scaleway_apple_silicon
@@ -40,6 +40,9 @@ The following arguments are supported:
 In addition to all above arguments, the following attributes are exported:
 
 - `id` - The ID of the server.
+
+~> **Important:** Apple Silicon servers' IDs are [zoned](../guides/regions_and_zones.md#resource-ids), which means they are of the form `{zone}/{id}`, e.g. `fr-par-1/11111111-1111-1111-1111-111111111111`
+
 - `state` - The state of the server. Check the possible values on
   our [sdk](https://github.com/scaleway/scaleway-sdk-go/blob/master/api/applesilicon/v1alpha1/applesilicon_sdk.go#L103).
 - `ip` - IPv4 address of the server (IPv4 address).

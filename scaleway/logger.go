@@ -41,6 +41,6 @@ func (l logger) Printf(format string, args ...interface{}) {
 }
 
 // ShouldLog allow the SDK to log only in DEBUG or TRACE levels.
-func (l logger) ShouldLog(level sdkLogger.LogLevel) bool {
+func (l logger) ShouldLog(_ sdkLogger.LogLevel) bool {
 	return logging.IsDebugOrHigher()
 }

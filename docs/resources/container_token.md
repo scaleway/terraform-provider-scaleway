@@ -1,7 +1,6 @@
 ---
+subcategory: "Containers"
 page_title: "Scaleway: scaleway_container_token"
-description: |-
-Manages Scaleway Container Tokens.
 ---
 
 # scaleway_container_token
@@ -58,6 +57,9 @@ The following arguments are supported:
 In addition to all arguments above, the following attributes are exported:
 
 - `id` - The ID of the token.
+
+~> **Important:** Container tokens' IDs are [regional](../guides/regions_and_zones.md#resource-ids), which means they are of the form `{region}/{id}`, e.g. `fr-par/11111111-1111-1111-1111-111111111111`
+
 - `token` - The token.
 
 ## Import

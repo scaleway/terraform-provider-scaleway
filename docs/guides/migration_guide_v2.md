@@ -1,7 +1,5 @@
 ---
 page_title: "Migration Guide"
-description: |-
-  Migrating your Scaleway provider from v1 to v2.
 ---
 
 # Migrating from Scaleway provider v1 to v2

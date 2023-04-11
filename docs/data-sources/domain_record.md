@@ -1,7 +1,6 @@
 ---
+subcategory: "Domains and DNS"
 page_title: "Scaleway: scaleway_domain_record"
-description: |-
-  Gets information about a domain record.
 ---
 
 # scaleway_domain_record
@@ -47,6 +46,10 @@ data "scaleway_domain_record" "by_id" {
 ## Attributes Reference
 
 In addition to all arguments above, the following attributes are exported:
+
+- `id` - The ID of the record.
+
+~> **Important:** Domain records' IDs are of the form `{dns_zone}/{id}`, e.g. `subdomain.domain.tld/11111111-1111-1111-1111-111111111111`
 
 - `ttl` - Time To Live of the record in seconds.
 - `priority` - The priority of the record (mostly used with an `MX` record)

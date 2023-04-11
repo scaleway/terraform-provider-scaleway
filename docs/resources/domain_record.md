@@ -1,7 +1,6 @@
 ---
+subcategory: "Domains and DNS"
 page_title: "Scaleway: scaleway_domain_record"
-description: |-
-  Manages Scaleway Domain records.
 ---
 
 # scaleway_domain_record
@@ -223,6 +222,14 @@ The following arguments are supported:
 - `weighted` - (Optional) You provide a list of IPs with their corresponding weights. These weights are used to proportionally direct requests to each IP. Depending on the weight of a record more or fewer requests are answered with its related IP compared to the others in the list. *(Can be more than 1)* [Documentation and usage example](https://www.scaleway.com/en/docs/network/domains-and-dns/how-to/manage-dns-records/#weight-records)
     - `ip` - (Required) The weighted IP
     - `weight` - (Required) The weight of the IP as an integer UInt32.
+
+## Attributes Reference
+
+In addition to all above arguments, the following attributes are exported:
+
+- `id` - The ID of the record.
+
+~> **Important:** Domain records' IDs are of the form `{dns_zone}/{id}`, e.g. `subdomain.domain.tld/11111111-1111-1111-1111-111111111111`
 
 ## Multiple records
 

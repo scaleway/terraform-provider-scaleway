@@ -1,7 +1,6 @@
 ---
+subcategory: "Instances"
 page_title: "Scaleway: scaleway_instance_ip"
-description: |-
-  Gets information about an instance IP.
 ---
 
 # scaleway_instance_ip
@@ -39,6 +38,9 @@ data "scaleway_instance_ip" "my_ip" {
 In addition to all above arguments, the following attributes are exported:
 
 - `id` - The ID of the IP.
+
+~> **Important:** Instance IPs' IDs are [zoned](../guides/regions_and_zones.md#resource-ids), which means they are of the form `{zone}/{id}`, e.g. `fr-par-1/11111111-1111-1111-1111-111111111111`
+
 - `address` - The IP address.
 - `reverse` - The reverse dns attached to this IP
 - `organization_id` - The organization ID the IP is associated with.

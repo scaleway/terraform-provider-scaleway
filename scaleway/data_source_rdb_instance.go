@@ -14,7 +14,7 @@ func dataSourceScalewayRDBInstance() *schema.Resource {
 	// Generate datasource schema from resource
 	dsSchema := datasourceSchemaFromResourceSchema(resourceScalewayRdbInstance().Schema)
 	// Set 'Optional' schema elements
-	addOptionalFieldsToSchema(dsSchema, "name")
+	addOptionalFieldsToSchema(dsSchema, "name", "region")
 
 	dsSchema["name"].ConflictsWith = []string{"instance_id"}
 	dsSchema["instance_id"] = &schema.Schema{
@@ -46,13 +46,17 @@ func dataSourceScalewayRDBInstanceRead(ctx context.Context, d *schema.ResourceDa
 		if err != nil {
 			return diag.FromErr(err)
 		}
-		if len(res.Instances) == 0 {
-			return diag.FromErr(fmt.Errorf("no instances found with the name %s", d.Get("name")))
+		for _, instance := range res.Instances {
+			if instance.Name == d.Get("name").(string) {
+				if instanceID != "" {
+					return diag.FromErr(fmt.Errorf("more than 1 instance found with the same name %s", d.Get("name")))
+				}
+				instanceID = instance.ID
+			}
 		}
-		if len(res.Instances) > 1 {
-			return diag.FromErr(fmt.Errorf("%d instances found with the same name %s", len(res.Instances), d.Get("name")))
+		if instanceID == "" {
+			return diag.FromErr(fmt.Errorf("no instance found with the name %s", d.Get("name")))
 		}
-		instanceID = res.Instances[0].ID
 	}
 
 	regionalID := datasourceNewRegionalizedID(instanceID, region)

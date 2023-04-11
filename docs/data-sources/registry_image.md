@@ -1,7 +1,6 @@
 ---
+subcategory: "Container Registry"
 page_title: "Scaleway: scaleway_registry_image"
-description: |-
-  Gets information about a registry image.
 ---
 
 # scaleway_registry_image
@@ -42,6 +41,9 @@ data "scaleway_registry_image" "my_image" {
 In addition to all above arguments, the following attributes are exported:
 
 - `id` - The ID of the registry image.
+
+~> **Important:** Registry images' IDs are [regional](../guides/regions_and_zones.md#resource-ids), which means they are of the form `{region}/{id}`, e.g. `fr-par/11111111-1111-1111-1111-111111111111`
+
 - `size` - The size of the registry image.
 - `visibility` - The privacy policy of the registry image.
 - `tags` - The tags associated with the registry image

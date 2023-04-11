@@ -1,7 +1,6 @@
 ---
+subcategory: "Domains and DNS"
 page_title: "Scaleway: scaleway_domain_zone"
-description: |-
-  Manages Scaleway Domain zones.
 ---
 
 # scaleway_domain_zone
@@ -33,6 +32,8 @@ The following arguments are supported:
 ## Attributes Reference
 
 In addition to all arguments above, the following attributes are exported:
+
+- `id` - The ID of the zone, which is of the form `{subdomain}.{domain}`
 
 - `ns` - NameServer list for zone.
 

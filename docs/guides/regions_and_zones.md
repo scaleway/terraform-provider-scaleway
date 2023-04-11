@@ -1,7 +1,5 @@
 ---
 page_title: "Scaleway Zones and Regions"
-description: |-
-  Scaleway resources can be created in availability zones and regions.
 ---
 
 # Scaleway Zones and Regions
@@ -39,6 +37,18 @@ List of availability zones by regions:
 To save this notion of regions and zones in the state, all the Terraform IDs of Scaleway contain the region or zone.
 This is saved in the following format: `{zone|region}/{resource_id}`.
 Where `zone` or `region` is the place where the resource is created and where `resource_id` is the ID that is used on Scaleway's console/API.
+
+If you need to retrieve the raw ID of the resource, you can either :
+
+- use the `trimprefix` function :
+
+`id = trimprefix(scaleway_resource.name.id, "${scaleway_resource.name.zone|region}/")`
+
+- use the `split` function :
+
+`zone|region = split("/", scaleway_resource.name.id)[0]`
+
+`id = split("/", scaleway_resource.name.id)[1]`
 
 ---
 

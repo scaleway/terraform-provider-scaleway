@@ -41,8 +41,17 @@ func resourceScalewayInstancePrivateNIC() *schema.Resource {
 				Description: "MAC address of the NIC",
 				Computed:    true,
 			},
+			"tags": {
+				Type: schema.TypeList,
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
+				Optional:    true,
+				Description: "The tags associated with the private-nic",
+			},
 			"zone": zoneSchema(),
 		},
+		CustomizeDiff: customizeDiffLocalityCheck("server_id", "private_network_id"),
 	}
 }
 
@@ -61,6 +70,7 @@ func resourceScalewayInstancePrivateNICCreate(ctx context.Context, d *schema.Res
 		Zone:             zone,
 		ServerID:         expandZonedID(d.Get("server_id").(string)).ID,
 		PrivateNetworkID: expandZonedID(d.Get("private_network_id").(string)).ID,
+		Tags:             expandStrings(d.Get("tags")),
 	}
 
 	privateNIC, err := instanceAPI.CreatePrivateNIC(
@@ -111,6 +121,10 @@ func resourceScalewayInstancePrivateNICRead(ctx context.Context, d *schema.Resou
 	_ = d.Set("private_network_id", newZonedID(zone, privateNIC.PrivateNetworkID).String())
 	_ = d.Set("mac_address", privateNIC.MacAddress)
 
+	if len(privateNIC.Tags) > 0 {
+		_ = d.Set("tags", privateNIC.Tags)
+	}
+
 	return nil
 }
 
@@ -152,6 +166,7 @@ func resourceScalewayInstancePrivateNICUpdate(ctx context.Context, d *schema.Res
 			Zone:             zone,
 			ServerID:         expandZonedID(d.Get("server_id").(string)).ID,
 			PrivateNetworkID: expandZonedID(d.Get("private_network_id").(string)).ID,
+			Tags:             expandStrings(d.Get("tags")),
 		}
 
 		privateNIC, err := instanceAPI.CreatePrivateNIC(
@@ -174,6 +189,19 @@ func resourceScalewayInstancePrivateNICUpdate(ctx context.Context, d *schema.Res
 				privateNIC.PrivateNic.ID,
 			),
 		)
+	} else if d.HasChange("tags") {
+		_, err := instanceAPI.UpdatePrivateNIC(
+			&instance.UpdatePrivateNICRequest{
+				Zone:         zone,
+				ServerID:     serverID,
+				PrivateNicID: privateNICID,
+				Tags:         expandUpdatedStringsPtr(d.Get("tags")),
+			},
+			scw.WithContext(ctx),
+		)
+		if err != nil {
+			return diag.FromErr(err)
+		}
 	}
 
 	return resourceScalewayInstancePrivateNICRead(ctx, d, meta)

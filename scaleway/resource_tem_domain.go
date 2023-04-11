@@ -2,6 +2,7 @@ package scaleway
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -29,10 +30,20 @@ func resourceScalewayTemDomain() *schema.Resource {
 				ForceNew:    true,
 				Description: "The domain name used when sending emails",
 			},
-			"id": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "ID of the domain",
+			"accept_tos": {
+				Type:        schema.TypeBool,
+				Required:    true,
+				ForceNew:    true,
+				Description: "Accept the Scaleway Terms of Service",
+				ValidateFunc: func(i interface{}, k string) (warnings []string, errors []error) {
+					v := i.(bool)
+					if !v {
+						errors = append(errors, fmt.Errorf("you must accept the Scaleway Terms of Service to use this service"))
+						return warnings, errors
+					}
+
+					return warnings, errors
+				},
 			},
 			"status": {
 				Type:        schema.TypeString,
@@ -90,6 +101,7 @@ func resourceScalewayTemDomainCreate(ctx context.Context, d *schema.ResourceData
 		Region:     region,
 		ProjectID:  d.Get("project_id").(string),
 		DomainName: d.Get("name").(string),
+		AcceptTos:  d.Get("accept_tos").(bool),
 	}, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
@@ -119,6 +131,7 @@ func resourceScalewayTemDomainRead(ctx context.Context, d *schema.ResourceData, 
 	}
 
 	_ = d.Set("name", domain.Name)
+	_ = d.Set("accept_tos", true)
 	_ = d.Set("status", domain.Status)
 	_ = d.Set("created_at", flattenTime(domain.CreatedAt))
 	_ = d.Set("next_check_at", flattenTime(domain.NextCheckAt))

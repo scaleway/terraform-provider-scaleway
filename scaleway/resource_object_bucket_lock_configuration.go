@@ -69,6 +69,8 @@ func resourceObjectLockConfiguration() *schema.Resource {
 				},
 				Description: "Specifies the Object Lock rule for the specified object.",
 			},
+			"region":     regionSchema(),
+			"project_id": projectIDSchema(),
 		},
 	}
 }
@@ -103,7 +105,7 @@ func resourceObjectLockConfigurationCreate(ctx context.Context, d *schema.Resour
 }
 
 func resourceObjectLockConfigurationRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	conn, _, bucket, err := s3ClientWithRegionAndName(meta, d.Id())
+	conn, _, bucket, err := s3ClientWithRegionAndName(d, meta, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -129,6 +131,14 @@ func resourceObjectLockConfigurationRead(ctx context.Context, d *schema.Resource
 		return nil
 	}
 
+	acl, err := conn.GetBucketAclWithContext(ctx, &s3.GetBucketAclInput{
+		Bucket: aws.String(bucket),
+	})
+	if err != nil {
+		return diag.FromErr(fmt.Errorf("couldn't read bucket acl: %s", err))
+	}
+	_ = d.Set("project_id", normalizeOwnerID(acl.Owner.ID))
+
 	_ = d.Set("bucket", bucket)
 	_ = d.Set("rule", flattenBucketLockConfigurationRule(output.ObjectLockConfiguration.Rule))
 
@@ -136,7 +146,7 @@ func resourceObjectLockConfigurationRead(ctx context.Context, d *schema.Resource
 }
 
 func resourceObjectLockConfigurationUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	conn, _, bucket, err := s3ClientWithRegionAndName(meta, d.Id())
+	conn, _, bucket, err := s3ClientWithRegionAndName(d, meta, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -161,7 +171,7 @@ func resourceObjectLockConfigurationUpdate(ctx context.Context, d *schema.Resour
 }
 
 func resourceObjectLockConfigurationDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	conn, _, bucket, err := s3ClientWithRegionAndName(meta, d.Id())
+	conn, _, bucket, err := s3ClientWithRegionAndName(d, meta, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}

@@ -77,6 +77,7 @@ func resourceScalewayContainerNamespace() *schema.Resource {
 				Optional:    true,
 				Default:     false,
 				Description: "Destroy registry on deletion",
+				Deprecated:  "Registry namespace is automatically destroyed with namespace",
 			},
 			"region":          regionSchema(),
 			"organization_id": organizationIDSchema(),
@@ -217,7 +218,7 @@ func resourceScalewayContainerNamespaceDelete(ctx context.Context, d *schema.Res
 			Region:      region,
 			NamespaceID: registryID,
 		})
-		if err != nil {
+		if err != nil && !is404Error(err) {
 			return diag.FromErr(err)
 		}
 		_, err = waitForRegistryNamespace(ctx, registryAPI, region, registryID, d.Timeout(schema.TimeoutDelete))

@@ -3,6 +3,7 @@ package scaleway
 import (
 	"context"
 	"fmt"
+	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -58,7 +59,8 @@ func TestAccScalewayTemDomain_Basic(t *testing.T) {
 			{
 				Config: fmt.Sprintf(`
 					resource scaleway_tem_domain cr01 {
-						name = "%s"
+						name       = "%s"
+						accept_tos = true
 					}
 				`, domainName),
 				Check: resource.ComposeTestCheckFunc(
@@ -66,6 +68,30 @@ func TestAccScalewayTemDomain_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_tem_domain.cr01", "name", domainName),
 					testCheckResourceAttrUUID("scaleway_tem_domain.cr01", "id"),
 				),
+			},
+		},
+	})
+}
+
+func TestAccScalewayTemDomain_Tos(t *testing.T) {
+	tt := NewTestTools(t)
+	defer tt.Cleanup()
+
+	domainName := "terraform-rs.test.local"
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      testAccCheckScalewayTemDomainDestroy(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`
+					resource scaleway_tem_domain cr01 {
+						name       = "%s"
+						accept_tos = false
+					}
+				`, domainName),
+				ExpectError: regexp.MustCompile("you must accept"),
 			},
 		},
 	})
@@ -104,14 +130,6 @@ func testAccCheckScalewayTemDomainDestroy(tt *TestTools) resource.TestCheckFunc 
 			}
 
 			api, region, id, err := temAPIWithRegionAndID(tt.Meta, rs.Primary.ID)
-			if err != nil {
-				return err
-			}
-
-			_, err = api.RevokeDomain(&tem.RevokeDomainRequest{
-				DomainID: id,
-				Region:   region,
-			})
 			if err != nil {
 				return err
 			}

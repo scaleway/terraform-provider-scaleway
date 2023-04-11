@@ -1,7 +1,6 @@
 ---
+subcategory: "Containers"
 page_title: "Scaleway: scaleway_container"
-description: |-
-    Manages Scaleway Containers.
 ---
 
 # scaleway_container
@@ -92,6 +91,10 @@ Note that if you want to use your own configuration, you must consult our config
 ## Attributes Reference
 
 In addition to all above arguments, the following attributes are exported:
+
+- `id` - The container's ID.
+
+~> **Important:** Containers' IDs are [regional](../guides/regions_and_zones.md#resource-ids), which means they are of the form `{region}/{id}`, e.g. `fr-par/11111111-1111-1111-1111-111111111111`
 
 - `region` - (Defaults to [provider](../index.md#region) `region`) The [region](../guides/regions_and_zones.md#regions) in which the container was created.
 - `status` - The container status.

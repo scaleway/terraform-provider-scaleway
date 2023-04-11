@@ -70,6 +70,7 @@ func resourceScalewayVPCPublicGatewayDHCPReservation() *schema.Resource {
 			},
 			"zone": zoneSchema(),
 		},
+		CustomizeDiff: customizeDiffLocalityCheck("gateway_network_id"),
 	}
 }
 

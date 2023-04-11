@@ -198,3 +198,8 @@ func expandFunctionsSecrets(secretsRawMap interface{}) []*function.Secret {
 
 	return secrets
 }
+
+func isFunctionDomainResolved(ctx context.Context, fc *function.Function, hostname string, timeout time.Duration) bool {
+	// Add a trailing dot to domain_name to follow cname format
+	return cnameResolver(ctx, timeout, hostname, fc.DomainName+".")
+}

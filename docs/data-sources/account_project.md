@@ -1,8 +1,7 @@
 ---
+subcategory: "Account"
 layout: "scaleway"
 page_title: "Scaleway: scaleway_account_project"
-description: |-
-Gets information about an existing IAM application.
 ---
 
 # scaleway_account_project

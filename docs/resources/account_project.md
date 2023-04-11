@@ -1,7 +1,6 @@
 ---
+subcategory: "Account"
 page_title: "Scaleway: scaleway_account_project"
-description: |-
-Manages Scaleway Account project.
 ---
 
 # scaleway_account_project
@@ -28,6 +27,7 @@ The following arguments are supported:
 
 In addition to all above arguments, the following attributes are exported:
 
+- `id` - The ID of the project (UUID format).
 - `created_at` - The Project creation time.
 - `updated_at` - The Project last update time.
 
