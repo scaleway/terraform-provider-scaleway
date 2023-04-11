@@ -90,35 +90,30 @@ func resourceScalewayTemDomain() *schema.Resource {
 				Computed:    true,
 				Description: "SMTP host to use to send emails",
 			},
-			// Port 25
 			"smtp_port_unsecure": {
 				Type:        schema.TypeInt,
 				Computed:    true,
-				Description: "SMTP port to use to send emails",
+				Description: "SMTP port to use to send emails. (Port 25)",
 			},
-			// Port 587
 			"smtp_port": {
 				Type:        schema.TypeInt,
 				Computed:    true,
-				Description: "SMTP port to use to send emails over TLS",
+				Description: "SMTP port to use to send emails over TLS. (Port 587)",
 			},
-			// Port 2587
 			"smtp_port_alternative": {
 				Type:        schema.TypeInt,
 				Computed:    true,
-				Description: "SMTP port to use to send emails over TLS",
+				Description: "SMTP port to use to send emails over TLS. (Port 2587)",
 			},
-			// Port 465
 			"smtps_port": {
 				Type:        schema.TypeInt,
 				Computed:    true,
-				Description: "SMTPS port to use to send emails over TLS Wrapper",
+				Description: "SMTPS port to use to send emails over TLS Wrapper. (Port 465)",
 			},
-			// Port 2465
 			"smtps_port_alternative": {
 				Type:        schema.TypeInt,
 				Computed:    true,
-				Description: "SMTPS port to use to send emails over TLS Wrapper",
+				Description: "SMTPS port to use to send emails over TLS Wrapper. (Port 2465)",
 			},
 			"region":     regionSchema(),
 			"project_id": projectIDSchema(),
