@@ -378,22 +378,22 @@ func TestAccScalewayK8SCluster_PoolPrivateNetwork(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
-				resource "scaleway_vpc_private_network" "private_network" {
+				resource "scaleway_vpc_private_network" "pn" {
 				  name       = "k8s-private-network"
 				}
 
-				resource "scaleway_k8s_cluster" "private_network" {
+				resource "scaleway_k8s_cluster" "cluster_with_pn" {
 				  name = "k8s-private-network-cluster"
 				  version = "%s"
 				  cni     = "cilium"
-				  private_network_id = scaleway_vpc_private_network.private_network.id
+				  private_network_id = scaleway_vpc_private_network.pn.id
 				  tags = [ "terraform-test", "scaleway_k8s_cluster", "private_network" ]
 				  delete_additional_resources = true
-				  depends_on = [scaleway_vpc_private_network.private_network]
+				  depends_on = [scaleway_vpc_private_network.pn]
 				}
 
-				resource "scaleway_k8s_pool" "private_network" {
-				  cluster_id          = scaleway_k8s_cluster.private_network.id
+				resource "scaleway_k8s_pool" "pool_with_pn" {
+				  cluster_id          = scaleway_k8s_cluster.cluster_with_pn.id
 				  name                = "pool"
 				  node_type           = "gp1_xs"
 				  size                = 2
@@ -402,11 +402,11 @@ func TestAccScalewayK8SCluster_PoolPrivateNetwork(t *testing.T) {
 				  wait_for_pool_ready = true
 				}`, latestK8SVersion),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckScalewayK8SClusterExists(tt, "scaleway_k8s_cluster.private_network"),
-					testAccCheckScalewayVPCPrivateNetworkExists(tt, "scaleway_vpc_private_network.private_network"),
-					testAccCheckScalewayK8SPoolExists(tt, "scaleway_k8s_pool.private_network"),
-					testAccCheckScalewayK8sClusterPrivateNetworkID(tt, "scaleway_k8s_cluster.private_network", "scaleway_vpc_private_network.private_network"),
-					testAccCheckScalewayK8SPoolServersAreInPrivateNetwork(tt, "scaleway_k8s_cluster.private_network", "scaleway_k8s_pool.private_network", "scaleway_vpc_private_network.private_network"),
+					testAccCheckScalewayK8SClusterExists(tt, "scaleway_k8s_cluster.cluster_with_pn"),
+					testAccCheckScalewayVPCPrivateNetworkExists(tt, "scaleway_vpc_private_network.pn"),
+					testAccCheckScalewayK8SPoolExists(tt, "scaleway_k8s_pool.pool_with_pn"),
+					testAccCheckScalewayK8sClusterPrivateNetworkID(tt, "scaleway_k8s_cluster.cluster_with_pn", "scaleway_vpc_private_network.pn"),
+					testAccCheckScalewayK8SPoolServersAreInPrivateNetwork(tt, "scaleway_k8s_cluster.cluster_with_pn", "scaleway_k8s_pool.pool_with_pn", "scaleway_vpc_private_network.pn"),
 				),
 			},
 		},

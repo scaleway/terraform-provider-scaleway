@@ -21,15 +21,16 @@ func TestAccScalewayDataSourceK8SVersion_Basic(t *testing.T) {
 			{
 				Config: `
 					data "scaleway_k8s_version" "by_name" {
-						name = "1.26.0"
+						name = "1.26.2"
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayK8SVersionExists(tt, "data.scaleway_k8s_version.by_name"),
 					resource.TestCheckResourceAttrSet("data.scaleway_k8s_version.by_name", "name"),
-					resource.TestCheckResourceAttr("data.scaleway_k8s_version.by_name", "available_cnis.#", "2"),
+					resource.TestCheckResourceAttr("data.scaleway_k8s_version.by_name", "available_cnis.#", "3"),
 					resource.TestCheckResourceAttr("data.scaleway_k8s_version.by_name", "available_cnis.0", "cilium"),
 					resource.TestCheckResourceAttr("data.scaleway_k8s_version.by_name", "available_cnis.1", "calico"),
+					resource.TestCheckResourceAttr("data.scaleway_k8s_version.by_name", "available_cnis.2", "kilo"),
 					resource.TestCheckResourceAttr("data.scaleway_k8s_version.by_name", "available_container_runtimes.#", "1"),
 					resource.TestCheckResourceAttr("data.scaleway_k8s_version.by_name", "available_container_runtimes.0", "containerd"),
 					resource.TestCheckResourceAttr("data.scaleway_k8s_version.by_name", "available_feature_gates.#", "3"),
