@@ -82,8 +82,45 @@ func expandLbACL(i interface{}) *lbSDK.ACL {
 func flattenLbACLAction(action *lbSDK.ACLAction) interface{} {
 	return []map[string]interface{}{
 		{
-			"type": action.Type,
+			"type":     action.Type,
+			"redirect": flattenLbACLActionRedirect(action.Redirect),
 		},
+	}
+}
+
+func expandLbACLAction(raw interface{}) *lbSDK.ACLAction {
+	if raw == nil || len(raw.([]interface{})) != 1 {
+		return nil
+	}
+	rawMap := raw.([]interface{})[0].(map[string]interface{})
+	return &lbSDK.ACLAction{
+		Type:     lbSDK.ACLActionType(rawMap["type"].(string)),
+		Redirect: expandLbACLActionRedirect(rawMap["redirect"]),
+	}
+}
+
+func flattenLbACLActionRedirect(redirect *lbSDK.ACLActionRedirect) interface{} {
+	if redirect == nil {
+		return nil
+	}
+	return []map[string]interface{}{
+		{
+			"type":   redirect.Type,
+			"target": redirect.Target,
+			"code":   redirect.Code,
+		},
+	}
+}
+
+func expandLbACLActionRedirect(raw interface{}) *lbSDK.ACLActionRedirect {
+	if raw == nil || len(raw.([]interface{})) != 1 {
+		return nil
+	}
+	rawMap := raw.([]interface{})[0].(map[string]interface{})
+	return &lbSDK.ACLActionRedirect{
+		Type:   lbSDK.ACLActionRedirectRedirectType(rawMap["type"].(string)),
+		Target: rawMap["target"].(string),
+		Code:   expandInt32Ptr(rawMap["code"]),
 	}
 }
 
@@ -199,16 +236,6 @@ func flattenPrivateNetworkConfigs(privateNetworks []*lbSDK.PrivateNetwork) inter
 	}
 
 	return pnI
-}
-
-func expandLbACLAction(raw interface{}) *lbSDK.ACLAction {
-	if raw == nil || len(raw.([]interface{})) != 1 {
-		return nil
-	}
-	rawMap := raw.([]interface{})[0].(map[string]interface{})
-	return &lbSDK.ACLAction{
-		Type: lbSDK.ACLActionType(rawMap["type"].(string)),
-	}
 }
 
 func flattenLbACLMatch(match *lbSDK.ACLMatch) interface{} {
