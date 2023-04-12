@@ -1,21 +1,28 @@
 package scaleway
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"net"
 	"net/http"
+	"reflect"
 	"strconv"
 	"strings"
+	"sync"
 	"testing"
 	"time"
 
+	"github.com/hashicorp/aws-sdk-go-base/tfawserr"
 	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/id"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/structure"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/scaleway/scaleway-sdk-go/namegenerator"
 	"github.com/scaleway/scaleway-sdk-go/scw"
@@ -953,4 +960,236 @@ func customizeDiffLocalityCheck(keys ...string) schema.CustomizeDiffFunc {
 		}
 		return nil
 	}
+}
+
+// NameWithSuffix returns in order the name if non-empty, a prefix generated name if non-empty, or fully generated name prefixed with "terraform-".
+// In the latter two cases, any suffix is appended to the generated name
+func NameWithSuffix(name string, namePrefix string, nameSuffix string) string {
+	if name != "" {
+		return name
+	}
+
+	if namePrefix != "" {
+		return id.PrefixedUniqueId(namePrefix) + nameSuffix
+	}
+
+	return id.UniqueId() + nameSuffix
+}
+
+// Name returns in order the name if non-empty, a prefix generated name if non-empty, or fully generated name prefixed with terraform-
+func Name(name string, namePrefix string) string {
+	return NameWithSuffix(name, namePrefix, "")
+}
+
+// retryWhenAWSErrCodeEquals retries the specified function when it returns one of the specified AWS error code.
+func retryWhenAWSErrCodeEquals(ctx context.Context, timeout time.Duration, f func() (interface{}, error), codes ...string) (interface{}, error) { // nosemgrep:ci.aws-in-func-name
+	return RetryWhen(ctx, timeout, f, func(err error) (bool, error) {
+		if tfawserr.ErrCodeEquals(err, codes...) {
+			return true, err
+		}
+
+		return false, err
+	})
+}
+
+// Retryable is a function that is used to decide if a function's error is retryable or not.
+// The error argument can be `nil`.
+// If the error is retryable, returns a bool value of `true` and an error (not necessarily the error passed as the argument).
+// If the error is not retryable, returns a bool value of `false` and either no error (success state) or an error (not necessarily the error passed as the argument).
+type Retryable func(error) (bool, error)
+
+// RetryWhen retries the function `f` when the error it returns satisfies `predicate`.
+// `f` is retried until `timeout` expires.
+func RetryWhen(ctx context.Context, timeout time.Duration, f func() (interface{}, error), retryable Retryable) (interface{}, error) {
+	var output interface{}
+
+	err := Retry(ctx, timeout, func() *retry.RetryError {
+		var err error
+		var again bool
+
+		output, err = f()
+		again, err = retryable(err)
+
+		if again {
+			return retry.RetryableError(err)
+		}
+
+		if err != nil {
+			return retry.NonRetryableError(err)
+		}
+
+		return nil
+	})
+
+	if TimedOut(err) {
+		output, err = f()
+	}
+
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
+}
+
+// RetryWhenNewResourceNotFound retries the specified function when it returns a retry.NotFoundError and `isNewResource` is true.
+func RetryWhenNewResourceNotFound(ctx context.Context, timeout time.Duration, f func() (interface{}, error), isNewResource bool) (interface{}, error) {
+	return RetryWhen(ctx, timeout, f, func(err error) (bool, error) {
+		if isNewResource && NotFound(err) {
+			return true, err
+		}
+
+		return false, err
+	})
+}
+
+type Options struct {
+	Delay                     time.Duration // Wait this time before starting checks
+	MinPollInterval           time.Duration // Smallest time to wait before refreshes (MinTimeout in retry.StateChangeConf)
+	PollInterval              time.Duration // Override MinPollInterval/backoff and only poll this often
+	NotFoundChecks            int           // Number of times to allow not found (nil result from Refresh)
+	ContinuousTargetOccurence int           // Number of times the Target state has to occur continuously
+}
+
+func (o Options) Apply(c *retry.StateChangeConf) {
+	if o.Delay > 0 {
+		c.Delay = o.Delay
+	}
+
+	if o.MinPollInterval > 0 {
+		c.MinTimeout = o.MinPollInterval
+	}
+
+	if o.PollInterval > 0 {
+		c.PollInterval = o.PollInterval
+	}
+
+	if o.NotFoundChecks > 0 {
+		c.NotFoundChecks = o.NotFoundChecks
+	}
+
+	if o.ContinuousTargetOccurence > 0 {
+		c.ContinuousTargetOccurence = o.ContinuousTargetOccurence
+	}
+}
+
+type OptionsFunc func(*Options)
+
+// Retry allows configuration of StateChangeConf's various time arguments.
+// This is especially useful for AWS services that are prone to throttling, such as Route53, where
+// the default durations cause problems.
+func Retry(ctx context.Context, timeout time.Duration, f retry.RetryFunc, optFns ...OptionsFunc) error {
+	// These are used to pull the error out of the function; need a mutex to
+	// avoid a data race.
+	var resultErr error
+	var resultErrMu sync.Mutex
+
+	options := Options{}
+	for _, fn := range optFns {
+		fn(&options)
+	}
+
+	c := &retry.StateChangeConf{
+		Pending:    []string{"retryableerror"},
+		Target:     []string{"success"},
+		Timeout:    timeout,
+		MinTimeout: 500 * time.Millisecond,
+		Refresh: func() (interface{}, string, error) {
+			rerr := f()
+
+			resultErrMu.Lock()
+			defer resultErrMu.Unlock()
+
+			if rerr == nil {
+				resultErr = nil
+				return 42, "success", nil
+			}
+
+			resultErr = rerr.Err
+
+			if rerr.Retryable {
+				return 42, "retryableerror", nil
+			}
+
+			return nil, "quit", rerr.Err
+		},
+	}
+
+	options.Apply(c)
+
+	_, waitErr := c.WaitForStateContext(ctx)
+
+	// Need to acquire the lock here to be able to avoid race using resultErr as
+	// the return value
+	resultErrMu.Lock()
+	defer resultErrMu.Unlock()
+
+	// resultErr may be nil because the wait timed out and resultErr was never
+	// set; this is still an error
+	if resultErr == nil {
+		return waitErr
+	}
+	// resultErr takes precedence over waitErr if both are set because it is
+	// more likely to be useful
+	return resultErr
+}
+
+type EmptyResultError struct {
+	LastRequest interface{}
+}
+
+func (e *EmptyResultError) Error() string {
+	return "empty result"
+}
+
+func NewEmptyResultError(lastRequest interface{}) error {
+	return &EmptyResultError{
+		LastRequest: lastRequest,
+	}
+}
+
+// BytesEqual compares two arrays of JSON bytes and returns true if the unmarshaled objects represented by the bytes
+// are equal according to `reflect.DeepEqual`.
+func BytesEqual(b1, b2 []byte) bool {
+	var o1 interface{}
+	if err := json.Unmarshal(b1, &o1); err != nil {
+		return false
+	}
+
+	var o2 interface{}
+	if err := json.Unmarshal(b2, &o2); err != nil {
+		return false
+	}
+
+	return reflect.DeepEqual(o1, o2)
+}
+
+func StringsEquivalent(s1, s2 string) bool {
+	b1 := bytes.NewBufferString("")
+	if err := json.Compact(b1, []byte(s1)); err != nil {
+		return false
+	}
+
+	b2 := bytes.NewBufferString("")
+	if err := json.Compact(b2, []byte(s2)); err != nil {
+		return false
+	}
+
+	return BytesEqual(b1.Bytes(), b2.Bytes())
+}
+
+// PolicyToSet returns the existing policy if the new policy is equivalent.
+// Otherwise, it returns the new policy. Either policy is normalized.
+func PolicyToSet(exist, newPolicy string) (string, error) {
+	policyToSet, err := SecondJSONUnlessEquivalent(exist, newPolicy)
+	if err != nil {
+		return "", fmt.Errorf("while checking equivalency of existing policy (%s) and new policy (%s), encountered: %w", exist, newPolicy, err)
+	}
+
+	policyToSet, err = structure.NormalizeJsonString(policyToSet)
+	if err != nil {
+		return "", fmt.Errorf("policy (%s) is invalid JSON: %w", policyToSet, err)
+	}
+
+	return policyToSet, nil
 }
