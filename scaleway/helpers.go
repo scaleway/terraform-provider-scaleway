@@ -1076,7 +1076,7 @@ func (o Options) Apply(c *retry.StateChangeConf) {
 type OptionsFunc func(*Options)
 
 // Retry allows configuration of StateChangeConf's various time arguments.
-// This is especially useful for AWS services that are prone to throttling, such as Route53, where
+// This is especially useful for Scaleway services that are prone to throttling, where
 // the default durations cause problems.
 func Retry(ctx context.Context, timeout time.Duration, f retry.RetryFunc, optFns ...OptionsFunc) error {
 	// These are used to pull the error out of the function; need a mutex to

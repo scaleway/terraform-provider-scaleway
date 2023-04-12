@@ -234,23 +234,61 @@ func (m AttributeMap) ResourceDataToAPIAttributesCreate(d *schema.ResourceData) 
 	return apiAttributes, nil
 }
 
+func (m AttributeMap) ResourceDataToAPIAttributesUpdate(d *schema.ResourceData) (map[string]string, error) {
+	apiAttributes := map[string]string{}
+
+	for tfAttributeName, attributeInfo := range m {
+		if attributeInfo.skipUpdate {
+			continue
+		}
+
+		// Purely Computed values aren't specified on update.
+		if attributeInfo.tfComputed && !attributeInfo.tfOptional {
+			continue
+		}
+
+		if d.HasChange(tfAttributeName) {
+			v := d.Get(tfAttributeName)
+
+			var apiAttributeValue string
+
+			switch t := attributeInfo.tfType; t {
+			case schema.TypeBool:
+				apiAttributeValue = strconv.FormatBool(v.(bool))
+			case schema.TypeInt:
+				apiAttributeValue = strconv.Itoa(v.(int))
+			case schema.TypeString:
+				apiAttributeValue = v.(string)
+
+				if attributeInfo.isIAMPolicy {
+					policy, err := structure.NormalizeJsonString(apiAttributeValue)
+					if err != nil {
+						return nil, fmt.Errorf("policy (%s) is invalid JSON: %w", apiAttributeValue, err)
+					}
+
+					apiAttributeValue = policy
+				}
+			default:
+				return nil, fmt.Errorf("attribute %s is of unsupported type: %d", tfAttributeName, t)
+			}
+
+			apiAttributes[attributeInfo.apiAttributeName] = apiAttributeValue
+		}
+	}
+
+	return apiAttributes, nil
+}
+
 func getQueueAttributeMap() AttributeMap {
 	return NewAttrMap(map[string]string{
-		"arn":                               sqs.QueueAttributeNameQueueArn,
-		"content_based_deduplication":       sqs.QueueAttributeNameContentBasedDeduplication,
-		"deduplication_scope":               sqs.QueueAttributeNameDeduplicationScope,
-		"delay_seconds":                     sqs.QueueAttributeNameDelaySeconds,
-		"fifo_queue":                        sqs.QueueAttributeNameFifoQueue,
-		"fifo_throughput_limit":             sqs.QueueAttributeNameFifoThroughputLimit,
-		"kms_data_key_reuse_period_seconds": sqs.QueueAttributeNameKmsDataKeyReusePeriodSeconds,
-		"kms_master_key_id":                 sqs.QueueAttributeNameKmsMasterKeyId,
-		"max_message_size":                  sqs.QueueAttributeNameMaximumMessageSize,
-		"message_retention_seconds":         sqs.QueueAttributeNameMessageRetentionPeriod,
-		"policy":                            sqs.QueueAttributeNamePolicy,
-		"receive_wait_time_seconds":         sqs.QueueAttributeNameReceiveMessageWaitTimeSeconds,
-		"redrive_allow_policy":              sqs.QueueAttributeNameRedriveAllowPolicy,
-		"redrive_policy":                    sqs.QueueAttributeNameRedrivePolicy,
-		"sqs_managed_sse_enabled":           sqs.QueueAttributeNameSqsManagedSseEnabled,
-		"visibility_timeout_seconds":        sqs.QueueAttributeNameVisibilityTimeout,
+		"arn":                         sqs.QueueAttributeNameQueueArn,
+		"content_based_deduplication": sqs.QueueAttributeNameContentBasedDeduplication,
+		"delay_seconds":               sqs.QueueAttributeNameDelaySeconds,
+		"fifo_queue":                  sqs.QueueAttributeNameFifoQueue,
+		"kms_master_key_id":           sqs.QueueAttributeNameKmsMasterKeyId,
+		"max_message_size":            sqs.QueueAttributeNameMaximumMessageSize,
+		"message_retention_seconds":   sqs.QueueAttributeNameMessageRetentionPeriod,
+		"receive_wait_time_seconds":   sqs.QueueAttributeNameReceiveMessageWaitTimeSeconds,
+		"visibility_timeout_seconds":  sqs.QueueAttributeNameVisibilityTimeout,
 	}, queueSchema).WithIAMPolicyAttribute("policy").WithMissingSetToNil("*").WithAlwaysSendConfiguredBooleanValueOnCreate("sqs_managed_sse_enabled")
 }
