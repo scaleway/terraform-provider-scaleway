@@ -56,3 +56,16 @@ In addition to all above arguments, the following attributes are exported:
 - `spf_config` - The snippet of the SPF record that should be registered in the DNS zone.
 
 - `dkim_config` - The DKIM public key, as should be recorded in the DNS zone.
+
+- `smtp_host` - The SMTP host to use to send emails.
+
+- `smtp_port_unsecure` - The SMTP port to use to send emails.
+
+- `smtp_port` - The SMTP port to use to send emails over TLS.
+
+- `smtp_port_alternative` - The SMTP port to use to send emails over TLS.
+
+- `smtps_port` - The SMTPS port to use to send emails over TLS Wrapper.
+
+- `smtps_port_alternative` - The SMTPS port to use to send emails over TLS Wrapper.
+
