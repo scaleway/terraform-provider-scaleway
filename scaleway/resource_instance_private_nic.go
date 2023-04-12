@@ -170,7 +170,10 @@ func resourceScalewayInstancePrivateNICDelete(ctx context.Context, d *schema.Res
 	}
 
 	_, err = waitForPrivateNIC(ctx, instanceAPI, zone, serverID, privateNICID, d.Timeout(schema.TimeoutDelete))
-	if err != nil && !is404Error(err) {
+	if err != nil {
+		if is404Error(err) {
+			return nil
+		}
 		return diag.FromErr(err)
 	}
 
@@ -180,12 +183,18 @@ func resourceScalewayInstancePrivateNICDelete(ctx context.Context, d *schema.Res
 		Zone:         zone,
 	}, scw.WithContext(ctx))
 
-	if err != nil && !is404Error(err) {
+	if err != nil {
+		if is404Error(err) {
+			return nil
+		}
 		return diag.FromErr(err)
 	}
 
 	_, err = waitForPrivateNIC(ctx, instanceAPI, zone, serverID, privateNICID, d.Timeout(schema.TimeoutDelete))
-	if err != nil && !is404Error(err) {
+	if err != nil {
+		if is404Error(err) {
+			return nil
+		}
 		return diag.FromErr(err)
 	}
 
