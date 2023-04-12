@@ -6,6 +6,7 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/sqs"
+	"github.com/hashicorp/aws-sdk-go-base/tfawserr"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -215,9 +216,60 @@ func resourceScalewayMNQQueueRead(ctx context.Context, d *schema.ResourceData, m
 }
 
 func resourceScalewayMNQQueueUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	api, _, err := SQSClientWithRegion(d, meta)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	attributes, err := getQueueAttributeMap().ResourceDataToAPIAttributesUpdate(d)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	input := &sqs.SetQueueAttributesInput{
+		Attributes: aws.StringMap(attributes),
+		QueueUrl:   aws.String(d.Id()),
+	}
+
+	log.Printf("[DEBUG] Updating SQS Queue: %s", input)
+	_, err = api.SetQueueAttributesWithContext(ctx, input)
+
+	if err != nil {
+		return diag.Errorf("updating SQS Queue (%s) attributes: %s", d.Id(), err)
+	}
+
+	err = waitQueueAttributesPropagated(ctx, api, d.Id(), attributes)
+
+	if err != nil {
+		return diag.Errorf("waiting for SQS Queue (%s) attributes update: %s", d.Id(), err)
+	}
 	return resourceScalewayMNQQueueRead(ctx, d, meta)
 }
 
 func resourceScalewayMNQQueueDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	return resourceScalewayMNQQueueRead(ctx, d, meta)
+	api, _, err := SQSClientWithRegion(d, meta)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	log.Printf("[DEBUG] Deleting SQS Queue: %s", d.Id())
+	_, err = api.DeleteQueueWithContext(ctx, &sqs.DeleteQueueInput{
+		QueueUrl: aws.String(d.Id()),
+	})
+
+	if tfawserr.ErrCodeEquals(err, sqs.ErrCodeQueueDoesNotExist) {
+		return nil
+	}
+
+	if err != nil {
+		return diag.Errorf("deleting SQS Queue (%s): %s", d.Id(), err)
+	}
+
+	err = waitQueueDeleted(ctx, api, d.Id())
+
+	if err != nil {
+		return diag.Errorf("waiting for SQS Queue (%s) delete: %s", d.Id(), err)
+	}
+
+	return nil
 }

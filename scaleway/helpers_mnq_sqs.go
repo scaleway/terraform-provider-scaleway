@@ -18,6 +18,11 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
+const (
+	queueStateExists    = "exists"
+	queueDeletedTimeout = 3 * time.Minute
+)
+
 func waitQueueAttributesPropagated(ctx context.Context, conn *sqs.SQS, url string, expected map[string]string) error {
 	stateConf := &retry.StateChangeConf{
 		Pending:                   []string{queueAttributeStateNotEqual},
@@ -259,4 +264,36 @@ func resourceQueueCustomizeDiff(_ context.Context, diff *schema.ResourceDiff, _ 
 	}
 
 	return nil
+}
+
+func statusQueueState(ctx context.Context, conn *sqs.SQS, url string) retry.StateRefreshFunc {
+	return func() (interface{}, string, error) {
+		output, err := FindQueueAttributesByURL(ctx, conn, url)
+
+		if NotFound(err) {
+			return nil, "", nil
+		}
+
+		if err != nil {
+			return nil, "", err
+		}
+
+		return output, queueStateExists, nil
+	}
+}
+
+func waitQueueDeleted(ctx context.Context, conn *sqs.SQS, url string) error {
+	stateConf := &retry.StateChangeConf{
+		Pending:                   []string{queueStateExists},
+		Target:                    []string{},
+		Refresh:                   statusQueueState(ctx, conn, url),
+		Timeout:                   queueDeletedTimeout,
+		ContinuousTargetOccurence: 15,              // set to accommodate GovCloud, commercial, China, etc. - avoid lowering
+		MinTimeout:                3 * time.Second, // set to accommodate GovCloud, commercial, China, etc. - avoid lowering
+		NotFoundChecks:            5,               // set to accommodate GovCloud, commercial, China, etc. - avoid lowering
+	}
+
+	_, err := stateConf.WaitForStateContext(ctx)
+
+	return err
 }
