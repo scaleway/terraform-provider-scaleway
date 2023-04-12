@@ -85,6 +85,36 @@ func resourceScalewayTemDomain() *schema.Resource {
 				Computed:    true,
 				Description: "DKIM public key, as should be recorded in the DNS zone",
 			},
+			"smtp_host": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "SMTP host to use to send emails",
+			},
+			"smtp_port_unsecure": {
+				Type:        schema.TypeInt,
+				Computed:    true,
+				Description: fmt.Sprintf("SMTP port to use to send emails. (Port %d)", tem.SMTPPortUnsecure),
+			},
+			"smtp_port": {
+				Type:        schema.TypeInt,
+				Computed:    true,
+				Description: fmt.Sprintf("SMTP port to use to send emails over TLS. (Port %d)", tem.SMTPPort),
+			},
+			"smtp_port_alternative": {
+				Type:        schema.TypeInt,
+				Computed:    true,
+				Description: fmt.Sprintf("SMTP port to use to send emails over TLS. (Port %d)", tem.SMTPPortAlternative),
+			},
+			"smtps_port": {
+				Type:        schema.TypeInt,
+				Computed:    true,
+				Description: fmt.Sprintf("SMTPS port to use to send emails over TLS Wrapper. (Port %d)", tem.SMTPSPort),
+			},
+			"smtps_port_alternative": {
+				Type:        schema.TypeInt,
+				Computed:    true,
+				Description: fmt.Sprintf("SMTPS port to use to send emails over TLS Wrapper. (Port %d)", tem.SMTPSPortAlternative),
+			},
 			"region":     regionSchema(),
 			"project_id": projectIDSchema(),
 		},
@@ -140,6 +170,12 @@ func resourceScalewayTemDomainRead(ctx context.Context, d *schema.ResourceData, 
 	_ = d.Set("last_error", domain.LastError)
 	_ = d.Set("spf_config", domain.SpfConfig)
 	_ = d.Set("dkim_config", domain.DkimConfig)
+	_ = d.Set("smtp_host", tem.SMTPHost)
+	_ = d.Set("smtp_port_unsecure", tem.SMTPPortUnsecure)
+	_ = d.Set("smtp_port", tem.SMTPPort)
+	_ = d.Set("smtp_port_alternative", tem.SMTPPortAlternative)
+	_ = d.Set("smtps_port", tem.SMTPSPort)
+	_ = d.Set("smtps_port_alternative", tem.SMTPSPortAlternative)
 	_ = d.Set("region", string(region))
 	_ = d.Set("project_id", domain.ProjectID)
 
