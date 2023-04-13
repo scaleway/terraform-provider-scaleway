@@ -63,6 +63,10 @@ func resourceScalewayInstanceSecurityGroupRulesRead(ctx context.Context, d *sche
 
 	inboundRules, outboundRules, err := getSecurityGroupRules(ctx, instanceAPI, zone, securityGroupID, d)
 	if err != nil {
+		if is404Error(err) {
+			d.SetId("")
+			return nil
+		}
 		return diag.FromErr(err)
 	}
 
