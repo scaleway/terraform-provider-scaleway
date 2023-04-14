@@ -24,7 +24,6 @@ func TestAccScalewayDataSourceIamGroup_Basic(t *testing.T) {
 					
 					data "scaleway_iam_group" "find_by_id_basic" {
 					  group_id        = scaleway_iam_group.main_ds_basic.id
-					  organization_id = "105bdce1-64c0-48ab-899d-868455867ecf"
 					}
 					
 					data "scaleway_iam_group" "find_by_name_basic" {
