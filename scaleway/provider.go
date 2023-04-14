@@ -132,6 +132,7 @@ func Provider(config *ProviderConfig) plugin.ProviderFunc {
 				"scaleway_lb_route":                            resourceScalewayLbRoute(),
 				"scaleway_registry_namespace":                  resourceScalewayRegistryNamespace(),
 				"scaleway_tem_domain":                          resourceScalewayTemDomain(),
+				"scaleway_tem_domain_check":                    resourceScalewayTemDomainCheck(),
 				"scaleway_container":                           resourceScalewayContainer(),
 				"scaleway_container_token":                     resourceScalewayContainerToken(),
 				"scaleway_rdb_acl":                             resourceScalewayRdbACL(),
