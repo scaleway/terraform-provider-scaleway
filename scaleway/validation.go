@@ -2,7 +2,9 @@ package scaleway
 
 import (
 	"fmt"
+	"strings"
 
+	tfvalidator "github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/scaleway/scaleway-sdk-go/validation"
 )
 
@@ -60,4 +62,9 @@ func validationEmail() func(interface{}, string) ([]string, []error) {
 
 		return
 	}
+}
+
+func validationIP(i interface{}, k string) ([]string, []error) {
+	i = strings.TrimSpace(i.(string))
+	return tfvalidator.IsCIDR(i, k)
 }

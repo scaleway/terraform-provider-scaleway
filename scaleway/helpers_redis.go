@@ -3,6 +3,7 @@ package scaleway
 import (
 	"context"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -91,7 +92,8 @@ func expandRedisACLSpecs(i interface{}) ([]*redis.ACLRuleSpec, error) {
 		if ruleDescription, hasDescription := rawRule["description"]; hasDescription {
 			rule.Description = ruleDescription.(string)
 		}
-		ip, err := expandIPNet(rawRule["ip"].(string))
+		ipSanitized := strings.TrimSpace(rawRule["ip"].(string))
+		ip, err := expandIPNet(ipSanitized)
 		if err != nil {
 			return nil, fmt.Errorf("failed to validate acl ip (%s): %w", rawRule["ip"].(string), err)
 		}
