@@ -1,11 +1,8 @@
 package scaleway
 
 import (
-	"errors"
-
 	"github.com/aws/aws-sdk-go/aws/endpoints"
 	"github.com/hashicorp/aws-sdk-go-base/tfawserr"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 )
 
 // Error code constants missing from AWS Go SDK:
@@ -134,12 +131,4 @@ func errorISOUnsupported(partition string, err error) bool {
 	}
 
 	return false
-}
-
-// NotFound returns true if the error represents a "resource not found" condition.
-// Specifically, NotFound returns true if the error or a wrapped error is of type
-// retry.NotFoundError.
-func NotFound(err error) bool {
-	var e *retry.NotFoundError // nosemgrep:ci.is-not-found-error
-	return errors.As(err, &e)
 }
