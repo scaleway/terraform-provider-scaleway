@@ -66,7 +66,7 @@ func TestAccScalewayCockpitToken_Basic(t *testing.T) {
 	defer tt.Cleanup()
 
 	projectName := "tf_tests_cockpit_token_basic"
-	tokenName := "tf_tests_cockpit_token_basic"
+	tokenName := projectName
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
@@ -109,12 +109,56 @@ func TestAccScalewayCockpitToken_Basic(t *testing.T) {
 	})
 }
 
+func TestAccScalewayCockpitToken_NoScopes(t *testing.T) {
+	tt := NewTestTools(t)
+	defer tt.Cleanup()
+
+	projectName := "tf_tests_cockpit_token_no_scopes"
+	tokenName := "tf_tests_cockpit_token_no_scopes"
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      testAccCheckScalewayCockpitTokenDestroy(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`
+					resource "scaleway_account_project" "project" {
+						name = "%[1]s"
+				  	}
+
+					resource scaleway_cockpit main {
+						project_id = scaleway_account_project.project.id
+					}
+
+					resource scaleway_cockpit_token main {
+						project_id = scaleway_cockpit.main.project_id
+						name = "%[2]s"
+					}
+				`, projectName, tokenName),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayCockpitTokenExists(tt, "scaleway_cockpit_token.main"),
+					resource.TestCheckResourceAttrPair("scaleway_cockpit_token.main", "project_id", "scaleway_cockpit.main", "project_id"),
+					resource.TestCheckResourceAttrSet("scaleway_cockpit_token.main", "secret_key"),
+					resource.TestCheckResourceAttr("scaleway_cockpit_token.main", "name", tokenName),
+					resource.TestCheckResourceAttr("scaleway_cockpit_token.main", "scopes.0.query_metrics", "false"),
+					resource.TestCheckResourceAttr("scaleway_cockpit_token.main", "scopes.0.write_metrics", "true"),
+					resource.TestCheckResourceAttr("scaleway_cockpit_token.main", "scopes.0.setup_metrics_rules", "false"),
+					resource.TestCheckResourceAttr("scaleway_cockpit_token.main", "scopes.0.query_logs", "false"),
+					resource.TestCheckResourceAttr("scaleway_cockpit_token.main", "scopes.0.write_logs", "true"),
+					resource.TestCheckResourceAttr("scaleway_cockpit_token.main", "scopes.0.setup_logs_rules", "false"),
+				),
+			},
+		},
+	})
+}
+
 func TestAccScalewayCockpitToken_Update(t *testing.T) {
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
 
 	projectName := "tf_tests_cockpit_token_update"
-	tokenName := "tf_tests_cockpit_token_update"
+	tokenName := projectName
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },

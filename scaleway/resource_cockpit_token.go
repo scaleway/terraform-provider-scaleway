@@ -33,63 +33,11 @@ func resourceScalewayCockpitToken() *schema.Resource {
 			"scopes": {
 				Type:        schema.TypeList,
 				Optional:    true,
+				Computed:    true,
 				ForceNew:    true,
-				MinItems:    1,
 				MaxItems:    1,
 				Description: "Endpoints",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"query_metrics": {
-							Type:        schema.TypeBool,
-							Optional:    true,
-							Default:     false,
-							ForceNew:    true,
-							Description: "Query metrics",
-						},
-						"write_metrics": {
-							Type:        schema.TypeBool,
-							Optional:    true,
-							Default:     true,
-							ForceNew:    true,
-							Description: "Write metrics",
-						},
-						"setup_metrics_rules": {
-							Type:        schema.TypeBool,
-							Optional:    true,
-							Default:     false,
-							ForceNew:    true,
-							Description: "Setup metrics rules",
-						},
-						"query_logs": {
-							Type:        schema.TypeBool,
-							Optional:    true,
-							Default:     false,
-							ForceNew:    true,
-							Description: "Query logs",
-						},
-						"write_logs": {
-							Type:        schema.TypeBool,
-							Optional:    true,
-							Default:     true,
-							ForceNew:    true,
-							Description: "Write logs",
-						},
-						"setup_logs_rules": {
-							Type:        schema.TypeBool,
-							Optional:    true,
-							Default:     false,
-							ForceNew:    true,
-							Description: "Setup logs rules",
-						},
-						"setup_alerts": {
-							Type:        schema.TypeBool,
-							Optional:    true,
-							Default:     false,
-							ForceNew:    true,
-							Description: "Setup alerts",
-						},
-					},
-				},
+				Elem:        resourceScalewayCockpitTokenScopes(),
 			},
 			"secret_key": {
 				Type:        schema.TypeString,
@@ -98,6 +46,62 @@ func resourceScalewayCockpitToken() *schema.Resource {
 				Sensitive:   true,
 			},
 			"project_id": projectIDSchema(),
+		},
+	}
+}
+
+func resourceScalewayCockpitTokenScopes() *schema.Resource {
+	return &schema.Resource{
+		Schema: map[string]*schema.Schema{
+			"query_metrics": {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Default:     false,
+				ForceNew:    true,
+				Description: "Query metrics",
+			},
+			"write_metrics": {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Default:     true,
+				ForceNew:    true,
+				Description: "Write metrics",
+			},
+			"setup_metrics_rules": {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Default:     false,
+				ForceNew:    true,
+				Description: "Setup metrics rules",
+			},
+			"query_logs": {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Default:     false,
+				ForceNew:    true,
+				Description: "Query logs",
+			},
+			"write_logs": {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Default:     true,
+				ForceNew:    true,
+				Description: "Write logs",
+			},
+			"setup_logs_rules": {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Default:     false,
+				ForceNew:    true,
+				Description: "Setup logs rules",
+			},
+			"setup_alerts": {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Default:     false,
+				ForceNew:    true,
+				Description: "Setup alerts",
+			},
 		},
 	}
 }
@@ -111,6 +115,21 @@ func resourceScalewayCockpitTokenCreate(ctx context.Context, d *schema.ResourceD
 	projectID := d.Get("project_id").(string)
 	name := d.Get("name").(string)
 	scopes := expandCockpitTokenScopes(d.Get("scopes"))
+
+	if scopes == nil {
+		schema := resourceScalewayCockpitTokenScopes().Schema
+		scopes = &cockpit.TokenScopes{
+			QueryMetrics:      schema["query_metrics"].Default.(bool),
+			WriteMetrics:      schema["write_metrics"].Default.(bool),
+			SetupMetricsRules: schema["setup_metrics_rules"].Default.(bool),
+			QueryLogs:         schema["query_logs"].Default.(bool),
+			WriteLogs:         schema["write_logs"].Default.(bool),
+			SetupLogsRules:    schema["setup_logs_rules"].Default.(bool),
+			SetupAlerts:       schema["setup_alerts"].Default.(bool),
+		}
+	}
+
+	l.Debugf("Creating token %+v", scopes)
 
 	res, err := api.CreateToken(&cockpit.CreateTokenRequest{
 		Name:      name,
