@@ -7,10 +7,6 @@ page_title: "Scaleway: scaleway_function_cron"
 
 Creates and manages Scaleway Function Triggers. For the moment, the feature is limited to CRON Schedule (time-based).
 
-For more information consult
-the [documentation](https://www.scaleway.com/en/docs/compute/functions/api-cli/fun-uploading-with-serverless-framework/#configuring-events)
-.
-
 For more details about the limitation
 check [functions-limitations](https://www.scaleway.com/en/docs/compute/functions/reference-content/functions-limitations/).
 
