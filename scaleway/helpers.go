@@ -15,6 +15,7 @@ import (
 	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/scaleway/scaleway-sdk-go/namegenerator"
@@ -953,4 +954,55 @@ func customizeDiffLocalityCheck(keys ...string) schema.CustomizeDiffFunc {
 		}
 		return nil
 	}
+}
+
+type TooManyResultsError struct {
+	Count       int
+	LastRequest interface{}
+}
+
+func (e *TooManyResultsError) Error() string {
+	return fmt.Sprintf("too many results: wanted 1, got %d", e.Count)
+}
+
+func (e *TooManyResultsError) Is(err error) bool {
+	_, ok := err.(*TooManyResultsError) //nolint:errorlint // Explicitly does *not* match down the error tree
+	return ok
+}
+
+func (e *TooManyResultsError) As(target interface{}) bool {
+	t, ok := target.(**retry.NotFoundError)
+	if !ok {
+		return false
+	}
+
+	*t = &retry.NotFoundError{
+		Message:     e.Error(),
+		LastRequest: e.LastRequest,
+	}
+
+	return true
+}
+
+var ErrTooManyResults = &TooManyResultsError{}
+
+// SingularDataSourceFindError returns a standard error message for a singular data source's non-nil resource find error.
+func SingularDataSourceFindError(resourceType string, err error) error {
+	if NotFound(err) {
+		if errors.Is(err, &TooManyResultsError{}) {
+			return fmt.Errorf("multiple %[1]ss matched; use additional constraints to reduce matches to a single %[1]s", resourceType)
+		}
+
+		return fmt.Errorf("no matching %[1]s found", resourceType)
+	}
+
+	return fmt.Errorf("reading %s: %w", resourceType, err)
+}
+
+// NotFound returns true if the error represents a "resource not found" condition.
+// Specifically, NotFound returns true if the error or a wrapped error is of type
+// retry.NotFoundError.
+func NotFound(err error) bool {
+	var e *retry.NotFoundError // nosemgrep:ci.is-not-found-error
+	return errors.As(err, &e)
 }
