@@ -11,9 +11,9 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/validation"
 )
 
-func DataSourceAvailabilityZone() *schema.Resource {
+func DataSourceAvailabilityZones() *schema.Resource {
 	return &schema.Resource{
-		ReadWithoutTimeout: dataSourceAvailabilityZoneRead,
+		ReadWithoutTimeout: dataSourceAvailabilityZonesRead,
 
 		Timeouts: &schema.ResourceTimeout{
 			Read: schema.DefaultTimeout(20 * time.Minute),
@@ -38,7 +38,7 @@ func DataSourceAvailabilityZone() *schema.Resource {
 	}
 }
 
-func dataSourceAvailabilityZoneRead(_ context.Context, d *schema.ResourceData, _ interface{}) diag.Diagnostics {
+func dataSourceAvailabilityZonesRead(_ context.Context, d *schema.ResourceData, _ interface{}) diag.Diagnostics {
 	regionStr := d.Get("region").(string)
 
 	if !validation.IsRegion(regionStr) {

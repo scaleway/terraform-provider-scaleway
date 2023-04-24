@@ -6,7 +6,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 )
 
-func TestAccScalewayDataSourceAvailabilityZone_Basic(t *testing.T) {
+func TestAccScalewayDataSourceAvailabilityZones_Basic(t *testing.T) {
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
 	resource.ParallelTest(t, resource.TestCase{
@@ -16,29 +16,29 @@ func TestAccScalewayDataSourceAvailabilityZone_Basic(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: `
-					data scaleway_availability_zone main {
+					data scaleway_availability_zones main {
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
-						"data.scaleway_availability_zone.main", "region", "fr-par"),
+						"data.scaleway_availability_zones.main", "region", "fr-par"),
 					resource.TestCheckResourceAttr(
-						"data.scaleway_availability_zone.main", "zones.0", "fr-par-1"),
+						"data.scaleway_availability_zones.main", "zones.0", "fr-par-1"),
 				),
 			},
 			{
 				Config: `
-					data scaleway_availability_zone main {
+					data scaleway_availability_zones main {
 						region = "nl-ams"
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
-						"data.scaleway_availability_zone.main", "region", "nl-ams"),
+						"data.scaleway_availability_zones.main", "region", "nl-ams"),
 					resource.TestCheckResourceAttr(
-						"data.scaleway_availability_zone.main", "zones.0", "nl-ams-1"),
+						"data.scaleway_availability_zones.main", "zones.0", "nl-ams-1"),
 					resource.TestCheckResourceAttr(
-						"data.scaleway_availability_zone.main", "zones.1", "nl-ams-2"),
+						"data.scaleway_availability_zones.main", "zones.1", "nl-ams-2"),
 				),
 			},
 		},

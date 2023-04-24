@@ -1,9 +1,9 @@
 ---
 subcategory: "Account"
-page_title: "Scaleway: scaleway_availability_zone"
+page_title: "Scaleway: scaleway_availability_zones"
 ---
 
-# scaleway_availability_zone
+# scaleway_availability_zones
 
 Use this data source to get the available zones information based on its Region.
 
@@ -14,7 +14,7 @@ you can choose the location that better fits your need (country, latency, …).
 
 ```hcl
 # Get info by Region key
-data scaleway_availability_zone main {
+data scaleway_availability_zones main {
   region = "nl-ams"
 }
 ```
