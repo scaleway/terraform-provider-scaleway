@@ -110,6 +110,22 @@ func waitForFunctionDomain(ctx context.Context, functionAPI *function.API, regio
 	return domain, err
 }
 
+func waitForFunctionTrigger(ctx context.Context, functionAPI *function.API, region scw.Region, id string, timeout time.Duration) (*function.Trigger, error) {
+	retryInterval := defaultFunctionRetryInterval
+	if DefaultWaitRetryInterval != nil {
+		retryInterval = *DefaultWaitRetryInterval
+	}
+
+	trigger, err := functionAPI.WaitForTrigger(&function.WaitForTriggerRequest{
+		Region:        region,
+		TriggerID:     id,
+		RetryInterval: &retryInterval,
+		Timeout:       scw.TimeDurationPtr(timeout),
+	}, scw.WithContext(ctx))
+
+	return trigger, err
+}
+
 func functionUpload(ctx context.Context, m interface{}, functionAPI *function.API, region scw.Region, functionID string, zipFile string) error {
 	meta := m.(*Meta)
 	zipStat, err := os.Stat(zipFile)
