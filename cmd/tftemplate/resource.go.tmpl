@@ -41,6 +41,7 @@ func resourceScaleway{{ .Resource }}Create(ctx context.Context, d *schema.Resour
 	}
 
 	{{ .ResourceCleanLow }}, err := api.Create{{ .ResourceClean }}(&{{ .API }}.Create{{ .ResourceClean }}Request{
+		{{.LocalityUpper}}: {{.Locality}},
 		Name: expandOrGenerateString(d.Get("name").(string), "{{ .ResourceCleanLow }}"),
 	}, scw.WithContext(ctx))
 	if err != nil {
@@ -93,7 +94,7 @@ func resourceScaleway{{ .Resource }}Update(ctx context.Context, d *schema.Resour
 	}
 
 	req := &{{ .API }}.Update{{ .ResourceClean }}Request{
-		{{ .Locality }}:      {{ .ResourceCleanLow }}.{{ .LocalityUpper }},
+		{{ .LocalityUpper }}:      {{.Locality}},
 		{{ .ResourceClean }}ID: {{ .ResourceCleanLow }}.ID,
 	}
 
