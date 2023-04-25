@@ -29,7 +29,6 @@ func splitByWord(sentence string) []string {
 	prevLetterIsUpper := false
 	for i := range sentence {
 		nextLetterIsUpper := i == len(sentence)-1 || isUpper(sentence[i+1])
-		_ = nextLetterIsUpper
 		currentLetterIsUpper := isUpper(sentence[i])
 
 		// Try to detect first letter of a word
