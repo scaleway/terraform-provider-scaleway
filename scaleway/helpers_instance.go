@@ -2,6 +2,7 @@ package scaleway
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"sort"
 	"strconv"
@@ -591,15 +592,36 @@ func formatImageLabel(imageUUID string) string {
 	return strings.ReplaceAll(imageUUID, "-", "_")
 }
 
-func isInstanceIPReverseResolved(ctx context.Context, instanceAPI *instance.API, reverse string, timeout time.Duration, id string, zone scw.Zone) bool {
-	getIPReq := &instance.GetIPRequest{
-		Zone: zone,
-		IP:   id,
-	}
-	res, err := instanceAPI.GetIP(getIPReq, scw.WithContext(ctx))
-	if err != nil {
+func isIPReverseDNSResolveError(err error) bool {
+	invalidArgError := &scw.InvalidArgumentsError{}
+
+	if !errors.As(err, &invalidArgError) {
 		return false
 	}
 
-	return hostResolver(ctx, timeout, reverse, res.IP.Address.String())
+	for _, fields := range invalidArgError.Details {
+		if fields.ArgumentName == "reverse" {
+			return true
+		}
+	}
+
+	return false
+}
+
+func retryUpdateReverseDNS(ctx context.Context, instanceAPI *instance.API, req *instance.UpdateIPRequest, timeout time.Duration) error {
+	timeoutChannel := time.After(timeout)
+
+	for {
+		select {
+		case <-time.After(defaultInstanceRetryInterval):
+			_, err := instanceAPI.UpdateIP(req, scw.WithContext(ctx))
+			if err != nil && isIPReverseDNSResolveError(err) {
+				continue
+			}
+			return err
+		case <-timeoutChannel:
+			_, err := instanceAPI.UpdateIP(req, scw.WithContext(ctx))
+			return err
+		}
+	}
 }
