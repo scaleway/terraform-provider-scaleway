@@ -88,7 +88,8 @@ func resourceScalewayRdbReadReplica() *schema.Resource {
 						"service_ip": {
 							Type:         schema.TypeString,
 							Description:  "Endpoint IPv4 address with a CIDR notation. Check documentation about IP and subnet limitations. (IP network).",
-							Required:     true,
+							Optional:     true,
+							Computed:     true,
 							ValidateFunc: validation.IsCIDR,
 						},
 						"zone": {

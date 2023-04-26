@@ -139,12 +139,6 @@ func resourceScalewayRdbInstance() *schema.Resource {
 				Description: "List of private network to expose your database instance",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"ip_net": {
-							Type:         schema.TypeString,
-							Required:     true,
-							ValidateFunc: validation.IsCIDR,
-							Description:  "The ip net of your private network",
-						},
 						"pn_id": {
 							Type:         schema.TypeString,
 							Required:     true,
@@ -157,6 +151,13 @@ func resourceScalewayRdbInstance() *schema.Resource {
 							Optional:    true,
 							Computed:    true,
 							Description: "The endpoint ID",
+						},
+						"ip_net": {
+							Type:         schema.TypeString,
+							Optional:     true,
+							Computed:     true,
+							ValidateFunc: validation.IsCIDR,
+							Description:  "The ip net of your private network",
 						},
 						"ip": {
 							Type:         schema.TypeString,

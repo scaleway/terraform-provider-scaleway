@@ -24,6 +24,25 @@ resource "scaleway_rdb_instance" "main" {
 }
 ```
 
+### Example With IPAM
+
+```hcl
+resource "scaleway_vpc_private_network" "pn" {}
+
+resource "scaleway_rdb_instance" "main" {
+  name           = "test-rdb"
+  node_type      = "DB-DEV-S"
+  engine         = "PostgreSQL-11"
+  is_ha_cluster  = true
+  disable_backup = true
+  user_name      = "my_initial_user"
+  password       = "thiZ_is_v&ry_s3cret"
+  private_network {
+    pn_id = scaleway_vpc_private_network.pn.id
+  }
+}
+```
+
 ### Example with Settings
 
 ```hcl
@@ -174,7 +193,7 @@ Please consult the [GoDoc](https://pkg.go.dev/github.com/scaleway/scaleway-sdk-g
 
 ~> **Important:** Updates to `private_network` will recreate the attachment Instance.
 
-- `ip_net` - (Required) The IP network where to con.
+- `ip_net` - (Optional) The IP network where to connect. Service IP is handle is not set.
 - `pn_id` - (Required) The ID of the private network. If not provided it will be randomly generated.
 
 ## Attributes Reference
