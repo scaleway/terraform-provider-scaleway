@@ -120,7 +120,8 @@ func expandPrivateNetwork(data interface{}, exist bool) ([]*rdb.EndpointSpec, er
 		spec := &rdb.EndpointSpec{
 			PrivateNetwork: &rdb.EndpointSpecPrivateNetwork{
 				PrivateNetworkID: expandID(r["pn_id"].(string)),
-			}}
+			},
+		}
 		if len(ipNet) > 0 {
 			ip, err := expandIPNet(r["ip_net"].(string))
 			if err != nil {

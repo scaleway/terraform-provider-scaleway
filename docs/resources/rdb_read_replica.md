@@ -65,9 +65,9 @@ The following arguments are supported:
 - `direct_access` - (Optional) Creates a direct access endpoint to rdb replica.
 
 - `private_network` - (Optional) Create an endpoint in a private network.
-    - `private_network_id` - (Optional) UUID of the private network to be connected to the read replica. Handled by IPAM
+    - `private_network_id` - (Required) UUID of the private network to be connected to the read replica. Handled by IPAM
       is not set.
-    - `service_ip` - (Required) Endpoint IPv4 address with a CIDR notation. Check documentation about IP and subnet
+    - `service_ip` - (Optional) Endpoint IPv4 address with a CIDR notation. Check documentation about IP and subnet
       limitations. (IP network).
 
 - `region` - (Defaults to [provider](../index.md#region) `region`) The [region](../guides/regions_and_zones.md#regions)
