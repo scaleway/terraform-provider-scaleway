@@ -81,20 +81,20 @@ func resourceScalewayRdbReadReplica() *schema.Resource {
 						// Private network specific
 						"private_network_id": {
 							Type:         schema.TypeString,
-							Description:  "UUID of the private network to be connected to the read replica (UUID format).",
+							Description:  "UUID of the private network to be connected to the read replica (UUID format)",
 							ValidateFunc: validationUUIDorUUIDWithLocality(),
 							Required:     true,
 						},
 						"service_ip": {
 							Type:         schema.TypeString,
-							Description:  "Endpoint IPv4 address with a CIDR notation. Check documentation about IP and subnet limitations. (IP network).",
+							Description:  "The IP network address within the private subnet",
 							Optional:     true,
 							Computed:     true,
 							ValidateFunc: validation.IsCIDR,
 						},
 						"zone": {
 							Type:        schema.TypeString,
-							Description: "Private network zone.",
+							Description: "Private network zone",
 							Computed:    true,
 						},
 						// Endpoints common
@@ -105,22 +105,22 @@ func resourceScalewayRdbReadReplica() *schema.Resource {
 						},
 						"ip": {
 							Type:        schema.TypeString,
-							Description: "IPv4 address of the endpoint (IP address). Only one of ip and hostname may be set.",
+							Description: "IPv4 address of the endpoint (IP address). Only one of ip and hostname may be set",
 							Computed:    true,
 						},
 						"port": {
 							Type:        schema.TypeInt,
-							Description: "TCP port of the endpoint.",
+							Description: "TCP port of the endpoint",
 							Computed:    true,
 						},
 						"name": {
 							Type:        schema.TypeString,
-							Description: "Name of the endpoint.",
+							Description: "Name of the endpoints",
 							Computed:    true,
 						},
 						"hostname": {
 							Type:        schema.TypeString,
-							Description: "Hostname of the endpoint. Only one of ip and hostname may be set.",
+							Description: "Hostname of the endpoint. Only one of ip and hostname may be set",
 							Computed:    true,
 						},
 					},
