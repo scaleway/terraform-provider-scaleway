@@ -2,6 +2,7 @@ package scaleway
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -55,7 +56,11 @@ func dataSourceScalewayAccountProjectRead(ctx context.Context, d *schema.Resourc
 			}
 		}
 		if projectID == "" {
-			diag.Errorf("no project found with the name %s", d.Get("name"))
+			return diag.Diagnostics{{
+				Severity: diag.Error,
+				Summary:  fmt.Sprintf("no project found with the name %s", d.Get("name")),
+				Detail:   "API Keys must be from the same organization as the project to fetch it",
+			}}
 		}
 	} else {
 		extractedProjectID, _, err := extractProjectID(d, meta.(*Meta))
