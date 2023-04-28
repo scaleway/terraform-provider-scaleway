@@ -151,8 +151,7 @@ interruption. Keep in mind that you cannot downgrade a Database Instance.
 
 - `volume_type` - (Optional, default to `lssd`) Type of volume where data are stored (`bssd` or `lssd`).
 
-- `volume_size_in_gb` - (Optional) Volume size (in GB) when `volume_type` is set to `bssd`. Must be a multiple of
-  5000000000.
+- `volume_size_in_gb` - (Optional) Volume size (in GB) when `volume_type` is set to `bssd`.
 
 - `user_name` - (Optional) Identifier for the first user of the database instance.
 
