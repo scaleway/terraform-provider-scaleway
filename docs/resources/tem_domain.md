@@ -19,6 +19,38 @@ resource "scaleway_tem_domain" "main" {
 }
 ```
 
+### Add the required records to your DNS zone
+
+```hcl
+variable "domain_name" {
+  type    = string
+}
+
+resource "scaleway_tem_domain" "main" {
+  name       = var.domain_name
+  accept_tos = true
+}
+
+resource "scaleway_domain_record" "spf" {
+  dns_zone = var.domain_name
+  type     = "TXT"
+  data     = "v=spf1 ${scaleway_tem_domain.main.spf_config} -all"
+}
+
+resource "scaleway_domain_record" "dkim" {
+  dns_zone = var.domain_name
+  name     = "${scaleway_tem_domain.main.project_id}._domainkey"
+  type     = "TXT"
+  data     = scaleway_tem_domain.main.dkim_config
+}
+
+resource "scaleway_domain_record" "mx" {
+  dns_zone = var.domain_name
+  type     = "MX"
+  data     = "."
+}
+```
+
 ## Arguments Reference
 
 The following arguments are supported:
