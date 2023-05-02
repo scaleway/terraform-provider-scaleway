@@ -116,15 +116,20 @@ func expandPrivateNetwork(data interface{}, exist bool) ([]*rdb.EndpointSpec, er
 	var res []*rdb.EndpointSpec
 	for _, pn := range data.([]interface{}) {
 		r := pn.(map[string]interface{})
-		ip, err := expandIPNet(r["ip_net"].(string))
-		if err != nil {
-			return res, err
-		}
+		ipNet := r["ip_net"].(string)
 		spec := &rdb.EndpointSpec{
 			PrivateNetwork: &rdb.EndpointSpecPrivateNetwork{
 				PrivateNetworkID: expandID(r["pn_id"].(string)),
-				ServiceIP:        &ip,
 			},
+		}
+		if len(ipNet) > 0 {
+			ip, err := expandIPNet(r["ip_net"].(string))
+			if err != nil {
+				return res, err
+			}
+			spec.PrivateNetwork.ServiceIP = &ip
+		} else {
+			spec.PrivateNetwork.IpamConfig = &rdb.EndpointSpecPrivateNetworkIpamConfig{}
 		}
 		res = append(res, spec)
 	}
@@ -281,15 +286,20 @@ func expandReadReplicaEndpointsSpecPrivateNetwork(data interface{}) (*rdb.ReadRe
 
 	endpoint := new(rdb.ReadReplicaEndpointSpec)
 
-	ip, err := expandIPNet(rawEndpoint["service_ip"].(string))
-	if err != nil {
-		return nil, fmt.Errorf("failed to parse private_network service_ip (%s): %w", rawEndpoint["service_ip"], err)
-	}
-
+	serviceIP := rawEndpoint["service_ip"].(string)
 	endpoint.PrivateNetwork = &rdb.ReadReplicaEndpointSpecPrivateNetwork{
 		PrivateNetworkID: expandID(rawEndpoint["private_network_id"]),
-		ServiceIP:        &ip,
 	}
+	if len(serviceIP) > 0 {
+		ipNet, err := expandIPNet(serviceIP)
+		if err != nil {
+			return nil, fmt.Errorf("failed to parse private_network service_ip (%s): %w", rawEndpoint["service_ip"], err)
+		}
+		endpoint.PrivateNetwork.ServiceIP = &ipNet
+	} else {
+		endpoint.PrivateNetwork.IpamConfig = &rdb.ReadReplicaEndpointSpecPrivateNetworkIpamConfig{}
+	}
+
 	return endpoint, nil
 }
 

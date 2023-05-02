@@ -24,6 +24,25 @@ resource "scaleway_rdb_instance" "main" {
 }
 ```
 
+### Example With IPAM
+
+```hcl
+resource "scaleway_vpc_private_network" "pn" {}
+
+resource "scaleway_rdb_instance" "main" {
+  name           = "test-rdb"
+  node_type      = "DB-DEV-S"
+  engine         = "PostgreSQL-11"
+  is_ha_cluster  = true
+  disable_backup = true
+  user_name      = "my_initial_user"
+  password       = "thiZ_is_v&ry_s3cret"
+  private_network {
+    pn_id = scaleway_vpc_private_network.pn.id
+  }
+}
+```
+
 ### Example with Settings
 
 ```hcl
@@ -123,7 +142,8 @@ The following arguments are supported:
 
 - `node_type` - (Required) The type of database instance you want to create (e.g. `db-dev-s`).
 
-~> **Important:** Updates to `node_type` will upgrade the Database Instance to the desired `node_type` without any interruption. Keep in mind that you cannot downgrade a Database Instance.
+~> **Important:** Updates to `node_type` will upgrade the Database Instance to the desired `node_type` without any
+interruption. Keep in mind that you cannot downgrade a Database Instance.
 
 - `engine` - (Required) Database Instance's engine version (e.g. `PostgreSQL-11`).
 
@@ -131,7 +151,7 @@ The following arguments are supported:
 
 - `volume_type` - (Optional, default to `lssd`) Type of volume where data are stored (`bssd` or `lssd`).
 
-- `volume_size_in_gb` - (Optional) Volume size (in GB) when `volume_type` is set to `bssd`. Must be a multiple of 5000000000.
+- `volume_size_in_gb` - (Optional) Volume size (in GB) when `volume_type` is set to `bssd`.
 
 - `user_name` - (Optional) Identifier for the first user of the database instance.
 
@@ -161,21 +181,26 @@ The following arguments are supported:
 
 - `tags` - (Optional) The tags associated with the Database Instance.
 
-- `region` - (Defaults to [provider](../index.md#region) `region`) The [region](../guides/regions_and_zones.md#regions) in which the Database Instance should be created.
+- `region` - (Defaults to [provider](../index.md#region) `region`) The [region](../guides/regions_and_zones.md#regions)
+  in which the Database Instance should be created.
 
-- `project_id` - (Defaults to [provider](../index.md#project_id) `project_id`) The ID of the project the Database Instance is associated with.
-
+- `project_id` - (Defaults to [provider](../index.md#project_id) `project_id`) The ID of the project the Database
+  Instance is associated with.
 
 ## Settings
 
-Please consult the [GoDoc](https://pkg.go.dev/github.com/scaleway/scaleway-sdk-go@v1.0.0-beta.9/api/rdb/v1#EngineVersion) to list all available `settings` and `init_settings` on your `node_type` of your convenient.
+Please consult
+the [GoDoc](https://pkg.go.dev/github.com/scaleway/scaleway-sdk-go@v1.0.0-beta.9/api/rdb/v1#EngineVersion) to list all
+available `settings` and `init_settings` on your `node_type` of your convenient.
 
 ## Private Network
 
 ~> **Important:** Updates to `private_network` will recreate the attachment Instance.
 
-- `ip_net` - (Required) The IP network where to con.
-- `pn_id` - (Required) The ID of the private network. If not provided it will be randomly generated.
+- `ip_net` - (Optional) The IP network address within the private subnet. This must be an IPv4 address with a
+  CIDR notation. The IP network address within the private subnet is determined by the IP Address Management (IPAM)
+  service if not set.
+- `pn_id` - (Required) The ID of the private network.
 
 ## Attributes Reference
 
@@ -183,7 +208,8 @@ In addition to all arguments above, the following attributes are exported:
 
 - `id` - The ID of the Database Instance.
 
-~> **Important:** Database instances' IDs are [regional](../guides/regions_and_zones.md#resource-ids), which means they are of the form `{region}/{id}`, e.g. `fr-par/11111111-1111-1111-1111-111111111111`
+~> **Important:** Database instances' IDs are [regional](../guides/regions_and_zones.md#resource-ids), which means they
+are of the form `{region}/{id}`, e.g. `fr-par/11111111-1111-1111-1111-111111111111`
 
 - `endpoint_ip` - (Deprecated) The IP of the Database Instance.
 - `endpoint_port` - (Deprecated) The port of the Database Instance.
@@ -209,7 +235,8 @@ In addition to all arguments above, the following attributes are exported:
 ## Limitations
 
 The Managed Database product is only compliant with the private network in the default availability zone (AZ).
-i.e. `fr-par-1`, `nl-ams-1`, `pl-waw-1`. To learn more, read our section [How to connect a PostgreSQL and MySQL Database Instance to a Private Network](https://www.scaleway.com/en/docs/managed-databases/postgresql-and-mysql/how-to/connect-database-private-network/)
+i.e. `fr-par-1`, `nl-ams-1`, `pl-waw-1`. To learn more, read our
+section [How to connect a PostgreSQL and MySQL Database Instance to a Private Network](https://www.scaleway.com/en/docs/managed-databases/postgresql-and-mysql/how-to/connect-database-private-network/)
 
 ## Import
 
