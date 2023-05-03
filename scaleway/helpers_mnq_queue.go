@@ -174,7 +174,7 @@ func resourceMNQQueueCustomizeDiff(_ context.Context, d *schema.ResourceDiff, _ 
 
 		var re *regexp.Regexp
 		if isSQS && isFifo {
-			re = regexp.MustCompile(`^[a-zA-Z0-9_-]{1,75}\.fifo$`)
+			re = regexp.MustCompile(`^[a-zA-Z0-9_-]{1,75}\` + SQSFIFOQueueNameSuffix + `$`)
 		} else {
 			re = regexp.MustCompile(`^[a-zA-Z0-9_-]{1,80}$`)
 		}
