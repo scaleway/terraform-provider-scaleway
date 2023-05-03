@@ -3,6 +3,7 @@ package scaleway
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
@@ -110,10 +111,13 @@ func resourceBucketWebsiteConfigurationCreate(ctx context.Context, d *schema.Res
 		WebsiteConfiguration: websiteConfig,
 	}
 
-	_, err = retryOnAWSCode(ctx, s3.ErrCodeNoSuchBucket, func() (interface{}, error) {
-		return conn.PutBucketWebsiteWithContext(ctx, input)
+	_, err = retryWhenAWSErrCodeEquals(ctx, []string{s3.ErrCodeNoSuchBucket}, &RetryWhenConfig[*s3.PutBucketWebsiteOutput]{
+		Timeout:  d.Timeout(schema.TimeoutCreate),
+		Interval: 5 * time.Second,
+		Function: func() (*s3.PutBucketWebsiteOutput, error) {
+			return conn.PutBucketWebsiteWithContext(ctx, input)
+		},
 	})
-
 	if err != nil {
 		return diag.FromErr(fmt.Errorf("error creating object bucket (%s) website configuration: %w", bucket, err))
 	}

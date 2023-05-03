@@ -150,6 +150,7 @@ func Provider(config *ProviderConfig) plugin.ProviderFunc {
 				"scaleway_object_bucket_website_configuration": ResourceBucketWebsiteConfiguration(),
 				"scaleway_mnq_namespace":                       resourceScalewayMNQNamespace(),
 				"scaleway_mnq_credential":                      resourceScalewayMNQCredential(),
+				"scaleway_mnq_queue":                           resourceScalewayMNQQueue(),
 				"scaleway_secret":                              resourceScalewaySecret(),
 				"scaleway_secret_version":                      resourceScalewaySecretVersion(),
 				"scaleway_vpc_public_gateway":                  resourceScalewayVPCPublicGateway(),

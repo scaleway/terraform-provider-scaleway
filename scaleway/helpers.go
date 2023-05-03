@@ -12,6 +12,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/hashicorp/aws-sdk-go-base/tfawserr"
 	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -956,53 +957,56 @@ func customizeDiffLocalityCheck(keys ...string) schema.CustomizeDiffFunc {
 	}
 }
 
-type TooManyResultsError struct {
-	Count       int
-	LastRequest interface{}
+type RetryWhenConfig[T any] struct {
+	Timeout  time.Duration
+	Interval time.Duration
+	Function func() (T, error)
 }
 
-func (e *TooManyResultsError) Error() string {
-	return fmt.Sprintf("too many results: wanted 1, got %d", e.Count)
-}
+var ErrRetryWhenTimeout = errors.New("timeout reached")
 
-func (e *TooManyResultsError) Is(err error) bool {
-	_, ok := err.(*TooManyResultsError) //nolint:errorlint // Explicitly does *not* match down the error tree
-	return ok
-}
-
-func (e *TooManyResultsError) As(target interface{}) bool {
-	t, ok := target.(**retry.NotFoundError)
-	if !ok {
-		return false
+// retryWhen executes the function passed in the configuration object until the timeout is reached or the context is cancelled.
+// It will retry if the shouldRetry function returns true. It will stop if the shouldRetry function returns false.
+func retryWhen[T any](ctx context.Context, config *RetryWhenConfig[T], shouldRetry func(error) bool) (T, error) { //nolint: ireturn
+	retryInterval := config.Interval
+	if DefaultWaitRetryInterval != nil {
+		retryInterval = *DefaultWaitRetryInterval
 	}
 
-	*t = &retry.NotFoundError{
-		Message:     e.Error(),
-		LastRequest: e.LastRequest,
-	}
+	timer := time.NewTimer(config.Timeout)
 
-	return true
-}
-
-var ErrTooManyResults = &TooManyResultsError{}
-
-// SingularDataSourceFindError returns a standard error message for a singular data source's non-nil resource find error.
-func SingularDataSourceFindError(resourceType string, err error) error {
-	if NotFound(err) {
-		if errors.Is(err, &TooManyResultsError{}) {
-			return fmt.Errorf("multiple %[1]ss matched; use additional constraints to reduce matches to a single %[1]s", resourceType)
+	for {
+		result, err := config.Function()
+		if shouldRetry(err) {
+			select {
+			case <-timer.C:
+				return result, ErrRetryWhenTimeout
+			case <-ctx.Done():
+				return result, ctx.Err()
+			default:
+				time.Sleep(retryInterval) // lintignore:R018
+				continue
+			}
 		}
 
-		return fmt.Errorf("no matching %[1]s found", resourceType)
+		return result, err
 	}
-
-	return fmt.Errorf("reading %s: %w", resourceType, err)
 }
 
-// NotFound returns true if the error represents a "resource not found" condition.
-// Specifically, NotFound returns true if the error or a wrapped error is of type
-// retry.NotFoundError.
-func NotFound(err error) bool {
-	var e *retry.NotFoundError // nosemgrep:ci.is-not-found-error
-	return errors.As(err, &e)
+// retryWhenAWSErrCodeEquals retries a function when it returns a specific AWS error
+func retryWhenAWSErrCodeEquals[T any](ctx context.Context, codes []string, config *RetryWhenConfig[T]) (T, error) { //nolint: ireturn
+	return retryWhen(ctx, config, func(err error) bool {
+		return tfawserr.ErrCodeEquals(err, codes...)
+	})
+}
+
+// retryWhenAWSErrCodeNotEquals retries a function until it returns a specific AWS error
+func retryWhenAWSErrCodeNotEquals[T any](ctx context.Context, codes []string, config *RetryWhenConfig[T]) (T, error) { //nolint: ireturn
+	return retryWhen(ctx, config, func(err error) bool {
+		if err == nil {
+			return true
+		}
+
+		return !tfawserr.ErrCodeEquals(err, codes...)
+	})
 }
