@@ -319,7 +319,7 @@ func resourceScalewayMNQQueueReadSQS(ctx context.Context, d *schema.ResourceData
 	log.Printf("[DEBUG] SQS Queue attributes READ: %+v", values)
 
 	for k, v := range values {
-		_ = d.Set(k, v)
+		_ = d.Set(k, v) // lintignore: R001
 	}
 
 	return nil
