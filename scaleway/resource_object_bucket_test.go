@@ -785,7 +785,7 @@ func testAccCheckBucketLifecycleConfigurationExists(tt *TestTools, n string) res
 			},
 		})
 		if err != nil {
-			if err == RetryWhenTimeoutError {
+			if err == ErrRetryWhenTimeout {
 				return fmt.Errorf("object Storage Bucket Replication Configuration for bucket (%s) not found", rs.Primary.ID)
 			}
 			return err
