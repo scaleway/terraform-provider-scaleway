@@ -778,7 +778,7 @@ func testAccCheckBucketLifecycleConfigurationExists(tt *TestTools, n string) res
 		}
 
 		_, err = retryWhenAWSErrCodeEquals(context.Background(), []string{ErrCodeNoSuchLifecycleConfiguration}, &RetryWhenConfig[*s3.GetBucketLifecycleConfigurationOutput]{
-			Timeout:  time.Duration(defaultObjectBucketTimeout),
+			Timeout:  defaultObjectBucketTimeout,
 			Interval: 5 * time.Second,
 			Function: func() (*s3.GetBucketLifecycleConfigurationOutput, error) {
 				return s3Client.GetBucketLifecycleConfiguration(input)

@@ -308,7 +308,7 @@ func testAccCheckScalewayMNQQueueExistsSQS(tt *TestTools, region scw.Region, acc
 	return nil
 }
 
-func testAccCheckScalewayMNQQueueExistsNATS(tt *TestTools, region scw.Region, credentials string, queueName string) error {
+func testAccCheckScalewayMNQQueueExistsNATS(_ *TestTools, region scw.Region, credentials string, queueName string) error {
 	js, err := newNATSJetStreamClient(region.String(), credentials)
 	if err != nil {
 		return err
@@ -381,7 +381,7 @@ func testAccCheckScalewayMNQQueueDestroySQS(tt *TestTools, region scw.Region, ac
 	return fmt.Errorf("queue still exists")
 }
 
-func testAccCheckScalewayMNQQueueDestroyNATS(tt *TestTools, region scw.Region, credentials string, queueName string) error {
+func testAccCheckScalewayMNQQueueDestroyNATS(_ *TestTools, region scw.Region, credentials string, queueName string) error {
 	js, err := newNATSJetStreamClient(region.String(), credentials)
 	if err != nil {
 		return err

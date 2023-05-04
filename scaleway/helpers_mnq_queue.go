@@ -17,16 +17,14 @@ import (
 
 const SQSFIFOQueueNameSuffix = ".fifo"
 
-var (
-	SQSAttributesToResourceMap = map[string]string{
-		sqs.QueueAttributeNameFifoQueue:                     "fifo_queue",
-		sqs.QueueAttributeNameMaximumMessageSize:            "message_max_size",
-		sqs.QueueAttributeNameMessageRetentionPeriod:        "message_max_age",
-		sqs.QueueAttributeNameContentBasedDeduplication:     "sqs.0.content_based_deduplication",
-		sqs.QueueAttributeNameReceiveMessageWaitTimeSeconds: "sqs.0.receive_wait_time_seconds",
-		sqs.QueueAttributeNameVisibilityTimeout:             "sqs.0.visibility_timeout_seconds",
-	}
-)
+var SQSAttributesToResourceMap = map[string]string{
+	sqs.QueueAttributeNameFifoQueue:                     "fifo_queue",
+	sqs.QueueAttributeNameMaximumMessageSize:            "message_max_size",
+	sqs.QueueAttributeNameMessageRetentionPeriod:        "message_max_age",
+	sqs.QueueAttributeNameContentBasedDeduplication:     "sqs.0.content_based_deduplication",
+	sqs.QueueAttributeNameReceiveMessageWaitTimeSeconds: "sqs.0.receive_wait_time_seconds",
+	sqs.QueueAttributeNameVisibilityTimeout:             "sqs.0.visibility_timeout_seconds",
+}
 
 // Returns all managed SQS attribute names
 func getSQSAttributeNames() []*string {

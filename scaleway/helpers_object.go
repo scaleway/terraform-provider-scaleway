@@ -27,7 +27,6 @@ import (
 
 const (
 	defaultObjectBucketTimeout = 10 * time.Minute
-	retryOnAWSAPI              = 2 * time.Minute
 
 	maxObjectVersionDeletionWorkers = 8
 )
