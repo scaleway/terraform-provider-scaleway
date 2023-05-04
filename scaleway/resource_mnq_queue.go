@@ -59,7 +59,6 @@ func resourceScalewayMNQQueue() *schema.Resource {
 			"fifo_queue": {
 				Type:     schema.TypeBool,
 				Default:  false,
-				ForceNew: true,
 				Optional: true,
 			},
 			"message_max_age": {
@@ -233,10 +232,16 @@ func resourceScalewayMNQQueueCreateNATS(ctx context.Context, d *schema.ResourceD
 	maxAge := d.Get("message_max_age").(int)
 	maxSize := d.Get("message_max_size").(int)
 
+	var retention nats.RetentionPolicy
+	if d.Get("fifo_queue").(bool) {
+		retention = nats.InterestPolicy
+	}
+
 	_, err = js.AddStream(&nats.StreamConfig{
-		Name:     name,
-		MaxAge:   time.Duration(maxAge) * time.Second,
-		MaxBytes: int64(maxSize),
+		Name:      name,
+		MaxAge:    time.Duration(maxAge) * time.Second,
+		MaxBytes:  int64(maxSize),
+		Retention: retention,
 	})
 	if err != nil {
 		return diag.FromErr(err)
@@ -424,11 +429,17 @@ func resourceScalewayMNQQueueUpdateNATS(ctx context.Context, d *schema.ResourceD
 	maxAge := d.Get("message_max_age").(int)
 	maxSize := d.Get("message_max_size").(int)
 
+	var retention nats.RetentionPolicy
+	if d.Get("fifo_queue").(bool) {
+		retention = nats.InterestPolicy
+	}
+
 	_, err = js.UpdateStream(&nats.StreamConfig{
-		Name:     queueName,
-		Subjects: stream.Config.Subjects,
-		MaxAge:   time.Duration(maxAge) * time.Second,
-		MaxBytes: int64(maxSize),
+		Name:      queueName,
+		Subjects:  stream.Config.Subjects,
+		MaxAge:    time.Duration(maxAge) * time.Second,
+		MaxBytes:  int64(maxSize),
+		Retention: retention,
 	})
 	if err != nil {
 		return diag.FromErr(err)

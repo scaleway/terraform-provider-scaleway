@@ -167,19 +167,21 @@ func resourceMNQQueueCustomizeDiff(_ context.Context, d *schema.ResourceDiff, _ 
 	isFifo := d.Get("fifo_queue").(bool)
 	_, isSQS := d.GetOk("sqs")
 
+	var name string
 	if d.Id() == "" {
-		name := resourceMNQQueueName(d.Get("name"), d.Get("name_prefix"), isSQS, isFifo)
+		name = resourceMNQQueueName(d.Get("name"), d.Get("name_prefix"), isSQS, isFifo)
+	} else {
+		name = d.Get("name").(string)
+	}
 
-		var re *regexp.Regexp
-		if isSQS && isFifo {
-			re = regexp.MustCompile(`^[a-zA-Z0-9_-]{1,75}\` + SQSFIFOQueueNameSuffix + `$`)
-		} else {
-			re = regexp.MustCompile(`^[a-zA-Z0-9_-]{1,80}$`)
-		}
-
-		if !re.MatchString(name) {
-			return fmt.Errorf("invalid queue name: %s (format is %s)", name, re.String())
-		}
+	var re *regexp.Regexp
+	if isSQS && isFifo {
+		re = regexp.MustCompile(`^[a-zA-Z0-9_-]{1,75}\` + SQSFIFOQueueNameSuffix + `$`)
+	} else {
+		re = regexp.MustCompile(`^[a-zA-Z0-9_-]{1,80}$`)
+	}
+	if !re.MatchString(name) {
+		return fmt.Errorf("invalid queue name: %s (format is %s)", name, re.String())
 	}
 
 	if isSQS {
