@@ -149,6 +149,11 @@ func cassetteBodyMatcher(actualRequest *http.Request, cassetteRequest cassette.R
 		return true
 	}
 
+	if !json.Valid(actualRawBody) {
+		// If body is not valid json, compare raw bodies
+		return cassetteRequest.Body == string(actualRawBody)
+	}
+
 	err = json.Unmarshal(actualRawBody, &actualJSON)
 	if err != nil {
 		panic(fmt.Errorf("cassette body matcher: failed to parse json body: %w", err)) // lintignore: R009
