@@ -283,17 +283,17 @@ func testAccCheckScalewayMNQQueueExists(tt *TestTools, n string) resource.TestCh
 
 		switch namespace.Protocol {
 		case mnq.NamespaceProtocolSqsSns:
-			return testAccCheckScalewayMNQQueueExistsSQS(tt, namespaceRegion, rs.Primary.Attributes["sqs.0.access_key"], rs.Primary.Attributes["sqs.0.secret_key"], queueName)
+			return testAccCheckScalewayMNQQueueExistsSQS(tt, namespaceRegion, rs.Primary.Attributes["sqs.0.endpoint"], rs.Primary.Attributes["sqs.0.access_key"], rs.Primary.Attributes["sqs.0.secret_key"], queueName)
 		case mnq.NamespaceProtocolNats:
-			return testAccCheckScalewayMNQQueueExistsNATS(tt, namespaceRegion, rs.Primary.Attributes["nats.0.credentials"], queueName)
+			return testAccCheckScalewayMNQQueueExistsNATS(tt, namespaceRegion, rs.Primary.Attributes["nats.0.endpoint"], rs.Primary.Attributes["nats.0.credentials"], queueName)
 		default:
 			return fmt.Errorf("unknown protocol %s", namespace.Protocol)
 		}
 	}
 }
 
-func testAccCheckScalewayMNQQueueExistsSQS(tt *TestTools, region scw.Region, accessKey string, secretKey string, queueName string) error {
-	sqsClient, err := newSQSClient(tt.Meta.httpClient, region.String(), accessKey, secretKey)
+func testAccCheckScalewayMNQQueueExistsSQS(tt *TestTools, region scw.Region, endpoint string, accessKey string, secretKey string, queueName string) error {
+	sqsClient, err := newSQSClient(tt.Meta.httpClient, region.String(), endpoint, accessKey, secretKey)
 	if err != nil {
 		return err
 	}
@@ -308,8 +308,8 @@ func testAccCheckScalewayMNQQueueExistsSQS(tt *TestTools, region scw.Region, acc
 	return nil
 }
 
-func testAccCheckScalewayMNQQueueExistsNATS(_ *TestTools, region scw.Region, credentials string, queueName string) error {
-	js, err := newNATSJetStreamClient(region.String(), credentials)
+func testAccCheckScalewayMNQQueueExistsNATS(_ *TestTools, region scw.Region, endpoint string, credentials string, queueName string) error {
+	js, err := newNATSJetStreamClient(region.String(), endpoint, credentials)
 	if err != nil {
 		return err
 	}
@@ -349,9 +349,9 @@ func testAccCheckScalewayMNQQueueDestroy(tt *TestTools) resource.TestCheckFunc {
 
 			switch namespace.Protocol {
 			case mnq.NamespaceProtocolSqsSns:
-				return testAccCheckScalewayMNQQueueDestroySQS(tt, namespaceRegion, rs.Primary.Attributes["sqs.0.access_key"], rs.Primary.Attributes["sqs.0.secret_key"], queueName)
+				return testAccCheckScalewayMNQQueueDestroySQS(tt, namespaceRegion, rs.Primary.Attributes["sqs.0.endpoint"], rs.Primary.Attributes["sqs.0.access_key"], rs.Primary.Attributes["sqs.0.secret_key"], queueName)
 			case mnq.NamespaceProtocolNats:
-				return testAccCheckScalewayMNQQueueDestroyNATS(tt, namespaceRegion, rs.Primary.Attributes["nats.0.credentials"], queueName)
+				return testAccCheckScalewayMNQQueueDestroyNATS(tt, namespaceRegion, rs.Primary.Attributes["nats.0.endpoint"], rs.Primary.Attributes["nats.0.credentials"], queueName)
 			default:
 				return fmt.Errorf("unknown protocol %s", namespace.Protocol)
 			}
@@ -361,8 +361,8 @@ func testAccCheckScalewayMNQQueueDestroy(tt *TestTools) resource.TestCheckFunc {
 	}
 }
 
-func testAccCheckScalewayMNQQueueDestroySQS(tt *TestTools, region scw.Region, accessKey string, secretKey string, queueName string) error {
-	sqsClient, err := newSQSClient(tt.Meta.httpClient, region.String(), accessKey, secretKey)
+func testAccCheckScalewayMNQQueueDestroySQS(tt *TestTools, region scw.Region, endpoint string, accessKey string, secretKey string, queueName string) error {
+	sqsClient, err := newSQSClient(tt.Meta.httpClient, region.String(), endpoint, accessKey, secretKey)
 	if err != nil {
 		return err
 	}
@@ -381,8 +381,8 @@ func testAccCheckScalewayMNQQueueDestroySQS(tt *TestTools, region scw.Region, ac
 	return fmt.Errorf("queue still exists")
 }
 
-func testAccCheckScalewayMNQQueueDestroyNATS(_ *TestTools, region scw.Region, credentials string, queueName string) error {
-	js, err := newNATSJetStreamClient(region.String(), credentials)
+func testAccCheckScalewayMNQQueueDestroyNATS(_ *TestTools, region scw.Region, endpoint string, credentials string, queueName string) error {
+	js, err := newNATSJetStreamClient(region.String(), endpoint, credentials)
 	if err != nil {
 		return err
 	}
