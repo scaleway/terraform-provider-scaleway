@@ -182,7 +182,7 @@ func resourceScalewayMNQQueueCreate(ctx context.Context, d *schema.ResourceData,
 }
 
 func resourceScalewayMNQQueueCreateSQS(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, _, err := SQSClientWithRegion(d, meta)
+	client, _, err := SQSClientWithRegion(d, meta)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -206,7 +206,7 @@ func resourceScalewayMNQQueueCreateSQS(ctx context.Context, d *schema.ResourceDa
 		Timeout:  d.Timeout(schema.TimeoutCreate),
 		Interval: defaultMNQQueueRetryInterval,
 		Function: func() (*sqs.CreateQueueOutput, error) {
-			return api.CreateQueueWithContext(ctx, input)
+			return client.CreateQueueWithContext(ctx, input)
 		},
 	})
 	if err != nil {
@@ -223,7 +223,7 @@ func resourceScalewayMNQQueueCreateSQS(ctx context.Context, d *schema.ResourceDa
 }
 
 func resourceScalewayMNQQueueCreateNATS(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	js, _, err := NATSClientWithRegion(d, meta)
+	client, _, err := NATSClientWithRegion(d, meta)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -237,7 +237,7 @@ func resourceScalewayMNQQueueCreateNATS(ctx context.Context, d *schema.ResourceD
 		retention = nats.InterestPolicy
 	}
 
-	_, err = js.AddStream(&nats.StreamConfig{
+	_, err = client.AddStream(&nats.StreamConfig{
 		Name:      name,
 		MaxAge:    time.Duration(maxAge) * time.Second,
 		MaxBytes:  int64(maxSize),
@@ -273,7 +273,7 @@ func resourceScalewayMNQQueueRead(ctx context.Context, d *schema.ResourceData, m
 }
 
 func resourceScalewayMNQQueueReadSQS(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, _, err := SQSClientWithRegion(d, meta)
+	client, _, err := SQSClientWithRegion(d, meta)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -287,7 +287,7 @@ func resourceScalewayMNQQueueReadSQS(ctx context.Context, d *schema.ResourceData
 		Timeout:  d.Timeout(schema.TimeoutRead),
 		Interval: defaultMNQQueueRetryInterval,
 		Function: func() (*sqs.GetQueueUrlOutput, error) {
-			return api.GetQueueUrlWithContext(ctx, &sqs.GetQueueUrlInput{
+			return client.GetQueueUrlWithContext(ctx, &sqs.GetQueueUrlInput{
 				QueueName: aws.String(queueName),
 			})
 		},
@@ -296,7 +296,7 @@ func resourceScalewayMNQQueueReadSQS(ctx context.Context, d *schema.ResourceData
 		return diag.Errorf("[READ] failed to get the SQS Queue URL: %s", err)
 	}
 
-	queueAttributes, err := api.GetQueueAttributesWithContext(ctx, &sqs.GetQueueAttributesInput{
+	queueAttributes, err := client.GetQueueAttributesWithContext(ctx, &sqs.GetQueueAttributesInput{
 		QueueUrl:       queue.QueueUrl,
 		AttributeNames: getSQSAttributeNames(),
 	})
@@ -331,7 +331,7 @@ func resourceScalewayMNQQueueReadSQS(ctx context.Context, d *schema.ResourceData
 }
 
 func resourceScalewayMNQQueueReadNATS(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	js, _, err := NATSClientWithRegion(d, meta)
+	client, _, err := NATSClientWithRegion(d, meta)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -341,7 +341,7 @@ func resourceScalewayMNQQueueReadNATS(_ context.Context, d *schema.ResourceData,
 		return diag.FromErr(err)
 	}
 
-	stream, err := js.StreamInfo(queueName)
+	stream, err := client.StreamInfo(queueName)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -371,7 +371,7 @@ func resourceScalewayMNQQueueUpdate(ctx context.Context, d *schema.ResourceData,
 }
 
 func resourceScalewayMNQQueueUpdateSQS(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, _, err := SQSClientWithRegion(d, meta)
+	client, _, err := SQSClientWithRegion(d, meta)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -385,7 +385,7 @@ func resourceScalewayMNQQueueUpdateSQS(ctx context.Context, d *schema.ResourceDa
 		Timeout:  d.Timeout(schema.TimeoutUpdate),
 		Interval: defaultMNQQueueRetryInterval,
 		Function: func() (*sqs.GetQueueUrlOutput, error) {
-			return api.GetQueueUrlWithContext(ctx, &sqs.GetQueueUrlInput{
+			return client.GetQueueUrlWithContext(ctx, &sqs.GetQueueUrlInput{
 				QueueName: aws.String(queueName),
 			})
 		},
@@ -399,7 +399,7 @@ func resourceScalewayMNQQueueUpdateSQS(ctx context.Context, d *schema.ResourceDa
 		return diag.FromErr(err)
 	}
 
-	_, err = api.SetQueueAttributesWithContext(ctx, &sqs.SetQueueAttributesInput{
+	_, err = client.SetQueueAttributesWithContext(ctx, &sqs.SetQueueAttributesInput{
 		QueueUrl:   queue.QueueUrl,
 		Attributes: attributes,
 	})
@@ -411,7 +411,7 @@ func resourceScalewayMNQQueueUpdateSQS(ctx context.Context, d *schema.ResourceDa
 }
 
 func resourceScalewayMNQQueueUpdateNATS(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	js, _, err := NATSClientWithRegion(d, meta)
+	client, _, err := NATSClientWithRegion(d, meta)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -421,7 +421,7 @@ func resourceScalewayMNQQueueUpdateNATS(ctx context.Context, d *schema.ResourceD
 		return diag.FromErr(err)
 	}
 
-	stream, err := js.StreamInfo(queueName)
+	stream, err := client.StreamInfo(queueName)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -434,7 +434,7 @@ func resourceScalewayMNQQueueUpdateNATS(ctx context.Context, d *schema.ResourceD
 		retention = nats.InterestPolicy
 	}
 
-	_, err = js.UpdateStream(&nats.StreamConfig{
+	_, err = client.UpdateStream(&nats.StreamConfig{
 		Name:      queueName,
 		Subjects:  stream.Config.Subjects,
 		MaxAge:    time.Duration(maxAge) * time.Second,
@@ -464,7 +464,7 @@ func resourceScalewayMNQQueueDelete(ctx context.Context, d *schema.ResourceData,
 }
 
 func resourceScalewayMNQQueueDeleteSQS(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	api, _, err := SQSClientWithRegion(d, meta)
+	client, _, err := SQSClientWithRegion(d, meta)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -474,7 +474,7 @@ func resourceScalewayMNQQueueDeleteSQS(ctx context.Context, d *schema.ResourceDa
 		return diag.FromErr(err)
 	}
 
-	queue, err := api.GetQueueUrlWithContext(ctx, &sqs.GetQueueUrlInput{
+	queue, err := client.GetQueueUrlWithContext(ctx, &sqs.GetQueueUrlInput{
 		QueueName: aws.String(queueName),
 	})
 	if err != nil {
@@ -485,7 +485,7 @@ func resourceScalewayMNQQueueDeleteSQS(ctx context.Context, d *schema.ResourceDa
 		return diag.Errorf("[DELETE] failed to get the SQS Queue URL: %s", err)
 	}
 
-	_, err = api.DeleteQueueWithContext(ctx, &sqs.DeleteQueueInput{
+	_, err = client.DeleteQueueWithContext(ctx, &sqs.DeleteQueueInput{
 		QueueUrl: queue.QueueUrl,
 	})
 	if err != nil {
@@ -500,7 +500,7 @@ func resourceScalewayMNQQueueDeleteSQS(ctx context.Context, d *schema.ResourceDa
 		Timeout:  d.Timeout(schema.TimeoutCreate),
 		Interval: defaultMNQQueueRetryInterval,
 		Function: func() (*sqs.GetQueueUrlOutput, error) {
-			return api.GetQueueUrlWithContext(ctx, &sqs.GetQueueUrlInput{
+			return client.GetQueueUrlWithContext(ctx, &sqs.GetQueueUrlInput{
 				QueueName: aws.String(queueName),
 			})
 		},
@@ -510,7 +510,7 @@ func resourceScalewayMNQQueueDeleteSQS(ctx context.Context, d *schema.ResourceDa
 }
 
 func resourceScalewayMNQQueueDeleteNATS(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	js, _, err := NATSClientWithRegion(d, meta)
+	client, _, err := NATSClientWithRegion(d, meta)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -520,7 +520,7 @@ func resourceScalewayMNQQueueDeleteNATS(_ context.Context, d *schema.ResourceDat
 		return diag.FromErr(err)
 	}
 
-	err = js.DeleteStream(queueName)
+	err = client.DeleteStream(queueName)
 	if err != nil {
 		return diag.FromErr(err)
 	}
