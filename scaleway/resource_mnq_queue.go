@@ -76,18 +76,20 @@ func resourceScalewayMNQQueue() *schema.Resource {
 				Description:  "The maximum size of a message. Should be in bytes.",
 			},
 			"sqs": {
-				Type:        schema.TypeList,
-				Optional:    true,
-				MaxItems:    1,
-				Description: "The SQS attributes of the queue",
-				Elem:        resourceScalewayMNQQueueSQS(),
+				Type:          schema.TypeList,
+				Optional:      true,
+				MaxItems:      1,
+				Description:   "The SQS attributes of the queue",
+				Elem:          resourceScalewayMNQQueueSQS(),
+				ConflictsWith: []string{"nats"},
 			},
 			"nats": {
-				Type:        schema.TypeList,
-				Optional:    true,
-				MaxItems:    1,
-				Description: "The NATS attributes of the queue",
-				Elem:        resourceScalewayMNQQueueNATS(),
+				Type:          schema.TypeList,
+				Optional:      true,
+				MaxItems:      1,
+				Description:   "The NATS attributes of the queue",
+				Elem:          resourceScalewayMNQQueueNATS(),
+				ConflictsWith: []string{"sqs"},
 			},
 		},
 		CustomizeDiff: customdiff.Sequence(
@@ -99,6 +101,12 @@ func resourceScalewayMNQQueue() *schema.Resource {
 func resourceScalewayMNQQueueSQS() *schema.Resource {
 	return &schema.Resource{
 		Schema: map[string]*schema.Schema{
+			"endpoint": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Default:     "http://sqs-sns.mnq.{region}.scw.cloud",
+				Description: "The endpoint of the SQS queue. Can contain a {region} placeholder.",
+			},
 			"access_key": {
 				Type:        schema.TypeString,
 				Required:    true,
@@ -139,6 +147,12 @@ func resourceScalewayMNQQueueSQS() *schema.Resource {
 func resourceScalewayMNQQueueNATS() *schema.Resource {
 	return &schema.Resource{
 		Schema: map[string]*schema.Schema{
+			"endpoint": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Default:     "nats://nats.mnq.{region}.scw.cloud:4222",
+				Description: "The endpoint of the NATS queue. Can contain a {region} placeholder.",
+			},
 			"credentials": {
 				Type:        schema.TypeString,
 				Required:    true,
@@ -314,6 +328,7 @@ func resourceScalewayMNQQueueReadSQS(ctx context.Context, d *schema.ResourceData
 
 	sqs := values["sqs"].([]interface{})[0].(map[string]interface{})
 	sqs["url"] = flattenStringPtr(queue.QueueUrl)
+	sqs["endpoint"] = d.Get("sqs.0.endpoint").(string)
 	sqs["access_key"] = d.Get("sqs.0.access_key").(string)
 	sqs["secret_key"] = d.Get("sqs.0.secret_key").(string)
 
