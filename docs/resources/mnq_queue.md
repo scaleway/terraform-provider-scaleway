@@ -75,17 +75,17 @@ The following arguments are supported:
 * `message_max_size` - (Optional) The maximum size of a message. Should be in bytes. Must be between 1024 and 262_144. Defaults to 262_144.
 
 * `sqs` - (Optional) The SQS attributes of the queue. Conflicts with `nats`.
-  ~ `endpoint` - (Optional) The endpoint of the SQS queue. Can contain a {region} placeholder. Defaults to `http://sqs-sns.mnq.{region}.scw.cloud`.
-  ~ `access_key` - (Required) The access key of the SQS queue.
-  ~ `secret_key` - (Required) The secret key of the SQS queue.
-  ~ `content_based_deduplication` - (Optional) Specifies whether to enable content-based deduplication. Defaults to `false`.
-  ~ `receive_wait_time_seconds` - (Optional) The number of seconds to wait for a message to arrive in the queue before returning. Must be between 0 and 20. Defaults to 0.
-  ~ `visibility_timeout_seconds` - (Optional) The number of seconds a message is hidden from other consumers. Must be between 0 and 43_200. Defaults to 30.
-  ~ For more information about the SQS limitations, see [the documentation](https://www.scaleway.com/en/developers/api/messaging-and-queuing/#technical-limitations).
+    - `endpoint` - (Optional) The endpoint of the SQS queue. Can contain a {region} placeholder. Defaults to `http://sqs-sns.mnq.{region}.scw.cloud`.
+    - `access_key` - (Required) The access key of the SQS queue.
+    - `secret_key` - (Required) The secret key of the SQS queue.
+    - `content_based_deduplication` - (Optional) Specifies whether to enable content-based deduplication. Defaults to `false`.
+    - `receive_wait_time_seconds` - (Optional) The number of seconds to wait for a message to arrive in the queue before returning. Must be between 0 and 20. Defaults to 0.
+    - `visibility_timeout_seconds` - (Optional) The number of seconds a message is hidden from other consumers. Must be between 0 and 43_200. Defaults to 30.
+    - For more information about the SQS limitations, see [the documentation](https://www.scaleway.com/en/developers/api/messaging-and-queuing/#technical-limitations).
 
 * `nats` - (Optional) The NATS attributes of the queue. Conflicts with `sqs`.
-  ~ `endpoint` - (Optional) The endpoint of the NATS queue. Can contain a {region} placeholder. Defaults to `nats://nats.mnq.{region}.scw.cloud:4222`.
-  ~ `credentials` - (Required) Line jump separated key and seed.
+    - `endpoint` - (Optional) The endpoint of the NATS queue. Can contain a {region} placeholder. Defaults to `nats://nats.mnq.{region}.scw.cloud:4222`.
+    - `credentials` - (Required) Line jump separated key and seed.
 
 
 ### Attribute Reference
