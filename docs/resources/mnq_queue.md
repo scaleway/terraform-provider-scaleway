@@ -81,6 +81,7 @@ The following arguments are supported:
   ~ `content_based_deduplication` - (Optional) Specifies whether to enable content-based deduplication. Defaults to `false`.
   ~ `receive_wait_time_seconds` - (Optional) The number of seconds to wait for a message to arrive in the queue before returning. Must be between 0 and 20. Defaults to 0.
   ~ `visibility_timeout_seconds` - (Optional) The number of seconds a message is hidden from other consumers. Must be between 0 and 43_200. Defaults to 30.
+  ~ For more information about the SQS limitations, see [the documentation](https://www.scaleway.com/en/developers/api/messaging-and-queuing/#technical-limitations).
 
 * `nats` - (Optional) The NATS attributes of the queue. Conflicts with `sqs`.
   ~ `endpoint` - (Optional) The endpoint of the NATS queue. Can contain a {region} placeholder. Defaults to `nats://nats.mnq.{region}.scw.cloud:4222`.
