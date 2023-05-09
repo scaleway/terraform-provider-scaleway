@@ -125,6 +125,10 @@ func expandLbACLActionRedirect(raw interface{}) *lbSDK.ACLActionRedirect {
 }
 
 func expandPrivateNetworks(data interface{}) ([]*lbSDK.PrivateNetwork, error) {
+	if data == nil {
+		return nil, nil
+	}
+
 	pns := []*lbSDK.PrivateNetwork(nil)
 
 	for _, pn := range data.(*schema.Set).List() {

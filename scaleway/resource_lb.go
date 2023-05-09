@@ -345,6 +345,12 @@ func resourceScalewayLbUpdate(ctx context.Context, d *schema.ResourceData, meta 
 			return diag.FromErr(err)
 		}
 
+		// check that pns are in a stable state
+		pns, err = waitForLBPN(ctx, lbAPI, zone, ID, d.Timeout(schema.TimeoutUpdate))
+		if err != nil && !is404Error(err) {
+			return diag.FromErr(err)
+		}
+
 		pnToAttach := privateNetworksCompare(pns, pnConfigs)
 		// attach new/updated private networks
 		for i := range pnToAttach {
