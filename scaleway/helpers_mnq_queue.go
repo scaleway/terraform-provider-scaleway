@@ -114,9 +114,9 @@ func splitNATSJWTAndSeed(credentials string) (string, string, error) {
 const SQSFIFOQueueNameSuffix = ".fifo"
 
 var SQSAttributesToResourceMap = map[string]string{
-	sqs.QueueAttributeNameFifoQueue:                     "fifo_queue",
 	sqs.QueueAttributeNameMaximumMessageSize:            "message_max_size",
 	sqs.QueueAttributeNameMessageRetentionPeriod:        "message_max_age",
+	sqs.QueueAttributeNameFifoQueue:                     "sqs.0.fifo_queue",
 	sqs.QueueAttributeNameContentBasedDeduplication:     "sqs.0.content_based_deduplication",
 	sqs.QueueAttributeNameReceiveMessageWaitTimeSeconds: "sqs.0.receive_wait_time_seconds",
 	sqs.QueueAttributeNameVisibilityTimeout:             "sqs.0.visibility_timeout_seconds",
@@ -241,7 +241,7 @@ func sqsAttributeToResourceData(values map[string]interface{}, value string, res
 	return nil
 }
 
-func resourceMNQQueueName(name interface{}, prefix interface{}, isSQS bool, isFifo bool) string {
+func resourceMNQQueueName(name interface{}, prefix interface{}, isSQS bool, isSQSFifo bool) string {
 	if value, ok := name.(string); ok && value != "" {
 		return value
 	}
@@ -252,7 +252,7 @@ func resourceMNQQueueName(name interface{}, prefix interface{}, isSQS bool, isFi
 	} else {
 		output = newRandomName("queue")
 	}
-	if isSQS && isFifo {
+	if isSQS && isSQSFifo {
 		return output + SQSFIFOQueueNameSuffix
 	}
 
@@ -260,32 +260,31 @@ func resourceMNQQueueName(name interface{}, prefix interface{}, isSQS bool, isFi
 }
 
 func resourceMNQQueueCustomizeDiff(_ context.Context, d *schema.ResourceDiff, _ interface{}) error {
-	isFifo := d.Get("fifo_queue").(bool)
 	_, isSQS := d.GetOk("sqs")
+	isSQSFifo := isSQS && d.Get("sqs.0.fifo_queue").(bool)
 
 	var name string
 	if d.Id() == "" {
-		name = resourceMNQQueueName(d.Get("name"), d.Get("name_prefix"), isSQS, isFifo)
+		name = resourceMNQQueueName(d.Get("name"), d.Get("name_prefix"), isSQS, isSQSFifo)
 	} else {
 		name = d.Get("name").(string)
 	}
 
-	var re *regexp.Regexp
-	if isSQS && isFifo {
-		re = regexp.MustCompile(`^[a-zA-Z0-9_-]{1,75}\` + SQSFIFOQueueNameSuffix + `$`)
-	} else {
-		re = regexp.MustCompile(`^[a-zA-Z0-9_-]{1,80}$`)
-	}
-	if !re.MatchString(name) {
-		return fmt.Errorf("invalid queue name: %s (format is %s)", name, re.String())
-	}
+	nameRegex := regexp.MustCompile(`^[a-zA-Z0-9_-]{1,80}$`)
 
 	if isSQS {
-		contentBasedDeduplication := d.Get("sqs.0.content_based_deduplication").(bool)
+		if isSQSFifo {
+			nameRegex = regexp.MustCompile(`^[a-zA-Z0-9_-]{1,75}\` + SQSFIFOQueueNameSuffix + `$`)
+		}
 
-		if !isFifo && contentBasedDeduplication {
+		contentBasedDeduplication := d.Get("sqs.0.content_based_deduplication").(bool)
+		if !isSQSFifo && contentBasedDeduplication {
 			return fmt.Errorf("content-based deduplication can only be set for FIFO queue")
 		}
+	}
+
+	if !nameRegex.MatchString(name) {
+		return fmt.Errorf("invalid queue name: %s (format is %s)", name, nameRegex.String())
 	}
 
 	return nil

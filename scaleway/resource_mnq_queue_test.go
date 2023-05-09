@@ -59,10 +59,10 @@ func TestAccScalewayMNQQueue_BasicSQS(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayMNQQueueExists(tt, "scaleway_mnq_queue.main"),
 					resource.TestCheckResourceAttr("scaleway_mnq_queue.main", "name", "terraform-example-queue"),
-					resource.TestCheckResourceAttr("scaleway_mnq_queue.main", "fifo_queue", "false"),
 					resource.TestCheckResourceAttrSet("scaleway_mnq_queue.main", "message_max_size"),
 					resource.TestCheckResourceAttrSet("scaleway_mnq_queue.main", "message_max_age"),
 					resource.TestCheckResourceAttr("scaleway_mnq_queue.main", "sqs.#", "1"),
+					resource.TestCheckResourceAttr("scaleway_mnq_queue.main", "sqs.0.fifo_queue", "false"),
 					resource.TestCheckResourceAttr("scaleway_mnq_queue.main", "sqs.0.receive_wait_time_seconds", "0"),
 					resource.TestCheckResourceAttrSet("scaleway_mnq_queue.main", "sqs.0.url"),
 				),
@@ -90,12 +90,11 @@ func TestAccScalewayMNQQueue_BasicSQS(t *testing.T) {
 						name         = "terraform-example-queue"
 						namespace_id = scaleway_mnq_namespace.main.id
 
-						fifo_queue = true
-
 						sqs {
 							access_key = scaleway_mnq_credential.main.sqs_sns_credentials[0].access_key
 							secret_key = scaleway_mnq_credential.main.sqs_sns_credentials[0].secret_key
 							receive_wait_time_seconds = 0
+							fifo_queue = true
 						}
 					}
 				`,
@@ -124,19 +123,18 @@ func TestAccScalewayMNQQueue_BasicSQS(t *testing.T) {
 						name         = "terraform-example-queue.fifo"
 						namespace_id = scaleway_mnq_namespace.main.id
 
-						fifo_queue = true
-
 						sqs {
 							access_key = scaleway_mnq_credential.main.sqs_sns_credentials[0].access_key
 							secret_key = scaleway_mnq_credential.main.sqs_sns_credentials[0].secret_key
 							receive_wait_time_seconds = 0
+							fifo_queue = true
 						}
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayMNQQueueExists(tt, "scaleway_mnq_queue.main"),
 					resource.TestCheckResourceAttr("scaleway_mnq_queue.main", "name", "terraform-example-queue.fifo"),
-					resource.TestCheckResourceAttr("scaleway_mnq_queue.main", "fifo_queue", "true"),
+					resource.TestCheckResourceAttr("scaleway_mnq_queue.main", "sqs.0.fifo_queue", "true"),
 				),
 			},
 			{
@@ -162,14 +160,13 @@ func TestAccScalewayMNQQueue_BasicSQS(t *testing.T) {
 						name         = "terraform-example-queue.fifo"
 						namespace_id = scaleway_mnq_namespace.main.id
 
-						fifo_queue = true
-
 						message_max_size = 4096
 
 						sqs {
 							access_key = scaleway_mnq_credential.main.sqs_sns_credentials[0].access_key
 							secret_key = scaleway_mnq_credential.main.sqs_sns_credentials[0].secret_key
 							receive_wait_time_seconds = 0
+							fifo_queue = true
 						}
 					}
 				`,
@@ -219,7 +216,6 @@ func TestAccScalewayMNQQueue_BasicNATS(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayMNQQueueExists(tt, "scaleway_mnq_queue.main"),
 					resource.TestCheckResourceAttr("scaleway_mnq_queue.main", "name", "terraform-example-queue"),
-					resource.TestCheckResourceAttr("scaleway_mnq_queue.main", "fifo_queue", "false"),
 					resource.TestCheckResourceAttrSet("scaleway_mnq_queue.main", "message_max_age"),
 					resource.TestCheckResourceAttrSet("scaleway_mnq_queue.main", "message_max_size"),
 				),
@@ -251,7 +247,6 @@ func TestAccScalewayMNQQueue_BasicNATS(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayMNQQueueExists(tt, "scaleway_mnq_queue.main"),
 					resource.TestCheckResourceAttr("scaleway_mnq_queue.main", "name", "terraform-example-queue"),
-					resource.TestCheckResourceAttr("scaleway_mnq_queue.main", "fifo_queue", "false"),
 					resource.TestCheckResourceAttr("scaleway_mnq_queue.main", "message_max_age", "100"),
 					resource.TestCheckResourceAttr("scaleway_mnq_queue.main", "message_max_size", "2048"),
 				),

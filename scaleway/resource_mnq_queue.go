@@ -56,11 +56,6 @@ func resourceScalewayMNQQueue() *schema.Resource {
 				ForceNew:      true,
 				ConflictsWith: []string{"name"},
 			},
-			"fifo_queue": {
-				Type:     schema.TypeBool,
-				Default:  false,
-				Optional: true,
-			},
 			"message_max_age": {
 				Type:         schema.TypeInt,
 				Optional:     true,
@@ -119,6 +114,13 @@ func resourceScalewayMNQQueueSQS() *schema.Resource {
 				Sensitive:   true,
 				Description: "The secret key of the SQS queue",
 			},
+			"fifo_queue": {
+				Type:        schema.TypeBool,
+				Default:     false,
+				Optional:    true,
+				ForceNew:    true,
+				Description: "Whether the queue is a FIFO queue. If true, the queue name must end with .fifo",
+			},
 			"content_based_deduplication": {
 				Type:     schema.TypeBool,
 				Default:  false,
@@ -158,6 +160,13 @@ func resourceScalewayMNQQueueNATS() *schema.Resource {
 				Required:    true,
 				Sensitive:   true,
 				Description: "Line jump separated key and seed",
+			},
+			"retention_policy": {
+				Type:         schema.TypeString,
+				Optional:     true,
+				Default:      "workqueue",
+				ValidateFunc: validation.StringInSlice([]string{"limits", "interest", "workqueue"}, false),
+				Description:  "The retention policy of the queue. See https://docs.nats.io/nats-concepts/jetstream/streams#retentionpolicy for more information.",
 			},
 		},
 	}
@@ -201,7 +210,7 @@ func resourceScalewayMNQQueueCreateSQS(ctx context.Context, d *schema.ResourceDa
 		return diag.FromErr(err)
 	}
 
-	isFifo := d.Get("fifo_queue").(bool)
+	isFifo := d.Get("sqs.0.fifo_queue").(bool)
 	name := resourceMNQQueueName(d.Get("name"), d.Get("name_prefix"), true, isFifo)
 
 	attributes, err := sqsResourceDataToAttributes(d, resourceScalewayMNQQueue().Schema)
@@ -247,8 +256,15 @@ func resourceScalewayMNQQueueCreateNATS(ctx context.Context, d *schema.ResourceD
 	maxSize := d.Get("message_max_size").(int)
 
 	var retention nats.RetentionPolicy
-	if d.Get("fifo_queue").(bool) {
+	switch d.Get("nats.0.retention_policy").(string) {
+	case "limits":
+		retention = nats.LimitsPolicy
+	case "interest":
 		retention = nats.InterestPolicy
+	case "workqueue":
+		retention = nats.WorkQueuePolicy
+	default:
+		return diag.Errorf("unknown retention policy %s", d.Get("nats.0.retention_policy").(string))
 	}
 
 	_, err = client.AddStream(&nats.StreamConfig{
@@ -445,8 +461,15 @@ func resourceScalewayMNQQueueUpdateNATS(ctx context.Context, d *schema.ResourceD
 	maxSize := d.Get("message_max_size").(int)
 
 	var retention nats.RetentionPolicy
-	if d.Get("fifo_queue").(bool) {
+	switch d.Get("nats.0.retention_policy").(string) {
+	case "limits":
+		retention = nats.LimitsPolicy
+	case "interest":
 		retention = nats.InterestPolicy
+	case "workqueue":
+		retention = nats.WorkQueuePolicy
+	default:
+		return diag.Errorf("unknown retention policy %s", d.Get("nats.0.retention_policy").(string))
 	}
 
 	_, err = client.UpdateStream(&nats.StreamConfig{
