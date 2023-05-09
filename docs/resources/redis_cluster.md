@@ -129,7 +129,7 @@ keep in mind that you cannot downgrade a Redis Cluster so setting a smaller `clu
   by side.
 
 - Cluster mode (`cluster_size` > 1) : you can define a single private network as you create your cluster, you won't be
-  able to edit or detach it afterwards, unless you create another cluster. Your `service_ips` must be listed as follows:
+  able to edit or detach it afterward, unless you create another cluster. Your `service_ips` must be listed as follows:
 
 ```hcl
   service_ips = [
@@ -156,7 +156,8 @@ The `private_network` block supports :
 - `id` - (Required) The UUID of the private network resource.
 - `service_ips` - (Required) Endpoint IPv4 addresses
   in [CIDR notation](https://en.wikipedia.org/wiki/Classless_Inter-Domain_Routing#CIDR_notation). You must provide at
-  least one IP per node.
+  least one IP per node or The IP network address within the private subnet is determined by the IP Address Management (IPAM)
+  service if not set.
 
 ~> The `private_network` conflict with `acl`. Only one should be specified.
 

@@ -66,17 +66,22 @@ func expandRedisPrivateNetwork(data []interface{}) ([]*redis.EndpointSpec, error
 		pnID := expandID(pn["id"].(string))
 		rawIPs := pn["service_ips"].([]interface{})
 		ips := []scw.IPNet(nil)
-		for _, rawIP := range rawIPs {
-			ip, err := expandIPNet(rawIP.(string))
-			if err != nil {
-				return epSpecs, err
-			}
-			ips = append(ips, ip)
-		}
 		spec := &redis.EndpointSpecPrivateNetworkSpec{
-			ID:         pnID,
-			ServiceIPs: ips,
+			ID: pnID,
 		}
+		if len(rawIPs) != 0 {
+			for _, rawIP := range rawIPs {
+				ip, err := expandIPNet(rawIP.(string))
+				if err != nil {
+					return epSpecs, err
+				}
+				ips = append(ips, ip)
+			}
+			spec.ServiceIPs = ips
+		} else {
+			spec.IpamConfig = &redis.EndpointSpecPrivateNetworkSpecIpamConfig{}
+		}
+
 		epSpecs = append(epSpecs, &redis.EndpointSpec{PrivateNetwork: spec})
 	}
 	return epSpecs, nil
