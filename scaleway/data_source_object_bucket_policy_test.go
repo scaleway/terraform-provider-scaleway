@@ -61,6 +61,7 @@ func TestAccScalewayDataSourceObjectBucketPolicy_Basic(t *testing.T) {
 					resource.TestCheckResourceAttrSet("data.scaleway_object_bucket_policy.selected", "policy"),
 					resource.TestCheckResourceAttrPair("data.scaleway_object_bucket_policy.selected", "policy", "scaleway_object_bucket_policy.main", "policy"),
 				),
+				ExpectNonEmptyPlan: !*UpdateCassettes,
 			},
 		},
 	})
