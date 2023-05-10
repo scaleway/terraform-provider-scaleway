@@ -210,6 +210,7 @@ func Provider(config *ProviderConfig) plugin.ProviderFunc {
 				"scaleway_lb_routes":                           dataSourceScalewayLbRoutes(),
 				"scaleway_marketplace_image":                   dataSourceScalewayMarketplaceImage(),
 				"scaleway_object_bucket":                       dataSourceScalewayObjectBucket(),
+				"scaleway_object_bucket_policy":                dataSourceScalewayObjectBucketPolicy(),
 				"scaleway_rdb_acl":                             dataSourceScalewayRDBACL(),
 				"scaleway_rdb_instance":                        dataSourceScalewayRDBInstance(),
 				"scaleway_rdb_database":                        dataSourceScalewayRDBDatabase(),

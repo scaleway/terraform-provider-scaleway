@@ -9,7 +9,6 @@ import (
 
 	domain "github.com/scaleway/scaleway-sdk-go/api/domain/v2beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
-	"golang.org/x/exp/slices"
 )
 
 const (
@@ -295,34 +294,6 @@ var (
 	dnsResolverTickDelay = time.Millisecond * 500
 	disableDNSResolver   bool
 )
-
-func hostResolver(ctx context.Context, timeout time.Duration, reverse, ip string) bool {
-	if disableDNSResolver {
-		return true
-	}
-	ticker := time.Tick(dnsResolverTickDelay)
-	ctx, cancel := context.WithTimeout(ctx, timeout)
-	defer cancel()
-
-	r := newDNSResolver()
-
-	for range ticker {
-		address, err := r.LookupHost(ctx, reverse)
-		if err != nil {
-			select {
-			case <-ctx.Done():
-				return false
-			default:
-				continue
-			}
-		}
-		if slices.Contains(address, ip) {
-			return true
-		}
-	}
-
-	return false
-}
 
 func cnameResolver(ctx context.Context, timeout time.Duration, hostname, expectedCNAME string) bool {
 	if disableDNSResolver {
