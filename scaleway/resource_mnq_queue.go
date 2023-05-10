@@ -2,7 +2,6 @@ package scaleway
 
 import (
 	"context"
-	"log"
 	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -218,8 +217,6 @@ func resourceScalewayMNQQueueCreateSQS(ctx context.Context, d *schema.ResourceDa
 		return diag.FromErr(err)
 	}
 
-	log.Printf("[DEBUG] SQS Queue attributes CREATE: %+v", attributes)
-
 	input := &sqs.CreateQueueInput{
 		QueueName:  aws.String(name),
 		Attributes: attributes,
@@ -323,7 +320,7 @@ func resourceScalewayMNQQueueReadSQS(ctx context.Context, d *schema.ResourceData
 		},
 	})
 	if err != nil {
-		return diag.Errorf("[READ] failed to get the SQS Queue URL: %s", err)
+		return diag.Errorf("failed to get the SQS Queue URL: %s", err)
 	}
 
 	queueAttributes, err := client.GetQueueAttributesWithContext(ctx, &sqs.GetQueueAttributesInput{
@@ -351,8 +348,6 @@ func resourceScalewayMNQQueueReadSQS(ctx context.Context, d *schema.ResourceData
 	if _, ok := sqs["visibility_timeout_seconds"]; !ok {
 		return diag.Errorf("failed to get the SQS Queue visibility timeout: %+v", *queueAttributes.Attributes["VisibilityTimeout"])
 	}
-
-	log.Printf("[DEBUG] SQS Queue attributes READ: %+v", values)
 
 	for k, v := range values {
 		_ = d.Set(k, v) // lintignore: R001
@@ -422,7 +417,7 @@ func resourceScalewayMNQQueueUpdateSQS(ctx context.Context, d *schema.ResourceDa
 		},
 	})
 	if err != nil {
-		return diag.Errorf("[UPDATE] failed to get the SQS Queue URL: %s", err)
+		return diag.Errorf("failed to get the SQS Queue URL: %s", err)
 	}
 
 	attributes, err := sqsResourceDataToAttributes(d, resourceScalewayMNQQueue().Schema)
@@ -520,7 +515,7 @@ func resourceScalewayMNQQueueDeleteSQS(ctx context.Context, d *schema.ResourceDa
 			return nil
 		}
 
-		return diag.Errorf("[DELETE] failed to get the SQS Queue URL: %s", err)
+		return diag.Errorf("failed to get the SQS Queue URL: %s", err)
 	}
 
 	_, err = client.DeleteQueueWithContext(ctx, &sqs.DeleteQueueInput{
