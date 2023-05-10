@@ -68,8 +68,6 @@ The following arguments are supported:
 
 * `name_prefix` - (Optional) Creates a unique name beginning with the specified prefix. Conflicts with `name`.
 
-* `fifo_queue` - (Optional) Specifies whether to create a FIFO queue.
-
 * `message_max_age` - (Optional) The number of seconds the queue retains a message. Must be between 60 and 1_209_600. Defaults to 345_600.
 
 * `message_max_size` - (Optional) The maximum size of a message. Should be in bytes. Must be between 1024 and 262_144. Defaults to 262_144.
@@ -78,6 +76,7 @@ The following arguments are supported:
     - `endpoint` - (Optional) The endpoint of the SQS queue. Can contain a {region} placeholder. Defaults to `http://sqs-sns.mnq.{region}.scw.cloud`.
     - `access_key` - (Required) The access key of the SQS queue.
     - `secret_key` - (Required) The secret key of the SQS queue.
+    - `fifo_queue` - (Optional) Whether the queue is a FIFO queue. If true, the queue name must end with .fifo. Defaults to `false`.
     - `content_based_deduplication` - (Optional) Specifies whether to enable content-based deduplication. Defaults to `false`.
     - `receive_wait_time_seconds` - (Optional) The number of seconds to wait for a message to arrive in the queue before returning. Must be between 0 and 20. Defaults to 0.
     - `visibility_timeout_seconds` - (Optional) The number of seconds a message is hidden from other consumers. Must be between 0 and 43_200. Defaults to 30.
@@ -86,6 +85,7 @@ The following arguments are supported:
 * `nats` - (Optional) The NATS attributes of the queue. Conflicts with `sqs`.
     - `endpoint` - (Optional) The endpoint of the NATS queue. Can contain a {region} placeholder. Defaults to `nats://nats.mnq.{region}.scw.cloud:4222`.
     - `credentials` - (Required) Line jump separated key and seed.
+    - `retention_policy` - (Optional) The retention policy of the queue. See https://docs.nats.io/nats-concepts/jetstream/streams#retentionpolicy for more information. Defaults to `workqueue`.
 
 
 ### Attribute Reference
