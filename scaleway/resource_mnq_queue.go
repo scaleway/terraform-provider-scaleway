@@ -46,6 +46,7 @@ func resourceScalewayMNQQueue() *schema.Resource {
 				Optional:      true,
 				Computed:      true,
 				ForceNew:      true,
+				Description:   "The name of the queue. Conflicts with name_prefix.",
 				ConflictsWith: []string{"name_prefix"},
 			},
 			"name_prefix": {
@@ -53,6 +54,7 @@ func resourceScalewayMNQQueue() *schema.Resource {
 				Optional:      true,
 				Computed:      true,
 				ForceNew:      true,
+				Description:   "Creates a unique name beginning with the specified prefix. Conflicts with name.",
 				ConflictsWith: []string{"name"},
 			},
 			"message_max_age": {
