@@ -45,75 +45,82 @@ func testSweepVPCPublicGatewayIP(_ string) error {
 func TestAccScalewayVPCPublicGatewayIP_Basic(t *testing.T) {
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
-
-	testDNSZone := fmt.Sprintf("%s.%s", testDomainZone, testDomain)
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheckScalewayVPCPublicGatewayIPDestroy(tt),
 		Steps: []resource.TestStep{
 			{
-				Config: fmt.Sprintf(`
-					resource "scaleway_domain_record" "tf_A" {
-						dns_zone = %[1]q
-						name     = "tf"
-						type     = "A"
-						data     = "${scaleway_vpc_public_gateway_ip.main.address}"
-						ttl      = 3600
-						priority = 1
-					}
-
-					resource scaleway_vpc_public_gateway_ip main {
-					}
-				`, testDomain),
+				Config: `
+					resource scaleway_vpc_public_gateway_ip main {}
+				`,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayVPCPublicGatewayIPExists(tt, "scaleway_vpc_public_gateway_ip.main"),
-					resource.TestCheckResourceAttrSet("scaleway_vpc_public_gateway_ip.main", "reverse"),
 					resource.TestCheckResourceAttrSet("scaleway_vpc_public_gateway_ip.main", "address"),
 					resource.TestCheckResourceAttrSet("scaleway_vpc_public_gateway_ip.main", "created_at"),
 					resource.TestCheckResourceAttrSet("scaleway_vpc_public_gateway_ip.main", "updated_at"),
 				),
 			},
-			{
-				Config: fmt.Sprintf(`
-					resource "scaleway_domain_record" "tf_A" {
-						dns_zone = %[1]q
-						name     = "tf"
-						type     = "A"
-						data     = "${scaleway_vpc_public_gateway_ip.main.address}"
-						ttl      = 3600
-						priority = 1
-					}
+		},
+	})
+}
 
-					resource scaleway_vpc_public_gateway_ip main {
-						reverse = %[2]q
-						tags = ["tag0", "tag1"]
-					}
-				`, testDomain, testDNSZone),
+func TestAccScalewayVPCPublicGatewayIP_WithZone(t *testing.T) {
+	tt := NewTestTools(t)
+	defer tt.Cleanup()
+	resource.ParallelTest(t, resource.TestCase{
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      testAccCheckScalewayVPCPublicGatewayIPDestroy(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource scaleway_vpc_public_gateway_ip main {}
+				`,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayVPCPublicGatewayIPExists(tt, "scaleway_vpc_public_gateway_ip.main"),
-					resource.TestCheckResourceAttr("scaleway_vpc_public_gateway_ip.main", "tags.0", "tag0"),
-					resource.TestCheckResourceAttr("scaleway_vpc_public_gateway_ip.main", "tags.1", "tag1"),
-					resource.TestCheckResourceAttr("scaleway_vpc_public_gateway_ip.main", "reverse", testDNSZone),
-					resource.TestCheckResourceAttrSet("scaleway_vpc_public_gateway_ip.main", "address"),
-					resource.TestCheckResourceAttrSet("scaleway_vpc_public_gateway_ip.main", "created_at"),
-					resource.TestCheckResourceAttrSet("scaleway_vpc_public_gateway_ip.main", "updated_at"),
+					resource.TestCheckResourceAttr("scaleway_vpc_public_gateway_ip.main", "zone", "fr-par-1"),
 				),
 			},
 			{
 				Config: `
 					resource scaleway_vpc_public_gateway_ip main {
-						tags = ["tag2", "tag3"]
+						zone = "nl-ams-1"
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayVPCPublicGatewayIPExists(tt, "scaleway_vpc_public_gateway_ip.main"),
-					resource.TestCheckResourceAttr("scaleway_vpc_public_gateway_ip.main", "tags.0", "tag2"),
-					resource.TestCheckResourceAttr("scaleway_vpc_public_gateway_ip.main", "tags.1", "tag3"),
-					resource.TestCheckResourceAttrSet("scaleway_vpc_public_gateway_ip.main", "reverse"),
-					resource.TestCheckResourceAttrSet("scaleway_vpc_public_gateway_ip.main", "address"),
-					resource.TestCheckResourceAttrSet("scaleway_vpc_public_gateway_ip.main", "created_at"),
-					resource.TestCheckResourceAttrSet("scaleway_vpc_public_gateway_ip.main", "updated_at"),
+					resource.TestCheckResourceAttr("scaleway_vpc_public_gateway_ip.main", "zone", "nl-ams-1"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccScalewayVPCPublicGatewayIP_WithTags(t *testing.T) {
+	tt := NewTestTools(t)
+	defer tt.Cleanup()
+	resource.ParallelTest(t, resource.TestCase{
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      testAccCheckScalewayVPCPublicGatewayIPDestroy(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource scaleway_vpc_public_gateway_ip main {}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayVPCPublicGatewayIPExists(tt, "scaleway_vpc_public_gateway_ip.main"),
+					resource.TestCheckNoResourceAttr("scaleway_vpc_public_gateway_ip.main", "tags"),
+				),
+			},
+			{
+				Config: `
+					resource scaleway_vpc_public_gateway_ip main {
+						tags = ["foo", "bar"]
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayVPCPublicGatewayIPExists(tt, "scaleway_vpc_public_gateway_ip.main"),
+					resource.TestCheckResourceAttr("scaleway_vpc_public_gateway_ip.main", "tags.0", "foo"),
+					resource.TestCheckResourceAttr("scaleway_vpc_public_gateway_ip.main", "tags.1", "bar"),
 				),
 			},
 		},
