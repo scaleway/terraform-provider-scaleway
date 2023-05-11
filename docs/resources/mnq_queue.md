@@ -25,6 +25,10 @@ resource "scaleway_mnq_credential" "main" {
 resource "scaleway_mnq_queue" "my_queue" {
   namespace_id = scaleway_mnq_namespace.main.id
   name         = "my-queue"
+
+  nats {
+    credentials = scaleway_mnq_credential.main.nats_credentials[0].content
+  }
 }
 ```
 
