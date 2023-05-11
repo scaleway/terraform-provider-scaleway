@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"hash/crc32"
 	"net/http"
-	"os"
 	"runtime"
 	"strings"
 	"time"
@@ -20,6 +19,7 @@ import (
 	awspolicy "github.com/hashicorp/awspolicyequivalence"
 	"github.com/hashicorp/go-multierror"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/logging"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal"
@@ -37,7 +37,7 @@ func newS3Client(httpClient *http.Client, region, accessKey, secretKey string) (
 	config.WithCredentials(credentials.NewStaticCredentials(accessKey, secretKey, ""))
 	config.WithEndpoint("https://s3." + region + ".scw.cloud")
 	config.WithHTTPClient(httpClient)
-	if strings.ToLower(os.Getenv("TF_LOG")) == "debug" {
+	if logging.IsDebugOrHigher() {
 		config.WithLogLevel(aws.LogDebugWithHTTPBody)
 	}
 

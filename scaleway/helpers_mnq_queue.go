@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"net/http"
-	"os"
 	"regexp"
 	"strconv"
 	"strings"
@@ -14,6 +13,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/sqs"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/id"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/logging"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/nats-io/nats.go"
 	mnq "github.com/scaleway/scaleway-sdk-go/api/mnq/v1alpha1"
@@ -49,7 +49,7 @@ func newSQSClient(httpClient *http.Client, region string, endpoint string, acces
 	config.WithCredentials(credentials.NewStaticCredentials(accessKey, secretKey, ""))
 	config.WithEndpoint(strings.ReplaceAll(endpoint, "{region}", region))
 	config.WithHTTPClient(httpClient)
-	if strings.ToLower(os.Getenv("TF_LOG")) == "debug" {
+	if logging.IsDebugOrHigher() {
 		config.WithLogLevel(aws.LogDebugWithHTTPBody)
 	}
 
