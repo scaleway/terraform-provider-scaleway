@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
@@ -432,8 +433,12 @@ func resourceBucketLifecycleUpdate(ctx context.Context, conn *s3.S3, d *schema.R
 		},
 	}
 
-	_, err := retryOnAWSCode(ctx, s3.ErrCodeNoSuchBucket, func() (interface{}, error) {
-		return conn.PutBucketLifecycleConfigurationWithContext(ctx, i)
+	_, err := retryWhenAWSErrCodeEquals(ctx, []string{s3.ErrCodeNoSuchBucket}, &RetryWhenConfig[*s3.PutBucketLifecycleConfigurationOutput]{
+		Timeout:  d.Timeout(schema.TimeoutCreate),
+		Interval: 5 * time.Second,
+		Function: func() (*s3.PutBucketLifecycleConfigurationOutput, error) {
+			return conn.PutBucketLifecycleConfigurationWithContext(ctx, i)
+		},
 	})
 	if err != nil {
 		return fmt.Errorf("error putting Object Storage lifecycle: %s", err)
@@ -540,17 +545,21 @@ func resourceScalewayObjectBucketRead(ctx context.Context, d *schema.ResourceDat
 	_ = d.Set("versioning", flattenObjectBucketVersioning(versioningResponse))
 
 	// Read the lifecycle configuration
-	lifecycleResponse, err := retryOnAWSCode(ctx, s3.ErrCodeNoSuchBucket, func() (interface{}, error) {
-		return s3Client.GetBucketLifecycleConfigurationWithContext(ctx, &s3.GetBucketLifecycleConfigurationInput{
-			Bucket: scw.StringPtr(bucketName),
-		})
+	lifecycle, err := retryWhenAWSErrCodeEquals(ctx, []string{s3.ErrCodeNoSuchBucket}, &RetryWhenConfig[*s3.GetBucketLifecycleConfigurationOutput]{
+		Timeout:  d.Timeout(schema.TimeoutRead),
+		Interval: 5 * time.Second,
+		Function: func() (*s3.GetBucketLifecycleConfigurationOutput, error) {
+			return s3Client.GetBucketLifecycleConfigurationWithContext(ctx, &s3.GetBucketLifecycleConfigurationInput{
+				Bucket: scw.StringPtr(bucketName),
+			})
+		},
 	})
 	if err != nil && !tfawserr.ErrMessageContains(err, ErrCodeNoSuchLifecycleConfiguration, "") {
 		return diag.FromErr(err)
 	}
 
 	lifecycleRules := make([]map[string]interface{}, 0)
-	if lifecycle, ok := lifecycleResponse.(*s3.GetBucketLifecycleConfigurationOutput); ok && len(lifecycle.Rules) > 0 {
+	if len(lifecycle.Rules) > 0 {
 		lifecycleRules = make([]map[string]interface{}, 0, len(lifecycle.Rules))
 
 		for _, lifecycleRule := range lifecycle.Rules {

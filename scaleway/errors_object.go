@@ -20,4 +20,32 @@ const (
 	ErrCodeNoSuchWebsiteConfiguration = "NoSuchWebsiteConfiguration"
 	// ErrCodeObjectLockConfigurationNotFoundError object lock configuration not found
 	ErrCodeObjectLockConfigurationNotFoundError = "ObjectLockConfigurationNotFoundError"
+	// ErrCodeAuthorizationError authorization error
+	ErrCodeAuthorizationError = "AuthorizationError"
+	// ErrCodeInternalException internal exception
+	ErrCodeInternalException = "InternalException"
+	// ErrCodeInternalServiceError internal exception error
+	ErrCodeInternalServiceError = "InternalServiceError"
+	// ErrCodeInvalidAction invalid action
+	ErrCodeInvalidAction = "InvalidAction"
+	// ErrCodeInvalidParameterException invalid parameter exception
+	ErrCodeInvalidParameterException = "InvalidParameterException"
+	// ErrCodeInvalidParameterValue invalid parameter value
+	ErrCodeInvalidParameterValue = "InvalidParameterValue"
+	// ErrCodeInvalidRequest invalid request
+	ErrCodeInvalidRequest = "InvalidRequest"
+	// ErrCodeOperationDisabledException operation disabled exception
+	ErrCodeOperationDisabledException = "OperationDisabledException"
+	// ErrCodeOperationNotPermitted operation not permitted
+	ErrCodeOperationNotPermitted = "OperationNotPermitted"
+	// ErrCodeUnknownOperationException   unknown operation exception
+	ErrCodeUnknownOperationException = "UnknownOperationException"
+	// ErrCodeUnsupportedFeatureException = unsupported Feature exception
+	ErrCodeUnsupportedFeatureException = "UnsupportedFeatureException"
+	// ErrCodeUnsupportedOperation unsupported operation
+	ErrCodeUnsupportedOperation = "UnsupportedOperation"
+	// ErrCodeValidationError validation error
+	ErrCodeValidationError = "ValidationError"
+	// ErrCodeValidationException validation exception
+	ErrCodeValidationException = "ValidationException"
 )
