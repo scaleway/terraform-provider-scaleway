@@ -24,7 +24,7 @@ func TestAccScalewayVPCPublicGatewayIPReverseDns_Basic(t *testing.T) {
 					
 					resource "scaleway_domain_record" "tf_A" {
 						dns_zone = %[1]q
-						name     = "tf"
+						name     = "tf-reverse-vpcgw"
 						type     = "A"
                         data     = "${scaleway_vpc_public_gateway_ip.main.address}"
 						ttl      = 3600

@@ -22,7 +22,7 @@ func TestAccScalewayInstanceIPReverseDns_Basic(t *testing.T) {
 					
 					resource "scaleway_domain_record" "tf_A" {
 						dns_zone = %[1]q
-						name     = "tf"
+						name     = "tf-reverse-instance"
 						type     = "A"
 						data     = "${scaleway_instance_ip.main.address}"
 						ttl      = 3600
@@ -36,7 +36,7 @@ func TestAccScalewayInstanceIPReverseDns_Basic(t *testing.T) {
 					
 					resource "scaleway_domain_record" "tf_A" {
 						dns_zone = %[1]q
-						name     = "tf"
+						name     = "tf-reverse-instance"
 						type     = "A"
 						data     = "${scaleway_instance_ip.main.address}"
 						ttl      = 3600
