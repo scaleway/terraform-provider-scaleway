@@ -12,7 +12,7 @@ import (
 func TestAccScalewayVPCPublicGatewayIPReverseDns_Basic(t *testing.T) {
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
-	testDNSZone := fmt.Sprintf("%s.%s", testDomainZone, testDomain)
+	testDNSZone := fmt.Sprintf("tf-reverse-vpcgw.%s", testDomain)
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
