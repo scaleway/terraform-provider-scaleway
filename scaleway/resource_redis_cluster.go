@@ -133,7 +133,7 @@ func resourceScalewayRedisCluster() *schema.Resource {
 						},
 						"service_ips": {
 							Type:     schema.TypeList,
-							Required: true,
+							Optional: true,
 							Elem: &schema.Schema{
 								Type:         schema.TypeString,
 								ValidateFunc: validation.IsCIDR,
@@ -236,9 +236,9 @@ func resourceScalewayRedisClusterCreate(ctx context.Context, d *schema.ResourceD
 		createReq.ClusterSettings = expandRedisSettings(settings)
 	}
 
-	privN, privNExists := d.GetOk("private_network")
-	if privNExists {
-		pnSpecs, err := expandRedisPrivateNetwork(privN.(*schema.Set).List())
+	pn, pnExists := d.GetOk("private_network")
+	if pnExists {
+		pnSpecs, err := expandRedisPrivateNetwork(pn.(*schema.Set).List())
 		if err != nil {
 			return diag.FromErr(err)
 		}

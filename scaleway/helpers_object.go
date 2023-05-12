@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"hash/crc32"
 	"net/http"
-	"os"
 	"runtime"
 	"strings"
 	"time"
@@ -17,11 +16,10 @@ import (
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
-	"github.com/hashicorp/aws-sdk-go-base/tfawserr"
 	awspolicy "github.com/hashicorp/awspolicyequivalence"
 	"github.com/hashicorp/go-multierror"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/logging"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal"
@@ -29,7 +27,6 @@ import (
 
 const (
 	defaultObjectBucketTimeout = 10 * time.Minute
-	retryOnAWSAPI              = 2 * time.Minute
 
 	maxObjectVersionDeletionWorkers = 8
 )
@@ -40,7 +37,7 @@ func newS3Client(httpClient *http.Client, region, accessKey, secretKey string) (
 	config.WithCredentials(credentials.NewStaticCredentials(accessKey, secretKey, ""))
 	config.WithEndpoint("https://s3." + region + ".scw.cloud")
 	config.WithHTTPClient(httpClient)
-	if strings.ToLower(os.Getenv("TF_LOG")) == "debug" {
+	if logging.IsDebugOrHigher() {
 		config.WithLogLevel(aws.LogDebugWithHTTPBody)
 	}
 
@@ -453,27 +450,6 @@ func StringHashcode(s string) int {
 	}
 	// v == MinInt
 	return 0
-}
-
-func retryOnAWSCode(ctx context.Context, code string, f func() (interface{}, error)) (interface{}, error) {
-	var resp interface{}
-	err := resource.RetryContext(ctx, retryOnAWSAPI, func() *resource.RetryError {
-		var err error
-		resp, err = f()
-		if err != nil {
-			if tfawserr.ErrCodeEquals(err, code) {
-				return resource.RetryableError(err)
-			}
-			return resource.NonRetryableError(err)
-		}
-		return nil
-	})
-
-	if TimedOut(err) {
-		resp, err = f()
-	}
-
-	return resp, err
 }
 
 const (

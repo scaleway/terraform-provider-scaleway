@@ -130,14 +130,24 @@ func resourceScalewayVPCPublicGatewayIPUpdate(ctx context.Context, d *schema.Res
 		return diag.FromErr(err)
 	}
 
-	if d.HasChanges("tags", "reverse") {
-		updateRequest := &vpcgw.UpdateIPRequest{
-			IPID:    ID,
-			Zone:    zone,
-			Tags:    scw.StringsPtr(expandStrings(d.Get("tags"))),
-			Reverse: expandStringPtr(d.Get("reverse").(string)),
-		}
+	updateRequest := &vpcgw.UpdateIPRequest{
+		IPID: ID,
+		Zone: zone,
+	}
 
+	hasChanged := false
+
+	if d.HasChange("tags") {
+		updateRequest.Tags = expandUpdatedStringsPtr(d.Get("tags"))
+		hasChanged = true
+	}
+
+	if d.HasChange("reverse") {
+		updateRequest.Reverse = expandStringPtr(d.Get("reverse").(string))
+		hasChanged = true
+	}
+
+	if hasChanged {
 		_, err = vpcgwAPI.UpdateIP(updateRequest, scw.WithContext(ctx))
 		if err != nil {
 			return diag.FromErr(err)
