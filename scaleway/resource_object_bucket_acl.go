@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/s3"
@@ -161,8 +162,12 @@ func resourceBucketACLCreate(ctx context.Context, d *schema.ResourceData, meta i
 		input.AccessControlPolicy = expandBucketACLAccessControlPolicy(v.([]interface{}))
 	}
 
-	out, err := retryOnAWSCode(ctx, s3.ErrCodeNoSuchBucket, func() (interface{}, error) {
-		return conn.PutBucketAclWithContext(ctx, input)
+	out, err := retryWhenAWSErrCodeEquals(ctx, []string{s3.ErrCodeNoSuchBucket}, &RetryWhenConfig[*s3.PutBucketAclOutput]{
+		Timeout:  d.Timeout(schema.TimeoutCreate),
+		Interval: 5 * time.Second,
+		Function: func() (*s3.PutBucketAclOutput, error) {
+			return conn.PutBucketAclWithContext(ctx, input)
+		},
 	})
 	if err != nil {
 		return diag.FromErr(fmt.Errorf("error putting Object Storage ACL: %s", err))
