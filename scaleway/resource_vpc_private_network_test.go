@@ -93,6 +93,18 @@ func TestAccScalewayVPCPrivateNetwork_Basic(t *testing.T) {
 					),
 				),
 			},
+		},
+	})
+}
+
+func TestAccScalewayVPCPrivateNetwork_DefaultName(t *testing.T) {
+	tt := NewTestTools(t)
+	defer tt.Cleanup()
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      testAccCheckScalewayVPCPrivateNetworkDestroy(tt),
+		Steps: []resource.TestStep{
 			{
 				Config: `resource scaleway_vpc_private_network main {}`,
 				Check: resource.ComposeTestCheckFunc(
