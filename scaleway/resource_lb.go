@@ -111,6 +111,7 @@ func resourceScalewayLb() *schema.Resource {
 							Description: "Set to true if you want to let DHCP assign IP addresses",
 							Type:        schema.TypeBool,
 							Optional:    true,
+							Computed:    true,
 						},
 						// Readonly attributes
 						"status": {
