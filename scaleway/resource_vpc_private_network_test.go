@@ -119,6 +119,58 @@ func TestAccScalewayVPCPrivateNetwork_DefaultName(t *testing.T) {
 	})
 }
 
+func TestAccScalewayVPCPrivateNetwork_Subnets(t *testing.T) {
+	tt := NewTestTools(t)
+	defer tt.Cleanup()
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      testAccCheckScalewayVPCPrivateNetworkDestroy(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: `resource scaleway_vpc_private_network test {}`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayVPCPrivateNetworkExists(
+						tt,
+						"scaleway_vpc_private_network.test",
+					),
+					resource.TestCheckResourceAttr(
+						"scaleway_vpc_private_network.test",
+						"subnets.#",
+						"2",
+					),
+				),
+			},
+			{
+				Config: `resource scaleway_vpc_private_network test {
+					subnets = ["10.20.0.0/22", "fd21:e31e:86f0:f2c6::/64"]
+				}`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayVPCPrivateNetworkExists(
+						tt,
+						"scaleway_vpc_private_network.test",
+					),
+					resource.TestCheckTypeSetElemAttr(
+						"scaleway_vpc_private_network.test",
+						"subnets.*",
+						"10.20.0.0/22",
+					),
+					resource.TestCheckTypeSetElemAttr(
+						"scaleway_vpc_private_network.test",
+						"subnets.*",
+						"fd21:e31e:86f0:f2c6::/64",
+					),
+					resource.TestCheckResourceAttr(
+						"scaleway_vpc_private_network.test",
+						"subnets.#",
+						"2",
+					),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckScalewayVPCPrivateNetworkExists(tt *TestTools, n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
