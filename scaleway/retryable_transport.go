@@ -17,6 +17,18 @@ type retryableTransportOptions struct {
 	RetryWaitMin *time.Duration
 }
 
+func retryPolicy(ctx context.Context, resp *http.Response, err error) (bool, error) {
+	if ctx.Err() != nil {
+		return false, ctx.Err()
+	}
+
+	if resp == nil || resp.StatusCode == http.StatusTooManyRequests {
+		return true, err
+	}
+
+	return false, nil
+}
+
 func newRetryableTransportWithOptions(defaultTransport http.RoundTripper, options retryableTransportOptions) http.RoundTripper {
 	c := retryablehttp.NewClient()
 	c.HTTPClient = &http.Client{Transport: defaultTransport}
@@ -26,12 +38,7 @@ func newRetryableTransportWithOptions(defaultTransport http.RoundTripper, option
 	c.RetryWaitMax = 2 * time.Minute
 	c.Logger = l
 	c.RetryWaitMin = time.Second * 2
-	c.CheckRetry = func(ctx context.Context, resp *http.Response, err error) (bool, error) {
-		if resp == nil || resp.StatusCode == http.StatusTooManyRequests {
-			return true, err
-		}
-		return retryablehttp.DefaultRetryPolicy(ctx, resp, err)
-	}
+	c.CheckRetry = retryPolicy
 
 	// If ErrorHandler is not set, retryablehttp will wrap http errors
 	c.ErrorHandler = func(resp *http.Response, err error, numTries int) (*http.Response, error) {
