@@ -6,7 +6,7 @@ page_title: "Scaleway: scaleway_lb_frontend"
 # scaleway_lb_frontend
 
 Get information about Scaleway Load-Balancer Frontends.
-For more information, see [the documentation](https://developers.scaleway.com/en/products/lb/zoned_api/#frontends-a6a28d).
+For more information, see [the documentation](https://www.scaleway.com/en/developers/api/load-balancer/zoned-api/#path-frontends).
 
 ## Example Usage
 

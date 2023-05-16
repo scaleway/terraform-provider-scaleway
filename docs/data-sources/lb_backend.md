@@ -6,7 +6,7 @@ page_title: "Scaleway: scaleway_lb_backend"
 # scaleway_lb_backend
 
 Get information about Scaleway Load-Balancer Backends.
-For more information, see [the documentation](https://developers.scaleway.com/en/products/lb/zoned_api/#backends-cbf4eb).
+For more information, see [the documentation](https://www.scaleway.com/en/developers/api/load-balancer/zoned-api/#path-backends).
 
 ## Example Usage
 
