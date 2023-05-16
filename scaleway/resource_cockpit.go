@@ -84,11 +84,6 @@ func resourceScalewayCockpitCreate(ctx context.Context, d *schema.ResourceData, 
 		return diag.FromErr(err)
 	}
 
-	_, err = waitForCockpit(ctx, api, d.Id(), d.Timeout(schema.TimeoutRead))
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
 	if targetPlanI, ok := d.GetOk("plan"); ok {
 		targetPlan := targetPlanI.(string)
 
