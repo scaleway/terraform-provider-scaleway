@@ -6,6 +6,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/scaleway/scaleway-sdk-go/api/vpc/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 )
@@ -26,6 +27,17 @@ func resourceScalewayVPCPrivateNetwork() *schema.Resource {
 				Optional:    true,
 				Description: "The name of the private network",
 				Computed:    true,
+			},
+			"subnets": {
+				Type:        schema.TypeSet,
+				Optional:    true,
+				Description: "The subnets CIDR associated with private network",
+				Computed:    true,
+				ForceNew:    true, // Updating the subnets is deprecated and has no effect
+				Elem: &schema.Schema{
+					Type:             schema.TypeString,
+					ValidateDiagFunc: validation.ToDiagFunc(validation.IsCIDR),
+				},
 			},
 			"tags": {
 				Type:        schema.TypeList,
@@ -59,11 +71,17 @@ func resourceScalewayVPCPrivateNetworkCreate(ctx context.Context, d *schema.Reso
 		return diag.FromErr(err)
 	}
 
+	subnets, err := expandSubnets(d.Get("subnets").(*schema.Set).List())
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	pn, err := vpcAPI.CreatePrivateNetwork(&vpc.CreatePrivateNetworkRequest{
 		Name:      expandOrGenerateString(d.Get("name"), "pn"),
 		Tags:      expandStrings(d.Get("tags")),
 		ProjectID: d.Get("project_id").(string),
 		Zone:      zone,
+		Subnets:   subnets,
 	}, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
@@ -97,6 +115,7 @@ func resourceScalewayVPCPrivateNetworkRead(ctx context.Context, d *schema.Resour
 	_ = d.Set("project_id", pn.ProjectID)
 	_ = d.Set("created_at", pn.CreatedAt.Format(time.RFC3339))
 	_ = d.Set("updated_at", pn.UpdatedAt.Format(time.RFC3339))
+	_ = d.Set("subnets", flattenSubnets(pn.Subnets))
 	_ = d.Set("zone", zone)
 	_ = d.Set("tags", pn.Tags)
 
@@ -109,18 +128,14 @@ func resourceScalewayVPCPrivateNetworkUpdate(ctx context.Context, d *schema.Reso
 		return diag.FromErr(err)
 	}
 
-	if d.HasChanges("name", "tags") {
-		updateRequest := &vpc.UpdatePrivateNetworkRequest{
-			PrivateNetworkID: ID,
-			Zone:             zone,
-			Name:             scw.StringPtr(d.Get("name").(string)),
-			Tags:             expandUpdatedStringsPtr(d.Get("tags")),
-		}
-
-		_, err = vpcAPI.UpdatePrivateNetwork(updateRequest, scw.WithContext(ctx))
-		if err != nil {
-			return diag.FromErr(err)
-		}
+	_, err = vpcAPI.UpdatePrivateNetwork(&vpc.UpdatePrivateNetworkRequest{
+		PrivateNetworkID: ID,
+		Zone:             zone,
+		Name:             scw.StringPtr(d.Get("name").(string)),
+		Tags:             expandUpdatedStringsPtr(d.Get("tags")),
+	}, scw.WithContext(ctx))
+	if err != nil {
+		return diag.FromErr(err)
 	}
 
 	return resourceScalewayVPCPrivateNetworkRead(ctx, d, meta)

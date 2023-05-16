@@ -40,3 +40,29 @@ func vpcAPI(m interface{}) (*vpc.API, error) {
 
 	return vpc.NewAPI(meta.scwClient), nil
 }
+
+func expandSubnets(data interface{}) ([]scw.IPNet, error) {
+	var ipNets []scw.IPNet
+	for _, s := range data.([]interface{}) {
+		if s == nil {
+			s = ""
+		}
+		ipNet, err := expandIPNet(s.(string))
+		if err != nil {
+			return nil, err
+		}
+		ipNets = append(ipNets, ipNet)
+	}
+
+	return ipNets, nil
+}
+
+func flattenSubnets(subnets []scw.IPNet) *schema.Set {
+	var rawSubnets []interface{}
+	for _, s := range subnets {
+		rawSubnets = append(rawSubnets, s.String())
+	}
+	return schema.NewSet(func(i interface{}) int {
+		return StringHashcode(i.(string))
+	}, rawSubnets)
+}
