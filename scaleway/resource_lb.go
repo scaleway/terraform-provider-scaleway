@@ -119,6 +119,10 @@ func resourceScalewayLb() *schema.Resource {
 							Computed:    true,
 							Description: "The status of private network connection",
 						},
+						"zone": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
 					},
 				},
 			},

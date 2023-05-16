@@ -204,6 +204,7 @@ func flattenPrivateNetworkConfigs(privateNetworks []*lbSDK.PrivateNetwork) inter
 			"private_network_id": pnZonedID,
 			"dhcp_config":        dhcpConfigExist,
 			"status":             pn.Status.String(),
+			"zone":               pn.LB.Zone.String(),
 			"static_config":      flattenLbPrivateNetworkStaticConfig(pn.StaticConfig),
 		})
 	}
