@@ -3,6 +3,7 @@ package scaleway
 import (
 	"bytes"
 	"context"
+	"encoding/base64"
 	"fmt"
 	"os"
 	"strings"
@@ -42,9 +43,16 @@ func resourceScalewayObject() *schema.Resource {
 				Description: "Key of the object",
 			},
 			"file": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "File to upload, defaults to an empty file",
+				Type:          schema.TypeString,
+				Optional:      true,
+				Description:   "Path of the file to upload, defaults to an empty file",
+				ConflictsWith: []string{"content"},
+			},
+			"content": {
+				Type:          schema.TypeString,
+				Optional:      true,
+				Description:   "Content of the file to upload, should be base64 encoded",
+				ConflictsWith: []string{"file"},
 			},
 			"hash": {
 				Type:        schema.TypeString,
@@ -116,6 +124,14 @@ func resourceScalewayObjectCreate(ctx context.Context, d *schema.ResourceData, m
 			return diag.FromErr(err)
 		}
 		req.Body = file
+	} else if content, hasContent := d.GetOk("content"); hasContent {
+		contentString := []byte(content.(string))
+		decoded := make([]byte, base64.StdEncoding.DecodedLen(len(contentString)))
+		_, err = base64.StdEncoding.Decode(decoded, contentString)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		req.Body = bytes.NewReader(decoded)
 	} else {
 		req.Body = bytes.NewReader([]byte{})
 	}

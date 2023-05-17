@@ -1,7 +1,9 @@
 package scaleway
 
 import (
+	"encoding/base64"
 	"fmt"
+	"regexp"
 	"testing"
 
 	"github.com/aws/aws-sdk-go/aws/awserr"
@@ -476,6 +478,73 @@ func TestAccScalewayObject_State(t *testing.T) {
 					resource.TestCheckResourceAttrPair("scaleway_object.file_imported", "bucket", "scaleway_object.file", "bucket"),
 					resource.TestCheckResourceAttrPair("scaleway_object.file_imported", "key", "scaleway_object.file", "key"),
 				),
+			},
+		},
+	})
+}
+
+func TestAccScalewayObject_ByContent(t *testing.T) {
+	tt := NewTestTools(t)
+	defer tt.Cleanup()
+	bucketName := sdkacctest.RandomWithPrefix("test-acc-scaleway-object-by-content")
+
+	fileContentStep1 := "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."
+	fileContentStep2 := "This is a different content"
+	fileEncodedStep1 := base64.StdEncoding.EncodeToString([]byte(fileContentStep1))
+	fileEncodedStep2 := base64.StdEncoding.EncodeToString([]byte(fileContentStep2))
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      testAccCheckScalewayObjectDestroy(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`
+					resource "scaleway_object_bucket" "base-01" {
+						name = "%s"
+					}
+					
+					resource scaleway_object "by-content" {
+						bucket = scaleway_object_bucket.base-01.name
+						key = "test-by-content"
+						content = base64encode("%s")
+					}
+				`, bucketName, fileContentStep1),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayObjectExists(tt, "scaleway_object.by-content"),
+					resource.TestCheckResourceAttr("scaleway_object.by-content", "content", fileEncodedStep1),
+				),
+			},
+			{
+				Config: fmt.Sprintf(`
+					resource "scaleway_object_bucket" "base-01" {
+						name = "%s"
+					}
+					
+					resource scaleway_object "by-content" {
+						bucket = scaleway_object_bucket.base-01.name
+						key = "test-by-content"
+						content = base64encode("%s")
+					}
+				`, bucketName, fileContentStep2),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayObjectExists(tt, "scaleway_object.by-content"),
+					resource.TestCheckResourceAttr("scaleway_object.by-content", "content", fileEncodedStep2),
+				),
+			},
+			{
+				Config: fmt.Sprintf(`
+					resource "scaleway_object_bucket" "base-01" {
+						name = "%s"
+					}
+					
+					resource scaleway_object "by-content" {
+						bucket = scaleway_object_bucket.base-01.name
+						key = "test-by-content"
+						content = "%s"
+					}
+				`, bucketName, fileContentStep2),
+				ExpectError: regexp.MustCompile("illegal base64 data at input byte 4"),
 			},
 		},
 	})
