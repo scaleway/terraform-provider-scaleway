@@ -125,6 +125,7 @@ func Provider(config *ProviderConfig) plugin.ProviderFunc {
 				"scaleway_k8s_cluster":                         resourceScalewayK8SCluster(),
 				"scaleway_k8s_pool":                            resourceScalewayK8SPool(),
 				"scaleway_lb":                                  resourceScalewayLb(),
+				"scaleway_lb_acl":                              resourceScalewayLbACL(),
 				"scaleway_lb_ip":                               resourceScalewayLbIP(),
 				"scaleway_lb_backend":                          resourceScalewayLbBackend(),
 				"scaleway_lb_certificate":                      resourceScalewayLbCertificate(),

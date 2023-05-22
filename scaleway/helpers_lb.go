@@ -65,11 +65,17 @@ func flattenLbACL(acl *lbSDK.ACL) interface{} {
 func expandLbACL(i interface{}) *lbSDK.ACL {
 	rawRule := i.(map[string]interface{})
 	acl := &lbSDK.ACL{
-		Name:   rawRule["name"].(string),
-		Match:  expandLbACLMatch(rawRule["match"]),
-		Action: expandLbACLAction(rawRule["action"]),
+		Name:        rawRule["name"].(string),
+		Description: rawRule["description"].(string),
+		Match:       expandLbACLMatch(rawRule["match"]),
+		Action:      expandLbACLAction(rawRule["action"]),
+		CreatedAt:   expandTimePtr(rawRule["created_at"]),
+		UpdatedAt:   expandTimePtr(rawRule["updated_at"]),
 	}
 
+	if rawRule["index"] != nil {
+		acl.Index = int32(rawRule["index"].(int))
+	}
 	// remove http filter values if we do not pass any http filter
 	if acl.Match.HTTPFilter == "" || acl.Match.HTTPFilter == lbSDK.ACLHTTPFilterACLHTTPFilterNone {
 		acl.Match.HTTPFilter = lbSDK.ACLHTTPFilterACLHTTPFilterNone

@@ -93,6 +93,11 @@ func resourceScalewayLbFrontend() *schema.Resource {
 							Computed:    true,
 							Description: "The ACL name",
 						},
+						"description": {
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "Description of the ACL",
+						},
 						"action": {
 							Type:        schema.TypeList,
 							Required:    true,
@@ -192,8 +197,24 @@ func resourceScalewayLbFrontend() *schema.Resource {
 								},
 							},
 						},
+						"created_at": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Date and time of ACL's creation (RFC 3339 format)",
+						},
+						"updated_at": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Date and time of ACL's update (RFC 3339 format)",
+						},
 					},
 				},
+			},
+			"external_acls": {
+				Type:          schema.TypeBool,
+				Optional:      true,
+				Default:       false,
+				ConflictsWith: []string{"acl"},
 			},
 			"enable_http3": {
 				Type:        schema.TypeBool,
@@ -267,12 +288,11 @@ func resourceScalewayLbFrontendCreate(ctx context.Context, d *schema.ResourceDat
 
 	d.SetId(newZonedIDString(zone, frontend.ID))
 
-	diagnostics := resourceScalewayLbFrontendUpdateACL(ctx, d, lbAPI, zone, frontend.ID)
-	if diagnostics != nil {
-		return diagnostics
+	if d.Get("external_acls").(bool) {
+		return resourceScalewayLbFrontendRead(ctx, d, meta)
 	}
 
-	return resourceScalewayLbFrontendRead(ctx, d, meta)
+	return resourceScalewayLbFrontendUpdateACL(ctx, d, lbAPI, zone, frontend.ID)
 }
 
 func resourceScalewayLbFrontendRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -310,16 +330,18 @@ func resourceScalewayLbFrontendRead(ctx context.Context, d *schema.ResourceData,
 		_ = d.Set("certificate_ids", flattenSliceIDs(frontend.CertificateIDs, zone))
 	}
 
-	// read related acls.
-	resACL, err := lbAPI.ListACLs(&lbSDK.ZonedAPIListACLsRequest{
-		Zone:       zone,
-		FrontendID: ID,
-	}, scw.WithAllPages(), scw.WithContext(ctx))
-	if err != nil {
-		return diag.FromErr(err)
-	}
+	if !d.Get("external_acls").(bool) {
+		// read related acls.
+		resACL, err := lbAPI.ListACLs(&lbSDK.ZonedAPIListACLsRequest{
+			Zone:       zone,
+			FrontendID: ID,
+		}, scw.WithAllPages(), scw.WithContext(ctx))
+		if err != nil {
+			return diag.FromErr(err)
+		}
 
-	_ = d.Set("acl", flattenLBACLs(resACL.ACLs))
+		_ = d.Set("acl", flattenLBACLs(resACL.ACLs))
+	}
 
 	return nil
 }
