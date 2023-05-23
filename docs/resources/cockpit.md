@@ -49,12 +49,14 @@ resource "grafana_folder" "test_folder" {
 ## Arguments Reference
 
 - `project_id` - (Defaults to [provider](../index.md#project_id) `project_id`) The ID of the project the cockpit is associated with.
+- `plan` - (Optional) Name or ID of the plan to use.
 
 
 ## Attributes Reference
 
 In addition to all arguments above, the following attributes are exported:
 
+- `plan_id` - The ID of the current plan
 - `endpoints` - Endpoints
     - `metrics_url` - The metrics URL
     - `logs_url` - The logs URL

@@ -17,6 +17,7 @@ func dataSourceScalewayCockpit() *schema.Resource {
 		Optional:     true,
 		ValidateFunc: validationUUID(),
 	}
+	delete(dsSchema, "plan")
 
 	return &schema.Resource{
 		ReadContext: dataSourceScalewayCockpitRead,
@@ -39,6 +40,7 @@ func dataSourceScalewayCockpitRead(ctx context.Context, d *schema.ResourceData, 
 
 	d.SetId(res.ProjectID)
 	_ = d.Set("project_id", res.ProjectID)
+	_ = d.Set("plan_id", res.Plan.ID)
 	_ = d.Set("endpoints", flattenCockpitEndpoints(res.Endpoints))
 
 	return nil
