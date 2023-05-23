@@ -208,7 +208,6 @@ func testAccCheckScalewayFunctionTriggerStatusReady(tt *TestTools, n string) res
 			TriggerID: id,
 			Region:    region,
 		})
-
 		if err != nil {
 			return err
 		}

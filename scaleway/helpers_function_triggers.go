@@ -8,21 +8,6 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 )
 
-func expandFunctionTriggerNatsCreationConfig(i interface{}) *function.CreateTriggerRequestMnqNatsClientConfig {
-	mList := i.([]interface{})
-	if len(mList) < 1 {
-		return nil
-	}
-	m := mList[0].(map[string]interface{})
-
-	return &function.CreateTriggerRequestMnqNatsClientConfig{
-		MnqNamespaceID: m["namespace_id"].(string),
-		Subject:        m["subject"].(string),
-		MnqProjectID:   m["project_id"].(string),
-		MnqRegion:      m["region"].(string),
-	}
-}
-
 func expandFunctionTriggerMnqSqsCreationConfig(i interface{}) *function.CreateTriggerRequestMnqSqsClientConfig {
 	m := i.(map[string]interface{})
 
@@ -50,13 +35,4 @@ func completeFunctionTriggerMnqSqsCreationConfig(i interface{}, d *schema.Resour
 	}
 
 	return nil
-}
-
-func expandFunctionTriggerSqsCreationConfig(i interface{}) *function.CreateTriggerRequestSqsClientConfig {
-	m := i.(map[string]interface{})
-
-	return &function.CreateTriggerRequestSqsClientConfig{
-		AccessKey: m["access_key"].(string),
-		SecretKey: m["secret_key"].(string),
-	}
 }

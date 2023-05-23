@@ -19,7 +19,13 @@ func resourceScalewayFunctionTrigger() *schema.Resource {
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
-		//TODO: timeouts
+		Timeouts: &schema.ResourceTimeout{
+			Default: schema.DefaultTimeout(defaultFunctionTimeout),
+			Read:    schema.DefaultTimeout(defaultFunctionTimeout),
+			Update:  schema.DefaultTimeout(defaultFunctionTimeout),
+			Delete:  schema.DefaultTimeout(defaultFunctionTimeout),
+			Create:  schema.DefaultTimeout(defaultFunctionTimeout),
+		},
 		SchemaVersion: 0,
 		Schema: map[string]*schema.Schema{
 			"function_id": {
@@ -109,7 +115,7 @@ func resourceScalewayFunctionTriggerCreate(ctx context.Context, d *schema.Resour
 
 	d.SetId(newRegionalIDString(region, trigger.ID))
 
-	trigger, err = waitForFunctionTrigger(ctx, api, region, trigger.ID, d.Timeout(schema.TimeoutCreate))
+	_, err = waitForFunctionTrigger(ctx, api, region, trigger.ID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
 		return diag.FromErr(err)
 	}
