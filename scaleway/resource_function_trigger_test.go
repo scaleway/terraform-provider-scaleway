@@ -57,20 +57,20 @@ func TestAccScalewayFunctionTrigger_SQS(t *testing.T) {
 			{
 				Config: `
 					resource scaleway_function_namespace main {
-						name = "test-function-trigger-basic"	
+						name = "test-function-trigger-sqs"	
 					}
 
 					resource scaleway_function main {
-						name = "test-function-trigger-basic"
+						name = "test-function-trigger-sqs"
 						namespace_id = scaleway_function_namespace.main.id
-						runtime = "node14"
+						runtime = "node20"
 						privacy = "private"
 						handler = "handler.handle"
 					}
 
 					resource scaleway_mnq_namespace main {
 						protocol = "sqs_sns"
-						name = "test-function-trigger-basic"
+						name = "test-function-trigger-sqs"
 					}
 
 					resource "scaleway_mnq_credential" "main" {
@@ -96,7 +96,7 @@ func TestAccScalewayFunctionTrigger_SQS(t *testing.T) {
 
 					resource scaleway_function_trigger main {
 						function_id = scaleway_function.main.id
-						name = "test-function-trigger-basic"
+						name = "test-function-trigger-sqs"
 						sqs {
 							namespace_id = scaleway_mnq_namespace.main.id
 							queue = "TestQueue"
@@ -108,7 +108,7 @@ func TestAccScalewayFunctionTrigger_SQS(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayFunctionTriggerExists(tt, "scaleway_function_trigger.main"),
 					testCheckResourceAttrUUID("scaleway_function_trigger.main", "id"),
-					resource.TestCheckResourceAttr("scaleway_function_trigger.main", "name", "test-function-trigger-basic"),
+					resource.TestCheckResourceAttr("scaleway_function_trigger.main", "name", "test-function-trigger-sqs"),
 					testAccCheckScalewayFunctionTriggerStatusReady(tt, "scaleway_function_trigger.main"),
 				),
 			},
