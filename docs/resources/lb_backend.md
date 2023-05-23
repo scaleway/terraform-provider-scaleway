@@ -49,8 +49,8 @@ The following arguments are supported:
 - `name`                        - (Optional) The name of the load-balancer backend.
 - `forward_port`                - (Required) User sessions will be forwarded to this port of backend servers.
 - `forward_port_algorithm`      - (Default: `roundrobin`) Load balancing algorithm. Possible values are: `roundrobin`, `leastconn` and `first`.
-- `sticky_sessions`             - (Default: `none`) Load balancing algorithm. Possible values are: `none`, `cookie` and `table`.
-- `sticky_sessions_cookie_name` - (Optional) Cookie name for for sticky sessions. Only applicable when sticky_sessions is set to `cookie`.
+- `sticky_sessions`             - (Default: `none`) The type of sticky sessions. The only current possible values are: `none`, `cookie` and `table`.
+- `sticky_sessions_cookie_name` - (Optional) Cookie name for sticky sessions. Only applicable when sticky_sessions is set to `cookie`.
 - `server_ips`                  - (Optional) List of backend server IP addresses. Addresses can be either IPv4 or IPv6.
 - `send_proxy_v2`               - DEPRECATED please use `proxy_protocol` instead - (Default: `false`) Enables PROXY protocol version 2.
 - `proxy_protocol`              - (Default: `none`) Choose the type of PROXY protocol to enable (`none`, `v1`, `v2`, `v2_ssl`, `v2_ssl_cn`)
@@ -94,7 +94,6 @@ In addition to all arguments above, the following attributes are exported:
 - `id` - The ID of the loadbalancer backend.
 
 ~> **Important:** Load-Balancers backends' IDs are [zoned](../guides/regions_and_zones.md#resource-ids), which means they are of the form `{zone}/{id}`, e.g. `fr-par-1/11111111-1111-1111-1111-111111111111`
-
 
 ## Import
 
