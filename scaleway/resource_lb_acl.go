@@ -265,21 +265,3 @@ func resourceScalewayLbACLDelete(ctx context.Context, d *schema.ResourceData, me
 
 	return nil
 }
-
-func aclToACLSpec(acl *lbSDK.ACL) *lbSDK.ACLSpec {
-	return &lbSDK.ACLSpec{
-		Name:        acl.Name,
-		Action:      acl.Action,
-		Match:       acl.Match,
-		Index:       acl.Index,
-		Description: acl.Description,
-	}
-}
-
-func aclListToACLSpecList(aclList []*lbSDK.ACL) []*lbSDK.ACLSpec {
-	aclSpecList := make([]*lbSDK.ACLSpec, len(aclList))
-	for i, acl := range aclList {
-		aclSpecList[i] = aclToACLSpec(acl)
-	}
-	return aclSpecList
-}
