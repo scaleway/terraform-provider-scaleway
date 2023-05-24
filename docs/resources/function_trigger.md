@@ -37,10 +37,10 @@ The following arguments are supported:
 - `description` (Optional) The description of the trigger.
 
 - `sqs` The configuration of the Scaleway's SQS used by the trigger
-  - `namespace_id` (Required) ID of the mnq namespace
-  - `queue` (Required) Name of the queue
-  - `project_id` (Optional) ID of the project that contain the mnq namespace, defaults to provider's project
-  - `region` (Optional) Region where the mnq namespace is, defaults to provider's region
+    - `namespace_id` (Required) ID of the mnq namespace
+    - `queue` (Required) Name of the queue
+    - `project_id` (Optional) ID of the project that contain the mnq namespace, defaults to provider's project
+    - `region` (Optional) Region where the mnq namespace is, defaults to provider's region
 
 - `region` - (Defaults to [provider](../index.md#region) `region`). The [region](../guides/regions_and_zones.md#regions) in which the namespace should be created.
 
