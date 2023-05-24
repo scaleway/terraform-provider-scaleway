@@ -77,7 +77,7 @@ func resourceScalewayLbBackend() *schema.Resource {
 				}, false),
 				Default:     lbSDK.StickySessionsTypeNone.String(),
 				Optional:    true,
-				Description: "Load balancing algorithm",
+				Description: "The type of sticky sessions",
 			},
 			"sticky_sessions_cookie_name": {
 				Type:        schema.TypeString,
