@@ -112,6 +112,57 @@ func TestAccScalewayFunctionTrigger_SQS(t *testing.T) {
 					testAccCheckScalewayFunctionTriggerStatusReady(tt, "scaleway_function_trigger.main"),
 				),
 			},
+			{
+				Config: `
+					resource scaleway_function_namespace main {
+						name = "test-function-trigger-sqs"	
+					}
+
+					resource scaleway_function main {
+						name = "test-function-trigger-sqs"
+						namespace_id = scaleway_function_namespace.main.id
+						runtime = "node20"
+						privacy = "private"
+						handler = "handler.handle"
+					}
+
+					resource scaleway_mnq_namespace main {
+						protocol = "sqs_sns"
+						name = "test-function-trigger-sqs"
+					}
+
+					resource "scaleway_mnq_credential" "main" {
+					  namespace_id = scaleway_mnq_namespace.main.id
+					
+					  sqs_sns_credentials {
+						permissions {
+						  can_publish = true
+						  can_receive = true
+						  can_manage  = true
+						}
+					  }
+					}
+					
+					resource "scaleway_mnq_queue" "queue" {
+					  namespace_id = scaleway_mnq_namespace.main.id
+					  name = "TestQueue"
+					  sqs {
+						access_key = scaleway_mnq_credential.main.sqs_sns_credentials.0.access_key
+						secret_key = scaleway_mnq_credential.main.sqs_sns_credentials.0.secret_key
+					  }
+					}
+
+					resource scaleway_function_trigger main {
+						function_id = scaleway_function.main.id
+						name = "test-function-trigger-sqs"
+						sqs {
+							namespace_id = scaleway_mnq_namespace.main.id
+							queue = "TestQueue"
+						}
+					}
+				`,
+				PlanOnly: true,
+			},
 		},
 	})
 }
