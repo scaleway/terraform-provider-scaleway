@@ -292,7 +292,7 @@ func resourceScalewayLbFrontendCreate(ctx context.Context, d *schema.ResourceDat
 		return resourceScalewayLbFrontendRead(ctx, d, meta)
 	}
 
-	return resourceScalewayLbFrontendUpdateACL(ctx, d, lbAPI, zone, frontend.ID)
+	return resourceScalewayLbFrontendUpdate(ctx, d, meta)
 }
 
 func resourceScalewayLbFrontendRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -463,20 +463,14 @@ func resourceScalewayLbFrontendUpdate(ctx context.Context, d *schema.ResourceDat
 		return diag.FromErr(err)
 	}
 	req := &lbSDK.ZonedAPIUpdateFrontendRequest{
-		Zone:          zone,
-		FrontendID:    ID,
-		Name:          d.Get("name").(string),
-		InboundPort:   int32(d.Get("inbound_port").(int)),
-		BackendID:     expandID(d.Get("backend_id")),
-		TimeoutClient: timeoutClient,
-	}
-
-	if d.HasChanges("certificate_ids") {
-		req.CertificateIDs = expandSliceIDsPtr(d.Get("certificate_ids"))
-	}
-
-	if d.HasChange("enable_http3") {
-		req.EnableHTTP3 = d.Get("enable_http3").(bool)
+		Zone:           zone,
+		FrontendID:     ID,
+		Name:           expandOrGenerateString(d.Get("name"), "lb-frt"),
+		InboundPort:    int32(d.Get("inbound_port").(int)),
+		BackendID:      expandID(d.Get("backend_id")),
+		TimeoutClient:  timeoutClient,
+		CertificateIDs: expandSliceIDsPtr(d.Get("certificate_ids")),
+		EnableHTTP3:    d.Get("enable_http3").(bool),
 	}
 
 	_, err = lbAPI.UpdateFrontend(req, scw.WithContext(ctx))
