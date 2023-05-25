@@ -26,7 +26,7 @@ as a node by the apiserver. This can be achieved manually (method A), or you can
 resource "scaleway_k8s_cluster" "multicloud" {
   name    = "multicloud-cluster"
   type    = "multicloud"
-  version = "1.27.0"
+  version = "1.27.1"
   cni     = "kilo"
   region  = "fr-par"
   delete_additional_resources = false
