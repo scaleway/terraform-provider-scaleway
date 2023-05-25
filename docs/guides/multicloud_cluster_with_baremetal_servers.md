@@ -8,7 +8,7 @@ In this guide you will learn how to deploy bare metal nodes on your Kubernetes c
 to do this, you need to have a [Kosmos multicloud cluster](../resources/k8s_cluster.md#multicloud) instead of a Kapsule
 cluster, and add your [pools](../resources/k8s_pool.md) as the "external" node type.
 Once you have set up your infrastructure, you will have to run a program on your server so it is configured and registered
-as a node by the apiserver. This can be achieved manually (method A), or you can automate the process (method B).
+as a node by the apiserver. This can be achieved manually ([method A](#method-a-manually-via-ssh-connexion)), or you can automate the process ([method B](#method-b-fully-automated-with-terraform-remote-exec)).
 
 ## Prerequisites
 
