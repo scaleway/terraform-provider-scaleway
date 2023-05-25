@@ -7,8 +7,8 @@ page_title: "Using Elastic Metal servers in a Kubernetes cluster"
 In this guide you will learn how to deploy bare metal nodes on your Kubernetes cluster instead of Instances. To be able
 to do this, you need to have a [Kosmos multicloud cluster](../resources/k8s_cluster.md#multicloud) instead of a Kapsule
 cluster, and add your [pools](../resources/k8s_pool.md) as the "external" node type.
-Once you have set up your infrastructure, you will have to run a script on your server so it is configured and recognized
-as a node by the cluster. This can be achieved manually (method A), or you can automate the process (method B).
+Once you have set up your infrastructure, you will have to run a program on your server so it is configured and registered
+as a node by the apiserver. This can be achieved manually (method A), or you can automate the process (method B).
 
 ## Prerequisites
 
@@ -26,7 +26,7 @@ as a node by the cluster. This can be achieved manually (method A), or you can a
 resource "scaleway_k8s_cluster" "multicloud" {
   name    = "multicloud-cluster"
   type    = "multicloud"
-  version = "1.26.0"
+  version = "1.27.0"
   cni     = "kilo"
   region  = "fr-par"
   delete_additional_resources = false
@@ -36,7 +36,7 @@ resource "scaleway_k8s_pool" "pool" {
   cluster_id  = scaleway_k8s_cluster.multicloud.id
   name        = "multicloud-pool"
   node_type   = "external"
-  size        = 1
+  size        = 0
   region      = "fr-par"
 }
 
@@ -93,22 +93,22 @@ raw values because it allows to check their availability in the zone you want to
     ssh <user>@<baremetal_server_ip>
     ```
 
-2. Download the multicloud-init script :
+2. Download the node-agent program :
 
     ```bash
-    wget https://scwcontainermulticloud.s3.fr-par.scw.cloud/multicloud-init.sh && chmod +x multicloud-init.sh`
+    wget https://scwcontainermulticloud.s3.fr-par.scw.cloud/node-agent_linux_amd64 && chmod +x node-agent_linux_amd64
     ```
 
 3. Export the required environment variables :
 
     ```bash
-    export POOL_ID=<pool_id>  REGION=<cluster_region>  SCW_SECRET_KEY=<secret_key>`
+    export POOL_ID=<pool_id>  POOL_REGION=<cluster_region>  SCW_SECRET_KEY=<secret_key>`
     ```
 
-4. Execute the script to attach the node to the multicloud pool :
+4. Execute the program to attach the node to the multicloud pool :
 
     ```bash
-    sudo ./multicloud-init.sh -p $POOL_ID -r $REGION -t $SCW_SECRET_KEY
+    sudo ./node-agent_linux_amd64 -loglevel 0 -no-controller
     ```
 
 ### Method B: Fully automated with Terraform "remote-exec"
@@ -138,10 +138,10 @@ resource "scaleway_baremetal_server" "server" {
     # Download and execute the configuration script
     provisioner "remote-exec" {
       inline = [
-        "wget https://scwcontainermulticloud.s3.fr-par.scw.cloud/multicloud-init.sh > log && chmod +x multicloud-init.sh",
-        "echo \"\nPOOL_ID=${split("/", scaleway_k8s_pool.pool.id)[1]}\nREGION=${scaleway_k8s_pool.pool.region}\nSCW_SECRET_KEY=${data.local_sensitive_file.secret_key.content}\" >> log",
-        "export POOL_ID=${split("/", scaleway_k8s_pool.pool.id)[1]}  REGION=${scaleway_k8s_pool.pool.region}  SCW_SECRET_KEY=${data.local_sensitive_file.secret_key.content}",
-        "sudo ./multicloud-init.sh -p $POOL_ID -r $REGION -t $SCW_SECRET_KEY >> log",
+        "wget https://scwcontainermulticloud.s3.fr-par.scw.cloud/node-agent_linux_amd64 > log && chmod +x node-agent_linux_amd64",
+        "echo \"\nPOOL_ID=${split("/", scaleway_k8s_pool.pool.id)[1]}\nPOOL_REGION=${scaleway_k8s_pool.pool.region}\nSCW_SECRET_KEY=${data.local_sensitive_file.secret_key.content}\" >> log",
+        "export POOL_ID=${split("/", scaleway_k8s_pool.pool.id)[1]}  POOL_REGION=${scaleway_k8s_pool.pool.region}  SCW_SECRET_KEY=${data.local_sensitive_file.secret_key.content}",
+        "sudo ./node-agent_linux_amd64 -loglevel 0 -no-controller >> log",
       ]
     }
 }
@@ -161,13 +161,15 @@ You check that everything went well by :
 * On the server : by connecting via SSH and checking the `log` file located in `/home/ubuntu`. It should display the
 following lines :
 
-    ```
-    [2023-02-22 15:29:43] apt prerequisites: installing apt dependencies (0) [OK]
-    [2023-02-22 15:30:00] containerd: installing containerd (0) [OK]
-    [2023-02-22 15:30:01] multicloud node: getting public ip (0) [OK]
-    [2023-02-22 15:30:07] kubernetes prerequisites: installing and configuring kubelet (0) [OK]
-    [2023-02-22 15:30:07] multicloud node: configuring this a node as a kubernetes node (0) [OK]
-    ```
+```
+[...]
+{"time":"2023-05-24T16:47:38.750041045Z","level":"DEBUG","msg":"writing kubelet config and CA"}
+{"time":"2023-05-24T16:47:38.750272845Z","level":"DEBUG","msg":"writing kubelet env file and systemd service"}
+{"time":"2023-05-24T16:47:38.750410725Z","level":"DEBUG","msg":"writing kubeconfig files"}
+{"time":"2023-05-24T16:47:38.751171166Z","level":"DEBUG","msg":"starting containerd systemd service"}
+{"time":"2023-05-24T16:47:39.042781246Z","level":"DEBUG","msg":"starting kubelet systemd service"}
+{"time":"2023-05-24T16:47:39.056392423Z","level":"INFO","msg":"successfully started kubelet"}
+```
 
   If something went wrong you should be able to find useful information for troubleshooting in here, like the
-  environment values that got exported.
+  environment values that got exported. You can also rerun the command with a different loglevel (lower is more verbose).
