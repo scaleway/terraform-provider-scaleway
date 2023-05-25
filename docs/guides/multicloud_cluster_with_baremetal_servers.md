@@ -102,7 +102,7 @@ raw values because it allows to check their availability in the zone you want to
 3. Export the required environment variables :
 
     ```bash
-    export POOL_ID=<pool_id>  POOL_REGION=<cluster_region>  SCW_SECRET_KEY=<secret_key>`
+    export POOL_ID=<pool_id>  POOL_REGION=<cluster_region>  SCW_SECRET_KEY=<secret_key>
     ```
 
 4. Execute the program to attach the node to the multicloud pool :
