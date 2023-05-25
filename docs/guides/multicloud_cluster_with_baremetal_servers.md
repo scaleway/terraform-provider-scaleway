@@ -69,6 +69,7 @@ resource "scaleway_baremetal_server" "server" {
 
 ### Notes
 
+* There is also an ARM binary (named `node-agent_linux_arm64`) for ARM based nodes.
 * If you want a fully automated process, don't apply this configuration yet because you will have to modify the spec of
 the server, which will trigger a new installation process that will take some time. You should instead apply this [configuration](#method-b-fully-automated-with-terraform-remote-exec)
 * `kilo` is the only CNI compatible with multicloud clusters
