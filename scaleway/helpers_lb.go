@@ -177,12 +177,8 @@ func privateNetworksCompare(slice1, slice2 []*lbSDK.PrivateNetwork) []*lbSDK.Pri
 	}
 	// find the differences
 	for _, pn := range slice2 {
-		if _, foundID := m[pn.PrivateNetworkID]; !foundID {
+		if _, foundID := m[pn.PrivateNetworkID]; !foundID || (foundID && !isPrivateNetworkEqual(slice1, slice2)) {
 			diff = append(diff, pn)
-		} else {
-			if !isPrivateNetworkEqual(slice1, slice2) {
-				diff = append(diff, pn)
-			}
 		}
 	}
 	return diff
