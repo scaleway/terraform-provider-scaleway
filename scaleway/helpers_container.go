@@ -2,6 +2,8 @@ package scaleway
 
 import (
 	"context"
+	"errors"
+	"strings"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -79,6 +81,10 @@ func setCreateContainerRequest(d *schema.ResourceData, region scw.Region) (*cont
 
 	if memoryLimit, ok := d.GetOk("memory_limit"); ok {
 		req.MemoryLimit = scw.Uint32Ptr(uint32(memoryLimit.(int)))
+	}
+
+	if cpuLimit, ok := d.GetOk("cpu_limit"); ok {
+		req.CPULimit = scw.Uint32Ptr(uint32(cpuLimit.(int)))
 	}
 
 	if timeout, ok := d.GetOk("timeout"); ok {
@@ -183,7 +189,33 @@ func expandContainerSecrets(secretsRawMap interface{}) []*container.Secret {
 	return secrets
 }
 
-func isContainerDomainResolved(ctx context.Context, ctnr *container.Container, hostname string, timeout time.Duration) bool {
-	// Add a trailing dot to domain_name to follow cname format
-	return cnameResolver(ctx, timeout, hostname, ctnr.DomainName+".")
+func isContainerDNSResolveError(err error) bool {
+	responseError := &scw.ResponseError{}
+
+	if !errors.As(err, &responseError) {
+		return false
+	}
+
+	if strings.HasPrefix(responseError.Message, "could not validate domain") {
+		return true
+	}
+
+	return false
+}
+
+func retryCreateContainerDomain(ctx context.Context, containerAPI *container.API, req *container.CreateDomainRequest, timeout time.Duration) (*container.Domain, error) {
+	timeoutChannel := time.After(timeout)
+
+	for {
+		select {
+		case <-time.After(defaultContainerRetryInterval):
+			domain, err := containerAPI.CreateDomain(req, scw.WithContext(ctx))
+			if err != nil && isContainerDNSResolveError(err) {
+				continue
+			}
+			return domain, err
+		case <-timeoutChannel:
+			return containerAPI.CreateDomain(req, scw.WithContext(ctx))
+		}
+	}
 }
