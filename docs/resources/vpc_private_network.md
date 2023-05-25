@@ -25,6 +25,7 @@ The following arguments are supported:
 - `tags` - (Optional) The tags associated with the private network.
 - `zone` - (Defaults to [provider](../index.md#zone) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which the private network should be created.
 - `project_id` - (Defaults to [provider](../index.md#project_id) `project_id`) The ID of the project the private network is associated with.
+- `subnets` - (Optional) The subnets CIDR associated with private network.
 
 ## Attributes Reference
 

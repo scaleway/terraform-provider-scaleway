@@ -2,10 +2,12 @@ package scaleway
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
 	"net/http/httputil"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-log/tflog"
@@ -199,7 +201,33 @@ func expandFunctionsSecrets(secretsRawMap interface{}) []*function.Secret {
 	return secrets
 }
 
-func isFunctionDomainResolved(ctx context.Context, fc *function.Function, hostname string, timeout time.Duration) bool {
-	// Add a trailing dot to domain_name to follow cname format
-	return cnameResolver(ctx, timeout, hostname, fc.DomainName+".")
+func isFunctionDNSResolveError(err error) bool {
+	responseError := &scw.ResponseError{}
+
+	if !errors.As(err, &responseError) {
+		return false
+	}
+
+	if strings.HasPrefix(responseError.Message, "could not validate domain") {
+		return true
+	}
+
+	return false
+}
+
+func retryCreateFunctionDomain(ctx context.Context, functionAPI *function.API, req *function.CreateDomainRequest, timeout time.Duration) (*function.Domain, error) {
+	timeoutChannel := time.After(timeout)
+
+	for {
+		select {
+		case <-time.After(defaultFunctionRetryInterval):
+			domain, err := functionAPI.CreateDomain(req, scw.WithContext(ctx))
+			if err != nil && isFunctionDNSResolveError(err) {
+				continue
+			}
+			return domain, err
+		case <-timeoutChannel:
+			return functionAPI.CreateDomain(req, scw.WithContext(ctx))
+		}
+	}
 }

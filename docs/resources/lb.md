@@ -6,7 +6,7 @@ page_title: "Scaleway: scaleway_lb"
 # scaleway_lb
 
 Creates and manages Scaleway Load-Balancers.
-For more information, see [the documentation](https://developers.scaleway.com/en/products/lb/zoned_api).
+For more information, see [the documentation](https://www.scaleway.com/en/developers/api/load-balancer/zoned-api).
 
 ## Examples
 
@@ -115,7 +115,7 @@ The following arguments are supported:
 
 - `release_ip` - (Defaults to false) The release_ip allow release the ip address associated with the load-balancers.
 
-- `ssl_compatibility_level` - (Optional) Enforces minimal SSL version (in SSL/TLS offloading context). Please check [possible values](https://developers.scaleway.com/en/products/lb/zoned_api/#ssl-compatibility-level-442f99).
+- `ssl_compatibility_level` - (Optional) Enforces minimal SSL version (in SSL/TLS offloading context). Please check [possible values](https://www.scaleway.com/en/developers/api/load-balancer/zoned-api/#path-load-balancer-create-a-load-balancer).
 
 - `zone` - (Defaults to [provider](../index.md#zone) `zone`) The [zone](../guides/regions_and_zones.md#zones) of the load-balancer.
 
@@ -140,7 +140,7 @@ The `resource_lb_ip` will be the only resource that handles those IPs.
 In order to migrate to other types you can check the migration up or down via our CLI `scw lb lb-types list`.
 this change will not recreate your Load Balancer.
 
-Please check our [documentation](https://developers.scaleway.com/en/products/lb/zoned_api/#post-355592) for further details
+Please check our [documentation](https://www.scaleway.com/en/developers/api/load-balancer/zoned-api/#path-load-balancer-migrate-a-load-balancer) for further details
 
 ## IP ID
 

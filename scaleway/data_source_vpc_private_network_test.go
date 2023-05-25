@@ -41,9 +41,27 @@ func TestAccScalewayDataSourceVPCPrivateNetwork_Basic(t *testing.T) {
 					resource.TestCheckResourceAttrPair(
 						"data.scaleway_vpc_private_network.pn_test_by_name", "name",
 						"scaleway_vpc_private_network.pn_test", "name"),
+					resource.TestCheckResourceAttr(
+						"data.scaleway_vpc_private_network.pn_test_by_name",
+						"subnets.#", "2"),
+					resource.TestCheckTypeSetElemAttrPair(
+						"data.scaleway_vpc_private_network.pn_test_by_name", "subnets.*",
+						"scaleway_vpc_private_network.pn_test", "subnets.0"),
+					resource.TestCheckTypeSetElemAttrPair(
+						"data.scaleway_vpc_private_network.pn_test_by_name", "subnets.*",
+						"scaleway_vpc_private_network.pn_test", "subnets.1"),
 					resource.TestCheckResourceAttrPair(
 						"data.scaleway_vpc_private_network.pn_test_by_id", "private_network_id",
 						"scaleway_vpc_private_network.pn_test", "id"),
+					resource.TestCheckResourceAttr(
+						"data.scaleway_vpc_private_network.pn_test_by_id",
+						"subnets.#", "2"),
+					resource.TestCheckTypeSetElemAttrPair(
+						"data.scaleway_vpc_private_network.pn_test_by_id", "subnets.*",
+						"scaleway_vpc_private_network.pn_test", "subnets.0"),
+					resource.TestCheckTypeSetElemAttrPair(
+						"data.scaleway_vpc_private_network.pn_test_by_id", "subnets.*",
+						"scaleway_vpc_private_network.pn_test", "subnets.1"),
 				),
 			},
 		},
