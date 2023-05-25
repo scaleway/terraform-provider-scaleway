@@ -179,7 +179,7 @@ func privateNetworksCompare(slice1, slice2 []*lbSDK.PrivateNetwork) []*lbSDK.Pri
 	for _, pn := range slice2 {
 		if _, foundID := m[pn.PrivateNetworkID]; !foundID {
 			diff = append(diff, pn)
-		} else if foundID {
+		} else {
 			if !isPrivateNetworkEqual(slice1, slice2) {
 				diff = append(diff, pn)
 			}
@@ -508,7 +508,7 @@ func waitForLBCertificate(ctx context.Context, lbAPI *lbSDK.ZonedAPI, zone scw.Z
 	return certificate, err
 }
 
-func attachLBPrivateNetwork(ctx context.Context, lbAPI *lbSDK.ZonedAPI, zone scw.Zone, pnConfigs []*lbSDK.PrivateNetwork, lbID string, timeout time.Duration) ([]*lbSDK.PrivateNetwork, error) {
+func attachLBPrivateNetworks(ctx context.Context, lbAPI *lbSDK.ZonedAPI, zone scw.Zone, pnConfigs []*lbSDK.PrivateNetwork, lbID string, timeout time.Duration) ([]*lbSDK.PrivateNetwork, error) {
 	var privateNetworks []*lbSDK.PrivateNetwork
 
 	for i := range pnConfigs {

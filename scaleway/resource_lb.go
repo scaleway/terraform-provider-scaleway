@@ -188,7 +188,7 @@ func resourceScalewayLbCreate(ctx context.Context, d *schema.ResourceData, meta 
 			return diag.FromErr(err)
 		}
 
-		_, err = attachLBPrivateNetwork(ctx, lbAPI, zone, pnConfigs, lb.ID, d.Timeout(schema.TimeoutCreate))
+		_, err = attachLBPrivateNetworks(ctx, lbAPI, zone, pnConfigs, lb.ID, d.Timeout(schema.TimeoutCreate))
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -358,17 +358,9 @@ func resourceScalewayLbUpdate(ctx context.Context, d *schema.ResourceData, meta 
 
 		pnToAttach := privateNetworksCompare(pns, pnConfigs)
 		// attach new/updated private networks
-		for i := range pnToAttach {
-			_, err := lbAPI.AttachPrivateNetwork(&lbSDK.ZonedAPIAttachPrivateNetworkRequest{
-				Zone:             zone,
-				LBID:             ID,
-				PrivateNetworkID: pnToAttach[i].PrivateNetworkID,
-				StaticConfig:     pnToAttach[i].StaticConfig,
-				DHCPConfig:       pnToAttach[i].DHCPConfig,
-			}, scw.WithContext(ctx))
-			if err != nil && !is404Error(err) {
-				return diag.FromErr(err)
-			}
+		_, err = attachLBPrivateNetworks(ctx, lbAPI, zone, pnToAttach, ID, d.Timeout(schema.TimeoutUpdate))
+		if err != nil {
+			return diag.FromErr(err)
 		}
 
 		privateNetworks, err := waitForLBPN(ctx, lbAPI, zone, ID, d.Timeout(schema.TimeoutUpdate))
