@@ -31,6 +31,7 @@ data "scaleway_cockpit" "main" {
 
 In addition to all arguments above, the following attributes are exported:
 
+- `plan_id` - The ID of the current plan
 - `endpoints` - Endpoints
     - `metrics_url` - The metrics URL
     - `logs_url` - The logs URL

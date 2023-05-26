@@ -299,10 +299,12 @@ func TestAccScalewayLbLb_WithIP(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("scaleway_vpc_private_network.pnLB01", "name"),
 					resource.TestCheckResourceAttr("scaleway_lb.lb01", "private_network.#", "2"),
-					resource.TestCheckResourceAttr("scaleway_lb.lb01",
-						"private_network.0.static_config.0", "172.16.0.100"),
-					resource.TestCheckResourceAttr("scaleway_lb.lb01",
-						"private_network.1.static_config.0", "172.16.0.105"),
+					resource.TestCheckTypeSetElemNestedAttrs("scaleway_lb.lb01", "private_network.*", map[string]string{
+						"static_config.0": "172.16.0.100",
+					}),
+					resource.TestCheckTypeSetElemNestedAttrs("scaleway_lb.lb01", "private_network.*", map[string]string{
+						"static_config.0": "172.16.0.105",
+					}),
 				),
 			},
 			{
@@ -337,10 +339,12 @@ func TestAccScalewayLbLb_WithIP(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("scaleway_vpc_private_network.pnLB01", "name"),
 					resource.TestCheckResourceAttr("scaleway_lb.lb01", "private_network.#", "2"),
-					resource.TestCheckResourceAttr("scaleway_lb.lb01",
-						"private_network.0.static_config.0", "172.16.0.100"),
-					resource.TestCheckResourceAttr("scaleway_lb.lb01",
-						"private_network.1.static_config.0", "172.16.0.107"),
+					resource.TestCheckTypeSetElemNestedAttrs("scaleway_lb.lb01", "private_network.*", map[string]string{
+						"static_config.0": "172.16.0.100",
+					}),
+					resource.TestCheckTypeSetElemNestedAttrs("scaleway_lb.lb01", "private_network.*", map[string]string{
+						"static_config.0": "172.16.0.107",
+					}),
 				),
 			},
 			{
