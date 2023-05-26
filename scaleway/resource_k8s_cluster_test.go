@@ -427,6 +427,66 @@ func TestAccScalewayK8SCluster_PrivateNetwork(t *testing.T) {
 	})
 }
 
+//func TestAccScalewayK8SCluster_PrivateNetworkChanges(t *testing.T) {
+//	tt := NewTestTools(t)
+//	defer tt.Cleanup()
+//
+//	latestK8SVersion := testAccScalewayK8SClusterGetLatestK8SVersion(tt)
+//
+//	resource.ParallelTest(t, resource.TestCase{
+//		PreCheck: func() {
+//			testAccPreCheck(t)
+//		},
+//		ProviderFactories: tt.ProviderFactories,
+//		CheckDestroy:      testAccCheckScalewayK8SClusterDestroy(tt),
+//		Steps: []resource.TestStep{
+//			{
+//				Config: testAccCheckScalewayK8SClusterConfigPrivateNetworkNotLinked(latestK8SVersion),
+//				Check: resource.ComposeTestCheckFunc(
+//					testAccCheckScalewayK8SClusterExists(tt, "scaleway_k8s_cluster.private_network"),
+//					testAccCheckScalewayVPCPrivateNetworkExists(tt, "scaleway_vpc_private_network.private_network"),
+//				),
+//			},
+//			{
+//				Config: testAccCheckScalewayK8SClusterConfigPrivateNetworkLinked(latestK8SVersion),
+//				Check: resource.ComposeTestCheckFunc(
+//					testAccCheckScalewayK8SClusterExists(tt, "scaleway_k8s_cluster.private_network"),
+//					testAccCheckScalewayVPCPrivateNetworkExists(tt, "scaleway_vpc_private_network.private_network"),
+//					testAccCheckScalewayK8sClusterPrivateNetworkID(tt, "scaleway_k8s_cluster.private_network", "scaleway_vpc_private_network.private_network"),
+//				),
+//			},
+//			{
+//				Config:   testAccCheckScalewayK8SClusterConfigPrivateNetworkChange(latestK8SVersion),
+//				PlanOnly: true,
+//				Check:    testAccCheckScalewayK8SClusterIDChange("scaleway_k8s_cluster.private_network"),
+//			},
+//			{
+//				Config:   testAccCheckScalewayK8SClusterConfigPrivateNetworkNotLinked(latestK8SVersion),
+//				PlanOnly: true,
+//				Check:    testAccCheckScalewayK8SClusterIDChange("scaleway_k8s_cluster.private_network"),
+//			},
+//		},
+//	})
+//}
+
+func testAccCheckScalewayK8SClusterIDChange(n string) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		rs, ok := s.RootModule().Resources[n]
+		if !ok {
+			return fmt.Errorf("resource not found: %s", n)
+		}
+
+		actual := rs.Primary.RawState
+		planned := rs.Primary.RawPlan
+
+		if actual.GetAttr("id") == planned.GetAttr("id") {
+			return fmt.Errorf("cluster ID should be different in the plan")
+		}
+
+		return nil
+	}
+}
+
 func TestAccScalewayK8SCluster_Multicloud(t *testing.T) {
 	tt := NewTestTools(t)
 	defer tt.Cleanup()

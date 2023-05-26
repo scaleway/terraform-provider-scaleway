@@ -229,6 +229,34 @@ func resourceScalewayK8SCluster() *schema.Resource {
 				Computed:    true,
 				Description: "The status of the cluster",
 			},
+			"private_network": {
+				Type:        schema.TypeList,
+				Computed:    true,
+				Optional:    true,
+				MaxItems:    1,
+				Description: "Private network specs details",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"id": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"name": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"vpc_id": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"subnets": {
+							Type:     schema.TypeList,
+							Computed: true,
+							Elem:     schema.TypeString,
+						},
+					},
+				},
+			},
 		},
 		CustomizeDiff: customdiff.All(
 			func(ctx context.Context, diff *schema.ResourceDiff, i interface{}) error {
@@ -437,7 +465,7 @@ func resourceScalewayK8SClusterCreate(ctx context.Context, d *schema.ResourceDat
 	// Private network configuration
 
 	if pnID, ok := d.GetOk("private_network_id"); ok {
-		req.PrivateNetworkID = scw.StringPtr(expandZonedID(pnID.(string)).ID)
+		req.PrivateNetworkID = scw.StringPtr(expandRegionalID(pnID.(string)).ID)
 	}
 
 	// Cluster creation
@@ -514,8 +542,12 @@ func resourceScalewayK8SClusterRead(ctx context.Context, d *schema.ResourceData,
 	_ = d.Set("auto_upgrade", clusterAutoUpgradeFlatten(cluster))
 
 	// private_network
-	if cluster.PrivateNetworkID != nil {
-		_ = d.Set("private_network_id", cluster.PrivateNetworkID)
+	pnFlat, err := flattenK8SPrivateNetwork(cluster, meta.(*Meta))
+	if err != nil {
+		return diag.FromErr(err)
+	}
+	if pnFlat != nil {
+		_ = d.Set("private_network", pnFlat)
 	}
 
 	////

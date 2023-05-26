@@ -9,6 +9,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/api/k8s/v1"
+	"github.com/scaleway/scaleway-sdk-go/api/vpc/v2"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 )
 
@@ -255,6 +256,34 @@ func flattenKubeletArgs(args map[string]string) map[string]interface{} {
 	}
 
 	return kubeletArgs
+}
+
+func flattenK8SPrivateNetwork(cluster *k8s.Cluster, meta *Meta) ([]map[string]interface{}, error) {
+	if cluster.PrivateNetworkID == nil {
+		return nil, nil
+	}
+
+	vpcAPI := vpc.NewAPI(meta.scwClient)
+	pn, err := vpcAPI.GetPrivateNetwork(&vpc.GetPrivateNetworkRequest{
+		Region:           cluster.Region,
+		PrivateNetworkID: *cluster.PrivateNetworkID,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	subnets := []string(nil)
+	for _, subnet := range pn.Subnets {
+		subnets = append(subnets, subnet.Subnet.String())
+	}
+
+	pnFlat := map[string]interface{}{
+		"id":      pn.ID,
+		"name":    pn.Name,
+		"vpc_id":  pn.VpcID,
+		"subnets": subnets,
+	}
+	return []map[string]interface{}{pnFlat}, nil
 }
 
 func migrateToPrivateNetworkCluster(ctx context.Context, d *schema.ResourceData, i interface{}) error {
