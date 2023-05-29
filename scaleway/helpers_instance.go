@@ -193,21 +193,20 @@ func reachState(ctx context.Context, instanceAPI *instance.API, zone scw.Zone, s
 
 // getServerType is a util to get a instance.ServerType by its commercialType
 func getServerType(ctx context.Context, apiInstance *instance.API, zone scw.Zone, commercialType string) *instance.ServerType {
-	serverType := (*instance.ServerType)(nil)
-
-	serverTypesRes, err := apiInstance.ListServersTypes(&instance.ListServersTypesRequest{
+	serverType, err := apiInstance.GetServerType(&instance.GetServerTypeRequest{
 		Zone: zone,
+		Name: commercialType,
 	})
 	if err != nil {
 		tflog.Warn(ctx, fmt.Sprintf("cannot get server types: %s", err))
 	} else {
-		serverType = serverTypesRes.Servers[commercialType]
 		if serverType == nil {
 			tflog.Warn(ctx, fmt.Sprintf("unrecognized server type: %s", commercialType))
 		}
+		return serverType
 	}
 
-	return serverType
+	return nil
 }
 
 // validateLocalVolumeSizes validates the total size of local volumes.
