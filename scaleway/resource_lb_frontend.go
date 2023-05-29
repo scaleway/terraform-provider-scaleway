@@ -212,6 +212,7 @@ func resourceScalewayLbFrontend() *schema.Resource {
 			},
 			"external_acls": {
 				Type:          schema.TypeBool,
+				Description:   "This boolean determines if ACLs should be managed externally through the 'lb_acl' resource. If set to `true`, `acl` attribute cannot be set directly in the lb frontend",
 				Optional:      true,
 				Default:       false,
 				ConflictsWith: []string{"acl"},
