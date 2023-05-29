@@ -130,35 +130,26 @@ func expandLbACLActionRedirect(raw interface{}) *lbSDK.ACLActionRedirect {
 	}
 }
 
-func expandPrivateNetworks(data interface{}, lbID string) ([]*lbSDK.ZonedAPIAttachPrivateNetworkRequest, error) {
+func expandPrivateNetworks(data interface{}) ([]*lbSDK.PrivateNetwork, error) {
 	if data == nil {
 		return nil, nil
 	}
 
-	var res []*lbSDK.ZonedAPIAttachPrivateNetworkRequest
-	for _, pn := range data.([]interface{}) {
-		r := pn.(map[string]interface{})
-		zonePN, pnID, err := parseZonedID(r["private_network_id"].(string))
-		if err != nil {
-			return nil, err
-		}
-		pnRequest := &lbSDK.ZonedAPIAttachPrivateNetworkRequest{
-			PrivateNetworkID: pnID,
-			Zone:             zonePN,
-			LBID:             lbID,
-		}
+	pns := []*lbSDK.PrivateNetwork(nil)
 
-		staticConfig := r["static_config"]
-		if len(staticConfig.([]interface{})) > 0 {
-			pnRequest.StaticConfig = expandLbPrivateNetworkStaticConfig(staticConfig)
+	for _, pn := range data.(*schema.Set).List() {
+		rawPn := pn.(map[string]interface{})
+		privateNetwork := &lbSDK.PrivateNetwork{}
+		privateNetwork.PrivateNetworkID = expandID(rawPn["private_network_id"].(string))
+		if staticConfig, hasStaticConfig := rawPn["static_config"]; hasStaticConfig {
+			privateNetwork.StaticConfig = expandLbPrivateNetworkStaticConfig(staticConfig)
 		} else {
-			pnRequest.DHCPConfig = expandLbPrivateNetworkDHCPConfig(r["dhcp_config"])
+			privateNetwork.DHCPConfig = expandLbPrivateNetworkDHCPConfig(rawPn["dhcp_config"])
 		}
 
-		res = append(res, pnRequest)
+		pns = append(pns, privateNetwork)
 	}
-
-	return res, nil
+	return pns, nil
 }
 
 func isPrivateNetworkEqual(a, b interface{}) bool {
@@ -183,41 +174,20 @@ func isPrivateNetworkEqual(a, b interface{}) bool {
 	return false
 }
 
-func newPrivateNetwork(raw map[string]interface{}) *lbSDK.PrivateNetwork {
-	_, pnID, _ := parseZonedID(raw["private_network_id"].(string))
+func privateNetworksCompare(slice1, slice2 []*lbSDK.PrivateNetwork) []*lbSDK.PrivateNetwork {
+	var diff []*lbSDK.PrivateNetwork
 
-	pn := &lbSDK.PrivateNetwork{PrivateNetworkID: pnID}
-	staticConfig := raw["static_config"]
-	if len(staticConfig.([]interface{})) > 0 {
-		pn.StaticConfig = expandLbPrivateNetworkStaticConfig(staticConfig)
-	} else {
-		pn.DHCPConfig = expandLbPrivateNetworkDHCPConfig(raw["dhcp_config"])
+	m := make(map[string]struct{}, len(slice1))
+	for _, pn := range slice1 {
+		m[pn.PrivateNetworkID] = struct{}{}
 	}
-
-	return pn
-}
-
-func privateNetworksToDetach(pns []*lbSDK.PrivateNetwork, updates interface{}) (map[string]bool, error) {
-	actions := make(map[string]bool, len(pns))
-	configs := make(map[string]*lbSDK.PrivateNetwork, len(pns))
-	// set detached all as default
-	for _, pn := range pns {
-		actions[pn.PrivateNetworkID] = true
-		configs[pn.PrivateNetworkID] = pn
-	}
-	// check if private network still exist or is different
-	for _, pn := range updates.([]interface{}) {
-		r := pn.(map[string]interface{})
-		_, pnID, err := parseZonedID(r["private_network_id"].(string))
-		if err != nil {
-			return nil, err
-		}
-		if _, exist := actions[pnID]; exist {
-			// check if config are equal
-			actions[pnID] = !isPrivateNetworkEqual(configs[pnID], newPrivateNetwork(r))
+	// find the differences
+	for _, pn := range slice2 {
+		if _, foundID := m[pn.PrivateNetworkID]; !foundID || (foundID && !isPrivateNetworkEqual(slice1, slice2)) {
+			diff = append(diff, pn)
 		}
 	}
-	return actions, nil
+	return diff
 }
 
 func flattenPrivateNetworkConfigs(privateNetworks []*lbSDK.PrivateNetwork) interface{} {
@@ -240,7 +210,6 @@ func flattenPrivateNetworkConfigs(privateNetworks []*lbSDK.PrivateNetwork) inter
 			"static_config":      flattenLbPrivateNetworkStaticConfig(pn.StaticConfig),
 		})
 	}
-
 	return pnI
 }
 
@@ -541,11 +510,17 @@ func waitForLBCertificate(ctx context.Context, lbAPI *lbSDK.ZonedAPI, zone scw.Z
 	return certificate, err
 }
 
-func attachLBPrivateNetwork(ctx context.Context, lbAPI *lbSDK.ZonedAPI, zone scw.Zone, pnConfigs []*lbSDK.ZonedAPIAttachPrivateNetworkRequest, timeout time.Duration) ([]*lbSDK.PrivateNetwork, error) {
+func attachLBPrivateNetworks(ctx context.Context, lbAPI *lbSDK.ZonedAPI, zone scw.Zone, pnConfigs []*lbSDK.PrivateNetwork, lbID string, timeout time.Duration) ([]*lbSDK.PrivateNetwork, error) {
 	var privateNetworks []*lbSDK.PrivateNetwork
 
-	for _, config := range pnConfigs {
-		pn, err := lbAPI.AttachPrivateNetwork(config, scw.WithContext(ctx))
+	for i := range pnConfigs {
+		pn, err := lbAPI.AttachPrivateNetwork(&lbSDK.ZonedAPIAttachPrivateNetworkRequest{
+			Zone:             zone,
+			LBID:             lbID,
+			PrivateNetworkID: pnConfigs[i].PrivateNetworkID,
+			StaticConfig:     pnConfigs[i].StaticConfig,
+			DHCPConfig:       pnConfigs[i].DHCPConfig,
+		}, scw.WithContext(ctx))
 		if err != nil && !is404Error(err) {
 			return nil, err
 		}

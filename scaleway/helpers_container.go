@@ -83,6 +83,10 @@ func setCreateContainerRequest(d *schema.ResourceData, region scw.Region) (*cont
 		req.MemoryLimit = scw.Uint32Ptr(uint32(memoryLimit.(int)))
 	}
 
+	if cpuLimit, ok := d.GetOk("cpu_limit"); ok {
+		req.CPULimit = scw.Uint32Ptr(uint32(cpuLimit.(int)))
+	}
+
 	if timeout, ok := d.GetOk("timeout"); ok {
 		timeInt := timeout.(int)
 		req.Timeout = &scw.Duration{Seconds: int64(timeInt)}
