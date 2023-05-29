@@ -2,6 +2,7 @@ package scaleway
 
 import (
 	"context"
+	"encoding/base64"
 	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -83,7 +84,7 @@ func datasourceSchemaFromResourceVersionSchema(ctx context.Context, d *schema.Re
 	}
 
 	d.SetId(secretVersionIDStr)
-	err = d.Set("data", base64Encoded(payloadSecretRaw))
+	err = d.Set("data", base64.StdEncoding.EncodeToString(payloadSecretRaw))
 	if err != nil {
 		return diag.FromErr(err)
 	}
