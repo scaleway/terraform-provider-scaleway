@@ -201,6 +201,9 @@ The following arguments are supported:
     - `http_value_option` - (Optional) If you have `http_filter` at `http_header_match`, you can use this field to filter on the HTTP header's value.
 
     - `invert` - (Optional) If set to `true`, the condition will be of type "unless".
+  
+- `external_acls` - (Defaults to `false`) A boolean to specify whether to use [lb_acl](../resources/lb_acl.md).
+  If `external_acls` is set to `true`, `acl` can not be set directly in the lb frontend.
 
 ## Attributes Reference
 
