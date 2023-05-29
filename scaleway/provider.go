@@ -102,6 +102,7 @@ func Provider(config *ProviderConfig) plugin.ProviderFunc {
 				"scaleway_function_domain":                     resourceScalewayFunctionDomain(),
 				"scaleway_function_namespace":                  resourceScalewayFunctionNamespace(),
 				"scaleway_function_token":                      resourceScalewayFunctionToken(),
+				"scaleway_function_trigger":                    resourceScalewayFunctionTrigger(),
 				"scaleway_iam_api_key":                         resourceScalewayIamAPIKey(),
 				"scaleway_iam_application":                     resourceScalewayIamApplication(),
 				"scaleway_iam_group":                           resourceScalewayIamGroup(),
