@@ -11,8 +11,8 @@ import (
 )
 
 func init() {
-	resource.AddTestSweepers("scaleway_vpc", &resource.Sweeper{
-		Name: "scaleway_vpc",
+	resource.AddTestSweepers("scaleway_vpc_private_network", &resource.Sweeper{
+		Name: "scaleway_vpc_private_network",
 		F:    testSweepVPCPrivateNetwork,
 	})
 }
