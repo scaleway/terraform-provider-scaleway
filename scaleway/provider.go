@@ -155,6 +155,7 @@ func Provider(config *ProviderConfig) plugin.ProviderFunc {
 				"scaleway_mnq_queue":                           resourceScalewayMNQQueue(),
 				"scaleway_secret":                              resourceScalewaySecret(),
 				"scaleway_secret_version":                      resourceScalewaySecretVersion(),
+				"scaleway_vpc":                                 resourceScalewayVPC(),
 				"scaleway_vpc_public_gateway":                  resourceScalewayVPCPublicGateway(),
 				"scaleway_vpc_gateway_network":                 resourceScalewayVPCGatewayNetwork(),
 				"scaleway_vpc_public_gateway_dhcp":             resourceScalewayVPCPublicGatewayDHCP(),

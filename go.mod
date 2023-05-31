@@ -15,7 +15,7 @@ require (
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.26.1
 	github.com/nats-io/nats.go v1.25.0
 	github.com/robfig/cron/v3 v3.0.1
-	github.com/scaleway/scaleway-sdk-go v1.0.0-beta.16.0.20230425114903-9de7ce5b674f
+	github.com/scaleway/scaleway-sdk-go v1.0.0-beta.17.0.20230526161530-cf508019231d
 	github.com/stretchr/testify v1.8.2
 )
 
