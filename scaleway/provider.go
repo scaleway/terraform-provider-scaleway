@@ -226,6 +226,7 @@ func Provider(config *ProviderConfig) plugin.ProviderFunc {
 				"scaleway_secret":                              dataSourceScalewaySecret(),
 				"scaleway_secret_version":                      dataSourceScalewaySecretVersion(),
 				"scaleway_registry_image":                      dataSourceScalewayRegistryImage(),
+				"scaleway_vpc":                                 dataSourceScalewayVPC(),
 				"scaleway_vpc_public_gateway":                  dataSourceScalewayVPCPublicGateway(),
 				"scaleway_vpc_gateway_network":                 dataSourceScalewayVPCGatewayNetwork(),
 				"scaleway_vpc_public_gateway_dhcp":             dataSourceScalewayVPCPublicGatewayDHCP(),
