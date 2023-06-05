@@ -78,12 +78,12 @@ The following arguments are supported:
 
 - `backend_id` - (Required) The ID of the backend to which the route is associated.
 - `frontend_id` - (Required) The ID of the frontend to which the route is associated.
-- `match_sni` - Server Name Indication (SNI) value to match. Value to match in the Server Name Indication TLS extension (SNI) field from an incoming connection made via an SSL/TLS transport layer.
+- `match_sni` - The Server Name Indication (SNI) value to match. Value to match in the Server Name Indication TLS extension (SNI) field from an incoming connection made via an SSL/TLS transport layer.
   Only one of `match_sni` and `match_host_header` should be specified.
 
 ~> **Important:** This field should be set for routes on TCP Load Balancers.
 
-- `match_host_header` - HTTP host header to match. Value to match in the HTTP Host request header from an incoming connection.
+- `match_host_header` - The HTTP host header to match. Value to match in the HTTP Host request header from an incoming connection.
   Only one of `match_sni` and `match_host_header` should be specified.  
 
 ~> **Important:** This field should be set for routes on HTTP Load Balancers.
