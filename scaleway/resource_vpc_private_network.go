@@ -30,7 +30,7 @@ func resourceScalewayVPCPrivateNetwork() *schema.Resource {
 				Computed:    true,
 			},
 			"ipv4_subnet": {
-				Type:        schema.TypeSet,
+				Type:        schema.TypeList,
 				Optional:    true,
 				Description: "The IPv4 subnet associated with the private network",
 				Computed:    true,
@@ -117,7 +117,7 @@ func resourceScalewayVPCPrivateNetwork() *schema.Resource {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Computed:    true,
-				Description: "The VPC in which to create the Private Network. ",
+				Description: "The VPC in which to create the private network",
 			},
 			"project_id": projectIDSchema(),
 			"zone":       zoneSchema(),

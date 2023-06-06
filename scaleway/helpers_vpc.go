@@ -68,7 +68,7 @@ func vpcAPI(m interface{}) (*v1.API, error) {
 
 func expandSubnets(d *schema.ResourceData) (ipv4Subnets []scw.IPNet, ipv6Subnets []scw.IPNet, err error) {
 	if v, ok := d.GetOk("ipv4_subnet"); ok {
-		for _, s := range v.(*schema.Set).List() {
+		for _, s := range v.([]interface{}) {
 			rawSubnet := s.(map[string]interface{})
 			ipNet, err := expandIPNet(rawSubnet["subnet"].(string))
 			if err != nil {
