@@ -66,28 +66,108 @@ func vpcAPI(m interface{}) (*v1.API, error) {
 	return v1.NewAPI(meta.scwClient), nil
 }
 
-func expandSubnets(data interface{}) ([]scw.IPNet, error) {
-	var ipNets []scw.IPNet
-	for _, s := range data.([]interface{}) {
-		if s == nil {
-			s = ""
+func expandSubnets(d *schema.ResourceData) (ipv4Subnets []scw.IPNet, ipv6Subnets []scw.IPNet, err error) {
+	if v, ok := d.GetOk("ipv4_subnet"); ok {
+		for _, s := range v.(*schema.Set).List() {
+			rawSubnet := s.(map[string]interface{})
+			ipNet, err := expandIPNet(rawSubnet["subnet"].(string))
+			if err != nil {
+				return nil, nil, err
+			}
+			ipv4Subnets = append(ipv4Subnets, ipNet)
 		}
-		ipNet, err := expandIPNet(s.(string))
-		if err != nil {
-			return nil, err
-		}
-		ipNets = append(ipNets, ipNet)
 	}
 
-	return ipNets, nil
+	if v, ok := d.GetOk("ipv6_subnet"); ok {
+		for _, s := range v.(*schema.Set).List() {
+			rawSubnet := s.(map[string]interface{})
+			ipNet, err := expandIPNet(rawSubnet["subnet"].(string))
+			if err != nil {
+				return nil, nil, err
+			}
+			ipv6Subnets = append(ipv6Subnets, ipNet)
+		}
+	}
+	return
 }
 
-func flattenSubnets(subnets []scw.IPNet) *schema.Set {
-	var rawSubnets []interface{}
-	for _, s := range subnets {
-		rawSubnets = append(rawSubnets, s.String())
+func flattenAndSortSubnets(sub interface{}) (interface{}, interface{}) {
+	switch subnets := sub.(type) {
+	case []scw.IPNet:
+		return flattenAndSortIPNetSubnets(subnets)
+	case []*v2.Subnet:
+		return flattenAndSortSubnetV2s(subnets)
+	default:
+		return "", nil
 	}
-	return schema.NewSet(func(i interface{}) int {
-		return StringHashcode(i.(string))
-	}, rawSubnets)
+}
+
+func flattenAndSortIPNetSubnets(subnets []scw.IPNet) (interface{}, interface{}) {
+	if subnets == nil {
+		return "", nil
+	}
+
+	flattenedipv4Subnets := []map[string]interface{}(nil)
+	flattenedipv6Subnets := []map[string]interface{}(nil)
+
+	for _, s := range subnets {
+		// If it's an IPv4 subnet
+		if s.IP.To4() != nil {
+			sub, err := flattenIPNet(s)
+			if err != nil {
+				return "", nil
+			}
+			flattenedipv4Subnets = append(flattenedipv4Subnets, map[string]interface{}{
+				"subnet": sub,
+			})
+		} else {
+			sub, err := flattenIPNet(s)
+			if err != nil {
+				return "", nil
+			}
+			flattenedipv6Subnets = append(flattenedipv6Subnets, map[string]interface{}{
+				"subnet": sub,
+			})
+		}
+	}
+
+	return flattenedipv4Subnets, flattenedipv6Subnets
+}
+
+func flattenAndSortSubnetV2s(subnets []*v2.Subnet) (interface{}, interface{}) {
+	if subnets == nil {
+		return "", nil
+	}
+
+	flattenedipv4Subnets := []map[string]interface{}(nil)
+	flattenedipv6Subnets := []map[string]interface{}(nil)
+
+	for _, s := range subnets {
+		// If it's an IPv4 subnet
+		if s.Subnet.IP.To4() != nil {
+			sub, err := flattenIPNet(s.Subnet)
+			if err != nil {
+				return "", nil
+			}
+			flattenedipv4Subnets = append(flattenedipv4Subnets, map[string]interface{}{
+				"id":         s.ID,
+				"created_at": flattenTime(s.CreatedAt),
+				"updated_at": flattenTime(s.UpdatedAt),
+				"subnet":     sub,
+			})
+		} else {
+			sub, err := flattenIPNet(s.Subnet)
+			if err != nil {
+				return "", nil
+			}
+			flattenedipv6Subnets = append(flattenedipv6Subnets, map[string]interface{}{
+				"id":         s.ID,
+				"created_at": flattenTime(s.CreatedAt),
+				"updated_at": flattenTime(s.UpdatedAt),
+				"subnet":     sub,
+			})
+		}
+	}
+
+	return flattenedipv4Subnets, flattenedipv6Subnets
 }
