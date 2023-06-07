@@ -43,25 +43,31 @@ func TestAccScalewayDataSourceVPCPrivateNetwork_Basic(t *testing.T) {
 						"scaleway_vpc_private_network.pn_test", "name"),
 					resource.TestCheckResourceAttr(
 						"data.scaleway_vpc_private_network.pn_test_by_name",
-						"subnets.#", "2"),
+						"ipv4_subnet.#", "1"),
+					resource.TestCheckResourceAttr(
+						"data.scaleway_vpc_private_network.pn_test_by_name",
+						"ipv6_subnets.#", "1"),
 					resource.TestCheckTypeSetElemAttrPair(
-						"data.scaleway_vpc_private_network.pn_test_by_name", "subnets.*",
-						"scaleway_vpc_private_network.pn_test", "subnets.0"),
+						"data.scaleway_vpc_private_network.pn_test_by_name", "ipv4_subnet.0.subnet",
+						"scaleway_vpc_private_network.pn_test", "ipv4_subnet.0.subnet"),
 					resource.TestCheckTypeSetElemAttrPair(
-						"data.scaleway_vpc_private_network.pn_test_by_name", "subnets.*",
-						"scaleway_vpc_private_network.pn_test", "subnets.1"),
+						"data.scaleway_vpc_private_network.pn_test_by_name", "ipv6_subnets.0.subnet",
+						"scaleway_vpc_private_network.pn_test", "ipv6_subnets.0.subnet"),
 					resource.TestCheckResourceAttrPair(
 						"data.scaleway_vpc_private_network.pn_test_by_id", "private_network_id",
 						"scaleway_vpc_private_network.pn_test", "id"),
 					resource.TestCheckResourceAttr(
 						"data.scaleway_vpc_private_network.pn_test_by_id",
-						"subnets.#", "2"),
+						"ipv4_subnet.#", "1"),
+					resource.TestCheckResourceAttr(
+						"data.scaleway_vpc_private_network.pn_test_by_id",
+						"ipv6_subnets.#", "1"),
 					resource.TestCheckTypeSetElemAttrPair(
-						"data.scaleway_vpc_private_network.pn_test_by_id", "subnets.*",
-						"scaleway_vpc_private_network.pn_test", "subnets.0"),
+						"data.scaleway_vpc_private_network.pn_test_by_id", "ipv4_subnet.0.subnet",
+						"scaleway_vpc_private_network.pn_test", "ipv4_subnet.0.subnet"),
 					resource.TestCheckTypeSetElemAttrPair(
-						"data.scaleway_vpc_private_network.pn_test_by_id", "subnets.*",
-						"scaleway_vpc_private_network.pn_test", "subnets.1"),
+						"data.scaleway_vpc_private_network.pn_test_by_id", "ipv6_subnets.0.subnet",
+						"scaleway_vpc_private_network.pn_test", "ipv6_subnets.0.subnet"),
 				),
 			},
 		},
