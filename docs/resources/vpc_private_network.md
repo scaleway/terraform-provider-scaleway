@@ -17,19 +17,19 @@ resource "scaleway_vpc_private_network" "pn_priv" {
 }
 ```
 
--> **Note:** Regional Private Network is now in Public Beta. You can create a regional private network directly using this resource by setting the `is_regional` to `true`.
+-> **Note:** Regional Private Network is now in Public Beta. You can create a regional private network directly using this resource by setting `is_regional` to `true`.
 
 ```hcl
-resource scaleway_vpc vpc01 {
-    name = "test-vpc"
-    tags = [ "terraform", "vpc" ]
+resource "scaleway_vpc" "vpc01" {
+  name = "test-vpc"
+  tags = ["terraform", "vpc"]
 }
-					
+
 resource "scaleway_vpc_private_network" "regional_pn" {
-    name = "my_regiona_pn"
-    tags = [ "terraform", "pn", regional"]
-    is_regional = true
-    vpc_id = scaleway_vpc.vpc01.id
+  name        = "my_regiona_pn"
+  tags        = ["terraform", "pn", "regional"]
+  is_regional = true
+  vpc_id      = scaleway_vpc.vpc01.id
 }
 ```
 
