@@ -161,8 +161,6 @@ func resourceScalewayK8SCluster() *schema.Resource {
 			"private_network_id": {
 				Type:             schema.TypeString,
 				Optional:         true,
-				Computed:         true,
-				ForceNew:         true,
 				Description:      "The ID of the cluster's private network",
 				ValidateFunc:     validationUUIDorUUIDWithLocality(),
 				DiffSuppressFunc: diffSuppressFuncLocality,
@@ -245,7 +243,31 @@ func resourceScalewayK8SCluster() *schema.Resource {
 
 				return nil
 			},
-			customizeDiffLocalityCheck("private_network_id"),
+			func(ctx context.Context, diff *schema.ResourceDiff, i interface{}) error {
+				if diff.HasChange("private_network_id") {
+					actual, planned := diff.GetChange("private_network_id")
+					if actual == "" {
+						// If no private network has been set yet, migrate the cluster in the Update function
+						return nil
+					}
+					if planned != "" {
+						_, plannedPNID, err := parseLocalizedID(planned.(string))
+						if err != nil {
+							return err
+						}
+						if plannedPNID == actual {
+							// If the private network ID is the same, do nothing
+							return nil
+						}
+					}
+					// Any other change will result in ForceNew
+					err := diff.ForceNew("private_network_id")
+					if err != nil {
+						return err
+					}
+				}
+				return nil
+			},
 		),
 	}
 }
@@ -574,6 +596,9 @@ func resourceScalewayK8SClusterUpdate(ctx context.Context, d *schema.ResourceDat
 		updateRequest.AdmissionPlugins = expandUpdatedStringsPtr(d.Get("admission_plugins"))
 	}
 
+	////
+	// AutoUpgrade changes
+	////
 	updateRequest.AutoUpgrade = &k8s.UpdateClusterRequestAutoUpgrade{}
 	autoupgradeEnabled := d.Get("auto_upgrade.0.enable").(bool)
 
@@ -587,6 +612,9 @@ func resourceScalewayK8SClusterUpdate(ctx context.Context, d *schema.ResourceDat
 		updateRequest.AutoUpgrade.MaintenanceWindow.Day = k8s.MaintenanceWindowDayOfTheWeek(d.Get("auto_upgrade.0.maintenance_window_day").(string))
 	}
 
+	////
+	// Version changes
+	////
 	version := d.Get("version").(string)
 	versionIsOnlyMinor := len(strings.Split(version, ".")) == 2
 
@@ -622,6 +650,9 @@ func resourceScalewayK8SClusterUpdate(ctx context.Context, d *schema.ResourceDat
 		}
 	}
 
+	////
+	// Autoscaler changes
+	////
 	autoscalerReq := &k8s.UpdateClusterRequestAutoscalerConfig{}
 
 	if d.HasChange("autoscaler_config.0.disable_scale_down") {
@@ -666,6 +697,9 @@ func resourceScalewayK8SClusterUpdate(ctx context.Context, d *schema.ResourceDat
 
 	updateRequest.AutoscalerConfig = autoscalerReq
 
+	////
+	// OpenIDConnect Config changes
+	////
 	updateClusterRequestOpenIDConnectConfig := &k8s.UpdateClusterRequestOpenIDConnectConfig{}
 
 	if d.HasChange("open_id_connect_config.0.issuer_url") {
@@ -697,6 +731,19 @@ func resourceScalewayK8SClusterUpdate(ctx context.Context, d *schema.ResourceDat
 	}
 
 	updateRequest.OpenIDConnectConfig = updateClusterRequestOpenIDConnectConfig
+
+	////
+	// Private Network changes
+	////
+	if d.HasChange("private_network_id") {
+		actual, _ := d.GetChange("private_network_id")
+		if actual == "" {
+			err = migrateToPrivateNetworkCluster(ctx, d, meta)
+			if err != nil {
+				return diag.FromErr(err)
+			}
+		}
+	}
 
 	////
 	// Apply Update
