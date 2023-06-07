@@ -175,7 +175,7 @@ func TestAccScalewayVPCPrivateNetwork_Subnets(t *testing.T) {
 					),
 					resource.TestCheckResourceAttr(
 						"scaleway_vpc_private_network.test",
-						"ipv6_subnet.#",
+						"ipv6_subnets.#",
 						"1",
 					),
 				),
@@ -185,7 +185,7 @@ func TestAccScalewayVPCPrivateNetwork_Subnets(t *testing.T) {
 					ipv4_subnet {
 						subnet = "172.16.32.0/22"
 					}
-					ipv6_subnet {
+					ipv6_subnets {
     				    subnet = "fd46:78ab:30b8:177c::/64"
 					}
 				}`,
@@ -201,7 +201,7 @@ func TestAccScalewayVPCPrivateNetwork_Subnets(t *testing.T) {
 					),
 					resource.TestCheckResourceAttr(
 						"scaleway_vpc_private_network.test",
-						"ipv6_subnet.0.subnet",
+						"ipv6_subnets.0.subnet",
 						"fd46:78ab:30b8:177c::/64",
 					),
 					resource.TestCheckResourceAttr(
@@ -211,7 +211,7 @@ func TestAccScalewayVPCPrivateNetwork_Subnets(t *testing.T) {
 					),
 					resource.TestCheckResourceAttr(
 						"scaleway_vpc_private_network.test",
-						"ipv6_subnet.#",
+						"ipv6_subnets.#",
 						"1",
 					),
 				),
@@ -246,7 +246,7 @@ func TestAccScalewayVPCPrivateNetwork_OneSubnet(t *testing.T) {
 					),
 					resource.TestCheckResourceAttrSet(
 						"scaleway_vpc_private_network.test",
-						"ipv6_subnet.0.subnet",
+						"ipv6_subnets.0.subnet",
 					),
 					resource.TestCheckResourceAttr(
 						"scaleway_vpc_private_network.test",
@@ -255,7 +255,7 @@ func TestAccScalewayVPCPrivateNetwork_OneSubnet(t *testing.T) {
 					),
 					resource.TestCheckResourceAttr(
 						"scaleway_vpc_private_network.test",
-						"ipv6_subnet.#",
+						"ipv6_subnets.#",
 						"1",
 					),
 				),
@@ -346,10 +346,10 @@ func TestAccScalewayVPCPrivateNetwork_RegionalWithTwoIPV6Subnets(t *testing.T) {
 						ipv4_subnet {
 						  subnet = "192.168.0.0/24"
 						}
-						ipv6_subnet {
+						ipv6_subnets {
 						  subnet = "fd46:78ab:30b8:177c::/64"
 						}
-						ipv6_subnet {
+						ipv6_subnets {
 						  subnet = "fd46:78ab:30b8:c7df::/64"
 						}
 					}
@@ -366,14 +366,14 @@ func TestAccScalewayVPCPrivateNetwork_RegionalWithTwoIPV6Subnets(t *testing.T) {
 					),
 					resource.TestCheckResourceAttrSet(
 						"scaleway_vpc_private_network.pn01",
-						"ipv6_subnet.0.subnet",
+						"ipv6_subnets.0.subnet",
 					),
 					resource.TestCheckTypeSetElemNestedAttrs(
-						"scaleway_vpc_private_network.pn01", "ipv6_subnet.*", map[string]string{
+						"scaleway_vpc_private_network.pn01", "ipv6_subnets.*", map[string]string{
 							"subnet": "fd46:78ab:30b8:177c::/64",
 						}),
 					resource.TestCheckTypeSetElemNestedAttrs(
-						"scaleway_vpc_private_network.pn01", "ipv6_subnet.*", map[string]string{
+						"scaleway_vpc_private_network.pn01", "ipv6_subnets.*", map[string]string{
 							"subnet": "fd46:78ab:30b8:c7df::/64",
 						}),
 					resource.TestCheckResourceAttr(
@@ -383,7 +383,7 @@ func TestAccScalewayVPCPrivateNetwork_RegionalWithTwoIPV6Subnets(t *testing.T) {
 					),
 					resource.TestCheckResourceAttr(
 						"scaleway_vpc_private_network.pn01",
-						"ipv6_subnet.#",
+						"ipv6_subnets.#",
 						"2",
 					),
 				),

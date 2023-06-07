@@ -42,7 +42,7 @@ The following arguments are supported:
 - `zone` - (Defaults to [provider](../index.md#zone) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which the private network should be created.
 - `project_id` - (Defaults to [provider](../index.md#project_id) `project_id`) The ID of the project the private network is associated with.
 - `ipv4_subnet` - (Optional) The IPv4 subnet associated with the private network.
-- `ipv6_subnet` - (Optional) The IPv6 subnet(s) associated with the private network.
+- `ipv6_subnets` - (Optional) The IPv6 subnets associated with the private network.
 
 -> **Note:** If using Regional Private Network:
 

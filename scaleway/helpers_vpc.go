@@ -78,7 +78,7 @@ func expandSubnets(d *schema.ResourceData) (ipv4Subnets []scw.IPNet, ipv6Subnets
 		}
 	}
 
-	if v, ok := d.GetOk("ipv6_subnet"); ok {
+	if v, ok := d.GetOk("ipv6_subnets"); ok {
 		for _, s := range v.(*schema.Set).List() {
 			rawSubnet := s.(map[string]interface{})
 			ipNet, err := expandIPNet(rawSubnet["subnet"].(string))

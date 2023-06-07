@@ -64,7 +64,7 @@ func resourceScalewayVPCPrivateNetwork() *schema.Resource {
 					},
 				},
 			},
-			"ipv6_subnet": {
+			"ipv6_subnets": {
 				Type:        schema.TypeSet,
 				Optional:    true,
 				Description: "The IPv6 subnet associated with the private network",
@@ -252,6 +252,7 @@ func resourceScalewayVPCPrivateNetworkZonalRead(ctx context.Context, d *schema.R
 	_ = d.Set("project_id", pn.ProjectID)
 	_ = d.Set("created_at", pn.CreatedAt.Format(time.RFC3339))
 	_ = d.Set("updated_at", pn.UpdatedAt.Format(time.RFC3339))
+	_ = d.Set("tags", pn.Tags)
 	_ = d.Set("zone", zone)
 	_ = d.Set("is_regional", false)
 
@@ -261,7 +262,7 @@ func resourceScalewayVPCPrivateNetworkZonalRead(ctx context.Context, d *schema.R
 
 	ipv4Subnet, ipv6Subnets := flattenAndSortSubnets(pn.Subnets)
 	_ = d.Set("ipv4_subnet", ipv4Subnet)
-	_ = d.Set("ipv6_subnet", ipv6Subnets)
+	_ = d.Set("ipv6_subnets", ipv6Subnets)
 
 	return nil
 }
@@ -299,7 +300,7 @@ func resourceScalewayVPCPrivateNetworkRegionalRead(ctx context.Context, d *schem
 
 	ipv4Subnet, ipv6Subnets := flattenAndSortSubnets(pn.Subnets)
 	_ = d.Set("ipv4_subnet", ipv4Subnet)
-	_ = d.Set("ipv6_subnet", ipv6Subnets)
+	_ = d.Set("ipv6_subnets", ipv6Subnets)
 
 	return nil
 }
