@@ -44,7 +44,7 @@ The following arguments are supported:
 - `ipv4_subnet` - (Optional) The IPv4 subnet associated with the private network.
 - `ipv6_subnet` - (Optional) The IPv6 subnet(s) associated with the private network.
 
--> **Note:** If using Regional Private Network: 
+-> **Note:** If using Regional Private Network:
 
 - `region` - (Defaults to [provider](../index.md#region) `region`) The [region](../guides/regions_and_zones.md#regions) of the private network.
 - `vpc_id` - (Optional) The VPC in which to create the private network.
