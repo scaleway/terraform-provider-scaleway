@@ -256,10 +256,6 @@ func resourceScalewayVPCPrivateNetworkZonalRead(ctx context.Context, d *schema.R
 	_ = d.Set("zone", zone)
 	_ = d.Set("is_regional", false)
 
-	if len(pn.Tags) > 0 {
-		_ = d.Set("tags", pn.Tags)
-	}
-
 	ipv4Subnet, ipv6Subnets := flattenAndSortSubnets(pn.Subnets)
 	_ = d.Set("ipv4_subnet", ipv4Subnet)
 	_ = d.Set("ipv6_subnets", ipv6Subnets)
@@ -291,12 +287,9 @@ func resourceScalewayVPCPrivateNetworkRegionalRead(ctx context.Context, d *schem
 	_ = d.Set("project_id", pn.ProjectID)
 	_ = d.Set("created_at", flattenTime(pn.CreatedAt))
 	_ = d.Set("updated_at", flattenTime(pn.UpdatedAt))
+	_ = d.Set("tags", pn.Tags)
 	_ = d.Set("region", region)
 	_ = d.Set("is_regional", true)
-
-	if len(pn.Tags) > 0 {
-		_ = d.Set("tags", pn.Tags)
-	}
 
 	ipv4Subnet, ipv6Subnets := flattenAndSortSubnets(pn.Subnets)
 	_ = d.Set("ipv4_subnet", ipv4Subnet)
