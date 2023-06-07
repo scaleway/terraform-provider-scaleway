@@ -45,7 +45,7 @@ func vpcAPIWithRegion(d *schema.ResourceData, m interface{}) (*v2.API, scw.Regio
 	return vpcAPI, region, err
 }
 
-// vpcAPIWithRegionAndID
+// vpcAPIWithRegionAndID returns a new VPC API with locality and ID extracted from the state
 func vpcAPIWithRegionAndID(m interface{}, id string) (*v2.API, scw.Region, string, error) {
 	meta := m.(*Meta)
 	vpcAPI := v2.NewAPI(meta.scwClient)
