@@ -160,7 +160,7 @@ func resourceScalewayK8SCluster() *schema.Resource {
 			},
 			"private_network_id": {
 				Type:             schema.TypeString,
-				Optional:         true,
+				Required:         true,
 				Description:      "The ID of the cluster's private network",
 				ValidateFunc:     validationUUIDorUUIDWithLocality(),
 				DiffSuppressFunc: diffSuppressFuncLocality,
