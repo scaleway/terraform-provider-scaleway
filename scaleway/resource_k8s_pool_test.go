@@ -9,6 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
 	"github.com/scaleway/scaleway-sdk-go/api/k8s/v1"
+	"github.com/scaleway/scaleway-sdk-go/scw"
 )
 
 func TestAccScalewayK8SCluster_PoolBasic(t *testing.T) {
@@ -318,11 +319,16 @@ func TestAccScalewayK8SCluster_PoolSize(t *testing.T) {
 				  version = "%s"
 				  cni     = "cilium"
 				  delete_additional_resources = true
+                  private_network_id = scaleway_vpc_private_network.pn.id
 				  auto_upgrade {
 				    enable = true
 				    maintenance_window_start_hour = 12
 				    maintenance_window_day = "monday"
 				  }
+				}
+
+				resource "scaleway_vpc_private_network" "pn" {
+					is_regional = true
 				}
 				
 				resource "scaleway_k8s_pool" "pool" {
@@ -342,11 +348,16 @@ func TestAccScalewayK8SCluster_PoolSize(t *testing.T) {
 				  version = "%s"
 				  cni     = "cilium"
 				  auto_upgrade {
-				  enable = true
-				  maintenance_window_start_hour = 12
-				  maintenance_window_day = "monday"
+				    enable = true
+				    maintenance_window_start_hour = 12
+				    maintenance_window_day = "monday"
 				  }
 				  delete_additional_resources = true
+                  private_network_id = scaleway_vpc_private_network.pn.id
+				}
+
+				resource "scaleway_vpc_private_network" "pn" {
+					is_regional = true
 				}
 				
 				resource "scaleway_k8s_pool" "pool" {
@@ -380,6 +391,7 @@ func TestAccScalewayK8SCluster_PoolPrivateNetwork(t *testing.T) {
 				Config: fmt.Sprintf(`
 				resource "scaleway_vpc_private_network" "pn" {
 				  name       = "k8s-private-network"
+				  is_regional = true
 				}
 
 				resource "scaleway_k8s_cluster" "cluster_with_pn" {
@@ -437,7 +449,7 @@ func testAccCheckScalewayK8SPoolServersAreInPrivateNetwork(tt *TestTools, cluste
 		if !ok {
 			return fmt.Errorf("resource not found: %s", pnTFName)
 		}
-		_, zone, pnID, err := vpcAPIWithZoneAndID(tt.Meta, rs.Primary.ID)
+		_, _, pnID, err := vpcAPIWithRegionAndID(tt.Meta, rs.Primary.ID)
 		if err != nil {
 			return err
 		}
@@ -460,7 +472,7 @@ func testAccCheckScalewayK8SPoolServersAreInPrivateNetwork(tt *TestTools, cluste
 			}
 
 			server, err := instanceAPI.GetServer(&instance.GetServerRequest{
-				Zone:     zone,
+				Zone:     scw.Zone(providerIDSplit[3]),
 				ServerID: providerIDSplit[4],
 			})
 			if err != nil {
@@ -566,6 +578,10 @@ resource "scaleway_k8s_cluster" "minimal" {
 	version = "%s"
 	tags = [ "terraform-test", "scaleway_k8s_cluster", "minimal" ]
 	delete_additional_resources = true
+	private_network_id = scaleway_vpc_private_network.pn.id
+}
+resource "scaleway_vpc_private_network" "pn" {
+	is_regional = true
 }
 %s`, version, pool)
 }
@@ -603,6 +619,10 @@ resource "scaleway_k8s_cluster" "minimal" {
 	version = "%s"
 	tags = [ "terraform-test", "scaleway_k8s_cluster", "minimal" ]
 	delete_additional_resources = true
+	private_network_id = scaleway_vpc_private_network.pn.id
+}
+resource "scaleway_vpc_private_network" "pn" {
+	is_regional = true
 }
 %s`, version, pool)
 }
@@ -712,7 +732,12 @@ resource "scaleway_k8s_cluster" "upgrade_policy" {
 	version = "%s"
 	tags = [ "terraform-test", "scaleway_k8s_cluster", "upgrade_policy" ]
 	delete_additional_resources = true
-}`, maxSurge, maxUnavailable, version)
+	private_network_id = scaleway_vpc_private_network.pn.id
+}
+resource "scaleway_vpc_private_network" "pn" {
+	is_regional = true
+}
+`, maxSurge, maxUnavailable, version)
 }
 
 func testAccCheckScalewayK8SPoolConfigKubeletArgs(version string, maxPods int) string {
@@ -735,10 +760,16 @@ resource "scaleway_k8s_cluster" "kubelet_args" {
 	version = "%s"
 	tags = [ "terraform-test", "scaleway_k8s_cluster", "kubelet_args" ]
 	delete_additional_resources = true
-}`, maxPods, version)
+	private_network_id = scaleway_vpc_private_network.pn.id
+}
+resource "scaleway_vpc_private_network" "pn" {
+	is_regional = true
+}
+`, maxPods, version)
 }
 
 func testAccCheckScalewayK8SPoolConfigZone(version string, zone string) string {
+	region := strings.TrimRight(zone, "-123")
 	return fmt.Sprintf(`
 resource "scaleway_k8s_pool" "default" {
     name = "default"
@@ -756,7 +787,13 @@ resource "scaleway_k8s_cluster" "zone" {
 	version = "%s"
 	tags = [ "terraform-test", "scaleway_k8s_cluster", "zone" ]
 	delete_additional_resources = true
-}`, zone, version)
+	private_network_id = scaleway_vpc_private_network.pn.id
+}
+resource "scaleway_vpc_private_network" "pn" {
+	region = "%s"
+	is_regional = true
+}
+`, zone, version, region)
 }
 
 func testAccCheckScalewayK8SPoolNodesOneOfIsDeleting(name string) resource.TestCheckFunc {

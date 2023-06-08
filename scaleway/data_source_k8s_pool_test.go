@@ -26,7 +26,9 @@ func TestAccScalewayDataSourceK8SPool_Basic(t *testing.T) {
 						cni     = "cilium"
 					  	tags    = [ "terraform-test", "data_scaleway_k8s_pool", "basic" ]
 						delete_additional_resources = true
+						private_network_id = scaleway_vpc_private_network.pn.id
 					}
+					resource "scaleway_vpc_private_network" "pn" {}
 					
 					resource "scaleway_k8s_pool" "default" {
 						cluster_id = "${scaleway_k8s_cluster.main.id}"
@@ -44,7 +46,9 @@ func TestAccScalewayDataSourceK8SPool_Basic(t *testing.T) {
 						cni     = "cilium"
 					  	tags    = [ "terraform-test", "data_scaleway_k8s_cluster", "basic" ]
 						delete_additional_resources = true
+						private_network_id = scaleway_vpc_private_network.pn.id
 					}
+					resource "scaleway_vpc_private_network" "pn" {}
 
 					resource "scaleway_k8s_pool" "default" {
 						cluster_id = "${scaleway_k8s_cluster.main.id}"
