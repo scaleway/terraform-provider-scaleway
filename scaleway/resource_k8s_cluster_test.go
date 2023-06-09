@@ -414,7 +414,7 @@ func TestAccScalewayK8SCluster_PrivateNetwork(t *testing.T) {
 	})
 }
 
-//func testAccCheckScalewayK8SClusterIDChange(n string) resource.TestCheckFunc {
+// func testAccCheckScalewayK8SClusterIDChange(n string) resource.TestCheckFunc {
 //	return func(s *terraform.State) error {
 //		rs, ok := s.RootModule().Resources[n]
 //		if !ok {
