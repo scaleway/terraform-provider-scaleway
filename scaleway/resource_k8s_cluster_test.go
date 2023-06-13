@@ -398,7 +398,14 @@ func TestAccScalewayK8SCluster_PrivateNetwork(t *testing.T) {
 		CheckDestroy:      testAccCheckScalewayK8SClusterDestroy(tt),
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckScalewayK8SClusterConfigPrivateNetwork(latestK8SVersion),
+				Config: testAccCheckScalewayK8SClusterConfigPrivateNetworkNotLinked(latestK8SVersion),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayK8SClusterExists(tt, "scaleway_k8s_cluster.private_network"),
+					testAccCheckScalewayVPCPrivateNetworkExists(tt, "scaleway_vpc_private_network.private_network"),
+				),
+			},
+			{
+				Config: testAccCheckScalewayK8SClusterConfigPrivateNetworkLinked(latestK8SVersion),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayK8SClusterExists(tt, "scaleway_k8s_cluster.private_network"),
 					testAccCheckScalewayVPCPrivateNetworkExists(tt, "scaleway_vpc_private_network.private_network"),
@@ -407,6 +414,11 @@ func TestAccScalewayK8SCluster_PrivateNetwork(t *testing.T) {
 			},
 			{
 				Config:             testAccCheckScalewayK8SClusterConfigPrivateNetworkChange(latestK8SVersion),
+				PlanOnly:           true,
+				ExpectNonEmptyPlan: true,
+			},
+			{
+				Config:             testAccCheckScalewayK8SClusterConfigPrivateNetworkNotLinked(latestK8SVersion),
 				PlanOnly:           true,
 				ExpectNonEmptyPlan: true,
 			},
@@ -697,7 +709,23 @@ resource "scaleway_k8s_cluster" "auto_upgrade" {
 }`, version, enable, hour, day)
 }
 
-func testAccCheckScalewayK8SClusterConfigPrivateNetwork(version string) string {
+func testAccCheckScalewayK8SClusterConfigPrivateNetworkNotLinked(version string) string {
+	return fmt.Sprintf(`
+resource "scaleway_vpc_private_network" "private_network" {
+  name       = "k8s-private-network"
+  is_regional = true
+}
+resource "scaleway_k8s_cluster" "private_network" {
+	cni = "calico"
+	version = "%s"
+	name = "k8s-private-network-cluster"
+	tags = [ "terraform-test", "scaleway_k8s_cluster", "private_network" ]
+	delete_additional_resources = true
+	depends_on = [scaleway_vpc_private_network.private_network]
+}`, version)
+}
+
+func testAccCheckScalewayK8SClusterConfigPrivateNetworkLinked(version string) string {
 	return fmt.Sprintf(`
 resource "scaleway_vpc_private_network" "private_network" {
   name      	= "k8s-private-network"
@@ -737,17 +765,12 @@ resource "scaleway_k8s_cluster" "private_network" {
 
 func testAccCheckScalewayK8SClusterMulticloud(version string) string {
 	return fmt.Sprintf(`
-resource "scaleway_vpc_private_network" "multicloud" {
-	is_regional = true
-}
-
 resource "scaleway_k8s_cluster" "multicloud" {
 	name = "test-multicloud"
 	version = "%s"
 	cni = "kilo"
 	type = "multicloud"
 	delete_additional_resources = true
-	private_network_id = scaleway_vpc_private_network.multicloud.id
 }
 
 resource "scaleway_k8s_pool" "multicloud" {

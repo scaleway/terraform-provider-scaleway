@@ -160,7 +160,7 @@ func resourceScalewayK8SCluster() *schema.Resource {
 			},
 			"private_network_id": {
 				Type:             schema.TypeString,
-				Required:         true,
+				Optional:         true,
 				Description:      "The ID of the cluster's private network",
 				ValidateFunc:     validationUUIDorUUIDWithLocality(),
 				DiffSuppressFunc: diffSuppressFuncLocality,
@@ -464,7 +464,11 @@ func resourceScalewayK8SClusterCreate(ctx context.Context, d *schema.ResourceDat
 
 	// Private network configuration
 
+	isKapsule := clusterType == "" || strings.HasPrefix(clusterType.(string), "kapsule")
 	if pnID, ok := d.GetOk("private_network_id"); ok {
+		if !isKapsule {
+			return diag.FromErr(fmt.Errorf("only Kapsule clusters support private networks"))
+		}
 		req.PrivateNetworkID = scw.StringPtr(expandRegionalID(pnID.(string)).ID)
 	}
 
