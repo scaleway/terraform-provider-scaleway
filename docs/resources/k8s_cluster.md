@@ -280,7 +280,7 @@ If you prefer keeping it, you should instead set it as `false`.
 
 - `private_network_id` - (Optional) The ID of the private network of the cluster.
 
-~> **Important:** This field can be set at cluster creation or later to migrate to a Private Network. 
+~> **Important:** This field can be set at cluster creation or later to migrate to a Private Network.
 Any subsequent change after this field got set will prompt for cluster recreation.
 
 - `default_pool` - (Deprecated) See below.
