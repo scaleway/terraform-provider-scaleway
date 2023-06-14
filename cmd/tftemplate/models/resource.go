@@ -6,7 +6,8 @@ import (
 )
 
 type ResourceTemplate struct {
-	LocalityAdjectiveUpper string // Regional
+	LocalityAdjectiveUpper string // Regional/Zoned
+	LocalityAdjective      string // regional/zoned
 	LocalityUpper          string // Region
 	Locality               string // region
 	Resource               string // FunctionNamespace
@@ -75,12 +76,24 @@ func resourceWordsLower(resource string) []string {
 	return words
 }
 
+func adjectiveLocality(locality string) string {
+	switch locality {
+	case "zone":
+		return "zoned"
+	case "region":
+		return "regional"
+	}
+
+	return locality
+}
+
 // api: function, container, instance
 // resource: FunctionNamespace, InstanceServer, ContainerDomain
 // locality: region, zone
 func NewResourceTemplate(api string, resource string, locality string) ResourceTemplate {
 	return ResourceTemplate{
-		LocalityAdjectiveUpper: strings.Title(locality) + "al",
+		LocalityAdjectiveUpper: strings.Title(adjectiveLocality(locality)),
+		LocalityAdjective:      adjectiveLocality(locality),
 		LocalityUpper:          strings.Title(locality),
 		Locality:               locality,
 		Resource:               resource,
