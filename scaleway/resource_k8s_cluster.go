@@ -245,6 +245,11 @@ func resourceScalewayK8SCluster() *schema.Resource {
 			},
 			func(ctx context.Context, diff *schema.ResourceDiff, i interface{}) error {
 				if diff.HasChange("private_network_id") {
+					clusterType := diff.Get("type")
+					isKapsule := clusterType == "" || strings.HasPrefix(clusterType.(string), "kapsule")
+					if !isKapsule {
+						return fmt.Errorf("only Kapsule clusters support private networks")
+					}
 					actual, planned := diff.GetChange("private_network_id")
 					if actual == "" {
 						// If no private network has been set yet, migrate the cluster in the Update function
@@ -437,7 +442,7 @@ func resourceScalewayK8SClusterCreate(ctx context.Context, d *schema.ResourceDat
 	// Private network configuration
 
 	if pnID, ok := d.GetOk("private_network_id"); ok {
-		req.PrivateNetworkID = scw.StringPtr(expandZonedID(pnID.(string)).ID)
+		req.PrivateNetworkID = scw.StringPtr(expandRegionalID(pnID.(string)).ID)
 	}
 
 	// Cluster creation
