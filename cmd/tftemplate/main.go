@@ -3,19 +3,23 @@ package main
 import (
 	_ "embed"
 	"fmt"
-	"html/template"
 	"log"
-	"os"
+	"text/template"
 	"tftemplate/models"
 
 	"github.com/AlecAivazis/survey/v2"
 )
 
-//go:embed resource.go.tmpl
-var resourceTemplateFile string
-
-//go:embed resource_test.go.tmpl
-var resourceTestTemplateFile string
+var (
+	//go:embed resource.go.tmpl
+	resourceTemplateFile string
+	//go:embed resource_test.go.tmpl
+	resourceTestTemplateFile string
+	//go:embed helpers.go.tmpl
+	resourceHelpersTemplateFile string
+	//go:embed waiters.go.tmpl
+	resourceWaitersTemplateFile string
+)
 
 var resourceQS = []*survey.Question{
 	{
@@ -35,6 +39,20 @@ var resourceQS = []*survey.Question{
 			Default: "zone",
 		},
 	},
+	{
+		Name: "helpers",
+		Prompt: &survey.Confirm{
+			Message: "Generate helpers ? Will override scaleway/helpers_{api}.go",
+			Default: false,
+		},
+	},
+	{
+		Name: "waiters",
+		Prompt: &survey.Confirm{
+			Message: "Generate helpers ? Will be added to scaleway/helpers_{api}.go",
+			Default: true,
+		},
+	},
 }
 
 func main() {
@@ -42,6 +60,8 @@ func main() {
 		API      string
 		Resource string
 		Locality string
+		Helpers  bool
+		Waiters  bool
 	}{}
 	err := survey.Ask(resourceQS, &resourceInput)
 	if err != nil {
@@ -49,34 +69,44 @@ func main() {
 	}
 	resourceData := models.NewResourceTemplate(resourceInput.API, resourceInput.Resource, resourceInput.Locality)
 
-	resourceTemplate, err := template.New("resource").Parse(resourceTemplateFile)
-	if err != nil {
-		log.Fatalln(err)
-	}
-	resourceTestTemplate, err := template.New("resource").Parse(resourceTestTemplateFile)
-	if err != nil {
-		log.Fatalln(err)
-	}
-	resourceFile, err := os.Create(fmt.Sprintf("../../scaleway/resource_%s.go", resourceData.ResourceHCL))
-	if err != nil {
-		log.Fatalln(err)
-	}
-	defer resourceFile.Close()
-	err = resourceTemplate.Execute(resourceFile, resourceData)
-	if err != nil {
-		log.Println(err)
-		return
+	templates := []*TerraformTemplate{
+		{
+			FileName:     fmt.Sprintf("../../scaleway/resource_%s.go", resourceData.ResourceHCL),
+			TemplateFile: resourceTemplateFile,
+		},
+		{
+			FileName:     fmt.Sprintf("../../scaleway/resource_%s_test.go", resourceData.ResourceHCL),
+			TemplateFile: resourceTestTemplateFile,
+		},
+		{
+			FileName:     fmt.Sprintf("../../scaleway/helpers_%s.go", resourceData.API),
+			TemplateFile: resourceHelpersTemplateFile,
+			Skip:         !resourceInput.Helpers,
+		},
+		{
+			FileName:     fmt.Sprintf("../../scaleway/helpers_%s.go", resourceData.API),
+			TemplateFile: resourceWaitersTemplateFile,
+			Skip:         !resourceInput.Waiters,
+			Append:       true,
+		},
 	}
 
-	resourceTestFile, err := os.Create(fmt.Sprintf("../../scaleway/resource_%s_test.go", resourceData.ResourceHCL))
-	if err != nil {
-		log.Println(err)
-		return
+	for _, tmpl := range templates {
+		if tmpl.Template == nil {
+			tmpl.Template, err = template.New(tmpl.FileName).Parse(tmpl.TemplateFile)
+			if err != nil {
+				log.Fatalln("failed to template " + tmpl.FileName + ":" + err.Error())
+			}
+		}
 	}
-	defer resourceTestFile.Close()
-	err = resourceTestTemplate.Execute(resourceTestFile, resourceData)
-	if err != nil {
-		log.Println(err)
-		return
+
+	for _, tmpl := range templates {
+		if tmpl.Skip {
+			continue
+		}
+		err := executeTemplate(tmpl, resourceData)
+		if err != nil {
+			log.Println(err)
+		}
 	}
 }
