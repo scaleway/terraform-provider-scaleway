@@ -73,6 +73,45 @@ func TestAccScalewayBlockVolume_Basic(t *testing.T) {
 	})
 }
 
+func TestAccScalewayBlockVolume_FromSnapshot(t *testing.T) {
+	tt := NewTestTools(t)
+	defer tt.Cleanup()
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      testAccCheckScalewayBlockVolumeDestroy(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource scaleway_block_volume base {
+						name = "test-block-volume-from-snapshot-base"
+						type = "b_ssd"
+						size_in_gb = 20
+					}
+
+					resource scaleway_block_snapshot main {
+						name = "test-block-volume-from-snapshot"
+						volume_id = scaleway_block_volume.base.id
+					}
+
+					resource scaleway_block_volume main {
+						name = "test-block-volume-from-snapshot"
+						type = "b_ssd"
+						snapshot_id = scaleway_block_snapshot.main.id
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayBlockVolumeExists(tt, "scaleway_block_volume.main"),
+					testCheckResourceAttrUUID("scaleway_block_volume.main", "id"),
+					resource.TestCheckResourceAttrPair("scaleway_block_volume.main", "snapshot_id", "scaleway_block_snapshot.main", "id"),
+					resource.TestCheckResourceAttrPair("scaleway_block_volume.main", "size_in_gb", "scaleway_block_volume.base", "size_in_gb"),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckScalewayBlockVolumeExists(tt *TestTools, n string) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		rs, ok := state.RootModule().Resources[n]

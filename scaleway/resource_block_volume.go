@@ -41,15 +41,17 @@ func resourceScalewayBlockVolume() *schema.Resource {
 			"size_in_gb": {
 				Type:         schema.TypeInt,
 				Optional:     true,
+				Computed:     true,
 				Description:  "The volume size in GB",
 				ExactlyOneOf: []string{"snapshot_id"},
 			},
 			"snapshot_id": {
-				Type:         schema.TypeString,
-				Optional:     true,
-				ForceNew:     true,
-				Description:  "The snapshot to create the volume from",
-				ExactlyOneOf: []string{"size_in_gb"},
+				Type:             schema.TypeString,
+				Optional:         true,
+				ForceNew:         true,
+				Description:      "The snapshot to create the volume from",
+				ExactlyOneOf:     []string{"size_in_gb"},
+				DiffSuppressFunc: diffSuppressFuncLocality,
 			},
 			"snapshot_project_id": {
 				Type:         schema.TypeString,
@@ -57,6 +59,14 @@ func resourceScalewayBlockVolume() *schema.Resource {
 				ForceNew:     true,
 				Description:  "ID of the project where the snapshot is",
 				RequiredWith: []string{"snapshot_id"},
+			},
+			"tags": {
+				Type: schema.TypeList,
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
+				Optional:    true,
+				Description: "The tags associated with the volume",
 			},
 			"zone":       zoneSchema(),
 			"project_id": projectIDSchema(),
@@ -78,6 +88,7 @@ func resourceScalewayBlockVolumeCreate(ctx context.Context, d *schema.ResourceDa
 		Name:      expandOrGenerateString(d.Get("name").(string), "volume"),
 		ProjectID: d.Get("project_id").(string),
 		Type:      d.Get("type").(string),
+		Tags:      expandStrings(d.Get("tags")),
 	}
 
 	if size, ok := d.GetOk("size_in_gb"); ok {
@@ -87,7 +98,7 @@ func resourceScalewayBlockVolumeCreate(ctx context.Context, d *schema.ResourceDa
 
 	if snapshotID, ok := d.GetOk("snapshot_id"); ok {
 		req.Snapshot = &block.SnapshotSpec{
-			SnapshotID: snapshotID.(string),
+			SnapshotID: expandID(snapshotID.(string)),
 			ProjectID:  expandStringPtr(d.Get("snapshot_project_id")),
 		}
 	}
@@ -125,9 +136,15 @@ func resourceScalewayBlockVolumeRead(ctx context.Context, d *schema.ResourceData
 	_ = d.Set("name", volume.Name)
 	_ = d.Set("type", volume.Type)
 	_ = d.Set("size_in_gb", volume.Size/scw.GB)
-	_ = d.Set("snapshot_id", flattenStringPtr(volume.ParentSnapshotID))
 	_ = d.Set("zone", volume.Zone)
 	_ = d.Set("project_id", volume.ProjectID)
+	_ = d.Set("tags", volume.Tags)
+
+	if volume.ParentSnapshotID != nil {
+		_ = d.Set("snapshot_id", newZonedIDString(zone, *volume.ParentSnapshotID))
+	} else {
+		_ = d.Set("snapshot_id", "")
+	}
 
 	return nil
 }
@@ -159,6 +176,10 @@ func resourceScalewayBlockVolumeUpdate(ctx context.Context, d *schema.ResourceDa
 	if d.HasChange("size") {
 		volumeSizeInBytes := scw.Size(uint64(d.Get("size").(int)) * gb)
 		req.Size = &volumeSizeInBytes
+	}
+
+	if d.HasChange("tags") {
+		req.Tags = expandUpdatedStringsPtr(d.Get("tags"))
 	}
 
 	if _, err := api.UpdateVolume(req, scw.WithContext(ctx)); err != nil {
