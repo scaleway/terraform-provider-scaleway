@@ -193,6 +193,7 @@ func Provider(config *ProviderConfig) plugin.ProviderFunc {
 				"scaleway_billing_invoices":                    dataSourceScalewayBillingInvoices(),
 				"scaleway_billing_consumptions":                dataSourceScalewayBillingConsumptions(),
 				"scaleway_block_volume":                        dataSourceScalewayBlockVolume(),
+				"scaleway_block_snapshot":                      dataSourceScalewayBlockSnapshot(),
 				"scaleway_cockpit":                             dataSourceScalewayCockpit(),
 				"scaleway_cockpit_plan":                        dataSourceScalewayCockpitPlan(),
 				"scaleway_domain_record":                       dataSourceScalewayDomainRecord(),
