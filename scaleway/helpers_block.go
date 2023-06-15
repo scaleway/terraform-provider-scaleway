@@ -66,3 +66,18 @@ func customDiffCannotShrink(key string) schema.CustomizeDiffFunc {
 		return oldValue < newValue
 	})
 }
+func waitForBlockSnapshot(ctx context.Context, blockAPI *block.API, zone scw.Zone, id string, timeout time.Duration) (*block.Snapshot, error) {
+	retryInterval := defaultFunctionRetryInterval
+	if DefaultWaitRetryInterval != nil {
+		retryInterval = *DefaultWaitRetryInterval
+	}
+
+	snapshot, err := blockAPI.WaitForSnapshot(&block.WaitForSnapshotRequest{
+		Zone:          zone,
+		SnapshotID:    id,
+		RetryInterval: &retryInterval,
+		Timeout:       scw.TimeDurationPtr(timeout),
+	}, scw.WithContext(ctx))
+
+	return snapshot, err
+}
