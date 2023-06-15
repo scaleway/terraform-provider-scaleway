@@ -2,6 +2,7 @@ package scaleway
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -10,6 +11,7 @@ import (
 	v1 "github.com/scaleway/scaleway-sdk-go/api/vpc/v1"
 	v2 "github.com/scaleway/scaleway-sdk-go/api/vpc/v2"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	validator "github.com/scaleway/scaleway-sdk-go/validation"
 )
 
 func resourceScalewayVPCPrivateNetwork() *schema.Resource {
@@ -19,7 +21,44 @@ func resourceScalewayVPCPrivateNetwork() *schema.Resource {
 		UpdateContext: resourceScalewayVPCPrivateNetworkUpdate,
 		DeleteContext: resourceScalewayVPCPrivateNetworkDelete,
 		Importer: &schema.ResourceImporter{
-			StateContext: schema.ImportStatePassthroughContext,
+			StateContext: func(ctx context.Context, d *schema.ResourceData, m interface{}) ([]*schema.ResourceData, error) {
+				id := d.Id()
+
+				location, _, err := parseLocalizedID(id)
+				if err != nil {
+					return nil, err
+				}
+
+				switch {
+				case validator.IsZone(location):
+					err := d.Set("zone", location)
+					if err != nil {
+						return nil, err
+					}
+					err = d.Set("is_regional", false)
+					if err != nil {
+						return nil, err
+					}
+				case validator.IsRegion(location):
+					err := d.Set("region", location)
+					if err != nil {
+						return nil, err
+					}
+					err = d.Set("is_regional", true)
+					if err != nil {
+						return nil, err
+					}
+				default:
+					return nil, fmt.Errorf("invalid location. Expected either a 'region' or 'zone'")
+				}
+
+				diags := resourceScalewayVPCPrivateNetworkRead(ctx, d, m)
+				if diags.HasError() {
+					return nil, fmt.Errorf("failed to read resource: %v", diags)
+				}
+
+				return []*schema.ResourceData{d}, nil
+			},
 		},
 		SchemaVersion: 0,
 		Schema: map[string]*schema.Schema{
