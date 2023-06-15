@@ -9,6 +9,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/aws/aws-sdk-go/service/sqs"
 	"github.com/dnaeon/go-vcr/cassette"
 	"github.com/stretchr/testify/assert"
 )
@@ -43,8 +44,9 @@ func TestAccScalewayCassettes_Validator(t *testing.T) {
 
 func checkErrorCode(c *cassette.Cassette) error {
 	for _, i := range c.Interactions {
-		if !checkErrCodeExcept(i, c, http.StatusNotFound, http.StatusTooManyRequests, http.StatusForbidden) &&
-			!isTransientStateError(i) {
+		isGoodErrorCode := checkErrCodeExcept(i, c, http.StatusNotFound, http.StatusTooManyRequests, http.StatusForbidden)
+
+		if !isGoodErrorCode && !isTransientStateError(i) {
 			return fmt.Errorf("status: %v found on %s. method: %s, url %s\nrequest body = %v\nresponse body = %v", i.Code, c.Name, i.Request.Method, i.Request.URL, i.Request.Body, i.Response.Body)
 		}
 	}
@@ -66,6 +68,11 @@ func checkErrCodeExcept(i *cassette.Interaction, c *cassette.Cassette, codes ...
 	_, isException := exceptions[c.File]
 	if isException {
 		return isException
+	}
+
+	// SQS returns 400 when the queue does not exist
+	if strings.Contains(i.Response.Body, sqs.ErrCodeQueueDoesNotExist) && i.Code == 400 {
+		return true
 	}
 
 	if i.Code >= 400 {
