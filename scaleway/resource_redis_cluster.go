@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"io/ioutil"
+	"strings"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -118,13 +119,21 @@ func resourceScalewayRedisCluster() *schema.Resource {
 				Optional:      true,
 				Description:   "Private network specs details",
 				ConflictsWith: []string{"acl"},
+				Set:           redisPrivateNetworkSetHash,
+				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
+					// Check if the key is for the 'id' attribute
+					if strings.HasSuffix(k, "id") {
+						return expandID(old) == expandID(new)
+					}
+					// Check if the key is for the 'service_ips' attribute
+					if strings.HasSuffix(k, "service_ips") {
+						return false // Do not suppress changes to service_ips
+					}
+					// For all other attributes, don't suppress the diff
+					return false
+				},
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"endpoint_id": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "UUID of the endpoint to be connected to the cluster",
-						},
 						"id": {
 							Type:         schema.TypeString,
 							Required:     true,
@@ -140,7 +149,16 @@ func resourceScalewayRedisCluster() *schema.Resource {
 							},
 							Description: "List of IPv4 addresses of the private network with a CIDR notation",
 						},
-						"zone": zoneSchema(),
+						// computed
+						"endpoint_id": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "UUID of the endpoint to be connected to the cluster",
+						},
+						"zone": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
 					},
 				},
 			},

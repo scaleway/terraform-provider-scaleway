@@ -140,10 +140,11 @@ func resourceScalewayRdbInstance() *schema.Resource {
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"pn_id": {
-							Type:         schema.TypeString,
-							Required:     true,
-							ValidateFunc: validationUUIDorUUIDWithLocality(),
-							Description:  "The private network ID",
+							Type:             schema.TypeString,
+							Required:         true,
+							ValidateFunc:     validationUUIDorUUIDWithLocality(),
+							DiffSuppressFunc: diffSuppressFuncLocality,
+							Description:      "The private network ID",
 						},
 						// Computed
 						"endpoint_id": {
