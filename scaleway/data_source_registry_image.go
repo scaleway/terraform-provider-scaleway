@@ -97,7 +97,7 @@ func dataSourceScalewayRegistryImageRead(d *schema.ResourceData, meta interface{
 		image = res
 	}
 
-	d.SetId(datasourceNewRegionalizedID(image.ID, region))
+	d.SetId(datasourceNewRegionalID(image.ID, region))
 	_ = d.Set("image_id", image.ID)
 	_ = d.Set("name", image.Name)
 	_ = d.Set("namespace_id", image.NamespaceID)

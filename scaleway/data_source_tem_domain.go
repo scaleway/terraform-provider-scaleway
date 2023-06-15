@@ -69,7 +69,7 @@ func dataSourceScalewayTemDomainRead(ctx context.Context, d *schema.ResourceData
 		}
 	}
 
-	regionalID := datasourceNewRegionalizedID(domainID, region)
+	regionalID := datasourceNewRegionalID(domainID, region)
 	d.SetId(regionalID)
 	err = d.Set("domain_id", regionalID)
 	if err != nil {

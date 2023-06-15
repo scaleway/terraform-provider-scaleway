@@ -55,7 +55,7 @@ func dataSourceScalewayFunctionNamespaceRead(ctx context.Context, d *schema.Reso
 		namespaceID = res.Namespaces[0].ID
 	}
 
-	regionalID := datasourceNewRegionalizedID(namespaceID, region)
+	regionalID := datasourceNewRegionalID(namespaceID, region)
 	d.SetId(regionalID)
 	_ = d.Set("namespace_id", regionalID)
 

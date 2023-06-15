@@ -65,7 +65,7 @@ func dataSourceScalewayK8SPoolRead(ctx context.Context, d *schema.ResourceData, 
 		}
 	}
 
-	regionalizedID := datasourceNewRegionalizedID(poolID, region)
+	regionalizedID := datasourceNewRegionalID(poolID, region)
 	d.SetId(regionalizedID)
 	_ = d.Set("pool_id", regionalizedID)
 	return resourceScalewayK8SPoolRead(ctx, d, meta)
