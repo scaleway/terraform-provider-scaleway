@@ -1,5 +1,7 @@
 module github.com/scaleway/terraform-provider-scaleway/v2
 
+replace github.com/scaleway/scaleway-sdk-go => ../scaleway-sdk-go
+
 require (
 	github.com/aws/aws-sdk-go v1.47.1
 	github.com/dnaeon/go-vcr v1.2.0
