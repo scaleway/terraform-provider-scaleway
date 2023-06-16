@@ -97,7 +97,7 @@ func resourceScalewayLbBackend() *schema.Resource {
 				Type:        schema.TypeBool,
 				Description: "Enables PROXY protocol version 2",
 				Optional:    true,
-				Default:     false,
+				Computed:    true,
 				Deprecated:  "Please use proxy_protocol instead",
 			},
 			"proxy_protocol": {
