@@ -126,5 +126,14 @@ func dataSourceScalewayVPCPrivateNetworkRegionalRead(ctx context.Context, d *sch
 	regionalID := datasourceNewRegionalizedID(privateNetworkID, region)
 	d.SetId(regionalID)
 	_ = d.Set("private_network_id", regionalID)
-	return resourceScalewayVPCPrivateNetworkRegionalRead(ctx, d, meta)
+	diags := resourceScalewayVPCPrivateNetworkRegionalRead(ctx, d, meta)
+	if diags != nil {
+		        return append(diags, diag.Errorf("failed to read private network state")...)
+	}
+	
+	if d.Id() == nil {
+		return diag.Errorf("private network (%s) not found", regionalID)
+	}
+	
+	return nil
 }
