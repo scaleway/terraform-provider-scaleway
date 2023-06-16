@@ -16,7 +16,7 @@ func dataSourceScalewayVPCPrivateNetwork() *schema.Resource {
 	dsSchema := datasourceSchemaFromResourceSchema(resourceScalewayVPCPrivateNetwork().Schema)
 
 	// Set 'Optional' schema elements
-	addOptionalFieldsToSchema(dsSchema, "name")
+	addOptionalFieldsToSchema(dsSchema, "name", "zone", "region")
 
 	dsSchema["name"].ConflictsWith = []string{"private_network_id"}
 	dsSchema["private_network_id"] = &schema.Schema{
@@ -128,12 +128,12 @@ func dataSourceScalewayVPCPrivateNetworkRegionalRead(ctx context.Context, d *sch
 	_ = d.Set("private_network_id", regionalID)
 	diags := resourceScalewayVPCPrivateNetworkRegionalRead(ctx, d, meta)
 	if diags != nil {
-		        return append(diags, diag.Errorf("failed to read private network state")...)
+		return append(diags, diag.Errorf("failed to read private network state")...)
 	}
-	
-	if d.Id() == nil {
+
+	if d.Id() == "" {
 		return diag.Errorf("private network (%s) not found", regionalID)
 	}
-	
+
 	return nil
 }
