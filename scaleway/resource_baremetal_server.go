@@ -159,6 +159,62 @@ If this behaviour is wanted, please set 'reinstall_on_ssh_key_changes' argument 
 					},
 				},
 			},
+			"ipv4": {
+				Type:     schema.TypeList,
+				Computed: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"id": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The ID of the IPv4",
+						},
+						"version": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The version of the IPv4",
+						},
+						"address": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The IPv4 address",
+						},
+						"reverse": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The Reverse of the IPv4",
+						},
+					},
+				},
+			},
+			"ipv6": {
+				Type:     schema.TypeList,
+				Computed: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"id": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The ID of the IPv6",
+						},
+						"version": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The version of the IPv6",
+						},
+						"address": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The IPv6 address",
+						},
+						"reverse": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The Reverse of the IPv6",
+						},
+					},
+				},
+			},
 			"domain": {
 				Type:     schema.TypeString,
 				Computed: true,
@@ -396,6 +452,8 @@ func resourceScalewayBaremetalServerRead(ctx context.Context, d *schema.Resource
 	_ = d.Set("tags", server.Tags)
 	_ = d.Set("domain", server.Domain)
 	_ = d.Set("ips", flattenBaremetalIPs(server.IPs))
+	_ = d.Set("ipv4", flattenBaremetalIPv4s(server.IPs))
+	_ = d.Set("ipv6", flattenBaremetalIPv6s(server.IPs))
 	if server.Install != nil {
 		_ = d.Set("os", newZonedIDString(server.Zone, os.ID))
 		_ = d.Set("os_name", os.Name)
