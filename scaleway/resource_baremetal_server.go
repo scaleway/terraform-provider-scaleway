@@ -160,8 +160,9 @@ If this behaviour is wanted, please set 'reinstall_on_ssh_key_changes' argument 
 				},
 			},
 			"ipv4": {
-				Type:     schema.TypeList,
-				Computed: true,
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "IPv4 addresses attached to the server",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"id": {
@@ -188,8 +189,9 @@ If this behaviour is wanted, please set 'reinstall_on_ssh_key_changes' argument 
 				},
 			},
 			"ipv6": {
-				Type:     schema.TypeList,
-				Computed: true,
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "IPv6 addresses attached to the server",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"id": {
