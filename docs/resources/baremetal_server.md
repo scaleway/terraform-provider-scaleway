@@ -171,7 +171,7 @@ In addition to all above arguments, the following attributes are exported:
     - `address` - The address of the IPv4.
     - `reverse` - The reverse of the IPv4.
     - `version` - The type of the IPv4.
-- `ipv6` - (List of) The IPv6 of the server.
+- `ipv6` - (List of) The IPv6 addresses of the server.
     - `id` - The ID of the IPv6.
     - `address` - The address of the IPv6.
     - `reverse` - The reverse of the IPv6.
