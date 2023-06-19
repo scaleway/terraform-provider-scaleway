@@ -132,32 +132,22 @@ If this behaviour is wanted, please set 'reinstall_on_ssh_key_changes' argument 
 			"organization_id": organizationIDSchema(),
 			"project_id":      projectIDSchema(),
 			"ips": {
-				Type:     schema.TypeList,
-				Computed: true,
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"id": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The ID of the IP",
-						},
-						"version": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The version of the IP",
-						},
-						"address": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The IP address of the IP",
-						},
-						"reverse": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The Reverse of the IP",
-						},
-					},
-				},
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "IP addresses attached to the server.",
+				Elem:        resourceScalewayBaremetalServerIP(),
+			},
+			"ipv4": {
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "IPv4 addresses attached to the server",
+				Elem:        resourceScalewayBaremetalServerIP(),
+			},
+			"ipv6": {
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "IPv6 addresses attached to the server",
+				Elem:        resourceScalewayBaremetalServerIP(),
 			},
 			"domain": {
 				Type:     schema.TypeString,
@@ -232,6 +222,33 @@ If this behaviour is wanted, please set 'reinstall_on_ssh_key_changes' argument 
 			customizeDiffLocalityCheck("private_network.#.id"),
 			customDiffBaremetalPrivateNetworkOption(),
 		),
+	}
+}
+
+func resourceScalewayBaremetalServerIP() *schema.Resource {
+	return &schema.Resource{
+		Schema: map[string]*schema.Schema{
+			"id": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The ID of the IPv6",
+			},
+			"version": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The version of the IPv6",
+			},
+			"address": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The IPv6 address",
+			},
+			"reverse": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The Reverse of the IPv6",
+			},
+		},
 	}
 }
 
@@ -396,6 +413,8 @@ func resourceScalewayBaremetalServerRead(ctx context.Context, d *schema.Resource
 	_ = d.Set("tags", server.Tags)
 	_ = d.Set("domain", server.Domain)
 	_ = d.Set("ips", flattenBaremetalIPs(server.IPs))
+	_ = d.Set("ipv4", flattenBaremetalIPv4s(server.IPs))
+	_ = d.Set("ipv6", flattenBaremetalIPv6s(server.IPs))
 	if server.Install != nil {
 		_ = d.Set("os", newZonedIDString(server.Zone, os.ID))
 		_ = d.Set("os_name", os.Name)
