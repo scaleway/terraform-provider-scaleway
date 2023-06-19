@@ -67,7 +67,7 @@ func TestAccScalewayDataSourceLbRoutes_Basic(t *testing.T) {
 					resource scaleway_lb_route rt02 {
 						frontend_id = scaleway_lb_frontend.frt01.id
 						backend_id = scaleway_lb_backend.bkd01.id
-						match_host_header = "host.scaleway.com"
+						match_sni = "sni2.scaleway.com"
 					}
 					data "scaleway_lb_routes" "by_frontendID" {
 						frontend_id = "${scaleway_lb_frontend.frt01.id}"
