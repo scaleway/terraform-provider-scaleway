@@ -214,8 +214,8 @@ func validateLocalVolumeSizes(volumes map[string]*instance.VolumeServerTemplate,
 	// Calculate local volume total size.
 	var localVolumeTotalSize scw.Size
 	for _, volume := range volumes {
-		if volume.VolumeType == instance.VolumeVolumeTypeLSSD {
-			localVolumeTotalSize += volume.Size
+		if volume.VolumeType == instance.VolumeVolumeTypeLSSD && volume.Size != nil {
+			localVolumeTotalSize += *volume.Size
 		}
 	}
 
@@ -252,7 +252,7 @@ func sanitizeVolumeMap(volumes map[string]*instance.VolumeServerTemplate) map[st
 		switch {
 		// If a volume already got an ID it is passed as it to the API without specifying the volume type.
 		// TODO: Fix once instance accept volume type in the schema validation
-		case v.ID != "":
+		case v.ID != nil:
 			v = &instance.VolumeServerTemplate{
 				ID:   v.ID,
 				Name: v.Name,
@@ -260,7 +260,7 @@ func sanitizeVolumeMap(volumes map[string]*instance.VolumeServerTemplate) map[st
 			}
 		// For the root volume (index 0) if the size is 0, it is considered as a volume created from an image.
 		// The size is not passed to the API, so it's computed by the API
-		case index == "0" && v.Size == 0:
+		case index == "0" && v.Size == nil:
 			v = &instance.VolumeServerTemplate{
 				VolumeType: v.VolumeType,
 				Boot:       v.Boot,
