@@ -15,6 +15,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/id"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/logging"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	natsjwt "github.com/nats-io/jwt/v2"
 	"github.com/nats-io/nats.go"
 	mnq "github.com/scaleway/scaleway-sdk-go/api/mnq/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
@@ -101,14 +102,22 @@ func newNATSJetStreamClient(region string, endpoint string, credentials string) 
 }
 
 func splitNATSJWTAndSeed(credentials string) (string, string, error) {
-	lines := strings.Split(credentials, "\n")
-	if len(lines) < 6 {
-		return "", "", fmt.Errorf("invalid credentials format")
+	jwt, err := natsjwt.ParseDecoratedJWT([]byte(credentials))
+	if err != nil {
+		return "", "", err
 	}
 
-	jwt := lines[1]
-	seed := lines[4]
-	return jwt, seed, nil
+	nkey, err := natsjwt.ParseDecoratedUserNKey([]byte(credentials))
+	if err != nil {
+		return "", "", err
+	}
+
+	seed, err := nkey.Seed()
+	if err != nil {
+		return "", "", err
+	}
+
+	return jwt, string(seed), nil
 }
 
 const SQSFIFOQueueNameSuffix = ".fifo"
