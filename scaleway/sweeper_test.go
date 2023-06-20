@@ -28,13 +28,15 @@ func sweepZones(zones []scw.Zone, f func(scwClient *scw.Client, zone scw.Zone) e
 }
 
 func sweepRegions(regions []scw.Region, f func(scwClient *scw.Client, region scw.Region) error) error {
-	for _, region := range regions {
-		return sweepZones(region.GetZones(), func(scwClient *scw.Client, zone scw.Zone) error {
-			r, _ := zone.Region()
-			return f(scwClient, r)
-		})
+	zones := make([]scw.Zone, len(regions))
+	for i, region := range regions {
+		zones[i] = region.GetZones()[0]
 	}
-	return nil
+
+	return sweepZones(zones, func(scwClient *scw.Client, zone scw.Zone) error {
+		r, _ := zone.Region()
+		return f(scwClient, r)
+	})
 }
 
 func sweep(f func(scwClient *scw.Client) error) error {

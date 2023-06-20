@@ -30,6 +30,9 @@ func testSweepVPC(_ string) error {
 		}
 
 		for _, v := range listVPCs.Vpcs {
+			if v.IsDefault {
+				continue
+			}
 			err := vpcAPI.DeleteVPC(&vpc.DeleteVPCRequest{
 				VpcID:  v.ID,
 				Region: region,
