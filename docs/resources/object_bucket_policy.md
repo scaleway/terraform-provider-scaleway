@@ -19,25 +19,22 @@ resource "scaleway_object_bucket_policy" "policy" {
   bucket = scaleway_object_bucket.bucket.name
   policy = jsonencode(
     {
-      Id = "MyPolicy"
+      Version = "2023-04-17",
+      Id      = "MyBucketPolicy",
       Statement = [
         {
-          Action = [
-            "s3:ListBucket",
-            "s3:GetObject",
-          ]
-          Effect = "Allow"
+          Sid    = "Delegate access",
+          Effect = "Allow",
           Principal = {
-            SCW = "*"
-          }
-          Resource = [
-            "some-unique-name",
-            "some-unique-name/*",
+            SCW = "application_id:<APPLICATION_ID>"
+          },
+          Action = "s3:ListBucket",
+          Resources = [
+            "${scaleway_object_bucket.bucket.name}",
+            "${scaleway_object_bucket.bucket.name}/*"
           ]
-          Sid = "GrantToEveryone"
-        },
+        }
       ]
-      Version = "2012-10-17"
     }
   )
 }
@@ -56,22 +53,23 @@ resource "scaleway_object_bucket_policy" "main" {
 }
 
 data "aws_iam_policy_document" "policy" {
-  version = "2012-10-17"
+  version = "2023-04-17"
+  id      = "MyBucketPolicy"
+
   statement {
-    sid = "MyPolicy"
+    sid    = "Delegate access"
+    effect = "Allow"
+
     principals {
       type        = "SCW"
-      identifiers = ["project_id:<project_id>"]
+      identifiers = ["application_id:<APPLICATION_ID>"]
     }
 
-    actions = [
-      "s3:GetObject",
-      "s3:ListBucket",
-    ]
+    actions = ["s3:ListBucket"]
 
     resources = [
-      "some-unique-name",
-      "some-unique-name/*",
+      "${scaleway_object_bucket.bucket.name}",
+      "${scaleway_object_bucket.bucket.name}/*"
     ]
   }
 }
