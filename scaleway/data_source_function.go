@@ -54,7 +54,7 @@ func dataSourceScalewayFunctionRead(ctx context.Context, d *schema.ResourceData,
 		functionID = res.Functions[0].ID
 	}
 
-	regionalID := datasourceNewRegionalizedID(functionID, region)
+	regionalID := datasourceNewRegionalID(functionID, region)
 	d.SetId(regionalID)
 	_ = d.Set("function_id", regionalID)
 

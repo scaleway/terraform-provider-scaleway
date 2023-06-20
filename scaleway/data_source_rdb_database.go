@@ -32,7 +32,7 @@ func dataSourceScalewayRDBDatabaseRead(ctx context.Context, d *schema.ResourceDa
 
 	_, _, err = parseLocalizedID(instanceID.(string))
 	if err != nil {
-		instanceID = datasourceNewRegionalizedID(instanceID, region)
+		instanceID = datasourceNewRegionalID(instanceID, region)
 	}
 
 	d.SetId(fmt.Sprintf("%s/%s", instanceID, dbName.(string)))

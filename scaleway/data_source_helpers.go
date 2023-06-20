@@ -15,7 +15,7 @@ func datasourceNewZonedID(idI interface{}, fallBackZone scw.Zone) string {
 	return newZonedIDString(zone, id)
 }
 
-func datasourceNewRegionalizedID(idI interface{}, fallBackRegion scw.Region) string {
+func datasourceNewRegionalID(idI interface{}, fallBackRegion scw.Region) string {
 	region, id, err := parseRegionalID(idI.(string))
 	if err != nil {
 		id = idI.(string)
