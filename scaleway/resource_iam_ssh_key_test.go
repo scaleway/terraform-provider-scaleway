@@ -13,9 +13,6 @@ import (
 const SSHKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAICJEoOOgQBLJPs4g/XcPTKT82NywNPpxeuA20FlOPlpO opensource@scaleway.com"
 
 func init() {
-	if !terraformBetaEnabled {
-		return
-	}
 	resource.AddTestSweepers("scaleway_iam_ssh_key", &resource.Sweeper{
 		Name: "scaleway_iam_ssh_key",
 		F:    testSweepIamSSHKey,
@@ -34,6 +31,9 @@ func testSweepIamSSHKey(_ string) error {
 		}
 
 		for _, sshKey := range listSSHKeys.SSHKeys {
+			if !isTestResource(sshKey.Name) {
+				continue
+			}
 			err := iamAPI.DeleteSSHKey(&iam.DeleteSSHKeyRequest{
 				SSHKeyID: sshKey.ID,
 			})
@@ -114,7 +114,7 @@ func TestAccScalewayIamSSHKey_WithNewLine(t *testing.T) {
 }
 
 func TestAccScalewayIamSSHKey_ChangeResourceName(t *testing.T) {
-	name := "TestAccScalewayIamSSHKey_ChangeResourceName"
+	name := "tf-test-iam-ssh-key-change-resource-name"
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
 
