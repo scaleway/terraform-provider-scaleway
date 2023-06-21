@@ -196,7 +196,6 @@ If this behaviour is wanted, please set 'reinstall_on_ssh_key_changes' argument 
 				Type:        schema.TypeSet,
 				Optional:    true,
 				Description: "The private networks to attach to the server",
-				Set:         baremetalPrivateNetworkSetHash,
 				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
 					// Check if the key is for the 'id' attribute
 					if strings.HasSuffix(k, "id") {
