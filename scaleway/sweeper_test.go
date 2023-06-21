@@ -2,6 +2,7 @@ package scaleway
 
 import (
 	"context"
+	"strings"
 	"testing"
 
 	"github.com/aws/aws-sdk-go/service/s3"
@@ -9,7 +10,16 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 )
 
-const testResourcePrefix = "tf_tests"
+// isTestResource returns true if given resource identifier is from terraform test
+// identifier should be resource name but some resource don't have names
+// return true if identifier match regex "tf[-_]test"
+// common used prefixes are "tf_tests", "tf_test", "tf-tests", "tf-test"
+func isTestResource(identifier string) bool {
+	return len(identifier) >= len("tf_test") &&
+		strings.HasPrefix(identifier, "tf") &&
+		(identifier[2] == '_' || identifier[2] == '-') &&
+		identifier[3:6] == "test"
+}
 
 func TestMain(m *testing.M) {
 	resource.TestMain(m)

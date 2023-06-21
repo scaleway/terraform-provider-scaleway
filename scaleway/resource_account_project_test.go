@@ -2,7 +2,6 @@ package scaleway
 
 import (
 	"fmt"
-	"strings"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -29,7 +28,7 @@ func testSweepAccountProject(_ string) error {
 			return fmt.Errorf("failed to list projects: %w", err)
 		}
 		for _, project := range listProjects.Projects {
-			if project.Name == "default" || !strings.HasPrefix(project.Name, testResourcePrefix) {
+			if project.Name == "default" || !isTestResource(project.Name) {
 				continue
 			}
 			err = accountAPI.DeleteProject(&accountV2.DeleteProjectRequest{
