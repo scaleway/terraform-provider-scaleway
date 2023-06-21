@@ -179,7 +179,7 @@ func TestAccScalewayIamPolicy_ChangeLinkedEntity(t *testing.T) {
 	ctx := context.Background()
 	project, iamAPIKey, terminateFakeSideProject, err := createFakeIAMManager(tt)
 	require.NoError(t, err)
-	randAppName := "test-acc-scaleway-iam-app-policy-permissions"
+	randAppName := "tf-tests-scaleway-iam-app-policy-permissions"
 	randGroupName := "test-acc-scaleway-iam-group-policy-permissions"
 
 	resource.ParallelTest(t, resource.TestCase{

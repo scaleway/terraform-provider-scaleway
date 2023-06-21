@@ -129,7 +129,7 @@ func TestAccScalewayIamGroup_Applications(t *testing.T) {
 			{
 				Config: `
 					resource "scaleway_iam_application" "app01" {
-						name = "first app"
+						name = "tf_tests_iam_group_app"
 					}
 					resource "scaleway_iam_group" "main_app" {
 						name = "iam_group_app"
@@ -148,10 +148,10 @@ func TestAccScalewayIamGroup_Applications(t *testing.T) {
 			{
 				Config: `
 					resource "scaleway_iam_application" "app01" {
-						name = "first app"
+						name = "tf_tests_iam_group_app"
 					}
 					resource "scaleway_iam_application" "app02" {
-						name = "second app"
+						name = "tf_tests_iam_group_app2"
 					}
 					resource "scaleway_iam_group" "main_app" {
 						name = "iam_group_app"
@@ -172,10 +172,10 @@ func TestAccScalewayIamGroup_Applications(t *testing.T) {
 			{
 				Config: `
 					resource "scaleway_iam_application" "app01" {
-						name = "first app"
+						name = "tf_tests_iam_group_app"
 					}
 					resource "scaleway_iam_application" "app02" {
-						name = "second app"
+						name = "tf_tests_iam_group_app2"
 					}
 					resource "scaleway_iam_group" "main_app" {
 						name = "iam_group_app"
@@ -194,10 +194,10 @@ func TestAccScalewayIamGroup_Applications(t *testing.T) {
 			{
 				Config: `
 					resource "scaleway_iam_application" "app01" {
-						name = "first app"
+						name = "tf_tests_iam_group_app"
 					}
 					resource "scaleway_iam_application" "app02" {
-						name = "second app"
+						name = "tf_tests_iam_group_app2"
 					}
 					resource "scaleway_iam_group" "main_app" {
 						name = "iam_group_app"
@@ -318,7 +318,7 @@ func TestAccScalewayIamGroup_UsersAndApplications(t *testing.T) {
 			{
 				Config: `
 					resource "scaleway_iam_application" "app03" {
-						name = "third app"
+						name = "tf_tests_iam_group_app3"
 					}
 
 					data "scaleway_iam_user" "user00" {
@@ -347,10 +347,10 @@ func TestAccScalewayIamGroup_UsersAndApplications(t *testing.T) {
 			{
 				Config: `
 					resource "scaleway_iam_application" "app03" {
-						name = "third app"
+						name = "tf_tests_iam_group_app3"
 					}
 					resource "scaleway_iam_application" "app04" {
-						name = "fourth app"
+						name = "tf_tests_iam_group_app4"
 					}
 
 					resource "scaleway_iam_group" "main_mix" {
@@ -374,10 +374,10 @@ func TestAccScalewayIamGroup_UsersAndApplications(t *testing.T) {
 			{
 				Config: `
 					resource "scaleway_iam_application" "app03" {
-						name = "third app"
+						name = "tf_tests_iam_group_app3"
 					}
 					resource "scaleway_iam_application" "app04" {
-						name = "fourth app"
+						name = "tf_tests_iam_group_app4"
 					}
 
 					data "scaleway_iam_user" "user00" {
@@ -411,10 +411,10 @@ func TestAccScalewayIamGroup_UsersAndApplications(t *testing.T) {
 			{
 				Config: `
 					resource "scaleway_iam_application" "app03" {
-						name = "third app"
+						name = "tf_tests_iam_group_app3"
 					}
 					resource "scaleway_iam_application" "app04" {
-						name = "fourth app"
+						name = "tf_tests_iam_group_app4"
 					}
 
 					data "scaleway_iam_user" "user01" {
@@ -450,10 +450,10 @@ func TestAccScalewayIamGroup_UsersAndApplications(t *testing.T) {
 			{
 				Config: `
 					resource "scaleway_iam_application" "app03" {
-						name = "third app"
+						name = "tf_tests_iam_group_app3"
 					}
 					resource "scaleway_iam_application" "app04" {
-						name = "fourth app"
+						name = "tf_tests_iam_group_app4"
 					}
 
 					resource "scaleway_iam_group" "main_mix" {

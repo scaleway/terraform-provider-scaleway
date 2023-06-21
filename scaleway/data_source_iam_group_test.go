@@ -56,7 +56,7 @@ func TestAccScalewayDataSourceIamGroup_UsersAndApplications(t *testing.T) {
 			{
 				Config: `
 					resource "scaleway_iam_application" "app00" {
-					  name = "app"
+					  name = "tf_tests_iam_group_ds_app"
 					}
 					
 					data "scaleway_iam_user" "user00" {
