@@ -33,6 +33,7 @@ func dataSourceScalewaySecretVersion() *schema.Resource {
 	dsSchema["data"] = &schema.Schema{
 		Type:        schema.TypeString,
 		Computed:    true,
+		Sensitive:   true,
 		Description: "The payload of the secret version",
 	}
 
