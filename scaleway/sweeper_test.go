@@ -9,6 +9,8 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 )
 
+const testResourcePrefix = "tf_tests"
+
 func TestMain(m *testing.M) {
 	resource.TestMain(m)
 }

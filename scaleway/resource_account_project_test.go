@@ -2,6 +2,7 @@ package scaleway
 
 import (
 	"fmt"
+	"strings"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -11,9 +12,6 @@ import (
 )
 
 func init() {
-	if !terraformBetaEnabled {
-		return
-	}
 	resource.AddTestSweepers("scaleway_account_project", &resource.Sweeper{
 		Name: "scaleway_account_project",
 		F:    testSweepAccountProject,
@@ -26,12 +24,12 @@ func testSweepAccountProject(_ string) error {
 
 		l.Debugf("sweeper: destroying the project")
 
-		listProjects, err := accountAPI.ListProjects(&accountV2.ListProjectsRequest{})
+		listProjects, err := accountAPI.ListProjects(&accountV2.ListProjectsRequest{}, scw.WithAllPages())
 		if err != nil {
 			return fmt.Errorf("failed to list projects: %w", err)
 		}
 		for _, project := range listProjects.Projects {
-			if project.Name == "default" {
+			if project.Name == "default" || !strings.HasPrefix(project.Name, testResourcePrefix) {
 				continue
 			}
 			err = accountAPI.DeleteProject(&accountV2.DeleteProjectRequest{
