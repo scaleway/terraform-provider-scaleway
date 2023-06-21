@@ -12,9 +12,6 @@ import (
 )
 
 func init() {
-	if !terraformBetaEnabled {
-		return
-	}
 	resource.AddTestSweepers("scaleway_iam_group", &resource.Sweeper{
 		Name: "scaleway_iam_group",
 		F:    testSweepIamGroup,
@@ -33,9 +30,12 @@ func testSweepIamGroup(_ string) error {
 		if err != nil {
 			return fmt.Errorf("failed to list groups: %w", err)
 		}
-		for _, app := range listApps.Groups {
+		for _, group := range listApps.Groups {
+			if !isTestResource(group.Name) {
+				continue
+			}
 			err = api.DeleteGroup(&iam.DeleteGroupRequest{
-				GroupID: app.ID,
+				GroupID: group.ID,
 			})
 			if err != nil {
 				return fmt.Errorf("failed to delete group: %w", err)
@@ -54,61 +54,64 @@ func TestAccScalewayIamGroup_Basic(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: `
-						resource "scaleway_iam_group" "main_basic" {}
+						resource "scaleway_iam_group" "main_basic" {
+							name = "tf_tests_iam_group_basic"
+						}
 					`,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayIamGroupExists(tt, "scaleway_iam_group.main_basic"),
-					resource.TestCheckResourceAttrSet("scaleway_iam_group.main_basic", "name"),
+					resource.TestCheckResourceAttr("scaleway_iam_group.main_basic", "name", "tf_tests_iam_group_basic"),
 					resource.TestCheckResourceAttr("scaleway_iam_group.main_basic", "description", ""),
 				),
 			},
 			{
 				Config: `
 						resource "scaleway_iam_group" "main_basic" {
+							name = "tf_tests_iam_group_basic"
 							description = "basic description"
 						}
 					`,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayIamGroupExists(tt, "scaleway_iam_group.main_basic"),
-					resource.TestCheckResourceAttrSet("scaleway_iam_group.main_basic", "name"),
+					resource.TestCheckResourceAttr("scaleway_iam_group.main_basic", "name", "tf_tests_iam_group_basic"),
 					resource.TestCheckResourceAttr("scaleway_iam_group.main_basic", "description", "basic description"),
 				),
 			},
 			{
 				Config: `
 						resource "scaleway_iam_group" "main_basic" {
-							name = "iam_group_basic"
+							name = "tf_tests_iam_group_basic_renamed"
 							description = "basic description"
 						}
 					`,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayIamGroupExists(tt, "scaleway_iam_group.main_basic"),
-					resource.TestCheckResourceAttr("scaleway_iam_group.main_basic", "name", "iam_group_basic"),
+					resource.TestCheckResourceAttr("scaleway_iam_group.main_basic", "name", "tf_tests_iam_group_basic_renamed"),
 					resource.TestCheckResourceAttr("scaleway_iam_group.main_basic", "description", "basic description"),
 				),
 			},
 			{
 				Config: `
 						resource "scaleway_iam_group" "main_basic" {
-							name = "iam_group_renamed"
+							name = "tf_tests_iam_group_basic_renamed"
 							description = "this is another description"
 						}
 					`,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayIamGroupExists(tt, "scaleway_iam_group.main_basic"),
-					resource.TestCheckResourceAttr("scaleway_iam_group.main_basic", "name", "iam_group_renamed"),
+					resource.TestCheckResourceAttr("scaleway_iam_group.main_basic", "name", "tf_tests_iam_group_basic_renamed"),
 					resource.TestCheckResourceAttr("scaleway_iam_group.main_basic", "description", "this is another description"),
 				),
 			},
 			{
 				Config: `
 						resource "scaleway_iam_group" "main" {
-							name = "iam_group_renamed"
+							name = "tf_tests_iam_group_basic_renamed"
 						}
 					`,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayIamGroupExists(tt, "scaleway_iam_group.main"),
-					resource.TestCheckResourceAttr("scaleway_iam_group.main", "name", "iam_group_renamed"),
+					resource.TestCheckResourceAttr("scaleway_iam_group.main", "name", "tf_tests_iam_group_basic_renamed"),
 					resource.TestCheckResourceAttr("scaleway_iam_group.main", "description", ""),
 				),
 			},
@@ -129,10 +132,10 @@ func TestAccScalewayIamGroup_Applications(t *testing.T) {
 			{
 				Config: `
 					resource "scaleway_iam_application" "app01" {
-						name = "first app"
+						name = "tf_tests_iam_group_app"
 					}
 					resource "scaleway_iam_group" "main_app" {
-						name = "iam_group_app"
+						name = "tf_tests_iam_group_app"
 						application_ids = [
 							scaleway_iam_application.app01.id
 						]
@@ -140,7 +143,7 @@ func TestAccScalewayIamGroup_Applications(t *testing.T) {
 				`,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayIamGroupExists(tt, "scaleway_iam_group.main_app"),
-					resource.TestCheckResourceAttr("scaleway_iam_group.main_app", "name", "iam_group_app"),
+					resource.TestCheckResourceAttr("scaleway_iam_group.main_app", "name", "tf_tests_iam_group_app"),
 					resource.TestCheckResourceAttr("scaleway_iam_group.main_app", "application_ids.#", "1"),
 					resource.TestCheckResourceAttrPair("scaleway_iam_group.main_app", "application_ids.0", "scaleway_iam_application.app01", "id"),
 				),
@@ -148,13 +151,13 @@ func TestAccScalewayIamGroup_Applications(t *testing.T) {
 			{
 				Config: `
 					resource "scaleway_iam_application" "app01" {
-						name = "first app"
+						name = "tf_tests_iam_group_app"
 					}
 					resource "scaleway_iam_application" "app02" {
-						name = "second app"
+						name = "tf_tests_iam_group_app2"
 					}
 					resource "scaleway_iam_group" "main_app" {
-						name = "iam_group_app"
+						name = "tf_tests_iam_group_app"
 						application_ids = [
 							scaleway_iam_application.app01.id,
 							scaleway_iam_application.app02.id,
@@ -163,7 +166,7 @@ func TestAccScalewayIamGroup_Applications(t *testing.T) {
 				`,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayIamGroupExists(tt, "scaleway_iam_group.main_app"),
-					resource.TestCheckResourceAttr("scaleway_iam_group.main_app", "name", "iam_group_app"),
+					resource.TestCheckResourceAttr("scaleway_iam_group.main_app", "name", "tf_tests_iam_group_app"),
 					resource.TestCheckResourceAttr("scaleway_iam_group.main_app", "application_ids.#", "2"),
 					resource.TestCheckTypeSetElemAttrPair("scaleway_iam_group.main_app", "application_ids.*", "scaleway_iam_application.app01", "id"),
 					resource.TestCheckTypeSetElemAttrPair("scaleway_iam_group.main_app", "application_ids.*", "scaleway_iam_application.app02", "id"),
@@ -172,13 +175,13 @@ func TestAccScalewayIamGroup_Applications(t *testing.T) {
 			{
 				Config: `
 					resource "scaleway_iam_application" "app01" {
-						name = "first app"
+						name = "tf_tests_iam_group_app"
 					}
 					resource "scaleway_iam_application" "app02" {
-						name = "second app"
+						name = "tf_tests_iam_group_app2"
 					}
 					resource "scaleway_iam_group" "main_app" {
-						name = "iam_group_app"
+						name = "tf_tests_iam_group_app"
 						application_ids = [
 							scaleway_iam_application.app02.id,
 						]
@@ -186,7 +189,7 @@ func TestAccScalewayIamGroup_Applications(t *testing.T) {
 				`,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayIamGroupExists(tt, "scaleway_iam_group.main_app"),
-					resource.TestCheckResourceAttr("scaleway_iam_group.main_app", "name", "iam_group_app"),
+					resource.TestCheckResourceAttr("scaleway_iam_group.main_app", "name", "tf_tests_iam_group_app"),
 					resource.TestCheckResourceAttr("scaleway_iam_group.main_app", "application_ids.#", "1"),
 					resource.TestCheckResourceAttrPair("scaleway_iam_group.main_app", "application_ids.0", "scaleway_iam_application.app02", "id"),
 				),
@@ -194,18 +197,18 @@ func TestAccScalewayIamGroup_Applications(t *testing.T) {
 			{
 				Config: `
 					resource "scaleway_iam_application" "app01" {
-						name = "first app"
+						name = "tf_tests_iam_group_app"
 					}
 					resource "scaleway_iam_application" "app02" {
-						name = "second app"
+						name = "tf_tests_iam_group_app2"
 					}
 					resource "scaleway_iam_group" "main_app" {
-						name = "iam_group_app"
+						name = "tf_tests_iam_group_app"
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayIamGroupExists(tt, "scaleway_iam_group.main_app"),
-					resource.TestCheckResourceAttr("scaleway_iam_group.main_app", "name", "iam_group_app"),
+					resource.TestCheckResourceAttr("scaleway_iam_group.main_app", "name", "tf_tests_iam_group_app"),
 					resource.TestCheckResourceAttr("scaleway_iam_group.main_app", "application_ids.#", "0"),
 					resource.TestCheckNoResourceAttr("scaleway_iam_group.main_app", "application_ids.0"),
 				),
@@ -230,7 +233,7 @@ func TestAccScalewayIamGroup_Users(t *testing.T) {
 					}
 
 					resource "scaleway_iam_group" "main_user" {
-						name = "iam_group_user"
+						name = "tf_tests_iam_group_user"
 						user_ids = [
 							data.scaleway_iam_user.user00.user_id
 						]
@@ -238,7 +241,7 @@ func TestAccScalewayIamGroup_Users(t *testing.T) {
 				`,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayIamGroupExists(tt, "scaleway_iam_group.main_user"),
-					resource.TestCheckResourceAttr("scaleway_iam_group.main_user", "name", "iam_group_user"),
+					resource.TestCheckResourceAttr("scaleway_iam_group.main_user", "name", "tf_tests_iam_group_user"),
 					resource.TestCheckResourceAttr("scaleway_iam_group.main_user", "user_ids.#", "1"),
 					resource.TestCheckResourceAttrPair("scaleway_iam_group.main_user", "user_ids.0", "data.scaleway_iam_user.user00", "user_id"),
 				),
@@ -253,7 +256,7 @@ func TestAccScalewayIamGroup_Users(t *testing.T) {
 					}
 
 					resource "scaleway_iam_group" "main_user" {
-						name = "iam_group_user"
+						name = "tf_tests_iam_group_user"
 						user_ids = [
 							data.scaleway_iam_user.user00.user_id,
 							data.scaleway_iam_user.user01.user_id,
@@ -262,7 +265,7 @@ func TestAccScalewayIamGroup_Users(t *testing.T) {
 				`,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayIamGroupExists(tt, "scaleway_iam_group.main_user"),
-					resource.TestCheckResourceAttr("scaleway_iam_group.main_user", "name", "iam_group_user"),
+					resource.TestCheckResourceAttr("scaleway_iam_group.main_user", "name", "tf_tests_iam_group_user"),
 					resource.TestCheckResourceAttr("scaleway_iam_group.main_user", "user_ids.#", "2"),
 					resource.TestCheckTypeSetElemAttrPair("scaleway_iam_group.main_user", "user_ids.*", "data.scaleway_iam_user.user00", "user_id"),
 					resource.TestCheckTypeSetElemAttrPair("scaleway_iam_group.main_user", "user_ids.*", "data.scaleway_iam_user.user01", "user_id"),
@@ -275,7 +278,7 @@ func TestAccScalewayIamGroup_Users(t *testing.T) {
 					}
 
 					resource "scaleway_iam_group" "main_user" {
-						name = "iam_group_user"
+						name = "tf_tests_iam_group_user"
 						user_ids = [
 							data.scaleway_iam_user.user02.user_id
 						]
@@ -283,7 +286,7 @@ func TestAccScalewayIamGroup_Users(t *testing.T) {
 				`,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayIamGroupExists(tt, "scaleway_iam_group.main_user"),
-					resource.TestCheckResourceAttr("scaleway_iam_group.main_user", "name", "iam_group_user"),
+					resource.TestCheckResourceAttr("scaleway_iam_group.main_user", "name", "tf_tests_iam_group_user"),
 					resource.TestCheckResourceAttr("scaleway_iam_group.main_user", "user_ids.#", "1"),
 					resource.TestCheckResourceAttrPair("scaleway_iam_group.main_user", "user_ids.0", "data.scaleway_iam_user.user02", "user_id"),
 				),
@@ -291,12 +294,12 @@ func TestAccScalewayIamGroup_Users(t *testing.T) {
 			{
 				Config: `
 					resource "scaleway_iam_group" "main_user" {
-						name = "iam_group_user"
+						name = "tf_tests_iam_group_user"
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayIamGroupExists(tt, "scaleway_iam_group.main_user"),
-					resource.TestCheckResourceAttr("scaleway_iam_group.main_user", "name", "iam_group_user"),
+					resource.TestCheckResourceAttr("scaleway_iam_group.main_user", "name", "tf_tests_iam_group_user"),
 					resource.TestCheckResourceAttr("scaleway_iam_group.main_user", "user_ids.#", "0"),
 					resource.TestCheckNoResourceAttr("scaleway_iam_group.main_user", "user_ids.0"),
 				),
@@ -318,7 +321,7 @@ func TestAccScalewayIamGroup_UsersAndApplications(t *testing.T) {
 			{
 				Config: `
 					resource "scaleway_iam_application" "app03" {
-						name = "third app"
+						name = "tf_tests_iam_group_app3"
 					}
 
 					data "scaleway_iam_user" "user00" {
@@ -326,7 +329,7 @@ func TestAccScalewayIamGroup_UsersAndApplications(t *testing.T) {
 					}
 
 					resource "scaleway_iam_group" "main_mix" {
-						name = "iam_group_user_app"
+						name = "tf_tests_iam_group_user_app"
 						application_ids = [
 							scaleway_iam_application.app03.id
 						]
@@ -337,7 +340,7 @@ func TestAccScalewayIamGroup_UsersAndApplications(t *testing.T) {
 				`,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayIamGroupExists(tt, "scaleway_iam_group.main_mix"),
-					resource.TestCheckResourceAttr("scaleway_iam_group.main_mix", "name", "iam_group_user_app"),
+					resource.TestCheckResourceAttr("scaleway_iam_group.main_mix", "name", "tf_tests_iam_group_user_app"),
 					resource.TestCheckResourceAttr("scaleway_iam_group.main_mix", "user_ids.#", "1"),
 					resource.TestCheckResourceAttrPair("scaleway_iam_group.main_mix", "user_ids.0", "data.scaleway_iam_user.user00", "user_id"),
 					resource.TestCheckResourceAttr("scaleway_iam_group.main_mix", "application_ids.#", "1"),
@@ -347,14 +350,14 @@ func TestAccScalewayIamGroup_UsersAndApplications(t *testing.T) {
 			{
 				Config: `
 					resource "scaleway_iam_application" "app03" {
-						name = "third app"
+						name = "tf_tests_iam_group_app3"
 					}
 					resource "scaleway_iam_application" "app04" {
-						name = "fourth app"
+						name = "tf_tests_iam_group_app4"
 					}
 
 					resource "scaleway_iam_group" "main_mix" {
-						name = "iam_group_user_app"
+						name = "tf_tests_iam_group_user_app"
 						application_ids = [
 							scaleway_iam_application.app03.id,
 							scaleway_iam_application.app04.id,
@@ -363,7 +366,7 @@ func TestAccScalewayIamGroup_UsersAndApplications(t *testing.T) {
 				`,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayIamGroupExists(tt, "scaleway_iam_group.main_mix"),
-					resource.TestCheckResourceAttr("scaleway_iam_group.main_mix", "name", "iam_group_user_app"),
+					resource.TestCheckResourceAttr("scaleway_iam_group.main_mix", "name", "tf_tests_iam_group_user_app"),
 					resource.TestCheckResourceAttr("scaleway_iam_group.main_mix", "application_ids.#", "2"),
 					resource.TestCheckTypeSetElemAttrPair("scaleway_iam_group.main_mix", "application_ids.*", "scaleway_iam_application.app03", "id"),
 					resource.TestCheckTypeSetElemAttrPair("scaleway_iam_group.main_mix", "application_ids.*", "scaleway_iam_application.app04", "id"),
@@ -374,10 +377,10 @@ func TestAccScalewayIamGroup_UsersAndApplications(t *testing.T) {
 			{
 				Config: `
 					resource "scaleway_iam_application" "app03" {
-						name = "third app"
+						name = "tf_tests_iam_group_app3"
 					}
 					resource "scaleway_iam_application" "app04" {
-						name = "fourth app"
+						name = "tf_tests_iam_group_app4"
 					}
 
 					data "scaleway_iam_user" "user00" {
@@ -388,7 +391,7 @@ func TestAccScalewayIamGroup_UsersAndApplications(t *testing.T) {
 					}
 
 					resource "scaleway_iam_group" "main_mix" {
-						name = "iam_group_user_app"
+						name = "tf_tests_iam_group_user_app"
 						application_ids = [
 							scaleway_iam_application.app04.id,
 						]
@@ -400,7 +403,7 @@ func TestAccScalewayIamGroup_UsersAndApplications(t *testing.T) {
 				`,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayIamGroupExists(tt, "scaleway_iam_group.main_mix"),
-					resource.TestCheckResourceAttr("scaleway_iam_group.main_mix", "name", "iam_group_user_app"),
+					resource.TestCheckResourceAttr("scaleway_iam_group.main_mix", "name", "tf_tests_iam_group_user_app"),
 					resource.TestCheckResourceAttr("scaleway_iam_group.main_mix", "application_ids.#", "1"),
 					resource.TestCheckResourceAttrPair("scaleway_iam_group.main_mix", "application_ids.0", "scaleway_iam_application.app04", "id"),
 					resource.TestCheckResourceAttr("scaleway_iam_group.main_mix", "user_ids.#", "2"),
@@ -411,10 +414,10 @@ func TestAccScalewayIamGroup_UsersAndApplications(t *testing.T) {
 			{
 				Config: `
 					resource "scaleway_iam_application" "app03" {
-						name = "third app"
+						name = "tf_tests_iam_group_app3"
 					}
 					resource "scaleway_iam_application" "app04" {
-						name = "fourth app"
+						name = "tf_tests_iam_group_app4"
 					}
 
 					data "scaleway_iam_user" "user01" {
@@ -428,7 +431,7 @@ func TestAccScalewayIamGroup_UsersAndApplications(t *testing.T) {
 					}
 
 					resource "scaleway_iam_group" "main_mix" {
-						name = "iam_group_user_app"
+						name = "tf_tests_iam_group_user_app"
 						user_ids = [
 							data.scaleway_iam_user.user03.user_id,
 							data.scaleway_iam_user.user01.user_id,
@@ -438,7 +441,7 @@ func TestAccScalewayIamGroup_UsersAndApplications(t *testing.T) {
 				`,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayIamGroupExists(tt, "scaleway_iam_group.main_mix"),
-					resource.TestCheckResourceAttr("scaleway_iam_group.main_mix", "name", "iam_group_user_app"),
+					resource.TestCheckResourceAttr("scaleway_iam_group.main_mix", "name", "tf_tests_iam_group_user_app"),
 					resource.TestCheckResourceAttr("scaleway_iam_group.main_mix", "application_ids.#", "0"),
 					resource.TestCheckNoResourceAttr("scaleway_iam_group.main_mix", "application_ids.0"),
 					resource.TestCheckResourceAttr("scaleway_iam_group.main_mix", "user_ids.#", "3"),
@@ -450,19 +453,19 @@ func TestAccScalewayIamGroup_UsersAndApplications(t *testing.T) {
 			{
 				Config: `
 					resource "scaleway_iam_application" "app03" {
-						name = "third app"
+						name = "tf_tests_iam_group_app3"
 					}
 					resource "scaleway_iam_application" "app04" {
-						name = "fourth app"
+						name = "tf_tests_iam_group_app4"
 					}
 
 					resource "scaleway_iam_group" "main_mix" {
-						name = "iam_group_user_app"
+						name = "tf_tests_iam_group_user_app"
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayIamGroupExists(tt, "scaleway_iam_group.main_mix"),
-					resource.TestCheckResourceAttr("scaleway_iam_group.main_mix", "name", "iam_group_user_app"),
+					resource.TestCheckResourceAttr("scaleway_iam_group.main_mix", "name", "tf_tests_iam_group_user_app"),
 					resource.TestCheckResourceAttr("scaleway_iam_group.main_mix", "application_ids.#", "0"),
 					resource.TestCheckNoResourceAttr("scaleway_iam_group.main_mix", "application_ids.0"),
 					resource.TestCheckResourceAttr("scaleway_iam_group.main_mix", "user_ids.#", "0"),

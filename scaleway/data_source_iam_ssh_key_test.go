@@ -9,7 +9,7 @@ import (
 
 func TestAccScalewayDataSourceIamSSHKey_Basic(t *testing.T) {
 	dataSourceIamSSHKey := "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILHy/M5FVm5ydLGcal3e5LNcfTalbeN7QL/ZGCvDEdqJ foobar@example.com"
-	sshKeyName := "TestAccScalewayDataSourceIamSSHKey_Basic"
+	sshKeyName := "tf-test-ds-iam-ssh-key-basic"
 	tt := NewTestTools(t)
 	defer tt.Cleanup()
 	resource.ParallelTest(t, resource.TestCase{
