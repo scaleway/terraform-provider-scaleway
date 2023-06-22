@@ -257,6 +257,39 @@ func flattenKubeletArgs(args map[string]string) map[string]interface{} {
 	return kubeletArgs
 }
 
+func flattenKubeconfig(ctx context.Context, k8sAPI *k8s.API, region scw.Region, clusterID string) (map[string]interface{}, error) {
+	kubeconfig, err := k8sAPI.GetClusterKubeConfig(&k8s.GetClusterKubeConfigRequest{
+		Region:    region,
+		ClusterID: clusterID,
+	}, scw.WithContext(ctx))
+	if err != nil {
+		return nil, err
+	}
+
+	kubeconfigServer, err := kubeconfig.GetServer()
+	if err != nil {
+		return nil, err
+	}
+
+	kubeconfigCa, err := kubeconfig.GetCertificateAuthorityData()
+	if err != nil {
+		return nil, err
+	}
+
+	kubeconfigToken, err := kubeconfig.GetToken()
+	if err != nil {
+		return nil, err
+	}
+
+	kubeconf := map[string]interface{}{}
+	kubeconf["config_file"] = string(kubeconfig.GetRaw())
+	kubeconf["host"] = kubeconfigServer
+	kubeconf["cluster_ca_certificate"] = kubeconfigCa
+	kubeconf["token"] = kubeconfigToken
+
+	return kubeconf, nil
+}
+
 func migrateToPrivateNetworkCluster(ctx context.Context, d *schema.ResourceData, i interface{}) error {
 	k8sAPI, region, clusterID, err := k8sAPIWithRegionAndID(i, d.Id())
 	if err != nil {
