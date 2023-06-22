@@ -2,7 +2,6 @@ package scaleway
 
 import (
 	"fmt"
-	"os"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -22,10 +21,13 @@ func testSweepIamGroup(_ string) error {
 	return sweep(func(scwClient *scw.Client) error {
 		api := iam.NewAPI(scwClient)
 
-		// Requiring organization_id in list request is temporary
-		organizationID := os.Getenv("DEFAULT_ORGANIZATION_ID")
+		orgID, exists := scwClient.GetDefaultOrganizationID()
+		if !exists {
+			return fmt.Errorf("missing organizationID")
+		}
+
 		listApps, err := api.ListGroups(&iam.ListGroupsRequest{
-			OrganizationID: &organizationID,
+			OrganizationID: &orgID,
 		})
 		if err != nil {
 			return fmt.Errorf("failed to list groups: %w", err)
