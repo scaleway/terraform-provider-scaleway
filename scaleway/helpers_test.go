@@ -302,3 +302,26 @@ func TestStringHashcode_positiveIndex(t *testing.T) {
 		}
 	}
 }
+
+func testAccCheckRawIDsMatch(res1, attr1, res2, attr2 string) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		rs1, ok1 := s.RootModule().Resources[res1]
+		if !ok1 {
+			return fmt.Errorf("not found: %s", res1)
+		}
+
+		rs2, ok2 := s.RootModule().Resources[res2]
+		if !ok2 {
+			return fmt.Errorf("not found: %s", res2)
+		}
+
+		id1 := expandID(rs1.Primary.Attributes[attr1])
+		id2 := expandID(rs2.Primary.Attributes[attr2])
+
+		if id1 != id2 {
+			return fmt.Errorf("ID %s from resource %s does not match ID %s (without locality prefix) from resource %s", id1, res1, id2, res2)
+		}
+
+		return nil
+	}
+}

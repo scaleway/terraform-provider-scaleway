@@ -120,14 +120,10 @@ func resourceScalewayRedisCluster() *schema.Resource {
 				Description:   "Private network specs details",
 				ConflictsWith: []string{"acl"},
 				Set:           redisPrivateNetworkSetHash,
-				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
+				DiffSuppressFunc: func(k, oldValue, newValue string, d *schema.ResourceData) bool {
 					// Check if the key is for the 'id' attribute
 					if strings.HasSuffix(k, "id") {
-						return expandID(old) == expandID(new)
-					}
-					// Check if the key is for the 'service_ips' attribute
-					if strings.HasSuffix(k, "service_ips") {
-						return false // Do not suppress changes to service_ips
+						return expandID(oldValue) == expandID(newValue)
 					}
 					// For all other attributes, don't suppress the diff
 					return false
@@ -155,10 +151,7 @@ func resourceScalewayRedisCluster() *schema.Resource {
 							Computed:    true,
 							Description: "UUID of the endpoint to be connected to the cluster",
 						},
-						"zone": {
-							Type:     schema.TypeString,
-							Computed: true,
-						},
+						"zone": zoneSchema(),
 					},
 				},
 			},

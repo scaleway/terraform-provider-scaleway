@@ -196,10 +196,10 @@ If this behaviour is wanted, please set 'reinstall_on_ssh_key_changes' argument 
 				Type:        schema.TypeSet,
 				Optional:    true,
 				Description: "The private networks to attach to the server",
-				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
+				DiffSuppressFunc: func(k, oldValue, newValue string, d *schema.ResourceData) bool {
 					// Check if the key is for the 'id' attribute
 					if strings.HasSuffix(k, "id") {
-						return expandID(old) == expandID(new)
+						return expandID(oldValue) == expandID(newValue)
 					}
 					// For all other attributes, don't suppress the diff
 					return false
