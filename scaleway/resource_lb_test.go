@@ -510,10 +510,10 @@ func TestAccScalewayLbLb_WithPrivateNetworksOnDHCPConfig(t *testing.T) {
 					testAccCheckScalewayLbExists(tt, "scaleway_lb.lb01"),
 					testAccCheckScalewayLbIPExists(tt, "scaleway_lb_ip.ip01"),
 					resource.TestCheckResourceAttrSet("scaleway_vpc_private_network.main", "name"),
-					resource.TestCheckResourceAttrPair(
+					testAccCheckRawIDsMatch(
 						"scaleway_lb.lb01", "private_network.0.private_network_id",
 						"scaleway_vpc_private_network.main", "id"),
-					resource.TestCheckResourceAttrPair(
+					testAccCheckRawIDsMatch(
 						"scaleway_instance_server.main", "private_network.0.pn_id",
 						"scaleway_vpc_private_network.main", "id"),
 					resource.TestCheckResourceAttr("scaleway_lb.lb01",

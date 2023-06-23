@@ -96,7 +96,7 @@ func TestAccScalewayVPCGatewayNetwork_Basic(t *testing.T) {
 				`,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayVPCGatewayNetworkExists(tt, "scaleway_vpc_gateway_network.main"),
-					resource.TestCheckResourceAttrPair("scaleway_vpc_gateway_network.main",
+					testAccCheckRawIDsMatch("scaleway_vpc_gateway_network.main",
 						"private_network_id", "scaleway_vpc_private_network.pn01", "id"),
 					resource.TestCheckResourceAttrSet("scaleway_vpc_gateway_network.main", "gateway_id"),
 					resource.TestCheckResourceAttrSet("scaleway_vpc_gateway_network.main", "private_network_id"),
