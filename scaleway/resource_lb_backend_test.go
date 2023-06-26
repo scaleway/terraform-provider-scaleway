@@ -86,6 +86,8 @@ func TestAccScalewayLbBackend_Basic(t *testing.T) {
 						on_marked_down_action = "shutdown_sessions"
 						ssl_bridging = "true"
 						ignore_ssl_server_verify = "true"
+						max_connections = 42
+						timeout_queue = "4s"
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
@@ -99,6 +101,8 @@ func TestAccScalewayLbBackend_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_lb_backend.bkd01", "on_marked_down_action", "shutdown_sessions"),
 					resource.TestCheckResourceAttr("scaleway_lb_backend.bkd01", "ssl_bridging", "true"),
 					resource.TestCheckResourceAttr("scaleway_lb_backend.bkd01", "ignore_ssl_server_verify", "true"),
+					resource.TestCheckResourceAttr("scaleway_lb_backend.bkd01", "max_connections", "42"),
+					resource.TestCheckResourceAttr("scaleway_lb_backend.bkd01", "timeout_queue", "4s"),
 				),
 			},
 		},
