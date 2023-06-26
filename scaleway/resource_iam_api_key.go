@@ -56,6 +56,7 @@ func resourceScalewayIamAPIKey() *schema.Resource {
 			"application_id": {
 				Type:          schema.TypeString,
 				Optional:      true,
+				ForceNew:      true,
 				Description:   "ID of the application attached to the api key",
 				ConflictsWith: []string{"user_id"},
 				ValidateFunc:  validationUUID(),
