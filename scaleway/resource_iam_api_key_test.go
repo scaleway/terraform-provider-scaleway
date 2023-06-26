@@ -23,7 +23,14 @@ func testSweepIamAPIKey(_ string) error {
 
 		l.Debugf("sweeper: destroying the api keys")
 
-		listAPIKeys, err := api.ListAPIKeys(&iam.ListAPIKeysRequest{}, scw.WithAllPages())
+		orgID, exists := scwClient.GetDefaultOrganizationID()
+		if !exists {
+			return fmt.Errorf("missing organizationID")
+		}
+
+		listAPIKeys, err := api.ListAPIKeys(&iam.ListAPIKeysRequest{
+			OrganizationID: &orgID,
+		}, scw.WithAllPages())
 		if err != nil {
 			return fmt.Errorf("failed to list api keys: %w", err)
 		}
