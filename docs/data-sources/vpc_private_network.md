@@ -17,7 +17,7 @@ data "scaleway_vpc_private_network" "my_name" {
 
 # Get info by IP ID
 data "scaleway_vpc_private_network" "my_id" {
-  private_network_id_id = "11111111-1111-1111-1111-111111111111"
+  private_network_id = "11111111-1111-1111-1111-111111111111"
 }
 ```
 
