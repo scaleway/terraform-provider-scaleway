@@ -53,7 +53,7 @@ resource "scaleway_rdb_instance" "main" {
   engine         = "MySQL-8"
   user_name      = "my_initial_user"
   password       = "thiZ_is_v&ry_s3cret"
-  init_settings = {
+  init_settings  = {
     "lower_case_table_names" = 1
   }
   settings = {
@@ -79,44 +79,18 @@ resource "scaleway_rdb_instance" "main" {
 }
 ```
 
-### Example with private network and dhcp configuration
+### Example with custom private network
 
 ```hcl
-resource "scaleway_vpc_private_network" "pn02" {
+# VPC PRIVATE NETWORK
+resource "scaleway_vpc_private_network" "pn" {
   name = "my_private_network"
+  ipv4_subnet {
+    subnet = "172.16.20.0/22"
+  }
 }
 
-resource "scaleway_vpc_public_gateway_dhcp" "main" {
-  subnet = "192.168.1.0/24"
-}
-
-resource "scaleway_vpc_public_gateway_ip" "main" {
-}
-
-resource "scaleway_vpc_public_gateway" "main" {
-  name  = "foobar"
-  type  = "VPC-GW-S"
-  ip_id = scaleway_vpc_public_gateway_ip.main.id
-}
-
-resource "scaleway_vpc_public_gateway_pat_rule" "main" {
-  gateway_id   = scaleway_vpc_public_gateway.main.id
-  private_ip   = scaleway_vpc_public_gateway_dhcp.main.address
-  private_port = scaleway_rdb_instance.main.private_network.0.port
-  public_port  = 42
-  protocol     = "both"
-  depends_on   = [scaleway_vpc_gateway_network.main, scaleway_vpc_private_network.pn02]
-}
-
-resource "scaleway_vpc_gateway_network" "main" {
-  gateway_id         = scaleway_vpc_public_gateway.main.id
-  private_network_id = scaleway_vpc_private_network.pn02.id
-  dhcp_id            = scaleway_vpc_public_gateway_dhcp.main.id
-  cleanup_dhcp       = true
-  enable_masquerade  = true
-  depends_on         = [scaleway_vpc_public_gateway_ip.main, scaleway_vpc_private_network.pn02]
-}
-
+# RDB INSTANCE CONNECTED ON A CUSTOM PRIVATE NETWORK
 resource "scaleway_rdb_instance" "main" {
   name              = "test-rdb"
   node_type         = "db-dev-s"
@@ -130,8 +104,8 @@ resource "scaleway_rdb_instance" "main" {
   volume_type       = "bssd"
   volume_size_in_gb = 10
   private_network {
-    ip_net = "192.168.1.254/24" #pool high
-    pn_id  = scaleway_vpc_private_network.pn02.id
+    ip_net = "172.16.20.4/22" # IP address within a given IP network
+    pn_id  = scaleway_vpc_private_network.pn.id
   }
 }
 ```
@@ -197,6 +171,10 @@ available `settings` and `init_settings` on your `node_type` of your convenient.
 
 ~> **Important:** Updates to `private_network` will recreate the attachment Instance.
 
+~> **NOTE:** Please calculate your host IP.
+using [cirhost](https://developer.hashicorp.com/terraform/language/functions/cidrhost). Otherwise, lets IPAM service
+handle the host IP on the network.
+
 - `ip_net` - (Optional) The IP network address within the private subnet. This must be an IPv4 address with a
   CIDR notation. The IP network address within the private subnet is determined by the IP Address Management (IPAM)
   service if not set.
@@ -224,11 +202,11 @@ are of the form `{region}/{id}`, e.g. `fr-par/11111111-1111-1111-1111-1111111111
     - `name` - Name of the endpoint.
     - `hostname` - Name of the endpoint.
 - `private_network` - List of private networks endpoints of the database instance.
-    - `endpoint_id` - The ID of the endpoint of the private network.
-    - `ip` - IP of the endpoint.
-    - `port` - Port of the endpoint.
+    - `endpoint_id` - The ID of the endpoint.
+    - `ip` - IPv4 address on the network.
+    - `port` - Port in the Private Network.
     - `name` - Name of the endpoint.
-    - `hostname` - Name of the endpoint.
+    - `hostname` - Hostname of the endpoint.
 - `certificate` - Certificate of the database instance.
 - `organization_id` - The organization ID the Database Instance is associated with.
 
