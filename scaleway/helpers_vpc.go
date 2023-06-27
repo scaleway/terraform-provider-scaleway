@@ -2,6 +2,9 @@ package scaleway
 
 import (
 	"fmt"
+	"net"
+	"strconv"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	v1 "github.com/scaleway/scaleway-sdk-go/api/vpc/v1"
@@ -118,7 +121,10 @@ func flattenAndSortIPNetSubnets(subnets []scw.IPNet) (interface{}, interface{}) 
 				return "", nil
 			}
 			flattenedipv4Subnets = append(flattenedipv4Subnets, map[string]interface{}{
-				"subnet": sub,
+				"subnet":        sub,
+				"address":       s.IP.String(),
+				"subnet_mask":   maskHexToDottedDecimal(s.Mask),
+				"prefix_length": getPrefixLength(s.Mask),
 			})
 		} else {
 			sub, err := flattenIPNet(s)
@@ -126,7 +132,10 @@ func flattenAndSortIPNetSubnets(subnets []scw.IPNet) (interface{}, interface{}) 
 				return "", nil
 			}
 			flattenedipv6Subnets = append(flattenedipv6Subnets, map[string]interface{}{
-				"subnet": sub,
+				"subnet":        sub,
+				"address":       s.IP.String(),
+				"subnet_mask":   maskHexToDottedDecimal(s.IPNet.Mask),
+				"prefix_length": getPrefixLength(s.Mask),
 			})
 		}
 	}
@@ -150,10 +159,13 @@ func flattenAndSortSubnetV2s(subnets []*v2.Subnet) (interface{}, interface{}) {
 				return "", nil
 			}
 			flattenedipv4Subnets = append(flattenedipv4Subnets, map[string]interface{}{
-				"id":         s.ID,
-				"created_at": flattenTime(s.CreatedAt),
-				"updated_at": flattenTime(s.UpdatedAt),
-				"subnet":     sub,
+				"id":            s.ID,
+				"created_at":    flattenTime(s.CreatedAt),
+				"updated_at":    flattenTime(s.UpdatedAt),
+				"subnet":        sub,
+				"address":       s.Subnet.IP.String(),
+				"subnet_mask":   maskHexToDottedDecimal(s.Subnet.Mask),
+				"prefix_length": getPrefixLength(s.Subnet.Mask),
 			})
 		} else {
 			sub, err := flattenIPNet(s.Subnet)
@@ -161,13 +173,33 @@ func flattenAndSortSubnetV2s(subnets []*v2.Subnet) (interface{}, interface{}) {
 				return "", nil
 			}
 			flattenedipv6Subnets = append(flattenedipv6Subnets, map[string]interface{}{
-				"id":         s.ID,
-				"created_at": flattenTime(s.CreatedAt),
-				"updated_at": flattenTime(s.UpdatedAt),
-				"subnet":     sub,
+				"id":            s.ID,
+				"created_at":    flattenTime(s.CreatedAt),
+				"updated_at":    flattenTime(s.UpdatedAt),
+				"subnet":        sub,
+				"address":       s.Subnet.IP.String(),
+				"subnet_mask":   maskHexToDottedDecimal(s.Subnet.Mask),
+				"prefix_length": getPrefixLength(s.Subnet.Mask),
 			})
 		}
 	}
 
 	return flattenedipv4Subnets, flattenedipv6Subnets
+}
+
+func maskHexToDottedDecimal(mask net.IPMask) string {
+	if len(mask) != net.IPv4len && len(mask) != net.IPv6len {
+		return ""
+	}
+
+	parts := make([]string, len(mask))
+	for i, part := range mask {
+		parts[i] = strconv.Itoa(int(part))
+	}
+	return strings.Join(parts, ".")
+}
+
+func getPrefixLength(mask net.IPMask) int {
+	ones, _ := mask.Size()
+	return ones
 }
