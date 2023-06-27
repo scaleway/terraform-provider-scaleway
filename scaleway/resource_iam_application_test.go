@@ -21,7 +21,14 @@ func testSweepIamApplication(_ string) error {
 	return sweep(func(scwClient *scw.Client) error {
 		api := iam.NewAPI(scwClient)
 
-		listApps, err := api.ListApplications(&iam.ListApplicationsRequest{})
+		orgID, exists := scwClient.GetDefaultOrganizationID()
+		if !exists {
+			return fmt.Errorf("missing organizationID")
+		}
+
+		listApps, err := api.ListApplications(&iam.ListApplicationsRequest{
+			OrganizationID: &orgID,
+		})
 		if err != nil {
 			return fmt.Errorf("failed to list applications: %w", err)
 		}

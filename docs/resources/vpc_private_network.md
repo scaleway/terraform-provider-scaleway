@@ -10,10 +10,31 @@ For more information, see [the documentation](https://developers.scaleway.com/en
 
 ## Example
 
+### Basic
+
 ```hcl
 resource "scaleway_vpc_private_network" "pn_priv" {
     name = "subnet_demo"
     tags = ["demo", "terraform"]
+}
+```
+
+### With subnets
+
+```hcl
+resource "scaleway_vpc_private_network" "pn_priv" {
+    name = "subnet_demo"
+    tags = ["demo", "terraform"]
+    
+    ipv4_subnet {
+      subnet = "192.168.0.0/24"
+    }
+    ipv6_subnets {
+      subnet = "fd46:78ab:30b8:177c::/64"
+    }
+    ipv6_subnets {
+      subnet = "fd46:78ab:30b8:c7df::/64"
+    }
 }
 ```
 
@@ -41,8 +62,10 @@ The following arguments are supported:
 - `tags` - (Optional) The tags associated with the private network.
 - `zone` - (Defaults to [provider](../index.md#zone) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which the private network should be created.
 - `project_id` - (Defaults to [provider](../index.md#project_id) `project_id`) The ID of the project the private network is associated with.
-- `ipv4_subnet` - (Optional) The IPv4 subnet associated with the private network.
-- `ipv6_subnets` - (Optional) The IPv6 subnets associated with the private network.
+- `ipv4_subnet` - (Optional) The IPv4 subnet to associate with the private network.
+    - `subnet` - (Optional) The subnet CIDR.
+- `ipv6_subnets` - (Optional) The IPv6 subnets to associate with the private network.
+    - `subnet` - (Optional) The subnet CIDR.
 
 -> **Note:** If using Regional Private Network:
 
@@ -55,6 +78,16 @@ The following arguments are supported:
 In addition to all above arguments, the following attributes are exported:
 
 - `id` - The ID of the private network.
+- `ipv4_subnet` - The IPv4 subnet associated with the private network.
+    - `subnet` - The subnet CIDR.
+    - `id` - The subnet ID.
+    - `created_at` - The date and time of the creation of the subnet.
+    - `updated_at` - The date and time of the last update of the subnet.
+- `ipv6_subnets` - The IPv6 subnets associated with the private network.
+    - `subnet` - The subnet CIDR.
+    - `id` - The subnet ID.
+    - `created_at` - The date and time of the creation of the subnet.
+    - `updated_at` - The date and time of the last update of the subnet.
 
 ~> **Important:** Private networks' IDs are [zoned](../guides/regions_and_zones.md#resource-ids) or [regional](../guides/regions_and_zones.md#resource-ids) if using beta, which means they are of the form `{zone}/{id}`, e.g. `fr-par-1/11111111-1111-1111-1111-111111111111` or `{region}/{id}`, e.g. `fr-par/11111111-1111-1111-1111-111111111111
 

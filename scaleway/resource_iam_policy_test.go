@@ -23,7 +23,14 @@ func testSweepIamPolicy(_ string) error {
 	return sweep(func(scwClient *scw.Client) error {
 		api := iam.NewAPI(scwClient)
 
-		listPols, err := api.ListPolicies(&iam.ListPoliciesRequest{})
+		orgID, exists := scwClient.GetDefaultOrganizationID()
+		if !exists {
+			return fmt.Errorf("missing organizationID")
+		}
+
+		listPols, err := api.ListPolicies(&iam.ListPoliciesRequest{
+			OrganizationID: &orgID,
+		})
 		if err != nil {
 			return fmt.Errorf("failed to list policies: %w", err)
 		}
