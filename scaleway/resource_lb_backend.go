@@ -2,6 +2,7 @@ package scaleway
 
 import (
 	"context"
+	"math"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -276,9 +277,10 @@ E.g. 'failover-website.s3-website.fr-par.scw.cloud' if your bucket website URL i
 				Default:     false,
 			},
 			"max_connections": {
-				Type:        schema.TypeInt,
-				Optional:    true,
-				Description: "Maximum number of connections allowed per backend server",
+				Type:         schema.TypeInt,
+				Optional:     true,
+				ValidateFunc: validation.IntBetween(0, math.MaxInt32),
+				Description:  "Maximum number of connections allowed per backend server",
 			},
 			"timeout_queue": {
 				Type:         schema.TypeString,
