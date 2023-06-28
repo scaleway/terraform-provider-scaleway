@@ -19,9 +19,21 @@ var (
 	resourceHelpersTemplateFile string
 	//go:embed waiters.go.tmpl
 	resourceWaitersTemplateFile string
+	//go:embed datasource.go.tmpl
+	datasourceTemplateFile string
+	//go:embed datasource_test.go.tmpl
+	datasourceTestTemplateFile string
 )
 
 var resourceQS = []*survey.Question{
+	{
+		Name: "targets",
+		Prompt: &survey.MultiSelect{
+			Message: "Select targets to generate",
+			Options: []string{"resource", "datasource"},
+			Default: []string{"resource"},
+		},
+	},
 	{
 		Name:   "api",
 		Prompt: &survey.Input{Message: "API name (function, instance, container)"},
@@ -49,14 +61,25 @@ var resourceQS = []*survey.Question{
 	{
 		Name: "waiters",
 		Prompt: &survey.Confirm{
-			Message: "Generate helpers ? Will be added to scaleway/helpers_{api}.go",
+			Message: "Generate waiters ? Will be added to scaleway/helpers_{api}.go",
 			Default: true,
 		},
 	},
 }
 
+func contains[T comparable](slice []T, expected T) bool {
+	for _, elem := range slice {
+		if elem == expected {
+			return true
+		}
+	}
+
+	return false
+}
+
 func main() {
 	resourceInput := struct {
+		Targets  []string
 		API      string
 		Resource string
 		Locality string
@@ -73,10 +96,22 @@ func main() {
 		{
 			FileName:     fmt.Sprintf("../../scaleway/resource_%s.go", resourceData.ResourceHCL),
 			TemplateFile: resourceTemplateFile,
+			Skip:         !contains(resourceInput.Targets, "resource"),
 		},
 		{
 			FileName:     fmt.Sprintf("../../scaleway/resource_%s_test.go", resourceData.ResourceHCL),
 			TemplateFile: resourceTestTemplateFile,
+			Skip:         !contains(resourceInput.Targets, "resource"),
+		},
+		{
+			FileName:     fmt.Sprintf("../../scaleway/data_source_%s.go", resourceData.ResourceHCL),
+			TemplateFile: datasourceTemplateFile,
+			Skip:         !contains(resourceInput.Targets, "datasource"),
+		},
+		{
+			FileName:     fmt.Sprintf("../../scaleway/data_source_%s_test.go", resourceData.ResourceHCL),
+			TemplateFile: datasourceTestTemplateFile,
+			Skip:         !contains(resourceInput.Targets, "datasource"),
 		},
 		{
 			FileName:     fmt.Sprintf("../../scaleway/helpers_%s.go", resourceData.API),
