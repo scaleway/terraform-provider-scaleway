@@ -83,11 +83,17 @@ In addition to all above arguments, the following attributes are exported:
     - `id` - The subnet ID.
     - `created_at` - The date and time of the creation of the subnet.
     - `updated_at` - The date and time of the last update of the subnet.
+    - `address` - The network address of the subnet in dotted decimal notation, e.g., '192.168.0.0' for a '192.168.0.0/24' subnet.
+    - `subnet_mask` - The subnet mask expressed in dotted decimal notation, e.g., '255.255.255.0' for a /24 subnet
+    - `prefix_length` - The length of the network prefix, e.g., 24 for a 255.255.255.0 mask.
 - `ipv6_subnets` - The IPv6 subnets associated with the private network.
     - `subnet` - The subnet CIDR.
     - `id` - The subnet ID.
     - `created_at` - The date and time of the creation of the subnet.
     - `updated_at` - The date and time of the last update of the subnet.
+    - `address` - The network address of the subnet in dotted decimal notation, e.g., '192.168.0.0' for a '192.168.0.0/24' subnet.
+    - `subnet_mask` - The subnet mask expressed in dotted decimal notation, e.g., '255.255.255.0' for a /24 subnet
+    - `prefix_length` - The length of the network prefix, e.g., 24 for a 255.255.255.0 mask.
 
 ~> **Important:** Private networks' IDs are [zoned](../guides/regions_and_zones.md#resource-ids) or [regional](../guides/regions_and_zones.md#resource-ids) if using beta, which means they are of the form `{zone}/{id}`, e.g. `fr-par-1/11111111-1111-1111-1111-111111111111` or `{region}/{id}`, e.g. `fr-par/11111111-1111-1111-1111-111111111111
 

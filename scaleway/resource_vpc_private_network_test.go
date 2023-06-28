@@ -201,8 +201,33 @@ func TestAccScalewayVPCPrivateNetwork_Subnets(t *testing.T) {
 					),
 					resource.TestCheckResourceAttr(
 						"scaleway_vpc_private_network.test",
+						"ipv4_subnet.0.address",
+						"172.16.32.0",
+					),
+					resource.TestCheckResourceAttr(
+						"scaleway_vpc_private_network.test",
+						"ipv4_subnet.0.subnet_mask",
+						"255.255.252.0",
+					),
+					resource.TestCheckResourceAttr(
+						"scaleway_vpc_private_network.test",
+						"ipv4_subnet.0.prefix_length",
+						"22",
+					),
+					resource.TestCheckResourceAttr(
+						"scaleway_vpc_private_network.test",
 						"ipv6_subnets.0.subnet",
 						"fd46:78ab:30b8:177c::/64",
+					),
+					resource.TestCheckResourceAttr(
+						"scaleway_vpc_private_network.test",
+						"ipv6_subnets.0.address",
+						"fd46:78ab:30b8:177c::",
+					),
+					resource.TestCheckResourceAttr(
+						"scaleway_vpc_private_network.test",
+						"ipv6_subnets.0.prefix_length",
+						"64",
 					),
 					resource.TestCheckResourceAttr(
 						"scaleway_vpc_private_network.test",

@@ -100,6 +100,21 @@ func resourceScalewayVPCPrivateNetwork() *schema.Resource {
 							Computed:    true,
 							Description: "The date and time of the last update of the subnet",
 						},
+						"address": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The network address of the subnet in dotted decimal notation, e.g., '192.168.0.0' for a '192.168.0.0/24' subnet",
+						},
+						"subnet_mask": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The subnet mask expressed in dotted decimal notation, e.g., '255.255.255.0' for a /24 subnet",
+						},
+						"prefix_length": {
+							Type:        schema.TypeInt,
+							Computed:    true,
+							Description: "The length of the network prefix, e.g., 24 for a 255.255.255.0 mask",
+						},
 					},
 				},
 			},
@@ -133,6 +148,21 @@ func resourceScalewayVPCPrivateNetwork() *schema.Resource {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "The date and time of the last update of the subnet",
+						},
+						"address": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The network address of the subnet in dotted decimal notation, e.g., '192.168.0.0' for a '192.168.0.0/24' subnet",
+						},
+						"subnet_mask": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The subnet mask expressed in dotted decimal notation, e.g., '255.255.255.0' for a /24 subnet",
+						},
+						"prefix_length": {
+							Type:        schema.TypeInt,
+							Computed:    true,
+							Description: "The length of the network prefix, e.g., 24 for a 255.255.255.0 mask",
 						},
 					},
 				},
