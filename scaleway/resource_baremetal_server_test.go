@@ -752,8 +752,8 @@ func TestAccScalewayBaremetalServer_AddAnotherPrivateNetwork(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayBaremetalServerExists(tt, "scaleway_baremetal_server.base"),
 					testAccCheckScalewayBaremetalServerHasPrivateNetwork(tt, "scaleway_baremetal_server.base"),
-					resource.TestCheckResourceAttrPair("scaleway_baremetal_server.base", "private_network.*.id", "scaleway_vpc_private_network.pn", "id"),
-					resource.TestCheckResourceAttrPair("scaleway_baremetal_server.base", "private_network.*.id", "scaleway_vpc_private_network.pn2", "id"),
+					testAccCheckRawIDsMatch("scaleway_baremetal_server.base", "private_network.*.id", "scaleway_vpc_private_network.pn", "id"),
+					testAccCheckRawIDsMatch("scaleway_baremetal_server.base", "private_network.*.id", "scaleway_vpc_private_network.pn2", "id"),
 				),
 			},
 		},
