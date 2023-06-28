@@ -2,6 +2,8 @@ package scaleway
 
 import (
 	"context"
+	"math"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -274,6 +276,18 @@ E.g. 'failover-website.s3-website.fr-par.scw.cloud' if your bucket website URL i
 				Optional:    true,
 				Default:     false,
 			},
+			"max_connections": {
+				Type:         schema.TypeInt,
+				Optional:     true,
+				ValidateFunc: validation.IntBetween(0, math.MaxInt32),
+				Description:  "Maximum number of connections allowed per backend server",
+			},
+			"timeout_queue": {
+				Type:         schema.TypeString,
+				Optional:     true,
+				ValidateFunc: validateDuration(),
+				Description:  "Maximum time (in seconds) for a request to be left pending in queue when `max_connections` is reached",
+			},
 		},
 	}
 }
@@ -352,6 +366,17 @@ func resourceScalewayLbBackendCreate(ctx context.Context, d *schema.ResourceData
 		IgnoreSslServerVerify: expandBoolPtr(getBool(d, "ignore_ssl_server_verify")),
 	}
 
+	if maxConn, ok := d.GetOk("max_connections"); ok {
+		createReq.MaxConnections = expandInt32Ptr(maxConn)
+	}
+	if timeoutQueue, ok := d.GetOk("timeout_queue"); ok {
+		timeout, err := time.ParseDuration(timeoutQueue.(string))
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		createReq.TimeoutQueue = &scw.Duration{Seconds: int64(timeout.Seconds())}
+	}
+
 	// deprecated attribute
 	createReq.SendProxyV2 = expandBoolPtr(getBool(d, "send_proxy_v2"))
 
@@ -416,6 +441,11 @@ func resourceScalewayLbBackendRead(ctx context.Context, d *schema.ResourceData, 
 	_ = d.Set("failover_host", backend.FailoverHost)
 	_ = d.Set("ssl_bridging", flattenBoolPtr(backend.SslBridging))
 	_ = d.Set("ignore_ssl_server_verify", flattenBoolPtr(backend.IgnoreSslServerVerify))
+	_ = d.Set("max_connections", flattenInt32Ptr(backend.MaxConnections))
+
+	if backend.TimeoutQueue != nil {
+		_ = d.Set("timeout_queue", flattenDuration(backend.TimeoutQueue.ToTimeDuration()))
+	}
 
 	_, err = waitForLB(ctx, lbAPI, zone, backend.LB.ID, d.Timeout(schema.TimeoutRead))
 	if err != nil {
@@ -480,6 +510,15 @@ func resourceScalewayLbBackendUpdate(ctx context.Context, d *schema.ResourceData
 		FailoverHost:             expandStringPtr(d.Get("failover_host")),
 		SslBridging:              expandBoolPtr(getBool(d, "ssl_bridging")),
 		IgnoreSslServerVerify:    expandBoolPtr(getBool(d, "ignore_ssl_server_verify")),
+		MaxConnections:           expandInt32Ptr(d.Get("max_connections")),
+	}
+
+	if timeoutQueue, ok := d.GetOk("timeout_queue"); ok {
+		timeoutQueueParsed, err := time.ParseDuration(timeoutQueue.(string))
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		req.TimeoutQueue = &scw.Duration{Seconds: int64(timeoutQueueParsed.Seconds())}
 	}
 
 	// deprecated
