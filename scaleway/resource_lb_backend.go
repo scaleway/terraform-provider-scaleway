@@ -119,6 +119,7 @@ func resourceScalewayLbBackend() *schema.Resource {
 			"timeout_server": {
 				Type:             schema.TypeString,
 				Optional:         true,
+				Default:          "5m",
 				DiffSuppressFunc: diffSuppressFuncDuration,
 				ValidateFunc:     validateDuration(),
 				Description:      "Maximum server connection inactivity time",
@@ -126,6 +127,7 @@ func resourceScalewayLbBackend() *schema.Resource {
 			"timeout_connect": {
 				Type:             schema.TypeString,
 				Optional:         true,
+				Default:          "5s",
 				DiffSuppressFunc: diffSuppressFuncDuration,
 				ValidateFunc:     validateDuration(),
 				Description:      "Maximum initial server connection establishment time",
@@ -133,6 +135,7 @@ func resourceScalewayLbBackend() *schema.Resource {
 			"timeout_tunnel": {
 				Type:             schema.TypeString,
 				Optional:         true,
+				Default:          "15m",
 				DiffSuppressFunc: diffSuppressFuncDuration,
 				ValidateFunc:     validateDuration(),
 				Description:      "Maximum tunnel inactivity time",
@@ -285,8 +288,22 @@ E.g. 'failover-website.s3-website.fr-par.scw.cloud' if your bucket website URL i
 			"timeout_queue": {
 				Type:         schema.TypeString,
 				Optional:     true,
+				Default:      "0s",
 				ValidateFunc: validateDuration(),
 				Description:  "Maximum time (in seconds) for a request to be left pending in queue when `max_connections` is reached",
+			},
+			"redispatch_attempt_count": {
+				Type:         schema.TypeInt,
+				Optional:     true,
+				ValidateFunc: validation.IntBetween(0, math.MaxInt32),
+				Description:  "Whether to use another backend server on each attempt",
+			},
+			"max_retries": {
+				Type:         schema.TypeInt,
+				Optional:     true,
+				Default:      3,
+				ValidateFunc: validation.IntBetween(0, math.MaxInt32),
+				Description:  "Number of retries when a backend server connection failed",
 			},
 		},
 	}
@@ -376,6 +393,12 @@ func resourceScalewayLbBackendCreate(ctx context.Context, d *schema.ResourceData
 		}
 		createReq.TimeoutQueue = &scw.Duration{Seconds: int64(timeout.Seconds())}
 	}
+	if redispatchAttemptCount, ok := d.GetOk("redispatch_attempt_count"); ok {
+		createReq.RedispatchAttemptCount = expandInt32Ptr(redispatchAttemptCount)
+	}
+	if maxRetries, ok := d.GetOk("max_retries"); ok {
+		createReq.MaxRetries = expandInt32Ptr(maxRetries)
+	}
 
 	// deprecated attribute
 	createReq.SendProxyV2 = expandBoolPtr(getBool(d, "send_proxy_v2"))
@@ -442,6 +465,8 @@ func resourceScalewayLbBackendRead(ctx context.Context, d *schema.ResourceData, 
 	_ = d.Set("ssl_bridging", flattenBoolPtr(backend.SslBridging))
 	_ = d.Set("ignore_ssl_server_verify", flattenBoolPtr(backend.IgnoreSslServerVerify))
 	_ = d.Set("max_connections", flattenInt32Ptr(backend.MaxConnections))
+	_ = d.Set("redispatch_attempt_count", flattenInt32Ptr(backend.RedispatchAttemptCount))
+	_ = d.Set("max_retries", flattenInt32Ptr(backend.MaxRetries))
 
 	if backend.TimeoutQueue != nil {
 		_ = d.Set("timeout_queue", flattenDuration(backend.TimeoutQueue.ToTimeDuration()))
@@ -511,6 +536,8 @@ func resourceScalewayLbBackendUpdate(ctx context.Context, d *schema.ResourceData
 		SslBridging:              expandBoolPtr(getBool(d, "ssl_bridging")),
 		IgnoreSslServerVerify:    expandBoolPtr(getBool(d, "ignore_ssl_server_verify")),
 		MaxConnections:           expandInt32Ptr(d.Get("max_connections")),
+		RedispatchAttemptCount:   expandInt32Ptr(d.Get("redispatch_attempt_count")),
+		MaxRetries:               expandInt32Ptr(d.Get("max_retries")),
 	}
 
 	if timeoutQueue, ok := d.GetOk("timeout_queue"); ok {
