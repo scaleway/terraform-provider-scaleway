@@ -63,7 +63,7 @@ func dataSourceScalewayContainerRead(ctx context.Context, d *schema.ResourceData
 		containerID = res.Containers[0].ID
 	}
 
-	regionalID := datasourceNewRegionalizedID(containerID, region)
+	regionalID := datasourceNewRegionalID(containerID, region)
 	d.SetId(regionalID)
 	_ = d.Set("container_id", regionalID)
 

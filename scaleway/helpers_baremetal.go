@@ -161,6 +161,42 @@ func flattenBaremetalIPs(ips []*baremetal.IP) interface{} {
 	return flattendIPs
 }
 
+func flattenBaremetalIPv4s(ips []*baremetal.IP) interface{} {
+	if ips == nil {
+		return nil
+	}
+	flattendIPs := []map[string]interface{}(nil)
+	for _, ip := range ips {
+		if ip.Version == baremetal.IPVersionIPv4 {
+			flattendIPs = append(flattendIPs, map[string]interface{}{
+				"id":      ip.ID,
+				"address": ip.Address.String(),
+				"reverse": ip.Reverse,
+				"version": ip.Version.String(),
+			})
+		}
+	}
+	return flattendIPs
+}
+
+func flattenBaremetalIPv6s(ips []*baremetal.IP) interface{} {
+	if ips == nil {
+		return nil
+	}
+	flattendIPs := []map[string]interface{}(nil)
+	for _, ip := range ips {
+		if ip.Version == baremetal.IPVersionIPv6 {
+			flattendIPs = append(flattendIPs, map[string]interface{}{
+				"id":      ip.ID,
+				"address": ip.Address.String(),
+				"reverse": ip.Reverse,
+				"version": ip.Version.String(),
+			})
+		}
+	}
+	return flattendIPs
+}
+
 func flattenBaremetalOptions(zone scw.Zone, options []*baremetal.ServerOption) interface{} {
 	if options == nil {
 		return nil

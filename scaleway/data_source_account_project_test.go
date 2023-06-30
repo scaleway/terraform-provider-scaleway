@@ -24,7 +24,7 @@ func TestAccScalewayDataSourceAccountProject_Basic(t *testing.T) {
 			{
 				Config: fmt.Sprintf(`
 					resource scaleway_account_project "project" {
-						name = "test-terraform-account-project"
+						name = "tf-tests-terraform-account-project"
 					}
 
 					data scaleway_account_project "by_name" {

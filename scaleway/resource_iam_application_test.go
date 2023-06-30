@@ -11,9 +11,6 @@ import (
 )
 
 func init() {
-	if !terraformBetaEnabled {
-		return
-	}
 	resource.AddTestSweepers("scaleway_iam_application", &resource.Sweeper{
 		Name: "scaleway_iam_application",
 		F:    testSweepIamApplication,
@@ -24,11 +21,22 @@ func testSweepIamApplication(_ string) error {
 	return sweep(func(scwClient *scw.Client) error {
 		api := iam.NewAPI(scwClient)
 
-		listApps, err := api.ListApplications(&iam.ListApplicationsRequest{})
+		orgID, exists := scwClient.GetDefaultOrganizationID()
+		if !exists {
+			return fmt.Errorf("missing organizationID")
+		}
+
+		listApps, err := api.ListApplications(&iam.ListApplicationsRequest{
+			OrganizationID: &orgID,
+		})
 		if err != nil {
 			return fmt.Errorf("failed to list applications: %w", err)
 		}
 		for _, app := range listApps.Applications {
+			if !isTestResource(app.Name) {
+				continue
+			}
+
 			err = api.DeleteApplication(&iam.DeleteApplicationRequest{
 				ApplicationID: app.ID,
 			})

@@ -62,6 +62,10 @@ The following arguments are supported:
 e.g. 'failover-website.s3-website.fr-par.scw.cloud' if your bucket website URL is 'https://failover-website.s3-website.fr-par.scw.cloud/'.
 - `ssl_bridging`                - (Default: `false`) Enables SSL between load balancer and backend servers.
 - `ignore_ssl_server_verify`    - (Default: `false`) Specifies whether the Load Balancer should check the backend server’s certificate before initiating a connection.
+- `max_connections`             - (Optional) Maximum number of connections allowed per backend server.
+- `timeout_queue`               - (Optional) Maximum time for a request to be left pending in queue when `max_connections` is reached. (e.g.: `1s`)
+- `redispatch_attempt_count`    - (Optional) Whether to use another backend server on each attempt.
+- `max_retries`                 - (Optional) Number of retries when a backend server connection failed.
 
 ### Health Check arguments
 

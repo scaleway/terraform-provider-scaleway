@@ -87,7 +87,7 @@ func dataSourceScalewayVPCRead(ctx context.Context, d *schema.ResourceData, meta
 		}
 	}
 
-	regionalID := datasourceNewRegionalizedID(vpcID, region)
+	regionalID := datasourceNewRegionalID(vpcID, region)
 	d.SetId(regionalID)
 	err = d.Set("vpc_id", regionalID)
 	if err != nil {

@@ -59,7 +59,7 @@ func dataSourceScalewayRDBInstanceRead(ctx context.Context, d *schema.ResourceDa
 		}
 	}
 
-	regionalID := datasourceNewRegionalizedID(instanceID, region)
+	regionalID := datasourceNewRegionalID(instanceID, region)
 	d.SetId(regionalID)
 	err = d.Set("instance_id", regionalID)
 	if err != nil {

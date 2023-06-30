@@ -1,0 +1,77 @@
+{{- /*gotype: tftemplate/models.ResourceTemplate*/ -}}
+package scaleway
+
+import (
+    "context"
+
+    "github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+    "github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+)
+
+func dataSourceScaleway{{.Resource}}() *schema.Resource {
+    // Generate datasource schema from resource
+    dsSchema := datasourceSchemaFromResourceSchema(resourceScaleway{{.Resource}}().Schema)
+    
+    addOptionalFieldsToSchema(dsSchema, "name", "{{.Locality}}")
+    
+    dsSchema["{{.ResourceCleanLow}}_id"] = &schema.Schema{
+        Type:          schema.TypeString,
+        Optional:      true,
+        Description:   "The ID of the {{.ResourceCleanLow}}",
+        ConflictsWith: []string{"name"},
+        ValidateFunc:  validationUUIDorUUIDWithLocality(),
+    }
+    
+    return &schema.Resource{
+        ReadContext: dataSourceScaleway{{.Resource}}Read,
+        Schema:      dsSchema,
+    }
+}
+
+func dataSourceScaleway{{.Resource}}Read(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+    api, {{.Locality}}, err := {{.API}}APIWith{{.LocalityUpper}}(d, meta)
+    if err != nil {
+        return diag.FromErr(err)
+    }
+
+    {{.ResourceCleanLow}}ID, {{.ResourceCleanLow}}IDExists := d.GetOk("{{.ResourceCleanLow}}_id")
+    if !{{.ResourceCleanLow}}IDExists {
+        res, err := api.List{{.ResourceClean}}s(&{{.API}}.List{{.ResourceClean}}sRequest{
+            {{.LocalityUpper}}:     {{.Locality}},
+            Name:       expandStringPtr(d.Get("name")),
+            ProjectID:  expandStringPtr(d.Get("project_id")),
+        })
+        if err != nil {
+            return diag.FromErr(err)
+        }
+        for _, {{.ResourceCleanLow}} := range res.{{.ResourceClean}}s {
+            if {{.ResourceCleanLow}}.Name == d.Get("name").(string) {
+                if {{.ResourceCleanLow}}ID != "" {
+                    return diag.Errorf("more than 1 {{.ResourceCleanLow}} found with the same name %s", d.Get("name"))
+                }
+                {{.ResourceCleanLow}}ID = {{.ResourceCleanLow}}.ID
+            }
+        }
+        if {{.ResourceCleanLow}}ID == "" {
+            return diag.Errorf("no {{.ResourceCleanLow}} found with the name %s", d.Get("name"))
+        }
+    }
+
+    {{.Locality}}ID := datasourceNew{{.LocalityAdjectiveUpper}}ID({{.ResourceCleanLow}}ID, {{.Locality}})
+    d.SetId({{.Locality}}ID)
+    err = d.Set("{{.ResourceCleanLow}}_id", {{.Locality}}ID)
+    if err != nil {
+        return diag.FromErr(err)
+    }
+
+    diags := resourceScaleway{{.Resource}}Read(ctx, d, meta)
+    if diags != nil {
+        return append(diags, diag.Errorf("failed to read {{.ResourceCleanLow}} state")...)
+    }
+
+    if d.Id() == "" {
+        return diag.Errorf("{{.ResourceCleanLow}} (%s) not found", {{.Locality}}ID)
+    }
+
+    return nil
+}
