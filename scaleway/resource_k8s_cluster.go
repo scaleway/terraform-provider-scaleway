@@ -6,6 +6,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -526,36 +527,21 @@ func resourceScalewayK8SClusterRead(ctx context.Context, d *schema.ResourceData,
 	////
 	// Read kubeconfig
 	////
-	kubeconfig, err := k8sAPI.GetClusterKubeConfig(&k8s.GetClusterKubeConfigRequest{
-		Region:    region,
-		ClusterID: clusterID,
-	}, scw.WithContext(ctx))
+	kubeconfig, err := flattenKubeconfig(ctx, k8sAPI, region, clusterID)
 	if err != nil {
+		if is403Error(err) {
+			return diag.Diagnostics{
+				diag.Diagnostic{
+					Severity:      diag.Warning,
+					Summary:       "Cannot read kubeconfig: unauthorized",
+					Detail:        "Got 403 while reading kubeconfig, please check your permissions",
+					AttributePath: cty.GetAttrPath("kubeconfig"),
+				},
+			}
+		}
 		return diag.FromErr(err)
 	}
-
-	kubeconfigServer, err := kubeconfig.GetServer()
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	kubeconfigCa, err := kubeconfig.GetCertificateAuthorityData()
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	kubeconfigToken, err := kubeconfig.GetToken()
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	kubeconf := map[string]interface{}{}
-	kubeconf["config_file"] = string(kubeconfig.GetRaw())
-	kubeconf["host"] = kubeconfigServer
-	kubeconf["cluster_ca_certificate"] = kubeconfigCa
-	kubeconf["token"] = kubeconfigToken
-
-	_ = d.Set("kubeconfig", []map[string]interface{}{kubeconf})
+	_ = d.Set("kubeconfig", []map[string]interface{}{kubeconfig})
 
 	return nil
 }
