@@ -184,6 +184,7 @@ If this behaviour is wanted, please set 'reinstall_on_ssh_key_changes' argument 
 			"private_network": {
 				Type:        schema.TypeSet,
 				Optional:    true,
+				Set:         baremetalPrivateNetworkSetHash,
 				Description: "The private networks to attach to the server",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -192,6 +193,9 @@ If this behaviour is wanted, please set 'reinstall_on_ssh_key_changes' argument 
 							Description:  "The private network ID",
 							Required:     true,
 							ValidateFunc: validationUUIDorUUIDWithLocality(),
+							StateFunc: func(i interface{}) string {
+								return expandID(i.(string))
+							},
 						},
 						// computed
 						"vlan": {
@@ -432,7 +436,7 @@ func resourceScalewayBaremetalServerRead(ctx context.Context, d *schema.Resource
 	if err != nil {
 		return diag.FromErr(fmt.Errorf("failed to list server's private networks: %w", err))
 	}
-	_ = d.Set("private_network", flattenBaremetalPrivateNetworks(server.Zone, listPrivateNetworks.ServerPrivateNetworks))
+	_ = d.Set("private_network", flattenBaremetalPrivateNetworks(listPrivateNetworks.ServerPrivateNetworks))
 
 	return nil
 }

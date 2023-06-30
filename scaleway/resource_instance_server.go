@@ -246,10 +246,11 @@ func resourceScalewayInstanceServer() *schema.Resource {
 					},
 					Schema: map[string]*schema.Schema{
 						"pn_id": {
-							Type:         schema.TypeString,
-							Required:     true,
-							ValidateFunc: validationUUIDorUUIDWithLocality(),
-							Description:  "The Private Network ID",
+							Type:             schema.TypeString,
+							Required:         true,
+							ValidateFunc:     validationUUIDorUUIDWithLocality(),
+							Description:      "The Private Network ID",
+							DiffSuppressFunc: diffSuppressFuncLocality,
 						},
 						// Computed
 						"mac_address": {

@@ -88,7 +88,16 @@ func resourceScalewayLb() *schema.Resource {
 				Type:        schema.TypeSet,
 				Optional:    true,
 				MaxItems:    8,
+				Set:         lbPrivateNetworkSetHash,
 				Description: "List of private network to connect with your load balancer",
+				DiffSuppressFunc: func(k, oldValue, newValue string, d *schema.ResourceData) bool {
+					// Check if the key is for the 'private_network_id' attribute
+					if strings.HasSuffix(k, "private_network_id") {
+						return expandID(oldValue) == expandID(newValue)
+					}
+					// For all other attributes, don't suppress the diff
+					return false
+				},
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"private_network_id": {
