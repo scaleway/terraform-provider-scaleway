@@ -283,6 +283,8 @@ If you prefer keeping it, you should instead set it as `false`.
 ~> **Important:** This field can be set at cluster creation or later to migrate to a Private Network.
 Any subsequent change after this field got set will prompt for cluster recreation.
 
+~> Also, you should only use **regional** Private Networks with Kapsule clusters, otherwise you will get an error saying that the Private Network can't be found.
+
 - `default_pool` - (Deprecated) See below.
 
 - `region` - (Defaults to [provider](../index.md#arguments-reference) `region`) The [region](../guides/regions_and_zones.md#regions) in which the cluster should be created.

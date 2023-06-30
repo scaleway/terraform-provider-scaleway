@@ -2,6 +2,7 @@ package scaleway
 
 import (
 	"fmt"
+	"strings"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -533,9 +534,14 @@ func testAccCheckScalewayK8sClusterPrivateNetworkID(tt *TestTools, clusterName, 
 			return fmt.Errorf("resource not found: %s", pnName)
 		}
 
-		_, _, pnID, err := vpcAPIWithZoneAndID(tt.Meta, rs.Primary.ID)
+		_, _, pnID, err := vpcAPIWithRegionAndID(tt.Meta, rs.Primary.ID)
 		if err != nil {
-			return err
+			if strings.Contains(err.Error(), "bad region format") {
+				_, _, pnID, err = vpcAPIWithZoneAndID(tt.Meta, rs.Primary.ID)
+				if err != nil {
+					return err
+				}
+			}
 		}
 
 		if clusterPNID == nil {
@@ -694,10 +700,10 @@ resource "scaleway_k8s_cluster" "private_network" {
 func testAccCheckScalewayK8SClusterConfigPrivateNetworkChange(version string) string {
 	return fmt.Sprintf(`
 resource "scaleway_vpc_private_network" "private_network" {
- name       = "k8s-private-network"
+  name       = "k8s-private-network"
 }
 resource "scaleway_vpc_private_network" "private_network_2" {
- name       = "other-private-network"
+  name       = "other-private-network"
 }
 resource "scaleway_k8s_cluster" "private_network" {
 	cni = "calico"

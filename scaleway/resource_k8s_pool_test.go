@@ -9,6 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
 	"github.com/scaleway/scaleway-sdk-go/api/k8s/v1"
+	"github.com/scaleway/scaleway-sdk-go/scw"
 )
 
 func TestAccScalewayK8SCluster_PoolBasic(t *testing.T) {
@@ -383,7 +384,7 @@ func TestAccScalewayK8SCluster_PoolPrivateNetwork(t *testing.T) {
 				}
 
 				resource "scaleway_k8s_cluster" "cluster_with_pn" {
-				  name = "k8s-private-network-cluster"
+				  name = "private-network-cluster"
 				  version = "%s"
 				  cni     = "cilium"
 				  private_network_id = scaleway_vpc_private_network.pn.id
@@ -437,9 +438,14 @@ func testAccCheckScalewayK8SPoolServersAreInPrivateNetwork(tt *TestTools, cluste
 		if !ok {
 			return fmt.Errorf("resource not found: %s", pnTFName)
 		}
-		_, zone, pnID, err := vpcAPIWithZoneAndID(tt.Meta, rs.Primary.ID)
+		_, _, pnID, err := vpcAPIWithRegionAndID(tt.Meta, rs.Primary.ID)
 		if err != nil {
-			return err
+			if strings.Contains(err.Error(), "bad region format") {
+				_, _, pnID, err = vpcAPIWithZoneAndID(tt.Meta, rs.Primary.ID)
+				if err != nil {
+					return err
+				}
+			}
 		}
 
 		nodes, err := k8sAPI.ListNodes(&k8s.ListNodesRequest{
@@ -455,12 +461,13 @@ func testAccCheckScalewayK8SPoolServersAreInPrivateNetwork(tt *TestTools, cluste
 
 		for _, node := range nodes.Nodes {
 			providerIDSplit := strings.SplitN(node.ProviderID, "/", 5)
+			// node.ProviderID is of the form scaleway://instance/<zone>/<id>
 			if len(providerIDSplit) < 5 {
 				return fmt.Errorf("unexpected format for ProviderID in node %s", node.ID)
 			}
 
 			server, err := instanceAPI.GetServer(&instance.GetServerRequest{
-				Zone:     zone,
+				Zone:     scw.Zone(providerIDSplit[3]),
 				ServerID: providerIDSplit[4],
 			})
 			if err != nil {
