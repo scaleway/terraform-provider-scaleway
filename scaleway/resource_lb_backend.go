@@ -249,6 +249,14 @@ func resourceScalewayLbBackend() *schema.Resource {
 					},
 				},
 			},
+			"health_check_transient_delay": {
+				Type:             schema.TypeString,
+				Optional:         true,
+				Default:          "0.5s",
+				ValidateFunc:     validateDuration(),
+				DiffSuppressFunc: diffSuppressFuncDuration,
+				Description:      "Time to wait between two consecutive health checks when a backend server is in a transient state (going UP or DOWN)",
+			},
 			"on_marked_down_action": {
 				Type: schema.TypeString,
 				ValidateFunc: validation.StringInSlice([]string{
@@ -286,11 +294,12 @@ E.g. 'failover-website.s3-website.fr-par.scw.cloud' if your bucket website URL i
 				Description:  "Maximum number of connections allowed per backend server",
 			},
 			"timeout_queue": {
-				Type:         schema.TypeString,
-				Optional:     true,
-				Default:      "0s",
-				ValidateFunc: validateDuration(),
-				Description:  "Maximum time (in seconds) for a request to be left pending in queue when `max_connections` is reached",
+				Type:             schema.TypeString,
+				Optional:         true,
+				Default:          "0s",
+				ValidateFunc:     validateDuration(),
+				DiffSuppressFunc: diffSuppressFuncDuration,
+				Description:      "Maximum time (in seconds) for a request to be left pending in queue when `max_connections` is reached",
 			},
 			"redispatch_attempt_count": {
 				Type:         schema.TypeInt,
@@ -399,6 +408,13 @@ func resourceScalewayLbBackendCreate(ctx context.Context, d *schema.ResourceData
 	if maxRetries, ok := d.GetOk("max_retries"); ok {
 		createReq.MaxRetries = expandInt32Ptr(maxRetries)
 	}
+	if healthCheckTransientDelay, ok := d.GetOk("health_check_transient_delay"); ok {
+		timeout, err := time.ParseDuration(healthCheckTransientDelay.(string))
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		createReq.HealthCheck.TransientCheckDelay = &scw.Duration{Seconds: int64(timeout.Seconds()), Nanos: int32(timeout.Nanoseconds())}
+	}
 
 	// deprecated attribute
 	createReq.SendProxyV2 = expandBoolPtr(getBool(d, "send_proxy_v2"))
@@ -467,10 +483,8 @@ func resourceScalewayLbBackendRead(ctx context.Context, d *schema.ResourceData, 
 	_ = d.Set("max_connections", flattenInt32Ptr(backend.MaxConnections))
 	_ = d.Set("redispatch_attempt_count", flattenInt32Ptr(backend.RedispatchAttemptCount))
 	_ = d.Set("max_retries", flattenInt32Ptr(backend.MaxRetries))
-
-	if backend.TimeoutQueue != nil {
-		_ = d.Set("timeout_queue", flattenDuration(backend.TimeoutQueue.ToTimeDuration()))
-	}
+	_ = d.Set("timeout_queue", flattenDuration(backend.TimeoutQueue.ToTimeDuration()))
+	_ = d.Set("health_check_transient_delay", flattenDuration(backend.HealthCheck.TransientCheckDelay.ToTimeDuration()))
 
 	_, err = waitForLB(ctx, lbAPI, zone, backend.LB.ID, d.Timeout(schema.TimeoutRead))
 	if err != nil {
@@ -574,6 +588,13 @@ func resourceScalewayLbBackendUpdate(ctx context.Context, d *schema.ResourceData
 		CheckDelay:      healthCheckDelay,
 		HTTPConfig:      expandLbHCHTTP(d.Get("health_check_http")),
 		HTTPSConfig:     expandLbHCHTTPS(d.Get("health_check_https")),
+	}
+	if healthCheckTransientDelay, ok := d.GetOk("health_check_transient_delay"); ok {
+		timeout, err := time.ParseDuration(healthCheckTransientDelay.(string))
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		updateHCRequest.TransientCheckDelay = &scw.Duration{Seconds: int64(timeout.Seconds()), Nanos: int32(timeout.Nanoseconds())}
 	}
 
 	// As this is the default behaviour if no other HC type are present we enable TCP
