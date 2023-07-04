@@ -56,6 +56,7 @@ func TestAccScalewayLbBackend_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_lb_backend.bkd01", "ignore_ssl_server_verify", "false"),
 					resource.TestCheckResourceAttr("scaleway_lb_backend.bkd01", "redispatch_attempt_count", "0"),
 					resource.TestCheckResourceAttr("scaleway_lb_backend.bkd01", "max_retries", "3"),
+					resource.TestCheckResourceAttr("scaleway_lb_backend.bkd01", "health_check_transient_delay", "500ms"),
 				),
 			},
 			{
@@ -94,6 +95,7 @@ func TestAccScalewayLbBackend_Basic(t *testing.T) {
 						timeout_queue = "4s"
 						redispatch_attempt_count = 1
 						max_retries = 6
+						health_check_transient_delay = "0.2s"
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
@@ -114,6 +116,7 @@ func TestAccScalewayLbBackend_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_lb_backend.bkd01", "timeout_queue", "4s"),
 					resource.TestCheckResourceAttr("scaleway_lb_backend.bkd01", "redispatch_attempt_count", "1"),
 					resource.TestCheckResourceAttr("scaleway_lb_backend.bkd01", "max_retries", "6"),
+					resource.TestCheckResourceAttr("scaleway_lb_backend.bkd01", "health_check_transient_delay", "200ms"),
 				),
 			},
 		},
