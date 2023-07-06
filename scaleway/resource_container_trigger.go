@@ -155,7 +155,7 @@ func resourceScalewayContainerTriggerRead(ctx context.Context, d *schema.Resourc
 		})
 	}
 
-	return nil
+	return diags
 }
 
 func resourceScalewayContainerTriggerUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
