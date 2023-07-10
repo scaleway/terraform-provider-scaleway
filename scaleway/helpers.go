@@ -378,7 +378,16 @@ func regionSchema() *schema.Schema {
 	}
 }
 
-// regionComputedSchema returns a standard schema for a zone
+// zoneComputedSchema returns a standard schema for a zone
+func zoneComputedSchema() *schema.Schema {
+	return &schema.Schema{
+		Type:        schema.TypeString,
+		Description: "The zone of the resource",
+		Computed:    true,
+	}
+}
+
+// regionComputedSchema returns a standard schema for a region
 func regionComputedSchema() *schema.Schema {
 	return &schema.Schema{
 		Type:        schema.TypeString,
