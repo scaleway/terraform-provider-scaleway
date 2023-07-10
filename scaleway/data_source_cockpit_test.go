@@ -21,18 +21,23 @@ func TestAccScalewayDataSourceCockpit_Basic(t *testing.T) {
 						name = "tf_tests_datasource_cockpit_project_basic"
 					}
 
-					resource scaleway_cockpit main {
+					resource "scaleway_cockpit" "main" {
 						project_id = scaleway_account_project.project.id
 					}
 
-					data scaleway_cockpit selected {
+					data "scaleway_cockpit" "selected" {
 						project_id = scaleway_cockpit.main.project_id
+					}
+
+					data "scaleway_cockpit_plan" "free" {
+						name = "free"
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayCockpitExists(tt, "scaleway_cockpit.main"),
 					testAccCheckScalewayCockpitExists(tt, "data.scaleway_cockpit.selected"),
 
+					resource.TestCheckResourceAttrPair("data.scaleway_cockpit.selected", "plan_id", "data.scaleway_cockpit_plan.free", "id"),
 					resource.TestCheckResourceAttrSet("data.scaleway_cockpit.selected", "endpoints.0.metrics_url"),
 					resource.TestCheckResourceAttrSet("data.scaleway_cockpit.selected", "endpoints.0.metrics_url"),
 					resource.TestCheckResourceAttrSet("data.scaleway_cockpit.selected", "endpoints.0.logs_url"),

@@ -256,3 +256,57 @@ func flattenKubeletArgs(args map[string]string) map[string]interface{} {
 
 	return kubeletArgs
 }
+
+func flattenKubeconfig(ctx context.Context, k8sAPI *k8s.API, region scw.Region, clusterID string) (map[string]interface{}, error) {
+	kubeconfig, err := k8sAPI.GetClusterKubeConfig(&k8s.GetClusterKubeConfigRequest{
+		Region:    region,
+		ClusterID: clusterID,
+	}, scw.WithContext(ctx))
+	if err != nil {
+		return nil, err
+	}
+
+	kubeconfigServer, err := kubeconfig.GetServer()
+	if err != nil {
+		return nil, err
+	}
+
+	kubeconfigCa, err := kubeconfig.GetCertificateAuthorityData()
+	if err != nil {
+		return nil, err
+	}
+
+	kubeconfigToken, err := kubeconfig.GetToken()
+	if err != nil {
+		return nil, err
+	}
+
+	kubeconf := map[string]interface{}{}
+	kubeconf["config_file"] = string(kubeconfig.GetRaw())
+	kubeconf["host"] = kubeconfigServer
+	kubeconf["cluster_ca_certificate"] = kubeconfigCa
+	kubeconf["token"] = kubeconfigToken
+
+	return kubeconf, nil
+}
+
+func migrateToPrivateNetworkCluster(ctx context.Context, d *schema.ResourceData, i interface{}) error {
+	k8sAPI, region, clusterID, err := k8sAPIWithRegionAndID(i, d.Id())
+	if err != nil {
+		return err
+	}
+	pnID := expandRegionalID(d.Get("private_network_id").(string)).ID
+	_, err = k8sAPI.MigrateToPrivateNetworkCluster(&k8s.MigrateToPrivateNetworkClusterRequest{
+		Region:           region,
+		ClusterID:        clusterID,
+		PrivateNetworkID: pnID,
+	}, scw.WithContext(ctx))
+	if err != nil {
+		return err
+	}
+	_, err = waitK8SCluster(ctx, k8sAPI, region, clusterID, defaultK8SClusterTimeout)
+	if err != nil {
+		return err
+	}
+	return nil
+}

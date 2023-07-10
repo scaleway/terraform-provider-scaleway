@@ -330,6 +330,10 @@ func resourceScalewayContainerUpdate(ctx context.Context, d *schema.ResourceData
 		req.MemoryLimit = scw.Uint32Ptr(uint32(d.Get("memory_limit").(int)))
 	}
 
+	if d.HasChanges("cpu_limit") {
+		req.CPULimit = scw.Uint32Ptr(uint32(d.Get("cpu_limit").(int)))
+	}
+
 	if d.HasChanges("timeout") {
 		req.Timeout = &scw.Duration{Seconds: int64(d.Get("timeout").(int))}
 	}

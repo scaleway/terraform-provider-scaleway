@@ -31,7 +31,9 @@ The following arguments are supported:
 
 * `bucket` - (Required) The name of the bucket.
 * `key` - (Required) The path of the object.
-* `file` - (Optional) The name of the file to upload, defaults to an empty file
+* `file` - (Optional) The name of the file to upload, defaults to an empty file. Only one of `file`, `content` or `content_base64` can be defined.
+* `content` - (Optional) The content of the file to upload. Only one of `file`, `content` or `content_base64` can be defined.
+* `content_base64` - (Optional) The base64-encoded content of the file to upload. Only one of `file`, `content` or `content_base64` can be defined.
 * `hash` - (Optional) Hash of the file, used to trigger upload on file change
 * `storage_class` - (Optional) Specifies the Scaleway [storage class](https://www.scaleway.com/en/docs/storage/object/concepts/#storage-class) `STANDARD`, `GLACIER`, `ONEZONE_IA` used to store the object.
 * `visibility` - (Optional) Visibility of the object, `public-read` or `private`

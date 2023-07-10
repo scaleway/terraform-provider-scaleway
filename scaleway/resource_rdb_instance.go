@@ -140,15 +140,15 @@ func resourceScalewayRdbInstance() *schema.Resource {
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"pn_id": {
-							Type:         schema.TypeString,
-							Required:     true,
-							ValidateFunc: validationUUIDorUUIDWithLocality(),
-							Description:  "The private network ID",
+							Type:             schema.TypeString,
+							Required:         true,
+							ValidateFunc:     validationUUIDorUUIDWithLocality(),
+							DiffSuppressFunc: diffSuppressFuncLocality,
+							Description:      "The private network ID",
 						},
 						// Computed
 						"endpoint_id": {
 							Type:        schema.TypeString,
-							Optional:    true,
 							Computed:    true,
 							Description: "The endpoint ID",
 						},
@@ -157,14 +157,12 @@ func resourceScalewayRdbInstance() *schema.Resource {
 							Optional:     true,
 							Computed:     true,
 							ValidateFunc: validation.IsCIDR,
-							Description:  "The IP network address within the private subnet",
+							Description:  "The IP with the given mask within the private subnet",
 						},
 						"ip": {
-							Type:         schema.TypeString,
-							Optional:     true,
-							Computed:     true,
-							ValidateFunc: validation.IsIPAddress,
-							Description:  "The IP of your private service",
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The IP of your Instance within the private service",
 						},
 						"port": {
 							Type:         schema.TypeInt,
@@ -175,13 +173,11 @@ func resourceScalewayRdbInstance() *schema.Resource {
 						},
 						"name": {
 							Type:        schema.TypeString,
-							Optional:    true,
 							Computed:    true,
 							Description: "The name of your private service",
 						},
 						"hostname": {
 							Type:        schema.TypeString,
-							Optional:    true,
 							Computed:    true,
 							Description: "The hostname of your endpoint",
 						},
@@ -244,28 +240,22 @@ func resourceScalewayRdbInstance() *schema.Resource {
 							Description: "The endpoint ID",
 						},
 						"ip": {
-							Type:         schema.TypeString,
-							Optional:     true,
-							Computed:     true,
-							ValidateFunc: validation.IsIPAddress,
-							Description:  "The IP of your load balancer service",
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The IP of your load balancer service",
 						},
 						"port": {
-							Type:         schema.TypeInt,
-							Optional:     true,
-							Computed:     true,
-							ValidateFunc: validation.IsPortNumber,
-							Description:  "The port of your load balancer service",
+							Type:        schema.TypeInt,
+							Computed:    true,
+							Description: "The port of your load balancer service",
 						},
 						"name": {
 							Type:        schema.TypeString,
-							Optional:    true,
 							Computed:    true,
 							Description: "The name of your load balancer service",
 						},
 						"hostname": {
 							Type:        schema.TypeString,
-							Optional:    true,
 							Computed:    true,
 							Description: "The hostname of your endpoint",
 						},

@@ -362,6 +362,11 @@ func resourceScalewayFunctionUpdate(ctx context.Context, d *schema.ResourceData,
 		updated = true
 	}
 
+	if d.HasChange("privacy") {
+		req.Privacy = function.FunctionPrivacy(d.Get("privacy").(string))
+		updated = true
+	}
+
 	if updated {
 		_, err = api.UpdateFunction(req, scw.WithContext(ctx))
 		if err != nil {

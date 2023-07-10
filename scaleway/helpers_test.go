@@ -302,3 +302,54 @@ func TestStringHashcode_positiveIndex(t *testing.T) {
 		}
 	}
 }
+
+func testAccCheckRawIDsMatch(res1, attr1, res2, attr2 string) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		rs1, ok1 := s.RootModule().Resources[res1]
+		if !ok1 {
+			return fmt.Errorf("not found: %s", res1)
+		}
+
+		rs2, ok2 := s.RootModule().Resources[res2]
+		if !ok2 {
+			return fmt.Errorf("not found: %s", res2)
+		}
+
+		// Check if attr1 uses the wildcard syntax
+		if strings.Contains(attr1, ".*.") {
+			parts := strings.SplitN(attr1, ".*.", 2)
+			prefix, suffix := parts[0], parts[1]
+
+			var id1s []string
+			for key, value := range rs1.Primary.Attributes {
+				if strings.HasPrefix(key, prefix+".") && strings.HasSuffix(key, "."+suffix) {
+					id1s = append(id1s, expandID(value))
+				}
+			}
+
+			id2 := expandID(rs2.Primary.Attributes[attr2])
+
+			matches := false
+			for _, id1 := range id1s {
+				if id1 == id2 {
+					matches = true
+					break
+				}
+			}
+
+			if !matches {
+				return fmt.Errorf("ID %s from resource %s does not match ID %s from resource %s", strings.Join(id1s, ", "), res1, id2, res2)
+			}
+		} else {
+			// attr1 doesn't use the wildcard syntax, so use it as is
+			id1 := expandID(rs1.Primary.Attributes[attr1])
+			id2 := expandID(rs2.Primary.Attributes[attr2])
+
+			if id1 != id2 {
+				return fmt.Errorf("ID %s from resource %s does not match ID %s from resource %s", id1, res1, id2, res2)
+			}
+		}
+
+		return nil
+	}
+}

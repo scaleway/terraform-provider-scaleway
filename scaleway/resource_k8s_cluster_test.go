@@ -2,6 +2,7 @@ package scaleway
 
 import (
 	"fmt"
+	"strings"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -398,12 +399,30 @@ func TestAccScalewayK8SCluster_PrivateNetwork(t *testing.T) {
 		CheckDestroy:      testAccCheckScalewayK8SClusterDestroy(tt),
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckScalewayK8SClusterConfigPrivateNetwork(latestK8SVersion),
+				Config: testAccCheckScalewayK8SClusterConfigPrivateNetworkNotLinked(latestK8SVersion),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayK8SClusterExists(tt, "scaleway_k8s_cluster.private_network"),
+					testAccCheckScalewayVPCPrivateNetworkExists(tt, "scaleway_vpc_private_network.private_network"),
+					resource.TestCheckNoResourceAttr("scaleway_k8s_cluster.private_network", "private_network_id"),
+				),
+			},
+			{
+				Config: testAccCheckScalewayK8SClusterConfigPrivateNetworkLinked(latestK8SVersion),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalewayK8SClusterExists(tt, "scaleway_k8s_cluster.private_network"),
 					testAccCheckScalewayVPCPrivateNetworkExists(tt, "scaleway_vpc_private_network.private_network"),
 					testAccCheckScalewayK8sClusterPrivateNetworkID(tt, "scaleway_k8s_cluster.private_network", "scaleway_vpc_private_network.private_network"),
 				),
+			},
+			{
+				Config:             testAccCheckScalewayK8SClusterConfigPrivateNetworkChange(latestK8SVersion),
+				PlanOnly:           true,
+				ExpectNonEmptyPlan: true,
+			},
+			{
+				Config:             testAccCheckScalewayK8SClusterConfigPrivateNetworkNotLinked(latestK8SVersion),
+				PlanOnly:           true,
+				ExpectNonEmptyPlan: true,
 			},
 		},
 	})
@@ -515,9 +534,14 @@ func testAccCheckScalewayK8sClusterPrivateNetworkID(tt *TestTools, clusterName, 
 			return fmt.Errorf("resource not found: %s", pnName)
 		}
 
-		_, _, pnID, err := vpcAPIWithZoneAndID(tt.Meta, rs.Primary.ID)
+		_, _, pnID, err := vpcAPIWithRegionAndID(tt.Meta, rs.Primary.ID)
 		if err != nil {
-			return err
+			if strings.Contains(err.Error(), "bad region format") {
+				_, _, pnID, err = vpcAPIWithZoneAndID(tt.Meta, rs.Primary.ID)
+				if err != nil {
+					return err
+				}
+			}
 		}
 
 		if clusterPNID == nil {
@@ -642,7 +666,22 @@ resource "scaleway_k8s_cluster" "auto_upgrade" {
 }`, version, enable, hour, day)
 }
 
-func testAccCheckScalewayK8SClusterConfigPrivateNetwork(version string) string {
+func testAccCheckScalewayK8SClusterConfigPrivateNetworkNotLinked(version string) string {
+	return fmt.Sprintf(`
+resource "scaleway_vpc_private_network" "private_network" {
+  name       = "k8s-private-network"
+}
+resource "scaleway_k8s_cluster" "private_network" {
+	cni = "calico"
+	version = "%s"
+	name = "k8s-private-network-cluster"
+	tags = [ "terraform-test", "scaleway_k8s_cluster", "private_network" ]
+	delete_additional_resources = true
+	depends_on = [scaleway_vpc_private_network.private_network]
+}`, version)
+}
+
+func testAccCheckScalewayK8SClusterConfigPrivateNetworkLinked(version string) string {
 	return fmt.Sprintf(`
 resource "scaleway_vpc_private_network" "private_network" {
   name       = "k8s-private-network"
@@ -655,6 +694,25 @@ resource "scaleway_k8s_cluster" "private_network" {
 	tags = [ "terraform-test", "scaleway_k8s_cluster", "private_network" ]
 	delete_additional_resources = true
 	depends_on = [scaleway_vpc_private_network.private_network]
+}`, version)
+}
+
+func testAccCheckScalewayK8SClusterConfigPrivateNetworkChange(version string) string {
+	return fmt.Sprintf(`
+resource "scaleway_vpc_private_network" "private_network" {
+  name       = "k8s-private-network"
+}
+resource "scaleway_vpc_private_network" "private_network_2" {
+  name       = "other-private-network"
+}
+resource "scaleway_k8s_cluster" "private_network" {
+	cni = "calico"
+	version = "%s"
+	name = "k8s-private-network-cluster"
+   private_network_id = scaleway_vpc_private_network.private_network_2.id
+	tags = [ "terraform-test", "scaleway_k8s_cluster", "private_network" ]
+	delete_additional_resources = true
+	depends_on = [scaleway_vpc_private_network.private_network_2]
 }`, version)
 }
 

@@ -211,7 +211,6 @@ func flattenPrivateNetwork(endpoints []*rdb.Endpoint) (interface{}, bool) {
 	for _, endpoint := range endpoints {
 		if endpoint.PrivateNetwork != nil {
 			pn := endpoint.PrivateNetwork
-			pnZonedID := newZonedIDString(pn.Zone, pn.PrivateNetworkID)
 			serviceIP, err := flattenIPNet(pn.ServiceIP)
 			if err != nil {
 				return pnI, false
@@ -222,7 +221,7 @@ func flattenPrivateNetwork(endpoints []*rdb.Endpoint) (interface{}, bool) {
 				"port":        int(endpoint.Port),
 				"name":        endpoint.Name,
 				"ip_net":      serviceIP,
-				"pn_id":       pnZonedID,
+				"pn_id":       pn.PrivateNetworkID,
 				"hostname":    flattenStringPtr(endpoint.Hostname),
 			})
 			return pnI, true
@@ -317,7 +316,7 @@ func flattenReadReplicaEndpoints(endpoints []*rdb.Endpoint) (directAccess, priva
 			directAccess = rawEndpoint
 		}
 		if endpoint.PrivateNetwork != nil {
-			rawEndpoint["private_network_id"] = newZonedID(endpoint.PrivateNetwork.Zone, endpoint.PrivateNetwork.PrivateNetworkID).String()
+			rawEndpoint["private_network_id"] = endpoint.PrivateNetwork.PrivateNetworkID
 			rawEndpoint["service_ip"] = endpoint.PrivateNetwork.ServiceIP.String()
 			rawEndpoint["zone"] = endpoint.PrivateNetwork.Zone
 			privateNetwork = rawEndpoint

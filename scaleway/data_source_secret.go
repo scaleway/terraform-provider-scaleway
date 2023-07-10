@@ -80,7 +80,7 @@ func dataSourceScalewaySecretRead(ctx context.Context, d *schema.ResourceData, m
 		}
 	}
 
-	regionalID := datasourceNewRegionalizedID(secretID, region)
+	regionalID := datasourceNewRegionalID(secretID, region)
 	d.SetId(regionalID)
 	err = d.Set("secret_id", regionalID)
 	if err != nil {

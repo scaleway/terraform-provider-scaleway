@@ -39,6 +39,7 @@ func dataSourceScalewayMarketplaceImageRead(ctx context.Context, d *schema.Resou
 		ImageLabel:     d.Get("label").(string),
 		CommercialType: d.Get("instance_type").(string),
 		Zone:           zone,
+		Type:           marketplace.LocalImageTypeInstanceLocal,
 	}, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)

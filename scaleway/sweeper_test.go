@@ -2,12 +2,24 @@ package scaleway
 
 import (
 	"context"
+	"strings"
 	"testing"
 
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 )
+
+// isTestResource returns true if given resource identifier is from terraform test
+// identifier should be resource name but some resource don't have names
+// return true if identifier match regex "tf[-_]test"
+// common used prefixes are "tf_tests", "tf_test", "tf-tests", "tf-test"
+func isTestResource(identifier string) bool {
+	return len(identifier) >= len("tf_test") &&
+		strings.HasPrefix(identifier, "tf") &&
+		(identifier[2] == '_' || identifier[2] == '-') &&
+		identifier[3:6] == "test"
+}
 
 func TestMain(m *testing.M) {
 	resource.TestMain(m)
@@ -28,13 +40,15 @@ func sweepZones(zones []scw.Zone, f func(scwClient *scw.Client, zone scw.Zone) e
 }
 
 func sweepRegions(regions []scw.Region, f func(scwClient *scw.Client, region scw.Region) error) error {
-	for _, region := range regions {
-		return sweepZones(region.GetZones(), func(scwClient *scw.Client, zone scw.Zone) error {
-			r, _ := zone.Region()
-			return f(scwClient, r)
-		})
+	zones := make([]scw.Zone, len(regions))
+	for i, region := range regions {
+		zones[i] = region.GetZones()[0]
 	}
-	return nil
+
+	return sweepZones(zones, func(scwClient *scw.Client, zone scw.Zone) error {
+		r, _ := zone.Region()
+		return f(scwClient, r)
+	})
 }
 
 func sweep(f func(scwClient *scw.Client) error) error {

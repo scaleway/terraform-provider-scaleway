@@ -246,10 +246,11 @@ func resourceScalewayInstanceServer() *schema.Resource {
 					},
 					Schema: map[string]*schema.Schema{
 						"pn_id": {
-							Type:         schema.TypeString,
-							Required:     true,
-							ValidateFunc: validationUUIDorUUIDWithLocality(),
-							Description:  "The Private Network ID",
+							Type:             schema.TypeString,
+							Required:         true,
+							ValidateFunc:     validationUUIDorUUIDWithLocality(),
+							Description:      "The Private Network ID",
+							DiffSuppressFunc: diffSuppressFuncLocality,
 						},
 						// Computed
 						"mac_address": {
@@ -301,6 +302,7 @@ func resourceScalewayInstanceServerCreate(ctx context.Context, d *schema.Resourc
 			CommercialType: commercialType,
 			Zone:           zone,
 			ImageLabel:     imageLabel,
+			Type:           marketplace.LocalImageTypeInstanceLocal,
 		})
 		if err != nil {
 			return diag.FromErr(fmt.Errorf("could not get image '%s': %s", newZonedID(zone, imageLabel), err))
@@ -367,24 +369,23 @@ func resourceScalewayInstanceServerCreate(ctx context.Context, d *schema.Resourc
 		rootVolumeName = newRandomName("vol")
 	}
 
-	var rootVolumeSize scw.Size
+	var rootVolumeSize *scw.Size
 	if sizeInput == 0 && rootVolumeType == instance.VolumeVolumeTypeLSSD.String() {
 		// Compute the rootVolumeSize so it will be valid against the local volume constraints
 		// It wouldn't be valid if another local volume is added, but in this case
 		// the user would be informed that it does not fulfill the local volume constraints
-		rootVolumeSize = serverType.VolumesConstraint.MaxSize
-	} else {
-		rootVolumeSize = scw.Size(uint64(sizeInput) * gb)
+		rootVolumeSize = scw.SizePtr(serverType.VolumesConstraint.MaxSize)
+	} else if sizeInput > 0 {
+		rootVolumeSize = scw.SizePtr(scw.Size(uint64(sizeInput) * gb))
 	}
 
 	req.Volumes["0"] = &instance.VolumeServerTemplate{
-		Name:       rootVolumeName,
-		ID:         rootVolumeID,
+		Name:       expandStringPtr(rootVolumeName),
+		ID:         expandStringPtr(rootVolumeID),
 		VolumeType: instance.VolumeVolumeType(rootVolumeType),
 		Size:       rootVolumeSize,
-		Boot:       *rootVolumeIsBootVolume,
+		Boot:       rootVolumeIsBootVolume,
 	}
-
 	if raw, ok := d.GetOk("additional_volume_ids"); ok {
 		for i, volumeID := range raw.([]interface{}) {
 			// We have to get the volume to know whether it is a local or a block volume
@@ -396,10 +397,10 @@ func resourceScalewayInstanceServerCreate(ctx context.Context, d *schema.Resourc
 				return diag.FromErr(err)
 			}
 			req.Volumes[strconv.Itoa(i+1)] = &instance.VolumeServerTemplate{
-				ID:         vol.Volume.ID,
-				Name:       vol.Volume.Name,
+				ID:         &vol.Volume.ID,
+				Name:       &vol.Volume.Name,
 				VolumeType: vol.Volume.VolumeType,
-				Size:       vol.Volume.Size,
+				Size:       &vol.Volume.Size,
 			}
 		}
 	}
@@ -713,9 +714,9 @@ func resourceScalewayInstanceServerUpdate(ctx context.Context, d *schema.Resourc
 
 	if raw, hasAdditionalVolumes := d.GetOk("additional_volume_ids"); d.HasChanges("additional_volume_ids", "root_volume") {
 		volumes["0"] = &instance.VolumeServerTemplate{
-			ID:   expandZonedID(d.Get("root_volume.0.volume_id")).ID,
-			Name: newRandomName("vol"), // name is ignored by the API, any name will work here
-			Boot: d.Get("root_volume.0.boot").(bool),
+			ID:   scw.StringPtr(expandZonedID(d.Get("root_volume.0.volume_id")).ID),
+			Name: scw.StringPtr(newRandomName("vol")), // name is ignored by the API, any name will work here
+			Boot: expandBoolPtr(d.Get("root_volume.0.boot")),
 		}
 
 		if !hasAdditionalVolumes {
@@ -742,8 +743,8 @@ func resourceScalewayInstanceServerUpdate(ctx context.Context, d *schema.Resourc
 				}
 			}
 			volumes[strconv.Itoa(i+1)] = &instance.VolumeServerTemplate{
-				ID:   expandZonedID(volumeID).ID,
-				Name: newRandomName("vol"), // name is ignored by the API, any name will work here
+				ID:   scw.StringPtr(expandZonedID(volumeID).ID),
+				Name: scw.StringPtr(newRandomName("vol")), // name is ignored by the API, any name will work here
 			}
 		}
 

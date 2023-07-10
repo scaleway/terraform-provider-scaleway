@@ -3,6 +3,7 @@ package scaleway
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/s3"
@@ -91,10 +92,13 @@ func resourceObjectLockConfigurationCreate(ctx context.Context, d *schema.Resour
 		},
 	}
 
-	_, err = retryOnAWSCode(ctx, s3.ErrCodeNoSuchBucket, func() (interface{}, error) {
-		return conn.PutObjectLockConfigurationWithContext(ctx, input)
+	_, err = retryWhenAWSErrCodeEquals(ctx, []string{s3.ErrCodeNoSuchBucket}, &RetryWhenConfig[*s3.PutObjectLockConfigurationOutput]{
+		Timeout:  d.Timeout(schema.TimeoutCreate),
+		Interval: 5 * time.Second,
+		Function: func() (*s3.PutObjectLockConfigurationOutput, error) {
+			return conn.PutObjectLockConfigurationWithContext(ctx, input)
+		},
 	})
-
 	if err != nil {
 		return diag.FromErr(fmt.Errorf("error creating object bucket (%s) lock configuration: %w", bucket, err))
 	}

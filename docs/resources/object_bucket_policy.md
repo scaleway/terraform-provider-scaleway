@@ -11,67 +11,65 @@ For more information, see [the documentation](https://www.scaleway.com/en/docs/s
 ## Example Usage
 
 ```hcl
-resource "scaleway_object_bucket_policy" "bucket" {
+resource "scaleway_object_bucket" "bucket" {
   name = "some-unique-name"
 }
 
 resource "scaleway_object_bucket_policy" "policy" {
-    bucket = scaleway_object_bucket.bucket.name
-    policy = jsonencode(
+  bucket = scaleway_object_bucket.bucket.name
+  policy = jsonencode(
     {
-        Id = "MyPolicy"
-        Statement = [
+      Version = "2023-04-17",
+      Id      = "MyBucketPolicy",
+      Statement = [
         {
-            Action = [
-                "s3:ListBucket",
-               "s3:GetObject",
-            ]
-           Effect = "Allow"
-           Principal = {
-               SCW = "*"
-            }
-           Resource  = [
-              "some-unique-name",
-              "some-unique-name/*",
-            ]
-           Sid = "GrantToEveryone"
-        },
-    ]
-    Version = "2012-10-17"
+          Sid    = "Delegate access",
+          Effect = "Allow",
+          Principal = {
+            SCW = "application_id:<APPLICATION_ID>"
+          },
+          Action = "s3:ListBucket",
+          Resources = [
+            "${scaleway_object_bucket.bucket.name}",
+            "${scaleway_object_bucket.bucket.name}/*"
+          ]
+        }
+      ]
     }
-    )
+  )
 }
 ```
 
 ## Example with aws provider
 
 ```hcl
-resource "scaleway_object_bucket_policy" "bucket" {
+resource "scaleway_object_bucket" "bucket" {
   name = "some-unique-name"
 }
 
-resource "scaleway_object_bucket_policy" main {
-    bucket = scaleway_object_bucket.bucket.name
-    policy = data.aws_iam_policy_document.policy.json
+resource "scaleway_object_bucket_policy" "main" {
+  bucket = scaleway_object_bucket.bucket.name
+  policy = data.aws_iam_policy_document.policy.json
 }
 
 data "aws_iam_policy_document" "policy" {
-  version = "2012-10-17"
+  version = "2023-04-17"
+  id      = "MyBucketPolicy"
+
   statement {
-    sid = "MyPolicy"
+    sid    = "Delegate access"
+    effect = "Allow"
+
     principals {
       type        = "SCW"
-      identifiers = ["project_id:<project_id>"]
+      identifiers = ["application_id:<APPLICATION_ID>"]
     }
 
-    actions = [
-      "s3:GetObject",
-      "s3:ListBucket",
-    ]
+    actions = ["s3:ListBucket"]
 
     resources = [
-      "some-unique-name",
-      "some-unique-name/*",
+      "${scaleway_object_bucket.bucket.name}",
+      "${scaleway_object_bucket.bucket.name}/*"
     ]
   }
 }

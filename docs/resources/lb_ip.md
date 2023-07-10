@@ -6,7 +6,7 @@ page_title: "Scaleway: scaleway_lb_ip"
 # scaleway_lb_ip
 
 Creates and manages Scaleway Load-Balancers IPs.
-For more information, see [the documentation](https://developers.scaleway.com/en/products/lb/zoned_api).
+For more information, see [the documentation](https://www.scaleway.com/en/developers/api/load-balancer/zoned-api/#path-ip-addresses).
 
 ## Examples
 

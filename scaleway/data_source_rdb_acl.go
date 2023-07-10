@@ -32,7 +32,7 @@ func dataSourceScalewayRDBACLRead(ctx context.Context, d *schema.ResourceData, m
 	_, _, err = parseLocalizedID(instanceID.(string))
 	regionalID := instanceID
 	if err != nil {
-		regionalID = datasourceNewRegionalizedID(instanceID, region)
+		regionalID = datasourceNewRegionalID(instanceID, region)
 	}
 
 	d.SetId(regionalID.(string))

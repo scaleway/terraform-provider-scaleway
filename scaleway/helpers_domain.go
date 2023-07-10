@@ -274,55 +274,6 @@ func waitForDNSZone(ctx context.Context, domainAPI *domain.API, dnsZone string, 
 	}, scw.WithContext(ctx))
 }
 
-func newDNSResolver() *net.Resolver {
-	return &net.Resolver{
-		PreferGo: true,
-		Dial: func(ctx context.Context, network, address string) (net.Conn, error) {
-			d := net.Dialer{
-				Timeout: time.Millisecond * time.Duration(500),
-			}
-			conn, err := d.DialContext(ctx, network, "ns0.dom.scw.cloud:53")
-			if err != nil {
-				conn, err = d.DialContext(ctx, network, "ns1.dom.scw.cloud:53")
-			}
-			return conn, err
-		},
-	}
-}
-
-var (
-	dnsResolverTickDelay = time.Millisecond * 500
-	disableDNSResolver   bool
-)
-
-func cnameResolver(ctx context.Context, timeout time.Duration, hostname, expectedCNAME string) bool {
-	if disableDNSResolver {
-		return true
-	}
-	ticker := time.Tick(dnsResolverTickDelay)
-	ctx, cancel := context.WithTimeout(ctx, timeout)
-	defer cancel()
-
-	r := newDNSResolver()
-
-	for range ticker {
-		cname, err := r.LookupCNAME(ctx, hostname)
-		if err != nil {
-			select {
-			case <-ctx.Done():
-				return false
-			default:
-				continue
-			}
-		}
-		if cname == expectedCNAME {
-			return true
-		}
-	}
-
-	return false
-}
-
 func findDefaultReverse(address string) string {
 	parts := strings.Split(address, ".")
 	for i, j := 0, len(parts)-1; i < j; i, j = i+1, j-1 {

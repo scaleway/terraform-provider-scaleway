@@ -58,7 +58,7 @@ func dataSourceScalewayIotHubRead(ctx context.Context, d *schema.ResourceData, m
 		}
 	}
 
-	regionalID := datasourceNewRegionalizedID(hubID, region)
+	regionalID := datasourceNewRegionalID(hubID, region)
 	d.SetId(regionalID)
 	err = d.Set("hub_id", regionalID)
 	if err != nil {

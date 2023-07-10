@@ -37,10 +37,11 @@ func resourceScalewayVPCGatewayNetwork() *schema.Resource {
 				Description:  "The ID of the public gateway where connect to",
 			},
 			"private_network_id": {
-				Type:         schema.TypeString,
-				Required:     true,
-				ValidateFunc: validationUUIDorUUIDWithLocality(),
-				Description:  "The ID of the private network where connect to",
+				Type:             schema.TypeString,
+				Required:         true,
+				ValidateFunc:     validationUUIDorUUIDWithLocality(),
+				DiffSuppressFunc: diffSuppressFuncLocality,
+				Description:      "The ID of the private network where connect to",
 			},
 			"dhcp_id": {
 				Type:          schema.TypeString,
@@ -112,7 +113,7 @@ func resourceScalewayVPCGatewayNetworkCreate(ctx context.Context, d *schema.Reso
 	req := &vpcgw.CreateGatewayNetworkRequest{
 		Zone:             zone,
 		GatewayID:        gateway.ID,
-		PrivateNetworkID: expandZonedID(d.Get("private_network_id").(string)).ID,
+		PrivateNetworkID: expandID(d.Get("private_network_id").(string)),
 		EnableMasquerade: *expandBoolPtr(d.Get("enable_masquerade")),
 		EnableDHCP:       expandBoolPtr(d.Get("enable_dhcp")),
 	}
@@ -207,7 +208,7 @@ func resourceScalewayVPCGatewayNetworkRead(ctx context.Context, d *schema.Resour
 	}
 
 	_ = d.Set("gateway_id", newZonedID(zone, gatewayNetwork.GatewayID).String())
-	_ = d.Set("private_network_id", newZonedID(zone, gatewayNetwork.PrivateNetworkID).String())
+	_ = d.Set("private_network_id", gatewayNetwork.PrivateNetworkID)
 	_ = d.Set("enable_masquerade", gatewayNetwork.EnableMasquerade)
 	_ = d.Set("cleanup_dhcp", cleanUpDHCPValue)
 	_ = d.Set("created_at", gatewayNetwork.CreatedAt.Format(time.RFC3339))

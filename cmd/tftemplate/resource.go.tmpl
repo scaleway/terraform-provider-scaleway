@@ -74,6 +74,8 @@ func resourceScaleway{{ .Resource }}Read(ctx context.Context, d *schema.Resource
 	}
 
 	_ = d.Set("name", {{ .ResourceCleanLow }}.Name)
+	_ = d.Set("{{.Locality}}", {{.ResourceCleanLow}}.{{.LocalityUpper}})
+	_ = d.Set("project_id", {{.ResourceCleanLow}}.ProjectID)
 
 	return nil
 }

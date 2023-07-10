@@ -1,0 +1,701 @@
+---
+version: 1
+interactions:
+- request:
+    body: '{"name":"test-mnq-nats-basic","protocol":"nats","project_id":"105bdce1-64c0-48ab-899d-868455867ecf"}'
+    form: {}
+    headers:
+      Content-Type:
+      - application/json
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.20.5; darwin; amd64) terraform-provider/develop
+        terraform/terraform-tests
+    url: https://api.scaleway.com/mnq/v1alpha1/regions/fr-par/namespaces
+    method: POST
+  response:
+    body: '{"created_at":"2023-06-14T17:01:57.113355259Z","endpoint":"nats://nats.mnq.fr-par.scw.cloud:4222","id":"AD5S7FTX2B33HAJRVEYDYD5I32HBZI2JDHUH5N3A5HARIXCQ2DAEF5JO","name":"test-mnq-nats-basic","project_id":"105bdce1-64c0-48ab-899d-868455867ecf","protocol":"nats","region":"fr-par","updated_at":"2023-06-14T17:01:57.113355259Z"}'
+    headers:
+      Content-Length:
+      - "325"
+      Content-Security-Policy:
+      - default-src 'none'; frame-ancestors 'none'
+      Content-Type:
+      - application/json
+      Date:
+      - Wed, 14 Jun 2023 17:01:58 GMT
+      Server:
+      - Scaleway API-Gateway
+      Strict-Transport-Security:
+      - max-age=63072000
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+      X-Request-Id:
+      - 10c1d2a5-188b-4f16-934f-46ad4e4f7355
+    status: 200 OK
+    code: 200
+    duration: ""
+- request:
+    body: ""
+    form: {}
+    headers:
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.20.5; darwin; amd64) terraform-provider/develop
+        terraform/terraform-tests
+    url: https://api.scaleway.com/mnq/v1alpha1/regions/fr-par/namespaces/AD5S7FTX2B33HAJRVEYDYD5I32HBZI2JDHUH5N3A5HARIXCQ2DAEF5JO
+    method: GET
+  response:
+    body: '{"created_at":"2023-06-14T17:01:57.113355Z","endpoint":"nats://nats.mnq.fr-par.scw.cloud:4222","id":"AD5S7FTX2B33HAJRVEYDYD5I32HBZI2JDHUH5N3A5HARIXCQ2DAEF5JO","name":"test-mnq-nats-basic","project_id":"105bdce1-64c0-48ab-899d-868455867ecf","protocol":"nats","region":"fr-par","updated_at":"2023-06-14T17:01:57.113355Z"}'
+    headers:
+      Content-Length:
+      - "319"
+      Content-Security-Policy:
+      - default-src 'none'; frame-ancestors 'none'
+      Content-Type:
+      - application/json
+      Date:
+      - Wed, 14 Jun 2023 17:01:58 GMT
+      Server:
+      - Scaleway API-Gateway
+      Strict-Transport-Security:
+      - max-age=63072000
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+      X-Request-Id:
+      - 0573578f-82e3-43c0-b07a-88d13262056c
+    status: 200 OK
+    code: 200
+    duration: ""
+- request:
+    body: '{"namespace_id":"AD5S7FTX2B33HAJRVEYDYD5I32HBZI2JDHUH5N3A5HARIXCQ2DAEF5JO","name":"test-queue-nats-basic","permissions":null}'
+    form: {}
+    headers:
+      Content-Type:
+      - application/json
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.20.5; darwin; amd64) terraform-provider/develop
+        terraform/terraform-tests
+    url: https://api.scaleway.com/mnq/v1alpha1/regions/fr-par/credentials
+    method: POST
+  response:
+    body: '{"id":"40c406b7-cfad-4d4d-b9db-874b2a1bcfcf","name":"test-queue-nats-basic","namespace_id":"AD5S7FTX2B33HAJRVEYDYD5I32HBZI2JDHUH5N3A5HARIXCQ2DAEF5JO","nats_credentials":{"content":"-----BEGIN
+      NATS USER JWT-----\neyJ0eXAiOiJKV1QiLCJhbGciOiJlZDI1NTE5LW5rZXkifQ.eyJqdGkiOiJQRUdHT0RTWlRXVEVKUzJPNkxXN1hGREFNRTZXT1VER0JNSTRPNVNBSDdRNldMREVJNUlRIiwiaWF0IjoxNjg2NzYyMTE4LCJpc3MiOiJBQlNCUUtHRDRIUkJNTkhCMjVIU1pBSFpLTTNIS0wzVDRIM0dGUUc3UUZQVkU1S01ZSlE2WUFIWCIsIm5hbWUiOiJ0ZXN0LXF1ZXVlLW5hdHMtYmFzaWMiLCJzdWIiOiJVRDJRTFM2SllBMkhISlJLR01LUTc1QUpaVkJITFJLQ1ZHTzc2NFFRWVRZN0lFUkgzUUs1RVhaNSIsIm5hdHMiOnsicHViIjp7fSwic3ViIjp7fSwic3VicyI6LTEsImRhdGEiOi0xLCJwYXlsb2FkIjotMSwiaXNzdWVyX2FjY291bnQiOiJBRDVTN0ZUWDJCMzNIQUpSVkVZRFlENUkzMkhCWkkySkRIVUg1TjNBNUhBUklYQ1EyREFFRjVKTyIsInR5cGUiOiJ1c2VyIiwidmVyc2lvbiI6Mn19.PuT06VETu_RR3hbWkYNs7lTCAr9uH_8epKbLIqhkfY6lmHWRqH4F1IEuHgPKNdQTH-GT6He8936A1Tbe5bhaBg\n------END
+      NATS USER JWT------\n\n************************* IMPORTANT *************************\nNKEY
+      Seed printed below can be used to sign and prove identity.\nNKEYs are sensitive
+      and should be treated as secrets.\n\n-----BEGIN USER NKEY SEED-----\nSUAOIF6WJWTFD2OCXLEOBBQYWOULJZZMUF2RW6EXR3BHCATUBKTPX54NFA\n------END
+      USER NKEY SEED------\n\n*************************************************************\n"},"protocol":"nats"}'
+    headers:
+      Content-Length:
+      - "1312"
+      Content-Security-Policy:
+      - default-src 'none'; frame-ancestors 'none'
+      Content-Type:
+      - application/json
+      Date:
+      - Wed, 14 Jun 2023 17:01:58 GMT
+      Server:
+      - Scaleway API-Gateway
+      Strict-Transport-Security:
+      - max-age=63072000
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+      X-Request-Id:
+      - a76418a7-eaa9-43f6-94e5-cf9328be3aa7
+    status: 200 OK
+    code: 200
+    duration: ""
+- request:
+    body: ""
+    form: {}
+    headers:
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.20.5; darwin; amd64) terraform-provider/develop
+        terraform/terraform-tests
+    url: https://api.scaleway.com/mnq/v1alpha1/regions/fr-par/credentials/40c406b7-cfad-4d4d-b9db-874b2a1bcfcf
+    method: GET
+  response:
+    body: '{"id":"40c406b7-cfad-4d4d-b9db-874b2a1bcfcf","name":"test-queue-nats-basic","namespace_id":"AD5S7FTX2B33HAJRVEYDYD5I32HBZI2JDHUH5N3A5HARIXCQ2DAEF5JO","protocol":"nats"}'
+    headers:
+      Content-Length:
+      - "168"
+      Content-Security-Policy:
+      - default-src 'none'; frame-ancestors 'none'
+      Content-Type:
+      - application/json
+      Date:
+      - Wed, 14 Jun 2023 17:01:58 GMT
+      Server:
+      - Scaleway API-Gateway
+      Strict-Transport-Security:
+      - max-age=63072000
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+      X-Request-Id:
+      - aa518a93-90ee-4690-8f82-7209c9e1fe64
+    status: 200 OK
+    code: 200
+    duration: ""
+- request:
+    body: ""
+    form: {}
+    headers:
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.20.5; darwin; amd64) terraform-provider/develop
+        terraform/terraform-tests
+    url: https://api.scaleway.com/mnq/v1alpha1/regions/fr-par/namespaces/AD5S7FTX2B33HAJRVEYDYD5I32HBZI2JDHUH5N3A5HARIXCQ2DAEF5JO
+    method: GET
+  response:
+    body: '{"created_at":"2023-06-14T17:01:57.113355Z","endpoint":"nats://nats.mnq.fr-par.scw.cloud:4222","id":"AD5S7FTX2B33HAJRVEYDYD5I32HBZI2JDHUH5N3A5HARIXCQ2DAEF5JO","name":"test-mnq-nats-basic","project_id":"105bdce1-64c0-48ab-899d-868455867ecf","protocol":"nats","region":"fr-par","updated_at":"2023-06-14T17:01:57.113355Z"}'
+    headers:
+      Content-Length:
+      - "319"
+      Content-Security-Policy:
+      - default-src 'none'; frame-ancestors 'none'
+      Content-Type:
+      - application/json
+      Date:
+      - Wed, 14 Jun 2023 17:01:58 GMT
+      Server:
+      - Scaleway API-Gateway
+      Strict-Transport-Security:
+      - max-age=63072000
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+      X-Request-Id:
+      - 08712f56-d301-4f91-9a13-ff90459b7284
+    status: 200 OK
+    code: 200
+    duration: ""
+- request:
+    body: ""
+    form: {}
+    headers:
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.20.5; darwin; amd64) terraform-provider/develop
+        terraform/terraform-tests
+    url: https://api.scaleway.com/mnq/v1alpha1/regions/fr-par/namespaces/AD5S7FTX2B33HAJRVEYDYD5I32HBZI2JDHUH5N3A5HARIXCQ2DAEF5JO
+    method: GET
+  response:
+    body: '{"created_at":"2023-06-14T17:01:57.113355Z","endpoint":"nats://nats.mnq.fr-par.scw.cloud:4222","id":"AD5S7FTX2B33HAJRVEYDYD5I32HBZI2JDHUH5N3A5HARIXCQ2DAEF5JO","name":"test-mnq-nats-basic","project_id":"105bdce1-64c0-48ab-899d-868455867ecf","protocol":"nats","region":"fr-par","updated_at":"2023-06-14T17:01:57.113355Z"}'
+    headers:
+      Content-Length:
+      - "319"
+      Content-Security-Policy:
+      - default-src 'none'; frame-ancestors 'none'
+      Content-Type:
+      - application/json
+      Date:
+      - Wed, 14 Jun 2023 17:01:58 GMT
+      Server:
+      - Scaleway API-Gateway
+      Strict-Transport-Security:
+      - max-age=63072000
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+      X-Request-Id:
+      - 2429e1ee-19da-47b0-98c9-aab9600ba72b
+    status: 200 OK
+    code: 200
+    duration: ""
+- request:
+    body: ""
+    form: {}
+    headers:
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.20.5; darwin; amd64) terraform-provider/develop
+        terraform/terraform-tests
+    url: https://api.scaleway.com/mnq/v1alpha1/regions/fr-par/namespaces/AD5S7FTX2B33HAJRVEYDYD5I32HBZI2JDHUH5N3A5HARIXCQ2DAEF5JO
+    method: GET
+  response:
+    body: '{"created_at":"2023-06-14T17:01:57.113355Z","endpoint":"nats://nats.mnq.fr-par.scw.cloud:4222","id":"AD5S7FTX2B33HAJRVEYDYD5I32HBZI2JDHUH5N3A5HARIXCQ2DAEF5JO","name":"test-mnq-nats-basic","project_id":"105bdce1-64c0-48ab-899d-868455867ecf","protocol":"nats","region":"fr-par","updated_at":"2023-06-14T17:01:57.113355Z"}'
+    headers:
+      Content-Length:
+      - "319"
+      Content-Security-Policy:
+      - default-src 'none'; frame-ancestors 'none'
+      Content-Type:
+      - application/json
+      Date:
+      - Wed, 14 Jun 2023 17:01:59 GMT
+      Server:
+      - Scaleway API-Gateway
+      Strict-Transport-Security:
+      - max-age=63072000
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+      X-Request-Id:
+      - 28a8b7e6-0375-4759-9d36-cbf987941681
+    status: 200 OK
+    code: 200
+    duration: ""
+- request:
+    body: ""
+    form: {}
+    headers:
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.20.5; darwin; amd64) terraform-provider/develop
+        terraform/terraform-tests
+    url: https://api.scaleway.com/mnq/v1alpha1/regions/fr-par/credentials/40c406b7-cfad-4d4d-b9db-874b2a1bcfcf
+    method: GET
+  response:
+    body: '{"id":"40c406b7-cfad-4d4d-b9db-874b2a1bcfcf","name":"test-queue-nats-basic","namespace_id":"AD5S7FTX2B33HAJRVEYDYD5I32HBZI2JDHUH5N3A5HARIXCQ2DAEF5JO","protocol":"nats"}'
+    headers:
+      Content-Length:
+      - "168"
+      Content-Security-Policy:
+      - default-src 'none'; frame-ancestors 'none'
+      Content-Type:
+      - application/json
+      Date:
+      - Wed, 14 Jun 2023 17:01:59 GMT
+      Server:
+      - Scaleway API-Gateway
+      Strict-Transport-Security:
+      - max-age=63072000
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+      X-Request-Id:
+      - c13378c9-5e78-4425-87f4-56d25b78a048
+    status: 200 OK
+    code: 200
+    duration: ""
+- request:
+    body: ""
+    form: {}
+    headers:
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.20.5; darwin; amd64) terraform-provider/develop
+        terraform/terraform-tests
+    url: https://api.scaleway.com/mnq/v1alpha1/regions/fr-par/namespaces/AD5S7FTX2B33HAJRVEYDYD5I32HBZI2JDHUH5N3A5HARIXCQ2DAEF5JO
+    method: GET
+  response:
+    body: '{"created_at":"2023-06-14T17:01:57.113355Z","endpoint":"nats://nats.mnq.fr-par.scw.cloud:4222","id":"AD5S7FTX2B33HAJRVEYDYD5I32HBZI2JDHUH5N3A5HARIXCQ2DAEF5JO","name":"test-mnq-nats-basic","project_id":"105bdce1-64c0-48ab-899d-868455867ecf","protocol":"nats","region":"fr-par","updated_at":"2023-06-14T17:01:57.113355Z"}'
+    headers:
+      Content-Length:
+      - "319"
+      Content-Security-Policy:
+      - default-src 'none'; frame-ancestors 'none'
+      Content-Type:
+      - application/json
+      Date:
+      - Wed, 14 Jun 2023 17:01:59 GMT
+      Server:
+      - Scaleway API-Gateway
+      Strict-Transport-Security:
+      - max-age=63072000
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+      X-Request-Id:
+      - e4778bd2-5dec-448b-974b-dc6194980d99
+    status: 200 OK
+    code: 200
+    duration: ""
+- request:
+    body: ""
+    form: {}
+    headers:
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.20.5; darwin; amd64) terraform-provider/develop
+        terraform/terraform-tests
+    url: https://api.scaleway.com/mnq/v1alpha1/regions/fr-par/namespaces/AD5S7FTX2B33HAJRVEYDYD5I32HBZI2JDHUH5N3A5HARIXCQ2DAEF5JO
+    method: GET
+  response:
+    body: '{"created_at":"2023-06-14T17:01:57.113355Z","endpoint":"nats://nats.mnq.fr-par.scw.cloud:4222","id":"AD5S7FTX2B33HAJRVEYDYD5I32HBZI2JDHUH5N3A5HARIXCQ2DAEF5JO","name":"test-mnq-nats-basic","project_id":"105bdce1-64c0-48ab-899d-868455867ecf","protocol":"nats","region":"fr-par","updated_at":"2023-06-14T17:01:57.113355Z"}'
+    headers:
+      Content-Length:
+      - "319"
+      Content-Security-Policy:
+      - default-src 'none'; frame-ancestors 'none'
+      Content-Type:
+      - application/json
+      Date:
+      - Wed, 14 Jun 2023 17:01:59 GMT
+      Server:
+      - Scaleway API-Gateway
+      Strict-Transport-Security:
+      - max-age=63072000
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+      X-Request-Id:
+      - ced09eb2-e808-42ba-a04a-86a082cc84e6
+    status: 200 OK
+    code: 200
+    duration: ""
+- request:
+    body: ""
+    form: {}
+    headers:
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.20.5; darwin; amd64) terraform-provider/develop
+        terraform/terraform-tests
+    url: https://api.scaleway.com/mnq/v1alpha1/regions/fr-par/credentials/40c406b7-cfad-4d4d-b9db-874b2a1bcfcf
+    method: GET
+  response:
+    body: '{"id":"40c406b7-cfad-4d4d-b9db-874b2a1bcfcf","name":"test-queue-nats-basic","namespace_id":"AD5S7FTX2B33HAJRVEYDYD5I32HBZI2JDHUH5N3A5HARIXCQ2DAEF5JO","protocol":"nats"}'
+    headers:
+      Content-Length:
+      - "168"
+      Content-Security-Policy:
+      - default-src 'none'; frame-ancestors 'none'
+      Content-Type:
+      - application/json
+      Date:
+      - Wed, 14 Jun 2023 17:01:59 GMT
+      Server:
+      - Scaleway API-Gateway
+      Strict-Transport-Security:
+      - max-age=63072000
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+      X-Request-Id:
+      - d409882f-820a-4ee6-96a3-e8e44a9849b0
+    status: 200 OK
+    code: 200
+    duration: ""
+- request:
+    body: ""
+    form: {}
+    headers:
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.20.5; darwin; amd64) terraform-provider/develop
+        terraform/terraform-tests
+    url: https://api.scaleway.com/mnq/v1alpha1/regions/fr-par/namespaces/AD5S7FTX2B33HAJRVEYDYD5I32HBZI2JDHUH5N3A5HARIXCQ2DAEF5JO
+    method: GET
+  response:
+    body: '{"created_at":"2023-06-14T17:01:57.113355Z","endpoint":"nats://nats.mnq.fr-par.scw.cloud:4222","id":"AD5S7FTX2B33HAJRVEYDYD5I32HBZI2JDHUH5N3A5HARIXCQ2DAEF5JO","name":"test-mnq-nats-basic","project_id":"105bdce1-64c0-48ab-899d-868455867ecf","protocol":"nats","region":"fr-par","updated_at":"2023-06-14T17:01:57.113355Z"}'
+    headers:
+      Content-Length:
+      - "319"
+      Content-Security-Policy:
+      - default-src 'none'; frame-ancestors 'none'
+      Content-Type:
+      - application/json
+      Date:
+      - Wed, 14 Jun 2023 17:01:59 GMT
+      Server:
+      - Scaleway API-Gateway
+      Strict-Transport-Security:
+      - max-age=63072000
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+      X-Request-Id:
+      - 262b8c20-7f6d-43c5-b352-cd20ab24d897
+    status: 200 OK
+    code: 200
+    duration: ""
+- request:
+    body: ""
+    form: {}
+    headers:
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.20.5; darwin; amd64) terraform-provider/develop
+        terraform/terraform-tests
+    url: https://api.scaleway.com/mnq/v1alpha1/regions/fr-par/namespaces/AD5S7FTX2B33HAJRVEYDYD5I32HBZI2JDHUH5N3A5HARIXCQ2DAEF5JO
+    method: GET
+  response:
+    body: '{"created_at":"2023-06-14T17:01:57.113355Z","endpoint":"nats://nats.mnq.fr-par.scw.cloud:4222","id":"AD5S7FTX2B33HAJRVEYDYD5I32HBZI2JDHUH5N3A5HARIXCQ2DAEF5JO","name":"test-mnq-nats-basic","project_id":"105bdce1-64c0-48ab-899d-868455867ecf","protocol":"nats","region":"fr-par","updated_at":"2023-06-14T17:01:57.113355Z"}'
+    headers:
+      Content-Length:
+      - "319"
+      Content-Security-Policy:
+      - default-src 'none'; frame-ancestors 'none'
+      Content-Type:
+      - application/json
+      Date:
+      - Wed, 14 Jun 2023 17:02:00 GMT
+      Server:
+      - Scaleway API-Gateway
+      Strict-Transport-Security:
+      - max-age=63072000
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+      X-Request-Id:
+      - 00675043-5739-45d4-8e27-c2e129c6a9c8
+    status: 200 OK
+    code: 200
+    duration: ""
+- request:
+    body: ""
+    form: {}
+    headers:
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.20.5; darwin; amd64) terraform-provider/develop
+        terraform/terraform-tests
+    url: https://api.scaleway.com/mnq/v1alpha1/regions/fr-par/namespaces/AD5S7FTX2B33HAJRVEYDYD5I32HBZI2JDHUH5N3A5HARIXCQ2DAEF5JO
+    method: GET
+  response:
+    body: '{"created_at":"2023-06-14T17:01:57.113355Z","endpoint":"nats://nats.mnq.fr-par.scw.cloud:4222","id":"AD5S7FTX2B33HAJRVEYDYD5I32HBZI2JDHUH5N3A5HARIXCQ2DAEF5JO","name":"test-mnq-nats-basic","project_id":"105bdce1-64c0-48ab-899d-868455867ecf","protocol":"nats","region":"fr-par","updated_at":"2023-06-14T17:01:57.113355Z"}'
+    headers:
+      Content-Length:
+      - "319"
+      Content-Security-Policy:
+      - default-src 'none'; frame-ancestors 'none'
+      Content-Type:
+      - application/json
+      Date:
+      - Wed, 14 Jun 2023 17:02:00 GMT
+      Server:
+      - Scaleway API-Gateway
+      Strict-Transport-Security:
+      - max-age=63072000
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+      X-Request-Id:
+      - a07b41a7-fe94-4aeb-9193-3f7184a32a1c
+    status: 200 OK
+    code: 200
+    duration: ""
+- request:
+    body: ""
+    form: {}
+    headers:
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.20.5; darwin; amd64) terraform-provider/develop
+        terraform/terraform-tests
+    url: https://api.scaleway.com/mnq/v1alpha1/regions/fr-par/namespaces/AD5S7FTX2B33HAJRVEYDYD5I32HBZI2JDHUH5N3A5HARIXCQ2DAEF5JO
+    method: GET
+  response:
+    body: '{"created_at":"2023-06-14T17:01:57.113355Z","endpoint":"nats://nats.mnq.fr-par.scw.cloud:4222","id":"AD5S7FTX2B33HAJRVEYDYD5I32HBZI2JDHUH5N3A5HARIXCQ2DAEF5JO","name":"test-mnq-nats-basic","project_id":"105bdce1-64c0-48ab-899d-868455867ecf","protocol":"nats","region":"fr-par","updated_at":"2023-06-14T17:01:57.113355Z"}'
+    headers:
+      Content-Length:
+      - "319"
+      Content-Security-Policy:
+      - default-src 'none'; frame-ancestors 'none'
+      Content-Type:
+      - application/json
+      Date:
+      - Wed, 14 Jun 2023 17:02:01 GMT
+      Server:
+      - Scaleway API-Gateway
+      Strict-Transport-Security:
+      - max-age=63072000
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+      X-Request-Id:
+      - 8d6b7934-c4cd-4f48-a284-c2c2b05602c0
+    status: 200 OK
+    code: 200
+    duration: ""
+- request:
+    body: ""
+    form: {}
+    headers:
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.20.5; darwin; amd64) terraform-provider/develop
+        terraform/terraform-tests
+    url: https://api.scaleway.com/mnq/v1alpha1/regions/fr-par/credentials/40c406b7-cfad-4d4d-b9db-874b2a1bcfcf
+    method: GET
+  response:
+    body: '{"id":"40c406b7-cfad-4d4d-b9db-874b2a1bcfcf","name":"test-queue-nats-basic","namespace_id":"AD5S7FTX2B33HAJRVEYDYD5I32HBZI2JDHUH5N3A5HARIXCQ2DAEF5JO","protocol":"nats"}'
+    headers:
+      Content-Length:
+      - "168"
+      Content-Security-Policy:
+      - default-src 'none'; frame-ancestors 'none'
+      Content-Type:
+      - application/json
+      Date:
+      - Wed, 14 Jun 2023 17:02:01 GMT
+      Server:
+      - Scaleway API-Gateway
+      Strict-Transport-Security:
+      - max-age=63072000
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+      X-Request-Id:
+      - 2914ce9f-212a-4708-9d65-c32b133ec9d4
+    status: 200 OK
+    code: 200
+    duration: ""
+- request:
+    body: ""
+    form: {}
+    headers:
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.20.5; darwin; amd64) terraform-provider/develop
+        terraform/terraform-tests
+    url: https://api.scaleway.com/mnq/v1alpha1/regions/fr-par/namespaces/AD5S7FTX2B33HAJRVEYDYD5I32HBZI2JDHUH5N3A5HARIXCQ2DAEF5JO
+    method: GET
+  response:
+    body: '{"created_at":"2023-06-14T17:01:57.113355Z","endpoint":"nats://nats.mnq.fr-par.scw.cloud:4222","id":"AD5S7FTX2B33HAJRVEYDYD5I32HBZI2JDHUH5N3A5HARIXCQ2DAEF5JO","name":"test-mnq-nats-basic","project_id":"105bdce1-64c0-48ab-899d-868455867ecf","protocol":"nats","region":"fr-par","updated_at":"2023-06-14T17:01:57.113355Z"}'
+    headers:
+      Content-Length:
+      - "319"
+      Content-Security-Policy:
+      - default-src 'none'; frame-ancestors 'none'
+      Content-Type:
+      - application/json
+      Date:
+      - Wed, 14 Jun 2023 17:02:01 GMT
+      Server:
+      - Scaleway API-Gateway
+      Strict-Transport-Security:
+      - max-age=63072000
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+      X-Request-Id:
+      - 88dc2a8c-510f-48e3-a44e-b296160b706f
+    status: 200 OK
+    code: 200
+    duration: ""
+- request:
+    body: ""
+    form: {}
+    headers:
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.20.5; darwin; amd64) terraform-provider/develop
+        terraform/terraform-tests
+    url: https://api.scaleway.com/mnq/v1alpha1/regions/fr-par/namespaces/AD5S7FTX2B33HAJRVEYDYD5I32HBZI2JDHUH5N3A5HARIXCQ2DAEF5JO
+    method: GET
+  response:
+    body: '{"created_at":"2023-06-14T17:01:57.113355Z","endpoint":"nats://nats.mnq.fr-par.scw.cloud:4222","id":"AD5S7FTX2B33HAJRVEYDYD5I32HBZI2JDHUH5N3A5HARIXCQ2DAEF5JO","name":"test-mnq-nats-basic","project_id":"105bdce1-64c0-48ab-899d-868455867ecf","protocol":"nats","region":"fr-par","updated_at":"2023-06-14T17:01:57.113355Z"}'
+    headers:
+      Content-Length:
+      - "319"
+      Content-Security-Policy:
+      - default-src 'none'; frame-ancestors 'none'
+      Content-Type:
+      - application/json
+      Date:
+      - Wed, 14 Jun 2023 17:02:01 GMT
+      Server:
+      - Scaleway API-Gateway
+      Strict-Transport-Security:
+      - max-age=63072000
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+      X-Request-Id:
+      - bf5c4cc5-d9ff-4f37-bde0-87e515c19e88
+    status: 200 OK
+    code: 200
+    duration: ""
+- request:
+    body: ""
+    form: {}
+    headers:
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.20.5; darwin; amd64) terraform-provider/develop
+        terraform/terraform-tests
+    url: https://api.scaleway.com/mnq/v1alpha1/regions/fr-par/credentials/40c406b7-cfad-4d4d-b9db-874b2a1bcfcf
+    method: DELETE
+  response:
+    body: ""
+    headers:
+      Content-Security-Policy:
+      - default-src 'none'; frame-ancestors 'none'
+      Content-Type:
+      - application/json
+      Date:
+      - Wed, 14 Jun 2023 17:02:02 GMT
+      Server:
+      - Scaleway API-Gateway
+      Strict-Transport-Security:
+      - max-age=63072000
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+      X-Request-Id:
+      - 5163ed05-e0da-484c-bece-c1f6c645df7b
+    status: 204 No Content
+    code: 204
+    duration: ""
+- request:
+    body: ""
+    form: {}
+    headers:
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.20.5; darwin; amd64) terraform-provider/develop
+        terraform/terraform-tests
+    url: https://api.scaleway.com/mnq/v1alpha1/regions/fr-par/namespaces/AD5S7FTX2B33HAJRVEYDYD5I32HBZI2JDHUH5N3A5HARIXCQ2DAEF5JO
+    method: DELETE
+  response:
+    body: ""
+    headers:
+      Content-Security-Policy:
+      - default-src 'none'; frame-ancestors 'none'
+      Content-Type:
+      - application/json
+      Date:
+      - Wed, 14 Jun 2023 17:02:04 GMT
+      Server:
+      - Scaleway API-Gateway
+      Strict-Transport-Security:
+      - max-age=63072000
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+      X-Request-Id:
+      - b406fe6d-350d-4a66-8c82-4a18da9f45f4
+    status: 204 No Content
+    code: 204
+    duration: ""
+- request:
+    body: ""
+    form: {}
+    headers:
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.20.5; darwin; amd64) terraform-provider/develop
+        terraform/terraform-tests
+    url: https://api.scaleway.com/mnq/v1alpha1/regions/fr-par/namespaces/AD5S7FTX2B33HAJRVEYDYD5I32HBZI2JDHUH5N3A5HARIXCQ2DAEF5JO
+    method: GET
+  response:
+    body: '{"message":"resource is not found","resource":"namespace","resource_id":"AD5S7FTX2B33HAJRVEYDYD5I32HBZI2JDHUH5N3A5HARIXCQ2DAEF5JO","type":"not_found"}'
+    headers:
+      Content-Length:
+      - "150"
+      Content-Security-Policy:
+      - default-src 'none'; frame-ancestors 'none'
+      Content-Type:
+      - application/json
+      Date:
+      - Wed, 14 Jun 2023 17:02:04 GMT
+      Server:
+      - Scaleway API-Gateway
+      Strict-Transport-Security:
+      - max-age=63072000
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+      X-Request-Id:
+      - ed3f48db-500c-4af4-b4d0-c66ffe1f5eff
+    status: 404 Not Found
+    code: 404
+    duration: ""

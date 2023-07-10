@@ -2,6 +2,8 @@ package scaleway
 
 import (
 	"context"
+	"math"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -77,7 +79,7 @@ func resourceScalewayLbBackend() *schema.Resource {
 				}, false),
 				Default:     lbSDK.StickySessionsTypeNone.String(),
 				Optional:    true,
-				Description: "Load balancing algorithm",
+				Description: "The type of sticky sessions",
 			},
 			"sticky_sessions_cookie_name": {
 				Type:        schema.TypeString,
@@ -97,7 +99,7 @@ func resourceScalewayLbBackend() *schema.Resource {
 				Type:        schema.TypeBool,
 				Description: "Enables PROXY protocol version 2",
 				Optional:    true,
-				Default:     false,
+				Computed:    true,
 				Deprecated:  "Please use proxy_protocol instead",
 			},
 			"proxy_protocol": {
@@ -117,6 +119,7 @@ func resourceScalewayLbBackend() *schema.Resource {
 			"timeout_server": {
 				Type:             schema.TypeString,
 				Optional:         true,
+				Default:          "5m",
 				DiffSuppressFunc: diffSuppressFuncDuration,
 				ValidateFunc:     validateDuration(),
 				Description:      "Maximum server connection inactivity time",
@@ -124,6 +127,7 @@ func resourceScalewayLbBackend() *schema.Resource {
 			"timeout_connect": {
 				Type:             schema.TypeString,
 				Optional:         true,
+				Default:          "5s",
 				DiffSuppressFunc: diffSuppressFuncDuration,
 				ValidateFunc:     validateDuration(),
 				Description:      "Maximum initial server connection establishment time",
@@ -131,6 +135,7 @@ func resourceScalewayLbBackend() *schema.Resource {
 			"timeout_tunnel": {
 				Type:             schema.TypeString,
 				Optional:         true,
+				Default:          "15m",
 				DiffSuppressFunc: diffSuppressFuncDuration,
 				ValidateFunc:     validateDuration(),
 				Description:      "Maximum tunnel inactivity time",
@@ -244,6 +249,14 @@ func resourceScalewayLbBackend() *schema.Resource {
 					},
 				},
 			},
+			"health_check_transient_delay": {
+				Type:             schema.TypeString,
+				Optional:         true,
+				Default:          "0.5s",
+				ValidateFunc:     validateDuration(),
+				DiffSuppressFunc: diffSuppressFuncDuration,
+				Description:      "Time to wait between two consecutive health checks when a backend server is in a transient state (going UP or DOWN)",
+			},
 			"on_marked_down_action": {
 				Type: schema.TypeString,
 				ValidateFunc: validation.StringInSlice([]string{
@@ -273,6 +286,33 @@ E.g. 'failover-website.s3-website.fr-par.scw.cloud' if your bucket website URL i
 				Description: "Specifies whether the Load Balancer should check the backend server’s certificate before initiating a connection",
 				Optional:    true,
 				Default:     false,
+			},
+			"max_connections": {
+				Type:         schema.TypeInt,
+				Optional:     true,
+				ValidateFunc: validation.IntBetween(0, math.MaxInt32),
+				Description:  "Maximum number of connections allowed per backend server",
+			},
+			"timeout_queue": {
+				Type:             schema.TypeString,
+				Optional:         true,
+				Default:          "0s",
+				ValidateFunc:     validateDuration(),
+				DiffSuppressFunc: diffSuppressFuncDuration,
+				Description:      "Maximum time (in seconds) for a request to be left pending in queue when `max_connections` is reached",
+			},
+			"redispatch_attempt_count": {
+				Type:         schema.TypeInt,
+				Optional:     true,
+				ValidateFunc: validation.IntBetween(0, math.MaxInt32),
+				Description:  "Whether to use another backend server on each attempt",
+			},
+			"max_retries": {
+				Type:         schema.TypeInt,
+				Optional:     true,
+				Default:      3,
+				ValidateFunc: validation.IntBetween(0, math.MaxInt32),
+				Description:  "Number of retries when a backend server connection failed",
 			},
 		},
 	}
@@ -352,6 +392,30 @@ func resourceScalewayLbBackendCreate(ctx context.Context, d *schema.ResourceData
 		IgnoreSslServerVerify: expandBoolPtr(getBool(d, "ignore_ssl_server_verify")),
 	}
 
+	if maxConn, ok := d.GetOk("max_connections"); ok {
+		createReq.MaxConnections = expandInt32Ptr(maxConn)
+	}
+	if timeoutQueue, ok := d.GetOk("timeout_queue"); ok {
+		timeout, err := time.ParseDuration(timeoutQueue.(string))
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		createReq.TimeoutQueue = &scw.Duration{Seconds: int64(timeout.Seconds())}
+	}
+	if redispatchAttemptCount, ok := d.GetOk("redispatch_attempt_count"); ok {
+		createReq.RedispatchAttemptCount = expandInt32Ptr(redispatchAttemptCount)
+	}
+	if maxRetries, ok := d.GetOk("max_retries"); ok {
+		createReq.MaxRetries = expandInt32Ptr(maxRetries)
+	}
+	if healthCheckTransientDelay, ok := d.GetOk("health_check_transient_delay"); ok {
+		timeout, err := time.ParseDuration(healthCheckTransientDelay.(string))
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		createReq.HealthCheck.TransientCheckDelay = &scw.Duration{Seconds: int64(timeout.Seconds()), Nanos: int32(timeout.Nanoseconds())}
+	}
+
 	// deprecated attribute
 	createReq.SendProxyV2 = expandBoolPtr(getBool(d, "send_proxy_v2"))
 
@@ -416,6 +480,11 @@ func resourceScalewayLbBackendRead(ctx context.Context, d *schema.ResourceData, 
 	_ = d.Set("failover_host", backend.FailoverHost)
 	_ = d.Set("ssl_bridging", flattenBoolPtr(backend.SslBridging))
 	_ = d.Set("ignore_ssl_server_verify", flattenBoolPtr(backend.IgnoreSslServerVerify))
+	_ = d.Set("max_connections", flattenInt32Ptr(backend.MaxConnections))
+	_ = d.Set("redispatch_attempt_count", flattenInt32Ptr(backend.RedispatchAttemptCount))
+	_ = d.Set("max_retries", flattenInt32Ptr(backend.MaxRetries))
+	_ = d.Set("timeout_queue", flattenDuration(backend.TimeoutQueue.ToTimeDuration()))
+	_ = d.Set("health_check_transient_delay", flattenDuration(backend.HealthCheck.TransientCheckDelay.ToTimeDuration()))
 
 	_, err = waitForLB(ctx, lbAPI, zone, backend.LB.ID, d.Timeout(schema.TimeoutRead))
 	if err != nil {
@@ -480,6 +549,17 @@ func resourceScalewayLbBackendUpdate(ctx context.Context, d *schema.ResourceData
 		FailoverHost:             expandStringPtr(d.Get("failover_host")),
 		SslBridging:              expandBoolPtr(getBool(d, "ssl_bridging")),
 		IgnoreSslServerVerify:    expandBoolPtr(getBool(d, "ignore_ssl_server_verify")),
+		MaxConnections:           expandInt32Ptr(d.Get("max_connections")),
+		RedispatchAttemptCount:   expandInt32Ptr(d.Get("redispatch_attempt_count")),
+		MaxRetries:               expandInt32Ptr(d.Get("max_retries")),
+	}
+
+	if timeoutQueue, ok := d.GetOk("timeout_queue"); ok {
+		timeoutQueueParsed, err := time.ParseDuration(timeoutQueue.(string))
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		req.TimeoutQueue = &scw.Duration{Seconds: int64(timeoutQueueParsed.Seconds())}
 	}
 
 	// deprecated
@@ -508,6 +588,13 @@ func resourceScalewayLbBackendUpdate(ctx context.Context, d *schema.ResourceData
 		CheckDelay:      healthCheckDelay,
 		HTTPConfig:      expandLbHCHTTP(d.Get("health_check_http")),
 		HTTPSConfig:     expandLbHCHTTPS(d.Get("health_check_https")),
+	}
+	if healthCheckTransientDelay, ok := d.GetOk("health_check_transient_delay"); ok {
+		timeout, err := time.ParseDuration(healthCheckTransientDelay.(string))
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		updateHCRequest.TransientCheckDelay = &scw.Duration{Seconds: int64(timeout.Seconds()), Nanos: int32(timeout.Nanoseconds())}
 	}
 
 	// As this is the default behaviour if no other HC type are present we enable TCP

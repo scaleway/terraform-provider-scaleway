@@ -59,7 +59,7 @@ func dataSourceScalewayRDBDatabaseBackupRead(ctx context.Context, d *schema.Reso
 		}
 	}
 
-	regionID := datasourceNewRegionalizedID(backupID, region)
+	regionID := datasourceNewRegionalID(backupID, region)
 	d.SetId(regionID)
 	err = d.Set("backup_id", regionID)
 	if err != nil {
