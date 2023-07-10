@@ -94,3 +94,12 @@ func waitForHosting(ctx context.Context, api *webhosting.API, region scw.Region,
 		RetryInterval: &retryInterval,
 	}, scw.WithContext(ctx))
 }
+
+func containsTag(tags []string, tag string) bool {
+	for _, t := range tags {
+		if t == tag {
+			return true
+		}
+	}
+	return false
+}

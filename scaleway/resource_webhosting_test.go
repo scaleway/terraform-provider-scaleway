@@ -101,9 +101,8 @@ func testAccCheckScalewayWebhostingExists(tt *TestTools, n string) resource.Test
 			Region:    region,
 		})
 
-		// If no error resource still exist
-		if err == nil {
-			return fmt.Errorf("server (%s) still exists", rs.Primary.ID)
+		if err != nil {
+			return err
 		}
 
 		return nil
@@ -122,12 +121,12 @@ func testAccCheckScalewayWebhostingDestroy(tt *TestTools) resource.TestCheckFunc
 				return err
 			}
 
-			_, err = api.DeleteHosting(&webhosting.DeleteHostingRequest{
+			res, err := api.GetHosting(&webhosting.GetHostingRequest{
 				HostingID: id,
 				Region:    region,
 			})
 
-			if err == nil {
+			if err == nil && res.Status != webhosting.HostingStatusUnknownStatus {
 				return fmt.Errorf("hosting (%s) still exists", rs.Primary.ID)
 			}
 

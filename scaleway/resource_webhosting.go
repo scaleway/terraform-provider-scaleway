@@ -73,7 +73,7 @@ func resourceScalewayWebhosting() *schema.Resource {
 			"status": {
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "The number of versions for this Secret",
+				Description: "The hosting status",
 			},
 			"platform_hostname": {
 				Type:        schema.TypeString,
@@ -137,6 +137,21 @@ func resourceScalewayWebhosting() *schema.Resource {
 			"region":          regionSchema(),
 			"project_id":      projectIDSchema(),
 			"organization_id": organizationIDSchema(),
+		},
+		CustomizeDiff: func(context context.Context, diff *schema.ResourceDiff, m interface{}) error {
+			if diff.HasChange("tags") {
+				oldTagsInterface, newTagsInterface := diff.GetChange("tags")
+				oldTags := expandStrings(oldTagsInterface)
+				newTags := expandStrings(newTagsInterface)
+				// If the 'internal' tag has been added, remove it from the diff
+				if containsTag(oldTags, "internal") && !containsTag(newTags, "internal") {
+					err := diff.SetNew("tags", oldTags)
+					if err != nil {
+						return err
+					}
+				}
+			}
+			return nil
 		},
 	}
 }
@@ -206,7 +221,7 @@ func resourceScalewayWebhostingRead(ctx context.Context, d *schema.ResourceData,
 	}
 
 	if len(webhostingResponse.Tags) > 0 {
-		_ = d.Set("tags", flattenSliceString(webhostingResponse.Tags))
+		_ = d.Set("tags", webhostingResponse.Tags)
 	}
 
 	_ = d.Set("offer_id", newRegionalIDString(region, webhostingResponse.OfferID))
@@ -297,6 +312,11 @@ func resourceScalewayWebhostingDelete(ctx context.Context, d *schema.ResourceDat
 	}, scw.WithContext(ctx))
 	if err != nil && !is404Error(err) {
 		return diag.FromErr(err)
+	}
+
+	_, err = waitForHosting(ctx, api, region, id, d.Timeout(schema.TimeoutDelete))
+	if err != nil {
+		return nil
 	}
 
 	return nil
