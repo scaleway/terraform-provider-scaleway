@@ -94,6 +94,7 @@ func Provider(config *ProviderConfig) plugin.ProviderFunc {
 				"scaleway_container_namespace":                 resourceScalewayContainerNamespace(),
 				"scaleway_container_cron":                      resourceScalewayContainerCron(),
 				"scaleway_container_domain":                    resourceScalewayContainerDomain(),
+				"scaleway_container_trigger":                   resourceScalewayContainerTrigger(),
 				"scaleway_domain_record":                       resourceScalewayDomainRecord(),
 				"scaleway_domain_zone":                         resourceScalewayDomainZone(),
 				"scaleway_flexible_ip":                         resourceScalewayFlexibleIP(),
