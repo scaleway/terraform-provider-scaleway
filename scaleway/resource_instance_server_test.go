@@ -1317,3 +1317,51 @@ func TestAccScalewayInstanceServer_PrivateNetwork(t *testing.T) {
 		},
 	})
 }
+
+func TestAccScalewayInstanceServer_Migrate(t *testing.T) {
+	tt := NewTestTools(t)
+	defer tt.Cleanup()
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      testAccCheckScalewayInstanceServerDestroy(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource "scaleway_instance_server" "main" {
+						image = "ubuntu_jammy"
+						type  = "PRO2-XXS"
+						
+					}`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayInstancePrivateNICsExists(tt, "scaleway_instance_server.main"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.main", "type", "PRO2-XXS"),
+				),
+			},
+			{
+				Config: `
+					resource "scaleway_instance_server" "main" {
+						image = "ubuntu_jammy"
+						type  = "PRO2-XS"
+						
+					}`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayInstancePrivateNICsExists(tt, "scaleway_instance_server.main"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.main", "type", "PRO2-XS"),
+				),
+			},
+			{
+				Config: `
+					resource "scaleway_instance_server" "main" {
+						image = "ubuntu_jammy"
+						type  = "PRO2-XXS"
+						
+					}`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalewayInstancePrivateNICsExists(tt, "scaleway_instance_server.main"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.main", "type", "PRO2-XXS"),
+				),
+			},
+		},
+	})
+}

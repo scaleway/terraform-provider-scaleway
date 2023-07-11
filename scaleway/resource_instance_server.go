@@ -54,7 +54,6 @@ func resourceScalewayInstanceServer() *schema.Resource {
 			"type": {
 				Type:             schema.TypeString,
 				Required:         true,
-				ForceNew:         true,
 				Description:      "The instance type of the server", // TODO: link to scaleway pricing in the doc
 				DiffSuppressFunc: diffSuppressFuncIgnoreCase,
 			},
@@ -943,6 +942,13 @@ func resourceScalewayInstanceServerUpdate(ctx context.Context, d *schema.Resourc
 		return diag.FromErr(err)
 	}
 
+	if d.HasChange("type") {
+		err := resourceScalewayInstanceServerMigrate(d, ctx, instanceAPI, zone, id)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+	}
+
 	return append(warnings, resourceScalewayInstanceServerRead(ctx, d, meta)...)
 }
 
@@ -1014,6 +1020,35 @@ func resourceScalewayInstanceServerDelete(ctx context.Context, d *schema.Resourc
 		if err != nil && !is404Error(err) {
 			return diag.FromErr(err)
 		}
+	}
+
+	return nil
+}
+
+func resourceScalewayInstanceServerMigrate(d *schema.ResourceData, ctx context.Context, instanceAPI *instance.API, zone scw.Zone, id string) error {
+	serv, err := waitForInstanceServer(ctx, instanceAPI, zone, id, d.Timeout(schema.TimeoutUpdate))
+	if err != nil {
+		return fmt.Errorf("failed to wait for server before changing server type: %w", err)
+	}
+	beginningState := serv.State
+
+	err = reachState(ctx, instanceAPI, zone, id, instance.ServerStateStopped)
+	if err != nil {
+		return fmt.Errorf("failed to stop server before changing server type: %w", err)
+	}
+
+	_, err = instanceAPI.UpdateServer(&instance.UpdateServerRequest{
+		Zone:           zone,
+		ServerID:       id,
+		CommercialType: expandStringPtr(d.Get("type")),
+	})
+	if err != nil {
+		return fmt.Errorf("failed to change server type server")
+	}
+
+	err = reachState(ctx, instanceAPI, zone, id, beginningState)
+	if err != nil {
+		return fmt.Errorf("failed to start server after changing server type: %w", err)
 	}
 
 	return nil
