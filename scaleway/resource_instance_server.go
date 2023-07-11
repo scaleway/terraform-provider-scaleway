@@ -11,6 +11,7 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
@@ -270,10 +271,13 @@ func resourceScalewayInstanceServer() *schema.Resource {
 			"organization_id": organizationIDSchema(),
 			"project_id":      projectIDSchema(),
 		},
-		CustomizeDiff: customizeDiffLocalityCheck(
-			"placement_group_id",
-			"additional_volume_ids.#",
-			"ip_id",
+		CustomizeDiff: customdiff.All(
+			customizeDiffLocalityCheck(
+				"placement_group_id",
+				"additional_volume_ids.#",
+				"ip_id",
+			),
+			customDiffInstanceServerType,
 		),
 	}
 }
@@ -1025,12 +1029,70 @@ func resourceScalewayInstanceServerDelete(ctx context.Context, d *schema.Resourc
 	return nil
 }
 
+func instanceServerCanMigrate(api *instance.API, server *instance.Server, requestedType string) error {
+	var localVolumeSize scw.Size
+
+	for _, volume := range server.Volumes {
+		if volume.VolumeType == instance.VolumeServerVolumeTypeLSSD {
+			localVolumeSize += volume.Size
+		}
+	}
+
+	serverType, err := api.GetServerType(&instance.GetServerTypeRequest{
+		Zone: server.Zone,
+		Name: requestedType,
+	})
+	if err != nil {
+		return err
+	}
+
+	if serverType.VolumesConstraint != nil &&
+		(localVolumeSize > serverType.VolumesConstraint.MaxSize) ||
+		(localVolumeSize < serverType.VolumesConstraint.MinSize) {
+		return fmt.Errorf("local volume total size does not respect type constraint, expected beteween (%dGB, %dGB), got %sGB",
+			serverType.VolumesConstraint.MinSize/scw.GB,
+			serverType.VolumesConstraint.MaxSize/scw.GB,
+			localVolumeSize/scw.GB)
+	}
+
+	return nil
+}
+
+func customDiffInstanceServerType(ctx context.Context, diff *schema.ResourceDiff, meta interface{}) error {
+	if !diff.HasChange("type") || diff.Id() == "" {
+		return nil
+	}
+
+	instanceAPI, zone, id, err := instanceAPIWithZoneAndID(meta, diff.Id())
+	if err != nil {
+		return err
+	}
+
+	_, newValue := diff.GetChange("type")
+	newType := newValue.(string)
+
+	resp, err := instanceAPI.GetServer(&instance.GetServerRequest{
+		Zone:     zone,
+		ServerID: id,
+	})
+	if err != nil {
+		return fmt.Errorf("failed to check server type change: %w", err)
+	}
+
+	err = instanceServerCanMigrate(instanceAPI, resp.Server, newType)
+	if err != nil {
+		return fmt.Errorf("cannot change server type: %w", err)
+	}
+
+	return nil
+}
+
 func resourceScalewayInstanceServerMigrate(d *schema.ResourceData, ctx context.Context, instanceAPI *instance.API, zone scw.Zone, id string) error {
-	serv, err := waitForInstanceServer(ctx, instanceAPI, zone, id, d.Timeout(schema.TimeoutUpdate))
+	server, err := waitForInstanceServer(ctx, instanceAPI, zone, id, d.Timeout(schema.TimeoutUpdate))
 	if err != nil {
 		return fmt.Errorf("failed to wait for server before changing server type: %w", err)
 	}
-	beginningState := serv.State
+	beginningState := server.State
 
 	err = reachState(ctx, instanceAPI, zone, id, instance.ServerStateStopped)
 	if err != nil {
