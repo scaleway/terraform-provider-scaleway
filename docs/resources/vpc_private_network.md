@@ -51,7 +51,7 @@ The following arguments are supported:
     - `subnet` - (Optional) The subnet CIDR.
 - `region` - (Defaults to [provider](../index.md#region) `region`) The [region](../guides/regions_and_zones.md#regions) of the private network.
 - `vpc_id` - (Optional) The VPC in which to create the private network.
-- `is_regional` - (Deprecated) Defines whether the private network is Regional. By default, it will be Zonal.
+- `is_regional` - (Deprecated) The private networks are necessarily regional now. 
 - `zone` - (Deprecated) please use `region` instead - (Defaults to [provider](../index.md#zone) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which the private network should be created.
 
 ## Attributes Reference
