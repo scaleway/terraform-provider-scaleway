@@ -432,11 +432,11 @@ func resourceScalewayBaremetalServerRead(ctx context.Context, d *schema.Resource
 	if err != nil {
 		return diag.FromErr(fmt.Errorf("failed to list server's private networks: %w", err))
 	}
-	fetchRegion, err := server.Zone.Region()
+	pnRegion, err := server.Zone.Region()
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	_ = d.Set("private_network", flattenBaremetalPrivateNetworks(fetchRegion, listPrivateNetworks.ServerPrivateNetworks))
+	_ = d.Set("private_network", flattenBaremetalPrivateNetworks(pnRegion, listPrivateNetworks.ServerPrivateNetworks))
 
 	return nil
 }
