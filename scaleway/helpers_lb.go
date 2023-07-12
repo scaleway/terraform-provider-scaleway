@@ -202,11 +202,11 @@ func flattenPrivateNetworkConfigs(privateNetworks []*lbSDK.PrivateNetwork) inter
 		if pn.DHCPConfig != nil {
 			dhcpConfigExist = true
 		}
-		fetchRegion, err := pn.LB.Zone.Region()
+		pnRegion, err := pn.LB.Zone.Region()
 		if err != nil {
 			return diag.FromErr(err)
 		}
-		pnRegionalID := newRegionalIDString(fetchRegion, pn.PrivateNetworkID)
+		pnRegionalID := newRegionalIDString(pnRegion, pn.PrivateNetworkID)
 		pnI = append(pnI, map[string]interface{}{
 			"private_network_id": pnRegionalID,
 			"dhcp_config":        dhcpConfigExist,
