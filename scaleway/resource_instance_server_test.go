@@ -1177,7 +1177,6 @@ func TestAccScalewayInstanceServer_PrivateNetwork(t *testing.T) {
 				Config: `
 					resource scaleway_vpc_private_network internal {
 						name = "private_network_instance"
-						zone = "fr-par-2"
 					}
 
 					resource "scaleway_instance_server" "base" {

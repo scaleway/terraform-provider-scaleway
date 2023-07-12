@@ -72,7 +72,7 @@ func resourceScalewayInstancePrivateNICCreate(ctx context.Context, d *schema.Res
 	createPrivateNICRequest := &instance.CreatePrivateNICRequest{
 		Zone:             zone,
 		ServerID:         expandZonedID(d.Get("server_id").(string)).ID,
-		PrivateNetworkID: expandID(d.Get("private_network_id").(string)),
+		PrivateNetworkID: expandRegionalID(d.Get("private_network_id").(string)).ID,
 		Tags:             expandStrings(d.Get("tags")),
 	}
 
@@ -119,9 +119,14 @@ func resourceScalewayInstancePrivateNICRead(ctx context.Context, d *schema.Resou
 		return diag.FromErr(err)
 	}
 
+	fetchRegion, err := zone.Region()
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	_ = d.Set("zone", zone)
 	_ = d.Set("server_id", newZonedID(zone, privateNIC.ServerID).String())
-	_ = d.Set("private_network_id", privateNIC.PrivateNetworkID)
+	_ = d.Set("private_network_id", newRegionalIDString(fetchRegion, privateNIC.PrivateNetworkID))
 	_ = d.Set("mac_address", privateNIC.MacAddress)
 
 	if len(privateNIC.Tags) > 0 {

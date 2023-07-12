@@ -1,17 +1,16 @@
 package scaleway
 
 import (
-	"bytes"
 	"context"
 	"fmt"
 	"net"
 	"reflect"
-	"strconv"
 	"strings"
 	"time"
 
 	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	lbSDK "github.com/scaleway/scaleway-sdk-go/api/lb/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
@@ -203,8 +202,13 @@ func flattenPrivateNetworkConfigs(privateNetworks []*lbSDK.PrivateNetwork) inter
 		if pn.DHCPConfig != nil {
 			dhcpConfigExist = true
 		}
+		fetchRegion, err := pn.LB.Zone.Region()
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		pnRegionalID := newRegionalIDString(fetchRegion, pn.PrivateNetworkID)
 		pnI = append(pnI, map[string]interface{}{
-			"private_network_id": pn.PrivateNetworkID,
+			"private_network_id": pnRegionalID,
 			"dhcp_config":        dhcpConfigExist,
 			"status":             pn.Status.String(),
 			"zone":               pn.LB.Zone.String(),
@@ -597,25 +601,4 @@ func ipv4Match(cidr, ipStr string) bool {
 	ip := net.ParseIP(ipStr)
 
 	return cidrNet.Contains(ip)
-}
-
-func lbPrivateNetworkSetHash(v interface{}) int {
-	var buf bytes.Buffer
-
-	m := v.(map[string]interface{})
-	if pnID, ok := m["private_network_id"]; ok {
-		buf.WriteString(expandID(pnID))
-	}
-
-	if staticConfig, ok := m["static_config"]; ok {
-		for _, item := range staticConfig.([]interface{}) {
-			buf.WriteString(item.(string))
-		}
-	}
-
-	if dhcpConfig, ok := m["dhcp_config"]; ok {
-		buf.WriteString(strconv.FormatBool(dhcpConfig.(bool)))
-	}
-
-	return StringHashcode(buf.String())
 }
