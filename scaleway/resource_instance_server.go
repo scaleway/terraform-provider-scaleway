@@ -953,7 +953,7 @@ func resourceScalewayInstanceServerUpdate(ctx context.Context, d *schema.Resourc
 	}
 
 	if d.HasChange("type") {
-		err := resourceScalewayInstanceServerMigrate(d, ctx, instanceAPI, zone, id)
+		err := resourceScalewayInstanceServerMigrate(ctx, d, instanceAPI, zone, id)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -1064,12 +1064,12 @@ func instanceServerCanMigrate(api *instance.API, server *instance.Server, reques
 	return nil
 }
 
-func customDiffInstanceServerType(ctx context.Context, diff *schema.ResourceDiff, meta interface{}) error {
+func customDiffInstanceServerType(_ context.Context, diff *schema.ResourceDiff, meta interface{}) error {
 	if !diff.HasChange("type") || diff.Id() == "" {
 		return nil
 	}
 
-	if diff.Get("replace_on_type_change").(bool) == true {
+	if diff.Get("replace_on_type_change").(bool) {
 		return diff.ForceNew("type")
 	}
 
@@ -1097,7 +1097,7 @@ func customDiffInstanceServerType(ctx context.Context, diff *schema.ResourceDiff
 	return nil
 }
 
-func resourceScalewayInstanceServerMigrate(d *schema.ResourceData, ctx context.Context, instanceAPI *instance.API, zone scw.Zone, id string) error {
+func resourceScalewayInstanceServerMigrate(ctx context.Context, d *schema.ResourceData, instanceAPI *instance.API, zone scw.Zone, id string) error {
 	server, err := waitForInstanceServer(ctx, instanceAPI, zone, id, d.Timeout(schema.TimeoutUpdate))
 	if err != nil {
 		return fmt.Errorf("failed to wait for server before changing server type: %w", err)
